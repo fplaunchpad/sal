@@ -1,0 +1,25 @@
+name = "LeanLangur"
+version = "0.1.0"
+keywords = ["math"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.26.0"
+
+[[require]]
+name = "Blaster"
+git = "https://github.com/input-output-hk/Lean-blaster"
+rev = "main"
+
+[[lean_lib]]
+name = "CaseStudies"
+
+[[lean_lib]]
+name = "CaseStudies.Pramaana"
+
+[[lean_lib]]
+name = "Tests"
