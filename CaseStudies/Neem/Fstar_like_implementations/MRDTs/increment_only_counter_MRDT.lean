@@ -60,9 +60,6 @@ dsimp
 neem
 
 
-
-
-
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3)
 → (¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd))

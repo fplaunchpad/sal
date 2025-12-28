@@ -1,36 +1,36 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
+
 import CaseStudies.Neem_interfaces.Map_extended
+
 import Blaster
 
 open Classical
 
 
 
-@[simp] abbrev concrete_st := map ℕ Int × map ℕ Int
+
+@[simp] abbrev concrete_st := ((set (Nat × Nat)) × (set (Nat × Nat)))
+
+
 
 @[simp]
-def mysel (s: map ℕ Int) (k: ℕ) : Int :=
-if (contains s k) then (sel s k) else 0
-
-@[simp]
-def init_st : concrete_st:= (const_on empty 0, const_on empty 0)
+def init_st : concrete_st := (empty, empty)
 
 @[simp]
 def eq (a b: concrete_st) :=
-(forall id, (contains (Prod.fst a) id = contains (Prod.fst b) id) ∧ (mysel (Prod.fst a) id = mysel (Prod.fst b) id)) ∧
-(forall id, (contains (Prod.snd a) id = contains (Prod.snd b) id) ∧ (mysel (Prod.snd a) id = mysel (Prod.snd b) id))
-
+(forall e, mem e (Prod.fst a) ↔ mem e (Prod.fst b)) ∧
+(forall e, mem e (Prod.snd a) ↔ mem e (Prod.snd b))
 
 inductive app_op_t : Type where
-| Inc
-| Dec
+| Add : ℕ → app_op_t
+| Rem : ℕ → app_op_t
 
 abbrev op_t:= ℕ × ℕ × app_op_t
 
 @[simp]
-def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2
+def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2 ∧ Prod.fst op1 !=0 ∧ Prod.fst op2 != 0
 
 @[simp]
 def get_rid (o : op_t) :=
@@ -39,9 +39,9 @@ match o with
 
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
-match (Prod.snd o) with
-| (r, app_op_t.Inc) => (upd (Prod.fst s) r (mysel (Prod.fst s) r + 1), Prod.snd s)
-| (r, app_op_t.Dec) => (Prod.fst s, upd (Prod.snd s) r (mysel (Prod.snd s) r + 1))
+match o with
+| (ts, (rid, .Add e)) => (add (e,ts) (Prod.fst s), Prod.snd s)
+| (_, (rid, .Rem e)) => (Prod.fst s, union (Prod.snd s) (filter (Prod.fst s) (fun (e1, _) => e1 = e)))
 
 inductive rc_res : Type where
 | Fst_then_snd
@@ -49,37 +49,50 @@ inductive rc_res : Type where
 | Either
 
 @[simp]
-def rc (o1 o2 : op_t) := rc_res.Either
+def rc (o1 o2 : op_t) := match Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2) with
+| .Add e1, .Rem e2 => if e1 = e2 then rc_res.Snd_then_fst else rc_res.Either
+| .Rem e1, .Add e2 => if e1 = e2 then rc_res.Fst_then_snd else rc_res.Either
+| _, _ => rc_res.Either
 
 @[simp]
 def commutes_with (o1 o2 : op_t) :=
-    forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
+    forall s, (eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1))
 
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
-let keys_f := union (domain (Prod.fst a)) (domain (Prod.fst b))
-let u_f := const_on keys_f 0
-let f := iter_upd (fun k v => max (mysel (Prod.fst a) k) (mysel (Prod.fst b) k)) u_f
-let keys_s := union (domain (Prod.snd a)) (domain (Prod.snd b))
-let u_s := const_on keys_s 0
-let s := iter_upd (fun k v => max (mysel (Prod.snd a) k) (mysel (Prod.snd b) k)) u_s
-(f,s)
+(union (Prod.fst a) (Prod.fst b), union (Prod.snd a) (Prod.snd b))
 
-set_option maxHeartbeats 0
 
--- theorem rc_non_comm (o1: op_t) (o2: op_t):
--- distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
--- →
--- (rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
+theorem rc_non_comm (o1: op_t) (o2: op_t):
+distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
+→
+(commutes_with o1 o2 → rc o1 o2 = rc_res.Either ) := by
+simp
+neem
+
+theorem mythm : (commutes_with (Prod.mk 20163 (Prod.mk 27885 (app_op_t.Add 11293))) (Prod.mk 20165 (Prod.mk 7719 (app_op_t.Rem 11293))) →  (rc (Prod.mk 20163 (Prod.mk 27885 (app_op_t.Add 11293))) (Prod.mk 20165 (Prod.mk 7719 (app_op_t.Rem 11293))) = rc_res.Either )) := by
+dsimp
+aesop
+blaster
+
+
+-- def o1 := (Prod.mk 1 (Prod.mk 38 (app_op_t.Rem 7719)))
+-- def o2 := (Prod.mk 3 (Prod.mk 39 (app_op_t.Add 7719)))
+
+-- example :  ( commutes_with o1 o2 → rc o1 o2 = rc_res.Either)  := by
 -- dsimp
--- aesop (simp_config := {maxSteps := 1000000})
+-- blaster
 
+
+
+
+/-
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3)
 → (¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd))
 := by
 dsimp
-try aesop
+blaster
 
 theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3
@@ -87,18 +100,18 @@ theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 →
 eq (do_ (do_ (do_ s o1) o2) o3) (do_ (do_ (do_ s o2) o1) o3) := by
 dsimp
-grind
+try neem
+
 
 theorem merge_comm (a b: concrete_st) :
 eq (merge a b) (merge b a) := by
 simp
-aesop
-all_goals try grind
+neem
 
 theorem merge_idem (s: concrete_st) :
 eq (merge s s) s := by
 simp
-aesop
+
 
 theorem base_2op (o1 o2: op_t) :
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
@@ -106,8 +119,9 @@ theorem base_2op (o1 o2: op_t) :
 →
  eq (merge (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st (do_ init_st o2)) o1)
  := by
- dsimp
- blaster
+ simp
+ aesop
+
 
 theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
@@ -117,7 +131,8 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
 := by
 dsimp
-blaster
+neem
+
 
 
 theorem inter_right_base_2op (a b: concrete_st) (o1 o2 ob ol:op_t) :
@@ -130,7 +145,9 @@ theorem inter_right_base_2op (a b: concrete_st) (o1 o2 ob ol:op_t) :
 →
  eq (merge (do_ (do_ a ol) o1) (do_ (do_ (do_ b ob) ol) o2)) (do_ (merge (do_ a ol) (do_ (do_ (do_ b ob) ol) o2)) o1)
  := by
- simp
+ dsimp
+ neem
+
 
 theorem inter_left_base_2op (a b : concrete_st) (o1 o2 ob ol:op_t) :
  (rc o2 o1) = rc_res.Fst_then_snd ∧ (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid o2 != get_rid o1 ∧ get_rid ob != get_rid ol ∧
@@ -138,7 +155,10 @@ theorem inter_left_base_2op (a b : concrete_st) (o1 o2 ob ol:op_t) :
                     eq (merge (do_ (do_ a ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ a ol) (do_ (do_ b ol) o2)) o1)
 →
  eq (merge (do_ (do_ (do_ a ob) ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ (do_ a ob) ol) (do_ (do_ b ol) o2)) o1) :=
- by simp
+ by
+ simp
+ neem
+
 
 theorem inter_right_2op (a b: concrete_st) (o1 o2 ob ol o:op_t) :
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧
@@ -148,7 +168,9 @@ theorem inter_right_2op (a b: concrete_st) (o1 o2 ob ol o:op_t) :
                     eq (merge (do_ (do_ a ol) o1) (do_ (do_ (do_ b ob) ol) o2)) (do_ (merge (do_ a ol) (do_ (do_ (do_ b ob) ol) o2)) o1)
 →
  eq (merge (do_ (do_ a ol) o1) (do_ (do_ (do_ (do_ b o) ob) ol) o2)) (do_ (merge (do_ a ol) (do_ (do_ (do_ (do_ b o) ob) ol) o2)) o1)
-:= by simp
+:= by
+simp
+neem
 
 
 theorem inter_left_2op (a b:concrete_st) (o1 o2 ob ol o:op_t) :
@@ -159,7 +181,9 @@ theorem inter_left_2op (a b:concrete_st) (o1 o2 ob ol o:op_t) :
                     eq (merge (do_ (do_ (do_ a ob) ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ (do_ a ob) ol) (do_ (do_ b ol) o2)) o1)
 →
  eq (merge (do_ (do_ (do_ (do_ a o) ob) ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ (do_ (do_ a o) ob) ol) (do_ (do_ b ol) o2)) o1)
- := by simp
+ := by
+  simp
+  neem
 
 theorem inter_lca_2op (a b:concrete_st) (o1 o2 ol:op_t):
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
@@ -169,7 +193,9 @@ theorem inter_lca_2op (a b:concrete_st) (o1 o2 ol:op_t):
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ a ol) (do_ (do_ b ol) o2)) o1)
-:= by simp
+:= by
+simp
+neem
 
 
 theorem ind_right_2op (a b: concrete_st) (o1 o2 o2':op_t) :
@@ -179,7 +205,9 @@ theorem ind_right_2op (a b: concrete_st) (o1 o2 o2':op_t) :
 
 →
  eq (merge (do_ a o1) (do_ (do_ b o2') o2)) (do_ (merge a (do_ (do_ b o2') o2)) o1)
-:= by simp
+:= by
+simp
+neem
 
 
 theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
@@ -190,14 +218,14 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
 := by
 dsimp
-blaster
+neem
 
 
 theorem base_1op (o1:op_t) :
 eq (merge (do_ init_st o1) init_st) (do_ (merge init_st init_st) o1) :=
 by
 simp
-aesop (simp_config := {maxSteps := 1000000})
+aesop
 
 theorem ind_lca_1op (l:concrete_st) (o1 ol:op_t) :
 distinct_ops o1 ol ∧
@@ -206,9 +234,7 @@ distinct_ops o1 ol ∧
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
 := by
 dsimp
-try first
-    | grind
-    | blaster
+neem
 
 
 theorem inter_right_base_1op (a b :concrete_st) (o1 ob ol:op_t) :
@@ -217,7 +243,9 @@ theorem inter_right_base_1op (a b :concrete_st) (o1 ob ol:op_t) :
                     ((rc ob o1) = rc_res.Fst_then_snd → eq (merge (do_ a o1) (do_ b ob)) (do_ (merge a (do_ b ob)) o1)) ∧
                     eq (merge (do_ (do_ a ol) o1) (do_ b ol)) (do_ (merge (do_ a ol) (do_ b ol)) o1)
 →  eq (merge (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ a ol) (do_ (do_ b ob) ol)) o1) :=
-by simp
+by
+simp
+neem
 
 theorem inter_left_base_1op (a b:concrete_st) (o1 ob ol:op_t) :
  (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧
@@ -226,7 +254,9 @@ theorem inter_left_base_1op (a b:concrete_st) (o1 ob ol:op_t) :
 →
 eq (merge (do_ (do_ (do_ a ob) ol) o1) (do_ b ol)) (do_ (merge (do_ (do_ a ob) ol) (do_ b ol)) o1)
 :=
-by simp
+by
+simp
+neem
 
 theorem inter_right_1op (a b:concrete_st) (o1 ob ol o:op_t) :
  (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧
@@ -236,7 +266,9 @@ theorem inter_right_1op (a b:concrete_st) (o1 ob ol o:op_t) :
                     eq (merge (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ a ol) (do_ (do_ b ob) ol)) o1)
 →
  eq (merge (do_ (do_ a ol) o1) (do_ (do_ (do_ b o) ob) ol)) (do_ (merge (do_ a ol) (do_ (do_ (do_ b o) ob) ol)) o1) :=
- by simp
+ by
+ simp
+ neem
 
 
 theorem inter_left_1op (a b:concrete_st) (o1 ob ol o:op_t) :
@@ -247,7 +279,9 @@ theorem inter_left_1op (a b:concrete_st) (o1 ob ol o:op_t) :
                     eq (merge (do_ (do_ (do_ a ob) ol) o1) (do_ b ol)) (do_ (merge (do_ (do_ a ob) ol) (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ (do_ (do_ a o) ob) ol) o1) (do_ b ol)) (do_ (merge (do_ (do_ (do_ a o) ob) ol) (do_ b ol)) o1)
-:= by simp
+:= by
+simp
+neem
 
 theorem inter_lca_1op (a b:concrete_st) (o1 ol oi:op_t) :
  distinct_ops o1 ol ∧ distinct_ops o1 oi ∧ distinct_ops ol oi ∧
@@ -259,7 +293,10 @@ theorem inter_lca_1op (a b:concrete_st) (o1 ol oi:op_t) :
 
 eq (merge (do_ (do_ (do_ a oi) ol) o1) (do_ (do_ b oi) ol))
                       (do_ (merge (do_ (do_ a oi) ol) (do_ (do_ b oi) ol)) o1)
-:= by simp
+:= by
+simp
+neem
+
 
 theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
  distinct_ops o1 o1' ∧ distinct_ops o1 ol ∧ distinct_ops o1' ol ∧
@@ -267,8 +304,8 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
  := by
- dsimp
- grind
+dsimp
+neem
 
 
 theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
@@ -278,10 +315,11 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
 := by
 dsimp
-grind
+neem
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
 eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by
 dsimp
-grind
+neem
+-/

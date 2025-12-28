@@ -3,15 +3,9 @@ import Lean
 import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
-
-import CaseStudies.Velvet.Std
-import CaseStudies.TestingUtil
-
 import Plausible
 
 import Blaster
-
-open Lean.Elab.Term.DoNames
 
 abbrev concrete_st := Int
 

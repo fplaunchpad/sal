@@ -19,7 +19,4 @@ rev = "main"
 name = "CaseStudies"
 
 [[lean_lib]]
-name = "CaseStudies.Pramaana"
-
-[[lean_lib]]
 name = "Tests"

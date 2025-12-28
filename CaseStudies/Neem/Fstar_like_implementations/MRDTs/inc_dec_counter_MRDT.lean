@@ -6,38 +6,24 @@ import Mathlib.Tactic.Linarith
 import CaseStudies.Neem_interfaces.Set_extended
 
 
-import Plausible
-
 import Blaster
 
--- State tracks: (current_count, number_of_resets)
--- The reset counter helps merge detect which branch had more recent resets
+abbrev concrete_st := Int
 
 @[simp]
-abbrev counter_version := ℕ
+def init_st: concrete_st := 0
 
 @[simp]
-abbrev counter_value := Int
-
-@[simp]
-abbrev concrete_st := counter_value × counter_version
-
-
-@[simp]
-def init_st: concrete_st := (0,0)
-
-@[simp]
-def eq (a b: concrete_st) := a = b
+def eq (a b: concrete_st) := (a = b)
 
 inductive app_op_t : Type where
-| Incr
-| Reset
-deriving BEq, DecidableEq
+| Inc
+| Dec
 
-abbrev op_t:= ℕ × ℕ × app_op_t -- (timestamp, replica_id, (value, version))
+abbrev op_t:= ℕ × ℕ × app_op_t
 
 @[simp]
-def distinct_ops (op1 op2: op_t) := (Prod.fst op1 != Prod.fst op2)
+def distinct_ops (op1 op2: op_t) := Prod.fst op1 != Prod.fst op2
 
 @[simp]
 def get_rid (o: op_t) :=
@@ -45,51 +31,26 @@ match o with
 | (_, (rid, _)) => rid
 
 @[simp]
-def get_app_op (o: op_t) :=
-match o with
-| (_, (_, app_op)) => app_op
-
-@[simp]
-def get_ts (o: op_t) : ℕ :=
-match o with
-| (ts, _) => ts
-
-@[simp]
-def do_ (s: concrete_st) (o: op_t) : concrete_st :=
-match (get_app_op o) with
-| app_op_t.Incr => ((Prod.fst s) + 1, Prod.snd s)
-| app_op_t.Reset => (0, Prod.snd s +1) --increment the version
+def do_ (s:concrete_st) (o: op_t) : concrete_st
+:= match Prod.snd (Prod.snd o) with
+| app_op_t.Inc => s+1
+| app_op_t.Dec => s-1
 
 inductive rc_res : Type where
 | Fst_then_snd
 | Snd_then_fst
 | Either
 
--- Reset-first semantics: Reset operations take precedence
 @[simp]
-def rc (o1 o2: op_t) : rc_res :=
-match get_app_op o1, get_app_op o2 with
-| app_op_t.Reset, app_op_t.Reset => rc_res.Either  -- Both resets, order doesn't matter
-| app_op_t.Reset, app_op_t.Incr => rc_res.Snd_then_fst  -- Reset before increment
-| app_op_t.Incr, app_op_t.Reset => rc_res.Fst_then_snd  -- Reset before increment
-| app_op_t.Incr, app_op_t.Incr => rc_res.Either  -- Both increments commute
+def rc (o1 o2: op_t) := rc_res.Either
 
 @[simp]
-def merge (l a b: concrete_st) : concrete_st :=
-  if (Prod.snd a > Prod.snd l) then
-    (if (Prod.snd b > Prod.snd l) then
-      (if (Prod.snd a > Prod.snd b) then (Prod.fst a, Prod.snd a + Prod.snd b - Prod.snd l)
-      else if (Prod.snd a = Prod.snd b) then (max (Prod.fst a) (Prod.fst b), Prod.snd a + Prod.snd b - Prod.snd l)
-      else (Prod.fst b, Prod.snd a + Prod.snd b  - Prod.snd l)) else a)
-  else
-  (if (Prod.snd b > Prod.snd l) then b
-    else (Prod.fst a + Prod.fst b - Prod.fst l, Prod.snd l))
-
+def merge (l a b: concrete_st) : concrete_st
+:= a + b - l
 
 @[simp]
 def commutes_with (o1 o2: op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
-
 
 
 theorem rc_non_comm (o1: op_t) (o2: op_t):
@@ -119,7 +80,6 @@ theorem  merge_comm (l: concrete_st) (a: concrete_st) (b: concrete_st) :
 eq (merge l a b) (merge l b a) := by
 dsimp
 neem
-
 
 theorem merge_idem (s: concrete_st):
 eq (merge s s s) s := by
@@ -311,11 +271,3 @@ eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol)
 := by
 dsimp
 neem
-
-def l := (Prod.mk 11294 7719)
-def a := (Prod.mk 8855 0)
-def b := (Prod.mk 2437 5798)
-def ol := (Prod.mk 11797 (Prod.mk 8365 app_op_t.Incr))
-
-
--/
