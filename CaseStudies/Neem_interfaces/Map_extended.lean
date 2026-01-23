@@ -15,7 +15,7 @@ m.mappings k
 @[simp, grind]
 def upd {key:Type} [DecidableEq key] {value: Type} (m: map key value) (k:key) (v:value)
 :=
-map.mk (fun x => if x = k then v else m.mappings x) (union (m.domain) (singleton k))
+map.mk (fun (x : key) => if x = k then v else m.mappings x) (union (m.domain) (singleton k))
 
 @[simp, grind]
 def const {key:Type} [DecidableEq key] {value: Type} (v:value) : map key value
@@ -147,7 +147,8 @@ lemma lemma_UpdDomain {key: Type} [DecidableEq key] {value:Type} (m: map key val
 equal (domain (upd m k v)) (union (domain m) (singleton k)) := by simp
 
 @[simp]
-def map_equal {key: Type} [DecidableEq key] {value: Type} (m1: map key value) (m2: map key value) := m1 = m2
+def map_equal {key: Type} [DecidableEq key] {value: Type} (m1: map key value) (m2: map key value) :=
+m1.mappings  = m2.mappings ∧ equal m1.domain m2.domain
 
 @[simp, grind?]
 theorem map_lemma_equal_intro  {key: Type} [DecidableEq key] {value: Type} (m1: map key value) (m2: map key value)  :
@@ -160,4 +161,7 @@ aesop
 
 @[simp]
 theorem map_lemma_equal_elim {key: Type} [DecidableEq key] {value: Type} (m1: map key value) (m2: map key value) :
-map_equal m1 m2 ↔ m1 = m2 := by simp
+map_equal m1 m2 ↔ m1 = m2 := by
+dsimp
+cases m1; cases m2
+aesop

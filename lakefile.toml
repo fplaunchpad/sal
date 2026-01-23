@@ -15,6 +15,11 @@ name = "Blaster"
 git = "https://github.com/input-output-hk/Lean-blaster"
 rev = "main"
 
+[[require]]
+name = "smt"
+scope = "ufmg-smite"
+rev = "main"
+
 [[lean_lib]]
 name = "CaseStudies"
 

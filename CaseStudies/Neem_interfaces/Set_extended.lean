@@ -11,7 +11,7 @@ abbrev set (a:Type) [DecidableEq a] := a → Bool
 
 @[simp, grind]
 def equal {a:Type} [DecidableEq a] (s1: set a) (s2: set a)
-:= s1 = s2
+:= ∀ x : a, s1 x == s2 x
 
 @[simp, grind]
 def empty {a:Type} [DecidableEq a] : set a := fun x => false
@@ -31,7 +31,7 @@ def intersection {a:Type} [DecidableEq a] (s1 s2: set a) : set a :=
 def complement {a:Type} [DecidableEq a] (s : set a) : set a :=
 (fun x => not (s x))
 
-@[simp, grind]
+@[simp, grind ]
 def mem {a:Type} [DecidableEq a] (x: a) (s: set a) : Bool :=
 s x
 
@@ -68,10 +68,7 @@ grind_pattern mem_empty => (mem x empty)
 lemma equal_intro {a: Type} [DecidableEq a] (s1 s2 : set a) :
 (forall x:a, mem x s1 == mem x s2) → equal s1 s2 := by
 simp
-unfold _root_.set at s1 s2
-intros h
-funext x
-exact h x
+
 
 grind_pattern equal_intro => (equal s1 s2)
 
@@ -79,10 +76,15 @@ grind_pattern equal_intro => (equal s1 s2)
 lemma equal_intro' {a: Type} [DecidableEq a] (s1 s2 : set a) :
 equal s1 s2 ↔ s1 = s2 := by
 simp
+aesop
+
 
 
 lemma equal_elim  {a: Type} [DecidableEq a] (s1 s2 : set a) :
-equal s1 s2 → s1 = s2 := by simp
+equal s1 s2 → s1 = s2 := by
+simp
+aesop
+
 
 grind_pattern equal_elim => equal s1 s2
 
@@ -97,7 +99,6 @@ grind
 lemma equal_refl' {a:Type} [DecidableEq a] (s1 s2: set a) :
 equal s1 s2 ↔ (forall x:a, mem x s1 == mem x s2) := by
 simp
-aesop
 
 
 

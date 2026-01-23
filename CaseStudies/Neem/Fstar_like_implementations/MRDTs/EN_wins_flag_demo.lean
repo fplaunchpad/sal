@@ -3,6 +3,7 @@ import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
 
 import Blaster
+import CaseStudies.Neem.Tactics.Sal
 
 abbrev concrete_st := Int × Bool
 
@@ -84,8 +85,7 @@ theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
     neem_solve
 
 theorem lem_0op (l : concrete_st) (a : concrete_st) (b : concrete_st) (ol : op_t):
-eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol) := by
-dsimp
+eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol) := by sal
 grind
 
 theorem ind_left_2op (l : concrete_st) (a : concrete_st) (b : concrete_st)
@@ -95,8 +95,6 @@ theorem ind_left_2op (l : concrete_st) (a : concrete_st) (b : concrete_st)
                     eq (merge l (do_ a o1) (do_ b o2)) (do_ (merge l a (do_ b o2)) o1))
 →
 (eq (merge l (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge l (do_ a o1') (do_ b o2)) o1))
-:= by
-dsimp
-blaster
+:= by sal
 
 #print lem_0op

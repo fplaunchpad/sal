@@ -5,6 +5,7 @@ import Blaster
 
 import CaseStudies.Neem_interfaces.Set_extended
 import CaseStudies.Neem_interfaces.Map_extended
+import CaseStudies.Neem.Tactics.Sal
 
 @[simp]
 abbrev counter := Int
@@ -101,6 +102,7 @@ structure CharMetaData where
   markOpsBefore? : Option (set MarkOp)
   markOpsAfter? : Option (set MarkOp)
 
+/- hello    bye-/
 
 abbrev TextMetaData := Array CharMetaData
 
@@ -197,7 +199,7 @@ def arrayInsertAt {α : Type} (arr : Array α) (pos : Nat) (elem : α) : Array �
 
 -- Main do_ function: applies an operation to the state
 @[simp]
-def do_ (s: concrete_st) (o: Op) : concrete_st :=
+def do_ (s: concrete_st) (o: Op)  : concrete_st :=
   match o with
   | Op.InsertOp insertOp =>
       -- Create new character metadata
