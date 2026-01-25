@@ -204,8 +204,12 @@ def splitAtMerge (lst : List ((concrete_st) × String × concrete_st)) (mergeLab
 open ProofWidgets Jsx in
 def renderBranchingTreeFromList (lst : List ((concrete_st) × String × concrete_st)) : Html :=
   let (rootPath, afterLMerge) := splitAtMerge lst "LMerge"
-  let (leftBranch, afterAMerge) := splitAtMerge afterLMerge "AMerge"
-  let (rightBranch, afterBMerge) := splitAtMerge afterAMerge "BMerge"
+  let (leftBranchFull, afterAMerge) := splitAtMerge afterLMerge "AMerge"
+  let (rightBranchFull, afterBMerge) := splitAtMerge afterAMerge "BMerge"
+
+  -- Drop the shared LCA operations from branches
+  let leftBranch := leftBranchFull.drop rootPath.length
+  let rightBranch := rightBranchFull.drop rootPath.length
 
   let finalNode := match rightBranch.getLast? with
     | some ((_, _), _, n1, n2) => (n1, n2)

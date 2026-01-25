@@ -1,6 +1,6 @@
 # Port of the Neem MRDT and CRDT Framework to Lean
 
-The code is built on top of the [Loom](https://github.com/verse-lab/loom/tree/master) repository. Initially, Loom was used to prove the correctness directly, but eventually pure Lean was used since the structures being verified did not have mutability. Therefore, some proofs use Loom and some do not. 
+This repository contains a port of various CRDTs and MRDTs from the Neem framework to Lean. It also comes equipped with a custom tactic called `sal` and a counterexample generation and visualization framework. 
 
 ## Steps to run
 
@@ -8,8 +8,23 @@ Clone this repository, and run `lake update` followed by `lake build`. Ensure th
 
 # Data structures implemented and description
 
-TODO
+| **RDT**                          | **dsimp + grind** | **Lean Blaster** | **Fallback to ITP** |
+|----------------------------------|:------:|:------:|:-------------------:|
+| Increment-only counter MRDT      | 24     | 0      | 0                   |
+| PN-counter MRDT                  | 24     | 0      | 0                   |
+| OR-set MRDT                      | 21     | 3      | 0                   |
+| Enable-Wins Flag MRDT            | 9      | 14     | 0                   |
+| Efficient OR-Set MRDT            | 22     | 2      | 0                   |
+| Grows-only set MRDT              | 24     | 0      | 0                   |
+| Grows-only map MRDT              | 22     | 0      | 2                   |
+| Replicated Growable Array MRDT   | 15     | 9      | 0                   |
+| Multi-valued Register MRDT       | 24     | 0      | 0                   |
+| Increment-only counter CRDT      | 24     | 0      | 0                   |
+| PN-counter CRDT                  | 16     | 2      | 6                   |
+| Multi-Valued Register CRDT       | 24     | 0      | 0                   |
+| OR-set CRDT                      | 4      | 19     | 1                   |
+
 
 # Counterexample generation using Plausible
 
-Our implementation of the `en-wins flag` was erroneous, and it did not pass the `inter_right_1op` VC. Earlier, the counterexample needed to be worked out manually, but we can now automatically generate small counter-examples. The [Plausible](https://github.com/leanprover-community/plausible) generator was used to generate minimal examples. The section of code can be checked out [here](https://github.com/pranavramesh2003/Neem_Loom/blob/master/CaseStudies/Neem/en_wins_flag.lean#L312). We prove that both the pre and post conditions are decidable under a suitable upper bound, and generate counter examples. Subsequently, we use [Logging](https://leanprover.github.io/functional_programming_in_lean/monads.html#logging)-style monads to derive the computation tree for the left and right hand sides of the `ensures` equality. [This file](CaseStudies/Neem/WriterMonad_ENflag.lean) shows the computation path logged as a list. 
+Our implementation of the `en-wins flag` was erroneous, and it did not pass the `inter_right_1op` VC. Earlier, the counterexample needed to be worked out manually, but we can now automatically generate small counter-examples. The [Plausible](https://github.com/leanprover-community/plausible) generator was used to generate minimal examples. The section of code can be checked out [here](https://github.com/pranavramesh2003/Neem_Loom/blob/master/CaseStudies/Neem/en_wins_flag.lean#L312). We prove that both the pre and post conditions are decidable under a suitable upper bound, and generate counter examples. Subsequently, we use [Logging](https://leanprover.github.io/functional_programming_in_lean/monads.html#logging)-style monads to derive the computation tree for the left and right hand sides of the `ensures` equality. [This file](CaseStudies/Neem/WriterMonad_ENflag.lean) shows the computation path logged as a list and the subsequent visualization in HTML. 

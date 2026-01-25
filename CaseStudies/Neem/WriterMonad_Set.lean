@@ -173,9 +173,13 @@ def splitAtMerge' {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (lst
 open ProofWidgets Jsx in
 def renderBranchingTreeFromList {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (lst : List ((concrete_st_viz α) × String × concrete_st_viz α)) : Html :=
   let (rootPath, afterLMerge) := splitAtMerge lst "LMerge"
-  let (leftBranch, afterAMerge) := splitAtMerge afterLMerge "AMerge"
-  let (rightBranch, afterBMerge) := splitAtMerge afterAMerge "BMerge"
+  let (leftBranchFull, afterAMerge) := splitAtMerge afterLMerge "AMerge"
+  let (rightBranchFull, afterBMerge) := splitAtMerge afterAMerge "BMerge"
   let (mergePath,_) := splitAtMerge' lst "LMerge"
+
+  let leftBranch := leftBranchFull.drop rootPath.length
+  let rightBranch := rightBranchFull.drop rootPath.length
+
 
   let finalNode := match mergePath.getLast? with
     | some (_, _, y) => y
