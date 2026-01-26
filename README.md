@@ -12,9 +12,9 @@ Clone this repository, and run `lake update` followed by `lake build`. Ensure th
 |----------------------------------|:------:|:------:|:-------------------:|
 | Increment-only counter MRDT      | 24     | 0      | 0                   |
 | PN-counter MRDT                  | 24     | 0      | 0                   |
-| OR-set MRDT                      | 21     | 3      | 0                   |
+| OR-set MRDT                      | 3      | 21     | 0                   |
 | Enable-Wins Flag MRDT            | 9      | 14     | 0                   |
-| Efficient OR-Set MRDT            | 22     | 2      | 0                   |
+| Efficient OR-Set MRDT            | 2      | 22     | 0                   |
 | Grows-only set MRDT              | 24     | 0      | 0                   |
 | Grows-only map MRDT              | 22     | 0      | 2                   |
 | Replicated Growable Array MRDT   | 15     | 9      | 0                   |
