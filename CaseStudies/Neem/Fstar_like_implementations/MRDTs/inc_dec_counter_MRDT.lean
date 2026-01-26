@@ -58,7 +58,11 @@ distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
 (rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
 
-sal
+sal { maxHeartbeats := 10000}
+
+
+
+
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :

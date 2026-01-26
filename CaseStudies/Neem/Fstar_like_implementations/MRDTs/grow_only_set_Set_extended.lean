@@ -58,14 +58,12 @@ def commutes_with (o1 o2: op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
 
-set_option maxHeartbeats 2000000
 
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
 (rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
 sal
-
 
 
 

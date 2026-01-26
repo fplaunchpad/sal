@@ -1,4 +1,4 @@
-# Port of the Neem MRDT and CRDT Framework to Lean
+# `sal`: Multi-modal Verification of Replicated Data Types
 
 This repository contains a port of various CRDTs and MRDTs from the Neem framework to Lean. It also comes equipped with a custom tactic called `sal` and a counterexample generation and visualization framework. 
 

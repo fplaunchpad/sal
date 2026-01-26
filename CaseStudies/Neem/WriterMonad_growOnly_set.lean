@@ -1,5 +1,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
+import ProofWidgets
+
 
 import Std.Tactic.BVDecide
 import CaseStudies.Neem_interfaces.Set_extended
@@ -68,3 +70,5 @@ def merge_ans := merge_viz merge (ok (init_st_viz init_st))
 (do_viz (do_) (ok (init_st_viz init_st)) (1,2,8) univ_add op_string)
 
 #eval merge_ans
+
+#html  renderBranchingTreeFromList merge_ans.log

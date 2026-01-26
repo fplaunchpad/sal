@@ -176,8 +176,7 @@ theorem ind_left_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op
 
  eq (merge l (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge l (do_ a o1') (do_ b o2)) o1)
  := by
- dsimp
- grind
+ blaster
 
 
 
