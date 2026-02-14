@@ -67,7 +67,31 @@ def merge (a b: concrete_st) : concrete_st :=
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sal
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
+  -- By definition of `rc`, if `o1` and `o2` are distinct and their `rid`s are different, then the `rc` result is `rc_res.Either` if and only if there exists a `res` such that both operations can execute with `res` and commute.
+  intro h_distinct
+  simp [rc, commutes_with];
+  rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o2 with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at *;
+  · grind +ring;
+  · -- If $a \neq b$, then the conditions in the if statements are equivalent, so the functions are equal.
+    apply Iff.intro;
+    · unfold union; aesop;
+    · -- If the if statements are equal for all a and b, then the conditions inside the if statements must be equivalent.
+      intro h_eq
+      by_contra h_contra;
+      specialize h_eq ( fun _ => Bool.false ) ( fun _ => Bool.false ) ; simp_all +decide [ union ];
+  · -- To prove the equivalence, we split it into two implications.
+    apply Iff.intro;
+    · -- Since $a✝¹ \neq a✝$, the second condition $a✝¹ = a✝$ is false, so the second if statement simplifies to the same as the first one.
+      intros h_ne a b e
+      simp [h_ne];
+    · -- If the if statements are equal for all a and b, then it must be that the variables are not equal.
+      intros h_eq h_neq
+      by_contra h_contra
+      simp [h_contra] at h_eq;
+      specialize h_eq ( fun _ => Bool.false ) ( fun _ => Bool.false ) ; simp_all +decide [ union ] ;
+  · intro a b e; split_ifs <;> simp +decide [ *, union ] ;
+    grind
 
 
 

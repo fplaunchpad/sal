@@ -99,7 +99,7 @@ def ans := do_viz do_ (do_viz (do_) (ok (init_st_viz init_st)) (1,1,app_op_t.Rem
 #eval ans
 
 def merge_ans := merge_viz merge (ok (init_st_viz init_st))
-( do_viz (do_) (ok (init_st_viz init_st)) (1,1,app_op_t.Rem 3) univ_add op_string)
+( do_viz (do_) (ok (init_st_viz init_st)) (2,1,app_op_t.Rem 3) univ_add op_string)
 (do_viz (do_) (ok (init_st_viz init_st)) (1,2,app_op_t.Add 3) univ_add op_string)
 
 #eval merge_ans

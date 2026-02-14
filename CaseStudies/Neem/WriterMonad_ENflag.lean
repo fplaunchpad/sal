@@ -60,8 +60,8 @@ def do_ (ls:  WithLog (concrete_st × String × concrete_st) concrete_st) (o: op
 let s := ls.val
 {log := ls.log, val := ()} ~~> fun () =>
  (match o with
-| (_, (rid, .Enable)) => save (s, "Enable", (Prod.fst s + 1, true)) ~~> fun () => ok ((Prod.fst s + 1, true))
-| (_, (rid, .Disable)) => save (s, "Disable", (Prod.fst s, false)) ~~> fun () => ok ((Prod.fst s, false))
+| (ts, (rid, .Enable)) => save (s, s!"({ts},r{rid},enable)", (Prod.fst s + 1, true)) ~~> fun () => ok ((Prod.fst s + 1, true))
+| (ts, (rid, .Disable)) => save (s, s!"({ts},r{rid},disable)", (Prod.fst s, false)) ~~> fun () => ok ((Prod.fst s, false))
  )
 
 def ans := do_ (do_ (ok init_st) (1,2,app_op_t.Enable)) (1,1,app_op_t.Disable)
@@ -123,10 +123,10 @@ namespace counter2
 def l: WithLog (concrete_st × String × concrete_st) concrete_st := ok (0, false)
 def a: WithLog (concrete_st × String × concrete_st) concrete_st := ok (0, false)
 def b: WithLog (concrete_st × String × concrete_st) concrete_st := ok (0, false)
-def ob := (0,1,app_op_t.Disable)
-def ol :=  (2,3,app_op_t.Enable)
-def o := (4,5, app_op_t.Enable)
-def o1 := (6,7,app_op_t.Disable)
+def ob := (4,2,app_op_t.Disable)
+def ol :=  (1,1,app_op_t.Enable)
+def o := (3,2, app_op_t.Enable)
+def o1 := (3,1,app_op_t.Disable)
 
 /- evaluate the counterexamples generated -/
 
@@ -204,12 +204,8 @@ def splitAtMerge (lst : List ((concrete_st) × String × concrete_st)) (mergeLab
 open ProofWidgets Jsx in
 def renderBranchingTreeFromList (lst : List ((concrete_st) × String × concrete_st)) : Html :=
   let (rootPath, afterLMerge) := splitAtMerge lst "LMerge"
-  let (leftBranchFull, afterAMerge) := splitAtMerge afterLMerge "AMerge"
-  let (rightBranchFull, afterBMerge) := splitAtMerge afterAMerge "BMerge"
-
-  -- Drop the shared LCA operations from branches
-  let leftBranch := leftBranchFull.drop rootPath.length
-  let rightBranch := rightBranchFull.drop rootPath.length
+  let (leftBranch, afterAMerge) := splitAtMerge afterLMerge "AMerge"
+  let (rightBranch, afterBMerge) := splitAtMerge afterAMerge "BMerge"
 
   let finalNode := match rightBranch.getLast? with
     | some ((_, _), _, n1, n2) => (n1, n2)
@@ -256,6 +252,9 @@ def renderBranchingTreeFromList (lst : List ((concrete_st) × String × concrete
         }}>
           {Html.text "Left Branch"}
         </div>
+        {match leftBranch.head? with
+          | some ((s1, s2), _, _, _) => renderNode (s1, s2)
+          | none => Html.element "div" #[] #[]}
         {leftBranch.foldl (fun html ((_, _), label, n1, n2) =>
           Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
         ) (Html.element "div" #[] #[])}
@@ -274,6 +273,9 @@ def renderBranchingTreeFromList (lst : List ((concrete_st) × String × concrete
         }}>
           {Html.text "Right Branch"}
         </div>
+        {match rightBranch.head? with
+          | some ((s1, s2), _, _, _) => renderNode (s1, s2)
+          | none => Html.element "div" #[] #[]}
         {rightBranch.foldl (fun html ((_, _), label, n1, n2) =>
           Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
         ) (Html.element "div" #[] #[])}

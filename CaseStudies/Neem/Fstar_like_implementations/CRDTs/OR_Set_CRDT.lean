@@ -1,5 +1,3 @@
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
 
 import CaseStudies.Neem_interfaces.Map_extended
@@ -7,6 +5,24 @@ import CaseStudies.Neem.Tactics.Sal
 
 import Blaster
 
+
+import Mathlib
+
+set_option linter.mathlibStandardSet false
+
+open scoped BigOperators
+open scoped Real
+open scoped Nat
+open scoped Classical
+open scoped Pointwise
+
+set_option maxHeartbeats 0
+set_option maxRecDepth 4000
+set_option synthInstance.maxHeartbeats 20000
+set_option synthInstance.maxSize 128
+
+set_option relaxedAutoImplicit false
+set_option autoImplicit false
 open Classical
 
 
@@ -67,16 +83,22 @@ def merge (a b: concrete_st) : concrete_st :=
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(commutes_with o1 o2 → rc o1 o2 = rc_res.Either ) := by sal
-
-
-
--- def o1 := (Prod.mk 1 (Prod.mk 38 (app_op_t.Rem 7719)))
--- def o2 := (Prod.mk 3 (Prod.mk 39 (app_op_t.Add 7719)))
-
--- example :  ( commutes_with o1 o2 → rc o1 o2 = rc_res.Either)  := by
--- dsimp
--- blaster
+(commutes_with o1 o2 → rc o1 o2 = rc_res.Either ) := by
+-- If the operations are distinct and their rid are different, then rc is Either by definition.
+  intros h_distinct h_comm
+  simp [rc] ; cases o2 ; simp;
+  -- By examining all possible cases for o1 and o2, we can conclude that rc o1 o2 is always Either.
+  cases o1 ; cases ‹ℕ × app_op_t› ; simp at h_distinct ⊢;
+  -- By examining all possible cases for o1 and o2, we can conclude that rc o1 o2 is always Either. We'll consider each case separately.
+  cases' ‹app_op_t› with e1 e1 <;> cases' ‹ℕ × app_op_t› with e2 e2 <;> simp [rc] at h_distinct ⊢;
+  · -- Since the operations are distinct and their rid are different, the match expression will always evaluate to rc_res.Either.
+    cases' e2 with e2 e2 <;> simp at h_distinct ⊢;
+    intro h; have := h_comm ( empty, empty ) ; simp_all +decide ;
+  · -- By examining all possible cases for o1 and o2, we can conclude that rc o1 o2 is always Either. We'll consider each case separately and show that the match expression simplifies to rc_res.Either.
+    cases' e2 with e2 e2 <;> simp at h_distinct ⊢;
+    -- By contradiction, assume e1 = e2.
+    by_contra h_eq;
+    specialize h_comm (init_st) ; simp_all +decide ;
 
 
 
