@@ -28,3 +28,7 @@ Clone this repository, and run `lake update` followed by `lake build`. Ensure th
 # Counterexample generation using Plausible
 
 Our implementation of the `en-wins flag` was erroneous, and it did not pass the `inter_right_1op` VC. Earlier, the counterexample needed to be worked out manually, but we can now automatically generate small counter-examples. The [Plausible](https://github.com/leanprover-community/plausible) generator was used to generate minimal examples. The section of code can be checked out [here](https://github.com/pranavramesh2003/Neem_Loom/blob/master/CaseStudies/Neem/en_wins_flag.lean#L312). We prove that both the pre and post conditions are decidable under a suitable upper bound, and generate counter examples. Subsequently, we use [Logging](https://leanprover.github.io/functional_programming_in_lean/monads.html#logging)-style monads to derive the computation tree for the left and right hand sides of the `ensures` equality. [This file](CaseStudies/Neem/WriterMonad_ENflag.lean) shows the computation path logged as a list and the subsequent visualization in HTML. 
+
+# Proofs generated using Harmonic's Aristotle
+
+Subseqent attempts to verify the VCs which fallback to ITP were successful using the [Aristotle](https://aristotle.harmonic.fun/dashboard/docs/overview) framework. Now, all of the data structures mentioned in the table above have complete proofs. 
