@@ -330,34 +330,124 @@ cases m1; cases m2
 aesop
 
 
-abbrev concrete_st := Int × Bool
+@[simp] abbrev concrete_st := map ℕ Int × map ℕ Int × map (ℕ × ℕ) Int
+-- Increment map, decrement map, transfer map
 
 @[simp]
-def init_st: concrete_st := (0, false)
+def mysel {α : Type} [DecidableEq α] (s: map α Int) (k: α) : Int :=
+if (contains s k) then (sel s k) else 0
 
 @[simp]
-def eq (a b: concrete_st) := (a = b)
+def init_st : concrete_st:= (const_on empty 0, const_on empty 0, const_on empty 0)
 
+@[simp]
+def eq (a b: concrete_st) :=
+(forall id, (contains (Prod.fst a) id = contains (Prod.fst b) id) ∧ (mysel (Prod.fst a) id = mysel (Prod.fst b) id)) ∧
+(forall id, (contains (Prod.fst (Prod.snd a)) id = contains (Prod.fst (Prod.snd b)) id) ∧ (mysel (Prod.fst (Prod.snd a)) id = mysel (Prod.fst (Prod.snd b)) id)) ∧
+(forall id, (contains (Prod.snd (Prod.snd a)) id = contains (Prod.snd (Prod.snd b)) id) ∧ (mysel (Prod.snd (Prod.snd a)) id = mysel (Prod.snd (Prod.snd b)) id))
+
+
+
+-- Helper to get increment map from state
+@[simp]
+def get_inc (s: concrete_st) : map ℕ Int := Prod.fst s
+
+-- Helper to get decrement map from state
+@[simp]
+def get_dec (s: concrete_st) : map ℕ Int := Prod.fst (Prod.snd s)
+
+-- Helper to get transfer map from state
+@[simp]
+def get_transfers (s: concrete_st) : map (ℕ × ℕ) Int := Prod.snd (Prod.snd s)
+
+-- Calculate a simplified value for the bounded counter
+-- For a specific replica: its increments minus its decrements
+@[simp]
+def replica_value (replica: ℕ) (s: concrete_st) : Int :=
+  mysel (get_inc s) replica - mysel (get_dec s) replica
+
+-- Calculate the quota available for a replica
+-- This is a simplified version: replica's own value plus net transfers
+@[simp]
+def quota (replica: ℕ) (s: concrete_st) : Int :=
+  replica_value replica s
+
+-- Increment operation - always succeeds (increment by 1)
+@[simp]
+def inc (replica: ℕ) (s: concrete_st) : concrete_st :=
+  let inc_map := get_inc s
+  let new_inc_map := upd inc_map replica (mysel inc_map replica + 1)
+  (new_inc_map, get_dec s, get_transfers s)
+
+-- Decrement operation - may fail if insufficient quota (decrement by 1)
+def dec (replica: ℕ) (s: concrete_st) : Option concrete_st :=
+  let q := quota replica s
+  if q >= 1 then
+    let dec_map := get_dec s
+    let new_dec_map := upd dec_map replica (mysel dec_map replica + 1)
+    some (get_inc s, new_dec_map, get_transfers s)
+  else
+    none
+
+-- Transfer quota from sender to receiver - may fail if insufficient quota
+def transfer (sender: ℕ) (receiver: ℕ) (amount: Int) (s: concrete_st) : Option concrete_st :=
+  let q := quota sender s
+  if q >= amount then
+    let transfers := get_transfers s
+    let pair := (sender, receiver)
+    let new_transfers := upd transfers pair (mysel transfers pair + amount)
+    some (get_inc s, get_dec s, new_transfers)
+  else
+    none
+
+-- Merge operation for bounded counters
+@[simp]
+def merge (a b: concrete_st) : concrete_st :=
+  -- Merge increment maps (take max like PN-Counter)
+  let keys_inc := union (domain (get_inc a)) (domain (get_inc b))
+  let u_inc := const_on keys_inc 0
+  let merged_inc := iter_upd (fun k _ => max (mysel (get_inc a) k) (mysel (get_inc b) k)) u_inc
+
+  -- Merge decrement maps (take max like PN-Counter)
+  let keys_dec := union (domain (get_dec a)) (domain (get_dec b))
+  let u_dec := const_on keys_dec 0
+  let merged_dec := iter_upd (fun k _ => max (mysel (get_dec a) k) (mysel (get_dec b) k)) u_dec
+
+  -- Merge transfer maps (take max - transfers are monotonically increasing)
+  let keys_transfer := union (domain (get_transfers a)) (domain (get_transfers b))
+  let u_transfer := const_on keys_transfer 0
+  let merged_transfer := iter_upd (fun k _ => max (mysel (get_transfers a) k) (mysel (get_transfers b) k)) u_transfer
+
+  (merged_inc, merged_dec, merged_transfer)
+
+-- Operation types for the CRDT framework
 inductive app_op_t : Type where
-| Enable
-| Disable
+| Inc
+| Dec
+| Transfer (receiver: ℕ) (amount: ℕ)
 
-abbrev op_t:= ℕ × ℕ × app_op_t
-
-@[simp]
-def distinct_ops (op1 op2: op_t) := Prod.fst op1 != Prod.fst op2
+abbrev op_t := ℕ × ℕ × app_op_t
 
 @[simp]
-def get_rid (o: op_t) :=
+def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2
+
+@[simp]
+def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
 @[simp]
-def do_ (s:concrete_st) (o: op_t) : concrete_st
-:= match o with
-| (_, (rid, .Enable)) => (Prod.fst s + 1, true)
-| (_, (rid, .Disable)) => (Prod.fst s, false)
-
+def do_ (s: concrete_st) (o: op_t) : concrete_st :=
+match o with
+| (_, (replica, app_op_t.Inc)) => inc replica s
+| (_, (replica, app_op_t.Dec)) =>
+    match dec replica s with
+    | some s' => s'
+    | none => s  -- If dec fails, state remains unchanged
+| (_, (sender, app_op_t.Transfer receiver amount)) =>
+    match transfer sender receiver amount s with
+    | some s' => s'
+    | none => s  -- If transfer fails, state remains unchanged
 
 inductive rc_res : Type where
 | Fst_then_snd
@@ -365,31 +455,46 @@ inductive rc_res : Type where
 | Either
 
 @[simp]
-def rc (o1 o2: op_t) :=
-match (Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2)) with
-| (.Enable, .Disable) => rc_res.Snd_then_fst
-| (.Disable, .Enable) => rc_res.Fst_then_snd
-| _ => rc_res.Either
+def rc (_ _ : op_t) := rc_res.Either
 
 @[simp]
-def merge_flag (l a b: concrete_st) :=
-  if Prod.snd a && Prod.snd b then true
-  else if not (Prod.snd a) && not (Prod.snd b) then false
-  else if Prod.snd a then Prod.fst a > Prod.fst l
-  else Prod.fst b > Prod.fst l
-
-@[simp]
-def merge (l a b: concrete_st) : concrete_st
-:= (Prod.fst a + Prod.fst b - Prod.fst l , merge_flag l a b)
-
-@[simp]
-def commutes_with (o1 o2: op_t) :=
+def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
-theorem inter_right_1op (l: concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (ob: op_t) (ol: op_t) (o: op_t) :
-rc ob ol =  rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧ (¬(rc o ob = rc_res.Either) ∨ (rc o ol = rc_res.Fst_then_snd)) ∧ distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops o1 o ∧ distinct_ops ob ol ∧ distinct_ops ob o ∧ distinct_ops ol o ∧ get_rid o != get_rid ol ∧ eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ b ob) ol)) o1)
+
+theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
+ ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
+                    distinct_ops o1 o2 ∧ distinct_ops o1 ol ∧ distinct_ops o2 ol ∧
+                    eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
-eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ (do_ b o) ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ (do_ b o) ob) ol)) o1)
+ eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
 := by sorry
 
-example : False := by sorry
+theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
+ ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
+                    distinct_ops o1 o2 ∧ distinct_ops o1 o1' ∧ distinct_ops o2 o1' ∧
+                    eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
+→
+ eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
+:= by sorry
+
+theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
+ distinct_ops o1 o1' ∧ distinct_ops o1 ol ∧ distinct_ops o1' ol ∧
+                    eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
+→
+ eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
+ := by sorry
+
+
+
+theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
+ distinct_ops o2 o2' ∧ distinct_ops o2 ol ∧ distinct_ops o2' ol ∧
+                    eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
+→
+ eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
+:= by sorry
+
+
+
+theorem lem_0op (a b:concrete_st) (ol:op_t) :
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry

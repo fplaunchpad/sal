@@ -80,7 +80,7 @@ distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3)
 → (¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd))
-:= by sal
+:= by blaster
 
 theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3
@@ -186,7 +186,7 @@ theorem inter_right_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st)
                     eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ b ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ b ol)) o1)
                     →
   eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ b ob) ol)) o1)
-  := by sal (dump-smt-lib:1)
+  := by sal
 
 
 theorem inter_left_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (ob: op_t) (ol: op_t) :
@@ -237,4 +237,4 @@ eq (merge (do_ l ol) (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ l ol) (do
 := by sal
 theorem  lem_0op (l: concrete_st) (a: concrete_st) (b: concrete_st) (ol: op_t) :
 eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol)
-:= by sal (dump-smt-lib:1)
+:= by sal
