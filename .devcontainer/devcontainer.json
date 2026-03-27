@@ -2,7 +2,6 @@
   "name": "SAL - Lean 4.26.0 (from DockerHub)",
   "image": "pranavramesh2003/sal:v4.26.0",
   "remoteUser": "lean",
-  "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
       "extensions": [
