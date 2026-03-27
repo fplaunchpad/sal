@@ -4,9 +4,6 @@
     "context": "..",
     "remoteUser": "lean",
     "workspaceFolder": "/workspace",
-    "mounts": [
-        "source=${localEnv:HOME}/.gitconfig,target=/home/lean/.gitconfig,type=bind,consistency=cached"
-    ],
     "customizations": {
         "vscode": {
             "extensions": [
