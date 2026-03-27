@@ -1,5 +1,5 @@
 {
-    "name": "sal",
+    "name": "sal (Build From Scratch)",
     "dockerFile": "Dockerfile",
     "context": "..",
     "remoteUser": "lean",
