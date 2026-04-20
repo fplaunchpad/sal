@@ -22,6 +22,3 @@ rev = "v4.26.0"
 
 [[lean_lib]]
 name = "CaseStudies"
-
-[[lean_lib]]
-name = "Tests"
