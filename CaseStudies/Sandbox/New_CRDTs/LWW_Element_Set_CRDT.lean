@@ -296,4 +296,4 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: aesop blow-up; rcases+grind attempted but `constructor` loses conjunction structure
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: VC is valid (verified by hand case-analysis); automated tactics explored — sal's aesop blows up simp-step budget; `blaster` rejects the ∀-in-eq as a lambda; `grind` after rcases+constructor can't close; manual per-key proof hits namespace ambiguity on `empty`/`singleton`. Needs either intermediate lemmas (paper's Harmonic-assist pattern) or a qualified simp set.
