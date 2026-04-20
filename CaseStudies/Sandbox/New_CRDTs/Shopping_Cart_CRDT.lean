@@ -88,7 +88,13 @@ set_option maxHeartbeats 0
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
+  intro h_distinct
+  simp [commutes_with]
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
+    simp +decide [*] at h_distinct ⊢
+  all_goals generalize_proofs at *
+  all_goals grind +ring
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :

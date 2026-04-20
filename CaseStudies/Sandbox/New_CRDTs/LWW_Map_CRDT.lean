@@ -81,7 +81,7 @@ set_option maxHeartbeats 0
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds max steps on the nested map + lex_max unfolding
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sorry -- TODO: grind +ring fails on lex_max case analysis
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
