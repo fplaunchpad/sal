@@ -26,14 +26,14 @@ open Classical
 
 
 
-@[simp] abbrev concrete_st := map ℕ ℕ × map ℕ ℕ
+@[simp] abbrev concrete_st := map (ℕ × ℕ) Int × map (ℕ × ℕ) Int
 
 @[simp]
-def mysel (s: map ℕ ℕ) (k: ℕ) : ℕ :=
+def mysel (s: map (ℕ × ℕ) Int) (k: ℕ × ℕ) : Int :=
 if (contains s k) then (sel s k) else 0
 
 @[simp]
-def init_st : concrete_st:= (const_on empty 0, const_on empty 0)
+def init_st : concrete_st := (const_on empty 0, const_on empty 0)
 
 @[simp]
 def eq (a b: concrete_st) :=
@@ -42,10 +42,10 @@ def eq (a b: concrete_st) :=
 
 
 inductive app_op_t : Type where
-| Add (id : ℕ)
-| Remove (id : ℕ)
+| Add (pid : ℕ)
+| Remove (pid : ℕ)
 
-abbrev op_t:= ℕ × ℕ × app_op_t
+abbrev op_t := ℕ × ℕ × app_op_t
 
 @[simp]
 def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2
@@ -58,8 +58,8 @@ match o with
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
-| (ts, (_, app_op_t.Add id))    => (upd (Prod.fst s) id (max (mysel (Prod.fst s) id) ts), Prod.snd s)
-| (ts, (_, app_op_t.Remove id)) => (Prod.fst s, upd (Prod.snd s) id (max (mysel (Prod.snd s) id) ts))
+| (_, (rid, app_op_t.Add pid))    => (upd (Prod.fst s) (rid, pid) (mysel (Prod.fst s) (rid, pid) + 1), Prod.snd s)
+| (_, (rid, app_op_t.Remove pid)) => (Prod.fst s, upd (Prod.snd s) (rid, pid) (mysel (Prod.snd s) (rid, pid) + 1))
 
 inductive rc_res : Type where
 | Fst_then_snd
@@ -75,13 +75,13 @@ def commutes_with (o1 o2 : op_t) :=
 
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
-let keys1 := union (domain (Prod.fst a)) (domain (Prod.fst b))
-let u1 := const_on keys1 0
-let m1 := iter_upd (fun k _ => max (mysel (Prod.fst a) k) (mysel (Prod.fst b) k)) u1
-let keys2 := union (domain (Prod.snd a)) (domain (Prod.snd b))
-let u2 := const_on keys2 0
-let m2 := iter_upd (fun k _ => max (mysel (Prod.snd a) k) (mysel (Prod.snd b) k)) u2
-(m1, m2)
+let keys_f := union (domain (Prod.fst a)) (domain (Prod.fst b))
+let u_f := const_on keys_f 0
+let f := iter_upd (fun k v => max (mysel (Prod.fst a) k) (mysel (Prod.fst b) k)) u_f
+let keys_s := union (domain (Prod.snd a)) (domain (Prod.snd b))
+let u_s := const_on keys_s 0
+let s := iter_upd (fun k v => max (mysel (Prod.snd a) k) (mysel (Prod.snd b) k)) u_s
+(f,s)
 
 set_option maxHeartbeats 0
 
