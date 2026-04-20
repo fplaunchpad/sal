@@ -4,7 +4,11 @@ This repository contains a port of various CRDTs and MRDTs from the Neem framewo
 
 ## Steps to run
 
-Clone this repository, and run `lake update` followed by `lake build`. Ensure that the Lean version in `lean-toolchain` stays at  `v4.26.0`. The various proofs are in the [Neem](CaseStudies/Neem) directory. Click on each Lean file in VS code to run all the verification conditions. 
+Clone this repository, then install [elan](https://github.com/leanprover/elan) (the Lean toolchain manager). From the repo root, run `lake exe cache get` to download the prebuilt Mathlib oleans — this takes a few minutes and is required before any file will type-check in a reasonable time.
+
+Do **not** run `lake update`: the committed `lake-manifest.json` is pinned to a working v4.26.0-compatible set, and `lake update` will resolve the `main` / `master` dependencies (Blaster, smt, batteries, aesop, etc.) to newer commits that break the build. The Lean version in `lean-toolchain` must stay at `v4.26.0`.
+
+The various proofs are in the [Neem](CaseStudies/Neem) directory. Open each Lean file in VS Code to run the verification conditions interactively, or run `lake lean <path-to-file.lean>` from the command line. The `run_files.sh` script checks every `.lean` file under a given directory.
 
 # Data structures implemented and description
 
