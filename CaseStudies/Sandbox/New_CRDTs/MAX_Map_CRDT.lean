@@ -1,49 +1,32 @@
-
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
+
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
+
 import Blaster
-
-import Mathlib
-
-set_option linter.mathlibStandardSet false
-
-open scoped BigOperators
-open scoped Real
-open scoped Nat
-open scoped Classical
-open scoped Pointwise
-
-set_option maxHeartbeats 0
-set_option maxRecDepth 4000
-set_option synthInstance.maxHeartbeats 20000
-set_option synthInstance.maxSize 128
-
-set_option relaxedAutoImplicit false
-set_option autoImplicit false
 
 open Classical
 
 
 
-@[simp] abbrev concrete_st := map ℕ ℕ × map ℕ ℕ
+
+@[simp] abbrev concrete_st := map ℕ ℕ
+/- keys: ℕ, values: ℕ; value at each key is the max ever written -/
 
 @[simp]
-def mysel (s: map ℕ ℕ) (k: ℕ) : ℕ :=
+def mysel (s: concrete_st) (k: ℕ) : ℕ :=
 if (contains s k) then (sel s k) else 0
 
 @[simp]
-def init_st : concrete_st:= (const_on empty 0, const_on empty 0)
+def init_st : concrete_st := const_on empty 0
 
 @[simp]
-def eq (a b: concrete_st) :=
-(forall id, (contains (Prod.fst a) id = contains (Prod.fst b) id) ∧ (mysel (Prod.fst a) id = mysel (Prod.fst b) id)) ∧
-(forall id, (contains (Prod.snd a) id = contains (Prod.snd b) id) ∧ (mysel (Prod.snd a) id = mysel (Prod.snd b) id))
-
+def eq (a b: concrete_st) := (forall k:ℕ, (contains a k = contains b k) ∧ (mysel a k = mysel b k))
 
 inductive app_op_t : Type where
-| Add (id : ℕ)
-| Remove (id : ℕ)
+| Write (k : ℕ) (v : ℕ)
 
 abbrev op_t:= ℕ × ℕ × app_op_t
 
@@ -58,8 +41,7 @@ match o with
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
-| (ts, (_, app_op_t.Add id))    => (upd (Prod.fst s) id (max (mysel (Prod.fst s) id) ts), Prod.snd s)
-| (ts, (_, app_op_t.Remove id)) => (Prod.fst s, upd (Prod.snd s) id (max (mysel (Prod.snd s) id) ts))
+| (_, (_, .Write k v)) => upd s k (max (mysel s k) v)
 
 inductive rc_res : Type where
 | Fst_then_snd
@@ -75,26 +57,16 @@ def commutes_with (o1 o2 : op_t) :=
 
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
-let keys1 := union (domain (Prod.fst a)) (domain (Prod.fst b))
-let u1 := const_on keys1 0
-let m1 := iter_upd (fun k _ => max (mysel (Prod.fst a) k) (mysel (Prod.fst b) k)) u1
-let keys2 := union (domain (Prod.snd a)) (domain (Prod.snd b))
-let u2 := const_on keys2 0
-let m2 := iter_upd (fun k _ => max (mysel (Prod.snd a) k) (mysel (Prod.snd b) k)) u2
-(m1, m2)
+let keys := union (domain a) (domain b)
+let u := const_on keys 0
+iter_upd (fun k _v => max (mysel a k) (mysel b k)) u
 
 set_option maxHeartbeats 0
 
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
-  intro h_distinct
-  simp [commutes_with]
-  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
-    simp +decide [*] at h_distinct ⊢
-  all_goals generalize_proofs at *
-  all_goals grind +ring
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sal
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
@@ -134,7 +106,7 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
 
 
 
@@ -208,7 +180,7 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
 
 
 
@@ -222,7 +194,7 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by sal
 
 
 
@@ -282,7 +254,7 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+ := by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
 
 
 
@@ -291,9 +263,9 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by sal
 
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: aesop blow-up; rcases+grind attempted but `constructor` loses conjunction structure
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sal
