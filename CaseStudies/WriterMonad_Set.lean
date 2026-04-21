@@ -5,7 +5,6 @@ import Std.Tactic.BVDecide
 import CaseStudies.Interfaces.Set_extended
 import Std
 
-import Blaster
 
 
 open Classical Std

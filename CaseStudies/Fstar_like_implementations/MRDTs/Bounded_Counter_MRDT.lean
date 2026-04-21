@@ -9,7 +9,6 @@ import CaseStudies.Tactics.Sal
 import Std.Data
 
 
-import Blaster
 
 -- Lexicographic ordering for pairs of natural numbers
 @[simp]

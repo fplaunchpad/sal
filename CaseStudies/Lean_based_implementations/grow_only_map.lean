@@ -4,7 +4,6 @@ import Std.Tactic.BVDecide
 
 import CaseStudies.Interfaces.Map_extended_with_lean_set
 
-import Blaster
 
 
 @[simp] abbrev concrete_st := map ℕ (set ℕ)
@@ -103,7 +102,7 @@ theorem base_2op (o1: op_t) (o2: op_t):
 →
 eq (merge init_st (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st init_st (do_ init_st o2)) o1) := by
 dsimp
-blaster
+sorry -- TODO: Blaster removed in v4.28 bump
 
 theorem ind_lca_2op (l: concrete_st) (o1: op_t) (o2: op_t) (ol: op_t) :
 (rc o2 o1 = rc_res.Fst_then_snd ∨ rc o2 o1 = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ distinct_ops o1 o2 ∧ distinct_ops o1 ol ∧ distinct_ops o2 ol ∧ eq (merge (do_ l ol) (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol) (do_ l ol)) o1) ∧ eq (merge l (do_ l o1) (do_ l o2)) (do_ (merge l l (do_ l o2)) o1)
@@ -208,7 +207,7 @@ simp
 theorem base_1op (o1: op_t) :
 eq (merge init_st (do_ init_st o1) init_st) (do_ (merge init_st init_st init_st) o1) := by
 dsimp
-blaster
+sorry -- TODO: Blaster removed in v4.28 bump
 
 theorem  ind_lca_1op (l: concrete_st) (o1: op_t) (ol: op_t) :
  distinct_ops o1 ol ∧

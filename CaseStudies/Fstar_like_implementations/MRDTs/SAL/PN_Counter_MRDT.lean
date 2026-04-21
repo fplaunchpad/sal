@@ -6,7 +6,6 @@ import Mathlib.Tactic.Linarith
 import CaseStudies.Interfaces.Set_extended
 import CaseStudies.Tactics.Sal
 
-import Blaster
 
 abbrev concrete_st := Int
 

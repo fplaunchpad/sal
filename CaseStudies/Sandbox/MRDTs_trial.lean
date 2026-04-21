@@ -6,7 +6,6 @@ import Std.Data.ExtTreeMap.Basic
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
 
-import Blaster
 
 
 @[simp] abbrev concrete_st := Std.ExtTreeMap ℕ (set ℕ)

@@ -1,5 +1,4 @@
 import Mathlib.Data.Real.Basic
-import Blaster
 
 @[simp]
 abbrev set (a:Type) [DecidableEq a] := a → Bool

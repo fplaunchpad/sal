@@ -2,7 +2,6 @@
 import Std.Tactic.BVDecide
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
-import Blaster
 
 import Mathlib
 

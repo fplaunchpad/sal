@@ -4,7 +4,6 @@ import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
 
 import Mathlib
-import Blaster
 
 
 set_option linter.mathlibStandardSet false

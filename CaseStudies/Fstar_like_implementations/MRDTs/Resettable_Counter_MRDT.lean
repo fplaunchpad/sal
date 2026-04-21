@@ -9,7 +9,6 @@ import CaseStudies.Tactics.Sal
 
 import Plausible
 
-import Blaster
 
 -- State tracks: (current_count, number_of_resets)
 -- The reset counter helps merge detect which branch had more recent resets

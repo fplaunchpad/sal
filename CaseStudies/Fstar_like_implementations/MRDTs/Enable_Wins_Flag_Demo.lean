@@ -2,7 +2,6 @@ import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
 
-import Blaster
 import CaseStudies.Tactics.Sal
 
 abbrev concrete_st := Int × Bool
@@ -75,7 +74,6 @@ macro "neem_solve" : tactic =>
         | (ext ; grind)
       | all_goals try first
         | (ext; grind)
-        | blaster
 )
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :

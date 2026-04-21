@@ -3,7 +3,6 @@ import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
 import Std
 
-import Blaster
 
 set_option linter.style.commandStart false
 

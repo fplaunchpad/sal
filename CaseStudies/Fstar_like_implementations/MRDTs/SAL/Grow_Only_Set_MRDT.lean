@@ -6,7 +6,6 @@ import CaseStudies.Interfaces.Set_extended
 import CaseStudies.Tactics.Sal
 
 
-import Blaster
 
 
 open Classical

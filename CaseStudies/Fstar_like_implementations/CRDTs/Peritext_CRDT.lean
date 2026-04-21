@@ -1,7 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
-import Blaster
 
 import CaseStudies.Interfaces.Set_extended
 import CaseStudies.Interfaces.Map_extended

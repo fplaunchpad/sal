@@ -4,7 +4,6 @@ import Std.Tactic.BVDecide
 
 import CaseStudies.Tactics.Sal
 
-import Blaster
 
 open Classical
 

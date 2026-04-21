@@ -3,7 +3,6 @@ import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
-import Blaster
 import Std.Data
 
 open Classical

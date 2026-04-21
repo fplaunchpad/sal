@@ -4,7 +4,6 @@ import Std.Tactic.BVDecide
 
 import CaseStudies.Interfaces.Map_extended
 
-import Blaster
 
 
 @[simp] abbrev concrete_st := map ℕ Int

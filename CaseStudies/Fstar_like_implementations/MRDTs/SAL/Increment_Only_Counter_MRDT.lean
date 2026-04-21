@@ -8,7 +8,6 @@ import CaseStudies.Tactics.Sal
 
 import Plausible
 
-import Blaster
 
 
 abbrev concrete_st := Int

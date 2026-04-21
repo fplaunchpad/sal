@@ -3,7 +3,6 @@ import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
 import Std
 
-import Blaster
 
 
 @[simp]
@@ -166,7 +165,7 @@ theorem rc_non_comm (o1: op_t) (o2: op_t) :
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2 →
 (rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
   dsimp
-  blaster
+  sorry -- TODO: Blaster removed in v4.28 bump; re-close with grind or Aristotle
 
 
 theorem merge_comm (a b:concrete_st) :
@@ -189,7 +188,7 @@ intros
 theorem merge_idem (s: concrete_st):
 eq (merge s s) s := by
   dsimp
-  blaster
+  sorry -- TODO: Blaster removed in v4.28 bump; re-close with grind or Aristotle
 
 theorem base_2op (o1 o2:op_t) :
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧

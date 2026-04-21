@@ -1,7 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
-import Blaster
 
 import CaseStudies.Interfaces.Set_extended
 import CaseStudies.Tactics.Sal
@@ -93,7 +92,7 @@ distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3)
 → (¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd))
-:= by blaster
+:= by sorry -- TODO: Blaster removed in v4.28 bump
 
 theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3

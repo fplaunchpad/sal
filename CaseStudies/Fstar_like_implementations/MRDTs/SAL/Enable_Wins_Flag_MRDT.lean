@@ -6,7 +6,6 @@ import Mathlib.Tactic.Linarith
 
 
 
-import Blaster
 import CaseStudies.Tactics.Sal
 
 
