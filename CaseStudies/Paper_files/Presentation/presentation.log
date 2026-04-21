@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.20)  21 APR 2026 17:53
 =======
 This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.20)  21 APR 2026 16:55
 >>>>>>> 228c91f (added paper and presentation)
+=======
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.2.20)  21 APR 2026 17:53
+>>>>>>> 6effa6e (updated presentation)
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1131,10 +1135,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-di
 st/fonts/enc/dvips/base/8r.enc}]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 75--75
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 76--76
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 75--75
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1146,6 +1154,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [2
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 91--91
  [][]  \T1/phv/m/n/6 ([])  
@@ -1174,6 +1183,12 @@ LaTeX Font Info:    Font shape `T1/phv/m/it' in size <8> not available
 LaTeX Font Info:    Font shape `T1/phv/m/it' in size <6> not available
 (Font)              Font shape `T1/phv/m/sl' tried instead on input line 96.
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 91--91
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1182,6 +1197,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [3
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 111--111
  [][]  \T1/phv/m/n/6 ([])  
@@ -1206,23 +1222,35 @@ LaTeX Font Info:    Font shape `T1/phv/m/it' in size <6> not available
 (Font)              Font shape `T1/phv/m/sl' tried instead on input line 111.
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 118--118
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 111--111
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
-LaTeX Font Info:    Font shape `T1/phv/m/it' in size <10> not available
-(Font)              Font shape `T1/phv/m/sl' tried instead on input line 118.
-LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
-(Font)              Font shape `T1/phv/m/sl' tried instead on input line 118.
-LaTeX Font Info:    Font shape `T1/phv/m/it' in size <5> not available
-(Font)              Font shape `T1/phv/m/sl' tried instead on input line 118.
-LaTeX Font Info:    Trying to load font information for T1+pcr on input line 11
-8.
-(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd
-File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 111
+.
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
+<<<<<<< HEAD
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <10> not available
 (Font)              Font shape `T1/pcr/m/sl' tried instead on input line 118.
 >>>>>>> 228c91f (added paper and presentation)
+=======
+LaTeX Font Info:    Trying to load font information for U+msb on input line 111
+.
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <10.95> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 111.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <8> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 111.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <6> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 111.
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1231,6 +1259,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [4
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 133--133
  [][]  \T1/phv/m/n/6 ([])  
@@ -1248,6 +1277,18 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 137--137
  []
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 133--133
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <10> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 133.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 133.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <5> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 133.
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1257,10 +1298,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 152--152
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 157--157
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 152--152
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1273,10 +1318,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 172--172
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 173--173
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 172--172
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1288,6 +1337,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [7
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 188--188
  [][]  \T1/phv/m/n/6 ([])  
@@ -1301,6 +1351,12 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 200--200
 LaTeX Font Info:    Font shape `T1/phv/m/it' in size <14.4> not available
 (Font)              Font shape `T1/phv/m/sl' tried instead on input line 200.
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 188--188
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1309,6 +1365,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [8
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 215--215
  [][]  \T1/phv/m/n/6 ([])  
@@ -1322,6 +1379,14 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 220--220
  []
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 215--215
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <14.4> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 215.
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1330,6 +1395,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [9
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 235--235
  [][]  \T1/phv/m/n/6 ([])  
@@ -1347,6 +1413,17 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 240--240
 
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 235--235
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 23
+5.
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd
+File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
+)
+>>>>>>> 6effa6e (updated presentation)
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
  []
@@ -1355,10 +1432,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 255--255
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 256--256
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 255--255
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1371,6 +1452,9 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6effa6e (updated presentation)
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 271--271
  [][]  \T1/phv/m/n/6 ([])  
  []
@@ -1384,9 +1468,12 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 274--274
+<<<<<<< HEAD
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 259--259
 >>>>>>> 228c91f (added paper and presentation)
+=======
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1394,10 +1481,14 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 259--259
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 302--302
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 282--282
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 302--302
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1413,6 +1504,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  []
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 [13
 
 ]
@@ -1423,6 +1515,12 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 305--305
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 285--285
 >>>>>>> 228c91f (added paper and presentation)
+=======
+[13
+
+]
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 305--305
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1430,10 +1528,14 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 285--285
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 335--335
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 302--302
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 335--335
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1442,6 +1544,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
  []
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 [14
 
@@ -1472,11 +1575,17 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 359--359
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 326--326
 >>>>>>> 228c91f (added paper and presentation)
+=======
+[14
+
+]
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 356--356
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
-\openout4 = `presentation.vrb'.
 
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 377--377
@@ -1486,6 +1595,8 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 344--344
  []
 
 (./presentation.vrb)
+=======
+>>>>>>> 6effa6e (updated presentation)
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
  []
@@ -1493,15 +1604,19 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [15
 
 ]
-Overfull \hbox (163.52121pt too wide) in paragraph at lines 347--347
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 359--359
  [][]  \T1/phv/m/n/6 ([])  
  []
 
 \openout4 = `presentation.vrb'.
 
 
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 365--365
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 377--377
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1513,6 +1628,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [16
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 394--394
  [][]  \T1/phv/m/n/6 ([])  
@@ -1546,6 +1662,34 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 386--386
  []
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 394--394
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+<../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_LHS.pn
+g, id=603, 507.8975pt x 867.24pt>
+File: ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_L
+HS.png Graphic file (type png)
+<use ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_LH
+S.png>
+Package pdftex.def Info: ../SAL___Multi_modal_Verification_of_Replicated_Data_T
+ypes/EN_wins_flag_LHS.png  used on input line 394.
+(pdftex.def)             Requested size: 119.80544pt x 204.56894pt.
+<../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_RHS.pn
+g, id=605, 431.6125pt x 838.13126pt>
+File: ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_R
+HS.png Graphic file (type png)
+<use ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_RH
+S.png>
+Package pdftex.def Info: ../SAL___Multi_modal_Verification_of_Replicated_Data_T
+ypes/EN_wins_flag_RHS.png  used on input line 394.
+(pdftex.def)             Requested size: 119.80544pt x 232.64172pt.
+
+Overfull \vbox (70.59097pt too high) detected at line 394
+ []
+
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1554,10 +1698,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [17
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6effa6e (updated presentation)
  <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_LHS.p
 ng> <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_RH
 S.png>]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 397--397
+<<<<<<< HEAD
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1572,11 +1720,23 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 415--415
 =======
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 411--411
+=======
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
+\openout4 = `presentation.vrb'.
 
+<<<<<<< HEAD
 >>>>>>> 228c91f (added paper and presentation)
+=======
+
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 415--415
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+(./presentation.vrb)
+>>>>>>> 6effa6e (updated presentation)
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
  []
@@ -1585,10 +1745,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 436--436
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 434--434
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 436--436
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1600,6 +1764,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [19
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 447--447
  [][]  \T1/phv/m/n/6 ([])  
@@ -1624,6 +1789,25 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 455--455
  []
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 447--447
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+<../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counterexamp
+le.pdf, id=715, 356.33125pt x 307.1475pt>
+File: ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counter
+example.pdf Graphic file (type pdf)
+<use ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-countere
+xample.pdf>
+Package pdftex.def Info: ../SAL___Multi_modal_Verification_of_Replicated_Data_T
+ypes/ewflag-counterexample.pdf  used on input line 447.
+(pdftex.def)             Requested size: 266.98991pt x 230.14915pt.
+
+Overfull \vbox (50.26344pt too high) detected at line 447
+ []
+
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1632,6 +1816,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [20
 
 <<<<<<< HEAD
+<<<<<<< HEAD
  <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counterexam
 ple.pdf>]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 470--470
@@ -1639,6 +1824,11 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 470--470
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 484--484
 >>>>>>> 228c91f (added paper and presentation)
+=======
+ <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counterexam
+ple.pdf>]
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 470--470
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1651,10 +1841,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 491--491
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 502--502
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 491--491
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1667,10 +1861,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 520--520
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 527--527
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 520--520
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1683,10 +1881,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 538--538
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 548--548
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 538--538
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1699,10 +1901,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 563--563
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 572--572
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 563--563
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1715,10 +1921,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 584--584
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 593--593
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 584--584
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1731,10 +1941,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 608--608
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 616--616
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 608--608
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1747,10 +1961,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 629--629
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 633--633
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 629--629
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1763,10 +1981,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 652--652
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 661--661
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 652--652
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1779,10 +2001,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 669--669
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 685--685
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 669--669
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1794,6 +2020,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [30
 
 ]
+<<<<<<< HEAD
 <<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 678--678
  [][]  \T1/phv/m/n/6 ([])  
@@ -1814,6 +2041,21 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 711--711
  []
 
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 678--678
+ [][]  \T1/phv/m/n/6 ([])  
+ []
+
+<../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.png, i
+d=1110, 732.7375pt x 383.4325pt>
+File: ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.p
+ng Graphic file (type png)
+<use ../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.pn
+g>
+Package pdftex.def Info: ../SAL___Multi_modal_Verification_of_Replicated_Data_T
+ypes/OR_set_trace.png  used on input line 678.
+(pdftex.def)             Requested size: 290.9531pt x 152.25279pt.
+>>>>>>> 6effa6e (updated presentation)
 
 Overfull \hbox (163.52121pt too wide) has occurred while \output is active
  [][]  \T1/phv/m/n/6 ([])  
@@ -1822,6 +2064,7 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [31
 
 <<<<<<< HEAD
+<<<<<<< HEAD
  <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.png>]
 
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 706--706
@@ -1829,6 +2072,11 @@ Overfull \hbox (163.52121pt too wide) in paragraph at lines 706--706
 ]
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 734--734
 >>>>>>> 228c91f (added paper and presentation)
+=======
+ <../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.png>]
+
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 706--706
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1841,10 +2089,14 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 730--730
 =======
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 752--752
 >>>>>>> 228c91f (added paper and presentation)
+=======
+Overfull \hbox (163.52121pt too wide) in paragraph at lines 730--730
+>>>>>>> 6effa6e (updated presentation)
  [][]  \T1/phv/m/n/6 ([])  
  []
 
@@ -1857,6 +2109,9 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 
 ]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6effa6e (updated presentation)
 Overfull \hbox (163.52121pt too wide) in paragraph at lines 756--756
  [][]  \T1/phv/m/n/6 ([])  
  []
@@ -1893,8 +2148,11 @@ Overfull \hbox (163.52121pt too wide) has occurred while \output is active
 [36
 
 ]
+<<<<<<< HEAD
 =======
 >>>>>>> 228c91f (added paper and presentation)
+=======
+>>>>>>> 6effa6e (updated presentation)
 \tf@nav=\write6
 \openout6 = `presentation.nav'.
 
@@ -1914,11 +2172,15 @@ Package rerunfilecheck Info: File `presentation.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6effa6e (updated presentation)
  29168 strings out of 476106
  559807 string characters out of 5793933
  2131975 words of memory out of 5000000
  50513 multiletter control sequences out of 15000+600000
  642925 words of font info for 120 fonts, out of 8000000 for 9000
+<<<<<<< HEAD
  59 hyphenation exceptions out of 8191
  101i,15n,107p,464b,1824s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
@@ -1942,30 +2204,31 @@ PDF statistics:
  2063975 words of memory out of 5000000
  50521 multiletter control sequences out of 15000+600000
  643662 words of font info for 122 fonts, out of 8000000 for 9000
+=======
+>>>>>>> 6effa6e (updated presentation)
  59 hyphenation exceptions out of 8191
- 101i,15n,107p,442b,1886s stack positions out of 10000i,1000n,20000p,200000b,200000s
-
-pdfTeX warning (dest): name{Navigation34} has been referenced but does not exis
-t, replaced by a fixed one
-
-
-pdfTeX warning (dest): name{Navigation45} has been referenced but does not exis
-t, replaced by a fixed one
-
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/ty
-pe1/urw/courier/ucrro8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helv
-etic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on presentation.pdf (33 pages, 204371 bytes).
+ 101i,15n,107p,464b,1824s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/he
+lvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvro
+8a.pfb>
+Output written on presentation.pdf (36 pages, 303139 bytes).
 PDF statistics:
+<<<<<<< HEAD
  1271 PDF objects out of 1440 (max. 8388607)
  1050 compressed objects within 11 object streams
  80 named destinations out of 1000 (max. 500000)
  797 words of extra memory for PDF output out of 10000 (max. 10000000)
 >>>>>>> 228c91f (added paper and presentation)
+=======
+ 1372 PDF objects out of 1440 (max. 8388607)
+ 1129 compressed objects within 12 object streams
+ 84 named destinations out of 1000 (max. 500000)
+ 817 words of extra memory for PDF output out of 10000 (max. 10000000)
+>>>>>>> 6effa6e (updated presentation)
 

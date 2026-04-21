@@ -1,5 +1,8 @@
 \babel@toc {english}{}\relax 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6effa6e (updated presentation)
 \beamer@sectionintoc {1}{Introduction: Replication in Practice}{3}{0}{1}
 \beamer@sectionintoc {2}{The Verification Problem}{7}{0}{2}
 \beamer@sectionintoc {3}{Verification with F* and its Limitations}{9}{0}{3}
@@ -11,6 +14,7 @@
 \beamer@sectionintoc {9}{Evaluation and Results}{27}{0}{9}
 \beamer@sectionintoc {10}{Related Work}{32}{0}{10}
 \beamer@sectionintoc {11}{Conclusion}{34}{0}{11}
+<<<<<<< HEAD
 =======
 \beamer@sectionintoc {1}{Introduction: Replication in Practice}{2}{0}{1}
 \beamer@sectionintoc {2}{The Verification Problem}{6}{0}{2}
@@ -24,3 +28,5 @@
 \beamer@sectionintoc {10}{Related Work}{29}{0}{10}
 \beamer@sectionintoc {11}{Conclusion}{31}{0}{11}
 >>>>>>> 228c91f (added paper and presentation)
+=======
+>>>>>>> 6effa6e (updated presentation)
