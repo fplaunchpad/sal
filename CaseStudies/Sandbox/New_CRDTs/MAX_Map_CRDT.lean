@@ -63,6 +63,27 @@ iter_upd (fun k _v => max (mysel a k) (mysel b k)) u
 
 set_option maxHeartbeats 0
 
+/-- Intermediate lemma: for MAX-Map, `merge` distributes over `do_`
+unconditionally on the state. All three failing `ind_*` VCs derive
+from this by instantiating at specific states — the inductive
+hypothesis in those VCs is redundant because this holds at any state.
+-/
+lemma merge_do_max (a b : concrete_st) (o1 o2 : op_t) :
+    eq (merge (do_ a o1) (do_ b o2))
+       (do_ (merge a (do_ b o2)) o1) := by
+  rcases o1 with ⟨_, _, op1⟩
+  rcases o2 with ⟨_, _, op2⟩
+  cases op1 with
+  | Write k1 v1 =>
+  cases op2 with
+  | Write k2 v2 =>
+  intro k
+  by_cases h1 : k1 = k <;> by_cases h2 : k2 = k <;>
+    (refine ⟨?_, ?_⟩ <;>
+      (simp only [merge, do_, mysel, lemma_InDomUpd1, lemma_SelUpd1,
+                  lemma_IterUpd, lemma_InDomConstMap] <;>
+       grind))
+
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
@@ -106,7 +127,7 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
+:= fun _ => merge_do_max (do_ l ol) (do_ l ol) o1 o2
 
 
 
@@ -180,7 +201,7 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
+:= fun _ => merge_do_max (do_ a o1') b o1 o2
 
 
 
@@ -254,7 +275,7 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: aesop proof reconstruction error; likely needs direct case-split proof
+ := fun _ => merge_do_max (do_ a o1') b o1 ol
 
 
 
