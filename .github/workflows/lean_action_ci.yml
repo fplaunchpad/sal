@@ -17,4 +17,4 @@ jobs:
           build: false
           test: false
       - name: Check all case-study files
-        run: ./run_files.sh CaseStudies
+        run: ./run_files.sh Sal

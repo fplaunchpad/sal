@@ -1,4 +1,4 @@
-name = "LeanLangur"
+name = "sal"
 version = "0.1.0"
 keywords = ["math"]
 
@@ -7,18 +7,13 @@ pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 
 [[require]]
 name = "Blaster"
-git = "https://github.com/input-output-hk/Lean-blaster"
-rev = "main"
-
-[[require]]
-name = "smt"
-scope = "ufmg-smite"
-rev = "main"
+git = "https://github.com/kayceesrk/Lean-blaster"
+rev = "chore-bump-lean-4.28"
 
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.26.0"
+rev = "v4.28.0"
 
 [[lean_lib]]
-name = "CaseStudies"
+name = "Sal"
