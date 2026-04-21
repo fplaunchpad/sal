@@ -82,20 +82,18 @@ Two patterns from the paper: MRDTs generally need less SMT than CRDTs because th
 
 ## Steps to run
 
-Clone this repository, then install [elan](https://github.com/leanprover/elan) (the Lean toolchain manager). From the repo root, run `lake exe cache get` to download the prebuilt Mathlib oleans — this takes a few minutes and is required before any file will type-check in a reasonable time.
+Clone this repository, then install [elan](https://github.com/leanprover/elan) (the Lean toolchain manager). `elan` will read `lean-toolchain` and install Lean `v4.28.0` on first use. From the repo root, run `lake exe cache get` to download the prebuilt Mathlib oleans — this takes a few minutes and is required before any file will type-check in a reasonable time.
 
-Do **not** run `lake update`: the committed `lake-manifest.json` is pinned to a working v4.26.0-compatible set, and `lake update` will resolve the `main` / `master` dependencies (Blaster, smt, batteries, aesop, etc.) to newer commits that break the build. The Lean version in `lean-toolchain` must stay at `v4.26.0`.
+`lake update` is safe to run on this branch — the `lakefile.toml` pins `mathlib` to `v4.28.0` and pins `Blaster` to the `chore-bump-lean-4.28` branch of [`kayceesrk/Lean-blaster`](https://github.com/kayceesrk/Lean-blaster), a fork whose upstream (`input-output-hk/Lean-blaster`) does not yet have a v4.28-compatible branch. Once the upstream catches up we will switch back.
 
 Open each Lean file in VS Code to run the verification conditions interactively, or run `lake lean <path-to-file.lean>` from the command line. The `run_files.sh` script checks every `.lean` file under a given directory.
 
 ## Repository layout
 
-- [`CaseStudies/Interfaces/`](CaseStudies/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_extended`, `Map_extended`, `Map_extended_with_lean_set`).
+- [`CaseStudies/Interfaces/`](CaseStudies/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
 - [`CaseStudies/Tactics/`](CaseStudies/Tactics) — the `sal` tactic (`Sal.lean`) and usage examples (`SalExample.lean`).
-- [`CaseStudies/Fstar_like_implementations/`](CaseStudies/Fstar_like_implementations) — CRDT and MRDT implementations in the `⟨Σ, σ₀, do, merge, rc⟩` signature used in the paper (§2), split into `CRDTs/` and `MRDTs/`. Within each, the `SAL/` subdirectory contains the thirteen benchmarks reported in Table 2; files at the parent level are additional/experimental implementations not part of the evaluated suite.
-- [`CaseStudies/Lean_based_implementations/`](CaseStudies/Lean_based_implementations) — alternative implementations using Lean's native `Set` type, for comparison against the custom decidable `set`.
-- `CaseStudies/WriterMonad_*.lean` — logging-monad traces used by the ProofWidgets-based counterexample visualizer.
-- [`CaseStudies/Sandbox/`](CaseStudies/Sandbox) — scratch / exploratory files kept for reference; not part of the evaluated benchmark suite.
+- [`CaseStudies/Fstar_like_implementations/`](CaseStudies/Fstar_like_implementations) — CRDT and MRDT implementations in the `⟨Σ, σ₀, do, merge, rc⟩` signature used in the paper (§2), split into `CRDTs/` and `MRDTs/` — these contain the thirteen benchmarks reported in Table 2. The `Counterexample_Visualization/` subdirectory holds the logging-monad traces (`WriterMonad_*.lean`) that feed the ProofWidgets visualizer.
+- [`CaseStudies/Sandbox/New_CRDTs/`](CaseStudies/Sandbox/New_CRDTs) — eleven additional state-based CRDTs (LWW / MAX / MIN registers, LWW Element Set, LWW Map, MAX Map, Grow-Only Set / Multiset, Shopping Cart, Priority Queue, and an Add-Win CRPQ adapted from Zhang et al. 2023). Not part of the paper's evaluation; serves as a stress-test of the `sal` tactic beyond the original benchmarks.
 
 ## License
 
