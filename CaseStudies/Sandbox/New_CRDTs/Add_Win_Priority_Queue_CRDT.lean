@@ -6,7 +6,6 @@ import CaseStudies.Interfaces.Set_extended
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
 
-import Blaster
 
 open Classical
 
@@ -29,16 +28,26 @@ count) tuples; R: set of (e, t)"). We adapt it to Sal's state-based
 
 and three operations: `Add elem value`, `Inc elem amount`, `Rmv elem`.
 
-**Semantic simplification vs the paper.** The paper's `inc` effect
-iterates over the set `A \ R` observed at prepare-time and modifies
-each observed `(e, t, x, inc, count)` record's `inc` and `count`. We
-instead record each `inc` as a standalone record tied to the element
-only (not to a specific `add_ts`), so later adds of the same element
-are also affected by earlier incs. This changes the per-add-record
-accumulation behaviour from the paper, but preserves:
-  - Add-Win resolution of `add` vs concurrent `rmv` (Rmv's effect
-    observes A at invocation time, so it only tombstones currently-
-    visible adds; later adds are preserved).
+**Faithful translation of op-based prepare/effect.** The paper separates
+`prepare` (at the originating replica, reads local A) from `effect`
+(applied at every replica, a pure function of the effect payload). To
+encode that in SAL's state-based `⟨Σ, σ₀, do, merge, rc⟩` model — which
+has no separate prepare — we push prepare-time data INTO the op payload:
+`Rmv` carries the tombstone snapshot `D ⊆ (ℕ × ℕ)` as a constructor
+parameter. `do_` for Rmv then only unions `D` into `R` — a pure
+pointwise-∨ that does not read the current A. This is what preserves
+Add/Rmv commutativity at the `do_` level (and thereby `rc_non_comm` /
+`base_2op`); an earlier version of this file computed the snapshot
+inside `do_` and failed those VCs as a result.
+
+The paper's `inc` similarly iterates `A \ R` at prepare-time. We
+simplify: record each `inc` as a standalone `(elem, inc_ts, amount)`
+tuple keyed by element only, not by specific `add_ts`. This changes
+the per-record accumulation behaviour vs the paper, but preserves:
+  - Add-Win resolution of add vs concurrent rmv (the prepare-time
+    snapshot in Rmv's payload only tombstones records visible at the
+    originating replica; adds at later timestamps or other replicas
+    are preserved on merge).
   - Commutativity / associativity / idempotence of merge (all three
     components are grow-only sets/maps merged pointwise).
   - LWW semantics for the innate value (via the `(elem, add_ts)` keys
@@ -75,7 +84,7 @@ def eq (a b : concrete_st) :=
 inductive app_op_t : Type where
 | Add (elem : ℕ) (value : ℕ)
 | Inc (elem : ℕ) (amount : ℤ)
-| Rmv (elem : ℕ)
+| Rmv (elem : ℕ) (tombstones : set (ℕ × ℕ))
 
 abbrev op_t := ℕ × ℕ × app_op_t
 
@@ -98,12 +107,10 @@ match o with
        (Prod.fst (Prod.snd s)) p ||
        (decide (p.1 = elem) && decide (p.2.1 = ts) && decide (p.2.2 = amount))),
      Prod.snd (Prod.snd s))
-| (_, (_, .Rmv elem)) =>
+| (_, (_, .Rmv _ D)) =>
     (Prod.fst s,
      Prod.fst (Prod.snd s),
-     (fun p =>
-       (Prod.snd (Prod.snd s)) p ||
-       (decide (p.1 = elem) && contains (Prod.fst s) (elem, p.2))))
+     (fun p => (Prod.snd (Prod.snd s)) p || D p))
 
 inductive rc_res : Type where
 | Fst_then_snd
@@ -131,7 +138,12 @@ set_option maxHeartbeats 0
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sorry -- TODO: PN-style rcases+grind fails on 3-op-constructor+state-dependent do_; needs case-by-case manual proof
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
+  intro h
+  simp [commutes_with]
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _⟩ <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
@@ -161,7 +173,10 @@ theorem base_2op (o1 o2: op_t) :
                     distinct_ops o1 o2
 →
  eq (merge (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st (do_ init_st o2)) o1)
- := by sorry -- TODO: aesop norm-simp blows up on 3-set state; needs intermediate lemmas or manual per-key proof
+ := by
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _⟩ <;>
+    simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -171,7 +186,10 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: aesop norm-simp blows up on 3-component (A, I, R) state; same class of failure as LWW family; needs intermediate lemmas
+:= by
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -245,7 +263,10 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: aesop norm-simp blows up on 3-set state; needs intermediate lemmas or manual per-key proof
+:= by
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _⟩ <;>
+    rcases o1' with ⟨_, _, _ | _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -259,7 +280,10 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: aesop norm-simp blows up on 3-set state; needs intermediate lemmas or manual per-key proof
+:= by
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases ol with ⟨_, _, _ | _ | _⟩ <;>
+    simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -319,7 +343,10 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: aesop norm-simp blows up on 3-set state; needs intermediate lemmas or manual per-key proof
+ := by
+  rcases o1 with ⟨_, _, _ | _ | _⟩ <;> rcases o1' with ⟨_, _, _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -328,7 +355,10 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: aesop norm-simp blows up on 3-set state; needs intermediate lemmas or manual per-key proof
+:= by
+  rcases o2 with ⟨_, _, _ | _ | _⟩ <;> rcases o2' with ⟨_, _, _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
