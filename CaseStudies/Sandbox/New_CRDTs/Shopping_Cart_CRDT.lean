@@ -490,7 +490,7 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: Aristotle proof ported from v4.28.0 but 2 of 8 cases in grind fail under v4.26.0; re-submit or prove specifically
+:= by sorry -- TODO: two Aristotle submissions both produced proofs that compile under v4.28 but leave 2 of 8 rcases branches open under v4.26's grind; fix requires manual proof or toolchain upgrade
 
 
 
