@@ -1,9 +1,10 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
+import Blaster
 
 macro "neem" : tactic =>
-  `(tactic| grind)
+  `(tactic| first | grind | blaster)
 
 @[simp]
 abbrev set (a:Type) [DecidableEq a] := a → Bool

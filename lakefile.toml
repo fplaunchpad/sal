@@ -6,6 +6,11 @@ keywords = ["math"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 
 [[require]]
+name = "Blaster"
+git = "https://github.com/kayceesrk/Lean-blaster"
+rev = "chore-bump-lean-4.28"
+
+[[require]]
 name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.28.0"

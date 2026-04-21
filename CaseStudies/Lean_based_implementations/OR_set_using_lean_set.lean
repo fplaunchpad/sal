@@ -6,6 +6,7 @@ import Mathlib.Algebra.Ring.Int.Defs
 import Mathlib.Tactic.Linarith
 import CaseStudies.Interfaces.Set_extended
 import Mathlib.Data.Set.Basic
+import Blaster
 
 
 
@@ -101,7 +102,7 @@ theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
 → (¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd))
 := by
 dsimp
-sorry -- TODO: Blaster removed in v4.28 bump
+blaster
 
 theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3
@@ -236,7 +237,7 @@ theorem inter_right_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st)
   eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ b ob) ol)) o1)
   := by
 dsimp
-sorry -- TODO: Blaster removed in v4.28 bump
+blaster
 
 
 theorem inter_left_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (ob: op_t) (ol: op_t) :
@@ -302,4 +303,4 @@ theorem  lem_0op (l: concrete_st) (a: concrete_st) (b: concrete_st) (ol: op_t) :
 eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol)
 := by
 dsimp
-sorry -- TODO: Blaster removed in v4.28 bump
+blaster
