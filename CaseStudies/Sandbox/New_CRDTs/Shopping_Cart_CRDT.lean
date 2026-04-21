@@ -490,7 +490,8 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: two Aristotle submissions both produced proofs that compile under v4.28 but leave 2 of 8 rcases branches open under v4.26's grind; fix requires manual proof or toolchain upgrade
+:= by
+  sorry -- TODO: Aristotle proof has 2 of 8 branches that v4.26's grind can't close even with intro a b / constructor / refine fallbacks; remaining branches have a universal hypothesis that grind fails to instantiate under v4.26
 
 
 
