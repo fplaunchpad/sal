@@ -124,7 +124,14 @@ theorem base_2op (o1 o2: op_t) :
                     distinct_ops o1 o2
 →
  eq (merge (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st (do_ init_st o2)) o1)
- := by sal
+ := by
+  -- Uncovered by the sal silent-sorry guard; direct proof (PN-Counter idiom).
+  intro h
+  rcases h with ⟨_, h_rid, _⟩
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
+    simp +decide [*] at h_rid ⊢
+  all_goals generalize_proofs at *
+  all_goals grind +ring
 
 
 
