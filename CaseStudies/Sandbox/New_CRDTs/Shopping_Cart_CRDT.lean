@@ -442,4 +442,9 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by
+  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
+  rcases ol with ⟨ _, _, ol ⟩
+  cases ol <;> simp +decide [ eq, do_, merge ]
+  · grind
+  · grind
