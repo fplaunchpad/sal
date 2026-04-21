@@ -280,7 +280,26 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
+  unfold rc distinct_ops eq
+  rintro ⟨ h1, h2, h3, h4, h5, h6, h7 ⟩
+  constructor
+  · unfold do_
+    rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o2 with ⟨ _, _, _ | _ ⟩ <;>
+      rcases ol with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at *
+    · grind
+    · grind
+    · grind
+    · exact h6
+  · intro id
+    unfold do_ at *
+    rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o2 with ⟨ _, _, _ | _ ⟩ <;>
+      rcases ol with ⟨ _, _, _ | _ ⟩ <;> simp +decide at h2 h3 h4 h5 ⊢
+    · grind
+    · grind
+    · grind
+    · grind
 
 
 
@@ -354,7 +373,26 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
+  unfold rc distinct_ops get_rid
+  unfold eq
+  intro h
+  constructor <;> intro id
+  · unfold do_ merge
+    rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o2 with ⟨ _, _, _ | _ ⟩ <;>
+      rcases o1' with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at h ⊢
+    · grind
+    · grind
+    · grind
+    · grind
+  · unfold do_ merge
+    rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o2 with ⟨ _, _, _ | _ ⟩ <;>
+      rcases o1' with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at h ⊢
+    · grind
+    · grind
+    · grind
+    · grind
 
 
 
@@ -368,7 +406,15 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
+  intro h
+  rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases ol with ⟨ _, _, _ | _ ⟩ <;>
+    simp +decide [ *, eq ] at *
+  · grind +ring
+  · grind +ring
+  · grind
+  · grind
 
 
 
@@ -428,7 +474,14 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+ := by
+  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
+  rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o1' with ⟨ _, _, _ | _ ⟩ <;>
+    rcases ol with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at *
+  · grind
+  · grind
+  · grind +ring
+  · grind
 
 
 
@@ -437,7 +490,7 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by sorry -- TODO: Aristotle proof ported from v4.28.0 but 2 of 8 cases in grind fail under v4.26.0; re-submit or prove specifically
 
 
 
