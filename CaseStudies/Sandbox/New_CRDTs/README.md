@@ -18,6 +18,7 @@ All files are on branch `wip/more-crdts`. None are referenced from the main buil
 | `Shopping_Cart_CRDT.lean` | 18 | 6 | `map (rid × pid) Int × map (rid × pid) Int` (per-(replica, product) PN counters). `rc_non_comm` closed with a direct PN-Counter-style proof; 6 `ind/lem` VCs remain sorried. |
 | `LWW_Element_Set_CRDT.lean` | 18 | 6 | `map ℕ ℕ × map ℕ ℕ` (add timestamps, remove timestamps). Same pattern as Shopping Cart — `rc_non_comm` closed directly; 6 remain sorried. |
 | `LWW_Map_CRDT.lean` | 17 | 7 | `map ℕ (ℕ × ℕ)` with `lex_max` per key. The lex_max case analysis defeats grind even on `rc_non_comm`. |
+| `Add_Win_Priority_Queue_CRDT.lean` | 17 | 7 | State-based adaptation of Zhang et al. (Internetware 2023) Add-Win CRPQ. 3-component state `(A : map (ℕ×ℕ) ℕ, I : set (ℕ×ℕ×ℤ), R : set (ℕ×ℕ))` with state-dependent `Rmv` (observes current `A`). Same 7-VC family as LWW-Map fails on the 3-component unfolding. |
 
 ## What worked
 
@@ -35,6 +36,6 @@ All files are on branch `wip/more-crdts`. None are referenced from the main buil
 ## Next steps (not attempted here)
 
 - For the 6 consistently-failing VCs (`ind_lca_2op`, `ind_left_2op`, `ind_lca_1op`, `ind_left_1op`, `ind_right_1op`, `lem_0op` across LWW-family files): port the `lemma_merge_do_comm`-style intermediate-lemma pattern from `PN_Counter_CRDT.lean` (the paper discharged those with Aristotle-generated proofs).
-- Zhang et al. 2023's full Priority Queue (with state-based Pop) — would need a tombstone/causal-stability mechanism we don't have yet.
+- Zhang, Ouyang, Huang, Ma 2023's CRPQ: a state-based adaptation (Add-Win) is now in `Add_Win_Priority_Queue_CRDT.lean`. The paper is op-based (prepare/effect); our adaptation transposes it to Sal's state-based `⟨Σ, σ₀, do, merge, rc⟩` model. The per-add-record accumulation from the paper's `inc` is simplified to per-element; see the file's docstring for what is and isn't preserved.
 - Shapiro 2011's 2P2P-Graph — vertices and edges each as 2P-sets. Skipped as too similar to the existing `TwoPhase_Set_CRDT`.
 - Byzantine-tolerant / Merkle-search-tree / JSON CRDTs (from crdt.tech) — require metadata beyond the paper's state-based model.
