@@ -2,7 +2,6 @@
 import Std.Tactic.BVDecide
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
-import Blaster
 
 import Mathlib
 
@@ -141,7 +140,10 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -215,7 +217,10 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
+    rcases o1' with ⟨_, _, _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -229,7 +234,10 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases ol with ⟨_, _, _ | _⟩ <;>
+    simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -289,7 +297,10 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+ := by
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o1' with ⟨_, _, _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -298,9 +309,14 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: sal stage 3 aesop norm-simp exceeds step budget on two-map state (same 7 VCs fail in LWW-Map, LWW-Element-Set v2, Shopping Cart)
+:= by
+  rcases o2 with ⟨_, _, _ | _⟩ <;> rcases o2' with ⟨_, _, _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: VC is valid (verified by hand case-analysis); automated tactics explored — sal's aesop blows up simp-step budget; `blaster` rejects the ∀-in-eq as a lambda; `grind` after rcases+constructor can't close; manual per-key proof hits namespace ambiguity on `empty`/`singleton`. Needs either intermediate lemmas (paper's Harmonic-assist pattern) or a qualified simp set.
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by
+  rcases ol with ⟨_, _, _ | _⟩ <;> simp +decide [*] at *
+  all_goals grind

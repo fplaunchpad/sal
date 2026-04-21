@@ -4,7 +4,6 @@ import Std.Tactic.BVDecide
 
 import CaseStudies.Tactics.Sal
 
-import Blaster
 
 open Classical
 
@@ -116,7 +115,10 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sal
+:= by
+  rcases o1 with ⟨ _, _, _ ⟩ <;> rcases o2 with ⟨ _, _, _ ⟩ <;>
+    rcases ol with ⟨ _, _, _ ⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -190,7 +192,10 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sal
+:= by
+  rcases o1 with ⟨ _, _, _ ⟩ <;> rcases o2 with ⟨ _, _, _ ⟩ <;>
+    rcases o1' with ⟨ _, _, _ ⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -264,7 +269,10 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sal
+ := by
+  rcases o1 with ⟨ _, _, _ ⟩ <;> rcases o1' with ⟨ _, _, _ ⟩ <;>
+    rcases ol with ⟨ _, _, _ ⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 
@@ -273,7 +281,10 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sal
+:= by
+  rcases o2 with ⟨ _, _, _ ⟩ <;> rcases o2' with ⟨ _, _, _ ⟩ <;>
+    rcases ol with ⟨ _, _, _ ⟩ <;> simp +decide [*] at *
+  all_goals grind
 
 
 

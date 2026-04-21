@@ -2,7 +2,6 @@
 import Std.Tactic.BVDecide
 import CaseStudies.Interfaces.Map_extended
 import CaseStudies.Tactics.Sal
-import Blaster
 
 import Mathlib
 
@@ -491,7 +490,12 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
 := by
-  sorry -- TODO: Aristotle proof has 2 of 8 branches that v4.26's grind can't close even with intro a b / constructor / refine fallbacks; remaining branches have a universal hypothesis that grind fails to instantiate under v4.26
+  rcases o2 with ⟨ _, _, _ | _ ⟩ <;> rcases o2' with ⟨ _, _, _ | _ ⟩ <;>
+    rcases ol with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at *
+  · grind
+  · grind
+  · grind +ring
+  · grind
 
 
 
