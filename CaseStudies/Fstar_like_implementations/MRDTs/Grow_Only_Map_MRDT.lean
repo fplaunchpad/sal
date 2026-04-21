@@ -1,6 +1,6 @@
 
 
-import CaseStudies.Interfaces.Map_extended
+import CaseStudies.Interfaces.Map_Extended
 import CaseStudies.Tactics.Sal
 
 import Mathlib

@@ -4,10 +4,10 @@ import ProofWidgets
 
 
 import Std.Tactic.BVDecide
-import CaseStudies.Interfaces.Set_extended
+import CaseStudies.Interfaces.Set_Extended
 import Std
 
-import CaseStudies.WriterMonad_Set
+import CaseStudies.Fstar_like_implementations.Counterexample_Visualization.WriterMonad_Set
 
 
 open Classical Std

@@ -2,7 +2,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
 
-import CaseStudies.Interfaces.Map_extended
+import CaseStudies.Interfaces.Map_Extended
 import CaseStudies.Tactics.Sal
 
 

@@ -1,6 +1,6 @@
 import Std.Tactic.BVDecide
 
-import CaseStudies.Interfaces.Map_extended
+import CaseStudies.Interfaces.Map_Extended
 import CaseStudies.Tactics.Sal
 
 

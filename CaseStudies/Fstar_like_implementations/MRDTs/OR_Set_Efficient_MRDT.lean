@@ -3,7 +3,7 @@ import Mathlib.Data.Set.Basic
 import Std.Tactic.BVDecide
 import CaseStudies.Tactics.Sal
 
-import CaseStudies.Interfaces.Map_extended
+import CaseStudies.Interfaces.Map_Extended
 
 @[simp] abbrev concrete_st := set (ℕ × ℕ × ℕ)
 

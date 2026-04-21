@@ -1,4 +1,4 @@
-import CaseStudies.Interfaces.Set_extended
+import CaseStudies.Interfaces.Set_Extended
 
 
 structure map (key:Type) [DecidableEq key] (value:Type) where
