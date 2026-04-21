@@ -10,7 +10,7 @@ Pranav Ramesh, Vimala Soundarapandian, KC Sivaramakrishnan. *Sal: Multi-modal Ve
 
 - PDF: <https://kcsrk.info/papers/sal_jan26.pdf>
 
-The paper evaluates Sal on 13 RDTs (4 CRDTs + 9 MRDTs). Since publication the suite has grown to 24 RDTs (15 CRDTs + 9 MRDTs). A `paper-v1` branch snapshots the paper-artifact state.
+The paper evaluates Sal on 13 RDTs (4 CRDTs + 9 MRDTs). Since publication the suite has grown to 24 RDTs (15 CRDTs + 9 MRDTs). A `papoc2026` branch snapshots the paper-artifact state.
 
 ## Headline result
 
@@ -98,7 +98,7 @@ Open each Lean file in VS Code to run the verification conditions interactively,
 
 - [`Sal/Interfaces/`](Sal/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
 - [`Sal/Tactic/`](Sal/Tactic) — the `sal` tactic (`Sal.lean`) and usage examples (`SalExample.lean`).
-- [`Sal/CRDTs/`](Sal/CRDTs) — state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature. Contains the paper's 4 CRDTs (`Increment_Only_Counter_CRDT`, `Multi_Valued_Register_CRDT`, `OR_Set_CRDT`, `PN_Counter_CRDT`) together with 11 additional post-paper CRDTs (LWW / MAX / MIN registers, LWW Element Set, LWW Map, MAX Map, Grow-Only Set / Multiset, Shopping Cart, insert-only Priority Queue, and an Add-Win CRPQ adapted from Zhang et al. 2023). Git history (`paper-v1` branch) distinguishes paper-era from post-paper files.
+- [`Sal/CRDTs/`](Sal/CRDTs) — state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature. Contains the paper's 4 CRDTs (`Increment_Only_Counter_CRDT`, `Multi_Valued_Register_CRDT`, `OR_Set_CRDT`, `PN_Counter_CRDT`) together with 11 additional post-paper CRDTs (LWW / MAX / MIN registers, LWW Element Set, LWW Map, MAX Map, Grow-Only Set / Multiset, Shopping Cart, insert-only Priority Queue, and an Add-Win CRPQ adapted from Zhang et al. 2023). Git history (`papoc2026` branch) distinguishes paper-era from post-paper files.
 - [`Sal/MRDTs/`](Sal/MRDTs) — state-based MRDTs; the paper's 9 benchmarks.
 - [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
 
