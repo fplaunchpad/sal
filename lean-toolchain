@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 leanprover/lean4:v4.28.0
 =======
 leanprover/lean4:v4.29.0
@@ -7,3 +8,6 @@ leanprover/lean4:v4.29.0
 =======
 leanprover/lean4:v4.26.0
 >>>>>>> 6effa6e (updated presentation)
+=======
+leanprover/lean4:v4.29.0
+>>>>>>> 228c91f (added paper and presentation)
