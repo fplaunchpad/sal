@@ -59,6 +59,21 @@
   \titlepage
 \end{frame}
 
+\begin{frame}
+  \frametitle{Presentation Flow}
+  \begin{enumerate}
+    \setlength\itemsep{0.5cm}
+    \item \textbf{Example RDTs:} Counter and OR-Set from practice
+    \item \textbf{Verification Challenge:} Why RA Linearizability matters
+    \item \textbf{Problem with F*:} SMT trust and opaque failures
+    \item \textbf{\sal Solution:} Multi-modal approach in Lean
+    \item \textbf{Counterexample Generation:} Automatic bug finding with visualization
+    \item \textbf{Agentic Framework:} Human-in-the-loop verification
+    \item \textbf{Developer Experience:} Building practical tools
+    \item \textbf{Evaluation:} 13 RDTs, 69\% kernel-only verification
+  \end{enumerate}
+\end{frame}
+
 % ===========================================================================================
 \section{Introduction: Replication in Practice}
 % ===========================================================================================
@@ -114,7 +129,7 @@
   \end{tabular}
   
   \vspace{0.3cm}
-  \small\textit{Reference: \url{www.kcsrk.info}}
+  \small\textit{Examples of state-based RDTs}
 \end{frame}
 
 \begin{frame}
@@ -133,7 +148,7 @@
   \end{itemize}
   
   \vspace{0.3cm}
-  \small\textit{Reference: \url{www.kcsrk.info}}
+  \small\textit{Examples of state-based RDTs}
 \end{frame}
 
 % ===========================================================================================
@@ -239,21 +254,6 @@
   \textbf{Key insight:} Lean's small trusted kernel $\rightarrow$ proofs checked without external SMT
 \end{frame}
 
-\begin{frame}
-  \frametitle{The Multi-Modal Tactic Stack}
-  
-  \centering
-  \vspace{0.5cm}
-  \textbf{Staged Automation:} \\[0.3cm]
-  \begin{tabular}{|l|}
-    \hline
-    \texttt{dsimp} / \texttt{aesop}: Simplification, proof search \\
-    \texttt{grind}: SMT-style + proof reconstruction \\
-    \texttt{lean-blaster}: Full SMT (Z3) as fallback \\
-    AI-assisted: Last resort \\
-    \hline
-  \end{tabular}
-\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Key Design: Data Structures for Automation}
@@ -262,19 +262,24 @@
   
   \vspace{0.3cm}
   \begin{block}{Custom Set and Map Interfaces}
-    \begin{itemize}
-      \item \textbf{Sets:} Boolean-valued membership (decidable)
-        \begin{lstlisting}[style=leanstyle]
-abbrev set (a:Type) [DecidableEq a] := a \rightarrow Bool
-        \end{lstlisting}
-      
-      \item \textbf{Maps:} Explicit domain with decidable equality
-        \begin{lstlisting}[style=leanstyle]
+    \small
+    \begin{lstlisting}[style=leanstyle,basicstyle=\tiny\ttfamily]
+-- Set: Boolean-valued membership
+@[simp]
+abbrev set (a:Type) [DecidableEq a] := a -> Bool
+
+@[simp, grind]
+def union {a:Type} [DecidableEq a] (s1 s2 : set a) : set a :=
+(fun x => s1 x || s2 x)
+
+@[simp, grind]
+def intersection {a:Type} [DecidableEq a] (s1 s2: set a) : set a :=
+(fun x => s1 x && s2 x)
+
+-- Map: Explicit domain
 structure map (key:Type) [DecidableEq key] (value:Type) where
-  mappings: key \rightarrow value
-  domain: set key
-        \end{lstlisting}
-    \end{itemize}
+  (mappings: key -> value) (domain: set key)
+    \end{lstlisting}
   \end{block}
   
   \vspace{0.2cm}
@@ -284,21 +289,34 @@ structure map (key:Type) [DecidableEq key] (value:Type) where
 \begin{frame}[fragile]
   \frametitle{Annotation for Proof Search}
   
-  \textbf{Strategy:} Build domain-specific rewrite database
+  \textbf{Strategy:} Build domain-specific rewrite database using @[simp, grind] annotations
   
-  \begin{lstlisting}[style=leanstyle]
+  \vspace{0.2cm}
+  \small
+  \begin{lstlisting}[style=leanstyle,basicstyle=\tiny\ttfamily]
+-- From Set_extended.lean
 @[simp, grind]
-lemma set_union_comm : s_1 \cup s_2 = s_2 \cup s_1 := ...
+def mem {a:Type} [DecidableEq a] (x: a) (s: set a) : Bool :=
+  s x
 
-@[grind_pattern]
-def map_lookup (m : map k v) (key : k) : v := ...
+@[simp, grind]
+def difference {a:Type} [DecidableEq a] (s1 s2: set a) : set a :=
+  (fun x => s1 x && not (s2 x))
+
+-- From Map_extended.lean
+@[simp, grind]
+def sel {key:Type} [DecidableEq key] {value: Type}
+  (m: map key value) (k:key) := m.mappings k
+
+@[simp, grind]
+def upd {key:Type} [DecidableEq key] {value: Type}
+  (m: map key value) (k:key) (v:value) :=
+  map.mk (fun (x : key) => if x = k then v else m.mappings x)
+         (union (m.domain) (singleton k))
   \end{lstlisting}
   
-  \vspace{0.3cm}
-  \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance
-  
-  \vspace{0.3cm}
-  \textit{This trades generality for automation—critical for VC-heavy developments}
+  \vspace{0.2cm}
+  \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance\vspace{0.1cm}
 \end{frame}
 
 % ===========================================================================================
@@ -343,6 +361,23 @@ def merge_flag (l a b: concrete_st) :=
   Finding such counterexamples manually is challenging.
 \end{frame}
 
+\begin{frame}
+  \frametitle{Enable-Wins Flag: Verification Conditions}
+  
+  \centering
+  \small
+  \begin{tabular}{cc}
+    \includegraphics[width=0.35\textwidth]{../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_LHS.png} &
+    \includegraphics[width=0.35\textwidth]{../SAL___Multi_modal_Verification_of_Replicated_Data_Types/EN_wins_flag_RHS.png} \\
+    \small LHS (merge result) & \small RHS (expected after linearization)
+  \end{tabular}
+  
+  \vspace{0.2cm}
+  When merge is applied then operation $e_3$ (disable), it should equal applying $e_3$ after merging.
+  
+  \small\textit{From paper Section~4.3: Bottom-up linearization checks if concurrent executions properly compose.}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Automated Counterexample Discovery}
   
@@ -365,10 +400,10 @@ def merge_flag (l a b: concrete_st) :=
 \end{frame}
 
 \begin{frame}
-  \frametitle{Execution Trace Visualization}
+  \frametitle{Execution Trace Visualization in Lean}
   
   \begin{block}{The Challenge}
-    Raw counterexample is hard to understand—why does it fail?
+    Raw counterexample is hard to understand---why does it fail?
   \end{block}
   
   \vspace{0.3cm}
@@ -386,28 +421,14 @@ def merge_flag (l a b: concrete_st) :=
 \end{frame}
 
 \begin{frame}
-  \frametitle{Enable-Wins Counterexample (Visual)}
+  \frametitle{Concrete Counterexample: Enable-Wins Flag Execution}
   
   \centering
-  \begin{tikzpicture}[scale=0.8]
-    \node at (0, 3) {$v_1 = (0, \text{false})$};
-    
-    \draw (0, 2.5) -- (-1, 2);
-    \draw (0, 2.5) -- (1, 2);
-    
-    \node at (-1, 1.5) {enable};
-    \node at (1, 1.5) {enable};
-    
-    \node at (-1.5, 1) {$v_3 = \text{enable}(v_1)$};
-    \node at (1.5, 1) {$v_5 = \text{enable}(v_2)$...};
-    
-    \draw (-1.5, 0.5) -- (1.5, 0.5);
-    
-    \node at (0, 0) {$\text{merge}(v_1, v_3, v_5) = (2, \text{true})$};
-    \node at (0, -0.7) {\color{red}\textbf{BUG: Flag is true, but all enables disabled!}};
-  \end{tikzpicture}
+  \includegraphics[width=0.78\textwidth]{../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counterexample.pdf}
   
-  \small\textit{Automatic counterexample exposes the bug}
+  \small
+  \vspace{0.2cm}
+  \textit{Automatic counterexample shows: both replicas disable the flag ($v_3, v_5$), yet merge produces (2, true)---flag is incorrectly enabled!}
 \end{frame}
 
 % ===========================================================================================
@@ -632,6 +653,15 @@ def merge_flag (l a b: concrete_st) :=
   \textbf{Without automated counterexamples:} Manual debugging would be required
 \end{frame}
 
+\begin{frame}
+  \frametitle{Execution Trace Visualization: OR-Set Example}
+  
+  \centering
+  \includegraphics[width=0.85\textwidth]{../SAL___Multi_modal_Verification_of_Replicated_Data_Types/OR_set_trace.png}
+  
+  \small\textit{Detailed execution trace showing state evolution and merge operations}
+\end{frame}
+
 % ===========================================================================================
 \section{Related Work}
 % ===========================================================================================
@@ -739,7 +769,6 @@ def merge_flag (l a b: concrete_st) :=
   \begin{itemize}
     \item \textbf{Paper:} ``SAL: Multi-modal Verification of Replicated Data Types''
     \item \textbf{Code:} \url{https://github.com/fplaunchpad/sal}
-    \item \textbf{KC's talks:} \url{www.kcsrk.info}
     \item \textbf{Related:} Loom, Neem, and other RDT frameworks
   \end{itemize}
   
