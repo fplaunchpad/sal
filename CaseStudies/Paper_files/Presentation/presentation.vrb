@@ -1,0 +1,18 @@
+\frametitle{Automated Counterexample Discovery}
+
+  \textbf{Approach:} Use Plausible (property-based testing for Lean)
+
+  \begin{block}{Process}
+    \begin{enumerate}
+      \item Express VCs as \textbf{decidable propositions}
+      \item Plausible generates random test inputs
+      \item Check whether VC holds for each input
+      \item When violation found: report the failing input
+    \end{enumerate}
+  \end{block}
+
+  \vspace{0.3cm}
+  Example failing input:
+  \begin{lstlisting}[style=leanstyle]
+(disable, (enable, (enable, (disable, (0, false)))))
+  \end{lstlisting}

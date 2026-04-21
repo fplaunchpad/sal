@@ -13,7 +13,11 @@ rev = "chore-bump-lean-4.28"
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
+<<<<<<< HEAD
 rev = "v4.28.0"
+=======
+rev = "master"
+>>>>>>> 228c91f (added paper and presentation)
 
 [[lean_lib]]
 name = "Sal"

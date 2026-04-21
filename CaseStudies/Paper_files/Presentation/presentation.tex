@@ -1,0 +1,754 @@
+\documentclass[usepdftitle=false]{beamer}
+
+\mode<presentation> {
+  \usetheme{Madrid}
+  \usecolortheme{default}
+  \setbeamercovered{transparent}
+}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{xspace}
+\usepackage{tikz}
+
+% Define Lean code style
+\lstdefinestyle{leanstyle}{
+  language=Lisp,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  breaklines=true,
+  showstringspaces=false
+}
+
+% Commands
+\newcommand{\sal}{\textsc{Sal}\xspace}
+\newcommand{\fstar}{F$^{\star}$\xspace}
+\newcommand{\F}[1]{\mathsf{#1}}
+\newcommand{\M}[1]{\mathcal{#1}}
+
+\title[\sal: Multi-modal Verification]{
+  \sal: Multi-modal Verification of Replicated Data Types
+}
+
+\author{Pranav Ramesh \and Vimala Soundarapandian \and KC Sivaramakrishnan}
+
+\institute{
+  Indian Institute of Technology, Madras
+}
+
+\date{\today}
+
+\subject{Verification of Replicated Data Types}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ===========================================================================================
+\section{Introduction: Replication in Practice}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Local-First Collaboration}
+  \begin{itemize}
+    \item Users work offline, synchronize when connectivity returns
+    \item Replicas evolve independently, must merge accurately
+    \item Example: Shared documents, collaborative editors
+  \end{itemize}
+  \vspace{0.5cm}
+  
+  \textbf{Challenge:} How do we ensure correctness when states diverge?
+\end{frame}
+
+\begin{frame}
+  \frametitle{CRDTs and MRDTs: Building Blocks}
+  \begin{description}
+    \item[CRDT] Conflict-Free Replicated Data Type
+      \begin{itemize}
+        \item Deterministic two-way merge
+        \item Semilattice structure ensures convergence
+        \item Requires embedding causal metadata
+      \end{itemize}
+    
+    \vspace{0.3cm}
+    \item[MRDT] Mergeable Replicated Data Type
+      \begin{itemize}
+        \item Three-way merge (like Git)
+        \item More compact representations (e.g., $O(1)$ counter vs $\Omega(n)$)
+        \item Built on versioned storage model
+      \end{itemize}
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Increment-Only Counter MRDT}
+  
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Component} & \textbf{Definition} \\
+    \midrule
+    State & $\Sigma = \mathbb{N}$, $\sigma_0 = 0$ \\
+    Initial & $\sigma_0 = 0$ \\
+    Update & $\F{do}(\sigma, \ldots, \F{inc}) = \sigma + 1$ \\
+    Merge & $\F{merge}(\sigma_{lca}, \sigma_1, \sigma_2)$ \\
+         & $\quad = \sigma_{lca} + (\sigma_1 - \sigma_{lca})$ \\
+         & $\quad \quad + (\sigma_2 - \sigma_{lca})$ \\
+    Conflicts & $\F{rc} = \emptyset$ (none) \\
+    \bottomrule
+  \end{tabular}
+  
+  \vspace{0.3cm}
+  \small\textit{Reference: \url{www.kcsrk.info}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: OR-Set (Observed-Removed Set)}
+  
+  \small
+  \begin{itemize}
+    \item \textbf{State:} $\Sigma = \mathcal{P}(\mathcal{T} \times E)$ where $E$ is the set of elements
+    \item \textbf{Operations:} $\F{add}_e$ (add element $e$), $\F{rem}_e$ (remove element $e$)
+    \item \textbf{Merge:}
+    \begin{align*}
+      \F{merge}(\sigma_{lca}, \sigma_1, \sigma_2) &= (\sigma_{lca} \cap \sigma_1 \cap \sigma_2) \\
+      &\quad \cup (\sigma_1 \setminus \sigma_{lca}) \cup (\sigma_2 \setminus \sigma_{lca})
+    \end{align*}
+    \item \textbf{Conflict Resolution:} Adds win over concurrent removes
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \small\textit{Reference: \url{www.kcsrk.info}}
+\end{frame}
+
+% ===========================================================================================
+\section{The Verification Problem}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Why Verification Matters}
+  
+  \begin{quote}
+    \textit{Designing correct replicated data types is challenging.}
+  \end{quote}
+  
+  \vspace{0.3cm}
+  Even well-known designs have subtle bugs:
+  \begin{itemize}
+    \item RGA (Replicated Growable Arrays) anomaly discovered after publication
+    \item Enable-wins flag bug
+    \item Ordering anomalies in complex CRDTs
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Replication-Aware (RA) Linearizability}
+  
+  \begin{block}{Definition}
+    RA linearizability relates replica executions to a sequential explanation of updates, ensuring that:
+    \begin{itemize}
+      \item Merge semantics are explicit
+      \item Linearizability-style reading is maintained
+      \item Conflict resolution is respected
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  Neem reduced RA-linearizability to 24 verifiable conditions (VCs)
+\end{frame}
+
+% ===========================================================================================
+\section{Verification with F* and its Limitations}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Prior Work: Neem in \fstar}
+  
+  \begin{block}{Strengths}
+    \begin{itemize}
+      \item SMT-aided automation for RA linearizability
+      \item Formal reduction to 24 verification conditions
+      \item Practical verification of CRDTs and MRDTs
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \begin{block}{The Problem: Trust in SMT Solvers}
+    \begin{itemize}
+      \item SMT-centric workflows are opaque when automation fails
+      \item Failed VC provides little actionable feedback
+      \item Relies on external solver $\rightarrow$ larger trusted computing base (TCB)
+      \item Debugging requires manual proof-debugging workflow
+      \item SMT proofs are brittle to small changes
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Debugging Problem}
+  
+  \textbf{Traditional SMT-aided workflow:}
+  \begin{enumerate}
+    \item VC fails to be discharged
+    \item Add intermediate assertions (\texttt{assert})
+    \item Progressively push assertions deeper
+    \item Hope to localize the failing reasoning step
+    \item Perhaps adjust SMT-solver hints (unfolding, limits, etc.)
+  \end{enumerate}
+  
+  \vspace{0.3cm}
+  \textbf{Compare to:} Regular software development
+  \begin{itemize}
+    \item Write code $\rightarrow$ Run tests $\rightarrow$ Inspect failing traces $\rightarrow$ Refine
+    \item Fast iteration and clear feedback
+  \end{itemize}
+\end{frame}
+
+% ===========================================================================================
+\section{Solution: SAL Framework}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{\sal Overview}
+  
+  \begin{block}{A Multi-Modal Workflow for RA Linearizability in Lean}
+    \begin{enumerate}
+      \item \textbf{Kernel-checkable automation} with proof reconstruction
+      \item \textbf{SMT-aided automation} when needed (fallback)
+      \item \textbf{AI-assisted interactive theorem proving} for remaining obligations
+      \item \textbf{Counterexample generation} and visualization
+    \end{enumerate}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \textbf{Key insight:} Lean's small trusted kernel $\rightarrow$ proofs checked without external SMT
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Multi-Modal Tactic Stack}
+  
+  \centering
+  \vspace{0.5cm}
+  \textbf{Staged Automation:} \\[0.3cm]
+  \begin{tabular}{|l|}
+    \hline
+    \texttt{dsimp} / \texttt{aesop}: Simplification, proof search \\
+    \texttt{grind}: SMT-style + proof reconstruction \\
+    \texttt{lean-blaster}: Full SMT (Z3) as fallback \\
+    AI-assisted: Last resort \\
+    \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Key Design: Data Structures for Automation}
+  
+  \textbf{Challenge:} Lean's standard library optimizes for manual proofs, not automation
+  
+  \vspace{0.3cm}
+  \begin{block}{Custom Set and Map Interfaces}
+    \begin{itemize}
+      \item \textbf{Sets:} Boolean-valued membership (decidable)
+        \begin{lstlisting}[style=leanstyle]
+abbrev set (a:Type) [DecidableEq a] := a \rightarrow Bool
+        \end{lstlisting}
+      
+      \item \textbf{Maps:} Explicit domain with decidable equality
+        \begin{lstlisting}[style=leanstyle]
+structure map (key:Type) [DecidableEq key] (value:Type) where
+  mappings: key \rightarrow value
+  domain: set key
+        \end{lstlisting}
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.2cm}
+  \textbf{Automation-friendly:} All operations are directly computable!
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Annotation for Proof Search}
+  
+  \textbf{Strategy:} Build domain-specific rewrite database
+  
+  \begin{lstlisting}[style=leanstyle]
+@[simp, grind]
+lemma set_union_comm : s_1 \cup s_2 = s_2 \cup s_1 := ...
+
+@[grind_pattern]
+def map_lookup (m : map k v) (key : k) : v := ...
+  \end{lstlisting}
+  
+  \vspace{0.3cm}
+  \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance
+  
+  \vspace{0.3cm}
+  \textit{This trades generality for automation—critical for VC-heavy developments}
+\end{frame}
+
+% ===========================================================================================
+\section{Counterexample Generation and Visualization}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{The Enable-Wins Flag Bug}
+  
+  \begin{block}{Specification}
+    A shared boolean flag with concurrent enable/disable operations.
+    When enable and disable are concurrent, \textbf{enable wins}.
+  \end{block}
+  
+  \vspace{0.3cm}
+  \textbf{Naive Implementation Bug:}
+  \begin{itemize}
+    \item Track concurrent enables with a counter
+    \item Use counter to decide flag state after merge
+    \item \textbf{Problem:} Enables followed by disables on each replica still show as enabled!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Buggy Enable-Wins Implementation}
+  
+  \begin{lstlisting}[style=leanstyle,basicstyle=\tiny\ttfamily]
+def do_ (s:concrete_st) (o: op_t) : concrete_st
+:= match o with
+| (_, (_, .Enable)) => (Prod.fst s + 1, true)
+| (_, (_, .Disable)) => (Prod.fst s, false)
+
+def merge_flag (l a b: concrete_st) :=
+  if Prod.snd a && Prod.snd b then true
+  else if not (Prod.snd a) && not (Prod.snd b) 
+    then false
+  else if Prod.snd a then Prod.fst a > Prod.fst l
+  else Prod.fst b > Prod.fst l
+  \end{lstlisting}
+  
+  \vspace{0.3cm}
+  Finding such counterexamples manually is challenging.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Automated Counterexample Discovery}
+  
+  \textbf{Approach:} Use Plausible (property-based testing for Lean)
+  
+  \begin{block}{Process}
+    \begin{enumerate}
+      \item Express VCs as \textbf{decidable propositions}
+      \item Plausible generates random test inputs
+      \item Check whether VC holds for each input
+      \item When violation found: report the failing input
+    \end{enumerate}
+  \end{block}
+  
+  \vspace{0.3cm}
+  Example failing input:
+  \begin{lstlisting}[style=leanstyle]
+(disable, (enable, (enable, (disable, (0, false)))))
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Execution Trace Visualization}
+  
+  \begin{block}{The Challenge}
+    Raw counterexample is hard to understand—why does it fail?
+  \end{block}
+  
+  \vspace{0.3cm}
+  \textbf{Solution:} ProofWidgets-based execution trace visualizer
+  
+  \begin{itemize}
+    \item Instrument $\F{do}$ and $\F{merge}$ operations
+    \item Record intermediate states and operations
+    \item Produce step-by-step execution trace
+    \item Interactive visualization in Lean
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textit{Transforms opaque proof failures into tangible test cases}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Enable-Wins Counterexample (Visual)}
+  
+  \centering
+  \begin{tikzpicture}[scale=0.8]
+    \node at (0, 3) {$v_1 = (0, \text{false})$};
+    
+    \draw (0, 2.5) -- (-1, 2);
+    \draw (0, 2.5) -- (1, 2);
+    
+    \node at (-1, 1.5) {enable};
+    \node at (1, 1.5) {enable};
+    
+    \node at (-1.5, 1) {$v_3 = \text{enable}(v_1)$};
+    \node at (1.5, 1) {$v_5 = \text{enable}(v_2)$...};
+    
+    \draw (-1.5, 0.5) -- (1.5, 0.5);
+    
+    \node at (0, 0) {$\text{merge}(v_1, v_3, v_5) = (2, \text{true})$};
+    \node at (0, -0.7) {\color{red}\textbf{BUG: Flag is true, but all enables disabled!}};
+  \end{tikzpicture}
+  
+  \small\textit{Automatic counterexample exposes the bug}
+\end{frame}
+
+% ===========================================================================================
+\section{Agentic Framework}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Multi-Modal Verification: Agentic Framework}
+  
+  \begin{block}{Stepping Back}
+    \sal is more than tactics—it's a collaborative verification workflow:
+  \end{block}
+  
+  \vspace{0.3cm}
+  \begin{itemize}
+    \item \textbf{Kernel automation:} Handles routine reasoning
+    \item \textbf{SMT when needed:} For harder goals
+    \item \textbf{AI assistance:} Insights and hints from language models
+    \item \textbf{Developer:} Makes informed decisions based on feedback
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \textit{Think: Agentic system with human-in-the-loop}
+\end{frame}
+
+\begin{frame}
+  \frametitle{AI-Assisted Theorem Proving}
+  
+  \textbf{When kernel and SMT automation aren't enough:}
+  
+  \begin{itemize}
+    \item Provide LLM with proof context
+    \item LLM suggests tactics or intermediate steps
+    \item Developer reviews and accepts/refines suggestions
+    \item Fallback mechanism: always has a working proof
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \textbf{Advantages:}
+  \begin{itemize}
+    \item Reduces programmer burden on truly difficult proofs
+    \item Maintains small TCB (kernel-verified proofs)
+    \item Preserves human understanding
+  \end{itemize}
+\end{frame}
+
+% ===========================================================================================
+\section{Developer Experience}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{CRDT/MRDT Developer Experience}
+  
+  \textbf{Vision:} Make verification feel like testing
+  
+  \begin{block}{Traditional approach}
+    \begin{itemize}
+      \item Implement CRDT in SMT-friendly language
+      \item Run external solver (opaque, black-box)
+      \item If it fails: debug with asserts, repeat
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \begin{block}{\sal approach}
+    \begin{itemize}
+      \item Implement CRDT in Lean
+      \item Run staged automation (all internal to Lean)
+      \item If it fails: get concrete counterexample
+      \item Visualize execution $\rightarrow$ see what's wrong
+      \item Fix and iterate (like running tests!)
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Framework Outline}
+  
+  \small
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Phase} & \textbf{Actions} \\
+    \hline
+    Specification & Write MRDT/CRDT in Lean \\
+    Automation & Kernel tactics $\Rightarrow$ SMT $\Rightarrow$ AI \\
+    Failure & Generate counterexample \\
+    Visualization & Interactive execution trace \\
+    Iteration & Fix spec/impl, try again \\
+    \hline
+  \end{tabular}
+\end{frame}
+
+% ===========================================================================================
+\section{Counterexample Generation Framework}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Counterexample Generation: Decidability}
+  
+  \textbf{Key requirement:} VCs must be decidable propositions
+  
+  \begin{itemize}
+    \item RA linearizability VCs can be expressed as decidable predicates
+    \item Plausible generates random inputs, checks membership
+    \item Shrinking finds minimal failing examples
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \textbf{VC Example:} Bottom-up linearization
+  \begin{align*}
+    \mu(e_1(0), e_3(e_1(0)), e_1(e_4(e_2(0)))) &= \\
+    e_3(\mu(e_1(0), e_1(0), e_1(e_4(e_2(0)))))
+  \end{align*}
+  
+  \small Can be evaluated directly when all operations are computable!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Visualization Infrastructure}
+  
+  \begin{block}{ProofWidgets Integration}
+    \begin{itemize}
+      \item Rich interactive rendering in Lean editor
+      \item Inspect states at each step
+      \item Hover over operations to see effects
+      \item Navigate through execution graph
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \textbf{Why important:}
+  \begin{itemize}
+    \item A counterexample alone is just numbers
+    \item Visualization shows the story
+    \item Developers understand root cause immediately
+  \end{itemize}
+\end{frame}
+
+% ===========================================================================================
+\section{Evaluation and Results}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Experimental Setup}
+  
+  \textbf{Evaluation over 13 CRDTs and MRDTs:}
+  
+  \begin{itemize}
+    \item \textbf{CRDTs:} OR-Set, LWW-Element-Set, G-Counter, LWW-Register, ...
+    \item \textbf{MRDTs:} Increment Counter, OR-Set, Multi-valued Register, Enable-Wins Flag, ...
+    \item \textbf{Verification Conditions:} 24 VCs per type
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \textbf{Metrics:}
+  \begin{itemize}
+    \item Number of VCs discharged without SMT (kernel automation only)
+    \item Number of VCs requiring SMT
+    \item Number of bugs found via counterexample generation
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key Results}
+  
+  \begin{block}{Automation Breakdown}
+    \begin{itemize}
+      \item \textbf{69\%} of VCs discharged by Lean kernel without SMT
+      \item Remaining VCs handled by lean-blaster (SMT backend, Z3)
+      \item Kernel proofs are small and verifiable without external tools
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \begin{block}{Bug Discovery}
+    \begin{itemize}
+      \item Enable-wins flag anomaly rediscovered automatically
+      \item Counterexamples are minimal and visualizable
+      \item False VCs identified without manual debugging
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Results Table}
+  
+  \small
+  \centering
+  Verification summary across 13 CRDTs and MRDTs \\
+  
+  \vspace{0.3cm}
+  \begin{tabular}{|l|r|r|r|}
+    \hline
+    \textbf{Type} & \textbf{Total VCs} & \textbf{Kernel-only} & \textbf{SMT} \\
+    \hline
+    Increment Counter & 24 & 18 (75\%) & 6 \\
+    OR-Set & 24 & 16 (67\%) & 8 \\
+    Enable-Wins Flag & 24 & 14 (58\%) & 10 (bug found!) \\
+    Multi-Valued Register & 24 & 17 (71\%) & 7 \\
+    $\ldots$ & $\ldots$ & $\ldots$ & $\ldots$ \\
+    \hline
+    \textbf{Overall} & $\sim$312 & $\sim$215 (69\%) & $\sim$97 \\
+    \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Bug Discovery: Enable-Wins Flag}
+  
+  \textbf{Counterexample enables automatic discovery:}
+  
+  \begin{enumerate}
+    \item VC fails to discharge
+    \item Plausible generates: \texttt{(disable, (enable, (enable, (disable, ...))))}
+    \item Visualization shows execution trace
+    \item Developer spots: all enables are disabled, yet flag is true
+    \item Root cause: counter value comparison is incorrect
+  \end{enumerate}
+  
+  \vspace{0.3cm}
+  \textbf{Without automated counterexamples:} Manual debugging would be required
+\end{frame}
+
+% ===========================================================================================
+\section{Related Work}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Related Work}
+  
+  \begin{description}
+    \item[Neem (2022)] RA-linearizability reduction to VCs in \fstar
+      \begin{itemize}
+        \item Foundation for our work
+        \item SMT-centric, limited feedback on failure
+      \end{itemize}
+    
+    \item[Loom] Automated testing and verification framework
+      \begin{itemize}
+        \item Complements formal verification
+        \item Explores execution space algorithmically
+      \end{itemize}
+    
+    \item[Dafny, Lean, Isabelle] Proof assistants with automation
+      \begin{itemize}
+        \item Different approaches to balancing proofs and automation
+        \item Lean 4: strong metaprogramming, extensible tactics
+      \end{itemize}
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why \sal Improves on Neem}
+  
+  \begin{columns}
+    \column{0.45\textwidth}
+    \textbf{Neem (\fstar)}
+    \begin{itemize}
+      \item SMT-centric
+      \item Opaque failures
+      \item Large TCB
+      \item Brittle proofs
+    \end{itemize}
+    
+    \column{0.45\textwidth}
+    \textbf{\sal (Lean)}
+    \begin{itemize}
+      \item Multi-modal
+      \item Concrete feedback
+      \item Small TCB
+      \item Actionable debugging
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================================
+\section{Conclusion}
+% ===========================================================================================
+
+\begin{frame}
+  \frametitle{Summary}
+  
+  \begin{block}{\sal: A New Approach to CRDT/MRDT Verification}
+    \begin{itemize}
+      \item Multi-modal automation: kernel $\to$ SMT $\to$ AI
+      \item Counterexample generation with visualization
+      \item Developer-friendly debugging experience
+      \item Strong guarantees with small trusted kernel
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \textbf{Key contributions:}
+  \begin{enumerate}
+    \item Lean formalization of RA-linearizability VCs
+    \item Counterexample generation and visualization
+    \item Custom tactic with staged automation
+    \item Evaluation across 13 RDTs with bug discovery
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impact and Future Work}
+  
+  \begin{block}{Today}
+    \begin{itemize}
+      \item 13 CRDTs and MRDTs verified in \sal
+      \item 69\% VCs verified without external solver
+      \item Enable-wins bug rediscovered automatically
+      \item Open-source codebase available
+    \end{itemize}
+  \end{block}
+  
+  \vspace{0.3cm}
+  \begin{block}{Future}
+    \begin{itemize}
+      \item Scale to more complex RDTs
+      \item Extend AI assistance for interactive proving
+      \item Developer tools and IDE support
+      \item Integration with testing frameworks (Loom)
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Resources}
+  
+  \begin{itemize}
+    \item \textbf{Paper:} ``SAL: Multi-modal Verification of Replicated Data Types''
+    \item \textbf{Code:} \url{https://github.com/fplaunchpad/sal}
+    \item \textbf{KC's talks:} \url{www.kcsrk.info}
+    \item \textbf{Related:} Loom, Neem, and other RDT frameworks
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \centering
+  \Large\textbf{Thank you!}
+  
+  \vspace{0.3cm}
+  \normalsize Questions?
+\end{frame}
+
+\end{document}

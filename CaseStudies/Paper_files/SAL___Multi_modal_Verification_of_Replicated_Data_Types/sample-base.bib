@@ -1,0 +1,540 @@
+@article{Neem,
+author = {Soundarapandian, Vimala and Nagar, Kartik and Rastogi, Aseem and Sivaramakrishnan, KC},
+title = {Automatically Verifying Replication-Aware Linearizability},
+year = {2025},
+issue_date = {April 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {9},
+number = {OOPSLA1},
+url = {https://doi.org/10.1145/3720452},
+doi = {10.1145/3720452},
+abstract = {Data replication is crucial for enabling fault tolerance and uniform low latency in modern decentralized applications. Replicated Data Types (RDTs) have emerged as a principled approach for developing replicated implementations of basic data structures such as counter, flag, set, map, etc. While the correctness of RDTs is generally specified using the notion of strong eventual consistency--which guarantees that replicas that have received the same set of updates would converge to the same state--a more expressive specification which relates the converged state to updates received at a replica would be more beneficial to RDT users. Replication-aware linearizability is one such specification, which requires all replicas to always be in a state which can be obtained by linearizing the updates received at the replica. In this work, we develop a novel fully automated technique for verifying replication-aware linearizability for Mergeable Replicated Data Types (MRDTs). We identify novel algebraic properties for MRDT operations and the merge function which are sufficient for proving an implementation to be linearizable and which go beyond the standard notions of commutativity, associativity, and idempotence. We also develop a novel inductive technique called bottom-up linearization to automatically verify the required algebraic properties. Our technique can be used to verify both MRDTs and state-based CRDTs. We have successfully applied our approach to a number of complex MRDT and CRDT implementations including a novel JSON MRDT.},
+journal = {Proc. ACM Program. Lang.},
+month = apr,
+articleno = {111},
+numpages = {27},
+keywords = {Automated verification, Eventual consistency, MRDTs, Replication-aware linearizability}
+}
+
+
+
+
+@inproceedings{localfirst,
+author = {Kleppmann, Martin and Wiggins, Adam and van Hardenberg, Peter and McGranaghan, Mark},
+title = {Local-first software: you own your data, in spite of the cloud},
+year = {2019},
+isbn = {9781450369954},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3359591.3359737},
+doi = {10.1145/3359591.3359737},
+abstract = {Cloud apps like Google Docs and Trello are popular because they enable real-time collaboration with colleagues, and they make it easy for us to access our work from all of our devices. However, by centralizing data storage on servers, cloud apps also take away ownership and agency from users. If a service shuts down, the software stops functioning, and data created with that software is lost. In this article we propose local-first software, a set of principles for software that enables both collaboration and ownership for users. Local-first ideals include the ability to work offline and collaborate across multiple devices, while also improving the security, privacy, long-term preservation, and user control of data. We survey existing approaches to data storage and sharing, ranging from email attachments to web apps to Firebase-backed mobile apps, and we examine the trade-offs of each. We look at Conflict-free Replicated Data Types (CRDTs): data structures that are multi-user from the ground up while also being fundamentally local and private. CRDTs have the potential to be a foundational technology for realizing local-first software. We share some of our findings from developing local-first software prototypes at the Ink \& Switch research lab over the course of several years. These experiments test the viability of CRDTs in practice, and explore the user interface challenges for this new data model. Lastly, we suggest some next steps for moving towards local-first software: for researchers, for app developers, and a startup opportunity for entrepreneurs.},
+booktitle = {Proceedings of the 2019 ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software},
+pages = {154–178},
+numpages = {25},
+keywords = {CRDTs, collaboration software, data ownership, mobile computing, peer-to-peer communication},
+location = {Athens, Greece},
+series = {Onward! 2019}
+}
+
+
+@InProceedings{CRDTs,
+author="Shapiro, Marc
+and Pregui{\c{c}}a, Nuno
+and Baquero, Carlos
+and Zawirski, Marek",
+editor="D{\'e}fago, Xavier
+and Petit, Franck
+and Villain, Vincent",
+title="Conflict-Free Replicated Data Types",
+booktitle="Stabilization, Safety, and Security of Distributed Systems",
+year="2011",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="386--400",
+abstract="Replicating data under Eventual Consistency (EC) allows any replica to accept updates without remote synchronisation. This ensures performance and scalability in large-scale distributed systems (e.g., clouds). However, published EC approaches are ad-hoc and error-prone. Under a formal Strong Eventual Consistency (SEC) model, we study sufficient conditions for convergence. A data type that satisfies these conditions is called a Conflict-free Replicated Data Type (CRDT). Replicas of any CRDT are guaranteed to converge in a self-stabilising manner, despite any number of failures. This paper formalises two popular approaches (state- and operation-based) and their relevant sufficient conditions. We study a number of useful CRDTs, such as sets with clean semantics, supporting both add and remove operations, and consider in depth the more complex Graph data type. CRDT types can be composed to develop large-scale distributed applications, and have interesting theoretical properties.",
+isbn="978-3-642-24550-3"
+}
+
+@inproceedings{Kaki2022,
+author = {Kaki, Gowtham and Prahladan, Prasanth and Lewchenko, Nicholas V.},
+title = {RunTime-assisted convergence in replicated data types},
+year = {2022},
+isbn = {9781450392655},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3519939.3523724},
+doi = {10.1145/3519939.3523724},
+abstract = {We propose a runtime-assisted approach to enforce convergence in distributed executions of replicated data types. The key distinguishing aspect of our approach is that it guarantees convergence unconditionally – without requiring data type operations to satisfy algebraic laws such as commutativity and idempotence. Consequently, programmers are no longer obligated to prove convergence on a per-type basis. Moreover, our approach lets sequential data types be reused in a distributed setting by extending their implementations rather than refactoring them. The novel component of our approach is a distributed runtime that orchestrates well-formed executions that are guaranteed to converge. Despite the utilization of a runtime, our approach comes at no additional cost of latency and availability. Instead, we introduce a novel tradeoff against a metric called staleness, which roughly corresponds to the time taken for replicas to converge. We implement our approach in a system called Quark and conduct a thorough evaluation of its tradeoffs.},
+booktitle = {Proceedings of the 43rd ACM SIGPLAN International Conference on Programming Language Design and Implementation},
+pages = {364–378},
+numpages = {15},
+keywords = {Runtime, Replication, MRDT, Decentralized Systems, Convergence, Concurrent Revisions, Causal Consistency, CRDT},
+location = {San Diego, CA, USA},
+series = {PLDI 2022}
+}
+
+@article{MRDT,
+author = {Kaki, Gowtham and Priya, Swarn and Sivaramakrishnan, KC and Jagannathan, Suresh},
+title = {Mergeable replicated data types},
+year = {2019},
+issue_date = {October 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3360580},
+doi = {10.1145/3360580},
+abstract = {Programming geo-replicated distributed systems is challenging given the complexity of reasoning about different evolving states on different replicas. Existing approaches to this problem impose significant burden on application developers to consider the effect of how operations performed on one replica are witnessed and applied on others. To alleviate these challenges, we present a fundamentally different approach to programming in the presence of replicated state. Our insight is based on the use of invertible relational specifications of an inductively-defined data type as a mechanism to capture salient aspects of the data type relevant to how its different instances can be safely merged in a replicated environment. Importantly, because these specifications only address a data type's (static) structural properties, their formulation does not require exposing low-level system-level details concerning asynchrony, replication, visibility, etc. As a consequence, our framework enables the correct-by-construction synthesis of rich merge functions over arbitrarily complex (i.e., composable) data types. We show that the use of a rich relational specification language allows us to extract sufficient conditions to automatically derive merge functions that have meaningful non-trivial convergence properties. We incorporate these ideas in a tool called Quark, and demonstrate its utility via a detailed evaluation study on real-world benchmarks.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {154},
+numpages = {29},
+keywords = {CRDTs, Git, Replication, Version Control, Weak Consistency}
+}
+
+@inproceedings{10.1145/3519939.3523735,
+author = {Soundarapandian, Vimala and Kamath, Adharsh and Nagar, Kartik and Sivaramakrishnan, KC},
+title = {Certified mergeable replicated data types},
+year = {2022},
+isbn = {9781450392655},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3519939.3523735},
+doi = {10.1145/3519939.3523735},
+abstract = {Replicated data types (RDTs) are data structures that permit concurrent modification of multiple, potentially geo-distributed, replicas without coordination between them. RDTs are designed in such a way that conflicting operations are eventually deterministically reconciled ensuring convergence. Constructing correct RDTs remains a difficult endeavour due to the complexity of reasoning about independently evolving states of the replicas. With the focus on the correctness of RDTs (and rightly so), existing approaches to RDTs are less efficient compared to their sequential counterparts in terms of the time and space complexity of local operations. This is unfortunate since RDTs are often used in a local-first setting where the local operations far outweigh remote communication. This paper presents PEEPUL, a pragmatic approach to building and verifying efficient RDTs. To make reasoning about correctness easier, we cast RDTs in the mould of the distributed version control system, and equip it with a three-way merge function for reconciling conflicting versions. Further, we go beyond just verifying convergence, and provide a methodology to verify arbitrarily complex specifications. We develop a replication-aware simulation relation to relate RDT specifications to their efficient purely functional implementations. We implement PEEPUL as an F* library that discharges proof obligations to an SMT solver. The verified efficient RDTs are extracted as OCaml code and used in Irmin, a distributed database built on the principles of Git.},
+booktitle = {Proceedings of the 43rd ACM SIGPLAN International Conference on Programming Language Design and Implementation},
+pages = {332–347},
+numpages = {16},
+keywords = {Automated verification, Eventual consistency, MRDTs, Replication-aware simulation},
+location = {San Diego, CA, USA},
+series = {PLDI 2022}
+}
+
+@inproceedings{10.1145/2535838.2535848,
+author = {Burckhardt, Sebastian and Gotsman, Alexey and Yang, Hongseok and Zawirski, Marek},
+title = {Replicated data types: specification, verification, optimality},
+year = {2014},
+isbn = {9781450325448},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2535838.2535848},
+doi = {10.1145/2535838.2535848},
+abstract = {Geographically distributed systems often rely on replicated eventually consistent data stores to achieve availability and performance. To resolve conflicting updates at different replicas, researchers and practitioners have proposed specialized consistency protocols, called replicated data types, that implement objects such as registers, counters, sets or lists. Reasoning about replicated data types has however not been on par with comparable work on abstract data types and concurrent data types, lacking specifications, correctness proofs, and optimality results.To fill in this gap, we propose a framework for specifying replicated data types using relations over events and verifying their implementations using replication-aware simulations. We apply it to 7 existing implementations of 4 data types with nontrivial conflict-resolution strategies and optimizations (last-writer-wins register, counter, multi-value register and observed-remove set). We also present a novel technique for obtaining lower bounds on the worst-case space overhead of data type implementations and use it to prove optimality of 4 implementations. Finally, we show how to specify consistency of replicated stores with multiple objects axiomatically, in analogy to prior work on weak memory models. Overall, our work provides foundational reasoning tools to support research on replicated eventually consistent stores.},
+booktitle = {Proceedings of the 41st ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {271–284},
+numpages = {14},
+keywords = {eventual consistency, replication, weak memory},
+location = {San Diego, California, USA},
+series = {POPL '14}
+}
+
+@article{Burckhardt,
+author = {Burckhardt, Sebastian and Gotsman, Alexey and Yang, Hongseok and Zawirski, Marek},
+title = {Replicated data types: specification, verification, optimality},
+year = {2014},
+issue_date = {January 2014},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {49},
+number = {1},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/2578855.2535848},
+doi = {10.1145/2578855.2535848},
+abstract = {Geographically distributed systems often rely on replicated eventually consistent data stores to achieve availability and performance. To resolve conflicting updates at different replicas, researchers and practitioners have proposed specialized consistency protocols, called replicated data types, that implement objects such as registers, counters, sets or lists. Reasoning about replicated data types has however not been on par with comparable work on abstract data types and concurrent data types, lacking specifications, correctness proofs, and optimality results.To fill in this gap, we propose a framework for specifying replicated data types using relations over events and verifying their implementations using replication-aware simulations. We apply it to 7 existing implementations of 4 data types with nontrivial conflict-resolution strategies and optimizations (last-writer-wins register, counter, multi-value register and observed-remove set). We also present a novel technique for obtaining lower bounds on the worst-case space overhead of data type implementations and use it to prove optimality of 4 implementations. Finally, we show how to specify consistency of replicated stores with multiple objects axiomatically, in analogy to prior work on weak memory models. Overall, our work provides foundational reasoning tools to support research on replicated eventually consistent stores.},
+journal = {SIGPLAN Not.},
+month = jan,
+pages = {271–284},
+numpages = {14},
+keywords = {eventual consistency, replication, weak memory}
+}
+
+
+@inproceedings{WangRALin,
+author = {Wang, Chao and Enea, Constantin and Mutluergil, Suha Orhun and Petri, Gustavo},
+title = {Replication-aware linearizability},
+year = {2019},
+isbn = {9781450367127},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3314221.3314617},
+doi = {10.1145/3314221.3314617},
+abstract = {Distributed systems often replicate data at multiple locations to achieve availability despite network partitions. These systems accept updates at any replica and propagate them asynchronously to every other replica. Conflict-Free Replicated Data Types (CRDTs) provide a principled approach to the problem of ensuring that replicas are eventually consistent despite the asynchronous delivery of updates.  We address the problem of specifying and verifying CRDTs, introducing a new correctness criterion called Replication-Aware Linearizability. This criterion is inspired by linearizability, the de-facto correctness criterion for (shared-memory) concurrent data structures. We argue that this criterion is both simple to understand, and it fits most known implementations of CRDTs. We provide a proof methodology to show that a CRDT satisfies replication-aware linearizability that we apply on a wide range of implementations. Finally, we show that our criterion can be leveraged to reason modularly about the composition of CRDTs.},
+booktitle = {Proceedings of the 40th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+pages = {980–993},
+numpages = {14},
+keywords = {consistency, replicated data types, verification},
+location = {Phoenix, AZ, USA},
+series = {PLDI 2019}
+}
+
+@inproceedings{The_mathlib_Community_2020, series={POPL ’20},
+   title={The lean mathematical library},
+   url={http://dx.doi.org/10.1145/3372885.3373824},
+   DOI={10.1145/3372885.3373824},
+   booktitle={Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+   publisher={ACM},
+   author={The mathlib Community},
+   year={2020},
+   month=jan, pages={367–381},
+   collection={POPL ’20} }
+
+
+@misc{song2025leancopilotlargelanguage,
+      title={Lean Copilot: Large Language Models as Copilots for Theorem Proving in Lean},
+      author={Peiyang Song and Kaiyu Yang and Anima Anandkumar},
+      year={2025},
+      eprint={2404.12534},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2404.12534},
+}
+
+@inproceedings{aesop_paper,
+author = {Limperg, Jannis and From, Asta Halkj\ae{}r},
+title = {Aesop: White-Box Best-First Proof Search for Lean},
+year = {2023},
+isbn = {9798400700262},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3573105.3575671},
+doi = {10.1145/3573105.3575671},
+abstract = {We present Aesop, a proof search tactic for the Lean 4 interactive   theorem prover. Aesop performs a tree-based search over a user-specified   set of proof rules. It supports safe and unsafe rules and uses a best-first   search strategy with customisable prioritisation. Aesop also allows users   to register custom normalisation rules and integrates Lean's simplifier to   support equational reasoning. Many details of Aesop's search procedure are   designed to make it a white-box proof automation tactic, meaning that users   should be able to easily predict how their rules will be applied, and thus how   powerful and fast their Aesop invocations will be.    Since we use a best-first search strategy, it is not obvious how to handle   metavariables which appear in multiple goals. The most common strategy for   dealing with metavariables relies on backtracking and is therefore not   suitable for best-first search. We give an algorithm which addresses this   issue. The algorithm works with any search strategy, is independent of the   underlying logic and makes few assumptions about how rules interact with   metavariables. We conjecture that with a fair search strategy, the algorithm   is as complete as the given set of rules allows.},
+booktitle = {Proceedings of the 12th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+pages = {253–266},
+numpages = {14},
+keywords = {Lean, deductive verification, interactive theorem proving, proof search, tactic, type theory},
+location = {Boston, MA, USA},
+series = {CPP 2023}
+}
+
+@misc{qian2025leanautointerfacelean4,
+      title={Lean-auto: An Interface between Lean 4 and Automated Theorem Provers},
+      author={Yicheng Qian and Joshua Clune and Clark Barrett and Jeremy Avigad},
+      year={2025},
+      eprint={2505.14929},
+      archivePrefix={arXiv},
+      primaryClass={cs.LO},
+      url={https://arxiv.org/abs/2505.14929},
+}
+
+@misc{mohamed2025leansmtsmttacticdischarging,
+      title={Lean-SMT: An SMT tactic for discharging proof goals in Lean},
+      author={Abdalrhman Mohamed and Tomaz Mascarenhas and Harun Khan and Haniel Barbosa and Andrew Reynolds and Yicheng Qian and Cesare Tinelli and Clark Barrett},
+      year={2025},
+      eprint={2505.15796},
+      archivePrefix={arXiv},
+      primaryClass={cs.LO},
+      url={https://arxiv.org/abs/2505.15796},
+}
+
+@inproceedings{kleppmanRGA,
+author = {Kleppmann, Martin and Gomes, Victor B. F. and Mulligan, Dominic P. and Beresford, Alastair R.},
+title = {Interleaving anomalies in collaborative text editors},
+year = {2019},
+isbn = {9781450362764},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3301419.3323972},
+doi = {10.1145/3301419.3323972},
+abstract = {Collaborative text editors allow two or more users to concurrently edit a shared document without merge conflicts. Such systems require an algorithm to provide convergence, ensuring all clients that have seen the same set of document edits are in the same state. Unfortunately convergence alone does not guarantee that a collaborative text editor is usable. Several published algorithms for collaborative text editing exhibit an undesirable anomaly in which concurrently inserted portions of text with a well-defined order may be randomly interleaved on a character-by-character basis, resulting in an unreadable jumble of letters. Although this anomaly appears to be known informally by some researchers in the field, we are not aware of any published work that fully explains or addresses it. We show that several algorithms suffer from this problem, explain its cause, and also identify a lesser variant of the anomaly that occurs in another algorithm. Moreover, we propose a specification of collaborative text editing that rules out the anomaly, and show how to prevent the lesser anomaly from occurring in one particular algorithm.},
+booktitle = {Proceedings of the 6th Workshop on Principles and Practice of Consistency for Distributed Data},
+articleno = {6},
+numpages = {7},
+keywords = {CRDTs, collaborative text editing, consistency, specification},
+location = {Dresden, Germany},
+series = {PaPoC '19}
+}
+
+@article{kleppmanverifyingstrongeventualconsistency,
+author = {Gomes, Victor B. F. and Kleppmann, Martin and Mulligan, Dominic P. and Beresford, Alastair R.},
+title = {Verifying strong eventual consistency in distributed systems},
+year = {2017},
+issue_date = {October 2017},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {1},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3133933},
+doi = {10.1145/3133933},
+abstract = {Data replication is used in distributed systems to maintain up-to-date copies of shared data across multiple computers in a network. However, despite decades of research, algorithms for achieving consistency in replicated systems are still poorly understood. Indeed, many published algorithms have later been shown to be incorrect, even some that were accompanied by supposed mechanised proofs of correctness. In this work, we focus on the correctness of Conflict-free Replicated Data Types (CRDTs), a class of algorithm that provides strong eventual consistency guarantees for replicated data. We develop a modular and reusable framework in the Isabelle/HOL interactive proof assistant for verifying the correctness of CRDT algorithms. We avoid correctness issues that have dogged previous mechanised proofs in this area by including a network model in our formalisation, and proving that our theorems hold in all possible network behaviours. Our axiomatic network model is a standard abstraction that accurately reflects the behaviour of real-world computer networks. Moreover, we identify an abstract convergence theorem, a property of order relations, which provides a formal definition of strong eventual consistency. We then obtain the first machine-checked correctness theorems for three concrete CRDTs: the Replicated Growable Array, the Observed-Remove Set, and an Increment-Decrement Counter. We find that our framework is highly reusable, developing proofs of correctness for the latter two CRDTs in a few hours and with relatively little CRDT-specific code.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {109},
+numpages = {28},
+keywords = {CRDTs, automated theorem proving, convergence, distributed systems, replication, strong eventual consistency, verification}
+}
+
+@misc{enea2019replicationawarelinearizability,
+      title={Replication-Aware Linearizability},
+      author={Constantin Enea and Suha Orhun Mutluergil and Gustavo Petri and Chao Wang},
+      year={2019},
+      eprint={1903.06560},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL},
+      url={https://arxiv.org/abs/1903.06560},
+}
+
+@inproceedings{lean_whitepaper,
+author = {Moura, Leonardo de and Ullrich, Sebastian},
+title = {The Lean 4 Theorem Prover and Programming Language},
+year = {2021},
+isbn = {978-3-030-79875-8},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+url = {https://doi.org/10.1007/978-3-030-79876-5_37},
+doi = {10.1007/978-3-030-79876-5_37},
+abstract = {Lean 4 is a reimplementation of the Lean interactive theorem prover (ITP) in Lean itself. It addresses many shortcomings of the previous versions and contains many new features. Lean 4 is fully extensible: users can modify and extend the parser, elaborator, tactics, decision procedures, pretty printer, and code generator. The new system has a hygienic macro system custom-built for ITPs. It contains a new typeclass resolution procedure based on tabled resolution, addressing significant performance problems reported by the growing user base. Lean 4 is also an efficient functional programming language based on a novel programming paradigm called functional but in-place. Efficient code generation is crucial for Lean users because many write custom proof automation procedures in Lean itself.},
+booktitle = {Automated Deduction – CADE 28: 28th International Conference on Automated Deduction, Virtual Event, July 12–15, 2021, Proceedings},
+pages = {625–635},
+numpages = {11}
+}
+
+@InProceedings{ayers_et_al:LIPIcs.ITP.2021.4,
+  author =	{Ayers, Edward W. and Jamnik, Mateja and Gowers, W. T.},
+  title =	{{A Graphical User Interface Framework for Formal Verification}},
+  booktitle =	{12th International Conference on Interactive Theorem Proving (ITP 2021)},
+  pages =	{4:1--4:16},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-188-7},
+  ISSN =	{1868-8969},
+  year =	{2021},
+  volume =	{193},
+  editor =	{Cohen, Liron and Kaliszyk, Cezary},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ITP.2021.4},
+  URN =		{urn:nbn:de:0030-drops-138996},
+  doi =		{10.4230/LIPIcs.ITP.2021.4},
+  annote =	{Keywords: User Interfaces, ITP}
+}
+
+@misc{yang2023leandojotheoremprovingretrievalaugmented,
+      title={LeanDojo: Theorem Proving with Retrieval-Augmented Language Models},
+      author={Kaiyu Yang and Aidan M. Swope and Alex Gu and Rahul Chalamala and Peiyang Song and Shixing Yu and Saad Godil and Ryan Prenger and Anima Anandkumar},
+      year={2023},
+      eprint={2306.15626},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2306.15626},
+}
+
+@misc{lean_grind,
+      title={The grind tactic},
+      author={{Lean Community}},
+      year={2024},
+      howpublished={Lean 4 Reference Manual},
+      url={https://lean-lang.org/doc/reference/latest/The--grind--tactic/}
+}
+
+
+@misc{lean_maps,
+      title={Lean Sets and Maps},
+      author={{Lean Community}},
+      year={2024},
+      howpublished={Lean 4 Reference Manual},
+      url={https://lean-lang.org/doc/reference/4.21.0-rc3///Basic-Types/Maps-and-Sets/#maps}
+}
+
+
+@misc{lean_blaster,
+      title={Lean-blaster: An SMT-based proof automation tactic for Lean 4},
+      author={{Input Output Global}},
+      year={2024},
+      howpublished={GitHub repository},
+      url={https://github.com/input-output-hk/Lean-blaster}
+}
+
+@InProceedings{lean_auto,
+author="Qian, Yicheng
+and Clune, Joshua
+and Barrett, Clark
+and Avigad, Jeremy",
+editor="Piskac, Ruzica
+and Rakamari{\'{c}}, Zvonimir",
+title="Lean-Auto: An Interface Between Lean 4 and Automated Theorem Provers",
+booktitle="Computer Aided Verification",
+year="2025",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="175--196",
+abstract="Proof automation is crucial to large-scale formal mathematics and software/hardware verification projects in ITPs. Sophisticated tools called hammers have been developed to provide general-purpose proof automation in ITPs such as Coq and Isabelle, leveraging the power of ATPs. An important component of a hammer is the translation algorithm from the ITP's logical system to the ATP's logical system. In this paper, we propose a novel translation algorithm for ITPs based on dependent type theory. The algorithm is implemented in Lean 4 under the name Lean-auto. When combined with ATPs, Lean-auto provides general-purpose, ATP-based proof automation in Lean 4 for the first time. Soundness of the main translation procedure is guaranteed, and experimental results suggest that our algorithm is sufficiently complete to automate the proof of many problems that arise in practical uses of Lean 4. We also find that Lean-auto solves more problems than existing tools on Lean 4's math library Mathlib4.",
+isbn="978-3-031-98682-6"
+}
+
+@inproceedings{lean_smt,
+author = {Mohamed, Abdalrhman and Mascarenhas, Tomaz and Khan, Harun and Barbosa, Haniel and Reynolds, Andrew and Qian, Yicheng and Tinelli, Cesare and Barrett, Clark},
+title = {lean-smt: An SMT Tactic for Discharging Proof Goals in Lean},
+year = {2025},
+isbn = {978-3-031-98681-9},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+url = {https://doi.org/10.1007/978-3-031-98682-6_11},
+doi = {10.1007/978-3-031-98682-6_11},
+abstract = {Lean is an increasingly popular proof assistant based on dependent type theory. Despite its success, it still lacks important automation features present in more seasoned proof assistants, such as the Sledgehammer tactic in Isabelle/HOL. A key aspect of Sledgehammer is the use of proof-producing SMT solvers to prove a translated proof goal and the reconstruction of the resulting proof into valid justifications for the original goal. We present lean-smt, a tactic providing this functionality in Lean. We detail how the tactic converts Lean goals into SMT problems and, more importantly, how it reconstructs SMT proofs into native Lean proofs. We evaluate the tactic on established benchmarks used to evaluate Sledgehammer's SMT integration, with promising results. We also evaluate lean-smt as a standalone proof checker for proofs of SMT-LIB problems. We show that lean-smt offers a smaller trusted core without sacrificing too much performance.},
+booktitle = {Computer Aided Verification: 37th International Conference, CAV 2025, Zagreb, Croatia, July 23-25, 2025, Proceedings, Part III},
+pages = {197--212},
+numpages = {16},
+location = {Zagreb, Croatia}
+}
+
+@misc{plausible,
+      title={Plausible: A counterexample generator for Lean 4},
+      author={{Lean Community}},
+      year={2024},
+      howpublished={Lean Reservoir},
+      url={https://reservoir.lean-lang.org/@leanprover-community/plausible}
+}
+
+@misc{song2025leancopilotlargelanguage,
+      title={Lean Copilot: Large Language Models as Copilots for Theorem Proving in Lean},
+      author={Peiyang Song and Kaiyu Yang and Anima Anandkumar},
+      year={2025},
+      eprint={2404.12534},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2404.12534},
+}
+@article{loom_paper,
+author = {Gladshtein, Vladimir and P\^{\i}rlea, George and Zhao, Qiyuan and Kurin, Vitaly and Sergey, Ilya},
+title = {Foundational Multi-Modal Program Verifiers},
+year = {2026},
+issue_date = {January 2026},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {10},
+number = {POPL},
+url = {https://doi.org/10.1145/3776719},
+doi = {10.1145/3776719},
+abstract = {Multi-modal program verification is a process of validating code against its specification using both dynamic and symbolic techniques, and proving its correctness by a combination of automated and interactive machine-assisted tools. In order to be trustworthy, such verification tools must themselves come with formal soundness proofs, establishing that any program verified in them against a certain specification does not violate the specification's statement when executed. Verification tools that are proven sound in a general-purpose proof assistant with a small trusted core are commonly referred to as foundational.    We present a framework that facilitates and streamlines construction of program verifiers that are both foundational and multi-modal. Our approach adopts the well-known idea of monadic shallow embedding of an executable program semantics into the programming language of a theorem prover based on higher-order logic, in our case, the Lean proof assistant. We provide a library of monad transformers for such semantics, encoding a variety of computational effects, including state, divergence, exceptions, and non-determinism. The key theoretical innovation of our work are monad transformer algebras that enable automated derivation of the respective sound verification condition generators. We show that proofs of the resulting verification conditions enjoy automation using off-the-shelf SMT solvers and allow for an interactive proof mode when automation fails. To demonstrate versatility of our framework, we instantiated it to embed two foundational multi-modal verifiers into Lean for reasoning about (1) distributed protocol safety and (2) Dafny-style specifications of imperative programs, and used them to mechanically verify a number of non-trivial case studies.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {77},
+numpages = {32},
+keywords = {Dijkstra monads, Lean, mechanised proofs, multi-modal verification}
+}
+
+@inproceedings{liquidhaskell_kuper,
+author = {Redmond, Patrick and Shen, Gan and Vazou, Niki and Kuper, Lindsey},
+title = {Verified Causal Broadcast with Liquid Haskell},
+year = {2023},
+isbn = {9781450398312},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3587216.3587222},
+doi = {10.1145/3587216.3587222},
+abstract = {Protocols to ensure that messages are delivered in causal order are a ubiquitous building block of distributed systems. For instance, distributed data storage systems can use causally ordered message delivery to ensure causal consistency, and CRDTs can rely on the existence of an underlying causally-ordered messaging layer to simplify their implementation. A causal delivery protocol ensures that when a message is delivered to a process, any causally preceding messages sent to the same process have already been delivered to it. While causal delivery protocols are widely used, verification of their correctness is less common, much less machine-checked proofs about executable implementations. We implemented a standard causal broadcast protocol in Haskell and used the Liquid Haskell solver-aided verification system to express and mechanically prove that messages will never be delivered to a process in an order that violates causality. We express this property using refinement types and prove that it holds of our implementation, taking advantage of Liquid Haskell’s underlying SMT solver to automate parts of the proof and using its manual theorem-proving features for the rest. We then put our verified causal broadcast implementation to work as the foundation of a distributed key-value store.},
+booktitle = {Proceedings of the 34th Symposium on Implementation and Application of Functional Languages},
+articleno = {6},
+numpages = {13},
+location = {Copenhagen, Denmark},
+series = {IFL '22}
+}
+
+@article{katarasynthesizingCRDTs,
+author = {Laddad, Shadaj and Power, Conor and Milano, Mae and Cheung, Alvin and Hellerstein, Joseph M.},
+title = {Katara: synthesizing CRDTs with verified lifting},
+year = {2022},
+issue_date = {October 2022},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {6},
+number = {OOPSLA2},
+url = {https://doi.org/10.1145/3563336},
+doi = {10.1145/3563336},
+abstract = {Conflict-free replicated data types (CRDTs) are a promising tool for designing scalable, coordination-free distributed systems. However, constructing correct CRDTs is difficult, posing a challenge for even seasoned developers. As a result, CRDT development is still largely the domain of academics, with new designs often awaiting peer review and a manual proof of correctness. In this paper, we present Katara, a program synthesis-based system that takes sequential data type implementations and automatically synthesizes verified CRDT designs from them. Key to this process is a new formal definition of CRDT correctness that combines a reference sequential type with a lightweight ordering constraint that resolves conflicts between non-commutative operations. Our process follows the tradition of work in verified lifting, including an encoding of correctness into SMT logic using synthesized inductive invariants and hand-crafted grammars for the CRDT state and runtime. Katara is able to automatically synthesize CRDTs for a wide variety of scenarios, from reproducing classic CRDTs to synthesizing novel designs based on specifications in existing literature. Crucially, our synthesized CRDTs are fully, automatically verified, eliminating entire classes of common errors and reducing the process of producing a new CRDT from a painstaking paper proof of correctness to a lightweight specification.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {173},
+numpages = {29},
+keywords = {distributed systems, program synthesis, replication, verification}
+}
+
+
+@article{quickchick,
+author = {Lampropoulos, Leonidas and Hicks, Michael and Pierce, Benjamin C.},
+title = {Coverage guided, property based testing},
+year = {2019},
+issue_date = {October 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3360607},
+doi = {10.1145/3360607},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {181},
+numpages = {29},
+keywords = {AFL, FuzzChick, QuickChick, coverage, fuzz testing, property-based testing, random testing}
+}
+
+@article{quickcheck_paper,
+author = {Claessen, Koen and Hughes, John},
+title = {QuickCheck: a lightweight tool for random testing of Haskell programs},
+year = {2000},
+issue_date = {Sept. 2000},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {35},
+number = {9},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/357766.351266},
+doi = {10.1145/357766.351266},
+abstract = {Quick Check is a tool which aids the Haskell programmer in formulating and testing properties of programs. Properties are described as Haskell functions, and can be automatically tested on random input, but it is also possible to define custom test data generators. We present a number of case studies, in which the tool was successfully used, and also point out some pitfalls to avoid. Random testing is especially suitable for functional programs because properties can be stated at a fine grain. When a function is built from separately tested components, then random testing suffices to obtain good coverage of the definition under test.},
+journal = {SIGPLAN Not.},
+month = sep,
+pages = {268–279},
+numpages = {12}
+}
+
+
+@article{isabelle_verification,
+author = {Gomes, Victor B. F. and Kleppmann, Martin and Mulligan, Dominic P. and Beresford, Alastair R.},
+title = {Verifying strong eventual consistency in distributed systems},
+year = {2017},
+issue_date = {October 2017},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {1},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3133933},
+doi = {10.1145/3133933},
+abstract = {Data replication is used in distributed systems to maintain up-to-date copies of shared data across multiple computers in a network. However, despite decades of research, algorithms for achieving consistency in replicated systems are still poorly understood. Indeed, many published algorithms have later been shown to be incorrect, even some that were accompanied by supposed mechanised proofs of correctness. In this work, we focus on the correctness of Conflict-free Replicated Data Types (CRDTs), a class of algorithm that provides strong eventual consistency guarantees for replicated data. We develop a modular and reusable framework in the Isabelle/HOL interactive proof assistant for verifying the correctness of CRDT algorithms. We avoid correctness issues that have dogged previous mechanised proofs in this area by including a network model in our formalisation, and proving that our theorems hold in all possible network behaviours. Our axiomatic network model is a standard abstraction that accurately reflects the behaviour of real-world computer networks. Moreover, we identify an abstract convergence theorem, a property of order relations, which provides a formal definition of strong eventual consistency. We then obtain the first machine-checked correctness theorems for three concrete CRDTs: the Replicated Growable Array, the Observed-Remove Set, and an Increment-Decrement Counter. We find that our framework is highly reusable, developing proofs of correctness for the latter two CRDTs in a few hours and with relatively little CRDT-specific code.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {109},
+numpages = {28},
+keywords = {CRDTs, automated theorem proving, convergence, distributed systems, replication, strong eventual consistency, verification}
+}
+
+@InProceedings{verifx_paper,
+  author =	{De Porre, Kevin and Ferreira, Carla and Gonzalez Boix, Elisa},
+  title =	{{VeriFx: Correct Replicated Data Types for the Masses}},
+  booktitle =	{37th European Conference on Object-Oriented Programming (ECOOP 2023)},
+  pages =	{9:1--9:45},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-281-5},
+  ISSN =	{1868-8969},
+  year =	{2023},
+  volume =	{263},
+  editor =	{Ali, Karim and Salvaneschi, Guido},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2023.9},
+  URN =		{urn:nbn:de:0030-drops-182028},
+  doi =		{10.4230/LIPIcs.ECOOP.2023.9},
+  annote =	{Keywords: distributed systems, eventual consistency, replicated data types, verification}
+}
+
+
+@misc{achim2025aristotleimolevelautomatedtheorem,
+      title={Aristotle: IMO-level Automated Theorem Proving}, 
+      author={Tudor Achim and Alex Best and Alberto Bietti and Kevin Der and Mathïs Fédérico and Sergei Gukov and Daniel Halpern-Leistner and Kirsten Henningsgard and Yury Kudryashov and Alexander Meiburg and Martin Michelsen and Riley Patterson and Eric Rodriguez and Laura Scharff and Vikram Shanker and Vladmir Sicca and Hari Sowrirajan and Aidan Swope and Matyas Tamas and Vlad Tenev and Jonathan Thomm and Harold Williams and Lawrence Wu},
+      year={2025},
+      eprint={2510.01346},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2510.01346}, 
+}
