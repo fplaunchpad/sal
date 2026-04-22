@@ -4,23 +4,19 @@ Sal is a Lean 4 framework for verifying state-based CRDTs and Mergeable Replicat
 
 The approach builds on the F★-based **Neem** framework of Soundarapandian, Nagar, Rastogi, and Sivaramakrishnan (OOPSLA 2025), which reduces RA-linearizability for a data type to a fixed set of VCs over `do`, `merge`, and `rc`. Sal is the Lean port of that reduction plus a multi-modal tactic, counterexample pipeline, and custom decidable set/map interfaces that make `grind` effective on RDT goals.
 
-## Paper
+## What's verified
 
-Pranav Ramesh, Vimala Soundarapandian, KC Sivaramakrishnan. *Sal: Multi-modal Verification of Replicated Data Types.*
+The suite currently contains **27 RDTs** — 18 CRDTs and 9 MRDTs — with all 24 RA-linearizability VCs closed on every one (648 kernel-verified VCs in total). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
-- PDF: <https://kcsrk.info/papers/sal_jan26.pdf>
+**CRDTs** ([`Sal/CRDTs/`](Sal/CRDTs)):
 
-The paper evaluates Sal on 13 RDTs (4 CRDTs + 9 MRDTs). Since publication the suite has grown to 24 RDTs (15 CRDTs + 9 MRDTs). A `papoc2026` branch snapshots the paper-artifact state.
+- Registers & counters: `Increment_Only_Counter`, `PN_Counter`, `LWW_Register`, `MAX_Register`, `MIN_Register`, `Multi_Valued_Register`, `Bounded_Counter` (Sypytkowski 2019 / Balegas et al. 2015 — PN-counter plus a sparse per-replica-pair `transfers` map for quota redistribution).
+- Sets & maps: `OR_Set`, `Grow_Only_Set`, `Grow_Only_Multiset`, `LWW_Element_Set`, `LWW_Map`, `MAX_Map`.
+- Sequences & structured data: `RGA` (Replicated Growable Array — the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`), `Peritext` (Litt et al. CSCW 2022 — rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`), `Shopping_Cart`, `Priority_Queue_Insert_Only`, `Add_Win_Priority_Queue` (adapted from Zhang et al. 2023).
 
-## Headline result
+**MRDTs** ([`Sal/MRDTs/`](Sal/MRDTs)):
 
-Paper-reported results, 13 case studies, 312 VCs total (24 per RDT):
-
-- **215 VCs (68.9%)** with kernel-verified automation (`dsimp + grind`) — TCB not enlarged.
-- **87 VCs (27.9%)** with `lean-blaster` (SMT-aided, enlarges the TCB to include Z3).
-- **9 VCs (3.0%)** via interactive proving, all closed using Harmonic's Aristotle, whose outputs are kernel-checked so the TCB is still not enlarged.
-
-Post-paper state (all 24 RDTs combined, v4.28.0 + Blaster fork): every `by sal` call is the paper's 3-stage pipeline. The 11 additional CRDTs were proved with a uniform kernel-verifiable pattern (`rcases + simp +decide [*] + grind`) on v4.28 without invoking Blaster for most VCs — so the live DG/LB/ITP breakdown differs from the paper's and will eventually be reported separately.
+- `Increment_Only_Counter`, `PN_Counter`, `Multi_Valued_Register`, `Grow_Only_Set`, `Grow_Only_Map`, `OR_Set`, `OR_Set_Efficient`, `Replicated_Growable_Array`, `Enable_Wins_Flag` (intentionally buggy — drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`).
 
 ## The `sal` tactic
 
@@ -28,9 +24,9 @@ The tactic lives in [`Sal/Tactic/Sal.lean`](Sal/Tactic/Sal.lean) and tries three
 
 1. **`dsimp` + `grind`** — lightweight SMT-style automation with proof reconstruction; the result is a kernel-checkable proof term. This stage is preferred because it does not enlarge the TCB. We deliberately skip `aesop` at this stage because its verification times on these RDT goals were prohibitive.
 2. **`lean-blaster`** — encodes the goal to Z3. More powerful (especially for higher-order functions and lambdas) but sacrifices proof reconstruction, so the TCB grows to include the SMT solver. Invoked with a wall-clock timeout (default 30 s) so a stuck goal cannot hang.
-3. **`dsimp` + `aesop` + `all_goals (try grind)`** — a broader proof-search fallback. Remaining goals are then typically closed interactively with tactics produced by Aristotle.
+3. **`dsimp` + `aesop` + `all_goals (try grind)`** — a broader proof-search fallback. Remaining goals are then typically closed interactively with tactics produced by Harmonic's Aristotle, whose outputs are kernel-checked so the TCB is still not enlarged.
 
-Stages 1 and 3 are guarded against `sorryAx` in the resulting proof term: aesop's default mode can otherwise close a goal with a silent `sorry` placeholder. Stage 2 is intentionally *not* guarded, because Blaster trusts Z3's "valid" verdict via `MVarId.admit` — that is Blaster's TCB-enlarging mechanism, and matches what the paper counts as the LB stage.
+Stages 1 and 3 are guarded against `sorryAx` in the resulting proof term: aesop's default mode can otherwise close a goal with a silent `sorry` placeholder. Stage 2 is intentionally *not* guarded, because Blaster trusts Z3's "valid" verdict via `MVarId.admit` — that is Blaster's TCB-enlarging mechanism.
 
 The tactic takes a heartbeat budget (default 400 000) that caps Lean-side elaboration across all three stages, and a separate `smtTimeoutSec` budget (default 30 s) for the SMT stage. See the docstring in `Sal.lean` for how to tune them.
 
@@ -41,6 +37,8 @@ import Sal.Tactic.Sal
 
 example (a b : Nat) : a + b = b + a := by sal
 ```
+
+Many post-paper CRDTs in the suite are proved with a uniform kernel-verifiable pattern — `rcases` over the operation family, `refine ⟨?_, …, ?_⟩` to split the state's components, then `simp +decide [*]` and `grind` — and avoid Blaster entirely. A few stubborn VCs still need Blaster or an Aristotle-assisted intermediate lemma (e.g. `LWW_Map_CRDT` uses `merge_do_lex_max`); those calls stay inside the three-stage pipeline.
 
 ## Custom set and map interfaces
 
@@ -56,17 +54,43 @@ structure map (key : Type) [DecidableEq key] (value : Type) where
 
 Every lemma on these types is annotated with `@[simp, grind]` and (where useful) a `grind_pattern`, building a domain-specific rewrite database that lets `grind` discharge set/map goals without SMT assistance. Files live in [`Sal/Interfaces/`](Sal/Interfaces).
 
+The Boolean-predicate representation is grind-friendly only as a *top-level* state component. Nesting a `set` inside a map value — e.g. `map K (set V)` — forces grind to prove function equality via `funext` and typically defeats it. Where possible, flatten: represent `map K (set V)` as `set (K × V)`. The Peritext CRDT is the clearest example in the suite: its formatting marks were originally a `map (OpId × Bool) (set MarkOp)`, which left 5 of 24 VCs stuck; flattening to a top-level `set AnchorAttachment` closes all 24.
+
 ## Counterexample generation and visualization
 
 When automation fails because the implementation is actually wrong, Sal makes the failure inspectable rather than opaque:
 
-- **Plausible** generates concrete counterexamples for decidable VCs. The canonical demo is the enable-wins flag MRDT, which contains a known bug from prior work (the `inter_right_1op` VC fails); Plausible rediscovers a minimal failing execution automatically. See [`Sal/MRDTs/Enable_Wins_Flag_MRDT.lean`](Sal/MRDTs/Enable_Wins_Flag_MRDT.lean).
-- **ProofWidgets trace visualizer.** A [logging-style writer monad](https://leanprover.github.io/functional_programming_in_lean/monads.html#logging) instruments `do` and `merge` to record intermediate states, and a ProofWidgets component renders the LCA, left branch, right branch, and merge result as a vertical diagram (paper Figure 3). See [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization).
-- **Universe tracking for functional sets.** Since Sal's `set` type is a `α → Bool` predicate and may be infinite, the visualizer augments abstract sets with a concrete `HashSet` of elements added or removed during execution, so the state can be displayed concretely (paper §3.3).
+- **Plausible** generates concrete counterexamples for decidable VCs. The canonical demo is the Enable-Wins Flag MRDT, which contains a known bug from prior work (the `inter_right_1op` VC fails); Plausible rediscovers a minimal failing execution automatically. See [`Sal/Counterexample_Visualization/WriterMonad_Enable_Wins_Flag.lean`](Sal/Counterexample_Visualization/WriterMonad_Enable_Wins_Flag.lean).
+- **ProofWidgets trace visualizer.** A [logging-style writer monad](https://leanprover.github.io/functional_programming_in_lean/monads.html#logging) instruments `do` and `merge` to record intermediate states, and a ProofWidgets component renders the LCA, left branch, right branch, and merge result as a vertical diagram. See [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization).
+- **Universe tracking for functional sets.** Since Sal's `set` type is a `α → Bool` predicate and may be infinite, the visualizer augments abstract sets with a concrete `HashSet` of elements added or removed during execution, so the state can be displayed concretely.
 
-## Benchmark results
+## Steps to run
 
-Per paper Table 2 (DG = `dsimp + grind`; LB = `lean-blaster`; ITP = Aristotle-assisted interactive proof):
+Clone this repository, then install [elan](https://github.com/leanprover/elan) (the Lean toolchain manager). `elan` will read `lean-toolchain` and install Lean `v4.28.0` on first use. From the repo root, run `lake exe cache get` to download the prebuilt Mathlib oleans — this takes a few minutes and is required before any file will type-check in a reasonable time.
+
+`lake update` is safe to run — `lakefile.toml` pins `mathlib` to `v4.28.0` and pins `Blaster` to the `chore-bump-lean-4.28` branch of [`kayceesrk/Lean-blaster`](https://github.com/kayceesrk/Lean-blaster), a fork whose upstream (`input-output-hk/Lean-blaster`) does not yet have a v4.28-compatible branch. Once the upstream catches up we will switch back.
+
+Open each Lean file in VS Code to run the verification conditions interactively, or run `lake lean <path-to-file.lean>` from the command line. The `run_files.sh` script checks every `.lean` file under a given directory.
+
+## Repository layout
+
+- [`Sal/Interfaces/`](Sal/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
+- [`Sal/Tactic/`](Sal/Tactic) — the `sal` tactic (`Sal.lean`) and usage examples (`SalExample.lean`).
+- [`Sal/CRDTs/`](Sal/CRDTs) — 18 state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature.
+- [`Sal/MRDTs/`](Sal/MRDTs) — 9 state-based MRDTs.
+- [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
+
+## Paper
+
+Pranav Ramesh, Vimala Soundarapandian, KC Sivaramakrishnan. *Sal: Multi-modal Verification of Replicated Data Types.*
+
+- PDF: <https://kcsrk.info/papers/sal_jan26.pdf>
+
+The paper evaluates Sal on 13 RDTs (4 CRDTs + 9 MRDTs), 312 VCs total (24 per RDT). The breakdown across the three stages (DG = `dsimp + grind`; LB = `lean-blaster`; ITP = Aristotle-assisted interactive proof):
+
+- **215 VCs (68.9%)** via DG — TCB not enlarged.
+- **87 VCs (27.9%)** via LB — TCB enlarged to include Z3.
+- **9 VCs (3.0%)** via ITP, all closed using Aristotle, whose outputs are kernel-checked — TCB not enlarged.
 
 | **RDT**                          | **DG** | **LB** | **ITP** |
 |----------------------------------|:------:|:------:|:-------:|
@@ -86,21 +110,7 @@ Per paper Table 2 (DG = `dsimp + grind`; LB = `lean-blaster`; ITP = Aristotle-as
 
 Two patterns from the paper: MRDTs generally need less SMT than CRDTs because three-way merges express causality directly, and map-based reasoning stresses current Lean automation more than set-based reasoning (the 8 remaining ITP goals are concentrated in map-heavy RDTs).
 
-## Steps to run
-
-Clone this repository, then install [elan](https://github.com/leanprover/elan) (the Lean toolchain manager). `elan` will read `lean-toolchain` and install Lean `v4.28.0` on first use. From the repo root, run `lake exe cache get` to download the prebuilt Mathlib oleans — this takes a few minutes and is required before any file will type-check in a reasonable time.
-
-`lake update` is safe to run — `lakefile.toml` pins `mathlib` to `v4.28.0` and pins `Blaster` to the `chore-bump-lean-4.28` branch of [`kayceesrk/Lean-blaster`](https://github.com/kayceesrk/Lean-blaster), a fork whose upstream (`input-output-hk/Lean-blaster`) does not yet have a v4.28-compatible branch. Once the upstream catches up we will switch back.
-
-Open each Lean file in VS Code to run the verification conditions interactively, or run `lake lean <path-to-file.lean>` from the command line. The `run_files.sh` script checks every `.lean` file under a given directory.
-
-## Repository layout
-
-- [`Sal/Interfaces/`](Sal/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
-- [`Sal/Tactic/`](Sal/Tactic) — the `sal` tactic (`Sal.lean`) and usage examples (`SalExample.lean`).
-- [`Sal/CRDTs/`](Sal/CRDTs) — state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature. Contains the paper's 4 CRDTs (`Increment_Only_Counter_CRDT`, `Multi_Valued_Register_CRDT`, `OR_Set_CRDT`, `PN_Counter_CRDT`) together with 14 additional post-paper CRDTs, all 24/24 VC-closed: LWW / MAX / MIN registers, LWW Element Set, LWW Map, MAX Map, Grow-Only Set / Multiset, Shopping Cart, insert-only Priority Queue, an Add-Win CRPQ adapted from Zhang et al. 2023, a Bounded Counter (Sypytkowski 2019 / Balegas et al. 2015 — PN-counter plus a sparse per-replica-pair `transfers` map for quota redistribution), a state-based RGA (Replicated Growable Array — the classic sequence CRDT underlying Automerge / Yjs, here in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`), and Peritext (Litt et al. CSCW 2022 — rich text = RGA + mark ops as a flat `set AnchorAttachment` where `AnchorAttachment := OpId × Bool × MarkOp`; flattening the naive `map anchor (set MarkOp)` to a top-level `set` was the structural insight that let `grind` close all 24 VCs, aligning with the paper's rationale for defining `set α := α → Bool`). Git history (`papoc2026` branch) distinguishes paper-era from post-paper files.
-- [`Sal/MRDTs/`](Sal/MRDTs) — state-based MRDTs; the paper's 9 benchmarks.
-- [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
+Since publication the suite has grown from 13 to 27 RDTs, and most of the added CRDTs were proved with the uniform kernel-verifiable pattern described under *The `sal` tactic*, without invoking Blaster for the majority of VCs. A refreshed DG/LB/ITP breakdown across all 27 RDTs is future work. The [`papoc2026`](https://github.com/kayceesrk/sal/tree/papoc2026) branch snapshots the repo at the paper-artifact state.
 
 ## License
 
