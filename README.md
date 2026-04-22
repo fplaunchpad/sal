@@ -38,7 +38,7 @@ import Sal.Tactic.Sal
 example (a b : Nat) : a + b = b + a := by sal
 ```
 
-Many post-paper CRDTs in the suite are proved with a uniform kernel-verifiable pattern — `rcases` over the operation family, `refine ⟨?_, …, ?_⟩` to split the state's components, then `simp +decide [*]` and `grind` — and avoid Blaster entirely. A few stubborn VCs still need Blaster or an Aristotle-assisted intermediate lemma (e.g. `LWW_Map_CRDT` uses `merge_do_lex_max`); those calls stay inside the three-stage pipeline.
+Many post-paper CRDTs in the suite are proved with a uniform kernel-verifiable pattern — `rcases` over the operation family, `refine ⟨?_, …, ?_⟩` to split the state's components, then `simp +decide [*]` and `grind` — and avoid Blaster entirely. A few stubborn VCs still need Blaster or an Aristotle-assisted intermediate lemma (e.g. `LWW_Map_CRDT` uses `merge_do_lex_max`); those calls stay inside the three-stage pipeline. For the full recipe of translating an op-based CRDT into Sal's state-based signature and closing the 24 VCs, see [`docs/porting.md`](docs/porting.md).
 
 ## Custom set and map interfaces
 
