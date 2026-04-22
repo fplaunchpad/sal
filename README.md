@@ -72,6 +72,10 @@ Clone this repository, then install [elan](https://github.com/leanprover/elan) (
 
 Open each Lean file in VS Code to run the verification conditions interactively, or run `lake lean <path-to-file.lean>` from the command line. The `run_files.sh` script checks every `.lean` file under a given directory.
 
+## Interactive playgrounds
+
+Per-CRDT browser demos live in [`demos/`](demos). Each spins up three replicas, lets you apply local ops and merge any pair, and toggles between the abstract view (what users see) and the concrete lattice state (what makes merge work). Phase 1 ships Increment-Only Counter, PN-Counter, and OR-Set; the rest follow the same harness. See [`demos/README.md`](demos/README.md) for local development and deployment.
+
 ## Repository layout
 
 - [`Sal/Interfaces/`](Sal/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
@@ -79,6 +83,8 @@ Open each Lean file in VS Code to run the verification conditions interactively,
 - [`Sal/CRDTs/`](Sal/CRDTs) — 18 state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature.
 - [`Sal/MRDTs/`](Sal/MRDTs) — 9 state-based MRDTs.
 - [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
+- [`demos/`](demos) — Vite + React + TypeScript playgrounds hosting an interactive simulator per CRDT (hand-ported from the Lean specs).
+- [`docs/porting.md`](docs/porting.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
 
 ## Paper
 
