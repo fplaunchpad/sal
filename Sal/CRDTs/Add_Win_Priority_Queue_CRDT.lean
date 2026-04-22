@@ -64,16 +64,23 @@ the per-record accumulation behaviour vs the paper, but preserves:
 Rmv's effect is a pointwise ∨ over R, which is idempotent-commutative).
 -/
 
+/-- Σ = (A, I, R) where
+  * A : map `(elem, add_ts) → innate value`,
+  * I : set of `(elem, inc_ts, amount)` increment records,
+  * R : set of `(elem, add_ts)` tombstones over A. -/
 @[simp] abbrev concrete_st :=
   map (ℕ × ℕ) ℕ × set (ℕ × ℕ × ℤ) × set (ℕ × ℕ)
 
+/-- Zero-default lookup on `A`. -/
 @[simp]
 def mysel (s : map (ℕ × ℕ) ℕ) (k : ℕ × ℕ) : ℕ :=
   if (contains s k) then (sel s k) else 0
 
+/-- Initial state: empty A, I, R. -/
 @[simp]
 def init_st : concrete_st := (const_on empty 0, empty, empty)
 
+/-- Pointwise equality on each of the three components. -/
 @[simp]
 def eq (a b : concrete_st) :=
   (forall k : ℕ × ℕ, (contains (Prod.fst a) k = contains (Prod.fst b) k) ∧
@@ -81,6 +88,12 @@ def eq (a b : concrete_st) :=
   (forall x : ℕ × ℕ × ℤ, (Prod.fst (Prod.snd a)) x = (Prod.fst (Prod.snd b)) x) ∧
   (forall x : ℕ × ℕ, (Prod.snd (Prod.snd a)) x = (Prod.snd (Prod.snd b)) x)
 
+/-- Three ops:
+  * `Add e v`    — stake a new add record at the op's `ts`.
+  * `Inc e a`    — record a priority increment of `a` for element `e`.
+  * `Rmv e D`    — tombstone the snapshot `D` of observed add records
+                   for `e`. The tombstone payload `D` is carried in the
+                   op, which is what makes `rc := Either` everywhere. -/
 inductive app_op_t : Type where
 | Add (elem : ℕ) (value : ℕ)
 | Inc (elem : ℕ) (amount : ℤ)
@@ -96,6 +109,10 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect:
+  * `Add`  writes A[(elem, ts)] := value.
+  * `Inc`  unions `{(elem, ts, amount)}` into I (pointwise ∨).
+  * `Rmv`  unions the prepare-time snapshot `D` into R (pointwise ∨). -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=
 match o with
@@ -117,6 +134,9 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: because `Rmv` carries its own tombstone set in the
+payload, `do_` doesn't read A when applying a Rmv, so Add-vs-Rmv pairs
+commute at the state level. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -124,6 +144,8 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key max on `A` (values agree under `distinct_ops`), and
+pointwise union on `I` and `R`. Three grow-only components. -/
 @[simp]
 def merge (a b : concrete_st) : concrete_st :=
   let keys_A := union (domain (Prod.fst a)) (domain (Prod.fst b))

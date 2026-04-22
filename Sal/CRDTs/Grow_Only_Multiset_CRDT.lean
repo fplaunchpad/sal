@@ -18,19 +18,23 @@ that `(rid, eid)` pair. Merge takes the per-key maximum so counts are never
 lost.
 -/
 
+/-- Σ = map `(rid, eid)` → per-replica count of that element. -/
 @[simp] abbrev concrete_st := map (ℕ × ℕ) Int
-/- keys: (replica id, element id), values: count of Add operations -/
 
+/-- Zero-default lookup: unseen `(rid, eid)` pairs read as 0. -/
 @[simp]
 def mysel (s: concrete_st) (k: ℕ × ℕ) : Int :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: empty map. -/
 @[simp]
 def init_st : concrete_st := const_on empty 0
 
+/-- Pointwise equality over both pair components. -/
 @[simp]
 def eq (a b: concrete_st) := (forall k:ℕ×ℕ, (contains a k = contains b k) ∧ (mysel a k = mysel b k))
 
+/-- Only op: `Add eid` bumps the sender's count for that element. -/
 inductive app_op_t : Type where
 | Add (eid : ℕ)
 
@@ -44,6 +48,9 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `state[(rid, eid)] += 1`. Each replica owns its own
+`(rid, _)` keys, so ops from distinct replicas write to disjoint
+slots. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -54,6 +61,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: slots are partitioned by `rid` so disjoint-replica
+adds commute; same-replica same-eid adds are idempotent under max-merge. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -61,6 +70,8 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key max on `Int`. Counts only grow, so the multiplicity
+of any element monotonically climbs. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys := union (domain a) (domain b)

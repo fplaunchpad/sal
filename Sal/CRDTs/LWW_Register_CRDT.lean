@@ -22,14 +22,21 @@ tiebreak is there only to make `merge` and `do_` total on arbitrary
 pairs so the VCs hold on unconstrained state parameters.
 -/
 
+/-- Σ = `(timestamp, value)`. Interpretation: the register's current
+value is the second component; the first is the timestamp of the write
+that installed it. -/
 @[simp] abbrev concrete_st := ℕ × ℕ
 
+/-- Initial state: `(0, 0)`. Zero timestamp is a sentinel for "never
+written"; `distinct_ops` guarantees real ops have `ts > 0`. -/
 @[simp]
 def init_st : concrete_st := (0, 0)
 
+/-- Plain product equality. -/
 @[simp]
 def eq (a b : concrete_st) := a = b
 
+/-- Only op: `Write v` proposes replacing the register with `v`. -/
 inductive app_op_t : Type where
 | Write (v : ℕ)
 
@@ -43,6 +50,9 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Lexicographic max on `(ts, value)`: higher `ts` wins; ties
+broken by larger `value`. Used by both `do_` and `merge` so the two
+agree on arbitrary equal-ts state pairs. -/
 @[simp]
 def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=
   if a.1 > b.1 then a
@@ -50,6 +60,8 @@ def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=
   else if a.2 ≥ b.2 then a
   else b
 
+/-- Effect: `do_ s (Write v)` = `lex_max s (ts, v)` — the incoming
+write wins iff it has the newer ts (or same ts with larger value). -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=
 match o with
@@ -60,6 +72,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `lex_max` is commutative/associative/idempotent, so
+any two Writes commute at the state level regardless of value. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -67,6 +81,8 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: lex-max on the two state pairs. Same operator as `do_`, so
+the 24 VCs reduce to lattice facts about `lex_max`. -/
 @[simp]
 def merge (a b : concrete_st) : concrete_st := lex_max a b
 

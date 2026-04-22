@@ -19,18 +19,23 @@ value-tiebreak in `merge` failed `lem_0op` on arbitrary equal-timestamp
 state pairs.
 -/
 
+/-- Σ = map key → `(timestamp, value)`. Per-key LWW cell. -/
 @[simp] abbrev concrete_st := map ℕ (ℕ × ℕ)
 
+/-- `(0,0)`-default lookup: unseen keys read as "never written". -/
 @[simp]
 def mysel (s: concrete_st) (k: ℕ) : ℕ × ℕ :=
 if (contains s k) then (sel s k) else (0, 0)
 
+/-- Initial state: empty map. -/
 @[simp]
 def init_st : concrete_st := const_on empty (0, 0)
 
+/-- Pointwise equality on domain + per-key cell. -/
 @[simp]
 def eq (a b: concrete_st) := (forall k:ℕ, (contains a k = contains b k) ∧ (mysel a k = mysel b k))
 
+/-- Only op: `Write k v`. -/
 inductive app_op_t : Type where
 | Write (k : ℕ) (v : ℕ)
 
@@ -44,6 +49,9 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Lex-max on `(ts, value)`: higher ts wins; ties broken by larger
+value. Used by both `do_` and `merge` — the shared operator is what
+makes `lem_0op` go through on arbitrary equal-ts state pairs. -/
 @[simp, grind]
 def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=
   if a.1 > b.1 then a
@@ -51,6 +59,7 @@ def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=
   else if a.2 ≥ b.2 then a
   else b
 
+/-- Effect: per-key `lex_max` with the incoming `(ts, v)`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -61,6 +70,7 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `lex_max` is commutative/associative/idempotent. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -68,6 +78,7 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key `lex_max` over the union of domains. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys := union (domain a) (domain b)

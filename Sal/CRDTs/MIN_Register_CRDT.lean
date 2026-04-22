@@ -17,14 +17,20 @@ the RA-linearizability VCs are lattice facts about `min`, so all 24
 close by sal's DG stage.
 -/
 
+/-- Σ = single ℕ. -/
 @[simp] abbrev concrete_st := ℕ
 
+/-- Initial state: 0. Note: with `min` on ℕ this is absorbing —
+the state stays 0 forever, which is the semantic-degeneracy flagged
+in the module docstring. -/
 @[simp]
 def init_st : concrete_st := 0
 
+/-- Plain equality. -/
 @[simp]
 def eq (a b : concrete_st) := a = b
 
+/-- Only op: `Write v`. -/
 inductive app_op_t : Type where
 | Write (v : ℕ)
 
@@ -38,6 +44,7 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `s := min(s, v)`. Monotonically non-increasing. -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=
 match o with
@@ -48,6 +55,7 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `min` is commutative-idempotent. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -55,6 +63,7 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: `min`. -/
 @[simp]
 def merge (a b : concrete_st) : concrete_st := min a b
 

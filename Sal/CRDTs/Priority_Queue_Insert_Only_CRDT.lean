@@ -24,19 +24,26 @@ reads the state and takes the minimum key prefix. State-based Pop
 generally requires extra tombstone machinery and is left as follow-up.
 -/
 
+/-- Σ = map `(prio, rid, ts)` → element id. Keys are globally unique
+because of `distinct_ops` on `ts`, so two distinct ops never collide. -/
 @[simp] abbrev concrete_st := map (ℕ × ℕ × ℕ) ℕ
 
+/-- Zero-default lookup. -/
 @[simp]
 def mysel (s: concrete_st) (k : ℕ × ℕ × ℕ) : ℕ :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: empty map. -/
 @[simp]
 def init_st : concrete_st := const_on empty 0
 
+/-- Pointwise equality. -/
 @[simp]
 def eq (a b : concrete_st) :=
   (forall k : ℕ × ℕ × ℕ, (contains a k = contains b k) ∧ (mysel a k = mysel b k))
 
+/-- Only op: `Push prio elem` inserts `elem` at priority `prio`. No
+state-based Pop (that needs tombstone machinery; left as follow-up). -/
 inductive app_op_t : Type where
 | Push (prio : ℕ) (elem : ℕ)
 
@@ -50,6 +57,9 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: stake `elem` at key `(prio, rid, ts)`. Taking `max` with
+the existing value at that slot makes `do_` total even on the
+impossible case of a duplicate key (which `distinct_ops` rules out). -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=
 match o with
@@ -61,6 +71,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: every op stakes a unique key by `distinct_ops`, so
+any two ops commute. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -68,6 +80,7 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key max over the union of domains. -/
 @[simp]
 def merge (a b : concrete_st) : concrete_st :=
   let keys := union (domain a) (domain b)
