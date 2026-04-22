@@ -153,16 +153,32 @@ def opid_max (a b : OpId) : OpId :=
 abbrev MarkOp :=
   OpId × OpId × Bool × OpId × Bool × ℕ × Bool
 
+/-- An "anchor attachment": a single mark op attached at a specific
+`(anchor_charId, anchor_side)` position. A single mark op typically
+appears as two `AnchorAttachment`s in state — one for its start
+anchor, one for its end anchor.
+
+Flattening the paper's `Map anchor (Set MarkOp)` layout into a
+single top-level `set AnchorAttachment` keeps the state as a
+product of simple `map`s and `set`s (Sal's `a → Bool` predicate
+type) — which the 24 VCs' automation handles natively — instead of
+nesting a `set` inside a `map` value, which would defeat `grind`'s
+pointwise reasoning (function-valued map entries need `funext`). -/
+abbrev AnchorAttachment :=
+  OpId × Bool × MarkOp
+  -- (anchor_charId, anchor_side, markOp)
+
 /-- State: `(chars, afters, deleted, marks)`.
 
 First three are the RGA grow-only character components. The fourth
-is a grow-only map from anchor keys `(OpId × Bool)` — meaning `(char
-opId, side)` — to sets of mark ops attached at that anchor. -/
+is a flat grow-only set of anchor attachments: each element says
+"mark op M is attached at the `side` anchor of character with opId
+`charId`". -/
 @[simp] abbrev concrete_st :=
   map OpId ℕ ×
   map OpId OpId ×
   map OpId Bool ×
-  map (OpId × Bool) (set MarkOp)
+  set AnchorAttachment
 
 /-- Zero-default lookup on `chars`. -/
 @[simp]
@@ -179,21 +195,16 @@ def mysel_a (s : map OpId OpId) (k : OpId) : OpId :=
 def mysel_d (s : map OpId Bool) (k : OpId) : Bool :=
   if (contains s k) then (sel s k) else false
 
-/-- Empty-set-default lookup on `marks`. Used so that a missing
-anchor key reads as "no marks attached here". -/
-@[simp]
-def mysel_m (s : map (OpId × Bool) (set MarkOp)) (k : OpId × Bool) : set MarkOp :=
-  if (contains s k) then (sel s k) else empty
-
 /-- Initial state: no chars, no afters, no tombstones, no marks. -/
 @[simp]
 noncomputable def init_st : concrete_st :=
   (const_on empty 0,
    const_on empty (0, 0),
    const_on empty false,
-   const_on empty empty)
+   empty)
 
-/-- Pointwise state equality: four ∀-conjuncts, one per component. -/
+/-- Pointwise state equality: three ∀-conjuncts over map keys, one
+per map component, plus one ∀-conjunct over the flat marks set. -/
 @[simp]
 def eq (a b : concrete_st) :=
   (forall k, (contains (Prod.fst a) k = contains (Prod.fst b) k) ∧
@@ -204,10 +215,7 @@ def eq (a b : concrete_st) :=
                contains (Prod.fst (Prod.snd (Prod.snd b))) k) ∧
              (mysel_d (Prod.fst (Prod.snd (Prod.snd a))) k =
                mysel_d (Prod.fst (Prod.snd (Prod.snd b))) k)) ∧
-  (forall k, (contains (Prod.snd (Prod.snd (Prod.snd a))) k =
-               contains (Prod.snd (Prod.snd (Prod.snd b))) k) ∧
-             (mysel_m (Prod.snd (Prod.snd (Prod.snd a))) k =
-               mysel_m (Prod.snd (Prod.snd (Prod.snd b))) k))
+  (forall x, (Prod.snd (Prod.snd (Prod.snd a))) x = (Prod.snd (Prod.snd (Prod.snd b))) x)
 
 /-- User-level operations. `Insert`/`Remove` are inherited from the
 RGA substrate; `AddMark`/`RemoveMark` are Peritext-specific. -/
@@ -262,8 +270,9 @@ match o with
 | (ts, (rid, app_op_t.AddMark sId sSd eId eSd mt)) =>
     let mark : MarkOp := ((ts, rid), sId, sSd, eId, eSd, mt, true)
     let m := Prod.snd (Prod.snd (Prod.snd s))
-    let m1 := upd m (sId, sSd) (add mark (mysel_m m (sId, sSd)))
-    let m2 := upd m1 (eId, eSd) (add mark (mysel_m m1 (eId, eSd)))
+    -- Add two anchor attachments: start and end.
+    let m1 := add ((sId, sSd, mark) : AnchorAttachment) m
+    let m2 := add ((eId, eSd, mark) : AnchorAttachment) m1
     (Prod.fst s,
      Prod.fst (Prod.snd s),
      Prod.fst (Prod.snd (Prod.snd s)),
@@ -271,8 +280,8 @@ match o with
 | (ts, (rid, app_op_t.RemoveMark sId sSd eId eSd mt)) =>
     let mark : MarkOp := ((ts, rid), sId, sSd, eId, eSd, mt, false)
     let m := Prod.snd (Prod.snd (Prod.snd s))
-    let m1 := upd m (sId, sSd) (add mark (mysel_m m (sId, sSd)))
-    let m2 := upd m1 (eId, eSd) (add mark (mysel_m m1 (eId, eSd)))
+    let m1 := add ((sId, sSd, mark) : AnchorAttachment) m
+    let m2 := add ((eId, eSd, mark) : AnchorAttachment) m1
     (Prod.fst s,
      Prod.fst (Prod.snd s),
      Prod.fst (Prod.snd (Prod.snd s)),
@@ -308,11 +317,7 @@ noncomputable def merge (a b : concrete_st) : concrete_st :=
   let u_d := const_on keys_d false
   let d := iter_upd (fun k _ => max (mysel_d (Prod.fst (Prod.snd (Prod.snd a))) k)
                                      (mysel_d (Prod.fst (Prod.snd (Prod.snd b))) k)) u_d
-  let keys_m := union (domain (Prod.snd (Prod.snd (Prod.snd a))))
-                      (domain (Prod.snd (Prod.snd (Prod.snd b))))
-  let u_m := const_on keys_m (empty : set MarkOp)
-  let m := iter_upd (fun k _ => union (mysel_m (Prod.snd (Prod.snd (Prod.snd a))) k)
-                                       (mysel_m (Prod.snd (Prod.snd (Prod.snd b))) k)) u_m
+  let m := union (Prod.snd (Prod.snd (Prod.snd a))) (Prod.snd (Prod.snd (Prod.snd b)))
   (c, af, d, m)
 
 set_option maxHeartbeats 0
@@ -371,7 +376,13 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: per-component decomposition pattern leaves ~2-4 residual branches with set-union + double-upd that grind can't close; awaits Aristotle
+:= by
+  intro h
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem inter_right_base_2op (a b: concrete_st) (o1 o2 ob ol:op_t) :
@@ -442,7 +453,13 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches with set-union under nested upd remain
+:= by
+  intro h
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _ | _⟩ <;>
+    rcases o1' with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem base_1op (o1:op_t) :
@@ -458,7 +475,12 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
+:= by
+  intro h
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases ol with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem inter_right_base_1op (a b :concrete_st) (o1 ob ol:op_t) :
@@ -518,7 +540,13 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
-:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
+:= by
+  intro h
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o1' with ⟨_, _, _ | _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
@@ -526,7 +554,13 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
+:= by
+  intro h
+  rcases o2 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o2' with ⟨_, _, _ | _ | _ | _⟩ <;>
+    rcases ol with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
