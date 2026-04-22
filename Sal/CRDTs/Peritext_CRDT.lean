@@ -321,10 +321,13 @@ set_option maxHeartbeats 0
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
 →
-(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by sorry
--- TODO: `by sal` hangs in combinatorial search (4-way rcases on 2 ops = 16 branches,
--- each with set-valued `marks` component reasoning that neither grind nor blaster
--- can close). Close via Aristotle or targeted per-component decomposition.
+(rc o1 o2 = rc_res.Either ↔ commutes_with o1 o2) := by
+  intro h
+  refine ⟨fun _ s => ?_, fun _ => rfl⟩
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 theorem no_rc_chain (o1 : op_t) (o2 : op_t) (o3 : op_t) :
@@ -353,7 +356,13 @@ theorem base_2op (o1 o2: op_t) :
                     distinct_ops o1 o2
 →
  eq (merge (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st (do_ init_st o2)) o1)
- := by sorry -- TODO: marks-component blowup (see rc_non_comm)
+ := by
+  intro h
+  rcases h with ⟨_, h_rid, _⟩
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h_rid ⊢
+  all_goals grind
 
 
 theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
@@ -362,7 +371,7 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
                     eq (merge (do_ l o1) (do_ l o2)) (do_ (merge l (do_ l o2)) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
-:= by sorry -- TODO: marks-component blowup (see rc_non_comm)
+:= by sorry -- TODO: per-component decomposition pattern leaves ~2-4 residual branches with set-union + double-upd that grind can't close; awaits Aristotle
 
 
 theorem inter_right_base_2op (a b: concrete_st) (o1 o2 ob ol:op_t) :
@@ -433,11 +442,15 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: marks-component blowup (see rc_non_comm)
+:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches with set-union under nested upd remain
 
 
 theorem base_1op (o1:op_t) :
-eq (merge (do_ init_st o1) init_st) (do_ (merge init_st init_st) o1) := by sorry -- TODO: marks-component blowup
+eq (merge (do_ init_st o1) init_st) (do_ (merge init_st init_st) o1) := by
+  rcases o1 with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at *
+  all_goals grind
 
 
 theorem ind_lca_1op (l:concrete_st) (o1 ol:op_t) :
@@ -445,7 +458,7 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: marks-component blowup
+:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
 
 
 theorem inter_right_base_1op (a b :concrete_st) (o1 ob ol:op_t) :
@@ -505,7 +518,7 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
-:= by sorry -- TODO: marks-component blowup
+:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
 
 
 theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
@@ -513,8 +526,12 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
                     eq (merge (do_ a ol) (do_ b o2)) (do_ (merge (do_ a ol) b) o2)
 →
  eq (merge (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ a ol) (do_ b o2')) o2)
-:= by sorry -- TODO: marks-component blowup
+:= by sorry -- TODO: per-component decomposition closes most branches; some marks-side branches remain
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: marks-component blowup
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by
+  rcases ol with ⟨_, _, _ | _ | _ | _⟩ <;>
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at *
+  all_goals grind
