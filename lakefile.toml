@@ -18,7 +18,11 @@ rev = "main"
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
+<<<<<<< HEAD
 rev = "v4.26.0"
+=======
+rev = "v4.28.0"
+>>>>>>> 0044841 (rebased with main)
 
 [[lean_lib]]
 name = "CaseStudies"
