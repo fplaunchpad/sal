@@ -12,13 +12,55 @@ import { Playground } from "./harness/Playground";
 import type { CRDTSpec } from "./harness/types";
 import { spec as incSpec } from "./crdts/increment_only_counter";
 import { spec as pnSpec } from "./crdts/pn_counter";
+import { spec as boundedSpec } from "./crdts/bounded_counter";
+import { spec as maxRegSpec } from "./crdts/max_register";
+import { spec as minRegSpec } from "./crdts/min_register";
+import { spec as lwwRegSpec } from "./crdts/lww_register";
+import { spec as mvRegSpec } from "./crdts/multi_valued_register";
+import { spec as gSetSpec } from "./crdts/grow_only_set";
+import { spec as gMultisetSpec } from "./crdts/grow_only_multiset";
 import { spec as orSpec } from "./crdts/or_set";
+import { spec as lwwElSetSpec } from "./crdts/lww_element_set";
+import { spec as lwwMapSpec } from "./crdts/lww_map";
+import { spec as maxMapSpec } from "./crdts/max_map";
+import { spec as cartSpec } from "./crdts/shopping_cart";
+import { spec as pqSpec } from "./crdts/pq_insert_only";
+import { spec as adwPqSpec } from "./crdts/add_win_pq";
 import "./style.css";
 
 // Heterogeneous registry: each spec has its own Concrete/Op types, so we erase
 // them here. Playground consumes the spec as an opaque CRDTSpec<any, any, any>.
 type AnySpec = CRDTSpec<any, any, any>;
-const specs: AnySpec[] = [incSpec, pnSpec, orSpec];
+
+interface Group {
+  heading: string;
+  specs: AnySpec[];
+}
+
+const groups: Group[] = [
+  {
+    heading: "Counters",
+    specs: [incSpec, pnSpec, boundedSpec],
+  },
+  {
+    heading: "Registers",
+    specs: [maxRegSpec, minRegSpec, lwwRegSpec, mvRegSpec],
+  },
+  {
+    heading: "Sets",
+    specs: [gSetSpec, gMultisetSpec, orSpec, lwwElSetSpec],
+  },
+  {
+    heading: "Maps",
+    specs: [lwwMapSpec, maxMapSpec, cartSpec],
+  },
+  {
+    heading: "Priority queues",
+    specs: [pqSpec, adwPqSpec],
+  },
+];
+
+const specs: AnySpec[] = groups.flatMap((g) => g.specs);
 
 function Landing() {
   return (
@@ -33,14 +75,19 @@ function Landing() {
         Toggle the concrete state to see the lattice representation that makes
         convergence work.
       </p>
-      <ul className="demo-list">
-        {specs.map((s) => (
-          <li key={s.slug}>
-            <Link to={`/${s.slug}`}>{s.name}</Link>
-            <p>{s.tagline}</p>
-          </li>
-        ))}
-      </ul>
+      {groups.map((g) => (
+        <section key={g.heading}>
+          <h2>{g.heading}</h2>
+          <ul className="demo-list">
+            {g.specs.map((s) => (
+              <li key={s.slug}>
+                <Link to={`/${s.slug}`}>{s.name}</Link>
+                <p>{s.tagline}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }
