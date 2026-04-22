@@ -5,7 +5,6 @@ import Std.Tactic.BVDecide
 import Sal.Interfaces.Map_Extended
 import Sal.Tactic.Sal
 
-
 open Classical
 
 /-!
@@ -76,6 +75,36 @@ let u := const_on keys (0, 0)
 iter_upd (fun k _ => lex_max (mysel a k) (mysel b k)) u
 
 set_option maxHeartbeats 0
+
+/-
+Intermediate lemma: for LWW-Map, `merge` distributes over `do_`
+unconditionally on the state, analogous to MAX_Map's `merge_do_max`.
+-/
+lemma merge_do_lex_max (a b : concrete_st) (o1 o2 : op_t) :
+    eq (merge (do_ a o1) (do_ b o2))
+       (do_ (merge a (do_ b o2)) o1) := by
+         obtain ⟨ _, _, _ ⟩ := o1;
+         obtain ⟨ _, _, _ ⟩ := o2;
+         rename_i k3 k4 op2;
+         cases op2;
+         rename_i k5 v5 k6 v6;
+         intro k;
+         by_cases h1 : k5 = k <;> by_cases h2 : k6 = k <;> simp +decide [ *, merge, do_, mysel, lemma_InDomUpd1, lemma_SelUpd1, lemma_IterUpd, lemma_InDomConstMap ];
+         · grind;
+         · grind;
+         · grind;
+         · grind
+
+/-
+Same-op variant: applying the same op to both sides then merging
+    equals merge-then-apply.
+-/
+lemma lem_0op_aux (a b : concrete_st) (ol : op_t) :
+    eq (merge (do_ a ol) (do_ b ol))
+       (do_ (merge a b) ol) := by
+         rcases ol with ⟨ ts, fst, op ⟩;
+         cases op ; simp +decide [ *, eq ];
+         grind
 
 theorem rc_non_comm (o1: op_t) (o2: op_t):
 distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2
@@ -202,7 +231,7 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
                     eq (merge (do_ a o1) (do_ b o2)) (do_ (merge a (do_ b o2)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
-:= by sorry -- TODO: rcases+simp+grind closes ind_right_* but not ind_left_* for this CRDT; probably needs an intermediate distributivity lemma merge(do_ a o1') b = do_ (merge a b) o1'
+:= fun _ => merge_do_lex_max (do_ a o1') b o1 o2
 
 
 
@@ -216,7 +245,7 @@ distinct_ops o1 ol ∧
                     eq (merge (do_ l o1) l) (do_ (merge l l) o1)
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
-:= by sorry -- TODO: rcases+simp+grind pattern doesn't close this; needs intermediate map lemma (iter_upd/upd identities on per-key max)
+:= fun _ => merge_do_lex_max (do_ l ol) l o1 ol
 
 
 
@@ -276,7 +305,7 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
                     eq (merge (do_ a o1) (do_ b ol)) (do_ (merge a (do_ b ol)) o1)
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
- := by sorry -- TODO: rcases+simp+grind closes ind_right_* but not ind_left_* for this CRDT; probably needs an intermediate distributivity lemma merge(do_ a o1') b = do_ (merge a b) o1'
+ := fun _ => merge_do_lex_max (do_ a o1') b o1 ol
 
 
 
@@ -293,4 +322,4 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
 
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
-eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by sorry -- TODO: rcases+simp+grind pattern doesn't close this; needs intermediate map lemma (iter_upd/upd identities on per-key max)
+eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := lem_0op_aux a b ol
