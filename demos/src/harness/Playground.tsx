@@ -17,6 +17,7 @@ interface HarnessState<Concrete, Op> {
 type Action<Op> =
   | { kind: "apply"; rid: number; op: Op }
   | { kind: "merge"; from: number; to: number }
+  | { kind: "mergeAll" }
   | { kind: "addReplica" }
   | { kind: "resetReplica"; rid: number }
   | { kind: "toggleConcrete" }
@@ -64,6 +65,26 @@ function reducer<Concrete, Abstract, Op>(
               }
             : r,
         );
+        return { ...s, replicas, nextTs: s.nextTs + 1 };
+      }
+      case "mergeAll": {
+        if (s.replicas.length < 2) return s;
+        // Fold all replicas into a single join; assign it to every replica.
+        // Associativity + commutativity + idempotence make this well-defined.
+        let joined = s.replicas[0].state;
+        for (let i = 1; i < s.replicas.length; i++) {
+          joined = spec.merge(joined, s.replicas[i].state);
+        }
+        const replicas = s.replicas.map((r, rid) => ({
+          state: joined,
+          history: [
+            ...r.history,
+            {
+              op: { __mergeAll: true } as unknown as Op,
+              meta: { ts: s.nextTs, rid },
+            },
+          ],
+        }));
         return { ...s, replicas, nextTs: s.nextTs + 1 };
       }
       case "addReplica":
@@ -192,6 +213,13 @@ export function Playground<Concrete, Abstract, Op>({
           >
             Merge
           </button>
+          <button
+            title="Join every replica's state; all replicas converge to the lub."
+            onClick={() => dispatch({ kind: "mergeAll" })}
+            disabled={state.replicas.length < 2}
+          >
+            Merge all
+          </button>
         </div>
       </section>
 
@@ -223,15 +251,18 @@ export function Playground<Concrete, Abstract, Op>({
               {historyOpen.has(rid) && (
                 <ol>
                   {r.history.map((entry, i) => {
-                    const mergeInfo = (entry.op as unknown as {
+                    const tagged = entry.op as unknown as {
                       __merge?: { from: number };
-                    } | null)?.__merge;
+                      __mergeAll?: true;
+                    } | null;
                     return (
                       <li key={i}>
                         <code>ts={entry.meta.ts}</code>{" "}
-                        {mergeInfo
-                          ? `merge ← R${mergeInfo.from}`
-                          : spec.formatOp(entry.op, entry.meta)}
+                        {tagged?.__mergeAll
+                          ? "merge all"
+                          : tagged?.__merge
+                            ? `merge ← R${tagged.__merge.from}`
+                            : spec.formatOp(entry.op, entry.meta)}
                       </li>
                     );
                   })}
