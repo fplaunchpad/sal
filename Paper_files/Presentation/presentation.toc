@@ -1,42 +1,8 @@
 \babel@toc {english}{}\relax 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6effa6e (updated presentation)
-\beamer@sectionintoc {1}{Introduction: Replication in Practice}{3}{0}{1}
-\beamer@sectionintoc {2}{The Verification Problem}{7}{0}{2}
-\beamer@sectionintoc {3}{Verification with F* and its Limitations}{9}{0}{3}
-\beamer@sectionintoc {4}{Solution: SAL Framework}{11}{0}{4}
-<<<<<<< HEAD
-\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{15}{0}{5}
-\beamer@sectionintoc {6}{Agentic Framework}{21}{0}{6}
-\beamer@sectionintoc {7}{Developer Experience}{23}{0}{7}
-\beamer@sectionintoc {8}{Counterexample Generation Framework}{25}{0}{8}
-\beamer@sectionintoc {9}{Evaluation and Results}{27}{0}{9}
-\beamer@sectionintoc {10}{Related Work}{32}{0}{10}
-\beamer@sectionintoc {11}{Conclusion}{34}{0}{11}
-<<<<<<< HEAD
-=======
 \beamer@sectionintoc {1}{Introduction: Replication in Practice}{2}{0}{1}
-\beamer@sectionintoc {2}{The Verification Problem}{6}{0}{2}
-\beamer@sectionintoc {3}{Verification with F* and its Limitations}{8}{0}{3}
-\beamer@sectionintoc {4}{Solution: SAL Framework}{10}{0}{4}
-\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{14}{0}{5}
-\beamer@sectionintoc {6}{Agentic Framework}{19}{0}{6}
-\beamer@sectionintoc {7}{Developer Experience}{21}{0}{7}
-\beamer@sectionintoc {8}{Counterexample Generation Framework}{23}{0}{8}
-\beamer@sectionintoc {9}{Evaluation and Results}{25}{0}{9}
-\beamer@sectionintoc {10}{Related Work}{29}{0}{10}
-\beamer@sectionintoc {11}{Conclusion}{31}{0}{11}
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
-=======
-\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{14}{0}{5}
-\beamer@sectionintoc {6}{Agentic Framework}{20}{0}{6}
-\beamer@sectionintoc {7}{Developer Experience}{22}{0}{7}
-\beamer@sectionintoc {8}{Counterexample Generation Framework}{24}{0}{8}
-\beamer@sectionintoc {9}{Evaluation and Results}{26}{0}{9}
-\beamer@sectionintoc {10}{Related Work}{31}{0}{10}
-\beamer@sectionintoc {11}{Conclusion}{33}{0}{11}
->>>>>>> d9c8f43 (updated presentation)
+\beamer@sectionintoc {2}{The Verification Problem}{5}{0}{2}
+\beamer@sectionintoc {3}{Verification with F* and its Limitations}{7}{0}{3}
+\beamer@sectionintoc {4}{Solution: SAL Framework}{8}{0}{4}
+\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{10}{0}{5}
+\beamer@sectionintoc {6}{Agentic Framework}{16}{0}{6}
+\beamer@sectionintoc {7}{Evaluation and Results}{18}{0}{7}
