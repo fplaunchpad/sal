@@ -24,21 +24,45 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
+/-!
+# Observed-Remove Set (OR-Set) — state-based CRDT
 
+Add-wins set. Concurrent `Add e` on one replica and `Rem e` on another
+should leave `e` present, because the removal only observed an
+earlier-generation add.
 
+State is two grow-only sets:
+  * `adds`       : `set (elem × ts)` — every `Add` stakes a unique tag.
+  * `tombstones` : `set (elem × ts)` — entries retracted by a `Rem`.
 
+Element `e` is live iff ∃ tag `(e, ts) ∈ adds` with `(e, ts) ∉ tombstones`.
+Merge is pointwise union of both components. A `Rem e` tombstones every
+`(e, _)` tag it observed locally; concurrent `Add e` at a fresh `ts` is
+not in the tombstones set and therefore survives (add-wins).
+
+`rc` is `Either` for most pairs, but `Add e ↔ Rem e` on the same
+element needs arbitration — the add must happen before the remove can
+retract it (`Rem-then-Add` at the state level corresponds to the
+conceptual "add wins"). The `OR_Set_MRDT` version drops the tombstone
+set entirely because the LCA supplies that information; see
+`Sal/MRDTs/OR_Set_MRDT.lean`.
+-/
+
+/-- Σ = (adds, tombstones), each a set of `(elem, ts)` tags. -/
 @[simp] abbrev concrete_st := ((set (Nat × Nat)) × (set (Nat × Nat)))
 
-
-
+/-- Initial state: both components empty. -/
 @[simp]
 def init_st : concrete_st := (empty, empty)
 
+/-- Pointwise extensional equality on both set components. -/
 @[simp]
 def eq (a b: concrete_st) :=
 (forall e, mem e (Prod.fst a) ↔ mem e (Prod.fst b)) ∧
 (forall e, mem e (Prod.snd a) ↔ mem e (Prod.snd b))
 
+/-- `Add e` stakes `(e, ts)` in `adds`; `Rem e` tombstones every
+`(e, _)` the local replica has observed. -/
 inductive app_op_t : Type where
 | Add : ℕ → app_op_t
 | Rem : ℕ → app_op_t
@@ -53,6 +77,12 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect:
+  * `Add e` at `ts` — add `(e, ts)` to `adds`.
+  * `Rem e`         — tombstone every observed `(e, _)` in `adds` by
+                       unioning them into `tombstones`. Only retracts
+                       locally-observed adds, which is the key to
+                       add-wins under concurrency. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -64,6 +94,10 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc` arbitrates Add-vs-Rem on the same element: the Add must be
+applied first so its tag is available for the subsequent Rem to
+tombstone. Pairs on different elements, or the same op kind, commute
+(`Either`). -/
 @[simp]
 def rc (o1 o2 : op_t) := match Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2) with
 | .Add e1, .Rem e2 => if e1 = e2 then rc_res.Snd_then_fst else rc_res.Either
@@ -74,6 +108,8 @@ def rc (o1 o2 : op_t) := match Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2) wi
 def commutes_with (o1 o2 : op_t) :=
     forall s, (eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1))
 
+/-- Merge: pointwise union of both components. Each component is a
+grow-only set, hence a join-semilattice under `∪`. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 (union (Prod.fst a) (Prod.fst b), union (Prod.snd a) (Prod.snd b))

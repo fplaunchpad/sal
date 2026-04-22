@@ -10,16 +10,35 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Multi-Valued Register — state-based MRDT
 
+Accumulates every `Write v` as a `(ts, v)` pair; merge is the three-way
+set union `l ∪ a ∪ b`. Read-side projection is "the distinct values ever
+written"; concurrent writes survive as multiple values.
+
+Note: uses Lean's standard `Set (ℕ × ℕ)` rather than Sal's `set` (the
+Boolean-predicate type) — the 24 VCs close without needing the
+decidable set interface because merge is pure union.
+
+Like `Grow_Only_Set_MRDT`, the LCA argument is vestigial: `l ⊆ a` and
+`l ⊆ b` already, so `a ∪ b` alone would suffice. The three-way form is
+kept to match the MRDT signature shape.
+-/
+
+/-- Σ = set of `(ts, value)` pairs. -/
 abbrev concrete_st := Set (ℕ × ℕ)
 
+/-- Initial state: ∅. -/
 @[simp]
 def init_st: concrete_st := {}
 
 
+/-- Plain set equality. -/
 @[simp]
 def eq (a: concrete_st) (b: concrete_st) := a = b
 
+/-- Only op: `Write v`. -/
 inductive app_op_t where
 | Write : ℕ → app_op_t
 
@@ -35,6 +54,7 @@ match o with
 
 
 
+/-- Effect: stake `(ts, v)` in the set. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -47,10 +67,15 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: each write stakes a unique `(ts, _)` slot via
+`distinct_ops`, so any two writes commute. -/
 @[simp, grind]
 def rc (o1: op_t) (o2: op_t) := rc_res.Either
 
 
+/-- Three-way merge: union of all three sides. Equivalent to `a ∪ b`
+because `l ⊆ a` and `l ⊆ b`; we keep the three-way form for signature
+regularity with the other MRDTs. -/
 @[simp, grind]
 def merge (l: concrete_st) (a: concrete_st) (b: concrete_st) : concrete_st :=
 l ∪ a ∪ b

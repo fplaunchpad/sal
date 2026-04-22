@@ -10,16 +10,32 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Grow-Only Set (G-Set) — state-based CRDT
 
+The simplest set CRDT: `Add` is the only op, state grows monotonically,
+merge is set union. No tombstones because nothing is ever removed.
+
+State is Sal's decidable `set ℕ` (i.e. `ℕ → Bool`); membership is Boolean
+so `grind` can discharge the 24 VCs directly without SMT assistance.
+
+Every op pair commutes (`rc := Either`) because Add is idempotent and
+insertion-order doesn't matter for a set.
+-/
+
+/-- Σ = set of natural numbers. -/
 abbrev concrete_st := set ℕ
 
+/-- Initial state: ∅. -/
 @[simp]
 def init_st: concrete_st := empty
 
 
+/-- State equality is plain decidable equality on the Boolean predicate. -/
 @[simp]
 def eq (a: concrete_st) (b: concrete_st) := a = b
 
+/-- Only op: `Add e` inserts `e`. Unit-arity op family keeps `rc` trivial. -/
 inductive app_op_t : Type where
 | Add (elem : ℕ)
 
@@ -35,6 +51,8 @@ match o with
 
 
 
+/-- Effect: `Add e` inserts `e` into the set. Idempotent; repeated Add
+of the same element is a no-op. -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=
   match o with
@@ -46,10 +64,14 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either` everywhere: Add is idempotent-commutative, so any two
+ops from distinct replicas can be reordered without affecting the
+post-state. -/
 @[simp, grind]
 def rc (_o1 _o2: op_t) := rc_res.Either
 
 
+/-- Merge is set union. Join-semilattice on `set ℕ` under `∪`. -/
 @[simp, grind]
 def merge (a: concrete_st) (b: concrete_st) : concrete_st :=
 union a b

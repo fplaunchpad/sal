@@ -10,16 +10,34 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Grow-Only Set (G-Set) — state-based MRDT
 
+G-set where the only op is `Add` and state grows monotonically. Merge is
+the three-way union `l ∪ a ∪ b`, but for a G-set the LCA is actually
+vestigial: `a ∪ b` already contains every element in `l` (since `l ⊆ a`
+and `l ⊆ b`). We keep `l ∪ a ∪ b` here to preserve the MRDT signature
+shape and because it's a no-op.
+
+This MRDT is a useful pedagogical contrast to `Increment_Only_Counter_MRDT`:
+both have simple state, but only the counter genuinely uses `l` (to
+avoid double-counting). For a grow-only set, adds cannot be undone, so
+"branch delta" equals the branch itself and no subtraction is needed.
+-/
+
+/-- Σ = set of natural numbers. -/
 abbrev concrete_st := set ℕ
 
+/-- Initial state: ∅. -/
 @[simp]
 def init_st: concrete_st := empty
 
 
+/-- Equality is plain decidable equality on the Boolean predicate. -/
 @[simp]
 def eq (a: concrete_st) (b: concrete_st) := a = b
 
+/-- The payload is just the element to add — no separate constructor. -/
 abbrev app_op_t := ℕ
 
 abbrev op_t:= ℕ × ℕ × app_op_t
@@ -34,6 +52,7 @@ match o with
 
 
 
+/-- Effect: insert the op's element into the set. Idempotent. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 add (Prod.snd (Prod.snd o)) s
@@ -44,10 +63,13 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `Add` is idempotent-commutative. -/
 @[simp, grind]
 def rc (o1: op_t) (o2: op_t) := rc_res.Either
 
 
+/-- Three-way merge: union of all three sides. Because `l ⊆ a` and
+`l ⊆ b`, this is semantically equivalent to `a ∪ b`. -/
 @[simp, grind]
 def merge (l: concrete_st) (a: concrete_st) (b: concrete_st) : concrete_st :=
 union l (union a b)

@@ -8,20 +8,35 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Multi-Valued Register — state-based CRDT
 
+Accumulates every write as a `(ts, value)` pair; merge is set union.
+Read-side projection is "the set of all values ever written"; concurrent
+writes survive as multiple values, which the client chooses among.
 
+Note: this is Sal's *simplification* of the textbook MVR. The classical
+MVR has `put(v)` *replace* the observed set with `{(v, ts)}` so the
+observed-set is reset per write; here we simply accumulate. The 24 VCs
+hold on either variant — the simplification gives a grow-only lattice
+that closes with pure set union. See `Sal/MRDTs/Multi_Valued_Register_MRDT.lean`
+for the MRDT twin.
+-/
 
+/-- Σ = set of `(ts, value)` pairs. Globally-unique `ts` keeps distinct
+writes separated; two writes with the same value at different ts each
+contribute their own entry. -/
 @[simp] abbrev concrete_st := set (Int × Nat)
-/- keys: replicas IDs, values: int -/
 
-
-
+/-- Initial state: ∅. -/
 @[simp]
 def init_st : concrete_st := empty
 
 @[simp]
 def eq (a b: concrete_st) := a = b
 
+/-- Only op: `Write v` stakes `(ts, v)` in the set. The `ts` is carried
+by the op wrapper. -/
 inductive app_op_t : Type where
 | Write : ℕ →  app_op_t
 
@@ -35,6 +50,7 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: adds `(ts, v)` to the set. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 let (ts, (_, .Write v)) := o
@@ -45,6 +61,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: each Write stakes a unique `(ts, v)` slot, so any
+two writes commute at the set level. -/
 @[simp]
 def rc (o1 o2 : op_t) := rc_res.Either
 
@@ -52,6 +70,7 @@ def rc (o1 o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge is set union. Standard join-semilattice. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st := union a b
 

@@ -6,55 +6,94 @@ import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
 
 
+/-!
+# Replicated Growable Array (RGA) — state-based MRDT
+
+Sequence CRDT for collaborative editing. Each insert stakes
+`(ts, (afterId, elem))`: globally-unique `ts` is the new node's id;
+`afterId` is the causal predecessor in the sequence DAG. Removes
+simply tombstone a node's `ts`. The canonical sequence the user reads
+is a deterministic traversal of the DAG (newer children before older
+at each anchor), skipping tombstones — that traversal is a read-side
+projection, not part of the 24 VCs.
+
+State is two components:
+  * `Prod.fst` : `set (ℕ × (ℕ × ℕ))` = set of `(ts, (afterId, elem))`
+    insert records.
+  * `Prod.snd` : `set ℕ` = set of tombstoned `ts`.
+
+Merge pointwise-unions both components (grow-only on each).
+
+`rc := Either` everywhere: every op writes to a distinct `ts` slot
+(via `distinct_ops`) and tombstones are idempotent unions.
+
+Compare with `Sal/CRDTs/RGA_CRDT.lean` (state-based CRDT version) and
+`Sal/CRDTs/Peritext_CRDT.lean` (RGA plus anchor-attached formatting
+marks).
+-/
+
+/-- Σ = (insert records, tombstones). -/
 @[simp] abbrev concrete_st := set (ℕ × (ℕ × ℕ)) × set (ℕ)
 
 
+/-- Initial state: both components empty. -/
 @[simp]
 def init_st : concrete_st:= (empty, empty)
 
 
+/-- Pointwise set equality on each component. -/
 @[simp]
 def eq (a b: concrete_st) :=
 equal (Prod.fst a) (Prod.fst b) ∧ equal (Prod.snd a) (Prod.snd b)
 
 
+/-- `Add_after id e` inserts `e` right after node `id`; `Remove id`
+tombstones the node with id `id`. -/
 inductive app_op_t : Type where
 | Add_after : ℕ → ℕ → app_op_t
 | Remove : ℕ → app_op_t
 
 abbrev op_t:= ℕ × ℕ × app_op_t
 
+/-- Element payload of an `Add_after` op (default for `Remove`). -/
 def get_ele (op:op_t) :=
 match op with
 | (_, (_, .Add_after _ ele)) => ele
 | _ => default
--- return default if it is not an add_after constructor
 
+/-- `afterId` predecessor of an `Add_after` op. -/
 def get_after_id (op:op_t) :=
 match op with
 | (_, (_, .Add_after id _)) => id
 | _ => default
 
+/-- Target ts of a `Remove` op. -/
 def get_rem_id (op:op_t) :=
 match op with
 | (_, (_, .Remove id)) => id
 | _ => default
 
+/-- Is there a live insert with id `id` and element `ele`? (Not
+tombstoned.) -/
 def id_ele (s: concrete_st) (id ele : ℕ) :=
   exists e, mem e (Prod.fst s) ∧ Prod.fst e = id ∧ Prod.snd (Prod.snd e) = ele ∧ not (mem id (Prod.snd s))
 
+/-- Does the insert-record set contain an entry with id `id`? -/
 def mem_id_s (id: ℕ) (s: set (ℕ × (ℕ × ℕ))) :=
 exists e, mem e s ∧ Prod.fst e = id
 
+/-- Distinct ops by their ts (which is globally unique). The initial
+state reserves ts = 0, so real ops must have ts > 0. -/
 @[simp]
 def distinct_ops (op1 op2 : op_t) := (Prod.fst op1 != Prod.fst op2)
---the initial state already has ts 0, so further ops should have ts > 0
 
 @[simp]
 def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `Add_after` adds an insert record; `Remove` adds a
+tombstone. Each touches one of the two components. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -67,6 +106,9 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: every op writes to a disjoint `ts` slot
+(distinct ts via `distinct_ops`); tombstone union is idempotent-
+commutative. -/
 @[simp]
 def rc (o1 o2 : op_t) := rc_res.Either
 
@@ -74,6 +116,8 @@ def rc (o1 o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: pointwise three-way union on each component. Equivalent to
+`a ∪ b` per component since `l ⊆ a` and `l ⊆ b`. -/
 @[simp]
 def merge (l a b: concrete_st) : concrete_st :=
 (union (Prod.fst l) (union (Prod.fst a) (Prod.fst b)), union (Prod.snd l) (union (Prod.snd a) (Prod.snd b)))

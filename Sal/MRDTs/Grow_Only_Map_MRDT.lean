@@ -24,19 +24,43 @@ set_option autoImplicit false
 
 
 
-@[simp] abbrev concrete_st := map ℕ (set ℕ)
-/- keys: replicas IDs, values: int -/
+/-!
+# Grow-Only Map — state-based MRDT
 
+A map from keys to grow-only sets of values. `Put(k, v)` inserts `v`
+into `state[k]`. Merge unions each key's set from all three sides.
+
+Uses a top-level `map ℕ (set ℕ)`. This is an example of the "function-
+valued map entry" pattern that typically makes `grind` struggle (the
+inner `set` is `ℕ → Bool`, so map-level equality needs `funext` on
+values). Sal's `Map_Extended` interface handles this via a custom
+`eq` that compares per-key with `mysel` (zero-default lookup) rather
+than requiring exact pointwise function equality — that's what keeps
+the 24 VCs tractable. For future ports of nested-set data types,
+consider flattening to `set (key × value)` (as Peritext's refactor
+demonstrates).
+
+All op pairs commute: `Put(k, v)` is idempotent on the inner set and
+different keys touch disjoint slots.
+-/
+
+/-- Σ = map key → set-of-values. -/
+@[simp] abbrev concrete_st := map ℕ (set ℕ)
+
+/-- Default lookup: keys never written return ∅. -/
 @[simp]
 def mysel (s: concrete_st) (k: ℕ) : (set ℕ) :=
 if (contains s k) then (sel s k) else empty
 
+/-- Initial state: every key maps to ∅. -/
 @[simp]
 def init_st : concrete_st := const empty
 
+/-- Pointwise equality: agree on domain + per-key value. -/
 @[simp]
 def eq (a b: concrete_st) := (forall id:ℕ, (contains a id = contains b id) ∧ (mysel a id = mysel b id))
 
+/-- Op payload is `(key, value)`. -/
 abbrev app_op_t := ℕ × ℕ
 
 abbrev op_t:= ℕ × ℕ × app_op_t
@@ -55,6 +79,7 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `state[k] := state[k] ∪ {v}`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -66,6 +91,7 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: per-key insertion is idempotent-commutative. -/
 @[simp]
 def rc (o1 o2 : op_t) := rc_res.Either
 
@@ -73,6 +99,9 @@ def rc (o1 o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key three-way union. For each key present in any of
+l / a / b, the merged value at that key is the union of the three
+sides. LCA `l` is subsumed by the union (as in `Grow_Only_Set_MRDT`). -/
 @[simp]
 def merge (l a b: concrete_st) : concrete_st :=
 let keys := union (domain l) (union (domain a) (domain b))

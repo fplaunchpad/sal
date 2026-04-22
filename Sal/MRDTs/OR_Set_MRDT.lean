@@ -7,23 +7,62 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Observed-Remove Set (OR-Set) — state-based MRDT
+
+Add-wins set with no tombstone component — the LCA handles retraction
+directly. Each `Add e` at timestamp `ts` stakes the tag `(ts, e)`;
+`Rem e` filters every `(_, e)` tag out of the local state. Concurrent
+`Add e` on one branch and `Rem e` on the other results in `e` present
+(add-wins), because the new add tag appears in `a ∖ l` and so survives
+the merge.
+
+The three-way merge formula
+
+    merge l a b = (l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)
+
+splits the result into:
+  * `l ∩ a ∩ b` — intact entries still present on both branches (these
+    have survived whatever happened on both sides since `l`);
+  * `a ∖ l`     — entries added on branch `a` since the LCA;
+  * `b ∖ l`     — entries added on branch `b` since the LCA.
+
+An entry present in `l` but removed on `a` (i.e. in `l`, not in `a`)
+drops out of `l ∩ a ∩ b`; the corresponding add tag on `b` survives
+via `b ∖ l` if it's been concurrently added there. This is the
+standard three-way set merge and gives add-wins semantics "for free"
+from the LCA argument.
+
+`rc` arbitrates Add-vs-Rem on the same element (matches the CRDT
+version); all other pairs are `Either`.
+
+See `Sal/CRDTs/OR_Set_CRDT.lean` for the state-based CRDT version,
+which needs a separate tombstone set because it has no LCA.
+-/
+
+/-- Σ = set of `(ts, elem)` tags. -/
 abbrev concrete_st := set (ℕ × ℕ)
 
+/-- Initial state: ∅. -/
 @[simp]
 def init_st: concrete_st := empty
 
+/-- Does `s` contain a tag with timestamp `id`? -/
 @[simp]
 def mem_id_s (id:ℕ) (s: concrete_st) : Prop :=
 exists e, mem e s ∧ Prod.fst e = id
 
+/-- Does `s` contain any live tag for element `ele`? -/
 @[simp]
 def mem_ele_s (ele: ℕ) (s: concrete_st) : Prop :=
 exists e, mem e s ∧ Prod.snd e = ele
 
 
+/-- Plain set equality. -/
 @[simp]
 def eq (a: concrete_st) (b: concrete_st) := a = b
 
+/-- `Add e` stakes a tag; `Rem e` filters every tag for `e`. -/
 inductive app_op_t : Type where
 | Add: ℕ → app_op_t
 | Rem: ℕ → app_op_t
@@ -44,6 +83,9 @@ def get_ele (o: op_t) : ℕ :=
   | app_op_t.Add e => e
   | app_op_t.Rem e => e
 
+/-- Effect:
+  * `Add e` at `ts` — add `(ts, e)` to the set.
+  * `Rem e`         — filter out every tag with element `= e`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -56,6 +98,11 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc` arbitrates Add-vs-Rem on the same element: Add-before-Rem
+semantically "the add exists, then the remove retracts it", while
+Rem-before-Add means "there's nothing to retract, then a new add
+sticks". These are different states, so the pair doesn't commute
+and `rc` orders them. Other pairs commute (`Either`). -/
 @[simp, grind]
 def rc (o1: op_t) (o2: op_t) :=
 match (Prod.snd (Prod.snd o1)), (Prod.snd (Prod.snd o2)) with
@@ -64,6 +111,8 @@ match (Prod.snd (Prod.snd o1)), (Prod.snd (Prod.snd o2)) with
 | _,_ => rc_res.Either
 
 
+/-- Three-way merge: intact-baseline ∪ additions-since-LCA-on-a ∪
+additions-since-LCA-on-b. Gives add-wins directly via the LCA. -/
 @[simp, grind]
 def merge (l: concrete_st) (a: concrete_st) (b: concrete_st) : concrete_st :=
   let da := difference a l

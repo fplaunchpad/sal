@@ -6,15 +6,33 @@ import Mathlib.Tactic.Linarith
 import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
 
+/-!
+# PN-Counter — state-based MRDT
 
+PN variant of `Increment_Only_Counter_MRDT`. The state is a single
+integer; `Inc` adds 1, `Dec` subtracts 1; merge has the same closed
+form `a + b − l`.
+
+The MRDT framework's LCA argument is what lets us collapse the
+state to a scalar: without it we'd need the CRDT's two-map trick
+(`map ℕ Int × map ℕ Int`) to distinguish "three Incs" from "two Incs
+then one Dec" after a merge.
+
+Every op pair commutes (`rc := Either`).
+-/
+
+/-- Σ = a single integer. -/
 abbrev concrete_st := Int
 
+/-- Initial state: 0. -/
 @[simp]
 def init_st: concrete_st := 0
 
+/-- Plain integer equality. -/
 @[simp]
 def eq (a b: concrete_st) := (a = b)
 
+/-- Two unit-payload ops. -/
 inductive app_op_t : Type where
 | Inc
 | Dec
@@ -29,6 +47,7 @@ def get_rid (o: op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `Inc` → `s + 1`, `Dec` → `s − 1`. -/
 @[simp]
 def do_ (s:concrete_st) (o: op_t) : concrete_st
 := match Prod.snd (Prod.snd o) with
@@ -40,9 +59,12 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`. -/
 @[simp]
 def rc (o1 o2: op_t) := rc_res.Either
 
+/-- Three-way merge: `a + b − l`. Same closed form as the inc-only
+counter, extended to `Dec` by sign. -/
 @[simp]
 def merge (l a b: concrete_st) : concrete_st
 := a + b - l

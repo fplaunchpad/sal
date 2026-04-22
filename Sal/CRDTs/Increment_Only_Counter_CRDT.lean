@@ -8,22 +8,37 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# Increment-Only Counter (G-Counter) — state-based CRDT
 
+The canonical counter CRDT. Each replica owns its own slot; `Incr` at
+replica `rid` bumps `state[rid]` by 1; the counter's value is the sum
+over all slots; merge is per-replica max.
 
+The trick that makes this work: because each replica writes only to its
+own slot, concurrent Incrs on different replicas cannot lose updates,
+and merging via per-slot max converges to the sum of all observed Incrs.
+Per-slot max is idempotent / commutative / associative so the 24 VCs
+close at the DG stage.
+-/
 
+/-- Σ = map replica-id → per-replica increment count. -/
 @[simp] abbrev concrete_st := map ℕ Int
-/- keys: replicas IDs, values: int -/
 
+/-- Zero-default lookup: unseen replicas have count 0. -/
 @[simp]
 def mysel (s: concrete_st) (k: ℕ) : Int :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: empty map (every slot = 0 via `mysel`). -/
 @[simp]
 def init_st : concrete_st := const_on empty 0
 
+/-- Pointwise equality: agree on domain membership and on values. -/
 @[simp]
 def eq (a b: concrete_st) := (forall id:ℕ, (contains a id = contains b id) ∧ (mysel a id = mysel b id))
 
+/-- Only op: `Incr`. The replica id comes from the outer op wrapper. -/
 inductive app_op_t : Type where
 | Incr
 
@@ -37,6 +52,9 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: bump `state[rid]` by 1. Only touches the sender's own slot,
+which is why concurrent Incrs on distinct replicas commute at the state
+level. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -47,6 +65,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either` because each Incr writes only to its sender's slot,
+so two Incrs on distinct replicas never collide. -/
 @[simp]
 def rc (o1 o2 : op_t) := rc_res.Either
 
@@ -54,6 +74,9 @@ def rc (o1 o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-slot max over the union of the two domains. `max` is a
+commutative / associative / idempotent join on `Int`, so the full map
+is a join-semilattice under pointwise max. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys := union (domain a) (domain b)

@@ -8,22 +8,36 @@ import Sal.Tactic.Sal
 
 open Classical
 
+/-!
+# MAX-Map — state-based CRDT
 
+Per-key monotonic MAX register. Value at each key is the max of all
+writes ever seen; merge is per-key max.
 
+Same lattice structure as `Increment_Only_Counter_CRDT` but keyed by
+user-chosen ℕ instead of replica id, and the update is `max` rather
+than `+ 1`. All ops commute (`rc := Either`) because `max` is
+idempotent-commutative regardless of which replica wrote.
+-/
 
+/-- Σ = map key → value. Each slot stores the max value ever written
+to that key across all replicas. -/
 @[simp] abbrev concrete_st := map ℕ ℕ
-/- keys: ℕ, values: ℕ; value at each key is the max ever written -/
 
+/-- Zero-default lookup: keys never written have value 0. -/
 @[simp]
 def mysel (s: concrete_st) (k: ℕ) : ℕ :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: empty map. -/
 @[simp]
 def init_st : concrete_st := const_on empty 0
 
+/-- Pointwise equality on domain + values. -/
 @[simp]
 def eq (a b: concrete_st) := (forall k:ℕ, (contains a k = contains b k) ∧ (mysel a k = mysel b k))
 
+/-- Only op: `Write k v` requests that `state[k] ≥ v`. -/
 inductive app_op_t : Type where
 | Write (k : ℕ) (v : ℕ)
 
@@ -37,6 +51,8 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `state[k] := max(state[k], v)`. Monotonically non-decreasing
+per key. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -47,6 +63,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `max` is commutative / idempotent, so any two Writes
+commute at the state level regardless of key or value. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -54,6 +72,7 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key max over the union of domains. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys := union (domain a) (domain b)

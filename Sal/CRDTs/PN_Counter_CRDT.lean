@@ -23,23 +23,46 @@ set_option autoImplicit false
 
 open Classical
 
+/-!
+# PN-Counter — state-based CRDT
 
+A counter that supports both `Inc` and `Dec`. Implemented as two
+G-counters glued together — one tracking per-replica increments, one
+tracking per-replica decrements — because a single `max`-merged map
+can't unambiguously distinguish "R0 did 3 incs" from "R0 did 2 incs
+then 1 dec" once merges fold the state.
 
+State is `(incs, decs)` where both components are `map ℕ Int`
+(replica id → count). The observable value is `Σ incs − Σ decs`.
+Merge takes per-key max on each component (grow-only on both sides,
+just like `Increment_Only_Counter_CRDT`).
+
+All ops commute (`rc := Either`) because every effect writes to the
+sender's own slot in one of the two maps.
+-/
+
+/-- Σ = (incs, decs), each a map from replica id to per-replica count. -/
 @[simp] abbrev concrete_st := map ℕ Int × map ℕ Int
 
+/-- Zero-default lookup. -/
 @[simp]
 def mysel (s: map ℕ Int) (k: ℕ) : Int :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: both maps empty. -/
 @[simp]
 def init_st : concrete_st:= (const_on empty 0, const_on empty 0)
 
+/-- Pointwise equality on both components. -/
 @[simp]
 def eq (a b: concrete_st) :=
 (forall id, (contains (Prod.fst a) id = contains (Prod.fst b) id) ∧ (mysel (Prod.fst a) id = mysel (Prod.fst b) id)) ∧
 (forall id, (contains (Prod.snd a) id = contains (Prod.snd b) id) ∧ (mysel (Prod.snd a) id = mysel (Prod.snd b) id))
 
 
+/-- `Inc` and `Dec` each bump the sender's slot by 1 in the appropriate
+map. No payload; amount is always +1 (matches `Increment_Only_Counter`
+convention — N ops move N units). -/
 inductive app_op_t : Type where
 | Inc
 | Dec
@@ -54,6 +77,8 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `Inc` at `rid` bumps `incs[rid]`; `Dec` bumps `decs[rid]`.
+Each op touches one slot in one map; slots are partitioned by `rid`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match (Prod.snd o) with
@@ -65,6 +90,9 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: ops from distinct replicas always touch disjoint
+slots (partitioned by `rid` in one of the two maps), so state-level
+ordering is irrelevant. -/
 @[simp]
 def rc (o1 o2 : op_t) := rc_res.Either
 
@@ -72,6 +100,8 @@ def rc (o1 o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-slot max on each of the two component maps. Each is a
+grow-only join-semilattice, so the product state is too. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys_f := union (domain (Prod.fst a)) (domain (Prod.fst b))

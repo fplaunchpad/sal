@@ -5,17 +5,42 @@ import Sal.Tactic.Sal
 
 import Sal.Interfaces.Map_Extended
 
+/-!
+# Observed-Remove Set (efficient) — state-based MRDT
+
+Compressed variant of `OR_Set_MRDT`. Tags are `(rid, ts, elem)` rather
+than `(ts, elem)`, and an `Add e` at `(rid, ts)` first removes any
+prior `(rid, _, e)` tag from the same replica before adding the new
+one. This caps the per-replica tag count at one-per-element (instead
+of unbounded) while keeping the merge formula identical.
+
+Trade-off: tag uniqueness is lost (reusing the same element at a
+different ts gives the same `(rid, e)` key with updated `ts`), so the
+bookkeeping to prove convergence is slightly different from the plain
+OR-Set. The three-way merge formula is the same:
+
+    merge l a b = (l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)
+
+because Add-Wins semantics is carried by the LCA regardless of tag
+scheme.
+-/
+
+/-- Σ = set of `(rid, ts, elem)` triples. At most one triple per
+`(rid, elem)` pair is kept live at any time. -/
 @[simp] abbrev concrete_st := set (ℕ × ℕ × ℕ)
 
 
 
+/-- Initial state: ∅. -/
 @[simp]
 def init_st : concrete_st:= empty
 
+/-- Plain set equality. -/
 @[simp]
 def eq (a b: concrete_st) := a = b
 
 
+/-- `Add e` and `Rem e` — same surface interface as plain OR-Set. -/
 inductive app_op_t : Type where
 | Add : ℕ → app_op_t
 | Rem : ℕ → app_op_t
@@ -36,6 +61,10 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect:
+  * `Add e` at `(ts, rid)` — first filter any prior `(rid, _, e)` out,
+    then insert `(rid, ts, e)`. Bounded per-replica growth.
+  * `Rem e`               — filter every triple with element `= e`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -53,6 +82,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- Same arbitration as plain OR-Set: Add-vs-Rem on the same element is
+ordered; other pairs commute. -/
 @[simp]
 def rc (o1 o2 : op_t) := match Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2) with
 | .Add e1, .Rem e2 => if e1 = e2 then rc_res.Snd_then_fst else rc_res.Either
@@ -63,6 +94,7 @@ def rc (o1 o2 : op_t) := match Prod.snd (Prod.snd o1), Prod.snd (Prod.snd o2) wi
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Three-way merge: identical formula to `OR_Set_MRDT`. -/
 @[simp]
 def merge (l a b: concrete_st) : concrete_st :=
   let da := difference a l

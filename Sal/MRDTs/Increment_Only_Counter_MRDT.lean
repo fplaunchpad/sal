@@ -8,16 +8,37 @@ import Sal.Tactic.Sal
 
 import Plausible
 
+/-!
+# Increment-Only Counter — state-based MRDT
 
+The canonical "Git for data types" example: the state is a single
+integer, each `Incr` bumps it by 1, and the three-way merge has the
+closed form
 
+    merge l a b = a + b − l
+
+The LCA `l` is subtracted so that increments present in both `a` and
+`b` (i.e. part of the shared history) aren't double-counted. If the
+MRDT framework didn't provide `l`, we'd need a per-replica vector à la
+`Increment_Only_Counter_CRDT`; `l` lets us get away with a scalar.
+
+Every op pair commutes (`rc := Either`) and convergence follows from
+the fact that `+` and `−` on `Int` interact associatively with the
+history-DAG branching.
+-/
+
+/-- Σ = a single integer. -/
 abbrev concrete_st := Int
 
+/-- Initial state: 0. -/
 @[simp]
 def init_st: concrete_st := 0
 
+/-- Plain integer equality. -/
 @[simp]
 def eq (a b: concrete_st) := (a = b)
 
+/-- Only op: `Incr`. Unit payload; the amount is always +1. -/
 inductive app_op_t : Type where
 | Incr
 
@@ -31,6 +52,7 @@ def get_rid (o: op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: `s := s + 1`. -/
 @[simp]
 def do_ (s:concrete_st) (o: op_t) : concrete_st
 := s + 1
@@ -40,9 +62,13 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `+1` at the Int level is commutative. -/
 @[simp]
 def rc (o1 o2: op_t) := rc_res.Either
 
+/-- Three-way merge: `a + b − l`. Subtracting the LCA removes the
+contribution of ops present in the shared past, so each branch's
+"delta since l" is added exactly once. -/
 @[simp]
 def merge (l a b: concrete_st) : concrete_st
 := a + b - l

@@ -6,7 +6,7 @@ The approach builds on the F★-based **Neem** framework of Soundarapandian, Nag
 
 ## What's verified
 
-The suite currently contains **28 RDTs** — 18 CRDTs and 10 MRDTs — with all 24 RA-linearizability VCs closed on every one (672 kernel-verified VCs in total). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
+The suite currently contains **29 RDTs** — 18 CRDTs and 11 MRDTs — with all 24 RA-linearizability VCs closed on every one (696 kernel-verified VCs in total). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
 **CRDTs** ([`Sal/CRDTs/`](Sal/CRDTs)):
 
@@ -16,7 +16,7 @@ The suite currently contains **28 RDTs** — 18 CRDTs and 10 MRDTs — with all 
 
 **MRDTs** ([`Sal/MRDTs/`](Sal/MRDTs)):
 
-- `Increment_Only_Counter`, `PN_Counter`, `Multi_Valued_Register`, `Grow_Only_Set`, `Grow_Only_Map`, `OR_Set`, `OR_Set_Efficient`, `Replicated_Growable_Array`, `Add_Win_Priority_Queue` (adapted from Zhang et al. 2023 — drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`), `Enable_Wins_Flag` (intentionally buggy — drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`).
+- `Increment_Only_Counter`, `PN_Counter`, `Multi_Valued_Register`, `Grow_Only_Set`, `Grow_Only_Map`, `OR_Set`, `OR_Set_Efficient`, `Replicated_Growable_Array`, `Add_Win_Priority_Queue` (adapted from Zhang et al. 2023 — drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`), `Peritext` (Litt et al. CSCW 2022 — RGA substrate plus `set AnchorAttachment`; RGA's tombstones are structurally load-bearing since later inserts reference earlier char ids, so this MRDT keeps all components grow-only and uses pointwise-union merge, mirroring `RGA_MRDT`), `Enable_Wins_Flag` (intentionally buggy — drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`).
 
 ## The `sal` tactic
 
@@ -74,7 +74,7 @@ Open each Lean file in VS Code to run the verification conditions interactively,
 
 ## Interactive playgrounds
 
-Browser demos for every RDT in the suite live in [`demos/`](demos) (Vite + React + TypeScript, one hand-ported module per RDT). All 28 RDTs have a playground — 18 CRDTs + 10 MRDTs.
+Browser demos for every RDT in the suite live in [`demos/`](demos) (Vite + React + TypeScript, one hand-ported module per RDT). All 29 RDTs have a playground — 18 CRDTs + 10 MRDTs.
 
 - **CRDT playgrounds** spin up three replicas, let you apply local ops per replica, and merge any pair directionally (source → target, like `git merge`). There's also a "Merge all" button that folds every replica's state into a single join and assigns it back, so you can watch replicas snap to the same value in one click. Toggle **Show concrete state** to expose the lattice representation.
 - **MRDT playgrounds** organise history like git. Every local op creates a 1-parent commit; every merge creates a 2-parent commit with the LCA computed from the DAG (BFS on ancestors). A toggleable SVG history graph shows per-replica lanes with colour-coded commits (op commits solid, merge commits dashed, HEADs ringed thicker); click any past commit to inspect its full state.
@@ -95,7 +95,7 @@ See [`demos/README.md`](demos/README.md) for the `CRDTSpec` / `MRDTSpec` interfa
 - [`Sal/Interfaces/`](Sal/Interfaces) — Sal's decidable `set` and `map` interfaces (`Set_Extended`, `Map_Extended`, `Map_Extended_With_Lean_Set`).
 - [`Sal/Tactic/`](Sal/Tactic) — the `sal` tactic (`Sal.lean`) and usage examples (`SalExample.lean`).
 - [`Sal/CRDTs/`](Sal/CRDTs) — 18 state-based CRDTs in the `⟨Σ, σ₀, do, merge, rc⟩` signature.
-- [`Sal/MRDTs/`](Sal/MRDTs) — 10 state-based MRDTs.
+- [`Sal/MRDTs/`](Sal/MRDTs) — 11 state-based MRDTs.
 - [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
 - [`demos/`](demos) — Vite + React + TypeScript playgrounds, one per RDT. CRDT demos do two-way merge; MRDT demos maintain a git-style commit DAG with LCA-driven three-way merge and a toggleable history visualisation.
 - [`docs/porting.md`](docs/porting.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
@@ -130,7 +130,7 @@ The paper evaluates Sal on 13 RDTs (4 CRDTs + 9 MRDTs), 312 VCs total (24 per RD
 
 Two patterns from the paper: MRDTs generally need less SMT than CRDTs because three-way merges express causality directly, and map-based reasoning stresses current Lean automation more than set-based reasoning (the 8 remaining ITP goals are concentrated in map-heavy RDTs).
 
-Since publication the suite has grown from 13 to 28 RDTs, and most of the added CRDTs were proved with the uniform kernel-verifiable pattern described under *The `sal` tactic*, without invoking Blaster for the majority of VCs. A refreshed DG/LB/ITP breakdown across all 28 RDTs is future work. The [`papoc2026`](https://github.com/kayceesrk/sal/tree/papoc2026) branch snapshots the repo at the paper-artifact state.
+Since publication the suite has grown from 13 to 29 RDTs, and most of the added CRDTs were proved with the uniform kernel-verifiable pattern described under *The `sal` tactic*, without invoking Blaster for the majority of VCs. A refreshed DG/LB/ITP breakdown across all 29 RDTs is future work. The [`papoc2026`](https://github.com/kayceesrk/sal/tree/papoc2026) branch snapshots the repo at the paper-artifact state.
 
 ## License
 

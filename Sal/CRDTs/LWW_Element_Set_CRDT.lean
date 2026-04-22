@@ -23,23 +23,47 @@ set_option autoImplicit false
 
 open Classical
 
+/-!
+# LWW-Element-Set — state-based CRDT
 
+Last-Writer-Wins set using two timestamp maps: per-element "latest add
+timestamp" and per-element "latest remove timestamp". An element is
+live iff its max add-ts strictly exceeds its max remove-ts; ties favour
+the remove (a conservative choice — the classical LWW-Set lets this
+convention vary).
 
+Merge is per-element max on each of the two maps (grow-only on both).
+All ops commute (`rc := Either`) because `max` is idempotent-
+commutative regardless of key, value, or which replica wrote.
+
+Contrast with `OR_Set_CRDT`: LWW-Element-Set uses timestamps to decide
+visibility, while OR-Set uses per-add tags and tombstones. LWW is
+simpler but requires some reasonable clock — concurrent writes at the
+same timestamp are resolved by the add-vs-remove tiebreak policy
+encoded above.
+-/
+
+/-- Σ = (addTs, remTs): per-element latest-add / latest-remove timestamps. -/
 @[simp] abbrev concrete_st := map ℕ ℕ × map ℕ ℕ
 
+/-- Zero-default lookup. `0` means "never written". -/
 @[simp]
 def mysel (s: map ℕ ℕ) (k: ℕ) : ℕ :=
 if (contains s k) then (sel s k) else 0
 
+/-- Initial state: both maps empty. -/
 @[simp]
 def init_st : concrete_st:= (const_on empty 0, const_on empty 0)
 
+/-- Pointwise equality on both components. -/
 @[simp]
 def eq (a b: concrete_st) :=
 (forall id, (contains (Prod.fst a) id = contains (Prod.fst b) id) ∧ (mysel (Prod.fst a) id = mysel (Prod.fst b) id)) ∧
 (forall id, (contains (Prod.snd a) id = contains (Prod.snd b) id) ∧ (mysel (Prod.snd a) id = mysel (Prod.snd b) id))
 
 
+/-- `Add id` and `Remove id` each stamp the current `ts` into the
+element's slot on the appropriate map. -/
 inductive app_op_t : Type where
 | Add (id : ℕ)
 | Remove (id : ℕ)
@@ -54,6 +78,10 @@ def get_rid (o : op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
+/-- Effect: update the per-element latest-add or latest-remove ts by
+taking `max` with the incoming `ts`. `ts` is globally unique (via
+`distinct_ops`) but we still take max to stay commutative under
+re-delivery. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
@@ -65,6 +93,8 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
+/-- `rc := Either`: `max` is idempotent-commutative so any two ops
+commute at the state level regardless of kind or element. -/
 @[simp]
 def rc (_o1 _o2 : op_t) := rc_res.Either
 
@@ -72,6 +102,7 @@ def rc (_o1 _o2 : op_t) := rc_res.Either
 def commutes_with (o1 o2 : op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
+/-- Merge: per-key max on each of the two maps. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=
 let keys1 := union (domain (Prod.fst a)) (domain (Prod.fst b))
