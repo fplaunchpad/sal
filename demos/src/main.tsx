@@ -9,7 +9,9 @@ import {
   useParams,
 } from "react-router-dom";
 import { Playground } from "./harness/Playground";
+import { MRDTPlayground } from "./harness/MRDTPlayground";
 import type { CRDTSpec } from "./harness/types";
+import type { MRDTSpec } from "./harness/mrdt_types";
 import { spec as incSpec } from "./crdts/increment_only_counter";
 import { spec as pnSpec } from "./crdts/pn_counter";
 import { spec as boundedSpec } from "./crdts/bounded_counter";
@@ -28,79 +30,80 @@ import { spec as pqSpec } from "./crdts/pq_insert_only";
 import { spec as adwPqSpec } from "./crdts/add_win_pq";
 import { spec as rgaSpec } from "./crdts/rga";
 import { spec as peritextSpec } from "./crdts/peritext";
+import { spec as mIncSpec } from "./mrdts/increment_only_counter";
+import { spec as mPnSpec } from "./mrdts/pn_counter";
+import { spec as mGSetSpec } from "./mrdts/grow_only_set";
 import "./style.css";
 
-// Heterogeneous registry: each spec has its own Concrete/Op types, so we erase
-// them here. Playground consumes the spec as an opaque CRDTSpec<any, any, any>.
-type AnySpec = CRDTSpec<any, any, any>;
+// Heterogeneous registries: each spec has its own Concrete/Op types, so we
+// erase them here. Playground consumes the spec as an opaque *Spec<any,any,any>.
+type AnyCRDT = CRDTSpec<any, any, any>;
+type AnyMRDT = MRDTSpec<any, any, any>;
 
-interface Group {
+interface CRDTGroup {
   heading: string;
-  specs: AnySpec[];
+  specs: AnyCRDT[];
 }
 
-const groups: Group[] = [
-  {
-    heading: "Counters",
-    specs: [incSpec, pnSpec, boundedSpec],
-  },
-  {
-    heading: "Registers",
-    specs: [maxRegSpec, minRegSpec, lwwRegSpec, mvRegSpec],
-  },
-  {
-    heading: "Sets",
-    specs: [gSetSpec, gMultisetSpec, orSpec, lwwElSetSpec],
-  },
-  {
-    heading: "Maps",
-    specs: [lwwMapSpec, maxMapSpec, cartSpec],
-  },
-  {
-    heading: "Priority queues",
-    specs: [pqSpec, adwPqSpec],
-  },
-  {
-    heading: "Sequences",
-    specs: [rgaSpec, peritextSpec],
-  },
+const crdtGroups: CRDTGroup[] = [
+  { heading: "Counters", specs: [incSpec, pnSpec, boundedSpec] },
+  { heading: "Registers", specs: [maxRegSpec, minRegSpec, lwwRegSpec, mvRegSpec] },
+  { heading: "Sets", specs: [gSetSpec, gMultisetSpec, orSpec, lwwElSetSpec] },
+  { heading: "Maps", specs: [lwwMapSpec, maxMapSpec, cartSpec] },
+  { heading: "Priority queues", specs: [pqSpec, adwPqSpec] },
+  { heading: "Sequences", specs: [rgaSpec, peritextSpec] },
 ];
 
-const specs: AnySpec[] = groups.flatMap((g) => g.specs);
+const crdtSpecs: AnyCRDT[] = crdtGroups.flatMap((g) => g.specs);
+
+const mrdtSpecs: AnyMRDT[] = [mIncSpec, mPnSpec, mGSetSpec];
 
 function Landing() {
   return (
     <div className="landing">
       <h1>Sal CRDT playgrounds</h1>
       <p>
-        Each playground simulates three replicas of a CRDT verified in{" "}
-        <a href="https://github.com/fplaunchpad/sal">Sal</a>. Apply operations
-        locally per replica, then merge replicas directionally — pick a{" "}
-        <em>source</em> and a <em>target</em>, click Merge, and the target
-        absorbs the source (source unchanged, just like <code>git merge</code>).
-        Toggle the concrete state to see the lattice representation that makes
-        convergence work.
+        Interactive simulators for the CRDTs and MRDTs verified in{" "}
+        <a href="https://github.com/fplaunchpad/sal">Sal</a>. CRDTs do two-way
+        merge (pick a source and target, target absorbs source); MRDTs do
+        three-way merge over a git-style commit DAG with LCA computed from
+        the history. Toggle the concrete state to see the lattice layer that
+        makes convergence work.
       </p>
-      {groups.map((g) => (
+
+      <h2 style={{ marginTop: "1.5rem" }}>CRDTs (two-way merge)</h2>
+      {crdtGroups.map((g) => (
         <section key={g.heading}>
-          <h2>{g.heading}</h2>
+          <h3>{g.heading}</h3>
           <ul className="demo-list">
             {g.specs.map((s) => (
               <li key={s.slug}>
-                <Link to={`/${s.slug}`}>{s.name}</Link>
+                <Link to={`/crdt/${s.slug}`}>{s.name}</Link>
                 <p>{s.tagline}</p>
               </li>
             ))}
           </ul>
         </section>
       ))}
+
+      <h2 style={{ marginTop: "1.5rem" }}>MRDTs (three-way merge, history DAG)</h2>
+      <section>
+        <ul className="demo-list">
+          {mrdtSpecs.map((s) => (
+            <li key={s.slug}>
+              <Link to={`/mrdt/${s.slug}`}>{s.name}</Link>
+              <p>{s.tagline}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }
 
-function DemoRoute() {
+function CRDTRoute() {
   const { slug } = useParams();
-  const found = specs.find((s) => s.slug === slug);
+  const found = crdtSpecs.find((s) => s.slug === slug);
   if (!found) return <Navigate to="/" replace />;
   return (
     <>
@@ -112,12 +115,29 @@ function DemoRoute() {
   );
 }
 
+function MRDTRoute() {
+  const { slug } = useParams();
+  const found = mrdtSpecs.find((s) => s.slug === slug);
+  if (!found) return <Navigate to="/" replace />;
+  return (
+    <>
+      <nav>
+        <Link to="/">← all demos</Link>
+      </nav>
+      <MRDTPlayground spec={found} />
+    </>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <HashRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/:slug" element={<DemoRoute />} />
+        <Route path="/crdt/:slug" element={<CRDTRoute />} />
+        <Route path="/mrdt/:slug" element={<MRDTRoute />} />
+        {/* legacy single-slug routes (phase 1–3 URLs) */}
+        <Route path="/:slug" element={<CRDTRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
