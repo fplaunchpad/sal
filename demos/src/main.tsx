@@ -26,6 +26,8 @@ import { spec as maxMapSpec } from "./crdts/max_map";
 import { spec as cartSpec } from "./crdts/shopping_cart";
 import { spec as pqSpec } from "./crdts/pq_insert_only";
 import { spec as adwPqSpec } from "./crdts/add_win_pq";
+import { spec as rgaSpec } from "./crdts/rga";
+import { spec as peritextSpec } from "./crdts/peritext";
 import "./style.css";
 
 // Heterogeneous registry: each spec has its own Concrete/Op types, so we erase
@@ -57,6 +59,10 @@ const groups: Group[] = [
   {
     heading: "Priority queues",
     specs: [pqSpec, adwPqSpec],
+  },
+  {
+    heading: "Sequences",
+    specs: [rgaSpec, peritextSpec],
   },
 ];
 
