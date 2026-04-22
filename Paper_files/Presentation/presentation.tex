@@ -59,10 +59,6 @@
   \titlepage
 \end{frame}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6effa6e (updated presentation)
 \begin{frame}
   \frametitle{Presentation Flow}
   \begin{enumerate}
@@ -78,27 +74,18 @@
   \end{enumerate}
 \end{frame}
 
-<<<<<<< HEAD
-=======
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
 % ===========================================================================================
 \section{Introduction: Replication in Practice}
 % ===========================================================================================
 
 \begin{frame}
   \frametitle{Local-First Collaboration}
-  \centering
-  \includegraphics[width=0.6\textwidth]{Pictures/local_first_collaboration_diagram.png}
-  
-  \vspace{0.3cm}
-  \small
   \begin{itemize}
     \item Users work offline, synchronize when connectivity returns
     \item Replicas evolve independently, must merge accurately
     \item Example: Shared documents, collaborative editors
   \end{itemize}
+  \vspace{0.5cm}
   
   \textbf{Challenge:} How do we ensure correctness when states diverge?
 \end{frame}
@@ -142,15 +129,7 @@
   \end{tabular}
   
   \vspace{0.3cm}
-<<<<<<< HEAD
-<<<<<<< HEAD
   \small\textit{Examples of state-based RDTs}
-=======
-  \small\textit{Reference: \url{www.kcsrk.info}}
->>>>>>> 228c91f (added paper and presentation)
-=======
-  \small\textit{Examples of state-based RDTs}
->>>>>>> 6effa6e (updated presentation)
 \end{frame}
 
 \begin{frame}
@@ -169,15 +148,7 @@
   \end{itemize}
   
   \vspace{0.3cm}
-<<<<<<< HEAD
-<<<<<<< HEAD
   \small\textit{Examples of state-based RDTs}
-=======
-  \small\textit{Reference: \url{www.kcsrk.info}}
->>>>>>> 228c91f (added paper and presentation)
-=======
-  \small\textit{Examples of state-based RDTs}
->>>>>>> 6effa6e (updated presentation)
 \end{frame}
 
 % ===========================================================================================
@@ -283,27 +254,6 @@
   \textbf{Key insight:} Lean's small trusted kernel $\rightarrow$ proofs checked without external SMT
 \end{frame}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-\begin{frame}
-  \frametitle{The Multi-Modal Tactic Stack}
-  
-  \centering
-  \vspace{0.5cm}
-  \textbf{Staged Automation:} \\[0.3cm]
-  \begin{tabular}{|l|}
-    \hline
-    \texttt{dsimp} / \texttt{aesop}: Simplification, proof search \\
-    \texttt{grind}: SMT-style + proof reconstruction \\
-    \texttt{lean-blaster}: Full SMT (Z3) as fallback \\
-    AI-assisted: Last resort \\
-    \hline
-  \end{tabular}
-\end{frame}
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
 
 \begin{frame}[fragile]
   \frametitle{Key Design: Data Structures for Automation}
@@ -312,10 +262,6 @@
   
   \vspace{0.3cm}
   \begin{block}{Custom Set and Map Interfaces}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6effa6e (updated presentation)
     \small
     \begin{lstlisting}[style=leanstyle,basicstyle=\tiny\ttfamily]
 -- Set: Boolean-valued membership
@@ -331,30 +277,9 @@ def intersection {a:Type} [DecidableEq a] (s1 s2: set a) : set a :=
 (fun x => s1 x && s2 x)
 
 -- Map: Explicit domain
-<<<<<<< HEAD
 structure map (key:Type) [DecidableEq key] (value:Type) where
   (mappings: key -> value) (domain: set key)
     \end{lstlisting}
-=======
-    \begin{itemize}
-      \item \textbf{Sets:} Boolean-valued membership (decidable)
-        \begin{lstlisting}[style=leanstyle]
-abbrev set (a:Type) [DecidableEq a] := a \rightarrow Bool
-        \end{lstlisting}
-      
-      \item \textbf{Maps:} Explicit domain with decidable equality
-        \begin{lstlisting}[style=leanstyle]
-structure map (key:Type) [DecidableEq key] (value:Type) where
-  mappings: key \rightarrow value
-  domain: set key
-        \end{lstlisting}
-    \end{itemize}
->>>>>>> 228c91f (added paper and presentation)
-=======
-structure map (key:Type) [DecidableEq key] (value:Type) where
-  (mappings: key -> value) (domain: set key)
-    \end{lstlisting}
->>>>>>> 6effa6e (updated presentation)
   \end{block}
   
   \vspace{0.2cm}
@@ -364,8 +289,6 @@ structure map (key:Type) [DecidableEq key] (value:Type) where
 \begin{frame}[fragile]
   \frametitle{Annotation for Proof Search}
   
-<<<<<<< HEAD
-<<<<<<< HEAD
   \textbf{Strategy:} Build domain-specific rewrite database using @[simp, grind] annotations
   
   \vspace{0.2cm}
@@ -394,47 +317,6 @@ def upd {key:Type} [DecidableEq key] {value: Type}
   
   \vspace{0.2cm}
   \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance\vspace{0.1cm}
-=======
-  \textbf{Strategy:} Build domain-specific rewrite database
-=======
-  \textbf{Strategy:} Build domain-specific rewrite database using @[simp, grind] annotations
->>>>>>> 6effa6e (updated presentation)
-  
-  \vspace{0.2cm}
-  \small
-  \begin{lstlisting}[style=leanstyle,basicstyle=\tiny\ttfamily]
--- From Set_extended.lean
-@[simp, grind]
-def mem {a:Type} [DecidableEq a] (x: a) (s: set a) : Bool :=
-  s x
-
-@[simp, grind]
-def difference {a:Type} [DecidableEq a] (s1 s2: set a) : set a :=
-  (fun x => s1 x && not (s2 x))
-
--- From Map_extended.lean
-@[simp, grind]
-def sel {key:Type} [DecidableEq key] {value: Type}
-  (m: map key value) (k:key) := m.mappings k
-
-@[simp, grind]
-def upd {key:Type} [DecidableEq key] {value: Type}
-  (m: map key value) (k:key) (v:value) :=
-  map.mk (fun (x : key) => if x = k then v else m.mappings x)
-         (union (m.domain) (singleton k))
-  \end{lstlisting}
-  
-<<<<<<< HEAD
-  \vspace{0.3cm}
-  \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance
-  
-  \vspace{0.3cm}
-  \textit{This trades generality for automation—critical for VC-heavy developments}
->>>>>>> 228c91f (added paper and presentation)
-=======
-  \vspace{0.2cm}
-  \textbf{Result:} \texttt{grind} automatically applies lemmas without manual guidance\vspace{0.1cm}
->>>>>>> 6effa6e (updated presentation)
 \end{frame}
 
 % ===========================================================================================
@@ -479,10 +361,6 @@ def merge_flag (l a b: concrete_st) :=
   Finding such counterexamples manually is challenging.
 \end{frame}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6effa6e (updated presentation)
 \begin{frame}
   \frametitle{Enable-Wins Flag: Verification Conditions}
   
@@ -500,11 +378,6 @@ def merge_flag (l a b: concrete_st) :=
   \small\textit{From paper Section~4.3: Bottom-up linearization checks if concurrent executions properly compose.}
 \end{frame}
 
-<<<<<<< HEAD
-=======
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
 \begin{frame}[fragile]
   \frametitle{Automated Counterexample Discovery}
   
@@ -527,24 +400,10 @@ def merge_flag (l a b: concrete_st) :=
 \end{frame}
 
 \begin{frame}
-<<<<<<< HEAD
-<<<<<<< HEAD
   \frametitle{Execution Trace Visualization in Lean}
   
   \begin{block}{The Challenge}
     Raw counterexample is hard to understand---why does it fail?
-=======
-  \frametitle{Execution Trace Visualization}
-  
-  \begin{block}{The Challenge}
-    Raw counterexample is hard to understand—why does it fail?
->>>>>>> 228c91f (added paper and presentation)
-=======
-  \frametitle{Execution Trace Visualization in Lean}
-  
-  \begin{block}{The Challenge}
-    Raw counterexample is hard to understand---why does it fail?
->>>>>>> 6effa6e (updated presentation)
   \end{block}
   
   \vspace{0.3cm}
@@ -562,8 +421,6 @@ def merge_flag (l a b: concrete_st) :=
 \end{frame}
 
 \begin{frame}
-<<<<<<< HEAD
-<<<<<<< HEAD
   \frametitle{Concrete Counterexample: Enable-Wins Flag Execution}
   
   \centering
@@ -572,23 +429,6 @@ def merge_flag (l a b: concrete_st) :=
   \small
   \vspace{0.2cm}
   \textit{Automatic counterexample shows: both replicas disable the flag ($v_3, v_5$), yet merge produces (2, true)---flag is incorrectly enabled!}
-=======
-  \frametitle{Enable-Wins Counterexample (Visual)}
-=======
-  \frametitle{Concrete Counterexample: Enable-Wins Flag Execution}
->>>>>>> 6effa6e (updated presentation)
-  
-  \centering
-  \includegraphics[width=0.78\textwidth]{../SAL___Multi_modal_Verification_of_Replicated_Data_Types/ewflag-counterexample.pdf}
-  
-<<<<<<< HEAD
-  \small\textit{Automatic counterexample exposes the bug}
->>>>>>> 228c91f (added paper and presentation)
-=======
-  \small
-  \vspace{0.2cm}
-  \textit{Automatic counterexample shows: both replicas disable the flag ($v_3, v_5$), yet merge produces (2, true)---flag is incorrectly enabled!}
->>>>>>> 6effa6e (updated presentation)
 \end{frame}
 
 % ===========================================================================================
@@ -813,10 +653,6 @@ def merge_flag (l a b: concrete_st) :=
   \textbf{Without automated counterexamples:} Manual debugging would be required
 \end{frame}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6effa6e (updated presentation)
 \begin{frame}
   \frametitle{Execution Trace Visualization: OR-Set Example}
   
@@ -826,11 +662,6 @@ def merge_flag (l a b: concrete_st) :=
   \small\textit{Detailed execution trace showing state evolution and merge operations}
 \end{frame}
 
-<<<<<<< HEAD
-=======
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
 % ===========================================================================================
 \section{Related Work}
 % ===========================================================================================
@@ -938,13 +769,6 @@ def merge_flag (l a b: concrete_st) :=
   \begin{itemize}
     \item \textbf{Paper:} ``SAL: Multi-modal Verification of Replicated Data Types''
     \item \textbf{Code:} \url{https://github.com/fplaunchpad/sal}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    \item \textbf{KC's talks:} \url{www.kcsrk.info}
->>>>>>> 228c91f (added paper and presentation)
-=======
->>>>>>> 6effa6e (updated presentation)
     \item \textbf{Related:} Loom, Neem, and other RDT frameworks
   \end{itemize}
   
