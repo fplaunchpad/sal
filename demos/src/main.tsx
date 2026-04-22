@@ -27,9 +27,11 @@ function Landing() {
       <p>
         Each playground simulates three replicas of a CRDT verified in{" "}
         <a href="https://github.com/fplaunchpad/sal">Sal</a>. Apply operations
-        locally per replica, then merge any pair to watch the abstract view
-        converge. Toggle the concrete state to see the lattice representation
-        that makes convergence work.
+        locally per replica, then merge replicas directionally — pick a{" "}
+        <em>source</em> and a <em>target</em>, click Merge, and the target
+        absorbs the source (source unchanged, just like <code>git merge</code>).
+        Toggle the concrete state to see the lattice representation that makes
+        convergence work.
       </p>
       <ul className="demo-list">
         {specs.map((s) => (

@@ -45,19 +45,19 @@ function reducer<Concrete, Abstract, Op>(
       }
       case "merge": {
         if (a.from === a.to) return s;
+        // Directional: `to` absorbs `from`; `from` is unchanged (like `git merge`).
         const merged = spec.merge(
-          s.replicas[a.from].state,
           s.replicas[a.to].state,
+          s.replicas[a.from].state,
         );
-        // Both replicas converge to the merged state.
         const replicas = s.replicas.map((r, i) =>
-          i === a.from || i === a.to
+          i === a.to
             ? {
                 state: merged,
                 history: [
                   ...r.history,
                   {
-                    op: null as unknown as Op,
+                    op: { __merge: { from: a.from } } as unknown as Op,
                     meta: { ts: s.nextTs, rid: i },
                   },
                 ],
@@ -140,7 +140,10 @@ export function Playground<Concrete, Abstract, Op>({
           Add replica
         </button>
 
-        <div className="merge-controls">
+        <div
+          className="merge-controls"
+          title="Directional merge: target replica absorbs source, like `git merge`. Source is unchanged."
+        >
           <span>Merge</span>
           <select
             value={state.mergeFrom ?? ""}
@@ -157,7 +160,7 @@ export function Playground<Concrete, Abstract, Op>({
               </option>
             ))}
           </select>
-          <span>↔</span>
+          <span aria-label="into">→</span>
           <select
             value={state.mergeTo ?? ""}
             onChange={(e) =>
@@ -219,14 +222,19 @@ export function Playground<Concrete, Abstract, Op>({
               </button>
               {historyOpen.has(rid) && (
                 <ol>
-                  {r.history.map((entry, i) => (
-                    <li key={i}>
-                      <code>ts={entry.meta.ts}</code>{" "}
-                      {entry.op === null
-                        ? "merge"
-                        : spec.formatOp(entry.op, entry.meta)}
-                    </li>
-                  ))}
+                  {r.history.map((entry, i) => {
+                    const mergeInfo = (entry.op as unknown as {
+                      __merge?: { from: number };
+                    } | null)?.__merge;
+                    return (
+                      <li key={i}>
+                        <code>ts={entry.meta.ts}</code>{" "}
+                        {mergeInfo
+                          ? `merge ← R${mergeInfo.from}`
+                          : spec.formatOp(entry.op, entry.meta)}
+                      </li>
+                    );
+                  })}
                 </ol>
               )}
             </div>
