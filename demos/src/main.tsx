@@ -33,6 +33,12 @@ import { spec as peritextSpec } from "./crdts/peritext";
 import { spec as mIncSpec } from "./mrdts/increment_only_counter";
 import { spec as mPnSpec } from "./mrdts/pn_counter";
 import { spec as mGSetSpec } from "./mrdts/grow_only_set";
+import { spec as mMvrSpec } from "./mrdts/multi_valued_register";
+import { spec as mGMapSpec } from "./mrdts/grow_only_map";
+import { spec as mOrSpec } from "./mrdts/or_set";
+import { spec as mOrEffSpec } from "./mrdts/or_set_efficient";
+import { spec as mRgaSpec } from "./mrdts/rga";
+import { spec as mEwfSpec } from "./mrdts/enable_wins_flag";
 import "./style.css";
 
 // Heterogeneous registries: each spec has its own Concrete/Op types, so we
@@ -56,7 +62,17 @@ const crdtGroups: CRDTGroup[] = [
 
 const crdtSpecs: AnyCRDT[] = crdtGroups.flatMap((g) => g.specs);
 
-const mrdtSpecs: AnyMRDT[] = [mIncSpec, mPnSpec, mGSetSpec];
+const mrdtSpecs: AnyMRDT[] = [
+  mIncSpec,
+  mPnSpec,
+  mMvrSpec,
+  mGSetSpec,
+  mGMapSpec,
+  mOrSpec,
+  mOrEffSpec,
+  mRgaSpec,
+  mEwfSpec,
+];
 
 function Landing() {
   return (

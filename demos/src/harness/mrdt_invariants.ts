@@ -26,8 +26,14 @@ export function checkMRDTLaws<C, A, O>(
       JSON.stringify(a, replacer) === JSON.stringify(b, replacer));
   const eqStates = (a: C, b: C) => absEq(spec.abstract(a), spec.abstract(b));
 
-  const applyAll = (ops: { op: O; rid: number }[], startTs: number) => {
-    let s = spec.init;
+  // Branch from a given starting state at a given ts. Fresh timestamps per
+  // op so ops keyed by ts (RGA, MVR, …) stay coherent across the whole DAG.
+  const applyFrom = (
+    start: C,
+    ops: { op: O; rid: number }[],
+    startTs: number,
+  ) => {
+    let s = start;
     let ts = startTs;
     for (const { op, rid } of ops) {
       const meta: OpMeta = { ts: ts++, rid };
@@ -44,8 +50,8 @@ export function checkMRDTLaws<C, A, O>(
   // 1. Left identity: merge(l, l, b) = b  (no changes on the left branch)
   fc.assert(
     fc.property(arbOpList, arbOpList, (lops, bops) => {
-      const { state: l, nextTs } = applyAll(lops, 0);
-      const { state: b } = applyAll([...lops, ...bops], nextTs);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: b } = applyFrom(l, bops, t1);
       return eqStates(spec.merge(l, l, b), b);
     }),
     { numRuns },
@@ -54,8 +60,8 @@ export function checkMRDTLaws<C, A, O>(
   // 2. Right identity: merge(l, a, l) = a
   fc.assert(
     fc.property(arbOpList, arbOpList, (lops, aops) => {
-      const { state: l, nextTs } = applyAll(lops, 0);
-      const { state: a } = applyAll([...lops, ...aops], nextTs);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: a } = applyFrom(l, aops, t1);
       return eqStates(spec.merge(l, a, l), a);
     }),
     { numRuns },
@@ -64,9 +70,9 @@ export function checkMRDTLaws<C, A, O>(
   // 3. Commutativity
   fc.assert(
     fc.property(arbOpList, arbOpList, arbOpList, (lops, aops, bops) => {
-      const { state: l, nextTs: t1 } = applyAll(lops, 0);
-      const { state: a, nextTs: t2 } = applyAll([...lops, ...aops], t1);
-      const { state: b } = applyAll([...lops, ...bops], t2);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: a, nextTs: t2 } = applyFrom(l, aops, t1);
+      const { state: b } = applyFrom(l, bops, t2);
       return eqStates(spec.merge(l, a, b), spec.merge(l, b, a));
     }),
     { numRuns },
