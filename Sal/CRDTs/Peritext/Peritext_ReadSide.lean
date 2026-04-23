@@ -506,3 +506,95 @@ theorem no_add_cover_implies_unformatted
   split_ifs with h_vis
   · exact decide_eq_false h_nex
   · rfl
+
+/-! ## Interior-span coverage (paper Ex 1)
+
+Everything above uses `in_span_boundary`, which covers characters at
+the mark's *four boundary positions* (start/end plus their
+immediate `afters`-successors). This is enough to capture the paper's
+expand/contract / priority-rule / anchors-survive-tombstones claims.
+
+The paper's **Ex 1** — *"insertion within the span of a concurrent
+formatting operation"* — goes further: any character inserted *at
+any interior position* of the span should be covered. Fully
+capturing Ex 1 requires formalizing the RGA's visible-order traversal
+(with deterministic sibling tie-breaking by `opid_max`), which is a
+substantial separate formalization effort.
+
+This section provides a **sound but incomplete** approximation: we
+define interior coverage as reflexive-transitive closure of
+`in_span_boundary` under the `after_of` relation. Concretely, a char
+is interior-covered if it is boundary-covered, or if it was inserted
+immediately after a char that is interior-covered (and is not itself
+at the mark's boundary). This captures the common case of Ex 1 —
+inserting `c_new` with `afters(c_new) = c_interior` where
+`c_interior` is already covered — without committing to the full
+traversal-order characterization (which would additionally track
+sibling ordering and visible-order position).
+
+**What we do not claim here.** We do not claim that
+`covered_interior` matches the paper's exact "within the span"
+semantics for every RGA state. Counter-examples exist where RGA
+visible-order position differs from afters-ancestry (siblings under
+the same parent, ordered by `opid_max`). A follow-up that formalizes
+the full traversal would refine or replace this predicate. -/
+
+/-- Reflexive-transitive closure of `after_of`: `c` is reachable from
+`anc` by following `after_of` links, i.e. `c` is an afters-descendant
+of `anc` in the RGA insertion tree. -/
+inductive afters_reach (s : concrete_st) : OpId → OpId → Prop where
+  | refl (c : OpId) : afters_reach s c c
+  | step {c c_parent anc : OpId} :
+      after_of s c c_parent = true →
+      afters_reach s c_parent anc →
+      afters_reach s c anc
+
+/-- Interior coverage via boundary + afters propagation.
+
+A character `c` is covered by mark `m` in state `s` if it is covered
+at the boundary (see `in_span_boundary`), or if it was inserted
+immediately after some character that is itself interior-covered,
+without being at the mark's own start/end boundary.
+
+This is a sound under-approximation of the paper's Ex 1; it handles
+the common "insert inside the span" case but does not fully match the
+paper's semantics when `opid_max`-driven sibling ordering matters. -/
+inductive covered_interior (s : concrete_st) (m : MarkOp) : OpId → Prop where
+  | boundary (c : OpId) :
+      in_span_boundary s m c = true → covered_interior s m c
+  | propagate {c c_parent : OpId} :
+      covered_interior s m c_parent →
+      after_of s c c_parent = true →
+      c ≠ mark_startId m →
+      c ≠ mark_endId m →
+      covered_interior s m c
+
+/-- Any character covered at the boundary is interior-covered. -/
+theorem covered_interior_of_boundary
+    (s : concrete_st) (m : MarkOp) (c : OpId) :
+    in_span_boundary s m c = true → covered_interior s m c :=
+  covered_interior.boundary c
+
+/-- **Paper Ex 1, one-step form.** If `c_parent` is interior-covered
+and `c` was inserted immediately after `c_parent` (and `c` is not at
+the mark's own boundary), then `c` is interior-covered.
+
+This is the propagation step: a concurrent insert that lands inside
+an already-covered region inherits the mark. Chaining this rule gives
+the general "insert anywhere in the span" claim for the afters-chain
+case. -/
+theorem covered_interior_propagate
+    (s : concrete_st) (m : MarkOp) (c c_parent : OpId) :
+    covered_interior s m c_parent →
+    after_of s c c_parent = true →
+    c ≠ mark_startId m →
+    c ≠ mark_endId m →
+    covered_interior s m c :=
+  fun h_cov h_after h_ne_s h_ne_e =>
+    covered_interior.propagate h_cov h_after h_ne_s h_ne_e
+
+-- Note: a chain-form propagation theorem over `afters_reach` would be
+-- a natural next step (bundling multiple `covered_interior_propagate`
+-- applications into one). Its proof is non-trivial because Lean's
+-- induction principle for `afters_reach` generalizes the boundary-
+-- exclusion hypothesis in a subtle way; deferred as follow-up work.

@@ -328,3 +328,50 @@ theorem no_add_cover_implies_unformatted
   split_ifs with h_vis
   · exact decide_eq_false h_nex
   · rfl
+
+/-! ## Interior-span coverage (paper Ex 1)
+
+Mirror of the CRDT's interior-coverage section. See the CRDT
+`Peritext_ReadSide.lean` for the full scope discussion — in short,
+`covered_interior` is a sound-but-incomplete approximation of the
+paper's "insertion within a span" semantics, built as the transitive
+closure of `in_span_boundary` under the `after_of` relation. Fully
+capturing Ex 1 requires formalizing the RGA's visible-order
+traversal and is deferred as follow-up work. -/
+
+inductive afters_reach (s : concrete_st) : OpId → OpId → Prop where
+  | refl (c : OpId) : afters_reach s c c
+  | step {c c_parent anc : OpId} :
+      after_of s c c_parent = true →
+      afters_reach s c_parent anc →
+      afters_reach s c anc
+
+inductive covered_interior (s : concrete_st) (m : MarkOp) : OpId → Prop where
+  | boundary (c : OpId) :
+      in_span_boundary s m c = true → covered_interior s m c
+  | propagate {c c_parent : OpId} :
+      covered_interior s m c_parent →
+      after_of s c c_parent = true →
+      c ≠ m.startId →
+      c ≠ m.endId →
+      covered_interior s m c
+
+theorem covered_interior_of_boundary
+    (s : concrete_st) (m : MarkOp) (c : OpId) :
+    in_span_boundary s m c = true → covered_interior s m c :=
+  covered_interior.boundary c
+
+/-- Paper Ex 1, one-step form: a concurrent insert at an already-
+covered interior character inherits the mark. -/
+theorem covered_interior_propagate
+    (s : concrete_st) (m : MarkOp) (c c_parent : OpId) :
+    covered_interior s m c_parent →
+    after_of s c c_parent = true →
+    c ≠ m.startId →
+    c ≠ m.endId →
+    covered_interior s m c :=
+  fun h_cov h_after h_ne_s h_ne_e =>
+    covered_interior.propagate h_cov h_after h_ne_s h_ne_e
+
+-- Chain-form propagation over `afters_reach` is deferred; see the
+-- CRDT ReadSide file for the corresponding note.
