@@ -68,7 +68,15 @@ noncomputable def in_span_boundary (s : concrete_st) (m : MarkOp) (c : OpId) : B
   else if after_of s c m.endId = true then m.endSide
   else false
 
-/-- Priority: Add beats Remove, else LWW by opId. -/
+/-- Priority: Add beats Remove, else LWW by opId.
+
+**Deliberate departure from paper §4.4.** See the CRDT's `mark_beats`
+docstring for the full discussion. In short: the paper uses pure LWW
+by `opId` (ignoring `isAdd`); we add an "Add beats Remove" clause so
+concurrent formatting doesn't get silently overridden by a stale
+`RemoveMark` with a higher `opId`. The paper's own framing calls
+Ex 5 "arbitrary deterministic," so both rules satisfy the paper's
+intent — ours picks the more user-friendly branch. -/
 def mark_beats (a b : MarkOp) : Bool :=
   if a.isAdd && !b.isAdd then true
   else if !a.isAdd && b.isAdd then false
