@@ -29,7 +29,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
 | 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED (strategy doc landed) |
-| 5 | End-to-end smoke test on Grow-Only Set | **PARTIAL** |
+| 5 | End-to-end smoke test on Grow-Only Set | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **DONE** |
@@ -121,7 +121,7 @@ template:
 
 **Effort:** 2–4 weeks. Single hardest proof in Phase 1.
 
-### 5. Smoke test on Grow-Only Set — PARTIAL
+### 5. Smoke test on Grow-Only Set — DONE
 
 Landed in `Sal/Emulation/Instances/Grow_Only_Set.lean`:
 - `D : CRDTSig` instance wrapping the top-level
@@ -130,13 +130,25 @@ Landed in `Sal/Emulation/Instances/Grow_Only_Set.lean`:
 - `toRcRes` bridge between per-file `rc_res` and generic `RcRes`.
 - `distinctOps_iff`, `differentReplicas_iff` — `simp` lemmas linking
   Prop-valued versions to Bool-valued `distinct_ops` / `get_rid`.
-- `D_satisfies_VCs` — partial instance: `merge_comm` and `merge_idem`
-  plumbed directly from the per-file Sal theorems (confirms the type
-  alignment works). Other 22 fields are `sorry`.
+- `D_rc_Either`, `D_rc_not_Fst`, `D_rc_Fst_iff_False` — helpers
+  capturing "`D.rc = Either` always" used by the vacuous VCs.
+- `D_satisfies_VCs : SatisfiesVCs D` — **all 24 fields closed**:
+  - 14 vacuous VCs (premise requires `Fst_then_snd`) closed by
+    `intros; simp_all`.
+  - 8 real-content VCs (`base_2op`, `ind_lca_2op`, `ind_left_2op`,
+    `base_1op`, `ind_lca_1op`, `ind_left_1op`, `ind_right_1op`,
+    `lem_0op`) plumbed to the corresponding `_root_.*` Sal theorems.
+  - `rc_non_comm` bridges the Prop/Bool premise conjunction.
+  - `merge_comm`, `merge_idem` direct delegation.
 
-**Effort remaining:** close the other 22 fields (~1 day of pattern
-plumbing), then call `ra_linearizable_of_vcs` to get end-to-end
-RA-linearizability for Grow-Only Set (modulo the Merge case sorry).
+Validates that the generic `SatisfiesVCs` struct matches the concrete
+Bool-valued theorem statements in Sal's existing files. One down,
+17 CRDTs to go (but the pattern is mechanical — probably a day for
+the rest once a macro is written).
+
+**Effort remaining:** zero, for Grow-Only Set. End-to-end
+`ra_linearizable_of_vcs D_satisfies_VCs` still fires a `sorry` via the
+Merge case, but the plumbing on the upstream side is all solid.
 
 ### 6. Instantiate bridge for remaining CRDTs — TODO
 

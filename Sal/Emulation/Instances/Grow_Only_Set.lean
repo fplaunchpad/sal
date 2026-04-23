@@ -71,6 +71,21 @@ function returning `Prod.fst o1 != Prod.fst o2`) while our
   rcases o₂ with ⟨t₂, r₂, a₂⟩
   simp [Op.rep]
 
+/-- For the Grow-Only Set, `D.rc` is always `Either`. Many VCs become
+vacuous because their premises require `Fst_then_snd`. -/
+@[simp] theorem D_rc_Either (o₁ o₂ : Op D.AppOp) :
+    D.rc o₁ o₂ = RcRes.Either := by
+  show toRcRes (_root_.rc o₁ o₂) = RcRes.Either
+  simp
+
+/-- Fst_then_snd never holds; used to discharge vacuous premises. -/
+@[simp] theorem D_rc_not_Fst (o₁ o₂ : Op D.AppOp) :
+    D.rc o₁ o₂ ≠ RcRes.Fst_then_snd := by
+  rw [D_rc_Either]; decide
+
+@[simp] theorem D_rc_Fst_iff_False (o₁ o₂ : Op D.AppOp) :
+    (D.rc o₁ o₂ = RcRes.Fst_then_snd) ↔ False := by simp
+
 /-! ## The SatisfiesVCs instance
 
 `rc := Either` makes most VCs trivial: `Fst_then_snd` never holds, so
@@ -80,39 +95,81 @@ close by `intro h; exact absurd h (by decide)` or `simp`.
 For the cases that aren't vacuous (commutativity-style), the existing
 theorem does the work. -/
 
-/-- Satisfies the 24 VCs. Each field plugs in the corresponding
-per-file theorem; the type mismatch between Prop-valued `distinctOps`
-and Bool-valued `distinct_ops` is bridged by `simp` with the
-`@[simp]` lemmas above.
+/-- Satisfies all 24 VCs. **No sorries.** Structure of each field:
 
-Currently closes `merge_comm` and `merge_idem` as a sanity check that
-the plumbing works. The other 22 fields are marked `sorry`; each is a
-mechanical unpacking of the corresponding Sal theorem (roughly a day
-of focused work total). -/
+* Vacuous VCs (premise requires `Fst_then_snd`, impossible since
+  `D.rc = Either` always): closed by `intros; simp_all` using the
+  `@[simp]` lemmas `D_rc_Fst_iff_False` / `D_rc_Either`.
+* `rc_non_comm`: delegates to `_root_.rc_non_comm`, bridging the Prop
+  premise conjunction to the Bool one.
+* `base_2op`, `ind_lca_2op`, `ind_left_2op`, `base_1op`, `ind_lca_1op`,
+  `ind_left_1op`, `ind_right_1op`, `lem_0op`, `merge_comm`,
+  `merge_idem`: plumb directly to the corresponding per-file Sal
+  theorems.
+
+This validates the Prop-valued `SatisfiesVCs` matches the Bool-valued
+theorem statements in the Sal-paper file, end-to-end, for at least one
+concrete CRDT. -/
 theorem D_satisfies_VCs : SatisfiesVCs D where
-  rc_non_comm := by sorry
-  no_rc_chain := by sorry
-  cond_comm_base := by sorry
+  -- `rc = Either` is total → commutes_with holds (Sal proved this for real).
+  rc_non_comm := by
+    intro o₁ o₂ h_d h_r
+    have hb : _root_.distinct_ops o₁ o₂ ∧ _root_.get_rid o₁ != _root_.get_rid o₂ := by
+      refine ⟨?_, ?_⟩
+      · rwa [← distinctOps_iff]
+      · rwa [← differentReplicas_iff]
+    have h := _root_.rc_non_comm o₁ o₂ hb
+    simp only [D_rc_Either, true_iff]
+    intro s
+    exact (h.mp rfl) s
+  -- Vacuous: D.rc = Either always, so D.rc = Fst_then_snd is impossible.
+  no_rc_chain := by intros; simp_all
+  cond_comm_base := by intros; simp_all
   merge_comm := fun a b => _root_.merge_comm a b
   merge_idem := fun s => _root_.merge_idem s
-  base_2op := by sorry
-  ind_lca_2op := by sorry
-  inter_right_base_2op := by sorry
-  inter_left_base_2op := by sorry
-  inter_right_2op := by sorry
-  inter_left_2op := by sorry
-  inter_lca_2op := by sorry
-  ind_right_2op := by sorry
-  ind_left_2op := by sorry
-  base_1op := by sorry
-  ind_lca_1op := by sorry
-  inter_right_base_1op := by sorry
-  inter_left_base_1op := by sorry
-  inter_right_1op := by sorry
-  inter_left_1op := by sorry
-  inter_lca_1op := by sorry
-  ind_left_1op := by sorry
-  ind_right_1op := by sorry
-  lem_0op := by sorry
+  -- Real content: delegate to Sal's base_2op.
+  base_2op := by
+    intro o₁ o₂ _ h_diff h_dis
+    apply _root_.base_2op
+    exact ⟨Or.inr rfl, by rwa [← differentReplicas_iff], by rwa [← distinctOps_iff]⟩
+  ind_lca_2op := by
+    intro l o₁ o₂ ol _ h_diff h_d12 h_d13 h_d23 h_eq
+    apply _root_.ind_lca_2op
+    exact ⟨Or.inr rfl, by rwa [← differentReplicas_iff],
+           by rwa [← distinctOps_iff], by rwa [← distinctOps_iff],
+           by rwa [← distinctOps_iff], h_eq⟩
+  inter_right_base_2op := by intros; simp_all
+  inter_left_base_2op := by intros; simp_all
+  inter_right_2op := by intros; simp_all
+  inter_left_2op := by intros; simp_all
+  inter_lca_2op := by intros; simp_all
+  ind_right_2op := by intros; simp_all
+  ind_left_2op := by
+    intro a b o₁ o₂ o₁' _ h_diff h_d12 h_d13 h_d23 h_eq
+    apply _root_.ind_left_2op
+    exact ⟨Or.inr rfl, by rwa [← differentReplicas_iff],
+           by rwa [← distinctOps_iff], by rwa [← distinctOps_iff],
+           by rwa [← distinctOps_iff], h_eq⟩
+  base_1op := fun o => _root_.base_1op o
+  ind_lca_1op := by
+    intro l o₁ ol h_dis h_eq
+    apply _root_.ind_lca_1op
+    exact ⟨by rwa [← distinctOps_iff], h_eq⟩
+  inter_right_base_1op := by intros; simp_all
+  inter_left_base_1op := by intros; simp_all
+  inter_right_1op := by intros; simp_all
+  inter_left_1op := by intros; simp_all
+  inter_lca_1op := by intros; simp_all
+  ind_left_1op := by
+    intro a b o₁ o₁' ol h_d11 h_d1l h_d1l' h_eq
+    apply _root_.ind_left_1op
+    exact ⟨by rwa [← distinctOps_iff], by rwa [← distinctOps_iff],
+           by rwa [← distinctOps_iff], h_eq⟩
+  ind_right_1op := by
+    intro a b o₂ o₂' ol h_d22 h_d2l h_d2l' h_eq
+    apply _root_.ind_right_1op
+    exact ⟨by rwa [← distinctOps_iff], by rwa [← distinctOps_iff],
+           by rwa [← distinctOps_iff], h_eq⟩
+  lem_0op := fun a b ol => _root_.lem_0op a b ol
 
 end Sal.Emulation.Instances.GrowOnlySet
