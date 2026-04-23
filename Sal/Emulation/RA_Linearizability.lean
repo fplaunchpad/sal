@@ -536,24 +536,74 @@ theorem RA_lin_preserved_apply
     rcases hr' with rfl
     simp [updateRep] at hN' hL'
     obtain ⟨π_old, hperm_old, hresp_old, heq_old⟩ := hRA r' s ev h_s h_ev
+    -- `e` not in `ev` (freshness), hence not in `π_old`.
+    have he_notin_ev : (t, r', o) ∉ ev := by
+      intro hev
+      exact h_fresh_t (t, r', o) ⟨r', ev, h_ev, hev⟩ rfl
+    have he_notin_old : (t, r', o) ∉ π_old := by
+      intro hmem
+      exact he_notin_ev ((hperm_old.2 _).mp hmem)
     refine ⟨π_old ++ [(t, r', o)], ?_, ?_, ?_⟩
-    · -- listPermOf (π_old ++ [e]) E'
-      -- Needs: Nodup (π_old ∧ fresh e) + membership ↔ (ev ∪ {e}).
-      -- Freshness of `e` follows from h_fresh_t; membership from hperm_old.
-      sorry
-    · -- respects (π_old ++ [e]) (lo C')
-      -- On π_old: lo_shrink_under_apply transfers respects.
-      -- Frontier pair (a, e): ¬ lo C' e a because vis_C' a e is forced by ev a.
-      sorry
-    · -- applySeq: π_old extends by e, which lands us at D.update s e.
+    · -- listPermOf
+      refine ⟨?_, ?_⟩
+      · rw [List.nodup_append]
+        refine ⟨hperm_old.1, by simp, ?_⟩
+        intro a ha hae hae_mem heq
+        rw [List.mem_singleton] at hae_mem
+        subst hae_mem
+        exact he_notin_old (heq ▸ ha)
+      · intro a
+        rw [List.mem_append, List.mem_singleton, ← hL']
+        constructor
+        · rintro (h | rfl)
+          · exact Or.inl ((hperm_old.2 a).mp h)
+          · exact Or.inr rfl
+        · rintro (h | rfl)
+          · exact Or.inl ((hperm_old.2 a).mpr h)
+          · exact Or.inr rfl
+    · -- respects
+      rw [respects, List.pairwise_append]
+      refine ⟨?_, List.pairwise_singleton _ _, ?_⟩
+      · -- Pairwise on π_old (shrink under apply)
+        refine hresp_old.imp_of_mem ?_
+        intro a b ha hb hab hlo'
+        have ha_ne : a ≠ (t, r', o) := fun h => he_notin_old (h ▸ ha)
+        have hb_ne : b ≠ (t, r', o) := fun h => he_notin_old (h ▸ hb)
+        exact hab (lo_shrink_under_apply hvis hb_ne ha_ne hlo')
+      · -- Frontier: ∀ a ∈ π_old, ∀ f ∈ [e], ¬ lo C' f a.
+        intro a ha f hf
+        rw [List.mem_singleton] at hf
+        subst hf
+        intro hlo
+        have ha_ev : ev a := (hperm_old.2 a).mp ha
+        unfold lo at hlo
+        rw [hvis] at hlo
+        rcases hlo with ⟨hv, _⟩ | ⟨_, hnv₂, _, _⟩
+        · rcases hv with hvC | ⟨_, ha_eq⟩
+          · -- vis_C (t, r', o) a: requires a "vis only over C.events"
+            -- invariant on reachable configurations. Left as sorry;
+            -- see PLAN.md step 3 note.
+            sorry
+          · exact he_notin_old (ha_eq ▸ ha)
+        · exact hnv₂ (Or.inr ⟨ha_ev, rfl⟩)
+    · -- applySeq
       rw [applySeq_append_single, heq_old]; exact hN'
   · -- Other replica: state and events unchanged; `lo` shrinks on π.
     simp [updateRep, hr'] at hN' hL'
     obtain ⟨π, hperm, hresp, heq⟩ := hRA r' s' E' hN' hL'
     refine ⟨π, hperm, ?_, heq⟩
-    -- Need: respects π (lo C'). For a, b ∈ π, both ≠ (t, r, o)
-    -- (by h_fresh_t), so lo_shrink_under_apply applies.
-    sorry
+    -- respects π (lo C'): each x ∈ π has x ∈ E' ⊆ C.events, so by
+    -- freshness `Op.time x ≠ t`, hence `x ≠ (t, r, o)`.
+    have h_fresh_in_pi : ∀ x ∈ π, x ≠ (t, r, o) := by
+      intro x hx hxe
+      have hx_in_E : x ∈ E' := (hperm.2 x).mp hx
+      have hx_in_C : x ∈ C.events := ⟨r', E', hL', hx_in_E⟩
+      have : Op.time x = t := by simp [hxe, Op.time]
+      exact h_fresh_t x hx_in_C this
+    refine hresp.imp_of_mem ?_
+    intro a b ha hb hab hlo'
+    exact hab (lo_shrink_under_apply hvis
+      (h_fresh_in_pi b hb) (h_fresh_in_pi a ha) hlo')
 
 /-! ### Bridge theorem — Merge case (TODO)
 
