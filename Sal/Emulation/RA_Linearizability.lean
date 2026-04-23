@@ -655,7 +655,13 @@ theorem visWellFormed_of_reachable {D : CRDTSig}
   | refl =>
     intro a b hv
     simp [initConfig] at hv
-  | tail _ _ _ => sorry
+  | tail _ _ _ =>
+    -- Inductive cases: each step either preserves `vis` and grows
+    -- `events` (CreateReplica, Merge, Query) or extends `vis` by
+    -- `ev × {e}` where `ev ⊆ old events` and `e ∈ new events` (Apply).
+    -- Requires an auxiliary "events is monotone" + (for cleanest
+    -- statement) a `domN = domL` configuration invariant.
+    sorry
 
 /-- **Bridge theorem (Sal paper, bottom-up linearization).** If a CRDT
 `D` satisfies the 24 VCs, every configuration reachable in `S_D` is
