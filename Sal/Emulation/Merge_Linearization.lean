@@ -44,110 +44,90 @@ noncomputable def restrictTo (π : List (Op D.AppOp)) (E : Set (Op D.AppOp)) :
     List (Op D.AppOp) :=
   π.filter fun x => decide (x ∈ E)
 
-/-- Combined permutation: the common events from `π₁`, followed by
-`π₁`'s unique events, followed by `π₂`'s unique events.
+/-- Combined permutation witnessing `ev₁ ∪ ev₂`: use `π₁` verbatim
+(covers `ev₁`), then append the sublist of `π₂` restricted to events
+only at `r₂` (covers `ev₂ \ ev₁`).
 
-Using `π₁`'s ordering for the common events (both `π₁` and `π₂`
-witness permutations of `ev₁` and `ev₂` respectively, so `π₁ ∩ π₂`
-gives both; we pick `π₁`'s version). -/
+This preserves `π₁`'s internal ordering (important for `respects`) and
+keeps `π₂`'s sub-list ordering intact. Since `π₁` already includes the
+common-ancestor events (`ev₁ ∩ ev₂`), there's no double counting. -/
 noncomputable def merge_witness (π₁ π₂ : List (Op D.AppOp))
     (ev₁ ev₂ : Set (Op D.AppOp)) : List (Op D.AppOp) :=
-  restrictTo π₁ (ev₁ ∩ ev₂) ++
-    restrictTo π₁ (ev₁ \ ev₂) ++
-    restrictTo π₂ (ev₂ \ ev₁)
+  π₁ ++ restrictTo π₂ (ev₂ \ ev₁)
 
 /-! ### Supporting lemmas (scaffolded) -/
 
 /-- The `merge_witness` is a permutation of `ev₁ ∪ ev₂`. Follows from
-`π₁` being a permutation of `ev₁` and `π₂` of `ev₂`, plus the
-standard set-theoretic decomposition `ev₁ ∪ ev₂ = (ev₁ ∩ ev₂) ∪
-(ev₁ \ ev₂) ∪ (ev₂ \ ev₁)`. -/
+`π₁ ≡ ev₁`, `π₂ ≡ ev₂` (up to permutation), and the fact that
+`ev₁ ∪ (ev₂ \ ev₁) = ev₁ ∪ ev₂`. -/
 theorem merge_witness_perm
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
     (h₁ : listPermOf π₁ ev₁) (h₂ : listPermOf π₂ ev₂) :
     listPermOf (merge_witness π₁ π₂ ev₁ ev₂) (ev₁ ∪ ev₂) := by
   obtain ⟨hn₁, hm₁⟩ := h₁
   obtain ⟨hn₂, hm₂⟩ := h₂
-  -- Three building blocks — the restrictTo parts.
-  have A_nodup : (restrictTo π₁ (ev₁ ∩ ev₂)).Nodup := by
-    unfold restrictTo; exact hn₁.filter _
-  have B_nodup : (restrictTo π₁ (ev₁ \ ev₂)).Nodup := by
-    unfold restrictTo; exact hn₁.filter _
-  have C_nodup : (restrictTo π₂ (ev₂ \ ev₁)).Nodup := by
+  have R_nodup : (restrictTo π₂ (ev₂ \ ev₁)).Nodup := by
     unfold restrictTo; exact hn₂.filter _
-  have mem_A : ∀ a, a ∈ restrictTo π₁ (ev₁ ∩ ev₂) ↔ a ∈ ev₁ ∧ a ∈ ev₂ := by
-    intro a; unfold restrictTo
-    simp only [List.mem_filter, decide_eq_true_eq, Set.mem_inter_iff]
-    constructor
-    · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
-    · rintro ⟨h, h'⟩; exact ⟨(hm₁ a).mpr h, h, h'⟩
-  have mem_B : ∀ a, a ∈ restrictTo π₁ (ev₁ \ ev₂) ↔ a ∈ ev₁ ∧ a ∉ ev₂ := by
-    intro a; unfold restrictTo
-    simp only [List.mem_filter, decide_eq_true_eq, Set.mem_diff]
-    constructor
-    · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
-    · rintro ⟨h, h'⟩; exact ⟨(hm₁ a).mpr h, h, h'⟩
-  have mem_C : ∀ a, a ∈ restrictTo π₂ (ev₂ \ ev₁) ↔ a ∈ ev₂ ∧ a ∉ ev₁ := by
+  have mem_R : ∀ a, a ∈ restrictTo π₂ (ev₂ \ ev₁) ↔ a ∈ ev₂ ∧ a ∉ ev₁ := by
     intro a; unfold restrictTo
     simp only [List.mem_filter, decide_eq_true_eq, Set.mem_diff]
     constructor
     · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
     · rintro ⟨h, h'⟩; exact ⟨(hm₂ a).mpr h, h, h'⟩
   refine ⟨?_, ?_⟩
-  · -- Nodup (A ++ B ++ C)
+  · -- Nodup (π₁ ++ restrictTo π₂ (ev₂ \ ev₁))
     unfold merge_witness
-    rw [List.nodup_append, List.nodup_append]
-    refine ⟨⟨A_nodup, B_nodup, ?_⟩, C_nodup, ?_⟩
-    · -- A disjoint B: a ∈ A ⟹ a ∈ ev₂; a ∈ B ⟹ a ∉ ev₂.
-      intro a haA b hbB hab
-      rw [(mem_B b)] at hbB
-      subst hab
-      exact hbB.2 ((mem_A a).mp haA).2
-    · -- (A ++ B) disjoint C
-      intro a hab c hcC hac
-      rw [List.mem_append] at hab
-      rw [(mem_C c)] at hcC
-      subst hac
-      rcases hab with h | h
-      · -- a ∈ A: a ∈ ev₁
-        exact hcC.2 ((mem_A a).mp h).1
-      · -- a ∈ B: a ∈ ev₁
-        exact hcC.2 ((mem_B a).mp h).1
+    rw [List.nodup_append]
+    refine ⟨hn₁, R_nodup, ?_⟩
+    intro a ha b hb hab
+    rw [mem_R b] at hb
+    subst hab
+    exact hb.2 ((hm₁ a).mp ha)
   · -- Membership
     intro a
     unfold merge_witness
-    rw [List.mem_append, List.mem_append]
-    rw [mem_A a, mem_B a, mem_C a, Set.mem_union]
+    rw [List.mem_append, mem_R a, hm₁ a, Set.mem_union]
     constructor
-    · rintro ((⟨h, _⟩ | ⟨h, _⟩) | ⟨h, _⟩)
-      · exact Or.inl h
+    · rintro (h | ⟨h, _⟩)
       · exact Or.inl h
       · exact Or.inr h
     · intro h
       rcases h with h | h
-      · by_cases h' : a ∈ ev₂
-        · exact Or.inl (Or.inl ⟨h, h'⟩)
-        · exact Or.inl (Or.inr ⟨h, h'⟩)
+      · exact Or.inl h
       · by_cases h' : a ∈ ev₁
-        · exact Or.inl (Or.inl ⟨h', h⟩)
+        · exact Or.inl h'
         · exact Or.inr ⟨h, h'⟩
 
-/-- The `merge_witness` respects `lo C` (the vis-unchanged assumption
-is baked in: at the merge step `C'.vis = C.vis`, so `lo C' = lo C`
-on the merged event set).
+/-- The `merge_witness` respects `lo C`. Split via `List.pairwise_append`
+into three obligations:
 
-The argument uses:
-* Within each of the three parts (π₁|_top, π₁|_L₁, π₂|_L₂):
-  the IH `respects` is preserved by `List.filter`.
-* Between parts: the standard "L₁^b before L_top^a before L₁^a"
-  structure from the paper (lemmas.tex Lemma 1 / Lemma 2). Requires
-  `rcNonComm` and `condComm` hypotheses (i.e. `SatisfiesVCs`). -/
+1. `π₁.Pairwise (¬ lo C · ·)` — directly from `h₁_resp`.
+2. `(restrictTo π₂ _).Pairwise ...` — from `h₂_resp` via filter-sublist.
+3. Cross case: for `a ∈ π₁` (so `a ∈ ev₁`) and `b ∈ restrictTo π₂ (ev₂ \ ev₁)`
+   (so `b ∈ ev₂ ∧ b ∉ ev₁`), show `¬ lo C b a`.
+
+The cross case needs:
+* `SatisfiesVCs D` — for `rcNonComm`, `condComm`, `no_rc_chain`.
+* A **causal closure invariant** on `C.vis`: `∀ a b r s,
+   C.vis a b → C.L r = some s → s b → s a`. This is not currently a
+   field of `Configuration` — it would need adding (symmetrically
+   with `dom_eq`, `vis_src`, `vis_tgt`).
+
+TODO: extend `Configuration` with causal closure + prove it preserved
+by `initConfig` and each `Step` rule, then close this lemma. -/
 theorem merge_witness_respects
     {C : Configuration D}
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    (_h₁_resp : respects π₁ (lo C)) (_h₂_resp : respects π₂ (lo C)) :
+    (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C)) :
     respects (merge_witness π₁ π₂ ev₁ ev₂) (lo C) := by
-  sorry
+  unfold merge_witness respects
+  rw [List.pairwise_append]
+  refine ⟨h₁_resp, ?_, ?_⟩
+  · -- Within restrictTo π₂ (ev₂ \ ev₁): filter preserves Pairwise.
+    unfold restrictTo
+    exact h₂_resp.filter _
+  · -- Cross case — see TODO above.
+    sorry
 
 /-- Applying the `merge_witness` to `σ₀` yields `D.merge s₁ s₂`. The
 load-bearing lemma. Uses the 24 VCs from `SatisfiesVCs` to iteratively
