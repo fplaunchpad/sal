@@ -960,3 +960,97 @@ theorem expand_contract_start_before
   intro h_sSd h_ne_s h_ne_e h_after h_not_after_end
   simp only [in_span_boundary, h_ne_s, h_ne_e, h_after, h_sSd, h_not_after_end]
   grind
+
+/-- **Paper Ex 2 — Partially overlapping Adds of the same type.**
+
+If no `RemoveMark` of type `mt` covers `c`, and some `AddMark` `m`
+covers `c` and beats every other covering Add of the same type (LWW),
+then `c` is formatted. Captures the paper's point that two users
+bolding overlapping regions yield a single bold union — every
+character in the union is covered by at least one Add, and that Add
+wins. -/
+theorem partial_overlap_all_adds_formatted
+    (s : concrete_st) (c : OpId) (mt : ℕ) (m : MarkOp) :
+    mark_isAdd m = true →
+    mark_markType m = mt →
+    mark_present s m = true →
+    in_span_boundary s m c = true →
+    visible s c = true →
+    -- No Remove of type `mt` covers `c`
+    (∀ m', mark_present s m' = true →
+           in_span_boundary s m' c = true →
+           mark_markType m' = mt →
+           mark_isAdd m' = false →
+           False) →
+    -- `m` beats every other covering Add of type `mt` (LWW)
+    (∀ m', mark_present s m' = true →
+           in_span_boundary s m' c = true →
+           mark_markType m' = mt →
+           mark_isAdd m' = true →
+           m' ≠ m →
+           mark_beats m m' = true) →
+    formatted s c mt = true := by
+  intro h_add h_mt h_pres h_cov h_vis h_no_rem h_beats_adds
+  simp only [formatted, h_vis, if_true]
+  refine decide_eq_true (Exists.intro m ?_)
+  refine ⟨⟨h_pres, h_cov, h_mt, ?_⟩, h_add⟩
+  intro m' h_pres' h_cov' h_mt' h_ne
+  match h_isAdd : mark_isAdd m' with
+  | true  => exact h_beats_adds m' h_pres' h_cov' h_mt' h_isAdd h_ne
+  | false => exact absurd (h_no_rem m' h_pres' h_cov' h_mt' h_isAdd) id
+
+/-- **Paper Ex 3 — Different-type Adds coexist.**
+
+A bold `AddMark` and an italic `AddMark` at the same character do not
+interact: the character is formatted as both bold and italic. Captures
+the paper's independence of mark types. -/
+theorem different_type_adds_coexist
+    (s : concrete_st) (c : OpId) (mB mI : MarkOp) :
+    mark_isAdd mB = true →
+    mark_isAdd mI = true →
+    mark_markType mB ≠ mark_markType mI →
+    mark_present s mB = true →
+    mark_present s mI = true →
+    in_span_boundary s mB c = true →
+    in_span_boundary s mI c = true →
+    visible s c = true →
+    (∀ m', mark_present s m' = true → in_span_boundary s m' c = true →
+           mark_markType m' = mark_markType mB → m' ≠ mB →
+           mark_beats mB m' = true) →
+    (∀ m', mark_present s m' = true → in_span_boundary s m' c = true →
+           mark_markType m' = mark_markType mI → m' ≠ mI →
+           mark_beats mI m' = true) →
+    formatted s c (mark_markType mB) = true ∧ formatted s c (mark_markType mI) = true := by
+  intro h_addB h_addI _ h_presB h_presI h_covB h_covI h_vis h_beatsB h_beatsI
+  refine ⟨?_, ?_⟩
+  · simp only [formatted, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mB ⟨⟨h_presB, h_covB, rfl, h_beatsB⟩, h_addB⟩)
+  · simp only [formatted, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mI ⟨⟨h_presI, h_covI, rfl, h_beatsI⟩, h_addI⟩)
+
+/-- **Paper Ex 5 (negative case) — No covering Add → unformatted.**
+
+If no `AddMark` of type `mt` covers `c` at the boundary, then `c` is
+not formatted with `mt`. This is the real content of paper Ex 5's
+negative case: unformatting is the absence of an Add that covers the
+character, not the presence of a specific "winning Remove." Unlike a
+pure-LWW characterization, this statement holds regardless of the
+priority rule — it depends only on the definition of `formatted` as
+`∃ m, mark_wins s m c mt ∧ isAdd m`. -/
+theorem no_add_cover_implies_unformatted
+    (s : concrete_st) (c : OpId) (mt : ℕ) :
+    -- No Add of type `mt` is present-and-covering at `c`
+    (∀ m, mark_present s m = true →
+          in_span_boundary s m c = true →
+          mark_markType m = mt →
+          mark_isAdd m = false) →
+    formatted s c mt = false := by
+  intro h_all_removes
+  have h_nex : ¬ ∃ m, mark_wins s m c mt ∧ mark_isAdd m = true := by
+    rintro ⟨w, ⟨h_pres_w, h_cov_w, h_mt_w, _⟩, h_w_add⟩
+    have : mark_isAdd w = false := h_all_removes w h_pres_w h_cov_w h_mt_w
+    grind
+  simp only [formatted]
+  split_ifs with h_vis
+  · exact decide_eq_false h_nex
+  · rfl
