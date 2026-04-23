@@ -19,9 +19,9 @@ but the correctness criteria land in different places:
 
 | Paper | Our Lean | Notes |
 |---|---|---|
-| Convergence (Thm A.1, §A.3) | 24 RA-linearizability VCs | Pointwise equality on the four state components; per-replica snapshot rather than op-log consistency. |
+| Convergence (Thm A.1, §A.3) | 24 RA-linearizability VCs (per variant) | Pointwise equality on each state component. CRDT has four components (`chars : map`, `afters : map`, `deleted : map`, `marks : set`); MRDT has three (`chars : set CharRec`, `removed : set OpId`, `marks : set`). Per-replica snapshot rather than op-log consistency. Both variants are fully sorry-free. |
 | Causality preservation (§A.1) | Framework-level assumption | Sal's state-based model assumes causal delivery; the VCs verify the local reconciliation rule. |
-| Intention preservation (§A.2, 8 examples) | Characterization theorems in `Peritext_ReadSide.lean` | See the table below. |
+| Intention preservation (§A.2, 8 examples) | Characterization theorems in `Peritext_ReadSide.lean` (mirrored on both CRDT and MRDT sides) | See the table below. |
 
 ## Intent-preservation: paper examples ↔ Lean theorems
 
@@ -59,11 +59,20 @@ docstring documents this decision in full.
 
 **List vs. per-char `readRichText`.** The paper (§4.4) presents the
 rendered document as a list of `{text, format}` spans. Our
-`readRichText` is a `OpId → Option (ℕ × (ℕ → Bool))` function —
-stronger as a specification (pure function of state) but less
-ergonomic for downstream consumers. The list form requires an RGA
-traversal which is the same dependency we'd need for complete Ex 1
-fidelity; see below.
+`readRichText` is instead a per-character function whose exact
+signature depends on the variant:
+
+- **CRDT:** `OpId → Option (ℕ × (ℕ → Bool))` — `(codepoint,
+  markType → is-formatted)` per visible char.
+- **MRDT:** `OpId → Option (ℕ → Bool)` — just the formatting
+  function; the codepoint lookup is skipped because in the MRDT's
+  set-of-triples `chars` representation, payload lookup at an `OpId`
+  requires `Classical.choose` on an existential.
+
+Both forms are stronger as a specification (pure function of state)
+but less ergonomic for downstream consumers than the list form. A
+list form requires an RGA traversal, which is the same dependency
+we'd need for complete Ex 1 fidelity (see below).
 
 ## Deferred work (follow-ups)
 
@@ -107,8 +116,11 @@ These are acknowledged as future work in the paper itself (§5):
 - `Sal/CRDTs/Peritext/Peritext_ReadSide.lean` — read-side projection
   + paper-semantic theorems.
 - `Sal/MRDTs/Peritext/{Peritext_MRDT,Peritext_ReadSide}.lean` — MRDT
-  counterparts; the MRDT's `eq` lifts to functional equality more
-  cleanly, which makes `readRichText_convergent` a three-line proof
-  vs. the CRDT's simp-heavy rewrite chain.
+  counterparts. The MRDT's `eq` is pointwise `==` on each set
+  component, which lifts via `funext` + `Prod.ext` to full
+  functional equality on the state — making
+  `readRichText_convergent` a tidy chain of component-wise `funext`s
+  then `rw`, rather than the CRDT's simp-heavy rewrite through the
+  `mysel_c` / `contains` / ... abstractions.
 - `docs/porting-op-based-crdts.md` — general recipe; Peritext is
   the worked example throughout.
