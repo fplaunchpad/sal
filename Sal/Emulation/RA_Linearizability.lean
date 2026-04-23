@@ -608,8 +608,9 @@ theorem RA_lin_preserved_apply
 The most complex case. Given RA-lin witnesses `π₁` for `r₁`'s state and
 `π₂` for `r₂`'s state, build a witness for `merge(s₁, s₂)` at event
 set `ev₁ ∪ ev₂`. Follows the bottom-up linearization template (paper
-§3.3 and appendix §A.2–A.4); uses the 24 VCs. Scaffolded here so
-downstream files can already depend on the lemma signature. -/
+§3.3 and appendix §A.2–A.4); uses the 24 VCs.
+
+**Detailed proof strategy:** see `Sal/Emulation/MERGE_PROOF.md`. -/
 theorem RA_lin_preserved_merge
     {D : CRDTSig} {C C' : Configuration D} (hVC : SatisfiesVCs D)
     {r₁ r₂ : Replica} {s₁ s₂ : D.State}

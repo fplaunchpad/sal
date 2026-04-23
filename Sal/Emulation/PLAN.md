@@ -28,8 +28,8 @@ This reduces to two subgoals we prove independently and then compose:
 | 1 | Transcribe the 24 VCs into `SatisfiesVCs` | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED |
-| 5 | End-to-end smoke test on Grow-Only Set | TODO |
+| 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED (strategy doc landed) |
+| 5 | End-to-end smoke test on Grow-Only Set | **PARTIAL** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **DONE** |
@@ -101,7 +101,13 @@ Landed:
 
 No outstanding sub-lemmas. Step 3 is finished.
 
-### 4. Bridge theorem — Merge case — SCAFFOLDED
+### 4. Bridge theorem — Merge case — SCAFFOLDED (strategy landed)
+
+Strategy document: [`MERGE_PROOF.md`](MERGE_PROOF.md). Contains the
+event-decomposition approach (`L_top`, `L₁`, `L₂`), the bottom-up
+template mapping, the proposed `merge_witness` helper, and the three
+supporting lemmas (`perm`, `respects`, `state`). Roughly 2–4 focused
+weeks to close.
 
 The load-bearing step. Given RA-lin witnesses for both merge inputs,
 construct one for the merged state. Follows the paper's bottom-up
@@ -115,14 +121,22 @@ template:
 
 **Effort:** 2–4 weeks. Single hardest proof in Phase 1.
 
-### 5. Smoke test on Grow-Only Set — TODO
+### 5. Smoke test on Grow-Only Set — PARTIAL
 
-Build a `SatisfiesVCs (D_GSet)` instance from the existing theorems in
-`Sal/CRDTs/Grow_Only_Set_CRDT.lean`, check `ra_linearizable_of_vcs`
-fires end-to-end. Catches shape mismatches between my VC statements and
-the existing Sal code.
+Landed in `Sal/Emulation/Instances/Grow_Only_Set.lean`:
+- `D : CRDTSig` instance wrapping the top-level
+  `concrete_st`, `init_st`, `do_`, `merge`, `rc` from
+  `Sal/CRDTs/Grow_Only_Set_CRDT.lean`.
+- `toRcRes` bridge between per-file `rc_res` and generic `RcRes`.
+- `distinctOps_iff`, `differentReplicas_iff` — `simp` lemmas linking
+  Prop-valued versions to Bool-valued `distinct_ops` / `get_rid`.
+- `D_satisfies_VCs` — partial instance: `merge_comm` and `merge_idem`
+  plumbed directly from the per-file Sal theorems (confirms the type
+  alignment works). Other 22 fields are `sorry`.
 
-**Effort:** 1 day once steps 1–4 land.
+**Effort remaining:** close the other 22 fields (~1 day of pattern
+plumbing), then call `ra_linearizable_of_vcs` to get end-to-end
+RA-linearizability for Grow-Only Set (modulo the Merge case sorry).
 
 ### 6. Instantiate bridge for remaining CRDTs — TODO
 
