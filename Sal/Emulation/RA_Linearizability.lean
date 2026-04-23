@@ -506,16 +506,23 @@ theorem lo_shrink_under_apply
     · rintro ⟨e₃, hvC, hnc3⟩
       exact hnex ⟨e₃, Or.inl hvC, hnc3⟩
 
-/-- `Apply` preserves RA-lin. For the replica that applied the op,
-append the fresh event to its IH witness (shown below via `π_old ++ [e]`).
-For other replicas, the IH witness still works because `lo` only shrinks
-(per `lo_shrink_under_apply`).
+/-- **Well-formedness invariant on `vis`**: in a reachable
+configuration, the visibility relation only relates events that
+appear in some replica's event set. Stated as a hypothesis here so the
+preservation lemmas can consume it; proved by induction on
+reachability as `vis_wellFormed` (TODO — see `ra_linearizable_of_vcs`
+where it's derived). -/
+def visWellFormed {D : CRDTSig} (C : Configuration D) : Prop :=
+  ∀ a b, C.vis a b → a ∈ C.events ∧ b ∈ C.events
 
-NOTE: the full mechanized proof is TODO (see PLAN.md step 3). The
-overall structure here reflects the paper's argument, with three
-`sorry` gaps — all guarded by stated lemmas that we know how to
-discharge on paper. Top-level shape is correct and downstream files
-can already call this lemma. -/
+/-- `Apply` preserves RA-lin. For the replica that applied the op,
+append the fresh event to its IH witness (shown below via
+`π_old ++ [e]`). For other replicas, the IH witness still works
+because `lo` only shrinks (per `lo_shrink_under_apply`).
+
+Takes a `visWellFormed C` hypothesis to rule out the degenerate
+`C.vis e a` case in the frontier argument (the fresh event `e` is
+not in `C.events`). -/
 theorem RA_lin_preserved_apply
     {D : CRDTSig} {C C' : Configuration D}
     {t : Timestamp} {r : Replica} {o : D.AppOp}
@@ -523,6 +530,7 @@ theorem RA_lin_preserved_apply
     (h_s : C.N r = some s)
     (h_ev : C.L r = some ev)
     (h_fresh_t : ∀ e', e' ∈ C.events → Op.time e' ≠ t)
+    (h_wf : visWellFormed C)
     (hN   : C'.N = updateRep C.N r (D.update s (t, r, o)))
     (hL   : C'.L = updateRep C.L r (ev ∪ {(t, r, o)}))
     (hvis : C'.vis = fun a b => C.vis a b ∨ (ev a ∧ b = (t, r, o)))
@@ -580,10 +588,10 @@ theorem RA_lin_preserved_apply
         rw [hvis] at hlo
         rcases hlo with ⟨hv, _⟩ | ⟨_, hnv₂, _, _⟩
         · rcases hv with hvC | ⟨_, ha_eq⟩
-          · -- vis_C (t, r', o) a: requires a "vis only over C.events"
-            -- invariant on reachable configurations. Left as sorry;
-            -- see PLAN.md step 3 note.
-            sorry
+          · -- vis_C (t, r', o) a: well-formedness gives
+            -- (t, r', o) ∈ C.events, contradicting freshness.
+            have he_in_C : (t, r', o) ∈ C.events := (h_wf _ _ hvC).1
+            exact h_fresh_t _ he_in_C rfl
           · exact he_notin_old (ha_eq ▸ ha)
         · exact hnv₂ (Or.inr ⟨ha_ev, rfl⟩)
     · -- applySeq
@@ -626,6 +634,29 @@ theorem RA_lin_preserved_merge
   sorry
 
 open LabeledTS in
+/-- `visWellFormed` holds on every reachable configuration.
+
+Base case: `initConfig` has `vis := fun _ _ => False`, so the
+implication is vacuous.
+
+Inductive cases: each transition either preserves `vis` entirely
+(CreateReplica, Merge, Query) or extends it with edges `(x, e)` where
+`x ∈ ev ⊆ C.events ⊆ C'.events` and `e ∈ C'.events` (Apply). In every
+case, if `C.vis a b ⟹ a, b ∈ C.events`, then the same implication
+holds after the step.
+
+TODO: close the inductive cases. The events-monotonicity sub-lemmas
+are a small amount of work; deferred. -/
+theorem visWellFormed_of_reachable {D : CRDTSig}
+    {C : Configuration D}
+    (hReach : (labeledTS D).ReachableFrom (initConfig D) C) :
+    visWellFormed C := by
+  induction hReach with
+  | refl =>
+    intro a b hv
+    simp [initConfig] at hv
+  | tail _ _ _ => sorry
+
 /-- **Bridge theorem (Sal paper, bottom-up linearization).** If a CRDT
 `D` satisfies the 24 VCs, every configuration reachable in `S_D` is
 RA-linearizable.
@@ -641,13 +672,14 @@ theorem ra_linearizable_of_vcs
     IsRALinearizable C := by
   induction hReach with
   | refl => exact initConfig_RA_lin D
-  | tail _ hs ih =>
+  | tail hReach' hs ih =>
     obtain ⟨ℓ, hstep⟩ := hs
+    have h_wf : visWellFormed _ := visWellFormed_of_reachable hReach'
     cases hstep with
     | createReplica _ _ hN hL hvis =>
       exact RA_lin_preserved_createReplica hN hL hvis ih
     | apply h_s h_ev h_fresh_t _ hN hL hvis =>
-      exact RA_lin_preserved_apply h_s h_ev h_fresh_t hN hL hvis ih
+      exact RA_lin_preserved_apply h_s h_ev h_fresh_t h_wf hN hL hvis ih
     | merge h_s₁ h_s₂ h_ev₁ h_ev₂ _ hN hL hvis =>
       exact RA_lin_preserved_merge hVC h_s₁ h_s₂ h_ev₁ h_ev₂ hN hL hvis ih
     | query _ _ => exact ih
