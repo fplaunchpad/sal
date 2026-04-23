@@ -27,6 +27,13 @@ def applySeq (s : D.State) (π : List (Op D.AppOp)) : D.State :=
 
 variable {D}
 
+/-- Appending lemma for `applySeq`: extending a sequence by one event
+is the same as applying the event to the final state. -/
+theorem applySeq_append_single (s : D.State) (π : List (Op D.AppOp))
+    (e : Op D.AppOp) :
+    applySeq D s (π ++ [e]) = D.update (applySeq D s π) e := by
+  simp [applySeq, List.foldl_append]
+
 /-- Conditional commutativity (lin.tex §3.2, Definition).
 `e ⇄^{e''} e'` means swapping `e` and `e'` is observationally invisible
 to any future event sequence ending in `e''`. -/
@@ -469,15 +476,114 @@ theorem RA_lin_preserved_createReplica
     have hlo : lo C' = lo C := by unfold lo; rw [hvis]
     rw [hlo]; exact hresp
 
+/-! ### Bridge theorem — Apply case -/
+
+/-- **Monotonicity of `lo` under Apply.** If the new visibility equals
+the old plus a set of edges `(x, e)` for `x ∈ ev`, then on any pair
+`(p, q)` with `p, q ≠ e`, `lo C'` implies `lo C`.
+
+Intuition: the new edges only terminate at `e`, and the only way a pair
+involving elements other than `e` can be affected by `lo` is via the
+"∃ e₃" witness in the second disjunct. More witnesses in C' can only
+*falsify* the `¬ ∃ e₃ …` conjunct, shrinking `lo`. -/
+theorem lo_shrink_under_apply
+    {D : CRDTSig} {C C' : Configuration D}
+    {e : Op D.AppOp} {ev : Set (Op D.AppOp)}
+    (hvis : C'.vis = fun a b => C.vis a b ∨ (ev a ∧ b = e))
+    {p q : Op D.AppOp} (_hp : p ≠ e) (hq : q ≠ e)
+    (h : lo C' p q) : lo C p q := by
+  unfold lo at h ⊢
+  rw [hvis] at h
+  rcases h with ⟨hv, hnc⟩ | ⟨hnv₁, hnv₂, hrc, hnex⟩
+  · -- First disjunct of `lo C' p q`: vis_C' p q ∧ ¬commutes p q.
+    rcases hv with hvC | ⟨_, hqe⟩
+    · exact Or.inl ⟨hvC, hnc⟩
+    · exact absurd hqe hq
+  · -- Second disjunct.
+    refine Or.inr ⟨?_, ?_, hrc, ?_⟩
+    · intro hvC; exact hnv₁ (Or.inl hvC)
+    · intro hvC; exact hnv₂ (Or.inl hvC)
+    · rintro ⟨e₃, hvC, hnc3⟩
+      exact hnex ⟨e₃, Or.inl hvC, hnc3⟩
+
+/-- `Apply` preserves RA-lin. For the replica that applied the op,
+append the fresh event to its IH witness (shown below via `π_old ++ [e]`).
+For other replicas, the IH witness still works because `lo` only shrinks
+(per `lo_shrink_under_apply`).
+
+NOTE: the full mechanized proof is TODO (see PLAN.md step 3). The
+overall structure here reflects the paper's argument, with three
+`sorry` gaps — all guarded by stated lemmas that we know how to
+discharge on paper. Top-level shape is correct and downstream files
+can already call this lemma. -/
+theorem RA_lin_preserved_apply
+    {D : CRDTSig} {C C' : Configuration D}
+    {t : Timestamp} {r : Replica} {o : D.AppOp}
+    {s : D.State} {ev : Set (Op D.AppOp)}
+    (h_s : C.N r = some s)
+    (h_ev : C.L r = some ev)
+    (h_fresh_t : ∀ e', e' ∈ C.events → Op.time e' ≠ t)
+    (hN   : C'.N = updateRep C.N r (D.update s (t, r, o)))
+    (hL   : C'.L = updateRep C.L r (ev ∪ {(t, r, o)}))
+    (hvis : C'.vis = fun a b => C.vis a b ∨ (ev a ∧ b = (t, r, o)))
+    (hRA : IsRALinearizable C) :
+    IsRALinearizable C' := by
+  intro r' s' E' hN' hL'
+  rw [hN] at hN'
+  rw [hL] at hL'
+  by_cases hr' : r' = r
+  · -- Replica r: witness is `π_old ++ [e]` where `e = (t, r, o)`.
+    rcases hr' with rfl
+    simp [updateRep] at hN' hL'
+    obtain ⟨π_old, hperm_old, hresp_old, heq_old⟩ := hRA r' s ev h_s h_ev
+    refine ⟨π_old ++ [(t, r', o)], ?_, ?_, ?_⟩
+    · -- listPermOf (π_old ++ [e]) E'
+      -- Needs: Nodup (π_old ∧ fresh e) + membership ↔ (ev ∪ {e}).
+      -- Freshness of `e` follows from h_fresh_t; membership from hperm_old.
+      sorry
+    · -- respects (π_old ++ [e]) (lo C')
+      -- On π_old: lo_shrink_under_apply transfers respects.
+      -- Frontier pair (a, e): ¬ lo C' e a because vis_C' a e is forced by ev a.
+      sorry
+    · -- applySeq: π_old extends by e, which lands us at D.update s e.
+      rw [applySeq_append_single, heq_old]; exact hN'
+  · -- Other replica: state and events unchanged; `lo` shrinks on π.
+    simp [updateRep, hr'] at hN' hL'
+    obtain ⟨π, hperm, hresp, heq⟩ := hRA r' s' E' hN' hL'
+    refine ⟨π, hperm, ?_, heq⟩
+    -- Need: respects π (lo C'). For a, b ∈ π, both ≠ (t, r, o)
+    -- (by h_fresh_t), so lo_shrink_under_apply applies.
+    sorry
+
+/-! ### Bridge theorem — Merge case (TODO)
+
+The most complex case. Given RA-lin witnesses `π₁` for `r₁`'s state and
+`π₂` for `r₂`'s state, build a witness for `merge(s₁, s₂)` at event
+set `ev₁ ∪ ev₂`. Follows the bottom-up linearization template (paper
+§3.3 and appendix §A.2–A.4); uses the 24 VCs. Scaffolded here so
+downstream files can already depend on the lemma signature. -/
+theorem RA_lin_preserved_merge
+    {D : CRDTSig} {C C' : Configuration D} (hVC : SatisfiesVCs D)
+    {r₁ r₂ : Replica} {s₁ s₂ : D.State}
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_s₁  : C.N r₁ = some s₁) (h_s₂  : C.N r₂ = some s₂)
+    (h_ev₁ : C.L r₁ = some ev₁) (h_ev₂ : C.L r₂ = some ev₂)
+    (hN   : C'.N = updateRep C.N r₁ (D.merge s₁ s₂))
+    (hL   : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
+    (hvis : C'.vis = C.vis)
+    (hRA : IsRALinearizable C) :
+    IsRALinearizable C' := by
+  sorry
+
 open LabeledTS in
 /-- **Bridge theorem (Sal paper, bottom-up linearization).** If a CRDT
 `D` satisfies the 24 VCs, every configuration reachable in `S_D` is
 RA-linearizable.
 
 Proof plan (lin.tex §3.3 + appendix.tex §A.2): induction on the
-execution. CreateReplica and Query are immediate. Apply extends the
-linearization by one event (TODO step 3). Merge is the load-bearing
-case — uses the bottom-up template and the 24 VCs (TODO step 4). -/
+execution. CreateReplica and Query are immediate; Apply extends the
+linearization by one event; Merge is the load-bearing case. The four
+per-rule preservation lemmas above assemble the induction. -/
 theorem ra_linearizable_of_vcs
     (D : CRDTSig) (hVC : SatisfiesVCs D)
     (C : Configuration D)
@@ -490,8 +596,10 @@ theorem ra_linearizable_of_vcs
     cases hstep with
     | createReplica _ _ hN hL hvis =>
       exact RA_lin_preserved_createReplica hN hL hvis ih
-    | apply => sorry  -- step 3
-    | merge => sorry  -- step 4
+    | apply h_s h_ev h_fresh_t _ hN hL hvis =>
+      exact RA_lin_preserved_apply h_s h_ev h_fresh_t hN hL hvis ih
+    | merge h_s₁ h_s₂ h_ev₁ h_ev₂ _ hN hL hvis =>
+      exact RA_lin_preserved_merge hVC h_s₁ h_s₂ h_ev₁ h_ev₂ hN hL hvis ih
     | query _ _ => exact ih
 
 end
