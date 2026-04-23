@@ -23,7 +23,7 @@ Each CRDT lives in `src/crdts/<name>.tsx` and exports a `CRDTSpec<Concrete, Abst
 
 The shared `harness/Playground.tsx` manages replica state, merge selection, and the abstract/concrete toggle. Invariants tests in `src/crdts/__tests__/` use [fast-check](https://fast-check.dev/) to property-check idempotence, commutativity, associativity, and strong convergence of `merge` (500 cases × 4 properties per CRDT).
 
-The CRDT modules are hand-ported from the Lean specs under [`../Sal/CRDTs/`](../Sal/CRDTs); see [`../docs/porting.md`](../docs/porting.md) for the translation recipe.
+The CRDT modules are hand-ported from the Lean specs under [`../Sal/CRDTs/`](../Sal/CRDTs); see [`../docs/porting-op-based-crdts.md`](../docs/porting-op-based-crdts.md) for the translation recipe.
 
 ## Deployment
 

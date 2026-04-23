@@ -38,7 +38,7 @@ import Sal.Tactic.Sal
 example (a b : Nat) : a + b = b + a := by sal
 ```
 
-Many post-paper CRDTs in the suite are proved with a uniform kernel-verifiable pattern — `rcases` over the operation family, `refine ⟨?_, …, ?_⟩` to split the state's components, then `simp +decide [*]` and `grind` — and avoid Blaster entirely. A few stubborn VCs still need Blaster or an Aristotle-assisted intermediate lemma (e.g. `LWW_Map_CRDT` uses `merge_do_lex_max`); those calls stay inside the three-stage pipeline. For the full recipe of translating an op-based CRDT into Sal's state-based signature and closing the 24 VCs, see [`docs/porting.md`](docs/porting.md).
+Many post-paper CRDTs in the suite are proved with a uniform kernel-verifiable pattern — `rcases` over the operation family, `refine ⟨?_, …, ?_⟩` to split the state's components, then `simp +decide [*]` and `grind` — and avoid Blaster entirely. A few stubborn VCs still need Blaster or an Aristotle-assisted intermediate lemma (e.g. `LWW_Map_CRDT` uses `merge_do_lex_max`); those calls stay inside the three-stage pipeline. For the full recipe of translating an op-based CRDT into Sal's state-based signature and closing the 24 VCs, see [`docs/porting-op-based-crdts.md`](docs/porting-op-based-crdts.md).
 
 ## Custom set and map interfaces
 
@@ -98,7 +98,7 @@ See [`demos/README.md`](demos/README.md) for the `CRDTSpec` / `MRDTSpec` interfa
 - [`Sal/MRDTs/`](Sal/MRDTs) — 11 state-based MRDTs.
 - [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
 - [`demos/`](demos) — Vite + React + TypeScript playgrounds, one per RDT. CRDT demos do two-way merge; MRDT demos maintain a git-style commit DAG with LCA-driven three-way merge and a toggleable history visualisation.
-- [`docs/porting.md`](docs/porting.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
+- [`docs/porting-op-based-crdts.md`](docs/porting-op-based-crdts.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
 
 ## Paper
 
