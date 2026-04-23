@@ -31,8 +31,8 @@ This reduces to two subgoals we prove independently and then compose:
 | 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED |
 | 5 | End-to-end smoke test on Grow-Only Set | TODO |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
-| 7 | Op-based TS (Liittschwager §3.3) | TODO |
-| 8 | Weak simulation + weak trace machinery | TODO |
+| 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
+| 8 | Weak simulation + weak trace machinery | **SCAFFOLDED** |
 | 9 | Canonical op→state emulation $\mathcal{G}$ | TODO |
 | 10 | Weak simulation proof for $\mathcal{G}$ | TODO |
 | 11 | Transfer theorem | TODO |
@@ -141,21 +141,35 @@ the existing Sal code.
 
 **Effort:** 1 day per CRDT, or batch with a macro (~1 week total).
 
-### 7. Op-based TS — TODO
+### 7. Op-based TS — SCAFFOLDED
 
-Port Liittschwager et al. §3.3 Fig. op-global-rules to Lean: op-based
-replica semantics (`prepare` + `effect`), system semantics with
-`send`/`deliver`, causal delivery predicate.
+Landed in `Op_Based_TS.lean`:
+- `OpCRDTSig` — ⟨Σ, σ₀, prepare, effect, query, rc⟩ with `Msg` type.
+- `OpConfiguration` — ⟨Γ, Σ, β⟩ (event trace, per-replica state,
+  message buffer).
+- `OpLabel` — update / query / deliver; `deliver` is silent.
+- `OpStep` — three rules matching Liittschwager Fig. op-global-rules.
+- `enabled` predicate encoding causal delivery over `hb`.
+- `opInitConfig`, `opLabeledTS` lifting into the generic `LabeledTS`.
 
-**Effort:** ~1 week.
+Compiles cleanly. No theorems proved; no `sorry`s needed in this file.
 
-### 8. Weak simulation + weak trace machinery — TODO
+**Effort remaining:** 0. Ready for consumption by `Emulation.lean`.
 
-Define weak traces (§4.4), weak simulation (§2.2/§4.2), prove weak
-simulation ⟹ weak trace inclusion. Generic infrastructure on top of
-`Labeled_TS.lean`.
+### 8. Weak simulation + weak trace machinery — SCAFFOLDED
 
-**Effort:** 1–2 weeks.
+Landed in `Weak_Simulation.lean`:
+- `silentStep`, `silentClosure` — τ-step and τ*.
+- `weakStep` — τ*-α-τ* step as an inductive.
+- `isWeakExecution` — chain of observable weak steps.
+- `weakTrace` — observable label lists.
+- `WeakSim` — weak simulation structure with `rel` + `step` fields.
+  Requires the two TSs to share a label type (Liittschwager setup).
+- `weakSim_sound` — soundness theorem statement (trace inclusion);
+  proof is `sorry`.
+
+**Effort remaining:** close `weakSim_sound` (~1 week: induction on
+`isWeakExecution`, glue `WeakSim.step`).
 
 ### 9. Canonical op→state emulation $\mathcal{G}$ — TODO
 
