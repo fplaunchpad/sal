@@ -1,4 +1,5 @@
 import Sal.Emulation.RA_Linearizability
+import Mathlib.Data.Set.Basic
 
 /-!
 # Merge linearization: bottom-up construction of the `merge_witness`
@@ -63,13 +64,73 @@ standard set-theoretic decomposition `ev₁ ∪ ev₂ = (ev₁ ∩ ev₂) ∪
 (ev₁ \ ev₂) ∪ (ev₂ \ ev₁)`. -/
 theorem merge_witness_perm
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    (_h₁ : listPermOf π₁ ev₁) (_h₂ : listPermOf π₂ ev₂) :
+    (h₁ : listPermOf π₁ ev₁) (h₂ : listPermOf π₂ ev₂) :
     listPermOf (merge_witness π₁ π₂ ev₁ ev₂) (ev₁ ∪ ev₂) := by
-  -- Nodup: each of the three parts is a Nodup list (filter preserves
-  -- Nodup), and their element sets are disjoint by construction.
-  -- Membership: element is in the witness iff it's in one of the three
-  -- parts iff it's in the corresponding subset of ev₁ ∪ ev₂.
-  sorry
+  obtain ⟨hn₁, hm₁⟩ := h₁
+  obtain ⟨hn₂, hm₂⟩ := h₂
+  -- Three building blocks — the restrictTo parts.
+  have A_nodup : (restrictTo π₁ (ev₁ ∩ ev₂)).Nodup := by
+    unfold restrictTo; exact hn₁.filter _
+  have B_nodup : (restrictTo π₁ (ev₁ \ ev₂)).Nodup := by
+    unfold restrictTo; exact hn₁.filter _
+  have C_nodup : (restrictTo π₂ (ev₂ \ ev₁)).Nodup := by
+    unfold restrictTo; exact hn₂.filter _
+  have mem_A : ∀ a, a ∈ restrictTo π₁ (ev₁ ∩ ev₂) ↔ a ∈ ev₁ ∧ a ∈ ev₂ := by
+    intro a; unfold restrictTo
+    simp only [List.mem_filter, decide_eq_true_eq, Set.mem_inter_iff]
+    constructor
+    · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
+    · rintro ⟨h, h'⟩; exact ⟨(hm₁ a).mpr h, h, h'⟩
+  have mem_B : ∀ a, a ∈ restrictTo π₁ (ev₁ \ ev₂) ↔ a ∈ ev₁ ∧ a ∉ ev₂ := by
+    intro a; unfold restrictTo
+    simp only [List.mem_filter, decide_eq_true_eq, Set.mem_diff]
+    constructor
+    · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
+    · rintro ⟨h, h'⟩; exact ⟨(hm₁ a).mpr h, h, h'⟩
+  have mem_C : ∀ a, a ∈ restrictTo π₂ (ev₂ \ ev₁) ↔ a ∈ ev₂ ∧ a ∉ ev₁ := by
+    intro a; unfold restrictTo
+    simp only [List.mem_filter, decide_eq_true_eq, Set.mem_diff]
+    constructor
+    · rintro ⟨_, h, h'⟩; exact ⟨h, h'⟩
+    · rintro ⟨h, h'⟩; exact ⟨(hm₂ a).mpr h, h, h'⟩
+  refine ⟨?_, ?_⟩
+  · -- Nodup (A ++ B ++ C)
+    unfold merge_witness
+    rw [List.nodup_append, List.nodup_append]
+    refine ⟨⟨A_nodup, B_nodup, ?_⟩, C_nodup, ?_⟩
+    · -- A disjoint B: a ∈ A ⟹ a ∈ ev₂; a ∈ B ⟹ a ∉ ev₂.
+      intro a haA b hbB hab
+      rw [(mem_B b)] at hbB
+      subst hab
+      exact hbB.2 ((mem_A a).mp haA).2
+    · -- (A ++ B) disjoint C
+      intro a hab c hcC hac
+      rw [List.mem_append] at hab
+      rw [(mem_C c)] at hcC
+      subst hac
+      rcases hab with h | h
+      · -- a ∈ A: a ∈ ev₁
+        exact hcC.2 ((mem_A a).mp h).1
+      · -- a ∈ B: a ∈ ev₁
+        exact hcC.2 ((mem_B a).mp h).1
+  · -- Membership
+    intro a
+    unfold merge_witness
+    rw [List.mem_append, List.mem_append]
+    rw [mem_A a, mem_B a, mem_C a, Set.mem_union]
+    constructor
+    · rintro ((⟨h, _⟩ | ⟨h, _⟩) | ⟨h, _⟩)
+      · exact Or.inl h
+      · exact Or.inl h
+      · exact Or.inr h
+    · intro h
+      rcases h with h | h
+      · by_cases h' : a ∈ ev₂
+        · exact Or.inl (Or.inl ⟨h, h'⟩)
+        · exact Or.inl (Or.inr ⟨h, h'⟩)
+      · by_cases h' : a ∈ ev₁
+        · exact Or.inl (Or.inl ⟨h', h⟩)
+        · exact Or.inr ⟨h, h'⟩
 
 /-- The `merge_witness` respects `lo C` (the vis-unchanged assumption
 is baked in: at the merge step `C'.vis = C.vis`, so `lo C' = lo C`
