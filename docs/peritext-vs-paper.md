@@ -27,11 +27,11 @@ but the correctness criteria land in different places:
 
 | Paper | Section | Lean theorem | Status |
 |---|---|---|---|
-| Ex 1 — insertion within a span | §3.1, §A.2 | `covered_interior` + `covered_interior_propagate` | **Sound approximation.** Captures the afters-chain case; full RGA-visible-order fidelity is deferred. |
+| Ex 1 — insertion within a span | §3.1, §A.2 | `covered_interior` + `covered_interior_propagate` + `covered_interior_of_reach` | **Sound approximation.** One-step and chain-form propagation both proved; full RGA-visible-order fidelity is the remaining gap. |
 | Ex 2 — overlapping same-type Adds | §3.2, §A.2 | `partial_overlap_all_adds_formatted` | ✅ |
 | Ex 3 — different mark types coexist | §3.2, §A.2 | `different_type_adds_coexist` | ✅ |
-| Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | Implicit via `mark_beats` LWW branch | Trivial standalone corollary of `add_beats_remove` — not yet spelled out. |
-| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_beats_remove` (positive) + `no_add_cover_implies_unformatted` (negative) | ✅ Deliberate departure on the priority rule — see below. |
+| Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist` apply — but that's the opposite of Ex 4's intent. |
+| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove` (positive) + `no_add_cover_implies_unformatted` (negative) | ✅ Deliberate departure on the priority rule — see below. |
 | Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
 | Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `expand_contract_end_after`, `expand_contract_start_after` | ✅ |
 | Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `expand_contract_end_before`, `expand_contract_start_before` | ✅ |
@@ -70,11 +70,10 @@ fidelity; see below.
 **Full RGA-visible-order formalization.** Needed to close the
 remaining gap in Ex 1: the paper's "within the span" applies to any
 character in visible-traversal order between `startId` and `endId`,
-not just those reachable via an afters-chain. A chain-form
-`covered_interior_of_reach` theorem was drafted and backed out; its
-proof runs into Lean's induction-hypothesis generalization in a way
-that needs careful motive handling. The full traversal relation
-would also unlock a list-form `readRichText`.
+not just those reachable via an afters-chain. Chain-form propagation
+is now proved (`covered_interior_of_reach`) but still captures
+*afters-reachability* rather than *visible-position*. The full
+traversal relation would also unlock a list-form `readRichText`.
 
 **Tombstone-scanning on insert (§4.2.2).** The paper's `Insert`
 algorithm inspects the marks set when placing a character after
