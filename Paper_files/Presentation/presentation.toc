@@ -1,8 +1,8 @@
 \babel@toc {english}{}\relax 
 \beamer@sectionintoc {1}{Introduction: Replication in Practice}{2}{0}{1}
-\beamer@sectionintoc {2}{The Verification Problem}{5}{0}{2}
-\beamer@sectionintoc {3}{Verification with F* and its Limitations}{7}{0}{3}
-\beamer@sectionintoc {4}{Solution: SAL Framework}{8}{0}{4}
-\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{10}{0}{5}
-\beamer@sectionintoc {6}{Agentic Framework}{16}{0}{6}
-\beamer@sectionintoc {7}{Evaluation and Results}{18}{0}{7}
+\beamer@sectionintoc {2}{The Verification Problem}{10}{0}{2}
+\beamer@sectionintoc {3}{Verification with F* and its Limitations}{14}{0}{3}
+\beamer@sectionintoc {4}{Solution: SAL Framework}{22}{0}{4}
+\beamer@sectionintoc {5}{Counterexample Generation and Visualization}{28}{0}{5}
+\beamer@sectionintoc {6}{Agentic Framework}{46}{0}{6}
+\beamer@sectionintoc {7}{Evaluation and Results}{53}{0}{7}

@@ -2,8 +2,8 @@
 
 \mode<presentation> {
   \usetheme{Madrid}
-  \usecolortheme{default}
-  \setbeamercovered{transparent}
+\colorlet{beamer@blendedblue}{green!40!black}
+  \setbeamercovered{invisible}
 }
 
 \usepackage[english]{babel}
@@ -43,13 +43,12 @@
   \sal: Multi-modal Verification of Replicated Data Types
 }
 
-\author{Pranav Ramesh \and Vimala Soundarapandian \and KC Sivaramakrishnan}
+\author{Pranav R \and Vimala S \and KC Sivaramakrishnan}
 
 \institute{
   Indian Institute of Technology, Madras
 }
 
-\date{\today}
 
 \subject{Verification of Replicated Data Types}
 
@@ -59,20 +58,7 @@
   \titlepage
 \end{frame}
 
-% \begin{frame}
-%   \frametitle{Presentation Flow}
-%   \begin{enumerate}
-%     \setlength\itemsep{0.5cm}
-%     \item \textbf{Example RDTs:} Counter and OR-Set from practice
-%     \item \textbf{Verification Challenge:} Why RA Linearizability matters
-%     \item \textbf{Problem with F*:} SMT trust and opaque failures
-%     \item \textbf{\sal Solution:} Multi-modal approach in Lean
-%     \item \textbf{Counterexample Generation:} Automatic bug finding with visualization
-%     \item \textbf{Agentic Framework:} Human-in-the-loop verification
-%     \item \textbf{Developer Experience:} Building practical tools
-%     \item \textbf{Evaluation:} 13 RDTs, 69\% kernel-only verification
-%   \end{enumerate}
-% \end{frame}
+
 
 % ===========================================================================================
 \section{Introduction: Replication in Practice}
@@ -80,7 +66,7 @@
 
 \begin{frame}
   \frametitle{Local-First Collaboration}
-  \begin{itemize}
+  \begin{itemize}[<+->]
     \item Users work offline, synchronize when connectivity returns
     \item Replicas evolve independently, must merge accurately
     \item Example: Shared documents, collaborative editors
@@ -97,14 +83,14 @@
   \frametitle{CRDTs and MRDTs: Building Blocks}
   \begin{description}
     \item[CRDT] Conflict-Free Replicated Data Type
-      \begin{itemize}
+      \begin{itemize}[<+->]
         \item Deterministic two-way merge
         \item Requires tombstones
       \end{itemize}
     
     \vspace{0.2cm}
     \item[MRDT] Mergeable Replicated Data Type
-      \begin{itemize}
+      \begin{itemize}[<+->]
         \item Three-way merge (like Git)
         \item More compact representations (e.g., $O(1)$ counter state vs $\Omega(n)$ in CRDTs due to tombstones)
       \end{itemize}
@@ -177,7 +163,7 @@
   
   \begin{block}{Definition}
     RA linearizability relates replica executions to a sequential explanation of updates, ensuring that:
-    \begin{itemize}
+    \begin{itemize}[<+->]
 \item The state at any replica during any execution must be achievable by applying a sequence (or linearization) of the
 update operations visible to the replica.
 \item This linearization should obey the user-specified
@@ -201,7 +187,7 @@ it handles concurrent operations.
   \frametitle{Prior Work: Neem in \fstar}
   
   \begin{block}{Strengths}
-    \begin{itemize}
+    \begin{itemize}[<+->]
       \item SMT-aided automation for RA linearizability
       \item Formal reduction to 24 verification conditions
       \item Practical verification of CRDTs and MRDTs
@@ -210,7 +196,7 @@ it handles concurrent operations.
   
   \vspace{0.3cm}
   \begin{block}{The Problem: Trust in SMT Solvers}
-    \begin{itemize}
+    \begin{itemize}[<+->]
       \item SMT-centric workflows are opaque when automation fails
       \item Failed VC provides little actionable feedback
       \item Relies on external solver $\rightarrow$ larger trusted computing base (TCB)
@@ -228,16 +214,20 @@ it handles concurrent operations.
   \frametitle{\sal Overview}
   
   \begin{block}{A Multi-Modal Workflow for RA Linearizability in Lean}
-    \begin{enumerate}
+    \begin{enumerate}[<+->]
       \item \textbf{Kernel-checkable automation} with proof reconstruction
       \item \textbf{SMT-aided automation} when needed (fallback)
       \item \textbf{AI-assisted interactive theorem proving} for remaining obligations
       \item \textbf{Counterexample generation} and visualization
+      \item \textbf{The grind tool in Lean offers kernel-checkable proofs}
+
     \end{enumerate}
   \end{block}
   
-  \vspace{0.3cm}
-  \textbf{Key insight:} Lean's small trusted kernel $\rightarrow$ proofs checked without external SMT
+  \begin{center}
+    \includegraphics[width=0.45\textwidth]{Pictures/grind_desc_1.png}\hspace{0.5cm}
+    \includegraphics[width=0.45\textwidth]{Pictures/grind_desc_2.png}
+  \end{center}
 \end{frame}
 
 
@@ -286,7 +276,7 @@ structure map (key:Type) [DecidableEq key] (value:Type) where
   
   \vspace{0.3cm}
   \textbf{Naive Implementation Bug:}
-  \begin{itemize}
+  \begin{itemize}[<+->]
     \item Track concurrent enables with a counter
     \item Use counter to decide flag state after merge
     \item \textbf{Problem:} Enables followed by disables on each replica still show as enabled!
@@ -341,11 +331,12 @@ theorem inter_right_1op (l: concrete_st) (a: concrete_st)
   \textbf{Approach:} Use Plausible (property-based testing for Lean)
   
   \begin{block}{Process}
-    \begin{enumerate}
+    \begin{enumerate}[<+->]
       \item Express VCs as \textbf{decidable propositions}
       \item Plausible generates random test inputs
       \item Check whether VC holds for each input
       \item When violation found: report the failing input
+      \item Uses machinery from the Loom work from VERSE lab
     \end{enumerate}
   \end{block}
   
@@ -354,6 +345,40 @@ theorem inter_right_1op (l: concrete_st) (a: concrete_st)
   \begin{lstlisting}[style=leanstyle]
 (disable, (enable, (enable, (disable, (0, false)))))
   \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Plausible: Making VCs Testable}
+  
+  \begin{enumerate}[<+->]
+    \item \textbf{Proving Precondition Decidable} by upper bounding the values of the operations and counters, 
+    and subsequently using \texttt{decidable\_by\_nat\_upperbound}
+    
+    \begin{center}
+      \includegraphics[width=0.5\textwidth]{Pictures/precond_decidable.png}
+    \end{center}
+    
+    \vspace{0.2cm}
+    \item \textbf{Proving Postcondition Decidable} again by using \texttt{decidable\_by\_nat\_upperbound}
+    
+    \begin{center}
+      \includegraphics[width=0.5\textwidth]{Pictures/postcond_decidable.png}
+    \end{center}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Plausible: Running the Elaborator}
+  
+  \begin{enumerate}[<+->]
+    \setcounter{enumi}{2}
+    \item \textbf{Running the Elaborator in Monadic Framework}\\
+    Running an elaborator in a monadic framework to generate and display the counterexample
+  \end{enumerate}
+  
+  \vspace{0.3cm}
+  \centering
+  \includegraphics[width=0.85\textwidth]{Pictures/running_plausible.png}
 \end{frame}
 
 \begin{frame}
@@ -366,7 +391,7 @@ theorem inter_right_1op (l: concrete_st) (a: concrete_st)
   \vspace{0.3cm}
   \textbf{Solution:} ProofWidgets-based execution trace visualizer
   
-  \begin{itemize}
+  \begin{itemize}[<+->]
     \item Instrument $\F{do}$ and $\F{merge}$ operations
     \item Record intermediate states and operations
     \item Produce step-by-step execution trace
@@ -403,7 +428,7 @@ theorem inter_right_1op (l: concrete_st) (a: concrete_st)
   \end{block}
   
   \vspace{0.3cm}
-  \begin{itemize}
+  \begin{itemize}[<+->]
     \item \textbf{Kernel automation:} Handles routine reasoning
     \item \textbf{SMT when needed:} For harder goals
     \item \textbf{AI assistance:} Proofs from Aristotle and Claude
@@ -413,22 +438,31 @@ theorem inter_right_1op (l: concrete_st) (a: concrete_st)
 
 
 \begin{frame}
-  \frametitle{AI-Assisted Verification: Real-World Integration}
+  \frametitle{AI-Assisted Verification: Agentic-Driven Commits}
   
   \centering
-  \includegraphics[width=0.5\textwidth]{Pictures/kc_commits.png}
-  \small\textit{Integration commits}
+  \begin{figure}
+    \includegraphics[width=\textwidth]{Pictures/kc_commits.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{AI-Assisted Verification: NodeJs Interactive Simulations }
   
-  \vspace{0.2cm}
-  \includegraphics[width=0.5\textwidth]{Pictures/peritext_commit.png}
-  \small\textit{Peritext verification}
+  \centering
+  \begin{figure}
+    \includegraphics[width=0.9\textwidth]{Pictures/npm_visualization.png}
+  \end{figure}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{AI-Assisted Verification: Verification Status}
   
-  \vspace{0.2cm}
-  \includegraphics[width=0.5\textwidth]{Pictures/verified_status.png}
-  \small\textit{Verification status}
-  
-  \vspace{0.2cm}
-  \tiny Practical deployment of AI-assisted theorem proving in the \sal framework
+  \centering
+  \begin{figure}
+    \includegraphics[width=\textwidth]{Pictures/verified_status.png}
+  \end{figure}
 \end{frame}
 
 
