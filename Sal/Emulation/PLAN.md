@@ -28,7 +28,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 1 | Transcribe the 24 VCs into `SatisfiesVCs` | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED (strategy doc landed) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (assembly done; 3 sub-lemmas sorry) |
 | 5 | End-to-end smoke test on Grow-Only Set | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
@@ -101,13 +101,28 @@ Landed:
 
 No outstanding sub-lemmas. Step 3 is finished.
 
-### 4. Bridge theorem — Merge case — SCAFFOLDED (strategy landed)
+### 4. Bridge theorem — Merge case — PARTIAL (machinery laid down)
 
-Strategy document: [`MERGE_PROOF.md`](MERGE_PROOF.md). Contains the
-event-decomposition approach (`L_top`, `L₁`, `L₂`), the bottom-up
-template mapping, the proposed `merge_witness` helper, and the three
-supporting lemmas (`perm`, `respects`, `state`). Roughly 2–4 focused
-weeks to close.
+Strategy document: [`MERGE_PROOF.md`](MERGE_PROOF.md).
+
+Landed in `Sal/Emulation/Merge_Linearization.lean`:
+- `restrictTo` — sub-list of a list restricted to a `Set`
+  (noncomputable via `Classical`).
+- `merge_witness π₁ π₂ ev₁ ev₂` — concrete list definition:
+  `π₁|_{ev₁ ∩ ev₂} ++ π₁|_{ev₁ \ ev₂} ++ π₂|_{ev₂ \ ev₁}`.
+- Three supporting lemmas stated, bodies `sorry`:
+  - `merge_witness_perm` — `listPermOf result (ev₁ ∪ ev₂)`.
+  - `merge_witness_respects` — respects `lo C`.
+  - `merge_witness_state` — `applySeq σ₀ result = D.merge s₁ s₂`.
+- `RA_lin_preserved_merge_via_witness` — the closure of the Merge case,
+  **fully assembled** from the three sub-lemmas. Once they're closed,
+  this theorem is done; then replace `RA_lin_preserved_merge` in
+  `RA_Linearizability.lean` with a single-line call.
+
+**Effort remaining:**
+- `merge_witness_perm`: ~1 day (list/set manipulation, uses `List.filter` preserves `Nodup`).
+- `merge_witness_respects`: ~3–5 days (paper Lemma 1 / Lemma 2 in §4.1).
+- `merge_witness_state`: 2–3 weeks (the bottom-up induction; uses all 24 VCs).
 
 The load-bearing step. Given RA-lin witnesses for both merge inputs,
 construct one for the merged state. Follows the paper's bottom-up
