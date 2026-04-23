@@ -311,6 +311,47 @@ theorem add_beats_remove
   refine decide_eq_true (Exists.intro addOp ?_)
   refine ⟨⟨h_pres_a, h_cov_a, h_mt_a, h_beats⟩, h_add⟩
 
+/-- **Paper Ex 5 (positive case) — concurrent Add wins over concurrent
+Remove.**
+
+If an `AddMark` and a `RemoveMark` of the same `markType` both cover
+`c` at the boundary (e.g. Alice sets bold, Bob concurrently sets
+non-bold on the same range), and no *other* same-type covering mark
+beats `addOp` by LWW, then `c` is formatted. The `RemoveMark` loses
+by the first clause of `mark_beats` (Add beats Remove), regardless
+of `opId` ordering.
+
+This is where our rule **deliberately differs from paper §4.4**.
+The paper would flip a coin (LWW by opId); we always side with the
+Add. See the `mark_beats` docstring for the rationale. -/
+theorem add_wins_over_concurrent_remove
+    (s : concrete_st) (c : OpId) (mt : ℕ)
+    (addOp remOp : MarkOp) :
+    mark_isAdd addOp = true →
+    mark_isAdd remOp = false →
+    mark_markType addOp = mt →
+    mark_markType remOp = mt →
+    mark_present s addOp = true →
+    mark_present s remOp = true →
+    in_span_boundary s addOp c = true →
+    in_span_boundary s remOp c = true →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_boundary s m' c = true →
+           mark_markType m' = mt →
+           m' ≠ addOp → m' ≠ remOp →
+           mark_beats addOp m' = true) →
+    formatted s c mt = true := by
+  intro h_add h_rem h_mt_a h_mt_r h_pres_a h_pres_r h_cov_a h_cov_r h_vis h_beats
+  refine add_beats_remove s c mt addOp remOp h_add h_rem h_mt_a h_mt_r
+    h_pres_a h_cov_a h_vis ?_
+  intro m' h_pres' h_cov' h_mt' h_ne_add
+  by_cases h_eq : m' = remOp
+  · subst h_eq
+    -- addOp is Add, remOp is Remove → Add-beats-Remove clause fires.
+    simp only [mark_beats, h_add, h_rem, Bool.true_and, Bool.not_false, if_true]
+  · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
+
 
 /-- **Tier 2 — Expand/contract at the `endId` boundary.**
 
