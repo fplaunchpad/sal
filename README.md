@@ -6,17 +6,48 @@ The approach builds on the F★-based **Neem** framework of Soundarapandian, Nag
 
 ## What's verified
 
-The suite currently contains **29 RDTs** — 18 CRDTs and 11 MRDTs — with all 24 RA-linearizability VCs closed on every one (696 kernel-verified VCs in total). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
+The suite currently contains **30 RDTs** — 18 CRDTs and 12 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
-**CRDTs** ([`Sal/CRDTs/`](Sal/CRDTs)):
+### CRDTs ([`Sal/CRDTs/`](Sal/CRDTs))
 
-- Registers & counters: `Increment_Only_Counter`, `PN_Counter`, `LWW_Register`, `MAX_Register`, `MIN_Register`, `Multi_Valued_Register`, `Bounded_Counter` (Sypytkowski 2019 / Balegas et al. 2015 — PN-counter plus a sparse per-replica-pair `transfers` map for quota redistribution).
-- Sets & maps: `OR_Set`, `Grow_Only_Set`, `Grow_Only_Multiset`, `LWW_Element_Set`, `LWW_Map`, `MAX_Map`.
-- Sequences & structured data: `RGA` (Replicated Growable Array — the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`), `Peritext` (Litt et al. CSCW 2022 — rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`), `Shopping_Cart`, `Priority_Queue_Insert_Only`, `Add_Win_Priority_Queue` (adapted from Zhang et al. 2023).
+**Registers & counters:**
+- `Increment_Only_Counter`
+- `PN_Counter`
+- `LWW_Register`
+- `MAX_Register`
+- `MIN_Register`
+- `Multi_Valued_Register`
+- `Bounded_Counter` — Sypytkowski 2019 / Balegas et al. 2015. PN-counter plus a sparse per-replica-pair `transfers` map for quota redistribution.
 
-**MRDTs** ([`Sal/MRDTs/`](Sal/MRDTs)):
+**Sets & maps:**
+- `OR_Set`
+- `Grow_Only_Set`
+- `Grow_Only_Multiset`
+- `LWW_Element_Set`
+- `LWW_Map`
+- `MAX_Map`
 
-- `Increment_Only_Counter`, `PN_Counter`, `Multi_Valued_Register`, `Grow_Only_Set`, `Grow_Only_Map`, `OR_Set`, `OR_Set_Efficient`, `Replicated_Growable_Array`, `Add_Win_Priority_Queue` (adapted from Zhang et al. 2023 — drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`), `Peritext` (Litt et al. CSCW 2022 — RGA substrate plus `set AnchorAttachment`; RGA's tombstones are structurally load-bearing since later inserts reference earlier char ids, so this MRDT keeps all components grow-only and uses pointwise-union merge, mirroring `RGA_MRDT`), `Enable_Wins_Flag` (intentionally buggy — drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`).
+**Sequences & structured data:**
+- `RGA` — Replicated Growable Array, the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`.
+- `Peritext` — Litt et al. CSCW 2022. Rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
+- `Shopping_Cart`
+- `Priority_Queue_Insert_Only`
+- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023.
+
+### MRDTs ([`Sal/MRDTs/`](Sal/MRDTs))
+
+- `Increment_Only_Counter`
+- `PN_Counter`
+- `Multi_Valued_Register`
+- `Grow_Only_Set`
+- `Grow_Only_Map`
+- `OR_Set`
+- `OR_Set_Efficient`
+- `Replicated_Growable_Array`
+- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023. Drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`.
+- `Peritext` — Litt et al. CSCW 2022. RGA substrate plus `set AnchorAttachment`. RGA's tombstones are structurally load-bearing (later inserts reference earlier char ids), so this MRDT keeps all components grow-only and uses pointwise-union merge, mirroring `RGA_MRDT`. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
+- `Enable_Wins_Flag` — enable-wins boolean flag, per-replica map of `(counter, flag)`.
+- `Enable_Wins_Flag_known_broken` — intentionally buggy variant preserved as a demo fixture. Drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`.
 
 ## The `sal` tactic
 
