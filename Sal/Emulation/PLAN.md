@@ -32,7 +32,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 5 | End-to-end smoke test on Grow-Only Set | TODO |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
-| 8 | Weak simulation + weak trace machinery | **SCAFFOLDED** |
+| 8 | Weak simulation + weak trace machinery | **DONE** |
 | 9 | Canonical op→state emulation $\mathcal{G}$ | **SCAFFOLDED** |
 | 10 | Weak simulation proof for $\mathcal{G}$ | TODO |
 | 11 | Transfer theorem | **SCAFFOLDED** |
@@ -146,20 +146,26 @@ Compiles cleanly. No theorems proved; no `sorry`s needed in this file.
 
 **Effort remaining:** 0. Ready for consumption by `Emulation.lean`.
 
-### 8. Weak simulation + weak trace machinery — SCAFFOLDED
+### 8. Weak simulation + weak trace machinery — DONE
 
-Landed in `Weak_Simulation.lean`:
-- `silentStep`, `silentClosure` — τ-step and τ*.
-- `weakStep` — τ*-α-τ* step as an inductive.
-- `isWeakExecution` — chain of observable weak steps.
-- `weakTrace` — observable label lists.
-- `WeakSim` — weak simulation structure with `rel` + `step` fields.
-  Requires the two TSs to share a label type (Liittschwager setup).
-- `weakSim_sound` — soundness theorem statement (trace inclusion);
-  proof is `sorry`.
+Landed in `Weak_Simulation.lean`, fully proved:
 
-**Effort remaining:** close `weakSim_sound` (~1 week: induction on
-`isWeakExecution`, glue `WeakSim.step`).
+- `coerceLabel`, `SilentPreserving` — explicit label-coercion helpers
+  for working with `hLabel : T₁.Label = T₂.Label` without elaboration
+  surprises.
+- `silentStep`, `silentClosure` (τ*).
+- `weakStep` (τ*-α-τ* inductive).
+- `isWeakExecution` (chain of observable weak steps) and `weakTrace`.
+- `WeakSim T₁ T₂ hLabel` — simulation structure with `rel` + `step`.
+- `silentClosure_lift` — a T₁ silent closure lifts to a T₂ silent
+  closure under a weak simulation (induction on `ReflTransGen`).
+- `weakStep_lift` — a T₁ weak step lifts to a T₂ weak step, case-
+  splitting on silent vs. observable.
+- `isWeakExecution_lift` — the execution-chain lift.
+- `weakSim_sound` — **closed**. Every weak trace of `s` maps to a
+  weak trace of any `R`-related `t` in `T₂`.
+
+All theorems kernel-verified; no sorries.
 
 ### 9. Canonical op→state emulation $\mathcal{G}$ — SCAFFOLDED
 
