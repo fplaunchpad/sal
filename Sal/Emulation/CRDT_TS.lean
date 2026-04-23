@@ -28,13 +28,26 @@ namespace Sal.Emulation
 open LabeledTS
 
 /-- A configuration: per-replica head state, per-replica event set,
-visibility relation over events. Invariant (not enforced at the type
-level; enforced by the transition rules): `C.N r` is `some` iff
-`C.L r` is `some`. -/
+visibility relation over events. Two invariants are enforced at the
+type level (making ill-formed configurations unrepresentable):
+
+* `dom_eq` — the domain of `N` (active replicas) equals the domain of
+  `L` (replicas with known event sets).
+* `vis_events` — every edge `(a, b) ∈ vis` has both endpoints in
+  *some* replica's event set. This is the "vis only relates observed
+  events" invariant consumed by the bridge theorem's Apply case. -/
 structure Configuration (D : CRDTSig) where
   N : Replica → Option D.State
   L : Replica → Option (Set (Op D.AppOp))
   vis : Op D.AppOp → Op D.AppOp → Prop
+  /-- Domain of `N` equals domain of `L`. -/
+  dom_eq : ∀ r, N r = none ↔ L r = none
+  /-- Every edge in `vis` has its source event observed at some
+  replica. -/
+  vis_src : ∀ {a b}, vis a b → ∃ r s, L r = some s ∧ s a
+  /-- Every edge in `vis` has its target event observed at some
+  replica. -/
+  vis_tgt : ∀ {a b}, vis a b → ∃ r s, L r = some s ∧ s b
 
 namespace Configuration
 
@@ -102,11 +115,21 @@ inductive Step (D : CRDTSig) : Configuration D → Label D → Configuration D �
       Step D C (.query r q v) C
 
 /-- Initial configuration: a single replica `r₀ = 0` at state σ₀ with no
-events seen and empty visibility. -/
+events seen and empty visibility. The three invariants are trivially
+discharged: `dom_eq` because both `N 0` and `L 0` are `some`, both
+`none` elsewhere; `vis_src` and `vis_tgt` vacuously because `vis` is
+always false. -/
 def initConfig (D : CRDTSig) : Configuration D where
   N := fun r => if r = 0 then some D.init else none
   L := fun r => if r = 0 then some ∅ else none
   vis := fun _ _ => False
+  dom_eq := by
+    intro r
+    by_cases h : r = 0
+    · subst h; simp
+    · simp [h]
+  vis_src := fun h => absurd h id
+  vis_tgt := fun h => absurd h id
 
 /-- Bundle the configuration/label/step data into a `LabeledTS`. -/
 def labeledTS (D : CRDTSig) : LabeledTS where

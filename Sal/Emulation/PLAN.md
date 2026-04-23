@@ -27,7 +27,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 0 | Scaffolding (signature, TS, RA-lin skeleton) | **DONE** |
 | 1 | Transcribe the 24 VCs into `SatisfiesVCs` | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
-| 3 | Bridge theorem: Apply case | **DONE** (modulo invariant lemma) |
+| 3 | Bridge theorem: Apply case | **DONE** |
 | 4 | Bridge theorem: Merge case (hardest) | SCAFFOLDED |
 | 5 | End-to-end smoke test on Grow-Only Set | TODO |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
@@ -87,23 +87,19 @@ Landed in `RA_Linearizability.lean`:
 `ra_linearizable_of_vcs` now has a working induction scaffold with two
 remaining `sorry`s: `apply` (step 3) and `merge` (step 4).
 
-### 3. Bridge theorem — Apply case — DONE (modulo invariant)
+### 3. Bridge theorem — Apply case — DONE
 
 Landed:
 - `applySeq_append_single` — trivial, closed.
 - `lo_shrink_under_apply` — the key monotonicity lemma. Closed.
   States: `lo C' p q → lo C p q` when the new vis is `C.vis ∪ (ev × {e})`
   and neither `p` nor `q` equals `e`.
-- `visWellFormed C` predicate: `∀ a b, C.vis a b → a, b ∈ C.events`.
-- `RA_lin_preserved_apply` — **fully closed**. Takes a `visWellFormed C`
-  hypothesis to rule out the degenerate "`C.vis e a` with `e` fresh"
-  case in the frontier argument.
+- `Configuration` gained invariant fields `dom_eq`, `vis_src`,
+  `vis_tgt` — "vis only relates observed events" is now structural.
+- `RA_lin_preserved_apply` — **fully closed, no auxiliary hypotheses**.
+  The degenerate `C.vis e a` case is ruled out by `C.vis_src` directly.
 
-Outstanding: `visWellFormed_of_reachable` — preservation of
-well-formedness. Base case closed; inductive cases are `sorry`.
-~30–50 lines of straight induction on reachability.
-
-**Effort remaining:** 1–2 days (just `visWellFormed_of_reachable`).
+No outstanding sub-lemmas. Step 3 is finished.
 
 ### 4. Bridge theorem — Merge case — SCAFFOLDED
 
