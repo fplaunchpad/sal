@@ -373,5 +373,26 @@ theorem covered_interior_propagate
   fun h_cov h_after h_ne_s h_ne_e =>
     covered_interior.propagate h_cov h_after h_ne_s h_ne_e
 
--- Chain-form propagation over `afters_reach` is deferred; see the
--- CRDT ReadSide file for the corresponding note.
+/-- Chain-form propagation over `afters_reach`. See the CRDT
+`Peritext_ReadSide.lean` for the docstring. -/
+theorem covered_interior_of_reach
+    (s : concrete_st) (m : MarkOp) (c_start c_end : OpId) :
+    afters_reach s c_start c_end →
+    covered_interior s m c_end →
+    (∀ c', afters_reach s c' c_end → afters_reach s c_start c' →
+           c' ≠ m.startId ∧ c' ≠ m.endId) →
+    covered_interior s m c_start := by
+  intro h_reach
+  induction h_reach with
+  | refl c => intro h _; exact h
+  | @step c mid anc h_after h_reach' ih =>
+    intro h_cov_end h_interior
+    have h_interior_mid :
+        ∀ c', afters_reach s c' anc → afters_reach s mid c' →
+              c' ≠ m.startId ∧ c' ≠ m.endId :=
+      fun c' h1 h2 => h_interior c' h1 (afters_reach.step h_after h2)
+    have h_cov_mid : covered_interior s m mid := ih h_cov_end h_interior_mid
+    have h_reach_c : afters_reach s c anc := afters_reach.step h_after h_reach'
+    have h_bounds : c ≠ m.startId ∧ c ≠ m.endId :=
+      h_interior c h_reach_c (afters_reach.refl c)
+    exact covered_interior.propagate h_cov_mid h_after h_bounds.1 h_bounds.2

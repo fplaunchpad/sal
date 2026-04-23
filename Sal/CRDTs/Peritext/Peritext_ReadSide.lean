@@ -593,8 +593,33 @@ theorem covered_interior_propagate
   fun h_cov h_after h_ne_s h_ne_e =>
     covered_interior.propagate h_cov h_after h_ne_s h_ne_e
 
--- Note: a chain-form propagation theorem over `afters_reach` would be
--- a natural next step (bundling multiple `covered_interior_propagate`
--- applications into one). Its proof is non-trivial because Lean's
--- induction principle for `afters_reach` generalizes the boundary-
--- exclusion hypothesis in a subtle way; deferred as follow-up work.
+/-- **Paper Ex 1, chain form.** Generalizes `covered_interior_propagate`
+to arbitrary-length afters-chains: if `c_start` reaches `c_end` via
+some `afters_reach` chain, `c_end` is interior-covered, and every
+intermediate (including `c_start`, excluding `c_end`) is not at the
+mark's boundary, then `c_start` is interior-covered.
+
+This is the useful form of interior coverage: a single theorem
+discharges the entire chain rather than requiring n calls to
+`covered_interior_propagate`. -/
+theorem covered_interior_of_reach
+    (s : concrete_st) (m : MarkOp) (c_start c_end : OpId) :
+    afters_reach s c_start c_end →
+    covered_interior s m c_end →
+    (∀ c', afters_reach s c' c_end → afters_reach s c_start c' →
+           c' ≠ mark_startId m ∧ c' ≠ mark_endId m) →
+    covered_interior s m c_start := by
+  intro h_reach
+  induction h_reach with
+  | refl c => intro h _; exact h
+  | @step c mid anc h_after h_reach' ih =>
+    intro h_cov_end h_interior
+    have h_interior_mid :
+        ∀ c', afters_reach s c' anc → afters_reach s mid c' →
+              c' ≠ mark_startId m ∧ c' ≠ mark_endId m :=
+      fun c' h1 h2 => h_interior c' h1 (afters_reach.step h_after h2)
+    have h_cov_mid : covered_interior s m mid := ih h_cov_end h_interior_mid
+    have h_reach_c : afters_reach s c anc := afters_reach.step h_after h_reach'
+    have h_bounds : c ≠ mark_startId m ∧ c ≠ mark_endId m :=
+      h_interior c h_reach_c (afters_reach.refl c)
+    exact covered_interior.propagate h_cov_mid h_after h_bounds.1 h_bounds.2
