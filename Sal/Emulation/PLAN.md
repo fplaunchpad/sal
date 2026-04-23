@@ -33,9 +33,9 @@ This reduces to two subgoals we prove independently and then compose:
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **SCAFFOLDED** |
-| 9 | Canonical op→state emulation $\mathcal{G}$ | TODO |
+| 9 | Canonical op→state emulation $\mathcal{G}$ | **SCAFFOLDED** |
 | 10 | Weak simulation proof for $\mathcal{G}$ | TODO |
-| 11 | Transfer theorem | TODO |
+| 11 | Transfer theorem | **SCAFFOLDED** |
 
 ## Steps in detail
 
@@ -171,13 +171,27 @@ Landed in `Weak_Simulation.lean`:
 **Effort remaining:** close `weakSim_sound` (~1 week: induction on
 `isWeakExecution`, glue `WeakSim.step`).
 
-### 9. Canonical op→state emulation $\mathcal{G}$ — TODO
+### 9. Canonical op→state emulation $\mathcal{G}$ — SCAFFOLDED
 
-Liittschwager et al. §4.2: given an op-based CRDT, produce the
-state-based emulator (essentially inlines causal broadcast into the
-state).
+Landed in `Emulation.lean`:
+- `effectiveState D hb delivered` — reconstruct the replica state
+  from a set of delivered messages + a causal order. Stubbed body
+  (returns `D.init`); TODO is picking a deterministic causal linear
+  extension or delegating to commutativity.
+- `canonicalG D hb : CRDTSig` — the canonical state-based emulator:
+  state is `Set D.Msg`, `update` runs `prepare` on the effective state
+  and appends the message, `merge` is set union, `query` delegates to
+  `D.query` on the effective state, `rc` is lifted.
+- `emulation_G_weak_bisim` — placeholder for the simulation theorem
+  (currently `True`, to be restated with a proper label morphism
+  alongside step 10).
 
-**Effort:** 1–2 weeks.
+Builds cleanly. Uses `noncomputable` + classical decidability on
+`Set D.Msg` — acceptable at this scaffolding level.
+
+**Effort remaining:** meaningful mechanization of `effectiveState`
+(linear-extension machinery) and the simulation relation — both
+coupled to step 10.
 
 ### 10. Weak simulation proof for $\mathcal{G}$ — TODO
 
@@ -188,19 +202,24 @@ induction.
 
 **Effort:** 2–4 weeks. Second hardest proof in Phase 1.
 
-### 11. Transfer theorem — TODO
+### 11. Transfer theorem — SCAFFOLDED
 
-Composition of the pieces above:
+Landed in `Transfer.lean`:
+- `OpIsRALinearizable D hb trace` — op-side RA-lin as a predicate on
+  traces. Body stubbed as `True`; TODO is fleshing out to match
+  Liittschwager's trace-property formulation.
+- `op_RA_linearizable_of_vcs` — the end-to-end meta-theorem statement:
+  if `canonicalG D hb` satisfies the 24 VCs, every reachable
+  op-based trace is RA-linearizable. Proof is `trivial` pending the
+  real `OpIsRALinearizable`.
 
-> **Theorem.** If $\mathcal{D}$ satisfies the 24 VCs, then every
-> reachable configuration in its op-based counterpart
-> $\mathcal{G}^{-1}(\mathcal{D})$ is RA-linearizable.
+With step 11 scaffolded, the full architecture is in Lean — each of
+the 11 steps has a file / lemma that compiles, and downstream parts
+call upstream parts through typed interfaces. Completing Phase 1
+means filling in the three real sorries (Apply vis-invariant, Merge,
+weakSim soundness) + the `canonicalG` simulation in step 10.
 
-Proof: RA-lin is a weak trace property; weak simulation (step 10)
-preserves weak trace properties; bridge (step 4) gives state-based
-RA-lin; done.
-
-**Effort:** ~1 week.
+**Effort remaining:** coupled to steps 3/4/8/10.
 
 ## Total effort
 
