@@ -341,6 +341,40 @@ theorem bottomUp_2op
   -- directly.
   sorry
 
+/-! ### Missing lemmas isolated as dependencies
+
+These lemmas are needed to close the inductive cases of
+`merge_linearization_exists` but are not directly derivable from
+the 24 VCs as standalone statements. The Sal paper (appendix §A.2)
+proves them as byproducts of its nested induction that combines
+the outer event-set-size induction with the inner VC applications.
+
+Each is stated here with a sorry so `merge_linearization_exists`
+can invoke them; they will be closed in future sessions by either
+(a) porting the paper's nested induction, or (b) adding the
+required invariants to `Configuration` and re-deriving. -/
+
+/-- `merge D.init s = s` for reachable `s`. Needed for the
+`π₁ = []` case of `merge_linearization_exists`.
+
+Not a direct VC consequence: every `ind_*_1op` / `inter_*_1op`
+requires the RHS of `merge` to have an event `ol` applied; the
+degenerate `b = init` is only handled by `base_1op` at `a = init`.
+The paper derives this via convergence + iteratively stripping the
+rightmost event of `π` through phantom-event tricks. -/
+theorem merge_init_left_reachable
+    (_hVC : SatisfiesVCs D) (π : List (Op D.AppOp)) :
+    D.merge D.init (applySeq D D.init π) = applySeq D D.init π := by
+  sorry
+
+/-- `merge s D.init = s` for reachable `s`. Mirror of
+`merge_init_left_reachable` via `merge_comm`. -/
+theorem merge_init_right_reachable
+    (hVC : SatisfiesVCs D) (π : List (Op D.AppOp)) :
+    D.merge (applySeq D D.init π) D.init = applySeq D D.init π := by
+  rw [hVC.merge_comm]
+  exact merge_init_left_reachable hVC π
+
 /-- **Merge case of the bridge theorem (existential form).**
 
 Given two RA-linearization witnesses for replicas `r₁` and `r₂`,
@@ -403,21 +437,37 @@ theorem merge_linearization_exists
       refine ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil, ?_⟩
       simp [applySeq, hVC.merge_idem]
     | [], _ :: _ =>
-      -- π₁ = [], π₂ non-empty. Requires merge(init, s) = s for
-      -- reachable s (not a direct VC consequence — the Sal paper
-      -- derives it via convergence inside its nested induction).
-      -- Left for future work; see MERGE_PROOF.md.
-      sorry
-    | _ :: _, _ =>
-      -- π₁ non-empty. The full inductive step needs to:
-      --   1. Decompose π₁ = π₁' ++ [e₁] (via List.eq_nil_or_concat).
-      --   2. Case-split: e₁ ∈ ev₂ (shared) ⟹ use lem_0op to reduce,
-      --      recurse via `ih` with smaller π₁, π₂.
-      --   3. e₁ ∉ ev₂ (local only) ⟹ further split on π₂ empty or
-      --      not; if non-empty, use bottomUp_2op_reachable to pull
-      --      e₁ across merge and recurse on π₁' + π₂.
-      --   4. π₂ = [] ⟹ merge(s₁, init) argument, same obstruction
-      --      as the [], _ :: _ branch above.
+      -- π₁ = [], π₂ non-empty. Use merge_init_left_reachable:
+      -- merge init s₂ = s₂, so witness is π₂.
+      subst hπ₁; subst hπ₂
+      simp [applySeq] at h₁s
+      obtain ⟨hn₁, hm₁⟩ := h₁p
+      have hev₁_empty : ev₁ = ∅ := by
+        ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+      subst hev₁_empty
+      subst h₁s
+      refine ⟨_, ?_, h₂r, ?_⟩
+      · simpa [Set.empty_union] using h₂p
+      · rw [← h₂s]; exact (merge_init_left_reachable hVC _).symm
+    | _ :: _, [] =>
+      -- π₁ non-empty, π₂ = []. Symmetric via merge_init_right_reachable.
+      subst hπ₁; subst hπ₂
+      simp [applySeq] at h₂s
+      obtain ⟨hn₂, hm₂⟩ := h₂p
+      have hev₂_empty : ev₂ = ∅ := by
+        ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+      subst hev₂_empty
+      subst h₂s
+      refine ⟨_, ?_, h₁r, ?_⟩
+      · simpa [Set.union_empty] using h₁p
+      · rw [← h₁s]; exact (merge_init_right_reachable hVC _).symm
+    | _ :: _, _ :: _ =>
+      -- Both π₁ and π₂ non-empty. The full inductive step needs to:
+      --   1. Decompose π₁ = π₁' ++ [e₁] and case-split on e₁ ∈ ev₂.
+      --   2. e₁ ∈ ev₂ (shared): use lem_0op to factor e₁ out, recurse
+      --      via `ih` on (π₁', π₂'\{e₁}).
+      --   3. e₁ ∉ ev₂ (local only): use bottomUp_2op_reachable to
+      --      pull e₁ across merge, recurse on (π₁', π₂).
       -- Left for future work; strong-induction ih is in scope.
       sorry
 
