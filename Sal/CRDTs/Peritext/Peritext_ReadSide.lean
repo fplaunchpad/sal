@@ -1565,3 +1565,75 @@ theorem anchors_survive_tombstones_visible
       (exists_mark_wins_visible_add_iff s s' c mt h_marks h_afc h_afv)
   · rfl
 
+
+/-! ### List-form traversal specification
+
+Rather than produce an RGA traversal `List OpId` computationally
+(which would require framework-level finite enumeration over
+`set OpId := OpId → Bool`), we specify **what it means for a list
+to be the traversal** via a Prop-valued relation. Callers that
+produce traversals by any means (e.g., the TypeScript demo's
+`traverse`) can prove their lists satisfy `is_rga_traversal` and
+then use the result with the list-form `readRichText_list` below.
+
+Three-part characterization of a valid traversal:
+1. Exactly-visible: `c ∈ l ↔ visible s c = true` (visibility
+   membership).
+2. No duplicates: each char appears at most once.
+3. Visible-order sorted: for any two chars at positions i < j in
+   `l`, `visible_lt s l[i] l[j]`. -/
+
+def is_rga_traversal (s : concrete_st) (l : List OpId) : Prop :=
+  (∀ c, c ∈ l ↔ visible s c = true) ∧
+  l.Nodup ∧
+  l.Pairwise (visible_lt s)
+
+/-- List-form rich-text projection: given a traversal, produce
+the list of `(OpId, codepoint, formatting)` records. -/
+noncomputable def readRichText_list
+    (s : concrete_st) (l : List OpId) :
+    List (OpId × ℕ × (ℕ → Bool)) :=
+  l.map (fun c => (c, mysel_c (Prod.fst s) c, fun mt => formatted_visible s c mt))
+
+/-- **Traversal-spec convergence.** Pointwise-`eq` states agree on
+which lists are valid traversals. -/
+theorem is_rga_traversal_convergent (s₁ s₂ : concrete_st) :
+    eq s₁ s₂ → ∀ l, is_rga_traversal s₁ l ↔ is_rga_traversal s₂ l := by
+  intro h l
+  rcases h with ⟨hc, haf, hd, _⟩
+  have h_afc : ∀ k, contains (Prod.fst (Prod.snd s₁)) k =
+                     contains (Prod.fst (Prod.snd s₂)) k := fun k => (haf k).1
+  have h_afv : ∀ k, mysel_a (Prod.fst (Prod.snd s₁)) k =
+                     mysel_a (Prod.fst (Prod.snd s₂)) k := fun k => (haf k).2
+  have h_vis : ∀ c, visible s₁ c = visible s₂ c := fun c => by
+    simp only [visible, (hc c).1, (hd c).2]
+  unfold is_rga_traversal
+  refine ⟨fun ⟨h_mem, h_nd, h_pw⟩ => ⟨?_, h_nd, ?_⟩,
+          fun ⟨h_mem, h_nd, h_pw⟩ => ⟨?_, h_nd, ?_⟩⟩
+  · intro c; rw [h_mem c, h_vis c]
+  · exact h_pw.imp (fun {a b} h => visible_lt_of_afters_eq s₁ s₂ h_afc h_afv a b h)
+  · intro c; rw [h_mem c, ← h_vis c]
+  · exact h_pw.imp (fun {a b} h =>
+      visible_lt_of_afters_eq s₂ s₁
+        (fun k => (h_afc k).symm) (fun k => (h_afv k).symm) a b h)
+
+/-- **List-form `readRichText` convergence.** If two pointwise-equal
+states produce traversals `l₁` and `l₂`, the list renderings may
+differ only by *identical* reorderings — but by traversal
+uniqueness (nodup + pairwise visible_lt), any traversal of a given
+state is unique as a list (given visible_lt is antisymmetric on
+distinct chars, which it is under `distinct_ops`). In particular,
+if both take the same list `l`, the renderings agree. -/
+theorem readRichText_list_eq_of_traversal_eq
+    (s₁ s₂ : concrete_st) (l : List OpId) :
+    eq s₁ s₂ →
+    readRichText_list s₁ l = readRichText_list s₂ l := by
+  intro h_eq
+  have h_payload : ∀ c, mysel_c (Prod.fst s₁) c = mysel_c (Prod.fst s₂) c :=
+    fun c => (h_eq.1 c).2
+  have h_fmt : ∀ c mt, formatted_visible s₁ c mt = formatted_visible s₂ c mt :=
+    fun c mt => formatted_visible_convergent s₁ s₂ c mt h_eq
+  unfold readRichText_list
+  apply List.map_congr_left
+  intro c _
+  exact Prod.ext rfl (Prod.ext (h_payload c) (funext (h_fmt c)))
