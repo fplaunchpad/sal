@@ -1,7 +1,9 @@
 import Sal.Emulation.RA_Linearizability
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Insert
 import Mathlib.Data.List.Induction
 import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Nodup
 
 /-!
 # Merge linearization (existential form)
@@ -369,79 +371,125 @@ theorem merge_linearization_exists
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h₁p h₂p h₁r h₂r h₁s h₂s
-    match hπ₁ : π₁, hπ₂ : π₂ with
-    | [], [] =>
-      -- Both-empty base case.
-      subst hπ₁; subst hπ₂
-      obtain ⟨_, hm₁⟩ := h₁p
-      obtain ⟨_, hm₂⟩ := h₂p
-      have hev₁_empty : ev₁ = ∅ := by
-        ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
-      have hev₂_empty : ev₂ = ∅ := by
-        ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
-      subst hev₁_empty; subst hev₂_empty
-      simp [applySeq] at h₁s h₂s
-      subst h₁s; subst h₂s
-      refine ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil, ?_⟩
-      simp [applySeq, hVC.merge_idem]
-    | [], _ :: _ =>
-      -- π₁ = [], π₂ non-empty. Use merge_init_left_reachable:
-      -- merge init s₂ = s₂, so witness is π₂.
-      subst hπ₁; subst hπ₂
-      simp [applySeq] at h₁s
-      obtain ⟨hn₁, hm₁⟩ := h₁p
-      have hev₁_empty : ev₁ = ∅ := by
-        ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
-      subst hev₁_empty
-      subst h₁s
-      refine ⟨_, ?_, h₂r, ?_⟩
-      · simpa [Set.empty_union] using h₂p
-      · rw [← h₂s]; exact (merge_init_left_reachable hVC _).symm
-    | _ :: _, [] =>
-      -- π₁ non-empty, π₂ = []. Symmetric via merge_init_right_reachable.
-      subst hπ₁; subst hπ₂
-      simp [applySeq] at h₂s
-      obtain ⟨hn₂, hm₂⟩ := h₂p
-      have hev₂_empty : ev₂ = ∅ := by
-        ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
-      subst hev₂_empty
-      subst h₂s
-      refine ⟨_, ?_, h₁r, ?_⟩
-      · simpa [Set.union_empty] using h₁p
-      · rw [← h₁s]; exact (merge_init_right_reachable hVC _).symm
-    | _ :: _, _ :: _ =>
-      -- Both non-empty. Decompose from the back to expose last events.
-      rcases List.eq_nil_or_concat' π₁ with hπ₁_nil | ⟨π₁', e₁, hπ₁_back⟩
-      · rw [hπ₁_nil] at hπ₁; exact absurd hπ₁ (List.cons_ne_nil _ _).symm
-      rcases List.eq_nil_or_concat' π₂ with hπ₂_nil | ⟨π₂', e₂, hπ₂_back⟩
-      · rw [hπ₂_nil] at hπ₂; exact absurd hπ₂ (List.cons_ne_nil _ _).symm
-      -- Now π₁ = π₁' ++ [e₁], π₂ = π₂' ++ [e₂]. Case-split on
-      -- whether the last events match.
-      by_cases h_same : e₁ = e₂
-      · -- Shared last event: factor via lem_0op + recurse via ih.
-        subst h_same
-        -- Invoke IH with smaller lengths. To call ih, we need to
-        -- establish:
-        --   - π₁'.length + π₂'.length < n
-        --   - listPermOf π₁' (ev₁ \ {e₁}) and similarly for π₂'
-        --   - respects π₁' (lo C), from h₁r
-        --   - applySeq init π₁' = some s₁', similarly for π₂'
-        -- Then construct witness π' ++ [e₁] from the IH result.
-        -- Concrete state equation:
-        --   applySeq init (π' ++ [e₁])
-        --     = update (merge s₁' s₂') e₁     [by ih]
-        --     = merge (update s₁' e₁) (update s₂' e₁) [by lem_0op.symm]
-        --     = merge s₁ s₂                    [defs]
-        -- The listPermOf + respects bookkeeping is substantial but
-        -- mechanical. Left for dedicated session.
-        sorry
-      · -- Distinct last events: use bottomUp_2op_reachable (rc case)
-        -- + symmetric variant for the Either rc case + IH.
-        -- Key step: rc between e₁ and e₂ determines which to peel.
-        -- If rc(e₂, e₁) = Fst_then_snd, use bottomUp_2op_reachable.
-        -- If rc(e₁, e₂) = Fst_then_snd, peel e₂ instead (symmetric).
-        -- If rc = Either (commute), peel either.
-        sorry
+    rcases List.eq_nil_or_concat' π₁ with rfl | ⟨π₁', e₁, rfl⟩
+    · rcases List.eq_nil_or_concat' π₂ with rfl | ⟨π₂', e₂, rfl⟩
+      · -- Both empty.
+        obtain ⟨_, hm₁⟩ := h₁p
+        obtain ⟨_, hm₂⟩ := h₂p
+        have hev₁_empty : ev₁ = ∅ := by
+          ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+        have hev₂_empty : ev₂ = ∅ := by
+          ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+        subst hev₁_empty; subst hev₂_empty
+        simp [applySeq] at h₁s h₂s
+        subst h₁s; subst h₂s
+        refine ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil, ?_⟩
+        simp [applySeq, hVC.merge_idem]
+      · -- π₁ = [], π₂ = π₂' ++ [e₂].
+        simp [applySeq] at h₁s
+        obtain ⟨_, hm₁⟩ := h₁p
+        have hev₁_empty : ev₁ = ∅ := by
+          ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+        subst hev₁_empty; subst h₁s
+        refine ⟨_, ?_, h₂r, ?_⟩
+        · simpa [Set.empty_union] using h₂p
+        · rw [← h₂s]; exact (merge_init_left_reachable hVC _).symm
+    · rcases List.eq_nil_or_concat' π₂ with rfl | ⟨π₂', e₂, rfl⟩
+      · -- π₁ = π₁' ++ [e₁], π₂ = [].
+        simp [applySeq] at h₂s
+        obtain ⟨_, hm₂⟩ := h₂p
+        have hev₂_empty : ev₂ = ∅ := by
+          ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
+        subst hev₂_empty; subst h₂s
+        refine ⟨_, ?_, h₁r, ?_⟩
+        · simpa [Set.union_empty] using h₁p
+        · rw [← h₁s]; exact (merge_init_right_reachable hVC _).symm
+      · -- Both non-empty: π₁ = π₁' ++ [e₁], π₂ = π₂' ++ [e₂].
+        by_cases h_same : e₁ = e₂
+        · -- Shared last event: factor via lem_0op + recurse via ih.
+          subst h_same
+          obtain ⟨hnd₁, hmem₁⟩ := h₁p
+          obtain ⟨hnd₂, hmem₂⟩ := h₂p
+          have he₁_in_ev₁ : e₁ ∈ ev₁ := (hmem₁ e₁).mp (by simp)
+          have he₁_in_ev₂ : e₁ ∈ ev₂ := (hmem₂ e₁).mp (by simp)
+          rw [List.nodup_append] at hnd₁ hnd₂
+          have he₁_not_π₁' : e₁ ∉ π₁' := fun h => hnd₁.2.2 e₁ h e₁ (by simp) rfl
+          have he₁_not_π₂' : e₁ ∉ π₂' := fun h => hnd₂.2.2 e₁ h e₁ (by simp) rfl
+          have hperm₁' : listPermOf π₁' (ev₁ \ {e₁}) := by
+            refine ⟨hnd₁.1, fun a => ?_⟩
+            simp only [Set.mem_diff, Set.mem_singleton_iff]
+            constructor
+            · intro ha
+              refine ⟨(hmem₁ a).mp (List.mem_append.mpr (Or.inl ha)), ?_⟩
+              intro rfl; exact he₁_not_π₁' ha
+            · rintro ⟨ha_ev, ha_ne⟩
+              rcases List.mem_append.mp ((hmem₁ a).mpr ha_ev) with h | h
+              · exact h
+              · rw [List.mem_singleton] at h; exact absurd h ha_ne
+          have hperm₂' : listPermOf π₂' (ev₂ \ {e₁}) := by
+            refine ⟨hnd₂.1, fun a => ?_⟩
+            simp only [Set.mem_diff, Set.mem_singleton_iff]
+            constructor
+            · intro ha
+              refine ⟨(hmem₂ a).mp (List.mem_append.mpr (Or.inl ha)), ?_⟩
+              intro rfl; exact he₁_not_π₂' ha
+            · rintro ⟨ha_ev, ha_ne⟩
+              rcases List.mem_append.mp ((hmem₂ a).mpr ha_ev) with h | h
+              · exact h
+              · rw [List.mem_singleton] at h; exact absurd h ha_ne
+          have hresp_split₁ := List.pairwise_append.mp h₁r
+          have hresp_split₂ := List.pairwise_append.mp h₂r
+          have hresp₁' : respects π₁' (lo C) := hresp_split₁.1
+          have hresp₂' : respects π₂' (lo C) := hresp_split₂.1
+          rw [applySeq_append_single] at h₁s h₂s
+          simp only [List.length_append, List.length_singleton] at h_len
+          have hn'lt : π₁'.length + π₂'.length < n := by omega
+          obtain ⟨π', hπ'perm, hπ'resp, hπ'state⟩ :=
+            ih _ hn'lt π₁' π₂' (ev₁ \ {e₁}) (ev₂ \ {e₁}) _ _ rfl
+              hperm₁' hperm₂' hresp₁' hresp₂' rfl rfl
+          refine ⟨π' ++ [e₁], ?_, ?_, ?_⟩
+          · obtain ⟨hnd', hm'⟩ := hπ'perm
+            refine ⟨?_, fun a => ?_⟩
+            · rw [List.nodup_append]
+              refine ⟨hnd', List.nodup_singleton _, ?_⟩
+              intro x hx y hy
+              rw [List.mem_singleton] at hy; subst y
+              intro heq; subst heq
+              rcases (hm' x).mp hx with ⟨_, hne⟩ | ⟨_, hne⟩ <;> exact hne rfl
+            · rw [List.mem_append, List.mem_singleton, Set.mem_union]
+              constructor
+              · rintro (h | rfl)
+                · rcases (hm' a).mp h with ⟨h_ev, _⟩ | ⟨h_ev, _⟩
+                  · exact Or.inl h_ev
+                  · exact Or.inr h_ev
+                · exact Or.inl he₁_in_ev₁
+              · intro h
+                by_cases hae : a = e₁
+                · exact Or.inr hae
+                · exact Or.inl ((hm' a).mpr (by
+                    rcases h with h | h
+                    · exact Or.inl ⟨h, hae⟩
+                    · exact Or.inr ⟨h, hae⟩))
+          · unfold respects
+            rw [List.pairwise_append]
+            refine ⟨hπ'resp, List.pairwise_singleton _ _, ?_⟩
+            intro x hx y hy
+            rw [List.mem_singleton] at hy; subst y
+            have hx_ev : x ∈ ev₁ \ {e₁} ∪ ev₂ \ {e₁} := (hπ'perm.2 x).mp hx
+            rcases hx_ev with ⟨hx_ev₁, hx_ne⟩ | ⟨hx_ev₂, hx_ne⟩
+            · have hx_π₁' : x ∈ π₁' := by
+                rcases List.mem_append.mp ((hmem₁ x).mpr hx_ev₁) with h | h
+                · exact h
+                · rw [List.mem_singleton] at h; exact absurd h hx_ne
+              exact hresp_split₁.2.2 x hx_π₁' e₁ (by simp)
+            · have hx_π₂' : x ∈ π₂' := by
+                rcases List.mem_append.mp ((hmem₂ x).mpr hx_ev₂) with h | h
+                · exact h
+                · rw [List.mem_singleton] at h; exact absurd h hx_ne
+              exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
+          · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
+        · -- Distinct last events: needs bottomUp_2op_reachable + rc split.
+          sorry
 
 end
 
