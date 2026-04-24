@@ -105,11 +105,11 @@ Infrastructure landed:
   - `partial_overlap_all_adds_formatted_visible` (Ex 2).
   - `different_type_adds_coexist_visible` (Ex 3).
 
+Now landed:
+- `anchors_survive_tombstones_visible` — both CRDT and MRDT sides,
+  via the `exists_mark_wins_visible_add_iff` helper.
+
 **Still pending:**
-- `anchors_survive_tombstones_visible` — proof plumbing; simp can't
-  rewrite `visible_lt (do_ s)` to `visible_lt s` through the opaque
-  inductive, and the direct iff-based construction wasn't quite
-  landing in a short session. Noted as follow-up.
 - Expand/contract theorems (Ex 7 / Ex 8) specific to the
   visible-order framing — the visible-order approach doesn't need
   the boundary-specific expand/contract theorems since the behavior
