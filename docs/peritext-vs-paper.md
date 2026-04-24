@@ -33,10 +33,10 @@ but the correctness criteria land in different places:
 | Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist_visible` apply — but that's the opposite of Ex 4's intent. |
 | Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove_visible` (positive) + `no_add_cover_implies_unformatted_visible` (negative) | ✅ Deliberate departure on the priority rule — see below. |
 | Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist_visible` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
-| Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` | 🟥 **Inherent state-based limitation** — only the cross-sibling case (insert lands in an older-sibling subtree of `endId`, so before `endId` in visible order) is captured. Full bold-expand depends on *op ordering* (whether the insert arrived before or after the mark) and is not state-recoverable. See *State-based vs op-based: Ex 7 / bold-expand* below. |
-| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` (full negation) + `ex8_link_descendant_not_in_span_visible_of_wf` (via `wf_afters`) | ✅ Afters-descendants of `endId` come after `endId` in visible order and are correctly excluded by `in_span_visible`. Full negation uses the state-level `wf_afters` acyclicity invariant. |
+| Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` (cross-sibling case) + `bold_expand_in_span_visible` (post-endId region) | ✅ Two complementary results: the cross-sibling case (insert lands before `endId` in visible order) uses the standard visible-order bound; the post-`endId` bold-expand region uses `bold_expand_reach`, which identifies afters-descendants of `endId` reachable via chains of post-mark-opId characters (paper's §3.3 "grab new inserts at the after-side" encoded via opId comparison). |
+| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` / `_of_wf` (full negation, link case) | ✅ Under link semantics (`endSide = false`), afters-descendants of `endId` are correctly excluded. Full negation uses the `wf_afters` acyclicity invariant. |
 | Table 1 — "Can marks overlap?" | §3.4 | Emergent from `formatted_visible` being per-`markType` | ✅ |
-| Table 1 — "Do marks expand?" | §3.4 | Captured by Ex 7 / Ex 8 visible-order demos above | 🟥 Ex 7 side is state-based-unreachable (see below); Ex 8 side is ✅. |
+| Table 1 — "Do marks expand?" | §3.4 | Captured by Ex 7 / Ex 8 visible-order demos above | ✅ |
 
 Plus one additional theorem not tied to a specific paper example:
 
@@ -100,6 +100,10 @@ those:
 - `wf_afters` — state-level acyclicity invariant on `afters`, with
   `visible_lt_asymm_of_wf` and `visible_le_antisymm_of_wf` as
   corollaries.
+- `bold_expand_reach` — paper §3.3 bold-expand region past `endId`,
+  characterized by afters-chain reachability through post-mark-opId
+  characters only. Embedded as the second disjunct of `in_span_visible`'s
+  `endSide = true` right bound.
 
 ## Still pending
 
@@ -111,46 +115,44 @@ those:
   structurally for states reached from `init_st` but needs an
   inductive trace proof.
 
-### State-based vs op-based: Ex 7 / bold-expand
+### How Ex 7 / bold-expand is captured: `bold_expand_reach`
 
-**The gap is fundamental, not a TODO.** Paper §3.3's bold-expand
-semantics — "the end anchor grabs *future* inserts on the after-side" —
-is inherently operation-based. A state-based snapshot cannot recover
-the op-order information the paper's rule depends on.
+Paper §3.3's bold-expand rule says: under `endSide = after`, the end
+anchor grabs inserts that arrive at or past `endId`. Op-based Peritext
+recovers "arrives after the mark" from opId comparisons — every op
+carries a `(replica, counter)` opId, and comparing `c.opId` against
+`mark.opId` tells you whether `c` was inserted after the mark was
+created. This information is state-recoverable (opIds are stored in
+state), so bold-expand can be formalized in a state-based model.
 
-Concrete scenario: state has chars `a < b < c` and a bold mark
-`[b, c, endSide = after]`. Consider two histories that produce the
-same final state:
+We capture this via the `bold_expand_reach` inductive predicate:
 
-- **History A.** Insert `x` with `afters = c` *before* the bold was
-  applied. Then apply the bold. Paper: `x` is outside the span
-  (it was already past `c` at mark creation).
-- **History B.** Apply the bold first. Then insert `x` with
-  `afters = c`. Paper: `x` is inside the span (bold-expand grabbed
-  the new insert).
+```lean
+inductive bold_expand_reach (s : concrete_st) (m : MarkOp) : OpId → Prop
+  | at_endId : bold_expand_reach s m (mark_endId m)
+  | step {c c_parent} :
+      after_of s c c_parent = true →
+      bold_expand_reach s m c_parent →
+      opid_max (mark_opId m) c = c →    -- c.opId > mark.opId
+      bold_expand_reach s m c
+```
 
-Both histories yield identical final `(chars, afters, deleted, marks)`.
-A state-based predicate `in_span_visible s m x` *must* return the
-same answer in both cases; it cannot reproduce the paper's
-op-history-dependent verdict.
+A character `c` is in the bold-expand region iff there's an
+afters-chain from `c` back to `endId` where every step's character
+post-dates the mark (`c.opId > mark.opId`). Pre-mark siblings break
+the chain, so older characters at the boundary are correctly
+excluded. New post-mark inserts are correctly included.
 
-Our `in_span_visible` takes the "under-approximating" choice
-(History A's answer): post-`endId` inserts are outside. This is
-link-contract-faithful for Ex 8 and captures the cross-sibling case
-of Ex 7 (via `ex7_bold_older_sibling_in_span`), but does not grab
-post-`endId` inserts for bold.
+`in_span_visible`'s right bound under `endSide = true` is the
+disjunction `visible_le c endId ∨ bold_expand_reach s m c` — the
+standard link-contract bound OR the bold-expand region.
 
-The paper's own §A.3 equivalence proof for op-based ↔ state-based
-addresses *convergence*, not intent-preservation. Ex 7's rule as
-stated is an op-based claim; the most faithful state-based analogue
-is a choice between under- and over-approximation, and either choice
-loses information in exchange for being state-recoverable.
-
-**What would be needed to close this.** Threading explicit op-history
-info into the state — e.g., per-mark "visible successor at creation
-time" — which effectively moves the formalization back toward the
-op-based model. Not pursued here; would change the state shape and
-require re-verifying the 24 convergence VCs.
+**Caveat on truly-concurrent inserts.** Two ops that are HB-incomparable
+to the mark may have `opId > mark.opId` or `opId < mark.opId` depending
+on replica-counter interleaving. Our rule commits to the total order
+given by `opid_max`, which matches the RGA sibling tiebreak and is
+therefore consistent with how visible order is computed. Replicas
+agree on both, so convergence is preserved.
 
 ## Paper implementation details not modelled
 

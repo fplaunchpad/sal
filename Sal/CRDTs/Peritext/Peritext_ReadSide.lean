@@ -349,32 +349,60 @@ theorem visible_lt_of_cross_sibling
 
 /-! ### `in_span_visible` — paper-faithful span membership
 
-The covering predicate that mirrors the paper's semantics exactly.
-A character `c` is in the span of mark `m` iff its visible-order
-position is bounded by the anchors, with the side bits choosing
-between strict `<` and non-strict `≤`:
+The covering predicate that mirrors the paper's semantics. A character
+`c` is in the span of mark `m` iff its visible-order position is
+bounded by the anchors:
 
-- **Left bound**: `c` is at or after `startId` in visible order,
-  with `startSide` choosing whether `startId` itself counts.
-  `startSide = false` (before startId) → `visible_le startId c`
-  (startId is in span).
-  `startSide = true`  (after startId)  → `visible_lt startId c`
-  (startId is excluded).
+- **Left bound**: `c` is at or after `startId`, with `startSide`
+  choosing whether `startId` itself counts.
+  `startSide = false` (before): `visible_le startId c` — startId is in.
+  `startSide = true`  (after):  `visible_lt startId c` — startId is out.
 
-- **Right bound**: `c` is at or before `endId`, with `endSide`
-  choosing whether `endId` counts.
-  `endSide = false` (before endId) → `visible_lt c endId`
-  (endId is excluded — but chars between "last covered" and `endId`
-  ARE in span; this captures the bold "expand" case of Ex 7).
-  `endSide = true`  (after endId)  → `visible_le c endId`
-  (endId is in span; chars after endId are excluded — captures the
-  link "no expand" case).
+- **Right bound**: `c` is at or before `endId`, *or* in `endId`'s
+  bold-expand region if `endSide = true`:
+  `endSide = false` (before, link/contract): `visible_lt c endId` —
+  endId and everything after are out.
+  `endSide = true`  (after,  bold/expand):  `visible_le c endId ∨
+  bold_expand_reach s m c` — endId is in, plus post-endId inserts
+  whose afters-chain back to endId consists entirely of
+  post-mark-opId characters. See `bold_expand_reach` below.
 
 -/
+
+/-- The bold-expand region past `endId`. A character `c` reaches `endId`
+via afters along a chain where every step's character has opId strictly
+greater than the mark's own opId — i.e., every intermediate was inserted
+after the mark was created.
+
+This captures paper §3.3 bold-expand via opId comparison: sibling
+siblings that pre-date the mark block the expand region, while
+post-mark siblings are grabbed.
+
+**Example (Ex 7).** State has `..., k, ' ', f, o, x` with bold
+`[q..k, endSide=after]`. Later (or concurrently), "brown" is
+inserted with `afters = k`. Each brown char has opId > mark.opId.
+The afters-chain `brown.last → brown[n-1] → ... → brown.first → k`
+goes through only post-mark nodes, so brown is in the expand
+region. The space `' '` has opId < mark.opId, so it blocks the
+chain — chars reachable only through the space (like `f`) are not
+in the expand region. -/
+inductive bold_expand_reach (s : concrete_st) (m : MarkOp) : OpId → Prop where
+  /-- Base: endId reaches itself. -/
+  | at_endId : bold_expand_reach s m (mark_endId m)
+  /-- Step: if `c_parent` is in the expand region and `c` is a direct
+  afters-child of `c_parent` with `c.opId > mark.opId`, then `c` is
+  also in the expand region. -/
+  | step {c c_parent : OpId} :
+      after_of s c c_parent = true →
+      bold_expand_reach s m c_parent →
+      opid_max (mark_opId m) c = c →
+      bold_expand_reach s m c
+
 def in_span_visible (s : concrete_st) (m : MarkOp) (c : OpId) : Prop :=
   (if mark_startSide m = true then visible_lt s (mark_startId m) c
    else visible_le s (mark_startId m) c) ∧
-  (if mark_endSide m = true then visible_le s c (mark_endId m)
+  (if mark_endSide m = true then
+      visible_le s c (mark_endId m) ∨ bold_expand_reach s m c
    else visible_lt s c (mark_endId m))
 
 /-- Sanity: `startId` is in the span when `startSide = false` and
@@ -387,11 +415,17 @@ theorem startId_in_span_visible
      else visible_lt s (mark_startId m) (mark_endId m)) →
     in_span_visible s m (mark_startId m) := by
   intro h_sSide h_nondeg
-  refine ⟨?_, h_nondeg⟩
-  show (if mark_startSide m = true then visible_lt s (mark_startId m) (mark_startId m)
-        else visible_le s (mark_startId m) (mark_startId m))
-  rw [h_sSide]; simp
-  exact visible_le_refl s (mark_startId m)
+  refine ⟨?_, ?_⟩
+  · show (if mark_startSide m = true then visible_lt s (mark_startId m) (mark_startId m)
+          else visible_le s (mark_startId m) (mark_startId m))
+    rw [h_sSide]; simp
+    exact visible_le_refl s (mark_startId m)
+  · show (if mark_endSide m = true then
+            visible_le s (mark_startId m) (mark_endId m) ∨ bold_expand_reach s m (mark_startId m)
+          else visible_lt s (mark_startId m) (mark_endId m))
+    split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_nondeg; exact Or.inl h_nondeg
+    · rw [if_neg h_eSide] at h_nondeg; exact h_nondeg
 
 /-- Sanity: `endId` is in the span when `endSide = true` and
 the mark's span is non-degenerate. -/
@@ -403,10 +437,11 @@ theorem endId_in_span_visible
     in_span_visible s m (mark_endId m) := by
   intro h_eSide h_nondeg
   refine ⟨h_nondeg, ?_⟩
-  show (if mark_endSide m = true then visible_le s (mark_endId m) (mark_endId m)
+  show (if mark_endSide m = true then
+          visible_le s (mark_endId m) (mark_endId m) ∨ bold_expand_reach s m (mark_endId m)
         else visible_lt s (mark_endId m) (mark_endId m))
   rw [h_eSide]; simp
-  exact visible_le_refl s (mark_endId m)
+  exact Or.inl (visible_le_refl s (mark_endId m))
 
 /-- **Paper Ex 1 (propagation step, visible-order form).**
 
@@ -430,13 +465,16 @@ theorem in_span_visible_propagate
      else visible_lt s c_new (mark_endId m)) →
     in_span_visible s m c_new := by
   intro ⟨h_left, _⟩ h_after h_right
-  refine ⟨?_, h_right⟩
-  have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
-  split_ifs with h_sSide
-  · rw [if_pos h_sSide] at h_left
-    exact visible_lt.trans h_left h_pc
-  · rw [if_neg h_sSide] at h_left
-    exact Or.inr (visible_lt_of_le_lt s (mark_startId m) c_parent c_new h_left h_pc)
+  refine ⟨?_, ?_⟩
+  · have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
+    split_ifs with h_sSide
+    · rw [if_pos h_sSide] at h_left
+      exact visible_lt.trans h_left h_pc
+    · rw [if_neg h_sSide] at h_left
+      exact Or.inr (visible_lt_of_le_lt s (mark_startId m) c_parent c_new h_left h_pc)
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right; exact Or.inl h_right
+    · rw [if_neg h_eSide] at h_right; exact h_right
 
 /-- **Paper Ex 1 (chain form, visible-order).**
 
@@ -457,17 +495,20 @@ theorem in_span_visible_of_reach
      else visible_lt s c (mark_endId m)) →
     in_span_visible s m c := by
   intro ⟨h_left, _⟩ h_reach h_right
-  refine ⟨?_, h_right⟩
-  by_cases h_eq : c = c_start
-  · subst h_eq
-    exact h_left
-  · have h_lt : visible_lt s c_start c :=
-      visible_lt_of_afters_reach s c c_start h_reach h_eq
-    split_ifs with h_sSide
-    · rw [if_pos h_sSide] at h_left
-      exact visible_lt.trans h_left h_lt
-    · rw [if_neg h_sSide] at h_left
-      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+  refine ⟨?_, ?_⟩
+  · by_cases h_eq : c = c_start
+    · subst h_eq
+      exact h_left
+    · have h_lt : visible_lt s c_start c :=
+        visible_lt_of_afters_reach s c c_start h_reach h_eq
+      split_ifs with h_sSide
+      · rw [if_pos h_sSide] at h_left
+        exact visible_lt.trans h_left h_lt
+      · rw [if_neg h_sSide] at h_left
+        exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right; exact Or.inl h_right
+    · rw [if_neg h_eSide] at h_right; exact h_right
 
 /-! ### Ex 7 / Ex 8 visible-order demonstrations
 
@@ -515,6 +556,29 @@ theorem ex7_bold_older_sibling_in_span
     · exact absurd h (by rw [h_eSide]; decide)
     · exact visible_lt.sibling h_after_new h_after_end h_ne h_order
 
+/-- **Paper Ex 7 (bold-expand) — post-endId inserts in the bold-expand region.**
+
+Under bold-expand semantics (`endSide = true`), a character `c` in
+`bold_expand_reach s m c` is in the span, provided the left bound
+is also satisfied. This is the "new text inserted at or after the
+bold boundary is grabbed by the bold" case of paper §3.3.
+
+`bold_expand_reach` identifies the region past `endId` reachable via
+afters-chains through post-mark-opId characters only — pre-mark
+siblings block the region, matching the paper's behavior where
+older text at the boundary is not re-formatted. -/
+theorem bold_expand_in_span_visible
+    (s : concrete_st) (m : MarkOp) (c : OpId) :
+    mark_endSide m = true →
+    (if mark_startSide m = true then visible_lt s (mark_startId m) c
+     else visible_le s (mark_startId m) c) →
+    bold_expand_reach s m c →
+    in_span_visible s m c := by
+  intro h_eSide h_left h_reach
+  refine ⟨h_left, ?_⟩
+  rw [if_pos h_eSide]
+  exact Or.inr h_reach
+
 /-- **Paper Ex 8 (link no-expand) — direct descendant of `endId` is not in span.**
 
 For a link-style mark (`endSide = true`), a new char inserted as
@@ -538,49 +602,41 @@ theorem ex8_link_descendant_visible_lt_endId
     visible_lt s (mark_endId m) c_new :=
   fun h => visible_lt.parent_child h
 
-/-- **Paper Ex 8 full negation** — given RGA acyclicity.
+/-- **Paper Ex 8 full negation (link case).**
 
-An afters-descendant `c_new` of `endId` with `c_new ≠ endId` is *not*
-in the span, regardless of `endSide`. This is the full paper-faithful
-link-no-expand statement.
+Under link semantics (`endSide = false`), an afters-descendant
+`c_new` of `endId` with `c_new ≠ endId` is *not* in the span.
 
-The theorem takes `h_acyclic : ¬ visible_lt s (mark_endId m) (mark_endId m)`
-as an explicit hypothesis — equivalent to RGA well-formedness on the
-`afters` map at `endId`. This state-level invariant is not currently
-an explicit predicate in the Sal framework, but it holds for every
-`do_`-generated state where `endId` was inserted with a distinct opId.
-Callers who have a generating trace can discharge this by induction;
-here we take it as-given. -/
+Under bold-expand semantics (`endSide = true`) this is **no longer
+universally true** — post-endId descendants with opId > mark.opId
+are now in span via `bold_expand_reach`. The theorem is therefore
+restricted to the link case here; the bold case is characterized
+positively by `bold_expand_in_span_visible` below.
+
+Takes `¬ visible_lt s endId endId` as a hypothesis (acyclicity of
+`afters` at `endId`); the `_of_wf` form below discharges this via
+the state-level `wf_afters` invariant. -/
 theorem ex8_link_descendant_not_in_span_visible
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
-    c_new ≠ mark_endId m →
+    mark_endSide m = false →
     after_of s c_new (mark_endId m) = true →
     ¬ visible_lt s (mark_endId m) (mark_endId m) →
     ¬ in_span_visible s m c_new := by
-  intro h_ne h_after h_acyclic h_in_span
+  intro h_eSide h_after h_acyclic h_in_span
   have h_lt : visible_lt s (mark_endId m) c_new :=
     ex8_link_descendant_visible_lt_endId s m c_new h_after
   rcases h_in_span with ⟨_, h_right⟩
-  split_ifs at h_right with h_eSide
-  · -- endSide = true: right bound is visible_le c_new endId
-    rcases h_right with h_eq | h_visible_lt
-    · exact h_ne h_eq
-    · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
-  · -- endSide = false: right bound is visible_lt c_new endId
-    exact h_acyclic (visible_lt.trans h_lt h_right)
+  rw [if_neg (by rw [h_eSide]; decide)] at h_right
+  exact h_acyclic (visible_lt.trans h_lt h_right)
 
-/-- **Paper Ex 8 full negation, `wf_afters` form.**
-
-Convenience corollary of `ex8_link_descendant_not_in_span_visible`
-that discharges the explicit acyclicity hypothesis via the state-
-level `wf_afters` invariant. -/
+/-- **Paper Ex 8 full negation (link), `wf_afters` form.** -/
 theorem ex8_link_descendant_not_in_span_visible_of_wf
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
     wf_afters s →
-    c_new ≠ mark_endId m →
+    mark_endSide m = false →
     after_of s c_new (mark_endId m) = true →
-    ¬ in_span_visible s m c_new := fun h_wf h_ne h_after =>
-  ex8_link_descendant_not_in_span_visible s m c_new h_ne h_after (h_wf _)
+    ¬ in_span_visible s m c_new := fun h_wf h_eSide h_after =>
+  ex8_link_descendant_not_in_span_visible s m c_new h_eSide h_after (h_wf _)
 
 /-! ### Preservation of `visible_lt` / `in_span_visible` under `Insert`
 
@@ -685,6 +741,24 @@ theorem visible_le_preserved_under_insert
   · exact Or.inl h
   · exact Or.inr (visible_lt_preserved_under_insert s ts rid ch after h_fresh c₁ c₂ h)
 
+/-- `bold_expand_reach` persists under fresh-opId Insert. -/
+theorem bold_expand_reach_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after : OpId) (m : MarkOp) :
+    contains (Prod.fst (Prod.snd s)) (ts, rid) = false →
+    ∀ c, bold_expand_reach s m c →
+      bold_expand_reach (do_ s (ts, rid, app_op_t.Insert ch after)) m c := by
+  intro h_fresh c h
+  induction h with
+  | at_endId => exact bold_expand_reach.at_endId
+  | @step c c_parent h_after _ h_opid ih =>
+    have h_ne : c ≠ (ts, rid) :=
+      after_of_true_implies_ne_fresh s ts rid c c_parent h_fresh h_after
+    have h_after' :
+        after_of (do_ s (ts, rid, app_op_t.Insert ch after)) c c_parent = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after c c_parent h_ne]
+      exact h_after
+    exact bold_expand_reach.step h_after' ih h_opid
+
 /-- **Ex 1 — insert-within-span fully paper-faithful.**
 
 If `c_after` is in the span (paper-faithfully) in `s_pre`, and we
@@ -721,7 +795,9 @@ theorem insert_within_span_in_span_visible
         exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_left_pre
     · split_ifs with h_eSide
       · rw [if_pos h_eSide] at h_right_pre
-        exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
+        rcases h_right_pre with h_le | h_be
+        · exact Or.inl (visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_le)
+        · exact Or.inr (bold_expand_reach_preserved_under_insert s_pre ts rid ch c_after m h_fresh _ h_be)
       · rw [if_neg h_eSide] at h_right_pre
         exact visible_lt_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
   -- New char has afters = c_after in s_post
@@ -987,6 +1063,21 @@ theorem visible_le_of_afters_eq
   · exact Or.inl h
   · exact Or.inr (visible_lt_of_afters_eq s₁ s₂ h_c h_v c₁ c₂ h)
 
+/-- `bold_expand_reach` transfers across states with pointwise-equal afters. -/
+theorem bold_expand_reach_of_afters_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c, contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c) →
+    (∀ c, mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c) →
+    ∀ m c, bold_expand_reach s₁ m c → bold_expand_reach s₂ m c := by
+  intro h_c h_v m c h
+  induction h with
+  | at_endId => exact bold_expand_reach.at_endId
+  | @step c c_parent h_after _ h_opid ih =>
+    have h_after' : after_of s₂ c c_parent = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ c c_parent (h_c c) (h_v c)]
+      exact h_after
+    exact bold_expand_reach.step h_after' ih h_opid
+
 /-- `in_span_visible` transfers across states with pointwise-equal afters. -/
 theorem in_span_visible_of_afters_eq
     (s₁ s₂ : concrete_st) (m : MarkOp) (c : OpId) :
@@ -1004,7 +1095,9 @@ theorem in_span_visible_of_afters_eq
       exact visible_le_of_afters_eq s₁ s₂ h_c h_v _ _ h_left
   · split_ifs with h_eSide
     · rw [if_pos h_eSide] at h_right
-      exact visible_le_of_afters_eq s₁ s₂ h_c h_v _ _ h_right
+      rcases h_right with h_le | h_be
+      · exact Or.inl (visible_le_of_afters_eq s₁ s₂ h_c h_v _ _ h_le)
+      · exact Or.inr (bold_expand_reach_of_afters_eq s₁ s₂ h_c h_v m c h_be)
     · rw [if_neg h_eSide] at h_right
       exact visible_lt_of_afters_eq s₁ s₂ h_c h_v _ _ h_right
 

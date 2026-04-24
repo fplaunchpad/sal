@@ -222,13 +222,25 @@ theorem visible_lt_of_cross_sibling
       visible_lt_of_afters_reach s c₂ c₂_top h_reach_2 h_eq2
     exact visible_lt.trans step_a step_b
 
+/-- The bold-expand region past `endId` (MRDT mirror). See the CRDT
+`Peritext_ReadSide.lean` for semantics and the Ex 7 rationale. -/
+inductive bold_expand_reach (s : concrete_st) (m : MarkOp) : OpId → Prop where
+  | at_endId : bold_expand_reach s m m.endId
+  | step {c c_parent : OpId} :
+      after_of s c c_parent = true →
+      bold_expand_reach s m c_parent →
+      opid_max m.opId c = c →
+      bold_expand_reach s m c
+
 /-- Paper-faithful span-membership predicate. See the CRDT
-`Peritext_ReadSide.lean` for full semantics and the relationship
-to `in_span_boundary`. -/
+`Peritext_ReadSide.lean` for full semantics. The `endSide = true`
+right bound is the paper's bold-expand: visible_le to endId OR in
+the bold-expand region past endId. -/
 def in_span_visible (s : concrete_st) (m : MarkOp) (c : OpId) : Prop :=
   (if m.startSide = true then visible_lt s m.startId c
    else visible_le s m.startId c) ∧
-  (if m.endSide = true then visible_le s c m.endId
+  (if m.endSide = true then
+      visible_le s c m.endId ∨ bold_expand_reach s m c
    else visible_lt s c m.endId)
 
 theorem startId_in_span_visible
@@ -238,11 +250,17 @@ theorem startId_in_span_visible
      else visible_lt s m.startId m.endId) →
     in_span_visible s m m.startId := by
   intro h_sSide h_nondeg
-  refine ⟨?_, h_nondeg⟩
-  show (if m.startSide = true then visible_lt s m.startId m.startId
-        else visible_le s m.startId m.startId)
-  rw [h_sSide]; simp
-  exact visible_le_refl s m.startId
+  refine ⟨?_, ?_⟩
+  · show (if m.startSide = true then visible_lt s m.startId m.startId
+          else visible_le s m.startId m.startId)
+    rw [h_sSide]; simp
+    exact visible_le_refl s m.startId
+  · show (if m.endSide = true then
+            visible_le s m.startId m.endId ∨ bold_expand_reach s m m.startId
+          else visible_lt s m.startId m.endId)
+    split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_nondeg; exact Or.inl h_nondeg
+    · rw [if_neg h_eSide] at h_nondeg; exact h_nondeg
 
 theorem endId_in_span_visible
     (s : concrete_st) (m : MarkOp) :
@@ -252,10 +270,11 @@ theorem endId_in_span_visible
     in_span_visible s m m.endId := by
   intro h_eSide h_nondeg
   refine ⟨h_nondeg, ?_⟩
-  show (if m.endSide = true then visible_le s m.endId m.endId
+  show (if m.endSide = true then
+          visible_le s m.endId m.endId ∨ bold_expand_reach s m m.endId
         else visible_lt s m.endId m.endId)
   rw [h_eSide]; simp
-  exact visible_le_refl s m.endId
+  exact Or.inl (visible_le_refl s m.endId)
 
 /-- **Paper Ex 1 propagation step, visible-order (MRDT).** See CRDT version for doc. -/
 theorem in_span_visible_propagate
@@ -266,13 +285,16 @@ theorem in_span_visible_propagate
      else visible_lt s c_new m.endId) →
     in_span_visible s m c_new := by
   intro ⟨h_left, _⟩ h_after h_right
-  refine ⟨?_, h_right⟩
-  have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
-  split_ifs with h_sSide
-  · rw [if_pos h_sSide] at h_left
-    exact visible_lt.trans h_left h_pc
-  · rw [if_neg h_sSide] at h_left
-    exact Or.inr (visible_lt_of_le_lt s m.startId c_parent c_new h_left h_pc)
+  refine ⟨?_, ?_⟩
+  · have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
+    split_ifs with h_sSide
+    · rw [if_pos h_sSide] at h_left
+      exact visible_lt.trans h_left h_pc
+    · rw [if_neg h_sSide] at h_left
+      exact Or.inr (visible_lt_of_le_lt s m.startId c_parent c_new h_left h_pc)
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right; exact Or.inl h_right
+    · rw [if_neg h_eSide] at h_right; exact h_right
 
 /-- **Paper Ex 1 chain form, visible-order (MRDT).** See CRDT version. -/
 theorem in_span_visible_of_reach
@@ -283,17 +305,20 @@ theorem in_span_visible_of_reach
      else visible_lt s c m.endId) →
     in_span_visible s m c := by
   intro ⟨h_left, _⟩ h_reach h_right
-  refine ⟨?_, h_right⟩
-  by_cases h_eq : c = c_start
-  · subst h_eq
-    exact h_left
-  · have h_lt : visible_lt s c_start c :=
-      visible_lt_of_afters_reach s c c_start h_reach h_eq
-    split_ifs with h_sSide
-    · rw [if_pos h_sSide] at h_left
-      exact visible_lt.trans h_left h_lt
-    · rw [if_neg h_sSide] at h_left
-      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+  refine ⟨?_, ?_⟩
+  · by_cases h_eq : c = c_start
+    · subst h_eq
+      exact h_left
+    · have h_lt : visible_lt s c_start c :=
+        visible_lt_of_afters_reach s c c_start h_reach h_eq
+      split_ifs with h_sSide
+      · rw [if_pos h_sSide] at h_left
+        exact visible_lt.trans h_left h_lt
+      · rw [if_neg h_sSide] at h_left
+        exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right; exact Or.inl h_right
+    · rw [if_neg h_eSide] at h_right; exact h_right
 
 /-- Paper-faithful "mark wins" predicate using `in_span_visible`.
 See the CRDT `Peritext_ReadSide.lean` for discussion. -/
@@ -545,6 +570,19 @@ theorem visible_le_of_chars_eq
   · exact Or.inl hle
   · exact Or.inr (visible_lt_of_chars_eq s₁ s₂ h c₁ c₂ hle)
 
+theorem bold_expand_reach_of_chars_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    ∀ m c, bold_expand_reach s₁ m c → bold_expand_reach s₂ m c := by
+  intro h m c hr
+  induction hr with
+  | at_endId => exact bold_expand_reach.at_endId
+  | @step c c_parent h_after _ h_opid ih =>
+    have h_after' : after_of s₂ c c_parent = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ c c_parent (fun ch => h c c_parent ch)]
+      exact h_after
+    exact bold_expand_reach.step h_after' ih h_opid
+
 theorem in_span_visible_of_chars_eq
     (s₁ s₂ : concrete_st) (m : MarkOp) (c : OpId) :
     (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
@@ -558,7 +596,9 @@ theorem in_span_visible_of_chars_eq
       exact visible_le_of_chars_eq s₁ s₂ h _ _ h_left
   · split_ifs with h_eSide
     · rw [if_pos h_eSide] at h_right
-      exact visible_le_of_chars_eq s₁ s₂ h _ _ h_right
+      rcases h_right with h_le | h_be
+      · exact Or.inl (visible_le_of_chars_eq s₁ s₂ h _ _ h_le)
+      · exact Or.inr (bold_expand_reach_of_chars_eq s₁ s₂ h m c h_be)
     · rw [if_neg h_eSide] at h_right
       exact visible_lt_of_chars_eq s₁ s₂ h _ _ h_right
 
@@ -719,6 +759,24 @@ theorem visible_le_preserved_under_insert
   · exact Or.inl h
   · exact Or.inr (visible_lt_preserved_under_insert s ts rid ch after h_fresh c₁ c₂ h)
 
+/-- `bold_expand_reach` persists under fresh-opId Insert (MRDT). -/
+theorem bold_expand_reach_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after : OpId) (m : MarkOp) :
+    (∀ t ch, Prod.fst s ((ts, rid), t, ch) = false) →
+    ∀ c, bold_expand_reach s m c →
+      bold_expand_reach (do_ s (ts, rid, app_op_t.Insert ch after)) m c := by
+  intro h_fresh c h
+  induction h with
+  | at_endId => exact bold_expand_reach.at_endId
+  | @step c c_parent h_after _ h_opid ih =>
+    have h_ne : c ≠ (ts, rid) :=
+      after_of_true_implies_ne_fresh s ts rid c c_parent h_fresh h_after
+    have h_after' :
+        after_of (do_ s (ts, rid, app_op_t.Insert ch after)) c c_parent = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after c c_parent h_ne]
+      exact h_after
+    exact bold_expand_reach.step h_after' ih h_opid
+
 /-- **Ex 1 (MRDT) — insert-within-span fully paper-faithful.** -/
 theorem insert_within_span_in_span_visible
     (s_pre : concrete_st) (m : MarkOp)
@@ -741,7 +799,9 @@ theorem insert_within_span_in_span_visible
         exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_left_pre
     · split_ifs with h_eSide
       · rw [if_pos h_eSide] at h_right_pre
-        exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
+        rcases h_right_pre with h_le | h_be
+        · exact Or.inl (visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_le)
+        · exact Or.inr (bold_expand_reach_preserved_under_insert s_pre ts rid ch c_after m h_fresh _ h_be)
       · rw [if_neg h_eSide] at h_right_pre
         exact visible_lt_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
   have h_after_new : after_of s_post (ts, rid) c_after = true := by
@@ -832,35 +892,47 @@ theorem ex8_link_descendant_visible_lt_endId
     visible_lt s m.endId c_new :=
   fun h => visible_lt.parent_child h
 
-/-- **Paper Ex 8 full negation (MRDT)** — given RGA acyclicity.
+/-- **Paper Ex 8 full negation (link case, MRDT)** — given RGA acyclicity.
 
-An afters-descendant `c_new` of `endId` with `c_new ≠ endId` is *not*
-in the span, regardless of `endSide`. See the CRDT side for the full
-rationale and the explicit acyclicity hypothesis. -/
+Under link semantics (`endSide = false`), an afters-descendant of `endId`
+is *not* in the span. Under bold-expand (`endSide = true`) this no
+longer holds in general; use `bold_expand_in_span_visible` for the
+positive characterization. -/
 theorem ex8_link_descendant_not_in_span_visible
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
-    c_new ≠ m.endId →
+    m.endSide = false →
     after_of s c_new m.endId = true →
     ¬ visible_lt s m.endId m.endId →
     ¬ in_span_visible s m c_new := by
-  intro h_ne h_after h_acyclic h_in_span
+  intro h_eSide h_after h_acyclic h_in_span
   have h_lt : visible_lt s m.endId c_new :=
     ex8_link_descendant_visible_lt_endId s m c_new h_after
   rcases h_in_span with ⟨_, h_right⟩
-  split_ifs at h_right with h_eSide
-  · rcases h_right with h_eq | h_visible_lt
-    · exact h_ne h_eq
-    · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
-  · exact h_acyclic (visible_lt.trans h_lt h_right)
+  rw [if_neg (by rw [h_eSide]; decide)] at h_right
+  exact h_acyclic (visible_lt.trans h_lt h_right)
 
-/-- **Paper Ex 8 full negation, `wf_afters` form (MRDT).** -/
+/-- **Paper Ex 8 full negation (link), `wf_afters` form (MRDT).** -/
 theorem ex8_link_descendant_not_in_span_visible_of_wf
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
     wf_afters s →
-    c_new ≠ m.endId →
+    m.endSide = false →
     after_of s c_new m.endId = true →
-    ¬ in_span_visible s m c_new := fun h_wf h_ne h_after =>
-  ex8_link_descendant_not_in_span_visible s m c_new h_ne h_after (h_wf _)
+    ¬ in_span_visible s m c_new := fun h_wf h_eSide h_after =>
+  ex8_link_descendant_not_in_span_visible s m c_new h_eSide h_after (h_wf _)
+
+/-- **Paper Ex 7 (bold-expand, MRDT) — post-endId inserts in the
+bold-expand region are in span.** See the CRDT side for discussion. -/
+theorem bold_expand_in_span_visible
+    (s : concrete_st) (m : MarkOp) (c : OpId) :
+    m.endSide = true →
+    (if m.startSide = true then visible_lt s m.startId c
+     else visible_le s m.startId c) →
+    bold_expand_reach s m c →
+    in_span_visible s m c := by
+  intro h_eSide h_left h_reach
+  refine ⟨h_left, ?_⟩
+  rw [if_pos h_eSide]
+  exact Or.inr h_reach
 
 /-! ### List-form traversal specification (MRDT mirror) -/
 
