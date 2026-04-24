@@ -507,22 +507,16 @@ theorem merge_linearization_exists
           -- Kernel-verifiable: distinctOps e₁ e₂ from new invariant.
           have h_dist_e₁_e₂ : distinctOps e₁ e₂ :=
             C.timestamps_distinct h_r₁'_L h_r₁'_ev h_r₂'_L h_r₂'_ev h_same
-          -- Kernel-verifiable: differentReplicas e₁ e₂ in the sub-case
-          -- e₁ ∉ ev₂ ∧ e₂ ∉ ev₁ (local events). Derived via
-          -- vis_total_same_replica + vis_causal contradiction.
-          -- We defer this derivation to the full sub-case analysis.
-          --
-          -- Remaining work: (a) case-split on e₁ ∈ ev₂ vs e₁ ∉ ev₂
-          -- and e₂ ∈ ev₁ vs e₂ ∉ ev₁; (b) in the local-only sub-case,
-          -- split on rc(e₂, e₁) and apply bottomUp_2op_reachable; (c)
-          -- in cross-containment sub-cases, use lem_0op at non-tail
-          -- positions; (d) respects bookkeeping accounting for
-          -- cross-set lo constraints (paper's L^a, L^b partitions).
-          --
-          -- h_dist_e₁_e₂ is a live witness that the timestamps_distinct
-          -- invariant threads correctly; the remainder is case analysis
-          -- and plumbing.
-          have _ := h_dist_e₁_e₂  -- use it to avoid unused warning
+          -- `differentReplicas` requires a more subtle argument that
+          -- breaks at recursive depth: the vis_causal + vis_total_same_replica
+          -- contradiction works at the top level (ev₁ = C.L r₁, ev₂ = C.L r₂),
+          -- but at recursive depth the ev sets are shrunken and no longer
+          -- equal any replica's event set. Specifically, an event could
+          -- be in shrunken (ev₁ \ ev₂) because it was peeled off ev₂ in
+          -- a prior shared-last-event iteration, not because it's truly
+          -- "local to r₁." Paper's L^a/L^b decomposition preserves closure
+          -- through recursion; porting it is the remaining work.
+          have _ := h_dist_e₁_e₂
           sorry
 
 end

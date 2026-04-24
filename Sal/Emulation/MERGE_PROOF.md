@@ -128,10 +128,30 @@ The abstract-state forms (`bottomUp_2op`, `bottomUp_1op_top`,
 
 ## Session update (2026-04-24, continued further)
 
-Closed the **shared last-event case** of
-`merge_linearization_exists` (~85 lines): factored via `lem_0op`
-+ strong-induction IH. Also retired the three abstract-state
-BottomUp sorries (unprovable — strictly stronger than VCs allow).
+**Closed this iteration:**
+- Shared-last-event case of `merge_linearization_exists` (~85 lines,
+  factored via `lem_0op` + strong-induction IH).
+- `timestamps_distinct` invariant on `Configuration` (discharged at
+  `initConfig`; usage demonstrated in distinct-last-event sub-case).
+- `vis_total_same_replica` invariant on `Configuration`.
+- Retired three abstract-state BottomUp sorries.
+
+**Key structural insight gained:**
+
+The `differentReplicas e₁ e₂` derivation via `vis_causal` +
+`vis_total_same_replica` works *only at the top level* of
+`merge_linearization_exists`. At recursive depth, the shrunken
+event sets `ev₁ \ {peeled}`, `ev₂ \ {peeled}` no longer equal any
+specific replica's event set, so `vis_causal` at the original
+replica can't be invoked. An event could be in the shrunken
+`ev₁ \ ev₂` because it was peeled off `ev₂` in a prior shared-
+last-event iteration, not because it's genuinely "local to r₁."
+
+This is why the paper's `L^a` / `L^b` event-set decomposition is
+**necessary**, not optional: it preserves the closure properties
+through recursion. Arbitrary shrinkage via the simple strong-
+induction breaks the invariant that would let us argue
+`differentReplicas` at deeper recursive depths.
 
 **Structural obstacle uncovered for the distinct-last-event case:**
 
