@@ -293,46 +293,65 @@ empty; `merge_idem` on `D.init` closes it.
 Closing this theorem is the main remaining work for Phase 1 — see
 `MERGE_PROOF.md` for the case-analysis plan. -/
 theorem merge_linearization_exists
-    {D : CRDTSig} (_hVC : SatisfiesVCs D)
+    {D : CRDTSig} (hVC : SatisfiesVCs D)
     {C : Configuration D}
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
     {s₁ s₂ : D.State}
     (h₁_perm : listPermOf π₁ ev₁) (h₂_perm : listPermOf π₂ ev₂)
-    (_h₁_resp : respects π₁ (lo C)) (_h₂_resp : respects π₂ (lo C))
+    (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C))
     (h₁_state : applySeq D D.init π₁ = s₁)
     (h₂_state : applySeq D D.init π₂ = s₂) :
     ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧
          respects π (lo C) ∧
          applySeq D D.init π = D.merge s₁ s₂ := by
-  -- Degenerate base case: both event sets empty.
-  -- Covers the one exercisable case of the reachable state space
-  -- (initConfig.merge applied to freshly-created replicas).
-  -- The full induction is left for future work.
-  by_cases h_empty₁ : π₁ = []
-  · by_cases h_empty₂ : π₂ = []
-    · -- Both π's empty ⟹ ev's empty, s's are init, merge is init.
-      subst h_empty₁; subst h_empty₂
-      obtain ⟨_, hm₁⟩ := h₁_perm
-      obtain ⟨_, hm₂⟩ := h₂_perm
+  -- Generalise then strong-induct on π₁.length + π₂.length.
+  suffices gen : ∀ n (π₁ π₂ : List (Op D.AppOp)) (ev₁ ev₂ : Set (Op D.AppOp))
+                   (s₁ s₂ : D.State),
+      π₁.length + π₂.length = n →
+      listPermOf π₁ ev₁ → listPermOf π₂ ev₂ →
+      respects π₁ (lo C) → respects π₂ (lo C) →
+      applySeq D D.init π₁ = s₁ → applySeq D D.init π₂ = s₂ →
+      ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
+           applySeq D D.init π = D.merge s₁ s₂ by
+    exact gen _ π₁ π₂ ev₁ ev₂ s₁ s₂ rfl
+      h₁_perm h₂_perm h₁_resp h₂_resp h₁_state h₂_state
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h₁p h₂p h₁r h₂r h₁s h₂s
+    match hπ₁ : π₁, hπ₂ : π₂ with
+    | [], [] =>
+      -- Both-empty base case.
+      subst hπ₁; subst hπ₂
+      obtain ⟨_, hm₁⟩ := h₁p
+      obtain ⟨_, hm₂⟩ := h₂p
       have hev₁_empty : ev₁ = ∅ := by
-        ext a; constructor
-        · intro ha; exact absurd ((hm₁ a).mpr ha) (List.not_mem_nil)
-        · intro ha; exact ha.elim
+        ext a; exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
       have hev₂_empty : ev₂ = ∅ := by
-        ext a; constructor
-        · intro ha; exact absurd ((hm₂ a).mpr ha) (List.not_mem_nil)
-        · intro ha; exact ha.elim
+        ext a; exact ⟨fun ha => absurd ((hm₂ a).mpr ha) List.not_mem_nil, fun ha => ha.elim⟩
       subst hev₁_empty; subst hev₂_empty
-      simp [applySeq] at h₁_state h₂_state
-      subst h₁_state; subst h₂_state
-      refine ⟨[], ?_, List.Pairwise.nil, ?_⟩
-      · refine ⟨List.nodup_nil, fun a => ?_⟩
-        simp
-      · simp [applySeq, _hVC.merge_idem]
-    · -- π₂ non-empty — inductive step. Left to future work.
+      simp [applySeq] at h₁s h₂s
+      subst h₁s; subst h₂s
+      refine ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil, ?_⟩
+      simp [applySeq, hVC.merge_idem]
+    | [], _ :: _ =>
+      -- π₁ = [], π₂ non-empty. Requires merge(init, s) = s for
+      -- reachable s (not a direct VC consequence — the Sal paper
+      -- derives it via convergence inside its nested induction).
+      -- Left for future work; see MERGE_PROOF.md.
       sorry
-  · -- π₁ non-empty — inductive step. Left to future work.
-    sorry
+    | _ :: _, _ =>
+      -- π₁ non-empty. The full inductive step needs to:
+      --   1. Decompose π₁ = π₁' ++ [e₁] (via List.eq_nil_or_concat).
+      --   2. Case-split: e₁ ∈ ev₂ (shared) ⟹ use lem_0op to reduce,
+      --      recurse via `ih` with smaller π₁, π₂.
+      --   3. e₁ ∉ ev₂ (local only) ⟹ further split on π₂ empty or
+      --      not; if non-empty, use bottomUp_2op_reachable to pull
+      --      e₁ across merge and recurse on π₁' + π₂.
+      --   4. π₂ = [] ⟹ merge(s₁, init) argument, same obstruction
+      --      as the [], _ :: _ branch above.
+      -- Left for future work; strong-induction ih is in scope.
+      sorry
 
 end
 
