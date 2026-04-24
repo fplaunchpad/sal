@@ -77,29 +77,54 @@ we'd need for complete Ex 1 fidelity (see below).
 ## Deferred work (follow-ups)
 
 **Full RGA-visible-order formalization.** Needed to close the
-remaining gap in Ex 1: the paper's "within the span" applies to any
-character in visible-traversal order between `startId` and `endId`,
-not just those reachable via an afters-chain.
+remaining gap in Ex 1 and to fix a semantic bug in
+`in_span_boundary` (see below).
 
-Foundation has landed: the `visible_lt` / `visible_le` relations
-(bottom of each `Peritext_ReadSide.lean`) formalize RGA traversal
-order via four inductive rules (parent-child, sibling,
-left-descendant-of-sibling, transitive closure), plus a partial-order
-API (reflexivity, transitivity, composition lemmas) and two useful
-derived theorems:
+Foundation has landed:
 
-- `visible_lt_of_afters_reach` — afters-ancestry gives a
-  visible_lt from ancestor to descendant.
-- `visible_lt_of_cross_sibling` — two chars in the subtrees of
-  different direct siblings are ordered by the siblings' opIds.
+- `visible_lt` / `visible_le` relations defined inductively (four
+  rules: parent-child, sibling, left-descendant-of-sibling,
+  transitive closure), plus a partial-order API (refl, trans,
+  composition) and two derived theorems (`visible_lt_of_afters_reach`,
+  `visible_lt_of_cross_sibling`).
+- `in_span_visible` — paper-faithful covering predicate using
+  `visible_lt` / `visible_le` with side-bit adjustments.
+- `mark_wins_visible` / `formatted_visible` / `readRichText_visible`
+  — parallel read-side projection using `in_span_visible`.
+- One demonstration theorem (`formatted_visible_of_lww_add_winner`)
+  showing the migration pattern.
 
-**Still pending:** integrating `visible_lt` with `in_span_boundary`
-to get a precise `in_span_visible` that subsumes the afters-chain-
-only `covered_interior`. This is the step that would fully close
-Ex 1 (and unlock a list-form `readRichText`). Deferred because it
-refactors the read-side projection and requires re-validating the
-expand/contract / priority-rule / anchors-survive-tombstones
-theorems against the new covering predicate.
+**Still pending:** migrating the rest of the read-side theorems
+(`expand_contract_*`, `partial_overlap_all_adds_formatted`,
+`different_type_adds_coexist`, `no_add_cover_implies_unformatted`,
+etc.) from `in_span_boundary` to `in_span_visible`, and restating
+`readRichText_convergent` against `formatted_visible`. This is the
+step that closes Ex 1 fully and also repairs the semantic bug noted
+below.
+
+### Semantic bug in `in_span_boundary` (use `in_span_visible` instead)
+
+Cross-checking against the paper uncovered a bug in the
+`in_span_boundary` predicate's fourth clause:
+
+```
+if after_of s c endId then endSide    -- the buggy clause
+```
+
+This says: a char `c` inserted as a direct afters-descendant of
+`endId` is covered by the mark iff `endSide = true`. But the paper's
+semantics at §3.3 (Ex 8, link-no-expand) is the **opposite**: with
+`endSide = after` (= `true`), inserts immediately after `endId`
+fall **outside** the span.
+
+`in_span_boundary`'s other three clauses are also approximate (the
+`after_of c startId` one has a similar mismatch for the
+startSide=false interior case). Concretely, the theorems proved
+against `in_span_boundary` (e.g., `expand_contract_end_after`) are
+true-about-`in_span_boundary` but don't match the paper's intent.
+
+`in_span_visible` does match the paper. A follow-up migration moves
+the theorems onto the correct predicate.
 
 **Tombstone-scanning on insert (§4.2.2).** The paper's `Insert`
 algorithm inspects the marks set when placing a character after
