@@ -4,34 +4,50 @@ This document sketches the proof plan in enough detail that a focused
 multi-day mechanization effort can follow it without re-deriving the
 Sal paper's strategy.
 
-## Structural finding (session 2026-04-24)
+## Structural finding + refactor (session 2026-04-24)
 
 The original plan factored the merge case into three independent
 sub-lemmas `merge_witness_{perm, respects, state}`. A closer look
-shows **`_respects` and `_state` are coupled** — they cannot be
-closed independently of each other. Reason: any elementary
-definition of `merge_witness` (including the paper's three-part
-`π_top ++ π₁|_{L₁} ++ π₂|_{L₂}` form) leaves **disjunct 2** of the
-cross case — the concurrent, `rc`-ordered, non-`vis` case — without
-an elementary contradiction. The paper's proof handles this by
-**co-constructing** the witness and the lo-respect property inside
-the bottom-up induction; `respects` is a byproduct of how the
-witness is built, not a fact about a pre-chosen witness.
+showed **`_respects` and `_state` are structurally coupled** — any
+elementary definition of `merge_witness` (including the paper's
+three-part `π_top ++ π₁|_{L₁} ++ π₂|_{L₂}` form) leaves disjunct 2
+of the cross case (the concurrent, `rc`-ordered, non-`vis` case)
+without an elementary contradiction. The paper's own proof
+co-constructs the witness and its lo-respect property inside the
+bottom-up induction; `respects` is a byproduct of *how* the witness
+is built, not a fact about a pre-chosen witness.
 
-What was closed in that session:
+**Refactor landed:** the three lemmas and the standalone
+`merge_witness` definition were replaced by a single existential
+theorem `merge_linearization_exists`:
+
+```
+∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
+      applySeq D.init π = D.merge s₁ s₂
+```
+
+This is what the paper actually proves in lin.tex §3.3 / appendix
+§A.2–A.4. Its body is structured as case analysis on whether `π₁`
+or `π₂` is empty; the degenerate **both-empty** case is closed
+using `merge_idem`. The two non-empty inductive cases remain
+`sorry` — they are the bulk of the remaining work.
+
+Other wins from the session:
 
 * **Causal closure invariant** added as `Configuration.vis_causal`
-  (CRDT_TS.lean). Initial configuration and all Step-using proofs
-  carry it. Kernel-verified, no sorries.
-* **`merge_witness_perm`** — closed (already was).
-* **`merge_witness_respects` disjunct 1** — closed via `vis_causal`.
-  Disjunct 2 remains `sorry` with a diagnostic comment; full closure
-  is coupled to `merge_witness_state`.
+  (`CRDT_TS.lean`). Kernel-verified, no sorries. Although the
+  coupled `_respects` sorry was folded into the new monolithic
+  theorem, `vis_causal` remains useful machinery for the Apply
+  case's lo-shrink argument and for eventual use inside the
+  bottom-up induction.
+* **Packaging theorem** `RA_lin_preserved_merge_via_witness` now
+  destructures the existential directly; no thematic change to its
+  shape.
 
-## What we are proving
+## Source material
 
-**Source material:** lin.tex §3.3 ("Bottom-up linearization") and
-appendix.tex §A.2–A.4 of the Sal paper (arXiv:2502.19967v1).
+lin.tex §3.3 ("Bottom-up linearization") and appendix.tex §A.2–A.4
+of the Sal paper (arXiv:2502.19967v1).
 
 ## What we are proving
 
