@@ -125,6 +125,7 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
   -- Vacuous: D.rc = Either always, so D.rc = Fst_then_snd is impossible.
   no_rc_chain := by intros; simp_all
   cond_comm_base := by intros; simp_all
+  cond_comm_lift := by intros; simp_all
   merge_comm := fun a b => _root_.merge_comm a b
   merge_idem := fun s => _root_.merge_idem s
   -- Real content: delegate to Sal's base_2op.

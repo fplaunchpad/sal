@@ -216,11 +216,27 @@ Case analysis:
   corresponding direction (disjunct 1 of `lo`), contradicting
   incomparability. Hence same replica ⟹ commutes.
 - Different replica + commutes: direct via `applySeq_swap_commute`.
-- Different replica + `¬ commutes`: there must be an overwriter of
-  `b` (or `a`), and `cond_comm_base` gives the swap when the
-  suffix starts with that overwriter. Extending cond_comm to
-  arbitrary suffixes requires the `condComm` lift not present in
-  the 24 VCs. **Remaining sorry.** -/
+- Different replica + `¬ commutes`: the `¬lo` hypotheses force
+  existence of an overwriter `e₃` with `vis b e₃ ∧ ¬commutes b e₃`
+  (i.e., `lo b e₃`). `cond_comm_lift` (added to `SatisfiesVCs`)
+  gives `update (applySeq (update (update s b) a) π) e₃ =
+  update (applySeq (update (update s a) b) π) e₃` for any π, so
+  the swap is invisible **when the intervening sequence is followed
+  by the overwriter**. However, our goal is state equality AT the
+  end of `sfx`, without a trailing overwriter. If `e₃` appears
+  somewhere in `sfx` (split `sfx = α ++ [e₃] ++ β`), we can apply
+  `cond_comm_lift` at that split and extend by `β` on both sides.
+  If `e₃` does NOT appear in `sfx`, the swap can genuinely change
+  the final state — the lemma as stated is unprovable without a
+  stronger structural assumption on `sfx`.
+
+  The Sal paper (lin.tex §3.2) resolves this by stating convergence
+  over `E_C` (the full configuration event set), which IS
+  overwriter-closed by construction; our `convergence` takes a
+  general `ev`, which may not be. **Closing this sub-case
+  requires either tightening convergence to `ev = C.events`, or
+  threading an "overwriter in sfx" hypothesis through the swap and
+  bubble lemmas. Remaining sorry.** -/
 theorem applySeq_swap_lo_incomparable
     (_hVC : SatisfiesVCs D) {C : Configuration D}
     {a b : Op D.AppOp} (h_ne : a ≠ b)

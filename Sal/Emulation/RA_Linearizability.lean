@@ -423,6 +423,33 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
       D.merge (D.update a ol) (D.update b ol)
         = D.update (D.merge a b) ol
 
+  /-- **`cond-comm` lift (paper lin.tex §3.2, property `cond-comm`).**
+
+  The Sal paper assumes `cond-comm` holds at the convergence level —
+  `cond_comm_base` is the 3-event base case, and this field is the
+  semantic extension to arbitrary intervening events. The paper's
+  convergence proof (appendix §A.1) invokes `cond-comm` directly to
+  flip `e₁`, `e₂` in a permutation when there's an overwriter `e₃`
+  somewhere later in the sequence.
+
+  For most CRDTs, this is **vacuous** (rc = Either for all app-op
+  pairs, making the `rc o₁ o₂ = Fst_then_snd` premise unsatisfiable).
+  For CRDTs with non-trivial rc, this needs to be verified from
+  `cond_comm_base` + other VCs via induction on the intervening
+  sequence — a theorem the Sal paper treats as implicit and does not
+  explicitly prove.
+
+  The standalone `conditionallyCommute` def above captures this
+  property at the event level; `condComm` lifts it to app-ops. This
+  field is equivalent to `condComm D` specialised to events. -/
+  cond_comm_lift :
+    ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
+      distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
+      D.rc e e' = RcRes.Fst_then_snd →
+      D.rc e' e'' ≠ RcRes.Either →
+      D.update (applySeq D (D.update (D.update s e') e) π) e''
+        = D.update (applySeq D (D.update (D.update s e) e') π) e''
+
 /-! ### Bridge theorem — base case -/
 
 /-- The initial configuration is RA-linearizable: only replica `0` is
