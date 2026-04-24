@@ -513,3 +513,32 @@ theorem visible_lt_of_cross_sibling
   · have step_b : visible_lt s c₂_top c₂ :=
       visible_lt_of_afters_reach s c₂ c₂_top h_reach_2 h_eq2
     exact visible_lt.trans step_a step_b
+
+/-- Paper-faithful span-membership predicate. See the CRDT
+`Peritext_ReadSide.lean` for full semantics and the relationship
+to `in_span_boundary`. -/
+def in_span_visible (s : concrete_st) (m : MarkOp) (c : OpId) : Prop :=
+  (if m.startSide = true then visible_lt s m.startId c
+   else visible_le s m.startId c) ∧
+  (if m.endSide = true then visible_le s c m.endId
+   else visible_lt s c m.endId)
+
+theorem startId_in_span_visible
+    (s : concrete_st) (m : MarkOp) :
+    m.startSide = false →
+    (if m.endSide = true then visible_le s m.startId m.endId
+     else visible_lt s m.startId m.endId) →
+    in_span_visible s m m.startId := by
+  intro h_sSide h_nondeg
+  refine ⟨?_, h_nondeg⟩
+  simp [h_sSide, visible_le_refl]
+
+theorem endId_in_span_visible
+    (s : concrete_st) (m : MarkOp) :
+    m.endSide = true →
+    (if m.startSide = true then visible_lt s m.startId m.endId
+     else visible_le s m.startId m.endId) →
+    in_span_visible s m m.endId := by
+  intro h_eSide h_nondeg
+  refine ⟨h_nondeg, ?_⟩
+  simp [h_eSide, visible_le_refl]
