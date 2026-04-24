@@ -27,7 +27,7 @@ but the correctness criteria land in different places:
 
 | Paper | Section | Lean theorem | Status |
 |---|---|---|---|
-| Ex 1 — insertion within a span | §3.1, §A.2 | `covered_interior` + `covered_interior_propagate` + `covered_interior_of_reach` | **Sound approximation.** One-step and chain-form propagation both proved; full RGA-visible-order fidelity is the remaining gap. |
+| Ex 1 — insertion within a span | §3.1, §A.2 | `insert_within_span_in_span_visible` (both sides) + `in_span_visible_propagate` / `_of_reach` | ✅ Paper-faithful via visible-order; caller provides the right-side bound from RGA geometry in their specific scenario. |
 | Ex 2 — overlapping same-type Adds | §3.2, §A.2 | `partial_overlap_all_adds_formatted` | ✅ |
 | Ex 3 — different mark types coexist | §3.2, §A.2 | `different_type_adds_coexist` | ✅ |
 | Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist` apply — but that's the opposite of Ex 4's intent. |
@@ -108,17 +108,33 @@ Infrastructure landed:
 Now landed:
 - `anchors_survive_tombstones_visible` — both CRDT and MRDT sides,
   via the `exists_mark_wins_visible_add_iff` helper.
+- `in_span_visible_propagate` / `in_span_visible_of_reach` — Ex 1
+  one-step and chain-form propagation, both sides.
+- `ex7_bold_older_sibling_in_span` / `ex8_link_descendant_visible_lt_endId`
+  — paper Ex 7 / Ex 8 visible-order demonstrations, both sides.
+- `insert_within_span_in_span_visible` — **Ex 1 fully closed**: if
+  `c_after` is in the span and we insert a fresh-opId char with
+  `afters = c_after`, and the caller provides the right-side bound,
+  the new char is in the span. Both CRDT and MRDT sides, backed by
+  insert-monotonicity chains (`visible_lt_preserved_under_insert`,
+  etc.).
+- `is_rga_traversal` / `readRichText_list` — list-form presentation
+  as a Prop-valued spec (the framework doesn't natively enumerate
+  `set α := α → Bool`). Convergence theorems land (CRDT side).
 
 **Still pending:**
-- Expand/contract theorems (Ex 7 / Ex 8) specific to the
-  visible-order framing — the visible-order approach doesn't need
-  the boundary-specific expand/contract theorems since the behavior
-  is captured naturally by `visible_lt`, but explicit theorems
-  making this visible would be educational.
-- Interior-span coverage (Ex 1 full): `in_span_visible` is the
-  right predicate, but linking `covered_interior` to it (showing
-  that afters-chain coverage implies `in_span_visible` for
-  appropriately bounded spans) would close Ex 1 fully.
+- Existence of a traversal for every state — requires finite-
+  carrier infrastructure; see `docs/list-form-readrichtext-design.md`.
+- Ex 8 full negation (i.e., `¬ in_span_visible s m c_new` for a
+  descendant of `endId` with `endSide = true`) — needs
+  `visible_lt` irreflexivity, which in turn needs a `distinct_ops`-
+  style well-formedness invariant on state.
+- Ex 1 bound-auto-derivation corollary: for the common case where
+  `c_after` is not an ancestor of `endId` in the afters-tree, the
+  right-side bound should be derivable from RGA geometry without
+  the caller having to supply it.
+- MRDT mirrors: `is_rga_traversal` / `readRichText_list` / their
+  convergence (mechanical port of CRDT side, deferred).
 
 ### Semantic bug in `in_span_boundary` (use `in_span_visible` instead)
 
