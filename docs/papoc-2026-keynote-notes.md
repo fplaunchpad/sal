@@ -113,6 +113,49 @@ The "push-button" branding covers a range of automation levels, and the honest s
 
 TCB gradient is orthogonal: kernel-checked > Blaster-admit (Z3-validated, TCB-enlarging) > tested / SMC'd (no formal guarantee). This week closed ~85 Blaster-admits across the suite (OR-Set MRDT: 17 of 20; OR-Set-Efficient MRDT: 17 of 21; Add-Win-PQ MRDT: 18 of 23; RGA MRDT: 9 of 9; several smaller CRDT closures). The remaining ~12 Blaster-admits are concentrated in a few specific files and are listed in the README.
 
+## Week in review — broader reflection
+
+Zooming out from Peritext: 157 commits in 7 days across four parallel tracks. The raw number overstates content (many are scaffolding / reverts / docs refreshes; real progress is ~half), but the breadth is real.
+
+**Track 1 — Peritext deep dive** (~35 commits). The sharpest work and the largest learning. Built `in_span_visible`, closed Ex 1–3, 5, 7, 8 on both CRDT and MRDT sides, added `bold_expand_reach` + `wf_afters`, deleted ~800 lines of a semantically-backwards `in_span_boundary` track. This is where the "vacuous convergence" thesis became concrete.
+
+**Track 2 — Emulation meta-theorem** (~30 commits, `Sal/Emulation/`). The foundational question none of the per-CRDT verification answers: *does the 24-VC bottom-up linearization argument actually work?* I.e. is the theorem "24 VCs ⟹ RA-linearizable" itself verified, or assumed? This track formalizes it: op-based TS, state-based TS, weak simulation, canonical emulation functor, transfer theorem. Currently ~11 sorries across 9 files, 2500 lines. Hit structural obstacles (documented in `MERGE_PROOF.md`) at the merge-linearization step. Still a partial development — honest status, unlike the per-CRDT tracks.
+
+**Track 3 — Suite Blaster-admit closures** (~20 commits). Closing by-sal sorries across OR-Set (16/18 CRDT, 17/20 MRDT), OR-Set-Efficient (17/21), Add-Win-PQ (18/23 MRDT, 1/1 CRDT), Shopping-Cart, PN-Counter, LWW-Element-Set, RGA MRDT (9/9), Peritext MRDT. Roughly 85 admits reduced. A single structural pattern — "per-component decomposition" — ported across the suite by the agent with the human directing. This is the cleanest case of agent-as-force-multiplier: once the pattern was found, the agent applied it consistently across files a human would have taken days to work through.
+
+**Track 4 — Suite hygiene and documentation** (~35 commits). Removed `RGA_Splice_MRDT` (WIP, 8/24 VCs) and `Priority_Queue_Insert_Only_CRDT` (semantically trivial). Added `docs/porting-op-based-crdts.md`, `docs/tombstone-scanning-design.md`, `docs/list-form-readrichtext-design.md`, `docs/peritext-vs-paper.md`, and now this file. Drafted and then reverted a formal-paper first draft (premature given the spec-drift evidence).
+
+### Observations across the tracks
+
+**Velocity has a shadow cost.** The AI can produce proofs faster than a human can audit. The `in_span_boundary` episode is the cautionary case: ~400 lines of well-structured, passing proofs had to be deleted because the underlying predicate encoded the opposite of paper §3.3. That's volume subtracting value, not adding it. Speed without honest framing is worse than slow proofs.
+
+**Parallel tracks hide each other's problems.** Peritext intent-preservation advanced rapidly; the Emulation meta-theorem barely moved. The meta-theorem is arguably *more* foundational — it validates the entire "verify convergence via 24 VCs" approach. Progress optics favored the visible track; the strategic priority favors the other.
+
+**Patterns emerge and can be codified.** Three reusable patterns crystalized this week, now written in `.claude/skills/sal-crdt/SKILL.md` for future sessions:
+- *Per-component decomposition* for closing `by sal` sorries in grow-only-bag states (Blaster-admit reduction).
+- *Flattening `map K (set V)` to `set (K × V)`* so `grind` stays in the decidable-Bool fragment at the top level. Originally discovered porting Peritext; now generalized.
+- *CRDT ↔ MRDT mirror methodology* — the congruence / preservation / convergence theorem shapes port directly across variants.
+
+These patterns are what let track 3 close ~85 admits. Without them, each file would have been a bespoke proof session.
+
+**Infrastructure debt accumulates silently.** The `set α := α → Bool` encoding was chosen early because it makes `grind` work; it bites later because it doesn't enumerate (the list-form `readRichText` existence gap). `map K (set V)` nested containers were problematic; we learned to flatten. Every framework choice has downstream cost that doesn't show up until it bites. For PaPoC: this is a real message to the audience — "verified" CRDT frameworks embed design choices that constrain what properties can be expressed, and those constraints emerge only when you push beyond the convergence-only sweet spot.
+
+**Pruning counts as progress.** Today's removal of two files is a ~300-line subtraction that makes the suite *more* correct, not less. An honest count of "verified RDTs" requires saying what's in and what isn't. The `Priority_Queue_Insert_Only` case is particularly instructive: all 24 VCs closed, but the RDT is Tier-C-vacuous (no Pop, no Remove; convergence proves pointwise-max on a grow-only map). Passing 24 VCs doesn't make it a verified priority queue; it makes it a verified grow-only map with priorities in its keys.
+
+**What the AI could not have done alone.** The human interventions were load-bearing in specific places: *reframing* ("bag convergence is vacuous, isn't it?"), *catching overclaims* (the "state-based limitation" retraction), *pruning scope* ("remove these two, they're partial"), *directing attention* ("do 1, 3, 4, 6 from that list"). Not proof steps — the proof steps the agent handles. But the judgment calls about *what's worth proving* and *what claim to make* remained human. This is the specialization the talk should name explicitly.
+
+### Scoreboard
+
+| Item | Start of week | End of week |
+|---|---|---|
+| RDTs in suite | 30 (including 2 partial/trivial) | 28 (27 properly verified) |
+| Convergence VCs | 696 | 648 |
+| Blaster-admits | ~100 | ~12 |
+| Peritext intent-preservation theorems | 0 | ~20 on each of CRDT and MRDT sides |
+| Peritext read-side predicates | buggy `in_span_boundary` | paper-faithful `in_span_visible` + `bold_expand_reach` |
+| Emulation meta-theorem | all stubbed | ~11 sorries remain; structural obstacles documented |
+| Framework patterns codified | 0 | 3 (skill file) |
+
 ## What's still honestly open
 
 - **Existence of `is_rga_traversal`** for every state. Requires either a framework-level enumeration extension to `Set_Extended` or per-theorem `Finset` hypotheses. Current spec is usable but non-existential.
