@@ -549,6 +549,44 @@ theorem endId_in_span_visible
   rw [h_eSide]; simp
   exact visible_le_refl s m.endId
 
+/-- **Paper Ex 1 propagation step, visible-order (MRDT).** See CRDT version for doc. -/
+theorem in_span_visible_propagate
+    (s : concrete_st) (m : MarkOp) (c_new c_parent : OpId) :
+    in_span_visible s m c_parent →
+    after_of s c_new c_parent = true →
+    (if m.endSide = true then visible_le s c_new m.endId
+     else visible_lt s c_new m.endId) →
+    in_span_visible s m c_new := by
+  intro ⟨h_left, _⟩ h_after h_right
+  refine ⟨?_, h_right⟩
+  have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
+  split_ifs with h_sSide
+  · rw [if_pos h_sSide] at h_left
+    exact visible_lt.trans h_left h_pc
+  · rw [if_neg h_sSide] at h_left
+    exact Or.inr (visible_lt_of_le_lt s m.startId c_parent c_new h_left h_pc)
+
+/-- **Paper Ex 1 chain form, visible-order (MRDT).** See CRDT version. -/
+theorem in_span_visible_of_reach
+    (s : concrete_st) (m : MarkOp) (c c_start : OpId) :
+    in_span_visible s m c_start →
+    afters_reach s c c_start →
+    (if m.endSide = true then visible_le s c m.endId
+     else visible_lt s c m.endId) →
+    in_span_visible s m c := by
+  intro ⟨h_left, _⟩ h_reach h_right
+  refine ⟨?_, h_right⟩
+  by_cases h_eq : c = c_start
+  · subst h_eq
+    exact h_left
+  · have h_lt : visible_lt s c_start c :=
+      visible_lt_of_afters_reach s c c_start h_reach h_eq
+    split_ifs with h_sSide
+    · rw [if_pos h_sSide] at h_left
+      exact visible_lt.trans h_left h_lt
+    · rw [if_neg h_sSide] at h_left
+      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+
 /-- Paper-faithful "mark wins" predicate using `in_span_visible`.
 See the CRDT `Peritext_ReadSide.lean` for discussion. -/
 noncomputable def mark_wins_visible

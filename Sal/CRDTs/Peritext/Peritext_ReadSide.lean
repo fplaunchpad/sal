@@ -904,6 +904,67 @@ theorem endId_in_span_visible
   rw [h_eSide]; simp
   exact visible_le_refl s (mark_endId m)
 
+/-- **Paper Ex 1 (propagation step, visible-order form).**
+
+If `c_parent` is in the span (paper-faithfully), `c_new` was inserted
+immediately after `c_parent` (i.e. `after_of s c_new c_parent = true`),
+and the user certifies that `c_new` still stays within the span's
+right-side bound (a bound the afters-relation alone can't verify,
+since a descendant of `c_parent` could be traversed past `endId` as
+a younger sibling of `endId`'s subtree), then `c_new` is in the span.
+
+This is the "insertion within a span inherits the mark" claim. The
+right-side bound hypothesis captures the one case where
+`covered_interior`'s pure afters-chain approach over-approximates:
+if the caller proves the bound, `in_span_visible` gives the
+paper-faithful "c_new is in the span" conclusion. -/
+theorem in_span_visible_propagate
+    (s : concrete_st) (m : MarkOp) (c_new c_parent : OpId) :
+    in_span_visible s m c_parent →
+    after_of s c_new c_parent = true →
+    (if mark_endSide m = true then visible_le s c_new (mark_endId m)
+     else visible_lt s c_new (mark_endId m)) →
+    in_span_visible s m c_new := by
+  intro ⟨h_left, _⟩ h_after h_right
+  refine ⟨?_, h_right⟩
+  have h_pc : visible_lt s c_parent c_new := visible_lt.parent_child h_after
+  split_ifs with h_sSide
+  · rw [if_pos h_sSide] at h_left
+    exact visible_lt.trans h_left h_pc
+  · rw [if_neg h_sSide] at h_left
+    exact Or.inr (visible_lt_of_le_lt s (mark_startId m) c_parent c_new h_left h_pc)
+
+/-- **Paper Ex 1 (chain form, visible-order).**
+
+Generalizes `in_span_visible_propagate` to arbitrary-length
+afters-chains: if `c_start` is in-span-visible, `c` reaches
+`c_start` via an `afters_reach` chain, and `c` stays within the
+right-side bound, then `c` is in-span-visible.
+
+The right-side bound is the key hypothesis: afters-reachability
+alone can't guarantee `c` is before `endId` in visible order (a
+distant afters-descendant could be traversed as a younger sibling
+past `endId`'s subtree). -/
+theorem in_span_visible_of_reach
+    (s : concrete_st) (m : MarkOp) (c c_start : OpId) :
+    in_span_visible s m c_start →
+    afters_reach s c c_start →
+    (if mark_endSide m = true then visible_le s c (mark_endId m)
+     else visible_lt s c (mark_endId m)) →
+    in_span_visible s m c := by
+  intro ⟨h_left, _⟩ h_reach h_right
+  refine ⟨?_, h_right⟩
+  by_cases h_eq : c = c_start
+  · subst h_eq
+    exact h_left
+  · have h_lt : visible_lt s c_start c :=
+      visible_lt_of_afters_reach s c c_start h_reach h_eq
+    split_ifs with h_sSide
+    · rw [if_pos h_sSide] at h_left
+      exact visible_lt.trans h_left h_lt
+    · rw [if_neg h_sSide] at h_left
+      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
+
 /-! ### Paper-faithful read-side using `in_span_visible`
 
 Parallel projection that uses `in_span_visible` (the visible-order
