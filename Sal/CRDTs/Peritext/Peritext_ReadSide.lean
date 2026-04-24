@@ -965,6 +965,156 @@ theorem in_span_visible_of_reach
     · rw [if_neg h_sSide] at h_left
       exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
 
+/-! ### Preservation of `visible_lt` / `in_span_visible` under `Insert`
+
+Visible-order relations monotone under fresh-opId insertions. If
+`(ts, rid)` is fresh in state `s` (not already an afters-key), then
+every existing `visible_lt`/`afters_reach`/`in_span_visible`
+relation persists in `do_ s (Insert ch after)` — the new entry
+added to `afters` at the fresh key doesn't invalidate any existing
+lookup since all existing lookups are at keys ≠ `(ts, rid)`.
+
+This is the monotonicity lemma needed to chain with
+`in_span_visible_propagate` for the Ex 1 insert-within-span claim. -/
+
+/-- Key observation: `after_of s c target` agrees with
+`after_of (do_ s (ts, rid, Insert ch after)) c target` whenever
+`c ≠ (ts, rid)`. -/
+theorem after_of_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after c target : OpId) :
+    c ≠ (ts, rid) →
+    after_of s c target = after_of (do_ s (ts, rid, app_op_t.Insert ch after)) c target := by
+  intro h_ne
+  simp only [after_of, do_]
+  have h_c : contains (Prod.fst (Prod.snd s)) c =
+             contains (upd (Prod.fst (Prod.snd s)) (ts, rid) after) c := by
+    grind
+  have h_v : mysel_a (Prod.fst (Prod.snd s)) c =
+             mysel_a (upd (Prod.fst (Prod.snd s)) (ts, rid) after) c := by
+    simp only [mysel_a]; grind
+  rw [h_c, h_v]
+
+/-- Helper: if `(ts, rid)` isn't an afters-key in `s`, then
+`after_of s c target = true` forces `c ≠ (ts, rid)`. -/
+theorem after_of_true_implies_ne_fresh
+    (s : concrete_st) (ts rid : ℕ) (c target : OpId) :
+    contains (Prod.fst (Prod.snd s)) (ts, rid) = false →
+    after_of s c target = true →
+    c ≠ (ts, rid) := by
+  intro h_fresh h_after h_eq
+  subst h_eq
+  simp only [after_of, h_fresh, Bool.false_and] at h_after
+  exact Bool.false_ne_true h_after
+
+/-- `afters_reach` persists under fresh-opId insertion. -/
+theorem afters_reach_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after : OpId) :
+    contains (Prod.fst (Prod.snd s)) (ts, rid) = false →
+    ∀ c anc, afters_reach s c anc →
+      afters_reach (do_ s (ts, rid, app_op_t.Insert ch after)) c anc := by
+  intro h_fresh c anc h
+  induction h with
+  | refl c => exact afters_reach.refl c
+  | @step c c_parent anc h_after _ ih =>
+    have h_ne : c ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid c c_parent h_fresh h_after
+    have h_after' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) c c_parent = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after c c_parent h_ne]
+      exact h_after
+    exact afters_reach.step h_after' ih
+
+/-- `visible_lt` persists under fresh-opId insertion. -/
+theorem visible_lt_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after : OpId) :
+    contains (Prod.fst (Prod.snd s)) (ts, rid) = false →
+    ∀ c₁ c₂, visible_lt s c₁ c₂ →
+      visible_lt (do_ s (ts, rid, app_op_t.Insert ch after)) c₁ c₂ := by
+  intro h_fresh c₁ c₂ h
+  induction h with
+  | @parent_child p c h_after =>
+    have h_ne : c ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid c p h_fresh h_after
+    have h_after' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) c p = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after c p h_ne]
+      exact h_after
+    exact visible_lt.parent_child h_after'
+  | @sibling p ca cb h_after_a h_after_b h_ne_sib h_order =>
+    have h_ne_a : ca ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid ca p h_fresh h_after_a
+    have h_ne_b : cb ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid cb p h_fresh h_after_b
+    have h_after_a' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) ca p = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after ca p h_ne_a]; exact h_after_a
+    have h_after_b' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) cb p = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after cb p h_ne_b]; exact h_after_b
+    exact visible_lt.sibling h_after_a' h_after_b' h_ne_sib h_order
+  | @left_descendant_of_sibling p ca cb d h_after_a h_after_b h_ne_sib h_order h_reach h_d_ne =>
+    have h_ne_a : ca ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid ca p h_fresh h_after_a
+    have h_ne_b : cb ≠ (ts, rid) := after_of_true_implies_ne_fresh s ts rid cb p h_fresh h_after_b
+    have h_after_a' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) ca p = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after ca p h_ne_a]; exact h_after_a
+    have h_after_b' : after_of (do_ s (ts, rid, app_op_t.Insert ch after)) cb p = true := by
+      rw [← after_of_preserved_under_insert s ts rid ch after cb p h_ne_b]; exact h_after_b
+    have h_reach' : afters_reach (do_ s (ts, rid, app_op_t.Insert ch after)) d ca :=
+      afters_reach_preserved_under_insert s ts rid ch after h_fresh d ca h_reach
+    exact visible_lt.left_descendant_of_sibling h_after_a' h_after_b' h_ne_sib h_order h_reach' h_d_ne
+  | @trans c₁ c₂ c₃ _ _ ih_12 ih_23 =>
+    exact visible_lt.trans ih_12 ih_23
+
+/-- `visible_le` persists under fresh-opId insertion. -/
+theorem visible_le_preserved_under_insert
+    (s : concrete_st) (ts rid : ℕ) (ch : ℕ) (after : OpId) :
+    contains (Prod.fst (Prod.snd s)) (ts, rid) = false →
+    ∀ c₁ c₂, visible_le s c₁ c₂ →
+      visible_le (do_ s (ts, rid, app_op_t.Insert ch after)) c₁ c₂ := by
+  intro h_fresh c₁ c₂ h
+  rcases h with h | h
+  · exact Or.inl h
+  · exact Or.inr (visible_lt_preserved_under_insert s ts rid ch after h_fresh c₁ c₂ h)
+
+/-- **Ex 1 — insert-within-span fully paper-faithful.**
+
+If `c_after` is in the span (paper-faithfully) in `s_pre`, and we
+insert a new char `(ts, rid)` with `afters = c_after` in a state
+where that opId is fresh, the new char is in the span in `s_post`.
+
+**Caveat.** The "right-side bound holds in s_post" hypothesis is
+still required — RGA geometry doesn't automatically guarantee the
+new char lands before `endId` in visible order (the new char could
+be a younger sibling of `endId`'s ancestor, traversed past `endId`
+as a late-in-opId-order descendant of `c_after`). The common case
+where `c_after` is not an ancestor of `endId` is the one where
+the bound is trivially derivable; a future commit could add that
+specific corollary. -/
+theorem insert_within_span_in_span_visible
+    (s_pre : concrete_st) (m : MarkOp)
+    (ts rid : ℕ) (ch : ℕ) (c_after : OpId) :
+    contains (Prod.fst (Prod.snd s_pre)) (ts, rid) = false →
+    in_span_visible s_pre m c_after →
+    (if mark_endSide m = true
+     then visible_le (do_ s_pre (ts, rid, app_op_t.Insert ch c_after)) (ts, rid) (mark_endId m)
+     else visible_lt (do_ s_pre (ts, rid, app_op_t.Insert ch c_after)) (ts, rid) (mark_endId m)) →
+    in_span_visible (do_ s_pre (ts, rid, app_op_t.Insert ch c_after)) m (ts, rid) := by
+  intro h_fresh h_span_pre h_right_post
+  set s_post := do_ s_pre (ts, rid, app_op_t.Insert ch c_after) with h_sp_def
+  -- c_after is in span in s_post (by preservation)
+  have h_span_c_after_post : in_span_visible s_post m c_after := by
+    rcases h_span_pre with ⟨h_left_pre, h_right_pre⟩
+    refine ⟨?_, ?_⟩
+    · split_ifs with h_sSide
+      · rw [if_pos h_sSide] at h_left_pre
+        exact visible_lt_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_left_pre
+      · rw [if_neg h_sSide] at h_left_pre
+        exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_left_pre
+    · split_ifs with h_eSide
+      · rw [if_pos h_eSide] at h_right_pre
+        exact visible_le_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
+      · rw [if_neg h_eSide] at h_right_pre
+        exact visible_lt_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_right_pre
+  -- New char has afters = c_after in s_post
+  have h_after_new : after_of s_post (ts, rid) c_after = true := by
+    simp only [h_sp_def, after_of, do_, mysel_a]
+    grind
+  -- Apply in_span_visible_propagate
+  exact in_span_visible_propagate s_post m (ts, rid) c_after
+    h_span_c_after_post h_after_new h_right_post
+
 /-! ### Paper-faithful read-side using `in_span_visible`
 
 Parallel projection that uses `in_span_visible` (the visible-order
