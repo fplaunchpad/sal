@@ -664,3 +664,91 @@ theorem covered_interior_of_reach
     have h_bounds : c ≠ mark_startId m ∧ c ≠ mark_endId m :=
       h_interior c h_reach_c (afters_reach.refl c)
     exact covered_interior.propagate h_cov_mid h_after h_bounds.1 h_bounds.2
+
+/-! ## RGA visible-order relation
+
+The inductive `visible_lt` captures the RGA traversal order on
+characters: c₁ precedes c₂ in the visible sequence iff
+`visible_lt s c₁ c₂` holds. The relation is defined by four rules
+that together characterize DFS traversal with sibling tie-breaking
+by `opid_max`:
+
+1. **`parent_child`** — a character's parent (via `after_of`) is
+   visited before it.
+2. **`sibling`** — among direct siblings (same `after_of`-parent),
+   the one with the higher `opId` (by `opid_max`) is visited first.
+3. **`left_descendant_of_sibling`** — any descendant of the older
+   sibling is visited before the younger sibling (the older subtree
+   is fully consumed before the younger).
+4. **`trans`** — transitive closure.
+
+This is the foundation for closing the remaining gap in paper Ex 1:
+`covered_interior` above tracks afters-reachability (a weaker
+condition than visible-position), whereas `visible_lt` captures the
+actual linear order. A future theorem
+
+    in_span_visible s m c :=
+      (visible_lt s (mark_startId m) c ∨ c = mark_startId m) ∧
+      (visible_lt s c (mark_endId m) ∨ c = mark_endId m)
+
+would give a precise characterization of "c is in the span" and,
+together with side-bit refinements, would close Ex 1 fully.
+
+**Scope of this commit.** This section defines the relation and
+proves a few structural lemmas. Integration with `in_span_boundary`
+/ `formatted` — replacing or refining the afters-chain-only
+`covered_interior` with a visible-order `in_span_visible` — is
+deliberately left as a follow-up, since it touches the read-side
+projection and requires re-validating the existing expand/contract,
+priority-rule, etc. theorems. -/
+
+/-- The "visited before" relation in the RGA traversal of state `s`.
+
+The smallest relation containing: (1) parent-child edges, (2) direct
+older-sibling → younger-sibling edges, (3) descendant-of-older-sibling
+→ younger-sibling edges (left-subtree-precedes-younger-sibling), and
+closed under transitivity. -/
+inductive visible_lt (s : concrete_st) : OpId → OpId → Prop where
+  /-- A character's parent (via `after_of`) is visited before it. -/
+  | parent_child {p c : OpId} : after_of s c p = true → visible_lt s p c
+  /-- Among direct siblings (sharing an `after_of`-parent), the one
+  with the higher `opId` by `opid_max` is visited first. `c₁ ≠ c₂`
+  rules out the degenerate reflexive case. -/
+  | sibling {p c₁ c₂ : OpId} :
+      after_of s c₁ p = true → after_of s c₂ p = true →
+      c₁ ≠ c₂ → opid_max c₁ c₂ = c₁ →
+      visible_lt s c₁ c₂
+  /-- Any descendant of the older sibling precedes the younger
+  sibling in the traversal. "Older" is measured by `opid_max` on
+  the direct-child OpIds. -/
+  | left_descendant_of_sibling {p c₁ c₂ d : OpId} :
+      after_of s c₁ p = true → after_of s c₂ p = true →
+      c₁ ≠ c₂ → opid_max c₁ c₂ = c₁ →
+      afters_reach s d c₁ → d ≠ c₁ →
+      visible_lt s d c₂
+  /-- Transitive closure. -/
+  | trans {c₁ c₂ c₃ : OpId} :
+      visible_lt s c₁ c₂ → visible_lt s c₂ c₃ → visible_lt s c₁ c₃
+
+/-- Reflexive closure: `visible_le s c₁ c₂` iff `c₁ = c₂` or
+`c₁` precedes `c₂` in the RGA traversal. -/
+def visible_le (s : concrete_st) (c₁ c₂ : OpId) : Prop :=
+  c₁ = c₂ ∨ visible_lt s c₁ c₂
+
+/-- A multi-hop `afters_reach` gives a `visible_lt` from ancestor
+to descendant (the parent-child edge lifted through transitivity). -/
+theorem visible_lt_of_afters_reach
+    (s : concrete_st) (c anc : OpId) :
+    afters_reach s c anc → c ≠ anc → visible_lt s anc c := by
+  intro h_reach h_ne
+  induction h_reach with
+  | refl c => exact absurd rfl h_ne
+  | @step c mid anc h_after h_reach' ih =>
+    by_cases h_eq : mid = anc
+    · -- Single-hop: c is direct child of anc.
+      subst h_eq
+      exact visible_lt.parent_child h_after
+    · -- Multi-hop: anc < mid (by IH) and mid < c (by parent_child), chain.
+      have h_mid : visible_lt s anc mid := ih h_eq
+      have h_c : visible_lt s mid c := visible_lt.parent_child h_after
+      exact visible_lt.trans h_mid h_c

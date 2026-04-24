@@ -425,3 +425,38 @@ theorem covered_interior_of_reach
     have h_bounds : c ≠ m.startId ∧ c ≠ m.endId :=
       h_interior c h_reach_c (afters_reach.refl c)
     exact covered_interior.propagate h_cov_mid h_after h_bounds.1 h_bounds.2
+
+/-! ## RGA visible-order relation (mirror)
+
+See the CRDT `Peritext_ReadSide.lean` for the full docstring. -/
+
+inductive visible_lt (s : concrete_st) : OpId → OpId → Prop where
+  | parent_child {p c : OpId} : after_of s c p = true → visible_lt s p c
+  | sibling {p c₁ c₂ : OpId} :
+      after_of s c₁ p = true → after_of s c₂ p = true →
+      c₁ ≠ c₂ → opid_max c₁ c₂ = c₁ →
+      visible_lt s c₁ c₂
+  | left_descendant_of_sibling {p c₁ c₂ d : OpId} :
+      after_of s c₁ p = true → after_of s c₂ p = true →
+      c₁ ≠ c₂ → opid_max c₁ c₂ = c₁ →
+      afters_reach s d c₁ → d ≠ c₁ →
+      visible_lt s d c₂
+  | trans {c₁ c₂ c₃ : OpId} :
+      visible_lt s c₁ c₂ → visible_lt s c₂ c₃ → visible_lt s c₁ c₃
+
+def visible_le (s : concrete_st) (c₁ c₂ : OpId) : Prop :=
+  c₁ = c₂ ∨ visible_lt s c₁ c₂
+
+theorem visible_lt_of_afters_reach
+    (s : concrete_st) (c anc : OpId) :
+    afters_reach s c anc → c ≠ anc → visible_lt s anc c := by
+  intro h_reach h_ne
+  induction h_reach with
+  | refl c => exact absurd rfl h_ne
+  | @step c mid anc h_after h_reach' ih =>
+    by_cases h_eq : mid = anc
+    · subst h_eq
+      exact visible_lt.parent_child h_after
+    · have h_mid : visible_lt s anc mid := ih h_eq
+      have h_c : visible_lt s mid c := visible_lt.parent_child h_after
+      exact visible_lt.trans h_mid h_c
