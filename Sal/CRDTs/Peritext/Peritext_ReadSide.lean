@@ -1024,10 +1024,168 @@ theorem add_wins_over_concurrent_remove_visible
     simp only [mark_beats, h_add, h_rem, Bool.true_and, Bool.not_false, if_true]
   · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
 
--- Note: convergence of `readRichText_visible` (pointwise-eq →
--- identical projection) requires a `visible_lt`-congruence lemma
--- showing that `visible_lt s₁ = visible_lt s₂` when `s₁` and `s₂`
--- agree on the `afters` component. The inductive's `after_of`-
--- dependent constructors need to be congruent under state
--- equality, which is a short but non-trivial structural-induction
--- proof. Deferred as follow-up.
+/-! ### `visible_lt` congruence under afters-agreement
+
+`visible_lt` depends on state only through `after_of`, which reads
+the `afters` component (`Prod.fst (Prod.snd s)`). When two states
+agree pointwise on `afters`, `visible_lt` (and `afters_reach`, and
+`in_span_visible`) give identical relations. These congruence
+lemmas let us lift state equality to read-side equality. -/
+
+/-- Pointwise `afters` agreement implies pointwise `after_of` agreement. -/
+theorem after_of_eq_of_afters_eq
+    (s₁ s₂ : concrete_st) (c target : OpId) :
+    contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c →
+    mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c →
+    after_of s₁ c target = after_of s₂ c target := by
+  intro h_c h_v
+  simp only [after_of, h_c, h_v]
+
+/-- `afters_reach` transfers across states with pointwise-equal `afters`. -/
+theorem afters_reach_of_afters_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c, contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c) →
+    (∀ c, mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c) →
+    ∀ c anc, afters_reach s₁ c anc → afters_reach s₂ c anc := by
+  intro h_c h_v c anc h
+  induction h with
+  | refl c => exact afters_reach.refl c
+  | @step c c_parent anc h_after _ ih =>
+    have h_after' : after_of s₂ c c_parent = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ c c_parent (h_c c) (h_v c)]
+      exact h_after
+    exact afters_reach.step h_after' ih
+
+/-- `visible_lt` transfers across states with pointwise-equal `afters`. -/
+theorem visible_lt_of_afters_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c, contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c) →
+    (∀ c, mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c) →
+    ∀ c₁ c₂, visible_lt s₁ c₁ c₂ → visible_lt s₂ c₁ c₂ := by
+  intro h_c h_v c₁ c₂ h
+  induction h with
+  | @parent_child p c h_after =>
+    have h_after' : after_of s₂ c p = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ c p (h_c c) (h_v c)]
+      exact h_after
+    exact visible_lt.parent_child h_after'
+  | @sibling p ca cb h_after_a h_after_b h_ne h_order =>
+    have h_after_a' : after_of s₂ ca p = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ ca p (h_c ca) (h_v ca)]
+      exact h_after_a
+    have h_after_b' : after_of s₂ cb p = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ cb p (h_c cb) (h_v cb)]
+      exact h_after_b
+    exact visible_lt.sibling h_after_a' h_after_b' h_ne h_order
+  | @left_descendant_of_sibling p ca cb d h_after_a h_after_b h_ne h_order h_reach h_d_ne =>
+    have h_after_a' : after_of s₂ ca p = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ ca p (h_c ca) (h_v ca)]
+      exact h_after_a
+    have h_after_b' : after_of s₂ cb p = true := by
+      rw [← after_of_eq_of_afters_eq s₁ s₂ cb p (h_c cb) (h_v cb)]
+      exact h_after_b
+    have h_reach' : afters_reach s₂ d ca :=
+      afters_reach_of_afters_eq s₁ s₂ h_c h_v d ca h_reach
+    exact visible_lt.left_descendant_of_sibling h_after_a' h_after_b' h_ne h_order h_reach' h_d_ne
+  | @trans c₁ c₂ c₃ _ _ ih_12 ih_23 =>
+    exact visible_lt.trans ih_12 ih_23
+
+/-- `visible_le` version of the congruence. -/
+theorem visible_le_of_afters_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c, contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c) →
+    (∀ c, mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c) →
+    ∀ c₁ c₂, visible_le s₁ c₁ c₂ → visible_le s₂ c₁ c₂ := by
+  intro h_c h_v c₁ c₂ h
+  rcases h with h | h
+  · exact Or.inl h
+  · exact Or.inr (visible_lt_of_afters_eq s₁ s₂ h_c h_v c₁ c₂ h)
+
+/-- `in_span_visible` transfers across states with pointwise-equal afters. -/
+theorem in_span_visible_of_afters_eq
+    (s₁ s₂ : concrete_st) (m : MarkOp) (c : OpId) :
+    (∀ c, contains (Prod.fst (Prod.snd s₁)) c = contains (Prod.fst (Prod.snd s₂)) c) →
+    (∀ c, mysel_a (Prod.fst (Prod.snd s₁)) c = mysel_a (Prod.fst (Prod.snd s₂)) c) →
+    in_span_visible s₁ m c → in_span_visible s₂ m c := by
+  intro h_c h_v h
+  rcases h with ⟨h_left, h_right⟩
+  refine ⟨?_, ?_⟩
+  · split_ifs with h_sSide
+    · -- startSide=true: visible_lt
+      rw [if_pos h_sSide] at h_left
+      exact visible_lt_of_afters_eq s₁ s₂ h_c h_v _ _ h_left
+    · rw [if_neg h_sSide] at h_left
+      exact visible_le_of_afters_eq s₁ s₂ h_c h_v _ _ h_left
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right
+      exact visible_le_of_afters_eq s₁ s₂ h_c h_v _ _ h_right
+    · rw [if_neg h_eSide] at h_right
+      exact visible_lt_of_afters_eq s₁ s₂ h_c h_v _ _ h_right
+
+/-- Helper: the `∃ m, mark_wins_visible s m c mt ∧ isAdd m` predicate
+is invariant under pointwise state equality. -/
+theorem exists_mark_wins_visible_add_iff
+    (s₁ s₂ : concrete_st) (c : OpId) (mt : ℕ) :
+    (∀ x : AnchorAttachment, Prod.snd (Prod.snd (Prod.snd s₁)) x =
+                              Prod.snd (Prod.snd (Prod.snd s₂)) x) →
+    (∀ k, contains (Prod.fst (Prod.snd s₁)) k = contains (Prod.fst (Prod.snd s₂)) k) →
+    (∀ k, mysel_a (Prod.fst (Prod.snd s₁)) k = mysel_a (Prod.fst (Prod.snd s₂)) k) →
+    ((∃ m, mark_wins_visible s₁ m c mt ∧ mark_isAdd m = true) ↔
+     (∃ m, mark_wins_visible s₂ m c mt ∧ mark_isAdd m = true)) := by
+  intro hm h_afc h_afv
+  constructor
+  · rintro ⟨m, ⟨h_pres, h_cov, h_mt, h_beats⟩, h_add⟩
+    refine ⟨m, ⟨?_, ?_, h_mt, ?_⟩, h_add⟩
+    · simp only [mark_present, marks_of, ← hm]; exact h_pres
+    · exact in_span_visible_of_afters_eq s₁ s₂ _ _ h_afc h_afv h_cov
+    · intro m' h_pres' h_cov' h_mt' h_ne
+      apply h_beats m' _ _ h_mt' h_ne
+      · simp only [mark_present, marks_of, hm]; exact h_pres'
+      · exact in_span_visible_of_afters_eq s₂ s₁ _ _
+          (fun k => (h_afc k).symm) (fun k => (h_afv k).symm) h_cov'
+  · rintro ⟨m, ⟨h_pres, h_cov, h_mt, h_beats⟩, h_add⟩
+    refine ⟨m, ⟨?_, ?_, h_mt, ?_⟩, h_add⟩
+    · simp only [mark_present, marks_of, hm]; exact h_pres
+    · exact in_span_visible_of_afters_eq s₂ s₁ _ _
+        (fun k => (h_afc k).symm) (fun k => (h_afv k).symm) h_cov
+    · intro m' h_pres' h_cov' h_mt' h_ne
+      apply h_beats m' _ _ h_mt' h_ne
+      · simp only [mark_present, marks_of, ← hm]; exact h_pres'
+      · exact in_span_visible_of_afters_eq s₁ s₂ _ _ h_afc h_afv h_cov'
+
+/-- **Formatting-level convergence (the useful core).** -/
+theorem formatted_visible_convergent
+    (s₁ s₂ : concrete_st) (c : OpId) (mt : ℕ) :
+    eq s₁ s₂ → formatted_visible s₁ c mt = formatted_visible s₂ c mt := by
+  intro h
+  rcases h with ⟨hc, haf, hd, hm⟩
+  have h_afc : ∀ k, contains (Prod.fst (Prod.snd s₁)) k =
+                     contains (Prod.fst (Prod.snd s₂)) k := fun k => (haf k).1
+  have h_afv : ∀ k, mysel_a (Prod.fst (Prod.snd s₁)) k =
+                     mysel_a (Prod.fst (Prod.snd s₂)) k := fun k => (haf k).2
+  have h_vis : visible s₁ c = visible s₂ c := by
+    simp only [visible, (hc c).1, (hd c).2]
+  have h_iff : (∃ m, mark_wins_visible s₁ m c mt ∧ mark_isAdd m = true) ↔
+               (∃ m, mark_wins_visible s₂ m c mt ∧ mark_isAdd m = true) :=
+    exists_mark_wins_visible_add_iff s₁ s₂ c mt hm h_afc h_afv
+  simp only [formatted_visible, h_vis]
+  split_ifs with h_v
+  · exact decide_eq_decide.mpr h_iff
+  · rfl
+
+/-- **Convergence of the paper-faithful read-side projection.** -/
+theorem readRichText_visible_convergent (s₁ s₂ : concrete_st) :
+    eq s₁ s₂ → readRichText_visible s₁ = readRichText_visible s₂ := by
+  intro h
+  funext c
+  have h_eq := h
+  rcases h with ⟨hc, _, hd, _⟩
+  have h_vis : visible s₁ c = visible s₂ c := by
+    simp only [visible, (hc c).1, (hd c).2]
+  have h_payload : mysel_c (Prod.fst s₁) c = mysel_c (Prod.fst s₂) c := (hc c).2
+  have h_fmt : ∀ mt, formatted_visible s₁ c mt = formatted_visible s₂ c mt :=
+    fun mt => formatted_visible_convergent s₁ s₂ c mt h_eq
+  simp only [readRichText_visible, h_vis, h_payload]
+  split_ifs with h_v
+  · exact congrArg some (Prod.ext rfl (funext h_fmt))
+  · rfl

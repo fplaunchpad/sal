@@ -641,3 +641,32 @@ theorem add_wins_over_concurrent_remove_visible
   · subst h_eq
     simp [mark_beats, h_add, h_rem]
   · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
+
+/-- **Formatting-level convergence for the paper-faithful projection.** -/
+theorem formatted_visible_convergent
+    (s₁ s₂ : concrete_st) (c : OpId) (mt : ℕ) :
+    eq s₁ s₂ → formatted_visible s₁ c mt = formatted_visible s₂ c mt := by
+  intro h
+  rcases h with ⟨hch, hrm, hmk⟩
+  have hch'' : Prod.fst s₁ = Prod.fst s₂ := by
+    funext x; have := hch x; simpa using this
+  have hrm'' : Prod.fst (Prod.snd s₁) = Prod.fst (Prod.snd s₂) := by
+    funext x; have := hrm x; simpa using this
+  have hmk'' : Prod.snd (Prod.snd s₁) = Prod.snd (Prod.snd s₂) := by
+    funext x; have := hmk x; simpa using this
+  have h_eq : s₁ = s₂ := Prod.ext hch'' (Prod.ext hrm'' hmk'')
+  rw [h_eq]
+
+/-- **Convergence of the paper-faithful read-side projection.** -/
+theorem readRichText_visible_convergent (s₁ s₂ : concrete_st) :
+    eq s₁ s₂ → readRichText_visible s₁ = readRichText_visible s₂ := by
+  intro h
+  rcases h with ⟨hch, hrm, hmk⟩
+  have hch'' : Prod.fst s₁ = Prod.fst s₂ := by
+    funext x; have := hch x; simpa using this
+  have hrm'' : Prod.fst (Prod.snd s₁) = Prod.fst (Prod.snd s₂) := by
+    funext x; have := hrm x; simpa using this
+  have hmk'' : Prod.snd (Prod.snd s₁) = Prod.snd (Prod.snd s₂) := by
+    funext x; have := hmk x; simpa using this
+  have h_eq : s₁ = s₂ := Prod.ext hch'' (Prod.ext hrm'' hmk'')
+  rw [h_eq]
