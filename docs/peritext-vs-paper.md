@@ -168,16 +168,6 @@ require re-verifying the 24 convergence VCs.
 - **Incremental patch emission (§4.5).** UI-layer concern; not part
   of the state-based spec.
 
-### Historical note: `in_span_boundary` track (removed)
-
-Earlier versions of the read-side had a parallel track built on an
-`in_span_boundary` predicate (plus `formatted`, `readRichText`,
-`readRichText_convergent`, `mark_wins`, `covered_interior`, and
-`_boundary` versions of Ex 2 / Ex 3 / Ex 5 / anchors-survive-tombstones).
-The predicate's `after_of c endId` clause encoded the *opposite* of
-paper §3.3 semantics. The entire track has been removed in favour
-of `in_span_visible`-based counterparts (`_visible` suffix).
-
 ## Out of scope
 
 These are acknowledged as future work in the paper itself (§5):
