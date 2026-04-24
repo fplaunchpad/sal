@@ -903,3 +903,75 @@ theorem endId_in_span_visible
         else visible_lt s (mark_endId m) (mark_endId m))
   rw [h_eSide]; simp
   exact visible_le_refl s (mark_endId m)
+
+/-! ### Paper-faithful read-side using `in_span_visible`
+
+Parallel projection that uses `in_span_visible` (the visible-order
+covering predicate) instead of `in_span_boundary` (the four-case
+boundary approximation). On well-formed Peritext-generated states
+the two agree; `formatted_visible` additionally handles:
+
+- **Bold-expand (Ex 7):** chars inserted between the last bold
+  char and `endId` in traversal order are correctly included (the
+  `in_span_boundary` predicate misses them unless they land exactly
+  at `after_of c endId`).
+- **Link-no-expand (Ex 8):** chars inserted as direct descendants
+  of `endId` with `endSide = true` (after) are correctly excluded
+  (the `in_span_boundary` predicate incorrectly includes them via
+  the `after_of c endId → endSide` clause).
+
+This section adds the definitions and one demonstration theorem; a
+full migration of the expand/contract / priority-rule / overlap
+theorems to `in_span_visible` is future work. -/
+
+/-- Paper-faithful "mark wins" predicate using `in_span_visible`. -/
+noncomputable def mark_wins_visible
+    (s : concrete_st) (m : MarkOp) (c : OpId) (mt : ℕ) : Prop :=
+  mark_present s m = true ∧
+  in_span_visible s m c ∧
+  mark_markType m = mt ∧
+  ∀ m', mark_present s m' = true →
+        in_span_visible s m' c →
+        mark_markType m' = mt →
+        m' ≠ m →
+        mark_beats m m' = true
+
+/-- Paper-faithful rendered formatting using `mark_wins_visible`. -/
+noncomputable def formatted_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ) : Bool :=
+  if visible s c = true then
+    decide (∃ m, mark_wins_visible s m c mt ∧ mark_isAdd m = true)
+  else false
+
+/-- Paper-faithful `readRichText`. -/
+noncomputable def readRichText_visible (s : concrete_st) :
+    OpId → Option (ℕ × (ℕ → Bool)) :=
+  fun c =>
+    if visible s c = true then
+      some (mysel_c (Prod.fst s) c, fun mt => formatted_visible s c mt)
+    else
+      none
+
+/-- **Demonstration theorem: paper-faithful LWW-add-winner.**
+
+If an `AddMark` is visibly-covering `c` and beats every other same-
+type visibly-covering mark, `c` is formatted in the paper-faithful
+projection. Analogue of `formatted_of_lww_add_winner` against the
+boundary predicate. -/
+theorem formatted_visible_of_lww_add_winner
+    (s : concrete_st) (c : OpId) (mt : ℕ) (addOp : MarkOp) :
+    mark_isAdd addOp = true →
+    mark_markType addOp = mt →
+    mark_present s addOp = true →
+    in_span_visible s addOp c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           mark_markType m' = mt →
+           m' ≠ addOp →
+           mark_beats addOp m' = true) →
+    formatted_visible s c mt = true := by
+  intro h_add h_mt_a h_pres_a h_cov_a h_vis h_beats
+  simp only [formatted_visible, h_vis, if_true]
+  refine decide_eq_true (Exists.intro addOp ?_)
+  refine ⟨⟨h_pres_a, h_cov_a, h_mt_a, h_beats⟩, h_add⟩

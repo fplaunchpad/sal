@@ -548,3 +548,50 @@ theorem endId_in_span_visible
         else visible_lt s m.endId m.endId)
   rw [h_eSide]; simp
   exact visible_le_refl s m.endId
+
+/-- Paper-faithful "mark wins" predicate using `in_span_visible`.
+See the CRDT `Peritext_ReadSide.lean` for discussion. -/
+noncomputable def mark_wins_visible
+    (s : concrete_st) (m : MarkOp) (c : OpId) (mt : ℕ) : Prop :=
+  mark_present s m = true ∧
+  in_span_visible s m c ∧
+  m.markType = mt ∧
+  ∀ m', mark_present s m' = true →
+        in_span_visible s m' c →
+        m'.markType = mt →
+        m' ≠ m →
+        mark_beats m m' = true
+
+noncomputable def formatted_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ) : Bool :=
+  if visible s c = true then
+    decide (∃ m, mark_wins_visible s m c mt ∧ m.isAdd = true)
+  else false
+
+noncomputable def readRichText_visible (s : concrete_st) :
+    OpId → Option (ℕ → Bool) :=
+  fun c =>
+    if visible s c = true then
+      some (fun mt => formatted_visible s c mt)
+    else
+      none
+
+/-- Demonstration: paper-faithful LWW-add-winner. Analogue of
+`formatted_of_lww_add_winner` against `in_span_visible`. -/
+theorem formatted_visible_of_lww_add_winner
+    (s : concrete_st) (c : OpId) (mt : ℕ) (addOp : MarkOp) :
+    addOp.isAdd = true →
+    addOp.markType = mt →
+    mark_present s addOp = true →
+    in_span_visible s addOp c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           m'.markType = mt →
+           m' ≠ addOp →
+           mark_beats addOp m' = true) →
+    formatted_visible s c mt = true := by
+  intro h_add h_mt_a h_pres_a h_cov_a h_vis h_beats
+  simp only [formatted_visible, h_vis, if_true]
+  refine decide_eq_true (Exists.intro addOp ?_)
+  refine ⟨⟨h_pres_a, h_cov_a, h_mt_a, h_beats⟩, h_add⟩
