@@ -461,6 +461,35 @@ theorem visible_lt_of_afters_reach
       have h_c : visible_lt s mid c := visible_lt.parent_child h_after
       exact visible_lt.trans h_mid h_c
 
+theorem visible_le_refl (s : concrete_st) (c : OpId) : visible_le s c c :=
+  Or.inl rfl
+
+theorem visible_le_trans
+    (s : concrete_st) (c₁ c₂ c₃ : OpId) :
+    visible_le s c₁ c₂ → visible_le s c₂ c₃ → visible_le s c₁ c₃ := by
+  intro h12 h23
+  rcases h12 with h12 | h12
+  · subst h12; exact h23
+  · rcases h23 with h23 | h23
+    · subst h23; exact Or.inr h12
+    · exact Or.inr (visible_lt.trans h12 h23)
+
+theorem visible_lt_of_lt_le
+    (s : concrete_st) (c₁ c₂ c₃ : OpId) :
+    visible_lt s c₁ c₂ → visible_le s c₂ c₃ → visible_lt s c₁ c₃ := by
+  intro h12 h23
+  rcases h23 with h23 | h23
+  · subst h23; exact h12
+  · exact visible_lt.trans h12 h23
+
+theorem visible_lt_of_le_lt
+    (s : concrete_st) (c₁ c₂ c₃ : OpId) :
+    visible_le s c₁ c₂ → visible_lt s c₂ c₃ → visible_lt s c₁ c₃ := by
+  intro h12 h23
+  rcases h12 with h12 | h12
+  · subst h12; exact h23
+  · exact visible_lt.trans h12 h23
+
 /-- Cross-sibling traversal. See the CRDT ReadSide for the full
 docstring. -/
 theorem visible_lt_of_cross_sibling
