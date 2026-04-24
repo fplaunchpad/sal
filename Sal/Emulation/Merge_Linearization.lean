@@ -1,6 +1,7 @@
 import Sal.Emulation.RA_Linearizability
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.List.Induction
+import Mathlib.Data.List.Basic
 
 /-!
 # Merge linearization (existential form)
@@ -462,14 +463,38 @@ theorem merge_linearization_exists
       · simpa [Set.union_empty] using h₁p
       · rw [← h₁s]; exact (merge_init_right_reachable hVC _).symm
     | _ :: _, _ :: _ =>
-      -- Both π₁ and π₂ non-empty. The full inductive step needs to:
-      --   1. Decompose π₁ = π₁' ++ [e₁] and case-split on e₁ ∈ ev₂.
-      --   2. e₁ ∈ ev₂ (shared): use lem_0op to factor e₁ out, recurse
-      --      via `ih` on (π₁', π₂'\{e₁}).
-      --   3. e₁ ∉ ev₂ (local only): use bottomUp_2op_reachable to
-      --      pull e₁ across merge, recurse on (π₁', π₂).
-      -- Left for future work; strong-induction ih is in scope.
-      sorry
+      -- Both non-empty. Decompose from the back to expose last events.
+      rcases List.eq_nil_or_concat' π₁ with hπ₁_nil | ⟨π₁', e₁, hπ₁_back⟩
+      · rw [hπ₁_nil] at hπ₁; exact absurd hπ₁ (List.cons_ne_nil _ _).symm
+      rcases List.eq_nil_or_concat' π₂ with hπ₂_nil | ⟨π₂', e₂, hπ₂_back⟩
+      · rw [hπ₂_nil] at hπ₂; exact absurd hπ₂ (List.cons_ne_nil _ _).symm
+      -- Now π₁ = π₁' ++ [e₁], π₂ = π₂' ++ [e₂]. Case-split on
+      -- whether the last events match.
+      by_cases h_same : e₁ = e₂
+      · -- Shared last event: factor via lem_0op + recurse via ih.
+        subst h_same
+        -- Invoke IH with smaller lengths. To call ih, we need to
+        -- establish:
+        --   - π₁'.length + π₂'.length < n
+        --   - listPermOf π₁' (ev₁ \ {e₁}) and similarly for π₂'
+        --   - respects π₁' (lo C), from h₁r
+        --   - applySeq init π₁' = some s₁', similarly for π₂'
+        -- Then construct witness π' ++ [e₁] from the IH result.
+        -- Concrete state equation:
+        --   applySeq init (π' ++ [e₁])
+        --     = update (merge s₁' s₂') e₁     [by ih]
+        --     = merge (update s₁' e₁) (update s₂' e₁) [by lem_0op.symm]
+        --     = merge s₁ s₂                    [defs]
+        -- The listPermOf + respects bookkeeping is substantial but
+        -- mechanical. Left for dedicated session.
+        sorry
+      · -- Distinct last events: use bottomUp_2op_reachable (rc case)
+        -- + symmetric variant for the Either rc case + IH.
+        -- Key step: rc between e₁ and e₂ determines which to peel.
+        -- If rc(e₂, e₁) = Fst_then_snd, use bottomUp_2op_reachable.
+        -- If rc(e₁, e₂) = Fst_then_snd, peel e₂ instead (symmetric).
+        -- If rc = Either (commute), peel either.
+        sorry
 
 end
 
