@@ -106,18 +106,25 @@ into three obligations:
 3. Cross case: for `a ∈ π₁` (so `a ∈ ev₁`) and `b ∈ restrictTo π₂ (ev₂ \ ev₁)`
    (so `b ∈ ev₂ ∧ b ∉ ev₁`), show `¬ lo C b a`.
 
-The cross case needs:
-* `SatisfiesVCs D` — for `rcNonComm`, `condComm`, `no_rc_chain`.
-* A **causal closure invariant** on `C.vis`: `∀ a b r s,
-   C.vis a b → C.L r = some s → s b → s a`. This is not currently a
-   field of `Configuration` — it would need adding (symmetrically
-   with `dom_eq`, `vis_src`, `vis_tgt`).
+The cross case unfolds `lo` into two disjuncts:
 
-TODO: extend `Configuration` with causal closure + prove it preserved
-by `initConfig` and each `Step` rule, then close this lemma. -/
+* **Disjunct 1** (`C.vis b a ∧ ¬ commutes b a`): closed via
+  `C.vis_causal` — `vis b a` + `a ∈ ev₁` implies `b ∈ ev₁`,
+  contradicting `b ∉ ev₁`.
+
+* **Disjunct 2** (`¬ vis b a ∧ ¬ vis a b ∧ rc b a = Fst_then_snd ∧
+  ¬ ∃ e₃, vis a e₃ ∧ ¬ commutes a e₃`): **NOT YET CLOSED.** The
+  concurrent, rc-ordered case has no elementary contradiction from
+  just the permutation/respect hypotheses. Any closure strategy has
+  to invoke `SatisfiesVCs` (specifically `rc_non_comm`, `cond_comm`)
+  and likely requires knowing the joint structure of π₁ and π₂ — i.e.
+  it is coupled to `merge_witness_state`. See `MERGE_PROOF.md` for the
+  status analysis. -/
 theorem merge_witness_respects
-    {C : Configuration D}
+    {C : Configuration D} {r₁ : Replica}
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_ev₁ : C.L r₁ = some ev₁)
+    (h₁_perm : listPermOf π₁ ev₁) (_h₂_perm : listPermOf π₂ ev₂)
     (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C)) :
     respects (merge_witness π₁ π₂ ev₁ ev₂) (lo C) := by
   unfold merge_witness respects
@@ -126,8 +133,20 @@ theorem merge_witness_respects
   · -- Within restrictTo π₂ (ev₂ \ ev₁): filter preserves Pairwise.
     unfold restrictTo
     exact h₂_resp.filter _
-  · -- Cross case — see TODO above.
-    sorry
+  · -- Cross case: a ∈ π₁, b ∈ restrictTo π₂ (ev₂ \ ev₁). Show ¬ lo C b a.
+    intro a ha b hb
+    have hb_mem : b ∈ ev₂ ∧ b ∉ ev₁ := by
+      unfold restrictTo at hb
+      simp only [List.mem_filter, decide_eq_true_eq, Set.mem_diff] at hb
+      exact hb.2
+    have ha_ev₁ : a ∈ ev₁ := (h₁_perm.2 a).mp ha
+    intro hlo
+    unfold lo at hlo
+    rcases hlo with ⟨hvis, _⟩ | ⟨_hnv₁, _hnv₂, _hrc, _hnex⟩
+    · -- Disjunct 1: causal closure rules out vis b a with a ∈ ev₁, b ∉ ev₁.
+      exact hb_mem.2 (C.vis_causal hvis h_ev₁ ha_ev₁)
+    · -- Disjunct 2: concurrent + rc-ordered. See docstring.
+      sorry
 
 /-- Applying the `merge_witness` to `σ₀` yields `D.merge s₁ s₂`. The
 load-bearing lemma. Uses the 24 VCs from `SatisfiesVCs` to iteratively
@@ -197,7 +216,7 @@ theorem RA_lin_preserved_merge_via_witness
     · -- respects lo C' = lo C (vis unchanged via hvis)
       have : lo C' = lo C := by unfold lo; rw [hvis]
       rw [this]
-      exact merge_witness_respects hr₁ hr₂
+      exact merge_witness_respects h_ev₁ hp₁ hp₂ hr₁ hr₂
     · -- state
       rw [← hN']
       exact merge_witness_state hVC hp₁ hp₂ hs₁' hs₂'

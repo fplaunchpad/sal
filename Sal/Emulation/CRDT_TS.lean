@@ -48,6 +48,12 @@ structure Configuration (D : CRDTSig) where
   /-- Every edge in `vis` has its target event observed at some
   replica. -/
   vis_tgt : ∀ {a b}, vis a b → ∃ r s, L r = some s ∧ s b
+  /-- Causal closure: if `a` is an ancestor of `b` (`vis a b`) and `b`
+  has been observed at some replica `r`, then so has `a`. Corresponds
+  to the "no gaps in the causal past" invariant used by the merge
+  case of the bridge theorem to rule out visibility edges that cross
+  the `ev₁ / ev₂ \ ev₁` boundary. -/
+  vis_causal : ∀ {a b r s}, vis a b → L r = some s → s b → s a
 
 namespace Configuration
 
@@ -130,6 +136,7 @@ def initConfig (D : CRDTSig) : Configuration D where
     · simp [h]
   vis_src := fun h => absurd h id
   vis_tgt := fun h => absurd h id
+  vis_causal := fun h _ _ => absurd h id
 
 /-- Bundle the configuration/label/step data into a `LabeledTS`. -/
 def labeledTS (D : CRDTSig) : LabeledTS where

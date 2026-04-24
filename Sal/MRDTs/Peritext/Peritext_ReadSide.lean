@@ -725,3 +725,142 @@ theorem different_type_adds_coexist_visible
     exact decide_eq_true (Exists.intro mB ⟨⟨h_presB, h_covB, rfl, h_beatsB⟩, h_addB⟩)
   · simp only [formatted_visible, h_vis, if_true]
     exact decide_eq_true (Exists.intro mI ⟨⟨h_presI, h_covI, rfl, h_beatsI⟩, h_addI⟩)
+
+/-! ### Chars-congruence for visible-order relations (MRDT)
+
+The MRDT's `after_of` reads `chars_of s = Prod.fst s`. States that
+agree pointwise on the chars component give identical `after_of`
+and hence identical `visible_lt` / `afters_reach` / `in_span_visible`
+relations. These lemmas are the MRDT analogues of the CRDT's
+afters-equality congruence lemmas. -/
+
+theorem after_of_eq_of_chars_eq
+    (s₁ s₂ : concrete_st) (c target : OpId) :
+    (∀ ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    after_of s₁ c target = after_of s₂ c target := by
+  intro h
+  simp only [after_of, chars_of]
+  congr 1
+  apply propext
+  exact ⟨fun ⟨ch, hc⟩ => ⟨ch, (h ch) ▸ hc⟩,
+         fun ⟨ch, hc⟩ => ⟨ch, (h ch).symm ▸ hc⟩⟩
+
+theorem afters_reach_of_chars_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    ∀ c anc, afters_reach s₁ c anc → afters_reach s₂ c anc := by
+  intro h c anc hr
+  induction hr with
+  | refl c => exact afters_reach.refl c
+  | @step c c_parent anc h_after _ ih =>
+    have h_after' : after_of s₂ c c_parent = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ c c_parent (fun ch => h c c_parent ch)]
+      exact h_after
+    exact afters_reach.step h_after' ih
+
+theorem visible_lt_of_chars_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    ∀ c₁ c₂, visible_lt s₁ c₁ c₂ → visible_lt s₂ c₁ c₂ := by
+  intro h c₁ c₂ hlt
+  induction hlt with
+  | @parent_child p c h_after =>
+    have h_after' : after_of s₂ c p = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ c p (fun ch => h c p ch)]
+      exact h_after
+    exact visible_lt.parent_child h_after'
+  | @sibling p ca cb h_after_a h_after_b h_ne h_order =>
+    have h_after_a' : after_of s₂ ca p = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ ca p (fun ch => h ca p ch)]
+      exact h_after_a
+    have h_after_b' : after_of s₂ cb p = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ cb p (fun ch => h cb p ch)]
+      exact h_after_b
+    exact visible_lt.sibling h_after_a' h_after_b' h_ne h_order
+  | @left_descendant_of_sibling p ca cb d h_after_a h_after_b h_ne h_order h_reach h_d_ne =>
+    have h_after_a' : after_of s₂ ca p = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ ca p (fun ch => h ca p ch)]
+      exact h_after_a
+    have h_after_b' : after_of s₂ cb p = true := by
+      rw [← after_of_eq_of_chars_eq s₁ s₂ cb p (fun ch => h cb p ch)]
+      exact h_after_b
+    have h_reach' : afters_reach s₂ d ca :=
+      afters_reach_of_chars_eq s₁ s₂ h d ca h_reach
+    exact visible_lt.left_descendant_of_sibling h_after_a' h_after_b' h_ne h_order h_reach' h_d_ne
+  | @trans c₁ c₂ c₃ _ _ ih_12 ih_23 =>
+    exact visible_lt.trans ih_12 ih_23
+
+theorem visible_le_of_chars_eq
+    (s₁ s₂ : concrete_st) :
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    ∀ c₁ c₂, visible_le s₁ c₁ c₂ → visible_le s₂ c₁ c₂ := by
+  intro h c₁ c₂ hle
+  rcases hle with hle | hle
+  · exact Or.inl hle
+  · exact Or.inr (visible_lt_of_chars_eq s₁ s₂ h c₁ c₂ hle)
+
+theorem in_span_visible_of_chars_eq
+    (s₁ s₂ : concrete_st) (m : MarkOp) (c : OpId) :
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    in_span_visible s₁ m c → in_span_visible s₂ m c := by
+  intro h ⟨h_left, h_right⟩
+  refine ⟨?_, ?_⟩
+  · split_ifs with h_sSide
+    · rw [if_pos h_sSide] at h_left
+      exact visible_lt_of_chars_eq s₁ s₂ h _ _ h_left
+    · rw [if_neg h_sSide] at h_left
+      exact visible_le_of_chars_eq s₁ s₂ h _ _ h_left
+  · split_ifs with h_eSide
+    · rw [if_pos h_eSide] at h_right
+      exact visible_le_of_chars_eq s₁ s₂ h _ _ h_right
+    · rw [if_neg h_eSide] at h_right
+      exact visible_lt_of_chars_eq s₁ s₂ h _ _ h_right
+
+theorem exists_mark_wins_visible_add_iff
+    (s₁ s₂ : concrete_st) (c : OpId) (mt : ℕ) :
+    (∀ x : AnchorAttachment, Prod.snd (Prod.snd s₁) x = Prod.snd (Prod.snd s₂) x) →
+    (∀ c target ch, Prod.fst s₁ (c, target, ch) = Prod.fst s₂ (c, target, ch)) →
+    ((∃ m, mark_wins_visible s₁ m c mt ∧ m.isAdd = true) ↔
+     (∃ m, mark_wins_visible s₂ m c mt ∧ m.isAdd = true)) := by
+  intro hm hch
+  constructor
+  · rintro ⟨m, ⟨h_pres, h_cov, h_mt, h_beats⟩, h_add⟩
+    refine ⟨m, ⟨?_, ?_, h_mt, ?_⟩, h_add⟩
+    · simp only [mark_present, marks_of, ← hm]; exact h_pres
+    · exact in_span_visible_of_chars_eq s₁ s₂ _ _ hch h_cov
+    · intro m' h_pres' h_cov' h_mt' h_ne
+      apply h_beats m' _ _ h_mt' h_ne
+      · simp only [mark_present, marks_of, hm]; exact h_pres'
+      · exact in_span_visible_of_chars_eq s₂ s₁ _ _
+          (fun c t ch => (hch c t ch).symm) h_cov'
+  · rintro ⟨m, ⟨h_pres, h_cov, h_mt, h_beats⟩, h_add⟩
+    refine ⟨m, ⟨?_, ?_, h_mt, ?_⟩, h_add⟩
+    · simp only [mark_present, marks_of, hm]; exact h_pres
+    · exact in_span_visible_of_chars_eq s₂ s₁ _ _
+        (fun c t ch => (hch c t ch).symm) h_cov
+    · intro m' h_pres' h_cov' h_mt' h_ne
+      apply h_beats m' _ _ h_mt' h_ne
+      · simp only [mark_present, marks_of, ← hm]; exact h_pres'
+      · exact in_span_visible_of_chars_eq s₁ s₂ _ _ hch h_cov'
+
+/-- **Anchors survive tombstones, visible version (MRDT).** -/
+theorem anchors_survive_tombstones_visible
+    (s : concrete_st) (c c_rm : OpId) (mt : ℕ) (ts rid : ℕ) :
+    c ≠ c_rm →
+    formatted_visible s c mt =
+      formatted_visible (do_ s (ts, rid, app_op_t.Remove c_rm)) c mt := by
+  intro hne
+  set s' := do_ s (ts, rid, app_op_t.Remove c_rm) with hs'_def
+  have h_chars : ∀ c₁ t ch, Prod.fst s (c₁, t, ch) = Prod.fst s' (c₁, t, ch) :=
+    fun _ _ _ => rfl
+  have h_marks : ∀ x : AnchorAttachment,
+                  Prod.snd (Prod.snd s) x = Prod.snd (Prod.snd s') x :=
+    fun _ => rfl
+  have h_vis : visible s c = visible s' c := by
+    simp only [visible, hs'_def, do_, chars_of, removed_of, add, union, _root_.singleton]
+    grind
+  simp only [formatted_visible, h_vis]
+  split_ifs with h_v
+  · exact decide_eq_decide.mpr
+      (exists_mark_wins_visible_add_iff s s' c mt h_marks h_chars)
+  · rfl
