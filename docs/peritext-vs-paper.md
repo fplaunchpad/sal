@@ -33,10 +33,10 @@ but the correctness criteria land in different places:
 | Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist` apply — but that's the opposite of Ex 4's intent. |
 | Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove` (positive) + `no_add_cover_implies_unformatted` (negative) | ✅ Deliberate departure on the priority rule — see below. |
 | Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
-| Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `expand_contract_end_after`, `expand_contract_start_after` | ✅ |
-| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `expand_contract_end_before`, `expand_contract_start_before` | ✅ |
-| Table 1 — "Can marks overlap?" | §3.4 | Emergent from `formatted` being per-`markType` | ✅ |
-| Table 1 — "Do marks expand?" | §3.4 | Captured by the four `expand_contract_*` theorems | ✅ |
+| Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` | 🟡 Partial. The cross-sibling case (insert lands in an older-sibling subtree of `endId`, so before `endId` in visible order) is captured. True bold-expand past `endId` in visible order isn't encoded in `in_span_visible`; see *Known gap* below. |
+| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` (full negation) | ✅ Afters-descendants of `endId` come after `endId` in visible order and are correctly excluded by `in_span_visible`. Full negation takes an explicit acyclicity hypothesis (`¬ visible_lt s endId endId`) since we don't yet carry a state-level well-formedness invariant. |
+| Table 1 — "Can marks overlap?" | §3.4 | Emergent from `formatted_visible` being per-`markType` | ✅ |
+| Table 1 — "Do marks expand?" | §3.4 | Captured by Ex 7 / Ex 8 visible-order demos above | 🟡 Per Ex 7: partial (see *Known gap*). |
 
 Plus one additional theorem not tied to a specific paper example:
 
@@ -120,45 +120,48 @@ Now landed:
   etc.).
 - `is_rga_traversal` / `readRichText_list` — list-form presentation
   as a Prop-valued spec (the framework doesn't natively enumerate
-  `set α := α → Bool`). Convergence theorems land (CRDT side).
+  `set α := α → Bool`). Convergence theorems land on both sides.
+- `insert_within_span_cross_subtree_in_span` — Ex 1 bound auto-
+  derivation for the cross-subtree case, both sides. Removes the
+  caller's bound obligation when `c_after` and `endId` live in
+  different afters-subtrees.
 
 **Still pending:**
 - Existence of a traversal for every state — requires finite-
   carrier infrastructure; see `docs/list-form-readrichtext-design.md`.
-- Ex 8 full negation (i.e., `¬ in_span_visible s m c_new` for a
-  descendant of `endId` with `endSide = true`) — needs
-  `visible_lt` irreflexivity, which in turn needs a `distinct_ops`-
-  style well-formedness invariant on state.
-- Ex 1 bound-auto-derivation corollary: for the common case where
-  `c_after` is not an ancestor of `endId` in the afters-tree, the
-  right-side bound should be derivable from RGA geometry without
-  the caller having to supply it.
-- MRDT mirrors: `is_rga_traversal` / `readRichText_list` / their
-  convergence (mechanical port of CRDT side, deferred).
+- State-level acyclicity invariant on `afters` — would let
+  `ex8_link_descendant_not_in_span_visible` (and analogous
+  theorems) drop the explicit `¬ visible_lt s endId endId`
+  hypothesis.
 
-### Semantic bug in `in_span_boundary` (use `in_span_visible` instead)
+### Known gap: bold-expand past `endId` under `in_span_visible`
 
-Cross-checking against the paper uncovered a bug in the
-`in_span_boundary` predicate's fourth clause:
+Our `in_span_visible` captures link-contract semantics faithfully —
+afters-descendants of `endId` come *after* `endId` in visible order
+and are correctly excluded. It does **not** capture true bold-expand
+semantics: a character inserted with `afters = endId` is visible-after
+`endId`, so under any `endSide` bit the right-bound check
+(`visible_le c endId` or `visible_lt c endId`) fails and the char is
+excluded. The paper's Ex 7 (bold-expand) is therefore only captured
+for the cross-sibling case (via `ex7_bold_older_sibling_in_span`),
+where the insert lands in an older-sibling subtree of `endId` and is
+visible-before `endId`.
 
-```
-if after_of s c endId then endSide    -- the buggy clause
-```
+Full bold-expand semantics would require extending the predicate to
+include "afters-descendants of `endId` whose top-sibling order places
+them immediately after `endId`" — essentially, the paper's §3.3
+anchor-side semantics. Not attempted in this formalization.
 
-This says: a char `c` inserted as a direct afters-descendant of
-`endId` is covered by the mark iff `endSide = true`. But the paper's
-semantics at §3.3 (Ex 8, link-no-expand) is the **opposite**: with
-`endSide = after` (= `true`), inserts immediately after `endId`
-fall **outside** the span.
+### Historical note: `in_span_boundary` (removed)
 
-`in_span_boundary`'s other three clauses are also approximate (the
-`after_of c startId` one has a similar mismatch for the
-startSide=false interior case). Concretely, the theorems proved
-against `in_span_boundary` (e.g., `expand_contract_end_after`) are
-true-about-`in_span_boundary` but don't match the paper's intent.
-
-`in_span_visible` does match the paper. A follow-up migration moves
-the theorems onto the correct predicate.
+Earlier versions of the read-side had an `in_span_boundary` predicate
+and four `expand_contract_*` theorems against it. The predicate's
+`after_of c endId` clause encodes the **opposite** of the paper's §3.3
+semantics (it includes post-`endId` inserts under `endSide = true`,
+which is the link/contract case, not the bold/expand case). Those
+theorems have been removed; the paper's Ex 7 / Ex 8 content lives in
+`ex7_bold_older_sibling_in_span`, `ex8_link_descendant_visible_lt_endId`,
+and `insert_within_span_{in_span_visible, cross_subtree_in_span}`.
 
 **Tombstone-scanning on insert (§4.2.2).** The paper's `Insert`
 algorithm inspects the marks set when placing a character after

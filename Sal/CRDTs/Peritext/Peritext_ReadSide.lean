@@ -353,106 +353,29 @@ theorem add_wins_over_concurrent_remove
   · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
 
 
-/-- **Tier 2 — Expand/contract at the `endId` boundary.**
+/-! ### Expand/contract at span boundaries
 
-The paper's headline claim: whether a concurrent boundary insert falls
-inside or outside a mark is determined by the anchor's `side` bit.
+The paper's §3.3 expand/contract distinction is captured by the
+paper-faithful visible-order theorems later in this file, not by
+`in_span_boundary`:
 
-This theorem is the `endSide = true` (expand) case: a character
-`c_new` inserted with `afters(c_new) = endId`, in a state that
-contains an `AddMark` whose `endSide = true` and whose covering span
-reaches `c_new` *only* via the end-boundary (i.e. no other mark
-competes for `(c_new, mt)`), is formatted.
+- **Ex 7 (bold-expand, cross-sibling case):** `ex7_bold_older_sibling_in_span`
+  covers the common scenario where a concurrent insert lands in an
+  older-sibling subtree of `endId` — the insert is before `endId` in
+  visible order and is correctly included in the span.
+- **Ex 8 (link-contract):** `ex8_link_descendant_visible_lt_endId`
+  demonstrates that afters-descendants of `endId` come *after* `endId`
+  in visible order, and are correctly excluded from `in_span_visible`.
+- **Ex 1 (insert-within-span):** `insert_within_span_in_span_visible`
+  and `insert_within_span_cross_subtree_in_span` cover the general
+  interior-insert case.
 
-The `endSide = false` (contract) symmetric statement is
-`expand_contract_end_before` below.
-
-Generality. The theorem is parameterized over the mark's `opId`,
-`startId`, `startSide`, `markType`, the post-state `s`, the new
-character's `opId`, and the absence of competing marks. It does
-**not** fix a particular replica topology or small-trace shape. -/
-theorem expand_contract_end_after
-    (s : concrete_st) (c_new : OpId) (mt : ℕ) (m : MarkOp) :
-    mark_isAdd m = true →
-    mark_endSide m = true →
-    mark_markType m = mt →
-    mark_present s m = true →
-    visible s c_new = true →
-    after_of s c_new (mark_endId m) = true →
-    c_new ≠ mark_startId m →
-    c_new ≠ mark_endId m →
-    ¬ after_of s c_new (mark_startId m) →
-    -- no other competing mark of the same type covers c_new at the boundary
-    (∀ m', mark_present s m' = true →
-           in_span_boundary s m' c_new = true →
-           mark_markType m' = mt →
-           m' ≠ m →
-           mark_beats m m' = true) →
-    formatted s c_new mt = true := by
-  intro h_add h_eSd h_mt h_pres h_vis h_after h_ne_s h_ne_e h_ns_after h_beats
-  simp only [formatted, h_vis, if_true]
-  refine decide_eq_true (Exists.intro m ?_)
-  refine ⟨⟨h_pres, ?_, h_mt, h_beats⟩, h_add⟩
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_ns_after, h_after, h_eSd]
-  grind
-
-/-- **Tier 2 (symmetric) — Contract at the `endId` boundary.**
-
-With `endSide = false`, the same `AddMark` does *not* cover a
-character inserted immediately after `endId` — the mark contracts
-away from the concurrent boundary insert.
-
-If that `AddMark` is the only Add of type `mt` in state, `c_new` is
-unformatted. (If other non-boundary Adds cover `c_new`, they would
-format it independently — captured by the "no other covering mark"
-premise.) -/
-theorem expand_contract_end_before
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    mark_endSide m = false →
-    mark_endId m ≠ c_new →
-    c_new ≠ mark_startId m →
-    after_of s c_new (mark_endId m) = true →
-    ¬ after_of s c_new (mark_startId m) →
-    in_span_boundary s m c_new = false := by
-  intro h_eSd h_ne h_ne_s h_after h_ns_after
-  have h_ne' : c_new ≠ mark_endId m := fun h => h_ne h.symm
-  simp only [in_span_boundary, h_ne_s, h_ne', h_ns_after, h_after, h_eSd]
-  grind
-
-/-- **Tier 2 (symmetric) — Start-side expansion.**
-
-`startSide = true` means a character inserted immediately after
-`startId` *is* covered (the start anchor is on the "after" side, so
-`startId`'s immediate successor is inside the span). -/
-theorem expand_contract_start_after
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    mark_startSide m = true →
-    c_new ≠ mark_startId m →
-    c_new ≠ mark_endId m →
-    after_of s c_new (mark_startId m) = true →
-    in_span_boundary s m c_new = true := by
-  intro h_sSd h_ne_s h_ne_e h_after
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_after, h_sSd]
-  grind
-
-/-- **Tier 2 (symmetric) — Start-side contraction.**
-
-`startSide = false` means the start anchor is on the "before" side of
-`startId`. A concurrent insert whose `afters = startId` (which,
-observationally, lands immediately *after* `startId` in visible order)
-is *not* covered — the anchor being before `startId` does not stretch
-rightward to a new successor. -/
-theorem expand_contract_start_before
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    mark_startSide m = false →
-    c_new ≠ mark_startId m →
-    c_new ≠ mark_endId m →
-    after_of s c_new (mark_startId m) = true →
-    ¬ after_of s c_new (mark_endId m) →
-    in_span_boundary s m c_new = false := by
-  intro h_sSd h_ne_s h_ne_e h_after h_not_after_end
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_after, h_sSd, h_not_after_end]
-  grind
+Earlier versions of this file had four `expand_contract_*` theorems
+stated against `in_span_boundary`. Those theorems were true about the
+boundary approximation but its `endSide`/`after_of endId` clause
+encodes the opposite of the paper's expand/contract semantics (see
+`docs/peritext-vs-paper.md`). They have been removed in favour of the
+visible-order theorems above. -/
 
 /-- **Paper Ex 2 — Partially overlapping Adds of the same type.**
 
@@ -1033,6 +956,37 @@ theorem ex8_link_descendant_visible_lt_endId
     after_of s c_new (mark_endId m) = true →
     visible_lt s (mark_endId m) c_new :=
   fun h => visible_lt.parent_child h
+
+/-- **Paper Ex 8 full negation** — given RGA acyclicity.
+
+An afters-descendant `c_new` of `endId` with `c_new ≠ endId` is *not*
+in the span, regardless of `endSide`. This is the full paper-faithful
+link-no-expand statement.
+
+The theorem takes `h_acyclic : ¬ visible_lt s (mark_endId m) (mark_endId m)`
+as an explicit hypothesis — equivalent to RGA well-formedness on the
+`afters` map at `endId`. This state-level invariant is not currently
+an explicit predicate in the Sal framework, but it holds for every
+`do_`-generated state where `endId` was inserted with a distinct opId.
+Callers who have a generating trace can discharge this by induction;
+here we take it as-given. -/
+theorem ex8_link_descendant_not_in_span_visible
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    c_new ≠ mark_endId m →
+    after_of s c_new (mark_endId m) = true →
+    ¬ visible_lt s (mark_endId m) (mark_endId m) →
+    ¬ in_span_visible s m c_new := by
+  intro h_ne h_after h_acyclic h_in_span
+  have h_lt : visible_lt s (mark_endId m) c_new :=
+    ex8_link_descendant_visible_lt_endId s m c_new h_after
+  rcases h_in_span with ⟨_, h_right⟩
+  split_ifs at h_right with h_eSide
+  · -- endSide = true: right bound is visible_le c_new endId
+    rcases h_right with h_eq | h_visible_lt
+    · exact h_ne h_eq
+    · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
+  · -- endSide = false: right bound is visible_lt c_new endId
+    exact h_acyclic (visible_lt.trans h_lt h_right)
 
 /-! ### Preservation of `visible_lt` / `in_span_visible` under `Insert`
 

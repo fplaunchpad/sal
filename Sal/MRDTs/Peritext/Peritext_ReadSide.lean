@@ -203,76 +203,22 @@ theorem add_wins_over_concurrent_remove
     simp [mark_beats, h_add, h_rem]
   · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
 
-/-- **Tier 2 — Expand/contract at the `endId` boundary (expand case).**
+/-! ### Expand/contract at span boundaries
 
-With `endSide = true`, a character inserted immediately after `endId`
-is covered — the mark *expands* to include the concurrent boundary
-insert. -/
-theorem expand_contract_end_after
-    (s : concrete_st) (c_new : OpId) (mt : ℕ) (m : MarkOp) :
-    m.isAdd = true →
-    m.endSide = true →
-    m.markType = mt →
-    mark_present s m = true →
-    visible s c_new = true →
-    after_of s c_new m.endId = true →
-    c_new ≠ m.startId →
-    c_new ≠ m.endId →
-    ¬ after_of s c_new m.startId = true →
-    (∀ m', mark_present s m' = true →
-           in_span_boundary s m' c_new = true →
-           m'.markType = mt →
-           m' ≠ m →
-           mark_beats m m' = true) →
-    formatted s c_new mt = true := by
-  intro h_add h_eSd h_mt h_pres h_vis h_after h_ne_s h_ne_e h_ns_after h_beats
-  simp only [formatted, h_vis, if_true]
-  refine decide_eq_true (Exists.intro m ?_)
-  refine ⟨⟨h_pres, ?_, h_mt, h_beats⟩, h_add⟩
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_ns_after, h_after, h_eSd]
-  grind
+The paper's §3.3 expand/contract distinction is captured by the
+visible-order theorems later in this file (see the CRDT side's
+`Peritext_ReadSide.lean` for the full discussion):
 
-/-- **Tier 2 (symmetric) — Contract at the `endId` boundary.**
+- **Ex 7 (bold-expand, cross-sibling case):** `ex7_bold_older_sibling_in_span`.
+- **Ex 8 (link-contract):** `ex8_link_descendant_visible_lt_endId`.
+- **Ex 1 (insert-within-span):** `insert_within_span_in_span_visible`
+  and `insert_within_span_cross_subtree_in_span`.
 
-With `endSide = false`, the same boundary insert is *not* covered —
-the mark *contracts* away from the concurrent boundary insert. -/
-theorem expand_contract_end_before
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    m.endSide = false →
-    m.endId ≠ c_new →
-    c_new ≠ m.startId →
-    after_of s c_new m.endId = true →
-    ¬ after_of s c_new m.startId = true →
-    in_span_boundary s m c_new = false := by
-  intro h_eSd h_ne h_ne_s h_after h_ns_after
-  have h_ne' : c_new ≠ m.endId := fun h => h_ne h.symm
-  simp only [in_span_boundary, h_ne_s, h_ne', h_ns_after, h_after, h_eSd]
-  grind
-
-/-- **Tier 2 (symmetric) — Start-side expansion.** -/
-theorem expand_contract_start_after
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    m.startSide = true →
-    c_new ≠ m.startId →
-    c_new ≠ m.endId →
-    after_of s c_new m.startId = true →
-    in_span_boundary s m c_new = true := by
-  intro h_sSd h_ne_s h_ne_e h_after
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_after, h_sSd]
-  grind
-
-/-- **Tier 2 (symmetric) — Start-side contraction.** -/
-theorem expand_contract_start_before
-    (s : concrete_st) (c_new : OpId) (m : MarkOp) :
-    m.startSide = false →
-    c_new ≠ m.startId →
-    c_new ≠ m.endId →
-    after_of s c_new m.startId = true →
-    ¬ after_of s c_new m.endId = true →
-    in_span_boundary s m c_new = false := by
-  intro h_sSd h_ne_s h_ne_e h_after h_not_after_end
-  simp only [in_span_boundary, h_ne_s, h_ne_e, h_after, h_sSd, h_not_after_end]
-  grind
+Earlier versions of this file had four `expand_contract_*` theorems
+against `in_span_boundary`. They were true about the boundary
+approximation but its `endSide`/`after_of endId` clause encodes the
+opposite of the paper's expand/contract semantics. They have been
+removed in favour of the visible-order theorems. -/
 
 /-- **Paper Ex 2 — Partially overlapping Adds of the same type.**
 
@@ -1043,6 +989,56 @@ theorem insert_within_span_in_span_visible
   exact in_span_visible_propagate s_post m (ts, rid) c_after
     h_span_c_after_post h_after_new h_right_post
 
+/-- **Ex 1 bound auto-derivation for the cross-subtree case (MRDT).**
+
+Mirror of the CRDT `insert_within_span_cross_subtree_in_span`. If
+`c_after` and `endId` live in the subtrees of different direct
+siblings `c_a_top` / `c_e_top` under a common afters-parent `p`,
+with `c_a_top` the older sibling, the right-side bound is derivable
+from RGA geometry without the caller supplying it. -/
+theorem insert_within_span_cross_subtree_in_span
+    (s_pre : concrete_st) (m : MarkOp)
+    (ts rid : ℕ) (ch : ℕ) (c_after p c_a_top c_e_top : OpId) :
+    (∀ t ch, Prod.fst s_pre ((ts, rid), t, ch) = false) →
+    in_span_visible s_pre m c_after →
+    m.endSide = false →
+    afters_reach s_pre c_after c_a_top →
+    afters_reach s_pre m.endId c_e_top →
+    after_of s_pre c_a_top p = true →
+    after_of s_pre c_e_top p = true →
+    c_a_top ≠ c_e_top →
+    opid_max c_a_top c_e_top = c_a_top →
+    in_span_visible (do_ s_pre (ts, rid, app_op_t.Insert ch c_after)) m (ts, rid) := by
+  intro h_fresh h_span_pre h_eSide h_reach_after h_reach_end
+    h_after_a h_after_e h_ne h_order
+  set s_post := do_ s_pre (ts, rid, app_op_t.Insert ch c_after) with h_sp_def
+  have h_reach_after_post : afters_reach s_post c_after c_a_top :=
+    afters_reach_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_reach_after
+  have h_reach_end_post : afters_reach s_post m.endId c_e_top :=
+    afters_reach_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_reach_end
+  have h_ne_a : c_a_top ≠ (ts, rid) :=
+    after_of_true_implies_ne_fresh s_pre ts rid c_a_top p h_fresh h_after_a
+  have h_ne_e : c_e_top ≠ (ts, rid) :=
+    after_of_true_implies_ne_fresh s_pre ts rid c_e_top p h_fresh h_after_e
+  have h_after_a_post : after_of s_post c_a_top p = true := by
+    rw [h_sp_def, ← after_of_preserved_under_insert s_pre ts rid ch c_after c_a_top p h_ne_a]
+    exact h_after_a
+  have h_after_e_post : after_of s_post c_e_top p = true := by
+    rw [h_sp_def, ← after_of_preserved_under_insert s_pre ts rid ch c_after c_e_top p h_ne_e]
+    exact h_after_e
+  have h_after_new : after_of s_post (ts, rid) c_after = true := by
+    simp only [h_sp_def, after_of, do_, chars_of, add, union, _root_.singleton,
+               Bool.or_eq_true, decide_eq_true_eq]
+    exact ⟨ch, Or.inr rfl⟩
+  have h_reach_new : afters_reach s_post (ts, rid) c_a_top :=
+    afters_reach.step h_after_new h_reach_after_post
+  have h_right : visible_lt s_post (ts, rid) m.endId :=
+    visible_lt_of_cross_sibling s_post p c_a_top c_e_top (ts, rid) m.endId
+      h_after_a_post h_after_e_post h_ne h_order h_reach_new h_reach_end_post
+  apply insert_within_span_in_span_visible s_pre m ts rid ch c_after h_fresh h_span_pre
+  rw [if_neg (by rw [h_eSide]; decide)]
+  exact h_right
+
 /-! ### Ex 7 / Ex 8 visible-order demonstrations (MRDT mirror)
 
 Mirrors of the CRDT Ex 7 / Ex 8 demo theorems. -/
@@ -1073,6 +1069,27 @@ theorem ex8_link_descendant_visible_lt_endId
     after_of s c_new m.endId = true →
     visible_lt s m.endId c_new :=
   fun h => visible_lt.parent_child h
+
+/-- **Paper Ex 8 full negation (MRDT)** — given RGA acyclicity.
+
+An afters-descendant `c_new` of `endId` with `c_new ≠ endId` is *not*
+in the span, regardless of `endSide`. See the CRDT side for the full
+rationale and the explicit acyclicity hypothesis. -/
+theorem ex8_link_descendant_not_in_span_visible
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    c_new ≠ m.endId →
+    after_of s c_new m.endId = true →
+    ¬ visible_lt s m.endId m.endId →
+    ¬ in_span_visible s m c_new := by
+  intro h_ne h_after h_acyclic h_in_span
+  have h_lt : visible_lt s m.endId c_new :=
+    ex8_link_descendant_visible_lt_endId s m c_new h_after
+  rcases h_in_span with ⟨_, h_right⟩
+  split_ifs at h_right with h_eSide
+  · rcases h_right with h_eq | h_visible_lt
+    · exact h_ne h_eq
+    · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
+  · exact h_acyclic (visible_lt.trans h_lt h_right)
 
 /-! ### List-form traversal specification (MRDT mirror) -/
 
