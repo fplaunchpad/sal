@@ -28,7 +28,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 1 | Transcribe the 24 VCs into `SatisfiesVCs` | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (refactored to monolithic existential; both-empty case closed; two inductive cases sorry) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (convergence skeleton landed via bubble-sort; 3 sorries remain — adjacent swap diff-rep case, `merge_init_left_reachable`, and distinct-last-event case) |
 | 5 | End-to-end smoke test on Grow-Only Set | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |

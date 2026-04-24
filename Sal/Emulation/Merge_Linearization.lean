@@ -172,53 +172,273 @@ Convergence is provable from the 24 VCs via a bubble-sort argument:
 any two `lo`-respecting permutations differ by adjacent
 transpositions of lo-unordered pairs; each transposition preserves
 state via `rc_non_comm` (unordered ⟹ commuting) or `cond_comm` +
-the presence of an overwriter. -/
+the presence of an overwriter.
+
+The proof is structured in four layers:
+
+1. `applySeq_swap_commute` — swap commuting adjacent ops. Direct
+   from `D.commutes`. Closed.
+2. `applySeq_swap_lo_incomparable` — swap lo-incomparable adjacent
+   ops (both events in `C.events`). Case-splits on commute; closes
+   three of four sub-cases:
+   - `commutes a b`: direct from (1).
+   - same replica: `vis_total_same_replica` + `¬commutes` ⟹ `lo`
+     in some direction, contradicting incomparability. Closed.
+   - different replica, commutes: direct from (1).
+   - different replica, `¬commutes`: needs overwriter + cond_comm.
+     **Remaining sorry.**
+3. `applySeq_bubble_lo_max` — bubble a lo-maximal event to the end
+   of a list via repeated (2). Closed modulo (2).
+4. `convergence` — strong induction on `π₁.length`, picking last
+   event of `π₁`, splitting `π₂`, bubbling, recursing. Closed
+   modulo (2) and (3). -/
+
+/-- **Swap adjacent commuting events.** Folding preserves state
+when two commuting events are swapped in position. -/
+theorem applySeq_swap_commute
+    {a b : Op D.AppOp} (h_comm : D.commutes a b)
+    (pfx sfx : List (Op D.AppOp)) (s : D.State) :
+    applySeq D s (pfx ++ a :: b :: sfx)
+    = applySeq D s (pfx ++ b :: a :: sfx) := by
+  simp only [applySeq, List.foldl_append, List.foldl_cons]
+  rw [h_comm]
+
+/-- **Swap adjacent lo-incomparable events.**
+
+If `a ≠ b` are events in `C.events` and are not ordered by `lo C`
+in either direction, their adjacent swap preserves `applySeq`
+state.
+
+Case analysis:
+- `D.commutes a b`: direct via `applySeq_swap_commute`.
+- Same replica: `vis_total_same_replica` forces `vis a b ∨ vis b a`.
+  Either, combined with `¬ commutes`, would yield `lo` in the
+  corresponding direction (disjunct 1 of `lo`), contradicting
+  incomparability. Hence same replica ⟹ commutes.
+- Different replica + commutes: direct via `applySeq_swap_commute`.
+- Different replica + `¬ commutes`: there must be an overwriter of
+  `b` (or `a`), and `cond_comm_base` gives the swap when the
+  suffix starts with that overwriter. Extending cond_comm to
+  arbitrary suffixes requires the `condComm` lift not present in
+  the 24 VCs. **Remaining sorry.** -/
+theorem applySeq_swap_lo_incomparable
+    (_hVC : SatisfiesVCs D) {C : Configuration D}
+    {a b : Op D.AppOp} (h_ne : a ≠ b)
+    (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
+    (h_not_lo_ab : ¬ lo C a b) (h_not_lo_ba : ¬ lo C b a)
+    (pfx sfx : List (Op D.AppOp)) (s : D.State) :
+    applySeq D s (pfx ++ a :: b :: sfx)
+    = applySeq D s (pfx ++ b :: a :: sfx) := by
+  by_cases h_comm : D.commutes a b
+  · exact applySeq_swap_commute h_comm pfx sfx s
+  · -- ¬ commutes. Case on same vs. different replica.
+    obtain ⟨_, _, hL_a, h_a_in_s⟩ := h_a_in_C
+    obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
+    by_cases h_same : a.rep = b.rep
+    · -- Same replica ⟹ vis ordered ⟹ lo ordered. Contradiction.
+      exfalso
+      have h_vis :=
+        C.vis_total_same_replica hL_a h_a_in_s hL_b h_b_in_s h_ne h_same
+      rcases h_vis with hvab | hvba
+      · exact h_not_lo_ab (Or.inl ⟨hvab, h_comm⟩)
+      · have h_comm_ba : ¬ D.commutes b a :=
+          fun h => h_comm (fun s => (h s).symm)
+        exact h_not_lo_ba (Or.inl ⟨hvba, h_comm_ba⟩)
+    · -- Different replica + ¬ commutes. Needs overwriter +
+      -- cond_comm lifted through arbitrary suffix. Pending.
+      sorry
+
+/-- **Bubble a lo-maximal event to the end of a list.**
+
+Given `τ` such that every `x ∈ τ` is `lo`-incomparable with `e`
+(neither `lo C e x` nor `lo C x e` holds) and both `e ∈ C.events`
+and every `x ∈ τ` is in `C.events`, we can move `e` from the front
+of `e :: τ` to the end, producing `τ ++ [e]`, without changing the
+folded state.
+
+Proof: induction on `τ`, swapping `e` past each element via
+`applySeq_swap_lo_incomparable`. -/
+theorem applySeq_bubble_lo_max
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (e : Op D.AppOp) (τ : List (Op D.AppOp))
+    (h_e_in_C : e ∈ C.events)
+    (h_τ_in_C : ∀ x ∈ τ, x ∈ C.events)
+    (h_e_notin : e ∉ τ)
+    (h_not_lo_fwd : ∀ x ∈ τ, ¬ lo C e x)
+    (h_not_lo_bwd : ∀ x ∈ τ, ¬ lo C x e)
+    (s : D.State) :
+    applySeq D s (e :: τ) = applySeq D s (τ ++ [e]) := by
+  induction τ generalizing s with
+  | nil => rfl
+  | cons x xs ih =>
+    have hx_in : x ∈ x :: xs := List.mem_cons_self
+    have hne : e ≠ x := fun heq => h_e_notin (heq ▸ hx_in)
+    have hswap : applySeq D s (e :: x :: xs)
+               = applySeq D s (x :: e :: xs) := by
+      have := applySeq_swap_lo_incomparable (D := D) hVC hne
+        h_e_in_C (h_τ_in_C x hx_in)
+        (h_not_lo_fwd x hx_in) (h_not_lo_bwd x hx_in)
+        [] xs s
+      simpa using this
+    rw [hswap]
+    -- applySeq s (x :: e :: xs) = applySeq (update s x) (e :: xs)
+    -- applySeq s (x :: xs ++ [e]) = applySeq (update s x) (xs ++ [e])
+    change applySeq D (D.update s x) (e :: xs)
+         = applySeq D (D.update s x) (xs ++ [e])
+    exact ih (fun y hy => h_τ_in_C y (List.mem_cons_of_mem _ hy))
+             (fun heq => h_e_notin (List.mem_cons_of_mem _ heq))
+             (fun y hy => h_not_lo_fwd y (List.mem_cons_of_mem _ hy))
+             (fun y hy => h_not_lo_bwd y (List.mem_cons_of_mem _ hy))
+             (D.update s x)
 
 /-- **Convergence.** Two `lo`-respecting permutations of the same
 event set yield equal states when folded into `D.init`.
 
-Proof scaffold: base cases for empty and singleton permutations
-are trivial (unique permutation). The general case requires the
-bubble-sort argument via `rc_non_comm` / `cond_comm`. -/
+Proof: strong induction on `π₁.length`. At each step, pick the last
+event `e` of `π₁`, locate it inside `π₂` (split `π₂ = σ ++ e :: τ`),
+bubble `e` to the end of `π₂` via `applySeq_bubble_lo_max` (using
+incomparability of `e` with every element of `τ`), then peel `e`
+off both sides and apply the IH to `π₁'` and `σ ++ τ`, both of
+which permute `ev \ {e}` and respect `lo C`. -/
 theorem convergence
-    (_hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : SatisfiesVCs D) {C : Configuration D}
     {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
+    (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
-    (_h₁_resp : respects π₁ (lo C)) (_h₂_resp : respects π₂ (lo C)) :
+    (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C)) :
     applySeq D D.init π₁ = applySeq D D.init π₂ := by
-  -- Base case: both empty.
-  by_cases h₁_nil : π₁ = []
-  · by_cases h₂_nil : π₂ = []
-    · subst h₁_nil; subst h₂_nil; rfl
-    · -- π₁ = [], π₂ ≠ []. Impossible: listPermOf forces ev = ∅ = ev,
-      -- but π₂ ≠ [] means some event is in ev, contradiction.
-      exfalso
-      obtain ⟨_, hm₂⟩ := h₂_perm
-      obtain ⟨_, hm₁⟩ := h₁_perm
-      subst h₁_nil
-      obtain ⟨e, hmem⟩ : ∃ e, e ∈ π₂ := by
-        match π₂, h₂_nil with
-        | e :: _, _ => exact ⟨e, List.mem_cons_self⟩
-      have hev : e ∈ ev := (hm₂ e).mp hmem
-      exact (List.not_mem_nil : e ∉ []) ((hm₁ e).mpr hev)
-  · by_cases h₂_nil : π₂ = []
-    · -- Symmetric impossibility.
-      exfalso
-      obtain ⟨_, hm₁⟩ := h₁_perm
-      obtain ⟨_, hm₂⟩ := h₂_perm
-      subst h₂_nil
-      obtain ⟨e, hmem⟩ : ∃ e, e ∈ π₁ := by
-        match π₁, h₁_nil with
-        | e :: _, _ => exact ⟨e, List.mem_cons_self⟩
-      have hev : e ∈ ev := (hm₁ e).mp hmem
-      exact (List.not_mem_nil : e ∉ []) ((hm₂ e).mpr hev)
-    · -- Both non-empty. The general convergence argument: pull
-      -- the rc-maximal event to the end of both permutations via
-      -- adjacent swaps (justified by `rc_non_comm` and
-      -- `cond_comm`), then recurse on the shorter permutations.
-      -- Left for future work; requires list-manipulation lemmas
-      -- beyond what's directly derivable from the 24 VCs.
-      sorry
+  -- Strong-induct on π₁.length in a generalized form.
+  suffices gen : ∀ n (π₁ π₂ : List (Op D.AppOp)) (ev : Set (Op D.AppOp)),
+      π₁.length = n →
+      (∀ a ∈ ev, a ∈ C.events) →
+      listPermOf π₁ ev → listPermOf π₂ ev →
+      respects π₁ (lo C) → respects π₂ (lo C) →
+      applySeq D D.init π₁ = applySeq D D.init π₂ by
+    exact gen _ π₁ π₂ ev rfl h_ev_in_C h₁_perm h₂_perm h₁_resp h₂_resp
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro π₁ π₂ ev h_len h_ev_in_C h₁p h₂p h₁r h₂r
+    rcases List.eq_nil_or_concat' π₁ with rfl | ⟨π₁', e, rfl⟩
+    · -- π₁ = []: ev = ∅, π₂ = [].
+      obtain ⟨_, hm₁⟩ := h₁p
+      have hev_empty : ev = ∅ := by
+        ext a
+        exact ⟨fun ha => absurd ((hm₁ a).mpr ha) List.not_mem_nil,
+               fun ha => ha.elim⟩
+      subst hev_empty
+      obtain ⟨_, hm₂⟩ := h₂p
+      have hπ₂_nil : π₂ = [] := by
+        match π₂, hm₂ with
+        | [], _ => rfl
+        | x :: _, hm₂ =>
+          exact absurd ((hm₂ x).mp List.mem_cons_self) id
+      subst hπ₂_nil
+      rfl
+    · -- π₁ = π₁' ++ [e]. Find e in π₂; split π₂ = σ ++ e :: τ.
+      obtain ⟨hnd₁, hmem₁⟩ := h₁p
+      obtain ⟨hnd₂, hmem₂⟩ := h₂p
+      have he_in_ev : e ∈ ev := (hmem₁ e).mp (by simp)
+      have he_in_π₂ : e ∈ π₂ := (hmem₂ e).mpr he_in_ev
+      obtain ⟨σ, τ, hπ₂_split⟩ := List.append_of_mem he_in_π₂
+      subst hπ₂_split
+      -- nodup facts
+      rw [List.nodup_append] at hnd₁
+      have he_notin_π₁' : e ∉ π₁' := fun h =>
+        hnd₁.2.2 e h e (by simp) rfl
+      rw [List.nodup_append, List.nodup_cons] at hnd₂
+      have he_notin_σ : e ∉ σ := fun h =>
+        hnd₂.2.2 e h e (by simp) rfl
+      have he_notin_τ : e ∉ τ := hnd₂.2.1.1
+      have hστ_nodup : (σ ++ τ).Nodup := by
+        rw [List.nodup_append]
+        refine ⟨hnd₂.1, hnd₂.2.1.2, ?_⟩
+        intro a ha b hb
+        exact hnd₂.2.2 a ha b (List.mem_cons_of_mem _ hb)
+      -- Bubble e to the end of σ ++ e :: τ.
+      have hbubble : applySeq D D.init (σ ++ e :: τ)
+                   = applySeq D D.init (σ ++ τ ++ [e]) := by
+        -- reduce via run-up through σ
+        have hshift₁ : applySeq D D.init (σ ++ e :: τ)
+                     = applySeq D (applySeq D D.init σ) (e :: τ) := by
+          simp [applySeq, List.foldl_append]
+        have hshift₂ : applySeq D (applySeq D D.init σ) (τ ++ [e])
+                     = applySeq D D.init (σ ++ τ ++ [e]) := by
+          simp [applySeq, List.foldl_append, List.append_assoc]
+        rw [hshift₁, ← hshift₂]
+        -- Derive lo-incomparability for every x ∈ τ.
+        have h_τ_sub_ev : ∀ x ∈ τ, x ∈ ev := fun x hx =>
+          (hmem₂ x).mp (List.mem_append.mpr (Or.inr (List.mem_cons_of_mem _ hx)))
+        have h_τ_in_C : ∀ x ∈ τ, x ∈ C.events :=
+          fun x hx => h_ev_in_C x (h_τ_sub_ev x hx)
+        have he_in_C : e ∈ C.events := h_ev_in_C e he_in_ev
+        -- π₂ = σ ++ e :: τ respects lo ⟹ ∀ x ∈ τ, ¬ lo x e.
+        have h_not_lo_bwd : ∀ x ∈ τ, ¬ lo C x e := by
+          intro x hx
+          have h2 := List.pairwise_append.mp h₂r
+          have hτcons := List.pairwise_cons.mp h2.2.1
+          exact hτcons.1 x hx
+        -- π₁ = π₁' ++ [e] respects lo ⟹ ∀ x ∈ π₁', ¬ lo e x.
+        -- For x ∈ τ ⊆ ev \ {e} ⊆ π₁', this gives ¬ lo e x.
+        have h_not_lo_fwd : ∀ x ∈ τ, ¬ lo C e x := by
+          intro x hx
+          have hx_ne : x ≠ e := fun h => he_notin_τ (h ▸ hx)
+          have hx_in_ev : x ∈ ev := h_τ_sub_ev x hx
+          have hx_in_π₁' : x ∈ π₁' := by
+            rcases List.mem_append.mp ((hmem₁ x).mpr hx_in_ev) with h | h
+            · exact h
+            · rw [List.mem_singleton] at h; exact absurd h hx_ne
+          have h1 := List.pairwise_append.mp h₁r
+          exact h1.2.2 x hx_in_π₁' e (by simp)
+        exact applySeq_bubble_lo_max (D := D) hVC e τ he_in_C h_τ_in_C
+          he_notin_τ h_not_lo_fwd h_not_lo_bwd (applySeq D D.init σ)
+      -- Now peel e off both sides and apply IH.
+      rw [hbubble, applySeq_append_single, applySeq_append_single]
+      -- Reduce to π₁' vs σ ++ τ, both perms of ev \ {e}, both
+      -- lo-respecting. Apply IH.
+      have h_len_new : π₁'.length < n := by
+        simp only [List.length_append, List.length_singleton] at h_len
+        omega
+      have hp₁' : listPermOf π₁' (ev \ {e}) := by
+        refine ⟨hnd₁.1, fun a => ?_⟩
+        simp only [Set.mem_diff, Set.mem_singleton_iff]
+        constructor
+        · intro ha
+          refine ⟨(hmem₁ a).mp (List.mem_append.mpr (Or.inl ha)), ?_⟩
+          intro rfl; exact he_notin_π₁' ha
+        · rintro ⟨hae, hne⟩
+          rcases List.mem_append.mp ((hmem₁ a).mpr hae) with h | h
+          · exact h
+          · rw [List.mem_singleton] at h; exact absurd h hne
+      have hpστ : listPermOf (σ ++ τ) (ev \ {e}) := by
+        refine ⟨hστ_nodup, fun a => ?_⟩
+        simp only [Set.mem_diff, Set.mem_singleton_iff, List.mem_append]
+        constructor
+        · rintro (ha | ha)
+          · refine ⟨(hmem₂ a).mp (List.mem_append.mpr (Or.inl ha)), ?_⟩
+            intro rfl; exact he_notin_σ ha
+          · refine ⟨(hmem₂ a).mp
+              (List.mem_append.mpr (Or.inr (List.mem_cons_of_mem _ ha))), ?_⟩
+            intro rfl; exact he_notin_τ ha
+        · rintro ⟨hae, hne⟩
+          rcases List.mem_append.mp ((hmem₂ a).mpr hae) with h | h
+          · exact Or.inl h
+          · rcases List.mem_cons.mp h with h' | h'
+            · exact absurd h' hne
+            · exact Or.inr h'
+      have hr₁' : respects π₁' (lo C) := (List.pairwise_append.mp h₁r).1
+      have hrστ : respects (σ ++ τ) (lo C) := by
+        have h2split := List.pairwise_append.mp h₂r
+        rw [List.pairwise_cons] at h2split
+        obtain ⟨hσ, ⟨_, hτ⟩, hcross⟩ := h2split
+        rw [respects, List.pairwise_append]
+        refine ⟨hσ, hτ, ?_⟩
+        intro a ha b hb
+        exact hcross a ha b (List.mem_cons_of_mem _ hb)
+      have h_ev_diff : ∀ a ∈ (ev \ {e}), a ∈ C.events :=
+        fun a ha => h_ev_in_C a ha.1
+      exact congrArg (fun s => D.update s e)
+        (ih _ h_len_new π₁' (σ ++ τ) _ rfl h_ev_diff hp₁' hpστ hr₁' hrστ)
 
 /-! ### Paper's BottomUp rules (derived from the 24 VCs)
 

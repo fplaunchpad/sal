@@ -126,9 +126,55 @@ The abstract-state forms (`bottomUp_2op`, `bottomUp_1op_top`,
   `merge_linearization_exists` directly via strong induction, not
   proved as a standalone lemma.
 
-## Session update (2026-04-24, continued further)
+## Session update (2026-04-24, continued yet further)
 
-**Closed this iteration:**
+**Convergence refactor — bubble-sort skeleton landed.**
+
+Previously, `convergence`'s both-non-empty case was a single
+monolithic sorry. This session decomposed it into four layered
+pieces, closing three and isolating the remaining VC-dependent
+obligation:
+
+- `applySeq_swap_commute` — swap adjacent commuting events. Direct
+  from `D.commutes`. Kernel-verified.
+- `applySeq_swap_lo_incomparable` — swap `lo`-incomparable adjacent
+  events (both in `C.events`). Case-split on `D.commutes`:
+  - same-replica sub-case closed via `vis_total_same_replica` +
+    `¬commutes` ⟹ `lo` in some direction, contradicting the
+    incomparability hypothesis.
+  - different-replica + commuting sub-case closed by reduction to
+    `applySeq_swap_commute`.
+  - **different-replica + `¬commutes` sub-case remains sorry.**
+    Requires lifting `cond_comm_base` through arbitrary suffix via
+    the `condComm` semantic definition, which is not in the 24 VCs.
+- `applySeq_bubble_lo_max` — bubble a `lo`-maximal event to the end
+  of a list via repeated swaps. Induction on `τ`. Kernel-verified
+  modulo the swap sorry.
+- `convergence` — strong induction on `π₁.length`. At each step:
+  pick last event `e` of `π₁`, locate it in `π₂` via
+  `List.append_of_mem` (split `π₂ = σ ++ e :: τ`), bubble `e` to
+  end of `π₂`, peel `e` from both sides, apply IH on `π₁'` and
+  `σ ++ τ` (both permute `ev \ {e}`, both respect `lo C`). Kernel-
+  verified modulo the swap sorry.
+
+The convergence signature now takes `h_ev_in_C : ∀ a ∈ ev, a ∈
+C.events` — required so `timestamps_distinct` and
+`vis_total_same_replica` apply inside the swap lemma.
+
+**Remaining work on convergence:** close the different-replica +
+`¬commutes` sub-case of `applySeq_swap_lo_incomparable`. The proof
+obligation: given `a ≠ b`, distinct timestamps, different replicas,
+`¬commutes a b`, `¬lo C a b`, `¬lo C b a`, show the adjacent swap
+preserves `applySeq` for any `pfx`, `sfx`, `s`. From the `lo`
+definition, the preconditions force an **overwriter** `e₃` with
+`vis b e₃ ∧ ¬commutes b e₃`. `cond_comm_base` (one of the 24 VCs)
+gives the swap when `sfx = [e₃]`; extending to `sfx = π ++ [e₃] ++
+rest` is the lift that matches `conditionallyCommute`'s semantic
+form. Whether `e₃` appears at all in our `sfx` is the open question
+— in general it does not, since `e₃` may be an event observed at a
+different replica, not in the permutation's event set.
+
+**Closed in earlier iterations (same session):**
 - Shared-last-event case of `merge_linearization_exists` (~85 lines,
   factored via `lem_0op` + strong-induction IH).
 - `timestamps_distinct` invariant on `Configuration` (discharged at
