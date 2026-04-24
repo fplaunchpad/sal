@@ -49,6 +49,47 @@ Other wins from the session:
 lin.tex §3.3 ("Bottom-up linearization") and appendix.tex §A.2–A.4
 of the Sal paper (arXiv:2502.19967v1).
 
+## Proof structure (from the paper's appendix)
+
+The paper's proof is **two layers**:
+
+1. **Derive three BottomUp rules** (BottomUp-0-OP, -1-OP, -2-OP)
+   from the 24 VCs. Each rule is a general pull-one-event-out-of-
+   `merge` rewrite. Each derivation is itself a *nested induction*
+   cascading through ~9 VCs — `base_*op` for the innermost base,
+   `ind_*_*op` for a single inductive extension, `inter_*_*op` for
+   the `rc`-ordered interposition cases.
+
+2. **Apply the BottomUp rules** inside a **quintuple-nested
+   induction** over the event sets `L_top^a, L_top^b, L_1^b, L_2^b`
+   to build the linearization witness.
+
+The specialisation to CRDTs (2-way merge, no LCA) collapses the LCA
+arguments to `init`, eliminating `L_top^a` as a separate outer
+induction, but the three BottomUp rules and their nested induction
+proofs are unchanged. Even the degenerate case `π₁ = []` (asymmetric
+merge against `init`) requires BottomUp-1-OP, because `merge init s`
+for reachable `s` is not a direct VC consequence.
+
+## Realistic effort estimate
+
+Even with the paper in hand, porting the nested inductions is ~2–3
+weeks of focused Lean work. The BottomUp rules alone are ~1 week
+each. The outer induction on event sets is another week. Breaking
+this into discrete sessions is tractable:
+
+- Session +1: port BottomUp-0-OP (the simplest — for CRDTs it's
+  just `lem_0op`, already a single-liner via `hVC.lem_0op`).
+- Session +2: port BottomUp-1-OP from `base_1op` + `ind_*_1op` +
+  `inter_*_1op`.
+- Session +3: port BottomUp-2-OP symmetrically.
+- Session +4: orchestrate the outer induction on `ev₁`, `ev₂`.
+
+Current Lean state: `bottomUp_0op` landed (closes to `lem_0op`);
+`bottomUp_1op`, `bottomUp_2op` scaffolded as `True` placeholders,
+pending formulation of the `rc`-precondition predicate and the
+triple induction.
+
 ## What we are proving
 
 ```lean

@@ -43,6 +43,58 @@ noncomputable def restrictTo (π : List (Op D.AppOp)) (E : Set (Op D.AppOp)) :
     List (Op D.AppOp) :=
   π.filter fun x => decide (x ∈ E)
 
+/-! ### Paper's BottomUp rules (derived from the 24 VCs)
+
+The Sal paper (arXiv:2502.19967v1, appendix §A.2–A.4) proves the
+merge case in two layers:
+
+1. **Derive the BottomUp-{0,1,2}-OP rules** from the 24 VCs. Each
+   rule is a general-shape rewrite that pulls an event out of
+   `merge`; each is proved by a nested induction cascading through
+   the VCs named `base_*op`, `ind_*_*op`, and `inter_*_*op`.
+2. **Apply the BottomUp rules** repeatedly inside a quintuple-nested
+   induction over the event sets `L_top^a, L_top^b, L_1^b, L_2^b` to
+   construct the merge witness.
+
+Since we are in the 2-way-merge CRDT setting (no LCA), only the
+single-argument LCA `l = init` instances of these rules are needed. -/
+
+/-- **BottomUp-0-OP** specialised to CRDTs with `l = init`.
+Corresponds to `lem_0op` applied recursively. When a single op `ol`
+appears on both sides of `merge`, it can be pulled out. In its
+general form this is exactly `lem_0op`; we restate with a
+`SatisfiesVCs` argument to match the shape of the other two rules. -/
+theorem bottomUp_0op (hVC : SatisfiesVCs D)
+    (a b : D.State) (ol : Op D.AppOp) :
+    D.merge (D.update a ol) (D.update b ol)
+      = D.update (D.merge a b) ol :=
+  hVC.lem_0op a b ol
+
+/-- **BottomUp-1-OP** specialised to CRDTs: pull the local-side op
+`o₁` out of `merge(update a o₁, b)` when `b` has no ops after the
+LCA. Proved from `base_1op`, `ind_*_1op`, `inter_*_1op`. -/
+theorem bottomUp_1op
+    (_hVC : SatisfiesVCs D)
+    (_a _b : D.State) (_π_a _π_b : List (Op D.AppOp)) (_o₁ : Op D.AppOp) :
+    True := by
+  -- Full statement: `merge (applySeq a (π_a ++ [o₁])) (applySeq b π_b) =
+  --   update (merge (applySeq a π_a) (applySeq b π_b)) o₁` whenever the
+  -- preconditions on `π_a, π_b, o₁` match the paper's lin.tex §3.3 fig.
+  -- Left as True pending the formulation of the `rc`-precondition
+  -- predicate the paper uses; proof is by paper's triple induction.
+  trivial
+
+/-- **BottomUp-2-OP** specialised to CRDTs: pull an op `o₂` out of
+the right side of `merge(a, update b o₂)` when both sides have local
+ops. Proved from `base_2op`, `ind_*_2op`, `inter_*_2op`. -/
+theorem bottomUp_2op
+    (_hVC : SatisfiesVCs D)
+    (_a _b : D.State) (_π_a _π_b : List (Op D.AppOp)) (_o₁ _o₂ : Op D.AppOp) :
+    True := by
+  -- Full statement: see BottomUp-2-OP in paper's Fig. bottom-up.
+  -- Left as True pending the formulation; proof is by triple induction.
+  trivial
+
 /-- **Merge case of the bridge theorem (existential form).**
 
 Given two RA-linearization witnesses for replicas `r₁` and `r₂`,
