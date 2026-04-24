@@ -193,6 +193,43 @@ The proof is structured in four layers:
    event of `π₁`, splitting `π₂`, bubbling, recursing. Closed
    modulo (2) and (3). -/
 
+/-- **Swap adjacent events via explicit overwriter.**
+
+Closes the swap using `cond_comm_lift` at an explicit overwriter `e₃`
+in `sfx`. The caller supplies the split `sfx = α ++ e₃ :: β` and the
+rc preconditions. Matches the Sal paper's treatment where `e₃` is
+found in `τ₄` (suffix after the swap) via `lo e' e₃`.
+
+Proof: absorb `pfx` into the state, unfold `applySeq` across `α`
+and the e₃ point, apply `cond_comm_lift` to equate the states at
+e₃, then apply `β` uniformly on both sides. -/
+theorem applySeq_swap_via_cond_comm_lift
+    (hVC : SatisfiesVCs D)
+    {a b e₃ : Op D.AppOp}
+    (h_dist_ab : distinctOps a b)
+    (h_dist_be : distinctOps b e₃)
+    (h_dist_ae : distinctOps a e₃)
+    (h_rc_ab : D.rc a b = RcRes.Fst_then_snd)
+    (h_rc_be : D.rc b e₃ ≠ RcRes.Either)
+    (pfx α β : List (Op D.AppOp)) (s : D.State) :
+    applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
+    = applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β)) := by
+  -- Reduce both sides to a common shape, then apply `cond_comm_lift`
+  -- to equate the inner states at `e₃`.
+  have hexp1 : applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
+             = applySeq D (D.update (applySeq D
+                 (D.update (D.update (applySeq D s pfx) a) b) α) e₃) β := by
+    simp [applySeq, List.foldl_append, List.foldl_cons]
+  have hexp2 : applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β))
+             = applySeq D (D.update (applySeq D
+                 (D.update (D.update (applySeq D s pfx) b) a) α) e₃) β := by
+    simp [applySeq, List.foldl_append, List.foldl_cons]
+  rw [hexp1, hexp2]
+  -- cond_comm_lift with e=a, e'=b, e''=e₃, π=α gives the inner equality.
+  exact congrArg (fun t => applySeq D t β)
+    (hVC.cond_comm_lift (applySeq D s pfx) a b e₃ α
+      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_rc_be).symm
+
 /-- **Swap adjacent commuting events.** Folding preserves state
 when two commuting events are swapped in position. -/
 theorem applySeq_swap_commute
@@ -203,7 +240,7 @@ theorem applySeq_swap_commute
   simp only [applySeq, List.foldl_append, List.foldl_cons]
   rw [h_comm]
 
-/-- **Swap adjacent lo-incomparable events.**
+/-- **Swap adjacent lo-incomparable events** (Path 1 version).
 
 If `a ≠ b` are events in `C.events` and are not ordered by `lo C`
 in either direction, their adjacent swap preserves `applySeq`
@@ -212,37 +249,34 @@ state.
 Case analysis:
 - `D.commutes a b`: direct via `applySeq_swap_commute`.
 - Same replica: `vis_total_same_replica` forces `vis a b ∨ vis b a`.
-  Either, combined with `¬ commutes`, would yield `lo` in the
+  Either, combined with `¬ commutes`, yields `lo` in the
   corresponding direction (disjunct 1 of `lo`), contradicting
-  incomparability. Hence same replica ⟹ commutes.
+  incomparability.
 - Different replica + commutes: direct via `applySeq_swap_commute`.
-- Different replica + `¬ commutes`: the `¬lo` hypotheses force
-  existence of an overwriter `e₃` with `vis b e₃ ∧ ¬commutes b e₃`
-  (i.e., `lo b e₃`). `cond_comm_lift` (added to `SatisfiesVCs`)
-  gives `update (applySeq (update (update s b) a) π) e₃ =
-  update (applySeq (update (update s a) b) π) e₃` for any π, so
-  the swap is invisible **when the intervening sequence is followed
-  by the overwriter**. However, our goal is state equality AT the
-  end of `sfx`, without a trailing overwriter. If `e₃` appears
-  somewhere in `sfx` (split `sfx = α ++ [e₃] ++ β`), we can apply
-  `cond_comm_lift` at that split and extend by `β` on both sides.
-  If `e₃` does NOT appear in `sfx`, the swap can genuinely change
-  the final state — the lemma as stated is unprovable without a
-  stronger structural assumption on `sfx`.
+- Different replica + `¬ commutes`: requires the `h_ov` hypothesis
+  — an explicit overwriter split of `sfx = α ++ e₃ :: β` with the
+  rc preconditions. Closed via `applySeq_swap_via_cond_comm_lift`.
 
-  The Sal paper (lin.tex §3.2) resolves this by stating convergence
-  over `E_C` (the full configuration event set), which IS
-  overwriter-closed by construction; our `convergence` takes a
-  general `ev`, which may not be. **Closing this sub-case
-  requires either tightening convergence to `ev = C.events`, or
-  threading an "overwriter in sfx" hypothesis through the swap and
-  bubble lemmas. Remaining sorry.** -/
+The Sal paper (lin.tex §3.2) states convergence over `E_C` (the
+full configuration event set), which is overwriter-closed by
+construction. Our callers supply `h_ov` from that closure. -/
 theorem applySeq_swap_lo_incomparable
-    (_hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : SatisfiesVCs D) {C : Configuration D}
     {a b : Op D.AppOp} (h_ne : a ≠ b)
     (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
     (h_not_lo_ab : ¬ lo C a b) (h_not_lo_ba : ¬ lo C b a)
-    (pfx sfx : List (Op D.AppOp)) (s : D.State) :
+    (pfx sfx : List (Op D.AppOp)) (s : D.State)
+    -- Path 1 hypothesis: for the different-replica `¬commutes` case,
+    -- the suffix must contain an appropriate overwriter. The caller
+    -- (`convergence` over `ev = C.events`) supplies this from the
+    -- lo-closure of the configuration event set.
+    (h_ov : ¬ D.commutes a b → a.rep ≠ b.rep →
+      ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
+                distinctOps a e₃ ∧ distinctOps b e₃ ∧
+                ((D.rc a b = RcRes.Fst_then_snd ∧
+                  D.rc b e₃ ≠ RcRes.Either) ∨
+                 (D.rc b a = RcRes.Fst_then_snd ∧
+                  D.rc a e₃ ≠ RcRes.Either))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
   by_cases h_comm : D.commutes a b
@@ -260,9 +294,18 @@ theorem applySeq_swap_lo_incomparable
       · have h_comm_ba : ¬ D.commutes b a :=
           fun h => h_comm (fun s => (h s).symm)
         exact h_not_lo_ba (Or.inl ⟨hvba, h_comm_ba⟩)
-    · -- Different replica + ¬ commutes. Needs overwriter +
-      -- cond_comm lifted through arbitrary suffix. Pending.
-      sorry
+    · -- Different replica + ¬ commutes: use `h_ov` to get the
+      -- overwriter split and close via `applySeq_swap_via_cond_comm_lift`.
+      have h_dist_ab : distinctOps a b :=
+        C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
+      obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
+      subst h_sfx
+      rcases h_case with ⟨h_rc_ab, h_rc_be⟩ | ⟨h_rc_ba, h_rc_ae⟩
+      · exact applySeq_swap_via_cond_comm_lift hVC h_dist_ab h_dbe h_dae
+          h_rc_ab h_rc_be pfx α β s
+      · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
+        exact (applySeq_swap_via_cond_comm_lift hVC h_dist_ba h_dae h_dbe
+          h_rc_ba h_rc_ae pfx α β s).symm
 
 /-- **Bubble a lo-maximal event to the end of a list.**
 
@@ -282,6 +325,18 @@ theorem applySeq_bubble_lo_max
     (h_e_notin : e ∉ τ)
     (h_not_lo_fwd : ∀ x ∈ τ, ¬ lo C e x)
     (h_not_lo_bwd : ∀ x ∈ τ, ¬ lo C x e)
+    -- Path 1 closure: for each `x ∈ τ` non-commuting with `e` on a
+    -- different replica, the suffix after `x` in `τ` must contain an
+    -- appropriate overwriter. Supplied by the caller from the
+    -- lo-closure of `ev = C.events`.
+    (h_ov : ∀ α β x, τ = α ++ x :: β →
+      ¬ D.commutes e x → e.rep ≠ x.rep →
+      ∃ e₃ α' β', β = α' ++ e₃ :: β' ∧
+                  distinctOps e e₃ ∧ distinctOps x e₃ ∧
+                  ((D.rc e x = RcRes.Fst_then_snd ∧
+                    D.rc x e₃ ≠ RcRes.Either) ∨
+                   (D.rc x e = RcRes.Fst_then_snd ∧
+                    D.rc e e₃ ≠ RcRes.Either)))
     (s : D.State) :
     applySeq D s (e :: τ) = applySeq D s (τ ++ [e]) := by
   induction τ generalizing s with
@@ -295,6 +350,7 @@ theorem applySeq_bubble_lo_max
         h_e_in_C (h_τ_in_C x hx_in)
         (h_not_lo_fwd x hx_in) (h_not_lo_bwd x hx_in)
         [] xs s
+        (fun h_nc h_diff => h_ov [] xs x rfl h_nc h_diff)
       simpa using this
     rw [hswap]
     -- applySeq s (x :: e :: xs) = applySeq (update s x) (e :: xs)
@@ -305,6 +361,8 @@ theorem applySeq_bubble_lo_max
              (fun heq => h_e_notin (List.mem_cons_of_mem _ heq))
              (fun y hy => h_not_lo_fwd y (List.mem_cons_of_mem _ hy))
              (fun y hy => h_not_lo_bwd y (List.mem_cons_of_mem _ hy))
+             (fun α' β' y hy_eq h_nc h_diff =>
+               h_ov (x :: α') β' y (by simp [hy_eq]) h_nc h_diff)
              (D.update s x)
 
 /-- **Convergence.** Two `lo`-respecting permutations of the same
@@ -406,8 +464,14 @@ theorem convergence
             · rw [List.mem_singleton] at h; exact absurd h hx_ne
           have h1 := List.pairwise_append.mp h₁r
           exact h1.2.2 x hx_in_π₁' e (by simp)
+        -- Path 1 obligation: the lo-closure of `ev = C.events`
+        -- supplies the overwriter hypothesis. Current `convergence`
+        -- signature still takes a general `ev`, so this remains a
+        -- sorry until the signature is tightened to `ev = C.events`
+        -- (Path 1 step 2 proper).
         exact applySeq_bubble_lo_max (D := D) hVC e τ he_in_C h_τ_in_C
-          he_notin_τ h_not_lo_fwd h_not_lo_bwd (applySeq D D.init σ)
+          he_notin_τ h_not_lo_fwd h_not_lo_bwd
+          (by sorry) (applySeq D D.init σ)
       -- Now peel e off both sides and apply IH.
       rw [hbubble, applySeq_append_single, applySeq_append_single]
       -- Reduce to π₁' vs σ ++ τ, both perms of ev \ {e}, both

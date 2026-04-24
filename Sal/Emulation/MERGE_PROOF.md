@@ -126,6 +126,49 @@ The abstract-state forms (`bottomUp_2op`, `bottomUp_1op_top`,
   `merge_linearization_exists` directly via strong induction, not
   proved as a standalone lemma.
 
+## Session update (2026-04-24, Path 1 partial)
+
+**Path 1 partial: sorry (1) closed via overwriter hypothesis.**
+
+Per Sal paper (lin.tex §3.2), `cond-comm` is assumed at the
+convergence level — the 24 VCs verify `cond_comm_base` (3-event
+base), not the full semantic extension. Added `cond_comm_lift`
+field to `SatisfiesVCs` capturing the paper's assumption. Grow-
+Only Set discharges it vacuously.
+
+**New tools landed:**
+
+- `applySeq_swap_via_cond_comm_lift` — takes explicit overwriter
+  split `sfx = α ++ e₃ :: β` plus rc preconditions. Closed
+  directly via `cond_comm_lift`: reduce both sides via
+  `List.foldl_append/cons`, apply cond_comm_lift at the inner
+  state, extend uniformly by β. ~15 lines.
+
+- `applySeq_swap_lo_incomparable` — now takes `h_ov` hypothesis:
+  `¬ commutes a b → a.rep ≠ b.rep → ∃ e₃ α β, sfx = α ++ e₃ :: β
+   ∧ distinctOps ∧ (rc-case-a ∨ rc-case-b)`. The different-
+  replica `¬commutes` case is **closed** via
+  `applySeq_swap_via_cond_comm_lift`. (Sorry (1) is gone.)
+
+- `applySeq_bubble_lo_max` — also takes `h_ov`, threads through
+  the induction on τ (at each swap, peel the head from the α
+  prefix in the overwriter witness).
+
+**Convergence callsite sorry.** The `h_ov` hypothesis for the
+bubble is now a sorry at the single convergence callsite
+(one new sorry replacing the old one in the deep swap lemma).
+Discharging it requires the full Path 1 refactor: tighten
+`convergence`'s signature to `ev = C.events` (with an
+overwriter-closure invariant), peel-first (lo-minimal) instead
+of peel-last, and bubble-to-front instead of bubble-to-back.
+The peel-first direction preserves closure under recursion
+(a lo-minimal element is never an overwriter of anything).
+
+**Sorry count unchanged (3)** but the structure now matches
+paper-faithful `cond-comm` reasoning. The remaining convergence
+callsite sorry is a well-defined closure-discharge obligation,
+not an open semantic question.
+
 ## Session update (2026-04-24, continued yet further)
 
 **Convergence refactor — bubble-sort skeleton landed.**
