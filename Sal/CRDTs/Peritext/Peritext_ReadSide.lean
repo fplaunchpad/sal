@@ -1255,13 +1255,33 @@ theorem different_type_adds_coexist_visible
   · simp only [formatted_visible, h_vis, if_true]
     exact decide_eq_true (Exists.intro mI ⟨⟨h_presI, h_covI, rfl, h_beatsI⟩, h_addI⟩)
 
--- Note: `anchors_survive_tombstones_visible` — the analogue of
--- `anchors_survive_tombstones` against `formatted_visible` — would
--- follow from the observation that `Remove c_rm` keeps chars,
--- afters, and marks unchanged, so `in_span_visible` and
--- `mark_wins_visible` are invariant. The proof needs the
--- congruence lemmas applied via an explicit iff on the existential
--- (simp can't rewrite `visible_lt (do_ s) c1 c2` to
--- `visible_lt s c1 c2` because `visible_lt` is an opaque
--- inductive). Deferred as follow-up.
+/-- **Anchors survive tombstones, visible version.**
+
+`Remove c_rm` only changes the `deleted` component at `c_rm`; chars,
+afters, and marks are unchanged. `formatted_visible` at `c ≠ c_rm`
+reads `deleted` only at `c` (invariant), and `mark_wins_visible`
+doesn't touch `deleted` at all. Proved by combining h_vis invariance
+on the outer `if` with `exists_mark_wins_visible_add_iff` via the
+reflexive refl-equalities on chars/afters/marks. -/
+theorem anchors_survive_tombstones_visible
+    (s : concrete_st) (c c_rm : OpId) (mt : ℕ) (ts rid : ℕ) :
+    c ≠ c_rm →
+    formatted_visible s c mt =
+      formatted_visible (do_ s (ts, rid, app_op_t.Remove c_rm)) c mt := by
+  intro hne
+  set s' := do_ s (ts, rid, app_op_t.Remove c_rm) with hs'_def
+  have h_afc : ∀ k, contains (Prod.fst (Prod.snd s)) k =
+                     contains (Prod.fst (Prod.snd s')) k := fun _ => rfl
+  have h_afv : ∀ k, mysel_a (Prod.fst (Prod.snd s)) k =
+                     mysel_a (Prod.fst (Prod.snd s')) k := fun _ => rfl
+  have h_marks : ∀ x : AnchorAttachment,
+                  Prod.snd (Prod.snd (Prod.snd s)) x =
+                  Prod.snd (Prod.snd (Prod.snd s')) x := fun _ => rfl
+  have h_vis : visible s c = visible s' c := by
+    simp only [visible, hs'_def, do_, mysel_d]; grind
+  simp only [formatted_visible, h_vis]
+  split_ifs with h_v
+  · exact decide_eq_decide.mpr
+      (exists_mark_wins_visible_add_iff s s' c mt h_marks h_afc h_afv)
+  · rfl
 
