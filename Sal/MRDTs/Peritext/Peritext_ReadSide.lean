@@ -670,3 +670,58 @@ theorem readRichText_visible_convergent (s₁ s₂ : concrete_st) :
     funext x; have := hmk x; simpa using this
   have h_eq : s₁ = s₂ := Prod.ext hch'' (Prod.ext hrm'' hmk'')
   rw [h_eq]
+
+/-- Paper Ex 2, visible version. -/
+theorem partial_overlap_all_adds_formatted_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ) (m : MarkOp) :
+    m.isAdd = true →
+    m.markType = mt →
+    mark_present s m = true →
+    in_span_visible s m c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           m'.markType = mt →
+           m'.isAdd = false →
+           False) →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           m'.markType = mt →
+           m'.isAdd = true →
+           m' ≠ m →
+           mark_beats m m' = true) →
+    formatted_visible s c mt = true := by
+  intro h_add h_mt h_pres h_cov h_vis h_no_rem h_beats_adds
+  simp only [formatted_visible, h_vis, if_true]
+  refine decide_eq_true (Exists.intro m ?_)
+  refine ⟨⟨h_pres, h_cov, h_mt, ?_⟩, h_add⟩
+  intro m' h_pres' h_cov' h_mt' h_ne
+  match h_isAdd : m'.isAdd with
+  | true  => exact h_beats_adds m' h_pres' h_cov' h_mt' h_isAdd h_ne
+  | false => exact absurd (h_no_rem m' h_pres' h_cov' h_mt' h_isAdd) id
+
+/-- Paper Ex 3, visible version. -/
+theorem different_type_adds_coexist_visible
+    (s : concrete_st) (c : OpId) (mB mI : MarkOp) :
+    mB.isAdd = true →
+    mI.isAdd = true →
+    mB.markType ≠ mI.markType →
+    mark_present s mB = true →
+    mark_present s mI = true →
+    in_span_visible s mB c →
+    in_span_visible s mI c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true → in_span_visible s m' c →
+           m'.markType = mB.markType → m' ≠ mB →
+           mark_beats mB m' = true) →
+    (∀ m', mark_present s m' = true → in_span_visible s m' c →
+           m'.markType = mI.markType → m' ≠ mI →
+           mark_beats mI m' = true) →
+    formatted_visible s c mB.markType = true ∧
+    formatted_visible s c mI.markType = true := by
+  intro h_addB h_addI _ h_presB h_presI h_covB h_covI h_vis h_beatsB h_beatsI
+  refine ⟨?_, ?_⟩
+  · simp only [formatted_visible, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mB ⟨⟨h_presB, h_covB, rfl, h_beatsB⟩, h_addB⟩)
+  · simp only [formatted_visible, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mI ⟨⟨h_presI, h_covI, rfl, h_beatsI⟩, h_addI⟩)

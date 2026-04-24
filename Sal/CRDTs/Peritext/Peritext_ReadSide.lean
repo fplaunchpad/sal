@@ -1189,3 +1189,79 @@ theorem readRichText_visible_convergent (s₁ s₂ : concrete_st) :
   split_ifs with h_v
   · exact congrArg some (Prod.ext rfl (funext h_fmt))
   · rfl
+
+/-! ### Remaining paper-faithful analogues
+
+The expand/contract, overlap, and anchors-survive-tombstones
+theorems from the boundary-predicate track get clean `_visible`
+analogues. -/
+
+/-- **Paper Ex 2, visible version — overlapping same-type Adds.**
+
+If no Remove of type `mt` visibly covers `c`, and some Add visibly
+covers `c` and beats every other covering Add by LWW, then `c` is
+formatted. -/
+theorem partial_overlap_all_adds_formatted_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ) (m : MarkOp) :
+    mark_isAdd m = true →
+    mark_markType m = mt →
+    mark_present s m = true →
+    in_span_visible s m c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           mark_markType m' = mt →
+           mark_isAdd m' = false →
+           False) →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           mark_markType m' = mt →
+           mark_isAdd m' = true →
+           m' ≠ m →
+           mark_beats m m' = true) →
+    formatted_visible s c mt = true := by
+  intro h_add h_mt h_pres h_cov h_vis h_no_rem h_beats_adds
+  simp only [formatted_visible, h_vis, if_true]
+  refine decide_eq_true (Exists.intro m ?_)
+  refine ⟨⟨h_pres, h_cov, h_mt, ?_⟩, h_add⟩
+  intro m' h_pres' h_cov' h_mt' h_ne
+  match h_isAdd : mark_isAdd m' with
+  | true  => exact h_beats_adds m' h_pres' h_cov' h_mt' h_isAdd h_ne
+  | false => exact absurd (h_no_rem m' h_pres' h_cov' h_mt' h_isAdd) id
+
+/-- **Paper Ex 3, visible version — different-type Adds coexist.** -/
+theorem different_type_adds_coexist_visible
+    (s : concrete_st) (c : OpId) (mB mI : MarkOp) :
+    mark_isAdd mB = true →
+    mark_isAdd mI = true →
+    mark_markType mB ≠ mark_markType mI →
+    mark_present s mB = true →
+    mark_present s mI = true →
+    in_span_visible s mB c →
+    in_span_visible s mI c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true → in_span_visible s m' c →
+           mark_markType m' = mark_markType mB → m' ≠ mB →
+           mark_beats mB m' = true) →
+    (∀ m', mark_present s m' = true → in_span_visible s m' c →
+           mark_markType m' = mark_markType mI → m' ≠ mI →
+           mark_beats mI m' = true) →
+    formatted_visible s c (mark_markType mB) = true ∧
+    formatted_visible s c (mark_markType mI) = true := by
+  intro h_addB h_addI _ h_presB h_presI h_covB h_covI h_vis h_beatsB h_beatsI
+  refine ⟨?_, ?_⟩
+  · simp only [formatted_visible, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mB ⟨⟨h_presB, h_covB, rfl, h_beatsB⟩, h_addB⟩)
+  · simp only [formatted_visible, h_vis, if_true]
+    exact decide_eq_true (Exists.intro mI ⟨⟨h_presI, h_covI, rfl, h_beatsI⟩, h_addI⟩)
+
+-- Note: `anchors_survive_tombstones_visible` — the analogue of
+-- `anchors_survive_tombstones` against `formatted_visible` — would
+-- follow from the observation that `Remove c_rm` keeps chars,
+-- afters, and marks unchanged, so `in_span_visible` and
+-- `mark_wins_visible` are invariant. The proof needs the
+-- congruence lemmas applied via an explicit iff on the existential
+-- (simp can't rewrite `visible_lt (do_ s) c1 c2` to
+-- `visible_lt s c1 c2` because `visible_lt` is an opaque
+-- inductive). Deferred as follow-up.
+
