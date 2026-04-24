@@ -752,3 +752,40 @@ theorem visible_lt_of_afters_reach
       have h_mid : visible_lt s anc mid := ih h_eq
       have h_c : visible_lt s mid c := visible_lt.parent_child h_after
       exact visible_lt.trans h_mid h_c
+
+/-- **Cross-sibling traversal.** If `c₁_top` and `c₂_top` are direct
+siblings under some common `after_of`-parent `p`, with `c₁_top` older
+(higher `opid_max`), and `c₁` is a descendant of `c₁_top` while `c₂`
+is a descendant of `c₂_top`, then `c₁` precedes `c₂` in the RGA
+traversal.
+
+This generalizes `left_descendant_of_sibling`: it lets `c₂` be
+anywhere in the younger sibling's subtree, not just `c₂_top` itself.
+Proved by chaining `left_descendant_of_sibling` (c₁ < c₂_top) with
+`visible_lt_of_afters_reach` (c₂_top < c₂), with the edge case
+`c₂ = c₂_top` handled separately. -/
+theorem visible_lt_of_cross_sibling
+    (s : concrete_st) (p c₁_top c₂_top c₁ c₂ : OpId) :
+    after_of s c₁_top p = true →
+    after_of s c₂_top p = true →
+    c₁_top ≠ c₂_top →
+    opid_max c₁_top c₂_top = c₁_top →
+    afters_reach s c₁ c₁_top →
+    afters_reach s c₂ c₂_top →
+    visible_lt s c₁ c₂ := by
+  intro h_after_1 h_after_2 h_ne h_order h_reach_1 h_reach_2
+  -- Step A: c₁ < c₂_top.
+  -- Either c₁ = c₁_top (use sibling rule directly) or c₁ is a strict
+  -- descendant (use left_descendant_of_sibling).
+  have step_a : visible_lt s c₁ c₂_top := by
+    by_cases h_eq1 : c₁ = c₁_top
+    · subst h_eq1
+      exact visible_lt.sibling h_after_1 h_after_2 h_ne h_order
+    · exact visible_lt.left_descendant_of_sibling h_after_1 h_after_2 h_ne
+        h_order h_reach_1 h_eq1
+  -- Step B: c₂_top ≤ c₂ (equal or ancestor, both give visible_lt or =).
+  by_cases h_eq2 : c₂ = c₂_top
+  · subst h_eq2; exact step_a
+  · have step_b : visible_lt s c₂_top c₂ :=
+      visible_lt_of_afters_reach s c₂ c₂_top h_reach_2 h_eq2
+    exact visible_lt.trans step_a step_b

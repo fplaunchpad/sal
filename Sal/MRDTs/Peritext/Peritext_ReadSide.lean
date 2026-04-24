@@ -460,3 +460,27 @@ theorem visible_lt_of_afters_reach
     · have h_mid : visible_lt s anc mid := ih h_eq
       have h_c : visible_lt s mid c := visible_lt.parent_child h_after
       exact visible_lt.trans h_mid h_c
+
+/-- Cross-sibling traversal. See the CRDT ReadSide for the full
+docstring. -/
+theorem visible_lt_of_cross_sibling
+    (s : concrete_st) (p c₁_top c₂_top c₁ c₂ : OpId) :
+    after_of s c₁_top p = true →
+    after_of s c₂_top p = true →
+    c₁_top ≠ c₂_top →
+    opid_max c₁_top c₂_top = c₁_top →
+    afters_reach s c₁ c₁_top →
+    afters_reach s c₂ c₂_top →
+    visible_lt s c₁ c₂ := by
+  intro h_after_1 h_after_2 h_ne h_order h_reach_1 h_reach_2
+  have step_a : visible_lt s c₁ c₂_top := by
+    by_cases h_eq1 : c₁ = c₁_top
+    · subst h_eq1
+      exact visible_lt.sibling h_after_1 h_after_2 h_ne h_order
+    · exact visible_lt.left_descendant_of_sibling h_after_1 h_after_2 h_ne
+        h_order h_reach_1 h_eq1
+  by_cases h_eq2 : c₂ = c₂_top
+  · subst h_eq2; exact step_a
+  · have step_b : visible_lt s c₂_top c₂ :=
+      visible_lt_of_afters_reach s c₂ c₂_top h_reach_2 h_eq2
+    exact visible_lt.trans step_a step_b
