@@ -28,11 +28,11 @@ but the correctness criteria land in different places:
 | Paper | Section | Lean theorem | Status |
 |---|---|---|---|
 | Ex 1 — insertion within a span | §3.1, §A.2 | `insert_within_span_in_span_visible` (both sides) + `in_span_visible_propagate` / `_of_reach` | ✅ Paper-faithful via visible-order; caller provides the right-side bound from RGA geometry in their specific scenario. |
-| Ex 2 — overlapping same-type Adds | §3.2, §A.2 | `partial_overlap_all_adds_formatted` | ✅ |
-| Ex 3 — different mark types coexist | §3.2, §A.2 | `different_type_adds_coexist` | ✅ |
-| Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist` apply — but that's the opposite of Ex 4's intent. |
-| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove` (positive) + `no_add_cover_implies_unformatted` (negative) | ✅ Deliberate departure on the priority rule — see below. |
-| Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
+| Ex 2 — overlapping same-type Adds | §3.2, §A.2 | `partial_overlap_all_adds_formatted_visible` | ✅ |
+| Ex 3 — different mark types coexist | §3.2, §A.2 | `different_type_adds_coexist_visible` | ✅ |
+| Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist_visible` apply — but that's the opposite of Ex 4's intent. |
+| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove_visible` (positive) + `no_add_cover_implies_unformatted_visible` (negative) | ✅ Deliberate departure on the priority rule — see below. |
+| Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist_visible` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
 | Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` | 🟡 Partial. The cross-sibling case (insert lands in an older-sibling subtree of `endId`, so before `endId` in visible order) is captured. True bold-expand past `endId` in visible order isn't encoded in `in_span_visible`; see *Known gap* below. |
 | Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` (full negation) | ✅ Afters-descendants of `endId` come after `endId` in visible order and are correctly excluded by `in_span_visible`. Full negation takes an explicit acyclicity hypothesis (`¬ visible_lt s endId endId`) since we don't yet carry a state-level well-formedness invariant. |
 | Table 1 — "Can marks overlap?" | §3.4 | Emergent from `formatted_visible` being per-`markType` | ✅ |
@@ -40,10 +40,10 @@ but the correctness criteria land in different places:
 
 Plus one additional theorem not tied to a specific paper example:
 
-- `anchors_survive_tombstones` — tombstoning any character leaves the
-  formatting of the other visible characters unchanged. Implicit in
-  the paper's §4.4 discussion of tombstoned anchors; we state it as
-  a parameterized theorem over all states.
+- `anchors_survive_tombstones_visible` — tombstoning any character
+  leaves the formatting of the other visible characters unchanged.
+  Implicit in the paper's §4.4 discussion of tombstoned anchors; we
+  state it as a parameterized theorem over all states.
 
 ## Deliberate departures
 
@@ -57,10 +57,10 @@ in `Peritext_ReadSide.lean`). The paper itself calls Ex 5's outcome
 `RemoveMark` that happens to have a higher `opId`. The `mark_beats`
 docstring documents this decision in full.
 
-**List vs. per-char `readRichText`.** The paper (§4.4) presents the
+**List vs. per-char `readRichText_visible`.** The paper (§4.4) presents the
 rendered document as a list of `{text, format}` spans. Our
-`readRichText` is instead a per-character function whose exact
-signature depends on the variant:
+`readRichText_visible` is instead a per-character function whose
+exact signature depends on the variant:
 
 - **CRDT:** `OpId → Option (ℕ × (ℕ → Bool))` — `(codepoint,
   markType → is-formatted)` per visible char.
@@ -69,18 +69,14 @@ signature depends on the variant:
   set-of-triples `chars` representation, payload lookup at an `OpId`
   requires `Classical.choose` on an existential.
 
-Both forms are stronger as a specification (pure function of state)
-but less ergonomic for downstream consumers than the list form. A
-list form requires an RGA traversal, which is the same dependency
-we'd need for complete Ex 1 fidelity (see below).
+The list form is available as `readRichText_list` (both sides), a
+Prop-valued spec via `is_rga_traversal`: callers construct the
+traversal externally and prove it satisfies the spec. See the
+*Deferred work* section below for the existence theorem follow-up.
 
 ## Deferred work (follow-ups)
 
-**Full RGA-visible-order formalization.** Needed to close the
-remaining gap in Ex 1 and to fix a semantic bug in
-`in_span_boundary` (see below).
-
-Infrastructure landed:
+**RGA visible-order infrastructure landed:**
 
 - `visible_lt` / `visible_le` relations defined inductively (four
   rules: parent-child, sibling, left-descendant-of-sibling,
@@ -152,16 +148,19 @@ include "afters-descendants of `endId` whose top-sibling order places
 them immediately after `endId`" — essentially, the paper's §3.3
 anchor-side semantics. Not attempted in this formalization.
 
-### Historical note: `in_span_boundary` (removed)
+### Historical note: `in_span_boundary` track (removed)
 
-Earlier versions of the read-side had an `in_span_boundary` predicate
-and four `expand_contract_*` theorems against it. The predicate's
-`after_of c endId` clause encodes the **opposite** of the paper's §3.3
-semantics (it includes post-`endId` inserts under `endSide = true`,
-which is the link/contract case, not the bold/expand case). Those
-theorems have been removed; the paper's Ex 7 / Ex 8 content lives in
-`ex7_bold_older_sibling_in_span`, `ex8_link_descendant_visible_lt_endId`,
-and `insert_within_span_{in_span_visible, cross_subtree_in_span}`.
+Earlier versions of the read-side had a full parallel track built on
+an `in_span_boundary` predicate — including `formatted`, `readRichText`
+(non-visible), `readRichText_convergent`, `mark_wins`, `covered_interior`,
+and `_boundary` versions of Ex 2 / Ex 3 / Ex 5 / anchors-survive-tombstones.
+The predicate's `after_of c endId` clause encodes the **opposite** of
+the paper's §3.3 semantics (it includes post-`endId` inserts under
+`endSide = true`, which is the link/contract case, not the bold/expand
+case). The entire track has been removed in favour of
+`in_span_visible`-based counterparts (named with the `_visible` suffix),
+which are kernel-checked against the paper-faithful visible-order
+predicate.
 
 **Tombstone-scanning on insert (§4.2.2).** The paper's `Insert`
 algorithm inspects the marks set when placing a character after
@@ -198,8 +197,8 @@ These are acknowledged as future work in the paper itself (§5):
   counterparts. The MRDT's `eq` is pointwise `==` on each set
   component, which lifts via `funext` + `Prod.ext` to full
   functional equality on the state — making
-  `readRichText_convergent` a tidy chain of component-wise `funext`s
-  then `rw`, rather than the CRDT's simp-heavy rewrite through the
-  `mysel_c` / `contains` / ... abstractions.
+  `readRichText_visible_convergent` a tidy chain of component-wise
+  `funext`s then `rw`, rather than the CRDT's simp-heavy rewrite
+  through the `mysel_c` / `contains` / ... abstractions.
 - `docs/porting-op-based-crdts.md` — general recipe; Peritext is
   the worked example throughout.
