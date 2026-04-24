@@ -488,7 +488,21 @@ theorem merge_linearization_exists
                 · rw [List.mem_singleton] at h; exact absurd h hx_ne
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
-        · -- Distinct last events: needs bottomUp_2op_reachable + rc split.
+        · -- Distinct last events e₁ ≠ e₂.
+          -- Plan: case-split on `D.rc e₂ e₁` (or symmetric).
+          --   - Fst_then_snd: peel e₁ via `bottomUp_2op_reachable`,
+          --     recurse on (π₁', π₂).
+          --   - Either (commute): peel either side (simpler).
+          --   - rc(e₁, e₂) = Fst_then_snd: peel e₂ via merge_comm
+          --     + bottomUp_2op_reachable symmetric.
+          -- Structural obstacle: `bottomUp_2op_reachable` requires
+          -- `distinctOps e₁ e₂` (different timestamps) and
+          -- `differentReplicas e₁ e₂`, which are reachability
+          -- invariants not currently exposed via `listPermOf` or
+          -- `respects`. Closing cleanly requires threading an
+          -- "events have distinct timestamps" invariant through
+          -- `merge_linearization_exists`' signature, or adding it
+          -- to `Configuration` and relating π₁, π₂ to C.events.
           sorry
 
 end

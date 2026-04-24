@@ -126,6 +126,52 @@ The abstract-state forms (`bottomUp_2op`, `bottomUp_1op_top`,
   `merge_linearization_exists` directly via strong induction, not
   proved as a standalone lemma.
 
+## Session update (2026-04-24, continued further)
+
+Closed the **shared last-event case** of
+`merge_linearization_exists` (~85 lines): factored via `lem_0op`
++ strong-induction IH. Also retired the three abstract-state
+BottomUp sorries (unprovable — strictly stronger than VCs allow).
+
+**Structural obstacle uncovered for the distinct-last-event case:**
+
+`bottomUp_2op_reachable` requires `distinctOps e₁ e₂` AND
+`differentReplicas e₁ e₂`. `distinctOps` (distinct timestamps) is
+a **reachability invariant** that can be threaded via a
+Configuration field or via a new hypothesis on the theorem
+signature. But `differentReplicas` is **NOT** universally true:
+two events from a third replica `r₃` could appear in both
+`ev₁ \ ev₂` (as peeled e₁) and `ev₂ \ ev₁` (as peeled e₂). Example:
+replica r₃ produces e, e'; r₃ merges into r₁ then produces e'; r₃
+separately merges into r₂. Now r₁ has {e, e'}, r₂ has {e, e'}, and
+neither has anything from the other. But if r₁ further advances
+(local op at r₁) and r₂ advances (local op at r₂), the "local"
+events are at r₁ and r₂ respectively, not r₃.
+
+Actually more relevantly: the peeled events e₁ and e₂ (maximal
+in `lo` order within π₁, π₂) could both be from r₃ if both r₁ and
+r₂ had received r₃'s events but not each other's.
+
+This is what the Sal paper's `L^a_1, L^a_2, L^b_1, L^b_2` event-set
+decomposition (appendix §A.2) is designed to sidestep: the paper
+picks peel candidates precisely to satisfy the VC preconditions.
+
+**Implication:** The Lean port of the distinct-last-event case
+cannot just do "case-split on rc(e₁, e₂) and peel." It needs the
+paper's full event-set decomposition machinery, which is a
+multi-session effort on its own.
+
+Realistic path forward:
+
+1. Prove **convergence** (bubble-sort) as a standalone theorem.
+   This provides a stronger rewrite tool and lets the next steps
+   pick any lo-respecting permutation without loss of generality.
+2. Define the `L^a_1, L^a_2, L^b_1, L^b_2` event sets and prove
+   `bottomUp_2op_reachable` applies at specifically-chosen peel
+   points (the maximal events in each decomposition class).
+3. Close the distinct-last-event case using step 2.
+4. `merge_init_left_reachable` falls out as corollary.
+
 ## What we are proving
 
 ```lean
