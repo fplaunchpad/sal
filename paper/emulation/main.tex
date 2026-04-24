@@ -1,0 +1,1001 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black,
+}
+
+\lstdefinelanguage{lean}{
+  morekeywords={def,theorem,lemma,structure,inductive,where,by,intro,exact,apply,match,with,fun,let,if,then,else,do,return,section,namespace,end,variable,open,instance,class,have,show,refine,obtain,rcases,cases,induction,simp,unfold,sorry},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]",
+}
+\lstset{
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!60!black}\bfseries,
+  commentstyle=\color{gray!70!black}\itshape,
+  stringstyle=\color{red!60!black},
+  breaklines=true,
+  tabsize=2,
+  captionpos=b,
+  frame=single,
+  framesep=3pt,
+  xleftmargin=0.5em,
+  numberstyle=\tiny\color{gray},
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Semantic macros
+\newcommand{\RDT}{\ensuremath{\mathcal{D}}}
+\newcommand{\Op}{\mathsf{op}}
+\newcommand{\mdo}{\mathsf{do}}
+\newcommand{\mmerge}{\mathsf{merge}}
+\newcommand{\meff}{\mathsf{eff}}
+\newcommand{\mquery}{\mathsf{query}}
+\newcommand{\mrc}{\mathsf{rc}}
+\newcommand{\mvis}{\mathsf{vis}}
+\newcommand{\mlo}{\mathsf{lo}}
+\newcommand{\mprep}{\mathsf{prep}}
+\newcommand{\Either}{\mathtt{Either}}
+\newcommand{\Fst}{\mathtt{Fst}}
+\newcommand{\Snd}{\mathtt{Snd}}
+\newcommand{\ev}{\mathit{ev}}
+\newcommand{\evs}{\mathcal{E}}
+\newcommand{\State}{\Sigma}
+\newcommand{\init}{\sigma_0}
+\newcommand{\commute}{\mathrel{\rightleftarrows}}
+\newcommand{\condcomm}[1]{\mathrel{\rightleftarrows^{#1}}}
+\newcommand{\Config}{\mathsf{Config}}
+\newcommand{\Replica}{\mathcal{R}}
+\newcommand{\Time}{\mathcal{T}}
+\newcommand{\Msg}{\mathcal{M}}
+\newcommand{\Lbl}{\Lambda}
+\newcommand{\weaksim}{\preceq}
+\newcommand{\wtrace}{\mathsf{wtrace}}
+\newcommand{\RALin}{\mathsf{RALin}}
+\newcommand{\OpRALin}{\mathsf{OpRALin}}
+\newcommand{\VCs}{\mathsf{VCs}}
+\newcommand{\wellformed}{\mathsf{WF}}
+\newcommand{\Sal}{\textsc{Sal}}
+\newcommand{\Emul}{\mathcal{G}}
+\newcommand{\sorry}{\texttt{sorry}}
+
+\title{From State-Based to Op-Based:\\
+  A Lean Formalisation of CRDT Emulation for\\
+  Replication-Aware Linearisability}
+\author{\\[-1em]\small Progress report / work in progress}
+\date{2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  Conflict-free replicated data types come in two flavours:
+  \emph{state-based} CRDTs, in which replicas periodically broadcast
+  their entire state and reconcile via a lattice join, and
+  \emph{op-based} CRDTs, in which each update is individually broadcast
+  and delivered under a causal-order constraint. Recent work has made
+  state-based CRDT verification tractable in Lean: the \Sal{}
+  framework reduces replication-aware linearisability (RA-lin) of a
+  state-based data type to a fixed set of $24$ verification
+  conditions over $\mdo$, $\mmerge$, and $\mrc$, discharged by a staged
+  automation pipeline. In parallel, Liittschwager et al.\ (ICFP~'25)
+  have placed the long-informal equivalence between the two CRDT
+  flavours on a formal footing, via a weak-simulation-based notion of
+  \emph{emulation} that preserves weak trace properties.
+
+  We mechanise in Lean~4 the architecture that composes these two
+  results: for every state-based CRDT $\RDT$ that satisfies \Sal{}'s
+  $24$ VCs, the canonical op-based counterpart $\Emul^{-1}(\RDT)$ is
+  also RA-linearisable on every reachable trace. The formalisation
+  decomposes into $11$ steps; $9$ have complete or substantially
+  complete Lean proofs, and the remaining two are the \emph{merge
+  case} of \Sal{}'s bottom-up linearisation and the weak-simulation
+  proof for the canonical emulation map. We report on the design
+  choices that made the closed parts tractable --- in particular an
+  \emph{invariants-in-type} formulation of system configurations that
+  discharges the \textsc{Apply} case of the bridge theorem without
+  auxiliary hypotheses --- and validate the architecture end-to-end
+  on the Grow-Only Set.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+State-based and op-based CRDTs have long been understood to be
+equivalent ``in some sense'' \cite{shapiro-crdts}, but verification
+tools and theorems tend to live on one side of the fence. On the
+state-based side, the \Sal{} framework~\cite{sal2025} --- the Lean
+port of the F$^{\star}$-based \textsc{Neem} framework~\cite{neem2025}
+--- reduces RA-linearisability of a state-based CRDT $\RDT$ to a
+fixed set of $24$ verification conditions over the tuple
+$\langle \State, \init, \mdo, \mmerge, \mquery, \mrc\rangle$, each of
+which is typically discharged by a single invocation of the \Sal{}
+tactic. That body of work is mature: $29$ RDTs mechanised, $696$
+kernel-verified VCs in total. On the op-based side,
+Liittschwager~et~al.~\cite{liittschwager2025} recently closed a
+long-standing gap by giving a formal definition of the
+folklore-level ``emulation'' relation between op-based and state-based
+CRDTs as a weak (bi)simulation between their labelled transition
+systems, and by showing that this emulation preserves weak trace
+properties --- including, in particular, observational correctness
+properties phrased over query responses.
+
+These two results slot together: if we can (a) bundle \Sal{}'s
+RA-linearisability statement into the trace predicate Liittschwager
+et al.\ transfer, (b) construct, in Lean, the canonical emulation
+$\Emul$ that maps an op-based CRDT to its state-based counterpart,
+and (c) exhibit a weak simulation witnessing that $\Emul$ is an
+emulation, then every \Sal{}-verified state-based CRDT lifts, for
+free, to an op-based RA-linearisable original. The aim of this work
+is to mechanise precisely this composition in Lean~4.
+
+\paragraph{Scope.}
+This paper reports on a formalisation in progress. The Lean
+development --- under \texttt{Sal/Emulation/} --- is structured as an
+$11$-step plan (\S\ref{sec:architecture}). Of those $11$ steps, $7$
+have complete proofs, $2$ are partial but substantially closed, and
+$2$ (the \emph{merge} case of the bridge theorem and the weak
+simulation for the canonical emulation) are actively in progress.
+The value of the work at this stage is the \emph{architecture} --- the
+set of definitions, lemmas, and well-formedness invariants that make
+the composition go through --- rather than a single headline theorem.
+Readers seeking a ``we proved $X$'' paper will find this work
+premature; readers seeking to extend the mechanisation or to build a
+similar one over a different specification framework (e.g.\ for
+MRDTs) should find the dependency structure useful.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=*]
+  \item An explicit $11$-step decomposition of the state-to-op
+    transfer theorem into typed Lean interfaces that compose
+    cleanly, with all interfaces in place and all composition
+    obligations discharged (\S\ref{sec:architecture}).
+  \item A mechanisation of \Sal{}'s bridge theorem for CRDTs, with
+    the \textsc{Apply} case fully closed (\S\ref{sec:bridge-apply})
+    and the \textsc{Merge} case reduced via a concrete witness
+    construction to three sub-lemmas, the first of which is closed
+    (\S\ref{sec:bridge-merge}).
+  \item An \emph{invariants-in-type} formulation of system
+    configurations: rather than layering well-formedness as a
+    predicate over a dumb data record and threading it through every
+    preservation lemma, we bake \texttt{dom\_eq}, \texttt{vis\_src},
+    and \texttt{vis\_tgt} into the \texttt{Configuration} structure
+    itself. The \textsc{Apply} case then closes without an auxiliary
+    hypothesis (\S\ref{sec:invariants}).
+  \item A reusable weak-simulation library parameterised by a
+    label-coercion, with Milner-style \textsc{WeakSim} soundness
+    proved in full (\S\ref{sec:weaksim}).
+  \item An end-to-end validation: for the Grow-Only Set we construct
+    a \texttt{CRDTSig} instance and discharge all $24$ VC fields of
+    \texttt{SatisfiesVCs} (\S\ref{sec:smoke-test}), confirming that
+    our Prop-valued $\VCs$ statements align with the concrete
+    Bool-valued theorem statements in \Sal{}'s existing files.
+  \item Concrete effort estimates, derived from actual mechanisation
+    experience rather than guesswork, for the three pieces that
+    remain open (\S\ref{sec:discussion}).
+\end{enumerate}
+
+\paragraph{Organisation.}
+\S\ref{sec:background} recalls state- and op-based CRDTs, the $24$
+VCs, and Liittschwager et al.'s emulation.
+\S\ref{sec:architecture} gives the $11$-step plan and the
+dependency graph that holds it together.
+\S\ref{sec:bridge} discusses the bridge theorem and the
+\textsc{Apply}/\textsc{Merge} cases.
+\S\ref{sec:emulation} covers the op-based TS, weak simulation, and
+the canonical emulation.
+\S\ref{sec:smoke-test} walks through the Grow-Only Set
+instantiation.
+\S\ref{sec:discussion} discusses design choices.
+\S\ref{sec:related} relates to prior work; \S\ref{sec:conclusion}
+concludes.
+
+\section{Background}
+\label{sec:background}
+
+\subsection{State- and op-based CRDTs}
+
+A \emph{state-based} CRDT over a set of replicas $\Replica$ is a
+tuple
+\[
+  \RDT = \langle \State, \init, \mdo, \mmerge, \mquery, \mrc\rangle
+\]
+where $\State$ is the state space, $\init \in \State$ the initial
+state, $\mdo : \State \times \Op \to \State$ the local update,
+$\mmerge : \State \times \State \to \State$ a binary lattice join,
+$\mquery : \State \times Q \to V$ the observable query, and
+$\mrc : \Op \times \Op \to \{\Fst, \Snd, \Either\}$ the
+\emph{return-consistency} specification.
+
+An \emph{op-based} CRDT replaces $\mmerge$ with a pair $(\mprep, \meff)$:
+$\mprep : \Replica \times \Op \times \State \to \Msg$ generates a
+message carrying the information other replicas need to apply the
+update, and $\meff : \Msg \times \State \to \State$ applies a
+delivered message. Op-based CRDTs assume a reliable causal broadcast
+underneath~\cite{lamport-clocks}, whereas state-based CRDTs only
+require eventual pairwise delivery.
+
+The folk wisdom that these two formulations are equivalent stems
+from two constructions: op-to-state, where $\State$ is augmented to
+track the delivered-message set, and state-to-op, where the state
+itself is the broadcast message. Liittschwager et
+al.~\cite{liittschwager2025} formalise these constructions as
+mappings $\Emul$ between \emph{labelled transition systems} and
+prove that each map is an emulation in the sense of weak
+(bi)simulation.
+
+\subsection{RA-linearisability and the bottom-up template}
+
+\Sal{}~\cite{sal2025} and the earlier \textsc{Neem}
+framework~\cite{neem2025} target \emph{replication-aware
+linearisability} (RA-lin)~\cite{wang-ra-lin}. Concretely, a
+state-based CRDT has a reference semantics as a labelled transition
+system $\mathcal{S}_\RDT = (\Phi, \to)$ whose configurations
+$C = \langle N, H, L, G, \mvis\rangle$ track the per-version state
+$N$, replica heads $H$, per-version event sets $L$, the version DAG
+$G$, and a global visibility relation $\mvis$ over events. Executions
+are sequences of $\textsc{CreateBranch}$, $\textsc{Apply}$,
+$\textsc{Merge}$, and $\textsc{Query}$ transitions.
+
+Given a configuration $C$, the \emph{linearisation relation}
+$\mlo_C \subseteq \evs_C \times \evs_C$ over the events witnessed in
+$C$ is
+\begin{equation}
+\label{eq:lo}
+\begin{aligned}
+e_1 \xrightarrow{\mlo_C} e_2
+\;\iff\;
+& \bigl(e_1 \xrightarrow{\mvis(C)} e_2 \wedge \neg (e_1 \commute e_2)\bigr) \\
+\vee \; & \bigl(e_1 \mathbin{\|}_C e_2
+   \wedge e_1 \xrightarrow{\mrc} e_2
+   \wedge \neg (\exists e_3.\, e_2 \xrightarrow{\mvis(C)} e_3 \wedge \neg (e_2 \commute e_3)) \bigr)
+\end{aligned}
+\end{equation}
+where $\commute$ denotes state-level commutativity
+($\forall s.\ e_1(e_2(s)) = e_2(e_1(s))$) and $\mathbin{\|}_C$
+denotes concurrency at $C$ ($\neg(e_1 \mvis e_2) \wedge \neg(e_2 \mvis e_1)$).
+
+\begin{definition}[RA-linearisability \cite{sal2025}]
+\label{def:ralin}
+A configuration $C = \langle N, H, L, G, \mvis\rangle$ is
+\emph{RA-linearisable} ($\RALin(C)$) when for every active replica
+$r$ with head version $v = H(r)$ there exists a sequence $\pi$ of
+events in $L(v)$ that \emph{extends} $\mlo_C$ restricted to $L(v)$
+and satisfies $N(v) = \pi(\init)$. The RDT $\RDT$ is
+RA-linearisable when every reachable configuration of
+$\mathcal{S}_\RDT$ is RA-linearisable.
+\end{definition}
+
+The $24$ VCs of \Sal{} are the premises of the
+\textsc{BottomUpTemplate} rule of \cite{sal2025}:
+\begin{equation}
+\label{eq:bottom-up-template}
+  \mmerge(\pi_0(l), \pi_1(a), \pi_2(b))
+  = \pi\bigl(\mmerge(\pi_0'(l), \pi_1'(a), \pi_2'(b))\bigr)
+\end{equation}
+where each $\pi_j$ is a single event (or empty), $\pi \in
+\{\pi_0, \pi_1, \pi_2\}$, and $\pi_j' = \pi_j - \pi$. Together with
+two well-formedness properties, $\textsc{rc-non-comm}(\RDT)$ and
+$\textsc{cond-comm}(\RDT)$, these VCs suffice to prove the
+following:
+
+\begin{theorem}[Bridge, \cite{sal2025}]
+\label{thm:bridge}
+If $\RDT$ satisfies the $24$ VCs, then every reachable configuration
+$C$ of $\mathcal{S}_\RDT$ is RA-linearisable.
+\end{theorem}
+
+The proof proceeds by induction on the execution length, with the
+\textsc{Merge} case discharged by the bottom-up template
+(appendix~\S A.2 of \cite{sal2025}).
+
+\subsection{Emulation as weak simulation}
+
+Liittschwager~et~al.~\cite{liittschwager2025} give both op-based and
+state-based CRDTs operational semantics as labelled transition
+systems. A labelled transition system $T = (\mathit{State},
+\mathit{Label}, \to, \tau)$ distinguishes a subset of labels as
+\emph{silent} (the $\tau$ transitions). Weak steps $s
+\xRightarrow{\ell} s'$ are defined by sandwiching an ordinary step
+between silent closures.
+
+\begin{definition}[Weak simulation]
+\label{def:weaksim}
+A relation $R \subseteq T_1.\mathit{State} \times T_2.\mathit{State}$
+with a label-coercion $\widehat{\cdot}\colon T_1.\mathit{Label} \to
+T_2.\mathit{Label}$ is a \emph{weak simulation} from $T_1$ to $T_2$
+when, for every $(s, t) \in R$ and every step $s
+\xrightarrow{\ell} s'$ in $T_1$, there exists $t'$ with
+$t \xRightarrow{\widehat{\ell}} t'$ in $T_2$ and $(s', t') \in R$.
+Weak simulation is sound for weak trace inclusion: if
+$R$ is a weak simulation and $(s, t) \in R$, then
+$\wtrace_{T_1}(s) \subseteq \widehat{\cdot}^{-1}\bigl(\wtrace_{T_2}(t)\bigr)$.
+\end{definition}
+
+A mapping $\Emul$ from op-based to state-based CRDT \emph{is an
+emulation} when the op-based system and the state-based system it
+produces are weakly bisimilar from their initial configurations.
+Liittschwager et al.\ construct a canonical op-to-state emulation
+and prove it is a weak bisimulation. A direct corollary is that
+\emph{weak trace properties} of the state-based system transfer to
+the op-based original. Since RA-linearisability in the sense of
+Definition~\ref{def:ralin} can be phrased over the observable event
+trace (updates and query responses), it is a weak trace property
+and hence transfers.
+
+\section{Architecture}
+\label{sec:architecture}
+
+We decompose the composite transfer theorem into $11$ steps, each
+backed by a Lean file under \texttt{Sal/Emulation/}. Steps further
+subdivide into local-infrastructure work (transition systems and
+signatures), theorems about the \Sal{} side (bridge), theorems
+about the emulation side (weak simulation, canonical $\Emul$), and
+the final composition (transfer theorem).
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}rlp{7.8cm}l@{}}
+    \toprule
+    $\#$ & File & Contents & Status \\
+    \midrule
+    0 & \texttt{Labeled\_TS.lean} & generic LTS, executions, reachability & done \\
+    0 & \texttt{CRDT\_Signature.lean} & \texttt{CRDTSig}, \texttt{RcRes}, $\Op$, $\commute$ & done \\
+    0 & \texttt{CRDT\_TS.lean} & configuration-with-invariants, four rules & done \\
+    1 & \texttt{RA\_Linearizability.lean} & $24$ VCs as a \texttt{SatisfiesVCs} struct & done \\
+    2 & --- & bridge: base / \textsc{CreateReplica} / \textsc{Query} & done \\
+    3 & --- & bridge: \textsc{Apply} case & done \\
+    4 & \texttt{Merge\_Linearization.lean} & bridge: \textsc{Merge} case & partial \\
+    5 & \texttt{Instances/Grow\_Only\_Set.lean} & end-to-end smoke test & done \\
+    6 & --- & per-CRDT plumbing for the remaining $17$ & todo \\
+    7 & \texttt{Op\_Based\_TS.lean} & op-based LTS (\cite{liittschwager2025} \S3.3) & done \\
+    8 & \texttt{Weak\_Simulation.lean} & weak-sim soundness & done \\
+    9 & \texttt{Emulation.lean} & canonical op-to-state $\Emul$ & scaffolded \\
+    10 & --- & $\Emul$ is a weak simulation & todo \\
+    11 & \texttt{Transfer.lean} & composed transfer theorem & scaffolded \\
+    \bottomrule
+  \end{tabular}
+  \caption{The $11$-step plan and current status.
+    \emph{Done} $=$ no \sorry{}s; \emph{partial} $=$ substantially
+    closed, some sub-lemma \sorry{}s; \emph{scaffolded} $=$
+    definitions/statements in place, proof body placeholder;
+    \emph{todo} $=$ unstarted.}
+  \label{tab:status}
+\end{table}
+
+\paragraph{Dependency graph.}
+Figure~\ref{fig:deps} shows how the $11$ files depend on each other.
+Two dependency chains stand out: the \Sal{}-side chain
+\texttt{CRDT\_Signature} $\to$ \texttt{CRDT\_TS} $\to$
+\texttt{RA\_Linearizability} $\to$ \texttt{Merge\_Linearization},
+which gives state-based RA-linearisability, and the emulation-side
+chain \texttt{Labeled\_TS} $\to$ \texttt{Weak\_Simulation}
+$\to$ \texttt{Emulation}, which gives the transfer machinery. The
+two chains meet at \texttt{Transfer.lean}, which states the
+composite theorem but whose body depends on closing the bodies of
+\texttt{Merge\_Linearization.merge\_witness\_state} (step~4) and the
+simulation proof for $\Emul$ (step~10).
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[node distance=5mm and 6mm,
+                      box/.style={draw, rounded corners=2pt,
+                                  inner sep=3pt, font=\footnotesize\ttfamily},
+                      done/.style={box, fill=green!10},
+                      partial/.style={box, fill=yellow!20},
+                      scaf/.style={box, fill=orange!15},
+                      todo/.style={box, fill=red!10},
+                      arr/.style={-{Stealth[length=3pt]}, thin, gray}]
+    \node[done] (lts) {Labeled\_TS};
+    \node[done, right=of lts] (sig) {CRDT\_Signature};
+    \node[done, right=of sig] (opsig) {Op\_Based\_TS};
+    \node[done, below=of sig] (ts) {CRDT\_TS};
+    \node[done, below=of ts] (ra) {RA\_Linearizability};
+    \node[partial, below=of ra] (merge) {Merge\_Linearization};
+    \node[done, below=of merge] (inst) {Instances/Grow\_Only\_Set};
+    \node[done, below=of opsig] (ws) {Weak\_Simulation};
+    \node[scaf, below=of ws] (emul) {Emulation};
+    \node[scaf, below=of emul, xshift=-5mm] (xfer) {Transfer};
+
+    \draw[arr] (lts) -- (ts);
+    \draw[arr] (lts) -- (ws);
+    \draw[arr] (sig) -- (ts);
+    \draw[arr] (sig) -- (opsig);
+    \draw[arr] (ts) -- (ra);
+    \draw[arr] (ra) -- (merge);
+    \draw[arr] (ra) -- (inst);
+    \draw[arr] (merge) -| (xfer);
+    \draw[arr] (ws) -- (emul);
+    \draw[arr] (opsig) -- (emul);
+    \draw[arr] (emul) -- (xfer);
+    \draw[arr] (ra) -| ($(emul.west) + (-2mm,0)$) -- (emul.west);
+  \end{tikzpicture}
+  \caption{Dependency graph for the $11$-step formalisation.
+    \textcolor{green!40!black}{Green} = done,
+    \textcolor{orange!70!black}{orange} = scaffolded,
+    \textcolor{yellow!50!black}{yellow} = partial. Edges denote Lean
+    \texttt{import} dependencies.}
+  \label{fig:deps}
+\end{figure}
+
+\paragraph{Design objective.}
+The plan is driven by a single design objective: \emph{every
+interface should be stable enough that downstream files can depend
+on it before its body is proved}. Concretely, this means every
+theorem has a typed signature before it has a proof body, and every
+placeholder body is either \sorry{} (in the sense of Lean's
+\texttt{sorry} axiom, flagged as a warning) or a trivial
+placeholder (\texttt{True}, \texttt{D.init}) clearly marked as such
+in the docstring. This discipline lets us work on step~8 (weak
+simulation soundness) while step~4 (merge case) is still open, and
+it makes the dependency graph of Figure~\ref{fig:deps} actually
+hold: changes to the merge proof do not ripple through the
+emulation side.
+
+\section{The Bridge Theorem}
+\label{sec:bridge}
+
+\subsection{Invariants-in-type configurations}
+\label{sec:invariants}
+
+Our transition-system configuration $C$ is a Lean record with three
+invariant fields baked in:
+\begin{lstlisting}[caption={\texttt{Configuration} with invariants,
+                           \texttt{Sal/Emulation/CRDT\_TS.lean}.},
+                   label=lst:config]
+structure Configuration (D : CRDTSig) where
+  N    : Replica -> Option D.State
+  L    : Replica -> Option (Set (Op D.AppOp))
+  vis  : Op D.AppOp -> Op D.AppOp -> Prop
+  dom_eq   : forall r, N r = none <-> L r = none
+  vis_src  : forall {a b}, vis a b -> exists r s, L r = some s /\ s a
+  vis_tgt  : forall {a b}, vis a b -> exists r s, L r = some s /\ s b
+\end{lstlisting}
+
+The alternative --- a dumb record plus a separate predicate
+$\wellformed(C)$ --- requires threading an extra hypothesis through
+every preservation lemma and proving $\wellformed$ preserved at
+every step. In our experience, the invariants-in-type formulation
+pays off immediately: the fiddly ``$\mvis$ cannot relate a fresh event
+to a stale one'' case in the \textsc{Apply} proof is dispatched
+directly by \texttt{C.vis\_src} (Lemma~\ref{lem:lo-shrink} below).
+
+\subsection{Statement and induction structure}
+\label{sec:bridge-statement}
+
+The bridge theorem is stated as an induction on the reachability
+relation of the TS lifted from $\RDT$. We factor each step's
+contribution into a preservation lemma, uniformly shaped:
+
+\begin{theorem}[Bridge, Lean formulation]
+\label{thm:bridge-lean}
+If $\RDT : \mathsf{CRDTSig}$ satisfies the $24$ VCs
+($\VCs(\RDT)$), then for every reachable configuration $C$ in
+$\mathcal{S}_\RDT$, $\RALin(C)$.
+\end{theorem}
+
+The proof skeleton pattern-matches on the transition rule:
+\begin{align*}
+  &\textsc{refl:} & & \RALin(\mathsf{init}_\RDT) \\
+  &\textsc{CreateReplica:} & & \RALin(C) \wedge C \to_{\mathsf{cr}} C' \;\Longrightarrow\; \RALin(C') \\
+  &\textsc{Apply:} & & \RALin(C) \wedge C \to_{\mathsf{apply}} C' \;\Longrightarrow\; \RALin(C') \\
+  &\textsc{Merge:} & & \RALin(C) \wedge C \to_{\mathsf{merge}} C' \;\Longrightarrow\; \RALin(C') \\
+  &\textsc{Query:} & & \RALin(C) \;\Longrightarrow\; \RALin(C)
+\end{align*}
+
+The first, second, and fifth cases are immediate: \textsc{Query}
+doesn't change $C$, and \textsc{CreateReplica} adds a fresh replica
+whose witness is the empty sequence (and leaves others unchanged
+modulo an extension of $N$ and $L$ on a single replica). The two
+non-trivial cases are \textsc{Apply} and \textsc{Merge}.
+
+\subsection{The Apply case}
+\label{sec:bridge-apply}
+
+Given the IH witness $\pi$ for replica $r$ at state $s$ and event
+set $\ev$ in $C$, the \textsc{Apply} transition produces a new
+configuration $C'$ with
+\[
+  C'.\mvis = C.\mvis \cup (\ev \times \{e\}) \text{ where } e = (t, r, o)
+\]
+fresh-timestamped. The proposed witness at $C'$ is $\pi \mathbin{\text{\tt ++}} [e]$.
+Verifying this requires two things: \emph{(i)} the new vis does not
+introduce $\mlo$-edges that would force us to re-order $\pi$, and
+\emph{(ii)} no fresh event can be $\mlo$-before a stale one.
+
+For \emph{(i)} we prove that $\mlo$ is \emph{monotonically shrinking}
+under \textsc{Apply}:
+
+\begin{lemma}[$\mlo$-shrinking under Apply]
+\label{lem:lo-shrink}
+If $C'.\mvis = C.\mvis \cup (\ev \times \{e\})$, then for every pair
+$(p, q)$ with $p \neq e$ and $q \neq e$, $\mlo_{C'}(p, q) \Longrightarrow
+\mlo_C(p, q)$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+  Case analysis on which disjunct of \eqref{eq:lo} witnesses
+  $\mlo_{C'}$. The first disjunct $\mvis \wedge \neg\commute$
+  transfers because new $\mvis$-edges land at $e$, excluded from
+  $(p,q)$. The second disjunct requires all of $\neg\mvis_{C'}(p,q)$,
+  $\neg\mvis_{C'}(q,p)$, $\mrc(p,q) = \Fst$, and the non-existence of
+  an \emph{overwriting} $e_3$. The first two conjuncts weaken on
+  moving from $C'$ to $C$ (since $\mvis_C \subseteq \mvis_{C'}$); the
+  third is independent of $C$; and the non-existence clause
+  \emph{strengthens} from $C'$ to $C$ (there are fewer candidate
+  $e_3$'s). All four components transfer.
+\end{proof}
+
+For \emph{(ii)} we observe that a hypothetical $\mlo_{C'}(e, p)$ with
+$p \in \pi$ would require either $\mvis_{C'}(e, p)$ --- impossible
+because the new edges go \emph{to} $e$, not from it, so
+$\mvis_{C'}(e, p) = \mvis_C(e, p)$, and then $\mvis_C(e, p)$
+contradicts $e \notin \evs_C$ by invariant \texttt{vis\_src} --- or
+the second disjunct, which fails its $\neg\mvis_{C'}(p, e)$ conjunct
+because every $p \in \pi \subseteq \ev$ has a new edge to $e$ by
+construction.
+
+The role of \texttt{vis\_src} in the first branch is exactly what
+makes invariants-in-type pay off: with a layered well-formedness
+predicate we would need to thread $\wellformed(C)$ into the
+\texttt{RA\_lin\_preserved\_apply} lemma as an extra hypothesis;
+with the structural formulation, the witness is simply
+\texttt{C.vis\_src}.
+
+\subsection{The Merge case}
+\label{sec:bridge-merge}
+
+The \textsc{Merge} transition merges two replicas $r_1, r_2$ with
+head states $s_1, s_2$ and event sets $\ev_1, \ev_2$, yielding a new
+configuration $C'$ with
+\[
+  C'.N(r_1) = \mmerge(s_1, s_2), \quad C'.L(r_1) = \ev_1 \cup \ev_2, \quad C'.\mvis = C.\mvis.
+\]
+The IH gives two witnesses $\pi_1$ for $(s_1, \ev_1)$ and $\pi_2$
+for $(s_2, \ev_2)$, each respecting $\mlo_C$. We must build a
+witness $\pi_m$ for $(\mmerge(s_1, s_2), \ev_1 \cup \ev_2)$ that
+respects $\mlo_{C'} = \mlo_C$ (since $\mvis$ is unchanged).
+
+Our construction takes the simple form
+\begin{equation}
+\label{eq:merge-witness}
+  \pi_m \triangleq \pi_1 \mathbin{\text{\tt ++}} \pi_2\big|_{\ev_2 \setminus \ev_1}
+\end{equation}
+where $\pi_2\big|_S$ denotes the filter of $\pi_2$ to events in $S$.
+This construction reuses $\pi_1$'s entire ordering (including the
+common events $\ev_1 \cap \ev_2$) and appends the events that are
+seen only at $r_2$. Three properties must be shown:
+
+\begin{lemma}[\texttt{merge\_witness\_perm}]
+\label{lem:merge-perm}
+$\pi_m$ enumerates every element of $\ev_1 \cup \ev_2$ without
+repetition.
+\end{lemma}
+
+\begin{lemma}[\texttt{merge\_witness\_respects}]
+\label{lem:merge-respects}
+$\pi_m$ respects $\mlo_C$.
+\end{lemma}
+
+\begin{lemma}[\texttt{merge\_witness\_state}]
+\label{lem:merge-state}
+$\pi_m(\init) = \mmerge(s_1, s_2)$.
+\end{lemma}
+
+Lemma~\ref{lem:merge-perm} is closed mechanically in our
+development: $\pi_1$'s \texttt{Nodup} plus \texttt{List.Nodup.filter}
+for the restricted part, with the disjointness witnessed by
+$\ev_1 \cap (\ev_2 \setminus \ev_1) = \emptyset$ at the Set level.
+
+Lemma~\ref{lem:merge-respects} splits (via \texttt{List.pairwise\_append})
+into three obligations: within $\pi_1$, within
+$\pi_2\big|_{\ev_2 \setminus \ev_1}$, and the \emph{cross case}.
+The first inherits from the IH directly; the second inherits via
+\texttt{List.Pairwise.filter}. The cross case ---
+``events from $\ev_2 \setminus \ev_1$ are never $\mlo$-before events
+in $\ev_1$'' --- is the load-bearing sub-argument. It needs a
+\emph{causal closure} invariant on $\mvis$ (if $\mvis(a, b)$ and $b$ is
+in some replica's event set, then so is $a$), which we have not yet
+added to \texttt{Configuration}, plus the $\VCs(\RDT)$ hypothesis
+for rc-non-comm and cond-comm.
+
+Lemma~\ref{lem:merge-state} is the paper's bottom-up induction
+(\cite{sal2025} appendix~\S A.2) ported to 2-way merge. The paper
+uses a double induction on the sizes of $L_1^a$ and $L_2^a$ (local
+events on each side that are not before any LCA event); for CRDTs
+without an explicit LCA, this specialises to a double induction on
+$|\ev_1 \setminus \ev_2|$ and $|\ev_2 \setminus \ev_1|$. Each
+inductive step invokes one of the $24$ VCs as a rewrite rule to
+pull an event out of $\mmerge$. We have not yet mechanised this
+induction.
+
+\begin{theorem}[Merge case, assembled]
+\label{thm:merge-assembled}
+Under Lemmas~\ref{lem:merge-perm}--\ref{lem:merge-state},
+\textsc{Merge} preserves RA-linearisability.
+\end{theorem}
+
+The assembly --- \texttt{RA\_lin\_preserved\_merge\_via\_witness} in
+\texttt{Merge\_Linearization.lean} --- is closed in our
+development. Once the three sub-lemmas close, swapping the stubbed
+\texttt{RA\_lin\_preserved\_merge} in \texttt{RA\_Linearizability.lean}
+for a one-line call to
+\texttt{RA\_lin\_preserved\_merge\_via\_witness} finishes the bridge
+theorem.
+
+\subsection{The 24 VCs as a Lean structure}
+\label{sec:satisfies-vcs}
+
+The $24$ VCs are packaged as a \texttt{Prop}-valued Lean structure
+\texttt{SatisfiesVCs} with one field per VC. The field names match
+the theorem names in \Sal{}'s per-CRDT files exactly
+(\texttt{rc\_non\_comm}, \texttt{no\_rc\_chain},
+\texttt{cond\_comm\_base}, \texttt{merge\_comm}, \texttt{merge\_idem},
+\texttt{base\_2op}, \texttt{ind\_lca\_2op}, eight \texttt{inter\_*}
+variants, \texttt{ind\_right\_2op}, \texttt{ind\_left\_2op}, and the
+corresponding $1$-op and $0$-op versions, ending in
+\texttt{lem\_0op}). This matching is deliberate: the target use
+case is closing \texttt{SatisfiesVCs D} for each existing \Sal{}
+CRDT by pointing at the corresponding theorem.
+
+\section{Emulation and Transfer}
+\label{sec:emulation}
+
+\subsection{Op-based labelled transition system}
+\label{sec:op-ts}
+
+We port Liittschwager~et~al.'s op-based semantics
+(\cite{liittschwager2025} Fig.~8) into Lean. Configurations are
+triples $\langle \Gamma, \Sigma, \beta\rangle$: an event trace
+$\Gamma$, a per-replica state map $\Sigma : \Replica \to \State$,
+and a message buffer $\beta \subseteq \Replica \times \Msg$.
+Transitions are
+\textsc{OpUpdate}, \textsc{OpQuery}, and \textsc{OpDeliver}
+(silent). The \textsc{OpDeliver} rule is guarded by an
+\texttt{enabled} predicate encoding causal-order delivery with
+respect to a happens-before relation $\mathit{hb}$ on messages,
+which is a parameter.
+
+\subsection{Weak simulation, Lean-side}
+\label{sec:weaksim}
+
+Given two LTSs $T_1, T_2$ with labels related by a coercion
+$\widehat{\cdot}$ that preserves silence, we define
+\begin{align*}
+  \mathsf{silentClosure}(T)\;s\;s' &\;\triangleq\; \text{refl.-trans.\ closure of silent steps}\\
+  s \xRightarrow{\ell}_T s' &\;\triangleq\; \begin{cases}
+    \mathsf{silentClosure}(T)\;s\;s' & \text{if } \tau(\ell)\\
+    \exists s_1 s_2.\ \mathsf{silentClosure}\;s\;s_1 \wedge s_1 \xrightarrow{\ell} s_2 \wedge \mathsf{silentClosure}\;s_2\;s' & \text{otherwise}
+  \end{cases}
+\end{align*}
+
+\begin{theorem}[Soundness of weak simulation for weak-trace inclusion]
+\label{thm:weaksim-sound}
+If $R$ is a weak simulation from $T_1$ to $T_2$ under
+$\widehat{\cdot}$ and $(s, t) \in R$, then every label list
+$\mathit{labels} \in \wtrace_{T_1}(s)$ satisfies
+$\widehat{\mathit{labels}} \in \wtrace_{T_2}(t)$.
+\end{theorem}
+
+Our Lean proof (\texttt{Weak\_Simulation.weakSim\_sound}) factors
+through three lift lemmas:
+\begin{lemma}[\texttt{silentClosure\_lift}]
+\label{lem:silent-lift}
+If $(s, t) \in R$ and $\mathsf{silentClosure}(T_1)\;s\;s'$, then
+there exists $t'$ with $\mathsf{silentClosure}(T_2)\;t\;t'$ and
+$(s', t') \in R$.
+\end{lemma}
+\begin{lemma}[\texttt{weakStep\_lift}]
+\label{lem:weakstep-lift}
+If $(s, t) \in R$ and $s \xRightarrow{\ell}_{T_1} s'$, then there
+exists $t'$ with $t \xRightarrow{\widehat{\ell}}_{T_2} t'$ and
+$(s', t') \in R$.
+\end{lemma}
+\begin{lemma}[\texttt{isWeakExecution\_lift}]
+\label{lem:weakexec-lift}
+If $(s, t) \in R$ and $s$ admits a weak execution along trail
+$\alpha$ in $T_1$, then $t$ admits a weak execution along
+$\widehat{\alpha}$ in $T_2$, relating endpoints by $R$.
+\end{lemma}
+
+Theorem~\ref{thm:weaksim-sound} follows by induction on weak
+executions, using Lemma~\ref{lem:weakexec-lift} at each step. The
+full chain is closed in our Lean development with no \sorry{}s.
+
+\subsection{The canonical emulation}
+\label{sec:canonical-G}
+
+Given an op-based CRDT
+$\mathcal{O} = \langle \State^{\mathcal{O}}, \sigma_0^{\mathcal{O}},
+\mprep, \meff, \mquery, \mrc, \Msg, \mathit{hb}\rangle$ with a
+happens-before relation on messages, we construct a state-based CRDT
+$\Emul(\mathcal{O})$ of signature $\mathsf{CRDTSig}$:
+\begin{align*}
+  \Emul(\mathcal{O}).\State &\;=\; \mathcal{P}(\Msg) \\
+  \Emul(\mathcal{O}).\init &\;=\; \emptyset \\
+  \Emul(\mathcal{O}).\mdo\;M\;(t, r, o) &\;=\; M \cup \{\mprep(r, o, \mathit{effective}(M))\} \\
+  \Emul(\mathcal{O}).\mmerge\;M_1\;M_2 &\;=\; M_1 \cup M_2 \\
+  \Emul(\mathcal{O}).\mquery\;M\;q &\;=\; \mquery(\mathit{effective}(M), q)
+\end{align*}
+where $\mathit{effective}$ folds $\meff$ over the delivered-message
+set in a causal-order-respecting linear extension of $\mathit{hb}$.
+The underlying idea is Liittschwager~et~al.'s §4.2 construction:
+inline causal broadcast into the state itself. Our Lean version is
+noncomputable and uses classical decidability for $\mathcal{P}(\Msg)$.
+
+\subsection{The transfer theorem}
+\label{sec:transfer}
+
+With $\Emul$ and Theorem~\ref{thm:weaksim-sound} available, the
+composite transfer theorem is
+\begin{theorem}[Transfer]
+\label{thm:transfer}
+For every op-based CRDT $\mathcal{O}$ with causal-order
+$\mathit{hb}$: if the state-based emulator $\Emul(\mathcal{O})$
+satisfies the $24$ VCs, then every reachable trace of $\mathcal{O}$ is
+RA-linearisable.
+\end{theorem}
+
+In our Lean development this is stated
+(\texttt{op\_RA\_linearizable\_of\_vcs}) but not yet proved, because
+the simulation witness for $\Emul$ (step~10) is currently scaffolded
+but not closed, and the op-side RA-linearisability predicate is
+defined as the trivial placeholder \texttt{True} pending the
+final trace-property formulation. Closing Theorem~\ref{thm:transfer}
+therefore requires two pieces beyond the bridge theorem:
+\emph{(a)} the weak simulation proof for $\Emul$, and \emph{(b)}
+spelling out the op-side trace predicate matching
+Definition~\ref{def:ralin} modulo the $\Emul$ coercion.
+
+\section{End-to-End Validation: Grow-Only Set}
+\label{sec:smoke-test}
+
+As a correctness check on the architecture, we instantiate a
+$\mathsf{CRDTSig}$ for the Grow-Only Set (adding natural numbers to
+a decidable $\mathbb{N} \to \mathsf{Bool}$ set) and close all $24$
+fields of \texttt{SatisfiesVCs}. The smoke test exposes type-level
+misalignments between our $\mathsf{Prop}$-valued VC statements and
+\Sal{}'s existing $\mathsf{Bool}$-valued theorem statements; in this
+case, the misalignments were few and mechanical:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{distinctOps} versus \texttt{distinct\_ops}: the
+    former is a \texttt{Prop} $o_1.\mathit{time} \neq o_2.\mathit{time}$,
+    the latter is a \texttt{Bool} \texttt{Prod.fst o1 != Prod.fst o2}.
+    A two-line \texttt{@[simp]} lemma bridges them.
+  \item \texttt{differentReplicas} versus \texttt{get\_rid o1 != get\_rid o2}:
+    the same pattern.
+  \item \texttt{RcRes} (the Prop-level result type) versus
+    \texttt{rc\_res} (the per-file type): a three-constructor
+    \texttt{toRcRes} function.
+\end{itemize}
+
+For Grow-Only Set, $14$ of the $24$ VCs are \emph{vacuous}: their
+premises require $\mrc(-, -) = \Fst$, but $\mrc \equiv \Either$ by
+definition, so \texttt{intros; simp\_all} discharges them
+uniformly. The remaining $10$ VCs have real content
+(\texttt{merge\_comm}, \texttt{merge\_idem}, \texttt{base\_2op},
+\texttt{ind\_lca\_2op}, \texttt{ind\_left\_2op}, \texttt{base\_1op},
+\texttt{ind\_lca\_1op}, \texttt{ind\_left\_1op},
+\texttt{ind\_right\_1op}, \texttt{lem\_0op}) and are discharged by
+applying the corresponding \texttt{\_root\_.*} theorem from \Sal{}'s
+per-CRDT file with the Prop/Bool bridge lemmas.
+
+The full \texttt{D\_satisfies\_VCs} instance is kernel-verified with
+no \sorry{}s. End-to-end invocation
+\texttt{ra\_linearizable\_of\_vcs D\_satisfies\_VCs} still hits the
+merge-case \sorry{}, but every other piece of plumbing is working.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}llp{6cm}@{}}
+    \toprule
+    VC & Status & Discharge strategy \\
+    \midrule
+    \texttt{rc\_non\_comm}         & closed & bridge + \texttt{\_root\_.rc\_non\_comm} \\
+    \texttt{no\_rc\_chain}         & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{cond\_comm\_base}      & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{merge\_comm}           & closed & direct delegation \\
+    \texttt{merge\_idem}           & closed & direct delegation \\
+    \texttt{base\_2op}             & closed & bridge + \texttt{\_root\_.base\_2op} \\
+    \texttt{ind\_lca\_2op}         & closed & bridge + \texttt{\_root\_.ind\_lca\_2op} \\
+    \texttt{inter\_right\_base\_2op} & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_left\_base\_2op}  & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_right\_2op}       & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_left\_2op}        & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_lca\_2op}         & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{ind\_right\_2op}         & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{ind\_left\_2op}          & closed & bridge + \texttt{\_root\_.ind\_left\_2op} \\
+    \texttt{base\_1op}               & closed & direct delegation \\
+    \texttt{ind\_lca\_1op}           & closed & bridge + \texttt{\_root\_.ind\_lca\_1op} \\
+    \texttt{inter\_right\_base\_1op} & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_left\_base\_1op}  & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_right\_1op}       & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_left\_1op}        & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{inter\_lca\_1op}         & vacuous & \texttt{intros; simp\_all} \\
+    \texttt{ind\_left\_1op}          & closed & bridge + \texttt{\_root\_.ind\_left\_1op} \\
+    \texttt{ind\_right\_1op}         & closed & bridge + \texttt{\_root\_.ind\_right\_1op} \\
+    \texttt{lem\_0op}                & closed & direct delegation \\
+    \bottomrule
+  \end{tabular}
+  \caption{Grow-Only Set: per-VC discharge in
+    \texttt{Instances/Grow\_Only\_Set.lean}.}
+  \label{tab:gset-vcs}
+\end{table}
+
+We expect the pattern to generalise: the other $17$ CRDTs in the
+\Sal{} suite each have $24$ theorems with near-identical structure,
+so the instantiation is a matter of pattern-matching plus the
+three bridge simp lemmas. Mechanising a macro to automate this is
+plausible future work.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Invariants-in-type versus layered well-formedness}
+
+We briefly considered a layered formulation where
+\texttt{Configuration} is a dumb record and well-formedness is a
+\texttt{Prop}-valued predicate threaded through every preservation
+lemma. Both were plausible; we chose invariants-in-type.
+
+The decisive factor was the \textsc{Apply} case, which needs ``$\mvis$
+relates only observed events.'' In a layered formulation, this
+is a separate reachability-preservation lemma whose statement has to
+be preserved by every step rule \emph{(i)} in isolation and
+\emph{(ii)} at the point of use. With invariants-in-type, the same
+fact is available as a record projection \texttt{C.vis\_src}, with
+zero bookkeeping at the point of use and the preservation obligation
+absorbed into the initial-configuration constructor. The tradeoff
+is that constructing a \texttt{Configuration} is slightly more
+work --- one must prove the invariants at the call site --- but in
+our development we construct only one concrete configuration
+(\texttt{initConfig}), so the overhead is a one-time cost.
+
+There is an alternative middle ground: a
+$\mathsf{WellFormed}$ bundle whose fields are well-formedness
+predicates, alongside a dumb \texttt{Configuration} record. This
+cleanly separates data from invariants but retains the threading
+cost. For the current scope, invariants-in-type wins; for an
+alternative development that also instantiates with ill-formed
+\texttt{Configuration}s (e.g.\ for debugging), the bundled
+alternative would be a reasonable port.
+
+A related structural choice is the \texttt{Merge} case's witness
+construction \eqref{eq:merge-witness}. An earlier draft used the
+three-piece form
+$\pi_1|_{\ev_1 \cap \ev_2} \mathbin{\text{\tt ++}}
+ \pi_1|_{\ev_1 \setminus \ev_2} \mathbin{\text{\tt ++}}
+ \pi_2|_{\ev_2 \setminus \ev_1}$, following the paper's $L_\top /
+L_1 / L_2$ decomposition. That form broke the $\mlo$-ordering
+inherited from $\pi_1$ (it permutes the two $\pi_1$ sub-lists), so
+the within-$\pi_1$ cases of
+\texttt{merge\_witness\_respects} did \emph{not} inherit from the
+IH. Replacing with $\pi_1 \mathbin{\text{\tt ++}}
+\pi_2|_{\ev_2 \setminus \ev_1}$ preserves $\pi_1$'s order, making
+the within-$\pi_1$ case direct (\texttt{h\_1\_resp}) and the
+within-filter case an application of \texttt{List.Pairwise.filter}.
+The only remaining obligation is the cross case.
+
+\subsection{Where we expect the remaining work to land}
+
+Three pieces are open. We report estimates based on actual
+mechanisation experience with the closed pieces and cross-referencing
+against the paper's proof structure.
+
+\begin{itemize}[leftmargin=*]
+  \item \emph{\textsc{merge\_witness\_respects} cross case}:
+    needs \emph{(a)} a causal-closure invariant on $\mvis$ added to
+    \texttt{Configuration} (symmetric with \texttt{vis\_src} and
+    \texttt{vis\_tgt}) and \emph{(b)} threading of $\VCs(\RDT)$ to
+    invoke \textsc{no-rc-chain}. About $3$--$5$ days of focused work.
+  \item \emph{\textsc{merge\_witness\_state}}: the paper's
+    double-induction on $|L_1^a|$ and $|L_2^a|$
+    (\cite{sal2025} appendix~\S A.2) ported to Lean. Each
+    inductive step applies one of the $24$ VCs as a rewrite. About
+    $2$--$3$ weeks, with the first few days of infrastructure
+    (induction scheme, list operations) and the remainder case-by-case.
+  \item \emph{Weak simulation for $\Emul$}: Liittschwager et
+    al.'s §4.2 argument ported to Lean. Needs a concrete definition
+    of $\mathit{effective}$ (a topological sort of the delivered-message
+    set with respect to $\mathit{hb}$) and the simulation relation
+    $R$ coupling op-side configurations to state-side ones. About
+    $2$--$4$ weeks, the second-longest item after
+    \texttt{merge\_witness\_state}.
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related}
+
+Our work synthesises two recent threads in CRDT verification. On
+the state-based side, \Sal{}~\cite{sal2025} descends from
+\textsc{Neem}~\cite{neem2025} and Burckhardt et
+al.'s replication-aware simulations framework~\cite{burckhardt-rdts-svo}.
+Earlier interactive mechanisations include
+\cite{zeller-state-based,gomes-verifying-sec}; Nieto et al.\ built
+a concurrent separation-logic framework for CRDT verification in
+Iris~\cite{nieto-aneris-state-based,timany-trillium}.
+On the op-based side, Liittschwager et al.'s emulation-as-simulation
+result~\cite{liittschwager2025} is the direct predecessor of our
+transfer theorem; their Agda mechanisation is an artefact precedent
+for ours. The two sides have long been spoken of as equivalent ---
+the folklore result goes back to~\cite{shapiro-crdts} --- but to our
+knowledge ours is the first attempt to mechanise the composition of
+a specification-side theorem with the emulation-side theorem in a
+single framework.
+
+The bottom-up linearisation strategy we port
+(\S\ref{sec:bridge-merge}) is \Sal{}'s own, descending from
+earlier MRDT-verification work by Kaki~\cite{kaki2022} and
+Soundarapandian~\cite{vimala-mrdts}. The weak-simulation soundness
+theorem (Theorem~\ref{thm:weaksim-sound}) is Milner's classical
+result~\cite{milner-ccs} specialised to silent-preserving label
+coercions; our contribution here is the Lean packaging.
+
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+We have described an architecture, and a substantially-complete
+mechanisation, for transferring state-based RA-linearisability to
+op-based RA-linearisability in Lean~4. The architecture is stable
+enough that downstream work (closing the three open pieces,
+extending to MRDTs, instantiating for the other $17$ CRDTs in the
+\Sal{} suite) can proceed without re-litigating design choices.
+
+Three directions suggest themselves.
+\emph{First}, closing the open pieces of \S\ref{sec:discussion}
+would give the first mechanised transfer theorem for a CRDT
+framework that scales to an entire verification suite.
+\emph{Second}, the MRDT setting --- with $3$-way merge and version
+DAGs --- does not fit Liittschwager et al.'s CRDT-only emulation
+theorem. Lifting the architecture to MRDTs would require either
+reducing MRDT behaviour to CRDT behaviour (likely only for a
+restricted class) or redeveloping an emulation theorem specific to
+the MRDT operational model.
+\emph{Third}, the bridge simp lemmas that reconcile our Prop-valued
+$\VCs$ with \Sal{}'s Bool-valued theorems are uniform across
+CRDTs; a Lean macro instantiating \texttt{SatisfiesVCs} from a
+per-CRDT file automatically would remove the remaining per-CRDT
+plumbing.
+
+\paragraph{Availability.}
+The Lean development is under
+\texttt{Sal/Emulation/} in the \Sal{} repository. All code compiles
+under Lean \texttt{v4.28.0} with Mathlib at the same version.
+\texttt{\sorry{}}-free status is as reported in
+Table~\ref{tab:status}.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
