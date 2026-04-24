@@ -80,27 +80,45 @@ we'd need for complete Ex 1 fidelity (see below).
 remaining gap in Ex 1 and to fix a semantic bug in
 `in_span_boundary` (see below).
 
-Foundation has landed:
+Infrastructure landed:
 
 - `visible_lt` / `visible_le` relations defined inductively (four
   rules: parent-child, sibling, left-descendant-of-sibling,
   transitive closure), plus a partial-order API (refl, trans,
-  composition) and two derived theorems (`visible_lt_of_afters_reach`,
+  composition) and derived theorems (`visible_lt_of_afters_reach`,
   `visible_lt_of_cross_sibling`).
 - `in_span_visible` — paper-faithful covering predicate using
   `visible_lt` / `visible_le` with side-bit adjustments.
+- Congruence lemmas (`after_of_eq_of_afters_eq`,
+  `afters_reach_of_afters_eq`, `visible_lt_of_afters_eq`,
+  `visible_le_of_afters_eq`, `in_span_visible_of_afters_eq`)
+  proved via structural induction on the inductive predicates.
 - `mark_wins_visible` / `formatted_visible` / `readRichText_visible`
   — parallel read-side projection using `in_span_visible`.
-- One demonstration theorem (`formatted_visible_of_lww_add_winner`)
-  showing the migration pattern.
+- Paper-faithful theorems landed so far:
+  - `formatted_visible_convergent` — formatting-level convergence.
+  - `readRichText_visible_convergent` — top-level convergence.
+  - `formatted_visible_of_lww_add_winner` (Ex 5 pos, Add wins).
+  - `no_add_cover_implies_unformatted_visible` (Ex 5 neg).
+  - `add_wins_over_concurrent_remove_visible` (Ex 5 pos with
+    explicit Remove).
+  - `partial_overlap_all_adds_formatted_visible` (Ex 2).
+  - `different_type_adds_coexist_visible` (Ex 3).
 
-**Still pending:** migrating the rest of the read-side theorems
-(`expand_contract_*`, `partial_overlap_all_adds_formatted`,
-`different_type_adds_coexist`, `no_add_cover_implies_unformatted`,
-etc.) from `in_span_boundary` to `in_span_visible`, and restating
-`readRichText_convergent` against `formatted_visible`. This is the
-step that closes Ex 1 fully and also repairs the semantic bug noted
-below.
+**Still pending:**
+- `anchors_survive_tombstones_visible` — proof plumbing; simp can't
+  rewrite `visible_lt (do_ s)` to `visible_lt s` through the opaque
+  inductive, and the direct iff-based construction wasn't quite
+  landing in a short session. Noted as follow-up.
+- Expand/contract theorems (Ex 7 / Ex 8) specific to the
+  visible-order framing — the visible-order approach doesn't need
+  the boundary-specific expand/contract theorems since the behavior
+  is captured naturally by `visible_lt`, but explicit theorems
+  making this visible would be educational.
+- Interior-span coverage (Ex 1 full): `in_span_visible` is the
+  right predicate, but linking `covered_interior` to it (showing
+  that afters-chain coverage implies `in_span_visible` for
+  appropriately bounded spans) would close Ex 1 fully.
 
 ### Semantic bug in `in_span_boundary` (use `in_span_visible` instead)
 
