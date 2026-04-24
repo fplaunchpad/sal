@@ -222,6 +222,41 @@ inductive visible_lt (s : concrete_st) : OpId → OpId → Prop where
 def visible_le (s : concrete_st) (c₁ c₂ : OpId) : Prop :=
   c₁ = c₂ ∨ visible_lt s c₁ c₂
 
+/-! ### RGA well-formedness: `wf_afters`
+
+A state is *well-formed* on its afters map iff the induced visible-
+order relation `visible_lt` is irreflexive — equivalently, the
+afters-parent chain has no cycles. Every state produced by a finite
+sequence of `do_` ops starting from `init_st` is well-formed: each
+`Insert`'s opId is fresh (by `distinct_ops`), so the afters-parent
+chain must terminate rather than loop back. We take this as a
+state-level invariant; a preservation proof for `do_` and `merge`
+is a deferred follow-up. -/
+
+/-- A Peritext state is well-formed on its afters map iff the induced
+visible-order relation is irreflexive. Equivalent to acyclicity of
+the afters-parent relation. -/
+def wf_afters (s : concrete_st) : Prop :=
+  ∀ c, ¬ visible_lt s c c
+
+/-- Under `wf_afters`, `visible_lt` is antisymmetric: no two characters
+each precede the other. -/
+theorem visible_lt_asymm_of_wf
+    (s : concrete_st) (h_wf : wf_afters s) (c₁ c₂ : OpId) :
+    visible_lt s c₁ c₂ → ¬ visible_lt s c₂ c₁ :=
+  fun h₁₂ h₂₁ => h_wf c₁ (visible_lt.trans h₁₂ h₂₁)
+
+/-- Under `wf_afters`, `visible_le` is antisymmetric. -/
+theorem visible_le_antisymm_of_wf
+    (s : concrete_st) (h_wf : wf_afters s) (c₁ c₂ : OpId) :
+    visible_le s c₁ c₂ → visible_le s c₂ c₁ → c₁ = c₂ := by
+  intro h12 h21
+  rcases h12 with h12 | h12
+  · exact h12
+  · rcases h21 with h21 | h21
+    · exact h21.symm
+    · exact absurd h21 (visible_lt_asymm_of_wf s h_wf _ _ h12)
+
 /-- A multi-hop `afters_reach` gives a `visible_lt` from ancestor
 to descendant (the parent-child edge lifted through transitivity). -/
 theorem visible_lt_of_afters_reach
@@ -533,6 +568,19 @@ theorem ex8_link_descendant_not_in_span_visible
     · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
   · -- endSide = false: right bound is visible_lt c_new endId
     exact h_acyclic (visible_lt.trans h_lt h_right)
+
+/-- **Paper Ex 8 full negation, `wf_afters` form.**
+
+Convenience corollary of `ex8_link_descendant_not_in_span_visible`
+that discharges the explicit acyclicity hypothesis via the state-
+level `wf_afters` invariant. -/
+theorem ex8_link_descendant_not_in_span_visible_of_wf
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    wf_afters s →
+    c_new ≠ mark_endId m →
+    after_of s c_new (mark_endId m) = true →
+    ¬ in_span_visible s m c_new := fun h_wf h_ne h_after =>
+  ex8_link_descendant_not_in_span_visible s m c_new h_ne h_after (h_wf _)
 
 /-! ### Preservation of `visible_lt` / `in_span_visible` under `Insert`
 

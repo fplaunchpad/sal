@@ -132,6 +132,29 @@ inductive visible_lt (s : concrete_st) : OpId → OpId → Prop where
 def visible_le (s : concrete_st) (c₁ c₂ : OpId) : Prop :=
   c₁ = c₂ ∨ visible_lt s c₁ c₂
 
+/-! ### RGA well-formedness: `wf_afters` (MRDT mirror)
+
+See the CRDT `Peritext_ReadSide.lean` for the full discussion. -/
+
+/-- A state is well-formed iff `visible_lt` is irreflexive. -/
+def wf_afters (s : concrete_st) : Prop :=
+  ∀ c, ¬ visible_lt s c c
+
+theorem visible_lt_asymm_of_wf
+    (s : concrete_st) (h_wf : wf_afters s) (c₁ c₂ : OpId) :
+    visible_lt s c₁ c₂ → ¬ visible_lt s c₂ c₁ :=
+  fun h₁₂ h₂₁ => h_wf c₁ (visible_lt.trans h₁₂ h₂₁)
+
+theorem visible_le_antisymm_of_wf
+    (s : concrete_st) (h_wf : wf_afters s) (c₁ c₂ : OpId) :
+    visible_le s c₁ c₂ → visible_le s c₂ c₁ → c₁ = c₂ := by
+  intro h12 h21
+  rcases h12 with h12 | h12
+  · exact h12
+  · rcases h21 with h21 | h21
+    · exact h21.symm
+    · exact absurd h21 (visible_lt_asymm_of_wf s h_wf _ _ h12)
+
 theorem visible_lt_of_afters_reach
     (s : concrete_st) (c anc : OpId) :
     afters_reach s c anc → c ≠ anc → visible_lt s anc c := by
@@ -829,6 +852,15 @@ theorem ex8_link_descendant_not_in_span_visible
     · exact h_ne h_eq
     · exact h_acyclic (visible_lt.trans h_lt h_visible_lt)
   · exact h_acyclic (visible_lt.trans h_lt h_right)
+
+/-- **Paper Ex 8 full negation, `wf_afters` form (MRDT).** -/
+theorem ex8_link_descendant_not_in_span_visible_of_wf
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    wf_afters s →
+    c_new ≠ m.endId →
+    after_of s c_new m.endId = true →
+    ¬ in_span_visible s m c_new := fun h_wf h_ne h_after =>
+  ex8_link_descendant_not_in_span_visible s m c_new h_ne h_after (h_wf _)
 
 /-! ### List-form traversal specification (MRDT mirror) -/
 
