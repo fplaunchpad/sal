@@ -965,6 +965,75 @@ theorem in_span_visible_of_reach
     · rw [if_neg h_sSide] at h_left
       exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left h_lt)
 
+/-! ### Ex 7 / Ex 8 visible-order demonstrations
+
+These theorems exercise the visible-order machinery to replay the
+paper's Ex 7 (bold-expand) and Ex 8 (link-no-expand) at the
+paper-faithful level. Ex 7's bold-expand behavior is a *theorem*
+here because the right-side bound can be derived from the
+older-sibling structure. Ex 8's link-no-expand is only a theorem
+under the "visible_lt endId c_new → ¬ visible_le c_new endId"
+irreflexivity assumption, which we don't have in full generality
+(it needs `distinct_ops`-style invariants). Ex 8 is therefore
+captured directly by the `if mark_endSide m then visible_le ...
+else visible_lt ...` shape of `in_span_visible` — a descendant of
+`endId` fails the `visible_le c_new endId` check. -/
+
+/-- **Paper Ex 7 (bold expand) — older sibling of `endId` is in span.**
+
+For a bold-style mark (`startSide = false`, `endSide = false`), a
+new char inserted as a direct sibling of `endId` with a higher
+`opId` (hence traversed before `endId` as an older sibling) is in
+the span, provided the mark's left-side bound is satisfied via
+the parent. This captures Ex 7's "text inserted immediately before
+`endId` (i.e. between the last bold char and the period) inherits
+the bold." -/
+theorem ex7_bold_older_sibling_in_span
+    (s : concrete_st) (m : MarkOp) (p c_new : OpId) :
+    mark_startSide m = false →
+    mark_endSide m = false →
+    visible_le s (mark_startId m) p →
+    after_of s c_new p = true →
+    after_of s (mark_endId m) p = true →
+    c_new ≠ mark_endId m →
+    opid_max c_new (mark_endId m) = c_new →
+    c_new ≠ mark_startId m →
+    in_span_visible s m c_new := by
+  intro h_sSide h_eSide h_left_bound h_after_new h_after_end h_ne h_order _
+  refine ⟨?_, ?_⟩
+  · -- Left: visible_le startId c_new. startId ≤ p and p < c_new (parent_child).
+    split_ifs with h
+    · exact absurd h (by rw [h_sSide]; decide)
+    · have h_pc : visible_lt s p c_new := visible_lt.parent_child h_after_new
+      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left_bound h_pc)
+  · -- Right: visible_lt c_new endId, via sibling rule.
+    split_ifs with h
+    · exact absurd h (by rw [h_eSide]; decide)
+    · exact visible_lt.sibling h_after_new h_after_end h_ne h_order
+
+/-- **Paper Ex 8 (link no-expand) — direct descendant of `endId` is not in span.**
+
+For a link-style mark (`endSide = true`), a new char inserted as
+a direct `afters`-descendant of `endId` has `visible_lt endId c_new`
+(by `parent_child`), so `visible_le c_new endId` requires
+`visible_lt c_new endId` — which together with the prior
+`visible_lt endId c_new` would give a cycle. Without an
+irreflexivity invariant on `visible_lt` (equivalent to asserting
+`distinct_ops`-style well-formedness of the RGA state), we can't
+derive `¬ in_span_visible` constructively.
+
+Instead, this theorem records the **observable** fact that any
+`c_new` with `after_of c_new endId = true` satisfies
+`visible_lt endId c_new`, which is precisely the failure condition
+for `in_span_visible`'s right-side bound when `endSide = true`.
+A user who wants the "not in span" conclusion can combine this
+with a well-formedness premise. -/
+theorem ex8_link_descendant_visible_lt_endId
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    after_of s c_new (mark_endId m) = true →
+    visible_lt s (mark_endId m) c_new :=
+  fun h => visible_lt.parent_child h
+
 /-! ### Preservation of `visible_lt` / `in_span_visible` under `Insert`
 
 Visible-order relations monotone under fresh-opId insertions. If
