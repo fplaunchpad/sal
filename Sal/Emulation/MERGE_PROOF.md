@@ -90,6 +90,42 @@ Current Lean state: `bottomUp_0op` landed (closes to `lem_0op`);
 pending formulation of the `rc`-precondition predicate and the
 triple induction.
 
+## Session update (2026-04-24, continued)
+
+Follow-up push closed three real inductive theorems:
+
+- `bottomUp_2op_init_left` — reachable `b`, `a = D.init`. Proved by
+  `List.reverseRecOn` over `π_b`; base is `base_2op`, step is
+  `ind_right_2op`. Kernel-verified.
+- `bottomUp_2op_reachable` — reachable `a` and `b`, strict
+  `Fst_then_snd` rc. Outer induction on `π_a` via `ind_left_2op`,
+  inner via `bottomUp_2op_init_left`. Kernel-verified. This is the
+  **main result** of the session on the merge case.
+- `bottomUp_1op_top_reachable` — strict-rc corollary of
+  `bottomUp_2op_reachable` by variable renaming (`ol → o₂`).
+
+The abstract-state forms (`bottomUp_2op`, `bottomUp_1op_top`,
+`bottomUp_1op_bot`) remain `sorry`:
+
+- `bottomUp_2op`, `bottomUp_1op_top` (abstract): the universal-`a, b`
+  statement is *strictly stronger* than the VCs — VCs only constrain
+  reachable states. This is expected; callers should use the
+  reachable-form theorems directly.
+- `bottomUp_1op_bot`: `merge(update a o₁, D.init) = update (merge a D.init) o₁`.
+  The 24 VCs contain **no rule** extending `base_1op` to reachable
+  `a` when the RHS is `init` — every `ind_*_1op` / `inter_*_1op`
+  requires the RHS to have an event `ol` applied. Tried and failed:
+  `ind_lca_1op` (diagonals, wrong shape), phantom-event transport
+  (no VC collapses `update init ol → init`), `merge_comm` + `lem_0op`
+  creativity (introduces structure but doesn't reduce). The paper's
+  closure of this case uses the outer nested induction's machinery
+  to handle init-shaped arguments via convergence — i.e., clause (b)
+  is actually closed **as a byproduct of the full linearization
+  theorem**, not derived separately. So in our Lean setup,
+  `bottomUp_1op_bot` is probably better folded into
+  `merge_linearization_exists` directly via strong induction, not
+  proved as a standalone lemma.
+
 ## What we are proving
 
 ```lean
