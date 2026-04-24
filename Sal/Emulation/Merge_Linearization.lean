@@ -172,21 +172,6 @@ theorem bottomUp_1op_top_base
       = D.update (D.merge D.init (D.update D.init ol)) o₁ :=
   hVC.base_2op o₁ ol h_rc h_rep h_dist
 
-/-- **BottomUp-1-OP, clause (a)** (general `a`, `b = init`).
-
-`merge(update a o₁, update init ol) = update (merge a (update init ol)) o₁`.
-Abstract-state form; closed for reachable states by
-`bottomUp_1op_top_reachable` (defined below, corollary of
-`bottomUp_2op_reachable` by renaming `ol → o₂`). -/
-theorem bottomUp_1op_top
-    (_hVC : SatisfiesVCs D)
-    (a : D.State) (o₁ ol : Op D.AppOp)
-    (_h_rc : D.rc ol o₁ = RcRes.Fst_then_snd ∨ D.rc ol o₁ = RcRes.Either)
-    (_h_rep : differentReplicas o₁ ol) (_h_dist : distinctOps o₁ ol) :
-    D.merge (D.update a o₁) (D.update D.init ol)
-      = D.update (D.merge a (D.update D.init ol)) o₁ := by
-  sorry
-
 /-- **BottomUp-1-OP, clause (b), base case** (`a = init`).
 
 `merge(update init o₁, init) = update (merge init init) o₁`.
@@ -196,25 +181,6 @@ theorem bottomUp_1op_bot_base
     D.merge (D.update D.init o₁) D.init
       = D.update (D.merge D.init D.init) o₁ :=
   hVC.base_1op o₁
-
-/-- **BottomUp-1-OP, clause (b)** (general `a`, `b = init`).
-
-`merge(update a o₁, init) = update (merge a init) o₁`.
-
-The analogue of `bottomUp_1op_top` for the `e_⊤ = ε ∧ l = b`
-premise clause. No direct VC covers the general-`a` extension when
-the RHS is `init` — `ind_left_1op` requires the RHS to be
-`update b ol`, not `init`. The paper's nested induction resolves
-this by transport through clause (a) first. -/
-theorem bottomUp_1op_bot
-    (_hVC : SatisfiesVCs D)
-    (a : D.State) (o₁ : Op D.AppOp) :
-    D.merge (D.update a o₁) D.init
-      = D.update (D.merge a D.init) o₁ := by
-  -- Base: a = init — closed by `bottomUp_1op_bot_base`.
-  -- Step: a = update a' o₁'. Not directly VC-shape; paper's
-  -- nested induction uses clause (a) with a "phantom" ol event.
-  sorry
 
 /-- **BottomUp-2-OP** (paper `lemmas.tex` fig `bottom-up`):
 
@@ -322,25 +288,6 @@ theorem bottomUp_1op_top_reachable
                           (D.update (applySeq D D.init π_b) ol)) o₁ :=
   bottomUp_2op_reachable hVC o₁ ol h_rc h_rep h_dist π_a π_b
     h_dist_a_o₁ h_dist_a_ol h_dist_b_o₁ h_dist_b_ol
-
-/-- **BottomUp-2-OP** (general). Pulls `o₂` out of the right side
-of `merge(update a o₁, update b o₂)`. Closed by
-`bottomUp_2op_reachable` once the caller materialises the
-event-list witnesses for `a, b`. The abstract-state form (no
-`π_a, π_b`) remains `sorry` because the VCs only hold for
-reachable states — a universal statement over `a, b` is strictly
-stronger than the VCs guarantee. -/
-theorem bottomUp_2op
-    (_hVC : SatisfiesVCs D)
-    (a b : D.State) (o₁ o₂ : Op D.AppOp)
-    (_h_rc : D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either)
-    (_h_rep : differentReplicas o₁ o₂) (_h_dist : distinctOps o₁ o₂) :
-    D.merge (D.update a o₁) (D.update b o₂)
-      = D.update (D.merge a (D.update b o₂)) o₁ := by
-  -- Abstract-state form. Callers that know `a = applySeq init π_a`
-  -- and `b = applySeq init π_b` should use `bottomUp_2op_reachable`
-  -- directly.
-  sorry
 
 /-! ### Missing lemmas isolated as dependencies
 
