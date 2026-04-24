@@ -349,6 +349,8 @@ theorem merge_linearization_exists
     {C : Configuration D}
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
     {s₁ s₂ : D.State}
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev₁) (h₂_perm : listPermOf π₂ ev₂)
     (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C))
     (h₁_state : applySeq D D.init π₁ = s₁)
@@ -360,17 +362,18 @@ theorem merge_linearization_exists
   suffices gen : ∀ n (π₁ π₂ : List (Op D.AppOp)) (ev₁ ev₂ : Set (Op D.AppOp))
                    (s₁ s₂ : D.State),
       π₁.length + π₂.length = n →
+      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
       listPermOf π₁ ev₁ → listPermOf π₂ ev₂ →
       respects π₁ (lo C) → respects π₂ (lo C) →
       applySeq D D.init π₁ = s₁ → applySeq D D.init π₂ = s₂ →
       ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
            applySeq D D.init π = D.merge s₁ s₂ by
-    exact gen _ π₁ π₂ ev₁ ev₂ s₁ s₂ rfl
+    exact gen _ π₁ π₂ ev₁ ev₂ s₁ s₂ rfl h_ev₁_in_C h_ev₂_in_C
       h₁_perm h₂_perm h₁_resp h₂_resp h₁_state h₂_state
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
-    intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h₁p h₂p h₁r h₂r h₁s h₂s
+    intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h_ev₁_in_C h_ev₂_in_C h₁p h₂p h₁r h₂r h₁s h₂s
     rcases List.eq_nil_or_concat' π₁ with rfl | ⟨π₁', e₁, rfl⟩
     · rcases List.eq_nil_or_concat' π₂ with rfl | ⟨π₂', e₂, rfl⟩
       · -- Both empty.
@@ -444,9 +447,13 @@ theorem merge_linearization_exists
           rw [applySeq_append_single] at h₁s h₂s
           simp only [List.length_append, List.length_singleton] at h_len
           have hn'lt : π₁'.length + π₂'.length < n := by omega
+          have h_ev₁'_in_C : ∀ a ∈ ev₁ \ {e₁}, a ∈ C.events :=
+            fun a ha => h_ev₁_in_C a ha.1
+          have h_ev₂'_in_C : ∀ a ∈ ev₂ \ {e₁}, a ∈ C.events :=
+            fun a ha => h_ev₂_in_C a ha.1
           obtain ⟨π', hπ'perm, hπ'resp, hπ'state⟩ :=
             ih _ hn'lt π₁' π₂' (ev₁ \ {e₁}) (ev₂ \ {e₁}) _ _ rfl
-              hperm₁' hperm₂' hresp₁' hresp₂' rfl rfl
+              h_ev₁'_in_C h_ev₂'_in_C hperm₁' hperm₂' hresp₁' hresp₂' rfl rfl
           refine ⟨π' ++ [e₁], ?_, ?_, ?_⟩
           · obtain ⟨hnd', hm'⟩ := hπ'perm
             refine ⟨?_, fun a => ?_⟩
@@ -489,20 +496,34 @@ theorem merge_linearization_exists
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
         · -- Distinct last events e₁ ≠ e₂.
-          -- Plan: case-split on `D.rc e₂ e₁` (or symmetric).
-          --   - Fst_then_snd: peel e₁ via `bottomUp_2op_reachable`,
-          --     recurse on (π₁', π₂).
-          --   - Either (commute): peel either side (simpler).
-          --   - rc(e₁, e₂) = Fst_then_snd: peel e₂ via merge_comm
-          --     + bottomUp_2op_reachable symmetric.
-          -- Structural obstacle: `bottomUp_2op_reachable` requires
-          -- `distinctOps e₁ e₂` (different timestamps) and
-          -- `differentReplicas e₁ e₂`, which are reachability
-          -- invariants not currently exposed via `listPermOf` or
-          -- `respects`. Closing cleanly requires threading an
-          -- "events have distinct timestamps" invariant through
-          -- `merge_linearization_exists`' signature, or adding it
-          -- to `Configuration` and relating π₁, π₂ to C.events.
+          --
+          -- Infrastructure now available (landed in a separate
+          -- commit): `C.timestamps_distinct` + `C.vis_total_same_replica`
+          -- + `h_ev₁_in_C` / `h_ev₂_in_C` hypothesis. Together these
+          -- let us derive:
+          --   1. `distinctOps e₁ e₂` via timestamps_distinct applied
+          --      to e₁, e₂ ∈ C.events with e₁ ≠ e₂.
+          --   2. `differentReplicas e₁ e₂` in the simple sub-case
+          --      (e₁ ∈ ev₁ \ ev₂ and e₂ ∈ ev₂ \ ev₁): assume
+          --      same replica; by `vis_total_same_replica` they are
+          --      vis-related; by `vis_causal` one side's
+          --      membership forces the other's — contradiction.
+          --
+          -- Remaining case analysis (still to mechanise):
+          --   - Sub-case A: e₁ ∈ ev₁ \ ev₂, e₂ ∈ ev₂ \ ev₁.
+          --     Split on rc(e₂, e₁) ∈ {Fst_then_snd, Either,
+          --     rc(e₁, e₂) = Fst_then_snd} via rc_non_comm +
+          --     no_rc_chain. For Fst_then_snd: apply
+          --     bottomUp_2op_reachable, recurse via IH.
+          --     For Either / symmetric: needs different VCs.
+          --   - Sub-case B: e₁ ∈ ev₂ (shared with π₂ earlier).
+          --     Need to peel via lem_0op against a non-tail
+          --     position in π₂. Requires list-reshuffling.
+          --   - Sub-case C: e₂ ∈ ev₁. Symmetric to B.
+          --
+          -- Full closure is a dedicated session's work; the
+          -- infrastructure above is the prerequisite that's
+          -- now in place.
           sorry
 
 end
@@ -538,8 +559,13 @@ theorem RA_lin_preserved_merge_via_witness
     simp [updateRep] at hN' hL'
     obtain ⟨π₁, hp₁, hr₁, hs₁'⟩ := hRA r' s₁ ev₁ h_s₁ h_ev₁
     obtain ⟨π₂, hp₂, hr₂, hs₂'⟩ := hRA r₂ s₂ ev₂ h_s₂ h_ev₂
+    have h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events :=
+      fun a ha => ⟨r', ev₁, h_ev₁, ha⟩
+    have h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events :=
+      fun a ha => ⟨r₂, ev₂, h_ev₂, ha⟩
     obtain ⟨π, hperm, hresp, hstate⟩ :=
-      merge_linearization_exists (D := D) (C := C) hVC hp₁ hp₂ hr₁ hr₂ hs₁' hs₂'
+      merge_linearization_exists (D := D) (C := C) hVC
+        h_ev₁_in_C h_ev₂_in_C hp₁ hp₂ hr₁ hr₂ hs₁' hs₂'
     refine ⟨π, ?_, ?_, ?_⟩
     · rw [← hL']; exact hperm
     · have : lo C' = lo C := by unfold lo; rw [hvis]

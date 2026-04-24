@@ -54,6 +54,25 @@ structure Configuration (D : CRDTSig) where
   case of the bridge theorem to rule out visibility edges that cross
   the `ev₁ / ev₂ \ ev₁` boundary. -/
   vis_causal : ∀ {a b r s}, vis a b → L r = some s → s b → s a
+  /-- Timestamp uniqueness: any two distinct events in the configuration
+  have different timestamps. Guaranteed by the `apply` rule's
+  freshness hypothesis (`h_fresh_t`) in conjunction with
+  monotonic accumulation in `events`. Consumed by the merge-case
+  proof to discharge `distinctOps` preconditions of BottomUp-2-OP. -/
+  timestamps_distinct :
+    ∀ {a b : Op D.AppOp} {r s r' s'},
+      L r = some s → s a → L r' = some s' → s' b →
+      a ≠ b → a.1 ≠ b.1
+  /-- Same-replica totality of `vis`: any two distinct events from the
+  same replica are comparable by `vis`. Follows from the `apply` rule
+  adding new events with edges from every existing replica-local
+  event. Consumed by the merge-case proof together with `vis_causal`
+  to establish `differentReplicas` on the ev₁\ev₂ / ev₂\ev₁
+  boundary. -/
+  vis_total_same_replica :
+    ∀ {a b : Op D.AppOp} {r s r' s'},
+      L r = some s → s a → L r' = some s' → s' b →
+      a ≠ b → a.2.1 = b.2.1 → vis a b ∨ vis b a
 
 namespace Configuration
 
@@ -137,6 +156,16 @@ def initConfig (D : CRDTSig) : Configuration D where
   vis_src := fun h => absurd h id
   vis_tgt := fun h => absurd h id
   vis_causal := fun h _ _ => absurd h id
+  timestamps_distinct := by
+    intro a b r s r' s' hLr hsa _ _ _
+    by_cases hr : r = 0
+    · subst hr; simp at hLr; subst hLr; exact hsa.elim
+    · simp [hr] at hLr
+  vis_total_same_replica := by
+    intro a b r s r' s' hLr hsa _ _ _ _
+    by_cases hr : r = 0
+    · subst hr; simp at hLr; subst hLr; exact hsa.elim
+    · simp [hr] at hLr
 
 /-- Bundle the configuration/label/step data into a `LabeledTS`. -/
 def labeledTS (D : CRDTSig) : LabeledTS where
