@@ -154,7 +154,12 @@ theorem base_2op (o1 o2: op_t) :
                     distinct_ops o1 o2
 →
  eq (merge (do_ init_st o1) (do_ init_st o2)) (do_ (merge init_st (do_ init_st o2)) o1)
- := by sal
+ := by
+  intro h
+  rcases o1 with ⟨_, _, _ | _⟩ <;> rcases o2 with ⟨_, _, _ | _⟩ <;>
+    refine ⟨?_, ?_⟩ <;> intro k <;>
+    simp +decide [*] at h ⊢
+  all_goals grind
 
 
 
@@ -307,9 +312,11 @@ by
 
 
 theorem base_1op (o1:op_t) :
-eq (merge (do_ init_st o1) init_st) (do_ (merge init_st init_st) o1) :=
-by
-sal
+eq (merge (do_ init_st o1) init_st) (do_ (merge init_st init_st) o1) := by
+  rcases o1 with ⟨_, _, _ | _⟩ <;>
+    refine ⟨?_, ?_⟩ <;> intro k <;>
+    simp +decide [*]
+  all_goals grind
 
 
 theorem ind_lca_1op (l:concrete_st) (o1 ol:op_t) :
