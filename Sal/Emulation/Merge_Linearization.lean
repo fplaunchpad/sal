@@ -70,30 +70,125 @@ theorem bottomUp_0op (hVC : SatisfiesVCs D)
       = D.update (D.merge a b) ol :=
   hVC.lem_0op a b ol
 
-/-- **BottomUp-1-OP** specialised to CRDTs: pull the local-side op
-`o₁` out of `merge(update a o₁, b)` when `b` has no ops after the
-LCA. Proved from `base_1op`, `ind_*_1op`, `inter_*_1op`. -/
-theorem bottomUp_1op
-    (_hVC : SatisfiesVCs D)
-    (_a _b : D.State) (_π_a _π_b : List (Op D.AppOp)) (_o₁ : Op D.AppOp) :
-    True := by
-  -- Full statement: `merge (applySeq a (π_a ++ [o₁])) (applySeq b π_b) =
-  --   update (merge (applySeq a π_a) (applySeq b π_b)) o₁` whenever the
-  -- preconditions on `π_a, π_b, o₁` match the paper's lin.tex §3.3 fig.
-  -- Left as True pending the formulation of the `rc`-precondition
-  -- predicate the paper uses; proof is by paper's triple induction.
-  trivial
+/-! **BottomUp-1-OP** (paper `lemmas.tex` fig `bottom-up`):
 
-/-- **BottomUp-2-OP** specialised to CRDTs: pull an op `o₂` out of
-the right side of `merge(a, update b o₂)` when both sides have local
-ops. Proved from `base_2op`, `ind_*_2op`, `inter_*_2op`. -/
+```
+  (e_⊤ ≠ ε ∧ e_1 ≠ e_⊤) ∨ (e_⊤ = ε ∧ l = b)
+  ─────────────────────────────────────────────────────────
+  merge(e_⊤(l), e_1(a), e_⊤(b)) = e_1(merge(e_⊤(l), a, e_⊤(b)))
+```
+
+For 2-way-merge CRDTs `l` collapses (no LCA argument). We split the
+disjunctive premise into two theorems:
+
+* `bottomUp_1op_top` — clause (`e_⊤ ≠ ε`): right side ends in a
+  shared event `ol ≠ o₁`.
+* `bottomUp_1op_bot` — clause (`e_⊤ = ε ∧ l = b`): right side
+  degenerates to `D.init`.
+
+Their base cases (both `a = init`) are direct VC applications.
+General-`a` extension is the paper's nested induction.
+-/
+
+/-- **BottomUp-1-OP, clause (a), base case** (`a = init`, `b = init`).
+
+`merge(update init o₁, update init ol) = update (merge init (update init ol)) o₁`
+under `rc`-preconditions. Direct application of `base_2op`. -/
+theorem bottomUp_1op_top_base
+    (hVC : SatisfiesVCs D) (o₁ ol : Op D.AppOp)
+    (h_rc : D.rc ol o₁ = RcRes.Fst_then_snd ∨ D.rc ol o₁ = RcRes.Either)
+    (h_rep : differentReplicas o₁ ol) (h_dist : distinctOps o₁ ol) :
+    D.merge (D.update D.init o₁) (D.update D.init ol)
+      = D.update (D.merge D.init (D.update D.init ol)) o₁ :=
+  hVC.base_2op o₁ ol h_rc h_rep h_dist
+
+/-- **BottomUp-1-OP, clause (a)** (general `a`, `b = init`).
+
+`merge(update a o₁, update init ol) = update (merge a (update init ol)) o₁`.
+Proved by induction on `a`'s construction from `D.init`, extending
+the base case `bottomUp_1op_top_base` via `ind_left_1op` (and
+`inter_right_1op` for the interposed cases). -/
+theorem bottomUp_1op_top
+    (_hVC : SatisfiesVCs D)
+    (a : D.State) (o₁ ol : Op D.AppOp)
+    (_h_rc : D.rc ol o₁ = RcRes.Fst_then_snd ∨ D.rc ol o₁ = RcRes.Either)
+    (_h_rep : differentReplicas o₁ ol) (_h_dist : distinctOps o₁ ol) :
+    D.merge (D.update a o₁) (D.update D.init ol)
+      = D.update (D.merge a (D.update D.init ol)) o₁ := by
+  -- Paper appendix §A.2 nested induction: a is `applySeq init π_a`
+  -- for some π_a; induct on |π_a|.
+  -- Base: π_a = [], so a = init — closed by `bottomUp_1op_top_base`.
+  -- Step: π_a = π_a' ++ [o₁']; apply `ind_left_1op` using IH for π_a'.
+  -- Interposed event cases use `inter_right_1op` / `inter_right_base_1op`.
+  sorry
+
+/-- **BottomUp-1-OP, clause (b), base case** (`a = init`).
+
+`merge(update init o₁, init) = update (merge init init) o₁`.
+Direct application of `base_1op`. -/
+theorem bottomUp_1op_bot_base
+    (hVC : SatisfiesVCs D) (o₁ : Op D.AppOp) :
+    D.merge (D.update D.init o₁) D.init
+      = D.update (D.merge D.init D.init) o₁ :=
+  hVC.base_1op o₁
+
+/-- **BottomUp-1-OP, clause (b)** (general `a`, `b = init`).
+
+`merge(update a o₁, init) = update (merge a init) o₁`.
+
+The analogue of `bottomUp_1op_top` for the `e_⊤ = ε ∧ l = b`
+premise clause. No direct VC covers the general-`a` extension when
+the RHS is `init` — `ind_left_1op` requires the RHS to be
+`update b ol`, not `init`. The paper's nested induction resolves
+this by transport through clause (a) first. -/
+theorem bottomUp_1op_bot
+    (_hVC : SatisfiesVCs D)
+    (a : D.State) (o₁ : Op D.AppOp) :
+    D.merge (D.update a o₁) D.init
+      = D.update (D.merge a D.init) o₁ := by
+  -- Base: a = init — closed by `bottomUp_1op_bot_base`.
+  -- Step: a = update a' o₁'. Not directly VC-shape; paper's
+  -- nested induction uses clause (a) with a "phantom" ol event.
+  sorry
+
+/-- **BottomUp-2-OP** (paper `lemmas.tex` fig `bottom-up`):
+
+```
+  e_1 ≠ e_2  ∧  (e_1 →^rc e_2 ∨ e_1 ⇄ e_2)
+  ────────────────────────────────────────────────
+  merge(l, e_1(a), e_2(b)) = e_2(merge(l, e_1(a), b))
+```
+
+Pulls the right-side last event `o₂` out, under `rc`-commutativity.
+For 2-way CRDTs (`l` collapses), the shape matches `ind_right_2op`'s
+inductive step pattern, though with `l → init`.
+
+Base case (both `a = b = init`) is `base_2op`. General form is
+proved by induction on `a, b`'s constructions via
+`ind_right_2op` + `inter_*_2op`. -/
+theorem bottomUp_2op_base
+    (hVC : SatisfiesVCs D) (o₁ o₂ : Op D.AppOp)
+    (h_rc : D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either)
+    (h_rep : differentReplicas o₁ o₂) (h_dist : distinctOps o₁ o₂) :
+    D.merge (D.update D.init o₁) (D.update D.init o₂)
+      = D.update (D.merge D.init (D.update D.init o₂)) o₁ :=
+  hVC.base_2op o₁ o₂ h_rc h_rep h_dist
+
+/-- **BottomUp-2-OP** (general). Pulls `o₂` out of the right side
+of `merge(update a o₁, update b o₂)`. Extends
+`bottomUp_2op_base` to arbitrary reachable `a, b` via the paper's
+nested induction. -/
 theorem bottomUp_2op
     (_hVC : SatisfiesVCs D)
-    (_a _b : D.State) (_π_a _π_b : List (Op D.AppOp)) (_o₁ _o₂ : Op D.AppOp) :
-    True := by
-  -- Full statement: see BottomUp-2-OP in paper's Fig. bottom-up.
-  -- Left as True pending the formulation; proof is by triple induction.
-  trivial
+    (a b : D.State) (o₁ o₂ : Op D.AppOp)
+    (_h_rc : D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either)
+    (_h_rep : differentReplicas o₁ o₂) (_h_dist : distinctOps o₁ o₂) :
+    D.merge (D.update a o₁) (D.update b o₂)
+      = D.update (D.merge a (D.update b o₂)) o₁ := by
+  -- Paper appendix §A.2 double induction on |π_a|, |π_b| where
+  -- a = applySeq init π_a, b = applySeq init π_b. Uses
+  -- `ind_left_2op`, `ind_right_2op`, `inter_*_2op` + base.
+  sorry
 
 /-- **Merge case of the bridge theorem (existential form).**
 
