@@ -6,7 +6,7 @@ The approach builds on the F★-based **Neem** framework of Soundarapandian, Nag
 
 ## What's verified
 
-The suite currently contains **30 RDTs** — 18 CRDTs and 12 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
+The suite currently contains **30 RDTs** — 18 CRDTs and 12 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). That's **696 kernel-verified VCs** for state convergence (29 × 24). The `Peritext` CRDT and MRDT additionally carry a read-side projection and characterization theorems for the paper's Ex 1 / Ex 2 / Ex 3 / Ex 5 / Ex 7 / Ex 8 intent-preservation scenarios — see [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
 ### CRDTs ([`Sal/CRDTs/`](Sal/CRDTs))
 
