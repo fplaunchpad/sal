@@ -416,7 +416,27 @@ Not a direct VC consequence: every `ind_*_1op` / `inter_*_1op`
 requires the RHS of `merge` to have an event `ol` applied; the
 degenerate `b = init` is only handled by `base_1op` at `a = init`.
 The paper derives this via convergence + iteratively stripping the
-rightmost event of `π` through phantom-event tricks. -/
+rightmost event of `π` through phantom-event tricks.
+
+Base cases (π = [], π = [o₁]) close directly from `merge_idem` +
+`base_1op` + `merge_comm`. Inductive step (|π| ≥ 2) is the deep
+obstacle: no VC extends `merge X init` beyond the singleton case. -/
+theorem merge_init_left_reachable_nil
+    (hVC : SatisfiesVCs D) :
+    D.merge D.init (applySeq D D.init ([] : List (Op D.AppOp))) = D.init := by
+  simp [applySeq, hVC.merge_idem]
+
+theorem merge_init_left_reachable_singleton
+    (hVC : SatisfiesVCs D) (o₁ : Op D.AppOp) :
+    D.merge D.init (applySeq D D.init [o₁]) = applySeq D D.init [o₁] := by
+  -- applySeq init [o₁] = update init o₁
+  -- Goal: merge init (update init o₁) = update init o₁
+  simp [applySeq]
+  -- merge init (update init o₁) = merge (update init o₁) init  [comm]
+  --   = update (merge init init) o₁                             [base_1op]
+  --   = update init o₁                                          [merge_idem]
+  rw [hVC.merge_comm, hVC.base_1op o₁, hVC.merge_idem]
+
 theorem merge_init_left_reachable
     (_hVC : SatisfiesVCs D) (π : List (Op D.AppOp)) :
     D.merge D.init (applySeq D D.init π) = applySeq D D.init π := by
