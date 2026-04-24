@@ -1042,3 +1042,34 @@ theorem insert_within_span_in_span_visible
     exact ⟨ch, Or.inr rfl⟩
   exact in_span_visible_propagate s_post m (ts, rid) c_after
     h_span_c_after_post h_after_new h_right_post
+
+/-! ### Ex 7 / Ex 8 visible-order demonstrations (MRDT mirror)
+
+Mirrors of the CRDT Ex 7 / Ex 8 demo theorems. -/
+
+theorem ex7_bold_older_sibling_in_span
+    (s : concrete_st) (m : MarkOp) (p c_new : OpId) :
+    m.startSide = false →
+    m.endSide = false →
+    visible_le s m.startId p →
+    after_of s c_new p = true →
+    after_of s m.endId p = true →
+    c_new ≠ m.endId →
+    opid_max c_new m.endId = c_new →
+    c_new ≠ m.startId →
+    in_span_visible s m c_new := by
+  intro h_sSide h_eSide h_left_bound h_after_new h_after_end h_ne h_order _
+  refine ⟨?_, ?_⟩
+  · split_ifs with h
+    · exact absurd h (by rw [h_sSide]; decide)
+    · have h_pc : visible_lt s p c_new := visible_lt.parent_child h_after_new
+      exact Or.inr (visible_lt_of_le_lt s _ _ _ h_left_bound h_pc)
+  · split_ifs with h
+    · exact absurd h (by rw [h_eSide]; decide)
+    · exact visible_lt.sibling h_after_new h_after_end h_ne h_order
+
+theorem ex8_link_descendant_visible_lt_endId
+    (s : concrete_st) (m : MarkOp) (c_new : OpId) :
+    after_of s c_new m.endId = true →
+    visible_lt s m.endId c_new :=
+  fun h => visible_lt.parent_child h
