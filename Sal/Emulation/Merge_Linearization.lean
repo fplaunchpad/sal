@@ -44,6 +44,74 @@ noncomputable def restrictTo (π : List (Op D.AppOp)) (E : Set (Op D.AppOp)) :
     List (Op D.AppOp) :=
   π.filter fun x => decide (x ∈ E)
 
+/-! ### Convergence
+
+Two `lo`-respecting permutations of the same event set yield the
+same state when folded into `D.init`.
+
+This is the Sal paper's **convergence theorem** (lin.tex §3.2,
+Lemma `convergence`). It underpins several sub-cases of
+`merge_linearization_exists`:
+
+* `π₁ = []`, `π₂ ≠ []`: we need `merge D.init s₂ = s₂` for
+  reachable `s₂`. Convergence gives us that any `lo`-respecting
+  permutation of `ev₂` yields `s₂`; combined with `base_1op` +
+  induction, this collapses the `merge init` to the right-side
+  state.
+* The mirror `π₁ ≠ []`, `π₂ = []` symmetrically.
+
+Convergence is provable from the 24 VCs via a bubble-sort argument:
+any two `lo`-respecting permutations differ by adjacent
+transpositions of lo-unordered pairs; each transposition preserves
+state via `rc_non_comm` (unordered ⟹ commuting) or `cond_comm` +
+the presence of an overwriter. -/
+
+/-- **Convergence.** Two `lo`-respecting permutations of the same
+event set yield equal states when folded into `D.init`.
+
+Proof scaffold: base cases for empty and singleton permutations
+are trivial (unique permutation). The general case requires the
+bubble-sort argument via `rc_non_comm` / `cond_comm`. -/
+theorem convergence
+    (_hVC : SatisfiesVCs D) {C : Configuration D}
+    {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
+    (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
+    (_h₁_resp : respects π₁ (lo C)) (_h₂_resp : respects π₂ (lo C)) :
+    applySeq D D.init π₁ = applySeq D D.init π₂ := by
+  -- Base case: both empty.
+  by_cases h₁_nil : π₁ = []
+  · by_cases h₂_nil : π₂ = []
+    · subst h₁_nil; subst h₂_nil; rfl
+    · -- π₁ = [], π₂ ≠ []. Impossible: listPermOf forces ev = ∅ = ev,
+      -- but π₂ ≠ [] means some event is in ev, contradiction.
+      exfalso
+      obtain ⟨_, hm₂⟩ := h₂_perm
+      obtain ⟨_, hm₁⟩ := h₁_perm
+      subst h₁_nil
+      obtain ⟨e, hmem⟩ : ∃ e, e ∈ π₂ := by
+        match π₂, h₂_nil with
+        | e :: _, _ => exact ⟨e, List.mem_cons_self⟩
+      have hev : e ∈ ev := (hm₂ e).mp hmem
+      exact (List.not_mem_nil : e ∉ []) ((hm₁ e).mpr hev)
+  · by_cases h₂_nil : π₂ = []
+    · -- Symmetric impossibility.
+      exfalso
+      obtain ⟨_, hm₁⟩ := h₁_perm
+      obtain ⟨_, hm₂⟩ := h₂_perm
+      subst h₂_nil
+      obtain ⟨e, hmem⟩ : ∃ e, e ∈ π₁ := by
+        match π₁, h₁_nil with
+        | e :: _, _ => exact ⟨e, List.mem_cons_self⟩
+      have hev : e ∈ ev := (hm₁ e).mp hmem
+      exact (List.not_mem_nil : e ∉ []) ((hm₂ e).mpr hev)
+    · -- Both non-empty. The general convergence argument: pull
+      -- the rc-maximal event to the end of both permutations via
+      -- adjacent swaps (justified by `rc_non_comm` and
+      -- `cond_comm`), then recurse on the shorter permutations.
+      -- Left for future work; requires list-manipulation lemmas
+      -- beyond what's directly derivable from the 24 VCs.
+      sorry
+
 /-! ### Paper's BottomUp rules (derived from the 24 VCs)
 
 The Sal paper (arXiv:2502.19967v1, appendix §A.2–A.4) proves the
