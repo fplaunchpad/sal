@@ -79,10 +79,27 @@ we'd need for complete Ex 1 fidelity (see below).
 **Full RGA-visible-order formalization.** Needed to close the
 remaining gap in Ex 1: the paper's "within the span" applies to any
 character in visible-traversal order between `startId` and `endId`,
-not just those reachable via an afters-chain. Chain-form propagation
-is now proved (`covered_interior_of_reach`) but still captures
-*afters-reachability* rather than *visible-position*. The full
-traversal relation would also unlock a list-form `readRichText`.
+not just those reachable via an afters-chain.
+
+Foundation has landed: the `visible_lt` / `visible_le` relations
+(bottom of each `Peritext_ReadSide.lean`) formalize RGA traversal
+order via four inductive rules (parent-child, sibling,
+left-descendant-of-sibling, transitive closure), plus a partial-order
+API (reflexivity, transitivity, composition lemmas) and two useful
+derived theorems:
+
+- `visible_lt_of_afters_reach` — afters-ancestry gives a
+  visible_lt from ancestor to descendant.
+- `visible_lt_of_cross_sibling` — two chars in the subtrees of
+  different direct siblings are ordered by the siblings' opIds.
+
+**Still pending:** integrating `visible_lt` with `in_span_boundary`
+to get a precise `in_span_visible` that subsumes the afters-chain-
+only `covered_interior`. This is the step that would fully close
+Ex 1 (and unlock a list-form `readRichText`). Deferred because it
+refactors the read-side projection and requires re-validating the
+expand/contract / priority-rule / anchors-survive-tombstones
+theorems against the new covering predicate.
 
 **Tombstone-scanning on insert (§4.2.2).** The paper's `Insert`
 algorithm inspects the marks set when placing a character after
