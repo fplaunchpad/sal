@@ -595,3 +595,49 @@ theorem formatted_visible_of_lww_add_winner
   simp only [formatted_visible, h_vis, if_true]
   refine decide_eq_true (Exists.intro addOp ?_)
   refine ⟨⟨h_pres_a, h_cov_a, h_mt_a, h_beats⟩, h_add⟩
+
+/-- Paper Ex 5 negative, visible-order version. -/
+theorem no_add_cover_implies_unformatted_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ) :
+    (∀ m, mark_present s m = true →
+          in_span_visible s m c →
+          m.markType = mt →
+          m.isAdd = false) →
+    formatted_visible s c mt = false := by
+  intro h_all_removes
+  have h_nex : ¬ ∃ m, mark_wins_visible s m c mt ∧ m.isAdd = true := by
+    rintro ⟨w, ⟨h_pres_w, h_cov_w, h_mt_w, _⟩, h_w_add⟩
+    have : w.isAdd = false := h_all_removes w h_pres_w h_cov_w h_mt_w
+    grind
+  simp only [formatted_visible]
+  split_ifs with h_vis
+  · exact decide_eq_false h_nex
+  · rfl
+
+/-- Paper-faithful Ex 5 positive: Add wins over concurrent Remove. -/
+theorem add_wins_over_concurrent_remove_visible
+    (s : concrete_st) (c : OpId) (mt : ℕ)
+    (addOp remOp : MarkOp) :
+    addOp.isAdd = true →
+    remOp.isAdd = false →
+    addOp.markType = mt →
+    remOp.markType = mt →
+    mark_present s addOp = true →
+    mark_present s remOp = true →
+    in_span_visible s addOp c →
+    in_span_visible s remOp c →
+    visible s c = true →
+    (∀ m', mark_present s m' = true →
+           in_span_visible s m' c →
+           m'.markType = mt →
+           m' ≠ addOp → m' ≠ remOp →
+           mark_beats addOp m' = true) →
+    formatted_visible s c mt = true := by
+  intro h_add h_rem h_mt_a _ h_pres_a _ h_cov_a _ h_vis h_beats
+  refine formatted_visible_of_lww_add_winner s c mt addOp
+    h_add h_mt_a h_pres_a h_cov_a h_vis ?_
+  intro m' h_pres' h_cov' h_mt' h_ne_add
+  by_cases h_eq : m' = remOp
+  · subst h_eq
+    simp [mark_beats, h_add, h_rem]
+  · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
