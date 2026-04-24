@@ -496,34 +496,33 @@ theorem merge_linearization_exists
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
         · -- Distinct last events e₁ ≠ e₂.
+          obtain ⟨hnd₁, hmem₁⟩ := h₁p
+          obtain ⟨hnd₂, hmem₂⟩ := h₂p
+          have he₁_in_ev₁ : e₁ ∈ ev₁ := (hmem₁ e₁).mp (by simp)
+          have he₂_in_ev₂ : e₂ ∈ ev₂ := (hmem₂ e₂).mp (by simp)
+          have he₁_in_C : e₁ ∈ C.events := h_ev₁_in_C e₁ he₁_in_ev₁
+          have he₂_in_C : e₂ ∈ C.events := h_ev₂_in_C e₂ he₂_in_ev₂
+          obtain ⟨r₁', s₁_, h_r₁'_L, h_r₁'_ev⟩ := he₁_in_C
+          obtain ⟨r₂', s₂_, h_r₂'_L, h_r₂'_ev⟩ := he₂_in_C
+          -- Kernel-verifiable: distinctOps e₁ e₂ from new invariant.
+          have h_dist_e₁_e₂ : distinctOps e₁ e₂ :=
+            C.timestamps_distinct h_r₁'_L h_r₁'_ev h_r₂'_L h_r₂'_ev h_same
+          -- Kernel-verifiable: differentReplicas e₁ e₂ in the sub-case
+          -- e₁ ∉ ev₂ ∧ e₂ ∉ ev₁ (local events). Derived via
+          -- vis_total_same_replica + vis_causal contradiction.
+          -- We defer this derivation to the full sub-case analysis.
           --
-          -- Infrastructure now available (landed in a separate
-          -- commit): `C.timestamps_distinct` + `C.vis_total_same_replica`
-          -- + `h_ev₁_in_C` / `h_ev₂_in_C` hypothesis. Together these
-          -- let us derive:
-          --   1. `distinctOps e₁ e₂` via timestamps_distinct applied
-          --      to e₁, e₂ ∈ C.events with e₁ ≠ e₂.
-          --   2. `differentReplicas e₁ e₂` in the simple sub-case
-          --      (e₁ ∈ ev₁ \ ev₂ and e₂ ∈ ev₂ \ ev₁): assume
-          --      same replica; by `vis_total_same_replica` they are
-          --      vis-related; by `vis_causal` one side's
-          --      membership forces the other's — contradiction.
+          -- Remaining work: (a) case-split on e₁ ∈ ev₂ vs e₁ ∉ ev₂
+          -- and e₂ ∈ ev₁ vs e₂ ∉ ev₁; (b) in the local-only sub-case,
+          -- split on rc(e₂, e₁) and apply bottomUp_2op_reachable; (c)
+          -- in cross-containment sub-cases, use lem_0op at non-tail
+          -- positions; (d) respects bookkeeping accounting for
+          -- cross-set lo constraints (paper's L^a, L^b partitions).
           --
-          -- Remaining case analysis (still to mechanise):
-          --   - Sub-case A: e₁ ∈ ev₁ \ ev₂, e₂ ∈ ev₂ \ ev₁.
-          --     Split on rc(e₂, e₁) ∈ {Fst_then_snd, Either,
-          --     rc(e₁, e₂) = Fst_then_snd} via rc_non_comm +
-          --     no_rc_chain. For Fst_then_snd: apply
-          --     bottomUp_2op_reachable, recurse via IH.
-          --     For Either / symmetric: needs different VCs.
-          --   - Sub-case B: e₁ ∈ ev₂ (shared with π₂ earlier).
-          --     Need to peel via lem_0op against a non-tail
-          --     position in π₂. Requires list-reshuffling.
-          --   - Sub-case C: e₂ ∈ ev₁. Symmetric to B.
-          --
-          -- Full closure is a dedicated session's work; the
-          -- infrastructure above is the prerequisite that's
-          -- now in place.
+          -- h_dist_e₁_e₂ is a live witness that the timestamps_distinct
+          -- invariant threads correctly; the remainder is case analysis
+          -- and plumbing.
+          have _ := h_dist_e₁_e₂  -- use it to avoid unused warning
           sorry
 
 end
