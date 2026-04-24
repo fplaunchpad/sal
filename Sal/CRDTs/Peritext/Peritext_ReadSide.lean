@@ -884,7 +884,10 @@ theorem startId_in_span_visible
     in_span_visible s m (mark_startId m) := by
   intro h_sSide h_nondeg
   refine ⟨?_, h_nondeg⟩
-  simp [h_sSide, visible_le_refl]
+  show (if mark_startSide m = true then visible_lt s (mark_startId m) (mark_startId m)
+        else visible_le s (mark_startId m) (mark_startId m))
+  rw [h_sSide]; simp
+  exact visible_le_refl s (mark_startId m)
 
 /-- Sanity: `endId` is in the span when `endSide = true` and
 the mark's span is non-degenerate. -/
@@ -896,4 +899,7 @@ theorem endId_in_span_visible
     in_span_visible s m (mark_endId m) := by
   intro h_eSide h_nondeg
   refine ⟨h_nondeg, ?_⟩
-  simp [h_eSide, visible_le_refl]
+  show (if mark_endSide m = true then visible_le s (mark_endId m) (mark_endId m)
+        else visible_lt s (mark_endId m) (mark_endId m))
+  rw [h_eSide]; simp
+  exact visible_le_refl s (mark_endId m)

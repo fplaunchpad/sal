@@ -531,7 +531,10 @@ theorem startId_in_span_visible
     in_span_visible s m m.startId := by
   intro h_sSide h_nondeg
   refine ⟨?_, h_nondeg⟩
-  simp [h_sSide, visible_le_refl]
+  show (if m.startSide = true then visible_lt s m.startId m.startId
+        else visible_le s m.startId m.startId)
+  rw [h_sSide]; simp
+  exact visible_le_refl s m.startId
 
 theorem endId_in_span_visible
     (s : concrete_st) (m : MarkOp) :
@@ -541,4 +544,7 @@ theorem endId_in_span_visible
     in_span_visible s m m.endId := by
   intro h_eSide h_nondeg
   refine ⟨h_nondeg, ?_⟩
-  simp [h_eSide, visible_le_refl]
+  show (if m.endSide = true then visible_le s m.endId m.endId
+        else visible_lt s m.endId m.endId)
+  rw [h_eSide]; simp
+  exact visible_le_refl s m.endId
