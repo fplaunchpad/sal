@@ -106,9 +106,9 @@ theorem bottomUp_1op_top_base
 /-- **BottomUp-1-OP, clause (a)** (general `a`, `b = init`).
 
 `merge(update a o₁, update init ol) = update (merge a (update init ol)) o₁`.
-Proved by induction on `a`'s construction from `D.init`, extending
-the base case `bottomUp_1op_top_base` via `ind_left_1op` (and
-`inter_right_1op` for the interposed cases). -/
+Abstract-state form; closed for reachable states by
+`bottomUp_1op_top_reachable` (defined below, corollary of
+`bottomUp_2op_reachable` by renaming `ol → o₂`). -/
 theorem bottomUp_1op_top
     (_hVC : SatisfiesVCs D)
     (a : D.State) (o₁ ol : Op D.AppOp)
@@ -116,11 +116,6 @@ theorem bottomUp_1op_top
     (_h_rep : differentReplicas o₁ ol) (_h_dist : distinctOps o₁ ol) :
     D.merge (D.update a o₁) (D.update D.init ol)
       = D.update (D.merge a (D.update D.init ol)) o₁ := by
-  -- Paper appendix §A.2 nested induction: a is `applySeq init π_a`
-  -- for some π_a; induct on |π_a|.
-  -- Base: π_a = [], so a = init — closed by `bottomUp_1op_top_base`.
-  -- Step: π_a = π_a' ++ [o₁']; apply `ind_left_1op` using IH for π_a'.
-  -- Interposed event cases use `inter_right_1op` / `inter_right_base_1op`.
   sorry
 
 /-- **BottomUp-1-OP, clause (b), base case** (`a = init`).
@@ -239,6 +234,25 @@ theorem bottomUp_2op_reachable
     · exact h_dist_a_o₂ e (by simp)
     · exact ih (fun f hf => h_dist_a_o₁ f (by simp [hf]))
                (fun f hf => h_dist_a_o₂ f (by simp [hf]))
+
+/-- **BottomUp-1-OP, clause (a), reachable form** — strict
+`Fst_then_snd` `rc` case. Direct corollary of
+`bottomUp_2op_reachable` (same theorem, renaming `ol → o₂`). -/
+theorem bottomUp_1op_top_reachable
+    (hVC : SatisfiesVCs D) (o₁ ol : Op D.AppOp)
+    (h_rc : D.rc ol o₁ = RcRes.Fst_then_snd)
+    (h_rep : differentReplicas o₁ ol) (h_dist : distinctOps o₁ ol)
+    (π_a π_b : List (Op D.AppOp))
+    (h_dist_a_o₁ : ∀ e ∈ π_a, distinctOps o₁ e)
+    (h_dist_a_ol : ∀ e ∈ π_a, distinctOps ol e)
+    (h_dist_b_o₁ : ∀ e ∈ π_b, distinctOps o₁ e)
+    (h_dist_b_ol : ∀ e ∈ π_b, distinctOps ol e) :
+    D.merge (D.update (applySeq D D.init π_a) o₁)
+            (D.update (applySeq D D.init π_b) ol)
+      = D.update (D.merge (applySeq D D.init π_a)
+                          (D.update (applySeq D D.init π_b) ol)) o₁ :=
+  bottomUp_2op_reachable hVC o₁ ol h_rc h_rep h_dist π_a π_b
+    h_dist_a_o₁ h_dist_a_ol h_dist_b_o₁ h_dist_b_ol
 
 /-- **BottomUp-2-OP** (general). Pulls `o₂` out of the right side
 of `merge(update a o₁, update b o₂)`. Closed by
