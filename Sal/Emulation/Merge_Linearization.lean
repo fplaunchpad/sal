@@ -1,5 +1,6 @@
 import Sal.Emulation.RA_Linearizability
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.List.Induction
 
 /-!
 # Merge linearization (existential form)
@@ -174,10 +175,78 @@ theorem bottomUp_2op_base
       = D.update (D.merge D.init (D.update D.init o₂)) o₁ :=
   hVC.base_2op o₁ o₂ h_rc h_rep h_dist
 
+/-- **BottomUp-2-OP** (fix `a = init`, extend `b` by a list of events).
+
+Specialised form useful for the inductive case of
+`merge_linearization_exists` when `π₁ = []`. Proved by induction on
+`π_b` (via `List.reverseRecOn`): base uses `bottomUp_2op_base`,
+step uses `ind_right_2op`. Requires `Fst_then_snd` (strict) for the
+`rc` precondition — `ind_right_2op` does not cover the `Either`
+case. -/
+theorem bottomUp_2op_init_left
+    (hVC : SatisfiesVCs D) (o₁ o₂ : Op D.AppOp)
+    (h_rc : D.rc o₂ o₁ = RcRes.Fst_then_snd)
+    (h_rep : differentReplicas o₁ o₂) (h_dist : distinctOps o₁ o₂)
+    (π_b : List (Op D.AppOp))
+    (h_dist_b_o₁ : ∀ e ∈ π_b, distinctOps o₁ e)
+    (h_dist_b_o₂ : ∀ e ∈ π_b, distinctOps o₂ e) :
+    D.merge (D.update D.init o₁) (D.update (applySeq D D.init π_b) o₂)
+      = D.update (D.merge D.init (D.update (applySeq D D.init π_b) o₂)) o₁ := by
+  induction π_b using List.reverseRecOn with
+  | nil =>
+    simpa [applySeq] using hVC.base_2op o₁ o₂ (Or.inl h_rc) h_rep h_dist
+  | append_singleton π' e ih =>
+    rw [applySeq_append_single]
+    refine hVC.ind_right_2op D.init (applySeq D D.init π') o₁ o₂ e
+      h_rc h_rep h_dist ?_ ?_ ?_
+    · exact h_dist_b_o₁ e (by simp)
+    · exact h_dist_b_o₂ e (by simp)
+    · exact ih (fun f hf => h_dist_b_o₁ f (by simp [hf]))
+               (fun f hf => h_dist_b_o₂ f (by simp [hf]))
+
+/-- **BottomUp-2-OP** (reachable `a, b`, Fst_then_snd `rc` case).
+
+For `a = applySeq init π_a`, `b = applySeq init π_b`, pulls `o₁`
+out of the left of `merge(update a o₁, update b o₂)`. Proved by
+double induction: outer on `π_a` (via `ind_left_2op`), inner on
+`π_b` (via `bottomUp_2op_init_left`).
+
+Does **not** cover the `Either` `rc` case (`ind_right_2op` rejects
+it) — that case needs different VC machinery, likely the
+`inter_*_2op` family. -/
+theorem bottomUp_2op_reachable
+    (hVC : SatisfiesVCs D) (o₁ o₂ : Op D.AppOp)
+    (h_rc : D.rc o₂ o₁ = RcRes.Fst_then_snd)
+    (h_rep : differentReplicas o₁ o₂) (h_dist : distinctOps o₁ o₂)
+    (π_a π_b : List (Op D.AppOp))
+    (h_dist_a_o₁ : ∀ e ∈ π_a, distinctOps o₁ e)
+    (h_dist_a_o₂ : ∀ e ∈ π_a, distinctOps o₂ e)
+    (h_dist_b_o₁ : ∀ e ∈ π_b, distinctOps o₁ e)
+    (h_dist_b_o₂ : ∀ e ∈ π_b, distinctOps o₂ e) :
+    D.merge (D.update (applySeq D D.init π_a) o₁)
+            (D.update (applySeq D D.init π_b) o₂)
+      = D.update (D.merge (applySeq D D.init π_a)
+                          (D.update (applySeq D D.init π_b) o₂)) o₁ := by
+  induction π_a using List.reverseRecOn with
+  | nil =>
+    simpa [applySeq] using
+      bottomUp_2op_init_left hVC o₁ o₂ h_rc h_rep h_dist π_b h_dist_b_o₁ h_dist_b_o₂
+  | append_singleton π' e ih =>
+    rw [applySeq_append_single]
+    refine hVC.ind_left_2op (applySeq D D.init π') (applySeq D D.init π_b) o₁ o₂ e
+      (Or.inl h_rc) h_rep h_dist ?_ ?_ ?_
+    · exact h_dist_a_o₁ e (by simp)
+    · exact h_dist_a_o₂ e (by simp)
+    · exact ih (fun f hf => h_dist_a_o₁ f (by simp [hf]))
+               (fun f hf => h_dist_a_o₂ f (by simp [hf]))
+
 /-- **BottomUp-2-OP** (general). Pulls `o₂` out of the right side
-of `merge(update a o₁, update b o₂)`. Extends
-`bottomUp_2op_base` to arbitrary reachable `a, b` via the paper's
-nested induction. -/
+of `merge(update a o₁, update b o₂)`. Closed by
+`bottomUp_2op_reachable` once the caller materialises the
+event-list witnesses for `a, b`. The abstract-state form (no
+`π_a, π_b`) remains `sorry` because the VCs only hold for
+reachable states — a universal statement over `a, b` is strictly
+stronger than the VCs guarantee. -/
 theorem bottomUp_2op
     (_hVC : SatisfiesVCs D)
     (a b : D.State) (o₁ o₂ : Op D.AppOp)
@@ -185,9 +254,9 @@ theorem bottomUp_2op
     (_h_rep : differentReplicas o₁ o₂) (_h_dist : distinctOps o₁ o₂) :
     D.merge (D.update a o₁) (D.update b o₂)
       = D.update (D.merge a (D.update b o₂)) o₁ := by
-  -- Paper appendix §A.2 double induction on |π_a|, |π_b| where
-  -- a = applySeq init π_a, b = applySeq init π_b. Uses
-  -- `ind_left_2op`, `ind_right_2op`, `inter_*_2op` + base.
+  -- Abstract-state form. Callers that know `a = applySeq init π_a`
+  -- and `b = applySeq init π_b` should use `bottomUp_2op_reachable`
+  -- directly.
   sorry
 
 /-- **Merge case of the bridge theorem (existential form).**
