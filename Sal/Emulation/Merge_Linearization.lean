@@ -47,6 +47,111 @@ noncomputable def restrictTo (π : List (Op D.AppOp)) (E : Set (Op D.AppOp)) :
     List (Op D.AppOp) :=
   π.filter fun x => decide (x ∈ E)
 
+/-! ### Event-set decomposition (paper's L^a / L^b partitions)
+
+For the Merge case's inductive argument, the Sal paper (lin.tex §3.3,
+detailed in appendix §A.2–A.4) partitions the event sets involved
+in a merge. Specialised to 2-way CRDT merge (LCA collapses to
+`init`), the partition is:
+
+* `L_top = ev₁ ∩ ev₂` — events seen at both replicas (shared
+  history).
+* `L₁' = ev₁ \ ev₂` — events local to `r₁`.
+* `L₂' = ev₂ \ ev₁` — events local to `r₂`.
+
+Within the local events, a further partition reflects whether a
+local event is `lo`-before some shared event (needs to be
+linearised early) or not (can be appended at the end):
+
+* `L_a C ev_local` — local events **not** `lo`-before any shared
+  event. These are the "easy" events that linearise at the end of
+  the merge.
+* `L_b C ev_local` — local events `lo`-before some shared event or
+  transitively `lo`-before another local `L_b` event.
+
+These definitions set up the structure the next session's
+inductive argument will use. No lemmas about them are proved
+here yet. -/
+
+/-- Shared events of a 2-way CRDT merge. -/
+def L_top (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₁ ∩ ev₂
+
+/-- Events local to `r₁`. -/
+def L₁_local (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₁ \ ev₂
+
+/-- Events local to `r₂`. -/
+def L₂_local (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₂ \ ev₁
+
+/-- Local events `lo`-before some `L_top` event, or transitively
+`lo`-before another `L_b` event. Inductively defined via a fixed-
+point. -/
+def L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
+    Set (Op D.AppOp) :=
+  fun e => e ∈ ev_local ∧
+    (∃ e' ∈ ev_top, lo C e e')
+
+/-- Local events NOT `lo`-before any shared event. These linearise
+at the end of the merge witness, peeled via `bottomUp_2op_reachable`
+or `bottomUp_1op_top_reachable`. -/
+def L_a (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
+    Set (Op D.AppOp) :=
+  fun e => e ∈ ev_local ∧
+    (∀ e' ∈ ev_top, ¬ lo C e e')
+
+/-- Sanity: `L_a ∪ L_b = ev_local` (every local event either has
+a lo-successor in shared events or doesn't). -/
+theorem L_a_union_L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
+    L_a C ev_top ev_local ∪ L_b C ev_top ev_local = ev_local := by
+  ext e
+  simp only [Set.mem_union]
+  constructor
+  · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
+  · intro he
+    by_cases h : ∃ e' ∈ ev_top, lo C e e'
+    · exact Or.inr ⟨he, h⟩
+    · refine Or.inl ⟨he, fun e' he' hlo => ?_⟩
+      exact h ⟨e', he', hlo⟩
+
+/-- Sanity: `L_a` and `L_b` are disjoint. -/
+theorem L_a_inter_L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
+    L_a C ev_top ev_local ∩ L_b C ev_top ev_local = ∅ := by
+  ext e
+  simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨⟨_, h_all⟩, _, e', he', hlo⟩
+  exact h_all e' he' hlo
+
+/-- Decomposition sanity: `ev₁ = L_top ∪ L₁_local` (disjoint union). -/
+theorem ev₁_eq_top_union_local (ev₁ ev₂ : Set (Op D.AppOp)) :
+    ev₁ = L_top ev₁ ev₂ ∪ L₁_local ev₁ ev₂ := by
+  ext e
+  simp only [L_top, L₁_local, Set.mem_union, Set.mem_inter_iff, Set.mem_diff]
+  constructor
+  · intro he
+    by_cases h : e ∈ ev₂
+    · exact Or.inl ⟨he, h⟩
+    · exact Or.inr ⟨he, h⟩
+  · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
+
+/-- Mirror: `ev₂ = L_top ∪ L₂_local`. -/
+theorem ev₂_eq_top_union_local (ev₁ ev₂ : Set (Op D.AppOp)) :
+    ev₂ = L_top ev₁ ev₂ ∪ L₂_local ev₁ ev₂ := by
+  ext e
+  simp only [L_top, L₂_local, Set.mem_union, Set.mem_inter_iff, Set.mem_diff]
+  constructor
+  · intro he
+    by_cases h : e ∈ ev₁
+    · exact Or.inl ⟨h, he⟩
+    · exact Or.inr ⟨he, h⟩
+  · rintro (⟨_, h⟩ | ⟨h, _⟩) <;> exact h
+
+/-- Decomposition sanity: `ev₁ ∪ ev₂ = L_top ∪ L₁_local ∪ L₂_local`. -/
+theorem union_eq_partition (ev₁ ev₂ : Set (Op D.AppOp)) :
+    ev₁ ∪ ev₂ = L_top ev₁ ev₂ ∪ L₁_local ev₁ ev₂ ∪ L₂_local ev₁ ev₂ := by
+  ext e
+  simp only [L_top, L₁_local, L₂_local,
+             Set.mem_union, Set.mem_inter_iff, Set.mem_diff]
+  tauto
+
 /-! ### Convergence
 
 Two `lo`-respecting permutations of the same event set yield the
