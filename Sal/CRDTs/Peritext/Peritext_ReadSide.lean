@@ -1184,6 +1184,72 @@ theorem insert_within_span_in_span_visible
   exact in_span_visible_propagate s_post m (ts, rid) c_after
     h_span_c_after_post h_after_new h_right_post
 
+/-- **Ex 1 bound auto-derivation for the cross-subtree case.**
+
+If `c_after` and `endId` live in the subtrees of different direct
+siblings `c_a_top` / `c_e_top` under a common afters-parent `p`,
+with `c_a_top` the older sibling (`opid_max c_a_top c_e_top = c_a_top`),
+then the right-side bound `visible_lt (do_ …) (ts, rid) endId`
+holds *automatically* — no caller-provided bound needed.
+
+The insertion places the new char in `c_a_top`'s subtree (since
+`afters((ts, rid)) = c_after` and `afters_reach s c_after c_a_top`).
+`c_e_top`'s subtree contains `endId`. By `visible_lt_of_cross_sibling`,
+anything in the older-sibling subtree precedes anything in the
+younger-sibling subtree.
+
+This corollary covers the common "insert inside a bold span where
+the bold starts below some ancestor level" case in the paper's
+Ex 1, removing the bound from the user's obligation. For the
+in-subtree-of-endId case (where `c_after` IS an afters-ancestor of
+`endId`), the right-bound depends on opid ordering and is best
+provided explicitly via `insert_within_span_in_span_visible`. -/
+theorem insert_within_span_cross_subtree_in_span
+    (s_pre : concrete_st) (m : MarkOp)
+    (ts rid : ℕ) (ch : ℕ) (c_after p c_a_top c_e_top : OpId) :
+    contains (Prod.fst (Prod.snd s_pre)) (ts, rid) = false →
+    in_span_visible s_pre m c_after →
+    mark_endSide m = false →
+    afters_reach s_pre c_after c_a_top →
+    afters_reach s_pre (mark_endId m) c_e_top →
+    after_of s_pre c_a_top p = true →
+    after_of s_pre c_e_top p = true →
+    c_a_top ≠ c_e_top →
+    opid_max c_a_top c_e_top = c_a_top →
+    in_span_visible (do_ s_pre (ts, rid, app_op_t.Insert ch c_after)) m (ts, rid) := by
+  intro h_fresh h_span_pre h_eSide h_reach_after h_reach_end
+    h_after_a h_after_e h_ne h_order
+  set s_post := do_ s_pre (ts, rid, app_op_t.Insert ch c_after) with h_sp_def
+  -- Transfer the afters-reach chains and sibling relations to s_post
+  -- (all via preservation, since the new opId is fresh).
+  have h_reach_after_post : afters_reach s_post c_after c_a_top :=
+    afters_reach_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_reach_after
+  have h_reach_end_post : afters_reach s_post (mark_endId m) c_e_top :=
+    afters_reach_preserved_under_insert s_pre ts rid ch c_after h_fresh _ _ h_reach_end
+  have h_ne_a : c_a_top ≠ (ts, rid) := by
+    exact after_of_true_implies_ne_fresh s_pre ts rid c_a_top p h_fresh h_after_a
+  have h_ne_e : c_e_top ≠ (ts, rid) := by
+    exact after_of_true_implies_ne_fresh s_pre ts rid c_e_top p h_fresh h_after_e
+  have h_after_a_post : after_of s_post c_a_top p = true := by
+    rw [h_sp_def, ← after_of_preserved_under_insert s_pre ts rid ch c_after c_a_top p h_ne_a]
+    exact h_after_a
+  have h_after_e_post : after_of s_post c_e_top p = true := by
+    rw [h_sp_def, ← after_of_preserved_under_insert s_pre ts rid ch c_after c_e_top p h_ne_e]
+    exact h_after_e
+  -- New char reaches c_a_top via step + existing chain.
+  have h_after_new : after_of s_post (ts, rid) c_after = true := by
+    simp only [h_sp_def, after_of, do_, mysel_a]; grind
+  have h_reach_new : afters_reach s_post (ts, rid) c_a_top :=
+    afters_reach.step h_after_new h_reach_after_post
+  -- Apply cross-sibling: new char in c_a_top's subtree, endId in c_e_top's.
+  have h_right : visible_lt s_post (ts, rid) (mark_endId m) :=
+    visible_lt_of_cross_sibling s_post p c_a_top c_e_top (ts, rid) (mark_endId m)
+      h_after_a_post h_after_e_post h_ne h_order h_reach_new h_reach_end_post
+  -- Now combine with the main insert theorem.
+  apply insert_within_span_in_span_visible s_pre m ts rid ch c_after h_fresh h_span_pre
+  rw [if_neg (by rw [h_eSide]; decide)]
+  exact h_right
+
 /-! ### Paper-faithful read-side using `in_span_visible`
 
 Parallel projection that uses `in_span_visible` (the visible-order
