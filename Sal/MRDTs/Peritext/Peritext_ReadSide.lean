@@ -1073,3 +1073,47 @@ theorem ex8_link_descendant_visible_lt_endId
     after_of s c_new m.endId = true →
     visible_lt s m.endId c_new :=
   fun h => visible_lt.parent_child h
+
+/-! ### List-form traversal specification (MRDT mirror) -/
+
+def is_rga_traversal (s : concrete_st) (l : List OpId) : Prop :=
+  (∀ c, c ∈ l ↔ visible s c = true) ∧
+  l.Nodup ∧
+  l.Pairwise (visible_lt s)
+
+noncomputable def readRichText_list
+    (s : concrete_st) (l : List OpId) : List (OpId × (ℕ → Bool)) :=
+  l.map (fun c => (c, fun mt => formatted_visible s c mt))
+
+theorem is_rga_traversal_convergent (s₁ s₂ : concrete_st) :
+    eq s₁ s₂ → ∀ l, is_rga_traversal s₁ l ↔ is_rga_traversal s₂ l := by
+  intro h l
+  rcases h with ⟨hch, hrm, _⟩
+  have hch'' : Prod.fst s₁ = Prod.fst s₂ := by
+    funext x; have := hch x; simpa using this
+  have hrm'' : Prod.fst (Prod.snd s₁) = Prod.fst (Prod.snd s₂) := by
+    funext x; have := hrm x; simpa using this
+  have h_chars : ∀ c t ch, Prod.fst s₁ (c, t, ch) = Prod.fst s₂ (c, t, ch) := by
+    intro c t ch; rw [hch'']
+  have h_vis : ∀ c, visible s₁ c = visible s₂ c := by
+    intro c
+    simp only [visible, chars_of, removed_of, hch'', hrm'']
+  unfold is_rga_traversal
+  refine ⟨fun ⟨h_mem, h_nd, h_pw⟩ => ⟨?_, h_nd, ?_⟩,
+          fun ⟨h_mem, h_nd, h_pw⟩ => ⟨?_, h_nd, ?_⟩⟩
+  · intro c; rw [h_mem c, h_vis c]
+  · exact h_pw.imp (fun {a b} h => visible_lt_of_chars_eq s₁ s₂ h_chars a b h)
+  · intro c; rw [h_mem c, ← h_vis c]
+  · exact h_pw.imp (fun {a b} h =>
+      visible_lt_of_chars_eq s₂ s₁ (fun c t ch => (h_chars c t ch).symm) a b h)
+
+theorem readRichText_list_eq_of_traversal_eq
+    (s₁ s₂ : concrete_st) (l : List OpId) :
+    eq s₁ s₂ → readRichText_list s₁ l = readRichText_list s₂ l := by
+  intro h_eq
+  have h_fmt : ∀ c mt, formatted_visible s₁ c mt = formatted_visible s₂ c mt :=
+    fun c mt => formatted_visible_convergent s₁ s₂ c mt h_eq
+  unfold readRichText_list
+  apply List.map_congr_left
+  intro c _
+  exact Prod.ext rfl (funext (h_fmt c))
