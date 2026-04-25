@@ -24,17 +24,17 @@ This reduces to two subgoals we prove independently and then compose:
 
 | # | Step | Status |
 |---|------|--------|
-| 0 | Scaffolding (signature, TS, RA-lin skeleton) | **DONE** |
-| 1 | Transcribe the 24 VCs into `SatisfiesVCs` | **DONE** |
+| 0 | Scaffolding (signature, TS with 5 invariants, RA-lin skeleton) | **DONE** |
+| 1 | Transcribe the 24 VCs + `cond_comm_lift` into `SatisfiesVCs` (25 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (convergence skeleton landed via bubble-sort; 3 sorries remain — adjacent swap diff-rep case, `merge_init_left_reachable`, and distinct-last-event case) |
-| 5 | End-to-end smoke test on Grow-Only Set | **DONE** |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (existential form, convergence + 7 BottomUp rules + 3-of-4 sub-cases of `merge_linearization_exists` closed; closure-stable carving foundation in place; 4 sorries remain — see §4 details) |
+| 5 | End-to-end smoke test on Grow-Only Set (25 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **DONE** |
 | 9 | Canonical op→state emulation $\mathcal{G}$ | **SCAFFOLDED** |
-| 10 | Weak simulation proof for $\mathcal{G}$ | TODO |
+| 10 | Weak simulation proof for $\mathcal{G}$ (incl. `effectiveState` linear extension) | TODO |
 | 11 | Transfer theorem | **SCAFFOLDED** |
 
 ## Steps in detail
@@ -45,15 +45,19 @@ Files landed in `Sal/Emulation/`:
 
 - `Labeled_TS.lean` — generic LTS, executions, reachability.
 - `CRDT_Signature.lean` — `CRDTSig` structure; `RcRes`; `Op`; `commutes`.
-- `CRDT_TS.lean` — configuration (per-replica state & event set + vis),
-  four rules (CreateReplica / Apply / Merge / Query), `initConfig`,
-  `labeledTS`.
+- `CRDT_TS.lean` — configuration with 5 invariants (`dom_eq`,
+  `vis_src`, `vis_tgt`, `vis_causal`, `timestamps_distinct`,
+  `vis_total_same_replica`), four rules (CreateReplica / Apply /
+  Merge / Query), `initConfig`, `labeledTS`. Latter three
+  invariants added to support the merge-case bottom-up induction
+  (top-level `differentReplicas` derivation; `distinctOps`
+  preconditions of BottomUp-2-OP).
 - `RA_Linearizability.lean` — `lo_C`, `rc-non-comm`, `cond-comm`,
   `IsRALinearizable`, stubbed `ra_linearizable_of_vcs`.
 
-### 1. Transcribe the 24 VCs into `SatisfiesVCs` — DONE
+### 1. Transcribe the 24 VCs + `cond_comm_lift` into `SatisfiesVCs` — DONE
 
-All 24 fields of `SatisfiesVCs` now present in `RA_Linearizability.lean`:
+All 25 fields of `SatisfiesVCs` now present in `RA_Linearizability.lean`:
 
 `rc_non_comm`, `no_rc_chain`, `cond_comm_base`, `merge_comm`,
 `merge_idem`, `base_2op`, `ind_lca_2op`, `inter_right_base_2op`,
@@ -61,11 +65,16 @@ All 24 fields of `SatisfiesVCs` now present in `RA_Linearizability.lean`:
 `inter_lca_2op`, `ind_right_2op`, `ind_left_2op`, `base_1op`,
 `ind_lca_1op`, `inter_right_base_1op`, `inter_left_base_1op`,
 `inter_right_1op`, `inter_left_1op`, `inter_lca_1op`, `ind_left_1op`,
-`ind_right_1op`, `lem_0op`.
+`ind_right_1op`, `lem_0op`, `cond_comm_lift`.
 
-Names match the per-CRDT theorem names in `Sal/CRDTs/*.lean` exactly,
-so building a `SatisfiesVCs (D_CRDT)` instance for any existing CRDT
-will be field-by-field plumbing.
+The first 24 names match the per-CRDT theorem names in
+`Sal/CRDTs/*.lean` exactly, so building a `SatisfiesVCs (D_CRDT)`
+instance for any existing CRDT will be field-by-field plumbing for
+those. `cond_comm_lift` (lin.tex §3.2 semantic extension of
+`cond_comm_base` to arbitrary intervening sequences) is the one
+field without a direct per-CRDT counterpart; vacuous for the 14
+rc=Either CRDTs in the suite, and a one-time discharge obligation
+per CRDT for the rest.
 
 Two helpers introduced: `distinctOps o₁ o₂ := o₁.time ≠ o₂.time` and
 `differentReplicas o₁ o₂ := o₁.rep ≠ o₂.rep` — these replace the
@@ -101,40 +110,154 @@ Landed:
 
 No outstanding sub-lemmas. Step 3 is finished.
 
-### 4. Bridge theorem — Merge case — PARTIAL (machinery laid down)
+### 4. Bridge theorem — Merge case — PARTIAL (existential form; 4-of-5 sub-cases closed)
 
 Strategy document: [`MERGE_PROOF.md`](MERGE_PROOF.md).
 
-Landed in `Sal/Emulation/Merge_Linearization.lean`:
-- `restrictTo` — sub-list of a list restricted to a `Set`
-  (noncomputable via `Classical`).
-- `merge_witness π₁ π₂ ev₁ ev₂` — concrete list definition:
-  `π₁|_{ev₁ ∩ ev₂} ++ π₁|_{ev₁ \ ev₂} ++ π₂|_{ev₂ \ ev₁}`.
-- Three supporting lemmas stated, bodies `sorry`:
-  - `merge_witness_perm` — `listPermOf result (ev₁ ∪ ev₂)`.
-  - `merge_witness_respects` — respects `lo C`.
-  - `merge_witness_state` — `applySeq σ₀ result = D.merge s₁ s₂`.
-- `RA_lin_preserved_merge_via_witness` — the closure of the Merge case,
-  **fully assembled** from the three sub-lemmas. Once they're closed,
-  this theorem is done; then replace `RA_lin_preserved_merge` in
-  `RA_Linearizability.lean` with a single-line call.
+The original three-lemma decomposition (`merge_witness_{perm,
+respects, state}`) was retired: the `_respects` cross case is
+structurally coupled to the state equation and cannot be proved
+independently of any closed-form witness. The current shape is a
+single existential theorem `merge_linearization_exists` whose
+internal induction co-constructs the witness with its lo-respect
+property.
 
-**Effort remaining:**
-- `merge_witness_perm`: ~1 day (list/set manipulation, uses `List.filter` preserves `Nodup`).
-- `merge_witness_respects`: ~3–5 days (paper Lemma 1 / Lemma 2 in §4.1).
-- `merge_witness_state`: 2–3 weeks (the bottom-up induction; uses all 24 VCs).
+**Landed** in `Sal/Emulation/Merge_Linearization.lean`:
+- `restrictTo` — sub-list of a list restricted to a `Set` (noncomputable via `Classical`).
+- Event-set decomposition definitions: `L_top`, `L₁_local`,
+  `L₂_local`, `L_a`, `L_b`, plus partition lemmas `L_a_union_L_b`,
+  `L_a_inter_L_b`. (Definitions only — induction over them is the
+  remaining work.)
+- Convergence machinery (closed): `applySeq_swap_via_cond_comm_lift`,
+  `applySeq_swap_commute`, `applySeq_swap_lo_incomparable`,
+  `applySeq_bubble_lo_max`, `convergence`. Consume `cond_comm_lift`
+  + Configuration invariants `timestamps_distinct`,
+  `vis_total_same_replica`. Modulo the overwriter-witness sorry at
+  the call site (see below).
+- BottomUp rules (closed): `bottomUp_0op`, `bottomUp_1op_top_base`,
+  `bottomUp_1op_bot_base`, `bottomUp_2op_base`,
+  `bottomUp_2op_init_left`, `bottomUp_2op_reachable`,
+  `bottomUp_1op_top_reachable`. The 2-OP reachable form is the
+  load-bearing rule for the existential's distinct-last-event case.
+- `merge_init_left_reachable_nil`, `merge_init_left_reachable_singleton` (closed).
+- `merge_init_right_reachable` (closed via `merge_comm`).
+- `merge_linearization_exists` — strong induction on
+  `|π₁| + |π₂|`. Closed sub-cases:
+  - both empty (uses `merge_idem`),
+  - asymmetric one-empty (uses
+    `merge_init_{left,right}_reachable`),
+  - shared last event (uses `lem_0op` + IH on shrunken event sets).
+- `RA_lin_preserved_merge_via_witness` — destructures the
+  existential, closed unconditionally. Once
+  `merge_linearization_exists` closes, swap the stub
+  `RA_lin_preserved_merge` in `RA_Linearizability.lean` for a
+  single-line call.
 
-The load-bearing step. Given RA-lin witnesses for both merge inputs,
-construct one for the merged state. Follows the paper's bottom-up
-template:
+**Live sorries (4):**
+1. `RA_Linearizability.lean:652` — `RA_lin_preserved_merge` shim;
+   trivial once the existential closes.
+2. `Merge_Linearization.lean:474` — overwriter-witness obligation
+   inside `convergence`'s call to `applySeq_bubble_lo_max`.
+   Resolved by tightening `convergence`'s signature to
+   `ev = C.events` and propagating an overwriter-closure invariant.
+3. `Merge_Linearization.lean:743` — `merge_init_left_reachable`
+   for `|π| ≥ 2`. No standalone VC extends `merge X init` beyond
+   the singleton case; expected to close as a byproduct of the
+   `L^a / L^b` carving.
+4. `Merge_Linearization.lean` (distinct-last-event branch of
+   `merge_linearization_exists`). With the new closure-stable
+   refactor (session 2026-04-25 below), `differentReplicas` is
+   now uniformly derivable inside the recursion via
+   `differentReplicas_of_closure`. The remaining work for this
+   sorry is the L^a / L^b *peel discipline* (choose peel candidates
+   from `L^a` so they are strictly local; case-split on commute;
+   apply BottomUp-2-OP / commutation appropriately).
 
-- Decompose `L r₁` and `L r₂` into the six sub-event sets
-  $L^a_1, L^b_1, L^a_2, L^b_2, L^a_\top, L^b_\top$.
-- Push events through the merge using `base_2op`, `ind_*`, `inter_*`.
-- Use `merge_comm`, `merge_idem` to normalize.
-- Discharge `lo` constraints via `rcNonComm` and `condComm`.
+### Session 2026-04-25: closure-stable refactor
 
-**Effort:** 2–4 weeks. Single hardest proof in Phase 1.
+Threaded `vis ∧ ¬commute` causal closure through
+`merge_linearization_exists` and its inner generalised statement.
+Discharged at the top level from `Configuration.vis_causal`.
+Proven preserved through shared-event tail peels via
+`closure_preserved_by_tail_peel` (consequence of `respects π (lo C)`
+plus `lo`'s first disjunct). The lemma
+`differentReplicas_of_closure` makes the top-level `vis_causal +
+vis_total_same_replica` argument uniform across recursive depth:
+strictly local peel candidates from `ev_i \ ev_{3-i}` plus the
+threaded closures yield `differentReplicas` without referring to
+any specific replica's `C.L`.
+
+**Discipline:** demand-driven only. Lemmas are landed when there is
+a concrete consumer to check them against — not as speculative
+infrastructure for an upcoming branch. (An earlier attempt to
+pre-stage `last_is_lo_maximal` and `last_is_lo_maximal_in_ev` was
+trimmed once it became clear they were sitting in scope without a
+proved obligation that consumed them.)
+
+**Top-down decomposition for the distinct-last-event branch.**
+The branch is split into four named, sorry-bodied theorem stubs;
+`merge_linearization_exists`'s body invokes them by application and
+is itself sorry-free. The collective type-sufficiency of the four
+stubs is verified by the dispatch type-checking. The stubs:
+
+* **`distinct_last_strict_local_commute_case`** (sub-case A):
+  `e₁ ∉ ev₂`, `e₂ ∉ ev₁`, `D.commutes e₁ e₂`. Strategy: commuting
+  events swap freely; pick one to peel via `BottomUp-1-OP-bot` after
+  re-permutation. `differentReplicas` is unneeded.
+* **`distinct_last_strict_local_noncomm_case`** (sub-case B):
+  `e₁ ∉ ev₂`, `e₂ ∉ ev₁`, `¬ D.commutes e₁ e₂`. Strategy: derive
+  `differentReplicas` via `differentReplicas_of_closure` (the
+  threaded closure is what unblocks this), extract `rc` direction
+  from `hVC.rc_non_comm`, apply `bottomUp_2op_reachable`, recurse
+  via `ih`. *Most likely first target* — both prerequisites already
+  proved.
+* **`distinct_last_e2_shared_case`** (sub-case C): `e₂ ∈ ev₁`.
+  Strategy: `e₂` is the wrong peel candidate from the right side;
+  re-permute `π₂` via `convergence` to bring an `L^a (ev₂ \ ev₁)`
+  element to the tail. Coupled to the open `convergence`
+  overwriter sorry — likely tackled together.
+* **`distinct_last_e1_shared_case`** (sub-case D): `e₁ ∈ ev₂`.
+  Mirror of C.
+
+The `MergeWitness` and `MergeIH` abbreviations factor out the
+existential conclusion and the strong-induction IH so the four
+stubs share readable signatures.
+
+Sorry count rises from 4 → 7 in this step, but each new leaf is a
+tightly-scoped, well-shaped obligation in its own theorem.
+`merge_linearization_exists` is now a thin dispatcher that routes
+to the named stubs.
+
+This refactor leaves the live-sorry count unchanged at 4 but
+restructures the distinct-last-event obstruction: it is no longer
+"how do we derive `differentReplicas` at recursive depth" — it is
+"how do we choose peel candidates so the strict-local hypothesis
+holds." That is the L^a / L^b carving question.
+
+**Next-session checklist** (recorded inline at the
+distinct-last-event sorry site):
+
+1. Case-split on `(e₁ ∈ ev₂)` and `(e₂ ∈ ev₁)` to identify
+   strictly-local vs shared peel candidates.
+2. In the strictly-local sub-case, case-split on
+   `D.commutes e₁ e₂`. Non-commute branch: derive
+   `differentReplicas` (via `differentReplicas_of_closure`)
+   and apply `bottomUp_2op_reachable`. Commute branch: independent
+   commutation argument; commuting events can swap freely.
+3. In the shared sub-cases, fall back to L^a candidates from
+   `ev₁ \ ev₂` (or `ev₂ \ ev₁`), re-permuting via convergence to
+   bring the candidate to the tail. Note that
+   convergence-based re-permutation surfaces the same overwriter
+   obligation as `Merge_Linearization.lean:377`, so this and the
+   convergence sorry should be tackled together.
+
+**Effort remaining (rebased):**
+- Sorry (2) — overwriter witness + signature tightening: ~1–2 days.
+- Sorry (3) + (4) — `L^a / L^b` carving and propagating it through
+  the existential's induction: ~1–2 weeks each, sharing
+  infrastructure. Closing them together is realistic.
+
+**Total remaining for step 4:** ~2–3 weeks of focused work.
 
 ### 5. Smoke test on Grow-Only Set — DONE
 
@@ -147,14 +270,14 @@ Landed in `Sal/Emulation/Instances/Grow_Only_Set.lean`:
   Prop-valued versions to Bool-valued `distinct_ops` / `get_rid`.
 - `D_rc_Either`, `D_rc_not_Fst`, `D_rc_Fst_iff_False` — helpers
   capturing "`D.rc = Either` always" used by the vacuous VCs.
-- `D_satisfies_VCs : SatisfiesVCs D` — **all 24 fields closed**:
-  - 14 vacuous VCs (premise requires `Fst_then_snd`) closed by
-    `intros; simp_all`.
-  - 8 real-content VCs (`base_2op`, `ind_lca_2op`, `ind_left_2op`,
-    `base_1op`, `ind_lca_1op`, `ind_left_1op`, `ind_right_1op`,
-    `lem_0op`) plumbed to the corresponding `_root_.*` Sal theorems.
-  - `rc_non_comm` bridges the Prop/Bool premise conjunction.
-  - `merge_comm`, `merge_idem` direct delegation.
+- `D_satisfies_VCs : SatisfiesVCs D` — **all 25 fields closed**:
+  - 14 vacuous VCs closed by `intros; simp_all`. Includes the
+    `cond_comm_lift` field (`Fst_then_snd` premise unsatisfiable).
+  - 11 real-content VCs (`rc_non_comm`, `merge_comm`, `merge_idem`,
+    `base_2op`, `ind_lca_2op`, `ind_left_2op`, `base_1op`,
+    `ind_lca_1op`, `ind_left_1op`, `ind_right_1op`, `lem_0op`)
+    plumbed to the corresponding `_root_.*` Sal theorems via the
+    Prop/Bool bridge lemmas.
 
 Validates that the generic `SatisfiesVCs` struct matches the concrete
 Bool-valued theorem statements in Sal's existing files. One down,

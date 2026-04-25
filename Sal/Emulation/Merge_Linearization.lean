@@ -750,6 +750,112 @@ theorem merge_init_right_reachable
   rw [hVC.merge_comm]
   exact merge_init_left_reachable hVC π
 
+/-! ### Causal-closure machinery for the merge induction
+
+The induction in `merge_linearization_exists` recurses on shrunken
+event sets. The `differentReplicas` derivation that the original Sal
+proof uses (`vis_total_same_replica` + `vis_causal` chain at a fixed
+replica) only works at the top level, where `ev_i = C.L(r_i)` for
+some replica. At recursive depth, the abstract event sets no longer
+correspond to any replica's view, and the chain breaks.
+
+Replacement: a *local* closure hypothesis stated on the abstract
+event sets the recursion threads. The form we use is closure under
+`vis ∧ ¬commute` predecessors, i.e., closure under the first
+disjunct of `lo`:
+
+  ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev
+
+This is implied by `Configuration.vis_causal` (which is unconditional
+on commute), so the top-level caller discharges it for free. It is
+*preserved* under shared-event peels of `lo`-respecting linearisations:
+if removing the lo-maximal `e` from `ev` broke closure, some `b` in
+the residue would have `vis e b ∧ ¬commute e b`, hence `lo C e b` —
+contradicting `respects π (lo C)` with `e` at the tail and `b` in
+the prefix. -/
+
+/-- `vis ∧ ¬commute` lifts to `lo`'s first disjunct. -/
+theorem lo_of_vis_noncomm {C : Configuration D} {a b : Op D.AppOp}
+    (hv : C.vis a b) (hnc : ¬ D.commutes a b) : lo C a b :=
+  Or.inl ⟨hv, hnc⟩
+
+/-- `D.commutes` is symmetric: swapping the arguments mirrors the
+state equation. -/
+theorem commutes_symm {a b : Op D.AppOp} (h : D.commutes a b) :
+    D.commutes b a :=
+  fun s => (h s).symm
+
+/-- **Local causal closure preserved by lo-respecting tail peel.**
+If `ev` is closed under `vis ∧ ¬commute` predecessors and `π = π' ++ [e]`
+is a `lo`-respecting permutation of `ev`, then `ev \ {e}` is also
+closed.
+
+Proof: suppose `vis a b ∧ ¬commute a b ∧ b ∈ ev \ {e}`. Old closure
+gives `a ∈ ev`. Suppose `a = e`. Then `lo C e b` by
+`lo_of_vis_noncomm`. By `respects`, no `lo`-edge in `π` points
+backward; `e` is at the tail and `b` is somewhere earlier in `π`, so
+the edge `lo C e b` would be backward, contradiction. -/
+theorem closure_preserved_by_tail_peel
+    {C : Configuration D} {ev : Set (Op D.AppOp)} {π' : List (Op D.AppOp)}
+    {e : Op D.AppOp}
+    (h_perm : listPermOf (π' ++ [e]) ev)
+    (h_resp : respects (π' ++ [e]) (lo C))
+    (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev) :
+    ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev \ {e} → a ∈ ev \ {e} := by
+  intro a b hv hnc hb_diff
+  obtain ⟨hb_ev, hb_ne⟩ := hb_diff
+  have hb_ne' : b ≠ e := fun h => hb_ne (by simp [h])
+  refine ⟨h_closed a b hv hnc hb_ev, ?_⟩
+  intro h_a_eq
+  simp only [Set.mem_singleton_iff] at h_a_eq
+  -- h_a_eq : a = e. Locate b in π' (rather than substituting, which
+  -- can flip variable directions when both are free).
+  obtain ⟨_, hmem⟩ := h_perm
+  have hb_in_π : b ∈ π' ++ [e] := (hmem b).mpr hb_ev
+  have hb_in_π' : b ∈ π' := by
+    rcases List.mem_append.mp hb_in_π with h | h
+    · exact h
+    · rw [List.mem_singleton] at h; exact absurd h hb_ne'
+  -- respects π lo C says: for x before y in π, ¬ lo C y x.
+  -- e is at the tail, b is before e, so ¬ lo C e b.
+  have hresp_split := List.pairwise_append.mp h_resp
+  have h_no_back : ¬ lo C e b :=
+    hresp_split.2.2 b hb_in_π' e (by simp)
+  -- Use h_a_eq to rewrite vis a b ⟹ vis e b and likewise for commute.
+  have hv' : C.vis e b := h_a_eq ▸ hv
+  have hnc' : ¬ D.commutes e b := h_a_eq ▸ hnc
+  exact h_no_back (lo_of_vis_noncomm hv' hnc')
+
+/-- **`differentReplicas` from local causal closure.**
+
+Top-level argument: if `e₁ ∈ ev₁ \ ev₂` and `e₂ ∈ ev₂ \ ev₁` share a
+replica, `vis_total_same_replica` produces a `vis` edge between them.
+With closure of the *target* event set under `vis ∧ ¬commute`
+predecessors, the edge forces the source into the target set,
+contradicting the strict-local hypothesis.
+
+Hypothesis `h_noncomm` is the case-split distinction: when `e₁` and
+`e₂` commute, `BottomUp-2-OP` is not the right rule anyway (commuting
+events can swap freely) so the distinct-replica obligation only needs
+to be discharged in the non-commuting branch. -/
+theorem differentReplicas_of_closure
+    {C : Configuration D} {e₁ e₂ : Op D.AppOp} {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_e₁_in_C : e₁ ∈ C.events) (h_e₂_in_C : e₂ ∈ C.events)
+    (h_e₁_in_ev₁ : e₁ ∈ ev₁) (h_e₁_not_ev₂ : e₁ ∉ ev₂)
+    (h_e₂_in_ev₂ : e₂ ∈ ev₂) (h_e₂_not_ev₁ : e₂ ∉ ev₁)
+    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h_noncomm : ¬ D.commutes e₁ e₂)
+    (h_ne : e₁ ≠ e₂) :
+    differentReplicas e₁ e₂ := by
+  intro h_same_rep
+  obtain ⟨r₁, s₁, hL₁, hs₁⟩ := h_e₁_in_C
+  obtain ⟨r₂, s₂, hL₂, hs₂⟩ := h_e₂_in_C
+  rcases C.vis_total_same_replica hL₁ hs₁ hL₂ hs₂ h_ne h_same_rep with hv | hv
+  · exact h_e₁_not_ev₂ (h_ev₂_closed e₁ e₂ hv h_noncomm h_e₂_in_ev₂)
+  · exact h_e₂_not_ev₁
+      (h_ev₁_closed e₂ e₁ hv (fun h => h_noncomm (commutes_symm h)) h_e₁_in_ev₁)
+
 /-- **Merge case of the bridge theorem (existential form).**
 
 Given two RA-linearization witnesses for replicas `r₁` and `r₂`,
@@ -776,6 +882,10 @@ theorem merge_linearization_exists
     {s₁ s₂ : D.State}
     (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
     (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed :
+      ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed :
+      ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
     (h₁_perm : listPermOf π₁ ev₁) (h₂_perm : listPermOf π₂ ev₂)
     (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C))
     (h₁_state : applySeq D D.init π₁ = s₁)
@@ -788,17 +898,21 @@ theorem merge_linearization_exists
                    (s₁ s₂ : D.State),
       π₁.length + π₂.length = n →
       (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
       listPermOf π₁ ev₁ → listPermOf π₂ ev₂ →
       respects π₁ (lo C) → respects π₂ (lo C) →
       applySeq D D.init π₁ = s₁ → applySeq D D.init π₂ = s₂ →
       ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
            applySeq D D.init π = D.merge s₁ s₂ by
     exact gen _ π₁ π₂ ev₁ ev₂ s₁ s₂ rfl h_ev₁_in_C h_ev₂_in_C
+      h_ev₁_closed h_ev₂_closed
       h₁_perm h₂_perm h₁_resp h₂_resp h₁_state h₂_state
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
-    intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h_ev₁_in_C h_ev₂_in_C h₁p h₂p h₁r h₂r h₁s h₂s
+    intro π₁ π₂ ev₁ ev₂ s₁ s₂ h_len h_ev₁_in_C h_ev₂_in_C
+      h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
     rcases List.eq_nil_or_concat' π₁ with rfl | ⟨π₁', e₁, rfl⟩
     · rcases List.eq_nil_or_concat' π₂ with rfl | ⟨π₂', e₂, rfl⟩
       · -- Both empty.
@@ -836,6 +950,15 @@ theorem merge_linearization_exists
         by_cases h_same : e₁ = e₂
         · -- Shared last event: factor via lem_0op + recurse via ih.
           subst h_same
+          -- Compute closure preservation BEFORE destructuring h₁p/h₂p,
+          -- since `closure_preserved_by_tail_peel` consumes the full
+          -- listPermOf hypothesis.
+          have h_ev₁'_closed :
+              ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ \ {e₁} → a ∈ ev₁ \ {e₁} :=
+            closure_preserved_by_tail_peel h₁p h₁r h_ev₁_closed
+          have h_ev₂'_closed :
+              ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ \ {e₁} → a ∈ ev₂ \ {e₁} :=
+            closure_preserved_by_tail_peel h₂p h₂r h_ev₂_closed
           obtain ⟨hnd₁, hmem₁⟩ := h₁p
           obtain ⟨hnd₂, hmem₂⟩ := h₂p
           have he₁_in_ev₁ : e₁ ∈ ev₁ := (hmem₁ e₁).mp (by simp)
@@ -878,7 +1001,8 @@ theorem merge_linearization_exists
             fun a ha => h_ev₂_in_C a ha.1
           obtain ⟨π', hπ'perm, hπ'resp, hπ'state⟩ :=
             ih _ hn'lt π₁' π₂' (ev₁ \ {e₁}) (ev₂ \ {e₁}) _ _ rfl
-              h_ev₁'_in_C h_ev₂'_in_C hperm₁' hperm₂' hresp₁' hresp₂' rfl rfl
+              h_ev₁'_in_C h_ev₂'_in_C h_ev₁'_closed h_ev₂'_closed
+              hperm₁' hperm₂' hresp₁' hresp₂' rfl rfl
           refine ⟨π' ++ [e₁], ?_, ?_, ?_⟩
           · obtain ⟨hnd', hm'⟩ := hπ'perm
             refine ⟨?_, fun a => ?_⟩
@@ -946,6 +1070,8 @@ theorem merge_linearization_exists
 
 end
 
+end
+
 /-! ### Packaging
 
 Invoke `merge_linearization_exists` to build the merged replica's
@@ -981,9 +1107,20 @@ theorem RA_lin_preserved_merge_via_witness
       fun a ha => ⟨r', ev₁, h_ev₁, ha⟩
     have h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events :=
       fun a ha => ⟨r₂, ev₂, h_ev₂, ha⟩
+    -- Causal closure of the top-level event sets follows directly
+    -- from `Configuration.vis_causal` on each replica. The weaker
+    -- closure threaded through the induction (vis ∧ ¬commute) is
+    -- implied by the unconditional `vis_causal`.
+    have h_ev₁_closed :
+        ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁ :=
+      fun a b hv _ hb => C.vis_causal hv h_ev₁ hb
+    have h_ev₂_closed :
+        ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂ :=
+      fun a b hv _ hb => C.vis_causal hv h_ev₂ hb
     obtain ⟨π, hperm, hresp, hstate⟩ :=
       merge_linearization_exists (D := D) (C := C) hVC
-        h_ev₁_in_C h_ev₂_in_C hp₁ hp₂ hr₁ hr₂ hs₁' hs₂'
+        h_ev₁_in_C h_ev₂_in_C h_ev₁_closed h_ev₂_closed
+        hp₁ hp₂ hr₁ hr₂ hs₁' hs₂'
     refine ⟨π, ?_, ?_, ?_⟩
     · rw [← hL']; exact hperm
     · have : lo C' = lo C := by unfold lo; rw [hvis]
