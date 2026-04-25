@@ -779,6 +779,106 @@ theorem lo_of_vis_noncomm {C : Configuration D} {a b : Op D.AppOp}
     (hv : C.vis a b) (hnc : ¬ D.commutes a b) : lo C a b :=
   Or.inl ⟨hv, hnc⟩
 
+/-! ### Lo-maximal element existence
+
+The appendix's distinct-last-event proof (§A.2) repeatedly picks
+"the lo-maximal element of `M_i^a`" — i.e., an element of `M_i^a`
+with no lo-successor in `M_i^a`. The standard route in Lean is:
+take the IH's lo-respecting linearisation, *filter* it to the
+target subset, and observe that the last element of the filtered
+list is lo-maximal in the subset (last element has no lo-successor
+in the prefix, which contains every other element of the subset).
+
+This subsection lays the foundation: tail-is-lo-maximal,
+`restrictTo` preserves perm/respects, and the headline existence
+lemma `exists_lo_maximal_in_subset`. -/
+
+/-- The tail event of a lo-respecting list has no lo-successor in
+the prefix. Direct from `respects`'s no-backward-edges meaning. -/
+theorem last_is_lo_maximal
+    {C : Configuration D} {π' : List (Op D.AppOp)} {e : Op D.AppOp}
+    (h_resp : respects (π' ++ [e]) (lo C)) :
+    ∀ x ∈ π', ¬ lo C e x := by
+  have hresp_split := List.pairwise_append.mp h_resp
+  intro x hx
+  exact hresp_split.2.2 x hx e (by simp)
+
+/-- `restrictTo π E` is a sub-list of `π`, so `Pairwise R` transfers
+unchanged (sub-lists of pairwise lists are pairwise). -/
+theorem restrictTo_respects
+    {C : Configuration D} {π : List (Op D.AppOp)}
+    {E : Set (Op D.AppOp)} (h_resp : respects π (lo C)) :
+    respects (restrictTo π E) (lo C) := by
+  unfold respects restrictTo
+  exact List.Pairwise.sublist List.filter_sublist h_resp
+
+/-- `restrictTo π E` permutes `E ∩ (multiset of π)`. When `E ⊆ S`
+and `π` permutes `S`, the result permutes `E`. -/
+theorem restrictTo_listPermOf_subset
+    {π : List (Op D.AppOp)} {S E : Set (Op D.AppOp)}
+    (h_perm : listPermOf π S) (h_sub : E ⊆ S) :
+    listPermOf (restrictTo π E) E := by
+  obtain ⟨h_nodup, h_mem⟩ := h_perm
+  refine ⟨?_, fun a => ?_⟩
+  · -- nodup: filter preserves nodup.
+    unfold restrictTo
+    exact h_nodup.filter _
+  · -- membership: a ∈ restrictTo π E ↔ a ∈ E.
+    unfold restrictTo
+    rw [List.mem_filter]
+    constructor
+    · rintro ⟨_, h_dec⟩
+      exact of_decide_eq_true h_dec
+    · intro ha
+      exact ⟨(h_mem a).mpr (h_sub ha), decide_eq_true ha⟩
+
+/-- **Lo-maximal element exists in any non-empty subset of a
+linearised event set.** Given a lo-respecting permutation `π` of
+`S`, and a non-empty subset `T ⊆ S`, there exists `e ∈ T` with no
+lo-successor in `T`.
+
+Proof: filter `π` to `T`, getting a lo-respecting permutation of
+`T`. Non-empty by hypothesis. Take its last element; by
+`last_is_lo_maximal` it has no lo-successor in the prefix, which
+contains every other element of `T`.
+
+Consumed by the appendix-faithful distinct-last-event proof to
+pick peel candidates from the carving layers `M_1^a`, `M_2^a`,
+`L_top^a`. -/
+theorem exists_lo_maximal_in_subset
+    {C : Configuration D} {π : List (Op D.AppOp)}
+    {S T : Set (Op D.AppOp)}
+    (h_perm : listPermOf π S) (h_resp : respects π (lo C))
+    (h_sub : T ⊆ S) (h_T_nonempty : T.Nonempty) :
+    ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ lo C e x := by
+  -- Filter π to T; this is a lo-respecting permutation of T.
+  set π_T := restrictTo π T with hπ_T_def
+  have h_perm_T : listPermOf π_T T :=
+    restrictTo_listPermOf_subset h_perm h_sub
+  have h_resp_T : respects π_T (lo C) := restrictTo_respects h_resp
+  -- π_T is non-empty: T is non-empty, and π_T permutes T.
+  obtain ⟨e₀, he₀_T⟩ := h_T_nonempty
+  have he₀_in_πT : e₀ ∈ π_T := (h_perm_T.2 e₀).mpr he₀_T
+  -- Decompose π_T as π_T' ++ [e]: every non-empty list has a
+  -- last-element form.
+  rcases List.eq_nil_or_concat' π_T with h_nil | ⟨π_T', e, h_eq⟩
+  · exact absurd (h_nil ▸ he₀_in_πT) List.not_mem_nil
+  -- e is in π_T (the last element), hence in T.
+  have he_in_T : e ∈ T := by
+    have he_in_πT : e ∈ π_T := h_eq ▸ (List.mem_append.mpr (Or.inr (List.mem_singleton.mpr rfl)))
+    exact (h_perm_T.2 e).mp he_in_πT
+  refine ⟨e, he_in_T, fun x hx_T hx_ne => ?_⟩
+  -- x ≠ e is in T → x is in π_T → x ≠ e → x is in π_T'.
+  have hx_in_πT : x ∈ π_T := (h_perm_T.2 x).mpr hx_T
+  have hx_in_πT' : x ∈ π_T' := by
+    rw [h_eq] at hx_in_πT
+    rcases List.mem_append.mp hx_in_πT with h | h
+    · exact h
+    · rw [List.mem_singleton] at h; exact absurd h hx_ne
+  -- last_is_lo_maximal on π_T' ++ [e]: no lo-successor of e in π_T'.
+  have h_resp_eq : respects (π_T' ++ [e]) (lo C) := h_eq ▸ h_resp_T
+  exact last_is_lo_maximal h_resp_eq x hx_in_πT'
+
 /-- `D.commutes` is symmetric: swapping the arguments mirrors the
 state equation. -/
 theorem commutes_symm {a b : Op D.AppOp} (h : D.commutes a b) :
@@ -855,171 +955,6 @@ theorem differentReplicas_of_closure
   · exact h_e₁_not_ev₂ (h_ev₂_closed e₁ e₂ hv h_noncomm h_e₂_in_ev₂)
   · exact h_e₂_not_ev₁
       (h_ev₁_closed e₂ e₁ hv (fun h => h_noncomm (commutes_symm h)) h_e₁_in_ev₁)
-
-/-! ### Distinct-last-event sub-case stubs
-
-The distinct-last-event branch of `merge_linearization_exists` (the
-last open case of the strong induction on `|π₁| + |π₂|`) decomposes
-into four sub-cases on the strict-locality and commutativity of the
-peel candidates `e₁ = π₁.last`, `e₂ = π₂.last`. Each sub-case is
-extracted here as a named `sorry`-bodied theorem; the main proof
-in `merge_linearization_exists` invokes them by application, so its
-body is sorry-free and the *type-sufficiency* of these four lemmas
-is verified by the main proof type-checking.
-
-To keep signatures readable we abbreviate the conclusion (`MergeWitness`)
-and the strong-induction IH (`MergeIH`). -/
-
-/-- The conclusion of `merge_linearization_exists` and of every
-distinct-last-event sub-case stub. -/
-abbrev MergeWitness (D : CRDTSig) (C : Configuration D)
-    (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State) : Prop :=
-  ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧
-       respects π (lo C) ∧
-       applySeq D D.init π = D.merge s₁ s₂
-
-/-- The strong-induction IH passed into each sub-case stub. Mirrors
-the inner `gen` body of `merge_linearization_exists`. -/
-abbrev MergeIH (D : CRDTSig) (C : Configuration D) (n : Nat) : Prop :=
-  ∀ m, m < n →
-    ∀ (π₁ π₂ : List (Op D.AppOp)) (ev₁ ev₂ : Set (Op D.AppOp))
-      (s₁ s₂ : D.State),
-      π₁.length + π₂.length = m →
-      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
-      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
-      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
-      listPermOf π₁ ev₁ → listPermOf π₂ ev₂ →
-      respects π₁ (lo C) → respects π₂ (lo C) →
-      applySeq D D.init π₁ = s₁ → applySeq D D.init π₂ = s₂ →
-      MergeWitness D C ev₁ ev₂ s₁ s₂
-
-/-- **Sub-case A: strict-local + commute.**
-Both peel candidates are strictly local (`e₁ ∉ ev₂`, `e₂ ∉ ev₁`)
-and commute as operations. Strategy: commuting events swap freely;
-pick one to peel via `BottomUp-1-OP-bot` after re-permutation.
-`differentReplicas` is unneeded in this branch.
-
-Body: pending; see PLAN.md `Session 2026-04-25 Sub-case A`. -/
-theorem distinct_last_strict_local_commute_case
-    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
-    (ih : MergeIH D C n)
-    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
-    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
-    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
-    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
-    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
-    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
-    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
-    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
-    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
-    (h_ne : e₁ ≠ e₂)
-    (h_e₁_strict : e₁ ∉ ev₂) (h_e₂_strict : e₂ ∉ ev₁)
-    (h_commute : D.commutes e₁ e₂) :
-    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
-  have _ := hVC; have _ := ih; have _ := h_len
-  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
-  have _ := h_ev₁_closed; have _ := h_ev₂_closed
-  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
-  have _ := h₁s; have _ := h₂s; have _ := h_ne
-  have _ := h_e₁_strict; have _ := h_e₂_strict; have _ := h_commute
-  sorry
-
-/-- **Sub-case B: strict-local + ¬commute.**
-Both peel candidates are strictly local and the operations do not
-commute. Strategy: derive `differentReplicas` via
-`differentReplicas_of_closure`, extract `rc` direction from
-`hVC.rc_non_comm`, apply `bottomUp_2op_reachable` (or symmetric),
-recurse on shrunken `(π₁', π₂)` (or `(π₁, π₂')`) via `ih`.
-
-Body: pending; this is the most likely sub-case to attack first
-since `differentReplicas_of_closure` and `bottomUp_2op_reachable`
-are both already proved. -/
-theorem distinct_last_strict_local_noncomm_case
-    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
-    (ih : MergeIH D C n)
-    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
-    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
-    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
-    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
-    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
-    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
-    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
-    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
-    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
-    (h_ne : e₁ ≠ e₂)
-    (h_e₁_strict : e₁ ∉ ev₂) (h_e₂_strict : e₂ ∉ ev₁)
-    (h_noncomm : ¬ D.commutes e₁ e₂) :
-    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
-  have _ := hVC; have _ := ih; have _ := h_len
-  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
-  have _ := h_ev₁_closed; have _ := h_ev₂_closed
-  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
-  have _ := h₁s; have _ := h₂s; have _ := h_ne
-  have _ := h_e₁_strict; have _ := h_e₂_strict; have _ := h_noncomm
-  sorry
-
-/-- **Sub-case C: e₂ shared.** `e₂ ∈ ev₁`. Strategy: re-permute `π₂`
-via `convergence` to bring an `L^a (ev₂ \ ev₁)` element to the
-tail (or fall through to a 1-OP rule if `L^a` is empty). The
-asymmetry between sub-cases C and D is structural rather than
-semantic.
-
-Body: pending; depends on `convergence` (which itself has an open
-overwriter sorry — likely tackled together). -/
-theorem distinct_last_e2_shared_case
-    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
-    (ih : MergeIH D C n)
-    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
-    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
-    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
-    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
-    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
-    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
-    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
-    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
-    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
-    (h_ne : e₁ ≠ e₂)
-    (h_e₂_shared : e₂ ∈ ev₁) :
-    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
-  have _ := hVC; have _ := ih; have _ := h_len
-  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
-  have _ := h_ev₁_closed; have _ := h_ev₂_closed
-  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
-  have _ := h₁s; have _ := h₂s; have _ := h_ne
-  have _ := h_e₂_shared
-  sorry
-
-/-- **Sub-case D: e₁ shared.** `e₁ ∈ ev₂`. Mirror of sub-case C. -/
-theorem distinct_last_e1_shared_case
-    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
-    (ih : MergeIH D C n)
-    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
-    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
-    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
-    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
-    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
-    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
-    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
-    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
-    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
-    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
-    (h_ne : e₁ ≠ e₂)
-    (h_e₁_shared : e₁ ∈ ev₂) :
-    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
-  have _ := hVC; have _ := ih; have _ := h_len
-  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
-  have _ := h_ev₁_closed; have _ := h_ev₂_closed
-  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
-  have _ := h₁s; have _ := h₂s; have _ := h_ne
-  have _ := h_e₁_shared
-  sorry
 
 /-- **Merge case of the bridge theorem (existential form).**
 
@@ -1209,33 +1144,45 @@ theorem merge_linearization_exists
                 · rw [List.mem_singleton] at h; exact absurd h hx_ne
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
-        · -- Distinct last events e₁ ≠ e₂. Dispatch into the four
-          -- sub-case stubs immediately; each derives the local
-          -- facts (distinctOps, differentReplicas, etc.) it needs
-          -- from the raw hypotheses. The main proof body is
-          -- sorry-free; type-sufficiency of the four stubs is
-          -- verified by *this dispatch type-checking*.
-          by_cases h_e₁_strict : e₁ ∉ ev₂
-          · by_cases h_e₂_strict : e₂ ∉ ev₁
-            · by_cases h_commute : D.commutes e₁ e₂
-              · exact distinct_last_strict_local_commute_case
-                  hVC ih h_len h_ev₁_in_C h_ev₂_in_C
-                  h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
-                  h_same h_e₁_strict h_e₂_strict h_commute
-              · exact distinct_last_strict_local_noncomm_case
-                  hVC ih h_len h_ev₁_in_C h_ev₂_in_C
-                  h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
-                  h_same h_e₁_strict h_e₂_strict h_commute
-            · push_neg at h_e₂_strict
-              exact distinct_last_e2_shared_case
-                hVC ih h_len h_ev₁_in_C h_ev₂_in_C
-                h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
-                h_same h_e₂_strict
-          · push_neg at h_e₁_strict
-            exact distinct_last_e1_shared_case
-              hVC ih h_len h_ev₁_in_C h_ev₂_in_C
-              h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
-              h_same h_e₁_strict
+        · -- Distinct last events e₁ ≠ e₂.
+          --
+          -- Pending: the paper's appendix (§A.2) closes this case via
+          -- the L^a / L^b carving — NOT by peeling π_i.last. The
+          -- correct peel candidate is a lo-maximal element within a
+          -- specific carving layer (M_1^a, M_2^a, or L_top^a),
+          -- chosen so its no-lo-successor property is structural
+          -- rather than positional. Concretely the appendix's
+          -- structure (specialised to 2-way merge by collapsing LCA
+          -- to init):
+          --
+          --   • Outer induction on |L_1^a ∪ L_2^a|.
+          --     - Base |L_1^a ∪ L_2^a| = 0: inner induction on
+          --       |L_top^a|. Inner base (L_top^a empty) closes via
+          --       MergeIdempotence. Inner step pulls a maximal
+          --       L_top^a element via BottomUp-0-OP and recurses on
+          --       the M_1^a / M_2^a carving for that LCA event.
+          --     - Step: pick a maximal element of M_1^a (or M_2^a);
+          --       case-split on rc(e_1, e_2) (commute / e_1 →rc e_2
+          --       handled by MergeCommutativity, e_2 →rc e_1 by
+          --       BottomUp-2-OP); recurse.
+          --
+          -- Required machinery beyond what's already proved:
+          --   1. lo-maximal element existence inside the carving
+          --      layers (uses no_rc_chain to bound lo-acyclicity).
+          --   2. Convergence-based re-permutation: given the IH
+          --      witness for v_i and a chosen maximal e_i, build a
+          --      new lo-respecting permutation of L_i ending in e_i.
+          --      (Couples to convergence's open overwriter sorry.)
+          --   3. The induction structure itself: |L_1^a ∪ L_2^a|
+          --      then |L_top^a| then |M_1^a ∪ M_2^a|, NOT
+          --      |π_1| + |π_2| as the current `gen` does.
+          --
+          -- The current `gen` strong-induction on |π₁| + |π₂|
+          -- handles both-empty / asymmetric / shared-last cleanly,
+          -- but the distinct-last branch needs the paper's
+          -- carving-based structure. Restructuring the induction is
+          -- the next session's first decision.
+          sorry
 
 end
 

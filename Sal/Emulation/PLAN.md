@@ -194,39 +194,98 @@ pre-stage `last_is_lo_maximal` and `last_is_lo_maximal_in_ev` was
 trimmed once it became clear they were sitting in scope without a
 proved obligation that consumed them.)
 
-**Top-down decomposition for the distinct-last-event branch.**
-The branch is split into four named, sorry-bodied theorem stubs;
-`merge_linearization_exists`'s body invokes them by application and
-is itself sorry-free. The collective type-sufficiency of the four
-stubs is verified by the dispatch type-checking. The stubs:
+**Distinct-last-event branch — appendix-faithful structure (post
+paper-side audit).**
 
-* **`distinct_last_strict_local_commute_case`** (sub-case A):
-  `e₁ ∉ ev₂`, `e₂ ∉ ev₁`, `D.commutes e₁ e₂`. Strategy: commuting
-  events swap freely; pick one to peel via `BottomUp-1-OP-bot` after
-  re-permutation. `differentReplicas` is unneeded.
-* **`distinct_last_strict_local_noncomm_case`** (sub-case B):
-  `e₁ ∉ ev₂`, `e₂ ∉ ev₁`, `¬ D.commutes e₁ e₂`. Strategy: derive
-  `differentReplicas` via `differentReplicas_of_closure` (the
-  threaded closure is what unblocks this), extract `rc` direction
-  from `hVC.rc_non_comm`, apply `bottomUp_2op_reachable`, recurse
-  via `ih`. *Most likely first target* — both prerequisites already
-  proved.
-* **`distinct_last_e2_shared_case`** (sub-case C): `e₂ ∈ ev₁`.
-  Strategy: `e₂` is the wrong peel candidate from the right side;
-  re-permute `π₂` via `convergence` to bring an `L^a (ev₂ \ ev₁)`
-  element to the tail. Coupled to the open `convergence`
-  overwriter sorry — likely tackled together.
-* **`distinct_last_e1_shared_case`** (sub-case D): `e₁ ∈ ev₂`.
-  Mirror of C.
+An earlier attempt to decompose the distinct-last-event branch by
+the strict-locality / commute status of `e₁ = π₁.last` and
+`e₂ = π₂.last` was abandoned after an audit of Sal's appendix §A.2
+(`_references/Neem/appendix.tex`, lines 250–360). The audit
+established:
 
-The `MergeWitness` and `MergeIH` abbreviations factor out the
-existential conclusion and the strong-induction IH so the four
-stubs share readable signatures.
+* **The peel candidate is NOT `π_i.last`.** The appendix picks the
+  peel candidate as a lo-maximal element within a specific carving
+  layer (`M_1^a`, `M_2^a`, or `L_top^a`), not as the tail of any
+  source linearisation. The carving definitions are precisely what
+  guarantee the chosen maximal event has no lo-successor in the
+  *residue*. `π_i.last` is only lo-maximal in `ev_i`, not in
+  `ev_1 ∪ ev_2`, so the put-at-tail strategy fails for it (the
+  second disjunct of `lo` can introduce successors in the other
+  side's local events).
+* **The case-split is on emptiness of carving layers, not on
+  strict-locality of tails.** Specialised to 2-way merge by
+  collapsing LCA to init, the appendix's structure is:
+  - Outer induction on `|L_1^a ∪ L_2^a|`.
+    - Base (both empty): inner induction on `|L_top^a|`. Inner base
+      (also empty) closes via `merge_idem`. Inner step pulls a
+      lo-maximal `L_top^a` event via `BottomUp-0-OP` and recurses
+      on the `M_1^a / M_2^a` carving for that LCA event.
+    - Step: pick a lo-maximal element of `M_1^a` (or `M_2^a`);
+      case-split on `rc(e_1, e_2)` (commute / `e_1 →rc e_2`
+      handled by `merge_comm` swap, `e_2 →rc e_1` by
+      `BottomUp-2-OP`); recurse.
+* **`no_rc_chain` is load-bearing.** The whole bottom-up
+  linearisation argument relies on `no_rc_chain` (already a field
+  in `SatisfiesVCs`) to bound `lo`-acyclicity. Without it, the
+  bottom-up template can fail (paper Fig. 6 counterexample). Our
+  current `merge_linearization_exists` proof has not yet invoked
+  `hVC.no_rc_chain`; it must.
+* **Convergence-based re-permutation is per-peel, not occasional.**
+  Every peel from a carving layer uses convergence to re-permute
+  the source's IH-given linearisation so the chosen maximal event
+  appears at the tail. This couples the distinct-last-event proof
+  to the open overwriter sorry inside `convergence`.
 
-Sorry count rises from 4 → 7 in this step, but each new leaf is a
-tightly-scoped, well-shaped obligation in its own theorem.
-`merge_linearization_exists` is now a thin dispatcher that routes
-to the named stubs.
+**State after revert.** The four wrong stubs and the
+`MergeWitness` / `MergeIH` abbreviations have been deleted (they
+were paper-faithful for a wrong abstraction; demand-driven
+discipline says regenerate them when the right abstraction is in
+scope). The dispatcher in `merge_linearization_exists` is back to
+a single inline `sorry` with a paper-faithful comment block
+recording the appendix structure and the three pieces of required
+machinery (lo-maximal-element existence in carving layers,
+convergence-based re-permutation, and induction restructure to
+`|L_1^a ∪ L_2^a|` / `|L_top^a|` / `|M_1^a ∪ M_2^a|`).
+
+Sorry count is back to 4 (closure-stable refactor state). The
+closure-stable foundation
+(`differentReplicas_of_closure`, `closure_preserved_by_tail_peel`)
+remains kernel-verified and continues to thread through the
+proof's other branches; it will be consumed by the
+appendix-faithful induction once the carving lemmas land.
+
+**Next-session opening move.** The first decision is whether to
+restructure `gen`'s strong induction from `|π₁| + |π₂|` to the
+appendix's three nested measures (or to keep `|π₁| + |π₂|` and
+emulate the carving inductions inside the distinct-last branch).
+The appendix's measures are more direct; the existing
+`|π₁| + |π₂|` measure handles the shared-last and asymmetric
+cases cleanly and would be ergonomically painful to discard.
+Likely outcome: keep `|π₁| + |π₂|` for the outer dispatch, do
+the carving inductions inline inside the distinct-last branch
+(or as separate helper theorems with their own measures).
+
+### Session 2026-04-25, post-audit: lo-maximal element existence
+
+Demand-driven addition (consumed by the appendix's M_i^a / L_top^a
+peel-candidate selection). The headline lemma
+`exists_lo_maximal_in_subset` says: given a lo-respecting
+permutation `π` of `S` and a non-empty subset `T ⊆ S`, there
+exists `e ∈ T` with no lo-successor in `T`.
+
+Proof: filter `π` to `T` via `restrictTo`, take the last element.
+`last_is_lo_maximal` (resurrected from the earlier-deleted
+speculative version, now with a concrete consumer) and
+`restrictTo_respects` / `restrictTo_listPermOf_subset` are the
+supporting facts.
+
+**Notable:** this approach sidesteps a separate `no_rc_chain` /
+lo-acyclicity argument at the lemma layer. The IH-given
+linearisation already encodes acyclicity by virtue of being
+lo-respecting; filtering preserves it. `no_rc_chain` remains
+load-bearing globally (per the paper) but manifests through
+per-CRDT instances satisfying the VC, not through a Lean
+acyclicity lemma at this step.
 
 This refactor leaves the live-sorry count unchanged at 4 but
 restructures the distinct-last-event obstruction: it is no longer
