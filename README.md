@@ -6,7 +6,17 @@ The approach builds on the F★-based **Neem** framework of Soundarapandian, Nag
 
 ## What's verified
 
-The suite currently contains **28 RDTs** — 17 CRDTs and 11 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). That's **648 VCs** for state convergence (27 × 24), of which the vast majority are **kernel-checked** (no TCB-enlarging admits) and a small residue of **~12 stage-2 Blaster-admits** remain in a few files (`OR_Set_MRDT`, `OR_Set_Efficient_MRDT`, `Add_Win_Priority_Queue_MRDT`) — validated by Z3 via the `sal` tactic's SMT stage but not yet kernel-reconstructed. The `Peritext` CRDT and MRDT additionally carry a read-side projection and characterization theorems for the paper's Ex 1 / Ex 2 / Ex 3 / Ex 5 / Ex 7 / Ex 8 intent-preservation scenarios — see [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md). Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
+The suite currently contains **28 RDTs** — 17 CRDTs and 11 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). That's **648 VCs** for state convergence (27 × 24), of which the vast majority are **kernel-checked** (no TCB-enlarging admits) and a small residue of stage-2 Blaster-admits remain in a few files (`OR_Set_MRDT`, `OR_Set_Efficient_MRDT`, `Add_Win_Priority_Queue_MRDT`, `Multi_Valued_Register_MRDT`) — validated by Z3 via the `sal` tactic's SMT stage but not yet kernel-reconstructed.
+
+Several Tier-C RDTs — those whose 24 VCs prove union-commutativity on grow-only state but leave the user-visible semantics to the read-side projection — additionally carry **read-side definitions and intent-preservation theorems**: `Peritext`, `RGA`, `Add_Win_Priority_Queue`, `OR_Set` (plain and efficient), and `Multi_Valued_Register`. Each comes with a `*_ReadSide.lean` companion alongside its `*_CRDT.lean` / `*_MRDT.lean`, and a per-RDT crosswalk to the source paper:
+
+- [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md) — Litt et al. CSCW 2022, Ex 1 / 2 / 3 / 5 / 7 / 8 intent-preservation.
+- [`docs/rga-vs-paper.md`](docs/rga-vs-paper.md) — Roh et al. JPDC 2011, causal-order preservation, tombstone monotonicity, deterministic concurrent-insert tiebreak.
+- [`docs/aw-crpq-vs-paper.md`](docs/aw-crpq-vs-paper.md) — Zhang et al. Internetware 2023, Add-wins headline + LWW innate + acquired-Σ + `get_max`.
+- [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md) — Shapiro et al. INRIA RR-7506, Add-Wins on lookup with sequential-Add-then-Remove extinguishment.
+- [`docs/mvr-vs-paper.md`](docs/mvr-vs-paper.md) — Shapiro et al. INRIA RR-7506 §3.2.2, classical replace-on-write semantics with concurrent-writes-both-survive + sequential-writes-supersede.
+
+Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
 ### CRDTs ([`Sal/CRDTs/`](Sal/CRDTs))
 
@@ -16,11 +26,11 @@ The suite currently contains **28 RDTs** — 17 CRDTs and 11 MRDTs — with all 
 - `LWW_Register`
 - `MAX_Register`
 - `MIN_Register`
-- `Multi_Valued_Register`
+- `Multi_Valued_Register` — classical replace-on-write MVR via the snapshot-in-op-payload trick (Shapiro et al. INRIA RR-7506 §3.2.2). State `(writes, removed)`; concurrent writes survive via additive merge, sequential writes overwrite via the snapshot. **+ read-side**: `is_visible_value`, `concurrent_writes_both_visible`, `sequential_write_supersedes`. See [`docs/mvr-vs-paper.md`](docs/mvr-vs-paper.md).
 - `Bounded_Counter` — Sypytkowski 2019 / Balegas et al. 2015. PN-counter plus a sparse per-replica-pair `transfers` map for quota redistribution.
 
 **Sets & maps:**
-- `OR_Set`
+- `OR_Set` — Shapiro et al. INRIA RR-7506. **+ read-side**: `lookup`, `add_wins_over_concurrent_remove`, `add_then_remove_extinguishes`. See [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md).
 - `Grow_Only_Set`
 - `Grow_Only_Multiset`
 - `LWW_Element_Set`
@@ -28,23 +38,23 @@ The suite currently contains **28 RDTs** — 17 CRDTs and 11 MRDTs — with all 
 - `MAX_Map`
 
 **Sequences & structured data:**
-- `RGA` — Replicated Growable Array, the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`.
-- `Peritext` — Litt et al. CSCW 2022. Rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
+- `RGA` — Replicated Growable Array, the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`. **+ read-side**: `visible_lt` four-rule DFS-traversal predicate, `causal_order_visible_lt`, `tombstone_monotone_under_remove`, `concurrent_insert_tiebreak_deterministic`. See [`docs/rga-vs-paper.md`](docs/rga-vs-paper.md).
+- `Peritext` — Litt et al. CSCW 2022. Rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`. **+ read-side**: paper Ex 1 / 2 / 3 / 5 / 7 / 8 intent-preservation theorems. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
 - `Shopping_Cart`
-- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023.
+- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023. **+ read-side**: `lookup`, `add_wins_over_concurrent_rmv`, LWW innate, MCW-collapsed-to-Σ acquired, `get_max`, `inc_increases_acquired`. See [`docs/aw-crpq-vs-paper.md`](docs/aw-crpq-vs-paper.md).
 
 ### MRDTs ([`Sal/MRDTs/`](Sal/MRDTs))
 
 - `Increment_Only_Counter`
 - `PN_Counter`
-- `Multi_Valued_Register`
+- `Multi_Valued_Register` — classical MVR with the same `(writes, removed)` shape as the CRDT but standard three-way merge per component. **+ read-side** (mirrors the CRDT side). See [`docs/mvr-vs-paper.md`](docs/mvr-vs-paper.md).
 - `Grow_Only_Set`
 - `Grow_Only_Map`
-- `OR_Set`
-- `OR_Set_Efficient`
-- `Replicated_Growable_Array`
-- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023. Drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`.
-- `Peritext` — Litt et al. CSCW 2022. RGA substrate plus `set AnchorAttachment`. RGA's tombstones are structurally load-bearing (later inserts reference earlier char ids), so this MRDT keeps all components grow-only and uses pointwise-union merge, mirroring `RGA_MRDT`. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
+- `OR_Set` — **+ read-side** (mirrors the CRDT side via three-way merge). See [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md).
+- `OR_Set_Efficient` — compressed variant with `(rid, ts, elem)` triples and per-replica deduplication. **+ read-side** with the same headline theorems on the triple representation.
+- `Replicated_Growable_Array` — **+ read-side** with relational `readSeq_visible` and the three RGA intent theorems. See [`docs/rga-vs-paper.md`](docs/rga-vs-paper.md).
+- `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023. Drops the CRDT's tombstone set since the LCA handles Add-Wins directly, leaving `set (add_ts, elem, value) × set (inc_ts, elem, amount)`. **+ read-side**. See [`docs/aw-crpq-vs-paper.md`](docs/aw-crpq-vs-paper.md).
+- `Peritext` — Litt et al. CSCW 2022. RGA substrate plus `set AnchorAttachment`. RGA's tombstones are structurally load-bearing (later inserts reference earlier char ids), so this MRDT keeps all components grow-only and uses pointwise-union merge, mirroring `RGA_MRDT`. **+ read-side**. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
 - `Enable_Wins_Flag` — enable-wins boolean flag, per-replica map of `(counter, flag)`.
 - `Enable_Wins_Flag_known_broken` — intentionally buggy variant preserved as a demo fixture. Drives the Plausible counterexample demo; the bug manifests on `inter_right_1op`.
 
