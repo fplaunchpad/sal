@@ -856,6 +856,171 @@ theorem differentReplicas_of_closure
   · exact h_e₂_not_ev₁
       (h_ev₁_closed e₂ e₁ hv (fun h => h_noncomm (commutes_symm h)) h_e₁_in_ev₁)
 
+/-! ### Distinct-last-event sub-case stubs
+
+The distinct-last-event branch of `merge_linearization_exists` (the
+last open case of the strong induction on `|π₁| + |π₂|`) decomposes
+into four sub-cases on the strict-locality and commutativity of the
+peel candidates `e₁ = π₁.last`, `e₂ = π₂.last`. Each sub-case is
+extracted here as a named `sorry`-bodied theorem; the main proof
+in `merge_linearization_exists` invokes them by application, so its
+body is sorry-free and the *type-sufficiency* of these four lemmas
+is verified by the main proof type-checking.
+
+To keep signatures readable we abbreviate the conclusion (`MergeWitness`)
+and the strong-induction IH (`MergeIH`). -/
+
+/-- The conclusion of `merge_linearization_exists` and of every
+distinct-last-event sub-case stub. -/
+abbrev MergeWitness (D : CRDTSig) (C : Configuration D)
+    (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State) : Prop :=
+  ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧
+       respects π (lo C) ∧
+       applySeq D D.init π = D.merge s₁ s₂
+
+/-- The strong-induction IH passed into each sub-case stub. Mirrors
+the inner `gen` body of `merge_linearization_exists`. -/
+abbrev MergeIH (D : CRDTSig) (C : Configuration D) (n : Nat) : Prop :=
+  ∀ m, m < n →
+    ∀ (π₁ π₂ : List (Op D.AppOp)) (ev₁ ev₂ : Set (Op D.AppOp))
+      (s₁ s₂ : D.State),
+      π₁.length + π₂.length = m →
+      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+      listPermOf π₁ ev₁ → listPermOf π₂ ev₂ →
+      respects π₁ (lo C) → respects π₂ (lo C) →
+      applySeq D D.init π₁ = s₁ → applySeq D D.init π₂ = s₂ →
+      MergeWitness D C ev₁ ev₂ s₁ s₂
+
+/-- **Sub-case A: strict-local + commute.**
+Both peel candidates are strictly local (`e₁ ∉ ev₂`, `e₂ ∉ ev₁`)
+and commute as operations. Strategy: commuting events swap freely;
+pick one to peel via `BottomUp-1-OP-bot` after re-permutation.
+`differentReplicas` is unneeded in this branch.
+
+Body: pending; see PLAN.md `Session 2026-04-25 Sub-case A`. -/
+theorem distinct_last_strict_local_commute_case
+    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
+    (ih : MergeIH D C n)
+    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
+    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
+    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
+    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
+    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
+    (h_ne : e₁ ≠ e₂)
+    (h_e₁_strict : e₁ ∉ ev₂) (h_e₂_strict : e₂ ∉ ev₁)
+    (h_commute : D.commutes e₁ e₂) :
+    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
+  have _ := hVC; have _ := ih; have _ := h_len
+  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
+  have _ := h_ev₁_closed; have _ := h_ev₂_closed
+  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
+  have _ := h₁s; have _ := h₂s; have _ := h_ne
+  have _ := h_e₁_strict; have _ := h_e₂_strict; have _ := h_commute
+  sorry
+
+/-- **Sub-case B: strict-local + ¬commute.**
+Both peel candidates are strictly local and the operations do not
+commute. Strategy: derive `differentReplicas` via
+`differentReplicas_of_closure`, extract `rc` direction from
+`hVC.rc_non_comm`, apply `bottomUp_2op_reachable` (or symmetric),
+recurse on shrunken `(π₁', π₂)` (or `(π₁, π₂')`) via `ih`.
+
+Body: pending; this is the most likely sub-case to attack first
+since `differentReplicas_of_closure` and `bottomUp_2op_reachable`
+are both already proved. -/
+theorem distinct_last_strict_local_noncomm_case
+    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
+    (ih : MergeIH D C n)
+    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
+    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
+    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
+    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
+    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
+    (h_ne : e₁ ≠ e₂)
+    (h_e₁_strict : e₁ ∉ ev₂) (h_e₂_strict : e₂ ∉ ev₁)
+    (h_noncomm : ¬ D.commutes e₁ e₂) :
+    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
+  have _ := hVC; have _ := ih; have _ := h_len
+  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
+  have _ := h_ev₁_closed; have _ := h_ev₂_closed
+  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
+  have _ := h₁s; have _ := h₂s; have _ := h_ne
+  have _ := h_e₁_strict; have _ := h_e₂_strict; have _ := h_noncomm
+  sorry
+
+/-- **Sub-case C: e₂ shared.** `e₂ ∈ ev₁`. Strategy: re-permute `π₂`
+via `convergence` to bring an `L^a (ev₂ \ ev₁)` element to the
+tail (or fall through to a 1-OP rule if `L^a` is empty). The
+asymmetry between sub-cases C and D is structural rather than
+semantic.
+
+Body: pending; depends on `convergence` (which itself has an open
+overwriter sorry — likely tackled together). -/
+theorem distinct_last_e2_shared_case
+    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
+    (ih : MergeIH D C n)
+    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
+    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
+    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
+    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
+    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
+    (h_ne : e₁ ≠ e₂)
+    (h_e₂_shared : e₂ ∈ ev₁) :
+    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
+  have _ := hVC; have _ := ih; have _ := h_len
+  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
+  have _ := h_ev₁_closed; have _ := h_ev₂_closed
+  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
+  have _ := h₁s; have _ := h₂s; have _ := h_ne
+  have _ := h_e₂_shared
+  sorry
+
+/-- **Sub-case D: e₁ shared.** `e₁ ∈ ev₂`. Mirror of sub-case C. -/
+theorem distinct_last_e1_shared_case
+    (hVC : SatisfiesVCs D) {C : Configuration D} {n : Nat}
+    (ih : MergeIH D C n)
+    {π₁' π₂' : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    {s₁ s₂ : D.State} {e₁ e₂ : Op D.AppOp}
+    (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁) (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
+    (h₁r : respects (π₁' ++ [e₁]) (lo C)) (h₂r : respects (π₂' ++ [e₂]) (lo C))
+    (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
+    (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
+    (h_ne : e₁ ≠ e₂)
+    (h_e₁_shared : e₁ ∈ ev₂) :
+    MergeWitness D C ev₁ ev₂ s₁ s₂ := by
+  have _ := hVC; have _ := ih; have _ := h_len
+  have _ := h_ev₁_in_C; have _ := h_ev₂_in_C
+  have _ := h_ev₁_closed; have _ := h_ev₂_closed
+  have _ := h₁p; have _ := h₂p; have _ := h₁r; have _ := h₂r
+  have _ := h₁s; have _ := h₂s; have _ := h_ne
+  have _ := h_e₁_shared
+  sorry
+
 /-- **Merge case of the bridge theorem (existential form).**
 
 Given two RA-linearization witnesses for replicas `r₁` and `r₂`,
@@ -1044,31 +1209,33 @@ theorem merge_linearization_exists
                 · rw [List.mem_singleton] at h; exact absurd h hx_ne
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
-        · -- Distinct last events e₁ ≠ e₂.
-          obtain ⟨hnd₁, hmem₁⟩ := h₁p
-          obtain ⟨hnd₂, hmem₂⟩ := h₂p
-          have he₁_in_ev₁ : e₁ ∈ ev₁ := (hmem₁ e₁).mp (by simp)
-          have he₂_in_ev₂ : e₂ ∈ ev₂ := (hmem₂ e₂).mp (by simp)
-          have he₁_in_C : e₁ ∈ C.events := h_ev₁_in_C e₁ he₁_in_ev₁
-          have he₂_in_C : e₂ ∈ C.events := h_ev₂_in_C e₂ he₂_in_ev₂
-          obtain ⟨r₁', s₁_, h_r₁'_L, h_r₁'_ev⟩ := he₁_in_C
-          obtain ⟨r₂', s₂_, h_r₂'_L, h_r₂'_ev⟩ := he₂_in_C
-          -- Kernel-verifiable: distinctOps e₁ e₂ from new invariant.
-          have h_dist_e₁_e₂ : distinctOps e₁ e₂ :=
-            C.timestamps_distinct h_r₁'_L h_r₁'_ev h_r₂'_L h_r₂'_ev h_same
-          -- `differentReplicas` requires a more subtle argument that
-          -- breaks at recursive depth: the vis_causal + vis_total_same_replica
-          -- contradiction works at the top level (ev₁ = C.L r₁, ev₂ = C.L r₂),
-          -- but at recursive depth the ev sets are shrunken and no longer
-          -- equal any replica's event set. Specifically, an event could
-          -- be in shrunken (ev₁ \ ev₂) because it was peeled off ev₂ in
-          -- a prior shared-last-event iteration, not because it's truly
-          -- "local to r₁." Paper's L^a/L^b decomposition preserves closure
-          -- through recursion; porting it is the remaining work.
-          have _ := h_dist_e₁_e₂
-          sorry
-
-end
+        · -- Distinct last events e₁ ≠ e₂. Dispatch into the four
+          -- sub-case stubs immediately; each derives the local
+          -- facts (distinctOps, differentReplicas, etc.) it needs
+          -- from the raw hypotheses. The main proof body is
+          -- sorry-free; type-sufficiency of the four stubs is
+          -- verified by *this dispatch type-checking*.
+          by_cases h_e₁_strict : e₁ ∉ ev₂
+          · by_cases h_e₂_strict : e₂ ∉ ev₁
+            · by_cases h_commute : D.commutes e₁ e₂
+              · exact distinct_last_strict_local_commute_case
+                  hVC ih h_len h_ev₁_in_C h_ev₂_in_C
+                  h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
+                  h_same h_e₁_strict h_e₂_strict h_commute
+              · exact distinct_last_strict_local_noncomm_case
+                  hVC ih h_len h_ev₁_in_C h_ev₂_in_C
+                  h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
+                  h_same h_e₁_strict h_e₂_strict h_commute
+            · push_neg at h_e₂_strict
+              exact distinct_last_e2_shared_case
+                hVC ih h_len h_ev₁_in_C h_ev₂_in_C
+                h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
+                h_same h_e₂_strict
+          · push_neg at h_e₁_strict
+            exact distinct_last_e1_shared_case
+              hVC ih h_len h_ev₁_in_C h_ev₂_in_C
+              h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s
+              h_same h_e₁_strict
 
 end
 
