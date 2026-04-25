@@ -86,8 +86,8 @@ match o with
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
-| (ts, (rid, .Add e)) => (add (e,ts) (Prod.fst s), Prod.snd s)
-| (_, (rid, .Rem e)) => (Prod.fst s, union (Prod.snd s) (filter (Prod.fst s) (fun (e1, _) => e1 = e)))
+| (ts, (_rid, .Add e)) => (add (e,ts) (Prod.fst s), Prod.snd s)
+| (_, (_rid, .Rem e)) => (Prod.fst s, union (Prod.snd s) (filter (Prod.fst s) (fun (e1, _) => e1 = e)))
 
 inductive rc_res : Type where
 | Fst_then_snd
