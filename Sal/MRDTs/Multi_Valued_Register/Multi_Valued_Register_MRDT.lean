@@ -5,42 +5,44 @@ import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
 
 
-
-
-
 open Classical
 
 /-!
-# Multi-Valued Register — state-based MRDT
+# Multi-Valued Register — state-based MRDT (classical, replace-on-write)
 
-Accumulates every `Write v` as a `(ts, v)` pair; merge is the three-way
-set union `l ∪ a ∪ b`. Read-side projection is "the distinct values ever
-written"; concurrent writes survive as multiple values.
+MRDT counterpart to `Sal/CRDTs/Multi_Valued_Register/Multi_Valued_Register_CRDT.lean`,
+matching the paper's classical MVR semantics (Shapiro et al. INRIA
+RR-7506 §3.2.2 Spec 14): concurrent writes both survive, sequential
+writes overwrite.
 
-Note: uses Lean's standard `Set (ℕ × ℕ)` rather than Sal's `set` (the
-Boolean-predicate type) — the 24 VCs close without needing the
-decidable set interface because merge is pure union.
+We use the same two-component state as the CRDT — `(writes, removed)`
+with `Write v O` adding to both — and standard three-way set merge per
+component. Both components are grow-only, so the 24 VCs close via
+the same pattern as `Grow_Only_Set_MRDT × Grow_Only_Set_MRDT`.
 
-Like `Grow_Only_Set_MRDT`, the LCA argument is vestigial: `l ⊆ a` and
-`l ⊆ b` already, so `a ∪ b` alone would suffice. The three-way form is
-kept to match the MRDT signature shape.
--/
+Read-side (`Multi_Valued_Register_ReadSide.lean`):
 
-/-- Σ = set of `(ts, value)` pairs. -/
-abbrev concrete_st := Set (ℕ × ℕ)
+    visible_value v ≔ ∃ ts, (ts, v) ∈ writes ∧ ts ∉ removed
 
-/-- Initial state: ∅. -/
+Compare with `Sal/MRDTs/OR_Set/OR_Set_MRDT.lean`: same shape but with
+`removed` indexed by `ts` only (since a Write retracts by ts, not by
+elem-tag). -/
+
+/-- Σ = (writes, removed). -/
+abbrev concrete_st := (set (ℕ × ℕ)) × (set ℕ)
+
+/-- Initial state: both components empty. -/
 @[simp]
-def init_st: concrete_st := {}
+def init_st: concrete_st := (empty, empty)
 
-
-/-- Plain set equality. -/
+/-- Plain pair equality. -/
 @[simp]
-def eq (a: concrete_st) (b: concrete_st) := a = b
+def eq (a b: concrete_st) := a = b
 
-/-- Only op: `Write v`. -/
-inductive app_op_t where
-| Write : ℕ → app_op_t
+/-- Single op: `Write v O`. The `O : set ℕ` is the prepare-time
+snapshot of currently-visible ts values at the originating replica. -/
+inductive app_op_t : Type where
+| Write (v : ℕ) (O : set ℕ)
 
 abbrev op_t:= ℕ × ℕ × app_op_t
 
@@ -52,14 +54,13 @@ def get_rid (o: op_t) :=
 match o with
 | (_, (rid, _)) => rid
 
-
-
-/-- Effect: stake `(ts, v)` in the set. -/
+/-- Effect: stake `(ts, v)` in writes, union the snapshot `O` into
+removed. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with
-| (ts, (_, app_op_t.Write v)) => s ∪ {(ts,v)}
-
+| (ts, (_, app_op_t.Write v O)) =>
+    (add (ts, v) (Prod.fst s), union (Prod.snd s) O)
 
 
 inductive rc_res : Type where
@@ -67,22 +68,27 @@ inductive rc_res : Type where
 | Snd_then_fst
 | Either
 
-/-- `rc := Either`: each write stakes a unique `(ts, _)` slot via
-`distinct_ops`, so any two writes commute. -/
+/-- `rc := Either`: both components are grow-only and additive, so
+any two Writes commute regardless of payload. -/
 @[simp, grind]
-def rc (o1: op_t) (o2: op_t) := rc_res.Either
-
-
-/-- Three-way merge: union of all three sides. Equivalent to `a ∪ b`
-because `l ⊆ a` and `l ⊆ b`; we keep the three-way form for signature
-regularity with the other MRDTs. -/
-@[simp, grind]
-def merge (l: concrete_st) (a: concrete_st) (b: concrete_st) : concrete_st :=
-l ∪ a ∪ b
+def rc (_o1 _o2: op_t) := rc_res.Either
 
 @[simp]
 def commutes_with (o1 o2: op_t) :=
     forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
+
+/-- Three-way merge: standard `(l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)`
+applied to each component. For grow-only sets, this collapses to
+`a ∪ b` (the LCA argument is vestigial), but the 3-way form keeps
+signature regularity with the other MRDTs. -/
+@[simp, grind]
+def merge (l a b: concrete_st) : concrete_st :=
+  (union (intersection (Prod.fst l) (intersection (Prod.fst a) (Prod.fst b)))
+         (union (difference (Prod.fst a) (Prod.fst l))
+                (difference (Prod.fst b) (Prod.fst l))),
+   union (intersection (Prod.snd l) (intersection (Prod.snd a) (Prod.snd b)))
+         (union (difference (Prod.snd a) (Prod.snd l))
+                (difference (Prod.snd b) (Prod.snd l))))
 
 
 set_option maxHeartbeats 2000000
@@ -105,10 +111,14 @@ theorem cond_comm_base (s: concrete_st) (o1: op_t) (o2: op_t) (o3: op_t) :
 eq (do_ (do_ (do_ s o1) o2) o3) (do_ (do_ (do_ s o2) o1) o3) := by sal
 
 theorem  merge_comm (l: concrete_st) (a: concrete_st) (b: concrete_st) :
-eq (merge l a b) (merge l b a) := by sal
+eq (merge l a b) (merge l b a) := by
+  unfold eq merge
+  ext1 <;> funext x <;> simp +decide <;> grind
 
 theorem merge_idem (s: concrete_st):
-eq (merge s s s) s := by sal
+eq (merge s s s) s := by
+  unfold eq merge
+  ext1 <;> funext x <;> simp +decide <;> grind
 
 theorem base_2op (o1: op_t) (o2: op_t):
 (rc o2 o1 = rc_res.Fst_then_snd ∨ rc o2 o1 = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ distinct_ops o1 o2
@@ -119,7 +129,6 @@ theorem ind_lca_2op (l: concrete_st) (o1: op_t) (o2: op_t) (ol: op_t) :
 (rc o2 o1 = rc_res.Fst_then_snd ∨ rc o2 o1 = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ distinct_ops o1 o2 ∧ distinct_ops o1 ol ∧ distinct_ops o2 ol ∧ eq (merge (do_ l ol) (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol) (do_ l ol)) o1) ∧ eq (merge l (do_ l o1) (do_ l o2)) (do_ (merge l l (do_ l o2)) o1)
 →
 eq (merge (do_ l ol) (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ l ol) (do_ (do_ l ol) o2)) o1) := by sal
-
 
 theorem inter_right_base_2op  (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ob: op_t) (ol: op_t) :
 (rc o2 o1 = rc_res.Fst_then_snd ∨ rc o2 o1 = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ rc ob o1 = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧ distinct_ops o1 o2 ∧ distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops o2 ob ∧ distinct_ops o2 ol ∧ distinct_ops ob ol ∧
@@ -139,9 +148,7 @@ theorem inter_left_base_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) 
 := by sal
 
 
-
-
-theorem inter_right_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ob: op_t) (ol: op_t) :
+theorem inter_right_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ob: op_t) (ol: op_t) (o : op_t):
  ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧ (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧
                     (¬ ((rc o ob) = rc_res.Either) ∨ (rc o ol) = rc_res.Fst_then_snd) ∧
                     distinct_ops o1 o2 ∧ distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops o1 o ∧ distinct_ops o2 ob ∧
@@ -153,9 +160,7 @@ theorem inter_right_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1:
 := by sal
 
 
-
-
-theorem inter_left_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ob: op_t) (ol: op_t) :
+theorem inter_left_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ob: op_t) (ol: op_t) (o : op_t) :
  (rc o2 o1) = rc_res.Fst_then_snd ∧ (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid o2 != get_rid o1 ∧ get_rid ob != get_rid ol ∧
                     (¬ ((rc o ob) = rc_res.Either) ∨ (rc o ol) = rc_res.Fst_then_snd) ∧
                     distinct_ops o1 o2 ∧ distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops o1 o ∧ distinct_ops o2 ob ∧
@@ -165,7 +170,6 @@ theorem inter_left_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: 
                     →
    eq (merge (do_ l ol) (do_ (do_ (do_ (do_ a o) ob) ol) o1) (do_ (do_ b ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ (do_ a o) ob) ol) (do_ (do_ b ol) o2)) o1)
    := by sal
-
 
 theorem inter_lca_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (o2: op_t) (ol: op_t) :
 ((rc o2 o1) = rc_res.Fst_then_snd ∨ (rc o2 o1) = rc_res.Either) ∧ get_rid o1 != get_rid o2 ∧
@@ -188,9 +192,12 @@ theorem ind_left_2op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op
                     distinct_ops o1 o2 ∧ distinct_ops o1 o1' ∧ distinct_ops o2 o1' ∧
                     eq (merge l (do_ a o1) (do_ b o2)) (do_ (merge l a (do_ b o2)) o1)
                     →
-
  eq (merge l (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge l (do_ a o1') (do_ b o2)) o1)
- := by sal
+ := by
+  rcases o1 with ⟨_, _, ⟨_, _⟩⟩
+  rcases o2 with ⟨_, _, ⟨_, _⟩⟩
+  rcases o1' with ⟨_, _, ⟨_, _⟩⟩
+  sal
 
 theorem base_1op (o1: op_t) :
 eq (merge init_st (do_ init_st o1) init_st) (do_ (merge init_st init_st init_st) o1) := by sal
@@ -210,9 +217,6 @@ theorem inter_right_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st)
   eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ b ob) ol)) o1)
   := by sal
 
-
-
-
 theorem inter_left_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (ob: op_t) (ol: op_t) :
  (rc ob ol) = rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧
                     distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops ob ol ∧
@@ -220,7 +224,6 @@ theorem inter_left_base_1op (l : concrete_st) (a: concrete_st) (b: concrete_st) 
                     →
   eq (merge (do_ l ol) (do_ (do_ (do_ a ob) ol) o1) (do_ b ol)) (do_ (merge (do_ l ol) (do_ (do_ a ob) ol) (do_ b ol)) o1)
   := by sal
-
 
 theorem inter_right_1op (l: concrete_st) (a: concrete_st) (b: concrete_st) (o1: op_t) (ob: op_t) (ol: op_t) (o: op_t) :
 rc ob ol =  rc_res.Fst_then_snd ∧ get_rid ob != get_rid ol ∧ (¬(rc o ob = rc_res.Either) ∨ (rc o ol = rc_res.Fst_then_snd)) ∧ distinct_ops o1 ob ∧ distinct_ops o1 ol ∧ distinct_ops o1 o ∧ distinct_ops ob ol ∧ distinct_ops ob o ∧ distinct_ops ol o ∧ get_rid o != get_rid ol ∧ eq (merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ b ob) ol)) (do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ b ob) ol)) o1)
@@ -255,7 +258,11 @@ distinct_ops o1 o1' ∧ distinct_ops o1 ol ∧ distinct_ops o1' ol ∧
                     eq (merge (do_ l ol) (do_ a o1) (do_ b ol)) (do_ (merge (do_ l ol) a (do_ b ol)) o1)
 →
 eq (merge (do_ l ol) (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ l ol) (do_ a o1') (do_ b ol)) o1)
-:= by sal
+:= by
+  rcases o1 with ⟨_, _, ⟨_, _⟩⟩
+  rcases o1' with ⟨_, _, ⟨_, _⟩⟩
+  rcases ol with ⟨_, _, ⟨_, _⟩⟩
+  sal
 
 
 theorem ind_right_1op (l: concrete_st) (a: concrete_st) (b: concrete_st) (o2: op_t) (o2': op_t) (ol: op_t)  :
@@ -263,7 +270,11 @@ distinct_ops o2 o2' ∧ distinct_ops o2 ol ∧ distinct_ops o2' ol ∧
                     eq (merge (do_ l ol) (do_ a ol) (do_ b o2)) (do_ (merge (do_ l ol) (do_ a ol) b) o2)
 →
 eq (merge (do_ l ol) (do_ a ol) (do_ (do_ b o2') o2)) (do_ (merge (do_ l ol) (do_ a ol) (do_ b o2')) o2)
-:= by sal
+:= by
+  rcases o2 with ⟨_, _, ⟨_, _⟩⟩
+  rcases o2' with ⟨_, _, ⟨_, _⟩⟩
+  rcases ol with ⟨_, _, ⟨_, _⟩⟩
+  sal
 
 theorem  lem_0op (l: concrete_st) (a: concrete_st) (b: concrete_st) (ol: op_t) :
 eq (merge (do_ l ol) (do_ a ol) (do_ b ol)) (do_ (merge l a b) ol)
