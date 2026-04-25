@@ -13,19 +13,19 @@ Sal is a Lean 4 framework for verifying state-based CRDTs and MRDTs under replic
 - [`Sal/MRDTs/`](../../../Sal/MRDTs/) — 9 state-based MRDTs (three-way merge).
 - [`Sal/Tactic/Sal.lean`](../../../Sal/Tactic/Sal.lean) — the three-stage `by sal` tactic (`dsimp + grind` → `blaster` → `dsimp + aesop + grind`).
 - [`Sal/Interfaces/`](../../../Sal/Interfaces/) — decidable `set α := α → Bool` and `map key value` with `@[simp, grind]` lemmas.
-- [`docs/porting.md`](../../../docs/porting.md) — **read this first** when porting a new op-based CRDT. It contains the five-step translation recipe, judgment calls, and proof-closing playbook. This skill is the short pointer; that doc is the full reference.
+- [`docs/porting-op-based-crdts.md`](../../../docs/porting-op-based-crdts.md) — **read this first** when porting a new op-based CRDT. It contains the five-step translation recipe, judgment calls, and proof-closing playbook. This skill is the short pointer; that doc is the full reference.
 - [`README.md`](../../../README.md) — the "What's verified" catalog. Update when adding a new RDT.
 - `lean-toolchain` pins Lean `v4.28.0`; `lakefile.toml` pins `mathlib` to `v4.28.0` and `Blaster` to `chore-bump-lean-4.28` of [`kayceesrk/Lean-blaster`](https://github.com/kayceesrk/Lean-blaster).
 
 ## Adding a new CRDT
 
 1. **Copy a skeleton** from an existing CRDT of similar shape. Registers → `LWW_Register_CRDT`. Set-of-ops → `Grow_Only_Set_CRDT`. Projected log with causality-in-op → `RGA_CRDT`. Nested structured state → `Peritext_CRDT` (after refactor).
-2. **Follow the five-step recipe** in `docs/porting.md`: pick Σ as a lattice, fold prepare+effect into `do_`, define `merge` as the join, define `rc`, then `by sal` on the 24 VCs.
+2. **Follow the five-step recipe** in `docs/porting-op-based-crdts.md`: pick Σ as a lattice, fold prepare+effect into `do_`, define `merge` as the join, define `rc`, then `by sal` on the 24 VCs.
 3. **Update the catalog** in `README.md` under "What's verified" and adjust the RDT count (currently 27 = 18 CRDTs + 9 MRDTs).
 
 ## Closing stuck VCs
 
-When a `by sal` doesn't close, reach for these in order (all detailed in `docs/porting.md`):
+When a `by sal` doesn't close, reach for these in order (all detailed in `docs/porting-op-based-crdts.md`):
 
 1. **Per-component decomposition** — kernel-verifiable, no SMT:
    ```lean
@@ -41,9 +41,28 @@ When a `by sal` doesn't close, reach for these in order (all detailed in `docs/p
 3. **Aristotle-generated intermediate lemma.** For goals where an auxiliary fact makes the main theorem a one-liner. Pattern: `LWW_Map_CRDT` uses `merge_do_lex_max` and `lem_0op_aux`. Submit via `aristotle submit --project-dir <path> --wait`.
 4. **TODO sorry with diagnostic.** Paste the failing `grind` state into the comment. Makes the next pass cheaper.
 
-## Critical principle: don't nest function-valued state
+## Critical principle: keep state and ops grind-friendly
 
-Sal's `set α := α → Bool` is grind-friendly **only as a top-level component of Σ**. Nesting it inside a map value (`map K (set V)`) forces grind to prove function equality via funext and typically doesn't terminate. If you hit stuck VCs on map-of-set state, try flattening before anything else.
+Prefer `Sal/Interfaces/Set_Extended.lean` and `Sal/Interfaces/Map_Extended.lean` as the first choice for Σ components. They're instrumented with `@[simp, grind]` and `grind_pattern` lemmas designed to make `grind` effective on RDT goals.
+
+The broader automation rule is: **avoid any construction that forces grind/simp to reason about function equality pointwise**. Known-hostile patterns:
+
+- `map K (set V)` — nested predicate forces funext.
+- A map's `mappings` field built via `iter_upd` with a **conditional lambda** (e.g., splice-at-`do_` rewriting children based on an `if`).
+- `rc` with nested conditionals producing non-`Either` results — branches multiply during norm-simp.
+- `open Classical` combined with `noncomputable def` introducing `propDecidable` terms into `do_`/`merge`.
+
+**Prefer `set (K × V)` tuples over `map K V` whenever `do_` would otherwise need per-key conditional rewrites.** The Peritext flattening refactor generalizes: Peritext went from `map (OpId × Bool) (set MarkOp)` to `set AnchorAttachment`. The same logic applies whenever splice or rewrite semantics would force a conditional lambda into a map's mappings field.
+
+### Diagnostic signatures
+
+If `by sal` fails with any of:
+
+- `aesop: internal error during proof reconstruction: goal N was not normalised`
+- `aesop: error in norm simp: simp failed: maximum number of steps exceeded`
+- `(deterministic) timeout at 'whnf'` during theorem elaboration
+
+…suspect a function-valued term in `state`, `do_`, or `merge`. **Reshape the state before reaching for manual proofs.** Manual proofs over a hostile state representation remain painful at every VC; a representation fix closes many at once.
 
 ## Building and monitoring
 
