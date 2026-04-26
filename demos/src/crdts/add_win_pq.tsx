@@ -1,36 +1,71 @@
 import { useState } from "react";
 import type { CRDTSpec } from "../harness/types";
 
-// Σ = (A : map (elem, ts) -> value,
-//      I : set (elem, ts, amount),
-//      R : set (elem, ts))     tombstones on add-records
+// Σ = (A : map (elem, add_ts) -> innate value,
+//      I : set (elem, inc_ts, amount),
+//      R : set (elem, add_ts) tombstones)
 //
-// Observed priority of elem e = Σ over non-tombstoned add-records for e of
-//   (innate A[(e, ts)] + Σ of I-entries matching (e, ts)).
+// Per the Lean CRDT spec:
+//   * Add e v at ts          -> A[(e, ts)] := v.
+//   * Inc e a at ts          -> union {(e, ts, a)} into I.   ts is the OP's
+//                                ts (not any add's), and the inc is keyed
+//                                by element only at the read side.
+//   * Rmv e   at the source  -> the op carries the prepare-time snapshot
+//                                D = { (e, at) ∈ A : not yet tombstoned }
+//                                of currently-visible add-records for e;
+//                                do_ unions D into R. (Carrying D in the
+//                                payload is what keeps `rc := Either`.)
+//
+// Read side:
+//   live(e)     := { (e, at) ∈ A : (e, at) ∉ R }
+//   innate(e)   := value with max add_ts in live(e)
+//   acquired(e) := Σ over inc records with elem=e of amount
+//   priority(e) := innate(e) + acquired(e)
 type AddKey = string; // `${elem}:${ts}`
+type IncKey = string; // `${elem}|${ts}|${amount}`
 export type Concrete = {
-  A: Map<AddKey, number>; // elem|ts -> innate value
-  I: Set<string>; // `${elem}|${ts}|${amount}`
-  R: Set<AddKey>; // tombstones of add-records
+  A: Map<AddKey, number>;
+  I: Set<IncKey>;
+  R: Set<AddKey>;
 };
 export type Abstract = { elem: number; priority: number }[];
 export type Op =
   | { kind: "add"; elem: number; value: number }
   | { kind: "inc"; elem: number; amount: number }
-  | { kind: "rmv"; elem: number };
+  | { kind: "rmv"; elem: number; tombstones: AddKey[] };
 
 function addK(elem: number, ts: number): AddKey {
   return `${elem}:${ts}`;
 }
-function incK(elem: number, ts: number, amount: number): string {
+function parseAddK(k: AddKey): { elem: number; ts: number } {
+  const [e, t] = k.split(":");
+  return { elem: Number(e), ts: Number(t) };
+}
+function incK(elem: number, ts: number, amount: number): IncKey {
   return `${elem}|${ts}|${amount}`;
+}
+function parseIncK(k: IncKey): { elem: number; ts: number; amount: number } {
+  const [e, t, a] = k.split("|");
+  return { elem: Number(e), ts: Number(t), amount: Number(a) };
+}
+
+// Helper used by the op form to build the Rmv payload at the source replica:
+// every currently-visible (elem, add_ts) record for `e` (live, not yet
+// tombstoned). This is the prepare-time snapshot in the Lean spec.
+function snapshotForRmv(s: Concrete, elem: number): AddKey[] {
+  const out: AddKey[] = [];
+  for (const k of s.A.keys()) {
+    if (s.R.has(k)) continue;
+    if (parseAddK(k).elem === elem) out.push(k);
+  }
+  return out;
 }
 
 export const spec: CRDTSpec<Concrete, Abstract, Op> = {
   name: "Add-Wins Priority Queue",
   slug: "add-win-pq",
   tagline:
-    "Zhang et al. 2023 CRPQ: multiple Add records per element (keyed by ts), Inc records against a specific add, and Rmv tombstones a snapshot of observed adds. Concurrent Add beats concurrent Rmv.",
+    "Zhang et al. 2023 CRPQ. Add stakes (e, ts) → value into A; Inc stakes (e, op_ts, amount) into I keyed by element; Rmv carries a prepare-time snapshot of currently-visible (e, add_ts) records and unions it into R. Concurrent Add at another replica beats concurrent Rmv.",
   init: { A: new Map(), I: new Set(), R: new Set() },
 
   apply(s, op, meta) {
@@ -39,29 +74,24 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
       A.set(addK(op.elem, meta.ts), op.value);
       return { ...s, A };
     } else if (op.kind === "inc") {
-      // Inc applies to the most recently observed add for elem, if any.
-      const liveAdds = [...s.A.keys()]
-        .filter((k) => !s.R.has(k) && k.startsWith(`${op.elem}:`))
-        .map((k) => Number(k.split(":")[1]))
-        .sort((a, b) => b - a);
-      if (liveAdds.length === 0) return s;
-      const ts = liveAdds[0];
+      // Lean: union {(elem, op_ts, amount)} into I unconditionally.
       const I = new Set(s.I);
-      I.add(incK(op.elem, ts, op.amount));
+      I.add(incK(op.elem, meta.ts, op.amount));
       return { ...s, I };
     } else {
-      // Rmv tombstones every currently-observed add-record for this elem.
-      const toTomb = [...s.A.keys()].filter((k) =>
-        k.startsWith(`${op.elem}:`),
-      );
-      if (toTomb.length === 0) return s;
+      // Lean: do_ for Rmv just unions the op's tombstone payload D into R.
+      // No reading of A. Keeping this `pure pointwise ∨` is what preserves
+      // Add/Rmv commutativity at the do_ level.
+      if (op.tombstones.length === 0) return s;
       const R = new Set(s.R);
-      for (const k of toTomb) R.add(k);
+      for (const k of op.tombstones) R.add(k);
       return { ...s, R };
     }
   },
 
   merge(a, b) {
+    // Pointwise lattice join: max on A's value (LWW by add_ts ⇒ writes are
+    // unique anyway), union on I and R.
     const A = new Map(a.A);
     for (const [k, v] of b.A) A.set(k, Math.max(A.get(k) ?? 0, v));
     return {
@@ -72,25 +102,27 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
   },
 
   abstract(s) {
-    const per = new Map<number, number>();
-    for (const [k, innate] of s.A) {
+    // Per Lean read-side:
+    //   innate(e)   = max-add_ts winner's value among live(e),
+    //   acquired(e) = Σ of inc amounts whose elem = e (regardless of R),
+    //   priority(e) = innate(e) + acquired(e).
+    const innateByElem = new Map<number, { ts: number; value: number }>();
+    for (const [k, value] of s.A) {
       if (s.R.has(k)) continue;
-      const [elemStr, tsStr] = k.split(":");
-      const elem = Number(elemStr);
-      let acquired = 0;
-      const prefix = `${elem}|${tsStr}|`;
-      for (const rec of s.I) {
-        if (rec.startsWith(prefix)) {
-          const amount = Number(rec.slice(prefix.length));
-          acquired += amount;
-        }
-      }
-      per.set(elem, (per.get(elem) ?? 0) + innate + acquired);
+      const { elem, ts } = parseAddK(k);
+      const cur = innateByElem.get(elem);
+      if (!cur || ts > cur.ts) innateByElem.set(elem, { ts, value });
     }
-    return [...per.entries()]
-      .filter(([, v]) => v !== 0)
-      .sort((a, b) => b[1] - a[1] || a[0] - b[0])
-      .map(([elem, priority]) => ({ elem, priority }));
+    const acquired = new Map<number, number>();
+    for (const k of s.I) {
+      const { elem, amount } = parseIncK(k);
+      acquired.set(elem, (acquired.get(elem) ?? 0) + amount);
+    }
+    const out: { elem: number; priority: number }[] = [];
+    for (const [elem, { value }] of innateByElem) {
+      out.push({ elem, priority: value + (acquired.get(elem) ?? 0) });
+    }
+    return out.sort((a, b) => b.priority - a.priority || a.elem - b.elem);
   },
 
   renderAbstract(a) {
@@ -108,8 +140,8 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
 
   renderConcrete(s) {
     const liveAdds = [...s.A.entries()].filter(([k]) => !s.R.has(k));
-    const tomb = [...s.R];
     const incs = [...s.I];
+    const tomb = [...s.R];
     return (
       <div>
         <div>
@@ -142,8 +174,8 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
     );
   },
 
-  opForm({ dispatch }) {
-    return <Form dispatch={dispatch} />;
+  opForm({ dispatch, state }) {
+    return <Form dispatch={dispatch} state={state} />;
   },
 
   formatOp(op, meta) {
@@ -153,12 +185,18 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
       case "inc":
         return `R${meta.rid} inc(elem=${op.elem}, ${op.amount >= 0 ? "+" : ""}${op.amount})`;
       case "rmv":
-        return `R${meta.rid} rmv(elem=${op.elem})`;
+        return `R${meta.rid} rmv(elem=${op.elem}, D=${op.tombstones.length})`;
     }
   },
 };
 
-function Form({ dispatch }: { dispatch: (op: Op) => void }) {
+function Form({
+  dispatch,
+  state,
+}: {
+  dispatch: (op: Op) => void;
+  state: Concrete;
+}) {
   const [elem, setElem] = useState(0);
   const [value, setValue] = useState(1);
   const [amount, setAmount] = useState(1);
@@ -202,7 +240,13 @@ function Form({ dispatch }: { dispatch: (op: Op) => void }) {
         </button>
       </div>
       <div className="op-buttons">
-        <button onClick={() => dispatch({ kind: "rmv", elem })}>rmv</button>
+        <button
+          onClick={() =>
+            dispatch({ kind: "rmv", elem, tombstones: snapshotForRmv(state, elem) })
+          }
+        >
+          rmv
+        </button>
       </div>
     </div>
   );
