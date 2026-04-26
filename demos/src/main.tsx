@@ -39,6 +39,7 @@ import { spec as mOrEffSpec } from "./mrdts/or_set_efficient";
 import { spec as mRgaSpec } from "./mrdts/rga";
 import { spec as mAdwPqSpec } from "./mrdts/add_win_pq";
 import { spec as mEwfSpec } from "./mrdts/enable_wins_flag";
+import { spec as mPeritextSpec } from "./mrdts/peritext";
 import "./style.css";
 
 // Heterogeneous registries: each spec has its own Concrete/Op types, so we
@@ -71,6 +72,7 @@ const mrdtSpecs: AnyMRDT[] = [
   mOrSpec,
   mOrEffSpec,
   mRgaSpec,
+  mPeritextSpec,
   mAdwPqSpec,
   mEwfSpec,
 ];
