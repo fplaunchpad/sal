@@ -82,24 +82,32 @@ def L₁_local (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₁ \ ev
 /-- Events local to `r₂`. -/
 def L₂_local (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₂ \ ev₁
 
-/-- Local events `lo`-before some `L_top` event, or transitively
-`lo`-before another `L_b` event. Inductively defined via a fixed-
-point. -/
+/-- Local events with a lo-path of length 1 OR 2 to `ev_top`,
+matching `appendix.tex:262`:
+
+  L_1^b = { e ∈ L_1' | ∃ e_⊤ ∈ L_⊤.
+              (e →_lo e_⊤ ∨ ∃ e' ∈ L_1'. e →_lo e' →_lo e_⊤) }
+
+The depth-2 case is essential for Lemma 1's "no lo-edge from `L^a`
+to `L^b`" — see the audit block below. -/
 def L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
     Set (Op D.AppOp) :=
   fun e => e ∈ ev_local ∧
-    (∃ e' ∈ ev_top, lo C e e')
+    ((∃ e' ∈ ev_top, lo C e e') ∨
+     (∃ e' ∈ ev_local, ∃ e'' ∈ ev_top, lo C e e' ∧ lo C e' e''))
 
-/-- Local events NOT `lo`-before any shared event. These linearise
-at the end of the merge witness, peeled via `bottomUp_2op_reachable`
-or `bottomUp_1op_top_reachable`. -/
+/-- Local events with NO lo-path (of length 1 or 2) to `ev_top`.
+These linearise at the end of the merge witness, peeled via
+`bottomUp_2op_reachable` or `bottomUp_1op_top_reachable`. Defined
+as the complement of `L_b` within `ev_local`. -/
 def L_a (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
     Set (Op D.AppOp) :=
   fun e => e ∈ ev_local ∧
-    (∀ e' ∈ ev_top, ¬ lo C e e')
+    ¬ ((∃ e' ∈ ev_top, lo C e e') ∨
+       (∃ e' ∈ ev_local, ∃ e'' ∈ ev_top, lo C e e' ∧ lo C e' e''))
 
 /-- Sanity: `L_a ∪ L_b = ev_local` (every local event either has
-a lo-successor in shared events or doesn't). -/
+some lo-path of length ≤ 2 to `ev_top`, or none). -/
 theorem L_a_union_L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
     L_a C ev_top ev_local ∪ L_b C ev_top ev_local = ev_local := by
   ext e
@@ -107,18 +115,18 @@ theorem L_a_union_L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp))
   constructor
   · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
   · intro he
-    by_cases h : ∃ e' ∈ ev_top, lo C e e'
+    by_cases h : (∃ e' ∈ ev_top, lo C e e') ∨
+                 (∃ e' ∈ ev_local, ∃ e'' ∈ ev_top, lo C e e' ∧ lo C e' e'')
     · exact Or.inr ⟨he, h⟩
-    · refine Or.inl ⟨he, fun e' he' hlo => ?_⟩
-      exact h ⟨e', he', hlo⟩
+    · exact Or.inl ⟨he, h⟩
 
 /-- Sanity: `L_a` and `L_b` are disjoint. -/
 theorem L_a_inter_L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
     L_a C ev_top ev_local ∩ L_b C ev_top ev_local = ∅ := by
   ext e
   simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false]
-  rintro ⟨⟨_, h_all⟩, _, e', he', hlo⟩
-  exact h_all e' he' hlo
+  rintro ⟨⟨_, h_neg⟩, _, h_pos⟩
+  exact h_neg h_pos
 
 /-- Decomposition sanity: `ev₁ = L_top ∪ L₁_local` (disjoint union). -/
 theorem ev₁_eq_top_union_local (ev₁ ev₂ : Set (Op D.AppOp)) :
@@ -151,6 +159,109 @@ theorem union_eq_partition (ev₁ ev₂ : Set (Op D.AppOp)) :
   simp only [L_top, L₁_local, L₂_local,
              Set.mem_union, Set.mem_inter_iff, Set.mem_diff]
   tauto
+
+/-! Subset facts. Each `L_*` partition piece is a subset of one of
+the underlying replica event sets `ev₁`, `ev₂`. Demand-driven —
+consumed by the distinct-last-event proof to invoke
+`exists_lo_maximal_in_subset` on the carving layers. -/
+
+theorem L_top_subset_left (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top ev₁ ev₂ ⊆ ev₁ := fun _ h => h.1
+
+theorem L_top_subset_right (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top ev₁ ev₂ ⊆ ev₂ := fun _ h => h.2
+
+theorem L₁_local_subset (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L₁_local ev₁ ev₂ ⊆ ev₁ := fun _ h => h.1
+
+theorem L₂_local_subset (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L₂_local ev₁ ev₂ ⊆ ev₂ := fun _ h => h.1
+
+theorem L_a_subset_local (C : Configuration D)
+    (ev_top ev_local : Set (Op D.AppOp)) :
+    L_a C ev_top ev_local ⊆ ev_local := fun _ h => h.1
+
+theorem L_b_subset_local (C : Configuration D)
+    (ev_top ev_local : Set (Op D.AppOp)) :
+    L_b C ev_top ev_local ⊆ ev_local := fun _ h => h.1
+
+/-! ### Carving of `L_top` (paper `appendix.tex:264-265`)
+
+Within the shared events `L_top`, classify each event by whether
+some `L^b`-event lo-precedes it:
+
+  L_top^a = { e_⊤ ∈ L_⊤ | ∃ e ∈ L_1^b ∪ L_2^b. e →_lo e_⊤ }
+  L_top^b = L_⊤ \ L_top^a
+
+The appendix's outer induction case-splits on `|L_top^a|` (with
+the `L_1^a ∪ L_2^a = ∅` outer base): inner base when
+`|L_top^a| = 0`, inner step pulls a maximal `L_top^a` element via
+`BottomUp-0-OP`. Definitions are robust to the `L_b` depth fix
+since they take `L_b` as input rather than re-deriving it. -/
+
+/-- Shared events with a lo-predecessor in `L_1^b ∪ L_2^b`. -/
+def L_top_a (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    Set (Op D.AppOp) :=
+  fun e_top => e_top ∈ L_top ev₁ ev₂ ∧
+    ∃ e, (e ∈ L_b C (L_top ev₁ ev₂) (L₁_local ev₁ ev₂) ∨
+          e ∈ L_b C (L_top ev₁ ev₂) (L₂_local ev₁ ev₂)) ∧
+         lo C e e_top
+
+/-- Shared events with NO lo-predecessor in `L_1^b ∪ L_2^b`. -/
+def L_top_b (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    Set (Op D.AppOp) :=
+  fun e_top => e_top ∈ L_top ev₁ ev₂ ∧
+    ¬ ∃ e, (e ∈ L_b C (L_top ev₁ ev₂) (L₁_local ev₁ ev₂) ∨
+            e ∈ L_b C (L_top ev₁ ev₂) (L₂_local ev₁ ev₂)) ∧
+           lo C e e_top
+
+theorem L_top_a_subset (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top_a C ev₁ ev₂ ⊆ L_top ev₁ ev₂ := fun _ h => h.1
+
+theorem L_top_b_subset (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top_b C ev₁ ev₂ ⊆ L_top ev₁ ev₂ := fun _ h => h.1
+
+theorem L_top_a_union_L_top_b (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top_a C ev₁ ev₂ ∪ L_top_b C ev₁ ev₂ = L_top ev₁ ev₂ := by
+  ext e
+  simp only [Set.mem_union]
+  constructor
+  · rintro (⟨h, _⟩ | ⟨h, _⟩) <;> exact h
+  · intro he
+    by_cases h : ∃ e', (e' ∈ L_b C (L_top ev₁ ev₂) (L₁_local ev₁ ev₂) ∨
+                         e' ∈ L_b C (L_top ev₁ ev₂) (L₂_local ev₁ ev₂)) ∧
+                       lo C e' e
+    · exact Or.inl ⟨he, h⟩
+    · exact Or.inr ⟨he, h⟩
+
+theorem L_top_a_inter_L_top_b (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) :
+    L_top_a C ev₁ ev₂ ∩ L_top_b C ev₁ ev₂ = ∅ := by
+  ext e
+  simp only [Set.mem_inter_iff, Set.mem_empty_iff_false, iff_false]
+  rintro ⟨⟨_, h_ex⟩, _, h_no⟩
+  exact h_no h_ex
+
+/-! **`L_b` depth audit (paper-side, 2026-04-25, post-fix).**
+
+Per `appendix.tex:262`, `L_1^b` accepts events with a lo-path of
+length 1 OR 2 to `L_⊤`:
+
+  L_1^b = { e ∈ L_1' | ∃ e_⊤ ∈ L_⊤.
+              (e →_lo e_⊤ ∨ ∃ e' ∈ L_1'. e →_lo e' →_lo e_⊤) }
+
+**Depth-2 is essential** for Lemma 1 of `appendix.tex:117-156`
+("no lo-edge from `L^a` to `L^b`"). Case 1.b.i (line 128) runs:
+`e →_vis e' →_vis e'' ∈ L_1' →_lo e_⊤`; by vis-transitivity
+`e →_vis e''`, so `e` has a depth-2 lo-path to `L_⊤`, hence
+`e ∈ L_b`. Without depth-2 in the definition, that step fails.
+The depth is bounded at 2 by `no_rc_chain` (at most one `rc`-edge
+per lo-path; vis-chains collapse via vis-transitivity).
+
+**Fix landed (this session).** `L_b` and `L_a` above now match
+the paper's depth-1-or-2 form. `L_a_union_L_b` and
+`L_a_inter_L_b` re-proved against the new definitions. The
+partition layer is now appendix-faithful before the distinct-last
+branch consumes it. -/
 
 /-! ### Convergence
 
@@ -464,11 +575,46 @@ theorem convergence
             · rw [List.mem_singleton] at h; exact absurd h hx_ne
           have h1 := List.pairwise_append.mp h₁r
           exact h1.2.2 x hx_in_π₁' e (by simp)
-        -- Path 1 obligation: the lo-closure of `ev = C.events`
-        -- supplies the overwriter hypothesis. Current `convergence`
-        -- signature still takes a general `ev`, so this remains a
-        -- sorry until the signature is tightened to `ev = C.events`
-        -- (Path 1 step 2 proper).
+        -- The h_ov hypothesis derivation has been audited and is
+        -- *almost* discharged from a closure hypothesis on `ev`
+        -- (closed under `vis ∧ ¬commute` successors) plus the
+        -- standard lo-respect facts. Sketch:
+        --
+        -- Given α, β, x with τ = α ++ x :: β and ¬commute(e, x),
+        -- different replicas:
+        -- * Case `rc(e, x) = Fst_then_snd`: ¬lo(e, x) decomposition
+        --   yields an overwriter `e₃` for x (∃ e₃, vis(x, e₃) ∧
+        --   ¬commute(x, e₃)). Closure on x ∈ ev places e₃ ∈ ev,
+        --   hence in π₂. lo(x, e₃) (first disjunct) plus π₂'s
+        --   lo-respect places e₃ AFTER x in π₂, i.e., in β. ✓
+        -- * Case `rc(x, e) = Fst_then_snd`: symmetric overwriter
+        --   would be for `e` (∃ e₃, vis(e, e₃) ∧ ¬commute(e, e₃)).
+        --   But lo(e, e₃) plus π₁'s lo-respect (with e at the
+        --   tail of π₁ = π₁' ++ [e]) forces e₃ AFTER end of π₁,
+        --   which is impossible since e₃ ∈ ev = π₁'s set. So
+        --   this case is vacuous (False.elim). ✓
+        --
+        -- **The remaining gap is a structural VC mismatch.**
+        -- The Sal paper's `rc-non-comm` (lin.tex:387-389) is the
+        -- *directional* form: ¬commute ↔ rc=Fst in some direction.
+        -- Our Lean `SatisfiesVCs.rc_non_comm` is strictly weaker —
+        -- only the semantic equivalence (rc=Either ↔ commute).
+        -- Under the weak form, the "inconsistent" case where both
+        -- rc(e,x) = Snd_then_fst AND rc(x,e) = Snd_then_fst is
+        -- not ruled out; in that case neither cond_comm direction
+        -- fires and the swap can't be justified.
+        --
+        -- Fix: upgrade `SatisfiesVCs.rc_non_comm` to the directional
+        -- form, OR add a new VC field
+        --   rc_either_or_fst : ¬commute → rc(o₁,o₂) = Fst_then_snd
+        --                                 ∨ rc(o₂,o₁) = Fst_then_snd
+        -- and re-discharge it in every per-CRDT `D_satisfies_VCs`
+        -- instance (vacuous for Grow_Only_Set; real content for
+        -- non-trivial CRDTs). Coordinated change across multiple
+        -- files; should land alongside the convergence proof body.
+        --
+        -- Until that VC change lands, `h_ov` cannot be derived
+        -- from the bubble's local context alone.
         exact applySeq_bubble_lo_max (D := D) hVC e τ he_in_C h_τ_in_C
           he_notin_τ h_not_lo_fwd h_not_lo_bwd
           (by sorry) (applySeq D D.init σ)
@@ -738,9 +884,9 @@ theorem merge_init_left_reachable_singleton
   rw [hVC.merge_comm, hVC.base_1op o₁, hVC.merge_idem]
 
 theorem merge_init_left_reachable
-    (_hVC : SatisfiesVCs D) (π : List (Op D.AppOp)) :
+    (hVC : SatisfiesVCs D) (π : List (Op D.AppOp)) :
     D.merge D.init (applySeq D D.init π) = applySeq D D.init π := by
-  sorry
+  exact hVC.merge_init _
 
 /-- `merge s D.init = s` for reachable `s`. Mirror of
 `merge_init_left_reachable` via `merge_comm`. -/

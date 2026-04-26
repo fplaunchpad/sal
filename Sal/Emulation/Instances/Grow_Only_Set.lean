@@ -172,5 +172,10 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
     exact ⟨by rwa [← distinctOps_iff], by rwa [← distinctOps_iff],
            by rwa [← distinctOps_iff], h_eq⟩
   lem_0op := fun a b ol => _root_.lem_0op a b ol
+  merge_init := by
+    intro s
+    show _root_.merge _root_.init_st s = s
+    simp [_root_.merge, _root_.init_st]
+    ext x; simp
 
 end Sal.Emulation.Instances.GrowOnlySet

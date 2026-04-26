@@ -450,6 +450,18 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
 
+  /-- **Merge-init identity.** The initial state `D.init` is the bottom
+  element of the CRDT's state lattice: merging with it leaves any state
+  unchanged.
+
+  This property is a fundamental lattice axiom that is NOT derivable
+  from the other 24 VCs — the VCs only constrain `merge` when both
+  arguments have at least one `update` applied.  The Sal paper treats
+  this as implicit (init is the lattice bottom by definition), but the
+  mechanization needs it as an explicit axiom. -/
+  merge_init :
+    ∀ s : D.State, D.merge D.init s = s
+
 /-! ### Bridge theorem — base case -/
 
 /-- The initial configuration is RA-linearizable: only replica `0` is
