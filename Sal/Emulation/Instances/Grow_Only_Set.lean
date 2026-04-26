@@ -122,6 +122,21 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
     simp only [D_rc_Either, true_iff]
     intro s
     exact (h.mp rfl) s
+  rc_non_comm_directional := by
+    -- For Grow-Only Set, `D.rc = Either` always, so the RHS
+    -- `rc=Fst ∨ rc(swap)=Fst` is `False`. The LHS `¬ commutes` is
+    -- also `False` because all G-Set ops commute (union is
+    -- commutative). The iff `False ↔ False` holds.
+    intro o₁ o₂ h_d h_r
+    simp only [D_rc_Fst_iff_False, or_self, iff_false]
+    -- Need: ¬ ¬ D.commutes o₁ o₂, i.e., D.commutes o₁ o₂.
+    have hb : _root_.distinct_ops o₁ o₂ ∧ _root_.get_rid o₁ != _root_.get_rid o₂ := by
+      refine ⟨?_, ?_⟩
+      · rwa [← distinctOps_iff]
+      · rwa [← differentReplicas_iff]
+    have h_comm := (_root_.rc_non_comm o₁ o₂ hb).mp rfl
+    intro h_nc
+    exact h_nc (fun s => h_comm s)
   -- Vacuous: D.rc = Either always, so D.rc = Fst_then_snd is impossible.
   no_rc_chain := by intros; simp_all
   cond_comm_base := by intros; simp_all
