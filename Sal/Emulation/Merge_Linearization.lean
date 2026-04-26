@@ -321,7 +321,7 @@ theorem applySeq_swap_via_cond_comm_lift
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
     (h_rc_ab : D.rc a b = RcRes.Fst_then_snd)
-    (h_rc_be : D.rc b e₃ ≠ RcRes.Either)
+    (h_nc_be : ¬ D.commutes b e₃)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
     = applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β)) := by
@@ -336,10 +336,9 @@ theorem applySeq_swap_via_cond_comm_lift
                  (D.update (D.update (applySeq D s pfx) b) a) α) e₃) β := by
     simp [applySeq, List.foldl_append, List.foldl_cons]
   rw [hexp1, hexp2]
-  -- cond_comm_lift with e=a, e'=b, e''=e₃, π=α gives the inner equality.
   exact congrArg (fun t => applySeq D t β)
     (hVC.cond_comm_lift (applySeq D s pfx) a b e₃ α
-      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_rc_be).symm
+      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_nc_be).symm
 
 /-- **Swap adjacent commuting events.** Folding preserves state
 when two commuting events are swapped in position. -/
@@ -385,9 +384,9 @@ theorem applySeq_swap_lo_incomparable
       ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
                 distinctOps a e₃ ∧ distinctOps b e₃ ∧
                 ((D.rc a b = RcRes.Fst_then_snd ∧
-                  D.rc b e₃ ≠ RcRes.Either) ∨
+                  ¬ D.commutes b e₃) ∨
                  (D.rc b a = RcRes.Fst_then_snd ∧
-                  D.rc a e₃ ≠ RcRes.Either))) :
+                  ¬ D.commutes a e₃))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
   by_cases h_comm : D.commutes a b
@@ -411,12 +410,12 @@ theorem applySeq_swap_lo_incomparable
         C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
-      rcases h_case with ⟨h_rc_ab, h_rc_be⟩ | ⟨h_rc_ba, h_rc_ae⟩
+      rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
       · exact applySeq_swap_via_cond_comm_lift hVC h_dist_ab h_dbe h_dae
-          h_rc_ab h_rc_be pfx α β s
+          h_rc_ab h_nc_be pfx α β s
       · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
         exact (applySeq_swap_via_cond_comm_lift hVC h_dist_ba h_dae h_dbe
-          h_rc_ba h_rc_ae pfx α β s).symm
+          h_rc_ba h_nc_ae pfx α β s).symm
 
 /-- **Bubble a lo-maximal event to the end of a list.**
 
@@ -445,9 +444,9 @@ theorem applySeq_bubble_lo_max
       ∃ e₃ α' β', β = α' ++ e₃ :: β' ∧
                   distinctOps e e₃ ∧ distinctOps x e₃ ∧
                   ((D.rc e x = RcRes.Fst_then_snd ∧
-                    D.rc x e₃ ≠ RcRes.Either) ∨
+                    ¬ D.commutes x e₃) ∨
                    (D.rc x e = RcRes.Fst_then_snd ∧
-                    D.rc e e₃ ≠ RcRes.Either)))
+                    ¬ D.commutes e e₃)))
     (s : D.State) :
     applySeq D s (e :: τ) = applySeq D s (τ ++ [e]) := by
   induction τ generalizing s with
@@ -497,9 +496,9 @@ theorem applySeq_bubble_to_front
       ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
                   distinctOps y e₃ ∧ distinctOps e e₃ ∧
                   ((D.rc y e = RcRes.Fst_then_snd ∧
-                    D.rc e e₃ ≠ RcRes.Either) ∨
+                    ¬ D.commutes e e₃) ∨
                    (D.rc e y = RcRes.Fst_then_snd ∧
-                    D.rc y e₃ ≠ RcRes.Either)))
+                    ¬ D.commutes y e₃)))
     (s : D.State) :
     applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
   induction σ generalizing s with
@@ -668,10 +667,152 @@ theorem convergence
             ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
                         distinctOps y e₃ ∧ distinctOps e e₃ ∧
                         ((D.rc y e = RcRes.Fst_then_snd ∧
-                          D.rc e e₃ ≠ RcRes.Either) ∨
+                          ¬ D.commutes e e₃) ∨
                          (D.rc e y = RcRes.Fst_then_snd ∧
-                          D.rc y e₃ ≠ RcRes.Either)) := by
-          sorry
+                          ¬ D.commutes y e₃)) := by
+          intro α β y h_σ_eq h_nc h_diff_rep
+          subst h_σ_eq
+          have hy_in_σ : y ∈ α ++ y :: β :=
+            List.mem_append.mpr (Or.inr List.mem_cons_self)
+          have hy_in_ev : y ∈ ev := h_σ_sub_ev y hy_in_σ
+          have hy_in_C : y ∈ C.events := h_ev_in_C y hy_in_ev
+          have hy_ne_e : y ≠ e := fun h => he_notin_σ (h ▸ hy_in_σ)
+          obtain ⟨_, _, hL_y, h_y_in_s⟩ := hy_in_C
+          obtain ⟨_, _, hL_e, h_e_in_s⟩ := he_in_C
+          have h_dist_ye : distinctOps y e :=
+            C.timestamps_distinct hL_y h_y_in_s hL_e h_e_in_s hy_ne_e
+          have h_not_lo_ye : ¬ lo C y e := h_not_lo_bwd y hy_in_σ
+          have h_not_lo_ey : ¬ lo C e y := h_not_lo_fwd y hy_in_σ
+          -- Apply directional rc_non_comm to (y, e).
+          have h_rc_disj :=
+            (hVC.rc_non_comm_directional y e h_dist_ye).mp h_nc
+          rcases h_rc_disj with h_rc_ye | h_rc_ey
+          · -- Case rc(y, e) = Fst. Need overwriter of e (in τ).
+            have h_not_vis_ye : ¬ C.vis y e := fun hv =>
+              h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
+            have h_overwriter_e : ∃ e₃, C.vis e e₃ ∧ ¬ D.commutes e e₃ := by
+              by_cases h_vis_ey : C.vis e y
+              · exfalso
+                have h_nc_ey : ¬ D.commutes e y :=
+                  fun h => h_nc (fun s => (h s).symm)
+                exact h_not_lo_ey (Or.inl ⟨h_vis_ey, h_nc_ey⟩)
+              · by_contra h_no_ow
+                push_neg at h_no_ow
+                exact h_not_lo_ye (Or.inr ⟨h_not_vis_ye, h_vis_ey, h_rc_ye, by
+                  rintro ⟨e₃, hv, hnc⟩; exact hnc (h_no_ow e₃ hv)⟩)
+            obtain ⟨e₃, h_vis_ee₃, h_nc_ee₃⟩ := h_overwriter_e
+            have h_e₃_in_ev : e₃ ∈ ev :=
+              h_ev_closed e he_in_ev e₃ h_vis_ee₃ h_nc_ee₃
+            have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
+              (hmem₂ e₃).mpr h_e₃_in_ev
+            have h_lo_ee₃ : lo C e e₃ := Or.inl ⟨h_vis_ee₃, h_nc_ee₃⟩
+            -- e₃ is after e in π₂ ⇒ e₃ ∈ τ.
+            have h_e₃_in_τ : e₃ ∈ τ := by
+              rcases List.mem_append.mp h_e₃_in_π₂ with h | h
+              · exfalso
+                have hresp_pair := List.pairwise_append.mp h₂r
+                exact hresp_pair.2.2 e₃ h e List.mem_cons_self h_lo_ee₃
+              · rcases List.mem_cons.mp h with h_eq | h_τ
+                · exact absurd h_eq.symm
+                    (fun h_eq2 => h_nc_ee₃ (fun s => by rw [h_eq2]))
+                · exact h_τ
+            have h_e₃_ne_y : e₃ ≠ y := by
+              intro h_eq
+              rw [h_eq] at h_e₃_in_τ
+              exact hnd₂.2.2 y
+                (List.mem_append.mpr (Or.inr List.mem_cons_self)) y
+                (List.mem_cons_of_mem _ h_e₃_in_τ) rfl
+            have h_e₃_ne_e : e₃ ≠ e := by
+              intro h_eq
+              rw [h_eq] at h_e₃_in_τ
+              exact he_notin_τ h_e₃_in_τ
+            obtain ⟨τ_a, τ_b, hτ_split⟩ := List.append_of_mem h_e₃_in_τ
+            obtain ⟨_, _, hL_e₃, h_e₃_in_s⟩ : e₃ ∈ C.events :=
+              C.vis_tgt h_vis_ee₃
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              C.timestamps_distinct hL_y h_y_in_s hL_e₃ h_e₃_in_s
+                (fun h => h_e₃_ne_y h.symm)
+            have h_dist_ee₃ : distinctOps e e₃ :=
+              C.timestamps_distinct hL_e h_e_in_s hL_e₃ h_e₃_in_s
+                (fun h => h_e₃_ne_e h.symm)
+            refine ⟨e₃, β ++ τ_a, τ_b, ?_, h_dist_ye₃, h_dist_ee₃,
+                    Or.inl ⟨h_rc_ye, h_nc_ee₃⟩⟩
+            rw [hτ_split, List.append_assoc]
+          · -- Case rc(e, y) = Fst. Need overwriter of y.
+            have h_not_vis_ey : ¬ C.vis e y := fun hv =>
+              h_not_lo_ey (Or.inl ⟨hv, fun h => h_nc (fun s => (h s).symm)⟩)
+            have h_overwriter_y : ∃ e₃, C.vis y e₃ ∧ ¬ D.commutes y e₃ := by
+              by_cases h_vis_ye : C.vis y e
+              · exact absurd (Or.inl ⟨h_vis_ye, h_nc⟩) h_not_lo_ye
+              · by_contra h_no_ow
+                push_neg at h_no_ow
+                exact h_not_lo_ey (Or.inr ⟨h_not_vis_ey, h_vis_ye, h_rc_ey, by
+                  rintro ⟨e₃, hv, hnc⟩; exact hnc (h_no_ow e₃ hv)⟩)
+            obtain ⟨e₃, h_vis_ye₃, h_nc_ye₃⟩ := h_overwriter_y
+            have h_e₃_in_ev : e₃ ∈ ev :=
+              h_ev_closed y hy_in_ev e₃ h_vis_ye₃ h_nc_ye₃
+            have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
+              (hmem₂ e₃).mpr h_e₃_in_ev
+            have h_lo_ye₃ : lo C y e₃ := Or.inl ⟨h_vis_ye₃, h_nc_ye₃⟩
+            -- e₃ ≠ e (since lo(y, e₃) and ¬ lo(y, e) — distinct).
+            have h_e₃_ne_e : e₃ ≠ e := fun h_eq => by
+              subst h_eq; exact h_not_lo_ye h_lo_ye₃
+            -- e₃ ≠ y.
+            have h_e₃_ne_y : e₃ ≠ y := fun h_eq => by
+              subst h_eq
+              -- lo y y from h_lo_ye₃ — unusual but possible if vis y y.
+              -- Actually vis y y means y is visible to itself; ¬commute y y
+              -- says y doesn't commute with itself. update s y; update s y
+              -- = update s y by idempotence — wait, not necessarily.
+              -- Anyway, we have vis y y from h_vis_ye₃. By vis_tgt we have
+              -- y ∈ C.events. By timestamps_distinct y y (with y ≠ y),
+              -- vacuously distinctOps. Hmm.
+              exact h_nc_ye₃ (fun _ => rfl)
+            -- e₃ position in π₂: lo(y, e₃) → after y in π₂. y is at
+            -- position |α|. e₃ at position > |α|: in β, in {e}, or in τ.
+            -- e₃ ≠ e, so in β or τ.
+            obtain ⟨_, _, hL_e₃, h_e₃_in_s⟩ : e₃ ∈ C.events :=
+              C.vis_tgt h_vis_ye₃
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              C.timestamps_distinct hL_y h_y_in_s hL_e₃ h_e₃_in_s
+                (fun h => h_e₃_ne_y h.symm)
+            have h_dist_ee₃ : distinctOps e e₃ :=
+              C.timestamps_distinct hL_e h_e_in_s hL_e₃ h_e₃_in_s
+                (fun h => h_e₃_ne_e h.symm)
+            -- e₃ in (β ∪ τ), as a sub-list β ++ τ.
+            have h_e₃_in_βτ : e₃ ∈ β ++ τ := by
+              rcases List.mem_append.mp h_e₃_in_π₂ with h | h
+              · -- h : e₃ ∈ α ++ y :: β.
+                rcases List.mem_append.mp h with h_α | h_yβ
+                · -- e₃ ∈ α: would be before y in π₂, contradicts lo(y, e₃)
+                  exfalso
+                  -- π₂ respect: for e₃ at α-position (earlier) and y at y-position,
+                  -- ¬ lo y e₃. Hmm wait, respect says ¬ lo (later) (earlier).
+                  -- For e₃ earlier (in α) and y later, respect gives ¬ lo y e₃.
+                  -- We have lo y e₃. Contradiction.
+                  have hresp_pair := List.pairwise_append.mp h₂r
+                  rw [List.pairwise_cons] at hresp_pair
+                  -- This isn't quite the right access. Let me try:
+                  have h_pair := List.pairwise_append.mp h₂r
+                  have h_respl := h_pair.1
+                  -- α ++ y :: β = (α ++ [y]) ++ β. Hmm, the structure
+                  -- doesn't directly give this. Let me use a different tactic.
+                  rw [respects, List.pairwise_append] at h₂r
+                  obtain ⟨h_resp_left, _, _⟩ := h₂r
+                  rw [List.pairwise_append] at h_resp_left
+                  obtain ⟨_, _, h_cross⟩ := h_resp_left
+                  exact h_cross e₃ h_α y List.mem_cons_self h_lo_ye₃
+                · -- e₃ ∈ y :: β.
+                  rcases List.mem_cons.mp h_yβ with h_eq | h_β
+                  · exact absurd h_eq h_e₃_ne_y
+                  · exact List.mem_append.mpr (Or.inl h_β)
+              · -- h : e₃ ∈ e :: τ.
+                rcases List.mem_cons.mp h with h_eq | h_τ
+                · exact absurd h_eq h_e₃_ne_e
+                · exact List.mem_append.mpr (Or.inr h_τ)
+            obtain ⟨γ_a, γ_b, hγ_split⟩ := List.append_of_mem h_e₃_in_βτ
+            refine ⟨e₃, γ_a, γ_b, hγ_split, h_dist_ye₃, h_dist_ee₃,
+                    Or.inr ⟨h_rc_ey, h_nc_ye₃⟩⟩
         exact applySeq_bubble_to_front (D := D) hVC e σ τ
           he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
       -- LHS = applySeq s (e :: π₁') = applySeq (update s e) π₁'.

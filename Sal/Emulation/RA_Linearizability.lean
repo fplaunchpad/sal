@@ -464,7 +464,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
       D.rc e e' = RcRes.Fst_then_snd →
-      D.rc e' e'' ≠ RcRes.Either →
+      ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
 
