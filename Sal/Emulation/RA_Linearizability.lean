@@ -155,14 +155,20 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
       (D.rc o₁ o₂ = RcRes.Either ↔ D.commutes o₁ o₂)
 
   /-- rc-nonComm directional form (paper lin.tex:387). At distinct
-  timestamps and replicas, non-commutativity is equivalent to being
-  `rc`-ordered in some direction. This is strictly stronger than
-  `rc_non_comm` (which only constrains the `Either` case); the
-  paper's convergence proof relies on this directional form to pick
-  which side of cond-comm fires. -/
+  timestamps, non-commutativity is equivalent to being `rc`-ordered in
+  some direction. This is strictly stronger than `rc_non_comm` (which
+  only constrains the `Either` case for different-replica events).
+
+  Note: this version omits the `differentReplicas` premise of the
+  weak `rc_non_comm`. The convergence proof's overwriter argument
+  needs `rc`-ordering for arbitrary `¬commute` pairs (including
+  same-replica events that arise as overwriters via causal chains).
+  For typical CRDTs (LWW, OR-set, etc.) same-replica events are
+  rc-ordered by timestamp; for trivially-commutative CRDTs (G-Set)
+  the directional form holds vacuously since `¬commute` is impossible. -/
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
-      distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
+      distinctOps o₁ o₂ →
       (¬ D.commutes o₁ o₂ ↔
        (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Fst_then_snd))
 

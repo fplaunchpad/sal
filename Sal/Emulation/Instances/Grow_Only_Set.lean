@@ -123,20 +123,20 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
     intro s
     exact (h.mp rfl) s
   rc_non_comm_directional := by
-    -- For Grow-Only Set, `D.rc = Either` always, so the RHS
-    -- `rc=Fst ∨ rc(swap)=Fst` is `False`. The LHS `¬ commutes` is
-    -- also `False` because all G-Set ops commute (union is
-    -- commutative). The iff `False ↔ False` holds.
-    intro o₁ o₂ h_d h_r
+    -- For Grow-Only Set, `D.rc = Either` always, so RHS
+    -- `rc=Fst ∨ rc(swap)=Fst` is `False`. LHS `¬ commutes` is also
+    -- `False` because all G-Set ops commute (set add commutes
+    -- regardless of replica). Hence iff `False ↔ False` holds.
+    intro o₁ o₂ _
     simp only [D_rc_Fst_iff_False, or_self, iff_false]
-    -- Need: ¬ ¬ D.commutes o₁ o₂, i.e., D.commutes o₁ o₂.
-    have hb : _root_.distinct_ops o₁ o₂ ∧ _root_.get_rid o₁ != _root_.get_rid o₂ := by
-      refine ⟨?_, ?_⟩
-      · rwa [← distinctOps_iff]
-      · rwa [← differentReplicas_iff]
-    have h_comm := (_root_.rc_non_comm o₁ o₂ hb).mp rfl
     intro h_nc
-    exact h_nc (fun s => h_comm s)
+    apply h_nc
+    intro s
+    rcases o₁ with ⟨_, _, ⟨n₁⟩⟩
+    rcases o₂ with ⟨_, _, ⟨n₂⟩⟩
+    show D.update (D.update s _) _ = D.update (D.update s _) _
+    simp [D, _root_.do_]
+    grind
   -- Vacuous: D.rc = Either always, so D.rc = Fst_then_snd is impossible.
   no_rc_chain := by intros; simp_all
   cond_comm_base := by intros; simp_all

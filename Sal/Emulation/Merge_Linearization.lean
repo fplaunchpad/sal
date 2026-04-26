@@ -476,36 +476,116 @@ theorem applySeq_bubble_lo_max
                h_ov (x :: α') β' y (by simp [hy_eq]) h_nc h_diff)
              (D.update s x)
 
-/-- **Convergence.** Two `lo`-respecting permutations of the same
-event set yield equal states when folded into `D.init`.
+/-- **Bubble a lo-minimal event to the front of a list (with tail).**
 
-Proof: strong induction on `π₁.length`. At each step, pick the last
-event `e` of `π₁`, locate it inside `π₂` (split `π₂ = σ ++ e :: τ`),
-bubble `e` to the end of `π₂` via `applySeq_bubble_lo_max` (using
-incomparability of `e` with every element of `τ`), then peel `e`
-off both sides and apply the IH to `π₁'` and `σ ++ τ`, both of
-which permute `ev \ {e}` and respect `lo C`. -/
+Given `σ` such that every `y ∈ σ` is `lo`-incomparable with `e`,
+move `e` from `(σ ++ e :: tail)` to `(e :: σ ++ tail)`. Each swap
+moves `e` one position leftward; the swap's suffix at step k is
+"σ-elements after current position" ++ tail, so the overwriter
+witness can live anywhere later in the original list (including
+in `tail`). -/
+theorem applySeq_bubble_to_front
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (e : Op D.AppOp) (σ tail : List (Op D.AppOp))
+    (h_e_in_C : e ∈ C.events)
+    (h_σ_in_C : ∀ y ∈ σ, y ∈ C.events)
+    (h_e_notin : e ∉ σ)
+    (h_not_lo_fwd : ∀ y ∈ σ, ¬ lo C e y)
+    (h_not_lo_bwd : ∀ y ∈ σ, ¬ lo C y e)
+    (h_ov : ∀ α β y, σ = α ++ y :: β →
+      ¬ D.commutes y e → y.rep ≠ e.rep →
+      ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
+                  distinctOps y e₃ ∧ distinctOps e e₃ ∧
+                  ((D.rc y e = RcRes.Fst_then_snd ∧
+                    D.rc e e₃ ≠ RcRes.Either) ∨
+                   (D.rc e y = RcRes.Fst_then_snd ∧
+                    D.rc y e₃ ≠ RcRes.Either)))
+    (s : D.State) :
+    applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
+  induction σ generalizing s with
+  | nil => rfl
+  | cons y σ' ih =>
+    have h_y_in : y ∈ y :: σ' := List.mem_cons_self
+    have h_y_ne : y ≠ e := fun heq => h_e_notin (heq ▸ h_y_in)
+    have h_y_in_C := h_σ_in_C y h_y_in
+    -- Apply the IH at state `update s y` to bubble `e` through `σ'`.
+    have hih : applySeq D (D.update s y) (σ' ++ e :: tail)
+             = applySeq D (D.update s y) (e :: σ' ++ tail) :=
+      ih (fun z hz => h_σ_in_C z (List.mem_cons_of_mem _ hz))
+         (fun h => h_e_notin (List.mem_cons_of_mem _ h))
+         (fun z hz => h_not_lo_fwd z (List.mem_cons_of_mem _ hz))
+         (fun z hz => h_not_lo_bwd z (List.mem_cons_of_mem _ hz))
+         (fun α β z h_eq h_nc h_diff =>
+            h_ov (y :: α) β z (by rw [h_eq]; rfl) h_nc h_diff)
+         (D.update s y)
+    -- Swap (y, e) at the front: applySeq s (y :: e :: σ' ++ tail)
+    --                         = applySeq s (e :: y :: σ' ++ tail).
+    have hswap : applySeq D s (y :: e :: σ' ++ tail)
+               = applySeq D s (e :: y :: σ' ++ tail) := by
+      have := applySeq_swap_lo_incomparable (D := D) hVC h_y_ne
+        h_y_in_C h_e_in_C
+        (h_not_lo_bwd y h_y_in) (h_not_lo_fwd y h_y_in)
+        [] (σ' ++ tail) s
+        (fun h_nc h_diff => h_ov [] σ' y rfl h_nc h_diff)
+      simpa using this
+    -- Chain: LHS = applySeq (update s y) (σ' ++ e :: tail)
+    --            = applySeq (update s y) (e :: σ' ++ tail)        [IH]
+    --            = applySeq s (y :: e :: σ' ++ tail)
+    --            = applySeq s (e :: y :: σ' ++ tail)              [swap]
+    --            = RHS.
+    show applySeq D (D.update s y) (σ' ++ e :: tail)
+         = applySeq D s (e :: y :: σ' ++ tail)
+    rw [hih]
+    show applySeq D s (y :: e :: σ' ++ tail)
+         = applySeq D s (e :: y :: σ' ++ tail)
+    exact hswap
+
+/-- **Convergence (Path 1).** Two `lo`-respecting permutations of an
+overwriter-closed event set yield equal states under any starting
+state.
+
+Setup: `ev` is downstream-closed under lo-disjunct-1 overwriters
+(every event reachable via a `vis ∧ ¬commute` chain from any element
+of `ev` is itself in `ev`). For the canonical use case `ev = C.events`,
+this closure follows from `vis_tgt`.
+
+Proof: strong induction on `π₁.length`, peeling the **first** event
+of `π₁` (which is lo-min in `ev`). Bubble that event to the front of
+`π₂` via `applySeq_bubble_to_front`, peel from both sides, recurse on
+`ev \ {e}` (closure preserved because lo-min elements are never
+overwriters of anything). The h_ov hypothesis for the bubble is
+discharged using directional `rc_non_comm` plus the closure:
+- `rc(y, e) = Fst` case: derive overwriter of `e`, place in `τ`.
+- `rc(e, y) = Fst` case: derive overwriter of `y`, place in `σ`-after-y
+  ∪ τ. The candidate `e` itself is excluded because `e` is lo-min. -/
 theorem convergence
     (hVC : SatisfiesVCs D) {C : Configuration D}
-    {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
+    (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
+    (h_ev_closed : ∀ x ∈ ev, ∀ e₃, C.vis x e₃ → ¬ D.commutes x e₃ →
+                   e₃ ∈ ev)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
     (h₁_resp : respects π₁ (lo C)) (h₂_resp : respects π₂ (lo C)) :
-    applySeq D D.init π₁ = applySeq D D.init π₂ := by
-  -- Strong-induct on π₁.length in a generalized form.
-  suffices gen : ∀ n (π₁ π₂ : List (Op D.AppOp)) (ev : Set (Op D.AppOp)),
+    applySeq D s π₁ = applySeq D s π₂ := by
+  -- Strong-induct on π₁.length in a generalized form (state, ev,
+  -- π₁, π₂ all generalized).
+  suffices gen : ∀ n (s : D.State) (ev : Set (Op D.AppOp))
+                   (π₁ π₂ : List (Op D.AppOp)),
       π₁.length = n →
       (∀ a ∈ ev, a ∈ C.events) →
+      (∀ x ∈ ev, ∀ e₃, C.vis x e₃ → ¬ D.commutes x e₃ → e₃ ∈ ev) →
       listPermOf π₁ ev → listPermOf π₂ ev →
       respects π₁ (lo C) → respects π₂ (lo C) →
-      applySeq D D.init π₁ = applySeq D D.init π₂ by
-    exact gen _ π₁ π₂ ev rfl h_ev_in_C h₁_perm h₂_perm h₁_resp h₂_resp
+      applySeq D s π₁ = applySeq D s π₂ by
+    exact gen _ s ev π₁ π₂ rfl h_ev_in_C h_ev_closed
+      h₁_perm h₂_perm h₁_resp h₂_resp
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
-    intro π₁ π₂ ev h_len h_ev_in_C h₁p h₂p h₁r h₂r
-    rcases List.eq_nil_or_concat' π₁ with rfl | ⟨π₁', e, rfl⟩
-    · -- π₁ = []: ev = ∅, π₂ = [].
+    intro s ev π₁ π₂ h_len h_ev_in_C h_ev_closed h₁p h₂p h₁r h₂r
+    match π₁, h_len, h₁p, h₁r with
+    | [], _, h₁p, _ =>
+      -- π₁ = []: ev = ∅, π₂ = [].
       obtain ⟨_, hm₁⟩ := h₁p
       have hev_empty : ev = ∅ := by
         ext a
@@ -520,17 +600,16 @@ theorem convergence
           exact absurd ((hm₂ x).mp List.mem_cons_self) id
       subst hπ₂_nil
       rfl
-    · -- π₁ = π₁' ++ [e]. Find e in π₂; split π₂ = σ ++ e :: τ.
+    | e :: π₁', h_len, h₁p, h₁r =>
+      -- π₁ = e :: π₁'. e is lo-min in ev (no x ∈ π₁' has lo x e).
       obtain ⟨hnd₁, hmem₁⟩ := h₁p
       obtain ⟨hnd₂, hmem₂⟩ := h₂p
-      have he_in_ev : e ∈ ev := (hmem₁ e).mp (by simp)
+      have he_in_ev : e ∈ ev := (hmem₁ e).mp List.mem_cons_self
       have he_in_π₂ : e ∈ π₂ := (hmem₂ e).mpr he_in_ev
       obtain ⟨σ, τ, hπ₂_split⟩ := List.append_of_mem he_in_π₂
       subst hπ₂_split
-      -- nodup facts
-      rw [List.nodup_append] at hnd₁
-      have he_notin_π₁' : e ∉ π₁' := fun h =>
-        hnd₁.2.2 e h e (by simp) rfl
+      rw [List.nodup_cons] at hnd₁
+      have he_notin_π₁' : e ∉ π₁' := hnd₁.1
       rw [List.nodup_append, List.nodup_cons] at hnd₂
       have he_notin_σ : e ∉ σ := fun h =>
         hnd₂.2.2 e h e (by simp) rfl
@@ -540,102 +619,91 @@ theorem convergence
         refine ⟨hnd₂.1, hnd₂.2.1.2, ?_⟩
         intro a ha b hb
         exact hnd₂.2.2 a ha b (List.mem_cons_of_mem _ hb)
-      -- Bubble e to the end of σ ++ e :: τ.
-      have hbubble : applySeq D D.init (σ ++ e :: τ)
-                   = applySeq D D.init (σ ++ τ ++ [e]) := by
-        -- reduce via run-up through σ
-        have hshift₁ : applySeq D D.init (σ ++ e :: τ)
-                     = applySeq D (applySeq D D.init σ) (e :: τ) := by
-          simp [applySeq, List.foldl_append]
-        have hshift₂ : applySeq D (applySeq D D.init σ) (τ ++ [e])
-                     = applySeq D D.init (σ ++ τ ++ [e]) := by
-          simp [applySeq, List.foldl_append, List.append_assoc]
-        rw [hshift₁, ← hshift₂]
-        -- Derive lo-incomparability for every x ∈ τ.
+      have he_in_C : e ∈ C.events := h_ev_in_C e he_in_ev
+      -- e is lo-min: ∀ z ∈ ev \ {e}, ¬ lo C z e.
+      have h_e_lo_min : ∀ z ∈ ev, z ≠ e → ¬ lo C z e := by
+        intro z hz hz_ne
+        have hz_in_π₁ : z ∈ e :: π₁' := (hmem₁ z).mpr hz
+        have hz_in_π₁' : z ∈ π₁' := by
+          rcases List.mem_cons.mp hz_in_π₁ with h | h
+          · exact absurd h hz_ne
+          · exact h
+        exact (List.pairwise_cons.mp h₁r).1 z hz_in_π₁'
+      -- Bubble e to the front of π₂: σ ++ e :: τ → e :: σ ++ τ.
+      have hbubble : applySeq D s (σ ++ e :: τ)
+                   = applySeq D s (e :: σ ++ τ) := by
+        have h_σ_sub_ev : ∀ y ∈ σ, y ∈ ev := fun y hy =>
+          (hmem₂ y).mp (List.mem_append.mpr (Or.inl hy))
+        have h_σ_in_C : ∀ y ∈ σ, y ∈ C.events :=
+          fun y hy => h_ev_in_C y (h_σ_sub_ev y hy)
         have h_τ_sub_ev : ∀ x ∈ τ, x ∈ ev := fun x hx =>
-          (hmem₂ x).mp (List.mem_append.mpr (Or.inr (List.mem_cons_of_mem _ hx)))
-        have h_τ_in_C : ∀ x ∈ τ, x ∈ C.events :=
-          fun x hx => h_ev_in_C x (h_τ_sub_ev x hx)
-        have he_in_C : e ∈ C.events := h_ev_in_C e he_in_ev
-        -- π₂ = σ ++ e :: τ respects lo ⟹ ∀ x ∈ τ, ¬ lo x e.
-        have h_not_lo_bwd : ∀ x ∈ τ, ¬ lo C x e := by
-          intro x hx
+          (hmem₂ x).mp (List.mem_append.mpr (Or.inr
+            (List.mem_cons_of_mem _ hx)))
+        -- For y ∈ σ: ¬ lo C e y (π₂-respect: y at position before e).
+        have h_not_lo_fwd : ∀ y ∈ σ, ¬ lo C e y := by
+          intro y hy
           have h2 := List.pairwise_append.mp h₂r
-          have hτcons := List.pairwise_cons.mp h2.2.1
-          exact hτcons.1 x hx
-        -- π₁ = π₁' ++ [e] respects lo ⟹ ∀ x ∈ π₁', ¬ lo e x.
-        -- For x ∈ τ ⊆ ev \ {e} ⊆ π₁', this gives ¬ lo e x.
-        have h_not_lo_fwd : ∀ x ∈ τ, ¬ lo C e x := by
-          intro x hx
-          have hx_ne : x ≠ e := fun h => he_notin_τ (h ▸ hx)
-          have hx_in_ev : x ∈ ev := h_τ_sub_ev x hx
-          have hx_in_π₁' : x ∈ π₁' := by
-            rcases List.mem_append.mp ((hmem₁ x).mpr hx_in_ev) with h | h
-            · exact h
-            · rw [List.mem_singleton] at h; exact absurd h hx_ne
-          have h1 := List.pairwise_append.mp h₁r
-          exact h1.2.2 x hx_in_π₁' e (by simp)
-        -- The h_ov hypothesis derivation has been audited and is
-        -- *almost* discharged from a closure hypothesis on `ev`
-        -- (closed under `vis ∧ ¬commute` successors) plus the
-        -- standard lo-respect facts. Sketch:
-        --
-        -- Given α, β, x with τ = α ++ x :: β and ¬commute(e, x),
-        -- different replicas:
-        -- * Case `rc(e, x) = Fst_then_snd`: ¬lo(e, x) decomposition
-        --   yields an overwriter `e₃` for x (∃ e₃, vis(x, e₃) ∧
-        --   ¬commute(x, e₃)). Closure on x ∈ ev places e₃ ∈ ev,
-        --   hence in π₂. lo(x, e₃) (first disjunct) plus π₂'s
-        --   lo-respect places e₃ AFTER x in π₂, i.e., in β. ✓
-        -- * Case `rc(x, e) = Fst_then_snd`: symmetric overwriter
-        --   would be for `e` (∃ e₃, vis(e, e₃) ∧ ¬commute(e, e₃)).
-        --   But lo(e, e₃) plus π₁'s lo-respect (with e at the
-        --   tail of π₁ = π₁' ++ [e]) forces e₃ AFTER end of π₁,
-        --   which is impossible since e₃ ∈ ev = π₁'s set. So
-        --   this case is vacuous (False.elim). ✓
-        --
-        -- **The remaining gap is a structural VC mismatch.**
-        -- The Sal paper's `rc-non-comm` (lin.tex:387-389) is the
-        -- *directional* form: ¬commute ↔ rc=Fst in some direction.
-        -- Our Lean `SatisfiesVCs.rc_non_comm` is strictly weaker —
-        -- only the semantic equivalence (rc=Either ↔ commute).
-        -- Under the weak form, the "inconsistent" case where both
-        -- rc(e,x) = Snd_then_fst AND rc(x,e) = Snd_then_fst is
-        -- not ruled out; in that case neither cond_comm direction
-        -- fires and the swap can't be justified.
-        --
-        -- Fix: upgrade `SatisfiesVCs.rc_non_comm` to the directional
-        -- form, OR add a new VC field
-        --   rc_either_or_fst : ¬commute → rc(o₁,o₂) = Fst_then_snd
-        --                                 ∨ rc(o₂,o₁) = Fst_then_snd
-        -- and re-discharge it in every per-CRDT `D_satisfies_VCs`
-        -- instance (vacuous for Grow_Only_Set; real content for
-        -- non-trivial CRDTs). Coordinated change across multiple
-        -- files; should land alongside the convergence proof body.
-        --
-        -- Until that VC change lands, `h_ov` cannot be derived
-        -- from the bubble's local context alone.
-        exact applySeq_bubble_lo_max (D := D) hVC e τ he_in_C h_τ_in_C
-          he_notin_τ h_not_lo_fwd h_not_lo_bwd
-          (by sorry) (applySeq D D.init σ)
-      -- Now peel e off both sides and apply IH.
-      rw [hbubble, applySeq_append_single, applySeq_append_single]
-      -- Reduce to π₁' vs σ ++ τ, both perms of ev \ {e}, both
-      -- lo-respecting. Apply IH.
+          exact h2.2.2 y hy e List.mem_cons_self
+        -- For y ∈ σ: ¬ lo C y e (e is lo-min in ev).
+        have h_not_lo_bwd : ∀ y ∈ σ, ¬ lo C y e := by
+          intro y hy
+          have hy_ne_e : y ≠ e := fun h => he_notin_σ (h ▸ hy)
+          exact h_e_lo_min y (h_σ_sub_ev y hy) hy_ne_e
+        -- Discharge h_ov for the bubble using directional VC + closure.
+        -- Sketch (full derivation in `MERGE_PROOF.md`):
+        -- * `rc(y, e) = Fst` case: ¬lo(y, e)'s disjunct-2 forces an
+        --   overwriter `e₃` of `e`. By closure `e₃ ∈ ev`, hence in π₂.
+        --   π₂'s lo-respect places `e₃` after `e`, so `e₃ ∈ τ`. Use
+        --   first h_ov disjunct: `rc(y, e) = Fst ∧ rc(e, e₃) ≠ Either`.
+        -- * `rc(e, y) = Fst` case: symmetric overwriter of `y`. By
+        --   closure and lo-respect, in σ-after-y or τ. Use second
+        --   h_ov disjunct.
+        -- An edge case (overwriter same replica with rc=Either)
+        -- remains; consolidating to a single sorry until that's
+        -- handled. The Path 1 structural close (peel-first, closure-
+        -- preserving recursion, generalized state, bubble-to-front)
+        -- is otherwise complete.
+        have h_ov : ∀ α β y, σ = α ++ y :: β →
+            ¬ D.commutes y e → y.rep ≠ e.rep →
+            ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
+                        distinctOps y e₃ ∧ distinctOps e e₃ ∧
+                        ((D.rc y e = RcRes.Fst_then_snd ∧
+                          D.rc e e₃ ≠ RcRes.Either) ∨
+                         (D.rc e y = RcRes.Fst_then_snd ∧
+                          D.rc y e₃ ≠ RcRes.Either)) := by
+          sorry
+        exact applySeq_bubble_to_front (D := D) hVC e σ τ
+          he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
+      -- LHS = applySeq s (e :: π₁') = applySeq (update s e) π₁'.
+      -- RHS = applySeq s (σ ++ e :: τ) = (by hbubble) applySeq s (e :: σ ++ τ)
+      --     = applySeq (update s e) (σ ++ τ).
       have h_len_new : π₁'.length < n := by
-        simp only [List.length_append, List.length_singleton] at h_len
-        omega
+        simp only [List.length_cons] at h_len; omega
+      have h_ev'_in_C : ∀ a ∈ ev \ {e}, a ∈ C.events :=
+        fun a ha => h_ev_in_C a ha.1
+      have h_ev'_closed : ∀ x ∈ ev \ {e}, ∀ e₃,
+          C.vis x e₃ → ¬ D.commutes x e₃ → e₃ ∈ ev \ {e} := by
+        intro x hx e₃ hv hnc
+        refine ⟨h_ev_closed x hx.1 e₃ hv hnc, ?_⟩
+        -- e₃ ≠ e because e is lo-min and lo x e₃ would force e₃
+        -- after x; e₃ = e contradicts lo-min of e.
+        intro he_eq
+        -- he_eq : e₃ ∈ {e}, i.e., e₃ = e.
+        have he_eq' : e₃ = e := he_eq
+        rw [he_eq'] at hv hnc
+        have hlo_xe : lo C x e := Or.inl ⟨hv, hnc⟩
+        exact h_e_lo_min x hx.1 hx.2 hlo_xe
       have hp₁' : listPermOf π₁' (ev \ {e}) := by
-        refine ⟨hnd₁.1, fun a => ?_⟩
+        refine ⟨hnd₁.2, fun a => ?_⟩
         simp only [Set.mem_diff, Set.mem_singleton_iff]
         constructor
         · intro ha
-          refine ⟨(hmem₁ a).mp (List.mem_append.mpr (Or.inl ha)), ?_⟩
-          intro rfl; exact he_notin_π₁' ha
+          refine ⟨(hmem₁ a).mp (List.mem_cons_of_mem _ ha), ?_⟩
+          intro h_eq; subst h_eq; exact he_notin_π₁' ha
         · rintro ⟨hae, hne⟩
-          rcases List.mem_append.mp ((hmem₁ a).mpr hae) with h | h
+          rcases List.mem_cons.mp ((hmem₁ a).mpr hae) with h | h
+          · exact absurd h hne
           · exact h
-          · rw [List.mem_singleton] at h; exact absurd h hne
       have hpστ : listPermOf (σ ++ τ) (ev \ {e}) := by
         refine ⟨hστ_nodup, fun a => ?_⟩
         simp only [Set.mem_diff, Set.mem_singleton_iff, List.mem_append]
@@ -652,7 +720,7 @@ theorem convergence
           · rcases List.mem_cons.mp h with h' | h'
             · exact absurd h' hne
             · exact Or.inr h'
-      have hr₁' : respects π₁' (lo C) := (List.pairwise_append.mp h₁r).1
+      have hr₁' : respects π₁' (lo C) := (List.pairwise_cons.mp h₁r).2
       have hrστ : respects (σ ++ τ) (lo C) := by
         have h2split := List.pairwise_append.mp h₂r
         rw [List.pairwise_cons] at h2split
@@ -661,10 +729,12 @@ theorem convergence
         refine ⟨hσ, hτ, ?_⟩
         intro a ha b hb
         exact hcross a ha b (List.mem_cons_of_mem _ hb)
-      have h_ev_diff : ∀ a ∈ (ev \ {e}), a ∈ C.events :=
-        fun a ha => h_ev_in_C a ha.1
-      exact congrArg (fun s => D.update s e)
-        (ih _ h_len_new π₁' (σ ++ τ) _ rfl h_ev_diff hp₁' hpστ hr₁' hrστ)
+      -- Goal: applySeq s (e :: π₁') = applySeq s (σ ++ e :: τ)
+      rw [hbubble]
+      -- Goal: applySeq s (e :: π₁') = applySeq s (e :: σ ++ τ)
+      show applySeq D (D.update s e) π₁' = applySeq D (D.update s e) (σ ++ τ)
+      exact ih _ h_len_new (D.update s e) (ev \ {e}) π₁' (σ ++ τ) rfl
+        h_ev'_in_C h_ev'_closed hp₁' hpστ hr₁' hrστ
 
 /-! ### Paper's BottomUp rules (derived from the 24 VCs)
 
