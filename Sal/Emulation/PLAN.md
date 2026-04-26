@@ -25,10 +25,10 @@ This reduces to two subgoals we prove independently and then compose:
 | # | Step | Status |
 |---|------|--------|
 | 0 | Scaffolding (signature, TS with 5 invariants, RA-lin skeleton) | **DONE** |
-| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` into `SatisfiesVCs` (26 fields) | **DONE** |
+| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` into `SatisfiesVCs` (27 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (existential form, convergence + 7 BottomUp rules + asymmetric sub-cases of `merge_linearization_exists` closed via `merge_init`; `ra_linearizable_of_vcs` end-to-end via `merge_linearization_exists`; 2 sorries remain — convergence's overwriter-in-sfx and distinct-last-event L^a/L^b carving) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Path 1 structural refactor lands: convergence is peel-first, generalized state, closure hypothesis, bubble-to-front via `applySeq_bubble_to_front`; `ra_linearizable_of_vcs` end-to-end via `merge_linearization_exists`; 2 sorries remain — convergence's h_ov rc-direction edge case and distinct-last-event L^a/L^b carving) |
 | 5 | End-to-end smoke test on Grow-Only Set (25 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
