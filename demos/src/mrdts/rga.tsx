@@ -49,7 +49,7 @@ export const spec: MRDTSpec<Concrete, Abstract, Op> = {
       return {
         adds: dedupAdds([
           ...s.adds,
-          { ts: meta.ts + 1, afterTs: op.after, ele: op.ele },
+          { ts: meta.ts, afterTs: op.after, ele: op.ele },
         ]),
         removes: s.removes,
       };

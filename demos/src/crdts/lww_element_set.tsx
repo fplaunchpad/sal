@@ -30,14 +30,13 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
     "Two timestamp maps, one for adds, one for removes. An element is live when its latest add timestamp beats its latest remove. Merge = per-key max on both maps.",
   init: { addTs: new Map(), remTs: new Map() },
   apply(s, op, meta) {
-    const ts = meta.ts + 1; // keep 0 as "never"
     if (op.kind === "add") {
       const addTs = new Map(s.addTs);
-      addTs.set(op.elem, Math.max(addTs.get(op.elem) ?? 0, ts));
+      addTs.set(op.elem, Math.max(addTs.get(op.elem) ?? 0, meta.ts));
       return { ...s, addTs };
     } else {
       const remTs = new Map(s.remTs);
-      remTs.set(op.elem, Math.max(remTs.get(op.elem) ?? 0, ts));
+      remTs.set(op.elem, Math.max(remTs.get(op.elem) ?? 0, meta.ts));
       return { ...s, remTs };
     }
   },

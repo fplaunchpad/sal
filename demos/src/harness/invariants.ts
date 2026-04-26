@@ -45,10 +45,12 @@ export function checkLattice<Concrete, Abstract, Op>(
     { minLength: 0, maxLength: 8 },
   );
 
+  // ts starts at 1 to match the playground harness; the Lean specs reserve
+  // 0 as a "never written" sentinel for their zero-default lookup.
   // 1. Idempotence
   fc.assert(
     fc.property(arbOpList, (ops) => {
-      const { state } = applyAll(ops, 0);
+      const { state } = applyAll(ops, 1);
       return eqStates(spec.merge(state, state), state);
     }),
     { numRuns },
@@ -57,7 +59,7 @@ export function checkLattice<Concrete, Abstract, Op>(
   // 2. Commutativity
   fc.assert(
     fc.property(arbOpList, arbOpList, (oa, ob) => {
-      const { state: a, nextTs } = applyAll(oa, 0);
+      const { state: a, nextTs } = applyAll(oa, 1);
       const { state: b } = applyAll(ob, nextTs);
       return eqStates(spec.merge(a, b), spec.merge(b, a));
     }),
@@ -67,7 +69,7 @@ export function checkLattice<Concrete, Abstract, Op>(
   // 3. Associativity
   fc.assert(
     fc.property(arbOpList, arbOpList, arbOpList, (oa, ob, oc) => {
-      const { state: a, nextTs: t1 } = applyAll(oa, 0);
+      const { state: a, nextTs: t1 } = applyAll(oa, 1);
       const { state: b, nextTs: t2 } = applyAll(ob, t1);
       const { state: c } = applyAll(oc, t2);
       const left = spec.merge(spec.merge(a, b), c);
@@ -80,7 +82,7 @@ export function checkLattice<Concrete, Abstract, Op>(
   // 4. Strong convergence
   fc.assert(
     fc.property(arbOpList, arbOpList, (oa, ob) => {
-      const { state: a, nextTs } = applyAll(oa, 0);
+      const { state: a, nextTs } = applyAll(oa, 1);
       const { state: b } = applyAll(ob, nextTs);
       return eqStates(spec.merge(a, b), spec.merge(b, a));
     }),

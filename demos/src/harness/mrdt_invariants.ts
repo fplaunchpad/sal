@@ -47,10 +47,12 @@ export function checkMRDTLaws<C, A, O>(
     { minLength: 0, maxLength: 6 },
   );
 
+  // ts starts at 1 to match the playground harness (the DAG harness already
+  // does the same). Lean specs reserve 0 as "never written" / sentinel.
   // 1. Left identity: merge(l, l, b) = b  (no changes on the left branch)
   fc.assert(
     fc.property(arbOpList, arbOpList, (lops, bops) => {
-      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 1);
       const { state: b } = applyFrom(l, bops, t1);
       return eqStates(spec.merge(l, l, b), b);
     }),
@@ -60,7 +62,7 @@ export function checkMRDTLaws<C, A, O>(
   // 2. Right identity: merge(l, a, l) = a
   fc.assert(
     fc.property(arbOpList, arbOpList, (lops, aops) => {
-      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 1);
       const { state: a } = applyFrom(l, aops, t1);
       return eqStates(spec.merge(l, a, l), a);
     }),
@@ -70,7 +72,7 @@ export function checkMRDTLaws<C, A, O>(
   // 3. Commutativity
   fc.assert(
     fc.property(arbOpList, arbOpList, arbOpList, (lops, aops, bops) => {
-      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 0);
+      const { state: l, nextTs: t1 } = applyFrom(spec.init, lops, 1);
       const { state: a, nextTs: t2 } = applyFrom(l, aops, t1);
       const { state: b } = applyFrom(l, bops, t2);
       return eqStates(spec.merge(l, a, b), spec.merge(l, b, a));

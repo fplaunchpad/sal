@@ -58,7 +58,7 @@ export type Op =
     };
 
 function mkOid(meta: OpMeta): OpId {
-  return `${meta.ts + 1}:${meta.rid}`;
+  return `${meta.ts}:${meta.rid}`;
 }
 
 function cmpOidDesc(a: OpId, b: OpId): number {

@@ -121,7 +121,7 @@ export function Playground<Concrete, Abstract, Op>({
         state: spec.init,
         history: [],
       })),
-      nextTs: 0,
+      nextTs: 1,
       showConcrete: false,
       mergeFrom: 0,
       mergeTo: 1,

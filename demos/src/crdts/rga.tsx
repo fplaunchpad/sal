@@ -21,7 +21,7 @@ export type Op =
   | { kind: "remove"; target: OpId };
 
 function mkOid(meta: OpMeta): OpId {
-  return `${meta.ts + 1}:${meta.rid}`; // +1 so we never collide with root
+  return `${meta.ts}:${meta.rid}`;
 }
 
 function cmpOidDesc(a: OpId, b: OpId): number {
