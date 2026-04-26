@@ -642,56 +642,12 @@ theorem RA_lin_preserved_apply
     exact hab (lo_shrink_under_apply hvis
       (h_fresh_in_pi b hb) (h_fresh_in_pi a ha) hlo')
 
-/-! ### Bridge theorem — Merge case (TODO)
+/-! ### Bridge theorem — Merge case + final assembly
 
-The most complex case. Given RA-lin witnesses `π₁` for `r₁`'s state and
-`π₂` for `r₂`'s state, build a witness for `merge(s₁, s₂)` at event
-set `ev₁ ∪ ev₂`. Follows the bottom-up linearization template (paper
-§3.3 and appendix §A.2–A.4); uses the 24 VCs.
-
-**Detailed proof strategy:** see `Sal/Emulation/MERGE_PROOF.md`. -/
-theorem RA_lin_preserved_merge
-    {D : CRDTSig} {C C' : Configuration D} (hVC : SatisfiesVCs D)
-    {r₁ r₂ : Replica} {s₁ s₂ : D.State}
-    {ev₁ ev₂ : Set (Op D.AppOp)}
-    (h_s₁  : C.N r₁ = some s₁) (h_s₂  : C.N r₂ = some s₂)
-    (h_ev₁ : C.L r₁ = some ev₁) (h_ev₂ : C.L r₂ = some ev₂)
-    (hN   : C'.N = updateRep C.N r₁ (D.merge s₁ s₂))
-    (hL   : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
-    (hvis : C'.vis = C.vis)
-    (hRA : IsRALinearizable C) :
-    IsRALinearizable C' := by
-  sorry
-
-open LabeledTS in
-/-- **Bridge theorem (Sal paper, bottom-up linearization).** If a CRDT
-`D` satisfies the 24 VCs, every configuration reachable in `S_D` is
-RA-linearizable.
-
-Proof plan (lin.tex §3.3 + appendix.tex §A.2): induction on the
-execution. CreateReplica and Query are immediate; Apply extends the
-linearization by one event; Merge is the load-bearing case. The four
-per-rule preservation lemmas above assemble the induction; the
-"vis only relates observed events" invariant required by the Apply
-case is baked into `Configuration` itself via `vis_src` / `vis_tgt`,
-so nothing needs to be threaded through. -/
-theorem ra_linearizable_of_vcs
-    (D : CRDTSig) (hVC : SatisfiesVCs D)
-    (C : Configuration D)
-    (hReach : (labeledTS D).ReachableFrom (initConfig D) C) :
-    IsRALinearizable C := by
-  induction hReach with
-  | refl => exact initConfig_RA_lin D
-  | tail _ hs ih =>
-    obtain ⟨ℓ, hstep⟩ := hs
-    cases hstep with
-    | createReplica _ _ hN hL hvis =>
-      exact RA_lin_preserved_createReplica hN hL hvis ih
-    | apply h_s h_ev h_fresh_t _ hN hL hvis =>
-      exact RA_lin_preserved_apply h_s h_ev h_fresh_t hN hL hvis ih
-    | merge h_s₁ h_s₂ h_ev₁ h_ev₂ _ hN hL hvis =>
-      exact RA_lin_preserved_merge hVC h_s₁ h_s₂ h_ev₁ h_ev₂ hN hL hvis ih
-    | query _ _ => exact ih
+The Merge case and the top-level `ra_linearizable_of_vcs` live in
+`Sal/Emulation/Merge_Linearization.lean`, since they depend on
+`merge_linearization_exists` and `RA_lin_preserved_merge_via_witness`
+defined there. Importing back into this file would create a cycle. -/
 
 end
 

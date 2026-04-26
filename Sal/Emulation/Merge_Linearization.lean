@@ -1393,4 +1393,33 @@ theorem RA_lin_preserved_merge_via_witness
     have : lo C' = lo C := by unfold lo; rw [hvis]
     rw [this]; exact hresp
 
+open LabeledTS in
+/-- **Bridge theorem (Sal paper, bottom-up linearization).** If a CRDT
+`D` satisfies the 24 VCs, every configuration reachable in `S_D` is
+RA-linearizable.
+
+Proof plan (lin.tex §3.3 + appendix.tex §A.2): induction on the
+execution. CreateReplica and Query are immediate; Apply extends the
+linearization by one event; Merge delegates to
+`RA_lin_preserved_merge_via_witness` which destructures the
+`merge_linearization_exists` existential. -/
+theorem ra_linearizable_of_vcs
+    (D : CRDTSig) (hVC : SatisfiesVCs D)
+    (C : Configuration D)
+    (hReach : (labeledTS D).ReachableFrom (initConfig D) C) :
+    IsRALinearizable C := by
+  induction hReach with
+  | refl => exact initConfig_RA_lin D
+  | tail _ hs ih =>
+    obtain ⟨ℓ, hstep⟩ := hs
+    cases hstep with
+    | createReplica _ _ hN hL hvis =>
+      exact RA_lin_preserved_createReplica hN hL hvis ih
+    | apply h_s h_ev h_fresh_t _ hN hL hvis =>
+      exact RA_lin_preserved_apply h_s h_ev h_fresh_t hN hL hvis ih
+    | merge h_s₁ h_s₂ h_ev₁ h_ev₂ _ hN hL hvis =>
+      exact RA_lin_preserved_merge_via_witness hVC h_s₁ h_s₂
+        h_ev₁ h_ev₂ hN hL hvis ih
+    | query _ _ => exact ih
+
 end Sal.Emulation
