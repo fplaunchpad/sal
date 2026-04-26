@@ -25,10 +25,10 @@ This reduces to two subgoals we prove independently and then compose:
 | # | Step | Status |
 |---|------|--------|
 | 0 | Scaffolding (signature, TS with 5 invariants, RA-lin skeleton) | **DONE** |
-| 1 | Transcribe the 24 VCs + `cond_comm_lift` into `SatisfiesVCs` (25 fields) | **DONE** |
+| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` into `SatisfiesVCs` (26 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (existential form, convergence + 7 BottomUp rules + 3-of-4 sub-cases of `merge_linearization_exists` closed; closure-stable carving foundation in place; 4 sorries remain — see §4 details) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (existential form, convergence + 7 BottomUp rules + asymmetric sub-cases of `merge_linearization_exists` closed via `merge_init`; `ra_linearizable_of_vcs` end-to-end via `merge_linearization_exists`; 2 sorries remain — convergence's overwriter-in-sfx and distinct-last-event L^a/L^b carving) |
 | 5 | End-to-end smoke test on Grow-Only Set (25 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
@@ -286,6 +286,109 @@ lo-respecting; filtering preserves it. `no_rc_chain` remains
 load-bearing globally (per the paper) but manifests through
 per-CRDT instances satisfying the VC, not through a Lean
 acyclicity lemma at this step.
+
+**Subset facts.** Six trivial subset lemmas added so callers can
+plug the carving layers into `exists_lo_maximal_in_subset`:
+`L_top_subset_left`, `L_top_subset_right`, `L₁_local_subset`,
+`L₂_local_subset`, `L_a_subset_local`, `L_b_subset_local`.
+
+**Documented mismatch on `L_b`.** The paper's `L_1^b`
+(`appendix.tex:262`) accepts events with a lo-path of length 1 OR
+length 2 to `L_⊤`. The existing Lean `L_b` only captures depth-1.
+The docstring claims a transitive fixed-point but the body
+disagrees.
+
+**Depth audit (paper-side, 2026-04-25).** Depth-2 inclusion is
+*essential*, not an artefact:
+
+* Lemma 1 (1) of `appendix.tex:117-156` ("no lo-edge from `L^a` to
+  `L^b`") is the load-bearing fact for the merge-witness proof. In
+  case 1.b.i, the argument runs: `e →_vis e' →_vis e'' ∈ L_1'
+  →_lo e_⊤`; by `vis`-transitivity `e →_vis e''`, so `e` has a
+  depth-2 lo-path to `L_⊤`, hence `e ∈ L_b`. Without depth-2 in
+  the definition, the step fails: `e` would sit in `L_a`, and
+  "no edge from `L^a` to `L^b`" becomes false.
+* The depth-2 cap is forced by `no_rc_chain`: at most one
+  `rc`-edge per lo-path (case 1.b.iii: `e' →_rc e'' →_rc e_⊤` is
+  ruled out by `no-rc-chain`), and `vis` is transitive — so any
+  multi-step lo-path collapses to depth 2 plus an internal
+  `vis`-chain.
+* For 2-way merge with LCA = init, the depth question doesn't
+  simplify: the proof flow of Lemma 1 is independent of LCA
+  being non-trivial.
+
+**Convergence overwriter sorry — audit (2026-04-25).**
+
+Closing the convergence overwriter sorry (`Merge_Linearization.lean:474`)
+turned out to require a structural VC change, not a local proof.
+
+The proof shape is clean: case-split on `rc(e, x)`. In the Fst case,
+the overwriter for `x` is in β by lo-respect of π₂. In the Snd
+direction (= rc(x, e) = Fst), the overwriter would be for `e` and
+its existence is *impossible* under our hypotheses (it would force
+some event after the tail of π₁ = π₁' ++ [e]). So both rc-Fst
+directions discharge.
+
+**The gap is the third case.** Under the current
+`SatisfiesVCs.rc_non_comm` (weak semantic form: `rc = Either ↔
+commute`), the case where both `rc(e, x) = Snd_then_fst` AND
+`rc(x, e) = Snd_then_fst` is not ruled out. In that case, neither
+`cond_comm_lift` direction fires. The Sal paper's `rc-non-comm`
+(`lin.tex:387-389`) is the *directional* form (¬commute ↔ rc=Fst
+in some direction) and rules this out.
+
+**Fix is a structural VC change**, not a tactic adjustment:
+either upgrade `SatisfiesVCs.rc_non_comm` to the directional form
+or add a new field `rc_either_or_fst : ¬commute → rc(o₁,o₂) = Fst
+∨ rc(o₂,o₁) = Fst`. Either requires re-discharging in every
+per-CRDT `D_satisfies_VCs` instance (vacuous for Grow_Only_Set,
+real content for non-trivial CRDTs). Per demand-driven discipline,
+deferred until the convergence proof body actually consumes the
+new VC — at which point the change lands as one coherent unit.
+
+The audit landed inline in `Merge_Linearization.lean` (replacing
+the old "tighten signature" comment with a precise statement of
+the structural gap). Sorry count unchanged at 4.
+
+---
+
+**Fix landed (this session, post-decision to push ahead).** `L_b`
+widened to depth-1-or-2:
+
+```
+def L_b ev_top ev_local :=
+  fun e => e ∈ ev_local ∧
+    ((∃ e' ∈ ev_top, lo C e e') ∨
+     (∃ e' ∈ ev_local, ∃ e'' ∈ ev_top, lo C e e' ∧ lo C e' e''))
+```
+
+`L_a` re-derived as the complement. `L_a_union_L_b` and
+`L_a_inter_L_b` re-proved against the new definitions. Partition
+layer now appendix-faithful before the distinct-last branch
+consumes it. The earlier "demand-driven, defer fix" position was
+sound at the time, but the fix turned out to be cheap enough
+(no consumers had to change, just re-proving two trivial partition
+lemmas) that landing it now removed a known follow-up cost.
+
+**`L_top` carving landed (post-audit).** Following
+`appendix.tex:264-265`:
+
+* `L_top_a C ev₁ ev₂` — shared events with a lo-predecessor in
+  `L_1^b ∪ L_2^b`.
+* `L_top_b C ev₁ ev₂ = L_top \ L_top_a` — shared events with no
+  such predecessor.
+
+Plus the four bookkeeping lemmas: `L_top_a_subset`,
+`L_top_b_subset`, `L_top_a_union_L_top_b`,
+`L_top_a_inter_L_top_b`.
+
+The definitions take `L_b` as input (via the existing parameterised
+`L_b C ev_top ev_local`), so they are robust to the eventual `L_b`
+depth fix — no re-derivation needed. The appendix's outer
+induction case-splits on `|L_top_a|`: inner-base when empty
+(closes via `merge_idem`), inner-step pulls a lo-maximal
+`L_top_a` element via `BottomUp-0-OP` and recurses on the
+`M_i^a` carving for that LCA event.
 
 This refactor leaves the live-sorry count unchanged at 4 but
 restructures the distinct-last-event obstruction: it is no longer
