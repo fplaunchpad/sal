@@ -85,6 +85,105 @@ Each matching line lands as a notification. Keep working on something else until
 - `README.md` "What's verified" catalog reflects the new RDT.
 - No `by blaster` or `by aesop` calls outside `Sal/Tactic/Sal.lean` — all tactic invocations on RDT theorems go through `by sal` or the manual kernel-verifiable pattern.
 
+## ReadSide and SPOT layers (Tier C RDTs)
+
+The 24 VCs prove **state convergence**. For RDTs with a non-trivial
+read (OR-Set lookup, Peritext span membership, RGA visible order, …)
+the headline paper claim lives in a **read-side projection**, not in
+the convergence proof. Methodology doc:
+[`docs/readside-projections.md`](../../../docs/readside-projections.md).
+Triage: Tier A (skip), Tier B (optional), Tier C (required) — see
+that doc.
+
+**ReadSide theorems** (`<RDT>_ReadSide.lean`, sibling to the CRDT/MRDT file):
+
+1. `def query` — the headline projection (`lookup`, `is_visible_value`,
+   `formatted_visible`, …). Often `noncomputable` for `∃` over `set`.
+2. **Convergence at the read.** `eq s₁ s₂ → query s₁ = query s₂`.
+   Trivial: `subst` on plain-`=` `eq`, structural induction on
+   propositional `eq`.
+3. **Two to four intent theorems** lifting paper headlines. Recurring
+   shapes: `add_wins_over_concurrent_*`, `*_then_*_extinguishes`,
+   `*_after_*`, plus 1–2 RDT-specific (`causal_order_visible_lt`,
+   `bold_expand_in_span_visible`, `innate_record_unique`).
+
+**Concurrency encoding** — two equivalent conventions:
+- *Literal* (used in OR-Set, RGA, MVR, AW-CRPQ readsides): the
+  theorem's statement contains `merge (do_ s o₁) (do_ s o₂)` with
+  `rid₁`, `rid₂` as universal parameters. The "concurrent" shape
+  is in the theorem's form.
+- *Abstract* (used in Peritext readside): the theorem takes any state
+  `s` with the relevant ops' effects already present (e.g.
+  `mark_present s addOp = true ∧ mark_present s remOp = true`).
+  Concurrency is implicit — such a state arises by concurrent
+  application from different replicas.
+Both are paper-faithful; the SPOT layer is what makes the concurrent
+shape concrete.
+
+**SPOTs** (`<RDT>_SPOT.lean`, sibling to the ReadSide file):
+
+Small Proof-Oriented Tests — pin each headline read-side claim onto a
+concrete `do_`/`merge` trace with literal arguments. Two roles:
+regression tests against refactors, and verified API documentation.
+
+Discharge styles, in order of preference:
+1. **Apply the readside theorem with literal arguments.** Cleanest;
+   demonstrates the universal theorem firing on a specific instance.
+2. `refine ⟨witness, ?_, ?_⟩ <;> decide` — when the membership
+   predicate (`mem`/`contains`) reduces on literals.
+3. `simp [hσ, do_, merge, ...]` for facts like `after_of σ c p = true`,
+   `visible σ c = true`. Often closes directly on the Peritext maps
+   substrate (CRDT side).
+
+**Critical pitfalls (audit these in every SPOT):**
+
+- **Match rids to the paper's framing.** If the paper claim is
+  *"concurrent X from different replicas"*, use distinct `rid`s
+  (e.g. `(ts₁, 0, op₁)` and `(ts₂, 1, op₂)`). Same rid is only for
+  ops a single replica issues sequentially. With `rc := Either`
+  everywhere, sequential `do_; do_` on different rids converges to
+  the same state as a literal merge of two divergent branches —
+  use it freely as the state-based stand-in for concurrent.
+- **Don't degenerate the scenario.** A theorem with universal
+  premises (e.g. `∀ m', mark_present σ m' → ...`) trivially admits
+  states with one or zero such ops — the premises become vacuous.
+  That's a *valid invocation* but doesn't exercise the paper's
+  scenario. For "overlapping same-type Adds" (Peritext Ex 2), set
+  up *two* AddMarks of the same type with truly overlapping spans;
+  for "concurrent Add wins over Rem", actually have both ops in
+  the state.
+- **Inline structured-type literals.** `let m : MarkOp := ⟨…⟩`
+  blocks projection reduction (`m.startSide`, `m.markType`) inside
+  `simp`. Pass the literal tuple/anonymous-constructor directly to
+  the theorem and to `mark_present`/`in_span_visible` calls.
+- **State the read-side claim in projection vocabulary.** A
+  read-side theorem's conclusion should use the projected query
+  (`is_visible_value`, `lookup`, `formatted_visible`, …) — not raw
+  membership in a state component. `ts ∈ removed` only invalidates
+  the specific `(ts, v)` witness; `¬ is_visible_value σ v` is the
+  headline claim and requires extra premises (coverage of all
+  visible witnesses, inequality with the new written value).
+  Convention: keep both — `<theorem>_witness` for the building
+  block, `<theorem>_value` for the headline (see MVR's
+  `sequential_write_supersedes_witness` / `_value`). If a SPOT
+  has to use raw `rintro/simp/grind` to close a "no longer
+  visible" claim, the value-level read-side theorem is missing.
+- **`mark_present`-uniqueness pattern.** When a readside premise has
+  `∀ m', mark_present σ m' = true → P m'`, build a uniqueness lemma:
+  ```lean
+  have h_uniq : ∀ m' : MarkOp, mark_present σ m' = true →
+      m' = literal₁ ∨ m' = literal₂ ∨ … := by
+    intro m' h_pres
+    simp [hσ, ..., mark_present, marks_of, do_, add,
+          _root_.singleton, union, empty] at h_pres
+    rcases m' with ⟨_, _, _, _, _, _, _⟩
+    grind
+  ```
+  The `rcases m'` *before* `grind` is what makes it work — it
+  destructures the structured type into fields so `grind` can
+  collapse the AnchorAttachment-injectivity disjunction
+  componentwise.
+
 ## Commit style
 
 Follow recent commits on `main`:

@@ -11,6 +11,23 @@ Cross-reference between the Lean formalization in
 This document is a living map: where the Lean matches the paper,
 where it deliberately departs, and where follow-up work is flagged.
 
+## At a glance — convergence, causality, intent preservation
+
+| Paper claim | Sal artifact | Status / notes |
+|---|---|---|
+| **§A.1 Convergence** | 24 RA-linearizability VCs in `Peritext_CRDT.lean` and `Peritext_MRDT.lean` (`merge_comm`, `merge_idem`, `base_2op`, `ind_lca_2op`, `inter_*`, `ind_*`, `lem_0op`) | ✅ All closed via `by sal`, kernel-checked. Universally quantified over op interleavings. |
+| **§3.1 Causality preservation** | Framework assumption (causal delivery); `afters` map structurally encodes insert causality; `causal_order_visible_lt` (RGA readside) lifts it to visible-order | ✅ Same convention as paper §3.1. |
+| **§A.2 Intent preservation — convergence at the read** | `readRichText_visible_convergent` | ✅ Read-side analogue of merge convergence. |
+| §A.2 Ex 1 — insertion within a span | `insert_within_span_in_span_visible` + propagation lemmas | ✅ |
+| §A.2 Ex 2 — overlapping same-type Adds | `partial_overlap_all_adds_formatted_visible` | ✅ |
+| §A.2 Ex 3 — different mark types coexist | `different_type_adds_coexist_visible` | ✅ |
+| §A.2 Ex 4 — same-type, different values (colors) | not formalised | ⚠️ Requires `markValue` field on `MarkOp` — state-shape change. |
+| §A.2 Ex 5 — bold vs non-bold conflict | `add_wins_over_concurrent_remove_visible` + `no_add_cover_implies_unformatted_visible` | ✅ Add-beats-Remove (paper acknowledges Ex 5 outcome is "arbitrary deterministic"). |
+| §A.2 Ex 6 — overlapping comments via distinct markType | follows from `different_type_adds_coexist_visible` | ✅ |
+| §A.2 Ex 7 — bold-boundary insertion expands | `ex7_bold_older_sibling_in_span` + `bold_expand_in_span_visible` (via `bold_expand_reach`) | ✅ |
+| §A.2 Ex 8 — link-boundary insertion does not expand | `ex8_link_descendant_visible_lt_endId` + `_not_in_span_visible_of_wf` | ✅ Uses `wf_afters` acyclicity. |
+| (Beyond paper) Anchors survive tombstones | `anchors_survive_tombstones_visible` | ✅ Implicit in §4.4 paper discussion. |
+
 ## Formalization target
 
 The paper describes an **op-based** CRDT; our Lean is a **state-based**

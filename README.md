@@ -8,13 +8,16 @@ The approach builds on the F★-based **Neem** framework of Soundarapandian, Nag
 
 The suite currently contains **28 RDTs** — 17 CRDTs and 11 MRDTs — with all 24 RA-linearizability VCs closed on every properly-verified one (one MRDT, `Enable_Wins_Flag_known_broken`, is an intentionally-buggy demo fixture and is excluded from the "all VCs closed" count). That's **648 VCs** for state convergence (27 × 24), of which the vast majority are **kernel-checked** (no TCB-enlarging admits) and a small residue of stage-2 Blaster-admits remain in a few files (`OR_Set_MRDT`, `OR_Set_Efficient_MRDT`, `Add_Win_Priority_Queue_MRDT`, `Multi_Valued_Register_MRDT`) — validated by Z3 via the `sal` tactic's SMT stage but not yet kernel-reconstructed.
 
-Several Tier-C RDTs — those whose 24 VCs prove union-commutativity on grow-only state but leave the user-visible semantics to the read-side projection — additionally carry **read-side definitions and intent-preservation theorems**: `Peritext`, `RGA`, `Add_Win_Priority_Queue`, `OR_Set` (plain and efficient), and `Multi_Valued_Register`. Each comes with a `*_ReadSide.lean` companion alongside its `*_CRDT.lean` / `*_MRDT.lean`, and a per-RDT crosswalk to the source paper:
+Several Tier-C RDTs — those whose 24 VCs prove union-commutativity on grow-only state but leave the user-visible semantics to the read-side projection — additionally carry **read-side definitions and intent-preservation theorems**: `Peritext`, `RGA`, `Add_Win_Priority_Queue`, `OR_Set` (plain and efficient), `Multi_Valued_Register`, and `LWW_Element_Set`. Each comes with a `*_ReadSide.lean` companion alongside its `*_CRDT.lean` / `*_MRDT.lean`, and a per-RDT crosswalk to the source paper:
 
 - [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md) — Litt et al. CSCW 2022, Ex 1 / 2 / 3 / 5 / 7 / 8 intent-preservation.
 - [`docs/rga-vs-paper.md`](docs/rga-vs-paper.md) — Roh et al. JPDC 2011, causal-order preservation, tombstone monotonicity, deterministic concurrent-insert tiebreak.
 - [`docs/aw-crpq-vs-paper.md`](docs/aw-crpq-vs-paper.md) — Zhang et al. Internetware 2023, Add-wins headline + LWW innate + acquired-Σ + `get_max`.
 - [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md) — Shapiro et al. INRIA RR-7506, Add-Wins on lookup with sequential-Add-then-Remove extinguishment.
 - [`docs/mvr-vs-paper.md`](docs/mvr-vs-paper.md) — Shapiro et al. INRIA RR-7506 §3.2.2, classical replace-on-write semantics with concurrent-writes-both-survive + sequential-writes-supersede.
+- [`docs/lww-element-set-vs-paper.md`](docs/lww-element-set-vs-paper.md) — Shapiro et al. INRIA RR-7506 §3.3.4, LWW-comparison lookup with `lookup_after_add_with_fresh_ts` + `remove_at_higher_ts_extinguishes`.
+
+The methodology — the Tier-A/B/C distinction, when read-sides are needed, the snapshot-in-op-payload pattern, and the spec-validation lesson from `in_span_boundary` — is documented in [`docs/readside-projections.md`](docs/readside-projections.md).
 
 Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branch of a [Blaster fork](https://github.com/kayceesrk/Lean-blaster).
 
@@ -33,7 +36,7 @@ Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branc
 - `OR_Set` — Shapiro et al. INRIA RR-7506. **+ read-side**: `lookup`, `add_wins_over_concurrent_remove`, `add_then_remove_extinguishes`. See [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md).
 - `Grow_Only_Set`
 - `Grow_Only_Multiset`
-- `LWW_Element_Set`
+- `LWW_Element_Set` — Shapiro et al. INRIA RR-7506. Per-element latest-add-ts and latest-remove-ts maps; `lookup` uses strict-`>` comparison (remove-wins on tie). **+ read-side**: `lookup`, `lookup_after_add_with_fresh_ts`, `remove_at_higher_ts_extinguishes`, `latest_write_wins`. See [`docs/lww-element-set-vs-paper.md`](docs/lww-element-set-vs-paper.md).
 - `LWW_Map`
 - `MAX_Map`
 

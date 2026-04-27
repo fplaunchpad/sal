@@ -62,6 +62,26 @@ paper's MVR semantics: under the simplified variant, sequential
 writes did **not** overwrite, which is the defining property
 distinguishing MVR from a write-only log.
 
+**This is also where Sal now diverges from the upstream Neem F*
+artefact.** The original Neem F* implementation
+(`_references/neem_fstar_repo/code/{crdts,mrdts}/Multi-valued_register/App_mrdt.fst`)
+uses exactly the simplified accumulating design that Sal inherited:
+
+```fstar
+type concrete_st = S.t (int & nat)
+let do s ((ts,(_,Write v))) = S.add (ts,v) s
+let merge a b = S.union a b           -- CRDT
+let merge l a b = S.union l (S.union a b) -- MRDT
+```
+
+Sequential writes don't overwrite there either, so Spec 14's
+headline property — *"concurrent writes both survive **and**
+sequential writes overwrite"* — held only in the first half. The
+current Sal MVR is therefore *more paper-faithful than the F*
+original it was ported from*, achieved by the snapshot-in-op-payload
+trick (same mechanism as `Add_Win_Priority_Queue`'s `Rmv` and
+`OR_Set`'s `Rem`).
+
 The current implementation closes that gap. The state shape
 `(writes, removed)` and snapshot-based `do_` together let us:
 

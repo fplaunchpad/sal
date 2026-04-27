@@ -80,12 +80,39 @@ theorem concurrent_writes_both_visible
   · simp [merge, do_, h_fresh_t2_W]
   · simp [merge, do_, h_fresh_t2_O1, h_fresh_t2_O2, h_fresh_t2_R]
 
-/-- **Sequential write supersedes prior.** A write whose snapshot
-includes a prior `ts₁` puts that ts in the post-state's `removed`,
-so the prior write at `ts₁` is no longer visible. -/
-theorem sequential_write_supersedes
+/-- **Sequential write supersedes prior (witness level).** Building-
+block fact: if `O₂` includes `ts₁`, then `ts₁` is in the post-state's
+`removed`, so the specific `(ts₁, v₁)` witness is no longer visible. -/
+theorem sequential_write_supersedes_witness
     (s : concrete_st) (v₂ ts₁ ts₂ rid : ℕ) (O₂ : set ℕ)
     (h_t1_in_O2 : mem ts₁ O₂ = true) :
     mem ts₁ (Prod.snd (do_ s (ts₂, rid, app_op_t.Write v₂ O₂))) = true := by
   simp only [mem] at h_t1_in_O2
   simp [do_, h_t1_in_O2]
+
+/-- **Sequential write supersedes prior (value level).** Headline
+classical-MVR claim, stated plainly via `is_visible_value`: after a
+new `Write v₂` whose snapshot `O₂` covers every prior visible
+witness for `v₁`, `v₁` is no longer visible.
+
+Premises:
+* `h_v2_ne_v1` — the new write does not coincidentally rewrite `v₁`.
+* `h_covered` — every currently-visible witness `(ts, v₁)` in `s`
+  has `ts ∈ O₂`. In a well-formed sequential execution the
+  prepare-time snapshot includes every visible record. -/
+theorem sequential_write_supersedes_value
+    (s : concrete_st) (v₁ v₂ ts₂ rid : ℕ) (O₂ : set ℕ)
+    (h_v2_ne_v1 : v₂ ≠ v₁)
+    (h_covered : ∀ ts,
+        mem (ts, v₁) (Prod.fst s) = true →
+        mem ts (Prod.snd s) = false →
+        mem ts O₂ = true) :
+    ¬ is_visible_value (do_ s (ts₂, rid, app_op_t.Write v₂ O₂)) v₁ := by
+  rintro ⟨ts, h_in_writes, h_not_removed⟩
+  simp [do_, add, _root_.singleton, union] at h_in_writes h_not_removed
+  obtain ⟨h_not_rem, h_not_O2⟩ := h_not_removed
+  rcases h_in_writes with h_in_old | h_eq
+  · have h_in_O2 : mem ts O₂ = true :=
+      h_covered ts h_in_old (by simp [mem, h_not_rem])
+    simp [mem, h_not_O2] at h_in_O2
+  · exact h_v2_ne_v1 h_eq.2.symm
