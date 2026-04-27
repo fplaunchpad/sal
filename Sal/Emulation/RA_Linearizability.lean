@@ -480,6 +480,31 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   merge_init :
     ∀ s : D.State, D.merge D.init s = s
 
+  /-- **Merge-peel commutativity** (paper's `BottomUpTemplate`,
+  `overview.tex:202`, specialised to 2-way merge).
+
+  When event `e` commutes with every event that produced `b` (i.e.,
+  `b = applySeq D.init π` for some `π` in which all events commute
+  with `e`), the merge equation can peel `e` from the left side:
+  `merge (update a e) b = update (merge a b) e`.
+
+  Aristotle's analysis (project 444d5bcd) identified this as the
+  "missing" peel rule for the all-commuting carving case. The 24 VCs'
+  `ind_right_2op` requires `rc = Fst_then_snd`, which doesn't fire
+  when all events commute (e.g., G-Set). The paper's BottomUpTemplate
+  is stated unconditionally; this conditional form is its
+  specialisation.
+
+  For typical CRDTs (G-Set, OR-set with same-element pairs, etc.) the
+  property is a direct lattice fact (set union associativity / similar).
+  For CRDTs with non-commuting ops, the hypothesis activates only when
+  it actually holds, and the conclusion is the standard peel. -/
+  merge_peel_comm :
+    ∀ (a : D.State) (e : Op D.AppOp) (π : List (Op D.AppOp)),
+      (∀ x ∈ π, D.commutes e x) →
+      D.merge (D.update a e) (applySeq D D.init π)
+        = D.update (D.merge a (applySeq D D.init π)) e
+
 /-! ### Bridge theorem — base case -/
 
 /-- The initial configuration is RA-linearizable: only replica `0` is

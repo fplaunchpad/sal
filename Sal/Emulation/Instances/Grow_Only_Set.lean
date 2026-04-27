@@ -1,5 +1,6 @@
 import Sal.CRDTs.Grow_Only_Set_CRDT
 import Sal.Emulation.RA_Linearizability
+import Mathlib.Data.List.Induction
 
 /-!
 # Grow-Only Set as an emulation `CRDTSig`
@@ -192,5 +193,21 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
     show _root_.merge _root_.init_st s = s
     simp [_root_.merge, _root_.init_st]
     ext x; simp
+  merge_peel_comm := by
+    -- For Grow-Only Set, the conclusion is set associativity:
+    -- (a ∪ {e}) ∪ ⋃π = (a ∪ ⋃π) ∪ {e}.
+    -- The hypothesis `∀ x ∈ π, commutes e x` is irrelevant — G-Set
+    -- has all ops commuting, so the conclusion holds unconditionally.
+    intro a e π _
+    -- The key fact: for any set b, merge (do_ a e) b = do_ (merge a b) e.
+    -- Prove this directly in G-Set, regardless of how b was constructed.
+    have key : ∀ b : _root_.concrete_st,
+        _root_.merge (_root_.do_ a e) b = _root_.do_ (_root_.merge a b) e := by
+      intro b
+      rcases e with ⟨_, _, ⟨n⟩⟩
+      simp [_root_.merge, _root_.do_]
+      ext x; simp
+      cases a x <;> cases b x <;> simp
+    exact key _
 
 end Sal.Emulation.Instances.GrowOnlySet
