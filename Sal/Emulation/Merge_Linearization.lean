@@ -1943,8 +1943,203 @@ theorem distinct_last_case
         · -- applySeq D D.init (π_ih ++ [e₂]) = D.merge s₁ s₂
           rw [applySeq_append_single, hπ_ih_state, h_peel]
     · -- Case 3: neither e₁ nor e₂ commutes with everything on the
-      -- other side. Genuinely hard "dueling non-commuters" case.
-      sorry  -- TODO: carving / bottomUp_2op_reachable analysis
+      -- other side.
+      by_cases h_e₁e₂_comm : D.commutes e₁ e₂
+      · -- Case 3b: e₁, e₂ commute, but each has non-commuting
+        -- partners on the OTHER list. The paper's carving (L^a/L^b)
+        -- handles this via picking peel candidates from M^a sub-
+        -- carvings. Multi-session work; sorry for now.
+        sorry
+      · -- Case 3a: ¬commute(e₁, e₂). Use bottomUp_2op_reachable.
+        have h_e₁_in_ev₁ : e₁ ∈ ev₁ :=
+          (h₁p.2 e₁).mp (List.mem_append.mpr (Or.inr
+            (List.mem_singleton.mpr rfl)))
+        have h_e₂_in_ev₂ : e₂ ∈ ev₂ :=
+          (h₂p.2 e₂).mp (List.mem_append.mpr (Or.inr
+            (List.mem_singleton.mpr rfl)))
+        have h_e₁_in_C : e₁ ∈ C.events := h_ev₁_in_C e₁ h_e₁_in_ev₁
+        have h_e₂_in_C : e₂ ∈ C.events := h_ev₂_in_C e₂ h_e₂_in_ev₂
+        have h_dist_e₁e₂ : distinctOps e₁ e₂ := by
+          obtain ⟨_, _, hL_e₁, hs_e₁⟩ := h_e₁_in_C
+          obtain ⟨_, _, hL_e₂, hs_e₂⟩ := h_e₂_in_C
+          exact C.timestamps_distinct hL_e₁ hs_e₁ hL_e₂ hs_e₂ h_ne
+        -- Inner case-split on shared-event possibilities.
+        by_cases h_e₁_in_ev₂ : e₁ ∈ ev₂
+        · -- e₁ shared but ¬commute(e₁, e₂). Hard sub-case;
+          -- needs re-permutation of π₂.
+          sorry
+        · by_cases h_e₂_in_ev₁ : e₂ ∈ ev₁
+          · -- e₂ shared but ¬commute(e₁, e₂). Hard sub-case;
+            -- needs re-permutation of π₁.
+            sorry
+          · -- Both strictly local: e₁ ∈ ev₁ \ ev₂, e₂ ∈ ev₂ \ ev₁.
+            have h_diff_rep : differentReplicas e₁ e₂ :=
+              differentReplicas_of_closure h_e₁_in_C h_e₂_in_C
+                h_e₁_in_ev₁ h_e₁_in_ev₂ h_e₂_in_ev₂ h_e₂_in_ev₁
+                h_ev₁_closed h_ev₂_closed h_e₁e₂_comm h_ne
+            -- Directional rc gives a Fst direction.
+            have h_rc :=
+              (hVC.rc_non_comm_directional e₁ e₂ h_dist_e₁e₂).mp h_e₁e₂_comm
+            rcases h_rc with h_rc_e₁e₂ | h_rc_e₂e₁
+            · -- rc(e₁,e₂) = Fst: peel e₂. Use merge_comm + the
+              -- symmetric bottomUp_2op_reachable argument. Sorry
+              -- for now (parallel to the other branch).
+              sorry
+            · -- rc(e₂,e₁) = Fst: peel e₁ via bottomUp_2op_reachable.
+              -- Step 1: distinctness premises for bottomUp_2op_reachable.
+              have h_e₁_not_π₁' : e₁ ∉ π₁' := by
+                intro h
+                have hnd := List.nodup_append.mp h₁p.1
+                exact hnd.2.2 e₁ h e₁ (List.mem_singleton.mpr rfl) rfl
+              have h_e₂_not_π₂' : e₂ ∉ π₂' := by
+                intro h
+                have hnd := List.nodup_append.mp h₂p.1
+                exact hnd.2.2 e₂ h e₂ (List.mem_singleton.mpr rfl) rfl
+              -- All events in π₁' are in C.events (∈ ev₁).
+              have h_π₁'_in_C : ∀ y ∈ π₁', y ∈ C.events := by
+                intro y hy
+                exact h_ev₁_in_C y ((h₁p.2 y).mp
+                  (List.mem_append.mpr (Or.inl hy)))
+              have h_π₂'_in_C : ∀ y ∈ π₂', y ∈ C.events := by
+                intro y hy
+                exact h_ev₂_in_C y ((h₂p.2 y).mp
+                  (List.mem_append.mpr (Or.inl hy)))
+              -- Distinctness of e₁ with each y ∈ π₁'.
+              have h_dist_a_e₁ : ∀ y ∈ π₁', distinctOps e₁ y := by
+                intro y hy
+                obtain ⟨_, _, hL_e₁, hs_e₁⟩ := h_e₁_in_C
+                obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy
+                have hne : e₁ ≠ y := fun heq => h_e₁_not_π₁' (heq ▸ hy)
+                exact C.timestamps_distinct hL_e₁ hs_e₁ hL_y hs_y hne
+              have h_dist_a_e₂ : ∀ y ∈ π₁', distinctOps e₂ y := by
+                intro y hy
+                obtain ⟨_, _, hL_e₂, hs_e₂⟩ := h_e₂_in_C
+                obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy
+                have hy_in_ev₁ : y ∈ ev₁ :=
+                  (h₁p.2 y).mp (List.mem_append.mpr (Or.inl hy))
+                have hne : e₂ ≠ y :=
+                  fun heq => h_e₂_in_ev₁ (heq ▸ hy_in_ev₁)
+                exact C.timestamps_distinct hL_e₂ hs_e₂ hL_y hs_y hne
+              have h_dist_b_e₁ : ∀ y ∈ π₂', distinctOps e₁ y := by
+                intro y hy
+                obtain ⟨_, _, hL_e₁, hs_e₁⟩ := h_e₁_in_C
+                obtain ⟨_, _, hL_y, hs_y⟩ := h_π₂'_in_C y hy
+                have hy_in_ev₂ : y ∈ ev₂ :=
+                  (h₂p.2 y).mp (List.mem_append.mpr (Or.inl hy))
+                have hne : e₁ ≠ y :=
+                  fun heq => h_e₁_in_ev₂ (heq ▸ hy_in_ev₂)
+                exact C.timestamps_distinct hL_e₁ hs_e₁ hL_y hs_y hne
+              have h_dist_b_e₂ : ∀ y ∈ π₂', distinctOps e₂ y := by
+                intro y hy
+                obtain ⟨_, _, hL_e₂, hs_e₂⟩ := h_e₂_in_C
+                obtain ⟨_, _, hL_y, hs_y⟩ := h_π₂'_in_C y hy
+                have hne : e₂ ≠ y := fun heq => h_e₂_not_π₂' (heq ▸ hy)
+                exact C.timestamps_distinct hL_e₂ hs_e₂ hL_y hs_y hne
+              -- Step 2: Apply bottomUp_2op_reachable.
+              have h_peel : D.merge s₁ s₂ =
+                  D.update (D.merge (applySeq D D.init π₁')
+                    (D.update (applySeq D D.init π₂') e₂)) e₁ := by
+                rw [← h₁s, ← h₂s, applySeq_append_single,
+                    applySeq_append_single]
+                exact bottomUp_2op_reachable hVC e₁ e₂ h_rc_e₂e₁
+                  h_diff_rep h_dist_e₁e₂ π₁' π₂'
+                  h_dist_a_e₁ h_dist_a_e₂ h_dist_b_e₁ h_dist_b_e₂
+              -- Note: D.merge a (D.update b e₂) = ... we need to
+              -- bring `D.update (applySeq init π₂') e₂ = s₂`.
+              have hs₂_form : D.update (applySeq D D.init π₂') e₂ = s₂ := by
+                rw [← h₂s, applySeq_append_single]
+              rw [hs₂_form] at h_peel
+              -- Step 3: listPermOf π₁' (ev₁ \ {e₁})
+              have h₁p' : listPermOf π₁' (ev₁ \ {e₁}) := by
+                constructor
+                · exact (List.nodup_append.mp h₁p.1).1
+                · intro a; constructor
+                  · intro ha
+                    exact ⟨(h₁p.2 a).mp (List.mem_append.mpr (Or.inl ha)),
+                      fun heq => h_e₁_not_π₁' (heq ▸ ha)⟩
+                  · intro ⟨ha_ev, ha_ne⟩
+                    rcases List.mem_append.mp ((h₁p.2 a).mpr ha_ev)
+                      with h | h
+                    · exact h
+                    · exact absurd (List.mem_singleton.mp h) ha_ne
+              -- Step 4: respects π₁'
+              have h₁r' : respects π₁' (lo C) :=
+                (List.pairwise_append.mp h₁r).1
+              -- Step 5: closures
+              have h_ev₁'_closed : ∀ a b, C.vis a b → ¬ D.commutes a b →
+                  b ∈ ev₁ \ {e₁} → a ∈ ev₁ \ {e₁} :=
+                closure_preserved_by_tail_peel h₁p h₁r h_ev₁_closed
+              -- Step 6: events-in-C
+              have h_ev₁'_in_C : ∀ a ∈ ev₁ \ {e₁}, a ∈ C.events :=
+                fun a ⟨ha, _⟩ => h_ev₁_in_C a ha
+              -- Step 7: length
+              have h_len' : π₁'.length + (π₂' ++ [e₂]).length < n := by
+                simp only [List.length_append, List.length_singleton]
+                  at h_len ⊢
+                omega
+              -- Step 8: ih
+              obtain ⟨π_ih, hπ_ih_perm, hπ_ih_resp, hπ_ih_state⟩ :=
+                ih _ h_len' π₁' (π₂' ++ [e₂]) (ev₁ \ {e₁}) ev₂
+                  (applySeq D D.init π₁') s₂
+                  rfl h_ev₁'_in_C h_ev₂_in_C h_ev₁'_closed h_ev₂_closed
+                  h₁p' h₂p h₁r' h₂r rfl h₂s
+              -- Step 9: e₁ ∉ π_ih (since π_ih perms (ev₁\{e₁}) ∪ ev₂
+              -- and e₁ ∉ both).
+              have h_e₁_not_π_ih : e₁ ∉ π_ih := by
+                intro h_in
+                rcases (hπ_ih_perm.2 e₁).mp h_in with ⟨_, hne⟩ | h
+                · exact hne rfl
+                · exact h_e₁_in_ev₂ h
+              -- Step 10: final witness π_ih ++ [e₁].
+              refine ⟨π_ih ++ [e₁], ?_, ?_, ?_⟩
+              · -- listPermOf
+                obtain ⟨hnd_ih, hm_ih⟩ := hπ_ih_perm
+                refine ⟨?_, fun a => ?_⟩
+                · rw [List.nodup_append]
+                  refine ⟨hnd_ih, List.nodup_singleton _, ?_⟩
+                  intro x hx y hy
+                  rw [List.mem_singleton] at hy; subst y
+                  intro heq; subst heq
+                  exact h_e₁_not_π_ih hx
+                · rw [List.mem_append, List.mem_singleton, Set.mem_union]
+                  constructor
+                  · rintro (h | rfl)
+                    · rcases (hm_ih a).mp h with ⟨h_ev, _⟩ | h_ev
+                      · exact Or.inl h_ev
+                      · exact Or.inr h_ev
+                    · exact Or.inl h_e₁_in_ev₁
+                  · intro h
+                    by_cases hae : a = e₁
+                    · exact Or.inr hae
+                    · refine Or.inl ((hm_ih a).mpr ?_)
+                      rcases h with h | h
+                      · exact Or.inl ⟨h, hae⟩
+                      · exact Or.inr h
+              · -- respects
+                unfold respects
+                rw [List.pairwise_append]
+                refine ⟨hπ_ih_resp, List.pairwise_singleton _ _, ?_⟩
+                intro y hy b hb
+                rw [List.mem_singleton] at hb; subst b
+                have hy_ev : y ∈ (ev₁ \ {e₁}) ∪ ev₂ :=
+                  (hπ_ih_perm.2 y).mp hy
+                rcases hy_ev with ⟨hy_ev₁, hy_ne⟩ | hy_ev₂
+                · -- y ∈ ev₁ \ {e₁}: use last_is_lo_maximal on π₁.
+                  have hy_π₁' : y ∈ π₁' := by
+                    rcases List.mem_append.mp ((h₁p.2 y).mpr hy_ev₁)
+                      with h | h
+                    · exact h
+                    · exact absurd (List.mem_singleton.mp h) hy_ne
+                  exact last_is_lo_maximal h₁r y hy_π₁'
+                · -- y ∈ ev₂. Need ¬ lo C e₁ y.
+                  -- Use no_lo_of_not_mem_and_rc with rc(e₂, e₁) = Fst.
+                  have hy_ne_e₁ : y ≠ e₁ :=
+                    fun heq => h_e₁_in_ev₂ (heq ▸ hy_ev₂)
+                  exact no_lo_of_not_mem_and_rc hVC h_e₁_in_C
+                    h_e₂_in_C h_ev₂_in_C h_e₁_in_ev₂ h_ev₂_closed
+                    h_ne h_rc_e₂e₁ y hy_ev₂ hy_ne_e₁
+              · -- applySeq state equation
+                rw [applySeq_append_single, hπ_ih_state, h_peel]
 
 /-- **Merge case of the bridge theorem (existential form).**
 
