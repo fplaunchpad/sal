@@ -1471,7 +1471,123 @@ theorem distinct_last_case
     (h_ne : ¬ e₁ = e₂) :
     ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
          applySeq D D.init π = D.merge s₁ s₂ := by
-  sorry
+  by_cases h_e₁_comm : ∀ x ∈ π₂' ++ [e₂], D.commutes e₁ x
+  · -- Case 1: e₁ commutes with all of π₂' ++ [e₂].
+    by_cases h_e₁_in_ev₂ : e₁ ∈ ev₂
+    · -- Case 1b: e₁ shared.
+      sorry
+    · -- Case 1a: e₁ strictly local.
+      -- Step 1: s₁' = applySeq D D.init π₁', s₁ = D.update s₁' e₁
+      set s₁' := applySeq D D.init π₁' with hs₁'_def
+      have hs₁_eq : s₁ = D.update s₁' e₁ := by
+        rw [← h₁s, applySeq_append_single]
+      -- Step 2: merge_peel_comm
+      have h_e₁_comm_ev₂ : ∀ x ∈ ev₂, D.commutes e₁ x := by
+        intro x hx
+        exact h_e₁_comm x ((h₂p.2 x).mpr hx)
+      have h_peel : D.merge s₁ s₂ = D.update (D.merge s₁' s₂) e₁ := by
+        rw [hs₁_eq, ← h₂s]
+        exact hVC.merge_peel_comm s₁' e₁ (π₂' ++ [e₂]) h_e₁_comm
+      -- Step 3: e₁ ∉ π₁' (from Nodup of π₁' ++ [e₁])
+      have h_e₁_nodup : (π₁' ++ [e₁]).Nodup := h₁p.1
+      have h_e₁_not_in_π₁' : e₁ ∉ π₁' := by
+        intro h
+        have := (List.nodup_append.mp h_e₁_nodup).2.2 e₁ h e₁ (List.mem_singleton.mpr rfl)
+        exact this rfl
+      -- Step 3b: listPermOf π₁' (ev₁ \ {e₁})
+      have h₁p' : listPermOf π₁' (ev₁ \ {e₁}) := by
+        constructor
+        · exact (List.nodup_append.mp h_e₁_nodup).1
+        · intro a
+          constructor
+          · intro ha
+            have ha_ev₁ : a ∈ ev₁ := (h₁p.2 a).mp (List.mem_append.mpr (Or.inl ha))
+            refine ⟨ha_ev₁, ?_⟩
+            simp only [Set.mem_singleton_iff]
+            intro heq; subst heq; exact h_e₁_not_in_π₁' ha
+          · intro ⟨ha_ev₁, ha_ne⟩
+            have ha_list : a ∈ π₁' ++ [e₁] := (h₁p.2 a).mpr ha_ev₁
+            rcases List.mem_append.mp ha_list with h | h
+            · exact h
+            · simp only [Set.mem_singleton_iff] at ha_ne
+              rw [List.mem_singleton] at h
+              exact absurd h (fun h => ha_ne h)
+      -- Step 3c: respects π₁' (lo C)
+      have h₁r' : respects π₁' (lo C) := by
+        exact (List.pairwise_append.mp h₁r).1
+      -- Step 4: closure for ev₁ \ {e₁}
+      have h_ev₁'_closed : ∀ a b, C.vis a b → ¬ D.commutes a b →
+          b ∈ ev₁ \ {e₁} → a ∈ ev₁ \ {e₁} :=
+        closure_preserved_by_tail_peel h₁p h₁r h_ev₁_closed
+      -- Step 5: ev₁_in_C for smaller set
+      have h_ev₁'_in_C : ∀ a ∈ ev₁ \ {e₁}, a ∈ C.events := by
+        intro a ⟨ha, _⟩; exact h_ev₁_in_C a ha
+      -- Step 6: length bound for ih
+      have h_len' : π₁'.length + (π₂' ++ [e₂]).length < n := by
+        have : (π₁' ++ [e₁]).length = π₁'.length + 1 := by simp
+        omega
+      -- Step 7: apply ih
+      obtain ⟨π_ih, hπ_ih_perm, hπ_ih_resp, hπ_ih_state⟩ :=
+        ih _ h_len' π₁' (π₂' ++ [e₂]) (ev₁ \ {e₁}) ev₂ s₁' s₂
+          (by omega) h_ev₁'_in_C h_ev₂_in_C h_ev₁'_closed h_ev₂_closed
+          h₁p' h₂p h₁r' h₂r rfl h₂s
+      -- Step 8: final witness π_ih ++ [e₁]
+      -- e₁ not in π_ih (since π_ih perms (ev₁ \ {e₁}) ∪ ev₂ and e₁ ∉ either)
+      have h_e₁_not_in_π_ih : e₁ ∉ π_ih := by
+        intro h_in
+        have := (hπ_ih_perm.2 e₁).mp h_in
+        rcases this with h | h
+        · exact h.2 rfl
+        · exact h_e₁_in_ev₂ h
+      -- e₁ ∈ ev₁ (for later use)
+      have h_e₁_in_ev₁ : e₁ ∈ ev₁ :=
+        (h₁p.2 e₁).mp (List.mem_append.mpr (Or.inr (List.mem_singleton.mpr rfl)))
+      refine ⟨π_ih ++ [e₁], ?_, ?_, ?_⟩
+      · -- listPermOf (π_ih ++ [e₁]) (ev₁ ∪ ev₂)
+        constructor
+        · -- Nodup
+          rw [List.nodup_append]
+          exact ⟨hπ_ih_perm.1, List.nodup_singleton _, fun a ha b hb => by
+            rw [List.mem_singleton] at hb
+            intro hab
+            rw [hab, hb] at ha
+            exact h_e₁_not_in_π_ih ha⟩
+        · -- membership
+          intro a
+          constructor
+          · intro ha
+            rcases List.mem_append.mp ha with h | h
+            · rcases (hπ_ih_perm.2 a).mp h with hl | hr
+              · exact Or.inl hl.1
+              · exact Or.inr hr
+            · rw [List.mem_singleton] at h
+              rw [h]; exact Or.inl h_e₁_in_ev₁
+          · intro ha
+            rcases ha with hl | hr
+            · by_cases hae : a = e₁
+              · rw [hae]; exact List.mem_append.mpr (Or.inr (List.mem_singleton.mpr rfl))
+              · exact List.mem_append.mpr (Or.inl ((hπ_ih_perm.2 a).mpr (Or.inl ⟨hl, hae⟩)))
+            · exact List.mem_append.mpr (Or.inl ((hπ_ih_perm.2 a).mpr (Or.inr hr)))
+      · -- respects (π_ih ++ [e₁]) (lo C)
+        unfold respects
+        rw [List.pairwise_append]
+        refine ⟨hπ_ih_resp, List.pairwise_singleton _ _, ?_⟩
+        intro y hy b hb
+        rw [List.mem_singleton] at hb
+        rw [hb]
+        -- Need: ¬ lo C e₁ y for y ∈ π_ih
+        have hy_ev : y ∈ (ev₁ \ {e₁}) ∪ ev₂ := (hπ_ih_perm.2 y).mp hy
+        rcases hy_ev with hy_ev₁ | hy_ev₂
+        · -- y ∈ ev₁ \ {e₁}: use last_is_lo_maximal
+          exact last_is_lo_maximal h₁r y ((h₁p'.2 y).mpr hy_ev₁)
+        · -- y ∈ ev₂: use no_lo_of_comm_and_not_mem
+          have hyne : y ≠ e₁ := fun heq => h_e₁_in_ev₂ (heq ▸ hy_ev₂)
+          exact no_lo_of_comm_and_not_mem hVC (h_ev₁_in_C e₁ h_e₁_in_ev₁)
+            h_ev₂_in_C h_e₁_in_ev₂ h_ev₂_closed h_e₁_comm_ev₂ y hy_ev₂ hyne
+      · -- applySeq D D.init (π_ih ++ [e₁]) = D.merge s₁ s₂
+        rw [applySeq_append_single, hπ_ih_state, h_peel]
+  · -- Case ¬: e₁ does NOT commute with all of π₂' ++ [e₂].
+    sorry
 
 /-- **Merge case of the bridge theorem (existential form).**
 
