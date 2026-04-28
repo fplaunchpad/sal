@@ -25,11 +25,11 @@ This reduces to two subgoals we prove independently and then compose:
 | # | Step | Status |
 |---|------|--------|
 | 0 | Scaffolding (signature, TS with 5 invariants, RA-lin skeleton) | **DONE** |
-| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` into `SatisfiesVCs` (27 fields) | **DONE** |
+| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` + `merge_peel_comm` into `SatisfiesVCs` (28 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Path 1 closed: convergence fully proved with closure hypothesis + peel-first + bubble-to-front; `cond_comm_lift` uses paper-faithful `¬commute` premise; 1 sorry remains — distinct-last-event L^a/L^b carving in `merge_linearization_exists`) |
-| 5 | End-to-end smoke test on Grow-Only Set (25 VCs) | **DONE** |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs with `vis_trans` as hypothesis. 4 declarations use `sorry`: 3 Lemma 1 bodies + `distinct_last_case` (3 internal sorries). Block 6 — paper-faithful triple-nested carving induction body for `merge_linearization_exists` — pending Session 3.) |
+| 5 | End-to-end smoke test on Grow-Only Set (28 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **DONE** |
@@ -420,6 +420,86 @@ distinct-last-event sorry site):
   infrastructure. Closing them together is realistic.
 
 **Total remaining for step 4:** ~2–3 weeks of focused work.
+
+### Session 2026-04-26: convergence Path 1 closed; Aristotle-driven distinct_last_case
+
+The convergence overwriter sorry was closed by **Path 1**:
+restricting `convergence`'s scope to `ev = C.events` and propagating
+an overwriter-closure invariant through the proof. `applySeq_swap_lo_incomparable`
+takes a `h_ov` hypothesis; `applySeq_bubble_lo_max` and
+`applySeq_bubble_to_front` thread it from the convergence call site,
+where the closure is recoverable from `Configuration.events_closed`-style
+invariants. (Per the demand-driven discipline, the path was chosen
+because it didn't require new VC fields.)
+
+Three new VC fields landed during this session:
+- `cond_comm_lift` (semantic cond-comm with `¬commute` premise) — already
+  required by the convergence proof.
+- `merge_init` (init is the lattice bottom for merge) — needed for
+  the asymmetric-empty case of `merge_linearization_exists`.
+- `rc_non_comm_directional` (directional form of `rc_non_comm`:
+  `¬commute ↔ rc(o₁,o₂) = Fst ∨ rc(o₂,o₁) = Fst`) — needed by
+  the strictly-local sub-case of `distinct_last_case`.
+
+`distinct_last_case` was extracted as a standalone theorem (~860 lines)
+and partially closed via Aristotle (Cases 1a, 1b, 2 closed; Case 3
+sub-cases manually closed for the strictly-local both-non-empty
+branch with `rc(e₁,e₂)=Fst` and `rc(e₂,e₁)=Fst`). Three sorries
+remain at lines 2162, 2180, 2184 — exactly the cases the paper's
+carving handles (Case 3b with `commute(e₁,e₂)`, and Case 3a with
+e₁ ∈ ev₂ or e₂ ∈ ev₁).
+
+### Session 2026-04-27: paper-faithful carving plan + Sessions 1-2 of execution
+
+**Plan landed** (`/Users/kc/.claude/plans/make-a-plan-cozy-turtle.md`):
+6 blocks across 3 sessions to replace `distinct_last_case`'s residual
+sorries with a paper-faithful triple-nested carving induction
+(appendix.tex:218-368).
+
+**Session 1** (commit `6ae26fc`) — carving extensions, perm_ending_in_lo_max:
+- `L_b_at C e_top ev_top ev_local` — paper's parameterized depth-2
+  form (single fixed `e_top` instead of an existential) used by the
+  inner-inner induction's measure σ₃.
+- `L_b_at_subset_local`, `L_b_at_subset_L_b` — sanity subsets.
+- `L_top_vis_closed` — `vis`-causal closure of `L_top`, derived
+  from `Configuration.vis_causal` plus `ev₁/ev₂` closures.
+- `perm_ending_in_lo_max` — given a lo-respecting perm `π` of `ev`
+  and an event `e ∈ ev` lo-max in `ev`, produce `π'` ending in `e`
+  with the same `applySeq` state via `convergence`. The bridge
+  between IH-given linearizations and the carving's "pick lo-max,
+  re-permute to tail" peel discipline.
+
+**Session 2** (commit `6812125`) — Lemma 1 stubs:
+- `no_lo_a_to_b` (paper Lemma 1 part 1, appendix.tex:117-156).
+- `no_lo_top_a_to_top_b` (paper Lemma 1 part 2).
+- `no_lo_within_L_top_a` (paper Lemma 2 part 1).
+
+All three stubs carry `vis_trans` as a hypothesis (Configuration
+doesn't expose vis-transitivity directly; threading it through Step
+rules would be a substantial refactor) and `h_top_vis_closed` as
+the carving-layer-closure assumption. **Bodies are `sorry`** — the
+paper's case 1(b)i (line 128) requires `vis a b ∧ vis b c → vis a c`
+plus a `¬commute` chain property that isn't directly derivable from
+the 28 VCs. Discharging them is follow-up work; Session 3 only
+needs the signatures so the new triple-nested induction can compile.
+
+**Session 3 (next)** — Block 6: replace `merge_linearization_exists`'s
+distinct-last-event branch with the paper's outer / inner / inner-inner
+carving induction (~280 lines). Outer on σ₁ = |L_a₁ ∪ L_a₂|, inner
+on σ₂ = |L_top_a|, inner-inner on σ₃ = |L_b_at e_m^⊤|. Uses Block 1-5
+helpers (`L_b_at`, `perm_ending_in_lo_max`, Lemma 1 stubs) as black
+boxes. Delete `distinct_last_case` (~860 lines).
+
+**Sorry trajectory across the plan:**
+- Pre-plan: 4 declarations using `sorry` (3 in distinct_last_case
+  + 1 placeholder).
+- After Session 2: 4 declarations using `sorry` (3 Lemma 1 stubs +
+  distinct_last_case).
+- After Session 3: expected 3 declarations (3 Lemma 1 stubs only;
+  distinct_last_case deleted).
+- Closing Lemma 1 bodies requires either adding `vis_trans` to
+  `Configuration` and re-discharging through Step rules, or proving
+  the paper's `¬commute` chain property from the VCs (open question).
 
 ### 5. Smoke test on Grow-Only Set — DONE
 
