@@ -88,8 +88,9 @@ function Landing() {
         linearizability</strong> (a strict strengthening of the usual
         commutative–associative–idempotent merge story) on a 24-VC schema
         for state-based replicated data types. Every RDT in the framework
-        is also instrumented with a <strong>read-side projection</strong>
-        that lifts the user-facing semantic claim — "is <code>e</code> in
+        is also instrumented with a{" "}
+        <strong>read-side projection</strong> that lifts the user-facing
+        semantic claim — "is <code>e</code> in
         the OR-Set?", "is this character bold in Peritext?", "does this
         counter equal <code>incs − decs</code>?" — into a Lean theorem,
         with concrete <em>SPOT</em> tests pinning the headline behaviour
