@@ -505,6 +505,36 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
       D.merge (D.update a e) (applySeq D D.init π)
         = D.update (D.merge a (applySeq D D.init π)) e
 
+  /-- **Shared-element 1-op peel.** When both replicas have applied
+  the same event `ol` and the left replica has additionally applied
+  `o₁`, peeling `o₁` out of the merge is sound:
+
+  ```
+  merge(update(update(a, ol), o₁), update(b, ol))
+    = update(merge(update(a, ol), update(b, ol)), o₁)
+  ```
+
+  This is a CRDT-lattice property (follows from join associativity /
+  commutativity for typical CRDTs) that the existing 24 VCs cannot
+  derive: every VC extending a single side requires `distinctOps`
+  between the new operation and the other side's tail operation.
+  When both sides share `ol`, this requires `distinctOps ol ol`
+  which is always false; the only "shared LCA event" VC,
+  `ind_lca_1op`, requires both sides to have the same base state
+  (which doesn't hold when each side has its own π_a / π_b prefix).
+
+  Consumed by `merge_peel_shared` (the 2-op shared-event peel) which
+  is in turn consumed by Case 3a-shared sub-cases of
+  `distinct_last_case`. Vacuous for trivial-rc CRDTs (Grow-Only Set).
+
+  Identified as a missing VC by Aristotle (project 1fe349b4) during
+  the merge-case formalization. -/
+  shared_peel_1op :
+    ∀ (o₁ ol : Op D.AppOp), distinctOps o₁ ol →
+      ∀ (a b : D.State),
+        D.merge (D.update (D.update a ol) o₁) (D.update b ol)
+          = D.update (D.merge (D.update a ol) (D.update b ol)) o₁
+
 /-! ### Bridge theorem — base case -/
 
 /-- The initial configuration is RA-linearizable: only replica `0` is

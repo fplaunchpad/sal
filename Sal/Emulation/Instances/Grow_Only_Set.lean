@@ -209,5 +209,14 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
       ext x; simp
       cases a x <;> cases b x <;> simp
     exact key _
+  shared_peel_1op := by
+    -- For Grow-Only Set, this is just set-union associativity:
+    -- (a ∪ {ol} ∪ {o₁}) ∪ (b ∪ {ol}) = (a ∪ {ol} ∪ b ∪ {ol}) ∪ {o₁}.
+    intro o₁ ol _ a b
+    rcases o₁ with ⟨_, _, ⟨n₁⟩⟩
+    rcases ol with ⟨_, _, ⟨nol⟩⟩
+    simp [D, _root_.merge, _root_.do_]
+    ext x
+    cases a x <;> cases b x <;> simp <;> grind
 
 end Sal.Emulation.Instances.GrowOnlySet

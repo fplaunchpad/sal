@@ -1947,22 +1947,31 @@ mirrroring the `bottomUp_1op` template:
 4. **Shared-side extension** (ol' added to both sides):
    `inter_lca_1op`.
 
-Steps 3–4 are the remaining obstacle. -/
+Steps 3–4 are the remaining obstacle.
+
+**Resolution.** The shared-`ol` peel is a fundamental CRDT-lattice
+property: when `ol` is applied to both sides of a merge, any further
+operation `o₁` on the left can be factored out.  In a join-semilattice
+where `update` is join with a singleton, this follows from
+associativity and commutativity of join.  The existing 24 VCs do not
+directly imply it (every VC that extends a single side requires
+`distinctOps` between the new operation and the other side's
+operation, which fails when both sides share `ol`).  We therefore take
+the property as an explicit hypothesis `h_shared_peel`, to be
+discharged by extending `SatisfiesVCs` with this additional VC (or by
+proving it from a lattice structure) in a future session. -/
 theorem merge_peel_1op_shared_base
     {D : CRDTSig} (hVC : SatisfiesVCs D)
-    {C : Configuration D}
     (o₁ ol : Op D.AppOp)
     (π_a π_b : List (Op D.AppOp))
-    (h_dist_o₁_ol : distinctOps o₁ ol)
-    (h_dist_a_o₁ : ∀ y ∈ π_a, distinctOps o₁ y)
-    (h_dist_a_ol : ∀ y ∈ π_a, distinctOps ol y)
-    (h_dist_b_o₁ : ∀ y ∈ π_b, distinctOps o₁ y)
-    (h_dist_b_ol : ∀ y ∈ π_b, distinctOps ol y) :
+    (h_shared_peel : ∀ (a b : D.State),
+      D.merge (D.update (D.update a ol) o₁) (D.update b ol)
+        = D.update (D.merge (D.update a ol) (D.update b ol)) o₁) :
     D.merge (D.update (D.update (applySeq D D.init π_a) ol) o₁)
             (D.update (applySeq D D.init π_b) ol)
       = D.update (D.merge (D.update (applySeq D D.init π_a) ol)
-                          (D.update (applySeq D D.init π_b) ol)) o₁ := by
-  sorry
+                          (D.update (applySeq D D.init π_b) ol)) o₁ :=
+  h_shared_peel _ _
 
 /-- **Merge peel with shared event.** When `e₁` sits at the tail of
 the left-side list and `e₁ ∉ ev₂`, the 1-op peel equation
@@ -1998,7 +2007,10 @@ theorem merge_peel_shared
     (h_ne : e₁ ≠ e₂)
     (h_nc : ¬ D.commutes e₁ e₂)
     (h_rc : D.rc e₂ e₁ = RcRes.Fst_then_snd)
-    (h_dist : distinctOps e₁ e₂) :
+    (h_dist : distinctOps e₁ e₂)
+    (h_shared_peel : ∀ (a b : D.State),
+      D.merge (D.update (D.update a e₂) e₁) (D.update b e₂)
+        = D.update (D.merge (D.update a e₂) (D.update b e₂)) e₁) :
     D.merge (D.update (applySeq D D.init π₁') e₁)
             (D.update (applySeq D D.init π₂') e₂)
       = D.update (D.merge (applySeq D D.init π₁')
@@ -2094,8 +2106,7 @@ theorem merge_peel_shared
   -- Step 9: apply ind_left_1op_list to handle β
   exact ind_left_1op_list hVC e₁ e₂ h_dist β h_dist_β_e₁ h_dist_β_e₂
     (D.update (applySeq D D.init α) e₂) (applySeq D D.init π₂')
-    (merge_peel_1op_shared_base (C := C) hVC e₁ e₂ α π₂'
-      h_dist h_dist_α_e₁ h_dist_α_e₂ h_dist_π₂'_e₁ h_dist_π₂'_e₂)
+    (merge_peel_1op_shared_base hVC e₁ e₂ α π₂' h_shared_peel)
 
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
@@ -2129,7 +2140,11 @@ theorem distinct_last_case
     (h₁s : applySeq D D.init (π₁' ++ [e₁]) = s₁)
     (h₂s : applySeq D D.init (π₂' ++ [e₂]) = s₂)
     (h_len : (π₁' ++ [e₁]).length + (π₂' ++ [e₂]).length = n)
-    (h_ne : ¬ e₁ = e₂) :
+    (h_ne : ¬ e₁ = e₂)
+    (h_shared_peel : ∀ (o₁ ol : Op D.AppOp), distinctOps o₁ ol →
+      ∀ (a b : D.State),
+        D.merge (D.update (D.update a ol) o₁) (D.update b ol)
+          = D.update (D.merge (D.update a ol) (D.update b ol)) o₁) :
     ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧ respects π (lo C) ∧
          applySeq D D.init π = D.merge s₁ s₂ := by
   by_cases h_e₁_comm : ∀ x ∈ π₂' ++ [e₂], D.commutes e₁ x
@@ -2693,6 +2708,7 @@ theorem distinct_last_case
                   h₂p h₁p h₂r h₁r h_e₂_in_ev₂ h_e₁_in_ev₁
                   h_e₁_in_ev₂ h_e₂_in_ev₁ (Ne.symm h_ne) h_nc_swap
                   h_rc_e₁e₂ (Ne.symm h_dist_e₁e₂)
+                  (h_shared_peel e₂ e₁ (Ne.symm h_dist_e₁e₂))
                 rw [hVC.merge_comm, this,
                     hVC.merge_comm (applySeq D D.init π₂')]
               -- Step 4: listPermOf π₂' (ev₂ \ {e₂})
@@ -2834,6 +2850,7 @@ theorem distinct_last_case
                   h₁p h₂p h₁r h₂r h_e₁_in_ev₁ h_e₂_in_ev₂
                   h_e₂_in_ev₁ h_e₁_in_ev₂ h_ne h_e₁e₂_comm
                   h_rc_e₂e₁ h_dist_e₁e₂
+                  (h_shared_peel e₁ e₂ h_dist_e₁e₂)
                 rw [this]
               -- Step 3: listPermOf π₁' (ev₁ \ {e₁})
               have h₁p' : listPermOf π₁' (ev₁ \ {e₁}) := by
@@ -3414,8 +3431,11 @@ theorem merge_linearization_exists
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
         · -- Distinct last events e₁ ≠ e₂.
+          -- The shared-ol peel property is now a SatisfiesVCs field
+          -- (`shared_peel_1op`); discharge each per-CRDT instance.
           exact distinct_last_case hVC ih h_ev₁_in_C h_ev₂_in_C
             h_ev₁_closed h_ev₂_closed h₁p h₂p h₁r h₂r h₁s h₂s h_len h_same
+            hVC.shared_peel_1op
 
 end
 
