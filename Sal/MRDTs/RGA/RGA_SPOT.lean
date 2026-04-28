@@ -1,6 +1,6 @@
 import Sal.Interfaces.Set_Extended
-import Sal.MRDTs.Replicated_Growable_Array.Replicated_Growable_Array_MRDT
-import Sal.MRDTs.Replicated_Growable_Array.Replicated_Growable_Array_ReadSide
+import Sal.MRDTs.RGA.RGA_MRDT
+import Sal.MRDTs.RGA.RGA_ReadSide
 
 set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 400000

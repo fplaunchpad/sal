@@ -1,7 +1,7 @@
 import Std.Tactic.BVDecide
 import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
-import Sal.MRDTs.Replicated_Growable_Array.Replicated_Growable_Array_MRDT
+import Sal.MRDTs.RGA.RGA_MRDT
 import Mathlib
 
 set_option linter.mathlibStandardSet false

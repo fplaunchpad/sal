@@ -15,7 +15,7 @@ set_option synthInstance.maxSize 128
 
 MRDT companion to `Sal/CRDTs/Peritext_CRDT.lean`, following the CSCW 2022
 Peritext paper (Litt, van Hardenberg, et al.) via the op-based
-specification and adapting the pattern used by `Replicated_Growable_Array_MRDT`.
+specification and adapting the pattern used by `RGA_MRDT`.
 
 The Peritext CRDT keeps four grow-only components:
 
@@ -27,7 +27,7 @@ The Peritext CRDT keeps four grow-only components:
 RGA's tombstones are structurally load-bearing (later inserts reference
 earlier character ids via `after_id`), so the MRDT cannot strip them the
 way the OR-Set or Add-Win PQ MRDTs can. Following the precedent of
-`Replicated_Growable_Array_MRDT`, this MRDT keeps all four components as
+`RGA_MRDT`, this MRDT keeps all four components as
 grow-only sets and uses pointwise-union for merge; it does not rely on
 the LCA at all. This makes the translation mechanical and keeps the 24
 VCs in the same shape as the Peritext CRDT and RGA MRDT.
@@ -154,7 +154,7 @@ def commutes_with (o1 o2 : op_t) :=
 
 /-- Merge: pointwise three-way union on each of the three components.
 All three are grow-only, so the MRDT's LCA argument is vestigial here
-(just like `Replicated_Growable_Array_MRDT`). -/
+(just like `RGA_MRDT`). -/
 @[simp]
 def merge (l a b : concrete_st) : concrete_st :=
   (union (Prod.fst l) (union (Prod.fst a) (Prod.fst b)),

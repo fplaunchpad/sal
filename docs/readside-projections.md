@@ -69,28 +69,36 @@ exists. Tier A/B sit in the middle row; Tier C needs the bottom row.
 The Sal suite separates RDTs by how much of their semantics the
 24 VCs already cover.
 
-### Tier A — read-side is trivial
+### Tier A — read-side is mechanical (still written for documentation)
 
 The 24 VCs cover everything; the read is essentially the identity
 projection or a per-key direct lookup whose convergence follows
-componentwise from state-convergence. Adding a read-side file is
-documentation noise.
+componentwise from state-convergence. The read-side and SPOT files
+are still written — *absence of a read-side file would communicate
+nothing about whether the read is trivial*; presence with a short
+mechanical proof tells a reader "yes, this query exists, this is
+its name and type, here's the convergence theorem (`rfl` or one
+`rw`), and here are 2–3 SPOT scenarios pinning the headline op-vs-
+read claim."
 
 | RDT | Read |
 |---|---|
-| `PN_Counter` | `pos.sum - neg.sum` |
-| `Increment_Only_Counter` | `sum` |
+| `PN_Counter` | per-replica `incs[r] − decs[r]` |
+| `Increment_Only_Counter` | per-replica `state[r]` (CRDT) / scalar (MRDT) |
 | `LWW_Register` | `value` field of the lex-max pair |
-| `MIN_Register` / `MAX_Register` | `min` / `max` of the values |
-| `MAX_Map` | per-key `max` |
-| `Grow_Only_Set` | set membership |
-| `Grow_Only_Multiset` | per-element count |
-| `Grow_Only_Map` | per-key value |
-| `Bounded_Counter` | current value (with bound preserved structurally) |
-| `Shopping_Cart` | per-item count (PN-counter pattern, Tier-A by composition) |
+| `MIN_Register` / `MAX_Register` | the scalar state |
+| `MAX_Map` | per-key `lookup` (zero-default) |
+| `Grow_Only_Set` | `lookup e = mem e` |
+| `Grow_Only_Multiset` | per-replica per-element `count_at` |
+| `Grow_Only_Map` | per-key per-value `lookup k v = v ∈ state[k]` |
+| `LWW_Map` | per-key `lookup k = state[k].value` |
+| `Bounded_Counter` | per-replica `inc_count`, `dec_count`, `transfer_count` |
+| `Shopping_Cart` | per-replica per-product `add_count`, `remove_count`, `per_replica_qty` |
 
 **Rule of thumb**: if the read is a single arithmetic/lookup over
-already-converged components, it's Tier A. Don't bother.
+already-converged components, it's Tier A. Write it anyway — it
+takes ~30–60 lines per RDT and pays back the next reader who has
+to confirm the read-side really is "obvious."
 
 ### Tier B — read-side adds clarification, not structural verification
 

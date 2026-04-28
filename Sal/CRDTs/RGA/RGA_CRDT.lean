@@ -123,7 +123,7 @@ read-side theorem, outside SAL's 24 VCs.
   (two grow-only `Map ℕ Int`) and `Shopping_Cart_CRDT` (two grow-only
   `Map (ℕ × ℕ) Int`). Here the components are grow-only
   `Map OpId _`, and one of them (`deleted`) tracks a monotonic flag.
-* `Replicated_Growable_Array_MRDT.lean` (in `Sal/MRDTs/`) is the
+* `RGA_MRDT.lean` (in `Sal/MRDTs/`) is the
   paper's three-way-merge version, which takes an LCA state. The
   present file is a *state-based* (two-way-merge) CRDT formulation;
   they are distinct CRDTs with different merge signatures.

@@ -87,13 +87,16 @@ Each matching line lands as a notification. Keep working on something else until
 
 ## ReadSide and SPOT layers (Tier C RDTs)
 
-The 24 VCs prove **state convergence**. For RDTs with a non-trivial
-read (OR-Set lookup, Peritext span membership, RGA visible order, …)
-the headline paper claim lives in a **read-side projection**, not in
-the convergence proof. Methodology doc:
+The 24 VCs prove **state convergence**. The headline user-facing
+claim — "the count is `incs − decs`", "`e` is in the OR-Set",
+"this character is bold" — lives in a **read-side projection**,
+not in the convergence proof. Methodology doc:
 [`docs/readside-projections.md`](../../../docs/readside-projections.md).
-Triage: Tier A (skip), Tier B (optional), Tier C (required) — see
-that doc.
+Triage: every RDT gets a read-side + SPOT file. Tier C
+(OR-Set / Peritext / RGA / MVR / AW-CRPQ / LWW-Element-Set) —
+substantive proofs of paper claims. Tier A (counters / registers /
+sets / maps / cart) — mechanical 30–60 line files that document
+the obvious read so the next reader can confirm it is obvious.
 
 **ReadSide theorems** (`<RDT>_ReadSide.lean`, sibling to the CRDT/MRDT file):
 
