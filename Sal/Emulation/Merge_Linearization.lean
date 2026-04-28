@@ -1592,12 +1592,11 @@ argument over the transition system).
 
 **`¬commute` chain dependency.** Beyond `vis_trans`, the paper's argument
 implicitly assumes a chain property for `¬commute` that is not directly
-derivable from the 24 VCs. The body here is currently `sorry`; closing
-it requires either (a) adding `vis_trans` and deriving the missing
-`¬commute` chain via the carving's structural properties, or (b)
-upgrading `Configuration` with stronger invariants. Either way, the
-**signature** is what Session 3's `merge_linearization_exists` uses
-(as a black box) — proving the body is a follow-up. -/
+derivable from the 24 VCs alone. Closed by adding
+`h_ncomm_concurrent_local_top` (concurrent local/top events don't
+commute). In the residual sub-case, `no_rc_chain` forces
+`commute(e', e_top)` while the new hypothesis gives
+`¬commute(e', e_top)`, yielding a contradiction. -/
 
 /-- **Lemma 1 part (1), same-replica form** (paper appendix.tex:117-156).
 For `e ∈ L_a` and `e' ∈ L_b` (in the same replica's `ev_local`), there
@@ -1615,8 +1614,11 @@ on whether `e'` has a depth-1 or depth-2 path to `ev_top`:
   for some `e_mid ∈ ev_local`, `e_top ∈ ev_top`. The paper splits on
   the (vis/rc) flavors of all three lo-edges (six sub-sub-cases),
   using `vis_trans`, `no_rc_chain`, and `L_top^a` causal closure.
-  Body still `sorry` — this is the load-bearing depth-2 case the
-  paper documents at lines 128-156. -/
+  Fully proved. The depth-2 vis/vis/rc sub-case with
+  `commute(e, e_mid)` and `rc(e, e') = Fst` is closed by
+  contradiction: `no_rc_chain` blocks both `rc` directions
+  between `e'` and `e_top`, forcing `commute(e', e_top)`,
+  which contradicts `h_ncomm_concurrent_local_top`. -/
 theorem no_lo_a_to_b
     (hVC : SatisfiesVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1626,6 +1628,9 @@ theorem no_lo_a_to_b
     (h_disjoint : ∀ x, x ∈ ev_top → x ∉ ev_local)
     (h_distinct : ∀ a b, a ∈ ev_top ∪ ev_local → b ∈ ev_top ∪ ev_local →
        a ≠ b → distinctOps a b)
+    (h_ncomm_concurrent_local_top :
+       ∀ a b, a ∈ ev_local → b ∈ ev_top →
+         ¬C.vis a b → ¬C.vis b a → ¬D.commutes a b)
     {e e' : Op D.AppOp}
     (h_e_a : e ∈ L_a C ev_top ev_local)
     (h_e'_b : e' ∈ L_b C ev_top ev_local) :
@@ -1692,22 +1697,48 @@ theorem no_lo_a_to_b
                   subst h_eq_eem
                   exact Or.inl ⟨e_top, h_etop_in_top,
                     Or.inr ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩⟩
-                · -- e ≠ e_mid: RESIDUAL SORRY.
-                  -- Sub-case: vis(e,e'), vis(e',e_mid), vis(e,e_mid),
-                  -- commute(e,e_mid), ¬commute(e,e'), ¬commute(e',e_mid),
-                  -- rc(e,e')=Fst, rc(e_mid,e')=Fst, rc(e_mid,e_top)=Fst,
-                  -- ¬vis(e_mid,e_top), ¬vis(e_top,e_mid),
-                  -- e≠e', e'≠e_mid, e≠e_mid, e_mid≠e_top.
-                  -- The goal reduces to showing lo C e e_top (via rc),
-                  -- which requires ¬commute(e, e_top). This is not
-                  -- derivable from the current VCs; the paper
-                  -- hand-waves this case (appendix.tex line ~140).
-                  -- Possible fixes: (a) add hypothesis
-                  --   h_ncomm_local_top : ∀ a b, a ∈ ev_local →
-                  --     b ∈ ev_top → ¬vis a b → ¬vis b a → ¬commute a b
-                  -- or (b) strengthen the lo definition to handle the
-                  -- commuting-but-visible transitivity pattern.
-                  sorry
+                · -- e ≠ e_mid: derive contradiction via
+                  -- h_ncomm_concurrent_local_top vs no_rc_chain.
+                  -- Step 1: ¬vis(e', e_top) and ¬vis(e_top, e').
+                  have h_nvis_e'_et : ¬C.vis e' e_top := by
+                    intro h; exact h_disjoint e'
+                      (h_top_vis_closed e' e_top h h_etop_in_top) he'_local
+                  have h_nvis_et_e' : ¬C.vis e_top e' := by
+                    intro h; exact h_nvis_et_em (h_vis_trans h h_vis_e'em)
+                  -- Step 2: ¬commute(e', e_top) from hypothesis.
+                  have h_e'_ne_et : e' ≠ e_top := by
+                    intro heq; subst heq
+                    exact h_disjoint e' h_etop_in_top he'_local
+                  have h_ncomm_e'_et : ¬D.commutes e' e_top :=
+                    h_ncomm_concurrent_local_top e' e_top he'_local
+                      h_etop_in_top h_nvis_e'_et h_nvis_et_e'
+                  -- Step 3: no_rc_chain forces commute(e', e_top),
+                  -- giving a contradiction.
+                  exfalso
+                  have h_dops_e'et := h_distinct e' e_top he'_in_union
+                    h_et_in_union h_e'_ne_et
+                  have h_dops_eme' : distinctOps e_mid e' :=
+                    h_distinct e_mid e' h_em_in_union he'_in_union
+                      (Ne.symm h_eq_e'em)
+                  -- rc(e', e_top) ≠ Fst from chain (e_mid, e', e_top)
+                  have h1 : D.rc e' e_top ≠ RcRes.Fst_then_snd := by
+                    intro h; exact hVC.no_rc_chain e_mid e' e_top
+                      h_dops_eme' h_dops_e'et ⟨h_rc2, h⟩
+                  -- rc(e_top, e') ≠ Fst from chain (e_mid, e_top, e')
+                  have h_dops_ete' : distinctOps e_top e' := by
+                    exact h_distinct e_top e' h_et_in_union he'_in_union
+                      (Ne.symm h_e'_ne_et)
+                  have h2 : D.rc e_top e' ≠ RcRes.Fst_then_snd := by
+                    intro h; exact hVC.no_rc_chain e_mid e_top e'
+                      h_dops_emet h_dops_ete' ⟨h_rc_em_et, h⟩
+                  -- Both directions blocked → commute(e', e_top)
+                  have h_comm : D.commutes e' e_top := by
+                    by_contra hc
+                    rcases (hVC.rc_non_comm_directional e' e_top
+                      h_dops_e'et).mp hc with h | h
+                    · exact h1 h
+                    · exact h2 h
+                  exact h_ncomm_e'_et h_comm
               · -- rc(e', e) = Fst: chain (e_mid, e', e) → no_rc_chain.
                 exfalso
                 have h_dops_e'e := h_distinct e' e he'_in_union he_in_union (Ne.symm h_e_ne_e')
