@@ -28,7 +28,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` + `merge_peel_comm` into `SatisfiesVCs` (28 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs. Lemma 1 part 2 closed via Aristotle (commit `d8a20dc`); part 1 has depth-1 sub-cases closed inline. 2 declarations use `sorry`: `no_lo_a_to_b` (depth-2 case) and `distinct_last_case` (3 internal sorries). Block 6 — paper-faithful triple-nested carving induction body — pending Session 3.) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs. **Both Lemma 1 lemmas closed via Aristotle** (`no_lo_top_a_to_top_b` at commit `d8a20dc`; `no_lo_a_to_b` at commit `15befe8`). 1 declaration uses `sorry`: `distinct_last_case` (3 internal sub-case sorries — paper Case 3b commute, Case 3a × 2 shared). Block 6 (paper-faithful triple-nested carving induction body) subsumes the residual.) |
 | 5 | End-to-end smoke test on Grow-Only Set (28 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
@@ -512,13 +512,24 @@ two consecutive rc-Fst edges. Adds a `h_distinct` hypothesis
 derivable from `C.timestamps_distinct` at any call site. The
 `vis_trans` hypothesis turned out to be unnecessary for this lemma.
 
-**Open work after Lemma 1 part 1 closes (Aristotle queued):**
-- After Aristotle closes `no_lo_a_to_b` depth-2: 1 declaration
-  (`distinct_last_case`, 3 internal sub-cases).
+**Aristotle's Lemma 1 part 1 close (commit `15befe8`).** Closes
+all 12 sub-cases of the depth-2 explosion. The residual sub-case
+(vis,vis,rc with `commute(e, e_mid)`) was previously blocked by
+needing `¬commute(e, e_top)`. Aristotle's resolution: derive
+contradiction by chaining `no_rc_chain` + `rc_non_comm_directional`
+contrapositive to force `commute(e', e_top)`, then contradict via
+a new hypothesis `h_ncomm_concurrent_local_top` (concurrent
+cross-set events don't commute). This hypothesis is structurally
+sound — vacuously true for trivial-rc CRDTs like Grow_Only_Set,
+real content for non-trivial CRDTs.
+
+**Open work after Lemma 1 closes (commit `15befe8`):**
+- 1 declaration uses `sorry`: `distinct_last_case` (3 internal
+  sub-cases — paper Case 3b commute, Case 3a × 2 shared).
 - Block 6 then subsumes that final declaration.
-- Closing the `¬commute` chain dependency turned out NOT to be
-  needed for Lemma 1 part 2; remains an open question for the
-  depth-2 case of part 1 if Aristotle can't close it.
+- New hypothesis `h_ncomm_concurrent_local_top` adds a per-CRDT
+  obligation discharge — vacuous for G-Set; needs analogue
+  proofs for non-trivial CRDTs (Step 6 of the plan).
 
 ### 5. Smoke test on Grow-Only Set — DONE
 
