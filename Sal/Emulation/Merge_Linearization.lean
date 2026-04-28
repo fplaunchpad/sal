@@ -1658,7 +1658,12 @@ show `lo e'' e'` (giving `e'` an L_b predecessor, contradicting
 `L_top_b`'s definition). This composition `lo e'' e ∧ lo e e' →
 lo e'' e'` is the paper's case-analysis (lines 158-178); it
 consumes `vis_trans` + `no_rc_chain` + concurrent-rc reasoning.
-Body still `sorry` for that residual composition. -/
+
+**Added hypothesis** `h_distinct`: all distinct events in `ev₁ ∪ ev₂`
+have distinct timestamps. This follows from `C.timestamps_distinct`
+at call sites (where ev₁, ev₂ are replica event sets). The paper's
+proof assumes it implicitly; the formalization needs it explicitly
+because `no_rc_chain` requires `distinctOps`. -/
 theorem no_lo_top_a_to_top_b
     (hVC : SatisfiesVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1666,6 +1671,8 @@ theorem no_lo_top_a_to_top_b
     {ev₁ ev₂ : Set (Op D.AppOp)}
     (h_top_vis_closed : ∀ a b, C.vis a b →
        b ∈ L_top ev₁ ev₂ → a ∈ L_top ev₁ ev₂)
+    (h_distinct : ∀ a b, a ∈ ev₁ ∪ ev₂ → b ∈ ev₁ ∪ ev₂ →
+       a ≠ b → distinctOps a b)
     {e e' : Op D.AppOp}
     (h_e_top_a : e ∈ L_top_a C ev₁ ev₂)
     (h_e'_top_b : e' ∈ L_top_b C ev₁ ev₂) :
@@ -1695,9 +1702,36 @@ theorem no_lo_top_a_to_top_b
   -- Goal: derive a contradiction. Aim for `lo e'' e'` to contradict
   -- e' ∈ L_top_b (no L_b predecessor). The composition
   -- `lo_rc e'' e ∧ lo e e' → lo e'' e'` is the paper's case-analysis.
+  -- Membership facts for h_distinct.
+  have he_in_union : e ∈ ev₁ ∪ ev₂ := Set.mem_union_left _ he_top.1
+  have he'_in_union : e' ∈ ev₁ ∪ ev₂ := Set.mem_union_left _ he'_top.1
+  have he''_in_union : e'' ∈ ev₁ ∪ ev₂ := by
+    rcases h_e''_in_local with ⟨h, _⟩ | ⟨h, _⟩
+    · exact Set.mem_union_left _ h
+    · exact Set.mem_union_right _ h
+  -- e'' ≠ e (different partition layers: e'' ∈ L_local, e ∈ L_top).
+  have h_e''_ne_e : e'' ≠ e := by
+    intro heq; subst heq; exact h_e''_not_top he_top
+  -- e ≠ e' (L_top_a and L_top_b are complementary, hence disjoint).
+  have h_e_ne_e' : e ≠ e' := by
+    intro heq; subst heq
+    exact h_no_pred ⟨e'', h_e''_lb, h_lo_e''_e⟩
+  -- In the rc-rc case, D.rc e'' e = Fst and D.rc e e' = Fst.
+  -- By no_rc_chain with distinctOps, this is a contradiction.
   apply h_no_pred
   refine ⟨e'', h_e''_lb, ?_⟩
-  sorry
+  -- Case-split on vis/rc disjuncts of h_lo : lo C e e'
+  rcases h_lo with ⟨h_vis_ee', h_ncomm_ee'⟩ | ⟨h_nvis_ee', h_nvis_e'e, h_rc_ee', h_no_ow_e'⟩
+  · -- Vis case: C.vis e e' ∧ ¬ D.commutes e e'.
+    -- Contradicts the no-overwriter condition of e in h_lo_e''_e_rc.
+    exact absurd ⟨e', h_vis_ee', h_ncomm_ee'⟩ h_lo_e''_e_rc.2.2.2
+  · -- RC case: D.rc e'' e = Fst_then_snd and D.rc e e' = Fst_then_snd.
+    -- By no_rc_chain, this gives False.
+    exfalso
+    exact hVC.no_rc_chain e'' e e'
+      (h_distinct e'' e he''_in_union he_in_union h_e''_ne_e)
+      (h_distinct e e' he_in_union he'_in_union h_e_ne_e')
+      ⟨h_lo_e''_e_rc.2.2.1, h_rc_ee'⟩
 
 /-! Note: an earlier stub `no_lo_within_L_top_a` claimed
 `∀ e e' ∈ L_top_a, e ≠ e' → ¬ lo C e e'` — this is too strong and
