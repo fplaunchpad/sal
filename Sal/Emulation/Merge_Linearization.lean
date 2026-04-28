@@ -1894,6 +1894,76 @@ step uses `exists_lo_maximal_in_subset (L_top_a)` directly to
 extract a lo-max element, which gives no-lo-successor *within*
 `L_top_a` for free. -/
 
+/-
+Extend the 1-op peel equation by prepending a list of operations to
+the left-side base state.  Uses `ind_left_1op` at each step.
+-/
+theorem ind_left_1op_list
+    {D : CRDTSig} (hVC : SatisfiesVCs D)
+    (o₁ ol : Op D.AppOp)
+    (h_dist_o₁_ol : distinctOps o₁ ol)
+    (l : List (Op D.AppOp))
+    (h_dist_l_o₁ : ∀ y ∈ l, distinctOps o₁ y)
+    (h_dist_l_ol : ∀ y ∈ l, distinctOps ol y)
+    (a b : D.State)
+    (h_base : D.merge (D.update a o₁) (D.update b ol)
+                = D.update (D.merge a (D.update b ol)) o₁) :
+    D.merge (D.update (applySeq D a l) o₁) (D.update b ol)
+      = D.update (D.merge (applySeq D a l) (D.update b ol)) o₁ := by
+  -- Apply the induction hypothesis to the list l.
+  have h_ind : ∀ (l : List (Op D.AppOp)), (∀ y ∈ l, distinctOps o₁ y) → (∀ y ∈ l, distinctOps ol y) → D.merge (D.update (applySeq D a l) o₁) (D.update b ol) = D.update (D.merge (applySeq D a l) (D.update b ol)) o₁ := by
+    intro l hl₁ hl₂; induction l using List.reverseRecOn <;> simp_all +decide ;
+    · exact h_base;
+    · rw [ applySeq_append_single ];
+      apply hVC.ind_left_1op;
+      · exact hl₁ _ _ _ ( Or.inr rfl );
+      · exact h_dist_o₁_ol;
+      · exact hl₂ _ _ _ ( Or.inr rfl ) |> fun h => by tauto;
+      · assumption;
+  exact h_ind l h_dist_l_o₁ h_dist_l_ol
+
+/-- **1-op peel equation for reachable states sharing element `ol`.**
+
+`merge(update(update(A, ol), o₁), update(B, ol))`
+  `= update(merge(update(A, ol), update(B, ol)), o₁)`
+
+where `A = applySeq init π_a`, `B = applySeq init π_b`.
+
+The Sal paper (appendix §A.2) proves this by a nested induction
+mirrroring the `bottomUp_1op` template:
+
+1. **Base case** (π_a = [], π_b = []): `ind_lca_1op` with `base_1op`.
+2. **Left-side extension** (π_a → π_a ++ [y]): `ind_left_1op`
+   (needs `distinctOps o₁ y`, `distinctOps ol y`; no
+   `differentReplicas` required).
+3. **Right-side extension** (π_b → π_b ++ [y]): requires the
+   `inter_right_base_1op` / `inter_right_1op` VCs, which
+   need `differentReplicas y ol` between each right-side
+   element and the shared element.  Deriving that relation
+   from the abstract event-set hypotheses available in the
+   merge-linearization induction requires additional
+   infrastructure (forward closure of ev₂, or a replica-level
+   argument that is not threaded through the current proof).
+4. **Shared-side extension** (ol' added to both sides):
+   `inter_lca_1op`.
+
+Steps 3–4 are the remaining obstacle. -/
+theorem merge_peel_1op_shared_base
+    {D : CRDTSig} (hVC : SatisfiesVCs D)
+    {C : Configuration D}
+    (o₁ ol : Op D.AppOp)
+    (π_a π_b : List (Op D.AppOp))
+    (h_dist_o₁_ol : distinctOps o₁ ol)
+    (h_dist_a_o₁ : ∀ y ∈ π_a, distinctOps o₁ y)
+    (h_dist_a_ol : ∀ y ∈ π_a, distinctOps ol y)
+    (h_dist_b_o₁ : ∀ y ∈ π_b, distinctOps o₁ y)
+    (h_dist_b_ol : ∀ y ∈ π_b, distinctOps ol y) :
+    D.merge (D.update (D.update (applySeq D D.init π_a) ol) o₁)
+            (D.update (applySeq D D.init π_b) ol)
+      = D.update (D.merge (D.update (applySeq D D.init π_a) ol)
+                          (D.update (applySeq D D.init π_b) ol)) o₁ := by
+  sorry
+
 /-- **Merge peel with shared event.** When `e₁` sits at the tail of
 the left-side list and `e₁ ∉ ev₂`, the 1-op peel equation
 `merge(update(A, e₁), B) = update(merge(A, B), e₁)` holds.
@@ -1903,9 +1973,10 @@ right-tail event `e₂` also appears in the left-side body list `π₁'`
 (a shared event).  `bottomUp_2op_reachable` requires `distinctOps e₂ y`
 for every `y ∈ π₁'`, which fails when `e₂ ∈ π₁'`.
 
-The Sal paper's proof handles this implicitly through its nested
-induction; mechanising the needed VC chain (using `inter_lca_2op` at
-the step where `e₂` appears in `π₁'`) is future work. -/
+The proof splits `π₁'` at the position of `e₂`, uses
+`merge_peel_1op_shared_base` for the base (where `e₂` sits at the
+split point), then extends by the remaining elements via
+`ind_left_1op_list`. -/
 theorem merge_peel_shared
     {D : CRDTSig} (hVC : SatisfiesVCs D)
     {C : Configuration D}
@@ -1932,7 +2003,99 @@ theorem merge_peel_shared
             (D.update (applySeq D D.init π₂') e₂)
       = D.update (D.merge (applySeq D D.init π₁')
                           (D.update (applySeq D D.init π₂') e₂)) e₁ := by
-  sorry
+  -- Step 1: e₂ ∈ π₁'
+  have h_e₂_in_π₁' : e₂ ∈ π₁' := by
+    have h := (h₁p.2 e₂).mpr h_e₂_in_ev₁
+    rcases List.mem_append.mp h with h | h
+    · exact h
+    · simp at h; exact absurd h.symm h_ne
+  -- Step 2: split π₁' at e₂
+  obtain ⟨α, β, h_split⟩ := List.append_of_mem h_e₂_in_π₁'
+  -- Step 3: π₁' nodup, and membership facts
+  have h_nodup_π₁' : π₁'.Nodup := (List.nodup_append.mp h₁p.1).1
+  have h_e₁_notin_π₁' : e₁ ∉ π₁' := by
+    intro h
+    have hnd := List.nodup_append.mp h₁p.1
+    exact absurd rfl (hnd.2.2 e₁ h e₁ (by simp))
+  have h_e₂_notin_β : e₂ ∉ β := by
+    rw [h_split] at h_nodup_π₁'
+    have hnd := List.nodup_append.mp h_nodup_π₁'
+    exact (List.nodup_cons.mp hnd.2.1).1
+  have h_e₂_notin_α : e₂ ∉ α := by
+    rw [h_split] at h_nodup_π₁'
+    intro h
+    have hnd := List.nodup_append.mp h_nodup_π₁'
+    exact absurd rfl (hnd.2.2 e₂ h e₂ (by exact List.Mem.head _))
+  have h_e₂_notin_π₂' : e₂ ∉ π₂' := by
+    intro h
+    have hnd := List.nodup_append.mp h₂p.1
+    exact absurd rfl (hnd.2.2 e₂ h e₂ (by simp))
+  -- Step 4: all events are in C.events
+  have h_π₁'_in_C : ∀ y ∈ π₁', y ∈ C.events := by
+    intro y hy; exact h_ev₁_in_C y ((h₁p.2 y).mp
+      (List.mem_append.mpr (Or.inl hy)))
+  have h_π₂'_in_C : ∀ y ∈ π₂', y ∈ C.events := by
+    intro y hy; exact h_ev₂_in_C y ((h₂p.2 y).mp
+      (List.mem_append.mpr (Or.inl hy)))
+  -- Step 5: distinctOps for β elements
+  have h_dist_β_e₁ : ∀ y ∈ β, distinctOps e₁ y := by
+    intro y hy
+    have hy_in_π : y ∈ π₁' := h_split ▸ List.mem_append.mpr
+      (Or.inr (List.mem_cons_of_mem _ hy))
+    have hne : e₁ ≠ y := fun heq => h_e₁_notin_π₁' (heq ▸ hy_in_π)
+    obtain ⟨_, _, hL₁, hs₁⟩ := h_e₁_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+    exact C.timestamps_distinct hL₁ hs₁ hL_y hs_y hne
+  have h_dist_β_e₂ : ∀ y ∈ β, distinctOps e₂ y := by
+    intro y hy
+    have hy_in_π : y ∈ π₁' := h_split ▸ List.mem_append.mpr
+      (Or.inr (List.mem_cons_of_mem _ hy))
+    have hne : e₂ ≠ y := fun heq => h_e₂_notin_β (heq ▸ hy)
+    obtain ⟨_, _, hL₂, hs₂⟩ := h_e₂_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+    exact C.timestamps_distinct hL₂ hs₂ hL_y hs_y hne
+  -- Step 6: distinctOps for α elements
+  have h_dist_α_e₁ : ∀ y ∈ α, distinctOps e₁ y := by
+    intro y hy
+    have hy_in_π : y ∈ π₁' := h_split ▸ List.mem_append.mpr (Or.inl hy)
+    have hne : e₁ ≠ y := fun heq => h_e₁_notin_π₁' (heq ▸ hy_in_π)
+    obtain ⟨_, _, hL₁, hs₁⟩ := h_e₁_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+    exact C.timestamps_distinct hL₁ hs₁ hL_y hs_y hne
+  have h_dist_α_e₂ : ∀ y ∈ α, distinctOps e₂ y := by
+    intro y hy
+    have hy_in_π : y ∈ π₁' := h_split ▸ List.mem_append.mpr (Or.inl hy)
+    have hne : e₂ ≠ y := fun heq => h_e₂_notin_α (heq ▸ hy)
+    obtain ⟨_, _, hL₂, hs₂⟩ := h_e₂_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+    exact C.timestamps_distinct hL₂ hs₂ hL_y hs_y hne
+  -- Step 7: distinctOps for π₂' elements
+  have h_dist_π₂'_e₁ : ∀ y ∈ π₂', distinctOps e₁ y := by
+    intro y hy
+    have hne : e₁ ≠ y := by
+      intro heq; subst heq
+      exact h_e₁_not_ev₂ ((h₂p.2 e₁).mp
+        (List.mem_append.mpr (Or.inl hy)))
+    obtain ⟨_, _, hL₁, hs₁⟩ := h_e₁_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₂'_in_C y hy
+    exact C.timestamps_distinct hL₁ hs₁ hL_y hs_y hne
+  have h_dist_π₂'_e₂ : ∀ y ∈ π₂', distinctOps e₂ y := by
+    intro y hy
+    have hne : e₂ ≠ y := fun heq => h_e₂_notin_π₂' (heq ▸ hy)
+    obtain ⟨_, _, hL₂, hs₂⟩ := h_e₂_in_C
+    obtain ⟨_, _, hL_y, hs_y⟩ := h_π₂'_in_C y hy
+    exact C.timestamps_distinct hL₂ hs₂ hL_y hs_y hne
+  -- Step 8: rewrite applySeq with the split
+  have h_applySeq_split : applySeq D D.init π₁' =
+      applySeq D (D.update (applySeq D D.init α) e₂) β := by
+    rw [h_split]
+    simp [applySeq, List.foldl_append, List.foldl_cons]
+  rw [h_applySeq_split]
+  -- Step 9: apply ind_left_1op_list to handle β
+  exact ind_left_1op_list hVC e₁ e₂ h_dist β h_dist_β_e₁ h_dist_β_e₂
+    (D.update (applySeq D D.init α) e₂) (applySeq D D.init π₂')
+    (merge_peel_1op_shared_base (C := C) hVC e₁ e₂ α π₂'
+      h_dist h_dist_α_e₁ h_dist_α_e₂ h_dist_π₂'_e₁ h_dist_π₂'_e₂)
 
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
