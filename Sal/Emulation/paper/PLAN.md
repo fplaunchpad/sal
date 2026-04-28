@@ -1,8 +1,9 @@
 # Emulation-paper plan
 
-Research-paper write-up of the `Sal/Emulation/` formalisation. Lives
-here to keep paper work visible in the repo without cluttering the
-Lean subtree.
+Research-paper write-up of the `Sal/Emulation/` formalisation.
+Co-located with the Lean code it documents so paper edits and Lean
+edits land in the same workflow; cross-references between the two
+are short relative paths.
 
 ## Files
 
