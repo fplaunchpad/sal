@@ -25,11 +25,11 @@ This reduces to two subgoals we prove independently and then compose:
 | # | Step | Status |
 |---|------|--------|
 | 0 | Scaffolding (signature, TS with 5 invariants, RA-lin skeleton) | **DONE** |
-| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` + `merge_peel_comm` into `SatisfiesVCs` (28 fields) | **DONE** |
+| 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` + `merge_peel_comm` + `shared_peel_1op` into `SatisfiesVCs` (29 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
 | 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs. **Both Lemma 1 lemmas closed via Aristotle** (`no_lo_top_a_to_top_b` at commit `d8a20dc`; `no_lo_a_to_b` at commit `15befe8`). 1 declaration uses `sorry`: `distinct_last_case` (3 internal sub-case sorries — paper Case 3b commute, Case 3a × 2 shared). Block 6 (paper-faithful triple-nested carving induction body) subsumes the residual.) |
-| 5 | End-to-end smoke test on Grow-Only Set (28 VCs) | **DONE** |
+| 5 | End-to-end smoke test on Grow-Only Set (29 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
 | 8 | Weak simulation + weak trace machinery | **DONE** |
@@ -523,13 +523,39 @@ cross-set events don't commute). This hypothesis is structurally
 sound — vacuously true for trivial-rc CRDTs like Grow_Only_Set,
 real content for non-trivial CRDTs.
 
-**Open work after Lemma 1 closes (commit `15befe8`):**
-- 1 declaration uses `sorry`: `distinct_last_case` (3 internal
-  sub-cases — paper Case 3b commute, Case 3a × 2 shared).
-- Block 6 then subsumes that final declaration.
-- New hypothesis `h_ncomm_concurrent_local_top` adds a per-CRDT
-  obligation discharge — vacuous for G-Set; needs analogue
-  proofs for non-trivial CRDTs (Step 6 of the plan).
+**Aristotle's Case 3a-shared and merge_peel_shared (commits
+`ca4f9b9`, `7a7ef43`, `4c2328d`, `e660a02`).** Mirror partial closes
+on Case 3a-shared-e₂ and Case 3a-shared-e₁: each closes one
+rc-direction (~100 lines) leaving the symmetric direction and
+the both-shared cross-case as `sorry` (forward-closure dependent).
+Adds helper `merge_peel_shared` (proved) which decomposes via
+`ind_left_1op_list` (proved) and `merge_peel_1op_shared_base`
+(proved by hoisting `h_shared_peel` to a hypothesis). Identifies
+that the shared-element 1-op peel is **not derivable from the
+existing 28 VCs** — every single-side-extension VC requires
+`distinctOps` between the new op and the other side's tail, which
+fails when both sides share `ol`. Adds **`shared_peel_1op` as the
+29th VC field**, discharged for Grow_Only_Set via set-union
+associativity.
+
+**Open work after `shared_peel_1op` (commit `e660a02`):**
+- 1 declaration uses `sorry`: `distinct_last_case` (4 internal
+  sub-cases — Case 3b commute, Case 3a-shared-e₁ both-shared,
+  Case 3a-shared-e₁ rc-other, Case 3a-shared-e₂ rc-other).
+- All 4 internal sorries blocked by the **forward-closure**
+  dependency Aristotle identified: re-permutation via
+  `perm_ending_in_lo_max` calls `convergence`, which requires
+  forward closure of the event set under `vis ∧ ¬commute`. The
+  main induction only threads backward closure. Block 6 (the
+  paper-faithful triple-nested carving induction) sidesteps
+  re-permutation by picking peel candidates from `L^a`.
+- Per-CRDT discharge of `shared_peel_1op` and
+  `h_ncomm_concurrent_local_top` for non-trivial CRDTs is Step 6
+  work. Note: `merge_init`'s universal-state quantification
+  bites Int-valued CRDTs (PN_Counter, Increment_Only_Counter)
+  whose arbitrary states can have negative slots; these will
+  need either state restriction or a different `merge_init`
+  formulation.
 
 ### 5. Smoke test on Grow-Only Set — DONE
 
