@@ -214,7 +214,7 @@ MRDTs) should find the dependency structure useful.
     label-coercion, with Milner-style \textsc{WeakSim} soundness
     proved in full (\S\ref{sec:weaksim}).
   \item An end-to-end validation: for the Grow-Only Set we construct
-    a \texttt{CRDTSig} instance and discharge all $25$ VC fields of
+    a \texttt{CRDTSig} instance and discharge all $29$ VC fields of
     \texttt{SatisfiesVCs} (\S\ref{sec:smoke-test}), confirming that
     our Prop-valued $\VCs$ statements align with the concrete
     Bool-valued theorem statements in \Sal{}'s existing files.
@@ -950,16 +950,29 @@ Realistic remaining effort:
 \end{itemize}
 
 Two architectural decisions accompanied this work. First, the
-\texttt{SatisfiesVCs} structure grew from $25$ fields to $28$:
+\texttt{SatisfiesVCs} structure grew from $25$ fields to $29$:
 \texttt{merge\_init} (the lattice-bottom property
 $\mmerge(\init, s) = s$, consumed by the asymmetric branches),
 \texttt{rc\_non\_comm\_directional} (a directional form of
 \texttt{rc\_non\_comm} consumed by the strictly-local sub-case of
-the distinct-last-event branch), and \texttt{merge\_peel\_comm}
+the distinct-last-event branch), \texttt{merge\_peel\_comm}
 (consumed by the convergence-based re-permutation when peeling
-commuting events from the carving's frontier). All three are
-discharged vacuously by Grow-Only Set and represent real
-obligations only on CRDTs whose $\mathit{rc}$ is non-trivial.
+commuting events from the carving's frontier), and
+\texttt{shared\_peel\_1op} (a CRDT-lattice property identified
+during the merge-case formalisation: when both replicas have
+applied the same LCA event $o_l$ and the left has additionally
+applied $o_1$, peeling $o_1$ out of the merge is sound). All
+four are discharged on Grow-Only Set (vacuously for the rc-Either
+fields, by set-union associativity for the shared peel) and
+represent real obligations only on CRDTs whose $\mathit{rc}$ is
+non-trivial. \texttt{shared\_peel\_1op} is genuinely missing from
+the original $24$: every existing single-side-extension VC
+requires \texttt{distinctOps} between the new operation and the
+other side's tail, which fails when both sides share the same LCA
+event (\texttt{distinctOps ol ol} is always false); the only
+``shared LCA'' VC, \texttt{ind\_lca\_1op}, requires both sides to
+have the same base state, which doesn't hold once each side has
+its own prefix.
 Second, the paper's $L^b$ definition was extended from depth-1
 lo-paths only to depth-1-or-2, matching
 \cite{sal2025}'s appendix.tex line 262; the depth-2 inclusion is
