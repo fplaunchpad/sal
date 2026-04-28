@@ -67,17 +67,10 @@ noncomputable def after_of (s : concrete_st) (c target : OpId) : Bool :=
 
 /-- Priority: Add beats Remove, else LWW by opId.
 
-**Deliberate departure from paper §4.4.** See the CRDT's `mark_beats`
-docstring for the full discussion. In short: the paper uses pure LWW
-by `opId` (ignoring `isAdd`); we add an "Add beats Remove" clause so
-concurrent formatting doesn't get silently overridden by a stale
-`RemoveMark` with a higher `opId`. The paper's own framing calls
-Ex 5 "arbitrary deterministic," so both rules satisfy the paper's
-intent — ours picks the more user-friendly branch. -/
+Paper §4.4: LWW on opId — the highest-opId op wins, regardless
+of `isAdd`. -/
 def mark_beats (a b : MarkOp) : Bool :=
-  if a.isAdd && !b.isAdd then true
-  else if !a.isAdd && b.isAdd then false
-  else decide (opid_max a.opId b.opId = a.opId)
+  decide (opid_max a.opId b.opId = a.opId)
 
 set_option maxHeartbeats 0
 
@@ -385,7 +378,12 @@ theorem no_add_cover_implies_unformatted_visible
   · exact decide_eq_false h_nex
   · rfl
 
-/-- Paper-faithful Ex 5 positive: Add wins over concurrent Remove. -/
+/-- **Paper Ex 5 positive: an Add with the highest opId wins.**
+
+"Concurrent Add wins over concurrent Remove" requires the Add to
+have the higher opId — including over the Remove. The caller
+discharges that as part of the universal "beats every other
+covering mark" premise. -/
 theorem add_wins_over_concurrent_remove_visible
     (s : concrete_st) (c : OpId) (mt : ℕ)
     (addOp remOp : MarkOp) :
@@ -401,17 +399,12 @@ theorem add_wins_over_concurrent_remove_visible
     (∀ m', mark_present s m' = true →
            in_span_visible s m' c →
            m'.markType = mt →
-           m' ≠ addOp → m' ≠ remOp →
+           m' ≠ addOp →
            mark_beats addOp m' = true) →
     formatted_visible s c mt = true := by
-  intro h_add h_rem h_mt_a _ h_pres_a _ h_cov_a _ h_vis h_beats
-  refine formatted_visible_of_lww_add_winner s c mt addOp
-    h_add h_mt_a h_pres_a h_cov_a h_vis ?_
-  intro m' h_pres' h_cov' h_mt' h_ne_add
-  by_cases h_eq : m' = remOp
-  · subst h_eq
-    simp [mark_beats, h_add, h_rem]
-  · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
+  intro h_add _ h_mt_a _ h_pres_a _ h_cov_a _ h_vis h_beats
+  exact formatted_visible_of_lww_add_winner s c mt addOp
+    h_add h_mt_a h_pres_a h_cov_a h_vis h_beats
 
 /-- **Formatting-level convergence for the paper-faithful projection.** -/
 theorem formatted_visible_convergent

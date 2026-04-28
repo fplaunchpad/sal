@@ -22,7 +22,7 @@ where it deliberately departs, and where follow-up work is flagged.
 | §A.2 Ex 2 — overlapping same-type Adds | `partial_overlap_all_adds_formatted_visible` | ✅ |
 | §A.2 Ex 3 — different mark types coexist | `different_type_adds_coexist_visible` | ✅ |
 | §A.2 Ex 4 — same-type, different values (colors) | not formalised | ⚠️ Requires `markValue` field on `MarkOp` — state-shape change. |
-| §A.2 Ex 5 — bold vs non-bold conflict | `add_wins_over_concurrent_remove_visible` + `no_add_cover_implies_unformatted_visible` | ✅ Add-beats-Remove (paper acknowledges Ex 5 outcome is "arbitrary deterministic"). |
+| §A.2 Ex 5 — bold vs non-bold conflict | `add_wins_over_concurrent_remove_visible` + `no_add_cover_implies_unformatted_visible` | ✅ LWW by opId (paper §4.4). |
 | §A.2 Ex 6 — overlapping comments via distinct markType | follows from `different_type_adds_coexist_visible` | ✅ |
 | §A.2 Ex 7 — bold-boundary insertion expands | `ex7_bold_older_sibling_in_span` + `bold_expand_in_span_visible` (via `bold_expand_reach`) | ✅ |
 | §A.2 Ex 8 — link-boundary insertion does not expand | `ex8_link_descendant_visible_lt_endId` + `_not_in_span_visible_of_wf` | ✅ Uses `wf_afters` acyclicity. |
@@ -48,7 +48,7 @@ but the correctness criteria land in different places:
 | Ex 2 — overlapping same-type Adds | §3.2, §A.2 | `partial_overlap_all_adds_formatted_visible` | ✅ |
 | Ex 3 — different mark types coexist | §3.2, §A.2 | `different_type_adds_coexist_visible` | ✅ |
 | Ex 4 — overlapping same-type different-values (colors) | §3.2.1, §A.2 | **Not expressible in our model** | Our `MarkOp` has `markType : ℕ` but no per-mark `value` field. Ex 4's resolution (LWW among distinct color values of the same markType) requires representing both "red" and "blue" as instances of the same markType, which we can't. Encoding each color as a distinct markType would make `different_type_adds_coexist_visible` apply — but that's the opposite of Ex 4's intent. |
-| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove_visible` (positive) + `no_add_cover_implies_unformatted_visible` (negative) | ✅ Deliberate departure on the priority rule — see below. |
+| Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove_visible` (positive) + `no_add_cover_implies_unformatted_visible` (negative) | ✅ LWW by opId. |
 | Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist_visible` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
 | Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` (cross-sibling case) + `bold_expand_in_span_visible` (post-endId region) | ✅ Two complementary results: the cross-sibling case (insert lands before `endId` in visible order) uses the standard visible-order bound; the post-`endId` bold-expand region uses `bold_expand_reach`, which identifies afters-descendants of `endId` reachable via chains of post-mark-opId characters (paper's §3.3 "grab new inserts at the after-side" encoded via opId comparison). |
 | Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` / `_of_wf` (full negation, link case) | ✅ Under link semantics (`endSide = false`), afters-descendants of `endId` are correctly excluded. Full negation uses the `wf_afters` acyclicity invariant. |
@@ -63,16 +63,6 @@ Plus one additional theorem not tied to a specific paper example:
   state it as a parameterized theorem over all states.
 
 ## Deliberate departures
-
-**Priority rule.** The paper §4.4 prescribes pure LWW by `opId` — the
-mark op with the highest `opId` wins, regardless of its `isAdd` bit.
-We instead use **"Add beats Remove, then LWW by opId"** (`mark_beats`
-in `Peritext_ReadSide.lean`). The paper itself calls Ex 5's outcome
-"arbitrary deterministic," so both rules satisfy the paper's
-*intent*; our rule picks the more user-friendly deterministic branch
-— concurrent formatting isn't silently overridden by a stale
-`RemoveMark` that happens to have a higher `opId`. The `mark_beats`
-docstring documents this decision in full.
 
 **List vs. per-char `readRichText_visible`.** The paper (§4.4) presents the
 rendered document as a list of `{text, format}` spans. Our
@@ -102,7 +92,7 @@ those:
   refinements on both boundaries.
 - `mark_wins_visible` / `formatted_visible` / `readRichText_visible`
   — read-side projection built from `in_span_visible` plus
-  `mark_beats` (Add-beats-Remove then LWW).
+  `mark_beats` (LWW by opId, paper §4.4).
 - `is_rga_traversal` + `readRichText_list` — list-form presentation
   as a Prop-valued spec; callers construct a traversal externally
   and prove it satisfies the spec (the framework's `set α := α → Bool`

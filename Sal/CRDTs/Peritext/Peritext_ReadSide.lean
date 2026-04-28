@@ -99,33 +99,11 @@ def after_of (s : concrete_st) (c target : OpId) : Bool :=
 /-- Priority comparison between two mark ops for the *same character
 and mark type*. Returns `true` iff `a` wins over `b`.
 
-**Deliberate departure from paper §4.4.** The paper prescribes pure
-LWW by `opId`, with no separate clause for Add-vs-Remove: whichever
-op has the higher `opId` wins, regardless of its `isAdd` bit.  This
-rule has a counter-intuitive consequence — a user concurrently
-bolding some text can be overridden by a stale non-bold `RemoveMark`
-from a different replica just because the `RemoveMark` happens to
-have a higher `opId`.  We instead use:
-
-  1. If exactly one of `{a, b}` has `isAdd = true`, that one wins
-     (**concurrent Add beats concurrent Remove**).
-  2. Otherwise (both Add or both Remove), the one with the higher
-     `opId` wins (LWW tie-break).
-
-This Add-biased rule matches the user intent that "recently added
-formatting should persist over concurrent removes" in the common
-case, and degrades to pure LWW when both ops agree on the Add/Remove
-bit. In exchange for this ergonomic improvement we lose exact fidelity
-to the paper on Ex 5: under pure LWW the winner is "whoever has the
-higher opId" (either Add or Remove arbitrarily); under our rule, the
-Add always wins. The paper itself calls Ex 5's outcome "arbitrary
-deterministic," so both rules satisfy the paper's *intent* — ours
-just picks a more user-friendly deterministic choice. -/
+Paper §4.4: LWW on opId — the highest-opId op wins, regardless of
+its `isAdd` bit. -/
 @[simp]
 def mark_beats (a b : MarkOp) : Bool :=
-  if mark_isAdd a && !(mark_isAdd b) then true
-  else if !(mark_isAdd a) && mark_isAdd b then false
-  else decide (opid_max (mark_opId a) (mark_opId b) = mark_opId a)
+  decide (opid_max (mark_opId a) (mark_opId b) = mark_opId a)
 
 set_option maxHeartbeats 0
 
@@ -958,7 +936,12 @@ theorem no_add_cover_implies_unformatted_visible
   · exact decide_eq_false h_nex
   · rfl
 
-/-- **Paper-faithful Ex 5 positive: Add wins over concurrent Remove.** -/
+/-- **Paper Ex 5 positive: an Add with the highest opId wins.**
+
+"Concurrent Add wins over concurrent Remove" holds iff the Add's
+opId is higher than every other same-mt covering mark — including
+the Remove. The caller discharges that as part of the "beats every
+other covering mark" universal. -/
 theorem add_wins_over_concurrent_remove_visible
     (s : concrete_st) (c : OpId) (mt : ℕ)
     (addOp remOp : MarkOp) :
@@ -974,17 +957,12 @@ theorem add_wins_over_concurrent_remove_visible
     (∀ m', mark_present s m' = true →
            in_span_visible s m' c →
            mark_markType m' = mt →
-           m' ≠ addOp → m' ≠ remOp →
+           m' ≠ addOp →
            mark_beats addOp m' = true) →
     formatted_visible s c mt = true := by
-  intro h_add h_rem h_mt_a _ h_pres_a _ h_cov_a _ h_vis h_beats
-  refine formatted_visible_of_lww_add_winner s c mt addOp
-    h_add h_mt_a h_pres_a h_cov_a h_vis ?_
-  intro m' h_pres' h_cov' h_mt' h_ne_add
-  by_cases h_eq : m' = remOp
-  · subst h_eq
-    simp only [mark_beats, h_add, h_rem, Bool.true_and, Bool.not_false, if_true]
-  · exact h_beats m' h_pres' h_cov' h_mt' h_ne_add h_eq
+  intro h_add _ h_mt_a _ h_pres_a _ h_cov_a _ h_vis h_beats
+  exact formatted_visible_of_lww_add_winner s c mt addOp
+    h_add h_mt_a h_pres_a h_cov_a h_vis h_beats
 
 /-! ### `visible_lt` congruence under afters-agreement
 
