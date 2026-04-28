@@ -1645,7 +1645,20 @@ theorem no_lo_a_to_b
     sorry
 
 /-- **Lemma 1 part (2)** (paper appendix.tex:158-178). For
-`e ∈ L_top_a` and `e' ∈ L_top_b`, no `lo`-edge from `e` to `e'`. -/
+`e ∈ L_top_a` and `e' ∈ L_top_b`, no `lo`-edge from `e` to `e'`.
+
+**Proof structure.** `e ∈ L_top_a` provides a witness `e''` with
+`e'' ∈ L_b` (in either replica's local) and `lo C e'' e`. The vis
+disjunct of `lo e'' e` is **closed inline** below — it would force
+`e'' ∈ L_top` via `h_top_vis_closed`, but `e'' ∈ L_local` (which is
+disjoint from `L_top`). Hence `lo e'' e` reduces to its rc disjunct.
+
+Then to derive a contradiction with `e' ∈ L_top_b`, the goal is to
+show `lo e'' e'` (giving `e'` an L_b predecessor, contradicting
+`L_top_b`'s definition). This composition `lo e'' e ∧ lo e e' →
+lo e'' e'` is the paper's case-analysis (lines 158-178); it
+consumes `vis_trans` + `no_rc_chain` + concurrent-rc reasoning.
+Body still `sorry` for that residual composition. -/
 theorem no_lo_top_a_to_top_b
     (hVC : SatisfiesVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1657,6 +1670,33 @@ theorem no_lo_top_a_to_top_b
     (h_e_top_a : e ∈ L_top_a C ev₁ ev₂)
     (h_e'_top_b : e' ∈ L_top_b C ev₁ ev₂) :
     ¬ lo C e e' := by
+  intro h_lo
+  obtain ⟨he_top, e'', h_e''_lb, h_lo_e''_e⟩ := h_e_top_a
+  obtain ⟨he'_top, h_no_pred⟩ := h_e'_top_b
+  -- Rule out vis disjunct of `lo e'' e` via L_top causal closure.
+  have h_e''_in_local :
+      e'' ∈ L₁_local ev₁ ev₂ ∨ e'' ∈ L₂_local ev₁ ev₂ := by
+    rcases h_e''_lb with h | h
+    · exact Or.inl (L_b_subset_local _ _ _ h)
+    · exact Or.inr (L_b_subset_local _ _ _ h)
+  have h_e''_not_top : e'' ∉ L_top ev₁ ev₂ := by
+    intro h_top
+    rcases h_e''_in_local with ⟨_, h_ne⟩ | ⟨_, h_ne⟩
+    · exact h_ne h_top.2
+    · exact h_ne h_top.1
+  have h_lo_e''_e_rc :
+      ¬ C.vis e'' e ∧ ¬ C.vis e e'' ∧
+      D.rc e'' e = RcRes.Fst_then_snd ∧
+      ¬ ∃ e₃, C.vis e e₃ ∧ ¬ D.commutes e e₃ := by
+    rcases h_lo_e''_e with ⟨h_vis_e''e, _⟩ | h_rc
+    · exact absurd (h_top_vis_closed e'' e h_vis_e''e he_top)
+        h_e''_not_top
+    · exact h_rc
+  -- Goal: derive a contradiction. Aim for `lo e'' e'` to contradict
+  -- e' ∈ L_top_b (no L_b predecessor). The composition
+  -- `lo_rc e'' e ∧ lo e e' → lo e'' e'` is the paper's case-analysis.
+  apply h_no_pred
+  refine ⟨e'', h_e''_lb, ?_⟩
   sorry
 
 /-! Note: an earlier stub `no_lo_within_L_top_a` claimed
