@@ -1623,6 +1623,9 @@ theorem no_lo_a_to_b
        C.vis a b → C.vis b c → C.vis a c)
     {ev_top ev_local : Set (Op D.AppOp)}
     (h_top_vis_closed : ∀ a b, C.vis a b → b ∈ ev_top → a ∈ ev_top)
+    (h_disjoint : ∀ x, x ∈ ev_top → x ∉ ev_local)
+    (h_distinct : ∀ a b, a ∈ ev_top ∪ ev_local → b ∈ ev_top ∪ ev_local →
+       a ≠ b → distinctOps a b)
     {e e' : Op D.AppOp}
     (h_e_a : e ∈ L_a C ev_top ev_local)
     (h_e'_b : e' ∈ L_b C ev_top ev_local) :
@@ -1639,10 +1642,129 @@ theorem no_lo_a_to_b
     -- depth-2 path from e to e_top via e'.
     exact Or.inr ⟨e', he'_local, e_top, h_etop_in_top, h_lo,
                   h_lo_e'_etop⟩
-  · -- depth-2 from e': paper's case-explosion (6 sub-sub-cases on
-    -- vis/rc flavors of the three lo-edges). Needs vis_trans +
-    -- no_rc_chain + L_top^a-causal-closure reasoning.
-    sorry
+  · -- depth-2 from e': 2×2 case split on vis/rc disjuncts of
+    -- h_lo and h_lo_e'_emid.
+    -- Membership facts for h_distinct.
+    have he_in_union : e ∈ ev_top ∪ ev_local := Set.mem_union_right _ he_local
+    have he'_in_union : e' ∈ ev_top ∪ ev_local := Set.mem_union_right _ he'_local
+    have h_em_in_union : e_mid ∈ ev_top ∪ ev_local := Set.mem_union_right _ h_mid_in_local
+    have h_et_in_union : e_top ∈ ev_top ∪ ev_local := Set.mem_union_left _ h_etop_in_top
+    -- e_mid ≠ e_top (e_mid ∈ ev_local, e_top ∈ ev_top, disjoint)
+    have h_em_ne_et : e_mid ≠ e_top := by
+      intro heq; subst heq; exact h_disjoint e_mid h_etop_in_top h_mid_in_local
+    rcases h_lo with ⟨h_vis_ee', h_ncomm_ee'⟩ | ⟨h_nvis_ee', h_nvis_e'e, h_rc_ee', h_no_ow_e'⟩
+    <;> rcases h_lo_e'_emid with ⟨h_vis_e'em, h_ncomm_e'em⟩ | ⟨h_nvis_e'em, h_nvis_eme', h_rc_e'em, h_no_ow_em⟩
+    · -- Case (vis, vis): h_lo vis, h_lo_e'_emid vis
+      have h_vis_e_em : C.vis e e_mid := h_vis_trans h_vis_ee' h_vis_e'em
+      rcases h_lo_emid_etop with ⟨h_vis_em_et, h_ncomm_em_et⟩ | ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩
+      · -- h_lo_emid_etop vis: vis e e_top by transitivity → e ∈ ev_top → contradiction
+        exact absurd (h_top_vis_closed e e_top
+          (h_vis_trans h_vis_e_em h_vis_em_et) h_etop_in_top)
+          (h_disjoint e · he_local)
+      · -- h_lo_emid_etop rc.
+        by_cases h_eq_e'em : e' = e_mid
+        · -- e' = e_mid: depth-2 path collapses. After subst, we have
+          -- lo C e e' (vis) and lo C e' e_top (rc). Depth-2 witness.
+          subst h_eq_e'em
+          exact Or.inr ⟨e', he'_local, e_top, h_etop_in_top,
+            Or.inl ⟨h_vis_ee', h_ncomm_ee'⟩,
+            Or.inr ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩⟩
+        · -- e' ≠ e_mid.
+          by_cases h_comm_e_em : D.commutes e e_mid
+          · -- commute e e_mid: use rc_non_comm_directional on (e', e_mid)
+            -- to get rc chain with (e_mid, e_top), then no_rc_chain.
+            have h_dops_e'em := h_distinct e' e_mid he'_in_union h_em_in_union h_eq_e'em
+            have h_dops_emet := h_distinct e_mid e_top h_em_in_union h_et_in_union h_em_ne_et
+            have h_rc_dir := (hVC.rc_non_comm_directional e' e_mid h_dops_e'em).mp h_ncomm_e'em
+            rcases h_rc_dir with h_rc1 | h_rc2
+            · -- rc(e', e_mid) = Fst, rc(e_mid, e_top) = Fst → no_rc_chain
+              exact absurd ⟨h_rc1, h_rc_em_et⟩
+                (hVC.no_rc_chain e' e_mid e_top h_dops_e'em h_dops_emet)
+            · -- rc(e_mid, e') = Fst. Split on rc_non_comm_directional(e,e').
+              have h_e_ne_e' : e ≠ e' := by
+                intro heq; subst heq; exact h_ncomm_e'em h_comm_e_em
+              have h_dops_ee' := h_distinct e e' he_in_union he'_in_union h_e_ne_e'
+              have h_rc_dir2 := (hVC.rc_non_comm_directional e e' h_dops_ee').mp h_ncomm_ee'
+              rcases h_rc_dir2 with h_rc_ee'_fst | h_rc_e'e_fst
+              · -- rc(e, e') = Fst.
+                by_cases h_eq_eem : e = e_mid
+                · -- e = e_mid: after subst, lo C e e_top directly.
+                  subst h_eq_eem
+                  exact Or.inl ⟨e_top, h_etop_in_top,
+                    Or.inr ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩⟩
+                · -- e ≠ e_mid: RESIDUAL SORRY.
+                  -- Sub-case: vis(e,e'), vis(e',e_mid), vis(e,e_mid),
+                  -- commute(e,e_mid), ¬commute(e,e'), ¬commute(e',e_mid),
+                  -- rc(e,e')=Fst, rc(e_mid,e')=Fst, rc(e_mid,e_top)=Fst,
+                  -- ¬vis(e_mid,e_top), ¬vis(e_top,e_mid),
+                  -- e≠e', e'≠e_mid, e≠e_mid, e_mid≠e_top.
+                  -- The goal reduces to showing lo C e e_top (via rc),
+                  -- which requires ¬commute(e, e_top). This is not
+                  -- derivable from the current VCs; the paper
+                  -- hand-waves this case (appendix.tex line ~140).
+                  -- Possible fixes: (a) add hypothesis
+                  --   h_ncomm_local_top : ∀ a b, a ∈ ev_local →
+                  --     b ∈ ev_top → ¬vis a b → ¬vis b a → ¬commute a b
+                  -- or (b) strengthen the lo definition to handle the
+                  -- commuting-but-visible transitivity pattern.
+                  sorry
+              · -- rc(e', e) = Fst: chain (e_mid, e', e) → no_rc_chain.
+                exfalso
+                have h_dops_e'e := h_distinct e' e he'_in_union he_in_union (Ne.symm h_e_ne_e')
+                have h_dops_eme' : distinctOps e_mid e' := fun h => h_dops_e'em (h.symm)
+                exact hVC.no_rc_chain e_mid e' e h_dops_eme' h_dops_e'e ⟨h_rc2, h_rc_e'e_fst⟩
+          · -- ¬commute e e_mid: lo_vis gives lo C e e_mid. Depth-2 witness.
+            exact Or.inr ⟨e_mid, h_mid_in_local, e_top, h_etop_in_top,
+                         Or.inl ⟨h_vis_e_em, h_comm_e_em⟩,
+                         Or.inr ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩⟩
+    · -- Case (vis, rc): h_lo vis, h_lo_e'_emid rc
+      -- no-overwriter on e_mid: ¬∃ e₃, vis e_mid e₃ ∧ ¬commute e_mid e₃
+      rcases h_lo_emid_etop with ⟨h_vis_em_et, h_ncomm_em_et⟩ | ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩
+      · -- h_lo_emid_etop vis: contradicts no-overwriter on e_mid.
+        exact absurd ⟨e_top, h_vis_em_et, h_ncomm_em_et⟩ h_no_ow_em
+      · -- Both h_lo_e'_emid and h_lo_emid_etop are rc.
+        -- rc(e', e_mid) = Fst and rc(e_mid, e_top) = Fst.
+        by_cases h_eq_e'em : e' = e_mid
+        · -- e' = e_mid: lo C e' e_top from rc components. Depth-2 witness.
+          subst h_eq_e'em
+          exact Or.inr ⟨e', he'_local, e_top, h_etop_in_top,
+            Or.inl ⟨h_vis_ee', h_ncomm_ee'⟩,
+            Or.inr ⟨h_nvis_em_et, h_nvis_et_em, h_rc_em_et, h_no_ow_et⟩⟩
+        · -- e' ≠ e_mid: no_rc_chain(e', e_mid, e_top)
+          exfalso
+          exact hVC.no_rc_chain e' e_mid e_top
+            (h_distinct e' e_mid he'_in_union h_em_in_union h_eq_e'em)
+            (h_distinct e_mid e_top h_em_in_union h_et_in_union h_em_ne_et)
+            ⟨h_rc_e'em, h_rc_em_et⟩
+    · -- Case (rc, vis): h_lo rc, h_lo_e'_emid vis
+      -- no-overwriter on e': ¬∃ e₃, vis e' e₃ ∧ ¬commute e' e₃
+      -- But vis e' e_mid ∧ ¬commute e' e_mid: e_mid is such an e₃.
+      exact absurd ⟨e_mid, h_vis_e'em, h_ncomm_e'em⟩ h_no_ow_e'
+    · -- Case (rc, rc): h_lo rc, h_lo_e'_emid rc
+      -- rc(e, e') = Fst and rc(e', e_mid) = Fst.
+      -- no_rc_chain(e, e', e_mid) gives contradiction.
+      by_cases h_eq_ee' : e = e'
+      · -- e = e': after subst, h_lo_e'_emid becomes lo C e e_mid.
+        -- And h_lo_emid_etop is lo C e_mid e_top.
+        -- So depth-2 path from e: e → e_mid → e_top.
+        subst h_eq_ee'
+        exact Or.inr ⟨e_mid, h_mid_in_local, e_top, h_etop_in_top,
+          Or.inr ⟨h_nvis_e'em, h_nvis_eme', h_rc_e'em, h_no_ow_em⟩,
+          h_lo_emid_etop⟩
+      · -- e ≠ e'
+        by_cases h_eq_e'em : e' = e_mid
+        · -- e' = e_mid: after subst, lo C e' e_top from h_lo_emid_etop.
+          -- And lo C e e' from rc components. Depth-2 witness.
+          subst h_eq_e'em
+          exact Or.inr ⟨e', he'_local, e_top, h_etop_in_top,
+            Or.inr ⟨h_nvis_ee', h_nvis_e'e, h_rc_ee', h_no_ow_e'⟩,
+            h_lo_emid_etop⟩
+        · -- e ≠ e', e' ≠ e_mid: no_rc_chain(e, e', e_mid)
+          exfalso
+          exact hVC.no_rc_chain e e' e_mid
+            (h_distinct e e' he_in_union he'_in_union h_eq_ee')
+            (h_distinct e' e_mid he'_in_union h_em_in_union h_eq_e'em)
+            ⟨h_rc_ee', h_rc_e'em⟩
 
 /-- **Lemma 1 part (2)** (paper appendix.tex:158-178). For
 `e ∈ L_top_a` and `e' ∈ L_top_b`, no `lo`-edge from `e` to `e'`.
