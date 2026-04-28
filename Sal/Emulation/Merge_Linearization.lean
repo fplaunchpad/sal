@@ -1894,6 +1894,46 @@ step uses `exists_lo_maximal_in_subset (L_top_a)` directly to
 extract a lo-max element, which gives no-lo-successor *within*
 `L_top_a` for free. -/
 
+/-- **Merge peel with shared event.** When `e₁` sits at the tail of
+the left-side list and `e₁ ∉ ev₂`, the 1-op peel equation
+`merge(update(A, e₁), B) = update(merge(A, B), e₁)` holds.
+
+This generalises `bottomUp_2op_reachable` to the case where the
+right-tail event `e₂` also appears in the left-side body list `π₁'`
+(a shared event).  `bottomUp_2op_reachable` requires `distinctOps e₂ y`
+for every `y ∈ π₁'`, which fails when `e₂ ∈ π₁'`.
+
+The Sal paper's proof handles this implicitly through its nested
+induction; mechanising the needed VC chain (using `inter_lca_2op` at
+the step where `e₂` appears in `π₁'`) is future work. -/
+theorem merge_peel_shared
+    {D : CRDTSig} (hVC : SatisfiesVCs D)
+    {C : Configuration D}
+    (e₁ e₂ : Op D.AppOp)
+    (π₁' π₂' : List (Op D.AppOp))
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_e₁_in_C : e₁ ∈ C.events)
+    (h_e₂_in_C : e₂ ∈ C.events)
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h₁p : listPermOf (π₁' ++ [e₁]) ev₁)
+    (h₂p : listPermOf (π₂' ++ [e₂]) ev₂)
+    (h₁r : respects (π₁' ++ [e₁]) (lo C))
+    (h₂r : respects (π₂' ++ [e₂]) (lo C))
+    (h_e₁_in_ev₁ : e₁ ∈ ev₁)
+    (h_e₂_in_ev₂ : e₂ ∈ ev₂)
+    (h_e₂_in_ev₁ : e₂ ∈ ev₁)
+    (h_e₁_not_ev₂ : e₁ ∉ ev₂)
+    (h_ne : e₁ ≠ e₂)
+    (h_nc : ¬ D.commutes e₁ e₂)
+    (h_rc : D.rc e₂ e₁ = RcRes.Fst_then_snd)
+    (h_dist : distinctOps e₁ e₂) :
+    D.merge (D.update (applySeq D D.init π₁') e₁)
+            (D.update (applySeq D D.init π₂') e₂)
+      = D.update (D.merge (applySeq D D.init π₁')
+                          (D.update (applySeq D D.init π₂') e₂)) e₁ := by
+  sorry
+
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
 theorem distinct_last_case
@@ -2473,24 +2513,135 @@ theorem distinct_last_case
           sorry
         · by_cases h_e₂_in_ev₁ : e₂ ∈ ev₁
           · -- Case 3a-shared-e₂: e₂ ∈ ev₁ ∩ ev₂, e₁ ∉ ev₂,
-            -- ¬commute(e₁, e₂). Symmetric to Case 3a-shared-e₁.
+            -- ¬commute(e₁, e₂).
             --
-            -- Strategy: bring e₂ to the tail of BOTH lists, then
-            -- apply `lem_0op` to peel e₂ and recurse via `ih`.
+            -- Strategy: peel e₁ from the merge using
+            -- `merge_peel_shared`, then recurse via `ih` on
+            -- (ev₁ \ {e₁}, ev₂) with smaller total length.
             --
-            -- Same obstacle: bringing e₂ to the tail of π₁ requires
-            -- e₂ to be lo-max in ev₁ and convergence with forward
-            -- closure. And `bottomUp_2op_reachable` fails because
-            -- e₂ ∈ ev₁ means e₂ ∈ π₁', violating `distinctOps`.
-            --
-            -- Note: `differentReplicas` is partially derivable here.
-            -- Same-replica(e₁, e₂) → vis(e₁, e₂) ∨ vis(e₂, e₁).
-            -- vis(e₁, e₂) + backward-closure(ev₂) → e₁ ∈ ev₂,
-            -- contradicting h_e₁_in_ev₂. So same-replica forces
-            -- vis(e₂, e₁). But this doesn't give False — it is a
-            -- consistent scenario (e₂ is a causal predecessor of e₁
-            -- at the same originating replica).
-            sorry
+            -- Derive the rc direction.
+            have h_rc :=
+              (hVC.rc_non_comm_directional e₁ e₂ h_dist_e₁e₂).mp
+                h_e₁e₂_comm
+            rcases h_rc with h_rc_e₁e₂ | h_rc_e₂e₁
+            · -- rc(e₁,e₂) = Fst, rc(e₂,e₁) ≠ Fst.
+              -- Peeling e₁ requires rc(e₂,e₁) = Fst for the
+              -- `no_lo_of_not_mem_and_rc` respects argument, which
+              -- we don't have. Peeling e₂ is blocked because
+              -- e₂ ∈ ev₁ means the respects proof for y ∈ ev₁
+              -- fails. This sub-case needs forward-closure or a
+              -- fundamentally different approach.
+              sorry
+            · -- rc(e₂,e₁) = Fst: peel e₁ via merge_peel_shared.
+              -- Step 1: basic membership facts.
+              have h_e₁_not_π₁' : e₁ ∉ π₁' := by
+                intro h
+                have hnd := List.nodup_append.mp h₁p.1
+                exact hnd.2.2 e₁ h e₁ (List.mem_singleton.mpr rfl) rfl
+              have h_e₂_not_π₂' : e₂ ∉ π₂' := by
+                intro h
+                have hnd := List.nodup_append.mp h₂p.1
+                exact hnd.2.2 e₂ h e₂ (List.mem_singleton.mpr rfl) rfl
+              -- Step 2: peel equation via merge_peel_shared.
+              have h_peel : D.merge s₁ s₂ =
+                  D.update (D.merge (applySeq D D.init π₁') s₂) e₁ := by
+                rw [← h₁s, ← h₂s, applySeq_append_single,
+                    applySeq_append_single]
+                have := merge_peel_shared hVC e₁ e₂ π₁' π₂'
+                  h_e₁_in_C h_e₂_in_C h_ev₁_in_C h_ev₂_in_C
+                  h₁p h₂p h₁r h₂r h_e₁_in_ev₁ h_e₂_in_ev₂
+                  h_e₂_in_ev₁ h_e₁_in_ev₂ h_ne h_e₁e₂_comm
+                  h_rc_e₂e₁ h_dist_e₁e₂
+                rw [this]
+              -- Step 3: listPermOf π₁' (ev₁ \ {e₁})
+              have h₁p' : listPermOf π₁' (ev₁ \ {e₁}) := by
+                constructor
+                · exact (List.nodup_append.mp h₁p.1).1
+                · intro a; constructor
+                  · intro ha
+                    exact ⟨(h₁p.2 a).mp (List.mem_append.mpr (Or.inl ha)),
+                      fun heq => h_e₁_not_π₁' (heq ▸ ha)⟩
+                  · intro ⟨ha_ev, ha_ne⟩
+                    rcases List.mem_append.mp ((h₁p.2 a).mpr ha_ev)
+                      with h | h
+                    · exact h
+                    · exact absurd (List.mem_singleton.mp h) ha_ne
+              -- Step 4: respects π₁'
+              have h₁r' : respects π₁' (lo C) :=
+                (List.pairwise_append.mp h₁r).1
+              -- Step 5: closures
+              have h_ev₁'_closed : ∀ a b, C.vis a b → ¬ D.commutes a b →
+                  b ∈ ev₁ \ {e₁} → a ∈ ev₁ \ {e₁} :=
+                closure_preserved_by_tail_peel h₁p h₁r h_ev₁_closed
+              -- Step 6: events-in-C
+              have h_ev₁'_in_C : ∀ a ∈ ev₁ \ {e₁}, a ∈ C.events :=
+                fun a ⟨ha, _⟩ => h_ev₁_in_C a ha
+              -- Step 7: length
+              have h_len' : π₁'.length + (π₂' ++ [e₂]).length < n := by
+                simp only [List.length_append, List.length_singleton]
+                  at h_len ⊢
+                omega
+              -- Step 8: ih on (π₁', π₂' ++ [e₂], ev₁ \ {e₁}, ev₂)
+              obtain ⟨π_ih, hπ_ih_perm, hπ_ih_resp, hπ_ih_state⟩ :=
+                ih _ h_len' π₁' (π₂' ++ [e₂]) (ev₁ \ {e₁}) ev₂
+                  (applySeq D D.init π₁') s₂
+                  rfl h_ev₁'_in_C h_ev₂_in_C h_ev₁'_closed h_ev₂_closed
+                  h₁p' h₂p h₁r' h₂r rfl h₂s
+              -- Step 9: e₁ ∉ π_ih
+              have h_e₁_not_π_ih : e₁ ∉ π_ih := by
+                intro h_in
+                rcases (hπ_ih_perm.2 e₁).mp h_in with ⟨_, hne⟩ | h
+                · exact hne rfl
+                · exact h_e₁_in_ev₂ h
+              -- Step 10: final witness π_ih ++ [e₁].
+              refine ⟨π_ih ++ [e₁], ?_, ?_, ?_⟩
+              · -- listPermOf
+                obtain ⟨hnd_ih, hm_ih⟩ := hπ_ih_perm
+                refine ⟨?_, fun a => ?_⟩
+                · rw [List.nodup_append]
+                  refine ⟨hnd_ih, List.nodup_singleton _, ?_⟩
+                  intro x hx y hy
+                  rw [List.mem_singleton] at hy; subst y
+                  intro heq; subst heq
+                  exact h_e₁_not_π_ih hx
+                · rw [List.mem_append, List.mem_singleton, Set.mem_union]
+                  constructor
+                  · rintro (h | rfl)
+                    · rcases (hm_ih a).mp h with ⟨h_ev, _⟩ | h_ev
+                      · exact Or.inl h_ev
+                      · exact Or.inr h_ev
+                    · exact Or.inl h_e₁_in_ev₁
+                  · intro h
+                    by_cases hae : a = e₁
+                    · exact Or.inr hae
+                    · refine Or.inl ((hm_ih a).mpr ?_)
+                      rcases h with h | h
+                      · exact Or.inl ⟨h, hae⟩
+                      · exact Or.inr h
+              · -- respects
+                unfold respects
+                rw [List.pairwise_append]
+                refine ⟨hπ_ih_resp, List.pairwise_singleton _ _, ?_⟩
+                intro y hy b hb
+                rw [List.mem_singleton] at hb; subst b
+                have hy_ev : y ∈ (ev₁ \ {e₁}) ∪ ev₂ :=
+                  (hπ_ih_perm.2 y).mp hy
+                rcases hy_ev with ⟨hy_ev₁, hy_ne⟩ | hy_ev₂
+                · -- y ∈ ev₁ \ {e₁}: use last_is_lo_maximal on π₁.
+                  have hy_π₁' : y ∈ π₁' := by
+                    rcases List.mem_append.mp ((h₁p.2 y).mpr hy_ev₁)
+                      with h | h
+                    · exact h
+                    · exact absurd (List.mem_singleton.mp h) hy_ne
+                  exact last_is_lo_maximal h₁r y hy_π₁'
+                · -- y ∈ ev₂: use no_lo_of_not_mem_and_rc.
+                  have hy_ne_e₁ : y ≠ e₁ :=
+                    fun heq => h_e₁_in_ev₂ (heq ▸ hy_ev₂)
+                  exact no_lo_of_not_mem_and_rc hVC h_e₁_in_C
+                    h_e₂_in_C h_ev₂_in_C h_e₁_in_ev₂ h_ev₂_closed
+                    h_ne h_rc_e₂e₁ y hy_ev₂ hy_ne_e₁
+              · -- applySeq state equation
+                rw [applySeq_append_single, hπ_ih_state, h_peel]
           · -- Both strictly local: e₁ ∈ ev₁ \ ev₂, e₂ ∈ ev₂ \ ev₁.
             have h_diff_rep : differentReplicas e₁ e₂ :=
               differentReplicas_of_closure h_e₁_in_C h_e₂_in_C
