@@ -1575,6 +1575,77 @@ theorem perm_ending_in_lo_max
     exact convergence hVC s h_ev_in_C h_ev_closed h_perm h_perm'
       h_resp h_resp'
 
+/-! ### Lemma 1 of paper (appendix.tex:117-156): no lo-edge `L^a → L^b`
+
+The paper's Lemma 1 establishes that events in `L_a` cannot lo-precede
+events in `L_b` (and similarly for `L_top_a → L_top_b`). This is the
+crucial structural fact that lets the carving's lo-max element be
+**globally** lo-max within `ev`, enabling `perm_ending_in_lo_max` to
+apply.
+
+**vis-transitivity dependency.** The paper's case 1(b)i (line 128) uses
+`vis a b ∧ vis b c → vis a c` to collapse a depth-3 chain to depth-2.
+`Configuration` does not provide `vis_trans` directly; we take it as
+a hypothesis here. At the top-level call, `vis_trans` follows from
+the system being reachable (proof omitted; would require an inductive
+argument over the transition system).
+
+**`¬commute` chain dependency.** Beyond `vis_trans`, the paper's argument
+implicitly assumes a chain property for `¬commute` that is not directly
+derivable from the 24 VCs. The body here is currently `sorry`; closing
+it requires either (a) adding `vis_trans` and deriving the missing
+`¬commute` chain via the carving's structural properties, or (b)
+upgrading `Configuration` with stronger invariants. Either way, the
+**signature** is what Session 3's `merge_linearization_exists` uses
+(as a black box) — proving the body is a follow-up. -/
+
+/-- **Lemma 1 part (1), same-replica form** (paper appendix.tex:117-156).
+For `e ∈ L_a` and `e' ∈ L_b` (in the same replica's `ev_local`), there
+is no `lo`-edge from `e` to `e'`. -/
+theorem no_lo_a_to_b
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    {ev_top ev_local : Set (Op D.AppOp)}
+    (h_top_vis_closed : ∀ a b, C.vis a b → b ∈ ev_top → a ∈ ev_top)
+    {e e' : Op D.AppOp}
+    (h_e_a : e ∈ L_a C ev_top ev_local)
+    (h_e'_b : e' ∈ L_b C ev_top ev_local) :
+    ¬ lo C e e' := by
+  sorry
+
+/-- **Lemma 1 part (2)** (paper appendix.tex:158-178). For
+`e ∈ L_top_a` and `e' ∈ L_top_b`, no `lo`-edge from `e` to `e'`. -/
+theorem no_lo_top_a_to_top_b
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_top_vis_closed : ∀ a b, C.vis a b →
+       b ∈ L_top ev₁ ev₂ → a ∈ L_top ev₁ ev₂)
+    {e e' : Op D.AppOp}
+    (h_e_top_a : e ∈ L_top_a C ev₁ ev₂)
+    (h_e'_top_b : e' ∈ L_top_b C ev₁ ev₂) :
+    ¬ lo C e e' := by
+  sorry
+
+/-- **Lemma 2 part (1)** (paper appendix.tex:180-201). Within
+`L_top^a`, no `lo`-edge between any two distinct elements. Used by
+the inner step's "pick lo-max of `L_top_a`" via convergence-based
+re-permutation. -/
+theorem no_lo_within_L_top_a
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_top_vis_closed : ∀ a b, C.vis a b →
+       b ∈ L_top ev₁ ev₂ → a ∈ L_top ev₁ ev₂)
+    {e e' : Op D.AppOp}
+    (_h_e : e ∈ L_top_a C ev₁ ev₂) (_h_e' : e' ∈ L_top_a C ev₁ ev₂)
+    (_h_ne : e ≠ e') :
+    ¬ lo C e e' := by
+  sorry
+
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
 theorem distinct_last_case
