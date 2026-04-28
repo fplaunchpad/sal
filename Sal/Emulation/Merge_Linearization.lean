@@ -2403,10 +2403,40 @@ theorem distinct_last_case
     · -- Case 3: neither e₁ nor e₂ commutes with everything on the
       -- other side.
       by_cases h_e₁e₂_comm : D.commutes e₁ e₂
-      · -- Case 3b: e₁, e₂ commute, but each has non-commuting
-        -- partners on the OTHER list. The paper's carving (L^a/L^b)
-        -- handles this via picking peel candidates from M^a sub-
-        -- carvings. Multi-session work; sorry for now.
+      · -- Case 3b: e₁, e₂ commute with each other, but each has
+        -- non-commuting partners on the OTHER list.
+        --
+        -- Obstacle: neither e₁ nor e₂ can be directly peeled from
+        -- the merge because neither commutes with all events on the
+        -- other side (precluding `merge_peel_comm`) and they DO
+        -- commute with each other (precluding `bottomUp_2op_reachable`
+        -- which needs ¬commute between the two peel candidates).
+        --
+        -- Resolution path (paper appendix §A.2, carving approach):
+        --   1. Partition each side's local events into L^a (no short
+        --      lo-path to the tail event) and L^b (short lo-path).
+        --   2. Use `exists_lo_maximal_in_subset` on L^a to pick a
+        --      peel candidate that is lo-max in the full event set
+        --      (by `no_lo_a_to_b`, L^a events can't lo-precede L^b
+        --      events, so lo-max-in-L^a implies lo-max-in-ev).
+        --   3. Use `perm_ending_in_lo_max` to bring the chosen
+        --      lo-max event to the list's tail.
+        --   4. Peel via `merge_peel_comm` or `bottomUp_2op_reachable`
+        --      depending on the peel candidate's properties.
+        --
+        -- Dependency: `perm_ending_in_lo_max` calls `convergence`,
+        -- which requires forward closure of the event set under
+        -- `vis ∧ ¬commute`. This property does NOT hold for the
+        -- abstract event sets threaded through the induction (they
+        -- only have backward closure). Closing this sorry requires
+        -- either:
+        --   (a) Adding forward closure to the induction hypothesis
+        --       and proving it holds at the top-level call site
+        --       (appears false for replica logs in general), or
+        --   (b) Proving a variant of convergence/re-permutation
+        --       that uses only backward closure, or
+        --   (c) A fundamentally different proof architecture that
+        --       avoids re-permutation entirely.
         sorry
       · -- Case 3a: ¬commute(e₁, e₂). Use bottomUp_2op_reachable.
         have h_e₁_in_ev₁ : e₁ ∈ ev₁ :=
@@ -2423,12 +2453,43 @@ theorem distinct_last_case
           exact C.timestamps_distinct hL_e₁ hs_e₁ hL_e₂ hs_e₂ h_ne
         -- Inner case-split on shared-event possibilities.
         by_cases h_e₁_in_ev₂ : e₁ ∈ ev₂
-        · -- e₁ shared but ¬commute(e₁, e₂). Hard sub-case;
-          -- needs re-permutation of π₂.
+        · -- Case 3a-shared-e₁: e₁ ∈ ev₁ ∩ ev₂, ¬commute(e₁, e₂).
+          --
+          -- Strategy: bring e₁ to the tail of BOTH lists, then
+          -- apply `lem_0op` to peel e₁ and recurse via `ih`.
+          --
+          -- Obstacle: bringing e₁ to the tail of π₂ requires
+          -- showing e₁ is lo-max in ev₂ (for `perm_ending_in_lo_max`).
+          -- This is NOT given — events in ev₂ \ ev₁ may lo-succeed
+          -- e₁. And `perm_ending_in_lo_max` calls `convergence`,
+          -- which requires forward closure of ev₂ under
+          -- `vis ∧ ¬commute`, not available in the current induction.
+          --
+          -- Additionally, `bottomUp_2op_reachable` cannot be used
+          -- because e₁ ∈ ev₂ means e₁ ∈ π₂', violating the
+          -- `distinctOps e₁ y` requirement for y ∈ π₂' (when y = e₁).
+          --
+          -- Same dependency on convergence/forward-closure as Case 3b.
           sorry
         · by_cases h_e₂_in_ev₁ : e₂ ∈ ev₁
-          · -- e₂ shared but ¬commute(e₁, e₂). Hard sub-case;
-            -- needs re-permutation of π₁.
+          · -- Case 3a-shared-e₂: e₂ ∈ ev₁ ∩ ev₂, e₁ ∉ ev₂,
+            -- ¬commute(e₁, e₂). Symmetric to Case 3a-shared-e₁.
+            --
+            -- Strategy: bring e₂ to the tail of BOTH lists, then
+            -- apply `lem_0op` to peel e₂ and recurse via `ih`.
+            --
+            -- Same obstacle: bringing e₂ to the tail of π₁ requires
+            -- e₂ to be lo-max in ev₁ and convergence with forward
+            -- closure. And `bottomUp_2op_reachable` fails because
+            -- e₂ ∈ ev₁ means e₂ ∈ π₁', violating `distinctOps`.
+            --
+            -- Note: `differentReplicas` is partially derivable here.
+            -- Same-replica(e₁, e₂) → vis(e₁, e₂) ∨ vis(e₂, e₁).
+            -- vis(e₁, e₂) + backward-closure(ev₂) → e₁ ∈ ev₂,
+            -- contradicting h_e₁_in_ev₂. So same-replica forces
+            -- vis(e₂, e₁). But this doesn't give False — it is a
+            -- consistent scenario (e₂ is a causal predecessor of e₁
+            -- at the same originating replica).
             sorry
           · -- Both strictly local: e₁ ∈ ev₁ \ ev₂, e₂ ∈ ev₂ \ ev₁.
             have h_diff_rep : differentReplicas e₁ e₂ :=
