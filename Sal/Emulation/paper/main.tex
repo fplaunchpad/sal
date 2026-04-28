@@ -122,11 +122,14 @@
   two are the \emph{merge case} of \Sal{}'s bottom-up linearisation
   and the weak-simulation proof for the canonical emulation map.
   Within the merge case the convergence machinery, the seven
-  bottom-up rules, and three of four sub-cases of the existential
-  induction are kernel-verified; four well-localised sorries
-  remain, all attributable to a closure-stability obstruction in
-  the recursion that the Sal paper handles via its
-  $L^a / L^b$ event-set decomposition. We report on the design
+  bottom-up rules, and the both-empty / asymmetric /
+  shared-last-event sub-cases of the existential induction are
+  kernel-verified; three well-localised sorries remain, two of
+  which are auxiliary lemmas (Lemma~1 of the Sal appendix:
+  no $\mathit{lo}$-edge from $L^a$ to $L^b$) with their depth-1
+  cases closed inline, and the third is the distinct-last-event
+  branch awaiting a paper-faithful $L^a / L^b$ carving refactor.
+  We report on the design
   choices that made the closed parts tractable --- in particular an
   \emph{invariants-in-type} formulation of system configurations
   that discharges the \textsc{Apply} case of the bridge theorem
@@ -191,9 +194,10 @@ MRDTs) should find the dependency structure useful.
     and the \textsc{Merge} case reduced to an existential
     \texttt{merge\_linearization\_exists}
     (\S\ref{sec:bridge-merge}) whose convergence/bubble-sort
-    machinery, seven bottom-up rules, and three of four
-    sub-cases of the strong induction are kernel-verified, with
-    four well-localised sorries remaining (Table~\ref{tab:sorries}).
+    machinery, seven bottom-up rules, and both-empty /
+    asymmetric / shared-last-event sub-cases of the strong
+    induction are kernel-verified, with three well-localised
+    sorries remaining (Table~\ref{tab:sorries}).
   \item An \emph{invariants-in-type} formulation of system
     configurations: rather than layering well-formedness as a
     predicate over a dumb data record and threading it through every
@@ -390,7 +394,7 @@ the final composition (transfer theorem).
     1 & \texttt{RA\_Linearizability.lean} & $25$ VCs as a \texttt{SatisfiesVCs} struct & done \\
     2 & --- & bridge: base / \textsc{CreateReplica} / \textsc{Query} & done \\
     3 & --- & bridge: \textsc{Apply} case & done \\
-    4 & \texttt{Merge\_Linearization.lean} & bridge: \textsc{Merge} case (existential, convergence + 7 bottom-up rules + 3-of-4 sub-cases closed) & partial \\
+    4 & \texttt{Merge\_Linearization.lean} & bridge: \textsc{Merge} case (existential, convergence + 7 bottom-up rules + both-empty / asymmetric / shared-last-event sub-cases closed; distinct-last-event awaiting carving refactor) & partial \\
     5 & \texttt{Instances/Grow\_Only\_Set.lean} & end-to-end smoke test & done \\
     6 & --- & per-CRDT plumbing for the remaining $17$ & todo \\
     7 & \texttt{Op\_Based\_TS.lean} & op-based LTS (\cite{liittschwager2025} \S3.3) & done \\
@@ -399,7 +403,7 @@ the final composition (transfer theorem).
     10 & --- & $\Emul$ is a weak simulation & todo \\
     11 & \texttt{Transfer.lean} & composed transfer theorem & scaffolded \\
     \midrule
-    \multicolumn{4}{l}{\footnotesize Live \texttt{sorry}s: $4$, all in the \textsc{Merge} case (Table~\ref{tab:sorries}).}\\
+    \multicolumn{4}{l}{\footnotesize Live \texttt{sorry}s: $3$ declarations, all in the \textsc{Merge} case (Table~\ref{tab:sorries}).}\\
     \bottomrule
   \end{tabular}
   \caption{The $11$-step plan and current status.
@@ -824,49 +828,54 @@ same event. Four cases:
 \subsubsection{What's left and why}
 \label{sec:merge-whats-left}
 
-Two specific obstructions remain.
+The convergence machinery, the asymmetric (one-side-empty)
+branches of \texttt{merge\_linearization\_exists}, the
+shared-last-event branch, the seven bottom-up rules, and the
+packaging theorem \texttt{RA\_lin\_preserved\_merge\_via\_witness}
+all close cleanly. The remaining work is concentrated in the
+\emph{distinct-last-event} branch, where peeling discipline must
+follow the paper's $L^a / L^b$ carving rather than the source
+linearisations' tails.
 
-\paragraph{Recursion on shrunken event sets does not preserve
-\texttt{differentReplicas}.}
-At the top level of \texttt{merge\_linearization\_exists}, $\ev_1$
-and $\ev_2$ equal specific replicas' event sets ($r_1$ and $r_2$
-of $C$), so an event in $\ev_1 \setminus \ev_2$ is genuinely
-``local to $r_1$'' and the
-\texttt{vis\_causal} + \texttt{vis\_total\_same\_replica} chain
-witnesses \texttt{differentReplicas} on any
-$(\ev_1 \setminus \ev_2) \times (\ev_2 \setminus \ev_1)$ pair.
-After one step of the shared-last-event recursion, $\ev_1$ and
-$\ev_2$ have been shrunk by removing $e_1$; they no longer equal
-any single replica's event set, and an event sitting in
-``shrunken $\ev_1 \setminus \ev_2$'' may have entered there
-because it was peeled off $\ev_2$ in a prior iteration, not
-because it is local to $r_1$. The Sal paper's
-$L^a / L^b$ decomposition (\S\ref{sec:merge-decomposition}) is
-designed to be \emph{closure-stable} under exactly this recursion;
-we have the decomposition definitions but have not yet refactored
-the inductive argument to peel from $L_a$ rather than from the
-list tail. The current sorry sits at
-\texttt{Merge\_Linearization.lean:945}.
+\paragraph{Carving-faithful peeling discipline.}
+After one step of any list-tail-based recursion, $\ev_1$ and
+$\ev_2$ no longer equal specific replicas' event sets, and an
+event sitting in ``shrunken $\ev_1 \setminus \ev_2$'' may have
+entered there because it was peeled off $\ev_2$ in a prior
+iteration. The paper's $L^a / L^b$ decomposition
+(\S\ref{sec:merge-decomposition}) is closure-stable under exactly
+this recursion: peel candidates from $L_a$ are the events with no
+lo-path of length $\le 2$ to $L_\top$, and peeling one such event
+preserves both the partition and the relevant
+\texttt{differentReplicas} chain. We have the carving definitions
+plus several supporting helpers
+(\texttt{exists\_lo\_maximal\_in\_subset},
+\texttt{perm\_ending\_in\_lo\_max} —
+the bridge from ``some lo-respecting witness'' to ``a witness
+ending in the chosen lo-max event'' via convergence-based
+re-permutation, \texttt{L\_b\_at} for the inner-inner inductive
+parameterisation), but the inductive argument itself still
+case-splits on $\pi_i.\mathsf{last}$.
 
-\paragraph{\texttt{merge\_init\_left\_reachable} for $|\pi| \geq 2$.}
-The asymmetric case requires
-$\mmerge(\init, \mathit{applySeq}(\init, \pi)) = \mathit{applySeq}(\init, \pi)$
-for general reachable $\pi$. The base cases $|\pi| \in \{0, 1\}$
-close via \texttt{merge\_idem}, \texttt{merge\_comm},
-\texttt{base\_1op}; for $|\pi| \geq 2$ no $\textsc{Ind-*-1op}$ /
-$\textsc{Inter-*-1op}$ rule extends the singleton case beyond the
-$b = \init$ line, because every such VC requires the right side of
-$\mmerge$ to have already received an event $o_l$. The Sal paper
-closes this case as a \emph{byproduct} of the same outer
-induction it uses for the merge witness; we expect to follow that
-path once the closure-stable carving lands. Sorry at
-\texttt{Merge\_Linearization.lean:743}; a related placeholder for
-``signature tightening to $\ev = C.\mathit{events}$'' sits at
-\texttt{:474} inside the convergence call site.
+\paragraph{Lemma~1 of the appendix as Lean obligations.}
+Closing the carving-faithful argument requires Lemma~1 of
+\cite{sal2025}'s appendix (\S A.2, lines 117--178): no
+$\mathit{lo}$-edge from $L^a$ to $L^b$, and no
+$\mathit{lo}$-edge from $L_\top^a$ to $L_\top^b$. We have the
+two lemma statements typed (\texttt{no\_lo\_a\_to\_b},
+\texttt{no\_lo\_top\_a\_to\_top\_b}) with $\mathit{vis}$-transitivity
+threaded as a hypothesis (\texttt{Configuration} does not expose it
+directly; deriving it from the existing invariants is sound but
+invasive across the \texttt{Step} rules). The depth-1 sub-cases of
+the first lemma (paper sub-cases 1.a and 2.a.i) and the
+vis-disjunct rule-out scaffold of the second lemma close inline; the
+paper's depth-2 case-explosion (six sub-sub-cases on vis/rc flavours
+of three $\mathit{lo}$-edges, lines 128--156) and the residual
+rc-composition for the second lemma remain as \texttt{sorry}.
 
 \paragraph{Live sorry inventory.}
-For the merge case as a whole, the live sorries are exactly the
-following (no others remain in the bridge or emulation
+For the merge case as a whole, three declarations carry
+\texttt{sorry} (no others remain in the bridge or emulation
 chains; \texttt{weakSim\_sound} and the \textsc{Apply}-case
 lemmas are kernel-verified):
 
@@ -877,27 +886,27 @@ lemmas are kernel-verified):
     \toprule
     File:line & Theorem & What's open \\
     \midrule
-    \texttt{RA\_Linearizability.lean:652}
-      & \texttt{RA\_lin\_preserved\_merge}
-      & Shim that dispatches to
-        \texttt{Merge\_Linearization}. Closes with a one-line call to
-        \texttt{RA\_lin\_preserved\_merge\_via\_witness} once the
-        existential is closed. \\
-    \texttt{Merge\_Linearization.lean:474}
-      & inside \texttt{convergence}
-      & Overwriter-witness obligation at the bubble-sort call site;
-        resolved by tightening \texttt{convergence}'s signature to
-        $\ev = C.\mathit{events}$. \\
-    \texttt{Merge\_Linearization.lean:743}
-      & \texttt{merge\_init\_left\_reachable}
-      & $|\pi| \geq 2$ inductive step (no VC extends
-        $\mmerge\,X\,\init$ beyond the singleton case). \\
-    \texttt{Merge\_Linearization.lean:945}
-      & distinct-last-event branch of
-        \texttt{merge\_linearization\_exists}
-      & \texttt{differentReplicas} does not survive recursion on
-        shrunken $\ev_1 \setminus \ev_2$; needs the
-        $L^a / L^b$ closure-stable carving. \\
+    \texttt{Merge\_Linearization.lean:1620}
+      & \texttt{no\_lo\_a\_to\_b}
+      & Lemma~1(1) of the paper. Depth-1 sub-cases close inline;
+        depth-2 case-explosion (six sub-sub-cases on vis/rc edges)
+        consumes \texttt{vis\_trans} + \texttt{no\_rc\_chain} +
+        $L_\top^a$ causal closure. \\
+    \texttt{Merge\_Linearization.lean:1662}
+      & \texttt{no\_lo\_top\_a\_to\_top\_b}
+      & Lemma~1(2) of the paper. Vis-disjunct rule-out closes
+        inline (via $L_\top$ causal closure); residual is the
+        rc-composition $\mathit{lo}_{rc}\,e''\,e \wedge
+        \mathit{lo}\,e\,e' \to \mathit{lo}\,e''\,e'$ at
+        appendix.tex:158--178. \\
+    \texttt{Merge\_Linearization.lean:1712}
+      & \texttt{distinct\_last\_case}
+      & Three internal sub-cases (paper Case~3b commute, Case~3a
+        with $e_1 \in \ev_2$ shared, Case~3a with $e_2 \in \ev_1$
+        shared) — exactly the cases the carving handles. To be
+        subsumed by the carving-faithful refactor of the
+        distinct-last-event branch (Block 6 of the
+        \texttt{Sal/Emulation/PLAN.md} carving plan). \\
     \bottomrule
   \end{tabular}
   \caption{Live sorries in the bridge theorem.}
@@ -908,30 +917,54 @@ lemmas are kernel-verified):
 \label{sec:merge-effort}
 
 The original effort estimate of $2$--$3$ weeks for the Merge case as
-a whole has been substantially absorbed: the convergence machinery,
-all seven bottom-up rules, the existential's both-empty,
-asymmetric (modulo \texttt{merge\_init\_left\_reachable}), and
-shared-last-event branches are closed. Realistic remaining effort:
+a whole has been substantially absorbed: the convergence machinery
+(now closed via Path~1, restricting scope to $\ev = C.\mathit{events}$
+with overwriter-closure threaded through the bubble-sort lemmas), all
+seven bottom-up rules, \texttt{merge\_init\_left\_reachable} for
+arbitrary $|\pi|$, and the existential's both-empty,
+asymmetric, and shared-last-event branches all close cleanly.
+The packaging theorem
+\texttt{RA\_lin\_preserved\_merge\_via\_witness} destructures the
+existential and is closed unconditionally; the corresponding shim
+\texttt{RA\_lin\_preserved\_merge} in
+\texttt{RA\_Linearizability.lean} now consumes it directly (the
+old stub has been removed).
+
+Realistic remaining effort:
 \begin{itemize}[leftmargin=*]
-  \item \texttt{Merge\_Linearization.lean:474} (overwriter witness):
-    $1$--$2$ days, mostly signature plumbing.
-  \item \texttt{merge\_init\_left\_reachable} ($|\pi| \geq 2$):
-    $1$--$2$ weeks, coupled to the $L^a / L^b$ refactor.
-  \item Distinct-last-event closure-stable refactor:
-    $1$--$2$ weeks, the bulk of which is the
-    $L^a / L^b$ carving and propagating it through the
-    induction.
+  \item Block 6 of the carving plan (\texttt{Sal/Emulation/PLAN.md}):
+    a paper-faithful triple-nested induction
+    ($\sigma_1 = |L_1^a \cup L_2^a|$, $\sigma_2 = |L_\top^a|$,
+    $\sigma_3 = |L_b(\hat e_\top)|$) replacing the
+    distinct-last-event branch. Estimated $\sim 280$ Lean lines, a
+    fresh-context multi-hour effort. Subsumes the three
+    \texttt{distinct\_last\_case} sub-case sorries.
+  \item Lemma~1 bodies (\texttt{no\_lo\_a\_to\_b} depth-2,
+    \texttt{no\_lo\_top\_a\_to\_top\_b} rc-composition):
+    each $\sim 100$ Lean lines, gated on either making
+    $\mathit{vis}$-transitivity a derived structural fact or
+    propagating it as a hypothesis on the bridge theorem. Open
+    question on the implicit
+    ``$\neg\mathit{commute}$ chain'' the paper invokes; may
+    require a derivation or a $29$th VC.
 \end{itemize}
 
-The packaging theorem
-\texttt{RA\_lin\_preserved\_merge\_via\_witness} (in
-\texttt{Merge\_Linearization.lean}) destructures the existential
-and is closed unconditionally; once
-\texttt{merge\_linearization\_exists} closes, swapping the stubbed
-\texttt{RA\_lin\_preserved\_merge} in
-\texttt{RA\_Linearizability.lean} for a one-line call to
-\texttt{RA\_lin\_preserved\_merge\_via\_witness} finishes the
-bridge theorem.
+Two architectural decisions accompanied this work. First, the
+\texttt{SatisfiesVCs} structure grew from $25$ fields to $28$:
+\texttt{merge\_init} (the lattice-bottom property
+$\mmerge(\init, s) = s$, consumed by the asymmetric branches),
+\texttt{rc\_non\_comm\_directional} (a directional form of
+\texttt{rc\_non\_comm} consumed by the strictly-local sub-case of
+the distinct-last-event branch), and \texttt{merge\_peel\_comm}
+(consumed by the convergence-based re-permutation when peeling
+commuting events from the carving's frontier). All three are
+discharged vacuously by Grow-Only Set and represent real
+obligations only on CRDTs whose $\mathit{rc}$ is non-trivial.
+Second, the paper's $L^b$ definition was extended from depth-1
+lo-paths only to depth-1-or-2, matching
+\cite{sal2025}'s appendix.tex line 262; the depth-2 inclusion is
+load-bearing for Lemma~1 case 1.b.i (and is forced by
+\texttt{no\_rc\_chain}).
 
 \subsection{The VCs as a Lean structure}
 \label{sec:satisfies-vcs}
@@ -1247,34 +1280,39 @@ single pass.
 
 \subsection{Where we expect the remaining work to land}
 
-Four sorries (Table~\ref{tab:sorries}) plus the simulation proof
+Three sorries (Table~\ref{tab:sorries}) plus the simulation proof
 for $\Emul$ remain open. We report estimates based on actual
 mechanisation experience with the closed pieces, including the
 substantial portion of the merge case that has now landed: the
-convergence machinery, all seven bottom-up rules, and three of
-the four sub-cases of \texttt{merge\_linearization\_exists}.
+convergence machinery, all seven bottom-up rules, and the
+both-empty / asymmetric / shared-last-event sub-cases of
+\texttt{merge\_linearization\_exists}.
 
 \begin{itemize}[leftmargin=*]
-  \item \emph{Overwriter-witness sorry inside
-    \texttt{convergence}} (\texttt{Merge\_Linearization.lean:474}):
-    resolved by tightening \texttt{convergence}'s signature to
-    $\ev = C.\mathit{events}$ and propagating an
-    overwriter-closure invariant through the bubble-sort. Mostly
-    plumbing. About $1$--$2$ days.
-  \item \emph{\texttt{merge\_init\_left\_reachable} for
-    $|\pi| \geq 2$} (\texttt{:743}): needs the closure-stable
-    $L^a / L^b$ carving (next item) since the $24$ VCs as
-    standalone rules do not cover $\mmerge\,X\,\init$ beyond the
-    singleton case. Likely closes as a byproduct once the carving
-    lands. About $1$--$2$ weeks, coupled to the next item.
-  \item \emph{Distinct-last-event branch of
-    \texttt{merge\_linearization\_exists}} (\texttt{:945}):
-    refactor the existential's induction to peel from $L_a$ rather
-    than from the list tail, threading the
-    $L^a / L^b$ partition through the recursion to preserve
-    closure of \texttt{differentReplicas}. About $1$--$2$ weeks.
-    This and the previous item share infrastructure and will likely
-    close together.
+  \item \emph{Carving-faithful refactor of the distinct-last-event
+    branch} (Block 6 of \texttt{Sal/Emulation/PLAN.md}):
+    replace the case-split on $(\pi_1.\mathsf{last},
+    \pi_2.\mathsf{last})$ with a paper-faithful triple-nested
+    induction over the carving sizes
+    ($\sigma_1 = |L_1^a \cup L_2^a|$, $\sigma_2 = |L_\top^a|$,
+    $\sigma_3 = |L_b(\hat e_\top)|$), peeling lo-max events of
+    each carving layer via
+    \texttt{exists\_lo\_maximal\_in\_subset} +
+    \texttt{perm\_ending\_in\_lo\_max} and applying the appropriate
+    bottom-up rule. About $\sim 280$ Lean lines, a fresh-context
+    multi-hour effort. Subsumes the three
+    \texttt{distinct\_last\_case} sub-case sorries.
+  \item \emph{Lemma~1 bodies}
+    (\texttt{no\_lo\_a\_to\_b} depth-2,
+    \texttt{no\_lo\_top\_a\_to\_top\_b} rc-composition):
+    each $\sim 100$ Lean lines. Gated on either deriving
+    $\mathit{vis}$-transitivity as a structural fact about
+    \texttt{Configuration} (sound but invasive across the
+    \texttt{Step} rules) or threading it as a hypothesis on the
+    bridge theorem. Open question on the implicit
+    ``$\neg\mathit{commute}$ chain'' the paper invokes; may
+    require a derivation or a $29$th VC. About $1$--$2$ weeks
+    once the dependency strategy is decided.
   \item \emph{\texttt{effectiveState} linear extension and weak
     simulation for $\Emul$}: Liittschwager et al.'s §4.2 argument
     ported to Lean. Needs a concrete definition of
@@ -1282,8 +1320,7 @@ the four sub-cases of \texttt{merge\_linearization\_exists}.
     delivered-message set with respect to $\mathit{hb}$, replacing
     the current \texttt{D.init} stub) and the simulation relation
     $R$ coupling op-side configurations to state-side ones. About
-    $2$--$4$ weeks; the second-longest remaining item after the
-    distinct-last-event refactor.
+    $2$--$4$ weeks.
 \end{itemize}
 
 \section{Related Work}
