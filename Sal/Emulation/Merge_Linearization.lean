@@ -1601,7 +1601,22 @@ upgrading `Configuration` with stronger invariants. Either way, the
 
 /-- **Lemma 1 part (1), same-replica form** (paper appendix.tex:117-156).
 For `e ∈ L_a` and `e' ∈ L_b` (in the same replica's `ev_local`), there
-is no `lo`-edge from `e` to `e'`. -/
+is no `lo`-edge from `e` to `e'`.
+
+**Proof structure** (matching paper sub-cases). `e' ∈ L_b` decomposes
+on whether `e'` has a depth-1 or depth-2 path to `ev_top`:
+
+* **depth-1** (paper sub-cases 1.a and 2.a.i): `e' →_lo e_top` for
+  some `e_top ∈ ev_top`. Combined with `h_lo : e →_lo e'`, this gives
+  a depth-2 path `e →_lo e' →_lo e_top` from `e` to `ev_top`,
+  contradicting `e ∈ L_a`. Closed inline below regardless of which
+  disjunct of `h_lo` (vis or rc) holds.
+* **depth-2** (paper sub-cases 1.b and 2.b): `e' →_lo e_mid →_lo e_top`
+  for some `e_mid ∈ ev_local`, `e_top ∈ ev_top`. The paper splits on
+  the (vis/rc) flavors of all three lo-edges (six sub-sub-cases),
+  using `vis_trans`, `no_rc_chain`, and `L_top^a` causal closure.
+  Body still `sorry` — this is the load-bearing depth-2 case the
+  paper documents at lines 128-156. -/
 theorem no_lo_a_to_b
     (hVC : SatisfiesVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1612,7 +1627,22 @@ theorem no_lo_a_to_b
     (h_e_a : e ∈ L_a C ev_top ev_local)
     (h_e'_b : e' ∈ L_b C ev_top ev_local) :
     ¬ lo C e e' := by
-  sorry
+  intro h_lo
+  obtain ⟨he_local, h_e_a_paths⟩ := h_e_a
+  obtain ⟨he'_local, h_e'_b_paths⟩ := h_e'_b
+  apply h_e_a_paths
+  rcases h_e'_b_paths with
+    ⟨e_top, h_etop_in_top, h_lo_e'_etop⟩
+  | ⟨e_mid, h_mid_in_local, e_top, h_etop_in_top,
+     h_lo_e'_emid, h_lo_emid_etop⟩
+  · -- depth-1 from e': compose h_lo with h_lo_e'_etop into a
+    -- depth-2 path from e to e_top via e'.
+    exact Or.inr ⟨e', he'_local, e_top, h_etop_in_top, h_lo,
+                  h_lo_e'_etop⟩
+  · -- depth-2 from e': paper's case-explosion (6 sub-sub-cases on
+    -- vis/rc flavors of the three lo-edges). Needs vis_trans +
+    -- no_rc_chain + L_top^a-causal-closure reasoning.
+    sorry
 
 /-- **Lemma 1 part (2)** (paper appendix.tex:158-178). For
 `e ∈ L_top_a` and `e' ∈ L_top_b`, no `lo`-edge from `e` to `e'`. -/
