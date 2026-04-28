@@ -28,7 +28,7 @@ This reduces to two subgoals we prove independently and then compose:
 | 1 | Transcribe the 24 VCs + `cond_comm_lift` + `merge_init` + `rc_non_comm_directional` + `merge_peel_comm` into `SatisfiesVCs` (28 fields) | **DONE** |
 | 2 | Bridge theorem: base / CreateReplica / Query cases | **DONE** |
 | 3 | Bridge theorem: Apply case | **DONE** |
-| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs with `vis_trans` as hypothesis. 4 declarations use `sorry`: 3 Lemma 1 bodies + `distinct_last_case` (3 internal sorries). Block 6 — paper-faithful triple-nested carving induction body for `merge_linearization_exists` — pending Session 3.) |
+| 4 | Bridge theorem: Merge case (hardest) | **PARTIAL** (Sessions 1-2 of carving plan landed: `L_b_at` parameterized form, `perm_ending_in_lo_max`, Lemma 1 stubs. Lemma 1 part 2 closed via Aristotle (commit `d8a20dc`); part 1 has depth-1 sub-cases closed inline. 2 declarations use `sorry`: `no_lo_a_to_b` (depth-2 case) and `distinct_last_case` (3 internal sorries). Block 6 — paper-faithful triple-nested carving induction body — pending Session 3.) |
 | 5 | End-to-end smoke test on Grow-Only Set (28 VCs) | **DONE** |
 | 6 | Instantiate bridge for remaining CRDTs | TODO |
 | 7 | Op-based TS (Liittschwager §3.3) | **SCAFFOLDED** |
@@ -495,11 +495,30 @@ boxes. Delete `distinct_last_case` (~860 lines).
   + 1 placeholder).
 - After Session 2: 4 declarations using `sorry` (3 Lemma 1 stubs +
   distinct_last_case).
-- After Session 3: expected 3 declarations (3 Lemma 1 stubs only;
-  distinct_last_case deleted).
-- Closing Lemma 1 bodies requires either adding `vis_trans` to
-  `Configuration` and re-discharging through Step rules, or proving
-  the paper's `¬commute` chain property from the VCs (open question).
+- After dropping overly-strong stub: 3 declarations.
+- After depth-1 partial close on Lemma 1 part 1: 3 declarations
+  (load-bearing depth-2 case isolated).
+- After Aristotle closes Lemma 1 part 2 (commit `d8a20dc`): 2
+  declarations (`no_lo_a_to_b` + `distinct_last_case`).
+
+**Aristotle's Lemma 1 part 2 close (commit `d8a20dc`).** The proof
+exploits a structural insight: the no-overwriter clause embedded
+in `lo`'s rc disjunct (`¬ ∃ e₃, vis e e₃ ∧ ¬commute e e₃`) is
+**directly contradicted** by the vis disjunct of the assumed lo-edge.
+Case-split on `h_lo`: vis case closes via `absurd` against the
+no-overwriter clause; rc case closes via `no_rc_chain` on the
+two consecutive rc-Fst edges. Adds a `h_distinct` hypothesis
+(timestamp uniqueness across `ev₁ ∪ ev₂`) needed by `no_rc_chain`,
+derivable from `C.timestamps_distinct` at any call site. The
+`vis_trans` hypothesis turned out to be unnecessary for this lemma.
+
+**Open work after Lemma 1 part 1 closes (Aristotle queued):**
+- After Aristotle closes `no_lo_a_to_b` depth-2: 1 declaration
+  (`distinct_last_case`, 3 internal sub-cases).
+- Block 6 then subsumes that final declaration.
+- Closing the `¬commute` chain dependency turned out NOT to be
+  needed for Lemma 1 part 2; remains an open question for the
+  depth-2 case of part 1 if Aristotle can't close it.
 
 ### 5. Smoke test on Grow-Only Set — DONE
 
