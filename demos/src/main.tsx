@@ -82,12 +82,51 @@ function Landing() {
     <div className="landing">
       <h1>Sal CRDT playgrounds</h1>
       <p>
-        Interactive simulators for the CRDTs and MRDTs verified in{" "}
-        <a href="https://github.com/fplaunchpad/sal">Sal</a>. CRDTs do two-way
-        merge (pick a source and target, target absorbs source); MRDTs do
-        three-way merge over a git-style commit DAG with LCA computed from
-        the history. Toggle the concrete state to see the lattice layer that
-        makes convergence work.
+        Interactive simulators for every CRDT and MRDT verified in{" "}
+        <a href="https://github.com/fplaunchpad/sal">Sal</a>, a Lean 4
+        framework that proves <strong>replication-aware
+        linearizability</strong> (a strict strengthening of the usual
+        commutative–associative–idempotent merge story) on a 24-VC schema
+        for state-based replicated data types. Every RDT in the framework
+        is also instrumented with a <strong>read-side projection</strong>
+        that lifts the user-facing semantic claim — "is <code>e</code> in
+        the OR-Set?", "is this character bold in Peritext?", "does this
+        counter equal <code>incs − decs</code>?" — into a Lean theorem,
+        with concrete <em>SPOT</em> tests pinning the headline behaviour
+        on small executions.
+      </p>
+      <p>
+        The playgrounds let you exercise those data structures
+        operationally:
+      </p>
+      <ul style={{ marginTop: "0.25rem", marginBottom: "0.75rem" }}>
+        <li>
+          <strong>CRDTs</strong> — two-way merge between replicas. Issue
+          ops at any replica, then pick a source and a target — the
+          target absorbs the source. The lattice underneath converges
+          regardless of the order you choose.
+        </li>
+        <li>
+          <strong>MRDTs</strong> — three-way merge over a git-style
+          commit DAG. Branches diverge, you merge them with the LCA
+          computed from history. Toggle the "concrete state" view to see
+          the lattice layer driving convergence.
+        </li>
+      </ul>
+      <p>
+        Each demo's controls match the operations in the corresponding
+        Lean file (look for <code>app_op_t</code> in the linked source);
+        the read-side query the simulator displays matches the headline
+        theorem in the <code>*_ReadSide.lean</code> companion. Background
+        on methodology:{" "}
+        <a href="https://github.com/fplaunchpad/sal/blob/main/docs/readside-projections.md">
+          read-side projections
+        </a>
+        ,{" "}
+        <a href="https://github.com/fplaunchpad/sal/blob/main/docs/porting-op-based-crdts.md">
+          porting op-based CRDTs into Sal
+        </a>
+        .
       </p>
 
       <h2 style={{ marginTop: "1.5rem" }}>CRDTs (two-way merge)</h2>
