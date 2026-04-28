@@ -241,6 +241,55 @@ theorem L_top_a_inter_L_top_b (C : Configuration D) (ev₁ ev₂ : Set (Op D.App
   rintro ⟨⟨_, h_ex⟩, _, h_no⟩
   exact h_no h_ex
 
+/-! ### `L_b_at`: parameterized `L_b` for a single LCA event
+
+The paper's nested induction (`appendix.tex:262, 313`) parameterizes
+`L_1^b` by a specific `e_⊤ ∈ L_⊤^a`: `M_1^a := L_1^b(e_m^⊤)`. Our
+existing `L_b` quantifies over all `e_⊤ ∈ ev_top`; the parameterized
+form below fixes `e_top` and is a subset of the all-paths form. -/
+
+/-- `L_b_at C e_top ev_local`: events in `ev_local` with a lo-path
+of length 1 or 2 to the **specific** event `e_top` (paper's
+`L_1^b(e_top)`). -/
+def L_b_at (C : Configuration D) (e_top : Op D.AppOp)
+    (ev_local : Set (Op D.AppOp)) : Set (Op D.AppOp) :=
+  fun e => e ∈ ev_local ∧
+    (lo C e e_top ∨
+     (∃ e' ∈ ev_local, lo C e e' ∧ lo C e' e_top))
+
+theorem L_b_at_subset_local (C : Configuration D) (e_top : Op D.AppOp)
+    (ev_local : Set (Op D.AppOp)) :
+    L_b_at C e_top ev_local ⊆ ev_local := fun _ h => h.1
+
+theorem L_b_at_subset_L_b (C : Configuration D) {e_top : Op D.AppOp}
+    {ev_top ev_local : Set (Op D.AppOp)} (h : e_top ∈ ev_top) :
+    L_b_at C e_top ev_local ⊆ L_b C ev_top ev_local := by
+  rintro e ⟨h_loc, h_path⟩
+  refine ⟨h_loc, ?_⟩
+  rcases h_path with h_lo | ⟨e', h_loc', h_lo_ee', h_lo_e'_top⟩
+  · exact Or.inl ⟨e_top, h, h_lo⟩
+  · exact Or.inr ⟨e', h_loc', e_top, h, h_lo_ee', h_lo_e'_top⟩
+
+/-! ### `L_top` causal closure (paper appendix.tex:209-210)
+
+The paper's "L_top^a is causally closed" is (a) `L_top` is closed
+under vis-predecessors when both `ev₁` and `ev₂` are, and (b) any
+vis-predecessor of an `L_top_a` element lands somewhere in `L_top`
+(which decomposes into `L_top_a ∪ L_top_b`).
+
+These hold because `L_top := ev₁ ∩ ev₂`, and replicas observe events
+causally (`vis_causal` on `Configuration`). For events in `ev₁ ∩ ev₂`,
+both replicas observed them, so both observed any vis-predecessors. -/
+
+theorem L_top_vis_closed
+    {C : Configuration D} {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_ev₁_closed : ∀ a b, C.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed : ∀ a b, C.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    {a b : Op D.AppOp} (h_vis : C.vis a b)
+    (h_b : b ∈ L_top ev₁ ev₂) :
+    a ∈ L_top ev₁ ev₂ :=
+  ⟨h_ev₁_closed a b h_vis h_b.1, h_ev₂_closed a b h_vis h_b.2⟩
+
 /-! **`L_b` depth audit (paper-side, 2026-04-25, post-fix).**
 
 Per `appendix.tex:262`, `L_1^b` accepts events with a lo-path of
@@ -1435,6 +1484,96 @@ theorem filter_ne_respects
     (h_resp : respects π (lo C)) :
     respects (π.filter (· ≠ e)) (lo C) := by
   exact h_resp.filter _
+
+/-! ### `perm_ending_in_lo_max`: re-permute via convergence
+
+The paper's nested induction (paper appendix.tex:323, 343) frequently
+says "since v_i is linearizable, there exists a sequence ending in
+e_i". This is **convergence applied**: the IH gives *some* lo-
+respecting witness, and convergence guarantees *every* lo-respecting
+permutation of the same `ev` yields the same state. So we can pick
+a witness that ends in any chosen lo-maximal element of `ev`. -/
+
+/-- Re-permute `π` to end in a chosen lo-maximal element `e` of the
+permutation's set, preserving lo-respect and `applySeq` state.
+
+The constructed witness is `(π.filter (· ≠ e)) ++ [e]`. Lo-respect
+follows because (a) filter preserves pairwise, (b) appending `e` is
+safe because `e` is lo-max. State equality follows from `convergence`
+applied to the original `π` and the new witness. -/
+theorem perm_ending_in_lo_max
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {π : List (Op D.AppOp)} {e : Op D.AppOp}
+    (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
+    (h_ev_closed : ∀ x ∈ ev, ∀ e₃, C.vis x e₃ → ¬ D.commutes x e₃ →
+                   e₃ ∈ ev)
+    (h_perm : listPermOf π ev) (h_resp : respects π (lo C))
+    (h_e_in_ev : e ∈ ev)
+    (h_e_lo_max : ∀ x ∈ ev, x ≠ e → ¬ lo C e x) :
+    listPermOf ((π.filter (· ≠ e)) ++ [e]) ev ∧
+    respects ((π.filter (· ≠ e)) ++ [e]) (lo C) ∧
+    ∀ s : D.State,
+      applySeq D s π = applySeq D s ((π.filter (· ≠ e)) ++ [e]) := by
+  have h_e_in_π : e ∈ π := (h_perm.2 e).mpr h_e_in_ev
+  -- Use existing filter_ne_listPermOf to get perm of (ev \ {e}),
+  -- then re-attach e at the end.
+  have hfilt_perm : listPermOf (π.filter (· ≠ e)) (ev \ {e}) :=
+    filter_ne_listPermOf h_perm h_e_in_π
+  have hfilt_resp : respects (π.filter (· ≠ e)) (lo C) :=
+    filter_ne_respects h_resp
+  refine ⟨?_, ?_, ?_⟩
+  · -- listPermOf (π.filter (· ≠ e) ++ [e]) ev.
+    refine ⟨?_, fun a => ?_⟩
+    · rw [List.nodup_append]
+      refine ⟨hfilt_perm.1, List.nodup_singleton _, ?_⟩
+      intro x hx y hy heq
+      rw [List.mem_singleton] at hy; subst y; subst heq
+      exact (hfilt_perm.2 x).mp hx |>.2 rfl
+    · rw [List.mem_append, List.mem_singleton]
+      constructor
+      · rintro (h | rfl)
+        · exact ((hfilt_perm.2 a).mp h).1
+        · exact h_e_in_ev
+      · intro ha
+        by_cases hae : a = e
+        · exact Or.inr hae
+        · exact Or.inl ((hfilt_perm.2 a).mpr ⟨ha, hae⟩)
+  · -- respects (π.filter (· ≠ e) ++ [e]) (lo C).
+    unfold respects
+    rw [List.pairwise_append]
+    refine ⟨hfilt_resp, List.pairwise_singleton _ _, ?_⟩
+    intro y hy b hb
+    rw [List.mem_singleton] at hb; subst b
+    have ⟨hy_in_ev, hy_ne⟩ := (hfilt_perm.2 y).mp hy
+    exact h_e_lo_max y hy_in_ev hy_ne
+  · -- State equality via convergence.
+    intro s
+    have h_perm' : listPermOf ((π.filter (· ≠ e)) ++ [e]) ev := by
+      refine ⟨?_, fun a => ?_⟩
+      · rw [List.nodup_append]
+        refine ⟨hfilt_perm.1, List.nodup_singleton _, ?_⟩
+        intro x hx y hy heq
+        rw [List.mem_singleton] at hy; subst y; subst heq
+        exact (hfilt_perm.2 x).mp hx |>.2 rfl
+      · rw [List.mem_append, List.mem_singleton]
+        constructor
+        · rintro (h | rfl)
+          · exact ((hfilt_perm.2 a).mp h).1
+          · exact h_e_in_ev
+        · intro ha
+          by_cases hae : a = e
+          · exact Or.inr hae
+          · exact Or.inl ((hfilt_perm.2 a).mpr ⟨ha, hae⟩)
+    have h_resp' : respects ((π.filter (· ≠ e)) ++ [e]) (lo C) := by
+      unfold respects
+      rw [List.pairwise_append]
+      refine ⟨hfilt_resp, List.pairwise_singleton _ _, ?_⟩
+      intro y hy b hb
+      rw [List.mem_singleton] at hb; subst b
+      have ⟨hy_in_ev, hy_ne⟩ := (hfilt_perm.2 y).mp hy
+      exact h_e_lo_max y hy_in_ev hy_ne
+    exact convergence hVC s h_ev_in_C h_ev_closed h_perm h_perm'
+      h_resp h_resp'
 
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
