@@ -1629,22 +1629,13 @@ theorem no_lo_top_a_to_top_b
     ¬ lo C e e' := by
   sorry
 
-/-- **Lemma 2 part (1)** (paper appendix.tex:180-201). Within
-`L_top^a`, no `lo`-edge between any two distinct elements. Used by
-the inner step's "pick lo-max of `L_top_a`" via convergence-based
-re-permutation. -/
-theorem no_lo_within_L_top_a
-    (hVC : SatisfiesVCs D) {C : Configuration D}
-    (h_vis_trans : ∀ {a b c : Op D.AppOp},
-       C.vis a b → C.vis b c → C.vis a c)
-    {ev₁ ev₂ : Set (Op D.AppOp)}
-    (h_top_vis_closed : ∀ a b, C.vis a b →
-       b ∈ L_top ev₁ ev₂ → a ∈ L_top ev₁ ev₂)
-    {e e' : Op D.AppOp}
-    (_h_e : e ∈ L_top_a C ev₁ ev₂) (_h_e' : e' ∈ L_top_a C ev₁ ev₂)
-    (_h_ne : e ≠ e') :
-    ¬ lo C e e' := by
-  sorry
+/-! Note: an earlier stub `no_lo_within_L_top_a` claimed
+`∀ e e' ∈ L_top_a, e ≠ e' → ¬ lo C e e'` — this is too strong and
+**false in general** (lo-edges between distinct `L_top_a` elements
+are not precluded by the carving's definitions). Block 6's inner
+step uses `exists_lo_maximal_in_subset (L_top_a)` directly to
+extract a lo-max element, which gives no-lo-successor *within*
+`L_top_a` for free. -/
 
 /-- **Distinct-last-event case** of `merge_linearization_exists`.
 Extracted as a separate theorem so the subagent can focus on it. -/
