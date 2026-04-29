@@ -403,10 +403,10 @@ the final composition (transfer theorem).
     0 & \texttt{Labeled\_TS.lean} & generic LTS, executions, reachability & done \\
     0 & \texttt{CRDT\_Signature.lean} & \texttt{CRDTSig}, \texttt{RcRes}, $\Op$, $\commute$ & done \\
     0 & \texttt{CRDT\_TS.lean} & configuration-with-invariants, four rules & done \\
-    1 & \texttt{RA\_Linearizability.lean} & $25$ VCs as a \texttt{SatisfiesVCs} struct & done \\
+    1 & \texttt{RA\_Linearizability.lean} & $29$ VCs as a \texttt{SatisfiesVCs} struct & done \\
     2 & --- & bridge: base / \textsc{CreateReplica} / \textsc{Query} & done \\
     3 & --- & bridge: \textsc{Apply} case & done \\
-    4 & \texttt{Merge\_Linearization.lean} & bridge: \textsc{Merge} case (existential, convergence + 7 bottom-up rules + both-empty / asymmetric / shared-last-event sub-cases closed; distinct-last-event awaiting carving refactor) & partial \\
+    4 & \texttt{Merge\_Linearization.lean} & bridge: \textsc{Merge} case (existential, convergence + 7 bottom-up rules + both-empty / asymmetric / shared-last-event sub-cases + Lemma~1 closed; distinct-last-event Case~3b awaiting carving refactor) & partial \\
     5 & \texttt{Instances/Grow\_Only\_Set.lean} & end-to-end smoke test & done \\
     6 & --- & per-CRDT plumbing for the remaining $17$ & todo \\
     7 & \texttt{Op\_Based\_TS.lean} & op-based LTS (\cite{liittschwager2025} \S3.3) & done \\
@@ -415,7 +415,7 @@ the final composition (transfer theorem).
     10 & --- & $\Emul$ is a weak simulation & todo \\
     11 & \texttt{Transfer.lean} & composed transfer theorem & scaffolded \\
     \midrule
-    \multicolumn{4}{l}{\footnotesize Live \texttt{sorry}s: $3$ declarations, all in the \textsc{Merge} case (Table~\ref{tab:sorries}).}\\
+    \multicolumn{4}{l}{\footnotesize Live \texttt{sorry}s: $2$ declarations / $6$ internal occurrences, all in the \textsc{Merge} case (Table~\ref{tab:sorries}).}\\
     \bottomrule
   \end{tabular}
   \caption{The $11$-step plan and current status.
@@ -1045,7 +1045,7 @@ known fix.''
 \label{sec:satisfies-vcs}
 
 The VCs are packaged as a \texttt{Prop}-valued Lean structure
-\texttt{SatisfiesVCs} with one field per VC. The first $24$ fields
+\texttt{SatisfiesVCs} with $29$ fields. The first $24$
 match the theorem names in \Sal{}'s per-CRDT files exactly
 (\texttt{rc\_non\_comm}, \texttt{no\_rc\_chain},
 \texttt{cond\_comm\_base}, \texttt{merge\_comm}, \texttt{merge\_idem},
@@ -1054,7 +1054,9 @@ variants, \texttt{ind\_right\_2op}, \texttt{ind\_left\_2op}, and the
 corresponding $1$-op and $0$-op versions, ending in
 \texttt{lem\_0op}). This matching is deliberate: the target use
 case is closing \texttt{SatisfiesVCs D} for each existing \Sal{}
-CRDT by pointing at the corresponding theorem.
+CRDT by pointing at the corresponding theorem. The remaining $5$
+fields capture properties \Sal{}'s $24$ VCs leave implicit;
+each emerged from a specific point in the mechanisation.
 
 \paragraph{The $25$th field: \texttt{cond\_comm\_lift}.}
 \Sal{}'s $24$ VCs include \texttt{cond\_comm\_base} but not its
@@ -1063,7 +1065,7 @@ paper (\cite{sal2025} \texttt{lin.tex} §3.2) treats the lifted form
 as a property of $\mathcal{S}_\RDT$ assumed at the convergence level;
 the appendix uses it directly when flipping two events past an
 overwriter $e_3$ that may sit anywhere in the suffix. Our Lean
-structure makes this implicit assumption explicit as a $25$th field:
+structure makes this implicit assumption explicit:
 \begin{lstlisting}[caption={The lifted \texttt{cond\_comm\_lift} field.},
                    label=lst:cond-comm-lift]
 cond_comm_lift :
@@ -1082,9 +1084,50 @@ field discharges by \texttt{intros; simp\_all}. For CRDTs with
 non-trivial $\mrc$, the field would need to be derived from
 \texttt{cond\_comm\_base} by induction on the intervening list
 $\pi$ --- a closure step the \Sal{} paper treats as implicit and
-does not explicitly mechanise. We expect this to be a single VC
-that does \emph{not} fall out of the per-CRDT \Sal{} files for
-free, and we flag it as a one-time discharge obligation per CRDT.
+does not explicitly mechanise.
+
+\paragraph{Fields $26$--$28$: lattice-bottom merge, directional
+rc-non-comm, merge-peel-commute.} \texttt{merge\_init}
+($\mmerge(\init, s) = s$) is consumed by the asymmetric
+(one-side-empty) sub-case of \texttt{merge\_linearization\_exists};
+$\Sal$'s file-level theorem set does not include it because the
+asymmetric case is treated implicitly in the paper.
+\texttt{rc\_non\_comm\_directional} ($\neg \commute(o_1, o_2)
+\leftrightarrow \mrc(o_1, o_2) = \Fst \lor \mrc(o_2, o_1) = \Fst$)
+is the directional variant of \texttt{rc\_non\_comm} that the
+strictly-local sub-case of the distinct-last-event branch needs;
+\Sal{}'s file-level statement is the symmetric $\Either$-shaped
+form which doesn't yield a peel-direction witness when both events
+are concurrent. \texttt{merge\_peel\_comm} (peel an event off the
+left side of a merge when the right side's events all commute with
+it) is consumed by the convergence-based re-permutation. All three
+discharge vacuously for trivial-rc CRDTs.
+
+\paragraph{Field $29$: \texttt{shared\_peel\_1op} (campaign-discovered).}
+The Aristotle campaign (\S\ref{sec:aristotle-campaign}) identified
+a CRDT-lattice property that \Sal{}'s $24$ VCs cannot derive: when
+both replicas have applied the same LCA event $o_l$ and one has
+additionally applied $o_1$, peeling $o_1$ out of the merge is sound:
+\begin{lstlisting}[caption={The shared-element 1-op peel field.},
+                   label=lst:shared-peel-1op]
+shared_peel_1op :
+  forall (o_1 o_l : Op D.AppOp), distinctOps o_1 o_l ->
+    forall (a b : D.State),
+      D.merge (D.update (D.update a o_l) o_1) (D.update b o_l)
+        = D.update (D.merge (D.update a o_l) (D.update b o_l)) o_1
+\end{lstlisting}
+The reason it is missing from \Sal{}'s base $24$: every existing
+single-side-extension VC (\texttt{ind\_left\_*}, \texttt{ind\_right\_*},
+\texttt{inter\_*}) requires \texttt{distinctOps} between the new
+operation and the other side's tail. When both sides share $o_l$,
+this requires \texttt{distinctOps o\_l o\_l}, which is always
+false. The only ``shared LCA'' VC, \texttt{ind\_lca\_1op}, requires
+both sides to start from the same base state, which doesn't hold
+once each side has its own prefix. The shared peel is therefore a
+genuinely new axiom; for typical CRDTs it follows from join
+associativity / commutativity (e.g.\ for Grow-Only Set,
+$(a \cup \{o_l\} \cup \{o_1\}) \cup (b \cup \{o_l\}) =
+(a \cup \{o_l\} \cup b \cup \{o_l\}) \cup \{o_1\}$).
 
 \section{Emulation and Transfer}
 \label{sec:emulation}
