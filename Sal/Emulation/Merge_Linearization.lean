@@ -2624,38 +2624,259 @@ theorem distinct_last_case
       · -- Case 3b: e₁, e₂ commute with each other, but each has
         -- non-commuting partners on the OTHER list.
         --
-        -- Obstacle: neither e₁ nor e₂ can be directly peeled from
-        -- the merge because neither commutes with all events on the
-        -- other side (precluding `merge_peel_comm`) and they DO
-        -- commute with each other (precluding `bottomUp_2op_reachable`
-        -- which needs ¬commute between the two peel candidates).
-        --
-        -- Resolution path (paper appendix §A.2, carving approach):
-        --   1. Partition each side's local events into L^a (no short
-        --      lo-path to the tail event) and L^b (short lo-path).
-        --   2. Use `exists_lo_maximal_in_subset` on L^a to pick a
-        --      peel candidate that is lo-max in the full event set
-        --      (by `no_lo_a_to_b`, L^a events can't lo-precede L^b
-        --      events, so lo-max-in-L^a implies lo-max-in-ev).
-        --   3. Use `perm_ending_in_lo_max` to bring the chosen
-        --      lo-max event to the list's tail.
-        --   4. Peel via `merge_peel_comm` or `bottomUp_2op_reachable`
-        --      depending on the peel candidate's properties.
-        --
-        -- Dependency: `perm_ending_in_lo_max` calls `convergence`,
-        -- which requires forward closure of the event set under
-        -- `vis ∧ ¬commute`. This property does NOT hold for the
-        -- abstract event sets threaded through the induction (they
-        -- only have backward closure). Closing this sorry requires
-        -- either:
-        --   (a) Adding forward closure to the induction hypothesis
-        --       and proving it holds at the top-level call site
-        --       (appears false for replica logs in general), or
-        --   (b) Proving a variant of convergence/re-permutation
-        --       that uses only backward closure, or
-        --   (c) A fundamentally different proof architecture that
-        --       avoids re-permutation entirely.
-        sorry
+        -- Decomposition strategy: derive witnesses from the negated
+        -- commutativity hypotheses, then split on shared membership.
+        -- Step 1: Basic membership facts.
+        have h_e₁_in_ev₁ : e₁ ∈ ev₁ :=
+          (h₁p.2 e₁).mp (List.mem_append.mpr (Or.inr
+            (List.mem_singleton.mpr rfl)))
+        have h_e₂_in_ev₂ : e₂ ∈ ev₂ :=
+          (h₂p.2 e₂).mp (List.mem_append.mpr (Or.inr
+            (List.mem_singleton.mpr rfl)))
+        have h_e₁_in_C : e₁ ∈ C.events := h_ev₁_in_C e₁ h_e₁_in_ev₁
+        have h_e₂_in_C : e₂ ∈ C.events := h_ev₂_in_C e₂ h_e₂_in_ev₂
+        have h_dist_e₁e₂ : distinctOps e₁ e₂ := by
+          obtain ⟨_, _, hL_e₁, hs_e₁⟩ := h_e₁_in_C
+          obtain ⟨_, _, hL_e₂, hs_e₂⟩ := h_e₂_in_C
+          exact C.timestamps_distinct hL_e₁ hs_e₁ hL_e₂ hs_e₂ h_ne
+        -- Step 2: Commutativity is symmetric.
+        have h_e₂e₁_comm : D.commutes e₂ e₁ :=
+          fun s => (h_e₁e₂_comm s).symm
+        -- Step 3: Extract witnesses from negated hypotheses.
+        -- Since e₁ commutes with e₂, the non-commuting witness from
+        -- h_e₁_comm must be in π₂' (not e₂).
+        have ⟨x₀, hx₀_mem, hx₀_nc⟩ : ∃ x ∈ π₂', ¬D.commutes e₁ x := by
+          push_neg at h_e₁_comm
+          obtain ⟨x, hx_mem, hx_nc⟩ := h_e₁_comm
+          rcases List.mem_append.mp hx_mem with h | h
+          · exact ⟨x, h, hx_nc⟩
+          · rw [List.mem_singleton] at h
+            subst h; exact absurd h_e₁e₂_comm hx_nc
+        -- Similarly for the other side.
+        have ⟨y₀, hy₀_mem, hy₀_nc⟩ : ∃ y ∈ π₁', ¬D.commutes e₂ y := by
+          push_neg at h_e₂_comm
+          obtain ⟨y, hy_mem, hy_nc⟩ := h_e₂_comm
+          rcases List.mem_append.mp hy_mem with h | h
+          · exact ⟨y, h, hy_nc⟩
+          · rw [List.mem_singleton] at h
+            subst h; exact absurd h_e₂e₁_comm hy_nc
+        -- Step 4: Sub-case decomposition on shared membership.
+        -- The proof strategy depends on whether e₁/e₂ appear on
+        -- the other side's event set.
+        by_cases h_e₂_in_ev₁ : e₂ ∈ ev₁
+        · by_cases h_e₁_in_ev₂ : e₁ ∈ ev₂
+          · -- Sub-case 3b-i-a: e₂ ∈ ev₁, e₁ ∈ ev₂ (both shared).
+            -- Both tail events are shared between the two sides.
+            -- The state equation via merge_peel_shared-style proof
+            -- works, but e₁ ∈ ev₂ means e₁ can appear in the IH
+            -- witness, preventing the simple "append e₁ at end"
+            -- strategy.
+            --
+            -- Requires: forward closure of ev₂ for the respects
+            -- proof, or a fundamentally different approach.
+            sorry
+          · -- Sub-case 3b-i-b: e₂ ∈ ev₁, e₁ ∉ ev₂.
+            -- Strategy: peel e₁ using merge_peel_shared-style
+            -- reasoning. The state equation holds because the proof
+            -- of merge_peel_shared doesn't use ¬commutes or rc.
+            -- Step 1: e₁ ∉ π₁'
+            have h_e₁_not_π₁' : e₁ ∉ π₁' := by
+              intro h
+              have hnd := List.nodup_append.mp h₁p.1
+              exact hnd.2.2 e₁ h e₁ (List.mem_singleton.mpr rfl) rfl
+            -- Step 2: e₂ ∈ π₁'
+            have h_e₂_in_π₁' : e₂ ∈ π₁' := by
+              have h := (h₁p.2 e₂).mpr h_e₂_in_ev₁
+              rcases List.mem_append.mp h with h | h
+              · exact h
+              · rw [List.mem_singleton] at h; exact absurd h (Ne.symm h_ne)
+            -- Step 3: split π₁' at e₂
+            obtain ⟨α, β, h_split⟩ := List.append_of_mem h_e₂_in_π₁'
+            -- Step 4: basic nodup / membership facts
+            have h_nodup_π₁' : π₁'.Nodup :=
+              (List.nodup_append.mp h₁p.1).1
+            have h_e₂_notin_β : e₂ ∉ β := by
+              rw [h_split] at h_nodup_π₁'
+              exact (List.nodup_cons.mp
+                (List.nodup_append.mp h_nodup_π₁').2.1).1
+            have h_e₂_notin_α : e₂ ∉ α := by
+              rw [h_split] at h_nodup_π₁'
+              intro h
+              exact (List.nodup_append.mp h_nodup_π₁').2.2 e₂ h e₂
+                (List.Mem.head _) rfl
+            -- Step 5: state equation
+            have h_applySeq_split : applySeq D D.init π₁' =
+                applySeq D (D.update (applySeq D D.init α) e₂) β := by
+              rw [h_split]
+              simp [applySeq, List.foldl_append, List.foldl_cons]
+            have h_π₁'_in_C : ∀ y ∈ π₁', y ∈ C.events := by
+              intro y hy; exact h_ev₁_in_C y ((h₁p.2 y).mp
+                (List.mem_append.mpr (Or.inl hy)))
+            have h_dist_β_e₁ : ∀ y ∈ β, distinctOps e₁ y := by
+              intro y hy
+              have hy_in_π : y ∈ π₁' := h_split ▸
+                List.mem_append.mpr
+                  (Or.inr (List.mem_cons_of_mem _ hy))
+              have hne' : e₁ ≠ y := fun heq =>
+                h_e₁_not_π₁' (heq ▸ hy_in_π)
+              obtain ⟨_, _, hL₁, hs₁'⟩ := h_e₁_in_C
+              obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+              exact C.timestamps_distinct hL₁ hs₁' hL_y hs_y hne'
+            have h_dist_β_e₂ : ∀ y ∈ β, distinctOps e₂ y := by
+              intro y hy
+              have hy_in_π : y ∈ π₁' := h_split ▸
+                List.mem_append.mpr
+                  (Or.inr (List.mem_cons_of_mem _ hy))
+              have hne' : e₂ ≠ y := fun heq =>
+                h_e₂_notin_β (heq ▸ hy)
+              obtain ⟨_, _, hL₂, hs₂'⟩ := h_e₂_in_C
+              obtain ⟨_, _, hL_y, hs_y⟩ := h_π₁'_in_C y hy_in_π
+              exact C.timestamps_distinct hL₂ hs₂' hL_y hs_y hne'
+            have h_peel_eq :
+              D.merge (D.update (applySeq D D.init π₁') e₁)
+                      (D.update (applySeq D D.init π₂') e₂)
+                = D.update (D.merge (applySeq D D.init π₁')
+                    (D.update (applySeq D D.init π₂') e₂)) e₁ := by
+              rw [h_applySeq_split]
+              exact ind_left_1op_list hVC e₁ e₂ h_dist_e₁e₂ β
+                h_dist_β_e₁ h_dist_β_e₂
+                (D.update (applySeq D D.init α) e₂)
+                (applySeq D D.init π₂')
+                (merge_peel_1op_shared_base hVC e₁ e₂ α π₂'
+                  (h_shared_peel e₁ e₂ h_dist_e₁e₂))
+            have h_peel : D.merge s₁ s₂ =
+                D.update
+                  (D.merge (applySeq D D.init π₁')
+                           (applySeq D D.init (π₂' ++ [e₂])))
+                  e₁ := by
+              rw [← h₁s, ← h₂s, applySeq_append_single,
+                  applySeq_append_single]
+              exact h_peel_eq
+            -- Step 6: prepare for IH
+            have h₁p' : listPermOf π₁' (ev₁ \ {e₁}) := by
+              constructor
+              · exact h_nodup_π₁'
+              · intro a; constructor
+                · intro ha
+                  exact ⟨(h₁p.2 a).mp
+                    (List.mem_append.mpr (Or.inl ha)),
+                    fun heq => h_e₁_not_π₁' (heq ▸ ha)⟩
+                · intro ⟨ha_ev₁, ha_ne⟩
+                  rcases List.mem_append.mp
+                    ((h₁p.2 a).mpr ha_ev₁) with h | h
+                  · exact h
+                  · exact absurd (List.mem_singleton.mp h) ha_ne
+            have h₁r' : respects π₁' (lo C) :=
+              (List.pairwise_append.mp h₁r).1
+            have h_ev₁'_closed :
+                ∀ a b, C.vis a b → ¬ D.commutes a b →
+                b ∈ ev₁ \ {e₁} → a ∈ ev₁ \ {e₁} :=
+              closure_preserved_by_tail_peel h₁p h₁r h_ev₁_closed
+            have h_ev₁'_in_C : ∀ a ∈ ev₁ \ {e₁}, a ∈ C.events :=
+              fun a ⟨ha, _⟩ => h_ev₁_in_C a ha
+            have h_len' :
+                π₁'.length + (π₂' ++ [e₂]).length < n := by
+              simp only [List.length_append,
+                List.length_singleton] at h_len ⊢; omega
+            -- Step 7: apply IH
+            obtain ⟨π_ih, hπ_ih_perm, hπ_ih_resp,
+                    hπ_ih_state⟩ :=
+              ih _ h_len' π₁' (π₂' ++ [e₂]) (ev₁ \ {e₁}) ev₂
+                (applySeq D D.init π₁') s₂
+                rfl h_ev₁'_in_C h_ev₂_in_C h_ev₁'_closed
+                h_ev₂_closed h₁p' h₂p h₁r' h₂r rfl h₂s
+            -- Step 8: e₁ ∉ π_ih (since e₁ ∉ ev₂)
+            have h_e₁_not_π_ih : e₁ ∉ π_ih := by
+              intro h_in
+              rcases (hπ_ih_perm.2 e₁).mp h_in with
+                ⟨_, hne'⟩ | h
+              · exact hne' rfl
+              · exact h_e₁_in_ev₂ h
+            -- Step 9: final witness π_ih ++ [e₁]
+            refine ⟨π_ih ++ [e₁], ?_, ?_, ?_⟩
+            · -- listPermOf (π_ih ++ [e₁]) (ev₁ ∪ ev₂)
+              constructor
+              · rw [List.nodup_append]
+                exact ⟨hπ_ih_perm.1, List.nodup_singleton _,
+                  fun a ha b hb => by
+                    rw [List.mem_singleton] at hb
+                    intro hab; rw [hab, hb] at ha
+                    exact h_e₁_not_π_ih ha⟩
+              · intro a
+                rw [List.mem_append, List.mem_singleton,
+                    Set.mem_union]
+                constructor
+                · rintro (h | rfl)
+                  · rcases (hπ_ih_perm.2 a).mp h with
+                      ⟨h_ev, _⟩ | h_ev
+                    · exact Or.inl h_ev
+                    · exact Or.inr h_ev
+                  · exact Or.inl h_e₁_in_ev₁
+                · intro h
+                  by_cases hae : a = e₁
+                  · exact Or.inr hae
+                  · exact Or.inl ((hπ_ih_perm.2 a).mpr
+                      (by rcases h with h | h
+                          · exact Or.inl ⟨h, hae⟩
+                          · exact Or.inr h))
+            · -- respects (π_ih ++ [e₁]) (lo C)
+              unfold respects
+              rw [List.pairwise_append]
+              refine ⟨hπ_ih_resp, List.pairwise_singleton _ _,
+                ?_⟩
+              intro y hy b hb
+              rw [List.mem_singleton] at hb; subst b
+              have hy_ev : y ∈ (ev₁ \ {e₁}) ∪ ev₂ :=
+                (hπ_ih_perm.2 y).mp hy
+              rcases hy_ev with ⟨hy_ev₁, hy_ne⟩ | hy_ev₂
+              · -- y ∈ ev₁ \ {e₁}: use last_is_lo_maximal
+                exact last_is_lo_maximal h₁r y
+                  ((h₁p'.2 y).mpr ⟨hy_ev₁, hy_ne⟩)
+              · -- y ∈ ev₂: need ¬ lo C e₁ y.
+                -- Disjunct 1 (vis ∧ ¬commute): by backward
+                -- closure.
+                -- Disjunct 2 (concurrent rc): needs forward
+                -- closure to produce an overwriter for y.
+                intro h_lo
+                rcases h_lo with ⟨h_vis, h_nc⟩ | ⟨_, _, h_rc_fst, _⟩
+                · exact h_e₁_in_ev₂
+                    (h_ev₂_closed e₁ y h_vis h_nc hy_ev₂)
+                · -- rc-concurrent case: e₁ and y are concurrent,
+                  -- rc(e₁,y) = Fst_then_snd, y has no overwriter.
+                  -- This requires forward closure infrastructure.
+                  sorry
+            · -- applySeq state equation
+              rw [applySeq_append_single, hπ_ih_state, h_peel]
+              congr 1; congr 1; exact h₂s.symm
+        · by_cases h_e₁_in_ev₂ : e₁ ∈ ev₂
+          · -- Sub-case 3b-ii-a: e₂ ∉ ev₁, e₁ ∈ ev₂.
+            -- Symmetric to sub-case 3b-i-b via merge_comm.
+            -- Peel e₂ instead of e₁.
+            -- The proof follows the same pattern but with sides
+            -- swapped. The state equation uses merge_comm +
+            -- merge_peel_shared-style reasoning with e₁ as the
+            -- shared event in π₂'.
+            --
+            -- The respects proof has the same obstacle:
+            -- the rc-concurrent disjunct of lo for y ∈ ev₁
+            -- when e₂ ∉ ev₁ requires forward closure.
+            sorry
+          · -- Sub-case 3b-ii-b: e₂ ∉ ev₁, e₁ ∉ ev₂ (both local).
+            -- Neither e₁ nor e₂ is shared.
+            -- Cannot use merge_peel_shared (no shared tail),
+            -- merge_peel_comm (neither commutes with all events
+            -- on the other side), or bottomUp_2op_reachable
+            -- (tails commute with each other).
+            --
+            -- Witnesses from negated hypotheses:
+            --   x₀ ∈ π₂' with ¬D.commutes e₁ x₀
+            --   y₀ ∈ π₁' with ¬D.commutes e₂ y₀
+            --
+            -- The paper's carving approach (partition into L^a/L^b,
+            -- find lo-max in L^a, re-permute via
+            -- perm_ending_in_lo_max) requires forward closure,
+            -- which the current proof architecture doesn't provide.
+            sorry
       · -- Case 3a: ¬commute(e₁, e₂). Use bottomUp_2op_reachable.
         have h_e₁_in_ev₁ : e₁ ∈ ev₁ :=
           (h₁p.2 e₁).mp (List.mem_append.mpr (Or.inr
