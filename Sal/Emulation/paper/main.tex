@@ -114,23 +114,31 @@
 
   We mechanise in Lean~4 the architecture that composes these two
   results: for every state-based CRDT $\RDT$ that satisfies the
-  $24$ VCs of \Sal{} together with one additional semantic
-  $\textsc{cond-comm}$ lift, the canonical op-based counterpart
-  $\Emul^{-1}(\RDT)$ is also RA-linearisable on every reachable
-  trace. The formalisation decomposes into $11$ steps; $9$ have
-  complete or substantially complete Lean proofs, and the remaining
-  two are the \emph{merge case} of \Sal{}'s bottom-up linearisation
-  and the weak-simulation proof for the canonical emulation map.
-  Within the merge case the convergence machinery, the seven
-  bottom-up rules, and the both-empty / asymmetric /
-  shared-last-event sub-cases of the existential induction are
-  kernel-verified; three well-localised sorries remain, two of
-  which are auxiliary lemmas (Lemma~1 of the Sal appendix:
-  no $\mathit{lo}$-edge from $L^a$ to $L^b$) with their depth-1
-  cases closed inline, and the third is the distinct-last-event
-  branch awaiting a paper-faithful $L^a / L^b$ carving refactor.
-  We report on the design
-  choices that made the closed parts tractable --- in particular an
+  $24$ VCs of \Sal{} together with five additional axioms
+  (semantic $\textsc{cond-comm}$ lift, lattice-bottom merge,
+  directional rc-non-commutativity, merge-peel-commute, and the
+  shared-element 1-op peel \texttt{shared\_peel\_1op} that the
+  campaign identified as missing), the canonical op-based
+  counterpart $\Emul^{-1}(\RDT)$ is also RA-linearisable on every
+  reachable trace. The formalisation decomposes into $11$ steps;
+  $9$ have complete or substantially complete Lean proofs, and the
+  remaining two are the \emph{merge case} of \Sal{}'s bottom-up
+  linearisation and the weak-simulation proof for the canonical
+  emulation map. Within the merge case, after a $10$-run
+  Aristotle-driven sorry-chain campaign, the convergence
+  machinery, the seven bottom-up rules, the both-empty /
+  asymmetric / shared-last-event sub-cases of the existential
+  induction, and \emph{both halves of the appendix's
+  Lemma~1} are kernel-verified; the distinct-last-event branch
+  holds $4$ residual sub-case sorries in \emph{Case~3b} (when both
+  peel candidates commute) plus $2$ forward-closure obligations
+  at the call site --- all blocked by the same architectural
+  decision (Block~6: a paper-faithful $L^a / L^b$ carving
+  refactor that picks peel candidates with no short
+  $\mathit{lo}$-paths to the residue, eliminating both the
+  Case~3b commute-block and the forward-closure dependency by
+  construction). We report on the design choices that made the
+  closed parts tractable --- in particular an
   \emph{invariants-in-type} formulation of system configurations
   that discharges the \textsc{Apply} case of the bridge theorem
   without auxiliary hypotheses --- and validate the architecture
