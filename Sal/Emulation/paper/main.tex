@@ -231,8 +231,8 @@ MRDTs) should find the dependency structure useful.
     our Prop-valued $\VCs$ statements align with the concrete
     Bool-valued theorem statements in \Sal{}'s existing files.
   \item Concrete effort estimates, derived from actual mechanisation
-    experience rather than guesswork, for the three pieces that
-    remain open (\S\ref{sec:discussion}).
+    experience rather than guesswork, for the open pieces
+    (\S\ref{sec:discussion}).
 \end{enumerate}
 
 \paragraph{Organisation.}
@@ -1477,9 +1477,16 @@ coercions; our contribution here is the Lean packaging.
 We have described an architecture, and a substantially-complete
 mechanisation, for transferring state-based RA-linearisability to
 op-based RA-linearisability in Lean~4. The architecture is stable
-enough that downstream work (closing the three open pieces,
-extending to MRDTs, instantiating for the other $17$ CRDTs in the
-\Sal{} suite) can proceed without re-litigating design choices.
+enough that downstream work (closing the residual sorries via
+Block 6, extending to MRDTs, instantiating for the other $17$
+CRDTs in the \Sal{} suite) can proceed without re-litigating
+design choices. A $10$-run automated sorry-chain campaign with
+Harmonic's \textsc{Aristotle} prover closed both halves of the
+appendix's Lemma~1, decomposed the residual distinct-last-event
+sorries into $6$ fine-grained sub-cases each pointing at the
+same architectural fix (the $L^a / L^b$ carving), and identified
+\texttt{shared\_peel\_1op} as a CRDT-lattice axiom missing from
+\Sal{}'s base $24$ VCs.
 
 Three directions suggest themselves.
 \emph{First}, closing the open pieces of \S\ref{sec:discussion}
