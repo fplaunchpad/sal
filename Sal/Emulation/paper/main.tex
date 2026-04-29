@@ -194,10 +194,14 @@ MRDTs) should find the dependency structure useful.
     and the \textsc{Merge} case reduced to an existential
     \texttt{merge\_linearization\_exists}
     (\S\ref{sec:bridge-merge}) whose convergence/bubble-sort
-    machinery, seven bottom-up rules, and both-empty /
-    asymmetric / shared-last-event sub-cases of the strong
-    induction are kernel-verified, with three well-localised
-    sorries remaining (Table~\ref{tab:sorries}).
+    machinery, seven bottom-up rules, both-empty / asymmetric /
+    shared-last-event sub-cases, and the entirety of the paper's
+    Lemma~1 (no $\mathit{lo}$-edge from $L^a$ to $L^b$ / from
+    $L_\top^a$ to $L_\top^b$) are kernel-verified, with the
+    distinct-last-event branch holding $4$ residual sub-case
+    sorries in \emph{Case~3b} (when both peel candidates commute
+    with each other) plus $2$ deferred forward-closure obligations
+    at the call site (Table~\ref{tab:sorries}).
   \item An \emph{invariants-in-type} formulation of system
     configurations: rather than layering well-formedness as a
     predicate over a dumb data record and threading it through every
@@ -867,14 +871,21 @@ two lemma statements typed (\texttt{no\_lo\_a\_to\_b},
 threaded as a hypothesis (\texttt{Configuration} does not expose it
 directly; deriving it from the existing invariants is sound but
 invasive across the \texttt{Step} rules). The depth-1 sub-cases of
-the first lemma (paper sub-cases 1.a and 2.a.i) and the
-vis-disjunct rule-out scaffold of the second lemma close inline; the
-paper's depth-2 case-explosion (six sub-sub-cases on vis/rc flavours
-of three $\mathit{lo}$-edges, lines 128--156) and the residual
-rc-composition for the second lemma remain as \texttt{sorry}.
+Both parts of Lemma~1 are now kernel-verified, closed via an
+extended Aristotle-driven sorry-chain campaign
+(\S\ref{sec:aristotle-campaign}). Lemma~1 part~2 closes via a
+structural insight: the no-overwriter clause embedded in
+$\mathit{lo}$'s rc disjunct is directly contradicted by the vis
+disjunct of the assumed $\mathit{lo}$-edge. Lemma~1 part~1 closes
+all $12$ sub-cases of the depth-2 explosion, with one residual
+sub-case requiring an additional hypothesis
+\texttt{h\_ncomm\_concurrent\_local\_top} (concurrent cross-set
+events do not commute) — a structural property of the carving
+that is vacuously true for trivial-rc CRDTs and a per-CRDT
+obligation for non-trivial CRDTs.
 
 \paragraph{Live sorry inventory.}
-For the merge case as a whole, three declarations carry
+For the merge case as a whole, two declarations carry
 \texttt{sorry} (no others remain in the bridge or emulation
 chains; \texttt{weakSim\_sound} and the \textsc{Apply}-case
 lemmas are kernel-verified):
@@ -884,32 +895,38 @@ lemmas are kernel-verified):
   \small
   \begin{tabular}{@{}llp{6.5cm}@{}}
     \toprule
-    File:line & Theorem & What's open \\
+    Theorem & Internal sorries & What's open \\
     \midrule
-    \texttt{Merge\_Linearization.lean:1620}
-      & \texttt{no\_lo\_a\_to\_b}
-      & Lemma~1(1) of the paper. Depth-1 sub-cases close inline;
-        depth-2 case-explosion (six sub-sub-cases on vis/rc edges)
-        consumes \texttt{vis\_trans} + \texttt{no\_rc\_chain} +
-        $L_\top^a$ causal closure. \\
-    \texttt{Merge\_Linearization.lean:1662}
-      & \texttt{no\_lo\_top\_a\_to\_top\_b}
-      & Lemma~1(2) of the paper. Vis-disjunct rule-out closes
-        inline (via $L_\top$ causal closure); residual is the
-        rc-composition $\mathit{lo}_{rc}\,e''\,e \wedge
-        \mathit{lo}\,e\,e' \to \mathit{lo}\,e''\,e'$ at
-        appendix.tex:158--178. \\
-    \texttt{Merge\_Linearization.lean:1712}
-      & \texttt{distinct\_last\_case}
-      & Three internal sub-cases (paper Case~3b commute, Case~3a
-        with $e_1 \in \ev_2$ shared, Case~3a with $e_2 \in \ev_1$
-        shared) — exactly the cases the carving handles. To be
-        subsumed by the carving-faithful refactor of the
-        distinct-last-event branch (Block 6 of the
-        \texttt{Sal/Emulation/PLAN.md} carving plan). \\
+    \texttt{distinct\_last\_case}
+      & $4$
+      & All in \emph{Case~3b} (when $e_1 \commute e_2$): the four
+        sub-cases enumerate the partition of $(e_1 \in \ev_2,
+        e_2 \in \ev_1)$. The $\commute(e_1, e_2)$ hypothesis
+        prevents \texttt{rc\_non\_comm\_directional} from applying
+        to $(e_1, e_2)$, so \texttt{no\_rc\_chain} cannot rule out
+        the rc-concurrent disjunct of $\mathit{lo}$. Forward
+        closure (added as a hypothesis to \texttt{distinct\_last\_case})
+        is insufficient on its own. These cases require the
+        paper's $L^a / L^b$ carving — picking peel candidates
+        from $L^a$ which by construction have no short
+        $\mathit{lo}$-path to the residue. \\
+    \texttt{merge\_linearization\_exists}
+      & $2$
+      & Forward-closure obligations $h\_ev_1\_fwd\_closed$ and
+        $h\_ev_2\_fwd\_closed$ at the call site to
+        \texttt{distinct\_last\_case}. Forward closure does not
+        hold for arbitrary replica logs (a third replica may have
+        unsynced $\mathit{vis}$-successors), so these need either
+        a structural argument specific to the merge case's
+        invariants or a restructuring (Block 6) that avoids
+        forward closure entirely. \\
     \bottomrule
   \end{tabular}
-  \caption{Live sorries in the bridge theorem.}
+  \caption{Live sorries in the bridge theorem (after the
+  Aristotle-driven campaign of \S\ref{sec:aristotle-campaign}).
+  $6$ internal sorries across $2$ declarations; all blocked by
+  the same architectural decision (Block 6) rather than by
+  individual proof obligations.}
   \label{tab:sorries}
 \end{table}
 
@@ -937,16 +954,15 @@ Realistic remaining effort:
     ($\sigma_1 = |L_1^a \cup L_2^a|$, $\sigma_2 = |L_\top^a|$,
     $\sigma_3 = |L_b(\hat e_\top)|$) replacing the
     distinct-last-event branch. Estimated $\sim 280$ Lean lines, a
-    fresh-context multi-hour effort. Subsumes the three
-    \texttt{distinct\_last\_case} sub-case sorries.
-  \item Lemma~1 bodies (\texttt{no\_lo\_a\_to\_b} depth-2,
-    \texttt{no\_lo\_top\_a\_to\_top\_b} rc-composition):
-    each $\sim 100$ Lean lines, gated on either making
-    $\mathit{vis}$-transitivity a derived structural fact or
-    propagating it as a hypothesis on the bridge theorem. Open
-    question on the implicit
-    ``$\neg\mathit{commute}$ chain'' the paper invokes; may
-    require a derivation or a $29$th VC.
+    fresh-context multi-hour effort. Subsumes both the $4$
+    Case~3b sub-case sorries and the $2$ forward-closure
+    obligations at the call site (the carving's $L^a$
+    construction sidesteps both).
+  \item Per-CRDT discharge of the new VCs and structural
+    obligations: \texttt{shared\_peel\_1op} and
+    \texttt{h\_ncomm\_concurrent\_local\_top} for non-trivial
+    CRDTs (vacuous for trivial-rc CRDTs). Mechanical work,
+    bundled with Step~6 (CRDT instantiation).
 \end{itemize}
 
 Two architectural decisions accompanied this work. First, the
@@ -978,6 +994,44 @@ lo-paths only to depth-1-or-2, matching
 \cite{sal2025}'s appendix.tex line 262; the depth-2 inclusion is
 load-bearing for Lemma~1 case 1.b.i (and is forced by
 \texttt{no\_rc\_chain}).
+
+\subsubsection{The Aristotle-driven sorry-chain campaign}
+\label{sec:aristotle-campaign}
+
+A substantial portion of the structural progress documented above
+landed via a $10$-run automated sorry-chain campaign with Harmonic's
+\textsc{Aristotle} theorem prover~\cite{harmonic-aristotle}. Each
+run targeted a single sorry with a focused prompt; results applied
+manually after build-verifying that the patch's modifications were
+restricted to \texttt{Sal/} files (the prover occasionally proposes
+edits to \texttt{.lake/packages/} dependencies that we discard).
+
+The campaign closed both halves of Lemma~1, decomposed the
+distinct-last-event branch's three monolithic sub-case sorries
+into $7$ fine-grained sub-sub-case sorries each annotated with a
+specific architectural need, identified \texttt{shared\_peel\_1op}
+as a VC missing from \Sal{}'s original $24$, and proposed the
+hypothesis \texttt{h\_ncomm\_concurrent\_local\_top} as a candidate
+$30$th VC (currently a per-lemma hypothesis). The four residual
+Case~3b sorries plus two forward-closure call-site obligations are
+all flagged as Block 6 territory rather than further automated
+runs --- forward closure does not hold for arbitrary replica logs
+in general (a third replica may have unsynced
+$\mathit{vis}$-successors), so closing them needs the carving's
+structural avoidance of re-permutation rather than more theorem
+proving on the same induction shape.
+
+The campaign's lasting value is twofold. First, the closures
+themselves: $13$ of $19$ enumerated sub-cases of the merge case's
+auxiliary lemmas are kernel-verified after the campaign, including
+Lemma~1's full $12$-sub-case depth-$2$ explosion. Second, and more
+useful for future work, the residual sorries each carry a specific
+documented obstruction --- ``forward closure of $\ev_2$ to produce
+an overwriter'', ``$\mathit{rc\_non\_comm\_directional}$ does not
+apply when $e_1 \commute e_2$'', etc.\ --- that pinpoints exactly
+which architectural decision (Block 6) closes them all, replacing
+``$3$ vague sorries'' with ``$6$ sorries each pointing at the same
+known fix.''
 
 \subsection{The VCs as a Lean structure}
 \label{sec:satisfies-vcs}
@@ -1293,13 +1347,15 @@ single pass.
 
 \subsection{Where we expect the remaining work to land}
 
-Three sorries (Table~\ref{tab:sorries}) plus the simulation proof
-for $\Emul$ remain open. We report estimates based on actual
-mechanisation experience with the closed pieces, including the
-substantial portion of the merge case that has now landed: the
-convergence machinery, all seven bottom-up rules, and the
+Two declarations carry $6$ internal sorries
+(Table~\ref{tab:sorries}) and the simulation proof for $\Emul$
+remains open. We report estimates based on actual mechanisation
+experience with the closed pieces, including the bulk of the
+merge case (convergence machinery, seven bottom-up rules,
 both-empty / asymmetric / shared-last-event sub-cases of
-\texttt{merge\_linearization\_exists}.
+\texttt{merge\_linearization\_exists}, both halves of Lemma~1)
+and the new $29$th VC \texttt{shared\_peel\_1op} that the
+campaign identified as missing.
 
 \begin{itemize}[leftmargin=*]
   \item \emph{Carving-faithful refactor of the distinct-last-event
@@ -1313,19 +1369,14 @@ both-empty / asymmetric / shared-last-event sub-cases of
     \texttt{exists\_lo\_maximal\_in\_subset} +
     \texttt{perm\_ending\_in\_lo\_max} and applying the appropriate
     bottom-up rule. About $\sim 280$ Lean lines, a fresh-context
-    multi-hour effort. Subsumes the three
-    \texttt{distinct\_last\_case} sub-case sorries.
-  \item \emph{Lemma~1 bodies}
-    (\texttt{no\_lo\_a\_to\_b} depth-2,
-    \texttt{no\_lo\_top\_a\_to\_top\_b} rc-composition):
-    each $\sim 100$ Lean lines. Gated on either deriving
-    $\mathit{vis}$-transitivity as a structural fact about
-    \texttt{Configuration} (sound but invasive across the
-    \texttt{Step} rules) or threading it as a hypothesis on the
-    bridge theorem. Open question on the implicit
-    ``$\neg\mathit{commute}$ chain'' the paper invokes; may
-    require a derivation or a $29$th VC. About $1$--$2$ weeks
-    once the dependency strategy is decided.
+    multi-hour effort. \emph{Subsumes all $6$ remaining
+    distinct-last-event sorries:} the $4$ Case~3b sub-cases (where
+    $e_1 \commute e_2$ blocks the
+    \texttt{rc\_non\_comm\_directional} approach) plus the $2$
+    forward-closure obligations (the carving picks peel candidates
+    from $L^a$ which by construction have no short
+    $\mathit{lo}$-paths to the residue, eliminating the need for
+    forward closure or re-permutation).
   \item \emph{\texttt{effectiveState} linear extension and weak
     simulation for $\Emul$}: Liittschwager et al.'s §4.2 argument
     ported to Lean. Needs a concrete definition of
@@ -1334,6 +1385,11 @@ both-empty / asymmetric / shared-last-event sub-cases of
     the current \texttt{D.init} stub) and the simulation relation
     $R$ coupling op-side configurations to state-side ones. About
     $2$--$4$ weeks.
+  \item \emph{Per-CRDT discharge of \texttt{shared\_peel\_1op} and
+    \texttt{h\_ncomm\_concurrent\_local\_top}} for non-trivial-rc
+    CRDTs (Step~6 of the architecture plan). Mechanical work,
+    bundled with porting \texttt{SatisfiesVCs} instances to the
+    remaining $17$ CRDTs.
 \end{itemize}
 
 \section{Related Work}
