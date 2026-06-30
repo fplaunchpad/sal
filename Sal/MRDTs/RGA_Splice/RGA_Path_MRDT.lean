@@ -20,8 +20,11 @@ path and recovered lazily by `resolve`.
 ### State
 
 `concrete_st := map ℕ (ℕ × ℕ)` maps an identity to `(element, immediate-anchor)`,
-with `0` the root sentinel (never stored). `ids = domain`, and id-uniqueness is
-structural. Deletion physically removes the id; there is no tombstone component.
+with `0` the root sentinel (never stored). `ids = domain`. Because a `map` sends
+each key to exactly one value, an identity cannot appear twice: the spec's
+"identities are unique" clause holds by construction (it is a property of the
+representation, so it never has to be assumed as a separate well-formedness
+hypothesis). Deletion physically removes the id; there is no tombstone component.
 
 ### Operations
 
