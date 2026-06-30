@@ -8,45 +8,55 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Tombstone-free RGA, path-carrying operations — flat-set MRDT
+# Tombstone-free RGA, path-carrying operations: flat-set MRDT
 
-Companion to `RGA_Splice_MRDT.lean`. Same flat-set state and same three-way
-merge; the only change is that **operations carry the ancestor path of their
-anchor/target**, and `do_` uses that path to reparent when the anchor has been
-spliced away. This removes the `do_`-level non-commutation that broke
-`cond_comm_base` in the splice variant, at the cost of a path-consistency
-assumption on the operations.
+## Design
 
-## The design point (from the conversation)
+A flat-set RGA (replicated sequence) MRDT whose operations carry the ancestor
+path of their anchor or target. The state holds only live records; the position
+information that tombstones would normally retain is supplied by the operation's
+path and recovered lazily by `resolve`.
 
-* The parent of a deleted node is the one bit of information physical deletion
-  destroys. The splice variant rewrites survivors eagerly (order-sensitive,
-  breaks `cond_comm_base`); the ghost-map variant stores it (a tombstone). Here
-  the information lives in the **operation's path**, which is transient: `do_`
-  consults it only to resolve the anchor, and only on the branch where the
-  anchor is already dead.
-* On a causally consistent history that branch is never taken (you never insert
-  after, or delete, a node you have not seen live). So the path is **never read
-  in real execution** and the runtime operations can drop it entirely. The path
-  is proof scaffolding, erased for deployment. `ins_path_free` below is the
-  formal statement of "the path is not consulted when the anchor is live."
+### State
 
-## What flips, and the residue
+`concrete_st := map ℕ (ℕ × ℕ)` maps an identity to `(element, immediate-anchor)`,
+with `0` the root sentinel (never stored). `ids = domain`, and id-uniqueness is
+structural. Deletion physically removes the id; there is no tombstone component.
 
-With path-resolution, all consistent-path operation pairs commute, so
-`rc = Either` everywhere. Then:
-* `cond_comm_base` and `no_rc_chain` hold **vacuously** (the `Fst_then_snd`
-  hypothesis is unsatisfiable). The splice variant's proven *violation* becomes
-  a proven *hold*. The `cond_comm_base` trio that diverged there now converges
-  (see the `#eval`s).
-* The residue, exactly as predicted: under universal quantification two ops may
-  carry *different* paths for the *same* id, or anchor at a not-yet-created node.
-  These are impossible in practice but admitted by the framework, and such pairs
-  do not commute. So the contentful VC `rc_non_comm'` carries op-level
-  reachability premises (`accurate` + `fresh_ts`); it is **proven** below with no
-  `sorry`. The obstruction is relocated from a structural-state fact to an
-  op-wellformedness fact, a lighter and op-local conditioning. (The merge family
-  `lem_0op`/`inter_*`/`ind_*` would carry the same `wf` + `accurate` conditioning.)
+### Operations
+
+* `Ins e prefix a`, whose timestamp is the new id, records
+  `(e, resolve s (a :: prefix))`. When `a` is live this is `(e, a)`; when `a` has
+  been deleted, `resolve` climbs the carried path to the nearest live ancestor.
+* `Del prefix x` removes `x` and rehomes its children to `resolve s prefix`, the
+  nearest live ancestor of `x`.
+
+The path is consulted only on the branch where the anchor or target is already
+dead. On a causally consistent history that branch is unreachable (an operation
+never references a node it has not seen live), so the path is never read in real
+execution and a runtime operation may carry only the immediate anchor.
+`ins_path_free` is the formal statement: when the anchor is live, `do_` ignores
+the path.
+
+### Merge
+
+Three-way: OR-set survival on identities, then `climb` each survivor's
+birth-anchor up the LCA's parent chain to the nearest live anchor. The merge
+reads parents from the LCA `L`, so it never needs the operation paths.
+
+### Conflict resolution and verification conditions
+
+`rc = Either` everywhere: every operation pair commutes, and the RGA newer-first
+sibling order is a read-side concern (as in `RGA_CRDT`), not a state-merge one.
+So `cond_comm_base` and `no_rc_chain` hold vacuously.
+
+`rc_non_comm'` is the commutation VC. Its unconditioned form
+(`rc = Either ↔ ∀ s, do_-commute`) is false: two inserts where one anchors at the
+other's freshly created id do not commute. It is therefore conditioned on the
+reachable states the framework's universal quantifier over-approximates: each
+operation's path is the genuine ancestor chain (`accurate`) and an `Ins` uses a
+fresh, nonzero id (`fresh_ts`). Under those premises every pair commutes, and
+`rc_non_comm'` is proven below with no `sorry`.
 -/
 
 /-- State: `id ↦ (element, immediate-anchor)`. Tombstone-free; only the
@@ -67,9 +77,9 @@ just the anchor, and the path tail is never inspected. -/
   | c :: rest => if contains s c then c else resolve s rest
 
 /-- Operations carry the ancestor path of their leaf.
-* `Ins e prefix a` — insert `e`, anchored at `a`, where `prefix` is `a`'s
+* `Ins e prefix a`: insert `e`, anchored at `a`, where `prefix` is `a`'s
   ancestor chain (nearest first, root excluded).
-* `Del prefix x` — delete `x`, where `prefix` is `x`'s ancestor chain. -/
+* `Del prefix x`: delete `x`, where `prefix` is `x`'s ancestor chain. -/
 inductive app_op_t : Type where
 | Ins : ℕ → List ℕ → ℕ → app_op_t      -- element, prefix, anchor
 | Del : List ℕ → ℕ → app_op_t          -- prefix, target
@@ -104,16 +114,16 @@ violated only by the framework's universal quantification over malformed ops. -/
       let tgt := resolve s pre
       del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, tgt) else ea) s) x
 
-/-- climb worker (identical to the splice variant): walk `ancL` to root/survivor. -/
+/-- climb worker: walk `ancL` to the root or a survivor. -/
 def climb_aux (ancL : ℕ → ℕ) (I : set ℕ) : ℕ → ℕ → ℕ
   | 0,        x => x
   | (fuel+1), x => if x = 0 || I x then x else climb_aux ancL I fuel (ancL x)
 
 @[simp] def climb (ancL : ℕ → ℕ) (I : set ℕ) (x : ℕ) : ℕ := climb_aux ancL I x x
 
-/-- Three-way merge (identical to the splice variant): OR-set survival on
-identities, then `climb` each survivor's birth-anchor up the LCA chain. The
-merge reads parents from the LCA `L`, so it never needs the op paths. -/
+/-- Three-way merge: OR-set survival on identities, then `climb` each survivor's
+birth-anchor up the LCA chain. The merge reads parents from the LCA `L`, so it
+never needs the op paths. -/
 @[simp] def merge (l a b : concrete_st) : concrete_st :=
   let dl := domain l
   let da := domain a
@@ -135,8 +145,8 @@ deriving DecidableEq
 
 /-- With path-resolution every consistent-path pair commutes, so conflict
 resolution is `Either` everywhere. The RGA newer-first order lives in the read
-(as in `RGA_CRDT`); the insert-vs-delete conflict the splice variant had to
-order is gone because the insert reparents via the path instead of dangling. -/
+(as in `RGA_CRDT`); the insert-vs-delete conflict is resolved by the insert
+reparenting through its path instead of dangling. -/
 @[simp] def rc (_o1 _o2 : op_t) : rc_res := rc_res.Either
 
 @[simp] def eq (a b : concrete_st) : Prop :=
@@ -160,9 +170,8 @@ def dump (s : concrete_st) (ids : List ℕ) : List (ℕ × ℕ × ℕ) :=
 
 /-! ### The `cond_comm_base` trio now CONVERGES (the flip)
 
-Same trace that diverged in the splice variant. Node `5` sits at the root, so
-its prefix is `[]` (resolving to `0`). With consistent paths both orders land
-both inserts at `0`. -/
+Node `5` sits at the root, so its prefix is `[]` (resolving to `0`). With
+consistent paths both orders land both inserts at `0`. -/
 def s0 : concrete_st := mk [(5,83,0)]
 def o1 : op_t := (10, 1, .Ins 65 [] 5)     -- insert after 5, prefix []
 def o2 : op_t := (11, 2, .Del [] 5)        -- delete 5, prefix []
@@ -186,8 +195,8 @@ def bad_del  : op_t := (11, 2, .Del [] 5)        -- wrong prefix
 set_option maxHeartbeats 1000000
 
 /-- **`cond_comm_base` holds** (vacuously): `rc = Either`, so the
-`Fst_then_snd` hypothesis is unsatisfiable. Contrast `cond_comm_base_violated`
-in the splice variant, which proved this same statement *false*. -/
+`Fst_then_snd` hypothesis is unsatisfiable. Without path-resolution this
+statement is false: insert-after-deleted does not commute with delete. -/
 theorem cond_comm_base (s : concrete_st) (o1 o2 o3 : op_t) :
     (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3
       ∧ rc o1 o2 = rc_res.Fst_then_snd ∧ ¬(rc o2 o3 = rc_res.Either))
@@ -225,7 +234,7 @@ theorem inconsistent_diverges :
     dump (do_ (do_ s1 good_ins) bad_del) [5,7,10]
       ≠ dump (do_ (do_ s1 bad_del) good_ins) [5,7,10] := by native_decide
 
-/-! ### Merge convergence core (ported from the splice variant) -/
+/-! ### Merge convergence core -/
 
 theorem climb_fixpoint (ancL : ℕ → ℕ) (I : set ℕ) (x : ℕ)
     (h : x = 0 ∨ I x = true) : climb ancL I x = x := by
@@ -262,21 +271,15 @@ theorem merge_idem (s : concrete_st) (hwf : wf s) : eq (merge s s s) s := by
               simp only [union, intersection, difference, contains, mem, anc, sel] at h ⊢
               grind)]
 
-/-! ## RA-linearizability: `rc_non_comm`, reachability-conditioned
+/-! ## `rc_non_comm'`: reachability-conditioned commutation
 
-The naive `rc_non_comm` (`rc = Either ↔ ∀ s, do_-commute`) is FALSE here even for
-path-consistent ops: two inserts where one anchors at the other's freshly created
-id do not commute (`o2 = Ins _ _ t1`; one order anchors the child at `t1`, the
-other at `t1`'s parent). The fix conditions `commutes_with` on the
-reachable/applicable states the framework's universal quantifier
-over-approximates: each op's path is the genuine ancestor chain (`accurate`) and
-an `Ins` uses a fresh, nonzero id (`fresh_ts`). Under those every op pair
-commutes, so `rc = Either` is exact. This premise was discovered and exhaustively
-validated (`violations = 0`; `fresh_ts` shown load-bearing), and `rc_non_comm'`
-below is proven with no `sorry` and axiom trail `[propext, Classical.choice,
-Quot.sound]`. `accurate`/`fresh_ts` are the op-level reachability premises the
-repo's RGA_Tree notes anticipated; the naive `commutes_with` above is kept only
-to document the unconditioned (false-as-an-iff) form. -/
+`rc = Either`, so the iff reduces to proving every operation pair commutes. The
+unconditioned `∀ s` form is false (two inserts, one anchored at the other's fresh
+id, do not commute), so commutation is conditioned on `accurate` (each op's path
+is the true ancestor chain), `fresh_ts` (an `Ins` uses a fresh, nonzero id), and
+`contains s 0 = false` (the root sentinel is never stored). The naive
+`commutes_with` above is retained only to document the unconditioned form. The
+proof splits into `insins_comm`, `insdel_comm`, and `deldel_comm`. -/
 
 set_option maxHeartbeats 4000000
 
@@ -305,7 +308,7 @@ sentinel: `0` is never a stored key. -/
        fresh_ts o1 s → fresh_ts o2 s →
        eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
-/-! ## Group A — resolve algebra (from proofcore.lean) -/
+/-! ## Group A: resolve algebra -/
 
 theorem resolve_dom_eq (s1 s2 : concrete_st) :
     ∀ cands : List ℕ, (∀ c ∈ cands, contains s1 c = contains s2 c) →
@@ -339,7 +342,7 @@ theorem upd_comm (s : concrete_st) (t1 t2 : ℕ) (v w : ℕ × ℕ) (h : t1 ≠ 
   · funext x; by_cases e1 : x = t1 <;> by_cases e2 : x = t2 <;> simp_all [upd]
   · intro x; simp only [upd, union, _root_.singleton, mem]; grind
 
-/-! ## Group B — eq plumbing -/
+/-! ## Group B: eq plumbing -/
 
 theorem eq_symm (a b : concrete_st) : eq a b → eq b a := by
   intro h k
