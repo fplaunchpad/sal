@@ -7,3 +7,10 @@
 # Claude Code user-local state (per-machine). Keep /.claude/skills/ tracked.
 /.claude/settings.local.json
 /.claude/scheduled_tasks.lock
+
+# External reference material: source papers + cloned upstream repos
+# (large, and not ours to redistribute). Kept locally, not committed.
+/_references/
+
+# Stray LaTeX log
+/texput.log
