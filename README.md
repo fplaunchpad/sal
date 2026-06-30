@@ -142,6 +142,9 @@ See [`demos/README.md`](demos/README.md) for the `CRDTSpec` / `MRDTSpec` interfa
 - [`Sal/Counterexample_Visualization/`](Sal/Counterexample_Visualization) — the `WriterMonad_*.lean` logging-monad traces that feed the ProofWidgets visualizer.
 - [`demos/`](demos) — Vite + React + TypeScript playgrounds, one per RDT. CRDT demos do two-way merge; MRDT demos maintain a git-style commit DAG with LCA-driven three-way merge and a toggleable history visualisation.
 - [`docs/porting-op-based-crdts.md`](docs/porting-op-based-crdts.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
+- [`ROADMAP.md`](ROADMAP.md) — open research threads (Neem soundness metatheory, op→state transfer, the tombstone-free/prefix-free RGA results) with status and entry points.
+- [`Sal/Metatheory/`](Sal/Metatheory) — blueprint for mechanising the Neem soundness meta-theorem (24 VCs ⇒ RA-linearizability).
+- [`Sal/MRDTs/RGA_Tombstone_Free/doc/why-the-path-matters.pdf`](Sal/MRDTs/RGA_Tombstone_Free/doc/why-the-path-matters.pdf) — a visual (TikZ) account of why the tombstone-free RGA needs the operation path, and why a prefix-free variant cannot be VC-verified.
 
 ## Paper
 
