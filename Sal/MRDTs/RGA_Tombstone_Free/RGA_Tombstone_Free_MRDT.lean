@@ -419,6 +419,20 @@ theorem sel_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
       = (if anc s k = x then (el s k, resolve s pre) else sel s k) := by
   simp only [do_, del, iter_upd, sel, el, anc]
 
+/-- Del companion of `ins_path_free`: when the op's path is accurate
+(`IsAncPath s x pre`), `do_ (Del pre x)` rehomes `x`'s children to the stored
+immediate anchor `anc s x`, independently of the prefix. `Ins` needs only that
+its anchor is live (the anchor is `resolve`'s head, so it short-circuits before
+the prefix); `Del` resolves from `x`'s parent, so it needs the path to be
+accurate, which makes `resolve s pre = anc s x`. Together the two lemmas show
+that on accurate states neither operation consults the path. -/
+theorem del_path_free (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+    (h : IsAncPath s x pre) :
+    do_ s (t, r, .Del pre x)
+      = del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, anc s x) else ea) s) x := by
+  have hr : resolve s pre = anc s x := isAncPath_resolve s x pre h
+  simp only [do_, hr]
+
 /-! ## Case lemmas -/
 
 -- Ins/Ins
