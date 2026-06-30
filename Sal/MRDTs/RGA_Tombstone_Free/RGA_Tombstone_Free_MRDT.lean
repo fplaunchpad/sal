@@ -275,7 +275,7 @@ is the true ancestor chain), `fresh_ts` (an `Ins` uses a fresh, nonzero id), and
 
 set_option maxHeartbeats 4000000
 
-/-! ## New definitions (to be inserted into RGA_Path_MRDT.lean) -/
+/-! ## Reachability predicates -/
 
 /-- `p` (the ancestor list of `leaf`) is the genuine root-ward chain in `s`. -/
 @[simp] def IsAncPath (s : concrete_st) : ℕ → List ℕ → Prop
