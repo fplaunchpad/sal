@@ -97,13 +97,6 @@ abbrev op_t := ℕ × ℕ × app_op_t
 @[simp] def opLeaf : app_op_t → ℕ | .Ins _ _ a => a | .Del _ x => x
 @[simp] def opPath : app_op_t → List ℕ | .Ins _ p _ => p | .Del p _ => p
 
-/-- Path-consistency: ops that reference the same leaf claim the same ancestry.
-Holds for every honestly generated history (a node has one path from the root);
-violated only by the framework's universal quantification over malformed ops. -/
-@[simp] def consistent (o1 o2 : op_t) : Prop :=
-  opLeaf (Prod.snd (Prod.snd o1)) = opLeaf (Prod.snd (Prod.snd o2)) →
-  opPath (Prod.snd (Prod.snd o1)) = opPath (Prod.snd (Prod.snd o2))
-
 /-- Effect.
 * `Ins e prefix a` at ts `t`: record `t ↦ (e, resolve s (a :: prefix))`. If `a`
   is live this is `(e, a)`; if `a` was deleted, the path resolves to the nearest
@@ -154,9 +147,6 @@ reparenting through its path instead of dangling. -/
 
 @[simp] def eq (a b : concrete_st) : Prop :=
   ∀ k, (contains a k = contains b k) ∧ (contains a k → sel a k = sel b k)
-
-@[simp] def commutes_with (o1 o2 : op_t) :=
-  forall s, eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
 /-! ## Operational oracle -/
 
@@ -280,9 +270,8 @@ theorem merge_idem (s : concrete_st) (hwf : wf s) : eq (merge s s s) s := by
 unconditioned `∀ s` form is false (two inserts, one anchored at the other's fresh
 id, do not commute), so commutation is conditioned on `accurate` (each op's path
 is the true ancestor chain), `fresh_ts` (an `Ins` uses a fresh, nonzero id), and
-`contains s 0 = false` (the root sentinel is never stored). The naive
-`commutes_with` above is retained only to document the unconditioned form. The
-proof splits into `insins_comm`, `insdel_comm`, and `deldel_comm`. -/
+`contains s 0 = false` (the root sentinel is never stored). The proof splits into
+`insins_comm`, `insdel_comm`, and `deldel_comm`. -/
 
 set_option maxHeartbeats 4000000
 
@@ -326,8 +315,8 @@ theorem resolve_dom_eq (s1 s2 : concrete_st) :
       fun x hx => h x (by simp [hx])
     simp only [resolve, hc]
     cases hcc : contains s2 c with
-    | true  => simp [hcc]
-    | false => simp [hcc]; exact ih hrest
+    | true  => simp
+    | false => simp; exact ih hrest
 
 theorem resolve_upd_notMem (s : concrete_st) (t : ℕ) (v : ℕ × ℕ)
     (cands : List ℕ) (ht : t ∉ cands) :
@@ -343,7 +332,7 @@ theorem upd_comm (s : concrete_st) (t1 t2 : ℕ) (v w : ℕ × ℕ) (h : t1 ≠ 
   apply (map_lemma_equal_elim _ _).mp
   constructor
   · funext x; by_cases e1 : x = t1 <;> by_cases e2 : x = t2 <;> simp_all [upd]
-  · intro x; simp only [upd, union, _root_.singleton, mem]; grind
+  · intro x; simp only [upd, union, _root_.singleton]; grind
 
 /-! ## Group B: eq plumbing -/
 
@@ -522,7 +511,7 @@ theorem insdel_comm (s : concrete_st) (t1 r1 e1 a1 : ℕ) (p1 : List ℕ)
   have anchorR : resolve DS (a1 :: p1) = (if a1 = x2 then resolve s p2 else a1) := by
     by_cases hax : a1 = x2
     · subst hax
-      simp only [if_pos rfl]
+      simp only
       -- contains DS a1 = false, so head dropped
       have hcDSa : contains DS a1 = false := by
         rw [hDS, contains_doDel]; simp
@@ -644,8 +633,8 @@ theorem resolve_doDel (s : concrete_st) (t r x : ℕ) (pre cands : List ℕ) :
         rw [contains_doDel, hb]; simp
       simp only [hb, if_true, resolve, hcc]
       cases hh : contains s c with
-      | true => simp [hh]
-      | false => simp [hh]; exact ih
+      | true => simp
+      | false => simp; exact ih
 
 /-- Under root-not-stored, the ancestor chain of a node is unique. -/
 theorem IsAncPath_unique (s : concrete_st) (h0 : contains s 0 = false) :
@@ -816,7 +805,7 @@ theorem deldel_comm (s : concrete_st) (t1 r1 : ℕ) (p1 : List ℕ) (x1 : ℕ)
         · -- anc s k = x1 = x2
           have hx12 : x1 = x2 := h1.symm.trans h2
           subst hx12
-          simp only [if_pos h1, if_pos h2]
+          simp only [if_pos h1]
           rcases ha1 with ⟨hx10, hp1nil⟩ | ⟨h1live, h1path⟩
           · subst hp1nil; subst hx10
             rcases ha2 with ⟨_, hp2nil⟩ | ⟨h2live, _⟩
