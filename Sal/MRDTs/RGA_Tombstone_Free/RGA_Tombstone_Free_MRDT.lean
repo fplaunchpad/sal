@@ -34,12 +34,17 @@ hypothesis). Deletion physically removes the id; there is no tombstone component
 * `Del prefix x` removes `x` and rehomes its children to `resolve s prefix`, the
   nearest live ancestor of `x`.
 
-The path is consulted only on the branch where the anchor or target is already
-dead. On a causally consistent history that branch is unreachable (an operation
-never references a node it has not seen live), so the path is never read in real
-execution and a runtime operation may carry only the immediate anchor.
-`ins_path_free` is the formal statement: when the anchor is live, `do_` ignores
-the path.
+The path matters only when the relevant ancestor has been spliced away, and the
+two operations reach it asymmetrically. For `Ins` the anchor `a` is `resolve`'s
+head, so a live anchor short-circuits and the prefix is never read;
+`ins_path_free` is the formal statement (when `a` is live, `do_` ignores the
+prefix). `Del` is different: it *always* evaluates `resolve s pre`, whose head is
+`x`'s parent, but when the path is accurate that value is exactly the stored
+`anc s x`; `del_path_free` is the corresponding statement. On a causally
+consistent history an operation never references an ancestor it has not seen
+live, so neither op needs to transmit its path: a runtime `Ins` carries only its
+immediate anchor, and a runtime `Del` only its target, the reparent anchor being
+recovered from the state as `anc s x`.
 
 ### Merge
 
@@ -56,10 +61,11 @@ So `cond_comm_base` and `no_rc_chain` hold vacuously.
 `rc_non_comm'` is the commutation VC. Its unconditioned form
 (`rc = Either ↔ ∀ s, do_-commute`) is false: two inserts where one anchors at the
 other's freshly created id do not commute. It is therefore conditioned on the
-reachable states the framework's universal quantifier over-approximates: each
-operation's path is the genuine ancestor chain (`accurate`) and an `Ins` uses a
-fresh, nonzero id (`fresh_ts`). Under those premises every pair commutes, and
-`rc_non_comm'` is proven below with no `sorry`.
+reachable states the framework's universal quantifier over-approximates: the root
+sentinel is never stored (`contains s 0 = false`), each operation's path is the
+genuine ancestor chain (`accurate`), and an `Ins` uses a fresh, nonzero id
+(`fresh_ts`). Under those premises every pair commutes, and `rc_non_comm'` is
+proven below with no `sorry`.
 -/
 
 /-- State: `id ↦ (element, immediate-anchor)`. Tombstone-free; only the
@@ -226,6 +232,33 @@ theorem trio_converges :
 theorem inconsistent_diverges :
     dump (do_ (do_ s1 good_ins) bad_del) [5,7,10]
       ≠ dump (do_ (do_ s1 bad_del) good_ins) [5,7,10] := by native_decide
+
+/-! ### The `Ins` prefix is necessary
+
+`inconsistent_diverges` shows a *wrong* prefix breaks commutation; this pair
+shows an *absent* one does too, isolating the `Ins` prefix as load-bearing. Node
+`5` sits under `7` under the root. Holding an accurate `Del` fixed, the only
+change is the `Ins` prefix: the genuine chain `[7]` versus the path-free `[]`. -/
+
+def sP : concrete_st := mk [(7,70,0),(5,83,7)]
+def insP  : op_t := (10, 1, .Ins 65 [7] 5)   -- accurate prefix
+def insPF : op_t := (10, 1, .Ins 65 []  5)   -- prefix dropped (path-free)
+def delP  : op_t := (11, 2, .Del [7] 5)      -- accurate, fixed across both runs
+
+/-- With the prefix, the pair commutes: both orders anchor the new node at `7`,
+the nearest live ancestor of the deleted `5`. -/
+theorem prefix_converges :
+    dump (do_ (do_ sP insP) delP) [5,7,10]
+      = dump (do_ (do_ sP delP) insP) [5,7,10] := by native_decide
+
+/-- Drop the prefix and the same accurate `Del`/`Ins` pair diverges. In
+`Del; Ins` the anchor `5` is already physically gone and, with no path to climb,
+the insert falls to the root `0` instead of `7`. Because deletion is
+tombstone-free, `anc s 5` survives nowhere but the carried prefix — so no
+path-free `Ins` can satisfy `rc_non_comm'`. -/
+theorem prefixfree_diverges :
+    dump (do_ (do_ sP insPF) delP) [5,7,10]
+      ≠ dump (do_ (do_ sP delP) insPF) [5,7,10] := by native_decide
 
 /-! ### Merge convergence core -/
 
@@ -432,6 +465,41 @@ theorem del_path_free (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
       = del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, anc s x) else ea) s) x := by
   have hr : resolve s pre = anc s x := isAncPath_resolve s x pre h
   simp only [do_, hr]
+
+/-! ### The `Del` prefix is dispensable
+
+The mirror of `prefixfree_diverges`. A `Del` need not carry a prefix at all: it
+reads its reparent target straight from the live state as `anc s x`.
+
+* `del_prefix_dispensable` — a *general* equivalence (corollary of
+  `del_path_free`): on every accurate state the path-carrying `Del` and the
+  path-free `doDelPF` are the same function, so the prefix carries no information
+  not already in the state.
+* `deldel_pathfree_converges` — a concrete witness that `doDelPF` still converges
+  in exactly the situation that sinks a path-free `Ins`: the chain `7 ← 5 ← 3 ← 9`
+  with both interior nodes deleted and physically removed. Eager child-reparenting
+  keeps the forest connected, so `9` climbs to the live `7` either way. -/
+
+/-- Path-free deletion: reparent `x`'s children to the stored parent `anc s x`,
+then remove `x`. No prefix. -/
+def doDelPF (s : concrete_st) (x : ℕ) : concrete_st :=
+  del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, anc s x) else ea) s) x
+
+/-- On any accurate state the path-carrying `Del` equals the path-free `doDelPF`.
+Immediate from `del_path_free`. -/
+theorem del_prefix_dispensable (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+    (h : IsAncPath s x pre) :
+    do_ s (t, r, .Del pre x) = doDelPF s x := by
+  unfold doDelPF; exact del_path_free s t r x pre h
+
+def chain : concrete_st := mk [(7,70,0),(5,83,7),(3,60,5),(9,40,3)]
+
+/-- Path-free `Del` converges even with both interior nodes (`5`, then `3`)
+deleted and physically removed: `9` reparents up to the live `7` in either order.
+This is the case a path-free `Ins` cannot survive. -/
+theorem deldel_pathfree_converges :
+    dump (doDelPF (doDelPF chain 5) 3) [3,5,7,9]
+      = dump (doDelPF (doDelPF chain 3) 5) [3,5,7,9] := by native_decide
 
 /-! ## Case lemmas -/
 
