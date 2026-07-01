@@ -407,6 +407,11 @@ premise).
 (the `Inv_merge` `sorry` at `:238` closed under the generation-time hypothesis); `events_applicable`
 proved by execution induction. **This is the Phase-0 research deliverable** — it answers
 "can the generation-time id-monotonicity be carried as a reachable-execution invariant?".
+**✅ DONE — the answer is yes.** `Inv_merge` is closed under the single premise
+`id_mono l`; `id_mono` is a reachable invariant under `mono_alloc` (`id_mono_init` /
+`id_mono_doIns` / `id_mono_doDel` / `id_mono_merge`), all kernel-clean. Sharpening: the
+cross-branch compatibility budgeted here is **derivable from `wf`** — `id_mono l` is the
+sole generation-time premise the RGA merge needs.
 
 **S6 — Ternary merge case (carving + lex recursion).** Build `MergeCarving` (re-anchor
 `ev_top := e⊤` via `lca_events`), `mergeMeasure`, and `merge_linearization_exists_T` as
@@ -424,9 +429,11 @@ re-opened *before* the S6 grind, exactly per research-first guidance.
 
 ## 5. Open risks carried forward
 
-- **S5 is the genuine research risk**, not a formality: `merge_preserves`/`AllocMono` must
-  be strong enough to prove yet weak enough to be a reachable-execution invariant. The
-  `Inv_merge` sorry (`:238`) is documented-false without it.
+- ~~**S5 is the genuine research risk**~~ **— RESOLVED (machine-checked).**
+  `merge_preserves`/`AllocMono` is both provable and a reachable-execution invariant:
+  `Inv_merge` (`:238`) is closed under `id_mono l`, and `id_mono` is inductive under
+  `init` / `do_` (`mono_alloc`) / `merge`. The conditioning design is validated, so
+  Phase-0 proceeds to S1/S6 without re-opening it.
 - **`lca_events` as a maintained invariant** (not yet derived from unique-generator
   well-foundedness, `appendix.tex:6-37`) must be correctly maintained by `Step.merge`;
   schedule a standalone proof post-Phase-0.

@@ -215,41 +215,314 @@ theorem merge_breaks_wf : ¬ wf (merge lCex aCex bCex) := by
 
 #print axioms merge_breaks_wf   -- uses `Lean.ofReduceBool` (native_decide); analysis-only
 
-/-! ## STRETCH 4 — `Inv_merge`
+/-! ## The id-monotone invariant and the fuel-sufficiency lemma
 
-The `contains 0 = false` conjunct holds from `Inv l/a/b` (a node `0` could only
-be in the merged domain `I` if it were in some input domain, which it is not).
-The `wf` conjunct is **not** provable from `Inv l/a/b`: it is exactly the property
-refuted by `merge_breaks_wf` above.
+`merge_breaks_wf` isolates the missing ingredient: `climb`'s fuel (`= the node
+id`) suffices exactly when anchor ids strictly *decrease* along the LCA's parent
+chain.  We name that discipline `id_mono` and prove it is precisely enough (with
+`wf l`) to close `wf (merge l a b)`. -/
 
-What the `wf` conjunct genuinely needs, on top of `Inv l/a/b`:
+/-- Id-monotone anchors: every live node's immediate anchor is the root `0` or a
+strictly smaller id.  This is a **generation-time** property (monotone timestamp
+allocation), NOT derivable from state shape: `merge_breaks_wf` exhibits a `wf`
+state that violates it, and inserting a small id under a larger live anchor
+breaks it under the abstract `fresh_ts`.  It is established below as a reachable
+invariant of monotone allocation (`id_mono_init`/`id_mono_doIns`/`id_mono_doDel`/
+`id_mono_merge`). -/
+def id_mono (s : concrete_st) : Prop :=
+  ∀ t, contains s t → (anc s t = 0 ∨ anc s t < t)
 
-1. `id_mono l : ∀ t, contains l t → (anc l t = 0 ∨ anc l t < t)` — id-monotone
-   anchors on the LCA, so that `climb`'s fuel (`= the node id`) always reaches a
-   `0`-or-survivor before running out; AND
-2. cross-branch compatibility: every `betaf`-chain of a survivor enters `l`'s
-   forest (so walking `anc l` is meaningful for nodes added in `a`/`b`).
+/-- The merged survivor set `I` (OR-set survival on identities), matching `merge`. -/
+def survivors (l a b : concrete_st) : set ℕ :=
+  union (intersection (intersection (domain l) (domain a)) (domain b))
+        (union (difference (domain a) (domain l)) (difference (domain b) (domain l)))
 
-Neither follows from `wf`, and (1) is *not even a `do_`-invariant* under the
-abstract `fresh_ts` (inserting a small id anchored at a larger live node breaks
-it).  It is a *generation-time* property of monotone timestamp allocation — a
-Phase-0 execution-model condition, not a state invariant.  The `sorry` below marks
-exactly this gap (and is, per `merge_breaks_wf`, *false* as stated). -/
-theorem Inv_merge (l a b : concrete_st) (hl : RgaInv l) (ha : RgaInv a) (hb : RgaInv b) :
+/-- Each survivor's birth-anchor, read from whichever branch it lives in
+(matching `merge`'s `betaf`). -/
+def birthAnc (l a b : concrete_st) (t : ℕ) : ℕ :=
+  if contains l t then anc l t else if contains a t then anc a t else anc b t
+
+/-- `contains (merge …)` is survivor-set membership (definitional). -/
+theorem contains_merge (l a b : concrete_st) (t : ℕ) :
+    contains (merge l a b) t = survivors l a b t := rfl
+
+/-- `anc (merge …)` is the `climb` of the birth-anchor (definitional). -/
+theorem anc_merge (l a b : concrete_st) (t : ℕ) :
+    anc (merge l a b) t
+      = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b t) := rfl
+
+/-- **Fuel-sufficiency for `climb`.**  Under id-monotone anchors (`Hdec`: the id
+strictly drops along `anc l`) and the forest invariant (`Hstay`: `anc l` stays in
+`{0} ∪ dom l`), a walk started at a node that is `0`, a survivor (`I`), or
+live-in-`l` (a) **lands in `{0} ∪ I`** and (b) **never climbs above its start**.
+The walk only ever applies `anc l` to live-in-`l` nodes — it halts first on `0`
+and on survivors — so `id_mono l` (which only constrains live-in-`l` nodes) is
+exactly enough.  Since the id strictly decreases at each `anc l` step, the fuel
+`= start id` always suffices; this is the ingredient `merge_breaks_wf` shows `wf`
+lacks. -/
+theorem climb_aux_walk (l : concrete_st) (I : set ℕ)
+    (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
+    (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true)) :
+    ∀ (fuel x : ℕ), x ≤ fuel → (x = 0 ∨ I x = true ∨ contains l x = true) →
+      (climb_aux (fun y => anc l y) I fuel x = 0
+        ∨ I (climb_aux (fun y => anc l y) I fuel x) = true)
+      ∧ climb_aux (fun y => anc l y) I fuel x ≤ x := by
+  intro fuel
+  induction fuel with
+  | zero =>
+    intro x hx _
+    have hx0 : x = 0 := Nat.le_zero.mp hx
+    subst hx0
+    exact ⟨Or.inl rfl, le_refl 0⟩
+  | succ fuel ih =>
+    intro x hx hs
+    by_cases hx0 : x = 0
+    · subst hx0
+      have h0fix : climb_aux (fun y => anc l y) I (fuel + 1) 0 = 0 := by
+        simp only [climb_aux]; simp
+      rw [h0fix]; exact ⟨Or.inl rfl, le_refl 0⟩
+    · by_cases hIx : I x = true
+      · have hfix : climb_aux (fun y => anc l y) I (fuel + 1) x = x := by
+          simp only [climb_aux]; simp [hIx]
+        rw [hfix]; exact ⟨Or.inr hIx, le_refl x⟩
+      · have hlx : contains l x = true := by
+          rcases hs with h | h | h
+          · exact absurd h hx0
+          · exact absurd h (by simp [hIx])
+          · exact h
+        have hIxf : I x = false := by
+          cases hI : I x with
+          | true => exact absurd hI hIx
+          | false => rfl
+        have hcondF : (decide (x = 0) || I x) = false := by simp [hx0, hIxf]
+        have hstep : climb_aux (fun y => anc l y) I (fuel + 1) x
+                   = climb_aux (fun y => anc l y) I fuel (anc l x) := by
+          simp only [climb_aux]
+          rw [if_neg (by rw [hcondF]; simp)]
+        rw [hstep]
+        have hdec := Hdec x hlx hx0
+        have hstay := Hstay x hlx
+        have hle_fuel : anc l x ≤ fuel := by omega
+        have hstart' : anc l x = 0 ∨ I (anc l x) = true ∨ contains l (anc l x) = true := by
+          rcases hstay with h | h
+          · exact Or.inl h
+          · exact Or.inr (Or.inr h)
+        have IHres := ih (anc l x) hle_fuel hstart'
+        exact ⟨IHres.1, le_trans IHres.2 (le_of_lt hdec)⟩
+
+/-- **The start condition is free from `wf l/a/b`.**  Every survivor's
+birth-anchor is `0`, itself a survivor, or live-in-`l` — so no separate
+cross-branch premise is needed.  Key fact: a node new in `a` (`da \ dl`) is
+*automatically* a survivor, so a chain of new `a`-nodes halts the climb at the
+first survivor rather than escaping `l`'s forest. -/
+theorem betaf_start (l a b : concrete_st)
+    (hlwf : ∀ t, contains l t = true → (anc l t = 0 ∨ contains l (anc l t) = true))
+    (hawf : ∀ t, contains a t = true → (anc a t = 0 ∨ contains a (anc a t) = true))
+    (hbwf : ∀ t, contains b t = true → (anc b t = 0 ∨ contains b (anc b t) = true))
+    (t : ℕ) (ht : survivors l a b t = true) :
+    birthAnc l a b t = 0 ∨ survivors l a b (birthAnc l a b t) = true
+      ∨ contains l (birthAnc l a b t) = true := by
+  unfold birthAnc
+  by_cases hlt : contains l t = true
+  · rw [if_pos hlt]
+    rcases hlwf t hlt with h | h
+    · exact Or.inl h
+    · exact Or.inr (Or.inr h)
+  · rw [if_neg hlt]
+    by_cases hat : contains a t = true
+    · rw [if_pos hat]
+      rcases hawf t hat with h | h
+      · exact Or.inl h
+      · by_cases hla : contains l (anc a t) = true
+        · exact Or.inr (Or.inr hla)
+        · refine Or.inr (Or.inl ?_)
+          simp only [survivors, union, intersection, difference, contains, domain, mem] at h hla ⊢
+          grind
+    · rw [if_neg hat]
+      have hbt : contains b t = true := by
+        simp only [survivors, union, intersection, difference, contains, domain, mem] at ht hlt hat
+        grind
+      rcases hbwf t hbt with h | h
+      · exact Or.inl h
+      · by_cases hlb : contains l (anc b t) = true
+        · exact Or.inr (Or.inr hlb)
+        · refine Or.inr (Or.inl ?_)
+          simp only [survivors, union, intersection, difference, contains, domain, mem] at h hlb ⊢
+          grind
+
+/-! ## STRETCH 4 — `Inv_merge`, now CLOSED under `id_mono l`
+
+The `contains 0 = false` conjunct holds from `Inv l/a/b`.  The `wf` conjunct —
+refuted from `Inv l/a/b` alone by `merge_breaks_wf` — goes through under the
+single extra premise `id_mono l`: the id-monotone anchors on the LCA make
+`climb`'s fuel sufficient (`climb_aux_walk`), and the start condition for every
+survivor's birth-anchor is supplied for free by `wf l/a/b` (`betaf_start`).  No
+separate cross-branch premise is needed. -/
+set_option maxHeartbeats 4000000 in
+theorem Inv_merge (l a b : concrete_st)
+    (hl : RgaInv l) (ha : RgaInv a) (hb : RgaInv b) (ml : id_mono l) :
     RgaInv (merge l a b) := by
-  obtain ⟨hl0, _hlwf⟩ := hl
-  obtain ⟨ha0, _hawf⟩ := ha
-  obtain ⟨hb0, _hbwf⟩ := hb
+  obtain ⟨hl0, hlwf⟩ := hl
+  obtain ⟨ha0, hawf⟩ := ha
+  obtain ⟨hb0, hbwf⟩ := hb
+  simp only [wf] at hlwf hawf hbwf
   refine ⟨?_, ?_⟩
   · -- root sentinel absent: closed from `Inv l/a/b`
     simp only [merge, contains, domain, mem] at hl0 ha0 hb0 ⊢
     grind
-  · -- forest invariant: NOT provable from `Inv l/a/b` — refuted by `merge_breaks_wf`.
-    -- Reduces to: for every survivor `k`, `climb (anc l) I (betaf k)` lands in
-    -- `{0} ∪ I`.  This needs `id_mono l` + cross-branch compatibility (see above).
-    sorry
+  · -- forest invariant: closed via `climb_aux_walk` + `betaf_start` under `id_mono l`
+    intro t ht
+    rw [contains_merge] at ht
+    rw [anc_merge, contains_merge]
+    have Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y := by
+      intro y hy hy0; rcases ml y hy with h | h
+      · omega
+      · exact h
+    have hstart := betaf_start l a b hlwf hawf hbwf t ht
+    have hwalk := climb_aux_walk l (survivors l a b) Hdec hlwf
+                    (birthAnc l a b t) (birthAnc l a b t) (le_refl _) hstart
+    simp only [climb]
+    exact hwalk.1
 
 #print axioms Inv_merge
+
+/-! ## Establishing `id_mono` as a reachable invariant of monotone allocation
+
+`id_mono` is not a `do_`-invariant on its own (a small id inserted under a larger
+live anchor breaks it); it needs the *allocation discipline* that a fresh `Ins`
+timestamp exceeds every live id.  We package that as `mono_alloc` and show
+`RgaInv ∧ id_mono` is jointly preserved by `init_st`/`do_`/`merge`. -/
+
+/-- Any `resolve` result is the root `0` or a live node — regardless of accuracy. -/
+theorem resolve_zero_or_live (s : concrete_st) (cands : List ℕ) :
+    resolve s cands = 0 ∨ contains s (resolve s cands) = true := by
+  induction cands with
+  | nil => left; rfl
+  | cons c rest ih =>
+    simp only [resolve]
+    by_cases hc : contains s c = true
+    · rw [if_pos hc]; right; exact hc
+    · rw [if_neg hc]; exact ih
+
+/-- Monotone allocation discipline: an `Ins` timestamp exceeds every live id
+(so its live anchor is strictly smaller); `Del` allocates nothing. -/
+def mono_alloc (o : op_t) (s : concrete_st) : Prop :=
+  match o with
+  | (t, _, .Ins _ _ _) => ∀ k, contains s k = true → k < t
+  | (_, _, .Del _ _)   => True
+
+/-- `id_mono` holds vacuously at the empty initial state. -/
+theorem id_mono_init : id_mono init_st := by
+  intro t ht
+  simp [init_st] at ht
+
+/-- `Ins` preserves `id_mono` under monotone allocation: the freshly stored anchor
+`resolve s (a :: pre)` is `0`-or-live, and every live id is `< t` by `mono_alloc`;
+existing nodes keep their (already id-monotone) anchor. -/
+theorem id_mono_doIns (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
+    (hmono : id_mono s) (halloc : mono_alloc (t, r, .Ins e pre a) s) :
+    id_mono (do_ s (t, r, .Ins e pre a)) := by
+  simp only [mono_alloc] at halloc
+  intro k hk
+  have hdo : do_ s (t, r, .Ins e pre a) = upd s t (e, resolve s (a :: pre)) := by
+    simp only [do_]
+  rw [hdo] at hk ⊢
+  by_cases hkt : k = t
+  · subst hkt
+    have hanc : anc (upd s k (e, resolve s (a :: pre))) k = resolve s (a :: pre) := by
+      simp only [anc]; rw [lemma_SelUpd1]
+    rw [hanc]
+    rcases resolve_zero_or_live s (a :: pre) with h | hl
+    · left; exact h
+    · right; exact halloc (resolve s (a :: pre)) hl
+  · have htk : t ≠ k := fun e' => hkt e'.symm
+    have hck : contains s k = true := by
+      rw [lemma_InDomUpd1] at hk
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at hk
+      rcases hk with h | h
+      · exact absurd h htk
+      · exact h
+    have hanc : anc (upd s t (e, resolve s (a :: pre))) k = anc s k := by
+      simp only [anc]
+      rw [lemma_SelUpd2 s k t (e, resolve s (a :: pre))
+            (by simp only [bne_iff_ne, ne_eq]; exact htk)]
+    rw [hanc]
+    exact hmono k hck
+
+/-- `Del` preserves `id_mono` under `accurate` and `contains s 0 = false`.  For an
+untouched node the anchor (hence its id-monotonicity) is carried from `s`.  For a
+rehomed child `k` (whose parent was `x = anc s k`), the new anchor is
+`resolve s pre = anc s x`, and `id_mono s` gives `anc s x < x = anc s k < k`, so
+monotonicity survives the reparent. -/
+theorem id_mono_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+    (h0 : contains s 0 = false) (hmono : id_mono s)
+    (hacc : accurate (t, r, .Del pre x) s) :
+    id_mono (do_ s (t, r, .Del pre x)) := by
+  simp only [accurate, opLeaf, opPath] at hacc
+  intro k hk
+  rw [contains_doDel] at hk
+  rw [Bool.and_eq_true] at hk
+  obtain ⟨hck, _hkx⟩ := hk
+  rw [anc_doDel]
+  by_cases hax : anc s k = x
+  · rw [if_pos hax]
+    rcases hacc with ⟨_hx0, hpnil⟩ | ⟨hxlive, hxpath⟩
+    · subst hpnil; left; rfl
+    · have hres : resolve s pre = anc s x := isAncPath_resolve s x pre hxpath
+      rw [hres]
+      have hxne0 : x ≠ 0 := contains_ne_zero s x h0 hxlive
+      rcases hmono k hck with hk0 | hklt
+      · exact absurd (hax.symm.trans hk0) hxne0
+      · have hxltk : x < k := by rw [← hax]; exact hklt
+        rcases hmono x hxlive with hx0' | hxlt'
+        · left; exact hx0'
+        · right; exact lt_trans hxlt' hxltk
+  · rw [if_neg hax]
+    exact hmono k hck
+
+/-- `merge` preserves `id_mono` when all three inputs are id-monotone well-formed:
+each merged anchor is `climb (anc l) I (betaf t) ≤ betaf t`, and `betaf t` is `0`
+or `< t` by the owning branch's `id_mono`, so the climb result is `0` or `< t`. -/
+theorem id_mono_merge (l a b : concrete_st)
+    (hl : RgaInv l) (ha : RgaInv a) (hb : RgaInv b)
+    (ml : id_mono l) (ma : id_mono a) (mb : id_mono b) :
+    id_mono (merge l a b) := by
+  obtain ⟨_, hlwf⟩ := hl
+  obtain ⟨_, hawf⟩ := ha
+  obtain ⟨_, hbwf⟩ := hb
+  simp only [wf] at hlwf hawf hbwf
+  intro t ht
+  rw [contains_merge] at ht
+  rw [anc_merge]
+  have Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y := by
+    intro y hy hy0; rcases ml y hy with h | h
+    · omega
+    · exact h
+  have hstart := betaf_start l a b hlwf hawf hbwf t ht
+  have hwalk := climb_aux_walk l (survivors l a b) Hdec hlwf
+                  (birthAnc l a b t) (birthAnc l a b t) (le_refl _) hstart
+  simp only [climb]
+  have hle := hwalk.2
+  have hbeta_lt : birthAnc l a b t = 0 ∨ birthAnc l a b t < t := by
+    unfold birthAnc
+    by_cases hlt : contains l t = true
+    · rw [if_pos hlt]; exact ml t hlt
+    · rw [if_neg hlt]
+      by_cases hat : contains a t = true
+      · rw [if_pos hat]; exact ma t hat
+      · rw [if_neg hat]
+        have hbt : contains b t = true := by
+          simp only [survivors, union, intersection, difference, contains, domain, mem] at ht hlt hat
+          grind
+        exact mb t hbt
+  rcases hbeta_lt with h0 | hlt
+  · left; rw [h0] at hle; omega
+  · right; omega
+
+#print axioms id_mono_init
+#print axioms id_mono_doIns
+#print axioms id_mono_doDel
+#print axioms id_mono_merge
 
 /-! ## VERDICT — the three ANALYSIS questions
 
@@ -261,12 +534,19 @@ Partly, and the partition is sharp:
 * Under `init_st` and `do_` (both `Ins` and `Del`): **YES**, machine-checked,
   `sorry`-free (`Inv_init`, `Inv_doIns`, `Inv_doDel`).  `Inv = (contains 0 =
   false) ∧ wf` is inductive for the local effect.
-* Under `merge`: **NO**, from `Inv l/a/b` alone.  `merge_breaks_wf` is a
-  machine-checked counterexample.  `wf`-preservation under `merge` requires an
-  auxiliary id-monotonicity invariant on the LCA (so `climb`'s fuel suffices) plus
-  cross-branch anchor compatibility.  So the keystone's *do_* half is validated
-  for this RGA, but its *merge* half needs a strictly stronger invariant than the
-  one the conditioning names.
+* Under `merge`: **NO** from `Inv l/a/b` alone (`merge_breaks_wf` is a
+  machine-checked counterexample), but **YES** once the LCA is id-monotone.
+  `Inv_merge` is now closed, `sorry`-free, under the single extra premise
+  `id_mono l`: `climb_aux_walk` proves that id-monotone anchors make `climb`'s
+  fuel (`= the node id`) sufficient, and `betaf_start` shows the walk's start
+  condition for every survivor's birth-anchor is supplied *for free* by `wf l/a/b`
+  — no separate cross-branch anchor-compatibility premise is needed (a node new in
+  a branch is automatically a survivor, so the climb halts on it).  And `id_mono`
+  is itself a reachable invariant of monotone allocation: `id_mono_init`,
+  `id_mono_doIns` (under `mono_alloc`), `id_mono_doDel` (under `accurate`), and
+  `id_mono_merge` are all closed.  So `RgaInv ∧ id_mono` is a reachable-state
+  invariant under `init_st`/`do_`/`merge`, and it discharges merge soundness — the
+  *merge* half requiring exactly the generation-time id-monotonicity.
 
 **(ii) Which conditioning is a state-invariant vs. an op-generation condition?**
 
@@ -288,15 +568,20 @@ because any op's path "stays accurate" but because the rehoming target
 Carrying the forest invariant `wf` is the right design; "paths stay accurate" is
 falsified by deletes (the blueprint's §5.4 staleness risk), and is not needed.
 
-For the **`merge` layer: R2 is too optimistic as literally stated.**  The
+For the **`merge` layer: R2 holds once conditioned on monotone allocation.**  The
 blueprint (§5.4 R2) claims the forest invariant is "preserved under update and
-merge including Del-rehoming."  The *update* half is confirmed; the *merge* half
-is **refuted** by `merge_breaks_wf`: `climb`'s fixed fuel makes `wf`-preservation
-depend on monotone anchor ids, which `wf` does not supply and which `fresh_ts`
-does not even make a `do_`-invariant.  The corrected statement: the conditioning
-predicate `wf` is a reachable-state invariant under `do_`, but its preservation
-under `merge` requires the additional generation-time discipline of monotone
-timestamp allocation (id-decreasing anchors).  Establishing that as a genuine
-reachable invariant is the precise remaining obligation for closing the RGA
-soundness composition — a sharper research target than the blueprint anticipated.
+merge including Del-rehoming."  The *update* half is confirmed unconditionally;
+the *merge* half is **refuted from `wf` alone** by `merge_breaks_wf` — `climb`'s
+fixed fuel makes `wf`-preservation depend on monotone anchor ids, which `wf` does
+not supply and which `fresh_ts` does not even make a `do_`-invariant — but is
+**recovered** under the generation-time discipline of monotone timestamp
+allocation (id-decreasing anchors), captured by `id_mono` + `mono_alloc`.  That
+obligation, flagged in the original write-up as "the precise remaining obligation
+for closing the RGA soundness composition", is now **discharged**: `id_mono` is
+established as a genuine reachable-execution invariant (`id_mono_init`/
+`id_mono_doIns`/`id_mono_doDel`/`id_mono_merge`) and it closes `Inv_merge`.  The
+headline: **`RgaInv ∧ id_mono` is a reachable invariant under monotone
+allocation, and it discharges merge soundness for the tombstone-free RGA** — the
+answer to the conditioning question, with the merge half requiring precisely the
+generation-time id-monotonicity that `merge_breaks_wf` predicted.
 -/

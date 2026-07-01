@@ -531,6 +531,18 @@ Two resolutions; **R2 is recommended and is half-built**:
   > allocation (a Phase-0 `ReachInv`/`applicable` obligation), not a pure state
   > invariant. The conditioning the RGA composition needs is `anc_consistent`
   > **plus** id-monotone allocation.
+  >
+  > **✅ RESOLVED (S5, machine-checked).** `Inv_merge` is now **closed** in
+  > `RGA_Reachability_Invariant.lean` under the *single* extra premise `id_mono l`
+  > (`anc l t = 0 ∨ anc l t < t`) — kernel-clean, no `sorryAx`/`native_decide`. And
+  > `id_mono` is proved a **reachable invariant** under monotone allocation
+  > (`id_mono_init`; `id_mono_doIns` under `mono_alloc`; `id_mono_doDel`;
+  > `id_mono_merge`). Sharpening: the cross-branch anchor-compatibility once
+  > conjectured is **derivable from `wf`** (a node new on a branch is automatically a
+  > survivor, so a chain of new nodes halts the climb on the first survivor), so
+  > `id_mono l` is the sole generation-time premise. Thus `RgaInv ∧ id_mono` is
+  > exactly the carried invariant, and the keystone — *conditioned VC sound ⟺
+  > conditioning is a reachable invariant* — is a **proved theorem** for the RGA merge.
 
 **Recommendation.** Adopt R2, **corrected per the result above**: set
 `Inv := anc_consistent` (inductive under `do_`, proved) *and* strengthen
