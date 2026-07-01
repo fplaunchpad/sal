@@ -43,16 +43,35 @@ a checked obligation, and is the rigorous form of the
 "applicability-conditioned `commutes_with` + re-derivation of soundness"
 flagged in thread 2.
 
-**Status.** Newly scoped here. A substantial **2-way-merge (CRDT)**
-prototype of the bridge already exists in `Sal/Emulation/` (thread 1's
-by-product): the Apply/CreateReplica/Query cases of the induction are fully
-proved; the **Merge case is the open frontier** — **6 residual `sorry`s**:
-four forward-closure-blocked sub-cases of `distinct_last_case`
-(`Merge_Linearization.lean:2681,2852,2868,2874`) plus two at the top-level
-Merge discharge (`:4308,4311`). The headline `ra_linearizable_of_vcs` is
-correspondingly still stubbed on the Merge case. The full **3-way-merge (MRDT)**
-meta-theorem — the one Sal's MRDTs and the RGA conditioning actually need —
-is **not yet started**; that is what this thread's blueprint scopes.
+**Status — Phase-0 scaffolded; reduced to one blocker.** The ternary (MRDT)
+meta-theorem is now built out and machine-checked through Phase-0 (all `0 sorry`,
+kernel-clean):
+- **S1** — `MRDTSig extends CRDTSig` + `mergeL`/`merge_init_slice`,
+  `ConditionedMRDTSig`, `commutesOn`, ternary `lo`
+  ([`Sal/Metatheory/MRDTSig.lean`](Sal/Metatheory/MRDTSig.lean)); `D.toCRDTSig` is a
+  literal `CRDTSig`.
+- **S2** — ternary `Configuration` (replica-keyed core + ranked-version store) +
+  well-founded `Reaches` + `initConfig`
+  ([`Sal/Metatheory/ExecutionModel.lean`](Sal/Metatheory/ExecutionModel.lean)).
+- **S4** — `SatisfiesVCsT` (29-field ternary bundle) + the reuse contract
+  `satisfiesVCs_of_T : SatisfiesVCsT D → SatisfiesVCs D.toCRDTSig`
+  ([`Sal/Metatheory/VCs.lean`](Sal/Metatheory/VCs.lean)): **the ternary case provably
+  reduces to the binary case** at `l := init`, so a fix to the binary bridge lifts
+  automatically.
+- **S5** — the conditioning gate (below).
+
+That leaves **exactly one blocker**: the **binary merge-linearization induction**
+(`Sal/Emulation/Merge_Linearization.lean:4137`, `merge_linearization_exists`, 6
+`sorry`s). A probe closed **0 of 6** and found a genuine architectural dead-end, not
+a grind: the peel-last strategy needs a *globally* `lo`-maximal event but gets only a
+locally-maximal one; two `sorry`s (`:4308/:4311`) are **provably false** (they ask for
+*upward* visibility closure, which `vis_causal` — a *backward* invariant — cannot
+give); and the obstruction corresponds to an **under-specified commuting sub-case in
+the paper** (`appendix.tex` Case 1.1.2). The three-item redesign (carving-based peel +
+a vis-transitivity `Configuration` invariant + closing the paper sub-case) and the full
+diagnosis are in [`Sal/Metatheory/FINDINGS.md`](Sal/Metatheory/FINDINGS.md). `S6` (the
+ternary merge induction) is the ternary twin of this induction and is blocked on the
+same redesign.
 
 **Key surfaced finding.** The mechanisation has already shown the paper's
 "24 VCs" are **not literally sufficient**: the soundness proof silently uses
@@ -70,19 +89,27 @@ The blueprint's R2 keystone — that the forest invariant `anc_consistent`
 fuel-bounded `climb` (fuel = node id) can run out at a deleted node, leaving a
 survivor anchored at an absent, non-root node. `wf`-preservation under `merge`
 additionally needs **id-monotone anchors** (`anc t < t`) — a *generation-time*
-property of monotone timestamp allocation, **not** a `do_`-invariant. So the RGA
-soundness composition's conditioning is `anc_consistent` **plus** monotone
-allocation — a sharper Phase-0 obligation than R2-as-written assumed. See
-BLUEPRINT §5.4 (corrected).
+property of monotone timestamp allocation, **not** a `do_`-invariant. **Now closed
+(S5):** `Inv_merge` is proved under the single premise `id_mono l`, and `id_mono` is
+itself a reachable invariant under monotone allocation (`id_mono_init` /
+`id_mono_doIns` / `id_mono_doDel` / `id_mono_merge`) — so `RgaInv ∧ id_mono` is a
+machine-checked reachable invariant that discharges merge soundness, and the keystone
+(*conditioned VC sound ⟺ conditioning is a reachable invariant*) is a proved theorem
+for the RGA. See BLUEPRINT §5.4 (updated).
 
 **Dependencies.** Reuses the `Sal/Emulation/` execution model + `lo` +
 `SatisfiesVCs` + convergence machinery; generalises them from binary to
 ternary merge (adds the LCA / version-graph layer).
 
 **Entry points.**
+- **Findings / current state:** [`Sal/Metatheory/FINDINGS.md`](Sal/Metatheory/FINDINGS.md)
+  — Phase-0 status, the single blocker, the verified diagnosis, and the redesign
+  path. **Start here for where things stand.**
+- **Phase-0 plan:** [`Sal/Metatheory/PHASE0_PLAN.md`](Sal/Metatheory/PHASE0_PLAN.md)
+  — the TTL+RV design, target Lean signatures, sequenced steps (S1–S6).
 - **Blueprint:** [`Sal/Metatheory/BLUEPRINT.md`](Sal/Metatheory/BLUEPRINT.md)
-  — the dependency graph, target Lean signatures, conditioning analysis,
-  and phased plan. **Start here.**
+  — the dependency graph, VC inventory, and conditioning analysis.
+- **Spec:** [`Sal/Metatheory/SOUNDNESS_SPEC.md`](Sal/Metatheory/SOUNDNESS_SPEC.md).
 - Paper: `_references/Neem/lin.tex` (RA-lin def, `lo` relation,
   convergence), `_references/Neem/lemmas.tex` (the VC table + Theorems 1/2),
   `_references/Neem/appendix.tex:218-368` (the merge-case induction proof).
