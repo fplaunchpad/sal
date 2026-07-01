@@ -325,6 +325,66 @@ not both. Dropping both defeats that route --- provably
 (\texttt{RGA\_PrefixFree\_Impossible.lean}); the runnable witness that drops both
 yet still converges \emph{via merge} is \texttt{RGA\_PrefixFree\_Impl.lean}.
 
+\section{The path is ghost state: needed for the proof, not for execution}
+\label{sec:ghost}
+
+The previous section's ``necessary'' is a statement about the \emph{proof
+obligation}, and its scope is worth being exact about: in a real execution the
+path is \textbf{never read}. It is \emph{ghost state} --- pure proof scaffolding
+that a runtime implementation can drop entirely.
+
+Why it is never read comes down to how operations are generated. A client issues
+an operation against \textbf{its own local replica}, on the state it currently
+sees; you insert after, or delete, a node that is \emph{live in front of you}. On
+any state where the anchor is live, \texttt{resolve} short-circuits on that anchor
+and never inspects the prefix --- exactly what \texttt{ins\_path\_free} and
+\texttt{del\_path\_free} prove. So for every operation a client can actually
+\emph{issue}, the path is dead code. The one state that reads it --- an insert
+whose anchor was \emph{already deleted on the same replica} --- is manufactured
+only by the $\doo$-commutation VC, which quantifies over \emph{all} states and, in
+forcing the two orders to agree, constructs exactly that intermediate. It sits
+\textbf{outside the reachable set} (Figure~\ref{fig:ghost}).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  \draw[line width=0.8pt, black!55] (0,0) ellipse (5.5 and 3.0);
+  \node[black!65, font=\small] at (0,2.6)
+    {all states $\sigma$ --- the range of $\forall\sigma$ in the $\doo$-commutation VC};
+  \fill[blue!8] (-1.3,-0.35) ellipse (3.5 and 2.0);
+  \draw[line width=0.7pt, blue!45!black] (-1.3,-0.35) ellipse (3.5 and 2.0);
+  \node[blue!45!black, align=center] at (-1.3,-0.35)
+    {\small\textbf{reachable states}\\[2pt]\scriptsize real executions:\\[-2pt]every operation's anchor\\[-2pt]is live when it is issued};
+  \fill[red!75!black] (2.9,1.15) circle (2.3pt);
+  \node[red!70!black, font=\scriptsize\itshape, anchor=west] at (3.15,1.15) {reads the path};
+  \node[red!70!black, align=center, font=\scriptsize, anchor=north] at (3.8,0.75)
+    {insert after an anchor\\[-2pt]already deleted on the\\[-2pt]\emph{same} replica};
+\end{tikzpicture}
+\caption{The path is ghost state. The $\doo$-commutation VC ranges over \emph{all}
+states; real executions live in the shaded \emph{reachable} region, where every
+operation's anchor is live and \texttt{resolve} short-circuits before the prefix
+(\texttt{ins\_path\_free} / \texttt{del\_path\_free}). The path is consulted only at
+the red state --- an insert whose anchor was already deleted on its own replica ---
+which a voluntary, pull-based merge never produces.}
+\label{fig:ghost}
+\end{figure}
+
+\paragraph{Why the system model rules it out.} Merge here is \textbf{voluntary},
+pull-based --- like \texttt{git pull}. A replica's state does not change under its
+feet: remote updates are incorporated only when the replica \emph{chooses} to
+merge, at well-defined points, never in the middle of forming an operation. So the
+anchor a client references is live when the operation is issued and stays live
+until it is applied locally; the dead-anchor state never arises on the replica that
+generated the op. And even in a model where remote state \emph{could} interleave,
+the client can \textbf{reject an operation whose anchor is no longer present} --- a
+cheap local check --- so the problematic state is never entered.
+
+The upshot is a clean separation. The \emph{runtime} operations carry no path:
+$\Ins$ needs only its immediate anchor, $\Del$ only its target, and the merge
+recovers position from the LCA (\S\ref{sec:merge}). The path exists solely to
+discharge the framework's universally-quantified commutation VC over states that no
+execution produces. It is ghost state --- read by the proof, erased at run time.
+
 \section{The asymmetry: $\Ins$ needs the path, $\Del$ does not}
 \label{sec:asym}
 
