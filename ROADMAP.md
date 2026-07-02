@@ -43,43 +43,41 @@ a checked obligation, and is the rigorous form of the
 "applicability-conditioned `commutes_with` + re-derivation of soundness"
 flagged in thread 2.
 
-**Status — Phase-0 scaffolded; reduced to one blocker.** The ternary (MRDT)
-meta-theorem is now built out and machine-checked through Phase-0 (all `0 sorry`,
-kernel-clean):
-- **S1** — `MRDTSig extends CRDTSig` + `mergeL`/`merge_init_slice`,
-  `ConditionedMRDTSig`, `commutesOn`, ternary `lo`
-  ([`Sal/Metatheory/MRDTSig.lean`](Sal/Metatheory/MRDTSig.lean)); `D.toCRDTSig` is a
-  literal `CRDTSig`.
-- **S2** — ternary `Configuration` (replica-keyed core + ranked-version store) +
-  well-founded `Reaches` + `initConfig`
-  ([`Sal/Metatheory/ExecutionModel.lean`](Sal/Metatheory/ExecutionModel.lean)).
-- **S4** — `SatisfiesVCsT` (29-field ternary bundle) + the reuse contract
-  `satisfiesVCs_of_T : SatisfiesVCsT D → SatisfiesVCs D.toCRDTSig`
-  ([`Sal/Metatheory/VCs.lean`](Sal/Metatheory/VCs.lean)): **the ternary case provably
-  reduces to the binary case** at `l := init`, so a fix to the binary bridge lifts
-  automatically.
-- **S5** — the conditioning gate (below).
+**Status — RESOLVED (2026-07): corrected metatheorem mechanized end-to-end,
+binary and ternary; three production MRDTs discharged.** The paper's route
+was refuted and repaired rather than transcribed:
 
-That leaves **exactly one blocker**: the **binary merge-linearization induction**
-(`Sal/Emulation/Merge_Linearization.lean:4137`, `merge_linearization_exists`, 6
-`sorry`s). A probe closed **0 of 6** and found a genuine architectural dead-end, not
-a grind: the peel-last strategy needs a *globally* `lo`-maximal event but gets only a
-locally-maximal one; two `sorry`s (`:4308/:4311`) are **provably false** (they ask for
-*upward* visibility closure, which `vis_causal` — a *backward* invariant — cannot
-give); and the obstruction corresponds to an **under-specified commuting sub-case in
-the paper** (`appendix.tex` Case 1.1.2). The three-item redesign (carving-based peel +
-a vis-transitivity `Configuration` invariant + closing the paper sub-case) and the full
-diagnosis are in [`Sal/Metatheory/FINDINGS.md`](Sal/Metatheory/FINDINGS.md). `S6` (the
-ternary merge induction) is the ternary twin of this induction and is blocked on the
-same redesign.
+- **Binary (CRDT) side** — the original convergence lemma and merge-case
+  proof are refuted by machine-checked countermodels (A1/A3), and the
+  24-VC bundle is provably insufficient for RA-linearizability (A8; A10 —
+  a *reachable* non-RA-linearizable execution under `CoreVCs` + full
+  bounded-semilattice laws). The corrected chains, both 0-sorry: `CoreVCs
+  + JoinPeelVCs ⇒ RA-lin` (A9) and the CD ladder `CoreVCs + ACI +
+  update-inflation + CD ⇒ RA-lin` (A11), with CD proved the *exact,
+  minimal* residual (A12: `CDVC ↔ JoinLemma`). Start at
+  [`Sal/CRDTs/Metatheory/README.md`](Sal/CRDTs/Metatheory/README.md);
+  journal in
+  [`Sal/CRDTs/Metatheory/FINDINGS.md`](Sal/CRDTs/Metatheory/FINDINGS.md)
+  (A1–A9) + the `A10–A12` drafts alongside it.
+- **Ternary (MRDT) side** — the full metatheorem over the version DAG:
+  the `Step3` LTS, the LCA lemma proved as a reachability invariant (the
+  paper's own proof of it has an erratum-sized gap), a validated VC set
+  (`CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3`, with the `differentReplicas`
+  guard restored to the F* artifact's interface form), and **end-to-end
+  kernel-checked RA-linearizability for the production OR-Set,
+  OR-Set-efficient, and Enable-wins flag** (plus Counter, G-Set, and the
+  commuting class), all in one instances file. Start at
+  [`Sal/MRDTs/Metatheory/README.md`](Sal/MRDTs/Metatheory/README.md);
+  superseded routes, impossibility results, and the T-series journal live
+  under
+  [`Sal/MRDTs/Metatheory/Development/`](Sal/MRDTs/Metatheory/Development).
 
-**Key surfaced finding.** The mechanisation has already shown the paper's
-"24 VCs" are **not literally sufficient**: the soundness proof silently uses
-5 further properties (`rc_non_comm_directional`, `cond_comm_lift`,
-`merge_init`, `merge_peel_comm`, `shared_peel_1op`) the paper treats as
-implicit. See `Sal/Emulation/RA_Linearizability.lean:149` (the 29-field
-`SatisfiesVCs`). Surfacing and either discharging or admitting these is a
-Sal-paper-level result on its own.
+**Remaining open (this thread's original motivation).** The RGA's
+reachability-*conditioned* commutation (`commutes_with'`) needs a feasible
+**update layer** — the σ-machinery's update-side VCs conditioned on
+reachable states, with a permutation-transport lemma — recorded as an open
+question in the Metatheory READMEs, alongside (b″)/(b″₃) and the
+route-reunification question.
 
 **Conditioning result (new, machine-checked — `Sal/MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`).**
 The blueprint's R2 keystone — that the forest invariant `anc_consistent`
@@ -97,24 +95,29 @@ machine-checked reachable invariant that discharges merge soundness, and the key
 (*conditioned VC sound ⟺ conditioning is a reachable invariant*) is a proved theorem
 for the RGA. See BLUEPRINT §5.4 (updated).
 
-**Dependencies.** Reuses the `Sal/Emulation/` execution model + `lo` +
-`SatisfiesVCs` + convergence machinery; generalises them from binary to
-ternary merge (adds the LCA / version-graph layer).
+**Dependencies.** The binary metatheory lives in `Sal/CRDTs/Metatheory/`
+(the shared execution-model primitives remain in `Sal/Emulation/`); the
+ternary layer reuses its σ/`loOn`/convergence machinery verbatim through
+the `Configuration.core` projection.
 
 **Entry points.**
-- **Findings / current state:** [`Sal/Metatheory/FINDINGS.md`](Sal/Metatheory/FINDINGS.md)
-  — Phase-0 status, the single blocker, the verified diagnosis, and the redesign
-  path. **Start here for where things stand.**
-- **Phase-0 plan:** [`Sal/Metatheory/PHASE0_PLAN.md`](Sal/Metatheory/PHASE0_PLAN.md)
-  — the TTL+RV design, target Lean signatures, sequenced steps (S1–S6).
-- **Blueprint:** [`Sal/Metatheory/BLUEPRINT.md`](Sal/Metatheory/BLUEPRINT.md)
-  — the dependency graph, VC inventory, and conditioning analysis.
-- **Spec:** [`Sal/Metatheory/SOUNDNESS_SPEC.md`](Sal/Metatheory/SOUNDNESS_SPEC.md).
+- **Start here:**
+  [`Sal/CRDTs/Metatheory/README.md`](Sal/CRDTs/Metatheory/README.md)
+  (binary: results table + the VC-bundle ladder) and
+  [`Sal/MRDTs/Metatheory/README.md`](Sal/MRDTs/Metatheory/README.md)
+  (ternary: the VC set, adequacy, the discharged-MRDT table).
+- **Journals:**
+  [`Sal/CRDTs/Metatheory/FINDINGS.md`](Sal/CRDTs/Metatheory/FINDINGS.md)
+  (A-series) and
+  [`Sal/MRDTs/Metatheory/Development/MRDT_METATHEORY_DRAFT.md`](Sal/MRDTs/Metatheory/Development/MRDT_METATHEORY_DRAFT.md)
+  (T-series).
+- **Historical plans:** `BLUEPRINT.md`, `PHASE0_PLAN.md`,
+  `SOUNDNESS_SPEC.md` under
+  [`Sal/MRDTs/Metatheory/Development/`](Sal/MRDTs/Metatheory/Development).
 - Paper: `_references/Neem/lin.tex` (RA-lin def, `lo` relation,
   convergence), `_references/Neem/lemmas.tex` (the VC table + Theorems 1/2),
-  `_references/Neem/appendix.tex:218-368` (the merge-case induction proof).
-- Existing Lean: `Sal/Emulation/RA_Linearizability.lean`,
-  `Sal/Emulation/Merge_Linearization.lean`, `Sal/Emulation/CRDT_TS.lean`.
+  `_references/Neem/appendix.tex:218-368` (the merge-case induction proof);
+  camera-ready PDF at `_references/2502.19967.pdf`.
 
 ---
 
