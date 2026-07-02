@@ -143,7 +143,7 @@ See [`demos/README.md`](demos/README.md) for the `CRDTSpec` / `MRDTSpec` interfa
 - [`demos/`](demos) — Vite + React + TypeScript playgrounds, one per RDT. CRDT demos do two-way merge; MRDT demos maintain a git-style commit DAG with LCA-driven three-way merge and a toggleable history visualisation.
 - [`docs/porting-op-based-crdts.md`](docs/porting-op-based-crdts.md) — recipe for porting a new op-based CRDT into Sal's state-based signature.
 - [`ROADMAP.md`](ROADMAP.md) — open research threads (Neem soundness metatheory, op→state transfer, the tombstone-free/prefix-free RGA results) with status and entry points.
-- [`Sal/Metatheory/`](Sal/Metatheory) — blueprint for mechanising the Neem soundness meta-theorem (24 VCs ⇒ RA-linearizability).
+- [`Sal/Metatheory/`](Sal/Metatheory) — the Neem soundness meta-theorem, corrected: `Sal/Emulation/RA_Lin_Of_Join.lean` proves `CoreVCs + JoinPeelVCs ⇒ RA-linearizability` end-to-end (0 sorries), with machine-checked counter-models showing the paper's original merge-case proof unsound as written; see `Sal/Metatheory/FINDINGS.md` (A1–A9).
 - [`Sal/MRDTs/RGA_Tombstone_Free/doc/why-the-path-matters.pdf`](Sal/MRDTs/RGA_Tombstone_Free/doc/why-the-path-matters.pdf) — a visual (TikZ) account of why the tombstone-free RGA needs the operation path, and why a prefix-free variant cannot be VC-verified.
 
 ## Paper
