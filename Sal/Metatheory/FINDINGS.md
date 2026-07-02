@@ -382,3 +382,68 @@ sides of the difficulty. Remaining open: the *generic* discharge of
 `JoinPeelVCs` from `CoreVCs` (+ lattice axioms) — or a counter-model
 separating them; and lifting the per-CRDT pattern of A7 (σ-characterization
 → trichotomy → set algebra) to the repo's real OR-Set/RGA.
+
+## A8. Separation: `CoreVCs` alone does NOT imply `JoinPeelVCs`; associativity is load-bearing 🔬→✅(in progress)
+
+**The forcing analysis.** Any attempt to refute the generic discharge with an
+"extra bit" fails: a Boolean mark added to `AWSet`'s state, preserved by
+`update` and set by `merge`, is *forced to be constant-false on all state
+pairs* by the four merge-touching CoreVCs fields — the move sequence
+(forward `lem_0op`-rem-crush) → (backward `lem_0op`-rem-uncrush to an
+all-adds pair) → (`merge_peel_comm`-strips to an init pair) → (`merge_init`)
+connects every pair to the sink. Consequently the *added*-component of any
+CoreVCs-merge is forced to be the union on all fold-pairs. **The dead
+component is only bounded, and that freedom is real:**
+
+**The separator `AWSetX`.** Same state, `update`, `rc` as `AWSet`; merge
+injects a phantom conflict:
+
+    mergeX σ τ = (σA ∪ τA,
+                  σD ∪ τD ∪ (if σD = ∅ ∨ τD = ∅ then ∅ else (σA Δ τA)))
+
+Hand-verified (mechanization in `CoreVCs_Insufficient.lean`):
+
+* all update/rc fields of `CoreVCs` transfer from `AWSet` verbatim
+  (`update` unchanged);
+* `merge_comm` (Δ symmetric), `merge_init` (guard off at ∅-dead);
+* `lem_0op`: add-case — the guard and `σA Δ τA` are invariant under
+  synchronized adds; rem-case — the injection is absorbed, since a rem
+  pushes both added-sets into dead anyway;
+* `merge_peel_comm`: an add commutes only with adds, whose fold has empty
+  dead — guard off; a rem commutes only with rems, whose fold is `init`.
+
+**The peel fails.** 5 events: r1 does `a = add s`, `r = rem`, `e = add t`;
+r2 does `b = add u`, `y = rem`. Then `e` is `loOn(∪)`-maximal (no out-edges:
+adds have no rc-edges out, nothing observed `e`), both sides backward-closed,
+and the canonical states are σ(ev₁) = ({s,t},{s}), σ(ev₁∖e) = ({s},{s}),
+σ(ev₂) = ({u},{u}). Now
+
+    mergeX σ(ev₁) σ(ev₂)              = ({s,t,u}, {s,t,u})   (Δ ∋ t)
+    update (mergeX σ(ev₁∖e) σ(ev₂)) e = ({s,t,u}, {s,u})
+
+`peel_local` is violated: the phantom conflict kills the union-maximal,
+unabsorbed add `t`.
+
+**Consequences.**
+
+1. `∃ D, CoreVCs D ∧ ¬ JoinPeelVCs D` — the fragment that runs the entire
+   σ/`loOn`/Join machinery cannot by itself discharge the peel identities.
+   A fortiori, the paper's 24 VCs (whose merge-relevant content on
+   fold-pairs is captured by these fields plus the strict-rc `ind/inter`
+   families, none of which see the guard) do not force the peel without
+   further axioms: the burden of the Neem theorem *cannot* be carried by
+   VC-shaped equations of the existing bundle alone.
+2. **`AWSetX`'s merge is not associative** — e.g. on all-dead singletons
+   against a clean one, association order flips the guard:
+   `(({x},{x}) ⊔ ({y},{y})) ⊔ ({z},∅)` has dead `{x,y}` but
+   `({x},{x}) ⊔ (({y},{y}) ⊔ ({z},∅))` has dead `{x,y,z}`. Every attempted
+   associative repair of the injection collapsed. This is strong evidence
+   that the correct sharpening of question (b) is:
+
+   > **Open (b′): does `CoreVCs D` + `merge` associativity (+ idempotence)
+   > imply `JoinPeelVCs D`?**
+
+   A proof of (b′) would repair the Neem theorem at full generality with
+   exactly one new, per-CRDT-trivial VC (associativity — true for every
+   real lattice-based RDT). The separator shows (b′) is *tight from below*:
+   drop associativity and it is false.
