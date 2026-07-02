@@ -359,3 +359,26 @@ paper's own proof is broken. Discharge routes, in order of promise:
    violating a peel in reachable context) would show the 24 VCs are
    insufficient and `JoinPeelVCs` (or lattice axioms strong enough to
    imply it) must be added to the paper's obligations.
+
+## A7. `JoinPeelVCs` DISCHARGED for `AWSet` — the Join Lemma holds for a non-trivial-`rc` CRDT ✅
+
+`Convergence_CounterModel.lean` (0 `sorry`, kernel-clean):
+
+| Result | Content |
+|---|---|
+| `CoreVCs` (in `Merge_Linearization_Set.lean`) | the 7-field fragment of `SatisfiesVCs` the σ/Join machinery actually consumes; `CoreVCs.of_full` recovers it from the full bundle. Needed because `AWSet` *cannot* satisfy the full bundle (`shared_peel_1op` is false for it, A1) — the whole foundation now runs on the fragment |
+| `AWSet_coreVCs` | `AWSet` satisfies the core (incl. a proved `merge_peel_comm`) |
+| `AWSet_canonical_eq` | **σ characterized**: `σ(ev) = (awAdds ev, awKilled C ev)` — added = add-timestamps of `ev`, dead = add-timestamps absorbed *inside* `ev`. Proof: sandwich invariant along any `loOn C ev`-respecting enumeration (absorbed-within-prefix ⊆ dead ⊆ absorbed-within-`ev`), using only `respects`-facts: a rem cannot precede an unabsorbed concurrent add (the rc-edge is mandatory), and an add cannot precede its own absorber's position incorrectly (the vis-edge is mandatory) |
+| `awAdds_killed_of_rem_max` | the A5 trichotomy, machine-checked: union-maximal rem + backward closure ⟹ every add of the union is absorbed on a side that owns it |
+| `AWSet_joinPeelVCs` | **both peel identities hold for `AWSet`** — pure set algebra over the characterization + the trichotomy |
+| `AWSet_joinLemma : JoinLemma AWSet` | via `join_lemma_of_peel AWSet_coreVCs AWSet_joinPeelVCs` |
+
+Significance: the Join Lemma — hence the merge case of RA-linearizability —
+is now closed end-to-end for (i) the entire commuting class (A6) and
+(ii) `AWSet`, a CRDT with non-trivial `rc`, state-dependent updates, and
+reachable instances (the A3 defeater) on which the paper's own bottom-up
+proof is unsound. The `JoinPeelVCs` interface is thereby validated on both
+sides of the difficulty. Remaining open: the *generic* discharge of
+`JoinPeelVCs` from `CoreVCs` (+ lattice axioms) — or a counter-model
+separating them; and lifting the per-CRDT pattern of A7 (σ-characterization
+→ trichotomy → set algebra) to the repo's real OR-Set/RGA.

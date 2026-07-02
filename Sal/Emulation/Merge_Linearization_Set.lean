@@ -77,6 +77,78 @@ open Classical
 section
 variable {D : CRDTSig}
 
+/-! ### 0. The core VC bundle
+
+The σ/`loOn` machinery of this file consumes only a small fragment of
+`SatisfiesVCs` — notably NOT `shared_peel_1op`, which
+`Convergence_CounterModel.lean` shows is *false* for state-dependent
+RDTs like `AWSet`. Parameterizing over the fragment lets such RDTs
+instantiate the Join-Lemma machinery. -/
+
+/-- The fields of `SatisfiesVCs` actually consumed by the set-relative
+linearization theory and the Join-Lemma induction. -/
+structure CoreVCs (D : CRDTSig) : Prop where
+  rc_non_comm_directional :
+    ∀ o₁ o₂ : Op D.AppOp,
+      distinctOps o₁ o₂ →
+      (¬ D.commutes o₁ o₂ ↔
+       (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨
+        D.rc o₂ o₁ = RcRes.Fst_then_snd))
+  no_rc_chain :
+    ∀ o₁ o₂ o₃ : Op D.AppOp,
+      distinctOps o₁ o₂ → distinctOps o₂ o₃ →
+      ¬ (D.rc o₁ o₂ = RcRes.Fst_then_snd ∧
+         D.rc o₂ o₃ = RcRes.Fst_then_snd)
+  cond_comm_lift :
+    ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
+      distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
+      D.rc e e' = RcRes.Fst_then_snd →
+      ¬ D.commutes e' e'' →
+      D.update (applySeq D (D.update (D.update s e') e) π) e''
+        = D.update (applySeq D (D.update (D.update s e) e') π) e''
+  merge_comm : ∀ a b : D.State, D.merge a b = D.merge b a
+  merge_init : ∀ s : D.State, D.merge D.init s = s
+  lem_0op :
+    ∀ (a b : D.State) (ol : Op D.AppOp),
+      D.merge (D.update a ol) (D.update b ol)
+        = D.update (D.merge a b) ol
+  merge_peel_comm :
+    ∀ (a : D.State) (e : Op D.AppOp) (π : List (Op D.AppOp)),
+      (∀ x ∈ π, D.commutes e x) →
+      D.merge (D.update a e) (applySeq D D.init π)
+        = D.update (D.merge a (applySeq D D.init π)) e
+
+/-- Every full bundle yields the core. -/
+theorem CoreVCs.of_full {D : CRDTSig} (hVC : CoreVCs D) :
+    CoreVCs D :=
+  ⟨hVC.rc_non_comm_directional, hVC.no_rc_chain, hVC.cond_comm_lift,
+   hVC.merge_comm, hVC.merge_init, hVC.lem_0op, hVC.merge_peel_comm⟩
+
+/-- Core-bundle version of `applySeq_swap_via_cond_comm_lift`. -/
+theorem applySeq_swap_via_cond_comm_lift_core
+    (hVC : CoreVCs D)
+    {a b e₃ : Op D.AppOp}
+    (h_dist_ab : distinctOps a b)
+    (h_dist_be : distinctOps b e₃)
+    (h_dist_ae : distinctOps a e₃)
+    (h_rc_ab : D.rc a b = RcRes.Fst_then_snd)
+    (h_nc_be : ¬ D.commutes b e₃)
+    (pfx α β : List (Op D.AppOp)) (s : D.State) :
+    applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
+    = applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β)) := by
+  have hexp1 : applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
+             = applySeq D (D.update (applySeq D
+                 (D.update (D.update (applySeq D s pfx) a) b) α) e₃) β := by
+    simp [applySeq, List.foldl_append, List.foldl_cons]
+  have hexp2 : applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β))
+             = applySeq D (D.update (applySeq D
+                 (D.update (D.update (applySeq D s pfx) b) a) α) e₃) β := by
+    simp [applySeq, List.foldl_append, List.foldl_cons]
+  rw [hexp1, hexp2]
+  exact congrArg (fun t => applySeq D t β)
+    (hVC.cond_comm_lift (applySeq D s pfx) a b e₃ α
+      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_nc_be).symm
+
 /-! ### 1. The set-relative linearization relation -/
 
 /-- **Set-relative linearization relation.** Like `lo C`, but the
@@ -180,7 +252,7 @@ def loOnNe (C : Configuration D) (T : Set (Op D.AppOp))
   a ≠ b ∧ a ∈ T ∧ b ∈ T ∧ loOn C T a b
 
 /-- **rc-flavored edges have no successors inside the set.** -/
-theorem loOn_rc_no_succ (hVC : SatisfiesVCs D) {C : Configuration D}
+theorem loOn_rc_no_succ (hVC : CoreVCs D) {C : Configuration D}
     {T : Set (Op D.AppOp)}
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     {x y z : Op D.AppOp}
@@ -201,7 +273,7 @@ theorem loOn_rc_no_succ (hVC : SatisfiesVCs D) {C : Configuration D}
 /-- **Path structure:** every `loOnNe`-path is either vis-connected,
 or its *last* edge is rc-flavored (an rc-flavored edge strictly
 inside a path is killed by `loOn_rc_no_succ`). -/
-theorem transGen_loOnNe_structure (hVC : SatisfiesVCs D)
+theorem transGen_loOnNe_structure (hVC : CoreVCs D)
     {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -232,7 +304,7 @@ theorem transGen_loOnNe_structure (hVC : SatisfiesVCs D)
           h_rc_edge h)
 
 /-- **`loOnNe` is acyclic** (no `TransGen`-cycle). -/
-theorem loOnNe_acyclic (hVC : SatisfiesVCs D) {C : Configuration D}
+theorem loOnNe_acyclic (hVC : CoreVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -267,7 +339,7 @@ would close a `TransGen`-cycle, contradicting `loOnNe_acyclic`), so
 it terminates at a maximal element. The `visited` bookkeeping is the
 invariant `h_reach`: every event outside `rem ∪ {cur}` reaches `cur`
 by a `TransGen`-path. -/
-theorem exists_loOn_maximal (hVC : SatisfiesVCs D)
+theorem exists_loOn_maximal (hVC : CoreVCs D)
     {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -323,7 +395,7 @@ theorem exists_loOn_maximal (hVC : SatisfiesVCs D)
 /-- **Every finite set has a `loOn`-respecting enumeration.**
 Peel a `loOn`-maximal element, enumerate the rest recursively, append
 the maximal element at the tail. -/
-theorem exists_loOn_respecting_perm (hVC : SatisfiesVCs D)
+theorem exists_loOn_respecting_perm (hVC : CoreVCs D)
     {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -398,7 +470,7 @@ used in the same-replica case changes from `lo C` to `loOn C ev`. -/
 
 /-- Swap adjacent `loOn`-incomparable events (Path 1 version). -/
 theorem applySeq_swap_loOn_incomparable
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)}
     {a b : Op D.AppOp} (h_ne : a ≠ b)
     (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
@@ -431,15 +503,15 @@ theorem applySeq_swap_loOn_incomparable
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
       rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
-      · exact applySeq_swap_via_cond_comm_lift hVC h_dist_ab h_dbe h_dae
+      · exact applySeq_swap_via_cond_comm_lift_core hVC h_dist_ab h_dbe h_dae
           h_rc_ab h_nc_be pfx α β s
       · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
-        exact (applySeq_swap_via_cond_comm_lift hVC h_dist_ba h_dae h_dbe
+        exact (applySeq_swap_via_cond_comm_lift_core hVC h_dist_ba h_dae h_dbe
           h_rc_ba h_nc_ae pfx α β s).symm
 
 /-- Bubble a `loOn`-minimal event to the front of a list (with tail). -/
 theorem applySeq_bubble_to_front_loOn
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)}
     (e : Op D.AppOp) (σ tail : List (Op D.AppOp))
     (h_e_in_C : e ∈ C.events)
@@ -503,7 +575,7 @@ relation pinned at `loOn C ev`. The invariant `h_abs` records that
 `evC = ev` and is preserved because a peeled head is `loOn`-minimal,
 so it absorbs nothing that remains. -/
 theorem convergence_on
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
@@ -770,7 +842,7 @@ theorem convergence_on
 preserving `loOn`-respect and the folded state (via
 `convergence_on` — no closure hypotheses needed). -/
 theorem perm_ending_in_loOn_max
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)} {π : List (Op D.AppOp)} {e : Op D.AppOp}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h_perm : listPermOf π ev) (h_resp : respects π (loOn C ev))
@@ -822,7 +894,7 @@ list. Fold preservation: both `ρ ++ [t]` and `ρ' ++ [t]` respect
 lost absorber `t` sits at the tail, absorbing exactly the swaps the
 re-sort performs. -/
 theorem normalize_peel_tail
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -917,7 +989,7 @@ def IsCanonicalState (C : Configuration D) (ev : Set (Op D.AppOp))
     applySeq D D.init ρ = s
 
 /-- Canonical states are unique. -/
-theorem isCanonicalState_unique (hVC : SatisfiesVCs D)
+theorem isCanonicalState_unique (hVC : CoreVCs D)
     {C : Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h : IsCanonicalState C ev s) (h' : IsCanonicalState C ev s') :
@@ -928,7 +1000,7 @@ theorem isCanonicalState_unique (hVC : SatisfiesVCs D)
   exact convergence_on hVC D.init h_ev_in_C hp hp' hr hr'
 
 /-- Canonical states exist for every finite set. -/
-theorem isCanonicalState_exists (hVC : SatisfiesVCs D)
+theorem isCanonicalState_exists (hVC : CoreVCs D)
     {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -956,7 +1028,7 @@ re-permutation): a `loOn C ev`-maximal event factors out of the
 canonical state exactly. Composes `perm_ending_in_loOn_max` (move
 `e` to the tail, state-preserving) with `normalize_peel_tail`
 (re-sort the front against the shrunken-set relation). -/
-theorem isCanonicalState_peel (hVC : SatisfiesVCs D)
+theorem isCanonicalState_peel (hVC : CoreVCs D)
     {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -1284,7 +1356,7 @@ structure JoinPeelVCs (D : CRDTSig) : Prop where
 induction: enumerate the union, select a `loOn(∪)`-maximal event,
 peel it with `JoinPeelVCs`, recurse on the strictly smaller sets,
 and re-attach with `isCanonicalState_snoc`. -/
-theorem join_lemma_of_peel {D : CRDTSig} (hVC : SatisfiesVCs D)
+theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
     (hPeel : JoinPeelVCs D) : JoinLemma D := by
   intro C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl h_in₁ h_in₂
     h_cl₁ h_cl₂ hc₁ hc₂
@@ -1457,7 +1529,7 @@ and `lem_0op`, and the Join Lemma holds unconditionally. -/
 
 /-- With all events commuting, `loOn` has no edges between distinct
 events of the configuration. -/
-theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     {C : Configuration D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
@@ -1470,7 +1542,7 @@ theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
 
 /-- Any enumeration is canonical when all events commute. -/
 theorem isCanonicalState_of_all_comm {D : CRDTSig}
-    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events)
@@ -1484,7 +1556,7 @@ theorem isCanonicalState_of_all_comm {D : CRDTSig}
     (Ne.symm hne)
 
 /-- The peel bundle for the commuting class. -/
-theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) :
     JoinPeelVCs D := by
   constructor
@@ -1532,7 +1604,7 @@ theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
     exact hVC.lem_0op t₁ t₂ e
 
 /-- **The Join Lemma, unconditionally, for the commuting class.** -/
-theorem join_lemma_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+theorem join_lemma_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : JoinLemma D :=
   join_lemma_of_peel hVC (joinPeelVCs_of_all_comm hVC h_comm)
 

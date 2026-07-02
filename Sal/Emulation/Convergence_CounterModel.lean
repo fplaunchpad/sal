@@ -664,4 +664,435 @@ theorem AWSet_shared_peel_1op_false :
   have h2 := Set.ext_iff.mp h_dead 2
   simp at h2
 
+/-! ### Discharging `JoinPeelVCs` for `AWSet`
+
+`AWSet` cannot satisfy the full `SatisfiesVCs`
+(`AWSet_shared_peel_1op_false`), but it satisfies the `CoreVCs`
+fragment the Join-Lemma machinery consumes, and — the point of this
+section — the two contextual peel identities. The engine is a
+**characterization of canonical states**:
+
+    σ(ev) = (awAdds ev, awKilled C ev)
+
+added = timestamps of `ev`'s add events; dead = timestamps of `ev`'s
+add events that are `vis`-before some rem event *inside `ev`*. The
+proof threads a sandwich invariant along any `loOn C ev`-respecting
+enumeration: adds absorbed within the processed prefix are already
+dead (the vis-edge to the absorber is mandatory), and everything
+dead is absorbed within `ev` (a rem cannot precede an unabsorbed
+concurrent add — the rc-edge `rem → add` would be mandatory).
+
+The peel identities then reduce to set algebra plus the A5
+trichotomy (`awAdds_killed_of_rem_max`): under union-maximality of a
+rem `e` and backward closure, *every* add of `ev₁ ∪ ev₂` is absorbed
+on the side that owns it. This yields `AWSet_joinLemma` — the Join
+Lemma, hence the full merge case, for a CRDT with non-trivial `rc`,
+on exactly the class of instances where the paper's own proof
+breaks. -/
+
+/-- All-rem lists leave `added` empty. -/
+private theorem AWSet_fold_rems_added {π : List (Op AWSet.AppOp)}
+    (h : ∀ x ∈ π, x.2.2 = AWOp.rem) :
+    (applySeq AWSet AWSet.init π).1 = ∅ := by
+  induction π using List.reverseRecOn with
+  | nil => rfl
+  | append_singleton π' x ih =>
+    rw [applySeq_append_single]
+    have hx := h x (by simp)
+    rw [AWSet_update, awUpdate_rem hx]
+    exact ih (fun y hy => h y (by simp [hy]))
+
+/-- `merge_peel_comm` for `AWSet`: an add peels unconditionally; a
+rem commutes only with rems, whose fold adds nothing. -/
+theorem AWSet_merge_peel_comm :
+    ∀ (a : AWSet.State) (e : Op AWSet.AppOp)
+      (π : List (Op AWSet.AppOp)),
+      (∀ x ∈ π, AWSet.commutes e x) →
+      AWSet.merge (AWSet.update a e) (applySeq AWSet AWSet.init π)
+        = AWSet.update (AWSet.merge a (applySeq AWSet AWSet.init π)) e := by
+  intro a e π h_comm
+  rcases he : e.2.2
+  · simp only [AWSet_update, AWSet_merge, awUpdate_add he, awMerge]
+    refine Prod.ext ?_ rfl
+    ext u
+    simp only [Set.mem_insert_iff, Set.mem_union]
+    tauto
+  · have h_all_rem : ∀ x ∈ π, x.2.2 = AWOp.rem := by
+      intro x hx
+      rcases hx_op : x.2.2
+      · exact absurd (h_comm x hx) (AWSet_not_comm_rem_add he hx_op)
+      · rfl
+    have hB : (applySeq AWSet AWSet.init π).1 = ∅ :=
+      AWSet_fold_rems_added h_all_rem
+    simp only [AWSet_update, AWSet_merge, awUpdate_rem he, awMerge]
+    refine Prod.ext rfl ?_
+    rw [hB]
+    ext u
+    simp only [Set.mem_union, Set.mem_empty_iff_false]
+    tauto
+
+/-- `AWSet` satisfies the core bundle (though not the full one). -/
+theorem AWSet_coreVCs : CoreVCs AWSet :=
+  ⟨AWSet_rc_non_comm_directional, AWSet_no_rc_chain,
+   AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_init,
+   AWSet_lem_0op, AWSet_merge_peel_comm⟩
+
+/-- Timestamps of the add events of `ev`. -/
+def awAdds (ev : Set (Op AWSet.AppOp)) : Set Timestamp :=
+  {t | ∃ a, a ∈ ev ∧ a.2.2 = AWOp.add ∧ a.1 = t}
+
+/-- Timestamps of `ev`'s add events absorbed inside `ev` (some rem of
+`ev` observed them). -/
+def awKilled (C : Configuration AWSet) (ev : Set (Op AWSet.AppOp)) :
+    Set Timestamp :=
+  {t | ∃ a, a ∈ ev ∧ a.2.2 = AWOp.add ∧ a.1 = t ∧
+       ∃ z, z ∈ ev ∧ C.vis a z ∧ z.2.2 = AWOp.rem}
+
+/-- The sandwich invariant along a `loOn C ev`-respecting list. -/
+private theorem AWSet_char_aux {C : Configuration AWSet}
+    {ev : Set (Op AWSet.AppOp)} :
+    ∀ ρ : List (Op AWSet.AppOp),
+      (∀ a ∈ ρ, a ∈ ev) →
+      respects ρ (loOn C ev) →
+      ((applySeq AWSet AWSet.init ρ).1
+          = {t | ∃ a, a ∈ ρ ∧ a.2.2 = AWOp.add ∧ a.1 = t}) ∧
+      (∀ a z : Op AWSet.AppOp, a ∈ ρ → z ∈ ρ →
+          a.2.2 = AWOp.add → C.vis a z → z.2.2 = AWOp.rem →
+          a.1 ∈ (applySeq AWSet AWSet.init ρ).2) ∧
+      (∀ t, t ∈ (applySeq AWSet AWSet.init ρ).2 →
+          ∃ a, a ∈ ρ ∧ a.2.2 = AWOp.add ∧ a.1 = t ∧
+            ∃ z, z ∈ ev ∧ C.vis a z ∧ z.2.2 = AWOp.rem) := by
+  intro ρ
+  induction ρ using List.reverseRecOn with
+  | nil =>
+    intro _ _
+    refine ⟨?_, ?_, ?_⟩
+    · ext t
+      simp [applySeq]
+    · intro a _ ha _ _ _ _
+      exact absurd ha List.not_mem_nil
+    · intro t ht
+      simp [applySeq] at ht
+  | append_singleton ρ' x ih =>
+    intro h_sub h_resp
+    have h_split := List.pairwise_append.mp h_resp
+    have h_resp' : respects ρ' (loOn C ev) := h_split.1
+    have h_cross : ∀ a ∈ ρ', ¬ loOn C ev x a := fun a ha =>
+      h_split.2.2 a ha x (by simp)
+    have h_sub' : ∀ a ∈ ρ', a ∈ ev := fun a ha =>
+      h_sub a (List.mem_append.mpr (Or.inl ha))
+    have hx_ev : x ∈ ev := h_sub x (by simp)
+    obtain ⟨ih_add, ih_low, ih_up⟩ := ih h_sub' h_resp'
+    rw [applySeq_append_single]
+    rcases hx_op : x.2.2
+    · -- x = add: dead unchanged, added gains x.1.
+      rw [AWSet_update, awUpdate_add hx_op]
+      refine ⟨?_, ?_, ?_⟩
+      · ext t
+        simp only [Set.mem_insert_iff, ih_add, Set.mem_setOf_eq,
+          List.mem_append, List.mem_singleton]
+        constructor
+        · rintro (rfl | ⟨a, ha, hadd, ht⟩)
+          · exact ⟨x, Or.inr rfl, hx_op, rfl⟩
+          · exact ⟨a, Or.inl ha, hadd, ht⟩
+        · rintro ⟨a, ha | rfl, hadd, ht⟩
+          · exact Or.inr ⟨a, ha, hadd, ht⟩
+          · exact Or.inl ht.symm
+      · intro a z ha hz hadd hvis hrem
+        rcases List.mem_append.mp hz with hz' | hz'
+        · rcases List.mem_append.mp ha with ha' | ha'
+          · exact ih_low a z ha' hz' hadd hvis hrem
+          · -- a = x with vis x z into the prefix: the mandatory edge
+            -- x → z contradicts x being last.
+            rw [List.mem_singleton] at ha'; subst ha'
+            exact absurd (Or.inl ⟨hvis,
+              AWSet_not_comm_add_rem hadd hrem⟩) (h_cross z hz')
+        · rw [List.mem_singleton] at hz'; subst hz'
+          rw [hx_op] at hrem
+          exact absurd hrem (fun h' => nomatch h')
+      · intro t ht
+        obtain ⟨a, ha, hadd, ht', hz⟩ := ih_up t ht
+        exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht', hz⟩
+    · -- x = rem: dead absorbs the whole current added set.
+      rw [AWSet_update, awUpdate_rem hx_op]
+      refine ⟨?_, ?_, ?_⟩
+      · ext t
+        simp only [ih_add, Set.mem_setOf_eq, List.mem_append,
+          List.mem_singleton]
+        constructor
+        · rintro ⟨a, ha, hadd, ht⟩
+          exact ⟨a, Or.inl ha, hadd, ht⟩
+        · rintro ⟨a, ha | rfl, hadd, ht⟩
+          · exact ⟨a, ha, hadd, ht⟩
+          · rw [hx_op] at hadd
+            exact absurd hadd (fun h' => nomatch h')
+      · intro a z ha hz hadd hvis hrem
+        have ha' : a ∈ ρ' := by
+          rcases List.mem_append.mp ha with h | h
+          · exact h
+          · rw [List.mem_singleton] at h; subst h
+            rw [hx_op] at hadd
+            exact absurd hadd (fun h' => nomatch h')
+        rcases List.mem_append.mp hz with hz' | hz'
+        · exact Or.inr (ih_low a z ha' hz' hadd hvis hrem)
+        · -- z = x: the victim sits in the prefix's added set.
+          left
+          rw [ih_add]
+          exact ⟨a, ha', hadd, rfl⟩
+      · intro t ht
+        rcases ht with ht | ht
+        · -- t was alive in the prefix: the A5 argument produces an
+          -- absorber of its add inside ev.
+          rw [ih_add] at ht
+          obtain ⟨a, ha, hadd, ht'⟩ := ht
+          have h_nc : ¬ AWSet.commutes x a :=
+            AWSet_not_comm_rem_add hx_op hadd
+          have h_noedge := h_cross a ha
+          have h1 : ¬ C.vis x a := fun hv =>
+            h_noedge (Or.inl ⟨hv, h_nc⟩)
+          have h_rc : AWSet.rc x a = RcRes.Fst_then_snd := by
+            simp only [AWSet_rc, awRc_eq, hx_op, hadd]
+          by_cases h2 : C.vis a x
+          · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
+              x, hx_ev, h2, hx_op⟩
+          · have h_abs : ∃ z ∈ ev,
+                C.vis a z ∧ ¬ AWSet.commutes a z := by
+              by_contra h_no
+              exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
+            obtain ⟨z, hz_ev, hz_vis, hz_nc⟩ := h_abs
+            rcases hz_op : z.2.2
+            · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc
+            · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
+                z, hz_ev, hz_vis, hz_op⟩
+        · obtain ⟨a, ha, hadd, ht', hz⟩ := ih_up t ht
+          exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht', hz⟩
+
+/-- **Canonical states of `AWSet`, characterized.** -/
+theorem AWSet_canonical_eq {C : Configuration AWSet}
+    {ev : Set (Op AWSet.AppOp)} {s : AWSet.State}
+    (h : IsCanonicalState C ev s) :
+    s = (awAdds ev, awKilled C ev) := by
+  obtain ⟨ρ, hp, hr, hf⟩ := h
+  obtain ⟨h_add, h_low, h_up⟩ :=
+    AWSet_char_aux ρ (fun a ha => (hp.2 a).mp ha) hr
+  subst hf
+  refine Prod.ext ?_ ?_
+  · rw [h_add]
+    ext t
+    simp only [Set.mem_setOf_eq, awAdds]
+    constructor
+    · rintro ⟨a, ha, hadd, ht⟩
+      exact ⟨a, (hp.2 a).mp ha, hadd, ht⟩
+    · rintro ⟨a, ha, hadd, ht⟩
+      exact ⟨a, (hp.2 a).mpr ha, hadd, ht⟩
+  · ext t
+    simp only [awKilled, Set.mem_setOf_eq]
+    constructor
+    · intro ht
+      obtain ⟨a, ha, hadd, ht', z, hz_ev, hvis, hrem⟩ := h_up t ht
+      exact ⟨a, (hp.2 a).mp ha, hadd, ht', z, hz_ev, hvis, hrem⟩
+    · rintro ⟨a, ha, hadd, ht', z, hz_ev, hvis, hrem⟩
+      subst ht'
+      exact h_low a z ((hp.2 a).mpr ha) ((hp.2 z).mpr hz_ev)
+        hadd hvis hrem
+
+/-! #### Set algebra for `awAdds` / `awKilled` -/
+
+theorem awAdds_diff_rem {ev : Set (Op AWSet.AppOp)}
+    {e : Op AWSet.AppOp} (he : e.2.2 = AWOp.rem) :
+    awAdds (ev \ {e}) = awAdds ev := by
+  ext t
+  simp only [awAdds, Set.mem_setOf_eq, Set.mem_diff,
+    Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨a, ⟨ha, _⟩, hadd, ht⟩
+    exact ⟨a, ha, hadd, ht⟩
+  · rintro ⟨a, ha, hadd, ht⟩
+    refine ⟨a, ⟨ha, ?_⟩, hadd, ht⟩
+    rintro rfl
+    rw [he] at hadd
+    exact absurd hadd (fun h' => nomatch h')
+
+theorem awAdds_insert_add {ev : Set (Op AWSet.AppOp)}
+    {e : Op AWSet.AppOp} (he : e.2.2 = AWOp.add) (he_in : e ∈ ev) :
+    awAdds ev = insert e.1 (awAdds (ev \ {e})) := by
+  ext t
+  simp only [awAdds, Set.mem_setOf_eq, Set.mem_insert_iff,
+    Set.mem_diff, Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨a, ha, hadd, ht⟩
+    by_cases hae : a = e
+    · subst hae
+      exact Or.inl ht.symm
+    · exact Or.inr ⟨a, ⟨ha, hae⟩, hadd, ht⟩
+  · rintro (rfl | ⟨a, ⟨ha, _⟩, hadd, ht⟩)
+    · exact ⟨e, he_in, he, rfl⟩
+    · exact ⟨a, ha, hadd, ht⟩
+
+theorem awKilled_mono {C : Configuration AWSet}
+    {ev ev' : Set (Op AWSet.AppOp)} (h : ev ⊆ ev') :
+    awKilled C ev ⊆ awKilled C ev' := by
+  rintro t ⟨a, ha, hadd, ht, z, hz, hvis, hrem⟩
+  exact ⟨a, h ha, hadd, ht, z, h hz, hvis, hrem⟩
+
+theorem awKilled_sub_adds {C : Configuration AWSet}
+    {ev : Set (Op AWSet.AppOp)} :
+    awKilled C ev ⊆ awAdds ev := by
+  rintro t ⟨a, ha, hadd, ht, _⟩
+  exact ⟨a, ha, hadd, ht⟩
+
+/-- A union-maximal add has no absorber anywhere in the union. -/
+theorem no_absorber_of_max {C : Configuration AWSet}
+    {evU ev : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
+    (h_sub : ev ⊆ evU) (he_add : e.2.2 = AWOp.add)
+    (h_max : ∀ x ∈ evU, x ≠ e → ¬ loOn C evU e x) :
+    ¬ ∃ z, z ∈ ev ∧ C.vis e z ∧ z.2.2 = AWOp.rem := by
+  rintro ⟨z, hz, hvis, hrem⟩
+  have hz_ne : z ≠ e := by
+    rintro rfl
+    rw [he_add] at hrem
+    exact absurd hrem (fun h' => nomatch h')
+  exact h_max z (h_sub hz) hz_ne
+    (Or.inl ⟨hvis, AWSet_not_comm_add_rem he_add hrem⟩)
+
+/-- Removing an unabsorbed add leaves `awKilled` unchanged. -/
+theorem awKilled_diff_add {C : Configuration AWSet}
+    {ev : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
+    (he : e.2.2 = AWOp.add)
+    (h_no_abs : ¬ ∃ z, z ∈ ev ∧ C.vis e z ∧ z.2.2 = AWOp.rem) :
+    awKilled C (ev \ {e}) = awKilled C ev := by
+  apply Set.Subset.antisymm (awKilled_mono (fun a ha => ha.1))
+  rintro t ⟨a, ha, hadd, ht, z, hz, hvis, hrem⟩
+  have ha_ne : a ≠ e := by
+    rintro rfl
+    exact h_no_abs ⟨z, hz, hvis, hrem⟩
+  have hz_ne : z ≠ e := by
+    rintro rfl
+    rw [he] at hrem
+    exact absurd hrem (fun h' => nomatch h')
+  exact ⟨a, ⟨ha, ha_ne⟩, hadd, ht, z, ⟨hz, hz_ne⟩, hvis, hrem⟩
+
+/-- **The A5 trichotomy**: with a union-maximal rem `e ∈ ev₁` and
+backward-closed sides, every add of the union is absorbed on a side
+that owns it. -/
+theorem awAdds_killed_of_rem_max {C : Configuration AWSet}
+    {ev₁ ev₂ : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
+    (h_cl₁ : ∀ a b, C.vis a b → ¬ AWSet.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (h_cl₂ : ∀ a b, C.vis a b → ¬ AWSet.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    (he_rem : e.2.2 = AWOp.rem) (he₁ : e ∈ ev₁)
+    (h_max : ∀ x ∈ ev₁ ∪ ev₂, x ≠ e → ¬ loOn C (ev₁ ∪ ev₂) e x) :
+    awAdds ev₁ ∪ awAdds ev₂ ⊆ awKilled C ev₁ ∪ awKilled C ev₂ := by
+  intro t ht
+  have h_wit : ∃ a, a ∈ ev₁ ∪ ev₂ ∧ a.2.2 = AWOp.add ∧ a.1 = t := by
+    rcases ht with ⟨a, ha, hadd, ht'⟩ | ⟨a, ha, hadd, ht'⟩
+    · exact ⟨a, Or.inl ha, hadd, ht'⟩
+    · exact ⟨a, Or.inr ha, hadd, ht'⟩
+  obtain ⟨a, ha_U, hadd, ht'⟩ := h_wit
+  have ha_ne : a ≠ e := by
+    rintro rfl
+    rw [he_rem] at hadd
+    exact absurd hadd (fun h' => nomatch h')
+  have h_nc : ¬ AWSet.commutes e a :=
+    AWSet_not_comm_rem_add he_rem hadd
+  have h_noedge := h_max a ha_U ha_ne
+  have h1 : ¬ C.vis e a := fun hv => h_noedge (Or.inl ⟨hv, h_nc⟩)
+  have h_rc : AWSet.rc e a = RcRes.Fst_then_snd := by
+    simp only [AWSet_rc, awRc_eq, he_rem, hadd]
+  by_cases h2 : C.vis a e
+  · have ha₁ : a ∈ ev₁ :=
+      h_cl₁ a e h2 (fun hc => h_nc (commutes_symm hc)) he₁
+    exact Or.inl ⟨a, ha₁, hadd, ht', e, he₁, h2, he_rem⟩
+  · have h_abs : ∃ z ∈ ev₁ ∪ ev₂,
+        C.vis a z ∧ ¬ AWSet.commutes a z := by
+      by_contra h_no
+      exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
+    obtain ⟨z, hz_U, hz_vis, hz_nc⟩ := h_abs
+    have hz_rem : z.2.2 = AWOp.rem := by
+      rcases hz_op : z.2.2
+      · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc
+      · rfl
+    rcases hz_U with hz₁ | hz₂
+    · exact Or.inl ⟨a, h_cl₁ a z hz_vis hz_nc hz₁, hadd, ht',
+        z, hz₁, hz_vis, hz_rem⟩
+    · exact Or.inr ⟨a, h_cl₂ a z hz_vis hz_nc hz₂, hadd, ht',
+        z, hz₂, hz_vis, hz_rem⟩
+
+/-- **`AWSet` discharges the peel identities.** -/
+theorem AWSet_joinPeelVCs : JoinPeelVCs AWSet := by
+  constructor
+  · -- peel_local
+    intro C ev₁ ev₂ s₁ s₂ t₁ e h_in₁ h_in₂ h_cl₁ h_cl₂ he₁ he₂
+      h_max hc₁ hc₂ hct₁
+    have hs₁ := AWSet_canonical_eq hc₁
+    have hs₂ := AWSet_canonical_eq hc₂
+    have hu₁ := AWSet_canonical_eq hct₁
+    subst hs₁; subst hs₂; subst hu₁
+    rcases he_op : e.2.2
+    · have h_no_abs₁ :=
+        no_absorber_of_max Set.subset_union_left he_op h_max
+      simp only [AWSet_merge, AWSet_update, awMerge, awUpdate_add he_op]
+      refine Prod.ext ?_ ?_
+      · rw [awAdds_insert_add he_op he₁, Set.insert_union]
+      · rw [awKilled_diff_add he_op h_no_abs₁]
+    · simp only [AWSet_merge, AWSet_update, awMerge, awUpdate_rem he_op]
+      refine Prod.ext ?_ ?_
+      · rw [awAdds_diff_rem he_op]
+      · rw [awAdds_diff_rem he_op]
+        apply Set.Subset.antisymm
+        · rintro t (h | h)
+          · exact Or.inl (Or.inl (awKilled_sub_adds h))
+          · exact Or.inl (Or.inr (awKilled_sub_adds h))
+        · rintro t ((h | h) | (h | h))
+          · exact awAdds_killed_of_rem_max h_cl₁ h_cl₂ he_op he₁
+              h_max (Or.inl h)
+          · exact awAdds_killed_of_rem_max h_cl₁ h_cl₂ he_op he₁
+              h_max (Or.inr h)
+          · exact Or.inl (awKilled_mono (fun a ha => ha.1) h)
+          · exact Or.inr h
+  · -- peel_shared
+    intro C ev₁ ev₂ s₁ s₂ t₁ t₂ e h_in₁ h_in₂ h_cl₁ h_cl₂ he₁ he₂
+      h_max hc₁ hc₂ hct₁ hct₂
+    have hs₁ := AWSet_canonical_eq hc₁
+    have hs₂ := AWSet_canonical_eq hc₂
+    have hu₁ := AWSet_canonical_eq hct₁
+    have hu₂ := AWSet_canonical_eq hct₂
+    subst hs₁; subst hs₂; subst hu₁; subst hu₂
+    rcases he_op : e.2.2
+    · have h_no_abs₁ :=
+        no_absorber_of_max Set.subset_union_left he_op h_max
+      have h_no_abs₂ :=
+        no_absorber_of_max Set.subset_union_right he_op h_max
+      simp only [AWSet_merge, AWSet_update, awMerge, awUpdate_add he_op]
+      refine Prod.ext ?_ ?_
+      · rw [awAdds_insert_add he_op he₁]
+        rw [awAdds_insert_add (ev := ev₂) he_op he₂]
+        ext u
+        simp only [Set.mem_union, Set.mem_insert_iff]
+        tauto
+      · rw [awKilled_diff_add he_op h_no_abs₁,
+          awKilled_diff_add he_op h_no_abs₂]
+    · simp only [AWSet_merge, AWSet_update, awMerge, awUpdate_rem he_op]
+      refine Prod.ext ?_ ?_
+      · rw [awAdds_diff_rem he_op, awAdds_diff_rem he_op]
+      · rw [awAdds_diff_rem he_op, awAdds_diff_rem he_op]
+        apply Set.Subset.antisymm
+        · rintro t (h | h)
+          · exact Or.inl (Or.inl (awKilled_sub_adds h))
+          · exact Or.inl (Or.inr (awKilled_sub_adds h))
+        · rintro t ((h | h) | (h | h))
+          · exact awAdds_killed_of_rem_max h_cl₁ h_cl₂ he_op he₁
+              h_max (Or.inl h)
+          · exact awAdds_killed_of_rem_max h_cl₁ h_cl₂ he_op he₁
+              h_max (Or.inr h)
+          · exact Or.inl (awKilled_mono (fun a ha => ha.1) h)
+          · exact Or.inr (awKilled_mono (fun a ha => ha.1) h)
+
+/-- **The Join Lemma holds for `AWSet`** — a CRDT with non-trivial
+`rc`, state-dependent updates, and instances (the A3 defeater shape)
+on which the paper's own bottom-up proof breaks. -/
+theorem AWSet_joinLemma : JoinLemma AWSet :=
+  join_lemma_of_peel AWSet_coreVCs AWSet_joinPeelVCs
+
 end Sal.Emulation
