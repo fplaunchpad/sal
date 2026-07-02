@@ -1,4 +1,4 @@
-import Sal.Metatheory.MRDTSig
+import Sal.MRDTs.Metatheory.MRDTSig
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 import Mathlib.Tactic.Tauto
@@ -7,8 +7,8 @@ import Mathlib.Tactic.Tauto
 # Ternary verification-condition bundle `SatisfiesVCsT` (Phase-0, step **S4**)
 
 This is the S4 deliverable of the Neem soundness meta-theory (Phase-0, TTL+RV design;
-see `Sal/Metatheory/PHASE0_PLAN.md` §1.6 and §4 S4). It builds directly on S1's
-`MRDTSig` (`Sal/Metatheory/MRDTSig.lean`) and its reuse contract `merge_init_slice`.
+see `Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.6 and §4 S4). It builds directly on S1's
+`MRDTSig` (`Sal/MRDTs/Metatheory/MRDTSig.lean`) and its reuse contract `merge_init_slice`.
 
 ## What this file provides
 
@@ -21,7 +21,7 @@ see `Sal/Metatheory/PHASE0_PLAN.md` §1.6 and §4 S4). It builds directly on S1'
 * `satisfiesVCs_of_T` — **THE reuse contract.** `SatisfiesVCsT D → SatisfiesVCs D.toCRDTSig`.
   Every ternary merge field, instantiated at the LCA slice `l := D.init` and rewritten
   through `merge_init_slice`, collapses to exactly the corresponding binary field. So the
-  proved binary machinery (`Sal/Emulation/Merge_Linearization.lean`) applies to the
+  proved binary machinery (`Sal/CRDTs/Metatheory/Merge_Linearization.lean`) applies to the
   init-LCA sub-family with no change.
 
 * `GSet_satisfiesVCsT : SatisfiesVCsT GSet` — the S1 Grow-Only Set discharges the whole
@@ -419,7 +419,7 @@ theorem satisfiesVCs_of_T {D : MRDTSig} (hT : SatisfiesVCsT D) :
 
 /-! ## §4 S4 exit — the Grow-Only Set discharges the ternary bundle
 
-The S1 `GSet` (`Sal/Metatheory/MRDTSig.lean`) has `mergeL l a b = a ∪ b` (independent of the
+The S1 `GSet` (`Sal/MRDTs/Metatheory/MRDTSig.lean`) has `mergeL l a b = a ∪ b` (independent of the
 LCA `l`), `update s o = insert o.2.2 s`, `init = ∅`, and `rc _ _ = Either`. Every merge/peel
 field is then an unconditional set identity of the `insert`/`∪` algebra; the `rc`-gated side
 conditions are vacuous (their `rc = Fst_then_snd` premises are `Either = Fst_then_snd`). -/

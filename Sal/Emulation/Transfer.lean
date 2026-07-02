@@ -1,5 +1,5 @@
 import Sal.Emulation.Emulation
-import Sal.Emulation.RA_Linearizability
+import Sal.CRDTs.Metatheory.RA_Linearizability
 
 /-!
 # Transfer theorem: state-based RA-lin ⇒ op-based RA-lin

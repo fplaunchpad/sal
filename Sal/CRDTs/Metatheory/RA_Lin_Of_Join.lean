@@ -1,4 +1,4 @@
-import Sal.Emulation.Merge_Linearization_Set
+import Sal.CRDTs.Metatheory.Merge_Linearization_Set
 
 /-!
 # RA-linearizability from `CoreVCs + JoinPeelVCs`

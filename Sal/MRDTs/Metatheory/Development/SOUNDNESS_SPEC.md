@@ -9,8 +9,8 @@ conditioning requirement (generation-time id-monotonicity).
 
 All `file:line` citations were re-checked against the cited sources while writing.
 Paper sources: `_references/Neem/{lin.tex, lemmas.tex, appendix.tex, overview.tex}`.
-Lean sources: `Sal/Emulation/{RA_Linearizability.lean, Merge_Linearization.lean,
-CRDT_TS.lean, CRDT_Signature.lean}`. Blueprint: `Sal/Metatheory/BLUEPRINT.md`.
+Lean sources: `Sal/CRDTs/Metatheory/{RA_Linearizability.lean, Merge_Linearization.lean}`, `Sal/Emulation/{
+CRDT_TS.lean, CRDT_Signature.lean}`. Blueprint: `Sal/MRDTs/Metatheory/BLUEPRINT.md`.
 
 **The single most important framing fact.** The existing `Sal/Emulation/` machinery is the
 **binary / CRDT specialisation**: `merge : State → State → State`
@@ -560,14 +560,14 @@ down.
   `:64-73`, convergence `:75-103`, query `:106-112`, pi1 `:117-178`, pi2 `:180-216`, Thm 1
   exec-induction `:218-374`, merge case `:250-368`, Thm 2 `ψ`-VC induction `:377-531`,
   lo-stability `:270-278`.
-- **Lean:** `lo`/`IsRALinearizable` `Sal/Emulation/RA_Linearizability.lean:88-117`;
+- **Lean:** `lo`/`IsRALinearizable` `Sal/CRDTs/Metatheory/RA_Linearizability.lean:88-117`;
   `SatisfiesVCs` (29 fields) `:149-536`; base/apply `:543,564,601,629`. Bridge
-  `ra_linearizable_of_vcs` `Sal/Emulation/Merge_Linearization.lean:4390-4407`;
+  `ra_linearizable_of_vcs` `Sal/CRDTs/Metatheory/Merge_Linearization.lean:4390-4407`;
   `merge_linearization_exists` `:4137`; `distinct_last_case` sorries `:2681,2852,2868,2874`;
   forward-closure sorries `:4308,4311`; convergence `:609`; swap `:422`; carving `:77-294`.
   Binary merge step `Sal/Emulation/CRDT_TS.lean:122-133`; signature
   `Sal/Emulation/CRDT_Signature.lean:67-77`. `canonicalG` `Sal/Emulation/Emulation.lean:75`.
-- **Conditioning / RGA hazard:** `Sal/Metatheory/BLUEPRINT.md` (node catalogue §4.1,
+- **Conditioning / RGA hazard:** `Sal/MRDTs/Metatheory/BLUEPRINT.md` (node catalogue §4.1,
   commutation sites §5.3, RGA hazard §5.4, `:184,437,471,477,488-544,561`); RGA conditional
   commute `Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean:331`; non-inductiveness
   finding `Sal/MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`.

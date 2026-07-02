@@ -1,8 +1,8 @@
 # Neem soundness metatheory — Phase-0 findings
 
 *Status snapshot after the Phase-0 build-out and the merge-induction probe. Companion
-to [`BLUEPRINT.md`](BLUEPRINT.md) (the plan), [`PHASE0_PLAN.md`](PHASE0_PLAN.md) (the
-design), [`SOUNDNESS_SPEC.md`](SOUNDNESS_SPEC.md) (the spec). This file records **what
+to [`BLUEPRINT.md`](../../MRDTs/Metatheory/Development/BLUEPRINT.md) (the plan), [`PHASE0_PLAN.md`](../../MRDTs/Metatheory/Development/PHASE0_PLAN.md) (the
+design), [`SOUNDNESS_SPEC.md`](../../MRDTs/Metatheory/Development/SOUNDNESS_SPEC.md) (the spec). This file records **what
 was learned building it**.*
 
 Verification legend: **✅ verified** = independently rebuilt / re-read and confirmed;
@@ -25,10 +25,10 @@ machine-checked (§4).
 
 | Piece | File | Status |
 |---|---|---|
-| `MRDTSig extends CRDTSig` + `mergeL`/`merge_init_slice`, `ConditionedMRDTSig`, `commutesOn`, ternary `lo`; collapse-to-binary lemmas; G-Set instance | [`MRDTSig.lean`](MRDTSig.lean) | ✅ 0 `sorry`, kernel-clean |
-| Ternary `Configuration` (replica-keyed core + ranked version store `ver`/`head`/`parents`/`parents_lt`), `IsLCA`, `Reaches` well-founded, `initConfig` invariants | [`ExecutionModel.lean`](ExecutionModel.lean) | ✅ 0 `sorry`, kernel-clean |
-| `SatisfiesVCsT` (29-field ternary VC bundle) + reuse contract `satisfiesVCs_of_T : SatisfiesVCsT D → SatisfiesVCs D.toCRDTSig`; G-Set witness | [`VCs.lean`](VCs.lean) | ✅ 0 `sorry`, kernel-clean |
-| Conditioning gate: `RgaInv ∧ id_mono` a reachable invariant under monotone allocation; `Inv_merge` closed under `id_mono l` | [`../MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`](../MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean) | ✅ 0 `sorry`, kernel-clean |
+| `MRDTSig extends CRDTSig` + `mergeL`/`merge_init_slice`, `ConditionedMRDTSig`, `commutesOn`, ternary `lo`; collapse-to-binary lemmas; G-Set instance | [`MRDTSig.lean`](../../MRDTs/Metatheory/MRDTSig.lean) | ✅ 0 `sorry`, kernel-clean |
+| Ternary `Configuration` (replica-keyed core + ranked version store `ver`/`head`/`parents`/`parents_lt`), `IsLCA`, `Reaches` well-founded, `initConfig` invariants | [`ExecutionModel.lean`](../../MRDTs/Metatheory/ExecutionModel.lean) | ✅ 0 `sorry`, kernel-clean |
+| `SatisfiesVCsT` (29-field ternary VC bundle) + reuse contract `satisfiesVCs_of_T : SatisfiesVCsT D → SatisfiesVCs D.toCRDTSig`; G-Set witness | [`VCs.lean`](../../MRDTs/Metatheory/Development/VCs.lean) | ✅ 0 `sorry`, kernel-clean |
+| Conditioning gate: `RgaInv ∧ id_mono` a reachable invariant under monotone allocation; `Inv_merge` closed under `id_mono l` | [`../../MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`](../../MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean) | ✅ 0 `sorry`, kernel-clean |
 
 Two structural facts this establishes:
 - **The ternary case reduces to the binary case.** `satisfiesVCs_of_T` (`VCs.lean:382`)
@@ -42,7 +42,7 @@ Two structural facts this establishes:
 
 ## 3. The single blocker: the binary merge-linearization induction
 
-`merge_linearization_exists` (`Sal/Emulation/Merge_Linearization.lean:4137`) carries 6
+`merge_linearization_exists` (`Sal/CRDTs/Metatheory/Merge_Linearization.lean:4137`) carries 6
 open `sorry`s. The probe closed **0 of 6** and diagnosed a **single root cause**.
 
 ### Root cause 🔬
@@ -144,7 +144,7 @@ than the original architectural dead-end. Two verified additive lemmas
 # ADDENDUM (2026-07-02, worktree `metatheory-merge-linearization`): the target lemma of §5 is FALSE; the paper has a second, deeper gap
 
 *Independent parallel attempt. Verification legend as above. Code:
-[`../Emulation/Merge_Linearization_Set.lean`](../Emulation/Merge_Linearization_Set.lean)
+[`Merge_Linearization_Set.lean`](Merge_Linearization_Set.lean)
 (0 `sorry`, kernel-clean, committed on this branch).*
 
 ## A1. The §5 blocker lemma is false ✅ (counter-model)
@@ -165,7 +165,7 @@ OR-set (add-wins, `rem →rc add`, all 24 VCs satisfiable):
 Convergence over backward-closed replica sets w.r.t. `lo C` is therefore
 unprovable — the merge-linearization induction cannot be closed on the §5
 plan. **Machine-checked** ✅ in
-[`../Emulation/Convergence_CounterModel.lean`](../Emulation/Convergence_CounterModel.lean)
+[`Convergence_CounterModel.lean`](Convergence_CounterModel.lean)
 (0 `sorry`): `convergence_over_backward_closed_subsets_false` exhibits the
 model (`AWSet`, with the full convergence toolkit proved for it, including
 `cond_comm_lift`), the 3-event configuration, and the two `lo C`-respecting
@@ -450,7 +450,7 @@ unabsorbed add `t`.
 
 ## A9. END-TO-END: RA-linearizability from `CoreVCs + JoinPeelVCs` ✅
 
-[`../Emulation/RA_Lin_Of_Join.lean`](../Emulation/RA_Lin_Of_Join.lean)
+[`RA_Lin_Of_Join.lean`](RA_Lin_Of_Join.lean)
 (0 `sorry`, kernel-clean): **`ra_linearizable_of_core_join`** — for any `D`
 with `CoreVCs D` and `JoinPeelVCs D`, every configuration reachable from
 `initConfig` is RA-linearizable. The induction carries `GoodConfig` =

@@ -122,7 +122,7 @@ single existential theorem `merge_linearization_exists` whose
 internal induction co-constructs the witness with its lo-respect
 property.
 
-**Landed** in `Sal/Emulation/Merge_Linearization.lean`:
+**Landed** in `Sal/CRDTs/Metatheory/Merge_Linearization.lean`:
 - `restrictTo` — sub-list of a list restricted to a `Set` (noncomputable via `Classical`).
 - Event-set decomposition definitions: `L_top`, `L₁_local`,
   `L₂_local`, `L_a`, `L_b`, plus partition lemmas `L_a_union_L_b`,

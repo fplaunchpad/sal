@@ -66,7 +66,7 @@ forces `Set ↔ Finset` bridging against the ported `Set`-valued carving lemmas
 
 ## 1. Target Lean signatures
 
-All under a new `Sal/Metatheory/` namespace; the binary `Sal/Emulation` is untouched.
+All under a new `Sal/MRDTs/Metatheory/` directory (Lean namespace `Sal.Metatheory`); the binary `Sal/Emulation` is untouched.
 
 ### 1.1 Signature: `MRDTSig` (Design 1 spine) and the conditioned extension
 

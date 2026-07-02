@@ -718,7 +718,7 @@ theorem RA_lin_preserved_apply
 /-! ### Bridge theorem — Merge case + final assembly
 
 The Merge case and the top-level `ra_linearizable_of_vcs` live in
-`Sal/Emulation/Merge_Linearization.lean`, since they depend on
+`Sal/CRDTs/Metatheory/Merge_Linearization.lean`, since they depend on
 `merge_linearization_exists` and `RA_lin_preserved_merge_via_witness`
 defined there. Importing back into this file would create a cycle. -/
 

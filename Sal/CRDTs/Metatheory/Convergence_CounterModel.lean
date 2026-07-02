@@ -1,10 +1,10 @@
-import Sal.Emulation.Merge_Linearization_Set
+import Sal.CRDTs.Metatheory.Merge_Linearization_Set
 
 /-!
 # Counter-model: convergence over backward-closed replica sets is FALSE
 
 This file machine-checks finding **A1** of
-`Sal/Metatheory/FINDINGS.md`: the lemma that `FINDINGS.md` §5
+`Sal/CRDTs/Metatheory/FINDINGS.md`: the lemma that `FINDINGS.md` §5
 identified as the sole remaining blocker of the merge-linearization
 induction —
 

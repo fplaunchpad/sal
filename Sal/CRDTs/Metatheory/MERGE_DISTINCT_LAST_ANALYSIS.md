@@ -2,7 +2,7 @@
 
 ## Status
 
-The sorry at line 1542 of `Sal/Emulation/Merge_Linearization.lean` remains **open**.
+The sorry at line 1542 of `Sal/CRDTs/Metatheory/Merge_Linearization.lean` remains **open**.
 After extensive analysis (including multiple automated proof attempts), this sorry
 cannot be closed within the current induction structure and VC formalization.
 

@@ -1,4 +1,4 @@
-import Sal.Emulation.Merge_Linearization
+import Sal.CRDTs.Metatheory.Merge_Linearization
 
 /-!
 # Set-relative linearization order (`loOn`) and its convergence theory

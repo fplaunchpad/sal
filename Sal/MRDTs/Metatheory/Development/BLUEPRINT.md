@@ -112,7 +112,7 @@ theorem ra_linearizable_of_vcs
 ```
 
 with `IsRALinearizable` faithful to Def. `lin` (`lin.tex:402`); cf. the
-2-way form already written, `Sal/Emulation/RA_Linearizability.lean:113`:
+2-way form already written, `Sal/CRDTs/Metatheory/RA_Linearizability.lean:113`:
 
 ```lean
 def IsRALinearizable (C : Configuration D) : Prop :=
@@ -134,7 +134,7 @@ Corollaries to also state (cheap once the headline lands):
 ### 2.1 The canonical 24 (per-RDT theorem names ⇄ paper)
 
 These field names already exist in `SatisfiesVCs`
-(`Sal/Emulation/RA_Linearizability.lean:149`) and match the per-RDT theorem
+(`Sal/CRDTs/Metatheory/RA_Linearizability.lean:149`) and match the per-RDT theorem
 names one-for-one (e.g. `Sal/MRDTs/OR_Set/OR_Set_MRDT.lean:132-441`).
 
 | # | Group | Lean field / theorem | Paper origin |
@@ -222,7 +222,7 @@ standalone Sal-paper contribution.*
 
 ### 3.3 The merge-linearization carving (the proof's combinatorial core)
 
-All in `Sal/Emulation/Merge_Linearization.lean`, currently for **2-way**
+All in `Sal/CRDTs/Metatheory/Merge_Linearization.lean`, currently for **2-way**
 (LCA collapsed to `init`, so `L_⊤ = ev₁ ∩ ev₂`):
 
 | Object | Paper | Lean status |
@@ -586,7 +586,7 @@ formalisation of `Ideas.md` §2/§3.
   side-condition; port the 7 config invariants. 🔨
 - **Lemma LCA** N11 (or fold into the Step rule). 🔨
 - `lo`, `IsRALinearizable`, `applySeq`, `respects` — ✅ port verbatim from
-  `Sal/Emulation/RA_Linearizability.lean`.
+  `Sal/CRDTs/Metatheory/RA_Linearizability.lean`.
 - `SatisfiesVCs` ternary (29 fields) — ✅ generalise existing struct.
 - *Exit:* the headline statement (§1.3) type-checks with `sorry`.
 
@@ -626,7 +626,7 @@ formalisation of `Ideas.md` §2/§3.
 - *Exit:* every RDT carries `theorem D_ra_linearizable : … RA-linearizable`
   by composition. Move the result to `README.md`'s catalog.
 
-**Total:** ≈3–5 months focused (matches `Sal/Emulation/PLAN.md`'s estimate
+**Total:** ≈3–5 months focused (matches `Sal/CRDTs/Metatheory/PLAN.md`'s estimate
 for the overlapping work). Genuine risk concentrated in Phase 2 (the merge
 induction) and Phase 3's R2 delete-staleness invariant.
 

@@ -1,5 +1,5 @@
 import Sal.CRDTs.Grow_Only_Set.Grow_Only_Set_CRDT
-import Sal.Emulation.RA_Linearizability
+import Sal.CRDTs.Metatheory.RA_Linearizability
 import Mathlib.Data.List.Induction
 
 /-!

@@ -1,10 +1,10 @@
-import Sal.Emulation.RA_Linearizability
+import Sal.CRDTs.Metatheory.RA_Linearizability
 
 /-!
 # Ternary MRDT signature and conditioned linearization (Phase-0, step **S1**)
 
 This is the foundation step of the Neem soundness meta-theory (Phase-0, TTL+RV
-design; see `Sal/Metatheory/PHASE0_PLAN.md` §1.1–§1.2 and §4 S1). It lays down the
+design; see `Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.1–§1.2 and §4 S1). It lays down the
 *Thin-Ternary-Layer* over the existing binary `Sal.Emulation.CRDTSig`:
 
 * `MRDTSig extends CRDTSig` — adds the ternary merge `mergeL l a b`

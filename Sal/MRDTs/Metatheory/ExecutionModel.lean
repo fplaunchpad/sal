@@ -1,4 +1,4 @@
-import Sal.Metatheory.MRDTSig
+import Sal.MRDTs.Metatheory.MRDTSig
 -- `Set` lemma API (`Set.empty_inter`, …); `MRDTSig`'s transitive imports carry only the
 -- `Set` notation, not the basic lemmas. This is a foundational Mathlib file — it does NOT
 -- pull in `Sal.Emulation.Merge_Linearization`.
@@ -8,7 +8,7 @@ import Mathlib.Data.Set.Basic
 # Ternary execution model: replica-keyed Configuration + ranked-version store (Phase-0 **S2**)
 
 This is step **S2** of the Neem soundness meta-theory (Phase-0, TTL+RV design; see
-`Sal/Metatheory/PHASE0_PLAN.md` §1.3, §1.7 and §4 S2). It builds the *execution model* for a
+`Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.3, §1.7 and §4 S2). It builds the *execution model* for a
 `ConditionedMRDTSig` on top of the S1 foundation (`Sal.Metatheory.MRDTSig`):
 
 * the ternary **`Configuration`** — the *replica-keyed core* (`N`/`L`/`vis` + the six

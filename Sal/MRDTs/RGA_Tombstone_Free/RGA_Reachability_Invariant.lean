@@ -3,7 +3,7 @@ import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
 /-!
 # Tombstone-free RGA: the conditioning predicates as a reachable-state invariant
 
-This file instantiates the **keystone** of `Sal/Metatheory/BLUEPRINT.md` for the
+This file instantiates the **keystone** of `Sal/MRDTs/Metatheory/Development/BLUEPRINT.md` for the
 flagship tombstone-free RGA (`RGA_Tombstone_Free_MRDT.lean`):
 
 > *A conditioned VC is sound iff its conditioning predicate is a reachable-state
