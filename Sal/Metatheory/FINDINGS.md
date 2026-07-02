@@ -447,3 +447,24 @@ unabsorbed add `t`.
    exactly one new, per-CRDT-trivial VC (associativity — true for every
    real lattice-based RDT). The separator shows (b′) is *tight from below*:
    drop associativity and it is false.
+
+## A9. END-TO-END: RA-linearizability from `CoreVCs + JoinPeelVCs` ✅
+
+[`../Emulation/RA_Lin_Of_Join.lean`](../Emulation/RA_Lin_Of_Join.lean)
+(0 `sorry`, kernel-clean): **`ra_linearizable_of_core_join`** — for any `D`
+with `CoreVCs D` and `JoinPeelVCs D`, every configuration reachable from
+`initConfig` is RA-linearizable. The induction carries `GoodConfig` =
+(every replica holds the canonical state of its event set) ∧ `vis`-trans ∧
+`vis`-irrefl; CreateReplica/Query are trivial, Apply is
+`isCanonicalState_extend` (+ `loOn`-locality: fresh-event vis-edges do not
+touch old sets — `isCanonicalState_congr`), Merge is the Join Lemma.
+
+Corollaries: RA-linearizability holds end-to-end for the commuting class
+(A6) and for `AWSet` (A7) — instantiate with `AWSet_coreVCs` and
+`AWSet_joinPeelVCs`. The corrected metatheorem statement is:
+
+    CoreVCs D → JoinPeelVCs D → reachable C → IsRALinearizable C
+
+with `JoinPeelVCs` per-CRDT (pattern of A7), NOT derivable from `CoreVCs`
+alone (A8), and conjecturally derivable from `CoreVCs` + merge
+associativity (open (b′)).
