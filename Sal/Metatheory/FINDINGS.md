@@ -274,3 +274,54 @@ OR-set key, 3 replicas (`t(b) ≠ t(d)` arbitrary):
   (A1/A3); the correct next milestones are (i) the Lean counter-model of A1,
   (ii) the associativity-VC or segment-induction redesign of the Merge case,
   (iii) only then the ternary S6 lift.
+
+## A5. The repair, scoped: canonical states, the Join Lemma, and why "just add associativity" is not enough ✅ (partially machine-checked)
+
+`convergence_on` makes every finite event set denote a **unique state** —
+the fold of any `loOn C ev`-respecting enumeration. New machine-checked
+layer (`Merge_Linearization_Set.lean` §6, 0 sorry):
+
+| Result | Content |
+|---|---|
+| `IsCanonicalState` + `_unique`/`_exists`/`_lo_witness` | σ(ev) well-defined; canonical witnesses satisfy the paper's Def-lin |
+| `isCanonicalState_peel` | σ(ev) = update σ(ev∖{e}) e for any `loOn(ev)`-max `e` — the *sound* replacement for the paper's broken re-permutation step |
+| `isCanonicalState_extend` | the Apply case at the σ-level |
+| `JoinLemma` (statement) + `merge_linearization_of_join` | **the entire merge case reduces to**: σ(ev₁∪ev₂) = merge σ(ev₁) σ(ev₂) for backward-closed sets |
+
+So the metatheorem is now: *strengthened RA-lin invariant = "every replica
+holds the canonical state of its event set"*; Apply = `_extend`; Merge =
+**Join Lemma**. Witness lists are gone from the induction.
+
+**Status of the Join Lemma.** Its natural induction peels a
+`loOn(ev₁∪ev₂)`-maximal `e` (exists, ✅) and needs the contextual identity
+`merge σ(ev₁) σ(ev₂) = update (merge σ(ev₁∖e) σ(ev₂)) e` (local case; 0-OP
+`lem_0op` covers the shared case when `e` is both-sides-max). Checked by
+hand on `AWSet` *including the A3 defeater*: the identity is **true** under
+exactly the available hypotheses — `e` `loOn(∪)`-max forces every
+non-commuting `x ∈ ev₂∖ev₁` to be either `vis`-ordered against `e`
+(excluded by backward closure) or absorbed *inside `ev₂`* (the absorber is
+`vis`-after `x`, so backward closure of `ev₂` traps it there). Note the A3
+defeater is no obstacle at the σ-level: `merge s₁ s₂ = update (merge
+σ({d,b}) σ(ev₂)) a` holds even though `s₁ ≠ update σ({d,b}) a` — the merge
+supplies the absorber that the side lacks.
+
+**Why no unconditional VC captures the peel.** The candidate
+`∀ a b e₁ e₂, (rc(e₂,e₁)=Fst ∨ e₁⇄e₂) → merge (update a e₁) (update b e₂) =
+update (merge a (update b e₂)) e₁` is **false for the two-key OR-set**:
+`e₁ = rem_k`, `e₂ = add_j` (`j ≠ k`, they commute — premise satisfied),
+`b` holding a live `k`-add that `a` never saw: the RHS `rem_k` kills `b`'s
+`k`-add, the LHS cannot. The saving condition is contextual
+(`e₁` `loOn(∪)`-maximal ⟹ `b`'s non-commuting content is absorbed), not
+equational. Consequence: **merge associativity alone does not discharge the
+Join Lemma** — assoc/inflation/monotonicity (the lattice VCs) give the easy
+`⊑`-direction, but the peel needs a *contextual* induction threading
+`loOn`-maximality and backward closure down to `cond_comm`-style leaf VCs.
+
+**The sharpened open problem** (was: "prove the §5 convergence lemma" —
+false; now): *prove `JoinLemma D` from `SatisfiesVCs D` (+ lattice VCs:
+merge associativity, update inflationarity/monotonicity), by induction on
+`|ev₁ ∪ ev₂|` peeling `loOn`-maximal events, with the contextual peel
+identity derived from `cond_comm_lift` + backward closure.* Everything
+around it is proved; a counter-model to *this* statement would show the
+paper's theorem needs stronger hypotheses than its 24 VCs even up to
+lattice axioms.

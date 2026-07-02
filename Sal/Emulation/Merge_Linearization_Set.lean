@@ -888,6 +888,187 @@ theorem normalize_peel_tail
     exact h_t_max y hy_ρ
   exact convergence_on hVC s h_ev_in_C h_perm' h_perm h_resp' h_resp
 
+/-! ### 6. Canonical states and the Join Lemma
+
+`convergence_on` makes every finite event set `ev` denote a unique
+state: the fold of *any* `loOn C ev`-respecting enumeration. This
+reformulates the whole metatheorem: the strengthened RA-lin invariant
+is "every replica's state is the canonical state of its event set",
+the Apply case is `isCanonicalState_extend`, and the Merge case
+reduces to a single state-level statement — the **Join Lemma**:
+
+    IsCanonicalState ev₁ s₁ → IsCanonicalState ev₂ s₂ →
+    IsCanonicalState (ev₁ ∪ ev₂) (merge s₁ s₂)
+
+for backward-closed `ev₁, ev₂`. Witness lists disappear from the
+induction entirely; `isCanonicalState_peel` (below, proved) is the
+engine that replaces the unsound side-witness re-permutation of the
+paper. The Join Lemma itself is the remaining open obligation — see
+`FINDINGS.md` addendum A5 for why its peel step is *true* under
+`loOn`-maximality + backward closure but not expressible as an
+unconditional per-CRDT VC. -/
+
+/-- `s` is the canonical state of `ev`: the fold of some (hence, by
+`convergence_on`, of every) `loOn C ev`-respecting enumeration. -/
+def IsCanonicalState (C : Configuration D) (ev : Set (Op D.AppOp))
+    (s : D.State) : Prop :=
+  ∃ ρ : List (Op D.AppOp),
+    listPermOf ρ ev ∧ respects ρ (loOn C ev) ∧
+    applySeq D D.init ρ = s
+
+/-- Canonical states are unique. -/
+theorem isCanonicalState_unique (hVC : SatisfiesVCs D)
+    {C : Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
+    (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
+    (h : IsCanonicalState C ev s) (h' : IsCanonicalState C ev s') :
+    s = s' := by
+  obtain ⟨ρ, hp, hr, hs⟩ := h
+  obtain ⟨ρ', hp', hr', hs'⟩ := h'
+  rw [← hs, ← hs']
+  exact convergence_on hVC D.init h_ev_in_C hp hp' hr hr'
+
+/-- Canonical states exist for every finite set. -/
+theorem isCanonicalState_exists (hVC : SatisfiesVCs D)
+    {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
+    {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
+    (h_l : listPermOf l ev)
+    (h_in_C : ∀ a ∈ ev, a ∈ C.events) :
+    ∃ s, IsCanonicalState C ev s := by
+  obtain ⟨ρ, hp, hr⟩ :=
+    exists_loOn_respecting_perm hVC h_vis_trans h_vis_irrefl h_l h_in_C
+  exact ⟨applySeq D D.init ρ, ρ, hp, hr, rfl⟩
+
+/-- A canonical state is a witness for the paper's Def-lin
+obligation: its enumeration respects `lo C`. -/
+theorem isCanonicalState_lo_witness {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {s : D.State}
+    (h : IsCanonicalState C ev s) :
+    ∃ ρ, listPermOf ρ ev ∧ respects ρ (lo C) ∧
+      applySeq D D.init ρ = s := by
+  obtain ⟨ρ, hp, hr, hs⟩ := h
+  exact ⟨ρ, hp, respects_lo_of_respects_loOn hr, hs⟩
+
+/-- **Peel** (the sound replacement for the paper's side-witness
+re-permutation): a `loOn C ev`-maximal event factors out of the
+canonical state exactly. Composes `perm_ending_in_loOn_max` (move
+`e` to the tail, state-preserving) with `normalize_peel_tail`
+(re-sort the front against the shrunken-set relation). -/
+theorem isCanonicalState_peel (hVC : SatisfiesVCs D)
+    {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
+    {ev : Set (Op D.AppOp)} {s : D.State} {e : Op D.AppOp}
+    (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
+    (h_e_in_ev : e ∈ ev)
+    (h_e_max : ∀ x ∈ ev, x ≠ e → ¬ loOn C ev e x)
+    (h : IsCanonicalState C ev s) :
+    ∃ s', IsCanonicalState C (ev \ {e}) s' ∧ s = D.update s' e := by
+  obtain ⟨ρ, hp, hr, hs⟩ := h
+  obtain ⟨hp', hr', h_state⟩ :=
+    perm_ending_in_loOn_max hVC h_ev_in_C hp hr h_e_in_ev h_e_max
+  obtain ⟨ρ'', hp'', hr'', h_state''⟩ :=
+    normalize_peel_tail hVC h_vis_trans h_vis_irrefl h_ev_in_C hp' hr'
+  refine ⟨applySeq D D.init ρ'', ⟨ρ'', hp'', hr'', rfl⟩, ?_⟩
+  rw [← hs, h_state D.init, ← h_state'' D.init, applySeq_append_single]
+
+/-- **Extend** (the Apply case at the σ-level): a fresh event `e`
+that observed everything in `ev` extends the canonical state by one
+update. `e` has no outgoing `loOn`-edges — it is `vis`-after all of
+`ev`, so neither disjunct can fire — and adding it only removes
+rc-edges among the old events. -/
+theorem isCanonicalState_extend {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {s : D.State} {e : Op D.AppOp}
+    (h_e_fresh : e ∉ ev)
+    (h_e_sees : ∀ x ∈ ev, C.vis x e)
+    (h_e_last : ∀ x ∈ ev, ¬ C.vis e x)
+    (h : IsCanonicalState C ev s) :
+    IsCanonicalState C (insert e ev) (D.update s e) := by
+  obtain ⟨ρ, hp, hr, hs⟩ := h
+  refine ⟨ρ ++ [e], ⟨?_, fun a => ?_⟩, ?_, ?_⟩
+  · rw [List.nodup_append]
+    refine ⟨hp.1, List.nodup_singleton _, ?_⟩
+    intro x hx y hy heq
+    rw [List.mem_singleton] at hy; subst hy; subst heq
+    exact h_e_fresh ((hp.2 x).mp hx)
+  · rw [List.mem_append, List.mem_singleton, Set.mem_insert_iff]
+    constructor
+    · rintro (h' | rfl)
+      · exact Or.inr ((hp.2 a).mp h')
+      · exact Or.inl rfl
+    · rintro (rfl | h')
+      · exact Or.inr rfl
+      · exact Or.inl ((hp.2 a).mpr h')
+  · unfold respects
+    rw [List.pairwise_append]
+    refine ⟨hr.imp (fun hn h' =>
+      hn (loOn_mono (Set.subset_insert _ _) h')), ?_, ?_⟩
+    · exact List.pairwise_singleton _ _
+    · intro y hy b hb
+      rw [List.mem_singleton] at hb; subst hb
+      have hy_ev : y ∈ ev := (hp.2 y).mp hy
+      rintro (⟨h_vis, _⟩ | ⟨_, h_nvis_ye, _, _⟩)
+      · exact h_e_last y hy_ev h_vis
+      · -- the rc disjunct requires `e ∥ y`, but `e` observed `y`.
+        exact h_nvis_ye (h_e_sees y hy_ev)
+  · rw [applySeq_append_single, hs]
+
+/-- **The Join Lemma** — after this file, the *entire* merge case of
+the RA-linearizability metatheorem reduces to this one state-level
+statement (see `merge_linearization_of_join`). It is TRUE on every
+worked instance including the A3 defeater of `FINDINGS.md`, and its
+peel step is valid under `loOn`-maximality + backward closure; but
+it is NOT derivable from the current VC bundle (the A3 defeater
+kills every bottom-up derivation), and its peel identities are
+irreducibly contextual — no unconditional per-CRDT equation
+captures them (FINDINGS A5). Discharging it — from cond-comm-style
+leaf VCs via a new contextual induction, or from lattice VCs
+(merge associativity + update inflation/monotonicity) — is the open
+obligation. -/
+def JoinLemma (D : CRDTSig) : Prop :=
+  ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
+    (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+    (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+    (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+    IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
+    IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₁ s₂)
+
+/-- **Reduction: the Join Lemma closes the merge case.** Given the
+strengthened (set-relative) witnesses for the two replicas, the Join
+Lemma delivers the merged witness — respecting `loOn` of the merged
+set, hence in particular the paper's `lo C`. This is the corrected
+replacement for `merge_linearization_exists`, with the false
+forward-closure hypotheses gone and the unsound re-permutation
+replaced by `isCanonicalState_peel`-based reasoning inside
+`JoinLemma`. -/
+theorem merge_linearization_of_join {D : CRDTSig}
+    (hJoin : JoinLemma D) {C : Configuration D}
+    {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
+    {s₁ s₂ : D.State}
+    (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
+    (h_ev₂_in_C : ∀ a ∈ ev₂, a ∈ C.events)
+    (h_ev₁_closed :
+      ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (h_ev₂_closed :
+      ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (h₁_perm : listPermOf π₁ ev₁) (h₂_perm : listPermOf π₂ ev₂)
+    (h₁_resp : respects π₁ (loOn C ev₁))
+    (h₂_resp : respects π₂ (loOn C ev₂))
+    (h₁_state : applySeq D D.init π₁ = s₁)
+    (h₂_state : applySeq D D.init π₂ = s₂) :
+    ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧
+         respects π (loOn C (ev₁ ∪ ev₂)) ∧
+         respects π (lo C) ∧
+         applySeq D D.init π = D.merge s₁ s₂ := by
+  have h_join := hJoin C ev₁ ev₂ s₁ s₂ h_ev₁_in_C h_ev₂_in_C
+    h_ev₁_closed h_ev₂_closed
+    ⟨π₁, h₁_perm, h₁_resp, h₁_state⟩ ⟨π₂, h₂_perm, h₂_resp, h₂_state⟩
+  obtain ⟨π, hp, hr, hs⟩ := h_join
+  exact ⟨π, hp, hr, respects_lo_of_respects_loOn hr, hs⟩
+
 end
 
 end Sal.Emulation
