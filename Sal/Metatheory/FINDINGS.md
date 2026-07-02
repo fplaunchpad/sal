@@ -164,8 +164,16 @@ OR-set (add-wins, `rem →rc add`, all 24 VCs satisfiable):
 
 Convergence over backward-closed replica sets w.r.t. `lo C` is therefore
 unprovable — the merge-linearization induction cannot be closed on the §5
-plan. (Formalizing this counter-model as a Lean theorem is scaffolded as
-follow-up work; the configuration is 3 events and visibly reachable.)
+plan. **Machine-checked** ✅ in
+[`../Emulation/Convergence_CounterModel.lean`](../Emulation/Convergence_CounterModel.lean)
+(0 `sorry`): `convergence_over_backward_closed_subsets_false` exhibits the
+model (`AWSet`, with the full convergence toolkit proved for it, including
+`cond_comm_lift`), the 3-event configuration, and the two `lo C`-respecting
+enumerations with different folds; `loOn_keeps_the_edge` demonstrates the A2
+repair on the same instance; `AWSet_shared_peel_1op_false` additionally shows
+the `shared_peel_1op` crutch VC of `SatisfiesVCs` is false for the paper's
+own OR-set skeleton — the current bundle excludes exactly the RDTs with
+non-trivial `rc`.
 
 ## A2. The fix for A1 — set-relative `lo`, machine-checked ✅
 
