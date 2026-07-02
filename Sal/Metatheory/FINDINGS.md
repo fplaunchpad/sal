@@ -138,3 +138,131 @@ replica event sets. The theorem is true, the paper is fine, and "will it come th
 now the bounded question *"can we prove that convergence lemma?"* — a far sharper target
 than the original architectural dead-end. Two verified additive lemmas
 (`no_lo_of_concurrent_to_L_b`, `lo_max_of_L_a_is_global`) are the corrected building blocks.
+
+---
+
+# ADDENDUM (2026-07-02, worktree `metatheory-merge-linearization`): the target lemma of §5 is FALSE; the paper has a second, deeper gap
+
+*Independent parallel attempt. Verification legend as above. Code:
+[`../Emulation/Merge_Linearization_Set.lean`](../Emulation/Merge_Linearization_Set.lean)
+(0 `sorry`, kernel-clean, committed on this branch).*
+
+## A1. The §5 blocker lemma is false ✅ (counter-model)
+
+§5 concluded the sole blocker was *"a convergence lemma valid over merely
+backward-closed reachable replica sets"* and asserted *"`convergence` over `ev₁`
+is true."* **It is not.** Counter-model, built from the paper's own flagship
+OR-set (add-wins, `rem →rc add`, all 24 VCs satisfiable):
+
+- Replica A: `e = add_k` then `e₃ = rem_k` (so `vis e e₃`, `¬commute e e₃`).
+- Replica B: `y = rem_k`, concurrent with both; B merges A's state *between*
+  `e` and `e₃`, so B's replica set is `ev_B = {y, e}` — backward-closed.
+- In the final configuration `C` (which contains `e₃`), the rc-edge
+  `y →lo e` is **cancelled by the global absorber `e₃`** (`lo`'s overwriter
+  existential ranges over all of `C.events`). So *both* `[y, e]` and `[e, y]`
+  respect `lo C` — but they fold to different states (`{k}` vs `∅`).
+
+Convergence over backward-closed replica sets w.r.t. `lo C` is therefore
+unprovable — the merge-linearization induction cannot be closed on the §5
+plan. (Formalizing this counter-model as a Lean theorem is scaffolded as
+follow-up work; the configuration is 3 events and visibly reachable.)
+
+## A2. The fix for A1 — set-relative `lo`, machine-checked ✅
+
+The absorber existential must range over the *version's own event set*:
+
+    loOn C ev e₁ e₂ ⟺ (vis e₁ e₂ ∧ ¬⇄) ∨ (∥ ∧ rc = Fst ∧ ¬∃ e₃ ∈ ev. vis e₂ e₃ ∧ ¬⇄)
+
+In the counter-model, `loOn C ev_B` *keeps* `y → e`, so only the fold-correct
+`[y, e]` respects it. `lo C ⊆ loOn C ev` pointwise, so a `loOn`-respecting
+witness still meets the paper's Def-lin obligation. `loOn C ev` depends only
+on `vis/rc/⇄` restricted to `ev` — a stable per-version invariant.
+
+**This matches the paper's own implicit usage**: appendix.tex's Merge case
+(line ~271) works with per-version `lo_i` whose absorber clause is
+`∃ e'' ∈ L(v_i)`, and asserts *"`lo` between two events should remain the same
+in all versions"* (`lo_i ⟺ lo_m`). The **⟹ direction of that stability claim
+is false** — a shared event can gain an absorber from the *other* branch's
+local events (that is exactly A1) — while the ⟸ direction is `loOn`
+monotonicity. New machine-checked layer (all 0-sorry):
+
+| Result | Content |
+|---|---|
+| `convergence_on` | two `loOn C ev`-respecting perms of `ev` fold equal — **no closure hypotheses at all**: each failed `loOn`-edge hands the bubble-sort argument an absorber *inside `ev`* |
+| `exists_loOn_maximal`, `exists_loOn_respecting_perm` | `loOn C T` is acyclic on `T` (`no_rc_chain` + absorber-kill + `vis` trans/irrefl), so maximal elements and respecting enumerations exist |
+| `perm_ending_in_loOn_max` | re-permute a witness to end in any `loOn`-max element, state-preserving |
+| `normalize_peel_tail` | after peeling a tail `t`, re-sort the front to respect the *shrunken-set* relation `loOn C (ev∖{t})`, fold-preserving (the lost absorber is `t` itself, still applied last) |
+
+## A3. The deeper gap: the paper's re-permutation step is unsound, and a reachable configuration defeats *every* bottom-up peel ✅ (semantic analysis) / ❓ (for the authors)
+
+The paper's Merge case repeatedly argues (appendix.tex:323, 343): *"since
+`lo` ordering between events remains the same in all versions, and since
+versions v₁, v₂ were already linearizable, there would exist sequences
+leading to the states … such that e_i would appear at the end."* This
+conflates *"an `lo`-extension ending in `e_i` exists"* (true, permutation-level)
+with *"a **witness with the same fold** ending in `e_i` exists"* (requires
+convergence over the version's event set — which by A1 is **false** for the
+paper's global-absorber `lo`). Concrete reachable defeater, 4 events on one
+OR-set key, 3 replicas (`t(b) ≠ t(d)` arbitrary):
+
+- r1: `d = add_k`, then `a = rem_k` (`vis d a`); r2: `b = add_k`, then
+  `c = rem_k` (`vis b c`).
+- r3 pulls `{d}` from r1 early; r1 pulls `{b}` from r2 before `c`; r2 pulls
+  `{d}` from r3 after `c`. Result: `ev₁ = {d,a,b}`, `ev₂ = {b,c,d}`,
+  `s₁ = {b}`-tag-only, `s₂ = {d}`-tag-only, `merge s₁ s₂ = ∅`.
+- Version-local orders are forced: `loOn(ev₁)` mandates `d→a` (vis) and
+  `a→b` (rc-edge alive: `b`'s only absorber `c ∉ ev₁`); `loOn(ev₂)` mandates
+  `b→c`, `c→d`. So **every witness of `s₁` ends in `b`; every witness of
+  `s₂` ends in `d`.**
+- Merged-set edges: `loOn(ev₁∪ev₂) = {b→c, d→a}` (both rc-edges die — the
+  absorbers are now inside). Valid final witnesses end in `a` or `c` only;
+  e.g. `[b,c,d,a]` folds to `∅ = merge s₁ s₂` ✓ (the *theorem* holds here).
+- But **no bottom-up peel can produce it**: `a`,`c` are globally appendable
+  yet *un-endable in their own sides* (`a→b`, `c→d` are mandatory locally);
+  `b`,`d` are endable in their sides yet *not appendable* (`b→c`, `d→a` are
+  vis-edges, alive in every relation). Peeling `a` would need
+  `merge s₁ s₂ = a(merge s₁' s₂)` with `s₁ = a(s₁')` — but `s₁ = {b}` has
+  **no** decomposition with `a` last (fold-wrong; only `[d,a,b]`-class works).
+  The `L^a/L^b` carving classifies `a ∈ L₁^a` and the paper *would* peel it
+  via the quoted false step. The 0-OP/1-OP/2-OP rules all fail here (checked
+  against every disponible Lean form: `lem_0op` needs both sides to end in
+  the shared event; `merge_peel_shared` needs the peeled event strictly
+  local; `bottomUp_2op_reachable` needs strict rc + distinctness that shared
+  tails violate).
+
+**Consequences.**
+
+1. The flat distinct-last induction (current `distinct_last_case`) *and* the
+   carving-based redesign of §5 are both structurally incapable of closing
+   the Merge case: sorries `:2816/:2987/:3003/:3009` protect sub-cases that
+   contain this configuration. The two "false forward-closure" sorries
+   `:4443/:4446` are unfixable as diagnosed in §3.
+2. The paper's proof of Theorems 1–2 has a hole **strictly deeper than the
+   Case 1.1.2 erratum of §4**: the side-witness re-permutation step. The
+   theorem itself *may* still be true (it holds semantically on the
+   defeater), but a new proof idea is required, not a patch.
+3. Candidate repairs (open research question, for the authors and for us):
+   - **Merge associativity as an explicit VC.** `s₁` in the defeater is
+     itself a merge; with associativity+commutativity of `merge`, the merge
+     tree can be re-associated so that peels always happen at *segment*
+     boundaries (per-replica op runs), where "side ends in `e`" is real.
+     All practical CRDTs/MRDTs have associative merges; the 24 VCs do not
+     imply it.
+   - **Provenance/segment-aware induction**: strengthen the RA-lin invariant
+     to remember the merge tree (each replica state = join of per-replica
+     op-sequence prefixes), and induct on segments rather than single
+     events. This is the direction the tombstone-free RGA work already
+     pioneers (path-carrying ghost state).
+   - Determine whether the 24 VCs alone are *insufficient* — i.e. exhibit a
+     VC-satisfying `D` and a reachable configuration violating RA-lin. The
+     defeater's shape is the place to look: the VCs pin `merge` down only on
+     update-shaped arguments, and nothing forces
+     `merge s₁ s₂ = fold [b,c,d,a]` for adversarial `D`.
+
+## A4. Status of this branch
+
+- `Merge_Linearization_Set.lean`: the A2 layer, complete and kernel-clean.
+- The 6 sorries of `Merge_Linearization.lean` are **not closable as posed**
+  (A1/A3); the correct next milestones are (i) the Lean counter-model of A1,
+  (ii) the associativity-VC or segment-induction redesign of the Merge case,
+  (iii) only then the ternary S6 lift.
