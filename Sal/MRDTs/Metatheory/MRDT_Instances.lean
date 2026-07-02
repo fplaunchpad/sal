@@ -3117,4 +3117,697 @@ theorem EWFlag_ra_linearizable3
     IsRALinearizable3 C :=
   ra_linearizable3_of_joinF EWFlag_joinLemma3F C hReach
 
+/-! # Phase 2: the production catalog sweep (T11)
+
+Six further production MRDTs, all in the **commuting class**: `rc = Either`
+everywhere and all update pairs commute. Four are LCA-inclusive grow-only
+unions (`mergeL l a b = l ∪ a ∪ b`, componentwise) — Grow-Only Set, Grow-Only
+Map, RGA (tombstone), Peritext — for which every merge law is a Boolean
+tautology (the `bor_*` kernel below); two are the counter group form
+(`mergeL l a b = a + b − l`) — Increment-Only Counter, PN-Counter. All six
+land end-to-end via `ra_linearizable_of_core_delta_cd3` with
+`cdVC3_of_all_comm`.
+
+Faithfulness notes: `set α = α → Bool` mirrors as before; Grow-Only Map's
+`map ℕ (set ℕ)` is mirrored uncurried as `(ℕ × ℕ) → Bool` (its
+`mysel`-observable semantics); Peritext's `MarkOp`/`AnchorAttachment`
+structures are flattened to tuples (componentwise identical fields). -/
+
+/-! ## The Boolean kernel for LCA-inclusive unions -/
+
+private theorem bor_rc (a b c : Bool) :
+    ((a || b) || c) = ((a || c) || b) := by
+  cases a <;> cases b <;> cases c <;> rfl
+
+private theorem bor_comm (l a b : Bool) :
+    (l || (a || b)) = (l || (b || a)) := by
+  cases l <;> cases a <;> cases b <;> rfl
+
+private theorem bor_init (s : Bool) : (false || (false || s)) = s := by
+  cases s <;> rfl
+
+private theorem bor_0op (l a b d : Bool) :
+    ((l || d) || ((a || d) || (b || d))) = ((l || (a || b)) || d) := by
+  cases l <;> cases a <;> cases b <;> cases d <;> rfl
+
+private theorem bor_peel (f a g d : Bool) :
+    (f || ((a || d) || g)) = ((f || (a || g)) || d) := by
+  cases f <;> cases a <;> cases g <;> cases d <;> rfl
+
+private theorem bor_redis (m x0 x1 x2 c : Bool) :
+    ((m || (x0 || c)) || ((m || (x1 || c)) || (m || (x2 || c))))
+      = (m || ((x0 || (x1 || x2)) || c)) := by
+  cases m <;> cases x0 <;> cases x1 <;> cases x2 <;> cases c <;> rfl
+
+private theorem bor_lredis (l m x c y : Bool) :
+    (l || ((m || (x || c)) || y)) = (m || ((l || (x || y)) || c)) := by
+  cases l <;> cases m <;> cases x <;> cases c <;> cases y <;> rfl
+
+/-! ## Grow-Only Set (production mirror: `Sal/MRDTs/Grow_Only_Set`) -/
+
+def goUpdate (s : ℕ → Bool) (o : Op ℕ) : ℕ → Bool :=
+  fun x => s x || decide (x = o.2.2)
+
+noncomputable def GOSet : ConditionedMRDTSig where
+  State := ℕ → Bool
+  dec_state := fun _ _ => Classical.propDecidable _
+  init := fun _ => false
+  AppOp := ℕ
+  dec_op := inferInstance
+  Query := Unit
+  Value := ℕ → Bool
+  update := goUpdate
+  merge := fun a b => fun x => false || (a x || b x)
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b => fun x => l x || (a x || b x)
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem GOSet_rc_either : ∀ o₁ o₂ : Op GOSet.AppOp,
+    GOSet.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem GOSet_all_comm : ∀ a b : Op GOSet.AppOp,
+    GOSet.toCRDTSig.commutes a b := by
+  intro a b s
+  funext x
+  exact bor_rc (s x) (decide (x = a.2.2)) (decide (x = b.2.2))
+
+theorem GOSet_updateVCs : UpdateVCs GOSet.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (GOSet_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [GOSet_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [GOSet_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [GOSet_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem GOSet_coreVCs3 : CoreVCs3 GOSet := by
+  refine ⟨GOSet_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    funext x
+    exact bor_comm (l x) (a x) (b x)
+  · intro s
+    funext x
+    exact bor_init (s x)
+  · intro l a b e
+    funext x
+    exact bor_0op (l x) (a x) (b x) (decide (x = e.2.2))
+  · intro a e π₀ π₂ _ _
+    funext x
+    exact bor_peel (applySeq GOSet.toCRDTSig GOSet.init π₀ x) (a x)
+      (applySeq GOSet.toCRDTSig GOSet.init π₂ x) (decide (x = e.2.2))
+
+theorem GOSet_deltaVCs3 : DeltaVCs3 GOSet := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    funext x
+    exact bor_redis (m x) (x₀ x) (x₁ x) (x₂ x) (c x)
+  · intro l m x c y
+    funext p
+    exact bor_lredis (l p) (m p) (x p) (c p) (y p)
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production Grow-Only Set. -/
+theorem goset_ra_linearizable3
+    (C : Configuration GOSet)
+    (hReach : (labeledTS3 GOSet).ReachableFrom
+      (initConfig GOSet trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 GOSet_coreVCs3 GOSet_deltaVCs3
+    (cdVC3_of_all_comm GOSet_coreVCs3 GOSet_all_comm) C hReach
+
+/-! ## Grow-Only Map (production mirror: `Sal/MRDTs/Grow_Only_Map`;
+uncurried `mysel`-view: `(key, value)`-membership) -/
+
+def gomUpdate (s : ℕ × ℕ → Bool) (o : Op (ℕ × ℕ)) : ℕ × ℕ → Bool :=
+  fun p => s p || decide (p = o.2.2)
+
+noncomputable def GOMap : ConditionedMRDTSig where
+  State := ℕ × ℕ → Bool
+  dec_state := fun _ _ => Classical.propDecidable _
+  init := fun _ => false
+  AppOp := ℕ × ℕ
+  dec_op := inferInstance
+  Query := Unit
+  Value := ℕ × ℕ → Bool
+  update := gomUpdate
+  merge := fun a b => fun p => false || (a p || b p)
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b => fun p => l p || (a p || b p)
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem GOMap_rc_either : ∀ o₁ o₂ : Op GOMap.AppOp,
+    GOMap.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem GOMap_all_comm : ∀ a b : Op GOMap.AppOp,
+    GOMap.toCRDTSig.commutes a b := by
+  intro a b s
+  funext p
+  exact bor_rc (s p) (decide (p = a.2.2)) (decide (p = b.2.2))
+
+theorem GOMap_updateVCs : UpdateVCs GOMap.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (GOMap_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [GOMap_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [GOMap_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [GOMap_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem GOMap_coreVCs3 : CoreVCs3 GOMap := by
+  refine ⟨GOMap_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    funext p
+    exact bor_comm (l p) (a p) (b p)
+  · intro s
+    funext p
+    exact bor_init (s p)
+  · intro l a b e
+    funext p
+    exact bor_0op (l p) (a p) (b p) (decide (p = e.2.2))
+  · intro a e π₀ π₂ _ _
+    funext p
+    exact bor_peel (applySeq GOMap.toCRDTSig GOMap.init π₀ p) (a p)
+      (applySeq GOMap.toCRDTSig GOMap.init π₂ p) (decide (p = e.2.2))
+
+theorem GOMap_deltaVCs3 : DeltaVCs3 GOMap := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    funext p
+    exact bor_redis (m p) (x₀ p) (x₁ p) (x₂ p) (c p)
+  · intro l m x c y
+    funext p
+    exact bor_lredis (l p) (m p) (x p) (c p) (y p)
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production Grow-Only Map. -/
+theorem gomap_ra_linearizable3
+    (C : Configuration GOMap)
+    (hReach : (labeledTS3 GOMap).ReachableFrom
+      (initConfig GOMap trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 GOMap_coreVCs3 GOMap_deltaVCs3
+    (cdVC3_of_all_comm GOMap_coreVCs3 GOMap_all_comm) C hReach
+
+/-! ## Increment-Only Counter (production mirror:
+`Sal/MRDTs/Increment_Only_Counter`; the metatheory's `Counter` toy is this
+RDT up to the singleton op type) -/
+
+inductive IOCOp : Type where
+  | incr
+deriving DecidableEq
+
+def IOC : ConditionedMRDTSig where
+  State := Int
+  dec_state := inferInstance
+  init := 0
+  AppOp := IOCOp
+  dec_op := inferInstance
+  Query := Unit
+  Value := Int
+  update := fun s _ => s + 1
+  merge := fun a b => a + b - (0 : Int)
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b => a + b - l
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem IOC_update_eq (s : Int) (e : Op IOC.AppOp) :
+    IOC.update s e = s + 1 := rfl
+
+theorem IOC_mergeL_eq (l a b : Int) : IOC.mergeL l a b = a + b - l := rfl
+
+theorem IOC_init_eq : IOC.init = (0 : Int) := rfl
+
+theorem IOC_rc_either : ∀ o₁ o₂ : Op IOC.AppOp,
+    IOC.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem IOC_all_comm : ∀ a b : Op IOC.AppOp, IOC.toCRDTSig.commutes a b :=
+  fun _ _ _ => rfl
+
+theorem IOC_updateVCs : UpdateVCs IOC.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (IOC_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [IOC_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [IOC_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [IOC_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem IOC_coreVCs3 : CoreVCs3 IOC := by
+  refine ⟨IOC_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    simp only [IOC_mergeL_eq]
+    have go : ∀ l' a' b' : Int, a' + b' - l' = b' + a' - l' := by omega
+    exact go l a b
+  · intro s
+    simp only [IOC_mergeL_eq, IOC_init_eq]
+    have go : ∀ s' : Int, (0 : Int) + s' - 0 = s' := by omega
+    exact go s
+  · intro l a b e
+    simp only [IOC_update_eq, IOC_mergeL_eq]
+    have go : ∀ l' a' b' : Int,
+        a' + 1 + (b' + 1) - (l' + 1) = a' + b' - l' + 1 := by omega
+    exact go l a b
+  · intro a e π₀ π₂ _ _
+    simp only [IOC_update_eq, IOC_mergeL_eq]
+    have go : ∀ x y z : Int, y + 1 + z - x = y + z - x + 1 := by omega
+    exact go _ _ _
+
+theorem IOC_deltaVCs3 : DeltaVCs3 IOC := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    simp only [IOC_mergeL_eq]
+    have go : ∀ m' x₀' x₁' x₂' c' : Int,
+        x₁' + c' - m' + (x₂' + c' - m') - (x₀' + c' - m')
+          = x₁' + x₂' - x₀' + c' - m' := by omega
+    exact go m x₀ x₁ x₂ c
+  · intro l m x c y
+    simp only [IOC_mergeL_eq]
+    have go : ∀ l' m' x' c' y' : Int,
+        x' + c' - m' + y' - l' = x' + y' - l' + c' - m' := by omega
+    exact go l m x c y
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production Increment-Only
+Counter. -/
+theorem ioc_ra_linearizable3
+    (C : Configuration IOC)
+    (hReach : (labeledTS3 IOC).ReachableFrom
+      (initConfig IOC trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 IOC_coreVCs3 IOC_deltaVCs3
+    (cdVC3_of_all_comm IOC_coreVCs3 IOC_all_comm) C hReach
+
+/-! ## PN-Counter (production mirror: `Sal/MRDTs/PN_Counter`) -/
+
+inductive PNOp : Type where
+  | inc
+  | dec
+deriving DecidableEq
+
+def pnUpdate (s : Int) (o : Op PNOp) : Int :=
+  match o.2.2 with
+  | .inc => s + 1
+  | .dec => s - 1
+
+def PN : ConditionedMRDTSig where
+  State := Int
+  dec_state := inferInstance
+  init := 0
+  AppOp := PNOp
+  dec_op := inferInstance
+  Query := Unit
+  Value := Int
+  update := pnUpdate
+  merge := fun a b => a + b - (0 : Int)
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b => a + b - l
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem PN_update_inc (s : Int) (ts r : ℕ) :
+    PN.update s (ts, r, PNOp.inc) = s + 1 := rfl
+
+theorem PN_update_dec (s : Int) (ts r : ℕ) :
+    PN.update s (ts, r, PNOp.dec) = s - 1 := rfl
+
+theorem PN_mergeL_eq (l a b : Int) : PN.mergeL l a b = a + b - l := rfl
+
+theorem PN_init_eq : PN.init = (0 : Int) := rfl
+
+theorem PN_rc_either : ∀ o₁ o₂ : Op PN.AppOp,
+    PN.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem PN_all_comm : ∀ a b : Op PN.AppOp, PN.toCRDTSig.commutes a b := by
+  rintro ⟨tsa, ra, opa⟩ ⟨tsb, rb, opb⟩ s
+  have go1 : ∀ x : Int, x + 1 - 1 = x - 1 + 1 := by omega
+  have go2 : ∀ x : Int, x - 1 + 1 = x + 1 - 1 := by omega
+  cases opa <;> cases opb
+  · rfl
+  · exact go1 s
+  · exact go2 s
+  · rfl
+
+theorem PN_updateVCs : UpdateVCs PN.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (PN_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [PN_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [PN_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [PN_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem PN_coreVCs3 : CoreVCs3 PN := by
+  refine ⟨PN_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    simp only [PN_mergeL_eq]
+    have go : ∀ l' a' b' : Int, a' + b' - l' = b' + a' - l' := by omega
+    exact go l a b
+  · intro s
+    simp only [PN_mergeL_eq, PN_init_eq]
+    have go : ∀ s' : Int, (0 : Int) + s' - 0 = s' := by omega
+    exact go s
+  · rintro l a b ⟨ts, r, op⟩
+    have goi : ∀ l' a' b' : Int,
+        a' + 1 + (b' + 1) - (l' + 1) = a' + b' - l' + 1 := by omega
+    have god : ∀ l' a' b' : Int,
+        a' - 1 + (b' - 1) - (l' - 1) = a' + b' - l' - 1 := by omega
+    cases op
+    · exact goi l a b
+    · exact god l a b
+  · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
+    have goi : ∀ x y z : Int, y + 1 + z - x = y + z - x + 1 := by omega
+    have god : ∀ x y z : Int, y - 1 + z - x = y + z - x - 1 := by omega
+    cases op
+    · exact goi _ a _
+    · exact god _ a _
+
+theorem PN_deltaVCs3 : DeltaVCs3 PN := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    simp only [PN_mergeL_eq]
+    have go : ∀ m' x₀' x₁' x₂' c' : Int,
+        x₁' + c' - m' + (x₂' + c' - m') - (x₀' + c' - m')
+          = x₁' + x₂' - x₀' + c' - m' := by omega
+    exact go m x₀ x₁ x₂ c
+  · intro l m x c y
+    simp only [PN_mergeL_eq]
+    have go : ∀ l' m' x' c' y' : Int,
+        x' + c' - m' + y' - l' = x' + y' - l' + c' - m' := by omega
+    exact go l m x c y
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production PN-Counter. -/
+theorem pn_ra_linearizable3
+    (C : Configuration PN)
+    (hReach : (labeledTS3 PN).ReachableFrom
+      (initConfig PN trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 PN_coreVCs3 PN_deltaVCs3
+    (cdVC3_of_all_comm PN_coreVCs3 PN_all_comm) C hReach
+
+/-! ## RGA, tombstone-based (production mirror: `Sal/MRDTs/RGA`) —
+Tier-1 in disguise: both components grow-only, `rc = Either`, all pairs
+commute, LCA-inclusive union merge. -/
+
+inductive RGAOp : Type where
+  | addAfter : ℕ → ℕ → RGAOp
+  | remove : ℕ → RGAOp
+deriving DecidableEq
+
+def rgaUpdate (s : ((ℕ × ℕ × ℕ) → Bool) × (ℕ → Bool)) (o : Op RGAOp) :
+    ((ℕ × ℕ × ℕ) → Bool) × (ℕ → Bool) :=
+  match o.2.2 with
+  | .addAfter af el => (fun p => s.1 p || decide (p = (o.1, af, el)), s.2)
+  | .remove id => (s.1, fun x => s.2 x || decide (x = id))
+
+noncomputable def RGAM : ConditionedMRDTSig where
+  State := ((ℕ × ℕ × ℕ) → Bool) × (ℕ → Bool)
+  dec_state := fun _ _ => Classical.propDecidable _
+  init := (fun _ => false, fun _ => false)
+  AppOp := RGAOp
+  dec_op := inferInstance
+  Query := Unit
+  Value := ((ℕ × ℕ × ℕ) → Bool) × (ℕ → Bool)
+  update := rgaUpdate
+  merge := fun a b =>
+    (fun p => false || (a.1 p || b.1 p), fun x => false || (a.2 x || b.2 x))
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b =>
+    (fun p => l.1 p || (a.1 p || b.1 p), fun x => l.2 x || (a.2 x || b.2 x))
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem RGAM_rc_either : ∀ o₁ o₂ : Op RGAM.AppOp,
+    RGAM.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem RGAM_all_comm : ∀ a b : Op RGAM.AppOp,
+    RGAM.toCRDTSig.commutes a b := by
+  rintro ⟨tsa, ra, opa⟩ ⟨tsb, rb, opb⟩ s
+  cases opa <;> cases opb
+  · exact Prod.ext (funext fun p => bor_rc (s.1 p) _ _) rfl
+  · rfl
+  · rfl
+  · exact Prod.ext rfl (funext fun x => bor_rc (s.2 x) _ _)
+
+theorem RGAM_updateVCs : UpdateVCs RGAM.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (RGAM_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [RGAM_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [RGAM_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [RGAM_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem RGAM_coreVCs3 : CoreVCs3 RGAM := by
+  refine ⟨RGAM_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    exact Prod.ext (funext fun p => bor_comm (l.1 p) (a.1 p) (b.1 p))
+      (funext fun x => bor_comm (l.2 x) (a.2 x) (b.2 x))
+  · intro s
+    exact Prod.ext (funext fun p => bor_init (s.1 p))
+      (funext fun x => bor_init (s.2 x))
+  · rintro l a b ⟨ts, r, op⟩
+    cases op with
+    | addAfter af el =>
+      exact Prod.ext (funext fun p => bor_0op (l.1 p) (a.1 p) (b.1 p) _) rfl
+    | remove id =>
+      exact Prod.ext rfl (funext fun x => bor_0op (l.2 x) (a.2 x) (b.2 x) _)
+  · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
+    cases op with
+    | addAfter af el =>
+      exact Prod.ext (funext fun p =>
+        bor_peel ((applySeq RGAM.toCRDTSig RGAM.init π₀).1 p) (a.1 p)
+          ((applySeq RGAM.toCRDTSig RGAM.init π₂).1 p) _) rfl
+    | remove id =>
+      exact Prod.ext rfl (funext fun x =>
+        bor_peel ((applySeq RGAM.toCRDTSig RGAM.init π₀).2 x) (a.2 x)
+          ((applySeq RGAM.toCRDTSig RGAM.init π₂).2 x) _)
+
+theorem RGAM_deltaVCs3 : DeltaVCs3 RGAM := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    exact Prod.ext
+      (funext fun p => bor_redis (m.1 p) (x₀.1 p) (x₁.1 p) (x₂.1 p) (c.1 p))
+      (funext fun x => bor_redis (m.2 x) (x₀.2 x) (x₁.2 x) (x₂.2 x) (c.2 x))
+  · intro l m x c y
+    exact Prod.ext
+      (funext fun p => bor_lredis (l.1 p) (m.1 p) (x.1 p) (c.1 p) (y.1 p))
+      (funext fun q => bor_lredis (l.2 q) (m.2 q) (x.2 q) (c.2 q) (y.2 q))
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production tombstone RGA. -/
+theorem rga_ra_linearizable3
+    (C : Configuration RGAM)
+    (hReach : (labeledTS3 RGAM).ReachableFrom
+      (initConfig RGAM trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 RGAM_coreVCs3 RGAM_deltaVCs3
+    (cdVC3_of_all_comm RGAM_coreVCs3 RGAM_all_comm) C hReach
+
+/-! ## Peritext (production mirror: `Sal/MRDTs/Peritext`) — three grow-only
+components (chars, tombstones, anchor-attached marks; `RemoveMark` *adds* a
+mark record with `isAdd = false`), `rc = Either`, all pairs commute. -/
+
+/-- Flattened `MarkOp`: `(opId, startId, startSide, endId, endSide,
+markType, isAdd)`. -/
+abbrev PtMark : Type :=
+  (ℕ × ℕ) × (ℕ × ℕ) × Bool × (ℕ × ℕ) × Bool × ℕ × Bool
+
+/-- Flattened `AnchorAttachment`: `(endId, endSide, mark)`. -/
+abbrev PtAnchor : Type := (ℕ × ℕ) × Bool × PtMark
+
+/-- Flattened `CharRec`: `(opId, after, ch)`. -/
+abbrev PtChar : Type := (ℕ × ℕ) × (ℕ × ℕ) × ℕ
+
+inductive PtOp : Type where
+  | insert : ℕ → ℕ × ℕ → PtOp
+  | remove : ℕ × ℕ → PtOp
+  | addMark : ℕ × ℕ → Bool → ℕ × ℕ → Bool → ℕ → PtOp
+  | removeMark : ℕ × ℕ → Bool → ℕ × ℕ → Bool → ℕ → PtOp
+deriving DecidableEq
+
+abbrev PtState : Type :=
+  (PtChar → Bool) × ((ℕ × ℕ) → Bool) × (PtAnchor → Bool)
+
+noncomputable def ptUpdate (s : PtState) (o : Op PtOp) : PtState :=
+  match o.2.2 with
+  | .insert ch af =>
+      (fun q => s.1 q || decide (q = ((o.1, o.2.1), af, ch)), s.2.1, s.2.2)
+  | .remove t =>
+      (s.1, fun q => s.2.1 q || decide (q = t), s.2.2)
+  | .addMark sI sS eI eS mt =>
+      (s.1, s.2.1, fun q =>
+        s.2.2 q || decide (q = (eI, eS, ((o.1, o.2.1), sI, sS, eI, eS, mt,
+          true))))
+  | .removeMark sI sS eI eS mt =>
+      (s.1, s.2.1, fun q =>
+        s.2.2 q || decide (q = (eI, eS, ((o.1, o.2.1), sI, sS, eI, eS, mt,
+          false))))
+
+noncomputable def Peritext : ConditionedMRDTSig where
+  State := PtState
+  dec_state := fun _ _ => Classical.propDecidable _
+  init := (fun _ => false, fun _ => false, fun _ => false)
+  AppOp := PtOp
+  dec_op := inferInstance
+  Query := Unit
+  Value := PtState
+  update := ptUpdate
+  merge := fun a b =>
+    (fun q => false || (a.1 q || b.1 q),
+     fun q => false || (a.2.1 q || b.2.1 q),
+     fun q => false || (a.2.2 q || b.2.2 q))
+  query := fun s _ => s
+  rc := fun _ _ => RcRes.Either
+  mergeL := fun l a b =>
+    (fun q => l.1 q || (a.1 q || b.1 q),
+     fun q => l.2.1 q || (a.2.1 q || b.2.1 q),
+     fun q => l.2.2 q || (a.2.2 q || b.2.2 q))
+  merge_init_slice := fun _ _ => rfl
+  Inv := fun _ => True
+  applicable := fun _ _ => True
+
+theorem Peritext_rc_either : ∀ o₁ o₂ : Op Peritext.AppOp,
+    Peritext.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+
+theorem Peritext_all_comm : ∀ a b : Op Peritext.AppOp,
+    Peritext.toCRDTSig.commutes a b := by
+  rintro ⟨tsa, ra, opa⟩ ⟨tsb, rb, opb⟩ s
+  cases opa <;> cases opb <;>
+    first
+      | rfl
+      | exact Prod.ext (funext fun q => bor_rc (s.1 q) _ _) rfl
+      | exact Prod.ext rfl (Prod.ext (funext fun q => bor_rc (s.2.1 q) _ _)
+          rfl)
+      | exact Prod.ext rfl (Prod.ext rfl
+          (funext fun q => bor_rc (s.2.2 q) _ _))
+
+theorem Peritext_updateVCs : UpdateVCs Peritext.toCRDTSig := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro o₁ o₂ _ _
+    constructor
+    · intro h
+      exact absurd (Peritext_all_comm o₁ o₂) h
+    · rintro (h | h) <;>
+        (rw [Peritext_rc_either] at h; exact RcRes.noConfusion h)
+  · intro o₁ o₂ o₃ _ _
+    rintro ⟨h, _⟩
+    rw [Peritext_rc_either] at h
+    exact RcRes.noConfusion h
+  · intro s e e' e'' π _ _ _ h_rc _
+    rw [Peritext_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
+
+theorem Peritext_coreVCs3 : CoreVCs3 Peritext := by
+  refine ⟨Peritext_updateVCs, ?_, ?_, ?_, ?_⟩
+  · intro l a b
+    exact Prod.ext (funext fun q => bor_comm (l.1 q) (a.1 q) (b.1 q))
+      (Prod.ext (funext fun q => bor_comm (l.2.1 q) (a.2.1 q) (b.2.1 q))
+        (funext fun q => bor_comm (l.2.2 q) (a.2.2 q) (b.2.2 q)))
+  · intro s
+    exact Prod.ext (funext fun q => bor_init (s.1 q))
+      (Prod.ext (funext fun q => bor_init (s.2.1 q))
+        (funext fun q => bor_init (s.2.2 q)))
+  · rintro l a b ⟨ts, r, op⟩
+    cases op <;>
+      first
+        | exact Prod.ext
+            (funext fun q => bor_0op (l.1 q) (a.1 q) (b.1 q) _) rfl
+        | exact Prod.ext rfl (Prod.ext
+            (funext fun q => bor_0op (l.2.1 q) (a.2.1 q) (b.2.1 q) _) rfl)
+        | exact Prod.ext rfl (Prod.ext rfl
+            (funext fun q => bor_0op (l.2.2 q) (a.2.2 q) (b.2.2 q) _))
+  · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
+    cases op <;>
+      first
+        | exact Prod.ext (funext fun q =>
+            bor_peel ((applySeq Peritext.toCRDTSig Peritext.init π₀).1 q)
+              (a.1 q)
+              ((applySeq Peritext.toCRDTSig Peritext.init π₂).1 q) _) rfl
+        | exact Prod.ext rfl (Prod.ext (funext fun q =>
+            bor_peel ((applySeq Peritext.toCRDTSig Peritext.init π₀).2.1 q)
+              (a.2.1 q)
+              ((applySeq Peritext.toCRDTSig Peritext.init π₂).2.1 q) _) rfl)
+        | exact Prod.ext rfl (Prod.ext rfl (funext fun q =>
+            bor_peel ((applySeq Peritext.toCRDTSig Peritext.init π₀).2.2 q)
+              (a.2.2 q)
+              ((applySeq Peritext.toCRDTSig Peritext.init π₂).2.2 q) _))
+
+theorem Peritext_deltaVCs3 : DeltaVCs3 Peritext := by
+  constructor
+  · intro m x₀ x₁ x₂ c
+    exact Prod.ext
+      (funext fun q => bor_redis (m.1 q) (x₀.1 q) (x₁.1 q) (x₂.1 q) (c.1 q))
+      (Prod.ext
+        (funext fun q =>
+          bor_redis (m.2.1 q) (x₀.2.1 q) (x₁.2.1 q) (x₂.2.1 q) (c.2.1 q))
+        (funext fun q =>
+          bor_redis (m.2.2 q) (x₀.2.2 q) (x₁.2.2 q) (x₂.2.2 q) (c.2.2 q)))
+  · intro l m x c y
+    exact Prod.ext
+      (funext fun q => bor_lredis (l.1 q) (m.1 q) (x.1 q) (c.1 q) (y.1 q))
+      (Prod.ext
+        (funext fun q =>
+          bor_lredis (l.2.1 q) (m.2.1 q) (x.2.1 q) (c.2.1 q) (y.2.1 q))
+        (funext fun q =>
+          bor_lredis (l.2.2 q) (m.2.2 q) (x.2.2 q) (c.2.2 q) (y.2.2 q)))
+
+open LabeledTS in
+/-- End-to-end RA-linearizability for the production Peritext. -/
+theorem peritext_ra_linearizable3
+    (C : Configuration Peritext)
+    (hReach : (labeledTS3 Peritext).ReachableFrom
+      (initConfig Peritext trivial) C) :
+    IsRALinearizable3 C :=
+  ra_linearizable_of_core_delta_cd3 Peritext_coreVCs3 Peritext_deltaVCs3
+    (cdVC3_of_all_comm Peritext_coreVCs3 Peritext_all_comm) C hReach
+
 end Sal.Metatheory

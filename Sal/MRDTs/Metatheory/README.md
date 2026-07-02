@@ -69,7 +69,18 @@ One file, all instance proofs:
 | **Enable-wins flag** (production mirror) | `EWFlag_ra_linearizable3` | direct full-closure join |
 | Counter (`mergeL l a b = a+b−l`) | `counter_ra_linearizable3_cd` | unconditional delta |
 | G-Set | `gset_ra_linearizable3_cd` | unconditional delta |
+| **Grow-Only Set** (production mirror) | `goset_ra_linearizable3` | unconditional delta |
+| **Grow-Only Map** (production mirror) | `gomap_ra_linearizable3` | unconditional delta |
+| **Increment-Only Counter** (production mirror) | `ioc_ra_linearizable3` | unconditional delta |
+| **PN-Counter** (production mirror) | `pn_ra_linearizable3` | unconditional delta |
+| **RGA, tombstone** (production mirror) | `rga_ra_linearizable3` | unconditional delta |
+| **Peritext** (production mirror) | `peritext_ra_linearizable3` | unconditional delta |
 | all-commuting class | via `cdVC3_of_all_comm` | generic |
+
+Not yet mechanized (class-placed with recipes, draft T11.3–T11.4):
+Multi-Valued Register and Add-Wins Priority Queue (feasible class); RGA
+tombstone-free (blocked on a `FeasibleUpdateVCs` σ-layer generalization —
+its commutation VC is reachability-conditioned).
 
 The production mirrors are faithful to `Sal/MRDTs/{OR_Set,
 OR_Set_Efficient, Enable_Wins_Flag}` (documented deviations only). The

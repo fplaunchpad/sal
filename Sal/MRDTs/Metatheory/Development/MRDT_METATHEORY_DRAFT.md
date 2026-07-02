@@ -704,3 +704,91 @@ untouched and EWFlag bypasses them; whether a full-closure variant of
 natural next question. Also recorded: the `differentReplicas` guard is **not**
 load-bearing for EWFlag (no `rc = Either` non-commuting pairs; same-replica Enables
 commute).
+
+---
+
+# T11 The production-catalog sweep: six more discharges, and the empirical class map of all twelve MRDTs
+
+*Code: appended to [`../MRDT_Instances.lean`](../MRDT_Instances.lean) (now 3813
+lines, **0 `sorry`**). New end-to-end theorems: `goset_ra_linearizable3`,
+`gomap_ra_linearizable3`, `ioc_ra_linearizable3`, `pn_ra_linearizable3`,
+`rga_ra_linearizable3`, `peritext_ra_linearizable3`.*
+
+## T11.1 Six RDTs are commuting-class — including RGA and Peritext
+
+Grow-Only Set, Grow-Only Map, Increment-Only Counter, PN-Counter, **RGA
+(tombstone)** and **Peritext** all have `rc = Either` and all-commuting update
+pairs. Four are LCA-inclusive grow-only unions (`mergeL l a b = l ∪ a ∪ b`
+componentwise — GO-Set; GO-Map uncurried to `(k,v)`-membership, its
+`mysel`-semantics; RGA = chars × tombstones; Peritext = chars × tombstones ×
+anchor-marks, where `RemoveMark` *adds* an `isAdd = false` record, keeping all
+three components grow-only). For these, **every merge law in
+`CoreVCs3 + DeltaVCs3` is a Boolean tautology** — a seven-lemma kernel
+(`bor_rc` … `bor_lredis`) discharges all four RDTs, multi-component states by
+`Prod.ext` + one kernel application per component. The two counters are the
+group form `a + b − l` (omega). All six land via
+`ra_linearizable_of_core_delta_cd3` + `cdVC3_of_all_comm`. The surprise: the
+"hard" tree CRDTs (RGA, Peritext) are *metatheoretically trivial* — tombstones
+convert all interference into grow-only unions; the entire difficulty of RGA
+lives in the read-side traversal, which RA-linearizability does not touch.
+
+## T11.2 The empirical class map (the (b″₃)(iii) dataset)
+
+| Class | Contract needed | MRDTs |
+|---|---|---|
+| **Unconditional** (group ⊕ lattice; commuting) | `CoreVCs3 + DeltaVCs3` (+ free CD) | GO-Set, GO-Map, IOC, PN-Counter, RGA, Peritext (+ toy G-Set, Counter) |
+| **Feasible** (LCA-sensitive set-shaped) | `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3` | OR-Set, OR-Set-efficient; **MVR** (recipe below); **AWPQ** (recipe below) |
+| **Full-closure** (counter-comparison) | direct `JoinLemma3F` | Enable-wins flag |
+| **Blocked on the update layer** | needs `FeasibleUpdateVCs` (below) | RGA tombstone-free |
+
+9 of 12 catalog MRDTs discharged end-to-end; 2 class-placed with recipes; 1
+research-blocked with the precise residual below.
+
+## T11.3 MVR and AWPQ recipes (feasible class, not mechanized in this sweep)
+
+**Multi-Valued Register**: all-commuting (`rc = Either`) but the merge is the
+OR-Set-shaped `(l∩a∩b) ∪ (a∖l) ∪ (b∖l)` per component, so `DeltaVCs3` fails
+(the `c∩l` corner) — MVR sits in the feasible class *despite* commuting. But
+all-comm ⟹ punctured downsets are empty ⟹ **B = σ(∅) = init in every feasible
+law and in CD** — no trichotomies, no kill/live σ-facts. Residual per corner:
+comp-1 (tagged writes) = the OR-Set fresh-timestamp argument; comp-2 (the
+overwritten-log accumulator) = a monotone fold-characterization
+(`p ∈ σ(F)₂ ↔ ∃ Write ∈ F with p ∈ O`). Estimated ~300 lines, mechanical.
+**AWPQ**: the A-component is literally the OR-Set pattern (same `rc`
+shape, `Add/Rmv` same-element ordered; filter-kill) and the I-component is a
+grow-only accumulator — the CD3_ORSet template applies with a second
+(tautological) component. Estimated CD3_ORSet-scale.
+
+## T11.4 The RGA tombstone-free residual: `FeasibleUpdateVCs` (the precise statement)
+
+RGA_TF's `rc_non_comm'` (`RGA_Tombstone_Free_MRDT.lean:928`) is conditioned:
+`commutes_with' o₁ o₂` quantifies only over states satisfying premises that
+reachable states enjoy (`RgaInv s = contains s 0 = false ∧ wf s`, plus
+`id_mono`/`fresh_ts` op-well-formedness — `RGA_Reachability_Invariant.lean`).
+The σ-layer's `UpdateVCs` cannot express this: `commutes` quantifies over ALL
+states. The generalization needed:
+
+    structure FeasibleUpdateVCs (D) (Inv : D.State → Prop) (WF : Op → Prop) where
+      inv_init  : Inv D.init
+      inv_step  : Inv s → WF e → Inv (D.update s e)
+      rc_non_comm_directional : ∀ o₁ o₂, distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
+        WF o₁ → WF o₂ →
+        (¬ commutesOn Inv o₁ o₂ ↔ rc-ordered)          -- commutesOn: ∀ s, Inv s → …
+      no_rc_chain : (unchanged)
+      cond_comm_lift : (as before, but state-quantified over Inv states only)
+
+and the **permutation-transport lemma** it requires: in `convergence_on_u` /
+`isCanonicalState_unique_u`, every adjacent swap `… s; e; e' …` happens at a
+prefix state `s = applySeq init ρ_pre` — provable `Inv` by `inv_init +
+inv_step` folded along the prefix — so `commutesOn Inv` suffices *if* the
+induction carries a "all prefix states satisfy Inv" side-invariant. That is
+the whole difficulty: the σ-theorems' list inductions must thread prefix-Inv
+through `listPermOf` reorderings (a permuted prefix is a prefix of a
+*different* enumeration, so prefix-Inv must be re-derived after each swap —
+available, since swaps preserve the fold on Inv-states, by induction along
+the swap sequence). `RgaInv ∧ id_mono` plug in as `Inv`/`WF`; `Inv_init` and
+the per-op preservation lemmas already exist in
+`RGA_Reachability_Invariant.lean`. Additionally the merge laws' tuples need
+`Inv` closed under `mergeL` on canonical triples (not yet proved anywhere).
+This is a *scoped but real* σ-layer generalization (est. the size of
+re-proving the 13 `_u` theorems — not small; do not fold into a sweep).

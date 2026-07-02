@@ -64,9 +64,12 @@ was refuted and repaired rather than transcribed:
   paper's own proof of it has an erratum-sized gap), a validated VC set
   (`CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3`, with the `differentReplicas`
   guard restored to the F* artifact's interface form), and **end-to-end
-  kernel-checked RA-linearizability for the production OR-Set,
-  OR-Set-efficient, and Enable-wins flag** (plus Counter, G-Set, and the
-  commuting class), all in one instances file. Start at
+  kernel-checked RA-linearizability for 9 of the 12 production MRDTs**
+  (OR-Set, OR-Set-efficient, Enable-wins flag, Grow-Only Set/Map,
+  Increment-Only + PN counters, tombstone RGA, Peritext — the last two land
+  in the *unconditional* commuting class: tombstones are a metatheoretic
+  trivializer), all in one instances file. MVR + priority queue:
+  class-placed with mechanical recipes. Start at
   [`Sal/MRDTs/Metatheory/README.md`](Sal/MRDTs/Metatheory/README.md);
   superseded routes, impossibility results, and the T-series journal live
   under
