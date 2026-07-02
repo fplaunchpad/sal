@@ -1030,6 +1030,8 @@ leaf VCs via a new contextual induction, or from lattice VCs
 obligation. -/
 def JoinLemma (D : CRDTSig) : Prop :=
   ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
+    (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
+    (∀ a : Op D.AppOp, ¬ C.vis a a) →
     (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
     (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
     (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
@@ -1046,6 +1048,9 @@ replaced by `isCanonicalState_peel`-based reasoning inside
 `JoinLemma`. -/
 theorem merge_linearization_of_join {D : CRDTSig}
     (hJoin : JoinLemma D) {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
     {π₁ π₂ : List (Op D.AppOp)} {ev₁ ev₂ : Set (Op D.AppOp)}
     {s₁ s₂ : D.State}
     (h_ev₁_in_C : ∀ a ∈ ev₁, a ∈ C.events)
@@ -1063,11 +1068,473 @@ theorem merge_linearization_of_join {D : CRDTSig}
          respects π (loOn C (ev₁ ∪ ev₂)) ∧
          respects π (lo C) ∧
          applySeq D D.init π = D.merge s₁ s₂ := by
-  have h_join := hJoin C ev₁ ev₂ s₁ s₂ h_ev₁_in_C h_ev₂_in_C
-    h_ev₁_closed h_ev₂_closed
+  have h_join := hJoin C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl
+    h_ev₁_in_C h_ev₂_in_C h_ev₁_closed h_ev₂_closed
     ⟨π₁, h₁_perm, h₁_resp, h₁_state⟩ ⟨π₂, h₂_perm, h₂_resp, h₂_state⟩
   obtain ⟨π, hp, hr, hs⟩ := h_join
   exact ⟨π, hp, hr, respects_lo_of_respects_loOn hr, hs⟩
+
+/-! ### 7. The Join Lemma from the peel identities
+
+The Join Lemma's induction peels a `loOn(ev₁ ∪ ev₂)`-maximal event
+`e` from the union. Everything about that induction — maximal-event
+selection, closure preservation, the measure, re-attachment — is
+proved below. The two *state equations* it consumes are exactly the
+contextual identities of FINDINGS A5, isolated here as the
+`JoinPeelVCs` bundle:
+
+* `peel_local`:  `merge s₁ s₂ = update (merge t₁ s₂) e` when `e` is
+  union-maximal and local to side 1 (`t₁` canonical for `ev₁ ∖ {e}`);
+* `peel_shared`: `merge s₁ s₂ = update (merge t₁ t₂) e` when `e` is
+  union-maximal and shared.
+
+They are stated over canonical states *with their full context*
+(union-maximality, backward closure) because — as A5 shows with the
+two-key OR-set — no unconditional equation over raw states is both
+true and sufficient. `join_lemma_of_peel` then closes the Join Lemma
+completely. `joinPeelVCs_of_all_comm` discharges the bundle for the
+commuting class (every pair of events commutes — G-Set and friends),
+giving the unconditional `join_lemma_of_all_comm`. -/
+
+/-- Two enumerations of the same set have the same length. -/
+theorem listPermOf_length_eq {α : Type} {l₁ l₂ : List α}
+    {ev : Set α}
+    (h₁ : listPermOf l₁ ev) (h₂ : listPermOf l₂ ev) :
+    l₁.length = l₂.length := by
+  induction l₁ generalizing l₂ ev with
+  | nil =>
+    match l₂, h₂ with
+    | [], _ => rfl
+    | x :: _, h₂ =>
+      exact absurd ((h₁.2 x).mpr ((h₂.2 x).mp List.mem_cons_self))
+        List.not_mem_nil
+  | cons a t ih =>
+    classical
+    have ha_ev : a ∈ ev := (h₁.2 a).mp List.mem_cons_self
+    have ha_l₂ : a ∈ l₂ := (h₂.2 a).mpr ha_ev
+    have h_nodup₁ := h₁.1
+    rw [List.nodup_cons] at h_nodup₁
+    have ht : listPermOf t (ev \ {a}) := by
+      refine ⟨h_nodup₁.2, fun x => ?_⟩
+      simp only [Set.mem_diff, Set.mem_singleton_iff]
+      constructor
+      · intro hx
+        refine ⟨(h₁.2 x).mp (List.mem_cons_of_mem _ hx), ?_⟩
+        intro rfl; exact h_nodup₁.1 hx
+      · rintro ⟨hx, hne⟩
+        rcases List.mem_cons.mp ((h₁.2 x).mpr hx) with h | h
+        · exact absurd h hne
+        · exact h
+    have h₂' : listPermOf (l₂.erase a) (ev \ {a}) := by
+      refine ⟨h₂.1.erase a, fun x => ?_⟩
+      rw [h₂.1.mem_erase_iff]
+      simp only [Set.mem_diff, Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨hne, hx⟩
+        exact ⟨(h₂.2 x).mp hx, hne⟩
+      · rintro ⟨hx, hne⟩
+        exact ⟨hne, (h₂.2 x).mpr hx⟩
+    have h_len := ih ht h₂'
+    have h_pos : 0 < l₂.length := List.length_pos_of_mem ha_l₂
+    have h_er := List.length_erase_of_mem ha_l₂
+    simp only [List.length_cons]
+    omega
+
+/-- Enumerate a union: side 1's list followed by side 2's leftovers. -/
+theorem listPermOf_union {D : CRDTSig} {l₁ l₂ : List (Op D.AppOp)}
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h₁ : listPermOf l₁ ev₁) (h₂ : listPermOf l₂ ev₂) :
+    listPermOf (l₁ ++ l₂.filter (fun a => decide (a ∉ l₁)))
+      (ev₁ ∪ ev₂) := by
+  classical
+  constructor
+  · rw [List.nodup_append]
+    refine ⟨h₁.1, h₂.1.filter _, ?_⟩
+    intro x hx y hy heq
+    subst heq
+    have := (List.mem_filter.mp hy).2
+    exact absurd hx (of_decide_eq_true this)
+  · intro a
+    rw [List.mem_append, List.mem_filter, Set.mem_union]
+    constructor
+    · rintro (h | ⟨h, _⟩)
+      · exact Or.inl ((h₁.2 a).mp h)
+      · exact Or.inr ((h₂.2 a).mp h)
+    · rintro (h | h)
+      · exact Or.inl ((h₁.2 a).mpr h)
+      · by_cases hmem : a ∈ l₁
+        · exact Or.inl hmem
+        · exact Or.inr ⟨(h₂.2 a).mpr h, decide_eq_true hmem⟩
+
+/-- Erasing an element of an enumeration enumerates the difference. -/
+theorem erase_listPermOf {α : Type} [DecidableEq α]
+    {l : List α} {ev : Set α} {e : α}
+    (h : listPermOf l ev) (he : e ∈ l) :
+    listPermOf (l.erase e) (ev \ {e}) := by
+  refine ⟨h.1.erase e, fun a => ?_⟩
+  rw [h.1.mem_erase_iff]
+  simp only [Set.mem_diff, Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨hne, ha⟩; exact ⟨(h.2 a).mp ha, hne⟩
+  · rintro ⟨ha, hne⟩; exact ⟨hne, (h.2 a).mpr ha⟩
+
+/-- Enumerations of `ev ∖ {e}` are one shorter than those of `ev`. -/
+theorem listPermOf_diff_length {α : Type} [DecidableEq α]
+    {l m : List α} {ev : Set α} {e : α}
+    (hl : listPermOf l ev) (he : e ∈ l)
+    (hm : listPermOf m (ev \ {e})) :
+    m.length = l.length - 1 := by
+  rw [listPermOf_length_eq hm (erase_listPermOf hl he)]
+  exact List.length_erase_of_mem he
+
+/-- The empty set's canonical state is `init`. -/
+theorem isCanonicalState_empty {D : CRDTSig} {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {s : D.State}
+    (h_empty : ev = ∅) (h : IsCanonicalState C ev s) : s = D.init := by
+  obtain ⟨ρ, hp, _, hf⟩ := h
+  subst h_empty
+  match ρ, hp with
+  | [], _ => exact hf.symm ▸ rfl
+  | x :: _, hp => exact absurd ((hp.2 x).mp List.mem_cons_self) id
+
+/-- Backward closure survives removing a union-maximal event: a
+`vis ∧ ¬commutes` edge out of `e` would be a `loOn`-edge in every
+relation, contradicting maximality. -/
+theorem closure_diff_of_max {D : CRDTSig} {C : Configuration D}
+    {ev evU : Set (Op D.AppOp)} {e : Op D.AppOp}
+    (h_sub : ev ⊆ evU)
+    (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev)
+    (h_max : ∀ x ∈ evU, x ≠ e → ¬ loOn C evU e x) :
+    ∀ a b, C.vis a b → ¬ D.commutes a b →
+      b ∈ ev \ {e} → a ∈ ev \ {e} := by
+  intro a b hv hnc ⟨hb, hb_ne⟩
+  refine ⟨h_closed a b hv hnc hb, ?_⟩
+  intro ha_eq
+  have ha_eq' : a = e := ha_eq
+  subst ha_eq'
+  exact h_max b (h_sub hb) hb_ne (Or.inl ⟨hv, hnc⟩)
+
+/-- Re-attach a union-maximal event to a canonical state of the
+set-minus-it. -/
+theorem isCanonicalState_snoc {D : CRDTSig} {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {t : D.State} {e : Op D.AppOp}
+    (h_e_in : e ∈ ev)
+    (h_max : ∀ x ∈ ev, x ≠ e → ¬ loOn C ev e x)
+    (h : IsCanonicalState C (ev \ {e}) t) :
+    IsCanonicalState C ev (D.update t e) := by
+  obtain ⟨ρ, hp, hr, hf⟩ := h
+  have h_e_notin : e ∉ ρ := fun hmem => ((hp.2 e).mp hmem).2 rfl
+  refine ⟨ρ ++ [e], ⟨?_, fun a => ?_⟩, ?_, ?_⟩
+  · rw [List.nodup_append]
+    refine ⟨hp.1, List.nodup_singleton _, ?_⟩
+    intro x hx y hy heq
+    rw [List.mem_singleton] at hy; subst hy; subst heq
+    exact h_e_notin hx
+  · rw [List.mem_append, List.mem_singleton]
+    constructor
+    · rintro (h' | rfl)
+      · exact ((hp.2 a).mp h').1
+      · exact h_e_in
+    · intro ha
+      by_cases hae : a = e
+      · exact Or.inr hae
+      · exact Or.inl ((hp.2 a).mpr ⟨ha, hae⟩)
+  · unfold respects
+    rw [List.pairwise_append]
+    refine ⟨respects_loOn_mono (fun a ha => ha.1) hr,
+      List.pairwise_singleton _ _, ?_⟩
+    intro y hy b hb
+    rw [List.mem_singleton] at hb; subst hb
+    obtain ⟨hy_ev, hy_ne⟩ := (hp.2 y).mp hy
+    exact h_max y hy_ev hy_ne
+  · rw [applySeq_append_single, hf]
+
+/-- **The peel identities** — the two contextual state equations the
+Join Lemma's induction consumes, isolated as an explicit bundle.
+See the section header and FINDINGS A5 for why they are stated over
+canonical states with the union-maximality context. -/
+structure JoinPeelVCs (D : CRDTSig) : Prop where
+  /-- Peel a union-maximal event local to side 1. -/
+  peel_local :
+    ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp))
+      (s₁ s₂ t₁ : D.State) (e : Op D.AppOp),
+      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+      e ∈ ev₁ → e ∉ ev₂ →
+      (∀ x ∈ ev₁ ∪ ev₂, x ≠ e → ¬ loOn C (ev₁ ∪ ev₂) e x) →
+      IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
+      IsCanonicalState C (ev₁ \ {e}) t₁ →
+      D.merge s₁ s₂ = D.update (D.merge t₁ s₂) e
+  /-- Peel a union-maximal shared event. -/
+  peel_shared :
+    ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp))
+      (s₁ s₂ t₁ t₂ : D.State) (e : Op D.AppOp),
+      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+      e ∈ ev₁ → e ∈ ev₂ →
+      (∀ x ∈ ev₁ ∪ ev₂, x ≠ e → ¬ loOn C (ev₁ ∪ ev₂) e x) →
+      IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
+      IsCanonicalState C (ev₁ \ {e}) t₁ →
+      IsCanonicalState C (ev₂ \ {e}) t₂ →
+      D.merge s₁ s₂ = D.update (D.merge t₁ t₂) e
+
+/-- **The Join Lemma holds given the peel identities.** The master
+induction: enumerate the union, select a `loOn(∪)`-maximal event,
+peel it with `JoinPeelVCs`, recurse on the strictly smaller sets,
+and re-attach with `isCanonicalState_snoc`. -/
+theorem join_lemma_of_peel {D : CRDTSig} (hVC : SatisfiesVCs D)
+    (hPeel : JoinPeelVCs D) : JoinLemma D := by
+  intro C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl h_in₁ h_in₂
+    h_cl₁ h_cl₂ hc₁ hc₂
+  classical
+  obtain ⟨l₁, hp₁, hr₁, hf₁⟩ := hc₁
+  obtain ⟨l₂, hp₂, hr₂, hf₂⟩ := hc₂
+  -- Strong induction on the total enumeration length.
+  suffices gen : ∀ n (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State)
+      (l₁ l₂ : List (Op D.AppOp)),
+      l₁.length + l₂.length = n →
+      (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+      (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+      listPermOf l₁ ev₁ → respects l₁ (loOn C ev₁) →
+      applySeq D D.init l₁ = s₁ →
+      listPermOf l₂ ev₂ → respects l₂ (loOn C ev₂) →
+      applySeq D D.init l₂ = s₂ →
+      IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₁ s₂) by
+    exact gen _ ev₁ ev₂ s₁ s₂ l₁ l₂ rfl h_in₁ h_in₂ h_cl₁ h_cl₂
+      hp₁ hr₁ hf₁ hp₂ hr₂ hf₂
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro ev₁ ev₂ s₁ s₂ l₁ l₂ h_len h_in₁ h_in₂ h_cl₁ h_cl₂
+      hp₁ hr₁ hf₁ hp₂ hr₂ hf₂
+    -- Empty sides collapse via merge_init.
+    rcases Set.eq_empty_or_nonempty ev₁ with h_e₁ | h_ne₁
+    · have hs₁ : s₁ = D.init :=
+        isCanonicalState_empty h_e₁ ⟨l₁, hp₁, hr₁, hf₁⟩
+      subst h_e₁
+      rw [hs₁, hVC.merge_init, Set.empty_union]
+      exact ⟨l₂, hp₂, hr₂, hf₂⟩
+    rcases Set.eq_empty_or_nonempty ev₂ with h_e₂ | h_ne₂
+    · have hs₂ : s₂ = D.init :=
+        isCanonicalState_empty h_e₂ ⟨l₂, hp₂, hr₂, hf₂⟩
+      subst h_e₂
+      rw [hs₂, hVC.merge_comm, hVC.merge_init, Set.union_empty]
+      exact ⟨l₁, hp₁, hr₁, hf₁⟩
+    -- Select a loOn(∪)-maximal event.
+    have h_inU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
+      rintro a (h | h)
+      · exact h_in₁ a h
+      · exact h_in₂ a h
+    have hpU := listPermOf_union (D := D) hp₁ hp₂
+    obtain ⟨x₁, hx₁⟩ := h_ne₁
+    obtain ⟨e, he_U, h_max⟩ :=
+      exists_loOn_maximal hVC h_vis_trans h_vis_irrefl hpU h_inU
+        ⟨x₁, Or.inl hx₁⟩
+    -- Canonical states of the shrunken sides.
+    by_cases he₁ : e ∈ ev₁
+    · by_cases he₂ : e ∈ ev₂
+      · -- Shared case.
+        have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
+        have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
+        have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
+          filter_ne_listPermOf hp₁ h_e_l₁
+        have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
+          filter_ne_listPermOf hp₂ h_e_l₂
+        obtain ⟨t₁, hct₁⟩ :=
+          isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₁'
+            (fun a ha => h_in₁ a ha.1)
+        obtain ⟨t₂, hct₂⟩ :=
+          isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₂'
+            (fun a ha => h_in₂ a ha.1)
+        have h_eq := hPeel.peel_shared C ev₁ ev₂ s₁ s₂ t₁ t₂ e
+          h_in₁ h_in₂ h_cl₁ h_cl₂ he₁ he₂ h_max
+          ⟨l₁, hp₁, hr₁, hf₁⟩ ⟨l₂, hp₂, hr₂, hf₂⟩ hct₁ hct₂
+        -- Recurse.
+        obtain ⟨m₁, hm₁, hrm₁, hfm₁⟩ := hct₁
+        obtain ⟨m₂, hm₂, hrm₂, hfm₂⟩ := hct₂
+        have h_len₁ : m₁.length = l₁.length - 1 :=
+          listPermOf_diff_length hp₁ h_e_l₁ hm₁
+        have h_len₂ : m₂.length = l₂.length - 1 :=
+          listPermOf_diff_length hp₂ h_e_l₂ hm₂
+        have h_pos₁ : 0 < l₁.length := List.length_pos_of_mem h_e_l₁
+        have h_pos₂ : 0 < l₂.length := List.length_pos_of_mem h_e_l₂
+        have h_ih := ih (m₁.length + m₂.length) (by omega)
+          (ev₁ \ {e}) (ev₂ \ {e}) t₁ t₂ m₁ m₂ rfl
+          (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
+          (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
+          (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+          hm₁ hrm₁ hfm₁ hm₂ hrm₂ hfm₂
+        have h_set : (ev₁ \ {e}) ∪ (ev₂ \ {e}) = (ev₁ ∪ ev₂) \ {e} := by
+          ext x
+          simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
+          tauto
+        rw [h_set] at h_ih
+        rw [h_eq]
+        exact isCanonicalState_snoc (Or.inl he₁) h_max h_ih
+      · -- Local to side 1.
+        have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
+        have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
+          filter_ne_listPermOf hp₁ h_e_l₁
+        obtain ⟨t₁, hct₁⟩ :=
+          isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₁'
+            (fun a ha => h_in₁ a ha.1)
+        have h_eq := hPeel.peel_local C ev₁ ev₂ s₁ s₂ t₁ e
+          h_in₁ h_in₂ h_cl₁ h_cl₂ he₁ he₂ h_max
+          ⟨l₁, hp₁, hr₁, hf₁⟩ ⟨l₂, hp₂, hr₂, hf₂⟩ hct₁
+        obtain ⟨m₁, hm₁, hrm₁, hfm₁⟩ := hct₁
+        have h_len₁ : m₁.length = l₁.length - 1 :=
+          listPermOf_diff_length hp₁ h_e_l₁ hm₁
+        have h_pos₁ : 0 < l₁.length := List.length_pos_of_mem h_e_l₁
+        have h_ih := ih (m₁.length + l₂.length) (by omega)
+          (ev₁ \ {e}) ev₂ t₁ s₂ m₁ l₂ rfl
+          (fun a ha => h_in₁ a ha.1) h_in₂
+          (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
+          h_cl₂ hm₁ hrm₁ hfm₁ hp₂ hr₂ hf₂
+        have h_set : (ev₁ \ {e}) ∪ ev₂ = (ev₁ ∪ ev₂) \ {e} := by
+          ext x
+          simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
+          constructor
+          · rintro (⟨h, hne⟩ | h)
+            · exact ⟨Or.inl h, hne⟩
+            · exact ⟨Or.inr h, fun heq => he₂ (heq ▸ h)⟩
+          · rintro ⟨h | h, hne⟩
+            · exact Or.inl ⟨h, hne⟩
+            · exact Or.inr h
+        rw [h_set] at h_ih
+        rw [h_eq]
+        exact isCanonicalState_snoc (Or.inl he₁) h_max h_ih
+    · -- Local to side 2: mirror via merge_comm.
+      have he₂ : e ∈ ev₂ := by
+        rcases he_U with h | h
+        · exact absurd h he₁
+        · exact h
+      have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
+      have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
+        filter_ne_listPermOf hp₂ h_e_l₂
+      obtain ⟨t₂, hct₂⟩ :=
+        isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₂'
+          (fun a ha => h_in₂ a ha.1)
+      have h_max' : ∀ x ∈ ev₂ ∪ ev₁, x ≠ e →
+          ¬ loOn C (ev₂ ∪ ev₁) e x := by
+        rw [Set.union_comm]
+        exact h_max
+      have h_eq := hPeel.peel_local C ev₂ ev₁ s₂ s₁ t₂ e
+        h_in₂ h_in₁ h_cl₂ h_cl₁ he₂ he₁ h_max'
+        ⟨l₂, hp₂, hr₂, hf₂⟩ ⟨l₁, hp₁, hr₁, hf₁⟩ hct₂
+      obtain ⟨m₂, hm₂, hrm₂, hfm₂⟩ := hct₂
+      have h_len₂ : m₂.length = l₂.length - 1 :=
+        listPermOf_diff_length hp₂ h_e_l₂ hm₂
+      have h_pos₂ : 0 < l₂.length := List.length_pos_of_mem h_e_l₂
+      have h_ih := ih (l₁.length + m₂.length) (by omega)
+        ev₁ (ev₂ \ {e}) s₁ t₂ l₁ m₂ rfl
+        h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
+        (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+        hp₁ hr₁ hf₁ hm₂ hrm₂ hfm₂
+      have h_set : ev₁ ∪ (ev₂ \ {e}) = (ev₁ ∪ ev₂) \ {e} := by
+        ext x
+        simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
+        constructor
+        · rintro (h | ⟨h, hne⟩)
+          · exact ⟨Or.inl h, fun heq => he₁ (heq ▸ h)⟩
+          · exact ⟨Or.inr h, hne⟩
+        · rintro ⟨h | h, hne⟩
+          · exact Or.inl h
+          · exact Or.inr ⟨h, hne⟩
+      rw [h_set] at h_ih
+      rw [hVC.merge_comm, h_eq, hVC.merge_comm t₂ s₁]
+      exact isCanonicalState_snoc (Or.inr he₂) h_max h_ih
+
+/-! #### The commuting class
+
+For a `D` in which every pair of events commutes (G-Set and its
+relatives), `loOn` relates no two distinct events at all —
+`rc_non_comm_directional` kills the rc disjunct — so both peel
+identities discharge from `applySeq_comm_extract`, `merge_peel_comm`
+and `lem_0op`, and the Join Lemma holds unconditionally. -/
+
+/-- With all events commuting, `loOn` has no edges between distinct
+events of the configuration. -/
+theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+    {C : Configuration D} {ev : Set (Op D.AppOp)}
+    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
+    {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
+    (hne : x ≠ y) :
+    ¬ loOn C ev x y := by
+  rintro (⟨_, hnc⟩ | ⟨_, _, h_rc, _⟩)
+  · exact hnc (h_comm x y)
+  · exact (hVC.rc_non_comm_directional x y
+      (distinctOps_of_events hx hy hne)).mpr (Or.inl h_rc) (h_comm x y)
+
+/-- Any enumeration is canonical when all events commute. -/
+theorem isCanonicalState_of_all_comm {D : CRDTSig}
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
+    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
+    (h_in_C : ∀ a ∈ ev, a ∈ C.events)
+    (h_perm : listPermOf l ev) :
+    IsCanonicalState C ev (applySeq D D.init l) := by
+  refine ⟨l, h_perm, ?_, rfl⟩
+  refine List.Pairwise.imp_of_mem ?_ h_perm.1
+  intro a b ha hb hne
+  exact loOn_empty_of_all_comm hVC h_comm
+    (h_in_C b ((h_perm.2 b).mp hb)) (h_in_C a ((h_perm.2 a).mp ha))
+    (Ne.symm hne)
+
+/-- The peel bundle for the commuting class. -/
+theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) :
+    JoinPeelVCs D := by
+  constructor
+  · -- peel_local
+    intro C ev₁ ev₂ s₁ s₂ t₁ e h_in₁ h_in₂ _ _ he₁ _ _ hc₁ hc₂ hct₁
+    obtain ⟨l₁, hp₁, _, hf₁⟩ := hc₁
+    obtain ⟨l₂, _, _, hf₂⟩ := hc₂
+    have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
+    -- Extract e from side 1's enumeration.
+    have h_ex := applySeq_comm_extract (D := D) h_e_l₁ hp₁.1
+      (fun x _ _ => h_comm e x) D.init
+    -- The filtered fold is canonical for ev₁ \ {e}, hence equals t₁.
+    have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
+      filter_ne_listPermOf hp₁ h_e_l₁
+    have h_t₁ : applySeq D D.init (l₁.filter (· ≠ e)) = t₁ :=
+      isCanonicalState_unique hVC (fun a ha => h_in₁ a ha.1)
+        (isCanonicalState_of_all_comm hVC h_comm
+          (fun a ha => h_in₁ a ha.1) hp₁') hct₁
+    rw [← hf₁, ← hf₂, h_ex, h_t₁]
+    exact hVC.merge_peel_comm t₁ e l₂ (fun x _ => h_comm e x)
+  · -- peel_shared
+    intro C ev₁ ev₂ s₁ s₂ t₁ t₂ e h_in₁ h_in₂ _ _ he₁ he₂ _
+      hc₁ hc₂ hct₁ hct₂
+    obtain ⟨l₁, hp₁, _, hf₁⟩ := hc₁
+    obtain ⟨l₂, hp₂, _, hf₂⟩ := hc₂
+    have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
+    have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
+    have h_ex₁ := applySeq_comm_extract (D := D) h_e_l₁ hp₁.1
+      (fun x _ _ => h_comm e x) D.init
+    have h_ex₂ := applySeq_comm_extract (D := D) h_e_l₂ hp₂.1
+      (fun x _ _ => h_comm e x) D.init
+    have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
+      filter_ne_listPermOf hp₁ h_e_l₁
+    have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
+      filter_ne_listPermOf hp₂ h_e_l₂
+    have h_t₁ : applySeq D D.init (l₁.filter (· ≠ e)) = t₁ :=
+      isCanonicalState_unique hVC (fun a ha => h_in₁ a ha.1)
+        (isCanonicalState_of_all_comm hVC h_comm
+          (fun a ha => h_in₁ a ha.1) hp₁') hct₁
+    have h_t₂ : applySeq D D.init (l₂.filter (· ≠ e)) = t₂ :=
+      isCanonicalState_unique hVC (fun a ha => h_in₂ a ha.1)
+        (isCanonicalState_of_all_comm hVC h_comm
+          (fun a ha => h_in₂ a ha.1) hp₂') hct₂
+    rw [← hf₁, ← hf₂, h_ex₁, h_ex₂, h_t₁, h_t₂]
+    exact hVC.lem_0op t₁ t₂ e
+
+/-- **The Join Lemma, unconditionally, for the commuting class.** -/
+theorem join_lemma_of_all_comm {D : CRDTSig} (hVC : SatisfiesVCs D)
+    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : JoinLemma D :=
+  join_lemma_of_peel hVC (joinPeelVCs_of_all_comm hVC h_comm)
 
 end
 

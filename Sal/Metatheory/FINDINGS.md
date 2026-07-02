@@ -325,3 +325,37 @@ identity derived from `cond_comm_lift` + backward closure.* Everything
 around it is proved; a counter-model to *this* statement would show the
 paper's theorem needs stronger hypotheses than its 24 VCs even up to
 lattice axioms.
+
+## A6. The Join Lemma: master induction PROVED; peel identities isolated; commuting class closed end-to-end ✅
+
+`Merge_Linearization_Set.lean` §7 (0 `sorry`, kernel-clean):
+
+| Result | Content |
+|---|---|
+| `JoinPeelVCs` | the two contextual state equations of A5 as an explicit bundle: `peel_local` (`merge s₁ s₂ = update (merge t₁ s₂) e`, `e` union-maximal local) and `peel_shared` (both sides shrink), each stated over canonical states with the union-maximality + backward-closure context |
+| `join_lemma_of_peel : SatisfiesVCs D → JoinPeelVCs D → JoinLemma D` | **the whole Join-Lemma induction, machine-checked**: union enumeration (`listPermOf_union`), `loOn(∪)`-maximal selection, closure preservation (`closure_diff_of_max`), termination measure (`listPermOf_diff_length`), re-attachment (`isCanonicalState_snoc`), empty-side collapse via `merge_init` |
+| `joinPeelVCs_of_all_comm`, `join_lemma_of_all_comm` | for `D` with all event pairs commuting, `loOn` is edge-free (`rc_non_comm_directional` kills the rc disjunct), both peels discharge from `applySeq_comm_extract` + `merge_peel_comm` + `lem_0op` — **the Join Lemma holds unconditionally for the commuting class** (G-Set and relatives) |
+
+Combined with A5's `merge_linearization_of_join`, the chain
+
+    SatisfiesVCs D → JoinPeelVCs D → JoinLemma D → merge case of RA-lin
+
+is complete and kernel-checked. The **entire** remaining gap of the Neem
+soundness metatheorem is now the two `JoinPeelVCs` fields — two named,
+contextually-stated identities that are (i) hand-verified on `AWSet`
+including the A3 defeater, (ii) provably *not* weakenable to unconditional
+equations (A5's two-key OR-set), and (iii) exactly the point where the
+paper's own proof is broken. Discharge routes, in order of promise:
+
+1. **Per-CRDT-family discharge** (as done for the commuting class): for
+   `AWSet`/OR-set-style RDTs, characterize `σ(E)` concretely
+   (added = adds of `E`, dead = adds absorbed within `E`) and prove both
+   peels by the A5 argument — backward closure traps each absorber on the
+   side of its victim. Mechanical but substantial; would demonstrate the
+   bundle on the non-trivial-rc class that defeats the paper.
+2. **Generic discharge from `cond_comm_lift` + lattice VCs** — the open
+   research question. A proof would repair the Neem theorem at its
+   original generality; a counter-model (a `SatisfiesVCs`-satisfying `D`
+   violating a peel in reachable context) would show the 24 VCs are
+   insufficient and `JoinPeelVCs` (or lattice axioms strong enough to
+   imply it) must be added to the paper's obligations.
