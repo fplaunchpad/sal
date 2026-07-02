@@ -16,8 +16,10 @@ Phase-0 is **fully scaffolded and machine-checked**, and the entire soundness
 meta-theorem is now reduced to **a single hard obstruction**: the binary
 merge-linearization induction. Everything else — the ternary signature, the execution
 model, the ternary→binary VC reduction, and the conditioning gate — is proved. The
-one blocker is not a grind; it needs a **redesign plus resolution of one paper
-sub-case**.
+one blocker is not a grind; after the redesign attempt it **reduces to a single
+well-posed lemma** — convergence over backward-closed reachable replica event sets
+(§5). The paper sub-case that looked like a gap is **resolved**: a missed argument,
+machine-checked (§4).
 
 ## 2. What is proved (the scaffolding) ✅
 
@@ -68,53 +70,71 @@ produce `a` without ever observing a later `b` made at a replica it has not merg
 re-permuting `π₁`), even the "provable" Case 3a is unsound as written and must be rewritten.
 
 ### Per-sorry map 🔬
+*(Line numbers are post-redesign-attempt: the two building-block lemmas added +135
+lines, shifting the sorries. All 6 remain open, and §5 shows they all reduce to a
+single convergence lemma.)*
 | sorry | sub-case | classification |
 |---|---|---|
-| `:2681` | 3b-i-a, both tails shared | mechanization dead-end (needs carving; no append works) |
-| `:2852` | 3b-i-b, local `e₁`, `e₁⇄e₂` | dead-end; satisfiable `⊢ False` |
-| `:2868` | 3b-ii-a | dead-end (symmetric to 2852) |
-| `:2874` | 3b-ii-b, both local | dead-end (needs carving) |
-| `:4308` / `:4311` | top-level forward closure | **false** — delete, forces Case-3a rewrite |
+| `:2816` | 3b-i-a, both tails shared | reduces to convergence-over-`ev₁` (§5) |
+| `:2987` | 3b-i-b, local `e₁`, `e₁⇄e₂` | satisfiable `⊢ False`; reduces to convergence-over-`ev₁` |
+| `:3003` | 3b-ii-a | reduces to convergence-over-`ev₁` |
+| `:3009` | 3b-ii-b, both local | reduces to convergence-over-`ev₁` |
+| `:4443` / `:4446` | top-level forward closure | **false** (upward closure); *load-bearing* for the re-permutation, so cannot be deleted until the convergence lemma exists |
 
-## 4. The paper sub-case ❓ (for the authors)
+## 4. The paper sub-case — RESOLVED ✅ (machine-checked: missed argument, not a gap)
 
-The probe traces the obstruction to `_references/Neem/appendix.tex`, **Case 1.1.2**.
-The paper rules out the `rc`-successor case with *"since `e₂ →rc e₁`, this case is not
-possible due to no-rc-chain."* But it **folds the commuting sub-case `e₁ ⇄ e₂` into the
-same case, where `e₂ →rc e₁` does not hold** — so the cited `no-rc-chain` justification
-does not literally cover the commuting sub-case. The probe judges this a genuine
-under-specification, **likely patchable** because the `M₂ᵃ` events are `lo`-constrained
-below the top event, but not discharged as written; the existing Lean carving lemmas do
-not cover the `L₁_local → L₂_local` `rc`-edge.
+`_references/Neem/appendix.tex` **Case 1.1.2** rules out the `rc`-successor case with
+*"since `e₂ →rc e₁`, not possible by no-rc-chain,"* but folds in the commuting sub-case
+`e₁ ⇄ e₂`, where `e₂ →rc e₁` does not hold — so the cited `no-rc-chain` step does not
+literally cover it. **A valid argument nonetheless exists, now mechanized** as
+`no_lo_of_concurrent_to_L_b` (`Merge_Linearization.lean:1926`, **depends on no axioms at
+all**):
+- `e₁ ∥ e` (concurrent) by **backward** causal closure (`vis_causal`) — they are local to
+  different replicas;
+- so `lo e₁ e` can only be the rc disjunct: `rc(e₁,e)=Fst` ∧ `e` has no overwriter;
+- but `e ∈ M₂ᵃ` has a first `lo`-hop `e →lo w` toward the top, which is either **vis**
+  (⇒ `w` overwrites `e`, contradicting no-overwriter) or **rc** (⇒ `rc(e₁,e)=Fst ∧
+  rc(e,w)=Fst` violates no-rc-chain).
 
-**Open question for the Neem authors:** is Case 1.1.2's commuting sub-case a real gap in
-the write-up, or is there an argument (perhaps using the `M₂ᵃ`-below-top constraint) that
-the probe and the Lean port both missed? This answer sets the redesign direction. It is a
-proof-write-up question, **not** a claim that the theorem is false — the RGA/CRDTs are
-correct and the meta-theorem is very likely still true.
+Either way the edge cannot exist. This is the `M₂ᵃ`-below-top patch, needing **no
+vis-transitivity**.
 
-## 5. The redesign path (three items, none pure effort) 🔬
+**Verdict for the Neem authors:** the theorem holds and the sub-case is soundly patchable;
+the write-up is *incomplete* for the commuting sub-case (the cited no-rc-chain step doesn't
+literally apply there), not *wrong* — an erratum-sized fix, exactly the argument above.
 
-1. **Carving-based peel.** Replace the `|π₁|+|π₂|` peel-last measure with a peel over the
-   `L^a/L^b` carving, choosing a *globally* `lo`-maximal event (the existing but unwired
-   `L_a`/`L_b`/`L_top_a`/`L_top_b`, `no_lo_a_to_b` `:1622`, `no_lo_top_a_to_top_b` `:1820`,
-   `perm_ending_in_lo_max` `:1504`, `exists_lo_maximal_in_subset`, `convergence` are the
-   material to wire together).
-2. **A vis-transitivity reachability invariant on `Configuration`.** `no_lo_a_to_b` needs
-   `h_vis_trans` (vis transitivity, true only for reachable configs) which is **not
-   currently a field of `Configuration`**; add and maintain it (`Step`-preservation), plus
-   thread `h_ncomm_concurrent_local_top`.
-3. **Close the Case 1.1.2 commuting sub-case** (§4) — rule out `e₁ →rc e` for
-   `e ∈ M₂ᵃ\{e₂}` when `e₁ ⇄ e₂`.
+## 5. The redesign path — updated status 🔬
 
-`S6` (the ternary merge induction) is the ternary twin of this same induction, so it is
-blocked on the same redesign; by `satisfiesVCs_of_T`, fixing the binary case lifts.
+1. **Carving-based peel — selection half DONE, state-equation half is the blocker.**
+   The global-`lo`-max *selection* is verified: `lo_max_of_L_a_is_global`
+   (`Merge_Linearization.lean:1996`, `[propext, Classical.choice, Quot.sound]`) shows the
+   `L_a`-maximal event is `lo`-maximal in the whole `ev_top ∪ ev_local`, composing the
+   existing `no_lo_a_to_b`/`no_lo_top_a_to_top_b`/`exists_lo_maximal_in_subset`. But
+   *using* it — peeling that event off `s₁` — requires re-permuting `π₁` (via
+   `perm_ending_in_lo_max`), whose state equality routes through **`convergence` over the
+   replica set `ev₁`** (item 2).
+2. **~~vis-transitivity invariant~~ → the real blocker: convergence over backward-closed
+   reachable sets.** *(Corrected from the original diagnosis.)* The Lean `convergence`
+   lemma requires `ev₁` to be **forward/overwriter-closed** — provably false for a replica
+   set even in reachable configs (the same forward closure as the false sorries
+   `:4443/:4446`, which are therefore *load-bearing* for the re-permutation and cannot be
+   deleted yet). `convergence` over `ev₁` is *true* (merge is convergent); its current
+   proof route just demands overwriters the set doesn't contain. **The single remaining
+   blocker is a convergence lemma valid over merely backward-closed reachable replica
+   sets** (or a reachability invariant supplying the missing overwriters). vis-transitivity
+   is carried as a hypothesis inside `lo_max_of_L_a_is_global` and is *not* the crux.
+3. **Case 1.1.2 commuting sub-case — DONE** (§4, `no_lo_of_concurrent_to_L_b`, zero axioms).
+
+`S6` (the ternary merge induction) is the ternary twin, blocked on the same convergence
+lemma; by `satisfiesVCs_of_T`, closing the binary case lifts.
 
 ## 6. Assessment
 
-Mechanization did what mechanization is for: it converted "the paper has a proof" into a
-**precise, verified diagnosis** of exactly where and why the soundness argument breaks,
-with two `sorry`s proven false and a concrete three-item path forward. The near-term
-completion risk is real (this is a research problem, not a grind), but the research value
-is high: a mechanization surfacing a likely gap in a published OOPSLA proof, with the fix
-localized to one induction and one sub-case.
+The redesign attempt (a) **cleared the paper** — Case 1.1.2 is a missed argument, patched
+with a zero-axiom lemma, not a real gap; (b) **validated half the redesign** — the carving
+global-`lo`-max selection composes and is verified; and (c) **reduced the entire remaining
+obstruction to one named, well-posed lemma**: convergence over backward-closed reachable
+replica event sets. The theorem is true, the paper is fine, and "will it come through?" is
+now the bounded question *"can we prove that convergence lemma?"* — a far sharper target
+than the original architectural dead-end. Two verified additive lemmas
+(`no_lo_of_concurrent_to_L_b`, `lo_max_of_L_a_is_global`) are the corrected building blocks.

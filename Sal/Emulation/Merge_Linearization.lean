@@ -1894,6 +1894,141 @@ step uses `exists_lo_maximal_in_subset (L_top_a)` directly to
 extract a lo-max element, which gives no-lo-successor *within*
 `L_top_a` for free. -/
 
+/-- **Case 1.1.2 commuting sub-case, machine-checked** (paper
+`appendix.tex` Case 1.1.2, lines 359–364).
+
+A *concurrent* event `e₁` (neither `vis`-before nor `vis`-after `e`)
+has **no** `lo`-edge to any `L_b` event `e` — i.e. any local event
+carrying a `lo`-path (of length 1 or 2) to a top event. This is the
+fact the paper needs in order to peel `e₁` at the tail of the merge
+linearization in the commuting sub-case `e₁ ⇄ e₂`; the paper's cited
+justification there ("no-rc-chain via `e₂ →rc e₁`") does **not**
+literally cover that sub-case, because `e₂ →rc e₁` is unavailable
+when `e₁` and `e₂` commute. This lemma supplies the missing argument.
+
+It needs only:
+
+* concurrency `e₁ ∥ e` (`h_conc₁`/`h_conc₂`); at the call site this
+  comes from **backward** causal closure — `e₁ ∈ ev₁ \ ev₂` and
+  `e ∈ ev₂ \ ev₁` are local to different replicas, so any `vis` edge
+  between them would drag one into the other's set; and
+* the `L_b` membership of `e` (its `lo`-path to the top).
+
+Argument: `lo e₁ e` between concurrent events can only be the `rc`
+disjunct — `rc(e₁,e) = Fst` **and** `e` has no overwriter. But
+`e ∈ L_b` gives a first hop `e →lo w`; that edge is either
+`vis` (then `w` overwrites `e`, contradicting the no-overwriter
+clause) or `rc` (then `rc(e₁,e) = Fst ∧ rc(e,w) = Fst` violates
+`no-rc-chain`). Either way no such `lo e₁ e` exists.
+
+**Verdict: the sub-case is a missed argument, not a real gap.** In
+particular the proof needs **no** `vis`-transitivity. -/
+theorem no_lo_of_concurrent_to_L_b
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    {ev_top ev_local : Set (Op D.AppOp)}
+    (h_disjoint : ∀ x, x ∈ ev_top → x ∉ ev_local)
+    (h_distinct : ∀ a b, a ∈ ev_top ∪ ev_local → b ∈ ev_top ∪ ev_local →
+       a ≠ b → distinctOps a b)
+    {e₁ e : Op D.AppOp}
+    (h_e₁_in : e₁ ∈ ev_top ∪ ev_local)
+    (h_ne : e₁ ≠ e)
+    (h_conc₁ : ¬ C.vis e₁ e) (h_conc₂ : ¬ C.vis e e₁)
+    (h_e_b : e ∈ L_b C ev_top ev_local) :
+    ¬ lo C e₁ e := by
+  intro h_lo
+  obtain ⟨he_local, h_paths⟩ := h_e_b
+  have he_in_union : e ∈ ev_top ∪ ev_local := Set.mem_union_right _ he_local
+  -- `lo e₁ e` must be the rc disjunct — vis is excluded by concurrency.
+  rcases h_lo with ⟨h_vis, _⟩ | ⟨_, _, h_rc_e₁e, h_no_ow⟩
+  · exact h_conc₁ h_vis
+  have h_dist_e₁e : distinctOps e₁ e := h_distinct e₁ e h_e₁_in he_in_union h_ne
+  -- Any outgoing `lo`-edge from `e` to a distinct `z` is impossible:
+  -- vis-flavored ⟹ overwriter of `e`; rc-flavored ⟹ no-rc-chain.
+  have key : ∀ z, lo C e z → distinctOps e z → False := by
+    intro z h_lo_ez h_dist_ez
+    rcases h_lo_ez with ⟨h_vis_ez, h_nc_ez⟩ | ⟨_, _, h_rc_ez, _⟩
+    · exact h_no_ow ⟨z, h_vis_ez, h_nc_ez⟩
+    · exact hVC.no_rc_chain e₁ e z h_dist_e₁e h_dist_ez ⟨h_rc_e₁e, h_rc_ez⟩
+  rcases h_paths with ⟨w, hw_top, h_lo_ew⟩
+    | ⟨e_mid, h_mid_local, w, hw_top, h_lo_emid, h_lo_midw⟩
+  · -- depth-1: `e →lo w`, `w ∈ ev_top`.
+    have h_e_ne_w : e ≠ w := fun heq => h_disjoint w hw_top (heq ▸ he_local)
+    exact key w h_lo_ew
+      (h_distinct e w he_in_union (Set.mem_union_left _ hw_top) h_e_ne_w)
+  · -- depth-2: `e →lo e_mid →lo w`.
+    by_cases h_e_eq_mid : e = e_mid
+    · -- `e = e_mid`: use the second hop `lo e w`.
+      subst h_e_eq_mid
+      have h_e_ne_w : e ≠ w := fun heq => h_disjoint w hw_top (heq ▸ he_local)
+      exact key w h_lo_midw
+        (h_distinct e w he_in_union (Set.mem_union_left _ hw_top) h_e_ne_w)
+    · -- `e ≠ e_mid`: use the first hop `lo e e_mid`.
+      exact key e_mid h_lo_emid
+        (h_distinct e e_mid he_in_union (Set.mem_union_right _ h_mid_local) h_e_eq_mid)
+
+/-- **Carving-based peel, lo-respect side: the `L_a`-maximal event is
+globally `lo`-maximal.** (Redesign item 1, verified.)
+
+Given the carving `ev_top ⊎ ev_local` and any `lo`-respecting
+permutation `π` of `ev_top ∪ ev_local`, the `lo`-maximal element of a
+non-empty `L_a` layer (local events with **no** `lo`-path to the top)
+is `lo`-maximal in the **entire** set `ev_top ∪ ev_local` — not merely
+within `L_a`. This is exactly the property the paper's peel needs and
+that the stuck "peel-last" proof lacked (it had only local
+maximality within one input list).
+
+The three obstructions to global maximality are discharged as:
+* successors in `ev_top`: ruled out by the `L_a` membership of `e`
+  (its depth-1 clause: no `lo`-edge to any top event);
+* successors in `L_a`: ruled out by `exists_lo_maximal_in_subset`;
+* successors in `L_b`: ruled out by `no_lo_a_to_b` (Lemma 1 of the
+  appendix), which is where the `vis`-transitivity hypothesis
+  `h_vis_trans` is consumed.
+
+So the **lo-respect half** of the carving-based peel composes cleanly
+from the already-proved carving lemmas; `h_vis_trans` is carried as a
+hypothesis (dischargeable from reachability at the call site) and it
+**does discharge here** via `no_lo_a_to_b`. The residual blocker for
+completing the induction is purely the *state-equation* half (peeling
+this globally-`lo`-max **local** event through `merge`, which needs
+convergence over the replica set `ev₁` — see the file header notes),
+not the lo-max selection. -/
+theorem lo_max_of_L_a_is_global
+    (hVC : SatisfiesVCs D) {C : Configuration D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    {ev_top ev_local : Set (Op D.AppOp)}
+    (h_top_vis_closed : ∀ a b, C.vis a b → b ∈ ev_top → a ∈ ev_top)
+    (h_disjoint : ∀ x, x ∈ ev_top → x ∉ ev_local)
+    (h_distinct : ∀ a b, a ∈ ev_top ∪ ev_local → b ∈ ev_top ∪ ev_local →
+       a ≠ b → distinctOps a b)
+    (h_ncomm_concurrent_local_top :
+       ∀ a b, a ∈ ev_local → b ∈ ev_top →
+         ¬C.vis a b → ¬C.vis b a → ¬D.commutes a b)
+    {π : List (Op D.AppOp)}
+    (h_perm : listPermOf π (ev_top ∪ ev_local))
+    (h_resp : respects π (lo C))
+    (h_La_nonempty : (L_a C ev_top ev_local).Nonempty) :
+    ∃ e ∈ L_a C ev_top ev_local,
+      ∀ z ∈ ev_top ∪ ev_local, z ≠ e → ¬ lo C e z := by
+  -- Pick the `lo`-maximal element of the `L_a` layer.
+  have h_La_sub : L_a C ev_top ev_local ⊆ ev_top ∪ ev_local :=
+    fun x hx => Set.mem_union_right _ (L_a_subset_local _ _ _ hx)
+  obtain ⟨e, he_a, he_max_La⟩ :=
+    exists_lo_maximal_in_subset h_perm h_resp h_La_sub h_La_nonempty
+  refine ⟨e, he_a, fun z hz hz_ne => ?_⟩
+  -- `z` lies in `ev_top`, or (via `L_a_union_L_b`) in `L_a` or `L_b`.
+  rcases hz with hz_top | hz_local
+  · -- `z ∈ ev_top`: `e ∈ L_a` forbids any `lo`-edge `e → (top)`.
+    exact fun h_lo => he_a.2 (Or.inl ⟨z, hz_top, h_lo⟩)
+  · -- `z ∈ ev_local = L_a ∪ L_b`.
+    have hz_ab : z ∈ L_a C ev_top ev_local ∪ L_b C ev_top ev_local := by
+      rw [L_a_union_L_b]; exact hz_local
+    rcases hz_ab with hz_a | hz_b
+    · exact he_max_La z hz_a hz_ne
+    · exact no_lo_a_to_b hVC h_vis_trans h_top_vis_closed h_disjoint
+        h_distinct h_ncomm_concurrent_local_top he_a hz_b
+
 /-
 Extend the 1-op peel equation by prepending a list of operations to
 the left-side base state.  Uses `ind_left_1op` at each step.
