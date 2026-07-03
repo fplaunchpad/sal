@@ -147,8 +147,21 @@ Orthogonal to G1 (order-theoretic vs semantic); attack in parallel.
    `applicabilityValid` — (b)'s strict "applicable at every prefix" is unsatisfiable — so the
    real feasibility notion must tolerate idempotent/absorbed re-application ("applicable OR
    no-op here"). This is the refined OQ4.
-4. **Conditioned update layer** (task #4, blocked on the OQ4 refinement above) and **EWFlag
-   re-derivation + RGA hosting** (task #5) remain, once the contract shape is chosen.
+4. **Framework spine (route c)** — DONE (`ConditionedContract.lean`, task #8),
+   **kernel-checked, "no new mathematics" confirmed.** `ra_linearizable3_of_joinC 𝒞`:
+   store versions are fully causally closed, so `JoinLemma3C D 𝒞` applies for any `𝒞` that
+   full closure implies; both existing bridges factor through it verbatim
+   (`ra_linearizable3_of_join_viaC`, `ra_linearizable3_of_joinF_viaC`). Contract bundle
+   `ConditionedContract` + smart constructors `ofVCs`/`ofJoinF`; production instances routed
+   through: OR-set at `(weak,⊤)` (`ORSet_adequate_viaContract`), EWFlag at `(full,⊤)`
+   (`EWFlag_adequate_viaContract`). One honest correction to the plan's phrasing: "fully-closed
+   ⇒ 𝒞-closed for arbitrary 𝒞" is FALSE — it holds exactly when `fullClosure ⟹ 𝒞` (a
+   side-condition `closure_below_full`); weak and full both satisfy it, so it costs nothing at
+   the corners. Class map: `(weak,⊤)` = all set-shaped + counters + RGA(tombstone) + Peritext;
+   `(full,⊤)` = EWFlag; the `Inv`-nontrivial column is empty (the update-layer hole).
+5. **Conditioned update layer** (task #4, blocked on the OQ4 applicable-or-no-op refinement)
+   and **RGA hosting** (task #5) remain — the `Inv`-nontrivial column. The spine leaves
+   `Inv`/`applicable` as parameter slots; it does not yet re-found convergence.
 
 ## Net verdict of the investigation
 
