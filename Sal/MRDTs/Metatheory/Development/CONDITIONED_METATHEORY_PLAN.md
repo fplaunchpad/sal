@@ -303,12 +303,32 @@ it stays inside the RGA's own `accurate` states where `commutes_with'` fires.
 
 **Milestones (now Route A):**
 1. GATE the staled-swap sub-question — DONE (both files above; verdict nuanced Route A).
-1b. Prove the GENERAL swap VC: `accurate b σ → do_ (do_ σ a) b = do_ (do_ σ b) a` (up to `eq`),
-   ∀ `a` (incl. re-anchoring inserts) and ∀ σ (incl. multi-delete-staled), by induction on
-   `resolve`/`climb`. This subsumes the bubble's need and settles the multi-delete residual. THE
-   real work.
+1b. General swap VC — DONE (`RGA_GeneralSwap.lean`, task #13, kernel-clean). Result in two parts:
+   - **The VC as I stated it is FALSE** (`naive_general_swap_false`): `id_mono s → wf s →
+     accurate b s → swap`, ∀ a, fails — counterexample at `init`, `a = Ins 40 [7] 3` whose
+     recorded path names `b`'s fresh id 7. `id_mono` constrains the *state* but NOT the *recorded
+     path* the op carries; the failure is a fresh-id reference. **This refutes insight 3's "id_mono
+     tames it" — id_mono is necessary-ish but not the lever.**
+   - **With the right conditioning it CLOSES**, ∀ op-combo, ∀ reachable (incl. multi-delete-staled)
+     s (`general_swap`): the levers are `Faithful a s` (path-faithfulness — strictly weaker than
+     `accurate`, `faithful_of_accurate`; survives delete-rehoming, which is its design) + `NoFreshClash a b`
+     (b's fresh id ∉ a's recorded path — the causal-freshness a real execution supplies, exactly what
+     the counterexample violates). All four combos proved; **Del/Del closed** (the flagged hard case)
+     via a one-sided `collapse`. `resolve_mono_under_delete` proved. Multi-delete residual settled
+     (`multidelete_swap_crosscheck`, 2-delete chain).
+   - **Refutes the "update-swap = merge-wf same fact" conjecture (insight 3):** different levers —
+     merge-wf uses id_mono as a *fuel bound* for `climb`; update-swap uses *path faithfulness*
+     (`resolve` walks a finite recorded list, terminates free); id_mono is used update-side ONLY in
+     Del/Del, ONLY for acyclicity. Cousins, not the same fact.
 2. Framework: add `ConvergenceVC` field; prove `UpdateVCs ⟹ ConvergenceVC`; re-point
    `conditioned_convergence_on` consumers to it; the 9 discharges still compile via the wrapper.
+   NOW the enabling swap lemma exists (`general_swap`): wire it into
+   `applySeq_swap_loOnA_incomparable_C`, replacing `accurate a` by `Faithful a` and dropping the
+   staled-event applicability premise. Downstream obligation this exposes (the real M2 work):
+   **`Faithful a` and `NoFreshClash a b` must thread through the σ-walk** — `Faithful` is a
+   reachability property preserved along `loOnA`-respecting folds (its delete-rehoming-stability is
+   why it should, where the too-strong `interleavingFeasible` did not), and concurrent events never
+   fresh-clash (causal freshness).
 3. RGA discharge `RGA_ConvergenceVC` by normal-form reduction (`insins/insdel/deldel_comm`). Crux:
    the canonicalizing swaps each land at a both-`accurate` state — Route A's alignment risk, but
    now with `id_mono` + rehoming determinism available to close it concretely.
