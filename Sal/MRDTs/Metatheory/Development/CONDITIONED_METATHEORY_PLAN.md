@@ -244,8 +244,35 @@ contract's philosophy and the EWFlag bespoke-`JoinLemma3F` precedent; `full_enum
 is the 4-event proof-of-concept. Framework change ~days; RGA normal-form discharge ~1–2 weeks, and
 it stays inside the RGA's own `accurate` states where `commutes_with'` fires.
 
-**Milestones (Route B):**
-1. GATE the staled-swap sub-question (`RGA_SwapAtStaled_Gate.lean`).
+**MILESTONE 1 VERDICT (done, kernel-checked): nuanced ROUTE A selected.** Two gates:
+- `RGA_SwapAtStaled_Gate.lean` (empty-path, degenerate — collapses to root): swap holds, but
+  proved a FAILURE when the swapped-in op `b` is inaccurate (`staled_swap_would_fail_if_b_inaccurate`)
+  ⇒ the `b`-accurate premise is *necessary*.
+- `RGA_SwapAtStaled_NonEmptyPath_Gate.lean` (the real case): `insE = Ins 40 [2,1] 3`, anchor n3
+  deleted, `climb_target_moves` (3→2 — genuine state-dependent re-anchoring). With `b` accurate
+  and adversarial (`bDel` deletes the climb-target n2), the swap HOLDS (`swap_delN2_holds`) — the
+  doubly-deleted chain's eager rehoming exactly compensates the extra climb hop. So the `b`-accurate
+  premise is *sufficient* even in the hardest re-anchoring case.
+- **Structural mechanism (why, not just that):** the anchor is the HEAD of `resolve`'s list, so an
+  `Ins`'s climb short-circuits at its still-live anchor; a single delete that kills the anchor
+  cannot also rehome the anchor's own ancestors, so the path *above* the climb-target stays real
+  and compensation is exact.
+- **Verdict:** the staled event need NOT be accurate; the swap VC needs only the *swapped-in* op
+  accurate. So drop the staled-event applicability premise from
+  `applySeq_swap_loOnA_incomparable_C` and use the existing generic bubble — **Route A (nuanced)**,
+  not Route B.
+- **Residual (evidence, not universal proof):** (i) the general `∀ staled-a, accurate-b ⟹ swap`
+  lemma is unproven — the structural argument must become an induction on `resolve`/paths; (ii)
+  σ_staled tested is a SINGLE delete; a σ with MULTIPLE accumulated concurrent deletes staling
+  a's path above the climb-target is untested and is where the single-delete structural argument
+  does not obviously extend — check it inside the general lemma. This is the real remaining work.
+
+**Milestones (now Route A):**
+1. GATE the staled-swap sub-question — DONE (both files above; verdict nuanced Route A).
+1b. Prove the GENERAL swap VC: `accurate b σ → do_ (do_ σ a) b = do_ (do_ σ b) a` (up to `eq`),
+   ∀ `a` (incl. re-anchoring inserts) and ∀ σ (incl. multi-delete-staled), by induction on
+   `resolve`/`climb`. This subsumes the bubble's need and settles the multi-delete residual. THE
+   real work.
 2. Framework: add `ConvergenceVC` field; prove `UpdateVCs ⟹ ConvergenceVC`; re-point
    `conditioned_convergence_on` consumers to it; the 9 discharges still compile via the wrapper.
 3. RGA discharge `RGA_ConvergenceVC` by normal-form reduction (`insins/insdel/deldel_comm`). Crux:
