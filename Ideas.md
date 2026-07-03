@@ -1,6 +1,6 @@
 # Ideas in flight
 
-Two research threads on top of the verified Sal suite. The README documents what's done; this is the hallway-track tour of what's interesting.
+Research threads on top of the verified Sal suite. The README documents what's done; this is the hallway-track tour of what's interesting.
 
 ## 1. Op-based ⇒ state-based transfer (Emulation)
 
@@ -115,19 +115,79 @@ Both variants pass extensive `#eval` property tests: commutativity (3+3), idempo
 
 All three are well-scoped Aristotle prompts. Empirical evidence (12+10 property tests on deep trees and multi-level DAG merges) suggests they all hold; the formal proof for the constrained case demonstrates the technique works.
 
-## 3. Mechanise the soundness meta-theorem (24 VCs ⇒ RA-linearizability)
+## 3. Mechanise the soundness meta-theorem (24 VCs ⇒ RA-linearizability) — **landed**
 
-The 24 VCs are mechanised per RDT, but the meta-theorem that discharging them implies RA-linearizability lives only in the Neem paper. So no RDT in the suite has an end-to-end machine-checked linearizability guarantee; each rests on two legs: the mechanised VCs (Lean) and a pen-and-paper soundness proof. The idea is to mechanise that meta-theorem in Lean, giving a single kernel-checked chain from `do_` / `merge` / `rc` to RA-linearizability, with no paper step in the trust chain.
+Landed, with a twist: the mechanization found the paper's proof **unsound as written**
+(sub-history convergence is false; a reachable defeater blocks every bottom-up peel) and
+several of its merge VCs false in principle for LCA-sensitive data types. The corrected
+chains are end-to-end and kernel-checked, 0 sorries: `CoreVCs + JoinPeelVCs ⇒ RA-lin` and
+the CD ladder in the binary world (`Sal/CRDTs/Metatheory/`), and the eight-VC delta contract
+over the version DAG in the ternary world (`Sal/MRDTs/Metatheory/`), with **9 of the 12
+production MRDTs discharged end-to-end**. The README documents the results; the two
+paper-style notes in `docs/metatheory-note/` tell the story.
 
-**Why now, concretely.** The path-carrying RGA (`Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean`) made the gap load-bearing. Its `rc_non_comm'` is the standard VC with commutation conditioned on `accurate` (op path = real ancestor chain) and `fresh_ts` (Ins id fresh, nonzero): a strictly weaker statement than Neem's unconditioned `commutes_with`. Whether the weaker VC still implies RA-linearizability cannot be settled from the mechanised VCs alone; it depends on whether the paper's soundness construction only ever invokes commutation at states where those conditions hold. A mechanised soundness turns that "probably fine" into a checked obligation. This is the same "applicability-conditioned `commutes_with` plus a re-derivation of soundness" flagged in thread 2; mechanising soundness is what makes that re-derivation rigorous instead of asserted.
+What survives of this thread as open research is exactly the conditioning question it
+flagged: a **feasible update layer** (update VCs conditioned on a reachability invariant,
+plus a transport lemma along canonical enumerations) — needed to host the path-carrying
+tombstone-free RGA, whose commutation VCs only hold on well-formed states. That is Open
+Question 4 of the MRDT note; `ROADMAP.md` has the entry points. Thread 1's transfer can now
+build on a kernel-checked state-based foundation instead of a paper step.
 
-**What it buys.**
-- Every RDT in the suite gets a kernel-checked RA-linearizability theorem by composition (its mechanised VCs plus the mechanised meta-theorem).
-- Conditioned VCs become first-class. The path-RGA `accurate` / `fresh_ts` premises and the structural-state `applicable` predicate from thread 2 can be admitted explicitly: the meta-theorem states which conditioning it tolerates, and a per-RDT reachability invariant (every reachable state satisfies the conditions) discharges the side condition. The concrete risk point to settle is `accurate` versus ancestry-change-under-delete: deletes rehome nodes, so an op's recorded path can go stale, and the proof must show commutation is only needed where paths are still accurate (or the design strengthened so they stay accurate).
+## 4. Demote the absorber clause: a declarative spec for RA-linearizability
 
-**Shape of the work.** Formalise the RA-linearizability definition (a sequential order respecting visibility and `rc`, matching the abstract spec), the replicated execution model (version DAG, `do_` / `merge`), and the inductive construction that rewrites a concrete execution into linearized form using the 24 VCs. The induction runs over reachable states, which is exactly where the conditioning predicates hold, so it is also the natural place to discharge them. Source material: the Neem paper and `_references/RA-Linearizability`.
+The linearization order's conflict disjunct carries an absorber exception: a concurrent
+`rc`-ordered pair is *not* ordered when the winner is already overwritten by a later
+non-commuting event of the set being linearized (Definition 2.1 of
+`docs/metatheory-note/mrdt-metatheory-note.pdf`; `loOn` at
+`Sal/CRDTs/Metatheory/Merge_Linearization_Set.lean:159`). The clause has always felt
+strapped-on, and the feeling has a precise source: it is an **operational condition inside a
+declarative spec** — a syntactic proxy ("∃ later non-commuting e₃") for the semantic
+statement actually wanted ("the ordering of this pair is observationally irrelevant in every
+continuation"). Two tells confirm it is proof-calibrated rather than semantics-first: it is
+asymmetric (only the *winner's* absorbers cancel — exactly the swaps the convergence
+induction needs), and it is anti-monotone in the event set (growing the history retracts
+edges) — which is what made the paper's configuration-wide reading unsound and forced the
+whole set-relativity repair.
 
-**Relationship to thread 1.** The emulation transfer assumes RA-linearizability in the state-based world and carries it to op-based. A mechanised state-based soundness gives that assumption a kernel-checked foundation, so the two compose into op-based RA-linearizability with no paper step anywhere.
+It is not decorative. Drop it and RA-linearizability is *false* for the paper's flagship
+example: in the defeater's merged version the uncancelled demands form a cycle
+
+```
+A_p —vis→ R_p —rc→ A_q —vis→ R_q —rc→ A_p
+```
+
+so no witness exists at all, while the actual merged state is perfectly sensible. The clause
+implements "arbitrate live conflicts, ignore dead ones."
+
+Why does it work beyond the OR-set? Only because **cond-comm is a per-data-type obligation
+that certifies the proxy**: `cond_comm_lift` (`Merge_Linearization_Set.lean:102`; the paper's
+`cond_comm_base`/`cond_comm_ind` in `App_mrdt.fsti:72,77`) says precisely that an rc-ordered
+pair followed by an absorber can be swapped deep in any fold without any later non-commuting
+event noticing. The pairing is a single lemma — `applySeq_swap_loOn_incomparable`
+(`Merge_Linearization_Set.lean:471`) destructs "the lo-edge was cancelled" into exactly
+cond-comm's premises. The definition and the VC are co-designed: the clause deletes exactly
+the edges cond-comm licenses the induction to swap.
+
+**The research question.** Reformulate the spec declaratively, in the Burckhardt-style
+`(vis, ar)` tradition (POPL'14): a version linearizes iff its state is the fold of *some
+total arbitration extending `rc` on surviving conflicts* — unobservable disputes become a
+**quotient**, not a conjunct. Then prove: for cond-comm data types, the declarative spec is
+*equivalent* to the current `lo^E` definition. That would demote the absorber clause from
+definition to lemma — the add/remove family's particular realization of a clean principle —
+and it would say exactly what replaces it for data types the current shape cannot express:
+**joint absorption**, where a disagreement is erased by several events together with no
+single `e₃` (cond-comm's premise can't even state this). Empirical footnote that sharpens
+the question: across the entire discharged production catalogue, the `rc`/absorber machinery
+is only ever *engaged* by add/remove-shaped conflicts — everything else is all-commuting, so
+the clause is vacuous. Its generality beyond that family is untested.
+
+**Shape of the work.** The equivalence proof sits naturally next to the convergence theorem
+(`Sigma_LoOn3.lean` / `Merge_Linearization_Set.lean`): declarative ⇒ current is a linear-
+extension argument; current ⇒ declarative consumes cond-comm once, at the same spot the
+bubble lemma does. A counterexample data type for the joint-absorption gap (if one exists)
+would be a publishable observation on its own; if none exists, that is a structure theorem
+about single-event overwrite being canonical. Reviewers of the metatheory note will ask this
+question; better to have the answer first.
 
 ---
 
