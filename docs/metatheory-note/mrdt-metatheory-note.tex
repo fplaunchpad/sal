@@ -966,16 +966,25 @@ $\mathsf{Ins}$ and a $\mathsf{Del}$ of the same node vacuously
 respect $\loE{E}$: convergence fails. Strengthening $\mathsf{Inv}$ cannot
 repair it --- conditioning is antitone, so a smaller applicability domain
 only removes more edges. The order must instead be
-\emph{applicability-aware} (an edge survives when one event's
-applicability \emph{depends} on the other), or --- strictly more general
-(\lean{G2\_Applicability\_Aware}: \lean{separating\_inequivalence}, a
-negative dependency between concurrent deletes that no positive
-create-before-use relation captures) --- convergence must range only over
-\emph{applicability-valid} enumerations. A last twist keeps this open:
-genuinely reachable versions can carry \emph{redundant concurrent} ops
-(two concurrent deletes of one node) for which \emph{no} enumeration is
-applicability-valid at every prefix, so the right feasibility notion must
-tolerate \emph{applicable-or-no-op} re-application.
+\emph{applicability-aware}: an edge survives when one event's
+applicability \emph{depends} on the other. Restricting convergence to
+strictly \emph{applicability-valid} enumerations is not the answer,
+though it looks strictly more general (\lean{G2\_Applicability\_Aware}:
+\lean{separating\_inequivalence}): it is \emph{unsatisfiable} for
+genuinely reachable versions carrying \emph{redundant concurrent} ops ---
+two concurrent deletes of one node, for which no enumeration keeps both
+deletes applicable. The resolution, and the finding, is that the two
+repairs are complementary, not competing: the correct notion is the
+applicability-aware order \emph{together with} \emph{no-op-feasible}
+enumerations (each step applicable \emph{or} acting as identity). The
+order excludes the dependency-violating replays (which mere no-op
+tolerance would re-admit, breaking convergence); no-op tolerance admits
+the harmless redundant ones (which strict applicability rejects, breaking
+satisfiability). On the two decisive cases --- one dependency, one
+redundancy --- this notion is provably both convergent and satisfiable,
+where each single repair fails one (\lean{UpdateFeasibility\_Gate}:
+\lean{loOnA\_noopFeasible\_verdict}). What remains is the general
+convergence theorem over this notion, and the RGA discharge on top of it.
 \end{openq}
 
 \begin{openq}[the automation layer]
@@ -1039,6 +1048,7 @@ peel obstruction (OQ~\ref{oq:reunify}) & \lean{reunification\_peel\_obstruction}
 closure-indexed contract & \lean{JoinLemma3C}, \lean{killTest\_no\_common\_U} & \lean{Development/JoinLemma3F\_Of\_AlmostClosed.lean} \\
 closure-indexed adequacy + instances & \lean{ra\_linearizable3\_of\_joinC}, \lean{ConditionedContract} & \lean{Development/ConditionedContract.lean} \\
 all 9 discharges via the contract & \lean{$\ast$\_adequate\_viaContract} (9) & \lean{Development/AllMRDTs\_viaContract.lean} \\
+update-layer feasibility notion & \lean{loOnA\_noopFeasible\_verdict} & \lean{Development/UpdateFeasibility\_Gate.lean} \\
 feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
 \bottomrule
 \end{tabular}}
