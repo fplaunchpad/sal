@@ -8,6 +8,40 @@ assume, and who proves it?** The contract becomes parameterized by
 note becomes a two-axis table. Two go/no-go gates run first; everything else is staged
 behind them.*
 
+## Cross-cutting insights (2026-07-03, from analyzing the whole arc)
+
+Five patterns the individual gates did not show; the first is the paper-shaped reframe.
+
+1. **The Neem methodology systematically over-specifies; every correction demotes an
+   obligation to the weakest thing the soundness proof consumes.** One thesis, not five
+   repairs: set-relative order → canonical states → closure-indexed contract →
+   `loOnA + noopFeasible` → `interleavingFeasible` sufficient-not-necessary. Cause: VC
+   catalogues are written *forward* (from the data type) instead of *backward* (from the
+   proof). The right discipline: extract the weakest local condition the global argument
+   consumes, then refute the natural stronger candidates (the counterexamples ARE the
+   minimality proofs). Reframes the note from "8 corrected VCs" to "a method for finding
+   minimal VC sets." No new mechanization — a framing of what is already proved.
+2. **Convergence and satisfiability are separate concerns.** Mechanized: `noopFeasible` is
+   orthogonal to convergence (it is for *satisfiability*). Strict `applicabilityValid` broke
+   by bundling them. The *order* (`loOnA`) forces convergence; *no-op tolerance* guarantees a
+   witness exists. Two independent obligations.
+3. **`id_mono` is the RGA's single unifying invariant** (grounded: `RGA_Reachability_Invariant.lean:232`,
+   and the merge proof already uses its strict-decrease for climb termination). The update-side
+   general swap lemma (milestone 1b) and the merge-side `wf`-preservation are plausibly the SAME
+   structural fact: under `id_mono` the ancestor chain is strictly-decreasing/well-founded, so a
+   `Del` can only shorten it, never relocate laterally — the path above a climb-target stays real
+   regardless of accumulated deletes. Being tested in task #13.
+4. **The class map is 3-dimensional** (delta-class × closure-strength × state-invariant), and
+   most cells are empty. Inhabited: (group/lattice, weak, ⊤), (feasible, full, ⊤); the entire
+   Inv≠⊤ plane holds only the RGA-in-progress. A structure theorem (which cells inhabited / provably
+   empty) would tell a designer what tier their merge shape forces. Speculative, cheap to sketch.
+5. **Both defeaters share a cycle shape** — the §3.3 defeater and the OQ3 peel-obstruction are both
+   4-event configs with an alternating `A→R→A→R` cycle in vis∪rc that set-relativity breaks.
+   Conjecture: a config defeats bottom-up peeling iff its config-level vis∪rc graph has a cycle
+   through non-commuting events (`no-rc-chain` forbids this *within* a version's `lo^E`, not across
+   the config). Would characterize exactly when the closure-indexed contract is NEEDED vs when plain
+   bottom-up suffices — two ad-hoc counterexamples → one boundary theorem.
+
 ## Gate G1 (OQ3): does a closure-preserving peel exist? — **REFUTED on paper**
 
 The naive reunification route — re-run the `JoinLemma3` induction with full-closure
