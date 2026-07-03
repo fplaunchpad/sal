@@ -160,9 +160,9 @@ consumes a small, contextual VC surface. Its contributions:
   for CRDTs.
 \item \textbf{Eight VCs suffice} (\S\ref{sec:vcs}--\S\ref{sec:adequacy}):
   three relational VCs on $\mathsf{rc}$ (one of them carrying a
-  different-replica guard that restores the paper's own F\textsuperscript{*}
-  artifact interface --- our first transcription had dropped it, and a real
-  data type detects the drop), merge symmetry, three
+  different-replica guard --- same-replica pairs are ordered by program
+  order, and demanding $\mathsf{rc}$ cover them is unsatisfiable for
+  real data types), merge symmetry, three
   feasibility-conditioned delta laws, and one contextual \emph{causal-delta}
   equation. The adequacy theorem is per \emph{version}: every version in
   the store, LCAs included, linearizes.
@@ -341,8 +341,8 @@ sets monotone along edges; and an \emph{origin} invariant --- each event
 appears first at a unique generator version) through every transition; the
 published proof asserts the generator-uniqueness step without the
 induction that sustains it. An erratum-sized gap: the statement survives,
-the proof as written does not. (A related boundary fact, discovered while
-probing: \emph{criss-cross} merges can defeat the \emph{existence} of an
+the proof as written does not. (A related boundary fact:
+\emph{criss-cross} merges can defeat the \emph{existence} of an
 LCA --- they gate merge-enabledness, not the lemma. Open
 Question~\ref{oq:crisscross} takes up the extension.)
 
@@ -671,15 +671,18 @@ an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
 \item \textbf{rc-non-comm (guarded)} --- for distinct events \emph{from
   different replicas}: they fail to commute iff $\mathsf{rc}$ orders them
   in exactly one direction. \emph{The conflict table is the commutativity
-  table, with a direction.} The different-replica guard matters: it is
-  the F\textsuperscript{*} artifact's own interface form
-  (\lean{App\_mrdt.fsti}: \texttt{requires distinct\_ops o1 o2 /\char`\\\
-  get\_rid o1 <> get\_rid o2}), dropped in our first transcription ---
-  and the \emph{optimized OR-set} detects the drop: its same-replica
-  same-element adds do not commute (the newer add evicts the older tag)
-  yet are never concurrent, so $\mathsf{rc}$ rightly ignores them.
-  Same-replica pairs are ordered by program order, not by conflict
-  resolution.
+  table, with a direction.} The different-replica guard is a semantic
+  necessity, not a convenience: same-replica events are totally ordered
+  by program order, so they are never concurrent and there is no
+  conflict for $\mathsf{rc}$ to resolve. An unguarded VC would instead
+  demand that $\mathsf{rc}$ order \emph{every} non-commuting pair ---
+  unsatisfiable for real data types: the \emph{optimized OR-set}'s
+  same-replica same-element adds do not commute (the newer add evicts
+  the older tag), yet they can never race, and its $\mathsf{rc}$
+  rightly ignores them. (The paper's F\textsuperscript{*} artifact
+  carries exactly this guard in its interface ---
+  \lean{App\_mrdt.fsti}: \texttt{requires distinct\_ops o1 o2
+  /\char`\\\ get\_rid o1 <> get\_rid o2}.)
 \item \textbf{no-rc-chain} --- conflict priorities do not chain: never
   $o_1 \rc o_2$ and $o_2 \rc o_3$. This is what makes the linearization
   order acyclic, so maximal events exist --- the entire peel-and-recurse
