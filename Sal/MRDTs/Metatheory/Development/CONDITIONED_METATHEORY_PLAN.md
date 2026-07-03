@@ -208,6 +208,59 @@ Orthogonal to G1 (order-theoretic vs semantic); attack in parallel.
    the tombstone-free RGA (it converges); the work is bounded but non-trivial. `interleavingFeasible`
    as stated in stage 6 is simply too strong for a path-carrying / rehoming CRDT.
 
+## Bubble re-architecture — SCOPE (stage 8 detail)
+
+**The resource.** The RGA proves `commutes_with'` (`RGA_Tombstone_Free_MRDT.lean:331`):
+`∀ s, contains s 0 = false → accurate o1 s → accurate o2 s → fresh_ts o1 s → fresh_ts o2 s → eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)`
+— a **∀-state** commutation, but gated on *both* ops `accurate` (+ `fresh`) at `s`, and up to
+observational `eq` (not Lean `Eq`). Instances `insins_comm`/`insdel_comm`/`deldel_comm` proved.
+This VC, and only this, is what the new bubble may consume.
+
+**Decisive sub-question — GATE FIRST (cheap, ~1 pass).** The generic bubble swaps an adjacent
+`loOnA`-incomparable pair `(a,b)` at the fold state `σ` they sit at; `commutes_with'` discharges
+it iff both are `accurate` at σ. So: **does `do_ (do_ σ a) b = do_ (do_ σ b) a` hold at *staled* σ
+(one of a,b inaccurate), or only at both-accurate σ?**
+- **∀-state (holds even staled):** EASY — RGA proves a stronger unconditioned swap VC, drop the
+  applicability premise from `applySeq_swap_loOnA_incomparable_C`, existing generic bubble closes
+  unchanged (~days). Unlikely (`commutes_with'` is gated precisely because unconditioned failed),
+  but check.
+- **Accurate-only (likely):** RGA convergence does not decompose into pointwise swaps at arbitrary
+  states — `full_enumerations_converge` holds *globally* (endpoints agree via re-anchoring) without
+  every intermediate swap being valid. Re-architecture needed; two routes.
+
+**Route A — base-anchored generic bubble.** Restructure `applySeq_bubble_to_front_loOn` so each
+swap fires at the pair's *common causal base* (fold of shared `loOnA`-predecessors, both `accurate`
+by construction), then transports up. Generic. Risk: intervening events between base and pair break
+the "prefix = base" alignment; the transport step may itself need `commutes_with'` at staled states
+— regressing to the same obstruction. Weeks; genuine non-closure risk.
+
+**Route B — convergence as a conditioned VC (RECOMMENDED).** Make convergence a bundle field
+`ConvergenceVC` (all `loOnA`-respecting `noopFeasible` enumerations of a backward-closed set fold to
+`eq` states). Flat/unconditioned types discharge it via the existing bubble (one wrapper theorem
+`UpdateVCs ⟹ ConvergenceVC`). The RGA discharges it *directly* by a **global normal-form argument**:
+every `loOnA`-respecting enumeration reduces to the timestamp-sorted (fully-`accurate`) canonical
+enumeration by base-justified swaps; the canonical one is unique. Mirrors the closure-indexed
+contract's philosophy and the EWFlag bespoke-`JoinLemma3F` precedent; `full_enumerations_converge`
+is the 4-event proof-of-concept. Framework change ~days; RGA normal-form discharge ~1–2 weeks, and
+it stays inside the RGA's own `accurate` states where `commutes_with'` fires.
+
+**Milestones (Route B):**
+1. GATE the staled-swap sub-question (`RGA_SwapAtStaled_Gate.lean`).
+2. Framework: add `ConvergenceVC` field; prove `UpdateVCs ⟹ ConvergenceVC`; re-point
+   `conditioned_convergence_on` consumers to it; the 9 discharges still compile via the wrapper.
+3. RGA discharge `RGA_ConvergenceVC` by normal-form reduction (`insins/insdel/deldel_comm`). Crux:
+   the canonicalizing swaps each land at a both-`accurate` state — Route A's alignment risk, but
+   now with `id_mono` + rehoming determinism available to close it concretely.
+4. Wire RGA → `ConditionedContract` → RA-linearizability (the `(·, RgaInv)` cell).
+
+**Risk register.** (a) The normal-form crux (M3) is Route A's alignment problem again; the bet is
+`id_mono` + rehoming determinism close it concretely where the generic version can't — unproven,
+the main risk. (b) `eq`-vs-`Eq`: `commutes_with'` is observational `eq`; the σ-layer is `Eq`-based,
+so a quotient / `eq`-respecting rebuild may be needed (a known RGA-hosting friction, independent of
+the bubble). (c) If M1 = accurate-only AND M3 does not close, the honest outcome is: the RGA
+converges but is not hostable by a *swap-based* convergence proof — pointing at a non-swap
+convergence argument, itself a publishable boundary result.
+
 ## Net verdict of the investigation
 
 Both open questions' *obvious* routes are kernel-refuted, and each leaves one precise design
