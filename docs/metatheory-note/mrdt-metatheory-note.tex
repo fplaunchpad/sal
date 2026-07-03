@@ -20,7 +20,7 @@
 \newtheorem{openq}[theorem]{Open Question}
 \newtheorem*{finding}{Finding}
 
-% Paper-style notation (shared with joinpeel-note.tex)
+% Paper-style notation
 \newcommand{\vis}{\xrightarrow{\mathsf{vis}}}
 \newcommand{\rc}{\xrightarrow{\mathsf{rc}}}
 \newcommand{\loC}{\xrightarrow{\mathsf{lo}_{C}}}
@@ -56,17 +56,15 @@ Mergeable replicated data types (MRDTs) resolve concurrent divergence by a
 are reconciled relative to their lowest common ancestor $l$ in a git-like
 version DAG. The Neem methodology reduces RA-linearizability of an MRDT to
 a fixed catalogue of per-data-type verification conditions (VCs), tied
-together by a once-and-for-all soundness meta-theorem. A companion
-note\footnote{\emph{Set-relative linearization and the Join Lemma}
-(\texttt{joinpeel-note.pdf}, same directory), which treats the binary
-(CRDT) specialization and develops the corrected proof architecture reused
-here.} shows that the meta-theorem's proof is unsound as written and that
-its VC catalogue is insufficient; this note lifts the corrected
-architecture to the \emph{ternary} setting the paper actually claims. The
-lift is not routine: the LCA argument is load-bearing (the counter MRDT is
-provably outside the binary theorem), the paper's own LCA lemma has a gap
-in its proof, and the lattice-flavoured repair that works for CRDTs
-provably does not survive (no idempotence, no usable order). What survives
+together by a once-and-for-all soundness meta-theorem. Mechanizing that
+meta-theorem in Lean~4, we find that its central induction is unsound as
+written --- a reachable, fully LCA-legal execution of a legal add-wins
+MRDT defeats every bottom-up peel the proof can make --- that the paper's
+own LCA lemma, while true, has a gap in its proof, and that no repair can
+lean on either of the two obvious crutches: the LCA argument cannot be
+forgotten (the counter MRDT provably admits no binary, CRDT-style
+collapse), and no lattice-flavoured contract is available (no idempotence,
+no usable order). What works
 is a \emph{delta} discipline: three unconditional relational VCs on
 $\mathsf{rc}$, one merge symmetry, three \emph{feasibility-conditioned}
 redistribution laws, and a single contextual \emph{causal-delta} equation
@@ -124,42 +122,45 @@ the data-type designer discharges a fixed catalogue of equations over
 $\mathsf{do}$, $\mergeL$ and the conflict-resolution relation
 $\mathsf{rc}$ --- mostly by SMT --- and a soundness meta-theorem, proved
 once, converts those VCs into \emph{RA-linearizability} of every reachable
-configuration. The companion note documents what a Lean~4 mechanization
-found in the binary specialization: the meta-theorem's central induction
-is unsound as written, and the VC catalogue is insufficient --- there are
-reachable, VC-satisfying executions that are not RA-linearizable. It also
-develops the repair: a set-relative linearization order, canonical states
-$\sigma(E)$, and a \emph{Join Lemma} whose induction consumes a small,
-contextual VC surface.
-
-This note is about the setting the paper actually claims: \textbf{ternary
-merge over a version DAG}. Its contributions:
+configuration. This note documents what a Lean~4 mechanization of that
+meta-theorem, in the full \textbf{ternary, version-DAG} setting, found:
+the meta-theorem's central induction is unsound as written, and for
+LCA-sensitive data types several of the catalogue's merge VCs are false
+in principle when quantified over all states. It also develops the
+corrected metatheory: a set-relative linearization order, canonical
+states $\sigma(E)$, and a ternary \emph{Join Lemma} whose induction
+consumes a small, contextual VC surface. Its contributions:
 
 \begin{enumerate}[leftmargin=2em]
-\item \textbf{The ternary lift is not an inert third argument}
-  (\S\ref{sec:loadbearing}): the counter satisfies the ternary shared-peel
-  VC but \emph{provably violates} its binary counterpart, so the class of
-  MRDTs covered by the ternary theorem strictly exceeds anything the
-  binary theorem can reach. ``A CRDT is an MRDT that ignores its LCA'' is
-  a one-way instantiation, not an equivalence.
+\item \textbf{The LCA argument is load-bearing}
+  (\S\ref{sec:loadbearing}): MRDT verification does not reduce to CRDT
+  verification. The counter satisfies the ternary shared-peel law but
+  \emph{provably violates} its binary counterpart under every
+  LCA-forgetting collapse, so no binary metatheory can host it. ``A CRDT
+  is an MRDT that ignores its LCA'' is a one-way instantiation, not an
+  equivalence: the metatheory must be built natively ternary.
 \item \textbf{The paper's LCA lemma is true but its proof has a gap}
   (\S\ref{sec:lca}): $L(v_\top) = L(v_1) \cap L(v_2)$ holds, but only as a
   \emph{reachability invariant} of the store, whose proof needs a
   generator-uniqueness induction the paper silently assumes. We mechanize
-  the transition system and the invariant. The binary defeater
-  configuration also lifts, verbatim, to a fully LCA-legal ternary
-  execution (\S\ref{sec:defeater}).
-\item \textbf{The lattice repair provably does not survive the lift}
+  the transition system and the invariant.
+\item \textbf{The soundness proof has a fully LCA-legal defeater}
+  (\S\ref{sec:defeater}): a reachable configuration of a legal add-wins
+  MRDT --- its final merge sitting at an honest LCA --- on which every
+  bottom-up peel of the paper's derivation rules is stuck. The
+  meta-theorem must be rebuilt, not patched.
+\item \textbf{No lattice contract survives; a delta contract does}
   (\S\ref{sec:whydelta}): MRDT merges are not idempotent
   ($\mergeL(l,a,a)=2a-l$ for the counter), the induced orders degenerate,
   and the honest associativity law has \emph{four distinct LCAs} and holds
   only on feasible tuples. What replaces the lattice laws is a two-law
   \emph{delta contract} --- redistribution identities in which the LCA
-  slot does, by arithmetic, the job idempotence did order-theoretically.
+  slot does, by arithmetic, the job idempotence does order-theoretically
+  for CRDTs.
 \item \textbf{Eight VCs suffice} (\S\ref{sec:vcs}--\S\ref{sec:adequacy}):
   three relational VCs on $\mathsf{rc}$ (one of them carrying a
   different-replica guard that restores the paper's own F\textsuperscript{*}
-  artifact interface --- the Lean transcription had dropped it, and a real
+  artifact interface --- our first transcription had dropped it, and a real
   data type detects the drop), merge symmetry, three
   feasibility-conditioned delta laws, and one contextual \emph{causal-delta}
   equation. The adequacy theorem is per \emph{version}: every version in
@@ -198,17 +199,49 @@ $\mergeL(\sigma_{v_\top}, \sigma_{v_1}, \sigma_{v_2})$ and event set
 $L(v_1) \cup L(v_2)$. Visibility $\vis$ records what each event's issuing
 replica had seen.
 
-\paragraph{RA-linearizability, per version.} A configuration is
-RA-linear\-izable when \emph{every version in the store} --- not only the
-replica heads; LCAs are historical versions and the merge reads them ---
-admits a sequencing $\pi$ of exactly its event set such that $\pi$ extends
-the linearization order $\mathsf{lo}$ and folds from $\Sinit$ to the
-version's state. The order $\mathsf{lo}$ is the paper's: $e_1$ before
-$e_2$ if either $e_1 \vis e_2$ and they do not commute, or they are
-concurrent, do not commute, $\mathsf{rc}$ orders them, and $e_2$ is not
-already \emph{absorbed} (overwritten) by a later non-commuting event. The
-companion note shows this order must be read \emph{relative to the event
-set being linearized} ($\loE{E}$); we reuse that machinery wholesale.
+\paragraph{RA-linearizability, per version.} Write $e_1 \parallel e_2$
+when neither $e_1 \vis e_2$ nor $e_2 \vis e_1$ (concurrency).
+
+\begin{definition}[linearization order, set-relative]
+\label{def:lo}
+For an event set $E$, the order $\loE{E}$ puts $e_1$ before $e_2$ iff
+\[
+\bigl(e_1 \vis e_2 \;\wedge\; e_1 \ncomm e_2\bigr)
+\;\;\vee\;\;
+\bigl(e_1 \parallel e_2 \;\wedge\; e_1 \rc e_2 \;\wedge\;
+  \neg\,\exists e_3 \in E.\;\; e_2 \vis e_3 \,\wedge\, e_2 \ncomm e_3\bigr):
+\]
+a visible non-commuting pair is ordered by visibility; a concurrent pair
+whose conflict $\mathsf{rc}$ resolves is ordered by $\mathsf{rc}$ ---
+unless $e_2$ is already \emph{absorbed} (overwritten) by a later
+non-commuting event of $E$. The paper's order $\mathsf{lo}$ is the
+variant whose absorber clause ranges over the whole configuration; since
+a $\mathsf{lo}$-edge asserts \emph{no absorber anywhere},
+$\mathsf{lo} \subseteq \loE{E}$ pointwise, for every $E$.
+\end{definition}
+
+\begin{definition}[RA-linearizability]
+\label{def:ralin}
+A list $\pi = e^1 e^2 \cdots e^n$ \emph{witnesses} a version holding
+state $s$ and event set $E$ when (i)~$\pi$ enumerates $E$ without
+repetition; (ii)~$\pi$ \emph{extends} $\mathsf{lo}$: $i < j$ implies
+$\neg(e^j \mathrel{\mathsf{lo}} e^i)$; and (iii)~$\pi$ \emph{folds} to
+the state: $e^n(\cdots e^2(e^1(\Sinit))\cdots) = s$. A configuration is
+\emph{RA-linearizable} when \emph{every version in the store} --- not
+only the replica heads; LCAs are historical versions and the merge reads
+them --- admits a witness. \hfill\lean{IsRALinearizable3}
+\end{definition}
+
+Why a set-relative order? One definitional correction is forced at the
+outset: for every internal use, the absorber clause must range over the
+event set of \emph{the version being linearized}, not over the whole
+configuration --- an event can gain absorbers from another branch,
+silently cancelling an order edge inside a version whose own state
+depends on it (the defeater of \S\ref{sec:defeater} realizes exactly
+this). We therefore construct witnesses respecting $\loE{E}$ throughout;
+since $\mathsf{lo} \subseteq \loE{E}$, every such witness also extends
+the paper's order, and Definition~\ref{def:ralin} is delivered exactly
+as the paper states it.
 
 \paragraph{Running examples.} Three data types exercise every corner of
 the theory:
@@ -239,15 +272,18 @@ the theory:
   visible in the metatheory (\S\ref{sec:catalog}).
 \end{itemize}
 
-\section{Three facts the lift must respect}
+\section{Three facts the metatheory must respect}
 
 \subsection{The LCA argument is load-bearing}
 \label{sec:loadbearing}
 
 The paper notes that CRDTs are the special case ``ignore the LCA
-argument.'' The converse direction fails, mechanically:
+argument,'' so binary, CRDT-style reasoning embeds into the ternary
+setting. One might hope for the converse --- collapse the ternary merge
+to a binary one, verify \emph{that} with lattice-style CRDT techniques,
+and inherit the result. The converse direction fails, mechanically:
 
-\begin{theorem}[the counter is outside the binary theorem]
+\begin{theorem}[the counter admits no binary collapse]
 \label{thm:counter-sep}
 The counter satisfies the ternary shared-peel VC
 \[
@@ -292,19 +328,28 @@ the proof as written does not. (A related boundary fact, discovered while
 probing: \emph{criss-cross} merges can defeat the \emph{existence} of an
 LCA --- they gate merge-enabledness, not the lemma.)
 
-\subsection{The binary defeater lifts to a fully LCA-legal execution}
+\subsection{A fully LCA-legal execution defeats the soundness proof}
 \label{sec:defeater}
 
-The companion note's central counterexample --- a reachable four-event
-add-wins configuration on which \emph{every} bottom-up peel is stuck ---
-might be hoped ternary-proof: perhaps the version DAG's discipline rules
-it out. It does not. One staging replica realizes the intersection as an
-honest version, and the paper's ternary merge induction breaks exactly as
-the binary one did.
+The generic half of the paper's contract is a \emph{bottom-up
+linearization} theorem: given linearization witnesses for the two sides
+of a merge, construct one for the merged version by repeatedly
+\emph{peeling} a final event through $\mergeL$ using the catalogue's
+interchange VCs. One might hope the version DAG's discipline --- every
+merge sitting at an honest LCA --- keeps the peel supplied with peelable
+events. It does not: one staging replica suffices to realize the
+intersection of two histories as an honest version, and the merge
+induction is stuck.
 
-\begin{example}[the ternary defeater]
+\begin{example}[the defeater]
 \label{ex:defeater}
-One key, add-wins semantics with tags, LCA-blind merge (a legal MRDT).
+The data type is a one-key add-wins skeleton with tagged adds:
+$\sigma = (A, D) \in 2^{\mathbb{T}} \times 2^{\mathbb{T}}$ with live set
+$A \setminus D$; $\add_t$ inserts its tag into $A$; $\rem$ kills
+everything it currently sees ($D \coloneqq A \cup D$ --- the
+state-dependence is what makes $\add \ncomm \rem$); concurrently
+$\rem \rc \add$ (add wins); the merge is componentwise union, ignoring
+its LCA argument. A legal MRDT.
 Replica $p$ adds ($A_p$), replica $q$ adds ($A_q$). A staging replica $s$
 merges both one-add versions, creating $v_s$ with
 $L(v_s) = \{A_p, A_q\}$. Now $p$ removes ($R_p$, seeing only $A_p$) and
@@ -312,10 +357,12 @@ then merges with $v_s$; symmetrically $q$ removes ($R_q$) and merges with
 $v_s$. Figure~\ref{fig:defeater} shows the DAG. The final merge of the two
 heads finds $\mathrm{LCA} = v_s$, and
 $L(v_s) = \{A_p,A_q\} = L(\text{head}_p) \cap L(\text{head}_q)$ --- the
-configuration is fully legal. But exactly as in the binary analysis: every
-state-correct linearization of $p$'s head ends in $A_q$ (not $R_p$), every
-linearization of $q$'s head ends in $A_p$ (not $R_q$), while every
-linearization of the \emph{merged} version must end in one of the removes.
+configuration is fully legal. Now count last events. $p$'s head lives on
+exactly $A_q$'s tag, so a state-correct witness must run $R_p$ before
+$A_q$, and neither $R_p$ nor $A_p$ can come last: every linearization of
+$p$'s head ends in $A_q$. Symmetrically, every linearization of $q$'s
+head ends in $A_p$. Yet in the \emph{merged} version every tag is dead,
+so its linearizations must end in one of the removes.
 The events the induction must peel are \emph{buried} in the very sides
 that own them; no ordering of the paper's bottom-up rules applies.
 \end{example}
@@ -350,7 +397,7 @@ that own them; no ordering of the paper's bottom-up rules applies.
 \draw[->] (q3) -- (top);
 \node[lbl, below=0.12cm of s] {$=\mathrm{LCA}(\text{heads})$};
 \end{tikzpicture}
-\caption{The ternary defeater (Example~\ref{ex:defeater}). Nodes are
+\caption{The defeater (Example~\ref{ex:defeater}). Nodes are
 versions labelled by their event sets; the shaded version $v_s$, created
 by a staging replica, realizes $L(\text{head}_p)\cap L(\text{head}_q)$ as
 an honest store version, so the final merge is LCA-legal. The removes
@@ -359,20 +406,27 @@ are buried mid-history on their own sides.}
 \label{fig:defeater}
 \end{figure}
 
-The consequences for the design are the same as binary, one level up: the
-metatheorem must be rebuilt on canonical states and a Join Lemma, and its
-merge-side VCs must be statements \emph{about the join}, not about how
-either side's state factors.
+The consequence for the design: the metatheorem cannot be patched
+peel-by-peel --- it must be rebuilt on canonical states and a Join Lemma,
+with merge-side VCs that are statements \emph{about the join}, not about
+how either side's state factors.
 
 \section{Canonical states and the ternary Join Lemma}
 \label{sec:join}
 
-The companion note's repair carries over verbatim on the update side ---
-mechanically so: the replica-facing core of a ternary configuration
-\emph{is} a binary configuration by projection, so the set-relative order
-$\loE{E}$, its convergence theorem (any two $\loE{E}$-respecting
-enumerations of $E$ fold to the same state), and hence \textbf{canonical
-states} $\sigma(E)$ are literally reused, not re-proved. The one genuinely
+The update side of the theory never mentions the merge: over
+$\langle \Sigma, \Sinit, \mathsf{do}, \mathsf{rc}\rangle$ alone, the
+update-layer VCs (items 1--3 of \S\ref{sec:vcs}) yield the
+\textbf{convergence theorem} --- any two $\loE{E}$-respecting enumerations
+of a finite event set $E$ fold from $\Sinit$ to the same state. (This is
+where the set-relative reading of \S\ref{sec:setting} earns its keep:
+relative to the paper's configuration-wide order, convergence over a
+version's own event set is \emph{false} --- the defeater's heads are
+already witnesses.) Convergence makes every event set denote a state, the
+\textbf{canonical state} $\sigma(E)$, and witness lists disappear from
+the induction: a version linearizes iff it holds the canonical state of
+its event set (respecting enumerations exist by acyclicity of $\loE{E}$,
+from VC~2). The one genuinely
 ternary statement is what the merge must produce:
 
 \begin{definition}[ternary Join Lemma]
@@ -394,9 +448,10 @@ per-data-type VCs make the Join Lemma true?
 \section{Why the contract is a delta contract}
 \label{sec:whydelta}
 
-In the binary world the answer was lattice-flavoured: associativity,
-idempotence and update-inflation, plus one contextual bound. Each of the
-three provably fails to survive the lift.
+For state-based CRDTs --- binary merge, no LCA --- the natural
+merge-coherence laws are lattice-flavoured: associativity, idempotence,
+inflation of updates. Each of the three provably fails under ternary
+merge.
 
 \paragraph{No idempotence.} $\mergeL(l,a,a) = 2a - l$ for the counter:
 only feasible \emph{triples} (where $l$ is the canonical state of the
@@ -404,11 +459,11 @@ intersection --- here, $l = a$) are idempotent. Unconditional idempotence
 would exclude the counter, i.e.\ exclude precisely the data types the
 ternary theorem exists for.
 
-\paragraph{No usable order.} The binary route's workhorse order
+\paragraph{No usable order.} The lattice-style workhorse order
 $x \sqsubseteq y \coloneqq \Merge(x,y) = y$ has ternary candidates
 $x \sqsubseteq_l y \coloneqq \mergeL(l,x,y) = y$, but for the counter this
-relation degenerates to $x = l$; there is no antisymmetry left to split
-proof obligations into a ``free half'' and a bounded half. The single
+relation degenerates to $x = l$; no antisymmetry survives to power
+order-theoretic reasoning. The single
 contextual VC below is accordingly an \emph{equation}, not an inequality.
 
 \paragraph{Associativity is the wrong target.} The natural guess ---
@@ -455,8 +510,9 @@ a delta application commutes past an enclosing merge through one branch
 slot. \textsc{redistribute} says a delta carried by \emph{all three}
 components extracts \emph{once} --- the LCA slot cancels the duplicates by
 arithmetic. This is the delta contract's quiet coup: cancelling the
-duplicated shared contribution is exactly the job idempotence performed in
-the binary theory, now done without any idempotence --- which is why the
+duplicated shared contribution is exactly the job idempotence performs in
+lattice-based convergence arguments, now done without any idempotence ---
+which is why the
 counter sails through ($\textsc{redistribute}$ for the counter is the
 identity $\sum x_i + 3c - 3m - (x_0 + c - m) - \cdots$ collapsing on both
 sides).
@@ -550,7 +606,7 @@ For an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
   table, with a direction.} The different-replica guard matters: it is
   the F\textsuperscript{*} artifact's own interface form
   (\lean{App\_mrdt.fsti}: \texttt{requires distinct\_ops o1 o2 /\char`\\\
-  get\_rid o1 <> get\_rid o2}), dropped in an earlier transcription ---
+  get\_rid o1 <> get\_rid o2}), dropped in our first transcription ---
   and the \emph{optimized OR-set} detects the drop: its same-replica
   same-element adds do not commute (the newer add evicts the older tag)
   yet are never concurrent, so $\mathsf{rc}$ rightly ignores them.
@@ -732,13 +788,16 @@ the catalogue, it explains \emph{why} the fixed design is right.
 \label{sec:open}
 
 \begin{openq}[$\cd$-derivability]
+\label{oq:cd}
 Is $\cd$ derivable from VCs 1--7 (plus the unconditional delta laws where
-they hold)? The binary analogue is pinned exactly --- there, the
-corresponding causal-delta bound is \emph{equivalent} to the Join Lemma
-and no strictly weaker bridge VC exists --- with both attack routes
-characterized: the positive induction is circular at two identified case
+they hold)? Specializing the merge to an LCA-blind lattice join --- the
+CRDT case --- the question closes exactly: there, the corresponding
+causal-delta bound is \emph{equivalent} to the Join Lemma and no strictly
+weaker bridge VC exists, with both attack routes
+characterized --- the positive induction is circular at two identified case
 shapes, and the countermodel space is narrowed to non-atomic lattice
-states.
+states (all of this mechanized, in \lean{Sal/CRDTs/Metatheory/}). The
+ternary question is open.
 \end{openq}
 
 \begin{openq}[structure theorem]
@@ -793,7 +852,7 @@ Artifact & Lean & File \\
 signature, ternary $\mathsf{lo}$ & \lean{MRDTSig}, \lean{ConditionedMRDTSig} & \lean{MRDTSig.lean} \\
 store, DAG, transitions & \lean{Configuration}, \lean{Step3} & \lean{ExecutionModel.lean}, \lean{LCA\_Lemma.lean} \\
 Lemma~\ref{lem:lca} & \lean{lca\_events\_of\_storeInv} & \lean{LCA\_Lemma.lean} \\
-$\sigma$/$\loE{E}$ layer (reused binary) & \lean{UpdateVCs}, \lean{IsCanonicalState} & \lean{Sigma\_LoOn3.lean} \\
+$\sigma$/$\loE{E}$ layer (merge-independent) & \lean{UpdateVCs}, \lean{IsCanonicalState} & \lean{Sigma\_LoOn3.lean} \\
 the eight VCs & $\co$, $\fd$, $\cd$ & \lean{VC\_Set.lean} \\
 Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feasible\_cd3} & \lean{Adequacy.lean} \\
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances.lean} \\
@@ -803,10 +862,14 @@ findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \
 \end{tabular}}
 \end{center}
 
-The binary theory this builds on --- including the refutations of the
-original route, the CD ladder, and the exactness of the causal-delta
-bound --- lives in \lean{Sal/CRDTs/Metatheory/} and is the subject of the
-companion note. The production data types of Table~\ref{tab:catalog} are
+The update-side layer ($\loE{E}$, convergence, $\sigma$) is
+merge-independent --- it is stated over the update signature
+$\langle \Sigma, \Sinit, \mathsf{do}, \mathsf{rc}\rangle$ alone --- and
+is shared with the binary
+(CRDT) specialization of the theory; in the repository it lives in
+\lean{Sal/CRDTs/Metatheory/}, the directory that also holds the binary
+exactness results quoted in Open Question~\ref{oq:cd}. The production
+data types of Table~\ref{tab:catalog} are
 mirrored faithfully from \lean{Sal/MRDTs/}$\ast$ (encoding deviations
 documented per instance); their original 24-VC discharges are untouched.
 
