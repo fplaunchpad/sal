@@ -327,7 +327,8 @@ published proof asserts the generator-uniqueness step without the
 induction that sustains it. An erratum-sized gap: the statement survives,
 the proof as written does not. (A related boundary fact, discovered while
 probing: \emph{criss-cross} merges can defeat the \emph{existence} of an
-LCA --- they gate merge-enabledness, not the lemma.)
+LCA --- they gate merge-enabledness, not the lemma. Open
+Question~\ref{oq:crisscross} takes up the extension.)
 
 \subsection{A fully LCA-legal execution defeats the soundness proof}
 \label{sec:defeater}
@@ -833,6 +834,25 @@ implies $\cd$ and the feasible delta laws --- restoring push-button
 discharge, now of VCs that actually imply RA-linearizability. The
 observed uniformity of the discharges ($\sigma$-characterization by
 sandwich invariant + absorber trichotomy) suggests the scheme exists.
+\end{openq}
+
+\begin{openq}[criss-cross merges and virtual LCAs]
+\label{oq:crisscross}
+The transition system gates Merge on the existence of an LCA
+(\S\ref{sec:lca}); criss-cross configurations are reachable, and every
+version in them linearizes, but their heads cannot merge --- the model
+is silent exactly where git reaches for its \emph{recursive} strategy
+(merge the maximal common ancestors into a virtual base, then merge with
+that). The metatheory looks ready for the extension: the ternary Join
+Lemma is stated over backward-closed \emph{event sets}, and
+$E_1 \cap E_2$ needs no witnessing store version. What remains is a
+virtual-LCA Merge rule plus one per-data-type question: do the eight VCs
+imply that the recursively computed base equals
+$\sigma(E_1 \cap E_2)$? For the counter this is inclusion--exclusion
+once more --- exact iff the maximal common ancestors jointly cover the
+intersection, itself a candidate store invariant; for the OR-set, a
+pointwise Boolean check. A positive answer closes the one visible gap
+between the model and practice.
 \end{openq}
 
 \section{Mechanization}

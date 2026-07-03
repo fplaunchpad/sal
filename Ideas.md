@@ -189,6 +189,27 @@ would be a publishable observation on its own; if none exists, that is a structu
 about single-event overwrite being canonical. Reviewers of the metatheory note will ask this
 question; better to have the answer first.
 
+## 5. Criss-cross merges: the model gates what git recurses
+
+`Step3`'s Merge rule is gated on `IsLCA` (`Sal/MRDTs/Metatheory/ExecutionModel.lean:67`) — a
+common ancestor *dominating every common ancestor*. Criss-cross configurations are reachable
+and every version in them linearizes, but the criss-crossed heads themselves cannot merge:
+the premise is unsatisfiable, so the transition doesn't exist. Inherited from the paper's
+main development — and it is exactly the spot where git switches to its *recursive* strategy
+(merge the maximal common ancestors into a virtual base, then merge with that). Real
+replication hits criss-cross constantly, so this is the one visible gap between the model
+and practice.
+
+The metatheory looks ready for the extension: the ternary Join Lemma is stated over
+backward-closed **event sets** — `σ(E₁ ∪ E₂) = mergeL(σ(E₁ ∩ E₂), σ(E₁), σ(E₂))` — and
+`E₁ ∩ E₂` needs no witnessing store version. So the work reduces to (a) a virtual-LCA Merge
+rule, and (b) one per-data-type question: **do the eight VCs imply the recursively computed
+base equals `σ(E₁ ∩ E₂)`?** For the counter it's inclusion–exclusion once more — exact iff
+the maximal common ancestors jointly cover the intersection, itself a candidate store
+invariant to prove (or refute) under `StoreInv`. For the OR-set, a pointwise Boolean check.
+Open Question 6 of the MRDT note. A natural first experiment: mechanize the criss-cross
+counterexample, state the covering invariant, and test it against `Step3` reachability.
+
 ---
 
 ## How to use this file
