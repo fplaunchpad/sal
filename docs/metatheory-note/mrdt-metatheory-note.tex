@@ -128,7 +128,8 @@ the meta-theorem's central induction is unsound as written, and for
 LCA-sensitive data types several of the catalogue's merge VCs are false
 in principle when quantified over all states. It also develops the
 corrected metatheory: a set-relative linearization order, canonical
-states $\sigma(E)$, and a ternary \emph{Join Lemma} whose induction
+states $\sigma(E)$ (each event set determines a unique state), and a
+ternary \emph{Join Lemma} whose induction
 consumes a small, contextual VC surface. Its contributions:
 
 \begin{enumerate}[leftmargin=2em]
@@ -180,6 +181,11 @@ Everything stated as a theorem below is mechanized with zero
 
 \section{The ternary setting}
 \label{sec:setting}
+
+This section fixes the model: the data-type signature, the replicated
+store and its transitions, and the specification the metatheorem must
+deliver. The definitions are the paper's, with one correction flagged
+where it occurs.
 
 \paragraph{Signature.} An MRDT is $\langle \Sigma, \Sinit, \mathsf{do},
 \mergeL, \mathsf{rc}\rangle$: a state space with initial state, an update
@@ -273,6 +279,16 @@ the theory:
 \end{itemize}
 
 \section{Three facts the metatheory must respect}
+
+Before building anything, we record three boundary facts. The first is
+about the problem: the LCA argument genuinely adds power, so there is no
+binary shortcut. The second and third are about the paper: its
+store-level LCA lemma is true but under-proved, and its soundness
+induction is refuted by a fully legal execution. Together they fix the
+shape of the corrected metatheory --- natively ternary
+(\S\ref{sec:loadbearing}), resting on a mechanized store invariant
+(\S\ref{sec:lca}), and built around the join rather than the sides
+(\S\ref{sec:defeater}).
 
 \subsection{The LCA argument is load-bearing}
 \label{sec:loadbearing}
@@ -416,20 +432,56 @@ how either side's state factors.
 \section{Canonical states and the ternary Join Lemma}
 \label{sec:join}
 
-The update side of the theory never mentions the merge: over
-$\langle \Sigma, \Sinit, \mathsf{do}, \mathsf{rc}\rangle$ alone, the
-update-layer VCs (items 1--3 of \S\ref{sec:vcs}) yield the
-\textbf{convergence theorem} --- any two $\loE{E}$-respecting enumerations
-of a finite event set $E$ fold from $\Sinit$ to the same state. (This is
-where the set-relative reading of \S\ref{sec:setting} earns its keep:
-relative to the paper's configuration-wide order, convergence over a
-version's own event set is \emph{false} --- the defeater's heads are
-already witnesses.) Convergence makes every event set denote a state, the
-\textbf{canonical state} $\sigma(E)$, and witness lists disappear from
-the induction: a version linearizes iff it holds the canonical state of
-its event set (respecting enumerations exist by acyclicity of $\loE{E}$,
-from VC~2). The one genuinely
-ternary statement is what the merge must produce:
+We now rebuild --- new proof architecture, and with it a \emph{new set
+of verification conditions} to replace the paper's catalogue. The lesson
+of the defeater is architectural: witnesses for a merged version cannot
+be manufactured out of witnesses for its sides, so the corrected
+metatheory must not traffic in witness lists at all. The rebuild has two
+layers. The \emph{update layer} makes states, not sequences, the objects
+of the induction: it assigns to every event set $E$ a single
+well-defined state, its \emph{canonical state}
+(Definition~\ref{def:sigma} below). The \emph{merge layer} is then one
+equation between canonical states --- the ternary \emph{Join Lemma} ---
+and establishing it from per-data-type VCs becomes the entire burden of
+the metatheorem (\S\ref{sec:whydelta}--\S\ref{sec:vcs}).
+
+The update layer comes first, and a structural observation makes it
+cheap: this half of the corrected theory never mentions the merge. Its
+one theorem is stated over the update signature $\langle \Sigma, \Sinit,
+\mathsf{do}, \mathsf{rc}\rangle$ alone:
+
+\begin{theorem}[convergence]
+\label{thm:conv}
+Assume the update-layer VCs (items 1--3 of \S\ref{sec:vcs}). Then any
+two $\loE{E}$-respecting enumerations of a finite event set $E$ fold
+from $\Sinit$ to the same state.
+\end{theorem}
+
+This is where the set-relative reading of \S\ref{sec:setting} earns
+its keep: with the paper's configuration-wide order in place of
+$\loE{E}$, the theorem is \emph{false} --- the defeater's heads are
+already counterexamples, since two order-respecting replays of the
+three events of $\mathrm{head}_p$ reach different states. Convergence
+licenses a definition:
+
+\begin{definition}[canonical state]
+\label{def:sigma}
+For a finite event set $E$, the \emph{canonical state} $\sigma(E)$ is
+the state obtained by folding any $\loE{E}$-respecting enumeration of
+$E$ from $\Sinit$. At least one respecting enumeration exists because
+$\loE{E}$ is acyclic (VC~2); the result is independent of the choice by
+Theorem~\ref{thm:conv}; and $\sigma(\emptyset) = \Sinit$. We write
+$\sigma(E)$ for the canonical state of an event set, and $\sigma_v$ for
+the state a version $v$ happens to hold in the store --- proving that
+the two coincide is precisely the metatheorem's job.
+\end{definition}
+
+With canonical states in hand, witness lists disappear as promised: a
+version linearizes iff $\sigma_v = \sigma(L(v))$ --- the witness, when
+one is owed, is any respecting enumeration of $L(v)$. The induction can
+therefore maintain a state-level invariant (``every version holds
+$\sigma$ of its events'') instead of constructing sequences. The one
+genuinely ternary statement is what the merge must produce:
 
 \begin{definition}[ternary Join Lemma]
 For backward-closed event sets $E_1, E_2$ of a reachable configuration,
@@ -450,16 +502,27 @@ per-data-type VCs make the Join Lemma true?
 \section{Why the contract is a delta contract}
 \label{sec:whydelta}
 
-For state-based CRDTs --- binary merge, no LCA --- the natural
-merge-coherence laws are lattice-flavoured: associativity, idempotence,
-inflation of updates. Each of the three provably fails under ternary
-merge.
+Where should the laws that prove the Join Lemma come from? The obvious
+supplier is the CRDT tradition. For state-based CRDTs --- binary merge,
+no LCA --- merge-coherence is lattice-flavoured: associativity,
+idempotence, inflation of updates. Each of the three provably fails
+under ternary merge, and this section works through the failures,
+because the shape of what fails is what reveals the contract that
+succeeds.
 
-\paragraph{No idempotence.} $\mergeL(l,a,a) = 2a - l$ for the counter:
-only feasible \emph{triples} (where $l$ is the canonical state of the
-intersection --- here, $l = a$) are idempotent. Unconditional idempotence
-would exclude the counter, i.e.\ exclude precisely the data types the
-ternary theorem exists for.
+\paragraph{No idempotence.} The \emph{diagonal} law
+$\mergeL(a,a,a) = a$ --- the paper's own \textsc{MergeIdempotence} ---
+does hold (for the counter: $a + a - a = a$), but it is not the law a
+lattice-style proof consumes. The binary architecture uses idempotence
+to absorb a duplicated \emph{side}, $\Merge(a,a) = a$, with nothing
+tying the two copies to a common past; the ternary analogue is
+$\mergeL(l,a,a) = a$ with $l$ \emph{free}, and for the counter
+$\mergeL(l,a,a) = 2a - l$: false whenever $l \neq a$. Only feasible
+triples are idempotent --- and feasibility (equal sides share their
+whole history, so $l$ is the canonical state of the intersection)
+forces $l = a$, collapsing the law back to the diagonal. Unconditional
+side-idempotence would exclude the counter, i.e.\ exclude precisely the
+data types the ternary theorem exists for.
 
 \paragraph{No usable order.} The lattice-style workhorse order
 $x \sqsubseteq y \coloneqq \Merge(x,y) = y$ has ternary candidates
@@ -597,7 +660,10 @@ cannot amplify what $e$ does.}
 \label{fig:cd}
 \end{figure}
 
-For an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
+The update-side obligations of \S\ref{sec:join} and the merge-side laws
+of \S\ref{sec:whydelta} now assemble into the full contract --- a
+\emph{new} VC set, replacing the paper's catalogue of twenty-four. For
+an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
 \mathsf{rc}\rangle$, the contract is:
 
 \paragraph{Update layer (unconditional, SMT-shaped).}
@@ -667,6 +733,10 @@ leaves (\S\ref{sec:open}).
 
 \section{Adequacy}
 \label{sec:adequacy}
+
+The contract delivers. Everything a data type owes is the eight
+equations of \S\ref{sec:vcs}; everything else is proved once, for all
+data types, as part of the execution model.
 
 \begin{theorem}[soundness of the eight VCs]
 \label{thm:main}
@@ -756,8 +826,8 @@ join. All of the RGA's genuine difficulty lives in the \emph{read-side}
 traversal (turning the node soup into a sequence), which
 RA-linearizability of the state never touches. By contrast the
 \emph{tombstone-free} RGA --- which physically deletes and repairs
-positions by climbing ancestor paths --- is the one data type the theory
-cannot yet host, for a reason worth stating precisely: its commutation VC
+positions by climbing ancestor paths --- is the one data type the
+corrected theory cannot yet host, for a reason worth stating precisely: its commutation VC
 is itself \emph{reachability-conditioned} (two inserts commute only on
 well-formed states), and our update layer, like the paper's, quantifies
 over all states. The missing piece is a feasible \emph{update} layer ---
@@ -788,6 +858,10 @@ the catalogue, it explains \emph{why} the fixed design is right.
 
 \section{Open questions}
 \label{sec:open}
+
+The mechanization settles what the paper claimed; it also sharpens what
+remains genuinely open. Six questions, roughly in order of theoretical
+depth:
 
 \begin{openq}[$\cd$-derivability]
 \label{oq:cd}
