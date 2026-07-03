@@ -140,7 +140,7 @@ consumes a small, contextual VC surface. Its contributions:
   is an MRDT that ignores its LCA'' is a one-way instantiation, not an
   equivalence: the metatheory must be built natively ternary.
 \item \textbf{The paper's LCA lemma is true but its proof has a gap}
-  (\S\ref{sec:lca}): $L(v_\top) = L(v_1) \cap L(v_2)$ holds, but only as a
+  (\S\ref{sec:lca}): $L(v_\ell) = L(v_1) \cap L(v_2)$ holds, but only as a
   \emph{reachability invariant} of the store, whose proof needs a
   generator-uniqueness induction the paper silently assumes. We mechanize
   the transition system and the invariant.
@@ -194,8 +194,8 @@ $e_1(e_2(\sigma)) = e_2(e_1(\sigma))$ for every $\sigma$.
 versions, each holding a state and the set of events that produced it,
 with per-replica heads. Transitions fork a replica, apply a fresh event at
 a head, query, or \textbf{merge}: pick heads $v_1, v_2$, find their LCA
-$v_\top$ in the DAG, and install a new version with state
-$\mergeL(\sigma_{v_\top}, \sigma_{v_1}, \sigma_{v_2})$ and event set
+$v_\ell$ in the DAG, and install a new version with state
+$\mergeL(\sigma_{v_\ell}, \sigma_{v_1}, \sigma_{v_2})$ and event set
 $L(v_1) \cup L(v_2)$. Visibility $\vis$ records what each event's issuing
 replica had seen.
 
@@ -312,8 +312,8 @@ Everything above silently used:
 
 \begin{lemma}[LCA lemma]
 \label{lem:lca}
-In every reachable configuration, if $v_\top$ is an LCA of versions $v_1,
-v_2$ in the store's DAG, then $L(v_\top) = L(v_1) \cap L(v_2)$.
+In every reachable configuration, if $v_\ell$ is an LCA of versions $v_1,
+v_2$ in the store's DAG, then $L(v_\ell) = L(v_1) \cap L(v_2)$.
 \end{lemma}
 
 This is what lets merge VCs be stated over \emph{event sets}: the state
