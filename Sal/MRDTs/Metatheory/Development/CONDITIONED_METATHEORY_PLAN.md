@@ -159,9 +159,24 @@ Orthogonal to G1 (order-theoretic vs semantic); attack in parallel.
    side-condition `closure_below_full`); weak and full both satisfy it, so it costs nothing at
    the corners. Class map: `(weak,⊤)` = all set-shaped + counters + RGA(tombstone) + Peritext;
    `(full,⊤)` = EWFlag; the `Inv`-nontrivial column is empty (the update-layer hole).
-5. **Conditioned update layer** (task #4, blocked on the OQ4 applicable-or-no-op refinement)
-   and **RGA hosting** (task #5) remain — the `Inv`-nontrivial column. The spine leaves
-   `Inv`/`applicable` as parameter slots; it does not yet re-found convergence.
+5. **Update-layer feasibility notion** — GATE PASSED (`UpdateFeasibility_Gate.lean`, task #4),
+   kernel-checked. The correct notion is **applicability-aware order `loOnA` + no-op-feasible
+   enumeration** (each step applicable OR identity) — NOT task #7's strict `applicabilityValid`.
+   The two repairs are complementary: the order excludes dependency-violating replays that mere
+   no-op tolerance re-admits (breaks convergence); no-op tolerance admits harmless redundant ops
+   that strict applicability rejects (breaks satisfiability). Verified convergent-and-satisfiable
+   on both the dependency case (ins/del, `dependency_case_converges`) and the redundancy case
+   (concurrent deletes, `redundancy_case_converges_and_satisfiable`), where each single repair
+   fails one (`plain_loOnC_noopFeasible_diverges`, `no_applicabilityValid_enum`). Sub-finding:
+   RGA `del`@init is a genuine no-op (`del_at_init_noop`, `rfl`, axiom-free), so `noopFeasible`
+   is well-defined. Caveat: the redundancy case's concurrency is proved config-generally (all ops
+   rid 0 can't be genuinely concurrent in a well-formed single-rid config), reusing task #7's
+   config-general reductions — the order-theoretic content holds, but a concrete two-replica
+   reachable config is not constructed.
+6. **REMAINING (the genuine open frontier):** the general conditioned convergence theorem over
+   `loOnA + noopFeasible` (all E, not just the two gate cases), then the conditioned update VCs
+   and the tombstone-free RGA discharge on top. This is the `Inv`-nontrivial column — now with
+   its feasibility notion pinned.
 
 ## Net verdict of the investigation
 
