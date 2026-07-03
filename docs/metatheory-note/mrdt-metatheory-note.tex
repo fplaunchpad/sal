@@ -983,8 +983,19 @@ the harmless redundant ones (which strict applicability rejects, breaking
 satisfiability). On the two decisive cases --- one dependency, one
 redundancy --- this notion is provably both convergent and satisfiable,
 where each single repair fails one (\lean{UpdateFeasibility\_Gate}:
-\lean{loOnA\_noopFeasible\_verdict}). What remains is the general
-convergence theorem over this notion, and the RGA discharge on top of it.
+\lean{loOnA\_noopFeasible\_verdict}). The general convergence theorem then
+factors cleanly (\lean{ConditionedConvergence}): a \emph{single} order VC
+(``a vacuous $\mathsf{commutesOn}$ edge is an applicability dependency'')
+re-adds exactly the dropped edges, reducing conditioned convergence to the
+unconditioned theorem (\lean{conditioned\_convergence\_on}) --- for any
+data type whose commutation is available unconditionally. The
+tombstone-free RGA is precisely the one that is not (its commutation is
+reachability-conditioned), so it forces the conditioned route, where the
+last obstruction is now pinned to a single lemma: the peel bubble cannot
+certify applicability at the \emph{interleaved} states its $\sigma$-walk
+visits. Whether that side-condition holds for the RGA --- closing the
+hosting --- or forces a reachability-restricted bubble is the final open
+step.
 \end{openq}
 
 \begin{openq}[the automation layer]
@@ -1049,6 +1060,7 @@ closure-indexed contract & \lean{JoinLemma3C}, \lean{killTest\_no\_common\_U} & 
 closure-indexed adequacy + instances & \lean{ra\_linearizable3\_of\_joinC}, \lean{ConditionedContract} & \lean{Development/ConditionedContract.lean} \\
 all 9 discharges via the contract & \lean{$\ast$\_adequate\_viaContract} (9) & \lean{Development/AllMRDTs\_viaContract.lean} \\
 update-layer feasibility notion & \lean{loOnA\_noopFeasible\_verdict} & \lean{Development/UpdateFeasibility\_Gate.lean} \\
+conditioned convergence (order-half) & \lean{conditioned\_convergence\_on} & \lean{Development/ConditionedConvergence.lean} \\
 feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
 \bottomrule
 \end{tabular}}

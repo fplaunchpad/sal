@@ -173,10 +173,26 @@ Orthogonal to G1 (order-theoretic vs semantic); attack in parallel.
    rid 0 can't be genuinely concurrent in a well-formed single-rid config), reusing task #7's
    config-general reductions — the order-theoretic content holds, but a concrete two-replica
    reachable config is not constructed.
-6. **REMAINING (the genuine open frontier):** the general conditioned convergence theorem over
-   `loOnA + noopFeasible` (all E, not just the two gate cases), then the conditioned update VCs
-   and the tombstone-free RGA discharge on top. This is the `Inv`-nontrivial column — now with
-   its feasibility notion pinned.
+6. **General conditioned convergence** — DONE (`ConditionedConvergence.lean`, task #9),
+   **order-half closed, RGA obstruction localized.** The problem factors cleanly:
+   - **Order half (solved):** `conditioned_convergence_on` (kernel-clean) reduces conditioned
+     convergence to the *unconditioned* `convergence_on_u`, via a SINGLE order VC
+     `dependency_covers_vacuity` (`vis a b → ¬commutes a b → commutesOn a b → appliesDependsOn b a`)
+     and the inclusion `loOn ⊆ loOnA`. A single order VC repairs *all* the vacuously-dropped
+     edges. Finding: `noopFeasible` is orthogonal to convergence under this route (it is for
+     *satisfiability*), and the reduction consumes the *unconditioned* `UpdateVCs`.
+   - **Semantic half (RGA, one located obstruction):** the RGA has no unconditioned `UpdateVCs`
+     (rc = Either; commutation is observational `eq`, not Lean `Eq` — the hosting gap), so it
+     forces the `commutesOn`-only route. There the *swap* closes (`applySeq_swap_loOnA_incomparable_C`,
+     all branches), but the *bubble* cannot discharge the swap's applicability premises
+     (`applicable a`, `applicable b`) at the HYBRID interleaved states of the σ-walk —
+     `noopFeasible π₁`/`π₂` control only their own prefixes, not the interleaving. This is G2's
+     "swaps visit states no execution visits," now pinned to the `ha`/`hb` premises of ONE lemma.
+     The named closer: an `interleavingFeasible` oracle (a per-MRDT obligation).
+7. **REMAINING (the last gate):** does `interleavingFeasible` HOLD for the RGA (→ hosting closes,
+   bounded re-mechanization) or is it itself false/hard (→ the RGA needs a bubble that only
+   produces execution-reachable interleavings, a genuine architecture change)? This is the final
+   fork; the research question is now localized to it.
 
 ## Net verdict of the investigation
 
