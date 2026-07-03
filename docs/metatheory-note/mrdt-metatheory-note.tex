@@ -174,10 +174,24 @@ consumes a small, contextual VC surface. Its contributions:
   \emph{class map} of which data types need which strength of contract,
   with two surprises: tombstones are a metatheoretic trivializer, and
   commutativity class and delta class are independent axes.
+\item \textbf{The eight VCs are one instance of a closure-indexed
+  contract} (\S\ref{sec:open}): a mechanized investigation of the note's
+  own open questions establishes that the ``second route'' asymmetry
+  (\S\ref{sec:adequacy}) is not a defect to be reunified but a
+  \emph{closure parameter} the data type declares; a single soundness
+  bridge covers both strengths, and \emph{all nine} production discharges
+  route through it unchanged. The same investigation refutes the obvious
+  attacks on the two remaining frontiers --- it defeats even the commuting
+  \textsc{2-OP} rule on the defeater, pins the feasible-update-layer
+  feasibility notion, and characterizes exactly why the tombstone-free RGA
+  resists (it converges, but through semantic commutation the pointwise
+  bubble cannot see). All kernel-checked.
 \end{enumerate}
 
 Everything stated as a theorem below is mechanized with zero
-\lean{sorry}s; \S\ref{sec:mech} maps statements to Lean names and files.
+\lean{sorry}s; \S\ref{sec:mech} maps statements to Lean names and files
+(the closure-indexed investigation lives under \lean{Development/}, each
+cited theorem kernel-checked).
 
 \section{The ternary setting}
 \label{sec:setting}
