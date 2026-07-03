@@ -385,6 +385,25 @@ The events the induction must peel are \emph{buried} in the very sides
 that own them; no ordering of the paper's bottom-up rules applies.
 \end{example}
 
+The two removes commute ($\rem \ncomm \add$ but $\rem \comm \rem$), which
+invites a particular rescue attempt: the paper's \textsc{BottomUp-2-OP}
+rule (\lean{inter\_lca\_2op}) admits the commuting case and could, one
+hopes, peel a remove last. It cannot, for a reason that is a one-line
+state fact. To peel $o$ last from a side, that side's state must be an
+$o$-image --- of the form $\mathsf{do}(\sigma', o)$ with $o$ outermost.
+But in the add-wins skeleton \emph{every} $\rem$-output has empty live set
+($\rem(A,D) = (A, A\cup D)$), whereas both heads carry a live tag
+($\mathrm{head}_p$ lives on $A_q$, $\mathrm{head}_q$ on $A_p$ --- the
+opposite add, merged in \emph{after} the local remove). So neither head
+is a $\rem$-image, and no bottom-up rule can extract a remove from it. The
+tempting linearization $[A_p, R_p, A_q, R_q]$ is a valid witness of the
+\emph{merged} version, but its restriction to $\mathrm{head}_q$ folds to
+the all-dead state, not $\mathrm{head}_q$'s actual state (live $A_p$): it
+is not assembled from a state-correct side witness, which is exactly what
+the induction requires. All three facts are mechanized
+(\lean{InterLca2op\_Defeater\_Arbiter}: \lean{awset\_rem\_output\_empty},
+\lean{no\_inter\_lca\_2op\_rem\_peel\_of\_defeater}, \lean{crack1\_witness}).
+
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[>=Stealth, node distance=0.55cm and 1.35cm,
@@ -781,8 +800,14 @@ excludes it, and the flag is discharged through a full-closure variant of
 the join. The finding: \textbf{required closure strength is a function of
 the merge's shape} --- commutation-closure suffices for set-shaped merges,
 counter-comparison merges need full causal closure. Reunifying the two
-routes under one contract (full closure only strengthens what a data type
-may assume) is open and, we expect, routine.
+routes was expected to be routine --- ``full closure only strengthens what
+a data type may assume.'' Mechanization shows it is not (\S\ref{sec:open},
+Open Question~\ref{oq:reunify}): the naive reunification --- re-run the
+Join Lemma induction with full-closure hypotheses --- is refuted, because
+no single-event (or block) peel preserves full closure. What survives is a
+\emph{closure-indexed} contract in which the data type \emph{declares} its
+closure strength; the soundness bridge is uniform across strengths, so no
+reunification into one strength is needed.
 
 \section{The catalogue, discharged}
 \label{sec:catalog}
@@ -888,19 +913,59 @@ two-sorted umbrella $\mergeL(l,a,b) = a \boxplus (b \boxminus l)$ does
 open.)
 \end{openq}
 
-\begin{openq}[route reunification]
-State the delta laws and $\cd$ over \emph{full causal closure} so the
-enable-wins flag's route becomes an instance of the general one. Full
-closure only strengthens the discharger's hypotheses; all current
-discharges should port unchanged.
+\begin{openq}[route reunification --- naive route refuted, closure-indexed
+resolution mechanized]
+\label{oq:reunify}
+The obvious reunification --- restate the delta laws and $\cd$ over
+\emph{full} causal closure and re-run the Join Lemma induction --- fails,
+and the failure is mechanized. The induction must peel an event that is
+both $\loE{U}$-maximal (placeable last) and vis-maximal (its removal keeps
+the sides \emph{fully} closed); on a reachable four-event configuration
+these two maximal sets are \emph{disjoint}, and the obstruction persists
+for every \emph{block} peel, in both directions
+(\lean{JoinLemma3C}: \lean{no\_proper\_back\_block},
+\lean{no\_proper\_front\_block}). A wider induction class (fully-closed
+minus a $\loE{}$-upward peel set) moves the obstruction but does not
+remove it: individually fully-closed sides admit no \emph{common} witness
+set to decompose against (\lean{killTest\_no\_common\_U}). What
+\emph{does} work needs no reunification: a \textbf{closure-indexed
+contract} $\mathsf{JoinLemma3C}\,\mathcal{C}$ in which the data type
+declares its closure strength $\mathcal{C}\in\{\text{weak},\text{full}\}$,
+with a single soundness bridge (store versions are fully causally closed,
+hence $\mathcal{C}$-closed for either strength). The two routes of
+\S\ref{sec:adequacy} are the two instances; the disjunction is the
+contract, not a defect to be reunified. Genuinely open: whether the
+single-strength contract (carrying the common witness set as data,
+re-founding $\cd$ on the full downset) buys anything over the
+closure-indexed form.
 \end{openq}
 
-\begin{openq}[the feasible update layer]
-Condition the update-layer VCs on an update-and-merge-closed invariant
-(with the permutation-transport lemma along canonical enumerations), and
+\begin{openq}[the feasible update layer --- naive conditioning refuted,
+feasibility notion sharpened]
+Condition the update-layer VCs on an update-and-merge-closed invariant and
 host the tombstone-free RGA. The required invariant machinery
 ($\mathsf{RgaInv} \wedge \mathsf{id\_mono}$, closed under merge given
-id-monotone allocation) is already mechanized on the data-type side.
+id-monotone allocation) is already mechanized on the data-type side ---
+but the \emph{conditioning of convergence itself} is subtler than
+``restrict the VCs to $\mathsf{Inv}$-states,'' and the naive form is
+refuted (\lean{G2\_Transport\_Probe}). Replacing $\ncomm$ by its
+$\mathsf{Inv}$-and-applicability-conditioned form inside $\loE{E}$ drops
+order edges between events that are \emph{never jointly applicable} (an
+$\mathsf{Ins}$ and a $\mathsf{Del}$ of the same node vacuously
+``commute''), and two orders that fold to different states then both
+respect $\loE{E}$: convergence fails. Strengthening $\mathsf{Inv}$ cannot
+repair it --- conditioning is antitone, so a smaller applicability domain
+only removes more edges. The order must instead be
+\emph{applicability-aware} (an edge survives when one event's
+applicability \emph{depends} on the other), or --- strictly more general
+(\lean{G2\_Applicability\_Aware}: \lean{separating\_inequivalence}, a
+negative dependency between concurrent deletes that no positive
+create-before-use relation captures) --- convergence must range only over
+\emph{applicability-valid} enumerations. A last twist keeps this open:
+genuinely reachable versions can carry \emph{redundant concurrent} ops
+(two concurrent deletes of one node) for which \emph{no} enumeration is
+applicability-valid at every prefix, so the right feasibility notion must
+tolerate \emph{applicable-or-no-op} re-application.
 \end{openq}
 
 \begin{openq}[the automation layer]
@@ -956,6 +1021,13 @@ Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feas
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances.lean} \\
 Theorem~\ref{thm:counter-sep}, kill-tests & --- & \lean{Development/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Conditioned-metatheory investigation
+  (\S\ref{sec:defeater}, Open Questions~\ref{oq:reunify} \& feasible-update):}} \\
+defeater vs.\ \textsc{2-OP} (\S\ref{sec:defeater}) & \lean{no\_inter\_lca\_2op\_rem\_peel\_of\_defeater} & \lean{Development/InterLca2op\_Defeater\_Arbiter.lean} \\
+peel obstruction (OQ~\ref{oq:reunify}) & \lean{reunification\_peel\_obstruction}, \lean{no\_proper\_back\_block} & \lean{Development/\{Reunification\_Peel\_Obstruction,JoinLemma3C\}.lean} \\
+closure-indexed contract & \lean{JoinLemma3C}, \lean{killTest\_no\_common\_U} & \lean{Development/JoinLemma3F\_Of\_AlmostClosed.lean} \\
+feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
 \bottomrule
 \end{tabular}}
 \end{center}
@@ -970,5 +1042,14 @@ exactness results quoted in Open Question~\ref{oq:cd}. The production
 data types of Table~\ref{tab:catalog} are
 mirrored faithfully from \lean{Sal/MRDTs/}$\ast$ (encoding deviations
 documented per instance); their original 24-VC discharges are untouched.
+
+The conditioned-metatheory artifacts under \lean{Development/} are
+exploratory --- they establish the refutations and the closure-indexed
+resolution cited in \S\ref{sec:defeater} and the open questions, and each
+cited theorem is kernel-checked with axioms in $\{\lean{propext},
+\lean{Classical.choice}, \lean{Quot.sound}\}$ (no \lean{sorryAx}). They
+import one linearization file carrying two unrelated \lean{sorry}s that the
+cited theorems do not transitively depend on; \lean{Development/}%
+\lean{CONDITIONED\_METATHEORY\_PLAN.md} is their roadmap.
 
 \end{document}
