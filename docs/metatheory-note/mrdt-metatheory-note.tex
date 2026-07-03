@@ -287,13 +287,14 @@ and inherit the result. The converse direction fails, mechanically:
 \label{thm:counter-sep}
 The counter satisfies the ternary shared-peel VC
 \[
-  \mergeL(l\!\cdot\! e,\; a\!\cdot\! e,\; b\!\cdot\! e)
-  \;=\; \mergeL(l,a,b)\cdot e
-  \qquad\text{(for the counter: } (a{+}1)+(b{+}1)-(l{+}1) = (a{+}b{-}l)+1\text{)}
+  \mergeL(l \cdot e,\; a \cdot e,\; b \cdot e)
+  \;=\; \mergeL(l,a,b) \cdot e
 \]
+--- for the counter, $(a{+}1)+(b{+}1)-(l{+}1) = (a{+}b{-}l)+1$ ---
 but provably violates the corresponding binary VC
-$\Merge(a\!\cdot\! e, b\!\cdot\! e) = \Merge(a,b)\cdot e$ for every
-LCA-forgetting binary collapse. \hfill\lean{Counter\_binary\_lem\_0op\_false}
+$\Merge(a \cdot e, b \cdot e) = \Merge(a,b) \cdot e$ for every
+LCA-forgetting binary collapse.
+\unskip\nobreak\hspace*{\fill}\lean{Counter\_binary\_lem\_0op\_false}
 \end{theorem}
 
 So the ternary metatheory cannot be obtained by instantiating a binary one;
