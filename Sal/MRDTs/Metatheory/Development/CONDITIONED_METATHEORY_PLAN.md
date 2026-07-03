@@ -189,10 +189,24 @@ Orthogonal to G1 (order-theoretic vs semantic); attack in parallel.
      `noopFeasible π₁`/`π₂` control only their own prefixes, not the interleaving. This is G2's
      "swaps visit states no execution visits," now pinned to the `ha`/`hb` premises of ONE lemma.
      The named closer: an `interleavingFeasible` oracle (a per-MRDT obligation).
-7. **REMAINING (the last gate):** does `interleavingFeasible` HOLD for the RGA (→ hosting closes,
-   bounded re-mechanization) or is it itself false/hard (→ the RGA needs a bubble that only
-   produces execution-reachable interleavings, a genuine architecture change)? This is the final
-   fork; the research question is now localized to it.
+7. **Final gate — ANSWERED** (`RGA_Rehoming_Gate.lean`, task #10, kernel-clean). Verdict:
+   **`interleavingFeasible` is FALSE for the RGA, but the RGA converges anyway** — the oracle is
+   sufficient, not necessary. Chain: a concurrent `Del` rehomes nodes and stales a concurrent
+   `Ins`'s path (`rehoming_stales_path`); the staled `Ins` is neither applicable nor a no-op
+   (`staled_ins_not_noop`, `staled_ins_not_applicable`) — it re-anchors at the nearest live
+   ancestor, i.e. *exactly* where `Del` rehomed. So `not_interleavingFeasible_RGA`. **But**
+   `orders_converge` (an instance of the RGA's proved `insdel_comm`) and
+   `full_enumerations_converge` show the two `loOnA`-admissible linearizations agree regardless
+   (`verdict_oracle_false_but_converges`). The obstruction is NOT unreachability
+   (`[insA,insB,delA]` is a legitimate causal prefix) — it is that the §5 bubble demands
+   *pointwise applicability at hybrid fold states*, while the RGA only supplies *semantic
+   commutation* (`insdel_comm`) at the both-applicable common causal base.
+8. **The genuine research frontier (open):** re-architect the peel bubble to fire each swap at
+   the semantic-commutation state (the transposed pair's last common causally-prior fold, where
+   both are applicable), consuming `insdel_comm` directly — NOT at a hybrid state that already
+   staled one event. A "reachability-restricted bubble" in the *swap-state* sense. This closes
+   the tombstone-free RGA (it converges); the work is bounded but non-trivial. `interleavingFeasible`
+   as stated in stage 6 is simply too strong for a path-carrying / rehoming CRDT.
 
 ## Net verdict of the investigation
 
