@@ -936,9 +936,11 @@ causally closed, so $\mathsf{JoinLemma3C}\,\mathcal{C}$ applies for any
 $\mathcal{C}$ that full closure implies --- both $\text{weak}$ and
 $\text{full}$ qualify, and the whole \lean{GoodConfig3} induction is
 reused verbatim. The two routes of \S\ref{sec:adequacy} are the two
-instances, and the production discharges route through the bridge
-unchanged (\lean{ConditionedContract}: the OR-set at $(\text{weak},\top)$,
-the enable-wins flag at $(\text{full},\top)$); the disjunction is the
+instances, and \emph{all nine} production discharges route through the
+bridge unchanged (\lean{AllMRDTs\_viaContract}), reusing their existing
+VCs verbatim: eight at $(\text{weak},\top)$ --- the OR-sets via the
+feasible triple, the six unconditional types via the delta on-ramp --- and
+the enable-wins flag at $(\text{full},\top)$; the disjunction is the
 contract, not a defect to be reunified. This is the ``no new mathematics''
 the resolution promised --- confirmed, with one correction: the bridge
 holds exactly for $\mathcal{C}$ weaker than full closure (a $\mathcal{C}$
@@ -1036,6 +1038,7 @@ defeater vs.\ \textsc{2-OP} (\S\ref{sec:defeater}) & \lean{no\_inter\_lca\_2op\_
 peel obstruction (OQ~\ref{oq:reunify}) & \lean{reunification\_peel\_obstruction}, \lean{no\_proper\_back\_block} & \lean{Development/\{Reunification\_Peel\_Obstruction,JoinLemma3C\}.lean} \\
 closure-indexed contract & \lean{JoinLemma3C}, \lean{killTest\_no\_common\_U} & \lean{Development/JoinLemma3F\_Of\_AlmostClosed.lean} \\
 closure-indexed adequacy + instances & \lean{ra\_linearizable3\_of\_joinC}, \lean{ConditionedContract} & \lean{Development/ConditionedContract.lean} \\
+all 9 discharges via the contract & \lean{$\ast$\_adequate\_viaContract} (9) & \lean{Development/AllMRDTs\_viaContract.lean} \\
 feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
 \bottomrule
 \end{tabular}}
