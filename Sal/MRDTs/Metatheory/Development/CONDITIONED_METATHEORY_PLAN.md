@@ -442,7 +442,22 @@ Next build: the base-anchored generic convergence over `ConditionedMRDTSig`, con
 `general_swap_bothFaithful` + `Inv`-reachability, deriving `Faithful`-threading internally. That is
 the framework result that makes Peritext cheap.
 
-## Keystone status (2026-07-04): `chainFaithful_doDel` PBT-corroborated; proof in progress
+## Keystone status (2026-07-04): `chainFaithful_doDel` PROVED (kernel-clean) + PBT-corroborated
+
+**PROVED** (`RGA_ChainFaithful_doDel.lean`, kernel-clean: axioms `[propext,
+Classical.choice, Quot.sound]`, no `sorryAx`/`ofReduceBool`). The keystone the whole
+state-dependent-convergence conjecture rested on. Induction closes the splice by outputting
+`ChainFaithful` on the target-free list `M.filter(≠x)` (matched to the `s`-recursion) with an
+"add the dead `x` back" bridge — dissolving the level-mismatch a `Del` creates (it shifts the
+climb-target and merges two chain levels). Combined with `chainFaithful_doIns` +
+`climbFaithful_of_chain`, both preservation steps of faithful-threading are now done.
+**Conjecture moves ~80% → ~95%:** the remaining state-dependent convergence is the ordinary
+bottom-up canonicalization (a proven flat-type template) instantiated with
+`general_swap_bothFaithful` under the now-complete threading, plus a routine generation base
+case — proof-engineering, no known open mathematical question. Below (superseded) is the
+pre-proof status.
+
+### (superseded) PBT-corroboration record
 
 `RGA_Faithful_PBT.lean` (kernel-clean; `chainFaithfulB_iff` — the Bool-checker ↔ `ChainFaithful`
 Prop equivalence — proved, axioms `[propext, Quot.sound]`, so the tests exercise the real
