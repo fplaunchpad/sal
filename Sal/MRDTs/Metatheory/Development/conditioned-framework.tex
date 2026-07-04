@@ -263,6 +263,40 @@ allocation. The anchor discipline the RGA already carries \emph{is} its
 applicability predicate; the author writes nothing new to describe sensible
 operations.
 
+\begin{example}[the unconditioned commutation VC is false]
+\label{ex:uncond}
+This is why conditioning is necessary, not merely convenient. Take two
+insertions issued concurrently by different replicas: $a$ records anchor $3$ and
+path $[7]$ (it creates a node under $3$, climbing the path if $3$ is gone), and
+$b$ creates a node with identifier $7$ at the root. Evaluate the two orders on the
+initial root-only state $\Sinit$:
+\begin{itemize}[leftmargin=1.4em]
+\item $\dolab(\dolab(\Sinit,a),b)$ --- $a$ first: it resolves its list $[3,7]$
+  against $\Sinit$, where both $3$ and $7$ are absent, and \emph{climbs to the
+  root}, anchoring its node at $0$; then $b$ creates node $7$.
+\item $\dolab(\dolab(\Sinit,b),a)$ --- $b$ first: it creates node $7$; now $a$
+  resolves $[3,7]$ with $3$ absent but $7$ \emph{live}, anchoring its node at $7$.
+\end{itemize}
+The two results disagree on the parent of $a$'s node ($0$ versus $7$): the
+whole-state commutation equation
+\[
+  \forall\sigma.\qquad \dolab(\dolab(\sigma,a),b)\ =\ \dolab(\dolab(\sigma,b),a)
+\]
+is therefore \emph{false}, already at $\sigma=\Sinit$
+(\lean{naive\_general\_swap\_false}).
+No execution reaches this counterexample: $a$ records an anchor $3$ that is not
+present and a path naming $b$'s identifier $7$, yet $a$ and $b$ are
+\emph{concurrent} --- $a$'s replica never observed $b$, so it could neither anchor
+to an absent node nor name $b$'s fresh identifier. These are exactly the tuples
+$\app$ (and causal freshness, \S\ref{sec:conv}) excludes; restricted to applicable
+tuples, the two insertions \emph{do} commute (Lemma~\ref{lem:swap}). A whole-state
+catalogue quantifies its commutation VC over $\sigma=\Sinit$ with this $a$ and so
+cannot state a true VC for the type at all; the conditioned catalogue can. The RGA
+already encodes the fix --- its shipped commutation VC is \emph{gated} on
+\lean{accurate}${}\wedge{}$\lean{fresh}${}\wedge{}$\lean{wf} precisely because the
+ungated equation is this counterexample.
+\end{example}
+
 \section{Sensible operations and reachability}
 \label{sec:sensible}
 
