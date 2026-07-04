@@ -396,11 +396,51 @@ obligations remain for RGA hosting, all precisely located:
   unchanged) and `chainFaithful_doIns` PROVED; **`chainFaithful_doDel` is the single remaining
   Faithful lemma** (documented goal, splice argument, not sorried). `NoFreshClash` threads
   (`noFreshClash_of_freshIns`/`_of_del`) under monotone allocation.
-- **(C) both-staled risk (analysis-level, unverified).** `general_swap` is asymmetric — one event
-  `Faithful`, the other `accurate`. At a hybrid σ-walk state BOTH swapped events can be staled
-  (M1's `rehoming_stales_path`), so `general_swap` may not even apply there; a both-`Faithful` swap
-  lemma may be needed. NOT mechanized either way — the live risk for whether Route A's swap even
-  fires at every bubble state.
+- **(C) both-staled — DISCHARGED (2026-07-04, `RGA_BothFaithfulSwap.lean`, kernel-clean).**
+  `general_swap_bothFaithful`: the swap holds with `accurate b` REPLACED by `Faithful b` + symmetric
+  `NoFreshClash b a`. All four op-combos close (InsIns needs no faithfulness, just both `NoFreshClash`;
+  the others recover `accurate b`'s content from `Faithful b`). No both-staled counterexample —
+  `naive_general_swap_false` was exactly a `NoFreshClash` violation, excluded by hypothesis.
+  Incidental: `h0` (root-sentinel) is unused in the Ins/Del and Del/Del cases. **Verdict: the swap
+  fires whenever both events are `Faithful` + mutually non-clashing; neither need be `accurate`.**
+
+## RECONCILED FRAMEWORK VIEW (2026-07-04) — the actual research target
+
+Stepping back (KC's framing): the goal is a **framework for state-dependent MRDTs where the developer
+describes only sensible operations** (like the RGA's anchors) with minimal proof burden — Peritext-
+without-tombstones being the next instance. The pieces reconcile as:
+
+- **Description mechanism (EXISTS):** `ConditionedMRDTSig` carries `applicable` ("when is this op
+  sensible?" — RGA: `accurate` path + `fresh_ts`; Peritext: mark anchors live chars) and `Inv`
+  (well-formedness). `commutesOn` conditions commutation on both-applicable-at-Inv. This is the
+  right, minimal developer-facing surface.
+- **Developer-effort ledger.** ESSENTIAL (developer): `applicable`; `Inv` + proof it is a
+  reachability invariant; conditioned commutation VCs (assume applicability). GENERIC (framework,
+  once): convergence, RA-linearizability, the linearization order. The flat bubble's sin was leaking
+  generic work (thread `Faithful` through hybrid states — obligations B/C) into the developer's lap.
+- **NOT Route B.** Direct per-type normal-form discharge is clean for one type but maximizes
+  developer effort — it is a pile of bespoke proofs, not a framework. Rejected as the framework
+  answer.
+- **THE APPROACH — base-anchored, applicability-respecting generic convergence.** Restrict the
+  generic proof to `noopFeasible` (applicable-or-no-op) enumerations, and justify each swap at the
+  swapped pair's COMMON CAUSAL BASE (both applicable by construction), transporting up. Then
+  `Faithful`/`ChainFaithful` become INTERNAL framework lemmas (derived once from `applicable` +
+  `Inv`-reachable), NOT developer obligations. Developer burden collapses to the essential column.
+  **`general_swap_bothFaithful` is this route's enabling lemma** (the transport-up step needs the
+  swap with both sides possibly staled — now proved). The remaining risk is the transport-regress
+  (does base-justified-swap-transported-up stay valid); the both-Faithful swap is exactly what it
+  needs.
+- **Peritext-without-tombstones = same class, one level up.** Marks:chars :: RGA children:parents;
+  deletion re-anchors marks (rehoming). Provides its own `applicable`/`Inv`, reuses the
+  `Faithful`+`NoFreshClash` commutation pattern. Build the framework (base-anchored generic
+  convergence, RGA as instance #1), then Peritext is instance #2 with reused machinery — turning
+  "two bespoke proofs" into "framework + two instantiations."
+- **eq-vs-Eq is a non-issue** (walked back above): RGA converges structurally, host through the
+  existing `Eq`-based σ-layer. So the base-anchored proof targets Lean `Eq`.
+
+Next build: the base-anchored generic convergence over `ConditionedMRDTSig`, consuming
+`general_swap_bothFaithful` + `Inv`-reachability, deriving `Faithful`-threading internally. That is
+the framework result that makes Peritext cheap.
 
 **Net:** hosting the tombstone-free RGA is a multi-obligation project dominated by an `eq`-quotient
 σ-layer rebuild (A), then `chainFaithful_doDel` (B), then possibly a both-`Faithful` swap (C). This
