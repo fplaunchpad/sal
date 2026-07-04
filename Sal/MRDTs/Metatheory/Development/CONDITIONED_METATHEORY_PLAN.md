@@ -343,8 +343,33 @@ obligations remain for RGA hosting, all precisely located:
   generic incomparable-swap with the staled-event applicability premise DROPPED (drops both
   `applicable a` and `applicable b`; keeps `hInv` for the rc-overwriter branch). The bubble can now
   consume a `SwapWitness` instead of pointwise applicability.
-- **(A) eq-vs-Eq — NOT a novel wall; it is Peepul's convergence-modulo-observable-behavior, which
-  Sal's metatheory failed to adopt.** `eq_strictly_weaker_than_Eq` (kernel-clean): for `concrete_st`,
+- **(A) eq-vs-Eq — OVERSTATED (2026-07-04, KC challenge; walked back).** The M2 agent's "provable
+  wall" conflated two claims: `eq_strictly_weaker_than_Eq` (kernel-true — `eq ≠ Eq` as *relations*,
+  because insert-then-delete leaves off-domain junk that `del`+`init` differ on) does NOT bear on
+  *convergence*. Convergence needs `eq` only if two lo-respecting orders of the SAME event set fold
+  to junk-differing states. **Tested empirically (raw `do_`, `_references`-free scratch): they do
+  NOT.** Three convergent pairs — the M1 `full_enum` transposition AND an adversarial
+  delete-a-node-early-vs-late construction designed to freeze different anchors — all produce
+  BYTE-IDENTICAL states including junk (deleted nodes' stored anchors normalize identically via
+  rehome-on-delete / climb-on-insert). `map_lemma_equal_intro` (`Map_Extended.lean:153`) confirms
+  `eq` vs `Eq` differ ONLY on off-domain junk, and that junk is order-independent for convergent
+  pairs (written in shared causal history, normalized by rehoming). **So the RGA almost certainly
+  converges up to structural `Eq`, and the existing Eq-based σ-layer hosts it with NO eq-quotient
+  rebuild.** `general_swap` was stated up-to-`eq` by Peepul convention (matching the RGA's own
+  `insins/insdel/deldel_comm`), not necessity. Residual (evidence, not proof): re-prove the RGA
+  swaps / convergence as Lean `Eq` — needs a manual all-keys argument (`map_equal` isn't decidable),
+  bounded work, very likely true. IF it turns out some convergent pair genuinely differs in junk,
+  THEN adopt Peepul's observational `eq` (below); but no such pair is known and the evidence is
+  against it. **(A) is downgraded from dominant blocker to likely non-issue.**
+
+  *Peepul fallback framing (only if `Eq` re-proof fails):* the correct notion would be Peepul's
+  convergence-modulo-observable-behavior (PLDI 2022, arXiv 2203.14518, `_references/peepul_src/pldi.tex`):
+  observational equivalence `σ₁ ∼ σ₂` (= the RGA's `eq`), lift it + `do_`/`merge` congruence to the
+  conditioned signature, restate convergence over `D.eq`. The RGA's OR-set-as-BST-rebalancing is the
+  paper's own example of why. Kept as the principled Plan B.
+
+  *(Original — now superseded — "provable wall" text:)* it is Peepul's convergence-modulo-observable-behavior, which
+  Sal's metatheory failed to adopt. `eq_strictly_weaker_than_Eq` (kernel-clean): for `concrete_st`,
   `eq x y ∧ x ≠ y` — witness `del (upd init 1 (5,0)) 1` vs `init` (both empty-domain, so
   observationally `eq`, but `del` leaves off-domain junk in `mappings`, so Lean-unequal).
   `general_swap` yields only observational `eq`; the σ-layer (`ConditionedConvergence`,
