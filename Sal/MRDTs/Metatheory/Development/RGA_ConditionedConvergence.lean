@@ -419,13 +419,29 @@ concurrent operand may be staled by concurrent deletes so that NEITHER is
 `ConditionedConvergence` §5 and `RGA_BubbleWiring` §3.3, now in the `eq`-route. -/
 
 /-- Generic `eq`-convergence engine: strong induction on `π₁.length`, peeling the
-head, bubbling it to the front of `π₂`, and recursing.  Order-agnostic in `lo`. -/
+head, bubbling it to the front of `π₂`, and recursing.  Order-agnostic in `lo`.
+
+**The oracle is RESTRICTED (GAP-1 fix).**  Rather than quantifying `pre` over ALL
+lists — which is unsatisfiable, since several `EqSwap`-discharge conjuncts are
+provably false at junk prefixes (`contains (fold [Ins 0 …]) 0 = false`;
+`Faithful a` off `a`'s enablement) — the oracle is supplied only at the prefixes
+the bubble actually visits: `pre` is a `nodup`, `respects`-ordered sub-list of the
+pending set `evC`, disjoint from the swapped pair, at which BOTH `a` and `b` are
+ENABLED (their entire `evC`-`lo`-past already lies in `pre`).  These are exactly the
+`loOnA`-respecting delivery prefixes at which M1/M2 supply `Faithful`/`NoFreshClash`
+etc.  The restriction SELF-THREADS through the recursion (`evC → evC \ {e}`,
+`pre → e :: pre`) with no explicit accumulator — the enablement past shrinks with
+`evC` and re-expands with the peeled head `e`. -/
 theorem eq_convergence (lo : op_t → op_t → Prop) :
     ∀ (n : Nat) (s : concrete_st) (evC : Set op_t) (π₁ π₂ : List op_t),
       π₁.length = n → listPermOf π₁ evC → listPermOf π₂ evC →
       respects π₁ lo → respects π₂ lo →
-      (∀ (pre : List op_t) (a b : op_t), a ∈ evC → b ∈ evC → a ≠ b →
-        ¬ lo a b → ¬ lo b a → EqSwap a b (applySeqR s pre)) →
+      (∀ (pre : List op_t) (a b : op_t),
+        (∀ x ∈ pre, x ∈ evC) → pre.Nodup → respects pre lo →
+        a ∈ evC → b ∈ evC → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
+        (∀ z ∈ evC, z ≠ a → lo z a → z ∈ pre) →
+        (∀ z ∈ evC, z ≠ b → lo z b → z ∈ pre) →
+        EqSwap a b (applySeqR s pre)) →
       eq (applySeqR s π₁) (applySeqR s π₂) := by
   intro n
   induction n using Nat.strong_induction_on with
@@ -483,8 +499,33 @@ theorem eq_convergence (lo : op_t → op_t → Prop) :
         have hy_in_σ : y ∈ α ++ y :: β := List.mem_append.mpr (Or.inr List.mem_cons_self)
         have hy_in_ev : y ∈ evC := h_σ_sub_ev y hy_in_σ
         have hy_ne_e : y ≠ e := fun h => he_notin_σ (h ▸ hy_in_σ)
-        exact hOracle α y e hy_in_ev he_in_ev hy_ne_e
-          (h_e_lo_min y hy_in_ev hy_ne_e) (h_not_lo_fwd y hy_in_σ)
+        -- eligibility of the prefix `α` for the swap of `(y, e)`
+        have hnd_σ : (α ++ y :: β).Nodup := hnd₂.1
+        have hα_sub : ∀ x ∈ α, x ∈ evC :=
+          fun x hx => h_σ_sub_ev x (List.mem_append.mpr (Or.inl hx))
+        have hα_nd : α.Nodup := (List.nodup_append.mp hnd_σ).1
+        have hα_resp : respects α lo :=
+          (List.pairwise_append.mp (List.pairwise_append.mp h₂r).1).1
+        have hy_notin_α : y ∉ α :=
+          fun h => (List.nodup_append.mp hnd_σ).2.2 y h y List.mem_cons_self rfl
+        have he_notin_α : e ∉ α := fun h => he_notin_σ (List.mem_append.mpr (Or.inl h))
+        have henab_y : ∀ z ∈ evC, z ≠ y → lo z y → z ∈ α := by
+          intro z hz hzy hlo
+          have hzπ : z ∈ (α ++ y :: β) ++ e :: τ := (hmem₂ z).mpr hz
+          rcases List.mem_append.mp hzπ with hz1 | hz2
+          · rcases List.mem_append.mp hz1 with hzα | hzyβ
+            · exact hzα
+            · rcases List.mem_cons.mp hzyβ with rfl | hzβ
+              · exact absurd rfl hzy
+              · exact absurd hlo
+                  ((List.pairwise_cons.mp (List.pairwise_append.mp
+                    (List.pairwise_append.mp h₂r).1).2.1).1 z hzβ)
+          · exact absurd hlo
+              ((List.pairwise_append.mp h₂r).2.2 y hy_in_σ z hz2)
+        have henab_e : ∀ z ∈ evC, z ≠ e → lo z e → z ∈ α :=
+          fun z hz hze hlo => absurd hlo (h_e_lo_min z hz hze)
+        exact hOracle α y e hα_sub hα_nd hα_resp hy_in_ev he_in_ev hy_notin_α he_notin_α
+          hy_ne_e (h_e_lo_min y hy_in_ev hy_ne_e) (h_not_lo_fwd y hy_in_σ) henab_y henab_e
       have h_len_new : π₁'.length < n := by
         rw [← h_len]; simp only [List.length_cons]; omega
       have hp₁' : listPermOf π₁' (evC \ {e}) := by
@@ -523,10 +564,43 @@ theorem eq_convergence (lo : op_t → op_t → Prop) :
         intro a ha b hb
         exact hcross a ha b (List.mem_cons_of_mem _ hb)
       have hOracle' : ∀ (pre : List op_t) (a b : op_t),
-          a ∈ evC \ {e} → b ∈ evC \ {e} → a ≠ b →
-          ¬ lo a b → ¬ lo b a → EqSwap a b (applySeqR (do_ s e) pre) := by
-        intro pre a b ha hb hab hnab hnba
-        have hh := hOracle (e :: pre) a b ha.1 hb.1 hab hnab hnba
+          (∀ x ∈ pre, x ∈ evC \ {e}) → pre.Nodup → respects pre lo →
+          a ∈ evC \ {e} → b ∈ evC \ {e} → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
+          (∀ z ∈ evC \ {e}, z ≠ a → lo z a → z ∈ pre) →
+          (∀ z ∈ evC \ {e}, z ≠ b → lo z b → z ∈ pre) →
+          EqSwap a b (applySeqR (do_ s e) pre) := by
+        intro pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
+        have he_notin_pre : e ∉ pre := fun h => (hsub e h).2 rfl
+        -- lift each eligibility field from `pre / evC\{e}` to `e :: pre / evC`
+        have hsub' : ∀ x ∈ e :: pre, x ∈ evC := by
+          intro x hx
+          rcases List.mem_cons.mp hx with rfl | hx'
+          · exact he_in_ev
+          · exact (hsub x hx').1
+        have hnd' : (e :: pre).Nodup := List.nodup_cons.mpr ⟨he_notin_pre, hnd⟩
+        have hresp' : respects (e :: pre) lo :=
+          List.pairwise_cons.mpr
+            ⟨fun x hx => h_e_lo_min x (hsub x hx).1 (fun he => (hsub x hx).2 he), hresp⟩
+        have ha_notin : a ∉ e :: pre := by
+          rw [List.mem_cons]; rintro (rfl | h)
+          · exact ha.2 rfl
+          · exact hanp h
+        have hb_notin : b ∉ e :: pre := by
+          rw [List.mem_cons]; rintro (rfl | h)
+          · exact hb.2 rfl
+          · exact hbnp h
+        have hena' : ∀ z ∈ evC, z ≠ a → lo z a → z ∈ e :: pre := by
+          intro z hz hza hlo
+          by_cases hze : z = e
+          · exact hze ▸ List.mem_cons_self
+          · exact List.mem_cons_of_mem _ (hena z ⟨hz, hze⟩ hza hlo)
+        have henb' : ∀ z ∈ evC, z ≠ b → lo z b → z ∈ e :: pre := by
+          intro z hz hzb hlo
+          by_cases hze : z = e
+          · exact hze ▸ List.mem_cons_self
+          · exact List.mem_cons_of_mem _ (henb z ⟨hz, hze⟩ hzb hlo)
+        have hh := hOracle (e :: pre) a b hsub' hnd' hresp' ha.1 hb.1 ha_notin hb_notin
+          hab hnab hnba hena' henb'
         rw [applySeqR_cons] at hh
         exact hh
       have hrec : eq (applySeqR (do_ s e) π₁') (applySeqR (do_ s e) (σ ++ τ)) :=
@@ -549,8 +623,11 @@ theorem RGA_conditioned_convergence (lo : op_t → op_t → Prop) (ev : Set op_t
     (π₁ π₂ : List op_t)
     (h₁p : listPermOf π₁ ev) (h₂p : listPermOf π₂ ev)
     (h₁r : respects π₁ lo) (h₂r : respects π₂ lo)
-    (hSwap : ∀ (pre : List op_t) (a b : op_t), a ∈ ev → b ∈ ev → a ≠ b →
-        ¬ lo a b → ¬ lo b a → EqSwap a b (applySeqR init_st pre)) :
+    (hSwap : ∀ (pre : List op_t) (a b : op_t),
+        (∀ x ∈ pre, x ∈ ev) → pre.Nodup → respects pre lo →
+        a ∈ ev → b ∈ ev → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
+        (∀ z ∈ ev, z ≠ a → lo z a → z ∈ pre) → (∀ z ∈ ev, z ≠ b → lo z b → z ∈ pre) →
+        EqSwap a b (applySeqR init_st pre)) :
     eq (applySeqR init_st π₁) (applySeqR init_st π₂) :=
   eq_convergence lo π₁.length init_st ev π₁ π₂ rfl h₁p h₂p h₁r h₂r hSwap
 
@@ -567,8 +644,10 @@ theorem RGA_conditioned_convergence_bothFaithful (lo : op_t → op_t → Prop) (
     (π₁ π₂ : List op_t)
     (h₁p : listPermOf π₁ ev) (h₂p : listPermOf π₂ ev)
     (h₁r : respects π₁ lo) (h₂r : respects π₂ lo)
-    (hReady : ∀ (pre : List op_t) (a b : op_t), a ∈ ev → b ∈ ev → a ≠ b →
-        ¬ lo a b → ¬ lo b a →
+    (hReady : ∀ (pre : List op_t) (a b : op_t),
+        (∀ x ∈ pre, x ∈ ev) → pre.Nodup → respects pre lo →
+        a ∈ ev → b ∈ ev → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
+        (∀ z ∈ ev, z ≠ a → lo z a → z ∈ pre) → (∀ z ∈ ev, z ≠ b → lo z b → z ∈ pre) →
         a.1 ≠ b.1 ∧ contains (applySeqR init_st pre) 0 = false ∧ wf (applySeqR init_st pre)
         ∧ id_mono (applySeqR init_st pre)
         ∧ fresh_ts a (applySeqR init_st pre) ∧ fresh_ts b (applySeqR init_st pre)
@@ -576,58 +655,72 @@ theorem RGA_conditioned_convergence_bothFaithful (lo : op_t → op_t → Prop) (
         ∧ NoFreshClash a b ∧ NoFreshClash b a) :
     eq (applySeqR init_st π₁) (applySeqR init_st π₂) := by
   apply RGA_conditioned_convergence lo ev π₁ π₂ h₁p h₂p h₁r h₂r
-  intro pre a b ha hb hab hnab hnba
-  obtain ⟨hd, h0, hwf, hmono, hfa, hfb, hFa, hFb, hcab, hcba⟩ := hReady pre a b ha hb hab hnab hnba
+  intro pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
+  obtain ⟨hd, h0, hwf, hmono, hfa, hfb, hFa, hFb, hcab, hcba⟩ :=
+    hReady pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
   exact eqSwap_of_bothFaithful (applySeqR init_st pre) a b hd h0 hwf hmono hfa hfb hFa hFb hcab hcba
 
 /- ═══════════════════════════════════════════════════════════════════════════
-   THE LOCATED OBSTRUCTION — why `hReady` (hence the headline) is not yet
-   unconditional, and it is NOT the swap-asymmetry.
+   STATUS AFTER THE GAP-1 FIX — what closes, and the one fact M1 still lacks.
 
-   `eqSwap_of_bothFaithful` closes the swap with BOTH operands merely `Faithful`
-   (no `accurate`), so the doubly-staled hybrid state is NOT an obstruction for
-   the *swap*.  What `hReady` still assumes is, at each prefix fold
-   `s' = applySeqR init_st pre`:
+   GAP-1 (the over-quantified, unsatisfiable oracle) is FIXED above: the oracle of
+   `eq_convergence` / `RGA_conditioned_convergence(_bothFaithful)` now ranges only
+   over ELIGIBLE prefixes `pre` — nodup, `respects`-ordered, `E`-drawn, disjoint
+   from the swapped pair, with BOTH events ENABLED (their `lo`-past `⊆ pre`).  This
+   is exactly the delivery-prefix class M1/M2 speak about, and it self-threads
+   through the recursion.  So `hReady` is now SATISFIABLE.
 
-   • `a.1 ≠ b.1`  — distinct timestamps: an execution-model fact (Phase 0).
-   • `RgaInv s' ∧ id_mono s'`  — TRANSPORT (imported): `RgaInv_do_opOK` /
-     `id_mono_doIns`/`id_mono_doDel` give these at any fold whose ops are `opOK`
-     and monotonically allocated.  Discharged given ev is a genuine execution.
-   • `fresh_ts a s' ∧ fresh_ts b s'`  — freshness of a pending event's id at a
-     fold not containing it: monotone allocation (Phase 0).
-   • `NoFreshClash a b ∧ NoFreshClash b a`  — `noFreshClash_concurrent` from
-     monotone allocation (§3).  Discharged given allocation discipline.
-   • `Faithful a s' ∧ Faithful b s'`  — THE REAL RESIDUE.
+   Discharging the ten `hReady` conjuncts at an eligible prefix
+   `s' = applySeqR init_st pre` (pre a `lo`-respecting `E`-prefix, `a`,`b` enabled):
 
-   `Faithful` at the HYBRID fold `s' = applySeqR init_st (peeled ++ α)` (peeled a
-   `π₁`-prefix, α a `σ ⊆ π₂`-prefix; `peeled ++ α` IS `lo`-respecting) reduces to a
-   `ChainFaithful`-reachability invariant: "every pending event's recorded list is
-   `ChainFaithful` at every `lo`-respecting prefix fold".  Its base holds
-   (`chainFaithful_init`: vacuous at `init_st`).  Its inductive step — fold the
-   next `lo`-event `w`, preserve `ChainFaithful (recList o)` for pending `o` —
-   needs TWO facts NOT among the imports:
+   • `a.1 ≠ b.1`               — M2 `ConditionedConfiguration.distinctTs`.
+   • `RgaInv s'` (`contains0`,`wf`) — RGA `RgaInv_do_opOK` transport over `pre`
+                                  (each `E`-event `opOK`), or M2 `inv_fold` given
+                                  `noopFeasible pre`.
+   • `id_mono s'`              — GAP 3: RGA `id_mono` state-form; M2 emits the
+                                  `causal_mono` vis/id-form (`id_mono_doIns/_doDel`
+                                  transport under `mono_alloc`).
+   • `fresh_ts a s'`,`fresh_ts b s'` — GAP 3: state-absence; M2 `freshTs` emits
+                                  id-distinctness (`∀x∈pre, x.1≠a.1`); needs a
+                                  contains-tracking step to reach state-absence.
+   • `NoFreshClash a b`,`… b a` — GAP 3: RGA recList-form; M2
+                                  `noFreshClash_concurrent` emits the vis-ancestor
+                                  id-form (`§3 noFreshClash_concurrent` bridges it
+                                  once `recList a = ids of {a} ∪ vis-ancestors a`).
+   • `Faithful a s'`,`Faithful b s'` — **GAP 2, the one FATAL residue.**
 
-     (1) `w` an ACCURATE Ins that is `o`'s own ancestor (`w.id ∈ recList o`):
-         the imported `chainFaithful_doIns` requires `w.id ∉ L`, so it does NOT
-         apply to the clash case.  Missing lemma (the Ins analogue of
-         `chainFaithful_doDel`):
-           accurate `(t,r,.Ins e pre a) s` → ChainFaithful s L →
-             ChainFaithful (do_ s (t,r,.Ins e pre a)) L      -- even when t ∈ L
+   **GAP 2 (M1 does not provide this).**  `Faithful a s'` reduces (via
+   `climbFaithful_of_chain`) to `ChainFaithful (recList a) (applySeqR init_st pre)`.
+   M1 proves `ChainFaithful (recList w)` only at `foldDo s_c concurrent`
+   (`chainFaithful_at_enablement`): `w`'s causal past folded CONTIGUOUSLY FIRST to
+   `s_c` (where `HistFaithful s_c w` = `accurate w s_c`), then an `IncompFold` of
+   concurrent steps.  The engine's eligible `pre` is a `lo`-INTERLEAVING: `a`'s
+   causal past is present (enablement) but interleaved with concurrent ops, NOT
+   contiguous-first, so `applySeqR init_st pre ≠ foldDo s_c concurrent`.
 
-     (2) `w` a Del that is CONCURRENT with `o` and STALED at the interleaved
-         prefix `peeled ++ α`: `chainFaithful_doDel` requires `accurate w s'`, but
-         a hybrid interleaving of two enumerations can stale `w` there.  This is
-         exactly the `interleavingFeasible` gap of `ConditionedConvergence` §5
-         (strictly stronger than `noopFeasible π₁ ∧ noopFeasible π₂`), now
-         re-surfaced in the `eq`/`Faithful` route.  Missing:
-           ChainFaithful preservation across a `Faithful` (possibly non-accurate)
-           concurrent Del.
+   The CONCURRENT-step half is covered — `RGAFaithfulThreadingGate.IncompFold`
+   threads fresh non-clashing `Ins`s and *`Faithful`* `Del`s
+   (`chainFaithful_doDel_faithful`, no `accurate`), so a concurrent staled `Del` is
+   fine (this dissolves the old "interleaving-feasibility Del" worry).  The
+   UNCOVERED half is the ANCESTOR steps: folding `a`'s own causal-ancestor `Ins`s
+   (`w'.id ∈ recList a`) while `a` is still mid-build (`a` not yet `accurate`, so
+   M1's `chainFaithful_doIns_reachable`, which needs `HistFaithful s a`, does NOT
+   fire).  The single missing M1 lemma is the reachable-regime accurate-ancestor
+   `Ins` BUILD-UP (deferred at `RGA_FaithfulThreading_Gate.lean:421-424`):
 
-   VERDICT: the unconditional headline does NOT close.  The obstruction is REAL
-   and precisely located — it is the `ChainFaithful`-reachability invariant at
-   HYBRID interleaved folds, whose two open steps are (1) accurate-ancestor-Ins
-   preservation and (2) the §5 interleaving-feasibility gap.  It is NOT the swap
-   (dispatched unconditionally by `eqSwap_of_bothFaithful`).
+       accurate (t,r,.Ins e p a') s → [reachability of L] →
+       ChainFaithful s L → ChainFaithful (do_ s (t,r,.Ins e p a')) L   -- even t ∈ L
+
+   equivalently: an M1 variant of `chainFaithful_at_enablement` accepting an
+   INTERLEAVED `lo`-respecting prefix (causal past a sub-list, all other steps
+   `IncompStep`s), not the causal-past-contiguous `foldDo s_c concurrent`.
+
+   VERDICT: with GAP-1 fixed, `RGA_update_convergence` reduces to exactly ONE open
+   M1 fact — the interleaved-prefix / accurate-ancestor-`Ins` build-up lemma — plus
+   the mechanical GAP-3 id/state-form bridges.  It is NOT the swap
+   (`eqSwap_of_bothFaithful`, both-`Faithful`), NOT the concurrent `Del`
+   (`chainFaithful_doDel_faithful`), NOT the oracle over-quantification (fixed
+   here).  Routed to M1.
    ═══════════════════════════════════════════════════════════════════════════ -/
 
 /-! ## §7  Axiom audit — every headline kernel-clean.
