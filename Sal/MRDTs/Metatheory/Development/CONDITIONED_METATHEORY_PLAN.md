@@ -477,6 +477,30 @@ applicability/`Faithful` can break. The fork:
 
 Running gate (a) as the fork-decider. If negative, (b)/(c) is an architecture change (KC's call).
 
+### Gate (a) verdict (`RGA_StaledDel_Gate.lean`, kernel-clean): the invariant is `Faithful`, not `accurate`
+
+Not a clean yes/no — it sharpened the invariant. Two kernel-checked results:
+- `chainFaithful_not_preserved_under_staled_del`: the LITERAL "arbitrary staled Del preserves
+  ChainFaithful" is FALSE — a *non-Faithful* (wrong-rehome-path) Del breaks it.
+- `chainFaithful_doDel_faithful`: ChainFaithful survives every `Faithful` Del (= `DelTargetFaithful`
+  + `x≠0`), **without `accurate` and without `id_mono`** — the splice induction reused. PROVED.
+Part 1: `chainFaithful_doIns`'s `t∉L` guard is load-bearing (the ancestor-Ins clash breaks it) — it
+is the `NoFreshClash` guard.
+
+**Resolution: thread `Faithful`, not `accurate`.** `accurate` is destroyed by reordering; `Faithful`
+is a structural (recorded-path-tracks-tree) property, and its Del-preservation is now proved. The
+counterexample tuples (wrong-rehome Dels, clashing Ins) are ones no delete-only execution produces.
+So the free bubble is salvageable **iff the σ-walk threads `Faithful`**.
+
+**The remaining crux (unproven, no odds — I've mis-estimated twice):** does a `loOnA`-respecting
+(backward-closed) reordering keep each op `Faithful` at its prefix fold? PLAUSIBLE path: `loOnA`'s
+`appliesDependsOn` edge was designed to order an op's generation-dependencies before it, which is
+exactly what should keep a Del's true parent present at the fold (⇒ `Faithful`). If that connects,
+threading closes over `Faithful`-folds via `chainFaithful_doIns` (t∉L) + `chainFaithful_doDel_faithful`,
+and stage-1 convergence reaches 100%. If `loOnA` does NOT force enough order, it needs strengthening
+(→ base-anchored) — the architecture decision. THIS is the crux to settle next; bringing it to KC
+rather than auto-grinding, per the standing agreement.
+
 ### (superseded) keystone-proved status
 
 **PROVED** (`RGA_ChainFaithful_doDel.lean`, kernel-clean: axioms `[propext,
