@@ -343,16 +343,26 @@ obligations remain for RGA hosting, all precisely located:
   generic incomparable-swap with the staled-event applicability premise DROPPED (drops both
   `applicable a` and `applicable b`; keeps `hInv` for the rc-overwriter branch). The bubble can now
   consume a `SwapWitness` instead of pointwise applicability.
-- **(A) eq-vs-Eq is a PROVABLE WALL (verified, dominant).** `eq_strictly_weaker_than_Eq`
-  (kernel-clean): for `concrete_st`, `eq x y ∧ x ≠ y` — witness `del (upd init 1 (5,0)) 1` vs `init`
-  (both empty-domain, so observationally `eq`, but `del` leaves off-domain junk in `mappings`, so
-  Lean-unequal). `general_swap` yields only observational `eq`; the σ-layer (`ConditionedConvergence`,
-  `Sigma_LoOn3`) is Lean-`Eq`-based. So `rga_swapWitnessEq` (the `eq`-version) closes but the
-  Lean-`Eq` `SwapWitness` does NOT. **Fix: rebuild the conditioned convergence layer over
-  observational `eq` (an `eq`-quotient of state, or `eq`-congruent `applySeq`).** Not a soundness
-  bug — RA-linearizability is up-to-`eq` anyway — but the layer over-committed to `Eq`, which flat
-  RDTs never exposed (their `do_` leaves no junk). *(Insight 1 again: over-specification, this time
-  in the equality relation.)* This blocks hosting for ANY swap, independent of (B)/(C).
+- **(A) eq-vs-Eq — NOT a novel wall; it is Peepul's convergence-modulo-observable-behavior, which
+  Sal's metatheory failed to adopt.** `eq_strictly_weaker_than_Eq` (kernel-clean): for `concrete_st`,
+  `eq x y ∧ x ≠ y` — witness `del (upd init 1 (5,0)) 1` vs `init` (both empty-domain, so
+  observationally `eq`, but `del` leaves off-domain junk in `mappings`, so Lean-unequal).
+  `general_swap` yields only observational `eq`; the σ-layer (`ConditionedConvergence`,
+  `Sigma_LoOn3`) is Lean-`Eq`-based. **KC's reframe (grounded in Peepul, PLDI 2022, arXiv
+  2203.14518, `_references/peepul_src/pldi.tex`):** the correct target was never structural `Eq`.
+  Peepul Def "observational equivalence" `σ₁ ∼ σ₂` = every operation returns the same value on both
+  (= the RGA's `eq`: agreement on `contains`/`sel`), and "convergence modulo observable behavior" =
+  branches converge to `∼`-equivalent, not structurally-equal, states. Peepul's own example is an
+  OR-set-as-BST where branches rebalance differently — structurally unequal, observationally equal;
+  **the RGA's dead-node junk is that example one level up.** `∼` is provable from the operations
+  (the RGA already proves every commutation up-to-`eq`, `eq_symm`, `merge_idem` up-to-`eq`); it is
+  NOT a signature field yet (per-RDT `def eq`, `RGA_..._MRDT.lean:154`) and the metatheory never
+  references it. **Fix (de-risked, principled): lift `eq` + its equivalence + `do_`/`merge`
+  congruence to the conditioned signature, restate convergence over `D.eq`; the RGA discharges the
+  congruence from its existing eq-lemmas, flat types trivially. No quotient types, no soundness
+  change — just adopting the equivalence discipline KC's own prior work established.** This is
+  Insight 1 once more (over-specification, here in the equality relation) — and it unblocks hosting
+  for ANY swap, independent of (B)/(C).
 - **(B) `general_swap`'s `Faithful` is too weak to THREAD (verified), fix partially mechanized.**
   `climbFaithful_not_preserved_under_del` (kernel-clean counterexample): `ClimbFaithful` is a
   one-level property, not a delete-invariant — a delete deeper in the recorded list re-anchors past
