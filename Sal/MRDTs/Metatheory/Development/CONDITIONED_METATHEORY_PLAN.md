@@ -442,7 +442,42 @@ Next build: the base-anchored generic convergence over `ConditionedMRDTSig`, con
 `general_swap_bothFaithful` + `Inv`-reachability, deriving `Faithful`-threading internally. That is
 the framework result that makes Peritext cheap.
 
-## Keystone status (2026-07-04): `chainFaithful_doDel` PROVED (kernel-clean) + PBT-corroborated
+## Convergence assembly (2026-07-04): engine + swap DONE; NOT 100% — interleaving wall recurs (3rd time)
+
+`RGA_ConditionedConvergence.lean` (kernel-clean, build exit 0). What closed: the eq-convergence
+ENGINE (bubble/order-repair/fold-transport/recursion, generic over an `EqSwap` oracle),
+`eqSwap_of_bothFaithful` (the swap needs NEITHER operand `accurate` — both merely `Faithful` via
+`general_swap_bothFaithful`; the swap was never the wall), and `chainFaithful_init` (base case).
+`RGA_conditioned_convergence_bothFaithful` routes the engine through the both-Faithful swap so its
+residual hypothesis `hReady` contains **no `accurate`** — only `Faithful` at each prefix fold.
+
+**The unconditional headline does NOT close.** The wall is `ChainFaithful`-preservation at
+REORDERED prefix folds. Two open steps: (1) preservation across an accurate *ancestor* `Ins`
+(`w.id ∈ recList o` — the clash case `chainFaithful_doIns` omits; likely provable, an Ins-analogue
+of `chainFaithful_doDel`); (2) preservation across a *concurrent, staled* `Del` at a reordered fold
+— `chainFaithful_doDel` needs `accurate`, which canonicalization's reordering can destroy. **(2) is
+exactly the `interleavingFeasible` gap of `ConditionedConvergence` §5 / `RGA_BubbleWiring` §3.3 ---
+now recurring a THIRD time, in the eq/Faithful route.**
+
+**Honest correction:** the ~95% estimate was over-optimistic. It conflated "keystone
+`chainFaithful_doDel` (accurate Del) proved" with "threading through the bubble works." The bubble
+REORDERS, and reordering visits folds where a Del is staled (non-accurate); the accurate-only
+keystone does not preserve `ChainFaithful` there. That gap was underweighted.
+
+**The recurrence is diagnostic:** convergence-by-free-canonicalization (arbitrary adjacent swaps)
+structurally fights state-dependence — reordering visits states no execution reaches, where
+applicability/`Faithful` can break. The fork:
+- (a) **Does `ChainFaithful` survive a STALED (non-accurate) `Del`?** Decisive gate. YES → fill (1)+(2),
+  the free bubble closes, stage-1 100%. NO → the free bubble is the wrong vehicle.
+- (b) **Base-anchored / applicability-preserving canonicalization** — reorder only through states
+  where ops stay applicable (e.g. toward timestamp order, which a real execution keeps applicable);
+  never reorder into staled folds. Different architecture; transport-regress risk.
+- (c) **Direct normal-form** — prove every `lo^E`-respecting fold equals the canonical
+  timestamp-sorted fold on reachable states, no free reordering (Route B).
+
+Running gate (a) as the fork-decider. If negative, (b)/(c) is an architecture change (KC's call).
+
+### (superseded) keystone-proved status
 
 **PROVED** (`RGA_ChainFaithful_doDel.lean`, kernel-clean: axioms `[propext,
 Classical.choice, Quot.sound]`, no `sorryAx`/`ofReduceBool`). The keystone the whole
