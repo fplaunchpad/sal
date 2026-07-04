@@ -501,6 +501,33 @@ and stage-1 convergence reaches 100%. If `loOnA` does NOT force enough order, it
 (→ base-anchored) — the architecture decision. THIS is the crux to settle next; bringing it to KC
 rather than auto-grinding, per the standing agreement.
 
+### Threading gate verdict (`RGA_FaithfulThreading_Gate.lean`, kernel-clean): FREE BUBBLE HOSTS THE RGA — base-anchored NOT needed
+
+The fork is resolved **positively**, and the three-time-recurring wall is finally EXPLAINED and
+dissolved. The finding: the threading invariant must be scoped to **enabled** events (whose causal
+past has been folded) — NOT all pending events at all hybrid folds. The all-pending invariant is
+genuinely FALSE (transiently, while a pending event's ancestors are mid-fold: PBT `t1StrongFails ≠ 0`);
+that is exactly what defeated M2 §5 / ConditionedConvergence §5 / the convergence assembly — all
+threaded the too-strong invariant. Scoped to enabled events — the only ones the bubble ever swaps —
+it holds.
+
+Proved (kernel-clean): **T2** `chainFaithful_incompStep` — an incomparable step (fresh concurrent
+`Ins` with `t∉recList`, or a *Faithful* `Del`) preserves `ChainFaithful` (upgrades
+`chainFaithful_fold` from accurate to Faithful `Del`s, closing old obstruction (2)); **T1 thread**
+`chainFaithful_incompFold` + `faithful_ins_of_chain` (threads the enabled-scope invariant along
+incomparable folds, projects to `Faithful`). Old obstruction (1) (clash-`Ins`) is UNREACHABLE
+(inconsistent `recList`) — a reachability lemma, not a wall. PBT: a genuine 2-replica concurrent
+generator, 330 scenarios × 6 interleavings + adversarial SPOTs, `convFails = 0` (every interleaving
+converges), all threading counters 0 except the (correctly-scoped-away) all-pending one.
+
+**Remaining to stage-1 100% (plumbing/reachability, NOT semantic walls):** (i) the enablement BASE
+(`ChainFaithful` when `w` is concurrently staled — PBT-confirmed, documented, not sorried); (ii) `vis`
+formalization; (iii) the eq-σ-layer (convergence up-to-`eq` → `σ(E)`) — the deferred tail; then
+discharge `RGA_conditioned_convergence`'s `hReady` for the unconditional headline. **Stage 2** (the
+merge-side Join Lemma for the RGA + compose via `ra_linearizable3_of_joinC`) remains for end-to-end
+RA-linearizability. No estimate offered (two prior misses); but the *vehicle question is settled* and
+no semantic wall remains.
+
 ### (superseded) keystone-proved status
 
 **PROVED** (`RGA_ChainFaithful_doDel.lean`, kernel-clean: axioms `[propext,

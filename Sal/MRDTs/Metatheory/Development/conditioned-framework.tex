@@ -582,12 +582,26 @@ results). Honestly delineated:
   dissolving the level-mismatch the splice creates. It is independently
   corroborated by property-based testing (a checker proved equivalent to the
   invariant; $\sim\!58{,}000$ random reachable-state trials, no counterexample).
-\item \textbf{In progress.} Theorem~\ref{thm:conv} itself: with
-  Lemma~\ref{lem:swap} and Prop.~\ref{prop:thread} both in hand, it is the
-  ordinary bottom-up canonicalization --- a proven template for flat types ---
-  instantiated with the faithful swap at each prefix fold. Its assembly (and a
-  routine generation base case) is the remaining mechanization; no open
-  mathematical question is known to stand in its way.
+\item \textbf{In progress --- with the central obstruction now resolved.}
+  Theorem~\ref{thm:conv} itself. The subtlety was faithful-threading
+  (Prop.~\ref{prop:thread}): naively threading faithfulness for \emph{all}
+  pending events at \emph{all} reordered folds is false (transiently, while a
+  pending event's ancestors are still being folded), which defeated three
+  successive attempts. The resolution is to scope the invariant to
+  \emph{enabled} events --- those whose causal past has been folded, the only
+  ones the canonicalization ever swaps. On that scope threading holds, and its
+  two steps are mechanized (kernel-clean): an incomparable step --- a fresh
+  concurrent insertion or a \emph{faithful} deletion --- preserves the
+  invariant (\lean{chainFaithful\_incompStep}, which also upgrades the deletion
+  step from \emph{accurate} to merely \emph{faithful}), and it threads along a
+  reordering (\lean{chainFaithful\_incompFold}). Property-based testing on a
+  two-replica concurrent generator (hundreds of scenarios $\times$ all
+  interleavings) reports zero convergence failures. What remains is
+  \emph{plumbing}: an enablement base case, a visibility formalization, and the
+  observational-equivalence ($\eqobs$) state layer feeding $\sigma(E)$ --- no semantic
+  obstruction is known to stand in the way, and the alternative
+  (base-anchored / applicability-preserving) canonicalization is confirmed
+  \emph{not} required.
 \item \textbf{Target.} End-to-end hosting of the RGA (and then Peritext) as
   conditioned instances, by composing Theorem~\ref{thm:conv} with the adequacy
   bridge of \S\ref{sec:adequacy}. We have verified, on reachable states, that the
