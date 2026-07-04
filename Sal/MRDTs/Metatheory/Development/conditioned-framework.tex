@@ -1,0 +1,567 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{microtype}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\vis}{\xrightarrow{\mathsf{vis}}}
+\newcommand{\rc}{\xrightarrow{\mathsf{rc}}}
+\newcommand{\comm}{\rightleftarrows}
+\newcommand{\ncomm}{\not\rightleftarrows}
+\newcommand{\Merge}{\mathsf{merge}}
+\newcommand{\Sinit}{\sigma_0}
+\newcommand{\dolab}{\mathsf{do}}
+\newcommand{\Inv}{\mathsf{Inv}}
+\newcommand{\app}{\mathsf{app}}
+\newcommand{\commOn}[1]{\comm_{#1}}
+\newcommand{\loE}[1]{\mathsf{lo}^{#1}}
+\newcommand{\loA}[1]{\mathsf{lo}_{\!\app}^{#1}}
+\newcommand{\eqobs}{\approx}
+\newcommand{\resolve}{\mathsf{resolve}}
+\newcommand{\anc}{\mathsf{anc}}
+\newcommand{\live}{\mathsf{live}}
+\newcommand{\reach}{\mathsf{Reach}}
+\newcommand{\lean}[1]{\texttt{\small #1}}
+\newcommand{\Ins}{\mathsf{Ins}}
+\newcommand{\Del}{\mathsf{Del}}
+\newcommand{\faith}{\mathsf{Faithful}}
+\newcommand{\nfc}{\mathsf{NoFreshClash}}
+
+\title{\bfseries A Verification Framework for State-Dependent MRDTs:\\
+  \large describe only the sensible operations}
+\author{Sal metatheory note --- framework draft\\
+  \small FP Launchpad, IIT Madras}
+\date{July 4, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Mergeable replicated data types (MRDTs) are verified by a standard division of
+labour: the data-type author discharges a fixed catalogue of local, equational
+\emph{verification conditions} (VCs), and a once-and-for-all soundness
+meta-theorem lifts them to RA-linearizability of every reachable configuration.
+Every published catalogue quantifies its VCs \emph{over all states}. This is
+adequate for \emph{flat} data types --- sets, counters, registers --- whose
+operations are total: meaningful on every state. It is \emph{inadequate} for
+\emph{state-dependent} data types, whose operations are only meaningful on
+well-formed states and whose effect depends on the state they observe. The
+sharp cases are tombstone-free sequence and rich-text CRDTs (a physical-delete
+RGA; Peritext without tombstones): deletion physically removes a node and
+\emph{re-anchors} its dependents, so an operation's recorded position can become
+stale, and its commutation with a concurrent operation holds only on reachable
+states. Whole-state VCs are simply \emph{false} on the infeasible states such a
+type admits.
+
+We present a \emph{conditioned} verification framework. The author enriches the
+signature with two predicates --- an \emph{applicability} predicate $\app$
+(``when is this operation sensible?'') and a reachability invariant $\Inv$ ---
+and discharges VCs \emph{conditioned} on them; the framework proves
+RA-linearizability once and for all. The developer thus \emph{describes only the
+sensible operations} (as the RGA already does with insertion anchors) and is
+never asked to reason about infeasible states. The technical core is an
+\emph{applicability-aware} linearization order together with a commutation
+discipline --- path-faithfulness plus causal freshness --- under which
+state-dependent, re-anchoring operations provably commute. The development is
+mechanized in Lean~4; we state which results are kernel-checked and which are
+in progress.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+An MRDT is a replicated data type whose replicas fork, apply operations locally,
+and reconcile divergence by a three-way \emph{merge} $\Merge(l,a,b)$ relative to
+the lowest common ancestor $l$ of the two divergent states $a,b$. Correctness is
+\emph{RA-linearizability}: every version in the store is explained by a
+sequencing of exactly the events it has observed, consistent with a
+linearization order $\mathsf{lo}$ derived from visibility and a
+conflict-resolution relation $\mathsf{rc}$.
+
+The prevailing methodology reduces this global property to a fixed catalogue of
+\emph{local, equational} VCs over $\dolab$, $\Merge$ and $\mathsf{rc}$,
+discharged per data type, and a soundness meta-theorem, proved once, that lifts
+the VCs to RA-linearizability of every reachable configuration. Crucially, the
+VCs are stated as universally quantified equations \emph{over all states}
+$\sigma \in \Sigma$.
+
+\paragraph{The whole-state assumption, and where it breaks.}
+Universal quantification is benign when every operation is \emph{total} ---
+meaningful on every state --- and \emph{state-independent} in the sense that a
+VC true on the reachable states is true on all states. Flat data types are of
+this kind: a grow-only set's $\mathsf{add}$ inserts on any state; an OR-set's
+$\mathsf{rem}$ deletes whatever tags it sees. But consider a
+\emph{tombstone-free} sequence CRDT (an RGA that physically deletes):
+
+\begin{itemize}[leftmargin=1.4em]
+\item An insertion records the \emph{position} it attaches to (a path to an
+  anchor node). If a concurrent deletion has removed that anchor, the insertion
+  must \emph{climb} to the nearest surviving ancestor --- its effect
+  \emph{depends on the state}.
+\item A deletion physically removes a node and \emph{re-anchors} (rehomes) its
+  children to the deleted node's parent.
+\item Consequently two operations commute only on \emph{well-formed} states:
+  replayed on a syntactically-constructible but unreachable state, the equation
+  is false.
+\end{itemize}
+
+A whole-state VC catalogue cannot express such a type: its commutation VC is
+false as a $\forall\sigma$ statement, even though it holds on every state the
+system can actually reach. This is not a peculiarity of the RGA; it is the
+generic situation for any data type with \emph{structural} state and
+\emph{positional} operations. Peritext without tombstones is the same
+phenomenon one level up: a formatting mark anchors to character positions, and
+deleting a character re-anchors the mark.
+
+\paragraph{Thesis.}
+Whole-state VC catalogues \emph{over-specify}: they demand equations on states no
+execution reaches. The remedy is not to invent new equations but to
+\emph{condition} the existing ones on what is reachable and sensible, and to
+re-prove the meta-theorem to consume the conditioned forms. The author's added
+burden should be exactly the \emph{description of sensible operations} --- which,
+for the RGA, is already implicit in the anchor discipline --- and nothing more.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=1.6em]
+\item A \emph{conditioned signature} (\S\ref{sec:sig}) carrying an applicability
+  predicate $\app$ and a reachability invariant $\Inv$, with a \emph{collapse}
+  property: flat types take $\app=\Inv=\top$ and recover the ordinary framework
+  verbatim.
+\item A \emph{conditioned VC discipline} (\S\ref{sec:vcs}): commutation and the
+  linearization order are relativized to $\app$ and $\Inv$, so the author
+  discharges VCs \emph{assuming sensibility}.
+\item The technical core (\S\ref{sec:conv}): an \emph{applicability-aware}
+  linearization order and a commutation discipline --- \emph{path-faithfulness}
+  and \emph{causal freshness} --- under which state-dependent, re-anchoring
+  operations commute; and the convergence theorem this yields.
+\item A once-and-for-all \emph{adequacy} theorem (\S\ref{sec:adequacy}) reducing
+  RA-linearizability to the conditioned VCs, with an explicit division between
+  the author's obligations and the framework's generic proof.
+\item Instantiation (\S\ref{sec:instances}): the tombstone-free RGA as the
+  driving instance, and Peritext-without-tombstones as an instance of the same
+  \emph{anchor-carrying} class that reuses the commutation discipline.
+\end{enumerate}
+
+\section{The replicated model and RA-linearizability}
+\label{sec:model}
+
+We recall the model, briefly, to fix notation; the framework of this note is
+orthogonal to its details.
+
+An \emph{event} is a triple $e=(t,r,o)$: a globally unique timestamp $t$, an
+origin replica $r$, and an operation $o$. A \emph{configuration} carries a
+\emph{store}: a directed acyclic graph of \emph{versions}, each holding a state
+$\sigma\in\Sigma$ and the set $L(v)$ of events that produced it, with per-replica
+heads. A transition forks a replica, applies a fresh event
+($\sigma \mapsto \dolab(\sigma,e)$; we write $e(\sigma)$), queries, or
+\textbf{merges}: it picks two heads $v_1,v_2$, finds their lowest common ancestor
+$v_\ell$, and installs a new version with state
+$\Merge(\sigma_{v_\ell},\sigma_{v_1},\sigma_{v_2})$ and event set
+$L(v_1)\cup L(v_2)$. Visibility $\vis$ records what each event's issuing replica
+had seen; $e_1 \parallel e_2$ denotes concurrency ($\neg(e_1\vis e_2)$ and
+$\neg(e_2\vis e_1)$). Two events \emph{commute}, $e_1 \comm e_2$, when
+$e_1(e_2(\sigma))=e_2(e_1(\sigma))$ for all $\sigma$.
+
+\begin{definition}[RA-linearizability, per version]
+\label{def:ralin}
+A list $\pi=e^1\cdots e^n$ \emph{witnesses} a version holding state $s$ with event
+set $E$ if (i) $\pi$ enumerates $E$ without repetition; (ii) $\pi$ extends the
+linearization order $\mathsf{lo}$; and (iii) it folds to the state,
+$e^n(\cdots e^1(\Sinit)\cdots)=s$. A configuration is \emph{RA-linearizable} if
+every version in its store admits a witness.
+\end{definition}
+
+The order $\mathsf{lo}$ places $e_1$ before $e_2$ when either $e_1\vis e_2$ and
+$e_1\ncomm e_2$, or $e_1\parallel e_2$, $e_1\ncomm e_2$, $\mathsf{rc}$ orders them,
+and $e_2$ is not already overwritten by a later non-commuting event. We work
+throughout with the \emph{set-relative} refinement $\loE{E}$ of this order, in
+which the overwriter clause ranges over the event set $E$ of the version being
+linearized rather than the whole configuration; this refinement is forced (an
+event can gain overwriters from a concurrent branch) and $\mathsf{lo}\subseteq
+\loE{E}$ pointwise, so every $\loE{E}$-witness is an $\mathsf{lo}$-witness.
+
+\section{The conditioned signature}
+\label{sec:sig}
+
+\begin{definition}[conditioned MRDT signature]
+\label{def:sig}
+A \emph{conditioned MRDT signature} is a tuple
+\[
+  \mathcal{D} \;=\;
+  \langle\, \Sigma,\ \Sinit,\ \dolab,\ \Merge,\ \mathsf{rc},\
+  \eqobs,\ \Inv,\ \app \,\rangle
+\]
+extending an ordinary MRDT signature $\langle
+\Sigma,\Sinit,\dolab,\Merge,\mathsf{rc}\rangle$ with
+\begin{itemize}[leftmargin=1.4em]
+\item an \emph{observational equivalence} $\eqobs\ \subseteq \Sigma\times\Sigma$
+  --- an equivalence relation that is a congruence for $\dolab$ and $\Merge$
+  (Def.~\ref{def:obs}); on flat types it may be taken as structural equality;
+\item a \emph{reachability invariant} $\Inv:\Sigma\to\mathsf{Prop}$ --- an
+  over-approximation of the reachable states;
+\item an \emph{applicability} predicate $\app:\mathsf{Op}\times\Sigma\to
+  \mathsf{Prop}$ --- ``operation $o$ is sensible on state $\sigma$.''
+\end{itemize}
+A signature is \emph{flat} when $\Inv=\top$, $\app=\top$, and $\eqobs$ is
+structural equality; then all conditioned notions below reduce definitionally to
+the ordinary ones.
+\end{definition}
+
+\begin{definition}[observational equivalence]
+\label{def:obs}
+$\sigma_1 \eqobs \sigma_2$ iff every query supported by the data type returns the
+same value on $\sigma_1$ and $\sigma_2$. Convergence is stated up to $\eqobs$:
+two replicas that have observed the same events must be observationally
+equivalent, not necessarily structurally equal.\footnote{This is the notion of
+\emph{convergence modulo observable behaviour}: two states may differ in
+representation (a balanced vs.\ unbalanced search tree; a physically-deleted node
+left as unreachable junk) yet agree on every observation. For the tombstone-free
+RGA it turns out that reachable convergence holds even \emph{structurally}, so
+$\eqobs$ may be taken as equality; we keep it abstract because state-dependent
+types in general need it.}
+\end{definition}
+
+\paragraph{Running example: the tombstone-free RGA.}
+The state is a forest over node identifiers: $\Sigma$ maps each live identifier
+$t$ to a payload and an anchor $\anc(t)$ (its parent), with a root sentinel $0$.
+We write $\live(\sigma,t)$ for ``$t$ is present in $\sigma$''. Two operations:
+\begin{align*}
+  \Ins(e,p,a)&:\quad \dolab(\sigma,\Ins(e,p,a)) = \sigma\big[t \mapsto (e,\
+    \resolve(\sigma, a\!:\!p))\big], \\
+  \Del(p,x)&:\quad \text{rehome each child of $x$ to } \resolve(\sigma,p),\
+    \text{then remove } x,
+\end{align*}
+where $\resolve(\sigma,L)$ returns the first identifier of the list $L$ that is
+live in $\sigma$, or the root $0$ if none is (the \emph{climb}). An insertion
+records a \emph{path} $p$ and an \emph{anchor} $a$; a deletion records the path
+$p$ to which its children rehome. The applicability and invariant predicates
+capture ``sensible'':
+\begin{align*}
+  \app(\Ins(e,p,a),\sigma) &\;\equiv\; \big(a=0 \wedge p=[\,]\big)\ \vee\
+    \big(\live(\sigma,a)\wedge \text{$p$ is the true ancestor chain of $a$}\big),\\
+  \app(\Del(p,x),\sigma) &\;\equiv\; \text{analogously, $x$ live and $p$ its
+    true rehome path},\\
+  \Inv(\sigma) &\;\equiv\; \mathsf{wf}(\sigma)\ \wedge\ \mathsf{idmono}(\sigma),
+\end{align*}
+where $\mathsf{wf}$ says the forest is well-formed (every anchor live or the
+root) and $\mathsf{idmono}$ says anchors strictly decrease
+($\anc(\sigma,t)=0 \vee \anc(\sigma,t)<t$), a consequence of monotone timestamp
+allocation. The anchor discipline the RGA already carries \emph{is} its
+applicability predicate; the author writes nothing new to describe sensible
+operations.
+
+\section{Sensible operations and reachability}
+\label{sec:sensible}
+
+The two predicates play complementary roles, and each carries exactly one
+obligation.
+
+\begin{definition}[reachability invariant]
+\label{def:reach}
+$\Inv$ is a \emph{reachability invariant} if $\Inv(\Sinit)$ holds and $\Inv$ is
+preserved by every transition: for all $\sigma$ with $\Inv(\sigma)$ and every
+applicable event $e$, $\Inv(e(\sigma))$; and for all $\Inv$-states $l,a,b$
+arising as an honest LCA-and-branches triple, $\Inv(\Merge(l,a,b))$. We write
+$\reach$ for the states satisfying $\Inv$.
+\end{definition}
+
+Establishing $\Inv$ as a reachability invariant is the author's obligation; it is
+a routine induction over $\dolab$ and $\Merge$ (for the RGA, preservation of
+$\mathsf{wf}$ under $\Merge$ requires exactly $\mathsf{idmono}$, which the same
+induction supplies). No other whole-state reasoning is asked of the author.
+
+\begin{remark}[the developer-effort ledger]
+\label{rem:ledger}
+The essential/author column and the generic/framework column are:
+\begin{center}\small
+\begin{tabular}{@{}p{0.44\textwidth}p{0.44\textwidth}@{}}
+\toprule
+Author provides (essential) & Framework proves (once) \\
+\midrule
+$\app$ --- spec of sensible operations & convergence of concurrent operations \\
+$\Inv$ + reachability-invariance (Def.~\ref{def:reach}) & existence of canonical
+  states $\sigma(E)$ \\
+conditioned VCs (\S\ref{sec:vcs}, assuming $\app$) & the linearization machinery \\
+& RA-linearizability (Thm.~\ref{thm:adequacy}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The author's column is the \emph{specification} --- one cannot verify a
+state-dependent type without saying which states are valid and which operations
+sensible --- and no more. The failure mode of a whole-state framework is that it
+leaks framework-column work into the author's lap; \S\ref{sec:conv} shows how the
+conditioned framework keeps the columns separate.
+\end{remark}
+
+\section{The conditioned verification conditions}
+\label{sec:vcs}
+
+The single primitive is conditioned commutation.
+
+\begin{definition}[conditioned commutation]
+\label{def:commOn}
+Operations $o_1,o_2$ \emph{commute where sensible}, written $o_1 \commOn{\app}
+o_2$, if for every $\sigma$ with $\Inv(\sigma)$, $\app(o_1,\sigma)$ and
+$\app(o_2,\sigma)$,
+\[
+  \dolab(\dolab(\sigma,o_1),o_2)\ \eqobs\ \dolab(\dolab(\sigma,o_2),o_1).
+\]
+\end{definition}
+
+Commutation is demanded only at reachable states where both operations are
+sensible, and only up to observation. The relational VCs on $\mathsf{rc}$ are the
+usual ones with $\comm$ replaced by $\commOn{\app}$: \textsc{rc-non-comm}
+(non-commuting distinct-replica operations are $\mathsf{rc}$-ordered in exactly
+one direction), \textsc{no-rc-chain} (no $o_1\rc o_2 \rc o_3$), and a conditioned
+\textsc{cond-comm} (a resolved conflict is invisible once an overwriter runs).
+These are the author's update-layer obligations, discharged \emph{assuming}
+applicability of the operations involved --- which, for state-dependent types, is
+what makes them provable at all.
+
+\section{Canonical states and convergence}
+\label{sec:conv}
+
+This section is the technical core: how conditioned VCs yield a well-defined
+canonical state per event set, and the commutation discipline that makes it work
+for re-anchoring operations.
+
+\subsection{The applicability-aware order}
+
+The set-relative order $\loE{E}$ (\S\ref{sec:model}) orders \emph{non-commuting}
+pairs. For state-dependent operations a second source of ordering appears: one
+operation's \emph{applicability} may depend on another. A concurrent deletion can
+render an insertion's recorded anchor stale; the insertion still commutes with
+the deletion (it climbs), but the two are related by a \emph{generation
+dependency} that the order must record, lest a reordering apply an operation at a
+state where it is neither sensible nor a harmless no-op.
+
+\begin{definition}[generation dependency; applicability-aware order]
+\label{def:loA}
+Event $e_2$ \emph{depends on} $e_1$, written $e_1 \prec_{\app} e_2$, if $e_1$ can
+change whether $e_2$ is applicable: $\exists\sigma.\ \app(e_2,\sigma)\neq
+\app(e_2,e_1(\sigma))$. The \emph{applicability-aware order} is
+\[
+  \loA{E} \;=\; \loE{E}\ \cup\ \{(e_1,e_2)\ :\ e_1\vis e_2\ \wedge\ e_1
+    \prec_{\app} e_2\}.
+\]
+\end{definition}
+
+For the RGA, $\prec_{\app}$ is the syntactic fact ``$e_2$'s recorded path names
+$e_1$'s identifier''; it is discharged directly from the operation shapes.
+
+\begin{definition}[no-op-feasible enumeration]
+\label{def:noop}
+A list $\pi=e^1\cdots e^n$ is \emph{no-op-feasible} if at each prefix fold
+$\sigma_i = e^i(\cdots e^1(\Sinit)\cdots)$ the next event is either applicable at
+$\sigma_i$ or acts as the identity there ($e^{i+1}(\sigma_i)\eqobs \sigma_i$).
+\end{definition}
+
+Two feasibility repairs are needed and are \emph{complementary}, not
+alternatives: $\loA{E}$ excludes reorderings that violate a generation dependency
+(which mere no-op tolerance would wrongly admit), while no-op tolerance admits the
+harmless \emph{redundant} reorderings that strict applicability would wrongly
+reject (e.g.\ two concurrent deletions of one node: whichever runs second is a
+no-op, so no fully-applicable enumeration exists, yet both orders converge). The
+order handles the first; no-op-feasibility the second.
+
+\subsection{The commutation discipline for anchor-carrying types}
+
+The convergence proof reorders an enumeration to a canonical form by adjacent
+swaps of $\loA{E}$-incomparable events. Each swap must hold \emph{at the prefix
+fold where the pair sits} --- a state at which either event may be stale, because
+prior events in the prefix may have deleted its anchor. The discipline below
+identifies exactly what makes such a swap valid without demanding either event be
+applicable there.
+
+\begin{definition}[path-faithfulness]
+\label{def:faith}
+An operation is \emph{faithful} at $\sigma$ if its recorded list tracks the true
+tree of $\sigma$ above its climb target: for an insertion with list $L$, writing
+$c=\resolve(\sigma,L)$, if $c$ is live then
+$\resolve(\sigma,L\!\setminus\!\{c\}) = \anc(\sigma,c)$ (the list continues up the
+real ancestor chain); a deletion is faithful if its rehome path likewise resolves
+to its target's true parent. Write $\faith(o,\sigma)$.
+\end{definition}
+
+\begin{definition}[causal freshness]
+\label{def:nfc}
+$\nfc(a,b)$ holds if $b$'s (fresh) identifier does not occur in $a$'s recorded
+list --- the condition a real execution guarantees between concurrent events,
+since neither observed the other and identifiers are allocated afresh.
+\end{definition}
+
+Faithfulness is strictly weaker than applicability ($\app(o,\sigma)\Rightarrow
+\faith(o,\sigma)$) and, unlike applicability, is \emph{stable under
+re-anchoring}: a deletion that rehomes nodes preserves the faithfulness of a
+concurrent operation's recorded path, because rehoming updates the true tree
+consistently with the climb. This is the property that lets the swap fire at
+stale states.
+
+\begin{lemma}[faithful commutation]
+\label{lem:swap}
+Let $\sigma$ satisfy $\Inv$ with root absent, and let $a,b$ be distinct-timestamp
+events with $\faith(a,\sigma)$, $\faith(b,\sigma)$, $\nfc(a,b)$ and $\nfc(b,a)$.
+Then
+\[
+  \dolab(\dolab(\sigma,a),b)\ \eqobs\ \dolab(\dolab(\sigma,b),a).
+\]
+\hfill\lean{general\_swap\_bothFaithful}
+\end{lemma}
+
+Lemma~\ref{lem:swap} is mechanized (kernel-checked, all four
+insertion/deletion combinations). It is the reusable heart of the framework for
+anchor-carrying types: it says two re-anchoring operations commute whenever each
+is merely faithful and they do not name each other's fresh identifiers ---
+neither need be applicable. The asymmetric special case ($b$ applicable, $a$
+faithful) is \lean{general\_swap}; that the symmetric case also holds is what
+guarantees the convergence swap fires \emph{at every} prefix fold, where both
+events may be stale.
+
+\subsection{Convergence}
+
+Faithfulness must hold not merely at one state but at every prefix fold the
+canonicalization visits. This is a reachability-style invariant --- call it
+\emph{faithful-threading} --- and it is where the framework absorbs the work that
+a whole-state approach would push onto the author.
+
+\begin{proposition}[faithful-threading, target form]
+\label{prop:thread}
+Along any $\loA{E}$-respecting, no-op-feasible enumeration of a backward-closed
+$E$, every event is faithful at the prefix fold at which it is applied.
+\end{proposition}
+
+Threading is established from the author's $\app$/$\Inv$ data by a single-step
+preservation argument: faithfulness is preserved by an applicable insertion, and
+by an applicable deletion (the deletion splices its target out of the true chain,
+re-linking children to the target's successor). The insertion step and the
+correct invariant strengthening are mechanized; the deletion step is the one
+remaining lemma (\S\ref{sec:status}).
+
+\begin{theorem}[conditioned convergence, target form]
+\label{thm:conv}
+Assume the conditioned VCs (\S\ref{sec:vcs}), Lemma~\ref{lem:swap}, and
+Proposition~\ref{prop:thread}. Then any two enumerations of a backward-closed
+event set $E$ that respect $\loA{E}$ and are no-op-feasible fold from $\Sinit$
+to $\eqobs$-equivalent states.
+\end{theorem}
+
+Convergence licenses the \emph{canonical state} $\sigma(E)$ --- the
+$\eqobs$-class obtained by folding any such enumeration --- and reduces
+``a version linearizes'' to ``its stored state $\eqobs\ \sigma$ of its event
+set,'' with witness lists eliminated from all downstream reasoning. The proof is
+the ordinary bottom-up canonicalization (proved once for flat types), with each
+adjacent swap discharged by Lemma~\ref{lem:swap} under
+Proposition~\ref{prop:thread}; nothing in it mentions $\resolve$, anchors, or the
+RGA. That is the sense in which convergence is generic: it consumes the
+faithful-commutation VC (Lemma~\ref{lem:swap}) and the threading obligation
+(Proposition~\ref{prop:thread}) as hypotheses, and each data type supplies those
+from its own operation algebra.
+
+\section{Adequacy}
+\label{sec:adequacy}
+
+Convergence is the update-layer half. The merge-layer half is a single equation
+between canonical states.
+
+\begin{definition}[Join Lemma]
+\label{def:join}
+For backward-closed event sets $E_1,E_2$ of a reachable configuration,
+$\sigma(E_1\cup E_2)\ \eqobs\ \Merge\big(\sigma(E_1\cap E_2),\ \sigma(E_1),\
+\sigma(E_2)\big)$.
+\end{definition}
+
+By the LCA property $L(v_\ell)=L(v_1)\cap L(v_2)$, the first argument is exactly
+the state the store hands the merge. The two halves compose once and for all:
+
+\begin{theorem}[adequacy]
+\label{thm:adequacy}
+If $\mathcal{D}$ satisfies the conditioned VCs, has $\Inv$ as a reachability
+invariant, and satisfies the Join Lemma, then every configuration reachable in
+the transition system is RA-linearizable, per version.
+\end{theorem}
+
+The adequacy bridge is closure-indexed and proved generically: because every
+store version is fully causally closed, the Join Lemma applies at it regardless
+of the closure strength a data type declares, and the two established
+verification routes (a delta contract for set- and counter-shaped merges; a
+direct join for counter-comparison merges) are its two instances. The bridge and
+its instances are mechanized (\lean{ra\_linearizable3\_of\_joinC}), with the nine
+flat production MRDTs of the repository routed through it.
+
+\section{The class map and instances}
+\label{sec:instances}
+
+Data types occupy a three-axis space: the \emph{delta class} of the merge (group,
+lattice, or feasibility-conditioned), the \emph{closure strength} the Join Lemma
+needs, and the \emph{state invariant} $\Inv$. Flat types sit on the $\Inv=\top$
+plane and are handled by the ordinary framework (the collapse of
+Def.~\ref{def:sig}). The conditioned framework of this note is what populates the
+$\Inv\neq\top$ plane.
+
+\paragraph{Tombstone-free RGA.} The driving instance: $\app$ = the anchor
+discipline, $\Inv=\mathsf{wf}\wedge\mathsf{idmono}$, faithful commutation
+(Lemma~\ref{lem:swap}) discharged from $\resolve$/rehome algebra.
+
+\paragraph{Peritext without tombstones.} The same class, one level up. A
+formatting mark anchors to character positions as an RGA node anchors to its
+parent; deleting a character re-anchors the marks that span it, exactly the
+rehoming phenomenon. The author supplies $\app$ (a mark's endpoints anchor live
+characters), $\Inv$ (well-formed marks over a well-formed sequence), and
+discharges the conditioned VCs by the \emph{same} faithfulness/freshness
+discipline (Lemmas~\ref{lem:swap} and the threading of
+Prop.~\ref{prop:thread}), with marks reusing the anchor machinery. It is thereby
+an \emph{instance}, not a second bespoke development --- which is the payoff of a
+framework over a per-type proof.
+
+\section{Mechanization status}
+\label{sec:status}
+
+The development is in Lean~4 (Mathlib; axioms $\{\mathtt{propext},
+\mathtt{Classical.choice}, \mathtt{Quot.sound}\}$; no \texttt{sorry} in the cited
+results). Honestly delineated:
+
+\begin{itemize}[leftmargin=1.4em]
+\item \textbf{Kernel-checked.} The closure-indexed adequacy bridge
+  (\lean{ra\_linearizable3\_of\_joinC}) and the nine flat MRDTs routed through it;
+  the set-relative convergence for flat types; the conditioned-convergence order
+  reduction; and the commutation discipline for the RGA ---
+  Lemma~\ref{lem:swap} (\lean{general\_swap\_bothFaithful}) and its asymmetric
+  form (\lean{general\_swap}), all insertion/deletion combinations.
+\item \textbf{In progress.} Proposition~\ref{prop:thread}
+  (faithful-threading): the correct invariant (a chain-faithfulness
+  strengthening) and its insertion step are mechanized; the deletion-preservation
+  step is the single remaining lemma, being discharged concurrently by direct
+  proof and by property-based testing on reachable states. Given it,
+  Theorem~\ref{thm:conv} is the ordinary canonicalization instantiated with
+  Lemma~\ref{lem:swap}.
+\item \textbf{Design/target.} Theorem~\ref{thm:conv} and the end-to-end hosting
+  of the RGA (and Peritext) as conditioned instances are the framework's
+  intended guarantee; their assembly rests on the in-progress step above. We have
+  verified, on reachable states, that the RGA converges even structurally, so
+  $\eqobs$ may there be taken as equality --- a simplification, not a soundness
+  requirement.
+\end{itemize}
+
+\paragraph{Relation to prior methodologies.} Whole-state VC catalogues (Neem)
+are the $\Inv=\app=\top$ collapse of this framework. The use of observational
+equivalence rather than structural equality follows earlier work on
+\emph{convergence modulo observable behaviour} (Peepul); the contribution here is
+to combine it with applicability conditioning and to isolate the commutation
+discipline (faithfulness + freshness) that makes state-dependent, re-anchoring
+operations tractable, so that the author need only \emph{describe the sensible
+operations}.
+
+\end{document}

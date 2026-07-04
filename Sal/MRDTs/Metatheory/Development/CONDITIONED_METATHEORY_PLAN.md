@@ -442,6 +442,22 @@ Next build: the base-anchored generic convergence over `ConditionedMRDTSig`, con
 `general_swap_bothFaithful` + `Inv`-reachability, deriving `Faithful`-threading internally. That is
 the framework result that makes Peritext cheap.
 
+## Keystone status (2026-07-04): `chainFaithful_doDel` PBT-corroborated; proof in progress
+
+`RGA_Faithful_PBT.lean` (kernel-clean; `chainFaithfulB_iff` — the Bool-checker ↔ `ChainFaithful`
+Prop equivalence — proved, axioms `[propext, Quot.sound]`, so the tests exercise the real
+invariant). Reachable-state generator (fold random *applicable* ops from `init_st`, self-validated
+4511/4511 accurate). Results: **~58,000 checks, 0 violations** — `chainFaithful_doDel` standalone
+(17202), threading base case (4511), end-to-end threading incl. Del steps (36637, the Del counter
+isolated = 0). Confirmatory SPOT: `ChainFaithful` correctly *excludes* the config where
+`ClimbFaithful` failed — validating `ChainFaithful` is the right corrected invariant. **No
+counterexample.** So the keystone is very likely true; the mechanized proof (`chainFaithful_doDel`)
+is running concurrently. Simultaneously raises the state-dependent-convergence conjecture from ~80%.
+
+The reachable-state generator is itself a reusable framework asset (the PBT methodology for
+conditioned VCs — ports to Peritext). Framework exposition: `conditioned-framework.pdf/.tex`
+(this directory) — the crux paper, self-contained, formal.
+
 **Net:** hosting the tombstone-free RGA is a multi-obligation project dominated by an `eq`-quotient
 σ-layer rebuild (A), then `chainFaithful_doDel` (B), then possibly a both-`Faithful` swap (C). This
 is the honest cost — substantially more than "wiring," and the eq-quotient (A) is the natural next
