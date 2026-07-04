@@ -334,6 +334,44 @@ it stays inside the RGA's own `accurate` states where `commutes_with'` fires.
    now with `id_mono` + rehoming determinism available to close it concretely.
 4. Wire RGA → `ConditionedContract` → RA-linearizability (the `(·, RgaInv)` cell).
 
+## M2 wiring — DONE, RGA does NOT yet host; frontier precisely mapped (`RGA_BubbleWiring.lean`, task #14, kernel-clean)
+
+Plumbing closed; then M2 surfaced a **verified wall** and refuted two sub-conjectures. Three
+obligations remain for RGA hosting, all precisely located:
+
+- **Plumbing (CLOSED):** `SwapWitness` abstraction + `applySeq_swap_loOnA_incomparable_C'` — the
+  generic incomparable-swap with the staled-event applicability premise DROPPED (drops both
+  `applicable a` and `applicable b`; keeps `hInv` for the rc-overwriter branch). The bubble can now
+  consume a `SwapWitness` instead of pointwise applicability.
+- **(A) eq-vs-Eq is a PROVABLE WALL (verified, dominant).** `eq_strictly_weaker_than_Eq`
+  (kernel-clean): for `concrete_st`, `eq x y ∧ x ≠ y` — witness `del (upd init 1 (5,0)) 1` vs `init`
+  (both empty-domain, so observationally `eq`, but `del` leaves off-domain junk in `mappings`, so
+  Lean-unequal). `general_swap` yields only observational `eq`; the σ-layer (`ConditionedConvergence`,
+  `Sigma_LoOn3`) is Lean-`Eq`-based. So `rga_swapWitnessEq` (the `eq`-version) closes but the
+  Lean-`Eq` `SwapWitness` does NOT. **Fix: rebuild the conditioned convergence layer over
+  observational `eq` (an `eq`-quotient of state, or `eq`-congruent `applySeq`).** Not a soundness
+  bug — RA-linearizability is up-to-`eq` anyway — but the layer over-committed to `Eq`, which flat
+  RDTs never exposed (their `do_` leaves no junk). *(Insight 1 again: over-specification, this time
+  in the equality relation.)* This blocks hosting for ANY swap, independent of (B)/(C).
+- **(B) `general_swap`'s `Faithful` is too weak to THREAD (verified), fix partially mechanized.**
+  `climbFaithful_not_preserved_under_del` (kernel-clean counterexample): `ClimbFaithful` is a
+  one-level property, not a delete-invariant — a delete deeper in the recorded list re-anchors past
+  a level it never constrained. Refutes "`Faithful` threads." Fix: the stronger `ChainFaithful`
+  (every live level a true ancestor chain); `climbFaithful_of_chain` (feeds `general_swap`
+  unchanged) and `chainFaithful_doIns` PROVED; **`chainFaithful_doDel` is the single remaining
+  Faithful lemma** (documented goal, splice argument, not sorried). `NoFreshClash` threads
+  (`noFreshClash_of_freshIns`/`_of_del`) under monotone allocation.
+- **(C) both-staled risk (analysis-level, unverified).** `general_swap` is asymmetric — one event
+  `Faithful`, the other `accurate`. At a hybrid σ-walk state BOTH swapped events can be staled
+  (M1's `rehoming_stales_path`), so `general_swap` may not even apply there; a both-`Faithful` swap
+  lemma may be needed. NOT mechanized either way — the live risk for whether Route A's swap even
+  fires at every bubble state.
+
+**Net:** hosting the tombstone-free RGA is a multi-obligation project dominated by an `eq`-quotient
+σ-layer rebuild (A), then `chainFaithful_doDel` (B), then possibly a both-`Faithful` swap (C). This
+is the honest cost — substantially more than "wiring," and the eq-quotient (A) is the natural next
+milestone as it unblocks everything downstream.
+
 **Risk register.** (a) The normal-form crux (M3) is Route A's alignment problem again; the bet is
 `id_mono` + rehoming determinism close it concretely where the generic version can't — unproven,
 the main risk. (b) `eq`-vs-`Eq`: `commutes_with'` is observational `eq`; the σ-layer is `Eq`-based,
