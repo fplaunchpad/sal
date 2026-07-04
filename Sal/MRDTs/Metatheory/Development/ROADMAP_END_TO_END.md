@@ -55,9 +55,28 @@ reachable replica state is `eq` to a fold of a `loOnA`-respecting enumeration of
 (update steps definitional; merge steps by M3 + M2). Corollary: same events ⇒ `eq` states = T-E2E.
 Needs `merge`'s `eq`-congruence. **Risk: medium** — pure structure once M1–M3 exist.
 
-**M5 (optional, framework paper only)** — `eq`-quotient σ-layer so the generic
-`conditioned_convergence_on` hosts the RGA as an *instance* rather than via the bespoke `eq`-route.
-Not needed for T-E2E; needed to claim "one conditioned metatheorem, RGA as an instance."
+**M5 — abstract-`≈` σ-layer** (optional for RGA-only T-E2E; **load-bearing for the framework
+claim**). Parametrize the σ-layer / convergence engine in the state equivalence `≈` (Lean `Eq` the
+degenerate instance) so the generic `conditioned_convergence_on` hosts the RGA as an *instance*, not
+via the bespoke `eq`-route.
+
+## Generic vs per-MRDT (the publication shape)
+
+Two of the four milestones are naturally **generic** (build once over `ConditionedMRDTSig` + abstract
+`≈`), which turns the result from "one RGA proof" into "an end-to-end verified-SEC metatheorem for
+conditioned MRDTs, RGA the flagship instance":
+- **Generic:** M2 (execution model — no RGA internals), M4 (system induction — MRDT-agnostic once
+  merge-linearization is a VC field), the convergence engine (`eq_convergence` consumes only: `≈`
+  equivalence, `do_` `≈`-congruent, a swap oracle — abstracting it is mechanical, and it is exactly
+  why M5 is load-bearing), and the `loOnA` order-repair theory (already generic).
+- **Per-MRDT VCs (RGA discharges the hard versions):** (1) swap witness at reorder states
+  (`general_swap_bothFaithful`); (2) a threadable reorder invariant + step lemmas (`ChainFaithful`,
+  `doIns`/`doDel_faithful`, M1's base); (3) the merge-linearization bridge (M3).
+- **Payoff:** the 9 simple production MRDTs (Lean-`Eq` commutation, trivial applicability) collapse
+  VCs 1–2 (`commutes` gives the swap witness unconditionally; the reorder invariant is `True`) and
+  usually VC 3, inheriting T-E2E nearly free; the RGA is precisely the instance that exercises every
+  conditioned mechanism. The RGA supplies the novelty, the framework the generality. Critical path
+  unchanged: M3's merge-vs-fold PBT gate runs first.
 
 ## Order of work
 
