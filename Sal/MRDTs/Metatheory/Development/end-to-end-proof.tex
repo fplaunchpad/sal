@@ -73,22 +73,40 @@ divergent states with $\merge$. Each replica state is a \emph{version}; the vers
 DAG whose leaves are updates ($\dodo$) and whose internal nodes are merges.
 
 \paragraph{Linearization and canonical states.} Fix an event set $E$ with a visibility
-(causal) order. The \emph{RA order} $\loE$ is the induced strict order that a correct
-sequential execution must respect: causal order, refined on concurrent operations by the
-return-value-aware tie-break (the absorber/overwriter clause --- a later-timestamp write
-wins over the value it overwrites). The \emph{canonical state} $\sigmacan(E) := \fold\,\ini\,\pi$
-for any $\loE$-respecting enumeration $\pi$ of $E$; this is well defined only once such folds
-are shown to converge.
+(causal) order. The \emph{RA order} $\loE$ orders the pairs a correct sequential execution
+must not invert: a visible non-commuting pair by visibility, and a concurrent non-commuting
+pair by the return-value-aware tie-break (the absorber/overwriter clause --- ordered by
+$\mathsf{rc}$ unless the later event is already overwritten by a still-later non-commuting
+one). Two points matter for the proof and were confirmed against the mechanization
+(\lean{RA\_Linearizability.lean}). First, $\loE$ is \emph{not transitive}: ``$\pi$ respects
+$\loE$'' is therefore the elementwise condition
+$\pi.\mathsf{Pairwise}\,(\lambda a\,b.\ \neg\,\loE\,b\,a)$ (\lean{respects}), not sortedness,
+and $\loE$ is in general partial --- many enumerations respect it, so the canonical state
+$\sigmacan(E) := \fold\,\ini\,\pi$ is well defined only up to $\eqobs$ and only once such
+folds are shown to converge (Lemma~\ref{lem:conv}). Second, for the \emph{conditioned}
+metatheorem $\loE$ is taken over conditioned commutation $\mathsf{commutesOn}$
+(\lean{MRDTSig.lean}); the unconditioned $\loE$ over $\mathsf{commutes}$
+(\lean{RA\_Linearizability.lean}) is the flat specialization.
 
 \paragraph{Observational equivalence.} $\st \eqobs \st'$ iff no client operation can
 distinguish them (equal liveness, payloads, and observable order per element). Representation
 junk --- dead-node residue, internal ordering artefacts --- is quotiented away. Convergence
 and RA-linearizability are always stated up to $\eqobs$.
 
-\begin{definition}[RA-linearizability, per version]\label{def:ralin}
+\begin{definition}[RA-linearizability, per version, up to $\eqobs$]\label{def:ralin}
 An MRDT is \emph{RA-linearizable} if, in every well-formed execution, each version $v$ with
-delivered event set $E_v$ satisfies $\text{state}(v) \eqobs \sigmacan(E_v)$: its state is
-observationally the canonical linearization of exactly the events it has seen.
+head state $s$ and delivered event set $E_v$ admits a witnessing linearization: there is a
+permutation $\pi$ of $E_v$ (\lean{listPermOf}) that respects $\loE$ (\lean{respects}) with
+\[
+  \fold\,\ini\,\pi \;\eqobs\; s .
+\]
+This is the mechanized \lean{IsRALinearizable} (\lean{RA\_Linearizability.lean}) with one
+change: structural equality $\fold\,\ini\,\pi = s$ is relaxed to observational $\eqobs$. The
+relaxation is exactly what a state-dependent datatype needs --- the tombstone-free RGA
+converges only up to observable behavior (dead-node residue may differ), so equality on the
+nose is too strong. Given convergence (Lemma~\ref{lem:conv}) the witness form is equivalent
+to $s \eqobs \sigmacan(E_v)$; we use the existential form as the definition and the canonical
+form as a convenience.
 \end{definition}
 
 \paragraph{Why conditioning is forced.} The unconditioned metatheory (below) proves
@@ -159,14 +177,17 @@ enumerations of a backward-closed reachable $E$ fold from $\ini$ to $\eqobs$-equ
 hence $\sigmacan(E)$ is well defined up to $\eqobs$.
 \end{lemma}
 \begin{proof}
-Two admissible enumerations of $E$ differ by transpositions of adjacent concurrent events.
-VC~\ref{vc:comm} preserves the fold up to $\eqobs$ under one transposition, provided its
-precondition holds at the transposition point; VC~\ref{vc:inv} supplies that precondition
-along the whole enumeration (base at each event's enabling fold, preserved by each step,
-scoped to enabled events). The generic order-repair engine threads the single-swap fact into
-the full statement (Lean: \lean{eq\_convergence}, kernel-clean --- consumes only that
-$\eqobs$ is an equivalence, $\dodo$ is $\eqobs$-congruent, and a swap oracle of the shape
-VC~\ref{vc:comm}$+$\ref{vc:inv} provides).
+Any two $\loE$-respecting enumerations of $E$ are related by repeatedly transposing adjacent
+$\loE$-incomparable events. Because $\loE$ is non-transitive, ``respecting'' is the elementwise
+\lean{Pairwise} condition rather than sortedness, so this order-repair is more delicate than
+for a total order --- it is exactly what the generic engine \lean{eq\_convergence} carries out,
+and we appeal to it rather than re-derive it. Each transposition preserves the fold up to
+$\eqobs$ by VC~\ref{vc:comm}, provided the swap precondition holds at the transposition point;
+VC~\ref{vc:inv} supplies it along the whole enumeration (base at each event's enabling fold,
+preserved by each step, scoped to the enabled events --- the only ones the repair transposes).
+The engine consumes only that $\eqobs$ is an equivalence, $\dodo$ is $\eqobs$-congruent, and a
+swap oracle of the shape VC~\ref{vc:comm}$+$\ref{vc:inv} provides (Lean: \lean{eq\_convergence},
+kernel-clean).
 \end{proof}
 
 \begin{lemma}[Canonical adequacy]\label{lem:adeq}
@@ -175,11 +196,17 @@ $\eqobs\ \sigmacan$ of its delivered event set.
 \end{lemma}
 \begin{proof}
 Induction over the version DAG. Initial: the empty fold. Update node: appends one delivered
-operation to a canonical fold (definitional). Merge node: its children are, by hypothesis,
-$\eqobs$ canonical folds of their delivered sets; VC~\ref{vc:merge} rewrites the merge to a
-$\loE$-fold of the union, and Lemma~\ref{lem:conv} identifies that with $\sigmacan$ of the
-union; $\eqobs$-congruence of $\merge$ discharges the substitution. Backward closure of
-delivered sets keeps every enumeration admissible.
+operation to a canonical fold (definitional). Merge node with LCA $l$ and branches $a,b$: by
+hypothesis $a \eqobs \sigmacan(E_a)$ and $b \eqobs \sigmacan(E_b)$, and $l \eqobs
+\sigmacan(E_l)$. First rewrite $a,b$ to literal canonical folds using $\eqobs$-congruence of
+$\merge$ (so VC~\ref{vc:merge}, stated for branch folds, applies); then VC~\ref{vc:merge}
+gives $\merge\,l\,a\,b \eqobs \fold\,l\,\pi$ for a $\loE$-respecting $\pi$ of the branch
+events $E_a \cup E_b$. Now $E_l$ causally precedes those branch events (they were generated on
+states derived from $l$), so a $\loE$-respecting enumeration of $E_l \cup E_a \cup E_b$
+factors as (an $\loE$-enumeration of $E_l$) followed by $\pi$; hence
+$\fold\,l\,\pi = \fold\,(\sigmacan(E_l))\,\pi \eqobs \sigmacan(E_l \cup E_a \cup E_b)$ by
+Lemma~\ref{lem:conv} (the engine is start-state generic). Backward closure keeps every
+enumeration admissible.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:meta}]
@@ -231,16 +258,26 @@ entries stay genuine ancestors, one possibly now dead --- still a live subchain
 
 \begin{lemma}[Key Lemma: resolution over a live subchain]\label{lem:key}
 For any live subchain of genuine ancestors $pre$ of $x$, in every reachable $\st$,
-$\resolve\,\st\,pre = \anc\,\st\,x$.
+$\resolve\,\st\,pre = \anc\,\st\,x$. (Lean: \lean{subchain\_resolve},
+\lean{RGA\_SubchainResolve.lean}, kernel-clean.)
 \end{lemma}
 \begin{proof}
-$\resolve$ returns the first live entry; each entry is a genuine ancestor, so this is the
-nearest live ancestor among $pre$. It is the nearest overall: a nearer live ancestor
-$c \notin pre$ is impossible --- (a) live at capture $\Rightarrow c$ would precede the head,
-so $c \in pre$; (b) dead at capture $\Rightarrow$ still dead (physical deletion is
-permanent); (c) inserted after capture $\Rightarrow$ a descendant, never a new ancestor of
-the pre-existing $x$. (Lean: in mechanization, \lean{RGA\_SubchainResolve}; replaces the
-full-chain lemma \lean{hres\_of\_lchain} that failed on proper subchains after rehoming.)
+$\resolve$ returns the first entry live in $\st$; each entry is a genuine ancestor, so this is
+the nearest live ancestor among $pre$. It is the nearest overall: no live ancestor $c \notin
+pre$ is nearer than that first-live entry --- (a) if $c$ was live at capture it was in the
+captured live chain, so $c \in pre$ (and any $pre$-entry nearer than the first-live one is
+dead in $\st$, hence not $c$); (b) if $c$ was dead at capture it is still dead (physical,
+tombstone-free deletion is permanent); (c) an event inserted after capture attaches as a
+descendant, never a new ancestor of the pre-existing $x$. The mechanization absorbs these
+three cases into one preserved invariant
+$\mathsf{LiveChain}\,\st\,x\,pre := (\text{root unstored}) \wedge \contains\,\st\,x \wedge
+\mathsf{IsAncPath}\,\st\,x\,(pre.\mathsf{filter}\,\contains)$, which holds at capture, is
+preserved by each insert (\lean{isAncPath\_upd}) and delete (\lean{isAncPath\_surgery}, chain
+splicing across a deleted entry), and yields the conclusion. Case~(b) is discharged by an
+explicit hypothesis $t \notin pre$ on inserts (\lean{okStep}) --- the mechanized form of ``no
+resurrection,'' itself a consequence of monotone allocation, every $pre$-entry sitting below
+$x$'s id. This replaces the earlier full-chain lemma \lean{hres\_of\_lchain}, which failed on
+the proper subchains rehoming produces.
 \end{proof}
 
 \begin{proposition}[RGA discharge]\label{prop:discharge}
@@ -306,22 +343,32 @@ Merge single-sided ($I_4$) & \lean{eq\_merge\_single} & proved\\
 Merge cross-branch & \lean{branchInv\_doDel\_crossBranch} & proved\\
 Two-sided merge (VC~\ref{vc:merge}) & \lean{eq\_merge\_two\_sided} & mod.\ $\RVF$\\
 \hline
-\textbf{Key Lemma (\ref{lem:key})} & \lean{RGA\_SubchainResolve} & in mechanization\\
-\textbf{$\RVF$ invariant (\ref{lem:rvf})} & \lean{RGA\_RecListVisFaithful} & in mechanization\\
-RGA discharge (Prop.~\ref{prop:discharge}) & \lean{RGA\_update\_convergence} + merge & awaits above\\
-Generic conditioned metatheorem (\ref{thm:meta}) & $\Inv/\app$-parametric soundness &
-  to build (generalizes template)\\
+\textbf{Key Lemma (\ref{lem:key})} & \lean{subchain\_resolve} & proved\\
+\textbf{$\RVF$ invariant (\ref{lem:rvf})} & \lean{RGA\_RecPathFaithful} & in mechanization\\
+RGA discharge (Prop.~\ref{prop:discharge}) & \lean{RGA\_update\_convergence} + merge & awaits $\RVF$\\
+$\eqobs$-relaxation + $\app$-conditioning of the metatheorem & (extends the template) &
+  to build\\
+Generic Join $\Rightarrow$ RA-lin (Inv-conditioned) & \lean{ra\_linearizable3\_of\_joinC} &
+  proved (template)\\
 \hline
 \end{tabular}
 \end{center}
 
-\paragraph{Reading.} The generic soundness (Theorem~\ref{thm:meta}) is the unconditioned
-metatheorem carried through with $\Inv/\app$; its convergence and adequacy lemmas are the
-already-proved engine and adequacy bridge. The RGA's discharge is kernel-clean except for the
-two facts it all reduces to --- the Key Lemma and the $\RVF$ invariant --- which are proved on
-paper here (Section~\ref{sec:rga}) by construction, and are in mechanization. Property-based
-testing corroborates every RGA step (600 merge-vs-fold triples through the hard corners, zero
-counterexamples; update-layer threading green across hundreds of interleavings), so no open
-mathematical question remains: the residual is transcription plus stating the soundness
-theorem $\Inv/\app$-generically.
+\paragraph{Reading.} Be precise about what exists. The \emph{Inv-conditioned} Join
+$\Rightarrow$ RA-linearizability theorem is already mechanized and kernel-clean
+(\lean{ra\_linearizable3\_of\_joinC}: it concludes RA-linearizability from the closure-indexed
+ternary Join Lemma and already carries $\Inv$), with nine flat instances. So
+Theorem~\ref{thm:meta} is not built from nothing; two \emph{genuinely new} pieces extend that
+template: (i) relaxing its structural equality to observational $\eqobs$ --- required because
+the RGA converges only up to observable behavior --- and (ii) adding the applicability
+conditioning $\app$ on top of $\Inv$. Its two lemmas are the already-proved convergence engine
+and the adequacy bridge, carried through with $\eqobs$ and $\app$. On the RGA side, the
+discharge is kernel-clean (swap, single-sided and cross-branch merge, reorder steps) except
+for the two facts it all reduces to: the Key Lemma (now \emph{proved}, \lean{subchain\_resolve})
+and the $\RVF$ invariant (in mechanization, \lean{RGA\_RecPathFaithful}) --- both established on
+paper here (Section~\ref{sec:rga}) by construction. Property-based testing corroborates every
+RGA step (600 merge-vs-fold triples through the hard corners, zero counterexamples;
+update-layer threading green across hundreds of interleavings), so no open mathematical
+question remains: the residual is transcription of $\RVF$, the $\eqobs/\app$ extension of the
+template, and the mechanical assembly they unlock.
 \end{document}
