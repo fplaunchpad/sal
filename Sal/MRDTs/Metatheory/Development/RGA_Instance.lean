@@ -187,14 +187,18 @@ RGA quotient is per-version RA-linearizable up to `≈` on every reachable
 configuration whose events are all `WfOpGen`. -/
 theorem RGA_is_RA_linearizable
     (hP : InvPres RGACondSig' WfOp)
-    (hJoinEq : EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOp)
+    (GenDisc : (Op RGACondSig'.AppOp → Op RGACondSig'.AppOp → Prop) →
+        Set (Op RGACondSig'.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOp GenDisc)
     (C : Configuration (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC'))
     (hReach : (labeledTS3 (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC')).ReachableFrom
         (initConfig (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC') trivial) C)
-    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o) :
+    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
+    (hGenDisc : GDSupply rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC' GenDisc
+        (Configuration.core C)) :
     IsRALinearizable3 C :=
   RA_linearizable_up_to_eq rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC'
-    WfOpGen rga_wfOpReachable' hJoinEq C hReach hGenC
+    WfOpGen rga_wfOpReachable' GenDisc hJoinEq C hReach hGenC hGenDisc
 
 #print axioms RGA_is_RA_linearizable
 
