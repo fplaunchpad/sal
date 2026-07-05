@@ -143,24 +143,21 @@ theorem wfOpGen_del_live {t r x : ℕ} {p : List ℕ} {s : concrete_st}
   refine ⟨isAncPath_not_mem s h0 x p hpath, ?_⟩
   intro hx0; rw [hx0, h0] at hlive; exact Bool.noConfusion hlive
 
-/-- **The literal VC is FALSE.**  `WfOpReachable RGACondSig WfOp` quantifies over
-EVERY `Nodup`, distinct-timestamp list, keeping no genuineness.  A single
-genuinely-applicable root delete `Del [] 0` (accurate at `init`, hence a
-reachable event) already breaks `WfOp`: `resolve init [] = 0`, so
-`WfOp (Del [] 0) init = (0 ≠ 0)` is false, while `[(2,0,.Del [] 0)]` is `Nodup`
-with (vacuously) distinct timestamps.  (A `t = 0` insert `[(0,0,.Ins 0 [] 0)]`
-refutes it too, via the `t ≠ 0` conjunct.)  This is the exact gap: `WfOp`'s per-op
-requirements are NOT among the VC's hypotheses. -/
-theorem rga_wfOpReachable_false : ¬ WfOpReachable RGACondSig WfOp := by
-  intro h
-  have hchain := h [(2, 0, app_op_t.Del [] 0)]
-    (by simp)
-    (by intro a ha b hb hab
-        simp only [List.mem_singleton] at ha hb
-        exact absurd (ha.trans hb.symm) hab)
-  obtain ⟨h1, _⟩ := hchain
-  exact h1 rfl
+/- **HISTORICAL FINDING — the old 2-argument `WfOpReachable` was FALSE.** It kept
+only `Nodup` + distinct timestamps, no per-op genuineness. A single genuinely-
+applicable root delete `[(2,0,.Del [] 0)]` (accurate at `init`, hence reachable)
+breaks `WfOp`: `resolve init [] = 0 = x`, so `WfOp (Del [] 0) init = (0≠0)` is
+false, yet the list is `Nodup` with distinct timestamps. (A `t=0` insert refutes it
+too.) The framework's `WfOpReachable` was strengthened to carry the per-event
+`WfOpGen` premise (`GenericEqQuotient.lean`); the RGA now DISCHARGES the corrected
+3-argument VC below. -/
+
+/-- **`WfOpReachable` for the RGA, satisfied.**  The corrected 3-argument VC holds:
+`rga_wfChain_of_genuine` is exactly its unfolded form under the RGA's `WfOpGen`
+(Ins `t≠0`; Del `x∉pre ∧ x≠0`), which is free at generation. -/
+theorem rga_wfOpReachable : WfOpReachable RGACondSig WfOp WfOpGen :=
+  rga_wfChain_of_genuine
 
 #print axioms rga_wfChain_of_genuine
 #print axioms wfOpGen_del_live
-#print axioms rga_wfOpReachable_false
+#print axioms rga_wfOpReachable
