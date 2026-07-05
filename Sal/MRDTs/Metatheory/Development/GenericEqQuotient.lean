@@ -8,9 +8,12 @@ generic over an abstract `D : ConditionedMRDTSig` — no datatype specifics.
 
 * **§1** the VC bundle a datatype supplies for the `≈`-route: `EqEquiv D`
   (the observational relation with its equivalence proof), `InvPres D`
-  (`Inv` holds initially and is preserved by `update`/`mergeL` — the
-  datatype's `inv_step`, which `ConditionedMRDTSig` does not carry as a
-  field), `CongVC D E` (`update`/`mergeL`/`query` respect `≈` **on
+  (`Inv` holds initially, is preserved by `update` **on `applicable` ops**,
+  and by `mergeL` — the datatype's `inv_step`, which `ConditionedMRDTSig`
+  does not carry as a field; the `applicable`-conditioning on `update` is
+  forced — `update` breaks `Inv` on non-`applicable` ops, so the quotient's
+  `update` is the guarded `apply-when-applicable` step `qdo`/`doApp`),
+  `CongVC D E` (`update`/`mergeL`/`query` respect `≈` **on
   `Inv`-states** — conditioned, per `merge_eq_congr_l_fails`), and
   `InvInvVC D E` (`applicable` is `≈`-invariant on `Inv`-states; `Inv`
   itself needs no invariance VC — the subtype quotient carries it).
@@ -50,13 +53,27 @@ structure EqEquiv (D : ConditionedMRDTSig) where
   /-- `≈` is an equivalence. -/
   equiv : Equivalence eqv
 
-/-- **`InvPres D`** — `Inv` holds at `init` and is preserved by `update` and
-`mergeL`. This is the datatype's `inv_step`; `ConditionedMRDTSig` does not
-carry it as a field, so it is an explicit VC here. It is what lets the
-`Inv`-subtype quotient receive the lifted operations. -/
+/-- **`InvPres D`** — `Inv` holds at `init`, is preserved by `update` **on
+`applicable` ops**, and is preserved by `mergeL`. This is the datatype's
+`inv_step`; `ConditionedMRDTSig` does not carry it as a field, so it is an
+explicit VC here. It is what lets the `Inv`-subtype quotient receive the lifted
+operations.
+
+`inv_update` is `applicable`-CONDITIONED — the honest form for a state-dependent
+MRDT. A `ConditionedMRDTSig`'s `update` need not preserve `Inv` on a
+NON-`applicable` op (the RGA's `do_` breaks root-freeness on an inaccurate/stale
+`Ins`), so demanding unconditional preservation would make `InvPres`
+UNSATISFIABLE by the very datatypes this framework exists to host. The quotient's
+lifted `update` (`qdo`) therefore applies `D.update` only when `applicable` and
+is the identity otherwise (`doApp`) — a non-`applicable` event is recorded in the
+event set but has no effect on state. `inv_mergeL` stays unconditional: the
+hosting datatype is expected to pick an `Inv` strong enough to close it (the RGA
+uses `qInv = wf ∧ root-free ∧ id_mono`, whose `id_mono` discharges `Inv_merge`;
+`RGA_VCPackage.rga_inv_mergeL_of_idmono`). -/
 structure InvPres (D : ConditionedMRDTSig) : Prop where
   inv_init : D.Inv D.init
-  inv_update : ∀ (s : D.State) (o : Op D.AppOp), D.Inv s → D.Inv (D.update s o)
+  inv_update : ∀ (s : D.State) (o : Op D.AppOp),
+    D.Inv s → D.applicable o s → D.Inv (D.update s o)
   inv_mergeL : ∀ l a b : D.State,
     D.Inv l → D.Inv a → D.Inv b → D.Inv (D.mergeL l a b)
 
@@ -113,20 +130,79 @@ theorem qmk_eq_iff (E : EqEquiv D) {s s' : D.State}
     qmk E s hs = qmk E s' hs' ↔ E.eqv s s' :=
   ⟨fun h => Quotient.exact h, fun h => Quotient.sound h⟩
 
+/-! ### The `apply-when-applicable` guarded step
+
+`ConditionedMRDTSig.update` need not preserve `Inv` on a NON-`applicable` op, and
+the execution model (`Step3.apply`, `LCA_Lemma.lean`) applies events with NO
+`applicable` guard. So the quotient's `update` cannot lift `D.update` blindly: it
+applies `D.update` only when the op is `applicable`, and is the identity
+otherwise (`doApp`). A NON-`applicable` event is thereby recorded in the event
+set but has no effect on state — the honest semantics of a conditioned MRDT — and
+this is what makes the `applicable`-conditioned `InvPres.inv_update` sufficient to
+keep the quotient inside the `Inv`-subtype. -/
+
+/-- One guarded step: apply `o` when `applicable`, else keep the state. -/
+noncomputable def doApp (D : ConditionedMRDTSig) (o : Op D.AppOp) (s : D.State) :
+    D.State :=
+  if D.applicable o s then D.update s o else s
+
+/-- `doApp` preserves `Inv` UNCONDITIONALLY in `o`: the applicable branch is the
+`applicable`-conditioned `inv_update`; the identity branch keeps `Inv`. -/
+theorem InvPres.inv_doApp (hP : InvPres D) (o : Op D.AppOp) (s : D.State)
+    (hs : D.Inv s) : D.Inv (doApp D o s) := by
+  unfold doApp
+  by_cases h : D.applicable o s
+  · rw [if_pos h]; exact hP.inv_update s o hs h
+  · rw [if_neg h]; exact hs
+
+/-- The guarded step respects `≈` on `Inv`-states: `applicable` agrees across `≈`
+(`InvInvVC`), and each branch is congruent (`update_congr` / reflexivity). This is
+what makes `qdo` well-defined on the quotient. -/
+theorem doApp_congr (E : EqEquiv D) (hC : CongVC D E) (hA : InvInvVC D E)
+    (o : Op D.AppOp) {s s' : D.State} (hs : D.Inv s) (hs' : D.Inv s')
+    (h : E.eqv s s') : E.eqv (doApp D o s) (doApp D o s') := by
+  unfold doApp
+  by_cases hp : D.applicable o s
+  · have hp' : D.applicable o s' := (hA.applicable_congr o hs hs' h).mp hp
+    rw [if_pos hp, if_pos hp']
+    exact hC.update_congr o hs hs' h
+  · have hp' : ¬ D.applicable o s' :=
+      fun c => hp ((hA.applicable_congr o hs hs' h).mpr c)
+    rw [if_neg hp, if_neg hp']
+    exact h
+
+/-- Guarded fold: `applySeq` with each step guarded by `applicable`. This is what
+the quotient's `update`-fold computes downstairs (`qapplySeq`), and the state the
+`≈`-route's canonical states / readback are stated against. -/
+noncomputable def applySeqApp (D : ConditionedMRDTSig) (s : D.State)
+    (ρ : List (Op D.AppOp)) : D.State :=
+  ρ.foldl (fun s o => doApp D o s) s
+
+/-- `Inv` is preserved by a guarded fold, UNCONDITIONALLY in `ρ` (each step is
+`inv_doApp`). -/
+theorem InvPres.applySeqApp (hP : InvPres D) (ρ : List (Op D.AppOp))
+    (s : D.State) (hs : D.Inv s) : D.Inv (applySeqApp D s ρ) := by
+  induction ρ generalizing s with
+  | nil => exact hs
+  | cons o ρ ih => exact ih (doApp D o s) (hP.inv_doApp o s hs)
+
 section Functor
 variable (E : EqEquiv D) (hP : InvPres D) (hC : CongVC D E) (hA : InvInvVC D E)
 
-/-- `update` lifted to the quotient. Well-defined by `CongVC.update_congr`
-(whose `Inv` hypotheses are supplied by the subtype) + `InvPres.inv_update`
-(which keeps the image inside the subtype). -/
-def qdo (q : QState D E) (o : Op D.AppOp) : QState D E :=
+/-- `update` lifted to the quotient — the `apply-when-applicable` guarded step
+(`doApp`) lifted. Well-defined by `doApp_congr` (whose `Inv` hypotheses are
+supplied by the subtype); it lands in the subtype by `InvPres.inv_doApp`, which
+needs only the `applicable`-conditioned `inv_update` (the non-`applicable` branch
+is the identity, keeping `Inv` for free). `noncomputable` via `doApp`'s classical
+`applicable`-guard. -/
+noncomputable def qdo (q : QState D E) (o : Op D.AppOp) : QState D E :=
   Quotient.lift
-    (fun sp : InvState D => qmk E (D.update sp.1 o) (hP.inv_update sp.1 o sp.2))
-    (fun sp sp' h => Quotient.sound (hC.update_congr o sp.2 sp'.2 h)) q
+    (fun sp : InvState D => qmk E (doApp D o sp.1) (hP.inv_doApp o sp.1 sp.2))
+    (fun sp sp' h => Quotient.sound (doApp_congr E hC hA o sp.2 sp'.2 h)) q
 
 @[simp] theorem qdo_qmk (o : Op D.AppOp) (s : D.State) (hs : D.Inv s) :
-    qdo E hP hC (qmk E s hs) o
-      = qmk E (D.update s o) (hP.inv_update s o hs) := rfl
+    qdo E hP hC hA (qmk E s hs) o
+      = qmk E (doApp D o s) (hP.inv_doApp o s hs) := rfl
 
 /-- Ternary `mergeL` lifted to the quotient: `Quotient.liftOn₂` in `(l, a)`
 nested with a `Quotient.liftOn` in `b`, each leg discharged by
@@ -175,7 +251,7 @@ noncomputable def QSig : ConditionedMRDTSig where
   dec_op := D.dec_op
   Query := D.Query
   Value := D.Value
-  update := fun q o => qdo E hP hC q o
+  update := fun q o => qdo E hP hC hA q o
   merge := fun a b => qmergeL E hP hC (qmk E D.init hP.inv_init) a b
   query := fun q qu => qquery E hC q qu
   rc := D.rc
@@ -184,30 +260,25 @@ noncomputable def QSig : ConditionedMRDTSig where
   Inv := fun _ => True
   applicable := fun o q => qapplicable E hA o q
 
-/-- `Inv` is preserved by event sequences (foldl of `inv_update`). -/
-theorem InvPres.applySeq (hP : InvPres D) (ρ : List (Op D.AppOp))
-    (s : D.State) (hs : D.Inv s) :
-    D.Inv (Sal.Emulation.applySeq D.toCRDTSig s ρ) := by
-  induction ρ generalizing s with
-  | nil => exact hs
-  | cons o ρ ih => exact ih (D.update s o) (hP.inv_update s o hs)
-
-/-- `applySeq` commutes with the quotient: folding the lifted `update` over
-a class is the class of the fold. -/
+/-- `applySeq` commutes with the quotient: folding the lifted (guarded) `update`
+over a class is the class of the guarded fold `applySeqApp`. The guard `doApp` is
+baked into BOTH sides — `qdo` upstairs, `doApp` downstairs — so this holds
+UNCONDITIONALLY in `ρ` (no applicability hypothesis on the enumeration is needed,
+which is exactly what the unguarded execution model cannot provide). -/
 theorem qapplySeq (ρ : List (Op D.AppOp)) (s : D.State) (hs : D.Inv s) :
     Sal.Emulation.applySeq (QSig E hP hC hA).toCRDTSig (qmk E s hs) ρ
-      = qmk E (Sal.Emulation.applySeq D.toCRDTSig s ρ) (hP.applySeq ρ s hs) := by
+      = qmk E (applySeqApp D s ρ) (hP.applySeqApp ρ s hs) := by
   induction ρ generalizing s with
   | nil => rfl
-  | cons o ρ ih => exact ih (D.update s o) (hP.inv_update s o hs)
+  | cons o ρ ih => exact ih (doApp D o s) (hP.inv_doApp o s hs)
 
 /-- `qapplySeq` at the initial state, keyed on `(QSig …).init` so it rewrites
 the `IsCanonicalState`/`IsRALinearizable3` folds syntactically. -/
 theorem qapplySeq_init (ρ : List (Op D.AppOp)) :
     Sal.Emulation.applySeq (QSig E hP hC hA).toCRDTSig
         (QSig E hP hC hA).init ρ
-      = qmk E (Sal.Emulation.applySeq D.toCRDTSig D.init ρ)
-          (hP.applySeq ρ D.init hP.inv_init) :=
+      = qmk E (applySeqApp D D.init ρ)
+          (hP.applySeqApp ρ D.init hP.inv_init) :=
   qapplySeq E hP hC hA ρ D.init hP.inv_init
 
 end Functor
@@ -216,12 +287,16 @@ end Functor
 configuration transport -/
 
 /-- **`≈`-commutation on `Inv`-states** — exactly what `(QSig …).commutes`
-means downstairs. Note: conditioned on `Inv` only, NOT on `applicable` —
-quotient states carry no applicability, so this (and not `commutesOn`) is
-the commutation notion the `≈`-route's Join must be proved against. -/
+means downstairs. The steps are the GUARDED steps (`doApp`), because the
+quotient's `update` is `qdo` (`apply-when-applicable`): on `applicable` ops at
+`applicable` states `doApp = update`, so this is real commutation there, and a
+non-`applicable` op commutes with everything as a no-op. Conditioned on `Inv`
+only, NOT on `applicable` — quotient states carry no applicability, so this (and
+not `commutesOn`) is the commutation notion the `≈`-route's Join is proved
+against. -/
 def eqCommutesOn (E : EqEquiv D) (o₁ o₂ : Op D.AppOp) : Prop :=
   ∀ s : D.State, D.Inv s →
-    E.eqv (D.update (D.update s o₁) o₂) (D.update (D.update s o₂) o₁)
+    E.eqv (doApp D o₂ (doApp D o₁ s)) (doApp D o₁ (doApp D o₂ s))
 
 section Transfer
 variable (E : EqEquiv D) (hP : InvPres D) (hC : CongVC D E) (hA : InvInvVC D E)
@@ -290,16 +365,18 @@ def fullClosureRel (vis : Op D.AppOp → Op D.AppOp → Prop)
     (ev : Set (Op D.AppOp)) : Prop :=
   ∀ a b, vis a b → b ∈ ev → a ∈ ev
 
-/-- **Canonical state up to `≈`**: some `loOnEq`-respecting enumeration of
-`ev` folds to a state `≈`-equal to `s`. This is `IsCanonicalState` with `=`
-relaxed to `≈` and `loOn`'s `commutes` replaced by `≈`-commutation-on-`Inv`
-(`loOnEq`) — exactly what the quotient's `IsCanonicalState` becomes. -/
+/-- **Canonical state up to `≈`**: some `loOnEq`-respecting enumeration of `ev`,
+folded `apply-when-applicable` from `D.init` (`applySeqApp`), lands `≈`-equal to
+`s`. This is `IsCanonicalState` with `=` relaxed to `≈`, `loOn`'s `commutes`
+replaced by `≈`-commutation-on-`Inv` (`loOnEq`), and the fold guarded by
+`applicable` (`applySeqApp`) — exactly what the quotient's `IsCanonicalState`
+becomes, since the quotient's `update` is the guarded step (`qdo`/`doApp`). -/
 def IsCanonicalStateEq (E : EqEquiv D)
     (vis : Op D.AppOp → Op D.AppOp → Prop)
     (ev : Set (Op D.AppOp)) (s : D.State) : Prop :=
   ∃ ρ : List (Op D.AppOp),
     listPermOf ρ ev ∧ respects ρ (loOnEq E vis ev) ∧
-    E.eqv (Sal.Emulation.applySeq D.toCRDTSig D.init ρ) s
+    E.eqv (applySeqApp D D.init ρ) s
 
 /-- **The datatype's `≈`-Join Lemma** (`EqJoinLemma3C`), the sole
 convergence VC of the `≈`-route. `JoinLemma3F`/`JoinLemma3C … fullClosure`
@@ -389,11 +466,13 @@ theorem RA_linearizable_up_to_eq
 /-- **Readback — the "up to `≈`" content, spelled out.** For a reachable
 `QSig`-configuration, a version whose registered state is the class of a
 concrete `D`-state `σ` admits an enumeration `π` of its event set that
-respects the `≈`-conditioned linearization order (`loEq`) and folds — from
-`D.init` — to a state `≈`-equal to `σ`. This is per-version
-RA-linearizability *up to observational `≈`* (Def-lin relaxed to `≈`),
-obtained by reading `RA_linearizable_up_to_eq` back through the quotient
-(`qmk_eq_iff`, `lo_qsig_iff`, `qapplySeq_init`). -/
+respects the `≈`-conditioned linearization order (`loEq`) and, folded
+`apply-when-applicable` from `D.init` (`applySeqApp` — each op applied only if
+`applicable` at that point, non-`applicable` ops being recorded no-ops), lands
+`≈`-equal to `σ`. This is per-version RA-linearizability *up to observational
+`≈`* (Def-lin relaxed to `≈`, over the guarded semantics the conditioned MRDT
+actually runs), obtained by reading `RA_linearizable_up_to_eq` back through the
+quotient (`qmk_eq_iff`, `lo_qsig_iff`, `qapplySeq_init`). -/
 theorem RA_linearizable_up_to_eq_readback
     (E : EqEquiv D) (hP : InvPres D) (hC : CongVC D E) (hA : InvInvVC D E)
     (hJoinEq : EqJoinLemma3C D E)
@@ -405,7 +484,7 @@ theorem RA_linearizable_up_to_eq_readback
     ∃ π : List (Op D.AppOp),
       listPermOf π Ev ∧
       respects π (loEq E (Configuration.core C).vis) ∧
-      E.eqv (Sal.Emulation.applySeq D.toCRDTSig D.init π) σ := by
+      E.eqv (applySeqApp D D.init π) σ := by
   obtain ⟨π, hperm, hresp, hfold⟩ :=
     RA_linearizable_up_to_eq E hP hC hA hJoinEq C hReach v (qmk E σ hσ) Ev hver
   refine ⟨π, hperm, ?_, ?_⟩
@@ -413,31 +492,48 @@ theorem RA_linearizable_up_to_eq_readback
   · rw [qapplySeq_init E hP hC hA π] at hfold
     exact (qmk_eq_iff E).mp hfold
 
-/-! ## §5. `app`-conditioning audit
+/-! ## §5. `app`-conditioning audit (corrected)
 
-`ra_linearizable3_of_joinC` ranges over `D.Inv` ONLY — never over
-`D.applicable`. It takes `{hInit : D.Inv D.init}` and its conclusion
-`IsRALinearizable3 C` is stated with the UNCONDITIONED `Sal.Emulation.lo`
-of the replica-keyed core (`Adequacy.lean:40`), never `commutesOn`; the
-Join it consumes (`JoinLemma3C`) reads `loOn`, whose commutation is the
-structural `D.commutes`, not `commutesOn`. So `applicable` does not appear
-anywhere on the metatheorem's adequacy path — it gates only the *execution
-model* (`Step3.apply`'s generation-time guard, `Sigma_LoOn3`/`LCA_Lemma`),
-i.e. WHICH events reach the store, not the linearizability of a stored
-version.
+An earlier version of this audit claimed `applicable` "gates only the execution
+model (`Step3.apply`'s generation-time guard)" and that "the datatype's own
+reachable events are `applicable` by construction of the execution model". **That
+is false**: `Step3.apply` (`LCA_Lemma.lean:451`) applies `D.update s (t,r,o)` with
+NO `applicable` precondition — its hypotheses are only head/version lookup and
+timestamp freshness. So a reachable configuration may hold events that are NOT
+`applicable`, and the metatheorem cannot assume otherwise.
 
-Consequence for the `≈`-route: the quotient's `commutes` is
-`eqCommutesOn` (`qcommutes_iff`), which conditions on `Inv` only — matching
-`ra_linearizable3_of_joinC` exactly. `EqJoinLemma3C` therefore correctly
-carries no `applicable` premise on the sides; the datatype's own reachable
-events are `applicable` by construction of the execution model, so no
-`applicable`-conditioning is needed at the metatheorem level. **Verdict:
-app-conditioning is free here — it lives entirely in the execution-model
-discharge of the Join VC, not in this transfer.** (If a future datatype
-needed the Join stated over `applicable`-restricted reachability, the
-extension would add `applicable` to the template's reachability the same
-way `Inv` is carried — but nothing in the present generic layer requires
-it.) -/
+This forces the honest design used here. A `ConditionedMRDTSig`'s `update` need
+not preserve `Inv` on a non-`applicable` op (verified: the RGA's `do_` breaks
+root-freeness on an inaccurate/stale `Ins`, `RGA_VCPackage`), so an UNCONDITIONAL
+`InvPres.inv_update` is UNSATISFIABLE by the datatypes this framework hosts. The
+resolution is entirely internal to the quotient functor:
+
+* `InvPres.inv_update` is `applicable`-conditioned
+  (`Inv s → applicable o s → Inv (update s o)`) — satisfiable, and matched
+  verbatim by `RGA_VCPackage.rga_inv_update_of_applicable`.
+* The quotient's `update` is the GUARDED step `qdo`/`doApp`: apply `D.update`
+  when `applicable`, else the identity. A non-`applicable` event is recorded in
+  the version's event set but has no effect on state. `doApp` preserves `Inv`
+  unconditionally in `o` (`InvPres.inv_doApp`), so `qdo` stays inside the
+  `Inv`-subtype for arbitrary ops — exactly what a total lifted `update` needs
+  under the unguarded execution model.
+* The guard is baked into BOTH the upstairs fold (`qdo`) and the downstairs fold
+  (`applySeqApp`, `apply-when-applicable`), so `qapplySeq` holds UNCONDITIONALLY
+  in the enumeration — no "all events applicable" hypothesis has to be threaded
+  through `joinC_quotient` / `RA_linearizable_up_to_eq` (which the unguarded
+  execution model could not supply anyway). Correspondingly `eqCommutesOn`,
+  `loOnEq`/`loEq`, `IsCanonicalStateEq`, `EqJoinLemma3C`, and the readback are all
+  stated over the guarded step; on `applicable` ops at `applicable` states the
+  guard is transparent (`doApp = update`), so this coincides with the intended
+  semantics exactly where it matters.
+
+**Verdict:** `applicable` IS load-bearing in this transfer — but only as the
+guard that defines the quotient's `update`, discharged once and for all inside the
+functor. `inv_mergeL` stays unconditional: the hosting datatype supplies an `Inv`
+strong enough (the RGA's `qInv`, carrying `id_mono`;
+`RGA_VCPackage.rga_inv_mergeL_of_idmono`). The metatheorem's conclusion
+(`IsRALinearizable3`) and premises are unchanged apart from `InvPres`'s now-honest
+shape. -/
 
 #print axioms RA_linearizable_up_to_eq
 #print axioms joinC_quotient
