@@ -496,7 +496,8 @@ required `Inv` (the reachable subfamily the RGA's `≈`-Join lives on). Canonica
 states fold the RAW `applySeq`. Fully closed sides so the quotient's
 `𝒞 := fullClosure` matches. -/
 def EqJoinLemma3C (D : ConditionedMRDTSig) (E : EqEquiv D)
-    (W : Op D.AppOp → D.State → Prop) : Prop :=
+    (W : Op D.AppOp → D.State → Prop)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop) : Prop :=
   ∀ (vis : Op D.AppOp → Op D.AppOp → Prop) (events : Set (Op D.AppOp))
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     D.Inv s₀ → D.Inv s₁ → D.Inv s₂ →
@@ -504,6 +505,7 @@ def EqJoinLemma3C (D : ConditionedMRDTSig) (E : EqEquiv D)
     (∀ a : Op D.AppOp, ¬ vis a a) →
     (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
     fullClosureRel vis ev₁ → fullClosureRel vis ev₂ →
+    GenDisc vis ev₁ → GenDisc vis ev₂ → GenDisc vis (ev₁ ∪ ev₂) →
     IsCanonicalStateEq E W vis (ev₁ ∩ ev₂) s₀ →
     IsCanonicalStateEq E W vis ev₁ s₁ → IsCanonicalStateEq E W vis ev₂ s₂ →
     IsCanonicalStateEq E W vis (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
@@ -570,20 +572,54 @@ def wfGenFull (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     ClosurePred (QSig E W hP hC hA).toCRDTSig :=
   fun C ev => fullClosure (QSig E W hP hC hA).toCRDTSig C ev ∧ (∀ o ∈ ev, WfOpGen o)
 
-/-- **`joinC_quotient`** — the transfer theorem. The datatype's `≈`-Join
-(`EqJoinLemma3C`) yields the structural `JoinLemma3C` of the quotient signature at
-the conditioned index `wfGenFull` (over Lean `=` on `QState`). Pure quotient
-bookkeeping: induct the three canonical states to representatives, rewrite each
-`IsCanonicalState` through `isCanonicalState_qsig_iff` (its `WfOpGen` premises
-supplied by the side-closure hypotheses), apply the `≈`-Join, and rewrite the
-`qmergeL` conclusion back. NO datatype specifics. -/
+/-- **The config-relative generation-discipline supply** (agreement-parameterized).
+The datatype's `GenDisc` holds for every backward-closed delivered set `ev ⊆
+Cfg.events`, evaluated at ANY `vis` that AGREES with `Cfg.vis` on `ev`. Mentions
+`Cfg` — config-relative, mirroring `hGenC`'s `∀ o ∈ Cfg.events, WfOpGen o`, and
+SATISFIABLE (the discipline is only asserted for genuine, delivered sets, not for
+arbitrary/fabricated ones). The agreement clause is what lets the reachability
+re-threading move the supply from a config to its predecessor: an `apply` step's
+new `vis` edges only target the FRESH event, which is OUTSIDE any `ev ⊆
+Cfg.events`, so `vis` restricted to such an `ev` is invariant (`vis_agree_of_step`).
+A `vis`-local `GenDisc` (e.g. the RGA's `GenDisc2CEq`, which reads only
+`vis`-edges internal to `ev`) discharges it from the honest-execution condition. -/
+def GDSupply (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
+    (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (Cfg : Sal.Emulation.Configuration (QSig E W hP hC hA).toCRDTSig) : Prop :=
+  ∀ (vis : Op D.AppOp → Op D.AppOp → Prop) (ev : Set (Op D.AppOp)),
+    (∀ a b, a ∈ ev → b ∈ ev → (vis a b ↔ Cfg.vis a b)) →
+    fullClosureRel vis ev → (∀ a ∈ ev, a ∈ Cfg.events) → GenDisc vis ev
+
+/-- **`joinC_quotient`** — the per-configuration transfer theorem. For a FIXED
+`QSig`-configuration `Cq`, the datatype's `≈`-Join (`EqJoinLemma3C`) yields the
+merged canonical state, given each side's `wfGenFull` closure PLUS the datatype
+genuineness `GenDisc` for the two sides AND their union, supplied explicitly. The
+union genuineness is NOT a `JoinLemma3C` side-hypothesis (which only carries the
+two sides), so it must be supplied per-config — which is why the caller
+(`goodConfig3_merge_wfgen`) feeds all three from the reachable config's `GDSupply`,
+rather than from a config-generic premise (that would be unsatisfiable on
+fabricated configs). Pure quotient bookkeeping otherwise: induct the three
+canonical states to representatives, rewrite each `IsCanonicalState` through
+`isCanonicalState_qsig_iff`, apply the `≈`-Join, rewrite the `qmergeL` back. -/
 theorem joinC_quotient
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (WfOpGen : Op D.AppOp → Prop) (hWFR : WfOpReachable D W WfOpGen)
-    (hJoinEq : EqJoinLemma3C D E W) :
-    JoinLemma3C (QSig E W hP hC hA) (wfGenFull E W hP hC hA WfOpGen) := by
-  intro Cq ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ hc₀ hc₁ hc₂
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C D E W GenDisc)
+    (Cq : Sal.Emulation.Configuration (QSig E W hP hC hA).toCRDTSig)
+    (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : (QSig E W hP hC hA).State)
+    (htr : ∀ {a b c : Op D.AppOp}, Cq.vis a b → Cq.vis b c → Cq.vis a c)
+    (hir : ∀ a : Op D.AppOp, ¬ Cq.vis a a)
+    (hin₁ : ∀ a ∈ ev₁, a ∈ Cq.events) (hin₂ : ∀ a ∈ ev₂, a ∈ Cq.events)
+    (hcl₁ : wfGenFull E W hP hC hA WfOpGen Cq ev₁)
+    (hcl₂ : wfGenFull E W hP hC hA WfOpGen Cq ev₂)
+    (hgd₁ : GenDisc Cq.vis ev₁) (hgd₂ : GenDisc Cq.vis ev₂)
+    (hgdU : GenDisc Cq.vis (ev₁ ∪ ev₂))
+    (hc₀ : IsCanonicalState Cq (ev₁ ∩ ev₂) s₀)
+    (hc₁ : IsCanonicalState Cq ev₁ s₁) (hc₂ : IsCanonicalState Cq ev₂ s₂) :
+    IsCanonicalState Cq (ev₁ ∪ ev₂) ((QSig E W hP hC hA).mergeL s₀ s₁ s₂) := by
   obtain ⟨hcl₁f, hgen₁⟩ := hcl₁
   obtain ⟨hcl₂f, hgen₂⟩ := hcl₂
   have hgenI : ∀ o ∈ ev₁ ∩ ev₂, WfOpGen o := fun o ho => hgen₁ o ho.1
@@ -598,7 +634,7 @@ theorem joinC_quotient
   have g₂ := (isCanonicalState_qsig_iff E W hP hC hA WfOpGen hWFR Cq ev₂
     hin₂ hgen₂ b hb).mp hc₂
   have gm := hJoinEq Cq.vis Cq.events ev₁ ev₂ l a b hl ha hb
-    htr hir hin₁ hin₂ hcl₁f hcl₂f g₀ g₁ g₂
+    htr hir hin₁ hin₂ hcl₁f hcl₂f hgd₁ hgd₂ hgdU g₀ g₁ g₂
   exact (isCanonicalState_qsig_iff E W hP hC hA WfOpGen hWFR Cq (ev₁ ∪ ev₂)
     (fun x hx => Or.elim hx (hin₁ x) (hin₂ x)) hgenU
     (D.mergeL l a b) (hP.inv_mergeL l a b hl ha hb)).mpr gm
@@ -649,6 +685,30 @@ theorem events_mono_of_step {D' : ConditionedMRDTSig}
       (fun s hs => by rw [← hco, Option.some.injEq] at hs; subst hs
                       exact Set.subset_union_left)
   | query h_s h_val => exact fun x hx => hx
+
+/-- **`vis` agrees across a `Step3` on the predecessor's event universe.** The only
+transition that changes `vis` is `Apply`, whose new edges all TARGET the fresh
+event `(t, r, o)`; timestamp freshness (`h_fresh_t`) keeps that event out of
+`C.events`, so on pairs of already-existing events the two `vis` relations
+coincide. This is the fact the `GDSupply` re-threading uses to move the
+generation-discipline supply from a config to its predecessor. -/
+theorem vis_agree_of_step {D' : ConditionedMRDTSig}
+    {b c : Configuration D'} {ℓ : Label3 D'} (hstep : Step3 D' b ℓ c) :
+    ∀ a x, a ∈ b.events → x ∈ b.events → (b.vis a x ↔ c.vis a x) := by
+  cases hstep with
+  | createReplica h_fresh C' hN hL hvis hver hhead hparents =>
+    intro a x _ _; rw [hvis]
+  | apply h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank C'
+      hN hL hvis hver hhead hparents =>
+    intro a x _ hx; rw [hvis]
+    refine ⟨Or.inl, ?_⟩
+    rintro (h | ⟨-, hxeq⟩)
+    · exact h
+    · exact absurd (by simp [hxeq, Op.time]) (h_fresh_t x hx)
+  | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁
+      h_rank₂ C' hN hL hvis hver hhead hparents =>
+    intro a x _ _; rw [hvis]
+  | query h_s h_val => intro a x _ _; exact Iff.rfl
 
 /-- **The merge step, factored on its merged canonical state.** `goodConfig3` is
 preserved by a ternary-merge transition once the merged version's state is shown
@@ -723,17 +783,19 @@ theorem goodConfig3_merge_of_canonical {D' : ConditionedMRDTSig}
 
 /-- **The conditioned merge step lemma** (QSig-specialized). Mirrors
 `Adequacy.goodConfig3_mergeF`, but derives the merged canonical state from the
-CONDITIONED `joinC_quotient` (index `wfGenFull`) instead of an unconditional
-`JoinLemma3F`: the two side event sets' `WfOpGen` facts (required by `wfGenFull`)
-are read off `hGenC` (`WfOpGen` on the predecessor's events) via
-`ver_events_sub`. The merge data (`ev₁`, `sT`, …) are implicit here — inferred
-from the explicit step hypotheses — so the reachability induction can invoke this
-without naming the `Step3.merge` implicits. -/
+per-config `joinC_quotient` (index `wfGenFull`) instead of an unconditional
+`JoinLemma3F`: the two sides' `WfOpGen` facts (required by `wfGenFull`) are read
+off `hGenC` via `ver_events_sub`, and the datatype genuineness for BOTH sides AND
+their union is read off the config-relative `hGDc` (`GDSupply` for the predecessor
+core), whose backward-closure / `⊆ events` obligations are exactly `ver_causal` /
+`ver_events_sub` (agreement is reflexive here — `Iff.rfl`). The merge data (`ev₁`,
+`sT`, …) are implicit, inferred from the step hypotheses. -/
 theorem goodConfig3_merge_wfgen
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
-    (WfOpGen : Op D.AppOp → Prop)
-    (hJC : JoinLemma3C (QSig E W hP hC hA) (wfGenFull E W hP hC hA WfOpGen))
+    (WfOpGen : Op D.AppOp → Prop) (hWFR : WfOpReachable D W WfOpGen)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C D E W GenDisc)
     {C C' : Configuration (QSig E W hP hC hA)} {r₁ : Replica}
     {v₁ v₂ vT vm : Version}
     {s₁ s₂ sT : (QSig E W hP hC hA).State} {ev₁ ev₂ evT : Set (Op D.AppOp)}
@@ -746,65 +808,90 @@ theorem goodConfig3_merge_wfgen
     (hver : C'.ver = fun w => if w = vm
       then some ((QSig E W hP hC hA).mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
+    (hGDc : GDSupply E W hP hC hA GenDisc (Configuration.core C))
     (h : GoodConfig3 C) : GoodConfig3 C' := by
   have hcT : IsCanonicalState (Configuration.core C) (ev₁ ∩ ev₂) sT := by
     rw [← C.lca_events h_lca h_ver₁ h_ver₂ h_verT]
     exact h.canonical vT sT evT h_verT
-  have h_merged := hJC (Configuration.core C) ev₁ ev₂ sT s₁ s₂
+  have hcl₁f : fullClosureRel (Configuration.core C).vis ev₁ :=
+    fun a b hab hb => h.ver_causal v₁ s₁ ev₁ h_ver₁ a b hab hb
+  have hcl₂f : fullClosureRel (Configuration.core C).vis ev₂ :=
+    fun a b hab hb => h.ver_causal v₂ s₂ ev₂ h_ver₂ a b hab hb
+  have hsub₁ : ∀ a ∈ ev₁, a ∈ (Configuration.core C).events :=
+    h.ver_events_sub v₁ s₁ ev₁ h_ver₁
+  have hsub₂ : ∀ a ∈ ev₂, a ∈ (Configuration.core C).events :=
+    h.ver_events_sub v₂ s₂ ev₂ h_ver₂
+  have hclU : fullClosureRel (Configuration.core C).vis (ev₁ ∪ ev₂) :=
+    fun a b hab hb => Or.elim hb
+      (fun h' => Or.inl (hcl₁f a b hab h')) (fun h' => Or.inr (hcl₂f a b hab h'))
+  have hsubU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ (Configuration.core C).events :=
+    fun a ha => Or.elim ha (hsub₁ a) (hsub₂ a)
+  have h_merged := joinC_quotient E W hP hC hA WfOpGen hWFR GenDisc hJoinEq
+    (Configuration.core C) ev₁ ev₂ sT s₁ s₂
     (fun hab hbc => h.vis_trans hab hbc)
     (fun a ha => h.vis_irrefl a ha)
-    (h.ver_events_sub v₁ s₁ ev₁ h_ver₁)
-    (h.ver_events_sub v₂ s₂ ev₂ h_ver₂)
-    ⟨fun a b hab hb => h.ver_causal v₁ s₁ ev₁ h_ver₁ a b hab hb,
-     fun o ho => hGenC o (h.ver_events_sub v₁ s₁ ev₁ h_ver₁ o ho)⟩
-    ⟨fun a b hab hb => h.ver_causal v₂ s₂ ev₂ h_ver₂ a b hab hb,
-     fun o ho => hGenC o (h.ver_events_sub v₂ s₂ ev₂ h_ver₂ o ho)⟩
+    hsub₁ hsub₂
+    ⟨hcl₁f, fun o ho => hGenC o (hsub₁ o ho)⟩
+    ⟨hcl₂f, fun o ho => hGenC o (hsub₂ o ho)⟩
+    (hGDc (Configuration.core C).vis ev₁ (fun _ _ _ _ => Iff.rfl) hcl₁f hsub₁)
+    (hGDc (Configuration.core C).vis ev₂ (fun _ _ _ _ => Iff.rfl) hcl₂f hsub₂)
+    (hGDc (Configuration.core C).vis (ev₁ ∪ ev₂) (fun _ _ _ _ => Iff.rfl) hclU hsubU)
     hcT (h.canonical v₁ s₁ ev₁ h_ver₁) (h.canonical v₂ s₂ ev₂ h_ver₂)
   exact goodConfig3_merge_of_canonical h_head₁ h_ver₁ h_ver₂ hL hvis hver h h_merged
 
 open LabeledTS in
 /-- **`GoodConfig3` re-derived from reachability under the conditioned Join.**
-Threads `∀ o ∈ C.events, WfOpGen o` (monotone along the trace by
-`events_mono_of_step`, so the predecessor inherits it) and discharges the merge
-step's join by applying `joinC_quotient` at the predecessor's core, feeding
-`WfOpGen` for the two sides from the threaded premise. The `WfOpGen` premise is
-the HONEST execution condition the RGA supplies (its events are generated
-sensibly); it is NOT execution-guaranteed generically, so it is a hypothesis. -/
+Threads TWO honest-execution conditions on the events, monotone along the trace:
+`∀ o ∈ C.events, WfOpGen o` (per-event, via `events_mono_of_step`) and the
+config-relative generation discipline `GDSupply` (per-delivered-set). The
+predecessor's `GDSupply` is rebuilt from the successor's using
+`vis_agree_of_step`: a step's new `vis` edges only reach the fresh event, so on
+any `ev ⊆` the predecessor's events the two `vis` agree, and the agreement clause
+of `GDSupply` absorbs exactly this. Neither premise is execution-guaranteed
+generically (the RGA supplies both from its generation invariants), so both are
+hypotheses. The merge step feeds both to `goodConfig3_merge_wfgen`. -/
 theorem goodConfig3_of_reachF_wfgen
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (WfOpGen : Op D.AppOp → Prop) (hWFR : WfOpReachable D W WfOpGen)
-    (hJoinEq : EqJoinLemma3C D E W)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C D E W GenDisc)
     (C : Configuration (QSig E W hP hC hA))
     (hReach : (labeledTS3 (QSig E W hP hC hA)).ReachableFrom
         (initConfig (QSig E W hP hC hA) trivial) C)
-    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o) :
+    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
+    (hGDc : GDSupply E W hP hC hA GenDisc (Configuration.core C)) :
     GoodConfig3 C := by
-  have hJC := joinC_quotient E W hP hC hA WfOpGen hWFR hJoinEq
-  revert hGenC
+  revert hGenC hGDc
   induction hReach with
-  | refl => intro _; exact goodConfig3_init trivial
+  | refl => intro _ _; exact goodConfig3_init trivial
   | tail _ hs ih =>
-    intro hGenc
+    intro hGenc hGDcurr
     obtain ⟨ℓ, hstep⟩ := hs
     have hmono := events_mono_of_step hstep
-    -- `WfOpGen` on the predecessor's events, elaborated against each callee's
-    -- expected type (so the predecessor config is pinned).
+    have hvagree := vis_agree_of_step hstep
+    -- The predecessor inherits both discipline premises (events monotone;
+    -- `GDSupply` moved back across the step via `vis`-agreement on delivered sets).
+    have hGDpred : GDSupply E W hP hC hA GenDisc (Configuration.core _) :=
+      fun vis ev hag hcl hsub =>
+        hGDcurr vis ev
+          (fun a x ha hx => (hag a x ha hx).trans (hvagree a x (hsub a ha) (hsub x hx)))
+          hcl (fun a ha => hmono a (hsub a ha))
     cases hstep with
     | createReplica h_fresh C' hN hL hvis hver hhead hparents =>
       exact goodConfig3_createReplica h_fresh hL hvis hver
-        (ih fun o ho => hGenc o (hmono o ho))
+        (ih (fun o ho => hGenc o (hmono o ho)) hGDpred)
     | apply h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank C'
         hN hL hvis hver hhead hparents =>
       exact goodConfig3_apply h_head h_ver h_fresh_t h_vnew hL hvis hver
-        (ih fun o ho => hGenc o (hmono o ho))
+        (ih (fun o ho => hGenc o (hmono o ho)) hGDpred)
     | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁
         h_rank₂ C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3_merge_wfgen E W hP hC hA WfOpGen hJC
+      exact goodConfig3_merge_wfgen E W hP hC hA WfOpGen hWFR GenDisc hJoinEq
         h_head₁ h_ver₁ h_ver₂ h_lca h_verT hL hvis hver
-        (fun o ho => hGenc o (hmono o ho))
-        (ih fun o ho => hGenc o (hmono o ho))
-    | query h_s h_val => exact ih fun o ho => hGenc o (hmono o ho)
+        (fun o ho => hGenc o (hmono o ho)) hGDpred
+        (ih (fun o ho => hGenc o (hmono o ho)) hGDpred)
+    | query h_s h_val => exact ih (fun o ho => hGenc o (hmono o ho)) hGDpred
 
 /-- **`RA_linearizable_up_to_eq`** — THE generic conditioned metatheorem.
 A `ConditionedMRDTSig` `D` supplying the `≈`-route VCs — `EqEquiv`, `InvPres`,
@@ -822,14 +909,17 @@ theorem RA_linearizable_up_to_eq
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (WfOpGen : Op D.AppOp → Prop) (hWFR : WfOpReachable D W WfOpGen)
-    (hJoinEq : EqJoinLemma3C D E W)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C D E W GenDisc)
     (C : Configuration (QSig E W hP hC hA))
     (hReach : (labeledTS3 (QSig E W hP hC hA)).ReachableFrom
         (initConfig (QSig E W hP hC hA) trivial) C)
-    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o) :
+    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
+    (hGenDisc : GDSupply E W hP hC hA GenDisc (Configuration.core C)) :
     IsRALinearizable3 C :=
   isRALinearizable3_of_good
-    (goodConfig3_of_reachF_wfgen E W hP hC hA WfOpGen hWFR hJoinEq C hReach hGenC)
+    (goodConfig3_of_reachF_wfgen E W hP hC hA WfOpGen hWFR GenDisc
+      hJoinEq C hReach hGenC hGenDisc)
 
 /-- **Readback — the "up to `≈`" content, over the RAW fold.** For a reachable
 `QSig`-configuration, a version whose registered state is the class of a concrete
@@ -845,11 +935,13 @@ theorem RA_linearizable_up_to_eq_readback
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (WfOpGen : Op D.AppOp → Prop) (hWFR : WfOpReachable D W WfOpGen)
-    (hJoinEq : EqJoinLemma3C D E W)
+    (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (hJoinEq : EqJoinLemma3C D E W GenDisc)
     (C : Configuration (QSig E W hP hC hA))
     (hReach : (labeledTS3 (QSig E W hP hC hA)).ReachableFrom
         (initConfig (QSig E W hP hC hA) trivial) C)
     (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
+    (hGenDisc : GDSupply E W hP hC hA GenDisc (Configuration.core C))
     (v : Version) (σ : D.State) (hσ : D.Inv σ) (Ev : Set (Op D.AppOp))
     (hver : C.ver v = some (qmk E σ hσ, Ev)) :
     ∃ π : List (Op D.AppOp),
@@ -857,7 +949,8 @@ theorem RA_linearizable_up_to_eq_readback
       respects π (loEq E W (Configuration.core C).vis) ∧
       E.eqv (applySeq D.toCRDTSig D.init π) σ := by
   have hgood :=
-    goodConfig3_of_reachF_wfgen E W hP hC hA WfOpGen hWFR hJoinEq C hReach hGenC
+    goodConfig3_of_reachF_wfgen E W hP hC hA WfOpGen hWFR GenDisc
+      hJoinEq C hReach hGenC hGenDisc
   obtain ⟨π, hperm, hresp, hfold⟩ :=
     isRALinearizable3_of_good hgood v (qmk E σ hσ) Ev hver
   have hsub : ∀ a ∈ Ev, a ∈ (Configuration.core C).events :=
