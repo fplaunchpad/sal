@@ -121,4 +121,36 @@ theorem refsInList_append_of_accurate (F : List op_t) (z : op_t) (s : concrete_s
 
 #print axioms refsInList_append_of_accurate
 
+/-- **`RefsInList` depends only on membership.**  Transfer across any two lists with the same members
+— in particular, `RefsInList` is invariant under permutation.  Needed to move from a structural union
+`F ++ G` to the merge's actual `loOnEq`-interleave enumeration (same event set). -/
+theorem refsInList_congr_mem (F G : List op_t)
+    (hmem : ∀ z, z ∈ F ↔ z ∈ G) (hF : RefsInList F) : RefsInList G := by
+  intro z hz c hc
+  rcases hF z ((hmem z).mpr hz) c hc with h0 | ⟨z', hz', hz'eq⟩
+  · exact Or.inl h0
+  · exact Or.inr ⟨z', (hmem z').mp hz', hz'eq⟩
+
+/-- **`RefsInList` is closed under union.**  Both branches' references resolve within their own branch,
+hence within the union.  The `merge` step of the `RefsInList` reachability invariant (combine with
+`refsInList_congr_mem` for the actual interleaved enumeration). -/
+theorem refsInList_of_append (F G : List op_t)
+    (hF : RefsInList F) (hG : RefsInList G) : RefsInList (F ++ G) := by
+  intro z hz c hc
+  rcases List.mem_append.mp hz with hzF | hzG
+  · rcases hF z hzF c hc with h0 | ⟨z', hz', hz'eq⟩
+    · exact Or.inl h0
+    · exact Or.inr ⟨z', List.mem_append.mpr (Or.inl hz'), hz'eq⟩
+  · rcases hG z hzG c hc with h0 | ⟨z', hz', hz'eq⟩
+    · exact Or.inl h0
+    · exact Or.inr ⟨z', List.mem_append.mpr (Or.inr hz'), hz'eq⟩
+
+/-- The empty history vacuously satisfies `RefsInList` — the `init`/`createReplica` base case. -/
+theorem refsInList_nil : RefsInList [] := by
+  intro z hz; simp at hz
+
+#print axioms refsInList_congr_mem
+#print axioms refsInList_of_append
+#print axioms refsInList_nil
+
 end Sal.Metatheory.RGACanonStepFromFacts
