@@ -162,15 +162,14 @@ theorem branchChain_transport (σ₀' σ₁' : concrete_st)
 
 /-- Filtering a live-sublist by `survB` is the same as filtering the raw list: survivors are already
 σ₁'-live, so the `contains σ₁'` pre-filter drops nothing a survivor filter keeps. -/
-theorem filter_liveSub_survB (σ₁' : concrete_st) (F : List op_t)
-    (hsurv1 : ∀ c, survP F c → contains σ₁' c = true) :
-    ∀ (L : List ℕ), (liveSub σ₁' L).filter (survB F) = L.filter (survB F) := by
-  intro L
+theorem filter_liveSub_survB (σ₁' : concrete_st) (F : List op_t) (L : List ℕ)
+    (hsurv1 : ∀ c ∈ L, survP F c → contains σ₁' c = true) :
+    (liveSub σ₁' L).filter (survB F) = L.filter (survB F) := by
   simp only [liveSub, List.filter_filter]
   apply List.filter_congr
-  intro a _
+  intro a ha
   by_cases hs : survB F a = true
-  · rw [hs, Bool.true_and]; exact hsurv1 a (survP_of_survB F a hs)
+  · rw [hs, Bool.true_and]; exact hsurv1 a ha (survP_of_survB F a hs)
   · simp only [Bool.not_eq_true] at hs
     rw [hs, Bool.false_and]
 
@@ -185,16 +184,19 @@ theorem hFiltEq_of_branchInv (σ₀' σ₁' : concrete_st) (F : List op_t)
     (h0 : contains σ₀' 0 = false) (h0₁ : contains σ₁' 0 = false)
     (hI4 : ∀ k, contains σ₀' k = true → contains σ₁' k = true →
         climb (fun y => anc σ₀' y) (domain σ₁') (anc σ₀' k) = anc σ₁' k)
-    (hsurv1 : ∀ c, survP F c → contains σ₁' c = true) :
+    (hsurv01 : ∀ c, contains σ₀' c = true → survP F c → contains σ₁' c = true) :
     ∀ (w : ℕ) (cw rc : List ℕ),
         contains σ₀' w = true → contains σ₁' w = true →
+        (∀ c ∈ rc, survP F c → contains σ₁' c = true) →
         IsAncPath σ₀' w cw → IsAncPath σ₁' w (liveSub σ₁' rc) →
         cw.filter (survB F) = rc.filter (survB F) := by
-  intro w cw rc hc0 hc1 hp0 hp1
+  intro w cw rc hc0 hc1 hrc1 hp0 hp1
   have htrans := branchChain_transport σ₀' σ₁' Hdec Hstay h0 h0₁ hI4 w cw hc0 hc1 hp0
   have huniq : liveSub σ₁' cw = liveSub σ₁' rc :=
     IsAncPath_unique σ₁' h0₁ w _ _ htrans hp1
-  rw [← filter_liveSub_survB σ₁' F hsurv1 cw, huniq, filter_liveSub_survB σ₁' F hsurv1 rc]
+  have hcw1 : ∀ c ∈ cw, survP F c → contains σ₁' c = true :=
+    fun c hcmem hsv => hsurv01 c (isAncPath_mem σ₀' w cw hp0 c hcmem) hsv
+  rw [← filter_liveSub_survB σ₁' F cw hcw1, huniq, filter_liveSub_survB σ₁' F rc hrc1]
 
 #print axioms hFiltEq_of_branchInv
 
@@ -210,12 +212,14 @@ theorem hFiltRecon_of_branchInv (σ₀' σ₁' : concrete_st) (F ρ₀ : List op
     (h0 : contains σ₀' 0 = false) (h0₁ : contains σ₁' 0 = false)
     (hI4 : ∀ k, contains σ₀' k = true → contains σ₁' k = true →
         climb (fun y => anc σ₀' y) (domain σ₁') (anc σ₀' k) = anc σ₁' k)
-    (hsurv1 : ∀ c, survP F c → contains σ₁' c = true) :
+    (hsurv01 : ∀ c, contains σ₀' c = true → survP F c → contains σ₁' c = true) :
     ∀ (w : ℕ) (rc : List ℕ),
-        contains σ₀' w = true → contains σ₁' w = true → IsAncPath σ₁' w (liveSub σ₁' rc) →
+        contains σ₀' w = true → contains σ₁' w = true →
+        (∀ c ∈ rc, survP F c → contains σ₁' c = true) →
+        IsAncPath σ₁' w (liveSub σ₁' rc) →
         ∃ cw, IsAncPath σ₀' w cw ∧ canonAnc F cw = canonAnc F rc :=
   hFiltRecon_of_canonInv σ₀' σ₁' F ρ₀ hCI0 hdomeq
-    (hFiltEq_of_branchInv σ₀' σ₁' F Hdec Hstay h0 h0₁ hI4 hsurv1)
+    (hFiltEq_of_branchInv σ₀' σ₁' F Hdec Hstay h0 h0₁ hI4 hsurv01)
 
 #print axioms hFiltRecon_of_branchInv
 

@@ -74,8 +74,10 @@ theorem hRc_bii (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t) (t r e a : 
     (hbwne : birthAnc σ₀' σ₁' σ₂' t ≠ 0)
     (hpreDead : ∀ c ∈ (a :: p), contains σ₁' c = false → ¬ survP F c)
     (hwf1 : ∀ y, contains σ₁' y = true → (anc σ₁' y = 0 ∨ contains σ₁' (anc σ₁' y) = true))
+    (hsurvAP1 : ∀ c ∈ (a :: p), survP F c → contains σ₁' c = true)
     (hFiltRecon : ∀ (w : ℕ) (rc : List ℕ),
         contains σ₀' w = true → contains σ₁' w = true →
+        (∀ c ∈ rc, survP F c → contains σ₁' c = true) →
         IsAncPath σ₁' w (liveSub σ₁' rc) →
         ∃ cw, IsAncPath σ₀' w cw ∧ canonAnc F cw = canonAnc F rc) :
     ∃ rcPre rcSuf : List ℕ,
@@ -95,7 +97,10 @@ theorem hRc_bii (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t) (t r e a : 
       rcases hwf1 t hct1 with h | h
       · exact absurd h hbwne
       · exact h
-    exact hFiltRecon (anc σ₁' t) rcSuf hcbw hc1bw hlive
+    have hrcSurv : ∀ c ∈ rcSuf, survP F c → contains σ₁' c = true :=
+      fun c hc hsv => hsurvAP1 c
+        (by rw [hsp]; exact List.mem_append.mpr (Or.inr (List.mem_cons.mpr (Or.inr hc)))) hsv
+    exact hFiltRecon (anc σ₁' t) rcSuf hcbw hc1bw hrcSurv hlive
 
 #print axioms hRc_bii
 
@@ -110,12 +115,15 @@ theorem hFiltRecon_of_canonInv (σ₀' σ₁' : concrete_st) (F ρ₀ : List op_
     (hdomeq : ∀ c, contains σ₀' c = true ↔ survP ρ₀ c)
     (hFiltEq : ∀ (w : ℕ) (cw rc : List ℕ),
         contains σ₀' w = true → contains σ₁' w = true →
+        (∀ c ∈ rc, survP F c → contains σ₁' c = true) →
         IsAncPath σ₀' w cw → IsAncPath σ₁' w (liveSub σ₁' rc) →
         cw.filter (survB F) = rc.filter (survB F)) :
     ∀ (w : ℕ) (rc : List ℕ),
-        contains σ₀' w = true → contains σ₁' w = true → IsAncPath σ₁' w (liveSub σ₁' rc) →
+        contains σ₀' w = true → contains σ₁' w = true →
+        (∀ c ∈ rc, survP F c → contains σ₁' c = true) →
+        IsAncPath σ₁' w (liveSub σ₁' rc) →
         ∃ cw, IsAncPath σ₀' w cw ∧ canonAnc F cw = canonAnc F rc := by
-  intro w rc hcw hcw1 hp1
+  intro w rc hcw hcw1 hrc1 hp1
   obtain ⟨_h0, _hwf, _hdom, hper⟩ := hCI0
   have hsv : survP ρ₀ w := (hdomeq w).mp hcw
   obtain ⟨r_w, e_w, p_w, a_w, hins⟩ := hsv.1
@@ -123,7 +131,7 @@ theorem hFiltRecon_of_canonInv (σ₀' σ₁' : concrete_st) (F ρ₀ : List op_
   obtain ⟨_, _, hpath⟩ := hlc
   refine ⟨liveSub σ₀' (a_w :: p_w), hpath, ?_⟩
   rw [canonAnc_filter_surv F (liveSub σ₀' (a_w :: p_w)), canonAnc_filter_surv F rc,
-    hFiltEq w (liveSub σ₀' (a_w :: p_w)) rc hcw hcw1 hpath hp1]
+    hFiltEq w (liveSub σ₀' (a_w :: p_w)) rc hcw hcw1 hrc1 hpath hp1]
 
 #print axioms hFiltRecon_of_canonInv
 
