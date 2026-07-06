@@ -64,10 +64,23 @@ theorem respects_loOnEq_of_respects_vis (W : op_t → concrete_st → Prop) (vis
     respects π (loOnEq rgaEqEquiv' W vis ev) :=
   List.Pairwise.imp (fun hnv hlo => hnv (loOnEq_imp_vis W vis ev _ _ hlo)) h
 
+/-- **No backward `loOnEq` edge without a backward `vis` edge.**  Contrapositive of `loOnEq_imp_vis`:
+if `a` does not causally see `b` (`¬ vis a b`), then there is no `loOnEq a b` edge — regardless of
+commutation.  THIS, not eq-commutation, is the correct tool for δ-A: to move an insert before a
+concurrent delete-of-its-anchor, rule out the forced order `loOnEq (Del) (Ins)` via `¬ vis (Del) (Ins)`
+— an insert in a `noopFeasible` branch never causally follows the deletion of its own anchor (else it
+would be applied at a dead anchor, non-accurate and non-noop).  Eq-commutation is UNRELIABLE here
+(`Del` can reparent an insert into/out of accuracy, flipping the `doW` guard), so the visibility route
+is the only sound one — and it needs no commutation lemma. -/
+theorem not_loOnEq_of_not_vis (W : op_t → concrete_st → Prop) (vis : op_t → op_t → Prop)
+    (ev : Set op_t) (a b : op_t) (hnv : ¬ vis a b) : ¬ loOnEq rgaEqEquiv' W vis ev a b :=
+  fun hlo => hnv (loOnEq_imp_vis W vis ev a b hlo)
+
 #print axioms rga_rc_either
 #print axioms loOnEq_causal_iff
 #print axioms loOnEq_imp_vis
 #print axioms not_loOnEq_of_eqCommutes
 #print axioms respects_loOnEq_of_respects_vis
+#print axioms not_loOnEq_of_not_vis
 
 end Sal.Metatheory.RGALoOnEqCausal
