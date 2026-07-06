@@ -43,8 +43,47 @@ theorem survP_branch_of_lca_union (ρ₀ ρ₁ F : List op_t) (E₀ E₁ Eu : Se
   ⟨insertedIn_mono ρ₀ ρ₁ E₀ E₁ h0p h1p hsub01 c hs0.1,
     fun hdel1 => hsF.2 (deletedIn_mono ρ₁ F E₁ Eu h1p hFp hsub1u c hdel1)⟩
 
+/-- `insertedIn` distributes over list append. -/
+theorem insertedIn_append (π₁ π₂ : List op_t) (c : ℕ) :
+    insertedIn (π₁ ++ π₂) c ↔ insertedIn π₁ c ∨ insertedIn π₂ c := by
+  constructor
+  · rintro ⟨r, e, p, a, hin⟩
+    rcases List.mem_append.mp hin with h | h
+    · exact Or.inl ⟨r, e, p, a, h⟩
+    · exact Or.inr ⟨r, e, p, a, h⟩
+  · rintro (⟨r, e, p, a, hin⟩ | ⟨r, e, p, a, hin⟩)
+    · exact ⟨r, e, p, a, List.mem_append.mpr (Or.inl hin)⟩
+    · exact ⟨r, e, p, a, List.mem_append.mpr (Or.inr hin)⟩
+
+/-- `deletedIn` distributes over list append. -/
+theorem deletedIn_append (π₁ π₂ : List op_t) (c : ℕ) :
+    deletedIn (π₁ ++ π₂) c ↔ deletedIn π₁ c ∨ deletedIn π₂ c := by
+  constructor
+  · rintro ⟨t, r, p, hin⟩
+    rcases List.mem_append.mp hin with h | h
+    · exact Or.inl ⟨t, r, p, h⟩
+    · exact Or.inr ⟨t, r, p, h⟩
+  · rintro (⟨t, r, p, hin⟩ | ⟨t, r, p, hin⟩)
+    · exact ⟨t, r, p, List.mem_append.mpr (Or.inl hin)⟩
+    · exact ⟨t, r, p, List.mem_append.mpr (Or.inr hin)⟩
+
+/-- **Membership transfer.**  Through a `listPermOf`, `insertedIn` reads off the event *set*. -/
+theorem insertedIn_perm_iff (π : List op_t) (E : Set op_t) (hπ : listPermOf π E) (c : ℕ) :
+    insertedIn π c ↔ ∃ r e p a, (c, r, .Ins e p a) ∈ E := by
+  constructor
+  · rintro ⟨r, e, p, a, hin⟩; exact ⟨r, e, p, a, (hπ.2 _).mp hin⟩
+  · rintro ⟨r, e, p, a, hin⟩; exact ⟨r, e, p, a, (hπ.2 _).mpr hin⟩
+
+theorem deletedIn_perm_iff (π : List op_t) (E : Set op_t) (hπ : listPermOf π E) (c : ℕ) :
+    deletedIn π c ↔ ∃ t r p, (t, r, .Del p c) ∈ E := by
+  constructor
+  · rintro ⟨t, r, p, hin⟩; exact ⟨t, r, p, (hπ.2 _).mp hin⟩
+  · rintro ⟨t, r, p, hin⟩; exact ⟨t, r, p, (hπ.2 _).mpr hin⟩
+
 #print axioms insertedIn_mono
 #print axioms deletedIn_mono
 #print axioms survP_branch_of_lca_union
+#print axioms insertedIn_append
+#print axioms deletedIn_append
 
 end Sal.Metatheory.RGAMergeSetAlgebra
