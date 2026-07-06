@@ -130,10 +130,44 @@ theorem isAncPath_applySeqR_of_chainSafe (σ : concrete_st) (L : List op_t) (z :
     exact ih (do_ σ o) (fun o' ho' => hsafe o' (List.mem_cons_of_mem o ho'))
       (isAncPath_do_of_chainSafe σ o z p (hsafe o (List.mem_cons_self ..)) h)
 
+/-- A `chainSafe` op does not delete any node of the chain. -/
+theorem not_deletesId_of_chainSafe (o : op_t) (L : List ℕ) (k : ℕ)
+    (hs : chainSafe o L) (hk : k ∈ L) : ¬ deletesId o k := by
+  obtain ⟨t, r, op⟩ := o
+  cases op with
+  | Ins e p a => rintro ⟨t', r', p', heq⟩; simp at heq
+  | Del p x =>
+    rintro ⟨t', r', p', heq⟩
+    simp only [Prod.mk.injEq] at heq
+    obtain ⟨_, _, hop⟩ := heq
+    injection hop with _ hxk
+    subst hxk; exact hs.1 hk
+
+/-- **An LCA-anchored insert stays accurate at any `chainSafe` prefix.**  Composes the two
+preservation primitives: with the anchor chain `a :: p` intact at the LCA fold `σ₀` and every prefix op
+`chainSafe` for it (no delete of a chain node, no id-clash), `contains … a` (via
+`contains_applySeqR_of_no_del`) and `IsAncPath … a p` (via `isAncPath_applySeqR_of_chainSafe`) both
+survive — i.e. the insert is `accurate` at its prefix fold.  The per-insert accuracy obligation of
+step C, for anchors present in the LCA. -/
+theorem ins_accurate_at_prefix_of_lca_chain (σ₀ : concrete_st) (pfx : List op_t)
+    (t r e a : ℕ) (p : List ℕ)
+    (hca : contains σ₀ a = true) (hpath : IsAncPath σ₀ a p)
+    (hsafe : ∀ o ∈ pfx, chainSafe o (a :: p)) :
+    accurate (t, r, app_op_t.Ins e p a) (applySeqR σ₀ pfx) := by
+  have hcontains : contains (applySeqR σ₀ pfx) a = true :=
+    contains_applySeqR_of_no_del σ₀ pfx a hca
+      (fun o ho => not_deletesId_of_chainSafe o (a :: p) a (hsafe o ho) (by simp))
+  have hisanc : IsAncPath (applySeqR σ₀ pfx) a p :=
+    isAncPath_applySeqR_of_chainSafe σ₀ pfx a p hsafe hpath
+  simp only [accurate, opLeaf, opPath]
+  exact Or.inr ⟨hcontains, hisanc⟩
+
 #print axioms contains_do_of_no_del
 #print axioms contains_applySeqR_of_no_del
 #print axioms isAncPath_upd_off
 #print axioms isAncPath_doDel_off
 #print axioms isAncPath_applySeqR_of_chainSafe
+#print axioms not_deletesId_of_chainSafe
+#print axioms ins_accurate_at_prefix_of_lca_chain
 
 end Sal.Metatheory.RGAFoldMembership
