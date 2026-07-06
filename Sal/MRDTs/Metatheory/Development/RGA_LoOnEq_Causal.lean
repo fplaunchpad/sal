@@ -21,7 +21,7 @@ set_option maxHeartbeats 1000000
 namespace Sal.Metatheory.RGALoOnEqCausal
 
 open Sal.Emulation
-open Sal.Metatheory.GenericEqQuotient (loOnEq eqCommutesOn)
+open Sal.Metatheory.GenericEqQuotient (loOnEq eqCommutesOn fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv')
 
 /-- **The RGA's `rc` is constantly `Either`.**  Definitional (`RGAM.rc = fun _ _ => RcRes.Either`). -/
@@ -76,11 +76,24 @@ theorem not_loOnEq_of_not_vis (W : op_t → concrete_st → Prop) (vis : op_t �
     (ev : Set op_t) (a b : op_t) (hnv : ¬ vis a b) : ¬ loOnEq rgaEqEquiv' W vis ev a b :=
   fun hlo => hnv (loOnEq_imp_vis W vis ev a b hlo)
 
+/-- **No cross-branch `loOnEq` edge into a causally-closed set.**  If `evBranch` is `vis`-closed
+(`fullClosureRel`) and `i ∈ evBranch` while `d ∉ evBranch`, there is no `loOnEq d i` (for any ambient
+`evAmb`): `loOnEq d i ⟹ vis d i ⟹ d ∈ evBranch` (closure), contradicting `d ∉ evBranch`.  In the merge
+delta this kills every `loOnEq` edge from a branch-2-only op to a branch-1-only op (and vice versa) —
+the cross-branch half of the delta order's acyclicity, so the two branches' deltas never force an
+interleaving. -/
+theorem not_loOnEq_cross_branch (W : op_t → concrete_st → Prop) (vis : op_t → op_t → Prop)
+    (evBranch evAmb : Set op_t) (hcl : fullClosureRel (D := RGACondSig') vis evBranch)
+    (d i : op_t) (hi : i ∈ evBranch) (hd : d ∉ evBranch) :
+    ¬ loOnEq rgaEqEquiv' W vis evAmb d i :=
+  not_loOnEq_of_not_vis W vis evAmb d i (fun hvis => hd (hcl d i hvis hi))
+
 #print axioms rga_rc_either
 #print axioms loOnEq_causal_iff
 #print axioms loOnEq_imp_vis
 #print axioms not_loOnEq_of_eqCommutes
 #print axioms respects_loOnEq_of_respects_vis
 #print axioms not_loOnEq_of_not_vis
+#print axioms not_loOnEq_cross_branch
 
 end Sal.Metatheory.RGALoOnEqCausal
