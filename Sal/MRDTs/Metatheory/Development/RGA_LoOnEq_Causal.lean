@@ -55,9 +55,19 @@ theorem not_loOnEq_of_eqCommutes (W : op_t → concrete_st → Prop) (vis : op_t
   · exact ((loOnEq_causal_iff W vis ev a b).mp h).2 hcomm
   · exact ((loOnEq_causal_iff W vis ev b a).mp h).2 hcomm'
 
+/-- **A `vis`-respecting linearization respects `loOnEq`.**  Since `loOnEq ⊆ vis`, a backward `loOnEq`
+edge would be a backward `vis` edge; so any causal (`vis`-respecting) enumeration is automatically
+`loOnEq`-respecting.  Reduces the δ-enum's semantic order obligation (`respects … (loOnEq …)`) to a
+clean causal one (`respects … vis`). -/
+theorem respects_loOnEq_of_respects_vis (W : op_t → concrete_st → Prop) (vis : op_t → op_t → Prop)
+    (ev : Set op_t) (π : List op_t) (h : respects π vis) :
+    respects π (loOnEq rgaEqEquiv' W vis ev) :=
+  List.Pairwise.imp (fun hnv hlo => hnv (loOnEq_imp_vis W vis ev _ _ hlo)) h
+
 #print axioms rga_rc_either
 #print axioms loOnEq_causal_iff
 #print axioms loOnEq_imp_vis
 #print axioms not_loOnEq_of_eqCommutes
+#print axioms respects_loOnEq_of_respects_vis
 
 end Sal.Metatheory.RGALoOnEqCausal
