@@ -25,12 +25,13 @@ open Classical
 namespace Sal.Metatheory.RGABranchInvChainTransport
 
 open Sal.Emulation
-open RGACanonConvergence (survP)
+open RGACanonConvergence (survP CanonInv canonAnc)
 open RGABranchCanon (survB)
 open RGAHinFilterEq (survP_of_survB)
 open Sal.Metatheory.RGABirthBridgeSplit (split_at_firstLive)
 open RGAMergeBranchNew (resolve_climb_start)
 open Sal.Metatheory.RGAChainFaithfulDoDel (resolve_mem_of_live)
+open Sal.Metatheory.RGABirthBridgeHRc (hFiltRecon_of_canonInv)
 
 /-- A suffix of an ancestor chain is itself an ancestor chain. -/
 theorem isAncPath_suffix (s : concrete_st) (d : ℕ) (suf : List ℕ) :
@@ -196,5 +197,26 @@ theorem hFiltEq_of_branchInv (σ₀' σ₁' : concrete_st) (F : List op_t)
   rw [← filter_liveSub_survB σ₁' F hsurv1 cw, huniq, filter_liveSub_survB σ₁' F hsurv1 rc]
 
 #print axioms hFiltEq_of_branchInv
+
+/-- **`hFiltRecon` from `CanonInv ρ₀` + `BranchInv`.**  Composes `hFiltEq_of_branchInv` into
+`RGA_BirthBridge_HRc.hFiltRecon_of_canonInv`, closing the branch-new reconciliation crux entirely:
+`hRc_bii`'s `hFiltRecon` hypothesis now follows from the σ₀' branch canon + the σ₀'↔σ₁' `BranchInv`
+relation (I4 + `hsurv1`). Only `BranchInv` itself (the branch-decomposition) remains. -/
+theorem hFiltRecon_of_branchInv (σ₀' σ₁' : concrete_st) (F ρ₀ : List op_t)
+    (hCI0 : CanonInv ρ₀ σ₀')
+    (hdomeq : ∀ c, contains σ₀' c = true ↔ survP ρ₀ c)
+    (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
+    (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
+    (h0 : contains σ₀' 0 = false) (h0₁ : contains σ₁' 0 = false)
+    (hI4 : ∀ k, contains σ₀' k = true → contains σ₁' k = true →
+        climb (fun y => anc σ₀' y) (domain σ₁') (anc σ₀' k) = anc σ₁' k)
+    (hsurv1 : ∀ c, survP F c → contains σ₁' c = true) :
+    ∀ (w : ℕ) (rc : List ℕ),
+        contains σ₀' w = true → contains σ₁' w = true → IsAncPath σ₁' w (liveSub σ₁' rc) →
+        ∃ cw, IsAncPath σ₀' w cw ∧ canonAnc F cw = canonAnc F rc :=
+  hFiltRecon_of_canonInv σ₀' σ₁' F ρ₀ hCI0 hdomeq
+    (hFiltEq_of_branchInv σ₀' σ₁' F Hdec Hstay h0 h0₁ hI4 hsurv1)
+
+#print axioms hFiltRecon_of_branchInv
 
 end Sal.Metatheory.RGABranchInvChainTransport
