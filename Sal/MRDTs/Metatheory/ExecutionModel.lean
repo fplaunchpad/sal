@@ -122,11 +122,19 @@ structure Configuration (D : ConditionedMRDTSig) where
   vis_tgt : ∀ {a b}, vis a b → ∃ r s, L r = some s ∧ s b
   /-- Causal closure: `vis a b` and `b` observed at `r` ⇒ `a` observed at `r`. -/
   vis_causal : ∀ {a b r s}, vis a b → L r = some s → s b → s a
-  /-- Timestamp uniqueness: distinct events have distinct timestamps. -/
+  /-- Timestamp uniqueness: distinct events have distinct timestamps.
+  Discharged structurally by the Lamport-clock + replica-id timestamp scheme: `a.1 = (lts, rid)`
+  with the lexicographic order (compare `lts`, tie-break on `rid`) is unique across events. -/
   timestamps_distinct :
     ∀ {a b : Op D.AppOp} {r s r' s'},
       L r = some s → s a → L r' = some s' → s' b →
       a ≠ b → a.1 ≠ b.1
+  /-- **Causal monotonicity**: a causal predecessor has a strictly smaller timestamp. This is the
+  fundamental Lamport-clock guarantee (`a → b ⟹ lts(a) < lts(b)`, so the lexicographic `(lts,rid)`
+  order strictly increases), threaded generically so the datatype Join never re-derives it. The one
+  execution-model fact (with `timestamps_distinct`) the merge VC needs for the generation regime
+  (`WfOpGenQ`/reference-causality follow from it + causal closure). -/
+  causal_mono : ∀ {a b : Op D.AppOp}, vis a b → a.1 < b.1
   /-- Same-replica totality of `vis`. -/
   vis_total_same_replica :
     ∀ {a b : Op D.AppOp} {r s r' s'},
@@ -248,6 +256,7 @@ def initConfig (D : ConditionedMRDTSig) (hInit : D.Inv D.init) : Configuration D
   vis_src := fun h => absurd h id
   vis_tgt := fun h => absurd h id
   vis_causal := fun h _ _ => absurd h id
+  causal_mono := fun h => absurd h id
   timestamps_distinct := by
     intro a b r s r' s' hLr hsa _ _ _
     by_cases hr : r = 0
