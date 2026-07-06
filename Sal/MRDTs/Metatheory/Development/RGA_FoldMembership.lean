@@ -51,7 +51,89 @@ theorem contains_applySeqR_of_no_del (s : concrete_st) (L : List op_t) (k : ℕ)
     exact ih (do_ s o) (contains_do_of_no_del s o k hlive (hnd o (List.mem_cons_self ..)))
       (fun o' ho' => hnd o' (List.mem_cons_of_mem o ho'))
 
+/-! ## `IsAncPath` preservation — an intact chain survives ops that don't touch it -/
+
+/-- **A `upd` off the chain preserves `IsAncPath`.**  `upd σ t v` changes only `t`'s entry, so a chain
+avoiding `t` keeps its `anc`/`contains` structure.  (No freshness needed — just `t ∉ z :: p`.) -/
+theorem isAncPath_upd_off (σ : concrete_st) (t : ℕ) (v : ℕ × ℕ) :
+    ∀ (p : List ℕ) (z : ℕ), t ∉ z :: p → IsAncPath σ z p → IsAncPath (upd σ t v) z p := by
+  intro p
+  induction p with
+  | nil =>
+    intro z hz h
+    simp only [IsAncPath] at h ⊢
+    have hzt : z ≠ t := by rintro rfl; exact hz (by simp)
+    have hsel : sel (upd σ t v) z = sel σ z :=
+      lemma_SelUpd2 σ z t v (by simp only [bne_iff_ne, ne_eq]; exact fun e => hzt e.symm)
+    simp only [anc, hsel]; exact h
+  | cons q qs ih =>
+    intro z hz h
+    simp only [IsAncPath] at h ⊢
+    obtain ⟨h1, h2, h3⟩ := h
+    have hzt : z ≠ t := by rintro rfl; exact hz (by simp)
+    have hsel : sel (upd σ t v) z = sel σ z :=
+      lemma_SelUpd2 σ z t v (by simp only [bne_iff_ne, ne_eq]; exact fun e => hzt e.symm)
+    refine ⟨by simp only [anc, hsel]; exact h1, by rw [lemma_InDomUpd1, h2]; simp, ?_⟩
+    exact ih q (fun hm => hz (List.mem_cons_of_mem z hm)) h3
+
+/-- **A `Del` off the chain preserves `IsAncPath`.**  `do_ σ (Del x)` only removes `x` and reparents
+`x`'s children; a chain with `x ∉ z :: p` and `x ≠ 0` (so the root-anchored deepest node is untouched)
+keeps its structure. -/
+theorem isAncPath_doDel_off (σ : concrete_st) (t r x : ℕ) (pre : List ℕ) (hx0 : x ≠ 0) :
+    ∀ (p : List ℕ) (z : ℕ), x ∉ z :: p → IsAncPath σ z p →
+      IsAncPath (do_ σ (t, r, app_op_t.Del pre x)) z p := by
+  intro p
+  induction p with
+  | nil =>
+    intro z hz h
+    simp only [IsAncPath] at h ⊢
+    rw [anc_doDel, h, if_neg (Ne.symm hx0)]
+  | cons q qs ih =>
+    intro z hz h
+    simp only [IsAncPath] at h ⊢
+    obtain ⟨h1, h2, h3⟩ := h
+    have hqx : q ≠ x := by rintro rfl; exact hz (by simp)
+    refine ⟨?_, ?_, ?_⟩
+    · rw [anc_doDel, h1, if_neg hqx]
+    · rw [contains_doDel, h2]; simp [hqx]
+    · exact ih q (fun hm => hz (List.mem_cons_of_mem z hm)) h3
+
+/-- An op that neither creates nor deletes a node of the chain `L` (a fresh `Ins` writes a new id ∉ L;
+a `Del` targets `x ∉ L`, `x ≠ 0`). -/
+def chainSafe (o : op_t) (L : List ℕ) : Prop :=
+  match o with
+  | (t, _, app_op_t.Ins _ _ _) => t ∉ L
+  | (_, _, app_op_t.Del _ x)   => x ∉ L ∧ x ≠ 0
+
+/-- **One `chainSafe` step preserves `IsAncPath`.**  Dispatches to the `upd`/`Del` off-chain lemmas. -/
+theorem isAncPath_do_of_chainSafe (σ : concrete_st) (o : op_t) (z : ℕ) (p : List ℕ)
+    (hsafe : chainSafe o (z :: p)) (h : IsAncPath σ z p) :
+    IsAncPath (do_ σ o) z p := by
+  obtain ⟨t, r, op⟩ := o
+  cases op with
+  | Ins e p2 a2 =>
+    have hdo : do_ σ (t, r, app_op_t.Ins e p2 a2) = upd σ t (e, resolve σ (a2 :: p2)) := by
+      simp only [do_]
+    rw [hdo]; exact isAncPath_upd_off σ t _ p z hsafe h
+  | Del p2 x =>
+    exact isAncPath_doDel_off σ t r x p2 hsafe.2 p z hsafe.1 h
+
+/-- **A `chainSafe` prefix preserves `IsAncPath`.**  If every op in `L` is `chainSafe` for `z :: p`, an
+intact chain in `σ` stays intact through the whole fold. -/
+theorem isAncPath_applySeqR_of_chainSafe (σ : concrete_st) (L : List op_t) (z : ℕ) (p : List ℕ)
+    (hsafe : ∀ o ∈ L, chainSafe o (z :: p)) (h : IsAncPath σ z p) :
+    IsAncPath (applySeqR σ L) z p := by
+  induction L generalizing σ with
+  | nil => simpa using h
+  | cons o rest ih =>
+    rw [applySeqR_cons]
+    exact ih (do_ σ o) (fun o' ho' => hsafe o' (List.mem_cons_of_mem o ho'))
+      (isAncPath_do_of_chainSafe σ o z p (hsafe o (List.mem_cons_self ..)) h)
+
 #print axioms contains_do_of_no_del
 #print axioms contains_applySeqR_of_no_del
+#print axioms isAncPath_upd_off
+#print axioms isAncPath_doDel_off
+#print axioms isAncPath_applySeqR_of_chainSafe
 
 end Sal.Metatheory.RGAFoldMembership
