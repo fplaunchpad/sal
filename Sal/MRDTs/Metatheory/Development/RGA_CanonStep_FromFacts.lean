@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Development.RGA_NoopFeasible_CanonFold
+import Sal.MRDTs.Metatheory.Development.RGA_RefEdge_FromAccurate
 
 /-!
 # `CanonStepOK` from honest facts — the `RefEdge`-free single-op step
@@ -23,6 +24,7 @@ open RGACanonConvergence (CanonStepOK ChainOK deletedIn CanonInv delOK_of_accura
   canonInv_doIns canonInv_doDel)
 open RGANoopFeasible (refsOf)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpGenQ)
+open Sal.Metatheory.RGARefEdgeFromAccurate (ref_live_of_accurate)
 
 /-- **`CanonStepOK` for an `Ins` from honest facts** (no `RefEdge`).  Given `t` nonzero and fresh in
 `s`, `hnoRef` (no op in `F` references `t`), `WfOpGenQ` (chain strictly below `t`), and `ChainOK`
@@ -66,5 +68,57 @@ theorem canonInv_doDel_of_accurate (F : List op_t) (s : concrete_st) (t r x : �
 
 #print axioms canonInv_doIns_of_facts
 #print axioms canonInv_doDel_of_accurate
+
+/-! ## `hnoRef` from freshness — the last config-level obligation, isolated
+
+`hnoRef` (no op in the applied prefix references the fresh id `t`) is what `RefEdge` used to buy.  On
+the reachability route it reduces to two facts about a *reachable* apply: every referenced id in the
+prefix is itself the timestamp of an event in the prefix (`RefsInList` — a reachability invariant,
+preserved across `apply` by `insertedIn_ev_of_ref` since a fresh op is accurate at its state), and the
+new id is globally fresh (`h_fresh_t`: differs from every prior event's timestamp).  `hnoRef` is then a
+one-line contradiction. -/
+
+/-- Every id referenced by an op in `F` is the root (`0`) or the timestamp of some op in `F`.  A
+reachability invariant of an accurately-executed event prefix. -/
+def RefsInList (F : List op_t) : Prop :=
+  ∀ z ∈ F, ∀ c ∈ refsOf z, c = 0 ∨ ∃ z' ∈ F, z'.1 = c
+
+/-- **`hnoRef` from freshness.**  If every reference in `F` resolves to an event timestamp in `F`
+(`RefsInList`) and the fresh id `t` is nonzero and differs from every timestamp in `F` (`h_fresh_t`),
+then no op in `F` references `t`.  This is the exact `hnoRef` hypothesis of `canonInv_doIns_of_facts`,
+discharged with no `RefEdge` — only the globally-fresh allocation of a reachable `apply`. -/
+theorem hnoRef_of_refsInList (F : List op_t) (t : ℕ) (ht0 : t ≠ 0)
+    (hfresh : ∀ z' ∈ F, z'.1 ≠ t) (href : RefsInList F) :
+    ∀ z ∈ F, t ∉ refsOf z := by
+  intro z hz hmem
+  rcases href z hz t hmem with h0 | ⟨z', hz', hz'eq⟩
+  · exact ht0 h0
+  · exact hfresh z' hz' hz'eq
+
+#print axioms hnoRef_of_refsInList
+
+/-- **`RefsInList` is preserved by an accurate apply.**  Old ops keep their references (monotone under
+append); the new op `z`, being `accurate` at the prefix fold `s`, references only ids live in `s`
+(`ref_live_of_accurate`), which are therefore inserted in `F` (`hlive_ins` — supplied at the call site
+by `insertedIn_of_contains_fold` when `s = applySeqR init_st F`), i.e. timestamps of `Ins` ops in `F`.
+This is the `apply` step of the `RefsInList` reachability invariant. -/
+theorem refsInList_append_of_accurate (F : List op_t) (z : op_t) (s : concrete_st)
+    (href : RefsInList F) (hacc : accurate z s)
+    (hlive_ins : ∀ c, c ≠ 0 → contains s c = true → ∃ r e p a, (c, r, .Ins e p a) ∈ F) :
+    RefsInList (F ++ [z]) := by
+  intro w hw c hc
+  rcases List.mem_append.mp hw with hwF | hwz
+  · rcases href w hwF c hc with h0 | ⟨z', hz', hz'eq⟩
+    · exact Or.inl h0
+    · exact Or.inr ⟨z', List.mem_append.mpr (Or.inl hz'), hz'eq⟩
+  · simp only [List.mem_singleton] at hwz
+    subst hwz
+    by_cases hc0 : c = 0
+    · exact Or.inl hc0
+    · have hlive := ref_live_of_accurate w s c hacc hc hc0
+      obtain ⟨r, e, p, a, hin⟩ := hlive_ins c hc0 hlive
+      exact Or.inr ⟨(c, r, .Ins e p a), List.mem_append.mpr (Or.inl hin), rfl⟩
+
+#print axioms refsInList_append_of_accurate
 
 end Sal.Metatheory.RGACanonStepFromFacts
