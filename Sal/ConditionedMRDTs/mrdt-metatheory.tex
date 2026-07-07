@@ -1177,8 +1177,14 @@ or physically deletes a node and rehomes its children; $\merge$ keeps OR-set sur
 re-anchors each by climbing to the nearest surviving ancestor. $\resolve\,\st\,p$ returns the
 first live id on a recorded path $p$; $\anc\,\st\,x$ is $x$'s current parent. Take
 $\Inv := \mathsf{wf} \wedge \mathsf{id\_mono} \wedge (\text{root not reinserted})$ and
-$\app := \mathsf{accurate} \wedge \mathsf{fresh}$. We discharge each VC; the two hard ones
-reduce to one invariant.
+$\app := \mathsf{accurate} \wedge \mathsf{fresh}$. This section presents the discharge as
+it was \emph{first attacked}: swap-based, with the two hard VCs reduced to one faithfulness
+invariant. The attack succeeds --- every lemma below is kernel-clean --- but it is not what
+the final theorem stands on: a kernel-level dependency audit of the assembled capstone shows
+its proof term uses \emph{none} of the swap machinery; of this section only the Key Lemma
+(Lemma~\ref{lem:key}) survives into the working proof. We keep the sketch because it is
+where the working technique's ingredients were found; Section~\ref{sec:actual} records what
+replaced it.
 
 \begin{definition}[Recorded-path faithfulness $\RVF$]\label{def:rvf}
 $\RVF\,a\,\st$: the recorded path $\recList\,a$ is a \emph{live subchain of genuine
@@ -1230,9 +1236,10 @@ the proper subchains rehoming produces.
 \end{proof}
 
 \begin{proposition}[RGA discharge]\label{prop:discharge}
-The RGA satisfies VCs~\ref{vc:disc}--\ref{vc:merge}. (The convergence VC~\ref{vc:inv} is
-discharged not by the swap route sketched here but by canonical-state characterization,
-Section~\ref{sec:actual}; the swap-route sketch below is superseded.)
+The RGA satisfies VCs~\ref{vc:disc}--\ref{vc:merge}. (Proof sketch below along the swap route; in the final
+mechanization the \emph{entire} route --- the swap VC, the $\ChainFaithful$ threading, the
+per-id $\mathsf{BranchInv}$ --- is superseded by the canonical-state engine of
+Section~\ref{sec:actual}, and only the Key Lemma survives; see the audit note there.)
 \end{proposition}
 \begin{proof}
 \emph{VC~\ref{vc:disc}} (discipline): $\Inv$ preservation and the generation model are
@@ -1282,6 +1289,17 @@ instance. But the mechanization did \emph{not} follow the swap-based convergence
 VC~\ref{vc:inv}. That route was tried and \textbf{machine-refuted twice}; convergence was then
 proved by a different technique. We record the actual route honestly --- the refutations are
 themselves findings about why tombstone-free deletion is hard.
+
+A postscript, established after the assembly was complete: a kernel-level dependency audit of
+the capstone's compiled proof term shows the subsumption is \emph{total}. The final theorem's
+dependency cone contains no swap lemma, no $\ChainFaithful$/$\RVF$ threading, and no
+$\mathsf{BranchInv}$ --- of the swap route only the Key Lemma remains load-bearing. The
+route's files stay proved and kernel-clean, retired under \lean{Development/}; of the
+investigation's ${\sim}17$k lines, the capstone's dependency cone spans ${\sim}8$k. The
+lesson generalizes the refutations: for a datatype whose operations reference mutable
+structure, the set-indexed characterization is not just an alternative to
+linearize-and-swap --- it makes the swap layer unnecessary even where the swaps are
+provable.
 
 \paragraph{Two machine-checked refutations of the swap route.} The reorder-invariant convergence
 (VC~\ref{vc:inv}, ``thread faithfulness through adjacent swaps'') fails for the tombstone-free
