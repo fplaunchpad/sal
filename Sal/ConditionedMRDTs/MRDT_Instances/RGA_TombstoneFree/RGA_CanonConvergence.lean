@@ -36,7 +36,7 @@ open Classical
 
 namespace RGACanonConvergence
 
-open RGAMergeLinearization (applySeqR applySeqR_nil applySeqR_cons)
+open RGAMergeLinearization (applySeqR applySeqR_cons)
 
 /-! ## §1  Survivors of an applied event set, and the canonical anchor -/
 
@@ -276,24 +276,6 @@ theorem canonMatch_of_canonInv (F : List op_t) (s : concrete_st)
   refine ⟨hel, ?_⟩
   rw [← liveChain_resolve s t (a :: p) hlc]
   exact resolve_eq_canonAnc F s hdom (a :: p)
-
-/-- `CanonMatch` is `eq`-respecting. -/
-theorem canonMatch_eq_respecting (F : List op_t) (s s' : concrete_st)
-    (h : CanonMatch F s) (he : eq s s') : CanonMatch F s' := by
-  obtain ⟨hdom, hanc⟩ := h
-  refine ⟨?_, ?_⟩
-  · intro c
-    rw [← (he c).1]
-    exact hdom c
-  · intro t r e p a hm hs
-    have hks : contains s t = true := (hdom t).mpr hs
-    obtain ⟨hel, hanc'⟩ := hanc t r e p a hm hs
-    have hsel : sel s t = sel s' t := (he t).2 hks
-    constructor
-    · show (sel s' t).1 = e
-      rw [← hsel]; exact hel
-    · show (sel s' t).2 = canonAnc F (a :: p)
-      rw [← hsel]; exact hanc'
 
 /-- **Two canonical states of the same event set are observationally equal** —
 the per-id extensional glue (the update analog of `eq_merge2_of_branchInv2`'s
@@ -624,20 +606,6 @@ theorem canonInv_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List
 
 /-! ## §8  Step corollaries at the `CanonMatch` level (the design's names) -/
 
-/-- The design's `canonMatch_doIns`.  Stated over the carrier invariant
-`CanonInv` (the bare `anc = canonAnc` equation is not by itself inductive);
-the conclusion is the design's `CanonMatch` of the extended set. -/
-theorem canonMatch_doIns (F : List op_t) (s : concrete_st) (t r e a : ℕ) (p : List ℕ)
-    (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Ins e p a)) :
-    CanonMatch (F ++ [(t, r, .Ins e p a)]) (do_ s (t, r, .Ins e p a)) :=
-  canonMatch_of_canonInv _ _ (canonInv_doIns F s t r e a p hinv hok)
-
-/-- The design's `canonMatch_doDel`. -/
-theorem canonMatch_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List ℕ)
-    (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Del p x)) :
-    CanonMatch (F ++ [(t, r, .Del p x)]) (do_ s (t, r, .Del p x)) :=
-  canonMatch_of_canonInv _ _ (canonInv_doDel F s t r x p hinv hok)
-
 /-! ## §9  The fold and the headline -/
 
 /-- **`canon_fold`:** a disciplined enumeration folds to the canonical state
@@ -736,8 +704,6 @@ theorem delOK_of_accurate (s : concrete_st) (t r x : ℕ) (p : List ℕ)
 
 #print axioms canonInv_doIns
 #print axioms canonInv_doDel
-#print axioms canonMatch_doIns
-#print axioms canonMatch_doDel
 #print axioms canon_fold
 #print axioms RGA_update_convergence_canon
 

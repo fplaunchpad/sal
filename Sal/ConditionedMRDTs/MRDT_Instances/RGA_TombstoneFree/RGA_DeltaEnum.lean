@@ -51,23 +51,4 @@ theorem exists_min_of_irrefl_trans {α : Type} (R : α → α → Prop)
         · exact hR
         · exact hmin y hyr
 
-/-- **δ-B: a `loOnEq`-respecting enumeration exists.**  From any `Nodup` list `lE` enumerating the
-event set `E` and `vis` a strict order, `exists_respecting` (with acyclicity discharged via
-`exists_min_of_irrefl_trans` on `vis` + `loOnEq_imp_vis`) yields a permutation `π` that `listPermOf E`
-and `respects (loOnEq … E)`.  The RGA analog of `exists_loOnA_enum`, for the `loOnEq` order the merge
-δ-enum must respect. -/
-theorem exists_loOnEq_enum (W : op_t → concrete_st → Prop) (vis : op_t → op_t → Prop)
-    (E : Set op_t) (lE : List op_t) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
-    (htr : ∀ {a b c : op_t}, vis a b → vis b c → vis a c) (hirr : ∀ a, ¬ vis a a) :
-    ∃ π, listPermOf π E ∧ respects π (loOnEq rgaEqEquiv' W vis E) := by
-  obtain ⟨π, hperm, hpw⟩ := exists_respecting (loOnEq rgaEqEquiv' W vis E) lE.length lE rfl
-    (fun l' _ hne => by
-      obtain ⟨m, hm, hmin⟩ := exists_min_of_irrefl_trans vis (@htr) hirr l' hne
-      exact ⟨m, hm, fun y hy hlo => hmin y hy (loOnEq_imp_vis W vis E y m hlo)⟩)
-  refine ⟨π, ⟨hperm.nodup_iff.mpr hnd, fun a => ?_⟩, hpw⟩
-  rw [hperm.mem_iff]; exact henum a
-
-#print axioms exists_min_of_irrefl_trans
-#print axioms exists_loOnEq_enum
-
 end Sal.ConditionedMRDTs.RGADeltaEnum

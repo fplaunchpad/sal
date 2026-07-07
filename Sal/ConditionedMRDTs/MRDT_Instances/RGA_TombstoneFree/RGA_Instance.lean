@@ -1,6 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeCong
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvFresh
-import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CondSig
+import Sal.ConditionedMRDTs.Framework.LoOnC
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
@@ -44,12 +45,6 @@ noncomputable def RGACondSig' : ConditionedMRDTSig where
   Inv := fun s => wf s ∧ contains s 0 = false ∧ id_mono s
   applicable := fun o s => accurate o s ∧ fresh_ts o s
 
-@[simp] theorem RGACondSig'_update (s : concrete_st) (o : op_t) :
-    RGACondSig'.update s o = do_ s o := rfl
-
-@[simp] theorem RGACondSig'_mergeL (l a b : concrete_st) :
-    RGACondSig'.mergeL l a b = merge l a b := rfl
-
 @[simp] theorem RGACondSig'_init : RGACondSig'.init = init_st := rfl
 
 /-! ## §2. `EqEquiv` — the observational `eq`. -/
@@ -74,25 +69,6 @@ def rgaCongVC' : CongVC RGACondSig' rgaEqEquiv' where
     intro _ _ _ _ _ _; rfl
 
 /-! ## §4. `InvInvVC` — `WfOp` and `applicable` are `≈`-invariant. -/
-
-/-- `InvInvVC RGACondSig' rgaEqEquiv' WfOp`.  `wf_congr`: `WfOp`'s `Ins` conjunct
-is `fresh_ts` (contains-driven), its `Del` conjunct `resolve · pre ≠ x` is
-`resolve`-driven; both descend through `eq` (`resolve_dom_eq`).
-`applicable_congr`: `accurate ∧ fresh_ts` (`RGA_EqQuotient` §3). -/
-def rgaInvInvVC' : InvInvVC RGACondSig' rgaEqEquiv' WfOp where
-  wf_congr := by
-    intro o s s' _ _ h
-    obtain ⟨t, r, ao⟩ := o
-    cases ao with
-    | Ins e pre a =>
-      show (t ≠ 0 ∧ contains s t = false) ↔ (t ≠ 0 ∧ contains s' t = false)
-      rw [(h t).1]
-    | Del pre x =>
-      show resolve s pre ≠ x ↔ resolve s' pre ≠ x
-      rw [resolve_dom_eq s s' pre (fun c _ => (h c).1)]
-  applicable_congr := by
-    intro o s s' _ _ h
-    exact and_congr (RGAEqQuotient.accurate_eq_iff o h) (RGAEqQuotient.fresh_ts_eq_iff o h)
 
 /-! ## §5. `InvPres` — `inv_init` and `inv_mergeL` hold; `inv_update` is the gap.
 
@@ -132,17 +108,6 @@ theorem rga_inv_mergeL' (l a b : concrete_st)
 `RGACondSig'.toMRDTSig = RGACondSig.toMRDTSig = RGAM`, so `init`/`update`/`AppOp`
 coincide and `WfOpReachable` (which reads only those, via `WfChain`) is the same
 proposition for both signatures. `rga_wfOpReachable` transports definitionally. -/
-
-/-- `WfChain` reads only `toMRDTSig` (`init`/`update`), so it agrees between
-`RGACondSig'` and `RGACondSig` — but with an abstract list both are stuck, so this
-one-line induction is needed to make the transport explicit. -/
-theorem wfChain_transport (s : concrete_st) (ρ : List op_t) :
-    WfChain RGACondSig' WfOp s ρ = WfChain RGASig.RGACondSig WfOp s ρ := by
-  induction ρ generalizing s with
-  | nil => rfl
-  | cons o ρ ih =>
-    simp only [WfChain, ih]
-    rfl
 
 end Sal.ConditionedMRDTs.RGAInstance
 

@@ -51,21 +51,6 @@ theorem eq_equiv : Equivalence eq :=
 quotient below IS `≈`. -/
 instance rgaSetoid : Setoid concrete_st := ⟨eq, eq_equiv⟩
 
-/-- The quotient state type. `⟦s⟧ = ⟦s'⟧ ↔ s ≈ s'` by `Quotient.eq`. -/
-def QState : Type := Quotient rgaSetoid
-
-/-- Lift of `do_` to the quotient. Well-defined because `do_` is *unconditionally*
-`≈`-congruent (`do_eq_congr`) — no reachability hypotheses. -/
-def qdo (o : op_t) (q : QState) : QState :=
-  Quotient.liftOn q (fun s => (⟦do_ s o⟧ : QState))
-    (fun s s' h => Quotient.sound (do_eq_congr s s' h o))
-
-@[simp] theorem qdo_mk (o : op_t) (s : concrete_st) :
-    qdo o (⟦s⟧ : QState) = ⟦do_ s o⟧ := rfl
-
-/-- The initial quotient state. -/
-def qinit : QState := (⟦init_st⟧ : QState)
-
 /-! ## §2. The merge `≈`-congruences (per argument)
 
 `Quotient.lift₃` of the ternary `merge` to `QState` needs the ternary congruence
@@ -176,24 +161,6 @@ etc.) all carry `Hstay`/`Hdec` (`wf l ∧ id_mono l`) AND require the start node
 `{0}∪domain l`; neither is available for a raw off-domain birth-anchor. `wf` does
 not rescue it: both `l`, `l'` here are `wf` **vacuously** (empty domain). -/
 
-private def ceL  : concrete_st := ⟨fun _ => (0, 0), empty⟩
-private def ceL' : concrete_st := ⟨fun x => if x = 3 then (0, 5) else (0, 0), empty⟩
-private def ceA  : concrete_st := ⟨fun x => if x = 5 then (7, 3) else (0, 0), singleton 5⟩
-
-/-- **The `l`-argument merge `≈`-congruence is FALSE.** `l ≈ l'` yet
-`merge l a a ≉ merge l' a a`. (`ceL`, `ceL'` are `≈`-equal empty-domain LCAs;
-they diverge the climb of survivor `5`.) -/
-theorem merge_eq_congr_l_fails :
-    ∃ (l l' a b : concrete_st), eq l l' ∧ ¬ eq (merge l a b) (merge l' a b) := by
-  refine ⟨ceL, ceL', ceA, ceA, ?_, ?_⟩
-  · intro k
-    refine ⟨rfl, fun h => ?_⟩
-    have hf : contains ceL k = false := rfl
-    rw [hf] at h
-    exact absurd h (by decide)
-  · intro h
-    exact absurd ((h 5).2 (by decide)) (by decide)
-
 /-! ## §3. `≈`-invariance of the state-shape predicates
 
 `Inv := wf ∧ contains · 0 = false ∧ id_mono` and `applicable := accurate ∧
@@ -210,9 +177,6 @@ theorem wf_eq_invariant {s s' : concrete_st} (h : eq s s') (hwf : wf s) : wf s' 
   · left; rw [← hanc]; exact h0
   · right; rw [← hanc, ← (h (anc s t)).1]; exact hc
 
-theorem wf_eq_iff {s s' : concrete_st} (h : eq s s') : wf s ↔ wf s' :=
-  ⟨wf_eq_invariant h, wf_eq_invariant (eq_symm s s' h)⟩
-
 /-- `contains · 0 = false` (root-not-stored) is `≈`-invariant. -/
 theorem contains_zero_eq_invariant {s s' : concrete_st} (h : eq s s')
     (h0 : contains s 0 = false) : contains s' 0 = false := by
@@ -227,9 +191,6 @@ theorem id_mono_eq_invariant {s s' : concrete_st} (h : eq s s') (hm : id_mono s)
   rcases hm t hts with h0 | hlt
   · left; rw [← hanc]; exact h0
   · right; rw [← hanc]; exact hlt
-
-theorem id_mono_eq_iff {s s' : concrete_st} (h : eq s s') : id_mono s ↔ id_mono s' :=
-  ⟨id_mono_eq_invariant h, id_mono_eq_invariant (eq_symm s s' h)⟩
 
 /-- `IsAncPath` is `≈`-invariant along a present leaf (used by `accurate`). -/
 theorem isAncPath_eq_invariant {s s' : concrete_st} (h : eq s s') :
@@ -287,25 +248,6 @@ guard *descend to `QState`* — these two defs are REAL (they compile), proving 
 descent. The remaining `ConditionedMRDTSig` data field `mergeL` is BLOCKED by the
 `l`-congruence gap (`merge_eq_congr_l_fails`), so the full instance and the payoff
 are marked PENDING below. -/
-
-/-- The RGA state-shape invariant lifted to `QState` (`= wf ∧ root-free ∧
-id_mono`). Well-defined by §3. This is the `ConditionedMRDTSig.Inv` slot. -/
-def qInv : QState → Prop :=
-  Quotient.lift (fun s => wf s ∧ contains s 0 = false ∧ id_mono s)
-    (fun _ _ h => propext (and_congr (wf_eq_iff h)
-      (and_congr (contains_zero_eq_iff h) (id_mono_eq_iff h))))
-
-@[simp] theorem qInv_mk (s : concrete_st) :
-    qInv (⟦s⟧ : QState) = (wf s ∧ contains s 0 = false ∧ id_mono s) := rfl
-
-/-- The RGA applicability guard lifted to `QState` (`= accurate ∧ fresh_ts`).
-Well-defined by §3. This is the `ConditionedMRDTSig.applicable` slot. -/
-def qapplicable (o : op_t) : QState → Prop :=
-  Quotient.lift (fun s => accurate o s ∧ fresh_ts o s)
-    (fun _ _ h => propext (and_congr (accurate_eq_iff o h) (fresh_ts_eq_iff o h)))
-
-@[simp] theorem qapplicable_mk (o : op_t) (s : concrete_st) :
-    qapplicable o (⟦s⟧ : QState) = (accurate o s ∧ fresh_ts o s) := rfl
 
 /-!
 ### The instance skeleton (PENDING — blocked on `qmerge`)

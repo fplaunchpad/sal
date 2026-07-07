@@ -35,7 +35,6 @@ namespace RGAMergeFoldChain
 
 open Sal.Emulation
 open RGACanonConvergence
-open RGAMergeBranchNew (FoldBirthChain)
 open RGAMergeLinearization (applySeqR)
 
 /-! ## §1  The reduced residual: a pure event-set / LCA-forest bridge
@@ -58,26 +57,6 @@ with `survP F k`, that `anc p k = canonAnc F (a_k :: p_k)`; and on the survivor
 domain `resolve p L = canonAnc F L` for every chain `L`.  Feeding the bridge in,
 both branches of `FoldBirthChain` fall out by rewriting `anc p k` and
 `resolve p (bw :: cw)` through `canonAnc`. -/
-theorem foldChain_of_canon (l a b p : concrete_st) (F : List op_t)
-    (hcm : CanonMatch F p)
-    (k r e_k a_k : ℕ) (p_k : List ℕ)
-    (hins : (k, r, .Ins e_k p_k a_k) ∈ F)
-    (hsv : survP F k)
-    (hbridge : CanonBirthBridge l F (birthAnc l a b k) (a_k :: p_k)) :
-    FoldBirthChain l a b p k := by
-  obtain ⟨hdom, hanc⟩ := hcm
-  have hres : ∀ L, resolve p L = canonAnc F L := resolve_eq_canonAnc F p hdom
-  have hancpk : anc p k = canonAnc F (a_k :: p_k) := (hanc k r e_k p_k a_k hins hsv).2
-  obtain ⟨hbin, hbout⟩ := hbridge
-  refine ⟨?_, ?_⟩
-  · intro hlw
-    obtain ⟨cw, hpath, hceq⟩ := hbin hlw
-    exact ⟨cw, hpath, by rw [hancpk, ← hceq, ← hres]⟩
-  · intro hlwf
-    rw [hancpk]; exact hbout hlwf
-
-#print axioms foldChain_of_canon
-
 /-! ## §3  The two-sided merge bridge, closed on the honest residual
 
 `eq_merge_two_sided_of_foldChain` carried a free `hFC : FoldBirthChain …`.

@@ -69,30 +69,4 @@ carried by the `noopFeasible` witnesses), and the residual additionally produces
 `noopFeasible` delta enumeration.  Everything ABOVE the residual — the union
 canonical-state shape — is closed by §2. -/
 
-/-- **The NF `≈`-Join residual.**  From the LCA enumeration `ρ₀` (with its
-`noopFeasible`) and the two sides' born-applicable canonical states, a
-`loOnEq`-respecting, `noopFeasible` delta enumeration `π₀` of the symmetric-
-difference whose continued fold from `ρ₀` is `≈ mergeL`.  The merge=delta-fold
-bridge, now carrying feasibility. -/
-def RgaEqJoinResidual_NF (W : op_t → concrete_st → Prop) : Prop :=
-  ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t)
-    (s₀ s₁ s₂ : concrete_st) (ρ₀ : List op_t),
-    RGACondSig'.Inv s₀ → RGACondSig'.Inv s₁ → RGACondSig'.Inv s₂ →
-    (∀ {a b c : op_t}, vis a b → vis b c → vis a c) →
-    (∀ a : op_t, ¬ vis a a) →
-    (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-    fullClosureRel (D := RGACondSig') vis ev₁ →
-    fullClosureRel (D := RGACondSig') vis ev₂ →
-    listPermOf ρ₀ (ev₁ ∩ ev₂) →
-    respects ρ₀ (loOnEq rgaEqEquiv' W vis (ev₁ ∩ ev₂)) →
-    noopFeasible RGACondSig' ρ₀ init_st →
-    IsCanonicalStateEqNF rgaEqEquiv' W vis ev₁ s₁ →
-    IsCanonicalStateEqNF rgaEqEquiv' W vis ev₂ s₂ →
-    ∃ π₀ : List op_t,
-      listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) ∧
-      respects π₀ (loOnEq rgaEqEquiv' W vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
-      noopFeasible RGACondSig' π₀ (applySeqR init_st ρ₀) ∧
-      eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
-
-
 end Sal.ConditionedMRDTs.RGAEqJoinNF

@@ -48,9 +48,8 @@ namespace Sal.ConditionedMRDTs.RGAInstanceFinal
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
-open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC'
-  rga_inv_init' RGACondSig'_update RGACondSig'_mergeL RGACondSig'_init)
-open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ WfOpGenQ rgaInvPresQ rga_wfOpReachableQ)
+open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC' rga_inv_init' RGACondSig'_init)
+open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ)
 open RGAMergeLinearization (applySeqR)
 
 /-! ## §1  `InvInvVC` over the strengthened guard `WfOpQ`
@@ -91,18 +90,6 @@ theorem applySeq_eq_applySeqR (s : concrete_st) (ρ : List op_t) :
   | nil => rfl
   | cons o ρ ih => exact ih (do_ s o)
 
-/-- Raw folds of `Nodup`, distinct-ts, `WfOpGenQ` enumerations land in `qInv`:
-`rga_wfOpReachableQ` seats `WfOpQ` at every prefix, `rgaInvPresQ` steps. -/
-theorem qInv_fold (ρ : List op_t) (hnd : ρ.Nodup)
-    (hts : ∀ a ∈ ρ, ∀ b ∈ ρ, a ≠ b → Op.time a ≠ Op.time b)
-    (hgen : ∀ o ∈ ρ, WfOpGenQ o) :
-    RGACondSig'.Inv (applySeqR init_st ρ) := by
-  have h := rgaInvPresQ.inv_applySeq_of_wfChain rga_inv_init'
-    (rga_wfOpReachableQ ρ hnd hts hgen)
-  rwa [applySeq_eq_applySeqR] at h
-
-#print axioms qInv_fold
-
 /-! ## §3  The union adapter: `IsCanonicalStateEq`'s ∃/order shape is CLEAN
 
 `IsCanonicalStateEq … (ev₁ ∪ ev₂) m` demands ONE `loOnEq`-respecting
@@ -117,26 +104,5 @@ fold is `≈ m`, the witness is literally `ρ₀ ++ π₀`:
   event into `ev₁ ∩ ev₂`.
 
 No order translation, no re-enumeration: the shape match is clean. -/
-
-def RgaEqJoinResidual
-    (GenDisc : (op_t → op_t → Prop) → Set op_t → Prop) : Prop :=
-  ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t)
-    (s₀ s₁ s₂ : concrete_st) (ρ₀ : List op_t),
-    RGACondSig'.Inv s₀ → RGACondSig'.Inv s₁ → RGACondSig'.Inv s₂ →
-    (∀ {a b c : op_t}, vis a b → vis b c → vis a c) →
-    (∀ a : op_t, ¬ vis a a) →
-    (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-    fullClosureRel (D := RGACondSig') vis ev₁ →
-    fullClosureRel (D := RGACondSig') vis ev₂ →
-    GenDisc vis ev₁ → GenDisc vis ev₂ → GenDisc vis (ev₁ ∪ ev₂) →
-    listPermOf ρ₀ (ev₁ ∩ ev₂) →
-    respects ρ₀ (loOnEq rgaEqEquiv' WfOpQ vis (ev₁ ∩ ev₂)) →
-    IsCanonicalStateEq rgaEqEquiv' WfOpQ vis ev₁ s₁ →
-    IsCanonicalStateEq rgaEqEquiv' WfOpQ vis ev₂ s₂ →
-    ∃ π₀ : List op_t,
-      listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) ∧
-      respects π₀ (loOnEq rgaEqEquiv' WfOpQ vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
-      eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
-
 
 end Sal.ConditionedMRDTs.RGAInstanceFinal

@@ -5,7 +5,6 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BranchCanon
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
-import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!
 # The MERGE half of `hCanon` — `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')`
@@ -109,41 +108,6 @@ theorem merge_el_clause
       exact (hcm2.2 t r e p a (hsurv2 h2) ((hcm2.1 t).mp h2)).1
 
 #print axioms merge_el_clause
-
-/-- **Merge anchor clause.**  A survivor's anchor in the merge is `canonAnc F` of its recorded chain.
-`anc (merge …) = climb (anc σ₀') survivors birthAnc` (rfl); via `resolve_climb_start` the climb is
-`resolve (merge) (bw::cw)`, which is `canonAnc F (bw::cw)` (`resolve_eq_canonAnc`, domain clause), and
-`CanonBirthBridge` reconciles that with `canonAnc F (a::p)`. Off-forest, `climb_fixpoint` collapses the
-climb to `bw = canonAnc F (a::p)`. The birth-anchor's forest chain is `CanonBirthBridge`'s content;
-`Hdec`/`Hstay`/`h0` (σ₀' forest invariants) and `hbwsurv` (birth-anchor is 0-or-survivor) are carried. -/
-theorem merge_anc_clause
-    (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t) (t a : ℕ) (p : List ℕ)
-    (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
-    (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
-    (h0 : contains σ₀' 0 = false)
-    (hdom : ∀ c, contains (merge σ₀' σ₁' σ₂') c = true ↔ survP F c)
-    (hbridge : CanonBirthBridge σ₀' F (birthAnc σ₀' σ₁' σ₂' t) (a :: p))
-    (hbwsurv : birthAnc σ₀' σ₁' σ₂' t = 0
-        ∨ survivors σ₀' σ₁' σ₂' (birthAnc σ₀' σ₁' σ₂' t) = true) :
-    anc (merge σ₀' σ₁' σ₂') t = canonAnc F (a :: p) := by
-  rw [anc_merge]
-  set bw := birthAnc σ₀' σ₁' σ₂' t with hbwdef
-  obtain ⟨hbin, hbout⟩ := hbridge
-  have hdmerge : domain (merge σ₀' σ₁' σ₂') = survivors σ₀' σ₁' σ₂' := by
-    funext k; rw [← contains_eq_domain]; exact contains_merge σ₀' σ₁' σ₂' k
-  by_cases hlw : contains σ₀' bw = true
-  · obtain ⟨cw, hpath, hceq⟩ := hbin hlw
-    have hrcs := resolve_climb_start σ₀' (merge σ₀' σ₁' σ₂') Hdec Hstay h0 bw cw hlw hpath
-    rw [hdmerge] at hrcs
-    rw [← hrcs, resolve_eq_canonAnc F (merge σ₀' σ₁' σ₂') hdom (bw :: cw), hceq]
-  · have hlwf : contains σ₀' bw = false := by
-      cases h : contains σ₀' bw with
-      | true => exact absurd h hlw
-      | false => rfl
-    rw [climb_fixpoint (fun y => anc σ₀' y) (survivors σ₀' σ₁' σ₂') bw hbwsurv]
-    exact (hbout hlwf).symm
-
-#print axioms merge_anc_clause
 
 /-- **`CanonMatch F (merge σ₀' σ₁' σ₂')`** — the RGA merge computes the canonical state of the union
 events, assembled from the three per-clause results (domain / el / anc). This is the SOLE RGA-specific

@@ -34,40 +34,8 @@ theorem rga_invCong {s s' : concrete_st} (h : rgaEqEquiv'.eqv s s')
   obtain ⟨hwf, h0, hmono⟩ := hI
   exact ⟨wf_eq_invariant h hwf, (contains_zero_eq_iff h).mp h0, id_mono_eq_invariant h hmono⟩
 
-/-- **RGA per-version RA-linearizability over born-applicable delivery.**  The RGA
-instance of `RA_linearizable_up_to_eq_NF` at `W := WfOpA`, with `hInvCong`
-discharged by `rga_invCong` and the four VCs plugged in.  Remaining honest inputs:
-`hJoinNF` (= the RGA merge residual, WALL 1), `hBA` (born-applicable delivery),
-`hgenW` (genuine events). -/
-theorem rga_RA_linearizable_NF
-    (hJoinNF : EqJoinLemma3C_NF RGACondSig' rgaEqEquiv' WfOpA)
-    (hBA : ∀ {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)}
-      {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t}
-      {v : Sal.ConditionedMRDTs.Version}
-      {sh : QState RGACondSig' rgaEqEquiv'} {evh : Set (Op app_op_t)},
-      (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
-        (Sal.ConditionedMRDTs.initConfig
-          (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C₀ →
-      Sal.ConditionedMRDTs.Step3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
-        C₀ (Sal.ConditionedMRDTs.Label3.apply t r o) C₁ →
-      C₀.head r = some v → C₀.ver v = some (sh, evh) →
-      qapplicable rgaEqEquiv' WfOpA rgaInvInvVCA (t, r, o) sh ∧
-        (∀ s', RGACondSig'.applicable (t, r, o) s' → WfOpA (t, r, o) s'))
-    (C : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA))
-    (hReach : (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
-        (Sal.ConditionedMRDTs.initConfig
-          (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C)
-    (hgenW : ∀ o ∈ (Sal.ConditionedMRDTs.Configuration.core C).events,
-        ∀ s', RGACondSig'.applicable o s' → WfOpA o s') :
-    Sal.ConditionedMRDTs.IsRALinearizable3 C :=
-  RA_linearizable_up_to_eq_NF rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA
-    (fun {_ _} h hI => rga_invCong h hI) hJoinNF hBA C hReach hgenW
-
 /-! ## Axiom audit -/
 
 #print axioms rga_invCong
-#print axioms rga_RA_linearizable_NF
 
 end Sal.ConditionedMRDTs.RGAInstanceNF

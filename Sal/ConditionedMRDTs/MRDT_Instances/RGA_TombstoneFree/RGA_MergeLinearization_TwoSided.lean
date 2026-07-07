@@ -103,45 +103,6 @@ open Sal.ConditionedMRDTs.RGAConditionedConvergence
 def birthEl (l a b : concrete_st) (t : ℕ) : ℕ :=
   if contains l t then el l t else if contains a t then el a t else el b t
 
-/-- **Two-sided branch invariant.**  The exact extensional content of the
-three-way merge, phrased as a predicate on the reference fold state `p`:
-
-* **dom** — `p`'s domain is the OR-set survivor set `survivors l a b`;
-* **el**  — each survivor keeps its `birthEl` (element from its owning branch);
-* **anc** — each survivor's anchor is the merge-`climb` of its `birthAnc` up the
-  LCA forest to the nearest two-sided survivor.
-
-This is the two-sided generalization of `RGAMergeLinearization.BranchInv`: the
-stop-set is `survivors l a b` (not `domain a`) and the climb start is `birthAnc`
-(not `anc l k`), so it also constrains the branch-new survivors. -/
-def BranchInv2 (l a b p : concrete_st) : Prop :=
-  (∀ k, survivors l a b k = contains p k)
-  ∧ (∀ k, survivors l a b k = true → el p k = birthEl l a b k)
-  ∧ (∀ k, survivors l a b k = true →
-        anc p k = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b k))
-
-/-- **eq-extensionality (steps 1+2 packaging).**  `BranchInv2 l a b p` is exactly
-`eq (merge l a b) p`.  Pure unfolding of `merge`'s definitional projections
-(`contains_merge`/`el_merge`/`anc_merge`), mirroring `eq_merge_single`. -/
-theorem eq_merge2_of_branchInv2 (l a b p : concrete_st) (hbi : BranchInv2 l a b p) :
-    eq (merge l a b) p := by
-  obtain ⟨hdom, hel, hanc⟩ := hbi
-  intro k
-  refine ⟨?_, ?_⟩
-  · rw [contains_merge]; exact hdom k
-  · intro hk
-    have hsv : survivors l a b k = true := by rw [contains_merge] at hk; exact hk
-    have he : el (merge l a b) k = el p k := by
-      have hm : el (merge l a b) k = birthEl l a b k := rfl
-      rw [hm, hel k hsv]
-    have ha : anc (merge l a b) k = anc p k := by
-      have hm : anc (merge l a b) k
-          = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b k) := rfl
-      rw [hm, hanc k hsv]
-    have e1 : sel (merge l a b) k = (el (merge l a b) k, anc (merge l a b) k) := rfl
-    have e2 : sel p k = (el p k, anc p k) := rfl
-    rw [e1, e2, he, ha]
-
 /-! ## §1b  GAP-2 machinery: the resolve-vs-climb reconciliation and the
 cross-branch `Del`-preservation lemma
 
@@ -190,153 +151,12 @@ theorem resolve_climb_lchain (l s : concrete_st)
         rw [← RGAMergeLinearization.contains_eq_domain]; exact hcsf
       rw [RGAMergeLinearization.climb_live_unfold l Hdec Hstay (domain s) c hcc hc0 hIcf]
 
-/-- The exact stuck goal `resolve a pre = anc a x`, now DISCHARGED for a `Del`
-whose path is `x`'s full `l`-chain: `resolve_climb_lchain` turns `resolve a pre`
-into the LCA-climb, which `BranchInv`'s I4 identifies with `anc a x`.  No
-`accurate a`-hypothesis. -/
-theorem hres_of_lchain (l a : concrete_st)
-    (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
-    (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
-    (h0 : contains l 0 = false)
-    (x : ℕ) (pre : List ℕ) (hpath : IsAncPath l x pre)
-    (hbi : RGAMergeLinearization.BranchInv l a)
-    (hxl : contains l x = true) (hxlive : contains a x = true) :
-    resolve a pre = anc a x := by
-  rw [resolve_climb_lchain l a Hdec Hstay h0 x pre hpath]
-  exact hbi.2.1 x hxl hxlive
-
-/-- **Cross-branch `Del`-preservation (GAP 2).**  Single-sided `BranchInv l` is
-preserved under a `Del pre x` WITHOUT the `accurate a`-hypothesis: it is enough
-that, when `x` is live, the (possibly stale) path resolves to `x`'s CURRENT anchor
-(`hres`) — supplied by `hres_of_lchain` for an `l`-accurate path — and that `a` is
-well-formed with `x ≠ 0`.  The live branch is the `branchInv_doDel` argument with
-`hres` in place of the accuracy-derived reparent equality; the dead branch is a
-forest no-op (no live node anchors at an absent `x`, by `wf a`). -/
-theorem branchInv_doDel_crossBranch (l a : concrete_st) (t r x : ℕ) (pre : List ℕ)
-    (ha0 : contains a 0 = false) (hwfa : wf a)
-    (hlwf : wf l) (hlmono : id_mono l) (hamono : id_mono a) (hx0 : x ≠ 0)
-    (hres : contains a x = true → resolve a pre = anc a x)
-    (hbi : RGAMergeLinearization.BranchInv l a) :
-    RGAMergeLinearization.BranchInv l (do_ a (t, r, .Del pre x)) := by
-  obtain ⟨hI2, hI4, hI3⟩ := hbi
-  have hHdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y := by
-    intro y hy hy0; rcases hlmono y hy with h | h
-    · omega
-    · exact h
-  have hHstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true) := hlwf
-  have hdomdel : domain (do_ a (t, r, .Del pre x)) = (fun z => domain a z && x != z) :=
-    RGAMergeLinearization.domain_doDel a t r x pre
-  by_cases hxlive : contains a x = true
-  · have hresx : resolve a pre = anc a x := hres hxlive
-    refine ⟨?_, ?_, ?_⟩
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [el_doDel a t r x pre k]; exact hI2 k hlk hak
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [anc_doDel a t r x pre k, hresx, hdomdel]
-      by_cases hax : anc a k = x
-      · rw [if_pos hax]
-        have hxl : contains l x = true := by
-          rcases hI3 k hlk hak with h | h
-          · rw [hax] at h; exact absurd h hx0
-          · rw [hax] at h; exact h
-        have hstepk :
-            climb (fun y => anc l y) (fun z => domain a z && x != z) (anc l k)
-              = climb (fun y => anc l y) (fun z => domain a z && x != z) (anc l x) := by
-          apply RGAMergeLinearization.climb_remove_eq_result l hHdec hHstay (domain a) x hxl hx0
-            (anc l k) (hlwf k hlk)
-          rw [hI4 k hlk hak]; exact hax
-        rw [hstepk]
-        have hancax : anc a x ≠ x := by
-          rcases hamono x hxlive with h | h
-          · rw [h]; exact fun e => hx0 e.symm
-          · omega
-        have hne : climb (fun y => anc l y) (domain a) (anc l x) ≠ x := by
-          rw [hI4 x hxl hxlive]; exact hancax
-        rw [RGAMergeLinearization.climb_remove_ne (fun y => anc l y) (domain a) x (anc l x) hne]
-        exact hI4 x hxl hxlive
-      · rw [if_neg hax]
-        have hne : climb (fun y => anc l y) (domain a) (anc l k) ≠ x := by
-          rw [hI4 k hlk hak]; exact hax
-        rw [RGAMergeLinearization.climb_remove_ne (fun y => anc l y) (domain a) x (anc l k) hne]
-        exact hI4 k hlk hak
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [anc_doDel a t r x pre k, hresx]
-      by_cases hax : anc a k = x
-      · rw [if_pos hax]
-        have hxl : contains l x = true := by
-          rcases hI3 k hlk hak with h | h
-          · rw [hax] at h; exact absurd h hx0
-          · rw [hax] at h; exact h
-        exact hI3 x hxl hxlive
-      · rw [if_neg hax]; exact hI3 k hlk hak
-  · have hxdom : domain a x = false := by
-      cases h : domain a x with
-      | false => rfl
-      | true => exact absurd (by rw [RGAMergeLinearization.contains_eq_domain]; exact h) hxlive
-    have hdomeq : domain (do_ a (t, r, .Del pre x)) = domain a := by
-      rw [hdomdel]; funext z
-      show (domain a z && (x != z)) = domain a z
-      by_cases hzx : z = x
-      · subst hzx; simp only [bne_self_eq_false, Bool.and_false, hxdom]
-      · have hb : (x != z) = true := by simp [Ne.symm hzx]
-        rw [hb, Bool.and_true]
-    have hanceq : ∀ k, contains a k = true → anc (do_ a (t, r, .Del pre x)) k = anc a k := by
-      intro k hk
-      rw [anc_doDel a t r x pre k]
-      by_cases hax : anc a k = x
-      · exfalso
-        rcases hwfa k hk with h | h
-        · rw [hax] at h; exact hx0 h
-        · rw [hax] at h; exact absurd h hxlive
-      · rw [if_neg hax]
-    refine ⟨?_, ?_, ?_⟩
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [el_doDel a t r x pre k]; exact hI2 k hlk hak
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [hanceq k hak, hdomeq]; exact hI4 k hlk hak
-    · intro k hlk hak'
-      have hak : contains a k = true := by
-        rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
-      rw [hanceq k hak]; exact hI3 k hlk hak
-
 /-! ## §2  Interleave-order independence (steps 3+4)
 
 The convergence engine `eq_convergence` is start-state-generic, so it applies with
 start state `l` directly: any two `lo`-respecting enumerations of the same event
 set fold from `l` to `eq` states, given the swap oracle.  Composing with §1 lifts
 the bridge from one reference interleave to any `lo`-respecting interleave. -/
-
-/-- **Interleave independence (steps 3+4).**  Given the bridge for ONE reference
-interleave `π₀` (`href`), any other `lo`-respecting interleave `π` of the same
-event set `ev` also satisfies the bridge — by the imported convergence engine
-(fold-order independence up to `eq`) plus `eq`-transitivity.  `hSwap` is the swap
-oracle the convergence headline already consumes (the located obstruction of
-`RGA_ConditionedConvergence.lean`); it transports unchanged. -/
-theorem merge_fold_indep
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
-    (href : eq (merge l a b) (applySeqR l π₀))
-    (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
-    (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hSwap : ∀ (pre : List op_t) (x y : op_t),
-        (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
-        x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
-        (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
-        (∀ z ∈ ev, z ≠ y → lo z y → z ∈ pre) →
-        EqSwap x y (applySeqR l pre)) :
-    eq (merge l a b) (applySeqR l π) := by
-  have hconv : eq (applySeqR l π₀) (applySeqR l π) :=
-    eq_convergence lo π₀.length l ev π₀ π rfl h₀p hπp h₀r hπr hSwap
-  exact eq_trans _ _ _ href hconv
 
 /-! ## §3  The assembled two-sided headline (conditioned)
 
@@ -345,30 +165,9 @@ on exactly two hypotheses: `hThread` — the reference fold `applySeqR l π₀` 
 `BranchInv2` (the residual two-sided threading obligation, see OBSTRUCTION below) —
 and `hSwap` — the convergence swap oracle (imported obligation).  Everything ELSE
 in the two-sided bridge is discharged. -/
-theorem eq_merge_two_sided
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
-    (hThread : BranchInv2 l a b (applySeqR l π₀))
-    (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
-    (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hSwap : ∀ (pre : List op_t) (x y : op_t),
-        (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
-        x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
-        (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
-        (∀ z ∈ ev, z ≠ y → lo z y → z ∈ pre) →
-        EqSwap x y (applySeqR l pre)) :
-    eq (merge l a b) (applySeqR l π) := by
-  have href : eq (merge l a b) (applySeqR l π₀) :=
-    eq_merge2_of_branchInv2 l a b _ hThread
-  exact merge_fold_indep l a b lo ev π₀ π href h₀p hπp h₀r hπr hSwap
-
 /-! ## §4  Axiom audit -/
 
-#print axioms eq_merge2_of_branchInv2
 #print axioms resolve_climb_lchain
-#print axioms hres_of_lchain
-#print axioms branchInv_doDel_crossBranch
-#print axioms merge_fold_indep
-#print axioms eq_merge_two_sided
 
 /- ═══════════════════════════════════════════════════════════════════════════
    THE LOCATED OBSTRUCTION — the exact missing lemma `hThread`, and why it is

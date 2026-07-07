@@ -39,27 +39,6 @@ open RGACanonBirthBridge (canonBirthBridge_holds canonAnc_pos canonAnc_neg)
 
 /-! ## §1  `survP` set-monotonicity — the `Fa ⊆ F` bridge -/
 
-/-- `deletedIn` is monotone in the applied set (membership inclusion). -/
-theorem deletedIn_mono (F₁ F₂ : List op_t) (hsub : ∀ o, o ∈ F₁ → o ∈ F₂) (c : ℕ)
-    (h : deletedIn F₁ c) : deletedIn F₂ c := by
-  obtain ⟨t, r, p, hm⟩ := h
-  exact ⟨t, r, p, hsub _ hm⟩
-
-/-- A recorded ancestor **deleted in the branch set** `Fa` cannot survive the
-two-sided set `F ⊇ Fa`: the branch's own `Del` event is also in `F`.  This is the
-OR-set reconciliation `hpreDead` runs on — a branch-dead nearer recorded entry is
-a non-`F`-survivor. -/
-theorem notSurv_of_branchDeleted (Fa F : List op_t) (hsub : ∀ o, o ∈ Fa → o ∈ F)
-    (c : ℕ) (h : deletedIn Fa c) : ¬ survP F c :=
-  fun hsv => hsv.2 (deletedIn_mono Fa F hsub c h)
-
-/-- `hpreDead` from the branch-canonical fact: every recorded entry nearer than
-`bw` was **deleted in the branch fold** (`Fa`), hence is a non-`F`-survivor. -/
-theorem hpreDead_of_branchDeleted (Fa F : List op_t) (hsub : ∀ o, o ∈ Fa → o ∈ F)
-    (rcPre : List ℕ) (hdel : ∀ c ∈ rcPre, deletedIn Fa c) :
-    ∀ c ∈ rcPre, ¬ survP F c :=
-  fun c hc => notSurv_of_branchDeleted Fa F hsub c (hdel c hc)
-
 /-! ## §2  `hout` — the off-forest birth-anchor survives `F` (clean, full-fold)
 
 `bw = birthAnc l a b k` is `k`'s branch-final anchor.  When `bw` is *off the LCA
@@ -134,41 +113,6 @@ non-survivors and stops at the first survivor.  So it depends on `L` *only throu
 that subsequence* — inserting or deleting non-survivors is invisible.  This lets us
 pin `hin` (`canonAnc F cw = canonAnc F rcSuf`) to a single crisp fact: `bw`'s
 `F`-surviving recorded ancestors equal its `F`-surviving `l`-ancestors, in order. -/
-
-/-- Decidable survivorship test (classical). -/
-noncomputable def survB (F : List op_t) (c : ℕ) : Bool := decide (survP F c)
-
-/-- `canonAnc F` depends on a chain only through its `F`-survivor subsequence. -/
-theorem canonAnc_filter_surv (F : List op_t) :
-    ∀ L : List ℕ, canonAnc F L = canonAnc F (L.filter (survB F)) := by
-  intro L
-  induction L with
-  | nil => rfl
-  | cons c cs ih =>
-    by_cases h : survP F c
-    · rw [canonAnc_pos F c cs h, List.filter_cons,
-        show survB F c = true from by simp [survB, h],
-        if_pos rfl, canonAnc_pos F c _ h]
-    · rw [canonAnc_neg F c cs h, List.filter_cons,
-        show survB F c = false from by simp [survB, h], if_neg (by simp), ih]
-
-/-- **`hin` from the survivor-subsequence coincidence.**  If `bw`'s recorded
-rootward tail `rcSuf` and its LCA-forest chain `cw` have the *same* `F`-surviving
-subsequence, they reach the same `F`-survivor, and `hin` holds.  This is the
-irreducible two-sided residual, stripped of all climb algebra: everything else in
-`canonAnc F cw = canonAnc F rcSuf` is discharged; what remains is that `bw`'s
-surviving ancestors are the same whether read off the recorded chain or the LCA
-forest. -/
-theorem hin_of_survFilterEq (l : concrete_st) (F : List op_t) (bw : ℕ)
-    (cw rcSuf : List ℕ) (hpath : IsAncPath l bw cw)
-    (hFiltEq : rcSuf.filter (survB F) = cw.filter (survB F)) :
-    contains l bw = true →
-      ∃ cw', IsAncPath l bw cw' ∧ canonAnc F cw' = canonAnc F rcSuf := by
-  intro _
-  refine ⟨cw, hpath, ?_⟩
-  rw [canonAnc_filter_surv F cw, canonAnc_filter_surv F rcSuf, hFiltEq]
-
-#print axioms hin_of_survFilterEq
 
 /-! ## §4  STATUS — which merge-side residual closed, and the exact residual
 

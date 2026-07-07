@@ -124,17 +124,6 @@ theorem pastE_loOnA_closed (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTS
     (hlo : loOnA RGACondSig Cfg E z x) : z ∈ pastE Cfg E o :=
   ⟨hz, htr (loOnA_imp_vis Cfg E z x hlo) hx.2⟩
 
-/-- A `loOnA`-respecting enumeration of the causal past is a `GoodEnum` at `E`. -/
-theorem goodEnum_of_past_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (o : op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (π : List op_t) (hπp : listPermOf π (pastE Cfg E o))
-    (hπr : respects π (loOnA RGACondSig Cfg E)) :
-    GoodEnum Cfg E π := by
-  refine ⟨fun x hx => ((hπp.2 x).mp hx).1, hπp.1, hπr, ?_⟩
-  intro x hx z hz _hzx hlo
-  exact (hπp.2 z).mpr (pastE_loOnA_closed Cfg E o htr x ((hπp.2 x).mp hx) z hz hlo)
-
 /-- The dependency set sits inside the causal past: a transitive dependency of `o` is a causal
 predecessor of `o` lying in `E`. -/
 theorem depC_mem_pastE (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
@@ -206,7 +195,6 @@ theorem isDepPreC_of_restrict (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
 #print axioms nondep_not_appliesDependsOn
 #print axioms applicable_peel_suffix
 #print axioms loOnA_ev_free
-#print axioms goodEnum_of_past_perm
 #print axioms depC_mem_pastE
 #print axioms depC_restrict
 #print axioms isDepPreC_of_restrict

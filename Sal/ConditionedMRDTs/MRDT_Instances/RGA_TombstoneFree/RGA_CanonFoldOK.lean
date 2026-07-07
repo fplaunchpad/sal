@@ -3,7 +3,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
-import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CondSig
+import Sal.ConditionedMRDTs.Framework.LoOnC
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 
@@ -69,7 +70,7 @@ open Sal.Emulation (respects listPermOf)
 open Sal.ConditionedMRDTs.ConditionedConvergence (loOnA)
 open Sal.ConditionedMRDTs.ConditionedExecutionModel (ConditionedConfiguration)
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
-open RGAMergeLinearization (applySeqR applySeqR_nil applySeqR_cons)
+open RGAMergeLinearization (applySeqR applySeqR_cons)
 open RGACanonConvergence
 
 /-! ## §1  The closure-corrected per-event generation discipline -/
@@ -164,48 +165,6 @@ theorem insertedIn_of_contains_fold (L : List op_t) (c : ℕ)
   rcases contains_fold_cases L init_st c h with h' | h'
   · rw [contains_init] at h'; exact Bool.noConfusion h'
   · exact h'
-
-/-- A live id not deleted along a fold stays live. -/
-theorem contains_fold_pres :
-    ∀ (L : List op_t) (s : concrete_st) (c : ℕ),
-      contains s c = true → ¬ deletedIn L c →
-      contains (applySeqR s L) c = true := by
-  intro L
-  induction L with
-  | nil => intro s c h _; exact h
-  | cons o rest ih =>
-    intro s c h hnd
-    rw [applySeqR_cons]
-    refine ih (do_ s o) c ?_ (fun ⟨t, r, p, hm⟩ => hnd ⟨t, r, p, List.mem_cons_of_mem o hm⟩)
-    obtain ⟨t, r, op⟩ := o
-    cases op with
-    | Ins e p a =>
-      rw [show do_ s (t, r, .Ins e p a) = upd s t (e, resolve s (a :: p)) from by
-            simp only [do_], lemma_InDomUpd1, h, Bool.or_true]
-    | Del p x =>
-      have hcx : c ≠ x := fun hEq =>
-        hnd ⟨t, r, p, by rw [hEq]; exact List.mem_cons_self ..⟩
-      rw [contains_doDel, h, Bool.true_and, bne_iff_ne]
-      exact hcx
-
-/-- A survivor of the applied list is live at its fold from `init_st`. -/
-theorem contains_fold_of_surv :
-    ∀ (L : List op_t) (s : concrete_st) (c : ℕ),
-      insertedIn L c → ¬ deletedIn L c → contains (applySeqR s L) c = true := by
-  intro L
-  induction L with
-  | nil => intro s c ⟨r, e, p, a, hm⟩ _; exact absurd hm (by simp)
-  | cons o rest ih =>
-    intro s c ⟨r, e, p, a, hm⟩ hnd
-    have hnd' : ¬ deletedIn rest c :=
-      fun ⟨t', r', p', hm'⟩ => hnd ⟨t', r', p', List.mem_cons_of_mem o hm'⟩
-    rw [applySeqR_cons]
-    rcases List.mem_cons.mp hm with rfl | hm'
-    · refine contains_fold_pres rest _ c ?_ hnd'
-      rw [show do_ s (c, r, .Ins e p a) = upd s c (e, resolve s (a :: p)) from by
-            simp only [do_], lemma_InDomUpd1]
-      simp
-    · exact ih (do_ s o) c ⟨r, e, p, a, hm'⟩ hnd'
 
 /-- `insertedIn` is monotone under list inclusion. -/
 theorem insertedIn_mono {L₁ L₂ : List op_t} (h : ∀ x ∈ L₁, x ∈ L₂) {c : ℕ}
@@ -710,56 +669,9 @@ theorem canonFoldOK_of_gen (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTS
         (canonStepOK_of_gen Cfg E hdts hids0 hGen F o hg
           (fun τ hτ hgτ => ih τ (hτ.trans hlenF) hgτ))
 
-/-- Every `loOnA`-respecting enumeration of the delivered set is disciplined:
-`CanonFoldOK` holds with NO residual beyond the generation discipline and the
-execution model's id-uniqueness. -/
-theorem canonFoldOK_of_genDisc
-    (C : ConditionedConfiguration RGACondSig)
-    (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (hE : C.BackClosed E)
-    (hids0 : ∀ o ∈ E, o.1 ≠ 0)
-    (hGen : GenDisc2C Cfg E)
-    (π : List op_t) (hπp : listPermOf π E)
-    (hπr : respects π (loOnA RGACondSig Cfg E)) :
-    CanonFoldOK [] init_st π :=
-  canonFoldOK_of_gen Cfg E
-    (fun _ _ ha hb hne => C.distinctTs E hE ha hb hne)
-    hids0 hGen π.length π le_rfl
-    ⟨fun x hx => (hπp.2 x).mp hx, hπp.1, hπr,
-     fun _x _hx z hz _ _ => (hπp.2 z).mpr hz⟩
-
-/-- **HEADLINE — RGA update convergence from the generation discipline.**
-Two `loOnA`-respecting enumerations of the same backward-closed delivered set
-`E` fold from `init_st` to observationally equal states.
-
-Premises, in full: the execution model (`C`, with `hE : C.BackClosed E` —
-supplying only global id-uniqueness `distinct_ts` — and nonzero ids `hids0`),
-the enumeration hypotheses (`listPermOf`/`respects`), and the per-event
-generation discipline `GenDisc2C` (each event `accurate` at its own dependency
-prefix).  NOTHING else: no `CanonFoldOK` residual (it is DERIVED, §5–§6), no
-`EligibleThread`, no per-prefix `Faithful`, no `DepComp`, no swap oracle, and
-no `ReachInv` — the canonical-state engine of `RGA_CanonConvergence` supplies
-the reachable-state facts itself. -/
-theorem RGA_update_convergence_final
-    (C : ConditionedConfiguration RGACondSig)
-    (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (hE : C.BackClosed E)
-    (hids0 : ∀ o ∈ E, o.1 ≠ 0)
-    (π₁ π₂ : List op_t)
-    (h₁p : listPermOf π₁ E) (h₂p : listPermOf π₂ E)
-    (h₁r : respects π₁ (loOnA RGACondSig Cfg E))
-    (h₂r : respects π₂ (loOnA RGACondSig Cfg E))
-    (hGen : GenDisc2C Cfg E) :
-    eq (applySeqR init_st π₁) (applySeqR init_st π₂) :=
-  RGA_update_convergence_canon π₁ π₂
-    (fun o => (h₁p.2 o).trans (h₂p.2 o).symm)
-    (canonFoldOK_of_genDisc C Cfg E hE hids0 hGen π₁ h₁p h₁r)
-    (canonFoldOK_of_genDisc C Cfg E hE hids0 hGen π₂ h₂p h₂r)
-
 /-! ## §7  Axiom audit -/
 
 #print axioms canonStepOK_of_gen
 #print axioms canonFoldOK_of_gen
-#print axioms RGA_update_convergence_final
 
 end Sal.ConditionedMRDTs.RGACanonFoldOK

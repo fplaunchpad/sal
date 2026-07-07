@@ -3,7 +3,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
-import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CondSig
+import Sal.ConditionedMRDTs.Framework.LoOnC
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 
 /-!
@@ -89,59 +90,6 @@ branch-new survivor `k` whose birth-anchor `w := birthAnc l a b k`:
   `anc p k = w`.
 
 `FoldBirthChain` packages exactly these two fold-side identities. -/
-
-/-- **The residual fold-chain identity.**  For a branch-new node `k` in the fold
-state `p`, its stored anchor is the `resolve` of its birth-anchor's LCA chain
-(in-forest birth-anchor) or the birth-anchor itself (off-forest).  This is the
-event-list content the climb algebra cannot supply — see the RESIDUAL block. -/
-def FoldBirthChain (l a b p : concrete_st) (k : ℕ) : Prop :=
-  (contains l (birthAnc l a b k) = true →
-      ∃ cw, IsAncPath l (birthAnc l a b k) cw
-        ∧ anc p k = resolve p (birthAnc l a b k :: cw))
-  ∧ (contains l (birthAnc l a b k) = false → anc p k = birthAnc l a b k)
-
-/-- **`hBN` from the fold-chain identity.**  Given `hD` (survivor set = fold live
-set) and, per branch-new survivor, the `FoldBirthChain` identity, the branch-new
-anchor clause `hBN` holds — all the `climb`/`resolve` reconciliation discharged by
-`resolve_climb_start` + `climb_fixpoint`, the off-forest start condition by
-`betaf_start`. -/
-theorem hBN_of_foldChain (l a b p : concrete_st)
-    (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
-    (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
-    (h0 : contains l 0 = false)
-    (hawf : ∀ t, contains a t = true → (anc a t = 0 ∨ contains a (anc a t) = true))
-    (hbwf : ∀ t, contains b t = true → (anc b t = 0 ∨ contains b (anc b t) = true))
-    (hD : ∀ k, survivors l a b k = contains p k)
-    (hFC : ∀ k, survivors l a b k = true → contains l k = false →
-        FoldBirthChain l a b p k) :
-    ∀ k, survivors l a b k = true → contains l k = false →
-        anc p k
-          = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b k) := by
-  have hsetEq : survivors l a b = domain p := by
-    funext j; rw [hD j]; exact RGAMergeLinearization.contains_eq_domain p j
-  intro k hsv hlkf
-  rw [hsetEq]
-  obtain ⟨hin, hout⟩ := hFC k hsv hlkf
-  by_cases hlw : contains l (birthAnc l a b k) = true
-  · obtain ⟨cw, hpath, heq⟩ := hin hlw
-    rw [heq]
-    exact resolve_climb_start l p Hdec Hstay h0 (birthAnc l a b k) cw hlw hpath
-  · have hlwf : contains l (birthAnc l a b k) = false := by
-      cases h : contains l (birthAnc l a b k) with
-      | true => exact absurd h hlw
-      | false => rfl
-    rw [hout hlwf]
-    have hcond : birthAnc l a b k = 0 ∨ (domain p) (birthAnc l a b k) = true := by
-      by_cases hw0 : birthAnc l a b k = 0
-      · exact Or.inl hw0
-      · rcases betaf_start l a b Hstay hawf hbwf k hsv with h | h | h
-        · exact absurd h hw0
-        · refine Or.inr ?_
-          rw [← RGAMergeLinearization.contains_eq_domain, ← hD]; exact h
-        · exact absurd h hlw
-    exact (climb_fixpoint (fun y => anc l y) (domain p) (birthAnc l a b k) hcond).symm
-
-#print axioms hBN_of_foldChain
 
 /-! ## §3  Composition: the two-sided bridge with `hBN` replaced by `FoldBirthChain`
 
