@@ -263,17 +263,32 @@ backward via `pairwise_append` (no index arithmetic).
     engineering), `hBA` (honest premise). Note: `hgenW` is GONE (it only fed
     the now-deleted guard-transparency).
 
+  **✅ FURTHER REDUCED (commits 58f7067 + c8e1cbe, kernel-clean):**
+  * `RGA_Skeleton3_Leaves.lean` — `canonMatch_of_canonFoldOK` +
+    **`hFoldCanon3`** (ALL FOUR CanonMatches from the carried disciplines —
+    **no `EngineReady`, no `RefEdge`, no `hReady` leg anywhere**; the entire
+    GoodEnumR/reachability-plumbing layer drops out of the main chain) +
+    **`hCanon_of_leaves3`** (Skeleton3's `hCanon` ⟸ `hMergeInputs` alone).
+  * **HonJ join-context threaded** (`EqJoinLemma3C_H … HonJ`): honest ambient
+    facts (same-replica `vis`-totality, `hids0`, generation-discipline content)
+    flow from reachable configs (`hHon`) through `GoodConfig3H`'s merge to the
+    join, and `hEnum`'s premise chain now carries `HonJ vis events` — closing
+    the dischargeability gap (K1's `GenDisc2C`/honest inputs now reachable).
+
   **Remaining work (all engineering, zero open research):**
-  1. `hCanon` reduction re-wire (mirror `hCanon_of_leaves2` + Skeleton2's
-     bridge at the Skeleton3 premise chain) + `hMergeInputs` discharge
-     (BranchInv-I4 etc.).
-  2. `hEnum` final wiring: `K1_canonFoldOK` needs `GenDisc2C` + `hids0` +
-     `respects π₀ loOnA` (vis-sort) — thread the honest facts (born accuracy =
-     `hborn`, from `hBA`-level reachability; enrich the invariant or the join
-     premises to carry them to the merge site).
+  1. `hEnum` discharge: instantiate `HonJ := rgaHonJ` (same-replica totality ∧
+     `hids0` ∧ born-accuracy/GenDisc2C content); build the synthetic
+     `Emulation.Configuration` from the join's `vis` restricted to events
+     (fields: `vis_src/tgt/causal` from closures+restriction,
+     `timestamps_distinct` from `hdts`, `vis_total_same_replica` from HonJ);
+     π₀ := vis-topological sort of the delta (respects loOnEq ∧ loOnA both,
+     since both ⊆ vis); conclude via `K1_canonFoldOK`.
+  2. `hMergeInputs` discharge — the deep algebra (BranchInv-I4 via
+     `branchInv_of_enum` + set-algebra + membership; tasks #38/#39).
   3. `hHext` discharge: `canonFoldOK_append` (snoc) + `chainOK_of_accurate` +
-     honest id-bookkeeping (WfOpGenQ + ts-freshness).
-  4. `hBA`/`hborn` from the execution model; hReady-style plumbing.
+     honest id-bookkeeping (t ∉ payload-ids from WfOpGenQ + ts-freshness).
+  4. `hHon`/`hBA` from the execution model (born accuracy at generation =
+     past-fold accuracy; `genDisc2C_of_born` consumes it).
   5. README/AgentNotes final update + promote Development→mainline.
 
   The criss-cross example is the RGA's last word: raw rehoming semantics is
