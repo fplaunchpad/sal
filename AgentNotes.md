@@ -119,22 +119,36 @@ branch folds) → applicable+noopFeasible is the right condition; merge delta fo
 (from σ₀) → rehome-correctness (`Faithful`/`ClimbFaithful`, GenDisc-like) is the
 right condition** — accuracy is provably wrong there.
 
-**Fix analysis.** The merge half of `hCanon_of_leaves` consumes only the three
-BRANCH CanonMatch facts; the union CanonMatch exists solely for
-`merge ≈ fold-from-σ₀`, and is plausibly TRUE in the counterexample — only the
-engine's noopFeasible ROUTE to it is unachievable. Both fix options need the
-same math (Faithful-at-prefix for delta ops at LCA-first prefixes):
-* **(B, recommended)** re-base the δ-fold obligation from `noopFeasible` to
-  `Faithful`/`ChainFaithful` and generalize the engine's per-op premise
-  (`ChainOK`-from-`Faithful` instead of from-`accurate`). Rides the completed
-  LINCHPIN infrastructure (`chainFaithful_at_interleaved_fold`,
-  `RGA_InterleavedThreading`). Gate: probe `chainOK_of_accurate_ins` → does it
-  extend to Faithful (rehomed anchors)?
-* **(A)** keep the engine, produce the union CanonMatch from a from-init enum
-  (noopFeasible from init IS achievable — the counterexample's
-  `[insOpE, insOnX, delOpE]`), transport to the LCA-first fold — but the
-  transport needs the same Faithful-based swap machinery
-  (`general_swap_bothFaithful`), so it smuggles B's math in anyway.
+**Fix analysis (superseded by the built fix below).** The merge half of
+`hCanon_of_leaves` consumes only the three BRANCH CanonMatch facts; the union
+CanonMatch exists solely for `merge ≈ fold-from-σ₀` — only the engine's
+noopFeasible ROUTE to it was unachievable. Decisive discovery: the engine's own
+per-op condition `ChainOK` (`RGA_CanonConvergence.lean:89`) is ALREADY
+rehome-tolerant ("weaker than `accurate` … survives the deletion of the chain's
+own head" — vacuous in the counterexample), and `canon_fold` is mid-fold capable.
+`noopFeasible` was a sufficient-condition packaging wrongly enshrined as the
+interface.
+
+**✅ CORRECTED SKELETON BUILT (commit b4c68e6), kernel-clean, 0 sorry:**
+* `RGA_Corrected_Residual.lean` — `RgaEqJoinResidualLit2`: the union residual is
+  now "∃ ρᵤ: the merged state is reachable by an honest from-init delivery of
+  the union"; ρᵤ itself is the `IsCanonicalStateEqNF` witness.
+  `canonFoldOK_concat`: the per-event discipline composes across `++`.
+* `RGA_Corrected_Assembly.lean` — merge=fold via `eq_of_canonMatch2` (unchanged);
+  the NEW hop `fold(ρ₀++π₀) ≈ fold(ρᵤ)` is the proved
+  `RGA_update_convergence_canon`. `rga_eqJoinNF_of_canon2` ⟹ `EqJoinLemma3C_NF`.
+* `RGA_Skeleton2.lean` — capstone `rga_RA_linearizable_skeleton2` ⟹ unconditional
+  `IsRALinearizable3 C`. `hEnum` = **K1** (`CanonFoldOK ρ₀ σ₀ π₀` — engine-native
+  delta discipline, TRUE in the refutation scenario) + **K2** (from-init union
+  re-enum `ρᵤ` with perm/respects/noopFeasible/`CanonFoldOK` — the merge induction
+  invariant) + the LCA/branch disciplines. `hReady` = THREE `EngineReady` legs
+  (union leg DERIVED via `canonFoldOK_concat` + `canon_fold` from init).
+
+**Remaining research = discharging K1 + K2** (the corrected hEnum): per-op
+`ChainOK`/`DelOK` establishment for the delta and union enums — LiveChain
+transport from branch runs (LINCHPIN machinery `chainFaithful_at_interleaved_fold`
+is adjacent) + the from-init delete-deferred order (forest-invariant id-rank looks
+viable for acyclicity).
 
 Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
 eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
