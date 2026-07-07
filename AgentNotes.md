@@ -210,6 +210,48 @@ backward via `pairwise_append` (no index arithmetic).
   (witness def) + GoodConfig3NF (invariant + extension) + the corrected
   residual/assembly/skeleton files (drop ρᵤ, carry `CanonFoldOK`).
 
+* **⚠️ FINDING #4 (2026-07-08): the CAPSTONE TARGET itself is unsatisfiable as
+  stated.** `IsRALinearizable3` (`Adequacy.lean:35`) demands, per version, an
+  enum whose fold **at the version's own signature** equals the state — at
+  `D := QSig … WfOpA …` that is the **guarded** fold (`qdo`/`applySeqW`) with
+  strict `=` on classes. The K2 counterexample shows every `WfOpA`-guarded
+  replay of the criss-cross union skips `o₁` or `o₂` (the accuracy cycle), and
+  a state missing the skipped node is observationally ≉ the merge — so NO
+  witness exists: **`IsRALinearizable3 C` at the WfOpA-quotient is FALSE for
+  the tombstone-free RGA at that reachable config.** The skeleton chain is
+  sound as an implication but its conclusion is undischargeable. (This is the
+  same noopFeasible/accuracy displaced-difficulty, surfacing at the very top:
+  `isCanonicalState_of_NF` is exactly the guard-transparency step that consumed
+  the witness's noopFeasibility.)
+
+  **Fix options:**
+  * **(R — recommended, cheap, research-correct):** re-state the capstone at
+    the raw/≈ level — per version `v` with class `s` and events `E`:
+    `∃ σ hσ, s = qmk σ hσ ∧ ∃ π, listPermOf π E ∧ respects π (lo core) ∧
+    rgaEqEquiv'.eqv (applySeqR init_st π) σ`. This is the paper's
+    RA-linearizability applied to the DATATYPE (raw `do_` folds, state up to
+    observational eq); the guarded-quotient replay was mechanization packaging,
+    never the paper's notion. The (H-swapped) GoodConfig3 invariant carries
+    exactly this clause per version — the final extraction needs NO guard
+    transparency (drop `isCanonicalState_of_NF`), only the order inclusion
+    (`loOnEq_antimono`-style, as the current chain already does). The quotient
+    remains as internal reachability machinery.
+  * **(W — expensive):** re-base the quotient guard from `WfOpA` (accuracy) to
+    a Faithful/rehome-correct guard so guarded = raw on disciplined enums; the
+    plan doc's Gate (a) verdict ("the invariant is Faithful, not accurate")
+    pointed here, and `general_swap_bothFaithful` covers the commutation VC —
+    but all four instance VC bundles re-prove. Only worth it if a
+    guarded-adequacy statement is independently wanted.
+
+  **The finish plan under (R):** (1) H-layer re-thread (GenericEqQuotient_H
+  with witness clause `H := CanonFoldOK [] init_st`, GoodConfig3H, raw-≈ final
+  theorem `IsRALinearizable3Eq`); (2) corrected residual chain already fits
+  (drop ρᵤ; union witness ρ₀ ++ π₀); (3) RGA instance re-wire + capstone
+  skeleton3; (4) plumbing (hborn/hReady/hMergeInputs). No remaining open
+  research questions — the criss-cross example is the RGA's last word: raw
+  rehoming semantics is the ONLY sequentially-replayable semantics for merge
+  unions, and the theorem statement must (and now does) say so.
+
 Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
 eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
 `RGA_NoopFeasible_Accurate` preservation lemmas (they apply to the from-init /
