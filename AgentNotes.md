@@ -311,7 +311,23 @@ backward via `pairwise_append` (no index arithmetic).
      (`RGA_BranchCanon:110`), whose `hin` is the honest filtered form, pinned by
      `hin_of_survFilterEq` to the crisp
      `hFiltEq : rcSuf.filter (survB F) = cw.filter (survB F)`.
-     **Discharge plan for hbridge via the existing reduction:**
+     **✅ hFiltEq's KERNEL DISCHARGED (commit baa3272, `RGA_FiltEq.lean`,
+     kernel-clean).** The decisive discovery: the coherence statement is
+     **F-static** (mentions no fold state), so it needs NO new engine
+     invariant — it is established at the survivor's DEPENDENCY fold, where
+     `GenDisc2C` (discharged from born accuracy) makes the entire recorded
+     chain live. `canonAnc_record_coherence`: the recorded suffix after `bw`
+     = the dep-fold-live filter of `bw`'s own record (`isAncPath_suffix` +
+     `LiveChain` + `isAncPath_unique`), and the filter's drops are dep-deleted
+     ⟹ F-dead (`canonAnc_liveSub_of_deadF`, `depList_trans_mem`).
+     `hin_of_genDisc`: the full `hin` of `canonBirthBridge_via_branchCanon` —
+     `cw` := σ₀'-live filter of `bw`'s record (LCA `LiveChain`), Step-1 drops
+     LCA-deleted (an LCA op's deps live in BOTH branches by closure) ⟹ F-dead.
+     **No BranchInv threading needed — the old I4 route is superseded.**
+     Remaining hbridge assembly (engineering): `hsplit`/`hpreDead` from the
+     home branch's LiveChain + Cfg-level wiring into the hMergeInputs
+     discharge (same synthetic-config wiring as hEnum; one wiring serves both).
+     **Original discharge plan (now partially superseded) below for reference:**
      (a) `hsplit`/`hpreDead`: from the home branch's `CanonInv` LiveChain
      (free!): `bw = anc σ_home t` is the FIRST home-final-live entry of the
      recorded chain; the prefix is home-dead ⟹ (with the HonJ
