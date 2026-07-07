@@ -66,11 +66,13 @@ the *raw* `do`-fold as witness. The **canonical state** `σ(E)` is that
 fold, well-defined (up to `≈`) because the theory forces all such folds of
 `E` to agree.
 
-## 1. The VC set (flat specialization) — [`VC_Set.lean`](VC_Set.lean)
+## 1. The VC set (the flat discharge engine) — [`VC_Set.lean`](VC_Set.lean)
 
-**Eight verification conditions** suffice for RA-linearizability in the
-flat specialization (`Inv = applicable = ⊤`, `≈` = `=`), where the
-signature reduces to `⟨Σ, σ₀, do, mergeL, rc⟩`:
+**Eight verification conditions** discharge a flat datatype
+(`Inv = applicable = ⊤`, `≈` = `=`, signature reduced to
+`⟨Σ, σ₀, do, mergeL, rc⟩`); what they buy — the closure-indexed Join
+Lemma — is exactly what the generic theorem of §4 consumes at the identity
+instantiation:
 
 Update layer (`UpdateVCs`, defined in [`Sigma_LoOn3.lean`](Sigma_LoOn3.lean)):
 1. `rc_non_comm_directional` — for *different-replica* events with distinct
@@ -98,14 +100,17 @@ group ⊕ lattice classes: Counter, G-Set, every LCA-blind CRDT);
 merges like the Enable-wins flag provably need full closure, not just
 commutation closure; reunifying this with the feasible route is open).
 
-## 2. Adequacy (flat specialization) — [`Adequacy.lean`](Adequacy.lean)
+## 2. Adequacy (the flat engine's internal form) — [`Adequacy.lean`](Adequacy.lean)
 
     ra_linearizable_of_core_feasible_cd3 :
       CoreVCs3CD D → FeasibleDeltaVCs3 D → CDVC3 D →
       ∀ C reachable from initConfig in the ternary system Step3,
         IsRALinearizable3 C
 
-— the definition above at `≈` := `=`. The proof carries `GoodConfig3`
+— the definition above at `≈` := `=`, in its historical direct form (the
+headline per-instance results are the §3 theorems through the generic
+framework; this chain remains as the engine that validates the VC set and
+supplies each instance's Join Lemma). The proof carries `GoodConfig3`
 (every version canonical + store closure facts) through the LTS of
 [`LCA_Lemma.lean`](LCA_Lemma.lean); the merge case is the Join Lemma
 obtained by `join_lemma3_of_cd_feasible`.
@@ -115,29 +120,34 @@ full-closure bridge (`ra_linearizable3_of_joinF`) used by the Enable-wins
 route. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`LCA_Lemma.lean`](LCA_Lemma.lean).
 
-## 3. The discharged MRDTs — [`MRDT_Instances.lean`](MRDT_Instances.lean)
+## 3. The discharged MRDTs —
+[`MRDT_Instances_Generic.lean`](MRDT_Instances_Generic.lean)
 
-One file, all instance proofs:
+Every production instance concludes `IsRALinearizable3Eq` **through the one
+generic theorem** (§4); what differs per datatype is the instantiation and
+the discharge of its Join Lemma (the VC bundles live in
+[`MRDT_Instances.lean`](MRDT_Instances.lean)):
 
-| MRDT | End-to-end theorem | Route |
+| MRDT | End-to-end theorem | Instantiation / discharge |
 |---|---|---|
-| **OR-Set** (production mirror) | `ORSet_ra_linearizable3` | feasible + CD |
-| **OR-Set-efficient** (production mirror) | `ORSetE_ra_linearizable3` | feasible + CD |
-| **Enable-wins flag** (production mirror) | `EWFlag_ra_linearizable3` | direct full-closure join |
-| Counter (`mergeL l a b = a+b−l`) | `counter_ra_linearizable3_cd` | unconditional delta |
-| G-Set | `gset_ra_linearizable3_cd` | unconditional delta |
-| **Grow-Only Set** (production mirror) | `goset_ra_linearizable3` | unconditional delta |
-| **Grow-Only Map** (production mirror) | `gomap_ra_linearizable3` | unconditional delta |
-| **Increment-Only Counter** (production mirror) | `ioc_ra_linearizable3` | unconditional delta |
-| **PN-Counter** (production mirror) | `pn_ra_linearizable3` | unconditional delta |
-| **RGA, tombstone** (production mirror) | `rga_ra_linearizable3` | unconditional delta |
-| **Peritext** (production mirror) | `peritext_ra_linearizable3` | unconditional delta |
-| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | general framework (§4) |
-| all-commuting class | via `cdVC3_of_all_comm` | generic |
+| **OR-Set** (production mirror) | `ORSet_ra_linearizable3_eq` | identity (`≈`=`=`); feasible + CD |
+| **OR-Set-efficient** (production mirror) | `ORSetE_ra_linearizable3_eq` | identity; feasible + CD |
+| **Enable-wins flag** (production mirror) | `EWFlag_ra_linearizable3_eq` | identity; direct full-closure join |
+| **Grow-Only Set** (production mirror) | `GOSet_ra_linearizable3_eq` | identity; unconditional delta |
+| **Grow-Only Map** (production mirror) | `GOMap_ra_linearizable3_eq` | identity; unconditional delta |
+| **Increment-Only Counter** (production mirror) | `IOC_ra_linearizable3_eq` | identity; unconditional delta |
+| **PN-Counter** (production mirror) | `PN_ra_linearizable3_eq` | identity; unconditional delta |
+| **RGA, tombstone** (production mirror) | `RGAM_ra_linearizable3_eq` | identity; unconditional delta |
+| **Peritext** (production mirror) | `Peritext_ra_linearizable3_eq` | identity; unconditional delta |
+| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 
 Not yet mechanized: Multi-Valued Register and Add-Wins Priority Queue
 (feasible class; mechanical discharge recipes are drafted as entries
 T11.3–T11.4 of the findings journal under [`Development/`](Development/)).
+The historical flat corollaries (`*_ra_linearizable3` over the raw system,
+plus the Counter/G-Set specimens) remain in
+[`MRDT_Instances.lean`](MRDT_Instances.lean) as internal steps of the
+engine.
 
 The production mirrors are faithful to `Sal/MRDTs/{OR_Set,
 OR_Set_Efficient, Enable_Wins_Flag}` (documented deviations only). The
@@ -145,12 +155,10 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
-## 4. The framework at full generality — [`RGA_TombstoneFree_RA_Lin.lean`](RGA_TombstoneFree_RA_Lin.lean)
+## 4. THE framework — [`RGA_TombstoneFree_RA_Lin.lean`](RGA_TombstoneFree_RA_Lin.lean)
 
-When commutation is genuinely state-dependent, the flat specialization is
-unavailable and the conditioned machinery fires. It is generic — stated
-over *any* `ConditionedMRDTSig` with an `EqEquiv`, on the same `Step3`
-LTS: the **`≈`-quotient functor** `D ↦ D≈` builds the datatype whose states
+The soundness theorem is generic — stated over *any* `ConditionedMRDTSig`
+with an `EqEquiv`, on the same `Step3` LTS: the **`≈`-quotient functor** `D ↦ D≈` builds the datatype whose states
 are `≈`-classes of `Inv`-states, with update, merge and `applicable`
 descending by congruence
 ([`Conditioned/GenericEqQuotient.lean`](Conditioned/GenericEqQuotient.lean));
@@ -164,7 +172,8 @@ update/merge/query are `≈`-congruent on `Inv` (`CongVC`, `InvInvVC`), and
 the merge is, up to `≈`, the fold of a `lo`-respecting enumeration of the
 joined events (the `≈`-Join, `EqJoinLemma3C_H`). Instantiated flat
 (`Inv = applicable = ⊤`, `≈` = `=`) these collapse into the ordinary Join
-Lemma of §2 — one framework, §§1–2 its easy half.
+Lemma of §2 — mechanized as `Conditioned/FlatGeneric_Bridge.lean`, which is
+how the nine flat instances of §3 ride the same theorem.
 
 **The exercising instance: the tombstone-free RGA**
 ([`../RGA_Tombstone_Free/`](../RGA_Tombstone_Free)) — a replicated list
@@ -212,7 +221,8 @@ model.
 
 `MRDTSig.lean` → `ExecutionModel.lean` → `LCA_Lemma.lean` →
 `Sigma_LoOn3.lean` → `VC_Set.lean` → `Adequacy.lean` →
-`MRDT_Instances.lean` → `RGA_TombstoneFree_RA_Lin.lean`.
+`MRDT_Instances.lean` → `MRDT_Instances_Generic.lean` →
+`RGA_TombstoneFree_RA_Lin.lean`.
 Everything else: [`Development/`](Development/).
 
 Lean namespace: `Sal.Metatheory`. Build:

@@ -1005,27 +1005,30 @@ reunification into one strength is needed.
 \toprule
 MRDT & contract tier & end-to-end theorem & $\sigma$-characterization (one line) \\
 \midrule
-Grow-only set & unconditional & \lean{goset\_ra\_linearizable3} & union of adds \\
-Grow-only map & unconditional & \lean{gomap\_ra\_linearizable3} & union of $(k,v)$ records \\
-Incr.-only counter & unconditional & \lean{ioc\_ra\_linearizable3} & $\#$events \\
-PN-counter & unconditional & \lean{pn\_ra\_linearizable3} & $\#\mathsf{inc}-\#\mathsf{dec}$ \\
-RGA (tombstone) & unconditional & \lean{rga\_ra\_linearizable3} & grow-only nodes + tombstones \\
-Peritext & unconditional & \lean{peritext\_ra\_linearizable3} & grow-only mark records \\
-OR-set & feasible & \lean{ORSet\_ra\_linearizable3} & tag live iff added, no vis-later $\rem$ \\
-OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3} & \dots{} or same-replica $\add$ later (eviction) \\
-Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3} & per key: ctr $=\#$enables; flag iff unkilled enable \\
+Grow-only set & unconditional & \lean{GOSet\_ra\_linearizable3\_eq} & union of adds \\
+Grow-only map & unconditional & \lean{GOMap\_ra\_linearizable3\_eq} & union of $(k,v)$ records \\
+Incr.-only counter & unconditional & \lean{IOC\_ra\_linearizable3\_eq} & $\#$events \\
+PN-counter & unconditional & \lean{PN\_ra\_linearizable3\_eq} & $\#\mathsf{inc}-\#\mathsf{dec}$ \\
+RGA (tombstone) & unconditional & \lean{RGAM\_ra\_linearizable3\_eq} & grow-only nodes + tombstones \\
+Peritext & unconditional & \lean{Peritext\_ra\_linearizable3\_eq} & grow-only mark records \\
+OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} & tag live iff added, no vis-later $\rem$ \\
+OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} & \dots{} or same-replica $\add$ later (eviction) \\
+Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key: ctr $=\#$enables; flag iff unkilled enable \\
 \midrule
 Multi-valued register & feasible & \multicolumn{2}{l}{recipe (trichotomy-free: all-comm $\Rightarrow B{=}\Sinit$)} \\
 Add-wins priority queue & feasible & \multicolumn{2}{l}{recipe (the OR-set pattern on the add component)} \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
 \end{tabular}}
-\caption{The Sal production catalogue. Nine of twelve carry
-kernel-checked end-to-end RA-linearizability through the eight VCs, all
-discharges in a single \lean{MRDT\_Instances.lean}; the tombstone-free
-RGA --- provably outside the VC set --- carries a kernel-checked
-\emph{conditioned} end-to-end theorem (RA-linearizability up to
-observational equivalence) through the extension of \S\ref{sec:open}.}
+\caption{The Sal production catalogue. Every instance concludes through
+the ONE generic conditioned metatheorem
+(\S\ref{sec:condmeta}--\S\ref{sec:actual}): the nine flat data types at
+the identity instantiation ($\eqobs = {=}$, their VC bundles feeding the
+flat collapse \lean{FlatGeneric\_Bridge.lean}, instance theorems in
+\lean{MRDT\_Instances\_Generic.lean}), the tombstone-free RGA at full
+generality. The contract-tier column is each data type's Join-Lemma
+discharge content (\lean{MRDT\_Instances.lean}); the historical flat
+corollaries over the raw system remain there as internal steps.}
 \label{tab:catalog}
 \end{table}
 
@@ -1638,6 +1641,8 @@ generation discipline from born accuracy & \lean{genDisc2C\_of\_born} & \lean{Co
 capstone + discharged leaves & \lean{rga\_RA\_linearizable\_skeleton3} & \lean{Conditioned/RGA\_Skeleton3.lean}, \lean{RGA\_$\ast$\_Discharge.lean} \\
 honest residual & \lean{HonestDelivery}, \lean{rga\_RA\_linearizable\_honest} & \lean{Conditioned/RGA\_Honest\_Residual.lean} \\
 mainline entry point & \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} & \lean{RGA\_TombstoneFree\_RA\_Lin.lean} \\
+flat collapse of the framework & \lean{eqJoinH\_of\_joinC}, \lean{flat\_ra\_linearizable3\_eq} & \lean{Conditioned/FlatGeneric\_Bridge.lean} \\
+the nine flat instances, generically & \lean{$\ast$\_ra\_linearizable3\_eq} (9) & \lean{MRDT\_Instances\_Generic.lean} \\
 \bottomrule
 \end{tabular}}
 \end{center}
