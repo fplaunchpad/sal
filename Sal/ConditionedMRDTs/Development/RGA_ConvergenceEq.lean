@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_OrderBridge
+import Sal.ConditionedMRDTs.Development.RGA_OrderBridge
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BranchCanon
@@ -563,59 +563,5 @@ theorem loOnEq_anchor_edge (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTS
 
 /-! ## §5  The merge bridge over `loOnEq` -/
 
-/-- **The two-sided merge bridge over the framework's order.**
-`RGAMergeFoldChain.eq_merge_two_sided_final` is already ORDER-AGNOSTIC: its
-linearization order is an abstract `lo` throughout — the two enumeration
-hypotheses, the dependency-frontier closure conditions, and the `hMSR` swap
-oracle all read the same abstract relation, and its proof engine (the
-canon-fold on the branch plus the merge linearization) never consults `loOnA`.
-This theorem exposes it instantiated at `lo := loOnEq rgaEqEquiv' WfOpQ
-Cfg.vis ev`: the merge equals the fold of any `loOnEq`-respecting enumeration
-of `ev` — the exact shape `EqJoinLemma3C`'s union-side canonical state
-demands, with no order translation left. -/
-theorem eq_merge_two_sided_eq
-    (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (l a b : concrete_st) (ev : Set op_t) (π₀ π : List op_t)
-    (F : List op_t)
-    (hlwf : wf l) (hlmono : id_mono l) (hawf : wf a) (hbwf : wf b)
-    (h0 : contains l 0 = false)
-    (hD : ∀ k, survivors l a b k = contains (applySeqR l π₀) k)
-    (hB : RGAMergeLinearization.BranchInv l (applySeqR l π₀))
-    (hBE : ∀ k, survivors l a b k = true → contains l k = false →
-        el (applySeqR l π₀) k = RGAMergeLinearizationTwoSided.birthEl l a b k)
-    (hcm : CanonMatch F (applySeqR l π₀))
-    (hbridge : ∀ k, survivors l a b k = true → contains l k = false →
-        ∀ r e_k a_k : ℕ, ∀ p_k : List ℕ, (k, r, .Ins e_k p_k a_k) ∈ F →
-          RGAMergeFoldChain.CanonBirthBridge l F (birthAnc l a b k) (a_k :: p_k))
-    (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
-    (h₀r : respects π₀ (loOnEq rgaEqEquiv' WfOpQ Cfg.vis ev))
-    (hπr : respects π (loOnEq rgaEqEquiv' WfOpQ Cfg.vis ev))
-    (hMSR : ∀ (pre : List op_t) (x y : op_t),
-        (∀ z ∈ pre, z ∈ ev) → pre.Nodup →
-        respects pre (loOnEq rgaEqEquiv' WfOpQ Cfg.vis ev) →
-        x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y →
-        ¬ loEqRGA Cfg ev x y → ¬ loEqRGA Cfg ev y x →
-        (∀ z ∈ ev, z ≠ x → loEqRGA Cfg ev z x → z ∈ pre) →
-        (∀ z ∈ ev, z ≠ y → loEqRGA Cfg ev z y → z ∈ pre) →
-        x.1 ≠ y.1 ∧ contains (applySeqR l pre) 0 = false ∧ wf (applySeqR l pre)
-        ∧ id_mono (applySeqR l pre)
-        ∧ fresh_ts x (applySeqR l pre) ∧ fresh_ts y (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.Faithful x (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.Faithful y (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.NoFreshClash x y
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.NoFreshClash y x) :
-    eq (merge l a b) (applySeqR l π) :=
-  RGAMergeFoldChain.eq_merge_two_sided_final l a b (loEqRGA Cfg ev) ev π₀ π F
-    hlwf hlmono hawf hbwf h0 hD hB hBE hcm hbridge h₀p hπp h₀r hπr hMSR
-
-/-! ## §6  Axiom audit -/
-
-#print axioms canonStepOK_of_genR
-#print axioms canonFoldOK_of_genR
-#print axioms canonFoldOK_of_loOnEq
-#print axioms RGA_update_convergence_eq
-#print axioms anchorIns_not_eqCommutesOn
-#print axioms loOnEq_anchor_edge
-#print axioms eq_merge_two_sided_eq
 
 end Sal.ConditionedMRDTs.RGAConvergenceEq

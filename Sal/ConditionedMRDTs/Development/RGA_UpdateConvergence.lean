@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_EnablementBase
+import Sal.ConditionedMRDTs.Development.RGA_EnablementBase
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence

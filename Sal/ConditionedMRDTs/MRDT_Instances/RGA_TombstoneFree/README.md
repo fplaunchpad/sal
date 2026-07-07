@@ -14,10 +14,12 @@ entry point is [`RA_Lin.lean`](RA_Lin.lean):
         IsRALinearizable3Eq … C
 
 Everything here is kernel-clean: axioms ⊆ {`propext`, `Classical.choice`,
-`Quot.sound`}, zero `sorry`. It is ~55 files because the RGA cannot take
-the flat route — the chain re-proves, under conditioning, everything the
+`Quot.sound`}, zero `sorry`. The chain is ~40 files because the RGA cannot
+take the flat route — it re-proves, under conditioning, everything the
 eight flat VCs give a flat datatype for free; each sub-chain below was a
-separate wall of the investigation.
+separate wall of the investigation. (A kernel-level dependency audit
+retired the investigation's superseded first route — the seventeen
+swap/faithfulness files — to `Development/`; see History below.)
 
 A file-naming note: several files keep the name of the *investigation* that
 produced them (`*_Gate`, `*_PBT`). Their load-bearing content is what the
@@ -29,28 +31,16 @@ map below says.
 |---|---|
 | `RGA_CondSig.lean` | **`RGAM`** (the raw `MRDTSig`: `do_`, three-way merge, `rc = Either`) and **`RGACondSig`** (`Inv := RgaInv`, `applicable := accurate ∧ fresh_ts`), plus the order-stable `opOK` layer discharging Inv-transport (`obligation_A_RGA`); namespace `Sal.ConditionedMRDTs.RGASig` |
 
-## Update-side swaps and faithfulness
+## Update-side survivors
 
-Commutation of concurrent updates, conditioned on the
-`Faithful`/`ChainFaithful` state predicates:
+Of the original swap/faithfulness route only two files remain load-bearing
+(the rest retired to `Development/` — the canonical-state engine subsumed
+pairwise swapping):
 
 | file | provides |
 |---|---|
-| `RGA_GeneralSwap.lean` | the general update-side swap VC under `Faithful` (`general_swap`) |
-| `RGA_BothFaithfulSwap.lean` | the BOTH-`Faithful` swap (`general_swap_bothFaithful`) |
-| `RGA_BubbleWiring.lean` | `ChainFaithful`, wiring the swap into the bubble-sort argument (`chainFaithful_doIns`) |
-| `RGA_ChainFaithful_doDel.lean` | `ChainFaithful` preserved by accurate `Del` (`chainFaithful_doDel`) |
-| `RGA_Faithful_PBT.lean` | executable `chainFaithfulB` + SPOT harness; `RGA_StaledDel_Gate` uses the executable forms |
-| `RGA_StaledDel_Gate.lean` | the staled-`Del` gate: locates the clash-`Ins` obstruction (`chainFaithful_not_preserved_under_clash_ins`) |
-| `RGA_FaithfulThreading_Gate.lean` | the faithful-threading gate: `chainFaithful_incompStep`/`_incompFold` |
-| `RGA_EnablementBase.lean` | the enablement base lemma (`faithful_at_enablement_ins`) |
 | `RGA_SubchainResolve.lean` | the Key Lemma: a captured live ancestor chain resolves to the current anchor (`subchain_resolve`) |
-| `RGA_RecPathFaithful.lean` | per-event faithfulness in reachable folds (`faithful_of_recPathFaithful`) |
-| `RGA_InterleavedThreading.lean` | faithfulness through interleaved folds (`faithful_at_interleaved_fold`) |
-| `RGA_UpdateConvergence_Assembly.lean` | stage-1 assembly facts (`fresh_ts_state_of_ids`) |
-| `RGA_UpdateConvergence_Final.lean` | the update-layer capstone (`RGA_update_convergence`) |
-| `RGA_GenDischarge.lean` | per-event generation discipline `GenDisc` ⟹ update-layer bundle (`RGA_update_convergence_genDisc`) |
-| `RGA_ConditionedConvergence.lean` | RGA conditioned convergence up to `eq` (`RGA_conditioned_convergence_bothFaithful`) |
+| `RGA_ConditionedConvergence.lean` | the `applySeqR` replay machinery and per-step goodness facts the canonical engine consumes |
 
 ## Canonical states and the two orders
 
@@ -66,8 +56,6 @@ The canonical-state characterization of reachable RGA states, and the
 | `RGA_GenDisc_Peel.lean` | the pointwise peel bricks (`isDepPreC_of_restrict`, `depC_mem_pastE`) |
 | `RGA_DeltaEnum.lean` | a `loOnEq`-respecting enumeration of the delta exists (`exists_loOnEq_enum`) |
 | `RGA_LoOnEq_Causal.lean` | `loOnEq` collapses to pure causal non-commutation for the RGA (`not_loOnEq_of_not_vis`) |
-| `RGA_OrderBridge.lean` | `loOnEq` vs `loOnA` are incomparable; `rc_is_Either'` |
-| `RGA_ConvergenceEq.lean` | convergence and merge bridge over the framework's `loOnEq` (`canonFoldOK_of_loOnEq`, `eq_merge_two_sided_eq`) |
 
 ## Merge side
 
@@ -77,7 +65,6 @@ Merge linearization and the canonical shape of the merged state:
 |---|---|
 | `RGA_MergeLinearization.lean` | `BranchInv`, the merge-linearization bridge (`eq_merge_branch_single`) |
 | `RGA_MergeLinearization_TwoSided.lean` | the two-sided version, `BranchInv2` (`eq_merge_two_sided`) |
-| `RGA_MergeThreadDischarge.lean` | `BranchInv2` from pieces at reachable configs (`eq_merge_two_sided_of_reachable`) |
 | `RGA_MergeBranchNew.lean` | GAP-1: the branch-new survivor anchor coincidence (`eq_merge_two_sided_of_foldChain`) |
 | `RGA_MergeFoldChain.lean` | `CanonBirthBridge`; closing `FoldBirthChain` (`eq_merge_two_sided_final`) |
 | `RGA_MergeCanon.lean` | the merge half of `hCanon` (`canonMatch_merge_of_inputs`) |
@@ -97,7 +84,6 @@ ladder `WfOp → WfOpQ → WfOpA`:
 | `RGA_Instance.lean` | the framework instantiation: `rgaEqEquiv'`, `rgaCongVC'`, `rgaInvInvVC'` (`RGA_is_RA_linearizable`) |
 | `RGA_InvFresh.lean` | `WfOp`; `RgaInv` preserved on any fresh op (`rgaInv_doOp_fresh`) |
 | `RGA_InvUpdateQ.lean` | `qInv`, **`WfOpQ`** — the strengthened guard closing `InvPres` |
-| `RGA_WfOpReachable.lean` | `WfOpGen`; the `WfOpReachable` VC (`rga_wfOpReachable`) |
 | `BornApplicable_Guard.lean` | **`WfOpA`** (= `WfOpQ` ∧ accurate ⟹ applicable) — born-applicability intrinsic to the quotient guard (`rga_appOrNoop_qsig`, `rgaInvPresA`) |
 | `RGA_WfOpA_VCs.lean` | the remaining quotient VC at `WfOpA` (`rgaInvInvVCA`) |
 | `RGA_Instance_Final.lean` | assembly over `WfOpQ` + the honestly-pinned Join residual (`rga_eqJoin_of_mergeFoldResidual`) |
@@ -127,8 +113,23 @@ The four proof leaves of the H-parameterized metatheorem, discharged at
 
 ## History
 
-Superseded generations of this chain (earlier capstone skeletons, assembly
-routes, and discharge intermediates the living chain no longer consumes)
-are in [`../../Development/`](../../Development/); the negative results
-that shaped the chain are in [`../../Refutations/`](../../Refutations/) or
-recorded in the gate files above.
+Two strata of this chain's history live in
+[`../../Development/`](../../Development/), all still 0-sorry:
+
+- **The retired swap/faithfulness route** (seventeen files:
+  `RGA_GeneralSwap`, `RGA_BothFaithfulSwap`, `RGA_BubbleWiring`,
+  `RGA_ChainFaithful_doDel`, `RGA_EnablementBase`, `RGA_RecPathFaithful`,
+  `RGA_InterleavedThreading`, `RGA_FaithfulThreading_Gate`,
+  `RGA_StaledDel_Gate`, `RGA_Faithful_PBT`, `RGA_UpdateConvergence_Assembly`,
+  `RGA_UpdateConvergence_Final`, `RGA_GenDischarge`, `RGA_ConvergenceEq`,
+  `RGA_WfOpReachable`, `RGA_MergeThreadDischarge`, `RGA_OrderBridge`, plus
+  `RGA_SwapRoute_Residuals.lean` with the bridge theorems cut from living
+  files). This was the investigation's first attack — repair the flat
+  theory's pairwise-swap argument under `Faithful` invariants. It is fully
+  proved, and the capstone needs none of it: a kernel-level dependency
+  audit showed the canonical-state engine subsumes it entirely.
+- **Earlier capstone generations** (skeletons, assembly routes, discharge
+  intermediates) retired in previous passes.
+
+The negative results that shaped the chain are in
+[`../../Refutations/`](../../Refutations/).

@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConvergenceEq
+import Sal.ConditionedMRDTs.Development.RGA_ConvergenceEq
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence

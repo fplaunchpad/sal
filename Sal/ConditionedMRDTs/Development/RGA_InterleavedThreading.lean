@@ -1,5 +1,5 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_RecPathFaithful
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ChainFaithful_doDel
+import Sal.ConditionedMRDTs.Development.RGA_RecPathFaithful
+import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
 
 /-!
 # Interleaved Faithful-threading: the accurate-ancestor `Ins` step (Step 1) and the

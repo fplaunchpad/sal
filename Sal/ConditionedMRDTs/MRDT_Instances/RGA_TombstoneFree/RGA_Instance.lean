@@ -1,5 +1,8 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeCong
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_WfOpReachable
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvFresh
+import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
 
@@ -141,65 +144,17 @@ theorem wfChain_transport (s : concrete_st) (ρ : List op_t) :
     simp only [WfChain, ih]
     rfl
 
-/-- `WfOpReachable RGACondSig' WfOp WfOpGen` — `rga_wfOpReachable` transported. -/
-theorem rga_wfOpReachable' : WfOpReachable RGACondSig' WfOp WfOpGen := by
-  intro ρ hnd hts hgen
-  rw [wfChain_transport]
-  exact rga_wfOpReachable ρ hnd hts hgen
-
-/-! ## §7. The `≈`-Join `EqJoinLemma3C` — the second (open) residual.
-
-`EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOp` demands, for every `vis`, that
-`mergeL s₀ s₁ s₂` be `IsCanonicalStateEq`-canonical for `ev₁ ∪ ev₂`, i.e. `≈`-equal
-to the RAW fold `applySeq init_st ρ` of some `ρ` respecting `loOnEq rgaEqEquiv'
-WfOp vis (ev₁∪ev₂)`.  The RGA has the two ingredients in principle —
-`RGA_CanonFoldOK.RGA_update_convergence_final` (all respecting enumerations of a
-backward-closed set fold `≈`-equal) and `RGA_MergeFoldChain.eq_merge_two_sided_final`
-(`merge l a b ≈ fold l π`) — but they do NOT compose into this shape here, for two
-reasons that this file makes precise rather than papering over:
-
-* **Order mismatch (`loOnA` vs `loOnEq`).**  Every RGA convergence/merge lemma is
-  stated over `loOnA` (`ConditionedConvergence.lean`, the *applicability-aware*
-  order forced by the G2 refutation `G2_conditioned_convergence_refuted`), whereas
-  the framework's canonical states live over `loOnEq` (the `eqCommutesOn`-based
-  order).  No `loOnEq ⊆ loOnA` bridge lemma exists in the repo; without it the
-  respecting-enumeration hypotheses of the two engines are incomparable.
-
-* **Merge=fold is not yet a clean bridge.**  `eq_merge_two_sided_final` still
-  carries `hD`/`hB`/`hBE`/`hcm`/`hbridge`(`CanonBirthBridge`)/`hMSR` — a
-  domain/element/anchor apparatus plus a merge-fold reachability oracle — and its
-  `hbridge`/`hBN` slot is the still-open GAP-1 (the branch-new-survivor
-  cross-forest anchor identity, per `RGA_MergeThreadDischarge`'s status block).
-
-Both are genuine, not cosmetic; so `rga_EqJoinLemma3C` is NOT constructed, and the
-`≈`-Join is threaded as a hypothesis into the capstone below.  A precisely-located
-adapter gap, per the honesty contract. -/
-
-/-! ## §8. The capstone — `RA_linearizable_up_to_eq` on the RGA.
-
-Every metatheorem input EXCEPT the two residuals of §5 (`inv_update`) and §7
-(the `≈`-Join) is discharged concretely for `RGACondSig'`: `rgaEqEquiv'`,
-`rgaCongVC'` (FULL — all three fields, `mergeL_congr` via `merge_eq_congr_inv`),
-`rgaInvInvVC'` (FULL — `wf_congr` + `applicable_congr`), and `rga_wfOpReachable'`.
-The two residuals are threaded as hypotheses `hP` (the full `InvPres`, whose
-`inv_init`/`inv_mergeL` fields are proved in §5) and `hJoinEq`.  Given them, the
-RGA quotient is per-version RA-linearizable up to `≈` on every reachable
-configuration whose events are all `WfOpGen`. -/
-theorem RGA_is_RA_linearizable
-    (hP : InvPres RGACondSig' WfOp)
-    (GenDisc : (Op RGACondSig'.AppOp → Op RGACondSig'.AppOp → Prop) →
-        Set (Op RGACondSig'.AppOp) → Prop)
-    (hJoinEq : EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOp GenDisc)
-    (C : Configuration (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC'))
-    (hReach : (labeledTS3 (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC')).ReachableFrom
-        (initConfig (QSig rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC') trivial) C)
-    (hGenC : ∀ o ∈ (Configuration.core C).events, WfOpGen o)
-    (hGenDisc : GDSupply rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC' GenDisc
-        (Configuration.core C)) :
-    IsRALinearizable3 C :=
-  RA_linearizable_up_to_eq rgaEqEquiv' WfOp hP rgaCongVC' rgaInvInvVC'
-    WfOpGen rga_wfOpReachable' GenDisc hJoinEq C hReach hGenC hGenDisc
-
-#print axioms RGA_is_RA_linearizable
-
 end Sal.ConditionedMRDTs.RGAInstance
+
+namespace Sal.ConditionedMRDTs.RGAOrderBridge
+
+open Sal.Emulation
+open Sal.ConditionedMRDTs.RGAInstance (RGACondSig')
+
+/-- `rc` is `Either` on every pair — for the primed hosting signature too.
+(Relocated from `RGA_OrderBridge.lean` when the swap route retired; the full
+name is unchanged.) -/
+theorem rc_is_Either' (o₁ o₂ : Op app_op_t) :
+    RGACondSig'.rc o₁ o₂ = RcRes.Either := rfl
+
+end Sal.ConditionedMRDTs.RGAOrderBridge

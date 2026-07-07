@@ -1,4 +1,10 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeThreadDischarge
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization_TwoSided
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
+import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
+import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 
 /-!
 # GAP-1 (`hBN`): the branch-new survivor anchor coincidence
@@ -146,99 +152,5 @@ NO free branch-new anchor premise — only the fold-chain identity `hFC`
 `wf l/a/b`, `id_mono l`.  Everything else (`hB`, `hBE`, `hD`, the reachability
 oracle `hMSR`) is threaded unchanged. -/
 
-/-- **Two-sided bridge, branch-new anchor discharged.**  `merge l a b ≈ fold l π`
-with `hBN` replaced by the fold-chain identity `hFC` (`FoldBirthChain` per
-branch-new survivor) together with the reachable invariants.  The free `hBN` of
-`eq_merge_two_sided_of_reachable` is gone: it is built by `hBN_of_foldChain`. -/
-theorem eq_merge_two_sided_of_foldChain
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
-    (hlwf : wf l) (hlmono : id_mono l) (hawf : wf a) (hbwf : wf b)
-    (h0 : contains l 0 = false)
-    (hD : ∀ k, survivors l a b k = contains (applySeqR l π₀) k)
-    (hB : RGAMergeLinearization.BranchInv l (applySeqR l π₀))
-    (hBE : ∀ k, survivors l a b k = true → contains l k = false →
-        el (applySeqR l π₀) k = RGAMergeLinearizationTwoSided.birthEl l a b k)
-    (hFC : ∀ k, survivors l a b k = true → contains l k = false →
-        FoldBirthChain l a b (applySeqR l π₀) k)
-    (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
-    (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hMSR : ∀ (pre : List op_t) (x y : op_t),
-        (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
-        x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
-        (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
-        (∀ z ∈ ev, z ≠ y → lo z y → z ∈ pre) →
-        x.1 ≠ y.1 ∧ contains (applySeqR l pre) 0 = false ∧ wf (applySeqR l pre)
-        ∧ id_mono (applySeqR l pre)
-        ∧ fresh_ts x (applySeqR l pre) ∧ fresh_ts y (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.Faithful x (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.Faithful y (applySeqR l pre)
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.NoFreshClash x y
-        ∧ Sal.ConditionedMRDTs.RGAGeneralSwap.NoFreshClash y x) :
-    eq (merge l a b) (applySeqR l π) := by
-  have hHdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y := by
-    intro y hy hy0; rcases hlmono y hy with h | h
-    · omega
-    · exact h
-  have hBN : ∀ k, survivors l a b k = true → contains l k = false →
-      anc (applySeqR l π₀) k
-        = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b k) :=
-    hBN_of_foldChain l a b (applySeqR l π₀) hHdec hlwf h0 hawf hbwf hD hFC
-  exact RGAMergeThreadDischarge.eq_merge_two_sided_of_reachable
-    l a b lo ev π₀ π hD hB hBE hBN h₀p hπp h₀r hπr hMSR
-
-#print axioms eq_merge_two_sided_of_foldChain
-
-/- ═══════════════════════════════════════════════════════════════════════════
-   STATUS — `hBN` (GAP-1), what closed and the exact residual.
-
-   CLOSED here, kernel-clean ([propext, Classical.choice, Quot.sound] only):
-
-   • The CROSS-FOREST RECONCILIATION bridge (`resolve_climb_start`).  The
-     OBSTRUCTION block named this as "genuinely NEW two-sided content": the merge's
-     `climb` over the LCA forest and the fold's `resolve` of the recorded chain
-     compute over DIFFERENT forests.  `resolve_climb_start` proves they agree for an
-     in-forest start `w`:  `resolve s (w :: cw) = climb (anc l) (domain s) w`  when
-     `IsAncPath l w cw`.  This is the exact climb=resolve identity the branch-new
-     anchor clause needs, generalizing `resolve_climb_lchain` (which started one step
-     above `w`, at `anc l w`) to start AT the birth-anchor `w`.
-
-   • The SURVIVOR↔FOLD-LIVENESS bridge is exactly `hD`
-     (`survivors l a b = contains (applySeqR l π₀)`), already a premise; here it is
-     used as the set identity `survivors l a b = domain (applySeqR l π₀)` to swap the
-     `climb` stop-set, and (via `betaf_start`) to discharge the off-forest fixpoint.
-
-   • `hBN` REDUCTION (`hBN_of_foldChain`) + COMPOSITION
-     (`eq_merge_two_sided_of_foldChain`).  `hBN` now follows from the per-node
-     fold-chain identity `FoldBirthChain` alone; the composed two-sided bridge no
-     longer carries a free `hBN` — it carries `hFC : FoldBirthChain …` plus the
-     standard reachable invariants `wf l/a/b`, `id_mono l`, `contains l 0 = false`.
-     All `climb`/`resolve` algebra is discharged.
-
-   NOT closed — the sharp residual (`FoldBirthChain`, the fold-chain identity):
-
-   • For a branch-new survivor `k`, `FoldBirthChain` demands, with `w := birthAnc`:
-       (in-forest w)   ∃ cw, IsAncPath l w cw ∧ anc p k = resolve p (w :: cw)
-       (off-forest w)  anc p k = w                                    (p = fold)
-     This is what `subchain_resolve` (`RGA_SubchainResolve`) yields — `resolve p ck
-     = anc p k` — PROVIDED `k`'s genuine fold ancestor chain `ck` equals `w :: cw`,
-     i.e. `k`'s rootward chain in the fold coincides with its BIRTH-ANCHOR's LCA
-     chain.  It does NOT hold definitionally: `k`'s fold chain is headed by `k`'s
-     FOLD-BIRTH resolved anchor, whereas `w = anc a k` / `anc b k` is `k`'s
-     BRANCH-FINAL anchor.  Reconciling the two (the mismatch the OBSTRUCTION block
-     flagged: "the stored anchor `resolve s (anch::path)` generally DIFFERS from
-     `anc b k`") needs the EVENT-LIST fold invariant — a branch-new analogue of
-     `BranchInv`'s I4 threaded through `Ea ++ Eb` via `GoodBranchFold`, using
-     cross-branch faithfulness (an `Eb`-`Del` never targets an `a`-new node; a
-     `b`-new birth over the `a`-carrying combined state climbs to the same survivor).
-
-   EXACT STUCK GOAL (the missing bridge lemma, name it `foldChain_of_goodFold`):
-       ⊢ FoldBirthChain l a b (applySeqR l (Ea ++ Eb)) k
-     for every branch-new survivor `k`, given `a = applySeqR l Ea`,
-     `b = applySeqR l Eb`, and the `GoodBranchFold`/faithfulness data for Ea, Eb.
-     This is a genuine event-list induction (branch-new I4 preservation across every
-     `Eb` step + establishment at `a` / at each `b`-new `Ins` birth), NOT expressible
-     as a per-event reachability premise — matching the OBSTRUCTION's reading that
-     the branch-new cross-forest anchor identity is irreducible two-sided content.
-   ═══════════════════════════════════════════════════════════════════════════ -/
 
 end RGAMergeBranchNew

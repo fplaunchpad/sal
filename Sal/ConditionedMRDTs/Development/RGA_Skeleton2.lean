@@ -6,7 +6,7 @@ import Sal.ConditionedMRDTs.Framework.Base.Labeled_TS
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.BornApplicable_Guard
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ChainFaithful_doDel
+import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Corrected_Residual
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_EqQuotient
@@ -17,6 +17,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_WfOpA_VCs
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
+import Sal.ConditionedMRDTs.Development.RGA_SwapRoute_Residuals
 
 /-!
 # The CORRECTED end-to-end skeleton — `hEnum` re-based on `CanonFoldOK` + union re-enumerability
@@ -54,9 +55,9 @@ open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch CanonFoldOK CanonInv canon_fold canonInv_init
   canonMatch_of_canonInv survP insertedIn deletedIn)
 open RGAMergeFoldChain (CanonBirthBridge)
-open Sal.ConditionedMRDTs.RGAMergeCanon (canonMatch_merge_of_inputs)
 open Sal.ConditionedMRDTs.RGASkeleton (EngineReady canonMatch_of_engineReady)
 open Sal.ConditionedMRDTs.RGACorrectedResidual (canonFoldOK_concat rga_eqJoinNF_of_canon2)
+open Sal.ConditionedMRDTs.RGAMergeCanon (canonMatch_merge_of_inputs)
 
 /-- **The corrected end-to-end.**  As `rga_RA_linearizable_end_to_end`, over the corrected leaves:
 `hEnum` carries K1 (`CanonFoldOK` delta discipline) + K2 (union re-enumeration) instead of the

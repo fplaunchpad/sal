@@ -1,5 +1,7 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ChainFaithful_doDel
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BothFaithfulSwap
+import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
+import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 
 /-!
 # RGA conditioned-convergence assembly (up to observational `eq`)
@@ -35,9 +37,6 @@ set_option maxHeartbeats 1000000
 namespace Sal.ConditionedMRDTs.RGAConditionedConvergence
 
 open Sal.Emulation
-open Sal.ConditionedMRDTs.RGAGeneralSwap
-open Sal.ConditionedMRDTs.RGABubbleWiring
-open Sal.ConditionedMRDTs.RGAChainFaithfulDoDel
 
 /-! ## §0  Plumbing: the concrete `eq`-fold and `eq` as an equivalence -/
 
@@ -147,189 +146,14 @@ theorem chain_lt (s : concrete_st) (hmono : id_mono s) (h0 : contains s 0 = fals
     · exact hclt
     · exact lt_trans (ih c hcc hrest x hx') hclt
 
-/-- The fuel-indexed engine: an accurate chain `leaf :: p` is `ChainFaithfulAux`
-at any fuel `≥` its length.  Induction on `p`; the head peels off cleanly because
-`chain_lt` makes `leaf ∉ p`. -/
-theorem chainAux_accurate (s : concrete_st) (hmono : id_mono s) (h0 : contains s 0 = false) :
-    ∀ (p : List ℕ) (leaf : ℕ) (n : ℕ), contains s leaf = true → IsAncPath s leaf p →
-      (leaf :: p).length ≤ n → ChainFaithfulAux s n (leaf :: p) := by
-  intro p
-  induction p with
-  | nil =>
-    intro leaf n hleaf hpath hlen
-    cases n with
-    | zero => simp only [List.length_cons, List.length_nil] at hlen; omega
-    | succ m =>
-      have hres : resolve s [leaf] = leaf := resolve_live_head s leaf [] hleaf
-      have hfl : ([leaf] : List ℕ).filter (fun x => x != leaf) = [] := by simp
-      simp only [ChainFaithfulAux]
-      intro _
-      simp only [hres]
-      refine ⟨?_, ?_⟩
-      · rw [hfl]
-        simp only [IsAncPath] at hpath
-        rw [show resolve s ([] : List ℕ) = 0 from rfl, hpath]
-      · rw [hfl]; exact aux_nil s h0 m
-  | cons c cs ih =>
-    intro leaf n hleaf hpath hlen
-    have hp := hpath
-    simp only [IsAncPath] at hpath
-    obtain ⟨_, hcc, hrest⟩ := hpath
-    cases n with
-    | zero => simp only [List.length_cons] at hlen; omega
-    | succ m =>
-      have hres : resolve s (leaf :: c :: cs) = leaf := resolve_live_head s leaf (c :: cs) hleaf
-      have hf' : (c :: cs).filter (fun x => x != leaf) = c :: cs := by
-        apply List.filter_eq_self.mpr
-        intro a ha
-        have hlt : a < leaf := chain_lt s hmono h0 (c :: cs) leaf hleaf hp a ha
-        simp only [bne_iff_ne, ne_eq]; omega
-      have hL2 : (leaf :: c :: cs).filter (fun x => x != leaf) = c :: cs := by
-        rw [List.filter_cons]
-        simp only [bne_self_eq_false, Bool.false_eq_true, if_false]
-        exact hf'
-      simp only [ChainFaithfulAux]
-      intro _
-      simp only [hres]
-      refine ⟨?_, ?_⟩
-      · rw [hL2]
-        have hres2 := isancpath_resolve_self_filter s leaf (c :: cs) hp
-        rw [hf'] at hres2
-        exact hres2
-      · rw [hL2]
-        exact ih c m hcc hrest (by simp only [List.length_cons] at hlen ⊢; omega)
-
-/-- Uniform accurate-chain form: `(leaf = 0 ∧ p = []) ∨ (live ∧ IsAncPath)`
-gives `ChainFaithful s (leaf :: p)`. -/
-theorem chainFaithful_of_accurate_chain (s : concrete_st) (hmono : id_mono s)
-    (h0 : contains s 0 = false) (leaf : ℕ) (path : List ℕ)
-    (h : (leaf = 0 ∧ path = []) ∨ (contains s leaf = true ∧ IsAncPath s leaf path)) :
-    ChainFaithful s (leaf :: path) := by
-  rcases h with ⟨hl0, hpnil⟩ | ⟨hlive, hpath⟩
-  · subst hl0; subst hpnil
-    show ChainFaithfulAux s 1 [0]
-    have hr0 : resolve s ([0] : List ℕ) = 0 := by
-      show (if contains s 0 then (0 : ℕ) else resolve s []) = 0
-      rw [h0]; rfl
-    simp only [ChainFaithfulAux]
-    intro hlive
-    rw [hr0, h0] at hlive
-    exact absurd hlive (by simp)
-  · exact chainAux_accurate s hmono h0 path leaf ((leaf :: path).length) hlive hpath (le_refl _)
-
-/-- **Generation base case (Layer 2).**  `contains s 0 = false → id_mono s →
-accurate o s → ChainFaithful s (recList o)`.  Dispatches `Ins`/`Del` to the
-uniform chain form. -/
-theorem chainFaithful_of_accurate (s : concrete_st) (o : op_t) (hmono : id_mono s)
-    (h0 : contains s 0 = false) (hacc : accurate o s) :
-    ChainFaithful s (recList o) := by
-  obtain ⟨t, r, op⟩ := o
-  cases op with
-  | Ins e pre a =>
-    show ChainFaithful s (a :: pre)
-    apply chainFaithful_of_accurate_chain s hmono h0 a pre
-    simpa only [accurate, opLeaf, opPath] using hacc
-  | Del pre x =>
-    show ChainFaithful s (x :: pre)
-    apply chainFaithful_of_accurate_chain s hmono h0 x pre
-    simpa only [accurate, opLeaf, opPath] using hacc
-
-/-! ## §3  Threading `Faithful` / `NoFreshClash` along a fold
-
-The per-step preservation lemmas are imported (`chainFaithful_doIns` for a fresh
-non-clashing `Ins`, `chainFaithful_doDel` for an ACCURATE `Del`).  Together with
-the §2 base case and `climbFaithful_of_chain` they thread `ChainFaithful` — and
-hence `Faithful` — along any fold whose every step is "reachability-good"
-(`GoodFold`).  `NoFreshClash` for concurrent pairs is monotone allocation. -/
-
-/-- A single reachability-good step for a recorded list `L`: a fresh non-clashing
-`Ins`, or an ACCURATE `Del`.  These are the exactly two step shapes whose
-`ChainFaithful`-preservation is proved (`chainFaithful_doIns`/`chainFaithful_doDel`). -/
 def GoodStep (s : concrete_st) (L : List ℕ) : op_t → Prop
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ t ∉ L
   | (_, _, .Del pre x) => contains s 0 = false ∧ accurate (0, 0, .Del pre x) s
 
-/-- One good step preserves `ChainFaithful`. -/
-theorem chainFaithful_doStep (s : concrete_st) (L : List ℕ) (o : op_t)
-    (hg : GoodStep s L o) (hcf : ChainFaithful s L) : ChainFaithful (do_ s o) L := by
-  obtain ⟨t, r, op⟩ := o
-  cases op with
-  | Ins e pre a =>
-    obtain ⟨ht0, htL⟩ := hg
-    exact chainFaithful_doIns s t r e a pre L ht0 htL hcf
-  | Del pre x =>
-    obtain ⟨h0, hacc⟩ := hg
-    have hacc' : accurate (t, r, .Del pre x) s := hacc
-    exact chainFaithful_doDel s t r x pre L h0 hacc' hcf
-
-/-- Every step of `π` is good at its own prefix fold. -/
 def GoodFold (L : List ℕ) : concrete_st → List op_t → Prop
   | _, [] => True
   | s, o :: rest => GoodStep s L o ∧ GoodFold L (do_ s o) rest
 
-/-- **Threading (Layer 3).**  `ChainFaithful` is preserved along a `GoodFold`.
-With `climbFaithful_of_chain` this threads `Faithful` along any fold whose steps
-are fresh non-clashing `Ins`s / accurate `Del`s — the single-enumeration σ-walk.
-(The cross-enumeration HYBRID states are where a concurrent `Del` need not be
-accurate; that is the located obstruction, shared with the swap oracle of §6.) -/
-theorem chainFaithful_fold (L : List ℕ) :
-    ∀ (π : List op_t) (s : concrete_st),
-      GoodFold L s π → ChainFaithful s L → ChainFaithful (applySeqR s π) L := by
-  intro π
-  induction π with
-  | nil => intro s _ hcf; exact hcf
-  | cons o rest ih =>
-    intro s hgf hcf
-    obtain ⟨hstep, hrest⟩ := hgf
-    rw [applySeqR_cons]
-    exact ih (do_ s o) hrest (chainFaithful_doStep s L o hstep hcf)
-
-/-- On an all-dead state (`contains s _ = false` everywhere) every list is
-`ChainFaithfulAux` at any fuel: each level's `resolve` is `0`, which is dead, so
-the obligation is vacuous. -/
-theorem chainFaithfulAux_empty (s : concrete_st) (hempty : ∀ k, contains s k = false) :
-    ∀ n (L : List ℕ), ChainFaithfulAux s n L := by
-  intro n
-  induction n with
-  | zero => intro L; exact trivial
-  | succ m _ =>
-    intro L
-    simp only [ChainFaithfulAux]
-    intro hlive
-    rw [hempty (resolve s L)] at hlive
-    exact absurd hlive (by simp)
-
-/-- **Reachability-invariant base case.**  At `init_st` (empty) EVERY recorded
-list is `ChainFaithful` — vacuously, since nothing is live.  This is the base of
-the `ChainFaithful`-at-every-fold reachability invariant whose inductive step is
-the located obstruction (§6). -/
-theorem chainFaithful_init (L : List ℕ) : ChainFaithful init_st L :=
-  chainFaithfulAux_empty init_st (fun k => contains_init k) L.length L
-
-/-- **`NoFreshClash` for concurrent pairs.**  Under monotone allocation (`b`'s
-fresh `Ins` id exceeds every id `a` recorded) or a genuine `Del` target, the
-no-fresh-clash side condition holds.  Dispatches `b`'s op kind to the imported
-`noFreshClash_of_freshIns` / `noFreshClash_of_del`. -/
-theorem noFreshClash_concurrent (a b : op_t)
-    (hIns : ∀ t2 r2 e2 anch2 pre2, b = (t2, r2, .Ins e2 pre2 anch2) →
-      ∀ c ∈ recList a, c < t2)
-    (hDel : ∀ t2 r2 xb pre2, b = (t2, r2, .Del pre2 xb) → xb ≠ 0) :
-    NoFreshClash a b := by
-  obtain ⟨t2, r2, op2⟩ := b
-  cases op2 with
-  | Ins e2 pre2 anch2 =>
-    exact noFreshClash_of_freshIns a t2 r2 e2 anch2 pre2 (hIns t2 r2 e2 anch2 pre2 rfl)
-  | Del pre2 xb =>
-    exact noFreshClash_of_del a t2 r2 xb pre2 (hDel t2 r2 xb pre2 rfl)
-
-/-! ## §4  Swap-at-fold up to `eq`
-
-An observational swap witness at a fold state lifts to a fold swap (transported
-through the suffix by §1's `applySeqR_eq_congr`); `general_swap` discharges the
-witness under the faithfulness/accuracy side conditions. -/
-
-/-- The RGA's observational swap witness at a state (defeq
-`RGABubbleWiring.SwapWitnessEq`). -/
 def EqSwap (a b : op_t) (s : concrete_st) : Prop :=
   eq (do_ (do_ s a) b) (do_ (do_ s b) a)
 
@@ -342,39 +166,6 @@ theorem applySeqR_swap_of_eqWitness (a b : op_t) (pfx sfx : List op_t) (s : conc
   simp only [applySeqR_cons]
   exact applySeqR_eq_congr sfx _ _ h_sw
 
-/-- **`general_swap` discharges `EqSwap` (Layer 4).**  Under the reachable-state
-invariants, freshness, `Faithful a`, `accurate b`, and `NoFreshClash a b`, the
-observational swap witness holds. -/
-theorem eqSwap_of_general (s : concrete_st) (a b : op_t)
-    (hdist : a.1 ≠ b.1) (h0 : contains s 0 = false) (hwf : wf s) (hmono : id_mono s)
-    (hb : accurate b s) (hfa : fresh_ts a s) (hfb : fresh_ts b s)
-    (hfaith : Faithful a s) (hclash : NoFreshClash a b) :
-    EqSwap a b s :=
-  general_swap s a b hdist h0 hwf hmono hb hfa hfb hfaith hclash
-
-/-- **`general_swap_bothFaithful` discharges `EqSwap` — NO operand `accurate`
-(Layer 4, doubly-staled case).**  Both `a` and `b` need only be `Faithful` (each
-staled by concurrent deletes); the swap still holds.  This is the lemma for the
-hybrid state where NEITHER operand is `accurate` — it dissolves the earlier
-"one operand must be accurate" reading of the obstruction. -/
-theorem eqSwap_of_bothFaithful (s : concrete_st) (a b : op_t)
-    (hdist : a.1 ≠ b.1) (h0 : contains s 0 = false) (hwf : wf s) (hmono : id_mono s)
-    (hfa : fresh_ts a s) (hfb : fresh_ts b s)
-    (hfaith_a : Faithful a s) (hfaith_b : Faithful b s)
-    (hclash_ab : NoFreshClash a b) (hclash_ba : NoFreshClash b a) :
-    EqSwap a b s :=
-  general_swap_bothFaithful s a b hdist h0 hwf hmono hfa hfb hfaith_a hfaith_b hclash_ab hclash_ba
-
-/-! ## §5  The generic `eq`-bubble
-
-Mirrors `applySeq_bubble_to_front_loOn_u` (`Sigma_LoOn3.lean`) but up to `eq`:
-bubble `e` to the front of `σ` by iterated adjacent swaps, transporting `eq`
-through the fold with §1.  The per-step swap witnesses are supplied by `h_sw`
-(whoever calls the bubble must produce them — for convergence, the swap oracle). -/
-
-/-- **eq-bubble (Layer 5).**  If, for every split `σ = α ++ y :: β`, the pair
-`(y, e)` has an `EqSwap` witness at the prefix fold `applySeqR s α`, then folding
-`σ ++ e :: tail` equals (up to `eq`) folding `e :: (σ ++ tail)`. -/
 theorem bubble_eq (e : op_t) (σ tail : List op_t) (s : concrete_st)
     (h_sw : ∀ α β y, σ = α ++ y :: β → EqSwap y e (applySeqR s α)) :
     eq (applySeqR s (σ ++ e :: tail)) (applySeqR s (e :: (σ ++ tail))) := by
@@ -631,113 +422,5 @@ theorem RGA_conditioned_convergence (lo : op_t → op_t → Prop) (ev : Set op_t
     eq (applySeqR init_st π₁) (applySeqR init_st π₂) :=
   eq_convergence lo π₁.length init_st ev π₁ π₂ rfl h₁p h₂p h₁r h₂r hSwap
 
-/-- **RGA conditioned convergence, swap discharged from BOTH-`Faithful` (Layer 6).**
-The corrected form: the swap oracle's semantic content is discharged by
-`eqSwap_of_bothFaithful` — NEITHER swapped operand need be `accurate`, both may be
-concurrently staled.  What remains (`hReady`) is purely a *threading* oracle: at
-every prefix fold `applySeqR init_st pre`, each `lo`-incomparable pair `a b ∈ ev`
-is `Faithful` there, mutually `NoFreshClash`, fresh, on the reachable-state
-invariants.  There is no `accurate` anywhere.  So the residual obligation is
-exactly `Faithful`-at-fold + `NoFreshClash` + `RgaInv`/`id_mono`-at-fold — see the
-obstruction note below for which of these transport and which does not. -/
-theorem RGA_conditioned_convergence_bothFaithful (lo : op_t → op_t → Prop) (ev : Set op_t)
-    (π₁ π₂ : List op_t)
-    (h₁p : listPermOf π₁ ev) (h₂p : listPermOf π₂ ev)
-    (h₁r : respects π₁ lo) (h₂r : respects π₂ lo)
-    (hReady : ∀ (pre : List op_t) (a b : op_t),
-        (∀ x ∈ pre, x ∈ ev) → pre.Nodup → respects pre lo →
-        a ∈ ev → b ∈ ev → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
-        (∀ z ∈ ev, z ≠ a → lo z a → z ∈ pre) → (∀ z ∈ ev, z ≠ b → lo z b → z ∈ pre) →
-        a.1 ≠ b.1 ∧ contains (applySeqR init_st pre) 0 = false ∧ wf (applySeqR init_st pre)
-        ∧ id_mono (applySeqR init_st pre)
-        ∧ fresh_ts a (applySeqR init_st pre) ∧ fresh_ts b (applySeqR init_st pre)
-        ∧ Faithful a (applySeqR init_st pre) ∧ Faithful b (applySeqR init_st pre)
-        ∧ NoFreshClash a b ∧ NoFreshClash b a) :
-    eq (applySeqR init_st π₁) (applySeqR init_st π₂) := by
-  apply RGA_conditioned_convergence lo ev π₁ π₂ h₁p h₂p h₁r h₂r
-  intro pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
-  obtain ⟨hd, h0, hwf, hmono, hfa, hfb, hFa, hFb, hcab, hcba⟩ :=
-    hReady pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
-  exact eqSwap_of_bothFaithful (applySeqR init_st pre) a b hd h0 hwf hmono hfa hfb hFa hFb hcab hcba
-
-/- ═══════════════════════════════════════════════════════════════════════════
-   STATUS AFTER THE GAP-1 FIX — what closes, and the one fact M1 still lacks.
-
-   GAP-1 (the over-quantified, unsatisfiable oracle) is FIXED above: the oracle of
-   `eq_convergence` / `RGA_conditioned_convergence(_bothFaithful)` now ranges only
-   over ELIGIBLE prefixes `pre` — nodup, `respects`-ordered, `E`-drawn, disjoint
-   from the swapped pair, with BOTH events ENABLED (their `lo`-past `⊆ pre`).  This
-   is exactly the delivery-prefix class M1/M2 speak about, and it self-threads
-   through the recursion.  So `hReady` is now SATISFIABLE.
-
-   Discharging the ten `hReady` conjuncts at an eligible prefix
-   `s' = applySeqR init_st pre` (pre a `lo`-respecting `E`-prefix, `a`,`b` enabled):
-
-   • `a.1 ≠ b.1`               — M2 `ConditionedConfiguration.distinctTs`.
-   • `RgaInv s'` (`contains0`,`wf`) — RGA `RgaInv_do_opOK` transport over `pre`
-                                  (each `E`-event `opOK`), or M2 `inv_fold` given
-                                  `noopFeasible pre`.
-   • `id_mono s'`              — GAP 3: RGA `id_mono` state-form; M2 emits the
-                                  `causal_mono` vis/id-form (`id_mono_doIns/_doDel`
-                                  transport under `mono_alloc`).
-   • `fresh_ts a s'`,`fresh_ts b s'` — GAP 3: state-absence; M2 `freshTs` emits
-                                  id-distinctness (`∀x∈pre, x.1≠a.1`); needs a
-                                  contains-tracking step to reach state-absence.
-   • `NoFreshClash a b`,`… b a` — GAP 3: RGA recList-form; M2
-                                  `noFreshClash_concurrent` emits the vis-ancestor
-                                  id-form (`§3 noFreshClash_concurrent` bridges it
-                                  once `recList a = ids of {a} ∪ vis-ancestors a`).
-   • `Faithful a s'`,`Faithful b s'` — **GAP 2, the one FATAL residue.**
-
-   **GAP 2 (M1 does not provide this).**  `Faithful a s'` reduces (via
-   `climbFaithful_of_chain`) to `ChainFaithful (recList a) (applySeqR init_st pre)`.
-   M1 proves `ChainFaithful (recList w)` only at `foldDo s_c concurrent`
-   (`chainFaithful_at_enablement`): `w`'s causal past folded CONTIGUOUSLY FIRST to
-   `s_c` (where `HistFaithful s_c w` = `accurate w s_c`), then an `IncompFold` of
-   concurrent steps.  The engine's eligible `pre` is a `lo`-INTERLEAVING: `a`'s
-   causal past is present (enablement) but interleaved with concurrent ops, NOT
-   contiguous-first, so `applySeqR init_st pre ≠ foldDo s_c concurrent`.
-
-   The CONCURRENT-step half is covered — `RGAFaithfulThreadingGate.IncompFold`
-   threads fresh non-clashing `Ins`s and *`Faithful`* `Del`s
-   (`chainFaithful_doDel_faithful`, no `accurate`), so a concurrent staled `Del` is
-   fine (this dissolves the old "interleaving-feasibility Del" worry).  The
-   UNCOVERED half is the ANCESTOR steps: folding `a`'s own causal-ancestor `Ins`s
-   (`w'.id ∈ recList a`) while `a` is still mid-build (`a` not yet `accurate`, so
-   M1's `chainFaithful_doIns_reachable`, which needs `HistFaithful s a`, does NOT
-   fire).  The single missing M1 lemma is the reachable-regime accurate-ancestor
-   `Ins` BUILD-UP (deferred at `RGA_FaithfulThreading_Gate.lean:421-424`):
-
-       accurate (t,r,.Ins e p a') s → [reachability of L] →
-       ChainFaithful s L → ChainFaithful (do_ s (t,r,.Ins e p a')) L   -- even t ∈ L
-
-   equivalently: an M1 variant of `chainFaithful_at_enablement` accepting an
-   INTERLEAVED `lo`-respecting prefix (causal past a sub-list, all other steps
-   `IncompStep`s), not the causal-past-contiguous `foldDo s_c concurrent`.
-
-   VERDICT: with GAP-1 fixed, `RGA_update_convergence` reduces to exactly ONE open
-   M1 fact — the interleaved-prefix / accurate-ancestor-`Ins` build-up lemma — plus
-   the mechanical GAP-3 id/state-form bridges.  It is NOT the swap
-   (`eqSwap_of_bothFaithful`, both-`Faithful`), NOT the concurrent `Del`
-   (`chainFaithful_doDel_faithful`), NOT the oracle over-quantification (fixed
-   here).  Routed to M1.
-   ═══════════════════════════════════════════════════════════════════════════ -/
-
-/-! ## §7  Axiom audit — every headline kernel-clean.
-All decls depend only on `propext, Classical.choice, Quot.sound`: no `sorryAx`,
-no `native_decide`/`ofReduceBool`; the `Merge_Linearization` sorries are not
-transitively touched. -/
-
-#print axioms applySeqR_eq_congr
-#print axioms chainFaithful_of_accurate
-#print axioms chainFaithful_fold
-#print axioms chainFaithful_init
-#print axioms noFreshClash_concurrent
-#print axioms eqSwap_of_general
-#print axioms eqSwap_of_bothFaithful
-#print axioms bubble_eq
-#print axioms eq_convergence
-#print axioms RGA_conditioned_convergence
-#print axioms RGA_conditioned_convergence_bothFaithful
 
 end Sal.ConditionedMRDTs.RGAConditionedConvergence

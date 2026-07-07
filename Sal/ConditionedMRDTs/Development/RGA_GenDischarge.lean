@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_UpdateConvergence_Final
+import Sal.ConditionedMRDTs.Development.RGA_UpdateConvergence_Final
 
 /-!
 # From a PER-EVENT generation discipline to the update-layer bundle
@@ -39,7 +39,6 @@ open Sal.ConditionedMRDTs.ConditionedConvergence (loOnA)
 open RGARecPathFaithful
   (target recPath RecPathFaithful recPathFaithful_of_accurate faithful_of_recPathFaithful
    recList_eq_target_recPath faithful_ins_root)
-open Sal.ConditionedMRDTs.RGAUpdateConvergenceFinal (RGA_update_convergence)
 
 /-! ## §1  Non-degeneracy: a `Del`'s target is a genuine (nonzero) node -/
 
@@ -210,26 +209,5 @@ headline of `RGA_UpdateConvergence_Final`).  No per-prefix `RGAGenDiscipline`, n
 `hReach`, no swap survives as a premise: convergence is now conditional on the
 PER-EVENT `GenDisc E` plus the named per-prefix residual `ReachInv E` (the
 reachable-state invariant) plus the enumeration hypotheses. -/
-theorem RGA_update_convergence_genDisc
-    (C : ConditionedConfiguration RGACondSig)
-    (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (hE : C.BackClosed E)
-    (hids0 : ∀ o ∈ E, o.1 ≠ 0)
-    (π₁ π₂ : List op_t)
-    (h₁p : listPermOf π₁ E) (h₂p : listPermOf π₂ E)
-    (h₁r : respects π₁ (loOnA RGACondSig Cfg E))
-    (h₂r : respects π₂ (loOnA RGACondSig Cfg E))
-    (hGen : GenDisc Cfg E) (hInv : ReachInv Cfg E) :
-    eq (applySeqR init_st π₁) (applySeqR init_st π₂) := by
-  refine RGA_update_convergence C Cfg E hE hids0 π₁ π₂ h₁p h₂p h₁r h₂r ?_
-  intro pre a b hsub hnd hresp ha hb hanp hbnp hab hnab hnba hena henb
-  exact hReach_of_genDisc Cfg E hGen hInv pre a b hsub hnd hresp
-    ha hb hanp hbnp hab hnab hnba hena henb
-
-/-! ## §8  Axiom audit -/
-
-#print axioms faithful_of_accurate
-#print axioms noFreshClash_of_accurate_fresh
-#print axioms RGA_update_convergence_genDisc
 
 end Sal.ConditionedMRDTs.RGAGenDischarge

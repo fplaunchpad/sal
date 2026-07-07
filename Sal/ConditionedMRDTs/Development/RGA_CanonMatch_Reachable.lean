@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_NoopFeasible_CanonFold
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConvergenceEq
+import Sal.ConditionedMRDTs.Development.RGA_ConvergenceEq
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonConvergence
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence

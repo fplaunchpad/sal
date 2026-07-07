@@ -1,4 +1,10 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConvergenceEq
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance
+import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BranchCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
 
 /-!
 # The RGA capstone, over `WfOpQ` — assembly + the honestly-pinned Join residual
@@ -45,7 +51,6 @@ open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC'
   rga_inv_init' RGACondSig'_update RGACondSig'_mergeL RGACondSig'_init)
 open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ WfOpGenQ rgaInvPresQ rga_wfOpReachableQ)
-open Sal.ConditionedMRDTs.RGAConvergenceEq (loOnEqQ_reduce)
 open RGAMergeLinearization (applySeqR)
 
 /-! ## §1  `InvInvVC` over the strengthened guard `WfOpQ`
@@ -113,87 +118,6 @@ fold is `≈ m`, the witness is literally `ρ₀ ++ π₀`:
 
 No order translation, no re-enumeration: the shape match is clean. -/
 
-/-- `loOnEq rgaEqEquiv' WfOpQ` does not read its event-set index. -/
-theorem loOnEqQ_index_free (vis : op_t → op_t → Prop) (ev ev' : Set op_t)
-    (e₁ e₂ : op_t) :
-    loOnEq rgaEqEquiv' WfOpQ vis ev e₁ e₂
-      ↔ loOnEq rgaEqEquiv' WfOpQ vis ev' e₁ e₂ :=
-  (loOnEqQ_reduce vis ev e₁ e₂).trans (loOnEqQ_reduce vis ev' e₁ e₂).symm
-
-/-- **The union adapter.**  From the LCA enumeration, a delta enumeration, and
-the merge-fold fact, the union's canonical-state shape follows. -/
-theorem isCanonicalStateEq_union_of_fold
-    (vis : op_t → op_t → Prop) (ev₁ ev₂ : Set op_t)
-    (hcl₁ : fullClosureRel (D := RGACondSig') vis ev₁)
-    (hcl₂ : fullClosureRel (D := RGACondSig') vis ev₂)
-    (m : concrete_st) (ρ₀ π₀ : List op_t)
-    (h₀p : listPermOf ρ₀ (ev₁ ∩ ev₂))
-    (h₀r : respects ρ₀ (loOnEq rgaEqEquiv' WfOpQ vis (ev₁ ∩ ev₂)))
-    (hπp : listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)))
-    (hπr : respects π₀ (loOnEq rgaEqEquiv' WfOpQ vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))))
-    (hMF : eq (applySeqR (applySeqR init_st ρ₀) π₀) m) :
-    IsCanonicalStateEq rgaEqEquiv' WfOpQ vis (ev₁ ∪ ev₂) m := by
-  have hmemρ : ∀ a ∈ ρ₀, a ∈ ev₁ ∩ ev₂ := fun a ha => (h₀p.2 a).mp ha
-  have hmemπ : ∀ a ∈ π₀, a ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂) :=
-    fun a ha => (hπp.2 a).mp ha
-  refine ⟨ρ₀ ++ π₀, ⟨?_, ?_⟩, ?_, ?_⟩
-  · refine List.nodup_append.mpr ⟨h₀p.1, hπp.1, ?_⟩
-    intro a ha b hb heq
-    exact (hmemπ b hb).2 (heq ▸ hmemρ a ha)
-  · intro a
-    constructor
-    · intro ha
-      rcases List.mem_append.mp ha with h | h
-      · exact Set.mem_union_left _ (hmemρ a h).1
-      · exact (hmemπ a h).1
-    · intro ha
-      by_cases hI : a ∈ ev₁ ∩ ev₂
-      · exact List.mem_append.mpr (Or.inl ((h₀p.2 a).mpr hI))
-      · exact List.mem_append.mpr (Or.inr ((hπp.2 a).mpr ⟨ha, hI⟩))
-  · refine List.pairwise_append.mpr ⟨?_, ?_, ?_⟩
-    · exact (respects_congr
-        (fun a b => loOnEqQ_index_free vis (ev₁ ∩ ev₂) (ev₁ ∪ ev₂) a b)).mp h₀r
-    · exact (respects_congr
-        (fun a b => loOnEqQ_index_free vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))
-          (ev₁ ∪ ev₂) a b)).mp hπr
-    · intro a ha b hb hR
-      have hva := ((loOnEqQ_reduce vis (ev₁ ∪ ev₂) b a).mp hR).1
-      have haI := hmemρ a ha
-      exact (hmemπ b hb).2 ⟨hcl₁ b a hva haI.1, hcl₂ b a hva haI.2⟩
-  · show rgaEqEquiv'.eqv
-      (applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)) m
-    have hsplit : applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)
-        = applySeqR (applySeqR init_st ρ₀) π₀ := by
-      rw [applySeq_eq_applySeqR, RGACondSig'_init]
-      simp only [applySeqR, List.foldl_append]
-    rw [hsplit]
-    exact hMF
-
-#print axioms isCanonicalStateEq_union_of_fold
-
-/-! ## §4  The `≈`-Join `EqJoinLemma3C`, reduced to the merge=delta-fold residual
-
-`EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOpQ GenDisc` (its NEW `GenDisc`-carrying
-form, GenericEqQuotient §4) demands `IsCanonicalStateEq (ev₁∪ev₂) (mergeL s₀ s₁ s₂)`
-from the three side canonical states, full closure, and `GenDisc` on the two sides
-and their union.  §3's `isCanonicalStateEq_union_of_fold` already discharges the
-ENTIRE `IsCanonicalStateEq` *shape* assembly (nodup/perm of `ρ₀ ++ π₀`, the
-`respects` append via `loOnEqQ_index_free` + full-closure cross-edge kill, the raw
-`foldl_append` split) from ONE merge-fold fact `hMF`.  So the join reduces to
-producing, from the LCA enumeration `ρ₀` (extracted from the intersection-side
-canonical state), a `loOnEq`-respecting delta enumeration `π₀` of
-`(ev₁∪ev₂)\(ev₁∩ev₂)` whose continued fold from the LCA-fold rep is `≈ mergeL`.
-
-`RgaEqJoinResidual` names EXACTLY that remaining content.  Everything ABOVE it —
-the union canonical-state shape — is closed here; nothing below it is smuggled in.
-See the STATUS block for why the residual is not (yet) discharge-able from
-`EqJoinLemma3C`'s hypotheses with the current swap-free machinery. -/
-
-/-- **The precisely-located `≈`-Join residual.**  Given the intersection-side
-LCA enumeration `ρ₀`, the merge is `≈`-equal to the fold of SOME `loOnEq`-respecting
-delta enumeration `π₀` of `(ev₁∪ev₂)\(ev₁∩ev₂)` continued from `applySeqR init_st ρ₀`.
-This is the merge=delta-fold bridge from the LCA (`eq (mergeL s₀ s₁ s₂)
-(applySeqR (fold ρ₀) π₀)`) PLUS existence/goodness of the delta enumeration. -/
 def RgaEqJoinResidual
     (GenDisc : (op_t → op_t → Prop) → Set op_t → Prop) : Prop :=
   ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t)
@@ -214,83 +138,5 @@ def RgaEqJoinResidual
       respects π₀ (loOnEq rgaEqEquiv' WfOpQ vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
       eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
 
-/-- **The `≈`-Join from the residual.**  The union canonical-state shape is closed
-by §3; the ONLY input beyond `EqJoinLemma3C`'s own hypotheses is
-`RgaEqJoinResidual` (the merge=delta-fold bridge).  Parametric in `GenDisc`, so it
-holds for any generation-discipline instantiation, including the intended
-`GenDisc2CEq`-family. -/
-theorem rga_eqJoin_of_mergeFoldResidual
-    (GenDisc : (op_t → op_t → Prop) → Set op_t → Prop)
-    (hRes : RgaEqJoinResidual GenDisc) :
-    EqJoinLemma3C RGACondSig' rgaEqEquiv' WfOpQ GenDisc := by
-  intro vis events ev₁ ev₂ s₀ s₁ s₂ hI0 hI1 hI2 htr hir hev1 hev2 hcl1 hcl2
-    hgd1 hgd2 hgdU hcs0 hcs1 hcs2
-  obtain ⟨ρ₀, h₀p, h₀r, _hfold0⟩ := hcs0
-  obtain ⟨π₀, hπp, hπr, hMF⟩ :=
-    hRes vis events ev₁ ev₂ s₀ s₁ s₂ ρ₀ hI0 hI1 hI2 htr hir hev1 hev2
-      hcl1 hcl2 hgd1 hgd2 hgdU h₀p h₀r hcs1 hcs2
-  exact isCanonicalStateEq_union_of_fold vis ev₁ ev₂ hcl1 hcl2
-    (RGACondSig'.mergeL s₀ s₁ s₂) ρ₀ π₀ h₀p h₀r hπp hπr hMF
-
-#print axioms rga_eqJoin_of_mergeFoldResidual
-
-/- ═══════════════════════════════════════════════════════════════════════════
-   STATUS — `rga_EqJoinLemma3C` is NOT constructed; the residual is located EXACTLY.
-
-   CLOSED here (kernel-clean, [propext, Classical.choice, Quot.sound]):
-
-   • The ENTIRE union canonical-state SHAPE.  `isCanonicalStateEq_union_of_fold`
-     (§3) + `rga_eqJoin_of_mergeFoldResidual` (§4) discharge every part of
-     `EqJoinLemma3C`'s conclusion EXCEPT `RgaEqJoinResidual`: the `ρ₀`-extraction
-     from the intersection-side canonical state, the `nodup`/`perm` of `ρ₀ ++ π₀`,
-     the `respects`-append (via `loOnEqQ_index_free` + full-closure cross-edge kill),
-     and the raw `foldl_append` split.  Nothing below `RgaEqJoinResidual` is smuggled.
-
-   THE RESIDUAL (`RgaEqJoinResidual`), and why it is a genuine WALL, not mechanization
-   debt.  Its core obligation is the merge=delta-fold bridge from the LCA:
-       `eq (applySeqR (applySeqR init_st ρ₀) π₀) (mergeL s₀ s₁ s₂)`
-   which — swapping `applySeqR init_st ρ₀ ≈ s₀` under merge congruence
-   (`rgaCongVC'.mergeL_congr`) — is `eq (mergeL s₀ s₁ s₂) (applySeqR s₀ π₀)`, the
-   classic bridge from `l := s₀`.  The swap-free toolkit
-   (`merge_fold_indep_canon` ← `eq_merge2_of_branchInv2` ← `branchInv2_of_pieces`)
-   is blocked at TWO independent points:
-
-   • WALL 0 — no execution model from the abstract `vis`.  `EqJoinLemma3C` hands only
-     `vis` trans/irrefl, `Inv sᵢ`, `fullClosureRel`, and `GenDisc`.  But
-     `merge_fold_indep_canon`, `canonFoldOK_of_loOnEq`, and even the EXISTENCE of the
-     delta enumeration `π₀` (`ConditionedExecutionModel`'s topological-extension lemma,
-     stated for `loOnA D Cfg`, not `loOnEq`) all require a `ConditionedConfiguration`
-     carrying `distinct_ts`, `causal_mono` (`vis a b → a.1 < b.1`), `BackClosed`, and
-     nonzero ids — NONE of which are `EqJoinLemma3C` hypotheses.  They can only enter
-     through a strengthened `GenDisc` (the `GenDisc2CEq`-family, re-exposed to carry a
-     config witness); `rga_eqJoin_of_mergeFoldResidual` is deliberately parametric in
-     `GenDisc` so that choice is orthogonal to the shape assembly proved here.
-
-   • WALL 1 — the four branch pieces `hD`/`hB`/`hBE`/`hBN` (`branchInv2_of_pieces`).
-     Even granting WALL 0's config, the reference-fold bridge `href` needs, at
-     `l := s₀`, `a := s₁`, `b := s₂` and a reference delta fold `applySeqR l π₀`:
-       – `hD` (`survivors l a b = contains (applySeqR l π₀)`): OR-set = live-set
-         induction — `RGA_MergeThreadDischarge` STATUS: "not yet mechanized here".
-       – `hB` (`BranchInv l (applySeqR l π₀)`): threadable per-`Del` by
-         `branchInv_doDel_crossBranch_sub`, but only once `π₀`'s events are pinned to
-         the branch `Ins`/`Del` with `RecPathFaithful` — "not yet mechanized here".
-       – `hBE` (branch-new element): "not yet mechanized here".
-       – `hBN` (branch-new anchor, GAP-1): reduces (`hBN_of_foldChain` →
-         `foldChain_of_canon` → `canonBirthBridge_of_branchChain`) to `CanonMatch F
-         (applySeqR l π₀)` + branch-`LiveChain` inputs (`hlive`/`hsurv`/`hsplit`) that
-         `birthAnc l a b k = anc(branch) k` carries its branch's live recorded chain.
-         The cross-forest reconciliation lemma (`resolve_climb_start`) IS closed, but
-         those branch-`LiveChain` inputs require `s₁`, `s₂` to be LITERAL canonical
-         states of their branch enumerations with the specific recorded inserts —
-         content `IsCanonicalStateEq` supplies only up to `≈`, and the survivor/anchor
-         projections needed are NOT `≈`-invariant in the combined-forest form.
-
-   VERDICT.  The `≈`/order rebasing (`RGA_ConvergenceEq`) removed the OLD §7 order
-   mismatch, and `merge_fold_indep_canon` removed the swap oracle — the two blockers
-   RGA_Instance §7 named.  What remains is `RgaEqJoinResidual`: WALL 0 (execution
-   model into `GenDisc`) + WALL 1 (the `hD`/`hB`/`hBE`/`hBN` branch-canon assembly,
-   `hBN` the sharp GAP-1).  `rga_EqJoinLemma3C` is therefore reduced, not closed —
-   `rga_eqJoin_of_mergeFoldResidual GenDisc hRes` produces it the moment `hRes` lands.
-   ═══════════════════════════════════════════════════════════════════════════ -/
 
 end Sal.ConditionedMRDTs.RGAInstanceFinal

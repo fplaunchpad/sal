@@ -52,77 +52,6 @@ theorem loOnEqQ_index_free_gen (W : op_t → concrete_st → Prop)
 
 /-! ## §2  The union canonical-state shape, born-applicable -/
 
-/-- **The NF union adapter.**  From the LCA enumeration `ρ₀`, a delta enumeration
-`π₀`, the merge-fold fact `hMF`, AND the two sides' `noopFeasible` (`ρ₀` from
-`init`, `π₀` from the LCA fold), the union's born-applicable canonical-state shape
-follows.  The `IsCanonicalStateEq` shape is exactly `RGA_Instance_Final`'s; the new
-content is the `noopFeasible` clause of `ρ₀ ++ π₀` via `noopFeasible_append`. -/
-theorem isCanonicalStateEqNF_union_of_fold
-    (W : op_t → concrete_st → Prop)
-    (vis : op_t → op_t → Prop) (ev₁ ev₂ : Set op_t)
-    (hcl₁ : fullClosureRel (D := RGACondSig') vis ev₁)
-    (hcl₂ : fullClosureRel (D := RGACondSig') vis ev₂)
-    (m : concrete_st) (ρ₀ π₀ : List op_t)
-    (h₀p : listPermOf ρ₀ (ev₁ ∩ ev₂))
-    (h₀r : respects ρ₀ (loOnEq rgaEqEquiv' W vis (ev₁ ∩ ev₂)))
-    (hπp : listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)))
-    (hπr : respects π₀ (loOnEq rgaEqEquiv' W vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))))
-    (hnf₀ : noopFeasible RGACondSig' ρ₀ init_st)
-    (hnfπ : noopFeasible RGACondSig' π₀ (applySeqR init_st ρ₀))
-    (hMF : eq (applySeqR (applySeqR init_st ρ₀) π₀) m) :
-    IsCanonicalStateEqNF rgaEqEquiv' W vis (ev₁ ∪ ev₂) m := by
-  have hmemρ : ∀ a ∈ ρ₀, a ∈ ev₁ ∩ ev₂ := fun a ha => (h₀p.2 a).mp ha
-  have hmemπ : ∀ a ∈ π₀, a ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂) :=
-    fun a ha => (hπp.2 a).mp ha
-  refine ⟨ρ₀ ++ π₀, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
-  · refine List.nodup_append.mpr ⟨h₀p.1, hπp.1, ?_⟩
-    intro a ha b hb heq
-    exact (hmemπ b hb).2 (heq ▸ hmemρ a ha)
-  · intro a
-    constructor
-    · intro ha
-      rcases List.mem_append.mp ha with h | h
-      · exact Set.mem_union_left _ (hmemρ a h).1
-      · exact (hmemπ a h).1
-    · intro ha
-      by_cases hI : a ∈ ev₁ ∩ ev₂
-      · exact List.mem_append.mpr (Or.inl ((h₀p.2 a).mpr hI))
-      · exact List.mem_append.mpr (Or.inr ((hπp.2 a).mpr ⟨ha, hI⟩))
-  · refine List.pairwise_append.mpr ⟨?_, ?_, ?_⟩
-    · exact (respects_congr
-        (fun a b => loOnEqQ_index_free_gen W vis (ev₁ ∩ ev₂) (ev₁ ∪ ev₂) a b)).mp h₀r
-    · exact (respects_congr
-        (fun a b => loOnEqQ_index_free_gen W vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))
-          (ev₁ ∪ ev₂) a b)).mp hπr
-    · intro a ha b hb hR
-      have hva := ((loOnEqQ_reduce_gen W vis (ev₁ ∪ ev₂) b a).mp hR).1
-      have haI := hmemρ a ha
-      exact (hmemπ b hb).2 ⟨hcl₁ b a hva haI.1, hcl₂ b a hva haI.2⟩
-  · -- the born-applicable clause: `ρ₀ ++ π₀` is `noopFeasible` from `init`
-    refine noopFeasible_append hnf₀ ?_
-    show noopFeasible RGACondSig' π₀ (applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ₀)
-    rw [applySeq_eq_applySeqR, RGACondSig'_init]
-    exact hnfπ
-  · show rgaEqEquiv'.eqv
-      (applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)) m
-    have hsplit : applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)
-        = applySeqR (applySeqR init_st ρ₀) π₀ := by
-      rw [applySeq_eq_applySeqR, RGACondSig'_init]
-      simp only [applySeqR, List.foldl_append]
-    rw [hsplit]
-    exact hMF
-
-/-! ## §2.5  The `≈`-vs-literal reconciliation (`mergeFold_transport`)
-
-The merge machinery (`eq_merge_two_sided_final`) needs the branches as LITERAL folds; the framework
-supplies them only up to `≈`.  The born-applicable re-base resolves this: run the machinery on the
-literal born-applicable folds `σ_i' ≈ s_i`, then transport to the `≈`-classes `s₀ s₁ s₂` by ONE
-`merge`-congruence step.  This lemma is that transport — it confines the entire `≈`-vs-literal tension
-to `mergeL_congr`.  See `WALL1_ANALYSIS.md`. -/
-
-/-- **Transport the literal merge=fold to the `≈`-classes.**  Given the merge=fold identity for the
-LITERAL folds `σ₀'/σ₁'/σ₂'` and `σ_i' ≈ s_i`, the same fold `X` equals `mergeL s₀ s₁ s₂` — because
-`merge` is `≈`-congruent (`rgaCongVC'.mergeL_congr`). -/
 theorem mergeFold_transport {σ₀' σ₁' σ₂' X s₀ s₁ s₂ : concrete_st}
     (hI0' : RGACondSig'.Inv σ₀') (hI1' : RGACondSig'.Inv σ₁') (hI2' : RGACondSig'.Inv σ₂')
     (hI0 : RGACondSig'.Inv s₀) (hI1 : RGACondSig'.Inv s₁) (hI2 : RGACondSig'.Inv s₂)
@@ -165,27 +94,5 @@ def RgaEqJoinResidual_NF (W : op_t → concrete_st → Prop) : Prop :=
       noopFeasible RGACondSig' π₀ (applySeqR init_st ρ₀) ∧
       eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
 
-/-- **`EqJoinLemma3C_NF` from the NF residual.**  The union canonical-state shape
-(§2) closes everything except `RgaEqJoinResidual_NF`.  No `GenDisc`, no
-`GDSupply` — the born-applicable `noopFeasible` witnesses carry the discipline the
-`GenDisc2CEq`-route needed a strengthened generation discipline for (WALL 0). -/
-theorem rga_eqJoin_of_mergeFoldResidual_NF
-    (W : op_t → concrete_st → Prop) (hRes : RgaEqJoinResidual_NF W) :
-    EqJoinLemma3C_NF RGACondSig' rgaEqEquiv' W := by
-  intro vis events ev₁ ev₂ s₀ s₁ s₂ hI0 hI1 hI2 htr hir _hdts hev1 hev2 hcl1 hcl2
-    hcs0 hcs1 hcs2
-  obtain ⟨ρ₀, h₀p, h₀r, hnf₀, _hfold0⟩ := hcs0
-  obtain ⟨π₀, hπp, hπr, hnfπ, hMF⟩ :=
-    hRes vis events ev₁ ev₂ s₀ s₁ s₂ ρ₀ hI0 hI1 hI2 htr hir hev1 hev2
-      hcl1 hcl2 h₀p h₀r hnf₀ hcs1 hcs2
-  exact isCanonicalStateEqNF_union_of_fold W vis ev₁ ev₂ hcl1 hcl2
-    (RGACondSig'.mergeL s₀ s₁ s₂) ρ₀ π₀ h₀p h₀r hπp hπr hnf₀ hnfπ hMF
-
-/-! ## §4  Axiom audit -/
-
-#print axioms loOnEqQ_reduce_gen
-#print axioms loOnEqQ_index_free_gen
-#print axioms isCanonicalStateEqNF_union_of_fold
-#print axioms rga_eqJoin_of_mergeFoldResidual_NF
 
 end Sal.ConditionedMRDTs.RGAEqJoinNF

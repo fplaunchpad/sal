@@ -1,5 +1,5 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ChainFaithful_doDel
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Faithful_PBT
+import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
+import Sal.ConditionedMRDTs.Development.RGA_Faithful_PBT
 
 /-!
 # The staled-`Del` gate — does `ChainFaithful` survive being threaded past a

@@ -7,7 +7,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.BornApplicable_Guar
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3NF
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ChainFaithful_doDel
+import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_EqQuotient
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance

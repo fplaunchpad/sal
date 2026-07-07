@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BubbleWiring
+import Sal.ConditionedMRDTs.Development.RGA_BubbleWiring
 
 /-!
 # `chainFaithful_doDel` — `ChainFaithful` is preserved by an accurate `Del`

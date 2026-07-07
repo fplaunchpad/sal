@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_EnablementBase
+import Sal.ConditionedMRDTs.Development.RGA_EnablementBase
 
 /-!
 # From the Key Lemma to per-event faithfulness in a reachable RGA fold

@@ -10,6 +10,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_WfOpA_VCs
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
+import Sal.ConditionedMRDTs.Development.RGA_SwapRoute_Residuals
 
 /-!
 # Gluing `RGA_EndToEnd.hCanon` down to the concrete leaf bundles

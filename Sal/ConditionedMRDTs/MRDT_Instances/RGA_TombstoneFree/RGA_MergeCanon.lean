@@ -1,4 +1,10 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConvergenceEq
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance
+import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BranchCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!
@@ -155,47 +161,5 @@ theorem merge_canonMatch
 
 #print axioms merge_canonMatch
 
-/-- **Merge-side glue.**  Assembles `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')` from the leaf inputs,
-precisely typing the residual: the three branch `CanonMatch` (`hcmᵢ`), σ₀' forest invariants
-(`Hdec`/`Hstay`/`h0`), the per-id causal facts (`hcaus`), per-survivor membership (`hins_branch`),
-and per-survivor `CanonBirthBridge` + 0-or-survivor birth-anchor (`hbridge`). Everything else is the
-three clause lemmas (done). What LEFT to discharge is exactly these five hypotheses. -/
-theorem canonMatch_merge_of_inputs
-    (σ₀' σ₁' σ₂' : concrete_st) (ρ₀ π₀ ρ₁ ρ₂ : List op_t)
-    (hcm0 : CanonMatch ρ₀ σ₀') (hcm1 : CanonMatch ρ₁ σ₁') (hcm2 : CanonMatch ρ₂ σ₂')
-    (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
-    (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
-    (h0 : contains σ₀' 0 = false)
-    (hcaus : ∀ c, (insertedIn ρ₀ c ↔ insertedIn ρ₁ c ∧ insertedIn ρ₂ c)
-        ∧ (deletedIn ρ₁ c → insertedIn ρ₁ c) ∧ (deletedIn ρ₂ c → insertedIn ρ₂ c)
-        ∧ (deletedIn ρ₀ c → deletedIn ρ₁ c) ∧ (deletedIn ρ₀ c → deletedIn ρ₂ c)
-        ∧ (insertedIn (ρ₀ ++ π₀) c ↔ insertedIn ρ₁ c ∨ insertedIn ρ₂ c)
-        ∧ (deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c))
-    (hins_branch : ∀ (t r e a : ℕ) (p : List ℕ),
-        (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
-        (contains σ₀' t = true → (t, r, .Ins e p a) ∈ ρ₀)
-        ∧ (contains σ₁' t = true → (t, r, .Ins e p a) ∈ ρ₁)
-        ∧ (contains σ₂' t = true → (t, r, .Ins e p a) ∈ ρ₂)
-        ∧ (contains σ₀' t = true ∨ contains σ₁' t = true ∨ contains σ₂' t = true))
-    (hbridge : ∀ (t r e a : ℕ) (p : List ℕ),
-        (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
-        CanonBirthBridge σ₀' (ρ₀ ++ π₀) (birthAnc σ₀' σ₁' σ₂' t) (a :: p)
-        ∧ (birthAnc σ₀' σ₁' σ₂' t = 0
-            ∨ survivors σ₀' σ₁' σ₂' (birthAnc σ₀' σ₁' σ₂' t) = true)) :
-    CanonMatch (ρ₀ ++ π₀) (merge σ₀' σ₁' σ₂') := by
-  have hdomain : ∀ c, contains (merge σ₀' σ₁' σ₂') c = true ↔ survP (ρ₀ ++ π₀) c := by
-    intro c
-    obtain ⟨hI0, hD1I, hD2I, hD01, hD02, hIu, hDu⟩ := hcaus c
-    exact merge_domain_clause σ₀' σ₁' σ₂' ρ₀ π₀ ρ₁ ρ₂ c
-      (hcm0.1 c) (hcm1.1 c) (hcm2.1 c) hI0 hD1I hD2I hD01 hD02 hIu hDu
-  refine merge_canonMatch σ₀' σ₁' σ₂' (ρ₀ ++ π₀) hdomain ?_ ?_
-  · intro t r e a p hins hsv
-    obtain ⟨hs0, hs1, hs2, hib⟩ := hins_branch t r e a p hins hsv
-    exact merge_el_clause σ₀' σ₁' σ₂' ρ₀ ρ₁ ρ₂ t r e a p hcm0 hcm1 hcm2 hs0 hs1 hs2 hib
-  · intro t r e a p hins hsv
-    obtain ⟨hbr, hbws⟩ := hbridge t r e a p hins hsv
-    exact merge_anc_clause σ₀' σ₁' σ₂' (ρ₀ ++ π₀) t a p Hdec Hstay h0 hdomain hbr hbws
-
-#print axioms canonMatch_merge_of_inputs
 
 end Sal.ConditionedMRDTs.RGAMergeCanon

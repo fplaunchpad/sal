@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
+import Sal.ConditionedMRDTs.Development.RGA_WfOpReachable
 
 /-!
 # The RGA order bridge: `loOnEq` vs `loOnA` — the orders are INCOMPARABLE
@@ -68,10 +69,6 @@ open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv')
 open Classical
 
 /-! ## §1  Fact 1: `rc ≡ Either`, and both orders collapse to their vis-arm -/
-
-/-- `rc` is `Either` on every pair — for the primed hosting signature too. -/
-theorem rc_is_Either' (o₁ o₂ : Op app_op_t) :
-    RGACondSig'.rc o₁ o₂ = RcRes.Either := rfl
 
 /-- **`loOnEq` collapses to its vis-arm**: the rc-tiebreak arm needs
 `rc = Fst_then_snd`, which `rc ≡ Either` refutes. -/

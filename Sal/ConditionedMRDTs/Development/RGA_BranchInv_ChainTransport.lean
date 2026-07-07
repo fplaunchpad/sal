@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Development.RGA_BirthBridge_HRc
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeBranchNew
+import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
 
 /-!
 # `BranchInv` chain transport — `hFiltEq`'s engine

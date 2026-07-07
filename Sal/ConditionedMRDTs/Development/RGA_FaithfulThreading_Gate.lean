@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_StaledDel_Gate
+import Sal.ConditionedMRDTs.Development.RGA_StaledDel_Gate
 
 /-!
 # The decisive Faithful-threading gate for the free-canonicalization bubble

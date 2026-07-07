@@ -7,6 +7,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConv
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
+import Sal.ConditionedMRDTs.Development.RGA_SwapRoute_Residuals
 
 /-!
 # `EqJoinLemma3C_NF` for the RGA, reduced to the LITERAL-fold merge residual

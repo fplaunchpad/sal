@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_GeneralSwap
+import Sal.ConditionedMRDTs.Development.RGA_GeneralSwap
 
 /-!
 # Task #13 · Milestone 1b — the BOTH-`Faithful` update-side swap VC

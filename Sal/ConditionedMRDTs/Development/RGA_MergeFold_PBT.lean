@@ -1,5 +1,5 @@
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Faithful_PBT
+import Sal.ConditionedMRDTs.Development.RGA_Faithful_PBT
 
 /-!
 # Merge = fold-of-linearization: the decisive refutation test for the tombstone-free RGA

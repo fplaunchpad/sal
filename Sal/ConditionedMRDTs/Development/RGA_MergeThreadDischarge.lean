@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization_TwoSided
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InterleavedThreading
+import Sal.ConditionedMRDTs.Development.RGA_InterleavedThreading
 
 /-!
 # Discharging the merge-side `hThread` via the proved Key Lemma
@@ -142,101 +142,5 @@ theorem hThread_of_pieces (l a b : concrete_st) (π₀ : List op_t)
     BranchInv2 l a b (applySeqR l π₀) :=
   branchInv2_of_pieces l a b (applySeqR l π₀) hD hB hBE hBN
 
-/-- **Two-sided bridge with `hThread` reduced to pieces and `hSwap` eliminated.**
-`merge l a b ≈ fold l π` for any `lo`-respecting `π`, with NO free swap oracle and
-NO bare `hThread`: `hThread` is reduced to the four `branchInv2_of_pieces` premises
-(`hBN` being the residual GAP-1 branch-new anchor clause, the ONLY non-reachability
-premise — see the OBSTRUCTION block) and `hSwap` to the both-`Faithful` merge-fold
-reachability oracle `hMSR`. -/
-theorem eq_merge_two_sided_of_reachable
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
-    (hD : ∀ k, survivors l a b k = contains (applySeqR l π₀) k)
-    (hB : BranchInv l (applySeqR l π₀))
-    (hBE : ∀ k, survivors l a b k = true → contains l k = false →
-        el (applySeqR l π₀) k = birthEl l a b k)
-    (hBN : ∀ k, survivors l a b k = true → contains l k = false →
-        anc (applySeqR l π₀) k
-          = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b k))
-    (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
-    (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hMSR : ∀ (pre : List op_t) (x y : op_t),
-        (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
-        x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
-        (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
-        (∀ z ∈ ev, z ≠ y → lo z y → z ∈ pre) →
-        x.1 ≠ y.1 ∧ contains (applySeqR l pre) 0 = false ∧ wf (applySeqR l pre)
-        ∧ id_mono (applySeqR l pre)
-        ∧ fresh_ts x (applySeqR l pre) ∧ fresh_ts y (applySeqR l pre)
-        ∧ Faithful x (applySeqR l pre) ∧ Faithful y (applySeqR l pre)
-        ∧ NoFreshClash x y ∧ NoFreshClash y x) :
-    eq (merge l a b) (applySeqR l π) := by
-  have hThread : BranchInv2 l a b (applySeqR l π₀) :=
-    hThread_of_pieces l a b π₀ hD hB hBE hBN
-  apply eq_merge_two_sided l a b lo ev π₀ π hThread h₀p hπp h₀r hπr
-  intro pre x y hsub hnd hresp hx hy hxp hyp hxy hnxy hnyx henx heny
-  obtain ⟨hd, h0, hwf, hmono, hfx, hfy, hFx, hFy, hcxy, hcyx⟩ :=
-    hMSR pre x y hsub hnd hresp hx hy hxp hyp hxy hnxy hnyx henx heny
-  exact eqSwap_of_bothFaithful (applySeqR l pre) x y hd h0 hwf hmono hfx hfy hFx hFy hcxy hcyx
-
-#print axioms eq_merge_two_sided_of_reachable
-
-/- ═══════════════════════════════════════════════════════════════════════════
-   STATUS — what the Key Lemma closes, and the exact residual.
-
-   CLOSED here, kernel-clean:
-
-   • GAP-2′ (cross-branch stale-path `Del` preservation).  `branchInv_doDel_crossBranch_sub`
-     re-supplies `hres : resolve a pre = anc a x` from the subchain-resolution Key
-     Lemma (`RecPathFaithful (Del pre x) a`) — with NO full-`l`-chain requirement and
-     NO `accurate a`.  This closes the documented witness `l = 0←1←2←3,
-     Eb = [Del [1] 2, Del [1] 3]`: the `Del` of `3` carries `[1]` (a proper live
-     subchain of `3`'s `l`-chain `[2,1]`), yet `resolve a [1] = anc a 3 = 1` by the
-     Key Lemma, so `branchInv_doDel_crossBranch` applies where `hres_of_lchain` could
-     not.  This is the GAP-2′ that the TwoSided file flagged as the residual blocker.
-
-   • The `hSwap` oracle.  `eq_merge_two_sided_of_reachable` carries NO free `EqSwap`
-     premise: it is discharged pointwise by `eqSwap_of_bothFaithful` (NEITHER operand
-     `accurate`).  The per-swap both-`Faithful` inputs are the reachability oracle
-     `hMSR` — the merge-fold analogue of the update side's `hReach`.  NB: the merge
-     fold starts at the LCA `l`, not `init_st`, so `faithful_at_interleaved_fold`
-     (init-anchored) does NOT transport; `hMSR` is a genuine merge-fold obligation.
-
-   • Reduction of `hThread`.  `branchInv2_of_pieces` splits `BranchInv2` into
-       (hD)  domain (applySeqR l π₀) = survivors l a b,
-       (hB)  single-sided `BranchInv l (applySeqR l π₀)`  — threadable across Ea++Eb
-             by `branchInv_doIns` (fresh ids) + `branchInv_doDel_crossBranch_sub`
-             (step 1) for every `Del`, i.e. reachability-only,
-       (hBE) branch-new-survivor element clause,
-       (hBN) branch-new-survivor ANCHOR clause.
-
-   NOT closed by the Key Lemma — the sharp residual (GAP-1):
-
-   • **(hBN) branch-new survivor anchor coincidence.**  For a survivor `k` with
-     `¬ contains l k` (an `a`-new or `b`-new node), `BranchInv2` demands
-       anc (applySeqR l π₀) k = climb (anc l) (survivors l a b) (birthAnc l a b k),
-     with `birthAnc = anc a k` / `anc b k`.  The subchain-resolution Key Lemma
-     resolves a node's OWN recorded chain to its current stored anchor OVER THE
-     ACTUAL FOLD FOREST — it does NOT reconcile that with a `climb` over the DISTINCT
-     LCA-forest (`anc l`) started at the branch birth-anchor.  Concretely (b-new
-     establishment): at `k`'s `Eb`-`Ins` birth over the combined, `a`-carrying state
-     `s`, the stored anchor `resolve s (anch :: path)` generally DIFFERS from
-     `anc b k = resolve b (anch :: path)` (the combined state already carries `a`'s
-     deletions of `k`'s ancestors), and the two must be shown to `climb` to the same
-     two-sided survivor over `anc l`.  That cross-forest reconciliation is genuinely
-     NEW two-sided content, NOT expressible as a per-event reachability premise, so it
-     is left as the explicit premise `hBN` rather than forced or `sorry`d.
-
-   • (hD)/(hBE) are the minor residue: a domain (OR-set = live-set) induction and a
-     branch-new birth-element preservation — reachability-flavoured, but not yet
-     mechanized here; also left as explicit premises.
-
-   VERDICT.  The Key Lemma DOES unblock the merge side's GAP-2′ (`hThread`'s
-   cross-branch `Del` preservation) and eliminates the free swap oracle.  It does
-   NOT, on its own, close `hThread`: the residual is GAP-1 (hBN, the branch-new
-   survivor cross-forest anchor identity) plus the minor hD/hBE.  This matches — and
-   sharpens — the TwoSided file's own OBSTRUCTION reading (GAP-1 branch-new + GAP-2′),
-   now with GAP-2′ discharged.  It is not a divergence: `merge` and `fold` still agree
-   on branch-new survivors (PBT-confirmed); the gap is the anchor-reconciliation lemma.
-   ═══════════════════════════════════════════════════════════════════════════ -/
 
 end RGAMergeThreadDischarge

@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_GeneralSwap
+import Sal.ConditionedMRDTs.Development.RGA_GeneralSwap
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 
 /-!

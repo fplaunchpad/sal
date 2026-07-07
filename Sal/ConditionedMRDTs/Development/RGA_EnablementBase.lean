@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_FaithfulThreading_Gate
+import Sal.ConditionedMRDTs.Development.RGA_FaithfulThreading_Gate
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
 
 /-!
@@ -56,7 +56,6 @@ set_option maxHeartbeats 1000000
 open Sal.ConditionedMRDTs.RGABubbleWiring
   (recList ChainFaithful ChainFaithfulAux chainFaithful_doIns climbFaithful_of_chain)
 open Sal.ConditionedMRDTs.RGAGeneralSwap (Faithful)
-open Sal.ConditionedMRDTs.RGAConditionedConvergence (chainFaithful_of_accurate)
 open RGAFaithfulThreadingGate (IncompStep IncompFold chainFaithful_incompFold foldDo)
 
 namespace RGAEnablementBase
@@ -124,21 +123,6 @@ theorem fresh_not_mem_recList (s : concrete_st) (w : op_t) (hHist : HistFaithful
 
 /-! ## §3  Generation base (i) -/
 
-/-- **(i) Generation base.**  On a root-free, `id_mono` state, `HistFaithful s w`
-gives `ChainFaithful s (recList w)`.  This is the imported `chainFaithful_of_accurate`
-re-exposed through `HistFaithful`; it is the base `chainFaithful_incompFold` threads. -/
-theorem chainFaithful_of_histFaithful (s : concrete_st) (w : op_t)
-    (hmono : id_mono s) (h0 : contains s 0 = false) (hHist : HistFaithful s w) :
-    ChainFaithful s (recList w) :=
-  chainFaithful_of_accurate s w hmono h0 hHist
-
-/-! ## §4  Reachable-regime clash-`Ins` lemma (the counterexample's positive twin) -/
-
-/-- **Reachable-regime clash-`Ins`.**  In the history-faithful regime an accurate
-fresh `Ins` DOES preserve `ChainFaithful (recList w)` — precisely because the fresh
-clash the Part-1 counterexample needs (`t ∈ recList w`) is excluded by
-`fresh_not_mem_recList`.  The `t ∉ L` premise of `chainFaithful_doIns` is discharged
-by `HistFaithful`; nothing is assumed away. -/
 theorem chainFaithful_doIns_reachable (s : concrete_st) (w : op_t) (t r e a : ℕ)
     (pre : List ℕ) (ht0 : t ≠ 0) (hfresh : contains s t = false)
     (hHist : HistFaithful s w) (hcf : ChainFaithful s (recList w)) :
@@ -193,39 +177,5 @@ before `w`'s swap point, each step of which is `loOnA`-incomparable to `recList 
 (`IncompFold`: a fresh non-clashing `Ins` or a `Faithful` `Del`).  `ChainFaithful
 (recList w)` then holds at the enablement fold, so `w` is `Faithful` there. -/
 
-/-- **(ii) Enablement base — CLOSED (order layer).**  At the enablement fold of `w`,
-`ChainFaithful (recList w)` holds.  Generation base + threading; the `IncompFold` and
-`id_mono`/root-free premises are the reachability facts M2 supplies. -/
-theorem chainFaithful_at_enablement (w : op_t) (s_c : concrete_st) (concurrent : List op_t)
-    (hmono : id_mono s_c) (h0 : contains s_c 0 = false)
-    (hHist : HistFaithful s_c w)
-    (hincomp : IncompFold (recList w) s_c concurrent) :
-    ChainFaithful (foldDo s_c concurrent) (recList w) :=
-  chainFaithful_incompFold (recList w) concurrent s_c hincomp
-    (chainFaithful_of_histFaithful s_c w hmono h0 hHist)
-
-/-- **`w` is `Faithful` at its enablement fold** (Ins form).  Projecting the threaded
-`ChainFaithful` through `climbFaithful_of_chain` gives the top-level `ClimbFaithful`
-that the incomparable swap consumes as `Faithful` for the enabled `Ins w`. -/
-theorem faithful_at_enablement_ins (t r e a : ℕ) (pre : List ℕ)
-    (s_c : concrete_st) (concurrent : List op_t)
-    (hmono : id_mono s_c) (h0 : contains s_c 0 = false)
-    (hHist : HistFaithful s_c (t, r, .Ins e pre a))
-    (h0' : contains (foldDo s_c concurrent) 0 = false)
-    (hincomp : IncompFold (recList (t, r, .Ins e pre a)) s_c concurrent) :
-    Faithful (t, r, .Ins e pre a) (foldDo s_c concurrent) := by
-  have hcf : ChainFaithful (foldDo s_c concurrent) (a :: pre) :=
-    chainFaithful_at_enablement (t, r, .Ins e pre a) s_c concurrent hmono h0 hHist hincomp
-  exact climbFaithful_of_chain (foldDo s_c concurrent) (a :: pre) h0' hcf
-
-/-! ## §6  Axiom audit — kernel-clean, no `sorryAx`, no `native_decide`. -/
-
-#print axioms fresh_not_mem_recList
-#print axioms chainFaithful_of_histFaithful
-#print axioms chainFaithful_doIns_reachable
-#print axioms incompStep_ins_of_hist
-#print axioms clash_recList_excluded
-#print axioms chainFaithful_at_enablement
-#print axioms faithful_at_enablement_ins
 
 end RGAEnablementBase

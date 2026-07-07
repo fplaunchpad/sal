@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeThreadDischarge
+import Sal.ConditionedMRDTs.Development.RGA_MergeThreadDischarge
 
 /-!
 # `BranchInv` from a good branch fold — the start of (B)

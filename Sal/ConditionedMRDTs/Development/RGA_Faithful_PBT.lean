@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BubbleWiring
+import Sal.ConditionedMRDTs.Development.RGA_BubbleWiring
 import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
 
 /-!

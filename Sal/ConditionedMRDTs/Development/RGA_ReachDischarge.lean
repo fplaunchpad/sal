@@ -1,14 +1,15 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_UpdateConvergence_Final
+import Sal.ConditionedMRDTs.Development.RGA_UpdateConvergence_Final
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 import Sal.ConditionedMRDTs.Refutations.G2_Applicability_Aware
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BubbleWiring
+import Sal.ConditionedMRDTs.Development.RGA_BubbleWiring
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_GeneralSwap
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InterleavedThreading
+import Sal.ConditionedMRDTs.Development.RGA_GeneralSwap
+import Sal.ConditionedMRDTs.Development.RGA_InterleavedThreading
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.Development.RGA_SwapRoute_Residuals
 
 /-!
 # Discharging `hReach`: update convergence modulo the RGA generation discipline

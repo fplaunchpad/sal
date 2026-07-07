@@ -150,17 +150,6 @@ def WfOpGenQ : op_t → Prop
   | (t, _, .Ins _ pre a) => t ≠ 0 ∧ ∀ c ∈ a :: pre, c < t
   | (_, _, .Del pre x)   => x ≠ 0 ∧ ∀ c ∈ pre, c < x
 
-/-- `WfOpGenQ` strengthens `WfOpGen` (`x ∉ pre` from irreflexivity of `<`). -/
-theorem wfOpGen_of_genQ (o : op_t) (h : WfOpGenQ o) : WfOpGen o := by
-  obtain ⟨t, r, ao⟩ := o
-  cases ao with
-  | Ins e pre a => exact h.1
-  | Del pre x =>
-    refine ⟨fun hx => ?_, h.1⟩
-    exact absurd (h.2 x hx) (lt_irrefl x)
-
-/-- The `Ins` `WfOpQ` holds at ANY state where the id is merely unstored:
-`resolve` lands in `{0} ∪ (a :: pre)` (`resolve_mem`), all below `t`. -/
 theorem wfOpQ_ins_of_genQ (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
     (hg : WfOpGenQ (t, r, .Ins e pre a)) (hfr : contains s t = false) :
     WfOpQ (t, r, .Ins e pre a) s := by
