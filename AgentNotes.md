@@ -243,14 +243,42 @@ backward via `pairwise_append` (no index arithmetic).
     but all four instance VC bundles re-prove. Only worth it if a
     guarded-adequacy statement is independently wanted.
 
-  **The finish plan under (R):** (1) H-layer re-thread (GenericEqQuotient_H
-  with witness clause `H := CanonFoldOK [] init_st`, GoodConfig3H, raw-≈ final
-  theorem `IsRALinearizable3Eq`); (2) corrected residual chain already fits
-  (drop ρᵤ; union witness ρ₀ ++ π₀); (3) RGA instance re-wire + capstone
-  skeleton3; (4) plumbing (hborn/hReady/hMergeInputs). No remaining open
-  research questions — the criss-cross example is the RGA's last word: raw
-  rehoming semantics is the ONLY sequentially-replayable semantics for merge
-  unions, and the theorem statement must (and now does) say so.
+  **✅ THE RAW-≈ CAPSTONE IS BUILT (commits 26d5707 + fc41f73, kernel-clean).**
+  * `GenericEqQuotient_H.lean` — `IsCanonicalStateEqH` (witness clause = abstract
+    delivery discipline `H`; RGA: `CanonFoldOK [] init_st`), `EqJoinLemma3C_H`,
+    congr + extend (`hHext` explicit).
+  * `GoodConfig3H.lean` — `GoodConfig3S` (structural invariant, standalone step
+    preservations; the unmaintainable guarded canonical clause is gone),
+    `IsCanonicalStateH`, **`IsRALinearizable3Eq`** (the raw-≈ target: every
+    version's class is `qmk` of a representative = raw `do_`-fold of a
+    `lo`-respecting linearization, up to `≈`), the reachability induction, and
+    `RA_linearizable_up_to_eq_H`.
+  * `RGA_Skeleton3.lean` — `rgaJoinH_of_canon` (the H-join with **union witness
+    `ρ₀ ++ π₀` itself**: discipline = `canonFoldOK_concat`, respects = the
+    LCA-first assembly, fold = merge by `eq_of_canonMatch2`) and the capstone
+    **`rga_RA_linearizable_skeleton3` ⟹ `IsRALinearizable3Eq C`**, residual:
+    `hEnum` (K1-shaped; core discharged via `K1_canonFoldOK` ←
+    `genDisc2C_of_born`), `hCanon` (fold half derivable as in Skeleton2's
+    bridge; merge half = hMergeInputs), `hHext` (discipline snoc at applies —
+    engineering), `hBA` (honest premise). Note: `hgenW` is GONE (it only fed
+    the now-deleted guard-transparency).
+
+  **Remaining work (all engineering, zero open research):**
+  1. `hCanon` reduction re-wire (mirror `hCanon_of_leaves2` + Skeleton2's
+     bridge at the Skeleton3 premise chain) + `hMergeInputs` discharge
+     (BranchInv-I4 etc.).
+  2. `hEnum` final wiring: `K1_canonFoldOK` needs `GenDisc2C` + `hids0` +
+     `respects π₀ loOnA` (vis-sort) — thread the honest facts (born accuracy =
+     `hborn`, from `hBA`-level reachability; enrich the invariant or the join
+     premises to carry them to the merge site).
+  3. `hHext` discharge: `canonFoldOK_append` (snoc) + `chainOK_of_accurate` +
+     honest id-bookkeeping (WfOpGenQ + ts-freshness).
+  4. `hBA`/`hborn` from the execution model; hReady-style plumbing.
+  5. README/AgentNotes final update + promote Development→mainline.
+
+  The criss-cross example is the RGA's last word: raw rehoming semantics is
+  the ONLY sequentially-replayable semantics for merge unions, and the theorem
+  statement now says exactly that.
 
 Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
 eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
