@@ -144,11 +144,29 @@ interface.
   invariant) + the LCA/branch disciplines. `hReady` = THREE `EngineReady` legs
   (union leg DERIVED via `canonFoldOK_concat` + `canon_fold` from init).
 
-**Remaining research = discharging K1 + K2** (the corrected hEnum): per-op
-`ChainOK`/`DelOK` establishment for the delta and union enums — LiveChain
-transport from branch runs (LINCHPIN machinery `chainFaithful_at_interleaved_fold`
-is adjacent) + the from-init delete-deferred order (forest-invariant id-rank looks
-viable for acyclicity).
+**✅ K1 DISCHARGED (commits a8d0c98 + f1443a5, kernel-clean).**
+`RGA_K1_DeltaDiscipline.lean` + `RGA_K1_Wiring.lean`:
+`K1_canonFoldOK : … → CanonFoldOK ρ₀ (fold ρ₀) π₀` from **GenDisc2C** (each
+event accurate at its own dependency fold — the engine's own rehome-tolerant
+generation condition; `canonStepOK_of_gen` was the blueprint), the LCA's own
+discipline (`CanonFoldOK [] init ρ₀`, existing noopFeasible engine route),
+`respects π₀ (loOnA …)` (any vis-sort works), and execution-model facts.
+Key move: the engine's `GoodEnum` interface threads the prefix's loOnA-respect
+which the NF-witness ρ₀ can't supply — so every order-sensitive ingredient was
+re-based on a freely-chosen loOnA-respecting ambient enumeration `U` (dep-lists
+carve from `U`; the prefix enters only via `CanonInv` + set-inclusions, exactly
+what `anc_transport`/`chainOK_transport` consume). Plus: `loOnA ⊆ vis` (rc =
+Either), `DepC` irreflexive, no-DepE-edge-into-the-LCA, delta chains point
+backward via `pairwise_append` (no index arithmetic).
+
+**Remaining research:**
+* **GenDisc2C discharge** (task #32): accuracy-at-dependency-fold from
+  born-applicability along the real execution (`hBA`). The one genuine leaf
+  K1 now rests on.
+* **K2**: the from-init union re-enum ρᵤ with `noopFeasible` (its `CanonFoldOK`
+  conjunct follows from `canonFoldOK_of_genDisc` + GenDisc2C already); the open
+  part is the noopFeasible-from-init delete-deferred order (forest-invariant
+  id-rank looks viable for acyclicity).
 
 Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
 eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
