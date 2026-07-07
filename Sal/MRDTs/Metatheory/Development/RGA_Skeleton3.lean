@@ -67,7 +67,7 @@ theorem rgaJoinH_of_canon
         listPermOf ρ₀ (ev₁ ∩ ev₂) → listPermOf ρ₁ ev₁ → listPermOf ρ₂ ev₂ →
         listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) →
         respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
-        CanonFoldOK [] init_st ρ₀ →
+        CanonFoldOK [] init_st ρ₀ → CanonFoldOK [] init_st ρ₁ → CanonFoldOK [] init_st ρ₂ →
         CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ →
         CanonMatch (ρ₀ ++ π₀)
             (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
@@ -95,7 +95,7 @@ theorem rgaJoinH_of_canon
       h₀p h₀r h₀OK h₁p h₁r h₁OK h₂p h₂r h₂OK
   obtain ⟨hCMmerge, hCMfold⟩ :=
     hCanon vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ htr hir hdts hev1 hev2 hcl1 hcl2
-      h₀p h₁p h₂p hπp hπr h₀OK hπOK
+      h₀p h₁p h₂p hπp hπr h₀OK h₁OK h₂OK hπOK
   -- merge = δ-fold, by canonical uniqueness
   have heq1 : eq (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
       (applySeqR (applySeqR init_st ρ₀) π₀) :=
@@ -187,7 +187,7 @@ theorem rga_RA_linearizable_skeleton3
         listPermOf ρ₀ (ev₁ ∩ ev₂) → listPermOf ρ₁ ev₁ → listPermOf ρ₂ ev₂ →
         listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) →
         respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
-        CanonFoldOK [] init_st ρ₀ →
+        CanonFoldOK [] init_st ρ₀ → CanonFoldOK [] init_st ρ₁ → CanonFoldOK [] init_st ρ₂ →
         CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ →
         CanonMatch (ρ₀ ++ π₀)
             (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
