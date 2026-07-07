@@ -275,21 +275,39 @@ backward via `pairwise_append` (no index arithmetic).
     join, and `hEnum`'s premise chain now carries `HonJ vis events` — closing
     the dischargeability gap (K1's `GenDisc2C`/honest inputs now reachable).
 
+  **✅ hMergeInputs GROUND DOWN (commits 4cfad0d + cde7f42, kernel-clean):**
+  * `RGA_MergeCanon_Fix.lean` — **another over-strong premise found and fixed**:
+    `canonMatch_merge_of_inputs`' per-survivor `hbwsurv` (birthAnc = 0 ∨
+    survives) is FALSE in general (criss-cross node 7's birth anchor = LCA node
+    2, dead in the merge). It fires only off the LCA forest, where it IS
+    derivable (`bwsurv_of_wf`, propext only: branch-read anchors are
+    branch-live by `wf` ⟹ branch-born survivors). Corrected glue
+    `canonMatch_merge_of_inputs'`: per-survivor leaf = `CanonBirthBridge` ONLY.
+  * `RGA_Skeleton3_Leaves.lean` (rewritten) — `CanonInv` free at every fold ⟹
+    σ-forest facts (`Hstay`/`h0`/branch `wf`) and the WHOLE `hins_branch`
+    bundle DERIVED (same-id ops identical via `hdts`; a union survivor lives in
+    its inserting branch via CanonInv domain-iffs + the causal algebra).
+    **Skeleton3's `hCanon` ⟸ THREE leaves: `Hdec` + `hcaus` + `hbridge`.**
+
   **Remaining work (all engineering, zero open research):**
-  1. `hEnum` discharge: instantiate `HonJ := rgaHonJ` (same-replica totality ∧
-     `hids0` ∧ born-accuracy/GenDisc2C content); build the synthetic
-     `Emulation.Configuration` from the join's `vis` restricted to events
-     (fields: `vis_src/tgt/causal` from closures+restriction,
-     `timestamps_distinct` from `hdts`, `vis_total_same_replica` from HonJ);
-     π₀ := vis-topological sort of the delta (respects loOnEq ∧ loOnA both,
-     since both ⊆ vis); conclude via `K1_canonFoldOK`.
-  2. `hMergeInputs` discharge — the deep algebra (BranchInv-I4 via
-     `branchInv_of_enum` + set-algebra + membership; tasks #38/#39).
-  3. `hHext` discharge: `canonFoldOK_append` (snoc) + `chainOK_of_accurate` +
-     honest id-bookkeeping (t ∉ payload-ids from WfOpGenQ + ts-freshness).
-  4. `hHon`/`hBA` from the execution model (born accuracy at generation =
-     past-fold accuracy; `genDisc2C_of_born` consumes it).
-  5. README/AgentNotes final update + promote Development→mainline.
+  1. `Hdec` (σ₀' id-monotonicity): fold invariant along ρ₀ from honest payload
+     bounds — needs `id_mono_doIns'`/`id_mono_doDel'` variants (the packaged
+     `mono_alloc`/`accurate` premises are from-init-replica-shaped, over-strong
+     at δ/union folds — same pattern as everything else; payload-bound-only
+     versions suffice: resolve lands in the recorded chain ∪ {0}).
+  2. `hcaus`: pure membership transfer (perms + `hdts`) for 5 clauses; the two
+     `deletedIn → insertedIn` provenance clauses from HonJ (del-target's
+     creator is causally prior ⟹ in the branch by closure).
+  3. `hbridge` — per-survivor `CanonBirthBridge`: THE remaining deep item
+     (`canonBirthBridge_per_survivor` reduces it to the four carriers =
+     branch `LiveChain` (have) + `BranchInv`-I4 (case ii) + set-algebra;
+     tasks #38/#39).
+  4. `hEnum` discharge: `HonJ := rgaHonJ`; synthetic `Emulation.Configuration`
+     from the join's vis restricted to events (`vis_total_same_replica` from
+     HonJ); π₀ := vis-sort of the delta; conclude via `K1_canonFoldOK`.
+  5. `hHext`: `canonFoldOK_append` snoc + `chainOK_of_accurate` + honest ids.
+  6. `hHon`/`hBA` from the execution model.
+  7. README final update + promote Development→mainline.
 
   The criss-cross example is the RGA's last word: raw rehoming semantics is
   the ONLY sequentially-replayable semantics for merge unions, and the theorem
