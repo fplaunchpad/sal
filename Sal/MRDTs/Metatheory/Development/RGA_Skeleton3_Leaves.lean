@@ -72,7 +72,9 @@ theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List op_t)
 the four `CanonMatch`es, the σ-forest facts, the branch `wf`s, and the per-survivor membership —
 is derived from the carried disciplines. -/
 theorem hCanon_of_leaves3
+    (HonJ : (op_t → op_t → Prop) → Set op_t → Prop)
     (hMergeInputs : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
@@ -93,6 +95,7 @@ theorem hCanon_of_leaves3
             CanonBirthBridge (applySeqR init_st ρ₀) (ρ₀ ++ π₀)
                 (birthAnc (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂) t) (a :: p))) :
     ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
@@ -105,11 +108,11 @@ theorem hCanon_of_leaves3
         CanonMatch (ρ₀ ++ π₀)
             (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
           ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR init_st ρ₀) π₀) := by
-  intro vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ htr hir hdts hev1 hev2 hcl1 hcl2 h0p h1p h2p hπp hπr
+  intro vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2 h0p h1p h2p hπp hπr
     h₀OK h₁OK h₂OK hπOK
   obtain ⟨hcm0, hcm1, hcm2, hfold⟩ := hFoldCanon3 ρ₀ ρ₁ ρ₂ π₀ h₀OK h₁OK h₂OK hπOK
   obtain ⟨Hdec, hcaus, hbridge⟩ :=
-    hMergeInputs vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ htr hir hdts hev1 hev2 hcl1 hcl2
+    hMergeInputs vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h0p h1p h2p hπp hπr h₀OK h₁OK h₂OK hπOK
   -- the canonical invariants at the three folds
   have hci0 : CanonInv ρ₀ (applySeqR init_st ρ₀) := canonInv_of_canonFoldOK ρ₀ h₀OK

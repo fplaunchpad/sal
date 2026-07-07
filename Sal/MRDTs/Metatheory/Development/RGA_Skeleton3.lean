@@ -62,6 +62,7 @@ theorem rgaJoinH_of_canon
           respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
           CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀)
     (hCanon : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
@@ -96,7 +97,7 @@ theorem rgaJoinH_of_canon
     hEnum vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h₀p h₀r h₀OK h₁p h₁r h₁OK h₂p h₂r h₂OK
   obtain ⟨hCMmerge, hCMfold⟩ :=
-    hCanon vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ htr hir hdts hev1 hev2 hcl1 hcl2
+    hCanon vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h₀p h₁p h₂p hπp hπr h₀OK h₁OK h₂OK hπOK
   -- merge = δ-fold, by canonical uniqueness
   have heq1 : eq (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
@@ -191,6 +192,7 @@ theorem rga_RA_linearizable_skeleton3
           respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
           CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀)
     (hCanon : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →

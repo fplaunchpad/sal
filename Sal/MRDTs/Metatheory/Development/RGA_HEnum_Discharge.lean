@@ -46,7 +46,9 @@ def rgaHonJ (vis : op_t → op_t → Prop) (events : Set op_t) : Prop :=
   ∃ Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig,
     (∀ a b : op_t, Cfg.vis a b ↔ (vis a b ∧ a ∈ events ∧ b ∈ events)) ∧
     GenDisc2C Cfg events ∧
-    (∀ o ∈ events, o.1 ≠ 0)
+    (∀ o ∈ events, o.1 ≠ 0) ∧
+    (∀ a b : op_t, a ∈ events → b ∈ events → vis a b → a.1 < b.1) ∧
+    (∀ (t r x : ℕ) (p : List ℕ), (t, r, app_op_t.Del p x) ∈ events → x ≠ 0)
 
 /-- **Skeleton 3's `hEnum`, discharged at `HonJ := rgaHonJ`.** -/
 theorem rga_hEnum_discharged :
@@ -69,7 +71,7 @@ theorem rga_hEnum_discharged :
           CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ := by
   intro vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ hHonJ htr hirr hdts hev1 hev2 hcl1 hcl2
     h₀p _h₀r h₀OK h₁p _h₁r _h₁OK h₂p _h₂r _h₂OK
-  obtain ⟨Cfg, hviseq, hGen, hids0⟩ := hHonJ
+  obtain ⟨Cfg, hviseq, hGen, hids0, _hmono, _hdel0⟩ := hHonJ
   -- union members are events
   have hUmem : ∀ x ∈ ev₁ ∪ ev₂, x ∈ events := by
     intro x hx
