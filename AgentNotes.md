@@ -175,10 +175,40 @@ backward via `pairwise_append` (no index arithmetic).
   `K1_canonFoldOK` ← `genDisc2C_of_born` ← born accuracy at past folds —
   which is the execution model's job (generation states ARE past folds;
   hReady-layer plumbing, not research).
-* **K2**: the from-init union re-enum ρᵤ with `noopFeasible` (its `CanonFoldOK`
-  conjunct follows from `canonFoldOK_of_genDisc` + GenDisc2C already); the open
-  part is the noopFeasible-from-init delete-deferred order (forest-invariant
-  id-rank looks viable for acyclicity).
+* **⚠️ K2 REFUTED — and DISSOLVED (2026-07-08, pen-level, crisp).** The from-init
+  `noopFeasible` union enum does NOT exist in general. Counterexample (7 ops,
+  criss-cross rehoming): shared creators build the chain `3→2→1→0`
+  (`iy₁=(1,Ins [] 0)`, `ia₂=(2,Ins [] 1)`, `ia₁=(3,Ins [1] 2)`); replica A runs
+  `z₂=(4,Del [1] 2)` then `o₁=(6,Ins [1] 3)` (records `anc 3 = 1`: post-z₂,
+  1 live); replica B runs `z₁=(5,Del [] 1)` then `o₂=(7,Ins [] 2)` (records
+  `anc 2 = 0`: post-z₁, 2 live). `o₁`'s accuracy forces z₂ effective while 1
+  live (so z₂ before z₁) and 1 still live; `o₂`'s forces z₁ effective while 2
+  live (so z₁ before z₂) and 2 still live — whichever delete goes first dooms
+  the other branch's insert; spending a delete early as a noop forfeits the
+  rehoming its branch's recorded chain requires. **Deep reason: tombstone-free
+  rehoming makes delete-ORDER observable in survivors' stored parents; the two
+  branches observed incompatible orders; no single guarded sequence replays
+  both.** A merged version is NOT re-presentable as an honest delivery — the
+  `IsCanonicalStateEqNF` union clause is unsatisfiable for the RGA, so
+  `EqJoinLemma3C_NF` as stated cannot be discharged (third displaced-difficulty
+  refutation: noopFeasible failed at the LCA-first delta, then at the from-init
+  union; the honest discipline is `CanonFoldOK` everywhere).
+
+  **The dissolution: swap the NF witness clause from `noopFeasible` to the
+  engine-native discipline** (`IsCanonicalStateEqH` with `H ρ :=
+  CanonFoldOK [] init_st ρ` for the RGA; generically a parameterized `H`).
+  Then: (a) **the union witness is `ρ₀ ++ π₀` itself** — `CanonFoldOK` by
+  `canonFoldOK_concat` (K1's output!), `respects loOnEq` by the existing union
+  assembly in `RGA_EqJoin_NF`, fold ≈ merge by the corrected chain — **K2
+  disappears entirely** (hEnumC conjuncts 5–8 deleted); (b) branch witnesses
+  hand K1 `CanonFoldOK [] init ρ₀` directly as a premise (no engine
+  re-derivation); (c) `GoodConfig3NF`'s apply-extension re-proves via
+  `canonFoldOK_append` (snoc) from `qapplicable` (born-accurate ⟹
+  `chainOK_of_accurate`); (d) the final RA-lin conclusion only ever uses the
+  plain `IsCanonicalStateEq` part (`isCanonicalStateEq_of_NF` drops the
+  clause), so the swap is interface-local. Re-thread scope: GenericEqQuotient_NF
+  (witness def) + GoodConfig3NF (invariant + extension) + the corrected
+  residual/assembly/skeleton files (drop ρᵤ, carry `CanonFoldOK`).
 
 Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
 eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
