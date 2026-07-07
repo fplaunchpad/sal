@@ -43,7 +43,7 @@ State-Dependent MRDTs\\[3pt]
 \large with the tombstone-free RGA as its instance --- pen-and-paper proof and
 mechanization map}
 \author{}
-\date{2026-07-04}
+\date{2026-07-04 (revised 2026-07-07: mechanization complete)}
 
 \begin{document}
 \maketitle
@@ -60,7 +60,14 @@ a replicated list in which deletion physically removes an element and re-anchors
 dependents; it discharges every conditioned VC, the hard ones resting on a single invariant
 ($\RVF$ below) that is true by construction. The nine flat production MRDTs discharge the
 same VCs trivially and inherit RA-linearizability nearly for free. Strong eventual
-consistency is a corollary. Each step carries its Lean name and kernel status.
+consistency is a corollary. Each step carries its Lean name and kernel status. \emph{As of
+the revision date the mechanization is complete}: the tombstone-free RGA carries a
+kernel-checked end-to-end theorem --- RA-linearizability up to $\eqobs$ at every reachable
+configuration of the replicated store --- whose sole assumption is per-step \emph{honest
+delivery} (each op generated accurately against a causal fold of the events its replica had
+seen, and delivered born-applicable); everything else, including Lamport clocks and all
+wellformedness of delivered payloads, is structural or derived
+(\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}).
 \end{abstract}
 
 \section{RA-linearizability, and why it must be conditioned}\label{sec:setting}
@@ -308,7 +315,9 @@ live is the Key Lemma on the remaining subchain.
 (\lean{eq\_merge2\_of\_branchInv2}); the anchor-coincidence clause is the single-sided
 $I_4$ (\lean{eq\_merge\_single}, kernel-clean) and, cross-branch, the Key Lemma directly
 (\lean{branchInv\_doDel\_crossBranch}, kernel-clean); order-independence is Lemma~\ref{lem:conv}
-at start state $l$.
+at start state $l$. (In the final assembly this per-id $\mathsf{BranchInv}$ threading is
+itself superseded by the birth-anchor bridges of Section~\ref{sec:actual}, which need no
+invariant threading at all.)
 Both hard VCs (\ref{vc:inv} base, \ref{vc:merge} cross-branch) thus rest on $\RVF$ and the
 Key Lemma --- proved by construction from freshness and permanence.
 \end{proof}
@@ -402,10 +411,66 @@ mechanization forced, each machine-verified:
   real $\dodo$.
 \end{itemize}
 
+\paragraph{The completed assembly.} Everything after the quotient functor was, at the
+first writing of this note, ``bounded assembly.'' Carrying it out surfaced three further
+machine-checked refutations that reshaped the target and the witness discipline; we record
+them because each is a fact about tombstone-free deletion, not about our proof.
+
+\begin{itemize}[nosep]
+  \item \textbf{At a merge union, applicability-tolerant witnesses do not exist.} An
+  LCA-first enumeration pre-applies one branch's anchor-killing deletes before replaying the
+  other branch's inserts, staling their recorded paths --- so even \emph{no-op-feasible}
+  witnesses (each step applicable or a no-op) are unsatisfiable from the initial state
+  (\lean{RGA\_HEnum\_Refutation}). Worse, on a seven-event two-branch execution \emph{no}
+  born-applicable enumeration of the union replays both branches' recorded observations:
+  rehoming makes the \emph{order of concurrent deletes} observable in survivors' stored
+  parents, and the branches observe it differently. Consequently the linearization target
+  itself must be the \emph{raw} $\dodo$-fold, up to $\eqobs$ --- any guarded or
+  feasibility-filtered fold is unsatisfiable at merge unions
+  (\lean{IsRALinearizable3Eq}, \lean{GoodConfig3H.lean}).
+  \item \textbf{The witness discipline is the engine's own, plus payload honesty.} Each
+  version carries, existentially, an enumeration satisfying the canonical engine's per-step
+  discipline (\lean{CanonFoldOK}: fresh nonzero ids, no id reuse, live recorded chains)
+  \emph{and} payload honesty (\lean{HonestPayloads}: delete targets and recorded-chain
+  entries are root-or-inserted). The second clause is forced by a counterexample: the fold
+  discipline alone admits a dead-target delete (a no-op), and a later insert reusing that
+  recorded dead id breaks the no-id-reuse clauses --- honesty of \emph{payloads} is
+  set-level, hence permutation-invariant, and it is exactly what extension at a fresh apply
+  needs (\lean{rga\_hHext\_discharged}). The discipline \emph{joins} at merges with the
+  union witness being the LCA-then-delta concatenation $\rho_0 +\!\!+\, \pi_0$ itself:
+  no reordering, no swaps, anywhere (\lean{rgaJoinH\_of\_canon}).
+  \item \textbf{The generation discipline is derived, not assumed.} Every event is
+  accurate at the fold of its \emph{transitive dependencies} (\lean{GenDisc2C}), provable
+  from \emph{born accuracy} --- the op was generated against a causal fold of the events its
+  replica had seen (\lean{genDisc2C\_of\_born}). Merge canonicity then reduces to three
+  leaves, all discharged: $\sigma_0$ id-monotonicity with \emph{no fold induction} (the
+  stored anchor is $\mathsf{canonAnc}$ of the recorded chain, whose entries are
+  dependencies, which are Lamport-below --- \lean{rga\_Hdec\_discharged}); a per-id causal
+  set-algebra whose only non-trivial clauses are dependency-fold provenance
+  (\lean{rga\_hcaus\_discharged}); and per-survivor \emph{birth-anchor bridges} reducing
+  the merged forest's anchors to record coherence at dependency folds, where the generation
+  discipline makes every recorded chain live
+  (\lean{rga\_hbridge\_discharged}, \lean{hin\_of\_genDisc}).
+\end{itemize}
+
+The residual, quantified once over the execution, is a single per-step assumption
+(\lean{HonestDelivery}): \emph{born accuracy} plus \emph{born-applicable delivery}. It is
+genuinely irreducible --- it is the generation discipline tombstone-freedom forces --- and it
+is also all there is: Lamport clocks, timestamp uniqueness and visibility-support are
+structural fields of the configuration (dishonest-clock executions are unrepresentable);
+nonzero insert ids and nonzero delete targets follow from the delivered op's own
+wellformedness at a representative of its head class; nonzero delete \emph{timestamps} are
+Lamport-derived from the target's insert. The end-to-end theorem
+(\lean{rga\_RA\_linearizable\_honest}, mainline entry point
+\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} in
+\lean{Sal/MRDTs/Metatheory/RGA\_TombstoneFree\_RA\_Lin.lean}) closes
+Proposition~\ref{prop:discharge} and the corollary unconditionally modulo that assumption.
+
 \section{Mechanization status}\label{sec:status}
 
 Kernel-clean means axioms $\subseteq\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}$,
-no \texttt{sorryAx}/\texttt{native\_decide}/\texttt{ofReduceBool}. Status as of this writing.
+no \texttt{sorryAx}/\texttt{native\_decide}/\texttt{ofReduceBool}. Status as of the
+revision date: \emph{every row is proved}.
 
 \begin{center}
 \begin{tabular}{@{}p{0.44\textwidth}p{0.34\textwidth}p{0.14\textwidth}@{}}
@@ -427,28 +492,37 @@ Merge $\eqobs$-congruence on $\Inv$ (VC$_{\mathrm{cong}}$) & \lean{merge\_eq\_co
 $\mathsf{WfOp}$ preservation (accuracy-free) & \lean{rgaInv\_doOp\_fresh} & proved\\
 RGA VC bundle (\lean{EqEquiv},\lean{InvInvVC},update-cong) & \lean{RGA\_VCPackage} & proved\\
 \hline
-Two-sided merge $\Rightarrow$ \lean{CanonBirthBridge} & \lean{eq\_merge\_two\_sided\_of\_foldChain}
-  & proved (mod.\ $\mathsf{hin}$)\\
-$\mathsf{hin}$ (branch-canonical) $\to$ close merge & \lean{RGA\_BranchCanon} & in mechanization\\
-$\mathsf{WfOpReachable}$ for the RGA & \lean{RGA\_WfOpReachable} & in mechanization\\
-$\mathsf{EqJoinLemma3C}$ assembly $+$ bundle $\to$ RGA RA-lin & --- & awaits the two above\\
-Flat MRDTs (MVR, AW-PQ) via identity quotient & --- & after the framework\\
+Raw-$\eqobs$ target + H-witness layer & \lean{IsRALinearizable3Eq},
+  \lean{RA\_linearizable\_up\_to\_eq\_H} & proved\\
+H-join (union witness $\rho_0 +\!\!+\, \pi_0$) & \lean{rgaJoinH\_of\_canon} & proved\\
+Generation discipline from born accuracy & \lean{genDisc2C\_of\_born} & proved\\
+Delta enumeration ($\mathsf{hEnum}$, K1) & \lean{rga\_hEnum\_discharged} & proved\\
+Merge-canonicity bundle ($\mathsf{Hdec}$, $\mathsf{hcaus}$, $\mathsf{hbridge}$) &
+  \lean{rga\_hMergeInputs\_discharged} & proved\\
+Record coherence at dependency folds & \lean{hin\_of\_genDisc} & proved\\
+Discipline extension at applies ($\mathsf{hHext}$) & \lean{rga\_hHext\_discharged} & proved\\
+Honest residual ($\mathsf{hHon}$, $\mathsf{hBA}$ from \lean{HonestDelivery}) &
+  \lean{rga\_hHon\_discharged}, \lean{honCore\_of\_reach} & proved\\
+\textbf{End-to-end RGA theorem} & \lean{rga\_RA\_linearizable\_honest},
+  \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} & \textbf{proved}\\
+\hline
+Flat MRDTs (MVR, AW-PQ) via identity quotient & --- & future work\\
 \hline
 \end{tabular}
 \end{center}
 
-\paragraph{Reading.} The two genuinely hard problems --- convergence of the tombstone-free RGA
-under rehoming, and making the metatheorem generic over $\eqobs$ --- are both \emph{proved and
-kernel-clean}: the first by canonical-state characterization (after the swap route was refuted
-twice), the second by the $\eqobs$-quotient functor \lean{RA\_linearizable\_up\_to\_eq}. No open
-mathematical question remains and no semantic distortion remains (the theorem is over the real
-$\dodo$). The residual is bounded assembly over verified lemmas: discharge $\mathsf{WfOpReachable}$
-(from monotone ids and the recorded-path structure), close the merge $\mathsf{hin}$ (a
-branch-canonical induction, the update technique re-run single-sided), assemble $\mathsf{EqJoinLemma3C}$
-from Lemma~\ref{lem:canon} plus the merge bridge, and bundle the five VCs into
-$\mathsf{RA\_linearizable\_up\_to\_eq}$ to obtain the RGA instance. Property-based testing
-corroborates every step (600 merge-vs-fold triples through the hard corners including
-cross-branch anchor and shared delete, zero counterexamples). The flat MRDTs then discharge the
-same five VCs trivially ($\eqobs$ is $=$, the quotient is the identity) and inherit
-RA-linearizability from the same theorem.
+\paragraph{Reading.} The chain is closed. The two genuinely hard problems --- convergence
+of the tombstone-free RGA under rehoming, and making the metatheorem generic over $\eqobs$ ---
+are proved by canonical-state characterization (after the swap route was refuted twice) and by
+the $\eqobs$-quotient functor; the assembly that this note's first version listed as residual
+is done, and doing it forced the further findings recorded above (the raw-$\eqobs$ target,
+payload honesty, the birth-anchor bridges). The theorem is over the real $\dodo$, at every
+reachable configuration, and its entire trust statement is one per-step assumption ---
+\lean{HonestDelivery}: ops are generated accurately against a causally-delivered state and
+delivered born-applicable. Property-based testing had corroborated every step in advance (600
+merge-vs-fold triples through the hard corners including cross-branch anchor and shared delete,
+zero counterexamples); the kernel now certifies them. Remaining future work is optional
+breadth, not depth: route the flat MRDTs (MVR, AW-PQ) through the same five VCs with the
+identity quotient, and give the RGA an $\eqobs$-collapsing ``eq variant'' whose observational
+equivalence is structural equality.
 \end{document}
