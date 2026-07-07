@@ -96,19 +96,54 @@ cannot hit a downstream type mismatch. The skeleton takes 7 arguments:
 
 Status legend: ✅ done · 🟡 mechanical / close · 🔴 open.
 
-## Target 1 — `hEnum` (the δ-enum) — the research piece, in progress
+## Target 1 — `hEnum` (the δ-enum) — ⚠️ REFUTED AS STATED (2026-07-07); needs re-phrasing
 
 Produce `π₀` enumerating the delta `D = (ev₁∪ev₂)\(ev₁∩ev₂)` with `listPermOf`,
 `respects loOnEq`, and `noopFeasible` from the LCA fold `applySeqR init_st ρ₀`.
 This is the only genuinely novel obligation.
 
-Research status: **δ-A is conceptually resolved.** `RGAM.rc = fun _ _ => Either`,
-so `loOnEq` collapses to a purely causal order (clause (B)'s `rc = Fst_then_snd`
-is unsatisfiable) — `loOnEq ⊆ vis`, no concurrent tiebreak. The δ-enum exists;
-its noopFeasibility goes through **visibility, not commutation** (an insert in a
-noopFeasible branch never causally follows deletion of its own anchor). The
-eq-commutation route is a **dead end** (the `doW` guard `WfOpA = WfOpQ ∧ accurate`
-includes accuracy, and a `Del` can reparent an insert into/out of accuracy).
+**⚠️ REFUTATION (commit 7a7ff9c, `RGA_HEnum_Refutation.lean`, kernel-clean):
+`hEnum` as typed in the skeleton is FALSE.** Counterexample: `insOpE` creates
+node 1; `delOpE ∈ LCA` deletes it; `insOnX ∈ delta` is anchored ON node 1 and
+CONCURRENT with `delOpE` (branch 1 ran `insOnX` first — `ρ₁ = [insOpE, insOnX,
+delOpE]` is noopFeasible). Every hEnum premise holds; the forced `π₀ = [insOnX]`
+is neither accurate at `σ₀` (anchor dead) nor a no-op (writes id 3). The
+LCA-first SHAPE `ρ₀ ++ π₀` pre-applies LCA deletes concurrent with delta
+inserts; no ordering freedom *within* π₀ can fix that. A `_guardSlot` partial
+application proves the refuted statement is the skeleton's slot verbatim.
+
+The RDT itself is fine (`raw_fold_rehomes`): `do_` rehomes via the carried path,
+`merge` reproduces it via `climb`. What is false is the noopFeasible/accuracy
+BOOKKEEPING at the delta fold. Layer resolution: **update layer (from-init
+branch folds) → applicable+noopFeasible is the right condition; merge delta fold
+(from σ₀) → rehome-correctness (`Faithful`/`ClimbFaithful`, GenDisc-like) is the
+right condition** — accuracy is provably wrong there.
+
+**Fix analysis.** The merge half of `hCanon_of_leaves` consumes only the three
+BRANCH CanonMatch facts; the union CanonMatch exists solely for
+`merge ≈ fold-from-σ₀`, and is plausibly TRUE in the counterexample — only the
+engine's noopFeasible ROUTE to it is unachievable. Both fix options need the
+same math (Faithful-at-prefix for delta ops at LCA-first prefixes):
+* **(B, recommended)** re-base the δ-fold obligation from `noopFeasible` to
+  `Faithful`/`ChainFaithful` and generalize the engine's per-op premise
+  (`ChainOK`-from-`Faithful` instead of from-`accurate`). Rides the completed
+  LINCHPIN infrastructure (`chainFaithful_at_interleaved_fold`,
+  `RGA_InterleavedThreading`). Gate: probe `chainOK_of_accurate_ins` → does it
+  extend to Faithful (rehomed anchors)?
+* **(A)** keep the engine, produce the union CanonMatch from a from-init enum
+  (noopFeasible from init IS achievable — the counterexample's
+  `[insOpE, insOnX, delOpE]`), transport to the LCA-first fold — but the
+  transport needs the same Faithful-based swap machinery
+  (`general_swap_bothFaithful`), so it smuggles B's math in anyway.
+
+Still-valid pieces: `loOnEq` causal collapse (rc=Either ⟹ `loOnEq ⊆ vis`), the
+eq-commutation dead end, δ-B order existence, all `RGA_FoldMembership` /
+`RGA_NoopFeasible_Accurate` preservation lemmas (they apply to the from-init /
+branch layer and to any Faithful re-base).
+
+Sub-task ledger (⚠️ pre-refutation framing — C2–C5 were the accuracy-based plan;
+under the Faithful re-base the establishment/order questions recur in Faithful
+form, with C1's preservation lemmas reusable):
 
 - ✅ **A — acyclicity / loOnEq collapse.** `RGA_LoOnEq_Causal.lean`
   (`loOnEq_causal_iff`, `loOnEq_imp_vis`, `not_loOnEq_of_not_vis`,
