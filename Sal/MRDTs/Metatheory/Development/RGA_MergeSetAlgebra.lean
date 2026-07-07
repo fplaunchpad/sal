@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.RGA_CanonMatch_Reachable
+import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonMatch_Reachable
 
 /-!
 # Merge set-algebra — `insertedIn`/`deletedIn`/`survP` monotonicity

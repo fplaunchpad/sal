@@ -1,5 +1,5 @@
 import Sal.MRDTs.Metatheory.MRDT_Instances
-import Sal.MRDTs.Metatheory.Development.JoinLemma3C
+import Sal.MRDTs.Metatheory.Conditioned.JoinLemma3C
 
 /-!
 # The full-closure Join Lemma via the wider `AlmostClosed` induction class

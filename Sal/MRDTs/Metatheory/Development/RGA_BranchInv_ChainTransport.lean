@@ -1,5 +1,5 @@
 import Sal.MRDTs.Metatheory.Development.RGA_BirthBridge_HRc
-import Sal.MRDTs.Metatheory.Development.RGA_MergeBranchNew
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeBranchNew
 
 /-!
 # `BranchInv` chain transport — `hFiltEq`'s engine

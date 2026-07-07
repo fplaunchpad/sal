@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.RGA_Honest_Residual
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Honest_Residual
 
 /-!
 # RGA (tombstone-free) — RA-linearizability up to observational equivalence
@@ -15,10 +15,10 @@ only correct against states that reflect the op's causal past — see
 result here is instead a DIRECT end-to-end theorem through the applicability-conditioned
 metatheory:
 
-* **Target** (`IsRALinearizable3Eq`, `Development/GoodConfig3H.lean`): every version of every
+* **Target** (`IsRALinearizable3Eq`, `Conditioned/GoodConfig3H.lean`): every version of every
   reachable configuration is the class of a representative that is the raw `do_`-fold of a
   `lo`-respecting linearization of its events, up to `≈`.
-* **Assumption** (`HonestDelivery`, `Development/RGA_Honest_Residual.lean`) — per apply step:
+* **Assumption** (`HonestDelivery`, `Conditioned/RGA_Honest_Residual.lean`) — per apply step:
   1. *born accuracy* — the delivered op was generated accurately against a causal fold of the
      events its replica had seen (how an RGA client actually works: it reads its replica's
      state).  This is the generation discipline forced by tombstone-freedom, and it is the
@@ -30,21 +30,21 @@ metatheory:
   delete targets are derived from the delivered op's own wellformedness.
 
 **Proof architecture** (all kernel-clean, 0 `sorry`, axioms ⊆ {`propext`, `Classical.choice`,
-`Quot.sound`}; the chain lives under [`Development/`](Development), culminating in):
+`Quot.sound`}; the chain lives under [`Conditioned/`](Conditioned), culminating in):
 
-* `Development/GenericEqQuotient*.lean`, `GoodConfig3H.lean` — the `D ↦ D≈` quotient functor,
+* `Conditioned/GenericEqQuotient*.lean`, `GoodConfig3H.lean` — the `D ↦ D≈` quotient functor,
   the H-disciplined canonical-witness layer, the raw-`≈` reachability induction;
-* `Development/RGA_CanonConvergence.lean`, `RGA_CanonFoldOK.lean` — the RGA's canonical-state
+* `Conditioned/RGA_CanonConvergence.lean`, `RGA_CanonFoldOK.lean` — the RGA's canonical-state
   engine (`CanonInv`/`CanonMatch`/`canon_fold`) and the per-event generation discipline
   (`GenDisc2C`, discharged from born accuracy);
-* `Development/RGA_Skeleton3.lean` + the discharge files (`RGA_HEnum_Discharge`,
+* `Conditioned/RGA_Skeleton3.lean` + the discharge files (`RGA_HEnum_Discharge`,
   `RGA_HcausHdec_Discharge`, `RGA_Hbridge_Discharge`, `RGA_HHext_Discharge`) — the capstone
   skeleton and the discharged leaves (delta enumeration, merge-canonicity bundle, discipline
   extension);
-* `Development/RGA_Final_Assembly.lean` — `rga_RA_linearizable_final` (explicit residual form:
+* `Conditioned/RGA_Final_Assembly.lean` — `rga_RA_linearizable_final` (explicit residual form:
   take `hHon`/`hBA` as premises instead of `HonestDelivery`, e.g. to substitute a different
   execution model);
-* `Development/RGA_Honest_Residual.lean` — the residual reduced to `HonestDelivery`.
+* `Conditioned/RGA_Honest_Residual.lean` — the residual reduced to `HonestDelivery`.
 -/
 
 namespace Sal.Metatheory

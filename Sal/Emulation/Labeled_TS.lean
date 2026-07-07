@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.Emulation.Labeled_TS
+import Sal.MRDTs.Metatheory.Conditioned.Emulation.Labeled_TS
 
 /-!
 # Forwarding stub — content moved

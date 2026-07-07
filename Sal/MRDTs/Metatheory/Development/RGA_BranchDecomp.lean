@@ -1,5 +1,5 @@
 import Sal.MRDTs.Metatheory.Development.RGA_BranchInv_Fold
-import Sal.MRDTs.Metatheory.Development.RGA_NoopFeasible_CanonFold
+import Sal.MRDTs.Metatheory.Conditioned.RGA_NoopFeasible_CanonFold
 
 /-!
 # Branch-decomposition — (B) piece (2), and the full `BranchInv` reduction

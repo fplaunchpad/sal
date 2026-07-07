@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.ConditionedConvergence
+import Sal.MRDTs.Metatheory.Conditioned.ConditionedConvergence
 
 /-!
 # Task #10 (the final gate): does `interleavingFeasible` hold for the tombstone-free RGA?

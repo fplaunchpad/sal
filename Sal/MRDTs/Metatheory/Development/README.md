@@ -4,14 +4,15 @@ These are **findings and history, not junk**: every file here either forced
 a design decision in the canonical development one level up, or documents
 how it was reached.
 
-**The conditioned-metatheory chain is live, not historical**: the
-tombstone-free RGA's end-to-end RA-linearizability (up to observational
-`≈`) is proved by the chain culminating in `RGA_Honest_Residual.lean`
-(quotient functor `GenericEqQuotient*.lean` → H-layer `GoodConfig3H.lean` →
-canonical engine `RGA_CanonConvergence.lean`/`RGA_CanonFoldOK.lean` →
-capstone `RGA_Skeleton3.lean` + the `RGA_*_Discharge.lean` leaves →
-`RGA_Final_Assembly.lean` → `RGA_Honest_Residual.lean`), promoted at
+**The conditioned-metatheory chain has been promoted out of this
+directory**: the generic framework and the tombstone-free RGA's end-to-end
+chain (quotient functor → H-layer → canonical engine → capstone + leaves →
+honest residual) now live in [`../Conditioned/`](../Conditioned/), with the
+mainline entry point at
 [`../RGA_TombstoneFree_RA_Lin.lean`](../RGA_TombstoneFree_RA_Lin.lean).
+What remains here is the research record; files here may import
+`Conditioned/`, never the reverse. (A few probe-flavored files moved with
+the chain because load-bearing definitions live in them.)
 
 - [`MRDT_METATHEORY_DRAFT.md`](MRDT_METATHEORY_DRAFT.md) — the findings
   journal **T0–T10.7**: the LCA-lemma gap analysis, the ternary defeater,

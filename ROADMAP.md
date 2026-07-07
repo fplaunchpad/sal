@@ -83,7 +83,7 @@ proves the tombstone-free RGA **RA-linearizable up to observational `≈`**
 at every reachable configuration, from a single honest-delivery assumption
 (born accuracy + applicable delivery), kernel-clean. Mainline entry point:
 [`Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean`](Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean);
-the full chain lives under `Sal/MRDTs/Metatheory/Development/`. Still open
+the full chain lives under `Sal/MRDTs/Metatheory/Conditioned/`. Still open
 elsewhere: (b″)/(b″₃) and the route-reunification question (Metatheory
 READMEs).
 

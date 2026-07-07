@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.RGA_MergeThreadDischarge
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeThreadDischarge
 
 /-!
 # `BranchInv` from a good branch fold — the start of (B)

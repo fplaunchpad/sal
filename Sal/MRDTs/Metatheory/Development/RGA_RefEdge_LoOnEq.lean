@@ -1,5 +1,5 @@
-import Sal.MRDTs.Metatheory.Development.RGA_Instance
-import Sal.MRDTs.Metatheory.Development.BornApplicable_Guard
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance
+import Sal.MRDTs.Metatheory.Conditioned.BornApplicable_Guard
 import Sal.MRDTs.Metatheory.Development.RGA_RefEdge_FromAccurate
 
 /-!

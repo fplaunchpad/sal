@@ -5,9 +5,11 @@ version DAG — the setting of the Neem paper's Theorem 2, arXiv:2502.19967 /
 OOPSLA 2025), built on the corrected binary theory of
 [`Sal/CRDTs/Metatheory/`](../../CRDTs/Metatheory/). Everything below is
 0-sorry and kernel-checked (axioms: `propext`, `Classical.choice`,
-`Quot.sound`). The full research record (findings T0–T10.7, planning docs,
-the historical peel route, the impossibility results) is in
-[`Development/`](Development/).
+`Quot.sound`). The conditioned framework and the tombstone-free-RGA chain live in
+[`Conditioned/`](Conditioned/); the research record (findings T0–T10.7,
+planning docs, the historical peel route, the impossibility results,
+refutation probes) is in [`Development/`](Development/), which may import
+`Conditioned/` but never the reverse.
 
 **The signature — one framework.** An MRDT presents the *conditioned*
 signature (`ConditionedMRDTSig`, [`MRDTSig.lean`](MRDTSig.lean))
@@ -15,7 +17,7 @@ signature (`ConditionedMRDTSig`, [`MRDTSig.lean`](MRDTSig.lean))
     ⟨ Σ, σ₀, do, mergeL, rc, Inv, applicable ⟩
 
 together with an observational equivalence `≈` on states (`EqEquiv`,
-[`Development/GenericEqQuotient.lean`](Development/GenericEqQuotient.lean)):
+[`Conditioned/GenericEqQuotient.lean`](Conditioned/GenericEqQuotient.lean)):
 a state space with initial state, the update `do`, the three-way merge
 `mergeL l a b` (LCA first), the conflict-resolution policy `rc` for
 concurrent non-commuting pairs, a state invariant `Inv` (a shape
@@ -55,7 +57,7 @@ This single definition has two mechanized renderings: at the flat
 specialization `≈` is `=` and it is `IsRALinearizable3`
 ([`Adequacy.lean`](Adequacy.lean)); in general the store holds `≈`-classes
 and it is `IsRALinearizable3Eq`
-([`Development/GoodConfig3H.lean`](Development/GoodConfig3H.lean)), with
+([`Conditioned/GoodConfig3H.lean`](Conditioned/GoodConfig3H.lean)), with
 the *raw* `do`-fold as witness. The **canonical state** `σ(E)` is that
 fold, well-defined (up to `≈`) because the theory forces all such folds of
 `E` to agree.
@@ -147,11 +149,11 @@ over *any* `ConditionedMRDTSig` with an `EqEquiv`, on the same `Step3`
 LTS: the **`≈`-quotient functor** `D ↦ D≈` builds the datatype whose states
 are `≈`-classes of `Inv`-states, with update, merge and `applicable`
 descending by congruence
-([`Development/GenericEqQuotient.lean`](Development/GenericEqQuotient.lean));
+([`Conditioned/GenericEqQuotient.lean`](Conditioned/GenericEqQuotient.lean));
 on top, a **witness-disciplined reachability layer** carries, per version,
 an enumeration witness for the general definition above, maintained at
 applies and joined at merges (`RA_linearizable_up_to_eq_H`,
-[`Development/GoodConfig3H.lean`](Development/GoodConfig3H.lean)). The
+[`Conditioned/GoodConfig3H.lean`](Conditioned/GoodConfig3H.lean)). The
 datatype's obligations, replacing the eight flat VCs: `≈` is an equivalence
 (`EqEquiv`), `Inv` is preserved on wellformed ops (`InvPres`),
 update/merge/query are `≈`-congruent on `Inv` (`CongVC`, `InvInvVC`), and
@@ -196,7 +198,7 @@ derived: Lamport clocks and timestamp uniqueness are `Configuration`
 fields, and nonzero ids and nonzero delete targets follow from the
 delivered op's own wellformedness. The full chain (quotient functor,
 witness layer, canonical engine, the discharged merge bundle, the residual
-reduction) is kernel-clean under [`Development/`](Development/), topped by
+reduction) is kernel-clean under [`Conditioned/`](Conditioned/), topped by
 `RGA_Honest_Residual.lean`; an explicit-residual form
 (`rga_RA_linearizable_final`, taking the two reachability-level premises
 `hHon`/`hBA` directly) is available for substituting a different execution

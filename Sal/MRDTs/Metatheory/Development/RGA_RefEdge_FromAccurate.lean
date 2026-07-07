@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.RGA_NoopFeasible_CanonFold
+import Sal.MRDTs.Metatheory.Conditioned.RGA_NoopFeasible_CanonFold
 
 /-!
 # `RefEdge` from accuracy — the reference-freshness the engine needs, without a config primitive

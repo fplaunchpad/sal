@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.RGA_NoopFeasible_CanonFold
+import Sal.MRDTs.Metatheory.Conditioned.RGA_NoopFeasible_CanonFold
 
 /-!
 # Fold membership — a live node stays live absent a delete of it

@@ -1,5 +1,5 @@
 import Sal.MRDTs.Metatheory.Development.RGA_SimulInduction
-import Sal.MRDTs.Metatheory.Development.RGA_Faithful_PBT
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Faithful_PBT
 
 /-!
 # Rehoming-aware simultaneous induction (attempt 2): the in-place Faith step

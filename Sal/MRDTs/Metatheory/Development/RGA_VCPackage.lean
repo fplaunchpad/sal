@@ -1,6 +1,6 @@
-import Sal.MRDTs.Metatheory.Development.GenericEqQuotient
-import Sal.MRDTs.Metatheory.Development.RGA_EqQuotient
-import Sal.MRDTs.Metatheory.Development.G2_Transport_Probe
+import Sal.MRDTs.Metatheory.Conditioned.GenericEqQuotient
+import Sal.MRDTs.Metatheory.Conditioned.RGA_EqQuotient
+import Sal.MRDTs.Metatheory.Conditioned.G2_Transport_Probe
 
 /-!
 # Packaging the RGA's *easy* conditioned VCs for `RA_linearizable_up_to_eq`

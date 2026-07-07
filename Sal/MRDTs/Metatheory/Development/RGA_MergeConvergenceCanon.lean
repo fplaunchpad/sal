@@ -1,5 +1,5 @@
-import Sal.MRDTs.Metatheory.Development.RGA_ConvergenceEq
-import Sal.MRDTs.Metatheory.Development.RGA_MergeLinearization_TwoSided
+import Sal.MRDTs.Metatheory.Conditioned.RGA_ConvergenceEq
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeLinearization_TwoSided
 
 /-!
 # General-start canonical-state convergence, and the swap-oracle-free merge bridge

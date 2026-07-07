@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Development.ConditionedContract
+import Sal.MRDTs.Metatheory.Conditioned.ConditionedContract
 
 /-!
 # Routing the ENTIRE discharged catalogue through the closure-indexed contract
