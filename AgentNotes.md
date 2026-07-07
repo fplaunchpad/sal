@@ -160,29 +160,21 @@ Either), `DepC` irreflexive, no-DepE-edge-into-the-LCA, delta chains point
 backward via `pairwise_append` (no index arithmetic).
 
 **Remaining research:**
-* **GenDisc2C discharge** (task #32): accuracy-at-dependency-fold from
-  born-applicability. The one genuine leaf K1 now rests on.
-  **Design settled + bricks proven (commit ea898f1, `RGA_GenDisc_Peel.lean`,
-  kernel-clean):** born-applicability gives accuracy at the fold of the FULL
-  causal past; a past-op with no `loOnA` edge into `o` is BY DEFINITION
-  pointwise invisible to `o`'s applicability (`nondep_not_appliesDependsOn`),
-  so non-dependencies **peel pointwise off the end** of a deps-first past enum
-  (`applicable_peel_suffix` — no state reasoning). The reorder to deps-first is
-  engine convergence on the past set. Structural gifts: `loOnA` is ev-free for
-  the RGA (`loOnA_ev_free`, rc=Either), the causal past is loOnA-closed
-  (`goodEnum_of_past_perm`), and `IsDepPreC` transports between `E` and
-  `past(o)` (`isDepPreC_of_restrict`) — so the strong induction can call the
-  EXISTING `canonFoldOK_of_gen` at `E' := past(o)` verbatim.
-  **Remaining assembly (the centerpiece):** strong induction on `|past(o)|`
-  (well-founded: `past(z) ⊊ past(o)` for `z ∈ past(o)`): (1) hborn gives
-  `accurate o (fold π_o)` at a replica-order past enum; (2) IH + transport ⟹
-  `GenDisc2C Cfg (past o)` ⟹ `canonFoldOK_of_gen` disciplines both `π_o` and a
-  deps-first enum `d ++ N` (cross-edges N→d impossible: they'd make the source
-  a dep); (3) `RGA_update_convergence_canon` ⟹ folds eq; (4) transport
-  applicable by `accurate_eq_iff`/`fresh_ts_eq_iff` (`RGA_EqQuotient:261/275`);
-  (5) peel `N` ⟹ `applicable o (fold d)` ⟹ accurate. Plus small pieces:
-  fresh-at-past-fold (id-uniqueness), filtered-length measure for the
-  induction.
+* **✅ GenDisc2C DISCHARGED (task #32; commits ea898f1 + 5a0c123, kernel-clean).**
+  `RGA_GenDisc_Peel.lean` (bricks) + `RGA_GenDisc_Assembly.lean` (the strong
+  induction): **`genDisc2C_of_born`** — born accuracy (each event accurate at
+  SOME causally-ordered enum of its full past — the honest generation content)
+  + id-uniqueness + nonzero ids + strict vis ⟹ `GenDisc2C Cfg E`. Mechanism:
+  a past-op with no `loOnA` edge into `o` is BY DEFINITION pointwise invisible
+  to `o`'s applicability, so non-deps peel off the end of a deps-first past
+  enum with no state reasoning (`applicable_peel_suffix`); the reorder is
+  engine convergence at `past(o)` (free relativization: `loOnA` ev-free,
+  past loOnA-closed, `isDepPreC_of_restrict`); induction measured by a
+  filtered listing (`msr_lt_of_mem` via `subperm_of_subset`).
+  **K1's chain is now fully closed down to `hborn`**: hEnumC-conj-4 ←
+  `K1_canonFoldOK` ← `genDisc2C_of_born` ← born accuracy at past folds —
+  which is the execution model's job (generation states ARE past folds;
+  hReady-layer plumbing, not research).
 * **K2**: the from-init union re-enum ρᵤ with `noopFeasible` (its `CanonFoldOK`
   conjunct follows from `canonFoldOK_of_genDisc` + GenDisc2C already); the open
   part is the noopFeasible-from-init delete-deferred order (forest-invariant
