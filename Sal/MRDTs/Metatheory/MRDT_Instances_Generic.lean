@@ -179,6 +179,21 @@ theorem Peritext_ra_linearizable3_eq
       (Sal.Metatheory.cdVC3_of_all_comm Sal.Metatheory.Peritext_coreVCs3
         Sal.Metatheory.Peritext_all_comm) trivial)) C hReach
 
+/-- **Multi-Valued Register over the generic framework** (feasible class,
+all-commuting — the T11.3 discharge). -/
+theorem MVR_ra_linearizable3_eq
+    (C : Configuration (QSig (eqOfEq Sal.Metatheory.MVR) (WTop Sal.Metatheory.MVR)
+      (invPresTop fun _ => trivial) (congVCEq Sal.Metatheory.MVR)
+      (invInvVCTop Sal.Metatheory.MVR)))
+    (hReach : (labeledTS3 _).ReachableFrom (initConfig _ trivial) C) :
+    IsRALinearizable3Eq (eqOfEq Sal.Metatheory.MVR) (WTop Sal.Metatheory.MVR)
+      (invPresTop fun _ => trivial) (congVCEq Sal.Metatheory.MVR)
+      (invInvVCTop Sal.Metatheory.MVR) C :=
+  flat_ra_linearizable3_eq (fun _ => trivial) (fun _ _ => trivial)
+    (contractJoinFull (ConditionedContract.ofVCs Sal.Metatheory.MVR
+      Sal.Metatheory.MVR_coreVCs3CD Sal.Metatheory.MVR_feasibleDeltaVCs3
+      Sal.Metatheory.MVR_cdVC3 trivial)) C hReach
+
 /-! ## Axiom audit -/
 
 #print axioms ORSet_ra_linearizable3_eq
@@ -190,5 +205,6 @@ theorem Peritext_ra_linearizable3_eq
 #print axioms PN_ra_linearizable3_eq
 #print axioms RGAM_ra_linearizable3_eq
 #print axioms Peritext_ra_linearizable3_eq
+#print axioms MVR_ra_linearizable3_eq
 
 end Sal.Metatheory.MRDTInstancesGeneric
