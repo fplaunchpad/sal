@@ -345,12 +345,28 @@ backward via `pairwise_append` (no index arithmetic).
      `survB F`-filters coincide. This is BranchInv-I4's content restated
      directly on `CanonInv`'s LiveChain — likely SIMPLER than the old
      `branchInv_of_enum` threading (both routes recorded; pick at build time).
-  4. `hEnum` discharge: `HonJ := rgaHonJ`; synthetic `Emulation.Configuration`
-     from the join's vis restricted to events (`vis_total_same_replica` from
-     HonJ); π₀ := vis-sort of the delta; conclude via `K1_canonFoldOK`.
+  4. **✅ hEnum DISCHARGED (commit 5cf1f37, `RGA_HEnum_Discharge.lean`,
+     kernel-clean, first-try).** `rgaHonJ vis events := ∃ Cfg,
+     (Cfg.vis ↔ vis restricted-to-events) ∧ GenDisc2C Cfg events ∧ hids0` —
+     the configuration is EXISTENTIAL, and at a real reachable config the
+     witness is `C.core` ITSELF (`vis_src`/`vis_tgt` give the restriction) —
+     **no synthetic configuration is ever built**. Discharge: branchwise delta
+     listing (disjoint filters) + restricted-vis topological sort +
+     `K1_canonFoldOK` with `GenDisc2C` restricted events→union via
+     `isDepPreC_of_restrict`.
   5. `hHext`: `canonFoldOK_append` snoc + `chainOK_of_accurate` + honest ids.
-  6. `hHon`/`hBA` from the execution model.
-  7. README final update + promote Development→mainline.
+  6. `hHon`/`hBA` from the execution model (`hHon` = `genDisc2C_of_born` at
+     the real core + the Cfg-iff, which is `vis_src`/`vis_tgt`).
+  7. `hcaus` note: the provenance clauses (`deletedIn → insertedIn`) derive
+     from GenDisc2C at the del's dep-fold (accuracy ⟹ target live ⟹ creator
+     among deps ⟹ in-branch by closure) — EXCEPT the degenerate del-of-root
+     (`Del _ 0` is born-accurate vacuously); honest events exclude it via
+     WfOpQ (`resolve pre ≠ x` fails at x=0), so **rgaHonJ needs a WfOpQ-ish
+     clause** (dels have nonzero, provenanced targets) — task #36's content
+     surfaces here. Then Hdec (payload-bound id_mono fold) + the hbridge
+     assembly (hsplit/hpreDead from home LiveChain + `hin_of_genDisc` +
+     `canonBirthBridge_via_branchCanon`) complete hMergeInputs.
+  8. README final update + promote Development→mainline.
 
   The criss-cross example is the RGA's last word: raw rehoming semantics is
   the ONLY sequentially-replayable semantics for merge unions, and the theorem
