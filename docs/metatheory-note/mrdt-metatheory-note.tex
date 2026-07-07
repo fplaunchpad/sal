@@ -44,7 +44,7 @@
 \large a mechanized, corrected soundness metatheory for RA-linearizability
 under three-way merge, with nine production data types discharged}
 \author{Sal metatheory note\\ \small FP Launchpad, IIT Madras}
-\date{July 3, 2026}
+\date{July 3, 2026 (revised July 7, 2026)}
 
 \begin{document}
 \maketitle
@@ -74,7 +74,13 @@ mechanized in Lean~4 with zero \lean{sorry}s, and the VC set is validated
 in the strongest currency available: nine of the twelve production MRDTs
 of the Sal repository --- including OR-sets, an enable-wins flag,
 counters, a tombstone RGA and Peritext --- carry kernel-checked
-end-to-end RA-linearizability theorems through it.
+end-to-end RA-linearizability theorems through it. The one data type
+provably \emph{outside} the VC set --- the tombstone-free RGA, whose
+commutation holds only on reachable states --- is hosted by a
+\emph{conditioned} extension of the metatheory grown from this note's own
+open questions: a kernel-checked end-to-end theorem gives
+RA-linearizability \emph{up to observational equivalence} at every
+reachable configuration, from a single honest-delivery assumption.
 \end{abstract}
 
 \tableofcontents
@@ -185,7 +191,13 @@ consumes a small, contextual VC surface. Its contributions:
   \textsc{2-OP} rule on the defeater, pins the feasible-update-layer
   feasibility notion, and characterizes exactly why the tombstone-free RGA
   resists (it converges, but through semantic commutation the pointwise
-  bubble cannot see). All kernel-checked.
+  bubble cannot see). Pushed to its end, the investigation \emph{hosts}
+  the tombstone-free RGA: the swap architecture itself is refuted at merge
+  unions, and a conditioned metatheory --- an observational quotient, a
+  canonical-witness discipline per version, and a generation discipline
+  derived from born accuracy --- proves it RA-linearizable up to
+  observational equivalence, end-to-end under honest delivery. All
+  kernel-checked.
 \end{enumerate}
 
 Everything stated as a theorem below is mechanized with zero
@@ -846,12 +858,15 @@ Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3} & per key: ct
 \midrule
 Multi-valued register & feasible & \multicolumn{2}{l}{recipe (trichotomy-free: all-comm $\Rightarrow B{=}\Sinit$)} \\
 Add-wins priority queue & feasible & \multicolumn{2}{l}{recipe (the OR-set pattern on the add component)} \\
-RGA (tombstone-free) & \emph{blocked} & \multicolumn{2}{l}{feasible \emph{update} layer needed (below)} \\
+RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
 \end{tabular}}
-\caption{The Sal production catalogue against the eight VCs. Nine of
-twelve carry kernel-checked end-to-end RA-linearizability; all discharges
-live in a single \lean{MRDT\_Instances.lean}.}
+\caption{The Sal production catalogue. Nine of twelve carry
+kernel-checked end-to-end RA-linearizability through the eight VCs, all
+discharges in a single \lean{MRDT\_Instances.lean}; the tombstone-free
+RGA --- provably outside the VC set --- carries a kernel-checked
+\emph{conditioned} end-to-end theorem (RA-linearizability up to
+observational equivalence) through the extension of \S\ref{sec:open}.}
 \label{tab:catalog}
 \end{table}
 
@@ -868,15 +883,17 @@ join. All of the RGA's genuine difficulty lives in the \emph{read-side}
 traversal (turning the node soup into a sequence), which
 RA-linearizability of the state never touches. By contrast the
 \emph{tombstone-free} RGA --- which physically deletes and repairs
-positions by climbing ancestor paths --- is the one data type the
-corrected theory cannot yet host, for a reason worth stating precisely: its commutation VC
+positions by climbing ancestor paths --- is the one data type the eight
+VCs cannot host, for a reason worth stating precisely: its commutation VC
 is itself \emph{reachability-conditioned} (two inserts commute only on
-well-formed states), and our update layer, like the paper's, quantifies
-over all states. The missing piece is a feasible \emph{update} layer ---
-update VCs conditioned on an update-and-merge-closed invariant, plus a
-transport lemma showing every state a canonical enumeration folds through
-satisfies it. That is the theory's sharpest open edge, and precisely the
-question the tombstone-free RGA was built to force.
+well-formed states), and the update layer above, like the paper's,
+quantifies over all states. That was the question the tombstone-free RGA
+was built to force, and it is now answered --- not by a conditioned
+update \emph{layer} (every layer-level conditioning is refuted, see the
+feasible-update question in \S\ref{sec:open}) but by a conditioned
+\emph{metatheory} that abandons pointwise swaps altogether; the resulting
+end-to-end theorem is RA-linearizability up to observational equivalence
+under honest delivery.
 
 \paragraph{Commutation class and delta class are independent axes.} The
 multi-valued register is all-commuting, yet \emph{not} in the
@@ -964,8 +981,8 @@ the common witness set as data, re-founding $\cd$ on the full downset)
 buys anything over the closure-indexed form.
 \end{openq}
 
-\begin{openq}[the feasible update layer --- naive conditioning refuted,
-feasibility notion sharpened]
+\begin{openq}[the feasible update layer --- resolved: from refuted
+conditionings to a conditioned metatheory]
 Condition the update-layer VCs on an update-and-merge-closed invariant and
 host the tombstone-free RGA. The required invariant machinery
 ($\mathsf{RgaInv} \wedge \mathsf{id\_mono}$, closed under merge given
@@ -1014,10 +1031,51 @@ node the delete rehomed to (the RGA's own \lean{insdel\_comm}). So the
 obstruction is not unreachability, and not non-convergence: it is that the
 peel bubble demands \emph{pointwise} applicability at hybrid fold states,
 while a path-carrying data type supplies \emph{semantic} commutation only
-at the pair's common causal base. The open step is thus sharper than
-``host the RGA'': re-architect the bubble to fire each swap at that
-base, consuming the semantic commutation directly. The RGA converges;
-what remains is a proof architecture that can see why.
+at the pair's common causal base. That architecture now exists, and it is not a repaired bubble: the swap
+frame itself is refuted one level higher. At a merge union, even
+\emph{no-op-feasible} witnesses are unsatisfiable --- an LCA-first
+enumeration pre-applies one branch's anchor-killing deletes before
+replaying the other branch's inserts, staling their recorded paths
+(\lean{RGA\_HEnum\_Refutation}) --- and on a seven-event two-branch
+execution \emph{no} born-applicable enumeration of the union replays
+both branches' recorded observations at all: tombstone-free rehoming
+makes the \emph{order of concurrent deletes} observable in survivors'
+stored parents, and the two branches observe it differently. The raw
+$\mathsf{do}$-fold is the only sequentially replayable semantics of a
+merge union, so the \emph{target} must move: RA-linearizability up to
+the data type's observational equivalence $\approx$.
+
+The resolution is a conditioned \emph{metatheory} in four moves, each
+kernel-checked. (i)~An observational quotient $D \mapsto D_\approx$:
+states are $\approx$-classes of invariant states; update, merge and the
+applicability guard descend by congruence. (ii)~A canonical-witness
+discipline: each version carries, existentially, an enumeration of its
+events satisfying the RGA engine's own per-step discipline --- fresh
+nonzero ids, no id reuse, live recorded chains --- plus payload honesty;
+the discipline \emph{extends} at applies (freshness is a field of the
+transition itself) and \emph{joins} at merges, the union witness being
+the LCA-then-delta concatenation --- no reordering, no swaps anywhere.
+(iii)~A generation discipline, derived rather than assumed: every event
+is accurate at the fold of its \emph{transitive dependencies}, provable
+from \emph{born accuracy} --- each op was generated against a causal
+fold of the events its replica had seen, which is simply how a client
+computes. (iv)~Per-survivor \emph{birth-anchor bridges} reduce merge
+canonicity to record coherence at dependency folds, where the
+generation discipline makes every recorded chain live. The end-to-end
+theorem (\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}, mainline in
+\lean{RGA\_TombstoneFree\_RA\_Lin.lean}): every reachable configuration
+of the quotient store is RA-linearizable up to $\approx$, per version,
+from a single honest-delivery assumption --- born accuracy plus
+applicable delivery. Everything else is structural or derived: Lamport
+clocks and timestamp uniqueness are fields of the configuration
+(dishonest-clock executions are unrepresentable), and nonzero ids and
+nonzero delete targets follow from the delivered op's own
+wellformedness. What this question asked for --- a proof architecture
+that can see why the RGA converges --- exists; the price, stated
+honestly, is the move from equality to $\approx$ in the linearization
+target and the born-accuracy clause in the trust statement, both
+forced: the first by rehoming's observable delete order, the second by
+tombstone-freedom itself.
 \end{openq}
 
 \begin{openq}[the automation layer]
@@ -1085,6 +1143,17 @@ update-layer feasibility notion & \lean{loOnA\_noopFeasible\_verdict} & \lean{De
 conditioned convergence (order-half) & \lean{conditioned\_convergence\_on} & \lean{Development/ConditionedConvergence.lean} \\
 RGA rehoming: oracle false, converges & \lean{verdict\_oracle\_false\_but\_converges} & \lean{Development/RGA\_Rehoming\_Gate.lean} \\
 feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{The conditioned metatheory (tombstone-free
+  RGA end-to-end, feasible-update question resolved):}} \\
+merge-union witness refutation & --- & \lean{Development/RGA\_HEnum\_Refutation.lean} \\
+observational quotient $D \mapsto D_\approx$ & \lean{QSig}, \lean{qapplicable} & \lean{Development/GenericEqQuotient$\ast$.lean} \\
+canonical-witness layer, raw-$\approx$ target & \lean{IsRALinearizable3Eq}, \lean{RA\_linearizable\_up\_to\_eq\_H} & \lean{Development/GoodConfig3H.lean} \\
+RGA canonical engine & \lean{CanonInv}, \lean{canon\_fold} & \lean{Development/RGA\_Canon$\ast$.lean} \\
+generation discipline from born accuracy & \lean{genDisc2C\_of\_born} & \lean{Development/RGA\_GenDisc\_Assembly.lean} \\
+capstone + discharged leaves & \lean{rga\_RA\_linearizable\_skeleton3} & \lean{Development/RGA\_Skeleton3.lean}, \lean{RGA\_$\ast$\_Discharge.lean} \\
+honest residual & \lean{HonestDelivery}, \lean{rga\_RA\_linearizable\_honest} & \lean{Development/RGA\_Honest\_Residual.lean} \\
+mainline entry point & \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} & \lean{RGA\_TombstoneFree\_RA\_Lin.lean} \\
 \bottomrule
 \end{tabular}}
 \end{center}
@@ -1100,10 +1169,12 @@ data types of Table~\ref{tab:catalog} are
 mirrored faithfully from \lean{Sal/MRDTs/}$\ast$ (encoding deviations
 documented per instance); their original 24-VC discharges are untouched.
 
-The conditioned-metatheory artifacts under \lean{Development/} are
-exploratory --- they establish the refutations and the closure-indexed
-resolution cited in \S\ref{sec:defeater} and the open questions, and each
-cited theorem is kernel-checked with axioms in $\{\lean{propext},
+The conditioned-metatheory artifacts under \lean{Development/} are the
+research record --- they establish the refutations and the
+closure-indexed resolution cited in \S\ref{sec:defeater} and the open
+questions, and carry the full conditioned chain culminating in the
+mainline tombstone-free-RGA theorem; each cited theorem is kernel-checked
+with axioms in $\{\lean{propext},
 \lean{Classical.choice}, \lean{Quot.sound}\}$ (no \lean{sorryAx}). They
 import one linearization file carrying two unrelated \lean{sorry}s that the
 cited theorems do not transitively depend on; \lean{Development/}%
