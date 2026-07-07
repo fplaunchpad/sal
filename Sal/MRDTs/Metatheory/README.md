@@ -75,12 +75,11 @@ One file, all instance proofs:
 | **PN-Counter** (production mirror) | `pn_ra_linearizable3` | unconditional delta |
 | **RGA, tombstone** (production mirror) | `rga_ra_linearizable3` | unconditional delta |
 | **Peritext** (production mirror) | `peritext_ra_linearizable3` | unconditional delta |
+| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | conditioned end-to-end (§4) |
 | all-commuting class | via `cdVC3_of_all_comm` | generic |
 
 Not yet mechanized (class-placed with recipes, draft T11.3–T11.4):
-Multi-Valued Register and Add-Wins Priority Queue (feasible class); RGA
-tombstone-free (blocked on a `FeasibleUpdateVCs` σ-layer generalization —
-its commutation VC is reachability-conditioned).
+Multi-Valued Register and Add-Wins Priority Queue (feasible class).
 
 The production mirrors are faithful to `Sal/MRDTs/{OR_Set,
 OR_Set_Efficient, Enable_Wins_Flag}` (documented deviations only). The
@@ -88,11 +87,47 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
+## 4. The conditioned route — tombstone-free RGA —
+[`RGA_TombstoneFree_RA_Lin.lean`](RGA_TombstoneFree_RA_Lin.lean)
+
+    rga_tombstone_free_ra_linearizable3_eq :
+      HonestDelivery →
+      ∀ C reachable from initConfig in the quotient ternary system,
+        IsRALinearizable3Eq … C
+
+The tombstone-free path-carrying RGA
+([`../RGA_Tombstone_Free/`](../RGA_Tombstone_Free)) **cannot** go through
+the VC schema above: its commutation only holds *conditioned* on
+reachable/accurate states (tombstone-freedom forces delete-rehoming, which
+is only correct against states reflecting the op's causal past — and a
+prefix-free variant is provably impossible). The result is instead a direct
+end-to-end theorem through an **applicability-conditioned metatheory**: the
+observational quotient `D ↦ D≈`, an H-disciplined canonical-witness layer
+over the same `Step3` LTS, and the RGA's canonical-state engine. The target
+is RA-linearizability **up to observational equivalence** — every version
+of every reachable configuration is, up to `≈`, the raw `do_`-fold of a
+`lo`-respecting linearization of its events.
+
+The single irreducible assumption (`HonestDelivery`) is per-step *honest
+delivery*: each delivered op was generated accurately against a causal fold
+of the events its replica had seen (born accuracy — how an RGA client
+actually works), and delivery is born-applicable. Lamport clocks and
+timestamp uniqueness are structural (dishonest-clock executions are
+unrepresentable in `Configuration`); nonzero ids and nonzero delete targets
+are derived from the op's own wellformedness. The full chain (quotient
+functor, canonical engine, the discharged capstone leaves, the residual
+reduction) is kernel-clean under [`Development/`](Development/), with
+`RGA_Honest_Residual.lean` at the top; the explicit-residual form
+(`rga_RA_linearizable_final`, premises `hHon`/`hBA` instead of
+`HonestDelivery`) is available for substituting a different execution
+model.
+
 ## Reading order
 
 `MRDTSig.lean` → `ExecutionModel.lean` → `LCA_Lemma.lean` →
 `Sigma_LoOn3.lean` → `VC_Set.lean` → `Adequacy.lean` →
-`MRDT_Instances.lean`. Everything else: [`Development/`](Development/).
+`MRDT_Instances.lean` → `RGA_TombstoneFree_RA_Lin.lean`.
+Everything else: [`Development/`](Development/).
 
 Lean namespace: `Sal.Metatheory`. Build:
 `lake build Sal.MRDTs.Metatheory.<Module>`.

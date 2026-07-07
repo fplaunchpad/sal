@@ -75,12 +75,17 @@ was refuted and repaired rather than transcribed:
   under
   [`Sal/MRDTs/Metatheory/Development/`](Sal/MRDTs/Metatheory/Development).
 
-**Remaining open (this thread's original motivation).** The RGA's
-reachability-*conditioned* commutation (`commutes_with'`) needs a feasible
-**update layer** — the σ-machinery's update-side VCs conditioned on
-reachable states, with a permutation-transport lemma — recorded as an open
-question in the Metatheory READMEs, alongside (b″)/(b″₃) and the
-route-reunification question.
+**This thread's original motivation — RESOLVED (2026-07).** The RGA's
+reachability-*conditioned* commutation is now justified end-to-end: the
+applicability-conditioned metatheory (observational quotient `D ↦ D≈`,
+H-disciplined canonical-witness layer, the RGA's canonical-state engine)
+proves the tombstone-free RGA **RA-linearizable up to observational `≈`**
+at every reachable configuration, from a single honest-delivery assumption
+(born accuracy + applicable delivery), kernel-clean. Mainline entry point:
+[`Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean`](Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean);
+the full chain lives under `Sal/MRDTs/Metatheory/Development/`. Still open
+elsewhere: (b″)/(b″₃) and the route-reunification question (Metatheory
+READMEs).
 
 **Conditioning result (new, machine-checked — `Sal/MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`).**
 The blueprint's R2 keystone — that the forest invariant `anc_consistent`
@@ -172,6 +177,9 @@ thread 3 mechanises.
   `Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean` — builds
   clean, `rc_non_comm'` proved (every pair commutes on well-formed
   histories). This is the design whose *conditioned* VC motivates thread 3.
+  **Now fully justified (2026-07):** the conditioned metatheory proves this
+  RDT RA-linearizable up to observational `≈` end-to-end
+  (`Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean`).
 - **Impossibility (new, kernel-checked):** tombstone-freedom and
   prefix-freedom are **mutually exclusive** for RGA in Sal's VC framework —
   the conflicting `Ins-after-x` / `Del-x` pair is forced into a *merge-free,
