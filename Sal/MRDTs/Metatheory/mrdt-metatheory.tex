@@ -18,6 +18,10 @@
 \newtheorem{example}[theorem]{Example}
 \newtheorem{claim}[theorem]{Claim}
 \newtheorem{openq}[theorem]{Open Question}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{vc}{VC}
 \newtheorem*{finding}{Finding}
 
 % Paper-style notation
@@ -39,12 +43,32 @@
 \newcommand{\fd}{\mathsf{FeasibleDeltaVCs3}}
 \newcommand{\cd}{\mathsf{CDVC3}}
 \newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\M}[1]{\mathcal{#1}}
 
-\title{\bfseries Eight Verification Conditions for MRDTs:\\
-\large a mechanized, corrected soundness metatheory for RA-linearizability
-under three-way merge, with nine production data types discharged}
+% Conditioned-part notation (from the end-to-end note)
+\newcommand{\st}{\sigma}
+\newcommand{\ini}{\st_0}
+\newcommand{\dodo}{\mathsf{do}}
+\newcommand{\merge}{\mathsf{merge}}
+\newcommand{\resolve}{\mathsf{resolve}}
+\newcommand{\anc}{\mathsf{anc}}
+\newcommand{\contains}{\mathsf{live}}
+\newcommand{\recList}{\mathsf{rec}}
+\newcommand{\eqobs}{\approx}
+\newcommand{\fold}{\mathsf{fold}}
+\newcommand{\Inv}{\mathsf{Inv}}
+\newcommand{\app}{\mathsf{app}}
+\newcommand{\sigmacan}{\st^{\ast}}
+\newcommand{\RVF}{\textsf{RecPathFaithful}}
+\newcommand{\Faithful}{\textsf{Faithful}}
+\newcommand{\ChainFaithful}{\textsf{ChainFaithful}}
+
+\title{\bfseries A Mechanized Metatheory for Mergeable Replicated Data Types:\\
+\large RA-linearizability under three-way merge --- eight verification
+conditions, a conditioned generalization, and the tombstone-free RGA
+end-to-end}
 \author{Sal metatheory note\\ \small FP Launchpad, IIT Madras}
-\date{July 3, 2026 (revised July 7, 2026)}
+\date{July 7, 2026}
 
 \begin{document}
 \maketitle
@@ -80,7 +104,13 @@ commutation holds only on reachable states --- is hosted by a
 \emph{conditioned} extension of the metatheory grown from this note's own
 open questions: a kernel-checked end-to-end theorem gives
 RA-linearizability \emph{up to observational equivalence} at every
-reachable configuration, from a single honest-delivery assumption.
+reachable configuration, from a single honest-delivery assumption. This
+note is the complete, self-contained account: what an MRDT is and how to
+describe one (\S\ref{sec:mrdts}), the corrected flat metatheory and its
+validation (\S\ref{sec:setting}--\S\ref{sec:catalog}), the conditioned
+metatheorem with its pen-and-paper end-to-end proof for the tombstone-free
+RGA (\S\ref{sec:condmeta}--\S\ref{sec:actual}), the open questions, and
+the mechanization map.
 \end{abstract}
 
 \tableofcontents
@@ -202,8 +232,134 @@ consumes a small, contextual VC surface. Its contributions:
 
 Everything stated as a theorem below is mechanized with zero
 \lean{sorry}s; \S\ref{sec:mech} maps statements to Lean names and files
-(the closure-indexed investigation lives under \lean{Development/}, each
-cited theorem kernel-checked).
+(the conditioned framework and the RGA chain live under
+\lean{Conditioned/}, the investigation record under \lean{Development/};
+each cited theorem kernel-checked).
+
+
+\section{Mergeable replicated data types, by definition and example}
+\label{sec:mrdts}
+
+\paragraph{Data type and implementation.} A replicated data type of
+\emph{type} $\tau = \langle O_\tau, Q_\tau, \mathit{Val}_\tau\rangle$
+exposes a set of update operations $O_\tau$, a set of query operations
+$Q_\tau$, and a domain of query return values $\mathit{Val}_\tau$. An
+\emph{MRDT implementation} of $\tau$ is a tuple
+\[
+  \M{D} \;=\; \langle \Sigma,\; \Sinit,\; \mathsf{do},\; \mergeL,\;
+  \mathsf{query},\; \mathsf{rc} \rangle ,
+\]
+where $\Sigma$ is the space of replica states with initial state
+$\Sinit$; $\mathsf{do} : \Sigma \times \M{E} \to \Sigma$ applies an
+\emph{event} --- an update-operation instance $e = (t, r, o)$ carrying a
+globally unique timestamp $t$, its origin replica $r$, and the operation
+$o \in O_\tau$; $\mergeL : \Sigma^3 \to \Sigma$ is the three-way merge,
+whose first argument is the state at the lowest common ancestor of the
+two versions being merged; $\mathsf{query} : \Sigma \times Q_\tau \to
+\mathit{Val}_\tau$ reads a state; and $\mathsf{rc} \subseteq O_\tau
+\times O_\tau$ is the \emph{conflict-resolution} relation, consulted to
+order concurrent non-commuting operations (it is the data-type designer's
+declaration of who wins a race). Queries never change state and play no
+role in the metatheory; the theory below reads the implementation as
+$\langle \Sigma, \Sinit, \mathsf{do}, \mergeL, \mathsf{rc}\rangle$.
+
+\paragraph{Describing an MRDT: the counter.} To describe an MRDT one
+gives the five components and, when operations can race, says who wins.
+The increment-only counter of Figure~\ref{fig:counter} is the smallest
+complete example:
+\[
+  \Sigma = \mathbb{Z}, \qquad \Sinit = 0, \qquad
+  \mathsf{do}(\sigma, (t,r,\mathsf{inc})) = \sigma + 1, \qquad
+  \mergeL(l,a,b) = a + b - l, \qquad \mathsf{rc} = \emptyset .
+\]
+All operations commute, so $\mathsf{rc}$ is empty --- yet the merge
+genuinely uses its LCA argument: $a + b$ alone would double-count the
+history shared by the two branches, and the $-\,l$ subtracts it exactly
+once. This ``read the shared past off the LCA'' pattern is what
+separates MRDTs from CRDTs, and \S\ref{sec:loadbearing} proves the
+separation is real.
+
+\paragraph{A data type with races: the OR-set.} The add-wins observed-remove
+set stores tagged elements: $\add$ inserts a tag unique to the adding
+event, $\rem$ deletes exactly the tags it has \emph{seen}. Sequentially,
+a remove after an add deletes it; concurrently the designer declares the
+add the winner: $\rem \rc \add$. The merge keeps a tag iff both sides
+have it (nobody deleted it) or some side added it since the fork:
+\[
+  \mergeL(l,a,b) \;=\; (a \cap b) \cup (a \setminus l) \cup (b \setminus l).
+\]
+The LCA here plays the role a tombstone set plays for the CRDT OR-set:
+deletion is absence \emph{relative to} $l$, and the state needs no
+graveyard.
+
+\paragraph{The generalized signature.} Both examples' operations make
+sense on \emph{every} state: any state can be incremented, any tag can be
+added. Such data types are \emph{flat}, and for them the metatheory of
+\S\ref{sec:setting}--\S\ref{sec:catalog} quantifies its VCs over all
+states. But a data type whose operations carry \emph{preconditions} ---
+insert under a node that must exist, delete a node that must be live ---
+breaks that quantification: its commutation equations are simply false at
+nonsense states. The full signature therefore extends the tuple with
+three declarations (\lean{ConditionedMRDTSig}; formalized in
+\S\ref{sec:cvcs}):
+\[
+  \M{D} \;=\; \langle \Sigma, \Sinit, \mathsf{do}, \mergeL, \mathsf{rc},\;
+  \Inv,\; \app \rangle
+  \quad\text{together with}\quad {\eqobs} \subseteq \Sigma \times \Sigma ,
+\]
+where $\Inv$ is a state invariant (a shape over-approximation of
+reachability), $\app$ an applicability predicate (when an event is
+sensible at a state), and $\eqobs$ an observational equivalence (what
+queries can distinguish; representation residue is quotiented away).
+Commutation is then required only at $\Inv$-states where both events are
+applicable. Flat data types take $\Inv = \app = \top$ and
+${\eqobs} = {=}$, collapsing the general signature to the plain one ---
+one framework, of which \S\ref{sec:setting}--\S\ref{sec:catalog} is the
+flat instance and \S\ref{sec:condmeta} onwards the general case.
+
+\paragraph{The running hard example: the tombstone-free RGA.} The
+Replicated Growable Array is the list CRDT/MRDT underlying collaborative
+text editing: characters are nodes identified by timestamps, each
+inserted \emph{after} an anchor node. Production RGAs keep deleted nodes
+as \emph{tombstones} because later concurrent inserts may still anchor on
+them. The \emph{tombstone-free} RGA deletes physically, and it is
+describable in the general signature:
+\begin{itemize}[leftmargin=2em,nosep]
+\item $\Sigma$: finite forests --- partial maps from node ids to
+  (element, anchor id), the root id $0$ never stored; $\Sinit$ the empty
+  forest.
+\item Operations: $\mathsf{Ins}(e, p, a)$ inserts a fresh node with
+  element $e$ under anchor $a$, and $\mathsf{Del}(p, x)$ deletes node
+  $x$; both carry a \emph{recorded path} $p$ --- the anchor's (resp.\
+  target's) ancestor chain as the issuing replica saw it. $\mathsf{do}$
+  resolves the first live entry of $a :: p$ and attaches there; a delete
+  removes $x$ physically and \emph{rehomes} $x$'s children to $x$'s
+  nearest live ancestor.
+\item $\mergeL(l,a,b)$: OR-set survivorship on node ids (present in both
+  sides, or born since the fork on one), each survivor re-anchored by
+  climbing its recorded chain to the nearest survivor.
+\item $\mathsf{rc}$: empty in the directional sense (\lean{Either}) ---
+  every pair commutes, but only \emph{conditionally}.
+\item $\Inv$: well-formed forest (every stored anchor live or root),
+  id-monotone anchors ($\anc(x) < x$), root unstored. $\app$:
+  \emph{accurate} (the recorded path is the target's true live ancestor
+  chain in the current state) and \emph{fresh} (the id is unused).
+  $\eqobs$: equal live forests --- same nodes, elements and anchors.
+\end{itemize}
+A three-node example shows why every piece is needed. Start from the
+chain $0 \leftarrow 1 \leftarrow 2$ (node $1$ under the root, node $2$
+under $1$). $\mathsf{Del}([0], 1)$ removes node $1$ and rehomes $2$ to
+the root. A \emph{concurrent} event $(3, r, \mathsf{Ins}(e, [0], 1))$ ---
+generated before the delete was seen, anchored on $1$, whose recorded
+chain $1 :: [0]$ is $1$'s live ancestor chain at generation --- arrives
+after it: the anchor is gone, and the recorded chain is exactly what lets
+$\mathsf{do}$ resolve the insert to $1$'s parent $0$, where the delete
+rehomed $1$'s children. Commutation of this pair over
+\emph{all} states is false (the recorded path can lie about a nonsense
+state); at reachable, accurate states it holds. This data type is the
+reason the general signature exists, and
+\S\ref{sec:condmeta}--\S\ref{sec:actual} prove it RA-linearizable up to
+$\eqobs$, end-to-end.
 
 \section{The ternary setting}
 \label{sec:setting}
@@ -214,11 +370,9 @@ deliver. The definitions are the paper's, with one correction flagged
 where it occurs.
 
 \paragraph{Signature.} An MRDT is $\langle \Sigma, \Sinit, \mathsf{do},
-\mergeL, \mathsf{rc}\rangle$: a state space with initial state, an update
-function applied to \emph{events} $e = (t, r, o)$ (a globally fresh
-timestamp, an origin replica, an operation), a ternary merge, and a
-conflict-resolution relation $\mathsf{rc}$ on operations used to order
-concurrent non-commuting pairs. We write $e(\sigma)$ for
+\mergeL, \mathsf{rc}\rangle$ as in \S\ref{sec:mrdts}, read flat for now
+($\Inv = \app = \top$, ${\eqobs} = {=}$; the general case resumes in
+\S\ref{sec:condmeta}). We write $e(\sigma)$ for
 $\mathsf{do}(\sigma,e)$, and $e_1 \comm e_2$ when
 $e_1(e_2(\sigma)) = e_2(e_1(\sigma))$ for every $\sigma$.
 
@@ -261,7 +415,12 @@ $\neg(e^j \mathrel{\mathsf{lo}} e^i)$; and (iii)~$\pi$ \emph{folds} to
 the state: $e^n(\cdots e^2(e^1(\Sinit))\cdots) = s$. A configuration is
 \emph{RA-linearizable} when \emph{every version in the store} --- not
 only the replica heads; LCAs are historical versions and the merge reads
-them --- admits a witness. \hfill\lean{IsRALinearizable3}
+them --- admits a witness. In the general signature the fold clause
+(iii) is read up to the data type's observational equivalence,
+$e^n(\cdots e^1(\Sinit)\cdots) \eqobs s$ --- the same definition with
+its equality parameter generalized; flat data types instantiate
+${\eqobs} = {=}$ and this section's form is exactly that instance.
+\hfill\lean{IsRALinearizable3}, \lean{IsRALinearizable3Eq}
 \end{definition}
 
 Why a set-relative order? One definitional correction is forced at the
@@ -915,6 +1074,370 @@ prove the production merge computes exactly union-liveness ---
 the methodology working as intended: the metatheory does not merely bless
 the catalogue, it explains \emph{why} the fixed design is right.
 
+
+\section{The conditioned metatheorem}
+\label{sec:condmeta}
+
+The eight VCs of \S\ref{sec:vcs} quantify over \emph{all} states, and
+\S\ref{sec:catalog} showed that is right for flat data types and fatal
+for state-dependent ones: in the tombstone-free RGA of
+\S\ref{sec:mrdts}, two concurrent inserts commute only when each one's
+anchor is faithfully resolvable in the other's presence, and an insert
+under a since-deleted, physically-removed node is not even applicable.
+Written over all states, the commutation VC is simply false (a mechanized
+counterexample: \lean{naive\_general\_swap\_false}). The remedy is the
+general signature of \S\ref{sec:mrdts}: condition every VC on the state
+invariant $\Inv$ and the applicability predicate $\app$, relax the
+witness fold of Definition~\ref{def:ralin} to the data type's
+observational equivalence $\eqobs$, and prove RA-linearizability from the
+conditioned VCs once and for all. The developer's burden is only to
+describe sensible operations; the metatheorem does the rest. This section
+states the conditioned VCs and the metatheorem with its pen-and-paper
+proof; \S\ref{sec:rgaend} discharges the VCs for the tombstone-free RGA;
+\S\ref{sec:actual} records how the mechanization actually went ---
+including the machine-checked refutations that reshaped the route --- and
+what the completed assembly proves.
+
+\section{The conditioned verification conditions}\label{sec:cvcs}
+
+A datatype presents a signature
+$\langle \text{State}, \ini, \dodo, \merge, \Inv, \app \rangle$ where $\Inv$ is a predicate
+on states and $\app$ a predicate on (operation, state) pairs (Lean:
+\lean{ConditionedMRDTSig}, \lean{MRDTSig.lean}). It must supply:
+
+\begin{vc}[Discipline]\label{vc:disc}
+$\Inv\,\ini$ holds; $\dodo$ preserves $\Inv$ on applicable operations; and generation is
+disciplined: every operation is $\app$ and \emph{fresh} at its birth state, with globally
+unique, monotone ids. (This is the execution model, Lean:
+\lean{ConditionedConfiguration}, \lean{ConditionedExecutionModel.lean} --- kernel-clean,
+axiom-free.)
+\end{vc}
+
+\begin{vc}[Conditioned commutation --- the swap witness]\label{vc:comm}
+For concurrent operations $a,b$ and any state $\st$ with $\Inv\,\st$ at which both are
+applicable in the relevant reorder sense, $\dodo\,(\dodo\,\st\,a)\,b \eqobs
+\dodo\,(\dodo\,\st\,b)\,a$.
+\end{vc}
+
+\begin{vc}[Threadable reorder invariant]\label{vc:inv}
+An auxiliary invariant $J$ on (state, pending-event) that (i) certifies applicability/the
+swap precondition of VC~\ref{vc:comm} at reorder states, (ii) holds at the enabling fold of
+each event, and (iii) is preserved by each reorder step. Only the \emph{enabled} events ---
+those whose causal past is folded --- need be certified; that scope is exactly what a
+linearization repair ever transposes.
+\end{vc}
+
+\begin{vc}[Merge--linearization bridge --- the conditioned Join Lemma]\label{vc:merge}
+For a reachable LCA state $l$ and branches $a,b$ obtained from $l$ by disjoint concurrent
+event lists, $\merge\,l\,a\,b \eqobs \fold\,l\,\pi$ for a $\loE{E}$-respecting enumeration $\pi$
+of the branch events.
+\end{vc}
+
+For flat datatypes $\Inv = \app = \mathsf{true}$, VC~\ref{vc:comm} degenerates to
+unconditioned commutation, VC~\ref{vc:inv} to $J = \mathsf{true}$, and VC~\ref{vc:merge} to
+the ordinary Join Lemma --- recovering the unconditioned methodology.
+
+\section{The metatheorem}\label{sec:meta}
+
+\begin{theorem}[Soundness --- conditioned VCs $\Rightarrow$ RA-linearizability]\label{thm:meta}
+Any MRDT satisfying VCs~\ref{vc:disc}--\ref{vc:merge} is RA-linearizable
+(Definition~\ref{def:ralin}, read up to $\eqobs$).
+\end{theorem}
+
+The proof is generic --- it never inspects a particular datatype --- and factors through two
+lemmas, each proved over the abstract signature with $\eqobs$ an arbitrary congruence for
+$\dodo$ and $\merge$.
+
+\begin{remark}[Route actually taken]
+The convergence lemma below is stated via the swap-based VC~\ref{vc:inv} for exposition. That
+route is \emph{machine-refuted} for the tombstone-free RGA; convergence is mechanized by direct
+canonical-state characterization instead. See Section~\ref{sec:actual}.
+\end{remark}
+
+\begin{lemma}[Convergence]\label{lem:conv}
+VCs~\ref{vc:disc},~\ref{vc:comm},~\ref{vc:inv} imply that all $\loE{E}$-respecting admissible
+enumerations of a backward-closed reachable $E$ fold from $\ini$ to $\eqobs$-equal states;
+hence $\sigmacan(E)$ is well defined up to $\eqobs$.
+\end{lemma}
+\begin{proof}
+Any two $\loE{E}$-respecting enumerations of $E$ are related by repeatedly transposing adjacent
+$\loE{E}$-incomparable events. Because $\loE{E}$ is non-transitive, ``respecting'' is the elementwise
+\lean{Pairwise} condition rather than sortedness, so this order-repair is more delicate than
+for a total order --- it is exactly what the generic engine \lean{eq\_convergence} carries out,
+and we appeal to it rather than re-derive it. Each transposition preserves the fold up to
+$\eqobs$ by VC~\ref{vc:comm}, provided the swap precondition holds at the transposition point;
+VC~\ref{vc:inv} supplies it along the whole enumeration (base at each event's enabling fold,
+preserved by each step, scoped to the enabled events --- the only ones the repair transposes).
+The engine consumes only that $\eqobs$ is an equivalence, $\dodo$ is $\eqobs$-congruent, and a
+swap oracle of the shape VC~\ref{vc:comm}$+$\ref{vc:inv} provides (Lean: \lean{eq\_convergence},
+kernel-clean).
+\end{proof}
+
+\begin{lemma}[Canonical adequacy]\label{lem:adeq}
+VC~\ref{vc:merge} and Lemma~\ref{lem:conv} imply that every reachable version state is
+$\eqobs\ \sigmacan$ of its delivered event set.
+\end{lemma}
+\begin{proof}
+Induction over the version DAG. Initial: the empty fold. Update node: appends one delivered
+operation to a canonical fold (definitional). Merge node with LCA $l$ and branches $a,b$: by
+hypothesis $a \eqobs \sigmacan(E_a)$ and $b \eqobs \sigmacan(E_b)$, and $l \eqobs
+\sigmacan(E_l)$. First rewrite $a,b$ to literal canonical folds using $\eqobs$-congruence of
+$\merge$ (so VC~\ref{vc:merge}, stated for branch folds, applies); then VC~\ref{vc:merge}
+gives $\merge\,l\,a\,b \eqobs \fold\,l\,\pi$ for a $\loE{E}$-respecting $\pi$ of the branch
+events $E_a \cup E_b$. Now $E_l$ causally precedes those branch events (they were generated on
+states derived from $l$), so a $\loE{E}$-respecting enumeration of $E_l \cup E_a \cup E_b$
+factors as (an $\loE{E}$-enumeration of $E_l$) followed by $\pi$; hence
+$\fold\,l\,\pi = \fold\,(\sigmacan(E_l))\,\pi \eqobs \sigmacan(E_l \cup E_a \cup E_b)$ by
+Lemma~\ref{lem:conv} (the engine is start-state generic). Backward closure keeps every
+enumeration admissible.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:meta}]
+Immediate from Lemma~\ref{lem:adeq}: each version state $\eqobs \sigmacan(E_v)$, which is
+Definition~\ref{def:ralin}. (Unconditioned template: \lean{ra\_linearizable3\_of\_joinC} plus
+the closure-indexed adequacy bridge, already kernel-clean with nine instances; the
+conditioned metatheorem generalizes it by carrying $\Inv/\app$ through the two lemmas.)
+\end{proof}
+
+\begin{corollary}[Strong eventual consistency]\label{cor:sec}
+Two versions with the same delivered set $E$ have $\eqobs$ states: both $\eqobs \sigmacan(E)$
+by Theorem~\ref{thm:meta}, hence $\eqobs$ each other.
+\end{corollary}
+
+\section{The tombstone-free RGA discharges the conditioned VCs}\label{sec:rgaend}
+
+The RGA is a forest of identified nodes; $\dodo$ inserts a fresh node under a resolved anchor
+or physically deletes a node and rehomes its children; $\merge$ keeps OR-set survivors and
+re-anchors each by climbing to the nearest surviving ancestor. $\resolve\,\st\,p$ returns the
+first live id on a recorded path $p$; $\anc\,\st\,x$ is $x$'s current parent. Take
+$\Inv := \mathsf{wf} \wedge \mathsf{id\_mono} \wedge (\text{root not reinserted})$ and
+$\app := \mathsf{accurate} \wedge \mathsf{fresh}$. We discharge each VC; the two hard ones
+reduce to one invariant.
+
+\begin{definition}[Recorded-path faithfulness $\RVF$]\label{def:rvf}
+$\RVF\,a\,\st$: the recorded path $\recList\,a$ is a \emph{live subchain of genuine
+ancestors} of $a$'s target in $\st$ --- true $\anc$-ancestors, nearest first, consecutive
+pairs real parent edges, and exactly the chain live at $a$'s generation. (This is
+\lean{accurate}/\lean{HistFaithful} promoted to a reachability invariant.)
+\end{definition}
+
+\begin{lemma}[$\RVF$ is a reachability invariant]\label{lem:rvf}
+$\RVF\,a\,\st$ holds at every reachable $\st$ in which $a$ is applied.
+\end{lemma}
+\begin{proof}
+Induction on the operations building $\st$. \emph{Birth:} $\dodo$ sets
+$\recList\,a = \resolve\text{-path}$ at generation $=$ the live-ancestor chain, so $\RVF$
+holds (\lean{chainFaithful\_of\_histFaithful}). \emph{Later $\mathsf{Ins}$ with fresh id
+$f$:} attaches $f$ as a descendant --- no reparenting, no liveness change for prior events'
+chains. $f$ cannot appear spuriously in any $\recList\,a$: its members are older ids
+$< a.\mathsf{id} \le$ every id extant at $a$'s birth, whereas $f$ exceeds all of them, so
+$f \notin \recList\,a$ definitionally. The resurrection/clash regime
+(\lean{chainFaithful\_not\_preserved\_under\_clash\_ins}) is therefore \emph{unreachable} by
+freshness (\lean{fresh\_not\_mem\_recList}, \lean{clash\_recList\_excluded}), not excluded by
+a side condition. \emph{Later $\mathsf{Del}\,x$:} flips $x$'s liveness only; $\recList\,a$'s
+entries stay genuine ancestors, one possibly now dead --- still a live subchain
+(\lean{chainFaithful\_doDel\_faithful}).
+\end{proof}
+
+\begin{lemma}[Key Lemma: resolution over a live subchain]\label{lem:key}
+For any live subchain of genuine ancestors $pre$ of $x$, in every reachable $\st$,
+$\resolve\,\st\,pre = \anc\,\st\,x$. (Lean: \lean{subchain\_resolve},
+\lean{RGA\_SubchainResolve.lean}, kernel-clean.)
+\end{lemma}
+\begin{proof}
+$\resolve$ returns the first entry live in $\st$; each entry is a genuine ancestor, so this is
+the nearest live ancestor among $pre$. It is the nearest overall: no live ancestor $c \notin
+pre$ is nearer than that first-live entry --- (a) if $c$ was live at capture it was in the
+captured live chain, so $c \in pre$ (and any $pre$-entry nearer than the first-live one is
+dead in $\st$, hence not $c$); (b) if $c$ was dead at capture it is still dead (physical,
+tombstone-free deletion is permanent); (c) an event inserted after capture attaches as a
+descendant, never a new ancestor of the pre-existing $x$. The mechanization absorbs these
+three cases into one preserved invariant
+$\mathsf{LiveChain}\,\st\,x\,pre := (\text{root unstored}) \wedge \contains\,\st\,x \wedge
+\mathsf{IsAncPath}\,\st\,x\,(pre.\mathsf{filter}\,\contains)$, which holds at capture, is
+preserved by each insert (\lean{isAncPath\_upd}) and delete (\lean{isAncPath\_surgery}, chain
+splicing across a deleted entry), and yields the conclusion. Case~(b) is discharged by an
+explicit hypothesis $t \notin pre$ on inserts (\lean{okStep}) --- the mechanized form of ``no
+resurrection,'' itself a consequence of monotone allocation, every $pre$-entry sitting below
+$x$'s id. This replaces the earlier full-chain lemma \lean{hres\_of\_lchain}, which failed on
+the proper subchains rehoming produces.
+\end{proof}
+
+\begin{proposition}[RGA discharge]\label{prop:discharge}
+The RGA satisfies VCs~\ref{vc:disc}--\ref{vc:merge}. (The convergence VC~\ref{vc:inv} is
+discharged not by the swap route sketched here but by canonical-state characterization,
+Section~\ref{sec:actual}; the swap-route sketch below is superseded.)
+\end{proposition}
+\begin{proof}
+\emph{VC~\ref{vc:disc}} (discipline): $\Inv$ preservation and the generation model are
+\lean{ConditionedConfiguration} instantiated at the RGA, with the RGA's $\dodo$-invariance
+lemmas; \lean{conditioned\_premises} supplies the timestamp/freshness facts.
+\emph{VC~\ref{vc:comm}} (swap): \lean{general\_swap\_bothFaithful} /
+\lean{eqSwap\_of\_bothFaithful} --- concurrent operations commute up to $\eqobs$ when both
+are \emph{faithful} (neither need be exact/accurate), kernel-clean.
+\emph{VC~\ref{vc:inv}} (reorder invariant): $J := \ChainFaithful$ on the enabled scope, with
+steps \lean{chainFaithful\_incompStep}/\lean{incompFold}; its \emph{base} --- each event
+faithful at its enabling fold --- is exactly $\RVF$ (Lemma~\ref{lem:rvf}) projected through
+the Key Lemma (Lemma~\ref{lem:key}): the residual goal
+$\resolve\,\st\,((\recList\,a)\setminus t') = anch'$ when an ancestor $t'$ becomes leftmost
+live is the Key Lemma on the remaining subchain.
+\emph{VC~\ref{vc:merge}} (Join): per-id extensional match
+(\lean{eq\_merge2\_of\_branchInv2}); the anchor-coincidence clause is the single-sided
+$I_4$ (\lean{eq\_merge\_single}, kernel-clean) and, cross-branch, the Key Lemma directly
+(\lean{branchInv\_doDel\_crossBranch}, kernel-clean); order-independence is Lemma~\ref{lem:conv}
+at start state $l$. (In the final assembly this per-id $\mathsf{BranchInv}$ threading is
+itself superseded by the birth-anchor bridges of Section~\ref{sec:actual}, which need no
+invariant threading at all.)
+Both hard VCs (\ref{vc:inv} base, \ref{vc:merge} cross-branch) thus rest on $\RVF$ and the
+Key Lemma --- proved by construction from freshness and permanence.
+\end{proof}
+
+\begin{corollary}
+The tombstone-free RGA is RA-linearizable (Theorem~\ref{thm:meta} + Proposition~\ref{prop:discharge}),
+and strongly eventually consistent (Corollary~\ref{cor:sec}). To our knowledge this is the
+first mechanized RA-linearizability / SEC result for an RGA with physical, tombstone-free
+deletion (cf.\ Gomes et al., OOPSLA'17, for the tombstoned RGA).
+\end{corollary}
+
+\begin{remark}[Other instances]
+The nine flat production MRDTs (counter, OR-set, MVR, \dots) take $\Inv=\app=\mathsf{true}$:
+VC~\ref{vc:comm} is their unconditioned commutation, VC~\ref{vc:inv} is $J=\mathsf{true}$,
+and VC~\ref{vc:merge} is the ordinary Join Lemma --- already discharged
+(\lean{ra\_linearizable3\_of\_joinC}). They inherit RA-linearizability from the same
+Theorem~\ref{thm:meta}. The RGA is the instance that exercises every conditioned mechanism;
+the framework supplies the generality, the RGA the novelty.
+\end{remark}
+
+\section{How it was actually mechanized (and two dead ends)}\label{sec:actual}
+
+The exposition above (Sections~\ref{sec:vcs}--\ref{sec:rga}) is the \emph{intended} route, and it
+correctly frames the contribution: conditioned VCs $\Rightarrow$ RA-linearizability, RGA as
+instance. But the mechanization did \emph{not} follow the swap-based convergence of
+VC~\ref{vc:inv}. That route was tried and \textbf{machine-refuted twice}; convergence was then
+proved by a different technique. We record the actual route honestly --- the refutations are
+themselves findings about why tombstone-free deletion is hard.
+
+\paragraph{Two machine-checked refutations of the swap route.} The reorder-invariant convergence
+(VC~\ref{vc:inv}, ``thread faithfulness through adjacent swaps'') fails for the tombstone-free
+RGA because \emph{rehoming makes an event's recorded chain time-relative}: correct at generation,
+wrong at reordered intermediate states.
+\begin{itemize}[nosep]
+  \item \textbf{$\loE{E}$ is not transitive} (\lean{RGA\_DepComp\_Gate}, kernel-clean refutation).
+  Reordering dependencies-contiguous-first needs transitivity of the linearization order; a
+  physical delete severs an operation's applicability-dependence on an ancestor
+  ($b\!\to\!a\!\to\!o$ but $\neg(b\!\to\!o)$ after $a$'s target is deleted). Witness:
+  $l=0\!\leftarrow\!1\!\leftarrow\!2\!\leftarrow\!3$, delete node~1, delete node~2.
+  \item \textbf{In-place threading fails at the ancestor-insert step}
+  (\lean{RGA\_SimulInduction2}, kernel-clean refutation). Even threading without reordering, an
+  event's recorded chain can be \emph{ahead} of the state (it anticipates a delete not yet folded),
+  so $\ChainFaithful$ of the recorded chain is false at that intermediate fold although it heals
+  later.
+\end{itemize}
+Both say the same thing: the linearize-and-swap method, which needs faithfulness at every
+\emph{intermediate} reordered state, is the wrong vehicle. This is exactly what tombstones prevent
+(Gomes et al.\ keep deleted nodes so dependencies never rewire); the tombstone-free RGA rewires
+them.
+
+\paragraph{The technique that works: direct canonical-state characterization.} Instead of swaps,
+characterize the fold state as a pure function of the applied event \emph{set} --- the update
+analog of the merge bridge (which always worked). For a finite applied set $F$, define
+$\mathsf{survivors}\,F$ (OR-set survival) and $\mathsf{canonAnc}\,F\,k$ (climb $k$'s recorded chain
+to the nearest survivor of $F$); let $\mathsf{CanonMatch}\,F\,s$ say $s$ matches this per id.
+\begin{lemma}[Canonical fold]\label{lem:canon}
+Along any $\loE{E}$-respecting enumeration $\pi$, $\mathsf{CanonMatch}\,(\pi\text{-applied})\,
+(\fold\,\ini\,\pi)$ (Lean: \lean{canon\_fold}, kernel-clean). Two folds of the same $E$ then both
+match $\mathsf{CanonMatch}\,E$, hence are $\eqobs$ --- convergence with no swaps and no
+intermediate-state faithfulness (\lean{RGA\_update\_convergence\_canon}; discharged from the
+per-event generation discipline $\mathsf{GenDisc2C}$ in \lean{RGA\_update\_convergence\_final}).
+\end{lemma}
+The invariant is over the \emph{applied} set, so $\mathsf{canonAnc}\,F$ never anticipates a future
+delete --- exactly why it succeeds where the swap route (which reasons about not-yet-applied
+events) fails. The Key Lemma (Lemma~\ref{lem:key}) survives unchanged as the per-id climb-vs-resolve
+coincidence; $\RVF$ is subsumed by $\mathsf{CanonMatch}$'s per-survivor \lean{LiveChain}.
+
+\paragraph{The metatheorem as a generic $\eqobs$-quotient functor.} Theorem~\ref{thm:meta} is
+mechanized generically over \lean{ConditionedMRDTSig} (\lean{RA\_linearizable\_up\_to\_eq},
+\lean{GenericEqQuotient}, kernel-clean). It quotients the state by $\eqobs$ over the $\Inv$-subtype
+and transfers the datatype's $\eqobs$-Join to the structural-$=$ template
+\lean{ra\_linearizable3\_of\_joinC} by \lean{Quotient.sound}; the readback is over \emph{raw}
+$\fold$, matching the RGA's convergence. The datatype supplies five VCs: $\mathsf{EqEquiv}$,
+$\mathsf{InvPres}$, $\mathsf{CongVC}$ (update/merge/query $\eqobs$-congruent on $\Inv$),
+$\mathsf{InvInvVC}$, and the $\eqobs$-Join $\mathsf{EqJoinLemma3C}$. Two subtleties the
+mechanization forced, each machine-verified:
+\begin{itemize}[nosep]
+  \item \textbf{The merge $\eqobs$-congruence is false on the full state type}
+  (\lean{merge\_eq\_congr\_l\_fails}, axiom-free), true on the reachable subfamily
+  ($\mathsf{wf}\wedge\mathsf{id\_mono}\wedge\text{forest}$): the LCA-climb reads $\anc\,l$ off
+  $\mathsf{domain}\,l$, where $\eqobs$ is silent. Hence the $\Inv$-conditioning of $\mathsf{CongVC}$
+  is load-bearing, and the quotient is over the $\Inv$-subtype (\lean{merge\_eq\_congr\_inv}).
+  \item \textbf{Invariant preservation needs well-formedness, not applicability.} $\mathsf{InvPres}$
+  cannot demand unconditional preservation ($\dodo$ at a bad id breaks the invariant), nor full
+  $\app$ (which the execution model does not guarantee --- \lean{Step3.apply} applies with only
+  timestamp freshness). The honest condition is a datatype predicate $\mathsf{WfOp}$ (for the RGA:
+  fresh id for $\mathsf{Ins}$; $\resolve\,s\,p \neq x$ for $\mathsf{Del}\,p\,x$), preserved by the
+  real $\dodo$ (\lean{rgaInv\_doOp\_fresh}, accuracy \emph{removed}) and holding along reachable
+  folds ($\mathsf{WfOpReachable}$). A totality guard on the lifted step is provably transparent on
+  the execution domain ($\mathsf{applySeqW}=\mathsf{applySeq}$); the exposed theorem is over the
+  real $\dodo$.
+\end{itemize}
+
+\paragraph{The completed assembly.} Everything after the quotient functor was, at the
+first writing of this note, ``bounded assembly.'' Carrying it out surfaced three further
+machine-checked refutations that reshaped the target and the witness discipline; we record
+them because each is a fact about tombstone-free deletion, not about our proof.
+
+\begin{itemize}[nosep]
+  \item \textbf{At a merge union, applicability-tolerant witnesses do not exist.} An
+  LCA-first enumeration pre-applies one branch's anchor-killing deletes before replaying the
+  other branch's inserts, staling their recorded paths --- so even \emph{no-op-feasible}
+  witnesses (each step applicable or a no-op) are unsatisfiable from the initial state
+  (\lean{RGA\_HEnum\_Refutation}). Worse, on a seven-event two-branch execution \emph{no}
+  born-applicable enumeration of the union replays both branches' recorded observations:
+  rehoming makes the \emph{order of concurrent deletes} observable in survivors' stored
+  parents, and the branches observe it differently. Consequently the linearization target
+  itself must be the \emph{raw} $\dodo$-fold, up to $\eqobs$ --- any guarded or
+  feasibility-filtered fold is unsatisfiable at merge unions
+  (\lean{IsRALinearizable3Eq}, \lean{GoodConfig3H.lean}).
+  \item \textbf{The witness discipline is the engine's own, plus payload honesty.} Each
+  version carries, existentially, an enumeration satisfying the canonical engine's per-step
+  discipline (\lean{CanonFoldOK}: fresh nonzero ids, no id reuse, live recorded chains)
+  \emph{and} payload honesty (\lean{HonestPayloads}: delete targets and recorded-chain
+  entries are root-or-inserted). The second clause is forced by a counterexample: the fold
+  discipline alone admits a dead-target delete (a no-op), and a later insert reusing that
+  recorded dead id breaks the no-id-reuse clauses --- honesty of \emph{payloads} is
+  set-level, hence permutation-invariant, and it is exactly what extension at a fresh apply
+  needs (\lean{rga\_hHext\_discharged}). The discipline \emph{joins} at merges with the
+  union witness being the LCA-then-delta concatenation $\rho_0 +\!\!+\, \pi_0$ itself:
+  no reordering, no swaps, anywhere (\lean{rgaJoinH\_of\_canon}).
+  \item \textbf{The generation discipline is derived, not assumed.} Every event is
+  accurate at the fold of its \emph{transitive dependencies} (\lean{GenDisc2C}), provable
+  from \emph{born accuracy} --- the op was generated against a causal fold of the events its
+  replica had seen (\lean{genDisc2C\_of\_born}). Merge canonicity then reduces to three
+  leaves, all discharged: $\sigma_0$ id-monotonicity with \emph{no fold induction} (the
+  stored anchor is $\mathsf{canonAnc}$ of the recorded chain, whose entries are
+  dependencies, which are Lamport-below --- \lean{rga\_Hdec\_discharged}); a per-id causal
+  set-algebra whose only non-trivial clauses are dependency-fold provenance
+  (\lean{rga\_hcaus\_discharged}); and per-survivor \emph{birth-anchor bridges} reducing
+  the merged forest's anchors to record coherence at dependency folds, where the generation
+  discipline makes every recorded chain live
+  (\lean{rga\_hbridge\_discharged}, \lean{hin\_of\_genDisc}).
+\end{itemize}
+
+The residual, quantified once over the execution, is a single per-step assumption
+(\lean{HonestDelivery}): \emph{born accuracy} plus \emph{born-applicable delivery}. It is
+genuinely irreducible --- it is the generation discipline tombstone-freedom forces --- and it
+is also all there is: Lamport clocks, timestamp uniqueness and visibility-support are
+structural fields of the configuration (dishonest-clock executions are unrepresentable);
+nonzero insert ids and nonzero delete targets follow from the delivered op's own
+wellformedness at a representative of its head class; nonzero delete \emph{timestamps} are
+Lamport-derived from the target's insert. The end-to-end theorem
+(\lean{rga\_RA\_linearizable\_honest}; mainline entry point
+\lean{rga\_tombstone\_free\_ra\_linea\-rizable3\_eq},
+file \lean{RGA\_TombstoneFree\_RA\_Lin.lean}) closes
+Proposition~\ref{prop:discharge} and the corollary unconditionally modulo
+that assumption.
+
+
 \section{Open questions}
 \label{sec:open}
 
@@ -1031,51 +1554,12 @@ node the delete rehomed to (the RGA's own \lean{insdel\_comm}). So the
 obstruction is not unreachability, and not non-convergence: it is that the
 peel bubble demands \emph{pointwise} applicability at hybrid fold states,
 while a path-carrying data type supplies \emph{semantic} commutation only
-at the pair's common causal base. That architecture now exists, and it is not a repaired bubble: the swap
-frame itself is refuted one level higher. At a merge union, even
-\emph{no-op-feasible} witnesses are unsatisfiable --- an LCA-first
-enumeration pre-applies one branch's anchor-killing deletes before
-replaying the other branch's inserts, staling their recorded paths
-(\lean{RGA\_HEnum\_Refutation}) --- and on a seven-event two-branch
-execution \emph{no} born-applicable enumeration of the union replays
-both branches' recorded observations at all: tombstone-free rehoming
-makes the \emph{order of concurrent deletes} observable in survivors'
-stored parents, and the two branches observe it differently. The raw
-$\mathsf{do}$-fold is the only sequentially replayable semantics of a
-merge union, so the \emph{target} must move: RA-linearizability up to
-the data type's observational equivalence $\approx$.
-
-The resolution is a conditioned \emph{metatheory} in four moves, each
-kernel-checked. (i)~An observational quotient $D \mapsto D_\approx$:
-states are $\approx$-classes of invariant states; update, merge and the
-applicability guard descend by congruence. (ii)~A canonical-witness
-discipline: each version carries, existentially, an enumeration of its
-events satisfying the RGA engine's own per-step discipline --- fresh
-nonzero ids, no id reuse, live recorded chains --- plus payload honesty;
-the discipline \emph{extends} at applies (freshness is a field of the
-transition itself) and \emph{joins} at merges, the union witness being
-the LCA-then-delta concatenation --- no reordering, no swaps anywhere.
-(iii)~A generation discipline, derived rather than assumed: every event
-is accurate at the fold of its \emph{transitive dependencies}, provable
-from \emph{born accuracy} --- each op was generated against a causal
-fold of the events its replica had seen, which is simply how a client
-computes. (iv)~Per-survivor \emph{birth-anchor bridges} reduce merge
-canonicity to record coherence at dependency folds, where the
-generation discipline makes every recorded chain live. The end-to-end
-theorem (\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}, mainline in
-\lean{RGA\_TombstoneFree\_RA\_Lin.lean}): every reachable configuration
-of the quotient store is RA-linearizable up to $\approx$, per version,
-from a single honest-delivery assumption --- born accuracy plus
-applicable delivery. Everything else is structural or derived: Lamport
-clocks and timestamp uniqueness are fields of the configuration
-(dishonest-clock executions are unrepresentable), and nonzero ids and
-nonzero delete targets follow from the delivered op's own
-wellformedness. What this question asked for --- a proof architecture
-that can see why the RGA converges --- exists; the price, stated
-honestly, is the move from equality to $\approx$ in the linearization
-target and the born-accuracy clause in the trust statement, both
-forced: the first by rehoming's observable delete order, the second by
-tombstone-freedom itself.
+at the pair's common causal base. That architecture now exists, and \S\ref{sec:condmeta}--\S\ref{sec:actual}
+of this note develop it in full: it is not a repaired bubble --- the swap
+frame itself is refuted at merge unions --- but a conditioned metatheory
+whose target is the raw fold up to $\eqobs$. The ladder above is the
+sequence of kernel-checked refutations that found it; the resolution is
+the end-to-end theorem \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}.
 \end{openq}
 
 \begin{openq}[the automation layer]
@@ -1133,26 +1617,26 @@ Theorem~\ref{thm:counter-sep}, kill-tests & --- & \lean{Development/Impossibilit
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Conditioned-metatheory investigation
-  (\S\ref{sec:defeater}, Open Questions~\ref{oq:reunify} \& feasible-update):}} \\
+  (\S\ref{sec:defeater}, Open Questions~\ref{oq:reunify} \& feasible-update; resolution in \S\ref{sec:condmeta}--\S\ref{sec:actual}):}} \\
 defeater vs.\ \textsc{2-OP} (\S\ref{sec:defeater}) & \lean{no\_inter\_lca\_2op\_rem\_peel\_of\_defeater} & \lean{Development/InterLca2op\_Defeater\_Arbiter.lean} \\
-peel obstruction (OQ~\ref{oq:reunify}) & \lean{reunification\_peel\_obstruction}, \lean{no\_proper\_back\_block} & \lean{Development/\{Reunification\_Peel\_Obstruction,JoinLemma3C\}.lean} \\
+peel obstruction (OQ~\ref{oq:reunify}) & \lean{reunification\_peel\_obstruction}, \lean{no\_proper\_back\_block} & \lean{Conditioned/\{Reunification\_Peel\_Obstruction,JoinLemma3C\}.lean} \\
 closure-indexed contract & \lean{JoinLemma3C}, \lean{killTest\_no\_common\_U} & \lean{Development/JoinLemma3F\_Of\_AlmostClosed.lean} \\
-closure-indexed adequacy + instances & \lean{ra\_linearizable3\_of\_joinC}, \lean{ConditionedContract} & \lean{Development/ConditionedContract.lean} \\
-all 9 discharges via the contract & \lean{$\ast$\_adequate\_viaContract} (9) & \lean{Development/AllMRDTs\_viaContract.lean} \\
-update-layer feasibility notion & \lean{loOnA\_noopFeasible\_verdict} & \lean{Development/UpdateFeasibility\_Gate.lean} \\
-conditioned convergence (order-half) & \lean{conditioned\_convergence\_on} & \lean{Development/ConditionedConvergence.lean} \\
+closure-indexed adequacy + instances & \lean{ra\_linearizable3\_of\_joinC}, \lean{ConditionedContract} & \lean{Conditioned/ConditionedContract.lean} \\
+all 9 discharges via the contract & \lean{$\ast$\_adequate\_viaContract} (9) & \lean{Conditioned/AllMRDTs\_viaContract.lean} \\
+update-layer feasibility notion & \lean{loOnA\_noopFeasible\_verdict} & \lean{Conditioned/UpdateFeasibility\_Gate.lean} \\
+conditioned convergence (order-half) & \lean{conditioned\_convergence\_on} & \lean{Conditioned/ConditionedConvergence.lean} \\
 RGA rehoming: oracle false, converges & \lean{verdict\_oracle\_false\_but\_converges} & \lean{Development/RGA\_Rehoming\_Gate.lean} \\
-feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Development/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
+feasible-update gate & \lean{G2\_conditioned\_convergence\_refuted}, \lean{separating\_inequivalence} & \lean{Conditioned/G2\_\{Transport\_Probe,Applicability\_Aware\}.lean} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{The conditioned metatheory (tombstone-free
   RGA end-to-end, feasible-update question resolved):}} \\
 merge-union witness refutation & --- & \lean{Development/RGA\_HEnum\_Refutation.lean} \\
-observational quotient $D \mapsto D_\approx$ & \lean{QSig}, \lean{qapplicable} & \lean{Development/GenericEqQuotient$\ast$.lean} \\
-canonical-witness layer, raw-$\approx$ target & \lean{IsRALinearizable3Eq}, \lean{RA\_linearizable\_up\_to\_eq\_H} & \lean{Development/GoodConfig3H.lean} \\
-RGA canonical engine & \lean{CanonInv}, \lean{canon\_fold} & \lean{Development/RGA\_Canon$\ast$.lean} \\
-generation discipline from born accuracy & \lean{genDisc2C\_of\_born} & \lean{Development/RGA\_GenDisc\_Assembly.lean} \\
-capstone + discharged leaves & \lean{rga\_RA\_linearizable\_skeleton3} & \lean{Development/RGA\_Skeleton3.lean}, \lean{RGA\_$\ast$\_Discharge.lean} \\
-honest residual & \lean{HonestDelivery}, \lean{rga\_RA\_linearizable\_honest} & \lean{Development/RGA\_Honest\_Residual.lean} \\
+observational quotient $D \mapsto D_\approx$ & \lean{QSig}, \lean{qapplicable} & \lean{Conditioned/GenericEqQuotient$\ast$.lean} \\
+canonical-witness layer, raw-$\approx$ target & \lean{IsRALinearizable3Eq}, \lean{RA\_linearizable\_up\_to\_eq\_H} & \lean{Conditioned/GoodConfig3H.lean} \\
+RGA canonical engine & \lean{CanonInv}, \lean{canon\_fold} & \lean{Conditioned/RGA\_Canon$\ast$.lean} \\
+generation discipline from born accuracy & \lean{genDisc2C\_of\_born} & \lean{Conditioned/RGA\_GenDisc\_Assembly.lean} \\
+capstone + discharged leaves & \lean{rga\_RA\_linearizable\_skeleton3} & \lean{Conditioned/RGA\_Skeleton3.lean}, \lean{RGA\_$\ast$\_Discharge.lean} \\
+honest residual & \lean{HonestDelivery}, \lean{rga\_RA\_linearizable\_honest} & \lean{Conditioned/RGA\_Honest\_Residual.lean} \\
 mainline entry point & \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} & \lean{RGA\_TombstoneFree\_RA\_Lin.lean} \\
 \bottomrule
 \end{tabular}}
@@ -1169,11 +1653,11 @@ data types of Table~\ref{tab:catalog} are
 mirrored faithfully from \lean{Sal/MRDTs/}$\ast$ (encoding deviations
 documented per instance); their original 24-VC discharges are untouched.
 
-The conditioned-metatheory artifacts under \lean{Development/} are the
-research record --- they establish the refutations and the
-closure-indexed resolution cited in \S\ref{sec:defeater} and the open
-questions, and carry the full conditioned chain culminating in the
-mainline tombstone-free-RGA theorem; each cited theorem is kernel-checked
+The conditioned framework and the full RGA chain live under
+\lean{Conditioned/} (importable from the mainline, which never imports
+\lean{Development/}); the refutation probes, findings journals and
+superseded routes remain under \lean{Development/} as the research
+record. Each cited theorem is kernel-checked
 with axioms in $\{\lean{propext},
 \lean{Classical.choice}, \lean{Quot.sound}\}$ (no \lean{sorryAx}). They
 import one linearization file carrying two unrelated \lean{sorry}s that the

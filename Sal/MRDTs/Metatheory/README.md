@@ -5,7 +5,11 @@ version DAG — the setting of the Neem paper's Theorem 2, arXiv:2502.19967 /
 OOPSLA 2025), built on the corrected binary theory of
 [`Sal/CRDTs/Metatheory/`](../../CRDTs/Metatheory/). Everything below is
 0-sorry and kernel-checked (axioms: `propext`, `Classical.choice`,
-`Quot.sound`). The conditioned framework and the tombstone-free-RGA chain live in
+`Quot.sound`). The paper-style companion note —
+[`mrdt-metatheory.pdf`](mrdt-metatheory.pdf) — is the self-contained
+account of everything in this directory, from the definition of an MRDT
+through the eight VCs to the conditioned end-to-end proof.
+The conditioned framework and the tombstone-free-RGA chain live in
 [`Conditioned/`](Conditioned/); the research record (findings T0–T10.7,
 planning docs, the historical peel route, the impossibility results,
 refutation probes) is in [`Development/`](Development/), which may import
