@@ -44,7 +44,9 @@ def rgaH : List op_t → Prop := fun ρ => CanonFoldOK [] init_st ρ
 
 /-- **The RGA's H-join from the two canonical leaves.**  The union's `H`-witness is `ρ₀ ++ π₀`. -/
 theorem rgaJoinH_of_canon
+    (HonJ : (op_t → op_t → Prop) → Set op_t → Prop)
     (hEnum : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
@@ -72,8 +74,8 @@ theorem rgaJoinH_of_canon
         CanonMatch (ρ₀ ++ π₀)
             (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
           ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR init_st ρ₀) π₀)) :
-    EqJoinLemma3C_H RGACondSig' rgaEqEquiv' WfOpA rgaH := by
-  intro vis events ev₁ ev₂ s₀ s₁ s₂ hI0 hI1 hI2 htr hir hdts hev1 hev2 hcl1 hcl2 hcs0 hcs1 hcs2
+    EqJoinLemma3C_H RGACondSig' rgaEqEquiv' WfOpA rgaH HonJ := by
+  intro vis events ev₁ ev₂ s₀ s₁ s₂ hHonJ hI0 hI1 hI2 htr hir hdts hev1 hev2 hcl1 hcl2 hcs0 hcs1 hcs2
   -- re-type the witnesses at `op_t` (defeq to `Op RGACondSig'.AppOp`)
   have hcs0' : ∃ ρ : List op_t,
       listPermOf ρ (ev₁ ∩ ev₂) ∧ respects ρ (loOnEq rgaEqEquiv' WfOpA vis (ev₁ ∩ ev₂)) ∧
@@ -91,7 +93,7 @@ theorem rgaJoinH_of_canon
   obtain ⟨ρ₁, h₁p, h₁r, h₁OK, hfold1⟩ := hcs1'
   obtain ⟨ρ₂, h₂p, h₂r, h₂OK, hfold2⟩ := hcs2'
   obtain ⟨π₀, hπp, hπr, hπOK⟩ :=
-    hEnum vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ htr hir hdts hev1 hev2 hcl1 hcl2
+    hEnum vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h₀p h₀r h₀OK h₁p h₁r h₁OK h₂p h₂r h₂OK
   obtain ⟨hCMmerge, hCMfold⟩ :=
     hCanon vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ htr hir hdts hev1 hev2 hcl1 hcl2
@@ -164,7 +166,16 @@ gated on the explicit residual:
 
 0 `sorry`; axioms ⊆ {propext, Classical.choice, Quot.sound}. -/
 theorem rga_RA_linearizable_skeleton3
+    (HonJ : (op_t → op_t → Prop) → Set op_t → Prop)
+    (hHon : ∀ {C₀ : Sal.Metatheory.Configuration
+        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)},
+      (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
+        (Sal.Metatheory.initConfig
+          (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C₀ →
+      HonJ (Sal.Metatheory.Configuration.core C₀).vis
+        (Sal.Metatheory.Configuration.core C₀).events)
     (hEnum : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ : List op_t),
+        HonJ vis events →
         (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
         (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
@@ -225,9 +236,10 @@ theorem rga_RA_linearizable_skeleton3
         (Sal.Metatheory.initConfig
           (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C) :
     IsRALinearizable3Eq rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA C :=
-  RA_linearizable_up_to_eq_H rgaH rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA
+  RA_linearizable_up_to_eq_H rgaH HonJ rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA
     (fun heqv hInv => rga_invCong heqv hInv)
-    (rgaJoinH_of_canon hEnum hCanon)
+    (rgaJoinH_of_canon HonJ hEnum hCanon)
+    (fun hreach => hHon hreach)
     trivial
     (fun hreach hstep hhead hver ρ hρp hH happ => hHext hreach hstep hhead hver ρ hρp hH happ)
     hBA C hReach

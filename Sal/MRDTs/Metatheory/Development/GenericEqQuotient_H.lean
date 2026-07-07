@@ -53,11 +53,16 @@ theorem isCanonicalStateEq_of_H (H : List (Op D.AppOp) → Prop)
   exact ⟨ρ, hperm, hresp, hfold⟩
 
 /-- **The datatype's `≈`-Join Lemma over `H`-disciplined delivery.**  `EqJoinLemma3C_NF` with
-`IsCanonicalStateEqNF` replaced by `IsCanonicalStateEqH`. -/
+`IsCanonicalStateEqNF` replaced by `IsCanonicalStateEqH`, and an abstract JOIN CONTEXT `HonJ`
+(honest facts about the ambient visibility/event universe — e.g. same-replica `vis`-totality,
+nonzero ids, the generation discipline — that a reachable configuration supplies and the RDT's
+join discharge may consume). -/
 def EqJoinLemma3C_H (D : ConditionedMRDTSig) (E : EqEquiv D)
-    (W : Op D.AppOp → D.State → Prop) (H : List (Op D.AppOp) → Prop) : Prop :=
+    (W : Op D.AppOp → D.State → Prop) (H : List (Op D.AppOp) → Prop)
+    (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop) : Prop :=
   ∀ (vis : Op D.AppOp → Op D.AppOp → Prop) (events : Set (Op D.AppOp))
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
+    HonJ vis events →
     D.Inv s₀ → D.Inv s₁ → D.Inv s₂ →
     (∀ {a b c : Op D.AppOp}, vis a b → vis b c → vis a c) →
     (∀ a : Op D.AppOp, ¬ vis a a) →

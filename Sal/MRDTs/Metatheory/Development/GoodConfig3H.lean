@@ -436,11 +436,13 @@ theorem goodConfig3H_apply (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
       (fun a ha b hb => (h_vis_old E' (h.1.ver_events_sub w s' E' hw) a ha b hb).symm) h_old
 
 /-- The H-join: merged H-canonical state from `EqJoinLemma3C_H`. -/
-theorem mergedH_of_join (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
+theorem mergedH_of_join (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
-    (hJoinH : EqJoinLemma3C_H D E W H)
+    (hJoinH : EqJoinLemma3C_H D E W H HonJ)
     (Cq : Sal.Emulation.Configuration (QSig E W hP hC hA).toCRDTSig)
     (events ev₁ ev₂ : Set (Op D.AppOp)) (sT s₁ s₂ : QState D E)
+    (hHonJ : HonJ Cq.vis events)
     (htr : ∀ {a b c : Op D.AppOp}, Cq.vis a b → Cq.vis b c → Cq.vis a c)
     (hir : ∀ a : Op D.AppOp, ¬ Cq.vis a a)
     (hdts : ∀ a b : Op D.AppOp, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1)
@@ -456,13 +458,14 @@ theorem mergedH_of_join (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
   obtain ⟨σ₂, hσ₂, hq₂, hcs₂⟩ := hc₂
   refine ⟨D.mergeL σT σ₁ σ₂, hP.inv_mergeL σT σ₁ σ₂ hσT hσ₁ hσ₂, ?_, ?_⟩
   · rw [hqT, hq₁, hq₂]; rfl
-  · exact hJoinH Cq.vis events ev₁ ev₂ σT σ₁ σ₂ hσT hσ₁ hσ₂
+  · exact hJoinH Cq.vis events ev₁ ev₂ σT σ₁ σ₂ hHonJ hσT hσ₁ hσ₂
       htr hir hdts hsub₁ hsub₂ hcl₁ hcl₂ hcsT hcs₁ hcs₂
 
 /-- The full merge step. -/
-theorem goodConfig3H_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
+theorem goodConfig3H_merge (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
-    (hJoinH : EqJoinLemma3C_H D E W H)
+    (hJoinH : EqJoinLemma3C_H D E W H HonJ)
     {C C' : Configuration (QSig E W hP hC hA)}
     {r₁ : Replica} {v₁ v₂ vT vm : Version}
     {s₁ s₂ sT : QState D E} {ev₁ ev₂ evT : Set (Op D.AppOp)}
@@ -474,6 +477,8 @@ theorem goodConfig3H_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
       then some ((QSig E W hP hC hA).mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+    (hHonJ : HonJ (Sal.Metatheory.Configuration.core C).vis
+      (Sal.Metatheory.Configuration.core C).events)
     (h : GoodConfig3H H E W hP hC hA C) :
     GoodConfig3H H E W hP hC hA C' := by
   have hcTH : IsCanonicalStateH H E W hP hC hA (C.core) (ev₁ ∩ ev₂) sT := by
@@ -491,8 +496,8 @@ theorem goodConfig3H_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     obtain ⟨r, s, hLr, hsa⟩ := ha
     obtain ⟨r', s', hLr', hsb⟩ := hb
     exact (C.core).timestamps_distinct hLr hsa hLr' hsb hne
-  have h_mergedH := mergedH_of_join H E W hP hC hA hJoinH (C.core) (C.core).events
-    ev₁ ev₂ sT s₁ s₂
+  have h_mergedH := mergedH_of_join H HonJ E W hP hC hA hJoinH (C.core) (C.core).events
+    ev₁ ev₂ sT s₁ s₂ hHonJ
     (fun hab hbc => h.1.vis_trans hab hbc) (fun a ha => h.1.vis_irrefl a ha) hdts
     hsub₁ hsub₂ hcl₁f hcl₂f hcTH (h.2 v₁ s₁ ev₁ h_ver₁) (h.2 v₂ s₂ ev₂ h_ver₂)
   refine ⟨goodConfig3S_merge h_head₁ h_ver₁ h_ver₂ hL hvis hver h.1, ?_⟩
@@ -517,10 +522,16 @@ theorem goodConfig3H_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
 
 /-- **`GoodConfig3H` from reachability.**  Gated on the H-join (`EqJoinLemma3C_H`), the honest
 conditions `hgenW`/`hBA`, and the H-discipline conditions `hHnil`/`hHext`. -/
-theorem goodConfig3H_of_reachF (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
+theorem goodConfig3H_of_reachF (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (hInvCong : ∀ {s s' : D.State}, E.eqv s s' → D.Inv s → D.Inv s')
-    (hJoinH : EqJoinLemma3C_H D E W H)
+    (hJoinH : EqJoinLemma3C_H D E W H HonJ)
+    (hHon : ∀ {C₀ : Configuration (QSig E W hP hC hA)},
+      (labeledTS3 (QSig E W hP hC hA)).ReachableFrom
+        (initConfig (QSig E W hP hC hA) trivial) C₀ →
+      HonJ (Sal.Metatheory.Configuration.core C₀).vis
+        (Sal.Metatheory.Configuration.core C₀).events)
     (hHnil : H [])
     (hHext : ∀ {C₀ C₁ : Configuration (QSig E W hP hC hA)}
       {t : Timestamp} {r : Replica} {o : D.AppOp}
@@ -559,17 +570,23 @@ theorem goodConfig3H_of_reachF (E : EqEquiv D) (W : Op D.AppOp → D.State → P
         (fun ρ hρp hH happ => hHext hprev hkeep h_head h_ver ρ hρp hH happ) ih
     | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁ h_rank₂
         C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3H_merge H E W hP hC hA hJoinH h_head₁ h_ver₁ h_ver₂ h_lca h_verT
-        hL hvis hver ih
+      exact goodConfig3H_merge H HonJ E W hP hC hA hJoinH h_head₁ h_ver₁ h_ver₂ h_lca h_verT
+        hL hvis hver (hHon hprev) ih
     | query h_s h_val => exact ih
 
 /-- **The RAW-≈ metatheorem.**  A reachable `QSig`-configuration under the born-applicable
 discipline is per-version RA-linearizable in the paper's sense — raw datatype folds, up to `≈` —
 gated on the datatype's H-join (`EqJoinLemma3C_H`) and the H-discipline conditions. -/
-theorem RA_linearizable_up_to_eq_H (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
+theorem RA_linearizable_up_to_eq_H (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
+    (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (hInvCong : ∀ {s s' : D.State}, E.eqv s s' → D.Inv s → D.Inv s')
-    (hJoinH : EqJoinLemma3C_H D E W H)
+    (hJoinH : EqJoinLemma3C_H D E W H HonJ)
+    (hHon : ∀ {C₀ : Configuration (QSig E W hP hC hA)},
+      (labeledTS3 (QSig E W hP hC hA)).ReachableFrom
+        (initConfig (QSig E W hP hC hA) trivial) C₀ →
+      HonJ (Sal.Metatheory.Configuration.core C₀).vis
+        (Sal.Metatheory.Configuration.core C₀).events)
     (hHnil : H [])
     (hHext : ∀ {C₀ C₁ : Configuration (QSig E W hP hC hA)}
       {t : Timestamp} {r : Replica} {o : D.AppOp}
@@ -594,7 +611,7 @@ theorem RA_linearizable_up_to_eq_H (E : EqEquiv D) (W : Op D.AppOp → D.State �
         (initConfig (QSig E W hP hC hA) trivial) C) :
     IsRALinearizable3Eq E W hP hC hA C :=
   isRALinearizable3Eq_of_goodH H E W hP hC hA C
-    (goodConfig3H_of_reachF H E W hP hC hA hInvCong hJoinH hHnil hHext hBA C hReach)
+    (goodConfig3H_of_reachF H HonJ E W hP hC hA hInvCong hJoinH hHon hHnil hHext hBA C hReach)
 
 /-! ## Axiom audit -/
 
