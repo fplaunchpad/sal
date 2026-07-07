@@ -289,7 +289,56 @@ backward via `pairwise_append` (no index arithmetic).
     its inserting branch via CanonInv domain-iffs + the causal algebra).
     **Skeleton3's `hCanon` ⟸ THREE leaves: `Hdec` + `hcaus` + `hbridge`.**
 
-  **Remaining work (all engineering, zero open research):**
+  **✅✅ FOCUSED SESSION COMPLETE (commits 1dc59db → 53b1a86: THE DATATYPE
+  SIDE IS CLOSED).** `rga_RA_linearizable_final` (`RGA_Final_Assembly.lean`,
+  kernel-clean, 0 sorry): RGA RA-linearizability up to ≈ at every reachable
+  configuration, residual = `hHon` + `hBA` ONLY (execution-model
+  honest-delivery facts). The leaf ledger:
+  * **hbridge DISCHARGED** (9cfaf39, `RGA_Hbridge_Discharge.lean`): takes the
+    sibling `hcaus` bundle as premise (its `hD` runs through
+    `merge_domain_clause` — decouples D from C); home determination via
+    `birthAnc`'s if-chain (a survivor is never union-deleted ⟹ home-live;
+    home `CanonInv` LiveChain); `home_dead_F_dead` (chain entries are deps ⟹
+    in the home enum by closure ⟹ home-dead = home-deleted = union-deleted);
+    `first_live_split` at the home-live head `bw`; `bw = 0` ⟹
+    `canonAnc_dead_eq_zero` directly, else `canonBirthBridge_via_branchCanon`
+    with `hin := hin_of_genDisc`. NO synthetic config (existential `Cfg` as
+    in hEnum). NO carrier-3, NO BranchInv.
+  * **hcaus + Hdec DISCHARGED** (9b5946a, `RGA_HcausHdec_Discharge.lean`):
+    hcaus = 5 membership clauses + 2 provenance clauses via
+    `del_target_inserted` (del accurate at its dep fold, target nonzero by
+    rgaHonJ's no-root-deletes ⟹ target LIVE there ⟹ inserted). Hdec WITHOUT
+    fold induction: anchor = `canonAnc` of the record (`CanonMatch`),
+    `canonAnc_mem` picks a chain entry or 0, chain entries are deps
+    (`chain_entries_mem`), deps are vis-past, vis is Lamport-monotone
+    (rgaHonJ's clock clause). The old item-1 plan (id_mono_doIns'/doDel'
+    payload-bound fold variants) was never needed.
+    `rga_hMergeInputs_discharged` assembles {Hdec, hcaus, hbridge} = the FULL
+    `hCanon_of_leaves3` premise. (Old item-7 concern resolved: rgaHonJ carries
+    the no-root-deletes + Lamport clauses since 1dc59db.)
+  * **hHext DISCHARGED** (bef33c0, `RGA_HHext_Discharge.lean`) — with the
+    SEVENTH interface gap found and fixed: `CanonFoldOK` alone cannot extend
+    at a fresh apply (DelOK/ChainOK constrain only LIVE data — a CanonFoldOK
+    witness admits dead-target dels / junk chain entries, and a later insert
+    reusing such a dead id breaks the no-id-reuse clauses; counterexample
+    `ρ = [(5,r,Del [] 7)]` then `Ins` at `t = 7`). Fix: `rgaH` strengthened
+    with `HonestPayloads` (SET-level ⟹ perm-invariant: del targets and chain
+    entries are root-or-inserted); the union witness lifts it branchwise
+    (tiny re-thread, leaf interfaces unchanged). Freshness of `t` against
+    `evh` comes from INVERTING `Step3.apply` (`h_fresh_store` covers every
+    stored version); fold obligations = `chainOK_of_accurate` /
+    `delOK_of_accurate` + `canonFoldOK_append`.
+  * **FINAL ASSEMBLY** (53b1a86, `RGA_Final_Assembly.lean`):
+    `rga_RA_linearizable_final` = skeleton3 @ rgaHonJ with hEnum :=
+    `rga_hEnum_discharged`, hCanon := `hCanon_of_leaves3 rgaHonJ
+    rga_hMergeInputs_discharged`, hHext := `rga_hHext_discharged`.
+  * **REMAINING (the only open work):** `hHon` (rgaHonJ at reachable cores —
+    `genDisc2C_of_born` at the real core + `vis_src`/`vis_tgt` + nonzero ids
+    + Lamport + no root deletes, by reachability induction over Step3) and
+    `hBA` (born-applicable delivery). Then README + Development→mainline
+    promotion (+ #28 PDF).
+
+  **Superseded plan (historical; kept for the refutation ledger):**
   1. `Hdec` (σ₀' id-monotonicity): fold invariant along ρ₀ from honest payload
      bounds — needs `id_mono_doIns'`/`id_mono_doDel'` variants (the packaged
      `mono_alloc`/`accurate` premises are from-init-replica-shaped, over-strong
