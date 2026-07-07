@@ -26,7 +26,7 @@ open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' RGACondSig'_init rgaCongVC')
 open Sal.Metatheory.RGAOrderBridge (rc_is_Either')
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAInstanceFinal (applySeq_eq_applySeqR)
 open RGAMergeLinearization (applySeqR)
 

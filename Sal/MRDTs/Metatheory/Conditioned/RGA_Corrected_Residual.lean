@@ -34,7 +34,7 @@ open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient (loOnEq EqJoinLemma3C_NF IsCanonicalStateEqNF fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv')
 open Sal.Metatheory.RGAInstanceNF (rga_invCong)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAEqJoinNF (mergeFold_transport)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonFoldOK CanonStepOK)

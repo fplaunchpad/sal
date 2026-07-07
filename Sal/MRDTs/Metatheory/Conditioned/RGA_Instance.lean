@@ -16,7 +16,7 @@ shape.
 NOT `RgaInv`.**  `CongVC.mergeL_congr` (`RGA_MergeCong.merge_eq_congr_inv`) and
 `InvPres.inv_mergeL` (`Inv_merge` + `id_mono_merge`) both consume `id_mono`, which
 `RgaInv` does not carry.  So the hosting signature here is `RGACondSig'`, a copy of
-`G2Probe.RGACondSig` with `Inv := qInv`.  Its `toMRDTSig` is *the same* `RGAM`, so
+`RGASig.RGACondSig` with `Inv := qInv`.  Its `toMRDTSig` is *the same* `RGAM`, so
 `update = do_`, `mergeL = merge`, `init = init_st`, and every `RGACondSig`-stated
 fact (notably `rga_wfOpReachable`) transports definitionally.
 
@@ -35,9 +35,9 @@ open Sal.Metatheory.GenericEqQuotient
 
 /-- The RGA as a `ConditionedMRDTSig` whose `Inv` is the framework-required
 `qInv = wf ∧ root-free ∧ id_mono` (the fields' order matches
-`RGA_MergeCong.merge_eq_congr_inv`).  Same `toMRDTSig` as `G2Probe.RGACondSig`. -/
+`RGA_MergeCong.merge_eq_congr_inv`).  Same `toMRDTSig` as `RGASig.RGACondSig`. -/
 noncomputable def RGACondSig' : ConditionedMRDTSig where
-  toMRDTSig := G2Probe.RGAM
+  toMRDTSig := RGASig.RGAM
   Inv := fun s => wf s ∧ contains s 0 = false ∧ id_mono s
   applicable := fun o s => accurate o s ∧ fresh_ts o s
 
@@ -134,7 +134,7 @@ proposition for both signatures. `rga_wfOpReachable` transports definitionally. 
 `RGACondSig'` and `RGACondSig` — but with an abstract list both are stuck, so this
 one-line induction is needed to make the transport explicit. -/
 theorem wfChain_transport (s : concrete_st) (ρ : List op_t) :
-    WfChain RGACondSig' WfOp s ρ = WfChain G2Probe.RGACondSig WfOp s ρ := by
+    WfChain RGACondSig' WfOp s ρ = WfChain RGASig.RGACondSig WfOp s ρ := by
   induction ρ generalizing s with
   | nil => rfl
   | cons o ρ ih =>

@@ -77,7 +77,9 @@ namespace Sal.Metatheory.RGABubbleWiring
 open Sal.Emulation
 open Sal.Metatheory
 open Sal.Metatheory.ConditionedConvergence
-open Sal.Metatheory.G2Probe (loOnC RGACondSig insOpE delOpE)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory (loOnC)
+open Sal.Metatheory.G2Probe (insOpE delOpE)
 open Sal.Metatheory.RGAGeneralSwap
 
 /-! ## §1  The generic swap-witness abstraction (deliverable 1)

@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Conditioned.G2_Applicability_Aware
+import Sal.MRDTs.Metatheory.Conditioned.NoopFeasible
 
 /-!
 # Task #4: the update-feasibility gate — `loOnA + noopFeasible` as the feasibility notion
@@ -87,19 +88,12 @@ namespace Sal.Metatheory.UpdateFeasibilityGate
 
 open Sal.Emulation
 open Sal.Metatheory.G2Probe
+open Sal.Metatheory.RGASig
 open Sal.Metatheory.G2AppAware
 
-/-! ## §0  The relaxed feasibility predicate `noopFeasible`
-
-`noopFeasible D π s` folds `π` from `s` and requires, at every prefix, that the next op is
-`D.applicable` OR acts as the identity (`D.update s o = s`) on the state reached so far.
-This RELAXES `applicabilityValid` (`G2_Applicability_Aware.lean`), whose clause was strict
-`D.applicable o s`. -/
-
-/-- Every prefix-fold of `π` (from `s`) keeps the next op applicable OR a no-op there. -/
-def noopFeasible (D : ConditionedMRDTSig) : List (Op D.AppOp) → D.State → Prop
-  | [], _ => True
-  | o :: rest, s => (D.applicable o s ∨ D.update s o = s) ∧ noopFeasible D rest (D.update s o)
+/-! ## §0  `noopFeasible` — moved to `NoopFeasible.lean` (namespace
+`Sal.Metatheory`); this file keeps the gate: the `Del` no-op algebra and the
+two-case verdict that `loOnA + noopFeasible` is the right feasibility notion. -/
 
 /-! ## §1  The RGA `Del` no-op algebra
 

@@ -20,7 +20,7 @@ set_option maxHeartbeats 1000000
 namespace Sal.Metatheory.RGANoopFeasibleAccurate
 
 open Sal.Emulation
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAInstance (RGACondSig')
 
 /-- **Prefix extraction for `noopFeasible`.**  The delivery disjunct holds at every prefix fold: from

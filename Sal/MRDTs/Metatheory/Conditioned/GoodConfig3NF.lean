@@ -34,7 +34,7 @@ namespace Sal.Metatheory.GoodConfig3NF
 
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 
 variable {D : ConditionedMRDTSig}
 

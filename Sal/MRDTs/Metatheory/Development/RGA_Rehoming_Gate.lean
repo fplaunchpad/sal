@@ -94,7 +94,8 @@ set_option maxHeartbeats 1000000
 namespace Sal.Metatheory.RGARehomingGate
 
 open Sal.Emulation
-open Sal.Metatheory.G2Probe (RGACondSig contains_doIns_self)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory.G2Probe (contains_doIns_self)
 open Sal.Metatheory.ConditionedConvergence (interleavingFeasible appOrNoop)
 
 /-! ## §1  The four events and the base chain `root → node1 → node2` -/

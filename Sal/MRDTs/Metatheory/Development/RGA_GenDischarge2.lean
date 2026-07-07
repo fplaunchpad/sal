@@ -66,7 +66,7 @@ open Sal.Metatheory.RGAConditionedConvergence
   (applySeqR applySeqR_append applySeqR_cons applySeqR_nil chainFaithful_of_accurate)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open RGAInterleavedThreading (GoodStep GoodFold chainFaithful_goodStep chainFaithful_goodFold)
 open Sal.Metatheory.RGAStaledDelGate (chainFaithful_doDel_faithful)
 open RGARecPathFaithful (target recPath recList_eq_target_recPath)

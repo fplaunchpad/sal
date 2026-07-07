@@ -37,7 +37,7 @@ namespace Sal.Metatheory.RGACorrectedResidual
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient (loOnEq EqJoinLemma3C_NF fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv')
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAConditionedConvergence (eq_trans)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch CanonFoldOK eq_of_canonMatch2 RGA_update_convergence_canon)

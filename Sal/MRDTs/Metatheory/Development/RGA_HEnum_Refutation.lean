@@ -45,7 +45,8 @@ namespace Sal.Metatheory.RGAHEnumRefutation
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient (loOnEq fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible ins_del_noopFeasible contains_doDel_node1)
+open Sal.Metatheory (noopFeasible)
+open Sal.Metatheory.UpdateFeasibilityGate (ins_del_noopFeasible contains_doDel_node1)
 open Sal.Metatheory.G2Probe (insOpE delOpE contains_doIns_self insOpE_applicable_at_init)
 open Sal.Metatheory.RGALoOnEqCausal (not_loOnEq_of_not_vis)
 open Sal.Metatheory.RGASkeleton (noopFeasible_transport rga_RA_linearizable_skeleton)

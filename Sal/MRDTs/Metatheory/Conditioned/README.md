@@ -18,10 +18,12 @@ It exists so that the mainline root of `Sal/MRDTs/Metatheory/` never imports
 Everything here is kernel-clean: axioms ⊆ {`propext`, `Classical.choice`,
 `Quot.sound`}, zero `sorry`.
 
-A file-naming caveat: several files keep the name of the *investigation* that
-produced them (`*_Probe`, `*_Gate`, `G2_*`) because the definition that the
-whole chain rests on was first written inside that investigation and downstream
-files refer to it there. The map below says what each file actually provides.
+A file-naming note: several files keep the name of the *investigation* that
+produced them (`*_Probe`, `*_Gate`, `G2_*`). The load-bearing definitions that
+were first written inside those investigations now live in properly-named
+homes — `RGA_CondSig.lean` (the signature), `LoOnC.lean` (the baseline order),
+`NoopFeasible.lean` (the feasibility predicate) — and the investigation files
+keep what their names promise: the counterexamples, gates, and verdicts.
 
 ## `Base/` — the transition-system core
 
@@ -49,9 +51,11 @@ of RA-linearizability.
 
 | file | provides |
 |---|---|
-| `G2_Transport_Probe.lean` | **`RGACondSig`** — the conditioned signature structure itself — plus the G2 counterexamples showing unconditioned commutation fails (`insdel_not_commutes_unconditioned`) |
-| `G2_Applicability_Aware.lean` | `appliesDependsOn`, **`loOnA`** (the applicability-aware order) and the separation results against plain `loOnC` |
-| `UpdateFeasibility_Gate.lean` | **`noopFeasible`** and the verdict that `loOnA + noopFeasible` is the right feasibility notion (`loOnA_noopFeasible_verdict`) |
+| `LoOnC.lean` | **`loOnC`** — the set-relative conditioned linearization order (`lo` with `commutes ↦ commutesOn`), the baseline the update layer runs against |
+| `NoopFeasible.lean` | **`noopFeasible`** — the relaxed feasibility predicate (each op applicable or a no-op at its prefix-fold) |
+| `G2_Transport_Probe.lean` | the G2 refutation: unconditioned applicability-transport fails (`G2_conditioned_convergence_refuted`), with the `insOpE`/`delOpE` counterexample; the ⚑-site map of the convergence induction |
+| `G2_Applicability_Aware.lean` | the probe-level `loOnA`/`appliesDependsOn` and the separation results against plain `loOnC` (the framework's `loOnA` is `ConditionedConvergence.lean`) |
+| `UpdateFeasibility_Gate.lean` | the `Del` no-op algebra and the verdict that `loOnA + noopFeasible` is the right feasibility notion (`loOnA_noopFeasible_verdict`) |
 | `Reunification_Peel_Obstruction.lean` | the K2 example (`K2Op`, `k2Update`, …) proving the full-closure peel does not exist (`reunification_peel_obstruction`); `JoinLemma3C.lean` reuses the K2 machinery for its boundary results |
 | `JoinLemma3C.lean` | `ClosurePred` (`weakClosure`/`fullClosure`), **`JoinLemma3C 𝒞`** — the closure-indexed Join Lemma — and the peel-compatibility boundary |
 | `GenericEqQuotient.lean` | **`EqEquiv`** (`≈`), `CongVC`, `InvInvVC`, `InvState`, the **`QSig` quotient functor** `D ↦ D≈`, and the conditioned metatheorem up to `≈` (`RA_linearizable_up_to_eq`) |
@@ -67,7 +71,13 @@ of RA-linearizability.
 ## The tombstone-free RGA instance chain
 
 The RGA (`Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean`)
-instantiated into the framework. Sub-chains, each in dependency order.
+instantiated into the framework. The signature every file below builds on:
+
+| file | provides |
+|---|---|
+| `RGA_CondSig.lean` | **`RGAM`** (the raw `MRDTSig`: `do_`, three-way merge, `rc = Either`) and **`RGACondSig`** (`Inv := RgaInv`, `applicable := accurate ∧ fresh_ts`), plus the order-stable `opOK` layer discharging Inv-transport (`obligation_A_RGA`); namespace `Sal.Metatheory.RGASig` |
+
+Sub-chains, each in dependency order.
 
 **Update-side swaps and faithfulness** — commutation of concurrent updates,
 conditioned on the `Faithful`/`ChainFaithful` state predicates:

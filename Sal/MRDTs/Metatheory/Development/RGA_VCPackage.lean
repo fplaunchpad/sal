@@ -16,7 +16,7 @@ consumes five VCs over a `ConditionedMRDTSig D`:
 
 This file supplies the RGA's instances of the EASY ones — everything except the
 `mergeL` merge-congruence field of `CongVC` and the `≈`-Join, which are separate
-workstreams. The datatype is `G2Probe.RGACondSig`
+workstreams. The datatype is `RGASig.RGACondSig`
 (`State = concrete_st`, `update = do_`, `mergeL = merge`, `≈ = eq`,
 `Inv = RgaInv = (contains · 0 = false) ∧ wf`,
 `applicable = accurate ∧ fresh_ts`, `Query = Unit`).
@@ -44,6 +44,7 @@ open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAConditionedConvergence
 open Sal.Metatheory.RGAEqQuotient
 open Sal.Metatheory.G2Probe
+open Sal.Metatheory.RGASig
 
 /-! ## §1. `EqEquiv` — the observational relation `≈` = `eq`. -/
 

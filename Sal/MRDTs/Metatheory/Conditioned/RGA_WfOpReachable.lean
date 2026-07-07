@@ -42,7 +42,7 @@ set_option maxHeartbeats 1000000
 
 open Sal.Emulation (Op)
 open Sal.Metatheory.GenericEqQuotient (WfChain WfOpReachable)
-open Sal.Metatheory.G2Probe (RGACondSig resolve_mem isAncPath_not_mem)
+open Sal.Metatheory.RGASig (RGACondSig resolve_mem isAncPath_not_mem)
 open Sal.Metatheory.RGACanonFoldOK (insertedIn_of_contains_fold)
 open RGACanonConvergence (insertedIn)
 open RGAMergeLinearization (applySeqR)

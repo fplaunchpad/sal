@@ -50,7 +50,7 @@ namespace Sal.Metatheory.RGAEqJoinNF
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient (loOnEq EqJoinLemma3C_NF fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv')
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch eq_of_canonMatch2)
 open Sal.Metatheory.RGAConditionedConvergence (applySeqR_append)

@@ -44,7 +44,8 @@ set_option maxHeartbeats 1000000
 namespace Sal.Metatheory.RGADepCompGate
 
 open Sal.Emulation
-open Sal.Metatheory.G2Probe (RGACondSig loOnC rc_is_Either)
+open Sal.Metatheory.RGASig (RGACondSig rc_is_Either)
+open Sal.Metatheory (loOnC)
 open Sal.Metatheory.ConditionedConvergence (loOnA appliesDependsOn)
 open Classical
 

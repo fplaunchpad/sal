@@ -35,7 +35,7 @@ open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC')
 open Sal.Metatheory.RGAInstanceNF (rga_invCong)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open RGAMergeLinearization (applySeqR)
 
 /-- **The literal-fold merge residual.**  From the three born-applicable deliveries `ρ₀` (LCA),

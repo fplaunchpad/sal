@@ -62,7 +62,7 @@ namespace Sal.Metatheory.RGAConvergenceEq
 
 open Sal.Emulation (respects listPermOf)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.GenericEqQuotient (loOnEq eqCommutesOn doW)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' rga_inv_init')
 open Sal.Metatheory.RGAInvUpdateQ (WfOpQ WfOpGenQ wfOpQ_ins_of_genQ)

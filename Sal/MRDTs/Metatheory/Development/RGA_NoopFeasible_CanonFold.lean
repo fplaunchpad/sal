@@ -56,7 +56,7 @@ open Classical
 
 namespace Sal.Metatheory.RGANoopFeasible
 
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (appOrNoop)
 open Sal.Metatheory.RGACanonFoldOK
 open RGACanonConvergence
@@ -165,7 +165,7 @@ induce order edges) plus the good-enum's `hlast`.  `RefEdge` is the honest
 causal-reference wellformedness the reachability layer provides. -/
 
 open Sal.Metatheory.RGAConvergenceEq (GoodEnumR goodEnumR_append loEqRGA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpGenQ)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
 open Sal.Emulation (respects listPermOf)

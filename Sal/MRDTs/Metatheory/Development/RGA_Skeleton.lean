@@ -63,18 +63,18 @@ namespace Sal.Metatheory.RGASkeleton
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch survP insertedIn deletedIn)
 open RGAMergeFoldChain (CanonBirthBridge)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpGenQ)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.RGANoopFeasible (RefEdge)
 open Sal.Metatheory.RGAConditionedConvergence (applySeqR_append)
 open Sal.Metatheory.RGACanonMatchReachable (canonMatch_reachable_of_facts)
 open Sal.Metatheory.RGAEndToEnd (hCanon_of_leaves rga_RA_linearizable_end_to_end)
 
-/-- **`noopFeasible` is signature-`Inv`-independent.**  `RGACondSig'` and `G2Probe.RGACondSig` share
+/-- **`noopFeasible` is signature-`Inv`-independent.**  `RGACondSig'` and `RGASig.RGACondSig` share
 `toMRDTSig := RGAM` and the same `applicable`; they differ only in `Inv`, which `noopFeasible` never
 reads. For a variable list both sides are stuck, so — exactly like `RGA_Instance.wfChain_transport` —
 this one-line induction makes the transport explicit. -/

@@ -47,7 +47,7 @@ open Sal.Metatheory.RGAConditionedConvergence
    EqSwap eqSwap_of_bothFaithful bubble_eq)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig isAncPath_not_mem)
+open Sal.Metatheory.RGASig (RGACondSig isAncPath_not_mem)
 open RGAInterleavedThreading
   (GoodStep GoodFold AncInsLink chainFaithful_goodFold chainFaithful_init_recList)
 open Sal.Metatheory.RGAGenDischarge

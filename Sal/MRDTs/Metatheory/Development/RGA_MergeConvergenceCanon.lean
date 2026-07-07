@@ -49,7 +49,7 @@ namespace Sal.Metatheory.RGAMergeConvergenceCanon
 
 open Sal.Emulation (respects listPermOf)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.GenericEqQuotient (loOnEq)
 open Sal.Metatheory.RGAInstance (rgaEqEquiv')
 open Sal.Metatheory.RGAInvUpdateQ (WfOpQ)

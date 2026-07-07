@@ -34,7 +34,7 @@ namespace Sal.Metatheory.RGAInvUpdateQ
 
 open Sal.Emulation (Op)
 open Sal.Metatheory.GenericEqQuotient (InvPres WfChain WfOpReachable)
-open Sal.Metatheory.G2Probe (resolve_mem isAncPath_not_mem)
+open Sal.Metatheory.RGASig (resolve_mem isAncPath_not_mem)
 open Sal.Metatheory.RGAInstance (RGACondSig' rga_inv_init' rga_inv_mergeL')
 open Sal.Metatheory.RGACanonFoldOK (insertedIn_of_contains_fold)
 open RGAMergeLinearization (applySeqR)

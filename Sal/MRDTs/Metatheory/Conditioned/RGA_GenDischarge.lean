@@ -34,7 +34,7 @@ open Sal.Metatheory.RGAGeneralSwap (Faithful NoFreshClash)
 open Sal.Metatheory.RGABubbleWiring (recList)
 open Sal.Metatheory.RGAConditionedConvergence (applySeqR)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open RGARecPathFaithful
   (target recPath RecPathFaithful recPathFaithful_of_accurate faithful_of_recPathFaithful

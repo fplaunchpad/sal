@@ -30,7 +30,7 @@ open Classical
 namespace Sal.Metatheory.RGAK1Delta
 
 open Sal.Emulation
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.GenericEqQuotient (loOnEq fullClosureRel)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA)

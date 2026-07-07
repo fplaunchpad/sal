@@ -77,7 +77,7 @@ namespace Sal.Metatheory.ConditionedExecutionModel
 
 open Sal.Emulation
 open Sal.Metatheory.ConditionedConvergence (loOnA appliesDependsOn appOrNoop)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 
 /-! ## §1  The conditioned configuration and its generation discipline -/
 

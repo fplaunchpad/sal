@@ -34,7 +34,8 @@ open Classical
 namespace Sal.Metatheory.RGAK1Delta
 
 open Sal.Emulation
-open Sal.Metatheory.G2Probe (RGACondSig loOnC rc_is_Either)
+open Sal.Metatheory.RGASig (RGACondSig rc_is_Either)
+open Sal.Metatheory (loOnC)
 open Sal.Metatheory.ConditionedConvergence (loOnA appliesDependsOn)
 open RGAMergeLinearization (applySeqR applySeqR_cons)
 open Sal.Metatheory.RGACanonFoldOK

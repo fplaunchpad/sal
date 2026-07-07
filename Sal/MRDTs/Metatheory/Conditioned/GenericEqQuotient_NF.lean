@@ -28,7 +28,7 @@ set_option maxHeartbeats 1000000
 namespace Sal.Metatheory.GenericEqQuotient
 
 open Sal.Emulation
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 
 variable {D : ConditionedMRDTSig}
 

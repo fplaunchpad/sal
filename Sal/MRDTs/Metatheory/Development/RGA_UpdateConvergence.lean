@@ -21,7 +21,7 @@ obtained by discharging the residual `hReady` hypothesis of the RGA convergence
 engine `RGAConditionedConvergence.RGA_conditioned_convergence_bothFaithful` using
 M1 (`RGAEnablementBase.faithful_at_enablement_ins`, the Faithful conjuncts) and
 M2 (`ConditionedExecutionModel.ConditionedConfiguration.conditioned_premises`, the
-rest), with the RGA instantiated as `G2Probe.RGACondSig`
+rest), with the RGA instantiated as `RGASig.RGACondSig`
 (`Inv := RgaInv`, `applicable := accurate ∧ fresh_ts`, `update := do_`).
 
 ## What composes cleanly (mechanized below, 0-sorry, kernel-clean)
@@ -104,8 +104,8 @@ namespace Sal.Metatheory.RGAUpdateConvergence
 
 open Sal.Emulation
 open Sal.Metatheory.ConditionedExecutionModel
-open Sal.Metatheory.G2Probe (RGACondSig)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAConditionedConvergence (applySeqR)
 
 /-! ## §0  The fold bridge: the engine's `applySeqR` IS M2's `applySeq` at `RGACondSig`

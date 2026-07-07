@@ -36,7 +36,7 @@ namespace Sal.Metatheory.RGAEndToEnd
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC' WfOpA rgaInvPresA rgaInvInvVCA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch survP insertedIn deletedIn)
 open RGAMergeFoldChain (CanonBirthBridge)

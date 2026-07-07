@@ -43,9 +43,9 @@ open RGAInterleavedThreading
   (GoodStep GoodFold AncInsLink chainFaithful_goodStep chainFaithful_goodFold
    chainFaithful_init_recList chainFaithful_at_interleaved_fold faithful_at_interleaved_fold)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open Sal.Metatheory.RGAConditionedConvergence (RGA_conditioned_convergence_bothFaithful)
 open Sal.Metatheory.RGAUpdateConvergenceAssembly (fresh_ts_state_of_ids)
 

@@ -88,6 +88,7 @@ namespace Sal.Metatheory.G2AppAware
 
 open Sal.Emulation
 open Sal.Metatheory.G2Probe
+open Sal.Metatheory.RGASig
 
 /-! ## §1  Repair (b): applicability-restricted convergence
 

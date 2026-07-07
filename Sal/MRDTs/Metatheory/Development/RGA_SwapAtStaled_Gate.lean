@@ -95,7 +95,8 @@ namespace Sal.Metatheory.RGASwapAtStaled
 
 open Sal.Emulation
 open Sal.Metatheory.RGARehomingGate
-open Sal.Metatheory.G2Probe (RGACondSig folds_differ insOpE delOpE)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory.G2Probe (folds_differ insOpE delOpE)
 
 /-! ## §1  The staled state and the two concurrent, `accurate` events -/
 

@@ -63,7 +63,7 @@ namespace Sal.Metatheory.RGACanonFoldOK
 open Sal.Emulation (respects listPermOf)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open RGAMergeLinearization (applySeqR applySeqR_nil applySeqR_cons)
 open RGACanonConvergence
 

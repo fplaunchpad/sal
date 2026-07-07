@@ -26,8 +26,8 @@ namespace Sal.Metatheory.RGABranchDecomp
 open Sal.Emulation
 open RGANoopFeasible (RGA_update_convergence_noop RefEdge)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpGenQ)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory (noopFeasible)
+open Sal.Metatheory.RGASig (RGACondSig)
 open RGAMergeLinearization (applySeqR BranchInv GoodBranchFold)
 open Sal.Metatheory.RGABranchInvFold (branchInv_of_decomp)
 

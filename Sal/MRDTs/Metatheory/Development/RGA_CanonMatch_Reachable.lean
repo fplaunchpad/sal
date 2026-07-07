@@ -31,8 +31,8 @@ open RGANoopFeasible (canonFoldOK_of_noopFeasible)
 open Sal.Metatheory.RGAConvergenceEq (GoodEnumR)
 open RGAMergeLinearization (applySeqR)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpGenQ)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory (noopFeasible)
+open Sal.Metatheory.RGASig (RGACondSig)
 
 /-- **`CanonMatch` for a reachable born-applicable fold.**  A `GoodEnumR`, `noopFeasible`
 enumeration `σ` of `E` (`R` any order with `RefEdge E R`, ids distinct/nonzero, ops `WfOpGenQ`) folds

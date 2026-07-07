@@ -41,7 +41,7 @@ open Sal.Metatheory.RGABubbleWiring (recList)
 open Sal.Metatheory.RGAConditionedConvergence (applySeqR)
 open RGAInterleavedThreading (GoodFold faithful_at_interleaved_fold)
 open Sal.Metatheory.ConditionedExecutionModel (ConditionedConfiguration)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.RGAUpdateConvergenceFinal (RGA_update_convergence)
 

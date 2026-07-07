@@ -62,7 +62,8 @@ open Sal.Emulation
 open Sal.Metatheory
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.ConditionedConvergence (loOnA appliesDependsOn)
-open Sal.Metatheory.G2Probe (RGACondSig loOnC)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory (loOnC)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv')
 open Classical
 
@@ -95,7 +96,7 @@ theorem loOnA_reduce (C : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
   · rintro ((⟨hv, hnc⟩ | ⟨_, _, hrc, _⟩) | ⟨hv, hdep⟩)
     · exact ⟨hv, Or.inl hnc⟩
     · exact absurd hrc (by
-        rw [Sal.Metatheory.G2Probe.rc_is_Either]
+        rw [Sal.Metatheory.RGASig.rc_is_Either]
         exact fun h => RcRes.noConfusion h)
     · exact ⟨hv, Or.inr hdep⟩
   · rintro ⟨hv, hnc | hdep⟩

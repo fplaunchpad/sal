@@ -42,7 +42,7 @@ open Sal.Metatheory.GoodConfig3H
 open Sal.Metatheory (Configuration Version Step3 Label3 initConfig labeledTS3)
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
 open Sal.Metatheory.RGAInvUpdateQ (WfOpQ)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 open Sal.Metatheory.ConditionedConvergence (loOnA)
 open Sal.Metatheory.RGAK1Delta (rgaHonJ loOnA_imp_vis genDisc2C_of_born pastE)
 open Sal.Metatheory.RGACanonFoldOK (GenDisc2C insertedIn_of_contains_fold)

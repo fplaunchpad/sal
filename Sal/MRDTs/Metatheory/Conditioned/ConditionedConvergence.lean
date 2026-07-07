@@ -93,8 +93,10 @@ namespace Sal.Metatheory.ConditionedConvergence
 
 open Sal.Emulation
 open Sal.Metatheory
-open Sal.Metatheory.G2Probe (loOnC RGACondSig insOpE delOpE)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory.RGASig (RGACondSig)
+open Sal.Metatheory (loOnC)
+open Sal.Metatheory.G2Probe (insOpE delOpE)
+open Sal.Metatheory (noopFeasible)
 open Classical
 
 /-! ## §0  Generic definitions

@@ -95,7 +95,7 @@ namespace Sal.Metatheory.RGASwapNonEmpty
 open Sal.Emulation
 open Sal.Metatheory.RGARehomingGate (insA insB baseAB baseAB_eq
   contains_baseAB_1 contains_baseAB_0 contains_baseAB_3 anc_baseAB_1)
-open Sal.Metatheory.G2Probe (RGACondSig)
+open Sal.Metatheory.RGASig (RGACondSig)
 
 /-! ## §1  The deep tree, the staled insert, and the delete events -/
 

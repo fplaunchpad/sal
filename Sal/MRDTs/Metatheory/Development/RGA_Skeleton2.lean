@@ -49,7 +49,7 @@ namespace Sal.Metatheory.RGASkeleton2
 open Sal.Emulation
 open Sal.Metatheory.GenericEqQuotient
 open Sal.Metatheory.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
-open Sal.Metatheory.UpdateFeasibilityGate (noopFeasible)
+open Sal.Metatheory (noopFeasible)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch CanonFoldOK CanonInv canon_fold canonInv_init
   canonMatch_of_canonInv survP insertedIn deletedIn)
