@@ -332,11 +332,30 @@ backward via `pairwise_append` (no index arithmetic).
     `rga_RA_linearizable_final` = skeleton3 @ rgaHonJ with hEnum :=
     `rga_hEnum_discharged`, hCanon := `hCanon_of_leaves3 rgaHonJ
     rga_hMergeInputs_discharged`, hHext := `rga_hHext_discharged`.
-  * **REMAINING (the only open work):** `hHon` (rgaHonJ at reachable cores —
-    `genDisc2C_of_born` at the real core + `vis_src`/`vis_tgt` + nonzero ids
-    + Lamport + no root deletes, by reachability induction over Step3) and
-    `hBA` (born-applicable delivery). Then README + Development→mainline
-    promotion (+ #28 PDF).
+  * **✅ hHon + hBA residual DISCHARGED (a3f4a26, `RGA_Honest_Residual.lean`,
+    kernel-clean) — THE HONEST CAPSTONE `rga_RA_linearizable_honest`:** RGA
+    RA-lin up to ≈ at every reachable configuration, from a SINGLE per-step
+    assumption `HonestDelivery` = (1) *born accuracy* — the delivered op was
+    generated accurately against a causal fold of the head version's events
+    (the generation discipline forced by tombstone-freedom; the acknowledged
+    irreducible assumption) + (2) *born-applicable delivery* (hBA's clauses
+    verbatim). Everything else DERIVED:
+    - Lamport clocks / timestamp uniqueness / vis-support are STRUCTURAL
+      fields of the metatheory `Configuration` (`causal_mono`,
+      `timestamps_distinct`, `vis_src`/`vis_tgt`) — dishonest-clock
+      configurations are unrepresentable; no induction needed.
+    - Nonzero ins-times and nonzero del-TARGETS from the delivered op's own
+      `WfOpQ`, extracted from hBA at a representative of the head class
+      (`wfOpQ_of_hBA`; the Del clause is ℕ-unsatisfiable at target 0) —
+      task #36's content absorbed, no separate WfOpGenQ premise.
+    - Nonzero del-TIMES Lamport-derived: an accurate non-root del saw its
+      target's insert, so `t > insert-time ≥ 0` forces `t ≥ 1`.
+    - `GenDisc2C` at every reachable core = `genDisc2C_of_born` over the
+      `HonCore` reachability invariant (finite events + nonzero ids + no
+      root dels + born accuracy) maintained through all four Step3 cases;
+      the rgaHonJ witness is the re-typed core `coreR` (only `N`'s state
+      type differs from `Configuration.core`; nothing reads `N`).
+    **Remaining: README + Development→mainline promotion (+ #28 PDF, #29).**
 
   **Superseded plan (historical; kept for the refutation ledger):**
   1. `Hdec` (σ₀' id-monotonicity): fold invariant along ρ₀ from honest payload
