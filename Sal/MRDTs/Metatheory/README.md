@@ -9,10 +9,62 @@ OOPSLA 2025), built on the corrected binary theory of
 the historical peel route, the impossibility results) is in
 [`Development/`](Development/).
 
-## 1. The VC set — [`VC_Set.lean`](VC_Set.lean)
+**The signature — one framework.** An MRDT presents the *conditioned*
+signature (`ConditionedMRDTSig`, [`MRDTSig.lean`](MRDTSig.lean))
 
-**Eight verification conditions** suffice for RA-linearizability. For an
-MRDT `⟨Σ, σ₀, do, mergeL, rc⟩`:
+    ⟨ Σ, σ₀, do, mergeL, rc, Inv, applicable ⟩
+
+together with an observational equivalence `≈` on states (`EqEquiv`,
+[`Development/GenericEqQuotient.lean`](Development/GenericEqQuotient.lean)):
+a state space with initial state, the update `do`, the three-way merge
+`mergeL l a b` (LCA first), the conflict-resolution policy `rc` for
+concurrent non-commuting pairs, a state invariant `Inv` (a shape
+over-approximation of reachability), an applicability predicate
+`applicable` (when an op is sensible at a state — it may read the op's
+timestamp), and `≈` (what clients can distinguish). Commutation is
+**conditioned** (`commutesOn`): two ops must commute only at `Inv`-states
+where both are applicable. **Flat datatypes** — counters, sets, registers,
+everything whose ops make sense on every state — take
+`Inv = applicable = ⊤` and `≈` := `=`; that specialization collapses to the
+unconditioned theory, and §§1–3 below are exactly it. §4 is the framework
+at full generality, exercised by the one production datatype that needs it.
+
+**The setting.** Replicas fork, apply operations locally, and merge,
+git-style. The LTS (`Step3`, [`ExecutionModel.lean`](ExecutionModel.lean),
+[`LCA_Lemma.lean`](LCA_Lemma.lean)) keeps a ranked **version store**: every
+apply and merge allocates a fresh version carrying its `(state, event set)`
+pair, and merge takes the two head states *plus the state at their lowest
+common ancestor* (LCA) in the version DAG. Events are timestamped ops
+`(t, r, o)`; visibility `vis` is the causal order delivery induces
+(Lamport-monotone timestamps and causally-closed logs are structural fields
+of `Configuration` — executions violating them are unrepresentable).
+
+**The property — one definition.** The **linearization order** `lo` on an
+event set `E` orders exactly the pairs a correct sequential replay must not
+invert: a `vis`-related non-`commutesOn` pair in `vis` order, and a
+concurrent non-`commutesOn` pair by `rc` (unless a still-later
+non-commuting event already overrides the later one). `lo` is partial and
+not transitive, so "π respects `lo`" is the pairwise no-inversion
+condition, not sortedness. **RA-linearizability, per version, up to `≈`**:
+in every reachable configuration, *every* stored version `(s, E)` — LCAs
+included, not just replica heads — satisfies
+
+    ∃ π, π a lo-respecting permutation of E  ∧  fold do σ₀ π ≈ s .
+
+This single definition has two mechanized renderings: at the flat
+specialization `≈` is `=` and it is `IsRALinearizable3`
+([`Adequacy.lean`](Adequacy.lean)); in general the store holds `≈`-classes
+and it is `IsRALinearizable3Eq`
+([`Development/GoodConfig3H.lean`](Development/GoodConfig3H.lean)), with
+the *raw* `do`-fold as witness. The **canonical state** `σ(E)` is that
+fold, well-defined (up to `≈`) because the theory forces all such folds of
+`E` to agree.
+
+## 1. The VC set (flat specialization) — [`VC_Set.lean`](VC_Set.lean)
+
+**Eight verification conditions** suffice for RA-linearizability in the
+flat specialization (`Inv = applicable = ⊤`, `≈` = `=`), where the
+signature reduces to `⟨Σ, σ₀, do, mergeL, rc⟩`:
 
 Update layer (`UpdateVCs`, defined in [`Sigma_LoOn3.lean`](Sigma_LoOn3.lean)):
 1. `rc_non_comm_directional` — for *different-replica* events with distinct
@@ -40,18 +92,17 @@ group ⊕ lattice classes: Counter, G-Set, every LCA-blind CRDT);
 merges like the Enable-wins flag provably need full closure, not just
 commutation closure; reunifying this with the feasible route is open).
 
-## 2. Adequacy — [`Adequacy.lean`](Adequacy.lean)
+## 2. Adequacy (flat specialization) — [`Adequacy.lean`](Adequacy.lean)
 
     ra_linearizable_of_core_feasible_cd3 :
       CoreVCs3CD D → FeasibleDeltaVCs3 D → CDVC3 D →
       ∀ C reachable from initConfig in the ternary system Step3,
         IsRALinearizable3 C
 
-`IsRALinearizable3` is **per version**: every version in the store (LCAs
-included, not just replica heads) is a `lo`-respecting linearization of its
-event set. The proof carries `GoodConfig3` (every version canonical + store
-closure facts) through the LTS of [`LCA_Lemma.lean`](LCA_Lemma.lean); the
-merge case is the Join Lemma obtained by `join_lemma3_of_cd_feasible`.
+— the definition above at `≈` := `=`. The proof carries `GoodConfig3`
+(every version canonical + store closure facts) through the LTS of
+[`LCA_Lemma.lean`](LCA_Lemma.lean); the merge case is the Join Lemma
+obtained by `join_lemma3_of_cd_feasible`.
 Also here: the unconditional-route bridge (`ra_linearizable_of_core_delta_cd3`),
 the commuting-class discharge of CD (`cdVC3_of_all_comm`), and the
 full-closure bridge (`ra_linearizable3_of_joinF`) used by the Enable-wins
@@ -75,11 +126,12 @@ One file, all instance proofs:
 | **PN-Counter** (production mirror) | `pn_ra_linearizable3` | unconditional delta |
 | **RGA, tombstone** (production mirror) | `rga_ra_linearizable3` | unconditional delta |
 | **Peritext** (production mirror) | `peritext_ra_linearizable3` | unconditional delta |
-| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | conditioned end-to-end (§4) |
+| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | general framework (§4) |
 | all-commuting class | via `cdVC3_of_all_comm` | generic |
 
-Not yet mechanized (class-placed with recipes, draft T11.3–T11.4):
-Multi-Valued Register and Add-Wins Priority Queue (feasible class).
+Not yet mechanized: Multi-Valued Register and Add-Wins Priority Queue
+(feasible class; mechanical discharge recipes are drafted as entries
+T11.3–T11.4 of the findings journal under [`Development/`](Development/)).
 
 The production mirrors are faithful to `Sal/MRDTs/{OR_Set,
 OR_Set_Efficient, Enable_Wins_Flag}` (documented deviations only). The
@@ -87,39 +139,67 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
-## 4. The conditioned route — tombstone-free RGA —
-[`RGA_TombstoneFree_RA_Lin.lean`](RGA_TombstoneFree_RA_Lin.lean)
+## 4. The framework at full generality — [`RGA_TombstoneFree_RA_Lin.lean`](RGA_TombstoneFree_RA_Lin.lean)
+
+When commutation is genuinely state-dependent, the flat specialization is
+unavailable and the conditioned machinery fires. It is generic — stated
+over *any* `ConditionedMRDTSig` with an `EqEquiv`, on the same `Step3`
+LTS: the **`≈`-quotient functor** `D ↦ D≈` builds the datatype whose states
+are `≈`-classes of `Inv`-states, with update, merge and `applicable`
+descending by congruence
+([`Development/GenericEqQuotient.lean`](Development/GenericEqQuotient.lean));
+on top, a **witness-disciplined reachability layer** carries, per version,
+an enumeration witness for the general definition above, maintained at
+applies and joined at merges (`RA_linearizable_up_to_eq_H`,
+[`Development/GoodConfig3H.lean`](Development/GoodConfig3H.lean)). The
+datatype's obligations, replacing the eight flat VCs: `≈` is an equivalence
+(`EqEquiv`), `Inv` is preserved on wellformed ops (`InvPres`),
+update/merge/query are `≈`-congruent on `Inv` (`CongVC`, `InvInvVC`), and
+the merge is, up to `≈`, the fold of a `lo`-respecting enumeration of the
+joined events (the `≈`-Join, `EqJoinLemma3C_H`). Instantiated flat
+(`Inv = applicable = ⊤`, `≈` = `=`) these collapse into the ordinary Join
+Lemma of §2 — one framework, §§1–2 its easy half.
+
+**The exercising instance: the tombstone-free RGA**
+([`../RGA_Tombstone_Free/`](../RGA_Tombstone_Free)) — a replicated list
+whose deletes *physically remove* nodes, no tombstone set; every op carries
+its target's recorded ancestor path, and merge re-anchors each surviving
+node by climbing that path to the nearest survivor. Here `Inv` is the
+forest well-formedness (with id-monotone anchors), `applicable` is
+**accurate** (the recorded path is the target's true live ancestor chain)
+**∧ fresh**, and `≈` is indistinguishability under the RGA's queries (same
+live nodes, payloads, traversal order — dead-node representation residue
+quotiented away). This datatype cannot take the flat route: commutation
+over all states is false, a prefix-free variant that drops the paths is
+provably impossible (`RGA_PrefixFree_Impossible.lean`), and rehoming makes
+replay-order-dependent residue unavoidable, so `≈` cannot be `=`. The
+end-to-end instance theorem:
 
     rga_tombstone_free_ra_linearizable3_eq :
       HonestDelivery →
-      ∀ C reachable from initConfig in the quotient ternary system,
+      ∀ C reachable from initConfig (states quotiented by ≈),
         IsRALinearizable3Eq … C
 
-The tombstone-free path-carrying RGA
-([`../RGA_Tombstone_Free/`](../RGA_Tombstone_Free)) **cannot** go through
-the VC schema above: its commutation only holds *conditioned* on
-reachable/accurate states (tombstone-freedom forces delete-rehoming, which
-is only correct against states reflecting the op's causal past — and a
-prefix-free variant is provably impossible). The result is instead a direct
-end-to-end theorem through an **applicability-conditioned metatheory**: the
-observational quotient `D ↦ D≈`, an H-disciplined canonical-witness layer
-over the same `Step3` LTS, and the RGA's canonical-state engine. The target
-is RA-linearizability **up to observational equivalence** — every version
-of every reachable configuration is, up to `≈`, the raw `do_`-fold of a
-`lo`-respecting linearization of its events.
+— the one definition above, at the general rendering, with the raw
+`do`-fold as witness. The discharge replaces the swap-based repair of the
+flat theory (unsound here: the needed intermediate states are unreachable)
+with a **canonical-state engine** — the fold state is characterized as a
+pure function of the applied event *set* — and a witness discipline joined
+at merges by plain concatenation, no reordering.
 
-The single irreducible assumption (`HonestDelivery`) is per-step *honest
-delivery*: each delivered op was generated accurately against a causal fold
-of the events its replica had seen (born accuracy — how an RGA client
-actually works), and delivery is born-applicable. Lamport clocks and
-timestamp uniqueness are structural (dishonest-clock executions are
-unrepresentable in `Configuration`); nonzero ids and nonzero delete targets
-are derived from the op's own wellformedness. The full chain (quotient
-functor, canonical engine, the discharged capstone leaves, the residual
-reduction) is kernel-clean under [`Development/`](Development/), with
-`RGA_Honest_Residual.lean` at the top; the explicit-residual form
-(`rga_RA_linearizable_final`, premises `hHon`/`hBA` instead of
-`HonestDelivery`) is available for substituting a different execution
+The single assumption, `HonestDelivery`, is per-step *honest delivery*: at
+each apply, the delivered op (1) was generated **accurately against a
+causal fold of the events its replica had seen** — which is simply how a
+client computes an op from its replica's state — and (2) is applicable at
+the head version it is delivered to. Everything else is structural or
+derived: Lamport clocks and timestamp uniqueness are `Configuration`
+fields, and nonzero ids and nonzero delete targets follow from the
+delivered op's own wellformedness. The full chain (quotient functor,
+witness layer, canonical engine, the discharged merge bundle, the residual
+reduction) is kernel-clean under [`Development/`](Development/), topped by
+`RGA_Honest_Residual.lean`; an explicit-residual form
+(`rga_RA_linearizable_final`, taking the two reachability-level premises
+`hHon`/`hBA` directly) is available for substituting a different execution
 model.
 
 ## Reading order
