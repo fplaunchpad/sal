@@ -70,10 +70,10 @@ was refuted and repaired rather than transcribed:
   Priority Queue — and the tombstone-free RGA through the conditioned
   framework), every instance concluding through the one generic
   metatheorem. Start at
-  [`Sal/MRDTs/Metatheory/README.md`](Sal/MRDTs/Metatheory/README.md);
+  [`Sal/ConditionedMRDTs/README.md`](Sal/ConditionedMRDTs/README.md);
   superseded routes, impossibility results, and the T-series journal live
   under
-  [`Sal/MRDTs/Metatheory/Development/`](Sal/MRDTs/Metatheory/Development).
+  [`Sal/ConditionedMRDTs/Development/`](Sal/ConditionedMRDTs/Development).
 
 **This thread's original motivation — RESOLVED (2026-07).** The RGA's
 reachability-*conditioned* commutation is now justified end-to-end: the
@@ -82,8 +82,8 @@ H-disciplined canonical-witness layer, the RGA's canonical-state engine)
 proves the tombstone-free RGA **RA-linearizable up to observational `≈`**
 at every reachable configuration, from a single honest-delivery assumption
 (born accuracy + applicable delivery), kernel-clean. Mainline entry point:
-[`Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean`](Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean);
-the full chain lives under `Sal/MRDTs/Metatheory/Conditioned/`. Still open
+[`Sal/ConditionedMRDTs/MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean`](Sal/ConditionedMRDTs/MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean);
+the full chain lives under `Sal/ConditionedMRDTs/MRDT_Instances/RGA_TombstoneFree/`. Still open
 elsewhere: (b″)/(b″₃) and the route-reunification question (Metatheory
 READMEs).
 
@@ -112,16 +112,16 @@ the `Configuration.core` projection.
 - **Start here:**
   [`Sal/CRDTs/Metatheory/README.md`](Sal/CRDTs/Metatheory/README.md)
   (binary: results table + the VC-bundle ladder) and
-  [`Sal/MRDTs/Metatheory/README.md`](Sal/MRDTs/Metatheory/README.md)
+  [`Sal/ConditionedMRDTs/README.md`](Sal/ConditionedMRDTs/README.md)
   (ternary: the VC set, adequacy, the discharged-MRDT table).
 - **Journals:**
   [`Sal/CRDTs/Metatheory/FINDINGS.md`](Sal/CRDTs/Metatheory/FINDINGS.md)
   (A-series) and
-  [`Sal/MRDTs/Metatheory/Development/MRDT_METATHEORY_DRAFT.md`](Sal/MRDTs/Metatheory/Development/MRDT_METATHEORY_DRAFT.md)
+  [`Sal/ConditionedMRDTs/Development/MRDT_METATHEORY_DRAFT.md`](Sal/ConditionedMRDTs/Development/MRDT_METATHEORY_DRAFT.md)
   (T-series).
 - **Historical plans:** `BLUEPRINT.md`, `PHASE0_PLAN.md`,
   `SOUNDNESS_SPEC.md` under
-  [`Sal/MRDTs/Metatheory/Development/`](Sal/MRDTs/Metatheory/Development).
+  [`Sal/ConditionedMRDTs/Development/`](Sal/ConditionedMRDTs/Development).
 - Paper: `_references/Neem/lin.tex` (RA-lin def, `lo` relation,
   convergence), `_references/Neem/lemmas.tex` (the VC table + Theorems 1/2),
   `_references/Neem/appendix.tex:218-368` (the merge-case induction proof);
@@ -179,7 +179,7 @@ thread 3 mechanises.
   histories). This is the design whose *conditioned* VC motivates thread 3.
   **Now fully justified (2026-07):** the conditioned metatheory proves this
   RDT RA-linearizable up to observational `≈` end-to-end
-  (`Sal/MRDTs/Metatheory/RGA_TombstoneFree_RA_Lin.lean`).
+  (`Sal/ConditionedMRDTs/MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean`).
 - **Impossibility (new, kernel-checked):** tombstone-freedom and
   prefix-freedom are **mutually exclusive** for RGA in Sal's VC framework —
   the conflicting `Ins-after-x` / `Del-x` pair is forced into a *merge-free,

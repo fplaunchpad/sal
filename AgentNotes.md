@@ -6,7 +6,7 @@ per-directory `PLAN.md` files for detail.
 
 For the **end-to-end RA-linearizability proof of the tombstone-free RGA in the
 generic conditioned metatheory framework** (the active research arc — the
-`Sal/MRDTs/Metatheory/Development/` files), jump to the task list at the bottom:
+`Sal/ConditionedMRDTs/Development/` files), jump to the task list at the bottom:
 [End-to-end RA-linearizability in the generic framework](#end-to-end-ra-linearizability-in-the-generic-framework--task-list).
 
 ## Authoritative, proved result
@@ -75,7 +75,7 @@ switching: `git show <branch>:<path>`.
 
 The active research arc: an **unconditional, kernel-clean, Lean-mechanized proof
 of RA-linearizability for the tombstone-free RGA** in the generic conditioned
-metatheory framework. Working files live in `Sal/MRDTs/Metatheory/Development/`.
+metatheory framework. Working files live in `Sal/ConditionedMRDTs/Development/`.
 
 **Target theorem.** `IsRALinearizable3 C` for every reachable, honestly-executed
 config `C`, with `#print axioms ⊆ {propext, Classical.choice, Quot.sound}` and

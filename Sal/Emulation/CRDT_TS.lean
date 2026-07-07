@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.Base.CRDT_TS
+import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 
 /-!
 # Forwarding stub — content moved
