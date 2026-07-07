@@ -298,10 +298,37 @@ backward via `pairwise_append` (no index arithmetic).
   2. `hcaus`: pure membership transfer (perms + `hdts`) for 5 clauses; the two
      `deletedIn → insertedIn` provenance clauses from HonJ (del-target's
      creator is causally prior ⟹ in the branch by closure).
-  3. `hbridge` — per-survivor `CanonBirthBridge`: THE remaining deep item
-     (`canonBirthBridge_per_survivor` reduces it to the four carriers =
-     branch `LiveChain` (have) + `BranchInv`-I4 (case ii) + set-algebra;
-     tasks #38/#39).
+  3. `hbridge` — per-survivor `CanonBirthBridge`: THE remaining deep item.
+     **⚠️ SIXTH over-strong premise found (2026-07-08, pen-level):** the
+     four-carrier reduction's carrier 3 (`canonBirthBridge_per_survivor`'s
+     `hlive : IsAncPath σ₀' bw (liveSub σ₀' rcSuf)`) is FALSE for an ordinary
+     branch-delete + insert-below execution: LCA chain `3→2→1`, branch deletes
+     2, then inserts `t` anchored at 3 — the recorded suffix `[1]` skips the
+     branch-dead-but-LCA-LIVE node 2, so it is NOT the σ₀' chain (`anc σ₀' 3 =
+     2 ≠ 1`); the recorded suffix and the LCA chain agree only AFTER
+     `survP F`-filtering (2 is union-deleted). **Do NOT use
+     `canonBirthBridge_per_survivor`; use `canonBirthBridge_via_branchCanon`**
+     (`RGA_BranchCanon:110`), whose `hin` is the honest filtered form, pinned by
+     `hin_of_survFilterEq` to the crisp
+     `hFiltEq : rcSuf.filter (survB F) = cw.filter (survB F)`.
+     **Discharge plan for hbridge via the existing reduction:**
+     (a) `hsplit`/`hpreDead`: from the home branch's `CanonInv` LiveChain
+     (free!): `bw = anc σ_home t` is the FIRST home-final-live entry of the
+     recorded chain; the prefix is home-dead ⟹ (with the HonJ
+     reference-causality clause: chain entries' creators are causally prior,
+     hence in the home branch by closure) inserted-and-deleted in the home
+     branch ⟹ union-deleted ⟹ `¬ survP F` ✓;
+     (b) `hlwf/hawf/hbwf` from `CanonInv` `wf`s ✓; `hD` from the two domain
+     clauses (merge_domain_clause + fold CanonMatch, Bool-ext) ✓; `hcm` = hfold ✓;
+     (c) **`hFiltEq` — the sole remaining deep leaf**: the recorded suffix is a
+     SUBSEQUENCE of the σ₀' chain `cw` (rehome targets stay on the original
+     chain: a delete's recorded path lists its target's ancestors, so climbing
+     never leaves `cw` — induction over the branch fold), whose omissions are
+     branch-deleted ⟹ union-deleted ⟹ `¬ survP F`; conversely `cw`-entries
+     missing from the suffix are branch-dead ⟹ `¬ survP F` — so the
+     `survB F`-filters coincide. This is BranchInv-I4's content restated
+     directly on `CanonInv`'s LiveChain — likely SIMPLER than the old
+     `branchInv_of_enum` threading (both routes recorded; pick at build time).
   4. `hEnum` discharge: `HonJ := rgaHonJ`; synthetic `Emulation.Configuration`
      from the join's vis restricted to events (`vis_total_same_replica` from
      HonJ); π₀ := vis-sort of the delta; conclude via `K1_canonFoldOK`.
