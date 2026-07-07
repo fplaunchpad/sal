@@ -1,5 +1,12 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_EqJoin_NF
 import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance_NF
+import Sal.MRDTs.Metatheory.Conditioned.Base.CRDT_TS
+import Sal.MRDTs.Metatheory.Conditioned.GenericEqQuotient
+import Sal.MRDTs.Metatheory.Conditioned.GenericEqQuotient_NF
+import Sal.MRDTs.Metatheory.Conditioned.RGA_ConditionedConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeLinearization
+import Sal.MRDTs.Metatheory.Conditioned.UpdateFeasibility_Gate
 
 /-!
 # `EqJoinLemma3C_NF` for the RGA, reduced to the LITERAL-fold merge residual

@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_Skeleton
+import Sal.MRDTs.Metatheory.Development.RGA_Skeleton
 import Sal.MRDTs.Metatheory.Conditioned.RGA_LoOnEq_Causal
 
 /-!

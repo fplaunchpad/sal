@@ -1,6 +1,7 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_HEnum_Discharge
 import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeCanon_Fix
 import Sal.MRDTs.Metatheory.Conditioned.RGA_BranchCanon
+import Sal.MRDTs.Metatheory.Conditioned.RGA_FiltEq
 
 /-!
 # hbridge DISCHARGED — per-survivor `CanonBirthBridge` from the join context

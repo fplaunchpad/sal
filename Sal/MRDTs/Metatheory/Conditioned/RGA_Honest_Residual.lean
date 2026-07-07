@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_Final_Assembly
+import Sal.MRDTs.Metatheory.Conditioned.RGA_GenDisc_Assembly
 
 /-!
 # The honest-execution residual DISCHARGED — hHon + hBA from per-step delivery honesty

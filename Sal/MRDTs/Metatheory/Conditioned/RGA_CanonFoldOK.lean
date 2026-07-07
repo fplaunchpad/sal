@@ -1,5 +1,6 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonConvergence
-import Sal.MRDTs.Metatheory.Conditioned.RGA_GenDischarge2
+import Sal.MRDTs.Metatheory.Conditioned.RGA_GenDischarge
+import Sal.MRDTs.Metatheory.Conditioned.RGA_InterleavedThreading
 
 /-!
 # Discharging `CanonFoldOK` from the per-event generation discipline

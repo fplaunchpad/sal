@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_HinFilterEq
+import Sal.MRDTs.Metatheory.Development.RGA_HinFilterEq
 
 /-!
 # #39 skeleton — `CanonBirthBridge` per survivor, reduced to the four carriers

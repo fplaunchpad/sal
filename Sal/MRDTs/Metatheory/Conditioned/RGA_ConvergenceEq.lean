@@ -2,7 +2,8 @@ import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonFoldOK
 import Sal.MRDTs.Metatheory.Conditioned.RGA_OrderBridge
 import Sal.MRDTs.Metatheory.Conditioned.RGA_InvUpdateQ
 import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeFoldChain
-import Sal.MRDTs.Metatheory.Conditioned.RGA_HinFilterEq
+import Sal.MRDTs.Metatheory.Conditioned.RGA_BranchCanon
+import Sal.MRDTs.Metatheory.Conditioned.RGA_SubchainResolve
 
 /-!
 # RGA update convergence and merge bridge over the framework's `loOnEq` order

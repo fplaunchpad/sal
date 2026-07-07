@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.Emulation.CRDT_Signature
+import Sal.MRDTs.Metatheory.Conditioned.Base.CRDT_Signature
 
 /-!
 # Labeled transition system for state-based CRDTs

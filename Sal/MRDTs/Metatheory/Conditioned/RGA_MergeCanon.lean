@@ -1,4 +1,5 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonMatch_Reachable
+import Sal.MRDTs.Metatheory.Conditioned.RGA_ConvergenceEq
+import Sal.MRDTs.Metatheory.Conditioned.UpdateFeasibility_Gate
 
 /-!
 # The MERGE half of `hCanon` — `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')`

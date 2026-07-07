@@ -1,5 +1,9 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_EnablementBase
 import Sal.MRDTs.Metatheory.Conditioned.ConditionedExecutionModel
+import Sal.MRDTs.Metatheory.Conditioned.G2_Transport_Probe
+import Sal.MRDTs.Metatheory.Conditioned.RGA_ConditionedConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeLinearization
+import Sal.MRDTs.Metatheory.Conditioned.UpdateFeasibility_Gate
 
 /-!
 # Stage-1 capstone attempt: composing M1 + M2 into RGA update-layer convergence

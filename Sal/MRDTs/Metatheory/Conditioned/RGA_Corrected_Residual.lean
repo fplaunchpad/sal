@@ -1,5 +1,6 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_EqJoin_NF_Residual
 import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_EqJoin_NF
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance_NF
 
 /-!
 # The CORRECTED literal-fold residual — union re-enumerability instead of `noopFeasible π₀`

@@ -1,5 +1,7 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_BranchCanon
 import Sal.MRDTs.Metatheory.Conditioned.RGA_SubchainResolve
+import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeFoldChain
 
 /-!
 # `RGA_HinFilterEq` — closing the last merge-side residual `hin`

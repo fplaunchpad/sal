@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_ReachDischarge
+import Sal.MRDTs.Metatheory.Conditioned.RGA_UpdateConvergence_Final
 
 /-!
 # From a PER-EVENT generation discipline to the update-layer bundle

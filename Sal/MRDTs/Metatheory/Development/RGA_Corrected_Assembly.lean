@@ -1,5 +1,12 @@
 import Sal.MRDTs.Metatheory.Conditioned.RGA_Corrected_Residual
 import Sal.MRDTs.Metatheory.Conditioned.RGA_ConditionedConvergence
+import Sal.MRDTs.Metatheory.Conditioned.Base.CRDT_TS
+import Sal.MRDTs.Metatheory.Conditioned.GenericEqQuotient
+import Sal.MRDTs.Metatheory.Conditioned.GenericEqQuotient_NF
+import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeLinearization
+import Sal.MRDTs.Metatheory.Conditioned.UpdateFeasibility_Gate
 
 /-!
 # The corrected canonical route — `EqJoinLemma3C_NF` from the CORRECTED leaves

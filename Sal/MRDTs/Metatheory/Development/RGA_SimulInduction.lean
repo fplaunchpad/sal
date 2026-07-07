@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_GenDischarge2
+import Sal.MRDTs.Metatheory.Development.RGA_GenDischarge2
 import Mathlib.Data.Finset.Card
 
 /-!

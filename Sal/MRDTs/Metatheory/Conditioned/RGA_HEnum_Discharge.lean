@@ -1,5 +1,5 @@
-import Sal.MRDTs.Metatheory.Conditioned.RGA_FiltEq
 import Sal.MRDTs.Metatheory.Conditioned.RGA_Skeleton3
+import Sal.MRDTs.Metatheory.Conditioned.RGA_GenDisc_Peel
 
 /-!
 # hEnum DISCHARGED — the delta enum from the join context

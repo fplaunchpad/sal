@@ -1,5 +1,10 @@
 import Sal.MRDTs.Metatheory.Conditioned.GoodConfig3H
-import Sal.MRDTs.Metatheory.Conditioned.RGA_Skeleton2
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Instance_NF
+import Sal.MRDTs.Metatheory.Conditioned.RGA_EqJoin_NF
+import Sal.MRDTs.Metatheory.Conditioned.RGA_CanonConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_ConditionedConvergence
+import Sal.MRDTs.Metatheory.Conditioned.RGA_MergeCanon
+import Sal.MRDTs.Metatheory.Conditioned.RGA_Corrected_Residual
 
 /-!
 # SKELETON 3 — the RAW-≈ capstone for the tombstone-free RGA

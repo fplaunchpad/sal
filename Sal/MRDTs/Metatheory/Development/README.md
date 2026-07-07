@@ -14,6 +14,13 @@ What remains here is the research record; files here may import
 `Conditioned/`, never the reverse. (A few probe-flavored files moved with
 the chain because load-bearing definitions live in them.)
 
+Thirteen superseded RGA files returned here from `Conditioned/` once the
+living chain stopped consuming them (earlier capstone skeletons and assembly
+routes: `RGA_Skeleton`/`RGA_Skeleton2`, `RGA_EndToEnd`, the `RGA_EqJoin_NF_*`
+assembly pair, and eight discharge intermediates); see the retirement note at
+the end of [`../Conditioned/README.md`](../Conditioned/README.md). All still
+build 0-sorry.
+
 - [`MRDT_METATHEORY_DRAFT.md`](MRDT_METATHEORY_DRAFT.md) — the findings
   journal **T0–T10.7**: the LCA-lemma gap analysis, the ternary defeater,
   the delta contract's discovery and its boundaries, the feasible-tuple

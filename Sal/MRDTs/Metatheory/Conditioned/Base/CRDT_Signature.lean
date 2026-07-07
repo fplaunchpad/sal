@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Conditioned.Emulation.Labeled_TS
+import Sal.MRDTs.Metatheory.Conditioned.Base.Labeled_TS
 
 /-!
 # CRDT signature
