@@ -39,8 +39,24 @@ open Sal.Metatheory.RGAConditionedConvergence (eq_trans)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch CanonFoldOK eq_of_canonMatch2)
 
-/-- The RGA's delivery discipline: the engine-native per-event canonical discipline from `init`. -/
-def rgaH : List op_t → Prop := fun ρ => CanonFoldOK [] init_st ρ
+/-- **Payload honesty** — SET-level, hence perm-invariant: every delete's target and every
+insert's recorded-chain entry is the root or inserted in the list.  `CanonFoldOK` alone cannot
+supply this (`DelOK`/`ChainOK` constrain only LIVE data, so dead-target deletes and junk chain
+entries are fold-admissible), yet extending the discipline at a fresh apply needs it: the new
+insert's id must not collide with any recorded dead id. -/
+def HonestPayloads (ρ : List op_t) : Prop :=
+  (∀ (t r x : ℕ) (p : List ℕ), (t, r, app_op_t.Del p x) ∈ ρ →
+      x = 0 ∨ RGACanonConvergence.insertedIn ρ x) ∧
+  (∀ (t r e a : ℕ) (p : List ℕ), (t, r, app_op_t.Ins e p a) ∈ ρ →
+      ∀ c ∈ a :: p, c = 0 ∨ RGACanonConvergence.insertedIn ρ c)
+
+/-- The RGA's delivery discipline: the engine-native per-event canonical discipline from `init`,
+plus payload honesty (what the extension at fresh applies genuinely needs). -/
+def rgaH : List op_t → Prop := fun ρ => CanonFoldOK [] init_st ρ ∧ HonestPayloads ρ
+
+theorem rgaH_nil : rgaH [] :=
+  ⟨trivial, fun _ _ _ _ h => absurd h (by simp),
+    fun _ _ _ _ _ h => absurd h (by simp)⟩
 
 /-- **The RGA's H-join from the two canonical leaves.**  The union's `H`-witness is `ρ₀ ++ π₀`. -/
 theorem rgaJoinH_of_canon
@@ -80,19 +96,19 @@ theorem rgaJoinH_of_canon
   -- re-type the witnesses at `op_t` (defeq to `Op RGACondSig'.AppOp`)
   have hcs0' : ∃ ρ : List op_t,
       listPermOf ρ (ev₁ ∩ ev₂) ∧ respects ρ (loOnEq rgaEqEquiv' WfOpA vis (ev₁ ∩ ev₂)) ∧
-      CanonFoldOK [] init_st ρ ∧
+      (CanonFoldOK [] init_st ρ ∧ HonestPayloads ρ) ∧
       rgaEqEquiv'.eqv (applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ) s₀ := hcs0
   have hcs1' : ∃ ρ : List op_t,
       listPermOf ρ ev₁ ∧ respects ρ (loOnEq rgaEqEquiv' WfOpA vis ev₁) ∧
-      CanonFoldOK [] init_st ρ ∧
+      (CanonFoldOK [] init_st ρ ∧ HonestPayloads ρ) ∧
       rgaEqEquiv'.eqv (applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ) s₁ := hcs1
   have hcs2' : ∃ ρ : List op_t,
       listPermOf ρ ev₂ ∧ respects ρ (loOnEq rgaEqEquiv' WfOpA vis ev₂) ∧
-      CanonFoldOK [] init_st ρ ∧
+      (CanonFoldOK [] init_st ρ ∧ HonestPayloads ρ) ∧
       rgaEqEquiv'.eqv (applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ) s₂ := hcs2
-  obtain ⟨ρ₀, h₀p, h₀r, h₀OK, hfold0⟩ := hcs0'
-  obtain ⟨ρ₁, h₁p, h₁r, h₁OK, hfold1⟩ := hcs1'
-  obtain ⟨ρ₂, h₂p, h₂r, h₂OK, hfold2⟩ := hcs2'
+  obtain ⟨ρ₀, h₀p, h₀r, ⟨h₀OK, _h₀HP⟩, hfold0⟩ := hcs0'
+  obtain ⟨ρ₁, h₁p, h₁r, ⟨h₁OK, h₁HP⟩, hfold1⟩ := hcs1'
+  obtain ⟨ρ₂, h₂p, h₂r, ⟨h₂OK, h₂HP⟩, hfold2⟩ := hcs2'
   obtain ⟨π₀, hπp, hπr, hπOK⟩ :=
     hEnum vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h₀p h₀r h₀OK h₁p h₁r h₁OK h₂p h₂r h₂OK
@@ -116,11 +132,8 @@ theorem rgaJoinH_of_canon
   have hmemρ : ∀ a ∈ ρ₀, a ∈ ev₁ ∩ ev₂ := fun a ha => (h₀p.2 a).mp ha
   have hmemπ : ∀ a ∈ π₀, a ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂) :=
     fun a ha => (hπp.2 a).mp ha
-  refine ⟨ρ₀ ++ π₀, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
-  · refine List.nodup_append.mpr ⟨h₀p.1, hπp.1, ?_⟩
-    intro a ha b hb heq
-    exact (hmemπ b hb).2 (heq ▸ hmemρ a ha)
-  · intro a
+  have hFmem : ∀ a : op_t, a ∈ ρ₀ ++ π₀ ↔ a ∈ ev₁ ∪ ev₂ := by
+    intro a
     constructor
     · intro ha
       rcases List.mem_append.mp ha with h | h
@@ -130,6 +143,29 @@ theorem rgaJoinH_of_canon
       by_cases hI : a ∈ ev₁ ∩ ev₂
       · exact List.mem_append.mpr (Or.inl ((h₀p.2 a).mpr hI))
       · exact List.mem_append.mpr (Or.inr ((hπp.2 a).mpr ⟨ha, hI⟩))
+  -- payload honesty at the union: branchwise, lifted along the memberships
+  have hsplitmem : ∀ x : op_t, x ∈ ρ₀ ++ π₀ → x ∈ ρ₁ ∨ x ∈ ρ₂ := by
+    intro x hx
+    rcases List.mem_append.mp hx with h | h
+    · exact Or.inl ((h₁p.2 x).mpr (hmemρ x h).1)
+    · rcases (hmemπ x h).1 with h1 | h2
+      · exact Or.inl ((h₁p.2 x).mpr h1)
+      · exact Or.inr ((h₂p.2 x).mpr h2)
+  have hlift1 : ∀ x : ℕ, RGACanonConvergence.insertedIn ρ₁ x →
+      RGACanonConvergence.insertedIn (ρ₀ ++ π₀) x := by
+    rintro x ⟨r', e', p', a', hm'⟩
+    exact ⟨r', e', p', a',
+      (hFmem _).mpr (Set.mem_union_left _ ((h₁p.2 _).mp hm'))⟩
+  have hlift2 : ∀ x : ℕ, RGACanonConvergence.insertedIn ρ₂ x →
+      RGACanonConvergence.insertedIn (ρ₀ ++ π₀) x := by
+    rintro x ⟨r', e', p', a', hm'⟩
+    exact ⟨r', e', p', a',
+      (hFmem _).mpr (Set.mem_union_right _ ((h₂p.2 _).mp hm'))⟩
+  refine ⟨ρ₀ ++ π₀, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
+  · refine List.nodup_append.mpr ⟨h₀p.1, hπp.1, ?_⟩
+    intro a ha b hb heq
+    exact (hmemπ b hb).2 (heq ▸ hmemρ a ha)
+  · exact hFmem
   · refine List.pairwise_append.mpr ⟨?_, ?_, ?_⟩
     · exact (respects_congr
         (fun a b => loOnEqQ_index_free_gen WfOpA vis (ev₁ ∩ ev₂) (ev₁ ∪ ev₂) a b)).mp h₀r
@@ -140,9 +176,26 @@ theorem rgaJoinH_of_canon
       have hva := ((Sal.Metatheory.RGAEqJoinNF.loOnEqQ_reduce_gen WfOpA vis (ev₁ ∪ ev₂) b a).mp hR).1
       have haI := hmemρ a ha
       exact (hmemπ b hb).2 ⟨hcl1 b a hva haI.1, hcl2 b a hva haI.2⟩
-  · -- the discipline clause: `ρ₀ ++ π₀` is CanonFoldOK from init — K2 dissolved
-    show CanonFoldOK [] init_st (ρ₀ ++ π₀)
-    exact canonFoldOK_concat ρ₀ [] init_st π₀ h₀OK hπOK
+  · -- the discipline clause: `ρ₀ ++ π₀` is CanonFoldOK from init (K2 dissolved), and its
+    -- payload honesty lifts branchwise (HonestPayloads is set-level)
+    show rgaH (ρ₀ ++ π₀)
+    refine ⟨canonFoldOK_concat ρ₀ [] init_st π₀ h₀OK hπOK, ?_, ?_⟩
+    · intro t r x p hm
+      rcases hsplitmem _ hm with h1 | h2
+      · rcases h₁HP.1 t r x p h1 with h0 | hins
+        · exact Or.inl h0
+        · exact Or.inr (hlift1 x hins)
+      · rcases h₂HP.1 t r x p h2 with h0 | hins
+        · exact Or.inl h0
+        · exact Or.inr (hlift2 x hins)
+    · intro t r e a p hm c hc
+      rcases hsplitmem _ hm with h1 | h2
+      · rcases h₁HP.2 t r e a p h1 c hc with h0 | hins
+        · exact Or.inl h0
+        · exact Or.inr (hlift1 c hins)
+      · rcases h₂HP.2 t r e a p h2 c hc with h0 | hins
+        · exact Or.inl h0
+        · exact Or.inr (hlift2 c hins)
   · show rgaEqEquiv'.eqv
       (applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)) (RGACondSig'.mergeL s₀ s₁ s₂)
     have hsplit : applySeq RGACondSig'.toCRDTSig RGACondSig'.init (ρ₀ ++ π₀)
@@ -242,7 +295,7 @@ theorem rga_RA_linearizable_skeleton3
     (fun heqv hInv => rga_invCong heqv hInv)
     (rgaJoinH_of_canon HonJ hEnum hCanon)
     (fun hreach => hHon hreach)
-    trivial
+    rgaH_nil
     (fun hreach hstep hhead hver ρ hρp hH happ => hHext hreach hstep hhead hver ρ hρp hH happ)
     hBA C hReach
 
