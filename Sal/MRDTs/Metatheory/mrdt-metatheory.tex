@@ -95,10 +95,11 @@ redistribution laws, and a single contextual \emph{causal-delta} equation
 --- eight VCs in all --- from which every reachable configuration of the
 replicated store is RA-linearizable, \emph{per version}. All of it is
 mechanized in Lean~4 with zero \lean{sorry}s, and the VC set is validated
-in the strongest currency available: nine of the twelve production MRDTs
-of the Sal repository --- including OR-sets, an enable-wins flag,
-counters, a tombstone RGA and Peritext --- carry kernel-checked
-end-to-end RA-linearizability theorems through it. The one data type
+in the strongest currency available: eleven of the twelve production MRDTs
+of the Sal repository --- OR-sets, an enable-wins flag, counters, grow-only
+set and map, a tombstone RGA, Peritext, the multi-valued register and the
+add-wins priority queue --- carry kernel-checked end-to-end
+RA-linearizability theorems through it. The one data type
 provably \emph{outside} the VC set --- the tombstone-free RGA, whose
 commutation holds only on reachable states --- is hosted by a
 \emph{conditioned} extension of the metatheory grown from this note's own
@@ -203,10 +204,12 @@ consumes a small, contextual VC surface. Its contributions:
   equation. The adequacy theorem is per \emph{version}: every version in
   the store, LCAs included, linearizes.
 \item \textbf{The VC set is validated on the production catalogue}
-  (\S\ref{sec:catalog}): nine of the twelve MRDTs shipped in Sal ---
+  (\S\ref{sec:catalog}): eleven of the twelve MRDTs shipped in Sal ---
   OR-set, an optimized OR-set, enable-wins flag, grow-only set and map,
-  increment-only and PN counters, a tombstone RGA, and Peritext --- are
-  discharged end-to-end, kernel-checked. The sweep produces an empirical
+  increment-only and PN counters, a tombstone RGA, Peritext, the
+  multi-valued register and the add-wins priority queue --- are
+  discharged end-to-end, kernel-checked; the twelfth, the tombstone-free
+  RGA, goes through the conditioned framework. The sweep produces an empirical
   \emph{class map} of which data types need which strength of contract,
   with two surprises: tombstones are a metatheoretic trivializer, and
   commutativity class and delta class are independent axes.
@@ -1015,8 +1018,8 @@ OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} & tag live iff added, no
 OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} & \dots{} or same-replica $\add$ later (eviction) \\
 Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key: ctr $=\#$enables; flag iff unkilled enable \\
 \midrule
-Multi-valued register & feasible & \multicolumn{2}{l}{recipe (trichotomy-free: all-comm $\Rightarrow B{=}\Sinit$)} \\
-Add-wins priority queue & feasible & \multicolumn{2}{l}{recipe (the OR-set pattern on the add component)} \\
+Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$ \\
+Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
 \end{tabular}}
@@ -1642,7 +1645,7 @@ capstone + discharged leaves & \lean{rga\_RA\_linearizable\_skeleton3} & \lean{C
 honest residual & \lean{HonestDelivery}, \lean{rga\_RA\_linearizable\_honest} & \lean{Conditioned/RGA\_Honest\_Residual.lean} \\
 mainline entry point & \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} & \lean{RGA\_TombstoneFree\_RA\_Lin.lean} \\
 flat collapse of the framework & \lean{eqJoinH\_of\_joinC}, \lean{flat\_ra\_linearizable3\_eq} & \lean{Conditioned/FlatGeneric\_Bridge.lean} \\
-the nine flat instances, generically & \lean{$\ast$\_ra\_linearizable3\_eq} (9) & \lean{MRDT\_Instances\_Generic.lean} \\
+the flat instances, generically & \lean{$\ast$\_ra\_linearizable3\_eq} (11) & \lean{MRDT\_Instances\_Generic.lean} \\
 \bottomrule
 \end{tabular}}
 \end{center}

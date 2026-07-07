@@ -194,6 +194,21 @@ theorem MVR_ra_linearizable3_eq
       Sal.Metatheory.MVR_coreVCs3CD Sal.Metatheory.MVR_feasibleDeltaVCs3
       Sal.Metatheory.MVR_cdVC3 trivial)) C hReach
 
+/-- **Add-Wins Priority Queue over the generic framework** (feasible class —
+the OR-Set pattern on the add component, grow-only increments; T11.3). -/
+theorem AWPQ_ra_linearizable3_eq
+    (C : Configuration (QSig (eqOfEq Sal.Metatheory.AWPQ) (WTop Sal.Metatheory.AWPQ)
+      (invPresTop fun _ => trivial) (congVCEq Sal.Metatheory.AWPQ)
+      (invInvVCTop Sal.Metatheory.AWPQ)))
+    (hReach : (labeledTS3 _).ReachableFrom (initConfig _ trivial) C) :
+    IsRALinearizable3Eq (eqOfEq Sal.Metatheory.AWPQ) (WTop Sal.Metatheory.AWPQ)
+      (invPresTop fun _ => trivial) (congVCEq Sal.Metatheory.AWPQ)
+      (invInvVCTop Sal.Metatheory.AWPQ) C :=
+  flat_ra_linearizable3_eq (fun _ => trivial) (fun _ _ => trivial)
+    (contractJoinFull (ConditionedContract.ofVCs Sal.Metatheory.AWPQ
+      Sal.Metatheory.AWPQ_coreVCs3CD Sal.Metatheory.AWPQ_feasibleDeltaVCs3
+      Sal.Metatheory.AWPQ_cdVC3 trivial)) C hReach
+
 /-! ## Axiom audit -/
 
 #print axioms ORSet_ra_linearizable3_eq
@@ -206,5 +221,6 @@ theorem MVR_ra_linearizable3_eq
 #print axioms RGAM_ra_linearizable3_eq
 #print axioms Peritext_ra_linearizable3_eq
 #print axioms MVR_ra_linearizable3_eq
+#print axioms AWPQ_ra_linearizable3_eq
 
 end Sal.Metatheory.MRDTInstancesGeneric

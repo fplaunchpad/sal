@@ -139,13 +139,14 @@ the discharge of its Join Lemma (the VC bundles live in
 | **PN-Counter** (production mirror) | `PN_ra_linearizable3_eq` | identity; unconditional delta |
 | **RGA, tombstone** (production mirror) | `RGAM_ra_linearizable3_eq` | identity; unconditional delta |
 | **Peritext** (production mirror) | `Peritext_ra_linearizable3_eq` | identity; unconditional delta |
+| **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
+| **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 
-Not yet mechanized: Multi-Valued Register and Add-Wins Priority Queue
-(feasible class; mechanical discharge recipes are drafted as entries
-T11.3–T11.4 of the findings journal under [`Development/`](Development/)).
-The historical flat corollaries (`*_ra_linearizable3` over the raw system,
-plus the Counter/G-Set specimens) remain in
+**The production catalogue is complete: every MRDT shipped in Sal carries a
+kernel-checked end-to-end theorem through the one framework.** The
+historical flat corollaries (`*_ra_linearizable3` over the raw system, plus
+the Counter/G-Set specimens) remain in
 [`MRDT_Instances.lean`](MRDT_Instances.lean) as internal steps of the
 engine.
 
