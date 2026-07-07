@@ -170,13 +170,6 @@ ternary \emph{Join Lemma} whose induction
 consumes a small, contextual VC surface. Its contributions:
 
 \begin{enumerate}[leftmargin=2em]
-\item \textbf{The LCA argument is load-bearing}
-  (\S\ref{sec:loadbearing}): MRDT verification does not reduce to CRDT
-  verification. The counter satisfies the ternary shared-peel law but
-  \emph{provably violates} its binary counterpart under every
-  LCA-forgetting collapse, so no binary metatheory can host it. ``A CRDT
-  is an MRDT that ignores its LCA'' is a one-way instantiation, not an
-  equivalence: the metatheory must be built natively ternary.
 \item \textbf{The paper's LCA lemma is true but its proof has a gap}
   (\S\ref{sec:lca}): $L(v_\ell) = L(v_1) \cap L(v_2)$ holds, but only as a
   \emph{reachability invariant} of the store, whose proof needs a
@@ -279,9 +272,8 @@ complete example:
 All operations commute, so $\mathsf{rc}$ is empty --- yet the merge
 genuinely uses its LCA argument: $a + b$ alone would double-count the
 history shared by the two branches, and the $-\,l$ subtracts it exactly
-once. This ``read the shared past off the LCA'' pattern is what
-separates MRDTs from CRDTs, and \S\ref{sec:loadbearing} proves the
-separation is real.
+once. This ``read the shared past off the LCA'' pattern recurs
+throughout the catalogue.
 
 \paragraph{A data type with races: the OR-set.} The add-wins observed-remove
 set stores tagged elements: $\add$ inserts a tag unique to the adding
@@ -469,45 +461,12 @@ the theory:
 
 \section{Three facts the metatheory must respect}
 
-Before building anything, we record three boundary facts. The first is
-about the problem: the LCA argument genuinely adds power, so there is no
-binary shortcut. The second and third are about the paper: its
-store-level LCA lemma is true but under-proved, and its soundness
-induction is refuted by a fully legal execution. Together they fix the
-shape of the corrected metatheory --- natively ternary
-(\S\ref{sec:loadbearing}), resting on a mechanized store invariant
-(\S\ref{sec:lca}), and built around the join rather than the sides
-(\S\ref{sec:defeater}).
-
-\subsection{The LCA argument is load-bearing}
-\label{sec:loadbearing}
-
-The paper notes that CRDTs are the special case ``ignore the LCA
-argument,'' so binary, CRDT-style reasoning embeds into the ternary
-setting. One might hope for the converse --- collapse the ternary merge
-to a binary one, verify \emph{that} with lattice-style CRDT techniques,
-and inherit the result. The converse direction fails, mechanically:
-
-\begin{theorem}[the counter admits no binary collapse]
-\label{thm:counter-sep}
-The counter satisfies the ternary shared-peel VC
-\[
-  \mergeL(l \cdot e,\; a \cdot e,\; b \cdot e)
-  \;=\; \mergeL(l,a,b) \cdot e
-\]
---- for the counter, $(a{+}1)+(b{+}1)-(l{+}1) = (a{+}b{-}l)+1$ ---
-but provably violates the corresponding binary VC
-$\Merge(a \cdot e, b \cdot e) = \Merge(a,b) \cdot e$ for every
-LCA-forgetting binary collapse.
-\unskip\nobreak\hspace*{\fill}\lean{Counter\_binary\_lem\_0op\_false}
-\end{theorem}
-
-So the ternary metatheory cannot be obtained by instantiating a binary one;
-it must be built natively, with the LCA state threaded through every
-merge-side statement. Concretely, in the corrected theory the shared peel
-becomes \emph{three-sided}: a shared event is (by the LCA lemma below)
-exactly an LCA event, and peeling it removes it from all three components
-in lock-step.
+Before building anything, we record two boundary facts about the
+paper's development: its store-level LCA lemma is true but under-proved,
+and its soundness induction is refuted by a fully legal execution.
+Together they fix the shape of the corrected metatheory --- resting on a
+mechanized store invariant (\S\ref{sec:lca}) and built around the join
+rather than the sides (\S\ref{sec:defeater}).
 
 \subsection{The LCA lemma is a reachability invariant --- with a gap in the
 published proof}
@@ -1620,7 +1579,7 @@ $\sigma$/$\loE{E}$ layer (merge-independent) & \lean{UpdateVCs}, \lean{IsCanonic
 the eight VCs & $\co$, $\fd$, $\cd$ & \lean{Framework/VC\_Set.lean} \\
 Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feasible\_cd3} & \lean{Metatheory/Adequacy.lean} \\
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
-Theorem~\ref{thm:counter-sep}, kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
+impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Conditioned-metatheory investigation
