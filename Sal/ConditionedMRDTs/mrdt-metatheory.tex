@@ -87,8 +87,9 @@ MRDT defeats every bottom-up peel the proof can make --- that the paper's
 own LCA lemma, while true, has a gap in its proof, and that no repair can
 lean on either of the two obvious crutches: the LCA argument cannot be
 forgotten (the counter MRDT provably admits no binary, CRDT-style
-collapse), and no lattice-flavoured contract is available (no idempotence,
-no usable order). What works
+collapse), and no lattice-flavoured contract is available (the lattice
+laws are equations over free tuples --- the wrong instances for an
+LCA-aware merge --- and no usable order survives). What works
 is a \emph{delta} discipline: three unconditional relational VCs on
 $\mathsf{rc}$, one merge symmetry, three \emph{feasibility-conditioned}
 redistribution laws, and a single contextual \emph{causal-delta} equation
@@ -180,12 +181,19 @@ consumes a small, contextual VC surface. Its contributions:
   MRDT --- its final merge sitting at an honest LCA --- on which every
   bottom-up peel of the paper's derivation rules is stuck. The
   meta-theorem must be rebuilt, not patched.
-\item \textbf{No lattice contract survives; a delta contract does}
-  (\S\ref{sec:whydelta}): MRDT merges are not idempotent
-  ($\mergeL(l,a,a)=2a-l$ for the counter), the induced orders degenerate,
-  and the honest associativity law has \emph{four distinct LCAs} and holds
-  only on feasible tuples. What replaces the lattice laws is a two-law
-  \emph{delta contract} --- redistribution identities in which the LCA
+\item \textbf{The lattice contract does not transfer; a delta contract does}
+  (\S\ref{sec:whydelta}): the lattice laws are equations over \emph{free}
+  tuples --- the wrong instances for an LCA-aware merge. Side-idempotence
+  $\mergeL(l,a,a) = a$ with $l$ free fails for the counter ($2a-l$), but
+  its only DAG-honest instance has $l = a$ (the LCA of a version with
+  itself \emph{is} that version), where it holds trivially; and when two
+  \emph{distinct} histories reach equal side states, $2a-l$ is the
+  \emph{correct} merge --- both branches' increments count --- not an
+  idempotence failure. The induced orders degenerate, and the honest
+  associativity law has \emph{four distinct LCAs} and holds only on
+  feasible tuples. The moral: the algebra of an LCA-aware merge is an
+  algebra of \emph{causal histories}, not of concrete states. What
+  replaces the lattice laws is a two-law \emph{delta contract} --- redistribution identities in which the LCA
   slot does, by arithmetic, the job idempotence does order-theoretically
   for CRDTs.
 \item \textbf{Eight VCs suffice} (\S\ref{sec:vcs}--\S\ref{sec:adequacy}):
@@ -672,24 +680,40 @@ per-data-type VCs make the Join Lemma true?
 Where should the laws that prove the Join Lemma come from? The obvious
 supplier is the CRDT tradition. For state-based CRDTs --- binary merge,
 no LCA --- merge-coherence is lattice-flavoured: associativity,
-idempotence, inflation of updates. Each of the three provably fails
-under ternary merge, and this section works through the failures,
-because the shape of what fails is what reveals the contract that
-succeeds.
+idempotence, inflation of updates. None of the three transfers to the
+ternary merge: their free-tuple forms are the wrong equations for an
+LCA-aware merge, and their honest instances are too weak to power a
+lattice-style proof. This section works through why, because the shape
+of what fails to transfer reveals the contract that succeeds.
 
-\paragraph{No idempotence.} The \emph{diagonal} law
-$\mergeL(a,a,a) = a$ --- the paper's own \textsc{MergeIdempotence} ---
-does hold (for the counter: $a + a - a = a$), but it is not the law a
-lattice-style proof consumes. The binary architecture uses idempotence
-to absorb a duplicated \emph{side}, $\Merge(a,a) = a$, with nothing
-tying the two copies to a common past; the ternary analogue is
-$\mergeL(l,a,a) = a$ with $l$ \emph{free}, and for the counter
-$\mergeL(l,a,a) = 2a - l$: false whenever $l \neq a$. Only feasible
-triples are idempotent --- and feasibility (equal sides share their
-whole history, so $l$ is the canonical state of the intersection)
-forces $l = a$, collapsing the law back to the diagonal. Unconditional
-side-idempotence would exclude the counter, i.e.\ exclude precisely the
-data types the ternary theorem exists for.
+\paragraph{Idempotence: the free-tuple form is the wrong equation.}
+The \emph{diagonal} law $\mergeL(a,a,a) = a$ --- the paper's own
+\textsc{MergeIdempotence} --- holds (for the counter: $a + a - a = a$),
+but it is not the law a lattice-style proof consumes. The binary
+architecture uses idempotence to absorb a duplicated \emph{side},
+$\Merge(a,a) = a$, with nothing tying the two copies to a common past;
+the ternary analogue would be $\mergeL(l,a,a) = a$ with $l$ \emph{free}.
+But quantifying $l$ freely asks the merge about tuples the version DAG
+never produces. Merging a version with \emph{itself} has $l = a$ --- the
+LCA of $a$ and $a$ is $a$ --- where the law collapses to the diagonal
+and holds. And when two \emph{distinct} histories happen to reach equal
+side states, feasibility puts $l$ strictly below them and the counter's
+$\mergeL(l,a,a) = 2a - l$ is the \emph{correct} answer: both branches'
+increments count. So there is no idempotence \emph{failure} --- there is
+no meaningful side-idempotence \emph{law}: its honest instances are the
+trivial diagonal, and demanding it unconditionally would exclude
+precisely the LCA-sensitive data types the ternary theorem exists for.
+
+The general principle, which the rest of this section instantiates: the
+algebraic properties of an LCA-aware merge are properties of the
+\emph{causal history}, not of the concrete state. Two sides merge
+idempotently when their \emph{histories} coincide --- which is what
+forces $l = a$ --- not when their states happen to be equal; equal
+states with different histories rightly merge differently. The lattice
+laws go wrong exactly by quantifying over states while forgetting the
+histories that produced them, and every law that survives below is
+stated over history-indexed data: canonical states $\sigma(E)$, feasible
+tuples (the LCA slot carrying the intersection history), downset deltas.
 
 \paragraph{No usable order.} The lattice-style workhorse order
 $x \sqsubseteq y \coloneqq \Merge(x,y) = y$ has ternary candidates
