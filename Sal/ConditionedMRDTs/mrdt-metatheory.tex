@@ -1563,7 +1563,7 @@ positional structure.
 \label{sec:open}
 
 The mechanization settles what the paper claimed; it also sharpens what
-remains genuinely open. Six questions, roughly in order of theoretical
+remains genuinely open. Seven questions, roughly in order of theoretical
 depth:
 
 \begin{openq}[$\cd$-derivability]
@@ -1712,6 +1712,55 @@ pointwise Boolean check. A positive answer closes the one visible gap
 between the model and practice.
 \end{openq}
 
+\begin{openq}[$\mathsf{rc}$-expressiveness: chains, LWW, and
+merge-recoverability]
+\label{oq:rcchain}
+The catalogue's $\mathsf{rc}$ relations are all \emph{star-shaped}: the
+conflicting pairs are cross-class ($\rem$/$\add$; add/checkout), so every
+edge runs from a class that is never second to a class that is never
+first. This is forced: VC~\ref{vc:disc}'s directionality plus
+\textsc{no-rc-chain} orient every non-commuting concurrent pair while
+forbidding length-2 paths, and any orientation of a \emph{self}-conflicting
+class (concurrent writes; concurrent claims of one slot) contains one. So
+total-order policies --- last-writer-wins first among them --- are
+inexpressible in the $\mathsf{rc}$ mechanism as constrained by the VC set.
+Two questions, one of them already closed at its boundary. (i)~Would a
+\emph{chain-tolerant} generalization (the concurrent arm of $\mathsf{lo}$ as a
+transitive tiebreak) be sound? The semantics is coherent --- with Lamport
+clocks the composite of $\mathsf{vis}$ and any timestamp- or priority-oriented
+tiebreak is acyclic, and canonical states remain well-defined --- so the
+restriction appears to be an artifact of the swap-flavored proof
+machinery (\lean{cond\_comm\_lift} cannot bubble past two consecutive
+$\mathsf{rc}$ edges), not of the theorem. The decisive experiment:
+re-prove the swap VC and the causal-delta peel over a transitive
+tiebreak; we expect the swap route to break and the canonical-state route
+(which peels a global maximum, and a total order has one everywhere) to
+survive. (ii)~What would it buy? \emph{Not} a metadata-free LWW register:
+whatever the order arbitrates, the converged outcome must be produced by
+$\mergeL(l,a,b)$ --- a function of three \emph{states} --- and for a
+plain-value LWW two executions present identical state triples with
+opposite timestamp orders, so no such function exists
+(\lean{lww\_merge\_needs\_timestamps},
+\lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean}, kernel-checked).
+The arbitration key is forced into the state by the \emph{merge}; once
+there, writes commute and $\mathsf{rc}$ is moot --- which is why every
+LWW implementation stores its timestamp. What a chain-tolerant arm
+\emph{could} buy: metadata-free \emph{priority} policies across three or
+more op classes (outcomes state-recoverable, orientations chained), and
+possibly a lighter witness layer for the tombstone-free RGA --- an
+$\mathsf{ins} \prec \mathsf{del}$ tiebreak keeps anchors live at fold
+time, which is exactly what the raw-fold witness discipline
+(\S\ref{sec:actual}) compensates for; any such attempt must reckon with
+the two standing refutations (dependency non-transitivity,
+\lean{RGA\_DepComp\_Gate}; and the merge-side path requirement, which
+chains cannot remove --- \lean{RGA\_PrefixFree\_Impossible} is itself a
+merge-recoverability argument). The general principle the kill-test
+isolates: $\mathsf{rc}$ is the mechanism for conflicts whose outcome is
+recoverable from branch states; clique conflicts pay for their arbitration
+key in state, and chains would extend $\mathsf{rc}$ only within the
+recoverable class.
+\end{openq}
+
 \section{Mechanization}
 \label{sec:mech}
 
@@ -1735,6 +1784,7 @@ the eight VCs & $\co$, $\fd$, $\cd$ & \lean{Framework/VC\_Set.lean} \\
 Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feasible\_cd3} & \lean{Metatheory/Adequacy.lean} \\
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
 bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
+LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule
