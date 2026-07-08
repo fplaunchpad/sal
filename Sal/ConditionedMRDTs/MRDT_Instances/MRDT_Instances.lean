@@ -12,6 +12,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
 import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
+import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
 
@@ -40,6 +41,7 @@ tombstone-free RGA is the fully general instantiation.
 | Multi-Valued Register | `MVR_ra_linearizable3_eq` |
 | Add-Wins Priority Queue | `AWPQ_ra_linearizable3_eq` |
 | **Bounded counter** (escrow) | `BC_ra_linearizable3_eq`; safety: `bc_version_inv` |
+| **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
 

@@ -165,7 +165,7 @@ One directory per RDT; each directory's presented capstone concludes
 `IsRALinearizable3Eq` **through the one generic theorem** (§4), and the
 same directory carries the flat VC discharge that feeds it. The umbrella
 [`MRDT_Instances/MRDT_Instances.lean`](MRDT_Instances/MRDT_Instances.lean)
-imports all fourteen capstones:
+imports all fifteen capstones:
 
 | MRDT | End-to-end theorem | Instantiation / discharge |
 |---|---|---|
@@ -181,6 +181,7 @@ imports all fourteen capstones:
 | **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
 | **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
 | **Bounded counter** (escrow; mirror of `Sal/CRDTs/Bounded_Counter`) | `BC_ra_linearizable3_eq`; **safety**: `bc_version_inv`, `bc_value_nonneg` | identity for convergence; the conditioned contract (`BCInv`/`bcApplicable`/`BCHonest`) delivers the bound as a reachability theorem |
+| **FWW reservation register** | `FWW_ra_linearizable3_eq`; **characterization**: `fww_version_min` (the min-ts claim wins, at every version) | payload arbitration (min-semilattice) — the positive complement to `LWW_Merge_Needs_Timestamps`; the claim-when-unset discipline is deliberately consumed by no theorem (unstable under concurrent honest extension) |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 

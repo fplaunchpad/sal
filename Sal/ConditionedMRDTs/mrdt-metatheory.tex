@@ -1084,6 +1084,7 @@ Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key
 Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$ \\
 Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
 Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} & convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv}) \\
+FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} & payload arbitration (min-ts semilattice); winner characterized at every version (\lean{fww\_version\_min}) \\
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
@@ -1719,6 +1720,34 @@ project's standing lesson, before any Lean. (A natural follow-up is a
 state --- under which honesty becomes a theorem of the LTS rather than a
 contract; deferred.)
 
+\paragraph{A small fourth instance: the FWW reservation register --- payload
+arbitration, and what honesty cannot buy.} A register claimable once (a
+seat, a username): sequentially the first claim wins; concurrently, the
+winner is the claim that is first in \emph{Lamport} time. This is the
+positive complement to the metadata-free kill-test
+(\lean{lww\_merge\_needs\_timestamps}): arbitration whose key is not in the
+state is impossible, and arbitration whose key \emph{is} in the state is a
+semilattice triviality --- the state is the minimum claim
+$(\mathsf{ts}, \mathsf{rep}, v)$ under the lexicographic order (or unset),
+update and merge are $\min$, and the entire eight-VC discharge is
+$\min$-algebra (${\sim}300$ lines, the smallest conditioned instance). The
+characterization theorem (\lean{fww\_version\_min}) is honesty-free ---
+semilattice folds are enumeration-independent --- and says: at every
+version of every reachable configuration the register holds exactly the
+minimum-timestamp claim of its event set, unset exactly on the empty set.
+Since timestamps respect causality, a causally later claim never displaces
+an installed one; the $\min$ rule arbitrates only among \emph{concurrent}
+claimants, and it must, on pain of divergence. The instructive part is the
+generation discipline: $\app$ for a claim is ``the register is unset in my
+causal past'', and \emph{deliberately no theorem consumes it} --- two
+honest concurrent claimants both see unset, both claim, and each locally
+wins until a merge disabuses one. ``Unset'' is the minimal example of an
+applicability check that is \emph{not stable under concurrent honest
+extension} (contrast the escrow counter's own-slot slack, which is ---
+precisely the boundary the safety metatheorem's \lean{SafetyStep} draws).
+A merge-based register is a reservation, confirmed only at causal
+stability; it is never a mutex.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -1963,6 +1992,7 @@ Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feas
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
 bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
 mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizable3} & \lean{MRDT\_Instances/MergeableQueue/} \\
+FWW register (payload arbitration) & \lean{fww\_version\_min} & \lean{MRDT\_Instances/FWWRegister/} \\
 per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
 honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/HonestReach.lean} \\
 generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/GenHonest.lean} \\
