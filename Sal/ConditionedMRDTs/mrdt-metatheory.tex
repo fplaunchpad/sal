@@ -1660,11 +1660,16 @@ to produce one. One further regularity is worth recording: all three
 honesty contracts have the shape ``$P$ holds of each event at the fold of
 its causal past'' --- born accuracy and applicable delivery for the RGA,
 slack for the counter, head-ness for the queue --- with $P$ the
-signature's client-checkable $\app$ (or its accuracy analogue). Extracting
-that shape generically, and with it a generic \emph{safety} metatheorem
-($\Inv$ at every version from applicability-stability), is the natural
-next step; the counter's counting argument shows the stability condition
-is where the per-datatype content will sit.
+signature's client-checkable $\app$ (or its accuracy analogue). That shape
+is extracted once (\lean{GenHonest}, with \lean{AppHonest} its $\app$
+instance and \lean{ra\_linearizable3\_of\_genHonest\_reach} the composite
+metatheorem; \lean{Metatheory/GenHonest.lean}), and the counter's and the
+queue's contracts are re-derived as instantiations
+(\lean{BCHonest\_iff\_genHonest}, \lean{qHonest\_of\_genHonest}). A generic
+\emph{safety} metatheorem ($\Inv$ at every version from
+applicability-stability) remains open; the counter's counting argument
+shows the stability condition is where the per-datatype content will
+sit.
 
 \section{Open questions}
 \label{sec:open}
@@ -1894,6 +1899,7 @@ bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \le
 mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizable3} & \lean{MRDT\_Instances/MergeableQueue/} \\
 per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
 honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/HonestReach.lean} \\
+generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/GenHonest.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\

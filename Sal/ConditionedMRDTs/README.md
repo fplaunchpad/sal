@@ -140,7 +140,13 @@ given that `H`-configurations admit the Join (`JoinLemma3At`). This is the
 factored form of the conditioned route — the generic induction extracted
 once, with the per-datatype join discharge as the residue (three species so
 far: conditioned commutation / flat / direct witness); the queue's and the
-bounded counter's inductions are one-line corollaries. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+bounded counter's inductions are one-line corollaries.
+[`Metatheory/GenHonest.lean`](Metatheory/GenHonest.lean) extracts the
+**generic honesty shape** (`GenHonest D P`: `P` holds of every event at the
+fold of its causal past — the client-checkable form; `AppHonest` is its
+`applicable` instance), with the counter's and the queue's contracts
+re-derived as instantiations (`BCHonest_iff_genHonest`,
+`qHonest_of_genHonest`). The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)

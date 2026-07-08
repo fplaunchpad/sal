@@ -1,6 +1,7 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
+import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
 # Bounded Counter — convergence, the client contract, and the bound as a theorem
@@ -406,6 +407,20 @@ def BCHonest (C : Configuration BC) : Prop :=
     ∀ π : List (Op BCOp),
       listPermOf π {e' ∈ C.events | C.vis e' e} →
       bcApplicable e (applySeq BC.toCRDTSig BC.init π)
+
+/-- `BCHonest` is exactly the generic honesty shape at `P := bcApplicable`:
+the `dec`-guard of `BCHonest` is immaterial because `bcApplicable` is `True`
+on `inc`. -/
+theorem BCHonest_iff_genHonest (C : Configuration BC) :
+    BCHonest C ↔ GenHonest BC bcApplicable C := by
+  constructor
+  · intro hHon e he π hπ
+    obtain ⟨ts, r, op⟩ := e
+    cases op with
+    | inc => show True; trivial
+    | dec => exact hHon (ts, r, BCOp.dec) he rfl π hπ
+  · intro hGen e he _hdec π hπ
+    exact hGen e he π hπ
 
 open LabeledTS in
 /-- The reachability invariant for the bounded counter: the generic

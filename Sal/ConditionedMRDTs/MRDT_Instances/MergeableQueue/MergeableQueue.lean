@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
+import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
 # The mergeable queue — Peepul's case study, through the one framework
@@ -839,6 +840,18 @@ theorem qHonest_of_applicable (C : Configuration Q)
     exact ⟨(a1, a2, QOp.enq w), haev.1, haev.2, h2, w, rfl⟩
 
 #print axioms qHonest_of_applicable
+
+/-- The queue's honesty contract from the generic honesty shape at
+`P := qApplicable`: since `qApplicable` is `True` on enqueues,
+`GenHonest Q qApplicable` supplies exactly the dequeue-guarded hypothesis of
+`qHonest_of_applicable`. -/
+theorem qHonest_of_genHonest (C : Configuration Q)
+    (hEnum : CausalPastEnumerable Q C)
+    (hApp : GenHonest Q qApplicable C) : QHonest C :=
+  qHonest_of_applicable C hEnum
+    (fun e he _t _ht π hπ => hApp e he π hπ)
+
+#print axioms qHonest_of_genHonest
 
 end Sal.ConditionedMRDTs
 
