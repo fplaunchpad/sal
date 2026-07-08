@@ -345,13 +345,15 @@ describable in the general signature:
 \item $\mathsf{rc}$: empty in the directional sense (\lean{Either}) ---
   every pair commutes, but only \emph{conditionally}.
 \item $\Inv$: well-formed forest (every stored anchor live or root),
-  id-monotone anchors ($\anc(x) < x$), root unstored. $\app$:
-  \emph{accurate} (the recorded path is the target's true live ancestor
-  chain in the current state) and \emph{fresh} (the id is unused).
-  $\eqobs$: equal live forests --- same nodes, elements and anchors.
+  id-monotone anchors ($\anc(x) < x$), root unstored.
+\item $\app$: \emph{accurate} (the recorded path is the target's true
+  live ancestor chain in the current state) and \emph{fresh} (the id is
+  unused) --- the predicate that holds at an op's generation but not at
+  arbitrary replay states, which is where conditioning bites.
+\item $\eqobs$: equal live forests --- same nodes, elements and anchors.
 \end{itemize}
-A three-node example shows why every piece is needed. Start from the
-chain $0 \leftarrow 1 \leftarrow 2$ (node $1$ under the root, node $2$
+A three-node example (Figure~\ref{fig:rga-example}) shows why every
+piece is needed. Start from the chain $0 \leftarrow 1 \leftarrow 2$ (node $1$ under the root, node $2$
 under $1$). $\mathsf{Del}([0], 1)$ removes node $1$ and rehomes $2$ to
 the root. A \emph{concurrent} event $(3, r, \mathsf{Ins}(e, [0], 1))$ ---
 generated before the delete was seen, anchored on $1$, whose recorded
@@ -364,6 +366,83 @@ state); at reachable, accurate states it holds. This data type is the
 reason the general signature exists, and
 \S\ref{sec:condmeta}--\S\ref{sec:actual} prove it RA-linearizable up to
 $\eqobs$, end-to-end.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[>=Stealth,
+  nd/.style={draw, rounded corners, inner sep=2.5pt, font=\small},
+  ghost/.style={draw, dashed, rounded corners, inner sep=2.5pt,
+    font=\small, text=black!40, draw=black!40},
+  rt/.style={draw, circle, inner sep=1.6pt, font=\small},
+  lbl/.style={font=\scriptsize, text=black!60},
+  doc/.style={font=\small}]
+% (a) two inserts
+\begin{scope}
+\node[lbl] (ta) at (0,0.75) {(a) two inserts};
+\node[rt] (a0) at (0,0) {$0$};
+\node[nd] (a1) at (0,-0.95) {$1{:}\,\texttt{C}$};
+\node[nd] (a2) at (0,-1.9) {$2{:}\,\texttt{A}$};
+\draw[->] (a1) -- (a0);
+\draw[->] (a2) -- (a1);
+\node[doc] at (0,-2.65) {``\texttt{CA}''};
+\end{scope}
+% (b) physical delete + rehome
+\begin{scope}[xshift=3.1cm]
+\node[lbl] at (0.35,0.75) {(b) $\mathsf{Del}([0],1)$ at $p$};
+\node[rt] (b0) at (0,0) {$0$};
+\node[ghost] (b1) at (1.15,-0.95) {$1{:}\,\texttt{C}$};
+\draw[black!40] (b1.south west) -- (b1.north east);
+\node[nd] (b2) at (0,-1.9) {$2{:}\,\texttt{A}$};
+\draw[->] (b2) to[bend left=12] node[lbl, left]{rehomed} (b0);
+\node[doc] at (0,-2.65) {``\texttt{A}''};
+\end{scope}
+% (c) concurrent insert at r, generated against (a)
+\begin{scope}[xshift=6.6cm]
+\node[lbl] at (0.5,0.75) {(c) $\mathsf{Ins}(\texttt{T},[0],1)$ at $r$};
+\node[rt] (c0) at (0.5,0) {$0$};
+\node[nd] (c1) at (0.5,-0.95) {$1{:}\,\texttt{C}$};
+\node[nd] (c3) at (0,-1.9) {$3{:}\,\texttt{T}$};
+\node[nd] (c2) at (1.35,-1.9) {$2{:}\,\texttt{A}$};
+\draw[->] (c1) -- (c0);
+\draw[->] (c3) -- (c1);
+\draw[->] (c2) -- (c1);
+\node[doc] at (0.5,-2.65) {``\texttt{CTA}''};
+\end{scope}
+% (d) delivery after the delete
+\begin{scope}[xshift=10.6cm]
+\node[lbl] at (0.5,0.75) {(d) event $3$ arrives at $p$};
+\node[rt] (d0) at (0.5,0) {$0$};
+\node[ghost] (d1) at (1.9,-0.95) {$1$};
+\draw[black!40] (d1.south west) -- (d1.north east);
+\node[nd] (d3) at (0,-1.9) {$3{:}\,\texttt{T}$};
+\node[nd] (d2) at (1.35,-1.9) {$2{:}\,\texttt{A}$};
+\draw[->] (d3) -- (d0);
+\draw[->] (d2) to[bend right=10] (d0);
+\draw[->, dashed, black!55] (d3) to[bend right=14]
+  node[lbl, right, align=left]{$\resolve$\\ $1{::}[0]$} (d1);
+\draw[->, dashed, black!55] (d1) to[bend right=25] (d0);
+\node[doc] at (0.5,-2.65) {``\texttt{TA}''};
+\end{scope}
+\end{tikzpicture}
+\caption{The running example as trees and the text they represent.
+Boxes are nodes $\mathit{id}{:}\,\mathit{element}$; arrows point to the
+anchor ($\anc$); the document is the depth-first traversal visiting
+siblings newest-id first. (a)~Two inserts build the chain
+$0 \leftarrow 1 \leftarrow 2$: text ``\texttt{CA}''. (b)~Replica $p$
+deletes node $1$ \emph{physically} --- no tombstone remains --- and its
+child $2$ is rehomed to $1$'s nearest live ancestor, the root.
+(c)~Concurrently, replica $r$ --- which has not seen the delete ---
+inserts \texttt{T} after \texttt{C}: event $(3, r,
+\mathsf{Ins}(\texttt{T}, [0], 1))$, whose recorded path $1{::}[0]$ is
+$1$'s live ancestor chain at generation; at $r$ the text reads
+``\texttt{CTA}''. (d)~When event $3$ arrives at $p$ the anchor is gone;
+$\resolve$ climbs the recorded path past the dead $1$ to $0$ and
+attaches there. Folding the two concurrent events in either order yields
+this same forest (``\texttt{TA}'') --- the pair commutes at accurate
+states, which is exactly what the recorded path buys and what no static
+$\mathsf{rc}$ policy could provide.}
+\label{fig:rga-example}
+\end{figure}
 
 \section{The ternary setting}
 \label{sec:setting}
