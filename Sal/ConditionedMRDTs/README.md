@@ -140,7 +140,7 @@ One directory per RDT; each directory's presented capstone concludes
 `IsRALinearizable3Eq` **through the one generic theorem** (§4), and the
 same directory carries the flat VC discharge that feeds it. The umbrella
 [`MRDT_Instances/MRDT_Instances.lean`](MRDT_Instances/MRDT_Instances.lean)
-imports all twelve capstones:
+imports all fourteen capstones:
 
 | MRDT | End-to-end theorem | Instantiation / discharge |
 |---|---|---|
@@ -156,6 +156,7 @@ imports all twelve capstones:
 | **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
 | **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
 | **Bounded counter** (escrow; mirror of `Sal/CRDTs/Bounded_Counter`) | `BC_ra_linearizable3_eq`; **safety**: `bc_version_inv`, `bc_value_nonneg` | identity for convergence; the conditioned contract (`BCInv`/`bcApplicable`/`BCHonest`) delivers the bound as a reachability theorem |
+| **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
@@ -163,7 +164,14 @@ kernel-checked end-to-end theorem through the one framework.** The bounded
 counter adds the first **safety** capstone: conditioning is used not to
 rescue convergence (its ops commute flatly) but to prove the invariant its
 name promises — `value ≥ 0` at every reachable version, from a
-client-checkable applicability contract. The
+client-checkable applicability contract. The mergeable queue is the
+first instance whose Join Lemma is proved **directly** rather than through
+the flat VC engine: concurrent enqueues are a non-commuting clique, so no
+`rc` assignment can satisfy `rc_non_comm_directional` + `no_rc_chain`, and
+the witness enumeration at every merge is Peepul's merge itself
+(LCA-survivors ++ branch-one delta ++ branch-two delta), available under the
+honest-delivery contract `QHonest` — which the dequeue `applicable`
+head-check discharges (`qHonest_of_applicable`). The
 historical flat corollaries (`*_ra_linearizable3` over the raw system, plus
 the `GSet/` and `Counter/` specimens) remain in the same per-RDT files as
 internal steps of the engine.

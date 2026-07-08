@@ -12,6 +12,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
 import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
+import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
 
 /-!
@@ -39,10 +40,20 @@ tombstone-free RGA is the fully general instantiation.
 | Multi-Valued Register | `MVR_ra_linearizable3_eq` |
 | Add-Wins Priority Queue | `AWPQ_ra_linearizable3_eq` |
 | **Bounded counter** (escrow) | `BC_ra_linearizable3_eq`; safety: `bc_version_inv` |
+| **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).
+
+The mergeable queue is the third genuinely conditioned instance and the
+first proved by a **direct Join Lemma** (`q_join_at`): concurrent enqueues
+form a non-commuting clique, so no `rc` assignment exists and the flat
+VC engine is structurally unavailable; instead Peepul's three-way merge is
+itself exhibited as the linearization witness at every merge, under the
+honest-delivery contract `QHonest` (every dequeue names an observed
+enqueue — discharged by the `applicable` head-check,
+`qHonest_of_applicable`).
 
 The bounded counter is the second genuinely conditioned instance and the
 first with a **safety** capstone: `bc_version_inv` proves the escrow

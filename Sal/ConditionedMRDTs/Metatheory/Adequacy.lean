@@ -280,8 +280,10 @@ theorem goodConfig3_apply {C C' : Configuration D}
 set delivered by the `lca_events` field (its maintainability is
 `LCA_Lemma.lean`), and the LCA version's canonical state delivered by the
 every-version coverage of `GoodConfig3`. -/
-theorem goodConfig3_merge (hJoin : JoinLemma3 D)
-    {C C' : Configuration D} {r₁ : Replica}
+theorem goodConfig3_merge_at
+    {C C' : Configuration D}
+    (hJoin : JoinLemma3At D (Configuration.core C))
+    {r₁ : Replica}
     {v₁ v₂ vT vm : Version} {s₁ s₂ sT : D.State}
     {ev₁ ev₂ evT : Set (Op D.AppOp)}
     (h_head₁ : C.head r₁ = some v₁)
@@ -331,7 +333,7 @@ theorem goodConfig3_merge (hJoin : JoinLemma3 D)
       have hcT : IsCanonicalState (Configuration.core C) (ev₁ ∩ ev₂) sT := by
         rw [← hevT_eq]
         exact h.canonical vT sT evT h_verT
-      have h_join := hJoin (Configuration.core C) ev₁ ev₂ sT s₁ s₂
+      have h_join := hJoin ev₁ ev₂ sT s₁ s₂
         (fun hab hbc => h.vis_trans hab hbc)
         (fun a ha => h.vis_irrefl a ha)
         (h.ver_events_sub v₁ s₁ ev₁ h_ver₁)
@@ -514,6 +516,23 @@ private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
       exact h_merge_can
     exact isCanonicalState_unique_u hU h_inE hs h_merge_can'
 
+/-- The original `JoinLemma3`-driven form, as a thin wrapper over
+`goodConfig3_merge_at`. -/
+theorem goodConfig3_merge (hJoin : JoinLemma3 D)
+    {C C' : Configuration D} {r₁ : Replica}
+    {v₁ v₂ vT vm : Version} {s₁ s₂ sT : D.State}
+    {ev₁ ev₂ evT : Set (Op D.AppOp)}
+    (h_head₁ : C.head r₁ = some v₁)
+    (h_ver₁ : C.ver v₁ = some (s₁, ev₁)) (h_ver₂ : C.ver v₂ = some (s₂, ev₂))
+    (h_lca : IsLCA C.parents v₁ v₂ vT)
+    (h_verT : C.ver vT = some (sT, evT))
+    (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
+    (hvis : C'.vis = C.vis)
+    (hver : C'.ver = fun w => if w = vm
+      then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+    (h : GoodConfig3 C) : GoodConfig3 C' :=
+  goodConfig3_merge_at (hJoin.at _) h_head₁ h_ver₁ h_ver₂ h_lca h_verT
+    hL hvis hver h
 /-- **The ternary Join Lemma from `CoreVCs3` + the delta contract + (CD3).**
 Compare `join_lemma3_of_peel` (which consumes the two full peel equations with
 their three-way LCA bookkeeping) and the binary `join_lemma_of_cd` (whose

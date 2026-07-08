@@ -1084,6 +1084,7 @@ Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key
 Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$ \\
 Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
 Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} & convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv}) \\
+Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
 \end{tabular}}
@@ -1559,6 +1560,72 @@ ${\sim}8$k, it is also the first calibration point for which conditioning
 machinery is generic: the same invariant-at-generation shape, none of the
 positional structure.
 
+\paragraph{A third conditioned instance: the mergeable queue --- when no
+$\rc$ can exist.} The queue of the certified-MRDT line of work
+(Soundarapandian et al., PLDI'22, \emph{Certified Mergeable Replicated Data
+Types}) is the catalogue's first data type whose conflict graph is a
+\emph{clique} rather than a star: two concurrent enqueues genuinely do not
+commute (queue order is arrival order), so VC~1's iff forces an $\rc$-edge
+between them, and any orientation of a self-conflicting class composes with
+itself into a length-2 path --- every candidate assignment violates
+\lean{no\_rc\_chain} (Open Question~\ref{oq:rcchain}). The flat engine is
+structurally unavailable, and the instance goes through the framework's
+per-configuration join hook instead (\lean{JoinLemma3At},
+\lean{goodConfig3\_merge\_at}): prove the Join Lemma directly, at every
+reachable configuration.
+
+The implementation is the functional queue with Peepul's merge, verbatim:
+the state is a list of $(\mathit{tag}, \mathit{value})$ pairs, head first;
+$\mathsf{enq}\,v$ appends a fresh element tagged with the operation's own
+timestamp; $\mathsf{deq}\,t$ removes the element tagged $t$, wherever it
+sits; and the three-way merge keeps the LCA's elements that survive in both
+branches (in LCA order), then each branch's new arrivals (in branch order).
+The client-facing API is unchanged --- $\mathsf{dequeue}()$ at a replica
+reads its local head --- but the \emph{operation} records which element that
+call removed: $\app$ for $\mathsf{deq}\,t$ is ``$t$ is the head of the
+issuing replica's state''. As with the RGA, the generation discipline is the
+datatype's natural client behaviour, captured rather than imposed.
+
+The proof exhibits Peepul's merge as its own certificate. The Join Lemma
+asks for a delivery-respecting enumeration of $E_1 \cup E_2$ whose fold is
+$\mathsf{mergeL}(\sigma_0, \sigma_1, \sigma_2)$; the witness is the
+concatenation $\rho_0 \cdot (\rho_1 \setminus E_0) \cdot (\rho_2 \setminus
+E_0)$ of the given enumerations --- exactly the merge's shape, no
+reordering. Three facts make the fold of that concatenation compute the
+merge, all consequences of the closure premise (branch event sets are
+backward-closed under $\vis$ among non-commuting pairs), timestamp
+uniqueness, and an honest-history contract (\lean{QHonest}: every dequeue
+names a tag whose enqueue is $\vis$-prior --- the queue's
+\lean{HonestDelivery}, discharged by the $\app$ head-check via
+\lean{qHonest\_of\_applicable}): a fold from the empty queue is ``the
+enqueues, in order, minus the dequeued tags'' (the fold formula, which
+needs honesty --- a dequeue preceding its enqueue would consume nothing); a
+delta's tags are fresh with respect to the LCA (uniqueness); and a
+cross-branch dequeue is impossible --- a $\mathsf{deq}\,t$ in one branch
+pulls its enqueue into that branch by closure, so if the enqueue of $t$ is
+the \emph{other} branch's delta, it would lie in both branches, hence in
+the LCA, contradicting delta-ness. An LCA element then survives the union
+iff it survives in both branches, which is precisely the merge's first
+clause.
+
+The payoff is the specification. In the PLDI'22 development the queue was
+the hardest case exactly because its specification had to be written in a
+bespoke relational language over event partial orders, with an explicit
+clause recovering \emph{which element is the head}; the merge was then
+verified against that ad-hoc spec. Here the specification is the same
+generic statement as every other instance in
+Table~\ref{tab:catalog} --- every version is the fold of a
+delivery-respecting linearization of its event set --- and head-ness,
+FIFO order, and once-per-element consumption are \emph{read off} the fold
+rather than specified. (One semantic caveat, present equally in Peepul:
+two replicas that concurrently dequeue the same head both consume that one
+element --- the merged state removes it once. RA-linearizability makes this
+visible instead of hiding it: both $\mathsf{deq}\,t$ events fold over the
+single $\mathsf{enq}\,t$.) At ${\sim}870$ lines
+(\lean{MRDT\_Instances/MergeableQueue/}), the instance sits between the
+bounded counter's ${\sim}600$ and the RGA's ${\sim}8$k --- positional
+structure but no rehoming.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -1784,6 +1851,8 @@ the eight VCs & $\co$, $\fd$, $\cd$ & \lean{Framework/VC\_Set.lean} \\
 Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feasible\_cd3} & \lean{Metatheory/Adequacy.lean} \\
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
 bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
+mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizable3} & \lean{MRDT\_Instances/MergeableQueue/} \\
+per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\

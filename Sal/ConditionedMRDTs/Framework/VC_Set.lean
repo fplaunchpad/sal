@@ -74,6 +74,26 @@ def JoinLemma3 (D : ConditionedMRDTSig) : Prop :=
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
+/-- The ternary Join Lemma **at a single configuration** — the per-`C` body of
+`JoinLemma3`. Instances whose join holds only under configuration-level
+hypotheses (an honest-history contract, say) supply this directly to
+`goodConfig3_merge_at`; `JoinLemma3` is the `∀ C` closure. -/
+def JoinLemma3At (D : ConditionedMRDTSig)
+    (C : Sal.Emulation.Configuration D.toCRDTSig) : Prop :=
+  ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
+    (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
+    (∀ a : Op D.AppOp, ¬ C.vis a a) →
+    (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
+    (∀ a b, C.vis a b → ¬ D.toCRDTSig.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
+    (∀ a b, C.vis a b → ¬ D.toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
+    IsCanonicalState C (ev₁ ∩ ev₂) s₀ →
+    IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
+    IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
+
+theorem JoinLemma3.at {D : ConditionedMRDTSig} (h : JoinLemma3 D)
+    (C : Sal.Emulation.Configuration D.toCRDTSig) : JoinLemma3At D C :=
+  fun ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2 => h C ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2
+
 /-- **The delta contract** — the ternary replacement for the binary lattice
 laws (`LatticeVCsPlus`). See the file header for the reading of `mergeL m · c`
 as delta application, and for the two classes (group, lattice) that satisfy it
