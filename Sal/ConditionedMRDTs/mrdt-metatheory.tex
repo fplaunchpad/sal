@@ -1285,12 +1285,40 @@ first live id on a recorded path $p$; $\anc\,\st\,x$ is $x$'s current parent. Ta
 $\Inv := \mathsf{wf} \wedge \mathsf{id\_mono} \wedge (\text{root not reinserted})$ and
 $\app := \mathsf{accurate} \wedge \mathsf{fresh}$. This section presents the discharge as
 it was \emph{first attacked}: swap-based, with the two hard VCs reduced to one faithfulness
-invariant. The attack succeeds --- every lemma below is kernel-clean --- but it is not what
-the final theorem stands on: a kernel-level dependency audit of the assembled capstone shows
-its proof term uses \emph{none} of the swap machinery; of this section only the Key Lemma
-(Lemma~\ref{lem:key}) survives into the working proof. We keep the sketch because it is
-where the working technique's ingredients were found; Section~\ref{sec:actual} records what
-replaced it.
+invariant.
+
+\paragraph{First, the evidence that the flat schema is out of reach.} The
+introduction's claim that this data type is \emph{provably outside} the flat
+VC set rests on two kernel-checked refutations at the $\dodo$ level, one per
+escape route (the visual account, with the traces drawn, is
+\lean{Sal/MRDTs/RGA\_Tombstone\_Free/doc/why-the-path-matters.pdf}, \S6).
+\emph{Route one: no path.} The path-free splice predecessor
+(\lean{RGA\_Splice}, branch \lean{wip/rga-splice}) has
+$\mathsf{Ins}(t\ \text{after}\ x)$ and $\mathsf{Del}(x)$ genuinely
+non-commuting (the splice destroys the parent pointer), so the flat schema's
+commutation iff (\lean{rc\_non\_comm}) forces the entry
+$\mathsf{rc}(\mathsf{Ins}(t\ \text{after}\ x), \mathsf{Del}(x)) =
+\mathsf{Fst\_then\_snd}$ --- and a non-Either entry awakens the
+conditional-commutation base VC (\lean{cond\_comm\_base}: an
+$\mathsf{rc}$-ordered pair must be order-insensitive at application whenever
+a third op also conflicts), which the three-operation trace
+$\mathsf{Ins}(10\ \text{after}\ 5);\mathsf{Del}(5);
+\mathsf{Ins}(12\ \text{after}\ 5)$ from $\{(5,\cdot,0)\}$ refutes: the first
+insert is rehomed onto the root in the mandated order but dangles in the
+flipped one (\lean{cond\_comm\_base\_violated}, by evaluation).
+\emph{Route two: the path.} Carrying the ancestor path repairs exactly that
+trace (\lean{trio\_converges}) but the repaired commutation is
+\emph{reachability-conditioned}: the mechanized \lean{rc\_non\_comm'}
+assumes the carried paths are \lean{accurate} in the state, and dropping
+that hypothesis is refuted by a lying record ---
+$\mathsf{Ins}(10\ \text{after}\ 5, \langle 7\rangle)$ accurate against
+$\mathsf{Del}(5, \langle\rangle)$ claiming $5$ hangs off the root; whichever
+runs second applies \emph{its own} record and the orders diverge
+(\lean{inconsistent\_diverges}). Accuracy is a property of the execution
+that generated the operation, not of the state it meets, so no
+$\forall\sigma$ equation can carry it: the schema cannot be satisfied, only
+\emph{changed} --- which, done soundly, is the conditioned framework of
+\S\ref{sec:condmeta}.
 
 \begin{definition}[Recorded-path faithfulness $\RVF$]\label{def:rvf}
 $\RVF\,a\,\st$: the recorded path $\recList\,a$ is a \emph{live subchain of genuine
@@ -1752,7 +1780,7 @@ stability; it is never a mutex.
 \label{sec:open}
 
 The mechanization settles what the paper claimed; it also sharpens what
-remains genuinely open. Eight questions, roughly in order of theoretical
+remains genuinely open. Nine questions, roughly in order of theoretical
 depth:
 
 \begin{openq}[$\cd$-derivability]
@@ -1966,6 +1994,31 @@ conditioned instance, hence \lean{CausalCanonical} is a hypothesis with
 two discharge lemmas rather than a theorem; a datatype needing both a
 nontrivial $\mathsf{rc}$ and a version invariant (the budget cart,
 \lean{BudgetCart}, of the instance roadmap) will force the question.
+\end{openq}
+
+\begin{openq}[Does conditioning compose?]
+\label{oq:compose}
+The catalogue is built one data type at a time; practice builds data types
+from data types --- the canonical case is the key-value map whose values are
+themselves MRDTs (the certified-MRDT line's own composite). The factored
+framework suggests composition should happen at the \lean{JoinLemma3At}
+boundary --- the map combinator would consume each value's per-configuration
+join, whatever species produced it, so a map of \emph{queues} composes as
+readily as a map of counters --- with a small once-only kit: folds and
+configurations project per key, cross-key pairs commute so $\loE{E}$
+localizes, and per-key joins re-interleave. Conjecturally the coupling
+strength stratifies what survives composition: payload parametricity (free),
+the indexed product = the grow-only-keys map (a theorem to prove), read
+coupling --- one layer's $\app$ reads another's state, as in a budgeted
+cart --- (convergence composes; safety needs a monotone-transfer lemma),
+uniform coupling --- key \emph{removal}, reaching into the value layer the
+same way for every value type (one generic obligation: a reset element and
+a $\mathsf{remove} \parallel v$-op policy) --- and ad-hoc effect coupling
+(rich-text marks anchored in a sequence), where nothing is expected to
+compose automatically. None of this is mechanized; the map combinator and
+the coupling boundaries are the roadmap's composition experiments, and
+where composition \emph{breaks} is expected to be as informative as where
+it holds.
 \end{openq}
 
 \section{Mechanization}
