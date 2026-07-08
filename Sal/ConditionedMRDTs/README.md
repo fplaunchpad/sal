@@ -156,7 +156,15 @@ the naive all-canonical-witness route is refuted by the bounded counter
 itself) and `escrow_version_inv` (the measured/affine route, no causal
 witness needed). `bc_version_inv` is re-derived through **both**, retiring
 the counter's bespoke counting apparatus; the analysis is the pen-and-paper
-memo `Development/GENERIC_SAFETY_PENPAPER.md`. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+memo `Development/GENERIC_SAFETY_PENPAPER.md`.
+[`Metatheory/Product.lean`](Metatheory/Product.lean) carries the
+**composition theorem** (raw kit): the binary heterogeneous product
+`D₁ ⊗ D₂` composes at the `JoinLemma3At` boundary — no cross-component
+`loOn` edges, concatenation witness — with `joinLemma3At_prod` and the
+composite `prod_ra_linearizable3_of_honest_reach`; consumability demo
+`MRDT_Instances/ProductDemo/` (queue ⊗ counter, zero bespoke proof).
+Analysis: `Development/COMPOSITION_PENPAPER.md`. ≈-lift and safety kit
+are the next phases; Peritext = RGA ⊗ marks is the target. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)

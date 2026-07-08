@@ -2008,7 +2008,7 @@ witnesses (\lean{CausalCanonical}) and the causal-past folds
 explicitly as \lean{BCartSpendMono}); closing the gate is this question.
 \end{openq}
 
-\begin{openq}[Does conditioning compose?]
+\begin{openq}[Does conditioning compose? --- convergence: yes, now a theorem]
 \label{oq:compose}
 The catalogue is built one data type at a time; practice builds data types
 from data types --- the canonical case is the key-value map whose values are
@@ -2027,10 +2027,30 @@ uniform coupling --- key \emph{removal}, reaching into the value layer the
 same way for every value type (one generic obligation: a reset element and
 a $\mathsf{remove} \parallel v$-op policy) --- and ad-hoc effect coupling
 (rich-text marks anchored in a sequence), where nothing is expected to
-compose automatically. None of this is mechanized; the map combinator and
-the coupling boundaries are the roadmap's composition experiments, and
-where composition \emph{breaks} is expected to be as informative as where
-it holds.
+compose automatically. The convergence half is now mechanized
+(\lean{Metatheory/Product.lean}): the binary heterogeneous product
+$D_1 \otimes D_2$ composes at exactly the \lean{JoinLemma3At} boundary ---
+cross-component pairs commute definitionally, so $\loE{E}$ has \emph{no}
+mixed edges and the glued join witness is a plain concatenation
+$\iota_1\rho^1 \mathbin{+\!\!+} \iota_2\rho^2$
+(\lean{joinLemma3At\_prod}; composite metatheorem
+\lean{prod\_ra\_linearizable3\_of\_honest\_reach}, axioms \lean{propext},
+\lean{Quot.sound}; consumability demo: a queue $\otimes$ counter capstone
+with zero bespoke proof, \lean{MRDT\_Instances/ProductDemo/}). Two
+boundary findings from the pen-and-paper pass
+(\lean{Development/COMPOSITION\_PENPAPER.md}): \emph{reachability does
+not project} (a second-component apply is a version-duplicating stutter
+for the first's projection), so finished capstones never compose ---
+only per-configuration certificates do, which retroactively forces this
+note's factored interface; and \emph{two-sided causal-witness
+re-interleaving is refuted} (a realizable four-event cross-$\vis$ cycle),
+with the sound repair --- pin one side, re-sort the other --- covering
+products with at most one $\mathsf{rc}$-nontrivial component. Still open:
+the $\eqobs$-lift (product of eq-quotients; the pragmatic cut $\eqobs_2 =
+{=}$ suffices for the roadmap's Peritext $=$ RGA $\otimes$ marks), the
+safety kit, the indexed (map-of-MRDTs) generalization, and the L2.5/L3
+coupling boundaries, where composition \emph{breaking} is expected to be
+as informative as where it holds.
 \end{openq}
 
 \section{Mechanization}
@@ -2064,6 +2084,7 @@ honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_o
 generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/GenHonest.lean} \\
 generic safety (causal witness) & \lean{SafetyStep}, \lean{version\_inv\_of\_causal\_canonical} & \lean{Metatheory/GenericSafety.lean} \\
 escrow metatheorem & \lean{Measured}, \lean{escrow\_version\_inv} & \lean{Metatheory/EscrowSafety.lean} \\
+product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/Product.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
