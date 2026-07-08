@@ -155,10 +155,15 @@ imports all twelve capstones:
 | **Peritext** (production mirror) | `Peritext_ra_linearizable3_eq` | identity; unconditional delta |
 | **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
 | **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
+| **Bounded counter** (escrow; mirror of `Sal/CRDTs/Bounded_Counter`) | `BC_ra_linearizable3_eq`; **safety**: `bc_version_inv`, `bc_value_nonneg` | identity for convergence; the conditioned contract (`BCInv`/`bcApplicable`/`BCHonest`) delivers the bound as a reachability theorem |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
-kernel-checked end-to-end theorem through the one framework.** The
+kernel-checked end-to-end theorem through the one framework.** The bounded
+counter adds the first **safety** capstone: conditioning is used not to
+rescue convergence (its ops commute flatly) but to prove the invariant its
+name promises — `value ≥ 0` at every reachable version, from a
+client-checkable applicability contract. The
 historical flat corollaries (`*_ra_linearizable3` over the raw system, plus
 the `GSet/` and `Counter/` specimens) remain in the same per-RDT files as
 internal steps of the engine.

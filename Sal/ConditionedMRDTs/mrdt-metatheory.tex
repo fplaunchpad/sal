@@ -1083,6 +1083,7 @@ Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key
 \midrule
 Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$ \\
 Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
+Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} & convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv}) \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
 \end{tabular}}
@@ -1525,6 +1526,39 @@ Proposition~\ref{prop:discharge} and the corollary unconditionally modulo
 that assumption.
 
 
+\paragraph{A second conditioned instance: the bounded counter — conditioning
+for safety.} The tombstone-free RGA needs conditioning to get
+\emph{convergence}. The bounded counter (per-replica escrow: grow-only
+tallies $(\mathsf{incs}, \mathsf{decs})$ per replica, per-slot group merge;
+mirror of \lean{Sal/CRDTs/Bounded\_Counter}) shows the same three mechanisms
+delivering \emph{safety} for a datatype whose convergence is flat: all its
+operations commute, the eight VCs discharge along the counter route, and the
+catalogue capstone (\lean{BC\_ra\_linearizable3\_eq}) is an identity
+instantiation. What the flat theory cannot even state is the property the
+datatype is named after. Its CRDT development is explicit: ``the bound is
+enforced operationally by well-behaved clients'' --- a client refuses to
+issue $\mathsf{Dec}$ without slack --- and that discipline lives outside the
+formal development. Conditioned, it moves inside: $\Inv$ is the per-replica
+escrow invariant ($0 \le \mathsf{decs}\,r \le \mathsf{incs}\,r$), $\app$ is
+the client's check (a $\mathsf{Dec}$ needs slack in the \emph{issuing
+replica's own} slots --- positive, and checkable against the issuing
+replica's state), and the contract on executions
+(\lean{BCHonest}: every decrement was applicable at the fold of its causal
+past) is the counter's \lean{HonestDelivery}. The theorem
+(\lean{bc\_version\_inv}, kernel-clean): in every reachable configuration
+with honest history, \emph{every version --- heads, LCAs, everything the
+store registered --- satisfies the invariant}; hence the counter's value is
+non-negative everywhere (\lean{bc\_value\_nonneg}). The proof is a
+counting argument riding the flat machinery: every version's state is a fold
+of its event set (canonicity), fold slots \emph{are} per-replica event
+counts (the group merge is inclusion--exclusion on counts, via the LCA
+lemma), and the vis-maximal decrement's honesty at its own causal past ---
+which lies inside the version by causal closure --- bounds the decrement
+count by the increment count. At ${\sim}600$ lines against the RGA's
+${\sim}8$k, it is also the first calibration point for which conditioning
+machinery is generic: the same invariant-at-generation shape, none of the
+positional structure.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -1700,6 +1734,7 @@ $\sigma$/$\loE{E}$ layer (merge-independent) & \lean{UpdateVCs}, \lean{IsCanonic
 the eight VCs & $\co$, $\fd$, $\cd$ & \lean{Framework/VC\_Set.lean} \\
 Theorem~\ref{thm:main} + bridges & \lean{ra\_linearizable\_of\_core\_}\lean{feasible\_cd3} & \lean{Metatheory/Adequacy.lean} \\
 Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
+bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule

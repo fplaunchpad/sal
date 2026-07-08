@@ -11,6 +11,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Tombstone.RGA_Tombstone
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
+import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
 
 /-!
@@ -37,8 +38,17 @@ tombstone-free RGA is the fully general instantiation.
 | Peritext | `Peritext_ra_linearizable3_eq` |
 | Multi-Valued Register | `MVR_ra_linearizable3_eq` |
 | Add-Wins Priority Queue | `AWPQ_ra_linearizable3_eq` |
+| **Bounded counter** (escrow) | `BC_ra_linearizable3_eq`; safety: `bc_version_inv` |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).
+
+The bounded counter is the second genuinely conditioned instance and the
+first with a **safety** capstone: `bc_version_inv` proves the escrow
+invariant (hence `bc_value_nonneg`, the bound) at every version of every
+reachable configuration whose history satisfies the formal client contract
+`BCHonest` — the property its CRDT counterpart
+(`Sal/CRDTs/Bounded_Counter`) documents as "enforced operationally by
+well-behaved clients" and cannot state.
 -/
