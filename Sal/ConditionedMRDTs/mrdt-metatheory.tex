@@ -1665,17 +1665,65 @@ is extracted once (\lean{GenHonest}, with \lean{AppHonest} its $\app$
 instance and \lean{ra\_linearizable3\_of\_genHonest\_reach} the composite
 metatheorem; \lean{Metatheory/GenHonest.lean}), and the counter's and the
 queue's contracts are re-derived as instantiations
-(\lean{BCHonest\_iff\_genHonest}, \lean{qHonest\_of\_genHonest}). A generic
-\emph{safety} metatheorem ($\Inv$ at every version from
-applicability-stability) remains open; the counter's counting argument
-shows the stability condition is where the per-datatype content will
-sit.
+(\lean{BCHonest\_iff\_genHonest}, \lean{qHonest\_of\_genHonest}). A generic \emph{safety}
+metatheorem completes the factorization; it is the subject of the next
+paragraph, and the counter's counting argument indeed turned out to mark
+where the per-datatype content sits.
+
+\paragraph{The generic safety metatheorem: causal witnesses, and an
+escrow route.} The safety half of conditioning also factorizes, but the
+obvious formulation is \emph{false}, and the refutation comes from the
+flagship safety instance itself. One would like: if updates preserve
+$\Inv$ on applicable operations and the history is honest, then $\Inv$
+holds at every version --- proved by inducting along the version's
+canonical enumeration. But canonicity constrains the enumeration only by
+$\mathsf{lo}$, and for the bounded counter --- all of whose operations
+commute --- $\mathsf{lo}$ is \emph{empty}: $[\mathsf{dec}, \mathsf{inc}]$
+is a perfectly canonical enumeration of an honest version, and its
+intermediate state violates the escrow invariant. Only \emph{endpoints}
+of canonical folds are guaranteed; commuting causal predecessors may
+float behind the event that needs them. The repair is to restrict the
+witness class, not the induction: a \emph{causal} witness additionally
+linearizes $\vis$ (\lean{CausalCanonical}), and its prefixes are exactly
+the vis-closed, future-free sets containing each event's whole causal
+past. Over those, the metatheorem holds
+(\lean{version\_inv\_of\_causal\_canonical}; axioms \lean{propext},
+\lean{Quot.sound}): $\Inv$ at every version, from honesty
+(\lean{HonestApp}: $\app$ at some causal fold of the event's causal past
+--- what the issuer's own state witnesses) and one per-datatype
+obligation \lean{SafetyStep} (applicability transfers from the causal
+past to any admissible prefix, fused with $\Inv$-preservation). For
+datatypes whose operations all commute the causal witness is free
+(\lean{causalCanonical\_of\_all\_comm\_rc\_either}, a pointwise
+permutation argument). The bounded counter discharges \lean{SafetyStep}
+in three lines --- extras in a prefix are other replicas' events and
+cannot touch the issuer's slots --- and \lean{bc\_version\_inv} is
+re-derived as a corollary, retiring the bespoke vis-maximal counting
+apparatus, which is thereby revealed as compensation for inducting over
+non-causal witnesses. A second, independent route generalizes that
+retired argument itself: for datatypes \emph{measured} by affine
+observations (fold values = event-set counts), an \emph{escrow
+metatheorem} (\lean{escrow\_version\_inv}) yields the same conclusions
+with no causal witness and no $\Inv$-preservation at all;
+\lean{bc\_version\_inv} is derived a second time this way. The queue,
+by contrast, \emph{refuses} \lean{SafetyStep} --- ``$t$ is the head'' is
+not stable under a concurrent honest dequeue of the same head, and
+correctly so: the double-dequeue execution satisfies any sound
+obligation, and the queue's stable residue is event-level
+(\lean{QHonest}), consumed by convergence rather than by a state
+invariant. The full analysis, including two further refuted
+formulations, is the pen-and-paper memo
+\lean{Development/GENERIC\_SAFETY\_PENPAPER.md} --- written, per this
+project's standing lesson, before any Lean. (A natural follow-up is a
+\emph{conditioned step relation} --- apply guarded by $\app$ at the head
+state --- under which honesty becomes a theorem of the LTS rather than a
+contract; deferred.)
 
 \section{Open questions}
 \label{sec:open}
 
 The mechanization settles what the paper claimed; it also sharpens what
-remains genuinely open. Seven questions, roughly in order of theoretical
+remains genuinely open. Eight questions, roughly in order of theoretical
 depth:
 
 \begin{openq}[$\cd$-derivability]
@@ -1873,6 +1921,24 @@ key in state, and chains would extend $\mathsf{rc}$ only within the
 recoverable class.
 \end{openq}
 
+\begin{openq}[Causal canonicity under general $\mathsf{rc}$]
+\label{oq:causalcanon}
+The generic safety metatheorem consumes \emph{causal} canonical
+witnesses --- enumerations linearizing $\vis$ and respecting $\loE{E}$
+jointly. With every concurrent pair unordered (Either), the two discharge
+species above suffice. Under a general $\mathsf{rc}$ the existence of a
+joint linearization is open: a cycle would need at least two
+$\mathsf{rc}$-edges separated by $\vis$-paths --- a single
+$\mathsf{rc}$-edge closed by a $\vis$-path contradicts concurrency via
+transitivity, and a non-commuting first $\vis$-step is an absorber
+killing the edge --- and \lean{no\_rc\_chain} forbids adjacent
+$\mathsf{rc}$-edges but not $\vis$-separated ones. Moot for every current
+conditioned instance, hence \lean{CausalCanonical} is a hypothesis with
+two discharge lemmas rather than a theorem; a datatype needing both a
+nontrivial $\mathsf{rc}$ and a version invariant (the checkout cart of
+the instance roadmap) will force the question.
+\end{openq}
+
 \section{Mechanization}
 \label{sec:mech}
 
@@ -1900,6 +1966,8 @@ mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizabl
 per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
 honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/HonestReach.lean} \\
 generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/GenHonest.lean} \\
+generic safety (causal witness) & \lean{SafetyStep}, \lean{version\_inv\_of\_causal\_canonical} & \lean{Metatheory/GenericSafety.lean} \\
+escrow metatheorem & \lean{Measured}, \lean{escrow\_version\_inv} & \lean{Metatheory/EscrowSafety.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\

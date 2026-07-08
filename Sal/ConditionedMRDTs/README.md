@@ -146,7 +146,17 @@ bounded counter's inductions are one-line corollaries.
 fold of its causal past — the client-checkable form; `AppHonest` is its
 `applicable` instance), with the counter's and the queue's contracts
 re-derived as instantiations (`BCHonest_iff_genHonest`,
-`qHonest_of_genHonest`). The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+`qHonest_of_genHonest`).
+[`Metatheory/GenericSafety.lean`](Metatheory/GenericSafety.lean) and
+[`Metatheory/EscrowSafety.lean`](Metatheory/EscrowSafety.lean) carry the
+**generic safety metatheorems**: `version_inv_of_causal_canonical` (`Inv` at
+every version, by induction along *causal* canonical witnesses —
+`CausalCanonical` — parametric in the per-datatype `SafetyStep` obligation;
+the naive all-canonical-witness route is refuted by the bounded counter
+itself) and `escrow_version_inv` (the measured/affine route, no causal
+witness needed). `bc_version_inv` is re-derived through **both**, retiring
+the counter's bespoke counting apparatus; the analysis is the pen-and-paper
+memo `Development/GENERIC_SAFETY_PENPAPER.md`. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)

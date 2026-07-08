@@ -2,6 +2,8 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
+import Sal.ConditionedMRDTs.Metatheory.GenericSafety
+import Sal.ConditionedMRDTs.Metatheory.EscrowSafety
 
 /-!
 # Bounded Counter — convergence, the client contract, and the bound as a theorem
@@ -30,12 +32,14 @@ Three layers:
   — "well-behaved clients", stated on the execution. The headline
   `bc_version_inv`: at every reachable configuration, **every version of every
   honest execution satisfies the invariant**; corollary `bc_value_nonneg`, the
-  counter's value (over any finite set of replicas) is non-negative. The proof
-  characterizes fold states as per-slot event counts (§4) and bounds the
-  decrement count by the increment count using the vis-maximal decrement's
-  honesty at its own causal past (§6) — the version's event set is causally
-  closed (`GoodConfig3.ver_causal`), so that causal past lies inside the
-  version.
+  counter's value (over any finite set of replicas) is non-negative. It is a
+  corollary of the generic safety metatheorem
+  (`version_inv_on_of_causal_canonical`, Route A′ of
+  `Development/GENERIC_SAFETY_PENPAPER.md`): the counter discharges
+  `CausalCanonical` pointwise (all ops commute, `rc ≡ Either`) and the fused
+  stability obligation `SafetyStepOn` in the memo's three steps (§5) — extras
+  in a causal prefix are cross-replica, slots are order-free per-slot event
+  counts (§4), and the guard reads only the issuer's own slots.
 -/
 
 set_option maxHeartbeats 1000000
@@ -315,85 +319,69 @@ theorem bc_fold_decs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
       push_cast
       omega
 
-/-! ## §5  A vis-maximal element of a finite totally-ordered family -/
+/-! ## §5  The safety obligations discharged (Route A′, memo §4.2.1)
 
-/-- Any nonempty duplicate-free list whose elements are pairwise comparable by
-a transitive relation `R` has an `R`-maximal element. -/
-theorem exists_rel_max {α : Type} (R : α → α → Prop)
-    (htrans : ∀ {a b c}, R a b → R b c → R a c) :
-    ∀ (l : List α), l ≠ [] → l.Nodup →
-      (∀ a ∈ l, ∀ b ∈ l, a ≠ b → R a b ∨ R b a) →
-      ∃ e ∈ l, ∀ d ∈ l, d ≠ e → R d e := by
-  intro l
-  induction l with
-  | nil => intro h; exact absurd rfl h
-  | cons a l ih =>
-    intro _ hnd htot
-    by_cases hl : l = []
-    · subst hl
-      refine ⟨a, List.mem_cons_self, ?_⟩
-      intro d hd hne
-      rcases List.mem_cons.mp hd with rfl | h
-      · exact absurd rfl hne
-      · exact absurd h List.not_mem_nil
-    · have hnd' : l.Nodup := (List.nodup_cons.mp hnd).2
-      have hanotin : a ∉ l := (List.nodup_cons.mp hnd).1
-      have htot' : ∀ x ∈ l, ∀ y ∈ l, x ≠ y → R x y ∨ R y x := fun x hx y hy =>
-        htot x (List.mem_cons_of_mem _ hx) y (List.mem_cons_of_mem _ hy)
-      obtain ⟨e, he, hmax⟩ := ih hl hnd' htot'
-      have hane : a ≠ e := fun h => hanotin (h ▸ he)
-      rcases htot a List.mem_cons_self e (List.mem_cons_of_mem _ he) hane
-        with hae | hea
-      · refine ⟨e, List.mem_cons_of_mem _ he, ?_⟩
-        intro d hd hne
-        rcases List.mem_cons.mp hd with rfl | hdl
-        · exact hae
-        · exact hmax d hdl hne
-      · refine ⟨a, List.mem_cons_self, ?_⟩
-        intro d hd hne
-        rcases List.mem_cons.mp hd with rfl | hdl
-        · exact absurd rfl hne
-        · by_cases hde : d = e
-          · subst hde; exact hea
-          · exact htrans (hmax d hdl hde) hea
+`bc_version_inv` is a corollary of the generic
+`version_inv_on_of_causal_canonical` (`Metatheory/GenericSafety.lean`). The
+per-instance residue is exactly the memo's three steps: extras in a causal
+prefix are cross-replica (the generic `countP_prefix_eq_causal_past`), slots
+are order-free counts (`bc_fold_incs`/`bc_fold_decs`), and the guard reads
+only the issuer's own slots (`bcApplicable_inv_pres` closes). The former
+vis-maximal-decrement apparatus (`exists_rel_max`, `countP_split`,
+`countP_le_one_of_unique`, the stray-dec bound) was compensation for the
+non-causal witness and is retired. -/
 
-/-- In a duplicate-free list, a predicate satisfied only by `e` counts at most
-once. -/
-theorem countP_le_one_of_unique {α : Type} {l : List α} {p : α → Bool} {e : α}
-    (hnd : l.Nodup) (h : ∀ x ∈ l, p x = true → x = e) :
-    l.countP p ≤ 1 := by
-  induction l with
-  | nil => simp
-  | cons a l ih =>
-    have hnd' : l.Nodup := (List.nodup_cons.mp hnd).2
-    have hanotin : a ∉ l := (List.nodup_cons.mp hnd).1
-    rw [List.countP_cons]
-    by_cases hpa : p a = true
-    · have hae : a = e := h a List.mem_cons_self hpa
-      have hzero : l.countP p = 0 := by
-        rw [List.countP_eq_zero]
-        intro x hx hpx
-        have hxe : x = e := h x (List.mem_cons_of_mem _ hx) hpx
-        rw [← hae] at hxe
-        exact absurd (hxe ▸ hx) hanotin
-      simp [hpa, hzero]
-    · have hih := ih hnd' (fun x hx hpx => h x (List.mem_cons_of_mem _ hx) hpx)
-      have hpa' : p a = false := by
-        cases hp : p a
-        · rfl
-        · exact absurd hp hpa
-      simp only [hpa', Bool.false_eq_true, if_false]
+theorem bc_inv_init : BCInv BC.init := fun _ => ⟨le_refl 0, le_refl 0⟩
+
+private theorem bcIsIncAt_rep {r : ℕ} {x : Op BCOp}
+    (h : bcIsIncAt r x = true) : x.2.1 = r := by
+  obtain ⟨ts, ro, op⟩ := x
+  cases op with
+  | inc => simpa [bcIsIncAt] using h
+  | dec => simp [bcIsIncAt] at h
+
+private theorem bcIsDecAt_rep {r : ℕ} {x : Op BCOp}
+    (h : bcIsDecAt r x = true) : x.2.1 = r := by
+  obtain ⟨ts, ro, op⟩ := x
+  cases op with
+  | inc => simp [bcIsDecAt] at h
+  | dec => simpa [bcIsDecAt] using h
+
+/-- **The fused stability obligation** (memo §4.2 (P2)) for the counter's
+conditioning pair `(BCInv, bcApplicable)`: an `inc` needs no guard; for a
+`dec` by `r`, both `r`-slots agree between the causal-prefix fold and the
+causal-past fold — the slots are event counts and every extra event of the
+prefix is cross-replica — so the issuer's own slack check transfers and
+`bcApplicable_inv_pres` closes. -/
+theorem bc_safetyStep : SafetyStepOn BC BCInv bcApplicable := by
+  intro C E S e σS σP hEev hEcl heE hSsub heS hScl hfut hpast hσS hσP hInv happ
+  obtain ⟨ts, r, op⟩ := e
+  cases op with
+  | inc => exact bcApplicable_inv_pres (o := (ts, r, BCOp.inc)) hInv trivial
+  | dec =>
+    obtain ⟨ρS, hpS, _hrS, hfS⟩ := hσS
+    obtain ⟨ρP, hpP, _hrP, hfP⟩ := hσP
+    have hinc : ρS.countP (bcIsIncAt r) = ρP.countP (bcIsIncAt r) :=
+      countP_prefix_eq_causal_past hEev hSsub heE heS hfut hpast hpS hpP
+        (bcIsIncAt r) (fun _ hx => bcIsIncAt_rep hx)
+    have hdec : ρS.countP (bcIsDecAt r) = ρP.countP (bcIsDecAt r) :=
+      countP_prefix_eq_causal_past hEev hSsub heE heS hfut hpast hpS hpP
+        (bcIsDecAt r) (fun _ hx => bcIsDecAt_rep hx)
+    have hfS' : applySeq BC.toCRDTSig BC.init ρS = σS := hfS
+    have hfP' : applySeq BC.toCRDTSig BC.init ρP = σP := hfP
+    have hS1 : σS.1 r = (ρS.countP (bcIsIncAt r) : ℤ) := by
+      rw [← hfS', bc_fold_incs, BC_init_fst]; omega
+    have hS2 : σS.2 r = (ρS.countP (bcIsDecAt r) : ℤ) := by
+      rw [← hfS', bc_fold_decs, BC_init_snd]; omega
+    have hP1 : σP.1 r = (ρP.countP (bcIsIncAt r) : ℤ) := by
+      rw [← hfP', bc_fold_incs, BC_init_fst]; omega
+    have hP2 : σP.2 r = (ρP.countP (bcIsDecAt r) : ℤ) := by
+      rw [← hfP', bc_fold_decs, BC_init_snd]; omega
+    have happ' : σP.2 r + 1 ≤ σP.1 r := happ
+    have happS : bcApplicable (ts, r, BCOp.dec) σS := by
+      show σS.2 r + 1 ≤ σS.1 r
       omega
-
-/-- Splitting a count along a second predicate. -/
-theorem countP_split {α : Type} (l : List α) (p q : α → Bool) :
-    l.countP p
-      = l.countP (fun x => p x && q x) + l.countP (fun x => p x && !(q x)) := by
-  induction l with
-  | nil => simp
-  | cons a l ih =>
-    simp only [List.countP_cons]
-    cases p a <;> cases q a <;> simp <;> omega
+    exact bcApplicable_inv_pres hInv happS
 
 /-! ## §6  Honest histories and the bound -/
 
@@ -435,125 +423,38 @@ theorem bc_goodConfig3
       (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)).at _)
     (honestReach_of_reachable hReach)
 
+/-- The ∃-form honesty (`HonestAppOn`) from the client contract: `BCHonest`'s
+∀-enumeration form covers in particular the causal enumeration of each causal
+past, which exists because every observed set is registered
+(`ObservedRegistered`) and versions carry causal witnesses
+(`CausalCanonical`) — the generic bridge `honestAppOn_of_genHonest`. -/
+theorem bc_honestAppOn {C : Configuration BC}
+    (hObs : ObservedRegistered C) (hCC : CausalCanonical C)
+    (hHon : BCHonest C) : HonestAppOn BC bcApplicable C :=
+  honestAppOn_of_genHonest hObs hCC ((BCHonest_iff_genHonest C).mp hHon)
+
 open LabeledTS in
 /-- **The bound, as a reachability theorem.** In every reachable configuration
 whose history is honest, every version — heads, LCAs, everything the store
 ever registered — satisfies the escrow invariant. What the CRDT development
 could only promise operationally is here a consequence of the formal client
-contract. -/
+contract. Corollary of the generic safety metatheorem (Route A′): the
+counter's `CausalCanonical` comes pointwise from all-comm + `rc ≡ Either`,
+and its `SafetyStepOn`/`HonestAppOn` discharges are §5 and
+`bc_honestAppOn`. -/
 theorem bc_version_inv
     (C : Configuration BC)
     (hReach : (labeledTS3 BC).ReachableFrom (initConfig BC trivial) C)
     (hHon : BCHonest C) :
     ∀ (v : Version) (s : BCState) (E : Set (Op BCOp)),
       C.ver v = some (s, E) → BCInv s := by
-  classical
-  intro v s E hv
   have hGood : GoodConfig3 C := bc_goodConfig3 C hReach
-  obtain ⟨π, hperm, _, hfold⟩ := hGood.canonical v s E hv
-  intro r
-  have hdecs : s.2 r = (π.countP (bcIsDecAt r) : ℤ) := by
-    rw [← hfold, bc_fold_decs, BC_init_snd]
-    omega
-  have hincs : s.1 r = (π.countP (bcIsIncAt r) : ℤ) := by
-    rw [← hfold, bc_fold_incs, BC_init_fst]
-    omega
-  refine ⟨by rw [hdecs]; exact_mod_cast Nat.zero_le _, ?_⟩
-  rw [hdecs, hincs]
-  suffices h : π.countP (bcIsDecAt r) ≤ π.countP (bcIsIncAt r) by
-    exact_mod_cast h
-  by_cases hz : π.countP (bcIsDecAt r) = 0
-  · omega
-  · -- there is a decrement by `r`; take the vis-maximal one
-    have hmem_events : ∀ x ∈ π, x ∈ C.events := fun x hx =>
-      hGood.ver_events_sub v s E hv x ((hperm.2 x).mp hx)
-    have hdecs_ne : π.filter (bcIsDecAt r) ≠ [] := by
-      intro h
-      apply hz
-      rw [List.countP_eq_length_filter, h]
-      rfl
-    have hdecs_nd : (π.filter (bcIsDecAt r)).Nodup := hperm.1.filter _
-    have hdecs_sub : ∀ x ∈ π.filter (bcIsDecAt r), x ∈ π := fun x hx =>
-      List.mem_of_mem_filter hx
-    have hdec_shape : ∀ x ∈ π.filter (bcIsDecAt r),
-        x.2.2 = BCOp.dec ∧ x.2.1 = r := by
-      intro x hx
-      have hpx : bcIsDecAt r x = true := List.of_mem_filter hx
-      obtain ⟨ts, ro, op⟩ := x
-      cases op with
-      | inc => exact absurd hpx (by simp [bcIsDecAt])
-      | dec =>
-        refine ⟨rfl, ?_⟩
-        simpa [bcIsDecAt] using hpx
-    have htot : ∀ a ∈ π.filter (bcIsDecAt r), ∀ b ∈ π.filter (bcIsDecAt r),
-        a ≠ b → C.vis a b ∨ C.vis b a := by
-      intro a ha b hb hne
-      obtain ⟨ra, sa, hLa, hsa⟩ := hmem_events a (hdecs_sub a ha)
-      obtain ⟨rb, sb, hLb, hsb⟩ := hmem_events b (hdecs_sub b hb)
-      exact C.vis_total_same_replica hLa hsa hLb hsb hne
-        (((hdec_shape a ha).2).trans ((hdec_shape b hb).2).symm)
-    obtain ⟨e, he_mem, he_max⟩ :=
-      exists_rel_max C.vis (fun hab hbc => hGood.vis_trans hab hbc)
-        (π.filter (bcIsDecAt r)) hdecs_ne hdecs_nd htot
-    obtain ⟨tse, re, ope⟩ := e
-    have hope : ope = BCOp.dec := (hdec_shape _ he_mem).1
-    subst hope
-    set e : Op BCOp := (tse, re, BCOp.dec) with he_def
-    have he_π : e ∈ π := hdecs_sub e he_mem
-    have he_E : e ∈ E := (hperm.2 e).mp he_π
-    have he_events : e ∈ C.events := hmem_events e he_π
-    have he_dec : e.2.2 = BCOp.dec := (hdec_shape e he_mem).1
-    have he_r : e.2.1 = r := (hdec_shape e he_mem).2
-    -- enumeration of `e`'s causal past, inside the (closed) version
-    have hπP_perm : listPermOf (π.filter (fun x => decide (C.vis x e)))
-        {e' ∈ C.events | C.vis e' e} := by
-      constructor
-      · exact hperm.1.filter _
-      · intro x
-        constructor
-        · intro hx
-          have hxπ : x ∈ π := List.mem_of_mem_filter hx
-          have hvis : C.vis x e := by
-            have := List.of_mem_filter hx
-            simpa using this
-          exact ⟨hmem_events x hxπ, hvis⟩
-        · rintro ⟨hxev, hvis⟩
-          refine List.mem_filter.mpr ⟨?_, by simpa using hvis⟩
-          exact (hperm.2 x).mpr (hGood.ver_causal v s E hv x e hvis he_E)
-    have happ := hHon e he_events he_dec _ hπP_perm
-    -- honesty at the causal past, in counting form
-    have hP_counts :
-        (π.filter (fun x => decide (C.vis x e))).countP (bcIsDecAt r) + 1
-          ≤ (π.filter (fun x => decide (C.vis x e))).countP (bcIsIncAt r) := by
-      have h2 : (applySeq BC.toCRDTSig BC.init
-            (π.filter (fun x => decide (C.vis x e)))).2 re + 1
-          ≤ (applySeq BC.toCRDTSig BC.init
-            (π.filter (fun x => decide (C.vis x e)))).1 re := happ
-      have hre : re = r := he_r
-      rw [bc_fold_decs, bc_fold_incs, BC_init_fst, BC_init_snd, hre] at h2
-      omega
-    -- every r-decrement of the version is in the past of `e`, or is `e`
-    have hsplit : π.countP (bcIsDecAt r)
-        = π.countP (fun x => bcIsDecAt r x && decide (C.vis x e))
-          + π.countP (fun x => bcIsDecAt r x && !(decide (C.vis x e))) :=
-      countP_split π (bcIsDecAt r) (fun x => decide (C.vis x e))
-    have hstray :
-        π.countP (fun x => bcIsDecAt r x && !(decide (C.vis x e))) ≤ 1 := by
-      refine countP_le_one_of_unique (e := e) hperm.1 ?_
-      intro x hx hpx
-      have hpx' : bcIsDecAt r x = true ∧ !(decide (C.vis x e)) = true := by
-        simpa using hpx
-      have hxdec : bcIsDecAt r x = true := hpx'.1
-      have hxnvis : ¬ C.vis x e := by simpa using hpx'.2
-      by_contra hne
-      exact hxnvis (he_max x (List.mem_filter.mpr ⟨hx, hxdec⟩) hne)
-    have hfiltP : (π.filter (fun x => decide (C.vis x e))).countP (bcIsDecAt r)
-        = π.countP (fun x => bcIsDecAt r x && decide (C.vis x e)) := by
-      rw [List.countP_filter]
-    have hπP_sub : (π.filter (fun x => decide (C.vis x e))).countP (bcIsIncAt r)
-        ≤ π.countP (bcIsIncAt r) :=
-      List.Sublist.countP_le List.filter_sublist
-    omega
+  have hCC : CausalCanonical C :=
+    causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hGood
+  have hObs : ObservedRegistered C :=
+    observedRegistered_of_honest_reach (honestReach_of_reachable hReach)
+  exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hGood hCC
+    (bc_honestAppOn hObs hCC hHon)
 
 /-- **Corollary: the counter's value is non-negative** — over any finite set of
 replicas, at every version of every reachable honest configuration. -/
@@ -600,11 +501,120 @@ theorem BC_ra_linearizable3_eq
 
 end
 
+/-! ## §8  Route B cross-check: the escrow metatheorem instance
+
+The counting shape of the original `bc_version_inv` proof generalizes to the
+escrow metatheorem (`Metatheory/EscrowSafety.lean`, memo §5), which needs
+neither a causal witness nor `Inv`-preservation: the counter is *measured* —
+its slots are affine event counts ((B1) below is `bc_fold_incs`/
+`bc_fold_decs` in structural form) — and the bound re-derives from
+(B1)–(B5). `bc_version_inv_escrow` is an independent second derivation of
+`bc_version_inv`'s statement. -/
+
+/-- The counter's observation family: slot `k.2` of the `inc` (resp. `dec`)
+tally. -/
+def bcObs (k : BCOp × ℕ) (s : BCState) : ℤ :=
+  match k.1 with
+  | .inc => s.1 k.2
+  | .dec => s.2 k.2
+
+/-- Per-op weights: does `e` bump slot `k`? -/
+def bcMu (k : BCOp × ℕ) (e : Op BCOp) : ℕ :=
+  match k.1 with
+  | .inc => if bcIsIncAt k.2 e then 1 else 0
+  | .dec => if bcIsDecAt k.2 e then 1 else 0
+
+/-- The bounded counter is measured ((B1): slot updates are affine). -/
+noncomputable def BCM : Measured BC (BCOp × ℕ) where
+  obs := bcObs
+  μ := bcMu
+  obs_init := by
+    rintro ⟨op, r⟩
+    cases op <;> rfl
+  obs_update := by
+    rintro ⟨op, r⟩ s ⟨ts, ro, eop⟩
+    cases op with
+    | inc =>
+      cases eop with
+      | inc =>
+        show (bcUpdate s (ts, ro, BCOp.inc)).1 r
+          = s.1 r + ↑(if bcIsIncAt r (ts, ro, BCOp.inc) then (1 : ℕ) else 0)
+        rw [bcUpdate_inc_fst]
+        by_cases h : ro = r
+        · subst h
+          simp [bcIsIncAt]
+        · have h' : ¬ (r = ro) := fun hh => h hh.symm
+          simp [bcIsIncAt, h, h']
+      | dec =>
+        show (bcUpdate s (ts, ro, BCOp.dec)).1 r
+          = s.1 r + ↑(if bcIsIncAt r (ts, ro, BCOp.dec) then (1 : ℕ) else 0)
+        rw [bcUpdate_dec_fst]
+        simp [bcIsIncAt]
+    | dec =>
+      cases eop with
+      | inc =>
+        show (bcUpdate s (ts, ro, BCOp.inc)).2 r
+          = s.2 r + ↑(if bcIsDecAt r (ts, ro, BCOp.inc) then (1 : ℕ) else 0)
+        rw [bcUpdate_inc_snd]
+        simp [bcIsDecAt]
+      | dec =>
+        show (bcUpdate s (ts, ro, BCOp.dec)).2 r
+          = s.2 r + ↑(if bcIsDecAt r (ts, ro, BCOp.dec) then (1 : ℕ) else 0)
+        rw [bcUpdate_dec_snd]
+        by_cases h : ro = r
+        · subst h
+          simp [bcIsDecAt]
+        · have h' : ¬ (r = ro) := fun hh => h hh.symm
+          simp [bcIsDecAt, h, h']
+
+/-- A consuming weight of `1` names a `dec` at the class's slot. -/
+private theorem bcMu_dec_rep {r : ℕ} {e : Op BCOp}
+    (h : bcMu (BCOp.dec, r) e = 1) : bcIsDecAt r e = true := by
+  by_cases hd : bcIsDecAt r e = true
+  · exact hd
+  · exfalso
+    have h' : (if bcIsDecAt r e = true then (1 : ℕ) else 0) = 1 := h
+    rw [if_neg hd] at h'
+    omega
+
+open LabeledTS in
+/-- **The bound, re-derived through Route B** (`escrow_version_inv`): same
+statement as `bc_version_inv`, no causal witness and no
+`bcApplicable_inv_pres` — (B3) is `bcApplicable`'s definition, (B4) is
+issuer-determined classes (`class_total_of_same_rep`), (B5) is `BCHonest`
+verbatim (the ∀-form is exactly the measured-guard shape). -/
+theorem bc_version_inv_escrow
+    (C : Configuration BC)
+    (hReach : (labeledTS3 BC).ReachableFrom (initConfig BC trivial) C)
+    (hHon : BCHonest C) :
+    ∀ (v : Version) (s : BCState) (E : Set (Op BCOp)),
+      C.ver v = some (s, E) → BCInv s := by
+  intro v s E hv r
+  exact escrow_version_inv BCM (BCOp.dec, r) (BCOp.inc, r) bcApplicable
+    (by
+      intro e
+      show (if bcIsDecAt r e = true then (1 : ℕ) else 0) ≤ 1
+      split <;> omega)
+    (by
+      rintro ⟨ts, ro, eop⟩ σ hμ happ
+      have hd := bcMu_dec_rep hμ
+      cases eop with
+      | inc => simp [bcIsDecAt] at hd
+      | dec =>
+        have hro : ro = r := by simpa [bcIsDecAt] using hd
+        subst hro
+        exact happ)
+    (bc_goodConfig3 C hReach)
+    (class_total_of_same_rep
+      (fun e hμe => bcIsDecAt_rep (bcMu_dec_rep hμe)))
+    ((BCHonest_iff_genHonest C).mp hHon) v s E hv
+
 /-! ## Axiom audit -/
 
 #print axioms bc_ra_linearizable3
 #print axioms BC_ra_linearizable3_eq
 #print axioms bc_version_inv
 #print axioms bc_value_nonneg
+#print axioms bc_version_inv_escrow
 
 end Sal.ConditionedMRDTs
