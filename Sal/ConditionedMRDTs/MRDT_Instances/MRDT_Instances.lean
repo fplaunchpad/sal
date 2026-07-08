@@ -12,6 +12,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
 import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
+import Sal.ConditionedMRDTs.MRDT_Instances.ORSetCore.ORSetCore
 import Sal.ConditionedMRDTs.MRDT_Instances.BudgetCart.BudgetCart
 import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
