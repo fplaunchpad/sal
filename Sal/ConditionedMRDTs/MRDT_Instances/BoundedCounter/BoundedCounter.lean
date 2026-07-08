@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
+import Sal.ConditionedMRDTs.Metatheory.HonestReach
 
 /-!
 # Bounded Counter — convergence, the client contract, and the bound as a theorem
@@ -172,9 +173,7 @@ theorem BC_coreVCs3 : CoreVCs3 BC := by
       simp only [bcMergeL_fst, bcMergeL_snd,
         bcUpdate_inc_fst, bcUpdate_inc_snd, bcUpdate_dec_fst,
         bcUpdate_dec_snd] <;>
-      first
-        | omega
-        | (split_ifs <;> omega)
+      omega
   · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
     generalize applySeq BC.toCRDTSig BC.init π₀ = X
     generalize applySeq BC.toCRDTSig BC.init π₂ = Y
@@ -185,9 +184,7 @@ theorem BC_coreVCs3 : CoreVCs3 BC := by
       simp only [bcMergeL_fst, bcMergeL_snd,
         bcUpdate_inc_fst, bcUpdate_inc_snd, bcUpdate_dec_fst,
         bcUpdate_dec_snd] <;>
-      first
-        | omega
-        | (split_ifs <;> omega)
+      omega
 
 theorem BC_deltaVCs3 : DeltaVCs3 BC := by
   constructor
@@ -277,16 +274,16 @@ theorem bc_fold_incs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
       rw [bcUpdate_inc_fst]
       by_cases h : ro = r
       · subst h
-        simp only [bcIsIncAt, decide_true, if_pos rfl, if_true]
+        simp only [bcIsIncAt, decide_true, if_true]
         push_cast
         omega
       · have h' : ¬ (r = ro) := fun hh => h hh.symm
-        simp only [bcIsIncAt, h, decide_false, if_neg h', if_false]
+        simp only [bcIsIncAt, h, decide_false, if_neg h']
         push_cast
         omega
     | dec =>
       rw [bcUpdate_dec_fst]
-      simp only [bcIsDecAt, bcIsIncAt, if_false]
+      simp only [bcIsIncAt]
       push_cast
       omega
 
@@ -304,16 +301,16 @@ theorem bc_fold_decs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
       rw [bcUpdate_dec_snd]
       by_cases h : ro = r
       · subst h
-        simp only [bcIsDecAt, decide_true, if_pos rfl, if_true]
+        simp only [bcIsDecAt, decide_true, if_true]
         push_cast
         omega
       · have h' : ¬ (r = ro) := fun hh => h hh.symm
-        simp only [bcIsDecAt, h, decide_false, if_neg h', if_false]
+        simp only [bcIsDecAt, h, decide_false, if_neg h']
         push_cast
         omega
     | inc =>
       rw [bcUpdate_inc_snd]
-      simp only [bcIsDecAt, bcIsIncAt, if_false]
+      simp only [bcIsDecAt]
       push_cast
       omega
 
@@ -395,7 +392,7 @@ theorem countP_split {α : Type} (l : List α) (p q : α → Bool) :
   | nil => simp
   | cons a l ih =>
     simp only [List.countP_cons]
-    cases hp : p a <;> cases hq : q a <;> simp [hp, hq] <;> omega
+    cases p a <;> cases q a <;> simp <;> omega
 
 /-! ## §6  Honest histories and the bound -/
 
@@ -411,31 +408,17 @@ def BCHonest (C : Configuration BC) : Prop :=
       bcApplicable e (applySeq BC.toCRDTSig BC.init π)
 
 open LabeledTS in
-/-- The reachability invariant, replayed locally for the bounded counter (the
-same induction as `ra_linearizable3_of_join`, exported at the `GoodConfig3`
-level). -/
+/-- The reachability invariant for the bounded counter: the generic
+honest-reachability induction (`goodConfig3_of_honest_reach`) under the
+trivial contract — the counter's Join is unconditional (the CD route). -/
 theorem bc_goodConfig3
     (C : Configuration BC)
     (hReach : (labeledTS3 BC).ReachableFrom (initConfig BC trivial) C) :
-    GoodConfig3 C := by
-  have hJoin : JoinLemma3 BC :=
-    join_lemma3_of_cd BC_coreVCs3 BC_deltaVCs3
-      (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)
-  induction hReach with
-  | refl => exact goodConfig3_init trivial
-  | tail _ hs ih =>
-    obtain ⟨ℓ, hstep⟩ := hs
-    cases hstep with
-    | createReplica h_fresh C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3_createReplica h_fresh hL hvis hver ih
-    | apply h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank C'
-        hN hL hvis hver hhead hparents =>
-      exact goodConfig3_apply h_head h_ver h_fresh_t h_vnew hL hvis hver ih
-    | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁
-        h_rank₂ C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3_merge hJoin h_head₁ h_ver₁ h_ver₂ h_lca h_verT
-        hL hvis hver ih
-    | query h_s h_val => exact ih
+    GoodConfig3 C :=
+  goodConfig3_of_honest_reach
+    (fun _ _ => (join_lemma3_of_cd BC_coreVCs3 BC_deltaVCs3
+      (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)).at _)
+    (honestReach_of_reachable hReach)
 
 open LabeledTS in
 /-- **The bound, as a reachability theorem.** In every reachable configuration

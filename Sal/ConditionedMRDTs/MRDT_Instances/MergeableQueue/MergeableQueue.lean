@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.HonestReach
 
 /-!
 # The mergeable queue — Peepul's case study, through the one framework
@@ -298,17 +299,12 @@ theorem q_enq_deq_not_comm (ts r v ts' r' : ℕ) :
   simp only [Q_core_update, qUpdate, qTags] at this
   simp at this
 
-/-- For the queue, `loOn` collapses to its `vis` arm (`rc` is `Either`). -/
+/-- For the queue, `loOn` collapses to its `vis` arm (`rc` is `Either`;
+the generic `loOn_iff_of_rc_either`). -/
 theorem q_loOn_iff (C : Sal.Emulation.Configuration Q.toCRDTSig)
     (ev : Set (Op QOp)) (e₁ e₂ : Op QOp) :
-    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ Q.toCRDTSig.commutes e₁ e₂ := by
-  unfold loOn
-  constructor
-  · rintro (h | ⟨_, _, hrc, _⟩)
-    · exact h
-    · rw [Q_rc_either] at hrc
-      exact RcRes.noConfusion hrc
-  · exact Or.inl
+    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ Q.toCRDTSig.commutes e₁ e₂ :=
+  loOn_iff_of_rc_either Q_rc_either C ev e₁ e₂
 
 
 /-! ## §5  Honest histories, well-formedness of enumerations -/
@@ -321,13 +317,11 @@ def QHonestCore (C : Sal.Emulation.Configuration Q.toCRDTSig) : Prop :=
 
 variable {C : Sal.Emulation.Configuration Q.toCRDTSig}
 
-/-- Timestamp uniqueness across the event universe (structural). -/
+/-- Timestamp uniqueness across the event universe (the generic
+`Configuration.ts_unique`). -/
 theorem q_ts_unique {a b : Op QOp}
-    (ha : a ∈ C.events) (hb : b ∈ C.events) (h : a.1 = b.1) : a = b := by
-  by_contra hne
-  obtain ⟨r, s, hL, hs⟩ := ha
-  obtain ⟨r', s', hL', hs'⟩ := hb
-  exact C.timestamps_distinct hL hs hL' hs' hne h
+    (ha : a ∈ C.events) (hb : b ∈ C.events) (h : a.1 = b.1) : a = b :=
+  C.ts_unique ha hb h
 
 /-- Non-commutation of the pair honesty and closure trade on. -/
 theorem q_pair_not_comm {a d : Op QOp}
@@ -437,13 +431,11 @@ theorem qTags_canon_perm {ρ : List (Op QOp)} {ev : Set (Op QOp)}
     exact ⟨⟨e, (hperm.2 e).mpr he, h1, h2⟩, fun hmem =>
       hnd ((qDeqTags_perm hperm).mp hmem)⟩
 
-/-- `respects` is `ev`-independent for the queue (`loOn`'s `rc` arm is dead). -/
+/-- `respects` is `ev`-independent for the queue (`loOn`'s `rc` arm is dead;
+the generic `respects_transfer_of_rc_either`). -/
 theorem q_respects_transfer {ev ev' : Set (Op QOp)} {ρ : List (Op QOp)}
-    (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') := by
-  unfold respects at h ⊢
-  refine h.imp ?_
-  intro a b hnab hab
-  exact hnab ((q_loOn_iff C ev b a).mpr ((q_loOn_iff C ev' b a).mp hab))
+    (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') :=
+  respects_transfer_of_rc_either (D' := Q.toCRDTSig) Q_rc_either h
 
 open LabeledTS in
 /-- **The queue's ternary Join Lemma, at any honest configuration.** The
@@ -725,35 +717,19 @@ theorem qHonest_core {C : Configuration Q} (h : QHonest C) :
   rw [core_events]
   exact ha
 
-open LabeledTS in
 /-- **Honest reachability**: LTS reachability where every step is taken from
 a configuration with an honest history. This is the queue's `HonestDelivery`
 — the per-step contract under which the Join Lemma is available at each
-merge. -/
-inductive QReach : Configuration Q → Prop where
-  | init : QReach (initConfig Q trivial)
-  | step {C : Configuration Q} {ℓ : Label3 Q} {C' : Configuration Q} :
-      QReach C → QHonest C → Step3 Q C ℓ C' → QReach C'
+merge — instantiating the generic `HonestReach`. -/
+def QReach : Configuration Q → Prop := HonestReach Q QHonest trivial
 
-open LabeledTS in
-/-- The `GoodConfig3` induction, with the queue's per-configuration Join
+/-- The generic honest-reachability induction
+(`goodConfig3_of_honest_reach`), with the queue's per-configuration Join
 supplied at each merge step from honesty of the pre-merge configuration. -/
 theorem q_goodConfig3 {C : Configuration Q} (hReach : QReach C) :
-    GoodConfig3 C := by
-  induction hReach with
-  | init => exact goodConfig3_init trivial
-  | step hprev hHon hstep ih =>
-    cases hstep with
-    | createReplica h_fresh C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3_createReplica h_fresh hL hvis hver ih
-    | apply h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank C'
-        hN hL hvis hver hhead hparents =>
-      exact goodConfig3_apply h_head h_ver h_fresh_t h_vnew hL hvis hver ih
-    | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁
-        h_rank₂ C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3_merge_at (q_join_at (qHonest_core hHon))
-        h_head₁ h_ver₁ h_ver₂ h_lca h_verT hL hvis hver ih
-    | query h_s h_val => exact ih
+    GoodConfig3 C :=
+  goodConfig3_of_honest_reach (fun _ hHon => q_join_at (qHonest_core hHon))
+    hReach
 
 /-- **The mergeable queue is RA-linearizable, per version, at every honestly
 reachable configuration**: every version the store ever registers is the fold

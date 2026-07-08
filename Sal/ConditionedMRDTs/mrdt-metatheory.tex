@@ -1626,6 +1626,46 @@ single $\mathsf{enq}\,t$.) At ${\sim}870$ lines
 bounded counter's ${\sim}600$ and the RGA's ${\sim}8$k --- positional
 structure but no rehoming.
 
+\paragraph{The factorization: one metatheorem, three join species.} With
+three conditioned instances on the books, the common structure is a
+theorem rather than a convention. All three developments ran the same
+induction --- thread a per-configuration honesty contract through
+reachability, invoke a Join Lemma at each merge --- and that induction is
+now extracted once (\lean{Metatheory/HonestReach.lean}):
+\lean{HonestReach}~$D$~$H$ is LTS reachability where every step leaves a
+configuration satisfying the contract $H$, and the metatheorem
+(\lean{ra\_linearizable3\_of\_honest\_reach}; axioms \lean{propext},
+\lean{Quot.sound}) states that if every $H$-configuration admits the Join
+at its core (\lean{JoinLemma3At}), every $H$-honestly reachable
+configuration is per-version RA-linearizable. Plain reachability is the
+degenerate contract $H = \top$, recovering the unconditional bridge. The
+queue's and the bounded counter's bespoke inductions are now one-line
+corollaries; the RGA's honest-delivery induction is the same shape under
+its $\eqobs$-quotient.
+
+What does \emph{not} factorize is the join discharge, and that is the
+finding: the three instances discharge \lean{JoinLemma3At} by three
+genuinely different mechanisms --- \emph{conditioned commutation} (the
+RGA: operations commute on invariant-satisfying states), \emph{flat
+commutation} (the bounded counter: the CD route, contract $\top$), and
+\emph{direct witness} (the queue: the merge is its own linearization
+certificate). Conditioning thus splits as
+\[
+  \text{generic honest-reachability metatheorem}
+  \;\times\;
+  \text{per-datatype join discharge},
+\]
+and the framework's job at the boundary is to \emph{receive} a join, not
+to produce one. One further regularity is worth recording: all three
+honesty contracts have the shape ``$P$ holds of each event at the fold of
+its causal past'' --- born accuracy and applicable delivery for the RGA,
+slack for the counter, head-ness for the queue --- with $P$ the
+signature's client-checkable $\app$ (or its accuracy analogue). Extracting
+that shape generically, and with it a generic \emph{safety} metatheorem
+($\Inv$ at every version from applicability-stability), is the natural
+next step; the counter's counting argument shows the stability condition
+is where the per-datatype content will sit.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -1853,6 +1893,7 @@ Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one d
 bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
 mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizable3} & \lean{MRDT\_Instances/MergeableQueue/} \\
 per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
+honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/HonestReach.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\

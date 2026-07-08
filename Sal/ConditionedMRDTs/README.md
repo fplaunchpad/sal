@@ -131,7 +131,16 @@ the Join Lemma obtained by `join_lemma3_of_cd_feasible`.
 Also here: the unconditional-route bridge (`ra_linearizable_of_core_delta_cd3`),
 the commuting-class discharge of CD (`cdVC3_of_all_comm`), and the
 full-closure bridge (`ra_linearizable3_of_joinF`) used by the Enable-wins
-route. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+route.
+[`Metatheory/HonestReach.lean`](Metatheory/HonestReach.lean) hosts the
+**honest-reachability metatheorem** (`HonestReach`,
+`ra_linearizable3_of_honest_reach`): RA-linearizability at every
+configuration reachable under a per-configuration honesty contract `H`,
+given that `H`-configurations admit the Join (`JoinLemma3At`). This is the
+factored form of the conditioned route — the generic induction extracted
+once, with the per-datatype join discharge as the residue (three species so
+far: conditioned commutation / flat / direct witness); the queue's and the
+bounded counter's inductions are one-line corollaries. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)

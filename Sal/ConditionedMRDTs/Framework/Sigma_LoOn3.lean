@@ -750,6 +750,17 @@ theorem core_events (C : Configuration D) :
 theorem core_vis (C : Configuration D) :
     (Configuration.core C).vis = C.vis := rfl
 
+/-- **Timestamp uniqueness, contrapositive form**: two events of a binary
+configuration's universe with equal timestamps are equal (structural, from
+`timestamps_distinct`; instances consume it through the core projection). -/
+theorem _root_.Sal.Emulation.Configuration.ts_unique {D' : CRDTSig}
+    (C : Sal.Emulation.Configuration D') {a b : Op D'.AppOp}
+    (ha : a ∈ C.events) (hb : b ∈ C.events) (h : a.1 = b.1) : a = b := by
+  by_contra hne
+  obtain ⟨r, s, hL, hs⟩ := ha
+  obtain ⟨r', s', hL', hs'⟩ := hb
+  exact C.timestamps_distinct hL hs hL' hs' hne h
+
 end Core
 
 end Sal.ConditionedMRDTs

@@ -220,6 +220,43 @@ def JoinLemma3F (D : ConditionedMRDTSig) : Prop :=
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
+/-! ### The rc-free `loOn` collapse
+
+For signatures whose `rc` is everywhere `Either` (no arbitration edges), the
+set-relative linearization relation collapses to its `vis` arm and becomes
+independent of the event set. Direct-join instances (the mergeable queue) use
+this to transfer `respects` obligations between the event sets a ternary
+merge juggles (the sides, their intersection, their union). -/
+
+/-- When `rc` is everywhere `Either`, `loOn` collapses to its `vis` arm and
+is independent of the event set: the rc arm's `Fst_then_snd` hypothesis is
+refuted outright. -/
+theorem loOn_iff_of_rc_either {D' : CRDTSig}
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
+    (C : Sal.Emulation.Configuration D') (ev : Set (Op D'.AppOp))
+    (e₁ e₂ : Op D'.AppOp) :
+    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ D'.commutes e₁ e₂ := by
+  unfold loOn
+  constructor
+  · rintro (h | ⟨_, _, hfs, _⟩)
+    · exact h
+    · rw [hrc e₁ e₂] at hfs
+      exact RcRes.noConfusion hfs
+  · exact Or.inl
+
+/-- With `rc` everywhere `Either`, `respects · (loOn C ev)` is independent of
+`ev`. -/
+theorem respects_transfer_of_rc_either {D' : CRDTSig}
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
+    {C : Sal.Emulation.Configuration D'} {ev ev' : Set (Op D'.AppOp)}
+    {ρ : List (Op D'.AppOp)}
+    (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') := by
+  unfold respects at h ⊢
+  refine h.imp ?_
+  intro a b hnab hab
+  exact hnab ((loOn_iff_of_rc_either hrc C ev b a).mpr
+    ((loOn_iff_of_rc_either hrc C ev' b a).mp hab))
+
 end
 
 end Sal.ConditionedMRDTs
