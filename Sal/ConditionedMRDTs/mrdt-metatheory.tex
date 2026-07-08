@@ -1085,6 +1085,7 @@ Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged wr
 Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
 Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} & convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv}) \\
 FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} & payload arbitration (min-ts semilattice); winner characterized at every version (\lean{fww\_version\_min}) \\
+BudgetCart & or-set $\rc$ & \lean{BCart\_ra\_linearizable3\_eq} & budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon}) \\
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 \bottomrule
@@ -1989,11 +1990,22 @@ $\mathsf{rc}$-edges separated by $\vis$-paths --- a single
 $\mathsf{rc}$-edge closed by a $\vis$-path contradicts concurrency via
 transitivity, and a non-commuting first $\vis$-step is an absorber
 killing the edge --- and \lean{no\_rc\_chain} forbids adjacent
-$\mathsf{rc}$-edges but not $\vis$-separated ones. Moot for every current
-conditioned instance, hence \lean{CausalCanonical} is a hypothesis with
-two discharge lemmas rather than a theorem; a datatype needing both a
-nontrivial $\mathsf{rc}$ and a version invariant (the budget cart,
-\lean{BudgetCart}, of the instance roadmap) will force the question.
+$\mathsf{rc}$-edges but not $\vis$-separated ones. \lean{CausalCanonical} is therefore a hypothesis with two discharge
+lemmas rather than a theorem. The budget cart (\lean{BudgetCart},
+\lean{MRDT\_Instances/BudgetCart/}) has now \emph{forced} the question ---
+and widened it: its convergence discharges along the OR-set route, but the
+ungated safety obligation \lean{SafetyStepOn} is \emph{false} for it, by a
+two-event refutation --- \lean{CausalFold} pins only $\vis$-respect, and
+the fold of a causal past containing a concurrent same-item
+$\mathsf{add}/\mathsf{rem}$ pair is enumeration-dependent (the orders
+disagree exactly where add-wins should arbitrate). So for
+$\mathsf{rc}$-nontrivial datatypes the \emph{honesty fold} needs
+$\mathsf{rc}$-orientation too: the right notion is folds along jointly
+$\vis$- and $\loE{E}$-respecting enumerations, for both the version
+witnesses (\lean{CausalCanonical}) and the causal-past folds
+(\lean{CausalFold}). The cart's safety theorem is delivered gated
+(\lean{bcart\_version\_inv\_gated}, with the missing transfer named
+explicitly as \lean{BCartSpendMono}); closing the gate is this question.
 \end{openq}
 
 \begin{openq}[Does conditioning compose?]
@@ -2046,6 +2058,7 @@ Table~\ref{tab:catalog} & all instance theorems & \lean{MRDT\_Instances/} (one d
 bounded-counter safety & \lean{bc\_version\_inv}, \lean{bc\_value\_nonneg} & \lean{MRDT\_Instances/BoundedCounter/} \\
 mergeable queue (direct join) & \lean{q\_join\_at}, \lean{queue\_ra\_linearizable3} & \lean{MRDT\_Instances/MergeableQueue/} \\
 FWW register (payload arbitration) & \lean{fww\_version\_min} & \lean{MRDT\_Instances/FWWRegister/} \\
+BudgetCart (gated safety) & \lean{BCart\_ra\_linearizable3\_eq}, \lean{bcart\_version\_inv\_gated} & \lean{MRDT\_Instances/BudgetCart/} \\
 per-configuration join hook & \lean{JoinLemma3At}, \lean{goodConfig3\_merge\_at} & \lean{Framework/VC\_Set.lean}, \lean{Metatheory/Adequacy.lean} \\
 honest-reachability metatheorem & \lean{HonestReach}, \lean{ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/HonestReach.lean} \\
 generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/GenHonest.lean} \\
