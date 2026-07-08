@@ -22,6 +22,17 @@ delivery) is the same fold-of-causal-past shape, stated per step of the
 delivery relation rather than per configuration; it is deliberately left on
 its own formulation.
 
+**Caveat on the ∀-enumeration form**: quantifying `P` over ALL enumerations
+of the causal past is only appropriate when `P` is fold-order-insensitive
+(all-comm datatypes like the bounded counter, or measure-valued guards).
+For order-sensitive datatypes the ∀-form can be unsatisfiable in honest
+executions (the queue's head check: two surviving enqueues in a past
+materialize different heads under different orders) — such instances want
+the existential causal-fold form, taken directly by their bridges
+(`qHonest_of_applicable`) and to be provided generically as `HonestApp`
+with the safety metatheorem (see
+`Development/GENERIC_SAFETY_PENPAPER.md` §3).
+
 `CausalPastEnumerable` isolates the side condition the bridges need: every
 event's causal past admits a `listPermOf`-enumeration. This holds in
 reachable configurations, whose event sets are finite, but the repo has no

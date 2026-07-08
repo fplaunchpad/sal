@@ -806,23 +806,24 @@ theorem qTags_fold_sub : ∀ (π : List (Op QOp)) (t : ℕ),
       obtain ⟨a, ha, h1, h2⟩ := ih t (hsub ht)
       exact ⟨a, List.mem_append_left _ ha, h1, h2⟩
 
-/-- **The `applicable` discipline discharges honesty.** If every dequeue in
-the history was applicable at the fold of its issuer's causal past — the
-replica checked the named element was its head — then the history is honest:
-the head's tag can only have entered that fold through a `vis`-prior enqueue.
-This is the queue's analogue of the RGA's applicable-delivery layer, and the
-formal content of "dequeue names the head its issuer observed". -/
+/-- **The `applicable` discipline discharges honesty.** If every dequeue was
+applicable at SOME fold of its issuer's causal past — the issuer's own
+materialized state is such a fold, so this is exactly what an honest client
+witnesses — then the history is honest: the head's tag can only have entered
+that fold through a `vis`-prior enqueue. This is the queue's analogue of the
+RGA's applicable-delivery layer, and the formal content of "dequeue names
+the head its issuer observed". (Existential form: quantifying over ALL
+enumerations of the causal past would be unsatisfiable once a past holds two
+surviving enqueues — different orders materialize different heads; see
+`Development/GENERIC_SAFETY_PENPAPER.md` §3.) -/
 theorem qHonest_of_applicable (C : Configuration Q)
-    (hEnum : ∀ e ∈ C.events, ∃ π : List (Op QOp),
-      listPermOf π {e' ∈ C.events | C.vis e' e})
     (hApp : ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
-      ∀ π : List (Op QOp),
-        listPermOf π {e' ∈ C.events | C.vis e' e} →
+      ∃ π : List (Op QOp),
+        listPermOf π {e' ∈ C.events | C.vis e' e} ∧
         qApplicable e (applySeq Q.toCRDTSig Q.init π)) :
     QHonest C := by
   intro e he t ht
-  obtain ⟨π, hπ⟩ := hEnum e he
-  have happ := hApp e he t ht π hπ
+  obtain ⟨π, hπ, happ⟩ := hApp e he t ht
   obtain ⟨ts, r, op⟩ := e
   simp only at ht
   subst ht
@@ -848,8 +849,9 @@ theorem qHonest_of_applicable (C : Configuration Q)
 theorem qHonest_of_genHonest (C : Configuration Q)
     (hEnum : CausalPastEnumerable Q C)
     (hApp : GenHonest Q qApplicable C) : QHonest C :=
-  qHonest_of_applicable C hEnum
-    (fun e he _t _ht π hπ => hApp e he π hπ)
+  qHonest_of_applicable C
+    (fun e he _t _ht => (hEnum e he).imp
+      (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
 
 #print axioms qHonest_of_genHonest
 
