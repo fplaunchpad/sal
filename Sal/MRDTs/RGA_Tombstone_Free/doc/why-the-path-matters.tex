@@ -452,101 +452,191 @@ through the \emph{conditioned} framework instead.
 tombstone-free design was the path-free splice RGA (\texttt{RGA\_Splice}, parked
 on branch \texttt{wip/rga-splice}): an $\Ins$ carried only its immediate anchor,
 a $\Del$ only its target, and delete physically spliced the node out. Physical
-splice destroys the deleted node's parent pointer, so $\Ins$-after-$x$ and
-$\Del(x)$ do not commute; whether the insert ran before the splice decides
-whether it gets rehomed onto $\anc(x)$ or left dangling. The schema then
-\emph{forces} an $\rc$-edge ordering the pair --- which makes the ordered-pair
-commutation obligation (\texttt{cond\_comm\_base}) non-vacuous, and that
-obligation is refuted by a three-operation trace
-(Figure~\ref{fig:splice}).
+splice destroys the deleted node's parent pointer, so $\Ins(t\ \text{after}\ x)$
+and $\Del(x)$ do not commute: whether the insert ran before the splice decides
+whether $t$ gets rehomed onto $\anc(x)$ or left dangling off the vanished $x$.
+The schema requires every non-commuting concurrent pair to be oriented, so the
+splice design's $\rc$ \emph{must} contain the entry
+\[
+  \rc\bigl(\Ins(t\ \text{after}\ x),\ \Del(x)\bigr) \;=\; \mathsf{Fst\_then\_snd}
+  \qquad\text{(the insert is sequenced first).}
+\]
+And a non-$\Either$ entry awakens a VC that is vacuously true for every data
+type whose $\rc$ is everywhere $\Either$ --- the \emph{conditional commutation
+base}. In the schema it reads: for every state $\sigma$ and distinct operations
+$o_1, o_2, o_3$ with $\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$ and
+$\rc(o_2,o_3)\neq\Either$,
+\[
+  \doo(\doo(\doo(\sigma,o_1),o_2),\,o_3)
+  \;\equiv\;
+  \doo(\doo(\doo(\sigma,o_2),o_1),\,o_3)
+  \tag{\texttt{cond\_comm\_base}}
+\]
+--- an $\rc$-ordered pair must still be order-\emph{insensitive} at application
+time whenever a third operation also conflicts with $o_2$: the linearisation
+machinery realises the mandated order by flipping adjacent applications, and
+this equation is what licenses the flip.
+
+For the splice design the hypothesis is satisfiable, and the conclusion is
+false, on a three-operation trace (mechanised as
+\texttt{cond\_comm\_base\_violated}, by evaluation). Start from
+$\sigma_0 = \{(5, \text{`S'}, 0)\}$ --- the single record $5$ anchored at the
+root --- and take
+\[
+  o_1 = \Ins(10\ \text{after}\ 5), \qquad
+  o_2 = \Del(5), \qquad
+  o_3 = \Ins(12\ \text{after}\ 5).
+\]
+The hypothesis holds: $\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$
+(insert-after-the-deleted) and $\rc(o_2,o_3)=\mathsf{Snd\_then\_fst}\neq\Either$.
+Now run both sides (Figure~\ref{fig:splice}). Left,
+$o_1 ; o_2 ; o_3$: the anchor $5$ is still live when $\Ins(10\ \text{after}\ 5)$
+runs, so $10$ lands under $5$; the splice of $5$ then rehomes $10$ onto
+$\anc(5)=0$; finally $\Ins(12\ \text{after}\ 5)$ finds no $5$ and dangles.
+Right, $o_2 ; o_1 ; o_3$: the splice runs first, so \emph{both} inserts find no
+$5$ --- $10$ and $12$ both dangle. The two final states differ at identity
+$10$: live under the root on the left, dangling off the vanished $5$ on the
+right. No re-orientation of $\rc$ escapes: the non-commuting pair forces
+\emph{some} non-$\Either$ entry, and any such entry makes the VC non-vacuous
+with the same trace shape refuting it.
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-  % LEFT: rc order Ins ; Del
-  \node[capt] at (0,0.8) {$\rc$-order: \(\Ins(7)\,;\ \Del(5)\)};
-  \node[rootvtx] (lr) at (0,0)    {$0$};
-  \node[vtx]     (l6) at (-1,-1.3) {$6$};
-  \node[vtx]     (l7) at (1,-1.3)  {$7$};
-  \draw[climb] (l6) -- (lr);
-  \draw[climb] (l7) -- (lr);
-  \node[capt, text width=5.0cm, align=center] at (0,-2.5)
-    {$7$ landed under $5$ in time; the splice of $5$ rehomed both $6$ and $7$
-     onto $\anc(5)=0$.};
+  % LEFT: mandated order o1 ; o2 ; o3
+  \node[capt, align=center] at (0.6,1.0)
+    {mandated order\\ \(\Ins(10\ \text{after}\ 5)\,;\ \Del(5)\,;\ \Ins(12\ \text{after}\ 5)\)};
+  \node[rootvtx] (lr)  at (0,0)     {$0$};
+  \node[vtx]     (l10) at (-0.9,-1.3) {$10$};
+  \node[dead]    (l5)  at (1.7,-0.6)  {$5$};
+  \node[vtx]     (l12) at (1.7,-1.9)  {$12$};
+  \draw[climb] (l10) -- (lr);
+  \draw[ghost] (l12) -- (l5);
+  \node[elbl, right=1mm of l5] {gone};
+  \node[capt, text width=5.0cm, align=center] at (0.4,-3.1)
+    {$10$ landed under the still-live $5$, so the splice rehomed it onto
+     $\anc(5)=0$; $12$ arrived too late and dangles.};
 
-  \node at (4.2,-1.0) {\Large $\neq$};
+  \node at (4.6,-1.0) {\Large $\neq$};
 
-  % RIGHT: delivery order Del ; Ins
-  \node[capt] at (8.4,0.8) {delivery order: \(\Del(5)\,;\ \Ins(7)\)};
-  \node[rootvtx] (rr) at (8.4,0)    {$0$};
-  \node[vtx]     (r6) at (8.4,-1.3) {$6$};
-  \node[dead]    (r5) at (10.4,-0.4){$5$};
-  \node[vtx]     (r7) at (10.4,-1.7){$7$};
-  \draw[climb] (r6) -- (rr);
-  \draw[ghost] (r7) -- (r5);
+  % RIGHT: flipped order o2 ; o1 ; o3
+  \node[capt, align=center] at (9.0,1.0)
+    {flipped order\\ \(\Del(5)\,;\ \Ins(10\ \text{after}\ 5)\,;\ \Ins(12\ \text{after}\ 5)\)};
+  \node[rootvtx] (rr)  at (8.2,0)     {$0$};
+  \node[dead]    (r5)  at (10.0,-0.6) {$5$};
+  \node[vtx]     (r10) at (9.1,-1.9)  {$10$};
+  \node[vtx]     (r12) at (10.9,-1.9) {$12$};
+  \draw[ghost] (r10) -- (r5);
+  \draw[ghost] (r12) -- (r5);
   \node[elbl, right=1mm of r5] {gone};
-  \node[capt, text width=5.2cm, align=center] at (9.2,-2.9)
-    {$5$ was already spliced away; $7$'s only reference is its anchor $5$, so it
-     dangles off a node that no longer exists.};
+  \node[capt, text width=5.4cm, align=center] at (9.4,-3.1)
+    {$5$ was spliced away before either insert ran: $10$ and $12$ both dangle
+     off a node that no longer exists.};
 \end{tikzpicture}
-\caption{\textbf{The splice design fails the schema.} Start from root $0$, node
-$5$ under $0$, node $6$ under $5$ (an earlier $\Ins$-after-$5$). The concurrent
-pair $\Ins(7\ \text{after}\ 5) \parallel \Del(5)$ does not commute, so the
-schema forces an $\rc$-edge (insert first). But replaying the mandated order
-against the delivery order diverges at $7$: rehomed onto the root on the left,
-dangling on the right. \texttt{cond\_comm\_base} is false for this design
-(branch \texttt{wip/rga-splice}); no assignment of $\rc$ rescues it.}
+\caption{\textbf{The splice design refutes \texttt{cond\_comm\_base}.} The
+three-operation trace $o_1 = \Ins(10\ \text{after}\ 5)$, $o_2 = \Del(5)$,
+$o_3 = \Ins(12\ \text{after}\ 5)$ from $\sigma_0=\{(5,\text{`S'},0)\}$
+satisfies the VC's hypothesis ($\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$,
+$\rc(o_2,o_3)\neq\Either$), yet the two application orders diverge at identity
+$10$: rehomed onto the root (left) versus dangling off the deleted $5$
+(right). Mechanised as \texttt{cond\_comm\_base\_violated} on branch
+\texttt{wip/rga-splice}.}
 \label{fig:splice}
 \end{figure}
 
-\paragraph{Attempt 2: the path --- which commutes only on truthful states.} The
-path-carrying design of this note repairs the algebra, but look at the fine
-print of the mechanised commutation fact (\texttt{rc\_non\_comm'}, \S\ref{sec:mech}):
-it holds \emph{on accurate, fresh-id, root-not-stored states}. Those hypotheses
-are not decoration. The unconditioned schema quantifies over \emph{all} states
-and all operation payloads --- including operations whose recorded path
-\emph{lies} --- and there the equation is false (Figure~\ref{fig:liar}): while
-the anchor is alive the path is ignored (the insert reads the state), and once
-the anchor is deleted the path is \emph{trusted} (the insert climbs the record);
-if record and history disagree, the two orders read two different sources of
-truth and diverge. No path discipline can be checked by $\doo$ locally ---
-whether a path is accurate is a property of the \emph{execution} that produced
-it, not of the state it is applied to.
+\paragraph{Attempt 2: the path --- which commutes only on truthful states.}
+The path-carrying design of this note repairs Attempt 1's trace: the very same
+three operations, now carrying their (empty, and for this state \emph{accurate})
+prefixes, converge in both orders --- $5$ hangs off the root, so after
+$\Del(5, \langle\rangle)$ each $\Ins(\cdot\ \text{after}\ 5, \langle\rangle)$
+climbs its carried prefix and lands deterministically at $0$
+(\texttt{trio\_converges}). But look at what the mechanisation actually
+discharges. The schema's commutation VC (\texttt{rc\_non\_comm}) demands, for
+every pair the policy leaves unordered, commutation over \emph{all} states:
+\[
+  \rc(o_1,o_2) = \Either
+  \;\iff\;
+  \forall \sigma,\;
+  \doo(\doo(\sigma,o_1),o_2) \equiv \doo(\doo(\sigma,o_2),o_1).
+\]
+What the tombstone-free RGA proves is \texttt{rc\_non\_comm'}, whose
+right-hand side is \emph{reachability-conditioned} commutation
+(\texttt{commutes\_with'}):
+\[
+\begin{aligned}
+  \forall \sigma,\quad
+  &\underbrace{\contains(\sigma,0)=\mathsf{false}}_{\text{root not stored}}
+  \;\to\;
+  \underbrace{\mathsf{accurate}(o_1,\sigma) \to \mathsf{accurate}(o_2,\sigma)}_{\text{carried paths are true in }\sigma}
+  \;\to\;
+  \underbrace{\mathsf{fresh}(o_1,\sigma) \to \mathsf{fresh}(o_2,\sigma)}_{\text{fresh ids}}\\
+  &\qquad\to\;
+  \doo(\doo(\sigma,o_1),o_2) \equiv \doo(\doo(\sigma,o_2),o_1),
+\end{aligned}
+\]
+where $\mathsf{accurate}(o,\sigma)$ says the op's carried prefix is the genuine
+root-ward ancestor chain of its leaf \emph{in $\sigma$}. Those hypotheses are
+not decoration: drop them and the equation is false, mechanised as
+\texttt{inconsistent\_diverges} (Figure~\ref{fig:liar}). Take
+$\sigma_1 = \{(7, \text{`F'}, 0),\ (5, \text{`S'}, 7)\}$ --- $7$ under the
+root, $5$ under $7$ --- and the pair
+\[
+\begin{aligned}
+  \mathsf{good\_ins} &= \Ins(10\ \text{after}\ 5,\ \langle 7\rangle)
+  &&\text{(accurate: $5$'s chain is $\langle 7 \rangle$)},\\
+  \mathsf{bad\_del} &= \Del(5,\ \langle\rangle)
+  &&\text{(a lie: claims $5$ hangs off the root)}.
+\end{aligned}
+\]
+Whichever operation runs \emph{second} consults \emph{its own} record: in the
+order $\mathsf{good\_ins} ; \mathsf{bad\_del}$, node $10$ lands under the live
+$5$ and the delete then rehomes it along the delete's \emph{lying} prefix, onto
+$0$; in the order $\mathsf{bad\_del} ; \mathsf{good\_ins}$, the anchor is
+already gone and the insert climbs its \emph{honest} prefix, landing at $7$.
+Two orders, two sources of truth, two trees. And no local check can exclude
+this: whether a carried path is accurate is a property of the \emph{execution}
+that generated the operation, not of the state it is applied to --- $\doo$
+cannot tell an honest record from a plausible lie.
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-  % LEFT: Ins ; Del  (anchor alive, path ignored)
-  \node[capt] at (0,0.8) {\(\Ins(3)\,;\ \Del(2)\): anchor alive, path ignored};
-  \node[rootvtx] (lr) at (0,0)    {$0$};
-  \node[vtx]     (l1) at (0,-1.3) {$1$};
-  \node[newv]    (l3) at (0,-2.6) {$3$};
-  \draw[anc] (l1) -- (lr);
-  \draw[climb] (l3) -- (l1);
-  \node[capt, text width=5.0cm, align=center] at (0,-3.7)
-    {$3$ lands under the live $2$; the delete then rehomes it to the
-     \emph{state's} truth $\anc(2)=1$.};
+  % LEFT: good_ins ; bad_del  (the lying del runs second and rehomes)
+  \node[capt, align=center] at (0.4,1.0)
+    {\(\Ins(10\ \text{after}\ 5,\langle 7\rangle)\,;\ \Del(5,\langle\rangle)\)\\
+     the \emph{delete's} lie decides};
+  \node[rootvtx] (lr)  at (0,0)     {$0$};
+  \node[vtx]     (l7)  at (-0.9,-1.3) {$7$};
+  \node[newv]    (l10) at (0.9,-1.3)  {$10$};
+  \draw[anc]   (l7) -- (lr);
+  \draw[climb] (l10) -- (lr);
+  \node[capt, text width=4.8cm, align=center] at (0,-2.5)
+    {$10$ landed under the live $5$; the delete rehomed it along its carried
+     $\langle\rangle$ --- onto the root.};
 
-  \node at (4.2,-1.6) {\Large $\neq$};
+  \node at (4.4,-1.0) {\Large $\neq$};
 
-  % RIGHT: Del ; Ins (anchor gone, lying path trusted)
-  \node[capt] at (8.4,0.8) {\(\Del(2)\,;\ \Ins(3)\): anchor gone, path trusted};
-  \node[rootvtx] (rr) at (8.4,0)    {$0$};
-  \node[vtx]     (r1) at (7.4,-1.3) {$1$};
-  \node[newv]    (r3) at (9.4,-1.3) {$3$};
-  \draw[anc] (r1) -- (rr);
-  \draw[climb] (r3) -- (rr);
-  \node[capt, text width=5.4cm, align=center] at (8.4,-2.7)
-    {$2$ is gone, so $3$ climbs its \emph{recorded} path $\langle 0\rangle$ ---
-     the lie --- and lands at the root.};
+  % RIGHT: bad_del ; good_ins  (the honest ins runs second and climbs)
+  \node[capt, align=center] at (8.8,1.0)
+    {\(\Del(5,\langle\rangle)\,;\ \Ins(10\ \text{after}\ 5,\langle 7\rangle)\)\\
+     the \emph{insert's} truth decides};
+  \node[rootvtx] (rr)  at (8.2,0)     {$0$};
+  \node[vtx]     (r7)  at (8.2,-1.3)  {$7$};
+  \node[newv]    (r10) at (8.2,-2.6)  {$10$};
+  \draw[anc]   (r7) -- (rr);
+  \draw[climb] (r10) -- (r7);
+  \node[capt, text width=5.0cm, align=center] at (8.6,-3.7)
+    {$5$ is gone, so $10$ climbs its own accurate $\langle 7\rangle$ and lands
+     at $7$.};
 \end{tikzpicture}
-\caption{\textbf{A lying path breaks unconditioned commutation.} State: $1$
-under $0$, $2$ under $1$. The operation $\Ins(3\ \text{after}\ 2)$ carries the
-\emph{inaccurate} path $\langle 0 \rangle$ (claiming $2$ hangs off the root).
-Left order: the path is never consulted and $3$ ends under $1$. Right order: the
-path is consulted and $3$ ends under $0$. The schema's commutation equation
-quantifies over such states and payloads, so it is unprovable; the mechanised
-\texttt{rc\_non\_comm'} must and does assume accuracy.}
+\caption{\textbf{A lying path breaks unconditioned commutation.} State
+$\sigma_1$: $7$ under $0$, $5$ under $7$. The insert's prefix
+$\langle 7\rangle$ is accurate; the delete's $\langle\rangle$ lies. Left
+order: $10$ ends under $0$ (the delete's record). Right order: $10$ ends
+under $7$ (the insert's record). The schema's $\forall\sigma$ ranges over
+such payload/state pairs, so \texttt{rc\_non\_comm} is unprovable;
+\texttt{rc\_non\_comm'} must and does assume $\mathsf{accurate}$. Mechanised
+as \texttt{inconsistent\_diverges}.}
 \label{fig:liar}
 \end{figure}
 
@@ -596,12 +686,14 @@ Every figure corresponds to a Lean fact in
   \item \texttt{RGA\_PrefixFree\_Impossible.lean} --- a parameterised theorem: no
         tombstone-free, prefix-free, local design can satisfy the $\rc=\Either$
         commutation VC.
-  \item Figure \ref{fig:splice} --- the splice predecessor's \texttt{do}-level
-        non-commutation and refuted \texttt{cond\_comm\_base}: branch
+  \item Figure \ref{fig:splice} --- the splice predecessor's refuted
+        conditional-commutation VC: \texttt{cond\_comm\_base\_violated}, branch
         \texttt{wip/rga-splice}
-        (\texttt{Sal/MRDTs/RGA\_Splice/RGA\_Splice\_MRDT.lean}). Figure
-        \ref{fig:liar} is definitional (the climb trusts the record); its
-        schema-level content is that \texttt{rc\_non\_comm'}'s accuracy
+        (\texttt{Sal/MRDTs/RGA\_Splice/RGA\_Splice\_MRDT.lean}); the trace and
+        both $\rc$ verdicts are checked by evaluation. Figure
+        \ref{fig:liar} --- \texttt{inconsistent\_diverges} (and
+        \texttt{trio\_converges}: the path repairs Attempt 1's exact trace);
+        the schema-level content is that \texttt{rc\_non\_comm'}'s accuracy
         hypothesis cannot be dropped, which is what forces the conditioned
         framework (\S\ref{sec:uncond}).
   \item \texttt{RGA\_PrefixFree\_Impl.lean} --- the runnable counterpart of
