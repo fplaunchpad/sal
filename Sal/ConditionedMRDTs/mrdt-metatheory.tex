@@ -1718,9 +1718,9 @@ merge-recoverability]
 The catalogue's $\mathsf{rc}$ relations are all \emph{star-shaped}: the
 conflicting pairs are cross-class ($\rem$/$\add$; add/checkout), so every
 edge runs from a class that is never second to a class that is never
-first. This is forced: VC~\ref{vc:disc}'s directionality plus
-\textsc{no-rc-chain} orient every non-commuting concurrent pair while
-forbidding length-2 paths, and any orientation of a \emph{self}-conflicting
+first. This is forced: the update layer's directionality law
+(\lean{rc\_non\_comm\_directional}) orients every non-commuting concurrent
+pair, while its companion \lean{no\_rc\_chain} forbids length-2 paths, and any orientation of a \emph{self}-conflicting
 class (concurrent writes; concurrent claims of one slot) contains one. So
 total-order policies --- last-writer-wins first among them --- are
 inexpressible in the $\mathsf{rc}$ mechanism as constrained by the VC set.
