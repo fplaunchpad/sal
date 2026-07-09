@@ -168,8 +168,12 @@ Analysis: `Development/COMPOSITION_PENPAPER.md`.
 **safety kit**: pinned-extension, `honestAppOn_prod`, `safetyStepOn_prod`,
 the one-sided `causalCanonical_prod_of_one_sided` (the two-sided form is
 refuted — memo §2.4.4), and the composite
-`prod_version_inv_on_of_one_sided`. The ≈-lift kit is the remaining phase;
-Peritext = RGA ⊗ marks is the target. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+`prod_version_inv_on_of_one_sided`. [`Metatheory/ProductEq.lean`](Metatheory/ProductEq.lean) is the
+**≈-lift kit** (pragmatic cut `≈₂ = Eq`): every eq-quotient obligation
+componentwise, `eqJoinLemma3C_H_prod`, and the product ≈-capstone
+`prod_ra_linearizable_up_to_eq_H` — one quotiented component, one flat,
+exactly the Peritext = RGA ⊗ marks shape. The composition kit is complete;
+Peritext instantiation is the next step. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)

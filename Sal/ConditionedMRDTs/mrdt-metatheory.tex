@@ -2045,10 +2045,22 @@ only per-configuration certificates do, which retroactively forces this
 note's factored interface; and \emph{two-sided causal-witness
 re-interleaving is refuted} (a realizable four-event cross-$\vis$ cycle),
 with the sound repair --- pin one side, re-sort the other --- covering
-products with at most one $\mathsf{rc}$-nontrivial component. Still open:
-the $\eqobs$-lift (product of eq-quotients; the pragmatic cut $\eqobs_2 =
-{=}$ suffices for the roadmap's Peritext $=$ RGA $\otimes$ marks), the
-safety kit, the indexed (map-of-MRDTs) generalization, and the L2.5/L3
+products with at most one $\mathsf{rc}$-nontrivial component. The safety and $\eqobs$ kits are also
+mechanized: honesty, \lean{SafetyStep}, and \emph{one-sided} causal
+witnesses compose (\lean{Metatheory/Product\_Safety.lean}: the
+pinned-extension lemma, \lean{safetyStepOn\_prod},
+\lean{causalCanonical\_prod\_of\_one\_sided}, composite
+\lean{prod\_version\_inv\_on\_of\_one\_sided}), and the eq-quotient layer
+lifts at the pragmatic cut $\eqobs_2 = {=}$
+(\lean{Metatheory/ProductEq.lean}: every \lean{GenericEqQuotient}
+obligation componentwise, \lean{eqJoinLemma3C\_H\_prod} glued by
+concatenation with no congruence chasing, capstone
+\lean{prod\_ra\_linearizable\_up\_to\_eq\_H} --- one quotiented component,
+one flat, exactly the Peritext shape, with the quotiented side's
+reachability supplies as premises per the memo's cost-center analysis).
+Still open: the general $\eqobs_1 \times \eqobs_2$ lift (no new ideas,
+double the plumbing --- deferred until a second quotiented component
+exists), the indexed (map-of-MRDTs) generalization, and the L2.5/L3
 coupling boundaries, where composition \emph{breaking} is expected to be
 as informative as where it holds.
 \end{openq}
@@ -2085,6 +2097,8 @@ generic honesty shape & \lean{GenHonest}, \lean{AppHonest} & \lean{Metatheory/Ge
 generic safety (causal witness) & \lean{SafetyStep}, \lean{version\_inv\_of\_causal\_canonical} & \lean{Metatheory/GenericSafety.lean} \\
 escrow metatheorem & \lean{Measured}, \lean{escrow\_version\_inv} & \lean{Metatheory/EscrowSafety.lean} \\
 product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/Product.lean} \\
+product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
+product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
