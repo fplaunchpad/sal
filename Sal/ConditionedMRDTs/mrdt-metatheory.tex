@@ -1803,6 +1803,34 @@ infeasible --- every lemma of the ${\sim}$10k-line RGA chain would have
 acquired mark cases. Composition is no longer a conjecture in this
 catalogue; it is how the newest instance was built.
 
+One boundary is worth flagging, because it extends the decorative-vs-load-%
+bearing taxonomy of $\app$ (\S\ref{sec:open}, the FWW register and the
+budget cart) to the compositional setting. The composite's honesty premise
+(\lean{PeritextHonestDelivery}) guards only the \emph{character} operations
+--- the mark component's operations are unconstrained. Marks carry the same
+data a discipline would need (each endpoint is a character id plus its
+recorded ancestor path), so it is natural to ask whether \emph{mark-anchor
+honesty} --- the mark-side analogue of the RGA's born accuracy --- composes.
+It does (\lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean}), and the way it
+does is the finding. The product \emph{signature} cannot express it: its
+$\app$ is componentwise ($\app^{\otimes}(\mathsf{inr}\,o)\,s = \app_2\,o\,s.2$),
+structurally blind to the other component. But the honesty \emph{premise} is
+a free-standing predicate over the product LTS --- exactly as the RGA's own
+born accuracy is --- and there \lean{MarkAccurate} reads the character
+component of a mark's causal-past fold freely; it respects the character
+quotient (\lean{markAccurate\_congr\_1}), so it is a well-defined predicate on
+the very quotient the capstone speaks about; and the strengthened contract
+still yields the capstone (\lean{peritextTF\_ra\_linearizable\_honest})
+unchanged, because the linearisation proof consumes only the character
+clause --- marks converge and linearise as an OR-set regardless. The mark
+clause is thus \emph{decorative for linearisability and load-bearing only for
+the read layer} (where \lean{markAccurate\_resolveMark} seeds the
+render-intent theorems). The lesson lifts cleanly: a component's honesty
+discipline is load-bearing exactly where the \emph{coupled read} depends on
+it, not where convergence does --- and the read-coupled boundary carries
+honesty precisely because the honesty predicate lives free of the
+signature's componentwise $\app$.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -2126,6 +2154,7 @@ product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linea
 product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
 product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
 Peritext by composition & \lean{peritextTF\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/PeritextTF/} \\
+mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
