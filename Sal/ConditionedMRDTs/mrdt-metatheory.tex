@@ -1088,6 +1088,7 @@ FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} & payloa
 BudgetCart & or-set $\rc$ & \lean{BCart\_ra\_linearizable3\_eq} & budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon}) \\
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
+Peritext (tombstone-free) & \emph{composed} & \multicolumn{2}{l}{\lean{peritextTF\_ra\_linearizable\_up\_to\_eq} --- RGA${}\otimes{}$marks through the product kit; 1{,}064 lines total} \\
 \bottomrule
 \end{tabular}}
 \caption{The Sal production catalogue. Every instance concludes through
@@ -1777,6 +1778,31 @@ precisely the boundary the safety metatheorem's \lean{SafetyStep} draws).
 A merge-based register is a reservation, confirmed only at causal
 stability; it is never a mutex.
 
+\paragraph{The composition payoff: tombstone-free Peritext in a thousand
+lines.} The composition kit's first real consumer is the instance that
+motivated it: tombstone-free rich text, built as
+$\text{RGA} \otimes \text{marks}$
+(\lean{MRDT\_Instances/PeritextTF/}, capstone
+\lean{peritextTF\_ra\_linearizable\_up\_to\_eq}: every version of every
+reachable configuration RA-linearizable up to $\eqobs_{\text{RGA}} \times
+{=}$, under precisely the RGA's own honest-delivery premise read through
+the first projection --- character operations guarded, mark operations
+unguarded). The mark store is an \lean{ORSetCore} instantiation (81
+lines); marks carry their endpoints' recorded paths, and resolution
+happens at \emph{read} time by the RGA's own path-climbing --- so no
+update or merge crosses components, the coupling lives in the query, and
+the one obligation read-coupling costs is discharged kernel-clean
+(\lean{peritextRender\_congr}: $\eqobs$-related states render
+identically, from the RGA's resolution reading only $\contains$). The
+cost center was exactly where the analysis predicted: re-running the
+RGA's honest-delivery induction over the product LTS (790 lines, the
+component-2 steps entering as stutters), consuming the RGA chain's
+content lemmas as certificates, re-proving none of them. Total:
+1{,}064 lines against a from-scratch alternative assessed structurally
+infeasible --- every lemma of the ${\sim}$10k-line RGA chain would have
+acquired mark cases. Composition is no longer a conjecture in this
+catalogue; it is how the newest instance was built.
+
 \section{Open questions}
 \label{sec:open}
 
@@ -2099,6 +2125,7 @@ escrow metatheorem & \lean{Measured}, \lean{escrow\_version\_inv} & \lean{Metath
 product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/Product.lean} \\
 product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
 product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
+Peritext by composition & \lean{peritextTF\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/PeritextTF/} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\

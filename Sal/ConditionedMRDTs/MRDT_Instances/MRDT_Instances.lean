@@ -18,6 +18,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.ProductDemo.ProductDemo
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.PeritextTF
 
 /-!
 # The conditioned MRDT instances — the full catalogue
@@ -48,6 +49,7 @@ tombstone-free RGA is the fully general instantiation.
 | **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
+| **Peritext (tombstone-free)** | `peritextTF_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).

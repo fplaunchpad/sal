@@ -182,7 +182,7 @@ One directory per RDT; each directory's presented capstone concludes
 `IsRALinearizable3Eq` **through the one generic theorem** (§4), and the
 same directory carries the flat VC discharge that feeds it. The umbrella
 [`MRDT_Instances/MRDT_Instances.lean`](MRDT_Instances/MRDT_Instances.lean)
-imports all sixteen capstones:
+imports all seventeen capstones:
 
 | MRDT | End-to-end theorem | Instantiation / discharge |
 |---|---|---|
@@ -202,6 +202,7 @@ imports all sixteen capstones:
 | **BudgetCart** | `BCart_ra_linearizable3_eq`; safety **gated**: `bcart_version_inv_gated` | or-set `rc` (add-wins) + derived per-replica spend; ungated `SafetyStepOn` is FALSE (vis-only causal folds are enumeration-dependent under concurrent add/rem) — the OQ8 forcer. Convergence is an **instantiation** of the payload-parametric [`ORSetCore/`](MRDT_Instances/ORSetCore/) library (composition level L0): `BudgetCart := OSCore (item × price) fst …`, its bespoke ~750-line discharge deleted |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
+| **Peritext, tombstone-free** | `peritextTF_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit — 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁) |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
 kernel-checked end-to-end theorem through the one framework.** The bounded
