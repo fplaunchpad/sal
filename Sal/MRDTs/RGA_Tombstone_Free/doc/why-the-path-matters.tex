@@ -96,6 +96,20 @@ $(\mathrm{id},\ \mathrm{element},\ \mathrm{anchor})$.
 \label{fig:state}
 \end{figure}
 
+\paragraph{Reading the text.} The state stores \emph{anchors}, not positions,
+so the visible sequence is recovered from the forest at read time by a
+\emph{depth-first preorder} traversal from the root sentinel $0$: visit a node,
+emit its element, then recurse into its children --- and among the children
+anchored at one node, visit them in \emph{descending timestamp order} (newest
+first). That newest-first tiebreak is the standard RGA sibling rule; it is what
+makes concurrent insertions at the same anchor converge to a single
+deterministic order, and it is where the linear order lives (the forest itself
+records only parent edges). In Figure~\ref{fig:state} the traversal visits $1$
+then its child $2$, reading $A\,B$. The traversal is purely a read-side
+computation over the \emph{converged} forest --- merge and the VCs operate on
+the forest, and the sequence is materialised only when read (mechanised as
+\texttt{document} in \texttt{RGA\_Tombstone\_Free\_ReadSide.lean}).
+
 \paragraph{Operations.} There are two, and (crucially) each carries a \emph{path}
 $p$ --- the ancestor chain of its referenced node, nearest first:
 \begin{itemize}
@@ -662,7 +676,7 @@ reachability under honest delivery. That is the conditioned MRDT framework
 (\texttt{Sal/ConditionedMRDTs/}; companion note
 \texttt{mrdt-metatheory.pdf}), and this data type is its founding instance:
 the end-to-end theorem
-(\texttt{rga\_tombstone\_free\_ra\_linearizable3\_eq}) is RA-linearizability up
+(\texttt{rga\_ra\_linearizable3\_eq}) is RA-linearizability up
 to observational equivalence at every reachable configuration under honest
 delivery. The price of leaving the unconditioned schema is real --- the
 tombstoned RGA discharges the flat VCs in ${\sim}170$ lines, while this data
