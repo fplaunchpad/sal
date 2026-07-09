@@ -19,12 +19,25 @@ path and recovered lazily by `resolve`.
 
 ### State
 
-`concrete_st := map ℕ (ℕ × ℕ)` maps an identity to `(element, immediate-anchor)`,
+`concrete_st α := map ℕ (α × ℕ)` maps an identity to `(element, immediate-anchor)`,
 with `0` the root sentinel (never stored). `ids = domain`. Because a `map` sends
 each key to exactly one value, an identity cannot appear twice: the spec's
 "identities are unique" clause holds by construction (it is a property of the
 representation, so it never has to be assumed as a separate well-formedness
 hypothesis). Deletion physically removes the id; there is no tombstone component.
+
+### Payload parametricity
+
+The element type is an arbitrary `α` (defaulting to `ℕ`, the character codepoint):
+the RGA's identity is the map **key** (a timestamp `ℕ`) and all ordering is by
+id/anchor (`ℕ`); the element rides in the `.1` of the value pair `(α × ℕ)` purely
+as cargo — it is copied and equality-tested, never inspected. A richer payload
+(e.g. `char ⊕ boundary` for a fused Peritext) is a mere instantiation. The only
+typeclasses used are `[DecidableEq α]` (for `deriving DecidableEq (app_op_t α)`)
+and, for `init_st`, a dead `[Inhabited α]` default (the element at the empty
+domain is never read). Because `α` defaults to `ℕ`, every bare reference
+(`concrete_st`, `op_t`, the `#eval`/`native_decide` demos, the read-side/SPOT/eq
+sibling files) resolves at `ℕ` exactly as before.
 
 ### Operations
 
@@ -68,20 +81,25 @@ genuine ancestor chain (`accurate`), and an `Ins` uses a fresh, nonzero id
 proven below with no `sorry`.
 -/
 
+set_option linter.unusedSectionVars false
+
 /-- State: `id ↦ (element, immediate-anchor)`. Tombstone-free; only the
-immediate anchor is stored, never the full path. `0` is the root. -/
-abbrev concrete_st := map ℕ (ℕ × ℕ)
+immediate anchor is stored, never the full path. `0` is the root. The element
+type `α` defaults to `ℕ` (the character codepoint). -/
+abbrev concrete_st (α : Type := ℕ) := map ℕ (α × ℕ)
 
-@[simp] def el (s : concrete_st) (t : ℕ) : ℕ := (sel s t).1
-@[simp] def anc (s : concrete_st) (t : ℕ) : ℕ := (sel s t).2
+variable {α : Type} [DecidableEq α]
 
-@[simp] def init_st : concrete_st := const_on empty (0, 0)
+@[simp] def el (s : concrete_st α) (t : ℕ) : α := (sel s t).1
+@[simp] def anc (s : concrete_st α) (t : ℕ) : ℕ := (sel s t).2
+
+@[simp] def init_st (α : Type := ℕ) [Inhabited α] : concrete_st α := const_on empty (default, 0)
 
 /-- `resolve s cands`: the first **live** candidate in `cands`, else the root
 `0`. `do_` feeds it the anchor followed by the anchor's ancestor path, so it
 returns the nearest live ancestor. On a state where the anchor is live this is
 just the anchor, and the path tail is never inspected. -/
-@[simp] def resolve (s : concrete_st) : List ℕ → ℕ
+@[simp] def resolve (s : concrete_st α) : List ℕ → ℕ
   | []        => 0
   | c :: rest => if contains s c then c else resolve s rest
 
@@ -89,19 +107,19 @@ just the anchor, and the path tail is never inspected. -/
 * `Ins e prefix a`: insert `e`, anchored at `a`, where `prefix` is `a`'s
   ancestor chain (nearest first, root excluded).
 * `Del prefix x`: delete `x`, where `prefix` is `x`'s ancestor chain. -/
-inductive app_op_t : Type where
-| Ins : ℕ → List ℕ → ℕ → app_op_t      -- element, prefix, anchor
-| Del : List ℕ → ℕ → app_op_t          -- prefix, target
+inductive app_op_t (α : Type := ℕ) : Type where
+| Ins : α → List ℕ → ℕ → app_op_t α      -- element, prefix, anchor
+| Del : List ℕ → ℕ → app_op_t α          -- prefix, target
 deriving DecidableEq
 
-abbrev op_t := ℕ × ℕ × app_op_t
+abbrev op_t (α : Type := ℕ) := ℕ × ℕ × app_op_t α
 
-@[simp] def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2
-@[simp] def get_rid (o : op_t) := match o with | (_, (rid, _)) => rid
+@[simp] def distinct_ops (op1 op2 : op_t α) := Prod.fst op1 != Prod.fst op2
+@[simp] def get_rid (o : op_t α) := match o with | (_, (rid, _)) => rid
 
 /-- The leaf (anchor/target) an op references, and the path it claims for it. -/
-@[simp] def opLeaf : app_op_t → ℕ | .Ins _ _ a => a | .Del _ x => x
-@[simp] def opPath : app_op_t → List ℕ | .Ins _ p _ => p | .Del p _ => p
+@[simp] def opLeaf : app_op_t α → ℕ | .Ins _ _ a => a | .Del _ x => x
+@[simp] def opPath : app_op_t α → List ℕ | .Ins _ p _ => p | .Del p _ => p
 
 /-- Effect.
 * `Ins e prefix a` at ts `t`: record `t ↦ (e, resolve s (a :: prefix))`. If `a`
@@ -109,7 +127,7 @@ abbrev op_t := ℕ × ℕ × app_op_t
   live ancestor.
 * `Del prefix x`: remove `x` and rehome its children to `resolve s prefix`, the
   nearest live ancestor of `x` named by the path. -/
-@[simp] def do_ (s : concrete_st) (o : op_t) : concrete_st :=
+@[simp] def do_ (s : concrete_st α) (o : op_t α) : concrete_st α :=
   match o with
   | (t, _, .Ins e pre a) => upd s t (e, resolve s (a :: pre))
   | (_, _, .Del pre x)   =>
@@ -126,14 +144,14 @@ def climb_aux (ancL : ℕ → ℕ) (I : set ℕ) : ℕ → ℕ → ℕ
 /-- Three-way merge: OR-set survival on identities, then `climb` each survivor's
 birth-anchor up the LCA chain. The merge reads parents from the LCA `L`, so it
 never needs the op paths. -/
-@[simp] def merge (l a b : concrete_st) : concrete_st :=
+@[simp] def merge (l a b : concrete_st α) : concrete_st α :=
   let dl := domain l
   let da := domain a
   let db := domain b
   let I : set ℕ := union (intersection (intersection dl da) db)
                          (union (difference da dl) (difference db dl))
   let ancL : ℕ → ℕ := fun y => anc l y
-  let elf : ℕ → ℕ := fun t =>
+  let elf : ℕ → α := fun t =>
     if contains l t then el l t else if contains a t then el a t else el b t
   let betaf : ℕ → ℕ := fun t =>
     if contains l t then anc l t else if contains a t then anc a t else anc b t
@@ -149,9 +167,9 @@ deriving DecidableEq
 resolution is `Either` everywhere. The RGA newer-first order lives in the read
 (as in `RGA_CRDT`); the insert-vs-delete conflict is resolved by the insert
 reparenting through its path instead of dangling. -/
-@[simp] def rc (_o1 _o2 : op_t) : rc_res := rc_res.Either
+@[simp] def rc (_o1 _o2 : op_t α) : rc_res := rc_res.Either
 
-@[simp] def eq (a b : concrete_st) : Prop :=
+@[simp] def eq (a b : concrete_st α) : Prop :=
   ∀ k, (contains a k = contains b k) ∧ (contains a k → sel a k = sel b k)
 
 /-! ## Operational oracle -/
@@ -196,14 +214,14 @@ set_option maxHeartbeats 1000000
 /-- **`cond_comm_base` holds** (vacuously): `rc = Either`, so the
 `Fst_then_snd` hypothesis is unsatisfiable. Without path-resolution this
 statement is false: insert-after-deleted does not commute with delete. -/
-theorem cond_comm_base (s : concrete_st) (o1 o2 o3 : op_t) :
+theorem cond_comm_base (s : concrete_st α) (o1 o2 o3 : op_t α) :
     (distinct_ops o1 o2 ∧ distinct_ops o2 o3 ∧ distinct_ops o1 o3
       ∧ rc o1 o2 = rc_res.Fst_then_snd ∧ ¬(rc o2 o3 = rc_res.Either))
     → eq (do_ (do_ (do_ s o1) o2) o3) (do_ (do_ (do_ s o2) o1) o3) := by
   intro h; simp [rc] at h
 
 /-- **`no_rc_chain` holds** (vacuously). -/
-theorem no_rc_chain (o1 o2 o3 : op_t) :
+theorem no_rc_chain (o1 o2 o3 : op_t α) :
     (distinct_ops o1 o2 ∧ distinct_ops o2 o3)
     → ¬(rc o1 o2 = rc_res.Fst_then_snd ∧ rc o2 o3 = rc_res.Fst_then_snd) := by
   intro _; simp [rc]
@@ -213,7 +231,7 @@ theorem no_rc_chain (o1 o2 o3 : op_t) :
 `do_ (Ins e prefix a)` equals the path-free `upd s t (e, a)`, regardless of
 `prefix`. So the runtime op type can drop the path; it is pure proof scaffolding,
 read only on the (causally unreachable) dead-anchor branch. -/
-theorem ins_path_free (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
+theorem ins_path_free (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
     (h : contains s a = true) :
     do_ s (t, r, .Ins e pre a) = upd s t (e, a) := by
   have hr : resolve s (a :: pre) = a := by simp only [resolve, h, if_true]
@@ -272,10 +290,10 @@ theorem climb_fixpoint (ancL : ℕ → ℕ) (I : set ℕ) (x : ℕ)
     have : I (n + 1) = true := by rcases h with h | h <;> simp_all
     simp [this]
 
-@[simp] def wf (s : concrete_st) : Prop :=
+@[simp] def wf (s : concrete_st α) : Prop :=
   ∀ t, contains s t → (anc s t = 0 ∨ contains s (anc s t))
 
-theorem merge_idem (s : concrete_st) (hwf : wf s) : eq (merge s s s) s := by
+theorem merge_idem (s : concrete_st α) (hwf : wf s) : eq (merge s s s) s := by
   intro k
   constructor
   · simp only [merge, contains, domain, mem]
@@ -311,31 +329,31 @@ set_option maxHeartbeats 4000000
 /-! ## Reachability predicates -/
 
 /-- `p` (the ancestor list of `leaf`) is the genuine root-ward chain in `s`. -/
-@[simp] def IsAncPath (s : concrete_st) : ℕ → List ℕ → Prop
+@[simp] def IsAncPath (s : concrete_st α) : ℕ → List ℕ → Prop
   | leaf, []      => anc s leaf = 0
   | leaf, p :: ps => anc s leaf = p ∧ contains s p = true ∧ IsAncPath s p ps
 
 /-- The op's claimed path is the true ancestor chain of its leaf in `s`. -/
-@[simp] def accurate (o : op_t) (s : concrete_st) : Prop :=
+@[simp] def accurate (o : op_t α) (s : concrete_st α) : Prop :=
   (opLeaf o.2.2 = 0 ∧ opPath o.2.2 = []) ∨
   (contains s (opLeaf o.2.2) = true ∧ IsAncPath s (opLeaf o.2.2) (opPath o.2.2))
 
 /-- An `Ins` uses a fresh, nonzero timestamp; `Del` creates nothing. -/
-@[simp] def fresh_ts (o : op_t) (s : concrete_st) : Prop :=
+@[simp] def fresh_ts (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ contains s t = false
   | (_, _, .Del _ _)   => True
 
 /-- Reachability-conditioned commutation. `contains s 0 = false` pins the root
 sentinel: `0` is never a stored key. -/
-@[simp] def commutes_with' (o1 o2 : op_t) : Prop :=
+@[simp] def commutes_with' (o1 o2 : op_t α) : Prop :=
   ∀ s, contains s 0 = false → accurate o1 s → accurate o2 s →
        fresh_ts o1 s → fresh_ts o2 s →
        eq (do_ (do_ s o1) o2) (do_ (do_ s o2) o1)
 
 /-! ## Group A: resolve algebra -/
 
-theorem resolve_dom_eq (s1 s2 : concrete_st) :
+theorem resolve_dom_eq (s1 s2 : concrete_st α) :
     ∀ cands : List ℕ, (∀ c ∈ cands, contains s1 c = contains s2 c) →
       resolve s1 cands = resolve s2 cands := by
   intro cands
@@ -351,7 +369,7 @@ theorem resolve_dom_eq (s1 s2 : concrete_st) :
     | true  => simp
     | false => simp; exact ih hrest
 
-theorem resolve_upd_notMem (s : concrete_st) (t : ℕ) (v : ℕ × ℕ)
+theorem resolve_upd_notMem (s : concrete_st α) (t : ℕ) (v : α × ℕ)
     (cands : List ℕ) (ht : t ∉ cands) :
     resolve (upd s t v) cands = resolve s cands := by
   apply resolve_dom_eq
@@ -360,7 +378,7 @@ theorem resolve_upd_notMem (s : concrete_st) (t : ℕ) (v : ℕ × ℕ)
   simp [contains, upd, mem, union, _root_.singleton]
   grind
 
-theorem upd_comm (s : concrete_st) (t1 t2 : ℕ) (v w : ℕ × ℕ) (h : t1 ≠ t2) :
+theorem upd_comm (s : concrete_st α) (t1 t2 : ℕ) (v w : α × ℕ) (h : t1 ≠ t2) :
     upd (upd s t1 v) t2 w = upd (upd s t2 w) t1 v := by
   apply (map_lemma_equal_elim _ _).mp
   constructor
@@ -369,7 +387,7 @@ theorem upd_comm (s : concrete_st) (t1 t2 : ℕ) (v w : ℕ × ℕ) (h : t1 ≠ 
 
 /-! ## Group B: eq plumbing -/
 
-theorem eq_symm (a b : concrete_st) : eq a b → eq b a := by
+theorem eq_symm (a b : concrete_st α) : eq a b → eq b a := by
   intro h k
   obtain ⟨hc, hs⟩ := h k
   refine ⟨hc.symm, ?_⟩
@@ -378,23 +396,23 @@ theorem eq_symm (a b : concrete_st) : eq a b → eq b a := by
 /-! ## resolve / IsAncPath facts -/
 
 -- Ins anchor resolves to itself.
-theorem resolve_cons_eq (s' : concrete_st) (a : ℕ) (p : List ℕ)
+theorem resolve_cons_eq (s' : concrete_st α) (a : ℕ) (p : List ℕ)
     (h : (a = 0 ∧ p = [] ∧ contains s' 0 = false) ∨ contains s' a = true) :
     resolve s' (a :: p) = a := by
   rcases h with ⟨ha, hp, h0⟩ | hc
   · subst ha; subst hp; simp only [resolve]; split <;> rfl
   · simp only [resolve]; rw [if_pos hc]
 
-theorem resolve_dead_head (s' : concrete_st) (a : ℕ) (p : List ℕ)
+theorem resolve_dead_head (s' : concrete_st α) (a : ℕ) (p : List ℕ)
     (h : contains s' a = false) : resolve s' (a :: p) = resolve s' p := by
   simp only [resolve]; rw [if_neg (by rw [h]; simp)]
 
-theorem resolve_live_head (s' : concrete_st) (a : ℕ) (p : List ℕ)
+theorem resolve_live_head (s' : concrete_st α) (a : ℕ) (p : List ℕ)
     (h : contains s' a = true) : resolve s' (a :: p) = a := by
   simp only [resolve]; rw [if_pos h]
 
 -- IsAncPath head: resolve of the path is the immediate anchor.
-theorem isAncPath_resolve (s : concrete_st) :
+theorem isAncPath_resolve (s : concrete_st α) :
     ∀ (y : ℕ) (p : List ℕ), IsAncPath s y p → resolve s p = anc s y := by
   intro y p
   cases p with
@@ -408,7 +426,7 @@ theorem isAncPath_resolve (s : concrete_st) :
     rw [if_pos h2]
 
 -- No self loop on a live non-root node.
-theorem isAncPath_self (s : concrete_st) :
+theorem isAncPath_self (s : concrete_st α) :
     ∀ (p : List ℕ) (y : ℕ), IsAncPath s y p → anc s y = y → y = 0 := by
   intro p
   induction p with
@@ -423,7 +441,7 @@ theorem isAncPath_self (s : concrete_st) :
     exact ih c h3 he
 
 -- every element of an accurate path is live.
-theorem isAncPath_mem (s : concrete_st) :
+theorem isAncPath_mem (s : concrete_st α) :
     ∀ (y : ℕ) (p : List ℕ), IsAncPath s y p → ∀ c ∈ p, contains s c = true := by
   intro y p
   induction p generalizing y with
@@ -436,18 +454,18 @@ theorem isAncPath_mem (s : concrete_st) :
     · exact h2
     · exact ih d h3 c hc'
 
-theorem contains_ne_zero (s : concrete_st) (k : ℕ) (h0 : contains s 0 = false)
+theorem contains_ne_zero (s : concrete_st α) (k : ℕ) (h0 : contains s 0 = false)
     (h : contains s k = true) : k ≠ 0 := by
   intro e; rw [e, h0] at h; exact absurd h (by simp)
 
 /-! ## Del state algebra -/
 
-theorem contains_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
+theorem contains_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
     contains (do_ s (t, r, .Del pre x)) k = (contains s k && k != x) := by
   simp only [do_, del, iter_upd, contains, domain, remove, mem]
   grind
 
-theorem sel_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
+theorem sel_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
     sel (do_ s (t, r, .Del pre x)) k
       = (if anc s k = x then (el s k, resolve s pre) else sel s k) := by
   simp only [do_, del, iter_upd, sel, el, anc]
@@ -459,7 +477,7 @@ its anchor is live (the anchor is `resolve`'s head, so it short-circuits before
 the prefix); `Del` resolves from `x`'s parent, so it needs the path to be
 accurate, which makes `resolve s pre = anc s x`. Together the two lemmas show
 that on accurate states neither operation consults the path. -/
-theorem del_path_free (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem del_path_free (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (h : IsAncPath s x pre) :
     do_ s (t, r, .Del pre x)
       = del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, anc s x) else ea) s) x := by
@@ -482,12 +500,12 @@ reads its reparent target straight from the live state as `anc s x`.
 
 /-- Path-free deletion: reparent `x`'s children to the stored parent `anc s x`,
 then remove `x`. No prefix. -/
-def doDelPF (s : concrete_st) (x : ℕ) : concrete_st :=
+def doDelPF (s : concrete_st α) (x : ℕ) : concrete_st α :=
   del (iter_upd (fun _ ea => if ea.2 = x then (ea.1, anc s x) else ea) s) x
 
 /-- On any accurate state the path-carrying `Del` equals the path-free `doDelPF`.
 Immediate from `del_path_free`. -/
-theorem del_prefix_dispensable (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem del_prefix_dispensable (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (h : IsAncPath s x pre) :
     do_ s (t, r, .Del pre x) = doDelPF s x := by
   unfold doDelPF; exact del_path_free s t r x pre h
@@ -504,7 +522,7 @@ theorem deldel_pathfree_converges :
 /-! ## Case lemmas -/
 
 -- Ins/Ins
-theorem insins_comm (s : concrete_st) (t1 r1 e1 a1 t2 r2 e2 a2 : ℕ) (p1 p2 : List ℕ)
+theorem insins_comm (s : concrete_st α) (t1 r1 : ℕ) (e1 : α) (a1 t2 r2 : ℕ) (e2 : α) (a2 : ℕ) (p1 p2 : List ℕ)
     (hdist : t1 ≠ t2) (h0 : contains s 0 = false)
     (ha1 : accurate (t1, r1, .Ins e1 p1 a1) s) (ha2 : accurate (t2, r2, .Ins e2 p2 a2) s)
     (hf1 : fresh_ts (t1, r1, .Ins e1 p1 a1) s) (hf2 : fresh_ts (t2, r2, .Ins e2 p2 a2) s) :
@@ -554,7 +572,7 @@ theorem insins_comm (s : concrete_st) (t1 r1 e1 a1 t2 r2 e2 a2 : ℕ) (p1 p2 : L
   rw [upd_comm s t1 t2 (e1, a1) (e2, a2) hdist]
   intro k; exact ⟨rfl, fun _ => rfl⟩
 
-theorem insdel_comm (s : concrete_st) (t1 r1 e1 a1 : ℕ) (p1 : List ℕ)
+theorem insdel_comm (s : concrete_st α) (t1 r1 : ℕ) (e1 : α) (a1 : ℕ) (p1 : List ℕ)
     (t2 r2 : ℕ) (p2 : List ℕ) (x2 : ℕ)
     (hdist : t1 ≠ t2) (h0 : contains s 0 = false)
     (ha1 : accurate (t1, r1, .Ins e1 p1 a1) s) (ha2 : accurate (t2, r2, .Del p2 x2) s)
@@ -587,8 +605,8 @@ theorem insdel_comm (s : concrete_st) (t1 r1 e1 a1 : ℕ) (p1 : List ℕ)
     simp only [do_]; rw [rIns]
   rw [hInsL]
   -- abbreviations
-  set US : concrete_st := upd s t1 (e1, a1) with hUS
-  set DS : concrete_st := do_ s (t2, r2, .Del p2 x2) with hDS
+  set US : concrete_st α := upd s t1 (e1, a1) with hUS
+  set DS : concrete_st α := do_ s (t2, r2, .Del p2 x2) with hDS
   -- the reparent anchor
   have anchorR : resolve DS (a1 :: p1) = (if a1 = x2 then resolve s p2 else a1) := by
     by_cases hax : a1 = x2
@@ -675,7 +693,7 @@ theorem insdel_comm (s : concrete_st) (t1 r1 e1 a1 : ℕ) (p1 : List ℕ)
 
 /-- The ancestor chain of `leaf` with `leaf` itself filtered out resolves to
 `leaf`'s parent (ported from the uniform-`accurate` development). -/
-theorem isancpath_resolve_self_filter (s : concrete_st) :
+theorem isancpath_resolve_self_filter (s : concrete_st α) :
     ∀ leaf p, IsAncPath s leaf p →
       resolve s (p.filter (fun c => c != leaf)) = anc s leaf := by
   intro leaf p
@@ -696,7 +714,7 @@ theorem isancpath_resolve_self_filter (s : concrete_st) :
 
 /-- `resolve` after a `Del x` equals `resolve` on the source with `x` filtered
 out of the candidates. -/
-theorem resolve_doDel (s : concrete_st) (t r x : ℕ) (pre cands : List ℕ) :
+theorem resolve_doDel (s : concrete_st α) (t r x : ℕ) (pre cands : List ℕ) :
     resolve (do_ s (t, r, .Del pre x)) cands
       = resolve s (cands.filter (fun c => c != x)) := by
   induction cands with
@@ -719,7 +737,7 @@ theorem resolve_doDel (s : concrete_st) (t r x : ℕ) (pre cands : List ℕ) :
       | false => simp; exact ih
 
 /-- Under root-not-stored, the ancestor chain of a node is unique. -/
-theorem IsAncPath_unique (s : concrete_st) (h0 : contains s 0 = false) :
+theorem IsAncPath_unique (s : concrete_st α) (h0 : contains s 0 = false) :
     ∀ (leaf : ℕ) (p q : List ℕ), IsAncPath s leaf p → IsAncPath s leaf q → p = q := by
   intro leaf p
   induction p generalizing leaf with
@@ -749,7 +767,7 @@ theorem IsAncPath_unique (s : concrete_st) (h0 : contains s 0 = false) :
 
 /-- Filtering out a value other than what the list resolves to leaves the
 resolve unchanged. -/
-theorem resolve_filter_ne (s : concrete_st) (y : ℕ) :
+theorem resolve_filter_ne (s : concrete_st α) (y : ℕ) :
     ∀ p, resolve s p ≠ y → resolve s (p.filter (fun c => c != y)) = resolve s p := by
   intro p
   induction p with
@@ -771,7 +789,7 @@ theorem resolve_filter_ne (s : concrete_st) (y : ℕ) :
         exact ih hne
 
 /-- `el` is unchanged by a `Del`. -/
-theorem el_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
+theorem el_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
     el (do_ s (t, r, .Del pre x)) k = el s k := by
   show (sel (do_ s (t, r, .Del pre x)) k).1 = el s k
   rw [sel_doDel s t r x pre k]
@@ -781,7 +799,7 @@ theorem el_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
 
 /-- `anc` after a `Del x`: reparent to `resolve s pre` exactly the nodes whose
 parent was `x`. -/
-theorem anc_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
+theorem anc_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
     anc (do_ s (t, r, .Del pre x)) k = if anc s k = x then resolve s pre else anc s k := by
   show (sel (do_ s (t, r, .Del pre x)) k).2 = if anc s k = x then resolve s pre else anc s k
   rw [sel_doDel s t r x pre k]
@@ -791,7 +809,7 @@ theorem anc_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (k : ℕ) :
 
 /-- The path-collapse fact: if `a`'s parent is `b` (a live, `a ≠ b`), then the
 two cross-filtered resolves agree (both equal `anc s b`). -/
-theorem collapse (s : concrete_st) (h0 : contains s 0 = false) (a b : ℕ) (pa pb : List ℕ)
+theorem collapse (s : concrete_st α) (h0 : contains s 0 = false) (a b : ℕ) (pa pb : List ℕ)
     (hpa : (a = 0 ∧ pa = []) ∨ (contains s a = true ∧ IsAncPath s a pa))
     (hpb : (b = 0 ∧ pb = []) ∨ (contains s b = true ∧ IsAncPath s b pb))
     (hab : a ≠ b) (hres : resolve s pa = b) :
@@ -863,7 +881,7 @@ theorem collapse (s : concrete_st) (h0 : contains s 0 = false) (a b : ℕ) (pa p
         rw [resolve_filter_ne s a pb hrne, isAncPath_resolve s b pb hbpath]
       rw [hLHS, hRHS]
 
-theorem deldel_comm (s : concrete_st) (t1 r1 : ℕ) (p1 : List ℕ) (x1 : ℕ)
+theorem deldel_comm (s : concrete_st α) (t1 r1 : ℕ) (p1 : List ℕ) (x1 : ℕ)
     (t2 r2 : ℕ) (p2 : List ℕ) (x2 : ℕ) (h0 : contains s 0 = false)
     (ha1 : accurate (t1, r1, .Del p1 x1) s) (ha2 : accurate (t2, r2, .Del p2 x2) s) :
     eq (do_ (do_ s (t1, r1, .Del p1 x1)) (t2, r2, .Del p2 x2))
@@ -925,7 +943,7 @@ theorem deldel_comm (s : concrete_st) (t1 r1 : ℕ) (p1 : List ℕ) (x1 : ℕ)
 
 /-! ## Main theorem -/
 
-theorem rc_non_comm' (o1 o2 : op_t) :
+theorem rc_non_comm' (o1 o2 : op_t α) :
     (distinct_ops o1 o2 ∧ get_rid o1 != get_rid o2)
     → (rc o1 o2 = rc_res.Either ↔ commutes_with' o1 o2) := by
   rintro ⟨hdist, _hrid⟩

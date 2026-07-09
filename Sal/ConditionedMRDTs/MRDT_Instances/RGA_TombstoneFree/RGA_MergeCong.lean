@@ -31,11 +31,14 @@ matched fuel makes the two climbs halt together regardless of sufficiency.
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
 
 open Sal.ConditionedMRDTs.RGAConditionedConvergence
 open Sal.ConditionedMRDTs.RGAEqQuotient
 
 namespace RGAMergeCong
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-! ## §1  Climb congruence in the anchor function
 
@@ -45,7 +48,7 @@ then their `climb`s coincide on any start in `{0} ∪ I ∪ (live l)`.  The walk
 only nodes where `Hag` applies, so the two climbs are pointwise identical.  No
 id-monotonicity is used: the fuel is the *same* start id on both sides, so they
 run out together. -/
-theorem climb_aux_anc_congr (l l' : concrete_st) (I : set ℕ)
+theorem climb_aux_anc_congr (l l' : concrete_st α) (I : set ℕ)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (Hag : ∀ y, contains l y = true → anc l y = anc l' y) :
     ∀ (fuel x : ℕ), (x = 0 ∨ I x = true ∨ contains l x = true) →
@@ -83,7 +86,7 @@ theorem climb_aux_anc_congr (l l' : concrete_st) (I : set ℕ)
           · exact Or.inr (Or.inr h))
 
 /-- `climb`-level congruence in the anchor function (fuel matched at the start). -/
-theorem climb_anc_congr (l l' : concrete_st) (I : set ℕ)
+theorem climb_anc_congr (l l' : concrete_st α) (I : set ℕ)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (Hag : ∀ y, contains l y = true → anc l y = anc l' y) (x : ℕ)
     (hs : x = 0 ∨ I x = true ∨ contains l x = true) :
@@ -97,7 +100,7 @@ FALSE on the full type (`merge_eq_congr_l_fails`); here `wf l`, `wf a`, `wf b`
 make it hold.  `id_mono l` / `contains l 0 = false` are **not** needed for the
 congruence (only for `wf`-preservation, `Inv_merge`): a genuinely weaker
 conditioning than the merge state-invariant. -/
-theorem merge_eq_congr_l_inv (l l' a b : concrete_st)
+theorem merge_eq_congr_l_inv (l l' a b : concrete_st α)
     (hlwf : wf l) (hawf : wf a) (hbwf : wf b) (h : eq l l') :
     eq (merge l a b) (merge l' a b) := by
   simp only [wf] at hlwf hawf hbwf
@@ -145,7 +148,7 @@ id_mono` (the RGA's `qInv`).  Only the `wf` conjuncts of `l`, `a`, `b` are
 consumed; `l'`'s `Inv`, both `contains·0` and all three `id_mono`s are carried for
 signature shape but not used — the congruence lives on the forest structure,
 transported from `l` to `l'` by `≈`. -/
-theorem merge_eq_congr_inv (l l' a a' b b' : concrete_st)
+theorem merge_eq_congr_inv (l l' a a' b b' : concrete_st α)
     (Il : wf l ∧ contains l 0 = false ∧ id_mono l)
     (_Il' : wf l' ∧ contains l' 0 = false ∧ id_mono l')
     (Ia : wf a ∧ contains a 0 = false ∧ id_mono a)

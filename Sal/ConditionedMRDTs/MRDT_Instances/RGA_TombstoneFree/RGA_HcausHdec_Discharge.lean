@@ -24,10 +24,12 @@ The two remaining `hMergeInputs` leaves, and the assembled `hMergeInputs` itself
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
@@ -45,7 +47,7 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK
 /-! ## §1  Bricks -/
 
 /-- `canonAnc` picks a chain entry or the root. -/
-theorem canonAnc_mem (F : List op_t) :
+theorem canonAnc_mem (F : List (op_t α)) :
     ∀ L : List ℕ, canonAnc F L = 0 ∨ canonAnc F L ∈ L := by
   intro L
   induction L with
@@ -63,13 +65,13 @@ theorem canonAnc_mem (F : List op_t) :
 /-- **A deleted nonzero id is inserted** — dependency-fold provenance: the delete is `accurate`
 at its dependency fold (`GenDisc2C`), so its nonzero target is live there, and ids enter a fold
 only by their own `Ins`. -/
-theorem del_target_inserted (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (hGen : GenDisc2C Cfg E)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E))
+theorem del_target_inserted (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (hGen : GenDisc2C Cfg E)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E))
     (t' r' c : ℕ) (p' : List ℕ) (hdE : (t', r', app_op_t.Del p' c) ∈ E)
     (hc0 : c ≠ 0) :
-    ∃ (rc ec : ℕ) (pc : List ℕ) (ac : ℕ), (c, rc, app_op_t.Ins ec pc ac) ∈ E := by
+    ∃ (rc : ℕ) (ec : α) (pc : List ℕ) (ac : ℕ), (c, rc, app_op_t.Ins ec pc ac) ∈ E := by
   have hpre := isDepPreC_depList Cfg E U (t', r', app_op_t.Del p' c)
     (fun x hx => (hUp.2 x).mp hx) hUp.1 hUr
     (fun z hz _ _ => (hUp.2 z).mpr hz)
@@ -87,24 +89,24 @@ theorem del_target_inserted (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDT
 `canonAnc` of the recorded chain (`CanonMatch`); chain entries are dependencies of the insert;
 dependencies are `vis`-past; `vis` is Lamport-monotone. -/
 theorem rga_Hdec_discharged
-    (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ : List op_t)
+    (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ : List (op_t α))
     (hHonJ : rgaHonJ vis events)
-    (htr : ∀ {a b c : op_t}, vis a b → vis b c → vis a c) (hirr : ∀ a : op_t, ¬ vis a a)
+    (htr : ∀ {a b c : op_t α}, vis a b → vis b c → vis a c) (hirr : ∀ a : op_t α, ¬ vis a a)
     (hev1 : ∀ a ∈ ev₁, a ∈ events) (_hev2 : ∀ a ∈ ev₂, a ∈ events)
-    (hcl1 : fullClosureRel (D := RGACondSig') vis ev₁)
-    (hcl2 : fullClosureRel (D := RGACondSig') vis ev₂)
+    (hcl1 : fullClosureRel (D := (RGACondSig' α)) vis ev₁)
+    (hcl2 : fullClosureRel (D := (RGACondSig' α)) vis ev₂)
     (h₀p : listPermOf ρ₀ (ev₁ ∩ ev₂))
-    (h₀OK : CanonFoldOK [] init_st ρ₀) :
-    ∀ y, contains (applySeqR init_st ρ₀) y = true → y ≠ 0 →
-      anc (applySeqR init_st ρ₀) y < y := by
+    (h₀OK : CanonFoldOK [] (init_st (α := α)) ρ₀) :
+    ∀ y, contains (applySeqR (init_st (α := α)) ρ₀) y = true → y ≠ 0 →
+      anc (applySeqR (init_st (α := α)) ρ₀) y < y := by
   obtain ⟨Cfg, hviseq, hGenE, _hids0, hmono, _hdel0⟩ := hHonJ
   have hsubI : ∀ x ∈ ev₁ ∩ ev₂, x ∈ events := fun x hx => hev1 _ hx.1
-  have htr' : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c := by
+  have htr' : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c := by
     intro a b c h1 h2
     have h1' := (hviseq a b).mp h1
     have h2' := (hviseq b c).mp h2
     exact (hviseq a c).mpr ⟨htr h1'.1 h2'.1, h1'.2.1, h2'.2.2⟩
-  have hirr' : ∀ a : op_t, ¬ Cfg.vis a a :=
+  have hirr' : ∀ a : op_t α, ¬ Cfg.vis a a :=
     fun a h => hirr a ((hviseq a a).mp h).1
   have hGen0 : GenDisc2C Cfg (ev₁ ∩ ev₂) := by
     intro o ho d hd
@@ -117,18 +119,18 @@ theorem rga_Hdec_discharged
     (fun l' _ hne => exists_min_of_irrefl_trans Cfg.vis (@htr') hirr' l' hne)
   have hU₀p : listPermOf U₀ (ev₁ ∩ ev₂) :=
     ⟨hU₀perm.nodup_iff.mpr h₀p.1, fun x => by rw [hU₀perm.mem_iff]; exact h₀p.2 x⟩
-  have hU₀r : respects U₀ (loOnA RGACondSig Cfg (ev₁ ∩ ev₂)) :=
+  have hU₀r : respects U₀ (loOnA (RGACondSig α) Cfg (ev₁ ∩ ev₂)) :=
     hU₀pw.imp (fun hn hlo => hn (loOnA_imp_vis Cfg _ _ _ hlo))
-  have hinv0 : CanonInv ρ₀ (applySeqR init_st ρ₀) := by
-    have h := RGACanonConvergence.canon_fold ρ₀ [] init_st
+  have hinv0 : CanonInv ρ₀ (applySeqR (init_st (α := α)) ρ₀) := by
+    have h := RGACanonConvergence.canon_fold ρ₀ [] (init_st (α := α))
       RGACanonConvergence.canonInv_init h₀OK
     rwa [List.nil_append] at h
-  have hcm0 : CanonMatch ρ₀ (applySeqR init_st ρ₀) :=
+  have hcm0 : CanonMatch ρ₀ (applySeqR (init_st (α := α)) ρ₀) :=
     RGACanonConvergence.canonMatch_of_canonInv ρ₀ _ hinv0
   intro y hy hy0
   have hsvy : survP ρ₀ y := (hinv0.2.2.1 y).mp hy
   obtain ⟨ry, ey, py, ay, hmy⟩ := hsvy.1
-  have hanc : anc (applySeqR init_st ρ₀) y = canonAnc ρ₀ (ay :: py) :=
+  have hanc : anc (applySeqR (init_st (α := α)) ρ₀) y = canonAnc ρ₀ (ay :: py) :=
     (hcm0.2 y ry ey py ay hmy hsvy).2
   rcases canonAnc_mem ρ₀ (ay :: py) with h0 | hmem
   · rw [hanc, h0]
@@ -153,13 +155,13 @@ theorem rga_Hdec_discharged
 /-- **hcaus, discharged**: five clauses are membership algebra over the enum perms; the two
 branch `del ⟹ ins` clauses are `del_target_inserted` at the branch's restricted discipline. -/
 theorem rga_hcaus_discharged
-    (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t)
+    (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α))
     (hHonJ : rgaHonJ vis events)
-    (htr : ∀ {a b c : op_t}, vis a b → vis b c → vis a c) (hirr : ∀ a : op_t, ¬ vis a a)
-    (hdts : ∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1)
+    (htr : ∀ {a b c : op_t α}, vis a b → vis b c → vis a c) (hirr : ∀ a : op_t α, ¬ vis a a)
+    (hdts : ∀ a b : op_t α, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1)
     (hev1 : ∀ a ∈ ev₁, a ∈ events) (hev2 : ∀ a ∈ ev₂, a ∈ events)
-    (hcl1 : fullClosureRel (D := RGACondSig') vis ev₁)
-    (hcl2 : fullClosureRel (D := RGACondSig') vis ev₂)
+    (hcl1 : fullClosureRel (D := (RGACondSig' α)) vis ev₁)
+    (hcl2 : fullClosureRel (D := (RGACondSig' α)) vis ev₂)
     (h₀p : listPermOf ρ₀ (ev₁ ∩ ev₂)) (h₁p : listPermOf ρ₁ ev₁) (h₂p : listPermOf ρ₂ ev₂)
     (hπp : listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) :
     ∀ c, (insertedIn ρ₀ c ↔ insertedIn ρ₁ c ∧ insertedIn ρ₂ c)
@@ -168,12 +170,12 @@ theorem rga_hcaus_discharged
       ∧ (insertedIn (ρ₀ ++ π₀) c ↔ insertedIn ρ₁ c ∨ insertedIn ρ₂ c)
       ∧ (deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c) := by
   obtain ⟨Cfg, hviseq, hGenE, _hids0, _hmono, hdel0⟩ := hHonJ
-  have htr' : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c := by
+  have htr' : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c := by
     intro a b c h1 h2
     have h1' := (hviseq a b).mp h1
     have h2' := (hviseq b c).mp h2
     exact (hviseq a c).mpr ⟨htr h1'.1 h2'.1, h1'.2.1, h2'.2.2⟩
-  have hirr' : ∀ a : op_t, ¬ Cfg.vis a a :=
+  have hirr' : ∀ a : op_t α, ¬ Cfg.vis a a :=
     fun a h => hirr a ((hviseq a a).mp h).1
   -- restricted disciplines and sorted listings at the two branches
   have hGen1 : GenDisc2C Cfg ev₁ := by
@@ -194,16 +196,16 @@ theorem rga_hcaus_discharged
     (fun l' _ hne => exists_min_of_irrefl_trans Cfg.vis (@htr') hirr' l' hne)
   have hU₁p : listPermOf U₁ ev₁ :=
     ⟨hU₁perm.nodup_iff.mpr h₁p.1, fun x => by rw [hU₁perm.mem_iff]; exact h₁p.2 x⟩
-  have hU₁r : respects U₁ (loOnA RGACondSig Cfg ev₁) :=
+  have hU₁r : respects U₁ (loOnA (RGACondSig α) Cfg ev₁) :=
     hU₁pw.imp (fun hn hlo => hn (loOnA_imp_vis Cfg _ _ _ hlo))
   obtain ⟨U₂, hU₂perm, hU₂pw⟩ := exists_respecting Cfg.vis ρ₂.length ρ₂ rfl
     (fun l' _ hne => exists_min_of_irrefl_trans Cfg.vis (@htr') hirr' l' hne)
   have hU₂p : listPermOf U₂ ev₂ :=
     ⟨hU₂perm.nodup_iff.mpr h₂p.1, fun x => by rw [hU₂perm.mem_iff]; exact h₂p.2 x⟩
-  have hU₂r : respects U₂ (loOnA RGACondSig Cfg ev₂) :=
+  have hU₂r : respects U₂ (loOnA (RGACondSig α) Cfg ev₂) :=
     hU₂pw.imp (fun hn hlo => hn (loOnA_imp_vis Cfg _ _ _ hlo))
   -- union memberships and id-uniqueness
-  have hFmem : ∀ x : op_t, x ∈ ρ₀ ++ π₀ ↔ x ∈ ev₁ ∪ ev₂ := by
+  have hFmem : ∀ x : op_t α, x ∈ ρ₀ ++ π₀ ↔ x ∈ ev₁ ∪ ev₂ := by
     intro x
     rw [List.mem_append]
     constructor
@@ -219,7 +221,7 @@ theorem rga_hcaus_discharged
     rcases hx with h | h
     · exact hev1 x h
     · exact hev2 x h
-  have hopEq : ∀ {o o' : op_t}, o ∈ ev₁ ∪ ev₂ → o' ∈ ev₁ ∪ ev₂ → o.1 = o'.1 → o = o' := by
+  have hopEq : ∀ {o o' : op_t α}, o ∈ ev₁ ∪ ev₂ → o' ∈ ev₁ ∪ ev₂ → o.1 = o'.1 → o = o' := by
     intro o o' ho ho' hid
     by_contra hne
     exact hdts o o' (hUmem o ho) (hUmem o' ho') hne hid
@@ -233,7 +235,7 @@ theorem rga_hcaus_discharged
     · rintro ⟨⟨r1, e1, p1, a1, hm1⟩, ⟨r2, e2, p2, a2, hm2⟩⟩
       have h1E : (c, r1, app_op_t.Ins e1 p1 a1) ∈ ev₁ := (h₁p.2 _).mp hm1
       have h2E : (c, r2, app_op_t.Ins e2 p2 a2) ∈ ev₂ := (h₂p.2 _).mp hm2
-      have heq : ((c, r2, app_op_t.Ins e2 p2 a2) : op_t) = (c, r1, app_op_t.Ins e1 p1 a1) :=
+      have heq : ((c, r2, app_op_t.Ins e2 p2 a2) : op_t α) = (c, r1, app_op_t.Ins e1 p1 a1) :=
         hopEq (Set.mem_union_right _ h2E) (Set.mem_union_left _ h1E) rfl
       exact ⟨r1, e1, p1, a1, (h₀p.2 _).mpr ⟨h1E, heq ▸ h2E⟩⟩
   · -- branch-1 deleted ⟹ branch-1 inserted (provenance)
@@ -288,29 +290,29 @@ theorem rga_hcaus_discharged
 /-- **The full `hMergeInputs` of `hCanon_of_leaves3`, discharged at `HonJ := rgaHonJ`**:
 `{Hdec, hcaus, hbridge}` assembled from the three leaf discharges. -/
 theorem rga_hMergeInputs_discharged :
-    ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+    ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α)),
         rgaHonJ vis events →
-        (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
-        (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
+        (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) → (∀ a : op_t α, ¬ vis a a) →
+        (∀ a b : op_t α, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-        fullClosureRel (D := RGACondSig') vis ev₁ → fullClosureRel (D := RGACondSig') vis ev₂ →
+        fullClosureRel (D := (RGACondSig' α)) vis ev₁ → fullClosureRel (D := (RGACondSig' α)) vis ev₂ →
         listPermOf ρ₀ (ev₁ ∩ ev₂) → listPermOf ρ₁ ev₁ → listPermOf ρ₂ ev₂ →
         listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) →
-        respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
-        CanonFoldOK [] init_st ρ₀ → CanonFoldOK [] init_st ρ₁ → CanonFoldOK [] init_st ρ₂ →
-        CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ →
-        (∀ y, contains (applySeqR init_st ρ₀) y = true → y ≠ 0 →
-            anc (applySeqR init_st ρ₀) y < y)
+        respects π₀ (loOnEq (rgaEqEquiv' α) WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
+        CanonFoldOK [] (init_st (α := α)) ρ₀ → CanonFoldOK [] (init_st (α := α)) ρ₁ → CanonFoldOK [] (init_st (α := α)) ρ₂ →
+        CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀ →
+        (∀ y, contains (applySeqR (init_st (α := α)) ρ₀) y = true → y ≠ 0 →
+            anc (applySeqR (init_st (α := α)) ρ₀) y < y)
         ∧ (∀ c, (insertedIn ρ₀ c ↔ insertedIn ρ₁ c ∧ insertedIn ρ₂ c)
             ∧ (deletedIn ρ₁ c → insertedIn ρ₁ c) ∧ (deletedIn ρ₂ c → insertedIn ρ₂ c)
             ∧ (deletedIn ρ₀ c → deletedIn ρ₁ c) ∧ (deletedIn ρ₀ c → deletedIn ρ₂ c)
             ∧ (insertedIn (ρ₀ ++ π₀) c ↔ insertedIn ρ₁ c ∨ insertedIn ρ₂ c)
             ∧ (deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c))
-        ∧ (∀ (t r e a : ℕ) (p : List ℕ),
+        ∧ (∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
             (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
-            CanonBirthBridge (applySeqR init_st ρ₀) (ρ₀ ++ π₀)
-                (birthAnc (applySeqR init_st ρ₀) (applySeqR init_st ρ₁)
-                  (applySeqR init_st ρ₂) t) (a :: p)) := by
+            CanonBirthBridge (applySeqR (init_st (α := α)) ρ₀) (ρ₀ ++ π₀)
+                (birthAnc (applySeqR (init_st (α := α)) ρ₀) (applySeqR (init_st (α := α)) ρ₁)
+                  (applySeqR (init_st (α := α)) ρ₂) t) (a :: p)) := by
   intro vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hirr hdts hev1 hev2 hcl1 hcl2
     h₀p h₁p h₂p hπp _hπr h₀OK h₁OK h₂OK hπOK
   have hcaus := rga_hcaus_discharged vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hirr hdts

@@ -28,10 +28,12 @@ cross-branch identity discharged by the branch canonical characterizations
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace RGAMergeFoldChain
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open RGACanonConvergence
@@ -46,7 +48,7 @@ the recorded chain `rc`.  It is stated entirely with `canonAnc` (a pure function
 of the event set `F`) and `IsAncPath l` (the LCA forest); NO fold state occurs.
 This is the honest cross-forest content: `bw = birthAnc l a b k = anc a k` is
 `k`'s branch-final anchor, generally distinct from the recorded head of `rc`. -/
-def CanonBirthBridge (l : concrete_st) (F : List op_t) (bw : ℕ) (rc : List ℕ) : Prop :=
+def CanonBirthBridge (l : concrete_st α) (F : List (op_t α)) (bw : ℕ) (rc : List ℕ) : Prop :=
   (contains l bw = true →
       ∃ cw, IsAncPath l bw cw ∧ canonAnc F (bw :: cw) = canonAnc F rc)
   ∧ (contains l bw = false → canonAnc F rc = bw)
@@ -58,9 +60,9 @@ with `survP F k`, that `anc p k = canonAnc F (a_k :: p_k)`; and on the survivor
 domain `resolve p L = canonAnc F L` for every chain `L`.  Feeding the bridge in,
 both branches of `FoldBirthChain` fall out by rewriting `anc p k` and
 `resolve p (bw :: cw)` through `canonAnc`. -/
-theorem foldChain_of_canon (l a b p : concrete_st) (F : List op_t)
+theorem foldChain_of_canon (l a b p : concrete_st α) (F : List (op_t α))
     (hcm : CanonMatch F p)
-    (k r e_k a_k : ℕ) (p_k : List ℕ)
+    (k r : ℕ) (e_k : α) (a_k : ℕ) (p_k : List ℕ)
     (hins : (k, r, .Ins e_k p_k a_k) ∈ F)
     (hsv : survP F k)
     (hbridge : CanonBirthBridge l F (birthAnc l a b k) (a_k :: p_k)) :

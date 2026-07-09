@@ -32,6 +32,8 @@ open Classical
 
 namespace Sal.ConditionedMRDTs.RGASkeleton3
 
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.GoodConfig3H
@@ -44,32 +46,32 @@ honest-execution residual `hHon` (the join context at reachable cores) and `hBA`
 (born-applicable delivery). -/
 theorem rga_RA_linearizable_final
     (hHon : ∀ {C₀ : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)},
-      (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)},
+      (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
         (Sal.ConditionedMRDTs.initConfig
-          (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C₀ →
+          (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C₀ →
       rgaHonJ (Sal.ConditionedMRDTs.Configuration.core C₀).vis
         (Sal.ConditionedMRDTs.Configuration.core C₀).events)
     (hBA : ∀ {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)}
-      {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t}
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}
+      {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
       {v : Sal.ConditionedMRDTs.Version}
-      {sh : QState RGACondSig' rgaEqEquiv'} {evh : Set (Op app_op_t)},
-      (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
+      {sh : QState (RGACondSig' α) (rgaEqEquiv' α)} {evh : Set (Op (app_op_t α))},
+      (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
         (Sal.ConditionedMRDTs.initConfig
-          (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C₀ →
-      Sal.ConditionedMRDTs.Step3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
+          (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C₀ →
+      Sal.ConditionedMRDTs.Step3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
         C₀ (Sal.ConditionedMRDTs.Label3.apply t r o) C₁ →
       C₀.head r = some v → C₀.ver v = some (sh, evh) →
-      qapplicable rgaEqEquiv' WfOpA rgaInvInvVCA (t, r, o) sh ∧
-        (∀ s', RGACondSig'.applicable (t, r, o) s' → WfOpA (t, r, o) s'))
+      qapplicable (rgaEqEquiv' α) WfOpA rgaInvInvVCA (t, r, o) sh ∧
+        (∀ s', (RGACondSig' α).applicable (t, r, o) s' → WfOpA (t, r, o) s'))
     (C : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA))
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA))
     (hReach : (labeledTS3
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
       (Sal.ConditionedMRDTs.initConfig
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C) :
-    IsRALinearizable3Eq rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA C :=
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C) :
+    IsRALinearizable3Eq (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA C :=
   rga_RA_linearizable_skeleton3 rgaHonJ
     (fun hreach => hHon hreach)
     rga_hEnum_discharged

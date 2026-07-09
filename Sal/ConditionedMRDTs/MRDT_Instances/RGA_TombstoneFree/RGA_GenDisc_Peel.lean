@@ -28,10 +28,12 @@ This file proves the bounded bricks of that design:
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig rc_is_Either)
@@ -57,11 +59,11 @@ theorem not_appliesDependsOn_iff (D : ConditionedMRDTSig) (o z : Op D.AppOp) :
 /-- **A non-dependency past-op is pointwise invisible to `o`'s applicability.**  If `z` is
 causally below `o` but carries no `loOnA` edge into `o`, then `¬ appliesDependsOn o z` — the
 `vis ∧ appliesDependsOn` arm of `loOnA` is exactly what would catch it. -/
-theorem nondep_not_appliesDependsOn (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev : Set op_t) (o z : op_t)
+theorem nondep_not_appliesDependsOn (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev : Set (op_t α)) (o z : op_t α)
     (hvis : Cfg.vis z o)
-    (hnlo : ¬ loOnA RGACondSig Cfg ev z o) :
-    ¬ appliesDependsOn RGACondSig o z :=
+    (hnlo : ¬ loOnA (RGACondSig α) Cfg ev z o) :
+    ¬ appliesDependsOn (RGACondSig α) o z :=
   fun hdep => hnlo (Or.inr ⟨hvis, hdep⟩)
 
 /-! ## §2  The peel -/
@@ -69,29 +71,29 @@ theorem nondep_not_appliesDependsOn (Cfg : Sal.Emulation.Configuration RGACondSi
 /-- **The pointwise peel.**  Appending ops that are pointwise invisible to `o`'s applicability
 leaves it unchanged — peeled one at a time from the right, each step an instance of the pointwise
 fact at the current fold state; NO other property of the state is used. -/
-theorem applicable_peel_suffix (o : op_t) (Z : List op_t)
-    (hinv : ∀ z ∈ Z, ¬ appliesDependsOn RGACondSig o z) :
-    ∀ s : concrete_st,
-      RGACondSig.applicable o (applySeqR s Z) = RGACondSig.applicable o s := by
+theorem applicable_peel_suffix (o : op_t α) (Z : List (op_t α))
+    (hinv : ∀ z ∈ Z, ¬ appliesDependsOn (RGACondSig α) o z) :
+    ∀ s : concrete_st α,
+      (RGACondSig α).applicable o (applySeqR s Z) = (RGACondSig α).applicable o s := by
   induction Z with
   | nil => intro s; rfl
   | cons z rest ih =>
     intro s
-    have hz : RGACondSig.applicable o (RGACondSig.update s z) = RGACondSig.applicable o s :=
-      ((not_appliesDependsOn_iff RGACondSig o z).mp (hinv z (by simp)) s).symm
+    have hz : (RGACondSig α).applicable o ((RGACondSig α).update s z) = (RGACondSig α).applicable o s :=
+      ((not_appliesDependsOn_iff (RGACondSig α) o z).mp (hinv z (by simp)) s).symm
     have hrest := ih (fun z' hz' => hinv z' (by simp [hz'])) (do_ s z)
-    calc RGACondSig.applicable o (applySeqR s (z :: rest))
-        = RGACondSig.applicable o (applySeqR (do_ s z) rest) := by rw [applySeqR_cons]
-      _ = RGACondSig.applicable o (do_ s z) := hrest
-      _ = RGACondSig.applicable o s := hz
+    calc (RGACondSig α).applicable o (applySeqR s (z :: rest))
+        = (RGACondSig α).applicable o (applySeqR (do_ s z) rest) := by rw [applySeqR_cons]
+      _ = (RGACondSig α).applicable o (do_ s z) := hrest
+      _ = (RGACondSig α).applicable o s := hz
 
 /-! ## §3  `loOnA` is ambient-set-free for the RGA -/
 
 /-- For the RGA, `loOnC` does not depend on the ambient event set: the only set-dependent clause
 (the concurrent-arm absorber) sits under `rc = Fst_then_snd`, which `rc = Either` refutes. -/
-theorem loOnC_ev_free (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev ev' : Set op_t) (e₁ e₂ : op_t) :
-    loOnC RGACondSig Cfg ev e₁ e₂ ↔ loOnC RGACondSig Cfg ev' e₁ e₂ := by
+theorem loOnC_ev_free (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev ev' : Set (op_t α)) (e₁ e₂ : op_t α) :
+    loOnC (RGACondSig α) Cfg ev e₁ e₂ ↔ loOnC (RGACondSig α) Cfg ev' e₁ e₂ := by
   constructor <;>
   · rintro (h | ⟨_, _, hrc, _⟩)
     · exact Or.inl h
@@ -99,9 +101,9 @@ theorem loOnC_ev_free (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
       exact absurd hrc (fun h => Sal.Emulation.RcRes.noConfusion h)
 
 /-- For the RGA, `loOnA` does not depend on the ambient event set. -/
-theorem loOnA_ev_free (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev ev' : Set op_t) (e₁ e₂ : op_t) :
-    loOnA RGACondSig Cfg ev e₁ e₂ ↔ loOnA RGACondSig Cfg ev' e₁ e₂ := by
+theorem loOnA_ev_free (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev ev' : Set (op_t α)) (e₁ e₂ : op_t α) :
+    loOnA (RGACondSig α) Cfg ev e₁ e₂ ↔ loOnA (RGACondSig α) Cfg ev' e₁ e₂ := by
   constructor <;>
   · rintro (h | h)
     · exact Or.inl ((loOnC_ev_free Cfg _ _ e₁ e₂).mp h)
@@ -110,26 +112,26 @@ theorem loOnA_ev_free (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 /-! ## §4  The causal past is a `GoodEnum` domain -/
 
 /-- The causal past of `o` within `E`. -/
-def pastE (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (o : op_t) : Set op_t :=
+def pastE (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (o : op_t α) : Set (op_t α) :=
   {z | z ∈ E ∧ Cfg.vis z o}
 
 /-- **The causal past is `loOnA`-predecessor-closed in `E`**: an `loOnA`-predecessor is a `vis`
 predecessor, and `vis` is transitive.  Hence any `loOnA`-respecting enumeration of `pastE` is a
 `GoodEnum` at `E` verbatim — the engine applies to past enumerations with no relativization. -/
-theorem pastE_loOnA_closed (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (o : op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (x : op_t) (hx : x ∈ pastE Cfg E o) (z : op_t) (hz : z ∈ E)
-    (hlo : loOnA RGACondSig Cfg E z x) : z ∈ pastE Cfg E o :=
+theorem pastE_loOnA_closed (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (o : op_t α)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (x : op_t α) (hx : x ∈ pastE Cfg E o) (z : op_t α) (hz : z ∈ E)
+    (hlo : loOnA (RGACondSig α) Cfg E z x) : z ∈ pastE Cfg E o :=
   ⟨hz, htr (loOnA_imp_vis Cfg E z x hlo) hx.2⟩
 
 /-- A `loOnA`-respecting enumeration of the causal past is a `GoodEnum` at `E`. -/
-theorem goodEnum_of_past_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (o : op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (π : List op_t) (hπp : listPermOf π (pastE Cfg E o))
-    (hπr : respects π (loOnA RGACondSig Cfg E)) :
+theorem goodEnum_of_past_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (o : op_t α)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (π : List (op_t α)) (hπp : listPermOf π (pastE Cfg E o))
+    (hπr : respects π (loOnA (RGACondSig α) Cfg E)) :
     GoodEnum Cfg E π := by
   refine ⟨fun x hx => ((hπp.2 x).mp hx).1, hπp.1, hπr, ?_⟩
   intro x hx z hz _hzx hlo
@@ -137,10 +139,10 @@ theorem goodEnum_of_past_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
 
 /-- The dependency set sits inside the causal past: a transitive dependency of `o` is a causal
 predecessor of `o` lying in `E`. -/
-theorem depC_mem_pastE (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (o : op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (z : op_t) (h : DepC Cfg E z o) : z ∈ pastE Cfg E o :=
+theorem depC_mem_pastE (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (o : op_t α)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (z : op_t α) (h : DepC Cfg E z o) : z ∈ pastE Cfg E o :=
   ⟨depC_src_mem Cfg E z o h, depC_imp_vis Cfg E htr z o h⟩
 
 /-! ## §5  Relativization — dependency structure restricts to a closed subset
@@ -152,10 +154,10 @@ and `E'` on `E'`-targets. -/
 
 /-- A dependency chain into a member of an `loOnA`-pred-closed subset stays in the subset:
 `DepC` at `E` into `w ∈ E'` implies `DepC` at `E'`. -/
-theorem depC_restrict (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E E' : Set op_t) (hsub : ∀ x ∈ E', x ∈ E)
-    (hcl : ∀ x ∈ E', ∀ z ∈ E, loOnA RGACondSig Cfg E z x → z ∈ E')
-    (z w : op_t) (hw : w ∈ E') (h : DepC Cfg E z w) : DepC Cfg E' z w := by
+theorem depC_restrict (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E E' : Set (op_t α)) (hsub : ∀ x ∈ E', x ∈ E)
+    (hcl : ∀ x ∈ E', ∀ z ∈ E, loOnA (RGACondSig α) Cfg E z x → z ∈ E')
+    (z w : op_t α) (hw : w ∈ E') (h : DepC Cfg E z w) : DepC Cfg E' z w := by
   induction h using Relation.TransGen.head_induction_on with
   | single hzw =>
     rename_i z'
@@ -173,9 +175,9 @@ theorem depC_restrict (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
       ihc
 
 /-- `DepC` at a subset is `DepC` at the ambient set (membership weakening). -/
-theorem depC_mono_ev (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E E' : Set op_t) (hsub : ∀ x ∈ E', x ∈ E)
-    (z w : op_t) (h : DepC Cfg E' z w) : DepC Cfg E z w := by
+theorem depC_mono_ev (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E E' : Set (op_t α)) (hsub : ∀ x ∈ E', x ∈ E)
+    (z w : op_t α) (h : DepC Cfg E' z w) : DepC Cfg E z w := by
   induction h with
   | single hzw => exact Relation.TransGen.single ⟨hsub _ hzw.1, (loOnA_ev_free Cfg E' E _ _).mp hzw.2⟩
   | tail _ hbc ih =>
@@ -184,10 +186,10 @@ theorem depC_mono_ev (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 /-- **`IsDepPreC` transports from a closed subset to the ambient set**: an `E'`-dependency prefix
 of `o ∈ E'` is an `E`-dependency prefix — completeness holds because an `E`-dependency chain into
 `o` stays inside `E'` (`depC_restrict`). -/
-theorem isDepPreC_of_restrict (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E E' : Set op_t) (hsub : ∀ x ∈ E', x ∈ E)
-    (hcl : ∀ x ∈ E', ∀ z ∈ E, loOnA RGACondSig Cfg E z x → z ∈ E')
-    (o : op_t) (ho : o ∈ E') (d : List op_t)
+theorem isDepPreC_of_restrict (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E E' : Set (op_t α)) (hsub : ∀ x ∈ E', x ∈ E)
+    (hcl : ∀ x ∈ E', ∀ z ∈ E, loOnA (RGACondSig α) Cfg E z x → z ∈ E')
+    (o : op_t α) (ho : o ∈ E') (d : List (op_t α))
     (h : IsDepPreC Cfg E' o d) : IsDepPreC Cfg E o d := by
   obtain ⟨hmem, hnd, hresp, hcomp, hsound⟩ := h
   refine ⟨fun x hx => hsub x (hmem x hx), hnd,

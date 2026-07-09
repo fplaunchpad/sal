@@ -18,9 +18,9 @@ shape.
 **The `Inv` the framework's subtype needs is `qInv = wf ∧ root-free ∧ id_mono`,
 NOT `RgaInv`.**  `CongVC.mergeL_congr` (`RGA_MergeCong.merge_eq_congr_inv`) and
 `InvPres.inv_mergeL` (`Inv_merge` + `id_mono_merge`) both consume `id_mono`, which
-`RgaInv` does not carry.  So the hosting signature here is `RGACondSig'`, a copy of
-`RGASig.RGACondSig` with `Inv := qInv`.  Its `toMRDTSig` is *the same* `RGAM`, so
-`update = do_`, `mergeL = merge`, `init = init_st`, and every `RGACondSig`-stated
+`RgaInv` does not carry.  So the hosting signature here is `(RGACondSig' α)`, a copy of
+`(RGASig.RGACondSig α)` with `Inv := qInv`.  Its `toMRDTSig` is *the same* `RGAM`, so
+`update = do_`, `mergeL = merge`, `init = (init_st (α := α))`, and every `RGACondSig`-stated
 fact (notably `rga_wfOpReachable`) transports definitionally.
 
 What assembles cleanly (this file, 0 sorries): `EqEquiv`, the FULL `CongVC` (all
@@ -29,41 +29,45 @@ three fields), the FULL `InvInvVC` (`wf_congr` for `WfOp` + `applicable_congr`),
 residuals are pinned precisely in §5-§6 and threaded into the capstone.
 -/
 
+set_option linter.unusedSectionVars false
+
 namespace Sal.ConditionedMRDTs.RGAInstance
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
 
-/-! ## §1. The hosting signature `RGACondSig'` (`Inv := qInv`). -/
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
+/-! ## §1. The hosting signature `(RGACondSig' α)` (`Inv := qInv`). -/
 
 /-- The RGA as a `ConditionedMRDTSig` whose `Inv` is the framework-required
 `qInv = wf ∧ root-free ∧ id_mono` (the fields' order matches
-`RGA_MergeCong.merge_eq_congr_inv`).  Same `toMRDTSig` as `RGASig.RGACondSig`. -/
-noncomputable def RGACondSig' : ConditionedMRDTSig where
-  toMRDTSig := RGASig.RGAM
+`RGA_MergeCong.merge_eq_congr_inv`).  Same `toMRDTSig` as `(RGASig.RGACondSig α)`. -/
+noncomputable def RGACondSig' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : ConditionedMRDTSig where
+  toMRDTSig := RGASig.RGAM α
   Inv := fun s => wf s ∧ contains s 0 = false ∧ id_mono s
   applicable := fun o s => accurate o s ∧ fresh_ts o s
 
-@[simp] theorem RGACondSig'_update (s : concrete_st) (o : op_t) :
-    RGACondSig'.update s o = do_ s o := rfl
+@[simp] theorem RGACondSig'_update (s : concrete_st α) (o : op_t α) :
+    (RGACondSig' α).update s o = do_ s o := rfl
 
-@[simp] theorem RGACondSig'_mergeL (l a b : concrete_st) :
-    RGACondSig'.mergeL l a b = merge l a b := rfl
+@[simp] theorem RGACondSig'_mergeL (l a b : concrete_st α) :
+    (RGACondSig' α).mergeL l a b = merge l a b := rfl
 
-@[simp] theorem RGACondSig'_init : RGACondSig'.init = init_st := rfl
+@[simp] theorem RGACondSig'_init : (RGACondSig' α).init = (init_st (α := α)) := rfl
 
 /-! ## §2. `EqEquiv` — the observational `eq`. -/
 
-/-- `EqEquiv RGACondSig'` — the RGA's `eq` with its equivalence proof. -/
-def rgaEqEquiv' : EqEquiv RGACondSig' where
+/-- `EqEquiv (RGACondSig' α)` — the RGA's `eq` with its equivalence proof. -/
+def rgaEqEquiv' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : EqEquiv (RGACondSig' α) where
   eqv := eq
   equiv := RGAEqQuotient.eq_equiv
 
 /-! ## §3. `CongVC` — all three congruence fields. -/
 
-/-- `CongVC RGACondSig' rgaEqEquiv'` — `update` (`do_eq_congr`), `mergeL`
+/-- `CongVC (RGACondSig' α) (rgaEqEquiv' α)` — `update` (`do_eq_congr`), `mergeL`
 (`merge_eq_congr_inv`, consuming `qInv`'s `id_mono`), `query` (`Unit`). -/
-def rgaCongVC' : CongVC RGACondSig' rgaEqEquiv' where
+def rgaCongVC' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : CongVC (RGACondSig' α) (rgaEqEquiv' α) where
   update_congr := by
     intro o s s' _ _ h
     exact RGAConditionedConvergence.do_eq_congr s s' h o
@@ -75,11 +79,11 @@ def rgaCongVC' : CongVC RGACondSig' rgaEqEquiv' where
 
 /-! ## §4. `InvInvVC` — `WfOp` and `applicable` are `≈`-invariant. -/
 
-/-- `InvInvVC RGACondSig' rgaEqEquiv' WfOp`.  `wf_congr`: `WfOp`'s `Ins` conjunct
+/-- `InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOp`.  `wf_congr`: `WfOp`'s `Ins` conjunct
 is `fresh_ts` (contains-driven), its `Del` conjunct `resolve · pre ≠ x` is
 `resolve`-driven; both descend through `eq` (`resolve_dom_eq`).
 `applicable_congr`: `accurate ∧ fresh_ts` (`RGA_EqQuotient` §3). -/
-def rgaInvInvVC' : InvInvVC RGACondSig' rgaEqEquiv' WfOp where
+def rgaInvInvVC' : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOp where
   wf_congr := by
     intro o s s' _ _ h
     obtain ⟨t, r, ao⟩ := o
@@ -107,18 +111,18 @@ very reason `Inv` must be `qInv`, not `RgaInv`.
 contains s t = false`, on `Del` just `resolve s pre ≠ x`).  `mono_alloc` is not
 order-respecting-stable (a fold may apply a large-id `Ins` then a small-id one),
 so it is a merge-fold reachability oracle, not a `W`-level fact.  Hence a full
-`InvPres RGACondSig' WfOp` cannot be assembled here; it is threaded as a
+`InvPres (RGACondSig' α) WfOp` cannot be assembled here; it is threaded as a
 hypothesis into the capstone (§8).  See the final report. -/
 
 /-- `inv_init` for `qInv`: `Inv_init` (root-free + wf) plus `id_mono_init`. -/
-theorem rga_inv_init' : RGACondSig'.Inv RGACondSig'.init :=
+theorem rga_inv_init' : (RGACondSig' α).Inv (RGACondSig' α).init :=
   ⟨Inv_init.2, Inv_init.1, id_mono_init⟩
 
 /-- `inv_mergeL` for `qInv`: `Inv_merge` (wf + root-free, under `id_mono l`) and
 `id_mono_merge` (under all three `id_mono`s). Both premises are in `qInv`. -/
-theorem rga_inv_mergeL' (l a b : concrete_st)
-    (hl : RGACondSig'.Inv l) (ha : RGACondSig'.Inv a) (hb : RGACondSig'.Inv b) :
-    RGACondSig'.Inv (RGACondSig'.mergeL l a b) := by
+theorem rga_inv_mergeL' (l a b : concrete_st α)
+    (hl : (RGACondSig' α).Inv l) (ha : (RGACondSig' α).Inv a) (hb : (RGACondSig' α).Inv b) :
+    (RGACondSig' α).Inv ((RGACondSig' α).mergeL l a b) := by
   have Rl : RgaInv l := ⟨hl.2.1, hl.1⟩
   have Ra : RgaInv a := ⟨ha.2.1, ha.1⟩
   have Rb : RgaInv b := ⟨hb.2.1, hb.1⟩
@@ -129,15 +133,15 @@ theorem rga_inv_mergeL' (l a b : concrete_st)
 
 /-! ## §6. `WfOpReachable` — transported from the `RGACondSig` proof.
 
-`RGACondSig'.toMRDTSig = RGACondSig.toMRDTSig = RGAM`, so `init`/`update`/`AppOp`
+`(RGACondSig' α).toMRDTSig = RGACondSig.toMRDTSig = RGAM`, so `init`/`update`/`AppOp`
 coincide and `WfOpReachable` (which reads only those, via `WfChain`) is the same
 proposition for both signatures. `rga_wfOpReachable` transports definitionally. -/
 
 /-- `WfChain` reads only `toMRDTSig` (`init`/`update`), so it agrees between
-`RGACondSig'` and `RGACondSig` — but with an abstract list both are stuck, so this
+`(RGACondSig' α)` and `RGACondSig` — but with an abstract list both are stuck, so this
 one-line induction is needed to make the transport explicit. -/
-theorem wfChain_transport (s : concrete_st) (ρ : List op_t) :
-    WfChain RGACondSig' WfOp s ρ = WfChain RGASig.RGACondSig WfOp s ρ := by
+theorem wfChain_transport (s : concrete_st α) (ρ : List (op_t α)) :
+    WfChain (RGACondSig' α) WfOp s ρ = WfChain (RGASig.RGACondSig α) WfOp s ρ := by
   induction ρ generalizing s with
   | nil => rfl
   | cons o ρ ih =>
@@ -151,10 +155,12 @@ namespace Sal.ConditionedMRDTs.RGAOrderBridge
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGAInstance (RGACondSig')
 
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 /-- `rc` is `Either` on every pair — for the primed hosting signature too.
 (Relocated from `RGA_OrderBridge.lean` when the swap route retired; the full
 name is unchanged.) -/
-theorem rc_is_Either' (o₁ o₂ : Op app_op_t) :
-    RGACondSig'.rc o₁ o₂ = RcRes.Either := rfl
+theorem rc_is_Either' (o₁ o₂ : Op (app_op_t α)) :
+    (RGACondSig' α).rc o₁ o₂ = RcRes.Either := rfl
 
 end Sal.ConditionedMRDTs.RGAOrderBridge

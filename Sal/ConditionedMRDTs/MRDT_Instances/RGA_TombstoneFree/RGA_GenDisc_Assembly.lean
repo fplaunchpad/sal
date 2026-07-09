@@ -24,14 +24,16 @@ filtering the finite listing of `E`).  The step, for `o` with dependency prefix 
 3. `RGA_update_convergence_canon`: the two folds are observationally equal.
 4. `accurate_eq_iff`/`fresh_ts_eq_iff` transport `o`'s applicability across.
 5. `applicable_peel_suffix` peels the pointwise-invisible `N` off the end: `o` is applicable —
-   in particular accurate — at `applySeqR init_st d`.  ∎
+   in particular accurate — at `applySeqR (init_st (α := α)) d`.  ∎
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
@@ -43,17 +45,17 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK
 /-! ## §1  The measure -/
 
 /-- The size of `o`'s causal past, measured through the finite listing of `E`. -/
-noncomputable def msr (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (lE : List op_t) (o : op_t) : ℕ :=
+noncomputable def msr (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (lE : List (op_t α)) (o : op_t α) : ℕ :=
   (lE.filter (fun z => decide (z ∈ pastE Cfg E o))).length
 
 /-- **The measure strictly decreases into the past**: for `z ∈ pastE o`, `pastE z ⊆ pastE o`
 (transitivity) while `z` itself is in the difference (irreflexivity). -/
-theorem msr_lt_of_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (lE : List op_t) (hlE : listPermOf lE E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (o z : op_t) (hz : z ∈ pastE Cfg E o) :
+theorem msr_lt_of_mem (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (lE : List (op_t α)) (hlE : listPermOf lE E)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (o z : op_t α) (hz : z ∈ pastE Cfg E o) :
     msr Cfg E lE z < msr Cfg E lE o := by
   have hsub : (z :: lE.filter (fun x => decide (x ∈ pastE Cfg E z)))
       ⊆ lE.filter (fun x => decide (x ∈ pastE Cfg E o)) := by
@@ -76,20 +78,20 @@ theorem msr_lt_of_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 
 /-- `o`'s own id is fresh at the fold of any enumeration of its causal past: the past cannot
 contain an insert with `o`'s id (id-uniqueness, and `o` is not in its own past). -/
-theorem fresh_at_past_fold (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem fresh_at_past_fold (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ x ∈ E, x.1 ≠ 0)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (o : op_t) (hoE : o ∈ E) (π : List op_t)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (o : op_t α) (hoE : o ∈ E) (π : List (op_t α))
     (hπp : listPermOf π (pastE Cfg E o)) :
-    fresh_ts o (applySeqR init_st π) := by
+    fresh_ts o (applySeqR (init_st (α := α)) π) := by
   obtain ⟨t, r, op⟩ := o
   cases op with
   | Del p x => trivial
   | Ins e p a =>
     refine ⟨hids0 (t, r, app_op_t.Ins e p a) hoE, ?_⟩
-    cases hb : contains (applySeqR init_st π) t with
+    cases hb : contains (applySeqR (init_st (α := α)) π) t with
     | false => rfl
     | true =>
       obtain ⟨r', e', p', a', hm⟩ := insertedIn_of_contains_fold π t hb
@@ -104,16 +106,16 @@ theorem fresh_at_past_fold (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTS
 /-! ## §3  The strong induction -/
 
 /-- The workhorse: dependency-fold accuracy for every event whose past is smaller than `n`. -/
-theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (lE : List op_t) (hlE : listPermOf lE E)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (lE : List (op_t α)) (hlE : listPermOf lE E)
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ x ∈ E, x.1 ≠ 0)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
     (hborn : ∀ o ∈ E, ∃ π, listPermOf π (pastE Cfg E o) ∧
-        respects π (loOnA RGACondSig Cfg E) ∧ accurate o (applySeqR init_st π)) :
-    ∀ (n : ℕ) (o : op_t), o ∈ E → msr Cfg E lE o < n →
-      ∀ d, IsDepPreC Cfg E o d → accurate o (applySeqR init_st d) := by
+        respects π (loOnA (RGACondSig α) Cfg E) ∧ accurate o (applySeqR (init_st (α := α)) π)) :
+    ∀ (n : ℕ) (o : op_t α), o ∈ E → msr Cfg E lE o < n →
+      ∀ d, IsDepPreC Cfg E o d → accurate o (applySeqR (init_st (α := α)) d) := by
   intro n
   induction n with
   | zero => intro o _ h; exact absurd h (Nat.not_lt_zero _)
@@ -130,7 +132,7 @@ theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
         (lt_of_lt_of_le (msr_lt_of_mem Cfg E lE hlE htr hirr o o' ho')
           (Nat.lt_succ_iff.mp hlt)) d' hd'E
     -- restricted execution facts
-    have hdtsP : ∀ a b : op_t, a ∈ pastE Cfg E o → b ∈ pastE Cfg E o → a ≠ b → a.1 ≠ b.1 :=
+    have hdtsP : ∀ a b : op_t α, a ∈ pastE Cfg E o → b ∈ pastE Cfg E o → a ≠ b → a.1 ≠ b.1 :=
       fun a b ha hb => hdts a b ha.1 hb.1
     have hids0P : ∀ x ∈ pastE Cfg E o, x.1 ≠ 0 := fun x hx => hids0 x hx.1
     -- the dependency prefix sits inside the past
@@ -167,9 +169,9 @@ theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
           · exact Or.inl hxd
           · exact Or.inr ((hNmem x).mpr ⟨hx, hxd⟩)
     -- W respects loOnA at E: cross edges N → d would make the source a dependency
-    have hNrE : respects N (loOnA RGACondSig Cfg E) :=
+    have hNrE : respects N (loOnA (RGACondSig α) Cfg E) :=
       List.Pairwise.imp (fun hn hl => hn ((loOnA_ev_free Cfg E _ _ _).mp hl)) hNr
-    have hWr : respects (d ++ N) (loOnA RGACondSig Cfg E) := by
+    have hWr : respects (d ++ N) (loOnA (RGACondSig α) Cfg E) := by
       refine List.pairwise_append.mpr ⟨hdresp, hNrE, ?_⟩
       intro a ha b hb hlo
       have hbP : b ∈ pastE Cfg E o := ((hNmem b).mp hb).1
@@ -178,27 +180,27 @@ theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
       have hbo : b ≠ o := fun heq => hirr o (heq ▸ hbP.2)
       exact ((hNmem b).mp hb).2 (hdcomp b hbP.1 hbo hdep)
     -- respects transported to the past set (ev-free), GoodEnums, discipline
-    have hπrP : respects π₀ (loOnA RGACondSig Cfg (pastE Cfg E o)) :=
+    have hπrP : respects π₀ (loOnA (RGACondSig α) Cfg (pastE Cfg E o)) :=
       List.Pairwise.imp (fun hn hl => hn ((loOnA_ev_free Cfg (pastE Cfg E o) E _ _).mp hl)) hπr
-    have hWrP : respects (d ++ N) (loOnA RGACondSig Cfg (pastE Cfg E o)) :=
+    have hWrP : respects (d ++ N) (loOnA (RGACondSig α) Cfg (pastE Cfg E o)) :=
       List.Pairwise.imp (fun hn hl => hn ((loOnA_ev_free Cfg (pastE Cfg E o) E _ _).mp hl)) hWr
-    have hOKπ : CanonFoldOK [] init_st π₀ :=
+    have hOKπ : CanonFoldOK [] (init_st (α := α)) π₀ :=
       canonFoldOK_of_gen Cfg (pastE Cfg E o) hdtsP hids0P hGenP π₀.length π₀ le_rfl
         (goodEnum_of_perm Cfg (pastE Cfg E o) π₀ hπp hπrP)
-    have hOKW : CanonFoldOK [] init_st (d ++ N) :=
+    have hOKW : CanonFoldOK [] (init_st (α := α)) (d ++ N) :=
       canonFoldOK_of_gen Cfg (pastE Cfg E o) hdtsP hids0P hGenP (d ++ N).length _ le_rfl
         (goodEnum_of_perm Cfg (pastE Cfg E o) (d ++ N) hWp hWrP)
     -- the two past folds converge
-    have heqf : eq (applySeqR init_st π₀) (applySeqR init_st (d ++ N)) :=
+    have heqf : eq (applySeqR (init_st (α := α)) π₀) (applySeqR (init_st (α := α)) (d ++ N)) :=
       RGA_update_convergence_canon π₀ (d ++ N)
         (fun x => (hπp.2 x).trans (hWp.2 x).symm) hOKπ hOKW
     -- o applicable at the born fold; transport; peel
-    have happπ : RGACondSig.applicable o (applySeqR init_st π₀) :=
+    have happπ : (RGACondSig α).applicable o (applySeqR (init_st (α := α)) π₀) :=
       ⟨hacc, fresh_at_past_fold Cfg E hdts hids0 hirr o hoE π₀ hπp⟩
-    have happW : RGACondSig.applicable o (applySeqR init_st (d ++ N)) :=
+    have happW : (RGACondSig α).applicable o (applySeqR (init_st (α := α)) (d ++ N)) :=
       ⟨(Sal.ConditionedMRDTs.RGAEqQuotient.accurate_eq_iff o heqf).mp happπ.1,
        (Sal.ConditionedMRDTs.RGAEqQuotient.fresh_ts_eq_iff o heqf).mp happπ.2⟩
-    have hinv : ∀ z ∈ N, ¬ appliesDependsOn RGACondSig o z := by
+    have hinv : ∀ z ∈ N, ¬ appliesDependsOn (RGACondSig α) o z := by
       intro z hz
       have hzP : z ∈ pastE Cfg E o := ((hNmem z).mp hz).1
       refine nondep_not_appliesDependsOn Cfg E o z hzP.2 ?_
@@ -206,23 +208,23 @@ theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
       have hzo : z ≠ o := fun heq => hirr o (heq ▸ hzP.2)
       exact ((hNmem z).mp hz).2
         (hdcomp z hzP.1 hzo (Relation.TransGen.single ⟨hzP.1, hlo⟩))
-    have hsplit : applySeqR init_st (d ++ N) = applySeqR (applySeqR init_st d) N := by
+    have hsplit : applySeqR (init_st (α := α)) (d ++ N) = applySeqR (applySeqR (init_st (α := α)) d) N := by
       simp only [applySeqR, List.foldl_append]
-    have hpeel := applicable_peel_suffix o N hinv (applySeqR init_st d)
+    have hpeel := applicable_peel_suffix o N hinv (applySeqR (init_st (α := α)) d)
     rw [hsplit, hpeel] at happW
     exact happW.1
 
 /-- **GenDisc2C from born accuracy** — task #32's discharge.  Each event accurate at the fold of
 SOME causally-ordered enumeration of its full past (the honest generation content) ⟹ accurate at
 the fold of EVERY enumeration of its transitive dependencies. -/
-theorem genDisc2C_of_born (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (lE : List op_t) (hlE : listPermOf lE E)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem genDisc2C_of_born (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (lE : List (op_t α)) (hlE : listPermOf lE E)
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ x ∈ E, x.1 ≠ 0)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
     (hborn : ∀ o ∈ E, ∃ π, listPermOf π (pastE Cfg E o) ∧
-        respects π (loOnA RGACondSig Cfg E) ∧ accurate o (applySeqR init_st π)) :
+        respects π (loOnA (RGACondSig α) Cfg E) ∧ accurate o (applySeqR (init_st (α := α)) π)) :
     GenDisc2C Cfg E :=
   fun o hoE d hd =>
     genDisc2C_of_born_aux Cfg E lE hlE hdts hids0 htr hirr hborn

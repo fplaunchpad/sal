@@ -27,10 +27,12 @@ discipline (`GenDisc2C`, discharged from born accuracy) makes `t`'s ENTIRE recor
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
@@ -42,7 +44,7 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK
 /-! ## §1  Chain surgery -/
 
 /-- Every entry of a genuine ancestor chain is live. -/
-theorem isAncPath_live (s : concrete_st) :
+theorem isAncPath_live (s : concrete_st α) :
     ∀ (L : List ℕ) (x : ℕ), IsAncPath s x L → ∀ c ∈ L, contains s c = true := by
   intro L
   induction L with
@@ -54,7 +56,7 @@ theorem isAncPath_live (s : concrete_st) :
     · exact ih q h.2.2 c hc
 
 /-- The suffix of a genuine chain after any entry is that entry's genuine chain. -/
-theorem isAncPath_suffix (s : concrete_st) :
+theorem isAncPath_suffix (s : concrete_st α) :
     ∀ (l₁ l₂ : List ℕ) (x y : ℕ), IsAncPath s x (l₁ ++ y :: l₂) → IsAncPath s y l₂ := by
   intro l₁
   induction l₁ with
@@ -62,7 +64,7 @@ theorem isAncPath_suffix (s : concrete_st) :
   | cons q l₁' ih => intro l₂ x y h; exact ih l₂ q y h.2.2
 
 /-- **`canonAnc` sees through a live-filter whose drops are `F`-dead.** -/
-theorem canonAnc_liveSub_of_deadF (F : List op_t) (s : concrete_st) :
+theorem canonAnc_liveSub_of_deadF (F : List (op_t α)) (s : concrete_st α) :
     ∀ L : List ℕ, (∀ c ∈ L, contains s c = false → ¬ survP F c) →
       canonAnc F L = canonAnc F (liveSub s L) := by
   intro L
@@ -92,12 +94,12 @@ theorem canonAnc_liveSub_of_deadF (F : List op_t) (s : concrete_st) :
 /-! ## §2  Record coherence at the dependency fold -/
 
 /-- Membership transfer: a dep of a dep is a dep. -/
-theorem depList_trans_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (w o : op_t) (hw : w ∈ depList Cfg E U o)
-    (x : op_t) (hx : x ∈ depList Cfg E U w) : x ∈ depList Cfg E U o := by
+theorem depList_trans_mem (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (w o : op_t α) (hw : w ∈ depList Cfg E U o)
+    (x : op_t α) (hx : x ∈ depList Cfg E U w) : x ∈ depList Cfg E U o := by
   obtain ⟨hwU, hwo, hwdep⟩ := mem_depList.mp hw
   obtain ⟨hxU, hxw, hxdep⟩ := mem_depList.mp hx
   have hdep : DepC Cfg E x o := Relation.TransGen.trans hxdep hwdep
@@ -109,28 +111,28 @@ theorem depList_trans_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSi
 /-- **Record coherence.**  For a delivered insert `t` with `bw ≠ 0` on its recorded chain, the
 first-`F`-survivor of the recorded suffix after `bw` equals that of `bw`'s own recorded chain —
 established at `t`'s dependency fold, where the generation discipline makes the whole chain live. -/
-theorem canonAnc_record_coherence (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem canonAnc_record_coherence (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ x ∈ E, x.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E))
-    (F : List op_t) (hFp : listPermOf F E)
-    (t r e a : ℕ) (p : List ℕ) (htE : (t, r, app_op_t.Ins e p a) ∈ E)
-    (bw rb eb ab : ℕ) (pb : List ℕ) (hbwF : (bw, rb, app_op_t.Ins eb pb ab) ∈ E)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E))
+    (F : List (op_t α)) (hFp : listPermOf F E)
+    (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ) (htE : (t, r, app_op_t.Ins e p a) ∈ E)
+    (bw rb : ℕ) (eb : α) (ab : ℕ) (pb : List ℕ) (hbwF : (bw, rb, app_op_t.Ins eb pb ab) ∈ E)
     (hbw0 : bw ≠ 0)
     (rcPre rcSuf : List ℕ) (hsplit : a :: p = rcPre ++ bw :: rcSuf) :
     canonAnc F rcSuf = canonAnc F (ab :: pb) := by
   -- t's dependency package
   set d := depList Cfg E U (t, r, app_op_t.Ins e p a) with hd
-  have hinvD : CanonInv d (applySeqR init_st d) :=
+  have hinvD : CanonInv d (applySeqR (init_st (α := α)) d) :=
     canonInv_depList_of_perm Cfg E hdts hids0 hGen htr hirr U hUp hUr _
-  have hacc : accurate (t, r, app_op_t.Ins e p a) (applySeqR init_st d) :=
+  have hacc : accurate (t, r, app_op_t.Ins e p a) (applySeqR (init_st (α := α)) d) :=
     hGen _ htE d (isDepPreC_depList_of_perm Cfg E U hUp hUr _)
-  set sD := applySeqR init_st d with hsD
+  set sD := applySeqR (init_st (α := α)) d with hsD
   -- accuracy: the whole recorded chain is live at the dep fold
   simp only [accurate, opLeaf, opPath] at hacc
   rcases hacc with ⟨ha0, hp0⟩ | ⟨hal, hpath⟩
@@ -214,30 +216,30 @@ LCA-live birth anchor `bw` on its recorded chain: `bw`'s LCA chain is the σ₀'
 own record (its LCA `LiveChain`), whose `F`-first-survivor equals the record's (Step 1: σ₀'-drops
 are LCA-deleted ⟹ `F`-dead, since an LCA op's dependencies live in BOTH branches by closure),
 which equals the recorded suffix's (`canonAnc_record_coherence`, Step 2). -/
-theorem hin_of_genDisc (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem hin_of_genDisc (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ x ∈ E, x.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E))
-    (ev₁ ev₂ : Set op_t)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E))
+    (ev₁ ev₂ : Set (op_t α))
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
     (hsubI : ∀ x ∈ ev₁ ∩ ev₂, x ∈ E)
-    (ρ₀ F : List op_t) (hρ₀p : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hFp : listPermOf F E)
-    (h₀OK : CanonFoldOK [] init_st ρ₀)
-    (t r e a : ℕ) (p : List ℕ) (htE : (t, r, app_op_t.Ins e p a) ∈ E)
+    (ρ₀ F : List (op_t α)) (hρ₀p : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hFp : listPermOf F E)
+    (h₀OK : CanonFoldOK [] (init_st (α := α)) ρ₀)
+    (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ) (htE : (t, r, app_op_t.Ins e p a) ∈ E)
     (bw : ℕ) (hbw0 : bw ≠ 0)
     (rcPre rcSuf : List ℕ) (hsplit : a :: p = rcPre ++ bw :: rcSuf)
-    (hbwσ : contains (applySeqR init_st ρ₀) bw = true) :
-    ∃ cw, IsAncPath (applySeqR init_st ρ₀) bw cw ∧
+    (hbwσ : contains (applySeqR (init_st (α := α)) ρ₀) bw = true) :
+    ∃ cw, IsAncPath (applySeqR (init_st (α := α)) ρ₀) bw cw ∧
       canonAnc F cw = canonAnc F rcSuf := by
-  set σ₀ := applySeqR init_st ρ₀ with hσ₀
+  set σ₀ := applySeqR (init_st (α := α)) ρ₀ with hσ₀
   have hinv0 : CanonInv ρ₀ σ₀ := by
-    have h := RGACanonConvergence.canon_fold ρ₀ [] init_st
+    have h := RGACanonConvergence.canon_fold ρ₀ [] (init_st (α := α))
       RGACanonConvergence.canonInv_init h₀OK
     rwa [List.nil_append] at h
   -- bw's insert in ρ₀, with its record

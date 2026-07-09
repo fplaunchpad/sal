@@ -23,12 +23,15 @@ definition (`resolve_zero_or_live`).  So `RgaInv` preservation needs only
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-- `RgaInv` is preserved by an `Ins` from **freshness alone** (only `t ≠ 0` is
 used).  This is `Inv_doIns` with the `accurate` hypothesis removed: the
 `0`-or-live fact about the stored anchor comes from `resolve_zero_or_live`, not
 from accuracy. -/
-theorem inv_doIns_fresh (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
+theorem inv_doIns_fresh (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
     (h : RgaInv s) (hfr : fresh_ts (t, r, .Ins e pre a) s) :
     RgaInv (do_ s (t, r, .Ins e pre a)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -81,7 +84,7 @@ being physically removed.  Given that, `resolve_zero_or_live` makes the target
 `0`-or-live in `s`, and `≠ x` lets it survive the deletion, so every rehomed child
 lands on a live-or-root anchor and `wf` is preserved.  This is `Inv_doDel` with
 `accurate` replaced by the strictly weaker `resolve s pre ≠ x`. -/
-theorem inv_doDel_free (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem inv_doDel_free (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (h : RgaInv s) (hRx : resolve s pre ≠ x) :
     RgaInv (do_ s (t, r, .Del pre x)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -121,7 +124,7 @@ invariant preservation (option 2).  For `Ins` it is exactly `fresh_ts`
 (`t ≠ 0 ∧ contains s t = false`; only `t ≠ 0` is actually consumed).  For `Del`
 it is the single path fact `resolve s pre ≠ x` — freshness (`= True` for `Del`)
 is NOT enough, see the finding block below. -/
-def WfOp (o : op_t) (s : concrete_st) : Prop :=
+def WfOp (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ contains s t = false
   | (_, _, .Del pre x) => resolve s pre ≠ x
@@ -129,7 +132,7 @@ def WfOp (o : op_t) (s : concrete_st) : Prop :=
 /-- **Invariant preserved on any well-formed op — accuracy irrelevant.**
 `RgaInv s → WfOp o s → RgaInv (do_ s o)`.  The `Ins` case is pure freshness; the
 `Del` case is the minimal path fact `resolve s pre ≠ x`. -/
-theorem rgaInv_doOp_fresh (s : concrete_st) (o : op_t)
+theorem rgaInv_doOp_fresh (s : concrete_st α) (o : op_t α)
     (h : RgaInv s) (hw : WfOp o s) : RgaInv (do_ s o) := by
   obtain ⟨t, r, ao⟩ := o
   cases ao with

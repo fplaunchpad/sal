@@ -423,7 +423,7 @@ theorem honCoreP_apply_inl {C C' : PCfg} {t : Timestamp} {r : Replica} {o₁ : a
         inlOp_injective heq
       have h3 := congrArg (fun z : op_t => z.2.2) heq'
       cases o₁ with
-      | Ins e p₀ a₀ => exact app_op_t.noConfusion h3
+      | Ins e p₀ a₀ => simp at h3
       | Del p₀ x₀ =>
         injection h3 with h3p h3x
         subst h3x
@@ -661,7 +661,7 @@ theorem rgaH_extend_of_fresh (t r : ℕ) (o : app_op_t) (ρ : List op_t)
         · exact Or.inr (hlift x' hins)
       · exfalso
         have hEq := List.mem_singleton.mp h
-        exact app_op_t.noConfusion (congrArg (fun z : op_t => z.2.2) hEq)
+        simp at hEq
     · -- insert payloads: old members lift; the new op's chain is accurate-live
       intro t' r' e' a' p' hm' c hc
       rcases List.mem_append.mp hm' with h | h
@@ -712,7 +712,7 @@ theorem rgaH_extend_of_fresh (t r : ℕ) (o : app_op_t) (ρ : List op_t)
         · exact Or.inr (hlift c hins)
       · exfalso
         have hEq := List.mem_singleton.mp h
-        exact app_op_t.noConfusion (congrArg (fun z : op_t => z.2.2) hEq)
+        simp at hEq
 
 /-- **The product `hHext` supply**: the product witness discipline
 `prodH rgaH` extends at every applicable product apply. `inr` ops are free

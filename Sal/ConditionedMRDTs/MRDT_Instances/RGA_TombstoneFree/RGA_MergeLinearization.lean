@@ -37,21 +37,24 @@ inherited — the needed steps are rebuilt natively.
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
 
 namespace RGAMergeLinearization
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-! ## §1  Framework: the concrete fold and `eq` plumbing -/
 
 /-- Concrete RGA fold: apply a list of ops left-to-right with `do_`. -/
-def applySeqR (s : concrete_st) (π : List op_t) : concrete_st := π.foldl do_ s
+def applySeqR (s : concrete_st α) (π : List (op_t α)) : concrete_st α := π.foldl do_ s
 
-@[simp] theorem applySeqR_nil (s : concrete_st) : applySeqR s [] = s := rfl
-@[simp] theorem applySeqR_cons (s : concrete_st) (o : op_t) (π : List op_t) :
+@[simp] theorem applySeqR_nil (s : concrete_st α) : applySeqR s [] = s := rfl
+@[simp] theorem applySeqR_cons (s : concrete_st α) (o : op_t α) (π : List (op_t α)) :
     applySeqR s (o :: π) = applySeqR (do_ s o) π := rfl
 
-theorem eq_refl (s : concrete_st) : eq s s := fun _ => ⟨rfl, fun _ => rfl⟩
+theorem eq_refl (s : concrete_st α) : eq s s := fun _ => ⟨rfl, fun _ => rfl⟩
 
-theorem eq_trans (a b c : concrete_st) (hab : eq a b) (hbc : eq b c) : eq a c := by
+theorem eq_trans (a b c : concrete_st α) (hab : eq a b) (hbc : eq b c) : eq a c := by
   intro k
   refine ⟨(hab k).1.trans (hbc k).1, ?_⟩
   intro hka
@@ -66,7 +69,7 @@ always sufficient, so the climb behaves like a value-recursive "nearest node in
 
 /-- **Fuel stability.**  Under id-monotone (`Hdec`) forest (`Hstay`) anchors, any
 fuel `≥ z` gives the canonical climb `climb_aux … z z` from a live/root node `z`. -/
-theorem climb_aux_stable (l : concrete_st)
+theorem climb_aux_stable (l : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (I : set ℕ) :
@@ -105,7 +108,7 @@ theorem climb_aux_stable (l : concrete_st)
 
 /-- **Live unfold.**  A live non-root node not in `I` climbs to the climb of its
 `anc l` parent — the value-recursive step (fuel matched by `climb_aux_stable`). -/
-theorem climb_live_unfold (l : concrete_st)
+theorem climb_live_unfold (l : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (I : set ℕ) (y : ℕ)
@@ -160,7 +163,7 @@ theorem climb_remove_ne (ancf : ℕ → ℕ) (I : set ℕ) (x y : ℕ)
 every live-in-`l` node, the climb (which only ever tests live-in-`l` nodes, or
 `0`) is unchanged.  This handles an `Ins`, which grows the stop-set by a fresh id
 not in `dom l`. -/
-theorem climb_aux_I_congr (l : concrete_st)
+theorem climb_aux_I_congr (l : concrete_st α)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (I I' : set ℕ) (hII : ∀ y, contains l y = true → I y = I' y) :
     ∀ (fuel y : ℕ), (y = 0 ∨ contains l y = true) →
@@ -190,7 +193,7 @@ theorem climb_aux_I_congr (l : concrete_st)
 /-- **Climb through the removed node.**  If the climb of `y` (under `I`) is `x`
 (a live-in-`l`, non-root node), then removing `x` from the stop-set makes the
 climb of `y` continue exactly to the climb of `x`'s `anc l` parent. -/
-theorem climb_remove_eq_result (l : concrete_st)
+theorem climb_remove_eq_result (l : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (I : set ℕ) (x : ℕ) (hxl : contains l x = true) (hx0 : x ≠ 0) :
@@ -234,18 +237,18 @@ theorem climb_remove_eq_result (l : concrete_st)
 /-! ## §3  `BranchInv`: the l-relative invariants, and merge helpers -/
 
 /-- Element of a merge (definitional projection of the `merge` map). -/
-theorem el_merge (l a b : concrete_st) (t : ℕ) :
+theorem el_merge (l a b : concrete_st α) (t : ℕ) :
     el (merge l a b) t
       = (if contains l t then el l t else if contains a t then el a t else el b t) := rfl
 
 /-- The single-sided (`b = l`) survivor set is exactly `a`'s domain. -/
-theorem survivors_single (l a : concrete_st) : survivors l a l = domain a := by
+theorem survivors_single (l a : concrete_st α) : survivors l a l = domain a := by
   funext t
   simp only [survivors, union, intersection, difference]
   cases (domain l t) <;> cases (domain a t) <;> rfl
 
 /-- `contains a k` and `domain a k` are the same Bool. -/
-theorem contains_eq_domain (a : concrete_st) (k : ℕ) : contains a k = domain a k := rfl
+theorem contains_eq_domain (a : concrete_st α) (k : ℕ) : contains a k = domain a k := rfl
 
 /-- The three **l-relative** branch invariants.  `RgaInv`/`id_mono` (state
 invariants) and `wf` are threaded separately (they are already known reachable
@@ -257,7 +260,7 @@ invariants); `BranchInv` carries only what relates a branch `a` to its LCA `l`:
   crux — merge's climb reproduces the fold's `resolve`-rehoming);
 * **I3** — an original node's branch anchor is again `0`-or-original (rehoming
   never sends an `l`-node onto a branch-new node). -/
-def BranchInv (l a : concrete_st) : Prop :=
+def BranchInv (l a : concrete_st α) : Prop :=
   (∀ k, contains l k = true → contains a k = true → el a k = el l k)
   ∧ (∀ k, contains l k = true → contains a k = true →
         climb (fun y => anc l y) (domain a) (anc l k) = anc a k)
@@ -270,7 +273,7 @@ The per-id extensional route: `merge l a l` and `a` have the same domain
 (`survivors_single`), and on each live id their element (I2) and anchor coincide —
 the original-node anchor by I4, the branch-new-node anchor by `climb_fixpoint`
 (its birth-anchor is already `0`-or-survivor by `wf a`). -/
-theorem eq_merge_single (l a : concrete_st) (hwfa : wf a) (hbi : BranchInv l a) :
+theorem eq_merge_single (l a : concrete_st α) (hwfa : wf a) (hbi : BranchInv l a) :
     eq (merge l a l) a := by
   obtain ⟨hI2, hI4, hI3⟩ := hbi
   intro k
@@ -304,13 +307,13 @@ theorem eq_merge_single (l a : concrete_st) (hwfa : wf a) (hbi : BranchInv l a) 
 
 /-! ## §5  Base case and preservation of `BranchInv` -/
 
-private theorem ne_of_lLive_lFresh {l : concrete_st} {t k : ℕ}
+private theorem ne_of_lLive_lFresh {l : concrete_st α} {t k : ℕ}
     (htnew : contains l t = false) (hlk : contains l k = true) : t ≠ k := by
   intro e'; rw [e', hlk] at htnew; exact absurd htnew (by simp)
 
 /-- **Base case.**  Every LCA is its own branch: `BranchInv l l` (under `wf l`,
 which makes each I4-climb a `climb_fixpoint`). -/
-theorem branchInv_refl (l : concrete_st) (hlwf : wf l) : BranchInv l l := by
+theorem branchInv_refl (l : concrete_st α) (hlwf : wf l) : BranchInv l l := by
   refine ⟨fun _ _ _ => rfl, ?_, fun k _ hk => hlwf k hk⟩
   intro k hlk _
   apply climb_fixpoint
@@ -322,7 +325,7 @@ theorem branchInv_refl (l : concrete_st) (hlwf : wf l) : BranchInv l l := by
 preserves `BranchInv`: an original node is untouched by the `upd`, and growing the
 stop-set by the off-forest id `t` leaves the LCA-climb unchanged
 (`climb_aux_I_congr`). -/
-theorem branchInv_doIns (l a : concrete_st) (t r e anch : ℕ) (pre : List ℕ)
+theorem branchInv_doIns (l a : concrete_st α) (t r : ℕ) (e : α) (anch : ℕ) (pre : List ℕ)
     (hlwf : wf l) (htnew_l : contains l t = false) (hbi : BranchInv l a) :
     BranchInv l (do_ a (t, r, .Ins e pre anch)) := by
   obtain ⟨hI2, hI4, hI3⟩ := hbi
@@ -366,7 +369,7 @@ theorem branchInv_doIns (l a : concrete_st) (t r e anch : ℕ) (pre : List ℕ)
     rw [hanc]; exact hI3 k hlk hak
 
 /-- Domain of a `Del`: the source domain with `x` removed. -/
-theorem domain_doDel (a : concrete_st) (t r x : ℕ) (pre : List ℕ) :
+theorem domain_doDel (a : concrete_st α) (t r x : ℕ) (pre : List ℕ) :
     domain (do_ a (t, r, .Del pre x)) = (fun z => domain a z && x != z) := by
   funext z
   have h := contains_doDel a t r x pre z
@@ -379,7 +382,7 @@ merge side the stop-set loses `x`; the LCA-climb of an original node either is
 unchanged (`climb_remove_ne`, when its result is not `x`) or continues *through*
 `x` to `anc a x` (`climb_remove_eq_result` + `climb_remove_ne`), exactly matching
 the rehoming.  A non-live target leaves live nodes untouched. -/
-theorem branchInv_doDel (l a : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem branchInv_doDel (l a : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (ha0 : contains a 0 = false) (hlwf : wf l) (hlmono : id_mono l) (hamono : id_mono a)
     (hacc : accurate (t, r, .Del pre x) a) (hbi : BranchInv l a) :
     BranchInv l (do_ a (t, r, .Del pre x)) := by
@@ -490,21 +493,21 @@ the unchanged LCA reproduces it. -/
 /-- One good branch step: an accurate/fresh/monotone `Ins` fresh to `l`, or an
 accurate `Del`.  These are exactly the premises that thread `RgaInv`, `id_mono`
 (imported invariance lemmas) and `BranchInv` (§5) in one shot. -/
-def BranchStepOK (l s : concrete_st) : op_t → Prop
+def BranchStepOK (l s : concrete_st α) : op_t α → Prop
   | (t, r, .Ins e pre a) =>
       accurate (t, r, .Ins e pre a) s ∧ fresh_ts (t, r, .Ins e pre a) s
         ∧ mono_alloc (t, r, .Ins e pre a) s ∧ contains l t = false
   | (t, r, .Del pre x)   => accurate (t, r, .Del pre x) s
 
 /-- Every step of `Ea` is good at its own prefix fold. -/
-def GoodBranchFold (l : concrete_st) : concrete_st → List op_t → Prop
+def GoodBranchFold (l : concrete_st α) : concrete_st α → List (op_t α) → Prop
   | _, []        => True
   | s, o :: rest => BranchStepOK l s o ∧ GoodBranchFold l (do_ s o) rest
 
 /-- **Threading.**  `RgaInv ∧ id_mono ∧ BranchInv l` is preserved along a good
 branch fold. -/
-theorem branchInv_triple_fold (l : concrete_st) (hlwf : wf l) (hlmono : id_mono l) :
-    ∀ (Ea : List op_t) (s : concrete_st),
+theorem branchInv_triple_fold (l : concrete_st α) (hlwf : wf l) (hlmono : id_mono l) :
+    ∀ (Ea : List (op_t α)) (s : concrete_st α),
       RgaInv s → id_mono s → BranchInv l s → GoodBranchFold l s Ea →
       RgaInv (applySeqR s Ea) ∧ id_mono (applySeqR s Ea) ∧ BranchInv l (applySeqR s Ea) := by
   intro Ea
@@ -540,7 +543,7 @@ unchanged LCA observationally reproduces the branch:
 This isolates the survival/climb-vs-`do_` coincidence (the design's core bet)
 without the two-sided interleave: merge's LCA-climb re-anchoring reproduces the
 fold's `resolve`-rehoming, pointwise per surviving id. -/
-theorem eq_merge_branch_single (l : concrete_st) (Ea : List op_t)
+theorem eq_merge_branch_single (l : concrete_st α) (Ea : List (op_t α))
     (hl : RgaInv l) (hlmono : id_mono l) (hgf : GoodBranchFold l l Ea) :
     eq (merge l (applySeqR l Ea) l) (applySeqR l Ea) := by
   obtain ⟨hl0, hlwf⟩ := hl

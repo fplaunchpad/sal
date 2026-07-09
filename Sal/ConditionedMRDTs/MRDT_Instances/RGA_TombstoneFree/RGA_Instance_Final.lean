@@ -12,16 +12,16 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
 *Additive; modifies no existing file; 0 `sorry`.*
 
 `RGA_Instance.lean` threaded TWO hypotheses into its capstone: `hP : InvPres
-RGACondSig' WfOp` (§5, unprovable at `WfOp`) and `hJoinEq` (§7, blocked on the
+(RGACondSig' α) WfOp` (§5, unprovable at `WfOp`) and `hJoinEq` (§7, blocked on the
 `loOnA`/`loOnEq` order mismatch and the merge `hin` residual).  Since then:
 `RGA_InvUpdateQ` closed the FULL `InvPres` at the strengthened guard `WfOpQ`
 (`rgaInvPresQ`, with `rga_wfOpReachableQ` at `WfOpGenQ`), `RGA_ConvergenceEq`
-re-derived convergence over the framework's own order `loOnEq rgaEqEquiv' WfOpQ`
+re-derived convergence over the framework's own order `loOnEq (rgaEqEquiv' α) WfOpQ`
 (no order mismatch left), and `RGA_HinFilterEq` closed the merge bridge's `hin`.
 
 This file re-bases the whole wiring on `WfOpQ`:
 
-* **§1** `rgaInvInvVCQ : InvInvVC RGACondSig' rgaEqEquiv' WfOpQ` — `WfOp`'s
+* **§1** `rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ` — `WfOp`'s
   `wf_congr` re-proved for the strengthened guard (its extra conjuncts are
   `resolve`-driven, hence `≈`-invariant via `resolve_dom_eq`).
 * **§2** raw folds of `Nodup`/distinct-ts/`WfOpGenQ` enumerations carry `qInv`
@@ -43,8 +43,10 @@ This file re-bases the whole wiring on `WfOpQ`:
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace Sal.ConditionedMRDTs.RGAInstanceFinal
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
@@ -61,8 +63,8 @@ instantiated at ONE `W` throughout, and `InvPres` only exists at `WfOpQ`.  The
 descend through `≈` exactly like `WfOp`'s conjuncts: `contains` via `(h t).1`,
 `resolve` via `resolve_dom_eq`. -/
 
-/-- `InvInvVC RGACondSig' rgaEqEquiv' WfOpQ` — full, both fields. -/
-theorem rgaInvInvVCQ : InvInvVC RGACondSig' rgaEqEquiv' WfOpQ where
+/-- `InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ` — full, both fields. -/
+theorem rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ where
   wf_congr := by
     intro o s s' _ _ h
     obtain ⟨t, r, ao⟩ := o
@@ -84,19 +86,19 @@ theorem rgaInvInvVCQ : InvInvVC RGACondSig' rgaEqEquiv' WfOpQ where
 
 /-! ## §2  `qInv` at raw folds of genuine enumerations -/
 
-/-- The framework's `applySeq` on `RGACondSig'` IS the RGA's raw `applySeqR`. -/
-theorem applySeq_eq_applySeqR (s : concrete_st) (ρ : List op_t) :
-    applySeq RGACondSig'.toCRDTSig s ρ = applySeqR s ρ := by
+/-- The framework's `applySeq` on `(RGACondSig' α)` IS the RGA's raw `applySeqR`. -/
+theorem applySeq_eq_applySeqR (s : concrete_st α) (ρ : List (op_t α)) :
+    applySeq (RGACondSig' α).toCRDTSig s ρ = applySeqR s ρ := by
   induction ρ generalizing s with
   | nil => rfl
   | cons o ρ ih => exact ih (do_ s o)
 
 /-- Raw folds of `Nodup`, distinct-ts, `WfOpGenQ` enumerations land in `qInv`:
 `rga_wfOpReachableQ` seats `WfOpQ` at every prefix, `rgaInvPresQ` steps. -/
-theorem qInv_fold (ρ : List op_t) (hnd : ρ.Nodup)
+theorem qInv_fold (ρ : List (op_t α)) (hnd : ρ.Nodup)
     (hts : ∀ a ∈ ρ, ∀ b ∈ ρ, a ≠ b → Op.time a ≠ Op.time b)
     (hgen : ∀ o ∈ ρ, WfOpGenQ o) :
-    RGACondSig'.Inv (applySeqR init_st ρ) := by
+    (RGACondSig' α).Inv (applySeqR (init_st (α := α)) ρ) := by
   have h := rgaInvPresQ.inv_applySeq_of_wfChain rga_inv_init'
     (rga_wfOpReachableQ ρ hnd hts hgen)
   rwa [applySeq_eq_applySeqR] at h
@@ -106,11 +108,11 @@ theorem qInv_fold (ρ : List op_t) (hnd : ρ.Nodup)
 /-! ## §3  The union adapter: `IsCanonicalStateEq`'s ∃/order shape is CLEAN
 
 `IsCanonicalStateEq … (ev₁ ∪ ev₂) m` demands ONE `loOnEq`-respecting
-enumeration of the union folding raw from `init_st` to `≈ m`.  Given the LCA
+enumeration of the union folding raw from `(init_st (α := α))` to `≈ m`.  Given the LCA
 enumeration `ρ₀` (of `ev₁ ∩ ev₂`) and a delta enumeration `π₀` whose continued
 fold is `≈ m`, the witness is literally `ρ₀ ++ π₀`:
 
-* `loOnEq rgaEqEquiv' WfOpQ` is INDEX-FREE (`loOnEqQ_reduce`: `rc ≡ Either`
+* `loOnEq (rgaEqEquiv' α) WfOpQ` is INDEX-FREE (`loOnEqQ_reduce`: `rc ≡ Either`
   empties the tiebreak arm), so `respects` transports across event-set indexes;
 * full closure of `ev₁`/`ev₂` kills every cross edge — a `loOnEq`-edge is a
   vis-edge, and a vis-edge from the delta into the LCA set would pull the delta
@@ -119,24 +121,24 @@ fold is `≈ m`, the witness is literally `ρ₀ ++ π₀`:
 No order translation, no re-enumeration: the shape match is clean. -/
 
 def RgaEqJoinResidual
-    (GenDisc : (op_t → op_t → Prop) → Set op_t → Prop) : Prop :=
-  ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t)
-    (s₀ s₁ s₂ : concrete_st) (ρ₀ : List op_t),
-    RGACondSig'.Inv s₀ → RGACondSig'.Inv s₁ → RGACondSig'.Inv s₂ →
-    (∀ {a b c : op_t}, vis a b → vis b c → vis a c) →
-    (∀ a : op_t, ¬ vis a a) →
+    (GenDisc : (op_t α → op_t α → Prop) → Set (op_t α) → Prop) : Prop :=
+  ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α))
+    (s₀ s₁ s₂ : concrete_st α) (ρ₀ : List (op_t α)),
+    (RGACondSig' α).Inv s₀ → (RGACondSig' α).Inv s₁ → (RGACondSig' α).Inv s₂ →
+    (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) →
+    (∀ a : op_t α, ¬ vis a a) →
     (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-    fullClosureRel (D := RGACondSig') vis ev₁ →
-    fullClosureRel (D := RGACondSig') vis ev₂ →
+    fullClosureRel (D := (RGACondSig' α)) vis ev₁ →
+    fullClosureRel (D := (RGACondSig' α)) vis ev₂ →
     GenDisc vis ev₁ → GenDisc vis ev₂ → GenDisc vis (ev₁ ∪ ev₂) →
     listPermOf ρ₀ (ev₁ ∩ ev₂) →
-    respects ρ₀ (loOnEq rgaEqEquiv' WfOpQ vis (ev₁ ∩ ev₂)) →
-    IsCanonicalStateEq rgaEqEquiv' WfOpQ vis ev₁ s₁ →
-    IsCanonicalStateEq rgaEqEquiv' WfOpQ vis ev₂ s₂ →
-    ∃ π₀ : List op_t,
+    respects ρ₀ (loOnEq (rgaEqEquiv' α) WfOpQ vis (ev₁ ∩ ev₂)) →
+    IsCanonicalStateEq (rgaEqEquiv' α) WfOpQ vis ev₁ s₁ →
+    IsCanonicalStateEq (rgaEqEquiv' α) WfOpQ vis ev₂ s₂ →
+    ∃ π₀ : List (op_t α),
       listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) ∧
-      respects π₀ (loOnEq rgaEqEquiv' WfOpQ vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
-      eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
+      respects π₀ (loOnEq (rgaEqEquiv' α) WfOpQ vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
+      eq (applySeqR (applySeqR (init_st (α := α)) ρ₀) π₀) ((RGACondSig' α).mergeL s₀ s₁ s₂)
 
 
 end Sal.ConditionedMRDTs.RGAInstanceFinal

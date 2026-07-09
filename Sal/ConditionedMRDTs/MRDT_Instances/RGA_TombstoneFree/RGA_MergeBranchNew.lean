@@ -33,8 +33,10 @@ flagged as genuinely new, and factors `hBN` into
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace RGAMergeBranchNew
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGAConditionedConvergence
@@ -52,7 +54,7 @@ LCA-ancestor chain `cw` (`IsAncPath l w cw`), then over any state `s` the first
 `s`'s current domain.  Both walk the `l`-forest from `w` rootward to the first
 `s`-live node; `resolve_climb_lchain` supplies the tail (from `anc l w` up) and
 `climb_live_unfold` / `climb_fixpoint` fixes the head `w`. -/
-theorem resolve_climb_start (l s : concrete_st)
+theorem resolve_climb_start (l s : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (h0 : contains l 0 = false)
@@ -94,7 +96,7 @@ branch-new survivor `k` whose birth-anchor `w := birthAnc l a b k`:
 state `p`, its stored anchor is the `resolve` of its birth-anchor's LCA chain
 (in-forest birth-anchor) or the birth-anchor itself (off-forest).  This is the
 event-list content the climb algebra cannot supply — see the RESIDUAL block. -/
-def FoldBirthChain (l a b p : concrete_st) (k : ℕ) : Prop :=
+def FoldBirthChain (l a b p : concrete_st α) (k : ℕ) : Prop :=
   (contains l (birthAnc l a b k) = true →
       ∃ cw, IsAncPath l (birthAnc l a b k) cw
         ∧ anc p k = resolve p (birthAnc l a b k :: cw))
@@ -105,7 +107,7 @@ set) and, per branch-new survivor, the `FoldBirthChain` identity, the branch-new
 anchor clause `hBN` holds — all the `climb`/`resolve` reconciliation discharged by
 `resolve_climb_start` + `climb_fixpoint`, the off-forest start condition by
 `betaf_start`. -/
-theorem hBN_of_foldChain (l a b p : concrete_st)
+theorem hBN_of_foldChain (l a b p : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (h0 : contains l 0 = false)

@@ -19,8 +19,10 @@ birth anchor under `¬ contains σ₀'` is the root (`Hstay`).
   `CanonBirthBridge` per survivor; the 0-or-survivor conjunct is GONE (derived). -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace Sal.ConditionedMRDTs.RGAMergeCanon
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open RGACanonConvergence (CanonMatch canonAnc survP insertedIn deletedIn resolve_eq_canonAnc)
@@ -31,7 +33,7 @@ open RGAMergeBranchNew (resolve_climb_start)
 /-- **The anchor clause, conditional-premise form.**  As `merge_anc_clause`, but the
 0-or-survivor fact is required only where it is used: off the LCA forest. -/
 theorem merge_anc_clause'
-    (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t) (t a : ℕ) (p : List ℕ)
+    (σ₀' σ₁' σ₂' : concrete_st α) (F : List (op_t α)) (t a : ℕ) (p : List ℕ)
     (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
     (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
     (h0 : contains σ₀' 0 = false)
@@ -59,7 +61,7 @@ theorem merge_anc_clause'
     exact (hbout hlwf).symm
 
 /-- A branch-born, branch-live node is a survivor. -/
-theorem survivors_of_branch (σ₀' σ₁' σ₂' : concrete_st) (c : ℕ)
+theorem survivors_of_branch (σ₀' σ₁' σ₂' : concrete_st α) (c : ℕ)
     (hnl : contains σ₀' c = false)
     (hbr : contains σ₁' c = true ∨ contains σ₂' c = true) :
     survivors σ₀' σ₁' σ₂' c = true := by
@@ -69,7 +71,7 @@ theorem survivors_of_branch (σ₀' σ₁' σ₂' : concrete_st) (c : ℕ)
 /-- **The 0-or-survivor fact, derived.**  The birth anchor is read off the state where the
 survivor lives; `Hstay`/`wf` make it root-or-live THERE; a non-LCA live anchor of a branch state
 is branch-born-or… in every case, off the LCA it is `0` or a survivor. -/
-theorem bwsurv_of_wf (σ₀' σ₁' σ₂' : concrete_st) (t : ℕ)
+theorem bwsurv_of_wf (σ₀' σ₁' σ₂' : concrete_st α) (t : ℕ)
     (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
     (hwf1 : ∀ y, contains σ₁' y = true → (anc σ₁' y = 0 ∨ contains σ₁' (anc σ₁' y) = true))
     (hwf2 : ∀ y, contains σ₂' y = true → (anc σ₂' y = 0 ∨ contains σ₂' (anc σ₂' y) = true))
@@ -102,7 +104,7 @@ theorem bwsurv_of_wf (σ₀' σ₁' σ₂' : concrete_st) (t : ℕ)
 0-or-survivor conjunct REMOVED from the bridge bundle (it is derived from the branch `wf` facts),
 so the per-survivor leaf is `CanonBirthBridge` alone. -/
 theorem canonMatch_merge_of_inputs'
-    (σ₀' σ₁' σ₂' : concrete_st) (ρ₀ π₀ ρ₁ ρ₂ : List op_t)
+    (σ₀' σ₁' σ₂' : concrete_st α) (ρ₀ π₀ ρ₁ ρ₂ : List (op_t α))
     (hcm0 : CanonMatch ρ₀ σ₀') (hcm1 : CanonMatch ρ₁ σ₁') (hcm2 : CanonMatch ρ₂ σ₂')
     (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
     (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
@@ -114,13 +116,13 @@ theorem canonMatch_merge_of_inputs'
         ∧ (deletedIn ρ₀ c → deletedIn ρ₁ c) ∧ (deletedIn ρ₀ c → deletedIn ρ₂ c)
         ∧ (insertedIn (ρ₀ ++ π₀) c ↔ insertedIn ρ₁ c ∨ insertedIn ρ₂ c)
         ∧ (deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c))
-    (hins_branch : ∀ (t r e a : ℕ) (p : List ℕ),
+    (hins_branch : ∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
         (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
         (contains σ₀' t = true → (t, r, .Ins e p a) ∈ ρ₀)
         ∧ (contains σ₁' t = true → (t, r, .Ins e p a) ∈ ρ₁)
         ∧ (contains σ₂' t = true → (t, r, .Ins e p a) ∈ ρ₂)
         ∧ (contains σ₀' t = true ∨ contains σ₁' t = true ∨ contains σ₂' t = true))
-    (hbridge : ∀ (t r e a : ℕ) (p : List ℕ),
+    (hbridge : ∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
         (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
         CanonBirthBridge σ₀' (ρ₀ ++ π₀) (birthAnc σ₀' σ₁' σ₂' t) (a :: p)) :
     CanonMatch (ρ₀ ++ π₀) (merge σ₀' σ₁' σ₂') := by

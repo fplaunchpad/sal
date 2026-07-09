@@ -49,6 +49,8 @@ metatheory:
 
 namespace Sal.ConditionedMRDTs
 
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.GoodConfig3H
@@ -69,12 +71,12 @@ capstone. Read-*order* under deletion is only partially pinned: `del_can_reorder
 (SPOT) exhibits a case where tombstone-free rehoming reorders survivors, the honest limit of the
 read model. -/
 theorem rga_tombstone_free_ra_linearizable3_eq
-    (hHD : HonestDelivery)
-    (C : Configuration (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA))
+    (hHD : HonestDelivery (α := α))
+    (C : Configuration (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA))
     (hReach : (labeledTS3
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
-      (initConfig (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C) :
-    IsRALinearizable3Eq rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA C :=
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
+      (initConfig (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C) :
+    IsRALinearizable3Eq (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA C :=
   RGASkeleton3.rga_RA_linearizable_honest hHD C hReach
 
 /-! ## Axiom audit -/

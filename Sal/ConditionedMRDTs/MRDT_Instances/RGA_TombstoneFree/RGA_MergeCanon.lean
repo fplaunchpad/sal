@@ -23,10 +23,12 @@ The causal facts are carried as explicit hypotheses here (skeleton-first); they 
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAMergeCanon
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open RGACanonConvergence (survP insertedIn deletedIn CanonMatch canonAnc resolve_eq_canonAnc)
@@ -50,7 +52,7 @@ theorem orset_survP_iff (I0 I1 I2 D0 D1 D2 : Prop)
 (ρ₀++π₀)`, given each branch's canonical domain characterization (`hb₀/hb₁/hb₂`) and the causal facts
 (id-uniqueness `hI0`, closed-deletes `hD1I/hD2I`, subset `hD01/hD02`, union membership `hIu/hDu`). -/
 theorem merge_domain_clause
-    (σ₀' σ₁' σ₂' : concrete_st) (ρ₀ π₀ ρ₁ ρ₂ : List op_t) (c : ℕ)
+    (σ₀' σ₁' σ₂' : concrete_st α) (ρ₀ π₀ ρ₁ ρ₂ : List (op_t α)) (c : ℕ)
     (hb0 : contains σ₀' c = true ↔ survP ρ₀ c)
     (hb1 : contains σ₁' c = true ↔ survP ρ₁ c)
     (hb2 : contains σ₂' c = true ↔ survP ρ₂ c)
@@ -85,7 +87,7 @@ canonical `el` (from `CanonMatch ρᵢ σᵢ'`) returns the recorded `e` for tha
 The "node's `Ins` is in the branch it survives in" facts (`hsurvᵢ`, from id-uniqueness) and
 "a survivor is in some branch" (`hin_branch`, from the domain clause) are carried as hypotheses. -/
 theorem merge_el_clause
-    (σ₀' σ₁' σ₂' : concrete_st) (ρ₀ ρ₁ ρ₂ : List op_t) (t r e a : ℕ) (p : List ℕ)
+    (σ₀' σ₁' σ₂' : concrete_st α) (ρ₀ ρ₁ ρ₂ : List (op_t α)) (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ)
     (hcm0 : CanonMatch ρ₀ σ₀') (hcm1 : CanonMatch ρ₁ σ₁') (hcm2 : CanonMatch ρ₂ σ₂')
     (hsurv0 : contains σ₀' t = true → (t, r, .Ins e p a) ∈ ρ₀)
     (hsurv1 : contains σ₁' t = true → (t, r, .Ins e p a) ∈ ρ₁)
@@ -117,7 +119,7 @@ theorem merge_el_clause
 climb to `bw = canonAnc F (a::p)`. The birth-anchor's forest chain is `CanonBirthBridge`'s content;
 `Hdec`/`Hstay`/`h0` (σ₀' forest invariants) and `hbwsurv` (birth-anchor is 0-or-survivor) are carried. -/
 theorem merge_anc_clause
-    (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t) (t a : ℕ) (p : List ℕ)
+    (σ₀' σ₁' σ₂' : concrete_st α) (F : List (op_t α)) (t a : ℕ) (p : List ℕ)
     (Hdec : ∀ y, contains σ₀' y = true → y ≠ 0 → anc σ₀' y < y)
     (Hstay : ∀ y, contains σ₀' y = true → (anc σ₀' y = 0 ∨ contains σ₀' (anc σ₀' y) = true))
     (h0 : contains σ₀' 0 = false)
@@ -149,11 +151,11 @@ theorem merge_anc_clause
 events, assembled from the three per-clause results (domain / el / anc). This is the SOLE RGA-specific
 input to the canonical route (`RGA_EndToEnd.hCanon`'s merge half); everything else is generic. -/
 theorem merge_canonMatch
-    (σ₀' σ₁' σ₂' : concrete_st) (F : List op_t)
+    (σ₀' σ₁' σ₂' : concrete_st α) (F : List (op_t α))
     (hdomain : ∀ c, contains (merge σ₀' σ₁' σ₂') c = true ↔ survP F c)
-    (hel : ∀ (t r e a : ℕ) (p : List ℕ),
+    (hel : ∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
         (t, r, .Ins e p a) ∈ F → survP F t → el (merge σ₀' σ₁' σ₂') t = e)
-    (hanc : ∀ (t r e a : ℕ) (p : List ℕ),
+    (hanc : ∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
         (t, r, .Ins e p a) ∈ F → survP F t →
         anc (merge σ₀' σ₁' σ₂') t = canonAnc F (a :: p)) :
     CanonMatch F (merge σ₀' σ₁' σ₂') :=

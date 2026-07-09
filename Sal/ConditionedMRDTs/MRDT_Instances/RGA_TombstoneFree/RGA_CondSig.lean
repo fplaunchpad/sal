@@ -24,10 +24,13 @@ refutation) and moved here because the entire chain consumes it.
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
 
 namespace Sal.ConditionedMRDTs.RGASig
 
 open Sal.Emulation
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-! ## §1 Obligation (A), generic part: an invariant preserved by every
 `update` step transports to every prefix-fold of every enumeration — including
@@ -79,12 +82,12 @@ are consequences of applicability at the *generation* state
 
 /-- Order-stable op-wellformedness: an `Ins` has a nonzero timestamp; a `Del`'s
 target does not occur in its own recorded ancestor path. -/
-def opOK : Op app_op_t → Prop
+def opOK : Op (app_op_t α) → Prop
   | (t, _, .Ins _ _ _) => t ≠ 0
   | (_, _, .Del pre x) => x ∉ pre
 
 /-- `resolve` returns the root or a member of its candidate list. -/
-theorem resolve_mem (s : concrete_st) :
+theorem resolve_mem (s : concrete_st α) :
     ∀ cands : List ℕ, resolve s cands = 0 ∨ resolve s cands ∈ cands := by
   intro cands
   induction cands with
@@ -101,7 +104,7 @@ theorem resolve_mem (s : concrete_st) :
 /-- `RgaInv` is preserved by an `Ins` given only `t ≠ 0` — NO path accuracy, NO
 freshness.  (Mirror of `Inv_doIns` with `resolve_zero_or_live` replacing the
 accuracy-derived liveness of the stored anchor.) -/
-theorem RgaInv_doIns_opOK (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
+theorem RgaInv_doIns_opOK (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
     (h : RgaInv s) (ht0 : t ≠ 0) :
     RgaInv (do_ s (t, r, .Ins e pre a)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -141,7 +144,7 @@ theorem RgaInv_doIns_opOK (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
 /-- `RgaInv` is preserved by a `Del` given only `x ∉ pre` — NO path accuracy.
 (Mirror of `Inv_doDel`: the reparent target `resolve s pre` is 0-or-live by
 `resolve_zero_or_live`, and `≠ x` because `resolve` lands in `{0} ∪ pre`.) -/
-theorem RgaInv_doDel_opOK (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem RgaInv_doDel_opOK (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (h : RgaInv s) (hx : x ∉ pre) :
     RgaInv (do_ s (t, r, .Del pre x)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -176,7 +179,7 @@ theorem RgaInv_doDel_opOK (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
 
 /-- Single-step dispatcher: `RgaInv` is preserved by every `do_` step under the
 op-only `opOK`. -/
-theorem RgaInv_do_opOK (s : concrete_st) (o : Op app_op_t)
+theorem RgaInv_do_opOK (s : concrete_st α) (o : Op (app_op_t α))
     (h : RgaInv s) (hok : opOK o) : RgaInv (do_ s o) := by
   obtain ⟨t, r, op⟩ := o
   cases op with
@@ -193,7 +196,7 @@ absent root, so it is loop-free). -/
 
 /-- Every member of an accurate path has a strictly shorter accurate path
 (its suffix). -/
-theorem isAncPath_mem_shorter (s : concrete_st) :
+theorem isAncPath_mem_shorter (s : concrete_st α) :
     ∀ (p : List ℕ) (y z : ℕ), IsAncPath s y p → z ∈ p →
       ∃ q, IsAncPath s z q ∧ q.length < p.length := by
   intro p
@@ -210,7 +213,7 @@ theorem isAncPath_mem_shorter (s : concrete_st) :
 
 /-- Accurate paths are unique (given the root sentinel is absent): `anc` is a
 function, and the head case is forced because a stored `0` is impossible. -/
-theorem isAncPath_unique (s : concrete_st) (h0 : contains s 0 = false) :
+theorem isAncPath_unique (s : concrete_st α) (h0 : contains s 0 = false) :
     ∀ (p q : List ℕ) (y : ℕ), IsAncPath s y p → IsAncPath s y q → p = q := by
   intro p
   induction p with
@@ -244,7 +247,7 @@ theorem isAncPath_unique (s : concrete_st) (h0 : contains s 0 = false) :
       rw [ih ds c hcs hds]
 
 /-- An accurate path never contains its own leaf. -/
-theorem isAncPath_not_mem (s : concrete_st) (h0 : contains s 0 = false)
+theorem isAncPath_not_mem (s : concrete_st α) (h0 : contains s 0 = false)
     (x : ℕ) (pre : List ℕ) (hpath : IsAncPath s x pre) : x ∉ pre := by
   intro hx
   obtain ⟨q, hq, hlen⟩ := isAncPath_mem_shorter s pre x x hpath hx
@@ -254,7 +257,7 @@ theorem isAncPath_not_mem (s : concrete_st) (h0 : contains s 0 = false)
 
 /-- Applicability at the generation state yields the order-stable `opOK` —
 so obligation (A) needs nothing from the reordered run. -/
-theorem opOK_of_generation (o : Op app_op_t) (s : concrete_st)
+theorem opOK_of_generation (o : Op (app_op_t α)) (s : concrete_st α)
     (h0 : contains s 0 = false) (hacc : accurate o s) (hfr : fresh_ts o s) :
     opOK o := by
   obtain ⟨t, r, op⟩ := o
@@ -283,42 +286,42 @@ NOTE (recorded hosting gap, see G2_FINDINGS.md): the RGA's commutation lemmas
 are not directly available at this signature — the counterexample below only
 needs the VACUOUS pairs, which are independent of that gap. -/
 
-noncomputable def RGAM : MRDTSig where
-  State := concrete_st
+noncomputable def RGAM (α : Type := ℕ) [DecidableEq α] [Inhabited α] : MRDTSig where
+  State := concrete_st α
   dec_state := fun a b => Classical.propDecidable (a = b)
-  init := init_st
-  AppOp := app_op_t
+  init := init_st (α := α)
+  AppOp := app_op_t α
   dec_op := inferInstance
   Query := Unit
   Value := Unit
   update := fun s o => do_ s o
-  merge := fun a b => _root_.merge init_st a b
+  merge := fun a b => _root_.merge (init_st (α := α)) a b
   query := fun _ _ => ()
   rc := fun _ _ => RcRes.Either
   mergeL := fun l a b => _root_.merge l a b
   merge_init_slice := fun _ _ => rfl
 
-noncomputable def RGACondSig : ConditionedMRDTSig where
-  toMRDTSig := RGAM
+noncomputable def RGACondSig (α : Type := ℕ) [DecidableEq α] [Inhabited α] : ConditionedMRDTSig where
+  toMRDTSig := RGAM α
   Inv := RgaInv
   applicable := fun o s => accurate o s ∧ fresh_ts o s
 
-theorem rc_is_Either (o₁ o₂ : Op app_op_t) :
-    RGACondSig.rc o₁ o₂ = RcRes.Either := rfl
+theorem rc_is_Either (o₁ o₂ : Op (app_op_t α)) :
+    (RGACondSig α).rc o₁ o₂ = RcRes.Either := rfl
 
-theorem applySeq_two (s : concrete_st) (o₁ o₂ : Op app_op_t) :
-    applySeq RGACondSig.toCRDTSig s [o₁, o₂] = do_ (do_ s o₁) o₂ := rfl
+theorem applySeq_two (s : concrete_st α) (o₁ o₂ : Op (app_op_t α)) :
+    applySeq (RGACondSig α).toCRDTSig s [o₁, o₂] = do_ (do_ s o₁) o₂ := rfl
 
 /-- **Obligation (A), discharged for the RGA**: `RgaInv` holds at every
 prefix-fold of every enumeration (loOn-respecting or hybrid) of any set of
 `opOK` events, starting from `init`.  This is the exact Inv-side input the
 conditioned ⚑ sites need. -/
-theorem obligation_A_RGA (pfx sfx : List (Op RGACondSig.AppOp))
+theorem obligation_A_RGA (pfx sfx : List (Op (RGACondSig α).AppOp))
     (hπ : ∀ o ∈ pfx ++ sfx, opOK o) :
-    RgaInv (applySeq RGACondSig.toCRDTSig RGACondSig.init pfx) :=
+    RgaInv (applySeq (RGACondSig α).toCRDTSig (RGACondSig α).init pfx) :=
   Inv_transport_prefix RgaInv opOK
     (fun s o h hok => RgaInv_do_opOK s o h hok)
-    pfx sfx RGACondSig.init Inv_init hπ
+    pfx sfx (RGACondSig α).init Inv_init hπ
 
 /-! ## Axiom audit -/
 

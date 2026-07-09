@@ -46,7 +46,7 @@ the monotone bound is free, so on genuine ops `WfOpA` coincides with `applicable
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.GenericEqQuotient
@@ -86,6 +86,8 @@ end Sal.ConditionedMRDTs.GenericEqQuotient
 /-! ## §2  The RGA guard `WfOpA := WfOpQ ∧ accurate` -/
 
 namespace Sal.ConditionedMRDTs.RGAInstance
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 
 open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ qInv_doOp rgaInvPresQ WfOpGenQ
@@ -93,15 +95,15 @@ open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ qInv_doOp rgaInvPresQ WfOpGenQ
 
 /-- The honest RGA quotient guard: `WfOpQ` (fresh + monotone `resolve < t`) plus
 `accurate`.  Strengthens `WfOpQ` with the accuracy that born-applicability needs. -/
-def WfOpA (o : op_t) (s : concrete_st) : Prop := WfOpQ o s ∧ accurate o s
+def WfOpA (o : op_t α) (s : concrete_st α) : Prop := WfOpQ o s ∧ accurate o s
 
 /-- `WfOpA ⟹ WfOpQ` — the `InvPres`-carrying part. -/
-theorem wfOpQ_of_wfOpA {o : op_t} {s : concrete_st} (h : WfOpA o s) : WfOpQ o s := h.1
+theorem wfOpQ_of_wfOpA {o : op_t α} {s : concrete_st α} (h : WfOpA o s) : WfOpQ o s := h.1
 
 /-- **`WfOpA ⟹ applicable`.**  `applicable = accurate ∧ fresh_ts`; `WfOpA`
 supplies `accurate` directly and `fresh_ts` from `WfOpQ`. -/
-theorem applicable_of_wfOpA {o : op_t} {s : concrete_st} (h : WfOpA o s) :
-    RGACondSig'.applicable o s := by
+theorem applicable_of_wfOpA {o : op_t α} {s : concrete_st α} (h : WfOpA o s) :
+    (RGACondSig' α).applicable o s := by
   obtain ⟨hwfq, hacc⟩ := h
   refine ⟨hacc, ?_⟩
   obtain ⟨t, r, ao⟩ := o
@@ -109,9 +111,9 @@ theorem applicable_of_wfOpA {o : op_t} {s : concrete_st} (h : WfOpA o s) :
   | Ins e pre a => exact hwfq.1
   | Del pre x => trivial
 
-/-- **`InvPres RGACondSig' WfOpA`** — reuse `rgaInvPresQ`'s components: `inv_update`
+/-- **`InvPres (RGACondSig' α) WfOpA`** — reuse `rgaInvPresQ`'s components: `inv_update`
 is `qInv_doOp` fed `WfOpA.1 : WfOpQ`. -/
-def rgaInvPresA : InvPres RGACondSig' WfOpA :=
+def rgaInvPresA : InvPres (RGACondSig' α) WfOpA :=
   ⟨rga_inv_init', fun s o hI hw => qInv_doOp s o hI (wfOpQ_of_wfOpA hw), rga_inv_mergeL'⟩
 
 /-- **`applicable ⟹ WfOpA` on genuine ops** — the `hWA` the exec-side bridge
@@ -120,8 +122,8 @@ def rgaInvPresA : InvPres RGACondSig' WfOpA :=
 `WfOpGenQ` (`wfOpQ_ins_of_genQ` at the `applicable`-supplied freshness;
 `wfOpQ_del_of_genQ` unconditionally). So for born-applicable delivery of genuine
 ops the guard fires exactly when the op is applicable. -/
-theorem wfOpA_of_genQ_applicable {o : op_t} {s : concrete_st}
-    (hg : WfOpGenQ o) (happ : RGACondSig'.applicable o s) : WfOpA o s := by
+theorem wfOpA_of_genQ_applicable {o : op_t α} {s : concrete_st α}
+    (hg : WfOpGenQ o) (happ : (RGACondSig' α).applicable o s) : WfOpA o s := by
   obtain ⟨hacc, hfr⟩ := happ
   obtain ⟨t, r, ao⟩ := o
   cases ao with
@@ -130,12 +132,12 @@ theorem wfOpA_of_genQ_applicable {o : op_t} {s : concrete_st}
 
 /-- **Born-applicability of the RGA quotient at `WfOpA`.**  `WfOpA ⟹ applicable`,
 so `appOrNoop_qsig` applies: every `QSig … WfOpA`-step is `applicable`-or-no-op. -/
-theorem rga_appOrNoop_qsig (hC : CongVC RGACondSig' rgaEqEquiv')
-    (hA : InvInvVC RGACondSig' rgaEqEquiv' WfOpA)
-    (o : op_t) (q : QState RGACondSig' rgaEqEquiv') :
+theorem rga_appOrNoop_qsig (hC : CongVC (RGACondSig' α) (rgaEqEquiv' α))
+    (hA : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpA)
+    (o : op_t α) (q : QState (RGACondSig' α) (rgaEqEquiv' α)) :
     Sal.ConditionedMRDTs.ConditionedConvergence.appOrNoop
-      (QSig rgaEqEquiv' WfOpA rgaInvPresA hC hA) o q :=
-  appOrNoop_qsig rgaEqEquiv' WfOpA rgaInvPresA hC hA
+      (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA hC hA) o q :=
+  appOrNoop_qsig (rgaEqEquiv' α) WfOpA rgaInvPresA hC hA
     (fun _o _s _ hw => applicable_of_wfOpA hw) o q
 
 /-! ## §3  Axiom audit -/

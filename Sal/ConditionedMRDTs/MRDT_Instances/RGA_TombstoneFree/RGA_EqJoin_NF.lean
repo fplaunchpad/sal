@@ -19,8 +19,10 @@ the honest born-applicable foundation — WALL 0's config facts come from the
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace Sal.ConditionedMRDTs.RGAEqJoinNF
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
@@ -34,10 +36,10 @@ open RGAMergeLinearization (applySeqR)
 
 /-- `loOnEq` collapses to its vis-arm at ANY guard `W` — `rc = Either` empties the
 rc-tiebreak arm.  Generalizes `RGAConvergenceEq.loOnEqQ_reduce` (`W := WfOpQ`). -/
-theorem loOnEqQ_reduce_gen (W : op_t → concrete_st → Prop)
-    (vis : op_t → op_t → Prop) (ev : Set op_t) (e₁ e₂ : op_t) :
-    loOnEq rgaEqEquiv' W vis ev e₁ e₂
-      ↔ (vis e₁ e₂ ∧ ¬ eqCommutesOn rgaEqEquiv' W e₁ e₂) := by
+theorem loOnEqQ_reduce_gen (W : op_t α → concrete_st α → Prop)
+    (vis : op_t α → op_t α → Prop) (ev : Set (op_t α)) (e₁ e₂ : op_t α) :
+    loOnEq (rgaEqEquiv' α) W vis ev e₁ e₂
+      ↔ (vis e₁ e₂ ∧ ¬ eqCommutesOn (rgaEqEquiv' α) W e₁ e₂) := by
   constructor
   · rintro (h | ⟨_, _, hrc, _⟩)
     · exact h
@@ -45,21 +47,21 @@ theorem loOnEqQ_reduce_gen (W : op_t → concrete_st → Prop)
   · exact Or.inl
 
 /-- `loOnEq` at guard `W` is index-free: it agrees across event-set parameters. -/
-theorem loOnEqQ_index_free_gen (W : op_t → concrete_st → Prop)
-    (vis : op_t → op_t → Prop) (ev ev' : Set op_t) (e₁ e₂ : op_t) :
-    loOnEq rgaEqEquiv' W vis ev e₁ e₂ ↔ loOnEq rgaEqEquiv' W vis ev' e₁ e₂ :=
+theorem loOnEqQ_index_free_gen (W : op_t α → concrete_st α → Prop)
+    (vis : op_t α → op_t α → Prop) (ev ev' : Set (op_t α)) (e₁ e₂ : op_t α) :
+    loOnEq (rgaEqEquiv' α) W vis ev e₁ e₂ ↔ loOnEq (rgaEqEquiv' α) W vis ev' e₁ e₂ :=
   (loOnEqQ_reduce_gen W vis ev e₁ e₂).trans (loOnEqQ_reduce_gen W vis ev' e₁ e₂).symm
 
 /-! ## §2  The union canonical-state shape, born-applicable -/
 
-theorem mergeFold_transport {σ₀' σ₁' σ₂' X s₀ s₁ s₂ : concrete_st}
-    (hI0' : RGACondSig'.Inv σ₀') (hI1' : RGACondSig'.Inv σ₁') (hI2' : RGACondSig'.Inv σ₂')
-    (hI0 : RGACondSig'.Inv s₀) (hI1 : RGACondSig'.Inv s₁) (hI2 : RGACondSig'.Inv s₂)
+theorem mergeFold_transport {σ₀' σ₁' σ₂' X s₀ s₁ s₂ : concrete_st α}
+    (hI0' : (RGACondSig' α).Inv σ₀') (hI1' : (RGACondSig' α).Inv σ₁') (hI2' : (RGACondSig' α).Inv σ₂')
+    (hI0 : (RGACondSig' α).Inv s₀) (hI1 : (RGACondSig' α).Inv s₁) (hI2 : (RGACondSig' α).Inv s₂)
     (h₀ : eq σ₀' s₀) (h₁ : eq σ₁' s₁) (h₂ : eq σ₂' s₂)
     (hlit : eq (merge σ₀' σ₁' σ₂') X) :
-    eq X (RGACondSig'.mergeL s₀ s₁ s₂) :=
-  rgaEqEquiv'.equiv.trans (rgaEqEquiv'.equiv.symm hlit)
-    (rgaCongVC'.mergeL_congr hI0' hI0 hI1' hI1 hI2' hI2 h₀ h₁ h₂)
+    eq X ((RGACondSig' α).mergeL s₀ s₁ s₂) :=
+  (rgaEqEquiv' α).equiv.trans ((rgaEqEquiv' α).equiv.symm hlit)
+    ((rgaCongVC' α).mergeL_congr hI0' hI0 hI1' hI1 hI2' hI2 h₀ h₁ h₂)
 
 /-! ## §3  `EqJoinLemma3C_NF`, reduced to the merge=delta-fold residual
 
@@ -74,25 +76,25 @@ canonical-state shape — is closed by §2. -/
 `loOnEq`-respecting, `noopFeasible` delta enumeration `π₀` of the symmetric-
 difference whose continued fold from `ρ₀` is `≈ mergeL`.  The merge=delta-fold
 bridge, now carrying feasibility. -/
-def RgaEqJoinResidual_NF (W : op_t → concrete_st → Prop) : Prop :=
-  ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t)
-    (s₀ s₁ s₂ : concrete_st) (ρ₀ : List op_t),
-    RGACondSig'.Inv s₀ → RGACondSig'.Inv s₁ → RGACondSig'.Inv s₂ →
-    (∀ {a b c : op_t}, vis a b → vis b c → vis a c) →
-    (∀ a : op_t, ¬ vis a a) →
+def RgaEqJoinResidual_NF (W : op_t α → concrete_st α → Prop) : Prop :=
+  ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α))
+    (s₀ s₁ s₂ : concrete_st α) (ρ₀ : List (op_t α)),
+    (RGACondSig' α).Inv s₀ → (RGACondSig' α).Inv s₁ → (RGACondSig' α).Inv s₂ →
+    (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) →
+    (∀ a : op_t α, ¬ vis a a) →
     (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-    fullClosureRel (D := RGACondSig') vis ev₁ →
-    fullClosureRel (D := RGACondSig') vis ev₂ →
+    fullClosureRel (D := (RGACondSig' α)) vis ev₁ →
+    fullClosureRel (D := (RGACondSig' α)) vis ev₂ →
     listPermOf ρ₀ (ev₁ ∩ ev₂) →
-    respects ρ₀ (loOnEq rgaEqEquiv' W vis (ev₁ ∩ ev₂)) →
-    noopFeasible RGACondSig' ρ₀ init_st →
-    IsCanonicalStateEqNF rgaEqEquiv' W vis ev₁ s₁ →
-    IsCanonicalStateEqNF rgaEqEquiv' W vis ev₂ s₂ →
-    ∃ π₀ : List op_t,
+    respects ρ₀ (loOnEq (rgaEqEquiv' α) W vis (ev₁ ∩ ev₂)) →
+    noopFeasible (RGACondSig' α) ρ₀ (init_st (α := α)) →
+    IsCanonicalStateEqNF (rgaEqEquiv' α) W vis ev₁ s₁ →
+    IsCanonicalStateEqNF (rgaEqEquiv' α) W vis ev₂ s₂ →
+    ∃ π₀ : List (op_t α),
       listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) ∧
-      respects π₀ (loOnEq rgaEqEquiv' W vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
-      noopFeasible RGACondSig' π₀ (applySeqR init_st ρ₀) ∧
-      eq (applySeqR (applySeqR init_st ρ₀) π₀) (RGACondSig'.mergeL s₀ s₁ s₂)
+      respects π₀ (loOnEq (rgaEqEquiv' α) W vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) ∧
+      noopFeasible (RGACondSig' α) π₀ (applySeqR (init_st (α := α)) ρ₀) ∧
+      eq (applySeqR (applySeqR (init_st (α := α)) ρ₀) π₀) ((RGACondSig' α).mergeL s₀ s₁ s₂)
 
 
 end Sal.ConditionedMRDTs.RGAEqJoinNF

@@ -16,8 +16,10 @@ half of hEnum's δ-enum, leaving only `noopFeasible` (step C).
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace Sal.ConditionedMRDTs.RGADeltaEnum
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient (loOnEq)
@@ -56,11 +58,11 @@ event set `E` and `vis` a strict order, `exists_respecting` (with acyclicity dis
 `exists_min_of_irrefl_trans` on `vis` + `loOnEq_imp_vis`) yields a permutation `π` that `listPermOf E`
 and `respects (loOnEq … E)`.  The RGA analog of `exists_loOnA_enum`, for the `loOnEq` order the merge
 δ-enum must respect. -/
-theorem exists_loOnEq_enum (W : op_t → concrete_st → Prop) (vis : op_t → op_t → Prop)
-    (E : Set op_t) (lE : List op_t) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
-    (htr : ∀ {a b c : op_t}, vis a b → vis b c → vis a c) (hirr : ∀ a, ¬ vis a a) :
-    ∃ π, listPermOf π E ∧ respects π (loOnEq rgaEqEquiv' W vis E) := by
-  obtain ⟨π, hperm, hpw⟩ := exists_respecting (loOnEq rgaEqEquiv' W vis E) lE.length lE rfl
+theorem exists_loOnEq_enum (W : op_t α → concrete_st α → Prop) (vis : op_t α → op_t α → Prop)
+    (E : Set (op_t α)) (lE : List (op_t α)) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
+    (htr : ∀ {a b c : op_t α}, vis a b → vis b c → vis a c) (hirr : ∀ a, ¬ vis a a) :
+    ∃ π, listPermOf π E ∧ respects π (loOnEq (rgaEqEquiv' α) W vis E) := by
+  obtain ⟨π, hperm, hpw⟩ := exists_respecting (loOnEq (rgaEqEquiv' α) W vis E) lE.length lE rfl
     (fun l' _ hne => by
       obtain ⟨m, hm, hmin⟩ := exists_min_of_irrefl_trans vis (@htr) hirr l' hne
       exact ⟨m, hm, fun y hy hlo => hmin y hy (loOnEq_imp_vis W vis E y m hlo)⟩)

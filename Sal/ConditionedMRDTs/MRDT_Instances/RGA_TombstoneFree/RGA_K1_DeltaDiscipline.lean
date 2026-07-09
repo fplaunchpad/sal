@@ -33,10 +33,12 @@ Main results:
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig rc_is_Either)
@@ -49,57 +51,57 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK
 /-! ## §1  `loOnA ⊆ vis` for the RGA, and `DepC` facts -/
 
 /-- `loOnC ⊆ vis` for the RGA: the concurrent arm requires `rc = Fst_then_snd`, but
-`RGACondSig.rc ≡ Either`. -/
-theorem loOnC_imp_vis (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev : Set op_t) (e₁ e₂ : op_t) (h : loOnC RGACondSig Cfg ev e₁ e₂) : Cfg.vis e₁ e₂ := by
+`(RGACondSig α).rc ≡ Either`. -/
+theorem loOnC_imp_vis (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev : Set (op_t α)) (e₁ e₂ : op_t α) (h : loOnC (RGACondSig α) Cfg ev e₁ e₂) : Cfg.vis e₁ e₂ := by
   rcases h with ⟨hv, _⟩ | ⟨_, _, hrc, _⟩
   · exact hv
   · rw [rc_is_Either] at hrc
     exact absurd hrc (fun h => Sal.Emulation.RcRes.noConfusion h)
 
 /-- `loOnA ⊆ vis` for the RGA. -/
-theorem loOnA_imp_vis (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev : Set op_t) (e₁ e₂ : op_t) (h : loOnA RGACondSig Cfg ev e₁ e₂) : Cfg.vis e₁ e₂ := by
+theorem loOnA_imp_vis (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev : Set (op_t α)) (e₁ e₂ : op_t α) (h : loOnA (RGACondSig α) Cfg ev e₁ e₂) : Cfg.vis e₁ e₂ := by
   rcases h with h | ⟨hv, _⟩
   · exact loOnC_imp_vis Cfg ev e₁ e₂ h
   · exact hv
 
 /-- A dependency edge is a `vis` edge. -/
-theorem depE_imp_vis (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (z x : op_t) (h : DepE Cfg E z x) : Cfg.vis z x :=
+theorem depE_imp_vis (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (z x : op_t α) (h : DepE Cfg E z x) : Cfg.vis z x :=
   loOnA_imp_vis Cfg E z x h.2
 
 /-- Transitive dependency stays inside the causal order. -/
-theorem depC_imp_vis (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (z x : op_t) (h : DepC Cfg E z x) : Cfg.vis z x := by
+theorem depC_imp_vis (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (z x : op_t α) (h : DepC Cfg E z x) : Cfg.vis z x := by
   induction h with
   | single hzx => exact depE_imp_vis Cfg E _ _ hzx
   | tail _ hbc ih => exact htr ih (depE_imp_vis Cfg E _ _ hbc)
 
 /-- `DepC` is irreflexive (via `vis` strictness). -/
-theorem depC_irrefl (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a) (o : op_t) : ¬ DepC Cfg E o o :=
+theorem depC_irrefl (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a) (o : op_t α) : ¬ DepC Cfg E o o :=
   fun h => hirr o (depC_imp_vis Cfg E htr o o h)
 
 /-! ## §2  The freely-chosen ambient enumeration and its dep-lists -/
 
 /-- A full `loOnA`-respecting enumeration of `E` is a `GoodEnum` (closure is vacuous). -/
-theorem goodEnum_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) : GoodEnum Cfg E U :=
+theorem goodEnum_of_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) : GoodEnum Cfg E U :=
   ⟨fun x hx => (hUp.2 x).mp hx, hUp.1, hUr, fun _x _hx z hz _ _ => (hUp.2 z).mpr hz⟩
 
 /-- The dep-list of ANY event `o ∈ E`, carved from a full enumeration `U`, is a `GoodEnum`:
 the `loOnA`-predecessor closure follows from `DepC`-transitivity, with the `z = o` degenerate
 case killed by `DepC`-irreflexivity. -/
-theorem goodEnum_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) (o : op_t) :
+theorem goodEnum_depList_of_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) (o : op_t α) :
     GoodEnum Cfg E (depList Cfg E U o) := by
   have hgU := goodEnum_of_perm Cfg E U hUp hUr
   refine ⟨fun x hx => hgU.1 x (mem_depList.mp hx).1,
@@ -115,39 +117,39 @@ theorem goodEnum_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.t
   exact mem_depList.mpr ⟨(hUp.2 z).mpr hz, hzo, hdep⟩
 
 /-- `IsDepPreC` for the dep-list of any `o`, carved from a full enumeration. -/
-theorem isDepPreC_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) (o : op_t) :
+theorem isDepPreC_depList_of_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) (o : op_t α) :
     IsDepPreC Cfg E o (depList Cfg E U o) :=
   isDepPreC_depList Cfg E U o (fun x hx => (hUp.2 x).mp hx) hUp.1 hUr
     (fun z hz _ _ => (hUp.2 z).mpr hz)
 
 /-- `CanonInv` at the dep-list's fold: the engine (`canonFoldOK_of_gen`) runs on the carved
 `GoodEnum` and `canon_fold` folds it up. -/
-theorem canonInv_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem canonInv_depList_of_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ o ∈ E, o.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) (o : op_t) :
-    CanonInv (depList Cfg E U o) (applySeqR init_st (depList Cfg E U o)) := by
-  have hOK : CanonFoldOK [] init_st (depList Cfg E U o) :=
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) (o : op_t α) :
+    CanonInv (depList Cfg E U o) (applySeqR (init_st (α := α)) (depList Cfg E U o)) := by
+  have hOK : CanonFoldOK [] (init_st (α := α)) (depList Cfg E U o) :=
     canonFoldOK_of_gen Cfg E hdts hids0 hGen (depList Cfg E U o).length _ le_rfl
       (goodEnum_depList_of_perm Cfg E htr hirr U hUp hUr o)
-  have h := canon_fold (depList Cfg E U o) [] init_st canonInv_init hOK
+  have h := canon_fold (depList Cfg E U o) [] (init_st (α := α)) canonInv_init hOK
   rwa [List.nil_append] at h
 
 /-- Recorded-chain closure of the dep-list: chain entries of a `d`-member are root-or-inserted
 in `d` itself (via `chain_entries_mem` at the full enumeration + `DepC`-transitivity). -/
-theorem chains_closed_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) (o : op_t) :
+theorem chains_closed_depList_of_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (hGen : GenDisc2C Cfg E)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) (o : op_t α) :
     ∀ z rz ez az (pz : List ℕ), (z, rz, .Ins ez pz az) ∈ depList Cfg E U o →
       ∀ c ∈ az :: pz, c = 0 ∨ insertedIn (depList Cfg E U o) c := by
   intro z rz ez az pz hm c hc
@@ -169,23 +171,23 @@ theorem chains_closed_depList_of_perm (Cfg : Sal.Emulation.Configuration RGACond
 /-- **`canonStepOK_delta`** — the application discipline for `o` at a prefix `F` that carries
 `CanonInv` and the dependency closures, with NO order hypothesis on `F`.  Mirror of
 `canonStepOK_of_gen` with every dep-list carved from the freely-chosen full enumeration `U`. -/
-theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ o ∈ E, o.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E))
-    (F : List op_t) (o : op_t)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E))
+    (F : List (op_t α)) (o : op_t α)
     (hFsub : ∀ x ∈ F, x ∈ E) (hoE : o ∈ E) (honF : o ∉ F)
-    (hinvF : CanonInv F (applySeqR init_st F))
+    (hinvF : CanonInv F (applySeqR (init_st (α := α)) F))
     (hdepF : ∀ z ∈ E, z ≠ o → DepC Cfg E z o → z ∈ F)
     (hFclosed : ∀ w ∈ F, ∀ z ∈ E, z ≠ w → DepC Cfg E z w → z ∈ F) :
-    CanonStepOK F (applySeqR init_st F) o := by
+    CanonStepOK F (applySeqR (init_st (α := α)) F) o := by
   -- o's id was never allocated by any insert seen from F (id uniqueness)
-  have hfresh : ∀ L : List op_t, (∀ x ∈ L, x ∈ F) → ¬ insertedIn L o.1 := by
+  have hfresh : ∀ L : List (op_t α), (∀ x ∈ L, x ∈ F) → ¬ insertedIn L o.1 := by
     rintro L hL ⟨r', e', p', a', hm⟩
     have hmF : (o.1, r', .Ins e' p' a') ∈ F := hL _ hm
     have hne : (o.1, r', .Ins e' p' a') ≠ o := fun hEq => honF (hEq ▸ hmF)
@@ -196,9 +198,9 @@ theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSi
     intro x hx
     obtain ⟨_hxU, hxo, hxdep⟩ := mem_depList.mp hx
     exact hdepF x ((hUp.2 x).mp (mem_depList.mp hx).1) hxo hxdep
-  have hinvD : CanonInv d (applySeqR init_st d) :=
+  have hinvD : CanonInv d (applySeqR (init_st (α := α)) d) :=
     canonInv_depList_of_perm Cfg E hdts hids0 hGen htr hirr U hUp hUr o
-  have hacc : accurate o (applySeqR init_st d) :=
+  have hacc : accurate o (applySeqR (init_st (α := α)) d) :=
     hGen o hoE d (isDepPreC_depList_of_perm Cfg E U hUp hUr o)
   have hchains : ∀ z rz ez az (pz : List ℕ), (z, rz, .Ins ez pz az) ∈ d →
       ∀ c ∈ az :: pz, c = 0 ∨ insertedIn d c :=
@@ -214,7 +216,7 @@ theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSi
   | Ins e p a =>
     refine ⟨ht0, ?_, ?_, ?_, ?_, ?_⟩
     · -- t is absent from the application fold
-      cases hb : contains (applySeqR init_st F) t with
+      cases hb : contains (applySeqR (init_st (α := α)) F) t with
       | false => rfl
       | true =>
         exact absurd (insertedIn_of_contains_fold F t hb)
@@ -245,7 +247,7 @@ theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSi
       rcases hacc with ⟨ha0, hp0⟩ | ⟨hal, hpath⟩
       · subst ha0; subst hp0
         intro c cs heq
-        have hnil : liveSub (applySeqR init_st F) [0] = [] := by
+        have hnil : liveSub (applySeqR (init_st (α := α)) F) [0] = [] := by
           unfold liveSub
           rw [List.filter_cons, List.filter_nil, hinvF.1]
           simp
@@ -269,23 +271,23 @@ theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSi
 
 /-- The workhorse induction: extend a dep-closed, `CanonInv`-carrying prefix `F` along a delta
 list `π`, maintaining the invariants. -/
-theorem canonFoldOK_delta_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem canonFoldOK_delta_aux (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ o ∈ E, o.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E)) :
-    ∀ (π F : List op_t),
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E)) :
+    ∀ (π F : List (op_t α)),
       (∀ x ∈ F, x ∈ E) → (∀ x ∈ π, x ∈ E) →
       (F ++ π).Nodup →
-      CanonInv F (applySeqR init_st F) →
+      CanonInv F (applySeqR (init_st (α := α)) F) →
       (∀ w ∈ F, ∀ z ∈ E, z ≠ w → DepC Cfg E z w → z ∈ F) →
       (∀ pre o post, π = pre ++ o :: post →
         ∀ z ∈ E, z ≠ o → DepC Cfg E z o → z ∈ F ++ pre) →
-      CanonFoldOK F (applySeqR init_st F) π := by
+      CanonFoldOK F (applySeqR (init_st (α := α)) F) π := by
   intro π
   induction π with
   | nil => intro F _ _ _ _ _ _; trivial
@@ -300,16 +302,16 @@ theorem canonFoldOK_delta_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
       intro z hz hzo hdep
       have := hδdeps [] o rest rfl z hz hzo hdep
       rwa [List.append_nil] at this
-    have hstep : CanonStepOK F (applySeqR init_st F) o :=
+    have hstep : CanonStepOK F (applySeqR (init_st (α := α)) F) o :=
       canonStepOK_delta Cfg E hdts hids0 hGen htr hirr U hUp hUr F o
         hFsub hoE honF hinvF hdepF hFclosed
     refine ⟨hstep, ?_⟩
     -- extend the invariants to F ++ [o] and recurse
-    have hfold' : applySeqR init_st (F ++ [o]) = do_ (applySeqR init_st F) o := by
+    have hfold' : applySeqR (init_st (α := α)) (F ++ [o]) = do_ (applySeqR (init_st (α := α)) F) o := by
       simp only [applySeqR, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    have hinvF' : CanonInv (F ++ [o]) (applySeqR init_st (F ++ [o])) := by
-      have h := canon_fold [o] F (applySeqR init_st F) hinvF ⟨hstep, trivial⟩
-      rwa [show applySeqR (applySeqR init_st F) [o] = applySeqR init_st (F ++ [o]) from by
+    have hinvF' : CanonInv (F ++ [o]) (applySeqR (init_st (α := α)) (F ++ [o])) := by
+      have h := canon_fold [o] F (applySeqR (init_st (α := α)) F) hinvF ⟨hstep, trivial⟩
+      rwa [show applySeqR (applySeqR (init_st (α := α)) F) [o] = applySeqR (init_st (α := α)) (F ++ [o]) from by
         simp only [applySeqR, List.foldl_append]] at h
     have hFsub' : ∀ x ∈ F ++ [o], x ∈ E := by
       intro x hx
@@ -333,30 +335,30 @@ theorem canonFoldOK_delta_aux (Cfg : Sal.Emulation.Configuration RGACondSig.toCR
       hFclosed' hδdeps'
     rwa [hfold'] at this
 
-/-- **K1 — the delta discipline.**  `CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀` from:
+/-- **K1 — the delta discipline.**  `CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀` from:
 the generation discipline (`GenDisc2C` — each event accurate at its own dependency fold, the
 condition that survives concurrent anchor-kills), the LCA's own discipline (`CanonFoldOK [] init ρ₀`
 — from the noopFeasible engine route on the given born-applicable `ρ₀`), dependency closure of the
 LCA set, and per-position dependency closure of the delta (`hδdeps`).  NO order hypothesis on `ρ₀`. -/
-theorem canonFoldOK_delta (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t)
-    (hdts : ∀ a b : op_t, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
+theorem canonFoldOK_delta (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α))
+    (hdts : ∀ a b : op_t α, a ∈ E → b ∈ E → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ o ∈ E, o.1 ≠ 0)
     (hGen : GenDisc2C Cfg E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (U : List op_t) (hUp : listPermOf U E)
-    (hUr : respects U (loOnA RGACondSig Cfg E))
-    (ρ₀ π₀ : List op_t)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (U : List (op_t α)) (hUp : listPermOf U E)
+    (hUr : respects U (loOnA (RGACondSig α) Cfg E))
+    (ρ₀ π₀ : List (op_t α))
     (hρsub : ∀ x ∈ ρ₀, x ∈ E) (hπsub : ∀ x ∈ π₀, x ∈ E)
     (hnd : (ρ₀ ++ π₀).Nodup)
-    (hρOK : CanonFoldOK [] init_st ρ₀)
+    (hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀)
     (hρclosed : ∀ w ∈ ρ₀, ∀ z ∈ E, z ≠ w → DepC Cfg E z w → z ∈ ρ₀)
     (hδdeps : ∀ pre o post, π₀ = pre ++ o :: post →
         ∀ z ∈ E, z ≠ o → DepC Cfg E z o → z ∈ ρ₀ ++ pre) :
-    CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ := by
-  have hinvρ : CanonInv ρ₀ (applySeqR init_st ρ₀) := by
-    have h := canon_fold ρ₀ [] init_st canonInv_init hρOK
+    CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀ := by
+  have hinvρ : CanonInv ρ₀ (applySeqR (init_st (α := α)) ρ₀) := by
+    have h := canon_fold ρ₀ [] (init_st (α := α)) canonInv_init hρOK
     rwa [List.nil_append] at h
   exact canonFoldOK_delta_aux Cfg E hdts hids0 hGen htr hirr U hUp hUr π₀ ρ₀
     hρsub hπsub hnd hinvρ hρclosed hδdeps

@@ -33,30 +33,33 @@ Built BOTTOM-UP, each layer 0-sorry:
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
 
 namespace Sal.ConditionedMRDTs.RGAConditionedConvergence
 
 open Sal.Emulation
 
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 /-! ## §0  Plumbing: the concrete `eq`-fold and `eq` as an equivalence -/
 
 /-- Concrete RGA fold: apply a list of ops left-to-right with `do_`. -/
-def applySeqR (s : concrete_st) (π : List op_t) : concrete_st := π.foldl do_ s
+def applySeqR (s : concrete_st α) (π : List (op_t α)) : concrete_st α := π.foldl do_ s
 
-@[simp] theorem applySeqR_nil (s : concrete_st) : applySeqR s [] = s := rfl
+@[simp] theorem applySeqR_nil (s : concrete_st α) : applySeqR s [] = s := rfl
 
-@[simp] theorem applySeqR_cons (s : concrete_st) (o : op_t) (π : List op_t) :
+@[simp] theorem applySeqR_cons (s : concrete_st α) (o : op_t α) (π : List (op_t α)) :
     applySeqR s (o :: π) = applySeqR (do_ s o) π := rfl
 
-theorem applySeqR_append (s : concrete_st) (π₁ π₂ : List op_t) :
+theorem applySeqR_append (s : concrete_st α) (π₁ π₂ : List (op_t α)) :
     applySeqR s (π₁ ++ π₂) = applySeqR (applySeqR s π₁) π₂ := by
   simp only [applySeqR, List.foldl_append]
 
 /-- `eq` is reflexive. -/
-theorem eq_refl (s : concrete_st) : eq s s := fun _ => ⟨rfl, fun _ => rfl⟩
+theorem eq_refl (s : concrete_st α) : eq s s := fun _ => ⟨rfl, fun _ => rfl⟩
 
 /-- `eq` is transitive. -/
-theorem eq_trans (a b c : concrete_st) (hab : eq a b) (hbc : eq b c) : eq a c := by
+theorem eq_trans (a b c : concrete_st α) (hab : eq a b) (hbc : eq b c) : eq a c := by
   intro k
   refine ⟨(hab k).1.trans (hbc k).1, ?_⟩
   intro hka
@@ -65,12 +68,12 @@ theorem eq_trans (a b c : concrete_st) (hab : eq a b) (hbc : eq b c) : eq a c :=
 /-! ## §1  eq-congruence of `do_` and of the fold -/
 
 /-- `resolve` only reads `contains`, so `eq` states resolve any list identically. -/
-theorem resolve_eq_congr (s s' : concrete_st) (h : eq s s') (L : List ℕ) :
+theorem resolve_eq_congr (s s' : concrete_st α) (h : eq s s') (L : List ℕ) :
     resolve s L = resolve s' L :=
   resolve_dom_eq s s' L (fun c _ => (h c).1)
 
 /-- `upd` is `eq`-congruent in its base state (same key, same value). -/
-theorem upd_eq_congr (s s' : concrete_st) (t : ℕ) (v : ℕ × ℕ) (h : eq s s') :
+theorem upd_eq_congr (s s' : concrete_st α) (t : ℕ) (v : α × ℕ) (h : eq s s') :
     eq (upd s t v) (upd s' t v) := by
   intro k
   refine ⟨?_, ?_⟩
@@ -87,7 +90,7 @@ theorem upd_eq_congr (s s' : concrete_st) (t : ℕ) (v : ℕ × ℕ) (h : eq s s
 /-- **eq-congruence of `do_` (the needed form).**  `eq s s' → eq (do_ s o) (do_ s' o)`.
 The stored anchor depends only on `resolve` (which reads `contains`), so it agrees
 across `eq` states; the `Del` case agrees pointwise via `contains_doDel`/`sel_doDel`. -/
-theorem do_eq_congr (s s' : concrete_st) (h : eq s s') (o : op_t) :
+theorem do_eq_congr (s s' : concrete_st α) (h : eq s s') (o : op_t α) :
     eq (do_ s o) (do_ s' o) := by
   obtain ⟨t, r, op⟩ := o
   cases op with
@@ -110,7 +113,7 @@ theorem do_eq_congr (s s' : concrete_st) (h : eq s s') (o : op_t) :
       rw [hanc, hel, hres, hsel]
 
 /-- **eq-congruence of the fold (Layer 1).**  `eq s s' → eq (applySeqR s π) (applySeqR s' π)`. -/
-theorem applySeqR_eq_congr (π : List op_t) (s s' : concrete_st) (h : eq s s') :
+theorem applySeqR_eq_congr (π : List (op_t α)) (s s' : concrete_st α) (h : eq s s') :
     eq (applySeqR s π) (applySeqR s' π) := by
   induction π generalizing s s' with
   | nil => exact h
@@ -127,7 +130,7 @@ without disturbing the recursive tail. -/
 
 /-- On an accurate chain the ids strictly decrease rootward (from `id_mono` +
 `contains 0 = false`).  In particular the head never recurs in its own tail. -/
-theorem chain_lt (s : concrete_st) (hmono : id_mono s) (h0 : contains s 0 = false) :
+theorem chain_lt (s : concrete_st α) (hmono : id_mono s) (h0 : contains s 0 = false) :
     ∀ (p : List ℕ) (leaf : ℕ), contains s leaf = true → IsAncPath s leaf p →
       ∀ x ∈ p, x < leaf := by
   intro p
@@ -146,27 +149,27 @@ theorem chain_lt (s : concrete_st) (hmono : id_mono s) (h0 : contains s 0 = fals
     · exact hclt
     · exact lt_trans (ih c hcc hrest x hx') hclt
 
-def GoodStep (s : concrete_st) (L : List ℕ) : op_t → Prop
+def GoodStep (s : concrete_st α) (L : List ℕ) : op_t α → Prop
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ t ∉ L
   | (_, _, .Del pre x) => contains s 0 = false ∧ accurate (0, 0, .Del pre x) s
 
-def GoodFold (L : List ℕ) : concrete_st → List op_t → Prop
+def GoodFold (L : List ℕ) : concrete_st α → List (op_t α) → Prop
   | _, [] => True
   | s, o :: rest => GoodStep s L o ∧ GoodFold L (do_ s o) rest
 
-def EqSwap (a b : op_t) (s : concrete_st) : Prop :=
+def EqSwap (a b : op_t α) (s : concrete_st α) : Prop :=
   eq (do_ (do_ s a) b) (do_ (do_ s b) a)
 
 /-- **Swap-at-fold (Layer 4).**  A pointwise `EqSwap` at the prefix fold lifts to
 an `eq` between the two adjacent orderings of the full fold. -/
-theorem applySeqR_swap_of_eqWitness (a b : op_t) (pfx sfx : List op_t) (s : concrete_st)
+theorem applySeqR_swap_of_eqWitness (a b : op_t α) (pfx sfx : List (op_t α)) (s : concrete_st α)
     (h_sw : EqSwap a b (applySeqR s pfx)) :
     eq (applySeqR s (pfx ++ a :: b :: sfx)) (applySeqR s (pfx ++ b :: a :: sfx)) := by
   rw [applySeqR_append, applySeqR_append]
   simp only [applySeqR_cons]
   exact applySeqR_eq_congr sfx _ _ h_sw
 
-theorem bubble_eq (e : op_t) (σ tail : List op_t) (s : concrete_st)
+theorem bubble_eq (e : op_t α) (σ tail : List (op_t α)) (s : concrete_st α)
     (h_sw : ∀ α β y, σ = α ++ y :: β → EqSwap y e (applySeqR s α)) :
     eq (applySeqR s (σ ++ e :: tail)) (applySeqR s (e :: (σ ++ tail))) := by
   induction σ generalizing s with
@@ -223,11 +226,11 @@ ENABLED (their entire `evC`-`lo`-past already lies in `pre`).  These are exactly
 etc.  The restriction SELF-THREADS through the recursion (`evC → evC \ {e}`,
 `pre → e :: pre`) with no explicit accumulator — the enablement past shrinks with
 `evC` and re-expands with the peeled head `e`. -/
-theorem eq_convergence (lo : op_t → op_t → Prop) :
-    ∀ (n : Nat) (s : concrete_st) (evC : Set op_t) (π₁ π₂ : List op_t),
+theorem eq_convergence (lo : op_t α → op_t α → Prop) :
+    ∀ (n : Nat) (s : concrete_st α) (evC : Set (op_t α)) (π₁ π₂ : List (op_t α)),
       π₁.length = n → listPermOf π₁ evC → listPermOf π₂ evC →
       respects π₁ lo → respects π₂ lo →
-      (∀ (pre : List op_t) (a b : op_t),
+      (∀ (pre : List (op_t α)) (a b : op_t α),
         (∀ x ∈ pre, x ∈ evC) → pre.Nodup → respects pre lo →
         a ∈ evC → b ∈ evC → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
         (∀ z ∈ evC, z ≠ a → lo z a → z ∈ pre) →
@@ -354,7 +357,7 @@ theorem eq_convergence (lo : op_t → op_t → Prop) :
         refine ⟨hσ, hτ, ?_⟩
         intro a ha b hb
         exact hcross a ha b (List.mem_cons_of_mem _ hb)
-      have hOracle' : ∀ (pre : List op_t) (a b : op_t),
+      have hOracle' : ∀ (pre : List (op_t α)) (a b : op_t α),
           (∀ x ∈ pre, x ∈ evC \ {e}) → pre.Nodup → respects pre lo →
           a ∈ evC \ {e} → b ∈ evC \ {e} → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
           (∀ z ∈ evC \ {e}, z ≠ a → lo z a → z ∈ pre) →
@@ -410,17 +413,17 @@ every `lo`-incomparable pair at every prefix fold.  Instantiate `lo` with
 `ConditionedConvergence.loOnA RGACondSig C ev`.  `hSwap` is the single obligation
 blocking a fully-unconditional close (see the §6 doc): it is exactly the
 `eqSwap_of_general`-discharge that stalls at hybrid staled states. -/
-theorem RGA_conditioned_convergence (lo : op_t → op_t → Prop) (ev : Set op_t)
-    (π₁ π₂ : List op_t)
+theorem RGA_conditioned_convergence (lo : op_t α → op_t α → Prop) (ev : Set (op_t α))
+    (π₁ π₂ : List (op_t α))
     (h₁p : listPermOf π₁ ev) (h₂p : listPermOf π₂ ev)
     (h₁r : respects π₁ lo) (h₂r : respects π₂ lo)
-    (hSwap : ∀ (pre : List op_t) (a b : op_t),
+    (hSwap : ∀ (pre : List (op_t α)) (a b : op_t α),
         (∀ x ∈ pre, x ∈ ev) → pre.Nodup → respects pre lo →
         a ∈ ev → b ∈ ev → a ∉ pre → b ∉ pre → a ≠ b → ¬ lo a b → ¬ lo b a →
         (∀ z ∈ ev, z ≠ a → lo z a → z ∈ pre) → (∀ z ∈ ev, z ≠ b → lo z b → z ∈ pre) →
-        EqSwap a b (applySeqR init_st pre)) :
-    eq (applySeqR init_st π₁) (applySeqR init_st π₂) :=
-  eq_convergence lo π₁.length init_st ev π₁ π₂ rfl h₁p h₂p h₁r h₂r hSwap
+        EqSwap a b (applySeqR (init_st (α := α)) pre)) :
+    eq (applySeqR (init_st (α := α)) π₁) (applySeqR (init_st (α := α)) π₂) :=
+  eq_convergence lo π₁.length (init_st (α := α)) ev π₁ π₂ rfl h₁p h₂p h₁r h₂r hSwap
 
 
 end Sal.ConditionedMRDTs.RGAConditionedConvergence

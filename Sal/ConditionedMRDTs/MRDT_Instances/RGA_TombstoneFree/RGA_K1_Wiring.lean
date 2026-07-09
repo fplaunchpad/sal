@@ -22,10 +22,12 @@ premise vocabulary (closures of `ev₁`/`ev₂`, perms, `respects`):
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGAK1Delta
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
@@ -39,8 +41,8 @@ open Sal.ConditionedMRDTs.ConditionedExecutionModel.ConditionedConfiguration (ex
 /-! ## §1  Dependency-chain structure across the LCA/delta split -/
 
 /-- The source of a transitive dependency is a delivered event. -/
-theorem depC_src_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (z o : op_t) (h : DepC Cfg E z o) : z ∈ E := by
+theorem depC_src_mem (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (z o : op_t α) (h : DepC Cfg E z o) : z ∈ E := by
   induction h with
   | single h => exact h.1
   | tail _ _ ih => exact ih
@@ -48,11 +50,11 @@ theorem depC_src_mem (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 /-- **No dependency edge crosses from outside the LCA into it.**  If `DepE u v` and
 `v ∈ ev₁ ∩ ev₂`, then `u ∈ ev₁ ∩ ev₂`: the edge is a `vis` edge, and both branch sets are
 `vis`-backward-closed. -/
-theorem depE_into_lca (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev₁ ev₂ : Set op_t)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
-    (u v : op_t) (h : DepE Cfg (ev₁ ∪ ev₂) u v) (hv : v ∈ ev₁ ∩ ev₂) :
+theorem depE_into_lca (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev₁ ev₂ : Set (op_t α))
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (u v : op_t α) (h : DepE Cfg (ev₁ ∪ ev₂) u v) (hv : v ∈ ev₁ ∩ ev₂) :
     u ∈ ev₁ ∩ ev₂ := by
   have hvis : Cfg.vis u v := depE_imp_vis Cfg (ev₁ ∪ ev₂) u v h
   exact ⟨hcl1 u v hvis hv.1, hcl2 u v hvis hv.2⟩
@@ -62,23 +64,23 @@ theorem depE_into_lca (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 dependency `z` of `o` that lies in the delta is in `pre`: the chain never enters the LCA
 (`depE_into_lca` would pull it out of the delta), so every link is between enumeration members,
 where `respects` forces each edge forward. -/
-theorem delta_chain_forward (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev₁ ev₂ : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
-    (pre post : List op_t) (o : op_t)
-    (hπr : respects (pre ++ o :: post) (loOnA RGACondSig Cfg (ev₁ ∪ ev₂)))
+theorem delta_chain_forward (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev₁ ev₂ : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (pre post : List (op_t α)) (o : op_t α)
+    (hπr : respects (pre ++ o :: post) (loOnA (RGACondSig α) Cfg (ev₁ ∪ ev₂)))
     (hDmem : ∀ x ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂), x ∈ pre ++ o :: post)
-    (z : op_t) (hzD : z ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))
+    (z : op_t α) (hzD : z ∈ (ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))
     (hdep : DepC Cfg (ev₁ ∪ ev₂) z o) :
     z ∈ pre := by
   obtain ⟨hcrossP, hop⟩ := List.pairwise_append.mp hπr
-  have hopost : ∀ b ∈ post, ¬ loOnA RGACondSig Cfg (ev₁ ∪ ev₂) b o :=
+  have hopost : ∀ b ∈ post, ¬ loOnA (RGACondSig α) Cfg (ev₁ ∪ ev₂) b o :=
     fun b hb => (List.pairwise_cons.mp hop.1).1 b hb
   have hcross : ∀ a ∈ pre, ∀ b ∈ o :: post,
-      ¬ loOnA RGACondSig Cfg (ev₁ ∪ ev₂) b a := hop.2
+      ¬ loOnA (RGACondSig α) Cfg (ev₁ ∪ ev₂) b a := hop.2
   -- head-first induction along the chain, motive: a delta source lies in `pre`
   revert hzD
   induction hdep using Relation.TransGen.head_induction_on with
@@ -111,12 +113,12 @@ theorem delta_chain_forward (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDT
 /-! ## §2  The two closure discharges -/
 
 /-- **The LCA set is dependency-closed** — `hρclosed` of `canonFoldOK_delta`. -/
-theorem lcaClosed_deps (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev₁ ev₂ : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
-    (ρ₀ : List op_t) (hρp : listPermOf ρ₀ (ev₁ ∩ ev₂)) :
+theorem lcaClosed_deps (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev₁ ev₂ : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (ρ₀ : List (op_t α)) (hρp : listPermOf ρ₀ (ev₁ ∩ ev₂)) :
     ∀ w ∈ ρ₀, ∀ z ∈ (ev₁ ∪ ev₂), z ≠ w → DepC Cfg (ev₁ ∪ ev₂) z w → z ∈ ρ₀ := by
   intro w hw z _hz _hzw hdep
   have hwL : w ∈ ev₁ ∩ ev₂ := (hρp.2 w).mp hw
@@ -125,16 +127,16 @@ theorem lcaClosed_deps (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 
 /-- **The per-position delta closure** — `hδdeps` of `canonFoldOK_delta`: a dependency of a
 delta op is an LCA op or an earlier delta op. -/
-theorem deltaDeps_discharge (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev₁ ev₂ : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
-    (ρ₀ π₀ : List op_t)
+theorem deltaDeps_discharge (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev₁ ev₂ : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (ρ₀ π₀ : List (op_t α))
     (hρp : listPermOf ρ₀ (ev₁ ∩ ev₂))
     (hπp : listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)))
-    (hπr : respects π₀ (loOnA RGACondSig Cfg (ev₁ ∪ ev₂))) :
+    (hπr : respects π₀ (loOnA (RGACondSig α) Cfg (ev₁ ∪ ev₂))) :
     ∀ pre o post, π₀ = pre ++ o :: post →
       ∀ z ∈ (ev₁ ∪ ev₂), z ≠ o → DepC Cfg (ev₁ ∪ ev₂) z o → z ∈ ρ₀ ++ pre := by
   intro pre o post hsplit z hz _hzo hdep
@@ -150,12 +152,12 @@ theorem deltaDeps_discharge (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDT
 /-- A `loOnA`-respecting enumeration of any finitely-listed event set exists: `loOnA ⊆ vis`
 and `vis` is a strict order, so a `vis`-minimal element is `loOnA`-minimal and the generic
 topological sort applies. -/
-theorem exists_loOnA_perm (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (E : Set op_t) (lE : List op_t) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a) :
-    ∃ U, listPermOf U E ∧ respects U (loOnA RGACondSig Cfg E) := by
-  obtain ⟨U, hperm, hpw⟩ := exists_respecting (loOnA RGACondSig Cfg E) lE.length lE rfl
+theorem exists_loOnA_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (E : Set (op_t α)) (lE : List (op_t α)) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a) :
+    ∃ U, listPermOf U E ∧ respects U (loOnA (RGACondSig α) Cfg E) := by
+  obtain ⟨U, hperm, hpw⟩ := exists_respecting (loOnA (RGACondSig α) Cfg E) lE.length lE rfl
     (fun l' _ hne => by
       obtain ⟨m, hm, hmin⟩ := exists_min_of_irrefl_trans Cfg.vis (@htr) hirr l' hne
       exact ⟨m, hm, fun y hy hlo => hmin y hy (loOnA_imp_vis Cfg E y m hlo)⟩)
@@ -169,7 +171,7 @@ leaf — from the honest residual only:
 
 * `hGen : GenDisc2C Cfg (ev₁ ∪ ev₂)` — each event accurate at its own dependency fold (the
   born-applicable generation content; task #32's discharge target);
-* `hρOK : CanonFoldOK [] init_st ρ₀` — the LCA's own discipline (the existing noopFeasible
+* `hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀` — the LCA's own discipline (the existing noopFeasible
   engine route on the born-applicable `ρ₀`);
 * `hπr : respects π₀ (loOnA …)` — the delta enum is causally sorted (constructible: any
   `vis`-topological sort works, since `loOnA ⊆ vis`);
@@ -177,21 +179,21 @@ leaf — from the honest residual only:
 
 Everything else — the ambient enumeration, the dependency closures, the per-position delta
 closure — is derived. NO order hypothesis on `ρ₀`; NO feasibility at the LCA-first fold. -/
-theorem K1_canonFoldOK (Cfg : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
-    (ev₁ ev₂ : Set op_t)
-    (htr : ∀ {a b c : op_t}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
-    (hirr : ∀ a : op_t, ¬ Cfg.vis a a)
-    (hcl1 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl2 : ∀ a b : op_t, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
-    (hdts : ∀ a b : op_t, a ∈ ev₁ ∪ ev₂ → b ∈ ev₁ ∪ ev₂ → a ≠ b → a.1 ≠ b.1)
+theorem K1_canonFoldOK (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
+    (ev₁ ev₂ : Set (op_t α))
+    (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
+    (hirr : ∀ a : op_t α, ¬ Cfg.vis a a)
+    (hcl1 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl2 : ∀ a b : op_t α, Cfg.vis a b → b ∈ ev₂ → a ∈ ev₂)
+    (hdts : ∀ a b : op_t α, a ∈ ev₁ ∪ ev₂ → b ∈ ev₁ ∪ ev₂ → a ≠ b → a.1 ≠ b.1)
     (hids0 : ∀ o ∈ ev₁ ∪ ev₂, o.1 ≠ 0)
     (hGen : GenDisc2C Cfg (ev₁ ∪ ev₂))
-    (ρ₀ π₀ : List op_t)
+    (ρ₀ π₀ : List (op_t α))
     (hρp : listPermOf ρ₀ (ev₁ ∩ ev₂))
     (hπp : listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)))
-    (hπr : respects π₀ (loOnA RGACondSig Cfg (ev₁ ∪ ev₂)))
-    (hρOK : CanonFoldOK [] init_st ρ₀) :
-    CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ := by
+    (hπr : respects π₀ (loOnA (RGACondSig α) Cfg (ev₁ ∪ ev₂)))
+    (hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀) :
+    CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀ := by
   -- the union list and its set algebra
   have hmem : ∀ o, o ∈ ρ₀ ++ π₀ ↔ o ∈ ev₁ ∪ ev₂ := by
     intro o

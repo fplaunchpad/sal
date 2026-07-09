@@ -23,10 +23,12 @@ The fold-step obligations themselves are the two accuracy cruxes (`chainOK_of_ac
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGASkeleton3
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
@@ -39,44 +41,44 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK (canonFoldOK_append insertedIn_of_conta
 /-- **hHext, discharged.**  The witness discipline `rgaH` extends at an applicable apply. -/
 theorem rga_hHext_discharged
     {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)}
-    {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t}
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}
+    {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
     {v : Sal.ConditionedMRDTs.Version}
-    {sh : QState RGACondSig' rgaEqEquiv'} {evh : Set (Op app_op_t)} :
-    (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)).ReachableFrom
+    {sh : QState (RGACondSig' α) (rgaEqEquiv' α)} {evh : Set (Op (app_op_t α))} :
+    (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
       (Sal.ConditionedMRDTs.initConfig
-        (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial) C₀ →
-    Sal.ConditionedMRDTs.Step3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C₀ →
+    Sal.ConditionedMRDTs.Step3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
       C₀ (Sal.ConditionedMRDTs.Label3.apply t r o) C₁ →
     C₀.head r = some v → C₀.ver v = some (sh, evh) →
-    ∀ ρ : List op_t, listPermOf ρ evh → rgaH ρ →
-      RGACondSig'.applicable (t, r, o) (applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ) →
+    ∀ ρ : List (op_t α), listPermOf ρ evh → rgaH ρ →
+      (RGACondSig' α).applicable (t, r, o) (applySeq (RGACondSig' α).toCRDTSig (RGACondSig' α).init ρ) →
       rgaH (ρ ++ [(t, r, o)]) := by
   intro _hreach hstep hhead hver ρ hρp hH happ
   obtain ⟨hOK, hHP⟩ := hH
   -- freshness of t against evh, from the step's stored-freshness side-condition
-  have hfresh : ∀ x : op_t, x ∈ evh → x.1 ≠ t := by
+  have hfresh : ∀ x : op_t α, x ∈ evh → x.1 ≠ t := by
     cases hstep with
     | apply h_head' h_ver' hft hfs hvn hrk C' hN hL hvis hver2 hhead2 hparents =>
       intro x hx
       exact hfs v sh evh hver x hx
   -- the applicable premise at the raw fold
-  have hstate : applySeq RGACondSig'.toCRDTSig RGACondSig'.init ρ = applySeqR init_st ρ :=
-    Sal.ConditionedMRDTs.RGAInstanceFinal.applySeq_eq_applySeqR RGACondSig'.init ρ
+  have hstate : applySeq (RGACondSig' α).toCRDTSig (RGACondSig' α).init ρ = applySeqR (init_st (α := α)) ρ :=
+    Sal.ConditionedMRDTs.RGAInstanceFinal.applySeq_eq_applySeqR (RGACondSig' α).init ρ
   rw [hstate] at happ
-  have hacc : accurate (t, r, o) (applySeqR init_st ρ) := happ.1
-  have hfr : fresh_ts (t, r, o) (applySeqR init_st ρ) := happ.2
-  have hinv : CanonInv ρ (applySeqR init_st ρ) := by
-    have h := RGACanonConvergence.canon_fold ρ [] init_st
+  have hacc : accurate (t, r, o) (applySeqR (init_st (α := α)) ρ) := happ.1
+  have hfr : fresh_ts (t, r, o) (applySeqR (init_st (α := α)) ρ) := happ.2
+  have hinv : CanonInv ρ (applySeqR (init_st (α := α)) ρ) := by
+    have h := RGACanonConvergence.canon_fold ρ [] (init_st (α := α))
       RGACanonConvergence.canonInv_init hOK
     rwa [List.nil_append] at h
-  have h0 : contains (applySeqR init_st ρ) 0 = false := hinv.1
+  have h0 : contains (applySeqR (init_st (α := α)) ρ) 0 = false := hinv.1
   have hlift : ∀ x : ℕ, insertedIn ρ x → insertedIn (ρ ++ [(t, r, o)]) x := by
     rintro x ⟨r', e', p', a', hm'⟩
     exact ⟨r', e', p', a', List.mem_append_left _ hm'⟩
   cases o with
   | Ins e p a =>
-    have hstepOK : CanonStepOK ρ (applySeqR init_st ρ) (t, r, app_op_t.Ins e p a) := by
+    have hstepOK : CanonStepOK ρ (applySeqR (init_st (α := α)) ρ) (t, r, app_op_t.Ins e p a) := by
       refine ⟨hfr.1, hfr.2, ?_, ?_, ?_,
         RGACanonConvergence.chainOK_of_accurate _ t r e a p h0 hacc⟩
       · -- no id reuse: a recorded delete of t names an inserted id — freshness contra
@@ -94,7 +96,7 @@ theorem rga_hHext_discharged
           rcases List.mem_cons.mp htmem with h | h
           · exact hfr.1 h
           · simp at h
-        · have hlive : contains (applySeqR init_st ρ) t = true := by
+        · have hlive : contains (applySeqR (init_st (α := α)) ρ) t = true := by
             rcases List.mem_cons.mp htmem with h | h
             · exact h ▸ hal
             · exact isAncPath_mem _ a p hpath t h
@@ -106,7 +108,7 @@ theorem rga_hHext_discharged
         · exact hfr.1 h0'
         · obtain ⟨r'', e'', p'', a'', hm''⟩ := hins
           exact hfresh _ ((hρp.2 _).mp hm'') rfl
-    refine ⟨canonFoldOK_append ρ [] init_st _ hOK hstepOK, ?_, ?_⟩
+    refine ⟨canonFoldOK_append ρ [] (init_st (α := α)) _ hOK hstepOK, ?_, ?_⟩
     · -- delete payloads: only old members (the appended op is an Ins)
       intro t' r' x' p' hm'
       rcases List.mem_append.mp hm' with h | h
@@ -115,7 +117,7 @@ theorem rga_hHext_discharged
         · exact Or.inr (hlift x' hins)
       · exfalso
         have hEq := List.mem_singleton.mp h
-        exact app_op_t.noConfusion (congrArg (fun z : op_t => z.2.2) hEq)
+        simp at hEq
     · -- insert payloads: old members lift; the new op's chain is accurate-live
       intro t' r' e' a' p' hm' c hc
       rcases List.mem_append.mp hm' with h | h
@@ -123,7 +125,7 @@ theorem rga_hHext_discharged
         · exact Or.inl h0'
         · exact Or.inr (hlift c hins)
       · have hEq := List.mem_singleton.mp h
-        have h3 := congrArg (fun z : op_t => z.2.2) hEq
+        have h3 := congrArg (fun z : op_t α => z.2.2) hEq
         injection h3 with h3e h3p h3a
         have hchain : (a' : ℕ) :: p' = a :: p := by rw [h3a, h3p]
         rw [hchain] at hc
@@ -134,15 +136,15 @@ theorem rga_hHext_discharged
           rcases List.mem_cons.mp hc with h' | h'
           · exact Or.inl h'
           · simp at h'
-        · have hlive : contains (applySeqR init_st ρ) c = true := by
+        · have hlive : contains (applySeqR (init_st (α := α)) ρ) c = true := by
             rcases List.mem_cons.mp hc with h' | h'
             · exact h' ▸ hal
             · exact isAncPath_mem _ a p hpath c h'
           exact Or.inr (hlift c (insertedIn_of_contains_fold ρ c hlive))
   | Del p x =>
-    have hstepOK : CanonStepOK ρ (applySeqR init_st ρ) (t, r, app_op_t.Del p x) :=
+    have hstepOK : CanonStepOK ρ (applySeqR (init_st (α := α)) ρ) (t, r, app_op_t.Del p x) :=
       RGACanonConvergence.delOK_of_accurate _ t r x p h0 hacc
-    refine ⟨canonFoldOK_append ρ [] init_st _ hOK hstepOK, ?_, ?_⟩
+    refine ⟨canonFoldOK_append ρ [] (init_st (α := α)) _ hOK hstepOK, ?_, ?_⟩
     · -- delete payloads: old members lift; the new del's nonzero target is accurate-live
       intro t' r' x' p' hm'
       rcases List.mem_append.mp hm' with h | h
@@ -150,7 +152,7 @@ theorem rga_hHext_discharged
         · exact Or.inl h0'
         · exact Or.inr (hlift x' hins)
       · have hEq := List.mem_singleton.mp h
-        have h3 := congrArg (fun z : op_t => z.2.2) hEq
+        have h3 := congrArg (fun z : op_t α => z.2.2) hEq
         injection h3 with h3p h3x
         have hacc' := hacc
         simp only [accurate, opLeaf, opPath] at hacc'
@@ -166,7 +168,7 @@ theorem rga_hHext_discharged
         · exact Or.inr (hlift c hins)
       · exfalso
         have hEq := List.mem_singleton.mp h
-        exact app_op_t.noConfusion (congrArg (fun z : op_t => z.2.2) hEq)
+        simp at hEq
 
 /-! ## Axiom audit -/
 

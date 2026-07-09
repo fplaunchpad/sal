@@ -9,7 +9,7 @@ only up to observational `eq` (`≈`), not Lean `=` — can be presented to the
 structural-`=` metatheorem template (`Adequacy.IsRALinearizable3`,
 `ConditionedContract.ra_linearizable3_of_joinC`).
 
-Design: `EQ_QUOTIENT_DESIGN.md`. The plan is to quotient `concrete_st` by `≈` so
+Design: `EQ_QUOTIENT_DESIGN.md`. The plan is to quotient `concrete_st α` by `≈` so
 that `=` on `QState` *is* `≈` downstairs, letting the RGA's `≈`-results become
 `QState` `=`-results for free.
 
@@ -34,33 +34,36 @@ states), which is exactly what the pending convergence workstream supplies.
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
 
 namespace Sal.ConditionedMRDTs.RGAEqQuotient
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGAConditionedConvergence
 
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 /-! ## §1. The setoid, the quotient, and the operation lift -/
 
 /-- `eq` (`≈`) is an equivalence relation: reflexive (`eq_refl`), symmetric
 (`eq_symm`), transitive (`eq_trans`). -/
-theorem eq_equiv : Equivalence eq :=
+theorem eq_equiv : Equivalence (@eq α) :=
   ⟨eq_refl, fun {a b} h => eq_symm a b h, fun {a b c} h₁ h₂ => eq_trans a b c h₁ h₂⟩
 
 /-- The observational setoid on RGA states. `Setoid.r` is `eq`, so `=` on the
-quotient below IS `≈`. -/
-instance rgaSetoid : Setoid concrete_st := ⟨eq, eq_equiv⟩
+quotient below IS `≈`.  (Dead scaffolding — pinned at `ℕ`.) -/
+instance rgaSetoid : Setoid (concrete_st ℕ) := ⟨eq, eq_equiv⟩
 
 /-- The quotient state type. `⟦s⟧ = ⟦s'⟧ ↔ s ≈ s'` by `Quotient.eq`. -/
 def QState : Type := Quotient rgaSetoid
 
 /-- Lift of `do_` to the quotient. Well-defined because `do_` is *unconditionally*
 `≈`-congruent (`do_eq_congr`) — no reachability hypotheses. -/
-def qdo (o : op_t) (q : QState) : QState :=
+def qdo (o : op_t ℕ) (q : QState) : QState :=
   Quotient.liftOn q (fun s => (⟦do_ s o⟧ : QState))
     (fun s s' h => Quotient.sound (do_eq_congr s s' h o))
 
-@[simp] theorem qdo_mk (o : op_t) (s : concrete_st) :
+@[simp] theorem qdo_mk (o : op_t ℕ) (s : concrete_st ℕ) :
     qdo o (⟦s⟧ : QState) = ⟦do_ s o⟧ := rfl
 
 /-- The initial quotient state. -/
@@ -84,11 +87,11 @@ of the three per-argument congruences. Below:
   lie *outside* `domain l`, where `≈` says nothing about `anc l`. So the `l`-step
   cannot be discharged on the raw type; it needs the reachable-state structural
   forest invariant (`wf l ∧ id_mono l ∧ birthAnc ∈ {0}∪I∪domL`, the
-  `BranchInv`/`climb_aux_walk` family), which lives on `concrete_st`, not on the
+  `BranchInv`/`climb_aux_walk` family), which lives on `concrete_st α`, not on the
   `≈`-class. THIS is why `qmerge` (§4) is PENDING. -/
 
 /-- **`a`-argument merge congruence** (unconditional). -/
-theorem merge_eq_congr_a (l a a' b : concrete_st) (h : eq a a') :
+theorem merge_eq_congr_a (l a a' b : concrete_st α) (h : eq a a') :
     eq (merge l a b) (merge l a' b) := by
   have hdom : domain a = domain a' := funext (fun k => (h k).1)
   intro k
@@ -122,7 +125,7 @@ theorem merge_eq_congr_a (l a a' b : concrete_st) (h : eq a a') :
 feeds the else-branch element/anchor for *every* key, so on the surviving key `k`
 we first recover `contains b k = true` from survivor membership `hk`, then use
 `≈` on `b`. -/
-theorem merge_eq_congr_b (l a b b' : concrete_st) (h : eq b b') :
+theorem merge_eq_congr_b (l a b b' : concrete_st α) (h : eq b b') :
     eq (merge l a b) (merge l a b') := by
   have hdom : domain b = domain b' := funext (fun k => (h k).1)
   intro k
@@ -176,15 +179,15 @@ etc.) all carry `Hstay`/`Hdec` (`wf l ∧ id_mono l`) AND require the start node
 `{0}∪domain l`; neither is available for a raw off-domain birth-anchor. `wf` does
 not rescue it: both `l`, `l'` here are `wf` **vacuously** (empty domain). -/
 
-private def ceL  : concrete_st := ⟨fun _ => (0, 0), empty⟩
-private def ceL' : concrete_st := ⟨fun x => if x = 3 then (0, 5) else (0, 0), empty⟩
-private def ceA  : concrete_st := ⟨fun x => if x = 5 then (7, 3) else (0, 0), singleton 5⟩
+private def ceL : concrete_st ℕ := ⟨fun _ => (0, 0), empty⟩
+private def ceL' : concrete_st ℕ := ⟨fun x => if x = 3 then (0, 5) else (0, 0), empty⟩
+private def ceA : concrete_st ℕ := ⟨fun x => if x = 5 then (7, 3) else (0, 0), singleton 5⟩
 
 /-- **The `l`-argument merge `≈`-congruence is FALSE.** `l ≈ l'` yet
 `merge l a a ≉ merge l' a a`. (`ceL`, `ceL'` are `≈`-equal empty-domain LCAs;
 they diverge the climb of survivor `5`.) -/
 theorem merge_eq_congr_l_fails :
-    ∃ (l l' a b : concrete_st), eq l l' ∧ ¬ eq (merge l a b) (merge l' a b) := by
+    ∃ (l l' a b : concrete_st ℕ), eq l l' ∧ ¬ eq (merge l a b) (merge l' a b) := by
   refine ⟨ceL, ceL', ceA, ceA, ?_, ?_⟩
   · intro k
     refine ⟨rfl, fun h => ?_⟩
@@ -202,7 +205,7 @@ present — so they descend to `QState`. Each is packaged as an `↔` (both
 directions, via `eq_symm`), the form `Quotient.lift` needs. -/
 
 /-- `wf` is `≈`-invariant (forward). -/
-theorem wf_eq_invariant {s s' : concrete_st} (h : eq s s') (hwf : wf s) : wf s' := by
+theorem wf_eq_invariant {s s' : concrete_st α} (h : eq s s') (hwf : wf s) : wf s' := by
   intro t ht
   have hts : contains s t = true := by rw [(h t).1]; exact ht
   have hanc : anc s t = anc s' t := congrArg Prod.snd ((h t).2 hts)
@@ -210,16 +213,16 @@ theorem wf_eq_invariant {s s' : concrete_st} (h : eq s s') (hwf : wf s) : wf s' 
   · left; rw [← hanc]; exact h0
   · right; rw [← hanc, ← (h (anc s t)).1]; exact hc
 
-theorem wf_eq_iff {s s' : concrete_st} (h : eq s s') : wf s ↔ wf s' :=
+theorem wf_eq_iff {s s' : concrete_st α} (h : eq s s') : wf s ↔ wf s' :=
   ⟨wf_eq_invariant h, wf_eq_invariant (eq_symm s s' h)⟩
 
 /-- `contains · 0 = false` (root-not-stored) is `≈`-invariant. -/
-theorem contains_zero_eq_invariant {s s' : concrete_st} (h : eq s s')
+theorem contains_zero_eq_invariant {s s' : concrete_st α} (h : eq s s')
     (h0 : contains s 0 = false) : contains s' 0 = false := by
   rw [← (h 0).1]; exact h0
 
 /-- `id_mono` is `≈`-invariant (forward). -/
-theorem id_mono_eq_invariant {s s' : concrete_st} (h : eq s s') (hm : id_mono s) :
+theorem id_mono_eq_invariant {s s' : concrete_st α} (h : eq s s') (hm : id_mono s) :
     id_mono s' := by
   intro t ht
   have hts : contains s t = true := by rw [(h t).1]; exact ht
@@ -228,11 +231,11 @@ theorem id_mono_eq_invariant {s s' : concrete_st} (h : eq s s') (hm : id_mono s)
   · left; rw [← hanc]; exact h0
   · right; rw [← hanc]; exact hlt
 
-theorem id_mono_eq_iff {s s' : concrete_st} (h : eq s s') : id_mono s ↔ id_mono s' :=
+theorem id_mono_eq_iff {s s' : concrete_st α} (h : eq s s') : id_mono s ↔ id_mono s' :=
   ⟨id_mono_eq_invariant h, id_mono_eq_invariant (eq_symm s s' h)⟩
 
 /-- `IsAncPath` is `≈`-invariant along a present leaf (used by `accurate`). -/
-theorem isAncPath_eq_invariant {s s' : concrete_st} (h : eq s s') :
+theorem isAncPath_eq_invariant {s s' : concrete_st α} (h : eq s s') :
     ∀ (leaf : ℕ) (p : List ℕ), contains s leaf = true →
       IsAncPath s leaf p → IsAncPath s' leaf p := by
   intro leaf p
@@ -250,7 +253,7 @@ theorem isAncPath_eq_invariant {s s' : concrete_st} (h : eq s s') :
     exact ⟨by rw [← hanc]; exact h1, by rw [← (h c).1]; exact h2, ih c h2 h3⟩
 
 /-- `accurate` (the applicability path guard) is `≈`-invariant (forward). -/
-theorem accurate_eq_invariant {s s' : concrete_st} (o : op_t) (h : eq s s')
+theorem accurate_eq_invariant {s s' : concrete_st α} (o : op_t α) (h : eq s s')
     (ha : accurate o s) : accurate o s' := by
   simp only [accurate] at ha ⊢
   rcases ha with h1 | h2
@@ -258,12 +261,12 @@ theorem accurate_eq_invariant {s s' : concrete_st} (o : op_t) (h : eq s s')
   · exact Or.inr ⟨by rw [← (h (opLeaf o.2.2)).1]; exact h2.1,
       isAncPath_eq_invariant h (opLeaf o.2.2) (opPath o.2.2) h2.1 h2.2⟩
 
-theorem accurate_eq_iff {s s' : concrete_st} (o : op_t) (h : eq s s') :
+theorem accurate_eq_iff {s s' : concrete_st α} (o : op_t α) (h : eq s s') :
     accurate o s ↔ accurate o s' :=
   ⟨accurate_eq_invariant o h, accurate_eq_invariant o (eq_symm s s' h)⟩
 
 /-- `fresh_ts` (fresh, nonzero id for `Ins`) is `≈`-invariant (forward). -/
-theorem fresh_ts_eq_invariant {s s' : concrete_st} (o : op_t) (h : eq s s')
+theorem fresh_ts_eq_invariant {s s' : concrete_st α} (o : op_t α) (h : eq s s')
     (hf : fresh_ts o s) : fresh_ts o s' := by
   obtain ⟨t, r, op⟩ := o
   cases op with
@@ -272,11 +275,11 @@ theorem fresh_ts_eq_invariant {s s' : concrete_st} (o : op_t) (h : eq s s')
     exact ⟨hf.1, by rw [← (h t).1]; exact hf.2⟩
   | Del p x => trivial
 
-theorem fresh_ts_eq_iff {s s' : concrete_st} (o : op_t) (h : eq s s') :
+theorem fresh_ts_eq_iff {s s' : concrete_st α} (o : op_t α) (h : eq s s') :
     fresh_ts o s ↔ fresh_ts o s' :=
   ⟨fresh_ts_eq_invariant o h, fresh_ts_eq_invariant o (eq_symm s s' h)⟩
 
-theorem contains_zero_eq_iff {s s' : concrete_st} (h : eq s s') :
+theorem contains_zero_eq_iff {s s' : concrete_st α} (h : eq s s') :
     contains s 0 = false ↔ contains s' 0 = false :=
   ⟨contains_zero_eq_invariant h, contains_zero_eq_invariant (eq_symm s s' h)⟩
 
@@ -295,16 +298,16 @@ def qInv : QState → Prop :=
     (fun _ _ h => propext (and_congr (wf_eq_iff h)
       (and_congr (contains_zero_eq_iff h) (id_mono_eq_iff h))))
 
-@[simp] theorem qInv_mk (s : concrete_st) :
+@[simp] theorem qInv_mk (s : concrete_st ℕ) :
     qInv (⟦s⟧ : QState) = (wf s ∧ contains s 0 = false ∧ id_mono s) := rfl
 
 /-- The RGA applicability guard lifted to `QState` (`= accurate ∧ fresh_ts`).
 Well-defined by §3. This is the `ConditionedMRDTSig.applicable` slot. -/
-def qapplicable (o : op_t) : QState → Prop :=
+def qapplicable (o : op_t ℕ) : QState → Prop :=
   Quotient.lift (fun s => accurate o s ∧ fresh_ts o s)
     (fun _ _ h => propext (and_congr (accurate_eq_iff o h) (fresh_ts_eq_iff o h)))
 
-@[simp] theorem qapplicable_mk (o : op_t) (s : concrete_st) :
+@[simp] theorem qapplicable_mk (o : op_t ℕ) (s : concrete_st ℕ) :
     qapplicable o (⟦s⟧ : QState) = (accurate o s ∧ fresh_ts o s) := rfl
 
 /-!
@@ -313,15 +316,15 @@ def qapplicable (o : op_t) : QState → Prop :=
 With `qmerge : QState → QState → QState → QState` in hand, the RGA would
 instantiate `ConditionedMRDTSig` as below. Every field marked ✓ is available
 NOW (in this file or upstream); the `mergeL`/`merge`/`merge_init_slice` fields are
-the DECLARED HOLE. `Op app_op_t = op_t` definitionally, so `update`/`rc`/
+the DECLARED HOLE. `Op (app_op_t α) = op_t α` definitionally, so `update`/`rc`/
 `applicable` typecheck directly.
 
 ```
 noncomputable def rgaQSig : ConditionedMRDTSig where
   State            := QState                         -- ✓ §1
   dec_state        := Classical.decEq QState          -- ✓
-  init             := qinit                            -- ✓ §1  (⟦init_st⟧)
-  AppOp            := app_op_t                         -- ✓
+  init             := qinit                            -- ✓ §1  (⟦(init_st (α := α))⟧)
+  AppOp            := app_op_t α                         -- ✓
   dec_op           := inferInstance                    -- ✓
   Query            := Unit
   Value            := Unit

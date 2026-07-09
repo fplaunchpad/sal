@@ -90,8 +90,10 @@ kernel-clean, conditional on `hThread` + `hSwap` only.
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 namespace RGAMergeLinearizationTwoSided
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGAConditionedConvergence
@@ -100,7 +102,7 @@ open Sal.ConditionedMRDTs.RGAConditionedConvergence
 
 /-- Each survivor's birth element, read from whichever branch it lives in
 (matching `merge`'s `elf`; the element analogue of `birthAnc`). -/
-def birthEl (l a b : concrete_st) (t : ℕ) : ℕ :=
+def birthEl (l a b : concrete_st α) (t : ℕ) : α :=
   if contains l t then el l t else if contains a t then el a t else el b t
 
 /-- **Two-sided branch invariant.**  The exact extensional content of the
@@ -114,7 +116,7 @@ three-way merge, phrased as a predicate on the reference fold state `p`:
 This is the two-sided generalization of `RGAMergeLinearization.BranchInv`: the
 stop-set is `survivors l a b` (not `domain a`) and the climb start is `birthAnc`
 (not `anc l k`), so it also constrains the branch-new survivors. -/
-def BranchInv2 (l a b p : concrete_st) : Prop :=
+def BranchInv2 (l a b p : concrete_st α) : Prop :=
   (∀ k, survivors l a b k = contains p k)
   ∧ (∀ k, survivors l a b k = true → el p k = birthEl l a b k)
   ∧ (∀ k, survivors l a b k = true →
@@ -123,7 +125,7 @@ def BranchInv2 (l a b p : concrete_st) : Prop :=
 /-- **eq-extensionality (steps 1+2 packaging).**  `BranchInv2 l a b p` is exactly
 `eq (merge l a b) p`.  Pure unfolding of `merge`'s definitional projections
 (`contains_merge`/`el_merge`/`anc_merge`), mirroring `eq_merge_single`. -/
-theorem eq_merge2_of_branchInv2 (l a b p : concrete_st) (hbi : BranchInv2 l a b p) :
+theorem eq_merge2_of_branchInv2 (l a b p : concrete_st α) (hbi : BranchInv2 l a b p) :
     eq (merge l a b) p := by
   obtain ⟨hdom, hel, hanc⟩ := hbi
   intro k
@@ -157,7 +159,7 @@ Both are the same rootward walk of the `l`-forest halting at the first `s`-live
 node; the id-monotone `l`-forest (`Hdec`/`Hstay`) supplies the climb's fuel.  This
 is the two-sided fact the single-sided bridge never needed (its target was the
 branch itself, so no second branch's `resolve` ever ran over the first's forest). -/
-theorem resolve_climb_lchain (l s : concrete_st)
+theorem resolve_climb_lchain (l s : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (h0 : contains l 0 = false) :
@@ -194,7 +196,7 @@ theorem resolve_climb_lchain (l s : concrete_st)
 whose path is `x`'s full `l`-chain: `resolve_climb_lchain` turns `resolve a pre`
 into the LCA-climb, which `BranchInv`'s I4 identifies with `anc a x`.  No
 `accurate a`-hypothesis. -/
-theorem hres_of_lchain (l a : concrete_st)
+theorem hres_of_lchain (l a : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
     (h0 : contains l 0 = false)
@@ -212,7 +214,7 @@ that, when `x` is live, the (possibly stale) path resolves to `x`'s CURRENT anch
 well-formed with `x ≠ 0`.  The live branch is the `branchInv_doDel` argument with
 `hres` in place of the accuracy-derived reparent equality; the dead branch is a
 forest no-op (no live node anchors at an absent `x`, by `wf a`). -/
-theorem branchInv_doDel_crossBranch (l a : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem branchInv_doDel_crossBranch (l a : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (ha0 : contains a 0 = false) (hwfa : wf a)
     (hlwf : wf l) (hlmono : id_mono l) (hamono : id_mono a) (hx0 : x ≠ 0)
     (hres : contains a x = true → resolve a pre = anc a x)
@@ -323,11 +325,11 @@ event set `ev` also satisfies the bridge — by the imported convergence engine
 oracle the convergence headline already consumes (the located obstruction of
 `RGA_ConditionedConvergence.lean`); it transports unchanged. -/
 theorem merge_fold_indep
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
+    (l a b : concrete_st α) (lo : op_t α → op_t α → Prop) (ev : Set (op_t α)) (π₀ π : List (op_t α))
     (href : eq (merge l a b) (applySeqR l π₀))
     (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
     (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hSwap : ∀ (pre : List op_t) (x y : op_t),
+    (hSwap : ∀ (pre : List (op_t α)) (x y : op_t α),
         (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
         x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
         (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
@@ -346,11 +348,11 @@ on exactly two hypotheses: `hThread` — the reference fold `applySeqR l π₀` 
 and `hSwap` — the convergence swap oracle (imported obligation).  Everything ELSE
 in the two-sided bridge is discharged. -/
 theorem eq_merge_two_sided
-    (l a b : concrete_st) (lo : op_t → op_t → Prop) (ev : Set op_t) (π₀ π : List op_t)
+    (l a b : concrete_st α) (lo : op_t α → op_t α → Prop) (ev : Set (op_t α)) (π₀ π : List (op_t α))
     (hThread : BranchInv2 l a b (applySeqR l π₀))
     (h₀p : listPermOf π₀ ev) (hπp : listPermOf π ev)
     (h₀r : respects π₀ lo) (hπr : respects π lo)
-    (hSwap : ∀ (pre : List op_t) (x y : op_t),
+    (hSwap : ∀ (pre : List (op_t α)) (x y : op_t α),
         (∀ z ∈ pre, z ∈ ev) → pre.Nodup → respects pre lo →
         x ∈ ev → y ∈ ev → x ∉ pre → y ∉ pre → x ≠ y → ¬ lo x y → ¬ lo y x →
         (∀ z ∈ ev, z ≠ x → lo z x → z ∈ pre) →
@@ -422,7 +424,7 @@ theorem eq_merge_two_sided
       kernel-clean (§1b):
 
         theorem branchInv_doDel_crossBranch
-            (l a : concrete_st) (t r x : ℕ) (pre : List ℕ) …
+            (l a : concrete_st α) (t r x : ℕ) (pre : List ℕ) …
             (hres : contains a x = true → resolve a pre = anc a x)
             (hbi : BranchInv l a) :
             BranchInv l (do_ a (t, r, .Del pre x))

@@ -20,10 +20,12 @@ bookkeeping and which is the located branch-canonical residual.
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace RGACanonBirthBridge
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open RGACanonConvergence
@@ -36,17 +38,17 @@ three facts — skip a non-survivor head, stop at a survivor head, and skip a
 whole non-surviving prefix — are the algebra the reconciliation runs on. -/
 
 /-- A surviving head is the canonical anchor. -/
-theorem canonAnc_pos (F : List op_t) (c : ℕ) (cs : List ℕ) (h : survP F c) :
+theorem canonAnc_pos (F : List (op_t α)) (c : ℕ) (cs : List ℕ) (h : survP F c) :
     canonAnc F (c :: cs) = c := by
   simp only [canonAnc]; rw [if_pos h]
 
 /-- A non-surviving head is skipped. -/
-theorem canonAnc_neg (F : List op_t) (c : ℕ) (cs : List ℕ) (h : ¬ survP F c) :
+theorem canonAnc_neg (F : List (op_t α)) (c : ℕ) (cs : List ℕ) (h : ¬ survP F c) :
     canonAnc F (c :: cs) = canonAnc F cs := by
   simp only [canonAnc]; rw [if_neg h]
 
 /-- A non-surviving prefix is dropped entirely. -/
-theorem canonAnc_append_dead (F : List op_t) :
+theorem canonAnc_append_dead (F : List (op_t α)) :
     ∀ (pre L : List ℕ), (∀ c ∈ pre, ¬ survP F c) →
       canonAnc F (pre ++ L) = canonAnc F L := by
   intro pre
@@ -61,7 +63,7 @@ theorem canonAnc_append_dead (F : List op_t) :
 /-- Two chains that share a head and reach the same canonical anchor on their
 tails reach the same canonical anchor overall (the tail is only consulted when
 the head is a non-survivor). -/
-theorem canonAnc_cons_congr (F : List op_t) (c : ℕ) (L M : List ℕ)
+theorem canonAnc_cons_congr (F : List (op_t α)) (c : ℕ) (L M : List ℕ)
     (h : canonAnc F L = canonAnc F M) : canonAnc F (c :: L) = canonAnc F (c :: M) := by
   by_cases hc : survP F c
   · rw [canonAnc_pos F c L hc, canonAnc_pos F c M hc]
@@ -87,7 +89,7 @@ Given these, the two `canonAnc` obligations are pure climb algebra (§1): strip 
 dead prefix, then stop at `bw` (off-forest) or push the head `bw` through and match
 tails (in-forest). -/
 theorem canonBirthBridge_holds
-    (l : concrete_st) (F : List op_t) (bw : ℕ) (rc : List ℕ)
+    (l : concrete_st α) (F : List (op_t α)) (bw : ℕ) (rc : List ℕ)
     (rcPre rcSuf : List ℕ)
     (hsplit : rc = rcPre ++ bw :: rcSuf)
     (hpreDead : ∀ c ∈ rcPre, ¬ survP F c)

@@ -22,24 +22,27 @@ enter the chain — case (a)), and it immediately yields the conclusion, since
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-! ## The invariant -/
 
 /-- The entries of the captured path `pre` still live in `s`, in order. -/
-def liveSub (s : concrete_st) (pre : List ℕ) : List ℕ :=
+def liveSub (s : concrete_st α) (pre : List ℕ) : List ℕ :=
   pre.filter (fun c => contains s c)
 
 /-- Invariant carried from capture to use: the root sentinel is not stored,
 `x` is live, and the live entries of `pre` are the genuine current ancestor
 chain of `x`. -/
-def LiveChain (s : concrete_st) (x : ℕ) (pre : List ℕ) : Prop :=
+def LiveChain (s : concrete_st α) (x : ℕ) (pre : List ℕ) : Prop :=
   contains s 0 = false ∧ contains s x = true ∧ IsAncPath s x (liveSub s pre)
 
 /-! ## From the invariant to the conclusion -/
 
 /-- `resolve` ignores dead candidates: resolving `pre` is resolving its live
 sublist. -/
-theorem resolve_liveSub (s : concrete_st) :
+theorem resolve_liveSub (s : concrete_st α) :
     ∀ pre : List ℕ, resolve s (liveSub s pre) = resolve s pre := by
   intro pre
   induction pre with
@@ -57,7 +60,7 @@ theorem resolve_liveSub (s : concrete_st) :
 
 /-- The invariant yields the Key Lemma's conclusion: the first live entry of
 `pre` is the current stored anchor of `x`. -/
-theorem liveChain_resolve (s : concrete_st) (x : ℕ) (pre : List ℕ)
+theorem liveChain_resolve (s : concrete_st α) (x : ℕ) (pre : List ℕ)
     (h : LiveChain s x pre) : resolve s pre = anc s x := by
   obtain ⟨_, _, hpath⟩ := h
   rw [← resolve_liveSub s pre]
@@ -67,7 +70,7 @@ theorem liveChain_resolve (s : concrete_st) (x : ℕ) (pre : List ℕ)
 
 /-- At capture the whole of `pre` is live (`IsAncPath` entries are live), so
 the live sublist is `pre` itself and the chain is genuine by hypothesis. -/
-theorem liveChain_capture (s : concrete_st) (x : ℕ) (pre : List ℕ)
+theorem liveChain_capture (s : concrete_st α) (x : ℕ) (pre : List ℕ)
     (h0 : contains s 0 = false) (hx : contains s x = true)
     (hpath : IsAncPath s x pre) : LiveChain s x pre := by
   refine ⟨h0, hx, ?_⟩
@@ -88,7 +91,7 @@ this follows from monotone allocation: every entry of `pre` is below `x`'s id
 and a fresh id exceeds every id ever seen.) -/
 
 /-- A genuine chain avoiding a fresh key survives an `upd` at that key. -/
-theorem isAncPath_upd (s : concrete_st) (t : ℕ) (v : ℕ × ℕ)
+theorem isAncPath_upd (s : concrete_st α) (t : ℕ) (v : α × ℕ)
     (ht : contains s t = false) :
     ∀ (L : List ℕ) (z : ℕ), z ≠ t → IsAncPath s z L → IsAncPath (upd s t v) z L := by
   intro L
@@ -115,8 +118,8 @@ theorem isAncPath_upd (s : concrete_st) (t : ℕ) (v : ℕ × ℕ)
 
 /-- `LiveChain` is preserved by a fresh `Ins` whose id is not a reused id of
 the captured path. -/
-theorem liveChain_doIns (s : concrete_st) (x : ℕ) (pre : List ℕ)
-    (t r e a : ℕ) (pa : List ℕ)
+theorem liveChain_doIns (s : concrete_st α) (x : ℕ) (pre : List ℕ)
+    (t r : ℕ) (e : α) (a : ℕ) (pa : List ℕ)
     (h : LiveChain s x pre) (ht0 : t ≠ 0) (htf : contains s t = false)
     (htp : t ∉ pre) :
     LiveChain (do_ s (t, r, .Ins e pa a)) x pre := by
@@ -149,7 +152,7 @@ so the live sublist of `pre` — the chain with `y` filtered out — is again th
 genuine chain of `x`; no node outside `pre` can enter it (case (a)). -/
 
 /-- `IsAncPath` sees its leaf only through `anc`. -/
-theorem isAncPath_leaf_congr (s : concrete_st) (z w : ℕ) (L : List ℕ)
+theorem isAncPath_leaf_congr (s : concrete_st α) (z w : ℕ) (L : List ℕ)
     (h : anc s z = anc s w) (hw : IsAncPath s w L) : IsAncPath s z L := by
   cases L with
   | nil => simp only [IsAncPath] at hw ⊢; rw [h]; exact hw
@@ -159,7 +162,7 @@ theorem isAncPath_leaf_congr (s : concrete_st) (z w : ℕ) (L : List ℕ)
 
 /-- A genuine chain transports along pointwise agreement of `anc` and
 containment-preservation. -/
-theorem isAncPath_of_eq (s s' : concrete_st)
+theorem isAncPath_of_eq (s s' : concrete_st α)
     (Ha : ∀ k, anc s' k = anc s k)
     (Hc : ∀ k, contains s k = true → contains s' k = true) :
     ∀ (L : List ℕ) (z : ℕ), IsAncPath s z L → IsAncPath s' z L := by
@@ -179,7 +182,7 @@ from the domain and rehoming every `y`-anchored node to `R = anc s y`, then
 any genuine chain in `s` becomes, in `s'`, the same chain with `y` filtered
 out. The delicate case is a chain entry equal to `y`: its predecessor is
 rehomed to `anc s y`, which is exactly where the chain continues. -/
-theorem isAncPath_surgery (s s' : concrete_st) (y R : ℕ)
+theorem isAncPath_surgery (s s' : concrete_st α) (y R : ℕ)
     (hy0 : y ≠ 0) (hR : R = anc s y)
     (Hc : ∀ k, contains s' k = (contains s k && (k != y)))
     (Ha : ∀ k, anc s' k = if anc s k = y then R else anc s k) :
@@ -220,7 +223,7 @@ theorem isAncPath_surgery (s s' : concrete_st) (y R : ℕ)
 /-- `LiveChain` is preserved by an accurate `Del` of any `y ≠ x`. Case
 `y = 0` (the degenerate root-delete `accurate` permits) changes no anchor;
 case `y` live is `isAncPath_surgery` with `R = resolve s py = anc s y`. -/
-theorem liveChain_doDel (s : concrete_st) (x : ℕ) (pre : List ℕ)
+theorem liveChain_doDel (s : concrete_st α) (x : ℕ) (pre : List ℕ)
     (t r y : ℕ) (py : List ℕ)
     (h : LiveChain s x pre)
     (hacc : accurate (t, r, .Del py y) s)
@@ -291,19 +294,19 @@ and its captured path `pre`:
 * a `Del` is accurate and does not delete `x` itself.
 `accurate` is *not* required of inserts: the chain of `x` is unaffected even
 by an insert with a garbage path. -/
-@[simp] def okStep (x : ℕ) (pre : List ℕ) (s : concrete_st) : op_t → Prop
+@[simp] def okStep (x : ℕ) (pre : List ℕ) (s : concrete_st α) : op_t α → Prop
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ contains s t = false ∧ t ∉ pre
   | (t, r, .Del py y)  => accurate (t, r, .Del py y) s ∧ y ≠ x
 
 /-- States reachable from the capture state by `okStep`-conditioned `do_`
 steps. -/
-inductive Reach (x : ℕ) (pre : List ℕ) (s0 : concrete_st) : concrete_st → Prop
+inductive Reach (x : ℕ) (pre : List ℕ) (s0 : concrete_st α) : concrete_st α → Prop
   | refl : Reach x pre s0 s0
-  | step {s : concrete_st} (o : op_t) :
+  | step {s : concrete_st α} (o : op_t α) :
       Reach x pre s0 s → okStep x pre s o → Reach x pre s0 (do_ s o)
 
 /-- One-step preservation of the invariant. -/
-theorem liveChain_step (s : concrete_st) (x : ℕ) (pre : List ℕ) (o : op_t)
+theorem liveChain_step (s : concrete_st α) (x : ℕ) (pre : List ℕ) (o : op_t α)
     (h : LiveChain s x pre) (hok : okStep x pre s o) : LiveChain (do_ s o) x pre := by
   obtain ⟨t, r, ao⟩ := o
   cases ao with
@@ -322,7 +325,7 @@ the root sentinel unstored and `x` live. Then in any state `s` reachable from
 that do not reuse an id of `pre` — the first entry of `pre` live in `s` is
 exactly `x`'s current stored anchor:
 `resolve s pre = anc s x`. -/
-theorem subchain_resolve (x : ℕ) (pre : List ℕ) (s0 s : concrete_st)
+theorem subchain_resolve (x : ℕ) (pre : List ℕ) (s0 s : concrete_st α)
     (h0 : contains s0 0 = false) (hx : contains s0 x = true)
     (hpre : IsAncPath s0 x pre)
     (hreach : Reach x pre s0 s) :
@@ -334,7 +337,7 @@ theorem subchain_resolve (x : ℕ) (pre : List ℕ) (s0 s : concrete_st)
   exact liveChain_resolve s x pre hinv
 
 /-- `x` also stays live along the way (companion fact, same induction). -/
-theorem subchain_live (x : ℕ) (pre : List ℕ) (s0 s : concrete_st)
+theorem subchain_live (x : ℕ) (pre : List ℕ) (s0 s : concrete_st α)
     (h0 : contains s0 0 = false) (hx : contains s0 x = true)
     (hpre : IsAncPath s0 x pre)
     (hreach : Reach x pre s0 s) :

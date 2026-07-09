@@ -27,10 +27,12 @@ irreducible two-sided content (the `hin` recorded-tail↔`l`-chain reconciliatio
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace RGABranchCanon
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open RGACanonConvergence
@@ -40,7 +42,7 @@ open RGACanonBirthBridge (canonBirthBridge_holds canonAnc_pos canonAnc_neg)
 /-! ## §1  `survP` set-monotonicity — the `Fa ⊆ F` bridge -/
 
 /-- `deletedIn` is monotone in the applied set (membership inclusion). -/
-theorem deletedIn_mono (F₁ F₂ : List op_t) (hsub : ∀ o, o ∈ F₁ → o ∈ F₂) (c : ℕ)
+theorem deletedIn_mono (F₁ F₂ : List (op_t α)) (hsub : ∀ o, o ∈ F₁ → o ∈ F₂) (c : ℕ)
     (h : deletedIn F₁ c) : deletedIn F₂ c := by
   obtain ⟨t, r, p, hm⟩ := h
   exact ⟨t, r, p, hsub _ hm⟩
@@ -49,13 +51,13 @@ theorem deletedIn_mono (F₁ F₂ : List op_t) (hsub : ∀ o, o ∈ F₁ → o �
 two-sided set `F ⊇ Fa`: the branch's own `Del` event is also in `F`.  This is the
 OR-set reconciliation `hpreDead` runs on — a branch-dead nearer recorded entry is
 a non-`F`-survivor. -/
-theorem notSurv_of_branchDeleted (Fa F : List op_t) (hsub : ∀ o, o ∈ Fa → o ∈ F)
+theorem notSurv_of_branchDeleted (Fa F : List (op_t α)) (hsub : ∀ o, o ∈ Fa → o ∈ F)
     (c : ℕ) (h : deletedIn Fa c) : ¬ survP F c :=
   fun hsv => hsv.2 (deletedIn_mono Fa F hsub c h)
 
 /-- `hpreDead` from the branch-canonical fact: every recorded entry nearer than
 `bw` was **deleted in the branch fold** (`Fa`), hence is a non-`F`-survivor. -/
-theorem hpreDead_of_branchDeleted (Fa F : List op_t) (hsub : ∀ o, o ∈ Fa → o ∈ F)
+theorem hpreDead_of_branchDeleted (Fa F : List (op_t α)) (hsub : ∀ o, o ∈ Fa → o ∈ F)
     (rcPre : List ℕ) (hdel : ∀ c ∈ rcPre, deletedIn Fa c) :
     ∀ c ∈ rcPre, ¬ survP F c :=
   fun c hc => notSurv_of_branchDeleted Fa F hsub c (hdel c hc)
@@ -74,7 +76,7 @@ branch fold — so no single-vs-two-sided reconciliation is involved. -/
 root in its branch — is off-forest but not a survivor; that degenerate case is
 handled by `canonAnc F rc = 0` directly, not by `hout`.) -/
 theorem branchCanon_hout
-    (l a b : concrete_st) (F : List op_t) (fold : concrete_st) (k : ℕ)
+    (l a b : concrete_st α) (F : List (op_t α)) (fold : concrete_st α) (k : ℕ)
     (hlwf : ∀ t, contains l t = true → (anc l t = 0 ∨ contains l (anc l t) = true))
     (hawf : ∀ t, contains a t = true → (anc a t = 0 ∨ contains a (anc a t) = true))
     (hbwf : ∀ t, contains b t = true → (anc b t = 0 ∨ contains b (anc b t) = true))
@@ -108,7 +110,7 @@ chain `rc`, the merge-side bridge holds given the recorded-chain split (`hsplit`
 the dead-prefix fact (`hpreDead`), and the in-forest reconciliation (`hin`).
 `hout` is supplied internally from the full-fold `CanonMatch F fold` + `hD`. -/
 theorem canonBirthBridge_via_branchCanon
-    (l a b : concrete_st) (F : List op_t) (fold : concrete_st) (k : ℕ)
+    (l a b : concrete_st α) (F : List (op_t α)) (fold : concrete_st α) (k : ℕ)
     (rc rcPre rcSuf : List ℕ)
     (hlwf : ∀ t, contains l t = true → (anc l t = 0 ∨ contains l (anc l t) = true))
     (hawf : ∀ t, contains a t = true → (anc a t = 0 ∨ contains a (anc a t) = true))
@@ -136,10 +138,10 @@ pin `hin` (`canonAnc F cw = canonAnc F rcSuf`) to a single crisp fact: `bw`'s
 `F`-surviving recorded ancestors equal its `F`-surviving `l`-ancestors, in order. -/
 
 /-- Decidable survivorship test (classical). -/
-noncomputable def survB (F : List op_t) (c : ℕ) : Bool := decide (survP F c)
+noncomputable def survB (F : List (op_t α)) (c : ℕ) : Bool := decide (survP F c)
 
 /-- `canonAnc F` depends on a chain only through its `F`-survivor subsequence. -/
-theorem canonAnc_filter_surv (F : List op_t) :
+theorem canonAnc_filter_surv (F : List (op_t α)) :
     ∀ L : List ℕ, canonAnc F L = canonAnc F (L.filter (survB F)) := by
   intro L
   induction L with
@@ -159,7 +161,7 @@ irreducible two-sided residual, stripped of all climb algebra: everything else i
 `canonAnc F cw = canonAnc F rcSuf` is discharged; what remains is that `bw`'s
 surviving ancestors are the same whether read off the recorded chain or the LCA
 forest. -/
-theorem hin_of_survFilterEq (l : concrete_st) (F : List op_t) (bw : ℕ)
+theorem hin_of_survFilterEq (l : concrete_st α) (F : List (op_t α)) (bw : ℕ)
     (cw rcSuf : List ℕ) (hpath : IsAncPath l bw cw)
     (hFiltEq : rcSuf.filter (survB F) = cw.filter (survB F)) :
     contains l bw = true →

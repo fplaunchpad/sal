@@ -6,7 +6,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeCanon_Fix
 
 *Additive; modifies no existing file; 0 `sorry`.*
 
-In the H-world the witnesses CARRY the engine discipline (`CanonFoldOK [] init_st ρᵢ`), so:
+In the H-world the witnesses CARRY the engine discipline (`CanonFoldOK [] (init_st (α := α)) ρᵢ`), so:
 
 * every `CanonMatch` derives directly (`canon_fold` + `canonMatch_of_canonInv`) — **no
   `EngineReady`, no `RefEdge`, no `hReady` leg anywhere**;
@@ -22,10 +22,12 @@ causal set-algebra; its two provenance clauses are the honest content), and `hbr
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGASkeleton3
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
@@ -38,31 +40,31 @@ open RGACanonConvergence (CanonMatch CanonFoldOK CanonInv canon_fold canonInv_in
 open RGAMergeFoldChain (CanonBirthBridge)
 
 /-- **A disciplined enumeration folds to its canonical invariant.** -/
-theorem canonInv_of_canonFoldOK (ρ : List op_t) (h : CanonFoldOK [] init_st ρ) :
-    CanonInv ρ (applySeqR init_st ρ) := by
-  have hci := canon_fold ρ [] init_st canonInv_init h
+theorem canonInv_of_canonFoldOK (ρ : List (op_t α)) (h : CanonFoldOK [] (init_st (α := α)) ρ) :
+    CanonInv ρ (applySeqR (init_st (α := α)) ρ) := by
+  have hci := canon_fold ρ [] (init_st (α := α)) canonInv_init h
   rwa [List.nil_append] at hci
 
 /-- **A disciplined enumeration folds to its canonical state.** -/
-theorem canonMatch_of_canonFoldOK (ρ : List op_t) (h : CanonFoldOK [] init_st ρ) :
-    CanonMatch ρ (applySeqR init_st ρ) :=
+theorem canonMatch_of_canonFoldOK (ρ : List (op_t α)) (h : CanonFoldOK [] (init_st (α := α)) ρ) :
+    CanonMatch ρ (applySeqR (init_st (α := α)) ρ) :=
   canonMatch_of_canonInv ρ _ (canonInv_of_canonFoldOK ρ h)
 
 /-- **All four `CanonMatch`es from the Skeleton-3 disciplines** — no `EngineReady` anywhere. -/
-theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List op_t)
-    (h₀OK : CanonFoldOK [] init_st ρ₀)
-    (h₁OK : CanonFoldOK [] init_st ρ₁)
-    (h₂OK : CanonFoldOK [] init_st ρ₂)
-    (hπOK : CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀) :
-    CanonMatch ρ₀ (applySeqR init_st ρ₀) ∧ CanonMatch ρ₁ (applySeqR init_st ρ₁)
-      ∧ CanonMatch ρ₂ (applySeqR init_st ρ₂)
-      ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR init_st ρ₀) π₀) := by
+theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α))
+    (h₀OK : CanonFoldOK [] (init_st (α := α)) ρ₀)
+    (h₁OK : CanonFoldOK [] (init_st (α := α)) ρ₁)
+    (h₂OK : CanonFoldOK [] (init_st (α := α)) ρ₂)
+    (hπOK : CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀) :
+    CanonMatch ρ₀ (applySeqR (init_st (α := α)) ρ₀) ∧ CanonMatch ρ₁ (applySeqR (init_st (α := α)) ρ₁)
+      ∧ CanonMatch ρ₂ (applySeqR (init_st (α := α)) ρ₂)
+      ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR (init_st (α := α)) ρ₀) π₀) := by
   refine ⟨canonMatch_of_canonFoldOK ρ₀ h₀OK, canonMatch_of_canonFoldOK ρ₁ h₁OK,
     canonMatch_of_canonFoldOK ρ₂ h₂OK, ?_⟩
-  have hcat : CanonFoldOK [] init_st (ρ₀ ++ π₀) :=
-    canonFoldOK_concat ρ₀ [] init_st π₀ h₀OK hπOK
+  have hcat : CanonFoldOK [] (init_st (α := α)) (ρ₀ ++ π₀) :=
+    canonFoldOK_concat ρ₀ [] (init_st (α := α)) π₀ h₀OK hπOK
   have hcm := canonMatch_of_canonFoldOK (ρ₀ ++ π₀) hcat
-  have happ : applySeqR init_st (ρ₀ ++ π₀) = applySeqR (applySeqR init_st ρ₀) π₀ := by
+  have happ : applySeqR (init_st (α := α)) (ρ₀ ++ π₀) = applySeqR (applySeqR (init_st (α := α)) ρ₀) π₀ := by
     simp only [applySeqR, List.foldl_append]
   rw [happ] at hcm
   exact hcm
@@ -72,42 +74,42 @@ theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List op_t)
 the four `CanonMatch`es, the σ-forest facts, the branch `wf`s, and the per-survivor membership —
 is derived from the carried disciplines. -/
 theorem hCanon_of_leaves3
-    (HonJ : (op_t → op_t → Prop) → Set op_t → Prop)
-    (hMergeInputs : ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+    (HonJ : (op_t α → op_t α → Prop) → Set (op_t α) → Prop)
+    (hMergeInputs : ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α)),
         HonJ vis events →
-        (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
-        (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
+        (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) → (∀ a : op_t α, ¬ vis a a) →
+        (∀ a b : op_t α, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-        fullClosureRel (D := RGACondSig') vis ev₁ → fullClosureRel (D := RGACondSig') vis ev₂ →
+        fullClosureRel (D := (RGACondSig' α)) vis ev₁ → fullClosureRel (D := (RGACondSig' α)) vis ev₂ →
         listPermOf ρ₀ (ev₁ ∩ ev₂) → listPermOf ρ₁ ev₁ → listPermOf ρ₂ ev₂ →
         listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) →
-        respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
-        CanonFoldOK [] init_st ρ₀ → CanonFoldOK [] init_st ρ₁ → CanonFoldOK [] init_st ρ₂ →
-        CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ →
-        (∀ y, contains (applySeqR init_st ρ₀) y = true → y ≠ 0 → anc (applySeqR init_st ρ₀) y < y)
+        respects π₀ (loOnEq (rgaEqEquiv' α) WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
+        CanonFoldOK [] (init_st (α := α)) ρ₀ → CanonFoldOK [] (init_st (α := α)) ρ₁ → CanonFoldOK [] (init_st (α := α)) ρ₂ →
+        CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀ →
+        (∀ y, contains (applySeqR (init_st (α := α)) ρ₀) y = true → y ≠ 0 → anc (applySeqR (init_st (α := α)) ρ₀) y < y)
         ∧ (∀ c, (insertedIn ρ₀ c ↔ insertedIn ρ₁ c ∧ insertedIn ρ₂ c)
             ∧ (deletedIn ρ₁ c → insertedIn ρ₁ c) ∧ (deletedIn ρ₂ c → insertedIn ρ₂ c)
             ∧ (deletedIn ρ₀ c → deletedIn ρ₁ c) ∧ (deletedIn ρ₀ c → deletedIn ρ₂ c)
             ∧ (insertedIn (ρ₀ ++ π₀) c ↔ insertedIn ρ₁ c ∨ insertedIn ρ₂ c)
             ∧ (deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c))
-        ∧ (∀ (t r e a : ℕ) (p : List ℕ),
+        ∧ (∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
             (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
-            CanonBirthBridge (applySeqR init_st ρ₀) (ρ₀ ++ π₀)
-                (birthAnc (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂) t) (a :: p))) :
-    ∀ (vis : op_t → op_t → Prop) (events ev₁ ev₂ : Set op_t) (ρ₀ ρ₁ ρ₂ π₀ : List op_t),
+            CanonBirthBridge (applySeqR (init_st (α := α)) ρ₀) (ρ₀ ++ π₀)
+                (birthAnc (applySeqR (init_st (α := α)) ρ₀) (applySeqR (init_st (α := α)) ρ₁) (applySeqR (init_st (α := α)) ρ₂) t) (a :: p))) :
+    ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α)),
         HonJ vis events →
-        (∀ {a b c : op_t}, vis a b → vis b c → vis a c) → (∀ a : op_t, ¬ vis a a) →
-        (∀ a b : op_t, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
+        (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) → (∀ a : op_t α, ¬ vis a a) →
+        (∀ a b : op_t α, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1) →
         (∀ a ∈ ev₁, a ∈ events) → (∀ a ∈ ev₂, a ∈ events) →
-        fullClosureRel (D := RGACondSig') vis ev₁ → fullClosureRel (D := RGACondSig') vis ev₂ →
+        fullClosureRel (D := (RGACondSig' α)) vis ev₁ → fullClosureRel (D := (RGACondSig' α)) vis ev₂ →
         listPermOf ρ₀ (ev₁ ∩ ev₂) → listPermOf ρ₁ ev₁ → listPermOf ρ₂ ev₂ →
         listPermOf π₀ ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂)) →
-        respects π₀ (loOnEq rgaEqEquiv' WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
-        CanonFoldOK [] init_st ρ₀ → CanonFoldOK [] init_st ρ₁ → CanonFoldOK [] init_st ρ₂ →
-        CanonFoldOK ρ₀ (applySeqR init_st ρ₀) π₀ →
+        respects π₀ (loOnEq (rgaEqEquiv' α) WfOpA vis ((ev₁ ∪ ev₂) \ (ev₁ ∩ ev₂))) →
+        CanonFoldOK [] (init_st (α := α)) ρ₀ → CanonFoldOK [] (init_st (α := α)) ρ₁ → CanonFoldOK [] (init_st (α := α)) ρ₂ →
+        CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀ →
         CanonMatch (ρ₀ ++ π₀)
-            (merge (applySeqR init_st ρ₀) (applySeqR init_st ρ₁) (applySeqR init_st ρ₂))
-          ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR init_st ρ₀) π₀) := by
+            (merge (applySeqR (init_st (α := α)) ρ₀) (applySeqR (init_st (α := α)) ρ₁) (applySeqR (init_st (α := α)) ρ₂))
+          ∧ CanonMatch (ρ₀ ++ π₀) (applySeqR (applySeqR (init_st (α := α)) ρ₀) π₀) := by
   intro vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2 h0p h1p h2p hπp hπr
     h₀OK h₁OK h₂OK hπOK
   obtain ⟨hcm0, hcm1, hcm2, hfold⟩ := hFoldCanon3 ρ₀ ρ₁ ρ₂ π₀ h₀OK h₁OK h₂OK hπOK
@@ -115,22 +117,22 @@ theorem hCanon_of_leaves3
     hMergeInputs vis events ev₁ ev₂ ρ₀ ρ₁ ρ₂ π₀ hHonJ htr hir hdts hev1 hev2 hcl1 hcl2
       h0p h1p h2p hπp hπr h₀OK h₁OK h₂OK hπOK
   -- the canonical invariants at the three folds
-  have hci0 : CanonInv ρ₀ (applySeqR init_st ρ₀) := canonInv_of_canonFoldOK ρ₀ h₀OK
-  have hci1 : CanonInv ρ₁ (applySeqR init_st ρ₁) := canonInv_of_canonFoldOK ρ₁ h₁OK
-  have hci2 : CanonInv ρ₂ (applySeqR init_st ρ₂) := canonInv_of_canonFoldOK ρ₂ h₂OK
+  have hci0 : CanonInv ρ₀ (applySeqR (init_st (α := α)) ρ₀) := canonInv_of_canonFoldOK ρ₀ h₀OK
+  have hci1 : CanonInv ρ₁ (applySeqR (init_st (α := α)) ρ₁) := canonInv_of_canonFoldOK ρ₁ h₁OK
+  have hci2 : CanonInv ρ₂ (applySeqR (init_st (α := α)) ρ₂) := canonInv_of_canonFoldOK ρ₂ h₂OK
   -- derived σ-forest facts
-  have h0σ : contains (applySeqR init_st ρ₀) 0 = false := hci0.1
-  have Hstay : ∀ y, contains (applySeqR init_st ρ₀) y = true →
-      (anc (applySeqR init_st ρ₀) y = 0
-        ∨ contains (applySeqR init_st ρ₀) (anc (applySeqR init_st ρ₀) y) = true) :=
+  have h0σ : contains (applySeqR (init_st (α := α)) ρ₀) 0 = false := hci0.1
+  have Hstay : ∀ y, contains (applySeqR (init_st (α := α)) ρ₀) y = true →
+      (anc (applySeqR (init_st (α := α)) ρ₀) y = 0
+        ∨ contains (applySeqR (init_st (α := α)) ρ₀) (anc (applySeqR (init_st (α := α)) ρ₀) y) = true) :=
     fun y hy => hci0.2.1 y hy
-  have hwf1 : ∀ y, contains (applySeqR init_st ρ₁) y = true →
-      (anc (applySeqR init_st ρ₁) y = 0
-        ∨ contains (applySeqR init_st ρ₁) (anc (applySeqR init_st ρ₁) y) = true) :=
+  have hwf1 : ∀ y, contains (applySeqR (init_st (α := α)) ρ₁) y = true →
+      (anc (applySeqR (init_st (α := α)) ρ₁) y = 0
+        ∨ contains (applySeqR (init_st (α := α)) ρ₁) (anc (applySeqR (init_st (α := α)) ρ₁) y) = true) :=
     fun y hy => hci1.2.1 y hy
-  have hwf2 : ∀ y, contains (applySeqR init_st ρ₂) y = true →
-      (anc (applySeqR init_st ρ₂) y = 0
-        ∨ contains (applySeqR init_st ρ₂) (anc (applySeqR init_st ρ₂) y) = true) :=
+  have hwf2 : ∀ y, contains (applySeqR (init_st (α := α)) ρ₂) y = true →
+      (anc (applySeqR (init_st (α := α)) ρ₂) y = 0
+        ∨ contains (applySeqR (init_st (α := α)) ρ₂) (anc (applySeqR (init_st (α := α)) ρ₂) y) = true) :=
     fun y hy => hci2.2.1 y hy
   -- op identity from id-uniqueness on the ambient event universe
   have hmemU : ∀ a, a ∈ ρ₀ ++ π₀ → a ∈ events := by
@@ -140,21 +142,21 @@ theorem hCanon_of_leaves3
     · rcases ((hπp.2 a).mp h).1 with h' | h'
       · exact hev1 a h'
       · exact hev2 a h'
-  have hopEq : ∀ {o o' : op_t}, o ∈ events → o' ∈ events → o.1 = o'.1 → o = o' := by
+  have hopEq : ∀ {o o' : op_t α}, o ∈ events → o' ∈ events → o.1 = o'.1 → o = o' := by
     intro o o' ho ho' hid
     by_contra hne
     exact hdts o o' ho ho' hne hid
   -- derived per-survivor membership bundle
-  have hins_branch : ∀ (t r e a : ℕ) (p : List ℕ),
+  have hins_branch : ∀ (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ),
       (t, r, .Ins e p a) ∈ ρ₀ ++ π₀ → survP (ρ₀ ++ π₀) t →
-      (contains (applySeqR init_st ρ₀) t = true → (t, r, .Ins e p a) ∈ ρ₀)
-      ∧ (contains (applySeqR init_st ρ₁) t = true → (t, r, .Ins e p a) ∈ ρ₁)
-      ∧ (contains (applySeqR init_st ρ₂) t = true → (t, r, .Ins e p a) ∈ ρ₂)
-      ∧ (contains (applySeqR init_st ρ₀) t = true ∨ contains (applySeqR init_st ρ₁) t = true
-          ∨ contains (applySeqR init_st ρ₂) t = true) := by
+      (contains (applySeqR (init_st (α := α)) ρ₀) t = true → (t, r, .Ins e p a) ∈ ρ₀)
+      ∧ (contains (applySeqR (init_st (α := α)) ρ₁) t = true → (t, r, .Ins e p a) ∈ ρ₁)
+      ∧ (contains (applySeqR (init_st (α := α)) ρ₂) t = true → (t, r, .Ins e p a) ∈ ρ₂)
+      ∧ (contains (applySeqR (init_st (α := α)) ρ₀) t = true ∨ contains (applySeqR (init_st (α := α)) ρ₁) t = true
+          ∨ contains (applySeqR (init_st (α := α)) ρ₂) t = true) := by
     intro t r e a p hins hsv
     have hoursE : (t, r, .Ins e p a) ∈ events := hmemU _ hins
-    have hpick : ∀ (ρ : List op_t) (evs : Set op_t), listPermOf ρ evs →
+    have hpick : ∀ (ρ : List (op_t α)) (evs : Set (op_t α)), listPermOf ρ evs →
         (∀ x ∈ evs, x ∈ events) → insertedIn ρ t → (t, r, .Ins e p a) ∈ ρ := by
       intro ρ evs hperm hsub hinst
       obtain ⟨r', e', p', a', hm⟩ := hinst
@@ -177,8 +179,8 @@ theorem hCanon_of_leaves3
       rcases hIu.mp hsv.1 with h | h
       · exact Or.inr (Or.inl ((hci1.2.2.1 t).mpr ⟨h, hnd1⟩))
       · exact Or.inr (Or.inr ((hci2.2.2.1 t).mpr ⟨h, hnd2⟩))
-  exact ⟨canonMatch_merge_of_inputs' (applySeqR init_st ρ₀) (applySeqR init_st ρ₁)
-      (applySeqR init_st ρ₂) ρ₀ π₀ ρ₁ ρ₂ hcm0 hcm1 hcm2 Hdec Hstay hwf1 hwf2 h0σ hcaus
+  exact ⟨canonMatch_merge_of_inputs' (applySeqR (init_st (α := α)) ρ₀) (applySeqR (init_st (α := α)) ρ₁)
+      (applySeqR (init_st (α := α)) ρ₂) ρ₀ π₀ ρ₁ ρ₂ hcm0 hcm1 hcm2 Hdec Hstay hwf1 hwf2 h0σ hcaus
       hins_branch hbridge,
     hfold⟩
 

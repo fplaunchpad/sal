@@ -31,39 +31,41 @@ application point — never at reordered prefixes.
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace RGACanonConvergence
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open RGAMergeLinearization (applySeqR applySeqR_nil applySeqR_cons)
 
 /-! ## §1  Survivors of an applied event set, and the canonical anchor -/
 
 /-- `k` is inserted by some event of `F`. -/
-def insertedIn (F : List op_t) (k : ℕ) : Prop :=
+def insertedIn (F : List (op_t α)) (k : ℕ) : Prop :=
   ∃ r e p a, (k, r, .Ins e p a) ∈ F
 
 /-- `k` is the target of some delete of `F`. -/
-def deletedIn (F : List op_t) (k : ℕ) : Prop :=
+def deletedIn (F : List (op_t α)) (k : ℕ) : Prop :=
   ∃ t r p, (t, r, .Del p k) ∈ F
 
 /-- Survivors of the applied set `F`: inserted in `F` and not deleted in `F`.
 A pure function of `F`'s membership. -/
-def survP (F : List op_t) (k : ℕ) : Prop := insertedIn F k ∧ ¬ deletedIn F k
+def survP (F : List (op_t α)) (k : ℕ) : Prop := insertedIn F k ∧ ¬ deletedIn F k
 
 /-- The canonical anchor: the first entry of a recorded ancestor chain that
 survives `F` (else the root `0`) — the applied-set analog of the merge's
 LCA-climb, and the value `resolve` computes on any state whose domain is
 `survivors F`. -/
-noncomputable def canonAnc (F : List op_t) : List ℕ → ℕ
+noncomputable def canonAnc (F : List (op_t α)) : List ℕ → ℕ
   | [] => 0
   | c :: cs => if survP F c then c else canonAnc F cs
 
 /-- **The design's `CanonMatch F s`**: `s` is observationally the canonical
 state of the applied set `F` — domain = survivors, and each surviving insert
 holds its recorded element and its `canonAnc`. -/
-def CanonMatch (F : List op_t) (s : concrete_st) : Prop :=
+def CanonMatch (F : List (op_t α)) (s : concrete_st α) : Prop :=
   (∀ c, contains s c = true ↔ survP F c) ∧
   (∀ t r e p a, (t, r, .Ins e p a) ∈ F → survP F t →
       el s t = e ∧ anc s t = canonAnc F (a :: p))
@@ -73,7 +75,7 @@ invariants (`0` unstored, `wf`) and, per surviving insert, the `LiveChain`
 carrier — the live entries of its recorded chain are its genuine current
 ancestor chain.  `LiveChain`'s `resolve`-projection is `canonAnc`
 (`canonMatch_of_canonInv`), and it is what makes the `Del` step inductive. -/
-def CanonInv (F : List op_t) (s : concrete_st) : Prop :=
+def CanonInv (F : List (op_t α)) (s : concrete_st α) : Prop :=
   contains s 0 = false ∧ wf s ∧
   (∀ c, contains s c = true ↔ survP F c) ∧
   (∀ t r e p a, (t, r, .Ins e p a) ∈ F → survP F t →
@@ -86,13 +88,13 @@ the survivors form a genuine ancestor path from the first one.  Weaker than
 `accurate` (which demands every entry live): it is exactly what generation-time
 accuracy transports through concurrent deletes (`LiveChain` preservation), and
 it survives the deletion of the chain's own head. -/
-def ChainOK (s : concrete_st) (L : List ℕ) : Prop :=
+def ChainOK (s : concrete_st α) (L : List ℕ) : Prop :=
   ∀ c cs, liveSub s L = c :: cs → IsAncPath s c cs
 
 /-- A `Del`'s path names its target's current stored anchor (or the root, in
 the degenerate root-delete).  Nothing is required of a delete whose target is
 already dead and non-root — it is a no-op on live data. -/
-def DelOK (s : concrete_st) (p : List ℕ) (x : ℕ) : Prop :=
+def DelOK (s : concrete_st α) (p : List ℕ) (x : ℕ) : Prop :=
   (x = 0 → resolve s p = 0) ∧ (contains s x = true → resolve s p = anc s x)
 
 /-- Per-event discipline at the event's OWN application point (`F` = applied
@@ -100,7 +102,7 @@ prefix, `s` = its fold).  For an `Ins`: fresh nonzero id, never previously
 deleted (no id reuse across the history), absent from every recorded chain
 (monotone allocation), and `ChainOK` for its own chain.  For a `Del`:
 `DelOK`. -/
-def CanonStepOK (F : List op_t) (s : concrete_st) : op_t → Prop
+def CanonStepOK (F : List (op_t α)) (s : concrete_st α) : op_t α → Prop
   | (t, _, .Ins _ p a) =>
       t ≠ 0 ∧ contains s t = false ∧ ¬ deletedIn F t ∧ t ∉ a :: p ∧
       (∀ t' r' e' p' a', (t', r', .Ins e' p' a') ∈ F → t ∉ a' :: p') ∧
@@ -109,13 +111,13 @@ def CanonStepOK (F : List op_t) (s : concrete_st) : op_t → Prop
 
 /-- The whole enumeration is disciplined: each event satisfies `CanonStepOK`
 at its own prefix fold. -/
-def CanonFoldOK : List op_t → concrete_st → List op_t → Prop
+def CanonFoldOK : List (op_t α) → concrete_st α → List (op_t α) → Prop
   | _, _, [] => True
   | F, s, o :: rest => CanonStepOK F s o ∧ CanonFoldOK (F ++ [o]) (do_ s o) rest
 
 /-! ## §3  Membership algebra for `survP` and `canonAnc` -/
 
-theorem insertedIn_append (F : List op_t) (o : op_t) (k : ℕ) :
+theorem insertedIn_append (F : List (op_t α)) (o : op_t α) (k : ℕ) :
     insertedIn (F ++ [o]) k ↔
       (insertedIn F k ∨ ∃ r e p a, o = (k, r, .Ins e p a)) := by
   unfold insertedIn
@@ -128,7 +130,7 @@ theorem insertedIn_append (F : List op_t) (o : op_t) (k : ℕ) :
     · exact ⟨r, e, p, a, List.mem_append.mpr (Or.inl hm)⟩
     · exact ⟨r, e, p, a, List.mem_append.mpr (Or.inr (by rw [ho]; simp))⟩
 
-theorem deletedIn_append (F : List op_t) (o : op_t) (k : ℕ) :
+theorem deletedIn_append (F : List (op_t α)) (o : op_t α) (k : ℕ) :
     deletedIn (F ++ [o]) k ↔
       (deletedIn F k ∨ ∃ t r p, o = (t, r, .Del p k)) := by
   unfold deletedIn
@@ -142,7 +144,7 @@ theorem deletedIn_append (F : List op_t) (o : op_t) (k : ℕ) :
     · exact ⟨t, r, p, List.mem_append.mpr (Or.inr (by rw [ho]; simp))⟩
 
 /-- Appending an `Ins t` adds `t` to the inserted set and deletes nothing. -/
-theorem survP_append_ins (F : List op_t) (t r e : ℕ) (p : List ℕ) (a : ℕ) (c : ℕ) :
+theorem survP_append_ins (F : List (op_t α)) (t r : ℕ) (e : α) (p : List ℕ) (a : ℕ) (c : ℕ) :
     survP (F ++ [(t, r, .Ins e p a)]) c ↔
       ((insertedIn F c ∨ c = t) ∧ ¬ deletedIn F c) := by
   unfold survP
@@ -156,14 +158,14 @@ theorem survP_append_ins (F : List op_t) (t r e : ℕ) (p : List ℕ) (a : ℕ) 
     · refine ⟨Or.inl hi, ?_⟩
       rintro (h | ⟨t', r', p', ho⟩)
       · exact hnd h
-      · exact app_op_t.noConfusion (congrArg (·.2.2) ho)
+      · simp at ho
     · refine ⟨Or.inr ⟨r, e, p, a, rfl⟩, ?_⟩
       rintro (h | ⟨t', r', p', ho⟩)
       · exact hnd h
-      · exact app_op_t.noConfusion (congrArg (·.2.2) ho)
+      · simp at ho
 
 /-- Appending a `Del x` removes `x` from the survivors and inserts nothing. -/
-theorem survP_append_del (F : List op_t) (t r x : ℕ) (p : List ℕ) (c : ℕ) :
+theorem survP_append_del (F : List (op_t α)) (t r x : ℕ) (p : List ℕ) (c : ℕ) :
     survP (F ++ [(t, r, .Del p x)]) c ↔ (survP F c ∧ c ≠ x) := by
   unfold survP
   rw [insertedIn_append, deletedIn_append]
@@ -172,7 +174,7 @@ theorem survP_append_del (F : List op_t) (t r x : ℕ) (p : List ℕ) (c : ℕ) 
     · refine ⟨⟨hi, fun h => hnd (Or.inl h)⟩, ?_⟩
       rintro rfl
       exact hnd (Or.inr ⟨t, r, p, rfl⟩)
-    · exact app_op_t.noConfusion (congrArg (·.2.2) ho)
+    · simp at ho
   · rintro ⟨⟨hi, hnd⟩, hcx⟩
     refine ⟨Or.inl hi, ?_⟩
     rintro (h | ⟨t', r', p', ho⟩)
@@ -182,7 +184,7 @@ theorem survP_append_del (F : List op_t) (t r x : ℕ) (p : List ℕ) (c : ℕ) 
       exact hcx (app_op_t.Del.inj h4).2.symm
 
 /-- `survP` depends only on membership. -/
-theorem survP_congr (F₁ F₂ : List op_t) (hmem : ∀ o, o ∈ F₁ ↔ o ∈ F₂) (k : ℕ) :
+theorem survP_congr (F₁ F₂ : List (op_t α)) (hmem : ∀ o, o ∈ F₁ ↔ o ∈ F₂) (k : ℕ) :
     survP F₁ k ↔ survP F₂ k := by
   unfold survP insertedIn deletedIn
   constructor <;> rintro ⟨⟨r, e, p, a, hi⟩, hnd⟩
@@ -192,7 +194,7 @@ theorem survP_congr (F₁ F₂ : List op_t) (hmem : ∀ o, o ∈ F₁ ↔ o ∈ 
       fun ⟨t', r', p', h⟩ => hnd ⟨t', r', p', (hmem _).mp h⟩⟩
 
 /-- `canonAnc` depends only on membership. -/
-theorem canonAnc_congr (F₁ F₂ : List op_t) (hmem : ∀ o, o ∈ F₁ ↔ o ∈ F₂) :
+theorem canonAnc_congr (F₁ F₂ : List (op_t α)) (hmem : ∀ o, o ∈ F₁ ↔ o ∈ F₂) :
     ∀ L : List ℕ, canonAnc F₁ L = canonAnc F₂ L := by
   intro L
   induction L with
@@ -206,24 +208,24 @@ theorem canonAnc_congr (F₁ F₂ : List op_t) (hmem : ∀ o, o ∈ F₁ ↔ o �
 /-! ## §4  `resolve`/`liveSub` helpers and live-guarded chain transport -/
 
 /-- Members of the live sublist are live. -/
-theorem liveSub_live (s : concrete_st) (L : List ℕ) (c : ℕ) (hc : c ∈ liveSub s L) :
+theorem liveSub_live (s : concrete_st α) (L : List ℕ) (c : ℕ) (hc : c ∈ liveSub s L) :
     contains s c = true :=
   (List.mem_filter.mp hc).2
 
 /-- `resolve` of a chain with no live entry is the root. -/
-theorem resolve_of_liveSub_nil (s : concrete_st) (L : List ℕ)
+theorem resolve_of_liveSub_nil (s : concrete_st α) (L : List ℕ)
     (h : liveSub s L = []) : resolve s L = 0 := by
   rw [← resolve_liveSub s L, h]; rfl
 
 /-- `resolve` of a chain is the head of its live sublist. -/
-theorem resolve_of_liveSub_cons (s : concrete_st) (L : List ℕ) (c : ℕ) (cs : List ℕ)
+theorem resolve_of_liveSub_cons (s : concrete_st α) (L : List ℕ) (c : ℕ) (cs : List ℕ)
     (h : liveSub s L = c :: cs) : resolve s L = c := by
   rw [← resolve_liveSub s L, h]
   exact resolve_live_head s c cs (liveSub_live s L c (by rw [h]; simp))
 
 /-- On a state whose domain is the `F`-survivor set, `resolve` computes
 `canonAnc F` on every chain. -/
-theorem resolve_eq_canonAnc (F : List op_t) (s : concrete_st)
+theorem resolve_eq_canonAnc (F : List (op_t α)) (s : concrete_st α)
     (hdom : ∀ c, contains s c = true ↔ survP F c) :
     ∀ L : List ℕ, resolve s L = canonAnc F L := by
   intro L
@@ -245,7 +247,7 @@ theorem resolve_eq_canonAnc (F : List op_t) (s : concrete_st)
 /-- Chain transport when `anc`/containment agree on live nodes (the leaf
 included).  The `∀ k`-strong `isAncPath_of_eq` does not apply when dead
 mapping junk changes (a `Del` of a dead target rewrites dead anchors). -/
-theorem isAncPath_congr_live (s s' : concrete_st)
+theorem isAncPath_congr_live (s s' : concrete_st α)
     (Ha : ∀ c, contains s c = true → anc s' c = anc s c)
     (Hc : ∀ c, contains s c = true → contains s' c = true) :
     ∀ (L : List ℕ) (z : ℕ), contains s z = true → IsAncPath s z L →
@@ -267,7 +269,7 @@ theorem isAncPath_congr_live (s s' : concrete_st)
 /-- `CanonInv` projects to the design's `CanonMatch`: the surviving insert's
 anchor is `resolve` of its recorded chain (`liveChain_resolve`), and `resolve`
 against the survivor domain is `canonAnc` (`resolve_eq_canonAnc`). -/
-theorem canonMatch_of_canonInv (F : List op_t) (s : concrete_st)
+theorem canonMatch_of_canonInv (F : List (op_t α)) (s : concrete_st α)
     (h : CanonInv F s) : CanonMatch F s := by
   obtain ⟨h0, hwf, hdom, hins⟩ := h
   refine ⟨hdom, ?_⟩
@@ -278,7 +280,7 @@ theorem canonMatch_of_canonInv (F : List op_t) (s : concrete_st)
   exact resolve_eq_canonAnc F s hdom (a :: p)
 
 /-- `CanonMatch` is `eq`-respecting. -/
-theorem canonMatch_eq_respecting (F : List op_t) (s s' : concrete_st)
+theorem canonMatch_eq_respecting (F : List (op_t α)) (s s' : concrete_st α)
     (h : CanonMatch F s) (he : eq s s') : CanonMatch F s' := by
   obtain ⟨hdom, hanc⟩ := h
   refine ⟨?_, ?_⟩
@@ -299,7 +301,7 @@ theorem canonMatch_eq_respecting (F : List op_t) (s s' : concrete_st)
 the per-id extensional glue (the update analog of `eq_merge2_of_branchInv2`'s
 per-id reduction): same domain (= survivors), same element and anchor
 (= recorded payload and `canonAnc`) on every survivor. -/
-theorem eq_of_canonMatch2 (F₁ F₂ : List op_t) (s s' : concrete_st)
+theorem eq_of_canonMatch2 (F₁ F₂ : List (op_t α)) (s s' : concrete_st α)
     (hmem : ∀ o, o ∈ F₁ ↔ o ∈ F₂)
     (h1 : CanonMatch F₁ s) (h2 : CanonMatch F₂ s') : eq s s' := by
   obtain ⟨hdom1, hanc1⟩ := h1
@@ -330,7 +332,7 @@ theorem eq_of_canonMatch2 (F₁ F₂ : List op_t) (s s' : concrete_st)
 /-! ## §6  Base case and the `Ins` step -/
 
 /-- `CanonInv` holds at the empty applied set and the initial state. -/
-theorem canonInv_init : CanonInv [] init_st := by
+theorem canonInv_init : CanonInv [] (init_st (α := α)) := by
   refine ⟨by simp [init_st], ?_, ?_, ?_⟩
   · intro t ht
     simp [init_st] at ht
@@ -348,7 +350,7 @@ insert extends the canonical invariant: the new node's stored anchor is
 `resolve` of its recorded chain (= the nearest `F`-survivor), its live-filtered
 chain is genuine (`ChainOK`), and every prior survivor's carrier is untouched
 (`liveChain_doIns`, reused). -/
-theorem canonInv_doIns (F : List op_t) (s : concrete_st) (t r e a : ℕ) (p : List ℕ)
+theorem canonInv_doIns (F : List (op_t α)) (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ)
     (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Ins e p a)) :
     CanonInv (F ++ [(t, r, .Ins e p a)]) (do_ s (t, r, .Ins e p a)) := by
   obtain ⟨h0, hwf, hdom, hins⟩ := hinv
@@ -477,7 +479,7 @@ survivor's live-filtered chain is spliced across `x` — exactly
 `isAncPath_surgery` (the single-sided rehoming lemma reused from the
 subchain-resolution development).  Degenerate targets (root, already-dead) are
 no-ops on live data. -/
-theorem canonInv_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List ℕ)
+theorem canonInv_doDel (F : List (op_t α)) (s : concrete_st α) (t r x : ℕ) (p : List ℕ)
     (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Del p x)) :
     CanonInv (F ++ [(t, r, .Del p x)]) (do_ s (t, r, .Del p x)) := by
   obtain ⟨h0, hwf, hdom, hins⟩ := hinv
@@ -501,7 +503,7 @@ theorem canonInv_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List
     rcases List.mem_append.mp hm with h | h
     · exact h
     · exact absurd (List.mem_singleton.mp h)
-        (by intro hEq; exact app_op_t.noConfusion (congrArg (·.2.2) hEq))
+        (by intro hEq; simp at hEq)
   by_cases hx0 : x = 0
   · -- degenerate root delete: resolve s p = 0, nothing live moves
     subst hx0
@@ -627,13 +629,13 @@ theorem canonInv_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List
 /-- The design's `canonMatch_doIns`.  Stated over the carrier invariant
 `CanonInv` (the bare `anc = canonAnc` equation is not by itself inductive);
 the conclusion is the design's `CanonMatch` of the extended set. -/
-theorem canonMatch_doIns (F : List op_t) (s : concrete_st) (t r e a : ℕ) (p : List ℕ)
+theorem canonMatch_doIns (F : List (op_t α)) (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ)
     (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Ins e p a)) :
     CanonMatch (F ++ [(t, r, .Ins e p a)]) (do_ s (t, r, .Ins e p a)) :=
   canonMatch_of_canonInv _ _ (canonInv_doIns F s t r e a p hinv hok)
 
 /-- The design's `canonMatch_doDel`. -/
-theorem canonMatch_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : List ℕ)
+theorem canonMatch_doDel (F : List (op_t α)) (s : concrete_st α) (t r x : ℕ) (p : List ℕ)
     (hinv : CanonInv F s) (hok : CanonStepOK F s (t, r, .Del p x)) :
     CanonMatch (F ++ [(t, r, .Del p x)]) (do_ s (t, r, .Del p x)) :=
   canonMatch_of_canonInv _ _ (canonInv_doDel F s t r x p hinv hok)
@@ -644,7 +646,7 @@ theorem canonMatch_doDel (F : List op_t) (s : concrete_st) (t r x : ℕ) (p : Li
 of its applied set — induction along the enumeration, steps by §6/§7.  The
 per-event discipline is consumed at each event's OWN application point only;
 no claim is ever made about a not-yet-applied event. -/
-theorem canon_fold : ∀ (π F : List op_t) (s : concrete_st),
+theorem canon_fold : ∀ (π F : List (op_t α)) (s : concrete_st α),
     CanonInv F s → CanonFoldOK F s π → CanonInv (F ++ π) (applySeqR s π) := by
   intro π
   induction π with
@@ -665,7 +667,7 @@ theorem canon_fold : ∀ (π F : List op_t) (s : concrete_st),
     exact ih (F ++ [o]) (do_ s o) h' hrest
 
 /-- **HEADLINE — RGA update convergence via the canonical state.**  Two
-disciplined enumerations of the same event set fold from `init_st` to
+disciplined enumerations of the same event set fold from `(init_st (α := α))` to
 observationally equal states.
 
 Premises: the per-event generation discipline at each event's own application
@@ -675,12 +677,12 @@ enumerations.  Nothing else: the reachable-state facts `ReachInv` supplied
 `loOnA`-respecting/backward-closure conditions of the execution model are what
 make `CanonFoldOK` satisfiable, not separate inputs.  NO swap oracle, NO
 per-prefix `Faithful`, NO `DepComp` — none are even imported. -/
-theorem RGA_update_convergence_canon (π₁ π₂ : List op_t)
+theorem RGA_update_convergence_canon (π₁ π₂ : List (op_t α))
     (hmem : ∀ o, o ∈ π₁ ↔ o ∈ π₂)
-    (h₁ : CanonFoldOK [] init_st π₁) (h₂ : CanonFoldOK [] init_st π₂) :
-    eq (applySeqR init_st π₁) (applySeqR init_st π₂) := by
-  have c₁ := canon_fold π₁ [] init_st canonInv_init h₁
-  have c₂ := canon_fold π₂ [] init_st canonInv_init h₂
+    (h₁ : CanonFoldOK [] (init_st (α := α)) π₁) (h₂ : CanonFoldOK [] (init_st (α := α)) π₂) :
+    eq (applySeqR (init_st (α := α)) π₁) (applySeqR (init_st (α := α)) π₂) := by
+  have c₁ := canon_fold π₁ [] (init_st (α := α)) canonInv_init h₁
+  have c₂ := canon_fold π₂ [] (init_st (α := α)) canonInv_init h₂
   rw [List.nil_append] at c₁ c₂
   exact eq_of_canonMatch2 π₁ π₂ _ _ hmem
     (canonMatch_of_canonInv π₁ _ c₁) (canonMatch_of_canonInv π₂ _ c₂)
@@ -691,7 +693,7 @@ theorem RGA_update_convergence_canon (π₁ π₂ : List op_t)
 fully live, hence equal to its own live sublist and genuine from its head.
 (`ChainOK` moreover survives concurrent deletes of chain entries — including
 the anchor itself — where `accurate` fails.) -/
-theorem chainOK_of_accurate (s : concrete_st) (t r e a : ℕ) (p : List ℕ)
+theorem chainOK_of_accurate (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ)
     (h0 : contains s 0 = false)
     (hacc : accurate (t, r, .Ins e p a) s) : ChainOK s (a :: p) := by
   simp only [accurate, opLeaf, opPath] at hacc
@@ -717,7 +719,7 @@ theorem chainOK_of_accurate (s : concrete_st) (t r e a : ℕ) (p : List ℕ)
     exact hpath
 
 /-- `accurate` at application implies `DelOK` there. -/
-theorem delOK_of_accurate (s : concrete_st) (t r x : ℕ) (p : List ℕ)
+theorem delOK_of_accurate (s : concrete_st α) (t r x : ℕ) (p : List ℕ)
     (h0 : contains s 0 = false)
     (hacc : accurate (t, r, .Del p x) s) : DelOK s p x := by
   simp only [accurate, opLeaf, opPath] at hacc

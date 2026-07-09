@@ -48,18 +48,21 @@ the execution model (Phase 0) at the point an event is generated.
 -/
 
 set_option maxHeartbeats 1000000
+set_option linter.unusedSectionVars false
+
+variable {α : Type} [DecidableEq α]
 
 /-- The candidate reachable-state invariant: the root sentinel is never stored,
 and the anchor pointers form a valid live forest.
 
 Named `RgaInv` rather than `Inv` to avoid a clash with Mathlib's `Inv` typeclass
 (the `⁻¹` class), which otherwise shadows a bare `Inv` in some binder positions. -/
-def RgaInv (s : concrete_st) : Prop := contains s 0 = false ∧ wf s
+def RgaInv (s : concrete_st α) : Prop := contains s 0 = false ∧ wf s
 
 /-! ## PRIMARY 1 — `init_st` -/
 
 /-- `Inv` holds at the initial (empty) state: `wf` is vacuous and `0 ∉ dom`. -/
-theorem Inv_init : RgaInv init_st := by
+theorem Inv_init [Inhabited α] : RgaInv (init_st (α := α)) := by
   refine ⟨?_, ?_⟩
   · simp [init_st]
   · intro t ht
@@ -70,7 +73,7 @@ theorem Inv_init : RgaInv init_st := by
 New key `t ≠ 0` (by `fresh_ts`) keeps `contains 0` false; the stored anchor
 `resolve s (a :: pre)` is the live anchor `a` (or `0` when `a = 0`), so `wf`
 is preserved; every existing node is left untouched by the `upd`. -/
-theorem Inv_doIns (s : concrete_st) (t r e a : ℕ) (pre : List ℕ) (h : RgaInv s)
+theorem Inv_doIns (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ) (h : RgaInv s)
     (hacc : accurate (t, r, .Ins e pre a) s) (hfr : fresh_ts (t, r, .Ins e pre a) s) :
     RgaInv (do_ s (t, r, .Ins e pre a)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -128,7 +131,7 @@ so it *survives* the removal.  Every child of `x` is rehomed to that survivor an
 every other node keeps a still-live (or `0`) anchor: `wf` is preserved despite the
 physical deletion.  This is R2 — the forest invariant is maintained under
 rehoming, NOT by keeping paths accurate. -/
-theorem Inv_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ) (h : RgaInv s)
+theorem Inv_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (h : RgaInv s)
     (hacc : accurate (t, r, .Del pre x) s) :
     RgaInv (do_ s (t, r, .Del pre x)) := by
   obtain ⟨h0, hwf⟩ := h
@@ -229,25 +232,25 @@ state that violates it, and inserting a small id under a larger live anchor
 breaks it under the abstract `fresh_ts`.  It is established below as a reachable
 invariant of monotone allocation (`id_mono_init`/`id_mono_doIns`/`id_mono_doDel`/
 `id_mono_merge`). -/
-def id_mono (s : concrete_st) : Prop :=
+def id_mono (s : concrete_st α) : Prop :=
   ∀ t, contains s t → (anc s t = 0 ∨ anc s t < t)
 
 /-- The merged survivor set `I` (OR-set survival on identities), matching `merge`. -/
-def survivors (l a b : concrete_st) : set ℕ :=
+def survivors (l a b : concrete_st α) : set ℕ :=
   union (intersection (intersection (domain l) (domain a)) (domain b))
         (union (difference (domain a) (domain l)) (difference (domain b) (domain l)))
 
 /-- Each survivor's birth-anchor, read from whichever branch it lives in
 (matching `merge`'s `betaf`). -/
-def birthAnc (l a b : concrete_st) (t : ℕ) : ℕ :=
+def birthAnc (l a b : concrete_st α) (t : ℕ) : ℕ :=
   if contains l t then anc l t else if contains a t then anc a t else anc b t
 
 /-- `contains (merge …)` is survivor-set membership (definitional). -/
-theorem contains_merge (l a b : concrete_st) (t : ℕ) :
+theorem contains_merge (l a b : concrete_st α) (t : ℕ) :
     contains (merge l a b) t = survivors l a b t := rfl
 
 /-- `anc (merge …)` is the `climb` of the birth-anchor (definitional). -/
-theorem anc_merge (l a b : concrete_st) (t : ℕ) :
+theorem anc_merge (l a b : concrete_st α) (t : ℕ) :
     anc (merge l a b) t
       = climb (fun y => anc l y) (survivors l a b) (birthAnc l a b t) := rfl
 
@@ -260,7 +263,7 @@ and on survivors — so `id_mono l` (which only constrains live-in-`l` nodes) is
 exactly enough.  Since the id strictly decreases at each `anc l` step, the fuel
 `= start id` always suffices; this is the ingredient `merge_breaks_wf` shows `wf`
 lacks. -/
-theorem climb_aux_walk (l : concrete_st) (I : set ℕ)
+theorem climb_aux_walk (l : concrete_st α) (I : set ℕ)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true)) :
     ∀ (fuel x : ℕ), x ≤ fuel → (x = 0 ∨ I x = true ∨ contains l x = true) →
@@ -315,7 +318,7 @@ birth-anchor is `0`, itself a survivor, or live-in-`l` — so no separate
 cross-branch premise is needed.  Key fact: a node new in `a` (`da \ dl`) is
 *automatically* a survivor, so a chain of new `a`-nodes halts the climb at the
 first survivor rather than escaping `l`'s forest. -/
-theorem betaf_start (l a b : concrete_st)
+theorem betaf_start (l a b : concrete_st α)
     (hlwf : ∀ t, contains l t = true → (anc l t = 0 ∨ contains l (anc l t) = true))
     (hawf : ∀ t, contains a t = true → (anc a t = 0 ∨ contains a (anc a t) = true))
     (hbwf : ∀ t, contains b t = true → (anc b t = 0 ∨ contains b (anc b t) = true))
@@ -359,7 +362,7 @@ single extra premise `id_mono l`: the id-monotone anchors on the LCA make
 survivor's birth-anchor is supplied for free by `wf l/a/b` (`betaf_start`).  No
 separate cross-branch premise is needed. -/
 set_option maxHeartbeats 4000000 in
-theorem Inv_merge (l a b : concrete_st)
+theorem Inv_merge (l a b : concrete_st α)
     (hl : RgaInv l) (ha : RgaInv a) (hb : RgaInv b) (ml : id_mono l) :
     RgaInv (merge l a b) := by
   obtain ⟨hl0, hlwf⟩ := hl
@@ -394,7 +397,7 @@ timestamp exceeds every live id.  We package that as `mono_alloc` and show
 `RgaInv ∧ id_mono` is jointly preserved by `init_st`/`do_`/`merge`. -/
 
 /-- Any `resolve` result is the root `0` or a live node — regardless of accuracy. -/
-theorem resolve_zero_or_live (s : concrete_st) (cands : List ℕ) :
+theorem resolve_zero_or_live (s : concrete_st α) (cands : List ℕ) :
     resolve s cands = 0 ∨ contains s (resolve s cands) = true := by
   induction cands with
   | nil => left; rfl
@@ -406,20 +409,20 @@ theorem resolve_zero_or_live (s : concrete_st) (cands : List ℕ) :
 
 /-- Monotone allocation discipline: an `Ins` timestamp exceeds every live id
 (so its live anchor is strictly smaller); `Del` allocates nothing. -/
-def mono_alloc (o : op_t) (s : concrete_st) : Prop :=
+def mono_alloc (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
   | (t, _, .Ins _ _ _) => ∀ k, contains s k = true → k < t
   | (_, _, .Del _ _)   => True
 
 /-- `id_mono` holds vacuously at the empty initial state. -/
-theorem id_mono_init : id_mono init_st := by
+theorem id_mono_init [Inhabited α] : id_mono (init_st (α := α)) := by
   intro t ht
   simp [init_st] at ht
 
 /-- `Ins` preserves `id_mono` under monotone allocation: the freshly stored anchor
 `resolve s (a :: pre)` is `0`-or-live, and every live id is `< t` by `mono_alloc`;
 existing nodes keep their (already id-monotone) anchor. -/
-theorem id_mono_doIns (s : concrete_st) (t r e a : ℕ) (pre : List ℕ)
+theorem id_mono_doIns (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
     (hmono : id_mono s) (halloc : mono_alloc (t, r, .Ins e pre a) s) :
     id_mono (do_ s (t, r, .Ins e pre a)) := by
   simp only [mono_alloc] at halloc
@@ -454,7 +457,7 @@ untouched node the anchor (hence its id-monotonicity) is carried from `s`.  For 
 rehomed child `k` (whose parent was `x = anc s k`), the new anchor is
 `resolve s pre = anc s x`, and `id_mono s` gives `anc s x < x = anc s k < k`, so
 monotonicity survives the reparent. -/
-theorem id_mono_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
+theorem id_mono_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (h0 : contains s 0 = false) (hmono : id_mono s)
     (hacc : accurate (t, r, .Del pre x) s) :
     id_mono (do_ s (t, r, .Del pre x)) := by
@@ -483,7 +486,7 @@ theorem id_mono_doDel (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
 /-- `merge` preserves `id_mono` when all three inputs are id-monotone well-formed:
 each merged anchor is `climb (anc l) I (betaf t) ≤ betaf t`, and `betaf t` is `0`
 or `< t` by the owning branch's `id_mono`, so the climb result is `0` or `< t`. -/
-theorem id_mono_merge (l a b : concrete_st)
+theorem id_mono_merge (l a b : concrete_st α)
     (hl : RgaInv l) (ha : RgaInv a) (hb : RgaInv b)
     (ml : id_mono l) (ma : id_mono a) (mb : id_mono b) :
     id_mono (merge l a b) := by

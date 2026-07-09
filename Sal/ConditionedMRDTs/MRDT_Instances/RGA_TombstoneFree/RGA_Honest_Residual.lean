@@ -31,10 +31,12 @@ induction (`HonCore`) over `Step3`.
 -/
 
 set_option maxHeartbeats 1000000
-
+set_option linter.unusedSectionVars false
 open Classical
 
 namespace Sal.ConditionedMRDTs.RGASkeleton3
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
 
 open Sal.Emulation
 open Sal.ConditionedMRDTs.GenericEqQuotient
@@ -48,12 +50,12 @@ open Sal.ConditionedMRDTs.RGAK1Delta (rgaHonJ loOnA_imp_vis genDisc2C_of_born pa
 open Sal.ConditionedMRDTs.RGACanonFoldOK (GenDisc2C insertedIn_of_contains_fold)
 open RGAMergeLinearization (applySeqR)
 
-local notation "QD" => QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA
+local notation "QD" => QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA
 local notation "Cfg3" => Sal.ConditionedMRDTs.Configuration
-  (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
+  (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
 local notation "Reach3" => LabeledTS.ReachableFrom
-  (labeledTS3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA))
-  (initConfig (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA) trivial)
+  (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA))
+  (initConfig (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial)
 
 /-! ## §0  Small bricks -/
 
@@ -65,23 +67,23 @@ private theorem updateRep_other {α} (f : Replica → Option α) {r r' : Replica
 
 /-- The delivered op is `WfOpQ` somewhere: extract a representative of the head class from
 `hBA`'s own clauses.  (`qapplicable` lifts `applicable`; `applicable ⟹ WfOpA ⟹ WfOpQ`.) -/
-theorem wfOpQ_of_hBA {t : ℕ} {r : ℕ} {o : app_op_t} {sh : QState RGACondSig' rgaEqEquiv'}
-    (hq : qapplicable rgaEqEquiv' WfOpA rgaInvInvVCA (t, r, o) sh)
-    (himp : ∀ s', RGACondSig'.applicable (t, r, o) s' → WfOpA (t, r, o) s') :
-    ∃ σ : concrete_st, WfOpQ (t, r, o) σ := by
+theorem wfOpQ_of_hBA {t : ℕ} {r : ℕ} {o : app_op_t α} {sh : QState (RGACondSig' α) (rgaEqEquiv' α)}
+    (hq : qapplicable (rgaEqEquiv' α) WfOpA rgaInvInvVCA (t, r, o) sh)
+    (himp : ∀ s', (RGACondSig' α).applicable (t, r, o) s' → WfOpA (t, r, o) s') :
+    ∃ σ : concrete_st α, WfOpQ (t, r, o) σ := by
   obtain ⟨⟨σ, _hσ⟩, hrep⟩ := Quotient.exists_rep sh
   rw [← hrep] at hq
-  have happ : RGACondSig'.applicable (t, r, o) σ := hq
+  have happ : (RGACondSig' α).applicable (t, r, o) σ := hq
   exact ⟨σ, (himp σ happ).1⟩
 
 /-! ## §1  The re-typed core: the `rgaHonJ` witness configuration
 
 `Configuration.core` lands at the QUOTIENT signature; `rgaHonJ` wants a configuration over the
-raw `RGACondSig.toCRDTSig`.  Only `N`'s state type differs — and nothing downstream reads `N` —
+raw `(RGACondSig α).toCRDTSig`.  Only `N`'s state type differs — and nothing downstream reads `N` —
 so re-seat it and carry every invariant field verbatim. -/
 
-def coreR (C : Cfg3) : Sal.Emulation.Configuration RGACondSig.toCRDTSig where
-  N := fun r => (C.L r).map fun _ => init_st
+def coreR (C : Cfg3) : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig where
+  N := fun r => (C.L r).map fun _ => (init_st (α := α))
   L := C.L
   vis := C.vis
   dom_eq := by intro r; cases h : C.L r <;> simp
@@ -115,34 +117,34 @@ theorem goodConfig3S_of_reach {C : Cfg3} (hReach : Reach3 C) : GoodConfig3S C :=
 are nonzero, deletes have nonzero targets, and every event was BORN ACCURATE — accurate at some
 causal-order fold of its strict `vis`-past. -/
 def HonCore (C : Cfg3) : Prop :=
-  (∃ lE : List op_t, listPermOf lE C.events) ∧
+  (∃ lE : List (op_t α), listPermOf lE C.events) ∧
   (∀ o ∈ C.events, o.1 ≠ 0) ∧
-  (∀ (t r x : ℕ) (p : List ℕ), ((t, r, app_op_t.Del p x) : op_t) ∈ C.events → x ≠ 0) ∧
-  (∀ o ∈ C.events, ∃ π : List op_t,
-      listPermOf π {z : op_t | z ∈ C.events ∧ C.vis z o} ∧
-      respects π (fun a b : op_t => C.vis a b) ∧
-      accurate o (applySeqR init_st π))
+  (∀ (t r x : ℕ) (p : List ℕ), ((t, r, app_op_t.Del p x) : op_t α) ∈ C.events → x ≠ 0) ∧
+  (∀ o ∈ C.events, ∃ π : List (op_t α),
+      listPermOf π {z : op_t α | z ∈ C.events ∧ C.vis z o} ∧
+      respects π (fun a b : op_t α => C.vis a b) ∧
+      accurate o (applySeqR (init_st (α := α)) π))
 
 /-- **The honest-delivery residual** — the ONLY assumption about the system, per apply step:
 the delivered op was generated accurately against a causal fold of the head version's events
 (born accuracy — the generation discipline forced by tombstone-freedom), and delivery is
 born-applicable (`hBA`'s own clauses, verbatim). -/
 def HonestDelivery : Prop :=
-  ∀ {C₀ C₁ : Cfg3} {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t}
-    {v : Sal.ConditionedMRDTs.Version} {sh : QState RGACondSig' rgaEqEquiv'} {evh : Set (Op app_op_t)},
+  ∀ {C₀ C₁ : Cfg3} {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
+    {v : Sal.ConditionedMRDTs.Version} {sh : QState (RGACondSig' α) (rgaEqEquiv' α)} {evh : Set (Op (app_op_t α))},
     Reach3 C₀ →
-    Step3 (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA)
+    Step3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
       C₀ (Label3.apply t r o) C₁ →
     C₀.head r = some v → C₀.ver v = some (sh, evh) →
-    (∃ π : List op_t, listPermOf π evh ∧ respects π (fun a b : op_t => C₀.vis a b) ∧
-        accurate (t, r, o) (applySeqR init_st π)) ∧
-    qapplicable rgaEqEquiv' WfOpA rgaInvInvVCA (t, r, o) sh ∧
-    (∀ s', RGACondSig'.applicable (t, r, o) s' → WfOpA (t, r, o) s')
+    (∃ π : List (op_t α), listPermOf π evh ∧ respects π (fun a b : op_t α => C₀.vis a b) ∧
+        accurate (t, r, o) (applySeqR (init_st (α := α)) π)) ∧
+    qapplicable (rgaEqEquiv' α) WfOpA rgaInvInvVCA (t, r, o) sh ∧
+    (∀ s', (RGACondSig' α).applicable (t, r, o) s' → WfOpA (t, r, o) s')
 
 theorem honCore_init : HonCore (initConfig QD trivial) := by
-  have hev : ∀ e : op_t, e ∈ (initConfig QD trivial).events → False := by
+  have hev : ∀ e : op_t α, e ∈ (initConfig QD trivial).events → False := by
     rintro e ⟨r, s, hLs, hse⟩
-    have hLs' : (if r = 0 then (some (∅ : Set op_t)) else none) = some s := hLs
+    have hLs' : (if r = 0 then (some (∅ : Set (op_t α))) else none) = some s := hLs
     by_cases h : r = 0
     · subst h
       rw [if_pos rfl] at hLs'
@@ -158,7 +160,7 @@ theorem honCore_init : HonCore (initConfig QD trivial) := by
 
 /-- Events-preserving, vis-preserving steps transfer the whole invariant. -/
 theorem honCore_transfer {C C' : Cfg3}
-    (hE : ∀ e : op_t, e ∈ C'.events ↔ e ∈ C.events)
+    (hE : ∀ e : op_t α, e ∈ C'.events ↔ e ∈ C.events)
     (hvis : C'.vis = C.vis)
     (h : HonCore C) : HonCore C' := by
   obtain ⟨⟨lE, hlE⟩, hz, hd, hb⟩ := h
@@ -201,7 +203,7 @@ theorem honCore_createReplica {C C' : Cfg3} {r : Replica}
     · exact ⟨r', s', by rw [hL, updateRep_other _ _ hr]; exact hLs, hse⟩
 
 theorem honCore_merge {C C' : Cfg3} {r₁ r₂ : Replica} {v₁ v₂ : Version}
-    {s₁ s₂ : (QD).State} {ev₁ ev₂ : Set op_t}
+    {s₁ s₂ : (QD).State} {ev₁ ev₂ : Set (op_t α)}
     (h_head₁ : C.head r₁ = some v₁) (h_head₂ : C.head r₂ = some v₂)
     (h_ver₁ : C.ver v₁ = some (s₁, ev₁)) (h_ver₂ : C.ver v₂ = some (s₂, ev₂))
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
@@ -238,23 +240,23 @@ theorem honCore_merge {C C' : Cfg3} {r₁ r₂ : Replica} {v₁ v₂ : Version}
 /-- **The apply step** — the only step that adds an event.  Freshness (`h_fresh_t`), the
 structural Lamport field of the POST-configuration, born accuracy, and `WfOpQ` of the new op
 maintain all four clauses. -/
-theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t}
-    {v : Version} {sh : (QD).State} {evh : Set op_t}
+theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t α}
+    {v : Version} {sh : (QD).State} {evh : Set (op_t α)}
     (h_head : C.head r = some v) (h_ver : C.ver v = some (sh, evh))
     (h_fresh_t : ∀ e', e' ∈ C.events → Op.time e' ≠ t)
     (hL : C'.L = updateRep C.L r (evh ∪ {(t, r, o)}))
     (hvis : C'.vis = fun a b => C.vis a b ∨ (evh a ∧ b = (t, r, o)))
-    (hborn : ∃ π : List op_t, listPermOf π evh ∧
-        respects π (fun a b : op_t => C.vis a b) ∧
-        accurate (t, r, o) (applySeqR init_st π))
-    (hwfQ : ∃ σ : concrete_st, WfOpQ (t, r, o) σ)
+    (hborn : ∃ π : List (op_t α), listPermOf π evh ∧
+        respects π (fun a b : op_t α => C.vis a b) ∧
+        accurate (t, r, o) (applySeqR (init_st (α := α)) π))
+    (hwfQ : ∃ σ : concrete_st α, WfOpQ (t, r, o) σ)
     (h : HonCore C) : HonCore C' := by
   have hLr : C.L r = some evh := by
     rw [← (C.head_coherent r v h_head).2, h_ver]; rfl
   have hevh_sub : ∀ a ∈ evh, a ∈ C.events := fun a ha => ⟨r, evh, hLr, ha⟩
-  have hnew_not : ((t, r, o) : op_t) ∉ C.events := fun hm => h_fresh_t _ hm rfl
+  have hnew_not : ((t, r, o) : op_t α) ∉ C.events := fun hm => h_fresh_t _ hm rfl
   -- the event universe grows by exactly the new op
-  have hE : ∀ e : op_t, e ∈ C'.events ↔ e ∈ C.events ∨ e = (t, r, o) := by
+  have hE : ∀ e : op_t α, e ∈ C'.events ↔ e ∈ C.events ∨ e = (t, r, o) := by
     intro e
     constructor
     · rintro ⟨r', s', hLs, hse⟩
@@ -295,7 +297,7 @@ theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t}
       rcases hπacc with ⟨h0eq, _⟩ | ⟨hlive, _⟩
       · exact absurd h0eq hx0
       · obtain ⟨rx, ex, px, ax, hmx⟩ := insertedIn_of_contains_fold π x hlive
-        have hxevh : ((x, rx, app_op_t.Ins ex px ax) : op_t) ∈ evh := (hπp.2 _).mp hmx
+        have hxevh : ((x, rx, app_op_t.Ins ex px ax) : op_t α) ∈ evh := (hπp.2 _).mp hmx
         have hvis' : C'.vis (x, rx, app_op_t.Ins ex px ax) (t, r, app_op_t.Del p x) := by
           rw [hvis]
           exact Or.inr ⟨hxevh, rfl⟩
@@ -326,9 +328,10 @@ theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t}
     rcases (hE _).mp hm with hold | heq
     · exact hd t' r' x p hold
     · obtain ⟨σ, hq⟩ := hwfQ
-      have h3 := congrArg (fun z : op_t => z.2.2) heq
+      injection heq with _ht heq2
+      injection heq2 with _hr h3
       cases o with
-      | Ins e p₀ a₀ => exact app_op_t.noConfusion h3
+      | Ins e p₀ a₀ => simp at h3
       | Del p₀ x₀ =>
         injection h3 with h3p h3x
         subst h3x
@@ -380,7 +383,7 @@ theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t}
         · exact hnew_not (heq ▸ hevh_sub _ ((hπp.2 a).mp ha))
 
 /-- The honest-core invariant at every reachable configuration. -/
-theorem honCore_of_reach (hHD : HonestDelivery) {C : Cfg3} (hReach : Reach3 C) :
+theorem honCore_of_reach (hHD : HonestDelivery (α := α)) {C : Cfg3} (hReach : Reach3 C) :
     HonCore C := by
   induction hReach with
   | refl => exact honCore_init
@@ -413,7 +416,7 @@ theorem honCore_of_reach (hHD : HonestDelivery) {C : Cfg3} (hReach : Reach3 C) :
 re-typed core itself; visibility restriction is `vis_src`/`vis_tgt`, Lamport is the structural
 `causal_mono`, id-uniqueness is `timestamps_distinct`, and the generation discipline is
 `genDisc2C_of_born` at the honest-core invariant. -/
-theorem rga_hHon_discharged (hHD : HonestDelivery) :
+theorem rga_hHon_discharged (hHD : HonestDelivery (α := α)) :
     ∀ {C₀ : Cfg3}, Reach3 C₀ →
       rgaHonJ (Sal.ConditionedMRDTs.Configuration.core C₀).vis
         (Sal.ConditionedMRDTs.Configuration.core C₀).events := by
@@ -444,9 +447,9 @@ theorem rga_hHon_discharged (hHD : HonestDelivery) :
 configuration of the quotient LTS is per-version RA-linearizable up to observational `≈`, given
 only `HonestDelivery`: each delivered op was generated accurately against a causal fold of the
 events it had seen, and delivery is born-applicable. -/
-theorem rga_RA_linearizable_honest (hHD : HonestDelivery)
+theorem rga_RA_linearizable_honest (hHD : HonestDelivery (α := α))
     (C : Cfg3) (hReach : Reach3 C) :
-    IsRALinearizable3Eq rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA C :=
+    IsRALinearizable3Eq (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA C :=
   rga_RA_linearizable_final
     (fun hreach => rga_hHon_discharged hHD hreach)
     (fun hreach hstep hhead hver => (hHD hreach hstep hhead hver).2)
