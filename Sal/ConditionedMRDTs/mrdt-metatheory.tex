@@ -1919,7 +1919,24 @@ weaker bridge VC exists, with both attack routes
 characterized --- the positive induction is circular at two identified case
 shapes, and the countermodel space is narrowed to non-atomic lattice
 states (all of this mechanized, in \lean{Sal/CRDTs/Metatheory/}). The
-ternary question is open.
+ternary question, by contrast, is now \textbf{closed}: \lean{CDVC3} is an
+\emph{independent} rule of the ternary bundle
+(\lean{cdvc3\_not\_derivable\_from\_core\_delta},
+\lean{Refutations/CD\_Not\_Derivable\_Ternary.lean}, kernel-clean) --- there is
+a \lean{ConditionedMRDTSig} (\lean{AWSetF3}, the LCA-blind lift of the binary
+inflation-separator, with a deflationary $\mathsf{rem}$) satisfying every
+\lean{CoreVCs3} and \lean{DeltaVCs3} clause yet falsifying \lean{CDVC3}, so
+$\mathsf{CoreVCs3} + \mathsf{DeltaVCs3} \not\Rightarrow \mathsf{CDVC3}$ (and,
+via \lean{joinLemma3\_iff\_cdVC3}, $\not\Rightarrow$ the Join Lemma). The
+reason ternary \emph{closes} where binary (b$''$) stays open is instructive:
+\lean{CDVC3}'s $\sqsubseteq$-half demands update \emph{inflation}
+($A \sqsubseteq \mathsf{update}\,A\,e$), which the binary \lean{LatticeVCsPlus}
+ships as a separate axiom but the ternary \lean{DeltaVCs3} honestly omits ---
+so the inflation-free delta laws cannot back \lean{CDVC3}, and a deflationary
+update refutes it. The eight-VC bundle is therefore \textbf{minimal at
+\lean{CDVC3}}: the causal-delta rule is a genuine independent axiom, not a
+derived lemma (a load-bearing point for the rule-basis of
+Open Question~\ref{oq:proglogic})
 \end{openq}
 
 \begin{openq}[structure theorem]
@@ -2203,6 +2220,7 @@ product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_lineariza
 Peritext by composition & \lean{peritextTF\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/PeritextTF/} \\
 mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
+$\cd$ independent of core+delta (OQ~\ref{oq:cd}) & \lean{cdvc3\_not\_derivable\_from\_core\_delta} & \lean{Refutations/CD\_Not\_Derivable\_Ternary.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule
