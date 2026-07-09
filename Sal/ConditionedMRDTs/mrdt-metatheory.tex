@@ -1936,63 +1936,18 @@ the common witness set as data, re-founding $\cd$ on the full downset)
 buys anything over the closure-indexed form.
 \end{openq}
 
-\begin{openq}[the feasible update layer --- resolved: from refuted
-conditionings to a conditioned metatheory]
-Condition the update-layer VCs on an update-and-merge-closed invariant and
-host the tombstone-free RGA. The required invariant machinery
-($\mathsf{RgaInv} \wedge \mathsf{id\_mono}$, closed under merge given
-id-monotone allocation) is already mechanized on the data-type side ---
-but the \emph{conditioning of convergence itself} is subtler than
-``restrict the VCs to $\mathsf{Inv}$-states,'' and the naive form is
-refuted (\lean{G2\_Transport\_Probe}). Replacing $\ncomm$ by its
-$\mathsf{Inv}$-and-applicability-conditioned form inside $\loE{E}$ drops
-order edges between events that are \emph{never jointly applicable} (an
-$\mathsf{Ins}$ and a $\mathsf{Del}$ of the same node vacuously
-``commute''), and two orders that fold to different states then both
-respect $\loE{E}$: convergence fails. Strengthening $\mathsf{Inv}$ cannot
-repair it --- conditioning is antitone, so a smaller applicability domain
-only removes more edges. The order must instead be
-\emph{applicability-aware}: an edge survives when one event's
-applicability \emph{depends} on the other. Restricting convergence to
-strictly \emph{applicability-valid} enumerations is not the answer,
-though it looks strictly more general (\lean{G2\_Applicability\_Aware}:
-\lean{separating\_inequivalence}): it is \emph{unsatisfiable} for
-genuinely reachable versions carrying \emph{redundant concurrent} ops ---
-two concurrent deletes of one node, for which no enumeration keeps both
-deletes applicable. The resolution, and the finding, is that the two
-repairs are complementary, not competing: the correct notion is the
-applicability-aware order \emph{together with} \emph{no-op-feasible}
-enumerations (each step applicable \emph{or} acting as identity). The
-order excludes the dependency-violating replays (which mere no-op
-tolerance would re-admit, breaking convergence); no-op tolerance admits
-the harmless redundant ones (which strict applicability rejects, breaking
-satisfiability). On the two decisive cases --- one dependency, one
-redundancy --- this notion is provably both convergent and satisfiable,
-where each single repair fails one (\lean{UpdateFeasibility\_Gate}:
-\lean{loOnA\_noopFeasible\_verdict}). The general convergence theorem then
-factors cleanly (\lean{ConditionedConvergence}): a \emph{single} order VC
-(``a vacuous $\mathsf{commutesOn}$ edge is an applicability dependency'')
-re-adds exactly the dropped edges, reducing conditioned convergence to the
-unconditioned theorem (\lean{conditioned\_convergence\_on}) --- for any
-data type whose commutation is available unconditionally. The
-tombstone-free RGA is precisely the one that is not (its commutation is
-reachability-conditioned), so it forces the conditioned route. There the
-last obstruction resolves sharply (\lean{RGA\_Rehoming\_Gate}): the
-interleaved-applicability side-condition is \emph{false} for the RGA --- a
-concurrent delete rehomes nodes and stales a concurrent insert's path, and
-the staled insert is neither applicable nor a no-op --- \emph{yet the
-version still converges}, because the insert re-anchors at exactly the
-node the delete rehomed to (the RGA's own \lean{insdel\_comm}). So the
-obstruction is not unreachability, and not non-convergence: it is that the
-peel bubble demands \emph{pointwise} applicability at hybrid fold states,
-while a path-carrying data type supplies \emph{semantic} commutation only
-at the pair's common causal base. That architecture now exists, and \S\ref{sec:condmeta}--\S\ref{sec:actual}
-of this note develop it in full: it is not a repaired bubble --- the swap
-frame itself is refuted at merge unions --- but a conditioned metatheory
-whose target is the raw fold up to $\eqobs$. The ladder above is the
-sequence of kernel-checked refutations that found it; the resolution is
-the end-to-end theorem \lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}.
-\end{openq}
+\paragraph{Resolved (how the framework was found).} An earlier open
+question --- how to condition the update-layer VCs so that a
+reachability-conditioned data type like the tombstone-free RGA can be hosted
+--- is settled: it \emph{became} the conditioned metatheory of
+\S\ref{sec:condmeta}--\S\ref{sec:actual}. The refutation ladder that found it
+(the naive $\mathsf{Inv}$-restriction refuted, \lean{G2\_Transport\_Probe};
+the applicability-aware order paired with no-op-feasible enumerations,
+\lean{UpdateFeasibility\_Gate}; the rehoming obstruction,
+\lean{RGA\_Rehoming\_Gate}) is recorded in the mechanization map's
+investigation rows, and the resolution is the end-to-end theorem
+\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq}. It is kept here as a
+pointer, not as an open question.
 
 \begin{openq}[the automation layer]
 The published catalogue's seventeen induction-scheme VCs were an
