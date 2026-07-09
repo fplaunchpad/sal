@@ -15,6 +15,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
 import Sal.ConditionedMRDTs.MRDT_Instances.ORSetCore.ORSetCore
 import Sal.ConditionedMRDTs.MRDT_Instances.BudgetCart.BudgetCart
 import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
+import Sal.ConditionedMRDTs.MRDT_Instances.LWWRegister.LWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.ProductDemo.ProductDemo
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
@@ -49,6 +50,7 @@ tombstone-free RGA is the fully general instantiation.
 | **Bounded counter** (escrow) | `BC_ra_linearizable3_eq`; safety: `bc_version_inv` |
 | **BudgetCart** (per-replica budgets) | `BCart_ra_linearizable3_eq`; safety: `bcart_version_inv_gated` (gated on `CausalCanonical` — OQ8) |
 | **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
+| **LWW register** | `LWW_ra_linearizable3_eq`; characterization: `lww_version_max` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
 | **Peritext (tombstone-free)** | `peritextTF_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
