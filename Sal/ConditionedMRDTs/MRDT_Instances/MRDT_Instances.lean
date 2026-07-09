@@ -22,6 +22,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.PeritextTF
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkHonesty
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkIntent
+import Sal.ConditionedMRDTs.MRDT_Instances.PeritextFused.PeritextFused
+import Sal.ConditionedMRDTs.MRDT_Instances.PeritextFused.PeritextFused_Read
 
 /-!
 # The conditioned MRDT instances — the full catalogue
@@ -54,6 +56,7 @@ tombstone-free RGA is the fully general instantiation.
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
 | **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
 | **Peritext (tombstone-free)** | `peritextTF_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
+| **Peritext (FUSED, tombstone-free)** | `peritextFused_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_tombstone_free_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `PeritextFused_Read`; the live-corner contrast to the frozen-path product above |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).
