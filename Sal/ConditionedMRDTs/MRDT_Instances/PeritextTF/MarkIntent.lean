@@ -1,41 +1,61 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkHonesty
 
 /-!
-# Peritext gap 2 — the render-intent theorems (what mark-anchor honesty buys)
+# Peritext gap 2 — what the frozen-path read actually guarantees (and does not)
 
 Gap 1 (`MarkHonesty.lean`) showed mark-anchor honesty *composes* but is
-decorative for the linearizability capstone — its payoff is the read layer.
-This file collects the payoff: the intent theorems the render owes, each
-consuming `MarkAccurate`.
+decorative for the linearizability capstone — any payoff must be on the read
+layer. This file states, honestly, what the frozen-path resolution buys and —
+importantly — what it does **not**: it is **not** the paper's positional
+semantics, and it does **not** prevent formatting from leaking under deletion.
 
-The Peritext promise (Litt et al., CSCW 2022) is that formatting stays put:
-a mark's span does not leak to unrelated text under concurrent edits. In the
-tombstone-free composite, a mark endpoint is a character id plus its recorded
-ancestor path; at read time the endpoint is resolved by the RGA's own
-path-climbing (`resolveMark`), which walks the recorded chain to the nearest
-surviving character. The read-side guarantee is therefore structural:
+**The correction (read this first).** The Peritext promise (Litt et al.,
+CSCW 2022) is that formatting stays put: deleting an anchored character does
+not move a mark boundary, because the paper's sequence keeps that character as
+a **tombstone** at its exact position. Our sequence is tombstone-free — the
+deleted character's position is destroyed — so we recover a boundary by
+climbing its frozen recorded path with the RGA's `resolve`, which climbs
+**tree ancestry**. Tree ancestry is *not* document position: an ancestor sits
+*earlier* in the reading order (a parent precedes its children in the DFS),
+and climbing can skip surviving siblings. So under deletion of its anchor a
+boundary **migrates backward in the document** — formatting extends to text
+that was never in the span. That is a genuine leak, not staleness, and it
+means the frozen-path design does **not** match the paper's positional
+semantics. (An earlier version of this file named the theorems below
+`mark_*_no_leak` and the note claimed a "formatting does not leak" guarantee;
+both overclaimed and are corrected here.)
 
-* **No leak** (`mark_start_in_recorded` / `mark_end_in_recorded`): resolution
-  returns either the document root or a member of the endpoint's *recorded
-  chain* — it can never jump to a character outside it. Combined with accuracy
-  (the recorded chain is the endpoint's true ancestry at issue,
-  `MarkAccurate`), formatting can only ever climb the anchored character's own
-  ancestry, never leak sideways.
+What the theorems below *do* establish is weaker and honest:
+
+* **Containment, not stasis** (`mark_start_within_recorded_ancestry` /
+  `_end_`): under accuracy the resolved endpoint is the document root, the
+  anchored character, or one of its *issue-time ancestors*. So the boundary
+  can drift, but only **along its own recorded ancestor chain** — it cannot
+  jump to unrelated text. This *bounds* the leak (no wild drift); it does not
+  *prevent* it (backward drift within the chain is exactly what happens when
+  the anchor dies).
+* **Structural containment** (`mark_start_in_recorded` / `_end_`): with no
+  hypotheses at all, resolution returns the root or a member of the recorded
+  chain — never an outside character.
 * **Surviving endpoint** (`mark_start_live` / `mark_end_live`): a non-root
-  resolved endpoint is *live* at read time — the mark attaches to a surviving
+  resolved endpoint is live at read time — the mark attaches to a surviving
   character, not a ghost.
-* **Faithful at issue** (`markAccurate_resolveMark`, from `MarkHonesty.lean`):
+* **Faithful at issue** (`markAccurate_resolveMark`, `MarkHonesty.lean`):
   before any deletion the mark renders to its exact recorded endpoints.
 
-The structural core is that `resolve` returns a live member of its candidate
-list or the root (`resolve_eq_zero_or_mem`, `resolve_live_of_ne_zero`) — the
-recorded chain is immutable data, so "stays within the recorded chain" holds
-at *every* read state without threading a reachability invariant. What a
-*stronger* claim would need — that the recorded chain remains a valid
-*ancestry* at read time, so the surviving endpoint is a genuine current
-ancestor and not merely a recorded one — is the RGA's own recorded-path
-faithfulness invariant (`chainFaithful`) lifted to the product LTS; it is the
-one remaining piece, noted at the end.
+The one genuine intent guarantee — that a mark's span is exactly the surviving
+image of its original span, with no backward leak — is **not proved here and
+does not hold for the frozen-path design**. It needs document-order rehoming
+(the boundary moving to its nearest surviving *neighbour in reading order*,
+gravity-respecting), which is what the *fused* boundary-node design provides
+via the RGA's own live rehoming — at the cost of atomicity (the trilemma).
+This is recorded as the remaining Peritext read-model work.
+
+(The containment facts are purely structural — `resolve` returns a live member
+of its candidate list or the root, `resolve_eq_zero_or_mem` /
+`resolve_live_of_ne_zero` — so they hold at every read state with no
+reachability invariant. It is precisely the *positional correctness* the
+structure cannot supply.)
 -/
 
 set_option maxHeartbeats 400000
@@ -77,7 +97,7 @@ theorem resolve_live_of_ne_zero (σ : concrete_st) :
     · rw [if_pos hc]; exact hc
     · rw [if_neg hc]; rw [if_neg hc] at h; exact ih h
 
-/-! ## §2  No leak: a rendered endpoint stays in its recorded chain
+/-! ## §2  Structural containment: a rendered endpoint stays in its recorded chain
 
 `resolveMark σ m` = `(markId, markType, resolvedStart, resolvedEnd)`, with the
 resolved start/end obtained by `resolve` on the recorded chains
@@ -90,15 +110,16 @@ def startChain (m : MarkPayload) : List ℕ := m.2.2.1.1 :: m.2.2.1.2
 /-- The recorded end chain of a mark. -/
 def endChain (m : MarkPayload) : List ℕ := m.2.2.2.1 :: m.2.2.2.2
 
-/-- **No leak (start)**: at any read state, the rendered start endpoint is the
-document root or a member of the recorded start chain — resolution cannot
-escape to an outside character. -/
+/-- **Containment (start)**: at any read state, the rendered start endpoint is
+the document root or a member of the recorded start chain — resolution cannot
+escape to an outside character. (Bounds where the boundary can land; says
+nothing about whether it moved.) -/
 theorem mark_start_in_recorded (σ : concrete_st) (m : MarkPayload) :
     (resolveMark σ m).2.2.1 = 0 ∨ (resolveMark σ m).2.2.1 ∈ startChain m := by
   show resolve σ (startChain m) = 0 ∨ resolve σ (startChain m) ∈ startChain m
   exact resolve_eq_zero_or_mem σ (startChain m)
 
-/-- **No leak (end)**. -/
+/-- **Containment (end)**. -/
 theorem mark_end_in_recorded (σ : concrete_st) (m : MarkPayload) :
     (resolveMark σ m).2.2.2 = 0 ∨ (resolveMark σ m).2.2.2 ∈ endChain m := by
   show resolve σ (endChain m) = 0 ∨ resolve σ (endChain m) ∈ endChain m
@@ -117,13 +138,16 @@ theorem mark_end_live (σ : concrete_st) (m : MarkPayload)
     contains σ (resolveMark σ m).2.2.2 = true :=
   resolve_live_of_ne_zero σ (endChain m) h
 
-/-! ## §3  The chain is the issue-time ancestry — no leak beyond it
+/-! ## §3  Under accuracy, the chain is genuine issue-time ancestry
 
 Under `MarkAccurate` at the issue state, the recorded chains ARE the true
-ancestor chains of the endpoint characters. Every non-head member of a chain
-is a genuine ancestor (`anc`-reachable) of the endpoint at issue; so the
-resolved endpoint, staying in the chain, can only be the endpoint character
-itself or one of its issue-time ancestors — the precise "no sideways leak". -/
+ancestor chains of the endpoint characters. So the resolved endpoint is the
+document root, the anchored character itself, or one of its genuine issue-time
+ancestors. This bounds the boundary's drift to its own ancestry — it cannot
+reach unrelated text — but note an ancestor is *earlier in document order*, so
+this is exactly the statement that under deletion the boundary drifts
+**backward** (a leak), confined to the recorded chain. Containment, not
+stasis. -/
 
 /-- Every member of an accurate chain is `anc`-reachable from the leaf at the
 issue state: the head is the leaf, and each tail member is the parent of the
@@ -141,12 +165,13 @@ theorem isAncPath_mem_is_ancestor {σ₀ : concrete_st} :
     · exact hpl
     · exact ih p hrest x hx'
 
-/-- **No leak beyond the issue-time ancestry (start)**: under mark-anchor
-accuracy, the rendered start endpoint is the root, the anchored start
-character, or one of its genuine ancestors at the issue state — never an
-unrelated character. This is the formal Peritext "formatting does not leak"
-guarantee, at endpoint granularity. -/
-theorem mark_start_no_leak {σ₀ σ' : concrete_st} {m : MarkPayload}
+/-- **Drift is confined to the issue-time ancestry (start)**: under
+mark-anchor accuracy, the rendered start endpoint is the root, the anchored
+start character, or one of its genuine ancestors at the issue state. This is a
+*containment* bound — the boundary cannot drift to unrelated text — NOT a
+no-leak guarantee: an ancestor is earlier in reading order, so this is
+precisely where the boundary migrates backward when the anchor is deleted. -/
+theorem mark_start_within_recorded_ancestry {σ₀ σ' : concrete_st} {m : MarkPayload}
     (hacc : MarkAccurate σ₀ m) :
     (resolveMark σ' m).2.2.1 = 0 ∨
     (resolveMark σ' m).2.2.1 = m.2.2.1.1 ∨
@@ -161,8 +186,8 @@ theorem mark_start_no_leak {σ₀ σ' : concrete_st} {m : MarkPayload}
       · rw [hpnil] at htail; cases htail
       · exact isAncPath_mem_is_ancestor m.2.2.1.1 m.2.2.1.2 hpath _ htail
 
-/-- **No leak beyond the issue-time ancestry (end)**. -/
-theorem mark_end_no_leak {σ₀ σ' : concrete_st} {m : MarkPayload}
+/-- **Drift is confined to the issue-time ancestry (end)**. -/
+theorem mark_end_within_recorded_ancestry {σ₀ σ' : concrete_st} {m : MarkPayload}
     (hacc : MarkAccurate σ₀ m) :
     (resolveMark σ' m).2.2.2 = 0 ∨
     (resolveMark σ' m).2.2.2 = m.2.2.2.1 ∨
@@ -179,20 +204,22 @@ theorem mark_end_no_leak {σ₀ σ' : concrete_st} {m : MarkPayload}
 
 /-! ## §4  What remains: recorded chain stays ancestral at read time
 
-`mark_start_no_leak` bounds the resolved endpoint by the *issue-time* ancestry
-(the recorded chain, pinned true by accuracy). The stronger read-time claim —
-that the surviving resolved endpoint is a genuine ancestor *at the read state
-`σ'`* (not merely a recorded one), so the mark's span is exactly the surviving
-image of its original span — needs that tombstone-free deletion preserves the
-ancestor relation among survivors, i.e. the RGA's recorded-path faithfulness
-invariant (`chainFaithful` / `RVF`, `RGA_Tombstone_Free_MRDT.lean`) lifted
-along the product LTS. That lift is the same shape as the character supply
-rerun (`Supplies.lean`) and is the remaining Peritext-specific work; the
-theorems above are the read-side guarantee that holds unconditionally in the
-mark data, and `mark_*_no_leak` is the guarantee accuracy already buys. -/
+`mark_*_within_recorded_ancestry` only *bounds* the resolved endpoint by the
+issue-time ancestry; it does not give the intended positional guarantee. The
+guarantee the paper has — the mark's span is exactly the surviving image of
+its original span, no backward leak — requires **document-order** rehoming:
+the boundary moving to its nearest surviving *neighbour in reading order*
+(gravity-respecting), not to a tree ancestor. The RGA's `resolve` climbs tree
+ancestry, which is the wrong notion, so no strengthening of the theorems above
+recovers it for the frozen-path design. The fused boundary-node design gets it
+(boundaries are RGA nodes, rehomed to preserve reading order) — modulo the
+`del_can_reorder_survivors` caveat proved for characters — at the cost of
+atomicity. Providing a genuine document-order intent spec, against which the
+frozen-path leak would be *visible as a failure*, is the remaining
+Peritext-specific work. -/
 
-#print axioms mark_start_no_leak
-#print axioms mark_end_no_leak
+#print axioms mark_start_within_recorded_ancestry
+#print axioms mark_end_within_recorded_ancestry
 #print axioms mark_start_live
 
 end Sal.ConditionedMRDTs.PeritextTF

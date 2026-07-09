@@ -1824,23 +1824,50 @@ still yields the capstone (\lean{peritextTF\_ra\_linearizable\_honest})
 unchanged, because the linearisation proof consumes only the character
 clause --- marks converge and linearise as an OR-set regardless. The mark
 clause is thus \emph{decorative for linearisability and load-bearing only for
-the read layer}: the render-intent theorems consume it
-(\lean{MarkIntent.lean}), giving tombstone-free Peritext its ``formatting does
-not leak'' guarantee at endpoint granularity --- a rendered endpoint is always
-the document root or a member of its \emph{recorded chain}
-(\lean{mark\_start\_no\_leak}, structural: \lean{resolve} returns a live
-candidate or the root), which mark-anchor accuracy pins to the endpoint's true
-issue-time ancestry, so formatting can only climb the anchored character's own
-ancestry, never leak sideways; a non-root endpoint is moreover live at read
-time (\lean{mark\_start\_live}, axiom-free). The strictly stronger read-time
-claim --- that the surviving endpoint is a genuine ancestor \emph{at the read
-state} --- needs the RGA's recorded-path-faithfulness invariant lifted along
-the product LTS, the one Peritext-specific piece left. The lesson lifts
-cleanly: a component's honesty
-discipline is load-bearing exactly where the \emph{coupled read} depends on
-it, not where convergence does --- and the read-coupled boundary carries
-honesty precisely because the honesty predicate lives free of the
-signature's componentwise $\app$.
+the read layer}, and the read-layer facts it buys are honest but weak
+(\lean{MarkIntent.lean}): resolution stays within a mark's recorded chain
+(\lean{mark\_start\_in\_recorded}), a non-root endpoint is live
+(\lean{mark\_start\_live}), and under accuracy the endpoint is an issue-time
+ancestor of its anchor (\lean{mark\_start\_within\_recorded\_ancestry}).
+
+That last fact is a \emph{containment} bound, not the ``formatting does not
+leak'' guarantee an earlier draft of this note claimed --- and the difference
+is instructive. The paper keeps deleted characters as tombstones, so a mark
+boundary anchored to a deleted character does not move. Our sequence is
+tombstone-free, so the boundary is recovered by climbing its frozen recorded
+path, and \lean{resolve} climbs \emph{tree ancestry} --- which is
+\emph{earlier} in reading order and can skip surviving siblings. So deleting a
+mark's anchor migrates the boundary \emph{backward} in the document:
+formatting leaks onto text that was never in the span. The theorem bounds this
+drift to the recorded ancestor chain (no wild jump to unrelated text) but does
+not prevent it; the frozen-path design simply does not have the paper's
+positional semantics. Correct tombstone-free positioning needs
+\emph{document-order} rehoming --- the boundary moving to its nearest surviving
+neighbour in reading order --- which the fused boundary-node variant supplies
+(boundaries are RGA nodes, rehomed to preserve reading order) at the cost of
+atomicity; this is the Peritext read-model work that remains
+(Open Question~\ref{oq:linspec}).
+
+The methodological point is worth stating, because it is why the overclaim
+survived a machine-checked proof. \textbf{RA-linearisability here certifies
+convergence \emph{to the datatype's own sequential fold}, not correctness of
+that fold.} Classical linearisability checks a concurrent history against a
+\emph{separate} sequential specification; our fold \emph{is} the reference, so
+a defect that lives in $\dodo$ itself --- a wrong rehoming --- appears
+identically in the merged state and in its sequential-fold ``spec,'' and
+linearisability faithfully certifies that the two agree, on the wrong answer.
+Single-replica semantic bugs are therefore invisible to it; only an
+\emph{independent} intent specification (the paper's \S A.2 examples; our
+read-side theorems) can catch them --- which is exactly why Peritext separates
+convergence from intent preservation, and exactly the obligation
+\lean{MarkIntent} was meant to discharge and (in its leak-prevention form) does
+not.
+
+The composition lesson still lifts cleanly: a component's honesty discipline is
+load-bearing exactly where the \emph{coupled read} depends on it, not where
+convergence does --- and the read-coupled boundary carries honesty precisely
+because the honesty predicate lives free of the signature's componentwise
+$\app$.
 
 \section{Open questions}
 \label{sec:open}
@@ -2128,6 +2155,27 @@ double the plumbing --- deferred until a second quotiented component
 exists), the indexed (map-of-MRDTs) generalization, and the L2.5/L3
 coupling boundaries, where composition \emph{breaking} is expected to be
 as informative as where it holds.
+\end{openq}
+
+\begin{openq}[The self-referential-spec limit, and document-order mark intent]
+\label{oq:linspec}
+RA-linearisability certifies that a version's state is the fold of some
+delivery-respecting linearisation of its events --- convergence to the
+datatype's \emph{own} $\dodo$-fold, with that fold as the reference. It says
+nothing about whether the fold's single-replica semantics is the intended
+one; a defect in $\dodo$ appears identically in the concurrent state and its
+fold, and is certified as agreement. Independent \emph{intent} specifications
+are therefore a separate obligation (the read-side theorems, the paper's
+examples), not a corollary of convergence. The concrete open instance: the
+tombstone-free Peritext composite's frozen-path mark resolution climbs tree
+ancestry and so leaks formatting backward under anchor deletion
+(\S\ref{sec:open}); a paper-faithful account needs a \emph{document-order}
+rehoming read (nearest surviving neighbour in reading order, gravity-aware),
+against which that leak is a visible failure. The fused boundary-node design
+provides such rehoming via the RGA's own machinery, at the cost of atomicity
+(the mark-positioning trilemma: atomic, tombstone-free, live --- pick two).
+Mechanising the document-order read and its intent theorems, for either
+design, is open.
 \end{openq}
 
 \section{Mechanization}
