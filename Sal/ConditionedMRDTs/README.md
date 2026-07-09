@@ -163,8 +163,13 @@ memo `Development/GENERIC_SAFETY_PENPAPER.md`.
 `loOn` edges, concatenation witness — with `joinLemma3At_prod` and the
 composite `prod_ra_linearizable3_of_honest_reach`; consumability demo
 `MRDT_Instances/ProductDemo/` (queue ⊗ counter, zero bespoke proof).
-Analysis: `Development/COMPOSITION_PENPAPER.md`. ≈-lift and safety kit
-are the next phases; Peritext = RGA ⊗ marks is the target. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+Analysis: `Development/COMPOSITION_PENPAPER.md`.
+[`Metatheory/Product_Safety.lean`](Metatheory/Product_Safety.lean) is the
+**safety kit**: pinned-extension, `honestAppOn_prod`, `safetyStepOn_prod`,
+the one-sided `causalCanonical_prod_of_one_sided` (the two-sided form is
+refuted — memo §2.4.4), and the composite
+`prod_version_inv_on_of_one_sided`. The ≈-lift kit is the remaining phase;
+Peritext = RGA ⊗ marks is the target. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
 ## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)
