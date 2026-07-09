@@ -32,7 +32,7 @@ base**. Then every RDT earns a kernel-checked RA-linearizability theorem by
 composing its mechanised VCs with the mechanised meta-theorem.
 
 **Why now.** The path-carrying RGA
-(`Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean`) made the gap
+(`Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean`) made the gap
 load-bearing: its `rc_non_comm'` is the standard VC with commutation
 *conditioned* on `accurate` / `fresh_ts` (strictly weaker than Neem's
 unconditioned `commutes_with`). Whether the weaker VC still implies
@@ -87,7 +87,7 @@ the full chain lives under `Sal/ConditionedMRDTs/MRDT_Instances/RGA_TombstoneFre
 elsewhere: (b″)/(b″₃) and the route-reunification question (Metatheory
 READMEs).
 
-**Conditioning result (new, machine-checked — `Sal/MRDTs/RGA_Tombstone_Free/RGA_Reachability_Invariant.lean`).**
+**Conditioning result (new, machine-checked — `Sal/MRDTs/RGA/RGA_Reachability_Invariant.lean`).**
 The blueprint's R2 keystone — that the forest invariant `anc_consistent`
 (≈ `wf s ∧ contains s 0 = false`) is a reachable invariant — is **proved for
 `do_`** (`Inv_init`/`Inv_doIns`/`Inv_doDel`, `sorry`-free; `Inv_doDel` is the
@@ -174,7 +174,7 @@ thread 3 mechanises.
 
 **Status.**
 - **Proved result on `main`:** the tombstone-free path-carrying RGA,
-  `Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_MRDT.lean` — builds
+  `Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean` — builds
   clean, `rc_non_comm'` proved (every pair commutes on well-formed
   histories). This is the design whose *conditioned* VC motivates thread 3.
   **Now fully justified (2026-07):** the conditioned metatheory proves this
@@ -185,7 +185,7 @@ thread 3 mechanises.
   the conflicting `Ins-after-x` / `Del-x` pair is forced into a *merge-free,
   single-replica* `do_` VC (`rc_non_comm'` for `rc=Either`, else
   `cond_comm_base`) that the 3-way merge's LCA cannot reach.
-  `Sal/MRDTs/RGA_Tombstone_Free/RGA_PrefixFree_Impossible.lean` (a
+  `Sal/MRDTs/RGA/RGA_PrefixFree_Impossible.lean` (a
   parameterised theorem over *all* local prefix-free semantics; 0 `sorry`,
   no `native_decide`) is the `rc=Either` horn; `RGA_Splice_Counterexample.lean`
   (`cond_comm_base_violated`) is the ordered-`rc` horn. The two proved RGAs

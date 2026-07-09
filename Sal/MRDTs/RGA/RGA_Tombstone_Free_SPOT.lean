@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_ReadSide
+import Sal.MRDTs.RGA.RGA_Tombstone_Free_ReadSide
 
 open RGA_TF_Read
 

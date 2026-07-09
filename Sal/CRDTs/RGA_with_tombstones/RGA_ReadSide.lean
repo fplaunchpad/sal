@@ -1,7 +1,7 @@
 import Std.Tactic.BVDecide
 import Sal.Interfaces.Map_Extended
 import Sal.Tactic.Sal
-import Sal.CRDTs.RGA.RGA_CRDT
+import Sal.CRDTs.RGA_with_tombstones.RGA_CRDT
 import Mathlib
 
 set_option linter.mathlibStandardSet false

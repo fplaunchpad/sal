@@ -3,7 +3,7 @@ import Sal.Interfaces.Set_Extended
 import Sal.Interfaces.Map_Extended
 import Sal.Tactic.Sal
 import Mathlib
-import Sal.CRDTs.Peritext.Peritext_CRDT
+import Sal.CRDTs.Peritext_with_tombstones.Peritext_CRDT
 
 set_option linter.mathlibStandardSet false
 

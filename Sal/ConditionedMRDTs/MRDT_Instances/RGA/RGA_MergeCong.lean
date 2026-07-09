@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_EqQuotient
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA.RGA_Reachability_Invariant
 
 /-!
 # The `l`-argument merge `≈`-congruence, CONDITIONED on the RGA `Inv` (M5)

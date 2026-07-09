@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA.RGA_Tombstone_Free_MRDT
 
 /-!
 # The eq-variant tombstone-free RGA: a normalizing implementation

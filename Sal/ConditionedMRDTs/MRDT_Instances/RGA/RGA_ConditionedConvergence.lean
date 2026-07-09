@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA.RGA_Reachability_Invariant
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 
 /-!

@@ -1,6 +1,6 @@
 import Sal.Interfaces.Map_Extended
-import Sal.CRDTs.Peritext.Peritext_CRDT
-import Sal.CRDTs.Peritext.Peritext_ReadSide
+import Sal.CRDTs.Peritext_with_tombstones.Peritext_CRDT
+import Sal.CRDTs.Peritext_with_tombstones.Peritext_ReadSide
 
 set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 800000

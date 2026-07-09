@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Framework.Sigma_LoOn3
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA.RGA_Reachability_Invariant
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CondSig
 import Sal.ConditionedMRDTs.Framework.LoOnC
 

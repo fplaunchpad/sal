@@ -1,7 +1,7 @@
 import Std.Tactic.BVDecide
 import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
-import Sal.MRDTs.RGA.RGA_MRDT
+import Sal.MRDTs.RGA_with_tombstones.RGA_MRDT
 import Mathlib
 
 set_option linter.mathlibStandardSet false

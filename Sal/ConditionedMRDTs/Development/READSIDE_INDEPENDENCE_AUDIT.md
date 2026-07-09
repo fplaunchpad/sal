@@ -40,7 +40,7 @@ unjustified as query-preserving.
 
 | RDT (file) | theorem | class | what bug it would / wouldn't catch |
 |---|---|---|---|
-| **Peritext flat** `Sal/MRDTs/Peritext/Peritext_ReadSide.lean` | `insert_within_span_in_span_visible` (Ex 1) + `_cross_subtree_` | IND | char inserted after an in-span char & left of `endId` comes out in-span; internally proves `after_of s_post (ts,rid) c_after = true` from `do_`, so a `do_ Insert` recording the wrong anchor breaks it |
+| **Peritext flat** `Sal/MRDTs/Peritext_with_tombstones/Peritext_ReadSide.lean` | `insert_within_span_in_span_visible` (Ex 1) + `_cross_subtree_` | IND | char inserted after an in-span char & left of `endId` comes out in-span; internally proves `after_of s_post (ts,rid) c_after = true` from `do_`, so a `do_ Insert` recording the wrong anchor breaks it |
 | | `in_span_visible_propagate` / `_of_reach` | IND | positional propagation lemmas feeding Ex 1 |
 | | `partial_overlap_all_adds_formatted_visible` (Ex 2) | IND | all-adds cover ⇒ formatted; catches a resolver dropping an add. PART on position (assumes `in_span`) |
 | | `different_type_adds_coexist_visible` (Ex 3) | IND | two markTypes coexist; catches per-type merge bug |
@@ -53,7 +53,7 @@ unjustified as query-preserving.
 | | `startId_in_span_visible` / `endId_in_span_visible` | PART | endpoints in their own degenerate span; structural |
 | | `readRichText_visible_convergent`, `formatted_visible_convergent`, `is_rga_traversal_convergent`, `readRichText_list_eq_of_traversal_eq` | PART | convergence-at-read; MRDT `eq` lifts to `s₁=s₂` so trivial; well-definedness, not positional |
 | | *(removed)* `expand_contract_*` vs `in_span_boundary` | **CIRC (precedent)** | prior wrong-spec: theorems "true" against a boundary predicate encoding the *opposite* of paper expand/contract; already deleted (lines 84–92). Same trap as `mark_no_leak` |
-| **RGA tombstone-free** `Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_ReadSide.lean` | `document_sound` | PART | read emits only `contains`-live ids; but the read *filters by* `contains`, so this is read↔state faithfulness — silent on whether the state / order is intended |
+| **RGA tombstone-free** `Sal/MRDTs/RGA/RGA_Tombstone_Free_ReadSide.lean` | `document_sound` | PART | read emits only `contains`-live ids; but the read *filters by* `contains`, so this is read↔state faithfulness — silent on whether the state / order is intended |
 | | `mem_document_of_live` / `mem_document_iff` | PART | read = exactly the live **set**; says **nothing about order** — and order is precisely where tombstone-free rehoming bites |
 | | `del_not_in_document` | IND | after `Del x`, `x` not read; catches a Del that fails to delete or a read showing tombstones |
 | | `del_document_mem` | IND | read-membership after `Del x` = old minus `x` |

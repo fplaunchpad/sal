@@ -2,7 +2,7 @@
 
 This directory is ONE instance of the generic conditioned framework: the
 tombstone-free RGA (implementation:
-[`Sal/MRDTs/RGA_Tombstone_Free/`](../../../MRDTs/RGA_Tombstone_Free/)),
+[`Sal/MRDTs/RGA/`](../../../MRDTs/RGA_Tombstone_Free/)),
 instantiated at full generality — non-trivial `Inv` (forest
 well-formedness), non-trivial `applicable` (accuracy ∧ freshness), and a
 non-identity `≈` (dead-node representation residue quotiented away). The

@@ -1,6 +1,6 @@
 import Sal.Interfaces.Map_Extended
-import Sal.CRDTs.RGA.RGA_CRDT
-import Sal.CRDTs.RGA.RGA_ReadSide
+import Sal.CRDTs.RGA_with_tombstones.RGA_CRDT
+import Sal.CRDTs.RGA_with_tombstones.RGA_ReadSide
 
 set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 400000

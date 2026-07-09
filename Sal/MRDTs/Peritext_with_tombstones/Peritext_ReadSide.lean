@@ -4,7 +4,7 @@ import Std.Tactic.BVDecide
 
 import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
-import Sal.MRDTs.Peritext.Peritext_MRDT
+import Sal.MRDTs.Peritext_with_tombstones.Peritext_MRDT
 
 set_option maxHeartbeats 2000000
 set_option maxRecDepth 4000

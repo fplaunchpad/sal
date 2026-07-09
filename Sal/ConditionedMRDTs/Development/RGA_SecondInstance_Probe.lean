@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA.RGA_Reachability_Invariant
 import Sal.ConditionedMRDTs.Framework.MRDTSig
 
 /-!

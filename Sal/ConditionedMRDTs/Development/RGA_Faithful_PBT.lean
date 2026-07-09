@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_BubbleWiring
-import Sal.MRDTs.RGA_Tombstone_Free.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA.RGA_Tombstone_Free_MRDT
 
 /-!
 # Property-based-testing + SPOT harness for the tombstone-free RGA

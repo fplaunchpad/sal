@@ -1,6 +1,6 @@
 import Sal.Interfaces.Set_Extended
-import Sal.MRDTs.Peritext.Peritext_MRDT
-import Sal.MRDTs.Peritext.Peritext_ReadSide
+import Sal.MRDTs.Peritext_with_tombstones.Peritext_MRDT
+import Sal.MRDTs.Peritext_with_tombstones.Peritext_ReadSide
 import Mathlib.Tactic.IntervalCases
 
 set_option linter.mathlibStandardSet false
