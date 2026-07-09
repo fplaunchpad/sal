@@ -12,6 +12,8 @@
 \usepackage{mathpartir}
 \usepackage{stmaryrd}
 
+\setlength{\emergencystretch}{3em}
+
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{definition}[theorem]{Definition}
@@ -538,7 +540,7 @@ impossibility of a prefix-free variant
 
 \paragraph{Orthogonal axis --- $\Guard$.} Safety conditioning composes
 with any level: BC $= \Guard_{\text{escrow}}(\text{F2 counter})$;
-BudgetCart $= \Guard(\sepmap\, \text{OR-set with derived spend})$ with the
+BudgetCart $= \Guard(\text{OR-set} \otimes \text{spend})$ with the
 budget theorem hypothesis-gated (OQ8 --- the refusal is the framework's,
 and the calculus must reproduce it, \S\ref{sec:refusals}).
 
@@ -558,6 +560,7 @@ unless stated.
 \subsection{LWW register --- $\Forget[\flat]_{\text{keep-max}}\bigl(\GSet\,(\mathbb{N} \times \mathbb{N} \times \tau)\bigr)$\quad[F1]}
 
 \begin{center}
+\small
 \begin{tabular}{@{}lll@{}}
 \toprule
 component & free term & after $\Forget$ \\
@@ -636,7 +639,7 @@ obligation is the VC bundle). The plain (tombstoned) OR-set is the
 variants are two points on one $\Forget$ chain, and their separate 24-VC
 discharges in the repository are the two Euno\"e instances.
 
-\subsection{Tombstone-free RGA --- $\Forget[\cc]_{\text{drop-dead, rehome};\,\nuop}(\text{tombstoned RGA})$\quad[F3]}
+\subsection{Tombstone-free RGA --- $\Forget[\cc]_{\text{drop{+}rehome};\,\nuop}(\text{tombstoned RGA})$\quad[F3]}
 \label{sec:rga-derivation}
 
 \begin{center}
@@ -679,10 +682,9 @@ $=$ \lean{HonestDelivery}); what Lethe owes is the rule-generic form.
 \subsection{Guarded exemplars, briefly}
 
 \begin{itemize}[leftmargin=2em]
-\item \textbf{Bounded counter} $=
-  \Guard_{v \geq 0,\ \text{escrow}}(\text{counter of \S6.2 as PN})$;
-  stability via tokens; \lean{bc\_version\_inv} is the discharged
-  obligation.
+\item \textbf{Bounded counter}: $\Guard_{v \geq 0,\ \text{escrow}}$
+  over the PN counter of \S6.2; stability via tokens;
+  \lean{bc\_version\_inv} is the discharged obligation.
 \item \textbf{BudgetCart} $= \Guard_{\text{budget}}\bigl(
   \sepmap_{\mathit{inst}}\, \text{OR-set} \otimes
   \text{derived-spend}\bigr)$; convergence flows through the OR-set
@@ -696,7 +698,7 @@ $=$ \lean{HonestDelivery}); what Lethe owes is the rule-generic form.
 
 \begin{center}
 \small
-\begin{tabular}{@{}lp{2.2in}lp{1.9in}@{}}
+\begin{tabular}{@{}lp{2.0in}lp{1.7in}@{}}
 \toprule
 datatype & proposed term & level & status of proposal \\
 \midrule
@@ -732,7 +734,7 @@ BC / BudgetCart & \S6.5 & $\Guard \circ$ F2 & derived above \\
 \end{center}
 
 %=====================================================================
-\section{Aletheia: the Soundness Theorem (statement owed, not proved)}
+\section{Aletheia: the Soundness Theorem (Statement Owed)}
 \label{sec:aletheia}
 
 \begin{theorem}[Aletheia]\label{thm:aletheia}
