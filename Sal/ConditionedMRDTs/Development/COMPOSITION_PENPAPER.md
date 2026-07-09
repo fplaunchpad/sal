@@ -760,7 +760,7 @@ crossing; climb at read time" design makes the coupling free.
 ## 4. The Peritext instantiation sketch
 
 Distinguish the **existing flat Peritext**
-(`MRDT_Instances/Peritext/Peritext.lean` — production mirror: grow-only
+(`MRDT_Instances/Peritext_WithTombstones/Peritext.lean` — production mirror: grow-only
 chars + tombstones + grow-only mark records, all-comm, `rc ≡ Either`,
 discharged through the flat bridge) from the target composite:
 

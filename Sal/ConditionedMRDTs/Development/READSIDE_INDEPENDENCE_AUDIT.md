@@ -5,7 +5,7 @@
 whether it *constrains behaviour* (can catch a `do_`/`merge`/read bug) or merely
 *restates the implementation*.
 
-**Why this exists.** `PeritextTF/MarkIntent.lean`'s original `mark_*_no_leak`
+**Why this exists.** `Peritext_Composed/MarkIntent.lean`'s original `mark_*_no_leak`
 was a machine-checked theorem that "held" while the mechanism it claimed to bound
 actually leaked: it restated where `resolve` climbs (tree ancestry) instead of
 specifying intended document position (retraction `91628ca`). The note's
@@ -79,7 +79,7 @@ unjustified as query-preserving.
 | | `latest_write_wins` | **CIRC** | proved by `rfl`; docstring: *"just `lookup`'s definition restated"*. Catches nothing |
 | | `equal_ts_remove_wins` | PART | tie convention; property of the predicate |
 | | `lookup_convergent` | PART | `≈→query-eq` non-trivially (uses `mysel` congruence); honest |
-| **PeritextTF** `Sal/ConditionedMRDTs/MRDT_Instances/PeritextTF/MarkIntent.lean` | `mark_start_in_recorded` / `mark_end_in_recorded` | CIRC | = `resolve_eq_zero_or_mem`: "resolve returns a member of the list it searches" — restates `resolve`'s own def; honestly re-glossed as "containment" |
+| **PeritextTF** `Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Composed/MarkIntent.lean` | `mark_start_in_recorded` / `mark_end_in_recorded` | CIRC | = `resolve_eq_zero_or_mem`: "resolve returns a member of the list it searches" — restates `resolve`'s own def; honestly re-glossed as "containment" |
 | | `mark_start_live` / `mark_end_live` | CIRC | = `resolve_live_of_ne_zero`: "resolve returns a live char" — restates `resolve`'s def |
 | | `mark_start_within_recorded_ancestry` / `_end_` | **PART (honest)** | under accuracy, endpoint ∈ {root, anchor, issue-time ancestors}. *Bounds* the leak; docstring now states it does **not** prevent backward drift. This is the corrected `mark_no_leak` |
 

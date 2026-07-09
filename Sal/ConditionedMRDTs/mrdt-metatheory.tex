@@ -1089,8 +1089,8 @@ LWW register & all-comm & \lean{LWW\_ra\_linearizable3\_eq} & payload arbitratio
 BudgetCart & or-set $\rc$ & \lean{BCart\_ra\_linearizable3\_eq} & budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon}) \\
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
-Peritext (tombstone-free) & \emph{composed} & \multicolumn{2}{l}{\lean{peritextTF\_ra\_linearizable\_up\_to\_eq} --- RGA${}\otimes{}$marks through the product kit; 1{,}064 lines total} \\
-Peritext (tombstone-free, fused) & \emph{fused} & \multicolumn{2}{l}{\lean{peritextFused\_ra\_linearizable\_up\_to\_eq} --- one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; convergence by instantiation, genuine positional intent (\lean{render\_id\_active\_iff\_between}); 773 lines} \\
+Peritext (tombstone-free) & \emph{composed} & \multicolumn{2}{l}{\lean{peritextComposed\_ra\_linearizable\_up\_to\_eq} --- RGA${}\otimes{}$marks through the product kit; 1{,}064 lines total} \\
+Peritext (tombstone-free, fused) & \emph{fused} & \multicolumn{2}{l}{\lean{peritext\_ra\_linearizable\_up\_to\_eq} --- one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; convergence by instantiation, genuine positional intent (\lean{render\_id\_active\_iff\_between}); 773 lines} \\
 \bottomrule
 \end{tabular}}
 \caption{The Sal production catalogue. Every instance concludes through
@@ -1784,8 +1784,8 @@ stability; it is never a mutex.
 lines.} The composition kit's first real consumer is the instance that
 motivated it: tombstone-free rich text, built as
 $\text{RGA} \otimes \text{marks}$
-(\lean{MRDT\_Instances/PeritextTF/}, capstone
-\lean{peritextTF\_ra\_linearizable\_up\_to\_eq}: every version of every
+(\lean{MRDT\_Instances/Peritext\_Composed/}, capstone
+\lean{peritextComposed\_ra\_linearizable\_up\_to\_eq}: every version of every
 reachable configuration RA-linearizable up to $\eqobs_{\text{RGA}} \times
 {=}$, under precisely the RGA's own honest-delivery premise read through
 the first projection --- character operations guarded, mark operations
@@ -1813,7 +1813,7 @@ budget cart) to the compositional setting. The composite's honesty premise
 data a discipline would need (each endpoint is a character id plus its
 recorded ancestor path), so it is natural to ask whether \emph{mark-anchor
 honesty} --- the mark-side analogue of the RGA's born accuracy --- composes.
-It does (\lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean}), and the way it
+It does (\lean{MRDT\_Instances/Peritext\_Composed/MarkHonesty.lean}), and the way it
 does is the finding. The product \emph{signature} cannot express it: its
 $\app$ is componentwise ($\app^{\otimes}(\mathsf{inr}\,o)\,s = \app_2\,o\,s.2$),
 structurally blind to the other component. But the honesty \emph{premise} is
@@ -2180,7 +2180,7 @@ rehoming read (nearest surviving neighbour in reading order, gravity-aware),
 against which that leak is a visible failure. The fused boundary-node design
 provides such rehoming via the RGA's own machinery, at the cost of atomicity
 (the mark-positioning trilemma: atomic, tombstone-free, live --- pick two),
-and it is now \textbf{built} (\lean{MRDT\_Instances/PeritextFused/}): rich text
+and it is now \textbf{built} (\lean{MRDT\_Instances/Peritext/}): rich text
 as one RGA over $\mathsf{char} \oplus \mathsf{boundary}$, with a document-order
 read and the genuine positional intent theorem
 \lean{render\_id\_active\_iff\_between} --- a rendered character carries a mark
@@ -2232,9 +2232,9 @@ escrow metatheorem & \lean{Measured}, \lean{escrow\_version\_inv} & \lean{Metath
 product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linearizable3\_of\_honest\_reach} & \lean{Metatheory/Product.lean} \\
 product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
 product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
-Peritext by composition & \lean{peritextTF\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/PeritextTF/} \\
-Peritext, fused (positional intent) & \lean{peritextFused\_ra\_linearizable\_up\_to\_eq}, \lean{render\_id\_active\_iff\_between} & \lean{MRDT\_Instances/PeritextFused/} \\
-mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean} \\
+Peritext by composition & \lean{peritextComposed\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/Peritext\_Composed/} \\
+Peritext, fused (positional intent) & \lean{peritext\_ra\_linearizable\_up\_to\_eq}, \lean{render\_id\_active\_iff\_between} & \lean{MRDT\_Instances/Peritext/} \\
+mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/Peritext\_Composed/MarkHonesty.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 $\cd$ independent of core+delta (OQ~\ref{oq:cd}) & \lean{cdvc3\_not\_derivable\_from\_core\_delta} & \lean{Refutations/CD\_Not\_Derivable\_Ternary.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\

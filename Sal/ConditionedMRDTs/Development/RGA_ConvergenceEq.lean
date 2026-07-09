@@ -1,9 +1,9 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonFoldOK
 import Sal.ConditionedMRDTs.Development.RGA_OrderBridge
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeFoldChain
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_BranchCanon
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_InvUpdateQ
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_BranchCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_SubchainResolve
 
 /-!
 # RGA update convergence and merge bridge over the framework's `loOnEq` order

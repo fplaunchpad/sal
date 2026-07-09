@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_FaithfulThreading_Gate
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
 
 /-!
 # M1 — the ENABLEMENT BASE lemma for faithful-threading

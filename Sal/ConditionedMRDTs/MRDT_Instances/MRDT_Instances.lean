@@ -7,8 +7,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.GOSet.GOSet
 import Sal.ConditionedMRDTs.MRDT_Instances.GOMap.GOMap
 import Sal.ConditionedMRDTs.MRDT_Instances.IOC.IOC
 import Sal.ConditionedMRDTs.MRDT_Instances.PN.PN
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Tombstone.RGA_Tombstone
-import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_WithTombstones.RGA_WithTombstones
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_WithTombstones.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
 import Sal.ConditionedMRDTs.MRDT_Instances.BoundedCounter.BoundedCounter
@@ -18,12 +18,12 @@ import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.LWWRegister.LWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.ProductDemo.ProductDemo
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
-import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.PeritextTF
-import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkHonesty
-import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkIntent
-import Sal.ConditionedMRDTs.MRDT_Instances.PeritextFused.PeritextFused
-import Sal.ConditionedMRDTs.MRDT_Instances.PeritextFused.PeritextFused_Read
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.Peritext_Composed
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkHonesty
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkIntent
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext_Read
 
 /-!
 # The conditioned MRDT instances — the full catalogue
@@ -34,7 +34,13 @@ conditioned instance; its presented capstone is the theorem named below
 (`IsRALinearizable3Eq` over the `≈`-quotient ternary system).  The eleven
 flat datatypes instantiate at the identity (`≈` = `=`,
 `Inv = applicable = ⊤`, via `FlatGeneric.flat_ra_linearizable3_eq`); the
-tombstone-free RGA is the fully general instantiation.
+canonical **RGA** (tombstone-free, `RGA/`) is the fully general instantiation.
+
+**Naming.** The plain names **RGA** (`RGA/`, `rga_ra_linearizable3_eq`) and
+**Peritext** (`Peritext/`, `peritext_ra_linearizable_up_to_eq`) denote the
+canonical, tombstone-free/fused designs.  The tombstone-carrying and composed
+variants are qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
+`Peritext_Composed/` (the RGA ⊗ marks composition case study).
 
 | instance | conditioned capstone |
 |---|---|
@@ -45,8 +51,8 @@ tombstone-free RGA is the fully general instantiation.
 | Grow-Only Map | `GOMap_ra_linearizable3_eq` |
 | Increment-Only Counter | `IOC_ra_linearizable3_eq` |
 | PN-Counter | `PN_ra_linearizable3_eq` |
-| RGA (tombstone) | `RGAM_ra_linearizable3_eq` |
-| Peritext | `Peritext_ra_linearizable3_eq` |
+| RGA (with tombstones) | `rgaWithTombstones_ra_linearizable3_eq` |
+| Peritext (with tombstones) | `peritextWithTombstones_ra_linearizable3_eq` |
 | Multi-Valued Register | `MVR_ra_linearizable3_eq` |
 | Add-Wins Priority Queue | `AWPQ_ra_linearizable3_eq` |
 | **Bounded counter** (escrow) | `BC_ra_linearizable3_eq`; safety: `bc_version_inv` |
@@ -54,9 +60,9 @@ tombstone-free RGA is the fully general instantiation.
 | **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
 | **LWW register** | `LWW_ra_linearizable3_eq`; characterization: `lww_version_max` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
-| **RGA (tombstone-free)** | `rga_tombstone_free_ra_linearizable3_eq` |
-| **Peritext (tombstone-free)** | `peritextTF_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
-| **Peritext (FUSED, tombstone-free)** | `peritextFused_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_tombstone_free_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `PeritextFused_Read`; the live-corner contrast to the frozen-path product above |
+| **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` — the fully general instantiation |
+| **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `Peritext_Read`; the live-corner contrast to the frozen-path product below |
+| Peritext (composed) — RGA ⊗ marks case study | `peritextComposed_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).

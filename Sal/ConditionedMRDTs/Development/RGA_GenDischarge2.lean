@@ -6,9 +6,9 @@ import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 import Sal.ConditionedMRDTs.Refutations.G2_Applicability_Aware
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 import Sal.ConditionedMRDTs.Development.RGA_BubbleWiring
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
 import Sal.ConditionedMRDTs.Development.RGA_GeneralSwap
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.Development.RGA_RecPathFaithful
 import Sal.ConditionedMRDTs.Development.RGA_StaledDel_Gate
 import Sal.ConditionedMRDTs.Development.RGA_UpdateConvergence_Final

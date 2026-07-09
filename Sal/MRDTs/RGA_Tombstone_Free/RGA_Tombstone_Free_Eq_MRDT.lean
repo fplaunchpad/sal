@@ -9,7 +9,8 @@ representation carries *ghost payloads at deleted keys*: `del` shrinks the
 domain but keeps the mapping, `iter_upd` rewrites mappings at every key
 (ghosts included), and `merge` manufactures payloads outside its survivor set.
 Different replay orders leave different ghosts — this is the entire content of
-the `≈` in `rga_tombstone_free_ra_linearizable3_eq`.
+the `≈` in `rga_ra_linearizable3_eq`
+(the conditioned RGA capstone in `Sal/ConditionedMRDTs/MRDT_Instances/RGA/`).
 
 This file shows the `≈` is **purely representational** by exhibiting the
 normalizing variant: `doN`/`mergeN` behave identically on live data

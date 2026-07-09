@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_ConvergenceEq
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization_TwoSided
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization_TwoSided
 
 /-!
 # General-start canonical-state convergence, and the swap-oracle-free merge bridge

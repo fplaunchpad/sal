@@ -193,8 +193,8 @@ imports all nineteen capstones:
 | **Grow-Only Map** (production mirror) | `GOMap_ra_linearizable3_eq` | identity; unconditional delta |
 | **Increment-Only Counter** (production mirror) | `IOC_ra_linearizable3_eq` | identity; unconditional delta |
 | **PN-Counter** (production mirror) | `PN_ra_linearizable3_eq` | identity; unconditional delta |
-| **RGA, tombstone** (production mirror) | `RGAM_ra_linearizable3_eq` | identity; unconditional delta |
-| **Peritext** (production mirror) | `Peritext_ra_linearizable3_eq` | identity; unconditional delta |
+| **RGA, with tombstones** (production mirror) | `rgaWithTombstones_ra_linearizable3_eq` | identity; unconditional delta |
+| **Peritext, with tombstones** (production mirror) | `peritextWithTombstones_ra_linearizable3_eq` | identity; unconditional delta |
 | **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
 | **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
 | **Bounded counter** (escrow; mirror of `Sal/CRDTs/Bounded_Counter`) | `BC_ra_linearizable3_eq`; **safety**: `bc_version_inv`, `bc_value_nonneg` | identity for convergence; the conditioned contract (`BCInv`/`bcApplicable`/`BCHonest`) delivers the bound as a reachability theorem |
@@ -202,9 +202,9 @@ imports all nineteen capstones:
 | **LWW register** | `LWW_ra_linearizable3_eq`; **characterization**: `lww_version_max` (the max-ts write wins, at every version) | payload arbitration (max-semilattice), the `last`-writer twin of FWW; **unconditional** (`applicable = ⊤` — writes always overwrite). Genuinely end-to-end mechanized: unlike the flat CRDT LWW (whose VCs→RA-lin bridge in `Sal/CRDTs/Metatheory/Merge_Linearization.lean` still carries `sorry`s), this rides the framework's kernel-clean bridge. |
 | **BudgetCart** | `BCart_ra_linearizable3_eq`; safety **gated**: `bcart_version_inv_gated` | or-set `rc` (add-wins) + derived per-replica spend; ungated `SafetyStepOn` is FALSE (vis-only causal folds are enumeration-dependent under concurrent add/rem) — the OQ8 forcer. Convergence is an **instantiation** of the payload-parametric [`ORSetCore/`](MRDT_Instances/ORSetCore/) library (composition level L0): `BudgetCart := OSCore (item × price) fst …`, its bespoke ~750-line discharge deleted |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
-| **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
-| **Peritext, tombstone-free** | `peritextTF_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` (well-definedness only) | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit — 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁). **Caveat**: convergence/safety are complete, but mark *positioning* is not paper-faithful — the frozen recorded paths climb tree ancestry, so deleting a mark's anchor leaks formatting backward (`MarkIntent.lean` states the honest containment bound, not a no-leak guarantee; OQ `oq:linspec`). |
-| **Peritext, tombstone-free (fused)** | `peritextFused_ra_linearizable_up_to_eq`; intent: `render_id_active_iff_between` + `render_span_before` | **fused, the paper-faithful design**: one RGA at `α := char ⊕ boundary` (marks are id-paired boundary nodes), convergence a one-line instantiation of the RGACore capstone (773 lines total vs the product's ~1,500). Delivers the genuine positional intent the product retracts — a char is formatted iff it lies between the mark's boundaries in reading order (fold-activation ⟺ structural decomposition, non-circular), and backward leak is forbidden by construction. Residual: interior-deletion reading-order re-sort (`del_can_reorder_survivors`), a bounded change, not a leak — the atomicity horn of the trilemma. |
+| **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` | full generality (§4) |
+| **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq`; intent: `render_id_active_iff_between` + `render_span_before` | **fused, the paper-faithful design**: one RGA at `α := char ⊕ boundary` (marks are id-paired boundary nodes), convergence a one-line instantiation of the RGACore capstone (773 lines total vs the composed design's ~1,500). Delivers the genuine positional intent the composed design retracts — a char is formatted iff it lies between the mark's boundaries in reading order (fold-activation ⟺ structural decomposition, non-circular), and backward leak is forbidden by construction. Residual: interior-deletion reading-order re-sort (`del_can_reorder_survivors`), a bounded change, not a leak — the atomicity horn of the trilemma. |
+| **Peritext, composed** (RGA ⊗ marks case study) | `peritextComposed_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` (well-definedness only) | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit — 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁). **Caveat**: convergence/safety are complete, but mark *positioning* is not paper-faithful — the frozen recorded paths climb tree ancestry, so deleting a mark's anchor leaks formatting backward (`MarkIntent.lean` states the honest containment bound, not a no-leak guarantee; OQ `oq:linspec`). |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
 kernel-checked end-to-end theorem through the one framework.** The bounded
@@ -229,7 +229,7 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
-## 4. THE framework — [`MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean`](MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean)
+## 4. THE framework — [`MRDT_Instances/RGA/RA_Lin.lean`](MRDT_Instances/RGA/RA_Lin.lean)
 
 The soundness theorem is generic — stated over *any* `ConditionedMRDTSig`
 with an `EqEquiv`, on the same `Step3` LTS: the **`≈`-quotient functor**
@@ -266,7 +266,7 @@ that drops the paths is provably impossible
 replay-order-dependent residue unavoidable, so `≈` cannot be `=`. The
 end-to-end instance theorem:
 
-    rga_tombstone_free_ra_linearizable3_eq :
+    rga_ra_linearizable3_eq :
       HonestDelivery →
       ∀ C reachable from initConfig (states quotiented by ≈),
         IsRALinearizable3Eq … C
@@ -288,7 +288,7 @@ fields, and nonzero ids and nonzero delete targets follow from the
 delivered op's own wellformedness. The full chain (quotient functor,
 witness layer, canonical engine, the discharged merge bundle, the residual
 reduction) lives in
-[`MRDT_Instances/RGA_TombstoneFree/`](MRDT_Instances/RGA_TombstoneFree/)
+[`MRDT_Instances/RGA/`](MRDT_Instances/RGA/)
 (see its README for the file-by-file map), topped by
 `RGA_Honest_Residual.lean`; an explicit-residual form
 (`rga_RA_linearizable_final`, taking the two reachability-level premises
@@ -302,7 +302,7 @@ model.
 `Framework/VC_Set.lean` → `Metatheory/Adequacy.lean` →
 `MRDT_Instances/<RDT>/<RDT>.lean` → `Metatheory/GenericEqQuotient.lean` →
 `Metatheory/GoodConfig3H.lean` →
-`MRDT_Instances/RGA_TombstoneFree/RA_Lin.lean`.
+`MRDT_Instances/RGA/RA_Lin.lean`.
 The negative results that shaped all of this: [`Refutations/`](Refutations/).
 Everything else: [`Development/`](Development/).
 

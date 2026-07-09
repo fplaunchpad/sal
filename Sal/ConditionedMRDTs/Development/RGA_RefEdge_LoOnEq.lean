@@ -1,5 +1,5 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_Instance
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.BornApplicable_Guard
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.BornApplicable_Guard
 import Sal.ConditionedMRDTs.Development.RGA_RefEdge_FromAccurate
 
 /-!

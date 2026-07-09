@@ -1,0 +1,907 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{microtype}
+\usepackage{mathpartir}
+\usepackage{stmaryrd}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{openq}[theorem]{Open Question}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{obligation}[theorem]{Obligation}
+
+% Paper-style notation (shared with mrdt-metatheory.tex)
+\newcommand{\Merge}{\mathsf{merge}}
+\newcommand{\mergeL}{\mathsf{mergeL}}
+\newcommand{\Sinit}{\sigma_0}
+\newcommand{\co}{\mathsf{CoreVCs3CD}}
+\newcommand{\fd}{\mathsf{FeasibleDeltaVCs3}}
+\newcommand{\cd}{\mathsf{CDVC3}}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\dodo}{\mathsf{do}}
+\newcommand{\eqobs}{\approx}
+\newcommand{\Inv}{\mathsf{Inv}}
+\newcommand{\app}{\mathsf{app}}
+\newcommand{\rc}{\mathsf{rc}}
+
+% Lethe-specific notation
+\newcommand{\Forget}{\mathsf{Forget}}
+\newcommand{\Guard}{\mathsf{Guard}}
+\newcommand{\GSet}{\mathsf{GSet}}
+\newcommand{\MaxCell}{\mathsf{MaxCell}}
+\newcommand{\Agree}{\mathsf{Agree}}
+\newcommand{\Log}{\mathsf{Log}}
+\newcommand{\State}{\mathsf{State}}
+\newcommand{\init}{\mathsf{init}}
+\newcommand{\NF}{\mathsf{NF}}
+\newcommand{\Op}{\mathsf{Op}}
+\newcommand{\fp}{\mathsf{fp}}
+\newcommand{\emp}{\mathsf{emp}}
+\newcommand{\tok}{\mathsf{tok}}
+\newcommand{\lseg}{\mathsf{lseg}}
+\newcommand{\live}{\mathsf{live}}
+\newcommand{\Either}{\mathsf{Either}}
+\newcommand{\nuop}{\nu_{\mathsf{op}}}
+\newcommand{\sepmap}{\mathop{\vcenter{\hbox{\Large$\circledast$}}}}
+\newcommand{\judg}[3]{\langle\, #1 \,;\, #2 \,;\, #3 \,\rangle}
+\newcommand{\RA}{\textsf{RA-lin}}
+\newcommand{\None}{\mathsf{none}}
+\newcommand{\ts}{\mathit{ts}}
+\newcommand{\rid}{\mathit{rid}}
+\newcommand{\cc}{\mathsf{cc}}
+\renewcommand{\flat}{\mathsf{flat}}
+\newcommand{\wit}{\mathsf{wit}}
+
+\title{\bfseries Lethe: A Core Calculus of Mergeable Forgetting\\
+\large A pen-and-paper kernel for building efficient MRDTs by construction\\
+(the \lean{oq:proglogic} design note)}
+\author{Sal metatheory note\\ \small FP Launchpad, IIT Madras}
+\date{July 9, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Every efficient mergeable replicated data type (MRDT) in the Sal catalogue
+is a \emph{forgetful image} of a free, remember-everything datatype. Lethe
+makes the forgetting an operator. A term of the calculus denotes an MRDT
+together with the retraction exhibiting it as an image of the free
+event log; the typing derivation assembles that retraction compositionally,
+and each constructor owes a fixed, leaf-level proof obligation. Four
+consequences reorganize the existing framework rather than extending it:
+the LCA of three-way merge is \emph{the price of forgetting}; efficiency is
+its \emph{yield}; the conditioned verification-condition bundle is the
+\emph{proof obligation} of the $\Forget$ operator, whose causal-delta law
+$\cd$ is already machine-checked to be independent; and the observational
+equivalence $\eqobs$ the framework reasons up to is the \emph{congruence}
+of $\Forget$. The assertion layer is separation logic over the
+\emph{id-heap}: states decompose as separating conjunctions over
+identities, operations have footprints, conflict resolution is a per-atom
+overlap policy, and the honesty conditions of the hardest datatype --- the
+tombstone-free RGA's ancestor paths --- are list-segment assertions carried
+by operations as birth certificates. No global rely appears in the
+judgment.
+
+\medskip
+\noindent\textbf{Status.} This is a pen-and-paper design note; nothing in
+it is mechanized. Every claim is either backed by an existing
+kernel-checked artifact (cited inline as \lean{code}) or explicitly marked
+as an obligation, a conjecture, or an open question.
+\end{abstract}
+
+\begin{remark}[Naming]
+Lethe is the river of forgetting. The calculus has one non-trivial
+operator, $\Forget$; the LCA is the price of forgetting; and the soundness
+theorem (\S\ref{sec:aletheia}) --- the efficient term is observationally
+equivalent to its free, remember-everything expansion --- is an
+\emph{un-forgetting} theorem, so it is named \textbf{Aletheia}
+(\emph{a-l\={e}th\={e}}: truth as un-forgetting). The LCA-recovery law of level F2
+(\S\ref{sec:ladder}) is \textbf{Euno\"e}, Lethe's paired river of restored
+memory.
+\end{remark}
+
+\tableofcontents
+
+%=====================================================================
+\section{Thesis}\label{sec:thesis}
+
+\textbf{Every efficient mergeable replicated data type is a forgetful
+image of a free, remember-everything datatype.} Lethe makes the forgetting
+an operator. Four consequences, each of which reorganizes an existing
+piece of the framework rather than adding a new one:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{The LCA is the price of forgetting.} A datatype that
+  remembers everything merges by union and never needs a common ancestor.
+  Three-way merge exists because the normal form has discarded information
+  that the join of two branches requires; the LCA is where it is
+  recovered.
+\item \textbf{Efficiency is the yield of forgetting.} ``Efficient
+  OR-set'', ``closed-form counter'', ``tombstone-free RGA'' are all the
+  same move: a retraction onto a normal form.
+\item \textbf{The conditioned VC bundle is the proof obligation of
+  $\Forget$.} The causal-delta axiom $\cd$ --- machine-checked independent
+  (\lean{Refutations/CD\_Not\_Derivable\_Ternary.lean}; see
+  \lean{CD\_MINIMALITY\_TERNARY.md}) --- is the primitive law of level-F2
+  forgetting.
+\item \textbf{$\eqobs$ is the congruence of $\Forget$.} The observational
+  equivalence the framework reasons up to is not an artifact; it is the
+  statement that forgetting is sound.
+\end{enumerate}
+
+%=====================================================================
+\section{Preliminaries}\label{sec:prelim}
+
+This section is self-contained; no companion note is assumed.
+
+\paragraph{Operations and events.} Fix a type $A$ of application
+operations. An \emph{event} is $\Op\,A \coloneqq \mathbb{N} \times
+\mathbb{N} \times A$ --- a globally unique timestamp, a replica id, and
+the payload. Timestamps are unique across the execution
+(\lean{distinct\_ops}).
+
+\paragraph{MRDT signature.} An MRDT is
+$D = \langle \State,\ \init,\ \dodo,\ \mergeL,\ \rc \rangle$
+where $\dodo : \State \to \Op\,A \to \State$,
+$\mergeL : \State \to \State \to \State \to \State$ is the three-way merge
+(first argument the LCA), and
+$\rc : \Op\,A \to \Op\,A \to \{\mathsf{Fst\_then\_snd},
+\mathsf{Snd\_then\_fst}, \Either\}$
+arbitrates non-commuting concurrent pairs. Binary merge, when it exists,
+is the slice $\Merge\,a\,b = \mergeL\,\init\,a\,b$.
+
+\paragraph{Version DAG.} Replicas evolve by local steps (1-parent commits,
+apply $\dodo$) and merge steps (2-parent commits, apply $\mergeL$ at the
+DAG-LCA of the parents). A \emph{configuration} is coherent when every
+merge's LCA argument is the fold of the shared causal prefix of its
+parents.
+
+\begin{remark}[Load-bearing caution]\label{rem:caution}
+In a general version DAG two branches may share events \emph{beyond} their
+LCA (the same operation delivered to both sides via different merges), so
+no per-triple state equation of the form
+$\nu(A \sqcup B) = m(\nu L, \nu A, \nu B)$ can be a \emph{definition} of
+correctness. This is exactly why the framework's contract is a
+DAG-inductive VC bundle and why no lattice-flavoured contract can exist
+(\lean{mrdt-metatheory.pdf}, delta-contract section). Lethe inherits this:
+the F2 obligation (\S\ref{sec:ladder}) is stated per \emph{reachable
+configuration}, not per triple.
+\end{remark}
+
+\paragraph{The judgment.} $D$ is \emph{RA-linearizable up to $\eqobs$}
+when at every version of every reachable coherent configuration, the state
+is $\eqobs$-equal to the fold ($\dodo$ over $\init$) of some linearization
+of the version's visible events that respects causal order and $\rc$.
+Here $\eqobs$ is an equivalence on $\State$, congruent for $\dodo$ and
+$\mergeL$, under which queries are invariant. For datatypes whose
+operations are only meaningful on some states, the judgment is conditioned
+on \emph{honest delivery}: every op is applicable at each state it is
+applied to, and \emph{accurate at birth} (its payload correctly describes
+the issuing state). Only level F3 and $\Guard$ consume honesty; F0--F2
+derivations are honesty-free.
+
+\paragraph{The metatheorem interface.} The framework provides:
+(i)~the flat ternary metatheorem ---
+$\co + \fd + \cd \Rightarrow \mathsf{JoinLemma3} \Rightarrow \RA$
+(eight VCs, validated, minimal at $\cd$);
+(ii)~the conditioned metatheorem consuming honest delivery (the
+tombstone-free RGA's route,
+\lean{MRDT\_Instances/RGA/RA\_Lin.lean});
+(iii)~the product kit (\lean{Metatheory/Product*.lean}): convergence by
+concatenation witness, one-sided safety, and the $\eqobs$-quotient lift.
+Lethe treats these as the semantic soundness lemmas its typing rules will
+invoke; this note adds no new metatheory.
+
+%=====================================================================
+\section{The Free Object: the Log}\label{sec:log}
+
+\begin{definition}[The log]\label{def:log}
+\[
+\Log(A):\quad
+\begin{aligned}[t]
+\State &\coloneqq \mathsf{Finset}\,(\Op\,A) &
+\init &\coloneqq \varnothing \\
+\dodo\ s\ o &\coloneqq \{o\} \cup s &
+\mergeL\ l\ a\ b &\coloneqq a \cup b
+  \quad\text{($l$ unused: remembering is free)} \\
+\rc\ \_\ \_ &\coloneqq \Either &
+\eqobs\; &\coloneqq\; (=)
+\end{aligned}
+\]
+\end{definition}
+
+On coherent configurations $l \subseteq a \cap b$, so union is the pushout
+of the two branches over the LCA; every linearization folds to the same
+union, and RA-linearizability is trivial. $\Log(A)$ is \emph{free} in the
+operative sense:
+
+\begin{quote}
+For any MRDT $D$ over the same operations, RA-linearizability of $D$ says
+exactly that every reachable state of $D$ is ($\eqobs$ to) the image of a
+reachable $\Log$-state under $D$'s own fold. \textbf{Correct $=$ a
+forgetful image of the log.}
+\end{quote}
+
+The catalogue proves this datatype-by-datatype. Lethe's job is to build
+the images \emph{compositionally}: a term denotes a datatype together with
+the retraction exhibiting it as an image, and the typing derivation
+assembles the global retraction from per-constructor pieces.
+
+%=====================================================================
+\section{The Id-Heap and the Assertion Layer}\label{sec:idheap}
+
+\paragraph{Id-heap.} A Lethe state is presented as a separating
+conjunction of cells indexed by keys (element identities, timestamps,
+replica ids, unit for singleton cells):
+\[
+\sigma \;\vDash\; \sepmap_{k \in K}\ \mathsf{cell}_k .
+\]
+
+\paragraph{Assertions.}
+\[
+P \;::=\; \emp
+  \;\mid\; k \mapsto v
+  \;\mid\; P * P
+  \;\mid\; \lseg(k_0 \cdots k_n)
+  \;\mid\; \tok(n)
+  \;\mid\; \ulcorner \varphi \urcorner
+\]
+$k \mapsto v$ --- key $k$ holds cell value $v$; $*$ --- disjoint
+composition; $\lseg(k_0 \cdots k_n)$ --- a chain
+$k_0 \mapsto (\_, k_1) * \cdots * k_{n-1} \mapsto (\_, k_n)$ in a
+parent-pointer cell family (the RGA ancestor path); $\tok(n)$ --- $n$
+escrow tokens (the bounded-counter / budget discipline);
+$\ulcorner \varphi \urcorner$ --- pure facts.
+
+\paragraph{Footprints and locality.} Each operation has a footprint
+$\fp(o) \subseteq K$ --- the keys its $\dodo$ reads or writes.
+
+\begin{proposition}[Locality principle]\label{prop:locality}
+$\fp(o_1) \cap \fp(o_2) = \varnothing$ implies $o_1, o_2$ commute on all
+states, and $\rc(o_1,o_2) = \Either$ is forced.
+\end{proposition}
+
+Consequently $\rc$ is not a global relation but a \textbf{per-atom overlap
+policy $\rho$}: a choice of arbitration for same-footprint concurrent
+pairs (add-wins, remove-wins, larger-timestamp-wins, \dots). Composite
+$\rc$ is computed pointwise; cross-component pairs are $\Either$ by frame.
+This is the separation-logic reading of the repository's empirical fact
+that every production $\rc$ is $\Either$ except on same-key pairs
+(\lean{osRc}; the RGA's $\Either$-everywhere; the mergeable queue's
+\emph{absence} of any valid $\rc$ being the flag that its operations share
+one footprint --- the whole sequence).
+
+\paragraph{Certificates.} An operation may carry an assertion over the
+id-heap --- its \emph{certificate} --- required to hold at the issuing
+state (birth) and to be re-establishable at delivery. F0--F2 operations
+carry $\emp$. The tombstone-free RGA's $\mathsf{Ins}/\mathsf{Del}$ carry
+$\lseg(\mathit{prefix} \mathbin{+\!\!+} [\mathit{anchor}])$: the recorded
+ancestor path \emph{is} a list-segment assertion, and honest delivery
+\emph{is} certificate validity. This is the design decision that replaces
+a global rely: what the environment may do is bounded by what certificates
+it must preserve, checked per footprint.
+
+%=====================================================================
+\section{The Kernel}\label{sec:kernel}
+
+\subsection{Grammar}
+
+\[
+\begin{array}{r@{\;\;}c@{\;\;}l@{\qquad}l}
+\text{atoms} & A &::= \GSet\,\tau
+  & \text{grow-only set of $\tau$ (the free cell)} \\
+ & &\mid\; \MaxCell\,(\tau, <)
+  & \text{write-max register ($\bot$-initialized)} \\
+ & &\mid\; \Agree\,\tau
+  & \text{write-once cell} \\[6pt]
+\text{terms} & D &::= A^{\rho} & \textsc{(Atom)} \\
+ & &\mid\; D_1 \otimes D_2 & \textsc{(Prod)} \\
+ & &\mid\; \sepmap_{k : K}\, D & \textsc{(Map)} \\
+ & &\mid\; \Forget[\mu]_{\nu,\,\iota,\,\nuop}\, D & \textsc{(Forget)} \\
+ & &\mid\; \Guard_{I,\,\app}\, D & \textsc{(Guard)}
+\end{array}
+\]
+
+Here $\rho$ is an overlap policy (the atom's $\rc$ on same-footprint
+pairs); $\nu : \State_D \to \NF$ is a retraction with section
+$\iota : \NF \to \State_D$, $\nu \circ \iota = \mathrm{id}$; $\nuop$ is
+the action of the retraction on operations (identity except at F3,
+\S\ref{sec:ladder}); and $\mu \in \{\cc, \flat, \wit\}$ is the \emph{join
+species}: which soundness route the owed Join Lemma takes
+(conditioned-commutation, flat/unconditional, or direct linearization
+witness). The species is a mode annotation, not a new judgment: the
+framework already ships all three as proved routes (the flat metatheorem;
+the conditioned metatheorem; the mergeable queue's direct witness
+\lean{queue\_ra\_linearizable3}).
+
+\begin{remark}[Near-single-atom basis]
+In principle the atom basis is $\GSet$ alone ---
+$\MaxCell = \Forget[\flat](\GSet)$ with $\nu = \max$ (an F1 forgetting)
+and $\Agree$ is its degenerate write-once form. They are kept primitive as
+a \emph{pre-discharged library}: their laws are proved once and
+derivations cite them.
+\end{remark}
+
+\subsection{The typing judgment}
+
+\[
+D \;\vdash\; \judg{\Sigma}{\eqobs}{O}
+\]
+
+$\Sigma$ --- the denoted MRDT signature; $\eqobs$ --- the equivalence the
+judgment is up to; $O$ --- the multiset of \emph{owed obligations}:
+leaf-level proof debt that a derivation leaves to the datatype author.
+Aletheia (\S\ref{sec:aletheia}) states: if
+$D \vdash \judg{\Sigma}{\eqobs}{O}$ and every obligation in $O$ is
+discharged, then $\Sigma$ is RA-linearizable up to $\eqobs$ (under honest
+delivery iff an F3 $\Forget$ or a $\Guard$ occurs in $D$), and $\Sigma$
+$\eqobs$-refines its free expansion.
+
+\subsection{Rules}
+
+\paragraph{\textsc{(Atom)}.}
+\begin{mathpar}
+\inferrule*[right=Atom]
+  { }
+  {A^{\rho} \;\vdash\; \judg{\Sigma_A \text{ with } \rc = \rho
+    \text{ on overlap},\ \Either \text{ off}}{(=)}{\{\text{atom laws of } A\}}}
+\end{mathpar}
+The atom laws (semilattice laws for $\GSet$; totality of $<$ for
+$\MaxCell$; single-writer for $\Agree$) are library facts, discharged
+once.
+
+\paragraph{\textsc{(Prod)}.}
+\begin{mathpar}
+\inferrule*[right=Prod]
+  {D_1 \vdash \judg{\Sigma_1}{\eqobs_1}{O_1} \\
+   D_2 \vdash \judg{\Sigma_2}{\eqobs_2}{O_2} \\
+   K(D_1) \cap K(D_2) = \varnothing}
+  {D_1 \otimes D_2 \;\vdash\;
+   \judg{\Sigma_1 \times \Sigma_2 \text{ pointwise}}
+        {\eqobs_1 \times \eqobs_2}{O_1 \cup O_2}}
+\end{mathpar}
+\textbf{No new obligation.} This is the frame rule, and it is the one
+rule already fully mechanized: convergence by concatenation witness,
+one-sided safety, and the $\eqobs$-quotient lift
+(\lean{Metatheory/Product*.lean}; first real consumer PeritextTF, 1{,}064
+lines for rich text). The side condition is syntactic: disjoint
+key-spaces, hence cross $\rc = \Either$ by
+Proposition~\ref{prop:locality}. The known semantic caution ---
+reachability does not project through $\otimes$ --- is \emph{why} the
+rule owes a concatenation witness rather than a naive pairing; the
+witness is proved once, in the kit, not per instance.
+
+\paragraph{\textsc{(Map)}.} $\sepmap_{k:K} D$ --- the keyed family:
+operations address one key, state is the finitely-supported product.
+Semantically an iterated $\otimes$ with uniform components; \textbf{no
+new obligation} beyond $D$'s, \emph{provided} each operation's footprint
+is a single key (syntactic check). Owed to the mechanization: the
+pointwise lift as a once-only theorem (it exists today only implicitly,
+inside each set/map datatype's own discharge).
+
+\paragraph{\textsc{(Forget)} --- the operator the calculus exists for.}
+\begin{mathpar}
+\inferrule*[right=Forget]
+  {D \vdash \judg{\Sigma}{\eqobs}{O} \\
+   \nu : \Sigma.\State \to \NF \\
+   \iota : \NF \to \Sigma.\State \\
+   \nu \circ \iota = \mathrm{id}}
+  {\Forget[\mu]_{\nu,\iota,\nuop}\, D \;\vdash\;
+   \judg{\Sigma_\NF}{\eqobs_\nu}{O \cup O_F(\text{level},\mu)}}
+\end{mathpar}
+where
+\[
+\begin{aligned}
+\Sigma_\NF.\init &\coloneqq \nu(\Sigma.\init), &
+\Sigma_\NF.\dodo\ s\ o &\coloneqq \nu\bigl(\Sigma.\dodo\ (\iota\,s)\ (\nuop\,o)\bigr), \\
+\Sigma_\NF.\mergeL\ l\ a\ b &\coloneqq
+  \nu\bigl(\Sigma.\mergeL\ (\iota\,l)\ (\iota\,a)\ (\iota\,b)\bigr), &
+\eqobs_\nu &\coloneqq \text{the $\nu$-kernel quotient of } \eqobs .
+\end{aligned}
+\]
+The owed obligation $O_F$ is stratified by \emph{how much $\nu$ forgets}
+--- the ladder, \S\ref{sec:ladder}. $\nuop = \mathrm{id}$ except at F3.
+
+\paragraph{\textsc{(Guard)}.} $\Guard_{I,\app} D$ --- the conditioning
+wrapper: invariant $I$ on states, applicability $\app$ on (state, op).
+Denotation unchanged; the judgment gains a safety clause ($I$ holds at
+every version) and the delivery assumption strengthens to honest ($\app$
+at each application). Owed: \textbf{stability} --- $I$ is preserved by
+$\dodo$ of applicable operations and by $\mergeL$ of $I$-states arising in
+honest configurations --- discharged by one of the two proved safety
+routes (causal-witness or escrow; both landed in the conditioning kits).
+The escrow instance: $\app$ consumes $\tok(n)$ resources whose total is
+bounded by $I$ --- the bounded counter is exactly this
+(\lean{bc\_version\_inv}). \textbf{The rule must be allowed to refuse}:
+see \S\ref{sec:refusals} for FWW-mutex and the ungated BudgetCart budget,
+where refusal is the correct and already-established outcome.
+
+%=====================================================================
+\section{The Forgetting Ladder}\label{sec:ladder}
+
+Stratify $\Forget$ by what the retraction destroys.
+
+\begin{conjecture}[C1: ladder strictness]\label{conj:ladder}
+Each level's obligations strictly contain the previous level's. The
+inclusions are evident; strictness at each step is witnessed by the
+exemplar datatypes below (see also Open
+Question~\ref{oq:strictness}).
+\end{conjecture}
+
+\paragraph{F0 --- no forgetting} ($\nu = \mathrm{id}$). Grow-only
+datatypes; merge is union; obligations: atom laws only.
+\emph{Exemplars:} G-set, G-map, tombstoned RGA, Peritext (all components
+grow-only, pointwise union).
+
+\paragraph{F1 --- join-compatible forgetting.} The kernel of $\nu$ is a
+semilattice congruence:
+\begin{obligation}[F1-law]\label{obl:f1}
+$\nu(x \sqcup y) \;=\; \nu\bigl(\iota(\nu\,x) \sqcup \iota(\nu\,y)\bigr)$
+for all reachable $x, y$.
+\end{obligation}
+The normal forms then carry an induced \emph{binary} join; the datatype
+remains a CRDT after forgetting, and no LCA appears. \emph{Exemplars:}
+LWW register ($\nu =$ keep-max: the max of a union is the max of maxes),
+FWW register (min-cell, the positive complement of the
+\lean{lww\_merge\_needs\_timestamps} kill-test), plausibly MVR ($\nu =$
+keep the undominated antichain --- \emph{tentative, to validate by
+hand-derivation}, RQ1).
+
+\paragraph{F2 --- LCA-recoverable forgetting.} $\nu$ is \emph{not} a
+join-congruence: the join of images is not determined by the images. The
+lost information is recovered from the LCA. The obligation is
+\textbf{Euno\"e}, stated at the only level of generality that survives
+Remark~\ref{rem:caution} (branches may share beyond the LCA):
+
+\begin{obligation}[Euno\"e, the F2 obligation]\label{obl:eunoe}
+There is a normal-form merge $m(l, a, b)$ such that in every reachable
+coherent configuration, $m$ at the version-DAG's LCA-images equals the
+$\nu$-image of the log-level union --- inductively over the DAG.
+Concretely: the shipped VC bundle $\co + \fd + \cd$ for $\Sigma_\NF$,
+under join species $\mu$.
+\end{obligation}
+
+The shape of $m$ is \emph{inclusion--exclusion}: subtract from the
+branches what the LCA shows to be shared history. Three instances of the
+same formula:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+datatype & normal form & $m(l, a, b)$ \\
+\midrule
+counter & event count & $a + b - l$ \\
+OR-set & live instances &
+  $(l \cap a \cap b) \cup (a \setminus l) \cup (b \setminus l)$
+  \ ($=$ \lean{osMergeL}) \\
+monoid cell, general & fold of events & branch deltas re-applied to $l$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$\cd$ is the causal-delta law of this level, and its machine-checked
+independence (\lean{cdvc3\_not\_derivable\_from\_core\_delta}) is now read
+as: \textbf{the Euno\"e law is a primitive axiom of the calculus, not
+derivable from the core and delta laws --- the rule basis is minimal at
+F2.} \emph{Exemplars:} IO-counter, PN-counter, OR-set, efficient OR-set
+(same free term, two retractions --- the ``efficient'' variant is a
+\emph{further} $\nu$; the calculus makes ``efficient'' a relation between
+terms, not a new datatype), EW-flag (tentative), AWPQ (tentative), and the
+mergeable queue at species $\wit$ (no $\rc$ exists --- the enqueue clique
+shares the sequence footprint --- so $\cc$ is structurally unavailable and
+the Join Lemma is the direct witness, exactly
+\lean{queue\_ra\_linearizable3}).
+
+\paragraph{F3 --- certificate-carrying forgetting.} $\nu$ destroys state
+that the \emph{operations' own semantics} reads: after forgetting, an
+operation's meaning is no longer a function of the normal form it is
+applied to. Two things become necessary, and the calculus makes both
+explicit where the framework discovered them semantically:
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{$\nuop \neq \mathrm{id}$} --- the retraction acts on
+  operations: payloads are extended with certificates
+  (\S\ref{sec:idheap}) recording the destroyed context at birth, and
+  $\dodo$ on normal forms consults the certificate.
+\item \textbf{Honest delivery} --- born-valid certificates, applicable at
+  delivery --- enters the judgment; it is consumed by nothing below F3.
+\end{enumerate}
+Obligation: Euno\"e \emph{plus} honesty-threading (born accuracy $+$
+applicability, inductively over the DAG) \emph{plus} correctness of
+$\nuop$ (the rewritten operation on the normal form simulates the original
+operation on the free state, up to $\eqobs_\nu$). \emph{Exemplar (the only
+one):} the tombstone-free RGA. Free term: the tombstoned RGA (an F0
+term!). $\nu$: drop dead nodes, rehome children along recorded parent
+chains. Certificates:
+$\lseg(\mathit{prefix} \mathbin{+\!\!+} [\mathit{anchor}])$.
+$\eqobs_\nu$: ghost payloads --- and the eq-variant result
+(\lean{RGA\_Tombstone\_Free\_Eq\_MRDT.lean}: on normal forms, $\eqobs$
+\emph{is} structural equality) is precisely the statement that
+$\eqobs_\nu$ is the $\nu$-kernel quotient and nothing more. The
+impossibility of a prefix-free variant
+(\lean{RGA\_PrefixFree\_Impossible.lean}) becomes a calculus theorem-shape:
+\textbf{F3 without certificates is underivable} (\S\ref{sec:refusals}).
+
+\paragraph{Orthogonal axis --- $\Guard$.} Safety conditioning composes
+with any level: BC $= \Guard_{\text{escrow}}(\text{F2 counter})$;
+BudgetCart $= \Guard(\sepmap\, \text{OR-set with derived spend})$ with the
+budget theorem hypothesis-gated (OQ8 --- the refusal is the framework's,
+and the calculus must reproduce it, \S\ref{sec:refusals}).
+
+\begin{remark}[The ladder retro-dicts the difficulty gradient]
+F0/F1 datatypes discharged with \lean{dsimp+grind} almost entirely; F2
+needed the conditioned metatheory; the single F3 datatype needed
+\lean{HonestDelivery} and a bespoke end-to-end proof. The calculus did not
+choose this ordering --- the proofs did.
+\end{remark}
+
+%=====================================================================
+\section{Worked Derivations}\label{sec:derivations}
+
+Component-by-component, per the house format. Certificates are $\emp$
+unless stated.
+
+\subsection{LWW register --- $\Forget[\flat]_{\text{keep-max}}\bigl(\GSet\,(\mathbb{N} \times \mathbb{N} \times \tau)\bigr)$\quad[F1]}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+component & free term & after $\Forget$ \\
+\midrule
+Type & $\mathsf{Finset}\,(\ts \times \rid \times \tau)$
+     & $\mathsf{Option}\,(\ts \times \rid \times \tau)$ \\
+init & $\varnothing$ & $\None$ \\
+do ($\mathsf{wr}\,v$ at $(t,r)$) & insert $(t,r,v)$
+     & keep the $<$-larger of old and $(t,r,v)$ \\
+merge & union & $\max\,l\,a\,b = \max\,a\,b$ \quad($l$ drops out --- F1) \\
+rc & $\Either$ (overlap resolved by $\ts$ order) & same \\
+$\Inv$ / $\app$ & $\top$ / $\top$ & $\top$ / $\top$ \\
+$\eqobs$ & $=$ & $=$ \quad($\nu$-kernel trivial on $\NF$) \\
+honesty & none & none \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Obligation discharged: the F1-law $=$
+$\max(x \cup y) = \max(\max x, \max y)$. One line. The LCA vanishing from
+the merge \emph{is the observable content of F1}.
+
+\subsection{Counter --- $\Forget[\flat]_{\mathrm{card}}\bigl(\GSet\,(\ts \times \rid)\bigr)$\quad[F2]}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+component & free term & after $\Forget$ \\
+\midrule
+Type & $\mathsf{Finset}\,(\ts \times \rid)$ (inc events) & $\mathbb{N}$ \\
+init & $\varnothing$ & $0$ \\
+do ($\mathsf{inc}$) & insert & $+1$ \\
+merge & union & $\mathbf{a + b - l}$ \\
+rc & $\Either$ & $\Either$ \\
+$\eqobs$ & $=$ & $=$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Euno\"e here is inclusion--exclusion on cardinality; $l$ cannot be
+eliminated (the join of two numbers does not determine the union's size)
+--- the minimal possible F2, and the right first mechanization target.
+PN-counter $=$ (this) $\otimes$ (this).
+
+\subsection{Efficient OR-set --- $\Forget[\cc]_{\live}\bigl(\sepmap_{\mathit{inst}} (\GSet\,\mathbf{1} \otimes \GSet\,\mathbf{1})\bigr)^{\text{add-wins}}$\quad[F2]}
+
+Free term: per instance $(\ts, \rid, \mathit{payload})$, an add-flag
+$\GSet$ and a remove-flag $\GSet$ (a keyed 2P pair). $\nu$ keeps instances
+with $\mathit{add} \wedge \neg\mathit{remove}$ --- the live set. This
+lands verbatim on \lean{ORSetCore.lean}:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+component & value (post-$\Forget$) & repo artifact \\
+\midrule
+Type & $\mathsf{Finset}\,(\mathbb{N} \times \mathbb{N} \times \beta)$
+     & \lean{OSState $\beta$} \\
+init & $\varnothing$ & \lean{OSCore.init} \\
+do & $\mathsf{add}$: insert instance; $\mathsf{rem}\,k$: filter key
+   & \lean{osUpdate} \\
+merge & $(l \cap a \cap b) \cup (a \setminus l) \cup (b \setminus l)$
+      & \lean{osMergeL} \\
+rc & add-wins on same key, else $\Either$
+   & \lean{osRc} --- $\rho$ is the same-key clause \\
+$\eqobs$ & $=$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Euno\"e instance to check by hand: the live-set of a log-union against the
+inclusion--exclusion formula, DAG-inductively (the per-triple identity
+fails in general --- Remark~\ref{rem:caution} --- which is \emph{why} the
+obligation is the VC bundle). The plain (tombstoned) OR-set is the
+\emph{same free term with a weaker $\nu$}; the plain and efficient
+variants are two points on one $\Forget$ chain, and their separate 24-VC
+discharges in the repository are the two Euno\"e instances.
+
+\subsection{Tombstone-free RGA --- $\Forget[\cc]_{\text{drop-dead, rehome};\,\nuop}(\text{tombstoned RGA})$\quad[F3]}
+\label{sec:rga-derivation}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{2.5in}p{2.6in}@{}}
+\toprule
+component & free term (F0, in repo as \lean{RGA\_MRDT}) & after $\Forget$ \\
+\midrule
+Type & grow-only: nodes $(\ts \mapsto \mathit{elem} \times
+       \mathit{anchor})$ $+$ tombstone set
+     & live nodes only: $\ts \mapsto (\mathit{elem}, \mathit{anchor})$ \\
+do & $\mathsf{Ins}$ after $x$ adds node; $\mathsf{Del}\,x$ adds tombstone
+   & $\mathsf{Ins}\,\mathit{pre}\,x$: insert with certificate;
+     $\mathsf{Del}\,\mathit{pre}\,x$: \textbf{remove $+$ rehome children
+     to $\mathsf{resolve}(\mathit{pre})$} \\
+merge & pointwise union
+      & climb-LCA rehoming of survivors (\lean{climb}) \\
+rc & $\Either$ & $\Either$ \quad(order is read-side) \\
+certificate & $\emp$
+  & $\lseg(\mathit{pre} \mathbin{+\!\!+} [x])$ --- the recorded ancestor
+    path \\
+$\eqobs$ & $=$
+  & ghost-payload quotient; on normal forms $\eqobs$ $=$ $=$
+    (eq-variant) \\
+honesty & none
+  & born accuracy $+$ applicable delivery (\lean{HonestDelivery}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This is the derivation where the note's one flagged surprise lives:
+$\nuop$ is not optional --- deletion on the normal form \emph{edits
+surviving state} (children re-anchor), which no state-only retraction
+produces. Whether $\Forget$ is one operator with an op-action or two
+operators (state-quotient $\circ$ op-compiler) is Open
+Question~\ref{oq:onetwo}. Everything owed here is already discharged
+\emph{as an instance} (\lean{RA\_Lin.lean}, kernel-clean, one assumption
+$=$ \lean{HonestDelivery}); what Lethe owes is the rule-generic form.
+
+\subsection{Guarded exemplars, briefly}
+
+\begin{itemize}[leftmargin=2em]
+\item \textbf{Bounded counter} $=
+  \Guard_{v \geq 0,\ \text{escrow}}(\text{counter of \S6.2 as PN})$;
+  stability via tokens; \lean{bc\_version\_inv} is the discharged
+  obligation.
+\item \textbf{BudgetCart} $= \Guard_{\text{budget}}\bigl(
+  \sepmap_{\mathit{inst}}\, \text{OR-set} \otimes
+  \text{derived-spend}\bigr)$; convergence flows through the OR-set
+  route; the \emph{ungated} budget obligation is provably false
+  (enumeration-dependence of vis-only folds) --- the \textsc{Guard} rule
+  must refuse, matching \lean{bcart\_version\_inv\_gated} and OQ8.
+\end{itemize}
+
+\subsection{The catalogue as Lethe terms (proposed; validation $=$ RQ1)}
+\label{sec:catalogue}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{2.2in}lp{1.9in}@{}}
+\toprule
+datatype & proposed term & level & status of proposal \\
+\midrule
+G-set / G-map & $\sepmap \GSet$ / $\sepmap_k \GSet$ & F0 & clear \\
+tombstoned RGA & $\sepmap_{\ts} (\Agree \otimes \GSet)$ grow-only
+  & F0 & clear \\
+Peritext & tombstoned RGA $\otimes$ $\GSet\,\mathsf{AnchorAttachment}$
+  & F0 & clear \\
+LWW register & \S6.1 & F1 & derived above \\
+FWW register & $\Forget[\flat]_{\text{keep-min}}(\GSet)$ & F1
+  & clear; $\Guard$-mutex refused (\S\ref{sec:refusals}) \\
+MVR & $\Forget_{\text{antichain}}(\GSet\ \text{tagged writes})$
+  & F1/F2? & hand-derive: does the antichain $\nu$ satisfy F1, or does
+    dominance need the LCA? \\
+IO / PN counter & \S6.2 ($\otimes$ for PN) & F2 & derived above \\
+OR-set / efficient & \S6.3 (two $\nu$'s) & F2 & derived above \\
+EW-flag & $\Forget(\text{OR-set-of-enables})$-like & F2?
+  & hand-derive; the known-broken variant should \emph{fail} a specific
+    Euno\"e instance --- a calculus-level account of the Plausible
+    counterexample \\
+AWPQ & $\sepmap (\text{OR-set instance})$ $+$ read-side max & F2?
+  & hand-derive \\
+mergeable queue & $\Forget[\wit](\Log)$ --- no $\rho$ exists
+  & F2 ($\mu = \wit$)
+  & matches \lean{queue\_ra\_linearizable3}; the \emph{absence} of an rc
+    is predicted by the shared footprint \\
+tombstone-free RGA & \S6.4 & F3 & derived above \\
+PeritextTF & (\S6.4) $\otimes$ markstore & F3 $\otimes$ F0
+  & matches \lean{Peritext\_Composed/}, the frame-rule consumer \\
+BC / BudgetCart & \S6.5 & $\Guard \circ$ F2 & derived above \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\section{Aletheia: the Soundness Theorem (statement owed, not proved)}
+\label{sec:aletheia}
+
+\begin{theorem}[Aletheia]\label{thm:aletheia}
+If $D \vdash \judg{\Sigma}{\eqobs}{O}$ and every obligation in $O$ is
+discharged, then:
+\begin{enumerate}[leftmargin=2em]
+\item \emph{(convergence)} $\Sigma$ is RA-linearizable up to $\eqobs$ at
+  every version of every reachable coherent configuration --- under honest
+  delivery iff $D$ contains an F3 $\Forget$ or a $\Guard$, unconditionally
+  otherwise;
+\item \emph{(un-forgetting)} the composite retraction $\nu_D$ assembled
+  along the derivation exhibits $\llbracket D \rrbracket$
+  $\eqobs$-refining its free expansion --- every reachable $\Sigma$-state
+  is $\nu_D$ of a reachable free state, and queries factor through
+  $\nu_D$;
+\item \emph{(safety)} every $\Guard_I$ node's $I$ holds at every version,
+  given the client honesty contract.
+\end{enumerate}
+Proved by \emph{one induction on the typing derivation}.
+\end{theorem}
+
+Case-by-case, what exists versus what is owed:
+
+\begin{center}
+\begin{tabular}{@{}lp{2.6in}p{2.1in}@{}}
+\toprule
+rule case & semantic lemma & status \\
+\midrule
+\textsc{Atom} & atom laws
+  & exists piecemeal in instance discharges; owed: library form \\
+\textsc{Prod} & concatenation witness $+$ safety $+$ $\eqobs$-lift
+  & \textbf{exists} (\lean{Product*.lean}) \\
+\textsc{Map} & pointwise lift
+  & owed (implicit in per-datatype proofs today) \\
+\textsc{Forget} F1 & join-congruence $\Rightarrow$ CRDT & easy; owed \\
+\textsc{Forget} F2 & Euno\"e $\Rightarrow$ VC bundle $\Rightarrow$
+  $\mathsf{JoinLemma3}$ $\Rightarrow$ \RA
+  & \textbf{exists} (flat $+$ conditioned metatheorems); owed: the
+    transport along $\nu$ as a lemma rather than per-instance \\
+\textsc{Forget} F3 & honesty-threading $+$ $\nuop$ simulation
+  & exists as the RGA instance (\lean{RA\_Lin.lean}); owed: rule-generic
+    form \\
+\textsc{Guard} & two safety routes
+  & \textbf{exists} (causal-witness $+$ escrow kits) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The honest summary: \textbf{the semantic content of every case except
+\textsc{Map} and the rule-generic F3 already exists kernel-checked; what
+does not exist is the grammar, the composite $\nu$, and the single
+induction.} That is the mechanization gap \lean{oq:proglogic} names, now
+with a precise worklist.
+
+%=====================================================================
+\section{What the Calculus Predicts and Refuses}\label{sec:refusals}
+
+A logic earns its keep by refusing derivations, and each refusal below is
+\emph{already a kernel-checked or documented impossibility} --- the
+calculus turns them from post-hoc discoveries into syntactic
+non-derivability:
+
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{No F3 without certificates.} A prefix-free tombstone-free
+  RGA is not a Lethe term ($\nuop$ has no certificate to consult), and the
+  framework proved the corresponding datatype unverifiable
+  (\lean{RGA\_PrefixFree\_Impossible.lean}).
+\item \textbf{No $\Guard$-mutex from merges.}
+  $\Guard_{\text{unset} \Rightarrow \text{exclusive}}$ over FWW fails
+  stability (``unset'' is not stable under concurrent honest extension)
+  --- the documented reason the FWW register is a reservation, never a
+  mutex. The \textsc{Guard} rule's stability side-condition refuses
+  exactly this.
+\item \textbf{No ungated BudgetCart budget.} The two-sided safety
+  obligation is provably false (enumeration-dependence); \textsc{Guard}
+  derives only the gated form (\lean{bcart\_version\_inv\_gated}, OQ8).
+\item \textbf{No rc for the queue.} Concurrent enqueues share the
+  sequence footprint; Proposition~\ref{prop:locality} makes $\rho$
+  unavailable, forcing $\mu = \wit$ --- which is exactly the route the
+  mechanized proof took.
+\end{enumerate}
+
+And the constructive test (\textbf{the falsifiable success criterion}):
+build a datatype \emph{not in the catalogue} --- a bounded OR-set
+($\Guard_{\text{escrow}}$ over \S6.3) or an LWW-map with eviction
+($\sepmap_k$ over \S6.1 with a $\Forget$ dropping evicted keys) --- where
+the only manual proof is the leaf Euno\"e/F1 instance. If the kernel
+cannot produce something new, it is a taxonomy; if it can, it is a
+calculus.
+
+%=====================================================================
+\section{Open Questions}\label{sec:oq}
+
+\begin{openq}[OQ-L1: $\Forget$ --- one operator or two?]\label{oq:onetwo}
+F3 forces an op-action $\nuop$. Is $\Forget$ a single operator with a
+(usually trivial) op-action, or a state-quotient composed with an
+\emph{op-compiler}? The RGA hand-derivation (\S\ref{sec:rga-derivation})
+suggests the compiler view: certificates are compiled-in preconditions.
+Decide on paper before mechanizing the \textsc{Forget} rule.
+\end{openq}
+
+\begin{openq}[OQ-L2: exactness of Euno\"e]\label{oq:exact}
+Is the F2 obligation \emph{equivalent} to the shipped bundle
+$\co + \fd + \cd$, or merely sufficient? The $\cd$ countermodel gives the
+``not less'' direction; the ``not more'' direction is open. If exact, the
+framework \emph{is} the soundness theorem of one operator --- the paper's
+headline.
+\end{openq}
+
+\begin{openq}[OQ-L3: SL sufficiency at F3]\label{oq:sl}
+Do footprint certificates $+$ per-key invariants fully replace a global
+rely --- i.e., can \lean{HonestDelivery} be \emph{derived} from per-op
+certificate validity, with the RGA $\lseg$ as the test? Expected yes for
+F0--F2 (vacuous), genuinely open at F3.
+\end{openq}
+
+\begin{openq}[OQ-L4: efficiency as a judgment]\label{oq:eff}
+$\Forget$ chains order variants of one datatype (plain vs.\ efficient
+OR-set). Make ``efficient'' formal: normal-form size / merge cost versus
+the free term. Even semi-formal, it justifies the word in the thesis.
+\end{openq}
+
+\begin{openq}[OQ-L5: completeness]\label{oq:complete}
+Which RA-linearizable MRDTs are \emph{not} Lethe terms? The queue needed a
+mode, not a new operator --- evidence the mode lattice
+$\{\cc, \flat, \wit\}$ might suffice; the MVR and AWPQ hand-derivations
+(\S\ref{sec:catalogue}) are the next stress tests.
+\end{openq}
+
+\begin{openq}[OQ-L6: ladder strictness --- Conjecture~\ref{conj:ladder}]
+\label{oq:strictness}
+Each level's obligations strictly contain the previous. Strictness
+F1 $\subsetneq$ F2 is witnessed by the counter ($l$ does not drop out);
+F2 $\subsetneq$ F3 by the prefix-free impossibility. F0 $\subsetneq$ F1
+needs a datatype whose $\nu = \mathrm{id}$ fails F1 vacuously --- trivial,
+but state it.
+\end{openq}
+
+%=====================================================================
+\section{Relation to Existing Artifacts (crosswalk)}\label{sec:crosswalk}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{3.6in}@{}}
+\toprule
+Lethe piece & existing artifact \\
+\midrule
+\textsc{Prod} rule & \lean{Metatheory/Product*.lean} (concatenation
+  witness, safety, $\eqobs$-lift) \\
+F2 obligation & \lean{Framework/VC\_Set.lean} bundle; minimality:
+  \lean{Refutations/CD\_Not\_Derivable\_Ternary.lean} \\
+F3 instance & \lean{MRDT\_Instances/RGA/RA\_Lin.lean};
+  $\eqobs$-collapse: \lean{RGA\_Tombstone\_Free\_Eq\_MRDT.lean} \\
+$\mu = \wit$ & \lean{MRDT\_Instances/MergeableQueue/}
+  \lean{queue\_ra\_linearizable3} \\
+\textsc{Guard} routes & conditioning kits (causal-witness, escrow);
+  \lean{bc\_version\_inv}, \lean{bcart\_version\_inv\_gated} \\
+refusals & \lean{RGA\_PrefixFree\_Impossible.lean}; FWW reservation
+  documentation; OQ8 \\
+\S6.3 verbatim & \lean{MRDT\_Instances/ORSetCore/ORSetCore.lean}
+  (\lean{osUpdate}, \lean{osMergeL}, \lean{osRc}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Scope limit, stated once.} Aletheia certifies convergence to
+the datatype's \emph{own} fold up to $\eqobs$ --- not intent (the
+\lean{oq:linspec} limit; the Peritext mark-leak is the canonical example).
+A spec layer per atom (abstract state $+$ per-op refinement) is future
+work and deliberately outside this kernel.
+
+\end{document}

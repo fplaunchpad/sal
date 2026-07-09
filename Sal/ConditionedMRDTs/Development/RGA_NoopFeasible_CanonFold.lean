@@ -4,12 +4,12 @@ import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_CanonFoldOK
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_InvUpdateQ
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_MergeLinearization
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RGA_SubchainResolve
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_InvUpdateQ
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_SubchainResolve
 
 /-!
 # The load-bearing bridge: `applicable` (accuracy at the ACTUAL prefix) ⟹ the
