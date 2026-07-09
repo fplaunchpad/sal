@@ -1874,8 +1874,40 @@ $\app$.
 \label{sec:open}
 
 The mechanization settles what the paper claimed; it also sharpens what
-remains genuinely open. Nine questions, roughly in order of theoretical
+remains genuinely open. Ten questions, roughly in order of theoretical
 depth:
+
+\begin{openq}[Is there a rely-guarantee program logic for MRDTs?]
+\label{oq:proglogic}
+The framework already carries the skeleton of a verification-condition logic:
+the signature-plus-conditioning is the ``program'', RA-linearizability up to
+$\eqobs$ is the judgment, the eight VCs are local proof obligations, the
+metatheorem is their \emph{soundness theorem}, and the product $\otimes$ with
+\lean{JoinLemma3At} is a frame/composition rule (the coupling hierarchy
+L0--L3 stratifying it by interaction strength, as disjoint-vs-shared
+reasoning does in separation logic). The conditioning layer is specifically
+\emph{rely-guarantee}: honest delivery is the \emph{rely} (an assumption on
+other replicas' and clients' steps), convergence/safety up to $\eqobs$ is the
+\emph{guarantee}, merges are environment steps, and the ``stable under
+concurrent honest extension'' condition the safety metatheorem turns on
+(\S\ref{sec:open} below --- the bounded counter succeeds and
+BudgetCart/FWW fail on exactly it) \emph{is} the rely-guarantee stability
+side-condition, arrived at independently. What is missing to make it a
+program logic proper is a \emph{syntax}: a language building $\dodo$/$\merge$
+from primitives (a per-replica counter cell, OR-set membership, an LWW/FWW
+$\max$/$\min$ cell, a sequence node) and combinators (the product $\otimes$,
+the indexed map, the payload-parametric wrap of \lean{ORSetCore}), each
+carrying its local VC contribution and its join-species, such that
+well-formedness entails RA-linearizability \emph{by construction} --- so that
+writing an MRDT and proving it converge become one act, as separation logic
+made heap-program verification syntax-directed. The \emph{semantic}
+combinators already exist and are each \emph{separately} proven sound; what
+is open is the grammar together with a \emph{single} soundness theorem for
+the grammar (not one per combinator). This question subsumes the two
+framework-theory questions below: $\cd$-derivability (\ref{oq:cd}) asks
+whether the rule set is minimal, and the structure theorem asks to classify
+the primitives.
+\end{openq}
 
 \begin{openq}[$\cd$-derivability]
 \label{oq:cd}
