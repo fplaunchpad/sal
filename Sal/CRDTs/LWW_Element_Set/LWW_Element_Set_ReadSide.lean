@@ -34,14 +34,19 @@ This file lifts the headline:
 1. `lookup s id` — element `id` is live iff its add-ts strictly
    exceeds its remove-ts.
 2. **Convergence at the read.**
-3. **Three intent theorems:**
+3. **Two intent theorems** (independent — they constrain `do_`'s effect on
+   liveness, so they would catch a wrong update):
    - `lookup_after_add_with_fresh_ts` — `Add` at a ts strictly larger
      than the current rem-ts makes `id` live.
-   - `latest_write_wins` — between any two ops on the same `id` with
-     distinct ts, the higher-ts op determines liveness (Add wins iff
-     it's strictly later).
    - `remove_at_higher_ts_extinguishes` — a `Remove` at ts > current
-     add-ts strips the element from the live set. -/
+     add-ts strips the element from the live set.
+4. `lookup_def` — the definitional unfolding of `lookup` (liveness is the
+   add-ts/rem-ts comparison). This is NOT an independent guarantee: it
+   restates how `lookup` is defined and holds for whatever that definition
+   is, so it catches no bug. The genuine "latest write wins" behavioural
+   content is convergence together with the two intent theorems above; a
+   `rfl` unfolding is not it. (Renamed from `latest_write_wins`, which
+   overstated a definitional restatement as the headline guarantee.) -/
 
 /-! ## Read-side primitives -/
 
@@ -87,11 +92,14 @@ theorem remove_at_higher_ts_extinguishes
   intro _
   exact h_ts_ge_add
 
-/-- **Latest write wins (strict).** If the element's current
-add-ts and rem-ts disagree (one strictly larger), liveness is
-determined by which is larger. This is just `lookup`'s definition
-restated as the LWW-Element-Set headline. -/
-theorem latest_write_wins
+/-- **`lookup` unfolded (definitional).** Liveness is the add-ts/rem-ts
+comparison — because that is how `lookup` is *defined* (`by rfl`). Useful as
+a rewrite lemma; it is NOT an independent intent theorem and does not certify
+any behaviour: it would hold for any definition of `lookup`. The behavioural
+"latest write wins" property is carried by convergence and the two
+ts-conditioned theorems (`lookup_after_add_with_fresh_ts`,
+`remove_at_higher_ts_extinguishes`). -/
+theorem lookup_def
     (s : concrete_st) (id : ℕ) :
     lookup s id ↔ mysel (Prod.fst s) id > mysel (Prod.snd s) id := by
   rfl

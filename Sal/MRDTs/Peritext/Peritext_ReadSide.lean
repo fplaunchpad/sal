@@ -81,7 +81,7 @@ visible-order theorems later in this file (see the CRDT side's
 `Peritext_ReadSide.lean` for the full discussion):
 
 - **Ex 7 (bold-expand, cross-sibling case):** `ex7_bold_older_sibling_in_span`.
-- **Ex 8 (link-contract):** `ex8_link_descendant_visible_lt_endId`.
+- **Ex 8 (link-contract):** `ex8_link_descendant_not_in_span_visible_of_wf` (the genuine guarantee; `ex8_link_descendant_visible_lt_endId` is a definitional constructor-helper feeding it, not the guarantee).
 - **Ex 1 (insert-within-span):** `insert_within_span_in_span_visible`
   and `insert_within_span_cross_subtree_in_span`.
 
@@ -879,6 +879,14 @@ theorem ex7_bold_older_sibling_in_span
     · exact absurd h (by rw [h_eSide]; decide)
     · exact visible_lt.sibling h_after_new h_after_end h_ne h_order
 
+/-- Constructor-level helper: an afters-descendant of `endId` is `visible_lt`
+after it. This is a `visible_lt` constructor applied to its hypothesis
+(definitional — it restates how `visible_lt` is built, so it catches no bug);
+it is NOT itself the Ex 8 guarantee. The genuine Ex 8 ("link-boundary
+insertion does not expand") is the *negative* theorem
+`ex8_link_descendant_not_in_span_visible_of_wf`, which uses `wf_afters`
+acyclicity to exclude the inserted character from the span. This helper only
+feeds that proof. -/
 theorem ex8_link_descendant_visible_lt_endId
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
     after_of s c_new m.endId = true →

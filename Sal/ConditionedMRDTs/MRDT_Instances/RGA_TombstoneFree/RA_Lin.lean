@@ -57,7 +57,17 @@ open Sal.ConditionedMRDTs.RGASkeleton3 (HonestDelivery)
 
 /-- **The tombstone-free RGA is RA-linearizable up to `≈`** at every reachable configuration of
 the ternary execution model, under honest delivery (`HonestDelivery`: born accuracy +
-born-applicable delivery — see the module docstring). -/
+born-applicable delivery — see the module docstring).
+
+NB (what this certifies, and what it does not). The signature's `query` is `Unit`, so this
+capstone's `≈`/`query_congr` content is *structural*, not observational: it certifies that every
+version's state is the fold of a `lo`-respecting linearization of its events, up to the state
+equivalence `≈`. The observable reading guarantee — that replicas display the same *sequence*,
+and that survivors keep their order — is the separate read-side theorem `document_convergent`
+(`Sal/MRDTs/RGA_Tombstone_Free/RGA_Tombstone_Free_ReadSide.lean`), which lives outside this
+capstone. Read-*order* under deletion is only partially pinned: `del_can_reorder_survivors`
+(SPOT) exhibits a case where tombstone-free rehoming reorders survivors, the honest limit of the
+read model. -/
 theorem rga_tombstone_free_ra_linearizable3_eq
     (hHD : HonestDelivery)
     (C : Configuration (QSig rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA))

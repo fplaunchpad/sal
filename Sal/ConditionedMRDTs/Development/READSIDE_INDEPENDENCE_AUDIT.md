@@ -299,3 +299,28 @@ named as the datatype's headline guarantee — the exact `mark_no_leak` pattern
 remaining hard-circular theorem still glossed as intent. Everything else is either
 genuinely independent, an honest convergence/containment bound, or already
 correctly caveated.
+
+---
+
+## Outcomes (fixes applied)
+
+The three circular/presentational findings presented as guarantees were corrected:
+
+1. **LWW `latest_write_wins` → `lookup_def`** (rename + re-gloss): the `by rfl`
+   unfolding is now labeled definitional, not an intent theorem; the crosswalk
+   and README attribute the behavioural "latest write wins" property to
+   convergence + the two ts-conditioned theorems
+   (`lookup_after_add_with_fresh_ts`, `remove_at_higher_ts_extinguishes`).
+2. **Peritext `ex8_link_descendant_visible_lt_endId`** (relabel, both CRDT and
+   MRDT): given an honest docstring marking it a definitional constructor-helper;
+   the Ex 8 guarantee is attributed to the genuine negative theorem
+   `ex8_link_descendant_not_in_span_visible_of_wf` in the headers and crosswalk.
+   (Symbol not renamed — it is a genuine helper feeding the real theorem, and
+   renaming would churn the SPOT files for no semantic gain.)
+3. **RGA-TF capstone**: docstring note that `query = Unit` makes its
+   `≈`/`query_congr` content structural, and the observable reading guarantee is
+   the separate `document_convergent`; read-*order* under deletion is only
+   partially pinned (`del_can_reorder_survivors`).
+
+The PARTIAL findings (RGA-TF membership silent on order; the various
+`*_convergent` at `≈ = =`) are honest as stated and left as-is.

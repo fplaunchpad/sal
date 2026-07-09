@@ -36,7 +36,7 @@ strictly — ties favour the remove, the conservative
 | **Lookup convergence.** Equal states give equal `lookup`. | `lookup_convergent` | ✅ |
 | **Add at fresh higher ts makes element live.** Adding with `ts > current rem-ts` puts the element in the visible set. | `lookup_after_add_with_fresh_ts` | ✅ |
 | **Remove at fresh higher ts extinguishes.** Removing with `ts ≥ current add-ts` removes the element from the visible set. | `remove_at_higher_ts_extinguishes` | ✅ The `≥` (not strict) reflects the remove-wins-on-tie convention. |
-| **Latest write wins.** The headline LWW property — liveness depends only on the comparison of the two latest timestamps. | `latest_write_wins` (definitional) | ✅ |
+| **Latest write wins.** The headline LWW property — liveness depends only on the comparison of the two latest timestamps. | convergence + `lookup_after_add_with_fresh_ts` + `remove_at_higher_ts_extinguishes` | ✅ These are the *independent* content. `lookup_def` (formerly `latest_write_wins`) is only the definitional unfolding of `lookup` (`by rfl`) — it restates the read's definition and certifies no behaviour, so it is **not** the guarantee. |
 | **Equal ts → remove wins.** Under tie, element is not live (conservative convention). | `equal_ts_remove_wins` | ✅ |
 
 ## Comparison with OR-Set

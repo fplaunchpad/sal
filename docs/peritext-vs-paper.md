@@ -25,7 +25,7 @@ where it deliberately departs, and where follow-up work is flagged.
 | §A.2 Ex 5 — bold vs non-bold conflict | `add_wins_over_concurrent_remove_visible` + `no_add_cover_implies_unformatted_visible` | ✅ LWW by opId (paper §4.4). |
 | §A.2 Ex 6 — overlapping comments via distinct markType | follows from `different_type_adds_coexist_visible` | ✅ |
 | §A.2 Ex 7 — bold-boundary insertion expands | `ex7_bold_older_sibling_in_span` + `bold_expand_in_span_visible` (via `bold_expand_reach`) | ✅ |
-| §A.2 Ex 8 — link-boundary insertion does not expand | `ex8_link_descendant_visible_lt_endId` + `_not_in_span_visible_of_wf` | ✅ Uses `wf_afters` acyclicity. |
+| §A.2 Ex 8 — link-boundary insertion does not expand | `ex8_link_descendant_not_in_span_visible_of_wf` (genuine, via `wf_afters` acyclicity); `ex8_link_descendant_visible_lt_endId` is a definitional constructor-helper feeding it | ✅ The guarantee is the negative theorem; the positive `visible_lt_endId` restates a `visible_lt` constructor and is not itself an independent check. |
 | (Beyond paper) Anchors survive tombstones | `anchors_survive_tombstones_visible` | ✅ Implicit in §4.4 paper discussion. |
 
 ## Formalization target
@@ -51,7 +51,7 @@ but the correctness criteria land in different places:
 | Ex 5 — conflicting bold vs non-bold | §3.2.1, §A.2 | `add_wins_over_concurrent_remove_visible` (positive) + `no_add_cover_implies_unformatted_visible` (negative) | ✅ LWW by opId. |
 | Ex 6 — overlapping comments via distinct markType | §3.2.2, §A.2 | Follows from `different_type_adds_coexist_visible` | ✅ (Comments encode each instance with a unique `markType`; the theorem then applies.) |
 | Ex 7 — bold-boundary insertion expands | §3.3, §A.2 | `ex7_bold_older_sibling_in_span` (cross-sibling case) + `bold_expand_in_span_visible` (post-endId region) | ✅ Two complementary results: the cross-sibling case (insert lands before `endId` in visible order) uses the standard visible-order bound; the post-`endId` bold-expand region uses `bold_expand_reach`, which identifies afters-descendants of `endId` reachable via chains of post-mark-opId characters (paper's §3.3 "grab new inserts at the after-side" encoded via opId comparison). |
-| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_visible_lt_endId` (positive) + `ex8_link_descendant_not_in_span_visible` / `_of_wf` (full negation, link case) | ✅ Under link semantics (`endSide = false`), afters-descendants of `endId` are correctly excluded. Full negation uses the `wf_afters` acyclicity invariant. |
+| Ex 8 — link/comment-boundary insertion doesn't expand | §3.3, §A.2 | `ex8_link_descendant_not_in_span_visible_of_wf` (the genuine full negation) | ✅ Under link semantics (`endSide = false`), afters-descendants of `endId` are excluded via `wf_afters` acyclicity. The positive `ex8_link_descendant_visible_lt_endId` is a definitional constructor-helper (it restates a `visible_lt` constructor), not an independent check — it only feeds the negation. |
 | Table 1 — "Can marks overlap?" | §3.4 | Emergent from `formatted_visible` being per-`markType` | ✅ |
 | Table 1 — "Do marks expand?" | §3.4 | Captured by Ex 7 / Ex 8 visible-order demos above | ✅ |
 

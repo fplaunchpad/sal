@@ -36,7 +36,7 @@ Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branc
 - `OR_Set` — Shapiro et al. INRIA RR-7506. **+ read-side**: `lookup`, `add_wins_over_concurrent_remove`, `add_then_remove_extinguishes`. See [`docs/or-set-vs-paper.md`](docs/or-set-vs-paper.md).
 - `Grow_Only_Set`
 - `Grow_Only_Multiset`
-- `LWW_Element_Set` — Shapiro et al. INRIA RR-7506. Per-element latest-add-ts and latest-remove-ts maps; `lookup` uses strict-`>` comparison (remove-wins on tie). **+ read-side**: `lookup`, `lookup_after_add_with_fresh_ts`, `remove_at_higher_ts_extinguishes`, `latest_write_wins`. See [`docs/lww-element-set-vs-paper.md`](docs/lww-element-set-vs-paper.md).
+- `LWW_Element_Set` — Shapiro et al. INRIA RR-7506. Per-element latest-add-ts and latest-remove-ts maps; `lookup` uses strict-`>` comparison (remove-wins on tie). **+ read-side**: `lookup_after_add_with_fresh_ts`, `remove_at_higher_ts_extinguishes` (independent intent theorems); `lookup_def` (definitional unfolding of `lookup`, not a behavioural guarantee — renamed from `latest_write_wins`, which overstated it). See [`docs/lww-element-set-vs-paper.md`](docs/lww-element-set-vs-paper.md).
 - `LWW_Map`
 - `MAX_Map`
 

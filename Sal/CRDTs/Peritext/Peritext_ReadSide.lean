@@ -117,7 +117,7 @@ paper-faithful visible-order theorems later in this file, not by
   covers the common scenario where a concurrent insert lands in an
   older-sibling subtree of `endId` — the insert is before `endId` in
   visible order and is correctly included in the span.
-- **Ex 8 (link-contract):** `ex8_link_descendant_visible_lt_endId`
+- **Ex 8 (link-contract):** `ex8_link_descendant_not_in_span_visible_of_wf` (genuine; the `visible_lt_endId` positive is a definitional helper).
   demonstrates that afters-descendants of `endId` come *after* `endId`
   in visible order, and are correctly excluded from `in_span_visible`.
 - **Ex 1 (insert-within-span):** `insert_within_span_in_span_visible`
@@ -574,6 +574,14 @@ Instead, this theorem records the **observable** fact that any
 for `in_span_visible`'s right-side bound when `endSide = true`.
 A user who wants the "not in span" conclusion can combine this
 with a well-formedness premise. -/
+/-- Constructor-level helper: an afters-descendant of `endId` is `visible_lt`
+after it. This is a `visible_lt` constructor applied to its hypothesis
+(definitional — it restates how `visible_lt` is built, so it catches no bug);
+it is NOT itself the Ex 8 guarantee. The genuine Ex 8 ("link-boundary
+insertion does not expand") is the *negative* theorem
+`ex8_link_descendant_not_in_span_visible_of_wf`, which uses `wf_afters`
+acyclicity to exclude the inserted character from the span. This helper only
+feeds that proof. -/
 theorem ex8_link_descendant_visible_lt_endId
     (s : concrete_st) (m : MarkOp) (c_new : OpId) :
     after_of s c_new (mark_endId m) = true →
