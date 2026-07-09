@@ -20,6 +20,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.ProductDemo.ProductDemo
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_TombstoneFree.RA_Lin
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.PeritextTF
 import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkHonesty
+import Sal.ConditionedMRDTs.MRDT_Instances.PeritextTF.MarkIntent
 
 /-!
 # The conditioned MRDT instances — the full catalogue

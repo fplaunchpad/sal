@@ -1824,8 +1824,19 @@ still yields the capstone (\lean{peritextTF\_ra\_linearizable\_honest})
 unchanged, because the linearisation proof consumes only the character
 clause --- marks converge and linearise as an OR-set regardless. The mark
 clause is thus \emph{decorative for linearisability and load-bearing only for
-the read layer} (where \lean{markAccurate\_resolveMark} seeds the
-render-intent theorems). The lesson lifts cleanly: a component's honesty
+the read layer}: the render-intent theorems consume it
+(\lean{MarkIntent.lean}), giving tombstone-free Peritext its ``formatting does
+not leak'' guarantee at endpoint granularity --- a rendered endpoint is always
+the document root or a member of its \emph{recorded chain}
+(\lean{mark\_start\_no\_leak}, structural: \lean{resolve} returns a live
+candidate or the root), which mark-anchor accuracy pins to the endpoint's true
+issue-time ancestry, so formatting can only climb the anchored character's own
+ancestry, never leak sideways; a non-root endpoint is moreover live at read
+time (\lean{mark\_start\_live}, axiom-free). The strictly stronger read-time
+claim --- that the surviving endpoint is a genuine ancestor \emph{at the read
+state} --- needs the RGA's recorded-path-faithfulness invariant lifted along
+the product LTS, the one Peritext-specific piece left. The lesson lifts
+cleanly: a component's honesty
 discipline is load-bearing exactly where the \emph{coupled read} depends on
 it, not where convergence does --- and the read-coupled boundary carries
 honesty precisely because the honesty predicate lives free of the
