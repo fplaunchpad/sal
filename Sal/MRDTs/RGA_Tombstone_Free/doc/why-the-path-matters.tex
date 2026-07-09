@@ -61,8 +61,11 @@ the merge alone already converges the concurrent case \emph{without} any path
 (\texttt{merge\_converges\_concurrent}); it is this commutation \emph{obligation},
 not operational convergence, that the path serves. We give the
 counterexample that diverges without the path, the fix that the path provides, and
-the asymmetry that makes the path mandatory for $\Ins$ but optional for $\Del$.
-Every claim here is mechanised in Lean (\S\ref{sec:mech}).
+a two-sided asymmetry: the insert path is mandatory \emph{semantically} (commutation
+fails without it), while the delete path, though \emph{runtime}-dispensable, is
+\emph{proof}-load-bearing --- the operation-static certificate that decouples a
+delete's well-formedness from the reachable-state invariant. Every claim here is
+mechanised in Lean (\S\ref{sec:mech}).
 \end{abstract}
 
 \section{The data type: a forest of live records}
@@ -399,12 +402,12 @@ recovers position from the LCA (\S\ref{sec:merge}). The path exists solely to
 discharge the framework's universally-quantified commutation VC over states that no
 execution produces. It is ghost state --- read by the proof, erased at run time.
 
-\section{The asymmetry: $\Ins$ needs the path, $\Del$ does not}
+\section{The asymmetry: $\Ins$ needs the path at run time, $\Del$ in the proof}
 \label{sec:asym}
 
-Strikingly, only the \emph{insert} needs the path. A delete can always recompute
-its target from the live state, because at the moment a delete runs, the node it
-reparents \emph{to} (its target's parent) is still present. Figure
+Strikingly, only the \emph{insert} needs the path \emph{at run time}. A delete can
+always recompute its target from the live state, because at the moment a delete
+runs, the node it reparents \emph{to} (its target's parent) is still present. Figure
 \ref{fig:asym} contrasts the two: the delete reads its answer from a node that is
 alive \emph{now}; the insert may need a node that was alive \emph{then} but is
 gone \emph{now}.
@@ -448,6 +451,39 @@ The intuition is temporal: a delete reparents \emph{all current children} the
 instant it runs, keeping the forest connected; a concurrent (or reordered) insert
 is a child that was \emph{not present} at that instant, so it missed the handoff
 and must supply its own ancestry.
+
+\paragraph{But the delete path is not idle scaffolding.} That a delete \emph{can}
+recompute its target does not make the path it carries inert in the proof --- and
+this is where the asymmetry is genuinely two-sided rather than ``insert yes, delete
+no.'' In the conditioned framework the recorded prefix on a delete is its
+\emph{operation-static well-formedness certificate}, and it is what keeps a delete's
+admissibility \emph{independent of the state invariant}. The operation-only side
+condition on $\Del(p,x)$ is $x\notin p$; since $\resolve(\sigma,p)$ always lands in
+$\{0\}\cup p$, this forces $\resolve(\sigma,p)\neq x$ --- ``the node does not reparent
+onto itself'' --- from the \emph{operation alone}, with no appeal to any property of
+$\sigma$. That is exactly what lets a delete's invariant preservation be discharged
+locally: \texttt{RgaInv\_doDel\_opOK} re-establishes the forest invariant across a
+$\Del$ \emph{given only} $x\notin p$, no path accuracy and no state hypothesis.
+
+Drop the path and this decoupling collapses. The reparent target becomes
+$\anc(\sigma,x)$, a function of the \emph{state}, so ``it does not reparent onto
+itself'' is no longer operation-static: it must be re-sourced from the state
+invariant \texttt{id\_mono} ($\anc(\sigma,x)<x$, whence the anchor forest is acyclic)
+and threaded through every invariant-preservation and commutation obligation. The
+$\doo$-commutation verification condition itself --- previously an equation guarded
+only by accuracy and freshness --- must then be strengthened with the very
+forest-acyclicity and delete-applicability premises the path had supplied for free.
+Removing the delete path is therefore not a simplification of the data type but a
+\emph{migration} of the delete's well-formedness out of the operation layer and into
+the reachable-state invariant.
+
+So both operations carry a path, for \emph{different} reasons, and that is the real
+asymmetry. The insert needs it \emph{semantically}: single-replica commutation
+genuinely fails without the vanished ancestor, and no state invariant can substitute
+(\S\ref{sec:path}, \S\ref{sec:uncond}). The delete needs it \emph{architecturally}:
+runtime-dispensable (\texttt{del\_path\_free}) yet proof-load-bearing --- the static
+certificate that decouples an operation's admissibility from the reachable-state
+invariant it would otherwise have to lean on.
 
 \section{Why no unconditioned proof exists}
 \label{sec:uncond}
@@ -693,8 +729,11 @@ Every figure corresponds to a Lean fact in
         \ref{fig:diverge}--\ref{fig:fix}: with the path the pair commutes; drop it
         and the same accurate pair diverges. The \emph{insert} path is necessary.
   \item \texttt{del\_path\_free} / \texttt{deldel\_pathfree\_converges} --- Figure
-        \ref{fig:asym}: the \emph{delete} path is dispensable; a $\Del$ reads its
-        reparent target $\anc(\sigma,x)$ from the live state.
+        \ref{fig:asym}: the \emph{delete} path is runtime-dispensable (a $\Del$ reads
+        its reparent target $\anc(\sigma,x)$ from the live state) yet
+        proof-load-bearing --- \texttt{RgaInv\_doDel\_opOK} discharges the delete's
+        invariant preservation from the operation-static $x\notin p$ alone, with no
+        state hypothesis (\S\ref{sec:asym}).
   \item \texttt{rc\_non\_comm'} --- the full commutation VC: on accurate,
         fresh-id, root-not-stored states, \emph{every} operation pair commutes.
   \item \texttt{RGA\_PrefixFree\_Impossible.lean} --- a parameterised theorem: no
