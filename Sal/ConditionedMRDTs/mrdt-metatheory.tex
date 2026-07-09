@@ -1090,6 +1090,7 @@ BudgetCart & or-set $\rc$ & \lean{BCart\_ra\_linearizable3\_eq} & budgeted cart,
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rc$ exists (enqueue clique); the merge itself is the linearization witness \\
 RGA (tombstone-free) & \emph{conditioned} & \multicolumn{2}{l}{\lean{rga\_tombstone\_free\_ra\_linearizable3\_eq} --- RA-lin up to $\approx$, honest delivery (\S\ref{sec:open})} \\
 Peritext (tombstone-free) & \emph{composed} & \multicolumn{2}{l}{\lean{peritextTF\_ra\_linearizable\_up\_to\_eq} --- RGA${}\otimes{}$marks through the product kit; 1{,}064 lines total} \\
+Peritext (tombstone-free, fused) & \emph{fused} & \multicolumn{2}{l}{\lean{peritextFused\_ra\_linearizable\_up\_to\_eq} --- one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; convergence by instantiation, genuine positional intent (\lean{render\_id\_active\_iff\_between}); 773 lines} \\
 \bottomrule
 \end{tabular}}
 \caption{The Sal production catalogue. Every instance concludes through
@@ -2178,9 +2179,23 @@ ancestry and so leaks formatting backward under anchor deletion
 rehoming read (nearest surviving neighbour in reading order, gravity-aware),
 against which that leak is a visible failure. The fused boundary-node design
 provides such rehoming via the RGA's own machinery, at the cost of atomicity
-(the mark-positioning trilemma: atomic, tombstone-free, live --- pick two).
-Mechanising the document-order read and its intent theorems, for either
-design, is open.
+(the mark-positioning trilemma: atomic, tombstone-free, live --- pick two),
+and it is now \textbf{built} (\lean{MRDT\_Instances/PeritextFused/}): rich text
+as one RGA over $\mathsf{char} \oplus \mathsf{boundary}$, with a document-order
+read and the genuine positional intent theorem
+\lean{render\_id\_active\_iff\_between} --- a rendered character carries a mark
+iff it lies between the mark's boundary nodes in reading order, i.e.
+fold-computed activation $\iff$ a structural positional decomposition of the
+element list (\emph{not} a restatement of the read, so it clears the
+circularity above). Its corollary \lean{render\_span\_before} forbids the
+backward leak \emph{by construction} --- exactly the failure the frozen-path
+design retracts. So the concrete Peritext instance of this question is
+\emph{resolved} for the fused design. What remains: (i) the enduring
+methodological point --- convergence to the own-fold never certifies intent,
+only an independent spec does; and (ii) a residual that is \emph{not} a leak
+--- under interior deletion the RGA re-sorts survivors
+(\lean{del\_can\_reorder\_survivors}), a bounded reading-order change, the
+atomicity horn traded for live positioning.
 \end{openq}
 
 \section{Mechanization}
@@ -2218,6 +2233,7 @@ product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linea
 product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
 product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
 Peritext by composition & \lean{peritextTF\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/PeritextTF/} \\
+Peritext, fused (positional intent) & \lean{peritextFused\_ra\_linearizable\_up\_to\_eq}, \lean{render\_id\_active\_iff\_between} & \lean{MRDT\_Instances/PeritextFused/} \\
 mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/PeritextTF/MarkHonesty.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 $\cd$ independent of core+delta (OQ~\ref{oq:cd}) & \lean{cdvc3\_not\_derivable\_from\_core\_delta} & \lean{Refutations/CD\_Not\_Derivable\_Ternary.lean} \\

@@ -182,7 +182,7 @@ One directory per RDT; each directory's presented capstone concludes
 `IsRALinearizable3Eq` **through the one generic theorem** (§4), and the
 same directory carries the flat VC discharge that feeds it. The umbrella
 [`MRDT_Instances/MRDT_Instances.lean`](MRDT_Instances/MRDT_Instances.lean)
-imports all eighteen capstones:
+imports all nineteen capstones:
 
 | MRDT | End-to-end theorem | Instantiation / discharge |
 |---|---|---|
@@ -204,6 +204,7 @@ imports all eighteen capstones:
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
 | **RGA, tombstone-free** (production) | `rga_tombstone_free_ra_linearizable3_eq` | full generality (§4) |
 | **Peritext, tombstone-free** | `peritextTF_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` (well-definedness only) | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit — 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁). **Caveat**: convergence/safety are complete, but mark *positioning* is not paper-faithful — the frozen recorded paths climb tree ancestry, so deleting a mark's anchor leaks formatting backward (`MarkIntent.lean` states the honest containment bound, not a no-leak guarantee; OQ `oq:linspec`). |
+| **Peritext, tombstone-free (fused)** | `peritextFused_ra_linearizable_up_to_eq`; intent: `render_id_active_iff_between` + `render_span_before` | **fused, the paper-faithful design**: one RGA at `α := char ⊕ boundary` (marks are id-paired boundary nodes), convergence a one-line instantiation of the RGACore capstone (773 lines total vs the product's ~1,500). Delivers the genuine positional intent the product retracts — a char is formatted iff it lies between the mark's boundaries in reading order (fold-activation ⟺ structural decomposition, non-circular), and backward leak is forbidden by construction. Residual: interior-deletion reading-order re-sort (`del_can_reorder_survivors`), a bounded change, not a leak — the atomicity horn of the trilemma. |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
 kernel-checked end-to-end theorem through the one framework.** The bounded
