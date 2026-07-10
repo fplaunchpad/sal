@@ -2172,7 +2172,35 @@ nothing about whether the fold's single-replica semantics is the intended
 one; a defect in $\dodo$ appears identically in the concurrent state and its
 fold, and is certified as agreement. Independent \emph{intent} specifications
 are therefore a separate obligation (the read-side theorems, the paper's
-examples), not a corollary of convergence. The concrete open instance: the
+examples), not a corollary of convergence.
+
+The cleanest witness of this needs no concurrency and no marks --- three
+sequential operations on the tombstone-free RGA. Event $1$ inserts $a$ after
+the root, event $2$ inserts $b$ after the root, and event $3$ inserts $c$
+after $a$. The same-anchor siblings $a,b$ read newest-first ($b$ before $a$)
+and $c$ sits under $a$, so the document reads $[b,a,c]$. Now delete $a$.
+Correct list semantics --- and a tombstoned RGA --- give $[b,c]$; the
+tombstone-free RGA gives $[c,b]$. Physically splicing $a$ out rehomes its
+child $c$ to the root, where $c$ (event $3$) out-ranks $b$ (event $2$) under
+the same newest-first tie-break and jumps ahead of it; a tombstoned RGA keeps
+$a$ as a dead position-holder, so $c$ never migrates. The reorder is baked
+into $\dodo$ itself, so the merged state and the fold of \emph{every}
+delivery-respecting linearisation agree on the same wrong sequence $[c,b]$,
+and RA-linearisability certifies that agreement without complaint ---
+kernel-clean and RA-linearisable does not make the single-replica sequence
+the intended one. Only an independent order spec exposes the defect, and the
+fail/pass pair is machine-checked: the tombstone-free RGA \emph{refutes} a
+``delete preserves survivor order'' property
+(\lean{tombstone\_free\_violates\_delete\_order}~$:\
+\neg\,\lean{DeleteOrderPreserving}$), via exactly this
+$[b,a,c]\!\to\![c,b]$ execution, while the tombstoned RGA's order relation
+--- invariant under a delete that touches only the tombstone set, not the
+insert records the read consults --- \emph{satisfies} it
+(\lean{remove\_preserves\_visible\_lt}). This is a more minimal instance of
+the limit than the Peritext leak below: three sequential operations, no
+concurrency, no marks.
+
+The original concrete instance was compositional: the
 tombstone-free Peritext composite's frozen-path mark resolution climbs tree
 ancestry and so leaks formatting backward under anchor deletion
 (\S\ref{sec:open}); a paper-faithful account needs a \emph{document-order}
@@ -2192,10 +2220,13 @@ backward leak \emph{by construction} --- exactly the failure the frozen-path
 design retracts. So the concrete Peritext instance of this question is
 \emph{resolved} for the fused design. What remains: (i) the enduring
 methodological point --- convergence to the own-fold never certifies intent,
-only an independent spec does; and (ii) a residual that is \emph{not} a leak
---- under interior deletion the RGA re-sorts survivors
-(\lean{del\_can\_reorder\_survivors}), a bounded reading-order change, the
-atomicity horn traded for live positioning.
+only an independent spec does; and (ii) the RGA reorder above is, unlike the
+Peritext leak, \emph{not} retractable --- physical splicing \emph{is} the
+data type, so the survivor reorder is intrinsic to tombstone-freedom rather
+than a bug to fix. It is thus the sharpest form of the point: a kernel-clean,
+RA-linearisable data type whose certified single-replica sequence is
+nevertheless not the sequential-list sequence, the gap visible only through
+an order property the metatheory never states.
 \end{openq}
 
 \section{Mechanization}

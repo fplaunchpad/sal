@@ -153,3 +153,100 @@ theorem concurrent_insert_tiebreak_deterministic
     c₁ ≠ c₂ → c₁ > c₂ →
     visible_lt s c₁ c₂ :=
   visible_lt.sibling
+
+/-! ## Delete preserves the visible order (tombstoned RGA)
+
+The **positive contrast** to the tombstone-free RGA. That variant reorders
+survivors on a *single* delete: splicing a deleted node physically out rehomes
+its children, which then re-sort among their new siblings by the newest-first
+tiebreak — a sequential-spec violation certified invisibly by our
+RA-linearizability (`RGA_TF_SPOT.tombstone_free_violates_delete_order`,
+`Sal/MRDTs/RGA/RGA_Tombstone_Free_SPOT.lean`; open question `oq:linspec`).
+
+The tombstoned RGA cannot exhibit this. Its visible order `visible_lt` is
+defined entirely through `after_of`, which reads only the insert records
+`Prod.fst s`. A `Remove` touches only the tombstone set `Prod.snd s`:
+`do_ s (_,_,.Remove x) = (Prod.fst s, add x (Prod.snd s))`
+(`RGA_MRDT.lean:101`). Hence `after_of` — and with it the entire order relation
+— is *invariant* under `Remove`: deletion flips a node's liveness (`visible`)
+but never moves any survivor. The dead node stays put as a position holder;
+nothing rehomes. `remove_preserves_visible_lt` is the machine-checked statement,
+a genuine `↔` (its non-vacuity is witnessed just below). -/
+
+/-- `after_of` reads only `Prod.fst`, and `Remove` leaves `Prod.fst` untouched,
+so the direct-after relation is unchanged by a `Remove`. -/
+theorem remove_preserves_after_of (s : concrete_st) (t r x c p : ℕ) :
+    after_of (do_ s (t, r, app_op_t.Remove x)) c p ↔ after_of s c p := by
+  have hfst : (do_ s (t, r, app_op_t.Remove x)).1 = s.1 := rfl
+  simp only [after_of, hfst]
+
+/-- The reflexive-transitive closure `afters_reach` is built only from
+`after_of`, so it too is invariant under a `Remove`. -/
+theorem remove_preserves_afters_reach (s : concrete_st) (t r x a b : ℕ) :
+    afters_reach (do_ s (t, r, app_op_t.Remove x)) a b ↔ afters_reach s a b := by
+  constructor
+  · intro h
+    induction h with
+    | refl c => exact afters_reach.refl c
+    | step hstep _ ih =>
+        exact afters_reach.step ((remove_preserves_after_of s t r x _ _).mp hstep) ih
+  · intro h
+    induction h with
+    | refl c => exact afters_reach.refl c
+    | step hstep _ ih =>
+        exact afters_reach.step ((remove_preserves_after_of s t r x _ _).mpr hstep) ih
+
+/-- **Delete preserves the visible order (tombstoned RGA).** For every pair of
+identities `a`, `b`, applying a `Remove x` leaves the visible-order relation
+`visible_lt` on them exactly as it was. This is the tombstoned RGA's
+delete-order-preservation — the property the tombstone-free RGA *violates*
+(`tombstone_free_violates_delete_order`). The proof replays each `visible_lt`
+constructor across the `after_of`/`afters_reach` invariance established above; no
+node is rehomed, because the tombstone lives outside the substrate `visible_lt`
+reads. -/
+theorem remove_preserves_visible_lt (s : concrete_st) (t r x a b : ℕ) :
+    visible_lt (do_ s (t, r, app_op_t.Remove x)) a b ↔ visible_lt s a b := by
+  constructor
+  · intro h
+    induction h with
+    | parent_child hp =>
+        exact visible_lt.parent_child ((remove_preserves_after_of s t r x _ _).mp hp)
+    | sibling hp1 hp2 hne hgt =>
+        exact visible_lt.sibling ((remove_preserves_after_of s t r x _ _).mp hp1)
+          ((remove_preserves_after_of s t r x _ _).mp hp2) hne hgt
+    | left_descendant_of_sibling hp1 hp2 hne hgt hreach hdne =>
+        exact visible_lt.left_descendant_of_sibling
+          ((remove_preserves_after_of s t r x _ _).mp hp1)
+          ((remove_preserves_after_of s t r x _ _).mp hp2) hne hgt
+          ((remove_preserves_afters_reach s t r x _ _).mp hreach) hdne
+    | trans _ _ ih1 ih2 => exact visible_lt.trans ih1 ih2
+  · intro h
+    induction h with
+    | parent_child hp =>
+        exact visible_lt.parent_child ((remove_preserves_after_of s t r x _ _).mpr hp)
+    | sibling hp1 hp2 hne hgt =>
+        exact visible_lt.sibling ((remove_preserves_after_of s t r x _ _).mpr hp1)
+          ((remove_preserves_after_of s t r x _ _).mpr hp2) hne hgt
+    | left_descendant_of_sibling hp1 hp2 hne hgt hreach hdne =>
+        exact visible_lt.left_descendant_of_sibling
+          ((remove_preserves_after_of s t r x _ _).mpr hp1)
+          ((remove_preserves_after_of s t r x _ _).mpr hp2) hne hgt
+          ((remove_preserves_afters_reach s t r x _ _).mpr hreach) hdne
+    | trans _ _ ih1 ih2 => exact visible_lt.trans ih1 ih2
+
+/-- Non-vacuity of `remove_preserves_visible_lt`: `visible_lt` is inhabited on a
+small state, and the equivalence transports a *real* derivation across a
+`Remove`. Here `σ` inserts `A` (id `1`) after the root and `B` (id `2`) after
+`A`; `visible_lt σ 1 2` holds by `parent_child`, and it survives removing the
+unrelated id `1`. -/
+example :
+    visible_lt
+      (do_ (do_ (do_ init_st (1, 0, app_op_t.Add_after 0 65))
+                (2, 0, app_op_t.Add_after 1 66))
+           (3, 0, app_op_t.Remove 1)) 1 2 := by
+  rw [remove_preserves_visible_lt]
+  exact visible_lt.parent_child ⟨66, by decide⟩
+
+section AxiomAudit
+#print axioms remove_preserves_visible_lt
+end AxiomAudit

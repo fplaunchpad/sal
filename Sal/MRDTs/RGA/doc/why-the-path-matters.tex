@@ -485,6 +485,96 @@ runtime-dispensable (\texttt{del\_path\_free}) yet proof-load-bearing --- the st
 certificate that decouples an operation's admissibility from the reachable-state
 invariant it would otherwise have to lean on.
 
+\section{A read-side consequence: the delete reorders survivors, and the proof cannot see it}
+\label{sec:reorder}
+
+The delete's rehoming (\S\ref{sec:asym}) buys convergence, but it has a second
+consequence the run-time picture hides: it can \emph{reorder the surviving
+elements}. A tombstone-free delete physically splices its target out and rehomes
+the orphaned subtree, so a child can migrate to a position where the newest-first
+sibling tie-break ranks it \emph{ahead} of an element it previously followed. This
+is not a concurrency artefact --- it happens on a single replica, in a plain
+sequential run --- and, crucially, the correctness theorem cannot register it.
+
+\paragraph{A minimal witness.} Three inserts and one delete. Event $1$ inserts $a$
+after the root, event $2$ inserts $b$ after the root, event $3$ inserts $c$ after
+$a$. The same-anchor siblings $a,b$ read newest-first, so $b$ precedes $a$, and $c$
+sits under $a$: the document reads $[b,a,c]$ (Figure \ref{fig:reorder}, left). Now
+delete $a$. Correct list semantics --- and a tombstoned RGA --- leave the
+survivors in place and read $[b,c]$; the tombstone-free RGA reads $[c,b]$. Splicing
+$a$ out rehomes $c$ to the root, where $c$ (event $3$) out-ranks $b$ (event $2$)
+under the same newest-first tie-break and jumps ahead of it. A tombstoned RGA keeps
+$a$ as a dead position-holder, so $c$ never migrates and the order is preserved ---
+the physical splice cannot offer that.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % ---- before ----
+  \node[capt] at (0.6,0.7) {before $\Del(a)$: reads $[b,a,c]$};
+  \node[rootvtx] (br) at (0.6,0)     {$0$};
+  \node[vtx]     (bb) at (-0.9,-1.3) {$b$};
+  \node[vtx]     (ba) at (2.1,-1.3)  {$a$};
+  \node[vtx]     (bc) at (2.1,-2.6)  {$c$};
+  \draw[anc] (bb) -- (br);
+  \draw[anc] (ba) -- (br);
+  \draw[anc] (bc) -- (ba);
+  \node[elbl, below=0.5mm of bb] {id $2$};
+  \node[elbl, right=0.8mm of ba] {id $1$};
+  \node[elbl, right=0.8mm of bc] {id $3$};
+
+  % ---- after ----
+  \node[capt] at (7.4,0.7) {after $\Del(a)$: reads $[c,b]$ (want $[b,c]$)};
+  \node[vtx]     (ac) at (6.0,-1.3) {$c$};
+  \node[rootvtx] (ar) at (7.5,0)    {$0$};
+  \node[vtx]     (ab) at (7.5,-1.3) {$b$};
+  \node[dead]    (aa) at (9.0,-1.3) {$a$};
+  \draw[anc] (ab) -- (ar);
+  \draw[climb] (ac) -- (ar);
+  \node[elbl, left=0.8mm of ac] {id $3$};
+  \node[elbl, below=0.5mm of ab] {id $2$};
+  \node[elbl, below=0.5mm of aa] {removed};
+\end{tikzpicture}
+\caption{The delete reorders survivors. \textbf{Left:} $a$ (id $1$) and $b$ (id
+$2$) are root siblings read newest-first ($b$ first), with $c$ (id $3$) under $a$;
+the document is $[b,a,c]$. \textbf{Right:} deleting $a$ splices it out and rehomes
+$c$ to the root (red dashed), where $c$ out-ranks $b$ and now reads first ---
+$[c,b]$, not the list-correct $[b,c]$. A tombstoned RGA would keep $a$ as a dead
+position-holder, so $c$ never migrates.
+(\texttt{tombstone\_free\_violates\_delete\_order} vs.\
+\texttt{remove\_preserves\_visible\_lt}.)}
+\label{fig:reorder}
+\end{figure}
+
+This is machine-checked as a fail/pass pair. The tombstone-free RGA
+\emph{refutes} an independent ``delete preserves survivor order'' property
+(\texttt{tombstone\_free\_violates\_delete\_order}, i.e.\
+$\neg\,\texttt{DeleteOrderPreserving}$), via exactly this $[b,a,c]\to[c,b]$ run,
+in \texttt{Sal/MRDTs/RGA/RGA\_Tombstone\_Free\_SPOT.lean}; the tombstoned RGA's
+order relation \texttt{visible\_lt}, invariant under a delete that touches only the
+tombstone set and not the insert records the read consults, \emph{satisfies} the
+same property (\texttt{remove\_preserves\_visible\_lt}, in
+\texttt{Sal/MRDTs/RGA\_with\_tombstones/RGA\_ReadSide.lean}).
+
+\paragraph{Why the verification does not catch it.} It is tempting to file this as
+a mere read-side cost of dropping tombstones. It is more than that: it changes the
+\emph{certified sequence}, and the correctness theorem is structurally unable to
+see the change. The end-to-end result is RA-linearizability --- every reachable and
+merged state equals the fold, under the data type's \emph{own} $\doo$, of some
+delivery-respecting linearisation of its events. The reorder is baked into that
+$\doo$, so the fold and the merge agree on the \emph{same} reordered sequence
+$[c,b]$; convergence to the own-fold holds, and the theorem certifies exactly it.
+What the theorem does \emph{not} certify is that $[c,b]$ is the sequence a
+sequential list would produce --- that is an independent \emph{intent} obligation,
+and against it this run is a visible failure. So this is a point distinct from the
+two-sided path asymmetry of \S\ref{sec:asym}: not about which operation must carry
+ancestry, but about the reach of the correctness statement itself. Kernel-clean
+plus RA-linearizable does \emph{not} mean the single-replica sequence is the one
+list semantics prescribes. It is the cleanest instance of the self-referential-spec
+limit recorded in the companion note (\texttt{mrdt-metatheory.pdf}, Open Question
+``the self-referential-spec limit''): it arrives with no concurrency and no marks,
+sharper than that note's earlier Peritext example.
+
 \section{Why no unconditioned proof exists}
 \label{sec:uncond}
 
