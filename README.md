@@ -42,7 +42,7 @@ Everything is checked on Lean `v4.28.0` against the `chore-bump-lean-4.28` branc
 
 **Sequences & structured data:**
 - `RGA` — Replicated Growable Array, the sequence CRDT underlying Automerge / Yjs, in its state-based formulation as a grow-only `Map OpId (char, afterId, deleted)`. **+ read-side**: `visible_lt` four-rule DFS-traversal predicate, `causal_order_visible_lt`, `tombstone_monotone_under_remove`, `concurrent_insert_tiebreak_deterministic`. See [`docs/rga-vs-paper.md`](docs/rga-vs-paper.md).
-- `Peritext` — Litt et al. CSCW 2022. Rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`. The paper Ex 1 / 2 / 3 / 5 / 7 / 8 intent-preservation theorems are verified on the **MRDT** side (see the MRDT `Peritext` below, `Sal/MRDTs/Peritext_with_tombstones/Peritext_ReadSide.lean`); the CRDT-side read-side projection is WIP and does not yet build. See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
+- `Peritext` — Litt et al. CSCW 2022. Rich text = RGA + formatting marks represented as a flat `set AnchorAttachment`. **+ read-side**: paper Ex 1 / 2 / 3 / 5 / 7 / 8 intent-preservation theorems (kernel-checked, mirrored on the MRDT side). See [`docs/peritext-vs-paper.md`](docs/peritext-vs-paper.md).
 - `Shopping_Cart`
 - `Add_Win_Priority_Queue` — adapted from Zhang et al. 2023. **+ read-side**: `lookup`, `add_wins_over_concurrent_rmv`, LWW innate, MCW-collapsed-to-Σ acquired, `get_max`, `inc_increases_acquired`. See [`docs/aw-crpq-vs-paper.md`](docs/aw-crpq-vs-paper.md).
 

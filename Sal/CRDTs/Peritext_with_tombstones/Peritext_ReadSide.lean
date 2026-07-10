@@ -557,7 +557,7 @@ theorem bold_expand_in_span_visible
   rw [if_pos h_eSide]
   exact Or.inr h_reach
 
-/-- **Paper Ex 8 (link no-expand) — direct descendant of `endId` is not in span.**
+/-! **Paper Ex 8 (link no-expand) — direct descendant of `endId` is not in span.**
 
 For a link-style mark (`endSide = true`), a new char inserted as
 a direct `afters`-descendant of `endId` has `visible_lt endId c_new`
