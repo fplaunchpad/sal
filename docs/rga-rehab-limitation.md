@@ -98,7 +98,7 @@ removed characters' after-chain predecessors), so this degrades the
 rehabilitation to a best-effort intra-branch splice.
 
 The lattice-join-like merges the 24 VCs were designed around — `OR_Set_MRDT`,
-`Grow_Only_Set_MRDT`, the existing `Replicated_Growable_Array_MRDT` — all
+`Grow_Only_Set_MRDT`, the existing `RGA_MRDT` — all
 commute with `do_` on the LCA because `l` appears only through set-algebraic
 operations (intersection, difference), not through structural queries on
 its contents. Rehabilitation is a structural query (it reads
@@ -342,5 +342,5 @@ the former but not the latter within a pure `merge : Σ → Σ → Σ → Σ`.
   24 VCs Sal ports.
 - `Sal/MRDTs/OR_Set_MRDT.lean` — the template that suggests the
   LCA-replaces-tombstone move in the first place.
-- `Sal/MRDTs/Replicated_Growable_Array_MRDT.lean` — existing RGA MRDT,
+- `Sal/MRDTs/RGA_with_tombstones/RGA_MRDT.lean` — existing RGA MRDT,
   lattice-join merge, LCA vestigial. Still the honest baseline.

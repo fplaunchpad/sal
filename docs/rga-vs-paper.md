@@ -1,9 +1,9 @@
 # RGA in Sal vs. the literature
 
 Cross-reference between the Lean formalization in
-`Sal/CRDTs/RGA/RGA_CRDT.lean` (state-based CRDT), `Sal/MRDTs/Replicated_Growable_Array/Replicated_Growable_Array_MRDT.lean`
+`Sal/CRDTs/RGA_with_tombstones/RGA_CRDT.lean` (state-based CRDT), `Sal/MRDTs/RGA_with_tombstones/RGA_MRDT.lean`
 (state-based MRDT), and their read-side companions
-(`*/RGA_ReadSide.lean`, `*/Replicated_Growable_Array_ReadSide.lean`),
+(`*/RGA_ReadSide.lean`, `*/RGA_ReadSide.lean`),
 against the canonical RGA reference:
 
 > Hyun-Gul Roh, Myeongjae Jeon, Jin-Soo Kim, Joonwon Lee.
@@ -42,7 +42,7 @@ different places:
 
 ## Read-side substrate sharing
 
-Peritext (`Sal/CRDTs/Peritext/Peritext_ReadSide.lean`) duplicates
+Peritext (`Sal/CRDTs/Peritext_with_tombstones/Peritext_ReadSide.lean`) duplicates
 `visible_lt` and `afters_reach` on its own (richer) state shape.
 That duplication predates the standalone RGA readside; refactoring
 Peritext to import from `RGA_ReadSide` is a follow-up. The two
@@ -78,8 +78,8 @@ does not depend on it.
 
 | Purpose | Path |
 |---|---|
-| State-based CRDT (24 VCs) | `Sal/CRDTs/RGA/RGA_CRDT.lean` |
-| State-based MRDT (24 VCs) | `Sal/MRDTs/Replicated_Growable_Array/Replicated_Growable_Array_MRDT.lean` |
-| CRDT read-side | `Sal/CRDTs/RGA/RGA_ReadSide.lean` |
-| MRDT read-side | `Sal/MRDTs/Replicated_Growable_Array/Replicated_Growable_Array_ReadSide.lean` |
+| State-based CRDT (24 VCs) | `Sal/CRDTs/RGA_with_tombstones/RGA_CRDT.lean` |
+| State-based MRDT (24 VCs) | `Sal/MRDTs/RGA_with_tombstones/RGA_MRDT.lean` |
+| CRDT read-side | `Sal/CRDTs/RGA_with_tombstones/RGA_ReadSide.lean` |
+| MRDT read-side | `Sal/MRDTs/RGA_with_tombstones/RGA_ReadSide.lean` |
 | Tombstone-free obstruction (historical) | `docs/rga-rehab-limitation.md` |

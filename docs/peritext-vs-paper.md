@@ -38,7 +38,7 @@ but the correctness criteria land in different places:
 |---|---|---|
 | Convergence (Thm A.1, §A.3) | 24 RA-linearizability VCs (per variant) | Pointwise equality on each state component. CRDT has four components (`chars : map`, `afters : map`, `deleted : map`, `marks : set`); MRDT has three (`chars : set CharRec`, `removed : set OpId`, `marks : set`). Per-replica snapshot rather than op-log consistency. Both variants are fully sorry-free. |
 | Causality preservation (§A.1) | Framework-level assumption | Sal's state-based model assumes causal delivery; the VCs verify the local reconciliation rule. |
-| Intention preservation (§A.2, 8 examples) | Characterization theorems in `Peritext_ReadSide.lean` (mirrored on both CRDT and MRDT sides) | See the table below. |
+| Intention preservation (§A.2, 8 examples) | Characterization theorems in the MRDT-side `Sal/MRDTs/Peritext_with_tombstones/Peritext_ReadSide.lean` (compiles, kernel-checked); the CRDT-side read-side is WIP and does not build | See the table below. |
 
 ## Intent-preservation: paper examples ↔ Lean theorems
 
@@ -189,10 +189,10 @@ These are acknowledged as future work in the paper itself (§5):
 
 ## Related files
 
-- `Sal/CRDTs/Peritext/Peritext_CRDT.lean` — spec + 24 VCs.
-- `Sal/CRDTs/Peritext/Peritext_ReadSide.lean` — read-side projection
+- `Sal/CRDTs/Peritext_with_tombstones/Peritext_CRDT.lean` — spec + 24 VCs.
+- `Sal/CRDTs/Peritext_with_tombstones/Peritext_ReadSide.lean` — read-side projection
   + paper-semantic theorems.
-- `Sal/MRDTs/Peritext/{Peritext_MRDT,Peritext_ReadSide}.lean` — MRDT
+- `Sal/MRDTs/Peritext_with_tombstones/{Peritext_MRDT,Peritext_ReadSide}.lean` — MRDT
   counterparts. The MRDT's `eq` is pointwise `==` on each set
   component, which lifts via `funext` + `Prod.ext` to full
   functional equality on the state — making

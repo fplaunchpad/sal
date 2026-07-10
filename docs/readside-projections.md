@@ -346,8 +346,8 @@ The Sal SPOT files live next to their read-sides:
 | OR-Set MRDT | `Sal/MRDTs/OR_Set/OR_Set_SPOT.lean` |
 | OR-Set Efficient MRDT | `Sal/MRDTs/OR_Set_Efficient/OR_Set_Efficient_SPOT.lean` |
 | MVR CRDT / MRDT | `Sal/{C,M}RDTs/Multi_Valued_Register/Multi_Valued_Register_SPOT.lean` |
-| RGA CRDT | `Sal/CRDTs/RGA/RGA_SPOT.lean` |
-| RGA MRDT | `Sal/MRDTs/Replicated_Growable_Array/Replicated_Growable_Array_SPOT.lean` |
+| RGA CRDT | `Sal/CRDTs/RGA_with_tombstones/RGA_SPOT.lean` |
+| RGA MRDT | `Sal/MRDTs/RGA_with_tombstones/RGA_SPOT.lean` |
 | AW-CRPQ CRDT / MRDT | `Sal/{C,M}RDTs/Add_Win_Priority_Queue/Add_Win_Priority_Queue_SPOT.lean` |
 | Peritext CRDT / MRDT | `Sal/{C,M}RDTs/Peritext/Peritext_SPOT.lean` |
 
