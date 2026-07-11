@@ -1,4 +1,4 @@
-# Mneme (proposed name) — sequential soundness and causal pairwise display stability: pen-and-paper proofs
+# Shesha — sequential soundness and causal pairwise display stability: pen-and-paper proofs
 
 *KC + Claude, 2026-07-11/12. Companion: `sibling-linked-rga-notes.md` (design record,
 litmus results, PBT verdict), boards `rga-tombstone-free.excalidraw`,
@@ -8,7 +8,9 @@ routine induction, spelled to the case split; **[owed]** = named obligation for 
 
 ## 0. Name
 
-Proposed: **Mneme** (the Muse of memory; in the rite of Trophonius, initiates drank from
+RATIFIED (KC, 2026-07-12): **Shesha** (शेष, Ananta-Shesha) — "the remainder": what persists when all else dissolves, holding the worlds steady, unbroken; the serpent as the mythic linked list. Earlier proposal Mneme superseded.
+
+Originally proposed: **Mneme** (the Muse of memory; in the rite of Trophonius, initiates drank from
 two springs — Lethe, to forget, and Mnemosyne, to remember). The datatype does exactly
 that: it *forgets its dead completely* (tombstone-free in the strictest sense — a deleted
 element leaves no record in any field of any replica) and *never contradicts what was
@@ -231,7 +233,7 @@ minimally in the harness.*
 | Logoot / LSEQ | ✓ | ✗ (dense ids grow) | ✓ [L] | ✓ [L?] | ✓ [L?] | ✗ (different order) | **✗ [L: PaPoC'19]** |
 | WOOT / Yjs-YATA / Fugue | ✗ (tombstones) | ✓ | ✓ [L] | ✓ [L?] | ✓ [L?] | ✗/≈ | ✓ [L; Fugue: maximal] |
 | stored-path (phase 1, repo) | ✓ | ✗ (path grows w/ depth) | ✓ [R] | ✓ [R?] | ✓ [R?] (immutable positions ⟹ one global order) | ✗ | ✓ [?] |
-| **Mneme (this)** | **✓ [R]** | **✓ [R]** | **✓ [Thm S]** | **✓ [Thm P + 16k merges]** | ✗ **forced** [I2] | ✗ **forced** [I1], licensed & measured | ✓ segments-contiguous [?backward] |
+| **Shesha (this)** | **✓ [R]** | **✓ [R]** | **✓ [Thm S]** | **✓ [Thm P + 16k merges]** | ✗ **forced** [I2] | ✗ **forced** [I1], licensed & measured | ✓ segments-contiguous [?backward] |
 
 Two literature notes (recall — verify in a related-work pass): the *interleaving* anomaly
 is well known (Kleppmann et al., PaPoC'19; Fugue = Weidner & Kleppmann 2023 as the
