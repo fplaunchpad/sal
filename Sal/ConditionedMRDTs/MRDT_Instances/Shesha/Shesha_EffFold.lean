@@ -163,6 +163,18 @@ theorem read_dropF {D : Nat → Bool} (s : St) :
     read (dropF D s) = (read s).filter (fun u => !D u) :=
   readF_dropF s
 
+/-- Collapse preserves well-formedness. -/
+theorem wf_dropF {s : St} (hwf : WF s) (D : Nat → Bool) :
+    WF (dropF D s) := by
+  constructor
+  · show (read (dropF D s)).Nodup
+    rw [read_dropF]
+    exact hwf.1.filter _
+  · show 0 ∉ read (dropF D s)
+    rw [read_dropF]
+    intro h
+    exact hwf.2 (List.mem_filter.mp h).1
+
 /-- Drop with a never-true predicate is the identity. -/
 theorem dropF_false : ∀ F : List Tree, dropF (fun _ => false) F = F
   | [] => rfl

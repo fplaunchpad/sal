@@ -463,4 +463,187 @@ theorem presplice_canonical {C : Configuration SheshaD}
         have hdu : d = u := hte
         exact absurd ⟨t, r, hdu ▸ (hpermu.2 _).mp (mem_delBlock.mp he).1⟩ hd
 
+/-! ## §7 slot alignment: towards the M0–M2 hypotheses at the join
+
+The live set of a normal-form slot is `inserted ∖ deleted` — pure event
+bookkeeping. With timestamp uniqueness this realigns the three slots:
+common liveness (`ModelOK.common`) and the anchor-chain closure that
+`LRowsOK` needs. -/
+
+open Classical in
+/-- The live set of a slot in normal form. -/
+theorem read_nf {T : Shesha.St} {E : Set (Op SAppOp)}
+    (hreads : ∀ u, u ∈ Shesha.read T ↔ ∃ p, InsIn E u p) (u : Nat) :
+    u ∈ Shesha.read (Shesha.dropF (fun v => decide (DelIn E v)) T)
+      ↔ (∃ p, InsIn E u p) ∧ ¬ DelIn E u := by
+  rw [Shesha.read_dropF, List.mem_filter, hreads]
+  constructor
+  · rintro ⟨h1, h2⟩
+    refine ⟨h1, ?_⟩
+    intro hd
+    rw [decide_eq_true hd] at h2
+    cases h2
+  · rintro ⟨h1, h2⟩
+    refine ⟨h1, ?_⟩
+    rw [decide_eq_false h2]
+    rfl
+
+/-- **Common liveness** (`ModelOK.common`-shape): an id live in both
+branches is live at the LCA — its unique insert is common past, and no
+common delete targets it. -/
+theorem nf_common {C : Configuration SheshaD}
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C.events)
+    {u : Nat}
+    (h₁ : (∃ p, InsIn ev₁ u p) ∧ ¬ DelIn ev₁ u)
+    (h₂ : (∃ p, InsIn ev₂ u p) ∧ ¬ DelIn ev₂ u) :
+    (∃ p, InsIn (ev₁ ∩ ev₂) u p) ∧ ¬ DelIn (ev₁ ∩ ev₂) u := by
+  obtain ⟨⟨p₁, r₁, hm₁⟩, hd₁⟩ := h₁
+  obtain ⟨⟨p₂, r₂, hm₂⟩, hd₂⟩ := h₂
+  have heq : ((u, r₂, SAppOp.insA p₂) : Op SAppOp)
+      = (u, r₁, SAppOp.insA p₁) :=
+    (Configuration.core C).ts_unique (hsub₂ _ hm₂) (hsub₁ _ hm₁) rfl
+  refine ⟨⟨p₁, r₁, hm₁, heq ▸ hm₂⟩, ?_⟩
+  rintro ⟨t, r, hm⟩
+  exact hd₁ ⟨t, r, hm.1⟩
+
+/-- **Anchor lift**: a common insert's (nonroot) anchor is itself a
+common insert — the anchor's insert is visible and non-commuting, so
+both closure hypotheses pull it in. -/
+theorem anchor_lift {C : Configuration SheshaD} (hH : SheshaHonest C)
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events)
+    (hclosed₁ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {y q : Nat} {ry : Replica}
+    (hy : (y, ry, SAppOp.insA q) ∈ ev₁ ∩ ev₂) (hq0 : q ≠ 0) :
+    ∃ rq aq, (q, rq, SAppOp.insA aq) ∈ ev₁ ∩ ev₂ := by
+  obtain ⟨rq, aq, hqev, hqvis⟩ :=
+    honest_anchor_sees_ins hH hq0 (hsub₁ _ hy.1)
+  have hnc : ¬ SheshaD.toCRDTSig.commutes
+      (q, rq, SAppOp.insA aq) (y, ry, SAppOp.insA q) :=
+    ncomm_ins_anchor_child hq0 (honest_ins_ne_anchor hH hqev)
+  exact ⟨rq, aq, hclosed₁ _ _ hqvis hnc hy.1, hclosed₂ _ _ hqvis hnc hy.2⟩
+
+/-- One row step of the lift: a common insert's row owner in a branch
+forest is the root or itself a common insert. -/
+theorem row_step {C : Configuration SheshaD} (hH : SheshaHonest C)
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events)
+    (hclosed₁ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T : Shesha.St}
+    (hrows : ∀ p x, x ∈ Shesha.row T p ↔ InsIn ev₁ x p)
+    {c q : Nat} (hcq : c ∈ Shesha.row T q)
+    (hc : ∃ rc ac, (c, rc, SAppOp.insA ac) ∈ ev₁ ∩ ev₂) :
+    q = 0 ∨ ∃ rq aq, (q, rq, SAppOp.insA aq) ∈ ev₁ ∩ ev₂ := by
+  obtain ⟨rc, ac, hcm⟩ := hc
+  obtain ⟨r', hcm'⟩ := (hrows q c).mp hcq
+  have heq : ((c, r', SAppOp.insA q) : Op SAppOp)
+      = (c, rc, SAppOp.insA ac) :=
+    (Configuration.core C).ts_unique (hsub₁ _ hcm') (hsub₁ _ hcm.1) rfl
+  have hq_ac : q = ac := by
+    injection heq with h1 h2
+    injection h2 with h3 h4
+    injection h4 with h5
+  by_cases hq0 : q = 0
+  · exact Or.inl hq0
+  · refine Or.inr (anchor_lift hH hsub₁ hclosed₁ hclosed₂
+      (y := c) (ry := rc) ?_ hq0)
+    rw [hq_ac]
+    exact hcm
+
+/-- **Chain lift**: climbing a dead-descent chain of a branch forest from
+a common insert reaches the root or a common insert — the intermediates
+are deleted (hence nonzero, hence anchored inserts) and the closure pulls
+each anchor into the common past. -/
+theorem chain_lift {C : Configuration SheshaD} (hH : SheshaHonest C)
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events)
+    (hclosed₁ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T : Shesha.St} {D : Nat → Bool}
+    (hrows : ∀ p x, x ∈ Shesha.row T p ↔ InsIn ev₁ x p)
+    (hDdel : ∀ u, D u = true → DelIn ev₁ u)
+    {q w : Nat} (hch : Shesha.RowChain T D q w)
+    (hw : ∃ rw aw, (w, rw, SAppOp.insA aw) ∈ ev₁ ∩ ev₂) :
+    q = 0 ∨ ∃ rq aq, (q, rq, SAppOp.insA aq) ∈ ev₁ ∩ ev₂ := by
+  induction hch with
+  | direct hwq =>
+      exact row_step hH hsub₁ hclosed₁ hclosed₂ hrows hwq hw
+  | @through q c w' hcq hDc hsub ih =>
+      rcases ih hw with hc0 | hc
+      · obtain ⟨td, rd, hdm⟩ := hDdel c hDc
+        exact absurd (hc0 ▸ honest_del_nonzero hH (hsub₁ _ hdm)) (fun f => f rfl)
+      · exact row_step hH hsub₁ hclosed₁ hclosed₂ hrows hcq hc
+
+open Classical in
+/-- **`ModelOK` at the join**: the three normal-form slots satisfy the
+M0–M2 model hypotheses — well-formed, with common liveness. -/
+theorem slots_modelOK {C : Configuration SheshaD}
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C.events)
+    {T₀ T₁ T₂ : Shesha.St}
+    (hwf₀ : Shesha.WF T₀) (hwf₁ : Shesha.WF T₁) (hwf₂ : Shesha.WF T₂)
+    (hreads₀ : ∀ u, u ∈ Shesha.read T₀ ↔ ∃ p, InsIn (ev₁ ∩ ev₂) u p)
+    (hreads₁ : ∀ u, u ∈ Shesha.read T₁ ↔ ∃ p, InsIn ev₁ u p)
+    (hreads₂ : ∀ u, u ∈ Shesha.read T₂ ↔ ∃ p, InsIn ev₂ u p) :
+    Shesha.ModelOK
+      (Shesha.dropF (fun u => decide (DelIn (ev₁ ∩ ev₂) u)) T₀)
+      (Shesha.dropF (fun u => decide (DelIn ev₁ u)) T₁)
+      (Shesha.dropF (fun u => decide (DelIn ev₂ u)) T₂) :=
+  ⟨Shesha.wf_dropF hwf₀ _, Shesha.wf_dropF hwf₁ _, Shesha.wf_dropF hwf₂ _,
+    fun u hA hB => (read_nf hreads₀ u).mpr
+      (nf_common hsub₁ hsub₂
+        ((read_nf hreads₁ u).mp hA) ((read_nf hreads₂ u).mp hB))⟩
+
+open Classical in
+/-- **`LRowsOK` at the join**: in a branch slot, an LCA-live node's row
+owner is the root or LCA-live — via the dead-descent chain and the
+anchor-chain closure. -/
+theorem slots_LRowsOK {C : Configuration SheshaD} (hH : SheshaHonest C)
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events)
+    (hclosed₁ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T₀ TX : Shesha.St} (hwfX : Shesha.WF TX)
+    (hreads₀ : ∀ u, u ∈ Shesha.read T₀ ↔ ∃ p, InsIn (ev₁ ∩ ev₂) u p)
+    (hrowsX : ∀ p x, x ∈ Shesha.row TX p ↔ InsIn ev₁ x p) :
+    Shesha.LRowsOK
+      (Shesha.dropF (fun u => decide (DelIn (ev₁ ∩ ev₂) u)) T₀)
+      (Shesha.dropF (fun u => decide (DelIn ev₁ u)) TX) := by
+  intro w q hwL hwX
+  by_cases hq0 : q = 0
+  · exact Or.inl hq0
+  · have hqX : q ∈ Shesha.read
+        (Shesha.dropF (fun u => decide (DelIn ev₁ u)) TX) :=
+      Shesha.row_parent_mem hq0 hwX
+    have hqD : decide (DelIn ev₁ q) = false := by
+      rw [Shesha.read_dropF, List.mem_filter] at hqX
+      rcases hd : decide (DelIn ev₁ q) with _ | _
+      · rfl
+      · rw [hd] at hqX
+        rcases hqX with ⟨-, hc⟩
+        cases hc
+    have hch := Shesha.mem_row_dropF hwfX hqD hwX
+    have hwc := (read_nf hreads₀ w).mp hwL
+    obtain ⟨p, rw', hwm⟩ := hwc.1
+    rcases chain_lift hH hsub₁ hclosed₁ hclosed₂ hrowsX
+        (fun u hu => of_decide_eq_true hu) hch ⟨rw', p, hwm⟩ with
+      h0 | ⟨rq, aq, hqm⟩
+    · exact Or.inl h0
+    · refine Or.inr ((read_nf hreads₀ q).mpr ⟨⟨aq, rq, hqm⟩, ?_⟩)
+      rintro ⟨t, r, hdm⟩
+      have : decide (DelIn ev₁ q) = true := decide_eq_true ⟨t, r, hdm.1⟩
+      rw [hqD] at this
+      cases this
+
 end Sal.ConditionedMRDTs
