@@ -245,6 +245,33 @@ and the explicit separation of *pairwise display stability* from the strong list
 (with I2 showing the gap is exactly "memory of the dead") appears new. Both claims need
 the verification pass before being asserted in print.
 
+
+### §8½ — Related-work verification outcomes (2026-07-12; full report: `related-work-verification.md`)
+
+Verified against primary sources. Corrections to the draft table: **WOOT interleaves
+forward** (Fugue Table 1, refuting PaPoC'19's conjecture) and **Yjs/YATA can interleave
+backward** — both tombstoned-competitor cells were wrong. PaPoC'19 contains no
+impossibility result; its spec is proved *unsatisfiable by any algorithm* in Fugue §2.5,
+and forward non-interleaving sometimes forces backward interleaving. Fugue keeps
+tombstones; FugueMax (not plain Fugue) is the maximal variant (TPDS 36(11), 2025).
+
+Novelty verdicts: the **delete-reorders-survivors anomaly is unnamed** in the
+literature (nearest misses are about anchor-uniqueness loss under tombstone purging,
+not survivor reordering), and no prior work names a pairwise/observed-order spec —
+**but Attiya et al.'s WEAK list spec is the real prior baseline**: it already severs
+constraints through deleted elements (its list order is only per-returned-list). Our
+positioning must therefore be: causal pairwise display stability is *strictly weaker
+than A_weak* and — the load-bearing point — **escapes the Ω(D) metadata lower bound
+that Attiya+16 prove even for the weak spec** (push-based protocols, n ≥ 3, even under
+causal atomic broadcast). The escape needs a dedicated paragraph: Shesha's replica
+state retains nothing, but the MRDT model's version store retains the LCA — the
+deleted-element memory Attiya proves necessary lives in the *store*, not the *state*,
+and the fooling pairs show exactly which specs can and cannot live off that
+distinction. Also verified: every practical "tombstone-free" system (Eg-walker,
+Chronofold, cola, Yjs) retains per-deletion memory somewhere — event graph, log,
+tombstoned runs, or GC structs — so "the state retains literally nothing" remains
+Shesha's distinguishing claim, properly scoped against the store.
+
 ## 9. Lean obligations (the port plan)
 
 1. State + WF invariant; `read`; `insert`/`delete`; **Theorem S** (sequential soundness
