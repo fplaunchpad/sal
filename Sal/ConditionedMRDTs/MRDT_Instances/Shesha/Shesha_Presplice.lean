@@ -495,4 +495,83 @@ theorem presplice_of_rows
         Shesha.row, if_neg hp0]
       exact (Shesha.rowF_absent hnm).symm
 
+/-! ## §5 the row-store residue (the owed core) -/
+
+open Classical in
+/-- **The row-store residue** — the merge-correctness core at the *row*
+level; everything forest-shaped is discharged (`presplice_of_rows`).
+Owed: a store `preRows` of pre-splice rows for the union's inserts with
+
+* `hK1`–`hK3` bookkeeping (exactly the union's inserts per original
+  anchor, duplicate-free, Lamport-graded — anchors precede children);
+* `hK4`/`hK5` order: each row extends both branch witnesses' same-anchor
+  `Before` orders, reversed (rows are newest-first);
+* `hK6` **the collapse equation**: the ghost expansion (`expandRow` at
+  the union's delete targets) of each live key's row is the merge's
+  output row.
+
+Construction plan (per key class of `merge s₀ s₁ s₂`; the classes are
+`outRows_alGet_of_skel/of_bornA/of_bornB/none` over the M0 classifiers):
+
+* **branch-born keys** (`q` born in branch `i`): the row is forced,
+  `preRow q := row Tᵢ q` (cross-branch inserts at `q` would make `q`
+  common — closure). `hK6`: the merge takes the branch row wholesale
+  (`outRows_alGet_of_bornA/B`, marker-free by `born_subtree_L_free`-style
+  closure, so `expandRow_of_nonmarker` collapses the RHS), and the
+  branch slot row is a front (`row_dropF`); the LHS ghost expansion
+  matches it by a subtree-front induction over `T₁`/`T₂`, transporting
+  `DelIn (ev₁ ∪ ev₂) ↔ DelIn evᵢ` on branch-only ids (`ins_mem_of_del`).
+* **skeleton keys** (`q` common-live): the assembled row
+  (`outRows_alGet_of_skel`, `rowAssemble`): skeleton entries carry
+  `s₀`'s row order (= `T₀` row front, branch-agreed via `SCoh`), runs
+  carry branch segments (`runsGo` machinery), same-slot runs interleave
+  newest-head-first (`sortRunsDesc`), and `expandRow` splices markers to
+  their subtree fronts — the ghosts of `preRow q` placed at their front
+  positions. `preRow q` := the merge row's parse: live direct children
+  and marker/ghost roots in output order, dead-in-both and LCA-ghost
+  ids at their front slots (their expansions are the contiguous blocks
+  the collapse leaves). Fronts of distinct dead children are contiguous
+  and disjoint (`expandRow_count_le_one`/`base_unique` uniqueness), so
+  the parse is well-defined.
+* **dead keys** (union inserts absent from the merge): rows of dead
+  keys only feed `hK6` through the ghost expansion of their live
+  ancestors; take their branch/`T₀` rows verbatim.
+
+`hK4`/`hK5` on common pairs is exactly branch agreement: `SCoh ρ₀ ρᵢ`
+plus `witness_nf`'s rows (reversed `anchIds`) make the three slots agree
+on every common same-anchor pair, and the merge preserves the skeleton
+order (`merge_extends_L`) and run order (M3, owed here). -/
+theorem shesha_rows_residue
+    (C' : Configuration SheshaD) (hH : SheshaHonest C')
+    (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)
+    (hirr : ∀ a : Op SAppOp, ¬ C'.vis a a)
+    {ev₁ ev₂ : Set (Op SAppOp)} {s₀ s₁ s₂ : Shesha.St}
+    {ρ₀ ρ₁ ρ₂ : List (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
+    (hclosed₁ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    (hc₀ : IsCanonWitness SheshaEff (Configuration.core C')
+      (ev₁ ∩ ev₂) s₀ ρ₀)
+    (hc₁ : IsCanonWitness SheshaEff (Configuration.core C') ev₁ s₁ ρ₁)
+    (hc₂ : IsCanonWitness SheshaEff (Configuration.core C') ev₂ s₂ ρ₂)
+    (hK₀₁ : SCoh ρ₀ ρ₁) (hK₀₂ : SCoh ρ₀ ρ₂) :
+    ∃ (preRows : List (Nat × List Nat)) (n : Nat),
+      (∀ q x, x ∈ Shesha.alGet preRows q ↔ InsIn (ev₁ ∪ ev₂) x q)
+      ∧ (∀ q, (Shesha.alGet preRows q).Nodup)
+      ∧ (∀ q c, c ∈ Shesha.alGet preRows q → q < c ∧ c ≤ n)
+      ∧ (∀ p tx ty rx ry,
+          Before ρ₁ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+          Shesha.precedes (Shesha.alGet preRows p) ty tx)
+      ∧ (∀ p tx ty rx ry,
+          Before ρ₂ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+          Shesha.precedes (Shesha.alGet preRows p) ty tx)
+      ∧ (∀ q, q ∈ Shesha.read (SheshaD.mergeL s₀ s₁ s₂) ∨ q = 0 →
+          Shesha.expandRow preRows
+              (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) n
+              (Shesha.alGet preRows q)
+            = Shesha.row (SheshaD.mergeL s₀ s₁ s₂) q) := by
+  sorry
+
 end Sal.ConditionedMRDTs

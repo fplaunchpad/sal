@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Coherence
+import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Presplice
 
 /-! # Shesha — the conditioned instance and the RA-linearizability capstone
 
@@ -23,12 +23,16 @@ level — along the store's version ancestry: the hook now receives the
 three slots' witnesses aligned (`SCoh ρ₀ ρ₁`, `SCoh ρ₀ ρ₂`), and owes the
 merged witness aligned with both branches.
 
-What remains is the **single owed hook** `shesha_presplice` (documented
-`sorry`): the ternary merge output is the collapse of a pre-splice
-anchored forest for the union whose rows *extend both branch witnesses'
-same-anchor orders* — the merge-correctness core (M2/M3 + fold
-realization), sitting on the closed M0–M2 layer, now with true
-hypotheses: the slots agree on every common same-anchor pair. -/
+The pre-splice obligation `shesha_presplice` is now **proved down to the
+row level** (`Shesha_Presplice.lean`): the forest is built from a row
+store by the graded builder (`Shesha_Out.lean`), and every clause — WF,
+rows, anti-`vis` order, the branch-order extensions, and the collapse
+equation — is discharged from the row-store package. What remains is the
+**single owed residue** `shesha_rows_residue` (documented `sorry`): the
+store itself — pre-splice rows whose ghost expansion is the merge's
+output rows — the merge-correctness core (M2/M3 + fold realization) in
+pure row combinatorics, sitting on the closed M0–M2 layer plus the new
+output characterization `merge_row`. -/
 
 namespace Sal.ConditionedMRDTs
 
@@ -94,41 +98,21 @@ the union whose
 * delete-collapse (`dropF` at the union's delete targets) is **the
   ternary merge output**.
 
-`sorry` — the merge-correctness core (pen-and-paper: M2/M3 + Theorem-P
-layer of `whiteboard/sibling-linked-proof.md` §4-5). What the corrected
-hypotheses add over the refuted phase-2e statement
-(`Shesha_Presplice_Refuted.lean`): `SCoh ρ₀ ρ₁` and `SCoh ρ₀ ρ₂` — the
-three slots agree on every common same-anchor pair, i.e. **branch
-agreement (Lemma B) holds at the join**, which is exactly the invariant
-the merge's skeleton/run placement relies on and exactly what the
-refutation shows indispensable. What is machine-checked around it:
-- each slot's state is `dropF (deleted) Tᵢ` of an anchored forest `Tᵢ`
-  with rows = the slot's inserts, ordered against `vis` (`witness_nf`),
-  and the slots' rows now *agree on common pairs* (via `SCoh` and
-  `witness_nf`'s row/`anchIds` reversal), so the M0–M2 hypotheses
-  (`ModelOK`, `LRowsOK`) and Lemma-B-alignment are all derivable;
-- the two row-extension clauses pin `T`'s rows completely on every
-  same-branch pair; the only remaining freedom is cross-branch-born
-  order (decided by the merge's newest-head-first tiebreak) and ghost
-  placement (deleted inserts, invisible to the collapse (b)/(d) but
-  constrained by (c)) — `T` is the union forest of the design's §4;
-- the converse is closed (`presplice_canonical_wit` + the transport
-  `plan_before_of_row`): producing `T` here IS producing the aligned
-  canonical witness, coherence obligations included
-  (`shesha_join_at_effC` below is a full proof from this statement).
-The remaining content: read the un-spliced forest off `merge s₀ s₁ s₂`
-(output rows + the ghosts each branch collapsed), check its rows against
-the three input forests' rows (the merge keeps L-order on the skeleton —
-`merge_extends_L` — branch order on runs, head-timestamp order across
-concurrent same-slot runs), and prove the collapse equation (the
-merge-time marker splice IS the delete splice — `expandRow`/`collapseRow`
-generalized from the L-filter instance `expandRow_filter_L` to the full
-output). The state equation (d) is already REDUCED to per-row equations:
-by `forest_ext`/`dropF_eq_of_rows` (`Shesha_Coherence.lean`) it suffices
-that `row (dropF D T) p = row (merge s₀ s₁ s₂) p` for every `p` — LHS is
-a front (`row_dropF`), RHS needs the one missing characterization: `row`
-of `buildF` at an emitted key is its `expandRow`-expanded `outRows` entry
-(the M0 `lvl`/fuel machinery makes this mechanical). -/
+**Proved** (`presplice_of_rows` ∘ `shesha_rows_residue`,
+`Shesha_Presplice.lean`): the forest level is fully machine-checked —
+`T` is the graded build of a pre-splice row store, its WF/rows/coverage
+come from the builder kit (`Shesha_Out.lean`), the anti-`vis` clause (c)
+is *derived* from the extension clauses (c′) through the
+honesty/non-commutation kernel, and the collapse equation (d) reduces
+per-row (`forest_ext`/`dropF_eq_of_rows`) to: live keys — the collapse
+row is the ghost expansion of the stored row
+(`build_collapse_row_raw`) and matches the merge row by the residue's
+`hK6`; absent keys — both sides die by the live-set identity
+(`slots_live_iff` + `merge_ids`). The single remaining `sorry` is the
+row store itself (`shesha_rows_residue`): the merge-correctness core in
+pure row combinatorics, with the corrected hypotheses `SCoh ρ₀ ρ₁`,
+`SCoh ρ₀ ρ₂` (branch agreement at the join — exactly what the phase-2e
+refutation showed indispensable). -/
 theorem shesha_presplice
     (C' : Configuration SheshaD) (hH : SheshaHonest C')
     (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)
@@ -161,7 +145,12 @@ theorem shesha_presplice
       ∧ Shesha.dropF
           (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) T
           = SheshaD.mergeL s₀ s₁ s₂ := by
-  sorry
+  obtain ⟨preRows, n, hK1, hK2, hK3, hK4, hK5, hK6⟩ :=
+    shesha_rows_residue C' hH (fun h1 h2 => htrans h1 h2) hirr
+      hsub₁ hsub₂ hclosed₁ hclosed₂ hc₀ hc₁ hc₂ hK₀₁ hK₀₂
+  exact presplice_of_rows C' hH (fun h1 h2 => htrans h1 h2) hirr
+    hsub₁ hsub₂ hclosed₁ hclosed₂ hc₀ hc₁ hc₂
+    preRows n hK1 hK2 hK3 hK4 hK5 hK6
 
 /-- **The aligned join hook**: under honest histories, Shesha's ternary
 merge of branch-agreement-aligned slots is the fold of an aligned
@@ -211,12 +200,17 @@ theorem shesha_ra_linearizable3 {C : Configuration SheshaD}
 end Sal.ConditionedMRDTs
 
 section AxiomAuditCond
-/-! Axiom audit: the capstone carries exactly the pre-splice `sorry`; the
-coherent route, the witness class, the analysis (`witness_nf`), the
-assembly (`presplice_canonical_wit`) and the transport
-(`plan_before_of_row`) are kernel-clean. -/
+/-! Axiom audit: the capstone carries exactly the row-store `sorry`
+(`shesha_rows_residue`); the coherent route, the witness class, the
+analysis (`witness_nf`), the assembly (`presplice_canonical_wit`), the
+transport (`plan_before_of_row`), the output characterization
+(`merge_row`), the builder kit, and the forest-level reduction
+(`presplice_of_rows`) are all kernel-clean. -/
 #print axioms Sal.ConditionedMRDTs.shesha_ra_linearizable3
 #print axioms Sal.ConditionedMRDTs.shesha_join_at_effC
+#print axioms Sal.ConditionedMRDTs.presplice_of_rows
+#print axioms Shesha.merge_row
+#print axioms Shesha.build_collapse_row_raw
 #print axioms Sal.ConditionedMRDTs.plan_before_of_row
 #print axioms Sal.ConditionedMRDTs.presplice_canonical_wit
 #print axioms Sal.ConditionedMRDTs.witness_nf
