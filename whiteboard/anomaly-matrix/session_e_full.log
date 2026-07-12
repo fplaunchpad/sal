@@ -1,0 +1,13 @@
+  ... 2000/12000: pooled cycle trials=126, per-observer cycle trials=0
+  ... 4000/12000: pooled cycle trials=242, per-observer cycle trials=0
+  ... 6000/12000: pooled cycle trials=403, per-observer cycle trials=0
+  ... 8000/12000: pooled cycle trials=528, per-observer cycle trials=0
+  ... 10000/12000: pooled cycle trials=642, per-observer cycle trials=0
+  ... 12000/12000: pooled cycle trials=833, per-observer cycle trials=0
+
+corpus: 12000 trials (identical seeds to anomaly_matrix.py)
+pooled  (global e) : 833/12000 cycle trials (epoch 602, stale 231) — report expects 833/12000
+session (per-line) : 0/12000 cycle trials (epoch 0, stale 0) by line: {'A': 0, 'B': 0, 'R3': 0}
+pooled-cycle trials with NO per-line cycle: 833
+
+no per-observer cycle in any trial: every replica's own display history admits a timeline; the global cycles live only in the cross-observer union.

@@ -1833,6 +1833,68 @@ theorem merge_WF {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) : WF (merge L A B) :=
   ⟨merge_read_nodup mok hA hB, zero_not_mem_merge mok⟩
 
+/-- Everything the merge displays is a non-marker: the splice really does
+eliminate the dead. -/
+theorem merge_mem_not_marker {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u : Nat}
+    (h : u ∈ read (merge L A B)) : markerp L A B u = false := by
+  simp only [merge, read] at h
+  obtain ⟨r, -, hur⟩ := buildF_emitted (outRows L A B) (markerp L A B) _
+    (fun x => markerp L A B x = false)
+    (fun p hp c hc => by
+      refine expandRow_out_marker_free mok hA hB ?_ p c hc
+      show (readF L).length <
+        (readF L).length + (readF A).length + (readF B).length + 1
+      omega)
+    _ 0 (markerp_zero mok.wfL) h
+  refine expandRow_out_marker_free mok hA hB ?_ r u hur
+  show (readF L).length <
+    (readF L).length + (readF A).length + (readF B).length + 1
+  omega
+
+/-- **The ⊆ half of the survivor-set identity** (`merge_ids`), closed: the
+merge displays only `liveM` ids — the working set `W` sharpened by
+marker-freeness. -/
+theorem merge_mem_liveM {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u : Nat}
+    (h : u ∈ read (merge L A B)) : liveMp L A B u = true := by
+  have hw := merge_mem_wp mok hA hB h
+  have hnm := merge_mem_not_marker mok hA hB h
+  rw [wp, Bool.or_eq_true_iff] at hw
+  rcases hw with hw | hw
+  · exact hw
+  · rw [hnm] at hw
+    cases hw
+
+/-- **Lemma M0, survivor-set identity** (design record §3): the merge's ids
+are exactly `liveM`. The ⊆ direction is closed (`merge_mem_liveM`).
+
+`sorry` — owed: the ⊇ (coverage) direction — every `liveM` id is placed and
+reached from the root. The remaining pieces, all with their substrate now
+in place: (i) `runsGo` coverage (every non-L element of a host row lands in
+an emitted run — mirror of `runsGo_count`'s ≥ half); (ii) placement
+validity (a slot command's index is within its skeleton row, from
+`skelOf_alGet` + `idxOf'` bounds); (iii) positive `expandRow`/`buildF`
+emission along the `lvl`-graded chain from the root (fuel suffices:
+chain length ≤ `lvl` ≤ the merge's fuel). -/
+theorem merge_ids {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
+    u ∈ ids (merge L A B) ↔ liveMp L A B u = true := by
+  constructor
+  · exact fun h => merge_mem_liveM mok hA hB h
+  · sorry
+
+/-- The survivor-set identity in set form (inherits `merge_ids`'s owed
+coverage half). -/
+theorem merge_ids_set {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
+    u ∈ ids (merge L A B) ↔
+      (u ∈ ids A ∧ u ∈ ids B) ∨ (u ∈ ids A ∧ u ∉ ids L) ∨
+        (u ∈ ids B ∧ u ∉ ids L) := by
+  rw [merge_ids mok hA hB u]
+  simp only [liveMp, Bool.or_eq_true, Bool.and_eq_true, Bool.not_eq_true',
+    contains_iff, contains_eq_false, or_assoc]
+
 end Shesha
 
 section AxiomAuditM0
@@ -1847,4 +1909,6 @@ section AxiomAuditM0
 #print axioms Shesha.lvl_edge
 #print axioms Shesha.merge_read_nodup
 #print axioms Shesha.merge_WF
+#print axioms Shesha.merge_mem_liveM
+#print axioms Shesha.merge_ids
 end AxiomAuditM0

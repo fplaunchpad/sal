@@ -189,6 +189,94 @@ naive-list = oracle semantics on live anchors), and merges preserve first displa
 (Theorem P), so a displayed oracle-direction pair can never be output reversed.
 *(Empirically: 0 exceptions in ~16,000 merges.)*
 
+## 5½. Theorem O — strong list on every causal chain (session strong list)
+
+*(Added 2026-07-12, closing step 4 of the e-fix thread; empirical trail in
+`anomaly-matrix/anomaly_matrix_report.md` Addendum: 833/12,000 global cycle trials, 0
+per-observer in the same corpus, an exhaustive ≤7-op search of 10,964,882 scripts, and
+52,000 adversarial trials, all dry. This section proves why: the forced strong-list
+failure needs a causal antichain.)*
+
+**Definition (chain).** A *chain* is a set of produced states totally ordered by causal
+descent. A replica line — the successive states one replica holds, through local ops and
+through merges it participates in — is a chain; so is any user's history of observed
+documents. An execution satisfies *chain strong list* if for every chain there is a
+single total order 𝒯 of elements such that every read of every state in the chain is a
+subsequence of 𝒯. Attiya et al.'s strong list is the same demand over *all* produced
+states at once — antichains included.
+
+**Lemma V (causal-removal liveness) [proved].** For every produced state,
+`V_σ = { x : ins(x) ∈ past(σ) and no del(x) ∈ past(σ) }`.
+
+*Proof.* Induction over the version DAG. Op states: fresh ids are never re-inserted
+(M1), and delete removes exactly its target. Merge `M = merge(L, A, B)`:
+`past(M) = past(A) ∪ past(B)`, and `past(L) = past(A) ∩ past(B)` (⊆ is L an ancestor of
+both; ⊇ is (M2)). Take x with `ins(x) ∈ past(M)`; recall ops are issued on live targets,
+so `ins(x) ∈ past(del(x))`. If no `del(x) ∈ past(M)`: either `ins(x)` is in both pasts,
+then x ∈ V_A ∩ V_B (IH) ⊆ live(M); or in past(A) only, then x ∈ V_A, and
+`ins(x) ∉ past(L)` gives x ∉ V_L (IH), so x ∈ V_A∖V_L ⊆ live(M). If some
+`del(x) ∈ past(A)` (wlog): x ∉ V_A (IH), killing V_A∩V_B and V_A∖V_L; for V_B∖V_L,
+either x ∉ V_B (done), or x ∈ V_B — then `del(x) ∉ past(B)` (IH), while
+`ins(x) ∈ past(del(x)) ⊆ past(A)` and `ins(x) ∈ past(B)` (IH) put
+`ins(x) ∈ past(L)`, and `del(x) ∉ past(B) ⊇ past(L)`, so x ∈ V_L (IH) — x ∉ V_B∖V_L. ∎
+
+*(Lemma V is exactly the harness's survivor-set cross-check, clean on 25,917/25,917
+merges — "as (M2) predicts".)*
+
+**Corollary NR (no second life on a chain) [proved].** On a chain σ₁ ≺ … ≺ σ_T:
+(i) if x ∈ read(σᵢ) and x ∉ read(σⱼ) with i < j, then x ∉ read(σₖ) for all k ≥ j;
+(ii) an element arriving at σₖ (in read(σₖ) but not read(σₖ₋₁)) appears in no read(σⱼ),
+j < k.
+
+*Proof.* read enumerates V (DFS over the forest on V). (i) x ∈ V_i gives
+`ins(x) ∈ past(σᵢ) ⊆ past(σⱼ)`; absence at σⱼ then forces `del(x) ∈ past(σⱼ) ⊆ past(σₖ)`
+(Lemma V), so x ∉ V_k. (ii) if x ∈ read(σⱼ), j < k, then x ∈ V_j and x ∉ V_{k−1} put a
+`del(x)` in past(σ_{k−1}) ⊆ past(σₖ) — contradicting x ∈ V_k. ∎
+
+**Theorem O (chain strong list) [proved from P + V].** Under (M1),(M2), every chain
+admits a single total order 𝒯 with every read a subsequence. In particular every
+replica's own display history admits one timeline: *session strong list* holds — no
+single observer ever witnesses a strong-list violation.
+
+*Proof.* Induction along the chain, maintaining a total order 𝒯ᵢ on all elements
+displayed so far with every read(σⱼ), j ≤ i, a subsequence; each step only *inserts*
+elements into 𝒯ᵢ, never reorders. Base: 𝒯₁ = read(σ₁). Step to i+1: let
+S = read(σᵢ) ∩ read(σ_{i+1}) (survivors), N = read(σ_{i+1}) ∖ read(σᵢ) (arrivals).
+(1) By NR(ii), N is disjoint from everything the chain ever displayed — in particular
+from 𝒯ᵢ. (2) By Theorem P (σ_{i+1} is a common causal upper bound of the two states),
+S appears in read(σ_{i+1}) in the same order as in read(σᵢ), hence as in 𝒯ᵢ (induction).
+(3) read(σ_{i+1}) is S interleaved with maximal N-blocks; splice each block into 𝒯ᵢ in
+its read order — immediately after its preceding survivor if it has one, else
+immediately before its following survivor, else (S = ∅) at 𝒯ᵢ's end. The result embeds
+read(σ_{i+1}): survivors are in the right order by (2), and each immediate placement
+crosses no survivor, so blocks sit strictly between their bounding survivors. Older
+reads stay embedded: their elements were not reordered, and freshly inserted elements
+occur in no older read by (1). ∎
+
+**Corollary O1 (the residual failure is irreducibly cross-observer).** By I2, strong
+list over all states must fail; by Theorem O, any witness cycle must draw displays from
+at least two causally *incomparable* states. So the forced anomaly is precisely: pooling
+concurrent observers' screenshots (necessarily through a dead element's past displays,
+M4) — no user's own document history, and no auditor walking any single causal chain,
+ever sees it. Spec map: pairwise display stability (P) ✓, chain/session strong list (O)
+✓, full strong list ✗ forced — and the gap between O and full strong list is exactly the
+antichain quantifier.
+
+**Remark (scope).** NR and O lean on (M2), honesty of the LCA — not freshness. Stale-
+but-honest LCAs double the *global* cycle rate in the corpus (231/2,000 stale vs
+602/10,000 fresh) yet cannot break O. Non-dominating bases (criss-cross virtual merges,
+git-recursive style — `Ideas.md` §5) break Lemma V itself (a delete unwitnessed by the
+base resurrects its element), and with it the proof: the criss-cross extension must
+re-establish V or accept per-observer anomalies.
+
+**Machine validation.** `anomaly-matrix/session_e_embed_check.py` replays the 12,000-
+trial matrix corpus and the 50,000-trial adversarial sweep, checking NR, step
+preservation, and the greedy construction itself per replica line: 150,970 lines,
+1,751,782 reads embedded, **0 failures** of any of the three (log:
+`session_e_embed_full.log`). Independently, per-line acyclicity ⟺ embeddability, so the
+exhaustive ≤7-op search (10,964,882 scripts, 0 hits) verifies O's statement outright at
+small scope.
+
 ## 6. Necessity of the three merge refinements
 
 Each refinement is forced — dropping it admits a machine-validated counterexample
@@ -280,7 +368,10 @@ Shesha's distinguishing claim, properly scoped against the store.
 2. The merge as specified; M0 (WF), M1 (symmetry).
 3. M2, M3 (order extension) — the main inductive work; L-document-order machinery.
 4. Lemma J + Theorem P over the framework's version-DAG reachability ((M2) is exactly the
-   store's LCA discipline — a *conditioned* hypothesis, sibling to HonestDelivery).
+   store's LCA discipline — a *conditioned* hypothesis, sibling to HonestDelivery). Then
+   Lemma V (causal-removal liveness — the survivor-set check as a theorem) and Theorem O
+   (chain strong list, §5½): both ride on P + (M2), and O's greedy embedding is
+   constructive — port as a function carrying the three-part invariant.
 5. Theorem D (licensed divergence) — relative to the repo's tombstoned RGA as oracle.
 6. I1, I2 as machine-checked impossibilities (`native_decide` on the two fooling pairs,
    quantified over merge functions of bounded state — statement engineering needed).

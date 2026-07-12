@@ -181,7 +181,9 @@ Cross-check row — reproduces all known results:
   deleted id (the §1 claim "after this line the state contains no trace of d").
 - b ✓: per-node row-local representation (par entry + optional sib entry) ≤ 2, flat.
 - c ✓ 10,000/10,000 (Theorem S); d ✓ **0 pairwise flips in 12,000 trials** (Theorem P).
-- e ✗ (forced, §7 I2): 833/12,000 trials have a display-log cycle. Directed 5-node
+- e ✗ (forced, §7 I2): 833/12,000 trials have a display-log cycle — but **all 833 are
+  cross-observer only: session/chain strong list holds, now proved (Theorem O,
+  `sibling-linked-proof.md` §5½; see Addendum)**. Directed 5-node
   witness (I2 world 1): L: m·1←⌂, g·2←⌂; A: `ins x·5←⌂, del g, del m` (displays
   `[5,2,1]` → x<g); B: `ins y·9←g` (displays g<y). Merge = `[9,5]` (y<x). Cycle
   `x<g, g<y, y<x` = `[2, 9, 5, 2]` **through the dead node g — with zero pair flips**:
@@ -236,6 +238,73 @@ Cross-check row — reproduces all known results:
    RGA is ✗ — consistent with the PaPoC'19 finding, now witnessed against our own
    implementation and against production Automerge.
 
+## Addendum (2026-07-12): session strong list — Shesha's e-failure is invisible to every single observer
+
+**Claim probed.** *Session strong list* = the strong-list condition applied to each
+replica line's own display history: for every replica, some single total order of all
+elements has every read that replica ever displayed as a subsequence. (Bayou-style
+session guarantee applied to the Attiya et al. list spec; sits strictly between d and e:
+d is global-pairwise, session-e is per-observer-total, e is global-total, and d and
+session-e are logically incomparable.)
+
+**Method.** `session_e_check.py` reruns the *identical* 12,000-trial corpus (same seeds
+via `build_trials`), partitioning the display log per replica line instead of pooling:
+line A = init reads + every epoch's opsA reads + every merged read; line B likewise;
+line R3 (stale trials) = init reads + r3ops reads + final stale-merge read. Init and
+merged reads are charged to every line that holds them — the inclusive, adversarial
+choice (more edges per observer). Same cycle search as column e, run per line. The
+pooled log is recomputed alongside as a corpus-identity cross-check.
+
+**Result (Shesha).** Pooled: **833/12,000** cycle trials — reproduces the e-cell
+exactly, so the corpus is byte-identical. Per-observer: **0/12,000** (A: 0, B: 0,
+R3: 0). Every one of the 833 global cycles is pooled-only: no single replica's own
+display history ever contains a cycle. Breakdown: global cycles hit 602/10,000 epoch
+trials vs 231/2,000 stale-LCA trials — stale ancestors roughly double the *global*
+cycle rate yet still never produce a per-observer cycle. Log: `session_e_full.log`.
+Reproduce: `python3 session_e_check.py` (~2 min; `--quick` for a fast pass).
+
+**Reading.** The §7 I2 impossibility forces Shesha to fail e, but at 12k scale the
+failure is *sociological*: the cycle exists only in the union of displays across
+observers (two users comparing screenshots of since-deleted text); each observer's own
+history always admits a timeline.
+
+**Directed search (step 3, same day).** `session_e_search.py`, two stages, both dry:
+- *Exhaustive by total size, ≤ 7 ops* (the W-c treatment): all two-branch topologies —
+  init ≤ 3 ops, 1–2 diverge/merge epochs (per-branch ≤ 2 ops; ≤ 3 in the single-epoch
+  shape), optional stale third replica (≤ 2 ops, merged last with LCA = fork) — with
+  every anchor/delete choice over the locally-live set and **every legal timestamp
+  assignment** (all linear extensions of the causal clock order: within-location
+  program order; init below everything; epoch-2 above epoch-1, since state sync
+  carries the Lamport clock even for ids whose elements died; stale-replica ids above
+  init *only*, so they interleave anywhere among epoch ids — a region the random
+  corpus never generates, its stale replica always drawing the top band).
+  **10,964,882 scripts: 0 per-observer cycles, 0 per-observer pair flips.** The global-e
+  witness needs only 6 ops (I2 world), so a session-e witness, if one exists at all,
+  is strictly larger or needs a deeper topology than every shape enumerated here.
+- *Biased randomized sweep past the corpus envelope*: up to 4 epochs, del_p up to 0.7,
+  stale ids low-interleaved among epoch ids. 50,000 trials: 5,155 global-e cycle
+  trials (10.3% — hotter than the corpus's 6.9%), **0 per-observer hits**.
+  Logs: `session_e_search_full.log`, `session_e_search_t7.log`.
+
+**Theorem (step 4, same day) — the conjecture is now PROVED**, and in a stronger form:
+**Theorem O (chain strong list)**, `whiteboard/sibling-linked-proof.md` §5½. Under
+(M1),(M2), the display log restricted to any *causal chain* of states admits a single
+timeline; replica lines are chains, so session strong list follows. Proof = Theorem P
+(pairwise stability) + a new **Lemma V** (causal-removal liveness: V_σ = inserted-not-
+deleted in past(σ) — the survivor-set check promoted to a theorem) giving **no-relive**
+(an element leaving a chain's display never returns), then a greedy embedding: arrivals
+are always fresh, so each read splices into the running total order without reordering.
+Corollary O1: the forced I2 failure requires a causal **antichain** — pooling concurrent
+observers' displays — making the anomaly irreducibly sociological. The proof needs LCA
+*honesty*, not freshness (stale-but-honest LCAs double the global cycle rate yet cannot
+break O); non-dominating bases (criss-cross virtual merges, `Ideas.md` §5) break Lemma V
+via resurrection, and with it the theorem. Construction machine-validated end to end by
+`session_e_embed_check.py`: no-relive, step preservation, and the greedy embedding
+checked per line over both corpora — 150,970 lines, 1,751,782 reads, **0 failures**
+(`session_e_embed_full.log`). Other rows are uninformative here:
+TombRGA/Logoot/StoredPath/Fugue have global e ✓ with d ✓, which already entails
+session-e ✓; FlatTF fails d sequentially, hence session-e trivially too.
+
 ## What remains
 
 - Fugue row uses a minimal reconstruction; a faithful port of the paper's exact
@@ -252,3 +321,16 @@ Cross-check row — reproduces all known results:
 - Literature-recall cells now verified in-repo; the two *naming* claims of §8 (the
   delete-reorder anomaly and the pairwise-vs-strong-list separation being new) still
   need the related-work pass before print.
+- **Restructure column f (deferred, discussed 2026-07-12).** Split by *kind*, not
+  outcome: f₁ "oracle-faithful" (merge = tombstoned RGA exactly; compatibility property
+  — ✓ only TombRGA, StoredPath) vs f₂ "divergence licensed-only" (correctness property).
+  Note the entailment d ✓ ⟹ f₂ ✓ (every violation is a displayed pair flipped, hence a
+  d-failure), so f₂ is *attribution* of d-flips to merge-vs-oracle, not an independent
+  column. Promote the two existing directed witnesses to named litmus tests run
+  uniformly on every row (and production libs where expressible): **licensed litmus** =
+  the §7 I1 fooling world (`ins p·5←⌂` ∥ `ins g·2←⌂, ins k·10←g, del g`) — the forced-
+  divergence certificate any strictly tombstone-free design must fail; **violation
+  litmus** = the FlatTF 3-node shape (L: `ins(1←0), ins(2←0)`; A: `ins(3←1), del(1)`;
+  A displayed `[2,1,3]`, merge must not read `[3,2]`). Caveat to state: litmuses certify
+  *presence* on one world; "licensed-only" at scale still needs the classified PBT sweep
+  (no finite litmus shows absence of violations).
