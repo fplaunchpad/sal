@@ -1866,26 +1866,715 @@ theorem merge_mem_liveM {L A B : St} (mok : ModelOK L A B)
   · rw [hnm] at hw
     cases hw
 
-/-- **Lemma M0, survivor-set identity** (design record §3): the merge's ids
-are exactly `liveM`. The ⊆ direction is closed (`merge_mem_liveM`).
+/-! ## §6 Coverage: every liveM id is placed and emitted -/
 
-`sorry` — owed: the ⊇ (coverage) direction — every `liveM` id is placed and
-reached from the root. The remaining pieces, all with their substrate now
-in place: (i) `runsGo` coverage (every non-L element of a host row lands in
-an emitted run — mirror of `runsGo_count`'s ≥ half); (ii) placement
-validity (a slot command's index is within its skeleton row, from
-`skelOf_alGet` + `idxOf'` bounds); (iii) positive `expandRow`/`buildF`
-emission along the `lvl`-graded chain from the root (fuel suffices:
-chain length ≤ `lvl` ≤ the merge's fuel). -/
+theorem idxOf'_lt : ∀ {l : List Nat} {x : Nat}, x ∈ l → idxOf' l x < l.length
+  | a :: l, x, h => by
+      rw [idxOf']
+      by_cases ha : (a == x) = true
+      · rw [if_pos ha]
+        simp
+      · rw [if_neg ha]
+        rw [List.length_cons]
+        have hx : x ∈ l := by
+          rcases List.mem_cons.mp h with he | h'
+          · exact absurd (by simp [he]) ha
+          · exact h'
+        have := idxOf'_lt hx
+        omega
+
+theorem jumpBack_le (skelRow : List Nat) (isM inX : Nat → Bool) :
+    ∀ k, jumpBack skelRow isM inX k ≤ k
+  | 0 => Nat.le_refl 0
+  | k + 1 => by
+      simp only [jumpBack]
+      by_cases hc : (isM (skelRow.getD k 0) && !inX (skelRow.getD k 0)) = true
+      · rw [if_pos hc]
+        exact Nat.le_trans (jumpBack_le skelRow isM inX k) (Nat.le_succ k)
+      · rw [if_neg hc]
+        exact Nat.le_refl _
+
+theorem dropWhile_sublist' (p : Nat → Bool) :
+    ∀ l : List Nat, l.dropWhile p <+ l
+  | [] => List.Sublist.refl _
+  | a :: l => by
+      rw [List.dropWhile_cons]
+      by_cases h : p a = true
+      · rw [if_pos h]
+        exact (dropWhile_sublist' p l).cons a
+      · rw [if_neg h]
+        exact List.Sublist.refl _
+
+theorem dropWhile_head_not (p : Nat → Bool) :
+    ∀ (l : List Nat) (s : Nat) (tl : List Nat), l.dropWhile p = s :: tl →
+      p s = false ∧ s ∈ l
+  | [], s, tl, h => by simp at h
+  | a :: l, s, tl, h => by
+      rw [List.dropWhile_cons] at h
+      by_cases ha : p a = true
+      · rw [if_pos ha] at h
+        obtain ⟨h1, h2⟩ := dropWhile_head_not p l s tl h
+        exact ⟨h1, List.mem_cons_of_mem _ h2⟩
+      · rw [if_neg ha] at h
+        cases h
+        exact ⟨bool_eq_false ha, List.mem_cons_self ..⟩
+
+/-- **Run coverage**: every non-L element of a scanned row lands in some
+emitted run. -/
+theorem runsGo_cover (isL : Nat → Bool) {u : Nat} (hu : isL u = false) :
+    ∀ (fuel : Nat) (pre : Option Nat) (l : List Nat), l.length < fuel →
+      u ∈ l → ∃ pr ∈ runsGo isL fuel pre l, u ∈ pr.2.1
+  | 0, _, l, h, _ => ((Nat.not_lt_zero _) h).elim
+  | fuel + 1, pre, [], _, hm => by simp at hm
+  | fuel + 1, pre, u' :: rest, h, hm => by
+      simp only [runsGo]
+      by_cases hL : isL u' = true
+      · rw [if_pos hL]
+        have hne : u ≠ u' := fun e => by
+          rw [e, hL] at hu
+          cases hu
+        have hmr : u ∈ rest := by
+          rcases List.mem_cons.mp hm with he | h'
+          · exact absurd he hne
+          · exact h'
+        refine runsGo_cover isL hu fuel (some u') rest ?_ hmr
+        simp only [List.length_cons] at h
+        omega
+      · rw [if_neg hL]
+        have hsplit := List.takeWhile_append_dropWhile
+          (p := fun v => !isL v) (l := u' :: rest)
+        rcases List.mem_append.mp (by rw [hsplit]; exact hm) with htw | hdw
+        · exact ⟨(pre, (u' :: rest).takeWhile (fun v => !isL v),
+            ((u' :: rest).dropWhile (fun v => !isL v)).head?),
+            List.mem_cons_self .., htw⟩
+        · have hlen : ((u' :: rest).dropWhile (fun v => !isL v)).length
+              < fuel := by
+            have hdw' : (u' :: rest).dropWhile (fun v => !isL v) =
+                rest.dropWhile (fun v => !isL v) := by
+              rw [List.dropWhile_cons, if_pos (by simp [hL])]
+            rw [hdw']
+            have := length_dropWhile_le' (fun v => !isL v) rest
+            simp only [List.length_cons] at h
+            omega
+          obtain ⟨pr, hpr, hupr⟩ := runsGo_cover isL hu fuel pre _ hlen hdw
+          exact ⟨pr, List.mem_cons_of_mem _ hpr, hupr⟩
+
+/-- Run predecessors are L-nodes of the scanned row (or the seed). -/
+theorem runsGo_pre (isL : Nat → Bool) :
+    ∀ (fuel : Nat) (pre₀ : Option Nat) (l : List Nat)
+      (pr : Option Nat × List Nat × Option Nat),
+      pr ∈ runsGo isL fuel pre₀ l →
+      pr.1 = pre₀ ∨ ∃ w, pr.1 = some w ∧ w ∈ l ∧ isL w = true
+  | 0, _, _, pr, h => by simp [runsGo] at h
+  | fuel + 1, _, [], pr, h => by simp [runsGo] at h
+  | fuel + 1, pre₀, u' :: rest, pr, h => by
+      simp only [runsGo] at h
+      by_cases hL : isL u' = true
+      · rw [if_pos hL] at h
+        rcases runsGo_pre isL fuel (some u') rest pr h with h1 |
+          ⟨w, h1, h2, h3⟩
+        · exact Or.inr ⟨u', h1, List.mem_cons_self .., hL⟩
+        · exact Or.inr ⟨w, h1, List.mem_cons_of_mem _ h2, h3⟩
+      · rw [if_neg hL] at h
+        rcases List.mem_cons.mp h with he | h'
+        · rw [he]
+          exact Or.inl rfl
+        · rcases runsGo_pre isL fuel pre₀ _ pr h' with h1 | ⟨w, h1, h2, h3⟩
+          · exact Or.inl h1
+          · exact Or.inr ⟨w, h1,
+              (dropWhile_sublist' _ _).subset h2, h3⟩
+
+/-- Run successors are L-nodes of the scanned row. -/
+theorem runsGo_succ (isL : Nat → Bool) :
+    ∀ (fuel : Nat) (pre₀ : Option Nat) (l : List Nat)
+      (pr : Option Nat × List Nat × Option Nat),
+      pr ∈ runsGo isL fuel pre₀ l →
+      ∀ s, pr.2.2 = some s → s ∈ l ∧ isL s = true
+  | 0, _, _, pr, h => by simp [runsGo] at h
+  | fuel + 1, _, [], pr, h => by simp [runsGo] at h
+  | fuel + 1, pre₀, u' :: rest, pr, h => by
+      simp only [runsGo] at h
+      by_cases hL : isL u' = true
+      · rw [if_pos hL] at h
+        intro s hs
+        obtain ⟨h1, h2⟩ := runsGo_succ isL fuel (some u') rest pr h s hs
+        exact ⟨List.mem_cons_of_mem _ h1, h2⟩
+      · rw [if_neg hL] at h
+        intro s hs
+        rcases List.mem_cons.mp h with he | h'
+        · rw [he] at hs
+          cases hdw : (u' :: rest).dropWhile (fun v => !isL v) with
+          | nil =>
+              rw [hdw] at hs
+              simp at hs
+          | cons s' tl =>
+              rw [hdw] at hs
+              have hs' : s' = s := by simpa using hs
+              obtain ⟨hp, hm⟩ := dropWhile_head_not
+                (fun v => !isL v) _ s' tl hdw
+              subst hs'
+              refine ⟨hm, ?_⟩
+              simpa using hp
+        · obtain ⟨h1, h2⟩ := runsGo_succ isL fuel pre₀ _ pr h' s hs
+          exact ⟨(dropWhile_sublist' _ _).subset h1, h2⟩
+
+/-! ### Positive splice and emission -/
+
+theorem expandRow_mem_self {rows : List (Nat × List Nat)} {mk : Nat → Bool}
+    {u : Nat} (hu : mk u = false) :
+    ∀ (f : Nat) (r : List Nat), u ∈ r → u ∈ expandRow rows mk f r
+  | 0, r, h => by rwa [expandRow]
+  | f + 1, r, h => by
+      rw [expandRow, List.mem_flatMap]
+      refine ⟨u, h, ?_⟩
+      rw [if_neg (by simp [hu])]
+      simp
+
+theorem expandRow_mem_marker_block {rows : List (Nat × List Nat)}
+    {mk : Nat → Bool} {b : Nat} (hmb : mk b = true) {r : List Nat}
+    (hb : b ∈ r) {u f : Nat}
+    (hu : u ∈ expandRow rows mk f (alGet rows b)) :
+    u ∈ expandRow rows mk (f + 1) r := by
+  rw [expandRow, List.mem_flatMap]
+  refine ⟨b, hb, ?_⟩
+  rw [if_pos hmb]
+  exact hu
+
+theorem expandRow_mem_mono {rows : List (Nat × List Nat)} {mk : Nat → Bool}
+    {u : Nat} (hu : mk u = false) :
+    ∀ (f : Nat) (r : List Nat), u ∈ expandRow rows mk f r →
+      u ∈ expandRow rows mk (f + 1) r
+  | 0, r, h => expandRow_mem_self hu 1 r (by rwa [expandRow] at h)
+  | f + 1, r, h => by
+      rw [expandRow, List.mem_flatMap] at h
+      obtain ⟨v, hv, h⟩ := h
+      by_cases hmv : mk v = true
+      · rw [if_pos hmv] at h
+        exact expandRow_mem_marker_block hmv hv (expandRow_mem_mono hu f _ h)
+      · rw [if_neg hmv] at h
+        rcases List.mem_singleton.mp h with rfl
+        exact expandRow_mem_self hu (f + 2) r hv
+
+theorem expandRow_mem_mono_le {rows : List (Nat × List Nat)}
+    {mk : Nat → Bool} {u : Nat} (hu : mk u = false) :
+    ∀ (k f : Nat) (r : List Nat), u ∈ expandRow rows mk f r →
+      u ∈ expandRow rows mk (f + k) r
+  | 0, f, r, h => h
+  | k + 1, f, r, h => by
+      rw [show f + (k + 1) = (f + k) + 1 from rfl]
+      exact expandRow_mem_mono hu _ _ (expandRow_mem_mono_le hu k f r h)
+
+theorem buildF_mem_mono (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) {u : Nat} :
+    ∀ (f p : Nat), u ∈ readF (buildF rows mk mf f p) →
+      u ∈ readF (buildF rows mk mf (f + 1) p)
+  | 0, p, h => by
+      rw [buildF] at h
+      simp [readF] at h
+  | f + 1, p, h => by
+      rw [buildF, readF_map_node, List.mem_flatMap] at h
+      rw [buildF, readF_map_node, List.mem_flatMap]
+      obtain ⟨c, hc, h⟩ := h
+      refine ⟨c, hc, ?_⟩
+      rcases List.mem_cons.mp h with he | h
+      · rw [he]
+        exact List.mem_cons_self ..
+      · exact List.mem_cons_of_mem _ (buildF_mem_mono rows mk mf f c h)
+
+/-- Emission step: if `q` is emitted and `q`'s expansion contains `u`, one
+more level of fuel emits `u`. -/
+theorem buildF_step_mem (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) {q u : Nat}
+    (hu : u ∈ expandRow rows mk mf (alGet rows q)) :
+    ∀ (f p : Nat), q ∈ readF (buildF rows mk mf f p) →
+      u ∈ readF (buildF rows mk mf (f + 1) p)
+  | 0, p, h => by
+      rw [buildF] at h
+      simp [readF] at h
+  | f + 1, p, h => by
+      rw [buildF, readF_map_node, List.mem_flatMap] at h
+      obtain ⟨c, hc, h⟩ := h
+      rw [buildF, readF_map_node, List.mem_flatMap]
+      refine ⟨c, hc, ?_⟩
+      rcases List.mem_cons.mp h with he | h
+      · refine List.mem_cons_of_mem _ ?_
+        rw [← he, buildF, readF_map_node, List.mem_flatMap]
+        exact ⟨u, hu, List.mem_cons_self ..⟩
+      · exact List.mem_cons_of_mem _ (buildF_step_mem rows mk mf hu f c h)
+
+/-- Root emission: the root row's expansion is emitted directly. -/
+theorem buildF_mem_root (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) {u : Nat}
+    (hu : u ∈ expandRow rows mk mf (alGet rows 0)) (f : Nat) :
+    u ∈ readF (buildF rows mk mf (f + 1) 0) := by
+  rw [buildF, readF_map_node, List.mem_flatMap]
+  exact ⟨u, hu, List.mem_cons_self ..⟩
+
+/-! ### Placement helpers -/
+
+theorem skelOf_alHas_zero (L A B : St) :
+    alHas (skelOf L A B).rows 0 = true := by
+  rw [alHas_iff_mem_keys]
+  simp only [skelOf]
+  refine skelFold_keys_super _ _ _ 0 (Or.inl ?_)
+  simp
+
+theorem wp_of_L_and_A {L A B : St} {x : Nat} (hL : contains L x = true)
+    (hA : contains A x = true) : wp L A B x = true := by
+  rw [wp, liveMp, markerp, hL, hA]
+  cases contains B x <;> rfl
+
+theorem wp_of_L_and_B {L A B : St} {x : Nat} (hL : contains L x = true)
+    (hB : contains B x = true) : wp L A B x = true := by
+  rw [wp, liveMp, markerp, hL, hB]
+  cases contains A x <;> rfl
+
+theorem placed_in_skelRow {L A B : St} {x : Nat}
+    (hx : x ∈ (read L).filter (wp L A B)) :
+    x ∈ alGet (skelOf L A B).rows (wpar L (wp L A B) x) := by
+  rw [skelOf_alGet]
+  exact List.mem_filter.mpr ⟨hx, by simp⟩
+
+theorem placed_in_host_row {L A B : St} {x : Nat}
+    (hx : x ∈ (read L).filter (wp L A B)) :
+    x ∈ alGet (outRows L A B) (wpar L (wp L A B) x) := by
+  rw [outRows_alGet_of_skel (skelOf_alHas_host hx)]
+  exact mem_rowAssemble_of_skel (placed_in_skelRow hx)
+
+theorem slotRuns_mem_intro {cmds : List Cmd} {tr k : Nat} {r : List Nat}
+    (hc : Cmd.slot tr k r ∈ cmds) : r ∈ slotRuns cmds tr k := by
+  unfold slotRuns
+  rw [List.mem_filterMap]
+  exact ⟨Cmd.slot tr k r, hc, by simp⟩
+
+theorem endRuns_mem_intro {cmds : List Cmd} {q : Nat} {r : List Nat}
+    (hc : Cmd.atEnd q r ∈ cmds) : r ∈ endRuns cmds q := by
+  unfold endRuns
+  rw [List.mem_filterMap]
+  exact ⟨Cmd.atEnd q r, hc, by simp⟩
+
+theorem mem_rowAssemble_slot {cmds : List Cmd} {tr k : Nat} {r : List Nat}
+    (hc : Cmd.slot tr k r ∈ cmds) {u : Nat} (hu : u ∈ r)
+    {skelRow : List Nat} (hk : k < skelRow.length + 1) :
+    u ∈ rowAssemble cmds tr skelRow := by
+  unfold rowAssemble
+  rw [List.mem_append]
+  refine Or.inl ?_
+  rw [List.mem_flatMap]
+  refine ⟨k, List.mem_range.mpr hk, ?_⟩
+  rw [List.mem_append]
+  refine Or.inl ?_
+  rw [List.mem_flatten]
+  refine ⟨r, ?_, hu⟩
+  unfold sortRunsDesc
+  rw [List.mem_mergeSort]
+  exact slotRuns_mem_intro hc
+
+theorem mem_rowAssemble_end {cmds : List Cmd} {q : Nat} {r : List Nat}
+    (hc : Cmd.atEnd q r ∈ cmds) {u : Nat} (hu : u ∈ r)
+    (skelRow : List Nat) :
+    u ∈ rowAssemble cmds q skelRow := by
+  unfold rowAssemble
+  rw [List.mem_append]
+  refine Or.inr ?_
+  rw [List.mem_flatten]
+  refine ⟨r, ?_, hu⟩
+  unfold sortRunsDesc
+  rw [List.mem_mergeSort]
+  exact endRuns_mem_intro hc
+
+theorem liveM_not_marker {L A B : St} {u : Nat}
+    (h : liveMp L A B u = true) : markerp L A B u = false := by
+  rw [liveMp] at h
+  rw [markerp]
+  cases hL : contains L u <;> cases hA : contains A u <;>
+    cases hB : contains B u <;> rw [hL, hA, hB] at h <;> simp_all
+
+theorem lvl_pos_of_liveM {L A B : St} {u : Nat}
+    (h : liveMp L A B u = true) : 1 ≤ lvl L A B u := by
+  rw [lvl]
+  by_cases hL : contains L u = true
+  · rw [if_pos hL]
+    omega
+  · rw [if_neg hL]
+    by_cases hA : contains A u = true
+    · rw [if_pos hA]
+      omega
+    · rw [if_neg hA]
+      by_cases hB : contains B u = true
+      · rw [if_pos hB]
+        omega
+      · rw [liveMp, bool_eq_false hL, bool_eq_false hA,
+          bool_eq_false hB] at h
+        simp at h
+
+theorem lvl_le_fuel {L A B : St} (u : Nat) :
+    lvl L A B u ≤
+      (read L).length + (read A).length + (read B).length + 1 := by
+  rw [lvl]
+  by_cases hL : contains L u = true
+  · rw [if_pos hL]
+    have := depthOf_lt_length (contains_iff.mp hL)
+    omega
+  · rw [if_neg hL]
+    by_cases hA : contains A u = true
+    · rw [if_pos hA]
+      have := depthOf_lt_length (contains_iff.mp hA)
+      omega
+    · rw [if_neg hA]
+      by_cases hB : contains B u = true
+      · rw [if_pos hB]
+        have := depthOf_lt_length (contains_iff.mp hB)
+        omega
+      · rw [if_neg hB]
+        omega
+
+/-- **Run placement**: a non-L member of a host row lands, via its
+placement command, in some skeleton key's merged row. -/
+theorem run_lands {L A B X : St} (mok : ModelOK L A B) (hwfX : WF X)
+    (hcmds : ∀ c, c ∈ branchCmds L X (skelOf L A B) (markerp L A B) →
+      c ∈ mergeCmds L A B)
+    (hwp : ∀ x, contains L x = true → x ∈ read X → wp L A B x = true)
+    {u p : Nat} (hp : p ∈ hosts L X) (hu : u ∈ row X p)
+    (hnL : contains L u = false) :
+    ∃ tr, alHas (skelOf L A B).rows tr = true ∧
+      u ∈ alGet (outRows L A B) tr := by
+  obtain ⟨pr, hpr, hupr⟩ := runsGo_cover (contains L) hnL
+    ((row X p).length + 1) none (row X p) (Nat.lt_succ_self _) hu
+  have pipeline : ∀ (w : Nat), w ∈ row X p → contains L w = true →
+      ∀ (k : Nat) (run : List Nat), u ∈ run →
+      k < (alGet (skelOf L A B).rows
+        (rowofGet (skelOf L A B) w)).length + 1 →
+      Cmd.slot (rowofGet (skelOf L A B) w) k run ∈
+        branchCmds L X (skelOf L A B) (markerp L A B) →
+      ∃ tr, alHas (skelOf L A B).rows tr = true ∧
+        u ∈ alGet (outRows L A B) tr := by
+    intro w hwrow hwL k run hurun hk hcmem
+    have hplaced : w ∈ (read L).filter (wp L A B) :=
+      List.mem_filter.mpr ⟨contains_iff.mp hwL,
+        hwp w hwL (mem_row_read hwrow)⟩
+    have hkey : alHas (skelOf L A B).rows (rowofGet (skelOf L A B) w)
+        = true := by
+      rw [rowofGet_skelOf hplaced]
+      exact skelOf_alHas_host hplaced
+    refine ⟨rowofGet (skelOf L A B) w, hkey, ?_⟩
+    rw [outRows_alGet_of_skel hkey]
+    exact mem_rowAssemble_slot (hcmds _ hcmem) hurun hk
+  rcases pr with ⟨_ | pre, run, s⟩
+  · rcases s with _ | s
+    · -- (none, run, none): end placement at the host
+      have hcmem : Cmd.atEnd p run ∈
+          branchCmds L X (skelOf L A B) (markerp L A B) := by
+        unfold branchCmds
+        rw [List.mem_flatMap]
+        exact ⟨p, hp, List.mem_map.mpr ⟨(none, run, none), hpr, rfl⟩⟩
+      have hpkey : alHas (skelOf L A B).rows p = true := by
+        rcases (hosts_mem hp).1 with h0 | hLp
+        · rw [h0]
+          exact skelOf_alHas_zero L A B
+        · obtain ⟨-, u', hu', hpar⟩ := hosts_mem hp
+          have hu'X : u' ∈ read X := by
+            rw [bornIds, List.mem_filter] at hu'
+            exact hu'.1
+          have hpX : p ∈ read X := by
+            rcases parOf_step hwfX hu'X with h0 | ⟨hm, -⟩
+            · rw [hpar] at h0
+              rw [h0] at hLp
+              exact absurd (contains_iff.mp hLp) mok.wfL.2
+            · rw [← hpar]
+              exact hm
+          exact skelOf_alHas_of_placed (List.mem_filter.mpr
+            ⟨contains_iff.mp hLp, hwp p hLp hpX⟩)
+      refine ⟨p, hpkey, ?_⟩
+      rw [outRows_alGet_of_skel hpkey]
+      exact mem_rowAssemble_end (hcmds _ hcmem) hupr _
+    · -- (none, run, some s): head jump-back slot at s's host row
+      obtain ⟨hsrow, hsL⟩ := runsGo_succ (contains L) _ none (row X p)
+        (none, run, some s) hpr s rfl
+      have hcmem : Cmd.slot (rowofGet (skelOf L A B) s)
+          (jumpBack (alGet (skelOf L A B).rows
+              (rowofGet (skelOf L A B) s))
+            (markerp L A B) (contains X)
+            (idxOf' (alGet (skelOf L A B).rows
+              (rowofGet (skelOf L A B) s)) s)) run ∈
+          branchCmds L X (skelOf L A B) (markerp L A B) := by
+        unfold branchCmds
+        rw [List.mem_flatMap]
+        exact ⟨p, hp, List.mem_map.mpr ⟨(none, run, some s), hpr, rfl⟩⟩
+      have hplaced : s ∈ (read L).filter (wp L A B) :=
+        List.mem_filter.mpr ⟨contains_iff.mp hsL,
+          hwp s hsL (mem_row_read hsrow)⟩
+      have hsin : s ∈ alGet (skelOf L A B).rows
+          (rowofGet (skelOf L A B) s) := by
+        rw [rowofGet_skelOf hplaced]
+        exact placed_in_skelRow hplaced
+      have hidx := idxOf'_lt hsin
+      have hjb := jumpBack_le (alGet (skelOf L A B).rows
+        (rowofGet (skelOf L A B) s)) (markerp L A B) (contains X)
+        (idxOf' (alGet (skelOf L A B).rows
+          (rowofGet (skelOf L A B) s)) s)
+      exact pipeline s hsrow hsL _ run hupr (by omega) hcmem
+  · -- (some pre, run, s): predecessor-riding slot at pre's host row
+    rcases runsGo_pre (contains L) _ none (row X p)
+      (some pre, run, s) hpr with h1 | ⟨w, h1, h2, h3⟩
+    · cases h1
+    · have hpw : pre = w := Option.some.inj h1
+      rw [← hpw] at h2 h3
+      have hplaced : pre ∈ (read L).filter (wp L A B) :=
+        List.mem_filter.mpr ⟨contains_iff.mp h3,
+          hwp pre h3 (mem_row_read h2)⟩
+      have hprein : pre ∈ alGet (skelOf L A B).rows
+          (rowofGet (skelOf L A B) pre) := by
+        rw [rowofGet_skelOf hplaced]
+        exact placed_in_skelRow hplaced
+      have hidx := idxOf'_lt hprein
+      rcases s with _ | s
+      · have hcmem : Cmd.slot (rowofGet (skelOf L A B) pre)
+            (idxOf' (alGet (skelOf L A B).rows
+              (rowofGet (skelOf L A B) pre)) pre + 1) run ∈
+            branchCmds L X (skelOf L A B) (markerp L A B) := by
+          unfold branchCmds
+          rw [List.mem_flatMap]
+          exact ⟨p, hp, List.mem_map.mpr ⟨(some pre, run, none), hpr, rfl⟩⟩
+        exact pipeline pre h2 h3 _ run hupr (by omega) hcmem
+      · have hcmem : Cmd.slot (rowofGet (skelOf L A B) pre)
+            (idxOf' (alGet (skelOf L A B).rows
+              (rowofGet (skelOf L A B) pre)) pre + 1) run ∈
+            branchCmds L X (skelOf L A B) (markerp L A B) := by
+          unfold branchCmds
+          rw [List.mem_flatMap]
+          exact ⟨p, hp,
+            List.mem_map.mpr ⟨(some pre, run, some s), hpr, rfl⟩⟩
+        exact pipeline pre h2 h3 _ run hupr (by omega) hcmem
+
+/-- **The positive climb**: an occurrence under any row key ascends the
+marker orbit to a *non-marker* key whose expansion (with fuel bounded by
+the ascent) contains it. -/
+theorem climb_emit {L A B : St} (mok : ModelOK L A B) {u : Nat} :
+    ∀ (d b : Nat), (markerp L A B b = true → depthOf L b ≤ d) →
+      (b = 0 ∨ liveMp L A B b = true ∨ markerp L A B b = true) →
+      ∀ (f : Nat),
+        u ∈ expandRow (outRows L A B) (markerp L A B) f
+          (alGet (outRows L A B) b) →
+      ∃ q, markerp L A B q = false ∧ (q = 0 ∨ liveMp L A B q = true) ∧
+        ∃ f', f' ≤ f + d + 1 ∧
+          u ∈ expandRow (outRows L A B) (markerp L A B) f'
+            (alGet (outRows L A B) q)
+  | 0, b, hd, hcls, f, hmem => by
+      by_cases hmb : markerp L A B b = true
+      · have hb' := marker_in_host_row mok hmb
+        have hstep := expandRow_mem_marker_block hmb hb' hmem
+        rcases wpar_spec mok.wfL (wp L A B) (marker_spec hmb).1 with h0 |
+          ⟨-, -, hdlt⟩
+        · exact ⟨0, markerp_zero mok.wfL, Or.inl rfl, f + 1, by omega,
+            h0 ▸ hstep⟩
+        · have := hd hmb
+          omega
+      · refine ⟨b, bool_eq_false hmb, ?_, f, by omega, hmem⟩
+        rcases hcls with h0 | hl | hm
+        · exact Or.inl h0
+        · exact Or.inr hl
+        · exact absurd hm hmb
+  | d + 1, b, hd, hcls, f, hmem => by
+      by_cases hmb : markerp L A B b = true
+      · have hb' := marker_in_host_row mok hmb
+        have hstep := expandRow_mem_marker_block hmb hb' hmem
+        rcases wpar_spec mok.wfL (wp L A B) (marker_spec hmb).1 with h0 |
+          ⟨-, hw, hdlt⟩
+        · exact ⟨0, markerp_zero mok.wfL, Or.inl rfl, f + 1, by omega,
+            h0 ▸ hstep⟩
+        · by_cases hm' : markerp L A B (wpar L (wp L A B) b) = true
+          · obtain ⟨q, hq1, hq2, f', hf', hq3⟩ := climb_emit mok d
+              (wpar L (wp L A B) b)
+              (fun _ => by
+                have := hd hmb
+                omega)
+              (Or.inr (Or.inr hm')) (f + 1) hstep
+            exact ⟨q, hq1, hq2, f', by omega, hq3⟩
+          · refine ⟨wpar L (wp L A B) b, bool_eq_false hm', Or.inr ?_,
+              f + 1, by omega, hstep⟩
+            rw [wp, Bool.or_eq_true_iff] at hw
+            rcases hw with h | h
+            · exact h
+            · exact absurd h hm'
+      · refine ⟨b, bool_eq_false hmb, ?_, f, by omega, hmem⟩
+        rcases hcls with h0 | hl | hm
+        · exact Or.inl h0
+        · exact Or.inr hl
+        · exact absurd hm hmb
+
+/-- **Master placement**: every liveM id sits in some merged row whose key
+is the root, another liveM id, or a marker. -/
+theorem liveM_placed {L A B : St} (mok : ModelOK L A B) {u : Nat}
+    (hu : liveMp L A B u = true) :
+    ∃ b, u ∈ alGet (outRows L A B) b ∧
+      (b = 0 ∨ liveMp L A B b = true ∨ markerp L A B b = true) := by
+  have keycls : ∀ tr, alHas (skelOf L A B).rows tr = true →
+      tr = 0 ∨ liveMp L A B tr = true ∨ markerp L A B tr = true := by
+    intro tr htr
+    rcases skelOf_keys_spec mok.wfL (alHas_iff_mem_keys.mp htr) with h0 |
+      ⟨-, hw⟩
+    · exact Or.inl h0
+    · rw [wp, Bool.or_eq_true_iff] at hw
+      rcases hw with h | h
+      · exact Or.inr (Or.inl h)
+      · exact Or.inr (Or.inr h)
+  by_cases hL : contains L u = true
+  · have hwpu : wp L A B u = true := by
+      rw [wp, hu]
+      rfl
+    have hplaced : u ∈ (read L).filter (wp L A B) :=
+      List.mem_filter.mpr ⟨contains_iff.mp hL, hwpu⟩
+    refine ⟨wpar L (wp L A B) u, placed_in_host_row hplaced, ?_⟩
+    rcases wpar_spec mok.wfL (wp L A B) (contains_iff.mp hL) with h0 |
+      ⟨-, hw, -⟩
+    · exact Or.inl h0
+    · rw [wp, Bool.or_eq_true_iff] at hw
+      rcases hw with h | h
+      · exact Or.inr (Or.inl h)
+      · exact Or.inr (Or.inr h)
+  · have hbranch : contains A u = true ∨ contains B u = true := by
+      rw [liveMp, Bool.or_eq_true_iff, Bool.or_eq_true_iff] at hu
+      rcases hu with (h | h) | h
+      · exact Or.inl (Bool.and_eq_true_iff.mp h).1
+      · exact Or.inl (Bool.and_eq_true_iff.mp h).1
+      · exact Or.inr (Bool.and_eq_true_iff.mp h).1
+    rcases hbranch with hX | hX
+    · -- A-born
+      have huA : u ∈ read A := contains_iff.mp hX
+      have hbu : u ∈ bornIds L A := by
+        rw [bornIds, List.mem_filter]
+        exact ⟨huA, by simp [bool_eq_false hL]⟩
+      have hurow : u ∈ row A (parOf A u) := parOf_row_mem mok.wfA huA
+      by_cases hpb : parOf A u = 0 ∨ contains L (parOf A u) = true
+      · have hhost : parOf A u ∈ hosts L A := by
+          unfold hosts
+          rw [dedupNat_mem, List.mem_filter]
+          refine ⟨List.mem_map.mpr ⟨u, hbu, rfl⟩, ?_⟩
+          rcases hpb with h0 | hl
+          · simp [h0]
+          · simp [hl]
+        obtain ⟨tr, htr, hmem⟩ := run_lands mok mok.wfA
+          (fun c hc => by
+            unfold mergeCmds
+            exact List.mem_append.mpr (Or.inl hc))
+          (fun x hxL hxA => wp_of_L_and_A hxL (contains_iff.mpr hxA))
+          hhost hurow (bool_eq_false hL)
+        exact ⟨tr, hmem, keycls tr htr⟩
+      · have hp0 : parOf A u ≠ 0 := fun h => hpb (Or.inl h)
+        have hpL : ¬ contains L (parOf A u) = true := fun h =>
+          hpb (Or.inr h)
+        have hpA : parOf A u ∈ read A := by
+          rcases parOf_step mok.wfA huA with h0 | ⟨hm, -⟩
+          · exact absurd h0 hp0
+          · exact hm
+        have hpborn : parOf A u ∈ bornIds L A := by
+          rw [bornIds, List.mem_filter]
+          exact ⟨hpA, by simp [bool_eq_false hpL]⟩
+        refine ⟨parOf A u, ?_, Or.inr (Or.inl ?_)⟩
+        · rw [outRows_alGet_of_bornA mok hpborn]
+          exact hurow
+        · rw [liveMp]
+          simp [contains_iff.mpr hpA, bool_eq_false hpL]
+    · -- B-born
+      have huB : u ∈ read B := contains_iff.mp hX
+      have hbu : u ∈ bornIds L B := by
+        rw [bornIds, List.mem_filter]
+        exact ⟨huB, by simp [bool_eq_false hL]⟩
+      have hurow : u ∈ row B (parOf B u) := parOf_row_mem mok.wfB huB
+      by_cases hpb : parOf B u = 0 ∨ contains L (parOf B u) = true
+      · have hhost : parOf B u ∈ hosts L B := by
+          unfold hosts
+          rw [dedupNat_mem, List.mem_filter]
+          refine ⟨List.mem_map.mpr ⟨u, hbu, rfl⟩, ?_⟩
+          rcases hpb with h0 | hl
+          · simp [h0]
+          · simp [hl]
+        obtain ⟨tr, htr, hmem⟩ := run_lands mok mok.wfB
+          (fun c hc => by
+            unfold mergeCmds
+            exact List.mem_append.mpr (Or.inr hc))
+          (fun x hxL hxB => wp_of_L_and_B hxL (contains_iff.mpr hxB))
+          hhost hurow (bool_eq_false hL)
+        exact ⟨tr, hmem, keycls tr htr⟩
+      · have hp0 : parOf B u ≠ 0 := fun h => hpb (Or.inl h)
+        have hpL : ¬ contains L (parOf B u) = true := fun h =>
+          hpb (Or.inr h)
+        have hpB : parOf B u ∈ read B := by
+          rcases parOf_step mok.wfB huB with h0 | ⟨hm, -⟩
+          · exact absurd h0 hp0
+          · exact hm
+        have hpborn : parOf B u ∈ bornIds L B := by
+          rw [bornIds, List.mem_filter]
+          exact ⟨hpB, by simp [bool_eq_false hpL]⟩
+        refine ⟨parOf B u, ?_, Or.inr (Or.inl ?_)⟩
+        · rw [outRows_alGet_of_bornB mok hpborn]
+          exact hurow
+        · rw [liveMp]
+          have hpnA : contains A (parOf B u) = false := by
+            by_cases h : contains A (parOf B u) = true
+            · exact absurd (mok.common _ (contains_iff.mp h) hpB)
+                (fun hc => hpL (contains_iff.mpr hc))
+            · exact bool_eq_false h
+          simp [contains_iff.mpr hpB, bool_eq_false hpL]
+
+/-- **The coverage engine**: every liveM id is emitted from the root, with
+`buildF` fuel = a bound on its level. -/
+theorem emitted_of_liveM {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {mf : Nat}
+    (hmf : (read L).length + 1 ≤ mf) :
+    ∀ (N u : Nat), lvl L A B u ≤ N → liveMp L A B u = true →
+      u ∈ readF (buildF (outRows L A B) (markerp L A B) mf N 0)
+  | 0, u, hN, hu => by
+      have := lvl_pos_of_liveM (L := L) (A := A) (B := B) hu
+      omega
+  | N + 1, u, hN, hu => by
+      obtain ⟨b, hb, hcls⟩ := liveM_placed mok hu
+      have hmem0 : u ∈ expandRow (outRows L A B) (markerp L A B) 0
+          (alGet (outRows L A B) b) := by
+        rw [expandRow]
+        exact hb
+      have hdb : markerp L A B b = true →
+          depthOf L b ≤ (read L).length := fun hmb =>
+        Nat.le_of_lt (depthOf_lt_length (marker_spec hmb).1)
+      obtain ⟨q, hqnm, hqcls, f', hf', hqmem⟩ :=
+        climb_emit mok (read L).length b hdb hcls 0 hmem0
+      have hqE : u ∈ expandRow (outRows L A B) (markerp L A B) mf
+          (alGet (outRows L A B) q) := by
+        have hle : f' ≤ mf := by omega
+        obtain ⟨k, hk⟩ := Nat.le.dest hle
+        rw [← hk]
+        exact expandRow_mem_mono_le (liveM_not_marker hu) k f' _ hqmem
+      rcases hqcls with hq0 | hqlive
+      · rw [hq0] at hqE
+        exact buildF_mem_root _ _ _ hqE N
+      · have hlt : lvl L A B q < lvl L A B u := lvl_edge mok hA hB hqE
+        have hqem := emitted_of_liveM mok hA hB hmf N q (by omega) hqlive
+        exact buildF_step_mem _ _ _ hqE N 0 hqem
+
+/-- **Lemma M0, survivor-set identity, fully closed** (design record §3):
+the merge's ids are exactly `liveM` — patterns 2 (in both branches), 6
+(A-born), 7 (B-born). ⊆ by `merge_mem_liveM`; ⊇ by placement
+(`liveM_placed`), the positive marker climb (`climb_emit`), and the
+`lvl`-graded emission chain (`emitted_of_liveM`). -/
 theorem merge_ids {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
     u ∈ ids (merge L A B) ↔ liveMp L A B u = true := by
   constructor
   · exact fun h => merge_mem_liveM mok hA hB h
-  · sorry
+  · intro hu
+    show u ∈ read (merge L A B)
+    simp only [merge, read]
+    refine emitted_of_liveM mok hA hB ?_ _ u ?_ hu
+    · show (readF L).length + 1 ≤
+        (readF L).length + (readF A).length + (readF B).length + 1
+      omega
+    · show lvl L A B u ≤
+        (readF L).length + (readF A).length + (readF B).length + 1
+      exact lvl_le_fuel u
 
-/-- The survivor-set identity in set form (inherits `merge_ids`'s owed
-coverage half). -/
+/-- The survivor-set identity in set form:
+`ids (merge) = (ids A ∩ ids B) ∪ (ids A \ ids L) ∪ (ids B \ ids L)`. -/
 theorem merge_ids_set {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
     u ∈ ids (merge L A B) ↔
@@ -1910,5 +2599,7 @@ section AxiomAuditM0
 #print axioms Shesha.merge_read_nodup
 #print axioms Shesha.merge_WF
 #print axioms Shesha.merge_mem_liveM
+#print axioms Shesha.emitted_of_liveM
 #print axioms Shesha.merge_ids
+#print axioms Shesha.merge_ids_set
 end AxiomAuditM0

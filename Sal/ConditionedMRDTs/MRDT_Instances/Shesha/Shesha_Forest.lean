@@ -2,9 +2,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Merge_Lemmas
 
 /-! # Shesha — forest layer: parent chains and depth (phase 2b, block 0)
 
-The parent-chain/depth machinery the three owed obligations share
-(`merge_ids`, `merge_read_nodup`, `merge_L_filter` — see the diagnostics in
-`Shesha_Merge_Lemmas.lean`):
+The parent-chain/depth machinery shared by the M0/M2 merge lemmas
+(`merge_ids`, `merge_read_nodup` — both closed in `Shesha_M0.lean` — and
+`merge_L_filter`, the M2 core still owed in `Shesha_Merge_Lemmas.lean`):
 
 - `depthF`/`depthOf` — structural depth of a node (first occurrence, like
   `parF`).
