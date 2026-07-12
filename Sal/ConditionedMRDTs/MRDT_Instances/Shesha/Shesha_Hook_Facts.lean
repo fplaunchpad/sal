@@ -625,4 +625,221 @@ theorem anchIds_sublist2_before :
           obtain ⟨ru, rv, hb⟩ := anchIds_sublist2_before h
           exact ⟨ru, rv, before_cons hb⟩
 
+theorem before_mem_left {γ : Type} {l : List γ} {a b : γ}
+    (h : Before l a b) : a ∈ l := by
+  obtain ⟨l₁, l₂, hl, -⟩ := h
+  rw [hl]
+  exact List.mem_append_right _ (List.mem_cons_self ..)
+
+theorem before_mem_right {γ : Type} {l : List γ} {a b : γ}
+    (h : Before l a b) : b ∈ l := by
+  obtain ⟨l₁, l₂, hl, hb⟩ := h
+  rw [hl]
+  exact List.mem_append_right _ (List.mem_cons_of_mem _ hb)
+
+/-! ## §5b every ordered delete–insert pair of a witness is clean -/
+
+section WitnessNF
+
+variable {C : Configuration SheshaD}
+variable {ev : Set (Op SAppOp)} {ρ : List (Op SAppOp)}
+
+/-- **(†)**: in an honest, `loOn`-respecting, effective witness, a delete
+positioned before an insert touches neither its id nor its anchor — the
+hypothesis under which deletes postpone (`steps_postpone_deletes`). -/
+theorem witness_delBeforeOK
+    (hH : SheshaHonest C)
+    (hirr : ∀ a : Op SAppOp, ¬ C.vis a a)
+    (hsub : ∀ a ∈ ev, a ∈ C.events)
+    (hclosed : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev → a ∈ ev)
+    (hperm : listPermOf ρ ev)
+    (hresp : respects ρ (loOn (Configuration.core C) ev))
+    (hW : SheshaEff ρ) :
+    (ρ.map toSOp).Pairwise Shesha.DelBeforeOK := by
+  rw [List.pairwise_map]
+  refine pairwise_of_before (fun a b hab => ?_)
+  have hmem : ∀ x, x ∈ ρ → x ∈ C.events := fun x hx =>
+    hsub x ((hperm.2 x).mp hx)
+  have haev : a ∈ C.events := hmem a (before_mem_left hab)
+  have hbev : b ∈ C.events := hmem b (before_mem_right hab)
+  rcases a with ⟨ta, ra, opa⟩
+  rcases b with ⟨tb, rb, opb⟩
+  cases opa with
+  | insA _ => cases opb <;> trivial
+  | delA d =>
+    cases opb with
+    | delA _ => trivial
+    | insA p =>
+      show d ≠ tb ∧ d ≠ p
+      constructor
+      · rintro rfl
+        have hvis : C.vis (d, rb, SAppOp.insA p) (ta, ra, SAppOp.delA d) :=
+          honest_ins_vis_del hH hbev haev
+        have hnc := ncomm_ins_del_self (ri := rb) (rd := ra) (td := ta)
+          (honest_ins_ne_anchor hH hbev)
+        exact respects_before hresp hab (loOn_shesha_iff.mpr ⟨hvis, hnc⟩)
+      · rintro rfl
+        -- the delete targets the insert's anchor `p = d`
+        have hp0 : d ≠ 0 := honest_del_nonzero hH haev
+        obtain ⟨r', a', hpev, hpvis⟩ :=
+          honest_anchor_sees_ins hH hp0 hbev
+        have hpa : d ≠ a' := honest_ins_ne_anchor hH hpev
+        set ep : Op SAppOp := (d, r', SAppOp.insA a') with hep
+        have hnc_pb : ¬ SheshaD.toCRDTSig.commutes ep (tb, rb, SAppOp.insA d) :=
+          ncomm_ins_anchor_child hp0 hpa
+        have hepev : ep ∈ ev :=
+          hclosed ep _ hpvis hnc_pb
+            ((hperm.2 _).mp (before_mem_right hab))
+        have hepρ : ep ∈ ρ := (hperm.2 ep).mpr hepev
+        have hbρ : (tb, rb, SAppOp.insA d) ∈ ρ := before_mem_right hab
+        have haρ : (ta, ra, SAppOp.delA d) ∈ ρ := before_mem_left hab
+        -- ep is before b
+        have hepb : Before ρ ep (tb, rb, SAppOp.insA d) := by
+          rcases before_trichotomy hepρ hbρ (fun he => by
+            rw [hep] at he
+            exact hirr _ (he ▸ hpvis)) with h | h
+          · exact h
+          · exact absurd (loOn_shesha_iff.mpr ⟨hpvis, hnc_pb⟩)
+              (respects_before hresp h)
+        -- ep is before a
+        have hvis_pa : C.vis ep (ta, ra, SAppOp.delA d) :=
+          honest_ins_vis_del hH hpev haev
+        have hnc_pa : ¬ SheshaD.toCRDTSig.commutes ep (ta, ra, SAppOp.delA d) :=
+          ncomm_ins_del_self hpa
+        have hepa : Before ρ ep (ta, ra, SAppOp.delA d) := by
+          rcases before_trichotomy hepρ haρ (fun he => by
+            rw [hep] at he
+            exact SAppOp.noConfusion
+              (congrArg (fun o : Op SAppOp => o.2.2) he)) with h | h
+          · exact h
+          · exact absurd (loOn_shesha_iff.mpr ⟨hvis_pa, hnc_pa⟩)
+              (respects_before hresp h)
+        -- split ρ at b; the prefix contains ep … a with no later ins-d
+        obtain ⟨αb, βb, hbsplit⟩ := List.append_of_mem hbρ
+        have haαb : (ta, ra, SAppOp.delA d) ∈ αb :=
+          before_split_prefix hperm.1 hab hbsplit
+        have hepαb : ep ∈ αb :=
+          before_split_prefix hperm.1 hepb hbsplit
+        have heff := effFrom_at hW hbsplit
+        have hpread : d ∈ Shesha.read
+            (applySeq SheshaD.toCRDTSig SheshaD.init αb) := by
+          rcases (heff : d = 0 ∨ _) with h0 | h
+          · exact absurd h0 hp0
+          · exact h
+        -- split the prefix at the delete
+        obtain ⟨γ, δ, hasplit⟩ := List.append_of_mem haαb
+        have hepδ : ep ∉ δ := by
+          intro hin
+          refine before_asymm hperm.1 hepa ⟨γ, δ ++ (tb, rb, SAppOp.insA d) :: βb, ?_, ?_⟩
+          · rw [hbsplit, hasplit, List.append_assoc, List.cons_append]
+          · exact List.mem_append_left _ hin
+        have hnoins : d ∉ Shesha.opInsIds (δ.map toSOp) := by
+          intro hin
+          obtain ⟨r'', a'', hm⟩ := opInsIds_map_toSOp hin
+          have hmρ : (d, r'', SAppOp.insA a'') ∈ ρ := by
+            rw [hbsplit, hasplit, List.append_assoc, List.cons_append]
+            exact List.mem_append_right _ (List.mem_cons_of_mem _
+              (List.mem_append_left _ hm))
+          have : ((d, r'', SAppOp.insA a'') : Op SAppOp) = ep :=
+            (Configuration.core C).ts_unique (hmem _ hmρ) hpev rfl
+          exact hepδ (this ▸ hm)
+        -- compute: d is dead at the end of the prefix
+        rw [applySeq_toSOp, hasplit, List.map_append, Shesha.steps_append,
+          List.map_cons,
+          show Shesha.steps (Shesha.steps SheshaD.init (γ.map toSOp))
+              (toSOp (ta, ra, SAppOp.delA d) :: δ.map toSOp)
+            = Shesha.steps (Shesha.delete
+                (Shesha.steps SheshaD.init (γ.map toSOp)) d)
+                (δ.map toSOp) from rfl] at hpread
+        refine Shesha.not_mem_read_steps ?_ hnoins hpread
+        rw [Shesha.read_delete, Shesha.seqDel]
+        intro hc
+        exact absurd rfl (of_decide_eq_true (List.mem_filter.mp hc).2)
+
+/-! ## §5c the insert phase of a witness is effective and fresh -/
+
+/-- Along a witness's insert phase, every insert is fresh (unique ids),
+nonzero (honesty), and lands at a live-or-root anchor (effectiveness,
+transferred through delete postponement). Stated for every prefix split,
+recursively. -/
+theorem witness_effFresh_go
+    (hH : SheshaHonest C)
+    (hsub : ∀ a ∈ ev, a ∈ C.events)
+    (hperm : listPermOf ρ ev)
+    (hW : SheshaEff ρ)
+    (hDB : (ρ.map toSOp).Pairwise Shesha.DelBeforeOK) :
+    ∀ (ρ' α : List (Op SAppOp)), ρ = α ++ ρ' →
+      Shesha.EffFreshFrom
+        (Shesha.steps SheshaD.init (Shesha.insPart (α.map toSOp)))
+        (Shesha.insPart (ρ'.map toSOp))
+  | [], _, _ => trivial
+  | ⟨t, r, op⟩ :: ρ'', α, hsplit => by
+      have hmem : ∀ x, x ∈ ρ → x ∈ C.events := fun x hx =>
+        hsub x ((hperm.2 x).mp hx)
+      have heρ : (⟨t, r, op⟩ : Op SAppOp) ∈ ρ := by
+        rw [hsplit]
+        exact List.mem_append_right _ (List.mem_cons_self ..)
+      have hsplit' : ρ = (α ++ [⟨t, r, op⟩]) ++ ρ'' := by
+        rw [hsplit, List.append_assoc, List.singleton_append]
+      have ih := witness_effFresh_go hH hsub hperm hW hDB ρ''
+        (α ++ [⟨t, r, op⟩]) hsplit'
+      cases op with
+      | delA d =>
+          rw [List.map_cons,
+            show toSOp (t, r, SAppOp.delA d) = Shesha.Op.del d from rfl,
+            Shesha.insPart]
+          rw [List.map_append, Shesha.insPart_append,
+            show (List.map toSOp [(⟨t, r, SAppOp.delA d⟩ : Op SAppOp)])
+              = [Shesha.Op.del d] from rfl,
+            show Shesha.insPart [Shesha.Op.del d] = [] from rfl,
+            List.append_nil] at ih
+          exact ih
+      | insA p =>
+          rw [List.map_cons,
+            show toSOp (t, r, SAppOp.insA p) = Shesha.Op.ins t p from rfl,
+            Shesha.insPart]
+          rw [List.map_append, Shesha.insPart_append,
+            show (List.map toSOp [(⟨t, r, SAppOp.insA p⟩ : Op SAppOp)])
+              = [Shesha.Op.ins t p] from rfl,
+            show Shesha.insPart [Shesha.Op.ins t p]
+              = [Shesha.Op.ins t p] from rfl,
+            Shesha.steps_append,
+            show Shesha.steps
+                (Shesha.steps SheshaD.init (Shesha.insPart (α.map toSOp)))
+                [Shesha.Op.ins t p]
+              = Shesha.insert
+                  (Shesha.steps SheshaD.init (Shesha.insPart (α.map toSOp)))
+                  t p from rfl] at ih
+          refine ⟨?_, ?_, ?_, ih⟩
+          · -- freshness: t was not inserted in the prefix
+            intro hc
+            rcases Shesha.mem_read_steps _ _ hc with h' | h'
+            · exact absurd h' List.not_mem_nil
+            · rw [Shesha.opInsIds_insPart] at h'
+              obtain ⟨r'', a'', hm⟩ := opInsIds_map_toSOp h'
+              have hmρ : (t, r'', SAppOp.insA a'') ∈ ρ := by
+                rw [hsplit]
+                exact List.mem_append_left _ hm
+              have heq : ((t, r'', SAppOp.insA a'') : Op SAppOp)
+                  = (t, r, SAppOp.insA p) :=
+                (Configuration.core C).ts_unique (hmem _ hmρ) (hmem _ heρ) rfl
+              have hnd := hperm.1
+              rw [hsplit, List.nodup_append] at hnd
+              exact hnd.2.2 _ (heq ▸ hm) _ (List.mem_cons_self ..) rfl
+          · exact honest_ins_nonzero hH (hmem _ heρ)
+          · -- the anchor is live-or-root, through delete postponement
+            rcases (effFrom_at hW hsplit : p = 0 ∨ _) with h0 | hlive
+            · exact Or.inl h0
+            · refine Or.inr ?_
+              rw [applySeq_toSOp,
+                Shesha.steps_normal_form (α.map toSOp) ([] : Shesha.St)
+                  (List.Pairwise.sublist
+                    (List.Sublist.map toSOp
+                      (hsplit ▸ List.sublist_append_left α _)) hDB),
+                Shesha.read_dropF, List.mem_filter] at hlive
+              exact hlive.1
+
+end WitnessNF
+
 end Sal.ConditionedMRDTs

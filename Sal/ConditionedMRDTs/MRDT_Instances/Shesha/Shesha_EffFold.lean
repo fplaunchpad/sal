@@ -158,6 +158,11 @@ mutual
           readF_dropT t, readF_dropF ts]
 end
 
+/-- The read of a drop, state form. -/
+theorem read_dropF {D : Nat → Bool} (s : St) :
+    read (dropF D s) = (read s).filter (fun u => !D u) :=
+  readF_dropF s
+
 /-- Drop with a never-true predicate is the identity. -/
 theorem dropF_false : ∀ F : List Tree, dropF (fun _ => false) F = F
   | [] => rfl
@@ -208,6 +213,15 @@ theorem opInsIds_insPart : ∀ ρ : List Op, opInsIds (insPart ρ) = opInsIds ρ
   | [] => rfl
   | .ins x a :: ρ => by rw [insPart, opInsIds, opInsIds, opInsIds_insPart ρ]
   | .del _ :: ρ => by rw [insPart, opInsIds, opInsIds_insPart ρ]
+
+theorem insPart_append :
+    ∀ l₁ l₂ : List Op, insPart (l₁ ++ l₂) = insPart l₁ ++ insPart l₂
+  | [], _ => rfl
+  | .ins x a :: l₁, l₂ => by
+      rw [List.cons_append, insPart, insPart, insPart_append l₁ l₂,
+        List.cons_append]
+  | .del d :: l₁, l₂ => by
+      rw [List.cons_append, insPart, insPart, insPart_append l₁ l₂]
 
 /-- An ordered delete–insert pair is *clean* if the delete touches neither
 the inserted id nor its anchor. (`Pairwise DelBeforeOK` is exactly the
@@ -413,6 +427,19 @@ theorem opHonest_of_effFresh {s : St} {x a : Nat}
     (hx : x ∉ read s) (hx0 : x ≠ 0) (ha : a = 0 ∨ a ∈ read s) :
     OpHonest ([] : St) s (.ins x a) :=
   ⟨hx, fun h => absurd h (by rw [read]; exact List.not_mem_nil), hx0, ha⟩
+
+theorem allIns_insPart : ∀ l : List Op, AllIns (insPart l)
+  | [] => trivial
+  | .ins _ _ :: l => allIns_insPart l
+  | .del _ :: l => allIns_insPart l
+
+theorem anchIds_insPart :
+    ∀ (l : List Op) (p : Nat), anchIds (insPart l) p = anchIds l p
+  | [], _ => rfl
+  | .ins x a :: l, p => by
+      rw [insPart, anchIds, anchIds, anchIds_insPart l p]
+  | .del _ :: l, p => by
+      rw [insPart, anchIds, anchIds_insPart l p]
 
 /-- The insert phase preserves well-formedness. -/
 theorem wf_steps_ins :
