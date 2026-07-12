@@ -495,7 +495,130 @@ theorem presplice_of_rows
         Shesha.row, if_neg hp0]
       exact (Shesha.rowF_absent hnm).symm
 
-/-! ## §5 the row-store residue (the owed core) -/
+/-! ## §5 the branch-pure region
+
+Ids inserted in one branch and not common. Below a branch-born anchor
+*everything* is branch-pure (anchors of common inserts are common —
+closure), the union delete-set restricts to the branch delete-set
+(a cross delete would pull the insert across), and hence the subtree
+front bridge applies: the ghost expansion of a store agreeing with the
+branch forest on the region computes the branch slot's rows — the
+branch-born key class of the residue's `hK6`. -/
+
+/-- Inserted in `ev₁`, not common. -/
+def BranchPure (ev₁ ev₂ : Set (Op SAppOp)) (u : Nat) : Prop :=
+  (∃ p, InsIn ev₁ u p) ∧ ¬ ∃ p, InsIn (ev₁ ∩ ev₂) u p
+
+/-- The region is closed under the branch forest's rows. -/
+theorem branchPure_row_closed {C' : Configuration SheshaD}
+    (hH : SheshaHonest C') {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T₁ : Shesha.St}
+    (hrows₁ : ∀ p x, x ∈ Shesha.row T₁ p ↔ InsIn ev₁ x p) :
+    ∀ c, BranchPure ev₁ ev₂ c → ∀ u, u ∈ Shesha.row T₁ c →
+      BranchPure ev₁ ev₂ u := by
+  intro c hPc u hu
+  obtain ⟨r, hue⟩ := (hrows₁ c u).mp hu
+  refine ⟨⟨c, r, hue⟩, ?_⟩
+  rintro ⟨p', r', hu'⟩
+  have hu'₁ : (u, r', SAppOp.insA p') ∈ ev₁ :=
+    ((Set.mem_inter_iff ..).mp hu').1
+  have heq : ((u, r', SAppOp.insA p') : Op SAppOp)
+      = (u, r, SAppOp.insA c) :=
+    (Configuration.core C').ts_unique (hsub₁ _ hu'₁) (hsub₁ _ hue) rfl
+  rw [heq] at hu'
+  obtain ⟨pc, rc, hce₁⟩ := hPc.1
+  have hc0 : c ≠ 0 := honest_ins_nonzero hH (hsub₁ _ hce₁)
+  obtain ⟨rc', ac', hce, hcvis⟩ :=
+    honest_anchor_sees_ins hH hc0 (hsub₁ _ hue)
+  have hnc : ¬ SheshaD.toCRDTSig.commutes
+      (c, rc', SAppOp.insA ac') (u, r, SAppOp.insA c) :=
+    ncomm_ins_anchor_child hc0 (honest_ins_ne_anchor hH hce)
+  have hc₂ : (c, rc', SAppOp.insA ac') ∈ ev₂ :=
+    hclosed₂ _ _ hcvis hnc ((Set.mem_inter_iff ..).mp hu').2
+  have hceq : ((c, rc, SAppOp.insA pc) : Op SAppOp)
+      = (c, rc', SAppOp.insA ac') :=
+    (Configuration.core C').ts_unique (hsub₁ _ hce₁) hce rfl
+  exact hPc.2 ⟨ac', rc',
+    (Set.mem_inter_iff ..).mpr ⟨hceq ▸ hce₁, hc₂⟩⟩
+
+/-- On the region, the union delete-set is the branch delete-set. -/
+theorem branchPure_del {C' : Configuration SheshaD}
+    (hH : SheshaHonest C') {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events)
+    (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂) :
+    ∀ u, BranchPure ev₁ ev₂ u →
+      decide (DelIn (ev₁ ∪ ev₂) u) = decide (DelIn ev₁ u) := by
+  intro u hPu
+  apply decide_eq_decide.mpr
+  constructor
+  · intro hd
+    rcases delIn_union_iff.mp hd with h | h
+    · exact h
+    · obtain ⟨p, r, hue⟩ := hPu.1
+      have hu₂ : (u, r, SAppOp.insA p) ∈ ev₂ :=
+        ins_mem_of_del hH hsub₂ hclosed₂ (hsub₁ _ hue) h
+      exact absurd ⟨p, r, (Set.mem_inter_iff ..).mpr ⟨hue, hu₂⟩⟩ hPu.2
+  · exact fun h => delIn_union_iff.mpr (Or.inl h)
+
+/-- The region is closed under dead-descent chains. -/
+theorem branchPure_chain {C' : Configuration SheshaD}
+    (hH : SheshaHonest C') {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T₁ : Shesha.St} {D : Nat → Bool}
+    (hrows₁ : ∀ p x, x ∈ Shesha.row T₁ p ↔ InsIn ev₁ x p)
+    {q u : Nat} (hch : Shesha.RowChain T₁ D q u)
+    (hPq : BranchPure ev₁ ev₂ q) : BranchPure ev₁ ev₂ u := by
+  induction hch with
+  | direct hwq =>
+      exact branchPure_row_closed hH hsub₁ hclosed₂ hrows₁ _ hPq _ hwq
+  | @through q' c w hcq hDc hch ih =>
+      exact ih (branchPure_row_closed hH hsub₁ hclosed₂ hrows₁ _ hPq _ hcq)
+
+/-- **The branch-born key equation** (`hK6`, branch-born class, branch-1
+form; the branch-2 form is the mirror instance): at a live branch-pure
+key, the ghost expansion of any store agreeing with the branch forest on
+the region *is* the branch slot's row — which is the merge's output row
+at branch-born keys (`outRows_alGet_of_bornA` + marker-freeness of the
+region). -/
+theorem born_key_expand {C' : Configuration SheshaD}
+    (hH : SheshaHonest C') {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events)
+    (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    {T₁ : Shesha.St} (hwf₁ : Shesha.WF T₁)
+    (hrows₁ : ∀ p x, x ∈ Shesha.row T₁ p ↔ InsIn ev₁ x p)
+    (rows : List (Nat × List Nat)) (lvl : Nat → Nat) (n : Nat)
+    (hedge : ∀ p u, u ∈ Shesha.alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ Shesha.alGet rows p → lvl u ≤ n)
+    (hagree : ∀ c, BranchPure ev₁ ev₂ c →
+      Shesha.alGet rows c = Shesha.row T₁ c)
+    {q : Nat} (hPq : BranchPure ev₁ ev₂ q)
+    (hqlive : q ∈ Shesha.read
+      (Shesha.dropF (fun u => decide (DelIn ev₁ u)) T₁))
+    (f : Nat) (hinv : n ≤ lvl q + f) :
+    Shesha.expandRow rows (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) f
+        (Shesha.alGet rows q)
+      = Shesha.row (Shesha.dropF (fun u => decide (DelIn ev₁ u)) T₁) q := by
+  rw [Shesha.read_dropF, List.mem_filter] at hqlive
+  have hD'q : decide (DelIn ev₁ q) = false := by
+    have h2 := hqlive.2
+    rw [Bool.not_eq_eq_eq_not, Bool.not_true] at h2
+    exact h2
+  exact Shesha.expand_eq_row_dropF hwf₁ rows _ _ lvl n
+    (BranchPure ev₁ ev₂) hedge hbound hagree
+    (branchPure_del hH hsub₁ hsub₂ hclosed₂)
+    (branchPure_row_closed hH hsub₁ hclosed₂ hrows₁)
+    hqlive.1 hPq hD'q f hinv
+
+/-! ## §6 the row-store residue (the owed core) -/
 
 open Classical in
 /-- **The row-store residue** — the merge-correctness core at the *row*
