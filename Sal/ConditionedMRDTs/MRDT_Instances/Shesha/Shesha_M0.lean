@@ -723,7 +723,7 @@ theorem base_addr {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) {u k : Nat}
     (h : u ∈ alGet (outRows L A B) k) :
     (u ∈ read L ∧ wp L A B u = true ∧ wpar L (wp L A B) u = k) ∨
-    (contains L u = false ∧
+    (contains L u = false ∧ alHas (skelOf L A B).rows k = true ∧
       ∃ c ∈ mergeCmds L A B, u ∈ cmdRun c ∧ cmdTarget c = k) ∨
     (contains L u = false ∧ k ∈ bornIds L A ∧ u ∈ row A k) ∨
     (contains L u = false ∧ k ∈ bornIds L B ∧ u ∈ row B k) := by
@@ -734,12 +734,12 @@ theorem base_addr {L A B : St} (mok : ModelOK L A B)
       obtain ⟨hin, hw⟩ := hsk
       rw [List.mem_filter] at hin
       exact Or.inl ⟨hin.1, hin.2, by simpa using hw⟩
-    · refine Or.inr (Or.inl ⟨?_, Cmd.slot k k' r, slotRuns_mem_cmd hr,
+    · refine Or.inr (Or.inl ⟨?_, hk, Cmd.slot k k' r, slotRuns_mem_cmd hr,
         hur, rfl⟩)
       rcases List.mem_append.mp (slotRuns_mem_cmd hr) with hc | hc
       · exact (branchCmds_run hc).mem_notL hur
       · exact (branchCmds_run hc).mem_notL hur
-    · refine Or.inr (Or.inl ⟨?_, Cmd.atEnd k r, endRuns_mem_cmd hr,
+    · refine Or.inr (Or.inl ⟨?_, hk, Cmd.atEnd k r, endRuns_mem_cmd hr,
         hur, rfl⟩)
       rcases List.mem_append.mp (endRuns_mem_cmd hr) with hc | hc
       · exact (branchCmds_run hc).mem_notL hur
@@ -837,10 +837,10 @@ theorem base_unique {L A B : St} (mok : ModelOK L A B)
   have h8 : contains L u = false → u ∈ read A → u ∈ read B → False :=
     fun hnL hA' hB' => contains_eq_false.mp hnL (mok.common u hA' hB')
   rcases base_addr mok hA hB h₁ with
-    ⟨hL₁, hw₁, hk₁⟩ | ⟨hnL₁, c₁, hc₁, hu₁, ht₁⟩ |
+    ⟨hL₁, hw₁, hk₁⟩ | ⟨hnL₁, -, c₁, hc₁, hu₁, ht₁⟩ |
     ⟨hnL₁, hb₁, hr₁⟩ | ⟨hnL₁, hb₁, hr₁⟩ <;>
   rcases base_addr mok hA hB h₂ with
-    ⟨hL₂, hw₂, hk₂⟩ | ⟨hnL₂, c₂, hc₂, hu₂, ht₂⟩ |
+    ⟨hL₂, hw₂, hk₂⟩ | ⟨hnL₂, -, c₂, hc₂, hu₂, ht₂⟩ |
     ⟨hnL₂, hb₂, hr₂⟩ | ⟨hnL₂, hb₂, hr₂⟩
   -- (1,1): both skeleton entries — hosted at the same wpar
   · rw [← hk₁, ← hk₂]
@@ -924,5 +924,535 @@ theorem base_unique {L A B : St} (mok : ModelOK L A B)
   · by_cases hpe : k₁ = k₂
     · exact hpe
     · exact (row_disjoint mok.wfB hpe hr₁ hr₂).elim
+
+/-! ## §4 The marker splice: placement, chains, fuel adequacy -/
+
+/-- Markers are live L-nodes in the working set. -/
+theorem marker_spec {L A B : St} {u : Nat} (h : markerp L A B u = true) :
+    u ∈ read L ∧ wp L A B u = true := by
+  rw [markerp, Bool.and_eq_true_iff] at h
+  exact ⟨contains_iff.mp h.1, by rw [wp]; simp [markerp, h.1, h.2]⟩
+
+theorem markerp_zero {L A B : St} (hwf : WF L) :
+    markerp L A B 0 = false := by
+  rw [markerp, bool_eq_false (fun hc => hwf.2 (contains_iff.mp hc))]
+  rfl
+
+theorem depthOf_absent {s : St} {u : Nat} (h : u ∉ read s) :
+    depthOf s u = 0 := by
+  rw [depthOf, depthF_eq_none h]
+  rfl
+
+mutual
+  theorem parT_eq_none (u cur : Nat) :
+      ∀ t : Tree, u ∉ readT t → parT cur u t = none
+    | .node i cs, h => by
+        rw [parT, if_neg (show ¬ i = u from fun e =>
+          h (by rw [readT, e]; exact List.mem_cons_self ..))]
+        exact parF_eq_none u i cs fun hm =>
+          h (by rw [readT]; exact List.mem_cons_of_mem _ hm)
+  theorem parF_eq_none (u cur : Nat) :
+      ∀ ts : List Tree, u ∉ readF ts → parF cur u ts = none
+    | [], _ => rfl
+    | t :: ts, h => by
+        rw [parF_cons_none (parT_eq_none u cur t fun hm =>
+          h (by rw [readF, List.mem_append]; exact Or.inl hm))]
+        exact parF_eq_none u cur ts fun hm =>
+          h (by rw [readF, List.mem_append]; exact Or.inr hm)
+end
+
+theorem parOf_absent {s : St} {u : Nat} (h : u ∉ read s) : parOf s u = 0 := by
+  rw [parOf, parF_eq_none u 0 s h]
+  rfl
+
+/-- `wpar` fixes the root. -/
+theorem wpar_zero {L : St} (hwf : WF L) (W : Nat → Bool) :
+    wpar L W 0 = 0 := by
+  rw [wpar, parOf_absent hwf.2, wparGo_zero]
+
+/-! ### Key existence: placed nodes and their hosts are skeleton keys -/
+
+theorem alApp_keys_super {al : List (Nat × List Nat)} {k v x : Nat}
+    (hx : x ∈ al.map (·.1)) : x ∈ (alApp al k v).map (·.1) := by
+  rw [alApp_keys]
+  split
+  · exact hx
+  · exact List.mem_append.mpr (Or.inl hx)
+
+theorem alEnsure_keys_super {al : List (Nat × List Nat)} {k x : Nat}
+    (hx : x ∈ al.map (·.1)) : x ∈ (alEnsure al k).map (·.1) := by
+  rw [alEnsure_keys]
+  split
+  · exact hx
+  · exact List.mem_append.mpr (Or.inl hx)
+
+theorem alApp_keys_self (al : List (Nat × List Nat)) (k v : Nat) :
+    k ∈ (alApp al k v).map (·.1) := by
+  rw [alApp_keys]
+  by_cases h : alHas al k = true
+  · rw [if_pos h]
+    exact alHas_iff_mem_keys.mp h
+  · rw [if_neg h]
+    exact List.mem_append.mpr (Or.inr (by simp))
+
+theorem alEnsure_keys_self (al : List (Nat × List Nat)) (k : Nat) :
+    k ∈ (alEnsure al k).map (·.1) := by
+  rw [alEnsure_keys]
+  by_cases h : alHas al k = true
+  · rw [if_pos h]
+    exact alHas_iff_mem_keys.mp h
+  · rw [if_neg h]
+    exact List.mem_append.mpr (Or.inr (by simp))
+
+theorem skelFold_keys_super (h : Nat → Nat) :
+    ∀ (l : List Nat) (sk : Skel) (x : Nat),
+      (x ∈ sk.rows.map (·.1) ∨ x ∈ l ∨ x ∈ l.map h) →
+      x ∈ ((l.foldl (fun sk u =>
+          { rows := alEnsure (alApp sk.rows (h u) u) u
+            rowof := sk.rowof ++ [(u, h u)] }) sk).rows).map (·.1)
+  | [], sk, x, hx => by
+      rcases hx with hx | hx | hx
+      · exact hx
+      · exact absurd hx (by simp)
+      · exact absurd hx (by simp)
+  | u :: l, sk, x, hx => by
+      rw [List.foldl_cons]
+      refine skelFold_keys_super h l _ x ?_
+      dsimp only
+      rcases hx with hx | hx | hx
+      · exact Or.inl (alEnsure_keys_super (alApp_keys_super hx))
+      · rcases List.mem_cons.mp hx with he | hx
+        · rw [he]
+          exact Or.inl (alEnsure_keys_self _ u)
+        · exact Or.inr (Or.inl hx)
+      · rw [List.map_cons] at hx
+        rcases List.mem_cons.mp hx with he | hx
+        · rw [he]
+          exact Or.inl (alEnsure_keys_super
+            (alApp_keys_self sk.rows (h u) u))
+        · exact Or.inr (Or.inr hx)
+
+/-- Every placed node is a skeleton key. -/
+theorem skelOf_alHas_of_placed {L A B : St} {u : Nat}
+    (hu : u ∈ (read L).filter (wp L A B)) :
+    alHas (skelOf L A B).rows u = true := by
+  rw [alHas_iff_mem_keys]
+  simp only [skelOf]
+  exact skelFold_keys_super _ _ _ u (Or.inr (Or.inl hu))
+
+/-- Every placed node's host is a skeleton key. -/
+theorem skelOf_alHas_host {L A B : St} {u : Nat}
+    (hu : u ∈ (read L).filter (wp L A B)) :
+    alHas (skelOf L A B).rows (wpar L (wp L A B) u) = true := by
+  rw [alHas_iff_mem_keys]
+  simp only [skelOf]
+  exact skelFold_keys_super _ _ _ _
+    (Or.inr (Or.inr (List.mem_map.mpr ⟨u, hu, rfl⟩)))
+
+/-- Skeleton entries survive assembly (runs only interleave around them). -/
+theorem mem_rowAssemble_of_skel {cmds : List Cmd} {p : Nat}
+    {skelRow : List Nat} {u : Nat} (hu : u ∈ skelRow) :
+    u ∈ rowAssemble cmds p skelRow := by
+  have h1 : 0 < skelRow.count u := List.count_pos_iff.mpr hu
+  have h2 := rowAssemble_count cmds p skelRow u
+  exact List.count_pos_iff.mp (by omega)
+
+/-- **Marker placement**: a marker occurs in its host's merged row… -/
+theorem marker_in_host_row {L A B : St} (mok : ModelOK L A B) {m : Nat}
+    (hm : markerp L A B m = true) :
+    m ∈ alGet (outRows L A B) (wpar L (wp L A B) m) := by
+  obtain ⟨hmL, hmw⟩ := marker_spec hm
+  have hplaced : m ∈ (read L).filter (wp L A B) :=
+    List.mem_filter.mpr ⟨hmL, hmw⟩
+  rw [outRows_alGet_of_skel (skelOf_alHas_host hplaced)]
+  refine mem_rowAssemble_of_skel ?_
+  rw [skelOf_alGet]
+  exact List.mem_filter.mpr ⟨hplaced, by simp⟩
+
+/-- …and only there. -/
+theorem marker_row_key {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {m k : Nat}
+    (hm : markerp L A B m = true)
+    (hk : m ∈ alGet (outRows L A B) k) : k = wpar L (wp L A B) m := by
+  rcases base_addr mok hA hB hk with ⟨-, -, hw⟩ | ⟨hnL, -, -⟩ | ⟨hnL, -⟩ |
+    ⟨hnL, -⟩
+  · exact hw.symm
+  all_goals simp [contains_iff.mpr (marker_spec hm).1] at hnL
+
+/-- A marker in a merged row sits under its `wpar`, strictly shallower. -/
+theorem marker_in_row_deeper {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {c k : Nat}
+    (hcm : markerp L A B c = true) (hc : c ∈ alGet (outRows L A B) k) :
+    k = 0 ∨ (k ∈ read L ∧ depthOf L k < depthOf L c) := by
+  have hk := marker_row_key mok hA hB hcm hc
+  rcases wpar_spec mok.wfL (wp L A B) (marker_spec hcm).1 with h0 | ⟨hm, -, hd⟩
+  · exact Or.inl (hk.trans h0)
+  · refine Or.inr ?_
+    rw [hk]
+    exact ⟨hm, hd⟩
+
+/-- **Fuel adequacy**: with a depth's worth of fuel, the splice eliminates
+every marker (splice chains descend strictly in L-depth). -/
+theorem expandRow_marker_free {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) :
+    ∀ (fuel d : Nat) (r : List Nat),
+      (read L).length < fuel + d →
+      (∀ m ∈ r, markerp L A B m = true → m ∈ read L ∧ d ≤ depthOf L m) →
+      ∀ u ∈ expandRow (outRows L A B) (markerp L A B) fuel r,
+        markerp L A B u = false
+  | 0, d, r, hbud, hr, u, hu => by
+      rw [expandRow] at hu
+      by_cases hm : markerp L A B u = true
+      · obtain ⟨hmem, hd⟩ := hr u hu hm
+        have := depthOf_lt_length hmem
+        omega
+      · exact bool_eq_false hm
+  | fuel + 1, d, r, hbud, hr, u, hu => by
+      rw [expandRow, List.mem_flatMap] at hu
+      obtain ⟨v, hv, hu⟩ := hu
+      by_cases hmv : markerp L A B v = true
+      · rw [if_pos hmv] at hu
+        obtain ⟨hvL, hvd⟩ := hr v hv hmv
+        refine expandRow_marker_free mok hA hB fuel (depthOf L v + 1)
+          (alGet (outRows L A B) v) (by omega) ?_ u hu
+        intro m hm hmm
+        rcases marker_in_row_deeper mok hA hB hmm hm with h0 | ⟨-, hd⟩
+        · rw [h0, markerp_zero mok.wfL] at hmv
+          cases hmv
+        · exact ⟨(marker_spec hmm).1, by omega⟩
+      · rw [if_neg hmv] at hu
+        rcases List.mem_singleton.mp hu with rfl
+        exact bool_eq_false hmv
+
+/-- The merged rows expand marker-free under the merge's own fuel. -/
+theorem expandRow_out_marker_free {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {fuel : Nat}
+    (hfuel : (read L).length < fuel) (k : Nat) :
+    ∀ u ∈ expandRow (outRows L A B) (markerp L A B) fuel
+        (alGet (outRows L A B) k),
+      markerp L A B u = false :=
+  expandRow_marker_free mok hA hB fuel 0 _ (by omega)
+    (fun m _ hm => ⟨(marker_spec hm).1, Nat.zero_le _⟩)
+
+/-! ### Splice chains: where an expanded occurrence comes from -/
+
+/-- `u`'s row is reachable from key `k` through marker splices. -/
+inductive SpliceReach (L A B : St) (u : Nat) : Nat → Prop where
+  | base {k} : u ∈ alGet (outRows L A B) k → SpliceReach L A B u k
+  | step {k m} : markerp L A B m = true → m ∈ alGet (outRows L A B) k →
+      SpliceReach L A B u m → SpliceReach L A B u k
+
+/-- Iterated attach-deep host. -/
+def wparIter (L A B : St) : Nat → Nat → Nat
+  | 0, b => b
+  | j + 1, b => wpar L (wp L A B) (wparIter L A B j b)
+
+theorem expandRow_spliceReach {L A B : St} {u : Nat} :
+    ∀ (fuel : Nat) (k : Nat),
+      u ∈ expandRow (outRows L A B) (markerp L A B) fuel
+        (alGet (outRows L A B) k) →
+      SpliceReach L A B u k
+  | 0, k, hu => .base (by rwa [expandRow] at hu)
+  | fuel + 1, k, hu => by
+      rw [expandRow, List.mem_flatMap] at hu
+      obtain ⟨v, hv, hu⟩ := hu
+      by_cases hmv : markerp L A B v = true
+      · rw [if_pos hmv] at hu
+        exact .step hmv hv (expandRow_spliceReach fuel v hu)
+      · rw [if_neg hmv] at hu
+        rcases List.mem_singleton.mp hu with rfl
+        exact .base hv
+
+/-- Chain form: reachability is an iterated-`wpar` ascent from the base
+row, through markers. -/
+theorem spliceReach_chain {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u k : Nat}
+    (h : SpliceReach L A B u k) :
+    ∃ b j, u ∈ alGet (outRows L A B) b ∧ k = wparIter L A B j b ∧
+      ∀ i, i < j → markerp L A B (wparIter L A B i b) = true := by
+  induction h with
+  | base hb =>
+      exact ⟨_, 0, hb, rfl, fun i hi => absurd hi (Nat.not_lt_zero i)⟩
+  | step hm hmk _ ih =>
+      obtain ⟨b, j, hb, he, hint⟩ := ih
+      refine ⟨b, j + 1, hb, ?_, ?_⟩
+      · rw [wparIter, ← he]
+        exact marker_row_key mok hA hB hm hmk
+      · intro i hi
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hlt | heq
+        · exact hint i hlt
+        · rw [heq, ← he]
+          exact hm
+
+/-- One `wpar` step off a marker: the root, or strictly shallower. -/
+theorem wpar_step' {L A B : St} (mok : ModelOK L A B) {b i : Nat}
+    (hmi : markerp L A B (wparIter L A B i b) = true) :
+    wparIter L A B (i + 1) b = 0 ∨
+      (wparIter L A B (i + 1) b ∈ read L ∧
+        depthOf L (wparIter L A B (i + 1) b) <
+          depthOf L (wparIter L A B i b)) := by
+  rcases wpar_spec mok.wfL (wp L A B) (marker_spec hmi).1 with h0 |
+    ⟨hm, -, hd⟩
+  · exact Or.inl (by rw [wparIter]; exact h0)
+  · exact Or.inr (by rw [wparIter]; exact ⟨hm, hd⟩)
+
+theorem chain_step_lt {L A B : St} (mok : ModelOK L A B) {b i : Nat}
+    (hmi : markerp L A B (wparIter L A B i b) = true)
+    (hmi1 : markerp L A B (wparIter L A B (i + 1) b) = true) :
+    depthOf L (wparIter L A B (i + 1) b) <
+      depthOf L (wparIter L A B i b) := by
+  rcases wpar_step' mok hmi with h0 | ⟨-, hd⟩
+  · rw [h0, markerp_zero mok.wfL] at hmi1
+    cases hmi1
+  · exact hd
+
+/-- Along an all-marker stretch of the ascent, depth strictly decreases. -/
+theorem chain_depth_lt {L A B : St} (mok : ModelOK L A B) (b : Nat) :
+    ∀ (i₂ i₁ : Nat), i₁ < i₂ →
+      (∀ i, i₁ ≤ i → i ≤ i₂ → markerp L A B (wparIter L A B i b) = true) →
+      depthOf L (wparIter L A B i₂ b) < depthOf L (wparIter L A B i₁ b)
+  | 0, i₁, h, _ => absurd h (Nat.not_lt_zero i₁)
+  | i + 1, i₁, h, hm => by
+      rcases Nat.lt_succ_iff_lt_or_eq.mp h with hlt | heq
+      · have h1 := chain_depth_lt mok b i i₁ hlt
+          (fun j hj1 hj2 => hm j hj1 (Nat.le_succ_of_le hj2))
+        have h2 := chain_step_lt mok (b := b) (i := i)
+          (hm i (Nat.le_of_lt hlt) (Nat.le_succ i))
+          (hm (i + 1) (by omega) (Nat.le_refl _))
+        omega
+      · subst heq
+        exact chain_step_lt mok (hm i₁ (Nat.le_refl _) (Nat.le_succ _))
+          (hm (i₁ + 1) (Nat.le_succ _) (Nat.le_refl _))
+
+/-- A marker never sits in its own merged row. -/
+theorem marker_not_self_row {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {m : Nat}
+    (hm : markerp L A B m = true)
+    (hself : m ∈ alGet (outRows L A B) m) : False := by
+  have hk := marker_row_key mok hA hB hm hself
+  rcases wpar_spec mok.wfL (wp L A B) (marker_spec hm).1 with h0 | ⟨-, -, hd⟩
+  · rw [hk, h0, markerp_zero mok.wfL] at hm
+    cases hm
+  · rw [← hk] at hd
+    omega
+
+/-- **Emitter uniqueness** (H2): a non-marker id's row is spliced into
+exactly one non-marker key's expansion. -/
+theorem spliceReach_nonmarker_unique {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u q₁ q₂ : Nat}
+    (h₁ : SpliceReach L A B u q₁) (h₂ : SpliceReach L A B u q₂)
+    (hn₁ : markerp L A B q₁ = false) (hn₂ : markerp L A B q₂ = false) :
+    q₁ = q₂ := by
+  obtain ⟨b₁, j₁, hb₁, he₁, hint₁⟩ := spliceReach_chain mok hA hB h₁
+  obtain ⟨b₂, j₂, hb₂, he₂, hint₂⟩ := spliceReach_chain mok hA hB h₂
+  have hbb : b₁ = b₂ := base_unique mok hA hB hb₁ hb₂
+  subst hbb
+  rcases Nat.lt_trichotomy j₁ j₂ with hlt | heq | hgt
+  · have hmark := hint₂ j₁ hlt
+    rw [← he₁, hn₁] at hmark
+    cases hmark
+  · rw [he₁, he₂, heq]
+  · have hmark := hint₁ j₂ hgt
+    rw [← he₂, hn₂] at hmark
+    cases hmark
+
+/-- A marker with `SpliceReach` to `u` climbing back into its own row's
+key is impossible: interior of a `wpar` cycle. -/
+theorem chain_no_cycle {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {b : Nat} {j₁ j₂ : Nat}
+    (hlt : j₁ < j₂)
+    (hint : ∀ i, i < j₂ → markerp L A B (wparIter L A B i b) = true)
+    (hj₂ : markerp L A B (wparIter L A B j₂ b) = true)
+    (hkey : wparIter L A B (j₁ + 1) b =
+      wpar L (wp L A B) (wparIter L A B j₂ b)) : False := by
+  rcases Nat.lt_or_ge (j₁ + 1) j₂ with hlt2 | hge
+  · -- strictly interior: depth of the top of the stretch beats its own wpar
+    have hdlt : depthOf L (wparIter L A B j₂ b) <
+        depthOf L (wparIter L A B (j₁ + 1) b) :=
+      chain_depth_lt mok b j₂ (j₁ + 1) hlt2 (fun i h1 h2 => by
+        rcases Nat.lt_or_ge i j₂ with h | h
+        · exact hint i h
+        · rw [Nat.le_antisymm h2 h]
+          exact hj₂)
+    rcases wpar_step' mok hj₂ with h0 | ⟨-, hd⟩
+    · -- wpar of the j₂ marker is 0 = the (j₁+1) element, itself a marker
+      rw [wparIter] at h0
+      have hz : wparIter L A B (j₁ + 1) b = 0 := hkey.trans h0
+      have hmk := hint (j₁ + 1) hlt2
+      rw [hz, markerp_zero mok.wfL] at hmk
+      cases hmk
+    · rw [wparIter] at hd
+      rw [← hkey] at hd
+      omega
+  · -- j₂ = j₁ + 1: the marker sits in its own row's key
+    have he : j₂ = j₁ + 1 := Nat.le_antisymm hge (Nat.succ_le_of_lt hlt)
+    subst he
+    -- wparIter (j₁+1) b = wpar (wparIter (j₁+1) b): self-wpar
+    rcases wpar_spec mok.wfL (wp L A B)
+      (marker_spec hj₂).1 with h0 | ⟨-, -, hd⟩
+    · rw [← hkey] at h0
+      rw [h0, markerp_zero mok.wfL] at hj₂
+      cases hj₂
+    · rw [← hkey] at hd
+      omega
+
+/-- **Contributor uniqueness**: within one merged row, at most one element
+carries `u` in its splice closure. -/
+theorem contributor_unique {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u k : Nat}
+    {v₁ v₂ : Nat} (hv₁ : v₁ ∈ alGet (outRows L A B) k)
+    (hv₂ : v₂ ∈ alGet (outRows L A B) k)
+    (hc₁ : v₁ = u ∨ (markerp L A B v₁ = true ∧ SpliceReach L A B u v₁))
+    (hc₂ : v₂ = u ∨ (markerp L A B v₂ = true ∧ SpliceReach L A B u v₂)) :
+    v₁ = v₂ := by
+  -- symmetric helper: a direct occurrence vs a spliced one is impossible
+  have key : ∀ v w : Nat, v ∈ alGet (outRows L A B) k →
+      w ∈ alGet (outRows L A B) k → v = u →
+      markerp L A B w = true → SpliceReach L A B u w → False := by
+    intro v w hv hw hvu hwm hwr
+    obtain ⟨b, j, hb, he, hint⟩ := spliceReach_chain mok hA hB hwr
+    have hbk : b = k := base_unique mok hA hB hb (hvu ▸ hv)
+    subst hbk
+    rcases Nat.eq_zero_or_pos j with hj0 | hjpos
+    · rw [hj0] at he
+      have hwb : w = b := he
+      exact marker_not_self_row mok hA hB hwm (hwb.symm ▸ hw)
+    · -- w's wpar closes a cycle back onto the base key b
+      have hcyc : wparIter L A B (j + 1) b = b := by
+        show wpar L (wp L A B) (wparIter L A B j b) = b
+        rw [← he]
+        exact (marker_row_key mok hA hB hwm hw).symm
+      have hmall : ∀ i, 0 ≤ i → i ≤ j + 1 →
+          markerp L A B (wparIter L A B i b) = true := by
+        intro i _ hi
+        rcases Nat.lt_or_ge i j with h | h
+        · exact hint i h
+        · rcases Nat.eq_or_lt_of_le h with hij | h2
+          · rw [← hij, ← he]
+            exact hwm
+          · have hij1 : i = j + 1 := by omega
+            rw [hij1, hcyc]
+            exact hint 0 hjpos
+      have hdlt := chain_depth_lt mok b (j + 1) 0 (Nat.succ_pos j)
+        (fun i h1 h2 => hmall i h1 h2)
+      rw [hcyc, show wparIter L A B 0 b = b from rfl] at hdlt
+      omega
+  rcases hc₁ with hvu₁ | ⟨hm₁, hr₁⟩
+  · rcases hc₂ with hvu₂ | ⟨hm₂, hr₂⟩
+    · rw [hvu₁, hvu₂]
+    · exact (key v₁ v₂ hv₁ hv₂ hvu₁ hm₂ hr₂).elim
+  · rcases hc₂ with hvu₂ | ⟨hm₂, hr₂⟩
+    · exact (key v₂ v₁ hv₂ hv₁ hvu₂ hm₁ hr₁).elim
+    · -- both markers: same base, same wpar target — same chain index
+      obtain ⟨b₁, j₁, hb₁, he₁, hint₁⟩ := spliceReach_chain mok hA hB hr₁
+      obtain ⟨b₂, j₂, hb₂, he₂, hint₂⟩ := spliceReach_chain mok hA hB hr₂
+      have hbb : b₁ = b₂ := base_unique mok hA hB hb₁ hb₂
+      subst hbb
+      rcases Nat.lt_trichotomy j₁ j₂ with hlt | heq | hgt
+      · -- v₁ deeper index: k = wpar v₁ closes a cycle against v₂'s stretch
+        refine (chain_no_cycle mok hA hB (b := b₁) (j₁ := j₁) (j₂ := j₂)
+          hlt ?_ (he₂ ▸ hm₂) ?_).elim
+        · intro i hi
+          exact hint₂ i hi
+        · rw [show wparIter L A B (j₁ + 1) b₁ =
+              wpar L (wp L A B) (wparIter L A B j₁ b₁) from rfl, ← he₁, ← he₂,
+            (marker_row_key mok hA hB hm₁ hv₁ :
+              k = wpar L (wp L A B) v₁).symm,
+            (marker_row_key mok hA hB hm₂ hv₂ :
+              k = wpar L (wp L A B) v₂)]
+      · rw [he₁, he₂, heq]
+      · refine (chain_no_cycle mok hA hB (b := b₁) (j₁ := j₂) (j₂ := j₁)
+          hgt ?_ (he₁ ▸ hm₁) ?_).elim
+        · intro i hi
+          exact hint₁ i hi
+        · rw [show wparIter L A B (j₂ + 1) b₁ =
+              wpar L (wp L A B) (wparIter L A B j₂ b₁) from rfl, ← he₂, ← he₁,
+            (marker_row_key mok hA hB hm₂ hv₂ :
+              k = wpar L (wp L A B) v₂).symm,
+            (marker_row_key mok hA hB hm₁ hv₁ :
+              k = wpar L (wp L A B) v₁)]
+
+theorem sum_ite_count (w : Nat) :
+    ∀ l : List Nat,
+      (l.map (fun v => if w == v then 1 else 0)).sum = l.count w
+  | [] => rfl
+  | a :: l => by
+      rw [List.map_cons, List.sum_cons, sum_ite_count w l, List.count_cons]
+      by_cases h : w = a
+      · rw [if_pos (by simp [h]), if_pos (by simp [h])]
+        omega
+      · rw [if_neg (by simp [h]),
+          if_neg (show ¬ ((a == w) = true) from by
+            simp only [beq_iff_eq]
+            exact fun e => h e.symm)]
+        omega
+
+/-- **H1**: a key's expansion holds each id at most once. -/
+theorem expandRow_count_le_one {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
+    ∀ (fuel k : Nat),
+      (expandRow (outRows L A B) (markerp L A B) fuel
+        (alGet (outRows L A B) k)).count u ≤ 1
+  | 0, k => by
+      rw [expandRow]
+      exact base_count1 mok k u
+  | fuel + 1, k => by
+      rw [expandRow, count_flatMap]
+      by_cases hex : ∃ w, w ∈ alGet (outRows L A B) k ∧
+          (w = u ∨ (markerp L A B w = true ∧ SpliceReach L A B u w))
+      · obtain ⟨w, hwmem, hw⟩ := hex
+        have hpt : ∀ v ∈ alGet (outRows L A B) k,
+            ((if markerp L A B v = true then
+                expandRow (outRows L A B) (markerp L A B) fuel
+                  (alGet (outRows L A B) v)
+              else [v]).count u) ≤ if w == v then 1 else 0 := by
+          intro v hv
+          by_cases hmv : markerp L A B v = true
+          · rw [if_pos hmv]
+            by_cases hz : (expandRow (outRows L A B) (markerp L A B) fuel
+                (alGet (outRows L A B) v)).count u = 0
+            · rw [hz]
+              exact Nat.zero_le _
+            · have hmem : u ∈ expandRow (outRows L A B) (markerp L A B) fuel
+                  (alGet (outRows L A B) v) :=
+                List.count_pos_iff.mp (Nat.pos_of_ne_zero hz)
+              have hveq : v = w := contributor_unique mok hA hB hv hwmem
+                (Or.inr ⟨hmv, expandRow_spliceReach fuel v hmem⟩) hw
+              rw [if_pos (show (w == v) = true by simp [hveq])]
+              exact expandRow_count_le_one mok hA hB u fuel v
+          · rw [if_neg hmv]
+            by_cases hvu : v = u
+            · have hveq : v = w := contributor_unique mok hA hB hv hwmem
+                (Or.inl hvu) hw
+              rw [if_pos (show (w == v) = true by simp [hveq])]
+              have := List.count_le_length (l := [v]) (a := u)
+              simpa using this
+            · have hz : ([v] : List Nat).count u = 0 := by
+                rw [List.count_eq_zero]
+                intro hc
+                exact hvu (List.mem_singleton.mp hc).symm
+              rw [hz]
+              exact Nat.zero_le _
+        exact Nat.le_trans (sum_le_sum' hpt)
+          (Nat.le_trans (Nat.le_of_eq (sum_ite_count w _))
+            (base_count1 mok k w))
+      · refine Nat.le_trans (Nat.le_of_eq (sum_eq_zero' fun x hx => ?_))
+          (by omega)
+        rw [List.mem_map] at hx
+        obtain ⟨v, hv, he⟩ := hx
+        rw [← he]
+        by_cases hmv : markerp L A B v = true
+        · rw [if_pos hmv]
+          by_cases hz : (expandRow (outRows L A B) (markerp L A B) fuel
+              (alGet (outRows L A B) v)).count u = 0
+          · exact hz
+          · exact absurd ⟨v, hv, Or.inr ⟨hmv, expandRow_spliceReach fuel v
+              (List.count_pos_iff.mp (Nat.pos_of_ne_zero hz))⟩⟩ hex
+        · rw [if_neg hmv]
+          by_cases hvu : v = u
+          · exact absurd ⟨v, hv, Or.inl hvu⟩ hex
+          · rw [List.count_eq_zero]
+            intro hc
+            exact hvu (List.mem_singleton.mp hc).symm
 
 end Shesha
