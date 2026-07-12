@@ -338,4 +338,83 @@ theorem honest_no_del_anchor_vis_ins (hH : SheshaHonest C)
       Shesha.read_delete, Shesha.seqDel, List.mem_filter] at hmem
     exact absurd rfl (of_decide_eq_true hmem.2)
 
+/-! ## §4 non-commutation certificates -/
+
+theorem sUpdate_ins (s : Shesha.St) (t : Timestamp) (r : Replica) (a : Nat) :
+    SheshaD.toCRDTSig.update s (t, r, SAppOp.insA a) = Shesha.insert s t a :=
+  rfl
+
+theorem sUpdate_del (s : Shesha.St) (t : Timestamp) (r : Replica) (d : Nat) :
+    SheshaD.toCRDTSig.update s (t, r, SAppOp.delA d) = Shesha.delete s d :=
+  rfl
+
+/-- **G1**: an id's insert and its delete do not commute. -/
+theorem ncomm_ins_del_self {x : Nat} {ri rd : Replica} {ai : Nat}
+    {td : Timestamp} (hxa : x ≠ ai) :
+    ¬ SheshaD.toCRDTSig.commutes
+        (x, ri, SAppOp.insA ai) (td, rd, SAppOp.delA x) := by
+  intro hc
+  have hax : ai ≠ x := fun h' => hxa h'.symm
+  by_cases ha0 : ai = 0
+  · subst ha0
+    have h := hc ([] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_del, sUpdate_del, sUpdate_ins] at h
+    simp [Shesha.insert, Shesha.delete, Shesha.delF, Shesha.delT,
+      Shesha.insF] at h
+  · have h := hc ([Shesha.Tree.node ai []] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_del, sUpdate_del, sUpdate_ins] at h
+    simp [Shesha.insert, Shesha.delete, ha0, Shesha.insF, Shesha.insT,
+      Shesha.delF, Shesha.delT, hax] at h
+    injection h with h1 h2
+    injection h1 with h3 h4
+    cases h4
+
+/-- **G2**: same-anchor inserts do not commute. -/
+theorem ncomm_ins_ins_same_anchor {x y p : Nat} {rx ry : Replica}
+    (hxy : x ≠ y) (hxp : x ≠ p) (hyp : y ≠ p) :
+    ¬ SheshaD.toCRDTSig.commutes
+        (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p) := by
+  intro hc
+  by_cases hp0 : p = 0
+  · subst hp0
+    have h := hc ([] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_ins, sUpdate_ins, sUpdate_ins] at h
+    simp [Shesha.insert] at h
+    injection h with h1 h2
+    injection h1 with h3 h4
+    exact hxy h3.symm
+  · have h := hc ([Shesha.Tree.node p []] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_ins, sUpdate_ins, sUpdate_ins] at h
+    simp [Shesha.insert, hp0, Shesha.insF, Shesha.insT, hxp, hyp] at h
+    injection h with h1 h2
+    injection h1 with h3 h4
+    injection h4 with h5 h6
+    injection h5 with h7 h8
+    exact hxy h7.symm
+
+/-- **G3**: an anchor's insert and a child insert at that anchor do not
+commute. -/
+theorem ncomm_ins_anchor_child {p : Nat} {r' ri : Replica} {a' x : Nat}
+    (hp0 : p ≠ 0) (hpa : p ≠ a') :
+    ¬ SheshaD.toCRDTSig.commutes
+        (p, r', SAppOp.insA a') (x, ri, SAppOp.insA p) := by
+  intro hc
+  by_cases ha0 : a' = 0
+  · subst ha0
+    have h := hc ([] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_ins, sUpdate_ins, sUpdate_ins] at h
+    simp [Shesha.insert, hp0, Shesha.insF, Shesha.insT] at h
+    injection h with h1 h2
+    injection h1 with h3 h4
+    cases h4
+  · have hap : a' ≠ p := fun h' => hpa h'.symm
+    have h := hc ([Shesha.Tree.node a' []] : Shesha.St)
+    rw [sUpdate_ins, sUpdate_ins, sUpdate_ins, sUpdate_ins] at h
+    simp [Shesha.insert, hp0, ha0, Shesha.insF, Shesha.insT, hap] at h
+    injection h with h1 h2
+    injection h1 with h3 h4
+    injection h4 with h5 h6
+    injection h5 with h7 h8
+    cases h8
+
 end Sal.ConditionedMRDTs
