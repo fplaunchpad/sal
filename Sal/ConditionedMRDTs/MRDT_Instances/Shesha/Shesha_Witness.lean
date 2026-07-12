@@ -323,10 +323,11 @@ theorem plan_kernel {C : Configuration SheshaD} {E : Set (Op SAppOp)}
 /-! ## §6 the assembly -/
 
 open Classical in
-/-- **The witness assembly**: a pre-splice forest for `E` — WF, rows =
-`E`'s inserts, row order against visibility — realizes the state
-`dropF (deleted E) T` as a `W`-canonical state of `E`. -/
-theorem presplice_canonical {C : Configuration SheshaD}
+/-- **The witness assembly**, explicit-witness form: a pre-splice forest
+for `E` — WF, rows = `E`'s inserts, row order against visibility —
+realizes the state `dropF (deleted E) T` as a `W`-canonical state of `E`
+via the witness `plan of the forest ++ deletes ascending`. -/
+theorem presplice_canonical_wit {C : Configuration SheshaD}
     {E : Set (Op SAppOp)} {ρu : List (Op SAppOp)}
     (hH : SheshaHonest C)
     (htrans : ∀ {a b c : Op SAppOp}, C.vis a b → C.vis b c → C.vis a c)
@@ -340,8 +341,9 @@ theorem presplice_canonical {C : Configuration SheshaD}
         (y, ry, SAppOp.insA p) ∈ E →
         Shesha.precedes (Shesha.row T p) x y →
         ¬ C.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p)) :
-    IsCanonicalStateW SheshaEff (Configuration.core C) E
-      (Shesha.dropF (fun u => decide (DelIn E u)) T) := by
+    IsCanonWitness SheshaEff (Configuration.core C) E
+      (Shesha.dropF (fun u => decide (DelIn E u)) T)
+      (evPlan E (Shesha.planF 0 T) ++ delBlock ρu) := by
   have hAI := Shesha.allIns_planF 0 T
   have hIdsNodup : (Shesha.opInsIds (Shesha.planF 0 T)).Nodup :=
     Shesha.nodup_of_count_le_one (fun u => by
@@ -359,7 +361,7 @@ theorem presplice_canonical {C : Configuration SheshaD}
     injection heq with h1 h2
     rw [h1, h2]
     exact hz
-  refine ⟨evPlan E (Shesha.planF 0 T) ++ delBlock ρu, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
+  refine ⟨⟨?_, ?_⟩, ?_, ?_, ?_⟩
   · -- nodup
     rw [List.nodup_append]
     refine ⟨evPlan_nodup hAI hIdsNodup, delBlock_nodup hpermu.1, ?_⟩
@@ -462,6 +464,27 @@ theorem presplice_canonical {C : Configuration SheshaD}
         obtain ⟨t, r, d, rfl⟩ := isDelEv_shape (mem_delBlock.mp he).2
         have hdu : d = u := hte
         exact absurd ⟨t, r, hdu ▸ (hpermu.2 _).mp (mem_delBlock.mp he).1⟩ hd
+
+open Classical in
+/-- **The witness assembly**, existential form (the phase-2e statement). -/
+theorem presplice_canonical {C : Configuration SheshaD}
+    {E : Set (Op SAppOp)} {ρu : List (Op SAppOp)}
+    (hH : SheshaHonest C)
+    (htrans : ∀ {a b c : Op SAppOp}, C.vis a b → C.vis b c → C.vis a c)
+    (hirr : ∀ a : Op SAppOp, ¬ C.vis a a)
+    (hsub : ∀ a ∈ E, a ∈ C.events)
+    (hpermu : listPermOf ρu E)
+    (T : Shesha.St)
+    (hwfT : Shesha.WF T)
+    (hrows : ∀ p x, x ∈ Shesha.row T p ↔ InsIn E x p)
+    (hcompat : ∀ p x y rx ry, (x, rx, SAppOp.insA p) ∈ E →
+        (y, ry, SAppOp.insA p) ∈ E →
+        Shesha.precedes (Shesha.row T p) x y →
+        ¬ C.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p)) :
+    IsCanonicalStateW SheshaEff (Configuration.core C) E
+      (Shesha.dropF (fun u => decide (DelIn E u)) T) :=
+  (presplice_canonical_wit hH htrans hirr hsub hpermu T hwfT
+    hrows hcompat).isCanonicalStateW
 
 /-! ## §7 slot alignment: towards the M0–M2 hypotheses at the join
 
