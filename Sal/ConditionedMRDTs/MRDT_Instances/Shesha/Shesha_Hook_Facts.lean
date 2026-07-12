@@ -878,7 +878,9 @@ theorem witness_nf {C : Configuration SheshaD}
           Shesha.precedes (Shesha.row T p) x y →
           ¬ C.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p))
       ∧ applySeq SheshaD.toCRDTSig SheshaD.init ρ
-          = Shesha.dropF (fun u => decide (DelIn ev u)) T := by
+          = Shesha.dropF (fun u => decide (DelIn ev u)) T
+      ∧ (∀ p, Shesha.row T p
+          = (Shesha.anchIds (ρ.map toSOp) p).reverse) := by
   have hDB := witness_delBeforeOK hH hirr hsub hclosed hperm hresp hW
   have hEF : Shesha.EffFreshFrom ([] : Shesha.St)
       (Shesha.insPart (ρ.map toSOp)) :=
@@ -902,7 +904,7 @@ theorem witness_nf {C : Configuration SheshaD}
     rw [hT, Shesha.row_steps_ins _ _ hwf0 hAI hEF p, hrow0,
       List.append_nil, Shesha.anchIds_insPart]
   have hmemev : ∀ x, x ∈ ρ ↔ x ∈ ev := hperm.2
-  refine ⟨T, hWFT, ?_, ?_, ?_, ?_⟩
+  refine ⟨T, hWFT, ?_, ?_, ?_, ?_, hrowT⟩
   · -- live set = inserted ids
     intro u
     rw [hT]

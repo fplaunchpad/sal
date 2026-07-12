@@ -400,16 +400,16 @@ theorem presplice_of_rows
       · exact precedes_asymm hndrow hprec (hext₂ p x y rx ry hb)
       · exact pairwise_before hc₂.2.1 hb (loOn_shesha_iff.mpr ⟨hvis, hnc⟩)
   · -- (d): collapse = merge, row by row
-    obtain ⟨T₀, hwf₀, hreads₀, hrows₀, hcompat₀, hfold₀⟩ :=
+    obtain ⟨T₀, hwf₀, hreads₀, hrows₀, hcompat₀, hfold₀, hrowEq₀⟩ :=
       witness_nf hH hirr
         (fun a ha => hsub₁ a ((Set.mem_inter_iff ..).mp ha).1)
         (fun a b hv hnc hb => (Set.mem_inter_iff ..).mpr
           ⟨hclosed₁ a b hv hnc ((Set.mem_inter_iff ..).mp hb).1,
            hclosed₂ a b hv hnc ((Set.mem_inter_iff ..).mp hb).2⟩)
         hc₀.1 hc₀.2.1 hc₀.2.2.1
-    obtain ⟨T₁, hwf₁, hreads₁, hrows₁, hcompat₁, hfold₁⟩ :=
+    obtain ⟨T₁, hwf₁, hreads₁, hrows₁, hcompat₁, hfold₁, hrowEq₁⟩ :=
       witness_nf hH hirr hsub₁ hclosed₁ hc₁.1 hc₁.2.1 hc₁.2.2.1
-    obtain ⟨T₂, hwf₂, hreads₂, hrows₂, hcompat₂, hfold₂⟩ :=
+    obtain ⟨T₂, hwf₂, hreads₂, hrows₂, hcompat₂, hfold₂, hrowEq₂⟩ :=
       witness_nf hH hirr hsub₂ hclosed₂ hc₂.1 hc₂.2.1 hc₂.2.2.1
     have hs₀ : s₀
         = Shesha.dropF (fun u => decide (DelIn (ev₁ ∩ ev₂) u)) T₀ := by
