@@ -28,14 +28,12 @@ Contents:
   `merge_WF`) and the survivor-set identity (`merge_ids`) are discharged in
   `Shesha_M0.lean` on top of the parent-chain layer (`Shesha_Forest.lean`)
   and the skeleton characterization (`Shesha_Skel.lean`).
-- **§6 Lemma M2** (`merge_extends_L`) — reduced, via proved plumbing
-  (`precedes_filter_iff`, `rowAssemble_filter_L`), to the single core identity
-  `merge_L_filter` (skeleton DFS order = L document order), which carries a
-  documented `sorry`.
+- **§6 Lemma M2** (`merge_extends_L`) — the proved plumbing
+  (`precedes_filter_iff`, `rowAssemble_filter_L`) lives here; the core
+  identity `merge_L_filter` (skeleton DFS order = L document order) and
+  `merge_extends_L` itself are discharged in `Shesha_M2.lean`.
 
-Running `sorry` tally in this file: **1** (`merge_L_filter`, the M2 core) —
-with a precise diagnostic at the site. Everything else, including all of M1,
-is kernel-clean.
+This file is `sorry`-free and kernel-clean throughout.
 -/
 
 namespace Shesha
@@ -1085,55 +1083,15 @@ theorem rowAssemble_filter_L {L A B : St} {sk : Skel} {mk : Nat → Bool}
   rw [filter_flatMap, hstep]
   exact flatMap_take_drop skelRow
 
-/-- **The M2 core identity** (owed): the merge read filtered to L-ids
-equals the L read filtered to merge survivors — L-survivors appear in
-L-document order.
-
-`sorry` — decomposition status:
-* runs contribute nothing to the L-filter (`rowAssemble_filter_L`,
-  **proved**), so the L-ids of any assembled row are its skeleton row;
-* owed: (i) the exact shape of `skelOf` — its rows partition
-  `(read L).filter W` by `wpar`, preserving L-document order inside each
-  host row (a `foldl` characterization, mirroring `skelFold_content`);
-  (ii) the collapse-preorder theorem — DFS of the `wpar`-collapsed forest
-  (attach-deep) visits W-nodes in L-preorder; needs the parent-chain/depth
-  machinery on WF forests (same layer `merge_ids` needs);
-  (iii) the marker splice at assembly preserves the skeleton order — the
-  `expandRow` analogue of `readF_delF` (the delete-splice argument), with
-  fuel adequacy along marker chains (bounded by L's depth).
-* Hypotheses: `LRowsOK` keeps L-ids out of `bbrows` rows — without it the
-  identity is false (see `LRowsOK`'s docstring). -/
-theorem merge_L_filter {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) :
-    (read (merge L A B)).filter (fun w => contains L w) =
-      (read L).filter (fun w => contains (merge L A B) w) := by
-  sorry
-
-/-- **Lemma M2 (L-extension)**, `sibling-linked-proof.md` §4: for
-merge-surviving L-pairs, the merge's display order is exactly L's. Derived
-from `merge_L_filter` (owed) by the proved filter transport — the skeleton
-is built in L-document order, attach-deep keeps a dead host's group at the
-host's position, runs only insert between skeleton elements, and the final
-splice preserves order. -/
-theorem merge_extends_L {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) {u v : Nat}
-    (hu : u ∈ ids (merge L A B)) (hv : v ∈ ids (merge L A B))
-    (huL : u ∈ ids L) (hvL : v ∈ ids L) :
-    precedes (read (merge L A B)) u v ↔ precedes (read L) u v := by
-  rw [← precedes_filter_iff (P := fun w => contains L w)
-      (l := read (merge L A B))
-      (contains_iff.mpr huL) (contains_iff.mpr hvL),
-    merge_L_filter mok hA hB,
-    precedes_filter_iff (P := fun w => contains (merge L A B) w)
-      (l := read L) (contains_iff.mpr hu) (contains_iff.mpr hv)]
+/-! The M2 core identity (`merge_L_filter`) and Lemma M2
+(`merge_extends_L`) are discharged in `Shesha_M2.lean`, on top of the
+subtree/`wpar` bridge and the collapse alignment. -/
 
 end Shesha
 
 section AxiomAudit
-/-! Axiom audit. Kernel-clean targets print `propext, Classical.choice,
-Quot.sound` at most; the owed M2 core (`merge_L_filter`) additionally
-prints `sorryAx` (and so does its corollary `merge_extends_L`). No
-`native_decide` anywhere in this file. -/
+/-! Axiom audit. Everything in this file is kernel-clean: `propext,
+Classical.choice, Quot.sound` at most. No `native_decide` anywhere. -/
 #print axioms Shesha.merge_comm
 #print axioms Shesha.merge_reads_bound
 #print axioms Shesha.zero_not_mem_merge
@@ -1141,6 +1099,4 @@ prints `sorryAx` (and so does its corollary `merge_extends_L`). No
 #print axioms Shesha.rowAssemble_filter_L
 #print axioms Shesha.IsRunOf.head_det
 #print axioms Shesha.precedes_filter_iff
-#print axioms Shesha.merge_L_filter
-#print axioms Shesha.merge_extends_L
 end AxiomAudit

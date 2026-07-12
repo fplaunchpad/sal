@@ -621,4 +621,482 @@ theorem skelRowOf_node {L A B : St} (mok : ModelOK L A B) {h : Nat}
   rw [wpar_of_parOf_zero _ hpar]
   exact fun e => hh0 e.symm
 
+/-! ## §3 Collapse alignment: markers expand shallow-W to
+shallow-survivors, whose DFS is the survivor filter -/
+
+mutual
+  theorem subT_length : ∀ {t x : Tree}, x ∈ subT t →
+      (readT x).length ≤ (readT t).length
+    | .node i cs, x, hx => by
+        rw [subT] at hx
+        rcases List.mem_cons.mp hx with he | hx
+        · rw [he]
+          exact Nat.le_refl _
+        · rw [readT, List.length_cons]
+          have := subF_length hx
+          omega
+  theorem subF_length : ∀ {F : List Tree} {x : Tree}, x ∈ subF F →
+      (readT x).length ≤ (readF F).length
+    | t :: ts, x, hx => by
+        rw [subF] at hx
+        rw [readF, List.length_append]
+        rcases List.mem_append.mp hx with hx | hx
+        · have := subT_length hx
+          omega
+        · have := subF_length hx
+          omega
+end
+
+theorem wp_of_liveM {L A B : St} {x : Nat} (h : liveMp L A B x = true) :
+    wp L A B x = true := by
+  rw [wp, h]
+  rfl
+
+/-- The (fueled) marker collapse of a skeleton row. -/
+def collapseRow (L A B : St) : Nat → List Nat → List Nat
+  | 0, cs => cs
+  | f + 1, cs => cs.flatMap (fun v =>
+      if markerp L A B v = true
+      then collapseRow L A B f (alGet (skelOf L A B).rows v)
+      else [v])
+
+/-- DFS of the collapsed skeleton. -/
+def survDFS (L A B : St) (mf : Nat) : Nat → List Nat → List Nat
+  | 0, _ => []
+  | f + 1, cs => cs.flatMap (fun c =>
+      c :: survDFS L A B mf f
+        (collapseRow L A B mf (alGet (skelOf L A B).rows c)))
+
+theorem collapseRow_append (L A B : St) :
+    ∀ (f : Nat) (a b : List Nat),
+      collapseRow L A B f (a ++ b) =
+        collapseRow L A B f a ++ collapseRow L A B f b
+  | 0, a, b => rfl
+  | f + 1, a, b => by
+      rw [collapseRow, collapseRow, collapseRow, List.flatMap_append]
+
+theorem survDFS_append (L A B : St) (mf : Nat) :
+    ∀ (f : Nat) (a b : List Nat),
+      survDFS L A B mf f (a ++ b) =
+        survDFS L A B mf f a ++ survDFS L A B mf f b
+  | 0, a, b => rfl
+  | f + 1, a, b => by
+      rw [survDFS, survDFS, survDFS, List.flatMap_append]
+
+mutual
+  /-- **J1 (tree)**: collapsing the shallow-`W` front of a subtree yields
+  its shallow-survivor front. -/
+  theorem collapseT {L A B : St} (mok : ModelOK L A B) :
+      ∀ (t : Tree), t ∈ subF L → ∀ (f : Nat), (readT t).length < f →
+        collapseRow L A B f (shallowWT (wp L A B) t) =
+          shallowWT (fun w => liveMp L A B w) t
+    | .node x csx, ht, f, hf => by
+        rw [shallowWT]
+        by_cases hWx : wp L A B x = true
+        · rw [if_pos hWx]
+          rcases f with _ | f
+          · exact absurd hf (Nat.not_lt_zero _)
+          rw [collapseRow, List.flatMap_cons, List.flatMap_nil,
+            List.append_nil]
+          by_cases hmx : markerp L A B x = true
+          · rw [if_pos hmx, skelRowOf_node mok ht hWx,
+              collapseF mok csx (fun t' ht' => child_mem_subF ht ht') f
+                (by simp only [readT, List.length_cons] at hf; omega)]
+            have hlive : ¬ (liveMp L A B x = true) := fun hl => by
+              rw [liveM_not_marker hl] at hmx
+              cases hmx
+            rw [shallowWT, if_neg hlive]
+          · rw [if_neg hmx]
+            have hlive : liveMp L A B x = true := by
+              rw [wp, Bool.or_eq_true_iff] at hWx
+              rcases hWx with h | h
+              · exact h
+              · exact absurd h hmx
+            rw [shallowWT, if_pos hlive]
+        · rw [if_neg hWx,
+            collapseF mok csx (fun t' ht' => child_mem_subF ht ht') f
+              (by simp only [readT, List.length_cons] at hf; omega),
+            shallowWT,
+            if_neg (show ¬ (liveMp L A B x = true) from fun hl =>
+              hWx (wp_of_liveM hl))]
+  /-- **J1 (forest)**. -/
+  theorem collapseF {L A B : St} (mok : ModelOK L A B) :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF L) →
+        ∀ (f : Nat), (readF F).length < f →
+        collapseRow L A B f (shallowWF (wp L A B) F) =
+          shallowWF (fun w => liveMp L A B w) F
+    | [], _, f, hf => by
+        rcases f with _ | f
+        · exact absurd hf (Nat.not_lt_zero _)
+        · rw [shallowWF, shallowWF, collapseRow, List.flatMap_nil]
+    | t :: ts, hsub, f, hf => by
+        rw [shallowWF, shallowWF, collapseRow_append,
+          collapseT mok t (hsub _ (List.mem_cons_self ..)) f
+            (by simp only [readF, List.length_append] at hf; omega),
+          collapseF mok ts
+            (fun t' ht' => hsub _ (List.mem_cons_of_mem _ ht')) f
+            (by simp only [readF, List.length_append] at hf; omega)]
+end
+
+mutual
+  /-- **J2 (tree)**: the collapsed DFS from a subtree's shallow-survivor
+  front reads out its survivor filter, in document order. -/
+  theorem survDFST {L A B : St} (mok : ModelOK L A B) {mf : Nat}
+      (hmf : (read L).length < mf) :
+      ∀ (t : Tree), t ∈ subF L → ∀ (f : Nat), (readT t).length < f →
+        survDFS L A B mf f (shallowWT (fun w => liveMp L A B w) t) =
+          (readT t).filter (fun w => liveMp L A B w)
+    | .node x csx, ht, f, hf => by
+        rw [shallowWT, readT, List.filter_cons]
+        by_cases hlx : liveMp L A B x = true
+        · rw [if_pos hlx, if_pos hlx]
+          rcases f with _ | f
+          · exact absurd hf (Nat.not_lt_zero _)
+          rw [survDFS, List.flatMap_cons, List.flatMap_nil,
+            List.append_nil, skelRowOf_node mok ht (wp_of_liveM hlx),
+            collapseF mok csx (fun t' ht' => child_mem_subF ht ht') mf
+              (by
+                have h1 := subF_length ht
+                simp only [readT, List.length_cons] at h1
+                have h2 : (readF L).length = (read L).length := rfl
+                omega),
+            survDFSF mok hmf csx
+              (fun t' ht' => child_mem_subF ht ht') f
+              (by simp only [readT, List.length_cons] at hf; omega)]
+        · rw [if_neg hlx, if_neg hlx]
+          exact survDFSF mok hmf csx
+            (fun t' ht' => child_mem_subF ht ht') f
+            (by simp only [readT, List.length_cons] at hf; omega)
+  /-- **J2 (forest)**. -/
+  theorem survDFSF {L A B : St} (mok : ModelOK L A B) {mf : Nat}
+      (hmf : (read L).length < mf) :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF L) →
+        ∀ (f : Nat), (readF F).length < f →
+        survDFS L A B mf f (shallowWF (fun w => liveMp L A B w) F) =
+          (readF F).filter (fun w => liveMp L A B w)
+    | [], _, f, hf => by
+        rcases f with _ | f
+        · exact absurd hf (Nat.not_lt_zero _)
+        · rw [shallowWF, survDFS, List.flatMap_nil, readF]
+          rfl
+    | t :: ts, hsub, f, hf => by
+        rw [shallowWF, readF, List.filter_append, survDFS_append,
+          survDFST mok hmf t (hsub _ (List.mem_cons_self ..)) f
+            (by simp only [readF, List.length_append] at hf; omega),
+          survDFSF mok hmf ts
+            (fun t' ht' => hsub _ (List.mem_cons_of_mem _ ht')) f
+            (by simp only [readF, List.length_append] at hf; omega)]
+end
+
+/-! ## §4 The output side: the L-filter of the built forest is the
+collapsed DFS -/
+
+theorem flatMap_singleton' : ∀ l : List Nat, l.flatMap (fun v => [v]) = l
+  | [] => rfl
+  | a :: l => by
+      rw [List.flatMap_cons, flatMap_singleton' l]
+      rfl
+
+theorem flatMap_congr' {f g : Nat → List Nat} :
+    ∀ {l : List Nat}, (∀ v ∈ l, f v = g v) → l.flatMap f = l.flatMap g
+  | [], _ => rfl
+  | a :: l, h => by
+      rw [List.flatMap_cons, List.flatMap_cons,
+        h a (List.mem_cons_self ..),
+        flatMap_congr' fun v hv => h v (List.mem_cons_of_mem _ hv)]
+
+theorem flatMap_eq_nil' {f : Nat → List Nat} :
+    ∀ {l : List Nat}, (∀ v ∈ l, f v = []) → l.flatMap f = []
+  | [], _ => rfl
+  | a :: l, h => by
+      rw [List.flatMap_cons, h a (List.mem_cons_self ..),
+        flatMap_eq_nil' fun v hv => h v (List.mem_cons_of_mem _ hv)]
+      rfl
+
+/-- Support restriction: a `flatMap` whose function vanishes off `P` only
+sees the `P`-filter. -/
+theorem flatMap_filter_support {P : Nat → Bool} {h : Nat → List Nat}
+    (hz : ∀ v, P v = false → h v = []) :
+    ∀ l : List Nat, l.flatMap h = (l.filter P).flatMap h
+  | [] => rfl
+  | a :: l => by
+      rw [List.flatMap_cons, List.filter_cons]
+      by_cases hp : P a = true
+      · rw [if_pos hp, List.flatMap_cons, flatMap_filter_support hz l]
+      · rw [if_neg hp, hz a (bool_eq_false hp),
+          flatMap_filter_support hz l]
+        rfl
+
+theorem expandRow_of_nonmarker {rows : List (Nat × List Nat)}
+    {mk : Nat → Bool} :
+    ∀ (f : Nat) (r : List Nat), (∀ v ∈ r, mk v = false) →
+      expandRow rows mk f r = r
+  | 0, r, _ => rfl
+  | f + 1, r, h => by
+      rw [expandRow,
+        flatMap_congr' (fun v hv => by rw [if_neg (by simp [h v hv])]),
+        flatMap_singleton']
+
+/-- Elements of merged rows are nonzero and, off `L`, branch-live. -/
+theorem outRows_mem_class {L A B : St} (mok : ModelOK L A B) {b u : Nat}
+    (hu : u ∈ alGet (outRows L A B) b) :
+    u ≠ 0 ∧ (contains L u = false → (u ∈ read A ∨ u ∈ read B)) := by
+  refine ⟨fun h0 => zero_not_mem_outRows mok (h0 ▸ hu), fun hnL => ?_⟩
+  rcases outRows_cases hu with ⟨hL, -⟩ | ⟨hAB, -⟩ | ⟨q, -, hr⟩ | ⟨q, -, hr⟩
+  · rw [contains_iff.mpr hL] at hnL
+    cases hnL
+  · exact hAB
+  · exact Or.inl (mem_row_read hr)
+  · exact Or.inr (mem_row_read hr)
+
+/-- **Born subtrees are L-free**: the output subtree under a born id never
+displays an L-id. -/
+theorem born_subtree_L_free {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {mf : Nat} :
+    ∀ (f c : Nat), contains L c = false → c ≠ 0 →
+      (readF (buildF (outRows L A B) (markerp L A B) mf f c)).filter
+        (fun w => contains L w) = []
+  | 0, c, _, _ => by
+      rw [buildF]
+      rfl
+  | f + 1, c, hcL, hc0 => by
+      rw [buildF, readF_map_node, filter_flatMap]
+      refine flatMap_eq_nil' fun d hd => ?_
+      -- the row of c is a wholesale born row (or empty), marker-free
+      have hrow : ∀ w ∈ alGet (outRows L A B) c,
+          contains L w = false ∧ markerp L A B w = false := by
+        intro w hw
+        by_cases hbA : c ∈ bornIds L A
+        · rw [outRows_alGet_of_bornA mok hbA] at hw
+          have hwL : contains L w = false := by
+            rw [contains_eq_false]
+            intro hwl
+            obtain ⟨-, hcL', hc0'⟩ := bornIds_spec mok.wfA hbA
+            rcases hA w c hwl hw with h0 | hL'
+            · exact hc0' h0
+            · exact hcL' hL'
+          refine ⟨hwL, ?_⟩
+          rw [markerp, hwL]
+          rfl
+        · by_cases hbB : c ∈ bornIds L B
+          · rw [outRows_alGet_of_bornB mok hbB] at hw
+            have hwL : contains L w = false := by
+              rw [contains_eq_false]
+              intro hwl
+              obtain ⟨-, hcL', hc0'⟩ := bornIds_spec mok.wfB hbB
+              rcases hB w c hwl hw with h0 | hL'
+              · exact hc0' h0
+              · exact hcL' hL'
+            refine ⟨hwL, ?_⟩
+            rw [markerp, hwL]
+            rfl
+          · have hskel : ¬ alHas (skelOf L A B).rows c = true := by
+              intro hc
+              rcases skelOf_keys_spec mok.wfL
+                (alHas_iff_mem_keys.mp hc) with h0 | ⟨hm, -⟩
+              · exact hc0 h0
+              · exact (contains_eq_false.mp hcL) hm
+            rw [outRows_alGet_none hskel hbA hbB] at hw
+            exact absurd hw (by simp)
+      have hexp : expandRow (outRows L A B) (markerp L A B) mf
+          (alGet (outRows L A B) c) = alGet (outRows L A B) c :=
+        expandRow_of_nonmarker mf _ (fun v hv => (hrow v hv).2)
+      rw [hexp] at hd
+      obtain ⟨hdL, -⟩ := hrow d hd
+      have hd0 : d ≠ 0 := (outRows_mem_class mok hd).1
+      rw [List.filter_cons, if_neg (by simp [hdL])]
+      exact born_subtree_L_free mok hA hB f d hdL hd0
+
+theorem skelRow_mem_L {L A B : St} {s v : Nat}
+    (hv : v ∈ alGet (skelOf L A B).rows s) :
+    v ∈ read L ∧ wp L A B v = true := by
+  rw [skelOf_alGet, List.mem_filter] at hv
+  obtain ⟨hv1, -⟩ := hv
+  exact ⟨(List.mem_filter.mp hv1).1, (List.mem_filter.mp hv1).2⟩
+
+theorem collapseRow_mem_L {L A B : St} :
+    ∀ (f : Nat) (cs : List Nat), (∀ v ∈ cs, v ∈ read L) →
+      ∀ u ∈ collapseRow L A B f cs, u ∈ read L
+  | 0, cs, hcs, u, hu => hcs u hu
+  | f + 1, cs, hcs, u, hu => by
+      rw [collapseRow, List.mem_flatMap] at hu
+      obtain ⟨v, hv, hu⟩ := hu
+      by_cases hmv : markerp L A B v = true
+      · rw [if_pos hmv] at hu
+        exact collapseRow_mem_L f _
+          (fun w hw => (skelRow_mem_L hw).1) u hu
+      · rw [if_neg hmv] at hu
+        rcases List.mem_singleton.mp hu with rfl
+        exact hcs u hv
+
+/-- **Claim C**: the L-filter of a skeleton key's expansion is its
+collapsed skeleton row — the marker splice IS the collapse. -/
+theorem expandRow_filter_L {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) :
+    ∀ (f s : Nat), alHas (skelOf L A B).rows s = true →
+      (expandRow (outRows L A B) (markerp L A B) f
+        (alGet (outRows L A B) s)).filter (fun w => contains L w) =
+      collapseRow L A B f (alGet (skelOf L A B).rows s)
+  | 0, s, hs => by
+      rw [expandRow, collapseRow, outRows_alGet_of_skel hs,
+        show mergeCmds L A B =
+          branchCmds L A (skelOf L A B) (markerp L A B) ++
+            branchCmds L B (skelOf L A B) (markerp L A B) from rfl]
+      exact rowAssemble_filter_L fun c hc =>
+        contains_iff.mpr (skelRow_mem_L hc).1
+  | f + 1, s, hs => by
+      rw [expandRow, filter_flatMap]
+      have hcongr : ∀ v ∈ alGet (outRows L A B) s,
+          ((if markerp L A B v = true
+            then expandRow (outRows L A B) (markerp L A B) f
+              (alGet (outRows L A B) v)
+            else [v]).filter (fun w => contains L w)) =
+          (if contains L v = true
+            then (if markerp L A B v = true
+              then collapseRow L A B f (alGet (skelOf L A B).rows v)
+              else [v])
+            else []) := by
+        intro v hv
+        by_cases hLv : contains L v = true
+        · rw [if_pos hLv]
+          by_cases hmv : markerp L A B v = true
+          · rw [if_pos hmv, if_pos hmv]
+            have hplaced : v ∈ (read L).filter (wp L A B) :=
+              List.mem_filter.mpr
+                ⟨(marker_spec hmv).1, (marker_spec hmv).2⟩
+            exact expandRow_filter_L mok hA hB f v
+              (skelOf_alHas_of_placed hplaced)
+          · rw [if_neg hmv, if_neg hmv, List.filter_cons, if_pos hLv]
+            rfl
+        · rw [if_neg hLv]
+          by_cases hmv : markerp L A B v = true
+          · rw [markerp, bool_eq_false hLv] at hmv
+            simp at hmv
+          · rw [if_neg hmv, List.filter_cons, if_neg (by simp [hLv])]
+            rfl
+      rw [flatMap_congr' hcongr,
+        flatMap_filter_support (P := fun w => contains L w)
+          (fun v hv => by rw [if_neg (by simp [hv])]) _,
+        outRows_alGet_of_skel hs,
+        show mergeCmds L A B =
+          branchCmds L A (skelOf L A B) (markerp L A B) ++
+            branchCmds L B (skelOf L A B) (markerp L A B) from rfl,
+        rowAssemble_filter_L (fun c hc =>
+          contains_iff.mpr (skelRow_mem_L hc).1),
+        collapseRow]
+      refine flatMap_congr' ?_
+      intro v hv
+      rw [if_pos (contains_iff.mpr (skelRow_mem_L hv).1)]
+
+/-- **Claim D**: the L-filter of the built forest is the collapsed DFS. -/
+theorem buildF_filter_L {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {mf : Nat}
+    (hmf : (read L).length < mf) :
+    ∀ (f s : Nat), alHas (skelOf L A B).rows s = true →
+      (readF (buildF (outRows L A B) (markerp L A B) mf f s)).filter
+        (fun w => contains L w) =
+      survDFS L A B mf f
+        (collapseRow L A B mf (alGet (skelOf L A B).rows s))
+  | 0, s, hs => by
+      rw [buildF, survDFS]
+      rfl
+  | f + 1, s, hs => by
+      rw [buildF, readF_map_node, filter_flatMap, survDFS]
+      have hcongr : ∀ c ∈ expandRow (outRows L A B) (markerp L A B) mf
+          (alGet (outRows L A B) s),
+          ((c :: readF (buildF (outRows L A B) (markerp L A B) mf f
+            c)).filter (fun w => contains L w)) =
+          (if contains L c = true
+            then c :: survDFS L A B mf f
+              (collapseRow L A B mf (alGet (skelOf L A B).rows c))
+            else []) := by
+        intro c hc
+        obtain ⟨b, hb⟩ := (expandRow_spliceReach mf s hc).mem_base
+        have hc0 : c ≠ 0 := (outRows_mem_class mok hb).1
+        by_cases hLc : contains L c = true
+        · rw [if_pos hLc, List.filter_cons, if_pos hLc]
+          have hwpc : wp L A B c = true := by
+            rcases base_addr mok hA hB hb with ⟨-, hw, -⟩ |
+              ⟨hnL, -, -⟩ | ⟨hnL, -⟩ | ⟨hnL, -⟩
+            · exact hw
+            all_goals rw [hLc] at hnL
+            all_goals cases hnL
+          have hkey : alHas (skelOf L A B).rows c = true :=
+            skelOf_alHas_of_placed (List.mem_filter.mpr
+              ⟨contains_iff.mp hLc, hwpc⟩)
+          rw [buildF_filter_L mok hA hB hmf f c hkey]
+        · rw [if_neg hLc, List.filter_cons, if_neg (by simp [hLc])]
+          exact born_subtree_L_free mok hA hB f c
+            (bool_eq_false hLc) hc0
+      rw [flatMap_congr' hcongr,
+        flatMap_filter_support (P := fun w => contains L w)
+          (fun v hv => by rw [if_neg (by simp [hv])]) _,
+        expandRow_filter_L mok hA hB mf s hs]
+      refine flatMap_congr' ?_
+      intro c hc
+      rw [if_pos (contains_iff.mpr (collapseRow_mem_L mf _
+        (fun v hv => (skelRow_mem_L hv).1) c hc))]
+
+/-! ## §5 The M2 theorems -/
+
+theorem bool_eq_of_iff {a b : Bool} (h : (a = true) ↔ (b = true)) :
+    a = b := by
+  cases a <;> cases b <;> simp_all
+
+theorem filter_congr'' {p q : Nat → Bool} :
+    ∀ {l : List Nat}, (∀ x ∈ l, p x = q x) → l.filter p = l.filter q
+  | [], _ => rfl
+  | a :: l, h => by
+      rw [List.filter_cons, List.filter_cons, h a (List.mem_cons_self ..),
+        filter_congr'' fun x hx => h x (List.mem_cons_of_mem _ hx)]
+
+/-- **The M2 core identity, closed**: the merge read filtered to L-ids
+equals the L read filtered to merge survivors — L-survivors appear in
+L-document order. The marker splice at assembly is the delete splice
+(`sibling-linked-proof.md` §4, Lemma M2). -/
+theorem merge_L_filter {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) :
+    (read (merge L A B)).filter (fun w => contains L w) =
+      (read L).filter (fun w => contains (merge L A B) w) := by
+  have hrhs : (read L).filter (fun w => contains (merge L A B) w) =
+      (read L).filter (fun w => liveMp L A B w) :=
+    filter_congr'' fun w _ => bool_eq_of_iff (by
+      rw [contains_iff]
+      exact merge_ids mok hA hB w)
+  rw [hrhs]
+  have hlen : (readF L).length = (read L).length := rfl
+  have hn : (read L).length <
+      (readF L).length + (readF A).length + (readF B).length + 1 := by
+    omega
+  simp only [merge, read]
+  rw [buildF_filter_L mok hA hB hn _ 0 (skelOf_alHas_zero L A B),
+    skelRowOf_root mok,
+    collapseF mok L (fun t ht => mem_subF_of_mem ht) _ (by omega),
+    survDFSF mok hn L (fun t ht => mem_subF_of_mem ht) _ (by omega)]
+
+/-- **Lemma M2 (L-extension), closed**: for merge-surviving L-pairs, the
+merge's display order is exactly L's. -/
+theorem merge_extends_L {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {u v : Nat}
+    (hu : u ∈ ids (merge L A B)) (hv : v ∈ ids (merge L A B))
+    (huL : u ∈ ids L) (hvL : v ∈ ids L) :
+    precedes (read (merge L A B)) u v ↔ precedes (read L) u v := by
+  rw [← precedes_filter_iff (P := fun w => contains L w)
+      (l := read (merge L A B))
+      (contains_iff.mpr huL) (contains_iff.mpr hvL),
+    merge_L_filter mok hA hB,
+    precedes_filter_iff (P := fun w => contains (merge L A B) w)
+      (l := read L) (contains_iff.mpr hu) (contains_iff.mpr hv)]
+
 end Shesha
+
+section AxiomAuditM2
+/-! Axiom audit: the M2 obligations are closed kernel-clean. -/
+#print axioms Shesha.skelRowOf_node
+#print axioms Shesha.collapseF
+#print axioms Shesha.survDFSF
+#print axioms Shesha.expandRow_filter_L
+#print axioms Shesha.buildF_filter_L
+#print axioms Shesha.merge_L_filter
+#print axioms Shesha.merge_extends_L
+end AxiomAuditM2
