@@ -498,4 +498,199 @@ theorem row_steps_ins :
       · rw [if_neg hap, if_neg hap]
   | .del _ :: _, _, _, hai, _, _ => absurd hai id
 
+/-! ## §4 fronts: the rows of a collapse -/
+
+mutual
+  /-- The **front** of a tree under the dead-set `D`: the tree's root if
+  alive, else the (recursively computed) front of its row — exactly what
+  the root contributes to its parent's row after the collapse. -/
+  def frontT (D : Nat → Bool) : Tree → List Nat
+    | .node i cs => if D i then frontF D cs else [i]
+  def frontF (D : Nat → Bool) : List Tree → List Nat
+    | [] => []
+    | t :: ts => frontT D t ++ frontF D ts
+end
+
+theorem frontF_nil {D : Nat → Bool} : frontF D [] = [] := rfl
+
+theorem frontF_cons {D : Nat → Bool} {t : Tree} {ts : List Tree} :
+    frontF D (t :: ts) = frontT D t ++ frontF D ts := rfl
+
+theorem frontF_append {D : Nat → Bool} :
+    ∀ F G : List Tree, frontF D (F ++ G) = frontF D F ++ frontF D G
+  | [], _ => rfl
+  | t :: ts, G => by
+      rw [List.cons_append, frontF_cons, frontF_cons, frontF_append ts G,
+        List.append_assoc]
+
+mutual
+  /-- The top ids of a collapse are the front (tree form: the collapse of
+  one tree contributes its front to the enclosing row). -/
+  theorem topIds_dropT {D : Nat → Bool} :
+      ∀ t : Tree, (dropT D t).map topId = frontT D t
+    | .node i cs => by
+        rw [dropT, frontT]
+        by_cases h : D i
+        · rw [if_pos h, if_pos h, topIds_dropF cs]
+        · rw [if_neg h, if_neg h, List.map_cons, List.map_nil]
+          rfl
+  theorem topIds_dropF {D : Nat → Bool} :
+      ∀ F : List Tree, (dropF D F).map topId = frontF D F
+    | [] => rfl
+    | t :: ts => by
+        rw [dropF_cons, frontF_cons, List.map_append, topIds_dropT t,
+          topIds_dropF ts]
+end
+
+mutual
+  /-- The child forest of `p` (the trees whose roots form `p`'s row). -/
+  def kidsT (p : Nat) : Tree → List Tree
+    | .node i cs => if i = p then cs else kidsF p cs
+  def kidsF (p : Nat) : List Tree → List Tree
+    | [] => []
+    | t :: ts => kidsT p t ++ kidsF p ts
+end
+
+theorem kidsF_cons {p : Nat} {t : Tree} {ts : List Tree} :
+    kidsF p (t :: ts) = kidsT p t ++ kidsF p ts := rfl
+
+mutual
+  theorem topIds_kidsT {p : Nat} :
+      ∀ t : Tree, (kidsT p t).map topId = rowT p t
+    | .node i cs => by
+        rw [kidsT, rowT]
+        by_cases h : i = p
+        · rw [if_pos h, if_pos h]
+        · rw [if_neg h, if_neg h, topIds_kidsF cs]
+  theorem topIds_kidsF {p : Nat} :
+      ∀ F : List Tree, (kidsF p F).map topId = rowF p F
+    | [] => rfl
+    | t :: ts => by
+        rw [kidsF_cons, rowF, List.map_append, topIds_kidsT t,
+          topIds_kidsF ts]
+end
+
+mutual
+  /-- **The rows of a collapse** (tree form): a surviving `p`'s row in the
+  collapse is the front of `p`'s child forest. -/
+  theorem rowF_dropT {D : Nat → Bool} {p : Nat} (hDp : D p = false) :
+      ∀ t : Tree, rowF p (dropT D t) = frontF D (kidsT p t)
+    | .node i cs => by
+        rw [dropT, kidsT]
+        by_cases hDi : D i
+        · have hip : ¬ i = p := fun he => by rw [he, hDp] at hDi; cases hDi
+          rw [if_pos hDi, if_neg hip, rowF_dropF hDp cs]
+        · rw [if_neg hDi]
+          by_cases hip : i = p
+          · rw [if_pos hip, rowF, rowT, if_pos hip, rowF, List.append_nil,
+              topIds_dropF cs]
+          · rw [if_neg hip, rowF, rowT, if_neg hip, rowF, List.append_nil,
+              rowF_dropF hDp cs]
+  theorem rowF_dropF {D : Nat → Bool} {p : Nat} (hDp : D p = false) :
+      ∀ F : List Tree, rowF p (dropF D F) = frontF D (kidsF p F)
+    | [] => rfl
+    | t :: ts => by
+        rw [dropF_cons, kidsF_cons, rowF_append, frontF_append,
+          rowF_dropT hDp t, rowF_dropF hDp ts]
+end
+
+/-- The child forest of `p` in a state (`p = 0`: the root forest). -/
+def kids (s : St) (p : Nat) : List Tree :=
+  if p = 0 then s else kidsF p s
+
+/-- **The rows of a collapse** (state form). -/
+theorem row_dropF {s : St} {D : Nat → Bool} {p : Nat}
+    (hDp : D p = false) :
+    row (dropF D s) p = frontF D (kids s p) := by
+  rw [row, kids]
+  by_cases hp : p = 0
+  · rw [if_pos hp, if_pos hp, topIds_dropF]
+  · rw [if_neg hp, if_neg hp, rowF_dropF hDp]
+
+/-- Descent through dead nodes: from `q`'s row, following only `D`-dead
+members, `w` is reachable. (`w` itself is unconstrained; consumers pair
+this with liveness.) -/
+inductive RowChain (s : St) (D : Nat → Bool) : Nat → Nat → Prop
+  | direct {q w : Nat} : w ∈ row s q → RowChain s D q w
+  | through {q c w : Nat} : c ∈ row s q → D c = true →
+      RowChain s D c w → RowChain s D q w
+
+theorem RowChain.mem_read {s : St} {D : Nat → Bool} {q w : Nat}
+    (h : RowChain s D q w) : w ∈ read s := by
+  induction h with
+  | direct hw => exact mem_row_read hw
+  | through _ _ _ ih => exact ih
+
+mutual
+  theorem kidsT_sub {p : Nat} :
+      ∀ {t x : Tree}, x ∈ kidsT p t → x ∈ subT t
+    | .node i cs, x, hx => by
+        rw [kidsT] at hx
+        rw [subT]
+        by_cases hip : i = p
+        · rw [if_pos hip] at hx
+          exact List.mem_cons_of_mem _ (mem_subF_of_mem hx)
+        · rw [if_neg hip] at hx
+          exact List.mem_cons_of_mem _ (kidsF_sub hx)
+  theorem kidsF_sub {p : Nat} :
+      ∀ {F : List Tree} {x : Tree}, x ∈ kidsF p F → x ∈ subF F
+    | t :: ts, x, hx => by
+        rw [kidsF_cons, List.mem_append] at hx
+        rw [subF, List.mem_append]
+        rcases hx with hx | hx
+        · exact Or.inl (kidsT_sub hx)
+        · exact Or.inr (kidsF_sub hx)
+end
+
+mutual
+  /-- A front member of a subtree hangs off the subtree's root by a
+  dead-descent chain. -/
+  theorem frontT_chain {T : St} (hwf : WF T) {D : Nat → Bool} :
+      ∀ (t : Tree), t ∈ subF T → ∀ {q w : Nat}, topId t ∈ row T q →
+        w ∈ frontT D t → RowChain T D q w
+    | .node i cs, hsub, q, w, hrow, hw => by
+        rw [frontT] at hw
+        by_cases hDi : D i
+        · rw [if_pos hDi] at hw
+          refine RowChain.through hrow hDi ?_
+          exact frontF_chain hwf cs (fun c hc => child_mem_subF hsub hc)
+            (fun c hc => by
+              show topId c ∈ row T i
+              rw [row_subtree hwf hsub]
+              exact List.mem_map.mpr ⟨c, hc, rfl⟩) hw
+        · rw [if_neg hDi, List.mem_singleton] at hw
+          exact hw ▸ RowChain.direct hrow
+  theorem frontF_chain {T : St} (hwf : WF T) {D : Nat → Bool} :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF T) → ∀ {p w : Nat},
+        (∀ t ∈ F, topId t ∈ row T p) →
+        w ∈ frontF D F → RowChain T D p w
+    | t :: ts, hsubs, p, w, hrows, hw => by
+        rw [frontF_cons, List.mem_append] at hw
+        rcases hw with hw | hw
+        · exact frontT_chain hwf t (hsubs t (List.mem_cons_self ..))
+            (hrows t (List.mem_cons_self ..)) hw
+        · exact frontF_chain hwf ts
+            (fun c hc => hsubs c (List.mem_cons_of_mem _ hc))
+            (fun c hc => hrows c (List.mem_cons_of_mem _ hc)) hw
+end
+
+/-- **Collapse-row membership is dead-descent**: a member of a surviving
+row of the collapse hangs off that row's owner in the pre-splice forest
+by a chain of dead ancestors. -/
+theorem mem_row_dropF {T : St} (hwf : WF T) {D : Nat → Bool} {q w : Nat}
+    (hDq : D q = false) (h : w ∈ row (dropF D T) q) : RowChain T D q w := by
+  rw [row_dropF hDq, kids] at h
+  by_cases hq : q = 0
+  · subst hq
+    rw [if_pos rfl] at h
+    exact frontF_chain hwf T (fun t ht => mem_subF_of_mem ht)
+      (fun t ht => by
+        rw [row, if_pos rfl]
+        exact List.mem_map.mpr ⟨t, ht, rfl⟩) h
+  · rw [if_neg hq] at h
+    refine frontF_chain hwf (kidsF q T) (fun t ht => kidsF_sub ht)
+      (fun t ht => ?_) h
+    rw [row, if_neg hq, ← topIds_kidsF]
+    exact List.mem_map.mpr ⟨t, ht, rfl⟩
+
 end Shesha
