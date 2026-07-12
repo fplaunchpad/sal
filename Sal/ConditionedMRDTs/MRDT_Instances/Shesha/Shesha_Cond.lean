@@ -123,7 +123,12 @@ the three input forests' rows (the merge keeps L-order on the skeleton —
 concurrent same-slot runs), and prove the collapse equation (the
 merge-time marker splice IS the delete splice — `expandRow`/`collapseRow`
 generalized from the L-filter instance `expandRow_filter_L` to the full
-output). -/
+output). The state equation (d) is already REDUCED to per-row equations:
+by `forest_ext`/`dropF_eq_of_rows` (`Shesha_Coherence.lean`) it suffices
+that `row (dropF D T) p = row (merge s₀ s₁ s₂) p` for every `p` — LHS is
+a front (`row_dropF`), RHS needs the one missing characterization: `row`
+of `buildF` at an emitted key is its `expandRow`-expanded `outRows` entry
+(the M0 `lvl`/fuel machinery makes this mechanical). -/
 theorem shesha_presplice
     (C' : Configuration SheshaD) (hH : SheshaHonest C')
     (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)

@@ -162,4 +162,66 @@ theorem anchIds_planF_row {T : St} (hwf : WF T) (p : Nat) :
   · rw [if_neg hp, if_neg (fun h : (0 : Nat) = p => hp h.symm),
       List.nil_append]
 
+/-! ## Forest extensionality
+
+A WF forest is determined by its row function: two WF states with the same
+rows (at every key, `0` included) are equal. This is the tool that reduces
+the collapse equation of the pre-splice obligation
+(`dropF (deleted) T = merge s₀ s₁ s₂`) to **per-row front equations**: by
+`row_dropF`, each side's row at a live key is a front / an assembled-and-
+expanded output row, and extensionality discharges the state equality once
+the rows agree. -/
+
+mutual
+  /-- Subtrees of row-equal WF states with equal roots are equal. -/
+  theorem extT {S₁ S₂ : St} (hwf₁ : WF S₁) (hwf₂ : WF S₂)
+      (hrows : ∀ p, row S₁ p = row S₂ p) :
+      ∀ (t₁ t₂ : Tree), t₁ ∈ subF S₁ → t₂ ∈ subF S₂ →
+        topId t₁ = topId t₂ → t₁ = t₂
+    | .node i cs, .node j ds, h₁, h₂, htop => by
+        have hij : i = j := htop
+        have hcs : cs.map topId = ds.map topId := by
+          rw [← row_subtree hwf₁ h₁, ← row_subtree hwf₂ h₂, ← hij, hrows i]
+        rw [hij, extF hwf₁ hwf₂ hrows cs ds
+          (fun t ht => child_mem_subF h₁ ht)
+          (fun t ht => child_mem_subF h₂ ht) hcs]
+  /-- Forests of subtrees with equal top-id lists are equal. -/
+  theorem extF {S₁ S₂ : St} (hwf₁ : WF S₁) (hwf₂ : WF S₂)
+      (hrows : ∀ p, row S₁ p = row S₂ p) :
+      ∀ (F₁ F₂ : List Tree), (∀ t ∈ F₁, t ∈ subF S₁) →
+        (∀ t ∈ F₂, t ∈ subF S₂) → F₁.map topId = F₂.map topId → F₁ = F₂
+    | [], [], _, _, _ => rfl
+    | [], t₂ :: F₂, _, _, htop => by
+        rw [List.map_nil, List.map_cons] at htop
+        cases htop
+    | t₁ :: F₁, [], _, _, htop => by
+        rw [List.map_nil, List.map_cons] at htop
+        cases htop
+    | t₁ :: F₁, t₂ :: F₂, hs₁, hs₂, htop => by
+        rw [List.map_cons, List.map_cons] at htop
+        injection htop with hh ht
+        rw [extT hwf₁ hwf₂ hrows t₁ t₂ (hs₁ _ (List.mem_cons_self ..))
+            (hs₂ _ (List.mem_cons_self ..)) hh,
+          extF hwf₁ hwf₂ hrows F₁ F₂
+            (fun t ht => hs₁ _ (List.mem_cons_of_mem _ ht))
+            (fun t ht => hs₂ _ (List.mem_cons_of_mem _ ht)) ht]
+end
+
+/-- **Forest extensionality**: WF states with the same rows are equal. -/
+theorem forest_ext {S₁ S₂ : St} (hwf₁ : WF S₁) (hwf₂ : WF S₂)
+    (hrows : ∀ p, row S₁ p = row S₂ p) : S₁ = S₂ := by
+  refine extF hwf₁ hwf₂ hrows S₁ S₂
+    (fun t ht => mem_subF_of_mem ht) (fun t ht => mem_subF_of_mem ht) ?_
+  have h0 := hrows 0
+  rw [row, if_pos rfl, row, if_pos rfl] at h0
+  exact h0
+
+/-- **The collapse-equation reduction**: to prove
+`dropF D T = M` for a WF pre-splice forest `T` and a WF target `M`, it
+suffices to match the rows — by `row_dropF`, fronts against `M`'s rows. -/
+theorem dropF_eq_of_rows {T M : St} (hwfT : WF T) (hwfM : WF M)
+    (D : Nat → Bool)
+    (hrows : ∀ p, row (dropF D T) p = row M p) : dropF D T = M :=
+  forest_ext (wf_dropF hwfT D) hwfM hrows
+
 end Shesha
