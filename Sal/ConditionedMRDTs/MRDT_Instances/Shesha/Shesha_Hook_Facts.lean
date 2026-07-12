@@ -842,4 +842,134 @@ theorem witness_effFresh_go
 
 end WitnessNF
 
+/-! ## §5d the witness normal form -/
+
+/-- Some insert event of id `x` anchored at `p` lies in `ev`. -/
+def InsIn (ev : Set (Op SAppOp)) (x p : Nat) : Prop :=
+  ∃ r, (x, r, SAppOp.insA p) ∈ ev
+
+/-- Some delete event targeting `u` lies in `ev`. -/
+def DelIn (ev : Set (Op SAppOp)) (u : Nat) : Prop :=
+  ∃ t r, (t, r, SAppOp.delA u) ∈ ev
+
+open Classical in
+/-- **The witness normal form**: the fold of any honest, `loOn`-respecting,
+effective enumeration of `ev` is the delete-collapse (`dropF`) of the
+**anchored forest** of `ev`'s inserts — a WF forest whose rows are exactly
+the same-anchor inserts, ordered against visibility (newer left). Every
+slot of the join hook is analysed through this. -/
+theorem witness_nf {C : Configuration SheshaD}
+    {ev : Set (Op SAppOp)} {ρ : List (Op SAppOp)}
+    (hH : SheshaHonest C)
+    (hirr : ∀ a : Op SAppOp, ¬ C.vis a a)
+    (hsub : ∀ a ∈ ev, a ∈ C.events)
+    (hclosed : ∀ a b, C.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev → a ∈ ev)
+    (hperm : listPermOf ρ ev)
+    (hresp : respects ρ (loOn (Configuration.core C) ev))
+    (hW : SheshaEff ρ) :
+    ∃ T : Shesha.St,
+      Shesha.WF T
+      ∧ (∀ u, u ∈ Shesha.read T ↔ ∃ p, InsIn ev u p)
+      ∧ (∀ p x, x ∈ Shesha.row T p ↔ InsIn ev x p)
+      ∧ (∀ p x y rx ry, (x, rx, SAppOp.insA p) ∈ ev →
+          (y, ry, SAppOp.insA p) ∈ ev →
+          Shesha.precedes (Shesha.row T p) x y →
+          ¬ C.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p))
+      ∧ applySeq SheshaD.toCRDTSig SheshaD.init ρ
+          = Shesha.dropF (fun u => decide (DelIn ev u)) T := by
+  have hDB := witness_delBeforeOK hH hirr hsub hclosed hperm hresp hW
+  have hEF : Shesha.EffFreshFrom ([] : Shesha.St)
+      (Shesha.insPart (ρ.map toSOp)) :=
+    witness_effFresh_go hH hsub hperm hW hDB ρ [] rfl
+  have hwf0 : Shesha.WF ([] : Shesha.St) := ⟨List.nodup_nil, List.not_mem_nil⟩
+  have hAI := Shesha.allIns_insPart (ρ.map toSOp)
+  set T := Shesha.steps ([] : Shesha.St) (Shesha.insPart (ρ.map toSOp))
+    with hT
+  have hWFT : Shesha.WF T := Shesha.wf_steps_ins _ _ hwf0 hAI hEF
+  have hrow0 : ∀ p, Shesha.row ([] : Shesha.St) p = [] := by
+    intro p
+    rw [Shesha.row]
+    by_cases hp : p = 0
+    · rw [if_pos hp]
+      rfl
+    · rw [if_neg hp]
+      rfl
+  have hrowT : ∀ p, Shesha.row T p
+      = (Shesha.anchIds (ρ.map toSOp) p).reverse := by
+    intro p
+    rw [hT, Shesha.row_steps_ins _ _ hwf0 hAI hEF p, hrow0,
+      List.append_nil, Shesha.anchIds_insPart]
+  have hmemev : ∀ x, x ∈ ρ ↔ x ∈ ev := hperm.2
+  refine ⟨T, hWFT, ?_, ?_, ?_, ?_⟩
+  · -- live set = inserted ids
+    intro u
+    rw [hT]
+    constructor
+    · intro h
+      rcases Shesha.mem_read_steps _ _ h with h' | h'
+      · exact absurd h' List.not_mem_nil
+      · rw [Shesha.opInsIds_insPart] at h'
+        obtain ⟨r, a, hm⟩ := opInsIds_map_toSOp h'
+        exact ⟨a, r, (hmemev _).mp hm⟩
+    · rintro ⟨p, r, hm⟩
+      exact (Shesha.read_steps_ins _ _ hAI hEF u).mpr
+        (Or.inr (by
+          rw [Shesha.opInsIds_insPart]
+          exact mem_opInsIds_of_mem ((hmemev _).mpr hm)))
+  · -- rows = same-anchor inserts
+    intro p x
+    rw [hrowT, List.mem_reverse]
+    constructor
+    · intro h
+      obtain ⟨r, hm⟩ := anchIds_map_toSOp h
+      exact ⟨r, (hmemev _).mp hm⟩
+    · rintro ⟨r, hm⟩
+      exact mem_anchIds_of_mem ((hmemev _).mpr hm)
+  · -- row order: newer (vis-later) strictly left
+    intro p x y rx ry hxev hyev hprec
+    rw [hrowT] at hprec
+    have hyx : List.Sublist [y, x] (Shesha.anchIds (ρ.map toSOp) p) := by
+      have h2 := List.Sublist.reverse hprec
+      rw [List.reverse_reverse] at h2
+      exact h2
+    have hnd : (Shesha.anchIds (ρ.map toSOp) p).Nodup := by
+      have := Shesha.row_nodup hWFT p
+      rw [hrowT] at this
+      exact (List.nodup_reverse).mp this
+    have hxy : x ≠ y := (sublist2_nodup_ne hyx hnd).symm
+    obtain ⟨ry', rx', hbefore⟩ := anchIds_sublist2_before hyx
+    have hyρ : (y, ry', SAppOp.insA p) ∈ ρ := before_mem_left hbefore
+    have hxρ : (x, rx', SAppOp.insA p) ∈ ρ := before_mem_right hbefore
+    have hxeq : ((x, rx', SAppOp.insA p) : Op SAppOp)
+        = (x, rx, SAppOp.insA p) :=
+      (Configuration.core C).ts_unique
+        (hsub _ ((hmemev _).mp hxρ)) (hsub _ hxev) rfl
+    have hyeq : ((y, ry', SAppOp.insA p) : Op SAppOp)
+        = (y, ry, SAppOp.insA p) :=
+      (Configuration.core C).ts_unique
+        (hsub _ ((hmemev _).mp hyρ)) (hsub _ hyev) rfl
+    intro hv
+    refine respects_before hresp hbefore ?_
+    rw [hxeq, hyeq]
+    exact loOn_shesha_iff.mpr ⟨hv,
+      ncomm_ins_ins_same_anchor hxy
+        (honest_ins_ne_anchor hH (hsub _ hxev))
+        (honest_ins_ne_anchor hH (hsub _ hyev))⟩
+  · -- the fold is the delete-collapse of the anchored forest
+    rw [applySeq_toSOp,
+      Shesha.steps_normal_form (ρ.map toSOp) SheshaD.init hDB]
+    refine Shesha.dropF_congr (fun u => ?_) _
+    by_cases hd : DelIn ev u
+    · rw [decide_eq_true hd]
+      obtain ⟨t, r, hm⟩ := hd
+      exact List.contains_iff_mem.mpr
+        (mem_opDelIds_of_mem ((hmemev _).mpr hm))
+    · rw [decide_eq_false hd]
+      rcases hc : (Shesha.opDelIds (ρ.map toSOp)).contains u with _ | _
+      · rfl
+      · obtain ⟨t, r, hm⟩ :=
+          opDelIds_map_toSOp (List.contains_iff_mem.mp hc)
+        exact absurd ⟨t, r, (hmemev _).mp hm⟩ hd
+
 end Sal.ConditionedMRDTs
