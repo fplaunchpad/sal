@@ -194,4 +194,305 @@ theorem slots_live_iff {C' : Configuration SheshaD} (hH : SheshaHonest C')
         rintro ⟨⟨q, r', hq⟩, -⟩
         exact h1 ⟨q, r', ((Set.mem_inter_iff ..).mp hq).1⟩
 
+/-! ## §3 the pre-splice forest, packed
+
+`build_pack` hides the builder: from a graded union row store it
+produces the forest `T` with its read set, its rows, and its collapse
+rows — everything the assembly consumes. -/
+
+open Classical in
+theorem build_pack {C' : Configuration SheshaD} (hH : SheshaHonest C')
+    {ev₁ ev₂ : Set (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
+    (hclosed₁ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    (preRows : List (Nat × List Nat)) (n : Nat)
+    (hK1 : ∀ q x, x ∈ Shesha.alGet preRows q ↔ InsIn (ev₁ ∪ ev₂) x q)
+    (hK2 : ∀ q, (Shesha.alGet preRows q).Nodup)
+    (hK3 : ∀ q c, c ∈ Shesha.alGet preRows q → q < c ∧ c ≤ n) :
+    ∃ T : Shesha.St,
+      Shesha.WF T
+      ∧ (∀ u, u ∈ Shesha.read T ↔ ∃ p, InsIn (ev₁ ∪ ev₂) u p)
+      ∧ (∀ p, (p ∈ Shesha.read T ∨ p = 0) →
+          Shesha.row T p = Shesha.alGet preRows p)
+      ∧ (∀ q, (q ∈ Shesha.read T ∨ q = 0) →
+          decide (DelIn (ev₁ ∪ ev₂) q) = false →
+          Shesha.row (Shesha.dropF
+              (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) T) q
+            = Shesha.expandRow preRows
+                (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) n
+                (Shesha.alGet preRows q)) := by
+  have hedge : ∀ p u, u ∈ Shesha.alGet preRows p → p < u :=
+    fun p u hu => (hK3 p u hu).1
+  have hbound : ∀ p u, u ∈ Shesha.alGet preRows p → u ≤ n :=
+    fun p u hu => (hK3 p u hu).2
+  have hnz : ∀ p u, u ∈ Shesha.alGet preRows p → u ≠ 0 := by
+    intro p u hu h0
+    have := (hK3 p u hu).1
+    omega
+  have hsubU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C'.events := fun a ha =>
+    ((Set.mem_union _ _ _).mp ha).elim (hsub₁ a) (hsub₂ a)
+  have huniq : ∀ v r₁ r₂, v ∈ Shesha.alGet preRows r₁ →
+      v ∈ Shesha.alGet preRows r₂ → r₁ = r₂ := by
+    intro v r₁ r₂ h₁ h₂
+    obtain ⟨ra, hra⟩ := (hK1 r₁ v).mp h₁
+    obtain ⟨rb, hrb⟩ := (hK1 r₂ v).mp h₂
+    exact ins_anchor_unique (hsubU _ hra) (hsubU _ hrb)
+  have hanc : ∀ p u, u ∈ Shesha.alGet preRows p →
+      p = 0 ∨ ∃ q, p ∈ Shesha.alGet preRows q := by
+    intro p u hu
+    by_cases hp0 : p = 0
+    · exact Or.inl hp0
+    · obtain ⟨a, ha⟩ := union_anchor hH hsub₁ hsub₂ hclosed₁ hclosed₂
+        ((hK1 p u).mp hu) hp0
+      exact Or.inr ⟨a, (hK1 a p).mpr ha⟩
+  have hwfT : Shesha.WF
+      (Shesha.buildF preRows (fun _ => false) 0 (n + 1) 0) :=
+    Shesha.build_WF_raw preRows _ (fun x => x) hedge hK2 huniq hnz (n + 1)
+  refine ⟨Shesha.buildF preRows (fun _ => false) 0 (n + 1) 0,
+    hwfT, ?_, ?_, ?_⟩
+  · intro u
+    constructor
+    · intro h
+      obtain ⟨r, hr⟩ := Shesha.build_mem_raw preRows _ (n + 1) 0 h
+      exact ⟨r, (hK1 r u).mp hr⟩
+    · rintro ⟨p, hp⟩
+      have hu : u ∈ Shesha.alGet preRows p := (hK1 p u).mpr hp
+      exact Shesha.build_cover_raw preRows _ (fun x => x) hedge hanc
+        n u p (hbound p u hu) hu
+  · intro p hp
+    exact Shesha.build_row_raw preRows _ (fun x => x) n hedge hbound hnz
+      rfl n (by omega) hwfT.1 hp
+  · intro q hq hDq
+    exact Shesha.build_collapse_row_raw preRows _
+      (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) (fun x => x) n
+      hedge hbound rfl n (by omega) hwfT.1 hq hDq
+
+/-! ## §4 the assembly: pre-splice forest from the row store -/
+
+open Classical in
+/-- **The forest-level reduction**: every clause of the pre-splice
+obligation follows from the row-store package `hK1`–`hK6`. The residue
+(`hK6` and the order clauses) is pure row combinatorics. -/
+theorem presplice_of_rows
+    (C' : Configuration SheshaD) (hH : SheshaHonest C')
+    (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)
+    (hirr : ∀ a : Op SAppOp, ¬ C'.vis a a)
+    {ev₁ ev₂ : Set (Op SAppOp)} {s₀ s₁ s₂ : Shesha.St}
+    {ρ₀ ρ₁ ρ₂ : List (Op SAppOp)}
+    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
+    (hclosed₁ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₁ → a ∈ ev₁)
+    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
+      b ∈ ev₂ → a ∈ ev₂)
+    (hc₀ : IsCanonWitness SheshaEff (Configuration.core C')
+      (ev₁ ∩ ev₂) s₀ ρ₀)
+    (hc₁ : IsCanonWitness SheshaEff (Configuration.core C') ev₁ s₁ ρ₁)
+    (hc₂ : IsCanonWitness SheshaEff (Configuration.core C') ev₂ s₂ ρ₂)
+    (preRows : List (Nat × List Nat)) (n : Nat)
+    (hK1 : ∀ q x, x ∈ Shesha.alGet preRows q ↔ InsIn (ev₁ ∪ ev₂) x q)
+    (hK2 : ∀ q, (Shesha.alGet preRows q).Nodup)
+    (hK3 : ∀ q c, c ∈ Shesha.alGet preRows q → q < c ∧ c ≤ n)
+    (hK4 : ∀ p tx ty rx ry,
+      Before ρ₁ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+      Shesha.precedes (Shesha.alGet preRows p) ty tx)
+    (hK5 : ∀ p tx ty rx ry,
+      Before ρ₂ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+      Shesha.precedes (Shesha.alGet preRows p) ty tx)
+    (hK6 : ∀ q, q ∈ Shesha.read (SheshaD.mergeL s₀ s₁ s₂) ∨ q = 0 →
+      Shesha.expandRow preRows
+          (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) n
+          (Shesha.alGet preRows q)
+        = Shesha.row (SheshaD.mergeL s₀ s₁ s₂) q) :
+    ∃ T : Shesha.St,
+      Shesha.WF T
+      ∧ (∀ p x, x ∈ Shesha.row T p ↔ InsIn (ev₁ ∪ ev₂) x p)
+      ∧ (∀ p x y rx ry, (x, rx, SAppOp.insA p) ∈ ev₁ ∪ ev₂ →
+          (y, ry, SAppOp.insA p) ∈ ev₁ ∪ ev₂ →
+          Shesha.precedes (Shesha.row T p) x y →
+          ¬ C'.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p))
+      ∧ (∀ p tx ty rx ry,
+          Before ρ₁ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+          Shesha.precedes (Shesha.row T p) ty tx)
+      ∧ (∀ p tx ty rx ry,
+          Before ρ₂ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+          Shesha.precedes (Shesha.row T p) ty tx)
+      ∧ Shesha.dropF
+          (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) T
+          = SheshaD.mergeL s₀ s₁ s₂ := by
+  have hsubU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C'.events := fun a ha =>
+    ((Set.mem_union _ _ _).mp ha).elim (hsub₁ a) (hsub₂ a)
+  obtain ⟨T, hwfT, hreadT, hrowT, hcollT⟩ :=
+    build_pack hH hsub₁ hsub₂ hclosed₁ hclosed₂ preRows n hK1 hK2 hK3
+  -- rows are stored rows at every insert anchor
+  have hrow_of_ins : ∀ {p x : Nat}, InsIn (ev₁ ∪ ev₂) x p →
+      Shesha.row T p = Shesha.alGet preRows p := by
+    intro p x hx
+    by_cases hp0 : p = 0
+    · exact hrowT p (Or.inr hp0)
+    · obtain ⟨a, ha⟩ := union_anchor hH hsub₁ hsub₂ hclosed₁ hclosed₂
+        hx hp0
+      exact hrowT p (Or.inl ((hreadT p).mpr ⟨a, ha⟩))
+  -- (b)
+  have hrows : ∀ p x, x ∈ Shesha.row T p ↔ InsIn (ev₁ ∪ ev₂) x p := by
+    intro p x
+    constructor
+    · intro hx
+      by_cases hp0 : p = 0
+      · subst hp0
+        rw [hrowT 0 (Or.inr rfl)] at hx
+        exact (hK1 0 x).mp hx
+      · rw [hrowT p (Or.inl (Shesha.row_parent_mem hp0 hx))] at hx
+        exact (hK1 p x).mp hx
+    · intro hx
+      rw [hrow_of_ins hx]
+      exact (hK1 p x).mpr hx
+  -- (c′)
+  have hext₁ : ∀ p tx ty rx ry,
+      Before ρ₁ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+      Shesha.precedes (Shesha.row T p) ty tx := by
+    intro p tx ty rx ry hbef
+    have hmem : (tx, rx, SAppOp.insA p) ∈ ev₁ :=
+      (hc₁.1.2 _).mp (before_mem_left hbef)
+    rw [hrow_of_ins ⟨rx, Set.mem_union_left _ hmem⟩]
+    exact hK4 p tx ty rx ry hbef
+  have hext₂ : ∀ p tx ty rx ry,
+      Before ρ₂ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
+      Shesha.precedes (Shesha.row T p) ty tx := by
+    intro p tx ty rx ry hbef
+    have hmem : (tx, rx, SAppOp.insA p) ∈ ev₂ :=
+      (hc₂.1.2 _).mp (before_mem_left hbef)
+    rw [hrow_of_ins ⟨rx, Set.mem_union_right _ hmem⟩]
+    exact hK5 p tx ty rx ry hbef
+  refine ⟨T, hwfT, hrows, ?_, hext₁, hext₂, ?_⟩
+  · -- (c): a `vis` same-anchor pair is branch-internal; the branch
+    -- witness orders it (respects `loOn`), so (c′) pins the row order —
+    -- the other way.
+    intro p x y rx ry hx hy hprec hvis
+    have hxy : x ≠ y := by
+      rintro rfl
+      have heq := (Configuration.core C').ts_unique
+        (hsubU _ hx) (hsubU _ hy) rfl
+      rw [heq] at hvis
+      exact hirr _ hvis
+    have hnc : ¬ SheshaD.toCRDTSig.commutes
+        (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p) :=
+      ncomm_ins_ins_same_anchor hxy
+        (honest_ins_ne_anchor hH (hsubU _ hx))
+        (honest_ins_ne_anchor hH (hsubU _ hy))
+    have hndrow : (Shesha.row T p).Nodup := Shesha.row_nodup hwfT p
+    have hne : ((x, rx, SAppOp.insA p) : Op SAppOp)
+        ≠ (y, ry, SAppOp.insA p) := by
+      intro he
+      injection he with h1 h2
+      exact hxy h1
+    rcases (Set.mem_union _ _ _).mp hy with hy1 | hy2
+    · have hx1 : (x, rx, SAppOp.insA p) ∈ ev₁ := hclosed₁ _ _ hvis hnc hy1
+      rcases before_trichotomy ((hc₁.1.2 _).mpr hx1)
+          ((hc₁.1.2 _).mpr hy1) hne with hb | hb
+      · exact precedes_asymm hndrow hprec (hext₁ p x y rx ry hb)
+      · exact pairwise_before hc₁.2.1 hb (loOn_shesha_iff.mpr ⟨hvis, hnc⟩)
+    · have hx2 : (x, rx, SAppOp.insA p) ∈ ev₂ := hclosed₂ _ _ hvis hnc hy2
+      rcases before_trichotomy ((hc₂.1.2 _).mpr hx2)
+          ((hc₂.1.2 _).mpr hy2) hne with hb | hb
+      · exact precedes_asymm hndrow hprec (hext₂ p x y rx ry hb)
+      · exact pairwise_before hc₂.2.1 hb (loOn_shesha_iff.mpr ⟨hvis, hnc⟩)
+  · -- (d): collapse = merge, row by row
+    obtain ⟨T₀, hwf₀, hreads₀, hrows₀, hcompat₀, hfold₀⟩ :=
+      witness_nf hH hirr
+        (fun a ha => hsub₁ a ((Set.mem_inter_iff ..).mp ha).1)
+        (fun a b hv hnc hb => (Set.mem_inter_iff ..).mpr
+          ⟨hclosed₁ a b hv hnc ((Set.mem_inter_iff ..).mp hb).1,
+           hclosed₂ a b hv hnc ((Set.mem_inter_iff ..).mp hb).2⟩)
+        hc₀.1 hc₀.2.1 hc₀.2.2.1
+    obtain ⟨T₁, hwf₁, hreads₁, hrows₁, hcompat₁, hfold₁⟩ :=
+      witness_nf hH hirr hsub₁ hclosed₁ hc₁.1 hc₁.2.1 hc₁.2.2.1
+    obtain ⟨T₂, hwf₂, hreads₂, hrows₂, hcompat₂, hfold₂⟩ :=
+      witness_nf hH hirr hsub₂ hclosed₂ hc₂.1 hc₂.2.1 hc₂.2.2.1
+    have hs₀ : s₀
+        = Shesha.dropF (fun u => decide (DelIn (ev₁ ∩ ev₂) u)) T₀ := by
+      rw [← hc₀.2.2.2]
+      exact hfold₀
+    have hs₁ : s₁ = Shesha.dropF (fun u => decide (DelIn ev₁ u)) T₁ := by
+      rw [← hc₁.2.2.2]
+      exact hfold₁
+    have hs₂ : s₂ = Shesha.dropF (fun u => decide (DelIn ev₂ u)) T₂ := by
+      rw [← hc₂.2.2.2]
+      exact hfold₂
+    have mok := slots_modelOK hsub₁ hsub₂ hwf₀ hwf₁ hwf₂
+      hreads₀ hreads₁ hreads₂
+    rw [← hs₀, ← hs₁, ← hs₂] at mok
+    have hA := slots_LRowsOK hH hsub₁ hclosed₁ hclosed₂ hwf₁
+      hreads₀ hrows₁
+    rw [← hs₀, ← hs₁] at hA
+    have hreads₀' : ∀ u, u ∈ Shesha.read T₀
+        ↔ ∃ p, InsIn (ev₂ ∩ ev₁) u p := by
+      intro u
+      rw [hreads₀ u]
+      constructor
+      · rintro ⟨p, r, hm⟩
+        exact ⟨p, r, (Set.mem_inter_iff ..).mpr
+          ⟨((Set.mem_inter_iff ..).mp hm).2,
+           ((Set.mem_inter_iff ..).mp hm).1⟩⟩
+      · rintro ⟨p, r, hm⟩
+        exact ⟨p, r, (Set.mem_inter_iff ..).mpr
+          ⟨((Set.mem_inter_iff ..).mp hm).2,
+           ((Set.mem_inter_iff ..).mp hm).1⟩⟩
+    have hB := slots_LRowsOK hH hsub₂ hclosed₂ hclosed₁ hwf₂
+      hreads₀' hrows₂
+    have hDcomm : ∀ u, decide (DelIn (ev₂ ∩ ev₁) u)
+        = decide (DelIn (ev₁ ∩ ev₂) u) := by
+      intro u
+      apply decide_eq_decide.mpr
+      constructor
+      · rintro ⟨t, r, hm⟩
+        exact ⟨t, r, (Set.mem_inter_iff ..).mpr
+          ⟨((Set.mem_inter_iff ..).mp hm).2,
+           ((Set.mem_inter_iff ..).mp hm).1⟩⟩
+      · rintro ⟨t, r, hm⟩
+        exact ⟨t, r, (Set.mem_inter_iff ..).mpr
+          ⟨((Set.mem_inter_iff ..).mp hm).2,
+           ((Set.mem_inter_iff ..).mp hm).1⟩⟩
+    rw [Shesha.dropF_congr hDcomm T₀, ← hs₀, ← hs₂] at hB
+    have hlive0 := slots_live_iff hH hsub₁ hsub₂ hclosed₁ hclosed₂
+      hreads₀ hreads₁ hreads₂
+    rw [← hs₀, ← hs₁, ← hs₂] at hlive0
+    have hlive : ∀ u, u ∈ Shesha.read (SheshaD.mergeL s₀ s₁ s₂)
+        ↔ ((∃ p, InsIn (ev₁ ∪ ev₂) u p) ∧ ¬ DelIn (ev₁ ∪ ev₂) u) :=
+      fun u => (Shesha.merge_ids mok hA hB u).trans (hlive0 u)
+    refine Shesha.dropF_eq_of_rows hwfT (Shesha.merge_WF mok hA hB) _
+      (fun p => ?_)
+    by_cases hp : p ∈ Shesha.read (SheshaD.mergeL s₀ s₁ s₂) ∨ p = 0
+    · have hDp : decide (DelIn (ev₁ ∪ ev₂) p) = false := by
+        rcases hp with hp | rfl
+        · exact decide_eq_false ((hlive p).mp hp).2
+        · refine decide_eq_false ?_
+          rintro ⟨t, r, hm⟩
+          exact honest_del_nonzero hH (hsubU _ hm) rfl
+      have hpT : p ∈ Shesha.read T ∨ p = 0 := by
+        rcases hp with hp | rfl
+        · exact Or.inl ((hreadT p).mpr ((hlive p).mp hp).1)
+        · exact Or.inr rfl
+      rw [hcollT p hpT hDp]
+      exact hK6 p hp
+    · have hp0 : p ≠ 0 := fun h0 => hp (Or.inr h0)
+      have hnm : p ∉ Shesha.read (SheshaD.mergeL s₀ s₁ s₂) :=
+        fun hm => hp (Or.inl hm)
+      have h1 : p ∉ Shesha.read
+          (Shesha.dropF (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) T) := by
+        intro hmem
+        rw [Shesha.read_dropF, List.mem_filter] at hmem
+        have hins := (hreadT p).mp hmem.1
+        have hnd : ¬ DelIn (ev₁ ∪ ev₂) p := by
+          have h2 := hmem.2
+          rw [Bool.not_eq_eq_eq_not, Bool.not_true,
+            decide_eq_false_iff_not] at h2
+          exact h2
+        exact hnm ((hlive p).mpr ⟨hins, hnd⟩)
+      rw [Shesha.row, if_neg hp0, Shesha.rowF_absent h1,
+        Shesha.row, if_neg hp0]
+      exact (Shesha.rowF_absent hnm).symm
+
 end Sal.ConditionedMRDTs
