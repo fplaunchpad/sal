@@ -320,4 +320,147 @@ theorem plan_kernel {C : Configuration SheshaD} {E : Set (Op SAppOp)}
         rw [sUpdate_ins, sUpdate_ins, sUpdate_ins, sUpdate_ins]
         exact Shesha.insert_insert_comm hqq hq2x hq1yy s
 
+/-! ## §6 the assembly -/
+
+open Classical in
+/-- **The witness assembly**: a pre-splice forest for `E` — WF, rows =
+`E`'s inserts, row order against visibility — realizes the state
+`dropF (deleted E) T` as a `W`-canonical state of `E`. -/
+theorem presplice_canonical {C : Configuration SheshaD}
+    {E : Set (Op SAppOp)} {ρu : List (Op SAppOp)}
+    (hH : SheshaHonest C)
+    (htrans : ∀ {a b c : Op SAppOp}, C.vis a b → C.vis b c → C.vis a c)
+    (hirr : ∀ a : Op SAppOp, ¬ C.vis a a)
+    (hsub : ∀ a ∈ E, a ∈ C.events)
+    (hpermu : listPermOf ρu E)
+    (T : Shesha.St)
+    (hwfT : Shesha.WF T)
+    (hrows : ∀ p x, x ∈ Shesha.row T p ↔ InsIn E x p)
+    (hcompat : ∀ p x y rx ry, (x, rx, SAppOp.insA p) ∈ E →
+        (y, ry, SAppOp.insA p) ∈ E →
+        Shesha.precedes (Shesha.row T p) x y →
+        ¬ C.vis (x, rx, SAppOp.insA p) (y, ry, SAppOp.insA p)) :
+    IsCanonicalStateW SheshaEff (Configuration.core C) E
+      (Shesha.dropF (fun u => decide (DelIn E u)) T) := by
+  have hAI := Shesha.allIns_planF 0 T
+  have hIdsNodup : (Shesha.opInsIds (Shesha.planF 0 T)).Nodup :=
+    Shesha.nodup_of_count_le_one (fun u => by
+      rw [Shesha.opInsIds_planF_count 0 u T]
+      exact Shesha.count_le_one_of_nodup hwfT.1 u)
+  -- membership of plan ops in rows
+  have hplan_row : ∀ {x p : Nat}, Shesha.Op.ins x p ∈ Shesha.planF 0 T →
+      x ∈ Shesha.row T p := by
+    intro x p h
+    obtain ⟨z, w, heq, hz⟩ := Shesha.planF_mem_row hwfT T
+      (fun _ ht => Shesha.mem_subF_of_mem ht)
+      (fun t ht => by
+        rw [Shesha.row, if_pos rfl]
+        exact List.mem_map.mpr ⟨t, ht, rfl⟩) h
+    injection heq with h1 h2
+    rw [h1, h2]
+    exact hz
+  refine ⟨evPlan E (Shesha.planF 0 T) ++ delBlock ρu, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
+  · -- nodup
+    rw [List.nodup_append]
+    refine ⟨evPlan_nodup hAI hIdsNodup, delBlock_nodup hpermu.1, ?_⟩
+    intro a ha b hb
+    rintro rfl
+    obtain ⟨x, p, rfl, -⟩ := mem_evPlan ha
+    obtain ⟨rx, hex⟩ := evOfIns_shape E x p
+    have := (mem_delBlock.mp hb).2
+    rw [hex] at this
+    exact absurd this (by rw [isDelEv]; intro hc; cases hc)
+  · -- membership
+    intro a
+    rw [List.mem_append]
+    constructor
+    · rintro (ha | ha)
+      · obtain ⟨x, p, rfl, hins⟩ := mem_evPlan ha
+        exact evOfIns_mem ((hrows p x).mp (hplan_row hins))
+      · exact (hpermu.2 a).mp (mem_delBlock.mp ha).1
+    · intro ha
+      rcases a with ⟨t, r, op⟩
+      cases op with
+      | insA p =>
+          refine Or.inl ?_
+          have hins : Shesha.Op.ins t p ∈ Shesha.planF 0 T :=
+            Shesha.row_mem_plan ((hrows p t).mpr ⟨r, ha⟩)
+          have hmem := evPlan_mem (ev := E) hins
+          have heq : evOfIns E t p = ((t, r, SAppOp.insA p) : Op SAppOp) := by
+            obtain ⟨r', he⟩ := evOfIns_shape E t p
+            rw [he]
+            exact (Configuration.core C).ts_unique
+              (hsub _ (he ▸ evOfIns_mem ⟨r, ha⟩)) (hsub _ ha) rfl
+          rw [← heq]
+          exact hmem
+      | delA d =>
+          exact Or.inr (mem_delBlock.mpr ⟨(hpermu.2 _).mpr ha, rfl⟩)
+  · -- respects loOn
+    rw [respects, List.pairwise_append]
+    refine ⟨?_, ?_, ?_⟩
+    · -- within the insert block
+      rw [evPlan_eq_map hAI, List.pairwise_map]
+      exact Shesha.plan_pw hwfT
+        (plan_kernel hH (fun h1 h2 => htrans h1 h2) hirr hsub hwfT
+          hrows hcompat)
+    · -- within the delete block: ascending timestamps
+      refine (delBlock_sorted ρu).imp ?_
+      intro a b hab hlo
+      rw [loOn_shesha_iff] at hlo
+      exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le (C.causal_mono hlo.1) hab)
+    · -- insert–delete cross pairs
+      intro a ha b hb hlo
+      rw [loOn_shesha_iff] at hlo
+      obtain ⟨hv, hnc⟩ := hlo
+      obtain ⟨x, p, rfl, hins⟩ := mem_evPlan ha
+      obtain ⟨rx, hex⟩ := evOfIns_shape E x p
+      obtain ⟨td, rd, d, rfl⟩ := isDelEv_shape (mem_delBlock.mp hb).2
+      have haE : evOfIns E x p ∈ E :=
+        evOfIns_mem ((hrows p x).mp (hplan_row hins))
+      have hbE : ((td, rd, SAppOp.delA d) : Op SAppOp) ∈ E :=
+        (hpermu.2 _).mp (mem_delBlock.mp hb).1
+      rw [hex] at hv haE
+      by_cases hdx : d = x
+      · subst hdx
+        have hvis := honest_ins_vis_del hH (hsub _ haE) (hsub _ hbE)
+        exact hirr _ (htrans hvis hv)
+      · by_cases hdp : d = p
+        · subst hdp
+          have hd0 : d ≠ 0 := honest_del_nonzero hH (hsub _ hbE)
+          exact honest_no_del_anchor_vis_ins hH hd0 (hsub _ hbE) hv
+        · refine hnc ?_
+          rw [hex]
+          intro s
+          rw [sUpdate_del, sUpdate_ins, sUpdate_ins, sUpdate_del]
+          exact (Shesha.delete_insert_comm hdx hdp s).symm
+  · -- effectiveness
+    refine effFrom_append' ?_ ?_
+    · refine effFrom_of_effS ?_
+      rw [evPlan_map_toSOp hAI]
+      exact Shesha.effS_planF 0 T ([] : Shesha.St) hwfT.1 hwfT.2
+        (fun u _ => rfl) (fun u hu h0 => hwfT.2 (h0 ▸ hu)) (Or.inl rfl)
+    · exact effFrom_dels (fun e he => isDelEv_shape (mem_delBlock.mp he).2)
+  · -- the fold
+    rw [applySeq_toSOp, List.map_append, evPlan_map_toSOp hAI,
+      map_toSOp_dels (fun e he => (mem_delBlock.mp he).2),
+      Shesha.steps_append,
+      show Shesha.steps SheshaD.init (Shesha.planF 0 T)
+        = Shesha.fold (Shesha.planF 0 T) from rfl,
+      Shesha.fold_planF T hwfT.1 hwfT.2,
+      Shesha.steps_dels]
+    refine Shesha.dropF_congr (fun u => ?_) T
+    by_cases hd : DelIn E u
+    · rw [decide_eq_true hd]
+      obtain ⟨t, r, hm⟩ := hd
+      refine List.contains_iff_mem.mpr ?_
+      refine List.mem_map.mpr ⟨(t, r, SAppOp.delA u), ?_, rfl⟩
+      exact mem_delBlock.mpr ⟨(hpermu.2 _).mpr hm, rfl⟩
+    · rw [decide_eq_false hd]
+      rcases hc : ((delBlock ρu).map delTarget).contains u with _ | _
+      · rfl
+      · obtain ⟨e, he, hte⟩ := List.mem_map.mp (List.contains_iff_mem.mp hc)
+        obtain ⟨t, r, d, rfl⟩ := isDelEv_shape (mem_delBlock.mp he).2
+        have hdu : d = u := hte
+        exact absurd ⟨t, r, hdu ▸ (hpermu.2 _).mp (mem_delBlock.mp he).1⟩ hd
+
 end Sal.ConditionedMRDTs
