@@ -60,6 +60,22 @@ theorem delIn_union_iff {ev₁ ev₂ : Set (Op SAppOp)} {u : Nat} :
     · exact ⟨t, r, Set.mem_union_left _ h⟩
     · exact ⟨t, r, Set.mem_union_right _ h⟩
 
+/-- Union symmetry transfer for delete targets (feeds the mirror
+instances of the branch lemmas). -/
+theorem delIn_union_comm {ev₁ ev₂ : Set (Op SAppOp)} {u : Nat} :
+    DelIn (ev₂ ∪ ev₁) u ↔ DelIn (ev₁ ∪ ev₂) u := by
+  rw [delIn_union_iff, delIn_union_iff]
+  exact Or.comm
+
+/-- Union symmetry transfer for inserts. -/
+theorem insIn_union_comm {ev₁ ev₂ : Set (Op SAppOp)} {x p : Nat} :
+    InsIn (ev₂ ∪ ev₁) x p ↔ InsIn (ev₁ ∪ ev₂) x p := by
+  constructor <;>
+    (rintro ⟨r, hm⟩
+     rcases (Set.mem_union _ _ _).mp hm with h | h
+     · exact ⟨r, Set.mem_union_right _ h⟩
+     · exact ⟨r, Set.mem_union_left _ h⟩)
+
 /-- A (nonroot) anchor of a union insert is itself a union insert. -/
 theorem union_anchor {C' : Configuration SheshaD} (hH : SheshaHonest C')
     {ev₁ ev₂ : Set (Op SAppOp)}
