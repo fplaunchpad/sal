@@ -240,4 +240,210 @@ theorem merge_row {L A B : St} (mok : ModelOK L A B)
       omega
     rw [hn, topIds_buildF]
 
+/-! ## §4 the raw-graded store: expansion stability and the front bridge
+
+For the pre-splice forest the store is consumed *raw* (`mfuel = 0`; no
+marker splice at build time), and the grading is over raw rows —
+concretely, anchors precede children in Lamport order. -/
+
+theorem expandRow_zero {rows : List (Nat × List Nat)} {mk : Nat → Bool}
+    {r : List Nat} : expandRow rows mk 0 r = r := rfl
+
+/-- A key at the level ceiling stores an empty row. -/
+theorem row_empty_of_level {rows : List (Nat × List Nat)}
+    {lvl : Nat → Nat} {n : Nat}
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+    {p : Nat} (h : n ≤ lvl p) : alGet rows p = [] := by
+  rcases hE : alGet rows p with _ | ⟨u, l⟩
+  · rfl
+  · have hu : u ∈ alGet rows p := by
+      rw [hE]
+      exact List.mem_cons_self ..
+    have := hedge p u hu
+    have := hbound p u hu
+    omega
+
+/-- **Expansion is fuel-stable** on a graded store: any two fuels
+covering the grading expand a key's row identically. -/
+theorem expand_stable (rows : List (Nat × List Nat)) (D : Nat → Bool)
+    (lvl : Nat → Nat) (n : Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n) :
+    ∀ (f g p : Nat), n ≤ lvl p + f → n ≤ lvl p + g →
+      expandRow rows D f (alGet rows p)
+        = expandRow rows D g (alGet rows p)
+  | 0, g, p, hf, hg => by
+      have hrow : alGet rows p = [] :=
+        row_empty_of_level hedge hbound (by omega)
+      rw [hrow, expandRow_nil, expandRow_nil]
+  | f + 1, 0, p, hf, hg => by
+      have hrow : alGet rows p = [] :=
+        row_empty_of_level hedge hbound (by omega)
+      rw [hrow, expandRow_nil, expandRow_nil]
+  | f + 1, g + 1, p, hf, hg => by
+      rw [expandRow, expandRow]
+      refine flatMap_congr' (fun v hv => ?_)
+      by_cases hDv : D v
+      · rw [if_pos hDv, if_pos hDv]
+        exact expand_stable rows D lvl n hedge hbound f g v
+          (by have := hedge p v hv; omega)
+          (by have := hedge p v hv; omega)
+      · rw [if_neg hDv, if_neg hDv]
+
+theorem frontF_map_node (D : Nat → Bool) (g : Nat → List Tree) :
+    ∀ l : List Nat, frontF D (l.map (fun c => Tree.node c (g c)))
+      = l.flatMap (fun c => if D c then frontF D (g c) else [c])
+  | [] => rfl
+  | c :: l => by
+      rw [List.map_cons, frontF_cons, List.flatMap_cons, frontT,
+        frontF_map_node D g l]
+
+/-- **The front bridge**: the `D`-front of a raw build is the `D`-marker
+expansion of its key's stored row — the collapse of the built forest is
+computed by `expandRow` over the same store. -/
+theorem build_front_raw (rows : List (Nat × List Nat))
+    (mk D : Nat → Bool) (lvl : Nat → Nat) (n : Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n) :
+    ∀ (f p : Nat), n ≤ lvl p + f →
+      frontF D (buildF rows mk 0 f p)
+        = expandRow rows D f (alGet rows p)
+  | 0, p, hinv => by
+      have hrow : alGet rows p = [] :=
+        row_empty_of_level hedge hbound (by omega)
+      rw [buildF, hrow]
+      rfl
+  | f + 1, p, hinv => by
+      rw [buildF, expandRow_zero, frontF_map_node, expandRow]
+      refine flatMap_congr' (fun c hc => ?_)
+      by_cases hDc : D c
+      · rw [if_pos hDc, if_pos hDc]
+        exact build_front_raw rows mk D lvl n hedge hbound f c
+          (by have := hedge p c hc; omega)
+      · rw [if_neg hDc, if_neg hDc]
+
+/-! ## §5 well-formedness, membership and coverage of raw builds -/
+
+/-- Fuel weakening for emission. -/
+theorem buildF_mem_le (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) {u : Nat} :
+    ∀ (k f p : Nat), u ∈ readF (buildF rows mk mf f p) →
+      u ∈ readF (buildF rows mk mf (f + k) p)
+  | 0, _, _, h => h
+  | k + 1, f, p, h =>
+      buildF_mem_mono rows mk mf (f + k) p (buildF_mem_le rows mk mf k f p h)
+
+/-- Everything a raw build displays is stored somewhere. -/
+theorem build_mem_raw (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (f p : Nat) {u : Nat} (h : u ∈ readF (buildF rows mk 0 f p)) :
+    ∃ r, u ∈ alGet rows r := by
+  obtain ⟨r, -, hur⟩ := buildF_emitted rows mk 0 (fun _ => True)
+    (fun _ _ _ _ => trivial) f p trivial h
+  exact ⟨r, hur⟩
+
+/-- **Raw-build well-formedness**: duplicate-free graded store with
+unique addresses and nonzero content builds a WF forest. -/
+theorem build_WF_raw (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (lvl : Nat → Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hcnt : ∀ p, (alGet rows p).Nodup)
+    (huniq : ∀ v r₁ r₂, v ∈ alGet rows r₁ → v ∈ alGet rows r₂ → r₁ = r₂)
+    (hnz : ∀ p u, u ∈ alGet rows p → u ≠ 0) (f : Nat) :
+    WF (buildF rows mk 0 f 0) := by
+  constructor
+  · exact nodup_of_count_le_one fun u =>
+      buildF_count_le_one rows mk 0 (fun _ => True) lvl
+        (fun _ _ _ _ => trivial)
+        (fun v r _ => count_le_one_of_nodup (hcnt r) v)
+        (fun v r₁ r₂ _ _ h₁ h₂ => huniq v r₁ r₂ h₁ h₂)
+        (fun r c _ hc => hedge r c hc)
+        (fun r c _ hc => hnz r c hc)
+        trivial u f
+  · intro h0
+    obtain ⟨r, hr⟩ := build_mem_raw rows mk f 0 h0
+    exact hnz r 0 hr rfl
+
+/-- **Coverage**: stored content whose key chain roots (every key is the
+root or itself stored) is displayed, with fuel one past its level. -/
+theorem build_cover_raw (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (lvl : Nat → Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hanc : ∀ p u, u ∈ alGet rows p → p = 0 ∨ ∃ q, p ∈ alGet rows q) :
+    ∀ (N u p : Nat), lvl u ≤ N → u ∈ alGet rows p →
+      u ∈ readF (buildF rows mk 0 (N + 1) 0)
+  | 0, u, p, hN, hu => by
+      have := hedge p u hu
+      omega
+  | N + 1, u, p, hN, hu => by
+      rcases hanc p u hu with rfl | ⟨q, hq⟩
+      · exact buildF_mem_root rows mk 0 hu (N + 1)
+      · have hpN : lvl p ≤ N := by
+          have := hedge p u hu
+          omega
+        have hp := build_cover_raw rows mk lvl hedge hanc N p q hpN hq
+        exact buildF_step_mem rows mk 0 hu (N + 1) 0 hp
+
+/-- **Raw-build rows, state form**: at every displayed id (and the
+root), the row is the stored row. -/
+theorem build_row_raw (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (lvl : Nat → Nat) (n : Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+    (hnz : ∀ p u, u ∈ alGet rows p → u ≠ 0)
+    (hlvl0 : lvl 0 = 0) (f : Nat) (hnf : n ≤ f + 1)
+    (hnd : (readF (buildF rows mk 0 (f + 1) 0)).Nodup) {q : Nat}
+    (hq : q ∈ read (buildF rows mk 0 (f + 1) 0) ∨ q = 0) :
+    row (buildF rows mk 0 (f + 1) 0) q = alGet rows q := by
+  rcases hq with hq | rfl
+  · have hq0 : q ≠ 0 := by
+      rintro rfl
+      obtain ⟨r, hr⟩ := build_mem_raw rows mk (f + 1) 0 hq
+      exact hnz r 0 hr rfl
+    rw [row, if_neg hq0]
+    have h := buildF_row_char rows mk 0 lvl n
+      (fun p u hu => hedge p u hu) (fun p u hu => hbound p u hu)
+      (f + 1) 0 q (by omega) hnd hq
+    rw [expandRow_zero] at h
+    exact h
+  · rw [row, if_pos rfl, topIds_buildF, expandRow_zero]
+
+/-! ## §6 the collapse rows of a raw build
+
+The state-level composite: the delete-collapse of the built pre-splice
+forest has, at every live key, exactly the `D`-expansion of the stored
+row at the canonical fuel `n`. With `merge_row` (§3) this reduces the
+pre-splice obligation (d) to per-key equations between two `expandRow`s. -/
+
+theorem build_collapse_row_raw (rows : List (Nat × List Nat))
+    (mk D : Nat → Bool) (lvl : Nat → Nat) (n : Nat)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+    (hlvl0 : lvl 0 = 0) (f : Nat) (hnf : n ≤ f + 1)
+    (hnd : (readF (buildF rows mk 0 (f + 1) 0)).Nodup) {q : Nat}
+    (hq : q ∈ read (buildF rows mk 0 (f + 1) 0) ∨ q = 0)
+    (hDq : D q = false) :
+    row (dropF D (buildF rows mk 0 (f + 1) 0)) q
+      = expandRow rows D n (alGet rows q) := by
+  rw [row_dropF hDq, kids]
+  rcases hq with hq | rfl
+  · have hq0 : q ≠ 0 := by
+      rintro rfl
+      obtain ⟨r, hr⟩ := build_mem_raw rows mk (f + 1) 0 hq
+      have := hedge r 0 hr
+      have := hbound r 0 hr
+      have h0 : lvl 0 = 0 := hlvl0
+      omega
+    rw [if_neg hq0]
+    obtain ⟨g, hg, hk⟩ := buildF_kids_char rows mk 0 lvl n
+      (fun p u hu => hedge p u hu) (f + 1) 0 q
+      (by omega) hnd hq
+    rw [hk, build_front_raw rows mk D lvl n hedge hbound g q hg]
+    exact expand_stable rows D lvl n hedge hbound g n q hg (by omega)
+  · rw [if_pos rfl,
+      build_front_raw rows mk D lvl n hedge hbound (f + 1) 0
+        (by omega)]
+    exact expand_stable rows D lvl n hedge hbound (f + 1) n 0
+      (by omega) (by omega)
+
 end Shesha
