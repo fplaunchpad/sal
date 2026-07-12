@@ -417,4 +417,212 @@ theorem ncomm_ins_anchor_child {p : Nat} {r' ri : Replica} {a' x : Nat}
     injection h5 with h7 h8
     cases h8
 
+/-! ## §5 the witness normal form — positional and transport helpers -/
+
+theorem before_split_prefix {γ : Type} :
+    ∀ {ρ α β : List γ} {a b : γ}, ρ.Nodup → Before ρ a b →
+      ρ = α ++ b :: β → a ∈ α := by
+  intro ρ α
+  induction α generalizing ρ with
+  | nil =>
+      rintro β a b hnd hab rfl
+      obtain ⟨l₁, l₂, hl, hb⟩ := hab
+      rw [List.nil_append] at hl hnd
+      cases l₁ with
+      | nil =>
+          rw [List.nil_append] at hl
+          injection hl with h1 h2
+          refine absurd ?_ (List.nodup_cons.mp hnd).1
+          rw [h2]
+          exact hb
+      | cons c l₁' =>
+          rw [List.cons_append] at hl
+          injection hl with h1 h2
+          refine absurd ?_ (List.nodup_cons.mp hnd).1
+          rw [h2]
+          exact List.mem_append_right _ (List.mem_cons_of_mem _ hb)
+  | cons e α' ih =>
+      rintro β a b hnd hab rfl
+      obtain ⟨l₁, l₂, hl, hb⟩ := hab
+      rw [List.cons_append] at hl hnd
+      cases l₁ with
+      | nil =>
+          rw [List.nil_append] at hl
+          injection hl with h1 h2
+          rw [← h1]
+          exact List.mem_cons_self ..
+      | cons c l₁' =>
+          rw [List.cons_append] at hl
+          injection hl with h1 h2
+          exact List.mem_cons_of_mem _
+            (ih (List.nodup_cons.mp hnd).2 ⟨l₁', l₂, h2, hb⟩ rfl)
+
+theorem before_asymm {γ : Type} {ρ : List γ} {a b : γ}
+    (hnd : ρ.Nodup) (h1 : Before ρ a b) (h2 : Before ρ b a) : False := by
+  obtain ⟨l₁, l₂, hl, hb⟩ := h1
+  have hbl₁ : b ∈ l₁ := before_split_prefix hnd h2 hl
+  subst hl
+  rw [List.nodup_append] at hnd
+  exact hnd.2.2 b hbl₁ b (List.mem_cons_of_mem _ hb) rfl
+
+theorem sublist2_nodup_ne {x y : Nat} {l : List Nat}
+    (h : List.Sublist [x, y] l) (hnd : l.Nodup) : x ≠ y := by
+  rintro rfl
+  have hnd2 := List.Sublist.nodup h hnd
+  exact (List.nodup_cons.mp hnd2).1 (List.mem_singleton.mpr rfl)
+
+theorem mem_opInsIds_of_mem :
+    ∀ {ρ : List (Op SAppOp)} {u : Nat} {r : Replica} {a : Nat},
+      (u, r, SAppOp.insA a) ∈ ρ → u ∈ Shesha.opInsIds (ρ.map toSOp)
+  | e :: ρ, u, r, a, hm => by
+      rw [List.map_cons]
+      rcases List.mem_cons.mp hm with he | hm'
+      · rw [← he,
+          show toSOp (u, r, SAppOp.insA a) = Shesha.Op.ins u a from rfl,
+          Shesha.opInsIds]
+        exact List.mem_cons_self ..
+      · rcases e with ⟨t', r', op⟩
+        cases op with
+        | insA a' =>
+            rw [show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+                from rfl, Shesha.opInsIds]
+            exact List.mem_cons_of_mem _ (mem_opInsIds_of_mem hm')
+        | delA d =>
+            rw [show toSOp (t', r', SAppOp.delA d) = Shesha.Op.del d
+                from rfl, Shesha.opInsIds]
+            exact mem_opInsIds_of_mem hm'
+
+theorem mem_opDelIds_of_mem :
+    ∀ {ρ : List (Op SAppOp)} {t : Timestamp} {r : Replica} {d : Nat},
+      (t, r, SAppOp.delA d) ∈ ρ → d ∈ Shesha.opDelIds (ρ.map toSOp)
+  | e :: ρ, t, r, d, hm => by
+      rw [List.map_cons]
+      rcases List.mem_cons.mp hm with he | hm'
+      · rw [← he,
+          show toSOp (t, r, SAppOp.delA d) = Shesha.Op.del d from rfl,
+          Shesha.opDelIds]
+        exact List.mem_cons_self ..
+      · rcases e with ⟨t', r', op⟩
+        cases op with
+        | insA a' =>
+            rw [show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+                from rfl, Shesha.opDelIds]
+            exact mem_opDelIds_of_mem hm'
+        | delA d' =>
+            rw [show toSOp (t', r', SAppOp.delA d') = Shesha.Op.del d'
+                from rfl, Shesha.opDelIds]
+            exact List.mem_cons_of_mem _ (mem_opDelIds_of_mem hm')
+
+theorem opDelIds_map_toSOp :
+    ∀ {ρ : List (Op SAppOp)} {d : Nat},
+      d ∈ Shesha.opDelIds (ρ.map toSOp) →
+      ∃ t r, (t, r, SAppOp.delA d) ∈ ρ
+  | e :: ρ, d, h => by
+      rcases e with ⟨t', r', op⟩
+      cases op with
+      | insA a' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+              from rfl, Shesha.opDelIds] at h
+          obtain ⟨t, r, hm⟩ := opDelIds_map_toSOp h
+          exact ⟨t, r, List.mem_cons_of_mem _ hm⟩
+      | delA d' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.delA d') = Shesha.Op.del d'
+              from rfl, Shesha.opDelIds] at h
+          rcases List.mem_cons.mp h with rfl | h'
+          · exact ⟨t', r', List.mem_cons_self ..⟩
+          · obtain ⟨t, r, hm⟩ := opDelIds_map_toSOp h'
+            exact ⟨t, r, List.mem_cons_of_mem _ hm⟩
+
+theorem mem_anchIds_of_mem :
+    ∀ {ρ : List (Op SAppOp)} {x : Nat} {r : Replica} {p : Nat},
+      (x, r, SAppOp.insA p) ∈ ρ → x ∈ Shesha.anchIds (ρ.map toSOp) p
+  | e :: ρ, x, r, p, hm => by
+      rw [List.map_cons]
+      rcases List.mem_cons.mp hm with he | hm'
+      · rw [← he,
+          show toSOp (x, r, SAppOp.insA p) = Shesha.Op.ins x p from rfl,
+          Shesha.anchIds, if_pos rfl]
+        exact List.mem_cons_self ..
+      · rcases e with ⟨t', r', op⟩
+        cases op with
+        | insA a' =>
+            rw [show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+                from rfl, Shesha.anchIds]
+            by_cases hap : a' = p
+            · rw [if_pos hap]
+              exact List.mem_cons_of_mem _ (mem_anchIds_of_mem hm')
+            · rw [if_neg hap]
+              exact mem_anchIds_of_mem hm'
+        | delA d' =>
+            rw [show toSOp (t', r', SAppOp.delA d') = Shesha.Op.del d'
+                from rfl, Shesha.anchIds]
+            exact mem_anchIds_of_mem hm'
+
+theorem anchIds_map_toSOp :
+    ∀ {ρ : List (Op SAppOp)} {x p : Nat},
+      x ∈ Shesha.anchIds (ρ.map toSOp) p →
+      ∃ r, (x, r, SAppOp.insA p) ∈ ρ
+  | e :: ρ, x, p, h => by
+      rcases e with ⟨t', r', op⟩
+      cases op with
+      | insA a' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+              from rfl, Shesha.anchIds] at h
+          by_cases hap : a' = p
+          · rw [if_pos hap] at h
+            rcases List.mem_cons.mp h with rfl | h'
+            · exact ⟨r', hap ▸ List.mem_cons_self ..⟩
+            · obtain ⟨r, hm⟩ := anchIds_map_toSOp h'
+              exact ⟨r, List.mem_cons_of_mem _ hm⟩
+          · rw [if_neg hap] at h
+            obtain ⟨r, hm⟩ := anchIds_map_toSOp h
+            exact ⟨r, List.mem_cons_of_mem _ hm⟩
+      | delA d' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.delA d') = Shesha.Op.del d'
+              from rfl, Shesha.anchIds] at h
+          obtain ⟨r, hm⟩ := anchIds_map_toSOp h
+          exact ⟨r, List.mem_cons_of_mem _ hm⟩
+
+/-- Two `p`-anchored ids in `anchIds` order come from positionally
+ordered insert events. -/
+theorem anchIds_sublist2_before :
+    ∀ {ρ : List (Op SAppOp)} {p u v : Nat},
+      List.Sublist [u, v] (Shesha.anchIds (ρ.map toSOp) p) →
+      ∃ ru rv, Before ρ (u, ru, SAppOp.insA p) (v, rv, SAppOp.insA p)
+  | [], p, u, v, h => by
+      rw [List.map_nil, Shesha.anchIds] at h
+      exact absurd (List.sublist_nil.mp h) (by intro hc; cases hc)
+  | e :: ρ, p, u, v, h => by
+      rcases e with ⟨t', r', op⟩
+      cases op with
+      | insA a' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.insA a') = Shesha.Op.ins t' a'
+              from rfl, Shesha.anchIds] at h
+          by_cases hap : a' = p
+          · rw [if_pos hap] at h
+            subst hap
+            cases h with
+            | cons _ h' =>
+                obtain ⟨ru, rv, hb⟩ := anchIds_sublist2_before h'
+                exact ⟨ru, rv, before_cons hb⟩
+            | cons₂ _ h' =>
+                have hv : v ∈ Shesha.anchIds (ρ.map toSOp) a' :=
+                  (List.singleton_sublist.mp h')
+                obtain ⟨rv, hm⟩ := anchIds_map_toSOp hv
+                exact ⟨r', rv, before_head hm⟩
+          · rw [if_neg hap] at h
+            obtain ⟨ru, rv, hb⟩ := anchIds_sublist2_before h
+            exact ⟨ru, rv, before_cons hb⟩
+      | delA d' =>
+          rw [List.map_cons,
+            show toSOp (t', r', SAppOp.delA d') = Shesha.Op.del d'
+              from rfl, Shesha.anchIds] at h
+          obtain ⟨ru, rv, hb⟩ := anchIds_sublist2_before h
+          exact ⟨ru, rv, before_cons hb⟩
+
 end Sal.ConditionedMRDTs
