@@ -871,6 +871,54 @@ mutual
         · exact Or.inl (row_mem_planF h)
 end
 
+mutual
+  /-- Local shape of plan ops (tree form): the root op, or an insert
+  whose id and anchor both live inside the subtree. -/
+  theorem mem_planT_shape :
+      ∀ {t : Tree} {p : Nat} {op : Op}, op ∈ planT p t →
+        op = .ins (topId t) p ∨
+          ∃ y q, op = .ins y q ∧ q ∈ readT t ∧ y ∈ readT t
+    | .node i cs, p, op, hop => by
+        rw [planT] at hop
+        rcases List.mem_cons.mp hop with rfl | hop'
+        · exact Or.inl rfl
+        · rcases mem_planF_shape hop' with ⟨t', ht', he⟩ | ⟨y, q, he, hq, hy⟩
+          · refine Or.inr ⟨topId t', i, he, ?_, ?_⟩
+            · rw [readT]
+              exact List.mem_cons_self ..
+            · rw [readT]
+              exact List.mem_cons_of_mem _
+                (mem_topIds_readF (List.mem_map.mpr ⟨t', ht', rfl⟩))
+          · refine Or.inr ⟨y, q, he, ?_, ?_⟩
+            · rw [readT]
+              exact List.mem_cons_of_mem _ hq
+            · rw [readT]
+              exact List.mem_cons_of_mem _ hy
+  /-- Local shape of plan ops (forest form): a top insert at the plan
+  anchor, or an insert wholly inside the forest. -/
+  theorem mem_planF_shape :
+      ∀ {F : List Tree} {p : Nat} {op : Op}, op ∈ planF p F →
+        (∃ t ∈ F, op = .ins (topId t) p) ∨
+          ∃ y q, op = .ins y q ∧ q ∈ readF F ∧ y ∈ readF F
+    | t :: ts, p, op, hop => by
+        rw [planF, List.mem_append] at hop
+        rcases hop with hop | hop
+        · rcases mem_planF_shape hop with ⟨t', ht', he⟩ | ⟨y, q, he, hq, hy⟩
+          · exact Or.inl ⟨t', List.mem_cons_of_mem _ ht', he⟩
+          · refine Or.inr ⟨y, q, he, ?_, ?_⟩
+            · rw [readF, List.mem_append]
+              exact Or.inr hq
+            · rw [readF, List.mem_append]
+              exact Or.inr hy
+        · rcases mem_planT_shape hop with he | ⟨y, q, he, hq, hy⟩
+          · exact Or.inl ⟨t, List.mem_cons_self .., he⟩
+          · refine Or.inr ⟨y, q, he, ?_, ?_⟩
+            · rw [readF, List.mem_append]
+              exact Or.inl hq
+            · rw [readF, List.mem_append]
+              exact Or.inl hy
+end
+
 /-- Completeness, state form: every row pair is planned from the root. -/
 theorem row_mem_plan {T : St} {z w : Nat} (h : z ∈ row T w) :
     Op.ins z w ∈ planF 0 T := by
@@ -881,6 +929,157 @@ theorem row_mem_plan {T : St} {z w : Nat} (h : z ∈ row T w) :
     exact top_mem_planF h
   · rw [if_neg hw] at h
     exact row_mem_planF h
+
+/-! ## §7 the plan is pairwise-safe
+
+For any pair relation `K` that holds of two inserts whenever (i) both
+land in rows of the ambient forest, (ii) their ids differ, (iii) the
+earlier op is not anchored at the later id, and (iv) same-anchor pairs
+are ordered right-to-left in their row — `K` holds pairwise along the
+plan. This is the structural half of the `respects` obligation; the
+event-level kernel (visibility, honesty, non-commutation) instantiates
+`K`. -/
+
+/-- The kernel hypothesis of `plan_pw_F`. -/
+def PlanKernel (T : St) (K : Op → Op → Prop) : Prop :=
+  ∀ x q₁ y q₂, x ∈ row T q₁ → y ∈ row T q₂ → x ≠ y →
+    q₁ ≠ y → (q₁ = q₂ → precedes (row T q₁) y x) →
+    K (.ins x q₁) (.ins y q₂)
+
+mutual
+  theorem plan_pw_T {T : St} (hwf : WF T) (K : Op → Op → Prop)
+      (kernel : PlanKernel T K) :
+      ∀ (t : Tree), t ∈ subF T → (readT t).Nodup → ∀ {q : Nat},
+        topId t ∈ row T q → q ∉ readT t → (planT q t).Pairwise K
+    | .node i cs, hsub, hnd, q, hrow, hqt => by
+        rw [planT, List.pairwise_cons]
+        have hndT : i ∉ readF cs ∧ (readF cs).Nodup := by
+          have : (i :: readF cs).Nodup := by
+            rw [← readT]
+            exact hnd
+          exact List.nodup_cons.mp this
+        have hsubs : ∀ c ∈ cs, c ∈ subF T := fun c hc =>
+          child_mem_subF hsub hc
+        have hrows : ∀ c ∈ cs, topId c ∈ row T i := fun c hc => by
+          rw [row_subtree hwf hsub]
+          exact List.mem_map.mpr ⟨c, hc, rfl⟩
+        constructor
+        · intro o₂ ho₂
+          obtain ⟨z, w, heq, hz⟩ :=
+            planF_mem_row hwf cs hsubs hrows ho₂
+          have hshape := mem_planF_shape ho₂
+          rw [heq] at hshape ⊢
+          have hyw : z ∈ readF cs ∧ (w = i ∨ w ∈ readF cs) := by
+            rcases hshape with ⟨t', ht', he⟩ | ⟨y', q', he, hq', hy'⟩
+            · injection he with h1 h2
+              rw [h1, h2]
+              exact ⟨mem_topIds_readF (List.mem_map.mpr ⟨t', ht', rfl⟩),
+                Or.inl rfl⟩
+            · injection he with h1 h2
+              rw [h1, h2]
+              exact ⟨hy', Or.inr hq'⟩
+          refine kernel i q z w hrow hz ?_ ?_ ?_
+          · intro he
+            refine hndT.1 ?_
+            rw [he]
+            exact hyw.1
+          · intro he
+            refine hqt ?_
+            rw [readT, he]
+            exact List.mem_cons_of_mem _ hyw.1
+          · intro he
+            refine absurd ?_ hqt
+            rw [readT]
+            rcases hyw.2 with h' | h'
+            · rw [he, h']
+              exact List.mem_cons_self ..
+            · rw [he]
+              exact List.mem_cons_of_mem _ h'
+        · refine plan_pw_F hwf K kernel cs hsubs hndT.2 ?_ hndT.1
+          rw [row_subtree hwf hsub]
+          exact List.Sublist.refl _
+  theorem plan_pw_F {T : St} (hwf : WF T) (K : Op → Op → Prop)
+      (kernel : PlanKernel T K) :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF T) → (readF F).Nodup →
+        ∀ {p : Nat}, List.Sublist (F.map topId) (row T p) → p ∉ readF F →
+        (planF p F).Pairwise K
+    | [], _, _, _, _, _ => List.Pairwise.nil
+    | t :: ts, hsubs, hnd, p, hsl, hpF => by
+        rw [planF, List.pairwise_append]
+        have hnd' : (readT t).Nodup ∧ (readF ts).Nodup ∧
+            ∀ u ∈ readT t, u ∉ readF ts := by
+          have : (readT t ++ readF ts).Nodup := by
+            rw [← readF_cons]
+            exact hnd
+          rw [List.nodup_append] at this
+          exact ⟨this.1, this.2.1, fun u hu hm => this.2.2 u hu u hm rfl⟩
+        have hpt : p ∉ readT t := fun h =>
+          hpF (by rw [readF_cons]; exact List.mem_append_left _ h)
+        have hpts : p ∉ readF ts := fun h =>
+          hpF (by rw [readF_cons]; exact List.mem_append_right _ h)
+        have hslts : List.Sublist (ts.map topId) (row T p) :=
+          List.Sublist.trans (List.sublist_cons_self _ _) hsl
+        have hrowt : topId t ∈ row T p :=
+          hsl.subset (List.mem_cons_self ..)
+        refine ⟨plan_pw_F hwf K kernel ts
+            (fun c hc => hsubs c (List.mem_cons_of_mem _ hc))
+            hnd'.2.1 hslts hpts,
+          plan_pw_T hwf K kernel t (hsubs t (List.mem_cons_self ..))
+            hnd'.1 hrowt hpt,
+          ?_⟩
+        intro o₁ ho₁ o₂ ho₂
+        obtain ⟨x, q₁, heq₁, hx⟩ := planF_mem_row hwf ts
+          (fun c hc => hsubs c (List.mem_cons_of_mem _ hc))
+          (fun c hc => hslts.subset (List.mem_map.mpr ⟨c, hc, rfl⟩)) ho₁
+        obtain ⟨y, q₂, heq₂, hy⟩ := planT_mem_row hwf t
+          (hsubs t (List.mem_cons_self ..)) hrowt ho₂
+        have hshape₁ := mem_planF_shape ho₁
+        have hshape₂ := mem_planT_shape ho₂
+        rw [heq₁] at hshape₁ ⊢
+        rw [heq₂] at hshape₂ ⊢
+        have hxts : x ∈ readF ts := by
+          rcases hshape₁ with ⟨t', ht', he⟩ | ⟨y', q', he, hq', hy'⟩ <;>
+            injection he with h1 h2
+          · exact h1 ▸ mem_topIds_readF (List.mem_map.mpr ⟨t', ht', rfl⟩)
+          · exact h1 ▸ hy'
+        have hyt : y ∈ readT t := by
+          rcases hshape₂ with he | ⟨y', q', he, hq', hy'⟩
+          · injection he with h1 h2
+            rw [h1]
+            exact topId_mem_readT t
+          · injection he with h1 h2
+            exact h1 ▸ hy'
+        refine kernel x q₁ y q₂ hx hy
+          (fun he => hnd'.2.2 y hyt (he ▸ hxts)) ?_ ?_
+        · rcases hshape₁ with ⟨t', ht', he⟩ | ⟨y', q', he, hq', hy'⟩ <;>
+            injection he with h1 h2
+          · exact fun hqy => hpt (h2 ▸ hqy ▸ hyt)
+          · exact fun hqy => hnd'.2.2 y hyt (hqy ▸ h2 ▸ hq')
+        · intro heq
+          rcases hshape₂ with he | ⟨y', q', he, hq', hy'⟩
+          · injection he with h1 h2
+            rcases hshape₁ with ⟨t', ht', he'⟩ | ⟨x', q'', he', hq'', hy''⟩ <;>
+              injection he' with h3 h4
+            · rw [h4]
+              show List.Sublist [y, x] (row T p)
+              refine List.Sublist.trans ?_ hsl
+              rw [h1, h3]
+              exact List.Sublist.cons₂ _ (List.singleton_sublist.mpr
+                (List.mem_map.mpr ⟨t', ht', rfl⟩))
+            · exact absurd (h4 ▸ hq'') (heq ▸ h2 ▸ hpts)
+          · injection he with h1 h2
+            rcases hshape₁ with ⟨t', ht', he'⟩ | ⟨x', q'', he', hq'', hy''⟩ <;>
+              injection he' with h3 h4
+            · exact absurd (heq ▸ h2 ▸ hq') (h4 ▸ hpt)
+            · exact absurd (heq ▸ h2 ▸ hq')
+                (fun hc => hnd'.2.2 _ hc (h4 ▸ hq''))
+end
+
+/-- The plan of a WF forest is pairwise-safe (state form). -/
+theorem plan_pw {T : St} (hwf : WF T) {K : Op → Op → Prop}
+    (kernel : PlanKernel T K) : (planF 0 T).Pairwise K :=
+  plan_pw_F hwf K kernel T (fun _ ht => mem_subF_of_mem ht) hwf.1
+    (by rw [row, if_pos rfl]; exact List.Sublist.refl _) hwf.2
 
 /-- Descent through dead nodes: from `q`'s row, following only `D`-dead
 members, `w` is reachable. (`w` itself is unconstrained; consumers pair
