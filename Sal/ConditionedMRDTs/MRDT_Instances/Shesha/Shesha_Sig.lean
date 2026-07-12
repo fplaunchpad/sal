@@ -2,6 +2,7 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 import Sal.ConditionedMRDTs.Metatheory.WitnessClass
+import Sal.ConditionedMRDTs.Metatheory.WitnessCoherence
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Evolution
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Replay
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_EffFold
