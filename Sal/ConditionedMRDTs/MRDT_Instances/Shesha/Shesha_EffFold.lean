@@ -1075,6 +1075,25 @@ mutual
                 (fun hc => hnd'.2.2 _ hc (h4 ▸ hq''))
 end
 
+theorem allIns_append :
+    ∀ {l₁ l₂ : List Op}, AllIns l₁ → AllIns l₂ → AllIns (l₁ ++ l₂)
+  | [], _, _, h₂ => h₂
+  | .ins x a :: l₁, l₂, h₁, h₂ => allIns_append (l₁ := l₁) h₁ h₂
+  | .del _ :: l₁, _, h₁, _ => absurd h₁ id
+
+mutual
+  theorem allIns_planT : ∀ (p : Nat) (t : Tree), AllIns (planT p t)
+    | p, .node i cs => by
+        rw [planT]
+        show AllIns (planF i cs)
+        exact allIns_planF i cs
+  theorem allIns_planF : ∀ (p : Nat) (F : List Tree), AllIns (planF p F)
+    | _, [] => trivial
+    | p, t :: ts => by
+        rw [planF]
+        exact allIns_append (allIns_planF p ts) (allIns_planT p t)
+end
+
 /-- The plan of a WF forest is pairwise-safe (state form). -/
 theorem plan_pw {T : St} (hwf : WF T) {K : Op → Op → Prop}
     (kernel : PlanKernel T K) : (planF 0 T).Pairwise K :=
