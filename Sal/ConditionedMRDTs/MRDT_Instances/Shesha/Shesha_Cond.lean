@@ -3,6 +3,7 @@ import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 import Sal.ConditionedMRDTs.Metatheory.WitnessClass
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Evolution
+import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Replay
 
 /-! # Shesha — the conditioned instance and the RA-linearizability capstone
 
@@ -141,29 +142,68 @@ theorem sheshaEff_step (e : Op SAppOp) (ρ : List (Op SAppOp)) (s : Shesha.St)
   rw [hs]
   exact sGuard_effStep hP
 
+/-! ## The op-level bridge
+
+The replay layers (`Shesha_Replay.lean`) are stated over `Shesha.Op`; the
+framework folds `Op SAppOp` events through `sUpdate`. The translation is a
+`map`, and the folds agree pointwise. -/
+
+/-- Translate a framework event to the datatype op (timestamp-as-id). -/
+def toSOp (o : Op SAppOp) : Shesha.Op :=
+  match o.2.2 with
+  | .insA a => .ins o.1 a
+  | .delA d => .del d
+
+theorem sUpdate_toSOp (s : Shesha.St) (o : Op SAppOp) :
+    sUpdate s o = Shesha.applyOp s (toSOp o) := by
+  rcases o with ⟨t, r, op⟩
+  cases op <;> rfl
+
+/-- The framework fold is the datatype fold of the translated ops. -/
+theorem applySeq_toSOp :
+    ∀ (ρ : List (Op SAppOp)) (s : Shesha.St),
+      applySeq SheshaD.toCRDTSig s ρ = Shesha.steps s (ρ.map toSOp)
+  | [], _ => rfl
+  | o :: ρ, s => by
+      rw [List.map_cons,
+        show applySeq SheshaD.toCRDTSig s (o :: ρ)
+          = applySeq SheshaD.toCRDTSig (sUpdate s o) ρ from rfl,
+        show Shesha.steps s (toSOp o :: ρ.map toSOp)
+          = Shesha.steps (Shesha.applyOp s (toSOp o)) (ρ.map toSOp) from rfl,
+        sUpdate_toSOp, applySeq_toSOp ρ]
+
 /-- **The owed join hook** (the last obligation): under honest histories,
 Shesha's ternary merge is the fold of some `lo`-respecting **effective**
 enumeration of the union of the branches' events, given effective
 witnesses for the LCA and both branches.
 
-`sorry` — the replay half of phase 2. What is already closed feeds it:
-`merge_WF_honest` / `merge_ids_honest` (the output is well-formed and
-displays exactly the merge-live ids), `merge_comm_honest` (symmetry), and
-`merge_extends_L_honest` (LCA-order extension) — with the `ModelOK` and
-`LRowsOK` hypotheses now re-derivable from effectiveness: the live set of
-an effective fold is set-determined (inserted ∖ deleted, by backward
-closure and honesty), so the three slots agree on membership. Owed:
-(i) the fold theory of effective enumerations (live-set exactness, parent
-= lowest live anchor-chain ancestor, vis-descending rows);
-(ii) **M3** — branch-order extension;
-(iii) fold realization — the witness `ρ⋆` = (all inserts of the union, in
-reverse-output order: anchors before children, same-anchor in reverse
-display order) ++ (all deletes, ascending timestamps): inserts rebuild the
-full anchored forest, deletes splice it down to the merge output
-(rehoming = the delete splice, `mem_row_delete`); `respects` holds because
-non-commuting pairs are same-anchor / anchor-chain / target-sharing pairs,
-which the construction orders `vis`-consistently, and everything else
-commutes. -/
+`sorry` — the replay half of phase 2. The witness is
+`ρ⋆ = (all inserts of the union, planned over the pre-splice anchored
+forest: anchors before children, same-anchor runs right-to-left)
+++ (all deletes, ascending timestamps)`. Landed layers it composes
+(`Shesha_Replay.lean`, all kernel-clean):
+- §1 commutation (`insert_insert_comm`, `delete_insert_comm`) — with
+  honesty (which excludes `vis` from a delete into an insert of its own
+  target or anchor: the target would be dead at the issuer's causal past)
+  this discharges `respects` for the inserts-then-deletes shape;
+- §3 realization (`fold_planF` via the §2 graft algebra) — the insert
+  phase builds any WF anchored forest exactly; `applySeq_toSOp` bridges
+  the framework fold to the datatype fold.
+Still owed, in order:
+(i) fold theory of effective enumerations: live set = inserted ∖ deleted
+    (set-determined — this is what effectiveness buys, and what restores
+    `ModelOK`/`LRowsOK` for the M0–M2 layer at misaligned-row inputs);
+    parent = lowest live original-anchor ancestor; vis-descending rows;
+(ii) the **pre-splice forest**: from the merge output `merge s₀ s₁ s₂`
+    and the three effective witnesses, the anchored forest `T` with
+    original-anchor parenthood whose delete-collapse is the output —
+    the un-spliced `outRows` plus the ghost ids (born-and-died within a
+    branch) that the merge never saw; its row orders are read off the
+    output rows (M0's `merge_ids`, M2's row characterizations feed this);
+(iii) the delete-phase equation: folding the deletes from `T` splices it
+    down to the output (iterated `mem_row_delete`-style splice algebra —
+    the delete-fold *is* the collapse, so the content is that the
+    collapse of `T` computes the output rows). -/
 theorem shesha_join_at_eff :
     ∀ C', SheshaHonest C' →
       JoinLemma3AtW SheshaD SheshaEff (Configuration.core C') := by
@@ -180,3 +220,11 @@ theorem shesha_ra_linearizable3 {C : Configuration SheshaD}
     (show HonestReach SheshaD (GenHonest SheshaD sGuard) trivial C from hReach)
 
 end Sal.ConditionedMRDTs
+
+section AxiomAuditCond
+/-! Axiom audit: the capstone carries exactly the hook's `sorry`; the
+route and the witness-class bookkeeping are kernel-clean. -/
+#print axioms Sal.ConditionedMRDTs.shesha_ra_linearizable3
+#print axioms Sal.ConditionedMRDTs.sheshaEff_step
+#print axioms Sal.ConditionedMRDTs.applySeq_toSOp
+end AxiomAuditCond
