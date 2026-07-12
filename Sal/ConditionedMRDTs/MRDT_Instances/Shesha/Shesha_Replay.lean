@@ -136,4 +136,220 @@ theorem delete_insert_comm (hdx : d ≠ x) (hda : d ≠ a) (s : St) :
 
 end DelComm
 
+/-! ## §2 Graft algebra -/
+
+mutual
+  /-- Prepend the forest `G` at the head of `p`'s row, everywhere `p`
+  occurs (mirroring `insert`'s totality; on WF states `p` occurs once). -/
+  def graftT (p : Nat) (G : List Tree) : Tree → Tree
+    | .node i cs =>
+        if i = p then .node i (G ++ graftF p G cs)
+        else .node i (graftF p G cs)
+  def graftF (p : Nat) (G : List Tree) : List Tree → List Tree
+    | [] => []
+    | t :: ts => graftT p G t :: graftF p G ts
+end
+
+/-- Prepend `G` at the head of `p`'s row (`p = 0`: the root row). -/
+def graft (s : St) (p : Nat) (G : List Tree) : St :=
+  if p = 0 then G ++ s else graftF p G s
+
+theorem graftF_nil {p : Nat} {G : List Tree} : graftF p G [] = [] := rfl
+
+theorem graftF_cons {p : Nat} {G : List Tree} {t : Tree} {ts : List Tree} :
+    graftF p G (t :: ts) = graftT p G t :: graftF p G ts := rfl
+
+theorem graftF_append {p : Nat} {G : List Tree} :
+    ∀ F₁ F₂ : List Tree,
+      graftF p G (F₁ ++ F₂) = graftF p G F₁ ++ graftF p G F₂
+  | [], _ => rfl
+  | t :: ts, F₂ => by
+      rw [List.cons_append, graftF_cons, graftF_cons,
+        graftF_append ts F₂, List.cons_append]
+
+mutual
+  /-- Grafting at an absent key is a no-op. -/
+  theorem graftT_no_op {p : Nat} {G : List Tree} :
+      ∀ t : Tree, containsT p t = false → graftT p G t = t
+    | .node i cs, h => by
+        rw [containsT] at h
+        rcases Bool.or_eq_false_iff.mp h with ⟨h1, h2⟩
+        rw [graftT, if_neg (fun he : i = p => by
+            rw [he] at h1
+            simp at h1),
+          graftF_no_op cs h2]
+  theorem graftF_no_op {p : Nat} {G : List Tree} :
+      ∀ F : List Tree, containsF p F = false → graftF p G F = F
+    | [], _ => rfl
+    | t :: ts, h => by
+        rw [containsF] at h
+        rcases Bool.or_eq_false_iff.mp h with ⟨h1, h2⟩
+        rw [graftF_cons, graftT_no_op t h1, graftF_no_op ts h2]
+end
+
+mutual
+  /-- `insert` is the singleton graft. -/
+  theorem insT_eq_graftT {x p : Nat} :
+      ∀ t : Tree, insT x p t = graftT p [Tree.node x []] t
+    | .node i cs => by
+        rw [insT, graftT]
+        by_cases h : i = p
+        · rw [if_pos h, if_pos h, insF_eq_graftF cs]
+          rfl
+        · rw [if_neg h, if_neg h, insF_eq_graftF cs]
+  theorem insF_eq_graftF {x p : Nat} :
+      ∀ F : List Tree, insF x p F = graftF p [Tree.node x []] F
+    | [] => rfl
+    | t :: ts => by
+        rw [insF_cons, graftF_cons, insT_eq_graftT t, insF_eq_graftF ts]
+end
+
+theorem insert_eq_graft {x p : Nat} (s : St) :
+    Shesha.insert s x p = graft s p [Tree.node x []] := by
+  rw [Shesha.insert, graft]
+  by_cases h : p = 0
+  · rw [if_pos h, if_pos h]
+    rfl
+  · rw [if_neg h, if_neg h, insF_eq_graftF s]
+
+theorem containsF_append {u : Nat} :
+    ∀ F₁ F₂ : List Tree,
+      containsF u (F₁ ++ F₂) = (containsF u F₁ || containsF u F₂)
+  | [], F₂ => by simp [containsF]
+  | t :: ts, F₂ => by
+      simp [containsF, containsF_append ts F₂, Bool.or_assoc]
+
+mutual
+  /-- Grafting the empty forest is the identity. -/
+  theorem graftT_nil {p : Nat} :
+      ∀ t : Tree, graftT p [] t = t
+    | .node i cs => by
+        rw [graftT]
+        by_cases h : i = p
+        · rw [if_pos h, List.nil_append, graftF_nil' cs]
+        · rw [if_neg h, graftF_nil' cs]
+  theorem graftF_nil' {p : Nat} :
+      ∀ F : List Tree, graftF p [] F = F
+    | [] => rfl
+    | t :: ts => by rw [graftF_cons, graftT_nil t, graftF_nil' ts]
+end
+
+theorem graft_nil {p : Nat} (s : St) : graft s p [] = s := by
+  rw [graft]
+  by_cases h : p = 0
+  · rw [if_pos h, List.nil_append]
+  · rw [if_neg h, graftF_nil' s]
+
+mutual
+  /-- Grafts don't create occurrences of an absent id. -/
+  theorem containsT_graftT_false {u p : Nat} {G : List Tree} :
+      ∀ t : Tree, containsT u t = false → containsF u G = false →
+        containsT u (graftT p G t) = false
+    | .node i cs, ht, hG => by
+        rw [containsT] at ht
+        rcases Bool.or_eq_false_iff.mp ht with ⟨h1, h2⟩
+        rw [graftT]
+        by_cases h : i = p
+        · rw [if_pos h, containsT, containsF_append, hG,
+            containsF_graftF_false cs h2 hG, h1]
+          rfl
+        · rw [if_neg h, containsT, containsF_graftF_false cs h2 hG, h1]
+          rfl
+  theorem containsF_graftF_false {u p : Nat} {G : List Tree} :
+      ∀ F : List Tree, containsF u F = false → containsF u G = false →
+        containsF u (graftF p G F) = false
+    | [], _, _ => rfl
+    | t :: ts, hF, hG => by
+        rw [containsF] at hF
+        rcases Bool.or_eq_false_iff.mp hF with ⟨h1, h2⟩
+        rw [graftF_cons, containsF, containsT_graftT_false t h1 hG,
+          containsF_graftF_false ts h2 hG]
+        rfl
+end
+
+/-- Membership in a graft is inherited from the state or the graft. -/
+theorem contains_graft_false {u p : Nat} {G : List Tree} (s : St)
+    (hs : containsF u s = false) (hG : containsF u G = false) :
+    containsF u (graft s p G) = false := by
+  rw [graft]
+  by_cases h : p = 0
+  · rw [if_pos h, containsF_append, hs, hG]
+    rfl
+  · rw [if_neg h]
+    exact containsF_graftF_false s hs hG
+
+mutual
+  /-- Composition of grafts at the same key: the later graft prepends. -/
+  theorem graftT_graftT {p : Nat} {G' G : List Tree}
+      (hG : containsF p G = false) :
+      ∀ t : Tree, graftT p G' (graftT p G t) = graftT p (G' ++ G) t
+    | .node i cs => by
+        by_cases h : i = p
+        · simp [graftT, h, graftF_append, graftF_no_op G hG,
+            graftF_graftF hG cs, List.append_assoc]
+        · simp [graftT, h, graftF_graftF hG cs]
+  theorem graftF_graftF {p : Nat} {G' G : List Tree}
+      (hG : containsF p G = false) :
+      ∀ F : List Tree, graftF p G' (graftF p G F) = graftF p (G' ++ G) F
+    | [] => rfl
+    | t :: ts => by
+        rw [graftF_cons, graftF_cons, graftF_cons, graftT_graftT hG t,
+          graftF_graftF hG ts]
+end
+
+mutual
+  /-- A graft at a key occurring only inside the grafted forest `G`
+  commutes inward. -/
+  theorem graftT_swap {q p : Nat} {H G : List Tree} :
+      ∀ t : Tree, containsT q t = false →
+        graftT q H (graftT p G t) = graftT p (graftF q H G) t
+    | .node i cs, ht => by
+        rw [containsT] at ht
+        rcases Bool.or_eq_false_iff.mp ht with ⟨h1, h2⟩
+        have hiq : ¬ i = q := fun he => by
+          rw [he] at h1
+          simp at h1
+        rw [graftT, graftT]
+        by_cases h : i = p
+        · rw [if_pos h, graftT, if_neg hiq, if_pos h, graftF_append,
+            graftF_swap cs h2]
+        · rw [if_neg h, graftT, if_neg hiq, if_neg h, graftF_swap cs h2]
+  theorem graftF_swap {q p : Nat} {H G : List Tree} :
+      ∀ F : List Tree, containsF q F = false →
+        graftF q H (graftF p G F) = graftF p (graftF q H G) F
+    | [], _ => rfl
+    | t :: ts, hF => by
+        rw [containsF] at hF
+        rcases Bool.or_eq_false_iff.mp hF with ⟨h1, h2⟩
+        rw [graftF_cons, graftF_cons, graftF_cons, graftT_swap t h1,
+          graftF_swap ts h2]
+end
+
+/-- Sibling composition: grafting a fresh leaf onto an existing graft. -/
+theorem graft_graft {p : Nat} {G' G : List Tree} (s : St)
+    (hG : containsF p G = false) :
+    graft (graft s p G) p G' = graft s p (G' ++ G) := by
+  rw [graft, graft, graft]
+  by_cases h : p = 0
+  · rw [if_pos h, if_pos h, if_pos h, List.append_assoc]
+  · rw [if_neg h, if_neg h, if_neg h, graftF_graftF hG s]
+
+/-- Child composition: filling in a freshly grafted node's row. -/
+theorem graft_child {p i : Nat} (s : St) (cs ts : List Tree)
+    (hi0 : i ≠ 0)
+    (his : containsF i s = false)
+    (hits : containsF i ts = false) :
+    graft (graft s p (Tree.node i [] :: ts)) i cs
+      = graft s p (Tree.node i cs :: ts) := by
+  have hkey : graftF i cs (Tree.node i [] :: ts) = Tree.node i cs :: ts := by
+    rw [graftF_cons, graftT, if_pos rfl, graftF_nil, List.append_nil,
+      graftF_no_op ts hits]
+  by_cases h : p = 0
+  · rw [graft, if_neg hi0, graft, if_pos h, graft, if_pos h,
+      List.cons_append, graftF_cons, graftF_append, graftT, if_pos rfl,
+      graftF_nil, List.append_nil, graftF_no_op ts hits,
+      graftF_no_op s his, List.cons_append]
+  · rw [graft, if_neg hi0, graft, if_neg h, graft, if_neg h,
+      graftF_swap s (H := cs) (G := Tree.node i [] :: ts) his, hkey]
+
 end Shesha
