@@ -20,6 +20,59 @@ oracle on **25,917/25,917** merges (its merge is the oracle), and every row pass
 survivor-set check on every merge (`liveset_bad=0`) — the live-set rule and tombstoned
 removal agree everywhere, as (M2) predicts.
 
+## What the anomalies are
+
+Definitions for every column, self-contained. Ops are `insert(x after a)` / `delete(x)`;
+notation `x·3` = element x with timestamp 3; "displayed" = appearing in the read of some
+state some replica actually held.
+
+**a. Tombstone retention** *(cost, not misbehavior)* — after `delete(x)`, does any part of
+the replica state still mention x (a grave entry, a flag, x inside surviving positions)?
+*Tombstone-free* = the post-delete state is indistinguishable from one where x never
+existed, given the survivors.
+
+**b. Unbounded per-node metadata** *(cost)* — does the representation of a single live
+element grow with history? Witness shape: insert a chain x₁←⌂, x₂←x₁, …, xₙ←xₙ₋₁, delete
+all but xₙ; measure xₙ's stored size. Position-based designs grow O(n) here (the deleted
+ancestors live on inside the position); pointer/row designs stay O(1).
+
+**c. Sequential misbehavior** — with NO concurrency at all, a single replica's read after
+plain inserts and deletes differs from what a naive list would give. The canonical
+instance is the **delete-reorder anomaly**: `ins(a·1←⌂); ins(b·2←⌂); ins(c·3←a)` reads
+`b a c`; `delete(a)` should give `b c`, but a design that re-sorts rehomed children by
+their own timestamps gives `c b` — a delete changed the relative order of two surviving
+characters on one machine.
+
+**d. Displayed-order flip** *(pairwise display stability violation)* — some state displays
+x before y, and a later or concurrent state (any replica) displays y before x. To a user:
+text they have already seen in one order silently reverses. The spec "pairwise display
+stability" forbids exactly this, and nothing more.
+
+**e. Global-timeline inconsistency** *(strong list spec violation, Attiya et al. PODC'16)*
+— no single total order of all elements is consistent with every read any replica ever
+displayed. This can fail **without any single pair flipping** (column d clean): the
+witness is a cycle through a *deleted* element's past displays — A displayed `x` before
+`g`, B displayed `g` before `y`, and the merge (which no longer knows g's rank) orders
+`y` before `x`. Each pairwise order is seen only once; jointly they admit no timeline.
+
+**f. RGA-oracle divergence** — the merge's order differs from what the tombstoned RGA
+(graves kept forever) would produce on the same operations. Classified against the
+display log: **licensed** = every differing pair was never co-displayed by any state (the
+order was decided where no observation constrains it); **violation** = a differing pair
+was displayed in the oracle's direction somewhere — i.e., an actual observed order got
+reversed (this also shows up in column d).
+
+**g. Forward interleaving** — two replicas concurrently type runs at the same place, each
+character anchored on that replica's *previous* character (normal typing). Anomaly: the
+merge shuffles the two runs character-wise (`HeWollrldo` instead of `HelloWorld` /
+`WorldHello`). Excluded = each run stays contiguous.
+
+**h. Backward interleaving** — same, but each character is anchored at the same fixed
+point (typing at the start of a line, or building text right-to-left), so each replica's
+own run reads in reverse insertion order. The classically hard case: several designs that
+exclude (g) still shuffle here — including the tombstoned RGA itself and production
+Automerge (witnessed below).
+
 ## The matrix — minimal implementations
 
 ✓ = property holds / anomaly excluded; ✗ = anomaly witnessed. Evidence pointers →
