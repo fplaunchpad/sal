@@ -352,4 +352,115 @@ theorem graft_child {p i : Nat} (s : St) (cs ts : List Tree)
   · rw [graft, if_neg hi0, graft, if_neg h, graft, if_neg h,
       graftF_swap s (H := cs) (G := Tree.node i [] :: ts) his, hkey]
 
+/-! ## §3 The insert-phase realization -/
+
+mutual
+  /-- Linearize a target tree into insert ops: the node, then its row
+  (children processed rightmost-first so heads are inserted last). -/
+  def planT (p : Nat) : Tree → List Op
+    | .node i cs => Op.ins i p :: planF i cs
+  def planF (p : Nat) : List Tree → List Op
+    | [] => []
+    | t :: ts => planF p ts ++ planT p t
+end
+
+theorem steps_append (s : St) (l₁ l₂ : List Op) :
+    steps s (l₁ ++ l₂) = steps (steps s l₁) l₂ := by
+  rw [steps, steps, steps, List.foldl_append]
+
+theorem readF_cons {t : Tree} {ts : List Tree} :
+    readF (t :: ts) = readT t ++ readF ts := rfl
+
+mutual
+  /-- **The insert-phase realization** (tree form): folding the plan of a
+  fresh tree grafts it. -/
+  theorem steps_planT (p : Nat) :
+      ∀ (t : Tree) (s : St),
+        (readT t).Nodup → 0 ∉ readT t →
+        (∀ u ∈ readT t, containsF u s = false) →
+        steps s (planT p t) = graft s p [t]
+    | .node i cs, s, hnd, h0, hfr => by
+        rw [planT, steps, List.foldl_cons]
+        have hstep : applyOp s (Op.ins i p) = graft s p [Tree.node i []] := by
+          rw [applyOp]
+          exact insert_eq_graft s
+        rw [show List.foldl applyOp (applyOp s (Op.ins i p)) (planF i cs)
+            = steps (applyOp s (Op.ins i p)) (planF i cs) from rfl, hstep]
+        have hi_mem : i ∈ readT (Tree.node i cs) := by
+          rw [readT]
+          exact List.mem_cons_self ..
+        have hndT : i ∉ readF cs ∧ (readF cs).Nodup := by
+          have : (i :: readF cs).Nodup := by
+            rw [← readT]
+            exact hnd
+          exact List.nodup_cons.mp this
+        have h0' : 0 ∉ readF cs := fun hm =>
+          h0 (by rw [readT]; exact List.mem_cons_of_mem _ hm)
+        have hfr' : ∀ u ∈ readF cs,
+            containsF u (graft s p [Tree.node i []]) = false := by
+          intro u hu
+          refine contains_graft_false s
+            (hfr u (by rw [readT]; exact List.mem_cons_of_mem _ hu)) ?_
+          have hne : ¬ i = u := fun he => hndT.1 (he ▸ hu)
+          simp [containsF, containsT, hne]
+        have hpi : ∀ u ∈ readF cs, u ≠ i := fun u hu he =>
+          hndT.1 (he ▸ hu)
+        rw [steps_planF i cs (graft s p [Tree.node i []])
+          hndT.2 h0' hfr' hpi]
+        exact graft_child s cs []
+          (fun he => h0 (he ▸ hi_mem))
+          (hfr i hi_mem) rfl
+  theorem steps_planF (p : Nat) :
+      ∀ (F : List Tree) (s : St),
+        (readF F).Nodup → 0 ∉ readF F →
+        (∀ u ∈ readF F, containsF u s = false) →
+        (∀ u ∈ readF F, u ≠ p) →
+        steps s (planF p F) = graft s p F
+    | [], s, _, _, _, _ => (graft_nil s).symm
+    | t :: ts, s, hnd, h0, hfr, hp => by
+        rw [planF, steps_append]
+        have hnd' : (readT t).Nodup ∧ (readF ts).Nodup ∧
+            ∀ u ∈ readT t, u ∉ readF ts := by
+          have : (readT t ++ readF ts).Nodup := by
+            rw [← readF_cons]
+            exact hnd
+          rw [List.nodup_append] at this
+          exact ⟨this.1, this.2.1, fun u hu hm => this.2.2 u hu u hm rfl⟩
+        have hfr_ts : ∀ u ∈ readF ts, containsF u s = false := fun u hu =>
+          hfr u (by rw [readF_cons]; exact List.mem_append_right _ hu)
+        have h0_ts : 0 ∉ readF ts := fun hm =>
+          h0 (by rw [readF_cons]; exact List.mem_append_right _ hm)
+        have hp_ts : ∀ u ∈ readF ts, u ≠ p := fun u hu =>
+          hp u (by rw [readF_cons]; exact List.mem_append_right _ hu)
+        rw [steps_planF p ts s hnd'.2.1 h0_ts hfr_ts hp_ts]
+        have hfr_t : ∀ u ∈ readT t, containsF u (graft s p ts) = false := by
+          intro u hu
+          refine contains_graft_false s (hfr u (by
+            rw [readF_cons]
+            exact List.mem_append_left _ hu)) ?_
+          rcases hc : containsF u ts with _ | _
+          · rfl
+          · exact absurd ((containsF_iff u ts).mp hc) (hnd'.2.2 u hu)
+        have h0_t : 0 ∉ readT t := fun hm =>
+          h0 (by rw [readF_cons]; exact List.mem_append_left _ hm)
+        rw [steps_planT p t (graft s p ts) hnd'.1 h0_t hfr_t]
+        have hG : containsF p ts = false := by
+          rcases hc : containsF p ts with _ | _
+          · rfl
+          · exact absurd rfl (hp p (by
+              rw [readF_cons]
+              exact List.mem_append_right _ ((containsF_iff p ts).mp hc)))
+        rw [graft_graft s hG]
+        rfl
+end
+
+/-- **The insert-phase realization**: from the empty document, the plan of
+a WF forest builds it exactly. -/
+theorem fold_planF (F : List Tree)
+    (hnd : (readF F).Nodup) (h0 : 0 ∉ readF F) :
+    fold (planF 0 F) = F := by
+  rw [fold, steps_planF 0 F init hnd h0
+    (fun u _ => rfl) (fun u hu he => h0 (he ▸ hu)), graft, if_pos rfl]
+  exact List.append_nil F
+
 end Shesha
