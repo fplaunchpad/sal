@@ -634,6 +634,254 @@ theorem row_dropF {s : St} {D : Nat → Bool} {p : Nat}
   · rw [if_pos hp, if_pos hp, topIds_dropF]
   · rw [if_neg hp, if_neg hp, rowF_dropF hDp]
 
+/-! ## §5 effectiveness along the plan -/
+
+/-- Datatype-level effectiveness: every insert's anchor is live-or-root
+at its point. -/
+def EffS : St → List Op → Prop
+  | _, [] => True
+  | s, .ins x a :: l => (a = 0 ∨ a ∈ read s) ∧ EffS (Shesha.insert s x a) l
+  | s, .del d :: l => EffS (Shesha.delete s d) l
+
+theorem effS_append :
+    ∀ (l₁ l₂ : List Op) (s : St),
+      EffS s l₁ → EffS (steps s l₁) l₂ → EffS s (l₁ ++ l₂)
+  | [], _, _, _, h₂ => h₂
+  | .ins x a :: l₁, l₂, s, h₁, h₂ => by
+      exact ⟨h₁.1, effS_append l₁ l₂ (Shesha.insert s x a) h₁.2 h₂⟩
+  | .del d :: l₁, l₂, s, h₁, h₂ =>
+      effS_append l₁ l₂ (Shesha.delete s d) h₁ h₂
+
+mutual
+  /-- Grafting never removes live ids (tree form). -/
+  theorem mem_readT_graftT {u p : Nat} {G : List Tree} :
+      ∀ {t : Tree}, u ∈ readT t → u ∈ readT (graftT p G t)
+    | .node i cs, h => by
+        rw [readT] at h
+        rw [graftT]
+        rcases List.mem_cons.mp h with he | h'
+        · by_cases hip : i = p
+          · rw [if_pos hip, readT, he]
+            exact List.mem_cons_self ..
+          · rw [if_neg hip, readT, he]
+            exact List.mem_cons_self ..
+        · by_cases hip : i = p
+          · rw [if_pos hip, readT]
+            refine List.mem_cons_of_mem _ ?_
+            rw [readF_append]
+            exact List.mem_append_right _ (mem_readF_graftF h')
+          · rw [if_neg hip, readT]
+            exact List.mem_cons_of_mem _ (mem_readF_graftF h')
+  theorem mem_readF_graftF {u p : Nat} {G : List Tree} :
+      ∀ {F : List Tree}, u ∈ readF F → u ∈ readF (graftF p G F)
+    | t :: ts, h => by
+        rw [readF, List.mem_append] at h
+        rw [graftF_cons, readF, List.mem_append]
+        rcases h with h | h
+        · exact Or.inl (mem_readT_graftT h)
+        · exact Or.inr (mem_readF_graftF h)
+end
+
+/-- Grafting never removes live ids (state form). -/
+theorem mem_read_graft {u p : Nat} {G : List Tree} {s : St}
+    (h : u ∈ read s) : u ∈ read (graft s p G) := by
+  rw [graft]
+  by_cases hp : p = 0
+  · rw [if_pos hp]
+    show u ∈ readF (G ++ s)
+    rw [readF_append]
+    exact List.mem_append_right _ h
+  · rw [if_neg hp]
+    exact mem_readF_graftF h
+
+mutual
+  /-- **Effectiveness of the plan** (tree form): planned at a live-or-root
+  anchor over fresh content, every insert of the plan applies. -/
+  theorem effS_planT (p : Nat) :
+      ∀ (t : Tree) (s : St),
+        (readT t).Nodup → 0 ∉ readT t →
+        (∀ u ∈ readT t, containsF u s = false) →
+        (p = 0 ∨ p ∈ read s) →
+        EffS s (planT p t)
+    | .node i cs, s, hnd, h0, hfr, hp => by
+        rw [planT]
+        refine ⟨hp, ?_⟩
+        have hndT : i ∉ readF cs ∧ (readF cs).Nodup := by
+          have : (i :: readF cs).Nodup := by
+            rw [← readT]
+            exact hnd
+          exact List.nodup_cons.mp this
+        have hi_mem : i ∈ readT (Tree.node i cs) := by
+          rw [readT]
+          exact List.mem_cons_self ..
+        have h0' : 0 ∉ readF cs := fun hm =>
+          h0 (by rw [readT]; exact List.mem_cons_of_mem _ hm)
+        have hfr' : ∀ u ∈ readF cs,
+            containsF u (Shesha.insert s i p) = false := by
+          intro u hu
+          rw [insert_eq_graft]
+          refine contains_graft_false s
+            (hfr u (by rw [readT]; exact List.mem_cons_of_mem _ hu)) ?_
+          have hne : ¬ i = u := fun he => hndT.1 (he ▸ hu)
+          simp [containsF, containsT, hne]
+        refine effS_planF i cs (Shesha.insert s i p) hndT.2 h0' hfr'
+          (fun u hu he => hndT.1 (he ▸ hu)) ?_
+        refine Or.inr ?_
+        rw [read_insert]
+        exact self_mem_seqIns hp
+  theorem effS_planF (p : Nat) :
+      ∀ (F : List Tree) (s : St),
+        (readF F).Nodup → 0 ∉ readF F →
+        (∀ u ∈ readF F, containsF u s = false) →
+        (∀ u ∈ readF F, u ≠ p) →
+        (p = 0 ∨ p ∈ read s) →
+        EffS s (planF p F)
+    | [], _, _, _, _, _, _ => trivial
+    | t :: ts, s, hnd, h0, hfr, hne, hp => by
+        rw [planF]
+        have hnd' : (readT t).Nodup ∧ (readF ts).Nodup ∧
+            ∀ u ∈ readT t, u ∉ readF ts := by
+          have : (readT t ++ readF ts).Nodup := by
+            rw [← readF_cons]
+            exact hnd
+          rw [List.nodup_append] at this
+          exact ⟨this.1, this.2.1, fun u hu hm => this.2.2 u hu u hm rfl⟩
+        have hfr_ts : ∀ u ∈ readF ts, containsF u s = false := fun u hu =>
+          hfr u (by rw [readF_cons]; exact List.mem_append_right _ hu)
+        have h0_ts : 0 ∉ readF ts := fun hm =>
+          h0 (by rw [readF_cons]; exact List.mem_append_right _ hm)
+        have hne_ts : ∀ u ∈ readF ts, u ≠ p := fun u hu =>
+          hne u (by rw [readF_cons]; exact List.mem_append_right _ hu)
+        refine effS_append _ _ _
+          (effS_planF p ts s hnd'.2.1 h0_ts hfr_ts hne_ts hp) ?_
+        rw [steps_planF p ts s hnd'.2.1 h0_ts hfr_ts hne_ts]
+        have hfr_t : ∀ u ∈ readT t, containsF u (graft s p ts) = false := by
+          intro u hu
+          refine contains_graft_false s (hfr u (by
+            rw [readF_cons]
+            exact List.mem_append_left _ hu)) ?_
+          rcases hc : containsF u ts with _ | _
+          · rfl
+          · exact absurd ((containsF_iff u ts).mp hc) (hnd'.2.2 u hu)
+        have h0_t : 0 ∉ readT t := fun hm =>
+          h0 (by rw [readF_cons]; exact List.mem_append_left _ hm)
+        refine effS_planT p t (graft s p ts) hnd'.1 h0_t hfr_t ?_
+        rcases hp with hp | hp
+        · exact Or.inl hp
+        · exact Or.inr (mem_read_graft hp)
+end
+
+/-! ## §6 plan characterization -/
+
+theorem opInsIds_append :
+    ∀ l₁ l₂ : List Op, opInsIds (l₁ ++ l₂) = opInsIds l₁ ++ opInsIds l₂
+  | [], _ => rfl
+  | .ins x a :: l₁, l₂ => by
+      rw [List.cons_append, opInsIds, opInsIds, opInsIds_append l₁ l₂,
+        List.cons_append]
+  | .del d :: l₁, l₂ => by
+      rw [List.cons_append, opInsIds, opInsIds, opInsIds_append l₁ l₂]
+
+mutual
+  /-- The plan inserts each subtree id exactly as often as it occurs. -/
+  theorem opInsIds_planT_count (p u : Nat) :
+      ∀ t : Tree, (opInsIds (planT p t)).count u = (readT t).count u
+    | .node i cs => by
+        rw [planT, opInsIds, readT, List.count_cons, List.count_cons,
+          opInsIds_planF_count i u cs]
+  theorem opInsIds_planF_count (p u : Nat) :
+      ∀ F : List Tree, (opInsIds (planF p F)).count u = (readF F).count u
+    | [] => rfl
+    | t :: ts => by
+        rw [planF, opInsIds_append, List.count_append, readF,
+          List.count_append, opInsIds_planT_count p u t,
+          opInsIds_planF_count p u ts]
+        omega
+end
+
+mutual
+  /-- Every op of the plan of a subtree is an insert into a row of the
+  ambient forest. -/
+  theorem planT_mem_row {T : St} (hwf : WF T) :
+      ∀ (t : Tree), t ∈ subF T → ∀ {q : Nat} {op : Op},
+        topId t ∈ row T q → op ∈ planT q t →
+        ∃ z w, op = .ins z w ∧ z ∈ row T w
+    | .node i cs, hsub, q, op, hrow, hop => by
+        rw [planT] at hop
+        rcases List.mem_cons.mp hop with rfl | hop'
+        · exact ⟨i, q, rfl, hrow⟩
+        · exact planF_mem_row hwf cs (fun c hc => child_mem_subF hsub hc)
+            (fun c hc => by
+              show topId c ∈ row T i
+              rw [row_subtree hwf hsub]
+              exact List.mem_map.mpr ⟨c, hc, rfl⟩) hop'
+  theorem planF_mem_row {T : St} (hwf : WF T) :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF T) → ∀ {p : Nat} {op : Op},
+        (∀ t ∈ F, topId t ∈ row T p) → op ∈ planF p F →
+        ∃ z w, op = .ins z w ∧ z ∈ row T w
+    | t :: ts, hsubs, p, op, hrows, hop => by
+        rw [planF, List.mem_append] at hop
+        rcases hop with hop | hop
+        · exact planF_mem_row hwf ts
+            (fun c hc => hsubs c (List.mem_cons_of_mem _ hc))
+            (fun c hc => hrows c (List.mem_cons_of_mem _ hc)) hop
+        · exact planT_mem_row hwf t (hsubs t (List.mem_cons_self ..))
+            (hrows t (List.mem_cons_self ..)) hop
+end
+
+mutual
+  /-- Completeness: every row pair of the forest is planned (tree form). -/
+  theorem row_mem_planT {z w : Nat} :
+      ∀ {t : Tree} {p : Nat}, z ∈ rowT w t → Op.ins z w ∈ planT p t
+    | .node i cs, p, h => by
+        rw [rowT] at h
+        rw [planT]
+        by_cases hiw : i = w
+        · rw [if_pos hiw] at h
+          refine List.mem_cons_of_mem _ ?_
+          rw [← hiw]
+          exact top_mem_planF h
+        · rw [if_neg hiw] at h
+          exact List.mem_cons_of_mem _ (row_mem_planF h)
+  /-- Completeness: every top id of a planned forest is planned at the
+  plan's anchor. -/
+  theorem top_mem_planF {z : Nat} :
+      ∀ {F : List Tree} {p : Nat}, z ∈ F.map topId →
+        Op.ins z p ∈ planF p F
+    | t :: ts, p, h => by
+        rw [List.map_cons] at h
+        rw [planF, List.mem_append]
+        rcases List.mem_cons.mp h with he | h'
+        · refine Or.inr ?_
+          cases t with
+          | node i cs =>
+              rw [planT]
+              rw [show topId (Tree.node i cs) = i from rfl] at he
+              rw [he]
+              exact List.mem_cons_self ..
+        · exact Or.inl (top_mem_planF h')
+  /-- Completeness (forest form). -/
+  theorem row_mem_planF {z w : Nat} :
+      ∀ {F : List Tree} {p : Nat}, z ∈ rowF w F → Op.ins z w ∈ planF p F
+    | t :: ts, p, h => by
+        rw [rowF, List.mem_append] at h
+        rw [planF, List.mem_append]
+        rcases h with h | h
+        · exact Or.inr (row_mem_planT h)
+        · exact Or.inl (row_mem_planF h)
+end
+
+/-- Completeness, state form: every row pair is planned from the root. -/
+theorem row_mem_plan {T : St} {z w : Nat} (h : z ∈ row T w) :
+    Op.ins z w ∈ planF 0 T := by
+  rw [row] at h
+  by_cases hw : w = 0
+  · rw [if_pos hw] at h
+    rw [← hw]
+    exact top_mem_planF h
+  · rw [if_neg hw] at h
+    exact row_mem_planF h
+
 /-- Descent through dead nodes: from `q`'s row, following only `D`-dead
 members, `w` is reachable. (`w` itself is unconstrained; consumers pair
 this with liveness.) -/
