@@ -446,4 +446,176 @@ theorem build_collapse_row_raw (rows : List (Nat × List Nat))
     exact expand_stable rows D lvl n hedge hbound (f + 1) n 0
       (by omega) (by omega)
 
+/-! ## §7 the subtree front bridge
+
+For a store that agrees with a forest's own rows on a child-closed
+region (with matching dead-sets), the ghost expansion of a region row
+computes the forest's front — how a branch slot's (already collapsed)
+rows are re-read as expansions of the pre-splice store. Feeds the
+branch-born key class of the row residue. -/
+
+mutual
+  theorem frontT_expand {S : St} (hwf : WF S)
+      (rows : List (Nat × List Nat)) (D D' : Nat → Bool)
+      (lvl : Nat → Nat) (n : Nat) (P : Nat → Prop)
+      (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+      (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+      (hProw : ∀ c, P c → alGet rows c = row S c)
+      (hPD : ∀ c, P c → D c = D' c)
+      (hPcl : ∀ c, P c → ∀ u, u ∈ row S c → P u) :
+      ∀ (t : Tree), t ∈ subF S → P (topId t) → ∀ (f : Nat),
+        n ≤ lvl (topId t) + f →
+        frontT D' t
+          = if D (topId t) then
+              expandRow rows D f (alGet rows (topId t))
+            else [topId t]
+    | .node i cs, hsub, hPi, f, hinv => by
+        rw [show topId (Tree.node i cs) = i from rfl] at hPi hinv ⊢
+        have hrowi : alGet rows i = cs.map topId := by
+          rw [hProw i hPi, row_subtree hwf hsub]
+        rw [frontT, ← hPD i hPi]
+        by_cases hDi : D i
+        · rw [if_pos hDi, if_pos hDi]
+          cases f with
+          | zero =>
+              have hempty : alGet rows i = [] :=
+                row_empty_of_level hedge hbound (by omega)
+              rw [expandRow_zero, hempty]
+              rw [hempty] at hrowi
+              cases cs with
+              | nil => rfl
+              | cons t ts =>
+                  rw [List.map_cons] at hrowi
+                  cases hrowi
+          | succ f' =>
+              rw [expandRow, hrowi]
+              exact frontF_expand hwf rows D D' lvl n P hedge hbound
+                hProw hPD hPcl cs
+                (fun t ht => child_mem_subF hsub ht)
+                (fun t ht => hPcl i hPi (topId t) (by
+                  rw [row_subtree hwf hsub]
+                  exact List.mem_map.mpr ⟨t, ht, rfl⟩))
+                f'
+                (fun t ht => by
+                  have := hedge i (topId t) (by
+                    rw [hrowi]
+                    exact List.mem_map.mpr ⟨t, ht, rfl⟩)
+                  omega)
+        · rw [if_neg hDi, if_neg hDi]
+  theorem frontF_expand {S : St} (hwf : WF S)
+      (rows : List (Nat × List Nat)) (D D' : Nat → Bool)
+      (lvl : Nat → Nat) (n : Nat) (P : Nat → Prop)
+      (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+      (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+      (hProw : ∀ c, P c → alGet rows c = row S c)
+      (hPD : ∀ c, P c → D c = D' c)
+      (hPcl : ∀ c, P c → ∀ u, u ∈ row S c → P u) :
+      ∀ (F : List Tree), (∀ t ∈ F, t ∈ subF S) →
+        (∀ t ∈ F, P (topId t)) → ∀ (f : Nat),
+        (∀ t ∈ F, n ≤ lvl (topId t) + f) →
+        frontF D' F = (F.map topId).flatMap
+          (fun c => if D c then expandRow rows D f (alGet rows c)
+            else [c])
+    | [], _, _, _, _ => rfl
+    | t :: ts, hsubs, hPs, f, hinvs => by
+        rw [frontF_cons, List.map_cons, List.flatMap_cons,
+          frontT_expand hwf rows D D' lvl n P hedge hbound hProw hPD
+            hPcl t (hsubs t (List.mem_cons_self ..))
+            (hPs t (List.mem_cons_self ..)) f
+            (hinvs t (List.mem_cons_self ..)),
+          frontF_expand hwf rows D D' lvl n P hedge hbound hProw hPD
+            hPcl ts (fun c hc => hsubs c (List.mem_cons_of_mem _ hc))
+            (fun c hc => hPs c (List.mem_cons_of_mem _ hc))
+            f (fun c hc => hinvs c (List.mem_cons_of_mem _ hc))]
+end
+
+mutual
+  /-- Node locator (tree form): a present id's child forest is the
+  child list of its unique node, and that node is a subtree. -/
+  theorem kidsT_node {q : Nat} :
+      ∀ {t : Tree}, (readT t).Nodup → q ∈ readT t →
+        ∃ cs, Tree.node q cs ∈ subT t ∧ kidsT q t = cs
+    | .node i cs, hnd, hq => by
+        rw [readT] at hnd hq
+        rw [kidsT]
+        rcases List.mem_cons.mp hq with rfl | hq'
+        · exact ⟨cs, subT_self _, if_pos rfl⟩
+        · have hiq : ¬ i = q := by
+            rintro rfl
+            exact (List.nodup_cons.mp hnd).1 hq'
+          rw [if_neg hiq]
+          obtain ⟨ds, hsub, hk⟩ :=
+            kidsF_node (List.nodup_cons.mp hnd).2 hq'
+          refine ⟨ds, ?_, hk⟩
+          rw [subT]
+          exact List.mem_cons_of_mem _ hsub
+  /-- Node locator (forest form). -/
+  theorem kidsF_node {q : Nat} :
+      ∀ {F : List Tree}, (readF F).Nodup → q ∈ readF F →
+        ∃ cs, Tree.node q cs ∈ subF F ∧ kidsF q F = cs
+    | t :: ts, hnd, hq => by
+        rw [readF_cons] at hnd hq
+        rw [kidsF_cons]
+        rcases List.mem_append.mp hq with hqt | hqts
+        · obtain ⟨ds, hsub, hk⟩ := kidsT_node (nodup_append_left hnd) hqt
+          have hnts : q ∉ readF ts := fun h => nodup_append_disj hnd hqt h
+          refine ⟨ds, ?_, ?_⟩
+          · rw [subF]
+            exact List.mem_append.mpr (Or.inl hsub)
+          · rw [hk, kidsF_absent hnts, List.append_nil]
+        · have hnt : q ∉ readT t := fun h => nodup_append_disj hnd h hqts
+          obtain ⟨ds, hsub, hk⟩ :=
+            kidsF_node (nodup_append_right hnd) hqts
+          refine ⟨ds, ?_, ?_⟩
+          · rw [subF]
+            exact List.mem_append.mpr (Or.inr hsub)
+          · rw [kidsT_absent hnt, hk, List.nil_append]
+end
+
+/-- **The subtree front bridge, row form**: at a live region key `q`,
+the ghost expansion of the stored row is the collapse row of the
+forest. -/
+theorem expand_eq_row_dropF {S : St} (hwf : WF S)
+    (rows : List (Nat × List Nat)) (D D' : Nat → Bool)
+    (lvl : Nat → Nat) (n : Nat) (P : Nat → Prop)
+    (hedge : ∀ p u, u ∈ alGet rows p → lvl p < lvl u)
+    (hbound : ∀ p u, u ∈ alGet rows p → lvl u ≤ n)
+    (hProw : ∀ c, P c → alGet rows c = row S c)
+    (hPD : ∀ c, P c → D c = D' c)
+    (hPcl : ∀ c, P c → ∀ u, u ∈ row S c → P u)
+    {q : Nat} (hq : q ∈ read S) (hPq : P q) (hD'q : D' q = false)
+    (f : Nat) (hinv : n ≤ lvl q + f) :
+    expandRow rows D f (alGet rows q) = row (dropF D' S) q := by
+  rw [row_dropF hD'q, kids]
+  have hq0 : q ≠ 0 := fun h0 => hwf.2 (h0 ▸ hq)
+  rw [if_neg hq0]
+  obtain ⟨cs, hsub, hk⟩ := kidsF_node hwf.1 hq
+  rw [hk]
+  have hrowq : alGet rows q = cs.map topId := by
+    rw [hProw q hPq, row_subtree hwf hsub]
+  cases f with
+  | zero =>
+      have hempty : alGet rows q = [] :=
+        row_empty_of_level hedge hbound (by omega)
+      rw [expandRow_zero, hempty]
+      rw [hempty] at hrowq
+      cases cs with
+      | nil => rfl
+      | cons t ts =>
+          rw [List.map_cons] at hrowq
+          cases hrowq
+  | succ f' =>
+      rw [expandRow, hrowq,
+        frontF_expand hwf rows D D' lvl n P hedge hbound hProw hPD
+          hPcl cs (fun t ht => child_mem_subF hsub ht)
+          (fun t ht => hPcl q hPq (topId t) (by
+            rw [row_subtree hwf hsub]
+            exact List.mem_map.mpr ⟨t, ht, rfl⟩))
+          f'
+          (fun t ht => by
+            have := hedge q (topId t) (by
+              rw [hrowq]
+              exact List.mem_map.mpr ⟨t, ht, rfl⟩)
+            omega)]
+
 end Shesha
