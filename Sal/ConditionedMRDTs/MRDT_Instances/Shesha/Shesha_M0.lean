@@ -1387,6 +1387,18 @@ theorem sum_ite_count (w : Nat) :
             exact fun e => h e.symm)]
         omega
 
+theorem sum_ite_count' (w : Nat) :
+    ∀ l : List Nat,
+      (l.map (fun v => if v == w then 1 else 0)).sum = l.count w
+  | [] => rfl
+  | a :: l => by
+      rw [List.map_cons, List.sum_cons, sum_ite_count' w l, List.count_cons]
+      by_cases h : a = w
+      · rw [if_pos (by simp [h])]
+        omega
+      · rw [if_neg (by simp [h])]
+        omega
+
 /-- **H1**: a key's expansion holds each id at most once. -/
 theorem expandRow_count_le_one {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
@@ -1455,4 +1467,384 @@ theorem expandRow_count_le_one {L A B : St} (mok : ModelOK L A B)
             intro hc
             exact hvu (List.mem_singleton.mp hc).symm
 
+/-! ## §5 The generic DFS-count lemma and `merge_read_nodup` -/
+
+theorem SpliceReach.mem_base {L A B : St} {u k : Nat}
+    (h : SpliceReach L A B u k) :
+    ∃ b, u ∈ alGet (outRows L A B) b := by
+  induction h with
+  | base hb => exact ⟨_, hb⟩
+  | step _ _ _ ih => exact ih
+
+theorem zero_not_mem_outRows {L A B : St} (mok : ModelOK L A B) {k : Nat}
+    (h : (0 : Nat) ∈ alGet (outRows L A B) k) : False := by
+  rcases outRows_cases h with ⟨hL, -⟩ | ⟨hAB, -⟩ | ⟨q, -, hr⟩ | ⟨q, -, hr⟩
+  · exact mok.wfL.2 hL
+  · rcases hAB with h' | h'
+    · exact mok.wfA.2 h'
+    · exact mok.wfB.2 h'
+  · exact mok.wfA.2 (mem_row_read hr)
+  · exact mok.wfB.2 (mem_row_read hr)
+
+/-- **Claim G** (emissions ≤ visits of the unique emitter): generic over the
+row store, for any visit-closed class `ok` on which `u`'s emitter is unique
+and expansion counts are ≤ 1. -/
+theorem buildF_count_le_visits (rows : List (Nat × List Nat))
+    (mk : Nat → Bool) (mf : Nat) (ok : Nat → Prop)
+    (hclosed : ∀ p, ok p → ∀ c ∈ expandRow rows mk mf (alGet rows p), ok c)
+    {u q : Nat}
+    (huniq : ∀ r, ok r → u ∈ expandRow rows mk mf (alGet rows r) → r = q)
+    (hcnt : ∀ r, ok r → (expandRow rows mk mf (alGet rows r)).count u ≤ 1) :
+    ∀ (f p : Nat), ok p →
+      (readF (buildF rows mk mf f p)).count u ≤
+        (p :: readF (buildF rows mk mf f p)).count q
+  | 0, p, hp => by
+      rw [buildF]
+      simp [readF]
+  | f + 1, p, hp => by
+      have hdecomp : ∀ w : Nat,
+          (readF (buildF rows mk mf (f + 1) p)).count w =
+          ((expandRow rows mk mf (alGet rows p)).map
+            (fun c => (readF (buildF rows mk mf f c)).count w)).sum
+            + (expandRow rows mk mf (alGet rows p)).count w := by
+        intro w
+        rw [buildF, readF_map_node, count_flatMap]
+        have hpt : ∀ c ∈ expandRow rows mk mf (alGet rows p),
+            (c :: readF (buildF rows mk mf f c)).count w =
+            (readF (buildF rows mk mf f c)).count w +
+              (if c == w then 1 else 0) := fun c _ => by
+          rw [List.count_cons]
+        rw [List.map_congr_left hpt,
+          sum_map_add (fun c => (readF (buildF rows mk mf f c)).count w)
+            (fun c => if c == w then 1 else 0),
+          sum_ite_count' w]
+      rw [hdecomp u, List.count_cons, hdecomp q]
+      have hIH : ∀ c ∈ expandRow rows mk mf (alGet rows p),
+          (readF (buildF rows mk mf f c)).count u ≤
+          (readF (buildF rows mk mf f c)).count q +
+            (if c == q then 1 else 0) := by
+        intro c hc
+        have := buildF_count_le_visits rows mk mf ok hclosed huniq hcnt f c
+          (hclosed p hp c hc)
+        rw [List.count_cons] at this
+        exact this
+      have hsum := sum_le_sum' hIH
+      rw [sum_map_add (fun c => (readF (buildF rows mk mf f c)).count q)
+          (fun c => if c == q then 1 else 0),
+        sum_ite_count' q] at hsum
+      by_cases hup : u ∈ expandRow rows mk mf (alGet rows p)
+      · have hpq : p = q := huniq p hp hup
+        have h1 := hcnt p hp
+        have h2 : (if p == q then 1 else 0) = 1 := by
+          rw [if_pos (by simp [hpq])]
+        omega
+      · have h0 : (expandRow rows mk mf (alGet rows p)).count u = 0 :=
+          List.count_eq_zero.mpr hup
+        omega
+
+/-- Everything emitted comes from some `ok` key's expansion. -/
+theorem buildF_emitted (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) (ok : Nat → Prop)
+    (hclosed : ∀ p, ok p → ∀ c ∈ expandRow rows mk mf (alGet rows p), ok c)
+    {u : Nat} :
+    ∀ (f p : Nat), ok p → u ∈ readF (buildF rows mk mf f p) →
+      ∃ r, ok r ∧ u ∈ expandRow rows mk mf (alGet rows r)
+  | 0, p, hp, hu => by
+      rw [buildF] at hu
+      simp [readF] at hu
+  | f + 1, p, hp, hu => by
+      rw [buildF, readF_map_node, List.mem_flatMap] at hu
+      obtain ⟨c, hc, hu⟩ := hu
+      rcases List.mem_cons.mp hu with he | hu
+      · exact ⟨p, hp, he ▸ hc⟩
+      · exact buildF_emitted rows mk mf ok hclosed f c (hclosed p hp c hc) hu
+
+/-- **The generic Nodup engine**: unique emitters + per-expansion counts
+≤ 1 + a strictly increasing level along emission edges ⟹ every id is
+emitted at most once from the root. -/
+theorem buildF_count_le_one (rows : List (Nat × List Nat)) (mk : Nat → Bool)
+    (mf : Nat) (ok : Nat → Prop) (lvl : Nat → Nat)
+    (hclosed : ∀ p, ok p → ∀ c ∈ expandRow rows mk mf (alGet rows p), ok c)
+    (hcnt : ∀ v r, ok r →
+      (expandRow rows mk mf (alGet rows r)).count v ≤ 1)
+    (huniq2 : ∀ v r₁ r₂, ok r₁ → ok r₂ →
+      v ∈ expandRow rows mk mf (alGet rows r₁) →
+      v ∈ expandRow rows mk mf (alGet rows r₂) → r₁ = r₂)
+    (hlvl : ∀ r c, ok r → c ∈ expandRow rows mk mf (alGet rows r) →
+      lvl r < lvl c)
+    (hzero : ∀ r c, ok r → c ∈ expandRow rows mk mf (alGet rows r) →
+      c ≠ 0)
+    (hok0 : ok 0) :
+    ∀ (u f : Nat), (readF (buildF rows mk mf f 0)).count u ≤ 1 := by
+  have hzcount : ∀ f, (readF (buildF rows mk mf f 0)).count 0 = 0 := by
+    intro f
+    rw [List.count_eq_zero]
+    intro hc
+    obtain ⟨r, hokr, hur⟩ := buildF_emitted rows mk mf ok hclosed f 0 hok0 hc
+    exact hzero r 0 hokr hur rfl
+  suffices aux : ∀ (N u : Nat), lvl u ≤ N → ∀ f,
+      (readF (buildF rows mk mf f 0)).count u ≤ 1 from
+    fun u f => aux (lvl u) u (Nat.le_refl _) f
+  intro N
+  induction N with
+  | zero =>
+      intro u hN f
+      rcases Classical.em (∃ r, ok r ∧
+          u ∈ expandRow rows mk mf (alGet rows r)) with ⟨r, hokr, hur⟩ | hno
+      · have := hlvl r u hokr hur
+        omega
+      · have h0 : (readF (buildF rows mk mf f 0)).count u = 0 := by
+          rw [List.count_eq_zero]
+          intro hc
+          exact hno (buildF_emitted rows mk mf ok hclosed f 0 hok0 hc)
+        omega
+  | succ N ih =>
+      intro u hN f
+      rcases Classical.em (∃ r, ok r ∧
+          u ∈ expandRow rows mk mf (alGet rows r)) with ⟨r, hokr, hur⟩ | hno
+      · have hG := buildF_count_le_visits rows mk mf ok hclosed
+          (fun r' hok' hu' => huniq2 u r' r hok' hokr hu' hur)
+          (fun r' hok' => hcnt u r' hok') f 0 hok0
+        rw [List.count_cons] at hG
+        by_cases hr0 : r = 0
+        · rw [hr0] at hG
+          have := hzcount f
+          have h2 : (if (0 : Nat) == 0 then 1 else 0) = 1 := by simp
+          omega
+        · have h2 : (if (0 : Nat) == r then 1 else 0) = 0 := by
+            rw [if_neg (show ¬ (((0 : Nat) == r) = true) from by
+              simp only [beq_iff_eq]
+              exact fun e => hr0 e.symm)]
+          have hlt := hlvl r u hokr hur
+          have := ih r (by omega) f
+          omega
+      · have h0 : (readF (buildF rows mk mf f 0)).count u = 0 := by
+          rw [List.count_eq_zero]
+          intro hc
+          exact hno (buildF_emitted rows mk mf ok hclosed f 0 hok0 hc)
+        omega
+
+/-! ### The level function: emission edges strictly increase it -/
+
+/-- Stratification of the merged forest: L-survivors by L-depth, then
+A-born by A-depth, then B-born by B-depth. -/
+def lvl (L A B : St) (u : Nat) : Nat :=
+  if contains L u then depthOf L u + 1
+  else if contains A u then (read L).length + 1 + depthOf A u
+  else if contains B u then
+    (read L).length + (read A).length + 2 + depthOf B u
+  else 0
+
+theorem lvl_zero {L A B : St} (mok : ModelOK L A B) : lvl L A B 0 = 0 := by
+  rw [lvl,
+    if_neg (show ¬ (contains L 0 = true) from
+      fun hc => mok.wfL.2 (contains_iff.mp hc)),
+    if_neg (show ¬ (contains A 0 = true) from
+      fun hc => mok.wfA.2 (contains_iff.mp hc)),
+    if_neg (show ¬ (contains B 0 = true) from
+      fun hc => mok.wfB.2 (contains_iff.mp hc))]
+
+theorem wparIter_zero {L A B : St} (hwf : WF L) :
+    ∀ n, wparIter L A B n 0 = 0
+  | 0 => rfl
+  | n + 1 => by
+      rw [wparIter, wparIter_zero hwf n, wpar_zero hwf]
+
+theorem wparIter_succ_inner (L A B : St) :
+    ∀ (j x : Nat),
+      wparIter L A B (j + 1) x = wparIter L A B j (wpar L (wp L A B) x)
+  | 0, x => rfl
+  | j + 1, x => by
+      show wpar L (wp L A B) (wparIter L A B (j + 1) x) =
+        wpar L (wp L A B) (wparIter L A B j (wpar L (wp L A B) x))
+      rw [wparIter_succ_inner L A B j x]
+
+/-- Iterated hosts of a live L-node: the root, or a live L-node — strictly
+shallower after at least one step. -/
+theorem wparIter_spec {L A B : St} (mok : ModelOK L A B) :
+    ∀ (n x : Nat), x ∈ read L →
+      wparIter L A B n x = 0 ∨
+        (wparIter L A B n x ∈ read L ∧
+          (n = 0 ∨ depthOf L (wparIter L A B n x) < depthOf L x))
+  | 0, x, hx => Or.inr ⟨hx, Or.inl rfl⟩
+  | n + 1, x, hx => by
+      rcases wparIter_spec mok n x hx with h0 | ⟨hmem, hd⟩
+      · rw [wparIter, h0, wpar_zero mok.wfL]
+        exact Or.inl rfl
+      · rcases wpar_spec mok.wfL (wp L A B) hmem with h0 | ⟨hm', -, hd'⟩
+        · exact Or.inl (by rw [wparIter]; exact h0)
+        · refine Or.inr ⟨by rw [wparIter]; exact hm', Or.inr ?_⟩
+          rcases hd with h00 | hdlt
+          · subst h00
+            exact hd'
+          · exact Nat.lt_trans (by rw [wparIter]; exact hd') hdlt
+
+/-- **The edge lemma**: expansion strictly raises the level. -/
+theorem lvl_edge {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) {mf : Nat} {q c : Nat}
+    (hc : c ∈ expandRow (outRows L A B) (markerp L A B) mf
+      (alGet (outRows L A B) q)) :
+    lvl L A B q < lvl L A B c := by
+  obtain ⟨b, j, hb, he, hint⟩ :=
+    spliceReach_chain mok hA hB (expandRow_spliceReach mf q hc)
+  -- helper: the level of anything on an L∪{0} `wpar` orbit is ≤ |L|
+  have hlow : ∀ x, (x = 0 ∨ x ∈ read L) → lvl L A B x ≤ (read L).length := by
+    intro x hx
+    rcases hx with rfl | hx
+    · rw [lvl_zero mok]
+      exact Nat.zero_le _
+    · rw [lvl, if_pos (contains_iff.mpr hx)]
+      exact depthOf_lt_length hx
+  rcases base_addr mok hA hB hb with ⟨hcL, -, hwc⟩ |
+    ⟨hnL, hkey, -⟩ | ⟨hnL, hbb, hrow⟩ | ⟨hnL, hbb, hrow⟩
+  · -- c is an L-survivor entry: q is on c's strict wpar orbit
+    have hq : q = wparIter L A B (j + 1) c := by
+      rw [wparIter_succ_inner, hwc]
+      exact he
+    have hlc : lvl L A B c = depthOf L c + 1 := by
+      rw [lvl, if_pos (contains_iff.mpr hcL)]
+    rcases wparIter_spec mok (j + 1) c hcL with h0 | ⟨hmem, hd⟩
+    · rw [hq, h0, lvl_zero mok, hlc]
+      omega
+    · rcases hd with h00 | hdlt
+      · cases h00
+      · have hqL : q ∈ read L := by rw [hq]; exact hmem
+        have hdq : depthOf L q < depthOf L c := by rw [hq]; exact hdlt
+        rw [lvl, if_pos (contains_iff.mpr hqL), hlc]
+        omega
+  · -- c rides a command into a skeleton row: q stays on the L∪{0} orbit
+    have hbspec : b = 0 ∨ b ∈ read L := by
+      rcases skelOf_keys_spec mok.wfL (alHas_iff_mem_keys.mp hkey) with h0 |
+        ⟨hm, -⟩
+      · exact Or.inl h0
+      · exact Or.inr hm
+    have hqlow : lvl L A B q ≤ (read L).length := by
+      rcases hbspec with rfl | hbL
+      · exact hlow q (Or.inl (by rw [he, wparIter_zero mok.wfL]))
+      · rcases wparIter_spec mok j b hbL with h0 | ⟨hmem, -⟩
+        · exact hlow q (Or.inl (he.trans h0))
+        · exact hlow q (Or.inr (he ▸ hmem))
+    have hchigh : (read L).length < lvl L A B c := by
+      rcases outRows_cases hb with ⟨hcL, -⟩ | ⟨hAB, -⟩ | ⟨p', -, hr⟩ |
+        ⟨p', -, hr⟩
+      · rw [contains_iff.mpr hcL] at hnL
+        cases hnL
+      · rcases hAB with hcA | hcB
+        · rw [lvl, if_neg (by simp [hnL]),
+            if_pos (contains_iff.mpr hcA)]
+          omega
+        · by_cases hcA : contains A c = true
+          · rw [lvl, if_neg (by simp [hnL]), if_pos hcA]
+            omega
+          · rw [lvl, if_neg (by simp [hnL]), if_neg hcA,
+              if_pos (contains_iff.mpr hcB)]
+            omega
+      · rw [lvl, if_neg (by simp [hnL]),
+          if_pos (contains_iff.mpr (mem_row_read hr))]
+        omega
+      · by_cases hcA : contains A c = true
+        · rw [lvl, if_neg (by simp [hnL]), if_pos hcA]
+          omega
+        · rw [lvl, if_neg (by simp [hnL]), if_neg hcA,
+            if_pos (contains_iff.mpr (mem_row_read hr))]
+          omega
+    omega
+  · -- c in an A-born wholesale row: the chain is trivial, q = the born parent
+    have hj0 : j = 0 := by
+      by_cases hj : j = 0
+      · exact hj
+      · have hm0 := hint 0 (Nat.pos_of_ne_zero hj)
+        have hb0 : (wparIter L A B 0 b) = b := rfl
+        rw [hb0] at hm0
+        obtain ⟨-, hbL, -⟩ := bornIds_spec mok.wfA hbb
+        exact absurd (marker_spec hm0).1 hbL
+    rw [hj0] at he
+    have hqb : q = b := he
+    obtain ⟨hbA, hbL, hb0⟩ := bornIds_spec mok.wfA hbb
+    have hcA : c ∈ read A := mem_row_read hrow
+    have hdepth : depthOf A c = depthOf A b + 1 :=
+      depth_row_succ mok.wfA hb0 hrow
+    rw [hqb, lvl, lvl,
+      if_neg (show ¬ (contains L b = true) from fun hc' => hbL
+        (contains_iff.mp hc')),
+      if_neg (show ¬ (contains L c = true) from by simp [hnL]),
+      if_pos (contains_iff.mpr hbA), if_pos (contains_iff.mpr hcA)]
+    omega
+  · -- c in a B-born wholesale row
+    have hj0 : j = 0 := by
+      by_cases hj : j = 0
+      · exact hj
+      · have hm0 := hint 0 (Nat.pos_of_ne_zero hj)
+        have hb0 : (wparIter L A B 0 b) = b := rfl
+        rw [hb0] at hm0
+        obtain ⟨-, hbL, -⟩ := bornIds_spec mok.wfB hbb
+        exact absurd (marker_spec hm0).1 hbL
+    rw [hj0] at he
+    have hqb : q = b := he
+    obtain ⟨hbB, hbL, hb0⟩ := bornIds_spec mok.wfB hbb
+    have hcB : c ∈ read B := mem_row_read hrow
+    have hcnA : ¬ (contains A c = true) := fun hc' =>
+      (contains_eq_false.mp hnL) (mok.common c (contains_iff.mp hc') hcB)
+    have hbnA : ¬ (contains A b = true) := fun hc' =>
+      hbL (mok.common b (contains_iff.mp hc') hbB)
+    have hdepth : depthOf B c = depthOf B b + 1 :=
+      depth_row_succ mok.wfB hb0 hrow
+    rw [hqb, lvl, lvl,
+      if_neg (show ¬ (contains L b = true) from fun hc' => hbL
+        (contains_iff.mp hc')),
+      if_neg (show ¬ (contains L c = true) from by simp [hnL]),
+      if_neg hcnA, if_neg hbnA, if_pos (contains_iff.mpr hbB),
+      if_pos (contains_iff.mpr hcB)]
+    omega
+
+/-! ### The `Nodup` half of Lemma M0, closed -/
+
+/-- **`merge_read_nodup`**: the merge places every id at most once — the
+`Nodup` half of `merge_WF`, previously owed
+(`whiteboard/sibling-linked-proof.md` §4, Lemma M0). -/
+theorem merge_read_nodup {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) :
+    (read (merge L A B)).Nodup := by
+  refine nodup_of_count_le_one fun u => ?_
+  simp only [merge, read]
+  refine buildF_count_le_one (outRows L A B) (markerp L A B) _
+    (fun x => markerp L A B x = false) (lvl L A B)
+    ?_ ?_ ?_ ?_ ?_ (markerp_zero mok.wfL) u _
+  · intro p hp c hc
+    refine expandRow_out_marker_free mok hA hB ?_ p c hc
+    show (readF L).length <
+      (readF L).length + (readF A).length + (readF B).length + 1
+    omega
+  · intro v r hr
+    exact expandRow_count_le_one mok hA hB v _ r
+  · intro v r₁ r₂ h₁ h₂ hv₁ hv₂
+    exact spliceReach_nonmarker_unique mok hA hB
+      (expandRow_spliceReach _ r₁ hv₁) (expandRow_spliceReach _ r₂ hv₂)
+      h₁ h₂
+  · intro r c hr hc
+    exact lvl_edge mok hA hB hc
+  · intro r c hr hc hc0
+    subst hc0
+    obtain ⟨b, hb⟩ := (expandRow_spliceReach _ r hc).mem_base
+    exact zero_not_mem_outRows mok hb
+
+/-- **Lemma M0 (well-formedness), fully closed**: the merge is WF. -/
+theorem merge_WF {L A B : St} (mok : ModelOK L A B)
+    (hA : LRowsOK L A) (hB : LRowsOK L B) : WF (merge L A B) :=
+  ⟨merge_read_nodup mok hA hB, zero_not_mem_merge mok⟩
+
 end Shesha
+
+section AxiomAuditM0
+/-! Axiom audit: everything above is kernel-clean (`propext`,
+`Classical.choice`, `Quot.sound` at most). -/
+#print axioms Shesha.base_count1
+#print axioms Shesha.base_unique
+#print axioms Shesha.expandRow_marker_free
+#print axioms Shesha.expandRow_count_le_one
+#print axioms Shesha.spliceReach_nonmarker_unique
+#print axioms Shesha.buildF_count_le_one
+#print axioms Shesha.lvl_edge
+#print axioms Shesha.merge_read_nodup
+#print axioms Shesha.merge_WF
+end AxiomAuditM0

@@ -23,18 +23,19 @@ Contents:
   branch-asymmetric step of the construction is the newest-head-first
   same-slot sort; run heads are pairwise distinct (within a branch by WF,
   across branches by pattern-8), so the sort output is order-independent.
-- **§5 Lemma M0** — the content bound (`merge_reads_bound`), the nonzero half
-  of `merge_WF` proved; the `Nodup` half and the survivor-set identity
-  (`merge_ids`) carry documented `sorry`s (the placed-exactly-once /
-  reachability graph argument — see the diagnostics in place).
+- **§5 Lemma M0** — the content bound (`merge_reads_bound`) and the nonzero
+  half of `merge_WF` proved here; the `Nodup` half (`merge_read_nodup`,
+  `merge_WF`) and the survivor-set identity (`merge_ids`) are discharged in
+  `Shesha_M0.lean` on top of the parent-chain layer (`Shesha_Forest.lean`)
+  and the skeleton characterization (`Shesha_Skel.lean`).
 - **§6 Lemma M2** (`merge_extends_L`) — reduced, via proved plumbing
   (`precedes_filter_iff`, `rowAssemble_filter_L`), to the single core identity
   `merge_L_filter` (skeleton DFS order = L document order), which carries a
   documented `sorry`.
 
-Running `sorry` tally: **3** (`merge_ids`, `merge_WF`'s Nodup half via
-`merge_read_nodup`, `merge_L_filter`) — each with a precise diagnostic at the
-site. Everything else, including all of M1, is kernel-clean.
+Running `sorry` tally in this file: **1** (`merge_L_filter`, the M2 core) —
+with a precise diagnostic at the site. Everything else, including all of M1,
+is kernel-clean.
 -/
 
 namespace Shesha
@@ -977,58 +978,10 @@ theorem merge_mem_wp {L A B : St} (mok : ModelOK L A B)
     have hcB : contains B c = true := contains_iff.mpr (mem_row_read hr)
     simp [wp, liveMp, hcB, hcL]
 
-/-- **Lemma M0, survivor-set identity** (design record §3): the merge's ids
-are exactly `liveM` — patterns 2 (in both branches), 6 (A-born), 7 (B-born).
-
-`sorry` — what is owed is genuinely global, and recorded here precisely:
-* (⊇) every liveM id is placed and reached from the root — the
-  placed-exactly-once argument: an L-survivor is reached along its `wpar`
-  chain (skeleton rows nest along L's parent structure), a branch-born id
-  along its branch parent chain (host = L-node or root → runs; born parent
-  → wholesale `bbrows`). Needs an induction along parent chains, i.e. a
-  depth measure on WF forests relating `parOf`/`row` to the tree structure
-  — not yet mechanized.
-* (⊆) `merge_mem_wp` above already confines the output to
-  `W = liveM ∪ markers`; sharpening `W` to `liveM` needs fuel adequacy of
-  the marker splice: marker-expansion chains descend L's tree (a marker's
-  assembled row holds only deeper skeleton entries and runs), so their
-  length is bounded by L's depth < the supplied fuel. Same parent-chain
-  machinery.
-Note `LRowsOK` is required — see its docstring for the countermodel. -/
-theorem merge_ids {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
-    u ∈ ids (merge L A B) ↔ liveMp L A B u = true := by
-  sorry
-
-/-- The survivor-set identity in set form, `List.mem` over the id lists:
-`ids (merge) = (ids A ∩ ids B) ∪ (ids A \ ids L) ∪ (ids B \ ids L)`.
-(Inherits `merge_ids`'s `sorry`; the Bool↔Prop bridge is proved.) -/
-theorem merge_ids_set {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) (u : Nat) :
-    u ∈ ids (merge L A B) ↔
-      (u ∈ ids A ∧ u ∈ ids B) ∨ (u ∈ ids A ∧ u ∉ ids L) ∨
-        (u ∈ ids B ∧ u ∉ ids L) := by
-  rw [merge_ids mok hA hB u]
-  simp only [liveMp, Bool.or_eq_true, Bool.and_eq_true, Bool.not_eq_true',
-    contains_iff, contains_eq_false, or_assoc]
-
-/-- The `Nodup` half of M0 — every live node placed exactly once.
-
-`sorry` — this is the same placed-exactly-once argument as `merge_ids` (⊇),
-see the diagnostic there; the §2 row machinery (rows `Nodup`, mutually
-disjoint) supplies the per-row halves, but the cross-row global argument
-(each id appears in exactly one merged row, and the rebuild visits each row
-key once) needs the parent-chain/reachability layer. -/
-theorem merge_read_nodup {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) :
-    (read (merge L A B)).Nodup := by
-  sorry
-
-/-- **Lemma M0 (well-formedness)** — `WF` of the merge: `Nodup` half owed
-(`merge_read_nodup`), nonzero half proved (`zero_not_mem_merge`). -/
-theorem merge_WF {L A B : St} (mok : ModelOK L A B)
-    (hA : LRowsOK L A) (hB : LRowsOK L B) : WF (merge L A B) :=
-  ⟨merge_read_nodup mok hA hB, zero_not_mem_merge mok⟩
+/-! The survivor-set identity (`merge_ids`) and the `Nodup` half of M0
+(`merge_read_nodup`, `merge_WF`) live in `Shesha_M0.lean`, on top of the
+parent-chain layer (`Shesha_Forest.lean`) and the skeleton
+characterization (`Shesha_Skel.lean`). -/
 
 /-! ## §6 Lemma M2 — L-extension (`merge_extends_L`)
 
@@ -1178,9 +1131,9 @@ end Shesha
 
 section AxiomAudit
 /-! Axiom audit. Kernel-clean targets print `propext, Classical.choice,
-Quot.sound` at most; the three owed obligations additionally print
-`sorryAx` (and so do their two derived corollaries `merge_ids_set`,
-`merge_WF`, `merge_extends_L`). No `native_decide` anywhere in this file. -/
+Quot.sound` at most; the owed M2 core (`merge_L_filter`) additionally
+prints `sorryAx` (and so does its corollary `merge_extends_L`). No
+`native_decide` anywhere in this file. -/
 #print axioms Shesha.merge_comm
 #print axioms Shesha.merge_reads_bound
 #print axioms Shesha.zero_not_mem_merge
@@ -1188,8 +1141,6 @@ Quot.sound` at most; the three owed obligations additionally print
 #print axioms Shesha.rowAssemble_filter_L
 #print axioms Shesha.IsRunOf.head_det
 #print axioms Shesha.precedes_filter_iff
-#print axioms Shesha.merge_ids
-#print axioms Shesha.merge_read_nodup
 #print axioms Shesha.merge_L_filter
 #print axioms Shesha.merge_extends_L
 end AxiomAudit
