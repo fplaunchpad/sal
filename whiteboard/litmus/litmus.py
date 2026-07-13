@@ -454,8 +454,77 @@ class QTree(Design):
         return {u: (climb(rec(u)[0]), rec(u)[1]) for u in surv}
     def fp(self, s): return frozenset(s.items())
 
+# ---- 6b. ghost with CHAIN-FOLLOWING tie rule (h-fix experiment) --------------
+# Same state as Ghost; the read's Kahn tie prefers a ready node that the
+# just-emitted node points to (its own chain continuation), falling back to
+# newest-first. Backward runs are R-chains in the records; the plain
+# newest-first tie walks across them (fails L19), this one follows them.
+class GhostCF(Ghost):
+    name = 'ghost-cf'
+    def read(self, s):
+        from collections import defaultdict as dd
+        succ = dd(set); indeg = dd(int); nodes = {START, END}
+        def edge(u, v):
+            if v not in succ[u]:
+                succ[u].add(v); indeg[v] += 1
+            nodes.add(u); nodes.add(v)
+        for u, (Lo, R, pL, pR) in s.items():
+            nodes.add(u)
+            prev = u
+            for g in pL: edge(g, prev); prev = g
+            prev = u
+            for h in pR: edge(prev, h); prev = h
+        order, ready, seen = [], [n for n in nodes if indeg[n] == 0], set()
+        prev = None
+        while ready:
+            pick = None
+            if prev is not None:
+                chain = [n for n in ready if n in succ.get(prev, ())]
+                if chain:
+                    pick = max(chain)
+            if pick is None:
+                if START in ready: pick = START
+                else:
+                    ready.sort(key=lambda n: (n == END, -n))
+                    pick = ready[0]
+            ready.remove(pick)
+            if pick in seen: continue
+            seen.add(pick); order.append(pick); prev = pick
+            for v in succ[pick]:
+                indeg[v] -= 1
+                if indeg[v] == 0: ready.append(v)
+        live = set(s)
+        return [u for u in order if u in live]
+
+# ---- 9. path-key: key = ancestor path of (uid) per level, lex sort ----------
+# KC's "carve a Q range per node" made concurrency-sound: a range is a PREFIX
+# (fixed in the causal past of everything inside it), a key is a path, sort is
+# lexicographic with parent-before-children and newest-uid-first per level.
+# One-sided (after-paths only) — the StoredPath reference model's shape.
+class PathKey(Design):
+    name = 'path-key'
+    def init(self): return {}
+    def copy(self, s): return dict(s)
+    def apply(self, s, it):
+        if it[0] == 'ins':
+            _, x, a = it
+            s[x] = (s[a] if a != 0 else ()) + (x,)
+        else:
+            s.pop(it[1], None)
+        return s
+    def read(self, s):
+        # sort key: (-uid per level); tuple order gives prefix-first + uid-desc
+        return sorted(s, key=lambda x: tuple(-u for u in s[x]))
+    def merge(self, L, A, B):
+        surv = (set(L) & set(A) & set(B)) | (set(A) - set(L)) | (set(B) - set(L))
+        src = {}
+        for S in (L, A, B):
+            for k, v in S.items(): src.setdefault(k, v)
+        return {u: src[u] for u in surv}
+    def fp(self, s): return frozenset(s.items())
+
 DESIGNS = [Naive(), Tombstoned(), FlatRGA(), RoseTree(), Splice2(),
-           B2(), Ghost(), QFlat(), QTree()]
+           B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey()]
 
 # ================================================================== driver
 def run_replica(D, base, script):
@@ -619,6 +688,13 @@ MERGE_TESTS = [
     ('L5 ins||del anchor',   [I(1,0)], [I(2,1)], [DL(1)], None),
     ('L7 concurrent runs',   [I(1,0)], [I(10,1), I(11,10)], [I(20,1), I(21,20)],
      [[10,11],[20,21]]),
+    # L19: BACKWARD runs (matrix column h): each user repeatedly inserts at the
+    # front (each element before the previous), interleaved Lamport ids.
+    # A displays [50,30,10,1], B displays [61,41,21,1]; the runs must stay blocks.
+    # Added 2026-07-13 — the battery previously had no h test (gap found while
+    # assessing the path-key/range proposal).
+    ('L19 backward runs (h)', [I(1,0)], [I(10,0), I(30,0), I(50,0)],
+     [I(21,0), I(41,0), I(61,0)], [[50,30,10],[61,41,21]]),
     ('L8 T2 dual markers',   [I(2,0), I(3,0)], [I(10,3), DL(3)], [I(20,2), DL(2)], None),
     ('L9 w-slot',            [I(2,0), I(3,0)], [I(4,0)], [I(6,3), DL(3)], None),
     ('L10 attach-deep',      [I(1,0), I(2,1)], [I(10,2), DL(1)], [I(20,1)], None),

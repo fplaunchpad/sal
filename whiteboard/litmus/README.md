@@ -127,9 +127,11 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
 | `rose(Shesha)` | rose-forest, order-preserving splice, skeleton/marker merge | `sl_pbt.py`, design record §§2–4; refuted `Shesha_Rows_Refuted.lean` |
 | `splice2` | symmetric-splice two-tree (after + before, both spliced) | design record §9 (refuted) |
 | `B2(bare)` | immutable birth records `(after,before)`, delete=remove, ghost read | this exploration |
-| `ghost(spine)` | birth records + carried ancestry spines, delete=remove | `sibling-origin-pbt.py`, `sibling-edge-design.pdf` (0 anomalies / 37k sweeps) |
+| `ghost(spine)` | birth records + carried ancestry spines, delete=remove; newest-first read ties | `sibling-origin-pbt.py`, `sibling-edge-design.pdf` (0 anomalies / 37k sweeps) |
+| `ghost-cf` | same state as `ghost(spine)`; the read's tie rule follows the just-emitted node's own chain before falling back to newest-first | the L19 h-fix (2026-07-13) |
 | `Q-flat` | immutable `(N,Q,char)`, Q = dense position identifier, read = sort | the Q proposal (flat instantiation) |
 | `Q-tree` | RGA tree + bounded sibling keys `Q(x) ∈ (max(Q(anchor),Q(head)), Q(A))` | the Q proposal (tree instantiation) |
+| `path-key` | key = ancestor path of uids, lex sort (prefix = KC's "carved Q range"; one-sided) | the range proposal made concurrency-sound; StoredPath's shape |
 
 ## Headline results (full matrix: `litmus_matrix.md`, generated)
 
@@ -142,9 +144,11 @@ Failures only — everything not listed passes:
 | `rose(Shesha)` | **L4 (its refutation, reproduced)**, L9 (S6/S7), L14+L15 fooled — but passes L17/L18 (order lives in links) |
 | `splice2` | L2/W2 (**provably fooled**), L4 (S4!), L11 (S4!), L17, L18, L14 fooled |
 | `B2(bare)` | L3a (deep chain), L17, L18, L14/W2 (ghost rank unknowable) |
-| `ghost(spine)` | **nothing — including both impossibility probes and L17/L18** |
-| `Q-flat` | L7 (interleaving), L14 fooled — passes L17/L18 (delete never re-sorts) |
-| `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L14 fooled |
+| `ghost(spine)` | **L19 — backward runs interleave** (retracting the earlier "passes everything": the battery lacked an h test). The R-chains are in the state; the newest-first read tie walks across them — a read artifact, not a state deficiency (see `ghost-cf`) |
+| `ghost-cf` | **nothing — the full battery including L19 and both impossibility probes** (same state as ghost; chain-following tie rule) |
+| `Q-flat` | L7 (interleaving), L19, L14 fooled — passes L17/L18 (delete never re-sorts) |
+| `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L19, L14 fooled |
+| `path-key` | **L19 only** (one-sided: no `before` information — needs the two-sided/Fugue form). Passes everything else, including both fooling probes and L17/L18: prefix-ranges are fixed in the causal past of everything inside them, so concurrent operations cannot escape them |
 
 **Correction (2026-07-13, same day):** an earlier revision of this file said
 Q-tree "passes S4/d in every case." That was a battery artifact — the battery
@@ -189,7 +193,26 @@ structurally at L18.
    question, now stated as a row of checkmarks instead of prose.
 6. **splice2 fails S4 outright** (L4, L11) — it is *below* the rose tree on
    the ladder, not beside it; its cheapness bought nothing.
-7. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
+7. **Ranges/prefixes rescue eager keys; scalars stay dead (path-key, new).**
+   KC's "carve a Q *range* per node" proposal, made concurrency-sound
+   (disjointness under concurrent carving forces a uid per level), is
+   path-shaped keys — and it passes L17/L18 and both fooling probes: a
+   subtree's prefix is fixed in the causal past of everything inside it, so
+   the L18 quantifier over unknown concurrent keys collapses to a known
+   interval. Depth grows *inside* the prefix instead of escaping upward. The
+   surviving weakness is exactly the missing `before` side (L19): the
+   one-sided form is StoredPath; the two-sided form is the Fugue id space —
+   and it is the spine, promoted from record field to sort key. Precision
+   growth = spine length: the same rent in key clothing.
+8. **The battery had no h test; adding one (L19) retracted a headline.**
+   `ghost(spine)` interleaves backward runs — its 0/37k record and "passes
+   everything" were artifacts of workloads and tests without prepend runs.
+   The state carries the R-chains; the plain newest-first Kahn tie walks
+   across them. `ghost-cf` (identical state, tie rule follows the just-emitted
+   node's chain) is clean on the full battery including L19 — evidence the
+   defect is in the read's tie rule, not the design. Promotion of the fix
+   into the design note/model and a backward-run PBT sweep are owed.
+9. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
    the ancestry *arithmetized at birth* — evaluated eagerly against the state
    the inserter saw. A spine/ghost reference is the same information evaluated
    *lazily* at read time, against whoever is currently alive. Concurrent
