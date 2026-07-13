@@ -210,6 +210,43 @@ theorem slots_live_iff {C' : Configuration SheshaD} (hH : SheshaHonest C')
         rintro ⟨⟨q, r', hq⟩, -⟩
         exact h1 ⟨q, r', ((Set.mem_inter_iff ..).mp hq).1⟩
 
+/-- **The marker bridge**: the merge's *structural* marker predicate
+(`markerp` — an LCA-live id killed in exactly one branch) implies the
+*event-level* union delete. Consumed by the residue's `hK6`: `merge_row`
+expresses the merge output as `expandRow … (markerp …)`, and every id it
+splices out is `DelIn (ev₁ ∪ ev₂)` — so the merge's splices are a subset
+of the pre-splice store's `DelIn`-union splices (the extra ones being the
+ghosts, whose live descendants the collapse re-homes). Stated over the
+collapsed-slot read characterizations (`read_nf` instances). -/
+theorem markerp_imp_delUnion {ev₁ ev₂ : Set (Op SAppOp)}
+    {s₀ s₁ s₂ : Shesha.St}
+    (hs₀ : ∀ u, u ∈ Shesha.read s₀ ↔
+      (∃ p, InsIn (ev₁ ∩ ev₂) u p) ∧ ¬ DelIn (ev₁ ∩ ev₂) u)
+    (hs₁ : ∀ u, u ∈ Shesha.read s₁ ↔ (∃ p, InsIn ev₁ u p) ∧ ¬ DelIn ev₁ u)
+    (hs₂ : ∀ u, u ∈ Shesha.read s₂ ↔ (∃ p, InsIn ev₂ u p) ∧ ¬ DelIn ev₂ u)
+    (u : Nat) (hm : Shesha.markerp s₀ s₁ s₂ u = true) :
+    DelIn (ev₁ ∪ ev₂) u := by
+  rw [Shesha.markerp, Bool.and_eq_true] at hm
+  obtain ⟨h0, hne⟩ := hm
+  obtain ⟨⟨p, r, hmem⟩, -⟩ := (hs₀ u).mp (Shesha.contains_iff.mp h0)
+  have hin₁ : ∃ q, InsIn ev₁ u q :=
+    ⟨p, r, ((Set.mem_inter_iff ..).mp hmem).1⟩
+  have hin₂ : ∃ q, InsIn ev₂ u q :=
+    ⟨p, r, ((Set.mem_inter_iff ..).mp hmem).2⟩
+  cases h1 : Shesha.contains s₁ u <;> cases h2 : Shesha.contains s₂ u
+  · exact absurd (h1 ▸ h2 ▸ hne) (by decide)
+  · -- ¬s₁-live, s₂-live: `u` inserted in `ev₁` but not in `read s₁`,
+    -- so it was deleted in branch 1.
+    have hnr := Shesha.contains_eq_false.mp h1
+    by_cases hd : DelIn ev₁ u
+    · exact delIn_union_iff.mpr (Or.inl hd)
+    · exact absurd ((hs₁ u).mpr ⟨hin₁, hd⟩) hnr
+  · have hnr := Shesha.contains_eq_false.mp h2
+    by_cases hd : DelIn ev₂ u
+    · exact delIn_union_iff.mpr (Or.inr hd)
+    · exact absurd ((hs₂ u).mpr ⟨hin₂, hd⟩) hnr
+  · exact absurd (h1 ▸ h2 ▸ hne) (by decide)
+
 /-! ## §3 the pre-splice forest, packed
 
 `build_pack` hides the builder: from a graded union row store it
@@ -679,7 +716,25 @@ Construction plan (per key class of `merge s₀ s₁ s₂`; the classes are
 `hK4`/`hK5` on common pairs is exactly branch agreement: `SCoh ρ₀ ρᵢ`
 plus `witness_nf`'s rows (reversed `anchIds`) make the three slots agree
 on every common same-anchor pair, and the merge preserves the skeleton
-order (`merge_extends_L`) and run order (M3, owed here). -/
+order (`merge_extends_L`) and run order (M3, owed here).
+
+**Frontier note (this session).** The obligation is *order-dependent*:
+`hK6`'s two sides are ordered lists, so `preRows` must carry the merge's
+*exact* display order (`sortRunsDesc` tiebreak included) — a wrong-order
+witness would make `hK6` a *false* `sorry`. Hence `hK4`/`hK5` for the
+forced construction are entangled with the M3 run-order theorem, which is
+still owed (`merge_extends_L` only settles the skeleton/`L`-projection,
+not the branch-born run interleaving). There is thus no order-free prefix
+to split off. What *is* now isolated: via `merge_row` the RHS is
+`expandRow (outRows …) (markerp …)`, and `markerp_imp_delUnion` (§2)
+shows every id the merge splices is `DelIn (ev₁ ∪ ev₂)` — so on the
+merge-present ids the two marker predicates agree and the merge's splices
+are a sub-multiset of `preRows`' `DelIn`-union splices. The *entire*
+residual difficulty is therefore the **ghost re-homing**: the extra
+`DelIn`-union splices (dead-in-both and born-and-died ids, absent from
+`outRows`) must promote their live descendants to exactly the slots the
+merge algorithm re-homed them to. That is M3 proper + the delete-splice
+correctness, ≈1.5k lines concentrated in the skeleton-key parse. -/
 theorem shesha_rows_residue
     (C' : Configuration SheshaD) (hH : SheshaHonest C')
     (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)
