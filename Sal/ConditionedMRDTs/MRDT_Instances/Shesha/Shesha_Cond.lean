@@ -27,12 +27,24 @@ The pre-splice obligation `shesha_presplice` is now **proved down to the
 row level** (`Shesha_Presplice.lean`): the forest is built from a row
 store by the graded builder (`Shesha_Out.lean`), and every clause — WF,
 rows, anti-`vis` order, the branch-order extensions, and the collapse
-equation — is discharged from the row-store package. What remains is the
-**single owed residue** `shesha_rows_residue` (documented `sorry`): the
-store itself — pre-splice rows whose ghost expansion is the merge's
-output rows — the merge-correctness core (M2/M3 + fold realization) in
-pure row combinatorics, sitting on the closed M0–M2 layer plus the new
-output characterization `merge_row`. -/
+equation — is discharged from the row-store package. The **single owed
+residue** `shesha_rows_residue` (documented `sorry`) is the store itself.
+
+**⚠️ REFUTED (2026-07, `Shesha_Rows_Refuted.lean`, machine-checked):**
+`shesha_rows_residue` is **FALSE**. At an honest, `SCoh`-aligned config
+(`SCoh` vacuous — only one common insert) the merge of the canonical folds
+of `LCA=[ins 1]`, `A=[ins 2←1, ins 4←⌂, del 1]`, `B=[ins 3←1]` is
+`[3,4,2]`, which splits marker `1`'s children `{2,3}` around the concurrent
+sibling `4` — no pre-splice forest collapses to it, and `[3,4,2]` is not the
+fold of any `loOn`-respecting linearization of the union. So the pre-splice
+route cannot close this capstone as stated, and `shesha_ra_linearizable3`
+below — proved *from* this `sorry` — rests on a now-known-false lemma; its
+statement is itself unsatisfiable at this reachable merge (the RGA
+criss-cross situation, `AgentNotes.md`). The anomaly is intrinsic to
+tombstone-free rehoming (the flat RGA_Tombstone_Free path shares it), not an
+artifact of the rose-tree state. A restatement to a weaker convergence /
+licensed-divergence spec is the owed research decision. The theorem below is
+kept byte-identical and compiling to preserve the type-locked interface. -/
 
 namespace Sal.ConditionedMRDTs
 

@@ -674,7 +674,28 @@ theorem born_key_expand {C' : Configuration SheshaD}
 /-! ## §6 the row-store residue (the owed core) -/
 
 open Classical in
-/-- **The row-store residue** — the merge-correctness core at the *row*
+/-- **⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked,
+2026-07): this residue is **FALSE** — no `preRows` exists in general. The
+minimal honest countermodel: LCA `[ins 1]`; branch A = `ins 2←1, ins 4←⌂,
+del 1` (fold `[4,2]`); branch B = `ins 3←1` (fold `[1,[3]]`). `ev₁∩ev₂ =
+{ins 1}` so `SCoh` is **vacuous** (the coherence repair does not exclude it),
+yet `merge s₀ s₁ s₂ = [3,4,2]` (`native_decide`). Node `1` is a marker whose
+live children `{2,3}` the merge splits around the concurrent sibling `4`: `2`
+(from A, where `1` was deleted) rides A's re-homed root run *after* `4`, while
+`3` (from B) sits at `1`'s skeleton slot. But `hK1` forces `alGet preRows 1 ⊇
+{2,3}` and `hK6` splices `1`'s whole contiguous block into `alGet preRows 0`
+(a permutation of `[1,4]`), so the expansion is `⟨block⟩++[4]` or `[4]++⟨block⟩`
+— never `[3,4,2]`. Worse, `[3,4,2]` is **not the fold of any `loOn`-respecting
+linearization** of the union (deleting `1` splices its children contiguously;
+no sibling lands between them), so this same trace refutes `IsRALinearizable3`
+for the merge version — the pre-splice strategy cannot close the capstone as
+stated. This is *intrinsic to tombstone-free rehoming*, not the rose-tree
+encoding: the flat sibling/stored-predecessor RGA has the identical anomaly
+(`AgentNotes.md`, "K2 REFUTED"), and `I1/I2_no_merge_function` already prove no
+tombstone-free merge recovers the (linearizable) tombstoned order. The theorem
+below keeps its `sorry` — now known-false — pending a capstone restatement.
+
+**The original owed statement** — the merge-correctness core at the *row*
 level; everything forest-shaped is discharged (`presplice_of_rows`).
 Owed: a store `preRows` of pre-splice rows for the union's inserts with
 
