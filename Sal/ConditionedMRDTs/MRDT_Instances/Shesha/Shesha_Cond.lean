@@ -40,14 +40,23 @@ fold of any `loOn`-respecting linearization of the union. So the pre-splice
 route cannot close this capstone as stated, and `shesha_ra_linearizable3`
 below — proved *from* this `sorry` — rests on a now-known-false lemma; its
 statement is itself unsatisfiable at this reachable merge. The split is caused
-by Shesha's *anchor-forgetting* splice-on-delete: an anchor-retaining
-representation (tombstoned oracle, or flat stored-predecessor `RGA_Tombstone_Free`)
-reunites the marker's children and yields the linearizable `[4,3,2]` — but
-re-introduces the single-replica delete-order violation Shesha exists to fix
-(the **sequence-CRDT trilemma**: merge RA-linearizability vs delete-order
-preservation). A restatement to a weaker convergence / licensed-divergence spec
-(which Shesha *does* satisfy) is the owed research decision. The theorem below is
-kept byte-identical and compiling to preserve the type-locked interface. -/
+by Shesha's *local-order-preserving splice over a mutable forest* — **not** by
+anchor-forgetting: `RGA_Tombstone_Free` also forgets the anchor on delete, but
+it re-homes and *re-sorts survivors by their global key*, so its read is always
+a fold (⇒ RA-linearizable) at the cost of reordering survivors
+(`tombstone_free_violates_delete_order`). Shesha instead keeps local sibling
+order (`delete_preserves_survivor_order`), so a single replica is delete-order-
+faithful but the merge of two mutable forests is not a global fold — the
+**sequence-CRDT trilemma** (local-order-preserving delete ⊻ merge RA-lin). The
+dissolution is not anchor-retention but **immutable stored positions** (KC+Kartik
+`Development/RGA_OrderPreserving_Reference.lean`, task #63): freeze the ancestry
+path at insert, read = lex-sort by frozen position, delete = drop; positions
+never move, so both delete-order holds and the read is a fold — on this trace
+`2`,`3` keep contiguous frozen paths so `4` cannot split them. A restatement to a
+weaker convergence / licensed-divergence spec (which Shesha *does* satisfy), or
+the immutable-position re-encoding, is the owed research decision. The theorem
+below is kept byte-identical and compiling to preserve the type-locked
+interface. -/
 
 namespace Sal.ConditionedMRDTs
 

@@ -689,19 +689,34 @@ live children `{2,3}` the merge splits around the concurrent sibling `4`: `2`
 linearization** of the union (deleting `1` splices its children contiguously;
 no sibling lands between them), so this same trace refutes `IsRALinearizable3`
 for the merge version — the pre-splice strategy cannot close the capstone as
-stated. **Root cause = Shesha's *anchor-forgetting* splice-on-delete**, not
-tombstone-freedom per se: an anchor-**retaining** representation (the tombstoned
-oracle, or the flat stored-predecessor `RGA_Tombstone_Free`) reunites `1`'s
-children — both climb from the retained anchor `1` — giving the linearizable
-`[4,3,2]` (checked). But that representation re-introduces the *single-replica
-delete-order* violation Shesha exists to fix (`tombstone_free_violates_delete_order`;
-cf. `delete_preserves_survivor_order`, which fails there: `[2,1,3] ─del 1→ [3,2]`).
-So the anomaly is not freely re-encodable away — it is the **sequence-CRDT
-trilemma**: Shesha trades merge RA-linearizability for delete-order preservation.
-(`I1/I2_no_merge_function` independently show no tombstone-free merge matches the
-tombstoned oracle.) The theorem below keeps its `sorry` — now known-false —
-pending a capstone restatement to Shesha's actual guarantee (convergence +
-licensed divergence).
+stated.
+
+**Root cause = Shesha's *local-order-preserving splice over a mutable forest*,
+not anchor-forgetting.** Both Shesha and the RA-linearizable
+`RGA_Tombstone_Free` *forget* the anchor on delete; the difference is how the
+read order is derived. `RGA_Tombstone_Free` re-homes and **re-sorts survivors
+by their global key** on every delete, so its read is *always a fold* of the
+key-order (⇒ RA-linearizable) — at the cost of reordering survivors
+(`tombstone_free_violates_delete_order`). Shesha's splice **preserves local
+sibling order** (`delete_preserves_survivor_order`), so the read of *one*
+replica is delete-order-faithful — but the merge of two such mutable forests is
+not a global fold, which is exactly the `[3,4,2]` split. So this is the
+**sequence-CRDT trilemma** surfacing as: local-order-preserving delete ⊻ merge
+RA-linearizability.
+
+The anomaly *is* an artifact of the **mutable** rose-tree, and the dissolution
+is **not** anchor-retention but **immutable stored positions** (KC+Kartik
+`Development/RGA_OrderPreserving_Reference.lean`, task #63): freeze each node's
+ancestry path at insert, `read = lex-sort by frozen position`, `delete = drop`.
+Positions never move, so both delete-order holds *and* the read is a fold; on
+this countermodel `2`,`3` keep contiguous frozen paths `[k₁,k₂]`,`[k₁,k₃]` while
+`4` is `[k₄]`, so `4` cannot land between them and `[3,4,2]` never arises. The
+trilemma reasserts only at the *insert-after-already-deleted-anchor* corner (the
+frozen path needs the dead anchor's position — an append-only position map, i.e.
+a metadata tombstone, or default-to-root that loses order); the reference model
+dodges that corner. The theorem below keeps its `sorry` — now known-false —
+pending either the immutable-position re-encoding or a capstone restatement to
+Shesha's actual guarantee (convergence + licensed divergence).
 
 **The original owed statement** — the merge-correctness core at the *row*
 level; everything forest-shaped is discharged (`presplice_of_rows`).
