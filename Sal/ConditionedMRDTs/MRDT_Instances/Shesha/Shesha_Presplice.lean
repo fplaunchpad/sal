@@ -689,11 +689,19 @@ live children `{2,3}` the merge splits around the concurrent sibling `4`: `2`
 linearization** of the union (deleting `1` splices its children contiguously;
 no sibling lands between them), so this same trace refutes `IsRALinearizable3`
 for the merge version — the pre-splice strategy cannot close the capstone as
-stated. This is *intrinsic to tombstone-free rehoming*, not the rose-tree
-encoding: the flat sibling/stored-predecessor RGA has the identical anomaly
-(`AgentNotes.md`, "K2 REFUTED"), and `I1/I2_no_merge_function` already prove no
-tombstone-free merge recovers the (linearizable) tombstoned order. The theorem
-below keeps its `sorry` — now known-false — pending a capstone restatement.
+stated. **Root cause = Shesha's *anchor-forgetting* splice-on-delete**, not
+tombstone-freedom per se: an anchor-**retaining** representation (the tombstoned
+oracle, or the flat stored-predecessor `RGA_Tombstone_Free`) reunites `1`'s
+children — both climb from the retained anchor `1` — giving the linearizable
+`[4,3,2]` (checked). But that representation re-introduces the *single-replica
+delete-order* violation Shesha exists to fix (`tombstone_free_violates_delete_order`;
+cf. `delete_preserves_survivor_order`, which fails there: `[2,1,3] ─del 1→ [3,2]`).
+So the anomaly is not freely re-encodable away — it is the **sequence-CRDT
+trilemma**: Shesha trades merge RA-linearizability for delete-order preservation.
+(`I1/I2_no_merge_function` independently show no tombstone-free merge matches the
+tombstoned oracle.) The theorem below keeps its `sorry` — now known-false —
+pending a capstone restatement to Shesha's actual guarantee (convergence +
+licensed divergence).
 
 **The original owed statement** — the merge-correctness core at the *row*
 level; everything forest-shaped is discharged (`presplice_of_rows`).

@@ -39,11 +39,14 @@ sibling `4` — no pre-splice forest collapses to it, and `[3,4,2]` is not the
 fold of any `loOn`-respecting linearization of the union. So the pre-splice
 route cannot close this capstone as stated, and `shesha_ra_linearizable3`
 below — proved *from* this `sorry` — rests on a now-known-false lemma; its
-statement is itself unsatisfiable at this reachable merge (the RGA
-criss-cross situation, `AgentNotes.md`). The anomaly is intrinsic to
-tombstone-free rehoming (the flat RGA_Tombstone_Free path shares it), not an
-artifact of the rose-tree state. A restatement to a weaker convergence /
-licensed-divergence spec is the owed research decision. The theorem below is
+statement is itself unsatisfiable at this reachable merge. The split is caused
+by Shesha's *anchor-forgetting* splice-on-delete: an anchor-retaining
+representation (tombstoned oracle, or flat stored-predecessor `RGA_Tombstone_Free`)
+reunites the marker's children and yields the linearizable `[4,3,2]` — but
+re-introduces the single-replica delete-order violation Shesha exists to fix
+(the **sequence-CRDT trilemma**: merge RA-linearizability vs delete-order
+preservation). A restatement to a weaker convergence / licensed-divergence spec
+(which Shesha *does* satisfy) is the owed research decision. The theorem below is
 kept byte-identical and compiling to preserve the type-locked interface. -/
 
 namespace Sal.ConditionedMRDTs
