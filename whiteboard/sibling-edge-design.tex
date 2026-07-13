@@ -68,10 +68,12 @@ merges the anchor. A brute-force Python model then \emph{convinces us
 empirically}: across $\approx$37{,}000 random merges (single- and multi-epoch)
 every merge is convergent and RA-linearizable (a fold of some
 $\mathsf{loOn}$-respecting linearization exists), delete-order is preserved, and
-concurrent runs stay contiguous (non-interleaving). The paths are ghost state, as
-in RGA; the honest boundary (the tombstoned-oracle / strong-list fooling pair
-remains impossible) is unchanged. Next step: the Lean port as a conditioned
-instance extending \texttt{RGA\_Tombstone\_Free}.
+concurrent runs stay contiguous (non-interleaving). The spines are \emph{runtime
+provenance} --- consulted by the read whenever a referenced origin is dead, so,
+unlike RGA's proof-only carried path, they cannot be erased (\S4); the honest
+boundary (the tombstoned-oracle / strong-list fooling pair remains impossible)
+is unchanged. Next step: the Lean port as a conditioned instance extending
+\texttt{RGA\_Tombstone\_Free}.
 \end{abstract}
 
 \section{The datatype: two immutable origins and their spines}
@@ -272,16 +274,36 @@ the important one: the design record feared that chained merges would break
 (ghost information lost); with the carried spines, states stay self-contained and
 they do not.
 
-\section{The paths are ghost state; the honest boundary}
+\section{The spines are runtime provenance --- \emph{not} ghost state; the honest boundary}
 
-\paragraph{Cost.} The spines $\pL,\pR$ are the analogue of RGA's carried path.
-They are consulted only to place the ghost of a node deleted while still
-referenced; under causal stability (every replica has seen the delete, no future
-insert can reference the node) a ghost id can be dropped from all spines, so the
-metadata is bounded by the in-flight deletes, not by history. This is the
-\emph{tombstone-free-with-transient-ghosts} regime --- no permanent graves, but
-per-deletion memory until stability, exactly as every published order-preserving
-sequence CRDT pays somewhere (design record \S8).
+\paragraph{Corrected claim (2026-07-13; the first revision of this note wrongly
+called the spines ``ghost state, as in RGA'').} RGA's carried path is ghost
+state in a strict, machine-checked sense: on \emph{every reachable state} the
+path is never read (\texttt{ins\_path\_free}/\texttt{del\_path\_free} --- a
+client's anchor is live when it issues the op, and \texttt{resolve}
+short-circuits), so a runtime implementation carries zero bytes of it; it exists
+only to discharge the $\forall\sigma$-quantified commutation VC. The spines
+$\pL,\pR$ are \textbf{not} that: the read consults a spine whenever a referenced
+origin is dead --- which is ordinary editing, not an unreachable corner (the
+\texttt{aed} trace of \S1 already uses $d$'s spine). The variant without spines
+(``B2'' in the litmus suite) fails the sequential deep-delete test L3a ---
+machine-checked evidence that real executions need them. So the two designs are
+\emph{opposite} corners: RGA is runtime-lean with proof-only baggage; this
+design carries \textbf{zero proof-only state} (application never resolves
+anything, so all VCs commute without any carried certificate), and its baggage
+is real runtime memory.
+
+\paragraph{Cost, stated correctly.} A dead id persists exactly while some
+\emph{live} record's birth certificate names it: the retention policy is
+\emph{live-reachable ancestry}, not ``all history'' (tombstones) and not
+``in-flight deletes only'' (the first revision's overstatement). Deleting a
+region into which nothing live was born frees it entirely; with structural
+sharing the spines are the insertion forest restricted to live-referenced
+ancestry. Causal-stability compaction (rerouting spines past a stably-dead id)
+is an out-of-band optimization, not part of the CRDT semantics. This memory is
+not slack: the strong-list impossibility (design record \S7\textonehalf) shows
+per-deletion memory is mandatory for the ordering properties this design has;
+the spines are that memory, scoped by reachability.
 
 \paragraph{What is still impossible.} Preserving order does \emph{not} recover the
 tombstoned-oracle order on pairs \emph{no replica ever co-displayed}: the
@@ -311,9 +333,12 @@ rehome.
   \item Order-preservation: \texttt{delete\_preserves\_survivor\_order} as a
         \emph{sequential} theorem (contrast the flat RGA's refutation) --- now
         \emph{true}, unlike the rose-tree at the merge level.
-  \item Single-replica commutation VC conditioned on \emph{accurate} spines
-        (the two-sided analogue of RGA's \texttt{commutes\_with'} / accuracy),
-        discharged through the conditioned framework; the spine is ghost state.
+  \item Single-replica commutation: application is record add/remove and never
+        resolves a reference, so \emph{all} operation pairs commute at the state
+        level --- no accuracy conditioning, no carried proof-only certificate;
+        the flat VC engine should apply (the OR-set route). Spine
+        \emph{validity} (each spine is the genuine birth ancestry) is an
+        invariant consumed by the ReadSide intent theorems, not by convergence.
   \item RA-linearizability capstone \texttt{sib\_ra\_linearizable3\_eq} via the
         LCA-climb join, reusing \texttt{RGA\_Tombstone\_Free}'s honest-delivery
         scaffolding: the merge is the linearization witness (integration order).
