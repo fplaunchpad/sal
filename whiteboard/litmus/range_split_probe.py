@@ -90,3 +90,77 @@ def deep(Dz):
 for Dz in (D, L.RangeTS(), L.Path2(), L.GhostCF()):
     rp, rq = deep(Dz)
     print(f"  {Dz.name:12} P: {rp}   Q: {rq}   {'CONVERGED' if rp == rq else '*** DIVERGED ***'}")
+
+
+# ============================================================================
+# DEPTH-3 FINDING (KC's question: "same node, different ranges at merge"):
+# children carved in DIFFERENT FRAMES of the same parent are mutually
+# incomparable raw; naive per-node value picking flips a co-displayed pair
+# (machine-checked: (62,61) flip). INVARIANT (frame coherence): every input is
+# internally consistent, so each input's frame of a subtree is an affine image
+# of the canonical slot; a child's value pulled back through ITS OWN input's
+# parent-frame is frame-independent. STRATEGY (normalize-then-repair): choose
+# the canonical range per node = the LCA's value (well-defined: any node in
+# both branches is in the LCA; branch-born nodes have no conflict), rewrite
+# every input's values through the affine map (input-frame -> canonical frame)
+# top-down, THEN run the canonical overlap repair. RangeSplitN below; fixes
+# the depth-3 flip, passes the battery (except one-sided L19).
+# ============================================================================
+class RangeSplitN(RangeSplit):
+    name = 'range-splitN'
+    def merge(self, Lst, Ast, Bst):
+        surv = (set(Lst)&set(Ast)&set(Bst)) | (set(Ast)-set(Lst)) | (set(Bst)-set(Lst))
+        def normalized(I):
+            out = {}
+            def walk(p, plo, phi, ilo, ihi):
+                for c in [x for x in I if I[x][0] == p]:
+                    _, clo, chi = I[c]
+                    nlo = plo + (clo-ilo)*(phi-plo)/(ihi-ilo)
+                    nhi = plo + (chi-ilo)*(phi-plo)/(ihi-ilo)
+                    cl, ch = (Lst[c][1], Lst[c][2]) if c in Lst else (nlo, nhi)
+                    out[c] = (p, cl, ch)
+                    walk(c, cl, ch, I[c][1], I[c][2])
+            walk(0, Fraction(0), Fraction(1), Fraction(0), Fraction(1))
+            return out
+        src = {}
+        for I in (Lst, Ast, Bst):
+            for k, v in normalized(I).items():
+                src.setdefault(k, v)
+        M = {u: src[u] for u in surv}
+        def anc(u):
+            for S in (Lst, Ast, Bst):
+                if u in S: return S[u][0]
+            return 0
+        M = {u: (self._climb_par(M[u][0], surv, anc), M[u][1], M[u][2]) for u in M}
+        return self._repair_all(M)
+    def _climb_par(self, p, surv, anc):
+        while p != 0 and p not in surv: p = anc(p)
+        return p
+    def _repair_all(self, M):
+        def kids_of(p): return [x for x in M if M[x][0] == p]
+        def rescale(root, olo, ohi, nlo, nhi):
+            def mapv(v): return nlo + (v-olo)*(nhi-nlo)/(ohi-olo)
+            st = [root]
+            while st:
+                u = st.pop(); p, lo, hi = M[u]
+                M[u] = (p, mapv(lo), mapv(hi)); st.extend(kids_of(u))
+        def repair(p):
+            ks = sorted(kids_of(p), key=lambda x: M[x][1])
+            comps, cur, cmax = [], [], None
+            for k in ks:
+                lo, hi = M[k][1], M[k][2]
+                if cur and lo < cmax: cur.append(k); cmax = max(cmax, hi)
+                else:
+                    if cur: comps.append(cur)
+                    cur, cmax = [k], hi
+            if cur: comps.append(cur)
+            for comp in comps:
+                if len(comp) >= 2:
+                    ulo = min(M[k][1] for k in comp); uhi = max(M[k][2] for k in comp)
+                    W, n = uhi-ulo, len(comp)
+                    for r, k in enumerate(sorted(comp, reverse=True)):
+                        _, olo, ohi = M[k]
+                        rescale(k, olo, ohi, uhi-Fraction(r+1)*W/n, uhi-Fraction(r)*W/n)
+            for k in kids_of(p): repair(k)
+        repair(0)
+        return M
