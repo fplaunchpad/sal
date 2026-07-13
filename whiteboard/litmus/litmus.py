@@ -548,6 +548,24 @@ def two_world_merge(D, lca, branch_fixed, worlds, required, fooled_state):
     except Exception as e:
         return {'ERR': type(e).__name__}
 
+def post_merge_verdict(D, lca, a_ops, b_ops, post):
+    """Merge, then apply `post` ops on the merged replica; check that no pair
+    the merged replica itself displayed ever flips (S2 over the post reads)."""
+    if D.merge is None: return None
+    try:
+        D.begin()
+        Ls, _ = run_replica(D, D.init(), lca)
+        As, _ = run_replica(D, Ls, a_ops)
+        Bs, _ = run_replica(D, Ls, b_ops)
+        M = D.merge(Ls, As, Bs)
+        reads = [D.read(M)]
+        for it in post:
+            M = D.apply(M, it)
+            reads.append(D.read(M))
+        return {'out': reads[-1], 'S2': step_stable(reads), 'merged': reads[0]}
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
 def multi_epoch_verdict(D, lca, a1, b1, c2, d2):
     if D.merge is None: return None
     try:
@@ -583,6 +601,13 @@ SEQ_TESTS = [
      [I(1,0), I(2,0), I(3,0), I(4,0), I(5,0), DL(2), DL(3), DL(4)]),
     ('L3b chain(after) del-run', 'S1,S2',
      [I(1,0), I(2,1), I(3,2), I(4,3), I(5,4), DL(2), DL(3), DL(4)]),
+    # L17: a deep chain is built under an OPEN ceiling (all heads), then a new
+    # head arrives whose key floor sees only the old head, then the chain is
+    # deleted: eagerly-assigned deep keys can exceed the new head's key and the
+    # rehome re-sort flips a co-displayed pair. Found 2026-07-13 during the
+    # pen-and-paper attempt at Q-tree's nesting invariant (not by the battery).
+    ('L17 ceiling escape (seq)', 'S1,S2',
+     [I(1,0), I(2,1), I(3,2), I(4,3), I(5,1), DL(2), DL(3)]),
 ]
 
 L2 = ('L2 splice fooling pair',
@@ -620,6 +645,19 @@ L15 = ('L15 strong-list (5-node)',
        'A')
 
 M1 = ('M1 two epochs', [I(1,0)], [I(2,1)], [I(3,1)], [DL(2)], [I(4,3)])
+
+# L18: the CONCURRENT ceiling escape. Branch B extends a deep chain under an
+# open ceiling while branch A concurrently inserts a new head whose key floor
+# cannot see B's keys; after the merge the pair IS co-displayed, and deleting
+# the chain re-sorts the escaped deep key above the head: a d-violation on the
+# merged replica itself. No birth-time floor can prevent it (B cannot see A).
+# Found on paper 2026-07-13; passes for lazy/relational orders (ghost, rose)
+# and for flat keys (delete never re-sorts); fails for eager keys + splice.
+L18 = ('L18 merge-then-delete collapse',
+       [I(1,0), I(2,1), I(3,2), I(4,3)],      # lca: chain, all heads
+       [I(5,1)],                              # A: new head after 1
+       [I(6,4), I(7,6)],                      # B: deepen the chain
+       [DL(2), DL(3), DL(4), DL(6)])          # applied ON THE MERGED replica
 
 # ================================================================== report
 def flag(v, keys):
@@ -683,6 +721,19 @@ def main():
             emit(f'| {D.name} | {r["identical_inputs"]} | '
                  f'{r["outs"]["W1"]} ({"✓" if r["meets"]["W1"] else "✗"}) | '
                  f'{r["outs"]["W2"]} ({"✓" if r["meets"]["W2"] else "✗"}) |')
+
+    emit()
+    name, lca, a, b, post = L18
+    emit(f'== {name} (S2 over the merged replica: co-displayed pairs must survive its own deletes) ==')
+    emit('| design | S2(post) | merged read | after deletes |')
+    emit('|---|---|---|---|')
+    for D in DESIGNS:
+        v = post_merge_verdict(D, lca, a, b, post)
+        if v is None: continue
+        if 'ERR' in v:
+            emit(f'| {D.name} | ERR:{v["ERR"]} |||')
+            continue
+        emit(f'| {D.name} | {"✓" if v["S2"] else "✗"} | {v["merged"]} | {v["out"]} |')
 
     emit()
     name, lca, a1, b1, c2, d2 = M1

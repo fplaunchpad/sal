@@ -6,6 +6,7 @@
 | L1 delete-reorder | ✓✓ 23 | ✓✓ 23 | ✗✗ 32 | ✓✓ 23 | ✓✓ 23 | ✓✓ 23 | ✓✓ 23 | ✓✓ 23 | ✓✓ 23 |
 | L3a chain(front) del-run | ✓✓ 51 | ✓✓ 51 | ✓✓ 51 | ✓✓ 51 | ✓✓ 51 | ✗✗ 15 | ✓✓ 51 | ✓✓ 51 | ✓✓ 51 |
 | L3b chain(after) del-run | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 | ✓✓ 15 |
+| L17 ceiling escape (seq) | ✓✓ 154 | ✓✓ 154 | ✓✓ 154 | ✓✓ 154 | ✗✗ 145 | ✗✗ 145 | ✓✓ 154 | ✓✓ 154 | ✗✗ 145 |
 
 == L2 splice fooling pair (both worlds must be S1-sound; identical states ⇒ provably fooled) ==
 | design | W1 (want 23) | W2 (want 32) | states identical? |
@@ -157,6 +158,18 @@
 | ghost(spine) | False | [5, 9] (✓) | [9, 5] (✓) |
 | Q-flat | False | [5, 9] (✓) | [9, 5] (✓) |
 | Q-tree | False | [9, 5] (✗) | [9, 5] (✓) |
+
+== L18 merge-then-delete collapse (S2 over the merged replica: co-displayed pairs must survive its own deletes) ==
+| design | S2(post) | merged read | after deletes |
+|---|---|---|---|
+| tombstoned | ✓ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| flat-RGA | ✗ | [1, 5, 2, 3, 4, 6, 7] | [1, 7, 5] |
+| rose(Shesha) | ✓ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| splice2 | ✗ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| B2(bare) | ✗ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| ghost(spine) | ✓ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| Q-flat | ✓ | [1, 5, 2, 3, 4, 6, 7] | [1, 5, 7] |
+| Q-tree | ✗ | [1, 5, 2, 3, 4, 6, 7] | [1, 7, 5] |
 
 == M1 two epochs (S3, S4, S6 across chained merges) ==
 | design | S3 | S4 | S6 | DUP | out |

@@ -85,6 +85,20 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
   interior node; L13 is the CX-P "puncture" (insert into a gap whose bound was
   concurrently deleted). IDL on the same shape is CX-F.
 - **L16 concurrent double delete** — both branches delete the same node.
+- **L17 ceiling escape, sequential** — a chain grows under an *open* key
+  ceiling (every node a row head); a later head's key floor sees only the old
+  head, not the chain's deep keys; deleting the chain re-sorts an escaped deep
+  key above the newer head — flipping a co-displayed pair on ONE replica.
+  Found by attempting the pen-and-paper proof of Q-tree's nesting invariant
+  (2026-07-13), **not** by the battery — a suite-gap lesson. Sequential repair
+  exists: floor a new head's key above the anchor's entire subtree max.
+- **L18 merge-then-delete collapse** — the *concurrent* ceiling escape: B
+  deepens a chain under an open ceiling while A concurrently inserts a new
+  head; post-merge the pair is co-displayed, and deleting the chain flips it
+  on the merged replica itself. **No birth-time floor can prevent this** (B
+  cannot see A's key), so it is structural for eagerly-assigned immutable keys
+  combined with splice-and-re-sort deletes. Lazy/relational orders (ghost,
+  rose) and flat remove-only keys (Q-flat, whose delete never re-sorts) pass.
 
 **Impossibility probes** (two-world; the suite verifies the fooling premise):
 
@@ -124,13 +138,18 @@ Failures only — everything not listed passes:
 | design | fails |
 |---|---|
 | `tombstoned` | nothing (baseline; pays permanent tombstones) |
-| `flat-RGA` | L1, L2/W1 (**provably fooled** — states identical), L8·L9·L13 (S6/S7), L14+L15 fooled |
-| `rose(Shesha)` | **L4 (its refutation, reproduced)**, L9 (S6/S7), L14+L15 fooled |
-| `splice2` | L2/W2 (**provably fooled**), L4 (S4!), L11 (S4!), L14 fooled |
-| `B2(bare)` | L3a (deep chain), L14/W2 (ghost rank unknowable) |
-| `ghost(spine)` | **nothing — including both impossibility probes** |
-| `Q-flat` | L7 (interleaving), L14 fooled |
-| `Q-tree` | L9+L13+L15/W1 (S6/S7 only — the licensed e-class, S4 holds; all one open-boundary cause), L14 fooled |
+| `flat-RGA` | L1, L2/W1 (**provably fooled** — states identical), L8·L9·L13 (S6/S7), **L18 (d!)**, L14+L15 fooled |
+| `rose(Shesha)` | **L4 (its refutation, reproduced)**, L9 (S6/S7), L14+L15 fooled — but passes L17/L18 (order lives in links) |
+| `splice2` | L2/W2 (**provably fooled**), L4 (S4!), L11 (S4!), L17, L18, L14 fooled |
+| `B2(bare)` | L3a (deep chain), L17, L18, L14/W2 (ghost rank unknowable) |
+| `ghost(spine)` | **nothing — including both impossibility probes and L17/L18** |
+| `Q-flat` | L7 (interleaving), L14 fooled — passes L17/L18 (delete never re-sorts) |
+| `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L14 fooled |
+
+**Correction (2026-07-13, same day):** an earlier revision of this file said
+Q-tree "passes S4/d in every case." That was a battery artifact — the battery
+lacked L17/L18. Q-tree fails the adopted spec (d), sequentially at L17 and
+structurally at L18.
 
 ## Findings the suite produced on day one
 
@@ -170,6 +189,16 @@ Failures only — everything not listed passes:
    question, now stated as a row of checkmarks instead of prose.
 6. **splice2 fails S4 outright** (L4, L11) — it is *below* the rose tree on
    the ladder, not beside it; its cheapness bought nothing.
+7. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
+   the ancestry *arithmetized at birth* — evaluated eagerly against the state
+   the inserter saw. A spine/ghost reference is the same information evaluated
+   *lazily* at read time, against whoever is currently alive. Concurrent
+   deletes are precisely where eager evaluation goes stale: a key comparison
+   frozen at birth cannot adapt when the structure it summarized is deleted
+   (L18: no birth-time floor can see a concurrent sibling's key). This is why
+   `ghost(spine)` and `rose` survive the ceiling escape and eager-key trees do
+   not — and why "the tree, arithmetized into keys" is *not* a conservative
+   transformation of "the tree, kept as relations."
 
 ## Adding a design / a test
 
