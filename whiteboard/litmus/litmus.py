@@ -523,8 +523,79 @@ class PathKey(Design):
         return {u: src[u] for u in surv}
     def fp(self, s): return frozenset(s.items())
 
+# ---- 10. range-ts: KC's carved ranges WITHOUT paths (tree + ts tiebreak) -----
+# Each node stores only (par, lo, hi): a bounded sub-range carved from its
+# parent's range, above the current head's range (leaving room for future
+# heads). Subtree confinement is numeric — no ancestor names retained.
+# Overlapping ranges from concurrent same-gap carves are ordered by timestamp.
+class RangeTS(Design):
+    name = 'range-ts'
+    def init(self): return {}
+    def copy(self, s): return dict(s)
+    def _kids(self, s, p):
+        return sorted((x for x in s if s[x][0] == p),
+                      key=lambda x: (s[x][1], x), reverse=True)
+    def apply(self, s, it):
+        if it[0] == 'ins':
+            _, x, a = it
+            if a == 0:
+                plo, phi = Fraction(0), Fraction(1)
+            else:
+                plo, phi = s[a][1], s[a][2]
+            kids = self._kids(s, a if a != 0 else 0)
+            base = max((s[k][2] for k in kids), default=plo)
+            w = phi - base
+            s[x] = (a if a != 0 else 0, base + w/4, base + w/2)
+        else:
+            d = it[1]
+            if d in s:
+                p = s.pop(d)[0]
+                for y in list(s):
+                    if s[y][0] == d: s[y] = (p, s[y][1], s[y][2])
+        return s
+    def read(self, s):
+        out = []
+        def dfs(u):
+            for c in self._kids(s, u):
+                out.append(c); dfs(c)
+        dfs(0); return out
+    def merge(self, L, A, B):
+        surv = (set(L) & set(A) & set(B)) | (set(A) - set(L)) | (set(B) - set(L))
+        def rec(u):
+            for S in (L, A, B):
+                if u in S: return S[u]
+            return (0, Fraction(0), Fraction(1))
+        def climb(v):
+            while v != 0 and v not in surv: v = rec(v)[0]
+            return v
+        return {u: (climb(rec(u)[0]), rec(u)[1], rec(u)[2]) for u in surv}
+    def fp(self, s): return frozenset(s.items())
+
+# ---- 10b. range-reproject: KC's re-range-at-merge --------------------------
+# Same state and local ops as range-ts, but the MERGE canonicalizes: after the
+# structural merge it re-carves every range top-down (siblings kept in their
+# merged display order), restoring disjoint nesting — the L20 fix by mutation.
+class RangeReproject(RangeTS):
+    name = 'range-repro'
+    def merge(self, L, A, B):
+        M = RangeTS.merge(self, L, A, B)
+        out = {}
+        def carve(p, plo, phi):
+            base = plo
+            kids = sorted((x for x in M if M[x][0] == p),
+                          key=lambda x: (M[x][1], x))          # oldest first
+            for k in kids:
+                w = phi - base
+                klo, khi = base + w/4, base + w/2
+                out[k] = (p, klo, khi)
+                carve(k, klo, khi)
+                base = khi
+        carve(0, Fraction(0), Fraction(1))
+        return out
+
 DESIGNS = [Naive(), Tombstoned(), FlatRGA(), RoseTree(), Splice2(),
-           B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey()]
+           B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey(),
+           RangeTS(), RangeReproject()]
 
 # ================================================================== driver
 def run_replica(D, base, script):
@@ -635,6 +706,34 @@ def post_merge_verdict(D, lca, a_ops, b_ops, post):
     except Exception as e:
         return {'ERR': type(e).__name__}
 
+def stale_fork_verdict(D, lca, a_ops, b_ops, c_ops):
+    """L21: C forks from the A-branch BEFORE the first merge; the merged line
+    and C then merge with LCA = the A-branch state. Any merge-time re-ranging
+    happened in a frame C never saw. Checks convergence, S4 over all displayed
+    reads, S6, DUP."""
+    if D.merge is None: return None
+    try:
+        D.begin()
+        Ls, lr = run_replica(D, D.init(), lca)
+        As, ar = run_replica(D, Ls, a_ops)
+        Bs, br = run_replica(D, Ls, b_ops)
+        M1 = D.merge(Ls, As, Bs)
+        Cs, cr = run_replica(D, As, c_ops)           # forked from As, pre-merge
+        M2 = D.merge(As, M1, Cs)                     # LCA = As
+        m = D.read(M2)
+        v = {'out': m, 'S3': m == D.read(D.merge(As, Cs, M1)),
+             'DUP': len(m) == len(set(m))}
+        disp = set()
+        for r in lr + ar + br + [D.read(M1)] + cr: disp |= pairs_of(r)
+        mp = pairs_of(m)
+        v['S4'] = not any((y, x) in mp for (x, y) in disp)
+        # causal order: lca < everything; a < c (C forked from A); b independent
+        v['S6'] = any(naive_fold(lca + il) == m
+                      for il in interleavings(b_ops, a_ops + c_ops))
+        return v
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
 def multi_epoch_verdict(D, lca, a1, b1, c2, d2):
     if D.merge is None: return None
     try:
@@ -735,6 +834,33 @@ L18 = ('L18 merge-then-delete collapse',
        [I(6,4), I(7,6)],                      # B: deepen the chain
        [DL(2), DL(3), DL(4), DL(6)])          # applied ON THE MERGED replica
 
+# L20: TIE INHERITANCE. Concurrent same-anchor inserts (10 vs 20) carve the
+# same/overlapping position; each branch types a child under its own insert
+# (40 under 10, 30 under 20). Post-merge the display is [1,20,30,10,40]
+# (newest head first). Deleting the two heads must NOT reorder their children:
+# the heads' tie verdict (20 before 10) must be INHERITED by 30 vs 40 — but
+# 40 is newer than 30, so any per-node timestamp tiebreak flips them. This is
+# what forces per-level disambiguators (paths) or read-time chains; a bare
+# (range, ts) state cannot inherit the verdict. Added 2026-07-13 while
+# testing KC's ranges-without-paths proposal.
+L20 = ('L20 tie inheritance',
+       [I(1,0)],
+       [I(10,1), I(40,10)],                   # A: head 10, child 40
+       [I(20,1), I(30,20)],                   # B: head 20, child 30
+       [DL(20), DL(10)])                      # delete both heads post-merge
+
+# L21: the STALE FRAME. Replica C forks from branch A BEFORE the merge and
+# inserts 50 under A's head 25 — carving in the old coordinates, where it
+# displays [1,25,50,40] (co-displaying 50 before 40). A re-ranging merge
+# (reprojection) re-carves 25's range to a new slot (its concurrent twin 20
+# has the smaller id, so the canonical re-carve hands 20 the old numbers);
+# C's stale range then lands numerically BELOW 40's re-carved range, flipping
+# the co-displayed pair (50,40). 'Numbers born in different computations' —
+# the design record's CX-F, machine-checkable form. Added 2026-07-13 while
+# testing re-range-at-merge.
+L21 = ('L21 stale frame',
+       [I(1,0)], [I(25,1), I(40,25)], [I(20,1), I(30,20)], [I(50,25)])
+
 # ================================================================== report
 def flag(v, keys):
     if 'ERR' in v: return 'ERR:' + v['ERR']
@@ -798,18 +924,32 @@ def main():
                  f'{r["outs"]["W1"]} ({"✓" if r["meets"]["W1"] else "✗"}) | '
                  f'{r["outs"]["W2"]} ({"✓" if r["meets"]["W2"] else "✗"}) |')
 
+    for name, lca, a, b, post in (L18, L20):
+        emit()
+        emit(f'== {name} (S2 over the merged replica: co-displayed pairs must survive its own deletes) ==')
+        emit('| design | S2(post) | merged read | after deletes |')
+        emit('|---|---|---|---|')
+        for D in DESIGNS:
+            v = post_merge_verdict(D, lca, a, b, post)
+            if v is None: continue
+            if 'ERR' in v:
+                emit(f'| {D.name} | ERR:{v["ERR"]} |||')
+                continue
+            emit(f'| {D.name} | {"✓" if v["S2"] else "✗"} | {v["merged"]} | {v["out"]} |')
+
     emit()
-    name, lca, a, b, post = L18
-    emit(f'== {name} (S2 over the merged replica: co-displayed pairs must survive its own deletes) ==')
-    emit('| design | S2(post) | merged read | after deletes |')
-    emit('|---|---|---|---|')
+    name, lca, a, b, c = L21
+    emit(f'== {name} (fork before the merge; re-ranged frames meet stale coordinates) ==')
+    emit('| design | S3 | S4 | S6 | DUP | out |')
+    emit('|---|---|---|---|---|---|')
     for D in DESIGNS:
-        v = post_merge_verdict(D, lca, a, b, post)
+        v = stale_fork_verdict(D, lca, a, b, c)
         if v is None: continue
         if 'ERR' in v:
-            emit(f'| {D.name} | ERR:{v["ERR"]} |||')
+            emit(f'| {D.name} | ERR:{v["ERR"]} |||||')
             continue
-        emit(f'| {D.name} | {"✓" if v["S2"] else "✗"} | {v["merged"]} | {v["out"]} |')
+        def m2(k): return '✓' if v[k] else '✗'
+        emit(f'| {D.name} | {m2("S3")} | {m2("S4")} | {m2("S6")} | {m2("DUP")} | {v["out"]} |')
 
     emit()
     name, lca, a1, b1, c2, d2 = M1

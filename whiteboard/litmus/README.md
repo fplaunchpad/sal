@@ -99,6 +99,23 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
   cannot see A's key), so it is structural for eagerly-assigned immutable keys
   combined with splice-and-re-sort deletes. Lazy/relational orders (ghost,
   rose) and flat remove-only keys (Q-flat, whose delete never re-sorts) pass.
+- **L20 tie inheritance** — concurrent same-anchor inserts carve *identical*
+  ranges under any deterministic name-free scheme; each branch types a child
+  under its own insert; post-merge, deleting the two heads must not reorder
+  the children — the heads' tie verdict (by ts) must be *inherited* by their
+  subtrees, but a child's own ts votes independently and can vote wrong.
+  Kills `range-ts` (and flat-RGA, Q-tree). **The nameless-carving lemma**:
+  pairwise display stability under concurrency forces a per-level
+  disambiguator — the path is required by column d itself, not by the
+  fooling pairs.
+- **L21 stale frame** — a replica forks *before* a re-ranging merge and keeps
+  carving in the old coordinates; the merge's re-carve moves its anchor's
+  range; the stale number then meets re-carved numbers as siblings. Built to
+  refute `range-repro` (the CX-F "numbers born in different computations"
+  shape) — **and it did not**: the LCA-precedence value choice plus the
+  order-preserving re-carve kept all frames ordinally consistent in both
+  attack variants tried. Reprojection is *unrefuted but unproven* — see
+  finding 11.
 
 **Impossibility probes** (two-world; the suite verifies the fooling premise):
 
@@ -132,6 +149,8 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
 | `Q-flat` | immutable `(N,Q,char)`, Q = dense position identifier, read = sort | the Q proposal (flat instantiation) |
 | `Q-tree` | RGA tree + bounded sibling keys `Q(x) ∈ (max(Q(anchor),Q(head)), Q(A))` | the Q proposal (tree instantiation) |
 | `path-key` | key = ancestor path of uids, lex sort (prefix = KC's "carved Q range"; one-sided) | the range proposal made concurrency-sound; StoredPath's shape |
+| `range-ts` | KC's written-down scheme: each node = a bounded range binary-split from the parent's free gap, NO names; ts breaks range ties; tree read | the ranges-without-paths proposal |
+| `range-repro` | `range-ts` + KC's re-range-at-merge: the merge re-carves all ranges canonically (order-preserving, oldest-lowest), restoring disjoint nesting | the reprojection proposal |
 
 ## Headline results (full matrix: `litmus_matrix.md`, generated)
 
@@ -149,6 +168,8 @@ Failures only — everything not listed passes:
 | `Q-flat` | L7 (interleaving), L19, L14 fooled — passes L17/L18 (delete never re-sorts) |
 | `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L19, L14 fooled |
 | `path-key` | **L19 only** (one-sided: no `before` information — needs the two-sided/Fugue form). Passes everything else, including both fooling probes and L17/L18: prefix-ranges are fixed in the causal past of everything inside them, so concurrent operations cannot escape them |
+| `range-ts` | **L20 (the nameless-carving refutation)**, L19, L14 fooled — passes L17/L18 (bounded ranges fix the ceiling escapes without paths) |
+| `range-repro` | L19, L14 fooled; **passes L20 (the re-range works) and L21 (two stale-frame attacks failed)** — but soundness is OPEN: frame-precedence at merge is underspecified (the adapter's LCA-first choice was load-bearing in L21), convergence across merge DAGs is unverified, and the ordinal-consistency invariant is unproven |
 
 **Correction (2026-07-13, same day):** an earlier revision of this file said
 Q-tree "passes S4/d in every case." That was a battery artifact — the battery
@@ -212,7 +233,29 @@ structurally at L18.
    node's chain) is clean on the full battery including L19 — evidence the
    defect is in the read's tie rule, not the design. Promotion of the fix
    into the design note/model and a backward-run PBT sweep are owed.
-9. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
+9. **The nameless-carving lemma (L20, new).** Bounded ranges (KC's scheme)
+   genuinely fix the ceiling escapes without retaining any dead name — but
+   deterministic name-free carving hands concurrent same-anchor insertions
+   *identical* ranges, and after the anchors die no function of (range,
+   own-ts) can order their descendants consistently with the merged display.
+   The tie verdict must be inherited subtree-wide, which requires a per-level
+   identifier: **the path is forced by pairwise display stability itself**,
+   independent of the oracle/strong-list fooling pairs.
+10. **Re-ranging at merge is unrefuted — and uniquely interesting (L20/L21,
+   open).** KC's reprojection (canonically re-carve all ranges at every
+   merge) fixes L20, and two purpose-built stale-frame attacks (L21 and a
+   variant) failed to break it: the order-preserving re-carve plus monotone
+   local carving kept every frame ordinally consistent in the tested cases.
+   If sound, it would be the only known candidate for the *strictly
+   dead-free* corner with **self-compacting precision** (re-carving re-bases
+   coordinates on the live tree, shedding historical depth — the retention
+   rent paid with merge-time mutation instead of memory). Open before any
+   claim: which frame wins when merge inputs disagree (underspecified; the
+   adapter's choice mattered), convergence across merge topologies
+   (criss-cross DAGs untested), and the global invariant "every frame ever
+   minted is ordinally consistent with the canonical order" — pen-and-paper
+   next, per the method.
+11. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
    the ancestry *arithmetized at birth* — evaluated eagerly against the state
    the inserter saw. A spine/ghost reference is the same information evaluated
    *lazily* at read time, against whoever is currently alive. Concurrent
