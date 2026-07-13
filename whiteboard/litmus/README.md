@@ -296,6 +296,31 @@ structurally at L18.
    not — and why "the tree, arithmetized into keys" is *not* a conservative
    transformation of "the tree, kept as relations."
 
+## Randomized DAG PBT (`pbt.py`)
+
+`python3 pbt.py [N]` — N random executions per design, parameterized by
+(#replicas, #rounds, ops/round, delete ratio, merge probability): honest
+clients, LCA-disciplined random merges (a merge fires only when a recorded
+version's event set equals the heads' intersection), forced convergence
+rounds driving all replicas to the full event set along different paths.
+Checks the scalable ladder subset: **FLIP** (global pairwise display
+stability, across every read of every replica), **CONV** (same event set via
+different topologies ⟹ same read), **LIVE/DUP** (survival correctness).
+Interleaving (g/h), strong-list (e), and S6 remain litmus territory.
+
+**First-run verdicts (120 executions/design):** CLEAN — `tombstoned`,
+`ghost(spine)`, `Q-flat`, `path-key`, `path-2`. FAILING — `flat-RGA`,
+`splice2`, `B2`, `rose` (flips at merges — beyond its known L22 divergence),
+`Q-tree`, `range-ts`, `range-repro`, `range-split`, **and two of this
+suite's own fixes**: `ghost-cf` (the chain-following tie rule added for L19
+is pairwise-UNSTABLE at random DAG shapes — retracted; ghost's L19 remains
+open, and the principled fix is to adopt path-2's structural in-order
+comparison over the spine data, which makes it path-2) and `range-splitN`
+(the frame normalization is not globally canonical: "canonical = the current
+merge's LCA" differs across merges — the mutation family's hole at yet
+another depth). **Net: `path-2` is the unique design clean on the full
+litmus battery AND the randomized DAG sweep.**
+
 ## Adding a design / a test
 
 New design: subclass `Design` (four methods + `fp` for fooling-pair state
