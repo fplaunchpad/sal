@@ -156,6 +156,7 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
 | `Q-flat` | immutable `(N,Q,char)`, Q = dense position identifier, read = sort | the Q proposal (flat instantiation) |
 | `Q-tree` | RGA tree + bounded sibling keys `Q(x) ∈ (max(Q(anchor),Q(head)), Q(A))` | the Q proposal (tree instantiation) |
 | `path-key` | key = ancestor path of uids, lex sort (prefix = KC's "carved Q range"; one-sided) | the range proposal made concurrency-sound; StoredPath's shape |
+| `path-2` | **the full two-sided path scheme**: records `(id, pos, char)`, pos = ancestor path of `(side, uid)` components (`L↦(0,uid)`, `R↦(2,−uid)`, node terminator `(1,)`), insert = L-child of `r` if `r` inside `l`'s subtree else R-child of `l`, delete = remove, merge = OR-set + verbatim, read = tuple sort | the surviving design, eager encoding (Fugue id-space) |
 | `range-ts` | KC's written-down scheme: each node = a bounded range binary-split from the parent's free gap, NO names; ts breaks range ties; tree read | the ranges-without-paths proposal |
 | `range-repro` | `range-ts` + KC's re-range-at-merge: the merge re-carves all ranges canonically (order-preserving, oldest-lowest), restoring disjoint nesting | the reprojection proposal |
 
@@ -172,6 +173,7 @@ Failures only — everything not listed passes:
 | `B2(bare)` | L3a (deep chain), L17, L18, L14/W2 (ghost rank unknowable) |
 | `ghost(spine)` | **L19 — backward runs interleave** (retracting the earlier "passes everything": the battery lacked an h test). The R-chains are in the state; the newest-first read tie walks across them — a read artifact, not a state deficiency (see `ghost-cf`) |
 | `ghost-cf` | **nothing — the full battery including L19 and both impossibility probes** (same state as ghost; chain-following tie rule) |
+| `path-2` | **nothing — the full battery** (L1–L22, both probes both worlds). The eager-encoding twin of `ghost-cf`: same information as the spines, stored as sort keys; read = a tuple sort |
 | `Q-flat` | L7 (interleaving), L19, L14 fooled — passes L17/L18 (delete never re-sorts) |
 | `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L19, L14 fooled |
 | `path-key` | **L19 only** (one-sided: no `before` information — needs the two-sided/Fugue form). Passes everything else, including both fooling probes and L17/L18: prefix-ranges are fixed in the causal past of everything inside them, so concurrent operations cannot escape them |

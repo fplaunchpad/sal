@@ -523,6 +523,41 @@ class PathKey(Design):
         return {u: src[u] for u in surv}
     def fp(self, s): return frozenset(s.items())
 
+# ---- 9b. path-2: the FULL two-sided path scheme (Fugue id-space) -------------
+# Components encoded for plain tuple sort: L -> (0, uid), R -> (2, -uid); a
+# record's sort key is its position terminated by (1,), giving the in-order
+# sandwich (left subtree < node < right subtree), R-siblings newest-first and
+# L-siblings newest-last. Insert between adjacent (l, r): L-child of r if r is
+# inside l's subtree, else R-child of l. Ops self-contained; delete = remove.
+class Path2(Design):
+    name = 'path-2'
+    def init(self): return {}
+    def copy(self, s): return dict(s)
+    def _key(self, pos): return pos + ((1,),)
+    def apply(self, s, it):
+        if it[0] == 'ins':
+            _, x, a = it
+            doc = self.read(s)
+            pl = s[a] if a != 0 else ()
+            r = successor_of(doc, a)
+            pr = s[r] if r != END else None
+            if pr is not None and len(pr) > len(pl) and pr[:len(pl)] == pl:
+                s[x] = pr + ((0, x),)          # L-child of r
+            else:
+                s[x] = pl + ((2, -x),)         # R-child of l
+        else:
+            s.pop(it[1], None)
+        return s
+    def read(self, s):
+        return sorted(s, key=lambda x: self._key(s[x]))
+    def merge(self, L, A, B):
+        surv = (set(L) & set(A) & set(B)) | (set(A) - set(L)) | (set(B) - set(L))
+        src = {}
+        for S in (L, A, B):
+            for k, v in S.items(): src.setdefault(k, v)
+        return {u: src[u] for u in surv}
+    def fp(self, s): return frozenset(s.items())
+
 # ---- 10. range-ts: KC's carved ranges WITHOUT paths (tree + ts tiebreak) -----
 # Each node stores only (par, lo, hi): a bounded sub-range carved from its
 # parent's range, above the current head's range (leaving room for future
@@ -594,7 +629,7 @@ class RangeReproject(RangeTS):
         return out
 
 DESIGNS = [Naive(), Tombstoned(), FlatRGA(), RoseTree(), Splice2(),
-           B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey(),
+           B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey(), Path2(),
            RangeTS(), RangeReproject()]
 
 # ================================================================== driver
