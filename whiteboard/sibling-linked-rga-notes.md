@@ -252,3 +252,38 @@ order on the rest, and the PBT reports divergence incidence per workload.
    then the Lean port as a conditioned instance; `oq:linspec` gets its answer — the
    intent spec of a sequence MRDT should be the *observable* order relation, not the
    datatype's private tree.
+
+## 9. Postscript (2026-07-13): the successor design, and a refuted simplification
+
+The rose-tree merge above was later machine-checked **non-RA-linearizable**
+(`Shesha_Rows_Refuted.lean`: an honest 5-event config where the merge splits a
+dead node's cross-branch children around a concurrent sibling, `[3,4,2]`, which
+is no fold). The successor is the **sibling-edge / between-origins design**
+(`sibling-edge-design.pdf`, `sibling-origin-pbt.py`): each node carries
+immutable `after` (= `anc`) **and** `before` origins plus their spines; delete =
+pure remove; read/merge = global integration with deleted ids participating as
+**ghosts**. Python-validated: 0 anomalies / ~37k merges (single + multi epoch),
+RA-linearizable, delete-order-preserving, non-interleaving.
+
+**Refuted simplification — the symmetric splice** (`new_proposal.excalidraw`):
+view the state as two mirrored RGA trees (`after` rooted at `s`, `before` rooted
+at `e`) and let delete *splice in both trees* (after-children climb to
+`after(d)`, before-children to `before(d)`), eliminating ghosts. This fails
+**sequentially**, by a 3-node fooling pair:
+
+    W1: ins a·1(s,e); ins b·2(s,a); ins c·3(a,e) → [b,a,c]; del a ⇒ must read [b,c]
+    W2: ins a·1(s,e); ins b·2(a,e); ins c·3(s,a) → [c,a,b]; del a ⇒ must read [c,b]
+
+Both worlds splice to the **bit-identical** state `{b:(s,e), c:(s,e)}`, so no
+read/tie-break preserves delete-order. The splice erases *which side of the dead
+node each survivor was on* — exactly the bit the ghost reference keeps (under
+pure remove the two worlds' states differ and read correctly; machine-checked).
+Consequence: the ghost id on survivors is the **irreducible** per-deletion
+memory of an order-preserving tombstone-free list; any "fix" that keeps the
+distinguishing bit is a ghost by another name. (W1 is the classic `[b,a,c] del
+a` case: older-first ties fix it, and then W2 — its mirror — breaks; the
+tie-break incoherence is the symptom of the lost bit.)
+
+The two-tree *frame* itself remains the right presentation of the validated
+design (sib = explicit `before`; `s`/`e` duals) — only the spliced delete is
+dead. Next step stays: the Lean port of the ghost-ref design (§8.4).
