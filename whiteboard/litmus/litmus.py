@@ -734,6 +734,26 @@ def stale_fork_verdict(D, lca, a_ops, b_ops, c_ops):
     except Exception as e:
         return {'ERR': type(e).__name__}
 
+def three_branch_verdict(D, lca, b1, b2, b3):
+    """L22: three branches diverge from ONE initial version; merge two, then
+    the pending third (LCA = the initial version each time). Convergence
+    demands all merge topologies read identically."""
+    if D.merge is None: return None
+    try:
+        reads = []
+        for (x, y, z) in ((b1, b2, b3), (b1, b3, b2), (b2, b3, b1)):
+            D.begin()
+            Ls, _ = run_replica(D, D.init(), lca)
+            Xs, _ = run_replica(D, Ls, x)
+            Ys, _ = run_replica(D, Ls, y)
+            Zs, _ = run_replica(D, Ls, z)
+            M1 = D.merge(Ls, Xs, Ys)
+            M2 = D.merge(Ls, M1, Zs)
+            reads.append(D.read(M2))
+        return {'S3topo': all(r == reads[0] for r in reads), 'reads': reads}
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
 def multi_epoch_verdict(D, lca, a1, b1, c2, d2):
     if D.merge is None: return None
     try:
@@ -861,6 +881,15 @@ L20 = ('L20 tie inheritance',
 L21 = ('L21 stale frame',
        [I(1,0)], [I(25,1), I(40,25)], [I(20,1), I(30,20)], [I(50,25)])
 
+# L22: THREE-BRANCH CONVERGENCE (KC's question, 2026-07-13). Three branches
+# diverge from one initial version, each inserting a child under the same
+# anchor (identical name-free carves). Merge two, re-range, then merge the
+# pending third: the re-ranged node carries a promoted number the late
+# brancher never saw, so the merge ORDER leaks into the display. Convergence
+# demands all topologies agree.
+L22 = ('L22 three-branch convergence',
+       [I(1,0)], [I(10,1)], [I(20,1)], [I(30,1)])
+
 # ================================================================== report
 def flag(v, keys):
     if 'ERR' in v: return 'ERR:' + v['ERR']
@@ -950,6 +979,21 @@ def main():
             continue
         def m2(k): return '✓' if v[k] else '✗'
         emit(f'| {D.name} | {m2("S3")} | {m2("S4")} | {m2("S6")} | {m2("DUP")} | {v["out"]} |')
+
+    emit()
+    name, lca, b1, b2, b3 = L22
+    emit(f'== {name} (all merge topologies must read identically) ==')
+    emit('| design | converges? | reads (3 topologies) |')
+    emit('|---|---|---|')
+    for D in DESIGNS:
+        v = three_branch_verdict(D, lca, b1, b2, b3)
+        if v is None: continue
+        if 'ERR' in v:
+            emit(f'| {D.name} | ERR:{v["ERR"]} ||')
+            continue
+        rs = v['reads']
+        show = str(rs[0]) if v['S3topo'] else ' / '.join(map(str, rs))
+        emit(f'| {D.name} | {"✓" if v["S3topo"] else "✗ DIVERGED"} | {show} |')
 
     emit()
     name, lca, a1, b1, c2, d2 = M1

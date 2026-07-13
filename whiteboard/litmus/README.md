@@ -112,10 +112,17 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
   carving in the old coordinates; the merge's re-carve moves its anchor's
   range; the stale number then meets re-carved numbers as siblings. Built to
   refute `range-repro` (the CX-F "numbers born in different computations"
-  shape) — **and it did not**: the LCA-precedence value choice plus the
-  order-preserving re-carve kept all frames ordinally consistent in both
-  attack variants tried. Reprojection is *unrefuted but unproven* — see
-  finding 11.
+  shape) — and it did not: two-branch scenarios let the LCA-precedence keep
+  every sibling comparison inside one frame. The refutation needed L22.
+- **L22 three-branch convergence** (KC's question) — three branches diverge
+  from ONE initial version, each inserting under the same anchor (identical
+  name-free carves); merge two, re-range, then merge the pending third. The
+  re-ranged node carries a promoted number the late brancher never saw, so
+  **the merge order leaks into the display**: `range-repro` reads
+  `[1,20,30,10]` or `[1,30,20,10]` depending on topology — **convergence
+  fails, refuting re-range-at-merge outright**. Bonus catch: `rose(Shesha)`
+  also diverges here (`[1,30,10,20]` on one topology) — the rose merge is
+  not topology-convergent, a defect its own 16k-merge PBT never surfaced.
 
 **Impossibility probes** (two-world; the suite verifies the fooling premise):
 
@@ -160,7 +167,7 @@ Failures only — everything not listed passes:
 |---|---|
 | `tombstoned` | nothing (baseline; pays permanent tombstones) |
 | `flat-RGA` | L1, L2/W1 (**provably fooled** — states identical), L8·L9·L13 (S6/S7), **L18 (d!)**, L14+L15 fooled |
-| `rose(Shesha)` | **L4 (its refutation, reproduced)**, L9 (S6/S7), L14+L15 fooled — but passes L17/L18 (order lives in links) |
+| `rose(Shesha)` | **L4 (its refutation, reproduced)**, **L22 (merge not topology-convergent — new)**, L9 (S6/S7), L14+L15 fooled — but passes L17/L18/L19/L20 (order lives in links) |
 | `splice2` | L2/W2 (**provably fooled**), L4 (S4!), L11 (S4!), L17, L18, L14 fooled |
 | `B2(bare)` | L3a (deep chain), L17, L18, L14/W2 (ghost rank unknowable) |
 | `ghost(spine)` | **L19 — backward runs interleave** (retracting the earlier "passes everything": the battery lacked an h test). The R-chains are in the state; the newest-first read tie walks across them — a read artifact, not a state deficiency (see `ghost-cf`) |
@@ -169,7 +176,7 @@ Failures only — everything not listed passes:
 | `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L19, L14 fooled |
 | `path-key` | **L19 only** (one-sided: no `before` information — needs the two-sided/Fugue form). Passes everything else, including both fooling probes and L17/L18: prefix-ranges are fixed in the causal past of everything inside them, so concurrent operations cannot escape them |
 | `range-ts` | **L20 (the nameless-carving refutation)**, L19, L14 fooled — passes L17/L18 (bounded ranges fix the ceiling escapes without paths) |
-| `range-repro` | L19, L14 fooled; **passes L20 (the re-range works) and L21 (two stale-frame attacks failed)** — but soundness is OPEN: frame-precedence at merge is underspecified (the adapter's LCA-first choice was load-bearing in L21), convergence across merge DAGs is unverified, and the ordinal-consistency invariant is unproven |
+| `range-repro` | **REFUTED — L22: convergence fails across merge topologies** (KC's three-branch scenario). Passes L20/L21, which is why two-branch testing looked clean; the third concurrent branch exposes the frame leak |
 
 **Correction (2026-07-13, same day):** an earlier revision of this file said
 Q-tree "passes S4/d in every case." That was a battery artifact — the battery
@@ -241,20 +248,23 @@ structurally at L18.
    The tie verdict must be inherited subtree-wide, which requires a per-level
    identifier: **the path is forced by pairwise display stability itself**,
    independent of the oracle/strong-list fooling pairs.
-10. **Re-ranging at merge is unrefuted — and uniquely interesting (L20/L21,
-   open).** KC's reprojection (canonically re-carve all ranges at every
-   merge) fixes L20, and two purpose-built stale-frame attacks (L21 and a
-   variant) failed to break it: the order-preserving re-carve plus monotone
-   local carving kept every frame ordinally consistent in the tested cases.
-   If sound, it would be the only known candidate for the *strictly
-   dead-free* corner with **self-compacting precision** (re-carving re-bases
-   coordinates on the live tree, shedding historical depth — the retention
-   rent paid with merge-time mutation instead of memory). Open before any
-   claim: which frame wins when merge inputs disagree (underspecified; the
-   adapter's choice mattered), convergence across merge topologies
-   (criss-cross DAGs untested), and the global invariant "every frame ever
-   minted is ordinally consistent with the canonical order" — pen-and-paper
-   next, per the method.
+10. **Re-ranging at merge is REFUTED (L22 — KC's three-branch question).**
+   Reprojection fixes L20 and survived every *two-branch* attack (L21) —
+   because with two branches the LCA-precedence keeps each sibling
+   comparison inside one frame. Three branches from one version break it:
+   after merging two, the re-carve promotes a node's number; the pending
+   third branch arrives with old-frame numbers; the resulting sibling sort
+   depends on *which two merged first* — **convergence fails**, the fatal
+   class. Consequence: the self-compacting-precision escape from the
+   retention rent is closed. With scalar keys dead (L17/L18), nameless
+   ranges dead (L20), and reprojection dead (L22), the wall is now
+   three-sided: **the ordering guarantees require remembering the dead — as
+   names (paths), relations (spines/ghosts), or entries (tombstones).**
+11. **The rose-tree merge is not topology-convergent (L22, new).** Three
+   same-anchor concurrent inserts merged in different orders read
+   differently (`[1,30,20,10]` vs `[1,30,10,20]`). Sixteen thousand PBT
+   merges and the entire Lean campaign never exercised this shape — found
+   by a 4-insert scenario the moment the right question was asked.
 11. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
    the ancestry *arithmetized at birth* — evaluated eagerly against the state
    the inserter saw. A spine/ghost reference is the same information evaluated

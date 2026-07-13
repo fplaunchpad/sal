@@ -274,6 +274,22 @@
 | range-ts | ✓ | ✓ | ✓ | ✓ | [1, 25, 50, 40, 20, 30] |
 | range-repro | ✓ | ✓ | ✓ | ✓ | [1, 25, 50, 40, 20, 30] |
 
+== L22 three-branch convergence (all merge topologies must read identically) ==
+| design | converges? | reads (3 topologies) |
+|---|---|---|
+| tombstoned | ✓ | [1, 30, 20, 10] |
+| flat-RGA | ✓ | [1, 30, 20, 10] |
+| rose(Shesha) | ✗ DIVERGED | [1, 30, 20, 10] / [1, 30, 10, 20] / [1, 30, 20, 10] |
+| splice2 | ✓ | [1, 10, 20, 30] |
+| B2(bare) | ✓ | [1, 10, 20, 30] |
+| ghost(spine) | ✓ | [1, 30, 20, 10] |
+| ghost-cf | ✓ | [1, 30, 20, 10] |
+| Q-flat | ✓ | [1, 10, 20, 30] |
+| Q-tree | ✓ | [1, 30, 20, 10] |
+| path-key | ✓ | [1, 30, 20, 10] |
+| range-ts | ✓ | [1, 30, 20, 10] |
+| range-repro | ✗ DIVERGED | [1, 20, 30, 10] / [1, 30, 20, 10] / [1, 30, 20, 10] |
+
 == M1 two epochs (S3, S4, S6 across chained merges) ==
 | design | S3 | S4 | S6 | DUP | out |
 |---|---|---|---|---|---|
