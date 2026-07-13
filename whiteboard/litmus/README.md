@@ -19,17 +19,21 @@ integers and double as timestamps.
 
 ## The spec clauses (the observable ladder)
 
-| clause | meaning |
-|---|---|
-| **S1** sequential soundness | a single replica's final read equals the naive-list fold of its script (the "obvious spec": insert-after places immediately right of the anchor; delete removes) |
-| **S2** step display stability | no two consecutive reads of one replica flip a surviving pair |
-| **S3** merge convergence | `merge(L,A,B)` reads equal to `merge(L,B,A)` |
-| **S4** pairwise display stability | no pair displayed by any LCA/branch read flips in the merge read (the spec adopted in the design-record §7¾) |
-| **S5** non-interleaving | designated concurrent runs stay contiguous, in run order |
-| **S6** list-linearizability | the merge read equals the naive fold of **some** causal interleaving of the branch scripts |
-| **S7** strong-list closure | the merge read respects the **transitive closure** of all displayed pairs (Attiya et al.-style; provably unachievable tombstone-free — see L15) |
-| **DUP** | no element duplicated in a merge read |
-| **IDL** | idle-branch identity: `merge(L, A, L) ≃ A` (the CX-F "frame mismatch" essence: an idle branch must contribute nothing) |
+Letters in the last column map to the anomaly-matrix report's columns
+(`whiteboard/anomaly-matrix/anomaly_matrix_report.md`).
+
+| clause | meaning | matrix col. |
+|---|---|---|
+| **S1** sequential soundness | a single replica's final read equals the naive-list fold of its script (the "obvious spec": insert-after places immediately right of the anchor; delete removes) | c |
+| **S2** step display stability | no two consecutive reads of one replica flip a surviving pair | d (seq.) |
+| **S3** merge convergence | `merge(L,A,B)` reads equal to `merge(L,B,A)` | — |
+| **S4** pairwise display stability | no pair displayed by any LCA/branch read flips in the merge read (the spec adopted in the design-record §7¾) | d |
+| **S5** non-interleaving | designated concurrent runs stay contiguous, in run order | g/h |
+| **S6** list-linearizability | the merge read equals the naive fold of **some** causal interleaving of the branch scripts | — |
+| **S7** strong-list closure | the merge read respects the **transitive closure** of all displayed pairs (Attiya et al.-style; provably unachievable tombstone-free — see L15) | e |
+| **DUP** | no element duplicated in a merge read | — |
+| **IDL** | idle-branch identity: `merge(L, A, L) ≃ A` (the CX-F "frame mismatch" essence: an idle branch must contribute nothing) | — |
+| (L14 probe) | fidelity to the tombstoned oracle | f |
 
 **Deliberately excluded: RA-linearizability w.r.t. the datatype's own fold.**
 Own-fold RA-lin certifies convergence to the datatype's own `do_`, so a
@@ -126,19 +130,27 @@ Failures only — everything not listed passes:
 | `B2(bare)` | L3a (deep chain), L14/W2 (ghost rank unknowable) |
 | `ghost(spine)` | **nothing — including both impossibility probes** |
 | `Q-flat` | L7 (interleaving), L14 fooled |
-| `Q-tree` | L9+L13+L15/W1 (all the same open-boundary defect, S6/S7), L14 fooled |
+| `Q-tree` | L9+L13+L15/W1 (S6/S7 only — the licensed e-class, S4 holds; all one open-boundary cause), L14 fooled |
 
 ## Findings the suite produced on day one
 
 1. **It reproduces every known refutation** from named tests: L1 (flat RGA),
    L2 with the state-identity bit proving the splice fooling, L4 = the
    `Shesha_Rows_Refuted` countermodel giving `[3,4,2]` and failing S6/S7.
-2. **Q-tree has an open-boundary defect (new).** The sibling bound
-   "`Q(x) < Q(A)`" is vacuous when the anchor is the *newest* sibling (no A
-   exists); a concurrent front insert then lands key-tied with subtree content
-   and can violate the transitive display closure (L9, L13). The flat rule —
-   bound by the *display successor* — is strictly stronger and passes both.
-   Any Q-tree design must inherit the enclosing boundary instead of ∞.
+2. **The suite locates exactly where Q-tree's licensed e-anomalies live
+   (new).** The sibling bound "`Q(x) < Q(A)`" is vacuous when the anchor is
+   the *newest* sibling (no A exists); keys born in that open interval lose
+   cross-branch comparability, and the merge can contradict the *transitive*
+   closure of displays routed through a dead node (L9, L13, L15/W1 — S6/S7
+   only; **S4 holds in every case**). In the anomaly-matrix vocabulary this
+   is precisely a **column-e (strong-list) failure with column d intact** —
+   the class the adopted spec (§7¾) licenses, and that L15 proves unavoidable
+   for bounded tombstone-free state. It is *not* the Shesha disease: Q-tree's
+   merge is the fold of its own operations under every order (keys are
+   carried on the ops and commute), so own-fold RA-linearizability is
+   untouched. The flat rule — bound by the *display successor*, which always
+   exists — closes these particular e-instances, but pays with interleaving
+   (L7, columns g/h): a rung trade, not a dominance.
 3. **Naive midpoint-fraction keys are unsound (new — caught by M1 only).**
    Two concurrent inserts into one gap pick the same rational; the sub-gap
    between them is then *empty* and a later insert misplaces. Dense keys must
