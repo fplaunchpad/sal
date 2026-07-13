@@ -123,6 +123,21 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
   fails, refuting re-range-at-merge outright**. Bonus catch: `rose(Shesha)`
   also diverges here (`[1,30,10,20]` on one topology) — the rose merge is
   not topology-convergent, a defect its own 16k-merge PBT never surfaced.
+- **L23 rescaled-children topology** — two different merge topologies, each
+  followed by an insert *under a repaired/rescaled node*, then the final
+  merges; both must read identically. `range-repro` fails (again);
+  the local-split designs, paths, ghosts converge.
+- **L24 frame mixing** (KC: "same node, different ranges at merge") —
+  children of ONE node carved against *different frames* of it (stale-wide
+  vs repaired-narrow) meet at a merge; **no deletes anywhere**, yet naive
+  per-node value inheritance flips a co-displayed pair (`range-split`:
+  `(62,61)`). Fixed by **frame normalization** (`range-splitN`): canonical
+  range per node = the LCA's value (any shared node is an LCA node), each
+  input's values rewritten top-down through the affine map input-frame →
+  canonical frame, then the canonical overlap repair. Bonus catches:
+  **`splice2` and `B2` flip four co-displayed pairs each on this
+  delete-free scenario** — their read-time tie resolution is non-monotone
+  under growth, an independent disqualification.
 
 **Impossibility probes** (two-world; the suite verifies the fooling premise):
 
@@ -178,7 +193,10 @@ Failures only — everything not listed passes:
 | `Q-tree` | **L17 (S1/S2 — sequential!), L18 (d on the merged replica)** — the ceiling escape, structural for eager keys + splice; plus L9+L13+L15/W1 (licensed e-class), L19, L14 fooled |
 | `path-key` | **L19 only** (one-sided: no `before` information — needs the two-sided/Fugue form). Passes everything else, including both fooling probes and L17/L18: prefix-ranges are fixed in the causal past of everything inside them, so concurrent operations cannot escape them |
 | `range-ts` | **L20 (the nameless-carving refutation)**, L19, L14 fooled — passes L17/L18 (bounded ranges fix the ceiling escapes without paths) |
-| `range-repro` | **REFUTED — L22: convergence fails across merge topologies** (KC's three-branch scenario). Passes L20/L21, which is why two-branch testing looked clean; the third concurrent branch exposes the frame leak |
+| `range-repro` | **REFUTED — L22 + L23: convergence fails across merge topologies** (KC's three-branch scenario). Passes L20/L21, which is why two-branch testing looked clean; the third concurrent branch exposes the frame leak |
+| `splice2`, `B2` (addendum) | **also fail L24** — four co-displayed pairs flipped on a delete-free, pure-insert scenario: their read-time tie resolution is non-monotone as elements arrive |
+| `range-split` | **L24 (frame mixing — KC's same-node-different-ranges question)**: raw per-node value inheritance mixes affine frames among siblings; plus L19, L14 fooled. Passes L17/L18/L20/L21/L22/L23 |
+| `range-splitN` | **L19 + L14-fooled only** — frame normalization + canonical local repair; clean on L20–L24. UNPROVEN: the frame-coherence + repair-canonicality invariant is the owed theorem; this family has produced a new hole at every probe depth |
 
 **Correction (2026-07-13, same day):** an earlier revision of this file said
 Q-tree "passes S4/d in every case." That was a battery artifact — the battery

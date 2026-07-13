@@ -628,9 +628,87 @@ class RangeReproject(RangeTS):
         carve(0, Fraction(0), Fraction(1))
         return out
 
+
+# ---- 11. range-split: KC's LOCAL overlap-split (naive per-node inheritance) --
+# Merge = survival + climb + verbatim ranges, then a LOCAL repair: connected
+# components of overlapping sibling ranges get their UNION re-split into equal
+# slots in ts order (newest topmost), subtrees rescaled affinely. No global
+# rebalance. Fails L24 (frame mixing): values inherited raw across frames.
+class RangeSplit(RangeTS):
+    name = 'range-split'
+    def merge(self, Lst, Ast, Bst):
+        M = dict(RangeTS.merge(self, Lst, Ast, Bst))
+        return self._repair_all(M)
+    def _repair_all(self, M):
+        def kids_of(p): return [x for x in M if M[x][0] == p]
+        def rescale(root, olo, ohi, nlo, nhi):
+            def mapv(v): return nlo + (v - olo) * (nhi - nlo) / (ohi - olo)
+            st = [root]
+            while st:
+                u = st.pop(); p, lo, hi = M[u]
+                M[u] = (p, mapv(lo), mapv(hi)); st.extend(kids_of(u))
+        def repair(p):
+            ks = sorted(kids_of(p), key=lambda x: M[x][1])
+            comps, cur, cmax = [], [], None
+            for k in ks:
+                lo, hi = M[k][1], M[k][2]
+                if cur and lo < cmax:
+                    cur.append(k); cmax = max(cmax, hi)
+                else:
+                    if cur: comps.append(cur)
+                    cur, cmax = [k], hi
+            if cur: comps.append(cur)
+            for comp in comps:
+                if len(comp) >= 2:
+                    ulo = min(M[k][1] for k in comp); uhi = max(M[k][2] for k in comp)
+                    W, n = uhi - ulo, len(comp)
+                    for r, k in enumerate(sorted(comp, reverse=True)):   # ts desc
+                        _, olo, ohi = M[k]
+                        rescale(k, olo, ohi, uhi - Fraction(r+1)*W/n, uhi - Fraction(r)*W/n)
+            for k in kids_of(p): repair(k)
+        repair(0)
+        return M
+
+# ---- 12. range-splitN: + FRAME NORMALIZATION (the L24 fix) -------------------
+# Frame coherence invariant: each input's view of a subtree is an affine image
+# of the canonical slot, so values pulled back through their own input's
+# parent-frame are frame-independent. Merge: canonical range per node = the
+# LCA's value (any shared node is an LCA node); normalize each input top-down
+# through (input frame -> canonical frame); then the canonical overlap repair.
+class RangeSplitN(RangeSplit):
+    name = 'range-splitN'
+    def merge(self, Lst, Ast, Bst):
+        surv = (set(Lst) & set(Ast) & set(Bst)) | (set(Ast) - set(Lst)) | (set(Bst) - set(Lst))
+        def normalized(I):
+            out = {}
+            def walk(p, plo, phi, ilo, ihi):
+                for c in [x for x in I if I[x][0] == p]:
+                    _, clo, chi = I[c]
+                    nlo = plo + (clo - ilo) * (phi - plo) / (ihi - ilo)
+                    nhi = plo + (chi - ilo) * (phi - plo) / (ihi - ilo)
+                    cl, ch = (Lst[c][1], Lst[c][2]) if c in Lst else (nlo, nhi)
+                    out[c] = (p, cl, ch)
+                    walk(c, cl, ch, I[c][1], I[c][2])
+            walk(0, Fraction(0), Fraction(1), Fraction(0), Fraction(1))
+            return out
+        src = {}
+        for I in (Lst, Ast, Bst):
+            for k, v in normalized(I).items():
+                src.setdefault(k, v)
+        M = {u: src[u] for u in surv}
+        def anc(u):
+            for S in (Lst, Ast, Bst):
+                if u in S: return S[u][0]
+            return 0
+        def climb(p):
+            while p != 0 and p not in surv: p = anc(p)
+            return p
+        M = {u: (climb(M[u][0]), M[u][1], M[u][2]) for u in M}
+        return self._repair_all(M)
+
 DESIGNS = [Naive(), Tombstoned(), FlatRGA(), RoseTree(), Splice2(),
            B2(), Ghost(), GhostCF(), QFlat(), QTree(), PathKey(), Path2(),
-           RangeTS(), RangeReproject()]
+           RangeTS(), RangeReproject(), RangeSplit(), RangeSplitN()]
 
 # ================================================================== driver
 def run_replica(D, base, script):
@@ -925,6 +1003,51 @@ L21 = ('L21 stale frame',
 L22 = ('L22 three-branch convergence',
        [I(1,0)], [I(10,1)], [I(20,1)], [I(30,1)])
 
+
+def l23_verdict(D):
+    """L23 rescaled-children topology: three same-anchor branches; two merge
+    topologies, each followed by an insert under a rescaled/repaired node;
+    the final states of both topologies must read identically."""
+    if D.merge is None: return None
+    try:
+        D.begin()
+        L0,_ = run_replica(D, D.init(), [I(1,0)])
+        B1,_ = run_replica(D, L0, [I(10,1)])
+        B2,_ = run_replica(D, L0, [I(20,1)])
+        B3,_ = run_replica(D, L0, [I(30,1)])
+        M12 = D.merge(L0, B1, B2)
+        X1  = D.apply(D.copy(M12), I(60,20))
+        M13 = D.merge(L0, B1, B3)
+        Y1  = D.apply(D.copy(M13), I(61,30))
+        FP  = D.merge(B1, X1, Y1)
+        Mq  = D.merge(L0, X1, B3)
+        FQ  = D.merge(M13, Mq, Y1)
+        return {'ok': D.read(FP) == D.read(FQ), 'P': D.read(FP), 'Q': D.read(FQ)}
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
+def l24_verdict(D):
+    """L24 frame mixing (KC): children of ONE node carved in DIFFERENT frames
+    of it (wide/stale vs narrow/repaired) meet at a merge; no co-displayed
+    pair may flip. Kills raw per-node value inheritance (range-split)."""
+    if D.merge is None: return None
+    try:
+        D.begin()
+        L0,_ = run_replica(D, D.init(), [I(1,0)])
+        B1,_ = run_replica(D, L0, [I(10,1)])
+        B2,_ = run_replica(D, L0, [I(20,1)])
+        Q,_  = run_replica(D, B1, [I(60,10), I(61,10)])
+        P    = D.merge(L0, B1, B2)
+        P2   = D.apply(D.copy(D.merge(B1, P, Q)), I(62,10))
+        R3,_ = run_replica(D, Q, [I(63,10)])
+        F    = D.merge(Q, P2, R3)
+        disp = pairs_of(D.read(P2)) | pairs_of(D.read(R3)) | pairs_of(D.read(Q))
+        mp = pairs_of(D.read(F))
+        flips = [(x, y) for (x, y) in disp if (y, x) in mp]
+        return {'ok': not flips, 'out': D.read(F), 'flips': flips}
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
 # ================================================================== report
 def flag(v, keys):
     if 'ERR' in v: return 'ERR:' + v['ERR']
@@ -1044,7 +1167,26 @@ def main():
         def m(k): return '✓' if v[k] else '✗'
         emit(f'| {D.name} | {m("S3")} | {m("S4")} | {m("S6")} | {m("DUP")} | {v["out"]} |')
 
+
+    for tname, fn in (('L23 rescaled-children topology', l23_verdict),
+                      ('L24 frame mixing', l24_verdict)):
+        emit()
+        emit(f'== {tname} ==')
+        emit('| design | verdict | detail |')
+        emit('|---|---|---|')
+        for D in DESIGNS:
+            v = fn(D)
+            if v is None: continue
+            if 'ERR' in v:
+                emit(f'| {D.name} | ERR:{v["ERR"]} ||')
+                continue
+            det = v.get('out') or f"P {v['P']} / Q {v['Q']}"
+            if not v['ok'] and 'flips' in v: det = f"FLIPPED {v['flips']} -> {v['out']}"
+            if not v['ok'] and 'P' in v: det = f"P {v['P']} / Q {v['Q']}"
+            emit(f'| {D.name} | {"✓" if v["ok"] else "✗"} | {det} |')
+
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+
                            'litmus_matrix.md'), 'w') as f:
         f.write('\n'.join(md) + '\n')
 
