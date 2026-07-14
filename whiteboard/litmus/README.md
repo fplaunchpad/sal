@@ -406,11 +406,57 @@ the full litmus battery AND the randomized DAG sweep. Superseded by finding
 layers of one design — path-2's identity chains arbitrate, the delta tree's
 geometry renders.**
 
+## Layer tests beyond the merge battery (L26, L27)
+
+The pre-Lean de-risk campaign (tasks 68–71) produced three refutation-backed
+countermodels that do NOT fit the `Design` interface above — because they
+test layers the merge battery cannot see. They live in their executable
+homes; this section is their index.
+
+**L26 — op-replay canonicality** (home: `replay.py`, self-checking). The
+merge battery applies intentions to a replica's own state and merges; it
+never applies a FOREIGN op. So it is blind to the op-application layer: the
+pure carried-slice replay rule R0 shares v3's merge and is therefore
+**indistinguishable from v3 by the entire L1–L25 battery and the DAG PBT**
+— yet it is wrong (task 68). The countermodels:
+- **L26a = CE1 (3 ops)**: A `ins1@0, ins2@0` ∥ B `ins3@0` → R0 replay
+  `[2,3,1]` vs canonical `[3,2,1]`. R0 commutes perfectly (state = function
+  of the op set, 48/48 linearizations) and converges to the WRONG order:
+  geometry minted against one sibling set is not canonical against another.
+  Convergence was never the hard property; canonicality is.
+- **L26b = CE2 (4 ops)**: kills the carve-above-on-collision repair (the
+  disease is not collision; deleting the collided node leaves crossed
+  numbers).
+- **L26c = CE3 (4 ops)**: latent tie + fold — kills insert-only repair; a
+  delete's fold can surface a non-canonical juxtaposition no insert saw.
+The rule that survives all three (R2): EVERY op leaves its touched sibling
+level canonical wrt the ledger. Any design whose op application trusts
+mint-time geometry fails L26.
+
+**L27 — GC-policy soundness** (home: `measure.py`). Parameterized by
+(design, pruning policy); lockstep the pruned variant against unpruned.
+Countermodel (6 steps): `ins1; ins2←1; del1; full sync` (the delete now
+causally STABLE everywhere) `; drop led[1]; ins3←2; merge` → the chain walk
+breaks: survivor 2 is live, its birth chain passes through the stably
+deleted 1. Verdicts: per-replica REACHABILITY pruning sound (inductive:
+live chains ⊆ ledger; merge unions re-supply); causal-stability-alone
+UNSOUND (31/40 natural failure) and adds nothing over reachability. The
+ledger is a GC'd heap (roots = live nodes), not a tombstone set.
+
+**New infrastructure from the same campaign**: the small-string churn
+regime (`equiv_stress.py`: live length pinned 6–10, hundreds of rounds,
+~332k legal merges — maximal dead-chain nesting per live char); the
+negative-control discipline (validate any new harness by feeding it a
+known-refuted design and demanding it bite, plus a delta-debug shrinker);
+and the width+2 precision law (post-merge max denominator bits = max
+sibling width + 2, 3,241/3,241 merges) as a PBT-assertable invariant.
+
 ## Adding a design / a test
 
 New design: subclass `Design` (four methods + `fp` for fooling-pair state
 identity), append to `DESIGNS`. New anomaly: add the history to the scenario
 tables with a one-line provenance comment — and if it came from a refutation,
-cite the machine-checked artifact.
+cite the machine-checked artifact. Op-layer and GC-policy anomalies go to
+L26/L27's executable homes (`replay.py`, `measure.py`) and get indexed here.
 
 Every test here is a candidate Lean SPOT for whichever design gets ported.
