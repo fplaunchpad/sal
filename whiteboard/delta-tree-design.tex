@@ -29,8 +29,9 @@
 }
 
 \title{\bfseries The Delta Tree\\[2pt]
-\large A strictly dead-free replicated list with relative ranges, isometric deletion,\\
-and a local overlap-splitting merge --- design, litmus results, and refutation}
+\large A replicated list with relative ranges, isometric deletion, and an
+identity-arbitrated merge:\\ the design, the refutation of its strictly
+dead-free merge, and the corrected design (v3)}
 \author{Sal / FP Launchpad --- KC + Claude}
 \date{2026-07-14}
 
@@ -55,20 +56,31 @@ the full litmus battery (L1--L25) against the published tombstoned RGA and
 the proved tombstone-free RGA, and state the anomaly contract. We then
 report the verdict of randomized property-based testing over a general MRDT
 execution model (many replicas, random merges under the LCA discipline):
-\textbf{the design is refuted} --- battery-clean, including every named
-countermodel that killed its eight predecessors, yet flipping co-displayed
-pairs at random-DAG scale (43/120 executions). We extract and minimize the
-countermodel (now litmus L25), identify the mechanism (\emph{fold-verdict
-erasure}: a dead node's timestamp is load-bearing for repair verdicts it
-participated in), refute the one principled repair as well
-(\emph{source-consistent folding}, killed by a second mechanism,
-\emph{repair non-locality}), and draw the structural conclusion: the three
-properties \{strictly dead-free, pairwise display stability, topology
-convergence\} now each have a machine-checked witness for every pairwise
-combination and eight failed attempts at the triple. What survives of the
-design --- relative deltas as a representation layer, and the isometric fold
-as stability-gated compaction --- survives \emph{below} an immutable-position
-specification, not as a rival to one.
+\textbf{the strictly dead-free merge is refuted} --- battery-clean,
+including every named countermodel that killed its eight predecessors, yet
+flipping co-displayed pairs at random-DAG scale (43/120 executions). We
+extract and minimize the countermodel (now litmus L25), identify the
+mechanism (\emph{fold-verdict erasure}: a dead node's timestamp is
+load-bearing for repair verdicts it participated in), refute the one
+principled repair as well (\emph{source-consistent folding}, killed by a
+second mechanism, \emph{repair non-locality}), and draw the structural
+conclusion: the three properties \{strictly dead-free, pairwise display
+stability, topology convergence\} each have a machine-checked witness for
+every pairwise combination and eight failed attempts at the triple.
+Section~\ref{sec:v3} then gives the correction: the refutation is a
+refutation of the \emph{merge}, not the design. Comparing the failing
+executions against \texttt{path-2}, the surviving immutable-key design,
+shows the reconciling information was in the state all along --- the
+\emph{birth-parent chains} --- and the merge was arbitrating from the
+geometry instead, which its own repairs perturb. \texttt{delta-tree-v3}
+keeps every local operation verbatim, adds a one-pointer-per-node birth
+ledger, and rebuilds the merge on three invariants (arbitrate from identity
+only; geometry is a rendering; render/carve compatibility). It is
+machine-checked clean on the full battery (except one-sided L19, shared by
+every one-sided design) and on the randomized DAG model at 120/120 and
+300/300 executions. The triangle stands --- v3 pays it one immutable parent
+id per node, consulted only at merges --- and the two surviving designs
+turn out to be layers of one: identity for deciding, geometry for reading.
 \end{abstract}
 
 \section{The design}
@@ -164,8 +176,12 @@ Nothing observable moves, and no trace of $1$ remains.}
 \label{fig:fold}
 \end{figure}
 
-\section{The merge}
+\section{The merge, strictly dead-free (as originally specified)}
 
+This is the merge as first designed --- arbitrating from geometry, keeping
+the state strictly dead-free. It is the component \S\ref{sec:refute}
+refutes and \S\ref{sec:v3} replaces; it is retained here in full because
+the refutation is only meaningful against the faithful artifact.
 $\mathrm{merge}(\lca, A, B)$, $\lca$ the least common ancestor:
 
 \begin{enumerate}
@@ -209,26 +225,28 @@ subtree, it would have moved with it.
 \label{sec:litmus}
 
 The suite (\texttt{whiteboard/litmus/}, tests L1--L25 with provenance) ran
-the faithful implementation. ``RGA$_\dagger$'' = the published, tombstoned
-RGA; ``RGA$_{tf}$'' = the repo's \emph{proved} tombstone-free RGA.
+the faithful implementation. ``strict'' = the strictly dead-free merge of
+\S2; ``v3'' = the corrected design of \S\ref{sec:v3};
+``RGA$_\dagger$'' = the published, tombstoned RGA; ``RGA$_{tf}$'' = the
+repo's \emph{proved} tombstone-free RGA.
 
 \begin{center}\small
-\begin{tabular}{@{}lccc l@{}}
+\begin{tabular}{@{}lcccc l@{}}
 \toprule
-test & delta tree & RGA$_\dagger$ & RGA$_{tf}$ & what it detects \\
+test & strict & v3 & RGA$_\dagger$ & RGA$_{tf}$ & what it detects \\
 \midrule
-L1 delete-reorder            & \checkmark & \checkmark & $\times$ & sequential splice re-sort \\
-L2 splice fooling pair       & \checkmark & \checkmark & $\times$ & delete erases the side bit \\
-L3a/b deep delete-runs       & \checkmark & \checkmark & \checkmark & transitive testimony loss \\
-L4 criss-cross split         & \checkmark & \checkmark & \checkmark & the rose tree's refutation \\
-L7 concurrent runs (g)       & \checkmark & \checkmark & \checkmark & forward interleaving \\
-L17/L18 ceiling escapes      & \checkmark & \checkmark & \checkmark$/\times$ & eager-scalar staleness \\
-L19 backward runs (h)        & $\times$   & $\times$   & $\times$ & prepend interleaving (one-sided) \\
-L20 tie inheritance          & \checkmark & \checkmark & $\times$ & nameless carving \\
-L21/L22/L23 topology         & \checkmark & \checkmark & \checkmark & re-ranging / frame leaks \\
-L24 frame mixing             & \checkmark & \checkmark & \checkmark & cross-frame siblings \\
-\textbf{L25 fold-verdict}    & $\boldsymbol{\times}$ & \checkmark & $\times$ & \textbf{this design's countermodel} \\
-DAG PBT (\S\ref{sec:refute}) & $\boldsymbol{\times}$ (43/120) & \checkmark & $\times$ & random branches and merges \\
+L1 delete-reorder            & \checkmark & \checkmark & \checkmark & $\times$ & sequential splice re-sort \\
+L2 splice fooling pair       & \checkmark & \checkmark & \checkmark & $\times$ & delete erases the side bit \\
+L3a/b deep delete-runs       & \checkmark & \checkmark & \checkmark & \checkmark & transitive testimony loss \\
+L4 criss-cross split         & \checkmark & \checkmark & \checkmark & \checkmark & the rose tree's refutation \\
+L7 concurrent runs (g)       & \checkmark & \checkmark & \checkmark & \checkmark & forward interleaving \\
+L17/L18 ceiling escapes      & \checkmark & \checkmark & \checkmark & \checkmark$/\times$ & eager-scalar staleness \\
+L19 backward runs (h)        & $\times$   & $\times$   & $\times$   & $\times$ & prepend interleaving (one-sided) \\
+L20 tie inheritance          & \checkmark & \checkmark & \checkmark & $\times$ & nameless carving \\
+L21/L22/L23 topology         & \checkmark & \checkmark & \checkmark & \checkmark & re-ranging / frame leaks \\
+L24 frame mixing             & \checkmark & \checkmark & \checkmark & \checkmark & cross-frame siblings \\
+\textbf{L25 fold-verdict}    & $\boldsymbol{\times}$ & \checkmark & \checkmark & $\times$ & \textbf{the strict merge's countermodel} \\
+DAG PBT (\S\ref{sec:refute}) & $\boldsymbol{\times}$ (43/120) & \checkmark (120/120, 300/300) & \checkmark & $\times$ & random branches and merges \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -239,9 +257,10 @@ sequential soundness (c), pairwise display stability (d),
 forward non-interleaving (g) --- with \emph{licensed}: strong-list (e) and
 oracle fidelity (f), both provably impossible tombstone-free, and backward
 runs (h), the shared one-sided limitation. The battery certifies everything
-above the line. The two rows below the line are the subject of the next
-section: \textbf{the claimed column d fails}, in a shape no prior test
-exercised.
+above the line. The two rows below the line are the subject of the next two
+sections: for the strict merge \textbf{the claimed column d fails}, in a
+shape no prior test exercised (\S\ref{sec:refute}); the corrected merge
+restores it at the cost of strictness (\S\ref{sec:v3}).
 
 \section{The execution model, and the refutation}
 \label{sec:refute}
@@ -258,7 +277,7 @@ every replica, no pair is ever shown in both orders), \textbf{CONV}
 (survival correctness). 120 executions, 4 replicas, 8 rounds.
 
 \paragraph{Verdict.} \textbf{43 of 120 executions flip a co-displayed
-pair.} The battery-clean design fails at random-DAG scale --- in shapes
+pair.} The battery-clean strict merge fails at random-DAG scale --- in shapes
 involving a repair, a delete of a repaired node, and a merge with a branch
 that had witnessed the repair's verdict.
 
@@ -323,9 +342,126 @@ verdict --- decides: $[4, 10]$. Re-slotting inside one family perturbs
 relations outside it; verdicts encoded in geometry are not stable under
 other verdicts.
 
+\section{The corrected design: identity-arbitrated merge (v3)}
+\label{sec:v3}
+
+The refutation of \S\ref{sec:refute} was answered by a conjecture (KC):
+\emph{the design is almost right; the merge is not observing some
+invariants} --- with a directive: compare \texttt{path-2}'s execution with
+this design's at a flipping trace, and ask whether the information needed
+to reconcile the order is \emph{in the state}. It is.
+
+\paragraph{The diagnosis.} At a flipping PBT execution, the offending pair
+is first co-displayed at an insert under a node $d$ and flips at
+$\del(d)$. \texttt{path-2} holds the order through the identical history
+because its key for the newcomer is the immutable ancestor chain
+\emph{through the dead $d$} --- position data that no repair, delete, or
+merge ever rewrites. The delta-tree state at the same point contains the
+same information: every node's birth parent is known the moment it is
+created, and the chain of birth parents \emph{is} the one-sided path key.
+But none of the refuted merges ever consulted it. Every one of them
+arbitrated sibling order from \emph{geometry} --- current fractions and
+folded frames --- and geometry is exactly what the merges' own repairs
+perturb (mechanism 2) and what folding through the wrong frame corrupts
+(mechanism 1). The correction separates the two roles the fractions had
+been forced to play.
+
+\paragraph{The three invariants.} Violated by every merge of
+\S\ref{sec:refute}; observed by v3:
+\begin{enumerate}
+\item \textbf{Arbitration from identity only.} Every order decision at a
+merge is computed from immutable birth-parent chains --- never from current
+fractions, never through frame-mixed folds. The chains subsume both refutation
+mechanisms: a dead node's timestamp persists in its descendants' chains, so
+every verdict it participated in remains derivable, identically, everywhere
+(the L25 cure); and chains never move, so verdicts cannot be re-decided by
+drifted geometry at causally disjoint merges (the non-locality cure).
+\item \textbf{Geometry is a rendering.} The merge re-derives all fractions,
+realizing the canonical order; reads remain purely geometric and never
+consult the chains. Between merges the geometry is authoritative for
+\emph{display}; it is never authoritative for \emph{arbitration}.
+\item \textbf{Render/carve compatibility.} The re-render reproduces the
+sequential carve's geometry --- oldest lowest, quarter slices, headroom
+above --- so a post-merge state is indistinguishable from a sequentially
+carved one, and the next local carve behaves exactly as \S1 specifies. (An
+intermediate fix violated only this invariant: its render filled each
+parent's space to $1$, the next carve minted a zero-width slice, and a
+lo-tie flipped a pair --- 2/120 executions. Merge output must be in the
+image of the local operations.)
+\end{enumerate}
+
+\paragraph{The components.} Only the state gains a field and the merge is
+rebuilt; \textbf{every local operation of \S1 is verbatim}.
+
+\begin{itemize}
+\item \textbf{State.} $\sigma = (\rho, \Lambda)$: the \emph{rendering}
+$\rho : t \mapsto (\mathrm{par}, (lo,hi), \mathrm{char})$ exactly as \S1
+(live nodes only), plus the \emph{ledger}
+$\Lambda : t \mapsto \mathrm{birth\ parent}$ --- written once at insert,
+never mutated, retained through delete. Retention scope: an entry is needed
+only while some survivor's chain passes through it (live-reachable), the
+same stability-gated compaction as the isometric fold.
+\item \textbf{init}: $(\varnothing, \varnothing)$.
+\item $\ins(x \leftarrow a)$: carve into $\rho$ as in \S1;
+$\Lambda[x] := a$.
+\item $\del(d)$: isometric fold in $\rho$ as in \S1; $\Lambda$ untouched.
+\item \textbf{read}: geometric DFS on $\rho$, descending ranges;
+$\Lambda$ is never read.
+\item $\mathrm{merge}(\lca, A, B)$:
+\begin{enumerate}
+  \item \emph{Ledger union}: $\Lambda' = \Lambda_\lca \cup \Lambda_A \cup
+        \Lambda_B$ --- entries are immutable, so the union is
+        conflict-free.
+  \item \emph{Survival}: OR-set, as before.
+  \item \emph{Live parent}: each survivor re-parents to its nearest
+        surviving ancestor, found by walking $\Lambda'$ --- the fold's
+        re-parenting, computed from identity instead of frames.
+  \item \emph{Canonical order}: per live parent, children sort by their
+        \textbf{birth chains} (the root path in the immutable birth tree):
+        compare per level, newest timestamp first; an ancestor's chain is
+        a prefix of its descendant's and sorts first. Equivalently: the
+        canonical order is \emph{the RGA order of the birth tree,
+        restricted to survivors}.
+  \item \emph{Render}: re-derive all fractions realizing the canonical
+        order by replaying the sequential carve --- children bottom-to-top,
+        oldest first, each taking $(b + \tfrac{w}{4},\, b + \tfrac{w}{2})$,
+        $w = 1 - b$ (invariant 3). Recurse.
+\end{enumerate}
+\end{itemize}
+
+\paragraph{L25, resolved.} At the final merge the survivors are
+$\{10, 22, 16\}$ with live parent $0$. Chains: $10$ is root-born;
+$22$ and $16$ were born under the dead $6$, so their chains run
+\emph{through} $6$. Comparing $10$ with $22$ at the first level compares
+the timestamps $10$ vs.\ $6$ --- the dead node's timestamp, persisting in
+its heirs' chains, keeps deciding, and $10$ wins exactly as the $M_1$
+repair ruled. Within $6$'s heirs, $22 > 16$ puts $22$ first. Display:
+$[10, 22, 16]$ --- both previously co-displayed pairs preserved. The
+arithmetic that produced the flip
+(fig.~\ref{fig:l25}) is still run --- but only to \emph{render} the order
+the chains already settled, never to decide it.
+
+\paragraph{Verdict (machine-checked).} \texttt{delta-tree-v3}
+(\texttt{litmus/delta\_tree.py}) is \textbf{clean on the full battery} ---
+including L25 and every countermodel of \S\ref{sec:litmus}, except
+one-sided L19, as every one-sided design --- \textbf{and clean on the
+randomized DAG model at 120/120} (4 replicas, 8 rounds) \textbf{and
+300/300} (6 replicas, 12 rounds), plus a fresh-seed 60/60.
+
+\paragraph{What v3 pays the triangle.} The ledger retains dead identifiers
+at live-reachable scope, so v3 is not \emph{strictly} dead-free --- the
+triangle of \S\ref{sec:refute} stands, and this is its toll. But the toll
+is the minimum the impossibility demands: one immutable parent id per node;
+no slot data, no materialized paths, no per-level ranks; nothing consulted
+at read time. And the two surviving designs collapse into one, layered:
+the birth chains are \texttt{path-2}'s one-sided key stored as a parent
+pointer per node instead of a materialized path; the delta tree is its
+runtime --- $O(1)$ isometric deletes and geometric reads between merges.
+\emph{Identity for deciding, geometry for reading.}
+
 \section{Conclusions}
 
-\paragraph{The design is refuted, and the refutation is structural.} Eight
+\paragraph{The strict merge is refuted, and the refutation is structural.} Eight
 variants of the mutation family (scalar keys, nameless ranges, global
 re-ranging, local splits with and without normalization, absolute and
 relative storage, LCA and source-consistent folds) have now produced eight
@@ -336,76 +472,43 @@ data that guarantees this is immutable data that names the participants,
 including the dead ones.}
 
 \paragraph{The triangle.} Every pairwise combination of the three desiderata
-now has a machine-checked witness; the triple has eight failed attempts:
+has a machine-checked witness; the triple has eight failed attempts:
 \begin{center}
 \begin{tikzpicture}
   \node[font=\small\bfseries] (A) at (90:2.1)  {strictly dead-free};
   \node[font=\small\bfseries] (B) at (210:2.6) {pairwise stability (d)};
   \node[font=\small\bfseries] (C) at (330:2.6) {topology convergence};
   \draw[black!50] (A) -- (B) node[midway, sloped, above, lab] {rose tree (fails L22)};
-  \draw[black!50] (B) -- (C) node[midway, sloped, below, lab] {path-2 / ghost / RGA$_\dagger$ (retain names)};
-  \draw[black!50] (A) -- (C) node[midway, sloped, above, lab] {delta tree (fails L25)};
+  \draw[black!50] (B) -- (C) node[midway, sloped, below, lab] {path-2 / ghost / RGA$_\dagger$ / \textbf{v3} (retain dead names)};
+  \draw[black!50] (A) -- (C) node[midway, sloped, above, lab] {strict delta tree (fails L25)};
   \node[font=\scriptsize, text=black!60, align=center] at (0,-0.25) {conjecture:\\ the triple is\\ unachievable};
 \end{tikzpicture}
 \end{center}
+v3 does not contradict the triangle; it sits on its bottom edge with the
+smallest known payment --- one immutable parent id per node, at
+live-reachable scope, never consulted by reads.
 
-\paragraph{What survives.} Two of the design's ideas are correct and
-permanent, one level down the stack: \emph{(i)} parent-relative deltas are
-the right \emph{representation} of any position tree --- $O(1)$ subtree
-transport, structural sharing, lazy absolute sums --- provided the
-\emph{semantics} above them is an immutable-position specification
-(path-2), whose per-level $(\mathrm{side}, \mathrm{uid})$ data is exactly
-the retained name the triangle demands; \emph{(ii)} the isometric fold is
-the right \emph{compaction}: sound precisely when gated on causal
-stability, where ``everyone has seen the delete'' certifies that no
-verdict involving the dead node can ever be contested again --- the same
-condition under which the L25 mechanism is disarmed. The delta tree is not
-a rival to the immutable-position design; it is its runtime.
+\paragraph{What stands.} The design, with its merge rebuilt on the three
+invariants of \S\ref{sec:v3} --- and, one level down, its two permanent
+ideas: \emph{(i)} parent-relative deltas are the right
+\emph{representation} of a position tree --- $O(1)$ subtree transport,
+structural sharing, lazy absolute sums --- now with the immutable-position
+\emph{semantics} supplied by the design's own birth chains rather than an
+external key scheme; \emph{(ii)} the isometric fold is the right
+\emph{compaction}: sound precisely when gated on causal stability, where
+``everyone has seen the delete'' certifies that no verdict involving the
+dead node can be contested again --- the condition under which both the
+L25 mechanism and the ledger's retention are simultaneously discharged.
+For mechanization, the layering suggests the proof structure directly:
+the chains are the specification (canonical order = RGA order of the
+immutable birth tree, restricted to survivors --- convergence is
+determinism of a function of the event set), and the rendering is a
+refinement whose obligation is exactly invariants 2 and 3.
 
 \paragraph{Provenance.} Every table cell and number in this note is
 reproduced by \texttt{whiteboard/litmus/}: \texttt{litmus.py} (L1--L25),
-\texttt{pbt.py} (the execution model), \texttt{delta\_tree.py} (the
-faithful implementation, both fold variants, and the battery/PBT runner).
-
-
-\section*{Postscript (same day): the corrected merge --- the design stands}
-
-KC's response to \S\ref{sec:refute}: \emph{``the design is almost right; the
-merge is not observing some invariants.''} Correct, twice over. Comparing the
-delta tree's and path-2's executions at a flipping PBT trace showed the
-state's \emph{identity} data (birth-parent chains) sufficed to reconcile
-every order, while the merge was consulting --- and corrupting --- the
-\emph{geometric} data instead. Three invariants, violated by every merge in
-\S\ref{sec:refute} and observed by the corrected one:
-
-\begin{enumerate}
-\item \textbf{Arbitration from identity only.} Every order decision at a
-merge is computed from immutable birth-parent chains (per level: newest
-timestamp first; parents before their subtrees) --- never from current
-fractions, which repairs perturb (mechanism 2), and never through
-frame-mixed folds (mechanism 1). The chains subsume both mechanisms: a dead
-node's timestamp persists in its descendants' chains, so verdicts it
-participated in remain derivable.
-\item \textbf{Geometry is a rendering.} The merge re-derives all fractions,
-realizing the canonical order; reads remain purely geometric and never
-consult the chains.
-\item \textbf{Render/carve compatibility.} The re-render reproduces
-sequential-carve geometry (oldest lowest, quarter slices, headroom above),
-making post-merge states indistinguishable from sequentially carved ones ---
-the residual failures of an intermediate fix were zero-width slices minted
-after a render that filled a parent's space completely.
-\end{enumerate}
-
-\noindent\textbf{Verdict (machine-checked)}: the corrected design ---
-\emph{KC's delta tree as the runtime (unchanged local operations: carve,
-isometric fold; geometric reads), with a birth-parent ledger as the
-merge-time arbitration substrate} --- is \textbf{clean on the full battery}
-(except one-sided L19, as every one-sided design) \textbf{and on the DAG PBT
-at 120/120 and 300/300} (6 replicas, 12 rounds). The triangle stands ---
-the ledger retains dead identifiers at live-reachable scope, so the design
-is not \emph{strictly} dead-free --- but the retention is the minimum the
-triangle demands: one parent id per node, no slot data, no materialized
-paths, nothing consulted at read time. The delta tree and the path are not
-rivals but layers: geometry for reading, identity for deciding.
+\texttt{pbt.py} (the execution model), \texttt{delta\_tree.py} (the strict
+design, both fold variants, \texttt{DeltaTreeV3}, and the battery/PBT
+runner).
 
 \end{document}
