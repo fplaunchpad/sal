@@ -126,9 +126,22 @@ itself, not the function-based map), `eInsert` (sorted insertion),
 `E Γ : ConditionedMRDTSig` (rc = Either, Inv/applicable trivial per the
 queue convention), first mem-lemmas.
 
+§2 DONE (sorted algebra + canonical-form extensionality, builds clean):
+`ESorted` (strictly desc by key); `mem_eInsert`/`eInsert_sorted`/
+`eUpdate_sorted` (fold steps stay sorted); **`esorted_ext`** — strictly
+sorted lists with the same members are EQUAL (why the sorted list is a
+canonical state); `mem_eMerge2`/`eMerge2_sorted` (functional induction via
+`eMerge2.induct`); `eMergeL_sorted` (merge of canonical inputs is
+canonical, given key-injectivity — supplied on chain-generated states by
+`coordOf_inj`).
+
 OWED (§-numbers from the queue file):
-- §2 canonical list of an enumeration: `eCanonList ρ` = sorted records of
-  live inserts (ins minus later dels); mem/perm helpers.
+- §3 fold membership characterization: under `EWf` (ins ids pairwise
+  distinct; every del target has a prior ins), `r ∈ fold ρ ↔ (its ins ∈ ρ)
+  ∧ (no del of r.1 ∈ ρ)` — snoc induction mirroring `qTags_fold_sub`; then
+  **`e_fold_canon`** = `esorted_ext` + fold-sorted + fold-mem: any two WF
+  enumerations of one event set fold to the SAME state (no separate
+  `eCanonList` formula needed — extensionality replaces it).
 - §3 `EWf` (fresh nonzero ins ids; del targets previously inserted;
   accurate prefixes — reuse chainState vocabulary) + **`e_fold_canon`**:
   fold of any well-formed enumeration = `eCanonList` — THE canonicity

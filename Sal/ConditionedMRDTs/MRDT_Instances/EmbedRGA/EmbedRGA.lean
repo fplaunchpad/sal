@@ -150,4 +150,182 @@ theorem mem_eIds_update_del {Γ : OrderedPrefixCode} {s : EState} {ts r x t : �
   · rintro ⟨⟨p, hp, rfl⟩, hne⟩
     exact ⟨p, List.mem_filter.mpr ⟨hp, by simpa using hne⟩, rfl⟩
 
+/-! ## §2  Sortedness and canonical-form extensionality
+
+The state is canonical because it is strictly sorted: strictly-sorted lists
+with the same members are EQUAL (`esorted_ext`). Everything the fold and the
+merge produce stays sorted, so fold-canonicity (§3) reduces to a membership
+characterization. -/
+
+open Sal.EmbedRGA (keyLt_trans keyLt_asymm keyLt_total keyLt_irrefl)
+
+/-- Strictly descending by key — the canonical form. -/
+def ESorted (s : EState) : Prop :=
+  s.Pairwise (fun r r' => keyLt (key r'.2.2) (key r.2.2) = true)
+
+theorem mem_eInsert {r x : ERec} : ∀ {s : EState},
+    x ∈ eInsert r s ↔ x ∈ s ∨ x = r
+  | [] => by simp [eInsert]
+  | y :: ys => by
+      by_cases h : keyLt (key y.2.2) (key r.2.2) = true
+      · simp only [eInsert, if_pos h, List.mem_cons]
+        tauto
+      · simp only [eInsert, if_neg h, List.mem_cons]
+        rw [mem_eInsert (s := ys)]
+        tauto
+
+theorem eInsert_sorted {r : ERec} : ∀ {s : EState}, ESorted s →
+    (∀ x ∈ s, key x.2.2 ≠ key r.2.2) → ESorted (eInsert r s)
+  | [], _, _ => List.pairwise_singleton _ _
+  | y :: ys, hs, hne => by
+      rcases List.pairwise_cons.mp hs with ⟨hy, hys⟩
+      by_cases h : keyLt (key y.2.2) (key r.2.2) = true
+      · rw [show eInsert r (y :: ys) = r :: y :: ys from by
+          simp [eInsert, h]]
+        refine List.pairwise_cons.mpr ⟨?_, hs⟩
+        intro z hz
+        rcases List.mem_cons.mp hz with rfl | hz'
+        · exact h
+        · exact keyLt_trans (hy z hz') h
+      · rw [show eInsert r (y :: ys) = y :: eInsert r ys from by
+          simp [eInsert, h]]
+        refine List.pairwise_cons.mpr ⟨?_, ?_⟩
+        · intro z hz
+          rcases mem_eInsert.mp hz with hz' | rfl
+          · exact hy z hz'
+          · rcases keyLt_total (hne y List.mem_cons_self) with h' | h'
+            · exact absurd h' (by simpa using h)
+            · exact h'
+        · exact eInsert_sorted hys
+            (fun x hx => hne x (List.mem_cons_of_mem _ hx))
+
+theorem eUpdate_sorted {Γ : OrderedPrefixCode} {s : EState} {o : Op EOp}
+    (hs : ESorted s)
+    (hne : ∀ x ∈ s, key x.2.2 ≠ key (eCoord Γ o)) :
+    ESorted (eUpdate Γ s o) := by
+  obtain ⟨ts, r, op⟩ := o
+  cases op with
+  | del x => exact List.Pairwise.filter _ hs
+  | ins e π a =>
+      simp only [eUpdate]
+      by_cases hmem : ts ∈ eIds s
+      · rw [if_pos hmem]; exact hs
+      · rw [if_neg hmem]
+        exact eInsert_sorted hs (by
+          intro x hx
+          have := hne x hx
+          simpa [eCoord] using this)
+
+/-- **Canonical-form extensionality**: strictly-sorted lists with the same
+members are equal. This is why the sorted list is a canonical state: any two
+routes to the same record set produce the identical list. -/
+theorem esorted_ext : ∀ {s s' : EState}, ESorted s → ESorted s' →
+    (∀ x, x ∈ s ↔ x ∈ s') → s = s'
+  | [], [], _, _, _ => rfl
+  | [], y :: ys, _, _, hmem => by
+      exact absurd ((hmem y).mpr List.mem_cons_self) (by simp)
+  | x :: xs, [], _, _, hmem => by
+      exact absurd ((hmem x).mp List.mem_cons_self) (by simp)
+  | x :: xs, y :: ys, hs, hs', hmem => by
+      rcases List.pairwise_cons.mp hs with ⟨hx, hxs⟩
+      rcases List.pairwise_cons.mp hs' with ⟨hy, hys⟩
+      have hxy : x = y := by
+        rcases List.mem_cons.mp ((hmem x).mp List.mem_cons_self) with h | h
+        · exact h
+        · rcases List.mem_cons.mp ((hmem y).mpr List.mem_cons_self) with h' | h'
+          · exact h'.symm
+          · have h1 := hy x h
+            have h2 := hx y h'
+            rw [keyLt_asymm h1] at h2
+            exact Bool.noConfusion h2
+      subst hxy
+      have htails : ∀ z, z ∈ xs ↔ z ∈ ys := by
+        intro z
+        constructor
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mp (List.mem_cons_of_mem _ hz))
+            with rfl | h
+          · exact absurd (hx z hz) (by rw [keyLt_irrefl]; simp)
+          · exact h
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mpr (List.mem_cons_of_mem _ hz))
+            with rfl | h
+          · exact absurd (hy z hz) (by rw [keyLt_irrefl]; simp)
+          · exact h
+      rw [esorted_ext hxs hys htails]
+
+/-! ## §2½  The sorted 2-merge -/
+
+theorem mem_eMerge2 {x : ERec} : ∀ (as bs : EState),
+    x ∈ eMerge2 as bs ↔ x ∈ as ∨ x ∈ bs := by
+  intro as bs
+  induction as, bs using eMerge2.induct with
+  | case1 ys => simp [eMerge2]
+  | case2 xs => cases xs <;> simp [eMerge2]
+  | case3 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = a :: eMerge2 as' (b :: bs')
+        from by rw [eMerge2]; simp [h]]
+      simp only [List.mem_cons, ih]
+      tauto
+  | case4 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = b :: eMerge2 (a :: as') bs'
+        from by rw [eMerge2]; simp [h]]
+      simp only [List.mem_cons, ih]
+      tauto
+
+theorem eMerge2_sorted : ∀ {as bs : EState}, ESorted as → ESorted bs →
+    (∀ a ∈ as, ∀ b ∈ bs, key a.2.2 ≠ key b.2.2) →
+    ESorted (eMerge2 as bs) := by
+  intro as bs has hbs hne
+  induction as, bs using eMerge2.induct with
+  | case1 ys => simpa [eMerge2] using hbs
+  | case2 xs => cases xs <;> simpa [eMerge2] using has
+  | case3 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = a :: eMerge2 as' (b :: bs')
+        from by rw [eMerge2]; simp [h]]
+      rcases List.pairwise_cons.mp has with ⟨ha, has'⟩
+      refine List.pairwise_cons.mpr ⟨?_, ih has' hbs
+        (fun x hx => hne x (List.mem_cons_of_mem _ hx))⟩
+      intro z hz
+      rcases (mem_eMerge2 as' (b :: bs')).mp hz with hz' | hz'
+      · exact ha z hz'
+      · rcases List.mem_cons.mp hz' with rfl | hz''
+        · exact h
+        · rcases List.pairwise_cons.mp hbs with ⟨hb, -⟩
+          exact keyLt_trans (hb z hz'') h
+  | case4 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = b :: eMerge2 (a :: as') bs'
+        from by rw [eMerge2]; simp [h]]
+      rcases List.pairwise_cons.mp hbs with ⟨hb, hbs'⟩
+      have hab : keyLt (key a.2.2) (key b.2.2) = true := by
+        rcases keyLt_total (Ne.symm (hne a List.mem_cons_self b
+          List.mem_cons_self)) with h' | h'
+        · exact absurd h' (by simpa using h)
+        · exact h'
+      refine List.pairwise_cons.mpr ⟨?_, ih has hbs'
+        (fun x hx y hy => hne x hx y (List.mem_cons_of_mem _ hy))⟩
+      intro z hz
+      rcases (mem_eMerge2 (a :: as') bs').mp hz with hz' | hz'
+      · rcases List.mem_cons.mp hz' with rfl | hz''
+        · exact hab
+        · rcases List.pairwise_cons.mp has with ⟨ha, -⟩
+          exact keyLt_trans (ha z hz'') hab
+      · exact hb z hz'
+
+/-- The merge of canonical inputs is canonical (sorted), given no key ties —
+supplied on chain-generated states by unique decodability. -/
+theorem eMergeL_sorted {l a b : EState}
+    (ha : ESorted a) (hb : ESorted b)
+    (hdisj : ∀ x ∈ a, ∀ y ∈ b, key x.2.2 = key y.2.2 → x = y) :
+    ESorted (eMergeL l a b) := by
+  apply eMerge2_sorted (List.Pairwise.filter _ ha) (List.Pairwise.filter _ hb)
+  intro x hx y hy hkey
+  have hxa := List.mem_of_mem_filter hx
+  have hyb := List.mem_of_mem_filter hy
+  have hxy : x = y := hdisj x hxa y hyb hkey
+  subst hxy
+  have h2 := List.of_mem_filter hy
+  simp at h2
+  exact h2.2 (List.mem_map.mpr ⟨x, hxa, rfl⟩)
+
 end Sal.ConditionedMRDTs
