@@ -1,0 +1,601 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newcommand{\del}{\mathsf{del}}
+\newcommand{\ins}{\mathsf{ins}}
+\newcommand{\rc}{\mathsf{rc}}
+\newcommand{\Either}{\textsf{Either}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\tikzset{
+  lab/.style ={font=\scriptsize, text=black!65},
+  rng/.style ={|-|, line width=1.0pt},
+  rngB/.style={|-|, line width=1.2pt, blue!60!black},
+}
+
+\title{\bfseries The Embedded-Chain RGA\\[2pt]
+\large A tombstone-free replicated list whose coordinates are the birth
+chains,\\ entropy-optimally encoded --- design, proofs, validation, and
+related work}
+\author{Sal / FP Launchpad --- KC + Claude\\
+\small working names in the artifact: \code{embed-tree} (unary),
+\code{embed-code} (delta-coded)}
+\date{2026-07-14}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+\noindent
+The embedded-chain RGA is a replicated list (a sequence MRDT for
+three-way merges with an LCA) whose entire state is its live nodes:
+no tombstones, no ledger, no event log. Each node carries one
+parent-relative dyadic interval; the insert \emph{mint} embeds the
+timestamp delta to the anchor in an order-preserving prefix-free code,
+which makes concurrent same-position mints provably non-colliding ---
+\emph{ties cannot exist} --- so the merge contains no repair and never
+decides an order. Every node's absolute interval is a birth constant;
+display order coincides with lexicographic order on birth chains; the
+state is a canonical function of the event set. Deletion is an exact
+isometric fold, so a dead node's interval encloses its descendants
+forever: the dead survive only as $\Theta(\log \delta)$ coordinate bits
+inside living positions --- the information-theoretic minimum, paid only
+at genuine races. The design is machine-validated: clean on the L1--L25
+anomaly battery (except backward-run interleaving L19, the published
+RGA's own anomaly) and on 420+ randomized version-DAG executions, and
+\textbf{lockstep read-equal with the published tombstoned RGA at every
+step of 120 randomized executions}. Insert operations carry the anchor's
+coordinate prefix --- consulted by no reachable execution, kept because
+the proof of $\rc = \Either$ commutation requires totality of reordered
+application; the prefix is ghost state in the strict, machine-checkable
+sense. We give the component-by-component definition, the four
+theorems with proofs, the validation record, a detailed comparison with
+Eg-walker, related work, and the Lean mechanization plan on the proved
+RGA scaffolding.
+\end{abstract}
+
+\section{The datatype, component by component}
+\label{sec:design}
+
+Timestamps $t \in \mathbb{N}^{+}$ are Lamport stamps, globally unique,
+and double as element identities. Causality gives: the anchor of every
+insert carries a smaller timestamp than the insert itself.
+
+\paragraph{Type.} A state is a finite map over \emph{live nodes only}:
+\[
+  \sigma \;:\; t \;\mapsto\; (\,\mathrm{par} \in \mathbb{N},\ \
+  (lo, hi) \subset (0,1),\ \ \mathrm{char}\,),
+\]
+where $(lo,hi)$ is a dyadic-rational interval \emph{relative to the
+parent's interval}, and $\mathrm{par} = 0$ denotes the root sentinel
+(which owns $(0,1)$ and is never stored). A node's \emph{absolute}
+interval is the affine composition of the intervals along its parent
+chain. Semantically the coordinates are rationals; the natural carrier
+is a bit string per node (\S\ref{sec:cost}).
+
+\paragraph{init.} $\sigma_0 = \varnothing$.
+
+\paragraph{The mint.} For $\delta \ge 1$ let $L$ be the bit-length of
+$\delta$ and
+\[
+  C(\delta) \;=\; \underbrace{1\cdots1}_{L-1}\;0\;\bigl(\delta
+  \text{ with its leading bit removed}\bigr)
+  \qquad (|C(\delta)| = 2L-1),
+\]
+an order-preserving prefix-free code. Writing $b = 1 \cdot C(\delta)$
+(a leading 1 keeps coordinates positive) and $w = 2^{-|b|-2}$, the mint
+is the second quarter of $b$'s dyadic cell:
+\[
+  M(\delta) \;=\; \bigl(\,0.b + w,\ \ 0.b + 2w\,\bigr)
+  \;\subset\; \bigl[\,0.b,\ 0.b + 4w\,\bigr) .
+\]
+The quarter placement leaves a gap below and headroom above inside the
+cell, and the open space $(0.b+2w,\, 0.b+4w)$ is never minted --- it
+exists so that the interval has room to \emph{contain} the node's own
+subtree without touching the next cell.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[xscale=11]
+  \draw[rng] (0,0) -- (1,0);
+  \node[lab, below] at (0,-0.06) {$0$};
+  \node[lab, below] at (1,-0.06) {$1$};
+  % cells for delta = 1..4 : b = 1C(d)
+  % d=1: C='0', b='10'  cell [1/2, 3/4)
+  % d=2: C='100', b='1100' cell [3/4, 13/16)
+  % d=3: C='101', b='1101' cell [13/16, 7/8)
+  % d=4: C='11000', b='111000' cell [7/8, 57/64)
+  \draw[rngB] (0.53125,0.35) -- (0.5625,0.35);
+  \node[lab, above] at (0.55,0.42) {$\delta{=}1$};
+  \draw[rngB] (0.7578,0.35) -- (0.7656,0.35);
+  \node[lab, above] at (0.76,0.42) {$\delta{=}2$};
+  \draw[rngB] (0.8203,0.35) -- (0.8281,0.35);
+  \node[lab, above] at (0.824,0.42) {$\delta{=}3$};
+  \draw[rngB] (0.8769,0.35) -- (0.8789,0.35);
+  \node[lab, above] at (0.884,0.42) {$\delta{=}4$};
+  \draw[black!40, densely dotted] (0.5,0.0) -- (0.5,0.28);
+  \draw[black!40, densely dotted] (0.75,0.0) -- (0.75,0.28);
+  \draw[black!40, densely dotted] (0.8125,0.0) -- (0.8125,0.28);
+  \draw[black!40, densely dotted] (0.875,0.0) -- (0.875,0.28);
+\end{tikzpicture}
+\caption{Mints $M(\delta)$ for $\delta = 1..4$ inside the parent's unit
+interval (cell boundaries dotted). Larger deltas sit strictly higher;
+distinct deltas are disjoint with gaps; each mint is a quarter of its
+cell, leaving room for the node's own subtree.}
+\label{fig:mint}
+\end{figure}
+
+\paragraph{do (the operations).} Two operations, with $\rc = \Either$
+everywhere (\S\ref{sec:prefix}):
+\begin{itemize}
+\item $\ins(x \leftarrow a,\ c,\ \pi)$ --- insert element $x$ (its
+timestamp) with character $c$ after anchor $a$ ($a = 0$ for the front).
+The payload $\pi$ is the anchor's coordinate prefix, carried \emph{for
+the proof alone} (\S\ref{sec:prefix}). Application on a state where $a$
+is live (every reachable application, by honesty):
+\[
+  \sigma[x] := \bigl(a,\ M(x - a),\ c\bigr), \qquad \pi\ \text{unread}.
+\]
+No head-tracking, no reading of siblings: the mint depends only on the
+two timestamps.
+\item $\del(d)$ --- remove $d$'s record and \emph{isometrically fold}
+it into its children: each child $c$ of $d$ is re-parented to $d$'s
+parent with $d$'s interval composed in,
+$c.\mathrm{frac} := d.\mathrm{frac} \circ c.\mathrm{frac}$. This is an
+exact affine substitution: every survivor's absolute interval is
+unchanged. If $d$ is absent, no-op (concurrent double delete).
+\end{itemize}
+
+\paragraph{read.} Depth-first from the root, children in descending
+order of $lo$. No tie rule is needed (Corollary~\ref{cor:notie}).
+
+\paragraph{merge.} $\mathrm{merge}(\mathit{L}, A, B)$, $\mathit{L}$
+the LCA:
+\begin{enumerate}
+\item \emph{Survival} (OR-set): live iff in all three, or born in
+exactly one branch.
+\item \emph{Refold}: for each survivor, compute its absolute interval
+by folding its record to the root inside the input that holds it (a
+record's stored parent is always live in its own input, so the chain
+stays in one input; by Theorem~\ref{thm:const} the choice of input
+cannot matter --- asserted at runtime, never fired); re-parent to the
+nearest \emph{surviving} ancestor; re-relativize.
+\end{enumerate}
+There is no step 3. No overlap repair exists because overlaps cannot
+occur (Theorem~\ref{thm:noverlap}); the merge never compares
+timestamps and never decides an order.
+
+\paragraph{Inv / applicable / honesty.} The honesty contract is the
+proved RGA's: an insert is \emph{generated} at a replica where its
+anchor is live (you insert after a character you can see), and
+$\ins$/$\del$ are \emph{applied} on states where they are applicable
+(anchor live; delete of a live or already-dead node). On every
+reachable state, application never consults $\pi$. The representation
+invariant (Theorem~\ref{thm:canon}) doubles as $\mathrm{Inv}$.
+
+\paragraph{$\approx$.} Equality. The state is a canonical function of
+the event set (Theorem~\ref{thm:canon}), so no quotient is needed ---
+convergence is literal state equality.
+
+\paragraph{Worked example.} $6$ and $10$ concurrently insert at the
+front ($\delta = 6, 10$): disjoint mints, $10$'s higher --- display
+$[10, 6]$, no repair, at every replica and merge order. Type $22, 16$
+under $6$; delete $6$: the fold composes $6$'s interval into $22$'s and
+$16$'s --- they remain inside the region $M(6)$, below $M(10)$,
+forever. A third party concurrently inserts $8$ at the front: $M(8)$
+lands between $M(6)$ and $M(10)$ by Theorem~\ref{thm:mint} --- display
+$[10, 8, 22, 16]$ whether $8$ arrives before or after $6$'s death
+(machine-checked as the \emph{credential countermodel}, the shape that
+kills every timestamp-oblivious variant, \S\ref{sec:validation}).
+
+\section{Theorems}
+\label{sec:theorems}
+
+\begin{theorem}[mint disjointness and order]\label{thm:mint}
+For $\delta \ne \delta'$, $M(\delta)$ and $M(\delta')$ are disjoint
+with a gap; $\delta < \delta' \Rightarrow M(\delta)$ lies entirely
+below $M(\delta')$.
+\end{theorem}
+\begin{proof}
+$C$ is prefix-free: codes of lengths $2L{-}1 < 2M{-}1$ differ at
+position $L$ (the shorter's header terminator $0$ against the longer's
+header $1$); equal-length codes differ in the payload. Prefix-free
+codes have pairwise-disjoint dyadic cells. $C$ is monotone as a binary
+fraction: within a length class the payload is $\delta$'s low bits in
+order; across classes the position-$L$ bit decides in favor of the
+longer code. Disjoint cells ordered by their codes, and mints interior
+quarters of their cells, give both claims.
+\end{proof}
+
+\begin{theorem}[birth constancy]\label{thm:const}
+Define $\alpha(u) = \varphi_{c_1} \circ \cdots \circ
+\varphi_{c_k}(M(\delta_u))$, the affine composition of the mints along
+$u$'s birth chain $c_1 \cdots c_k\,u$ (where $\varphi_v$ maps $(0,1)$
+onto $v$'s mint interval, order-preservingly, and $\delta_v$ is $v$'s
+delta to its birth parent). Then in every reachable state, every live
+node's absolute interval equals $\alpha(u)$.
+\end{theorem}
+\begin{proof}
+By induction over transitions. $\ins$ establishes it by definition.
+$\del$'s fold replaces $(\mathrm{par}, \mathrm{frac})$ pairs by their
+exact composition --- the function $\alpha$ is unchanged. The merge
+recomputes precisely $\alpha(u)$ (folding a record chain to the root)
+and re-relativizes against another $\alpha$; ties cannot exist, so no
+step of any transition ever rewrites an interval by anything but exact
+composition.
+\end{proof}
+
+\begin{theorem}[no overlap, globally and permanently]\label{thm:noverlap}
+For distinct live $u, v$: either one's birth chain is a prefix of the
+other's ($\alpha$ nested --- and the two are never read-time siblings),
+or $\alpha(u) \cap \alpha(v) = \varnothing$.
+\end{theorem}
+\begin{proof}
+If neither chain is a prefix of the other, they first differ at some
+level, on distinct deltas relative to the \emph{same} birth ancestor;
+Theorem~\ref{thm:mint} separates them there, and affine images of
+disjoint intervals are disjoint. If $u$ lies on $v$'s birth chain and
+both are live, $v$'s nearest live ancestor is $u$ or deeper --- so they
+never share a current parent, and sibling groups are pairwise disjoint.
+Permanence is Theorem~\ref{thm:const}.
+\end{proof}
+
+\begin{theorem}[canonicity]\label{thm:canon}
+The state is a function of the event set:
+$\sigma = \{\,u \mapsto (\mathrm{lp}(u),\ \alpha(u) \text{ relative to }
+\alpha(\mathrm{lp}(u)),\ \mathrm{char}_u)\,\}$ over survivors $u$,
+where $\mathrm{lp}(u)$ is the nearest live birth-ancestor.
+\end{theorem}
+\begin{proof}
+Induction: $\ins$ adds exactly this record (its anchor is live at
+application, by honesty); the fold rewrites a dead parent's children to
+exactly this form (exactness); the merge computes exactly this form,
+and survivorship is a function of the event set (OR-set).
+\end{proof}
+
+\begin{corollary}[no tie rule]\label{cor:notie}
+Sibling $lo$-values never tie; the read's id tiebreak is dead code.
+Machine check: pairwise disjointness asserted at every read of $320$
+randomized executions --- clean.
+\end{corollary}
+
+\begin{corollary}[display $\equiv$ chain-lex]\label{cor:lex}
+Display order is the lexicographic order on birth chains (per level:
+larger delta first --- among same-parent siblings, exactly newest
+first): survivors rank by their own timestamps, folded heirs by their
+dead founder's. Machine check over $19{,}531$ multi-member sibling
+groups: own-timestamp order violated $3{,}481$ times (exactly the
+post-fold heir groups --- forcing own-ts there is the refuted
+dissolution behavior), \textbf{chain-lex violated $0$ times}.
+Equivalently: the canonical order is the RGA order of the birth tree
+restricted to survivors.
+\end{corollary}
+
+\section{The insert prefix: for the proof, and the proof alone}
+\label{sec:prefix}
+
+The proved tombstone-free RGA's \emph{why-the-path-matters} analysis
+applies verbatim, and this design inherits its discipline.
+
+\paragraph{Why $\rc$ must be \Either.} In the Sal framework, any
+oriented conflict-resolution entry for an insert/delete pair awakens
+the machine-refuted \code{cond\_comm\_base} obligation: ordering
+$\ins(x \leftarrow a)$ against $\del(a)$ (in either direction) is
+undischargeable as a conflict entry, because rehoming is
+non-transitive across chains of deletions. So $\rc = \Either$: the
+proof must show the two \emph{commute}, in both orders, on all
+applicable states.
+
+\paragraph{The commutation, and where the prefix earns its keep.}
+Order 1: $\ins(x \leftarrow a)$ then $\del(a)$ --- $x$ is born under
+$a$, then the fold re-homes $x$ to $a$'s parent with composed
+coordinates; by exactness, $x$'s absolute interval is
+$\alpha(a) \circ M(x-a)$. Order 2: $\del(a)$ then
+$\ins(x \leftarrow a)$ --- $a$ is gone; application must still be
+\emph{total} and land $x$ at the same $\alpha$. This is what the
+carried prefix $\pi$ (the anchor's coordinate, equivalently its chain
+of codes) provides: apply computes
+$\alpha(x) = \pi \circ M(x - a)$ and attaches $x$ to the nearest live
+ancestor. The two orders produce \emph{equal} states --- commutation
+to equality, not merely up to $\approx$, courtesy of
+Theorem~\ref{thm:canon}.
+
+\paragraph{Ghost, in the strict sense.} On every reachable state the
+anchor is live at application (honesty), and the mint reads only the
+two timestamps: $\pi$ is never consulted. The Lean artifact should
+carry the analogue of the proved RGA's \code{ins\_path\_free}: a
+machine-checked lemma that the transition function restricted to
+reachable states is invariant under erasure of $\pi$. An
+implementation may therefore drop $\pi$ from the wire entirely; the
+\emph{proof} may not, because the verification conditions quantify over
+reorderings that visit unreachable states, and there application
+without $\pi$ is partial. The prefix costs $O(\sum \log \delta)$ bits
+--- the same entropy as the coordinate itself --- and exists at the
+proof layer alone.
+
+\section{Validation}
+\label{sec:validation}
+
+All numbers reproduce from \code{whiteboard/litmus/}
+(\code{embed\_tree.py}; harnesses \code{litmus.py}, \code{pbt.py}).
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+check & verdict \\
+\midrule
+litmus battery L1--L25 (incl.\ every countermodel that killed & clean,
+  except one-sided L19 \\
+\quad 16 prior designs: ceiling escapes, tie inheritance, three- &
+  (backward-run interleaving --- \\
+\quad branch topology, frame mixing, fold-verdict inheritance) &
+  the published RGA's own anomaly) \\
+credential countermodel (tie heirs vs mid-ts third party, & converges,
+  no flips --- \\
+\quad death-before vs death-after topologies) & $=$ RGA$_\dagger$'s
+  reads \\
+subordination-escape and retroactive-subordination CEs & survive \\
+randomized version-DAG PBT (FLIP / CONV / LIVE / DUP) & 120/120 and
+  300/300 clean \\
+per-read sibling-disjointness assertion sweep & 320/320 clean \\
+chain-lex instrumentation (19{,}531 sibling groups) & 0 violations \\
+\textbf{lockstep vs the published tombstoned RGA} & \textbf{read-equal
+  at every apply/merge/read, 120/120} \\
+L1 delete-reorder vs the proved flat tombstone-free RGA & embed
+  $[2,3]$ \checkmark\ vs flat $[3,2]$ $\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The lockstep row is the identification: \emph{the
+embedded-chain RGA is observationally the published tombstoned RGA
+with the tombstone set compressed into coordinate entropy} ---
+machine-checked on 120 executions; the read-for-read theorem is the
+mechanization target, not yet a theorem. The L1 row is the separation
+from the repo's \emph{proved} flat tombstone-free RGA: that design's
+climb re-sorts a rehomed node by its own timestamp (the
+$[b,a,c] \to [c,b]$ anomaly), i.e.\ its sort key is the birth chain
+\emph{truncated at each rehoming}; this design keeps the chain whole.
+
+\section{Cost and representation}
+\label{sec:cost}
+
+\paragraph{The entropy law.} A coordinate is the concatenation of the
+codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits ---
+the entropy of the chain. Sequential typing ($\delta = 1$ at every
+level) costs $\sim$4 bits per level; a race with timestamp gap $g$
+costs $2\log_2 g + O(1)$ bits. \emph{The state pays for the magnitude
+of actual concurrency, and for nothing else.} Measured (1000
+elements):
+
+\begin{center}\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+scenario & unary mint & \textbf{delta-coded mint} & quarter carve
+  (ts-oblivious, refuted) \\
+\midrule
+chain then delete-all ($\delta{=}1$) & $2^{502501}$ ($\sim$61 KB) &
+  $\boldsymbol{2^{4001}}$ ($\sim$0.5 KB) & $2^{2001}$ \\
+1000 root siblings ($\delta{=}t$) & max $2^{1003}$, 125 KB total &
+  \textbf{max $\boldsymbol{2^{23}}$, 5 KB total} & --- (ties) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The carrier.} The natural representation is a
+\textbf{parent-relative bit string per node}: the fold is
+concatenation, comparison is lexicographic --- $O(1)$-ish with
+structure sharing; the rationals are the semantics of the strings,
+kept for the proofs. IEEE 754 binary64 is machine-refuted as the
+carrier: mints degenerate at $t = 52$, depths underflow at 44, and
+rounding voids Theorem~\ref{thm:const} (6/120 PBT executions die). The
+obstruction is a pigeonhole --- chains carry $\Theta(\sum \log \delta)$
+bits, a fixed-width word holds 64 --- but binary64 is sound as a
+\emph{comparison cache} with exact fallback on float equality.
+
+\paragraph{What remains open.} Dead chains concatenated into
+survivors' strings are the conservation law's irreducible content;
+reclaiming them under \emph{causal stability} (renumber once every
+replica has seen the delete --- the only condition under which
+rewriting geometry is safe, since no verdict involving the dead can
+be contested again) is the one open cost item, and it is orthogonal to
+correctness.
+
+\section{Comparison with Eg-walker}
+\label{sec:egwalker}
+
+Eg-walker (Gentle \& Kleppmann, EuroSys 2025) is the closest system in
+spirit, and the two designs can be read as the \emph{operational} and
+\emph{denotational} realizations of the same thesis --- \textbf{pay for
+concurrency, not for history}:
+
+\begin{center}\small
+\begin{tabular}{@{}p{0.31\textwidth}p{0.31\textwidth}p{0.31\textwidth}@{}}
+\toprule
+ & Eg-walker & embedded-chain RGA \\
+\midrule
+model & op-based; replicas exchange events & MRDT: three-way merge
+  with an LCA \\
+durable state & \textbf{full event graph on disk}, deletes included,
+  retained while concurrent ops may arrive; document state
+  metadata-free & \textbf{live nodes only}; no event log anywhere;
+  dead survive as $\Theta(\log\delta)$ bits inside live coordinates \\
+merge mechanism & \emph{replay}: walk the event graph, rebuild a
+  transient CRDT structure (tombstones reappear transiently), discard
+  at causally-linear points & \emph{refold}: $O(\text{survivors})$
+  coordinate recomputation; no replay, no transient structure, no
+  order decisions \\
+sequential-editing cost & $\approx$ zero (plain edits; no metadata) &
+  $\approx$ zero order metadata ($\sim$4 bits/level; plain
+  append-like behavior) \\
+concurrency cost & replay time proportional to the concurrent region,
+  at every affected merge & coordinate bits proportional to
+  $\log(\text{ts gap})$, once, in space \\
+ordering semantics & Yjs-variant (FugueMax-adjacent); maximal
+  non-interleaving \emph{conjectured}, not proved; two-sided (no L19
+  analogue) & $\equiv$ published RGA (machine lockstep); one-sided ---
+  L19 backward-run interleaving inherited, two-sided extension future
+  work \\
+correctness artifact & informal proof (Appendix C) + property testing
+  & L1--L25 battery + DAG PBT + lockstep vs RGA$_\dagger$;
+  \textbf{Lean mechanization as the deliverable} --- the design was
+  chosen so the merge proves itself (no order decisions to verify) \\
+op payload & integer origin positions (compact, human-meaningful) &
+  two timestamps + ghost prefix (droppable on the wire;
+  \S\ref{sec:prefix}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three sentences of honest positioning. \emph{(i)} Eg-walker
+achieves its clean document state by keeping the entire history and
+re-deriving order on demand; the embedded-chain RGA achieves it by
+making order derivation unnecessary --- the coordinates \emph{are} the
+derivation, precomputed at mint time and exact forever. \emph{(ii)}
+Eg-walker's ordering target is stronger where L19 is concerned
+(Fugue-style two-sidedness removes backward interleaving; this design
+inherits RGA's one-sided anomaly --- by construction, since it is
+read-equal to RGA). \emph{(iii)} The verification gap runs the other
+way: Eg-walker's replay-transform-clear loop is algorithmically
+sophisticated and only informally proved; here the merge performs no
+arbitration at all, the four theorems are one-paragraph proofs, and
+the mechanization inherits a proved scaffolding
+(\S\ref{sec:mechanization}). In the MRDT setting there is also a model
+fit: Eg-walker must reconstruct merge context by replay because the
+op-based model gives it none; the MRDT model hands the merge its LCA,
+which is exactly the context replay rebuilds.
+
+\section{Related work}
+\label{sec:related}
+
+The verified landscape sweep lives in
+\code{whiteboard/litmus/related-work.md} (per-claim verdicts, primary
+sources); this section positions the datatype.
+
+\paragraph{Retention taxonomy.} What nearby systems keep for the dead:
+tombstone records (RGA with cemetery under causal stability; WOOT;
+Yjs's per-deletion GC structs, kept forever; Fugue --- ``we cannot
+remove a deleted element's node entirely''; Peritext --- ``the
+positions must be remembered''); the full history (Eg-walker's event
+graph, Chronofold/causal trees where the log \emph{is} the text);
+consensus-gated compaction (Treedoc's flatten requires Paxos-commit);
+or \textbf{dead identifiers inside live position keys} (Logoot/LSEQ,
+Weidner's position-strings/list-positions --- the Fugue id space). The
+embedded-chain RGA is in the last class \emph{by information content}
+--- dead deltas persist as code bits inside survivors' coordinates,
+at live-reachable scope --- but with three deltas to its classmates:
+the retention is \emph{entropy-optimal and delta-coded} (a sequential
+history costs a constant per element where Logoot-family keys grow
+with allocation policy), the \emph{tree with isometric fold} gives
+forward non-interleaving and delete-order preservation (position-key
+designs interleave --- the PaPoC'19 anomaly --- and Figma-style
+fractional indexing is unsound under concurrency by its own account),
+and the semantics is pinned to the best-studied sequence CRDT by a
+machine-checked lockstep rather than being a new point in anomaly
+space.
+
+\paragraph{The impossibility backdrop.} Attiya et al.\ (PODC 2016)
+prove $\Omega(D)$ metadata for push-based protocols meeting even the
+weak list spec --- the published form of ``ordering requires
+remembering the dead.'' This design does not escape the bound; it
+\emph{relocates and minimizes} the memory: $\Theta(\log \delta)$ bits
+per dead-chain element inside live coordinates (plus the MRDT version
+store, which the model provides). The campaign's sharper, machine-
+witnessed form is the \emph{conservation law}: the verdict information
+survives every encoding change --- stamp, spine, tombstone, or
+denominator bits --- and ties force separate \emph{metadata} only under
+timestamp-oblivious minting; the timestamp-faithful mint carries the
+same bits inside the coordinate. Eight timestamp-oblivious mutation
+variants each have a named machine-checked countermodel (fold-verdict
+erasure; repair non-locality); the credential countermodel separates
+this design from all of them.
+
+\paragraph{Verified datatypes.} Isabelle RGA (Gomes et al.\ OOPSLA'17,
+op-based convergence), OpSets (list semantics specified by a total
+order of identified ops --- arbitration-by-identity as specification),
+VeriFx (SMT, convergence properties), MET (TLA+, list CRDT bugs). In
+the MRDT line (Kaki et al.\ OOPSLA'19; Peepul PLDI'22; RA-lin
+OOPSLA'25 --- this framework), no verified sequence with
+sequence-CRDT-grade ordering guarantees exists; the proved flat
+tombstone-free RGA in this repo is own-fold RA-linearizable but fails
+the sequential delete-order spec (the spec-limit lesson). The
+embedded-chain RGA targets: the first verified tombstone-free sequence
+whose \emph{intent} theorems (delete-order preservation, forward
+non-interleaving, RGA read-equivalence) are part of the statement, not
+excluded by it.
+
+\paragraph{Treedoc's lesson, inverted.} Treedoc re-balances geometry
+and must pay consensus for it; the delta-tree arc's principle
+(\emph{reprojection without consensus is safe iff geometry has been
+demoted to a rendering}) is here taken to its fixed point: geometry is
+never reprojected at all --- it is immutable, so it may safely be the
+only thing.
+
+\section{Mechanization plan}
+\label{sec:mechanization}
+
+Rides the proved tombstone-free RGA's scaffolding
+(\code{Sal/MRDTs/RGA}): ConditionedMRDTSig; $\rc = \Either$
+everywhere; prefix-carrying insert with the ghost-erasure lemma
+(\S\ref{sec:prefix}); the honesty contract (born-accuracy +
+applicability) and the HonestReach/GenHonest metatheorems unchanged.
+What is new is only the read/state layer, and it is \emph{smaller}
+than the flat RGA's:
+
+\begin{enumerate}
+\item \textbf{Spec layer}: lists ordered by chain-lex
+(Corollary~\ref{cor:lex}); convergence = determinism of a function of
+the event set (Theorem~\ref{thm:canon} makes $\approx$ equality ---
+no quotient); pairwise display stability from immutability of
+$\alpha$.
+\item \textbf{Refinement}: the coordinate encoding is an
+order-embedding of chain-lex --- Theorems~\ref{thm:mint}
+and~\ref{thm:noverlap}, each a one-paragraph induction; fold
+exactness is algebra on affine maps.
+\item \textbf{VC discharge}: the ins/del commutation is
+\emph{to equality} (\S\ref{sec:prefix}); ins/ins commute by
+disjointness; del/del by set algebra. No merge case analysis exists
+because the merge makes no decisions.
+\item \textbf{Capstone}: own-fold RA-linearizability (the framework
+route), \emph{plus} the intent theorems the flat RGA provably lacks
+--- delete-order preservation (L1 as a SPOT theorem), forward
+non-interleaving --- \emph{plus} the equivalence target
+$\mathrm{read} \circ \mathrm{embed} = \mathrm{read} \circ
+\mathrm{RGA}_\dagger$ on honest executions, which converts the design
+into a theorem \emph{about} the published RGA: it admits a
+strictly-live compaction preserving every read.
+\end{enumerate}
+
+Until the Lean theorems land, every claim above is scoped as
+machine-checked on the stated executions, not proved.
+
+\paragraph{Provenance.} \code{whiteboard/litmus/embed\_tree.py} (the
+design, the timestamp-oblivious control, the credential countermodel,
+the IEEE 754 measurements; \code{python3 embed\_tree.py} /
+\code{fp} / \code{code}); \code{litmus.py}, \code{pbt.py} (battery and
+DAG harness); \code{contest\_tree.py} (lockstep harness, CE
+regressions); \code{whiteboard/retention-countermodel.pdf} (the
+retention arc that forced this design);
+\code{whiteboard/delta-tree-design.pdf} (the ledger-based sibling
+design and the invariants I1--I3);
+\code{whiteboard/litmus/related-work.md} (verified source list:
+Roh et al.\ JPDC'11; Attiya et al.\ PODC'16; Kleppmann et al.\
+PaPoC'19; Weidner \& Kleppmann TPDS'25 (Fugue); Gentle \& Kleppmann
+EuroSys'25 (Eg-walker, arXiv:2409.14252); Preguiça et al.\ ICDCS'09
+(Treedoc); Grishchenko \& Patrakeev PaPoC'20 (Chronofold); Litt et
+al.\ CSCW'22 (Peritext); Gomes et al.\ OOPSLA'17; OpSets 2018; Kaki et
+al.\ OOPSLA'19; Peepul PLDI'22; RA-lin OOPSLA'25; VeriFx ECOOP'23;
+Figma/Wallace fractional indexing; Weidner position-strings).
+
+\end{document}
