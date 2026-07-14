@@ -161,6 +161,56 @@ ordering fact it justified must survive in the state: as a tombstone
 (RGA) or as one retained timestamp on the descendant (ours).
 \end{itemize}
 
+\section{The same history with the Q-ranges written out}
+
+The rationals version stores, per node, a range $Q = (lo, hi)$
+\emph{relative to its parent's range} (root owns $(0,1)$); display order
+is descending $Q$; inserts carve above the current head
+($b+\tfrac{w}{4},\,b+\tfrac{w}{2}$ with $w = 1-b$); the merge re-renders
+all ranges after ordering by (inherited stamps, own time). All values
+below are machine-printed from the implementation.
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+version & node & $Q$ (rel.\ to parent) & inherited stamps \\
+\midrule
+$V_1$ & $d$(1): par root & $(\tfrac14,\tfrac12)$ & --- \\
+      & $a$(4): par root & $(\tfrac58,\tfrac34)$ & --- \\
+\addlinespace
+$V_A$ & $d, a$ as in $V_1$ & & \\
+      & $x$(6): par $d$ & $(\tfrac14,\tfrac12)$ \; [abs.\ $(\tfrac{5}{16},\tfrac38)$] & --- \\
+\addlinespace
+$V_B$ & $a$(4): par root & $(\tfrac58,\tfrac34)$ & --- \\
+\addlinespace
+$M_1$ & $a$(4): par root & $(\tfrac58,\tfrac34)$ & --- \\
+      & $x$(6): par root & $(\tfrac14,\tfrac12)$ & $(1)$ \; $\leftarrow$ the retained timestamp \\
+\addlinespace
+$P$   & $+\ y$(7): par root & $(\tfrac{13}{16},\tfrac78)$ & --- \\
+$Q$   & $+\ z$(8): par root & $(\tfrac{13}{16},\tfrac78)$ & --- \\
+\addlinespace
+$M_2$ & $x$(6): par root & $(\tfrac14,\tfrac12)$ & $(1)$ \\
+      & $a$(4): par root & $(\tfrac58,\tfrac34)$ & --- \\
+      & $y$(7): par root & $(\tfrac{13}{16},\tfrac78)$ & --- \\
+      & $z$(8): par root & $(\tfrac{29}{32},\tfrac{15}{16})$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things visible in the numbers. \emph{(i)} At $M_1$, $x$
+re-homes to the root and takes over $d$'s old slot $(\tfrac14,\tfrac12)$
+--- below $a$'s $(\tfrac58,\tfrac34)$ --- and the pair
+$(\text{stamps},\text{own}) = ((1),6)$ is what justifies that placement
+at every later merge. \emph{(ii)} $P$ and $Q$ mint \emph{identical}
+ranges for $y$ and $z$ ($(\tfrac{13}{16},\tfrac78)$, carved from
+identical states): raw ranges cannot order concurrent same-position
+inserts --- the timestamps decide (8 before 7), and the $M_2$ re-render
+then separates them, $z \mapsto (\tfrac{29}{32},\tfrac{15}{16})$.
+\emph{(iii)} The ranges are re-derivable decoration: every range in
+$M_2$'s row is a function of the order given by the stamps; the one
+datum that is \emph{not} re-derivable from live content is $x$'s
+inherited $(1)$.
+
 \paragraph{Status of the retention question.} Machine-checked:
 remembering nothing breaks (8 refuted designs); remembering
 conditionally breaks (2 refuted rules, counterexamples above); always
