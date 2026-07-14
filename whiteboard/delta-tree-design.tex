@@ -109,12 +109,12 @@ persists anywhere}: not as an entry, not as a name inside a field.
   \node[lab, left=1mm of a]  {$(\tfrac14,\tfrac12)$ rel.\ $0$};
   \node[lab, right=1mm of b] {$(\tfrac58,\tfrac34)$ rel.\ $0$};
   \node[lab, left=1mm of c]  {$(\tfrac14,\tfrac12)$ rel.\ $1$};
-  \begin{scope}[xshift=62mm, yshift=-4mm]
+  \begin{scope}[xshift=62mm, yshift=-24mm]
     \draw[rng] (0,0) -- (5,0);
-    \node[lab, below] at (0,0) {$0$}; \node[lab, below] at (5,0) {$1$};
-    \draw[rngB] (1.25,0.42) -- (2.5,0.42); \node[lab, above] at (1.87,0.44) {$1$: $(\tfrac14,\tfrac12)$};
-    \draw[rngB] (3.125,0.42) -- (3.75,0.42); \node[lab, above] at (3.44,0.44) {$7$};
-    \draw[rngR] (1.5625,0.95) -- (1.875,0.95); \node[lab, above] at (1.72,0.97) {$10$: abs $(\tfrac{5}{16},\tfrac38)$};
+    \node[lab, below] at (0,-0.08) {$0$}; \node[lab, below] at (5,-0.08) {$1$};
+    \draw[rngB] (1.25,0.55) -- (2.5,0.55);  \node[lab] at (1.87,0.95) {$1$: $(\tfrac14,\tfrac12)$};
+    \draw[rngB] (3.125,0.55) -- (3.75,0.55); \node[lab] at (3.44,0.95) {$7$: $(\tfrac58,\tfrac34)$};
+    \draw[rngR] (1.5625,1.6) -- (1.875,1.6); \node[lab] at (1.72,2.0) {$10$: abs $(\tfrac{5}{16},\tfrac38)$};
   \end{scope}
 \end{tikzpicture}
 \caption{The state is a tree of deltas (left); absolute ranges are composed
@@ -158,15 +158,17 @@ ultimately could not have.
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-  \node[capt] at (2.5,1.3) {before $\del(1)$};
-  \draw[rng] (0,0.6) -- (5,0.6);
-  \draw[rngB] (1.25,0.95) -- (2.5,0.95);  \node[lab, above] at (1.87,0.97) {$1$};
-  \draw[rngR] (1.5625,1.35) -- (1.875,1.35); \node[lab, above] at (1.72,1.37) {$10 \subset 1$};
-  \begin{scope}[yshift=-22mm]
-  \node[capt] at (2.5,1.3) {after: $10$ re-parented to $0$, delta composed};
-  \draw[rng] (0,0.6) -- (5,0.6);
-  \draw[rngR] (1.5625,0.95) -- (1.875,0.95);
-  \node[lab, above] at (1.72,0.97) {$10$: rel.\ $(\tfrac{5}{16},\tfrac{3}{8})$ of $0$ --- \textbf{absolute unchanged}};
+  \node[capt, anchor=west] at (-0.1,2.35) {before $\del(1)$:};
+  \draw[rng] (0,0) -- (5,0);
+  \node[lab, below] at (0,-0.08) {$0$}; \node[lab, below] at (5,-0.08) {$1$};
+  \draw[rngB] (1.25,0.55) -- (2.5,0.55);  \node[lab] at (1.87,0.9) {$1$: $(\tfrac14,\tfrac12)$};
+  \draw[rngR] (1.5625,1.45) -- (1.875,1.45); \node[lab] at (1.72,1.8) {$10 \subset 1$};
+  \begin{scope}[yshift=-42mm]
+  \node[capt, anchor=west] at (-0.1,1.75) {after: $10$ re-parented to $0$, delta composed:};
+  \draw[rng] (0,0) -- (5,0);
+  \node[lab, below] at (0,-0.08) {$0$}; \node[lab, below] at (5,-0.08) {$1$};
+  \draw[rngR] (1.5625,0.55) -- (1.875,0.55);
+  \node[lab] at (2.5,0.95) {$10$: rel.\ $(\tfrac{5}{16},\tfrac{3}{8})$ of $0$ --- \textbf{absolute unchanged}};
   \end{scope}
 \end{tikzpicture}
 \caption{The isometric fold. Deleting $1$ rewrites $10$'s delta to
@@ -297,7 +299,7 @@ that had witnessed the repair's verdict.
   \draw[par] (R0) -- (M1); \draw[par] (RM) -- (M1);
   \draw[par] (M1) -- (M1p);
   \draw[par] (R0) -- (RD);
-  \draw[par] (M1p) -- (F); \draw[par] (RD) -- (F);
+  \draw[par] (M1p) -- (F); \draw[par] (RD) to[out=-60, in=180] (F);
 \end{tikzpicture}
 \caption{L25. The $M_1$ repair decided $10$ before $6$ (timestamps:
 $10>6$); typing $22$ under $6$ co-displayed $10$ before $22$. The deleter
