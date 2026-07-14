@@ -232,7 +232,7 @@ the faithful implementation. ``strict'' = the strictly dead-free merge of
 ``RGA$_\dagger$'' = the published, tombstoned RGA; ``RGA$_{tf}$'' = the
 repo's \emph{proved} tombstone-free RGA.
 
-\begin{center}\small
+\begin{center}\footnotesize
 \begin{tabular}{@{}lcccc l@{}}
 \toprule
 test & strict & v3 & RGA$_\dagger$ & RGA$_{tf}$ & what it detects \\
@@ -243,16 +243,27 @@ L3a/b deep delete-runs       & \checkmark & \checkmark & \checkmark & \checkmark
 L4 criss-cross split         & \checkmark & \checkmark & \checkmark & \checkmark & the rose tree's refutation \\
 L7 concurrent runs (g)       & \checkmark & \checkmark & \checkmark & \checkmark & forward interleaving \\
 L17/L18 ceiling escapes      & \checkmark & \checkmark & \checkmark & \checkmark$/\times$ & eager-scalar staleness \\
-L19 backward runs (h)        & $\times$   & $\times$   & $\times$   & $\times$ & prepend interleaving (one-sided) \\
+L19 backward runs (h)        & $\times$   & $\times$   & $\times$   & $\times$ & prepend interleaving \\
 L20 tie inheritance          & \checkmark & \checkmark & \checkmark & $\times$ & nameless carving \\
 L21/L22/L23 topology         & \checkmark & \checkmark & \checkmark & \checkmark & re-ranging / frame leaks \\
 L24 frame mixing             & \checkmark & \checkmark & \checkmark & \checkmark & cross-frame siblings \\
-\textbf{L25 fold-verdict}    & $\boldsymbol{\times}$ & \checkmark & \checkmark & $\times$ & \textbf{the strict merge's countermodel} \\
-DAG PBT (\S\ref{sec:refute}) & $\boldsymbol{\times}$ (43/120) & \checkmark (120/120, 300/300) & \checkmark & $\times$ & random branches and merges \\
+L5/L8--L13/L16 slot family   & \checkmark & \checkmark & \checkmark & $\times$ (L8/9/13) & w-slot / puncture family \\
+M1 two epochs                & \checkmark & \checkmark & \checkmark & \checkmark & key exhaustion across merges \\
+L14/L15 fooling probes       & ($\times$ L14)$^{\dagger}$ & \checkmark & \checkmark & $\times$ both & bounded-state impossibility \\
+\textbf{L25 fold-verdict}    & $\boldsymbol{\times}$ & \checkmark & \checkmark & $\times$ & \textbf{the strict countermodel} \\
+DAG PBT (\S\ref{sec:refute}) & $\boldsymbol{\times}$ (43/120) & \checkmark (120/120, 300/300) & \checkmark & $\times$ (80/120) & random branches and merges \\
 \bottomrule
 \end{tabular}
 \end{center}
 
+\noindent $^{\dagger}$\,strict is \emph{provably} fooled on L14 (identical
+states, so no read can meet the oracle) --- an f-column anomaly the contract
+below licenses for bounded tombstone-free state. v3 and RGA$_\dagger$
+\emph{escape} both probes the way the spine designs do: their retained data
+(the ledger; the tombstones) distinguishes the two worlds, so the
+impossibility's bounded-state hypothesis does not apply.
+
+\medskip
 \noindent\textbf{Intended contract} (the anomaly-matrix columns): strictly
 dead-free (a, \emph{strict} --- unique among live candidates),
 sequential soundness (c), pairwise display stability (d),
@@ -448,7 +459,11 @@ the chains already settled, never to decide it.
 including L25 and every countermodel of \S\ref{sec:litmus}, except
 one-sided L19, as every one-sided design --- \textbf{and clean on the
 randomized DAG model at 120/120} (4 replicas, 8 rounds) \textbf{and
-300/300} (6 replicas, 12 rounds), plus a fresh-seed 60/60.
+300/300} (6 replicas, 12 rounds), plus a fresh-seed 60/60. It moreover
+\emph{escapes} the L14/L15 impossibility probes that provably fool the
+strict variant: the ledger distinguishes the fooling worlds' states, so
+the bounded-state hypothesis of the impossibility does not apply --- the
+same escape route as the spine designs, bought with the same retention.
 
 \paragraph{What v3 pays the triangle.} The ledger retains dead identifiers
 at live-reachable scope, so v3 is not \emph{strictly} dead-free --- the
