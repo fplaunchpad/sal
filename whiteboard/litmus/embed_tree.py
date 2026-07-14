@@ -427,3 +427,100 @@ def fp_report():
 
 if __name__ == '__main__' and __import__('sys').argv[1:] == ['fp']:
     fp_report()
+
+
+# =========================================================================
+# The efficient representation (KC: "is there one, if binary64 doesn't
+# work?"). The unary-exponent mint I(t) = 1 - 2^-t spends t bits to
+# encode log2(t) bits of information. Replace it with an ORDER-PRESERVING
+# PREFIX-FREE CODE of the timestamp DELTA d = t - t_anchor (d >= 1 by
+# causality: you insert after something you have seen):
+#
+#   C(d) = '1'^(L-1) ++ '0' ++ (binary of d minus its leading bit),
+#   L = bitlength(d)                       [len = 2L-1 bits]
+#
+# Properties (same shape as Theorem 1, proofs one line each):
+#   - prefix-free across length classes ('1'^(L-1)'0' headers differ)
+#     => the dyadic cells [0.C(d), 0.C(d)+2^-len) are pairwise disjoint;
+#   - monotone: d < d' => 0.C(d) < 0.C(d')  => newest highest, as before;
+#   - mint takes the lower QUARTER of its cell => gaps + child headroom.
+#
+# Costs: sequential chain (d = 1 at every level) ~4 bits/level -- the
+# quarter carve's constant, recovered; a race with timestamp gap g costs
+# 2*log2(g) + O(1) bits. Total = Theta(sum over chain of log d_i): the
+# entropy of the birth chain. The conservation law becomes sharp -- you
+# pay for the MAGNITUDE OF ACTUAL CONCURRENCY, nothing else.
+# Everything else (fold, merge, read, all theorems) is inherited verbatim.
+# =========================================================================
+class EmbedTreeCode(EmbedTree):
+    name = 'embed-code'
+
+    @staticmethod
+    def C(d):
+        b = bin(d)[2:]
+        return '1'*(len(b)-1) + '0' + b[1:]
+
+    def apply(self, s, it):
+        if it[0] == 'ins':
+            _, x, a = it
+            p = a if a != 0 else 0
+            bits = '1' + self.C(x - p)          # leading '1': keep lo > 0
+            cell = Fraction(int(bits, 2), 2**len(bits))
+            w = Fraction(1, 2**(len(bits)+2))
+            s[x] = (p, cell + w, cell + 2*w)    # lower quarter of the cell
+            return s
+        return super().apply(s, it)
+
+
+if __name__ == '__main__' and __import__('sys').argv[1:] == ['code']:
+    import pbt
+    D = EmbedTreeCode()
+    print('==== embed-code: gauntlet ====')
+    ok, detail = credential_cm(D)
+    print(f'  credential CM: {"PASS" if ok else "FAIL  " + detail}')
+    ok, detail = l25_third_party(D)
+    print(f'  L25-third-party: {"PASS" if ok else "FAIL  " + detail}')
+    for nm, fn in (('CE-escape', ce_subordination_escape),
+                   ('CE-retro', ce_retroactive_subordination)):
+        ok, detail = fn(D)
+        print(f'  {nm}: {"survives" if ok else "REFUTED  " + detail}')
+    for nm, fn in (('L25', L.l25_verdict), ('L23', L.l23_verdict), ('L24', L.l24_verdict)):
+        r = fn(D); print(f'  {nm}: {"PASS" if r["ok"] else "FAIL"}')
+    v = L.three_branch_verdict(D, *L.L22[1:])
+    print(f'  L22: {"PASS" if v["S3topo"] else "FAIL " + str(v["reads"])}')
+    for name, lca, a, b, runs in L.MERGE_TESTS:
+        vv = L.merge_verdict(D, lca, a, b, runs)
+        badk = [k for k in ('S3','S4','S6','S7','DUP','IDL','S5') if k in vv and not vv[k]]
+        if badk: print(f'  {name}: FAIL {badk}')
+    for name, _, script in L.SEQ_TESTS:
+        vv = L.seq_verdict(D, script)
+        if not (vv.get('S1') and vv.get('S2')): print(f'  {name}: FAIL S1/S2')
+    for name, lca, a, b, post in (L.L18, L.L20):
+        vv = L.post_merge_verdict(D, lca, a, b, post)
+        if not vv['S2']: print(f'  {name}: FAIL')
+    v = L.stale_fork_verdict(D, *L.L21[1:])
+    if not all(v[k] for k in ('S3','S4','S6','DUP')): print('  L21: FAIL')
+    f, _ = pbt.sweep(D, 120)
+    print(f'  DAG PBT 120: {"CLEAN" if not f else str(len(f))+" FAIL, first "+str(f[0])}')
+    if not f:
+        f2, _ = pbt.sweep(D, 300, seed0=7, n_replicas=6, n_rounds=12)
+        print(f'  DAG PBT 300 (6 rep, 12 rounds): '
+              f'{"CLEAN" if not f2 else str(len(f2))+" FAIL, first "+str(f2[0])}')
+    print('==== state-size measurements (survivor denominator bits) ====')
+    for DD in (EmbedTreeCode(), EmbedTree(), RelSplitV2a()):
+        s = DD.init(); N = 1000
+        s = DD.apply(s, ('ins', 1, 0))
+        for i in range(2, N+1): s = DD.apply(s, ('ins', i, i-1))
+        for i in range(1, N):   s = DD.apply(s, ('del', i))
+        (p, lo, hi), = s.values()
+        bits = max(lo.denominator.bit_length(), hi.denominator.bit_length())
+        print(f'  {DD.name:14} 1000-chain (sequential, d=1): ~2^{bits}')
+    # the race-cost case: 1000 root siblings (d = t, the worst gap growth)
+    for DD in (EmbedTreeCode(), EmbedTree()):
+        s = DD.init()
+        for i in range(1, 1001): s = DD.apply(s, ('ins', i, 0))
+        bits = max(max(r[1].denominator.bit_length(), r[2].denominator.bit_length())
+                   for r in s.values())
+        tot = sum(r[1].denominator.bit_length() + r[2].denominator.bit_length()
+                  for r in s.values())
+        print(f'  {DD.name:14} 1000 root siblings (d=t): max ~2^{bits}, total {tot//8000} KB')

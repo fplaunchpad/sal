@@ -420,6 +420,61 @@ relabeling is geometry mutation, refuted throughout this campaign
 unless gated on causal stability, which is precisely the open
 compression question above.
 
+
+\subsection*{The efficient representation (embed-code)}
+
+Binary64 fails, but the inefficiency it exposes is not intrinsic --- it
+is the mint's: $I(t) = 1 - 2^{-t}$ writes the timestamp \emph{in unary
+in the exponent}, spending $t$ bits to carry $\log_2 t$ bits of
+information. Replace it with an \textbf{order-preserving prefix-free
+code} of the timestamp \textbf{delta} $\delta = t - t_{\mathrm{anchor}}$
+($\delta \ge 1$ by causality --- one inserts after something one has
+seen):
+\[
+  C(\delta) \;=\; \underbrace{1\cdots1}_{L-1}\,0\,\bigl(\delta
+  \text{ minus its leading bit}\bigr),
+  \qquad L = \mathrm{bitlength}(\delta),\ \ |C| = 2L-1 ,
+\]
+minting the lower quarter of the dyadic cell $[\,0.C(\delta),\
+0.C(\delta) + 2^{-|C|}\,)$. Prefix-freeness makes distinct cells
+disjoint; monotonicity keeps newest-highest; both proofs are one line,
+and Theorems~1--2 and every corollary carry over verbatim ---
+machine-confirmed: \textbf{the full gauntlet is clean} (credential
+countermodel, L25-third-party, both CEs, battery except one-sided L19,
+DAG PBT 120/120 and 300/300).
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+scenario & embed (unary) & \textbf{embed-code} & quarter carve (lossy) \\
+\midrule
+1000-chain, sequential ($\delta = 1$) & $2^{502501}$ ($\sim$61\,KB) &
+  $\boldsymbol{2^{4001}}$ ($\sim$0.5\,KB) & $2^{2001}$ \\
+1000 root siblings ($\delta = t$) & max $2^{1003}$, 125\,KB total &
+  \textbf{max $\boldsymbol{2^{23}}$, 5\,KB total} & --- (ties) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Sequential typing costs $\sim$4 bits per level --- the
+quarter carve's constant, recovered --- and a race with timestamp gap
+$g$ costs $2\log_2 g + O(1)$ bits. Total coordinate size is
+$\Theta(\sum_i \log \delta_i)$: \emph{the entropy of the birth chain}.
+This sharpens the conservation law to its final form: \textbf{the state
+pays for the magnitude of actual concurrency, and for nothing else}.
+
+Two implementation corollaries. \emph{(i)} The natural carrier is not a
+rational at all but a \textbf{bit string per node, parent-relative}:
+composition (the fold) is concatenation, comparison is lexicographic
+--- $O(1)$ with structure sharing; the rationals are the
+\emph{semantics} of the strings, kept for the proofs. (This is the
+Logoot/Fugue key space, reached here by construction rather than by
+choice, with the tree and the isometric fold retained on top.)
+\emph{(ii)} The residual growth is exactly the dead chains concatenated
+into survivors' strings --- the conservation law's irreducible content
+--- and reclaiming it is the stability-gated compaction question, now
+the only open cost item.
+
 \section{Where the LCA helps --- scoped honestly}
 
 The MRDT merge sees three states; ``dead in a branch, live in the LCA''
@@ -440,10 +495,10 @@ ts-oblivious mints works everywhere except ties (52/120 at scale);
 \textbf{keep-the-range with ts-faithful mints (\S\ref{sec:v3}) works
 everywhere} --- full battery except one-sided L19, DAG PBT 120/120 and
 300/300, no ids, no stamps, no ledger, no tombstones. The tie-only-stamp
-candidate is moot: ties no longer exist. Open: compression of
-birth-constant coordinates (stability-gated renumbering), and the L19
-backward-run column (two-sided extension), both orthogonal to
-retention.
+candidate is moot: ties no longer exist. The encoding question is settled
+(embed-code is entropy-optimal); open: stability-gated reclamation of
+dead-chain bits, and the L19 backward-run column (two-sided
+extension), both orthogonal to retention.
 
 \paragraph{Provenance.} \texttt{whiteboard/litmus/}:
 \texttt{contest\_tree.py} (designs and countermodel regressions, and the
