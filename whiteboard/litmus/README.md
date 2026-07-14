@@ -114,6 +114,21 @@ matrix. S6 plays its role here, against the one fixed sequential spec.
   refute `range-repro` (the CX-F "numbers born in different computations"
   shape) — and it did not: two-branch scenarios let the LCA-precedence keep
   every sibling comparison inside one frame. The refutation needed L22.
+- **L25 fold-verdict inheritance** — minimized from the DAG PBT's refutation
+  of the delta-tree design (seed 0). A *repair* decides `10 before 6`
+  (ts-descending); `22` is then typed under `6`, co-displaying `10 before
+  22`; a branch that knew only `{6}` deletes it; the final merge must
+  fold/rehome `6`'s children. **The dead parent's timestamp was load-bearing
+  for the repair verdict**: designs that erase it (strictly dead-free folds,
+  timestamp re-sorts) let the child re-litigate with its own newer ts and
+  flip the co-displayed pair. Kills `delta-tree`, `flat-RGA`, `range-ts`,
+  `range-splitN`; immutable-key designs inherit the verdict through the
+  retained name. The companion mechanism (found on the `delta-tree-sf`
+  repair, PBT seed 1): **repair non-locality** — re-slotting a node inside
+  one overlap family perturbs its numeric relation to nodes *outside* it, so
+  a pair tie-decided by ts at one merge is re-decided by position at a
+  causally disjoint one. Together these close the mutation family: eight
+  variants, eight countermodels.
 - **L22 three-branch convergence** (KC's question) — three branches diverge
   from ONE initial version, each inserting under the same anchor (identical
   name-free carves); merge two, re-range, then merge the pending third. The
@@ -196,7 +211,9 @@ Failures only — everything not listed passes:
 | `range-repro` | **REFUTED — L22 + L23: convergence fails across merge topologies** (KC's three-branch scenario). Passes L20/L21, which is why two-branch testing looked clean; the third concurrent branch exposes the frame leak |
 | `splice2`, `B2` (addendum) | **also fail L24** — four co-displayed pairs flipped on a delete-free, pure-insert scenario: their read-time tie resolution is non-monotone as elements arrive |
 | `range-split` | **L24 (frame mixing — KC's same-node-different-ranges question)**: raw per-node value inheritance mixes affine frames among siblings; plus L19, L14 fooled. Passes L17/L18/L20/L21/L22/L23 |
-| `range-splitN` | **L19 + L14-fooled only** — frame normalization + canonical local repair; clean on L20–L24. UNPROVEN: the frame-coherence + repair-canonicality invariant is the owed theorem; this family has produced a new hole at every probe depth |
+| `range-splitN` | **REFUTED — DAG PBT (43/120) + L25**; the frame normalization is not globally canonical, and the fold erases repair verdicts |
+| `delta-tree` (in `delta_tree.py`) | KC's full design (parent-relative fractional ranges, isometric-fold delete, LCA-revert merge, local overlap-split). **Battery-clean incl. L20–L24, but REFUTED by the DAG PBT (43/120) and L25**: the fold via the LCA's frame erases repair verdicts — the dead parent's ts was load-bearing |
+| `delta-tree-sf` (in `delta_tree.py`) | the source-consistent-fold repair: **fixes L25, still REFUTED by the DAG PBT (41/120)** — repair non-locality re-decides ts-tied pairs by position at causally disjoint merges |
 
 **Correction (2026-07-13, same day):** an earlier revision of this file said
 Q-tree "passes S4/d in every case." That was a battery artifact — the battery
@@ -285,7 +302,22 @@ structurally at L18.
    differently (`[1,30,20,10]` vs `[1,30,10,20]`). Sixteen thousand PBT
    merges and the entire Lean campaign never exercised this shape — found
    by a 4-insert scenario the moment the right question was asked.
-11. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
+11. **The verdict-inheritance principle, and the triangle is fully witnessed
+   (L25 + the delta-tree PBT campaign, new).** When concurrent same-position
+   content is ordered by a timestamp tie at repair time, that verdict is a
+   fact about the *pair* of timestamps — including, later, a dead node's.
+   Strictly dead-free designs erase the dead ts (the fold), so descendants
+   re-litigate with their own newer ts (L25); and repairs are *non-local* —
+   re-slotting inside one family perturbs relations outside it, so
+   ts-decided pairs get re-decided by position at causally disjoint merges
+   (delta-tree-sf). Eight mutation-family variants, eight machine-checked
+   countermodels. Each pairwise corner of {strictly dead-free, pairwise
+   display stability, topology-convergence} now has a witness: rose has the
+   first two (fails L22); the delta-tree family has the first and third
+   (fails L25/PBT); the immutable-key designs have the last two (retain
+   dead names). Conjecture: the triple is unachievable — the dead node's
+   timestamp is load-bearing for orders it participated in.
+12. **Eager keys go stale; lazy references don't (L17/L18, new).** A Q key is
    the ancestry *arithmetized at birth* — evaluated eagerly against the state
    the inserter saw. A spine/ghost reference is the same information evaluated
    *lazily* at read time, against whoever is currently alive. Concurrent

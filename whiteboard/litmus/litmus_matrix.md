@@ -400,3 +400,22 @@
 | range-repro | ✓ | [1, 20, 10, 63, 62, 61, 60] |
 | range-split | ✗ | FLIPPED [(62, 61)] -> [1, 20, 10, 63, 61, 62, 60] |
 | range-splitN | ✓ | [1, 20, 10, 63, 62, 61, 60] |
+
+== L25 fold-verdict inheritance ==
+| design | verdict | detail |
+|---|---|---|
+| tombstoned | ✓ | [10, 22, 16] |
+| flat-RGA | ✗ | FLIPPED [(10, 16), (10, 22)] -> [22, 16, 10] |
+| rose(Shesha) | ✓ | [10, 22, 16] |
+| splice2 | ✓ | [22, 16, 10] |
+| B2(bare) | ✓ | [22, 16, 10] |
+| ghost(spine) | ✓ | [10, 22, 16] |
+| ghost-cf | ✓ | [10, 22, 16] |
+| Q-flat | ✓ | [22, 16, 10] |
+| Q-tree | ✓ | [10, 22, 16] |
+| path-key | ✓ | [10, 22, 16] |
+| path-2 | ✓ | [10, 22, 16] |
+| range-ts | ✗ | FLIPPED [(10, 16), (10, 22)] -> [22, 16, 10] |
+| range-repro | ✓ | [10, 22, 16] |
+| range-split | ✓ | [10, 22, 16] |
+| range-splitN | ✗ | FLIPPED [(10, 22)] -> [22, 10, 16] |

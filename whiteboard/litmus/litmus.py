@@ -1026,6 +1026,33 @@ def l23_verdict(D):
     except Exception as e:
         return {'ERR': type(e).__name__}
 
+def l25_verdict(D):
+    """L25 fold-verdict inheritance (found by the DAG PBT on delta-tree,
+    2026-07-13, minimized from pbt seed 0): a REPAIR decides '10 before 6'
+    (ts-desc); 22 is then typed under 6, co-displaying '10 before 22'; a
+    branch that knew only {6} deletes it; the final merge folds/rehomes 6's
+    children. The dead parent's timestamp was load-bearing for the repair
+    verdict — designs that erase it let the child re-litigate with its own
+    (newer) ts and flip the co-displayed pair. Kills delta-tree, flat-RGA,
+    range-ts; immutable-key designs inherit the verdict through the retained
+    name."""
+    if D.merge is None: return None
+    try:
+        D.begin()
+        E, _  = run_replica(D, D.init(), [])
+        R0, _ = run_replica(D, E, [I(6,0)])
+        RD, _ = run_replica(D, R0, [DL(6)])
+        RM, _ = run_replica(D, E, [I(10,0)])
+        M1    = D.merge(E, RM, R0)
+        M1p,_ = run_replica(D, M1, [I(16,6), I(22,6)])
+        disp = pairs_of(D.read(M1)) | pairs_of(D.read(M1p)) | pairs_of(D.read(RD))
+        F = D.merge(R0, M1p, RD)
+        mp = pairs_of(D.read(F))
+        flips = [(x, y) for (x, y) in disp if (y, x) in mp]
+        return {'ok': not flips, 'out': D.read(F), 'flips': flips}
+    except Exception as e:
+        return {'ERR': type(e).__name__}
+
 def l24_verdict(D):
     """L24 frame mixing (KC): children of ONE node carved in DIFFERENT frames
     of it (wide/stale vs narrow/repaired) meet at a merge; no co-displayed
@@ -1169,7 +1196,8 @@ def main():
 
 
     for tname, fn in (('L23 rescaled-children topology', l23_verdict),
-                      ('L24 frame mixing', l24_verdict)):
+                      ('L24 frame mixing', l24_verdict),
+                      ('L25 fold-verdict inheritance', l25_verdict)):
         emit()
         emit(f'== {tname} ==')
         emit('| design | verdict | detail |')

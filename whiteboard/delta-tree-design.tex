@@ -1,0 +1,370 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
+
+\newcommand{\lca}{L}
+\newcommand{\del}{\mathsf{del}}
+\newcommand{\ins}{\mathsf{ins}}
+\newcommand{\fold}{\mathsf{fold}}
+\newcommand{\ok}{\ding{51}}
+\usepackage{pifont}
+
+\tikzset{
+  vtx/.style  ={draw, circle, minimum size=7.5mm, inner sep=0pt, fill=blue!8,  line width=0.6pt},
+  rootv/.style={draw, circle, minimum size=7.5mm, inner sep=0pt, fill=black!12, line width=0.6pt, font=\bfseries},
+  dead/.style ={draw, circle, minimum size=7.5mm, inner sep=0pt, densely dashed, fill=black!4, text=black!45},
+  par/.style  ={-{Stealth[length=2.2mm]}, line width=0.7pt},
+  rng/.style  ={|-|, line width=1.1pt},
+  rngB/.style ={|-|, line width=1.1pt, blue!60!black},
+  rngR/.style ={|-|, line width=1.1pt, red!70!black},
+  lab/.style  ={font=\scriptsize, text=black!65},
+  capt/.style ={font=\small\itshape, text=black!75},
+}
+
+\title{\bfseries The Delta Tree\\[2pt]
+\large A strictly dead-free replicated list with relative ranges, isometric deletion,\\
+and a local overlap-splitting merge --- design, litmus results, and refutation}
+\author{Sal / FP Launchpad --- KC + Claude}
+\date{2026-07-14}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+\noindent
+This note gives the complete design of the \emph{delta tree}: a replicated
+list whose state is a tree of live nodes carrying \emph{parent-relative}
+fractional ranges (deltas), whose delete is an \emph{isometric fold}
+(survivor positions arithmetically unchanged), and whose three-way merge is
+OR-set survival plus a \emph{local} overlap-splitting repair. The design is
+the endpoint of a systematic exploration: every component is forced by a
+named, machine-checked countermodel to some alternative. It is the only
+candidate in its corner of the design space: \emph{strictly dead-free}
+(no dead identifier survives anywhere in the state) while aiming at
+convergence and order preservation, with a merge simple enough to mechanize.
+We work through the operations and the merge on concrete examples, tabulate
+the full litmus battery (L1--L25) against the published tombstoned RGA and
+the proved tombstone-free RGA, and state the anomaly contract. We then
+report the verdict of randomized property-based testing over a general MRDT
+execution model (many replicas, random merges under the LCA discipline):
+\textbf{the design is refuted} --- battery-clean, including every named
+countermodel that killed its eight predecessors, yet flipping co-displayed
+pairs at random-DAG scale (43/120 executions). We extract and minimize the
+countermodel (now litmus L25), identify the mechanism (\emph{fold-verdict
+erasure}: a dead node's timestamp is load-bearing for repair verdicts it
+participated in), refute the one principled repair as well
+(\emph{source-consistent folding}, killed by a second mechanism,
+\emph{repair non-locality}), and draw the structural conclusion: the three
+properties \{strictly dead-free, pairwise display stability, topology
+convergence\} now each have a machine-checked witness for every pairwise
+combination and eight failed attempts at the triple. What survives of the
+design --- relative deltas as a representation layer, and the isometric fold
+as stability-gated compaction --- survives \emph{below} an immutable-position
+specification, not as a rival to one.
+\end{abstract}
+
+\section{The design}
+
+\paragraph{State.} A finite map from timestamps (which double as element
+identities) to records
+\[
+  \sigma : t \;\mapsto\; (\,\mathrm{par},\ (lo, hi),\ \mathrm{char}\,),
+  \qquad 0 \le lo < hi \le 1 ,
+\]
+where $(lo,hi)$ is the node's range \emph{relative to its parent's range} ---
+the \emph{delta}. The root sentinel $0$ owns the unit interval and is never
+stored. A node's \emph{absolute} range is the affine composition of the
+deltas along its root path. The state contains \textbf{live nodes only}, and
+--- the design's distinguishing ambition --- \textbf{no dead identifier
+persists anywhere}: not as an entry, not as a name inside a field.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=11mm]
+  \node[rootv] (r) {$0$};
+  \node[vtx, below left=9mm and 13mm of r] (a) {$1$};
+  \node[vtx, below right=9mm and 13mm of r] (b) {$7$};
+  \node[vtx, below=9mm of a] (c) {$10$};
+  \draw[par] (a) -- (r); \draw[par] (b) -- (r); \draw[par] (c) -- (a);
+  \node[lab, left=1mm of a]  {$(\tfrac14,\tfrac12)$ rel.\ $0$};
+  \node[lab, right=1mm of b] {$(\tfrac58,\tfrac34)$ rel.\ $0$};
+  \node[lab, left=1mm of c]  {$(\tfrac14,\tfrac12)$ rel.\ $1$};
+  \begin{scope}[xshift=62mm, yshift=-4mm]
+    \draw[rng] (0,0) -- (5,0);
+    \node[lab, below] at (0,0) {$0$}; \node[lab, below] at (5,0) {$1$};
+    \draw[rngB] (1.25,0.42) -- (2.5,0.42); \node[lab, above] at (1.87,0.44) {$1$: $(\tfrac14,\tfrac12)$};
+    \draw[rngB] (3.125,0.42) -- (3.75,0.42); \node[lab, above] at (3.44,0.44) {$7$};
+    \draw[rngR] (1.5625,0.95) -- (1.875,0.95); \node[lab, above] at (1.72,0.97) {$10$: abs $(\tfrac{5}{16},\tfrac38)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The state is a tree of deltas (left); absolute ranges are composed
+down the path (right): $10$'s absolute range is
+$\tfrac14 + \tfrac14\cdot(\tfrac14,\tfrac12) = (\tfrac{5}{16},\tfrac38)$.
+Display order: depth-first, children by descending range --- newest first.}
+\label{fig:state}
+\end{figure}
+
+\paragraph{Insert.} \emph{Carve}: the new child of anchor $a$ takes a slice
+of $a$'s free child-space above the current head --- with remaining relative
+gap $(b,1)$ (where $b$ is the current head's $hi$, or $0$), the newcomer
+takes $\bigl(b+\tfrac{w}{4},\, b+\tfrac{w}{2}\bigr)$, $w = 1-b$, leaving
+room above for future siblings and below for its own children. Newer
+siblings sit higher; the display (descending) shows them first --- the RGA
+convention, realized geometrically instead of by timestamp comparison at
+read time.
+
+\paragraph{The operation payload (per the proved RGA).} Following the
+\emph{why-the-path-matters} analysis: $\mathsf{rc}$ must be
+\textsf{Either} everywhere (any oriented insert/delete pair awakens the
+refuted \texttt{cond\_comm\_base}), so the insert carries its anchor's
+ancestor \emph{id-path} plus \textbf{one} absolute slice --- the composed
+delta at mint time. Ids suffice for the path because the isometric fold
+(next) makes the absolute position invariant under ancestor deletion: a
+reordered application resolves the id-path to the nearest live ancestor and
+re-relativizes the carried absolute --- landing exactly where
+insert-then-delete would have put it. On reachable states the anchor is
+live and none of this is read: the path is ghost state in the strict,
+machine-checked sense (\texttt{ins\_path\_free}).
+
+\paragraph{Delete: the isometric fold.} Remove the record; re-parent each
+child to the grandparent with the dead node's delta composed in:
+$c.\mathrm{frac} := d.\mathrm{frac} \circ c.\mathrm{frac}$. Every
+survivor's absolute position is unchanged --- \emph{delete-order
+preservation is an arithmetic identity}, where the flat RGA's climb
+re-sorts (the $[b,a,c]\to[c,b]$ anomaly that started this whole
+exploration) and the rose tree's splice needed sixteen thousand lines it
+ultimately could not have.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  \node[capt] at (2.5,1.3) {before $\del(1)$};
+  \draw[rng] (0,0.6) -- (5,0.6);
+  \draw[rngB] (1.25,0.95) -- (2.5,0.95);  \node[lab, above] at (1.87,0.97) {$1$};
+  \draw[rngR] (1.5625,1.35) -- (1.875,1.35); \node[lab, above] at (1.72,1.37) {$10 \subset 1$};
+  \begin{scope}[yshift=-22mm]
+  \node[capt] at (2.5,1.3) {after: $10$ re-parented to $0$, delta composed};
+  \draw[rng] (0,0.6) -- (5,0.6);
+  \draw[rngR] (1.5625,0.95) -- (1.875,0.95);
+  \node[lab, above] at (1.72,0.97) {$10$: rel.\ $(\tfrac{5}{16},\tfrac{3}{8})$ of $0$ --- \textbf{absolute unchanged}};
+  \end{scope}
+\end{tikzpicture}
+\caption{The isometric fold. Deleting $1$ rewrites $10$'s delta to
+$(\tfrac14,\tfrac12)\circ(\tfrac14,\tfrac12) = (\tfrac{5}{16},\tfrac38)$
+relative to the root: the composition that \emph{was} its absolute range.
+Nothing observable moves, and no trace of $1$ remains.}
+\label{fig:fold}
+\end{figure}
+
+\section{The merge}
+
+$\mathrm{merge}(\lca, A, B)$, $\lca$ the least common ancestor:
+
+\begin{enumerate}
+  \item \textbf{Survival} (OR-set): live iff in all three or born in
+        exactly one branch.
+  \item \textbf{Values}: shared nodes (all in $\lca$, by the LCA
+        discipline) take the \emph{LCA's} $(\mathrm{par}, \mathrm{frac})$
+        --- the canonical, topology-free base frame, deliberately reverting
+        branch-local repairs; branch-born nodes bring their branch's.
+        \emph{Why revert?} Branch values encode private merge history;
+        computing the repair over them makes the output depend on merge
+        order --- the machine-checked failure of global re-ranging (litmus
+        L22). The LCA's values are the unique data both branches share.
+        Because a repair is a deterministic function of the overlap
+        family's union and its members' timestamps, reverting loses
+        nothing: the merge \emph{recomputes} the branch's repair,
+        canonically extended (\S\ref{sec:refute} tests this claim).
+  \item \textbf{Dead-chain folding}: a survivor whose parent is merge-dead
+        folds through the dead chain using the LCA's records
+        (dead-in-merge $\Rightarrow$ live-in-LCA: the LCA does the
+        remembering, as in the proved RGA --- but isometrically, not by
+        re-sorting).
+  \item \textbf{Local repair} (the overlap split): per parent, in relative
+        coordinates, connected components of overlapping child ranges have
+        their \emph{union} re-split into equal slots in timestamp order,
+        newest topmost; only the members' own fractions are rewritten ---
+        descendants are relative and follow automatically ($O(1)$ per
+        member: the delta payoff). Singletons untouched; no global
+        rebalance; recurse.
+\end{enumerate}
+
+\paragraph{Worked example.} Branches carve twins: $\lca$ empty; $A$:
+$\ins(10\,{\leftarrow}\,0)$, $B$: $\ins(6\,{\leftarrow}\,0)$ --- identical
+computations, identical slices $(\tfrac14,\tfrac12)$. Merge: family
+$\{10, 6\}$, union $(\tfrac14,\tfrac12)$, timestamp order $10 > 6$:
+$10 \mapsto (\tfrac38, \tfrac12)$, $6 \mapsto (\tfrac14, \tfrac38)$;
+display $[10, 6]$. The repair wrote two fractions; had $6$ carried a
+subtree, it would have moved with it.
+
+\section{Litmus results and the anomaly contract}
+\label{sec:litmus}
+
+The suite (\texttt{whiteboard/litmus/}, tests L1--L25 with provenance) ran
+the faithful implementation. ``RGA$_\dagger$'' = the published, tombstoned
+RGA; ``RGA$_{tf}$'' = the repo's \emph{proved} tombstone-free RGA.
+
+\begin{center}\small
+\begin{tabular}{@{}lccc l@{}}
+\toprule
+test & delta tree & RGA$_\dagger$ & RGA$_{tf}$ & what it detects \\
+\midrule
+L1 delete-reorder            & \checkmark & \checkmark & $\times$ & sequential splice re-sort \\
+L2 splice fooling pair       & \checkmark & \checkmark & $\times$ & delete erases the side bit \\
+L3a/b deep delete-runs       & \checkmark & \checkmark & \checkmark & transitive testimony loss \\
+L4 criss-cross split         & \checkmark & \checkmark & \checkmark & the rose tree's refutation \\
+L7 concurrent runs (g)       & \checkmark & \checkmark & \checkmark & forward interleaving \\
+L17/L18 ceiling escapes      & \checkmark & \checkmark & \checkmark$/\times$ & eager-scalar staleness \\
+L19 backward runs (h)        & $\times$   & $\times$   & $\times$ & prepend interleaving (one-sided) \\
+L20 tie inheritance          & \checkmark & \checkmark & $\times$ & nameless carving \\
+L21/L22/L23 topology         & \checkmark & \checkmark & \checkmark & re-ranging / frame leaks \\
+L24 frame mixing             & \checkmark & \checkmark & \checkmark & cross-frame siblings \\
+\textbf{L25 fold-verdict}    & $\boldsymbol{\times}$ & \checkmark & $\times$ & \textbf{this design's countermodel} \\
+DAG PBT (\S\ref{sec:refute}) & $\boldsymbol{\times}$ (43/120) & \checkmark & $\times$ & random branches and merges \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Intended contract} (the anomaly-matrix columns): strictly
+dead-free (a, \emph{strict} --- unique among live candidates),
+sequential soundness (c), pairwise display stability (d),
+forward non-interleaving (g) --- with \emph{licensed}: strong-list (e) and
+oracle fidelity (f), both provably impossible tombstone-free, and backward
+runs (h), the shared one-sided limitation. The battery certifies everything
+above the line. The two rows below the line are the subject of the next
+section: \textbf{the claimed column d fails}, in a shape no prior test
+exercised.
+
+\section{The execution model, and the refutation}
+\label{sec:refute}
+
+\paragraph{The model.} Randomized version-DAG executions
+(\texttt{litmus/pbt.py}): $n$ replicas; per round each replica either
+issues honest operations against its own read or merges with a peer ---
+legal only when some recorded version's event set equals the two heads'
+intersection (the LCA discipline); final convergence rounds drive all
+replicas to the full event set along different merge paths. Checks:
+\textbf{FLIP} (global pairwise display stability: across every read of
+every replica, no pair is ever shown in both orders), \textbf{CONV}
+(equal event sets $\Rightarrow$ equal reads), \textbf{LIVE/DUP}
+(survival correctness). 120 executions, 4 replicas, 8 rounds.
+
+\paragraph{Verdict.} \textbf{43 of 120 executions flip a co-displayed
+pair.} The battery-clean design fails at random-DAG scale --- in shapes
+involving a repair, a delete of a repaired node, and a merge with a branch
+that had witnessed the repair's verdict.
+
+\paragraph{The minimized countermodel (now litmus L25).} Five nodes.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=9mm and 16mm]
+  \node[draw, rounded corners, fill=black!6, font=\small] (E)  {$\varnothing$};
+  \node[draw, rounded corners, fill=black!6, font=\small, below left=of E]  (R0) {$R_0$: $\ins(6{\leftarrow}0)$};
+  \node[draw, rounded corners, fill=black!6, font=\small, below right=of E] (RM) {$R_M$: $\ins(10{\leftarrow}0)$};
+  \node[draw, rounded corners, fill=blue!8,  font=\small, below right=of R0] (M1) {$M_1$: repair $\Rightarrow$ $[10,6]$};
+  \node[draw, rounded corners, fill=blue!8,  font=\small, below=of M1] (M1p) {$+\ \ins(16{\leftarrow}6),\ \ins(22{\leftarrow}6)$: $[10,6,22,16]$};
+  \node[draw, rounded corners, fill=red!8,   font=\small, below left=13mm and -2mm of R0] (RD) {$R_D$: $\del(6)$};
+  \node[draw, rounded corners, fill=red!12,  font=\small, below right=10mm and -14mm of M1p] (F) {merge: $[\mathbf{22},\mathbf{10},16]$ --- flip};
+  \draw[par] (E) -- (R0); \draw[par] (E) -- (RM);
+  \draw[par] (R0) -- (M1); \draw[par] (RM) -- (M1);
+  \draw[par] (M1) -- (M1p);
+  \draw[par] (R0) -- (RD);
+  \draw[par] (M1p) -- (F); \draw[par] (RD) -- (F);
+\end{tikzpicture}
+\caption{L25. The $M_1$ repair decided $10$ before $6$ (timestamps:
+$10>6$); typing $22$ under $6$ co-displayed $10$ before $22$. The deleter
+branch $R_D$ knew only $\{6\}$. At the final merge, $6$ is dead and $22$
+folds through \emph{the LCA's} record of $6$ --- the frame that never heard
+the verdict.}
+\label{fig:l25}
+\end{figure}
+
+The arithmetic of the flip: in the $M_1$ line, the repair left
+$10 = (\tfrac38,\tfrac12)$ and $6 = (\tfrac14,\tfrac38)$; $22$'s
+\emph{relative} slice under $6$ is $(\tfrac58,\tfrac34)$ (it carved above
+$16$). The fold uses the LCA's $6 = (\tfrac14,\tfrac12)$:
+\[
+  22 \;\mapsto\; \tfrac14 + \tfrac14\cdot(\tfrac58,\tfrac34)
+     \;=\; (\tfrac{13}{32}, \tfrac{7}{16})
+     \;\subset\; (\tfrac38, \tfrac12) = 10 .
+\]
+Folded $22$ lands \emph{inside} $10$'s repaired slot; the repair re-splits
+the family $\{10, 22\}$ by timestamp --- and $22 > 10$, so $22$ goes on
+top: $[22, 10, 16]$, flipping the co-displayed $(10, 22)$.
+
+\paragraph{The mechanism: fold-verdict erasure.} The repair verdict
+``$10$ before $6$'' is a fact about the \emph{pair of timestamps}
+$(10, 6)$. Strict dead-freedom erases $6$ --- its timestamp with it --- so
+$6$'s heir re-litigates the slot with \emph{its own} timestamp, and wins a
+contest its parent had lost. The dead node's timestamp was load-bearing
+for every order it participated in. This is the nameless-carving lemma
+(L20) reaching the fold: pairwise display stability requires the loser's
+\emph{name} to persist, in some form, as long as the verdict matters.
+
+\paragraph{The repair candidate, also refuted.} \emph{Source-consistent
+folding} --- fold each node through the same input that supplied its value,
+so the fold uses the branch's (verdict-bearing) frame. It fixes L25 and
+the battery. The DAG PBT kills it too (41/120), by a second mechanism:
+\textbf{repair non-locality}. Two concurrent twins $(10, 4)$ are
+tie-decided by timestamp at one merge ($[10, 4]$, on a replica whose
+history is disjoint from both final inputs); elsewhere, $4$ is re-slotted
+by repairs against \emph{unrelated} nodes; at a causally disjoint merge the
+pair's geometries no longer tie, and position order --- not the timestamp
+verdict --- decides: $[4, 10]$. Re-slotting inside one family perturbs
+relations outside it; verdicts encoded in geometry are not stable under
+other verdicts.
+
+\section{Conclusions}
+
+\paragraph{The design is refuted, and the refutation is structural.} Eight
+variants of the mutation family (scalar keys, nameless ranges, global
+re-ranging, local splits with and without normalization, absolute and
+relative storage, LCA and source-consistent folds) have now produced eight
+machine-checked countermodels, the last two by the two mechanisms above.
+The pattern admits a one-sentence summary: \emph{order verdicts must be
+re-derivable, identically, at every replica and every time --- and the only
+data that guarantees this is immutable data that names the participants,
+including the dead ones.}
+
+\paragraph{The triangle.} Every pairwise combination of the three desiderata
+now has a machine-checked witness; the triple has eight failed attempts:
+\begin{center}
+\begin{tikzpicture}
+  \node[font=\small\bfseries] (A) at (90:2.1)  {strictly dead-free};
+  \node[font=\small\bfseries] (B) at (210:2.6) {pairwise stability (d)};
+  \node[font=\small\bfseries] (C) at (330:2.6) {topology convergence};
+  \draw[black!50] (A) -- (B) node[midway, sloped, above, lab] {rose tree (fails L22)};
+  \draw[black!50] (B) -- (C) node[midway, sloped, below, lab] {path-2 / ghost / RGA$_\dagger$ (retain names)};
+  \draw[black!50] (A) -- (C) node[midway, sloped, above, lab] {delta tree (fails L25)};
+  \node[font=\scriptsize, text=black!60, align=center] at (0,-0.25) {conjecture:\\ the triple is\\ unachievable};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{What survives.} Two of the design's ideas are correct and
+permanent, one level down the stack: \emph{(i)} parent-relative deltas are
+the right \emph{representation} of any position tree --- $O(1)$ subtree
+transport, structural sharing, lazy absolute sums --- provided the
+\emph{semantics} above them is an immutable-position specification
+(path-2), whose per-level $(\mathrm{side}, \mathrm{uid})$ data is exactly
+the retained name the triangle demands; \emph{(ii)} the isometric fold is
+the right \emph{compaction}: sound precisely when gated on causal
+stability, where ``everyone has seen the delete'' certifies that no
+verdict involving the dead node can ever be contested again --- the same
+condition under which the L25 mechanism is disarmed. The delta tree is not
+a rival to the immutable-position design; it is its runtime.
+
+\paragraph{Provenance.} Every table cell and number in this note is
+reproduced by \texttt{whiteboard/litmus/}: \texttt{litmus.py} (L1--L25),
+\texttt{pbt.py} (the execution model), \texttt{delta\_tree.py} (the
+faithful implementation, both fold variants, and the battery/PBT runner).
+
+\end{document}
