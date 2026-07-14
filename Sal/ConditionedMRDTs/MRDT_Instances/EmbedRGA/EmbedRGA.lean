@@ -328,4 +328,264 @@ theorem eMergeL_sorted {l a b : EState}
   simp at h2
   exact h2.2 (List.mem_map.mpr ⟨x, hxa, rfl⟩)
 
+/-! ## §3  Well-formed enumerations and fold-canonicity
+
+`e_fold_canon`: any two well-formed enumerations of one event set fold to
+the **same** state — the mechanized "state is a function of the event set"
+(design doc Thm 4), by `esorted_ext` + a fold membership characterization.
+No explicit canonical-list formula is needed. -/
+
+def eFold (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) : EState :=
+  applySeq (E Γ).toCRDTSig (E Γ).init ρ
+
+theorem eFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) (e : Op EOp) :
+    eFold Γ (ρ ++ [e]) = eUpdate Γ (eFold Γ ρ) e := by
+  unfold eFold applySeq
+  rw [List.foldl_append]
+  rfl
+
+def eIsIns (o : Op EOp) : Bool :=
+  match o.2.2 with
+  | .ins _ _ _ => true
+  | .del _ => false
+
+/-- The record an insert writes. -/
+def eRecOf (Γ : OrderedPrefixCode) (o : Op EOp) : ERec :=
+  (o.1, (match o.2.2 with | .ins e _ _ => e | .del _ => 0), eCoord Γ o)
+
+def eInsIds (ρ : List (Op EOp)) : List ℕ :=
+  (ρ.filter (fun o => eIsIns o)).map Prod.fst
+
+def eDels (ρ : List (Op EOp)) : List ℕ :=
+  ρ.filterMap (fun o => match o.2.2 with | .del x => some x | .ins _ _ _ => none)
+
+theorem mem_eInsIds {ρ : List (Op EOp)} {t : ℕ} :
+    t ∈ eInsIds ρ ↔ ∃ o ∈ ρ, eIsIns o = true ∧ o.1 = t := by
+  simp only [eInsIds, List.mem_map, List.mem_filter]
+  constructor
+  · rintro ⟨o, ⟨hm, hi⟩, rfl⟩
+    exact ⟨o, hm, hi, rfl⟩
+  · rintro ⟨o, hm, hi, rfl⟩
+    exact ⟨o, ⟨hm, hi⟩, rfl⟩
+
+theorem mem_eDels {ρ : List (Op EOp)} {x : ℕ} :
+    x ∈ eDels ρ ↔ ∃ o ∈ ρ, o.2.2 = EOp.del x := by
+  simp only [eDels, List.mem_filterMap]
+  constructor
+  · rintro ⟨o, hm, hsome⟩
+    refine ⟨o, hm, ?_⟩
+    cases hop : o.2.2 with
+    | ins e π a => rw [hop] at hsome; simp at hsome
+    | del y => rw [hop] at hsome; simp at hsome; rw [hsome]
+  · rintro ⟨o, hm, hdel⟩
+    exact ⟨o, hm, by rw [hdel]⟩
+
+theorem eInsIds_append (ρ σ : List (Op EOp)) :
+    eInsIds (ρ ++ σ) = eInsIds ρ ++ eInsIds σ := by
+  simp [eInsIds, List.filter_append]
+
+theorem eDels_append (ρ σ : List (Op EOp)) :
+    eDels (ρ ++ σ) = eDels ρ ++ eDels σ := by
+  simp [eDels, List.filterMap_append]
+
+/-- Well-formed enumerations: insert ids are unique, nothing is deleted
+before its insert, and distinct inserts mint distinct keys (supplied on
+honest histories by chain-generation + unique decodability — §5). -/
+structure EWf (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) : Prop where
+  ins_nodup : (eInsIds ρ).Nodup
+  del_late : ∀ σ o τ, ρ = σ ++ o :: τ → eIsIns o = true → o.1 ∉ eDels σ
+  keys_inj : ∀ o₁ ∈ ρ, ∀ o₂ ∈ ρ, eIsIns o₁ = true → eIsIns o₂ = true →
+      o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂)
+
+theorem EWf.prefix {Γ : OrderedPrefixCode} {ρ : List (Op EOp)} {e : Op EOp}
+    (h : EWf Γ (ρ ++ [e])) : EWf Γ ρ where
+  ins_nodup := by
+    have := h.ins_nodup
+    rw [eInsIds_append] at this
+    exact this.of_append_left
+  del_late := fun σ o τ heq hins => by
+    refine h.del_late σ o (τ ++ [e]) ?_ hins
+    rw [heq]
+    simp
+  keys_inj := fun o₁ h₁ o₂ h₂ => h.keys_inj o₁ (List.mem_append_left _ h₁)
+    o₂ (List.mem_append_left _ h₂)
+
+/-- Record provenance, unconditioned: everything in a fold was written by
+some insert of the enumeration. -/
+theorem e_fold_rec_sub (Γ : OrderedPrefixCode) : ∀ (ρ : List (Op EOp))
+    (r : ERec), r ∈ eFold Γ ρ → ∃ o ∈ ρ, eIsIns o = true ∧ r = eRecOf Γ o := by
+  intro ρ
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      intro r hr
+      exact absurd hr (by simp [eFold, applySeq, E])
+  | append_singleton ρ e ih =>
+      intro r hr
+      rw [eFold_snoc] at hr
+      obtain ⟨ts, rr, op⟩ := e
+      cases op with
+      | ins el π a =>
+          simp only [eUpdate] at hr
+          by_cases hmem : ts ∈ eIds (eFold Γ ρ)
+          · rw [if_pos hmem] at hr
+            obtain ⟨o, hm, hi, hrec⟩ := ih r hr
+            exact ⟨o, List.mem_append_left _ hm, hi, hrec⟩
+          · rw [if_neg hmem] at hr
+            rcases mem_eInsert.mp hr with hr' | rfl
+            · obtain ⟨o, hm, hi, hrec⟩ := ih r hr'
+              exact ⟨o, List.mem_append_left _ hm, hi, hrec⟩
+            · exact ⟨(ts, rr, .ins el π a),
+                List.mem_append_right _ (by simp),
+                by simp [eIsIns], by simp [eRecOf, eCoord]⟩
+      | del x =>
+          simp only [eUpdate] at hr
+          obtain ⟨o, hm, hi, hrec⟩ := ih r (List.mem_of_mem_filter hr)
+          exact ⟨o, List.mem_append_left _ hm, hi, hrec⟩
+
+/-- Under well-formedness the insert guard never fires: a fresh insert's id
+is not in the fold of its past. -/
+theorem e_fold_guard_free {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+    {e : Op EOp} (hwf : EWf Γ (ρ ++ [e])) (hins : eIsIns e = true) :
+    e.1 ∉ eIds (eFold Γ ρ) := by
+  intro hmem
+  obtain ⟨r, hr, hr1⟩ := List.mem_map.mp hmem
+  obtain ⟨o, hm, hi, hrec⟩ := e_fold_rec_sub Γ ρ r hr
+  have ho1 : o.1 = e.1 := by rw [hrec] at hr1; exact hr1
+  have h1 : e.1 ∈ eInsIds ρ := mem_eInsIds.mpr ⟨o, hm, hi, ho1⟩
+  have := hwf.ins_nodup
+  rw [eInsIds_append] at this
+  rcases List.nodup_append.mp this with ⟨-, -, hdisj⟩
+  have h2 : e.1 ∈ eInsIds [e] := by
+    simp [eInsIds, hins]
+  exact (hdisj e.1 h1 e.1 h2) rfl
+
+/-- Folds of well-formed enumerations are canonical (sorted). -/
+theorem e_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
+    EWf Γ ρ → ESorted (eFold Γ ρ) := by
+  intro ρ
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      intro _
+      rw [show eFold Γ [] = [] from rfl]
+      exact List.Pairwise.nil
+  | append_singleton ρ e ih =>
+      intro hwf
+      have hsorted := ih hwf.prefix
+      rw [eFold_snoc]
+      obtain ⟨ts, rr, op⟩ := e
+      cases op with
+      | del x => exact List.Pairwise.filter _ hsorted
+      | ins el π a =>
+          simp only [eUpdate]
+          by_cases hmem : ts ∈ eIds (eFold Γ ρ)
+          · rw [if_pos hmem]; exact hsorted
+          · rw [if_neg hmem]
+            apply eInsert_sorted hsorted
+            intro x hx
+            obtain ⟨o, hm, hi, hrec⟩ := e_fold_rec_sub Γ ρ x hx
+            have hx1 : x.1 = o.1 := by rw [hrec]; rfl
+            have hne : o.1 ≠ ts := by
+              intro heq
+              exact hmem (List.mem_map.mpr ⟨x, hx, by rw [hx1, heq]⟩)
+            have hkey := hwf.keys_inj o (List.mem_append_left _ hm)
+              (ts, rr, .ins el π a) (List.mem_append_right _ (by simp))
+              hi (by simp [eIsIns]) hne
+            rw [hrec]
+            show key (eCoord Γ o) ≠ key (π ++ Γ.enc (ts - a))
+            simpa [eCoord] using hkey
+
+/-- **The fold membership characterization**: under well-formedness a record
+is in the fold iff its insert is in the enumeration and its id is never
+deleted — an ORDER-FREE description. -/
+theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
+    EWf Γ ρ → ∀ (r : ERec),
+    (r ∈ eFold Γ ρ ↔
+      (∃ o ∈ ρ, eIsIns o = true ∧ r = eRecOf Γ o) ∧ r.1 ∉ eDels ρ) := by
+  intro ρ
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      intro _ r
+      simp [show eFold Γ [] = [] from rfl]
+  | append_singleton ρ e ih =>
+      intro hwf r
+      have IH := ih hwf.prefix
+      rw [eFold_snoc]
+      obtain ⟨ts, rr, op⟩ := e
+      cases op with
+      | ins el π a =>
+          simp only [eUpdate]
+          rw [if_neg (e_fold_guard_free hwf (by simp [eIsIns]))]
+          have hdels : eDels (ρ ++ [(ts, rr, EOp.ins el π a)]) = eDels ρ := by
+            rw [eDels_append]
+            simp [eDels]
+          rw [hdels, mem_eInsert]
+          constructor
+          · rintro (hr | rfl)
+            · obtain ⟨⟨o, hm, hi, hrec⟩, hnd⟩ := (IH r).mp hr
+              exact ⟨⟨o, List.mem_append_left _ hm, hi, hrec⟩, hnd⟩
+            · refine ⟨⟨(ts, rr, .ins el π a),
+                List.mem_append_right _ (by simp),
+                by simp [eIsIns], by simp [eRecOf, eCoord]⟩, ?_⟩
+              show ts ∉ eDels ρ
+              exact hwf.del_late ρ (ts, rr, .ins el π a) [] rfl
+                (by simp [eIsIns])
+          · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
+            rcases List.mem_append.mp hm with hm' | hm'
+            · exact Or.inl ((IH r).mpr ⟨⟨o, hm', hi, hrec⟩, hnd⟩)
+            · right
+              have : o = (ts, rr, .ins el π a) := List.mem_singleton.mp hm'
+              rw [hrec, this]
+              simp [eRecOf, eCoord]
+      | del x =>
+          simp only [eUpdate]
+          have hdels : eDels (ρ ++ [(ts, rr, EOp.del x)])
+              = eDels ρ ++ [x] := by
+            rw [eDels_append]
+            simp [eDels]
+          rw [hdels]
+          constructor
+          · intro hr
+            have hm := List.mem_of_mem_filter hr
+            have hx := List.of_mem_filter hr
+            simp only [decide_eq_true_eq] at hx
+            obtain ⟨⟨o, hmo, hi, hrec⟩, hnd⟩ := (IH r).mp hm
+            refine ⟨⟨o, List.mem_append_left _ hmo, hi, hrec⟩, ?_⟩
+            simp only [List.mem_append, List.mem_singleton]
+            rintro (h | h)
+            · exact hnd h
+            · exact hx h
+          · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
+            simp only [List.mem_append, List.mem_singleton] at hnd
+            push_neg at hnd
+            have hm' : o ∈ ρ := by
+              rcases List.mem_append.mp hm with h | h
+              · exact h
+              · have : o = (ts, rr, .del x) := List.mem_singleton.mp h
+                rw [this] at hi
+                simp [eIsIns] at hi
+            refine List.mem_filter.mpr
+              ⟨(IH r).mpr ⟨⟨o, hm', hi, hrec⟩, hnd.1⟩, by
+                simpa using hnd.2⟩
+
+/-- **Fold-canonicity** (design doc Thm 4, mechanized): well-formed
+enumerations of one event set fold to the SAME state. The state is a
+function of the event set — the property `Shesha_Join_Refuted` shows the
+join hook cannot live without, and the reason this instance exists. -/
+theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op EOp)}
+    (hwf : EWf Γ ρ) (hwf' : EWf Γ ρ')
+    (hmem : ∀ o, o ∈ ρ ↔ o ∈ ρ') :
+    eFold Γ ρ = eFold Γ ρ' := by
+  apply esorted_ext (e_fold_sorted Γ hwf) (e_fold_sorted Γ hwf')
+  intro r
+  rw [e_fold_mem Γ hwf r, e_fold_mem Γ hwf' r]
+  constructor
+  · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
+    refine ⟨⟨o, (hmem o).mp hm, hi, hrec⟩, fun hx => hnd ?_⟩
+    obtain ⟨o', hm', hdel⟩ := mem_eDels.mp hx
+    exact mem_eDels.mpr ⟨o', (hmem o').mpr hm', hdel⟩
+  · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
+    refine ⟨⟨o, (hmem o).mpr hm, hi, hrec⟩, fun hx => hnd ?_⟩
+    obtain ⟨o', hm', hdel⟩ := mem_eDels.mp hx
+    exact mem_eDels.mpr ⟨o', (hmem o').mp hm', hdel⟩
+
 end Sal.ConditionedMRDTs

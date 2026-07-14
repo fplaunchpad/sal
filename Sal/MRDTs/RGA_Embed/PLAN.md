@@ -135,13 +135,17 @@ canonical state); `mem_eMerge2`/`eMerge2_sorted` (functional induction via
 canonical, given key-injectivity — supplied on chain-generated states by
 `coordOf_inj`).
 
-OWED (§-numbers from the queue file):
-- §3 fold membership characterization: under `EWf` (ins ids pairwise
-  distinct; every del target has a prior ins), `r ∈ fold ρ ↔ (its ins ∈ ρ)
-  ∧ (no del of r.1 ∈ ρ)` — snoc induction mirroring `qTags_fold_sub`; then
-  **`e_fold_canon`** = `esorted_ext` + fold-sorted + fold-mem: any two WF
-  enumerations of one event set fold to the SAME state (no separate
-  `eCanonList` formula needed — extensionality replaces it).
+§3 DONE (kernel-clean): `eFold`/`eFold_snoc`; `eIsIns`/`eRecOf`/
+`eInsIds`/`eDels` + mem/append lemmas; `EWf` (ins_nodup, del_late,
+keys_inj — the last supplied on honest histories by chain-generation +
+`coordOf_inj`, §5's job) with prefix closure; `e_fold_rec_sub` (record
+provenance, unconditioned); `e_fold_guard_free` (the insert guard never
+fires under WF); `e_fold_sorted`; **`e_fold_mem`** (fold membership is
+ORDER-FREE: ins present ∧ id never deleted); **`e_fold_canon`** — any two
+WF enumerations of one event set fold to the SAME state. The mechanized
+canonicity theorem (design Thm 4); the property the join hook lives on.
+
+OWED:
 - §3 `EWf` (fresh nonzero ins ids; del targets previously inserted;
   accurate prefixes — reuse chainState vocabulary) + **`e_fold_canon`**:
   fold of any well-formed enumeration = `eCanonList` — THE canonicity
