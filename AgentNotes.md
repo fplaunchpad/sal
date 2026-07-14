@@ -30,6 +30,7 @@ path-carrying operations, flat-set state `map ℕ (ℕ × ℕ)` (id ↦ element,
 
 | Variant | Where it lives | State | Status |
 |---|---|---|---|
+| **RGA_Embed (embedded-chain RGA)** | `Sal/MRDTs/RGA_Embed/` (main) | flat map `id ↦ (elem, coordinate : List Bool)` — absolute immutable birth-chain coordinates, Del = pure removal, merge = OR-set + value lookup (no climb) | **ACTIVE** — layers 0–1 done (code kernel + full commutation/merge kernel, 0 sorry, kernel-clean); read side + capstones per `Sal/MRDTs/RGA_Embed/PLAN.md`; design `whiteboard/embed-code-design.pdf`, Python twin `whiteboard/litmus/embed_tree.py` (lockstep ≡ RGA† 120/120) |
 | RGA (original) | `Sal/MRDTs/RGA_with_tombstones/` (main) | tombstone + read-side projection | committed, 0 sorry; different design, kept |
 | RGA_Splice | branch `wip/rga-splice` | flat set, splice delete | predecessor of RGA_Tombstone_Free; `do_`-level non-commutation (`cond_comm_base`); superseded |
 | RGA_Tree | branch `wip/rga-tree` | literal inductive tree | WIP, open sorries (MRDT 1, ReadSide 1, Refinement 6; not build-verified) |
