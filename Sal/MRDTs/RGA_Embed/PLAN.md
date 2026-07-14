@@ -92,9 +92,23 @@ DONE (`RGA_Embed_ChainLex.lean`, kernel-clean):
   theorem `display_iff_chainBefore`**: the key comparison of coordinates
   computes exactly `chainBefore`; state-level `before_iff_chainBefore`.
 
-OPEN: non-interleaving statement; chainState as a reachability invariant
-(mints write prefix ++ codeword — connect `accurate` histories to
-`chainState`).
+DONE (same file, kernel-clean):
+- **chainState closure**: `chainState_ins` (accurate insert + the birth
+  record `chainOf t = chainOf a ++ [t−a]` preserves it), `chainState_del`
+  (values untouched), `chainState_merge` (values copied) — "every live
+  coordinate is a positive chain's coordinate" is closed under all three
+  transitions, same shape as the coherence closure.
+- **Non-interleaving** (`subtree_convex`): anything displayed between two
+  members of a subtree (a coordinate prefix) is in the subtree — the
+  litmus g-column as lex convexity (`keyLt_prefix_convex`, code-free) +
+  the terminator argument (`sym_prefix_of_key`: a symbol-prefix of a key
+  cannot reach past the coordinate, since 3 is outside the alphabet).
+
+Layers 0–3 are now COMPLETE. OPEN (layer 4 only): execution-level
+induction assembling the closures into "reachable ⟹ coherent ∧ chainState"
+(the framework hookup), canonicity/merge=fold, the conditioned capstone
+(route decision: flat engine via FlatGeneric_Bridge vs the RGA_TF
+conditioned route), and the RGA† read-equivalence.
 
 ### Layer 4 — capstones
 

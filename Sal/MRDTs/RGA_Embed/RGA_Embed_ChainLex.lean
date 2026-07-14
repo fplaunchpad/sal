@@ -418,4 +418,210 @@ theorem chainState_distinctCoords (Γ : OrderedPrefixCode) (s : concrete_st α)
   apply coordOf_inj Γ hp1 hp2
   rw [← he1, ← he2, hpos]
 
+/-! ## chainState is closed under the transitions
+
+Same shape as the coherence closure: honest inserts extend the global chain
+assignment, deletes and merges never touch values, so "every live coordinate
+is a positive chain's coordinate" is a reachability invariant. -/
+
+omit [DecidableEq α] in
+/-- An accurate insert whose id is assigned the extended chain preserves
+`chainState`. (`accurate` supplies both the causality bound `a < t` and the
+prefix's truthfulness; `hch` records the birth: `t`'s chain is its anchor's
+chain extended by the delta.) -/
+theorem chainState_ins (Γ : OrderedPrefixCode) (s : concrete_st α)
+    (chainOf : ℕ → List ℕ) (t r : ℕ) (e : α) (π : coord) (a : ℕ)
+    (h0 : contains s 0 = false)
+    (hcs : chainState Γ s chainOf)
+    (hacc : accurate (t, r, .Ins e π a) s)
+    (hch : chainOf t = (if a = 0 then [] else chainOf a) ++ [t - a]) :
+    chainState Γ (do_ Γ s (t, r, .Ins e π a)) chainOf := by
+  simp only [accurate] at hacc
+  obtain ⟨hat, hval⟩ := hacc
+  intro k hk
+  by_cases hkt : k = t
+  · subst hkt
+    have hπc : π = (if a = 0 then [] else coordOf Γ (chainOf a)) := by
+      rcases hval with ⟨ha0, hπ⟩ | ⟨hlive, hπ⟩
+      · simp [ha0, hπ]
+      · have ha0 : a ≠ 0 := by
+          intro hz
+          rw [hz] at hlive
+          rw [hlive] at h0
+          exact Bool.noConfusion h0
+        rw [if_neg ha0, hπ, (hcs a hlive).2]
+    have hpos_a : PosChain (if a = 0 then [] else chainOf a) := by
+      rcases hval with ⟨ha0, -⟩ | ⟨hlive, -⟩
+      · simp [ha0]
+      · by_cases ha0 : a = 0
+        · simp [ha0]
+        · rw [if_neg ha0]
+          exact (hcs a hlive).1
+    constructor
+    · rw [hch]
+      intro d hd
+      rcases List.mem_append.mp hd with hmem | hmem
+      · exact hpos_a d hmem
+      · have : d = k - a := List.mem_singleton.mp hmem
+        omega
+    · show (sel (upd s k (e, mint Γ π k a)) k).2 = coordOf Γ (chainOf k)
+      rw [lemma_SelUpd1]
+      show mint Γ π k a = coordOf Γ (chainOf k)
+      rw [hch, coordOf_append, hπc]
+      by_cases ha0 : a = 0
+      · simp [ha0, coordOf, mint]
+      · simp [ha0, coordOf, mint]
+  · have hk' : contains s k = true := by
+      simp only [do_, upd, contains, mem] at hk
+      simp only [contains]
+      grind
+    obtain ⟨hp, hpos⟩ := hcs k hk'
+    refine ⟨hp, ?_⟩
+    show (sel (upd s t (e, mint Γ π t a)) k).2 = coordOf Γ (chainOf k)
+    rw [lemma_SelUpd2 _ _ _ _ (by simpa using Ne.symm hkt)]
+    exact hpos
+
+omit [DecidableEq α] in
+/-- Deletion preserves `chainState`: values are never touched. -/
+theorem chainState_del (Γ : OrderedPrefixCode) (s : concrete_st α)
+    (chainOf : ℕ → List ℕ) (t r x : ℕ)
+    (hcs : chainState Γ s chainOf) :
+    chainState Γ (do_ Γ s (t, r, .Del x)) chainOf := by
+  intro k hk
+  have hk' : contains s k = true := by
+    simp only [do_, del, contains, domain, mem] at hk
+    simp only [contains]
+    grind
+  exact hcs k hk'
+
+omit [DecidableEq α] in
+/-- Merging preserves `chainState`: values are copied from the inputs. -/
+theorem chainState_merge (Γ : OrderedPrefixCode) (l a b : concrete_st α)
+    (chainOf : ℕ → List ℕ)
+    (hl : chainState Γ l chainOf) (ha : chainState Γ a chainOf)
+    (hb : chainState Γ b chainOf) :
+    chainState Γ (merge l a b) chainOf := by
+  intro k hk
+  simp only [merge, contains, domain, mem] at hk
+  have hsel : sel (merge l a b) k =
+      (if contains l k then sel l k else
+        if contains a k then sel a k else sel b k) := rfl
+  by_cases hkl : contains l k
+  · obtain ⟨hp, hpos⟩ := hl k hkl
+    exact ⟨hp, by simp only [pos, hsel, if_pos hkl]; exact hpos⟩
+  · by_cases hka : contains a k
+    · obtain ⟨hp, hpos⟩ := ha k hka
+      exact ⟨hp, by simp only [pos, hsel, if_neg hkl, if_pos hka]; exact hpos⟩
+    · have hkb : contains b k = true := by
+        simp only [contains] at hkl hka ⊢
+        grind
+      obtain ⟨hp, hpos⟩ := hb k hkb
+      exact ⟨hp, by
+        simp only [pos, hsel, if_neg hkl, if_neg hka]; exact hpos⟩
+
+/-! ## Non-interleaving: subtree convexity
+
+The g-column guarantee, in its sharpest form: **everything displayed between
+two members of a subtree is in the subtree**. A subtree is a coordinate
+prefix (the anchor's coordinate); concurrent runs live in disjoint subtrees,
+so they cannot interleave. The proof is pure lex-order convexity of
+prefix-sets — no property of the code is needed. -/
+
+theorem keyLt_prefix_convex : ∀ {q k1 k2 k3 : List ℕ},
+    keyLt k1 k2 = true → keyLt k2 k3 = true →
+    q <+: k1 → q <+: k3 → q <+: k2
+  | [], _, _, _, _, _, _, _ => List.nil_prefix
+  | x :: q', k1, k2, k3, h12, h23, hp1, hp3 => by
+      obtain ⟨k1', rfl, hp1'⟩ : ∃ k1', k1 = x :: k1' ∧ q' <+: k1' := by
+        cases k1 with
+        | nil => exact absurd hp1 (by simp)
+        | cons y ys =>
+            rcases List.cons_prefix_cons.mp hp1 with ⟨rfl, hp⟩
+            exact ⟨ys, rfl, hp⟩
+      obtain ⟨k3', rfl, hp3'⟩ : ∃ k3', k3 = x :: k3' ∧ q' <+: k3' := by
+        cases k3 with
+        | nil => exact absurd hp3 (by simp)
+        | cons y ys =>
+            rcases List.cons_prefix_cons.mp hp3 with ⟨rfl, hp⟩
+            exact ⟨ys, rfl, hp⟩
+      cases k2 with
+      | nil => simp [keyLt] at h12
+      | cons y k2' =>
+          simp only [keyLt] at h12 h23
+          rcases Nat.lt_trichotomy x y with hxy | rfl | hxy
+          · rw [if_neg (by omega : ¬ y < x), if_pos hxy] at h23
+            exact Bool.noConfusion h23
+          · rw [if_neg (by omega : ¬ x < x)] at h12 h23
+            rw [if_neg (by omega : ¬ x < x)] at h12 h23
+            exact List.cons_prefix_cons.mpr
+              ⟨rfl, keyLt_prefix_convex h12 h23 hp1' hp3'⟩
+          · rw [if_neg (by omega : ¬ x < y), if_pos hxy] at h12
+            exact Bool.noConfusion h12
+
+theorem map_sym_prefix_reflect : ∀ {c d : coord},
+    (c.map sym) <+: (d.map sym) → c <+: d
+  | [], _, _ => List.nil_prefix
+  | b :: c', d, h => by
+      cases d with
+      | nil => exact absurd h (by simp)
+      | cons b' d' =>
+          simp only [List.map_cons] at h
+          rcases List.cons_prefix_cons.mp h with ⟨hb, hp⟩
+          have : b = b' := by
+            cases b <;> cases b' <;> simp [sym] at hb ⊢
+          exact this ▸ List.cons_prefix_cons.mpr
+            ⟨rfl, map_sym_prefix_reflect hp⟩
+
+/-- A symbol-prefix of a key is a coordinate prefix: the terminator `3` is
+outside the symbol alphabet, so the prefix cannot reach past the coordinate. -/
+theorem sym_prefix_of_key {c d : coord} (h : (c.map sym) <+: key d) :
+    c <+: d := by
+  rcases Nat.lt_or_ge d.length c.length with hlt | hle
+  · exfalso
+    have hlen : c.length ≤ d.length + 1 := by
+      have := h.length_le
+      simpa [key_def] using this
+    have hceq : c.length = d.length + 1 := by omega
+    have heq : c.map sym = key d := by
+      apply h.eq_of_length
+      simp [key_def, hceq]
+    have hlast : (c.map sym).getLast? = (key d).getLast? := by rw [heq]
+    rw [List.getLast?_map] at hlast
+    have hklast : (key d).getLast? = some 3 := by
+      rw [key_def]
+      exact List.getLast?_concat
+    obtain ⟨b, hb⟩ : ∃ b, c.getLast? = some b := by
+      cases hc : c.getLast? with
+      | none =>
+          rw [List.getLast?_eq_none_iff] at hc
+          subst hc
+          simp at hceq
+      | some b => exact ⟨b, rfl⟩
+    rw [hb, hklast] at hlast
+    have : sym b = 3 := by simpa using hlast
+    cases b <;> simp [sym] at this
+  · apply map_sym_prefix_reflect
+    apply List.prefix_of_prefix_length_le h
+      (by rw [key_def]; exact List.prefix_append _ _)
+    simpa using hle
+
+omit [DecidableEq α] in
+/-- **Non-interleaving (subtree convexity)**: anything displayed between two
+members of a subtree is in the subtree. Instantiated at an anchor's
+coordinate, this says a concurrently-typed run under one anchor is displayed
+contiguously — the litmus g-column, from lex convexity alone. -/
+theorem subtree_convex (s : concrete_st α) {c : coord} {t1 t2 t3 : ℕ}
+    (h12 : before s t1 t2) (h23 : before s t2 t3)
+    (hp1 : c <+: pos s t1) (hp3 : c <+: pos s t3) : c <+: pos s t2 := by
+  obtain ⟨-, -, hk12⟩ := h12
+  obtain ⟨-, -, hk23⟩ := h23
+  have hq1 : (c.map sym) <+: key (pos s t1) := by
+    rw [key_def]
+    exact (hp1.map sym).trans (List.prefix_append _ _)
+  have hq3 : (c.map sym) <+: key (pos s t3) := by
+    rw [key_def]
+    exact (hp3.map sym).trans (List.prefix_append _ _)
+  exact sym_prefix_of_key
+    (keyLt_prefix_convex hk23 hk12 hq3 hq1)
+
 end Sal.EmbedRGA
