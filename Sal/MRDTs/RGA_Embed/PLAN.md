@@ -24,10 +24,15 @@ Mac — run bare). `lake build Sal.MRDTs.RGA_Embed.<Module>` to produce oleans.
   are parametric in the structure.
 - `unaryCode` instance proved (`enc d = replicate d true ++ [false]`) — the
   Lean twin of the unary mint `I(t)`; unblocks everything downstream.
-- **Owed**: the binary delta code `C(δ) = 1^(L−1) 0 (δ − leading bit)`
-  (entropy-optimal, the `embed-code` mint) as a second instance. Isolated
-  arithmetic (Nat.size / same-length MSB comparison); nothing downstream
-  changes when it lands.
+- ✅ **binary delta code landed** (`Embed_Code_Binary.lean`, kernel-clean):
+  `binEnc d = 1^(size d − 1) ++ 0 ++ bitsW (size d − 1) d`, with
+  `bitsW` (fixed-width big-endian bit fields), `bitsW_lt` (same-width
+  fields compare like the numbers — the MSB lemma, via `testBit_top`),
+  `bitsW_inj`, header algebra (`header_lt`, `header_not_prefix`),
+  `binEnc_mono`, `binEnc_prefixFree`, `binEnc_length = 2·size − 1` (the
+  entropy bound, exactly), and `binaryCode : OrderedPrefixCode`.
+  Cross-validated against the Python `C` by `decide` (C(1)/C(2)/C(3)/C(5)).
+  Both instances are drop-in: every datatype theorem is code-parametric.
 
 ### Layer 1 — MRDT kernel: `RGA_Embed_MRDT.lean` ✅ (0 errors, 0 sorry, kernel-clean)
 
