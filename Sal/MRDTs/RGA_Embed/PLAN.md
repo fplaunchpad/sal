@@ -44,24 +44,37 @@ Mirrors the proved flat RGA's statement shapes
 - `ins_prefix_ghost` — on accurate ops, `do_` = the state-reading `do_run`:
   the prefix is droppable at runtime, indispensable in the VCs.
 
-### Layer 2 — reachability/wf (next)
+### Layer 2 — coherence closure ✅ / canonicity (open)
 
-- `coherent2`/`coherent3` as a reachability invariant: honest executions
-  produce pairwise-coherent replicas (values immutable ⟹ agreement on shared
-  ids). Establish preservation under `do_` and `merge` (the `wf` layer);
-  `merge_assoc`-grade lemmas as needed by the engine.
-- `merge_of_lca` correspondence: merge = fold of the delta (the design's
-  canonicity, Thm 4 — state is a function of the event set; `≈` can be `=`).
+DONE (`RGA_Embed_MRDT.lean`, kernel-clean): `opVal`/`opCoherent`;
+`do_coherent` (ops preserve coherence with coherent bystanders) and
+`merge_coherent` (merges never invent values) — the immutability invariant
+is closed under both transitions; execution-level induction to "all honest
+replicas pairwise coherent" belongs to the framework hookup.
 
-### Layer 3 — read side + intent theorems
+OPEN: `merge_of_lca` correspondence — merge = fold of the delta (design
+Thm 4 canonicity: state is a function of the event set; `≈` can be `=`).
 
-- Terminator embedding `key : coord → List ℕ` (bits ↦ {1,2}, ++ [3]) and its
-  `LinearOrder` (Mathlib `List.Lex` linear order); read = sort desc by key.
-- Chain-lex theorem: display order ≡ lex on birth chains (design Cor 2);
-  needs unique decodability of prefix-free concatenations (coordinate
-  injectivity across distinct ids).
-- **L1 delete-order as a SPOT theorem** (the flat RGA provably fails it:
-  `tombstone_free_violates_delete_order`); non-interleaving statement.
+### Layer 3 — read side ✅ (stability + SPOT) / chain-lex (open)
+
+DONE (`RGA_Embed_ReadSide.lean`):
+- `key` (terminator embedding), `keyLt`/`keyLe`, `before` (strict display).
+- `sel_do_stable`, `sel_merge_stable`(+`_right`) — value immutability.
+- **`before_do_stable`** — S2 step stability, AXIOM-FREE; at `Del` this is
+  general delete-order preservation, the clause the flat RGA refutes.
+- **`before_merge_stable`(+`_right`)** — S4 pairwise display stability at
+  merges (the adopted contract), from value immutability alone. No property
+  of the code is used anywhere in the stability layer.
+- `document` (mergeSort by descending key over an explicit id list) + SPOT
+  by `native_decide`: the flat RGA's reorder witness with the OPPOSITE
+  verdict (`del_preserves_order` [6,5,8]→[6,8] where flat reads [8,6]);
+  litmus L1 through `do_` ([2,1,3]→[2,3]); the merge read [10,6,22,16];
+  both credential-countermodel topologies converging to [10,8,22,16].
+
+OPEN: sortedness characterization of `document` (Pairwise/perm ↔ `before`,
+needs keyLt totality/transitivity); chain-lex theorem (display ≡ lex on
+birth chains — needs unique decodability of prefix-free concatenations);
+non-interleaving statement.
 
 ### Layer 4 — capstones
 
@@ -81,3 +94,6 @@ Mirrors the proved flat RGA's statement shapes
   a trailing `grind` errors with "no goals".
 - The linter flags unused `[DecidableEq α]` on every theorem that never
   selects on α — most of them, since values are opaque pairs here.
+- `decide` cannot reduce the function-based `map` (closures block kernel
+  reduction) — SPOT verdicts must use `native_decide` (repo convention;
+  adds `Lean.ofReduceBool`/`trustCompiler`, as in the flat RGA's SPOT).

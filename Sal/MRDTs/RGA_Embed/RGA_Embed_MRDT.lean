@@ -275,6 +275,69 @@ theorem merge_idem (s : concrete_st α) : eq (merge s s s) s := by
     simp only [sel]
     grind
 
+/-- The value an op writes — a function of the op alone (never the state).
+`Del` writes nothing. -/
+@[simp] def opVal (Γ : OrderedPrefixCode) (o : op_t α) : Option (ℕ × (α × coord)) :=
+  match o with
+  | (t, _, .Ins e π a) => some (t, (e, mint Γ π t a))
+  | (_, _, .Del _)     => none
+
+/-- `o` is coherent with a bystander state `s'`: if `s'` already holds the id
+`o` writes, it holds the same value — true in any execution, since a shared id
+means `s'` applied the same `Ins` (ids are unique), whose value is a function
+of the op. -/
+@[simp] def opCoherent (Γ : OrderedPrefixCode) (o : op_t α) (s' : concrete_st α) : Prop :=
+  match opVal Γ o with
+  | some (t, v) => contains s' t → sel s' t = v
+  | none        => True
+
+omit [DecidableEq α] in
+/-- Applying an op preserves coherence with any bystander it is coherent with:
+the immutability invariant is closed under `do_`. -/
+theorem do_coherent (Γ : OrderedPrefixCode) (s s' : concrete_st α) (o : op_t α)
+    (hco : coherent2 s s') (hop : opCoherent Γ o s') :
+    coherent2 (do_ Γ s o) s' := by
+  obtain ⟨t, r, op⟩ := o
+  cases op with
+  | Del x =>
+      intro k hk hk'
+      refine hco k ?_ hk'
+      simp only [do_, del, contains, domain, mem] at hk ⊢
+      grind
+  | Ins e π a =>
+      intro k hk hk'
+      simp only [opCoherent, opVal] at hop
+      by_cases hkt : k = t
+      · subst hkt
+        simp only [do_, upd, sel]
+        simp only [contains] at hk'
+        rw [(hop hk').symm]
+        simp
+      · simp only [do_, upd, sel, contains, mem] at hk ⊢
+        rw [if_neg hkt]
+        refine hco k ?_ hk'
+        simp only [contains]
+        grind
+
+omit [DecidableEq α] in
+/-- Merging preserves coherence with any bystander coherent with all three
+inputs: merge values are read from the inputs, never invented. -/
+theorem merge_coherent (l a b s' : concrete_st α)
+    (hl : coherent2 l s') (ha : coherent2 a s') (hb : coherent2 b s') :
+    coherent2 (merge l a b) s' := by
+  intro k hk hk'
+  simp only [merge, contains, domain, mem] at hk
+  simp only [merge, sel]
+  by_cases hkl : contains l k
+  · rw [if_pos hkl]; exact hl k hkl hk'
+  · rw [if_neg hkl]
+    by_cases hka : contains a k
+    · rw [if_pos hka]; exact ha k hka hk'
+    · rw [if_neg hka]
+      refine hb k ?_ hk'
+      simp only [contains] at hkl hka ⊢
+      grind
+
 omit [DecidableEq α] in
 /-- Branch symmetry, on coherent inputs. -/
 theorem merge_comm (l a b : concrete_st α)
