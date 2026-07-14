@@ -104,11 +104,54 @@ DONE (same file, kernel-clean):
   the terminator argument (`sym_prefix_of_key`: a symbol-prefix of a key
   cannot reach past the coordinate, since 3 is outside the alphabet).
 
-Layers 0–3 are now COMPLETE. OPEN (layer 4 only): execution-level
-induction assembling the closures into "reachable ⟹ coherent ∧ chainState"
-(the framework hookup), canonicity/merge=fold, the conditioned capstone
-(route decision: flat engine via FlatGeneric_Bridge vs the RGA_TF
-conditioned route), and the RGA† read-equivalence.
+Layers 0–3 are now COMPLETE.
+
+### Layer 4 — the conditioned capstone (STARTED)
+
+**Route decided and recorded**: the MERGEABLE-QUEUE route
+(`MRDT_Instances/MergeableQueue/MergeableQueue.lean` is the template,
+§-for-§). Rationale: the queue's `JoinLemma3At` hook needs canonical
+states unique per event set (`Shesha_Join_Refuted` kills it otherwise);
+embed's canonicity (design Thm 4) supplies exactly that. NOT the flat
+24-VC engine (same-id ins/del does not commute unconditionally — embed is
+outside the schema like RGA_TF) and NOT the RGA_TF 55-file chain
+(unnecessary: no rehoming exists).
+
+§1 DONE (`Sal/ConditionedMRDTs/MRDT_Instances/EmbedRGA/EmbedRGA.lean`,
+builds clean): `EOp`/`ERec`/`EState` (canonical sorted association list —
+the framework needs `DecidableEq State`, so the instance uses the document
+itself, not the function-based map), `eInsert` (sorted insertion),
+`eUpdate` (idempotent-guarded insert / filter delete), `eMerge2` (sorted
+2-merge), `eMergeL` (OR-set survival re-canonicalized),
+`E Γ : ConditionedMRDTSig` (rc = Either, Inv/applicable trivial per the
+queue convention), first mem-lemmas.
+
+OWED (§-numbers from the queue file):
+- §2 canonical list of an enumeration: `eCanonList ρ` = sorted records of
+  live inserts (ins minus later dels); mem/perm helpers.
+- §3 `EWf` (fresh nonzero ins ids; del targets previously inserted;
+  accurate prefixes — reuse chainState vocabulary) + **`e_fold_canon`**:
+  fold of any well-formed enumeration = `eCanonList` — THE canonicity
+  theorem; needs eInsert/filter/sort commutation algebra (sorted-insert
+  into sorted stays sorted — keyLt total order from ChainLex — plus
+  `coordOf_inj` for no-key-ties via chain-generation).
+- §5 `EHonestCore` (mirror QHonestCore: ts-uniqueness + del-after-ins
+  vis + accurate generation) + `e_wf_of_enum`.
+- §6 `e_join_at : JoinLemma3At (E Γ) C` — with canonicity this should be
+  the SHORT half: merge of canonical states of ev₁, ev₂ over LCA ev₀ =
+  canonical state of ev₁ ∪ ev₂ (set algebra on survivors + sorted-merge
+  = sort of union), witness enumeration = any loOn-respecting
+  interleaving (mirror `q_respects_transfer`).
+- §7 `EReach := HonestReach (E Γ) EHonest trivial` → `e_goodConfig3` →
+  capstone `embed_ra_linearizable3 : IsRALinearizable3 C`.
+- §8 `eApplicable` (ins: anchor live + π = its coordinate + a < ts;
+  del: target live) discharges honesty (`eHonest_of_applicable`,
+  `eHonest_of_genHonest`) — this is where `accurate` from the map model
+  reappears as the generation discipline.
+- After the capstone: intent theorems transported to the instance
+  (delete-order, non-interleaving via the map-model bridge or directly),
+  then the RGA† read-equivalence (the compaction theorem) as its own
+  arc.
 
 ### Layer 4 — capstones
 
