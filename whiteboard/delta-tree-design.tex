@@ -376,9 +376,9 @@ chain lies in $\Lambda$; at a merge, each survivor is live in some input,
 and that input's own closure re-supplies exactly the chain entries the
 survivor needs (entries are write-once, so unions never conflict).
 Conversely, \textbf{causal stability alone is unsound}: a six-step
-countermodel (\texttt{ins}\,1; \texttt{ins}\,2\,{\leftarrow}\,1;
+countermodel ($\ins(1{\leftarrow}0)$; $\ins(2{\leftarrow}1)$;
 $\del(1)$; full sync --- the delete now stable everywhere; drop
-$\Lambda[1]$; \texttt{ins}\,3\,{\leftarrow}\,2; merge) breaks the chain
+$\Lambda[1]$; $\ins(3{\leftarrow}2)$; merge) breaks the chain
 walk: survivor $2$ is live and its chain passes through the stably
 deleted $1$. The ledger inverts the classical tombstone-GC picture: what
 licenses forgetting is unreachability, not stability. \emph{(b) Size.}
