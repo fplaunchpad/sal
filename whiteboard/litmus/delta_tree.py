@@ -115,37 +115,6 @@ class DeltaTree(L.Design):
         return M
 
 
-if __name__ == '__main__':
-    D = DeltaTree()
-    print("== battery ==")
-    for name, lca, a, b, runs in L.MERGE_TESTS:
-        v = L.merge_verdict(D, lca, a, b, runs)
-        bad = [k for k in ('S3','S4','S6','S7','DUP','IDL','S5') if k in v and not v[k]]
-        print(f"  {name:28} {'PASS' if not bad else 'FAIL '+str(bad):20} {v.get('out')}")
-    for name, _, script in L.SEQ_TESTS:
-        v = L.seq_verdict(D, script)
-        ok = v.get('S1') and v.get('S2')
-        print(f"  {name:28} {'PASS' if ok else 'FAIL':20} {v.get('out')}")
-    for name, lca, a, b, post in (L.L18, L.L20):
-        v = L.post_merge_verdict(D, lca, a, b, post)
-        print(f"  {name:28} {'PASS' if v['S2'] else 'FAIL':20} {v['merged']} -> {v['out']}")
-    v = L.stale_fork_verdict(D, *L.L21[1:])
-    print(f"  {L.L21[0]:28} {'PASS' if all(v[k] for k in ('S3','S4','S6','DUP')) else 'FAIL'}")
-    v = L.three_branch_verdict(D, *L.L22[1:])
-    print(f"  {L.L22[0]:28} {'PASS' if v['S3topo'] else 'FAIL: '+str(v['reads'])}")
-    v = L.l23_verdict(D)
-    print(f"  L23 rescaled-children        {'PASS' if v['ok'] else 'FAIL: P '+str(v['P'])+' Q '+str(v['Q'])}")
-    v = L.l24_verdict(D)
-    print(f"  L24 frame mixing             {'PASS' if v['ok'] else 'FAIL: '+str(v['flips'])+' -> '+str(v['out'])}")
-
-    import pbt
-    print("\n== randomized DAG PBT ==")
-    fails, skipped = pbt.sweep(D, 120)
-    print(f"  default (4 replicas, 8 rounds): "
-          f"{'CLEAN' if not fails else str(len(fails))+' FAILING, first: '+str(fails[0])}"
-          f"   [skipped: {skipped}]")
-
-
 # =============================================================================
 # REPAIR CANDIDATE (also refuted): source-consistent folding — fold each node
 # through the SAME input that provided its value. Fixes L25 (the fold then
@@ -286,3 +255,37 @@ class DeltaTreeV3(L.Design):
                 render(k)
         render(0)
         return (r, led)
+
+
+if __name__ == '__main__':
+    import pbt
+    for D in (DeltaTree(), DeltaTreeSF(), DeltaTreeV3()):
+        print(f"==== {D.name} ====")
+        print("== battery ==")
+        for name, lca, a, b, runs in L.MERGE_TESTS:
+            v = L.merge_verdict(D, lca, a, b, runs)
+            bad = [k for k in ('S3','S4','S6','S7','DUP','IDL','S5') if k in v and not v[k]]
+            print(f"  {name:28} {'PASS' if not bad else 'FAIL '+str(bad):20} {v.get('out')}")
+        for name, _, script in L.SEQ_TESTS:
+            v = L.seq_verdict(D, script)
+            ok = v.get('S1') and v.get('S2')
+            print(f"  {name:28} {'PASS' if ok else 'FAIL':20} {v.get('out')}")
+        for name, lca, a, b, post in (L.L18, L.L20):
+            v = L.post_merge_verdict(D, lca, a, b, post)
+            print(f"  {name:28} {'PASS' if v['S2'] else 'FAIL':20} {v['merged']} -> {v['out']}")
+        v = L.stale_fork_verdict(D, *L.L21[1:])
+        print(f"  {L.L21[0]:28} {'PASS' if all(v[k] for k in ('S3','S4','S6','DUP')) else 'FAIL'}")
+        v = L.three_branch_verdict(D, *L.L22[1:])
+        print(f"  {L.L22[0]:28} {'PASS' if v['S3topo'] else 'FAIL: '+str(v['reads'])}")
+        v = L.l23_verdict(D)
+        print(f"  L23 rescaled-children        {'PASS' if v['ok'] else 'FAIL: P '+str(v['P'])+' Q '+str(v['Q'])}")
+        v = L.l24_verdict(D)
+        print(f"  L24 frame mixing             {'PASS' if v['ok'] else 'FAIL: '+str(v['flips'])+' -> '+str(v['out'])}")
+        v = L.l25_verdict(D)
+        print(f"  L25 fold-verdict inheritance {'PASS' if v['ok'] else 'FAIL: '+str(v['flips'])+' -> '+str(v['out'])}")
+        print("== randomized DAG PBT ==")
+        fails, skipped = pbt.sweep(D, 120)
+        print(f"  default (4 replicas, 8 rounds): "
+              f"{'CLEAN' if not fails else str(len(fails))+' FAILING, first: '+str(fails[0])}"
+              f"   [skipped: {skipped}]")
+        print()

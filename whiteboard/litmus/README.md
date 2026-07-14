@@ -342,6 +342,29 @@ structurally at L18.
    `ghost(spine)` and `rose` survive the ceiling escape and eager-key trees do
    not — and why "the tree, arithmetized into keys" is *not* a conservative
    transformation of "the tree, kept as relations."
+13. **The delta tree stands, with the corrected merge (`delta-tree-v3`,
+   new — KC: "the design is almost right; the merge is not observing some
+   invariants").** Comparing path-2's and the delta tree's executions at a
+   flipping PBT trace (KC's directive) showed the state's *identity* data —
+   birth-parent chains — sufficed to reconcile every order, while the merge
+   was consulting, and corrupting, the *geometry*. Three invariants restore
+   it: **(I1) arbitration from identity only** — merge-time order decisions
+   come from immutable birth-parent chains (per level ts-desc,
+   prefix-first), never from current fractions (repairs perturb them:
+   mechanism 2) and never through frame-mixed folds (mechanism 1; a dead
+   node's ts persists in its descendants' chains, so its verdicts stay
+   derivable); **(I2) geometry is a rendering** — the merge re-derives all
+   fractions to realize the canonical order, and reads stay purely
+   geometric; **(I3) render/carve compatibility** — the re-render reproduces
+   sequential-carve geometry (oldest lowest, quarter slices, headroom), so
+   post-merge states are indistinguishable from sequentially carved ones.
+   `delta-tree-v3` (in `delta_tree.py`: KC's local ops unchanged — carve,
+   isometric fold — plus a birth-parent ledger consulted only at merges) is
+   clean on the full battery (except one-sided L19) and the DAG PBT at
+   120/120 and 300/300 (6 replicas, 12 rounds). The triangle stands — the
+   ledger retains dead ids at live-reachable scope — but the retention is
+   the minimum it demands: one parent id per node, nothing read-side.
+   Geometry for reading, identity for deciding.
 
 ## Randomized DAG PBT (`pbt.py`)
 
@@ -365,8 +388,11 @@ open, and the principled fix is to adopt path-2's structural in-order
 comparison over the spine data, which makes it path-2) and `range-splitN`
 (the frame normalization is not globally canonical: "canonical = the current
 merge's LCA" differs across merges — the mutation family's hole at yet
-another depth). **Net: `path-2` is the unique design clean on the full
-litmus battery AND the randomized DAG sweep.**
+another depth). **Net at first run: `path-2` was the unique design clean on
+the full litmus battery AND the randomized DAG sweep. Superseded by finding
+13: `delta-tree-v3` joins it (clean except one-sided L19), and the two are
+layers of one design — path-2's identity chains arbitrate, the delta tree's
+geometry renders.**
 
 ## Adding a design / a test
 
