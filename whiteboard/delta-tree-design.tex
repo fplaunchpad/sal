@@ -160,18 +160,29 @@ is why it must.}
 \paragraph{Read.} Depth-first traversal of $\rho$, children by descending
 range (newest first). Purely geometric; the ledger is never consulted.
 
-\paragraph{The operation payload (per the proved RGA).} Following the
-\emph{why-the-path-matters} analysis: $\mathsf{rc}$ must be
+\paragraph{The operation payload and replay rule (per the proved RGA).}
+Following the \emph{why-the-path-matters} analysis: $\mathsf{rc}$ must be
 \textsf{Either} everywhere (any oriented insert/delete pair awakens the
 refuted \texttt{cond\_comm\_base}), so the insert carries its anchor's
 ancestor \emph{id-path} plus \textbf{one} absolute slice --- the composed
-delta at mint time. Ids suffice for the path because the isometric fold
-makes the absolute position invariant under ancestor deletion: a reordered
-application resolves the id-path to the nearest live ancestor and
-re-relativizes the carried absolute --- landing exactly where
-insert-then-delete would have put it. On reachable states the anchor is
-live and none of this is read: the path is ghost state in the strict,
-machine-checked sense (\texttt{ins\_path\_free}).
+delta at mint time. A reordered application resolves the id-path to the
+nearest live ancestor and re-relativizes the carried absolute, landing
+exactly where insert-then-delete would have put it: this fold-invariance
+is machine-checked as \emph{exact state equality} (1303 reordered
+ins$\parallel$del-anchor diamonds, \texttt{litmus/replay.py}). The
+placement alone is not the whole replay rule, however: a 3-op
+countermodel (CE1 in \texttt{replay.py}) shows that carried-slice
+placement, though it commutes perfectly, can converge to a sibling order
+contradicting the ledger's --- geometry minted against one replica's
+sibling set is not canonical against another's. The correct rule
+(machine-checked clean across lockstep runs, all countermodels, and 48/48
+linearizations) adds a \emph{lazy canonical repair}: after any placement
+or fold, if the touched level's geometric order contradicts the ledger's
+birth-chain order, re-render \textbf{that level} with the sequential
+carve. Invariant 1 of \S\ref{sec:merge} thus applies at op application
+too, not only at merges. At the origin the repair never fires, so
+generation remains exactly the local carve; concurrent same-anchor
+inserts commute up to $\approx$ (read- and merge-future-equal).
 
 \section{The merge}
 \label{sec:merge}
@@ -390,10 +401,25 @@ $\mathrm{read}_{\text{delta}} = \mathrm{read}_{\mathrm{RGA}_\dagger}$ on
 all histories --- the delta tree as a \emph{compaction} of the published
 RGA, inheriting the North Star's specification wholesale. The lockstep
 harness is this theorem's test double.
+\item \textbf{The op layer.} \texttt{do\_} = carried-slice placement +
+lazy canonical repair of the touched level (\S\ref{sec:design}), written
+with the repair as the first-class case (empirically it is the common
+path in replays). Its invariant is level-local --- \emph{every sibling
+level canonical with respect to the ledger, and contained} --- with three
+lemma-shaped obligations: placement$+$repair preserves it; fold$+$repair
+preserves it; any invariant state reads exactly the canonical order of
+(live ids, ledger). Replay $\approx$ merge is then immediate, since the
+merge renders that same order.
 \item \textbf{Framework fit.} A Conditioned MRDT with $\mathsf{rc} =
 \textsf{Either}$ everywhere and the id-path payload of
 \S\ref{sec:design}, reusing the proved RGA's conditioning scaffolding
-(honest delivery; born accuracy + applicable delivery).
+(honest delivery; born accuracy + applicable delivery). Two scope facts
+from the simulation sketch (\texttt{litmus/equiv-proof-sketch.md}): the
+equivalence theorem is a statement of the \emph{MRDT model} (under
+op-based causal delivery with tombstone-displayed anchors the two designs
+genuinely separate), and no-resurrection at merges rests on the honest-LCA
+/ reachability conditioning --- exactly the framework's existing
+machinery.
 \end{itemize}
 
 \paragraph{Provenance.} Every table cell and number in this note is
