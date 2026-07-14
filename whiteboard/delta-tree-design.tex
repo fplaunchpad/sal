@@ -367,4 +367,45 @@ reproduced by \texttt{whiteboard/litmus/}: \texttt{litmus.py} (L1--L25),
 \texttt{pbt.py} (the execution model), \texttt{delta\_tree.py} (the
 faithful implementation, both fold variants, and the battery/PBT runner).
 
+
+\section*{Postscript (same day): the corrected merge --- the design stands}
+
+KC's response to \S\ref{sec:refute}: \emph{``the design is almost right; the
+merge is not observing some invariants.''} Correct, twice over. Comparing the
+delta tree's and path-2's executions at a flipping PBT trace showed the
+state's \emph{identity} data (birth-parent chains) sufficed to reconcile
+every order, while the merge was consulting --- and corrupting --- the
+\emph{geometric} data instead. Three invariants, violated by every merge in
+\S\ref{sec:refute} and observed by the corrected one:
+
+\begin{enumerate}
+\item \textbf{Arbitration from identity only.} Every order decision at a
+merge is computed from immutable birth-parent chains (per level: newest
+timestamp first; parents before their subtrees) --- never from current
+fractions, which repairs perturb (mechanism 2), and never through
+frame-mixed folds (mechanism 1). The chains subsume both mechanisms: a dead
+node's timestamp persists in its descendants' chains, so verdicts it
+participated in remain derivable.
+\item \textbf{Geometry is a rendering.} The merge re-derives all fractions,
+realizing the canonical order; reads remain purely geometric and never
+consult the chains.
+\item \textbf{Render/carve compatibility.} The re-render reproduces
+sequential-carve geometry (oldest lowest, quarter slices, headroom above),
+making post-merge states indistinguishable from sequentially carved ones ---
+the residual failures of an intermediate fix were zero-width slices minted
+after a render that filled a parent's space completely.
+\end{enumerate}
+
+\noindent\textbf{Verdict (machine-checked)}: the corrected design ---
+\emph{KC's delta tree as the runtime (unchanged local operations: carve,
+isometric fold; geometric reads), with a birth-parent ledger as the
+merge-time arbitration substrate} --- is \textbf{clean on the full battery}
+(except one-sided L19, as every one-sided design) \textbf{and on the DAG PBT
+at 120/120 and 300/300} (6 replicas, 12 rounds). The triangle stands ---
+the ledger retains dead identifiers at live-reachable scope, so the design
+is not \emph{strictly} dead-free --- but the retention is the minimum the
+triangle demands: one parent id per node, no slot data, no materialized
+paths, nothing consulted at read time. The delta tree and the path are not
+rivals but layers: geometry for reading, identity for deciding.
+
 \end{document}

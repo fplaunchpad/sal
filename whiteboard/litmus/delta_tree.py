@@ -192,3 +192,97 @@ class DeltaTreeSF(DeltaTree):
             for k in (x for x in M if M[x][0] == p): repair(k)
         repair(0)
         return M
+
+
+# =============================================================================
+# v3 — THE CORRECTED DESIGN (KC: "almost right; the merge wasn't observing
+# invariants"). Machine-checked CLEAN: full battery (except one-sided L19)
+# + DAG PBT 120/120 and 300/300 (6 replicas, 12 rounds).
+#
+# State = KC's delta-tree rendering (parent + relative fractions; carve;
+# isometric fold — local ops UNCHANGED) + a birth-parent LEDGER
+# (id -> birth parent, retained incl. dead entries; live-reachable scope).
+#
+# The three invariants the earlier merges violated, now observed:
+#  I1 ARBITRATION FROM IDENTITY ONLY: every order decision at a merge is
+#     computed from the ledger (per-level birth chains, ts-desc per level,
+#     prefix-first) — never from current geometry (which repairs perturb) and
+#     never from frame-mixed folds. The v2 diagnosis (KC's "compare with
+#     path-2 at the flip") showed the identity half of the state sufficed and
+#     the geometric half was corrupted.
+#  I2 GEOMETRY IS A RENDERING: the merge re-derives fractions realizing the
+#     canonical order; reads stay geometric (never consult the ledger).
+#  I3 RENDER/CARVE COMPATIBILITY: the render reproduces sequential-carve
+#     geometry (oldest-lowest, quarter slices, HEADROOM above) so post-merge
+#     states are indistinguishable from sequentially carved ones — v2's
+#     residual PBT failures were zero-width slices minted after a render
+#     that filled the parent's space to 1.
+#
+# The synthesis: the delta tree is the runtime (O(1)-ish geometric reads,
+# isometric deletes); the birth chains are the arbitration substrate,
+# consulted only at merges. Not strictly dead-free (the triangle held: dead
+# ids persist in the ledger while live descendants reference them), but the
+# retention is minimal — one parent id per node, no slot data, no
+# materialized paths, nothing read-side.
+# =============================================================================
+class DeltaTreeV3(L.Design):
+    name = 'delta-tree-v3'
+    def init(self): return ({}, {})
+    def copy(self, s): return (dict(s[0]), dict(s[1]))
+    def fp(self, s): return (frozenset(s[0].items()), frozenset(s[1].items()))
+    def _kids(self, r, p):
+        return sorted((x for x in r if r[x][0] == p),
+                      key=lambda x: (r[x][1], x), reverse=True)
+    def apply(self, s, it):
+        r, led = s
+        if it[0] == 'ins':
+            _, x, a = it
+            p = a if a != 0 else 0
+            base = max((r[k][2] for k in r if r[k][0] == p), default=Fraction(0))
+            w = Fraction(1) - base
+            r[x] = (p, base + w/4, base + w/2)
+            led[x] = p
+        else:
+            d = it[1]
+            if d in r:
+                dp, dl, dh = r.pop(d); dw = dh - dl
+                for c in list(r):
+                    if r[c][0] == d:
+                        _, cl, ch = r[c]
+                        r[c] = (dp, dl + dw*cl, dl + dw*ch)
+        return (r, led)
+    def read(self, s):
+        r, _ = s
+        out = []
+        def dfs(u):
+            for c in self._kids(r, u):
+                out.append(c); dfs(c)
+        dfs(0); return out
+    def _chain(self, led, x):
+        ch = []
+        while x != 0:
+            ch.append(-x); x = led[x]
+        ch.reverse(); return ch
+    def merge(self, Ls, As, Bs):
+        (lr, ll), (ar, al), (br, bl) = Ls, As, Bs
+        led = dict(ll); led.update(al); led.update(bl)
+        surv = (set(lr) & set(ar) & set(br)) | (set(ar) - set(lr)) | (set(br) - set(lr))
+        def live_par(x):
+            p = led[x]
+            while p != 0 and p not in surv: p = led[p]
+            return p
+        par = {u: live_par(u) for u in surv}
+        kids = {}
+        for u in surv: kids.setdefault(par[u], []).append(u)
+        chains = {u: self._chain(led, u) for u in surv}
+        r = {}
+        def render(p):
+            ks = sorted(kids.get(p, []), key=lambda x: chains[x])
+            base = Fraction(0)
+            for k in reversed(ks):                     # oldest first: sequential-carve geometry
+                w = Fraction(1) - base
+                r[k] = (p, base + w/4, base + w/2)
+                base = base + w/2
+                render(k)
+        render(0)
+        return (r, led)
