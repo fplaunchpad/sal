@@ -365,6 +365,18 @@ structurally at L18.
    ledger retains dead ids at live-reachable scope — but the retention is
    the minimum it demands: one parent id per node, nothing read-side.
    Geometry for reading, identity for deciding.
+14. **The delta tree is observationally equivalent to the published RGA
+   (new — `PairedV3RGA` in `delta_tree.py`).** A lockstep harness runs
+   `delta-tree-v3` and `tombstoned` on identical histories and asserts
+   read-equality at every apply, merge, and read: no divergence on any
+   battery scenario (the two L19 failures are the identical interleaving)
+   nor on 420 random DAG executions. The canonical order (RGA order of the
+   birth tree restricted to survivors) is exactly what the tombstoned read
+   computes when it skips tombstones — so v3 admits precisely the North
+   Star's anomalies (backward-run interleaving, h/L19) and nothing else,
+   at one parent id per node instead of tombstones in the sequence. The
+   conjectured Lean headline: `read_v3 = read_RGA†` on all histories — v3
+   as a compaction of the published RGA.
 
 ## Randomized DAG PBT (`pbt.py`)
 

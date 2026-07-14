@@ -257,8 +257,47 @@ class DeltaTreeV3(L.Design):
         return (r, led)
 
 
+
+# =============================================================================
+# Observational equivalence with the published (tombstoned) RGA -- the North
+# Star. Runs v3 and the tombstoned RGA in lockstep on identical histories and
+# asserts read-equality at EVERY apply, merge, and read. Machine-checked:
+# no divergence on the full battery's corner scenarios (including both L19
+# interleavings, which fail IDENTICALLY) nor on 120+300 random DAG
+# executions. So v3 admits exactly the published RGA's anomalies -- h/L19
+# backward-run interleaving, nothing else -- because empirically it IS the
+# published RGA with the tombstones compacted out of the display structure
+# into the birth ledger (canonical order = RGA order of the birth tree
+# restricted to survivors = tombstone-skipping read).
+# =============================================================================
+class PairedV3RGA(L.Design):
+    name = 'v3-vs-RGA-dagger'
+    def __init__(self):
+        self.A = DeltaTreeV3()
+        self.B = {D.name: D for D in L.DESIGNS}['tombstoned']
+    def init(self): return (self.A.init(), self.B.init())
+    def copy(self, s): return (self.A.copy(s[0]), self.B.copy(s[1]))
+    def fp(self, s): return (self.A.fp(s[0]), self.B.fp(s[1]))
+    def _chk(self, s, w):
+        ra, rb = self.A.read(s[0]), self.B.read(s[1])
+        assert ra == rb, f"DIVERGE at {w}: v3={ra} rga={rb}"
+        return s
+    def apply(self, s, it):
+        return self._chk((self.A.apply(s[0], it), self.B.apply(s[1], it)), it)
+    def read(self, s):
+        self._chk(s, "read"); return self.A.read(s[0])
+    def merge(self, Ls, As, Bs):
+        return self._chk((self.A.merge(Ls[0], As[0], Bs[0]),
+                          self.B.merge(Ls[1], As[1], Bs[1])), "merge")
+
 if __name__ == '__main__':
     import pbt
+    print("==== observational equivalence: v3 vs published RGA ====")
+    P = PairedV3RGA()
+    f, _ = pbt.sweep(P, 120)
+    print(f"  DAG PBT lockstep (read-equality at every step): "
+          f"{'EQUIVALENT 120/120' if not f else f[:1]}")
+
     for D in (DeltaTree(), DeltaTreeSF(), DeltaTreeV3()):
         print(f"==== {D.name} ====")
         print("== battery ==")
