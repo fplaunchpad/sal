@@ -71,10 +71,25 @@ DONE (`RGA_Embed_ReadSide.lean`):
   litmus L1 through `do_` ([2,1,3]→[2,3]); the merge read [10,6,22,16];
   both credential-countermodel topologies converging to [10,8,22,16].
 
-OPEN: sortedness characterization of `document` (Pairwise/perm ↔ `before`,
-needs keyLt totality/transitivity); chain-lex theorem (display ≡ lex on
-birth chains — needs unique decodability of prefix-free concatenations);
-non-interleaving statement.
+DONE (`RGA_Embed_ChainLex.lean`, kernel-clean):
+- keyLt strict-total-order algebra (irrefl/asymm/trans/total) + keyLe facts.
+- document characterization: `document_perm` (the live filter), `mem_document`,
+  `document_pairwise_le` (sorted), **`document_pairwise_before`** (on
+  `distinctCoords` states every displayed pair is strictly `before`).
+- birth chains: `coordOf`, `enc_ne_nil`, **`coordOf_inj`** (unique
+  decodability of prefix-free concatenations — distinct chains have
+  distinct coordinates), `chainState_distinctCoords`.
+- `lex_first_diff`/`enc_first_diff` (monotone + prefix-free ⟹ every
+  codeword comparison is decided at a genuine first differing bit — the
+  `nil` escape of `List.Lex` never fires).
+- `chainBefore` (ancestors first; larger delta at first divergence — the
+  RGA order of the birth tree), `chainBefore_total`, and **the chain-lex
+  theorem `display_iff_chainBefore`**: the key comparison of coordinates
+  computes exactly `chainBefore`; state-level `before_iff_chainBefore`.
+
+OPEN: non-interleaving statement; chainState as a reachability invariant
+(mints write prefix ++ codeword — connect `accurate` histories to
+`chainState`).
 
 ### Layer 4 — capstones
 
