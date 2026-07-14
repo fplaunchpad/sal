@@ -81,9 +81,11 @@ The root sentinel $0$ owns the unit interval and is never stored. A node's
 root path. The \emph{ledger} $\Lambda : t \mapsto \mathrm{birth\ parent}$
 records each node's parent at birth --- written once at insert, never
 mutated, retained through delete. Its entries are needed only while some
-live node's birth chain passes through them (live-reachable scope), and
-are prunable at causal stability. Reads never consult $\Lambda$; merges
-never order by $\rho$.
+live node's birth chain passes through them, and pruning the unreachable
+rest at every merge is machine-checked sound (\S\ref{sec:validation}) ---
+the ledger is a garbage-collected \emph{heap} (roots = live nodes,
+pointers = birth parents), not a tombstone set. Reads never consult
+$\Lambda$; merges never order by $\rho$.
 
 \begin{figure}[h]
 \centering
@@ -362,6 +364,35 @@ every replica, no pair is ever shown in both orders), \textbf{CONV}
 correctness). Clean at 120/120 (4 replicas, 8 rounds) and 300/300
 (6 replicas, 12 rounds), plus fresh-seed re-runs.
 
+\paragraph{Ledger retention, state size, and precision
+(\texttt{litmus/measure.py}).} Three machine-checked facts fix the cost
+model. \emph{(a) Pruning is referential, not causal.} Per-replica
+reachability pruning --- at every merge, drop $\Lambda$-entries on no
+live node's birth chain --- is \textbf{sound}: lockstep-clean against
+unpruned across 800 DAG executions plus 210 churn executions (185{,}228
+ops, 61{,}561 merges), with a deliberately-broken control confirming the
+harness bites. The invariant is inductive: every live node's full birth
+chain lies in $\Lambda$; at a merge, each survivor is live in some input,
+and that input's own closure re-supplies exactly the chain entries the
+survivor needs (entries are write-once, so unions never conflict).
+Conversely, \textbf{causal stability alone is unsound}: a six-step
+countermodel (\texttt{ins}\,1; \texttt{ins}\,2\,{\leftarrow}\,1;
+$\del(1)$; full sync --- the delete now stable everywhere; drop
+$\Lambda[1]$; \texttt{ins}\,3\,{\leftarrow}\,2; merge) breaks the chain
+walk: survivor $2$ is live and its chain passes through the stably
+deleted $1$. The ledger inverts the classical tombstone-GC picture: what
+licenses forgetting is unreachability, not stability. \emph{(b) Size.}
+The unpruned ledger equals the tombstoned RGA's state \emph{exactly}
+(both $=$ \#inserts); the pruned ledger is $O(\mathrm{live})$: at round
+300 of the churn regime, 9 live $+$ 17 ledger entries vs.\ 906 for
+RGA$_\dagger$ ($\approx 35\times$, growing linearly). \emph{(c)
+Precision.} Post-merge, the maximum denominator obeys an exact law ---
+$\mathrm{bits} = \text{max sibling-set width} + 2$, verified on
+3{,}241/3{,}241 merges --- because the re-render replays quarter-carves:
+merges reset fold-accumulated precision, leaving a structural, not
+historical, floor (churn: 14 bits across 1{,}803 ops, vs.\ 76 bits
+merge-free).
+
 \paragraph{The anomaly contract, relative to the North Star.} What
 anomalies does the delta tree admit, compared to the published
 (tombstoned) RGA? The table shows column-for-column agreement; the true
@@ -395,7 +426,15 @@ proved RGA's global-key re-sort.
 exactly invariants 2 and 3: the merge's render realizes the canonical
 order, and its output is in the image of the local operations. Local
 steps preserve the correspondence (the isometric fold is
-position-invariant by construction).
+position-invariant by construction). The width$+2$ precision law
+(\S\ref{sec:validation}) says the fractions are bounded by structure,
+not history --- so the mechanization can treat them as \emph{derived}
+data (the render of the finite sibling order), never as stored truth.
+\item \textbf{Garbage collection as heap reachability.} The pruning
+obligation is referential --- live nodes are roots, birth parents are
+pointers --- so it phrases naturally as separation-logic-style
+reachability over the id heap, \emph{not} as a causal-stability
+side-condition (which is machine-refuted, \S\ref{sec:validation}).
 \item \textbf{The conjectured headline theorem.}
 $\mathrm{read}_{\text{delta}} = \mathrm{read}_{\mathrm{RGA}_\dagger}$ on
 all histories --- the delta tree as a \emph{compaction} of the published
