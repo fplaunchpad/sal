@@ -1,0 +1,179 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+\tikzset{
+  ver/.style ={draw, rounded corners, fill=black!6, font=\small, align=center, inner sep=5pt},
+  verB/.style={draw, rounded corners, fill=blue!8, font=\small, align=center, inner sep=5pt},
+  verR/.style={draw, rounded corners, fill=red!8, font=\small, align=center, inner sep=5pt},
+  e/.style   ={-{Stealth[length=2.2mm]}, line width=0.7pt},
+  lab/.style ={font=\scriptsize\itshape, text=black!60},
+}
+
+\title{\bfseries What must be remembered about a deleted character?\\[2pt]
+\large The minimal counterexample, with branches, merges, and the LCA\\
+(working note --- throwaway)}
+\author{Sal / FP Launchpad --- KC + Claude}
+\date{2026-07-14}
+
+\begin{document}
+\maketitle
+
+\paragraph{The question.} When a character is deleted from a replicated
+list, what must the system remember about it, and for how long? The
+requirement throughout: once any user has seen character $u$ displayed
+before character $v$, no user may ever see $v$ before $u$; and replicas
+with the same events must agree.
+
+\paragraph{The cast.} Three characters, identified by \emph{when} they
+were typed (larger = later): $d$ at time~1, $a$ at time~4, $x$ at
+time~6. Concurrent same-position characters display newest-first, so a
+document containing $a$ and $d$ at the same position shows ``$a\ d$''.
+
+\section{The four-event history}
+
+\begin{center}
+\begin{tabular}{@{}cll@{}}
+\toprule
+step & action & screen \\
+\midrule
+1 & type $d$ (time 1) & $d$ \\
+2 & type $a$ (time 4), same position & $a\ d$ \\
+  & \emph{--- both replicas sync ---} & $a\ d$ \\
+3 & \textbf{Alice}: type $x$ (time 6) \emph{after} $d$ & $a\ d\ x$
+    \quad$\Rightarrow$ \textbf{Alice has seen $a$ before $x$} \\
+4 & \textbf{Bob}: delete $d$ & $a$ \\
+5 & \emph{merge} & ? \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The version DAG and the first merge}
+
+\begin{center}
+\begin{tikzpicture}[node distance=9mm and 6mm]
+  \node[ver] (v0) {$V_0=\varnothing$};
+  \node[ver, below=7mm of v0] (v1)
+    {$V_1=\{\,a{:}(\mathrm{root},4),\ d{:}(\mathrm{root},1)\,\}$\\ display: $a\ d$};
+  \node[verB, below left=10mm and 6mm of v1] (va)
+    {Alice\quad $V_A=\{a,\ d,\ x{:}(\mathrm{par}\,d,6)\}$\\ display: $a\ d\ x$};
+  \node[verR, below right=10mm and 6mm of v1] (vb)
+    {Bob\quad $V_B=\{a\}$\\ display: $a$};
+  \node[ver, below=26mm of v1] (m1)
+    {$M_1=\mathrm{merge}(L{=}V_1,\ A{=}V_A,\ B{=}V_B)$};
+  \draw[e] (v0) -- node[lab, right] {ins $d$(1); ins $a$(4)} (v1);
+  \draw[e] (v1) -- node[lab, above left] {ins $x$(6) after $d$} (va);
+  \draw[e] (v1) -- node[lab, above right] {del $d$} (vb);
+  \draw[e] (va) -- (m1);
+  \draw[e] (vb) -- (m1);
+  \node[lab, right=2mm of m1] {LCA $= V_1$ (the common past of the two heads)};
+\end{tikzpicture}
+\end{center}
+
+\noindent What $M_1$ sees, record by record:
+
+\begin{center}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+node & in $L$ ($=V_1$) & in $A$ & in $B$ & verdict \\
+\midrule
+$a$ (4) & root & root & root & in all three $\Rightarrow$ \textbf{lives} \\
+$d$ (1) & root & root & \textbf{absent} & live in LCA, missing in $B$
+  $\Rightarrow$ $B$ deleted it $\Rightarrow$ \textbf{dies} \\
+$x$ (6) & absent & par $= d$ & absent & not in LCA, born in $A$
+  $\Rightarrow$ \textbf{lives} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Survivors $\{a, x\}$. The whole question is the root order:
+\textbf{$a$ before $x$, or $x$ before $a$?}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+design & root comparison & result \\
+\midrule
+RGA (keep $d$ as tombstone) & $a$(4) vs $d$(1): $a$ first; $x$ rides
+  after $d$; read skips $d$ & $a\ x$\quad\checkmark \\
+always keep the dead time & $x$'s rank $=(1,6)$ via dead parent; $4$ vs
+  $(1,6)$: $4>1$ & $a\ x$\quad\checkmark \\
+keep only if $d$ conflicted & $d$ never conflicted $\Rightarrow$ nothing
+  kept; $4$ vs $(6)$: $6>4$ & $x\ a$\quad$\boldsymbol\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The conditional design reverses the order Alice already saw.
+The point: \emph{the position of $x$ relative to $a$ is decided by the
+timestamp of $d$} --- a character that is gone, and that looked
+completely uninteresting at deletion time (typed sequentially, never
+part of any conflict). Any rule that skips remembering in ``boring''
+cases skips exactly this one. (A second, six-event counterexample kills
+the smarter condition ``remember $d$ if something displays above it'':
+that condition can change \emph{after} $d$'s death, via a concurrent
+insert in a replica where $d$ still exists, so replicas answer it
+differently.)
+
+\section{Where the LCA helps, and where it stops helping}
+
+At $M_1$, $d$'s timestamp is still present in two of the three inputs
+--- the LCA remembers it. So the \emph{first} merge after a death could
+answer correctly with no retention at all, just by consulting its
+inputs; the conditional design fails at $M_1$ by rule, not for lack of
+information. Retention is forced \emph{one merge later}:
+
+\begin{center}
+\begin{tikzpicture}[node distance=9mm and 6mm]
+  \node[ver] (m1) {$M_1=\{a,\ x\}$ \quad ($d$ is gone from this state)};
+  \node[verB, below left=9mm and 4mm of m1]  (p) {$P$: ins $y$(7)};
+  \node[verR, below right=9mm and 4mm of m1] (q) {$Q$: ins $z$(8)};
+  \node[ver, below=22mm of m1] (m2)
+    {$M_2=\mathrm{merge}(L{=}M_1,\ P,\ Q)$:\quad $d$ appears in \textbf{no} input};
+  \draw[e] (m1) -- (p); \draw[e] (m1) -- (q);
+  \draw[e] (p) -- (m2); \draw[e] (q) -- (m2);
+\end{tikzpicture}
+\end{center}
+
+\noindent $M_2$ must still order $a$ vs $x$, and no input contains $d$.
+Whatever $M_1$ learned had to be written into its \emph{output state}.
+That is exactly what the working designs do. After $M_1$:
+\[
+  \text{RGA: } d^{\dagger}\ \text{kept in the sequence}
+  \qquad\qquad
+  \text{ours: } x : (\mathrm{par}=\mathrm{root},\ \mathrm{rank}=(1,6))
+\]
+and $M_2$ reads $z\ y\ a\ x$ in both (machine-checked).
+
+\paragraph{Division of labor.}
+\begin{itemize}
+\item \textbf{The LCA covers the first merge after a death} --- ``dead
+in a branch, live in the LCA'' is visible for free, timestamp included.
+This is real power that two-way-merge CRDTs lack.
+\item \textbf{The LCA cannot cover the second merge.} Once the death is
+processed, the deleted record leaves the visible horizon, and the
+ordering fact it justified must survive in the state: as a tombstone
+(RGA) or as one retained timestamp on the descendant (ours).
+\end{itemize}
+
+\paragraph{Status of the retention question.} Machine-checked:
+remembering nothing breaks (8 refuted designs); remembering
+conditionally breaks (2 refuted rules, counterexamples above); always
+remembering works and is observationally equivalent to the tombstoned
+RGA, at one number per deleted character with living descendants ---
+$O(\text{history})$ in the worst case, same as RGA. The one open
+question: whether the retained timestamps can be discarded once every
+replica has seen the deletion (causal stability), which would shrink the
+steady state to the live text plus in-flight activity.
+
+\paragraph{Provenance.} All rows reproduce from
+\texttt{whiteboard/litmus/contest\_tree.py} (designs, both
+counterexamples as executable regressions, and the always-keep control's
+lockstep equivalence with the tombstoned RGA).
+
+\end{document}
