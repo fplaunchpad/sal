@@ -331,3 +331,99 @@ if __name__ == '__main__':
         (p, lo, hi), = s.values()
         bits = max(lo.denominator.bit_length(), hi.denominator.bit_length())
         print(f'  {D.name:14} live={len(s)}  survivor denominator ~2^{bits}')
+
+
+# =========================================================================
+# IEEE 754 analysis (KC's question): the same design with binary64 floats
+# as the range carrier. Floats ARE dyadics -- sign * m * 2^e with m < 2^53
+# -- so they are the right SHAPE for embed values (everything here is
+# dyadic); the analysis measures what the fixed 53-bit window costs.
+# Pre-registered failure modes:
+#   F1 mint collapse: 1 - 2^-t rounds to 1.0 once 2^-t < ulp(1)/2, so
+#      every mint with ts beyond ~2^6 collides at (1,1) -- ties return.
+#   F2 depth underflow: absolute width 2^-(sum of ts+2) hits the
+#      subnormal floor 2^-1074 after ~1000 bits of path.
+#   F3 isometry loss: the fold multiplies dyadics; once a product needs
+#      > 53 significand bits it rounds, absolutes stop being birth
+#      constants, and different fold orders diverge -- mutable geometry
+#      re-entering through the ulp (the merge's invariance assert fires).
+# =========================================================================
+class EmbedTreeFP(EmbedTree):
+    name = 'embed-fp64'
+
+    @staticmethod
+    def I(t):
+        w = 2.0**-t
+        return (1.0 - w, 1.0 - 0.75*w)
+
+
+def fp_report():
+    import pbt
+    print('== F1 mint collapse ==')
+    t = 1
+    while True:
+        lo, hi = EmbedTreeFP.I(t)
+        lo2, hi2 = EmbedTreeFP.I(t+1)
+        if not (lo < hi and hi < lo2 and hi2 < 1.0):
+            print(f'  first degenerate/non-disjoint mint at t={t}: '
+                  f'I({t})=({lo!r},{hi!r})  I({t+1})=({lo2!r},{hi2!r})')
+            break
+        t += 1
+    print('== F2 depth underflow (sequential chain, ts=1,2,3,...) ==')
+    D = EmbedTreeFP()
+    s = D.init(); s = D.apply(s, ('ins', 1, 0))
+    n = None
+    for i in range(2, 200):
+        s = D.apply(s, ('ins', i, i-1))
+        # absolute width of the deepest node
+        w = 1.0
+        u = i
+        while u != 0:
+            p, lo, hi = s[u]; w *= (hi - lo); u = p
+        if w == 0.0:
+            n = i
+            print(f'  absolute width underflows to 0.0 at depth {i}')
+            break
+    if n is None: print('  no underflow through depth 200')
+    print('== F3 isometry: fold exactness sentinel ==')
+    D = EmbedTreeFP()
+    s = D.init()
+    for i, a in ((1,0),(2,1),(3,2),(4,3)):
+        s = D.apply(s, ('ins', i, a))
+    def absr(s, u):
+        p, lo, hi = s[u]
+        while p != 0:
+            pp, plo, phi = s[p]
+            w = phi - plo
+            lo, hi = plo + w*lo, plo + w*hi
+            p = pp
+        return (lo, hi)
+    before = absr(s, 4)
+    s = D.apply(s, ('del', 2))
+    after = absr(s, 4)
+    print(f'  shallow chain (ts 1..4): fold exact? {before == after}')
+    exact = EmbedTree()
+    print('== DAG PBT under binary64 ==')
+    from random import Random
+    ok = flips = errs = 0
+    first = None
+    for i in range(120):
+        try:
+            bad, _ = pbt.run_execution(EmbedTreeFP(), Random(i), 4, 8, 2, 0.3, 0.4)
+            if bad:
+                flips += 1
+                if first is None: first = (i, bad)
+            else:
+                ok += 1
+        except AssertionError as e:
+            errs += 1
+            if first is None: first = (i, f'ISOMETRY ASSERT: {e}')
+        except Exception as e:
+            errs += 1
+            if first is None: first = (i, f'{type(e).__name__}: {e}')
+    print(f'  120 executions: {ok} clean, {flips} flip/conv, {errs} invariant-assert/error')
+    print(f'  first failure: {first}')
+
+
+if __name__ == '__main__' and __import__('sys').argv[1:] == ['fp']:
+    fp_report()

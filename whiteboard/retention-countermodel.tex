@@ -16,7 +16,8 @@
 }
 
 \title{\bfseries What must be remembered about a deleted character?\\[2pt]
-\large v2: positions are testimony; only ties force retention\\
+\large v3: nothing beyond the coordinates --- if the carve is
+timestamp-faithful\\
 (working note --- throwaway)}
 \author{Sal / FP Launchpad --- KC + Claude}
 \date{2026-07-14}
@@ -233,6 +234,192 @@ Mixed-comparator transitivity}: position where distinct, stamps at ties
 --- the combined relation must remain a total order. \emph{(iv) Nested
 tie families}: heirs of both sides of a tie meeting each other.
 
+\medskip
+\noindent\emph{(v3, same day: the box above was never run --- it was
+overtaken. KC: ``we don't need metadata for races \dots\ the ranges
+fully capture it \dots\ it may be the case you don't see it or your
+merge may be wrong.'' Correct. The next section removes the box's hidden
+premise, and all four risks dissolve with it.)}
+
+\section{v3: the tie premise falls --- timestamp-faithful carves}
+\label{sec:v3}
+
+The boxed claim quantifies over designs whose carve is
+\textbf{timestamp-oblivious}: the quarter carve is a deterministic
+function of the seen state only, so concurrent same-slot mints produce
+\emph{identical} ranges. Ties are not intrinsic to races --- they are
+\emph{manufactured by the carve}, which discards the one datum that
+distinguishes the rivals. Embed it instead. Mint, relative to the
+anchor:
+\[
+  I(t) \;=\; \Bigl(\,1 - 2^{-t},\ \ 1 - \tfrac34\,2^{-t}\,\Bigr).
+\]
+Everything else is unchanged --- in particular \textbf{delete is the
+delta tree's isometric fold, verbatim}: the dead node's interval is
+composed into its children's, an exact affine substitution, so every
+survivor's absolute interval is untouched (the machine sentinel: the
+merge asserts that all three inputs agree on every survivor's absolute;
+it has never fired). The merge is OR-set survival plus re-anchoring to
+the nearest surviving ancestor; \emph{it contains no repair and never
+decides an order}.
+
+\paragraph{Theorem 1 (mint disjointness and order).} For $s \ne t$,
+$I(s)$ and $I(t)$ are disjoint with a gap, and $s < t \Rightarrow I(s)$
+lies entirely below $I(t)$.
+\emph{Proof.} WLOG $s < t$, so $t \ge s+1$. The claim is
+$\mathrm{hi}(s) < \mathrm{lo}(t)$, i.e.
+$1 - \tfrac34 2^{-s} < 1 - 2^{-t}$, i.e. $2^{\,t-s} > \tfrac43$ ---
+true since $2^{\,t-s} \ge 2$. Monotonicity of $\mathrm{lo}$ gives the
+order. $\square$
+
+\noindent Timestamps are globally unique, so \emph{ties cannot exist}:
+no repair ever runs, no interval is ever rewritten, and a node's
+absolute interval is a \textbf{birth constant}
+\[
+  \alpha(u) \;=\; \varphi_{c_1} \circ \varphi_{c_2} \circ \cdots \circ
+  \varphi_{c_k}\bigl(I(t_u)\bigr),
+\]
+the affine composition of the mints along $u$'s \emph{birth chain}
+$c_1 c_2 \cdots c_k u$ (where $\varphi_v$ maps $(0,1)$ onto $I(t_v)$,
+order-preservingly).
+
+\paragraph{Theorem 2 (no overlap, globally and permanently).} For any
+two distinct nodes $u, v$, either one's birth chain is a prefix of the
+other's (ancestor and descendant: $\alpha$ nested), or
+$\alpha(u) \cap \alpha(v) = \varnothing$. In particular, any two nodes
+sharing a \emph{current} parent have disjoint intervals.
+\emph{Proof.} If neither chain is a prefix of the other, let $k$ be the
+first level where they differ, with distinct timestamps $s \ne t$
+there. Both $\alpha$'s factor through the shared prefix
+$\varphi_{c_1} \circ \cdots \circ \varphi_{c_{k-1}}$, which is a
+monotone injection; inside it, one continuation lies in $I(s)$ and the
+other in $I(t)$, disjoint by Theorem~1 --- and affine images of
+disjoint intervals are disjoint. For the ``in particular'': two nodes
+with the same current parent $p$ cannot be chain-comparable --- if $u$
+lay on $v$'s birth chain and both were live, then $v$'s nearest live
+birth-ancestor would be $u$ or deeper, not $p$ above $u$. And folds
+preserve $\alpha$ exactly (isometry), so the disjointness is permanent,
+not a mint-time accident. $\square$
+
+\paragraph{Corollary (the read needs no tie rule).} Sibling intervals
+never tie, so the id tiebreak in the sort is dead code ---
+machine-confirmed by an instrumented sweep asserting pairwise
+disjointness at \emph{every read of every execution}: clean over
+$120 + 200$ randomized DAG executions.
+
+\paragraph{Corollary (display $\equiv$ chain-lex).} Sibling order under
+any current parent is descending timestamp \emph{at the first level
+where the birth chains diverge}: survivors by their own ts, folded
+heirs by their dead founder's --- the subordination the countermodels
+demand, read off geometry. Instrumented check over 19{,}531
+multi-member sibling groups: own-ts order violated 3{,}481 times (all
+post-fold heir groups --- forcing own-ts there is exactly the
+dissolution failure), \textbf{birth-chain lex order violated 0 times}.
+Display order \emph{is} the lex order on birth chains; the geometry
+realizes it with zero retained metadata.
+
+\paragraph{Machine verdicts.} The credential shape (a tie's heirs
+meeting a mid-timestamp third party under death-before vs.\ death-after
+topologies) plus the full gauntlet:
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llll@{}}
+\toprule
+ & RGA$_\dagger$ & keep-range + o.-p.\ repair & embed \\
+\midrule
+credential countermodel & \checkmark & $\times$ diverges, 5 flips &
+  \checkmark (= RGA$_\dagger$'s read) \\
+L25-third-party / CE-escape / CE-retro & \checkmark & $\times$ / \checkmark
+  / \checkmark & all \checkmark \\
+litmus battery & \checkmark & --- & clean exc.\ one-sided L19 \\
+DAG PBT & \checkmark & 28/120 fail & \textbf{120/120, 300/300 clean} \\
+state beyond live $(\mathrm{par}, lo, hi)$ & tombstones & none & \textbf{none} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The control column matters: order-preserving repair is the
+strongest form of ``the ranges capture the settled order'' \emph{without}
+changing the mint, and it fails exactly where predicted --- ranking a
+fresh claimant against a dead founder's heirs needs the founder's rank,
+which a ts-oblivious state no longer holds and ts-faithful geometry
+does. All four pre-registered risks dissolve: identical ranges require
+identical timestamps, so posthumous ties, tied orphans, mixed
+comparators, and nested tie families have no instances.
+
+\paragraph{The conservation law (what replaces the box).}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Nothing must be remembered about
+the dead beyond the coordinates of the living --- provided mints are
+timestamp-faithful.} The order information is conserved, not
+eliminated: it moves into coordinate precision. Ties force
+\emph{metadata} only under timestamp-oblivious minting; under
+timestamp-faithful minting the same bits are carried \emph{inside} the
+ranges --- as a stamp, a link, a tombstone, or denominator bits, the
+verdict persists somewhere as long as it matters.}}
+\end{center}
+
+\medskip
+\noindent Measured on the 1000-character chain-then-delete-all: the
+survivor's denominator is $\sim 2^{502501}$ --- $\approx
+\sum_i (t_i + 2)$ bits, i.e.\ the sum of the timestamps folded through,
+$\sim$61\,KB for one character --- versus $2^{2001}$ for the
+ts-oblivious quarter carve (the width$+2$ law). The carve choice is an
+information trade, not an escape: quarter carve = cheap and lossy
+(ties, hence metadata elsewhere); ts-embed = complete and exact
+(metadata inside the number). The open question is no longer
+\emph{whether} to retain but \emph{how to compress}: stability-gated
+renumbering of birth-constant coordinates without re-opening the
+mutable-geometry hole.
+
+\subsection*{IEEE 754 floats as the range carrier (KC's question)}
+
+Binary64 values \emph{are} dyadics --- $\pm m \cdot 2^{e}$, $m <
+2^{53}$ --- so floats are the right \emph{shape} for embed coordinates
+(every value in the design is dyadic; exact \texttt{Fraction}s here
+never need gcd). What the fixed 53-bit window costs, machine-measured
+(\texttt{embed\_tree.py fp}):
+
+\begin{itemize}
+\item \textbf{F1, mint collapse at $t = 52$.} $I(52)$ already rounds to
+a zero-width point ($\mathrm{lo} = \mathrm{hi}$), and $1 - 2^{-t}$
+rounds to $1.0$ shortly after: every mint with a timestamp beyond
+$\sim$52 degenerates. A Lamport clock passes 52 within the first minute
+of any real system.
+\item \textbf{F2, depth underflow at 44.} On the sequential chain with
+$t = 1, 2, 3, \ldots$, the absolute width $2^{-\sum (t_i+2)}$ hits the
+subnormal floor $2^{-1074}$ at depth 44: deeper nodes have no interval.
+\item \textbf{F3, isometry survives only inside the window.} Shallow,
+small-ts folds are \emph{exact} (dyadic products within 53 bits round
+to themselves) --- but once a composition overflows the window it
+rounds, absolutes stop being birth constants, and Theorem~2's
+permanence is void: mutable geometry re-enters through the ulp.
+\item \textbf{DAG PBT: 114/120 clean, 6 executions die} ---
+zero-width parents from F1/F2 produce \texttt{ZeroDivisionError} at
+merge re-relativization. The failures begin exactly when timestamps
+cross the window, and the 114 clean runs are those whose ids stayed
+small: binary64 works precisely as long as the workload fits 53 bits.
+\end{itemize}
+
+\noindent The general obstruction is a pigeonhole, not an artifact: the
+contract requires the state to order survivors by birth chains carrying
+$\Theta(\sum t_i)$ bits; a 64-bit pattern holds 64. \emph{Any}
+fixed-width coordinate must eventually conflate two distinct chains ---
+re-manufacturing ties --- or reorder them. Fixed-precision floats do
+not evade the conservation law; they truncate it. What floats are good
+for: \emph{(a)} a comparison cache --- a binary64 key alongside the
+exact coordinate, compared first, falling back to the exact layer on
+equality; sound, since float equality flags exactly the pairs the
+window cannot separate; \emph{(b)} the exact carrier itself in
+IEEE \emph{shape} but with an unbounded mantissa (softfloat /
+big-dyadic), which is the natural implementation of these coordinates
+--- cheaper than general rationals, no gcd ever; \emph{(c)} fixed-width
+labels \emph{with relabeling} (order-maintenance style) --- but
+relabeling is geometry mutation, refuted throughout this campaign
+unless gated on causal stability, which is precisely the open
+compression question above.
+
 \section{Where the LCA helps --- scoped honestly}
 
 The MRDT merge sees three states; ``dead in a branch, live in the LCA''
@@ -248,15 +435,25 @@ is exactly risk \emph{(ii)}: ties whose dead side no input remembers.
 \paragraph{Status.} Machine-checked: remembering nothing at all breaks
 --- at ties (8 refuted designs); conditional retention on mutable
 conditions breaks (2 refuted rules); always-remembering works and equals
-the tombstoned RGA ($O(\text{history})$ worst case); keep-the-range
-works everywhere except ties (52/120 at scale). Open: tie-only retention
-(the candidate above), and stability-gated discard of whatever is
-retained.
+the tombstoned RGA ($O(\text{history})$ worst case); keep-the-range with
+ts-oblivious mints works everywhere except ties (52/120 at scale);
+\textbf{keep-the-range with ts-faithful mints (\S\ref{sec:v3}) works
+everywhere} --- full battery except one-sided L19, DAG PBT 120/120 and
+300/300, no ids, no stamps, no ledger, no tombstones. The tie-only-stamp
+candidate is moot: ties no longer exist. Open: compression of
+birth-constant coordinates (stability-gated renumbering), and the L19
+backward-run column (two-sided extension), both orthogonal to
+retention.
 
 \paragraph{Provenance.} \texttt{whiteboard/litmus/}:
 \texttt{contest\_tree.py} (designs and countermodel regressions, and the
 always-keep control's lockstep equivalence with the tombstoned RGA),
-\texttt{sibling\_tree.py} (the encoding-divergence probe). The
+\texttt{sibling\_tree.py} (the encoding-divergence probe),
+\texttt{relsplit\_v2.py} (canonical refolding; the naive and
+frozen-block repairs), \texttt{embed\_tree.py} (\S\ref{sec:v3}: the
+ts-faithful design, the v2c control, the credential countermodel, and
+the IEEE 754 measurements; \texttt{python3 embed\_tree.py} runs the
+gauntlet, \texttt{python3 embed\_tree.py fp} the float analysis). The
 keep-range runs reproduce from the session transcript of 2026-07-14; all
 table values machine-printed.
 
