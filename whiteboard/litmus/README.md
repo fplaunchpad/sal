@@ -17,6 +17,21 @@ providing `{init, apply, read, merge}` (see the `Design` classes in
 `litmus.py`); the whole battery then runs unchanged. Ids are Lamport-plausible
 integers and double as timestamps.
 
+## The adopted contract (KC, 2026-07-14)
+
+**If a co-displayed pair is flipped, we have failed.** Pairwise display
+stability — globally, across every read of every replica at every time — is
+a hard requirement, not a graded anomaly. The PBT's FLIP check and the
+battery's S2/S4 clauses are this criterion's enforcement; a design that
+fails any of them is out, whatever else it offers. Consequence, via the
+machine-witnessed triangle (finding 11): convergence being equally
+non-negotiable, **strict dead-freedom is the corner that must be
+surrendered** — the state retains dead names at live-reachable scope
+(freed when their last witness dies; compactable under causal stability).
+The unique design satisfying the contract on the full battery and the DAG
+PBT is `path-2`; deltas and the isometric fold survive as its
+representation and compaction layers.
+
 ## The spec clauses (the observable ladder)
 
 Letters in the last column map to the anomaly-matrix report's columns
