@@ -882,4 +882,170 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
         exact ⟨hnot hp₀ hwf₀ (fun a ha => hin₁ a ha.1) (fun a ha => ha.1),
                hnot hp₁ hwf₁ hin₁ (fun a ha => ha)⟩
 
+/-! ## §6b  The Join — the merge is its own linearization witness
+
+Witness enumeration for the union: the LCA's enumeration, then branch one's
+delta (in branch order), then branch two's news. Its `respects` obligation
+falls to CLOSURE — a `loOn`-later event sitting in an earlier block would
+have been pulled into the earlier event set — and `loOn` is event-set
+independent under `rc = Either`, so within-block orders transfer verbatim. -/
+
+open LabeledTS in
+theorem e_join_at {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    (hHon : EHonestCore Γ C) : JoinLemma3At (E Γ) C := by
+  intro ev₁ ev₂ s₀ s₁ s₂ _htr _hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
+  classical
+  obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
+  obtain ⟨ρ₁, hp₁, hr₁, hf₁⟩ := h₁
+  obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
+  set ev₀ := ev₁ ∩ ev₂ with hev₀
+  have hin₀ : ∀ a ∈ ev₀, a ∈ C.events := fun a ha => hin₁ a ha.1
+  have hcl₀ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b →
+      b ∈ ev₀ → a ∈ ev₀ :=
+    fun a b hv hc hb => ⟨hcl₁ a b hv hc hb.1, hcl₂ a b hv hc hb.2⟩
+  have hinU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
+    rintro a (ha | ha)
+    · exact hin₁ a ha
+    · exact hin₂ a ha
+  have hclU : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b →
+      b ∈ ev₁ ∪ ev₂ → a ∈ ev₁ ∪ ev₂ := by
+    rintro a b hv hc (hb | hb)
+    · exact Or.inl (hcl₁ a b hv hc hb)
+    · exact Or.inr (hcl₂ a b hv hc hb)
+  have hwf₀ := e_wf_of_enum hHon hin₀ hcl₀ hp₀ hr₀
+  have hwf₁ := e_wf_of_enum hHon hin₁ hcl₁ hp₁ hr₁
+  have hwf₂ := e_wf_of_enum hHon hin₂ hcl₂ hp₂ hr₂
+  -- loOn is event-set independent under rc = Either
+  have hloOn : ∀ (ev ev' : Set (Op EOp)) (x y : Op EOp),
+      loOn C ev x y → loOn C ev' x y := by
+    intro ev ev' x y h
+    rw [loOn_iff_of_rc_either (E_rc_either Γ)] at h ⊢
+    exact h
+  -- the witness enumeration
+  set δ₁ := ρ₁.filter (fun o => decide (o ∉ ev₀)) with hδ₁
+  set δ₂ := ρ₂.filter (fun o => decide (o ∉ ev₁)) with hδ₂
+  set ρᵤ := ρ₀ ++ (δ₁ ++ δ₂) with hρᵤ
+  have hmemδ₁ : ∀ {o}, o ∈ δ₁ ↔ o ∈ ρ₁ ∧ o ∉ ev₀ := by
+    intro o
+    rw [hδ₁]
+    simp [List.mem_filter]
+  have hmemδ₂ : ∀ {o}, o ∈ δ₂ ↔ o ∈ ρ₂ ∧ o ∉ ev₁ := by
+    intro o
+    rw [hδ₂]
+    simp [List.mem_filter]
+  -- membership: ρᵤ enumerates the union
+  have hmemU : ∀ o, o ∈ ρᵤ ↔ o ∈ ev₁ ∪ ev₂ := by
+    intro o
+    rw [hρᵤ]
+    simp only [List.mem_append]
+    constructor
+    · rintro (h | h | h)
+      · exact Or.inl ((hp₀.2 o).mp h).1
+      · exact Or.inl ((hp₁.2 o).mp (hmemδ₁.mp h).1)
+      · exact Or.inr ((hp₂.2 o).mp (hmemδ₂.mp h).1)
+    · rintro (h | h)
+      · by_cases h0 : o ∈ ev₀
+        · exact Or.inl ((hp₀.2 o).mpr h0)
+        · exact Or.inr (Or.inl (hmemδ₁.mpr ⟨(hp₁.2 o).mpr h, h0⟩))
+      · by_cases h1 : o ∈ ev₁
+        · by_cases h0 : o ∈ ev₀
+          · exact Or.inl ((hp₀.2 o).mpr h0)
+          · exact Or.inr (Or.inl (hmemδ₁.mpr ⟨(hp₁.2 o).mpr h1, h0⟩))
+        · exact Or.inr (Or.inr (hmemδ₂.mpr ⟨(hp₂.2 o).mpr h, h1⟩))
+  -- nodup: blocks are nodup and pairwise set-separated
+  have hndU : ρᵤ.Nodup := by
+    rw [hρᵤ]
+    rw [List.nodup_append]
+    refine ⟨hp₀.1, ?_, ?_⟩
+    · rw [List.nodup_append]
+      refine ⟨hp₁.1.filter _, hp₂.1.filter _, ?_⟩
+      intro a ha b hb hab
+      subst hab
+      exact (hmemδ₂.mp hb).2 ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
+    · intro a ha b hb hab
+      subst hab
+      have ha0 : a ∈ ev₀ := (hp₀.2 a).mp ha
+      rcases List.mem_append.mp hb with h | h
+      · exact (hmemδ₁.mp h).2 ha0
+      · exact (hmemδ₂.mp h).2 ha0.1
+  have hpU : listPermOf ρᵤ (ev₁ ∪ ev₂) := ⟨hndU, hmemU⟩
+  -- respects: within-blocks by transfer, cross-blocks by closure
+  have hrU : respects ρᵤ (loOn C (ev₁ ∪ ev₂)) := by
+    rw [hρᵤ]
+    unfold respects at hr₀ hr₁ hr₂ ⊢
+    rw [List.pairwise_append]
+    refine ⟨hr₀.imp (fun h hl => h (hloOn _ _ _ _ hl)), ?_, ?_⟩
+    · rw [List.pairwise_append]
+      refine ⟨(hr₁.sublist List.filter_sublist).imp
+          (fun h hl => h (hloOn _ _ _ _ hl)),
+        (hr₂.sublist List.filter_sublist).imp
+          (fun h hl => h (hloOn _ _ _ _ hl)), ?_⟩
+      -- cross δ₁ × δ₂: a loOn-later δ₂ event before a δ₁ event would be in ev₁
+      intro a ha b hb hl
+      rw [loOn_iff_of_rc_either (E_rc_either Γ)] at hl
+      have hb1 : b ∈ ev₁ := hcl₁ b a hl.1 hl.2 ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
+      exact (hmemδ₂.mp hb).2 hb1
+    · -- cross ρ₀ × deltas: a loOn-later delta event before an LCA event
+      -- would be in ev₀
+      intro a ha b hb hl
+      rw [loOn_iff_of_rc_either (E_rc_either Γ)] at hl
+      have ha0 : a ∈ ev₀ := (hp₀.2 a).mp ha
+      have hb0 : b ∈ ev₀ := hcl₀ b a hl.1 hl.2 ha0
+      rcases List.mem_append.mp hb with h | h
+      · exact (hmemδ₁.mp h).2 hb0
+      · exact (hmemδ₂.mp h).2 hb0.1
+  have hwfU : EWf Γ ρᵤ := e_wf_of_enum hHon hinU hclU hpU hrU
+  -- the fold of the witness IS the merge, by canonical-form extensionality
+  refine ⟨ρᵤ, hpU, hrU, ?_⟩
+  show eFold Γ ρᵤ = (E Γ).mergeL s₀ s₁ s₂
+  rw [← hf₀, ← hf₁, ← hf₂]
+  show eFold Γ ρᵤ = eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂)
+  -- cross-key-injectivity feeding the merge's sortedness
+  have hdisj : ∀ x ∈ eFold Γ ρ₁, ∀ y ∈ eFold Γ ρ₂,
+      key x.2.2 = key y.2.2 → x = y := by
+    intro x hx y hy hkey
+    obtain ⟨o₁, hm₁, hi₁, hrec₁⟩ := e_fold_rec_sub Γ ρ₁ x hx
+    obtain ⟨o₂, hm₂, hi₂, hrec₂⟩ := e_fold_rec_sub Γ ρ₂ y hy
+    have he₁ : o₁ ∈ C.events := hin₁ o₁ ((hp₁.2 o₁).mp hm₁)
+    have he₂ : o₂ ∈ C.events := hin₂ o₂ ((hp₂.2 o₂).mp hm₂)
+    have hkey' : key (eCoord Γ o₁) = key (eCoord Γ o₂) := by
+      rw [hrec₁, hrec₂] at hkey
+      exact hkey
+    have hids : o₁.1 = o₂.1 := by
+      by_contra hne
+      exact e_keys_inj_events hHon o₁ he₁ o₂ he₂ hi₁ hi₂ hne hkey'
+    have : o₁ = o₂ := C.ts_unique he₁ he₂ hids
+    rw [hrec₁, hrec₂, this]
+  apply esorted_ext (e_fold_sorted Γ hwfU)
+    (eMergeL_sorted (e_fold_sorted Γ hwf₁) (e_fold_sorted Γ hwf₂) hdisj)
+  intro r
+  rw [e_fold_mem Γ hwfU r,
+      e_mergeL_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
+  constructor
+  · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
+    have hor : o ∈ ev₁ ∨ o ∈ ev₂ := by
+      rcases (hmemU o).mp hm with h | h
+      · exact Or.inl h
+      · exact Or.inr h
+    refine ⟨⟨o, hor, hi, hrec⟩, ?_⟩
+    intro d hd hdel
+    apply hnd
+    apply mem_eDels.mpr
+    refine ⟨d, (hmemU d).mpr ?_, hdel⟩
+    rcases hd with h | h
+    · exact Or.inl h
+    · exact Or.inr h
+  · rintro ⟨⟨o, hor, hi, hrec⟩, hnd⟩
+    have hmU : o ∈ ev₁ ∪ ev₂ := by
+      rcases hor with h | h
+      · exact Or.inl h
+      · exact Or.inr h
+    refine ⟨⟨o, (hmemU o).mpr hmU, hi, hrec⟩, ?_⟩
+    intro hdel
+    obtain ⟨d, hd, hdel'⟩ := mem_eDels.mp hdel
+    rcases (hmemU d).mp hd with h | h
+    · exact hnd d (Or.inl h) hdel'
+    · exact hnd d (Or.inr h) hdel'
+
 end Sal.ConditionedMRDTs
