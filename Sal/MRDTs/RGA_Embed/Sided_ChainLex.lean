@@ -339,4 +339,158 @@ example : keyLt (sKey (sidedCoordOf unaryCode [(Side.R, 1)]))
     (sKey (sidedCoordOf unaryCode [(Side.R, 1), (Side.L, 2)])) = true := by
   decide
 
+/-! ## Unique decodability over the sided alphabet -/
+
+/-- Uniform view of a block: the code mapped through the side's symbol
+function (the L side pre-composes the complement). -/
+def sideSym : Side → Bool → ℕ
+  | Side.R => symR
+  | Side.L => fun b => symL (!b)
+
+theorem sBlock_eq (Γ : OrderedPrefixCode) (sd : Side) (d : ℕ) :
+    sBlock Γ (sd, d) = (Γ.enc d).map (sideSym sd) := by
+  cases sd with
+  | R => rfl
+  | L => simp [sBlock, sideSym, compl, List.map_map, Function.comp]
+
+theorem sideSym_inj (sd : Side) : Function.Injective (sideSym sd) := by
+  cases sd <;> intro a b h <;> cases a <;> cases b <;>
+    simp [sideSym, symR, symL] at h ⊢
+
+theorem sideSym_band_ne (b b' : Bool) :
+    sideSym Side.R b ≠ sideSym Side.L b' := by
+  cases b <;> cases b' <;> simp [sideSym, symR, symL]
+
+/-- Injective per-symbol maps reflect prefixes. -/
+theorem map_prefix_reflect {f : Bool → ℕ} (hf : Function.Injective f) :
+    ∀ {u v : List Bool}, u.map f <+: v.map f → u <+: v
+  | [], _, _ => List.nil_prefix
+  | a :: u, [], h => by simp at h
+  | a :: u, b :: v, h => by
+      simp only [List.map_cons, List.cons_prefix_cons] at h
+      obtain ⟨hab, ht⟩ := h
+      have hab' := hf hab
+      subst hab'
+      exact List.cons_prefix_cons.mpr ⟨rfl, map_prefix_reflect hf ht⟩
+
+/-- **Unique decodability**: distinct positive sided chains mint distinct
+coordinates — the side is recoverable from the first symbol's band, the
+delta by prefix-freedom within the band. -/
+theorem sidedCoordOf_inj (Γ : OrderedPrefixCode) :
+    ∀ {c1 c2 : SChain}, PosSChain c1 → PosSChain c2 →
+      sidedCoordOf Γ c1 = sidedCoordOf Γ c2 → c1 = c2
+  | [], [], _, _, _ => rfl
+  | [], (sd, d) :: es, _, h2, h => by
+      exfalso
+      have hd : 1 ≤ d := h2 (sd, d) List.mem_cons_self
+      have hne := sBlock_ne_nil Γ (e := (sd, d)) hd
+      cases hb : sBlock Γ (sd, d) with
+      | nil => exact hne hb
+      | cons x xs =>
+          simp only [sidedCoordOf, hb] at h
+          simp at h
+  | (sd, d) :: es, [], h1, _, h => by
+      exfalso
+      have hd : 1 ≤ d := h1 (sd, d) List.mem_cons_self
+      have hne := sBlock_ne_nil Γ (e := (sd, d)) hd
+      cases hb : sBlock Γ (sd, d) with
+      | nil => exact hne hb
+      | cons x xs =>
+          simp only [sidedCoordOf, hb] at h
+          simp at h
+  | (s1, d1) :: t1, (s2, d2) :: t2, h1, h2, h => by
+      have hd1 : 1 ≤ d1 := h1 (s1, d1) List.mem_cons_self
+      have hd2 : 1 ≤ d2 := h2 (s2, d2) List.mem_cons_self
+      simp only [sidedCoordOf, sBlock_eq] at h
+      obtain ⟨b1, bs1, hb1⟩ : ∃ b bs, Γ.enc d1 = b :: bs := by
+        cases henc : Γ.enc d1 with
+        | nil => exact absurd henc (enc_ne_nil Γ hd1)
+        | cons b bs => exact ⟨b, bs, rfl⟩
+      obtain ⟨b2, bs2, hb2⟩ : ∃ b bs, Γ.enc d2 = b :: bs := by
+        cases henc : Γ.enc d2 with
+        | nil => exact absurd henc (enc_ne_nil Γ hd2)
+        | cons b bs => exact ⟨b, bs, rfl⟩
+      have hs : s1 = s2 := by
+        by_contra hns
+        rw [hb1, hb2] at h
+        simp only [List.map_cons, List.cons_append,
+          List.cons.injEq] at h
+        cases s1 <;> cases s2
+        · exact hns rfl
+        · exact sideSym_band_ne b1 b2 h.1
+        · exact sideSym_band_ne b2 b1 h.1.symm
+        · exact hns rfl
+      subst hs
+      have hdd : d1 = d2 := by
+        by_contra hnd
+        have p1 : (Γ.enc d1).map (sideSym s1) <+:
+            (Γ.enc d1).map (sideSym s1) ++ sidedCoordOf Γ t1 :=
+          List.prefix_append _ _
+        have p2 : (Γ.enc d2).map (sideSym s1) <+:
+            (Γ.enc d1).map (sideSym s1) ++ sidedCoordOf Γ t1 := by
+          rw [h]
+          exact List.prefix_append _ _
+        rcases Nat.le_total ((Γ.enc d1).map (sideSym s1)).length
+          ((Γ.enc d2).map (sideSym s1)).length with hle | hle
+        · exact Γ.prefixFree hd1 hd2 hnd
+            (map_prefix_reflect (sideSym_inj s1)
+              (List.prefix_of_prefix_length_le p1 p2 hle))
+        · exact Γ.prefixFree hd2 hd1 (Ne.symm hnd)
+            (map_prefix_reflect (sideSym_inj s1)
+              (List.prefix_of_prefix_length_le p2 p1 hle))
+      subst hdd
+      have htail := List.append_cancel_left h
+      rw [sidedCoordOf_inj Γ
+        (fun e he => h1 e (List.mem_cons_of_mem _ he))
+        (fun e he => h2 e (List.mem_cons_of_mem _ he)) htail]
+
+/-! ## The all-R fragment: the one-sided design, verbatim
+
+The erasure theorem, derived through the two marker theorems: lifting a
+one-sided chain to all-R sided form changes neither the coordinate's key
+nor the display verdict — the current datatype IS the L-uninhabited
+fragment. This is the Lean form of the Python all-R lockstep. -/
+
+/-- Lift a one-sided (delta) chain to the all-R sided form. -/
+def liftR (c : List ℕ) : SChain := c.map (fun d => (Side.R, d))
+
+theorem liftR_inj {c1 c2 : List ℕ} (h : liftR c1 = liftR c2) : c1 = c2 := by
+  have := congrArg (List.map Prod.snd) h
+  simpa [liftR, List.map_map, Function.comp] using this
+
+theorem posSChain_liftR {c : List ℕ} (h : PosChain c) :
+    PosSChain (liftR c) := by
+  intro e he
+  obtain ⟨d, hd, rfl⟩ := List.mem_map.mp he
+  exact h d hd
+
+/-- All-R blocks are the one-sided codewords under the one-sided symbol
+map. -/
+theorem sidedCoordOf_liftR (Γ : OrderedPrefixCode) (c : List ℕ) :
+    sidedCoordOf Γ (liftR c) = (coordOf Γ c).map sym := by
+  induction c with
+  | nil => rfl
+  | cons d ds ih =>
+      show sBlock Γ (Side.R, d) ++ sidedCoordOf Γ (liftR ds) = _
+      rw [ih]
+      simp only [coordOf, List.map_append]
+      congr 1
+
+/-- The lifted key IS the one-sided key. -/
+theorem sKey_liftR (Γ : OrderedPrefixCode) (c : List ℕ) :
+    sKey (sidedCoordOf Γ (liftR c)) = key (coordOf Γ c) := by
+  rw [sidedCoordOf_liftR]
+  rfl
+
+/-- **The fragment theorem**: on all-R chains, the in-order rule IS the
+one-sided chain order. The current embed is the L-uninhabited fragment,
+as a theorem. -/
+theorem schainBefore_liftR {c1 c2 : List ℕ}
+    (h1 : PosChain c1) (h2 : PosChain c2) (hne : c1 ≠ c2) :
+    schainBefore (liftR c1) (liftR c2) ↔ chainBefore c1 c2 := by
+  have hlne : liftR c1 ≠ liftR c2 := fun h => hne (liftR_inj h)
+  rw [← sdisplay_iff_schainBefore unaryCode (posSChain_liftR h1)
+      (posSChain_liftR h2) hlne, sKey_liftR, sKey_liftR]
+  exact display_iff_chainBefore unaryCode h1 h2 hne
+
 end Sal.EmbedRGA
