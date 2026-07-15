@@ -44,9 +44,9 @@
 
 \title{\bfseries The Embedded-Chain RGA\\[2pt]
 \large A tombstone-free replicated list whose sort keys are the birth
-chains,\\ entropy-coded --- design, proofs, validation, and
+chains,\\ entropy-coded: design, proofs, validation, and
 related work}
-\author{Sal / FP Launchpad --- KC + Claude\\
+\author{Sal / FP Launchpad (KC + Claude)\\
 \small working names in the artifact: \code{embed-tree} (unary),
 \code{embed-code} (delta-coded)}
 \date{2026-07-14; revised 2026-07-15 (the datatype separated from its
@@ -59,32 +59,32 @@ encoding)}
 \begin{abstract}
 \noindent
 The embedded-chain RGA (replicated growable array) is a replicated
-list --- a sequence MRDT, a \emph{mergeable replicated data type}:
-state-based, reconciled by a three-way merge against the branches'
-lowest common ancestor version --- that
-keeps no tombstones, no ledger, and no event log: its entire state is
-the live nodes. A deleted element survives only as
+list that keeps no tombstones, no ledger, and no event log: its
+entire state is the live nodes. It is a sequence MRDT, a
+\emph{mergeable replicated data type}: state-based, reconciled by a
+three-way merge against the branches' lowest common ancestor
+version. A deleted element survives only as
 $\Theta(\log \delta)$ bits inside its descendants' sort keys,
 $\delta$ being the Lamport-timestamp gap between the element and its
-own insertion anchor ($1$ under sequential editing) --- the
+own insertion anchor ($1$ under sequential editing); that is the
 entropy of the race that created it, paid once, in space.
 Concurrent inserts provably cannot tie, so the merge
 contains no repair and never decides an order; the state is a
 canonical function of the event set, and convergence is literal
 equality. Observationally the datatype \emph{is} the published RGA
---- a kernel-checked read-equivalence theorem, with machine lockstep
-at every step as its tested form --- with the
-tombstone set compressed into coordinate entropy. All of this follows
+with the tombstone set compressed into coordinate entropy: a
+kernel-checked read-equivalence theorem, with machine lockstep at
+every step as its tested form. All of this follows
 from one idea: an element's sort key is its \emph{birth chain}, the
 timestamps from the root of the birth tree down to the element, dead
-ancestors included --- written at birth, never edited, and carried in
-an order-preserving self-delimiting code. Separating the datatype
+ancestors included. The chain is written at birth, never edited, and
+carried in an order-preserving self-delimiting code. Separating the datatype
 from its encoding makes the metatheory nearly definitional:
 correctness is three one-line facts about chains, plus a single
 faithfulness theorem about the code. The design is machine-validated
 (the L1--L25 anomaly battery, except L19, RGA's own; 420+ randomized
-version-DAG executions; 120/120 lockstep), and the central theorem
---- RA-linearizability at every honestly reachable configuration ---
+version-DAG executions; 120/120 lockstep), and the central theorem,
+RA-linearizability at every honestly reachable configuration,
 is a kernel-checked Lean theorem (\S\ref{sec:mechanization}).
 \end{abstract}
 
@@ -98,7 +98,7 @@ insert carries a smaller timestamp than the insert itself.
 \paragraph{The birth tree.} Every insert names an anchor. The event
 set therefore induces a tree: the root is the front sentinel $0$; the
 \emph{birth parent} of each element is its anchor. The tree is
-append-only and never edited --- an element's place in it is fixed at
+append-only and never edited: an element's place in it is fixed at
 birth.
 
 \paragraph{Birth chains.} The \emph{birth chain} of $u$ is the
@@ -120,7 +120,7 @@ stated in terms of it; nothing here depends on how chains are stored
 \paragraph{do (the operations).} Two operations, with $\rc = \Either$
 everywhere (\S\ref{sec:prefix}):
 \begin{itemize}
-\item $\ins(x \leftarrow a,\ c,\ \pi)$ --- insert element $x$ (its
+\item $\ins(x \leftarrow a,\ c,\ \pi)$: insert element $x$ (its
 timestamp) with character $c$ after anchor $a$ ($a = 0$ for the
 front). The payload $\pi = \chain(a)$ is the anchor's birth chain,
 carried \emph{for the proof alone} (\S\ref{sec:prefix}). Application
@@ -131,8 +131,8 @@ honesty):
   \qquad \pi\ \text{unread}.
 \]
 No head-tracking, no reading of siblings.
-\item $\del(d)$ --- remove $d$'s record. Nothing else changes:
-survivors' chains are untouched --- in particular, $d$'s descendants
+\item $\del(d)$: remove $d$'s record. Nothing else changes:
+survivors' chains are untouched; in particular, $d$'s descendants
 still carry $d$'s timestamp in their sort keys. If $d$ is absent,
 no-op (concurrent double delete).
 \end{itemize}
@@ -144,10 +144,10 @@ its descendants). Among same-parent siblings this is exactly RGA's
 newest-first rule; equivalently, the canonical order is the RGA
 traversal of the birth tree restricted to survivors.
 
-\paragraph{merge.} $\mathrm{merge}(\mathit{L}, A, B)$, $\mathit{L}$
-the LCA --- the branches' lowest common ancestor version, the merge
-context the MRDT model stores and supplies: \emph{survival} (OR-set)
---- live iff in all three, or born
+\paragraph{merge.} $\mathrm{merge}(\mathit{L}, A, B)$, where
+$\mathit{L}$ is the LCA (the branches' lowest common ancestor
+version, the merge context the MRDT model stores and supplies). The
+merge is \emph{survival} (OR-set): live iff in all three, or born
 in exactly one branch. There is no second step at this layer:
 survivors' chains come with their insert events, so every input that
 holds a survivor agrees on its chain. The merge never compares
@@ -164,7 +164,7 @@ representation layer, Theorem~\ref{thm:faithful}(iii) is its stored
 form.
 
 \paragraph{$\approx$.} Equality. The state is a canonical function of
-the event set (Theorem~\ref{thm:chain}), so no quotient is needed ---
+the event set (Theorem~\ref{thm:chain}), so no quotient is needed:
 convergence is literal state equality.
 
 \paragraph{The metatheory, which is nearly definitional.} At this
@@ -176,16 +176,16 @@ they are the specification the representation must meet
 In every reachable state:
 \begin{itemize}
 \item[(i)] \emph{Canonicity:} $\sigma = \{\,u \mapsto (\chain(u),\
-\mathrm{char}_u)\,\}$ over survivors $u$ --- the state is a function
+\mathrm{char}_u)\,\}$ over survivors $u$; the state is a function
 of the event set.
 \item[(ii)] \emph{Birth constancy:} $\chain(u)$ is fixed at $u$'s
 insert and never edited by any later transition.
-\item[(iii)] \emph{Totality --- no ties:} chain-lex is a total order
+\item[(iii)] \emph{Totality (no ties):} chain-lex is a total order
 on every state's survivors.
 \end{itemize}
 \end{theorem}
 \begin{proof}
-(i) Survivorship is OR-set --- a function of the event set --- and a
+(i) Survivorship is OR-set, hence a function of the event set, and a
 survivor's chain is determined by its insert event alone: by
 induction, $\ins$ writes $\chain_\sigma(a) \cdot x = \chain(a) \cdot
 x$ (the anchor is live at application, by honesty, and its stored
@@ -194,7 +194,7 @@ records, never rewrite them. (ii) is (i) read off per node: no
 transition writes to an existing record. (iii) Distinct elements'
 chains are distinct (they end in distinct timestamps); if neither is a
 prefix of the other, the first difference compares two distinct
-timestamps in $\mathbb{N}$ --- uniqueness of Lamport stamps \emph{is}
+timestamps in $\mathbb{N}$, and uniqueness of Lamport stamps \emph{is}
 the no-tie property; prefix pairs are ancestor/descendant, ordered by
 the prefix rule.
 \end{proof}
@@ -203,7 +203,7 @@ the prefix rule.
 natural first attempt at tombstone-freedom is the \emph{rehoming}
 RGA: keep flat $(\mathrm{element}, \mathrm{anchor})$ records, and let
 a delete splice its node out, re-parenting the orphans to the nearest
-live ancestor --- the \emph{climb}. We built and verified that design
+live ancestor (the \emph{climb}). We built and verified that design
 before this one (it is RA-linearizable, in the same Lean framework,
 \S\ref{sec:mechanization}), and it fails the L1 delete-reorder litmus
 (the $[b,a,c] \to [c,b]$ anomaly, Figure~\ref{fig:l1}): the climb
@@ -213,7 +213,7 @@ chain whole. That is the entire difference
 between the two datatypes,
 and it is the crisp form of the conservation law that our design
 sweep kept re-imposing:
-\emph{the sort key must retain dead ancestors' timestamps} --- every
+\emph{the sort key must retain dead ancestors' timestamps}. Every
 design that forgets them has a named machine-checked countermodel
 (\S\ref{sec:related}). What is negotiable is only how many bits the
 retained timestamps cost; that is the subject of
@@ -245,7 +245,7 @@ and nothing else.
   \draw[anc] (e2) -- (er);
   \draw[ghost] (e1) -- (er);
   \draw[anc] (e3) -- (e1);
-  \node[elbl, right=1mm of e3] {$\langle 1,3\rangle$ --- kept};
+  \node[elbl, right=1mm of e3] {$\langle 1,3\rangle$, kept};
   \node[capt, align=center] at (0,-3.7)
     {embed: $[2,3]$ \checkmark\\ ($3$ still ranks by dead $1$)};
   \end{scope}
@@ -256,7 +256,7 @@ and nothing else.
   \node[vtx] (f2) at ( 0.9,-1.35) {$2$};
   \draw[climb] (f3) -- (fr);
   \draw[anc]   (f2) -- (fr);
-  \node[elbl, below=1mm of f3] {$\langle 3\rangle$ --- truncated};
+  \node[elbl, below=1mm of f3] {$\langle 3\rangle$, truncated};
   \node[capt, align=center] at (0,-3.7)
     {rehoming RGA: $[3,2]$ $\times$\\ ($3$ re-sorts by own ts)};
   \end{scope}
@@ -264,7 +264,7 @@ and nothing else.
 \caption{The one-line separation on the L1 delete-reorder litmus:
 insert $1$ and $2$ at the front, $3$ after $1$, delete $1$. The
 rehoming RGA's climb (red) re-parents $3$ and re-sorts it by its \emph{own}
-timestamp --- the truncated key $\langle 3\rangle$ beats
+timestamp: the truncated key $\langle 3\rangle$ beats
 $\langle 2\rangle$, and $3$ jumps over $2$. The embedded chain
 $\langle 1,3\rangle$ keeps ranking $3$ by its dead parent's
 timestamp: $[2,3]$, the delete-order-preserving read. Arrows point
@@ -274,14 +274,14 @@ from a node to its anchor; dashed grey = dead.}
 
 \paragraph{Worked example (Figure~\ref{fig:credential}).} $6$ and
 $10$ concurrently insert at the
-front: chains $\langle 6 \rangle$ and $\langle 10 \rangle$ ---
+front: chains $\langle 6 \rangle$ and $\langle 10 \rangle$;
 display $[10, 6]$, no arbitration, at every replica and merge order.
 Type $22, 16$ under $6$: chains $\langle 6, 22 \rangle$,
 $\langle 6, 16 \rangle$. Delete $6$: the records of $22$ and $16$ are
 untouched and still carry $6$'s timestamp. A third party concurrently
 inserts $8$ at the front: $\langle 8 \rangle$ sorts below
-$\langle 10 \rangle$ and above $\langle 6, 22 \rangle$ --- display
-$[10, 8, 22, 16]$ whether $8$ arrives before or after $6$'s death
+$\langle 10 \rangle$ and above $\langle 6, 22 \rangle$, so the display
+is $[10, 8, 22, 16]$ whether $8$ arrives before or after $6$'s death
 (machine-checked as the \emph{credential countermodel}, the shape that
 kills every timestamp-oblivious variant, \S\ref{sec:validation}).
 
@@ -315,7 +315,7 @@ kills every timestamp-oblivious variant, \S\ref{sec:validation}).
       at (-0.4,-0.7)
       {$\langle 8\rangle$ vs $\langle 6,22\rangle$ compares $8$
        against the \emph{dead} $6$: the orphans stay in $6$'s slot,
-       and $8$ cannot land between them --- whether or not $6$'s
+       and $8$ cannot land between them, whether or not $6$'s
        death has arrived.};
   \end{scope}
 \end{tikzpicture}
@@ -332,26 +332,97 @@ order. Every timestamp-oblivious variant flips this shape
 \label{sec:encoding}
 
 Everything above is the datatype; everything below is bits. A naive
-carrier would store a full timestamp at every chain level and compare
-whole chains at every read. The representation compresses the chains
-without disturbing their order --- two independent codings, then a
-coordinate realization whose maintenance is purely local. What this
-section owes \S\ref{sec:design} is a single obligation,
-\emph{faithfulness} (Theorem~\ref{thm:faithful}): the coordinate
-order must be exactly chain-lex, in every reachable state, forever.
-Correctness lives upstairs; this layer is an implementation that must
-not lie.
+carrier would store a full timestamp at every chain level (each
+$\sim\!\log(\text{document age})$ bits, even for purely sequential
+typing) and compare whole chains at every read. This section stores
+the chains compactly without disturbing their order.
+
+\paragraph{Vocabulary.} A \emph{codeword} is the bit string
+$C(\delta)$ encoding one chain level: one element's timestamp,
+stored as its differential $\delta$ to its birth anchor (step 1
+below). A \emph{coordinate} is the bit string encoding a whole
+chain: the concatenation, root to element, of one block per level
+(the level's codeword plus three framing bits fixed by the mint
+construction below), with nothing else marking the boundaries. We
+write $|s|$ for the length in bits of a bit string $s$. Read as a
+binary fraction, a coordinate names a dyadic interval in $(0,1)$;
+codeword concatenation becomes interval nesting, and the interval is
+the $\alpha(u)$ of Theorem~\ref{thm:faithful}. Bit string and
+interval are two views of one object; we use whichever is clearer.
+
+\paragraph{What the coding is for.} Two jobs, only one of which is
+about correctness.
+\emph{Job 1: cost.} The datatype layer already forced sort keys to
+retain dead ancestors' timestamps (the conservation law,
+\S\ref{sec:design}); the only remaining question is how many bits
+that retention costs. Without entropy coding, ``tombstone-free''
+would be bookkeeping: a full timestamp per level grows with document
+age however calm the history, and the unary control below costs
+61\,KB where the coded design costs 0.5\,KB. The coding is what makes
+the headline claim true: the dead survive as the entropy of the races
+that created them, and not more.
+\emph{Job 2: faithfulness.} The chains must be stored so that plain
+lexicographic bit comparison reproduces chain-lex exactly, in every
+reachable state, forever. This is the single obligation the
+representation owes \S\ref{sec:design}
+(Theorem~\ref{thm:faithful}). Correctness lives upstairs; this layer
+is an implementation that must not lie. Job 2 needs no entropy
+optimality at all: it needs exactly two structural properties of the
+per-level code, stated next.
+
+\paragraph{The contract.} The stored form must support four
+operations: \emph{mint} (insert: produce the new codeword from the
+two timestamps alone, coordination-free, reading no siblings);
+\emph{compare} (read: plain lexicographic comparison, with no tie
+rule); \emph{fold} (delete: splice a dead node out by concatenating
+its block into each child's stored string, exactly); and
+\emph{refold} (merge: recompute survivors' coordinates by the same
+concatenation). Each guarantee is bought by a specific property of
+$C$:
+\begin{itemize}
+\item \textbf{Monotone} ($\delta < \delta' \Rightarrow C(\delta)
+<_{\mathrm{lex}} C(\delta')$) buys correct \emph{compare}. A
+chain-lex first difference always compares two same-anchor entries,
+where timestamp order and $\delta$ order coincide (step 1); bitwise
+comparison of coordinates therefore equals timestamp comparison at
+the first differing level precisely when $C$ is monotone.
+\item \textbf{Prefix-free} (no codeword is a prefix of another) buys
+three things at once. \emph{Alignment}: in a comparison of two
+coordinates, the first differing bit falls inside the first
+differing level's codewords, so levels cannot be confused across
+boundaries and no delimiters are needed; this is also what keeps
+\emph{fold} and \emph{refold} exact splices. \emph{Geometry}: by the
+Kraft correspondence, prefix-free codewords occupy pairwise-disjoint
+dyadic cells, which is Theorem~\ref{thm:faithful}(i) and the reason
+a concurrent front-insert can never land inside a dead sibling's
+span (Figure~\ref{fig:nest}). \emph{No ties}: cell disjointness plus
+Lamport uniqueness means sibling coordinates never tie, so the merge
+never decides an order and the read needs no tiebreak.
+\item \textbf{Universal, with a cheap floor} buys Job 1: $C$ is
+defined for every $\delta \ge 1$, $|C(1)| = O(1)$ so sequential
+typing costs a constant per level, and $|C(\delta)| = \Theta(\log
+\delta)$ so a race pays for its own magnitude and nothing else.
+\end{itemize}
+Monotone plus prefix-free is all of Job 2: any such code satisfies
+Theorem~\ref{thm:faithful}, which is why the Lean capstone is
+parametric in the code (\S\ref{sec:mechanization}) and why the unary
+control proves the same theorems at absurd cost. Entropy coding
+enters only in \emph{which} monotone prefix-free code is chosen; the
+choice sets the constant in the bits-per-level bill and nothing in
+the correctness story. One requirement cuts across all four
+operations: the arithmetic is exact, never rounded (see the binary64
+refutation below).
 
 \paragraph{Step 1: differential coding.} By causality
 $\delta = x - a \ge 1$. A chain-lex first difference always compares
 two entries with the \emph{same} anchor (the shared prefix), and for
-a fixed anchor, ordering by $x$ and by $\delta$ coincide --- so each
+a fixed anchor, ordering by $x$ and by $\delta$ coincide, so each
 chain level may store the differential instead of the timestamp.
 This is where \emph{pay for concurrency} enters: sequential typing
 has $\delta = 1$ at every level regardless of how long the document
 has lived, while a genuine race with timestamp gap $g$ costs
 $\log_2 g$ bits. The differential is an encoding choice, not
-semantics --- the mathematical object remains the timestamp.
+semantics: the mathematical object remains the timestamp.
 
 \paragraph{Step 2: entropy coding.} For $\delta \ge 1$ let $L$ be the
 bit-length of $\delta$ and
@@ -360,15 +431,14 @@ bit-length of $\delta$ and
   \text{ with its leading bit removed}\bigr)
   \qquad (|C(\delta)| = 2L-1),
 \]
-an order-preserving prefix-free code. The length accounting: a
-coordinate is a \emph{concatenation} of codewords along a chain, so
-each codeword must be self-delimiting --- nothing outside it says
-where it ends --- and a self-delimiting code over unbounded $\delta$
+an order-preserving prefix-free code: exactly the contract. The
+length accounting: prefix-freedom makes each codeword
+self-delimiting, and a self-delimiting code over unbounded $\delta$
 must spend bits twice, once on the value and once announcing its own
 length. $C$ pays each bill at $\sim\!\log_2\delta$. The header
 $1^{L-1}0$ is a unary announcement ``$L{-}1$ payload bits follow''
-($L$ bits); the payload is $\delta$'s trailing $L{-}1$ bits --- the
-leading bit of an $L$-bit number is always $1$, so once the header
+($L$ bits); the payload is $\delta$'s trailing $L{-}1$ bits, since
+the leading bit of an $L$-bit number is always $1$: once the header
 has said $L$ it carries no information and is dropped. Hence
 \[
   |C(\delta)| \;=\; \underbrace{(L{-}1) + 1}_{\text{header}}
@@ -378,7 +448,7 @@ has said $L$ it carries no information and is dropped. Hence
 e.g.\ $C(1) = 0$, $C(2) = 100$, $C(3) = 101$, $C(5) = 11001$ (the
 values kernel-checked in the artifact). This is Elias~$\gamma$ with
 its header flipped: $\gamma$ announces the length in \emph{zeros},
-which is prefix-free but order-reversing across length classes ---
+which is prefix-free but order-reversing across length classes:
 at the first divergence the longer, hence larger, number shows a
 header $0$ against the shorter's leading payload bit $1$. Writing
 the header in ones makes that same position decide in favor of the
@@ -387,19 +457,19 @@ $\delta$. The $\gamma$-flip is the building block, not the last
 word: only the \emph{value} bill is forced at $\log_2 \delta$, and
 the \emph{length} bill can itself be entropy-coded. Applying $C$ to
 the length field (then the payload) gives the order-preserving flip
-of \textbf{Elias~$\delta$} --- prefix-free and monotone by the same
+of \textbf{Elias~$\delta$}, prefix-free and monotone by the same
 across-length-class argument, at $\log_2 \delta + O(\log \log
-\delta)$ per level --- and \emph{this is the canonical mint}: the
+\delta)$ per level; \emph{this is the canonical mint}, the
 best proved code so far. \emph{Any} order-preserving prefix-free
 code works here, and the artifact exists in three proved encodings
 of one datatype (\code{embed-tree} unary, \code{embed-code} the
 $\gamma$-flip, \code{eliasDeltaCode} the $\delta$-flip); the capstone
 theorem is inherited at each verbatim, with zero new proof content
-(\S\ref{sec:mechanization}) --- the code-parametricity claim,
+(\S\ref{sec:mechanization}): the code-parametricity claim,
 machine-validated. Two honest footnotes: per level the $\delta$-flip
 wins only from $\delta \ge 32$ and loses at $\delta \in \{2,3\} \cup
 [8,15]$ (kernel-checked length comparisons), and measured editing
-tails are thin, so on real traces the two flips are a wash --- the
+tails are thin, so on real traces the two flips are a wash; the
 dominance shows in race-heavy shapes (the entropy-law table below)
 and in the asymptotics.
 
@@ -411,7 +481,7 @@ second quarter of $b$'s dyadic cell:
   \;\subset\; \bigl[\,0.b,\ 0.b + 4w\,\bigr) .
 \]
 The quarter placement leaves a gap below and headroom above inside the
-cell, and the open space $(0.b+2w,\, 0.b+4w)$ is never minted --- it
+cell, and the open space $(0.b+2w,\, 0.b+4w)$ is never minted: it
 exists so that the interval has room to \emph{contain} the node's own
 subtree without touching the next cell.
 
@@ -477,7 +547,7 @@ example of \S\ref{sec:design} in coordinates.
 \begin{tikzpicture}
   % depth-1 intervals (schematic widths; true mints are dyadic, Fig 1)
   \draw[rngD] (0.6,0) -- (5.0,0);
-  \node[lab, below] at (2.8,-0.12) {$\alpha(6)$: dead --- geometry only};
+  \node[lab, below] at (2.8,-0.12) {$\alpha(6)$: dead, geometry only};
   \draw[rngB] (6.4,0) -- (8.0,0);
   \node[lab, below] at (7.2,-0.12) {$\alpha(8)$};
   \draw[rngB] (9.4,0) -- (11.0,0);
@@ -498,7 +568,7 @@ example of \S\ref{sec:design} in coordinates.
 \caption{Figure~\ref{fig:credential} downstairs (widths schematic;
 true mints are the dyadic cells of Figure~\ref{fig:mint}). Deleting
 $6$ removes its record, but $\alpha(16)$ and $\alpha(22)$ are
-compositions \emph{through} $M(6)$ --- the dead node survives as the
+compositions \emph{through} $M(6)$: the dead node survives as the
 dashed container, the tombstone compressed into geometry. $8$'s
 interval can never land inside $\alpha(6)$'s span: distinct deltas
 occupy disjoint cells (Theorem~\ref{thm:faithful}(i)), which is the
@@ -513,7 +583,7 @@ new record depends only on the two timestamps.
 \item $\del(d)$ \emph{isometrically folds} $d$ into its children:
 each child $c$ is re-parented to $d$'s parent with $d$'s interval
 composed in, $c.\mathrm{frac} := d.\mathrm{frac} \circ
-c.\mathrm{frac}$ --- an exact affine substitution. Note what this is:
+c.\mathrm{frac}$, an exact affine substitution. Note what this is:
 upstairs, deletion changes nobody's sort key (\S\ref{sec:design});
 the fold is the parent-relative storage scheme \emph{re-normalizing}
 while every absolute interval stays fixed
@@ -523,8 +593,8 @@ maintenance, not datatype semantics.
 absolute interval by folding its record to the root inside the input
 that holds it (a record's stored parent is always live in its own
 input, so the chain stays in one input; by
-Theorem~\ref{thm:faithful}(iii) the choice of input cannot matter ---
-asserted at runtime, never fired); re-parent to the nearest
+Theorem~\ref{thm:faithful}(iii) the choice of input cannot matter,
+asserted at runtime and never fired); re-parent to the nearest
 \emph{surviving} ancestor; re-relativize.
 \item The read is depth-first from the root, children in descending
 order of $lo$. No tie rule is needed (Corollary~\ref{cor:lex}).
@@ -558,14 +628,14 @@ order of $lo$. No tie rule is needed (Corollary~\ref{cor:lex}).
   \node[capt] at (0.6,-3.6) {after: fracs composed};
   \draw[rng]  (-1.5,-4.5) -- (2.7,-4.5);
   \draw[rngB] (0.3,-4.5) -- (1.2,-4.5);
-  \node[lab, below] at (0.75,-4.62) {$\alpha(22)$ --- unchanged};
+  \node[lab, below] at (0.75,-4.62) {$\alpha(22)$: unchanged};
   \end{scope}
 \end{tikzpicture}
 \caption{The isometric fold. $\del(6)$ deletes $6$'s record and
 substitutes its stored interval into each child's:
 $22.\mathrm{frac} := M(6) \circ M(16)$, an exact affine composition
 (red = the re-parenting, a storage move only). The absolute interval
-$\alpha(22) = M(6) \circ M(16)$ --- and with it the display --- is
+$\alpha(22) = M(6) \circ M(16)$, and with it the display, is
 bit-for-bit unchanged: upstairs, $22$'s sort key still reads
 $\langle 6,22\rangle$.}
 \label{fig:fold}
@@ -607,12 +677,12 @@ images of disjoint intervals are disjoint and order-preserved (each
 $\varphi$ is increasing). If $\chain(u)$ prefixes $\chain(v)$, then
 $\alpha(v) \subseteq \varphi_{c_1} \circ \cdots \circ
 \varphi_{c_k}(\varphi_u((0,1))) = \alpha(u)$ by construction; and if
-both are live, $v$'s nearest live ancestor is $u$ or deeper --- so
+both are live, $v$'s nearest live ancestor is $u$ or deeper, so
 they never share a current parent, and sibling groups are pairwise
 disjoint.
 (iii) By induction over transitions. $\ins$ establishes it by
 definition. $\del$'s fold replaces $(\mathrm{par}, \mathrm{frac})$
-pairs by their exact composition --- $\alpha$ is unchanged. The merge
+pairs by their exact composition, leaving $\alpha$ unchanged. The merge
 recomputes precisely $\alpha(u)$ (folding a record chain to the root)
 and re-relativizes against another $\alpha$; ties cannot exist by
 (i) and (ii), so no step of any transition ever rewrites an interval
@@ -622,27 +692,27 @@ by anything but exact composition.
 \begin{corollary}[display $\equiv$ chain-lex; no tie rule]
 \label{cor:lex}
 The read (DFS by descending $lo$) enumerates survivors in exactly
-chain-lex order --- per level, larger delta first: among same-parent
+chain-lex order: per level, larger delta first, so among same-parent
 siblings, exactly newest first; survivors rank by their own
 timestamps, folded heirs by their dead founder's. Sibling $lo$-values
 never tie; the read's id tiebreak is dead code. Machine checks:
 pairwise sibling disjointness asserted at every read of $320$
-randomized executions --- clean; over $19{,}531$ multi-member sibling
+randomized executions, all clean; over $19{,}531$ multi-member sibling
 groups, own-timestamp order violated $3{,}481$ times (exactly the
-post-fold heir groups --- forcing own-ts there is the refuted
+post-fold heir groups; forcing own-ts there is the refuted
 dissolution behavior), \textbf{chain-lex violated $0$ times}.
 \end{corollary}
 
 \paragraph{The entropy law.} A coordinate is the concatenation of the
-codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits ---
+codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits,
 the entropy of the chain. Sequential typing ($\delta = 1$ at every
 level) costs $\sim$4 bits per level under every code here; a race
 with timestamp gap $g$ costs $\log_2 g + O(\log \log g)$ bits under
 the canonical Elias-$\delta$ mint ($2\log_2 g + 1$ under the
 $\gamma$-flip). \emph{The state pays for the magnitude
 of actual concurrency, and for nothing else.} Measured (1000
-elements; the numbers are \emph{order metadata alone} --- survivors'
-coordinate bits, read off the dyadic denominators --- characters
+elements; the numbers are \emph{order metadata alone}, survivors'
+coordinate bits read off the dyadic denominators; characters are
 excluded, since data costs are identical across all designs):
 
 \begin{center}\small
@@ -664,40 +734,40 @@ chain then delete-all ($\delta{=}1$) & $2^{2001}$ &
 
 \paragraph{The carrier.} The natural representation is a
 \textbf{parent-relative bit string per node}: the fold is
-concatenation, comparison is lexicographic --- $O(1)$-ish with
-structure sharing; the rationals are the semantics of the strings,
+concatenation, comparison is lexicographic ($O(1)$-ish with
+structure sharing); the rationals are the semantics of the strings,
 kept for the proofs. IEEE 754 binary64 is machine-refuted as the
-carrier --- a faithfulness failure, not a design failure: mints
+carrier, a faithfulness failure rather than a design failure: mints
 degenerate at $t = 52$, depths underflow at 44, and rounding voids
 Theorem~\ref{thm:faithful}(iii) (6/120 PBT executions die). The
-obstruction is a pigeonhole --- chains carry $\Theta(\sum \log
-\delta)$ bits, a fixed-width word holds 64 --- but binary64 is sound
+obstruction is a pigeonhole (chains carry $\Theta(\sum \log
+\delta)$ bits; a fixed-width word holds 64), but binary64 is sound
 as a \emph{comparison cache} with exact fallback on float equality.
 
 \paragraph{Timestamps in practice.} The unique stamps in
 $\mathbb{N}^{+}$ are Lamport's 1978 construction, flattened: each
 replica ticks a counter per local operation, advances it to the max
-on merge, and breaks ties by replica id --- packed as
+on merge, and breaks ties by replica id, packed as
 $t \cdot 2^{k} + r$ with $k$ id bits. Uniqueness and causality
 ($t_a < t_x$ gives $\mathrm{packed}_a < \mathrm{packed}_x$ regardless
 of ids, so $\delta \ge 1$) both survive the packing; the proof layer
 only \emph{assumes} uniqueness (the Lamport-structural part of
 honesty), and this construction is the witness that the assumption is
 realizable. Two entropy caveats. \emph{(i)} Packing inflates every
-delta by $2^{k}$ --- $\sim$$2k$ extra bits per chain level, which
+delta by $2^{k}$, costing $\sim$$2k$ extra bits per chain level, which
 turns the 0.5 KB sequential run above into $\sim$3 KB at $k = 10$.
 Cheaper: extend the mint's code to the pair, $C(\Delta t)$ followed
-by a $k$-bit id --- still order-preserving prefix-free (lex on
-$(\Delta t, r)$), costing $k$ bits only where the level is minted.
-A further option --- unvalidated against the battery, recorded as a
-design note --- is to order sibling ids \emph{relative to the
-anchor's} (any deterministic per-anchor id order is a legitimate
+by a $k$-bit id. The pair code is still order-preserving prefix-free
+(lex on $(\Delta t, r)$), and costs $k$ bits only where the level is
+minted. A further option, unvalidated against the battery and
+recorded as a design note, is to order sibling ids \emph{relative to
+the anchor's} (any deterministic per-anchor id order is a legitimate
 tiebreak; convergence needs agreement, not a uniform order), making
-``same author as my anchor'' --- sequential typing --- cost $\sim$1
+``same author as my anchor'', i.e.\ sequential typing, cost $\sim$1
 bit, so only genuine cross-author races pay $\log R$. \emph{(ii)} The
 clock must be \emph{dense logical time, never physical}: wall-clock
 or HLC stamps make $\delta$ measure elapsed time rather than elapsed
-events --- a keystroke every 100\,ms over $\mu$s-resolution stamps
+events: a keystroke every 100\,ms over $\mu$s-resolution stamps
 mints $\delta \approx 10^{5}$, $\sim$34 bits per level for a purely
 sequential edit. The entropy law holds precisely because the counter
 ticks once per event, making $\delta$ an event-count gap; if
@@ -707,17 +777,18 @@ tiebreak, never in the minted coordinate.
 \paragraph{What remains open.} Dead chain entries concatenated into
 survivors' strings are the conservation law's irreducible content
 (\S\ref{sec:design}); reclaiming them under \emph{causal stability}
-(renumber once every replica has seen the delete --- the only
+(renumber once every replica has seen the delete, the only
 condition under which rewriting geometry is safe, since no verdict
 involving the dead can be contested again) is the deepest of the
 open cost items, and it is orthogonal to correctness. The wider
-compression headroom --- context-conditioned per-anchor codes
-(licensed by comparison locality: a chain-lex first difference never
-crosses anchors), coalescing $\delta{=}1$ runs, Steiner-sharing dead
-prefixes across co-heirs, stability-gated rank re-coding, and the
-Elias-$\delta$ constant (step 2 above) --- is catalogued with its
-research questions in the companion assessment
-\code{whiteboard/order-coding-compression-notes.md}.
+compression headroom is catalogued with its research questions in
+the companion assessment
+\code{whiteboard/order-coding-compression-notes.md}:
+context-conditioned per-anchor codes (licensed by comparison
+locality: a chain-lex first difference never crosses anchors),
+coalescing $\delta{=}1$ runs, Steiner-sharing dead prefixes across
+co-heirs, stability-gated rank re-coding, and the Elias-$\delta$
+constant (step 2 above).
 
 \section{The insert prefix: for the proof, and the proof alone}
 \label{sec:prefix}
@@ -739,17 +810,17 @@ proof must show the two \emph{commute}, in both orders, on all
 applicable states.
 
 \paragraph{The commutation, and where the prefix earns its keep.}
-Order 1: $\ins(x \leftarrow a)$ then $\del(a)$ --- $x$ is born with
+Order 1, $\ins(x \leftarrow a)$ then $\del(a)$: $x$ is born with
 chain $\pi \cdot x$, and the delete touches no chain (downstairs: the
 fold re-homes $x$'s record with composed coordinates; by exactness
-$\alpha(x) = \alpha(a) \circ M(x - a)$). Order 2: $\del(a)$ then
-$\ins(x \leftarrow a)$ --- $a$ is gone; application must still be
+$\alpha(x) = \alpha(a) \circ M(x - a)$). Order 2, $\del(a)$ then
+$\ins(x \leftarrow a)$: $a$ is gone; application must still be
 \emph{total} and land $x$ on the same sort key. This is what the
 carried prefix $\pi = \chain(a)$ (equivalently, the anchor's
-coordinate --- its chain of codes) provides: apply sets
+coordinate) provides: apply sets
 $\chain(x) = \pi \cdot x$ (downstairs:
 $\alpha(x) = \pi \circ M(x - a)$, attached to the nearest live
-ancestor). The two orders produce \emph{equal} states --- commutation
+ancestor). The two orders produce \emph{equal} states: commutation
 to equality, not merely up to $\approx$, courtesy of canonicity
 (Theorem~\ref{thm:chain}). Figure~\ref{fig:commute} draws the square
 on the smallest instance.
@@ -778,7 +849,7 @@ on the smallest instance.
 \caption{$\rc = \Either$ discharged: $\ins(22 \leftarrow 6)$ and
 $\del(6)$ commute \emph{to equality}. Down the left, the anchor is
 live and application never consults $\pi$ (the reachable, honest
-order). Down the right, $6$ is already gone --- the state cannot
+order). Down the right, $6$ is already gone: the state cannot
 supply the anchor's chain, so the carried $\pi = \chain(6)$ does,
 landing $22$ on the same sort key. The right-hand state is
 unreachable under honesty; the verification condition quantifies
@@ -792,14 +863,14 @@ only the state and the two timestamps: $\pi$ is never consulted. The
 Lean artifact carries this as \code{ins\_prefix\_ghost}
 (\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_MRDT.lean}): on accurate
 ops the always-$\pi$ transition and the state-reading transition are
-literally the same function --- the two conventions of this section
+literally the same function: the two conventions of this section
 coincide on every honest state. An implementation may therefore drop
 $\pi$ from the wire
 entirely; the \emph{proof} may not, because the verification
 conditions quantify over reorderings that visit unreachable states,
 and there application without $\pi$ is partial. The prefix costs
-$O(\sum \log \delta)$ bits --- the same entropy as the coordinate
-itself --- and exists at the proof layer alone.
+$O(\sum \log \delta)$ bits, the same entropy as the coordinate
+itself, and exists at the proof layer alone.
 
 \section{Validation}
 \label{sec:validation}
@@ -811,7 +882,7 @@ Notation: RGA$_\dagger$ is the published tombstoned RGA (Roh et
 al.; \S\ref{sec:related}); the \emph{rehoming} RGA is the verified
 flat tombstone-free design of \S\ref{sec:design}. The L1--L25
 battery is the litmus suite accumulated over this project's
-design sweep --- each entry is the named countermodel that killed at
+design sweep; each entry is the named countermodel that killed at
 least one of 16 prior candidate designs.
 
 \begin{center}\small
@@ -822,11 +893,11 @@ check & verdict \\
 litmus battery L1--L25 (incl.\ every countermodel that killed & clean,
   except one-sided L19 \\
 \quad 16 prior designs: ceiling escapes, tie inheritance, three- &
-  (backward-run interleaving --- \\
+  (backward-run interleaving, \\
 \quad branch topology, frame mixing, fold-verdict inheritance) &
   the published RGA's own anomaly) \\
 credential countermodel (tie heirs vs mid-ts third party, & converges,
-  no flips --- \\
+  no flips; \\
 \quad death-before vs death-after topologies) & $=$ RGA$_\dagger$'s
   reads \\
 subordination-escape and retroactive-subordination CEs & survive \\
@@ -846,8 +917,8 @@ L1 delete-reorder vs the verified rehoming RGA & embed $[2,3]$
 
 \noindent The lockstep row is the identification: \emph{the
 embedded-chain RGA is observationally the published tombstoned RGA
-with the tombstone set compressed into coordinate entropy} ---
-machine-checked on 120 executions, and now a kernel-checked theorem
+with the tombstone set compressed into coordinate entropy},
+machine-checked on 120 executions and now a kernel-checked theorem
 (the compaction theorem, \S\ref{sec:mechanization}): on every honest
 event set, any enumeration of the tombstoned RGA's visible ids in its
 own visible order \emph{equals} the embed read, element for element. The L1 row is the separation
@@ -862,7 +933,7 @@ $[b,a,c] \to [c,b]$ anomaly), i.e.\ its sort key is the birth chain
 
 Eg-walker (Gentle \& Kleppmann, EuroSys 2025) is the closest system in
 spirit, and the two designs can be read as the \emph{operational} and
-\emph{denotational} realizations of the same thesis --- \textbf{pay for
+\emph{denotational} realizations of one thesis, \textbf{pay for
 concurrency, not for history}:
 
 \begin{center}\small
@@ -889,13 +960,13 @@ concurrency cost & replay time proportional to the concurrent region,
   $\log(\text{ts gap})$, once, in space \\
 ordering semantics & Yjs-variant (FugueMax-adjacent); maximal
   non-interleaving \emph{conjectured}, not proved; two-sided (no L19
-  analogue) & $\equiv$ published RGA (machine lockstep); one-sided ---
+  analogue) & $\equiv$ published RGA (machine lockstep); one-sided:
   L19 backward-run interleaving inherited, two-sided extension future
   work \\
 correctness artifact & informal proof (Appendix C) + property testing
   & L1--L25 battery + DAG PBT + lockstep vs RGA$_\dagger$;
   \textbf{RA-linearizability kernel-checked in Lean}
-  (\S\ref{sec:mechanization}) --- the design was
+  (\S\ref{sec:mechanization}); the design was
   chosen so the merge proves itself (no order decisions to verify) \\
 op payload & integer origin positions (compact, human-meaningful) &
   two timestamps + ghost prefix (droppable on the wire;
@@ -907,12 +978,12 @@ op payload & integer origin positions (compact, human-meaningful) &
 \noindent Three sentences of honest positioning. \emph{(i)} Eg-walker
 achieves its clean document state by keeping the entire history and
 re-deriving order on demand; the embedded-chain RGA achieves it by
-making order derivation unnecessary --- the sort keys are written at
+making order derivation unnecessary: the sort keys are written at
 birth and never edited, and the coordinates are their encoding
 (\S\ref{sec:encoding}), precomputed at mint time and exact forever.
 \emph{(ii)} Eg-walker's ordering target is stronger where L19 is
 concerned (Fugue-style two-sidedness removes backward interleaving;
-this design inherits RGA's one-sided anomaly --- by construction,
+this design inherits RGA's one-sided anomaly by construction,
 since it is read-equal to RGA). \emph{(iii)} The verification gap runs
 the other way: Eg-walker's replay-transform-clear loop is
 algorithmically sophisticated and only informally proved; here the
@@ -934,21 +1005,21 @@ sources); this section positions the datatype.
 
 \paragraph{Retention taxonomy.} What nearby systems keep for the dead:
 tombstone records (RGA with cemetery under causal stability; WOOT;
-Yjs's per-deletion GC structs, kept forever; Fugue --- ``we cannot
-remove a deleted element's node entirely''; Peritext --- ``the
+Yjs's per-deletion GC structs, kept forever; Fugue, ``we cannot
+remove a deleted element's node entirely''; Peritext, ``the
 positions must be remembered''); the full history (Eg-walker's event
 graph, Chronofold/causal trees where the log \emph{is} the text);
 consensus-gated compaction (Treedoc's flatten requires Paxos-commit);
 or \textbf{dead identifiers inside live position keys} (Logoot/LSEQ,
-Weidner's position-strings/list-positions --- the Fugue id space). The
+Weidner's position-strings/list-positions, the Fugue id space). The
 embedded-chain RGA is in the last class \emph{by information content}
---- dead ancestors' timestamps persist inside survivors' sort keys,
-at live-reachable scope --- but with three deltas to its classmates:
+(dead ancestors' timestamps persist inside survivors' sort keys,
+at live-reachable scope), but with three deltas to its classmates:
 the retention is \emph{delta-coded at the entropy of the races} (a sequential
 history costs a constant per element where Logoot-family keys grow
 with allocation policy), the \emph{birth tree kept whole} gives
 forward non-interleaving and delete-order preservation (position-key
-designs interleave --- the PaPoC'19 anomaly --- and Figma-style
+designs interleave, the PaPoC'19 anomaly, and Figma-style
 fractional indexing is unsound under concurrency by its own account),
 and the semantics is pinned to the best-studied sequence CRDT by a
 machine-checked lockstep rather than being a new point in anomaly
@@ -956,16 +1027,16 @@ space.
 
 \paragraph{The impossibility backdrop.} Attiya et al.\ (PODC 2016)
 prove $\Omega(D)$ metadata for push-based protocols meeting even the
-weak list spec --- the published form of ``ordering requires
+weak list spec: the published form of ``ordering requires
 remembering the dead.'' This design does not escape the bound; it
 \emph{relocates and minimizes} the memory: $\Theta(\log \delta)$ bits
 per dead-chain element inside live coordinates (plus the MRDT version
 store, which the model provides). The sharper, machine-witnessed
 form from our design sweep is the \emph{conservation law}
 (\S\ref{sec:design}):
-the sort key must retain dead ancestors' timestamps --- the verdict
-information survives every encoding change (stamp, spine, tombstone,
-or denominator bits) --- and ties force separate \emph{metadata} only
+the sort key must retain dead ancestors' timestamps (the verdict
+information survives every encoding change: stamp, spine, tombstone,
+or denominator bits), and ties force separate \emph{metadata} only
 under timestamp-oblivious minting; the timestamp-faithful mint carries
 the same bits inside the coordinate. Eight timestamp-oblivious
 mutation variants each have a named machine-checked countermodel
@@ -974,16 +1045,16 @@ countermodel separates this design from all of them.
 
 \paragraph{Verified datatypes.} Isabelle RGA (Gomes et al.\ OOPSLA'17,
 op-based convergence), OpSets (list semantics specified by a total
-order of identified ops --- arbitration-by-identity as specification),
+order of identified ops: arbitration-by-identity as specification),
 VeriFx (SMT, convergence properties), MET (TLA+, list CRDT bugs). In
 the MRDT line (Kaki et al.\ OOPSLA'19; Peepul PLDI'22; RA-lin
-OOPSLA'25 --- this framework), no verified sequence with
+OOPSLA'25, this framework), no verified sequence with
 sequence-CRDT-grade ordering guarantees exists; our verified rehoming
 RGA (\S\ref{sec:design}) is RA-linearizable against its own fold yet
-fails the sequential delete-order spec --- RA-linearizability
-certifies convergence to the datatype's \emph{own} semantics, so
+fails the sequential delete-order spec, since RA-linearizability
+certifies convergence to the datatype's \emph{own} semantics and
 ordering intent must be specified and proved separately. The
-embedded-chain RGA delivers the first part of the missing artifact ---
+embedded-chain RGA delivers the missing artifact:
 RA-linearizability is a kernel-checked Lean theorem
 (\S\ref{sec:mechanization}); delete-order preservation, display
 stability and forward non-interleaving are proved at the model layer;
@@ -996,14 +1067,14 @@ and must pay consensus for it; the principle that emerged from our
 ledger-based sibling design study
 (\emph{reprojection without consensus is safe iff geometry has been
 demoted to a rendering}) is here taken to its fixed point: geometry is
-never reprojected at all --- it is immutable, so it may safely be the
+never reprojected at all. It is immutable, so it may safely be the
 only thing.
 
 \section{Mechanization status}
 \label{sec:mechanization}
 
 The verification framework is the RA-linearizability metatheory for
-MRDTs (OOPSLA'25), mechanized in the Sal Lean development --- the
+MRDTs (OOPSLA'25), mechanized in the Sal Lean development, the
 same framework in which twelve production MRDTs (the rehoming RGA
 among them) and a further half-dozen born-conditioned instances (the
 Peepul mergeable queue included) are verified end-to-end; file paths
@@ -1016,10 +1087,10 @@ $\{\mathrm{propext}, \mathrm{Classical.choice},
   \code{embed\_ra\_linearizable3} \;:\;
   \mathrm{EReach}\ \Gamma\ C \to \mathrm{IsRALinearizable3}\ C
 \]
---- RA-linearizability per version at every honestly reachable
-configuration, \emph{parametric in the code} $\Gamma$ --- the unary
+i.e.\ RA-linearizability per version at every honestly reachable
+configuration, \emph{parametric in the code} $\Gamma$: the unary
 code, the binary delta code, and the flipped Elias-$\delta$ code are
-all proved \code{OrderedPrefixCode} instances: three encodings on
+all proved \code{OrderedPrefixCode} instances, three encodings on
 one proof. The factoring is exactly this
 note's design--encoding split, which is itself evidence for the split:
 
@@ -1028,8 +1099,8 @@ note's design--encoding split, which is itself evidence for the split:
 files, 0 sorry): the code-parametric kernel; commutations \emph{to
 state equality} under $\rc = \Either$ (\code{rc\_non\_comm'});
 \code{ins\_prefix\_ghost}; coherence and chain-generation closures;
-display stability --- step stability (S2, delete-order preservation at
-its `del` instance) proved \emph{without any axioms}, merge pairwise
+display stability, with step stability (S2, delete-order preservation at
+its `del` instance) proved \emph{without any axioms} and merge pairwise
 stability (S4, the adopted contract); unique decodability
 (\code{coordOf\_inj}); \textbf{the chain-lex theorem}
 (\code{display\_iff\_chainBefore} = Corollary~\ref{cor:lex});
@@ -1043,26 +1114,26 @@ witness gets the opposite verdict.
 \item \textbf{Conditioned instance}
 (\code{Sal/ConditionedMRDTs/MRDT\_Instances/EmbedRGA/}, nine
 sections, 0 sorry, plus the Elias-$\delta$ inheritance corollary
-\code{EmbedRGA\_EliasDelta.lean}) --- via the \emph{mergeable-queue route}: a
+\code{EmbedRGA\_EliasDelta.lean}), proved via the \emph{mergeable-queue route}: a
 generic join lemma (\code{JoinLemma3At}: the merge exhibits its own
 linearization witness) plus an honest-reachability metatheorem
 (\code{HonestReach}), rather than the rehoming RGA's 55-file bespoke
 chain. The route applies exactly when states are canonical per event
-set --- Theorem~\ref{thm:chain}(i).
+set, which is Theorem~\ref{thm:chain}(i).
 Landed: the canonical sorted-list state; strictly-sorted
-extensionality (\code{esorted\_ext} --- sorted lists with the same
+extensionality (\code{esorted\_ext}: sorted lists with the same
 members are equal, replacing any canonical-list formula);
 \textbf{fold-canonicity} (\code{e\_fold\_canon}: well-formed
-enumerations of one event set fold to the \emph{same} state ---
+enumerations of one event set fold to the \emph{same} state;
 Theorem~\ref{thm:chain}(i) mechanized); the honesty core and its
 bridge to well-formedness; the merge membership characterization
 (\code{e\_mergeL\_mem}, OR-set survival with honesty closing the
-cross-branch-delete corner); the Join (\code{e\_join\_at} --- the
+cross-branch-delete corner); the Join (\code{e\_join\_at}: the
 merge is its own linearization witness); the capstone; the honesty
 discharge from the framework's generation discipline
 (\code{eHonest\_of\_applicable}: applicable generation forces the
 honesty core, so per-op honesty needs no bespoke oracle); and the
-instance intent theorems --- delete-order preservation \emph{is}
+instance intent theorems: delete-order preservation \emph{is}
 sublist stability (\code{eUpdate\_del\_sublist} is literally
 \code{List.filter\_sublist}: a delete's successor state is a sublist
 of its predecessor, so the surviving display order is untouched;
@@ -1071,7 +1142,7 @@ the merge preserves each input's survivor order on both sides).
 
 \noindent\textbf{The compaction theorem is proved} (2026-07-15,
 kernel-clean): $\mathrm{read} \circ \mathrm{embed} = \mathrm{read}
-\circ \mathrm{RGA}_\dagger$ on honest executions ---
+\circ \mathrm{RGA}_\dagger$ on honest executions, as
 \code{rga\_read\_eq\_embed\_read}
 (\code{EmbedRGA\_ReadEquiv.lean}): for every well-formed enumeration
 of an honest event set, \emph{any} enumeration of the tombstoned
@@ -1084,7 +1155,7 @@ element agreement (\code{embed\_rec\_readSeq}). The proof is
 (soundness by induction on derivations, completeness by realizing
 every chain prefix as an \code{afters}-reachable ancestor), and en
 route proves the published relational order total and asymmetric on
-the birth tree --- facts the published side never had. This converts
+the birth tree, facts the published side never had. This converts
 the design into a theorem \emph{about} the published RGA: it admits a
 strictly-live compaction preserving every read. The lockstep rows of
 \S\ref{sec:validation} are this theorem's tested form.
