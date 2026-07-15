@@ -493,4 +493,154 @@ theorem schainBefore_liftR {c1 c2 : List ℕ}
       (posSChain_liftR h2) hlne, sKey_liftR, sKey_liftR]
   exact display_iff_chainBefore unaryCode h1 h2 hne
 
+/-! ## In-order-interval convexity: a subtree is a display interval
+
+The Fugue intent target: everything the display places between two
+members of a subtree is itself in the subtree — with the node included
+(the empty extension), since the subtree's interval straddles it:
+L-descendants, the node, R-descendants. -/
+
+theorem sEntryBefore_irrefl (e : SEntry) : ¬ sEntryBefore e e := by
+  obtain ⟨sd, d⟩ := e
+  cases sd <;> simp [sEntryBefore]
+
+theorem sEntryBefore_asymm {e1 e2 : SEntry} (h : sEntryBefore e1 e2) :
+    ¬ sEntryBefore e2 e1 := by
+  obtain ⟨s1, d1⟩ := e1
+  obtain ⟨s2, d2⟩ := e2
+  cases s1 <;> cases s2 <;> simp [sEntryBefore] at h ⊢ <;> omega
+
+/-- Inversion of the in-order rule into its three verdict shapes. -/
+theorem schainBefore_inv {c1 c2 : SChain} (h : schainBefore c1 c2) :
+    (∃ d rest, c1 = c2 ++ (Side.L, d) :: rest) ∨
+    (∃ d rest, c2 = c1 ++ (Side.R, d) :: rest) ∨
+    (∃ q e1 e2 t1 t2, sEntryBefore e1 e2 ∧
+      c1 = q ++ e1 :: t1 ∧ c2 = q ++ e2 :: t2) := by
+  cases h with
+  | extL ch d rest => exact Or.inl ⟨d, rest, rfl⟩
+  | extR ch d rest => exact Or.inr (Or.inl ⟨d, rest, rfl⟩)
+  | diverge q e1 e2 t1 t2 hlt =>
+      exact Or.inr (Or.inr ⟨q, e1, e2, t1, t2, hlt, rfl, rfl⟩)
+
+/-- A shared head strips off the in-order rule. -/
+theorem schainBefore_cons_strip {x : SEntry} {a b : SChain}
+    (h : schainBefore (x :: a) (x :: b)) : schainBefore a b := by
+  rcases schainBefore_inv h with ⟨d, rest, heq⟩ | ⟨d, rest, heq⟩ |
+    ⟨q, e1, e2, t1, t2, hlt, ha, hb⟩
+  · rw [List.cons_append] at heq
+    injection heq with h1x h2
+    rw [h2]
+    exact schainBefore.extL b d rest
+  · rw [List.cons_append] at heq
+    injection heq with h1x h2
+    rw [h2]
+    exact schainBefore.extR a d rest
+  · cases q with
+    | nil =>
+        simp only [List.nil_append] at ha hb
+        injection ha with h3 h4
+        injection hb with h5 h6
+        rw [← h3, ← h5] at hlt
+        exact absurd hlt (sEntryBefore_irrefl x)
+    | cons y q' =>
+        rw [List.cons_append] at ha hb
+        injection ha with hax h4
+        injection hb with hbx h6
+        rw [h4, h6]
+        exact schainBefore.diverge q' e1 e2 t1 t2 hlt
+
+/-- Only L-headed chains display before the root. -/
+theorem schainBefore_nil_right {c : SChain} (h : schainBefore c []) :
+    ∃ d rest, c = (Side.L, d) :: rest := by
+  rcases schainBefore_inv h with ⟨d, rest, heq⟩ | ⟨d, rest, heq⟩ |
+    ⟨q, e1, e2, t1, t2, hlt, h1, h2⟩
+  · exact ⟨d, rest, by simpa using heq⟩
+  · simp at heq
+  · simp at h2
+
+/-- Only R-headed chains display after the root. -/
+theorem schainBefore_nil_left {c : SChain} (h : schainBefore [] c) :
+    ∃ d rest, c = (Side.R, d) :: rest := by
+  rcases schainBefore_inv h with ⟨d, rest, heq⟩ | ⟨d, rest, heq⟩ |
+    ⟨q, e1, e2, t1, t2, hlt, h1, h2⟩
+  · simp at heq
+  · exact ⟨d, rest, by simpa using heq⟩
+  · simp at h1
+
+/-- **In-order-interval convexity**: whatever the display places between
+two members of `p`'s subtree is itself in `p`'s subtree. With the empty
+extension allowed, the node itself is a member — the subtree interval is
+L-descendants, then the node, then R-descendants, with nothing foreign
+in between. -/
+theorem schain_subtree_convex :
+    ∀ (p : SChain) {cx cy cz : SChain},
+      (∃ ex, cx = p ++ ex) → (∃ ey, cy = p ++ ey) →
+      schainBefore cx cz → schainBefore cz cy →
+      ∃ ez, cz = p ++ ez
+  | [], _, _, cz, _, _, _, _ => ⟨cz, rfl⟩
+  | e :: p', cx, cy, cz, hex, hey, h1, h2 => by
+      obtain ⟨ex, hx⟩ := hex
+      obtain ⟨ey, hy⟩ := hey
+      subst hx
+      subst hy
+      cases cz with
+      | nil =>
+          obtain ⟨d1, r1, hc1⟩ := schainBefore_nil_right h1
+          obtain ⟨d2, r2, hc2⟩ := schainBefore_nil_left h2
+          rw [List.cons_append] at hc1 hc2
+          injection hc1 with h3 h3t
+          injection hc2 with h4 h4t
+          rw [h3] at h4
+          exact absurd (congrArg Prod.fst h4) (by simp)
+      | cons f cz' =>
+          have hfe : f = e := by
+            by_contra hne
+            have hEF : sEntryBefore e f := by
+              rcases schainBefore_inv h1 with ⟨d, rest, heq⟩ |
+                ⟨d, rest, heq⟩ | ⟨q, e1, e2, t1, t2, hlt, ha, hb⟩
+              · rw [List.cons_append] at heq
+                injection heq with h3 h3t
+                exact absurd h3.symm hne
+              · rw [List.cons_append] at heq
+                injection heq with h3 h3t
+                exact absurd h3 hne
+              · cases q with
+                | nil =>
+                    simp only [List.nil_append] at ha hb
+                    injection ha with h3 h3t
+                    injection hb with h4 h4t
+                    rw [← h3, ← h4] at hlt
+                    exact hlt
+                | cons y q' =>
+                    rw [List.cons_append] at ha hb
+                    injection ha with h3 h3t
+                    injection hb with h4 h4t
+                    exact absurd (h4.trans h3.symm) hne
+            have hFE : sEntryBefore f e := by
+              rcases schainBefore_inv h2 with ⟨d, rest, heq⟩ |
+                ⟨d, rest, heq⟩ | ⟨q, e1, e2, t1, t2, hlt, ha, hb⟩
+              · rw [List.cons_append] at heq
+                injection heq with h3 h3t
+                exact absurd h3 hne
+              · rw [List.cons_append] at heq
+                injection heq with h3 h3t
+                exact absurd h3.symm hne
+              · cases q with
+                | nil =>
+                    simp only [List.nil_append] at ha hb
+                    injection ha with h3 h3t
+                    injection hb with h4 h4t
+                    rw [← h3, ← h4] at hlt
+                    exact hlt
+                | cons y q' =>
+                    rw [List.cons_append] at ha hb
+                    injection ha with h3 h3t
+                    injection hb with h4 h4t
+                    exact absurd (h3.trans h4.symm) hne
+            exact sEntryBefore_asymm hEF hFE
+          subst hfe
+          obtain ⟨ez, hez⟩ := schain_subtree_convex p' ⟨ex, rfl⟩ ⟨ey, rfl⟩
+            (schainBefore_cons_strip h1) (schainBefore_cons_strip h2)
+          exact ⟨ez, by rw [List.cons_append, hez]⟩
+
 end Sal.EmbedRGA
