@@ -8,6 +8,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.GOSet.GOSet
 import Sal.ConditionedMRDTs.MRDT_Instances.GOMap.GOMap
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
+import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
+import Sal.ConditionedMRDTs.MRDT_Instances.LWWRegister.LWWRegister
 
 /-!
 # Sequential-spec soundness — tier 1: the flat RDTs (task #78 / #65)
@@ -554,5 +556,152 @@ theorem awpq_inc_log_sound (ρ : List (Op AWPQ.AppOp)) (t e : ℕ) (a : ℤ) :
               subst h3
               subst h4
               exact Or.inr ⟨h2.symm, rfl, rfl⟩
+
+/-! ## LWW and FWW registers: last/first write, under monotone stamps
+
+The registers arbitrate by TIMESTAMP, not program order; the two coincide
+exactly when stamps increase along the history — the sequential Lamport
+condition. Under it LWW reads the LAST write and FWW the FIRST:
+program-order register semantics recovered from payload arbitration. -/
+
+/-- Stamps strictly increase along the history (sequential Lamport). -/
+def stampsMono {A : Type} (ρ : List (Op A)) : Prop :=
+  ρ.Pairwise (fun a b => a.1 < b.1)
+
+/-- `Lex` on write/claim triples compares stamps first. -/
+theorem lex_lt_of_ts {w₁ w₂ : Lex (ℕ × Lex (ℕ × ℕ))}
+    (h : (ofLex w₁).1 < (ofLex w₂).1) : w₁ < w₂ := by
+  show toLex (ofLex w₁) < toLex (ofLex w₂)
+  rw [Prod.Lex.toLex_lt_toLex]
+  exact Or.inl h
+
+/-- The LWW state, at its underlying semilattice type. -/
+def lwwSt (s : LWW.State) : LWWState := s
+
+/-- The value view of the LWW state. -/
+def lwwView (s : LWWState) : Option ℕ :=
+  s.map fun w => (ofLex (ofLex w).2).2
+
+/-- The naive last-write register program. -/
+def lwwSpecFold (ρ : List (Op LWWOp)) : Option ℕ :=
+  ρ.foldl (fun _ o => some (lwwVal o)) none
+
+theorem lwwSpecFold_snoc (ρ : List (Op LWWOp)) (o : Op LWWOp) :
+    lwwSpecFold (ρ ++ [o]) = some (lwwVal o) := by
+  unfold lwwSpecFold
+  rw [List.foldl_append]
+  rfl
+
+/-- The LWW fold sits strictly below any write whose stamp exceeds the
+whole history's. -/
+theorem lww_fold_lt (ρ : List (Op LWWOp)) (w : LWWWrite)
+    (h : ∀ o' ∈ ρ, o'.1 < (ofLex w).1) :
+    lwwSt (seqFold LWW ρ) < (w : LWWState) := by
+  induction ρ using List.reverseRecOn with
+  | nil => exact WithBot.bot_lt_coe w
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc]
+      show max (lwwSt (seqFold LWW ρ)) ↑(lwwWrite o) < (w : LWWState)
+      refine max_lt (ih fun o' ho' => h o' (List.mem_append_left _ ho')) ?_
+      rw [WithBot.coe_lt_coe]
+      exact lex_lt_of_ts (h o (List.mem_append_right _ (by simp)))
+
+/-- **LWW, sequentially = a last-write register** (under monotone
+stamps: the arbitration key agrees with program order). -/
+theorem lww_seq_sound (ρ : List (Op LWWOp)) (hmono : stampsMono ρ) :
+    lwwView (lwwSt (seqFold LWW ρ)) = lwwSpecFold ρ := by
+  induction ρ using List.reverseRecOn with
+  | nil => rfl
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, lwwSpecFold_snoc]
+      have hcross := (List.pairwise_append.mp hmono).2.2
+      have hlt : lwwSt (seqFold LWW ρ) < (lwwWrite o : LWWState) :=
+        lww_fold_lt ρ (lwwWrite o)
+          (fun o' ho' => hcross o' ho' o (by simp))
+      show lwwView (max (lwwSt (seqFold LWW ρ)) ↑(lwwWrite o)) = _
+      rw [max_eq_right (le_of_lt hlt)]
+      rfl
+
+/-- The FWW state, at its underlying semilattice type. -/
+def fwwSt (s : FWW.State) : FWWState := s
+
+/-- The (stamp, value) view of the FWW state. -/
+def fwwView : FWWState → Option (ℕ × ℕ)
+  | none => none
+  | some w => some ((ofLex w).1, (ofLex (ofLex w).2).2)
+
+/-- The naive first-write register program. -/
+def fwwSpecFold (ρ : List (Op FWWOp)) : Option (ℕ × ℕ) :=
+  ρ.foldl
+    (fun a o => match a with
+      | none => some (o.1, fwwVal o)
+      | some p => some p) none
+
+theorem fwwSpecFold_snoc (ρ : List (Op FWWOp)) (o : Op FWWOp) :
+    fwwSpecFold (ρ ++ [o]) =
+      match fwwSpecFold ρ with
+      | none => some (o.1, fwwVal o)
+      | some p => some p := by
+  unfold fwwSpecFold
+  rw [List.foldl_append]
+  rfl
+
+/-- The first-write program only reports stamps of history members. -/
+theorem fwwSpec_stamp_mem (ρ : List (Op FWWOp)) (t v : ℕ)
+    (h : fwwSpecFold ρ = some (t, v)) : ∃ o' ∈ ρ, o'.1 = t := by
+  induction ρ using List.reverseRecOn with
+  | nil => simp [fwwSpecFold] at h
+  | append_singleton ρ o ih =>
+      rw [fwwSpecFold_snoc] at h
+      cases hsp : fwwSpecFold ρ with
+      | none =>
+          rw [hsp] at h
+          simp only [Option.some.injEq, Prod.mk.injEq] at h
+          exact ⟨o, List.mem_append_right _ (by simp), h.1⟩
+      | some p =>
+          rw [hsp] at h
+          simp only [Option.some.injEq] at h
+          obtain ⟨o', ho', h1⟩ := ih (by rw [hsp, h])
+          exact ⟨o', List.mem_append_left _ ho', h1⟩
+
+theorem fwwView_eq_none {s : FWWState} (h : fwwView s = none) : s = ⊤ := by
+  cases s with
+  | none => rfl
+  | some w => simp [fwwView] at h
+
+theorem fwwView_eq_some {s : FWWState} {p : ℕ × ℕ}
+    (h : fwwView s = some p) :
+    ∃ w : FWWClaim, s = ↑w ∧ ((ofLex w).1, (ofLex (ofLex w).2).2) = p := by
+  cases s with
+  | none => simp [fwwView] at h
+  | some w => exact ⟨w, rfl, by simpa [fwwView] using h⟩
+
+/-- **FWW, sequentially = a first-write register** (under monotone
+stamps: every later claim loses the `min`). -/
+theorem fww_seq_sound (ρ : List (Op FWWOp)) (hmono : stampsMono ρ) :
+    fwwView (fwwSt (seqFold FWW ρ)) = fwwSpecFold ρ := by
+  induction ρ using List.reverseRecOn with
+  | nil => rfl
+  | append_singleton ρ o ih =>
+      have hmono' := (List.pairwise_append.mp hmono).1
+      have hcross := (List.pairwise_append.mp hmono).2.2
+      rw [seqFold_snoc, fwwSpecFold_snoc]
+      show fwwView (min (fwwSt (seqFold FWW ρ)) ↑(fwwClaim o)) = _
+      cases hsp : fwwSpecFold ρ with
+      | none =>
+          have hfold := fwwView_eq_none ((ih hmono').trans hsp)
+          rw [hfold, min_eq_right (le_top (α := FWWState))]
+          rfl
+      | some p =>
+          obtain ⟨w, hf, hpair⟩ := fwwView_eq_some ((ih hmono').trans hsp)
+          obtain ⟨o', ho', ho't⟩ := fwwSpec_stamp_mem ρ p.1 p.2 hsp
+          have hlt : w < fwwClaim o := by
+            apply lex_lt_of_ts
+            show (ofLex w).1 < o.1
+            rw [congrArg Prod.fst hpair, ← ho't]
+            exact hcross o' ho' o (by simp)
+          rw [hf, min_eq_left (le_of_lt (WithTop.coe_lt_coe.mpr hlt))]
+          rw [show fwwView ((w : FWWClaim) : FWWState) =
+              some ((ofLex w).1, (ofLex (ofLex w).2).2) from rfl, hpair]
 
 end Sal.ConditionedMRDTs
