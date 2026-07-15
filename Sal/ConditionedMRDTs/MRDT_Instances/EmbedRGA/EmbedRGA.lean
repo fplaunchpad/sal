@@ -588,4 +588,123 @@ theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op EOp)}
     obtain ⟨o', hm', hdel⟩ := mem_eDels.mp hx
     exact mem_eDels.mpr ⟨o', (hmem o').mp hm', hdel⟩
 
+/-! ## §5  Honest histories, well-formedness of enumerations
+
+`EHonestCore` is the embed analogue of the queue's honesty: every delete
+names an id its issuer had observed (a `vis`-prior insert), and inserts are
+chain-generated (the mint is a positive birth chain's coordinate whose
+deltas telescope to the id — what an honest replica's `accurate` generation
+produces, §8). Its three consequences are exactly `EWf`'s three fields. -/
+
+open Sal.EmbedRGA (PosChain coordOf coordOf_inj key_inj)
+
+/-- The one non-commuting shape: an insert and the delete of its id.
+Witnessed at the empty state. -/
+theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r el : ℕ)
+    (π : List Bool) (a : ℕ) (ts' r' : ℕ) :
+    ¬ (E Γ).toCRDTSig.commutes (ts, r, EOp.ins el π a) (ts', r', EOp.del ts) := by
+  intro h
+  have h0 := h []
+  rw [E_core_update, E_core_update, E_core_update, E_core_update] at h0
+  simp only [eUpdate, eIds, eInsert, List.map_nil, List.not_mem_nil,
+    if_false, List.filter_nil] at h0
+  simp at h0
+
+/-- Honest histories. -/
+structure EHonestCore (Γ : OrderedPrefixCode)
+    (C : Sal.Emulation.Configuration (E Γ).toCRDTSig) : Prop where
+  /-- Every delete's target was inserted `vis`-before it. -/
+  del_has_ins : ∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
+    ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true
+  /-- Inserts are chain-generated: each mint is the coordinate of a positive
+  birth chain whose deltas telescope to the id (so chains are injective on
+  ids for free). -/
+  chain_gen : ∃ chainOf : ℕ → List ℕ,
+    ∀ o ∈ C.events, eIsIns o = true →
+      PosChain (chainOf o.1) ∧
+      eCoord Γ o = coordOf Γ (chainOf o.1) ∧
+      (chainOf o.1).sum = o.1
+
+/-- Honesty + backward closure: a delete's insert lies in the same closed
+event set, `vis`-before it. -/
+theorem e_del_ins_mem {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev : Set (Op EOp)}
+    (hin : ∀ a ∈ ev, a ∈ C.events)
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
+    ∀ d ∈ ev, ∀ x : ℕ, d.2.2 = EOp.del x →
+      ∃ a ∈ ev, eIsIns a = true ∧ a.1 = x ∧ C.vis a d := by
+  intro d hd x hdel
+  obtain ⟨a, haev, hvis, hax, hains⟩ := hHon.del_has_ins d (hin d hd) x hdel
+  have hncomm : ¬ (E Γ).toCRDTSig.commutes a d := by
+    obtain ⟨a1, a2, aop⟩ := a
+    obtain ⟨d1, d2, dop⟩ := d
+    simp only at hdel hax
+    subst hdel
+    cases aop with
+    | del y => simp [eIsIns] at hains
+    | ins el π anc =>
+        subst hax
+        exact e_ins_del_not_comm Γ a1 a2 el π anc d1 d2
+  exact ⟨a, hcl a d hvis hncomm hd, hains, hax, hvis⟩
+
+/-- **A `loOn`-respecting enumeration of a closed honest set is
+well-formed** — the bridge from the configuration layer to `EWf`, one
+honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
+delete-after-insert visibility gives `del_late`, chain generation +
+unique decodability give `keys_inj`. -/
+theorem e_wf_of_enum {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev : Set (Op EOp)} {ρ : List (Op EOp)}
+    (hin : ∀ a ∈ ev, a ∈ C.events)
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
+    (hperm : listPermOf ρ ev)
+    (hresp : respects ρ (loOn C ev)) : EWf Γ ρ where
+  ins_nodup := by
+    apply List.Nodup.map_on ?_ (hperm.1.filter _)
+    intro o₁ h₁ o₂ h₂ hfst
+    exact C.ts_unique
+      (hin _ ((hperm.2 _).mp (List.mem_of_mem_filter h₁)))
+      (hin _ ((hperm.2 _).mp (List.mem_of_mem_filter h₂))) hfst
+  del_late := by
+    intro σ o τ heq hins hdel
+    obtain ⟨d, hdσ, hddel⟩ := mem_eDels.mp hdel
+    have hdρ : d ∈ ρ := by
+      rw [heq]; exact List.mem_append_left _ hdσ
+    have hoρ : o ∈ ρ := by
+      rw [heq]; exact List.mem_append_right _ List.mem_cons_self
+    obtain ⟨a, haev, hains, hax, hvis⟩ :=
+      e_del_ins_mem hHon hin hcl d ((hperm.2 d).mp hdρ) o.1 hddel
+    have hao : a = o :=
+      C.ts_unique (hin a haev) (hin o ((hperm.2 o).mp hoρ)) hax
+    subst hao
+    unfold respects at hresp
+    rw [heq] at hresp
+    have hcross := (List.pairwise_append.mp hresp).2.2 d hdσ a
+      List.mem_cons_self
+    apply hcross
+    rw [loOn_iff_of_rc_either (E_rc_either Γ)]
+    refine ⟨hvis, ?_⟩
+    obtain ⟨a1, a2, aop⟩ := a
+    obtain ⟨d1, d2, dop⟩ := d
+    simp only at hddel
+    subst hddel
+    cases aop with
+    | del y => simp [eIsIns] at hins
+    | ins el π anc =>
+        exact e_ins_del_not_comm Γ a1 a2 el π anc d1 d2
+  keys_inj := by
+    obtain ⟨chainOf, hch⟩ := hHon.chain_gen
+    intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
+    obtain ⟨hp₁, hc₁, hs₁⟩ := hch o₁ (hin _ ((hperm.2 _).mp h₁)) hi₁
+    obtain ⟨hp₂, hc₂, hs₂⟩ := hch o₂ (hin _ ((hperm.2 _).mp h₂)) hi₂
+    apply hne
+    have hc : coordOf Γ (chainOf o₁.1) = coordOf Γ (chainOf o₂.1) := by
+      rw [← hc₁, ← hc₂]
+      exact key_inj hkey
+    have hchain := coordOf_inj Γ hp₁ hp₂ hc
+    calc o₁.1 = (chainOf o₁.1).sum := hs₁.symm
+      _ = (chainOf o₂.1).sum := by rw [hchain]
+      _ = o₂.1 := hs₂
+
 end Sal.ConditionedMRDTs
