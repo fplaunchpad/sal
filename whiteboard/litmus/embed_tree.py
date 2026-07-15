@@ -472,6 +472,26 @@ class EmbedTreeCode(EmbedTree):
         return super().apply(s, it)
 
 
+# =========================================================================
+# embed-eliasd: the canonical mint — the flipped Elias-DELTA code (note I5,
+# proved: Embed_Code_EliasDelta.lean, eliasDeltaCode, capstone inherited).
+# The gamma-flip C above is applied to the LENGTH field, then the payload:
+#   D(d) = C(bitlength d) ++ (d minus its leading bit)   [len = L + 2|L| - 2]
+# = log2 d + O(log log d) per level. Same mint geometry; only C changes.
+# Sequential (d=1) identical to C; wins from d >= 32, loses d in {2,3}+[8,15]
+# (real editing tails are thin => wash on traces; the win is race-heavy
+# shapes and the theorem — see entropy_measure.py + the design doc §2).
+# =========================================================================
+class EmbedTreeCodeD(EmbedTreeCode):
+    name = 'embed-eliasd'
+
+    @staticmethod
+    def C(d):
+        b = bin(d)[2:]
+        h = bin(len(b))[2:]
+        return '1'*(len(h)-1) + '0' + h[1:] + b[1:]
+
+
 if __name__ == '__main__' and __import__('sys').argv[1:] == ['code']:
     import pbt
     D = EmbedTreeCode()
@@ -507,7 +527,7 @@ if __name__ == '__main__' and __import__('sys').argv[1:] == ['code']:
         print(f'  DAG PBT 300 (6 rep, 12 rounds): '
               f'{"CLEAN" if not f2 else str(len(f2))+" FAIL, first "+str(f2[0])}')
     print('==== state-size measurements (survivor denominator bits) ====')
-    for DD in (EmbedTreeCode(), EmbedTree(), RelSplitV2a()):
+    for DD in (EmbedTreeCodeD(), EmbedTreeCode(), EmbedTree(), RelSplitV2a()):
         s = DD.init(); N = 1000
         s = DD.apply(s, ('ins', 1, 0))
         for i in range(2, N+1): s = DD.apply(s, ('ins', i, i-1))
@@ -516,7 +536,7 @@ if __name__ == '__main__' and __import__('sys').argv[1:] == ['code']:
         bits = max(lo.denominator.bit_length(), hi.denominator.bit_length())
         print(f'  {DD.name:14} 1000-chain (sequential, d=1): ~2^{bits}')
     # the race-cost case: 1000 root siblings (d = t, the worst gap growth)
-    for DD in (EmbedTreeCode(), EmbedTree()):
+    for DD in (EmbedTreeCodeD(), EmbedTreeCode(), EmbedTree()):
         s = DD.init()
         for i in range(1, 1001): s = DD.apply(s, ('ins', i, 0))
         bits = max(max(r[1].denominator.bit_length(), r[2].denominator.bit_length())

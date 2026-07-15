@@ -380,24 +380,25 @@ at the first divergence the longer, hence larger, number shows a
 header $0$ against the shorter's leading payload bit $1$. Writing
 the header in ones makes that same position decide in favor of the
 longer code, so lexicographic order on codewords is numeric order on
-$\delta$. \emph{Any} order-preserving prefix-free code works here,
-and the artifact exists twice to prove it: \code{embed-tree} carries
-unary codes, \code{embed-code} the delta code above --- two encodings
-of one datatype. The delta code is frugal but not the last word:
-only the \emph{value} bill is forced at $\log_2 \delta$; the
-\emph{length} bill can itself be entropy-coded --- the
-order-preserving flip of Elias~$\delta$ (apply $C$ to the length
-field, then the payload) is prefix-free and monotone by the same
+$\delta$. The $\gamma$-flip is the building block, not the last
+word: only the \emph{value} bill is forced at $\log_2 \delta$, and
+the \emph{length} bill can itself be entropy-coded. Applying $C$ to
+the length field (then the payload) gives the order-preserving flip
+of \textbf{Elias~$\delta$} --- prefix-free and monotone by the same
 across-length-class argument, at $\log_2 \delta + O(\log \log
-\delta)$ per level. This is now the \emph{third proved}
-\code{OrderedPrefixCode} instance (\code{eliasDeltaCode}), and the
-capstone theorem is inherited at it verbatim, with zero new proof
-content (\S\ref{sec:mechanization}) --- the code-parametricity claim,
-machine-validated. Two honest footnotes: the flip wins only from
-$\delta \ge 32$ and loses at $\delta \in \{2,3\} \cup [8,15]$
-(kernel-checked length comparisons), and measured editing tails are
-thin, so on real traces the two codes are a wash --- the upgrade's
-value is the theorem, not the bits.
+\delta)$ per level --- and \emph{this is the canonical mint}: the
+best proved code so far. \emph{Any} order-preserving prefix-free
+code works here, and the artifact exists in three proved encodings
+of one datatype (\code{embed-tree} unary, \code{embed-code} the
+$\gamma$-flip, \code{eliasDeltaCode} the $\delta$-flip); the capstone
+theorem is inherited at each verbatim, with zero new proof content
+(\S\ref{sec:mechanization}) --- the code-parametricity claim,
+machine-validated. Two honest footnotes: per level the $\delta$-flip
+wins only from $\delta \ge 32$ and loses at $\delta \in \{2,3\} \cup
+[8,15]$ (kernel-checked length comparisons), and measured editing
+tails are thin, so on real traces the two flips are a wash --- the
+dominance shows in race-heavy shapes (the entropy-law table below)
+and in the asymptotics.
 
 \paragraph{The mint.} Writing $b = 1 \cdot C(\delta)$ (a leading 1
 keeps coordinates positive) and $w = 2^{-|b|-2}$, the mint is the
@@ -438,7 +439,10 @@ subtree without touching the next cell.
 \caption{Mints $M(\delta)$ for $\delta = 1..4$ inside the parent's unit
 interval (cell boundaries dotted). Larger deltas sit strictly higher;
 distinct deltas are disjoint with gaps; each mint is a quarter of its
-cell, leaving room for the node's own subtree.}
+cell, leaving room for the node's own subtree. Drawn for the
+$\gamma$-flip $C$; the construction reads verbatim over any
+order-preserving prefix-free code, in particular the canonical
+Elias-$\delta$ mint (step 2).}
 \label{fig:mint}
 \end{figure}
 
@@ -629,23 +633,26 @@ dissolution behavior), \textbf{chain-lex violated $0$ times}.
 \paragraph{The entropy law.} A coordinate is the concatenation of the
 codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits ---
 the entropy of the chain. Sequential typing ($\delta = 1$ at every
-level) costs $\sim$4 bits per level; a race with timestamp gap $g$
-costs $2\log_2 g + O(1)$ bits. \emph{The state pays for the magnitude
+level) costs $\sim$4 bits per level under every code here; a race
+with timestamp gap $g$ costs $\log_2 g + O(\log \log g)$ bits under
+the canonical Elias-$\delta$ mint ($2\log_2 g + 1$ under the
+$\gamma$-flip). \emph{The state pays for the magnitude
 of actual concurrency, and for nothing else.} Measured (1000
 elements):
 
 \begin{center}\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lccc@{}}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-scenario & \shortstack[c]{quarter carve\\ (ts-oblivious, refuted)} &
-  unary mint & \textbf{delta-coded mint} \\
+scenario & \shortstack[c]{quarter carve\\ (refuted)} &
+  unary mint & $\gamma$-flip mint & \textbf{Elias-$\delta$ mint} \\
 \midrule
 chain then delete-all ($\delta{=}1$) & $2^{2001}$ &
-  $2^{502501}$ ($\sim$61 KB) & $\boldsymbol{2^{4001}}$ ($\sim$0.5 KB) \\
+  $2^{502501}$ ($\sim$61 KB) & $2^{4001}$ ($\sim$0.5 KB) &
+  $\boldsymbol{2^{4001}}$ ($\sim$0.5 KB) \\
 1000 root siblings ($\delta{=}t$) & --- (ties) &
-  max $2^{1003}$, 125 KB &
-  \textbf{max $\boldsymbol{2^{23}}$, 5 KB} \\
+  max $2^{1003}$, 125 KB & max $2^{23}$, 5 KB &
+  \textbf{max $\boldsymbol{2^{20}}$, 4 KB} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1019,9 +1026,10 @@ stability (S4, the adopted contract); unique decodability
 (\code{coordOf\_inj}); \textbf{the chain-lex theorem}
 (\code{display\_iff\_chainBefore} = Corollary~\ref{cor:lex});
 non-interleaving as subtree convexity (\code{subtree\_convex});
-Theorem~\ref{thm:faithful}(i) for both codes
-(\code{binEnc\_mono}/\code{binEnc\_prefixFree}, cross-validated
-against the Python \code{C} by kernel \code{decide});
+Theorem~\ref{thm:faithful}(i) for all three codes
+(\code{binEnc\_mono}/\code{binEnc\_prefixFree},
+\code{dEnc\_mono}/\code{dEnc\_prefixFree}, cross-validated
+against the Python codes by kernel \code{decide});
 \code{native\_decide} SPOTs where the rehoming RGA's delete-reorder
 witness gets the opposite verdict.
 \item \textbf{Conditioned instance}
