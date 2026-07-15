@@ -26,6 +26,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext_Read
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_EliasDelta
+-- NOTE: EmbedRGA_ReadEquiv (the compaction theorem) is a standalone build
+-- target: it imports the published tombstoned RGA *model*
+-- (Sal/MRDTs/RGA_with_tombstones), whose top-level names collide with the
+-- rehoming RGA model this umbrella already reaches through RGA/RA_Lin.
+-- Build it with `lake build Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_ReadEquiv`.
 
 /-!
 # The conditioned MRDT instances — the full catalogue
@@ -65,7 +70,7 @@ variants are qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
 | **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` — the fully general instantiation |
 | **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `Peritext_Read`; the live-corner contrast to the frozen-path product below |
 | Peritext (composed) — RGA ⊗ marks case study | `peritextComposed_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
-| **Embedded-chain RGA** (tombstone-free, entropy-coded birth chains) | `embed_ra_linearizable3` (under honest reachability, via the queue route's Join) — **parametric in the coordinate code**: `unaryCode`, `binaryCode`, and `eliasDeltaCode` (`embed_ra_linearizable3_eliasDelta`, `EmbedRGA_EliasDelta.lean`) are three verified encodings on one proof |
+| **Embedded-chain RGA** (tombstone-free, entropy-coded birth chains) | `embed_ra_linearizable3` (under honest reachability, via the queue route's Join) — **parametric in the coordinate code**: `unaryCode`, `binaryCode`, and `eliasDeltaCode` (`embed_ra_linearizable3_eliasDelta`, `EmbedRGA_EliasDelta.lean`) are three verified encodings on one proof; plus the **compaction theorem** `rga_read_eq_embed_read` (`EmbedRGA_ReadEquiv.lean`): on every honest event set the embed read IS the published tombstoned RGA's read (`visible_lt` order equivalence + visibility + element agreement, proved against `Sal/MRDTs/RGA_with_tombstones`'s own relational read) |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).

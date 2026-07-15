@@ -309,6 +309,21 @@ theorem visible_lt_iff_chainBefore (B : BirthEnv s chainOf) {a b : ℕ}
     _root_.visible_lt s a b ↔ chainBefore (chainOf a) (chainOf b) :=
   ⟨fun h => (visible_lt_chainBefore B h).2.2, chainBefore_visible_lt B ha hb⟩
 
+/-- `visible_lt` is asymmetric on a birth environment (inherited from the
+coordinate order's asymmetry — another fact the published side never
+proved about its own relational read). -/
+theorem visible_lt_asymm (B : BirthEnv s chainOf) {a b : ℕ}
+    (h : _root_.visible_lt s a b) : ¬ _root_.visible_lt s b a := by
+  intro h'
+  obtain ⟨ta, rb, cb1⟩ := visible_lt_chainBefore B h
+  obtain ⟨-, ra, cb2⟩ := visible_lt_chainBefore B h'
+  have k1 := chainBefore_display unaryCode (posChain_of_treeId B _ ta)
+    (posChain_of_treeId B _ (Or.inr rb)) cb1
+  have k2 := chainBefore_display unaryCode (posChain_of_treeId B _ (Or.inr rb))
+    (posChain_of_treeId B _ (Or.inr ra)) cb2
+  rw [keyLt_asymm k1] at k2
+  exact Bool.noConfusion k2
+
 /-- `visible_lt` is total on distinct real ids (inherited from
 `chainBefore_total` through the equivalence — the published RGA's
 relational order is a strict total order on the birth tree, a fact the

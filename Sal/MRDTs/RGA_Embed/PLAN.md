@@ -193,7 +193,26 @@ OWED:
   (the compaction theorem — converts the design into a statement about the
   published RGA).
 
-### Layer 5 — RGA† read-equivalence (task #75) — IN PROGRESS, recon done 2026-07-15
+### Layer 5 — RGA† read-equivalence (task #75) ✅ COMPLETE 2026-07-15 (kernel-clean)
+
+**All five steps landed.** Order core (step 4):
+`RGA_Embed_ReadEquiv.lean` (see below). Wiring + capstone (steps 1–3, 5):
+`MRDT_Instances/EmbedRGA/EmbedRGA_ReadEquiv.lean` — `toRgaOp` (the ghost π
+dropped on the wire, made syntactic), `rgaFold` + order-free membership
+characterizations, `after_of`/`visible` bridges (`visible_iff_eIds`),
+`eChainOf` (choice over `e_chain_exists`) with `birthEnv_rgaFold` (the §8
+discipline discharges every BirthEnv field; `chain_step` recovered from
+`chain_gen` + the applicability π-forcing via `coordOf_inj` — no new
+induction), `embed_read_pairwise` (the embed read is `visible_lt`-sorted),
+`sorted_unique` (asymmetric-sorted lists with equal members are equal), and
+**`rga_read_eq_embed_read`**: any `visible_lt`-sorted enumeration of the
+RGA† fold's visible ids IS the embed fold's id sequence, plus
+`embed_rec_readSeq` (element agreement). Axioms: propext, Classical.choice,
+Quot.sound. NOTE: standalone build target (the two RGA *models* declare
+colliding top-level names, so the umbrella cannot import it):
+`lake build Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_ReadEquiv`.
+
+Original plan record follows.
 
 Tested form: Python lockstep read-equality at every apply/merge/read,
 120/120 (`contest_tree.py`). Lean recon findings:

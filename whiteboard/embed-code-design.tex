@@ -64,13 +64,16 @@ state-based, reconciled by a three-way merge against the branches'
 lowest common ancestor version --- that
 keeps no tombstones, no ledger, and no event log: its entire state is
 the live nodes. A deleted element survives only as
-$\Theta(\log \delta)$ bits inside its descendants' sort keys --- the
+$\Theta(\log \delta)$ bits inside its descendants' sort keys,
+$\delta$ being the Lamport-timestamp gap between the element and its
+own insertion anchor ($1$ under sequential editing) --- the
 entropy of the race that created it, paid once, in space.
 Concurrent inserts provably cannot tie, so the merge
 contains no repair and never decides an order; the state is a
 canonical function of the event set, and convergence is literal
 equality. Observationally the datatype \emph{is} the published RGA
---- machine-checked lockstep read-equality at every step --- with the
+--- a kernel-checked read-equivalence theorem, with machine lockstep
+at every step as its tested form --- with the
 tombstone set compressed into coordinate entropy. All of this follows
 from one idea: an element's sort key is its \emph{birth chain}, the
 timestamps from the root of the birth tree down to the element, dead
@@ -844,8 +847,10 @@ L1 delete-reorder vs the verified rehoming RGA & embed $[2,3]$
 \noindent The lockstep row is the identification: \emph{the
 embedded-chain RGA is observationally the published tombstoned RGA
 with the tombstone set compressed into coordinate entropy} ---
-machine-checked on 120 executions; the read-for-read theorem is the
-mechanization target, not yet a theorem. The L1 row is the separation
+machine-checked on 120 executions, and now a kernel-checked theorem
+(the compaction theorem, \S\ref{sec:mechanization}): on every honest
+event set, any enumeration of the tombstoned RGA's visible ids in its
+own visible order \emph{equals} the embed read, element for element. The L1 row is the separation
 from the verified rehoming RGA, and it is
 exactly the one-line difference of \S\ref{sec:design}: that design's
 climb re-sorts a rehomed node by its own timestamp (the
@@ -979,11 +984,12 @@ fails the sequential delete-order spec --- RA-linearizability
 certifies convergence to the datatype's \emph{own} semantics, so
 ordering intent must be specified and proved separately. The
 embedded-chain RGA delivers the first part of the missing artifact ---
-RA-linearizability is now a kernel-checked Lean theorem
-(\S\ref{sec:mechanization}) and delete-order preservation, display
-stability and forward non-interleaving are proved at the model layer
---- with the RGA read-equivalence (the remaining intent theorem) still
-owed.
+RA-linearizability is a kernel-checked Lean theorem
+(\S\ref{sec:mechanization}); delete-order preservation, display
+stability and forward non-interleaving are proved at the model layer;
+and the RGA read-equivalence (the compaction theorem,
+\S\ref{sec:mechanization}) closes the intent question against the
+best-studied sequence semantics.
 
 \paragraph{Treedoc's lesson, inverted.} Treedoc re-balances geometry
 and must pay consensus for it; the principle that emerged from our
@@ -1063,14 +1069,25 @@ of its predecessor, so the surviving display order is untouched;
 the merge preserves each input's survivor order on both sides).
 \end{enumerate}
 
-\noindent\textbf{Still owed}: the equivalence target
-$\mathrm{read} \circ \mathrm{embed} = \mathrm{read} \circ
-\mathrm{RGA}_\dagger$ on honest executions, stated at the chain layer
-(both sides are functions of the event set), which converts the design
-into a theorem \emph{about} the published RGA: it admits a
-strictly-live compaction preserving every read. Until that lands, the
-lockstep identification of \S\ref{sec:validation} remains
-machine-checked on the stated executions, not proved.
+\noindent\textbf{The compaction theorem is proved} (2026-07-15,
+kernel-clean): $\mathrm{read} \circ \mathrm{embed} = \mathrm{read}
+\circ \mathrm{RGA}_\dagger$ on honest executions ---
+\code{rga\_read\_eq\_embed\_read}
+(\code{EmbedRGA\_ReadEquiv.lean}): for every well-formed enumeration
+of an honest event set, \emph{any} enumeration of the tombstoned
+fold's visible ids in the published RGA's own relational order
+(\code{visible\_lt}) equals the embed fold's id sequence, with
+element agreement (\code{embed\_rec\_readSeq}). The proof is
+\emph{against the published definition}: the order core
+(\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_ReadEquiv.lean}) shows
+\code{visible\_lt} coincides with chain-lex on the shared birth tree
+(soundness by induction on derivations, completeness by realizing
+every chain prefix as an \code{afters}-reachable ancestor), and en
+route proves the published relational order total and asymmetric on
+the birth tree --- facts the published side never had. This converts
+the design into a theorem \emph{about} the published RGA: it admits a
+strictly-live compaction preserving every read. The lockstep rows of
+\S\ref{sec:validation} are this theorem's tested form.
 
 \paragraph{Provenance.} \code{whiteboard/litmus/embed\_tree.py} (the
 design, the timestamp-oblivious control, the credential countermodel,
