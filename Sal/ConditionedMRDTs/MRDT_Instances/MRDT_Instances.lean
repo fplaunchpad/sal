@@ -24,6 +24,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkHonesty
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkIntent
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext_Read
+import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
+import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_EliasDelta
 
 /-!
 # The conditioned MRDT instances — the full catalogue
@@ -63,6 +65,7 @@ variants are qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
 | **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` — the fully general instantiation |
 | **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `Peritext_Read`; the live-corner contrast to the frozen-path product below |
 | Peritext (composed) — RGA ⊗ marks case study | `peritextComposed_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
+| **Embedded-chain RGA** (tombstone-free, entropy-coded birth chains) | `embed_ra_linearizable3` (under honest reachability, via the queue route's Join) — **parametric in the coordinate code**: `unaryCode`, `binaryCode`, and `eliasDeltaCode` (`embed_ra_linearizable3_eliasDelta`, `EmbedRGA_EliasDelta.lean`) are three verified encodings on one proof |
 
 `GSet/` and `Counter/` additionally carry the two demo kernels of the flat
 route (`gset_ra_linearizable3_cd`, `counter_ra_linearizable3_cd`).

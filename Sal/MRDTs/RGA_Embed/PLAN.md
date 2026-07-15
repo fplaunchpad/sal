@@ -32,7 +32,20 @@ Mac — run bare). `lake build Sal.MRDTs.RGA_Embed.<Module>` to produce oleans.
   `binEnc_mono`, `binEnc_prefixFree`, `binEnc_length = 2·size − 1` (the
   entropy bound, exactly), and `binaryCode : OrderedPrefixCode`.
   Cross-validated against the Python `C` by `decide` (C(1)/C(2)/C(3)/C(5)).
-  Both instances are drop-in: every datatype theorem is code-parametric.
+- ✅ **flipped Elias-δ landed** (`Embed_Code_EliasDelta.lean`, kernel-clean;
+  task #77, order-coding note I5): `dEnc d = binEnc (size d) ++
+  bitsW (size d − 1) d` — `binEnc` reused as the *header* on the length
+  field, glued by `bitLt_append_of_not_prefix` (strict Lex + not-prefix
+  survives appends). `dEnc_length = size d + 2·size (size d) − 2`
+  (= log δ + O(log log δ)), `dEnc_mono`, `dEnc_prefixFree`,
+  `eliasDeltaCode : OrderedPrefixCode`. Capstone inherited with zero new
+  proof content: `embed_ra_linearizable3_eliasDelta`
+  (`MRDT_Instances/EmbedRGA/EmbedRGA_EliasDelta.lean`, kernel-clean; both
+  EmbedRGA files now wired into the `MRDT_Instances` umbrella). Honest
+  `decide` battery: the flip loses at δ∈{2,3}∪[8,15], ties {4..7}∪{16..31},
+  wins from δ=32 — matching the I1 measurement (traces: wash; the value is
+  the theorem).
+  All three instances are drop-in: every datatype theorem is code-parametric.
 
 ### Layer 1 — MRDT kernel: `RGA_Embed_MRDT.lean` ✅ (0 errors, 0 sorry, kernel-clean)
 
