@@ -212,6 +212,37 @@ Quot.sound. NOTE: standalone build target (the two RGA *models* declare
 colliding top-level names, so the umbrella cannot import it):
 `lake build Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_ReadEquiv`.
 
+### Layer 6 — the sided generalization (task #83) ✅ capstone landed 2026-07-15 (kernel-clean)
+
+Design: `whiteboard/sided-embed-design-note.md`; Python validation:
+`whiteboard/litmus/embed_sided.py` (Fugue policy flips L19 clean, all-R
+lockstep-exact with the one-sided embed). Two layers, both kernel-clean:
+
+- **Sided chain-lex kernel** (`Sided_ChainLex.lean`): chains of
+  `(side, delta)` entries; marker alphabet R band {1,2} < marker 3 <
+  L band {4,5} with the L band in the *complemented* code; the sided
+  marker theorem `sdisplay_iff_schainBefore`; totality axiom-free;
+  unique decodability `sidedCoordOf_inj`; the all-R **fragment theorem**
+  `schainBefore_liftR` (all-R chains order exactly as one-sided chains);
+  in-order-interval subtree convexity `schain_subtree_convex` (the Fugue
+  intent target).
+- **Conditioned instance** (`MRDT_Instances/SidedRGA/SidedRGA.lean`,
+  §§1–9 mirroring `EmbedRGA.lean` with `sKey = coord ++ [3]`):
+  fold-canonicity `s_fold_canon`, the Join by the queue route, capstone
+  `sided_embed_ra_linearizable3` — RA-lin at every honestly reachable
+  configuration for EVERY side assignment (sides are payload to
+  convergence: the policy/datatype split, mechanized), plus
+  `sHonest_of_applicable` and the sublist intent theorems. In the
+  umbrella.
+
+Owed: per-policy intent theorems at the instance (all-R read-equivalence
+to the one-sided instance via the fragment theorem; Fugue
+non-interleaving via convexity) and the sided adjacency lemma for the
+seq-spec campaign. Gotcha recorded: `omega` cannot parse goals whose
+inequality is elaborated at the `Timestamp` abbrev (hypotheses parse,
+`show`-minted goals don't) — use term proofs (`exact hat`,
+`Nat.le_sub_of_add_le`) or state the `show` at `ℕ`.
+
 Original plan record follows.
 
 Tested form: Python lockstep read-equality at every apply/merge/read,
