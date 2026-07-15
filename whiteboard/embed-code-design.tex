@@ -50,7 +50,7 @@ related work}
 \small working names in the artifact: \code{embed-tree} (unary),
 \code{embed-code} (delta-coded)}
 \date{2026-07-14; revised 2026-07-15 (the datatype separated from its
-encoding)}
+encoding; the sided generalization)}
 
 \begin{document}
 \maketitle
@@ -66,8 +66,9 @@ three-way merge against the branches' lowest common ancestor
 version. A deleted element survives only as
 $\Theta(\log \delta)$ bits inside its descendants' sort keys,
 $\delta$ being the Lamport-timestamp gap between the element and its
-own insertion anchor ($1$ under sequential editing); that is the
-entropy of the race that created it, paid once, in space.
+own insertion anchor ($1$ under continuation typing); that is the
+log of the event gap the insertion crossed, a race or a cursor
+jump, paid once, in space.
 Concurrent inserts provably cannot tie, so the merge
 contains no repair and never decides an order; the state is a
 canonical function of the event set, and convergence is literal
@@ -82,7 +83,8 @@ carried in an order-preserving self-delimiting code. Separating the datatype
 from its encoding makes the metatheory nearly definitional:
 correctness is three one-line facts about chains, plus a single
 faithfulness theorem about the code. The design is machine-validated
-(the L1--L25 anomaly battery, except L19, RGA's own; 420+ randomized
+(the L1--L25 anomaly battery, except L19, RGA's own, discharged by
+the sided generalization of \S\ref{sec:sided}; 420+ randomized
 version-DAG executions; 120/120 lockstep), and the central theorem,
 RA-linearizability at every honestly reachable configuration,
 is a kernel-checked Lean theorem (\S\ref{sec:mechanization}).
@@ -217,8 +219,8 @@ sweep kept re-imposing:
 design that forgets them has a named machine-checked countermodel
 (\S\ref{sec:related}). What is negotiable is only how many bits the
 retained timestamps cost; that is the subject of
-\S\ref{sec:encoding}, and the answer is: the entropy of the races,
-and nothing else.
+\S\ref{sec:encoding}, and the answer is: the log of each element's
+anchor gap, and nothing else.
 
 \begin{figure}[h]
 \centering
@@ -357,10 +359,14 @@ retain dead ancestors' timestamps (the conservation law,
 \S\ref{sec:design}); the only remaining question is how many bits
 that retention costs. Without entropy coding, ``tombstone-free''
 would be bookkeeping: a full timestamp per level grows with document
-age however calm the history, and the unary control below costs
-61\,KB where the coded design costs 0.5\,KB. The coding is what makes
-the headline claim true: the dead survive as the entropy of the races
-that created them, and not more.
+age however calm the history. The \emph{unary control}
+(\code{embed-tree}: the identical datatype with a unary code in the
+mint, codeword length linear in the value, kept as the experiment's
+cost-control arm; step 2 and the entropy-law table) makes the gap
+measurable: 61\,KB against the coded design's 0.5\,KB on the table's
+1000-element chain scenario. The coding is what makes
+the headline claim true: the dead survive as the entropy of the
+anchor gaps they were born across, and not more.
 \emph{Job 2: faithfulness.} The chains must be stored so that plain
 lexicographic bit comparison reproduces chain-lex exactly, in every
 reachable state, forever. This is the single obligation the
@@ -399,9 +405,10 @@ span (Figure~\ref{fig:nest}). \emph{No ties}: cell disjointness plus
 Lamport uniqueness means sibling coordinates never tie, so the merge
 never decides an order and the read needs no tiebreak.
 \item \textbf{Universal, with a cheap floor} buys Job 1: $C$ is
-defined for every $\delta \ge 1$, $|C(1)| = O(1)$ so sequential
+defined for every $\delta \ge 1$, $|C(1)| = O(1)$ so continuation
 typing costs a constant per level, and $|C(\delta)| = \Theta(\log
-\delta)$ so a race pays for its own magnitude and nothing else.
+\delta)$ so a level pays the log of its anchor gap, whether the gap
+is a race or a cursor jump (step 1), and nothing else.
 \end{itemize}
 Monotone plus prefix-free is all of Job 2: any such code satisfies
 Theorem~\ref{thm:faithful}, which is why the Lean capstone is
@@ -418,10 +425,15 @@ $\delta = x - a \ge 1$. A chain-lex first difference always compares
 two entries with the \emph{same} anchor (the shared prefix), and for
 a fixed anchor, ordering by $x$ and by $\delta$ coincide, so each
 chain level may store the differential instead of the timestamp.
-This is where \emph{pay for concurrency} enters: sequential typing
-has $\delta = 1$ at every level regardless of how long the document
-has lived, while a genuine race with timestamp gap $g$ costs
-$\log_2 g$ bits. The differential is an encoding choice, not
+Call $\delta$ the \emph{anchor gap}: the events elapsed between the
+anchor's mint and the insert's.
+Continuation typing (each character anchored at its predecessor) has
+$\delta = 1$ at every level regardless of how long the document has
+lived. Two things widen the gap, and they pay the same bill: a
+genuine race with timestamp gap $g$ costs $\log_2 g$ bits, and so
+does a \emph{cursor jump}, the first character typed at an old
+anchor; its successors anchor at fresh characters and are back to
+$\delta = 1$. The differential is an encoding choice, not
 semantics: the mathematical object remains the timestamp.
 
 \paragraph{Step 2: entropy coding.} For $\delta \ge 1$ let $L$ be the
@@ -445,8 +457,8 @@ has said $L$ it carries no information and is dropped. Hence
   \;+\; \underbrace{(L{-}1)}_{\text{payload}}
   \;=\; 2L - 1 \;=\; 2\lfloor \log_2 \delta \rfloor + 1,
 \]
-e.g.\ $C(1) = 0$, $C(2) = 100$, $C(3) = 101$, $C(5) = 11001$ (the
-values kernel-checked in the artifact). This is Elias~$\gamma$ with
+e.g.\ $C(1) = 0$, $C(2) = 100$, $C(3) = 101$, $C(5) = 11001$. This
+is Elias~$\gamma$ with
 its header flipped: $\gamma$ announces the length in \emph{zeros},
 which is prefix-free but order-reversing across length classes:
 at the first divergence the longer, hence larger, number shows a
@@ -459,8 +471,8 @@ the \emph{length} bill can itself be entropy-coded. Applying $C$ to
 the length field (then the payload) gives the order-preserving flip
 of \textbf{Elias~$\delta$}, prefix-free and monotone by the same
 across-length-class argument, at $\log_2 \delta + O(\log \log
-\delta)$ per level; \emph{this is the canonical mint}, the
-best proved code so far. \emph{Any} order-preserving prefix-free
+\delta)$ per level; \emph{this is the canonical mint}.
+\emph{Any} order-preserving prefix-free
 code works here, and the artifact exists in three proved encodings
 of one datatype (\code{embed-tree} unary, \code{embed-code} the
 $\gamma$-flip, \code{eliasDeltaCode} the $\delta$-flip); the capstone
@@ -483,7 +495,42 @@ second quarter of $b$'s dyadic cell:
 The quarter placement leaves a gap below and headroom above inside the
 cell, and the open space $(0.b+2w,\, 0.b+4w)$ is never minted: it
 exists so that the interval has room to \emph{contain} the node's own
-subtree without touching the next cell.
+subtree without touching the next cell. This also pins down the
+per-level \emph{block} promised in the vocabulary: $0.b + w$ written
+as a string is $b\,\code{01}$, so the block is
+$1\,C(\delta)\,\code{01}$, the codeword in its three framing bits
+(the leading $1$ for positivity, the \code{01} that selects the
+second quarter). The block is what a node stores; read as a binary
+fraction it is the lower endpoint of $M(\delta)$, and flipping the
+trailing \code{01} to \code{10} gives the upper. Worked out for
+small deltas:
+
+\begin{center}\small
+\begin{tabular}{@{}rllll@{}}
+\toprule
+$\delta$ & $C(\delta)$ & block $= 1\,C(\delta)\,\code{01}$ &
+  $M(\delta)$ & bits/level \\
+\midrule
+1   & \code{0}             & \code{1001}     & $(9/16,\ 10/16)$   & 4 \\
+2   & \code{100}           & \code{110001}   & $(49/64,\ 50/64)$  & 6 \\
+3   & \code{101}           & \code{110101}   & $(53/64,\ 54/64)$  & 6 \\
+4   & \code{11000}         & \code{11100001} & $(225/256,\ 226/256)$ & 8 \\
+5   & \code{11001}         & \code{11100101} & $(229/256,\ 230/256)$ & 8 \\
+10  & \code{1110010}       & \code{1111001001} & $(969/1024,\ 970/1024)$ & 10 \\
+100 & \code{1111110100100} & \code{1111111010010001} &
+  $(65169/65536,\ 65170/65536)$ & 16 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three things to read off. The endpoints are consecutive
+dyadics at scale $2^{-(|b|+2)}$ (numerators $n$ and $n{+}1$): the
+mint is one tick wide at its own scale, with the tick below it (the
+gap) and the two ticks above it (the subtree headroom) never minted.
+The rows are strictly increasing as fractions: monotonicity made
+visible. And the bit count is $2L + 2$ for an $L$-bit $\delta$: four
+bits at $\delta = 1$ (the sequential-typing constant of the entropy
+law), sixteen at $\delta = 100$.
 
 \begin{figure}[h]
 \centering
@@ -523,24 +570,110 @@ Elias-$\delta$ mint (step 2).}
 parent-relatively:
 \[
   \sigma \;:\; t \;\mapsto\; (\,\mathrm{par} \in \mathbb{N},\ \
-  (lo, hi) \subset (0,1),\ \ \mathrm{char}\,),
+  s \in \{0,1\}^{*},\ \ \mathrm{char}\,),
 \]
-where $(lo,hi)$ is a dyadic-rational interval \emph{relative to the
-parent's interval}, and $\mathrm{par} = 0$ denotes the root sentinel
-(which owns $(0,1)$ and is never stored). A node's \emph{absolute}
-interval is the affine composition of the intervals along its parent
-chain; write
+where $s$ is a block ($1\,C(\delta)\,\code{01}$ at birth; after
+folds, below, a concatenation of blocks) \emph{relative to the
+parent}, and $\mathrm{par} = 0$ denotes the root sentinel (which
+owns $(0,1)$ and is never stored). The record holds no interval; the
+interval is the string's decoding,
+\[
+  (lo, hi) \;=\; \bigl(\,0.s,\ \ 0.s + 2^{-|s|}\,\bigr)
+  \;\subset\; (0,1),
+\]
+consecutive dyadics at $s$'s own scale, one block at a time exactly
+as in the mint table. The maintenance below and
+Theorem~\ref{thm:faithful} are stated on the intervals, and every
+operation they perform on an interval is a string operation on $s$:
+composition is concatenation, comparison is lexicographic. (The
+validation model stores the decoded pair directly, as exact
+fractions.) A node's \emph{absolute} interval is the affine
+composition of the intervals along its parent chain. For a node $v$
+with mint $M(\delta_v) = (lo_v,\ lo_v + w_v)$, let
+\[
+  \varphi_v : (0,1) \to M(\delta_v), \qquad
+  \varphi_v(x) \;=\; lo_v + w_v \cdot x,
+\]
+the unique increasing affine bijection of the unit interval onto
+$v$'s mint; it maps a subinterval $(a,b)$ to
+$(lo_v + w_v a,\ lo_v + w_v b)$, and on strings it prefixes $v$'s
+block: $\varphi_v(0.y) = 0.(s_v\, y)$. Write
 \[
   \alpha(u) \;=\; \varphi_{c_1} \circ \cdots \circ
   \varphi_{c_k}\bigl(M(\delta_u)\bigr)
 \]
-for the composition of the mints along $u$'s birth chain
-$c_1 \cdots c_k\,u$ (where $\varphi_v$ maps $(0,1)$ onto $v$'s mint
-interval, order-preservingly, and $\delta_v$ is $v$'s delta to its
-birth parent): $\alpha(u)$ is the \emph{encoding of $\chain(u)$}.
-Semantically the coordinates are rationals; the natural carrier is a
-bit string per node (below). Figure~\ref{fig:nest} draws the worked
-example of \S\ref{sec:design} in coordinates.
+for the composition along $u$'s birth chain $c_1 \cdots c_k\,u$
+($\delta_v$ is $v$'s delta to its birth parent): $\alpha(u)$ is the
+\emph{encoding of $\chain(u)$}, and at the string level it decodes
+the concatenation of the blocks along the chain. Worked on the tree
+of Figure~\ref{fig:credential}, redrawn before $\del(6)$ with the
+delta (child minus anchor) on each edge and the stored block under
+each node:
+
+\begin{center}
+\begin{tikzpicture}
+  \node[rootvtx] (r)   at (0,0)        {$0$};
+  \node[elbl, right=1.5mm of r] {owns $(0,1)$; never stored};
+  \node[vtx] (n10) at (-3.2,-1.6) {$10$};
+  \node[vtx] (n8)  at (-1.1,-1.6) {$8$};
+  \node[vtx] (n6)  at (1.4,-1.6)  {$6$};
+  \node[vtx] (n22) at (0.4,-3.3)  {$22$};
+  \node[vtx] (n16) at (2.6,-3.3)  {$16$};
+  \draw[anc] (n10) -- (r)
+    node[elbl, midway, fill=white, inner sep=1.5pt] {$\delta{=}10$};
+  \draw[anc] (n8) -- (r)
+    node[elbl, midway, fill=white, inner sep=1.5pt] {$\delta{=}8$};
+  \draw[anc] (n6) -- (r)
+    node[elbl, midway, fill=white, inner sep=1.5pt] {$\delta{=}6$};
+  \draw[anc] (n22) -- (n6)
+    node[elbl, midway, fill=white, inner sep=1.5pt] {$\delta{=}16$};
+  \draw[anc] (n16) -- (n6)
+    node[elbl, midway, fill=white, inner sep=1.5pt] {$\delta{=}10$};
+  \node[elbl, below=1mm of n10] {\code{1111001001}};
+  \node[elbl, below=1mm of n8]  {\code{1111000001}};
+  \node[elbl, right=1.5mm of n6] {\code{11101001}};
+  \node[elbl, below=1mm of n22] {\code{111110000001}};
+  \node[elbl, below=1mm of n16] {\code{1111001001}};
+\end{tikzpicture}
+\end{center}
+
+\noindent Writing $(n, n{+}1)/2^{k}$ for the interval
+$(n/2^k,\ (n{+}1)/2^k)$ and $\approx$ for its lower endpoint:
+
+\begin{center}\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}rrllll@{}}
+\toprule
+node & $\delta$ & stores $(\mathrm{par}, s)$ & decode of $s$ &
+  $\alpha$ (absolute) & $\approx$ \\
+\midrule
+$10$ & $10$ & $(0,\ \code{1111001001})$   & $(969, 970)/2^{10}$ &
+  $(969, 970)/2^{10}$ & $0.94629$ \\
+$8$  & $8$  & $(0,\ \code{1111000001})$   & $(961, 962)/2^{10}$ &
+  $(961, 962)/2^{10}$ & $0.93848$ \\
+$6$  & $6$  & $(0,\ \code{11101001})$     & $(233, 234)/2^{8}$  &
+  $(233, 234)/2^{8}$  & $0.91016$ \\
+$22$ & $16$ & $(6,\ \code{111110000001})$ & $(3969, 3970)/2^{12}$ &
+  $(958337, 958338)/2^{20}$ & $0.91394$ \\
+$16$ & $10$ & $(6,\ \code{1111001001})$   & $(969, 970)/2^{10}$ &
+  $(239561, 239562)/2^{18}$ & $0.91385$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The root's children store their absolute intervals already
+($\mathrm{par} = 0$). The grandchildren compose: $22$'s absolute
+string is its parent's block followed by its own,
+$\code{11101001}\,\code{111110000001}$ ($20$ bits, hence the
+$2^{20}$), and likewise $16$'s ($18$ bits). Both absolute intervals
+sit inside $M(6) = (0.91016, 0.91406)$ while $8$'s sits above it, so
+the descending-$\alpha$ read is $[10, 8, 22, 16]$ and $8$ cannot
+land between the orphans. Nodes $16$ and $10$ store the same
+string, both being $\delta = 10$ births; records are
+parent-relative, so this is no collision. After $\del(6)$ the fold
+rewrites the two records to $(\mathrm{par}\ 0,\ \text{the
+concatenated } s)$ and the $\alpha$ column is unchanged bit for bit.
+Figure~\ref{fig:nest} draws these intervals (widths schematic).
 
 \begin{figure}[h]
 \centering
@@ -581,14 +714,34 @@ credential verdict, now a fact about intervals.}
 \item $\ins(x \leftarrow a)$ mints $M(x - a)$ relative to $a$: the
 new record depends only on the two timestamps.
 \item $\del(d)$ \emph{isometrically folds} $d$ into its children:
-each child $c$ is re-parented to $d$'s parent with $d$'s interval
-composed in, $c.\mathrm{frac} := d.\mathrm{frac} \circ
-c.\mathrm{frac}$, an exact affine substitution. Note what this is:
-upstairs, deletion changes nobody's sort key (\S\ref{sec:design});
-the fold is the parent-relative storage scheme \emph{re-normalizing}
-while every absolute interval stays fixed
-(Figure~\ref{fig:fold}). Representation
-maintenance, not datatype semantics.
+each child $c$ is re-parented to $d$'s parent and $d$'s record is
+substituted into $c$'s. On the stored strings this is concatenation,
+$c.s := d.s\, c.s$; read as intervals, $c.\mathrm{frac} :=
+d.\mathrm{frac} \circ c.\mathrm{frac}$, where $I \circ J$ is the
+image of $J$ under the increasing affine bijection of $(0,1)$ onto
+$I$ (the $\varphi$ of the stored state, with $I$ in place of a
+mint): for $I = (lo,\ lo + w)$,
+\[
+  I \circ J \;=\; (\,lo + w \cdot lo_J,\ \ lo + w \cdot hi_J\,).
+\]
+The substitution is exact. Upstairs, deletion
+changes nobody's sort key (\S\ref{sec:design}); the fold is the
+parent-relative storage scheme \emph{re-normalizing} while every
+absolute interval stays fixed (Figure~\ref{fig:fold}):
+representation maintenance, not datatype semantics. On the running
+example, $\del(6)$ removes $6$'s record and substitutes it into both
+children: $22$'s record $(6,\ \code{111110000001})$ becomes
+$(0,\ \code{11101001}\,\code{111110000001})$, whose decode is
+\[
+  (233, 234)/2^{8} \circ (3969, 3970)/2^{12}
+  \;=\; (233 \cdot 2^{12} + 3969,\ 233 \cdot 2^{12} + 3970)/2^{20}
+  \;=\; (958337, 958338)/2^{20},
+\]
+and likewise $16$'s becomes $(0,\
+\code{11101001}\,\code{1111001001})$, decoding $(239561,
+239562)/2^{18}$. Both are exactly the $\alpha$ column of the worked
+table: the absolute intervals did not move, only the
+parent-relative bookkeeping did.
 \item The merge \emph{refolds}: for each survivor, compute its
 absolute interval by folding its record to the root inside the input
 that holds it (a record's stored parent is always live in its own
@@ -604,42 +757,86 @@ order of $lo$. No tie rule is needed (Corollary~\ref{cor:lex}).
 \centering
 \begin{tikzpicture}
   % ---- before del(6): parent-relative records
-  \node[rootvtx] (ar)  at (0,0)    {$0$};
-  \node[vtx]     (a6)  at (0,-1.4) {$6$};
-  \node[vtx]     (a22) at (0,-2.8) {$22$};
-  \draw[anc] (a6) -- (ar)
-    node[elbl, midway, right=1.5mm] {$6 \mapsto (\mathrm{par}\,0,\ M(6))$};
-  \draw[anc] (a22) -- (a6)
-    node[elbl, midway, right=1.5mm] {$22 \mapsto (\mathrm{par}\,6,\ M(16))$};
-  \node[capt] at (0.6,-3.6) {before $\del(6)$};
-  \draw[rng]  (-1.5,-4.5) -- (2.7,-4.5);
-  \draw[rngB] (0.3,-4.5) -- (1.2,-4.5);
-  \node[lab, below] at (0.75,-4.62) {$\alpha(22)$};
+  \node[rootvtx] (ar)  at (0,0)     {$0$};
+  \node[vtx]     (a6)  at (0,-1.3)  {$6$};
+  \node[vtx]     (a22) at (-1.0,-2.6) {$22$};
+  \node[vtx]     (a16) at ( 1.0,-2.6) {$16$};
+  \draw[anc] (a6)  -- (ar);
+  \draw[anc] (a22) -- (a6);
+  \draw[anc] (a16) -- (a6);
+  \node[elbl, align=left] at (0,-3.9)
+    {$6  \mapsto (0,\ \code{11101001})$\\[1pt]
+     $22 \mapsto (6,\ \code{111110000001})$\\[1pt]
+     $16 \mapsto (6,\ \code{1111001001})$};
+  \draw[rngD] (-1.9,-5.3) -- (1.9,-5.3);
+  \draw[rngB] (-0.6,-5.3) -- (0.1,-5.3);
+  \draw[rngB] ( 0.5,-5.3) -- (1.2,-5.3);
+  \node[lab, below] at (-0.25,-5.42) {$\alpha(16)$};
+  \node[lab, below] at ( 0.85,-5.42) {$\alpha(22)$};
+  \node[lab, below] at (0,-5.95) {inside $6$'s span (dashed)};
+  \node[capt] at (0,-6.6) {before $\del(6)$};
   % ---- arrow
-  \node at (4.6,-1.8) {\Large $\Longrightarrow$};
-  % ---- after: record substituted, absolute interval fixed
-  \begin{scope}[shift={(8.2,0)}]
-  \node[rootvtx] (br)  at (0,0)    {$0$};
-  \node[deadv]   (b6)  at (1.9,-1.4) {$6$};
+  \node at (3.6,-2.6) {\Large $\Longrightarrow$};
+  % ---- after: blocks concatenated, absolute intervals fixed
+  \begin{scope}[shift={(7.6,0)}]
+  \node[rootvtx] (br)  at (0,0)     {$0$};
+  \node[deadv]   (b6)  at (1.8,-1.0) {$6$};
   \node[elbl, right=1mm of b6] {record gone};
-  \node[vtx]     (b22) at (0,-2.8) {$22$};
-  \draw[climb] (b22) -- (br)
-    node[elbl, midway, left=1.5mm] {$22 \mapsto (\mathrm{par}\,0,\ M(6) \circ M(16))$};
-  \node[capt] at (0.6,-3.6) {after: fracs composed};
-  \draw[rng]  (-1.5,-4.5) -- (2.7,-4.5);
-  \draw[rngB] (0.3,-4.5) -- (1.2,-4.5);
-  \node[lab, below] at (0.75,-4.62) {$\alpha(22)$: unchanged};
+  \node[vtx]     (b22) at (-1.0,-2.6) {$22$};
+  \node[vtx]     (b16) at ( 1.0,-2.6) {$16$};
+  \draw[climb] (b22) -- (br);
+  \draw[climb] (b16) -- (br);
+  \node[elbl, align=left] at (0,-3.9)
+    {$22 \mapsto (0,\ \code{11101001}\,\code{111110000001})$\\[1pt]
+     $16 \mapsto (0,\ \code{11101001}\,\code{1111001001})$};
+  \draw[rngD] (-1.9,-5.3) -- (1.9,-5.3);
+  \draw[rngB] (-0.6,-5.3) -- (0.1,-5.3);
+  \draw[rngB] ( 0.5,-5.3) -- (1.2,-5.3);
+  \node[lab, below] at (-0.25,-5.42) {$\alpha(16)$};
+  \node[lab, below] at ( 0.85,-5.42) {$\alpha(22)$};
+  \node[lab, below] at (0,-5.95) {bit for bit unchanged};
+  \node[capt] at (0,-6.6) {after: blocks concatenated};
   \end{scope}
 \end{tikzpicture}
-\caption{The isometric fold. $\del(6)$ deletes $6$'s record and
-substitutes its stored interval into each child's:
-$22.\mathrm{frac} := M(6) \circ M(16)$, an exact affine composition
-(red = the re-parenting, a storage move only). The absolute interval
-$\alpha(22) = M(6) \circ M(16)$, and with it the display, is
-bit-for-bit unchanged: upstairs, $22$'s sort key still reads
-$\langle 6,22\rangle$.}
+\caption{The isometric fold on the running example. $\del(6)$
+deletes $6$'s record and concatenates its block \code{11101001}
+onto the front of each child's, re-parenting both to the root (red:
+the re-parenting, a storage move only). The stored states change:
+$22$ and $16$ now carry two-block strings and $\mathrm{par}\ 0$.
+The absolute intervals $\alpha(22) = (958337, 958338)/2^{20}$ and
+$\alpha(16) = (239561, 239562)/2^{18}$, and with them the display,
+are bit-for-bit unchanged: upstairs, the sort keys still read
+$\langle 6, 22\rangle$ and $\langle 6, 16\rangle$. The dashed span
+is $6$'s old interval, surviving as pure geometry.}
 \label{fig:fold}
 \end{figure}
+
+\paragraph{Why the codeword must announce its own end.} Before the
+theorem, the countermodel that motivates it. A single codeword in a
+field of known extent needs no header, and the length looks
+recoverable from the string itself; plain binary shows what breaks,
+once per purchase in the contract. \emph{Geometry:} $B(2) = \code{10}$
+prefixes $B(5) = \code{101}$, so $B(5)$'s cell sits inside $B(2)$'s;
+containment means ancestry, so the $\delta{=}5$ sibling lands amid
+the $\delta{=}2$ sibling's descendants and non-interleaving dies
+with everything alive. \emph{Parsing:} once a fold erases the
+structural boundary between blocks, \code{101100\ldots} reads as
+$B(2)$ then \code{11\ldots} or as $B(5)$ then \code{00\ldots}, and
+nothing outside the string can say. \emph{Ties:} a binary fraction
+cannot see trailing zeros, so \code{10} and \code{100} both denote
+$\tfrac12$; distinct siblings mint touching intervals, and the id
+tiebreak wakes into an arbiter that orders by id, not chain-lex.
+Nor can the header bits be dodged: prefix-freedom demands
+$\sum_\delta 2^{-\ell(\delta)} \le 1$, and plain binary puts
+$2^{L-1}$ values at every length $L$, so every prefix-free code
+pays a length announcement of order $\log L$ somewhere (out-of-band
+boundary tables cost the same bits and forfeit the string as a
+self-contained key; database key encodings inline it for the same
+reason). And the fold names where the boundary went: the tree node
+that carried it structurally is the deleted tombstone, whose
+ordering verdict becomes the payload and whose boundary becomes the
+header. ``Tombstone compressed into coordinate entropy'' is literal
+at the bit level.
 
 \paragraph{The one obligation.} The four theorems of the earlier
 drafts collapse into a single statement about the encoding.
@@ -705,12 +902,13 @@ dissolution behavior), \textbf{chain-lex violated $0$ times}.
 
 \paragraph{The entropy law.} A coordinate is the concatenation of the
 codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits,
-the entropy of the chain. Sequential typing ($\delta = 1$ at every
-level) costs $\sim$4 bits per level under every code here; a race
-with timestamp gap $g$ costs $\log_2 g + O(\log \log g)$ bits under
+the entropy of the chain. Continuation typing ($\delta = 1$ at every
+level) costs $\sim$4 bits per level under every code here; a level
+minted across an event gap $g$, by a race or by the first character
+after a cursor jump, costs $\log_2 g + O(\log \log g)$ bits under
 the canonical Elias-$\delta$ mint ($2\log_2 g + 1$ under the
-$\gamma$-flip). \emph{The state pays for the magnitude
-of actual concurrency, and for nothing else.} Measured (1000
+$\gamma$-flip). \emph{The state pays for the magnitude of edit
+non-locality, concurrent or not, and for nothing else.} Measured (1000
 elements; the numbers are \emph{order metadata alone}, survivors'
 coordinate bits read off the dyadic denominators; characters are
 excluded, since data costs are identical across all designs):
@@ -736,7 +934,19 @@ chain then delete-all ($\delta{=}1$) & $2^{2001}$ &
 \textbf{parent-relative bit string per node}: the fold is
 concatenation, comparison is lexicographic ($O(1)$-ish with
 structure sharing); the rationals are the semantics of the strings,
-kept for the proofs. IEEE 754 binary64 is machine-refuted as the
+kept for the proofs. Nothing here computes $M(\delta)$: the
+endpoints $0.b + w$ and $0.b + 2w$ are the strings $b\,\code{01}$
+and $b\,\code{10}$, so the mint emits a block and the fold
+concatenates, and $hi$ need not be stored at all. The Lean
+mechanization drops even the framing bits: its coordinate is the
+bare codeword concatenation on \code{List Bool} (\code{mint} appends
+$\Gamma.\mathrm{enc}(t - a)$ to the anchor's coordinate), with the
+prefix rule stated directly on strings; the quarter framing serves
+the interval realization alone, buying positivity and subtree
+interiority. The rational $M(\delta)$ is computed in exactly one
+place, the validation model \code{embed\_tree.py}, as exact
+fractions; the entropy tables read their bit counts off those
+denominators. IEEE 754 binary64 is machine-refuted as the
 carrier, a faithfulness failure rather than a design failure: mints
 degenerate at $t = 52$, depths underflow at 44, and rounding voids
 Theorem~\ref{thm:faithful}(iii) (6/120 PBT executions die). The
@@ -883,7 +1093,8 @@ al.; \S\ref{sec:related}); the \emph{rehoming} RGA is the verified
 flat tombstone-free design of \S\ref{sec:design}. The L1--L25
 battery is the litmus suite accumulated over this project's
 design sweep; each entry is the named countermodel that killed at
-least one of 16 prior candidate designs.
+least one of 16 prior candidate designs. The one exception below,
+L19, is discharged by the sided generalization of \S\ref{sec:sided}.
 
 \begin{center}\small
 \begin{tabular}{@{}ll@{}}
@@ -928,6 +1139,279 @@ climb re-sorts a rehomed node by its own timestamp (the
 $[b,a,c] \to [c,b]$ anomaly), i.e.\ its sort key is the birth chain
 \emph{truncated at each rehoming}; this design keeps the chain whole.
 
+\section{The sided generalization: two-sidedness as a parameter}
+\label{sec:sided}
+
+The one blemish in the battery is L19: two replicas that each type a
+\emph{backward} run at the same place (repeatedly ``insert before the
+current head'') interleave, because every insert-before anchors at the
+same left neighbor and both runs land in one sibling group. The fan is
+not a traversal artifact: no read order of the same birth tree un-fans
+a fan, so any fix must change where insert-before \emph{anchors}. The
+Fugue family's answer is a second side: insert-before anchors at the
+\emph{right} neighbor as an L-entry, so a backward run is a chain,
+exactly as a forward run already is.
+
+\paragraph{The L19 example, concretely.} It is the battery's own trace
+(Figure~\ref{fig:sided-l19}). The LCA document is $\langle 1 \rangle$
+(one insert, stamp $1$, anchored at the start marker $\diamond$). Then,
+concurrently, replica A types a backward run at the head, three
+inserts each anchored ``before the current first element'':
+\[
+  \ins(10 \text{ at head}),\quad \ins(30 \text{ at head}),\quad
+  \ins(50 \text{ at head}),
+\]
+so A locally reads $\langle 50, 30, 10, 1 \rangle$; replica B does the
+same with stamps $21, 41, 61$ and locally reads
+$\langle 61, 41, 21, 1 \rangle$. (The stamps interleave numerically,
+$10 < 21 < 30 < 41 < 50 < 61$, because the two replicas' Lamport
+clocks advance together.) In the one-sided datatype, ``insert at the
+head'' can only anchor at the left neighbor, which is $\diamond$ for
+every one of the six inserts: all six become R-children of $\diamond$,
+one sibling group, and the sibling tiebreak (newest first) merges the
+two runs by stamp:
+\[
+  \langle\, 61, 50, 41, 30, 21, 10, 1 \,\rangle
+\]
+after the merge, the two sentences shuffled together. No traversal of
+that tree can do better; the information ``these three form one run''
+is simply not in a sibling fan whose stamps interleave.
+
+\paragraph{The sided datatype, and why it prevents the interleaving.}
+The generalization does not build a second datatype. An insert names an
+anchor \emph{and a side}; chains become sequences of
+$(\mathrm{side}, \mathrm{timestamp\ delta})$ entries; and the display
+rule generalizes from the prefix rule (``a prefix precedes its
+extensions'') to the in-order rule (``L-extensions, then the node, then
+R-extensions''). One marker trick makes this ordinary lexicographic
+comparison again: a node's sort key is its coordinate followed by a
+virtual terminator, and the sided symbol alphabet is ordered
+\[
+  (R,1) < (R,2) < \cdots < \mathsf{marker} < \cdots < (L,2) < (L,1),
+\]
+with the L band \emph{mirrored} (among L-siblings the newer sits
+adjacent to the node). Marker above the R band puts a node before its
+R-extensions; marker below the L band puts L-extensions before the
+node.
+
+On the example, the Fugue anchoring rule (the generation-policy
+paragraph below) sends each ``insert at head'' to the \emph{successor}
+as an L-entry, so each run is an L-chain
+(Figure~\ref{fig:sided-l19}, right). Writing chains as
+entry sequences with deltas relative to the parent's stamp
+($10 = 1 + 9$, $30 = 10 + 20$, \dots):
+\[
+\begin{array}{lcl}
+  \chain(1)  = (R,1) &\qquad&
+  \chain(10) = (R,1)\,(L,9) \\
+  \chain(30) = (R,1)\,(L,9)\,(L,20) &&
+  \chain(21) = (R,1)\,(L,20) \\
+  \chain(50) = (R,1)\,(L,9)\,(L,20)\,(L,20) &&
+  \chain(41) = (R,1)\,(L,20)\,(L,20)
+\end{array}
+\]
+and the marker-lex comparisons (keys descending in display order) work
+out as follows, writing $M$ for the marker:
+\begin{itemize}
+\item \emph{L-extensions precede the node}: $\mathrm{key}(10) =
+  (R,1)(L,9)\,M$ vs $\mathrm{key}(1) = (R,1)\,M$ first differ at
+  position 2, $(L,9)$ vs $M$, and the L band sits above the marker: so
+  $10$ displays before $1$. Likewise $30$ before $10$, $50$ before
+  $30$: each backward keystroke lands immediately left of the previous
+  one, which is the typed intent.
+\item \emph{The two runs are decided once, not per pair}:
+  $\mathrm{key}(10)$ vs $\mathrm{key}(21)$ first differ at position 2,
+  $(L,9)$ vs $(L,20)$, and the L band is mirrored, so $(L,20) <
+  (L,9)$: A's run displays before B's. Now \emph{every} node of A's
+  chain carries the prefix $(R,1)(L,9)$ and every node of B's carries
+  $(R,1)(L,20)$, so \emph{every} cross-pair first-differs at that same
+  position 2 with that same verdict. The blocks cannot interleave:
+  \[
+    \langle\, 50, 30, 10,\ 61, 41, 21,\ 1 \,\rangle .
+  \]
+  This is the datatype-level theorem \code{schain\_subtree\_convex}
+  (a subtree is an in-order interval; \S\ref{sec:mechanization}):
+  \emph{any} policy that keeps a run inside one subtree gets
+  non-interleaving from the datatype, for free.
+\end{itemize}
+
+The current datatype is the all-R fragment of this order,
+\emph{exactly}: with L uninhabited the in-order rule degenerates to the
+prefix rule, and the existing key of \S\ref{sec:encoding} (the
+$\mathrm{sym}$-mapped bits plus terminator) is literally this
+construction with the L band empty. That is a theorem, not a slogan:
+the mechanization's fragment theorem (\S\ref{sec:mechanization}) proves
+all-R chains order exactly as one-sided chains.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % ---- left: one-sided (all-R), the L19 sibling fan
+  \node[rootvtx] (fr) at (0,0) {$\diamond$};
+  \node[vtx, fill=orange!20] (f61) at (-3.6,-1.5) {\small$61$};
+  \node[vtx]                 (f50) at (-2.4,-1.5) {\small$50$};
+  \node[vtx, fill=orange!20] (f41) at (-1.2,-1.5) {\small$41$};
+  \node[vtx]                 (f30) at ( 0.0,-1.5) {\small$30$};
+  \node[vtx, fill=orange!20] (f21) at ( 1.2,-1.5) {\small$21$};
+  \node[vtx]                 (f10) at ( 2.4,-1.5) {\small$10$};
+  \node[vtx, fill=black!6]   (f1)  at ( 3.6,-1.5) {\small$1$};
+  \foreach \n in {f61,f50,f41,f30,f21,f10,f1}
+    \draw[anc] (\n) -- (fr);
+  \node[elbl] at (0,-2.4) {every edge R: one sibling group};
+  \node[stbox] at (0,-3.3)
+    {$\langle\,\textcolor{orange!80!black}{61}\;50\;
+      \textcolor{orange!80!black}{41}\;30\;
+      \textcolor{orange!80!black}{21}\;10\;1\,\rangle$};
+  \node[capt] at (0,-4.2) {one-sided: runs interleaved (L19)};
+  % ---- right: sided under the Fugue policy, backward runs = L-chains
+  \begin{scope}[shift={(9.4,0)}]
+  \node[rootvtx] (sr) at (0,0) {$\diamond$};
+  \node[vtx, fill=black!6] (s1) at (0,-1.1) {\small$1$};
+  \node[vtx]                 (s10) at (-1.1,-2.2) {\small$10$};
+  \node[vtx, fill=orange!20] (s21) at ( 1.1,-2.2) {\small$21$};
+  \node[vtx]                 (s30) at (-1.1,-3.3) {\small$30$};
+  \node[vtx, fill=orange!20] (s41) at ( 1.1,-3.3) {\small$41$};
+  \node[vtx]                 (s50) at (-1.1,-4.4) {\small$50$};
+  \node[vtx, fill=orange!20] (s61) at ( 1.1,-4.4) {\small$61$};
+  \draw[anc] (s1)  -- (sr) node[elbl, midway, right=1pt] {R};
+  \draw[anc] (s10) -- (s1) node[elbl, midway, left=2pt]  {L};
+  \draw[anc] (s21) -- (s1) node[elbl, midway, right=2pt] {L};
+  \draw[anc] (s30) -- (s10) node[elbl, midway, left=1pt]  {L};
+  \draw[anc] (s41) -- (s21) node[elbl, midway, right=1pt] {L};
+  \draw[anc] (s50) -- (s30) node[elbl, midway, left=1pt]  {L};
+  \draw[anc] (s61) -- (s41) node[elbl, midway, right=1pt] {L};
+  \node[stbox] at (0,-5.5)
+    {$\langle\,50\;30\;10\;\;
+      \textcolor{orange!80!black}{61\;41\;21}\;\;1\,\rangle$};
+  \node[capt] at (0,-6.4) {sided, Fugue policy: blocks contiguous};
+  \end{scope}
+\end{tikzpicture}
+\caption{L19 under the two anchoring rules, the battery's own trace.
+LCA document $\langle 1\rangle$; replica A (blue) types backward
+$10, 30, 50$ before the head while replica B (orange) concurrently
+types backward $21, 41, 61$. One-sided (left): every insert-before
+anchors at the same left neighbor $\diamond$, both runs land in one
+R-sibling group, and the timestamp-sorted fan interleaves them. Sided
+under the Fugue policy (right): insert-before anchors at the
+\emph{successor} as an L-entry, each run is an L-chain hanging off
+$1$, and the in-order read keeps the blocks contiguous: L-extensions
+precede the node ($50, 30, 10$ before their parents' line ending at
+$1$), and among the L-siblings $10, 21$ of node $1$ the older run
+displays first (the L band is mirrored). Both display strips are
+machine outputs of \code{embed\_sided.py}.}
+\label{fig:sided-l19}
+\end{figure}
+
+\paragraph{How the encoding realizes it, for zero extra bits.} The
+one-sided block of \S\ref{sec:encoding} spends a constant leading
+\code{1} per level whose only job is keeping coordinates nonempty;
+repurpose it as the side bit. The L band needs an
+order-\emph{reversing} prefix-free code, and the bit complement
+$\overline{C}$ is exactly that at identical lengths (flipping every
+bit flips every first-difference verdict and preserves both lengths
+and prefix relations), so the block becomes
+\[
+  \mathrm{block}(\mathrm{side}, \delta) \;=\; \mathrm{sideBit}
+  \,\|\, \bigl(C(\delta) \text{ if } R,\ \overline{C(\delta)}
+  \text{ if } L\bigr),
+\]
+prefix-free per band, with no framing change and no new bits. On the
+example, with the binary delta code ($C(1) = \code{0}$, $C(9) =
+\code{1110001}$, $C(20) = \code{111100100}$, so $\overline{C(9)} =
+\code{0001110}$, $\overline{C(20)} = \code{000011011}$), the stored
+coordinates are the concatenated blocks:
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+node & chain & stored coordinate (side bits marked) \\
+\midrule
+$1$  & $(R,1)$ &
+  $\underline{\code{1}}\code{0}$ \\
+$10$ & $(R,1)(L,9)$ &
+  $\underline{\code{1}}\code{0}\;\underline{\code{0}}\code{0001110}$ \\
+$21$ & $(R,1)(L,20)$ &
+  $\underline{\code{1}}\code{0}\;\underline{\code{0}}\code{000011011}$ \\
+$30$ & $(R,1)(L,9)(L,20)$ &
+  $\underline{\code{1}}\code{0}\;\underline{\code{0}}\code{0001110}\;
+   \underline{\code{0}}\code{000011011}$ \\
+$50$ & $(R,1)(L,9)(L,20)(L,20)$ &
+  $\underline{\code{1}}\code{0}\;\underline{\code{0}}\code{0001110}\;
+   \underline{\code{0}}\code{000011011}\;
+   \underline{\code{0}}\code{000011011}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+To compare two coordinates, parse: read a side bit; if \code{1},
+decode one $C$ codeword as an R-band symbol $(R,\delta)$; if \code{0},
+decode one $\overline{C}$ codeword (decode $C$ on the flipped bits) as
+an L-band symbol $(L,\delta)$; repeat, then terminate with the marker.
+Prefix-freedom per band delimits every block, so no length fields or
+framing are needed, exactly as one-sided. The complement is what makes
+the mirror free: within the L band, plain descending comparison of the
+\emph{stored} bits is already the mirrored delta order ($
+\overline{C(20)} = \code{000011011} < \overline{C(9)} = \code{0001110}
+$ bitwise, matching $(L,20) < (L,9)$), so the carrier stores entropy
+payload only and the marker-lex of the previous paragraph is read off
+the bits. Faithfulness of this parse (unique decodability plus order
+embedding of the sided alphabet) is machine-checked by the
+chain-model/code-model lockstep below.
+
+Two honest cost notes. Runs absorb the side bit like every other
+run-constant (paid once at the head). On \emph{this} trace the sided
+coordinates are longer than the one-sided fan's (the runs' deltas are
+$20$ because the two replicas' Lamport clocks interleave); the
+compression claim is about the common case, continuation-stamped
+backward typing ($\delta = 1$ per keystroke, an \code{0}$\|
+\overline{C(1)} = \code{01}$ block per level), where today's design
+pays a growing-$\delta$ fan. Two-sidedness buys the semantics always
+and the compression exactly when backward runs are locally stamped.
+
+\paragraph{Side selection is a generation policy, not a datatype
+choice.} If insert merely ``takes a side,'' convergence and
+RA-linearizability hold for any sides whatsoever: those proofs never
+consult the order's intent. What depends on \emph{which} side is
+picked is the ordering intent. Fugue's non-interleaving needs the rule
+``right child of the left neighbor when it has no right children, else
+left child of the successor,'' and that rule lives at generation time,
+where the framework already has a slot: honesty, the same layer that
+polices the mint. The architecture is therefore one sided datatype,
+verified once, policy-free (canonicity, fold exactness, the Join,
+RA-linearizability), with intent theorems per generation policy: under
+always-R, read-equivalence to the published RGA (the fragment theorem
+composed with the compaction theorem); under the Fugue rule,
+non-interleaving (a subtree is an in-order interval). RGA and Fugue
+become two disciplines over one kernel rather than two datatypes.
+
+\paragraph{Validation.} \code{whiteboard/litmus/embed\_sided.py}: the
+chain semantics and the bit carrier as lockstep twin models, both run
+under both policies. Every design prediction survived the first full
+run:
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+check & verdict \\
+\midrule
+full gauntlet under the Fugue policy (L1--L25, credential & clean,
+  \textbf{including L19} \\
+\quad family, subordination CEs, stale forks) &
+  (out $= \langle 50,30,10,61,41,21,1\rangle$) \\
+same gauntlet under always-R & clean except L19: the \\
+ & one-sided fan, reproduced \\
+chain semantics $\sim$ bit carrier, both policies & lockstep-EXACT
+  (unique \\
+ & decodability + order embedding) \\
+all-R fragment $\sim$ the one-sided embed model & lockstep-EXACT, every
+  scenario \\
+randomized version-DAG PBT, all four models & 120 + 300 clean \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The Lean mechanization of both layers (the sided chain-lex
+kernel and the sided conditioned instance, capstone included) has
+landed kernel-clean; \S\ref{sec:mechanization} records it.
+
 \section{Comparison with Eg-walker}
 \label{sec:egwalker}
 
@@ -953,16 +1437,17 @@ merge mechanism & \emph{replay}: walk the event graph, rebuild a
   coordinate recomputation; no replay, no transient structure, no
   order decisions \\
 sequential-editing cost & $\approx$ zero (plain edits; no metadata) &
-  $\approx$ zero order metadata ($\sim$4 bits/level; plain
-  append-like behavior) \\
+  $\approx$ zero order metadata ($\sim$4 bits/level for continuation
+  typing; a cursor jump pays log-gap once, at the run head) \\
 concurrency cost & replay time proportional to the concurrent region,
   at every affected merge & coordinate bits proportional to
   $\log(\text{ts gap})$, once, in space \\
 ordering semantics & Yjs-variant (FugueMax-adjacent); maximal
   non-interleaving \emph{conjectured}, not proved; two-sided (no L19
   analogue) & $\equiv$ published RGA (machine lockstep); one-sided:
-  L19 backward-run interleaving inherited, two-sided extension future
-  work \\
+  L19 backward-run interleaving inherited; removed by the sided
+  generalization (\S\ref{sec:sided}), RGA kept as the all-R
+  fragment \\
 correctness artifact & informal proof (Appendix C) + property testing
   & L1--L25 battery + DAG PBT + lockstep vs RGA$_\dagger$;
   \textbf{RA-linearizability kernel-checked in Lean}
@@ -975,23 +1460,32 @@ op payload & integer origin positions (compact, human-meaningful) &
 \end{tabular}
 \end{center}
 
-\noindent Three sentences of honest positioning. \emph{(i)} Eg-walker
+\noindent Four sentences of honest positioning. \emph{(i)} Eg-walker
 achieves its clean document state by keeping the entire history and
 re-deriving order on demand; the embedded-chain RGA achieves it by
 making order derivation unnecessary: the sort keys are written at
 birth and never edited, and the coordinates are their encoding
 (\S\ref{sec:encoding}), precomputed at mint time and exact forever.
-\emph{(ii)} Eg-walker's ordering target is stronger where L19 is
-concerned (Fugue-style two-sidedness removes backward interleaving;
-this design inherits RGA's one-sided anomaly by construction,
-since it is read-equal to RGA). \emph{(iii)} The verification gap runs
+\emph{(ii)} Eg-walker's ordering target was stronger where L19 is
+concerned (Fugue-style two-sidedness removes backward interleaving,
+while the one-sided design inherits RGA's anomaly by construction,
+being read-equal to RGA); the sided generalization of
+\S\ref{sec:sided} adopts exactly that two-sidedness as a parameter,
+closing the gap while keeping the one-sided datatype as its all-R
+fragment. \emph{(iii)} The verification gap runs
 the other way: Eg-walker's replay-transform-clear loop is
 algorithmically sophisticated and only informally proved; here the
 merge performs no arbitration at all, the metatheory is one-line at
 the chain layer plus a single faithfulness theorem at the encoding
 layer, and RA-linearizability is a kernel-checked theorem in a
 framework that had already verified a dozen-plus replicated
-datatypes end-to-end (\S\ref{sec:mechanization}). In the MRDT setting there is also a model
+datatypes end-to-end (\S\ref{sec:mechanization}). \emph{(iv)} The
+cost models part company at cursor jumps: a single-user history that
+hops back to type at an old anchor is free for Eg-walker (nothing
+concurrent to replay) but mints log-gap bits here, once per jump, at
+the run head; on measured single-user editing traces the jump tail
+is thin (code bits $\approx 1.4$--$1.8$ per level; see the companion
+note of \S\ref{sec:encoding}). In the MRDT setting there is also a model
 fit: Eg-walker must reconstruct merge context by replay because the
 op-based model gives it none; the MRDT model hands the merge its LCA,
 which is exactly the context replay rebuilds.
@@ -999,7 +1493,7 @@ which is exactly the context replay rebuilds.
 \section{Related work}
 \label{sec:related}
 
-The verified landscape sweep lives in
+The verified sweep of nearby systems lives in
 \code{whiteboard/litmus/related-work.md} (per-claim verdicts, primary
 sources); this section positions the datatype.
 
@@ -1015,7 +1509,8 @@ Weidner's position-strings/list-positions, the Fugue id space). The
 embedded-chain RGA is in the last class \emph{by information content}
 (dead ancestors' timestamps persist inside survivors' sort keys,
 at live-reachable scope), but with three deltas to its classmates:
-the retention is \emph{delta-coded at the entropy of the races} (a sequential
+the retention is \emph{delta-coded at the entropy of the anchor
+gaps} (a sequential
 history costs a constant per element where Logoot-family keys grow
 with allocation policy), the \emph{birth tree kept whole} gives
 forward non-interleaving and delete-order preservation (position-key
@@ -1096,7 +1591,8 @@ note's design--encoding split, which is itself evidence for the split:
 
 \begin{enumerate}
 \item \textbf{Model layer} (\code{Sal/MRDTs/RGA\_Embed/}, six
-files, 0 sorry): the code-parametric kernel; commutations \emph{to
+files, 0 sorry, plus the read-equivalence order core and the sided
+kernel noted below): the code-parametric kernel; commutations \emph{to
 state equality} under $\rc = \Either$ (\code{rc\_non\_comm'});
 \code{ins\_prefix\_ghost}; coherence and chain-generation closures;
 display stability, with step stability (S2, delete-order preservation at
@@ -1159,6 +1655,36 @@ the birth tree, facts the published side never had. This converts
 the design into a theorem \emph{about} the published RGA: it admits a
 strictly-live compaction preserving every read. The lockstep rows of
 \S\ref{sec:validation} are this theorem's tested form.
+
+\medskip
+\noindent\textbf{The sided generalization is proved} (2026-07-15,
+kernel-clean), in the same two layers as \S\ref{sec:sided} presents
+it. The sided chain-lex kernel
+(\code{Sal/MRDTs/RGA\_Embed/Sided\_ChainLex.lean}): the sided marker
+theorem \code{sdisplay\_iff\_schainBefore} (display comparison of
+sided coordinates IS the in-order rule), totality of the display
+relation \emph{without any axioms}, unique decodability
+(\code{sidedCoordOf\_inj}: the side is recoverable from the first
+symbol's band, the delta by prefix-freedom within the band), the
+all-R \emph{fragment theorem} \code{schainBefore\_liftR} (all-R chains
+order exactly as one-sided chains: ``RGA is the all-R fragment,''
+mechanized), and in-order-interval subtree convexity
+(\code{schain\_subtree\_convex}, the datatype half of the L19
+discharge). The conditioned instance
+(\code{MRDT\_Instances/SidedRGA/}, nine sections mirroring the
+one-sided instance with the sided key): fold-canonicity
+(\code{s\_fold\_canon}), the Join by the same mergeable-queue route,
+and the capstone
+\[
+  \code{sided\_embed\_ra\_linearizable3} \;:\;
+  \mathrm{SReach}\ \Gamma\ C \to \mathrm{IsRALinearizable3}\ C
+\]
+\emph{for every side assignment}: sides are payload to convergence,
+which is the policy/datatype split of \S\ref{sec:sided} as a theorem,
+with \code{sHonest\_of\_applicable} discharging honesty from the
+generation guard exactly as one-sided. Owed next: the per-policy
+intent theorems at the instance (all-R read-equivalence through the
+fragment theorem; Fugue non-interleaving through convexity).
 
 \paragraph{Provenance.} \code{whiteboard/litmus/embed\_tree.py} (the
 design, the timestamp-oblivious control, the credential countermodel,
