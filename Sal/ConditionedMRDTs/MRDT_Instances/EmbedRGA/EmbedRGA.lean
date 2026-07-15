@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
+import Sal.ConditionedMRDTs.Metatheory.GenHonest
 import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
@@ -596,7 +597,7 @@ chain-generated (the mint is a positive birth chain's coordinate whose
 deltas telescope to the id — what an honest replica's `accurate` generation
 produces, §8). Its three consequences are exactly `EWf`'s three fields. -/
 
-open Sal.EmbedRGA (PosChain coordOf coordOf_inj key_inj)
+open Sal.EmbedRGA (PosChain coordOf coordOf_inj coordOf_append key_inj)
 
 /-- The one non-commuting shape: an insert and the delete of its id.
 Witnessed at the empty state. -/
@@ -1097,5 +1098,219 @@ theorem embed_ra_linearizable3 {Γ : OrderedPrefixCode}
   isRALinearizable3_of_good (e_goodConfig3 hReach)
 
 #print axioms embed_ra_linearizable3
+
+/-! ## §8  The generation discipline: `applicable` implies honesty
+
+What a well-behaved replica checks before issuing an op at the state it
+sees. Both `EHonest` components are consequences: the delete half exactly as
+the queue (fold provenance is unconditioned), the chain half by building the
+global chain assignment by strong induction on ids — anchors have smaller
+timestamps, and the anchor's record in ANY fold of the issuer's past is
+op-determined, so the carried prefix is forced to be the anchor's chain's
+coordinate. -/
+
+/-- The issuer-side guard: an insert's anchor is live with EXACTLY the
+carried prefix as its stored coordinate and a smaller stamp (Lamport); a
+delete's target is live. -/
+def eApplicable (o : Op EOp) (s : EState) : Prop :=
+  match o with
+  | (t, _, .ins _ π a) => a < t ∧ ((a = 0 ∧ π = []) ∨ ∃ el, (a, el, π) ∈ s)
+  | (_, _, .del x)     => x ∈ eIds s
+
+/-- Per-id chain existence: every insert's coordinate is a positive chain's
+coordinate with telescoping sum. Strong induction on the id. -/
+theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
+    (hApp : ∀ e ∈ C.events, ∃ π : List (Op EOp),
+      listPermOf π {e' ∈ C.events | C.vis e' e} ∧
+      eApplicable e (eFold Γ π)) :
+    ∀ t : ℕ, ∃ ch : List ℕ, PosChain ch ∧ ch.sum = t ∧
+      ∀ o ∈ C.events, eIsIns o = true → o.1 = t →
+        eCoord Γ o = coordOf Γ ch := by
+  intro t
+  induction t using Nat.strong_induction_on with
+  | _ t ih =>
+    classical
+    by_cases hex : ∃ o ∈ C.events, eIsIns o = true ∧ o.1 = t
+    · obtain ⟨o, ho, hoi, hot⟩ := hex
+      obtain ⟨ts, r, op⟩ := o
+      cases op with
+      | del x => simp [eIsIns] at hoi
+      | ins el π a =>
+          simp only at hot
+          subst hot
+          obtain ⟨πe, hπe, happ⟩ := hApp _ ho
+          simp only [eApplicable] at happ
+          obtain ⟨hat, hcase⟩ := happ
+          rcases hcase with ⟨ha0, hπ0⟩ | ⟨el', hmem⟩
+          · subst ha0
+            subst hπ0
+            refine ⟨[ts], ?_, by simp, ?_⟩
+            · intro d hd
+              simp at hd
+              omega
+            · intro o' ho' hoi' hot'
+              have ho'eq : o' = (ts, r, EOp.ins el [] 0) :=
+                (Configuration.core C).ts_unique ho' ho hot'
+              rw [ho'eq]
+              simp [eCoord, coordOf]
+          · obtain ⟨aop, haπ, hai, hae⟩ := e_fold_rec_sub Γ πe (a, el', π) hmem
+            have haev := (hπe.2 aop).mp haπ
+            have ha1 : aop.1 = a := congrArg Prod.fst hae.symm
+            have hπval : π = eCoord Γ aop :=
+              congrArg (fun p : ERec => p.2.2) hae
+            obtain ⟨ch, hpos, hsum, hcoord⟩ := ih a hat
+            refine ⟨ch ++ [ts - a], ?_, ?_, ?_⟩
+            · intro d hd
+              rcases List.mem_append.mp hd with h | h
+              · exact hpos d h
+              · simp at h
+                omega
+            · rw [List.sum_append]
+              simp
+              omega
+            · intro o' ho' hoi' hot'
+              have ho'eq : o' = (ts, r, EOp.ins el π a) :=
+                (Configuration.core C).ts_unique ho' ho hot'
+              rw [ho'eq]
+              show π ++ Γ.enc (ts - a) = coordOf Γ (ch ++ [ts - a])
+              rw [coordOf_append, hπval, hcoord aop haev.1 hai ha1]
+              simp [coordOf]
+    · push_neg at hex
+      cases t with
+      | zero =>
+          exact ⟨[], by intro d hd; simp at hd, rfl,
+            fun o ho hi h1 => absurd h1 (hex o ho hi)⟩
+      | succ n =>
+          refine ⟨[n + 1], ?_, by simp, fun o ho hi h1 => absurd h1 (hex o ho hi)⟩
+          intro d hd
+          simp at hd
+          omega
+
+/-- **The `applicable` discipline discharges honesty.** If every op was
+applicable at SOME fold of its issuer's causal past — the issuer's own
+materialized state is such a fold — then the history is honest: a delete's
+target can only have entered that fold through a `vis`-prior insert, and the
+carried prefixes are forced to be birth-chain coordinates. The embed
+analogue of the queue's §8 and of the RGA's applicable-delivery layer. -/
+theorem eHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
+    (hApp : ∀ e ∈ C.events, ∃ π : List (Op EOp),
+      listPermOf π {e' ∈ C.events | C.vis e' e} ∧
+      eApplicable e (eFold Γ π)) :
+    EHonest Γ C := by
+  constructor
+  · -- delete half: fold provenance
+    intro e he x hx
+    obtain ⟨π, hπ, happ⟩ := hApp e he
+    obtain ⟨ts, r, op⟩ := e
+    simp only at hx
+    subst hx
+    simp only [eApplicable] at happ
+    obtain ⟨rec, hrec, hrec1⟩ := List.mem_map.mp happ
+    obtain ⟨a, ha, hai, hae⟩ := e_fold_rec_sub Γ π rec hrec
+    have haev := (hπ.2 a).mp ha
+    have hax : a.1 = x := by
+      rw [hae] at hrec1
+      exact hrec1
+    exact ⟨a, haev.1, haev.2, hax, hai⟩
+  · -- chain half: the global assignment, by choice over per-id existence
+    classical
+    refine ⟨fun t => Classical.choose (e_chain_exists C hApp t), ?_⟩
+    intro o ho hi
+    obtain ⟨hpos, hsum, hcoord⟩ :=
+      Classical.choose_spec (e_chain_exists C hApp o.1)
+    exact ⟨hpos, hcoord o ho hi rfl, hsum⟩
+
+/-- The honesty contract from the generic honesty shape at
+`P := eApplicable`: `GenHonest` + causal-past enumerability supply exactly
+`eHonest_of_applicable`'s hypothesis. -/
+theorem eHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
+    (hEnum : CausalPastEnumerable (E Γ) C)
+    (hApp : GenHonest (E Γ) eApplicable C) : EHonest Γ C :=
+  eHonest_of_applicable C
+    (fun e he => (hEnum e he).imp (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
+
+#print axioms eHonest_of_applicable
+#print axioms eHonest_of_genHonest
+
+/-! ## §9  Intent theorems at the instance
+
+The instance state IS the document (a sorted list), so the display-stability
+contract becomes sublist preservation — three short lemmas. A delete never
+reorders survivors (the clause the proved flat RGA violates); an insert
+never reorders the existing document; a merge displays each branch's
+survivors in that branch's own order. No co-displayed pair ever flips. -/
+
+/-- **Delete-order preservation**: deletion displays exactly the survivors,
+in unchanged order. -/
+theorem eUpdate_del_sublist (Γ : OrderedPrefixCode) (s : EState)
+    (ts r x : ℕ) :
+    List.Sublist (eUpdate Γ s (ts, r, .del x)) s :=
+  List.filter_sublist
+
+theorem eInsert_sublist (r : ERec) : ∀ (s : EState), List.Sublist s (eInsert r s)
+  | [] => List.nil_sublist _
+  | x :: xs => by
+      by_cases h : keyLt (key x.2.2) (key r.2.2) = true
+      · rw [show eInsert r (x :: xs) = r :: x :: xs from by simp [eInsert, h]]
+        exact List.Sublist.cons r (List.Sublist.refl _)
+      · rw [show eInsert r (x :: xs) = x :: eInsert r xs from by
+          simp [eInsert, h]]
+        exact List.Sublist.cons₂ x (eInsert_sublist r xs)
+
+/-- **Step stability**: an insert never reorders the existing document. -/
+theorem eUpdate_ins_sublist (Γ : OrderedPrefixCode) (s : EState)
+    (ts r : ℕ) (el : ℕ) (π : List Bool) (a : ℕ) :
+    List.Sublist s (eUpdate Γ s (ts, r, .ins el π a)) := by
+  simp only [eUpdate]
+  by_cases h : ts ∈ eIds s
+  · rw [if_pos h]
+  · rw [if_neg h]
+    exact eInsert_sublist _ s
+
+theorem eMerge2_sublist_left : ∀ (as bs : EState), List.Sublist as (eMerge2 as bs) := by
+  intro as bs
+  induction as, bs using eMerge2.induct with
+  | case1 ys => exact List.nil_sublist _
+  | case2 xs => cases xs <;> simp [eMerge2]
+  | case3 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = a :: eMerge2 as' (b :: bs')
+        from by rw [eMerge2]; simp [h]]
+      exact List.Sublist.cons₂ a ih
+  | case4 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = b :: eMerge2 (a :: as') bs'
+        from by rw [eMerge2]; simp [h]]
+      exact List.Sublist.cons b ih
+
+theorem eMerge2_sublist_right : ∀ (as bs : EState), List.Sublist bs (eMerge2 as bs) := by
+  intro as bs
+  induction as, bs using eMerge2.induct with
+  | case1 ys =>
+      rw [show eMerge2 [] ys = ys from by rw [eMerge2]]
+  | case2 xs => cases xs <;> simp [eMerge2]
+  | case3 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = a :: eMerge2 as' (b :: bs')
+        from by rw [eMerge2]; simp [h]]
+      exact List.Sublist.cons a ih
+  | case4 a as' b bs' h ih =>
+      rw [show eMerge2 (a :: as') (b :: bs') = b :: eMerge2 (a :: as') bs'
+        from by rw [eMerge2]; simp [h]]
+      exact List.Sublist.cons₂ b ih
+
+/-- **Merge stability (S4 at the instance)**: the merge displays branch
+`a`'s survivors — those shared with `b` or new since the LCA — as a sublist
+of `a`'s own document: in `a`'s order, never reordered. Symmetrically for
+`b`'s news via `eMerge2_sublist_right`. -/
+theorem eMergeL_stable_left (l a b : EState) :
+    List.Sublist (a.filter (fun r => decide (r.1 ∈ eIds b ∨ r.1 ∉ eIds l)))
+      (eMergeL l a b) :=
+  eMerge2_sublist_left _ _
+
+theorem eMergeL_stable_right (l a b : EState) :
+    List.Sublist (b.filter (fun r => decide (r.1 ∉ eIds l ∧ r.1 ∉ eIds a)))
+      (eMergeL l a b) :=
+  eMerge2_sublist_right _ _
+
+#print axioms eUpdate_del_sublist
+#print axioms eMergeL_stable_left
 
 end Sal.ConditionedMRDTs
