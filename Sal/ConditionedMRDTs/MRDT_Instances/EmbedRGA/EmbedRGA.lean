@@ -1048,4 +1048,54 @@ theorem e_join_at {Γ : OrderedPrefixCode}
     · exact hnd d (Or.inl h) hdel'
     · exact hnd d (Or.inr h) hdel'
 
+/-! ## §7  Honest reachability and the capstone -/
+
+/-- Honest histories at the ternary configuration: every delete names an id
+its issuer had observed (a `vis`-prior insert), and inserts are
+chain-generated. The embedded-chain RGA's `HonestDelivery`. -/
+def EHonest (Γ : OrderedPrefixCode) (C : Configuration (E Γ)) : Prop :=
+  (∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
+    ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true) ∧
+  (∃ chainOf : ℕ → List ℕ, ∀ o ∈ C.events, eIsIns o = true →
+    PosChain (chainOf o.1) ∧ eCoord Γ o = coordOf Γ (chainOf o.1) ∧
+    (chainOf o.1).sum = o.1)
+
+theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
+    (h : EHonest Γ C) : EHonestCore Γ (Configuration.core C) where
+  del_has_ins := by
+    intro e he x hx
+    rw [core_events] at he
+    obtain ⟨a, ha, hv, hax, hai⟩ := h.1 e he x hx
+    refine ⟨a, ?_, hv, hax, hai⟩
+    rw [core_events]
+    exact ha
+  chain_gen := by
+    obtain ⟨chainOf, hch⟩ := h.2
+    refine ⟨chainOf, fun o ho hi => hch o ?_ hi⟩
+    rw [core_events] at ho
+    exact ho
+
+/-- **Honest reachability**: LTS reachability where every step is taken from
+a configuration with an honest history — instantiating the generic
+`HonestReach`, exactly as the mergeable queue does. -/
+def EReach (Γ : OrderedPrefixCode) : Configuration (E Γ) → Prop :=
+  HonestReach (E Γ) (EHonest Γ) trivial
+
+theorem e_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
+    (hReach : EReach Γ C) : GoodConfig3 C :=
+  goodConfig3_of_honest_reach (fun _ hHon => e_join_at (eHonest_core hHon))
+    hReach
+
+/-- **The embedded-chain RGA is RA-linearizable, per version, at every
+honestly reachable configuration**: every version the store registers is the
+fold of a linearization of its event set that respects delivery order.
+Parametric in the code — instantiate `Γ := binaryCode` for the
+entropy-optimal artifact. -/
+theorem embed_ra_linearizable3 {Γ : OrderedPrefixCode}
+    {C : Configuration (E Γ)} (hReach : EReach Γ C) :
+    IsRALinearizable3 C :=
+  isRALinearizable3_of_good (e_goodConfig3 hReach)
+
+#print axioms embed_ra_linearizable3
+
 end Sal.ConditionedMRDTs
