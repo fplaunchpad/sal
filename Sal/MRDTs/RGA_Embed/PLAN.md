@@ -212,6 +212,21 @@ Tested form: Python lockstep read-equality at every apply/merge/read,
 - **Embed's read**: `document` = sort by descending coordinate = chain-lex
   (`display_iff_chainBefore`, ChainLex).
 
+**Step 4 LANDED** (`RGA_Embed_ReadEquiv.lean`, kernel-clean): the order
+core is proved against the published `visible_lt`, parametrized by a
+`BirthEnv` (anchor_lt/anchor_real/chain_zero/chain_step over `after_of` +
+a delta-chain assignment). `visible_lt_iff_chainBefore` (soundness by
+induction on the derivation — `trans` closes via `chainBefore_trans`,
+itself proved through the coordinates with `unaryCode` + `keyLt_trans`;
+completeness via `prefix_real`: every chain prefix is realized by an
+`afters_reach`-ancestor), `visible_lt_total` (the published RGA's
+relational order is total on the birth tree — a fact the published side
+never proved), and `before_iff_visible_lt` (embed's display order ↔ RGA†'s
+visible order on shared live ids, via `chainState`). Remaining wiring =
+steps 1–3, 5 below: instantiate `BirthEnv` + `chainState` at the two
+folds of one honest event set, bridge visibility/membership, then the
+sequence-level capstone.
+
 Plan (`RGA_Embed_ReadEquiv.lean`, new; imports ChainLex + RGA† ReadSide):
 1. Op translation `EOp → RGA† op_t` (Ins x π a ↦ insert-after, π DROPPED —
    the ghost earns its name); `rgaFold ρ`; permutation-invariance lemma.
