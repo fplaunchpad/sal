@@ -7,6 +7,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EWFlag.EWFlag
 import Sal.ConditionedMRDTs.MRDT_Instances.GOSet.GOSet
 import Sal.ConditionedMRDTs.MRDT_Instances.GOMap.GOMap
 import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
+import Sal.ConditionedMRDTs.MRDT_Instances.AWPQ.AWPQ
 
 /-!
 # Sequential-spec soundness — tier 1: the flat RDTs (task #78 / #65)
@@ -404,5 +405,154 @@ theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
                     hnotag
             have h2 : ts ∉ O := fun hin => hnotag ((hO ts).mp hin).1
             exact ⟨ts, Or.inr ⟨rfl, rfl⟩, h1, h2⟩
+
+/-! ## Conditioned G-Set: the spec is accumulation, over `Set` -/
+
+/-- The set view (the state, at its underlying type). -/
+def gsetView (s : GSetCond.State) : Set ℕ := s
+
+/-- **Conditioned G-Set, sequentially = accumulation.** -/
+theorem gsetcond_seq_sound (ρ : List (Op GSetCond.AppOp)) (x : ℕ) :
+    x ∈ gsetView (seqFold GSetCond ρ) ↔ ∃ o ∈ ρ, o.2.2 = x := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show x ∈ (∅ : Set ℕ) ↔ _
+      simp
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc]
+      show x ∈ insert o.2.2 (gsetView (seqFold GSetCond ρ)) ↔ _
+      rw [Set.mem_insert_iff, ih]
+      constructor
+      · rintro (rfl | ⟨o', ho', rfl⟩)
+        · exact ⟨o, List.mem_append_right _ (by simp), rfl⟩
+        · exact ⟨o', List.mem_append_left _ ho', rfl⟩
+      · rintro ⟨o', ho', rfl⟩
+        rcases List.mem_append.mp ho' with h | h
+        · exact Or.inr ⟨o', h, rfl⟩
+        · simp at h
+          subst h
+          exact Or.inl rfl
+
+/-! ## Add-Wins Priority Queue: membership + the increment log
+
+Sequentially the AWPQ state is pinned by two theorems: membership behaves
+as the plain add/remove set (increments are membership-inert), and the
+increment component is a grow-only log of exactly the issued increments.
+Together they determine both components pointwise. (A priority-sum view
+needs finite aggregation over the log — meaningful only against the
+read-side companion, task #53; the state-level spec is complete without
+it.) -/
+
+/-- Membership view: `e` has a live add record. -/
+def awpqMemView (s : AWPQ.State) (e : ℕ) : Prop :=
+  ∃ t v, s.1 (t, e, v) = true
+
+/-- The naive sequential membership program: add inserts, rmv deletes,
+inc is inert. -/
+def awpqSpecStep (S : ℕ → Bool) (o : Op AWPQOp) : ℕ → Bool :=
+  match o.2.2 with
+  | .add e _ => fun x => S x || decide (x = e)
+  | .inc _ _ => S
+  | .rmv e   => fun x => S x && !decide (x = e)
+
+def awpqSpecFold (ρ : List (Op AWPQOp)) : ℕ → Bool :=
+  ρ.foldl awpqSpecStep (fun _ => false)
+
+theorem awpqSpecFold_snoc (ρ : List (Op AWPQOp)) (o : Op AWPQOp) :
+    awpqSpecFold (ρ ++ [o]) = awpqSpecStep (awpqSpecFold ρ) o := by
+  unfold awpqSpecFold
+  rw [List.foldl_append]
+  rfl
+
+/-- **AWPQ membership, sequentially = a plain set.** -/
+theorem awpq_mem_seq_sound (ρ : List (Op AWPQ.AppOp)) (e : ℕ) :
+    awpqMemView (seqFold AWPQ ρ) e ↔ awpqSpecFold ρ e = true := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show awpqMemView (fun _ => false, fun _ => false) e ↔ _
+      simp [awpqMemView, awpqSpecFold]
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, awpqSpecFold_snoc, AWPQ_update_eq]
+      obtain ⟨ts, r, op⟩ := o
+      cases op with
+      | add e' v' =>
+          simp only [awpqMemView, awpqUpdate, awpqSpecStep,
+            Bool.or_eq_true, decide_eq_true_eq, Prod.mk.injEq]
+          constructor
+          · rintro ⟨t, v, ht | ⟨rfl, rfl, rfl⟩⟩
+            · exact Or.inl (ih.mp ⟨t, v, ht⟩)
+            · exact Or.inr rfl
+          · rintro (h | rfl)
+            · obtain ⟨t, v, ht⟩ := ih.mpr h
+              exact ⟨t, v, Or.inl ht⟩
+            · exact ⟨ts, v', Or.inr ⟨rfl, rfl, rfl⟩⟩
+      | inc e' a' =>
+          simp only [awpqMemView, awpqUpdate, awpqSpecStep]
+          exact ih
+      | rmv e' =>
+          simp only [awpqMemView, awpqUpdate, awpqSpecStep,
+            Bool.and_eq_true, Bool.not_eq_true', decide_eq_false_iff_not]
+          constructor
+          · rintro ⟨t, v, ht, hne⟩
+            exact ⟨ih.mp ⟨t, v, ht⟩, hne⟩
+          · rintro ⟨h, hne⟩
+            obtain ⟨t, v, ht⟩ := ih.mpr h
+            exact ⟨t, v, ht, hne⟩
+
+/-- **The AWPQ increment log, sequentially = exactly the issued
+increments** (grow-only accumulation; add/rmv are inert on it). -/
+theorem awpq_inc_log_sound (ρ : List (Op AWPQ.AppOp)) (t e : ℕ) (a : ℤ) :
+    (seqFold AWPQ ρ).2 (t, e, a) = true ↔
+      ∃ o ∈ ρ, o.2.2 = AWPQOp.inc e a ∧ o.1 = t := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show (false = true) ↔ _
+      simp
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, AWPQ_update_eq]
+      obtain ⟨ts, r, op⟩ := o
+      cases op with
+      | add e' v' =>
+          show (seqFold AWPQ ρ).2 (t, e, a) = true ↔ _
+          rw [ih]
+          constructor
+          · rintro ⟨o', ho', h1, h2⟩
+            exact ⟨o', List.mem_append_left _ ho', h1, h2⟩
+          · rintro ⟨o', ho', h1, h2⟩
+            rcases List.mem_append.mp ho' with h | h
+            · exact ⟨o', h, h1, h2⟩
+            · simp at h
+              subst h
+              exact absurd h1 (by simp)
+      | rmv e' =>
+          show (seqFold AWPQ ρ).2 (t, e, a) = true ↔ _
+          rw [ih]
+          constructor
+          · rintro ⟨o', ho', h1, h2⟩
+            exact ⟨o', List.mem_append_left _ ho', h1, h2⟩
+          · rintro ⟨o', ho', h1, h2⟩
+            rcases List.mem_append.mp ho' with h | h
+            · exact ⟨o', h, h1, h2⟩
+            · simp at h
+              subst h
+              exact absurd h1 (by simp)
+      | inc e' a' =>
+          simp only [awpqUpdate, Bool.or_eq_true, decide_eq_true_eq,
+            Prod.mk.injEq, ih]
+          constructor
+          · rintro (⟨o', ho', h1, h2⟩ | ⟨rfl, rfl, rfl⟩)
+            · exact ⟨o', List.mem_append_left _ ho', h1, h2⟩
+            · exact ⟨(t, r, AWPQOp.inc e a),
+                List.mem_append_right _ (by simp), rfl, rfl⟩
+          · rintro ⟨o', ho', h1, h2⟩
+            rcases List.mem_append.mp ho' with h | h
+            · exact Or.inl ⟨o', h, h1, h2⟩
+            · simp at h
+              subst h
+              simp only at h1 h2
+              injection h1 with h3 h4
+              subst h3
+              subst h4
+              exact Or.inr ⟨h2.symm, rfl, rfl⟩
 
 end Sal.ConditionedMRDTs
