@@ -2,7 +2,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Counter.Counter
 import Sal.ConditionedMRDTs.MRDT_Instances.IOC.IOC
 import Sal.ConditionedMRDTs.MRDT_Instances.PN.PN
 import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet
+import Sal.ConditionedMRDTs.MRDT_Instances.ORSetE.ORSetE
 import Sal.ConditionedMRDTs.MRDT_Instances.EWFlag.EWFlag
+import Sal.ConditionedMRDTs.MRDT_Instances.GOSet.GOSet
+import Sal.ConditionedMRDTs.MRDT_Instances.GOMap.GOMap
+import Sal.ConditionedMRDTs.MRDT_Instances.MVR.MVR
 
 /-!
 # Sequential-spec soundness — tier 1: the flat RDTs (task #78 / #65)
@@ -190,5 +194,215 @@ theorem ewflag_seq_sound (ρ : List (Op EWFlag.AppOp)) :
             simp [ewUpdate] at hk
           · intro h
             exact Bool.noConfusion h
+
+/-! ## Grow-only set and map: the spec is the union of payloads -/
+
+theorem GOSet_update_eq' (s : GOSet.State) (o : Op GOSet.AppOp) :
+    GOSet.update s o = goUpdate s o := rfl
+
+theorem GOMap_update_eq' (s : GOMap.State) (o : Op GOMap.AppOp) :
+    GOMap.update s o = gomUpdate s o := rfl
+
+/-- **Grow-only set, sequentially = accumulation.** Membership is exactly
+"some op added it". -/
+theorem goset_seq_sound (ρ : List (Op GOSet.AppOp)) (x : ℕ) :
+    seqFold GOSet ρ x = true ↔ ∃ o ∈ ρ, o.2.2 = x := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show (false = true) ↔ _
+      simp
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, GOSet_update_eq']
+      simp only [goUpdate, Bool.or_eq_true, decide_eq_true_eq, ih]
+      constructor
+      · rintro (⟨o', ho', rfl⟩ | rfl)
+        · exact ⟨o', List.mem_append_left _ ho', rfl⟩
+        · exact ⟨o, List.mem_append_right _ (by simp), rfl⟩
+      · rintro ⟨o', ho', rfl⟩
+        rcases List.mem_append.mp ho' with h | h
+        · exact Or.inl ⟨o', h, rfl⟩
+        · simp at h
+          subst h
+          exact Or.inr rfl
+
+/-- **Grow-only map, sequentially = accumulation** of `(key, value)`
+pairs. -/
+theorem gomap_seq_sound (ρ : List (Op GOMap.AppOp)) (p : ℕ × ℕ) :
+    seqFold GOMap ρ p = true ↔ ∃ o ∈ ρ, o.2.2 = p := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show (false = true) ↔ _
+      simp
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, GOMap_update_eq']
+      simp only [gomUpdate, Bool.or_eq_true, decide_eq_true_eq, ih]
+      constructor
+      · rintro (⟨o', ho', rfl⟩ | rfl)
+        · exact ⟨o', List.mem_append_left _ ho', rfl⟩
+        · exact ⟨o, List.mem_append_right _ (by simp), rfl⟩
+      · rintro ⟨o', ho', rfl⟩
+        rcases List.mem_append.mp ho' with h | h
+        · exact Or.inl ⟨o', h, rfl⟩
+        · simp at h
+          subst h
+          exact Or.inr rfl
+
+/-! ## OR-Set-efficient: same spec program as the OR-Set -/
+
+/-- The element view over `(rid, ts, elem)` triples. -/
+def orEView (s : (ℕ × ℕ × ℕ) → Bool) (e : ℕ) : Prop :=
+  ∃ r t, s (r, t, e) = true
+
+/-- **OR-Set-efficient, sequentially = the same plain set.** The
+per-replica tag compaction (add filters the issuer's prior tag before
+staking) is invisible at the element view: the two OR-Sets satisfy the
+one sequential spec. -/
+theorem orsete_seq_sound (ρ : List (Op ORSetE.AppOp)) (e : ℕ) :
+    orEView (seqFold ORSetE ρ) e ↔ orSpecFold ρ e = true := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      show orEView (fun _ => false) e ↔ _
+      simp [orEView, orSpecFold]
+  | append_singleton ρ o ih =>
+      rw [seqFold_snoc, orSpecFold_snoc, ORSetE_update_eq]
+      obtain ⟨ts, rid, op⟩ := o
+      cases op with
+      | add e' =>
+          simp only [orEView, orEUpdate, orSpecStep, Bool.or_eq_true,
+            Bool.and_eq_true, decide_eq_true_eq]
+          constructor
+          · rintro ⟨r, t, ⟨hs, -⟩ | heq⟩
+            · exact Or.inl (ih.mp ⟨r, t, hs⟩)
+            · simp only [Prod.mk.injEq] at heq
+              exact Or.inr heq.2.2
+          · intro h
+            by_cases hee : e = e'
+            · subst hee
+              exact ⟨rid, ts, Or.inr rfl⟩
+            · rcases h with h | h
+              · obtain ⟨r, t, hs⟩ := ih.mpr h
+                refine ⟨r, t, Or.inl ⟨hs, ?_⟩⟩
+                simp only [Bool.not_eq_true', decide_eq_false_iff_not]
+                exact fun h => hee h.2.symm
+              · exact absurd h hee
+      | rem e' =>
+          simp only [orEView, orEUpdate, orSpecStep, Bool.and_eq_true,
+            Bool.not_eq_true', decide_eq_false_iff_not]
+          constructor
+          · rintro ⟨r, t, hs, hne⟩
+            exact ⟨ih.mp ⟨r, t, hs⟩, fun h => hne h.symm⟩
+          · rintro ⟨h, hne⟩
+            obtain ⟨r, t, hs⟩ := ih.mpr h
+            exact ⟨r, t, hs, fun h => hne h.symm⟩
+
+/-! ## Multi-Valued Register: the first genuine inductive invariant
+
+Sequentially the MVR must read as a plain last-write-wins register. The
+op payload `O` (the overwritten tags) is honest exactly when it lists the
+issuer's currently-visible tags, and stamps are fresh — `mvrOK`. Under
+it, the theorem needs a real auxiliary invariant, discovered here:
+**every overwritten stamp is a staked tag** (`mvr_over_tags`), which is
+what makes a fresh stamp provably not-yet-overwritten. -/
+
+/-- `n` is a staked write stamp. -/
+def mvrTag (s : MVR.State) (n : ℕ) : Prop := ∃ v, s.1 (n, v) = true
+
+/-- `n` is a visible (staked, not overwritten) stamp. -/
+def mvrVis (s : MVR.State) (n : ℕ) : Prop := mvrTag s n ∧ s.2 n = false
+
+/-- The register view: values of visible stamps. -/
+def mvrView (s : MVR.State) (v : ℕ) : Prop :=
+  ∃ n, s.1 (n, v) = true ∧ s.2 n = false
+
+/-- Sequential honesty for MVR histories: every op's stamp is fresh, and
+its overwrite payload lists exactly the issuer's visible stamps. -/
+def mvrOK (ρ : List (Op MVROp)) : Prop :=
+  ∀ (σ : List (Op MVROp)) (o : Op MVROp) (τ : List (Op MVROp)),
+    ρ = σ ++ o :: τ →
+    (∀ v', (seqFold MVR σ).1 (o.1, v') = false) ∧
+    (∀ w O, o.2.2 = MVROp.write w O →
+      ∀ n, n ∈ O ↔ mvrVis (seqFold MVR σ) n)
+
+theorem mvrOK_prefix {ρ : List (Op MVROp)} {o : Op MVROp}
+    (h : mvrOK (ρ ++ [o])) : mvrOK ρ := by
+  intro σ o' τ heq
+  exact h σ o' (τ ++ [o]) (by rw [heq]; simp)
+
+/-- The naive sequential register program: the last write's value. -/
+def mvrSpecFold (ρ : List (Op MVROp)) : Option ℕ :=
+  ρ.foldl (fun _ o => match o.2.2 with | .write v _ => some v) none
+
+theorem mvrSpecFold_snoc (ρ : List (Op MVROp)) (ts r w : ℕ) (O : List ℕ) :
+    mvrSpecFold (ρ ++ [(ts, r, MVROp.write w O)]) = some w := by
+  unfold mvrSpecFold
+  rw [List.foldl_append]
+  rfl
+
+/-- **The discovered invariant**: every overwritten stamp is staked. -/
+theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
+    ∀ n, (seqFold MVR ρ).2 n = true → mvrTag (seqFold MVR ρ) n := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      intro n h
+      have : (seqFold MVR ([] : List (Op MVROp))).2 n = false := rfl
+      rw [this] at h
+      exact Bool.noConfusion h
+  | append_singleton ρ o ih =>
+      intro n h
+      obtain ⟨ts, r, op⟩ := o
+      cases op with
+      | write w O =>
+          rw [seqFold_snoc, MVR_update_eq] at h ⊢
+          simp only [mvrUpdate, Bool.or_eq_true, decide_eq_true_eq] at h
+          simp only [mvrTag, mvrUpdate, Bool.or_eq_true, decide_eq_true_eq]
+          rcases h with h' | h'
+          · obtain ⟨v', hv'⟩ := ih (mvrOK_prefix hOK) n h'
+            exact ⟨v', Or.inl hv'⟩
+          · have hO := (hOK ρ (ts, r, .write w O) [] (by simp)).2 w O rfl n
+            obtain ⟨⟨v', hv'⟩, -⟩ := hO.mp h'
+            exact ⟨v', Or.inl hv'⟩
+
+/-- **MVR, sequentially = a last-write-wins register.** -/
+theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
+    mvrView (seqFold MVR ρ) v ↔ mvrSpecFold ρ = some v := by
+  induction ρ using List.reverseRecOn with
+  | nil =>
+      constructor
+      · rintro ⟨n, hn, -⟩
+        exact Bool.noConfusion hn
+      · intro h
+        simp [mvrSpecFold] at h
+  | append_singleton ρ o ih =>
+      obtain ⟨ts, r, op⟩ := o
+      cases op with
+      | write w O =>
+          have hcond := hOK ρ (ts, r, .write w O) [] (by simp)
+          have hfresh := hcond.1
+          have hO := hcond.2 w O rfl
+          rw [seqFold_snoc, MVR_update_eq, mvrSpecFold_snoc]
+          simp only [mvrView, mvrUpdate, Bool.or_eq_true,
+            decide_eq_true_eq, Bool.or_eq_false_iff,
+            decide_eq_false_iff_not, Prod.mk.injEq]
+          constructor
+          · rintro ⟨n, hstake, hov, hnO⟩
+            rcases hstake with hs | ⟨rfl, rfl⟩
+            · exact absurd ((hO n).mpr ⟨⟨v, hs⟩, hov⟩) hnO
+            · rfl
+          · intro hspec
+            have hvw : w = v := by
+              simpa using hspec
+            subst hvw
+            have hnotag : ¬ mvrTag (seqFold MVR ρ) ts := by
+              rintro ⟨v', hv'⟩
+              rw [hfresh v'] at hv'
+              exact Bool.noConfusion hv'
+            have h1 : (seqFold MVR ρ).2 ts = false := by
+              cases hh : (seqFold MVR ρ).2 ts with
+              | false => rfl
+              | true =>
+                  exact absurd (mvr_over_tags (mvrOK_prefix hOK) ts hh)
+                    hnotag
+            have h2 : ts ∉ O := fun hin => hnotag ((hO ts).mp hin).1
+            exact ⟨ts, Or.inr ⟨rfl, rfl⟩, h1, h2⟩
 
 end Sal.ConditionedMRDTs
