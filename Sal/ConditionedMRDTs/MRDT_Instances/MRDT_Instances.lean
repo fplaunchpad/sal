@@ -26,6 +26,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext_Read
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_EliasDelta
+import Sal.ConditionedMRDTs.MRDT_Instances.SeqSpec_Flat
 -- NOTE: EmbedRGA_ReadEquiv (the compaction theorem) is a standalone build
 -- target: it imports the published tombstoned RGA *model*
 -- (Sal/MRDTs/RGA_with_tombstones), whose top-level names collide with the
