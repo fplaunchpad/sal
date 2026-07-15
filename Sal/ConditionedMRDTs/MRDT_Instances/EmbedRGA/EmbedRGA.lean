@@ -707,4 +707,179 @@ theorem e_wf_of_enum {Γ : OrderedPrefixCode}
       _ = (chainOf o₂.1).sum := by rw [hchain]
       _ = o₂.1 := hs₂
 
+/-! ## §6a  The survival algebra
+
+The record-level membership of the ternary merge, characterized order-free
+against the union event set — the mathematical core of the Join. §6b turns
+it into `JoinLemma3At` by exhibiting the witness enumeration. -/
+
+theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op EOp)}
+    (hwf : EWf Γ ρ) (t : ℕ) :
+    t ∈ eIds (eFold Γ ρ) ↔
+      (∃ o ∈ ρ, eIsIns o = true ∧ o.1 = t) ∧ t ∉ eDels ρ := by
+  constructor
+  · intro h
+    obtain ⟨r, hr, rfl⟩ := List.mem_map.mp h
+    obtain ⟨⟨o, hm, hi, hrec⟩, hnd⟩ := (e_fold_mem Γ hwf r).mp hr
+    exact ⟨⟨o, hm, hi, by rw [hrec]; rfl⟩, hnd⟩
+  · rintro ⟨⟨o, hm, hi, rfl⟩, hnd⟩
+    have hr : eRecOf Γ o ∈ eFold Γ ρ :=
+      (e_fold_mem Γ hwf _).mpr ⟨⟨o, hm, hi, rfl⟩, hnd⟩
+    exact List.mem_map.mpr ⟨eRecOf Γ o, hr, rfl⟩
+
+/-- Distinct honest inserts mint distinct keys (the standalone form of
+`e_wf_of_enum`'s third discharge, for use at the merge site). -/
+theorem e_keys_inj_events {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    (hHon : EHonestCore Γ C) :
+    ∀ o₁ ∈ C.events, ∀ o₂ ∈ C.events, eIsIns o₁ = true → eIsIns o₂ = true →
+      o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂) := by
+  obtain ⟨chainOf, hch⟩ := hHon.chain_gen
+  intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
+  obtain ⟨hp₁, hc₁, hs₁⟩ := hch o₁ h₁ hi₁
+  obtain ⟨hp₂, hc₂, hs₂⟩ := hch o₂ h₂ hi₂
+  apply hne
+  have hc : coordOf Γ (chainOf o₁.1) = coordOf Γ (chainOf o₂.1) := by
+    rw [← hc₁, ← hc₂]
+    exact key_inj hkey
+  have hchain := coordOf_inj Γ hp₁ hp₂ hc
+  calc o₁.1 = (chainOf o₁.1).sum := hs₁.symm
+    _ = (chainOf o₂.1).sum := by rw [hchain]
+    _ = o₂.1 := hs₂
+
+/-- **The merge membership characterization.** At a join site (three
+canonical enumerations over an honest configuration), a record is in the
+ternary merge iff its insert is somewhere in the union and its id is deleted
+nowhere in the union — the union's order-free membership. OR-set survival,
+with honesty closing the one subtle corner (a branch-2 delete of a
+branch-1 survivor forces the insert into the LCA). -/
+theorem e_mergeL_mem {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op EOp)}
+    {ρ₀ ρ₁ ρ₂ : List (Op EOp)}
+    (hin₁ : ∀ a ∈ ev₁, a ∈ C.events) (hin₂ : ∀ a ∈ ev₂, a ∈ C.events)
+    (hcl₁ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl₂ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
+    (hp₂ : listPermOf ρ₂ ev₂)
+    (hwf₀ : EWf Γ ρ₀) (hwf₁ : EWf Γ ρ₁) (hwf₂ : EWf Γ ρ₂) (r : ERec) :
+    r ∈ eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂) ↔
+      (∃ o, (o ∈ ev₁ ∨ o ∈ ev₂) ∧ eIsIns o = true ∧ r = eRecOf Γ o) ∧
+      (∀ d, (d ∈ ev₁ ∨ d ∈ ev₂) → d.2.2 ≠ EOp.del r.1) := by
+  classical
+  set s₀ := eFold Γ ρ₀
+  set s₁ := eFold Γ ρ₁
+  set s₂ := eFold Γ ρ₂
+  have hdels : ∀ {ρ : List (Op EOp)} {ev : Set (Op EOp)}, listPermOf ρ ev →
+      ∀ {t : ℕ}, t ∈ eDels ρ ↔ ∃ d ∈ ev, d.2.2 = EOp.del t := by
+    intro ρ ev hp t
+    rw [mem_eDels]
+    constructor
+    · rintro ⟨d, hm, hdel⟩
+      exact ⟨d, (hp.2 d).mp hm, hdel⟩
+    · rintro ⟨d, hm, hdel⟩
+      exact ⟨d, (hp.2 d).mpr hm, hdel⟩
+  rw [show eMergeL s₀ s₁ s₂ = eMerge2
+    (s₁.filter (fun x => decide (x.1 ∈ eIds s₂ ∨ x.1 ∉ eIds s₀)))
+    (s₂.filter (fun x => decide (x.1 ∉ eIds s₀ ∧ x.1 ∉ eIds s₁))) from rfl,
+    mem_eMerge2]
+  constructor
+  · rintro (hr | hr)
+    · -- branch-1 survivor
+      have hm := List.mem_of_mem_filter hr
+      have hcond := List.of_mem_filter hr
+      simp only [decide_eq_true_eq] at hcond
+      obtain ⟨⟨o, hoρ, hi, hrec⟩, hnd₁⟩ := (e_fold_mem Γ hwf₁ r).mp hm
+      refine ⟨⟨o, Or.inl ((hp₁.2 o).mp hoρ), hi, hrec⟩, ?_⟩
+      rintro d (hd | hd) hdel
+      · exact hnd₁ ((hdels hp₁).mpr ⟨d, hd, hdel⟩)
+      · rcases hcond with hin2 | hout0
+        · have := ((e_fold_id_mem Γ hwf₂ r.1).mp hin2).2
+          exact this ((hdels hp₂).mpr ⟨d, hd, hdel⟩)
+        · -- honest corner: the deleter's insert lands in the LCA
+          obtain ⟨a, haev₂, hains, hax, -⟩ :=
+            e_del_ins_mem hHon hin₂ hcl₂ d hd r.1 hdel
+          have hao : a = o := by
+            apply C.ts_unique (hin₂ a haev₂)
+              (hin₁ o ((hp₁.2 o).mp hoρ))
+            rw [hax, hrec]; rfl
+          have ho₀ : o ∈ ev₁ ∩ ev₂ :=
+            ⟨(hp₁.2 o).mp hoρ, hao ▸ haev₂⟩
+          apply hout0
+          rw [e_fold_id_mem Γ hwf₀]
+          refine ⟨⟨o, (hp₀.2 o).mpr ho₀, hi, by rw [hrec]; rfl⟩, ?_⟩
+          intro hdel0
+          obtain ⟨d', hd', hdel'⟩ := (hdels hp₀).mp hdel0
+          exact hnd₁ ((hdels hp₁).mpr ⟨d', hd'.1, hdel'⟩)
+    · -- branch-2 news
+      have hm := List.mem_of_mem_filter hr
+      have hcond := List.of_mem_filter hr
+      simp only [decide_eq_true_eq] at hcond
+      obtain ⟨⟨o, hoρ, hi, hrec⟩, hnd₂⟩ := (e_fold_mem Γ hwf₂ r).mp hm
+      refine ⟨⟨o, Or.inr ((hp₂.2 o).mp hoρ), hi, hrec⟩, ?_⟩
+      rintro d (hd | hd) hdel
+      · -- a branch-1 delete would force the insert into the LCA,
+        -- contradicting r.1 ∉ ids s₀
+        obtain ⟨a, haev₁, hains, hax, -⟩ :=
+          e_del_ins_mem hHon hin₁ hcl₁ d hd r.1 hdel
+        have hao : a = o := by
+          apply C.ts_unique (hin₁ a haev₁)
+            (hin₂ o ((hp₂.2 o).mp hoρ))
+          rw [hax, hrec]; rfl
+        have ho₀ : o ∈ ev₁ ∩ ev₂ :=
+          ⟨hao ▸ haev₁, (hp₂.2 o).mp hoρ⟩
+        apply hcond.1
+        rw [e_fold_id_mem Γ hwf₀]
+        refine ⟨⟨o, (hp₀.2 o).mpr ho₀, hi, by rw [hrec]; rfl⟩, ?_⟩
+        intro hdel0
+        obtain ⟨d', hd', hdel'⟩ := (hdels hp₀).mp hdel0
+        exact hnd₂ ((hdels hp₂).mpr ⟨d', hd'.2, hdel'⟩)
+      · exact hnd₂ ((hdels hp₂).mpr ⟨d, hd, hdel⟩)
+  · rintro ⟨⟨o, hor, hi, hrec⟩, hnd⟩
+    by_cases ho₁ : o ∈ ev₁
+    · -- route through branch 1
+      left
+      refine List.mem_filter.mpr ⟨?_, ?_⟩
+      · rw [e_fold_mem Γ hwf₁]
+        refine ⟨⟨o, (hp₁.2 o).mpr ho₁, hi, hrec⟩, ?_⟩
+        intro hdel1
+        obtain ⟨d, hd, hdel⟩ := (hdels hp₁).mp hdel1
+        exact hnd d (Or.inl hd) hdel
+      · simp only [decide_eq_true_eq]
+        by_cases h0 : r.1 ∈ eIds s₀
+        · left
+          obtain ⟨⟨o', ho'ρ, hi', ho'1⟩, -⟩ := (e_fold_id_mem Γ hwf₀ r.1).mp h0
+          have ho'₀ := (hp₀.2 o').mp ho'ρ
+          rw [e_fold_id_mem Γ hwf₂]
+          refine ⟨⟨o', (hp₂.2 o').mpr ho'₀.2, hi', ho'1⟩, ?_⟩
+          intro hdel2
+          obtain ⟨d, hd, hdel⟩ := (hdels hp₂).mp hdel2
+          exact hnd d (Or.inr hd) hdel
+        · exact Or.inr h0
+    · -- o ∈ ev₂ only: route through branch 2
+      have ho₂ : o ∈ ev₂ := by
+        rcases hor with h | h
+        · exact absurd h ho₁
+        · exact h
+      right
+      refine List.mem_filter.mpr ⟨?_, ?_⟩
+      · rw [e_fold_mem Γ hwf₂]
+        refine ⟨⟨o, (hp₂.2 o).mpr ho₂, hi, hrec⟩, ?_⟩
+        intro hdel2
+        obtain ⟨d, hd, hdel⟩ := (hdels hp₂).mp hdel2
+        exact hnd d (Or.inr hd) hdel
+      · simp only [decide_eq_true_eq]
+        have hnot : ∀ {ρ : List (Op EOp)} {ev : Set (Op EOp)},
+            listPermOf ρ ev → EWf Γ ρ → (∀ a ∈ ev, a ∈ C.events) →
+            (∀ a ∈ ev, a ∈ ev₁) → r.1 ∉ eIds (eFold Γ ρ) := by
+          intro ρ ev hp hwf hin hsub hmem
+          obtain ⟨⟨o', ho'ρ, hi', ho'1⟩, -⟩ := (e_fold_id_mem Γ hwf r.1).mp hmem
+          have ho'ev := (hp.2 o').mp ho'ρ
+          have : o' = o := by
+            apply C.ts_unique (hin o' ho'ev) (hin₂ o ho₂)
+            rw [ho'1, hrec]; rfl
+          exact ho₁ (this ▸ hsub o' ho'ev)
+        exact ⟨hnot hp₀ hwf₀ (fun a ha => hin₁ a ha.1) (fun a ha => ha.1),
+               hnot hp₁ hwf₁ hin₁ (fun a ha => ha)⟩
+
 end Sal.ConditionedMRDTs
