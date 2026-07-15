@@ -187,10 +187,58 @@ OWED:
 
 - Conditioned instance in `Sal/ConditionedMRDTs/MRDT_Instances/` (flat route
   via FlatGeneric_Bridge if the 24-VC engine accepts the shape, else the
-  RGA_TombstoneFree conditioned route with HonestDelivery).
+  RGA_TombstoneFree conditioned route with HonestDelivery). ✅ DONE
+  (`EmbedRGA/EmbedRGA.lean` §§1–9 + `EmbedRGA_EliasDelta.lean`).
 - The equivalence target: `read ∘ embed = read ∘ RGA†` on honest executions
   (the compaction theorem — converts the design into a statement about the
   published RGA).
+
+### Layer 5 — RGA† read-equivalence (task #75) — IN PROGRESS, recon done 2026-07-15
+
+Tested form: Python lockstep read-equality at every apply/merge/read,
+120/120 (`contest_tree.py`). Lean recon findings:
+
+- **RGA† = `Sal/MRDTs/RGA_with_tombstones`**: state = (insert-record set,
+  tombstone set); `do_` = set-add / tombstone-add, so the fold is an
+  event-set function up to permutation (both components are unions) —
+  the cheap first lemma.
+- **RGA†'s read is relational**: `visible` (inserted ∧ not tombstoned),
+  `after_of` (birth edge), `visible_lt` (inductive: `parent_child` |
+  `sibling` by id `>` | `left_descendant_of_sibling` | `trans`) — the RGA
+  traversal order on the FULL birth forest (constructors don't require
+  visibility — good: matches chain-lex on chains with dead prefixes),
+  filtered by `visible` at read. Sibling tiebreak is id `>` = ts `>`
+  (ids are timestamps in both models) = embed's larger-first.
+- **Embed's read**: `document` = sort by descending coordinate = chain-lex
+  (`display_iff_chainBefore`, ChainLex).
+
+Plan (`RGA_Embed_ReadEquiv.lean`, new; imports ChainLex + RGA† ReadSide):
+1. Op translation `EOp → RGA† op_t` (Ins x π a ↦ insert-after, π DROPPED —
+   the ghost earns its name); `rgaFold ρ`; permutation-invariance lemma.
+2. Edge bridge: `after_of (rgaFold ρ) c p ↔ ins c after p ∈ ρ ↔` the
+   embed chainState birth edge — both trees are THE birth tree of ρ.
+3. Membership bridge: `visible (rgaFold ρ) t ↔ contains (embed fold) t`
+   (both = inserted ∖ deleted; embed side exists as `e_fold_mem` /
+   model-layer closures).
+4. **The meat** — order equivalence, for a ≠ b in ρ's birth tree, under
+   honesty (anchors present-and-earlier ⟹ chains well-defined, unique ts):
+   `visible_lt (rgaFold ρ) a b ↔ chainBefore (chainOf a) (chainOf b)`.
+   Soundness (→): induct on the `visible_lt` derivation — `parent_child`
+   = prefix rule; `sibling` = first-difference-newer; `left_descendant_of_
+   sibling` = prefix ∘ first-difference; `trans` = chainBefore transitivity
+   (proved in ChainLex). Completeness (←): case-split `chainBefore` —
+   proper prefix ⟹ a chain of `parent_child`+`trans`; first difference at
+   the shared anchor p ⟹ the two divergent children are siblings under p
+   ⟹ `sibling`/`left_descendant_of_sibling` + `trans` down to a and b.
+5. Capstone: `document (embed fold ρ)` = THE `visible_lt`-sorted
+   enumeration of RGA†'s visible ids (uniqueness from chainBefore totality
+   + strictly-sorted extensionality) — read-for-read, as sequences.
+
+Risks: the repo `set`/`mem` function-set API in the RGA† fold lemmas
+(mechanical but fiddly); completeness needs the divergence-point witness
+(build by induction on the shared-prefix length); both models must consume
+the SAME op list — the translation in step 1 is where del/ins arity and
+the ghost π are reconciled.
 
 ## Gotchas
 
