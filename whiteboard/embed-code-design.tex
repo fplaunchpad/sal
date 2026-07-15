@@ -40,38 +40,27 @@ encoding)}
 
 \begin{abstract}
 \noindent
-The embedded-chain RGA is a replicated list (a sequence MRDT for
-three-way merges with an LCA) built from one idea: an element's sort
-key is its \emph{birth chain} --- the sequence of timestamps from the
-root of the birth tree down to the element, dead ancestors included ---
-written at birth and never edited. Display order is lexicographic
-order on birth chains (per level: newest first, RGA's rule); deletion
-removes the element's record and nothing else; the merge is OR-set
-survival over event sets, contains no repair, and never decides an
-order. Timestamps are unique, so \emph{ties cannot exist}; chains
-travel with the insert events, so the state is a canonical function of
-the event set. The whole state is the live nodes --- no tombstones, no
-ledger, no event log: the dead persist only as entries inside their
-descendants' sort keys. On top of this sits a separable
-\emph{representation} layer: chains are carried as parent-relative
-dyadic intervals through an order-preserving prefix-free code of the
-timestamp \emph{differentials}, which realizes chain concatenation as
-affine composition, turns deletion into an exact isometric fold, and
-prices a dead ancestor at $\Theta(\log \delta)$ coordinate bits ---
-the entropy of the race that created it, the information-theoretic
-minimum, paid only at genuine races. The design is machine-validated:
-clean on the L1--L25 anomaly battery (except backward-run interleaving
-L19, the published RGA's own anomaly) and on 420+ randomized
-version-DAG executions, and \textbf{lockstep read-equal with the
-published tombstoned RGA at every step of 120 randomized executions}.
-Insert operations carry the anchor's birth chain --- consulted by no
-reachable execution, kept because the proof of $\rc = \Either$
-commutation requires totality of reordered application; the prefix is
-ghost state in the strict, machine-checkable sense. We give the
-datatype and its one-line metatheory, the encoding and its
-faithfulness theorem, the validation record, a detailed comparison
-with Eg-walker, related work, and the Lean mechanization plan on the
-proved RGA scaffolding.
+The embedded-chain RGA is a replicated list (a sequence MRDT) that
+keeps no tombstones, no ledger, and no event log: its entire state is
+the live nodes. A deleted element survives only as
+$\Theta(\log \delta)$ bits inside its descendants' sort keys --- the
+entropy of the race that created it, the information-theoretic
+minimum. Concurrent inserts provably cannot tie, so the merge
+contains no repair and never decides an order; the state is a
+canonical function of the event set, and convergence is literal
+equality. Observationally the datatype \emph{is} the published RGA
+--- machine-checked lockstep read-equality at every step --- with the
+tombstone set compressed into coordinate entropy. All of this follows
+from one idea: an element's sort key is its \emph{birth chain}, the
+timestamps from the root of the birth tree down to the element, dead
+ancestors included --- written at birth, never edited, and carried in
+an entropy-optimal order-preserving code. Separating the datatype
+from its encoding makes the metatheory nearly definitional:
+correctness is three one-line facts about chains, plus a single
+faithfulness theorem about the code. The design is machine-validated
+(the L1--L25 anomaly battery, except L19, RGA's own; 420+ randomized
+version-DAG executions; 120/120 lockstep); the Lean mechanization on
+the proved RGA scaffolding is the deliverable.
 \end{abstract}
 
 \section{The datatype: sort keys are birth chains}
@@ -431,6 +420,36 @@ Theorem~\ref{thm:faithful}(iii) (6/120 PBT executions die). The
 obstruction is a pigeonhole --- chains carry $\Theta(\sum \log
 \delta)$ bits, a fixed-width word holds 64 --- but binary64 is sound
 as a \emph{comparison cache} with exact fallback on float equality.
+
+\paragraph{Timestamps in practice.} The unique stamps in
+$\mathbb{N}^{+}$ are Lamport's 1978 construction, flattened: each
+replica ticks a counter per local operation, advances it to the max
+on merge, and breaks ties by replica id --- packed as
+$t \cdot 2^{k} + r$ with $k$ id bits. Uniqueness and causality
+($t_a < t_x$ gives $\mathrm{packed}_a < \mathrm{packed}_x$ regardless
+of ids, so $\delta \ge 1$) both survive the packing; the proof layer
+only \emph{assumes} uniqueness (the Lamport-structural part of
+honesty), and this construction is the witness that the assumption is
+realizable. Two entropy caveats. \emph{(i)} Packing inflates every
+delta by $2^{k}$ --- $\sim$$2k$ extra bits per chain level, which
+turns the 0.5 KB sequential run above into $\sim$3 KB at $k = 10$.
+Cheaper: extend the mint's code to the pair, $C(\Delta t)$ followed
+by a $k$-bit id --- still order-preserving prefix-free (lex on
+$(\Delta t, r)$), costing $k$ bits only where the level is minted.
+A further option --- unvalidated against the battery, recorded as a
+design note --- is to order sibling ids \emph{relative to the
+anchor's} (any deterministic per-anchor id order is a legitimate
+tiebreak; convergence needs agreement, not a uniform order), making
+``same author as my anchor'' --- sequential typing --- cost $\sim$1
+bit, so only genuine cross-author races pay $\log R$. \emph{(ii)} The
+clock must be \emph{dense logical time, never physical}: wall-clock
+or HLC stamps make $\delta$ measure elapsed time rather than elapsed
+events --- a keystroke every 100\,ms over $\mu$s-resolution stamps
+mints $\delta \approx 10^{5}$, $\sim$34 bits per level for a purely
+sequential edit. The entropy law holds precisely because the counter
+ticks once per event, making $\delta$ an event-count gap; if
+wall-clock order is ever wanted, it belongs in a display-layer
+tiebreak, never in the minted coordinate.
 
 \paragraph{What remains open.} Dead chain entries concatenated into
 survivors' strings are the conservation law's irreducible content
