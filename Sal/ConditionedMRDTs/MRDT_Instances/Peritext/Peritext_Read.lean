@@ -54,8 +54,11 @@ interior deletion the *span can change membership*, but always by a bounded loca
 re-sort of the physical sequence, never by a boundary jumping backward to unrelated
 earlier text.  The fused corner trades atomicity (the third horn of the trilemma)
 for live positioning; that residual is inherited from the RGA and is exactly
-`del_can_reorder_survivors`, demonstrated concretely below (`fused_no_leak_spot`
-vs. the product retraction).
+`del_can_reorder_survivors`, demonstrated concretely below — the wins
+(`fused_no_leak_spot`, `fused_delete_interior_no_leak` vs. the product
+retraction) AND the loss (`fused_delete_reformats_survivor`: deleting a plain
+character moves an untouched survivor across a mark boundary, re-formatting
+it — the do-level sequential-spec failure, machine-checked).
 -/
 
 namespace Sal.ConditionedMRDTs.Peritext.Read
@@ -646,5 +649,54 @@ member; nothing before the start boundary was formatted. -/
 theorem fused_delete_interior_no_leak :
     (renderRichText (do_ docBold (9, 1, .Del [2, 1] 3)) [5, 4, 2, 1]).map (fun r => (r.1, r.2 Mark.bold))
       = [(65, false), (67, true)] := by native_decide
+
+/-! ### The inherited residual, concretely — the loss, not just the wins
+
+The two SPOTs above are the favorable cases.  The header's "honest scope"
+paragraph owes the unfavorable one a witness: the fused design inherits the
+RGA's delete-reorder anomaly (`del_can_reorder_survivors`,
+`RGA_Tombstone_Free_SPOT.lean`), and at the render layer that anomaly is a
+**span-membership change**: deleting a plain character can move a surviving
+character across a mark boundary, re-formatting text the delete never touched.
+Single replica, `do_`-built (KC's `s_bac` shape lifted to `char ⊕ boundary`),
+invisible to the convergence capstone (`oq:linspec`). -/
+
+/-- KC's reordering witness at the rich-text payload, built through `do_`:
+`⟨bold⟩`(1) ← `X`(2), then two siblings under `X` — `P`(3, plain char) and
+`⟨/bold⟩`(4, newer, so it reads first) — and `C`(5) under `P`.  Reading order
+`[⟨bold⟩, X, ⟨/bold⟩, P, C]`: the bold span is exactly `{X}`. -/
+def docResidual : St :=
+  do_ (do_ (do_ (do_ (do_ (init_st (α := PeritextElt))
+    (1, 0, .Ins (PeritextElt.bound 100 Mark.bold true) [] 0))
+    (2, 0, .Ins (PeritextElt.char 88) [] 1))          -- 'X'
+    (3, 0, .Ins (PeritextElt.char 80) [1] 2))         -- 'P'
+    (4, 0, .Ins (PeritextElt.bound 100 Mark.bold false) [1] 2))
+    (5, 0, .Ins (PeritextElt.char 67) [2, 1] 3)       -- 'C'
+
+/-- Before the delete: `X` is bold; `P` and `C` are plain. -/
+theorem docResidual_render :
+    (renderRichText docResidual [5, 4, 3, 2, 1]).map (fun r => (r.1, r.2 Mark.bold))
+      = [(88, true), (80, false), (67, false)] := by native_decide
+
+/-- **Deleting the plain character `P` re-formats `C`.**  `C` rehomes to `X`
+and, being newest among `X`'s children (id 5 > 4), leapfrogs the close
+boundary: reading order becomes `[⟨bold⟩, X, C, ⟨/bold⟩]` and `C` is now
+INSIDE the bold span.  The delete touched neither `C` nor any boundary. -/
+theorem fused_delete_moves_char_into_span :
+    (renderRichText (do_ docResidual (9, 0, .Del [2, 1] 3)) [5, 4, 2, 1]).map
+        (fun r => (r.1, r.2 Mark.bold))
+      = [(88, true), (67, true)] := by native_decide
+
+/-- The refutation shape (mirroring `del_a_breaks_survivor_order`): the
+post-delete render is NOT the pre-delete render with the deleted character
+removed — formatting of an untouched survivor changed.  This is the sequential
+(single-replica) spec failure the fused Peritext inherits from the rehoming
+RGA's `do_`, at the layer users read. -/
+theorem fused_delete_reformats_survivor :
+    (renderRichText (do_ docResidual (9, 0, .Del [2, 1] 3)) [5, 4, 2, 1]).map
+        (fun r => (r.1, r.2 Mark.bold))
+      ≠ ((renderRichText docResidual [5, 4, 3, 2, 1]).map
+          (fun r => (r.1, r.2 Mark.bold))).filter (fun r => r.1 ≠ 80) := by
+  native_decide
 
 end Sal.ConditionedMRDTs.Peritext.ReadSPOT
