@@ -320,4 +320,15 @@ example : visible_lt ex8_post.state (mark_endId ex8_mark) (15, 0) := by
   show visible_lt ex8_post.state (14, 0) (15, 0)
   exact ex8_link_descendant_visible_lt_endId ex8_post.state ex8_mark (15, 0) h_after
 
+/-! ## Negative companion (should-FAIL pin)
+
+Mark-level negatives (`boldAt … = false`) require inversion on the
+inductive `visible_lt` and belong to the ReadSide theorem layer; the
+SPOT-sized pin is at the visibility read: the scenario states are
+finite and the read is not constantly true on them. -/
+
+/-- A never-inserted OpId is invisible in the paper's base state. -/
+example : visible the_fox_jumped.state (99, 7) = false := by
+  simp [visible, do_, init_st]
+
 end Peritext_SPOT

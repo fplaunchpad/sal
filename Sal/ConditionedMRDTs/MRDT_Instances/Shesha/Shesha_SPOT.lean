@@ -57,6 +57,14 @@ theorem t2_input_reads :
 
 theorem litmus_T2 : read (merge t2L t2A t2B) = [1, 10, 20] := by native_decide
 
+/-- Should-FAIL pin: the merge is not a projection of any of its three
+inputs — all three input reads are wrong answers for the merge. -/
+theorem litmus_T2_not_projection :
+    read (merge t2L t2A t2B) ≠ read t2L ∧
+    read (merge t2L t2A t2B) ≠ read t2A ∧
+    read (merge t2L t2A t2B) ≠ read t2B := by
+  refine ⟨?_, ?_, ?_⟩ <;> native_decide
+
 /-! ### CX-F — frame mismatch (B idle)
 
 A builds `3` under `1`, `4` under `3`, then deletes `3` and `1`; B does

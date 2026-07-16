@@ -71,4 +71,13 @@ example :
   simp [do_, init_st] at h_dom h_R
   grind
 
+/-! ## Negative companion (should-FAIL pin) -/
+
+/-- The read is not constantly true: nothing is live in the initial
+state, and an Add of `5` does not make an un-added `6` live. -/
+example :
+    ¬ lookup (do_ init_st (1, 0, app_op_t.Add 5 100)) 6 := by
+  rintro ⟨ts, h_dom, -⟩
+  simp [do_, init_st] at h_dom
+
 end AW_CRPQ_CRDT_SPOT

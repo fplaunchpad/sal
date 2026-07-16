@@ -20,4 +20,12 @@ example : value (do_ (5 : concrete_st) (1, 0, app_op_t.Write 7)) = 5 := by decid
 
 example : value (merge (5 : concrete_st) (3 : concrete_st)) = 3 := by decide
 
+/-! ## Negative companions (should-FAIL pins) -/
+
+/-- A larger later write does NOT clobber: this is MIN, not LWW. -/
+example : value (do_ (5 : concrete_st) (1, 0, app_op_t.Write 7)) ≠ 7 := by decide
+
+/-- Merge is not max and not left-biased: the other order is not 5. -/
+example : value (merge (3 : concrete_st) (5 : concrete_st)) ≠ 5 := by decide
+
 end MIN_Register_SPOT

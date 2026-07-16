@@ -123,6 +123,12 @@ def s_bac : concrete_st :=
 /-- Before the delete the document reads `b, a, c` (ids `2, 1, 3`). -/
 theorem doc_bac : document s_bac [3, 2, 1] = [2, 1, 3] := by native_decide
 
+/-- Should-FAIL pin: the read is the tree traversal, not the candidate
+list echoed back — `[3, 2, 1]` (ids sorted descending) is the WRONG
+answer, and the harness can tell. -/
+theorem doc_bac_not_ids_order :
+    document s_bac [3, 2, 1] ≠ [3, 2, 1] := by native_decide
+
 /-- After deleting `a` (id `1`) the document reads `c, b` (ids `3, 2`): the two
 survivors have swapped relative to their pre-delete order. -/
 theorem del_a_document :

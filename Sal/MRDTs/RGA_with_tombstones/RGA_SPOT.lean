@@ -75,4 +75,12 @@ example :
   exact concurrent_insert_tiebreak_deterministic σ 0 2 1 h_2 h_1
     (by decide) (by decide)
 
+/-! ## Negative companion (should-FAIL pin) -/
+
+/-- The read is not constantly true: a never-inserted id is invisible. -/
+example :
+    ¬ visible (do_ init_st (1, 0, app_op_t.Add_after 0 65)) 7 := by
+  rintro ⟨⟨r, e, h⟩, -⟩
+  simp [do_, init_st] at h
+
 end RGA_MRDT_SPOT

@@ -59,4 +59,12 @@ example :
   · decide
   · decide
 
+/-! ## Negative companion (should-FAIL pin) -/
+
+/-- The read is not constantly true: adding `5` does not make an
+un-added `6` live. -/
+example : ¬ lookup (do_ init_st (1, 0, app_op_t.Add 5)) 6 := by
+  rintro ⟨rid, ts, h_mem⟩
+  simp [do_, init_st] at h_mem
+
 end OR_Set_Efficient_MRDT_SPOT

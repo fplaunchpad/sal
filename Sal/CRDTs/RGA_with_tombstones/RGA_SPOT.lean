@@ -77,4 +77,12 @@ example :
   exact concurrent_insert_tiebreak_deterministic σ (0, 0) (2, 1) (1, 0)
     h_2 h_1 (by decide) (by decide)
 
+/-! ## Negative companion (should-FAIL pin) -/
+
+/-- The read is not constantly true: a never-inserted OpId is invisible. -/
+example :
+    let σ : concrete_st := do_ init_st (1, 0, app_op_t.Insert 65 (0, 0))
+    visible σ (7, 0) = false := by
+  simp [visible, do_, init_st, mysel_d]
+
 end RGA_CRDT_SPOT

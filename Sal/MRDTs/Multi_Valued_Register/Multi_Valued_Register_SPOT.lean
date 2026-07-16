@@ -82,4 +82,16 @@ example :
     simp [do_, merge] at h_in_writes h_not_removed
     grind
 
+/-! ## Negative companion (should-FAIL pin) -/
+
+/-- The read is not constantly true: a never-written value is invisible
+even in the merged two-writer state. -/
+example :
+    ¬ is_visible_value
+        (merge init_st
+          (do_ init_st (1, 0, app_op_t.Write 42 empty))
+          (do_ init_st (2, 1, app_op_t.Write 99 empty))) 7 := by
+  rintro ⟨ts, h_in_writes, h_not_removed⟩
+  simp [do_, merge, init_st] at h_in_writes
+
 end MVR_SPOT

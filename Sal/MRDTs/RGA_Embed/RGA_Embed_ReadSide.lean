@@ -187,6 +187,12 @@ theorem del_preserves_order :
     document (do_ unaryCode s_reorder (11, 1, .Del 5)) [5, 6, 8] = [6, 8] := by
   native_decide
 
+/-- Should-FAIL pin: the rehoming RGA's verdict on this witness, `[8, 6]`
+(survivors swapped), is exactly what this design does NOT compute. -/
+theorem del_preserves_order_not_rehoming :
+    document (do_ unaryCode s_reorder (11, 1, .Del 5)) [5, 6, 8] ≠ [8, 6] := by
+  native_decide
+
 /-! ### Litmus L1 (delete-reorder), built through `do_` from `init` -/
 
 def s_L1 : concrete_st ℕ :=
@@ -217,6 +223,12 @@ def m_RT : concrete_st ℕ := mkE [(8, 104, u 8)]
 def m_M1 : concrete_st ℕ := merge m_lca m_A m_B
 
 theorem merge_document : document m_M1 [6, 10, 16, 22] = [10, 6, 22, 16] := by
+  native_decide
+
+/-- Should-FAIL pin: the display is computed from the coordinates, not
+echoed from the candidate id list — the read differs from `ids` order. -/
+theorem merge_document_not_ids_order :
+    document m_M1 [6, 10, 16, 22] ≠ [6, 10, 16, 22] := by
   native_decide
 
 /-- Topology X: meet `8` while `6` is alive, then delete `6`. -/

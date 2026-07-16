@@ -22,4 +22,17 @@ example :
     let σ_b := do_ init_st (2, 1, app_op_t.Write 7)
     value (merge σ_a σ_b) = 7 := by decide
 
+/-! ## Negative companions (should-FAIL pins) -/
+
+/-- A smaller later write does NOT clobber: this is MAX, not LWW. -/
+example :
+    value (do_ (do_ init_st (1, 0, app_op_t.Write 5)) (2, 0, app_op_t.Write 3))
+      ≠ 3 := by decide
+
+/-- Merge is not left-biased (and not min): the other order agrees on 7. -/
+example :
+    let σ_a := do_ init_st (1, 0, app_op_t.Write 5)
+    let σ_b := do_ init_st (2, 1, app_op_t.Write 7)
+    value (merge σ_b σ_a) ≠ 5 := by decide
+
 end MAX_Register_SPOT

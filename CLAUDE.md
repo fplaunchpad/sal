@@ -11,3 +11,12 @@
   count, and any file or branch references match what is on the branch being
   pushed (RDTs added, removed, renamed, or moved; sorries closed or opened).
   Update `README.md` in the same push if it has drifted.
+
+- SPOT files (concrete-execution tests) are PASS+FAIL shaped, like good unit
+  tests: every SPOT block carries at least one `≠`/`¬` companion pinning the
+  tempting degenerate behavior (read constantly true or empty, delete a
+  no-op, merge a projection of an input, display echoing the candidate id
+  list, the rival design's verdict). Expected values are hand-derived,
+  never `#eval`'d from the implementation under test (a self-fulfilling
+  oracle). Negatives that need inversion on an inductive relation belong to
+  the ReadSide theorem layer, not SPOTs.
