@@ -35,33 +35,43 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Sal.EmbedRGA (OrderedPrefixCode keyLt keyLe key unaryCode binaryCode)
 
-/-! ## §1  The datatype -/
+set_option linter.unusedSectionVars false
 
-inductive EOp : Type where
-  | ins (e : ℕ) (π : List Bool) (a : ℕ)   -- element, coordinate prefix, anchor
+/-! ## §1  The datatype
+
+The element payload is a parameter `α` (default `ℕ`, so every existing
+consumer reads unchanged): the datatype carries elements blindly, exactly
+like the rehoming model's `concrete_st (α := ℕ)`. `Inhabited α` supplies
+the don't-care element of a delete's `eRecOf` (never read: provenance is
+insert-only). The fused Peritext instantiates at `α := PeritextElt`. -/
+
+inductive EOp (α : Type := ℕ) : Type where
+  | ins (e : α) (π : List Bool) (a : ℕ)   -- element, coordinate prefix, anchor
   | del (x : ℕ)
 deriving DecidableEq
 
 /-- A record: `(id, element, absolute coordinate)`. -/
-abbrev ERec : Type := ℕ × ℕ × List Bool
+abbrev ERec (α : Type := ℕ) : Type := ℕ × α × List Bool
 
 /-- State: the document — records strictly descending by key. Canonical
 single-list form (sortedness is the `Inv`-grade invariant, established by
 fold-canonicity in §3, not baked into the type). -/
-abbrev EState : Type := List ERec
+abbrev EState (α : Type := ℕ) : Type := List (ERec α)
 
-def eIds (s : EState) : List ℕ := s.map Prod.fst
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
+def eIds (s : EState α) : List ℕ := s.map Prod.fst
 
 /-- The coordinate an insert writes — a function of the op alone (the carried
 prefix + the delta codeword; design doc §3: the prefix is for the proof). -/
-def eCoord (Γ : OrderedPrefixCode) (o : Op EOp) : List Bool :=
+def eCoord (Γ : OrderedPrefixCode) (o : Op (EOp α)) : List Bool :=
   match o.2.2 with
   | .ins _ π a => π ++ Γ.enc (o.1 - a)
   | .del _     => []
 
 /-- Sorted insertion, descending by key: the newcomer goes before the first
 record with a strictly smaller key. -/
-def eInsert (r : ERec) : EState → EState
+def eInsert (r : ERec α) : EState α → EState α
   | [] => [r]
   | x :: xs =>
       if keyLt (key x.2.2) (key r.2.2) then r :: x :: xs
@@ -70,7 +80,7 @@ def eInsert (r : ERec) : EState → EState
 /-- Insert places the record at its sorted position (idempotent on a present
 id); delete removes the record wherever it sits. Strictness about *which*
 target lives in the honesty layer (§8), not in the effect. -/
-def eUpdate (Γ : OrderedPrefixCode) (s : EState) (o : Op EOp) : EState :=
+def eUpdate (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) : EState α :=
   match o.2.2 with
   | .ins e π a =>
       if o.1 ∈ eIds s then s
@@ -79,7 +89,7 @@ def eUpdate (Γ : OrderedPrefixCode) (s : EState) (o : Op EOp) : EState :=
 
 /-- Merge of two sorted lists, descending by key (ties cannot occur between
 distinct ids on chain-generated states — `coordOf_inj`). -/
-def eMerge2 : EState → EState → EState
+def eMerge2 : EState α → EState α → EState α
   | [], ys => ys
   | xs, [] => xs
   | x :: xs, y :: ys =>
@@ -91,7 +101,7 @@ termination_by xs ys => xs.length + ys.length
 record is read off whichever input holds it), re-canonicalized by the sorted
 2-merge. Branch `a` contributes its survivors (shared with `b`, or new since
 `l`); branch `b` contributes its own news not already contributed. -/
-def eMergeL (l a b : EState) : EState :=
+def eMergeL (l a b : EState α) : EState α :=
   eMerge2
     (a.filter (fun r => decide (r.1 ∈ eIds b ∨ r.1 ∉ eIds l)))
     (b.filter (fun r => decide (r.1 ∉ eIds l ∧ r.1 ∉ eIds a)))
@@ -101,14 +111,15 @@ def eMergeL (l a b : EState) : EState :=
 computation). `Inv`/`applicable` are trivially true — as in the queue, the
 honesty discipline lives in the configuration layer (§5/§8), not the
 signature. -/
-def E (Γ : OrderedPrefixCode) : ConditionedMRDTSig where
-  State := EState
+def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
+    [DecidableEq α] [Inhabited α] : ConditionedMRDTSig where
+  State := EState α
   dec_state := inferInstance
   init := []
-  AppOp := EOp
+  AppOp := EOp α
   dec_op := inferInstance
   Query := Unit
-  Value := List ℕ
+  Value := List α
   update := eUpdate Γ
   merge := fun a b => eMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
@@ -118,15 +129,15 @@ def E (Γ : OrderedPrefixCode) : ConditionedMRDTSig where
   Inv := fun _ => True
   applicable := fun _ _ => True
 
-theorem E_core_update (Γ : OrderedPrefixCode) (s : EState) (o : Op EOp) :
-    (E Γ).toCRDTSig.update s o = eUpdate Γ s o := rfl
+theorem E_core_update (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) :
+    (E Γ α).toCRDTSig.update s o = eUpdate Γ s o := rfl
 
-theorem E_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op EOp) :
-    (E Γ).toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+theorem E_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op (EOp α)) :
+    (E Γ α).toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §1½  First list algebra -/
 
-theorem mem_eIds_eInsert {r : ERec} {t : ℕ} : ∀ {s : EState},
+theorem mem_eIds_eInsert {r : ERec α} {t : ℕ} : ∀ {s : EState α},
     t ∈ eIds (eInsert r s) ↔ t ∈ eIds s ∨ t = r.1
   | [] => by simp [eInsert, eIds]
   | x :: xs => by
@@ -139,7 +150,7 @@ theorem mem_eIds_eInsert {r : ERec} {t : ℕ} : ∀ {s : EState},
         rw [ih]
         tauto
 
-theorem mem_eIds_update_del {Γ : OrderedPrefixCode} {s : EState} {ts r x t : ℕ} :
+theorem mem_eIds_update_del {Γ : OrderedPrefixCode} {s : EState α} {ts r x t : ℕ} :
     t ∈ eIds (eUpdate Γ s (ts, r, .del x)) ↔ t ∈ eIds s ∧ t ≠ x := by
   simp only [eUpdate, eIds, List.mem_map]
   constructor
@@ -161,10 +172,10 @@ characterization. -/
 open Sal.EmbedRGA (keyLt_trans keyLt_asymm keyLt_total keyLt_irrefl)
 
 /-- Strictly descending by key — the canonical form. -/
-def ESorted (s : EState) : Prop :=
+def ESorted (s : EState α) : Prop :=
   s.Pairwise (fun r r' => keyLt (key r'.2.2) (key r.2.2) = true)
 
-theorem mem_eInsert {r x : ERec} : ∀ {s : EState},
+theorem mem_eInsert {r x : ERec α} : ∀ {s : EState α},
     x ∈ eInsert r s ↔ x ∈ s ∨ x = r
   | [] => by simp [eInsert]
   | y :: ys => by
@@ -175,7 +186,7 @@ theorem mem_eInsert {r x : ERec} : ∀ {s : EState},
         rw [mem_eInsert (s := ys)]
         tauto
 
-theorem eInsert_sorted {r : ERec} : ∀ {s : EState}, ESorted s →
+theorem eInsert_sorted {r : ERec α} : ∀ {s : EState α}, ESorted s →
     (∀ x ∈ s, key x.2.2 ≠ key r.2.2) → ESorted (eInsert r s)
   | [], _, _ => List.pairwise_singleton _ _
   | y :: ys, hs, hne => by
@@ -200,7 +211,7 @@ theorem eInsert_sorted {r : ERec} : ∀ {s : EState}, ESorted s →
         · exact eInsert_sorted hys
             (fun x hx => hne x (List.mem_cons_of_mem _ hx))
 
-theorem eUpdate_sorted {Γ : OrderedPrefixCode} {s : EState} {o : Op EOp}
+theorem eUpdate_sorted {Γ : OrderedPrefixCode} {s : EState α} {o : Op (EOp α)}
     (hs : ESorted s)
     (hne : ∀ x ∈ s, key x.2.2 ≠ key (eCoord Γ o)) :
     ESorted (eUpdate Γ s o) := by
@@ -220,7 +231,7 @@ theorem eUpdate_sorted {Γ : OrderedPrefixCode} {s : EState} {o : Op EOp}
 /-- **Canonical-form extensionality**: strictly-sorted lists with the same
 members are equal. This is why the sorted list is a canonical state: any two
 routes to the same record set produce the identical list. -/
-theorem esorted_ext : ∀ {s s' : EState}, ESorted s → ESorted s' →
+theorem esorted_ext : ∀ {s s' : EState α}, ESorted s → ESorted s' →
     (∀ x, x ∈ s ↔ x ∈ s') → s = s'
   | [], [], _, _, _ => rfl
   | [], y :: ys, _, _, hmem => by
@@ -257,7 +268,7 @@ theorem esorted_ext : ∀ {s s' : EState}, ESorted s → ESorted s' →
 
 /-! ## §2½  The sorted 2-merge -/
 
-theorem mem_eMerge2 {x : ERec} : ∀ (as bs : EState),
+theorem mem_eMerge2 {x : ERec α} : ∀ (as bs : EState α),
     x ∈ eMerge2 as bs ↔ x ∈ as ∨ x ∈ bs := by
   intro as bs
   induction as, bs using eMerge2.induct with
@@ -274,7 +285,7 @@ theorem mem_eMerge2 {x : ERec} : ∀ (as bs : EState),
       simp only [List.mem_cons, ih]
       tauto
 
-theorem eMerge2_sorted : ∀ {as bs : EState}, ESorted as → ESorted bs →
+theorem eMerge2_sorted : ∀ {as bs : EState α}, ESorted as → ESorted bs →
     (∀ a ∈ as, ∀ b ∈ bs, key a.2.2 ≠ key b.2.2) →
     ESorted (eMerge2 as bs) := by
   intro as bs has hbs hne
@@ -315,7 +326,7 @@ theorem eMerge2_sorted : ∀ {as bs : EState}, ESorted as → ESorted bs →
 
 /-- The merge of canonical inputs is canonical (sorted), given no key ties —
 supplied on chain-generated states by unique decodability. -/
-theorem eMergeL_sorted {l a b : EState}
+theorem eMergeL_sorted {l a b : EState α}
     (ha : ESorted a) (hb : ESorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b, key x.2.2 = key y.2.2 → x = y) :
     ESorted (eMergeL l a b) := by
@@ -336,31 +347,31 @@ the **same** state — the mechanized "state is a function of the event set"
 (design doc Thm 4), by `esorted_ext` + a fold membership characterization.
 No explicit canonical-list formula is needed. -/
 
-def eFold (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) : EState :=
-  applySeq (E Γ).toCRDTSig (E Γ).init ρ
+def eFold (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : EState α :=
+  applySeq (E Γ α).toCRDTSig (E Γ α).init ρ
 
-theorem eFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) (e : Op EOp) :
+theorem eFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) (e : Op (EOp α)) :
     eFold Γ (ρ ++ [e]) = eUpdate Γ (eFold Γ ρ) e := by
   unfold eFold applySeq
   rw [List.foldl_append]
   rfl
 
-def eIsIns (o : Op EOp) : Bool :=
+def eIsIns (o : Op (EOp α)) : Bool :=
   match o.2.2 with
   | .ins _ _ _ => true
   | .del _ => false
 
 /-- The record an insert writes. -/
-def eRecOf (Γ : OrderedPrefixCode) (o : Op EOp) : ERec :=
-  (o.1, (match o.2.2 with | .ins e _ _ => e | .del _ => 0), eCoord Γ o)
+def eRecOf (Γ : OrderedPrefixCode) (o : Op (EOp α)) : ERec α :=
+  (o.1, (match o.2.2 with | .ins e _ _ => e | .del _ => default), eCoord Γ o)
 
-def eInsIds (ρ : List (Op EOp)) : List ℕ :=
+def eInsIds (ρ : List (Op (EOp α))) : List ℕ :=
   (ρ.filter (fun o => eIsIns o)).map Prod.fst
 
-def eDels (ρ : List (Op EOp)) : List ℕ :=
+def eDels (ρ : List (Op (EOp α))) : List ℕ :=
   ρ.filterMap (fun o => match o.2.2 with | .del x => some x | .ins _ _ _ => none)
 
-theorem mem_eInsIds {ρ : List (Op EOp)} {t : ℕ} :
+theorem mem_eInsIds {ρ : List (Op (EOp α))} {t : ℕ} :
     t ∈ eInsIds ρ ↔ ∃ o ∈ ρ, eIsIns o = true ∧ o.1 = t := by
   simp only [eInsIds, List.mem_map, List.mem_filter]
   constructor
@@ -369,7 +380,7 @@ theorem mem_eInsIds {ρ : List (Op EOp)} {t : ℕ} :
   · rintro ⟨o, hm, hi, rfl⟩
     exact ⟨o, ⟨hm, hi⟩, rfl⟩
 
-theorem mem_eDels {ρ : List (Op EOp)} {x : ℕ} :
+theorem mem_eDels {ρ : List (Op (EOp α))} {x : ℕ} :
     x ∈ eDels ρ ↔ ∃ o ∈ ρ, o.2.2 = EOp.del x := by
   simp only [eDels, List.mem_filterMap]
   constructor
@@ -381,24 +392,24 @@ theorem mem_eDels {ρ : List (Op EOp)} {x : ℕ} :
   · rintro ⟨o, hm, hdel⟩
     exact ⟨o, hm, by rw [hdel]⟩
 
-theorem eInsIds_append (ρ σ : List (Op EOp)) :
+theorem eInsIds_append (ρ σ : List (Op (EOp α))) :
     eInsIds (ρ ++ σ) = eInsIds ρ ++ eInsIds σ := by
   simp [eInsIds, List.filter_append]
 
-theorem eDels_append (ρ σ : List (Op EOp)) :
+theorem eDels_append (ρ σ : List (Op (EOp α))) :
     eDels (ρ ++ σ) = eDels ρ ++ eDels σ := by
   simp [eDels, List.filterMap_append]
 
 /-- Well-formed enumerations: insert ids are unique, nothing is deleted
 before its insert, and distinct inserts mint distinct keys (supplied on
 honest histories by chain-generation + unique decodability — §5). -/
-structure EWf (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) : Prop where
+structure EWf (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : Prop where
   ins_nodup : (eInsIds ρ).Nodup
   del_late : ∀ σ o τ, ρ = σ ++ o :: τ → eIsIns o = true → o.1 ∉ eDels σ
   keys_inj : ∀ o₁ ∈ ρ, ∀ o₂ ∈ ρ, eIsIns o₁ = true → eIsIns o₂ = true →
       o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂)
 
-theorem EWf.prefix {Γ : OrderedPrefixCode} {ρ : List (Op EOp)} {e : Op EOp}
+theorem EWf.prefix {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))} {e : Op (EOp α)}
     (h : EWf Γ (ρ ++ [e])) : EWf Γ ρ where
   ins_nodup := by
     have := h.ins_nodup
@@ -413,8 +424,8 @@ theorem EWf.prefix {Γ : OrderedPrefixCode} {ρ : List (Op EOp)} {e : Op EOp}
 
 /-- Record provenance, unconditioned: everything in a fold was written by
 some insert of the enumeration. -/
-theorem e_fold_rec_sub (Γ : OrderedPrefixCode) : ∀ (ρ : List (Op EOp))
-    (r : ERec), r ∈ eFold Γ ρ → ∃ o ∈ ρ, eIsIns o = true ∧ r = eRecOf Γ o := by
+theorem e_fold_rec_sub (Γ : OrderedPrefixCode) : ∀ (ρ : List (Op (EOp α)))
+    (r : ERec α), r ∈ eFold Γ ρ → ∃ o ∈ ρ, eIsIns o = true ∧ r = eRecOf Γ o := by
   intro ρ
   induction ρ using List.reverseRecOn with
   | nil =>
@@ -445,8 +456,8 @@ theorem e_fold_rec_sub (Γ : OrderedPrefixCode) : ∀ (ρ : List (Op EOp))
 
 /-- Under well-formedness the insert guard never fires: a fresh insert's id
 is not in the fold of its past. -/
-theorem e_fold_guard_free {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
-    {e : Op EOp} (hwf : EWf Γ (ρ ++ [e])) (hins : eIsIns e = true) :
+theorem e_fold_guard_free {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
+    {e : Op (EOp α)} (hwf : EWf Γ (ρ ++ [e])) (hins : eIsIns e = true) :
     e.1 ∉ eIds (eFold Γ ρ) := by
   intro hmem
   obtain ⟨r, hr, hr1⟩ := List.mem_map.mp hmem
@@ -461,7 +472,7 @@ theorem e_fold_guard_free {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
   exact (hdisj e.1 h1 e.1 h2) rfl
 
 /-- Folds of well-formed enumerations are canonical (sorted). -/
-theorem e_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
+theorem e_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
     EWf Γ ρ → ESorted (eFold Γ ρ) := by
   intro ρ
   induction ρ using List.reverseRecOn with
@@ -498,8 +509,8 @@ theorem e_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
 /-- **The fold membership characterization**: under well-formedness a record
 is in the fold iff its insert is in the enumeration and its id is never
 deleted — an ORDER-FREE description. -/
-theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
-    EWf Γ ρ → ∀ (r : ERec),
+theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
+    EWf Γ ρ → ∀ (r : ERec α),
     (r ∈ eFold Γ ρ ↔
       (∃ o ∈ ρ, eIsIns o = true ∧ r = eRecOf Γ o) ∧ r.1 ∉ eDels ρ) := by
   intro ρ
@@ -572,7 +583,7 @@ theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op EOp)},
 enumerations of one event set fold to the SAME state. The state is a
 function of the event set — the property `Shesha_Join_Refuted` shows the
 join hook cannot live without, and the reason this instance exists. -/
-theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op EOp)}
+theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op (EOp α))}
     (hwf : EWf Γ ρ) (hwf' : EWf Γ ρ')
     (hmem : ∀ o, o ∈ ρ ↔ o ∈ ρ') :
     eFold Γ ρ = eFold Γ ρ' := by
@@ -601,9 +612,9 @@ open Sal.EmbedRGA (PosChain coordOf coordOf_inj coordOf_append key_inj)
 
 /-- The one non-commuting shape: an insert and the delete of its id.
 Witnessed at the empty state. -/
-theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r el : ℕ)
+theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r : ℕ) (el : α)
     (π : List Bool) (a : ℕ) (ts' r' : ℕ) :
-    ¬ (E Γ).toCRDTSig.commutes (ts, r, EOp.ins el π a) (ts', r', EOp.del ts) := by
+    ¬ (E Γ α).toCRDTSig.commutes (ts, r, EOp.ins el π a) (ts', r', EOp.del ts) := by
   intro h
   have h0 := h []
   rw [E_core_update, E_core_update, E_core_update, E_core_update] at h0
@@ -613,7 +624,7 @@ theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r el : ℕ)
 
 /-- Honest histories. -/
 structure EHonestCore (Γ : OrderedPrefixCode)
-    (C : Sal.Emulation.Configuration (E Γ).toCRDTSig) : Prop where
+    (C : Sal.Emulation.Configuration (E Γ α).toCRDTSig) : Prop where
   /-- Every delete's target was inserted `vis`-before it. -/
   del_has_ins : ∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true
@@ -629,15 +640,15 @@ structure EHonestCore (Γ : OrderedPrefixCode)
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
 theorem e_del_ins_mem {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
-    (hHon : EHonestCore Γ C) {ev : Set (Op EOp)}
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
     ∀ d ∈ ev, ∀ x : ℕ, d.2.2 = EOp.del x →
       ∃ a ∈ ev, eIsIns a = true ∧ a.1 = x ∧ C.vis a d := by
   intro d hd x hdel
   obtain ⟨a, haev, hvis, hax, hains⟩ := hHon.del_has_ins d (hin d hd) x hdel
-  have hncomm : ¬ (E Γ).toCRDTSig.commutes a d := by
+  have hncomm : ¬ (E Γ α).toCRDTSig.commutes a d := by
     obtain ⟨a1, a2, aop⟩ := a
     obtain ⟨d1, d2, dop⟩ := d
     simp only at hdel hax
@@ -655,10 +666,10 @@ honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 unique decodability give `keys_inj`. -/
 theorem e_wf_of_enum {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
-    (hHon : EHonestCore Γ C) {ev : Set (Op EOp)} {ρ : List (Op EOp)}
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))} {ρ : List (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
     (hperm : listPermOf ρ ev)
     (hresp : respects ρ (loOn C ev)) : EWf Γ ρ where
   ins_nodup := by
@@ -714,7 +725,7 @@ The record-level membership of the ternary merge, characterized order-free
 against the union event set — the mathematical core of the Join. §6b turns
 it into `JoinLemma3At` by exhibiting the witness enumeration. -/
 
-theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op EOp)}
+theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op (EOp α))}
     (hwf : EWf Γ ρ) (t : ℕ) :
     t ∈ eIds (eFold Γ ρ) ↔
       (∃ o ∈ ρ, eIsIns o = true ∧ o.1 = t) ∧ t ∉ eDels ρ := by
@@ -731,7 +742,7 @@ theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op EOp)}
 /-- Distinct honest inserts mint distinct keys (the standalone form of
 `e_wf_of_enum`'s third discharge, for use at the merge site). -/
 theorem e_keys_inj_events {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) :
     ∀ o₁ ∈ C.events, ∀ o₂ ∈ C.events, eIsIns o₁ = true → eIsIns o₂ = true →
       o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂) := by
@@ -755,15 +766,15 @@ nowhere in the union — the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
 theorem e_mergeL_mem {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
-    (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op EOp)}
-    {ρ₀ ρ₁ ρ₂ : List (Op EOp)}
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op (EOp α))}
+    {ρ₀ ρ₁ ρ₂ : List (Op (EOp α))}
     (hin₁ : ∀ a ∈ ev₁, a ∈ C.events) (hin₂ : ∀ a ∈ ev₂, a ∈ C.events)
-    (hcl₁ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl₂ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (hcl₁ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl₂ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂)
     (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
     (hp₂ : listPermOf ρ₂ ev₂)
-    (hwf₀ : EWf Γ ρ₀) (hwf₁ : EWf Γ ρ₁) (hwf₂ : EWf Γ ρ₂) (r : ERec) :
+    (hwf₀ : EWf Γ ρ₀) (hwf₁ : EWf Γ ρ₁) (hwf₂ : EWf Γ ρ₂) (r : ERec α) :
     r ∈ eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂) ↔
       (∃ o, (o ∈ ev₁ ∨ o ∈ ev₂) ∧ eIsIns o = true ∧ r = eRecOf Γ o) ∧
       (∀ d, (d ∈ ev₁ ∨ d ∈ ev₂) → d.2.2 ≠ EOp.del r.1) := by
@@ -771,7 +782,7 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
   set s₀ := eFold Γ ρ₀
   set s₁ := eFold Γ ρ₁
   set s₂ := eFold Γ ρ₂
-  have hdels : ∀ {ρ : List (Op EOp)} {ev : Set (Op EOp)}, listPermOf ρ ev →
+  have hdels : ∀ {ρ : List (Op (EOp α))} {ev : Set (Op (EOp α))}, listPermOf ρ ev →
       ∀ {t : ℕ}, t ∈ eDels ρ ↔ ∃ d ∈ ev, d.2.2 = EOp.del t := by
     intro ρ ev hp t
     rw [mem_eDels]
@@ -870,7 +881,7 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
         obtain ⟨d, hd, hdel⟩ := (hdels hp₂).mp hdel2
         exact hnd d (Or.inr hd) hdel
       · simp only [decide_eq_true_eq]
-        have hnot : ∀ {ρ : List (Op EOp)} {ev : Set (Op EOp)},
+        have hnot : ∀ {ρ : List (Op (EOp α))} {ev : Set (Op (EOp α))},
             listPermOf ρ ev → EWf Γ ρ → (∀ a ∈ ev, a ∈ C.events) →
             (∀ a ∈ ev, a ∈ ev₁) → r.1 ∉ eIds (eFold Γ ρ) := by
           intro ρ ev hp hwf hin hsub hmem
@@ -893,8 +904,8 @@ independent under `rc = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
 theorem e_join_at {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ).toCRDTSig}
-    (hHon : EHonestCore Γ C) : JoinLemma3At (E Γ) C := by
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    (hHon : EHonestCore Γ C) : JoinLemma3At (E Γ α) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ _htr _hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical
   obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
@@ -902,14 +913,14 @@ theorem e_join_at {Γ : OrderedPrefixCode}
   obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
   set ev₀ := ev₁ ∩ ev₂ with hev₀
   have hin₀ : ∀ a ∈ ev₀, a ∈ C.events := fun a ha => hin₁ a ha.1
-  have hcl₀ : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b →
+  have hcl₀ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b →
       b ∈ ev₀ → a ∈ ev₀ :=
     fun a b hv hc hb => ⟨hcl₁ a b hv hc hb.1, hcl₂ a b hv hc hb.2⟩
   have hinU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
     rintro a (ha | ha)
     · exact hin₁ a ha
     · exact hin₂ a ha
-  have hclU : ∀ a b, C.vis a b → ¬ (E Γ).toCRDTSig.commutes a b →
+  have hclU : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b →
       b ∈ ev₁ ∪ ev₂ → a ∈ ev₁ ∪ ev₂ := by
     rintro a b hv hc (hb | hb)
     · exact Or.inl (hcl₁ a b hv hc hb)
@@ -918,7 +929,7 @@ theorem e_join_at {Γ : OrderedPrefixCode}
   have hwf₁ := e_wf_of_enum hHon hin₁ hcl₁ hp₁ hr₁
   have hwf₂ := e_wf_of_enum hHon hin₂ hcl₂ hp₂ hr₂
   -- loOn is event-set independent under rc = Either
-  have hloOn : ∀ (ev ev' : Set (Op EOp)) (x y : Op EOp),
+  have hloOn : ∀ (ev ev' : Set (Op (EOp α))) (x y : Op (EOp α)),
       loOn C ev x y → loOn C ev' x y := by
     intro ev ev' x y h
     rw [loOn_iff_of_rc_either (E_rc_either Γ)] at h ⊢
@@ -999,7 +1010,7 @@ theorem e_join_at {Γ : OrderedPrefixCode}
   have hwfU : EWf Γ ρᵤ := e_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
-  show eFold Γ ρᵤ = (E Γ).mergeL s₀ s₁ s₂
+  show eFold Γ ρᵤ = (E Γ α).mergeL s₀ s₁ s₂
   rw [← hf₀, ← hf₁, ← hf₂]
   show eFold Γ ρᵤ = eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂)
   -- cross-key-injectivity feeding the merge's sortedness
@@ -1054,14 +1065,14 @@ theorem e_join_at {Γ : OrderedPrefixCode}
 /-- Honest histories at the ternary configuration: every delete names an id
 its issuer had observed (a `vis`-prior insert), and inserts are
 chain-generated. The embedded-chain RGA's `HonestDelivery`. -/
-def EHonest (Γ : OrderedPrefixCode) (C : Configuration (E Γ)) : Prop :=
+def EHonest (Γ : OrderedPrefixCode) (C : Configuration (E Γ α)) : Prop :=
   (∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true) ∧
   (∃ chainOf : ℕ → List ℕ, ∀ o ∈ C.events, eIsIns o = true →
     PosChain (chainOf o.1) ∧ eCoord Γ o = coordOf Γ (chainOf o.1) ∧
     (chainOf o.1).sum = o.1)
 
-theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
+theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     (h : EHonest Γ C) : EHonestCore Γ (Configuration.core C) where
   del_has_ins := by
     intro e he x hx
@@ -1079,10 +1090,10 @@ theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
 /-- **Honest reachability**: LTS reachability where every step is taken from
 a configuration with an honest history — instantiating the generic
 `HonestReach`, exactly as the mergeable queue does. -/
-def EReach (Γ : OrderedPrefixCode) : Configuration (E Γ) → Prop :=
-  HonestReach (E Γ) (EHonest Γ) trivial
+def EReach (Γ : OrderedPrefixCode) : Configuration (E Γ α) → Prop :=
+  HonestReach (E Γ α) (EHonest Γ) trivial
 
-theorem e_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
+theorem e_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     (hReach : EReach Γ C) : GoodConfig3 C :=
   goodConfig3_of_honest_reach (fun _ hHon => e_join_at (eHonest_core hHon))
     hReach
@@ -1093,7 +1104,7 @@ fold of a linearization of its event set that respects delivery order.
 Parametric in the code — instantiate `Γ := binaryCode` for the
 entropy-optimal artifact. -/
 theorem embed_ra_linearizable3 {Γ : OrderedPrefixCode}
-    {C : Configuration (E Γ)} (hReach : EReach Γ C) :
+    {C : Configuration (E Γ α)} (hReach : EReach Γ C) :
     IsRALinearizable3 C :=
   isRALinearizable3_of_good (e_goodConfig3 hReach)
 
@@ -1112,15 +1123,15 @@ coordinate. -/
 /-- The issuer-side guard: an insert's anchor is live with EXACTLY the
 carried prefix as its stored coordinate and a smaller stamp (Lamport); a
 delete's target is live. -/
-def eApplicable (o : Op EOp) (s : EState) : Prop :=
+def eApplicable (o : Op (EOp α)) (s : EState α) : Prop :=
   match o with
   | (t, _, .ins _ π a) => a < t ∧ ((a = 0 ∧ π = []) ∨ ∃ el, (a, el, π) ∈ s)
   | (_, _, .del x)     => x ∈ eIds s
 
 /-- Per-id chain existence: every insert's coordinate is a positive chain's
 coordinate with telescoping sum. Strong induction on the id. -/
-theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
-    (hApp : ∀ e ∈ C.events, ∃ π : List (Op EOp),
+theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
+    (hApp : ∀ e ∈ C.events, ∃ π : List (Op (EOp α)),
       listPermOf π {e' ∈ C.events | C.vis e' e} ∧
       eApplicable e (eFold Γ π)) :
     ∀ t : ℕ, ∃ ch : List ℕ, PosChain ch ∧ ch.sum = t ∧
@@ -1157,7 +1168,7 @@ theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
             have haev := (hπe.2 aop).mp haπ
             have ha1 : aop.1 = a := congrArg Prod.fst hae.symm
             have hπval : π = eCoord Γ aop :=
-              congrArg (fun p : ERec => p.2.2) hae
+              congrArg (fun p : ERec α => p.2.2) hae
             obtain ⟨ch, hpos, hsum, hcoord⟩ := ih a hat
             refine ⟨ch ++ [ts - a], ?_, ?_, ?_⟩
             · intro d hd
@@ -1192,8 +1203,8 @@ materialized state is such a fold — then the history is honest: a delete's
 target can only have entered that fold through a `vis`-prior insert, and the
 carried prefixes are forced to be birth-chain coordinates. The embed
 analogue of the queue's §8 and of the RGA's applicable-delivery layer. -/
-theorem eHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
-    (hApp : ∀ e ∈ C.events, ∃ π : List (Op EOp),
+theorem eHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
+    (hApp : ∀ e ∈ C.events, ∃ π : List (Op (EOp α)),
       listPermOf π {e' ∈ C.events | C.vis e' e} ∧
       eApplicable e (eFold Γ π)) :
     EHonest Γ C := by
@@ -1223,9 +1234,9 @@ theorem eHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (E Γ)
 /-- The honesty contract from the generic honesty shape at
 `P := eApplicable`: `GenHonest` + causal-past enumerability supply exactly
 `eHonest_of_applicable`'s hypothesis. -/
-theorem eHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (E Γ))
-    (hEnum : CausalPastEnumerable (E Γ) C)
-    (hApp : GenHonest (E Γ) eApplicable C) : EHonest Γ C :=
+theorem eHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
+    (hEnum : CausalPastEnumerable (E Γ α) C)
+    (hApp : GenHonest (E Γ α) eApplicable C) : EHonest Γ C :=
   eHonest_of_applicable C
     (fun e he => (hEnum e he).imp (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
 
@@ -1242,12 +1253,12 @@ survivors in that branch's own order. No co-displayed pair ever flips. -/
 
 /-- **Delete-order preservation**: deletion displays exactly the survivors,
 in unchanged order. -/
-theorem eUpdate_del_sublist (Γ : OrderedPrefixCode) (s : EState)
+theorem eUpdate_del_sublist (Γ : OrderedPrefixCode) (s : EState α)
     (ts r x : ℕ) :
     List.Sublist (eUpdate Γ s (ts, r, .del x)) s :=
   List.filter_sublist
 
-theorem eInsert_sublist (r : ERec) : ∀ (s : EState), List.Sublist s (eInsert r s)
+theorem eInsert_sublist (r : ERec α) : ∀ (s : EState α), List.Sublist s (eInsert r s)
   | [] => List.nil_sublist _
   | x :: xs => by
       by_cases h : keyLt (key x.2.2) (key r.2.2) = true
@@ -1258,8 +1269,8 @@ theorem eInsert_sublist (r : ERec) : ∀ (s : EState), List.Sublist s (eInsert r
         exact List.Sublist.cons₂ x (eInsert_sublist r xs)
 
 /-- **Step stability**: an insert never reorders the existing document. -/
-theorem eUpdate_ins_sublist (Γ : OrderedPrefixCode) (s : EState)
-    (ts r : ℕ) (el : ℕ) (π : List Bool) (a : ℕ) :
+theorem eUpdate_ins_sublist (Γ : OrderedPrefixCode) (s : EState α)
+    (ts r : ℕ) (el : α) (π : List Bool) (a : ℕ) :
     List.Sublist s (eUpdate Γ s (ts, r, .ins el π a)) := by
   simp only [eUpdate]
   by_cases h : ts ∈ eIds s
@@ -1267,7 +1278,7 @@ theorem eUpdate_ins_sublist (Γ : OrderedPrefixCode) (s : EState)
   · rw [if_neg h]
     exact eInsert_sublist _ s
 
-theorem eMerge2_sublist_left : ∀ (as bs : EState), List.Sublist as (eMerge2 as bs) := by
+theorem eMerge2_sublist_left : ∀ (as bs : EState α), List.Sublist as (eMerge2 as bs) := by
   intro as bs
   induction as, bs using eMerge2.induct with
   | case1 ys => exact List.nil_sublist _
@@ -1281,7 +1292,7 @@ theorem eMerge2_sublist_left : ∀ (as bs : EState), List.Sublist as (eMerge2 as
         from by rw [eMerge2]; simp [h]]
       exact List.Sublist.cons b ih
 
-theorem eMerge2_sublist_right : ∀ (as bs : EState), List.Sublist bs (eMerge2 as bs) := by
+theorem eMerge2_sublist_right : ∀ (as bs : EState α), List.Sublist bs (eMerge2 as bs) := by
   intro as bs
   induction as, bs using eMerge2.induct with
   | case1 ys =>
@@ -1300,12 +1311,12 @@ theorem eMerge2_sublist_right : ∀ (as bs : EState), List.Sublist bs (eMerge2 a
 `a`'s survivors — those shared with `b` or new since the LCA — as a sublist
 of `a`'s own document: in `a`'s order, never reordered. Symmetrically for
 `b`'s news via `eMerge2_sublist_right`. -/
-theorem eMergeL_stable_left (l a b : EState) :
+theorem eMergeL_stable_left (l a b : EState α) :
     List.Sublist (a.filter (fun r => decide (r.1 ∈ eIds b ∨ r.1 ∉ eIds l)))
       (eMergeL l a b) :=
   eMerge2_sublist_left _ _
 
-theorem eMergeL_stable_right (l a b : EState) :
+theorem eMergeL_stable_right (l a b : EState α) :
     List.Sublist (b.filter (fun r => decide (r.1 ∉ eIds l ∧ r.1 ∉ eIds a)))
       (eMergeL l a b) :=
   eMerge2_sublist_right _ _
