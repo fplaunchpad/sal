@@ -1,11 +1,11 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Corrected_Residual
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Corrected_Residual
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergence
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient_NF
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!

@@ -12,7 +12,7 @@ the published tombstoned RGA 120/120).
 
 This is the **absolute-coordinate model**: the state stores each live id's
 full coordinate — the concatenation of prefix-free codewords along its birth
-chain — as an immutable value. Compare `Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean`
+chain — as an immutable value. Compare `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`
 (the proved flat RGA), whose state stores mutable anchors and whose proofs
 need resolve/rehome/climb algebra. Here:
 

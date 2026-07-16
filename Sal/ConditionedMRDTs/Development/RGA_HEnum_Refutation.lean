@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_Skeleton
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_LoOnEq_Causal
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_LoOnEq_Causal
 
 /-!
 # REFUTATION — the skeleton's `hEnum` is FALSE as stated

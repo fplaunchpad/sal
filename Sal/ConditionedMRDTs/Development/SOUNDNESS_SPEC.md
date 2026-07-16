@@ -517,7 +517,7 @@ not a conjecture:
   `commutes_with'` requires `accurate ∧ fresh_ts ∧ contains s 0 = false`
   (`RGA_Tombstone_Free_MRDT.lean:331`), and `accurate` can go **stale** under an intervening
   `Del`-rehoming.
-- The machine-checked result (`Sal/MRDTs/RGA/RGA_Reachability_Invariant.lean`):
+- The machine-checked result (`Sal/MRDTs/RGA_Rehoming/RGA_Reachability_Invariant.lean`):
   the natural forest invariant `anc_consistent` is **inductive under `do_` but refuted under
   `merge`** *unless anchors are id-monotone* — a **generation-time `applicable` condition,
   not a state-shape predicate**.
@@ -569,5 +569,5 @@ down.
   `Sal/Emulation/CRDT_Signature.lean:67-77`. `canonicalG` `Sal/Emulation/Emulation.lean:75`.
 - **Conditioning / RGA hazard:** `Sal/MRDTs/Metatheory/BLUEPRINT.md` (node catalogue §4.1,
   commutation sites §5.3, RGA hazard §5.4, `:184,437,471,477,488-544,561`); RGA conditional
-  commute `Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean:331`; non-inductiveness
-  finding `Sal/MRDTs/RGA/RGA_Reachability_Invariant.lean`.
+  commute `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean:331`; non-inductiveness
+  finding `Sal/MRDTs/RGA_Rehoming/RGA_Reachability_Invariant.lean`.

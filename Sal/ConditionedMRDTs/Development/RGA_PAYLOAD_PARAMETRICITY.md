@@ -72,7 +72,7 @@ element at all (they pattern-match `Ins _ pre a`).
 
 INSPECTED count in core proof: **0**.
 
-### Conditioned chain (`ConditionedMRDTs/MRDT_Instances/RGA/`, ~40 files)
+### Conditioned chain (`ConditionedMRDTs/MRDT_Instances/RGA_Rehoming/`, ~40 files)
 
 - **18** `el`-reads total (word-boundary grep). Every one is either a merge
   `elf` selection, a `sel s k = (el s k, anc s k)` destructuring rewrite, a

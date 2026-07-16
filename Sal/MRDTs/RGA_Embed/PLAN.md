@@ -50,7 +50,7 @@ Mac — run bare). `lake build Sal.MRDTs.RGA_Embed.<Module>` to produce oleans.
 ### Layer 1 — MRDT kernel: `RGA_Embed_MRDT.lean` ✅ (0 errors, 0 sorry, kernel-clean)
 
 Mirrors the proved flat RGA's statement shapes
-(`Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean`), radically smaller because
+(`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`), radically smaller because
 `do_` on Ins is state-independent (no resolve/rehome/climb algebra):
 
 - `insins_comm` (needs only `t1 ≠ t2`), `insdel_comm` (needs `t_ins ≠ x`,

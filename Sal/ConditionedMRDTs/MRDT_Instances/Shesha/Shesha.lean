@@ -193,7 +193,7 @@ with `read`. Structural induction over the forest, unconditional (no
 well-formedness needed — the totality choices of both sides agree). This is
 the per-datatype "obvious spec" theorem (`sibling-linked-proof.md` §2), and
 precisely the property the flat tombstone-free RGA *fails*
-(`tombstone_free_violates_delete_order`, `Sal/MRDTs/RGA/RGA_Tombstone_Free_SPOT.lean`). -/
+(`tombstone_free_violates_delete_order`, `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean`). -/
 
 theorem readF_append :
     ∀ f g : List Tree, readF (f ++ g) = readF f ++ readF g

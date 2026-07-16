@@ -9,7 +9,7 @@ open Classical
 
 /-! # RGA (CRDT) — SPOTs
 
-CRDT-side mirror of `Sal/MRDTs/RGA/RGA_SPOT.lean`.
+CRDT-side mirror of `Sal/MRDTs/RGA_Rehoming/RGA_SPOT.lean`.
 Same scenarios; the CRDT carries `(chars, afters, deleted)` map
 components with `OpId = ℕ × ℕ` (rather than the MRDT's flat sets
 keyed by `ℕ`), so the discharge of `after_of` facts unfolds to

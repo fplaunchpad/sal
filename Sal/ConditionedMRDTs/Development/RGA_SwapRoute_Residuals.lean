@@ -15,14 +15,14 @@ import Sal.ConditionedMRDTs.Development.RGA_RecPathFaithful
 import Sal.ConditionedMRDTs.Development.RGA_WfOpReachable
 import Sal.ConditionedMRDTs.Development.RGA_UpdateConvergence_Assembly
 import Sal.ConditionedMRDTs.Development.RGA_OrderBridge
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_EqJoin_NF
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance_Final
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_InvUpdateQ
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeBranchNew
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeCanon
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_EqJoin_NF
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance_Final
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_InvUpdateQ
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeBranchNew
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeFoldChain
 
 /-!
 # Residuals of the retired swap/faithfulness route

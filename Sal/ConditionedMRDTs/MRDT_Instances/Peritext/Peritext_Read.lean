@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext.Peritext
-import Sal.MRDTs.RGA.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA_Rehoming.RGA_Tombstone_Free_MRDT
 
 open Classical
 

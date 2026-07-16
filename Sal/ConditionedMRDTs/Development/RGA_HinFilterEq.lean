@@ -1,7 +1,7 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_BranchCanon
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_SubchainResolve
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_BranchCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeFoldChain
 
 /-!
 # `RGA_HinFilterEq` — closing the last merge-side residual `hin`

@@ -229,7 +229,7 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
-## 4. THE framework — [`MRDT_Instances/RGA/RA_Lin.lean`](MRDT_Instances/RGA/RA_Lin.lean)
+## 4. THE framework — [`MRDT_Instances/RGA_Rehoming/RA_Lin.lean`](MRDT_Instances/RGA_Rehoming/RA_Lin.lean)
 
 The soundness theorem is generic — stated over *any* `ConditionedMRDTSig`
 with an `EqEquiv`, on the same `Step3` LTS: the **`≈`-quotient functor**
@@ -288,7 +288,7 @@ fields, and nonzero ids and nonzero delete targets follow from the
 delivered op's own wellformedness. The full chain (quotient functor,
 witness layer, canonical engine, the discharged merge bundle, the residual
 reduction) lives in
-[`MRDT_Instances/RGA/`](MRDT_Instances/RGA/)
+[`MRDT_Instances/RGA_Rehoming/`](MRDT_Instances/RGA_Rehoming/)
 (see its README for the file-by-file map), topped by
 `RGA_Honest_Residual.lean`; an explicit-residual form
 (`rga_RA_linearizable_final`, taking the two reachability-level premises
@@ -302,7 +302,7 @@ model.
 `Framework/VC_Set.lean` → `Metatheory/Adequacy.lean` →
 `MRDT_Instances/<RDT>/<RDT>.lean` → `Metatheory/GenericEqQuotient.lean` →
 `Metatheory/GoodConfig3H.lean` →
-`MRDT_Instances/RGA/RA_Lin.lean`.
+`MRDT_Instances/RGA_Rehoming/RA_Lin.lean`.
 The negative results that shaped all of this: [`Refutations/`](Refutations/).
 Everything else: [`Development/`](Development/).
 

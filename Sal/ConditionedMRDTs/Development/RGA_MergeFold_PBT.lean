@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 import Sal.ConditionedMRDTs.Development.RGA_Faithful_PBT
 
 /-!

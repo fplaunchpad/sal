@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Development.RGA_NoopFeasible_CanonFold
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_LoOnEq_Causal
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_LoOnEq_Causal
 
 /-!
 # `noopFeasible` forces accuracy — every insert has a live anchor at its point

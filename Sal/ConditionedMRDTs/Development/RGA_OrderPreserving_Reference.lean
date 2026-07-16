@@ -17,7 +17,7 @@ the delete physically splices `a` out and **rehomes** `c` to the root, where `c`
 re-sorts by its own key and leapfrogs `b`. This is a *sequential*-spec violation
 (one replica, no concurrency), machine-checked as
 `RGA_TF_SPOT.tombstone_free_violates_delete_order`
-(`Sal/MRDTs/RGA/RGA_Tombstone_Free_SPOT.lean`).
+(`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean`).
 
 ## The fix embodied here
 

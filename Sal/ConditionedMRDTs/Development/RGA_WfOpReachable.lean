@@ -1,6 +1,6 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_InvFresh
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_InvFresh
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonFoldOK
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonFoldOK
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 
 /-!

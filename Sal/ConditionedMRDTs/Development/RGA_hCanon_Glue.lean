@@ -1,14 +1,14 @@
 import Sal.ConditionedMRDTs.Development.RGA_EndToEnd
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeCanon
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.BornApplicable_Guard
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.BornApplicable_Guard
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeFoldChain
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_WfOpA_VCs
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeFoldChain
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_WfOpA_VCs
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 import Sal.ConditionedMRDTs.Development.RGA_SwapRoute_Residuals
 

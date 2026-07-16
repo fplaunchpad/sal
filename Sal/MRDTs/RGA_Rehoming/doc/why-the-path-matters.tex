@@ -1,0 +1,858 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, backgrounds, fit, positioning}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black, urlcolor=blue!50!black}
+
+%% ---- operator notation (matches the "Formalising the Merge" writeup) ----
+\newcommand{\ids}{\mathsf{ids}}
+\newcommand{\anc}{\mathsf{anc}}
+\newcommand{\el}{\mathsf{el}}
+\newcommand{\climb}{\mathsf{climb}}
+\newcommand{\mrg}{\mathsf{merge}}
+\newcommand{\rc}{\mathsf{rc}}
+\newcommand{\doo}{\mathsf{do}}
+\newcommand{\resolve}{\mathsf{resolve}}
+\newcommand{\Ins}{\mathsf{Ins}}
+\newcommand{\Del}{\mathsf{Del}}
+\newcommand{\Either}{\mathsf{Either}}
+\newcommand{\contains}{\mathsf{contains}}
+\newcommand{\lca}{L}
+
+%% ---- tikz styles ----
+\tikzset{
+  vtx/.style     ={draw, circle, minimum size=8.5mm, inner sep=0pt, fill=blue!8,  line width=0.6pt},
+  rootvtx/.style ={draw, circle, minimum size=8.5mm, inner sep=0pt, fill=black!12, line width=0.6pt, font=\bfseries},
+  dead/.style    ={draw, circle, minimum size=8.5mm, inner sep=0pt, densely dashed, fill=black!4, text=black!40, line width=0.6pt},
+  newv/.style    ={draw, circle, minimum size=8.5mm, inner sep=0pt, fill=green!14, line width=0.7pt},
+  anc/.style     ={-{Stealth[length=2.2mm]}, line width=0.8pt},                          % node -> its anchor
+  climb/.style   ={-{Stealth[length=2.2mm]}, line width=1.0pt, red!75!black, densely dashed}, % climb / rehome
+  ghost/.style   ={-{Stealth[length=2mm]}, line width=0.7pt, black!28, densely dotted},
+  elbl/.style    ={font=\scriptsize, text=black!60},
+  capt/.style    ={font=\small\itshape, text=black!75},
+}
+
+\title{\bfseries Why the Path Matters\\[2pt]
+\large A visual account of the tombstone-free, path-carrying RGA}
+\author{Sal / FP Launchpad}
+\date{}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+\noindent
+The replicated growable array (RGA) in \texttt{RGA\_Tombstone\_Free} stores only
+\emph{live} elements: a delete physically removes its target, leaving no
+tombstone. To stay convergent without tombstones, each operation carries the
+\emph{ancestor path} of the node it references. This note explains, with pictures,
+two things: \textbf{(i) why the implementation converges} --- the three-way merge
+recovers a concurrently-deleted node's parent from the lowest common ancestor
+(LCA); and \textbf{(ii) why the path is necessary \emph{for the single-replica
+commutation proof}} --- to discharge the framework's $\doo$-commutation VC, where
+there is no LCA, an insert whose anchor was deleted has nowhere to recover its
+position \emph{unless it carries that position itself}. The qualification matters:
+the merge alone already converges the concurrent case \emph{without} any path
+(\texttt{merge\_converges\_concurrent}); it is this commutation \emph{obligation},
+not operational convergence, that the path serves. We give the
+counterexample that diverges without the path, the fix that the path provides, and
+a two-sided asymmetry: the insert path is mandatory \emph{semantically} (commutation
+fails without it), while the delete path, though \emph{runtime}-dispensable, is
+\emph{proof}-load-bearing --- the operation-static certificate that decouples a
+delete's well-formedness from the reachable-state invariant. Every claim here is
+mechanised in Lean (\S\ref{sec:mech}).
+\end{abstract}
+
+\section{The data type: a forest of live records}
+
+The state is a finite map $\sigma : \mathrm{id} \mapsto (\el, \anc)$ from an
+identity to its element and its \emph{immediate anchor} --- the identity it was
+inserted after. Identity $0$ is the root sentinel and is never stored. So a state
+\emph{is} a forest rooted at $0$: an edge from a node to its anchor (Figure
+\ref{fig:state}). We write $\ids(\sigma)$ for the stored identities,
+$\el(\sigma,t)$ and $\anc(\sigma,t)$ for the element and anchor of $t$, and
+$\contains(\sigma,t)$ for ``$t$ is live''. Records use the reference notation
+$(\mathrm{id},\ \mathrm{element},\ \mathrm{anchor})$.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  \node[rootvtx] (r) at (0,0)    {$0$};
+  \node[vtx]     (1) at (0,-1.5) {$1$};
+  \node[vtx]     (2) at (0,-3.0) {$2$};
+  \draw[anc] (1) -- (r);
+  \draw[anc] (2) -- (1);
+  \node[elbl, right=1.5mm of r] {root sentinel (never stored)};
+  \node[elbl, right=1.5mm of 1] {$\el=A,\ \anc=0$};
+  \node[elbl, right=1.5mm of 2] {$\el=B,\ \anc=1$};
+  \node[capt, text width=4.6cm, align=left] at (5.6,-1.5)
+    {An arrow points from a node \emph{to its anchor} --- the element it was
+     inserted after. Here the sequence reads $A\,B$ (node $1$ then its child
+     $2$).};
+\end{tikzpicture}
+\caption{The state as a forest. $\sigma=\{(1,A,0),(2,B,1)\}$.}
+\label{fig:state}
+\end{figure}
+
+\paragraph{Reading the text.} The state stores \emph{anchors}, not positions,
+so the visible sequence is recovered from the forest at read time by a
+\emph{depth-first preorder} traversal from the root sentinel $0$: visit a node,
+emit its element, then recurse into its children --- and among the children
+anchored at one node, visit them in \emph{descending timestamp order} (newest
+first). That newest-first tiebreak is the standard RGA sibling rule; it is what
+makes concurrent insertions at the same anchor converge to a single
+deterministic order, and it is where the linear order lives (the forest itself
+records only parent edges). In Figure~\ref{fig:state} the traversal visits $1$
+then its child $2$, reading $A\,B$. The traversal is purely a read-side
+computation over the \emph{converged} forest --- merge and the VCs operate on
+the forest, and the sequence is materialised only when read (mechanised as
+\texttt{document} in \texttt{RGA\_Tombstone\_Free\_ReadSide.lean}).
+
+\paragraph{Operations.} There are two, and (crucially) each carries a \emph{path}
+$p$ --- the ancestor chain of its referenced node, nearest first:
+\begin{itemize}
+  \item $\Ins(e, p, a)$ at a fresh id $t$: insert $e$ anchored at $a$. It stores
+        $(t, e, \resolve(\sigma, a\!::\!p))$, where $\resolve$ returns the first
+        \emph{live} candidate in its list, else $0$. When $a$ is live this is just
+        $a$; when $a$ is dead it climbs $p$ to the nearest live ancestor.
+  \item $\Del(p, x)$: \emph{splice} out $x$ --- physically remove it and re-parent
+        its children to $\resolve(\sigma, p)$, the nearest live ancestor of $x$.
+        No tombstone is kept.
+\end{itemize}
+
+Figure \ref{fig:splice} shows the defining move of a tombstone-free delete: the
+splice. Deleting $2$ removes it and lifts its child $3$ one level, onto $2$'s
+parent $1$.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % before
+  \node[rootvtx] (r) at (0,0)    {$0$};
+  \node[vtx]     (1) at (0,-1.4) {$1$};
+  \node[vtx]     (2) at (0,-2.8) {$2$};
+  \node[vtx]     (3) at (0,-4.2) {$3$};
+  \draw[anc] (1) -- (r);
+  \draw[anc] (2) -- (1);
+  \draw[anc] (3) -- (2);
+  \node[capt] at (0,-5.0) {before $\Del(\,[1],\,2)$};
+  % arrow
+  \node at (3.0,-2.1) {\Large $\Longrightarrow$};
+  % after
+  \node[rootvtx] (R) at (6,0)    {$0$};
+  \node[vtx]     (A) at (6,-1.4) {$1$};
+  \node[dead]    (D) at (7.6,-2.8) {$2$};
+  \node[newv]    (C) at (6,-2.8) {$3$};
+  \draw[anc] (A) -- (R);
+  \draw[climb] (C) -- (A);
+  \node[elbl, right=0.5mm of D] {spliced out};
+  \node[capt] at (6,-4.4) {after: $3$ re-parented to $1$};
+\end{tikzpicture}
+\caption{The splice. A tombstone-free $\Del(2)$ physically removes $2$ and rehomes
+its child $3$ to $2$'s live parent $1$ (red dashed = the new anchor). Compare a
+tombstone design, which would instead keep $2$ as a dead marker.}
+\label{fig:splice}
+\end{figure}
+
+\section{Why the implementation converges: the LCA does the remembering}
+\label{sec:merge}
+
+Concurrency is reconciled by a three-way merge $\mrg(\lca, A, B)$ where $\lca$ is
+the least common ancestor of branches $A$ and $B$. It has two steps:
+\emph{survival} (an OR-set merge on the three id sets) and \emph{re-parenting}
+(climb each survivor's birth-anchor up $\lca$'s chain). The survivor set is
+\[
+  I \;=\; \bigl(\ids(\lca)\cap\ids(A)\cap\ids(B)\bigr)\ \cup\
+          \bigl(\ids(A)\setminus\ids(\lca)\bigr)\ \cup\
+          \bigl(\ids(B)\setminus\ids(\lca)\bigr)
+\]
+--- an id lives iff it is kept on both sides, or freshly added on either;
+equivalently, a node lives unless it was in $\lca$ and deleted on a side. Each
+survivor $t$ takes its element $\el(t)$ and \emph{birth-anchor} $\beta(t)$ from
+$\lca$ if present, else $A$, else $B$; the birth-anchor is then climbed up $\lca$'s
+chain --- via $\lca$'s anchor map $\anc_\lca$ --- to the nearest live survivor:
+\[
+  \climb_I(a) \;=\;
+  \begin{cases}
+    a, & a = 0 \ \text{or}\ a \in I,\\[2pt]
+    \climb_I(\anc_\lca(a)), & a \in \ids(\lca)\setminus I.
+  \end{cases}
+\]
+\[
+  \mrg(\lca,A,B) \;=\; \bigl\{\,(t,\ \el(t),\ \climb_I(\beta(t)))\ \big|\ t\in I\,\bigr\}.
+\]
+The point for convergence is the phrase \textbf{``up $\lca$'s chain''}: even when a
+node was deleted on one branch, \emph{the LCA still holds it live, with its
+parent}. So the merge can always recover where a survivor should attach --- it
+reads parents from $\lca$, and never needs the operations' paths. Figure
+\ref{fig:merge} is the canonical case: $A$ inserts $3$ after $2$ while $B$
+concurrently deletes $2$; the merge climbs $3$'s dead birth-anchor $2$ up the
+\emph{LCA} chain to the live $1$.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % --- L ---
+  \node[capt] at (0,0.5) {LCA $\lca$};
+  \node[rootvtx] (lr) at (0,0)    {$0$};
+  \node[vtx]     (l1) at (0,-1.3) {$1$};
+  \node[vtx]     (l2) at (0,-2.6) {$2$};
+  \draw[anc] (l1) -- (lr);
+  \draw[anc] (l2) -- (l1);
+
+  % --- A ---
+  \node[capt] at (3.3,0.5) {$A$: $\Ins(3)$ after $2$};
+  \node[rootvtx] (ar) at (3.3,0)    {$0$};
+  \node[vtx]     (a1) at (3.3,-1.3) {$1$};
+  \node[vtx]     (a2) at (3.3,-2.6) {$2$};
+  \node[newv]    (a3) at (3.3,-3.9) {$3$};
+  \draw[anc] (a1) -- (ar);
+  \draw[anc] (a2) -- (a1);
+  \draw[anc] (a3) -- (a2);
+
+  % --- B ---
+  \node[capt] at (6.6,0.5) {$B$: $\Del(2)$};
+  \node[rootvtx] (br) at (6.6,0)    {$0$};
+  \node[vtx]     (b1) at (6.6,-1.3) {$1$};
+  \node[dead]    (b2) at (6.6,-2.6) {$2$};
+  \draw[anc] (b1) -- (br);
+
+  % --- merge ---
+  \node at (8.7,-1.6) {\Large $\Rightarrow$};
+  \node[capt] at (10.8,0.5) {$\mrg(\lca,A,B)$};
+  \node[rootvtx] (mr) at (10.8,0)    {$0$};
+  \node[vtx]     (m1) at (10.8,-1.3) {$1$};
+  \node[dead]    (m2) at (12.2,-2.6) {$2$};
+  \node[newv]    (m3) at (10.8,-2.6) {$3$};
+  \draw[anc] (m1) -- (mr);
+  \draw[climb] (m3) -- (m1);
+  \node[ghost] (m3g) at (10.8,-2.6) {};
+  \draw[ghost] (m3) .. controls (11.9,-2.0) .. (m2);
+\end{tikzpicture}
+\caption{Why merge converges. $3$ was born under $2$ (dotted, $2$'s ghost), but
+$2$ is deleted on $B$. The merge climbs $3$'s birth-anchor up the \emph{LCA}
+chain --- $2 \in \ids(\lca)\setminus I$, so $\climb_I(2)=\climb_I(\anc_\lca(2))=
+\climb_I(1)=1$ --- and rehomes $3$ to $1$ (red dashed). The LCA is where ``$2$'s
+parent is $1$'' is read. \textbf{No path on the operations is used.}}
+\label{fig:merge}
+\end{figure}
+
+This is the whole reason a tombstone-free RGA can converge at all: the merge has
+a third input, $\lca$, that retains the deleted node's ancestry. Keep that fact in
+mind --- the next section is about the one place where there is \emph{no} such
+third input.
+
+\section{Why the path is necessary: a single replica has no LCA}
+\label{sec:path}
+
+Convergence of a replicated data type also requires that operations applied in
+different orders on \emph{one} replica agree --- the framework discharges this as a
+\emph{commutation} condition on $\doo$ (single-replica application). And here is
+the catch: \textbf{$\doo$ has no LCA}. There is only the current state. So when an
+insert's anchor has already been deleted, the parent the merge would have read
+from $\lca$ is simply \emph{gone} --- unless the insert brought it along.
+
+\paragraph{The counterexample (no path).} Take $\sigma=\{(1,A,0),(2,B,1)\}$ and the
+two operations $\Ins(C, 2)$ (insert $C$ as id $3$ after $2$) and $\Del(2)$. Apply
+them in both orders, with a \emph{prefix-free} insert (anchor only, no path):
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % LEFT: Ins ; Del
+  \node[capt] at (0,0.6) {order \(\Ins(3)\,;\ \Del(2)\)};
+  \node[rootvtx] (lr) at (0,0)    {$0$};
+  \node[vtx]     (l1) at (0,-1.3) {$1$};
+  \node[newv]    (l3) at (0,-2.6) {$3$};
+  \draw[anc] (l1) -- (lr);
+  \draw[climb] (l3) -- (l1);
+  \node[capt, text width=4.6cm, align=center] at (0,-3.7)
+    {$3$ existed when $2$ was deleted, so the splice rehomed it to $1$.};
+
+  % not equal
+  \node at (4.2,-1.6) {\Large $\neq$};
+
+  % RIGHT: Del ; Ins (no path)
+  \node[capt] at (8.4,0.6) {order \(\Del(2)\,;\ \Ins(3)\) \ (no path)};
+  \node[rootvtx] (rr) at (8.4,0)    {$0$};
+  \node[vtx]     (r1) at (7.4,-1.3) {$1$};
+  \node[newv]    (r3) at (9.4,-1.3) {$3$};
+  \draw[anc] (r1) -- (rr);
+  \draw[climb] (r3) -- (rr);
+  \node[capt, text width=5.2cm, align=center] at (8.4,-3.7)
+    {$2$ was already gone when $3$ arrived; with no path to climb, $3$ falls to
+     the root $0$.};
+\end{tikzpicture}
+\caption{\textbf{Divergence without the path.} The same insert/delete pair, two
+orders, two different trees: $3$ is anchored at $1$ on the left but at $0$ on the
+right. The information ``$2$'s parent is $1$'' was destroyed by the tombstone-free
+delete, and nothing on the right carries it. Mechanised as
+\texttt{prefixfree\_diverges}.}
+\label{fig:diverge}
+\end{figure}
+
+The two orders disagree on $3$'s anchor ($1$ versus $0$): the design does
+\emph{not} commute. Because the delete physically removed $2$, the fact
+``$\anc(2)=1$'' survives nowhere on the right --- and a prefix-free insert has no
+way to reconstruct it.
+
+\paragraph{The fix (carry the path).} Give the insert the ancestor path of its
+anchor, $\Ins(C, [1], 2)$. Now when $2$ is dead, $\resolve$ climbs the carried
+path $[1]$ to the live $1$, and both orders land $3$ under $1$ (Figure
+\ref{fig:fix}). The path is exactly the ancestry that the tombstone-free state
+threw away; carrying it on the operation restores commutation.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  \node[capt] at (0,0.6) {order \(\Del(2)\,;\ \Ins(3,[1],2)\) \ \textbf{with path}};
+  \node[rootvtx] (rr) at (0,0)    {$0$};
+  \node[vtx]     (r1) at (0,-1.4) {$1$};
+  \node[dead]    (r2) at (1.7,-1.4) {$2$};
+  \node[newv]    (r3) at (0,-2.8) {$3$};
+  \draw[anc] (r1) -- (rr);
+  \draw[climb] (r3) -- (r1);
+  % climb illustration: 3 -> dead 2 -> 1
+  \draw[ghost] (r3) .. controls (1.4,-2.2) .. (r2);
+  \draw[ghost] (r2) .. controls (1.4,-0.9) .. (r1);
+  \node[elbl, below=0.5mm of r2] {dead};
+  \node[capt, text width=5.4cm, align=left] at (7.0,-1.4)
+    {$\resolve(\sigma,\ 2\!::\![1])$: $2$ is dead, so skip to the carried $1$,
+     which is live $\Rightarrow$ anchor $3$ at $1$. This now \emph{equals} the
+     $\Ins;\Del$ order of Figure \ref{fig:diverge}. The pair commutes.};
+\end{tikzpicture}
+\caption{\textbf{The path restores convergence.} The carried path $[1]$ lets the
+late insert climb past the deleted $2$ to the live $1$, matching the other order.
+Mechanised as \texttt{prefix\_converges}.}
+\label{fig:fix}
+\end{figure}
+
+\paragraph{The slogan.} \emph{A tombstone keeps the deleted node's parent in the
+\textbf{state}; the path keeps it on the \textbf{operation}.} Remove the tombstone
+and that parent has to ride along on any operation that might still need it --- and
+on a single replica (no LCA) the insert is exactly such an operation. This is also
+why the two are \emph{mutually exclusive but jointly unavoidable for the proof}: to
+satisfy the $\doo$-commutation VC you may drop the tombstone or drop the path, but
+not both. Dropping both defeats that route --- provably
+(\texttt{RGA\_PrefixFree\_Impossible.lean}); the runnable witness that drops both
+yet still converges \emph{via merge} is \texttt{RGA\_PrefixFree\_Impl.lean}.
+
+\section{The path is ghost state: needed for the proof, not for execution}
+\label{sec:ghost}
+
+The previous section's ``necessary'' is a statement about the \emph{proof
+obligation}, and its scope is worth being exact about: in a real execution the
+path is \textbf{never read}. It is \emph{ghost state} --- pure proof scaffolding
+that a runtime implementation can drop entirely.
+
+Why it is never read comes down to how operations are generated. A client issues
+an operation against \textbf{its own local replica}, on the state it currently
+sees; you insert after, or delete, a node that is \emph{live in front of you}. On
+any state where the anchor is live, \texttt{resolve} short-circuits on that anchor
+and never inspects the prefix --- exactly what \texttt{ins\_path\_free} and
+\texttt{del\_path\_free} prove. So for every operation a client can actually
+\emph{issue}, the path is dead code. The one state that reads it --- an insert
+whose anchor was \emph{already deleted on the same replica} --- is manufactured
+only by the $\doo$-commutation VC, which quantifies over \emph{all} states and, in
+forcing the two orders to agree, constructs exactly that intermediate. It sits
+\textbf{outside the reachable set} (Figure~\ref{fig:ghost}).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  \draw[line width=0.8pt, black!55] (0,0) ellipse (5.5 and 3.0);
+  \node[black!65, font=\small] at (0,2.6)
+    {all states $\sigma$ --- the range of $\forall\sigma$ in the $\doo$-commutation VC};
+  \fill[blue!8] (-1.3,-0.35) ellipse (3.5 and 2.0);
+  \draw[line width=0.7pt, blue!45!black] (-1.3,-0.35) ellipse (3.5 and 2.0);
+  \node[blue!45!black, align=center] at (-1.3,-0.35)
+    {\small\textbf{reachable states}\\[2pt]\scriptsize real executions:\\[-2pt]every operation's anchor\\[-2pt]is live when it is issued};
+  \fill[red!75!black] (2.9,1.15) circle (2.3pt);
+  \node[red!70!black, font=\scriptsize\itshape, anchor=west] at (3.15,1.15) {reads the path};
+  \node[red!70!black, align=center, font=\scriptsize, anchor=north] at (3.8,0.75)
+    {insert after an anchor\\[-2pt]already deleted on the\\[-2pt]\emph{same} replica};
+\end{tikzpicture}
+\caption{The path is ghost state. The $\doo$-commutation VC ranges over \emph{all}
+states; real executions live in the shaded \emph{reachable} region, where every
+operation's anchor is live and \texttt{resolve} short-circuits before the prefix
+(\texttt{ins\_path\_free} / \texttt{del\_path\_free}). The path is consulted only at
+the red state --- an insert whose anchor was already deleted on its own replica ---
+which a voluntary, pull-based merge never produces.}
+\label{fig:ghost}
+\end{figure}
+
+\paragraph{Why the system model rules it out.} Merge here is \textbf{voluntary},
+pull-based --- like \texttt{git pull}. A replica's state does not change under its
+feet: remote updates are incorporated only when the replica \emph{chooses} to
+merge, at well-defined points, never in the middle of forming an operation. So the
+anchor a client references is live when the operation is issued and stays live
+until it is applied locally; the dead-anchor state never arises on the replica that
+generated the op. And even in a model where remote state \emph{could} interleave,
+the client can \textbf{reject an operation whose anchor is no longer present} --- a
+cheap local check --- so the problematic state is never entered.
+
+The upshot is a clean separation. The \emph{runtime} operations carry no path:
+$\Ins$ needs only its immediate anchor, $\Del$ only its target, and the merge
+recovers position from the LCA (\S\ref{sec:merge}). The path exists solely to
+discharge the framework's universally-quantified commutation VC over states that no
+execution produces. It is ghost state --- read by the proof, erased at run time.
+
+\section{The asymmetry: $\Ins$ needs the path at run time, $\Del$ in the proof}
+\label{sec:asym}
+
+Strikingly, only the \emph{insert} needs the path \emph{at run time}. A delete can
+always recompute its target from the live state, because at the moment a delete
+runs, the node it reparents \emph{to} (its target's parent) is still present. Figure
+\ref{fig:asym} contrasts the two: the delete reads its answer from a node that is
+alive \emph{now}; the insert may need a node that was alive \emph{then} but is
+gone \emph{now}.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % Del side
+  \node[capt] at (0,0.6) {$\Del$: reads a \emph{currently} live parent};
+  \node[rootvtx] (dr) at (0,0)    {$0$};
+  \node[vtx]     (d1) at (0,-1.3) {$1$};
+  \node[dead]    (d2) at (0,-2.6) {$2$};
+  \node[vtx]     (d3) at (0,-3.9) {$3$};
+  \draw[anc] (d1) -- (dr);
+  \draw[climb] (d3) .. controls (1.5,-2.6) .. (d1);
+  \node[elbl, left=1mm of d2] {removed};
+  \node[capt, text width=4.0cm, align=left] at (4.9,-2.5)
+    {Deleting $2$ rehomes $3$ to $\anc(2)=1$, read straight from the state ($1$ is
+     live). No path needed --- \texttt{del\_path\_free}.};
+
+  % Ins side
+  \node[capt] at (8.4,0.6) {$\Ins$: may need a \emph{vanished} parent};
+  \node[rootvtx] (ir) at (8.4,0)    {$0$};
+  \node[vtx]     (i1) at (8.4,-1.3) {$1$};
+  \node[dead]    (i2) at (8.4,-2.6) {$2$};
+  \node[newv]    (i3) at (9.9,-2.6) {$3$};
+  \draw[anc] (i1) -- (ir);
+  \draw[climb] (i3) -- (i1);
+  \node[capt, text width=4.4cm, align=left] at (8.4,-3.9)
+    {Inserting $3$ after the already-deleted $2$: $2$'s parent is gone from the
+     state, so the insert must \emph{carry} it.};
+\end{tikzpicture}
+\caption{The asymmetry. $\Del$ hands off children to a parent that is still live at
+delete time, so it reads from state; a late $\Ins$ references a node that may have
+been spliced away, so it must carry the path. (\texttt{del\_path\_free} /
+\texttt{prefixfree\_diverges}.)}
+\label{fig:asym}
+\end{figure}
+
+The intuition is temporal: a delete reparents \emph{all current children} the
+instant it runs, keeping the forest connected; a concurrent (or reordered) insert
+is a child that was \emph{not present} at that instant, so it missed the handoff
+and must supply its own ancestry.
+
+\paragraph{But the delete path is not idle scaffolding.} That a delete \emph{can}
+recompute its target does not make the path it carries inert in the proof --- and
+this is where the asymmetry is genuinely two-sided rather than ``insert yes, delete
+no.'' In the conditioned framework the recorded prefix on a delete is its
+\emph{operation-static well-formedness certificate}, and it is what keeps a delete's
+admissibility \emph{independent of the state invariant}. The operation-only side
+condition on $\Del(p,x)$ is $x\notin p$; since $\resolve(\sigma,p)$ always lands in
+$\{0\}\cup p$, this forces $\resolve(\sigma,p)\neq x$ --- ``the node does not reparent
+onto itself'' --- from the \emph{operation alone}, with no appeal to any property of
+$\sigma$. That is exactly what lets a delete's invariant preservation be discharged
+locally: \texttt{RgaInv\_doDel\_opOK} re-establishes the forest invariant across a
+$\Del$ \emph{given only} $x\notin p$, no path accuracy and no state hypothesis.
+
+Drop the path and this decoupling collapses. The reparent target becomes
+$\anc(\sigma,x)$, a function of the \emph{state}, so ``it does not reparent onto
+itself'' is no longer operation-static: it must be re-sourced from the state
+invariant \texttt{id\_mono} ($\anc(\sigma,x)<x$, whence the anchor forest is acyclic)
+and threaded through every invariant-preservation and commutation obligation. The
+$\doo$-commutation verification condition itself --- previously an equation guarded
+only by accuracy and freshness --- must then be strengthened with the very
+forest-acyclicity and delete-applicability premises the path had supplied for free.
+Removing the delete path is therefore not a simplification of the data type but a
+\emph{migration} of the delete's well-formedness out of the operation layer and into
+the reachable-state invariant.
+
+So both operations carry a path, for \emph{different} reasons, and that is the real
+asymmetry. The insert needs it \emph{semantically}: single-replica commutation
+genuinely fails without the vanished ancestor, and no state invariant can substitute
+(\S\ref{sec:path}, \S\ref{sec:uncond}). The delete needs it \emph{architecturally}:
+runtime-dispensable (\texttt{del\_path\_free}) yet proof-load-bearing --- the static
+certificate that decouples an operation's admissibility from the reachable-state
+invariant it would otherwise have to lean on.
+
+\section{A read-side consequence: the delete reorders survivors, and the proof cannot see it}
+\label{sec:reorder}
+
+The delete's rehoming (\S\ref{sec:asym}) buys convergence, but it has a second
+consequence the run-time picture hides: it can \emph{reorder the surviving
+elements}. A tombstone-free delete physically splices its target out and rehomes
+the orphaned subtree, so a child can migrate to a position where the newest-first
+sibling tie-break ranks it \emph{ahead} of an element it previously followed. This
+is not a concurrency artefact --- it happens on a single replica, in a plain
+sequential run --- and, crucially, the correctness theorem cannot register it.
+
+\paragraph{A minimal witness.} Three inserts and one delete. Event $1$ inserts $a$
+after the root, event $2$ inserts $b$ after the root, event $3$ inserts $c$ after
+$a$. The same-anchor siblings $a,b$ read newest-first, so $b$ precedes $a$, and $c$
+sits under $a$: the document reads $[b,a,c]$ (Figure \ref{fig:reorder}, left). Now
+delete $a$. Correct list semantics --- and a tombstoned RGA --- leave the
+survivors in place and read $[b,c]$; the tombstone-free RGA reads $[c,b]$. Splicing
+$a$ out rehomes $c$ to the root, where $c$ (event $3$) out-ranks $b$ (event $2$)
+under the same newest-first tie-break and jumps ahead of it. A tombstoned RGA keeps
+$a$ as a dead position-holder, so $c$ never migrates and the order is preserved ---
+the physical splice cannot offer that.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % ---- before ----
+  \node[capt] at (0.6,0.7) {before $\Del(a)$: reads $[b,a,c]$};
+  \node[rootvtx] (br) at (0.6,0)     {$0$};
+  \node[vtx]     (bb) at (-0.9,-1.3) {$b$};
+  \node[vtx]     (ba) at (2.1,-1.3)  {$a$};
+  \node[vtx]     (bc) at (2.1,-2.6)  {$c$};
+  \draw[anc] (bb) -- (br);
+  \draw[anc] (ba) -- (br);
+  \draw[anc] (bc) -- (ba);
+  \node[elbl, below=0.5mm of bb] {id $2$};
+  \node[elbl, right=0.8mm of ba] {id $1$};
+  \node[elbl, right=0.8mm of bc] {id $3$};
+
+  % ---- after ----
+  \node[capt] at (7.4,0.7) {after $\Del(a)$: reads $[c,b]$ (want $[b,c]$)};
+  \node[vtx]     (ac) at (6.0,-1.3) {$c$};
+  \node[rootvtx] (ar) at (7.5,0)    {$0$};
+  \node[vtx]     (ab) at (7.5,-1.3) {$b$};
+  \node[dead]    (aa) at (9.0,-1.3) {$a$};
+  \draw[anc] (ab) -- (ar);
+  \draw[climb] (ac) -- (ar);
+  \node[elbl, left=0.8mm of ac] {id $3$};
+  \node[elbl, below=0.5mm of ab] {id $2$};
+  \node[elbl, below=0.5mm of aa] {removed};
+\end{tikzpicture}
+\caption{The delete reorders survivors. \textbf{Left:} $a$ (id $1$) and $b$ (id
+$2$) are root siblings read newest-first ($b$ first), with $c$ (id $3$) under $a$;
+the document is $[b,a,c]$. \textbf{Right:} deleting $a$ splices it out and rehomes
+$c$ to the root (red dashed), where $c$ out-ranks $b$ and now reads first ---
+$[c,b]$, not the list-correct $[b,c]$. A tombstoned RGA would keep $a$ as a dead
+position-holder, so $c$ never migrates.
+(\texttt{tombstone\_free\_violates\_delete\_order} vs.\
+\texttt{remove\_preserves\_visible\_lt}.)}
+\label{fig:reorder}
+\end{figure}
+
+This is machine-checked as a fail/pass pair. The tombstone-free RGA
+\emph{refutes} an independent ``delete preserves survivor order'' property
+(\texttt{tombstone\_free\_violates\_delete\_order}, i.e.\
+$\neg\,\texttt{DeleteOrderPreserving}$), via exactly this $[b,a,c]\to[c,b]$ run,
+in \texttt{Sal/MRDTs/RGA\_Rehoming/RGA\_Tombstone\_Free\_SPOT.lean}; the tombstoned RGA's
+order relation \texttt{visible\_lt}, invariant under a delete that touches only the
+tombstone set and not the insert records the read consults, \emph{satisfies} the
+same property (\texttt{remove\_preserves\_visible\_lt}, in
+\texttt{Sal/MRDTs/RGA\_with\_tombstones/RGA\_ReadSide.lean}).
+
+\paragraph{Why the verification does not catch it.} It is tempting to file this as
+a mere read-side cost of dropping tombstones. It is more than that: it changes the
+\emph{certified sequence}, and the correctness theorem is structurally unable to
+see the change. The end-to-end result is RA-linearizability --- every reachable and
+merged state equals the fold, under the data type's \emph{own} $\doo$, of some
+delivery-respecting linearisation of its events. The reorder is baked into that
+$\doo$, so the fold and the merge agree on the \emph{same} reordered sequence
+$[c,b]$; convergence to the own-fold holds, and the theorem certifies exactly it.
+What the theorem does \emph{not} certify is that $[c,b]$ is the sequence a
+sequential list would produce --- that is an independent \emph{intent} obligation,
+and against it this run is a visible failure. So this is a point distinct from the
+two-sided path asymmetry of \S\ref{sec:asym}: not about which operation must carry
+ancestry, but about the reach of the correctness statement itself. Kernel-clean
+plus RA-linearizable does \emph{not} mean the single-replica sequence is the one
+list semantics prescribes. It is the cleanest instance of the self-referential-spec
+limit recorded in the companion note (\texttt{mrdt-metatheory.pdf}, Open Question
+``the self-referential-spec limit''): it arrives with no concurrency and no marks,
+sharper than that note's earlier Peritext example.
+
+\section{Why no unconditioned proof exists}
+\label{sec:uncond}
+
+The path fixes the counterexample of \S\ref{sec:path}; it is natural to hope the
+fixed design then discharges the standard framework schema as-is --- the flat
+verification conditions, in which \emph{commutation is an equation over all
+states}: for every concurrent pair left unordered by the reconciliation policy
+$\rc$, $\doo(\doo(\sigma,a),b) = \doo(\doo(\sigma,b),a)$ for \emph{every}
+$\sigma$, with the policy itself constrained (every non-commuting concurrent
+pair must be $\rc$-oriented, and $\rc$-edges must not chain). That hope fails
+twice, in instructive ways, and the failures are why this data type is verified
+through the \emph{conditioned} framework instead.
+
+\paragraph{Attempt 1: no path at all (the splice predecessor).} The original
+tombstone-free design was the path-free splice RGA (\texttt{RGA\_Splice}, parked
+on branch \texttt{wip/rga-splice}): an $\Ins$ carried only its immediate anchor,
+a $\Del$ only its target, and delete physically spliced the node out. Physical
+splice destroys the deleted node's parent pointer, so $\Ins(t\ \text{after}\ x)$
+and $\Del(x)$ do not commute: whether the insert ran before the splice decides
+whether $t$ gets rehomed onto $\anc(x)$ or left dangling off the vanished $x$.
+The schema requires every non-commuting concurrent pair to be oriented, so the
+splice design's $\rc$ \emph{must} contain the entry
+\[
+  \rc\bigl(\Ins(t\ \text{after}\ x),\ \Del(x)\bigr) \;=\; \mathsf{Fst\_then\_snd}
+  \qquad\text{(the insert is sequenced first).}
+\]
+And a non-$\Either$ entry awakens a VC that is vacuously true for every data
+type whose $\rc$ is everywhere $\Either$ --- the \emph{conditional commutation
+base}. In the schema it reads: for every state $\sigma$ and distinct operations
+$o_1, o_2, o_3$ with $\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$ and
+$\rc(o_2,o_3)\neq\Either$,
+\[
+  \doo(\doo(\doo(\sigma,o_1),o_2),\,o_3)
+  \;\equiv\;
+  \doo(\doo(\doo(\sigma,o_2),o_1),\,o_3)
+  \tag{\texttt{cond\_comm\_base}}
+\]
+--- an $\rc$-ordered pair must still be order-\emph{insensitive} at application
+time whenever a third operation also conflicts with $o_2$: the linearisation
+machinery realises the mandated order by flipping adjacent applications, and
+this equation is what licenses the flip.
+
+For the splice design the hypothesis is satisfiable, and the conclusion is
+false, on a three-operation trace (mechanised as
+\texttt{cond\_comm\_base\_violated}, by evaluation). Start from
+$\sigma_0 = \{(5, \text{`S'}, 0)\}$ --- the single record $5$ anchored at the
+root --- and take
+\[
+  o_1 = \Ins(10\ \text{after}\ 5), \qquad
+  o_2 = \Del(5), \qquad
+  o_3 = \Ins(12\ \text{after}\ 5).
+\]
+The hypothesis holds: $\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$
+(insert-after-the-deleted) and $\rc(o_2,o_3)=\mathsf{Snd\_then\_fst}\neq\Either$.
+Now run both sides (Figure~\ref{fig:splice}). Left,
+$o_1 ; o_2 ; o_3$: the anchor $5$ is still live when $\Ins(10\ \text{after}\ 5)$
+runs, so $10$ lands under $5$; the splice of $5$ then rehomes $10$ onto
+$\anc(5)=0$; finally $\Ins(12\ \text{after}\ 5)$ finds no $5$ and dangles.
+Right, $o_2 ; o_1 ; o_3$: the splice runs first, so \emph{both} inserts find no
+$5$ --- $10$ and $12$ both dangle. The two final states differ at identity
+$10$: live under the root on the left, dangling off the vanished $5$ on the
+right. No re-orientation of $\rc$ escapes: the non-commuting pair forces
+\emph{some} non-$\Either$ entry, and any such entry makes the VC non-vacuous
+with the same trace shape refuting it.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % LEFT: mandated order o1 ; o2 ; o3
+  \node[capt, align=center] at (0.6,1.0)
+    {mandated order\\ \(\Ins(10\ \text{after}\ 5)\,;\ \Del(5)\,;\ \Ins(12\ \text{after}\ 5)\)};
+  \node[rootvtx] (lr)  at (0,0)     {$0$};
+  \node[vtx]     (l10) at (-0.9,-1.3) {$10$};
+  \node[dead]    (l5)  at (1.7,-0.6)  {$5$};
+  \node[vtx]     (l12) at (1.7,-1.9)  {$12$};
+  \draw[climb] (l10) -- (lr);
+  \draw[ghost] (l12) -- (l5);
+  \node[elbl, right=1mm of l5] {gone};
+  \node[capt, text width=5.0cm, align=center] at (0.4,-3.1)
+    {$10$ landed under the still-live $5$, so the splice rehomed it onto
+     $\anc(5)=0$; $12$ arrived too late and dangles.};
+
+  \node at (4.6,-1.0) {\Large $\neq$};
+
+  % RIGHT: flipped order o2 ; o1 ; o3
+  \node[capt, align=center] at (9.0,1.0)
+    {flipped order\\ \(\Del(5)\,;\ \Ins(10\ \text{after}\ 5)\,;\ \Ins(12\ \text{after}\ 5)\)};
+  \node[rootvtx] (rr)  at (8.2,0)     {$0$};
+  \node[dead]    (r5)  at (10.0,-0.6) {$5$};
+  \node[vtx]     (r10) at (9.1,-1.9)  {$10$};
+  \node[vtx]     (r12) at (10.9,-1.9) {$12$};
+  \draw[ghost] (r10) -- (r5);
+  \draw[ghost] (r12) -- (r5);
+  \node[elbl, right=1mm of r5] {gone};
+  \node[capt, text width=5.4cm, align=center] at (9.4,-3.1)
+    {$5$ was spliced away before either insert ran: $10$ and $12$ both dangle
+     off a node that no longer exists.};
+\end{tikzpicture}
+\caption{\textbf{The splice design refutes \texttt{cond\_comm\_base}.} The
+three-operation trace $o_1 = \Ins(10\ \text{after}\ 5)$, $o_2 = \Del(5)$,
+$o_3 = \Ins(12\ \text{after}\ 5)$ from $\sigma_0=\{(5,\text{`S'},0)\}$
+satisfies the VC's hypothesis ($\rc(o_1,o_2)=\mathsf{Fst\_then\_snd}$,
+$\rc(o_2,o_3)\neq\Either$), yet the two application orders diverge at identity
+$10$: rehomed onto the root (left) versus dangling off the deleted $5$
+(right). Mechanised as \texttt{cond\_comm\_base\_violated} on branch
+\texttt{wip/rga-splice}.}
+\label{fig:splice}
+\end{figure}
+
+\paragraph{Attempt 2: the path --- which commutes only on truthful states.}
+The path-carrying design of this note repairs Attempt 1's trace: the very same
+three operations, now carrying their (empty, and for this state \emph{accurate})
+prefixes, converge in both orders --- $5$ hangs off the root, so after
+$\Del(5, \langle\rangle)$ each $\Ins(\cdot\ \text{after}\ 5, \langle\rangle)$
+climbs its carried prefix and lands deterministically at $0$
+(\texttt{trio\_converges}). But look at what the mechanisation actually
+discharges. The schema's commutation VC (\texttt{rc\_non\_comm}) demands, for
+every pair the policy leaves unordered, commutation over \emph{all} states:
+\[
+  \rc(o_1,o_2) = \Either
+  \;\iff\;
+  \forall \sigma,\;
+  \doo(\doo(\sigma,o_1),o_2) \equiv \doo(\doo(\sigma,o_2),o_1).
+\]
+What the tombstone-free RGA proves is \texttt{rc\_non\_comm'}, whose
+right-hand side is \emph{reachability-conditioned} commutation
+(\texttt{commutes\_with'}):
+\[
+\begin{aligned}
+  \forall \sigma,\quad
+  &\underbrace{\contains(\sigma,0)=\mathsf{false}}_{\text{root not stored}}
+  \;\to\;
+  \underbrace{\mathsf{accurate}(o_1,\sigma) \to \mathsf{accurate}(o_2,\sigma)}_{\text{carried paths are true in }\sigma}
+  \;\to\;
+  \underbrace{\mathsf{fresh}(o_1,\sigma) \to \mathsf{fresh}(o_2,\sigma)}_{\text{fresh ids}}\\
+  &\qquad\to\;
+  \doo(\doo(\sigma,o_1),o_2) \equiv \doo(\doo(\sigma,o_2),o_1),
+\end{aligned}
+\]
+where $\mathsf{accurate}(o,\sigma)$ says the op's carried prefix is the genuine
+root-ward ancestor chain of its leaf \emph{in $\sigma$}. Those hypotheses are
+not decoration: drop them and the equation is false, mechanised as
+\texttt{inconsistent\_diverges} (Figure~\ref{fig:liar}). Take
+$\sigma_1 = \{(7, \text{`F'}, 0),\ (5, \text{`S'}, 7)\}$ --- $7$ under the
+root, $5$ under $7$ --- and the pair
+\[
+\begin{aligned}
+  \mathsf{good\_ins} &= \Ins(10\ \text{after}\ 5,\ \langle 7\rangle)
+  &&\text{(accurate: $5$'s chain is $\langle 7 \rangle$)},\\
+  \mathsf{bad\_del} &= \Del(5,\ \langle\rangle)
+  &&\text{(a lie: claims $5$ hangs off the root)}.
+\end{aligned}
+\]
+Whichever operation runs \emph{second} consults \emph{its own} record: in the
+order $\mathsf{good\_ins} ; \mathsf{bad\_del}$, node $10$ lands under the live
+$5$ and the delete then rehomes it along the delete's \emph{lying} prefix, onto
+$0$; in the order $\mathsf{bad\_del} ; \mathsf{good\_ins}$, the anchor is
+already gone and the insert climbs its \emph{honest} prefix, landing at $7$.
+Two orders, two sources of truth, two trees. And no local check can exclude
+this: whether a carried path is accurate is a property of the \emph{execution}
+that generated the operation, not of the state it is applied to --- $\doo$
+cannot tell an honest record from a plausible lie.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+  % LEFT: good_ins ; bad_del  (the lying del runs second and rehomes)
+  \node[capt, align=center] at (0.4,1.0)
+    {\(\Ins(10\ \text{after}\ 5,\langle 7\rangle)\,;\ \Del(5,\langle\rangle)\)\\
+     the \emph{delete's} lie decides};
+  \node[rootvtx] (lr)  at (0,0)     {$0$};
+  \node[vtx]     (l7)  at (-0.9,-1.3) {$7$};
+  \node[newv]    (l10) at (0.9,-1.3)  {$10$};
+  \draw[anc]   (l7) -- (lr);
+  \draw[climb] (l10) -- (lr);
+  \node[capt, text width=4.8cm, align=center] at (0,-2.5)
+    {$10$ landed under the live $5$; the delete rehomed it along its carried
+     $\langle\rangle$ --- onto the root.};
+
+  \node at (4.4,-1.0) {\Large $\neq$};
+
+  % RIGHT: bad_del ; good_ins  (the honest ins runs second and climbs)
+  \node[capt, align=center] at (8.8,1.0)
+    {\(\Del(5,\langle\rangle)\,;\ \Ins(10\ \text{after}\ 5,\langle 7\rangle)\)\\
+     the \emph{insert's} truth decides};
+  \node[rootvtx] (rr)  at (8.2,0)     {$0$};
+  \node[vtx]     (r7)  at (8.2,-1.3)  {$7$};
+  \node[newv]    (r10) at (8.2,-2.6)  {$10$};
+  \draw[anc]   (r7) -- (rr);
+  \draw[climb] (r10) -- (r7);
+  \node[capt, text width=5.0cm, align=center] at (8.6,-3.7)
+    {$5$ is gone, so $10$ climbs its own accurate $\langle 7\rangle$ and lands
+     at $7$.};
+\end{tikzpicture}
+\caption{\textbf{A lying path breaks unconditioned commutation.} State
+$\sigma_1$: $7$ under $0$, $5$ under $7$. The insert's prefix
+$\langle 7\rangle$ is accurate; the delete's $\langle\rangle$ lies. Left
+order: $10$ ends under $0$ (the delete's record). Right order: $10$ ends
+under $7$ (the insert's record). The schema's $\forall\sigma$ ranges over
+such payload/state pairs, so \texttt{rc\_non\_comm} is unprovable;
+\texttt{rc\_non\_comm'} must and does assume $\mathsf{accurate}$. Mechanised
+as \texttt{inconsistent\_diverges}.}
+\label{fig:liar}
+\end{figure}
+
+\paragraph{Why this cannot be patched inside the schema.} Two escape routes
+suggest themselves, and both are closed. \emph{Weakening the VC} --- baking
+``accurate, fresh, root-free'' into the commutation statement --- silently
+changes the schema: the framework's soundness theorem was proved for the
+original VCs, so the modified bundle discharges nothing until that soundness
+proof is redone (this project's costliest lesson; the redone proof \emph{is} the
+conditioned framework). \emph{Re-engineering the operations} --- finding some
+tombstone-free design whose operations commute unconditionally --- is refuted in
+general: \texttt{RGA\_PrefixFree\_Impossible.lean} shows no tombstone-free,
+prefix-free, local design can satisfy the $\rc=\Either$ commutation VC, and
+ordering the insert/delete pair instead founders on rehoming non-transitivity
+(\texttt{RGA\_DepComp\_Gate}).
+
+\paragraph{The resolution.} The side conditions are promoted to first-class
+citizens: an \emph{invariant} on states, an \emph{applicability} discipline on
+operation generation (a well-behaved replica only issues an $\Ins$ whose
+recorded path is its actual view --- which is all any honest replica can do),
+and commutation proved \emph{conditioned} on both, propagated along
+reachability under honest delivery. That is the conditioned MRDT framework
+(\texttt{Sal/ConditionedMRDTs/}; companion note
+\texttt{mrdt-metatheory.pdf}), and this data type is its founding instance:
+the end-to-end theorem
+(\texttt{rga\_ra\_linearizable3\_eq}) is RA-linearizability up
+to observational equivalence at every reachable configuration under honest
+delivery. The price of leaving the unconditioned schema is real --- the
+tombstoned RGA discharges the flat VCs in ${\sim}170$ lines, while this data
+type's conditioned chain runs to ${\sim}10{,}000$ --- and, by the results
+above, unavoidable.
+
+\section{What is mechanised}
+\label{sec:mech}
+
+Every figure corresponds to a Lean fact in
+\texttt{Sal/MRDTs/RGA\_Rehoming/}:
+\begin{itemize}
+  \item \texttt{prefix\_converges} / \texttt{prefixfree\_diverges} --- Figures
+        \ref{fig:diverge}--\ref{fig:fix}: with the path the pair commutes; drop it
+        and the same accurate pair diverges. The \emph{insert} path is necessary.
+  \item \texttt{del\_path\_free} / \texttt{deldel\_pathfree\_converges} --- Figure
+        \ref{fig:asym}: the \emph{delete} path is runtime-dispensable (a $\Del$ reads
+        its reparent target $\anc(\sigma,x)$ from the live state) yet
+        proof-load-bearing --- \texttt{RgaInv\_doDel\_opOK} discharges the delete's
+        invariant preservation from the operation-static $x\notin p$ alone, with no
+        state hypothesis (\S\ref{sec:asym}).
+  \item \texttt{rc\_non\_comm'} --- the full commutation VC: on accurate,
+        fresh-id, root-not-stored states, \emph{every} operation pair commutes.
+  \item \texttt{RGA\_PrefixFree\_Impossible.lean} --- a parameterised theorem: no
+        tombstone-free, prefix-free, local design can satisfy the $\rc=\Either$
+        commutation VC.
+  \item Figure \ref{fig:splice} --- the splice predecessor's refuted
+        conditional-commutation VC: \texttt{cond\_comm\_base\_violated}, branch
+        \texttt{wip/rga-splice}
+        (\texttt{Sal/MRDTs/RGA\_Splice/RGA\_Splice\_MRDT.lean}); the trace and
+        both $\rc$ verdicts are checked by evaluation. Figure
+        \ref{fig:liar} --- \texttt{inconsistent\_diverges} (and
+        \texttt{trio\_converges}: the path repairs Attempt 1's exact trace);
+        the schema-level content is that \texttt{rc\_non\_comm'}'s accuracy
+        hypothesis cannot be dropped, which is what forces the conditioned
+        framework (\S\ref{sec:uncond}).
+  \item \texttt{RGA\_PrefixFree\_Impl.lean} --- the runnable counterpart of
+        Figures \ref{fig:merge} and \ref{fig:diverge}: its \emph{merge} converges
+        the concurrent case (LCA), yet its single-replica $\doo$ diverges
+        (\texttt{merge\_converges\_concurrent} vs.\
+        \texttt{single\_replica\_do\_diverges}).
+\end{itemize}
+
+\paragraph{One honest caveat.} The merge's $\climb$ is bounded by a fuel equal to
+the node id, so its convergence relies on \emph{id-monotone} anchors
+($\anc(t) < t$). That holds under monotone timestamp allocation but is \emph{not}
+guaranteed by the forest shape alone; a non-monotone state can make $\climb$ run
+out of fuel under merge (\texttt{merge\_breaks\_wf} in
+\texttt{RGA\_Reachability\_Invariant.lean}). So Figure \ref{fig:merge}'s
+convergence is a theorem about reachable, monotone states --- the precise extra
+condition the soundness argument must carry.
+
+\end{document}

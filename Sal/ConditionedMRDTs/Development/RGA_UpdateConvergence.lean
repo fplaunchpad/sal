@@ -1,8 +1,8 @@
 import Sal.ConditionedMRDTs.Development.RGA_EnablementBase
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeLinearization
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!

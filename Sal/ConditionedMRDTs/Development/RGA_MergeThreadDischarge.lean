@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization_TwoSided
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeLinearization_TwoSided
 import Sal.ConditionedMRDTs.Development.RGA_InterleavedThreading
 
 /-!

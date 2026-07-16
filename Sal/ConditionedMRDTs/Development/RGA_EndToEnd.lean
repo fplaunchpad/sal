@@ -1,18 +1,18 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance_NF
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance_NF
 import Sal.ConditionedMRDTs.Development.RGA_EqJoin_NF_Assembly
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_Signature
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 import Sal.ConditionedMRDTs.Framework.Base.Labeled_TS
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.BornApplicable_Guard
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.BornApplicable_Guard
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3NF
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_CanonConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonConvergence
 import Sal.ConditionedMRDTs.Development.RGA_ChainFaithful_doDel
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_ConditionedConvergence
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_EqQuotient
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_MergeLinearization
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_WfOpA_VCs
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergence
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_EqQuotient
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeLinearization
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_WfOpA_VCs
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!

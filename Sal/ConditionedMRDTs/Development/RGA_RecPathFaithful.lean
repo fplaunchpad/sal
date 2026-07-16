@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_SubchainResolve
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 import Sal.ConditionedMRDTs.Development.RGA_EnablementBase
 
 /-!

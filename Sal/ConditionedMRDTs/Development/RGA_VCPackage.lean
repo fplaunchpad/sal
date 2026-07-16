@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_EqQuotient
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_EqQuotient
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 
 /-!

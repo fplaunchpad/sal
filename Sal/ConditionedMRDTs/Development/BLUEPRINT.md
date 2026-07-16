@@ -397,7 +397,7 @@ specialisation = `init`).
 ### 5.1 The gap, concretely
 
 The mechanised RGA VC is **weaker** than Neem's. From
-`Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean:928`:
+`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean:928`:
 
 ```lean
 theorem rc_non_comm' (o1 o2 : op_t) :

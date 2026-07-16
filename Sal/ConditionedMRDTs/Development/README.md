@@ -12,7 +12,7 @@ promoted there from this directory: `Impossibility`,
 `InterLca2op_Defeater_Arbiter`, `JoinLemma3F_Of_AlmostClosed`,
 `RGA_Rehoming_Gate`), and the per-RDT conditioned instances in
 [`../MRDT_Instances/`](../MRDT_Instances/), with the tombstone-free RGA
-chain at [`../MRDT_Instances/RGA/`](../MRDT_Instances/RGA/).
+chain at [`../MRDT_Instances/RGA_Rehoming/`](../MRDT_Instances/RGA_Rehoming/).
 What remains here is the research record; files here may import the
 presented tree, never the reverse. (A few probe-flavored files moved with
 the chain because load-bearing definitions live in them.)

@@ -172,7 +172,7 @@ def u (d : ℕ) : coord := unaryEnc d
 
 /-! ### The flat RGA's reorder witness — opposite verdict here
 
-`Sal/MRDTs/RGA/RGA_Tombstone_Free_SPOT.lean` (`del_can_reorder_survivors`):
+`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean` (`del_can_reorder_survivors`):
 state `[(5,100,root), (6,101,root), (8,102,under 5)]` reads `[6,5,8]`; the
 flat RGA's delete of `5` re-sorts the rehomed `8` by its own timestamp and
 reads `[8,6]` — the `[b,a,c] → [c,b]` anomaly. Here the coordinates are

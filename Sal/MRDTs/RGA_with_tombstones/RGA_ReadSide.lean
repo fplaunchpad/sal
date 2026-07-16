@@ -161,7 +161,7 @@ survivors on a *single* delete: splicing a deleted node physically out rehomes
 its children, which then re-sort among their new siblings by the newest-first
 tiebreak — a sequential-spec violation certified invisibly by our
 RA-linearizability (`RGA_TF_SPOT.tombstone_free_violates_delete_order`,
-`Sal/MRDTs/RGA/RGA_Tombstone_Free_SPOT.lean`; open question `oq:linspec`).
+`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean`; open question `oq:linspec`).
 
 The tombstoned RGA cannot exhibit this. Its visible order `visible_lt` is
 defined entirely through `after_of`, which reads only the insert records

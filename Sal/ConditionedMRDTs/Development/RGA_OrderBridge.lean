@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RGA_Instance
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 import Sal.ConditionedMRDTs.Development.RGA_WfOpReachable
 

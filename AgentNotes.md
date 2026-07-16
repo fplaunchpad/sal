@@ -9,10 +9,20 @@ generic conditioned metatheory framework** (the active research arc — the
 `Sal/ConditionedMRDTs/Development/` files), jump to the task list at the bottom:
 [End-to-end RA-linearizability in the generic framework](#end-to-end-ra-linearizability-in-the-generic-framework--task-list).
 
-## Authoritative, proved result
+## The rehoming design (convergence proved; DEMOTED 2026-07-16)
 
-`Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean` — tombstone-free RGA with
+`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean` — tombstone-free RGA with
 path-carrying operations, flat-set state `map ℕ (ℕ × ℕ)` (id ↦ element, anchor).
+Formerly held the plain name `Sal/MRDTs/RGA/` and the canonical seat.
+**Demotion (KC decision)**: the convergence capstone is sound, but the design
+is sequential-spec-refuted at the `do` level (`tombstone_free_violates_delete_order`;
+campaign form `rehoming_seq_refuted` in
+`Sal/ConditionedMRDTs/MRDT_Instances/RGA_Rehoming/RGA_SeqSpec_Refuted.lean`):
+a single-replica delete reorders survivors. Retained as the framework's
+generality stress test and the delete-order countermodel; fused Peritext
+still instantiates it (migration to the embed kernel owed, task #85).
+**The canonical sequence datatype is the embedded-chain family**
+(`Sal/MRDTs/RGA_Embed/` + `MRDT_Instances/EmbedRGA/`, `MRDT_Instances/SidedRGA/`).
 
 - Deletion physically removes the id from the domain (`del` ⇒ `contains` drops
   it); there is no tombstone/graveyard set in the state.
@@ -24,7 +34,22 @@ path-carrying operations, flat-set state `map ℕ (ℕ × ℕ)` (id ↦ element,
   `insins_comm`, `insdel_comm`, and `deldel_comm`. Conditioned on well-formed
   histories (`accurate`: the op's claimed path is the true ancestor chain;
   `fresh_ts`; `contains s 0 = false`).
-- Build check: `timeout 300 lake env lean Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean`
+- Build check: `timeout 300 lake env lean Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`
+
+## The sided embed (two-sidedness as a parameter) — LANDED 2026-07-15
+
+`whiteboard/sided-embed-design-note.md` executed in full (tasks #82/#83):
+Python sided model battery-clean with L19 flipping clean under the Fugue
+policy (`whiteboard/litmus/embed_sided.py`); sided chain-lex kernel
+(`Sal/MRDTs/RGA_Embed/Sided_ChainLex.lean`: marker theorem, axiom-free
+totality, unique decodability, all-R fragment theorem, in-order-interval
+convexity) and the conditioned instance with capstone
+`sided_embed_ra_linearizable3` (`MRDT_Instances/SidedRGA/`), all
+kernel-clean. Sides are payload to convergence; side *selection* is a
+generation policy (RGA and Fugue = two policies over one kernel). Owed:
+per-policy intent theorems + the one-sided-from-sided re-derivation
+decision (task #84). Design doc §5 of `whiteboard/embed-code-design.pdf`
+has the worked L19 example and the encoding.
 
 ## The other RGA designs
 
@@ -49,7 +74,7 @@ Design one-liners:
 
 main keeps only the proved/working designs:
 - `Sal/MRDTs/RGA_with_tombstones/` (original tombstone-based MRDT, already committed).
-- `Sal/MRDTs/RGA/RGA_Tombstone_Free_MRDT.lean` (proved tombstone-free path-carrying
+- `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean` (proved tombstone-free path-carrying
   RGA).
 
 The broken / superseded / WIP attempts are parked on branches (not lost):

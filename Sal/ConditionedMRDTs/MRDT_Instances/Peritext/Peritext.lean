@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin
 
 /-!
 # Peritext (FUSED, tombstone-free) — the instance

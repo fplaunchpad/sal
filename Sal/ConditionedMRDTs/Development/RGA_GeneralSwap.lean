@@ -1,5 +1,5 @@
-import Sal.MRDTs.RGA.RGA_Tombstone_Free_MRDT
-import Sal.MRDTs.RGA.RGA_Reachability_Invariant
+import Sal.MRDTs.RGA_Rehoming.RGA_Tombstone_Free_MRDT
+import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 /-!
 # Task #13 · Milestone 1b — the GENERAL update-side swap VC (or its located obstruction)

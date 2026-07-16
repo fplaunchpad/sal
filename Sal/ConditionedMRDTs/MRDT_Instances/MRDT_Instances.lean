@@ -18,7 +18,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.LWWRegister.LWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.ProductDemo.ProductDemo
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SeqSpec_Refuted
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.Peritext_Composed
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkHonesty
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkIntent
@@ -45,12 +46,26 @@ conditioned instance; its presented capstone is the theorem named below
 (`IsRALinearizable3Eq` over the `≈`-quotient ternary system).  The eleven
 flat datatypes instantiate at the identity (`≈` = `=`,
 `Inv = applicable = ⊤`, via `FlatGeneric.flat_ra_linearizable3_eq`); the
-canonical **RGA** (tombstone-free, `RGA/`) is the fully general instantiation.
+**rehoming RGA** (tombstone-free, `RGA_Rehoming/`) is the fully general
+instantiation.
 
-**Naming.** The plain names **RGA** (`RGA/`, `rga_ra_linearizable3_eq`) and
-**Peritext** (`Peritext/`, `peritext_ra_linearizable_up_to_eq`) denote the
-canonical, tombstone-free/fused designs.  The tombstone-carrying and composed
-variants are qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
+**Naming and status (revised 2026-07-16).** `RGA_Rehoming/` formerly held
+the plain name `RGA/` and the "canonical" seat.  It is **demoted**: its
+convergence capstone `rga_ra_linearizable3_eq` is sound and fully general,
+but the design is *sequential-spec-refuted at the `do` level*
+(`RGA_Rehoming/RGA_SeqSpec_Refuted.lean`: a single-replica delete reorders
+survivors, so the datatype does not implement the naive text buffer).  It
+is retained as the framework's generality stress test (the only instance
+exercising nontrivial `≈`, `Inv`, `applicable`, and the bespoke honest
+chain), as the delete-order countermodel, and — for now — as fused
+Peritext's kernel.  The **canonical sequence RDT is the embedded-chain
+family** (`EmbedRGA/`, `SidedRGA/`): tombstone-free, seq-spec-sound
+(tier 3), delete-order-preserving, read-equal to the published RGA (the
+compaction theorem).  `Peritext/` (fused, on the rehoming kernel) inherits
+the delete-reorder residual at the render
+(`fused_delete_reformats_survivor`); its migration to the embed kernel is
+owed (task #85).  The tombstone-carrying and composed variants are
+qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
 `Peritext_Composed/` (the RGA ⊗ marks composition case study).
 
 | instance | conditioned capstone |
@@ -71,8 +86,8 @@ variants are qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
 | **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
 | **LWW register** | `LWW_ra_linearizable3_eq`; characterization: `lww_version_max` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
-| **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` — the fully general instantiation |
-| **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq` — **single-datatype**: the tombstone-free RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `Peritext_Read`; the live-corner contrast to the frozen-path product below |
+| **RGA (rehoming)** (tombstone-free; DEMOTED — convergence sound, seq-spec-refuted) | `rga_ra_linearizable3_eq` — the fully general instantiation; negative row: `rehoming_seq_refuted` (`RGA_Rehoming/RGA_SeqSpec_Refuted.lean`) |
+| **Peritext** (fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq` — **single-datatype**: the rehoming RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq` (convergence inherited, ONE honesty contract). Read + genuine positional intent (`render_id_active_iff_between`, `render_span_before` = no backward leak) in `Peritext_Read`; the live-corner contrast to the frozen-path product below. **Inherits the rehoming delete-reorder residual at the render** (`fused_delete_reformats_survivor`, machine-checked); embed-kernel migration owed (#85) |
 | Peritext (composed) — RGA ⊗ marks case study | `peritextComposed_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |
 | **Embedded-chain RGA** (tombstone-free, entropy-coded birth chains) | `embed_ra_linearizable3` (under honest reachability, via the queue route's Join) — **parametric in the coordinate code**: `unaryCode`, `binaryCode`, and `eliasDeltaCode` (`embed_ra_linearizable3_eliasDelta`, `EmbedRGA_EliasDelta.lean`) are three verified encodings on one proof; plus the **compaction theorem** `rga_read_eq_embed_read` (`EmbedRGA_ReadEquiv.lean`): on every honest event set the embed read IS the published tombstoned RGA's read (`visible_lt` order equivalence + visibility + element agreement, proved against `Sal/MRDTs/RGA_with_tombstones`'s own relational read) |
 | **Sided embedded-chain RGA** (two-sidedness as a parameter; the one-sided embed is the all-R fragment) | `sided_embed_ra_linearizable3` (`SidedRGA/`, the queue route again) — holds for **every side assignment**: sides are payload to convergence, so side *selection* (always-R = the published RGA order; Fugue's between-rule = non-interleaving, `schain_subtree_convex`) is a generation policy above one verified kernel (`Sal/MRDTs/RGA_Embed/Sided_ChainLex.lean`: sided marker theorem, axiom-free totality, unique decodability, all-R fragment theorem `schainBefore_liftR`) |

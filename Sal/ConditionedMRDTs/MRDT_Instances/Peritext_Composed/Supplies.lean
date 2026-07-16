@@ -1,5 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.ProductEq
-import Sal.ConditionedMRDTs.MRDT_Instances.RGA.RA_Lin
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkStore
 
 /-!
