@@ -235,10 +235,17 @@ lockstep-exact with the one-sided embed). Two layers, both kernel-clean:
   `sHonest_of_applicable` and the sublist intent theorems. In the
   umbrella.
 
-Owed: per-policy intent theorems at the instance (all-R read-equivalence
-to the one-sided instance via the fragment theorem; Fugue
-non-interleaving via convexity) and the sided adjacency lemma for the
-seq-spec campaign. Gotcha recorded: `omega` cannot parse goals whose
+Per-policy intent LANDED (`MRDT_Instances/SidedRGA/SidedRGA_Intent.lean`,
+kernel-clean): `sFold_liftOp` (always-R sided fold = one-sided fold,
+unconditional simulation; `liftOp`/`liftRec`, sort keys coincide by
+`sym = symR`), `sided_allR_read_eq`, `sided_fold_subtree_convex`
+(subtree = contiguous display block in any chain-generated fold; the
+datatype half of the L19 discharge), L19 SPOT contiguous + interleaved
+pin. Re-derivation decision recorded there: the one-sided instance file
+stays (downstream ecosystem), the fragment equality transports.
+Still owed: the Fugue rule as a formal generation policy (intent-op
+layer; pen-and-paper first) and the sided adjacency lemma / seq-spec
+tier. Gotcha recorded: `omega` cannot parse goals whose
 inequality is elaborated at the `Timestamp` abbrev (hypotheses parse,
 `show`-minted goals don't) — use term proofs (`exact hat`,
 `Nat.le_sub_of_add_le`) or state the `show` at `ℕ`.
