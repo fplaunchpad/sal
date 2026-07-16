@@ -23,29 +23,33 @@ open Sal.EmbedRGA (OrderedPrefixCode PosChain coordOf coordOf_inj
   coordOf_append key_inj keyLt keyLe key keyLt_total keyLt_irrefl
   keyLt_asymm chainBefore chainBefore_total display_iff_chainBefore)
 
+set_option linter.unusedSectionVars false
+
+variable {α : Type} [DecidableEq α] [Inhabited α]
+
 /-! ## §A  The naive sequential buffer -/
 
 /-- The user-visible projection of a record: `(id, element)`. -/
-def eProj (r : ERec) : ℕ × ℕ := (r.1, r.2.1)
+def eProj (r : ERec α) : ℕ × α := (r.1, r.2.1)
 
 /-- Splice `p` immediately after the entry with id `a`. (No-op when `a`
 is absent — unreachable under `eSeqOK`, where anchors are live.) -/
-def eInsAfter (a : ℕ) (p : ℕ × ℕ) : List (ℕ × ℕ) → List (ℕ × ℕ)
+def eInsAfter (a : ℕ) (p : ℕ × α) : List (ℕ × α) → List (ℕ × α)
   | [] => []
   | q :: qs => if q.1 = a then q :: p :: qs else q :: eInsAfter a p qs
 
 /-- The naive sequential buffer program: front/after-anchor splice,
 filter delete. -/
-def eSpecStep (S : List (ℕ × ℕ)) (o : Op EOp) : List (ℕ × ℕ) :=
+def eSpecStep (S : List (ℕ × α)) (o : Op (EOp α)) : List (ℕ × α) :=
   match o.2.2 with
   | .ins el _ a =>
       if a = 0 then (o.1, el) :: S else eInsAfter a (o.1, el) S
   | .del x => S.filter (fun p => decide (p.1 ≠ x))
 
-def eSpecFold (ρ : List (Op EOp)) : List (ℕ × ℕ) :=
+def eSpecFold (ρ : List (Op (EOp α))) : List (ℕ × α) :=
   ρ.foldl eSpecStep []
 
-theorem eSpecFold_snoc (ρ : List (Op EOp)) (o : Op EOp) :
+theorem eSpecFold_snoc (ρ : List (Op (EOp α))) (o : Op (EOp α)) :
     eSpecFold (ρ ++ [o]) = eSpecStep (eSpecFold ρ) o := by
   unfold eSpecFold
   rw [List.foldl_append]
@@ -56,13 +60,13 @@ theorem eSpecFold_snoc (ρ : List (Op EOp)) (o : Op EOp) :
 /-- Sequential honesty for embed histories: stamps exceed all previous
 insert stamps (Lamport), and every op is applicable at the current fold
 (the §8 issuer-side guard, specialized to a linear history). -/
-def eSeqOK (Γ : OrderedPrefixCode) (ρ : List (Op EOp)) : Prop :=
-  ∀ (σ : List (Op EOp)) (o : Op EOp) (τ : List (Op EOp)),
+def eSeqOK (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : Prop :=
+  ∀ (σ : List (Op (EOp α))) (o : Op (EOp α)) (τ : List (Op (EOp α))),
     ρ = σ ++ o :: τ →
     (∀ x ∈ eInsIds σ, x < o.1) ∧ eApplicable o (eFold Γ σ)
 
-theorem eSeqOK_prefix {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
-    {o : Op EOp} (h : eSeqOK Γ (ρ ++ [o])) : eSeqOK Γ ρ := by
+theorem eSeqOK_prefix {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
+    {o : Op (EOp α)} (h : eSeqOK Γ (ρ ++ [o])) : eSeqOK Γ ρ := by
   intro σ o' τ heq
   exact h σ o' (τ ++ [o]) (by rw [heq]; simp)
 
@@ -70,7 +74,7 @@ theorem eSeqOK_prefix {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
 
 /-- Every insert of a sequentially honest history mints a positive
 chain's coordinate whose deltas telescope to its (positive) id. -/
-theorem e_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+theorem e_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     (hOK : eSeqOK Γ ρ) :
     ∀ o ∈ ρ, eIsIns o = true →
       ∃ ch, PosChain ch ∧ ch.sum = o.1 ∧ 1 ≤ o.1 ∧
@@ -102,7 +106,7 @@ theorem e_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
             · obtain ⟨aop, haρ, hai, hae⟩ :=
                 e_fold_rec_sub Γ ρ (a, el', π) hmem
               have hπ : π = eCoord Γ aop :=
-                congrArg (fun q : ERec => q.2.2) hae
+                congrArg (fun q : ERec α => q.2.2) hae
               have ha1 : aop.1 = a := (congrArg Prod.fst hae).symm
               obtain ⟨cha, hpos, hsum, -, hcoord⟩ :=
                 ih (eSeqOK_prefix hOK) aop haρ hai
@@ -123,15 +127,15 @@ theorem e_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
 
 /-! ## §C′  Well-formedness from sequential honesty -/
 
-theorem eInsIds_lt_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
-    {o : Op EOp} (hOK : eSeqOK Γ (ρ ++ [o])) :
+theorem eInsIds_lt_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
+    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o])) :
     ∀ x ∈ eInsIds ρ, x < o.1 :=
   (hOK ρ o [] (by simp)).1
 
 /-- Sequential honesty gives well-formedness: fresh monotone stamps give
 `ins_nodup` and `del_late`; chains + unique decodability give
 `keys_inj`. -/
-theorem eWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+theorem eWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     (hOK : eSeqOK Γ ρ) : EWf Γ ρ := by
   constructor
   case ins_nodup =>
@@ -191,7 +195,7 @@ theorem eWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
 
 /-! ## §D  Record and id uniqueness in the fold -/
 
-theorem e_fold_recs_nodup {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+theorem e_fold_recs_nodup {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     (hwf : EWf Γ ρ) : (eFold Γ ρ).Nodup := by
   have hs := e_fold_sorted Γ hwf
   refine hs.imp ?_
@@ -200,7 +204,7 @@ theorem e_fold_recs_nodup {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
   rw [heq, keyLt_irrefl] at hk
   exact Bool.noConfusion hk
 
-theorem e_fold_fst_inj {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+theorem e_fold_fst_inj {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     (hwf : EWf Γ ρ) :
     ∀ r ∈ eFold Γ ρ, ∀ r' ∈ eFold Γ ρ, r.1 = r'.1 → r = r' := by
   intro r hr r' hr' hfst
@@ -277,7 +281,7 @@ theorem chainBefore_snoc_iff {ca cr : List ℕ} {δ : ℕ}
 /-! ## §F  Placement: sorted insert = splice after the anchor -/
 
 /-- When the newcomer's key beats every element, `eInsert` prepends. -/
-theorem eInsert_all_lt {nr : ERec} : ∀ {s : EState},
+theorem eInsert_all_lt {nr : ERec α} : ∀ {s : EState α},
     (∀ y ∈ s, keyLt (key y.2.2) (key nr.2.2) = true) →
     eInsert nr s = nr :: s
   | [], _ => rfl
@@ -289,8 +293,8 @@ theorem eInsert_all_lt {nr : ERec} : ∀ {s : EState},
 newcomer's key sits exactly between the anchor's and everything after it
 (the `hiff` hypothesis — discharged by the adjacency lemma), then the
 sorted insert IS the splice-after-anchor, under projection. -/
-theorem eInsert_map_insAfter {a : ℕ} {nr : ERec} :
-    ∀ {s : EState} {ar : ERec}, ESorted s → ar ∈ s → ar.1 = a →
+theorem eInsert_map_insAfter {a : ℕ} {nr : ERec α} :
+    ∀ {s : EState α} {ar : ERec α}, ESorted s → ar ∈ s → ar.1 = a →
     (∀ r ∈ s, ∀ r' ∈ s, r.1 = r'.1 → r = r') →
     (∀ r ∈ s, key r.2.2 ≠ key nr.2.2) →
     (∀ r ∈ s, (keyLt (key nr.2.2) (key r.2.2) = true ↔
@@ -378,7 +382,7 @@ theorem eInsert_map_insAfter {a : ℕ} {nr : ERec} :
 
 /-! ## §G  Deletion commutes with projection -/
 
-theorem map_eProj_filter (s : EState) (x : ℕ) :
+theorem map_eProj_filter (s : EState α) (x : ℕ) :
     (s.filter (fun r => decide (r.1 ≠ x))).map eProj =
       (s.map eProj).filter (fun p => decide (p.1 ≠ x)) := by
   induction s with
@@ -392,8 +396,8 @@ theorem map_eProj_filter (s : EState) (x : ℕ) :
 /-! ## §H  The main theorem -/
 
 /-- Chain package for a live record. -/
-theorem e_fold_chain {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
-    (hOK : eSeqOK Γ ρ) {rec : ERec} (hrec : rec ∈ eFold Γ ρ) :
+theorem e_fold_chain {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
+    (hOK : eSeqOK Γ ρ) {rec : ERec α} (hrec : rec ∈ eFold Γ ρ) :
     ∃ ch, PosChain ch ∧ ch.sum = rec.1 ∧ 1 ≤ rec.1 ∧
       rec.2.2 = coordOf Γ ch := by
   obtain ⟨iop, hiρ, hii, hie⟩ := e_fold_rec_sub Γ ρ rec hrec
@@ -404,8 +408,8 @@ theorem e_fold_chain {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
     by rw [e2]; exact h4⟩
 
 /-- Live ids sit below a fresh op's stamp. -/
-theorem e_fold_id_lt {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
-    {o : Op EOp} (hOK : eSeqOK Γ (ρ ++ [o])) {rec : ERec}
+theorem e_fold_id_lt {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
+    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o])) {rec : ERec α}
     (hrec : rec ∈ eFold Γ ρ) : rec.1 < o.1 := by
   obtain ⟨iop, hiρ, hii, hie⟩ := e_fold_rec_sub Γ ρ rec hrec
   have h1 := eInsIds_lt_of_seqOK hOK iop.1
@@ -417,7 +421,7 @@ theorem e_fold_id_lt {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
 Under the datatype's own sequential discipline the canonical state IS
 the spec buffer, record for record: insert splices immediately after
 its anchor (the adjacency lemma), delete removes. -/
-theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
+theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     (hOK : eSeqOK Γ ρ) :
     (eFold Γ ρ).map eProj = eSpecFold ρ := by
   induction ρ using List.reverseRecOn with
@@ -453,13 +457,13 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
           · -- front insert: the fresh stamp beats every chain
             have hall : ∀ y ∈ eFold Γ ρ, keyLt (key y.2.2)
                 (key (((ts : ℕ), el,
-                  ([] : List Bool) ++ Γ.enc (ts - 0)) : ERec).2.2)
+                  ([] : List Bool) ++ Γ.enc (ts - 0)) : ERec α).2.2)
                 = true := by
               intro y hy
               obtain ⟨chy, hpy, hsy, hy1, hcy⟩ := e_fold_chain hOK' hy
               have hylt : y.1 < ts := e_fold_id_lt hOK hy
               have hnew : ((((ts : ℕ), el,
-                  ([] : List Bool) ++ Γ.enc (ts - 0)) : ERec)).2.2
+                  ([] : List Bool) ++ Γ.enc (ts - 0)) : ERec α)).2.2
                   = coordOf Γ [ts] := by
                 simp [coordOf]
               rw [hnew, hcy]
@@ -508,12 +512,12 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
               have := congrArg List.length hcontra
               simp at this
             have hkeyne : ∀ rec ∈ eFold Γ ρ, key rec.2.2 ≠
-                key (((ts : ℕ), el, π ++ Γ.enc (ts - a)) : ERec).2.2 := by
+                key (((ts : ℕ), el, π ++ Γ.enc (ts - a)) : ERec α).2.2 := by
               intro rec hrec hcontra
               obtain ⟨chr, hpr, hsr, -, hcr⟩ := e_fold_chain hOK' hrec
               have hrlt : rec.1 < ts := e_fold_id_lt hOK hrec
               rw [hcr, show (((ts : ℕ), el, π ++ Γ.enc (ts - a)) :
-                  ERec).2.2 = coordOf Γ (cha ++ [ts - a]) from hcoordnew]
+                  ERec α).2.2 = coordOf Γ (cha ++ [ts - a]) from hcoordnew]
                 at hcontra
               have h1 := coordOf_inj Γ hpr hpos_new (key_inj hcontra)
               have h2 := congrArg List.sum h1
@@ -522,9 +526,9 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
               omega
             have hiff : ∀ rec ∈ eFold Γ ρ,
                 (keyLt (key (((ts : ℕ), el, π ++ Γ.enc (ts - a)) :
-                    ERec).2.2) (key rec.2.2) = true ↔
+                    ERec α).2.2) (key rec.2.2) = true ↔
                   (rec = ((a : ℕ), el', π) ∨
-                    keyLt (key (((a : ℕ), el', π) : ERec).2.2)
+                    keyLt (key (((a : ℕ), el', π) : ERec α).2.2)
                       (key rec.2.2) = true)) := by
               intro rec hrec
               by_cases hreq : rec = ((a : ℕ), el', π)
@@ -534,9 +538,9 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
                   exact Or.inl rfl
                 · intro _
                   rw [show (((ts : ℕ), el, π ++ Γ.enc (ts - a)) :
-                      ERec).2.2 = coordOf Γ (cha ++ [ts - a])
+                      ERec α).2.2 = coordOf Γ (cha ++ [ts - a])
                       from hcoordnew,
-                    show (((a : ℕ), el', π) : ERec).2.2 = coordOf Γ cha
+                    show (((a : ℕ), el', π) : ERec α).2.2 = coordOf Γ cha
                       from hca]
                   exact (display_iff_chainBefore Γ hpa hpos_new
                     hcane).mpr
@@ -567,9 +571,9 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op EOp)}
                   exact Nat.lt_sub_of_add_lt
                     (by rw [Nat.add_comm]; exact h3)
                 rw [show (((ts : ℕ), el, π ++ Γ.enc (ts - a)) :
-                    ERec).2.2 = coordOf Γ (cha ++ [ts - a])
+                    ERec α).2.2 = coordOf Γ (cha ++ [ts - a])
                     from hcoordnew,
-                  show (((a : ℕ), el', π) : ERec).2.2 = coordOf Γ cha
+                  show (((a : ℕ), el', π) : ERec α).2.2 = coordOf Γ cha
                     from hca,
                   show rec.2.2 = coordOf Γ chr from hcr,
                   display_iff_chainBefore Γ hpr hpos_new hchne2,
