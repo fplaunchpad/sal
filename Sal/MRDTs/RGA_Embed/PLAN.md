@@ -1,6 +1,6 @@
 # RGA_Embed — the embedded-chain RGA mechanization plan
 
-Design + pen-and-paper proofs: `whiteboard/embed-code-design.pdf`.
+Design + pen-and-paper proofs: `Sal/ConditionedMRDTs/sal-mrdts.pdf`, Part II.
 Python-validated artifact: `whiteboard/litmus/embed_tree.py` — battery clean
 except one-sided L19; DAG PBT 120/120 + 300/300; **lockstep read-equal with
 the published tombstoned RGA 120/120**. Retention arc that forced the design:

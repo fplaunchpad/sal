@@ -6,9 +6,11 @@ OOPSLA 2025), built on the corrected binary theory of
 [`Sal/CRDTs/Metatheory/`](../CRDTs/Metatheory/). Everything below is
 0-sorry and kernel-checked (axioms: `propext`, `Classical.choice`,
 `Quot.sound`). The paper-style companion note —
-[`mrdt-metatheory.pdf`](mrdt-metatheory.pdf) — is the self-contained
-account of everything in this directory, from the definition of an MRDT
-through the eight VCs to the conditioned end-to-end proof.
+[`sal-mrdts.pdf`](sal-mrdts.pdf) — is the consolidated account (its
+Part I is the metatheory of this directory, from the definition of an
+MRDT through the eight VCs to the conditioned metatheorem and the
+factored discharge route; Part II is the embedded-chain RGA design
+note; Part III is the sequential-specification campaign).
 
 **The tree tells the story:**
 

@@ -26,7 +26,7 @@
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{obligation}[theorem]{Obligation}
 
-% Paper-style notation (shared with mrdt-metatheory.tex)
+% Paper-style notation (shared with sal-mrdts.tex)
 \newcommand{\Merge}{\mathsf{merge}}
 \newcommand{\mergeL}{\mathsf{mergeL}}
 \newcommand{\Sinit}{\sigma_0}
@@ -180,7 +180,7 @@ no per-triple state equation of the form
 $\nu(A \sqcup B) = m(\nu L, \nu A, \nu B)$ can be a \emph{definition} of
 correctness. This is exactly why the framework's contract is a
 DAG-inductive VC bundle and why no lattice-flavoured contract can exist
-(\lean{mrdt-metatheory.pdf}, delta-contract section). Lethe inherits this:
+(\lean{sal-mrdts.pdf}, delta-contract section). Lethe inherits this:
 the F2 obligation (\S\ref{sec:ladder}) is stated per \emph{reachable
 configuration}, not per triple.
 \end{remark}

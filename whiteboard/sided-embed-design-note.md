@@ -137,8 +137,8 @@ surviving.
   the unique fully-clean design; this is that design, given an
   entropy-coded coordinate realization and a parametric relationship
   to the proved one-sided kernel.
-- Design doc: whiteboard/embed-code-design.tex (the contract, the mint,
-  the fold, the compaction theorem). Compression context:
+- Design doc: Sal/ConditionedMRDTs/sal-mrdts.tex, Part II (the contract,
+  the mint, the fold, the compaction theorem). Compression context:
   whiteboard/order-coding-compression-notes.md.
 
 ## Step-2 results (2026-07-15, `whiteboard/litmus/embed_sided.py`)

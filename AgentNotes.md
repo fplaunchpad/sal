@@ -48,14 +48,14 @@ convexity) and the conditioned instance with capstone
 kernel-clean. Sides are payload to convergence; side *selection* is a
 generation policy (RGA and Fugue = two policies over one kernel). Owed:
 per-policy intent theorems + the one-sided-from-sided re-derivation
-decision (task #84). Design doc §5 of `whiteboard/embed-code-design.pdf`
-has the worked L19 example and the encoding.
+decision (task #84). The sided section of `Sal/ConditionedMRDTs/sal-mrdts.pdf`
+(Part II) has the worked L19 example and the encoding.
 
 ## The other RGA designs
 
 | Variant | Where it lives | State | Status |
 |---|---|---|---|
-| **RGA_Embed (embedded-chain RGA)** | `Sal/MRDTs/RGA_Embed/` (kernel + read side) + `Sal/ConditionedMRDTs/MRDT_Instances/EmbedRGA/` (conditioned instance) | absolute immutable birth-chain coordinates (List Bool); Del = pure removal, merge = OR-set + value copy (no climb); instance state = canonical sorted list | **CAPSTONE PROVED** (`embed_ra_linearizable3`, kernel-clean, c812342): RA-lin per version at every honestly reachable configuration, parametric in the code (binary entropy-optimal + unary instances both proved), via the mergeable-queue route — join discharged by canonicity (`e_fold_canon`). Layers 0–3 + §§1–7 all 0-sorry. Remaining per `Sal/MRDTs/RGA_Embed/PLAN.md`: §8 applicable⟹honesty, intent transport, RGA† read-equivalence. Design `whiteboard/embed-code-design.pdf`, Python twin `whiteboard/litmus/embed_tree.py` (lockstep ≡ RGA† 120/120) |
+| **RGA_Embed (embedded-chain RGA)** | `Sal/MRDTs/RGA_Embed/` (kernel + read side) + `Sal/ConditionedMRDTs/MRDT_Instances/EmbedRGA/` (conditioned instance) | absolute immutable birth-chain coordinates (List Bool); Del = pure removal, merge = OR-set + value copy (no climb); instance state = canonical sorted list | **CAPSTONE PROVED** (`embed_ra_linearizable3`, kernel-clean, c812342): RA-lin per version at every honestly reachable configuration, parametric in the code (binary entropy-optimal + unary instances both proved), via the mergeable-queue route — join discharged by canonicity (`e_fold_canon`). Layers 0–3 + §§1–7 all 0-sorry. Remaining per `Sal/MRDTs/RGA_Embed/PLAN.md`: §8 applicable⟹honesty, intent transport, RGA† read-equivalence. Design `Sal/ConditionedMRDTs/sal-mrdts.pdf` (Part II), Python twin `whiteboard/litmus/embed_tree.py` (lockstep ≡ RGA† 120/120) |
 | RGA (original) | `Sal/MRDTs/RGA_with_tombstones/` (main) | tombstone + read-side projection | committed, 0 sorry; different design, kept |
 | RGA_Splice | branch `wip/rga-splice` | flat set, splice delete | predecessor of RGA_Tombstone_Free; `do_`-level non-commutation (`cond_comm_base`); superseded |
 | RGA_Tree | branch `wip/rga-tree` | literal inductive tree | WIP, open sorries (MRDT 1, ReadSide 1, Refinement 6; not build-verified) |

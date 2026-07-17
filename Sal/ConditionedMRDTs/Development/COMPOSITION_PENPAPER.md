@@ -2,8 +2,8 @@
 
 Status: analysis memo, no Lean. Written before mechanization, per the standing
 lesson (pen-and-paper first; when a formulation fails a worked check, record
-the failure and move on). Target: Open Question 9 (`oq:compose`,
-`mrdt-metatheory.tex:2012`), specialized from the map combinator to the
+the failure and move on). Target: Open Question `oq:compose`
+(`sal-mrdts.tex`, consolidated open-questions section), specialized from the map combinator to the
 **binary heterogeneous product** — the combinator Peritext actually needs.
 
 **Verdict in one paragraph.** The product composes cleanly at exactly the
