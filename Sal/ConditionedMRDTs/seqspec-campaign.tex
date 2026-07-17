@@ -192,6 +192,177 @@ tags are nodup) for the flat and queue tiers, \emph{geometry}
 (adjacency, stamp monotonicity) for the sequence tier,
 \emph{composition} (buffer $\times$ shared render fold) for rich text.
 
+\section{The specifications, stated}
+\label{sec:specs}
+
+This section writes out the sequential specification of every RDT in
+the campaign, and flags, per datatype, where the RDT's operation
+alphabet had to \emph{bend away} from the purely sequential data
+structure's interface. That bend is the campaign's most instructive
+artifact. A sequential structure addresses its state positionally or
+implicitly: \code{dequeue()} takes no argument because ``the head'' is
+unambiguous; \code{insert(i, e)} names an index. A replicated datatype
+cannot, because positions and implicit referents are not stable under
+concurrent edits. So the RDT operation carries a \textbf{witness}: the
+identity (tag, stamp, id, coordinate, snapshot) of what the issuing
+replica \emph{observed} the positional referent to be, at its own
+state, at issue time. The sequential-honesty side conditions of
+\S\ref{sec:tiers} are then exactly the statement ``the witness is what
+the sequential operation would have seen,'' and each theorem says:
+under that discipline, the witnessed-identity program implements the
+positional program. Where no witness is needed, the op alphabets
+coincide and the spec is a view homomorphism.
+
+\subsection{No gap: the alphabets already coincide}
+
+For nine of the flat datatypes the RDT op is literally the sequential
+op; the state carries invisible bookkeeping (tags, per-replica slots)
+and the spec is the evident program on the user-visible view.
+
+\begin{itemize}
+\item \textbf{Counter / increment-only counter.} Spec state $\mathbb{Z}$
+  (resp.\ $\mathbb{N}$); $\ins\mathsf{c}$ is $n \mapsto n+1$. Theorem:
+  the fold \emph{is} the history length
+  (\code{counter\_seq\_sound}, \code{ioc\_seq\_sound}).
+\item \textbf{PN-counter.} Spec: $\#\mathsf{inc} - \#\mathsf{dec}$
+  (\code{pnSpec}); \code{pn\_seq\_sound}.
+\item \textbf{Grow-only set / map, conditioned G-set.} Spec:
+  accumulation; membership of $x$ iff some op added $x$
+  (\code{goset\_seq\_sound}, \code{gomap\_seq\_sound},
+  \code{gsetcond\_seq\_sound}).
+\item \textbf{OR-set (plain and efficient).} Spec state: a plain set;
+  $\mathsf{add}\,e$ inserts, $\mathsf{rem}\,e$ deletes
+  (\code{orSpecStep}). The tag machinery (fresh $(t,e)$ stakes,
+  filter-all-tags on remove) is invisible to one replica: the element
+  view of the fold is the naive program
+  (\code{orset\_seq\_sound}, \code{orsete\_seq\_sound}). No invariant
+  needed; the view is a fold homomorphism.
+\item \textbf{Enable-wins flag.} Spec state: one boolean;
+  $\mathsf{enable} \mapsto \mathsf{true}$,
+  $\mathsf{disable} \mapsto \mathsf{false}$ (\code{ewSpecStep});
+  \code{ewflag\_seq\_sound}.
+\item \textbf{Add-wins priority queue.} Two-part spec pinning both
+  state components: membership behaves as the plain add/remove set
+  with $\mathsf{inc}$ inert (\code{awpqSpecStep},
+  \code{awpq\_mem\_seq\_sound}), and the increment component is a
+  grow-only log of exactly the issued increments
+  (\code{awpq\_inc\_log\_sound}).
+\end{itemize}
+
+\subsection{Gap: arbitration by stamp instead of program order}
+
+\textbf{LWW and FWW registers.} The sequential register is
+$\mathsf{write}\,v$ with \emph{program order} deciding who wins: the
+spec programs are ``the last write's value''
+(\code{lwwSpecFold}: $\_\,, o \mapsto \mathsf{some}\,(\mathrm{val}\,o)$)
+and ``the first write's value'' (\code{fwwSpecFold}). The RDT op
+carries its Lamport stamp \emph{as the arbitration key in the payload}
+(a max- resp.\ min-semilattice on stamped writes), because concurrent
+replicas have no shared program order to appeal to. The gap is the
+transfer of ordering authority from control flow to data. The honesty
+condition is precisely its repair: \code{stampsMono} (stamps strictly
+increase along the history, the sequential Lamport condition), under
+which the arbitration key agrees with program order and
+\code{lww\_seq\_sound} / \code{fww\_seq\_sound} recover last-write and
+first-write semantics. Without \code{stampsMono} the statements are
+false and should be: a replica that back-dates a write is asking LWW
+to disagree with program order.
+
+\subsection{Gap: overwrite by snapshot instead of ``everything''}
+
+\textbf{Multi-valued register.} The sequential register's
+$\mathsf{write}\,v$ implicitly overwrites \emph{everything before it}.
+The RDT op is $\mathsf{write}\,(v, O)$ where $O$ is a
+\textbf{prepare-time snapshot}: the set of write-stamps the issuer
+currently sees, named explicitly so that a \emph{concurrent} write
+(not in $O$) survives, which is the whole point of an MVR. The
+sequential spec is still the plain last-write register
+(\code{mvrSpecFold}). Honesty (\code{mvrOK}): the op's stamp is fresh
+and $O$ lists \emph{exactly} the issuer's visible stamps, the formal
+form of ``I overwrite precisely what I can see.'' Under it,
+\code{mvr\_seq\_sound}: the visible-value view of the fold is the last
+write. The proof needs the campaign's first genuinely discovered
+invariant, \code{mvr\_over\_tags}: every overwritten stamp was staked,
+which is what makes a fresh stamp provably not-yet-overwritten.
+
+\subsection{Gap: dequeue() becomes delete-what-I-saw}
+
+\textbf{The mergeable queue}, the cleanest specimen of the principle.
+The sequential queue is
+\[
+  \mathsf{enq}\,v : S \mapsto S \mathbin{+\!\!+} [v]
+  \qquad\qquad
+  \mathsf{deq}() : S \mapsto \mathrm{tail}(S)
+\]
+with \code{deq} \emph{nullary}: the head is implicit. The RDT cannot
+say ``the head'' (two replicas may disagree about it), so its op is
+$\mathsf{deq}\,t$: remove \emph{by tag}, where $t$ is the tag of the
+element the issuing replica read as the head of \emph{its own} queue.
+The implementation filters $t$ out of the whole list, wherever it
+sits. The spec keeps the sequential shape, \code{tail}, blind to $t$
+(\code{qSpecStep}); honesty (\code{qOK}) says the witness is faithful:
+the fold at the issue point is literally $(t, v) :: \mathit{rest}$.
+The invariant \code{q\_tags\_nodup} (fresh stakes stay
+duplicate-free) makes filter-by-tag remove exactly the head, and
+\code{queue\_seq\_sound} closes the loop: delete-what-I-saw implements
+pop-the-head. The same witness discipline is what the convergence side
+already consumed (\code{qHonest\_of\_applicable}); the campaign reuses
+the datatype's own contract rather than inventing one.
+
+\subsection{Gap: insert-at-index becomes insert-after-who-I-saw}
+
+\textbf{The embedded-chain RGA.} The sequential text buffer is
+$\mathsf{insert}(i, e)$ and $\mathsf{delete}(i)$, index-addressed. The
+RDT op is $\ins(e, \pi, a)$: $a$ is the \emph{id} of the element the
+issuer saw at position $i - 1$ (the anchor; the sentinel $0$ for the
+head), and $\pi$ is the anchor's stored coordinate as the issuer read
+it (the proof-carrying prefix); $\del(x)$ names the id seen at
+position $i$. The spec program is the buffer in id-clothing
+(\code{eSpecStep}): front-cons for $a = 0$, otherwise splice
+immediately after $a$'s entry (\code{eInsAfter}); delete filters by
+id. On a sequential history the anchor id determines the index
+uniquely, so this \emph{is} the positional program with positions
+named by their occupants. Honesty (\code{eSeqOK}): stamps exceed all
+prior insert stamps, and each op is \code{eApplicable} at the current
+fold, i.e.\ the anchor is live and carries exactly $\pi$: the witness
+is faithful. The theorem (\code{embed\_seq\_sound}) is the strongest
+form in the campaign: the canonical sorted state equals the spec
+buffer \emph{record for record}, via the adjacency lemma. The same
+spec, verbatim, is what the rehoming RGA is refuted against
+(\S\ref{sec:negative}): the gap analysis there is not about the
+witness (the rehoming op carries one too, plus a path) but about the
+implementation moving other elements' referents after a delete.
+
+\subsection{Gap: one mark becomes a boundary pair}
+
+\textbf{Fused Peritext.} The sequential marked-text editor has an
+\emph{atomic} $\mathsf{mark}(i, j, m)$. The fused RDT has no such op:
+a mark is \textbf{two} ordinary inserts of boundary elements
+$\langle m\rangle$, $\langle/m\rangle$ sharing a fresh mark id,
+anchored at the range ends, and mark removal is two deletes. The
+atomic sequential op is traded for a pair of witnessed inserts, which
+is the atomicity horn of the mark-positioning trilemma, accepted
+knowingly. The spec therefore lives at the token level: the editor is
+the tier-3 buffer over
+$\mathrm{char} \oplus \mathrm{boundary}$ entries plus one
+left-to-right walk maintaining the open-mark set (a start boundary
+opens, the matching close removes, characters display with what is
+open). \code{peritextEmbed\_seq\_sound} says the datatype's render is
+that editor's screen; the range-level reading is recovered by the
+positional intent theorems (\code{render\_id\_active\_iff\_between}:
+a character carries mark $m$ iff it sits, in reading order, strictly
+between $m$'s boundaries). The boundary-pair encoding is also why the
+character/boundary distinction is load-bearing in the delete theorem:
+deleting a \emph{character} re-formats nothing
+(\code{renderIds\_del}), deleting a \emph{boundary} is mark removal
+and must re-format its span.
+
+\medskip
+\noindent The pattern, in one sentence: \emph{every honesty condition
+in the campaign is the faithfulness of a witness that replaced a
+positional argument}, and the campaign's theorems are the statement
+that witnessed operations, honestly issued, are positional operations.
+
 \section{The negative rows, and the two-axis separation}
 \label{sec:negative}
 
