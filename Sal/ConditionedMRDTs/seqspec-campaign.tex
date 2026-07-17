@@ -419,7 +419,13 @@ standalone build target because the two RGA models share top-level
 names). And the sided generalization simulates the one-sided instance
 on all-R histories unconditionally (\code{sFold\_liftOp}), so the
 buffer spec transports to the sided datatype's all-R fragment at zero
-proof cost.
+proof cost; the full two-sided theorem has since landed as
+\code{sided\_seq\_sound} (\code{SidedRGA\_SeqSpec.lean}): a
+sentinel-rooted buffer where an R-insert splices immediately after its
+anchor and an L-insert immediately before it, via the two sided
+adjacency lemmas (\code{schainBefore\_snocR\_iff},
+\code{snocL\_iff}, axioms $\{\mathrm{propext},
+\mathrm{Quot.sound}\}$).
 
 \begin{figure}[h]
 \centering
@@ -681,7 +687,7 @@ design & sequential spec (do) & RA-lin (merge) \\
 \midrule
 embedded-chain RGA & \code{embed\_seq\_sound} &
   \code{embed\_ra\_linearizable3} \\
-sided RGA (all-R) & via \code{sFold\_liftOp} &
+sided RGA (two-sided) & \code{sided\_seq\_sound} &
   \code{sided\_embed\_ra\_linearizable3} \\
 published RGA$_\dagger$ & \code{rga\_seq\_read\_eq\_buffer} &
   \code{rgaWithTombstones\_ra\_lin...\_eq} \\
@@ -724,6 +730,8 @@ tier 2: mergeable queue &
   \code{MRDT\_Instances/MergeableQueue/MergeableQueue\_SeqSpec.lean} \\
 tier 3: embedded-chain RGA &
   \code{MRDT\_Instances/EmbedRGA/EmbedRGA\_SeqSpec.lean} \\
+tier 3, two-sided: sided RGA &
+  \code{MRDT\_Instances/SidedRGA/SidedRGA\_SeqSpec.lean} \\
 tier 3 corollary: RGA$_\dagger$ &
   \code{MRDT\_Instances/EmbedRGA/EmbedRGA\_SeqSpec\_RGA.lean}
   (standalone) \\

@@ -399,3 +399,202 @@ kernel's R-sibling order both change (reverse right-origin order with
 lowest-ID ties), which is a new design to take through the battery first;
 nothing in the present kernel obstructs it, since sides and order carry
 through one `sEntryBefore` table.
+
+## 8. The FugueMax variant: the positive twin (task #87a)
+
+*Written 2026-07-17, after the section-7 verdict. The executable check is
+`whiteboard/litmus/fuguemax_check.py`; the mechanization is
+`Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean` (the kernel variant) and
+`Sal/ConditionedMRDTs/MRDT_Instances/SidedRGA/SidedRGA_FugueMax.lean`
+(the policy, the adapted statement, the proofs). Paper reference:
+Definition 6 and Theorem 9 of arXiv:2305.00583v3, re-extracted from the
+paper on 2026-07-17.*
+
+**Headline.** FugueMax is realized on the embedded-chain family as a
+kernel VARIANT alphabet whose R entries carry an immutable right-origin
+tag. The realization is machine-validated in Python (the gauntlet, seven
+directed cases, 1500 randomized final states, all three W-K conditions
+clean everywhere) and mechanized in Lean: the variant kernel's marker
+theorem, unique decodability, and subtree convexity are kernel-clean, and
+**condition (3) of Definition 4 is a THEOREM** at every replica of every
+reachable FugueMax configuration
+(`fuguemax_same_origin_low_first`, axioms {propext, Classical.choice,
+Quot.sound}). This is the positive twin of section 3's first refutation:
+the trace that refuted condition (3) for the Fugue-with-recency policy
+(`[2, 1]`) displays `[1, 2]` under the variant, as a checked SPOT.
+Conditions (1) and (2) are stated over the same reachability and remain
+open in Lean (the section-6 gap G2, the display-to-traversal theory);
+`fuguemax_max_noninterleaving_of_gaps` records that the full Theorem-9
+statement reduces to exactly those two gaps plus the proved condition
+(3).
+
+### 8.1 What the paper's FugueMax is, precisely
+
+Definition 6: FugueMax is identical to Fugue except that its tree
+traversal visits right-side siblings in the REVERSE order of their right
+origins, breaking ties by the lexicographic order of their IDs. The
+insert rule is Fugue's (right child of the left origin when it has never
+had a right child or there is no successor, else left child of the right
+origin), but a right child additionally stores its right origin. Left
+siblings keep Fugue's ascending-ID order. On Figure 7 the traversal must
+produce the unique maximally non-interleaving order A X Y B C: X (right
+origin C) precedes Y (right origin B) because C displays after B, whatever
+the IDs of X and Y are.
+
+### 8.2 The realization decision, settled on paper first
+
+In this family the same-anchor sibling order is decided by the coordinate
+alphabet, not by the generation policy. The candidate "mirror the R band
+the way the L band already is" (same-anchor R-siblings oldest first,
+lowest stamp first) realizes exactly the PAPER'S PLAIN FUGUE, ascending
+IDs on both sides, and plain Fugue is what the paper proves is not
+maximally non-interleaving. Concretely: mint Figure 7 in the adverse
+order (Y before X, so Y gets the smaller stamp) and the mirrored band
+displays A Y X B C, violating condition (2) at the pair (Y, B). The
+`mirror` control in `fuguemax_check.py` witnesses this: output
+`[3, 6, 7, 4, 5]` with the C2 violation `(6, 4)`. The conclusion is
+forced: the R-sibling order depends on the right origin, which is not a
+function of `(side, delta)`, so NO re-banding of the delta alphabet
+realizes FugueMax. The entry itself must carry right-origin information,
+and since coordinates are immutable at mint, the information is captured
+at mint time and never consulted again.
+
+The variant entry type (`FMEntry`): an L entry is `(L, delta)` as before;
+an R entry is `(R, tag, delta)` where `tag` is the sort key of the
+tombstone-visible successor at mint time, or `[0]` for the `end` origin.
+The divergence order (`fmEntryBefore`): among R-siblings, smaller tag
+first (a display-later right origin has a smaller key, so this is the
+paper's reverse right-origin order; `end` is display-last, and `[0]` is
+the least tag), ties by ascending delta (the paper's ascending-ID
+tiebreak, since same-anchor deltas order as stamps); among L-siblings
+ascending delta, unchanged; L before the node before R, unchanged.
+
+### 8.3 The flat realization
+
+The variant stays a one-comparison lexicographic order over a marker
+alphabet. Bands: R-block symbols {0,1,2} < marker 3 < L band {4,5}. An
+L block is the sided kernel's, unchanged: `(compl (enc d)).map symL`. An
+R block is `fwTag tag ++ (compl (enc d)).map symR` where
+
+    fw k = [(8 - k) / 3, (8 - k) % 3]
+
+embeds each tag symbol as two R-band symbols, order-REVERSING on the tag
+alphabet {0..5} (so a smaller tag yields a larger block, i.e. an earlier
+display), and the delta code is complemented into the R band (so a
+smaller delta yields a larger block: ascending IDs). Wellformedness of
+tags (`TagOK`: the end tag `[0]`, or a real key, nonzero non-marker head,
+marker-free bounded body, marker terminator) gives prefix-freedom of
+distinct tags, which keeps the first difference of two R blocks inside
+the tag region; block heads stay in {1,2}, coordinates never contain the
+marker, and the whole `keyLt` machinery is reused unchanged. Closure
+(`tagOK_key`): the key of any wellformed nonempty variant coordinate is
+itself a wellformed tag, which is what lets minted keys feed back in as
+the tags of later mints.
+
+### 8.4 Hand-derived displays (all Python-checked and Lean SPOTs)
+
+IDs are chosen ascending for the Figure-7 letters (A=3 < B=4 < C=5), so
+the paper's target order is ID-compatible; the adverse twin then swaps
+the mint order of X and Y to decouple the right-origin order from both
+recency and IDs.
+
+| case | FugueMax display | Fugue (section 4) display |
+|---|---|---|
+| two front inserts 1, 2 | `[1, 2]` (C3 holds) | `[2, 1]` (C3 refuted) |
+| L19 backward | `[50, 30, 10, 61, 41, 21, 1]` | same (L band unchanged) |
+| forward twin | `[1, 10, 30, 50, 21, 41, 61]` | `[1, 21, 41, 61, 10, 30, 50]` |
+| mixed fwd/bwd | `[1, 50, 30, 10, 21, 41, 61]` | `[1, 21, 41, 61, 50, 30, 10]` |
+| figure 7 (X=6, Y=7) | `[3, 6, 7, 4, 5]` = A X Y B C | Y-block first (C2 refuted) |
+| figure 7 adverse (Y=6, X=7) | `[3, 7, 6, 4, 5]` = A X Y B C | not applicable |
+
+The adverse Figure 7 is the decisive row: X displays first although Y has
+both the smaller stamp and the smaller ID, because X's right origin C
+displays after Y's right origin B. The strict-vs-lenient countermodel of
+section 2 adapts by making the dead sibling the OLDER one (branch
+`ins 2 after 1; ins 9 after 2; del 2` against `ins 5 after 1`): display
+`[1, 9, 5]`, strict clean, lenient C1 fires.
+
+### 8.5 Python results (run of record: `python3 fuguemax_check.py 500`)
+
+* The embed_sided gauntlet: CLEAN (S1/S2 sequential rows included:
+  sequentially the tombstone-visible successor rule never creates
+  same-side siblings, so FugueMax = Fugue = the naive buffer on
+  single-replica histories).
+* NOT RGA-ordered, as expected by design: the forward twin gives
+  `[1, 21, 41, 61, 10, 30, 50]` on the one-sided embed and
+  `[1, 10, 30, 50, 21, 41, 61]` on FugueMax, so the all-R lockstep with
+  the one-sided embed fails; this is the point, not a bug.
+* All seven directed cases: displays match the hand derivations; strict
+  C1/C2/C3 CLEAN on every one; the lenient reading fires only on the
+  countermodel built for it.
+* The mirror control: adverse Figure 7 violates C2, as derived.
+* Randomized sweeps, strict reading, 3 shapes x 500 states (2-branch,
+  3-branch, 3-branch two-epoch Figure-7 shaped): C1 = C2 = C3 = RUN = 0
+  everywhere. The extra MIX statistic (0 everywhere) checks the
+  structural lemma behind the Lean proof of condition (3): two minted
+  elements with the same recorded (lo, ro) always sit in the same policy
+  branch (same side, same tree parent).
+* DAG PBT 120: convergence CLEAN.
+
+### 8.6 The Lean mechanization
+
+Kernel (`SidedMax_ChainLex.lean`, all kernel-clean): `fmEntryBefore` /
+`fmChainBefore` with totality, inversion, strip, and asymmetry;
+`fmChainBefore_display` and the variant marker theorem
+`fmdisplay_iff_fmChainBefore` (the flat key comparison of wellformed
+variant coordinates is exactly the FugueMax chain order); unique
+decodability `fmCoordOf_inj`; subtree convexity `fm_subtree_convex`; the
+tag-closure lemma `tagOK_key`; `fm_ext_after_is_R` (a subtree member
+after the node extends it on the R side).
+
+Policy (`SidedRGA_FugueMax.lean`): the generation layer (records with
+mint-time lo, ro, and FugueMax chain; the display fold over the sided
+instance's sorted-insert; `succOfM` as the argmax over all minted keys;
+`mGenInsAfter` with the three mint branches; `MaxReach` with Lamport
+inserts, deletes, pairwise sync). The reachability invariant
+`maxReach_inv` (kernel-clean) carries, besides positivity, uniqueness,
+and chain wellformedness, the two LINK clauses that decide condition (3):
+
+* an R mint records `ro`, and its right origin is NOT an R-descendant of
+  its left origin. Proved at the mint step from `hasRChildM = false` by a
+  closure walk: knowledges are ancestor-closed (`chain_prefix_minted`),
+  so an R-descendant of the anchor would exhibit a minted R-child of the
+  anchor (`hasR_of_R_descendant`, with the parent pinned by the
+  telescoping sums, no injectivity needed).
+* an L mint's parent (= its recorded right origin) IS an R-descendant of
+  its left origin. Proved at the mint step from `hasRChildM = true`: the
+  witness R-child is a successor candidate displaying after the anchor,
+  the argmax successor is therefore pinned between the anchor and that
+  child (`foldl_maxKey_not_beaten`), and `fm_subtree_convex` plus
+  `fm_ext_after_is_R` land it in the anchor's R-subtree
+  (`succ_R_descendant`); the equal-key corner collapses by
+  `fmCoordOf_inj`.
+
+Condition (3) (`fuguemax_same_origin_low_first`, kernel-clean): same
+recorded (lo, ro) forces the same mint branch, because an R record's
+negative geometry clause contradicts an L record's positive one on the
+same pair; same-branch records are siblings under one parent chain, and
+the kernel divergence order puts the smaller stamp first (equal tags for
+R-siblings since the recorded ro is equal; L-siblings by delta). Run
+contiguity transports as in section 4:
+`fuguemax_reachable_runs_no_interleave` via `fm_fold_subtree_convex`.
+SPOTs (PASS and FAIL shaped, `native_decide`): every row of the 8.4
+table, including both Figure-7 mint orders.
+
+### 8.7 Honest gaps, and what moved on G1/G2/G3
+
+Conditions (1) and (2) are `def`s over `MaxReach`
+(`FugueMaxForwardNonInterleaving`, `FugueMaxBackwardNonInterleaving`),
+Python-clean over 1500 randomized states, unproved in Lean: both need the
+display-to-tree-traversal characterization (the paper's Lemma 7 and 8
+layer), which is section 6's gap G2 and is not built here.
+`fuguemax_max_noninterleaving_of_gaps` fixes the remaining obligation
+exactly: those two statements imply the full adapted Theorem 9, with
+condition (3) already discharged. What DID move on the G1/G3 front is the
+technique: the `succOfM` argmax-to-chain-geometry bridge
+(`foldl_maxKey_not_beaten` + convexity + `fm_ext_after_is_R` inside a
+reachability invariant) is precisely the shape section 6's G1 asked for
+at the Fugue file's `succOf`, executed here at the variant; porting it
+back to the recency kernel's backward-run adjacency is now a transcription
+job rather than an open design question. G2 remains the substantive open
+item for both policies.
