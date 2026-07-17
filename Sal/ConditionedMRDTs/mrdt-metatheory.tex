@@ -68,7 +68,7 @@
 conditions, a conditioned generalization, and the tombstone-free RGA
 end-to-end}
 \author{Sal metatheory note\\ \small FP Launchpad, IIT Madras}
-\date{July 7, 2026}
+\date{July 7, 2026; postscript and status notes July 17, 2026}
 
 \begin{document}
 \maketitle
@@ -1282,6 +1282,18 @@ by Theorem~\ref{thm:meta}, hence $\eqobs$ each other.
 
 \section{The tombstone-free RGA discharges the conditioned VCs}\label{sec:rgaend}
 
+\noindent\emph{Status note (2026-07-17).} The datatype of this section is
+the \emph{rehoming} tombstone-free RGA (\lean{RGA\_Rehoming/}), and
+everything below stands: it remains the framework's fully general
+instantiation and the canonical worked example of the conditioned
+discharge. Its repository seat has since changed: the
+sequential-specification campaign (\S\ref{sec:postscript}) refuted its
+single-replica list semantics (\lean{rehoming\_seq\_refuted}), and the
+canonical sequence datatype is now the embedded-chain RGA, tombstone-free
+\emph{and} delete-order-preserving. The demotion does not touch the
+convergence results presented here; it recalibrates what they certify
+(Open Question~\ref{oq:linspec}, now resolved).
+
 The RGA is a forest of identified nodes; $\dodo$ inserts a fresh node under a resolved anchor
 or physically deletes a node and rehomes its children; $\merge$ keeps OR-set survivors and
 re-anchors each by climbing to the nearest surviving ancestor. $\resolve\,\st\,p$ returns the
@@ -1871,6 +1883,77 @@ convergence does --- and the read-coupled boundary carries honesty precisely
 because the honesty predicate lives free of the signature's componentwise
 $\app$.
 
+\section{Postscript: the arcs after this note (July 8--17, 2026)}
+\label{sec:postscript}
+
+This note's core (the flat and conditioned metatheorems, the VC set, the
+rehoming discharge) is stable; four arcs landed after its writing and are
+recorded here as pointers, each kernel-clean unless marked.
+
+\paragraph{The embedded-chain RGA, and the compaction theorem.} A second
+tombstone-free RGA in which sort keys are immutable \emph{birth chains}
+carried as entropy-coded coordinates: deletion is a filter, the merge never
+decides an order, and the state is a function of the event set
+(\lean{e\_fold\_canon}). Its capstone \lean{embed\_ra\_linearizable3} goes
+by the mergeable-queue route of \S\ref{sec:actual} (the per-configuration
+\lean{JoinLemma3At} discharged by fold-canonicity, under
+\lean{HonestReach}), in nine sections where the rehoming design needed its
+bespoke chain, and is parametric in the coordinate code (unary, binary,
+flipped Elias-$\delta$: three verified encodings on one proof). The
+\emph{compaction theorem} (\lean{rga\_read\_eq\_embed\_read}) proves its
+reads equal the published tombstoned RGA's own relational reads on every
+honest event set: the design is, as a theorem, the published RGA with the
+tombstone set compressed into coordinates. Design and proofs:
+\lean{whiteboard/embed-code-design.pdf}.
+
+\paragraph{The sequential-specification campaign.} For every production
+RDT, a kernel-checked theorem that the fold of any sequentially honest
+single-replica history equals an independent naive sequential program;
+the unifying observation is the \emph{witness discipline} (replicated
+operations carry the identity their issuer observed where sequential
+interfaces address positionally, and every honesty condition is the
+faithfulness of such a witness). Three refutations landed with the
+theorems, giving a two-axis separation: the rehoming RGA converges to a
+reordering fold (\lean{rehoming\_seq\_refuted}, do-faithfulness fails),
+Shesha folds correctly into a non-linearizable merge (merge-faithfulness
+fails), and the embed family holds both. The self-contained account is
+\lean{Sal/ConditionedMRDTs/seqspec-campaign.pdf}; the consequences for
+this note are the \S\ref{sec:rgaend} status note and the resolution of
+Open Question~\ref{oq:linspec}. The fused Peritext was re-based onto the
+embed kernel (\lean{MRDT\_Instances/Peritext\_Embed/}), where deleting a
+character provably never re-formats another (\lean{renderIds\_del}).
+
+\paragraph{The sided generalization and the Fugue/FugueMax arc.}
+Two-sidedness as a parameter over one kernel: inserts carry a side, the
+display rule generalizes to in-order via a marker alphabet, and the
+one-sided datatype is the all-R fragment as a theorem
+(\lean{sFold\_liftOp}, an unconditional simulation). The capstone
+\lean{sided\_embed\_ra\_linearizable3} holds for every side assignment
+(sides are payload to convergence; side \emph{selection} is a generation
+policy, i.e.\ honesty-layer). Per-policy intent: subtree convexity makes
+any chain-forming policy non-interleaving
+(\lean{fugue\_reachable\_runs\_no\_interleave}); the Weidner--Kleppmann
+maximal-non-interleaving definition, formalized over reachable
+configurations, is \emph{refuted} for the Fugue-with-recency policy
+(their own Fugue-vs-FugueMax separation, machine-checked) and its
+condition (3) is \emph{proved} for a FugueMax kernel variant in which
+R-entries carry their right origin's key
+(\lean{fuguemax\_same\_origin\_low\_first}); full Theorem~9 is reduced to
+one remaining display-to-traversal lemma. The variant's coordinate cost
+at contested inserts, $\Theta(|\text{origin key}|)$ where plain Fugue
+pays zero, raises a retention lower-bound question in the style of the
+entropy analysis.
+
+\paragraph{Framework additions in passing.} The instance layer is now
+payload-generic where it should be (the embed instance takes its element
+type as a defaulted parameter, so fused Peritext is a pure
+instantiation); join lemmas relative to a \emph{witness class}
+(\lean{Metatheory/WitnessClass.lean}, from the Shesha investigation)
+generalize \lean{JoinLemma3At} to datatypes whose canonical states are
+unique only per witness-classed enumerations; and the test suites follow
+a PASS-and-FAIL convention (every concrete block pairs hand-derived
+expectations with should-fail pins).
+
 \section{Open questions}
 \label{sec:open}
 
@@ -2208,7 +2291,7 @@ rehoming read (nearest surviving neighbour in reading order, gravity-aware),
 against which that leak is a visible failure. The fused boundary-node design
 provides such rehoming via the RGA's own machinery, at the cost of atomicity
 (the mark-positioning trilemma: atomic, tombstone-free, live --- pick two),
-and it is now \textbf{built} (\lean{MRDT\_Instances/Peritext/}): rich text
+and it is now \textbf{built} (\lean{MRDT\_Instances/Peritext\_Rehoming/}): rich text
 as one RGA over $\mathsf{char} \oplus \mathsf{boundary}$, with a document-order
 read and the genuine positional intent theorem
 \lean{render\_id\_active\_iff\_between} --- a rendered character carries a mark
@@ -2227,6 +2310,31 @@ than a bug to fix. It is thus the sharpest form of the point: a kernel-clean,
 RA-linearisable data type whose certified single-replica sequence is
 nevertheless not the sequential-list sequence, the gap visible only through
 an order property the metatheory never states.
+
+\medskip\noindent\textbf{Resolution (2026-07-16).} The question is now
+answered systematically rather than per-instance: the
+sequential-specification campaign (\S\ref{sec:postscript};
+\lean{Sal/ConditionedMRDTs/seqspec-campaign.pdf}) proves, for every
+production RDT, that the fold of any sequentially honest single-replica
+history equals an independent naive sequential program, with the honesty
+side conditions identified as witness-faithfulness. Its refutations also
+\emph{correct} point (ii) above: the survivor reorder is not intrinsic to
+tombstone-freedom, it is intrinsic to \emph{rehoming}. The embedded-chain
+RGA is tombstone-free with immutable birth-chain coordinates, satisfies
+the sequential list specification in the strongest form
+(\lean{embed\_seq\_sound}: the canonical state is the naive buffer,
+record for record) and preserves delete order
+(\lean{eUpdate\_del\_sublist}); the $[b,a,c]\!\to\![c,b]$ execution above
+reads $[b,c]$ there. The campaign form of this section's refutation
+(\lean{rehoming\_seq\_refuted}) demoted the rehoming design from the
+repository's canonical seat, and the fused Peritext was re-based onto the
+embed kernel, where the render-level inheritance of the reorder
+(\lean{fused\_delete\_reformats\_survivor}) is replaced by a general fix
+(\lean{renderIds\_del}: deleting a character never re-formats another).
+One successor question is open (oq:seqwitness, stated in the campaign
+note): whether every honest configuration's merged read is the naive
+program's output on some enumeration that is both delivery-respecting and
+sequentially honest; the dead-anchor corner is the obstacle.
 \end{openq}
 
 \section{Mechanization}
@@ -2264,12 +2372,22 @@ product composition (raw kit) & \lean{joinLemma3At\_prod}, \lean{prod\_ra\_linea
 product safety kit & \lean{safetyStepOn\_prod}, \lean{prod\_version\_inv\_on\_of\_one\_sided} & \lean{Metatheory/Product\_Safety.lean} \\
 product $\eqobs$-lift & \lean{eqJoinLemma3C\_H\_prod}, \lean{prod\_ra\_linearizable\_up\_to\_eq\_H} & \lean{Metatheory/ProductEq.lean} \\
 Peritext by composition & \lean{peritextComposed\_ra\_linearizable\_up\_to\_eq}, \lean{peritextRender\_congr} & \lean{MRDT\_Instances/Peritext\_Composed/} \\
-Peritext, fused (positional intent) & \lean{peritext\_ra\_linearizable\_up\_to\_eq}, \lean{render\_id\_active\_iff\_between} & \lean{MRDT\_Instances/Peritext/} \\
+Peritext, fused (positional intent) & \lean{peritext\_ra\_linearizable\_up\_to\_eq}, \lean{render\_id\_active\_iff\_between} & \lean{MRDT\_Instances/Peritext\_Rehoming/} \\
 mark-anchor honesty composes & \lean{MarkAccurate}, \lean{peritextTF\_ra\_linearizable\_honest} & \lean{MRDT\_Instances/Peritext\_Composed/MarkHonesty.lean} \\
 LWW merge needs timestamps (OQ~\ref{oq:rcchain}) & \lean{lww\_merge\_needs\_timestamps} & \lean{Refutations/LWW\_Merge\_Needs\_Timestamps.lean} \\
 $\cd$ independent of core+delta (OQ~\ref{oq:cd}) & \lean{cdvc3\_not\_derivable\_from\_core\_delta} & \lean{Refutations/CD\_Not\_Derivable\_Ternary.lean} \\
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal T0--T11 & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Postscript arcs (\S\ref{sec:postscript}, July 8--17):}} \\
+embedded-chain RGA (queue route) & \lean{embed\_ra\_linearizable3}, \lean{e\_fold\_canon} & \lean{MRDT\_Instances/EmbedRGA/} \\
+compaction theorem & \lean{rga\_read\_eq\_embed\_read} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_ReadEquiv.lean} \\
+sided RGA + per-policy intent & \lean{sided\_embed\_ra\_linearizable3}, \lean{sFold\_liftOp} & \lean{MRDT\_Instances/SidedRGA/} \\
+Fugue/FugueMax vs.\ W--K Def.~4 & \lean{fugue\_not\_maximally\_noninterleaving}, \lean{fuguemax\_same\_origin\_low\_first} & \lean{MRDT\_Instances/SidedRGA/} \\
+Peritext on the embed kernel & \lean{peritextEmbed\_ra\_linearizable3}, \lean{renderIds\_del} & \lean{MRDT\_Instances/Peritext\_Embed/} \\
+seq-spec campaign, tiers 1--4 & \lean{$\ast$\_seq\_sound} (per RDT) & \lean{seqspec-campaign.pdf} + files cited there \\
+rehoming seq-spec refuted & \lean{rehoming\_seq\_refuted} & \lean{MRDT\_Instances/RGA\_Rehoming/RGA\_SeqSpec\_Refuted.lean} \\
+witness-class join lemmas & \lean{JoinLemma3AtW} & \lean{Metatheory/WitnessClass.lean} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Conditioned-metatheory investigation
   (\S\ref{sec:defeater}, Open Questions~\ref{oq:reunify} \& feasible-update; resolution in \S\ref{sec:condmeta}--\S\ref{sec:actual}):}} \\
