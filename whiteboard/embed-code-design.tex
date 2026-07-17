@@ -49,8 +49,9 @@ related work}
 \author{Sal / FP Launchpad (KC + Claude)\\
 \small working names in the artifact: \code{embed-tree} (unary),
 \code{embed-code} (delta-coded)}
-\date{2026-07-14; revised 2026-07-15 (the datatype separated from its
-encoding; the sided generalization)}
+\date{2026-07-14; revised 2026-07-17 (encoding separation; the sided
+generalization; the sequential spec, the canonical seat, and the
+FugueMax arc)}
 
 \begin{document}
 \maketitle
@@ -1089,8 +1090,12 @@ All numbers reproduce from \code{whiteboard/litmus/} in the
 accompanying Sal repository
 (\code{embed\_tree.py}; harnesses \code{litmus.py}, \code{pbt.py}).
 Notation: RGA$_\dagger$ is the published tombstoned RGA (Roh et
-al.; \S\ref{sec:related}); the \emph{rehoming} RGA is the verified
-flat tombstone-free design of \S\ref{sec:design}. The L1--L25
+al.; \S\ref{sec:related}); the \emph{rehoming} RGA is the
+convergence-verified flat tombstone-free design of \S\ref{sec:design}
+(since demoted repo-wide: the L1 row below was generalized into a
+kernel-checked refutation of its sequential specification,
+\code{rehoming\_seq\_refuted}, and this design took the canonical
+seat; \S\ref{sec:mechanization}). The L1--L25
 battery is the litmus suite accumulated over this project's
 design sweep; each entry is the named countermodel that killed at
 least one of 16 prior candidate designs. The one exception below,
@@ -1657,6 +1662,34 @@ strictly-live compaction preserving every read. The lockstep rows of
 \S\ref{sec:validation} are this theorem's tested form.
 
 \medskip
+\noindent\textbf{The sequential specification is proved, and the
+design now holds the canonical seat} (2026-07-16). The
+sequential-specification campaign (its self-contained note:
+\code{Sal/ConditionedMRDTs/seqspec-campaign.pdf}) proved
+\code{embed\_seq\_sound}: on every sequentially honest single-replica
+history the canonical sorted state IS the naive insert-at-position
+text buffer, record for record, with the adjacency lemma
+(\code{chainBefore\_snoc\_iff}: a fresh insert's delta beats every
+existing child's by sum-telescoping) as the geometric heart; the
+published RGA$_\dagger$ inherits the same buffer spec through the
+compaction theorem (\code{rga\_seq\_read\_eq\_buffer}). The same
+statement is REFUTED for the rehoming design
+(\code{rehoming\_seq\_refuted}: the \S\ref{sec:validation} L1 row
+generalized to a kernel-checked refutation on an honest four-op
+trace), which demoted it repo-wide: the embedded-chain family is now
+the repository's canonical sequence RDT, and the canonical fused
+Peritext was re-based onto THIS kernel
+(\code{Peritext\_Embed/}: capstone by pure instantiation of the
+payload-generic instance; \code{renderIds\_del}, deleting a character
+never re-formats another, the theorem the rehoming kernel provably
+lacks; and the tier-4 editor theorem
+\code{peritextEmbed\_seq\_sound}). One caveat is recorded as an open
+question (oq:seqwitness, campaign note \S8): per-replica soundness
+and convergence do not compose into ``the merged read is the naive
+buffer on some ordering of the union''; the dead-anchor corner is
+where stamp-sorted replay diverges from the fold.
+
+\medskip
 \noindent\textbf{The sided generalization is proved} (2026-07-15,
 kernel-clean), in the same two layers as \S\ref{sec:sided} presents
 it. The sided chain-lex kernel
@@ -1682,9 +1715,37 @@ and the capstone
 \emph{for every side assignment}: sides are payload to convergence,
 which is the policy/datatype split of \S\ref{sec:sided} as a theorem,
 with \code{sHonest\_of\_applicable} discharging honesty from the
-generation guard exactly as one-sided. Owed next: the per-policy
-intent theorems at the instance (all-R read-equivalence through the
-fragment theorem; Fugue non-interleaving through convexity).
+generation guard exactly as one-sided. The per-policy intent
+theorems have since landed, and the policy story is a machine-checked
+three-act arc (2026-07-16/17). \emph{Act one}: \code{sFold\_liftOp},
+the all-R sided fold IS the one-sided fold, unconditionally (the sort
+keys coincide definitionally), so every one-sided theorem transports;
+and \code{sided\_fold\_subtree\_convex}, subtrees display as
+contiguous blocks in any chain-generated fold, so runs that chain
+never interleave (\code{fugue\_reachable\_runs\_no\_interleave}).
+\emph{Act two}: the Weidner--Kleppmann maximal-non-interleaving
+Definition~4 was formalized over reachable configurations
+(\code{SidedRGA\_Fugue.lean}) and REFUTED twice for this Fugue
+policy on reachable traces (the recency tiebreak reverses the paper's
+lowest-ID-first; their Figure-7 execution): the paper's own
+Fugue-vs-FugueMax separation, landing on this implementation.
+\emph{Act three}: FugueMax realized as a kernel variant
+(\code{SidedMax\_ChainLex.lean}): its sibling order depends on the
+right ORIGIN, not expressible by any re-banding of deltas (the mirror
+control machine-witnesses this), so R-entries carry the mint-time
+successor's key as an order-reversing tag; condition (3) is proved in
+full (\code{fuguemax\_same\_origin\_low\_first}, the positive twin
+of the refutation) and full Theorem~9 is reduced to exactly two
+stated gaps, the display-to-traversal theory (task \#88). The sided
+sequential spec also landed (\code{sided\_seq\_sound}: a
+sentinel-rooted two-sided buffer, R-inserts splice after their
+anchor, L-inserts immediately before). The tag has a COST: at
+contested inserts the coordinate embeds the successor's key,
+$\Theta(|\text{key}|)$ where plain Fugue pays zero, and whether that
+retention is a lower bound for tombstone-free maximal
+non-interleaving is an open question with a Myhill--Nerode shape
+(task \#89): the entropy law of \S\ref{sec:encoding} meeting the
+ordering intent.
 
 \paragraph{Provenance.} \code{whiteboard/litmus/embed\_tree.py} (the
 design, the timestamp-oblivious control, the credential countermodel,
