@@ -82,17 +82,51 @@ coordinate symbols, ~8.9x).
 ## State GC: compactEliasDelta (task #97, practical tail)
 
 `src/compact.js` implements the state-level GC of the embed RGA as a pure
-function `compactEliasDelta(state, cut) -> { state', translate, stats }`
-over the stable coordinate tree: dead ranges below the cut with no live
-descendants and no known in-flight coordinates through them vanish; every
-settled sibling group with no known in-flight children rank-renumbers its
-deltas to ordinals `1..k` (order preserved, re-encoded with
-`eliasDeltaCode`); groups with known in-flight children are SKIPPED for
-the epoch (dense renumbering against a frozen in-flight delta can flip an
-order; the negative-control test demonstrates the flip via the
+function `compactEliasDelta(state, cut, opts) -> { state', translate,
+stats }` over the stable coordinate tree: dead ranges below the cut with
+no live descendants and no known in-flight coordinates through them
+vanish; every settled sibling group with no known in-flight children
+rank-renumbers its deltas to ordinals `1..k` (order preserved, re-encoded
+with `eliasDeltaCode`); groups with known in-flight children are SKIPPED
+for the epoch (dense renumbering against a frozen in-flight delta can
+flip an order; the negative-control test demonstrates the flip via the
 `unguardedRenumber` knob, which must never be set in production). The
 returned `translate` is the lazy stable-prefix map
 `rho-hat(c) = rho(stab c) ++ rest c`.
+
+SPINE FUSION (iteration two, opt-in via `opts.fuseSpines`; design:
+`whiteboard/embed-recoding-note.md` Addendum 2). A fusible spine is a
+maximal chain of dead below-cut nodes, each with exactly one child branch
+counting every known coordinate INCLUDING declared in-flight prefixes,
+and no in-flight op anchored at any spine node; it collapses to ONE level
+at the spine head's group codeword, so a typing-run-then-delete chain of
+depth k costs one codeword instead of k. One `translate` covers
+renumbering and fusion together. Order survives by the three-class H2
+argument (within-block prefix replaced wholesale; block-vs-sibling
+decided at the head's level, whose codeword fusion keeps; no key ends at
+a fused-away level since spine nodes are dead). THE GUARD is
+conservative: any known in-flight branch or anchor at a spine node blocks
+that node from every spine (`stats.spinesSkippedInflight`); through
+traffic below the spine still fuses, the frozen tail translated verbatim.
+`test/fusion.test.js` pins each H2 class directed, the guard, ingest
+translation through a fused spine, and a 120-trial twin PBT (fusion on,
+per-step reads vs an uncompacted control; a run reports ~129 spines
+fused, ~182 levels removed, 0 guard skips under settled cuts).
+
+Measured on the josephg editing traces
+(`whiteboard/litmus/embed_compact_measure.py`, which mirrors the fusion
+map and re-checks history-independence three ways plus display order on
+the fused coordinates), bits per live char, before / renumber-only /
+renumber+fusion: automerge-paper 2304 / 2076 / 1279 (1.8x), seph-blog1
+2975 / 2310 / 917 (3.2x), friendsforever 1623 / 906 / 856 (1.9x),
+clownschool 2489 / 1472 / 1471 (1.7x). HONEST VERDICT: the fused column
+does land on the code cost of the live tree shape (the surviving DEAD
+levels cost only 3-76 bits/char), but that live-shape cost is NOT "a few
+bits/char": 97-99.8% of the remaining bits are LIVE ancestor levels
+(mean live depth 835-1468 levels/coordinate), the intrinsic cost of
+immutable chain coordinates over deep live anchoring runs, which no
+dead-level GC can touch. The next lever is re-coding LIVE runs (a
+representation change, not an epoch map).
 
 The runtime hook is `replica.compact(cut)` (needs a datatype with
 `compact` + `remapState`; `compactibleEmbedRGA` in `src/compact.js`
@@ -102,13 +136,10 @@ record, so replicas that never compact keep merging and their records are
 translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
 settled at the compacting replica (all concurrency delivered:
 heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
-section 2); in v1 the caller asserts it, and evidence certificates are a
-follow-on. v1 also linearizes epochs per runtime (concurrent divergent
+section 2); the caller asserts it, and evidence certificates are a
+follow-on. Epochs are also linearized per runtime (concurrent divergent
 compactions are the deferred protocol half,
-`whiteboard/embed-recoding-note.md` section 6) and defers spine fusion
-(chain DEPTH is untouched; renumbering densifies sibling groups only).
-The real-trace measurement lives in
-`whiteboard/litmus/embed_compact_measure.py`.
+`whiteboard/embed-recoding-note.md` section 6).
 
 ## The head-sync discipline, and why
 

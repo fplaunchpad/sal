@@ -319,3 +319,40 @@ of the LIVE tree shape alone: sequential typing (deep delta-1 spines,
 mostly dead after edits) should collapse toward a few bits per
 character, delivering the order of magnitude the renumbering pass
 could not.
+
+## Addendum 2 errata (from the implementation and re-measurement)
+
+1. Spines should be defined with k >= 2: at k = 1 the fusion map
+   degenerates to rank-renumbering, so the implementation treats it as
+   the identity, neither applied nor counted.
+2. The fused block rewrites to the head's GROUP CODEWORD, which is the
+   ordinal when the head's group renumbers and the retained original
+   delta when that group is skipped by the in-flight guard. The
+   class-2 order argument is unaffected either way.
+3. The implementation adds one conservative guard case: a node where a
+   declared in-flight coordinate ENDS is never fused (contradictory
+   caller input, since an in-flight op cannot be settled-dead).
+4. Harness finding, not a fusion defect: criss-cross verdict agreement
+   between compacted and control twins is NOT stable in general,
+   because epoch commits perturb the subject's commit graph (a control
+   fast-forward can be a subject merge); 38 divergences across 120
+   trials. The v1 harness's agreement assertion survives by schedule
+   luck; the fusion PBT pre-checks the gate on both twins and counts
+   divergences instead.
+
+## The measured verdict on iteration two
+
+Fusion removed essentially everything removable: surviving dead levels
+cost 3 to 76 bits per char, and the fused column equals the code cost
+of the live tree shape, verified by per-level attribution that
+accounts for every bit. The few-bits-per-char prediction FAILS because
+that live shape is itself expensive: real traces anchor typing runs in
+LIVE chains of mean depth 835 to 1468 levels at about one bit per
+level, and 97 to 99.8 percent of the remaining bits are live ancestor
+levels. Totals: 1.7x to 3.2x end to end (edit-heavy seph-blog1 gains
+the most; mostly-surviving clownschool the least). History
+independence holds three ways under fusion, and the fused display
+spells endContent on every sequential trace. The next cost lever is
+therefore RE-CODING LIVE RUNS (run/offset coding of live delta-1
+chains, the isometric-fold/path-2 representation layer, task #73's
+territory), a representation change, not a better epoch map.

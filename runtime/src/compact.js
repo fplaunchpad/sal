@@ -35,6 +35,36 @@
 //       likewise never renumbered (its coordinate is a birth constant with
 //       copies elsewhere; rewriting it would diverge at merge).
 //
+//   (2b) SPINE FUSION (iteration two, opt-in via opts.fuseSpines;
+//       whiteboard/embed-recoding-note.md Addendum 2). A fusible spine is
+//       a maximal chain of DEAD nodes d1..dk, each below the cut (settled,
+//       via the same downward-closure evidence as step 2), each with
+//       EXACTLY ONE child branch counting every known coordinate INCLUDING
+//       the seeded in-flight prefixes, and with no in-flight op anchored
+//       at (or landing on) any d_i. The spine collapses to ONE level at
+//       the head's group codeword: every coordinate through it rewrites
+//         prefix(parent) ++ block(d1) ++ .. ++ block(dk) ++ rest
+//           -> prefix(parent) ++ enc(head's ordinal-or-delta) ++ rest,
+//       i.e. in the tree all spine nodes share the head's newCoord and
+//       dk's single child group continues below it. Order survives by the
+//       three-class H2 argument of Addendum 2: (i) inside the block the
+//       common prefix is replaced wholesale; (ii) against the head's
+//       siblings the comparison is decided at the head's level, whose
+//       codeword fusion keeps; (iii) no key ends at a fused-away level
+//       (spine nodes are dead: no records), so no anchor-vs-extension
+//       comparison is lost. THE GUARD, conservative and explicit: a dead
+//       single-child chain node with a known in-flight branch or in-flight
+//       anchor is NEVER a spine member (it caps any spine above it and
+//       heads none; counted once in stats.spinesSkippedInflight when
+//       examined as a head). Fusion with k = 1 is the identity and is
+//       neither applied nor counted. Coordinates ending STRICTLY INSIDE a
+//       fused spine translate (non-injectively) to the fused block; such
+//       coordinates cannot exist at hand under an honest settled cut --
+//       spine nodes are settled-dead, so no record, LCA payload, declared
+//       in-flight (guarded), or future mint ends there -- they arise only
+//       from a violated settledness assertion, the same failure class the
+//       drop-finality clause pins.
+//
 //   (3) LAZY TRANSLATION. The returned translate implements the
 //       stable-prefix map  rho-hat(c) = rho(stab c) ++ rest c : it walks
 //       c's codewords down the tree, emits the re-mapped prefix, and keeps
@@ -80,7 +110,11 @@
 //
 // Returns { state', translate, stats } with stats =
 //   { symbolsBefore, symbolsAfter, groupsRenumbered,
-//     groupsSkippedInflight, groupsSkippedUnstable }.
+//     groupsSkippedInflight, groupsSkippedUnstable,
+//     spinesFused, levelsRemoved, spinesSkippedInflight }.
+// The fusion counters are 0 unless opts.fuseSpines is set. Under fusion,
+// the k-1 collapsed singleton groups of a fused spine are not visited, so
+// they do not count toward groupsRenumbered; levelsRemoved counts them.
 
 import { embedRGA, eliasDeltaCode } from './datatypes/embedRGA.js';
 
@@ -131,6 +165,10 @@ const mkNode = (id, delta) => ({
   recordId: null,         // live record occupying this node, if any
   inflightChild: false,   // a known in-flight coordinate's first frozen
                           // codeword lands in THIS node's child group
+  inflightHere: false,    // a known in-flight coordinate ENDS at this node
+                          // (contradictory caller input -- an in-flight op
+                          // cannot be settled -- guarded conservatively:
+                          // never a spine member)
   seedSettled: false,     // settledness witnessed by the in-flight walk
                           // (dead ranges kept for in-flight coordinates)
   evidence: false,        // settled evidence: own record listed, seeded,
@@ -144,6 +182,7 @@ export function compactEliasDelta(state, cut, opts = {}) {
   const settled = cut?.settledIds ?? new Set();
   const inflight = cut?.inflight ?? [];
   const unguarded = opts.unguardedRenumber === true; // NEGATIVE-CONTROL ONLY
+  const fuse = opts.fuseSpines === true;             // iteration two (step 2b)
 
   const root = mkNode(0, null);
   const childOf = (node, d) => {
@@ -180,6 +219,7 @@ export function compactEliasDelta(state, cut, opts = {}) {
       node.seedSettled = true;
       i = j;
     }
+    if (i >= c.length && node !== root) node.inflightHere = true;
   }
 
   // --- settled evidence, bottom-up (post-order): a node is evidenced
@@ -202,12 +242,42 @@ export function compactEliasDelta(state, cut, opts = {}) {
       || [...n.children.values()].some((ch) => ch.evidence);
   }
 
-  // --- stability + rank-renumbering, pre-order
+  // --- stability + rank-renumbering (+ spine fusion), pre-order
   root.stable = true;
   const stats = {
     symbolsBefore, symbolsAfter: 0,
     groupsRenumbered: 0, groupsSkippedInflight: 0, groupsSkippedUnstable: 0,
+    spinesFused: 0, levelsRemoved: 0, spinesSkippedInflight: 0,
   };
+
+  // Spine fusion (step 2b). head has its newCoord assigned; walks the
+  // maximal chain of dead, settled, single-child, in-flight-free nodes and
+  // collapses it onto the head's level. Returns the node the pre-order
+  // traversal resumes from: the spine tail dk when fused (its child group
+  // is then processed normally, so intermediate singleton groups are never
+  // visited), else head itself. A structurally fusible node carrying an
+  // in-flight branch/anchor is never a member; it is counted once, when
+  // examined as a head.
+  const spineMember = (n) => n.recordId === null && n.stable && n.children.size === 1;
+  const inflightFree = (n) => !n.inflightChild && !n.inflightHere;
+  const fuseSpine = (head) => {
+    if (!spineMember(head)) return head;
+    if (!inflightFree(head)) { stats.spinesSkippedInflight++; return head; }
+    const members = [head];
+    for (;;) {
+      const n = members[members.length - 1];
+      const next = n.children.values().next().value;
+      next.stable = n.stable && next.evidence; // idempotent vs the main loop
+      if (!spineMember(next) || !inflightFree(next)) break;
+      members.push(next);
+    }
+    if (members.length < 2) return head; // k = 1: fusion is the identity
+    for (let k = 1; k < members.length; k++) members[k].newCoord = head.newCoord;
+    stats.spinesFused++;
+    stats.levelsRemoved += members.length - 1;
+    return members[members.length - 1];
+  };
+
   const stack = [root];
   while (stack.length > 0) {
     const node = stack.pop();
@@ -225,7 +295,7 @@ export function compactEliasDelta(state, cut, opts = {}) {
     else stats.groupsSkippedUnstable++;
     kids.forEach((ch, idx) => {
       ch.newCoord = node.newCoord + enc(renumber ? idx + 1 : ch.delta);
-      stack.push(ch);
+      stack.push(fuse ? fuseSpine(ch) : ch);
     });
   }
 
