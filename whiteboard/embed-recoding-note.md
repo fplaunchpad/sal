@@ -251,3 +251,35 @@ the accumulated dead-history cost, with reads provably invariant. Together
 with the capstone's parametricity in `Γ`, an implementation may pick the
 Elias-delta code for mints and any order-preserving compaction for epochs,
 and every observer-visible guarantee of the datatype survives both choices.
+
+## Addendum: findings from the runtime implementation and trace measurement
+
+From the JS twin (runtime/src/compact.js, 33 tests incl. a 140-trial
+twin PBT with 899 cross-epoch merges) and the real-trace measurement
+(whiteboard/litmus/embed_compact_measure.py, josephg editing traces).
+
+1. THE MEASURED HEADLINE. Rank-renumbering alone recovers 1.1x to 1.8x
+   on real traces. The residual cost is SPINE DEPTH: typing runs mint
+   delta-1 chains, and every level costs at least one bit even at
+   ordinal 1. This is exactly the live-tree-shape cost the design
+   predicts, and it is what spine fusion (iteration two) owns; the
+   order of magnitude win lives there. History independence was
+   verified exactly: staggered cuts and one from-scratch final cut
+   land on bit-identical totals on every sequential trace.
+2. ID-ADDRESSED CUTS BREAK AFTER EPOCH ONE: renumbered coordinates no
+   longer telescope to event ids, so a cut given as event ids cannot
+   be resolved by prefix sums on a re-compacted state. The cut should
+   be specified as coordinates/records with downward closure (a
+   settled record witnesses its whole dead ancestor chain), or carry a
+   per-epoch id table. The v1 in-flight walk still uses prefix-sum
+   ids, exact in the mint code; the in-flight times multi-epoch
+   combination is approximated in v1.
+3. DROP-FINALITY: the settled set must list deleted ids below the cut
+   too; an unlisted absent id is treated as never-existing, and if it
+   is actually in flight it must be declared or the compaction is
+   unsound (the negative control's failure class). Implied by
+   SettledAt; worth the explicit clause.
+4. The v1 runtime LINEARIZES epochs per replica (compaction refused
+   off the newest epoch); concurrent divergent compactions remain the
+   protocol half deferred in section 6 (epoch DAG plus
+   common-refinement translation).

@@ -79,6 +79,37 @@ codes) and measures the cost gap on a growing-delta workload (200
 interleaved root-anchored ops: unary 20300 vs eliasDelta 2283 total
 coordinate symbols, ~8.9x).
 
+## State GC: compactEliasDelta (task #97, practical tail)
+
+`src/compact.js` implements the state-level GC of the embed RGA as a pure
+function `compactEliasDelta(state, cut) -> { state', translate, stats }`
+over the stable coordinate tree: dead ranges below the cut with no live
+descendants and no known in-flight coordinates through them vanish; every
+settled sibling group with no known in-flight children rank-renumbers its
+deltas to ordinals `1..k` (order preserved, re-encoded with
+`eliasDeltaCode`); groups with known in-flight children are SKIPPED for
+the epoch (dense renumbering against a frozen in-flight delta can flip an
+order; the negative-control test demonstrates the flip via the
+`unguardedRenumber` knob, which must never be set in production). The
+returned `translate` is the lazy stable-prefix map
+`rho-hat(c) = rho(stab c) ++ rest c`.
+
+The runtime hook is `replica.compact(cut)` (needs a datatype with
+`compact` + `remapState`; `compactibleEmbedRGA` in `src/compact.js`
+provides both). Each compaction opens an EPOCH; merges lift the
+lower-epoch side and the LCA payload into the newer epoch record by
+record, so replicas that never compact keep merging and their records are
+translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
+settled at the compacting replica (all concurrency delivered:
+heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
+section 2); in v1 the caller asserts it, and evidence certificates are a
+follow-on. v1 also linearizes epochs per runtime (concurrent divergent
+compactions are the deferred protocol half,
+`whiteboard/embed-recoding-note.md` section 6) and defers spine fusion
+(chain DEPTH is untouched; renumbering densifies sibling groups only).
+The real-trace measurement lives in
+`whiteboard/litmus/embed_compact_measure.py`.
+
 ## The head-sync discipline, and why
 
 The GC is sound ONLY if every merge is between two CURRENT heads. This is
@@ -136,7 +167,13 @@ Suites: `test/dag.test.js` (DAG/LCA units, criss-cross construction),
 (GC genuinely prunes; post-GC merges match a no-GC control; the membership
 gate), `test/gc-pbt.test.js` (the GC-safety PBT: 220 embedRGA + 120 orset
 twin trials, 3-5 replicas, 25-50 steps, sync/del/gc probabilities
-.35/.30/.35, plus a per-replica LIVE oracle against the implicit event set).
+.35/.30/.35, plus a per-replica LIVE oracle against the implicit event
+set), `test/compact.test.js` (compactEliasDelta: directed delete-heavy
+compaction with pinned symbol counts, the in-flight negative control and
+its guarded companion, lazy translation on ingest, dead-range keeping,
+future mints past the compacted block, the v1 epoch guards, and a
+140-trial twin PBT compacting at explicitly-settled points against a
+never-compacting control).
 
 ## Datatype ports are UNVERIFIED transliterations
 
