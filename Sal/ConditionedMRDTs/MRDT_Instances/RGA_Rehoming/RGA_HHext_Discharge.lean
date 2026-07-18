@@ -38,23 +38,23 @@ open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonInv CanonStepOK CanonFoldOK insertedIn)
 open Sal.ConditionedMRDTs.RGACanonFoldOK (canonFoldOK_append insertedIn_of_contains_fold)
 
-/-- **hHext, discharged.**  The witness discipline `rgaH` extends at an applicable apply. -/
-theorem rga_hHext_discharged
+/-- **hHext, discharged — reachability-free core.**  The witness discipline `rgaH`
+extends at an applicable apply.  Only the `Step3.apply` step itself is consumed (its
+store-wide timestamp freshness); no reachability premise — so the same discharge serves
+both the gated (`labeledTS3`) and the widened (`labeledTS3V`, task #90) inductions. -/
+theorem rga_hHext_discharged_core
     {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
         (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}
     {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
     {v : Sal.ConditionedMRDTs.Version}
     {sh : QState (RGACondSig' α) (rgaEqEquiv' α)} {evh : Set (Op (app_op_t α))} :
-    (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
-      (Sal.ConditionedMRDTs.initConfig
-        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C₀ →
     Sal.ConditionedMRDTs.Step3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
       C₀ (Sal.ConditionedMRDTs.Label3.apply t r o) C₁ →
     C₀.head r = some v → C₀.ver v = some (sh, evh) →
     ∀ ρ : List (op_t α), listPermOf ρ evh → rgaH ρ →
       (RGACondSig' α).applicable (t, r, o) (applySeq (RGACondSig' α).toCRDTSig (RGACondSig' α).init ρ) →
       rgaH (ρ ++ [(t, r, o)]) := by
-  intro _hreach hstep hhead hver ρ hρp hH happ
+  intro hstep hhead hver ρ hρp hH happ
   obtain ⟨hOK, hHP⟩ := hH
   -- freshness of t against evh, from the step's stored-freshness side-condition
   have hfresh : ∀ x : op_t α, x ∈ evh → x.1 ≠ t := by
@@ -170,8 +170,28 @@ theorem rga_hHext_discharged
         have hEq := List.mem_singleton.mp h
         simp at hEq
 
+/-- **hHext, discharged** (the gated-form wrapper: the reachability premise was never
+consumed — `rga_hHext_discharged_core` is the content). -/
+theorem rga_hHext_discharged
+    {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}
+    {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
+    {v : Sal.ConditionedMRDTs.Version}
+    {sh : QState (RGACondSig' α) (rgaEqEquiv' α)} {evh : Set (Op (app_op_t α))} :
+    (labeledTS3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)).ReachableFrom
+      (Sal.ConditionedMRDTs.initConfig
+        (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA) trivial) C₀ →
+    Sal.ConditionedMRDTs.Step3 (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)
+      C₀ (Sal.ConditionedMRDTs.Label3.apply t r o) C₁ →
+    C₀.head r = some v → C₀.ver v = some (sh, evh) →
+    ∀ ρ : List (op_t α), listPermOf ρ evh → rgaH ρ →
+      (RGACondSig' α).applicable (t, r, o) (applySeq (RGACondSig' α).toCRDTSig (RGACondSig' α).init ρ) →
+      rgaH (ρ ++ [(t, r, o)]) :=
+  fun _hreach => rga_hHext_discharged_core
+
 /-! ## Axiom audit -/
 
+#print axioms rga_hHext_discharged_core
 #print axioms rga_hHext_discharged
 
 end Sal.ConditionedMRDTs.RGASkeleton3

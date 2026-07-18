@@ -38,6 +38,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 import Sal.ConditionedMRDTs.Metatheory.Stability_VC
 import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet_Stability
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Stability_Bridge
+import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge_V
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin_V
+import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_VirtualLCA_Spot
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Intent
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
@@ -104,7 +107,7 @@ qualified: `RGA_WithTombstones/`, `Peritext_WithTombstones/`, and
 | **FWW reservation register** | `FWW_ra_linearizable3_eq`; characterization: `fww_version_min` |
 | **LWW register** | `LWW_ra_linearizable3_eq`; characterization: `lww_version_max` |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` (under honest reachability) |
-| **RGA (rehoming)** (tombstone-free; DEMOTED — convergence sound, seq-spec-refuted) | `rga_ra_linearizable3_eq` — the fully general instantiation; negative row: `rehoming_seq_refuted` (`RGA_Rehoming/RGA_SeqSpec_Refuted.lean`) |
+| **RGA (rehoming)** (tombstone-free; DEMOTED — convergence sound, seq-spec-refuted) | `rga_ra_linearizable3_eq` — the fully general instantiation; over the widened LTS (criss-cross gate lifted, task #90): `rga_ra_linearizable3_eq_V` (`RGA_Rehoming/RA_Lin_V.lean`, via the H-layer virtual-LCA fold `GoodConfig3H_V.lean`; the flats' analogue is `flat_ra_linearizable3_eq_V`); negative row: `rehoming_seq_refuted` (`RGA_Rehoming/RGA_SeqSpec_Refuted.lean`) |
 | Peritext (fused, rehoming kernel — countermodel) | `peritext_ra_linearizable_up_to_eq` (`Peritext_Rehoming/`) — the rehoming RGA at `α := char ⊕ boundary`, a *pure instantiation* of `rga_ra_linearizable3_eq`. Carries the pure render layer + positional intent theorems (`render_id_active_iff_between`, `render_span_before` = no backward leak) that both fused instances share. **Inherits the rehoming delete-reorder residual at the render** (`fused_delete_reformats_survivor`, machine-checked); retained as the countermodel |
 | **Peritext (fused, embed kernel — CANONICAL)** | `peritextEmbed_ra_linearizable3` (`Peritext_Embed/`) — `embed_ra_linearizable3` at `α := PeritextElt`, pure instantiation (the embed instance is payload-generic). The state IS the document (read = `map`, no traversal), the shared pure render layer applies verbatim, and the rehoming residual is **fixed with a general theorem**: `renderIds_del` (kernel-clean, {propext, Quot.sound}) — deleting a character leaves every other character's formatting bitwise untouched; SPOT replays the rehoming witness trace clean (PASS+FAIL shaped). **Seq-spec tier 4** (`PeritextEmbed_SeqSpec.lean`): `peritextEmbed_seq_sound`(`_ids`) — the render IS the naive marked-text editor's screen on every sequentially honest history (tier 3's buffer soundness, payload-generic, composed with the shared render fold); FAIL pin: a *boundary* delete refutes the `renderIds_del` equation, so the character hypothesis is necessary |
 | Peritext (composed) — RGA ⊗ marks case study | `peritextComposed_ra_linearizable_up_to_eq` — **composed**: RGA_TF ⊗ ORSetCore marks, the composition payoff (`prod_ra_linearizable_up_to_eq_H` at the product parameters; render layer `peritextRender` + `peritextRender_congr`) |

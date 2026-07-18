@@ -261,3 +261,18 @@ quotient layer already carries the congruence kit).
 Exit 0 iff all asserted expectations hold (expected refutation firings are
 passing assertions). Runs in well under a second; the verdict block prints
 the C5 firing counts per suite.
+
+## Addendum: errata from the mechanization pass
+
+1. Bill items 1 and 2 cost zero: the union predecessor-closure is a
+   three line closure fact inside the fold, and the mechanized
+   EqJoinLemma3C_H / rgaHonJ shape already is this note's own
+   alternative (the relaxed HonJ on a superset universe with
+   membership side conditions).
+2. Only ONE fold induction was owed, at the H layer: the Eq-quotient
+   layers contain no step destructs, and the NF layer is precisely the
+   refuted noopFeasible route with no production consumer at V, so its
+   mirror was deliberately not built.
+3. rga_hHext_discharged carried a dead reachability premise; the V
+   route forced exposing a premise-free core, with the original kept
+   verbatim as a wrapper.
