@@ -283,3 +283,39 @@ twin PBT with 899 cross-epoch merges) and the real-trace measurement
    off the newest epoch); concurrent divergent compactions remain the
    protocol half deferred in section 6 (epoch DAG plus
    common-refinement translation).
+
+## Addendum 2: spine fusion (iteration two), the design
+
+Motivated by the measurement: rank-renumbering alone recovers 1.1x to
+1.8x because the residual cost is spine depth (typing runs mint
+delta-1 chains; every level costs at least one bit even at ordinal 1).
+Fusion removes the dead levels themselves.
+
+**The map.** A fusible spine is a maximal chain of dead nodes
+d1, d2, ..., dk (k >= 1), each below the cut, each with EXACTLY ONE
+child branch counting every known coordinate including in-flight ones,
+and with no in-flight op anchored at any d_i (checkable: SettledAt
+makes all existing concurrency visible; and no FUTURE op can anchor at
+a settled dead node, which is invisible to every future minter). The
+fusion collapses the spine to one level: every coordinate through the
+spine rewrites from prefix(parent) ++ block(d1) ++ ... ++ block(dk) ++
+rest to prefix(parent) ++ enc(ordinal of d1 in its sibling group) ++
+rest. Composition with rank-renumbering is the full iteration-two map.
+
+**Why order survives (the H2 argument).** Three comparison classes:
+(1) inside the fused block: the common prefix is replaced wholesale,
+relative order untouched; (2) the block against the spine head's
+siblings and their subtrees: decided at the head's level by the group
+ordinal, which fusion preserves (the block inherits d1's rank); (3)
+the sentinel corner is vacuous: dead spine nodes have no records,
+hence no keys exist at the fused-away levels, so no anchor-versus-
+extension comparison is lost. In-flight coordinates through the spine
+are handled by the same stable-prefix translation as any re-mapped
+prefix; future mints against compacted state extend the fused
+coordinates natively.
+
+**Prediction.** Post-fusion coordinate cost approaches the code cost
+of the LIVE tree shape alone: sequential typing (deep delta-1 spines,
+mostly dead after edits) should collapse toward a few bits per
+character, delivering the order of magnitude the renumbering pass
+could not.
