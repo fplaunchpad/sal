@@ -20,11 +20,9 @@ UNSOUND, by the following near miss, which shapes everything after it.
 **The discriminating remove.** Adds of element a at stamps t1 < t2,
 both below every head. Replica A compacts, dropping the older instance
 t1. But an in-flight remove, minted long ago by a replica that had
-observed only t1 (the remove is concurrent with add t2), is still ≤
+observed only t2 (the remove is concurrent with add t1), is still ≤
 some head and arrives later. In the full execution the remove kills
-only t1, and a survives through t2. Wait, the dangerous direction is
-the mirror: a remove that observed only t2 kills t2, and in the full
-execution a survives through t1; in the compacted execution t1 is
+only t2 and a survives through t1; in the compacted execution t1 is
 gone and a is absent. Observable divergence: reads differ.
 
 The repair is a version level condition. Say a cut S is **SettledAt**

@@ -197,3 +197,25 @@ below (what is settled), the garbage collector reads it from above (what must be
 retained). A runtime that already tracks the stable cut for stability VCs gets the GC
 retention boundary from the same bookkeeping, at pairwise rather than global
 granularity.
+
+## Addendum (from the virtual-LCA design, task #90)
+
+Two corrections from `virtual-lca-note.md`, recorded here so this note
+stays accurate.
+
+1. The criss-cross section above forecast that the union of the
+   maximal common ancestors' event sets approximates the intersection
+   from below. Under the store invariants actually carried
+   (`StoreInv.origin` + `events_mono`) it is EXACT: Proposition 1 of
+   the virtual-LCA note (the covering proposition). The virtual LCA
+   therefore has precisely the intersection event set, and the Merge
+   rule's semantic requirement is met natively.
+
+2. When virtual merges land, the keep set must grow from the pairwise
+   MCAs of the heads to the FIXPOINT of the head set under pairwise
+   MCA (`mcasClosure`): the one-layer seed is one closure layer short,
+   machine-witnessed by a depth-2 sync raising PrunedError under the
+   one-layer rule and succeeding under the closure rule (harness T5).
+   The runtime's `gc.js` must switch to the closure seed in the same
+   change that introduces virtual merges; until then the criss-cross
+   gate makes the one-layer seed sufficient.
