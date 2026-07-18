@@ -1,3 +1,4 @@
+import Sal.ConditionedMRDTs.Metatheory.GC_Safety
 import Sal.ConditionedMRDTs.MRDT_Instances.GSet.GSet
 import Sal.ConditionedMRDTs.MRDT_Instances.Counter.Counter
 import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet

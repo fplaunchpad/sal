@@ -1,0 +1,10 @@
+{
+  "name": "sal-runtime",
+  "version": "0.1.0",
+  "description": "Git-like commit-DAG MRDT runtime with pluggable verified datatypes and commit GC (task #94, engineering half)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}
