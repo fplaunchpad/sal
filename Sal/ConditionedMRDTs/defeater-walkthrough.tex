@@ -450,33 +450,33 @@ the kernel (\lean{sp\_eq}, \lean{sq\_eq}, \lean{LCA\_eq},
     font=\footnotesize, fill=blue!14, line width=0.6pt},
   lbl/.style={font=\scriptsize, text=black!60}]
 \node[ver] (v0) at (0,0) {$v_0:\ (\emptyset,\emptyset)$};
-\node[ver] (p1) at (2.6,1.6)  {$p_1:\ \{\Ap\}\ (\{1\},\emptyset)$};
-\node[ver] (q1) at (2.6,-1.6) {$q_1:\ \{\Aq\}\ (\{2\},\emptyset)$};
-\node[lca] (s)  at (5.4,0)
+\node[ver] (p1) at (-3.2,-1.5)  {$p_1:\ \{\Ap\}\ (\{1\},\emptyset)$};
+\node[ver] (q1) at (3.2,-1.5) {$q_1:\ \{\Aq\}\ (\{2\},\emptyset)$};
+\node[lca] (s)  at (0,-3.1)
   {$v_s:\ \{\Ap,\Aq\}\ (\{1,2\},\emptyset)$};
-\node[ver] (p2) at (5.6,2.9)  {$p_2:\ \{\Ap,\Rp\}\ (\{1\},\{1\})$};
-\node[ver] (q2) at (5.6,-2.9) {$q_2:\ \{\Aq,\Rq\}\ (\{2\},\{2\})$};
-\node[ver] (p3) at (9.6,1.6)
+\node[ver] (p2) at (-5.2,-3.1)  {$p_2:\ \{\Ap,\Rp\}\ (\{1\},\{1\})$};
+\node[ver] (q2) at (5.2,-3.1) {$q_2:\ \{\Aq,\Rq\}\ (\{2\},\{2\})$};
+\node[ver] (p3) at (-3.4,-4.8)
   {$\mathrm{head}_p:\ \{\Ap,\Rp,\Aq\}\ (\{1,2\},\{1\})$};
-\node[ver] (q3) at (9.6,-1.6)
+\node[ver] (q3) at (3.4,-4.8)
   {$\mathrm{head}_q:\ \{\Aq,\Rq,\Ap\}\ (\{1,2\},\{2\})$};
-\node[ver] (top) at (12.2,0)
+\node[ver] (top) at (0,-6.4)
   {$v_\top:\ (\{1,2\},\{1,2\})$};
 \draw[anc] (v0) -- node[lbl, pos=0.45, above=1pt, sloped]{$\Ap$} (p1);
-\draw[anc] (v0) -- node[lbl, pos=0.45, below=1pt, sloped]{$\Aq$} (q1);
+\draw[anc] (v0) -- node[lbl, pos=0.45, above=1pt, sloped]{$\Aq$} (q1);
 \draw[anc] (p1) -- (s);
 \draw[anc] (q1) -- (s);
 \draw[anc] (p1) -- node[lbl, pos=0.4, above=1pt, sloped]{$\Rp$} (p2);
-\draw[anc] (q1) -- node[lbl, pos=0.4, below=1pt, sloped]{$\Rq$} (q2);
+\draw[anc] (q1) -- node[lbl, pos=0.4, above=1pt, sloped]{$\Rq$} (q2);
 \draw[anc] (p2) -- (p3);
 \draw[anc] (s)  -- (p3);
 \draw[anc] (q2) -- (q3);
 \draw[anc] (s)  -- (q3);
 \draw[anc] (p3) -- (top);
 \draw[anc] (q3) -- (top);
-\node[lbl, below=0.14cm of s] {$= \mathrm{LCA}(\mathrm{head}_p,
+\node[lbl, below=0.12cm of s] {$= \mathrm{LCA}(\mathrm{head}_p,
   \mathrm{head}_q)$};
-\node[lbl, above=0.12cm of top] {live $\emptyset$};
+\node[lbl, right=0.14cm of top] {live $\emptyset$};
 \end{tikzpicture}
 \caption{The defeater. Versions are labelled with their event sets and
 states $(A, D)$; the shaded $v_s$ is the staging version, an honest
