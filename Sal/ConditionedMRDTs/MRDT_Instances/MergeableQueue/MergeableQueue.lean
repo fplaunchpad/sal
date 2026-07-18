@@ -855,5 +855,35 @@ theorem qHonest_of_genHonest (C : Configuration Q)
 
 #print axioms qHonest_of_genHonest
 
+/-! ## The widened LTS: the queue over virtual merges (task #90 residue)
+
+The queue rides the PLAIN `JoinLemma3At`, supplied per honest
+configuration by `q_join_at`; the virtual-LCA fold induction
+(`virtualLCAState_canonical`) consumes exactly that hook, so lifting the
+criss-cross gate costs the queue nothing beyond restating reachability.
+No witness-class obligation arises: the queue's honest-history content
+lives inside `QHonestCore`, which is per-configuration, not
+per-registered-version. -/
+
+/-- Honest reachability over the widened LTS (virtual merges enabled). -/
+def QReachV : Configuration Q → Prop := HonestReachV Q QHonest trivial
+
+/-- `GoodConfig3` at every honestly reachable configuration of the widened
+LTS: the same per-configuration Join, fed to the V induction. -/
+theorem q_goodConfig3V {C : Configuration Q} (hReach : QReachV C) :
+    GoodConfig3 C :=
+  goodConfig3_of_honest_reachV
+    (fun _ hHon => q_join_at (qHonest_core hHon)) hReach
+
+/-- **The mergeable queue is RA-linearizable over the widened LTS**:
+per-version RA-linearizability at every honestly reachable configuration
+with the criss-cross gate lifted (virtual merges enabled). -/
+theorem queue_ra_linearizable3_V {C : Configuration Q} (hReach : QReachV C) :
+    IsRALinearizable3 C :=
+  ra_linearizable3_of_honest_reachV
+    (fun _ hHon => q_join_at (qHonest_core hHon)) hReach
+
+#print axioms queue_ra_linearizable3_V
+
 end Sal.ConditionedMRDTs
 
