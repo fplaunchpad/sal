@@ -60,13 +60,17 @@ Layers:
   (unchanged), the mixed case, and BOTH Figure-7 mint orders — the
   adverse one is the trace that kills every plain re-banding.
 
-**Honest gaps** (stated, not proved; no `sorry` anywhere): conditions (1)
-and (2) (`FugueMaxForwardNonInterleaving`, `FugueMaxBackwardNonInterleaving`)
-need the display-to-tree-traversal theory (the paper's Lemma 7/8 layer,
-gap G2 of the completed arc), which is not built here; both are
-Python-clean over 1500 randomized states and every directed case.
-`fuguemax_max_noninterleaving_of_gaps` records that the full Theorem-9
-statement reduces to exactly those two gaps plus the proved condition (3).
+**Status: all three Definition-4 conditions are now theorems.**
+Condition (1) is discharged in `SidedRGA_NonInterleaving.lean`
+(`fuguemax_forward_ni`, via the traversal theory), condition (2) in
+`SidedRGA_Backward.lean` (`fuguemax_backward_ni`, via the `RBk`
+mint-time clause bundle and the four-route witness construction; note
+the corrected exception statement below quantifies the witness over
+minted records, tombstones included: the live reading was
+machine-refuted, note section 9.7.2), and condition (3) here. The
+capstone `fuguemax_maximally_noninterleaving` (full adapted Theorem 9,
+kernel-clean) lives in `SidedRGA_Backward.lean`; the convergence
+capstone for this variant is `SidedRGA_FugueMax_RA_Lin.lean`.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -1430,11 +1434,25 @@ def mConsecutive (Γ : OrderedPrefixCode) (K : KnowM) (x y : ℕ) : Prop :=
 
 def mLoDesc (K : KnowM) (c p : ℕ) : Prop := ∃ nn : ℕ, (mLoOf K)^[nn] c = p
 
-/-- Lemma 5's exception at the pair `(A, B)`. -/
+/-- Lemma 5's exception at the pair `(A, B)`.
+
+The witness `C` ranges over ALL minted elements, tombstones included —
+the paper's own quantification (its list state keeps tombstones; right
+origins are defined "including tombstones"). An earlier revision of this
+def carried an `mLive Γ K C` conjunct; that live reading is FALSE on
+this realization: run the paper's Figure-7 execution (ids 3, 4, 5 roots;
+X = 6 with origins (3, 5), Y = 7 with (3, 4); display `[3, 6, 7, 4, 5]`),
+then delete 4. At the pair (A, B) = (6, 5) the premises of condition (2)
+hold, 7 sits live between, and the ONLY witness strictly between
+lo(6) = 3 and 5 that is not a lo-descendant of 3 is the TOMBSTONE 4.
+Countermodel and 4500-state validation:
+`whiteboard/fugue-maximal-noninterleaving.md` §9.7.2,
+`whiteboard/litmus/fuguemax_backward_check.py`. The conclusion
+`mConsecutive` keeps its live reading (the visible-document property). -/
 def BackwardExceptionM (Γ : OrderedPrefixCode) (K : KnowM)
     (A B : ℕ) : Prop :=
   mLoOf K A ≠ mLoOf K B ∧
-  ∃ C ∈ mMintedIds K, mLive Γ K C ∧
+  ∃ C ∈ mMintedIds K,
     mBefore Γ K (mLoOf K A) C ∧ mBefore Γ K C B ∧
     ¬ mLoDesc K C (mLoOf K A)
 

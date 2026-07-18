@@ -977,4 +977,82 @@ example : keyLt (sKey (fmCoordOf unaryCode [.R [0] 1, .L 20]))
 #print axioms fmCoordOf_inj
 #print axioms tagOK_key
 
+/-! ## Backward-condition bookkeeping (task #92 item 1)
+
+The two marker-theorem consumers the backward discharge needs: the
+before-side twin of `fm_ext_after_is_R`, and the divergence inversion for
+same-parent R-siblings. Design: `whiteboard/fugue-maximal-noninterleaving.md`
+§9.7.8 item 2. -/
+
+/-- Order congruence under a common prefix (the append form of
+`fmChainBefore_cons`). -/
+theorem fmChainBefore_append_left (p : FMChain) {a b : FMChain}
+    (h : fmChainBefore a b) : fmChainBefore (p ++ a) (p ++ b) := by
+  induction p with
+  | nil => exact h
+  | cons x p' ih => exact fmChainBefore_cons x ih
+
+/-- Strip a common prefix (the append form of `fmChainBefore_cons_strip`). -/
+theorem fmChainBefore_append_strip :
+    ∀ (p : FMChain) {a b : FMChain},
+      fmChainBefore (p ++ a) (p ++ b) → fmChainBefore a b
+  | [], _, _, h => h
+  | _ :: p', _, _, h =>
+      fmChainBefore_append_strip p' (fmChainBefore_cons_strip h)
+
+/-- A member of the subtree strictly before the node extends it on the L
+side: the before-side twin of `fm_ext_after_is_R`. -/
+theorem fm_ext_before_is_L {p ext : FMChain}
+    (h : fmChainBefore (p ++ ext) p) :
+    ∃ d rest, ext = FMEntry.L d :: rest := by
+  rcases fmChainBefore_inv h with ⟨d, rest, heq⟩ | ⟨t, d, rest, heq⟩ |
+    ⟨q, e1, e2, t1, t2, hlt, h1, h2⟩
+  · exact ⟨d, rest, List.append_cancel_left heq⟩
+  · exfalso
+    have := congrArg List.length heq
+    simp at this
+  · exfalso
+    rw [h2, List.append_assoc] at h1
+    have h3 := List.append_cancel_left h1
+    injection h3 with h4 h5
+    subst h4
+    exact fmEntryBefore_irrefl e2 hlt
+
+/-- **Divergence inversion for same-parent R-siblings**: a node one R
+entry over `p` displays before a member of a same-parent R-child's
+subtree only through the entry order at the divergence — smaller tag
+lexicographically, or equal tags and smaller delta — unless the two R
+entries coincide (the member sits in the node's own subtree). -/
+theorem fm_R_sibling_inv {p : FMChain} {t t' : List ℕ} {d d' : ℕ}
+    {u : FMChain}
+    (h : fmChainBefore (p ++ [FMEntry.R t d]) (p ++ FMEntry.R t' d' :: u)) :
+    (keyLt t t' = true ∨ (t = t' ∧ d < d')) ∨ (t = t' ∧ d = d') := by
+  have h' := fmChainBefore_append_strip p h
+  rcases fmChainBefore_inv h' with ⟨dd, rest, heq⟩ | ⟨tt, dd, rest, heq⟩ |
+    ⟨q, e1, e2, t1, t2, hlt, h1, h2⟩
+  · exfalso
+    have := congrArg List.length heq
+    simp at this
+  · rw [List.singleton_append] at heq
+    injection heq with h1 h2
+    injection h1 with h3 h4
+    exact Or.inr ⟨h3.symm, h4.symm⟩
+  · cases q with
+    | nil =>
+        simp only [List.nil_append] at h1 h2
+        injection h1 with h3 h4
+        injection h2 with h5 h6
+        rw [← h3, ← h5] at hlt
+        exact Or.inl hlt
+    | cons y q' =>
+        exfalso
+        rw [List.cons_append] at h1
+        injection h1 with h3 h4
+        have := congrArg List.length h4
+        simp at this
+        omega
+
+#print axioms fm_ext_before_is_L
+#print axioms fm_R_sibling_inv
+
 end Sal.EmbedRGA

@@ -38,6 +38,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_FugueMax
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_FugueMax_RA_Lin
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_NonInterleaving
+import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Backward
+import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue_ForwardNI
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_SeqSpec
 -- NOTE: EmbedRGA_ReadEquiv (the compaction theorem) is a standalone build
 -- target: it imports the published tombstoned RGA *model*

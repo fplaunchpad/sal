@@ -1210,3 +1210,29 @@ mint-time clauses and a two-step chain walk, which was the design
 question this section set out to answer. Estimated size: kernel ~150
 lines, bundle ~400, discharge ~450, SPOTs (the four delete variants of
 9.7.7 as PASS+FAIL pairs, witness values pinned) ~120.
+
+### 9.7.9 Errata from the mechanization pass
+
+Two corrections to the design record, found while executing the bill of
+9.7.8 (the mechanization is `SidedRGA_Backward.lean`; recorded here so
+this note stays the source of truth):
+
+1. Section 9.7.3 cites "(RSA) at the anchor" for a < m in the (RSuccR)
+   case. The anchor's (RSA) instance yields only P < m, for the anchor's
+   own anchor P. The mechanized proof derives a < m by the full Step-0
+   argument (lemma `rmint_ro_after`: (RSA) plus the convexity trap plus
+   the (LinkR) geometry), which section 9.7.4 already supplies. The
+   construction is sound; only the citation line was wrong.
+
+2. The transport bill in section 9.7.6 is incomplete: besides chain
+   stability, transporting the RBk clauses across sync needs
+   record-lookup stability (`mRecOfId_append_left` plus a new
+   `mRecOfId_agree`, obtained from `MInv.cross`) and positivity of the
+   grown knowledge (`mRecOfId_zero` vacuates the transported clauses at
+   a = 0). A completeness gap, not an error.
+
+For the record, two simplifications: the mint-step RBk preservation
+needs no Lamport or freshness hypotheses (the clauses never mention the
+minted stamp), and two case analyses forecast in 9.7.4 (the full "after
+everything in Subtree(a)" form of Step 0, and the L-descendant sub-case
+of beta1) turned out unnecessary.

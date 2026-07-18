@@ -29,10 +29,11 @@ route is the paper's Lemma 7 + Lemma 8(a) layer replayed on chains:
   all-L tails at every misalignment.
 
 * **§3 The discharge**: `forwardNIM_of_inv` and
-  `fuguemax_forward_ni : FugueMaxForwardNonInterleaving Γ`. Full adapted
-  Theorem 9 now reduces to the backward condition alone
-  (`fuguemax_theorem9_of_backward`); the backward design state is section
-  9.6 of the note.
+  `fuguemax_forward_ni : FugueMaxForwardNonInterleaving Γ`. The
+  reduction `fuguemax_theorem9_of_backward` is CONSUMED in
+  `SidedRGA_Backward.lean`, where the backward condition is discharged
+  and full adapted Theorem 9 is closed
+  (`fuguemax_maximally_noninterleaving`).
 
 * **§4 SPOTs**, PASS+FAIL shaped, on the Figure-7 and L19 traces.
 -/
@@ -523,9 +524,10 @@ theorem fuguemax_forward_ni (Γ : OrderedPrefixCode) :
 
 #print axioms fuguemax_forward_ni
 
-/-- **Full adapted Theorem 9 now reduces to the backward condition
-alone**: conditions (1) and (3) are theorems. The backward design state
-is section 9.6 of the note. -/
+/-- **The Theorem-9 reduction**: conditions (1) and (3) are theorems
+here and in `SidedRGA_FugueMax.lean`, so full adapted Theorem 9 follows
+from the backward condition. Discharged in `SidedRGA_Backward.lean`
+(`fuguemax_backward_ni`), closing `fuguemax_maximally_noninterleaving`. -/
 theorem fuguemax_theorem9_of_backward {Γ : OrderedPrefixCode}
     (h2 : FugueMaxBackwardNonInterleaving Γ) :
     FugueMaxMaximallyNonInterleaving Γ :=
