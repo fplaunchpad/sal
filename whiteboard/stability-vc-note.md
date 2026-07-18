@@ -186,3 +186,31 @@ source of truth.
    pre-compaction merge version; pulling the add branch directly makes
    the delivery pair criss-cross and the naive compaction
    unobservable. A choreography note, not a soundness item.
+
+## 10. Errata and sharpenings from the mechanization pass
+
+Recorded from the Lean (Metatheory/Stability_VC.lean, ORSet_Stability,
+EmbedRGA_Stability_Bridge); the note stays the source of truth.
+
+1. VC-S3 class (b) is absorbed into VC-S4: in the state-based ternary
+   model, in-flight effects arrive only through merge branch states, so
+   the step VC covers class (a) only.
+2. Redundant_S must be state dependent even under the settled gate: a
+   static drop set is unsound when the kept twin has already died
+   before compaction (SPOT static_drop_unsound); the sound callback is
+   the twin-liveness-guarded drop. Newest-first is not needed for
+   soundness; any live kept witness preserves reads.
+3. The gate is SettledAt AND AllHeard: settledness alone is not stable
+   under future mints by ignorant replicas; the all-heads frontier
+   keeps it stable, and createReplica after a compaction is policy
+   gated (the section 8 open-membership deferral made operational).
+4. VC-S6 holds observationally, not as a same-R-class statement: a
+   first-epoch-dropped tag whose second-epoch keeper has died is kept
+   by the direct coarser compaction; reads still agree.
+5. Query labels match only up to the observation; raw values may
+   differ.
+6. Mechanization convenience: compaction projects to a stuttering
+   SELF-MERGE on the full side (IsLCA is reflexive, E union E = E), so
+   the twin DAGs stay literally identical and no version-map
+   bisimulation is needed. This is why stability_simulation needs only
+   propext and Quot.sound.
