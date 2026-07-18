@@ -442,6 +442,50 @@ theorem observedRegistered_of_honest_reach {H : Configuration D → Prop}
       simp at hL0
   | step _ _ hstep ih => exact observedRegistered_step hstep ih
 
+/-- `ObservedRegistered` is preserved by every widened step (task #90): the
+`mergeVirtual` case registers the merged head at the fresh `vm` exactly as the gated
+merge does — the LCA slot's contents are irrelevant to registration. -/
+private theorem observedRegistered_stepV {C C' : Configuration D}
+    {ℓ : Label3 D} (hstep : Step3V D C ℓ C') (ih : ObservedRegistered C) :
+    ObservedRegistered C' := by
+  cases hstep with
+  | base hstep' => exact observedRegistered_step hstep' ih
+  | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂ h_head₁ h_head₂ h_ver₁
+      h_ver₂ h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+    have hver_old : ∀ w, w ≠ vm → C'.ver w = C.ver w := by
+      intro w hw; rw [hver]; simp [hw]
+    intro r' ev' hL'
+    rw [hL] at hL'
+    simp only [updateRep] at hL'
+    split at hL'
+    · rw [Option.some.injEq] at hL'
+      subst hL'
+      exact ⟨vm, D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, by rw [hver]; simp⟩
+    · obtain ⟨v', s', hv'⟩ := ih r' ev' hL'
+      have hne : v' ≠ vm := by
+        intro h
+        rw [h, h_vm] at hv'
+        simp at hv'
+      exact ⟨v', s', by rw [hver_old v' hne]; exact hv'⟩
+
+/-- `ObservedRegistered` at every widened honestly reachable configuration
+(task #90 case duplication). -/
+theorem observedRegistered_of_honest_reachV {H : Configuration D → Prop}
+    {hInit : D.Inv D.init} {C : Configuration D}
+    (hReach : HonestReachV D H hInit C) : ObservedRegistered C := by
+  induction hReach with
+  | init =>
+    intro r ev hL
+    have hL0 : (if r = 0 then some (∅ : Set (Op D.AppOp)) else none)
+        = some ev := hL
+    by_cases hr : r = 0
+    · rw [if_pos hr, Option.some.injEq] at hL0
+      subst hL0
+      exact ⟨0, D.init, (initConfig D hInit).ver_init⟩
+    · rw [if_neg hr] at hL0
+      simp at hL0
+  | step _ _ hstep ih => exact observedRegistered_stepV hstep ih
+
 /-- **The generic honesty bridge**: the ∀-enumeration shape (`GenHonest`,
 which `BCHonest` instantiates) discharges the ∃-form `HonestAppOn` wherever
 every observed set is registered and versions carry causal witnesses. The
@@ -524,5 +568,6 @@ end
 #print axioms causalCanonical_of_all_comm_rc_either
 #print axioms honestAppOn_of_genHonest
 #print axioms observedRegistered_of_honest_reach
+#print axioms observedRegistered_of_honest_reachV
 
 end Sal.ConditionedMRDTs

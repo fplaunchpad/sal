@@ -527,6 +527,785 @@ theorem gc_safety (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.pare
 
 #print axioms gc_safety
 
+/-! ## §6V  GC under virtual LCAs (task #90): the MCA-closure keep set
+
+Under the widened step relation (`Step3V`, `LCA_Lemma.lean` §9) a merge may read the
+states of **maximal common ancestors** — versions strictly below the pairwise head
+meets — and of the MCAs of MCAs, recursively. The keep set is reseeded by the
+**pairwise-MCA closure** of the prune-time heads (`mcasClosure`); the future-proofing
+argument needs two invariant strengthenings of `GCInv` (packaged in `GCInvV`):
+
+* `headGate` — a current head that was allocated at prune time is a prune-time head
+  (or the pinned root): heads only ever move to freshly allocated versions or to `0`;
+* `gateway` — **the gateway invariant** (the note's main new GC proof): every ancestry
+  path from a prune-time-allocated version to a post-prune version passes through a
+  prune-time head (or collapses to the root).
+
+`mcaClosure_not_dropped` then transfers closure membership at ANY future configuration
+down to the prune-time closure (maximality transfers along the gateway), and the prune
+commutation (`step_dropVerV`) matches virtual merges verbatim because pruning keeps the
+DAG skeleton, so the recursion reads only closure members — all kept. -/
+
+/-- The pairwise-MCA closure of the current (allocated) heads: the least version-set
+containing the heads and closed under taking MCAs of member pairs. -/
+inductive InMcasClosure (C : Configuration D) : Version → Prop where
+  | head {v : Version} (h : IsHead C v) (halloc : (C.ver v).isSome) :
+      InMcasClosure C v
+  | mca {a b m : Version} (ha : InMcasClosure C a) (hb : InMcasClosure C b)
+      (hm : IsMCA C.parents {a} b m) : InMcasClosure C m
+
+/-- The closure as a set (the note's `mcasClosure(heads C)`). -/
+def mcasClosure (C : Configuration D) : Set Version := {v | InMcasClosure C v}
+
+/-- Closure members are allocated (an MCA reaches a member, and heads are). -/
+theorem inMcasClosure_alloc {C : Configuration D}
+    (hStore : StoreInv C.ver C.parents) {v : Version}
+    (h : InMcasClosure C v) : (C.ver v).isSome := by
+  induction h with
+  | head _ halloc => exact halloc
+  | mca _ _ hm _ ihb => exact reaches_alloc hStore hm.1.2 ihb
+
+/-- Sub-pair MCAs decompose into pairwise MCAs: a maximal element of the union of
+common-ancestor sets is maximal in any member set containing it (note §2), so every
+`mcaFinset` read over a closure-supported pair stays in the closure. -/
+theorem inMcasClosure_of_mcaFinset {C : Configuration D}
+    {S : Finset Version} {w m : Version}
+    (hS : ∀ x ∈ S, InMcasClosure C x) (hw : InMcasClosure C w)
+    (hm : m ∈ mcaFinset C.parents S w) : InMcasClosure C m := by
+  obtain ⟨⟨⟨u, huS, hmu⟩, hmw⟩, hmax⟩ := mcaFinset_isMCA C.parents hm
+  refine InMcasClosure.mca (hS u huS) hw ⟨⟨⟨u, rfl, hmu⟩, hmw⟩, ?_⟩
+  rintro x ⟨⟨u', hu', hxu⟩, hxw⟩ hmx
+  rcases hu' with rfl
+  exact hmax x ⟨⟨u', huS, hxu⟩, hxw⟩ hmx
+
+/-- **The revised keep set** (note §6): allocated versions event-set-above some
+prune-time closure member, plus the pinned root. Every recursion read of every future
+virtual resolution lies here (`mcaClosure_not_dropped` + `inMcasClosure_of_mcaFinset`). -/
+def keepSetV (C : Configuration D) : Set Version :=
+  {v | ∃ s e w sw ew, InMcasClosure C w ∧ C.ver w = some (sw, ew) ∧
+        C.ver v = some (s, e) ∧ ew ⊆ e} ∪ {0}
+
+/-- What the revised pruning removes. -/
+def droppedSetV (C : Configuration D) : Set Version :=
+  {v | (C.ver v).isSome ∧ v ∉ keepSetV C}
+
+theorem zero_not_droppedV (C : Configuration D) : (0 : Version) ∉ droppedSetV C :=
+  fun h => h.2 (Or.inr rfl)
+
+/-- Closure members keep themselves (the reflexive witness). -/
+theorem inMcasClosure_mem_keepSetV {C : Configuration D} {v : Version}
+    (h : InMcasClosure C v) {s : D.State} {e : Set (Op D.AppOp)}
+    (hv : C.ver v = some (s, e)) : v ∈ keepSetV C :=
+  Or.inl ⟨s, e, v, s, e, h, hv, hv, fun _ hx => hx⟩
+
+/-- **The GC run invariant, virtual-LCA form**: `GCInv` plus the head gate and the
+gateway invariant (file-header of this section). -/
+structure GCInvV (C₀ C : Configuration D) : Prop extends GCInv C₀ C where
+  /-- The prune-time store invariant, carried for the closure-transfer argument
+  (`mcaClosure_not_dropped` moves reachability between the two graphs). -/
+  store₀ : StoreInv C₀.ver C₀.parents
+  /-- Parent lists of prune-time versions are immutable: the DAG only grows at
+  freshly allocated versions. -/
+  parentsExt : ∀ v, (C₀.ver v).isSome → C.parents v = C₀.parents v
+  /-- A current head allocated at prune time is a prune-time head or the root
+  (heads only move to freshly allocated versions, or to `0` at `createReplica`). -/
+  headGate : ∀ r v, C.head r = some v → (C₀.ver v).isSome → IsHead C₀ v ∨ v = 0
+  /-- **The gateway invariant**: an ancestry path from a prune-time-allocated `w` to a
+  post-prune-allocated `v` passes through a prune-time head, or `w` is the root. -/
+  gateway : ∀ v, (C.ver v).isSome → ¬ (C₀.ver v).isSome →
+    ∀ w, (C₀.ver w).isSome → Reaches C.parents w v →
+      w = 0 ∨ ∃ h, IsHead C₀ h ∧ (C₀.ver h).isSome ∧
+        Reaches C.parents w h ∧ Reaches C.parents h v
+
+theorem gcInvV_init (C₀ : Configuration D)
+    (hStore : StoreInv C₀.ver C₀.parents) : GCInvV C₀ C₀ where
+  toGCInv := gcInv_init C₀ hStore
+  store₀ := hStore
+  parentsExt := fun _ _ => rfl
+  headGate := fun r v hh _ => Or.inl ⟨r, hh⟩
+  gateway := fun _ hv hv₀ => absurd hv hv₀
+
+/-- A current-graph path to a prune-time version restricts to the prune-time graph
+(prune-time parent lists are immutable, and their sources are prune-time-allocated). -/
+theorem GCInvV.reaches_restrict {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {a b : Version} (hr : Reaches C.parents a b) :
+    (C₀.ver b).isSome → Reaches C₀.parents a b := by
+  induction hr with
+  | refl => intro _; exact Relation.ReflTransGen.refl
+  | tail _hpre hstep ih =>
+    rename_i mid c
+    intro hc
+    have hedge : mid ∈ C₀.parents c := by
+      rw [← hInv.parentsExt c hc]; exact hstep
+    have hmid : (C₀.ver mid).isSome := hInv.store₀.parents_alloc c mid hedge
+    exact (ih hmid).tail hedge
+
+/-- A prune-time-graph path embeds into the current graph (same immutability). -/
+theorem GCInvV.reaches_extend {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {a b : Version} (hr : Reaches C₀.parents a b) :
+    (C₀.ver b).isSome → Reaches C.parents a b := by
+  induction hr with
+  | refl => intro _; exact Relation.ReflTransGen.refl
+  | tail _hpre hstep ih =>
+    rename_i mid c
+    intro hc
+    have hmid : (C₀.ver mid).isSome := hInv.store₀.parents_alloc c mid hstep
+    have hedge : mid ∈ C.parents c := by
+      rw [hInv.parentsExt c hc]; exact hstep
+    exact (ih hmid).tail hedge
+
+/-- `GCInv` is preserved by every widened step: the `mergeVirtual` case is the merge
+case verbatim (it never consulted the LCA slot). -/
+theorem gcInv_stepV {C₀ C C' : Configuration D} {ℓ : Label3 D}
+    (hInv : GCInv C₀ C) (hstep : Step3V D C ℓ C') : GCInv C₀ C' := by
+  cases hstep with
+  | base hstep' => exact gcInv_step hInv hstep'
+  | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂ h_head₁ h_head₂ h_ver₁ h_ver₂
+      h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+    have hstore' : StoreInv C'.ver C'.parents :=
+      storeInv_merge_extend (sm := D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂)
+        hInv.store h_vm h_ver₁ h_ver₂
+        (by rw [hver]; simp)
+        (fun w hw => by rw [hver]; simp [hw])
+        (by rw [hparents]; simp)
+        (fun w hw => by rw [hparents]; simp [hw])
+    refine ⟨?_, ?_, hstore'⟩
+    · intro w hw
+      have hwne : w ≠ vm := by
+        rintro rfl; exact not_alloc₀_of_fresh hInv h_vm hw
+      simp only [hver, if_neg hwne]
+      exact hInv.verExt w hw
+    · intro r' w sw ew hh hv
+      simp only [hhead] at hh
+      simp only [hver] at hv
+      simp only [hparents]
+      by_cases hw : w = vm
+      · subst hw
+        rw [if_pos rfl] at hv
+        injection hv with hv
+        have hew : ew = ev₁ ∪ ev₂ := (congrArg Prod.snd hv).symm
+        rcases hInv.mono r₁ v₁ s₁ ev₁ h_head₁ h_ver₁ with hd₁ | hvir₁
+        · obtain ⟨h₀, s₀, e₀, hh₀, hv₀, hsub⟩ := hd₁
+          exact Or.inl ⟨h₀, s₀, e₀, hh₀, hv₀,
+            hsub.trans (by rw [hew]; exact Set.subset_union_left)⟩
+        · rcases hInv.mono r₂ v₂ s₂ ev₂ h_head₂ h_ver₂ with hd₂ | hvir₂
+          · obtain ⟨h₀, s₀, e₀, hh₀, hv₀, hsub⟩ := hd₂
+            exact Or.inl ⟨h₀, s₀, e₀, hh₀, hv₀,
+              hsub.trans (by rw [hew]; exact Set.subset_union_right)⟩
+          · refine Or.inr fun u hu hu₀ => ?_
+            rcases reaches_new_target hInv.store.parents_alloc h_vm
+                (if_pos rfl) (fun x hx => if_neg hx)
+                (by intro p hp
+                    rcases List.mem_cons.mp hp with rfl | hp'
+                    · rw [h_ver₁]; rfl
+                    · rw [List.mem_singleton] at hp'; subst hp'
+                      rw [h_ver₂]; rfl) hu with h | ⟨p, hp, hre⟩
+            · exact absurd hu₀ (h ▸ not_alloc₀_of_fresh hInv h_vm)
+            · rcases List.mem_cons.mp hp with rfl | hp'
+              · exact hvir₁ u hre hu₀
+              · rw [List.mem_singleton] at hp'; subst hp'
+                exact hvir₂ u hre hu₀
+      · rw [if_neg hw] at hv
+        have hh' : C.head r' = some w := by
+          by_cases hr : r' = r₁
+          · rw [if_pos hr] at hh; injection hh with hh; exact absurd hh.symm hw
+          · rw [if_neg hr] at hh; exact hh
+        rcases hInv.mono r' w sw ew hh' hv with hd | hvir
+        · exact Or.inl hd
+        · refine Or.inr fun u hu hu₀ => ?_
+          have hwsome : (C.ver w).isSome := by rw [hv]; rfl
+          exact hvir u (reaches_old_of_new hInv.store.parents_alloc h_vm
+            (fun x hx => if_neg hx) hu hwsome) hu₀
+
+/-- The per-head-side gateway factoring, old graph: a prune-time-allocated `w`
+reaching a *current head* reaches it through a prune-time head, or is the root
+(`headGate` when the head predates the prune, `gateway` when it postdates it). -/
+private theorem gateway_side {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {r : Replica} {vp : Version} (hhead : C.head r = some vp)
+    (hvp : (C.ver vp).isSome)
+    {w : Version} (hw₀ : (C₀.ver w).isSome) (hwvp : Reaches C.parents w vp) :
+    w = 0 ∨ ∃ h, IsHead C₀ h ∧ (C₀.ver h).isSome ∧
+      Reaches C.parents w h ∧ Reaches C.parents h vp := by
+  by_cases hvp₀ : (C₀.ver vp).isSome
+  · rcases hInv.headGate r vp hhead hvp₀ with hh | h0
+    · exact Or.inr ⟨vp, hh, hvp₀, hwvp, Relation.ReflTransGen.refl⟩
+    · subst h0
+      exact Or.inl (Nat.le_antisymm (reaches_le C.parents_lt hwvp) (Nat.zero_le w))
+  · exact hInv.gateway vp hvp hvp₀ w hw₀ hwvp
+
+/-- Gateway at the freshly allocated node: a path into it factors through a declared
+parent — a current head — where `gateway_side` routes it; both legs transport along
+the conservative DAG extension. -/
+private theorem gateway_new_node {C₀ C C' : Configuration D} (hInv : GCInvV C₀ C)
+    {vm : Version} (h_vm : C.ver vm = none) {ps : List Version}
+    (hpar_old : ∀ x, x ≠ vm → C'.parents x = C.parents x)
+    (hpar_new : C'.parents vm = ps)
+    (hps_heads : ∀ p ∈ ps, ∃ r, C.head r = some p)
+    (hps_alloc : ∀ p ∈ ps, (C.ver p).isSome)
+    {w : Version} (hw₀ : (C₀.ver w).isSome) (hr : Reaches C'.parents w vm) :
+    w = 0 ∨ ∃ h, IsHead C₀ h ∧ (C₀.ver h).isSome ∧
+      Reaches C'.parents w h ∧ Reaches C'.parents h vm := by
+  rcases reaches_new_target hInv.store.parents_alloc h_vm hpar_new hpar_old
+      hps_alloc hr with h | ⟨p, hp, hre⟩
+  · exact absurd hw₀ (h ▸ not_alloc₀_of_fresh hInv.toGCInv h_vm)
+  · obtain ⟨r, hhead⟩ := hps_heads p hp
+    rcases gateway_side hInv hhead (hps_alloc p hp) hw₀ hre
+      with h0 | ⟨h, hh, hh₀, hwh, hhp⟩
+    · exact Or.inl h0
+    · have hhC : (C.ver h).isSome := by rw [hInv.verExt h hh₀]; exact hh₀
+      refine Or.inr ⟨h, hh, hh₀,
+        reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hwh hhC, ?_⟩
+      refine Relation.ReflTransGen.tail
+        (reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hhp
+          (hps_alloc p hp)) ?_
+      show p ∈ C'.parents vm
+      rw [hpar_new]
+      exact hp
+
+/-- Gateway at an untouched post-prune node: collapse to the old graph, use the old
+gateway, transport back. -/
+private theorem gateway_old_node {C₀ C C' : Configuration D} (hInv : GCInvV C₀ C)
+    {vm : Version} (h_vm : C.ver vm = none)
+    (hpar_old : ∀ x, x ≠ vm → C'.parents x = C.parents x)
+    {v' : Version} (hv'C : (C.ver v').isSome) (hv₀' : ¬ (C₀.ver v').isSome)
+    {w : Version} (hw₀ : (C₀.ver w).isSome) (hr : Reaches C'.parents w v') :
+    w = 0 ∨ ∃ h, IsHead C₀ h ∧ (C₀.ver h).isSome ∧
+      Reaches C'.parents w h ∧ Reaches C'.parents h v' := by
+  have hrold := reaches_old_of_new hInv.store.parents_alloc h_vm hpar_old hr hv'C
+  rcases hInv.gateway v' hv'C hv₀' w hw₀ hrold with h0 | ⟨h, hh, hh₀, hwh, hhv⟩
+  · exact Or.inl h0
+  · have hhC : (C.ver h).isSome := by rw [hInv.verExt h hh₀]; exact hh₀
+    exact Or.inr ⟨h, hh, hh₀,
+      reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hwh hhC,
+      reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hhv hv'C⟩
+
+/-- **`GCInvV` is a `Step3V` invariant** — the gateway invariant's preservation, the
+note's main new GC proof (§6): after the prune point versions extend only current
+heads, and `headGate`/`gateway` route every prune-time ancestor through a prune-time
+head (or the root). -/
+theorem gcInvV_step {C₀ C C' : Configuration D} {ℓ : Label3 D}
+    (hInv : GCInvV C₀ C) (hstep : Step3V D C ℓ C') : GCInvV C₀ C' := by
+  have hbase : GCInv C₀ C' := gcInv_stepV hInv.toGCInv hstep
+  cases hstep with
+  | base hstep' =>
+    cases hstep' with
+    | @createReplica r h_fresh C'' hN hL hvis hver hhead hparents =>
+      refine ⟨hbase, hInv.store₀, ?_, ?_, ?_⟩
+      · intro v hv
+        rw [hparents]
+        exact hInv.parentsExt v hv
+      · intro r' v hh hv₀
+        simp only [hhead] at hh
+        by_cases hr : r' = r
+        · rw [if_pos hr, Option.some.injEq] at hh
+          exact Or.inr hh.symm
+        · rw [if_neg hr] at hh
+          exact hInv.headGate r' v hh hv₀
+      · intro v hv hv₀ w hw₀ hr
+        rw [hver] at hv
+        rw [hparents] at hr
+        rcases hInv.gateway v hv hv₀ w hw₀ hr with h0 | ⟨h, hh, hh₀, hwh, hhv⟩
+        · exact Or.inl h0
+        · exact Or.inr ⟨h, hh, hh₀, by rw [hparents]; exact hwh,
+            by rw [hparents]; exact hhv⟩
+    | @apply t r o v s ev vnew h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank
+        C'' hN hL hvis hver hhead hparents =>
+      have hpar_old : ∀ x, x ≠ vnew → C'.parents x = C.parents x := fun x hx => by
+        rw [hparents]; simp [hx]
+      have hpar_new : C'.parents vnew = [v] := by rw [hparents]; simp
+      have hver_old : ∀ x, x ≠ vnew → C'.ver x = C.ver x := fun x hx => by
+        rw [hver]; simp [hx]
+      refine ⟨hbase, hInv.store₀, ?_, ?_, ?_⟩
+      · intro v' hv'
+        rw [hpar_old v'
+          (fun h => not_alloc₀_of_fresh hInv.toGCInv h_vnew (h ▸ hv'))]
+        exact hInv.parentsExt v' hv'
+      · intro r' v' hh hv₀
+        simp only [hhead] at hh
+        by_cases hr : r' = r
+        · rw [if_pos hr, Option.some.injEq] at hh
+          subst hh
+          exact absurd hv₀ (not_alloc₀_of_fresh hInv.toGCInv h_vnew)
+        · rw [if_neg hr] at hh
+          exact hInv.headGate r' v' hh hv₀
+      · intro v' hv' hv₀' w hw₀ hr
+        by_cases hvn : v' = vnew
+        · subst hvn
+          exact gateway_new_node hInv h_vnew hpar_old hpar_new
+            (by intro p hp; rw [List.mem_singleton] at hp; subst hp
+                exact ⟨r, h_head⟩)
+            (by intro p hp; rw [List.mem_singleton] at hp; subst hp
+                rw [h_ver]; rfl)
+            hw₀ hr
+        · have hv'C : (C.ver v').isSome := by rw [← hver_old v' hvn]; exact hv'
+          exact gateway_old_node hInv h_vnew hpar_old hv'C hv₀' hw₀ hr
+    | @merge r₁ r₂ v₁ v₂ vT vm s₁ s₂ sT ev₁ ev₂ evT h_head₁ h_head₂ h_ver₁ h_ver₂
+        h_lca h_verT h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+      have hpar_old : ∀ x, x ≠ vm → C'.parents x = C.parents x := fun x hx => by
+        rw [hparents]; simp [hx]
+      have hpar_new : C'.parents vm = [v₁, v₂] := by rw [hparents]; simp
+      have hver_old : ∀ x, x ≠ vm → C'.ver x = C.ver x := fun x hx => by
+        rw [hver]; simp [hx]
+      refine ⟨hbase, hInv.store₀, ?_, ?_, ?_⟩
+      · intro v' hv'
+        rw [hpar_old v'
+          (fun h => not_alloc₀_of_fresh hInv.toGCInv h_vm (h ▸ hv'))]
+        exact hInv.parentsExt v' hv'
+      · intro r' v' hh hv₀
+        simp only [hhead] at hh
+        by_cases hr : r' = r₁
+        · rw [if_pos hr, Option.some.injEq] at hh
+          subst hh
+          exact absurd hv₀ (not_alloc₀_of_fresh hInv.toGCInv h_vm)
+        · rw [if_neg hr] at hh
+          exact hInv.headGate r' v' hh hv₀
+      · intro v' hv' hv₀' w hw₀ hr
+        by_cases hvn : v' = vm
+        · subst hvn
+          exact gateway_new_node hInv h_vm hpar_old hpar_new
+            (by intro p hp
+                rcases List.mem_cons.mp hp with rfl | hp'
+                · exact ⟨r₁, h_head₁⟩
+                · rw [List.mem_singleton] at hp'; subst hp'
+                  exact ⟨r₂, h_head₂⟩)
+            (by intro p hp
+                rcases List.mem_cons.mp hp with rfl | hp'
+                · rw [h_ver₁]; rfl
+                · rw [List.mem_singleton] at hp'; subst hp'
+                  rw [h_ver₂]; rfl)
+            hw₀ hr
+        · have hv'C : (C.ver v').isSome := by rw [← hver_old v' hvn]; exact hv'
+          exact gateway_old_node hInv h_vm hpar_old hv'C hv₀' hw₀ hr
+    | @query r q vq s h_s h_val =>
+      exact ⟨hbase, hInv.store₀, hInv.parentsExt, hInv.headGate, hInv.gateway⟩
+  | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂ h_head₁ h_head₂ h_ver₁ h_ver₂
+      h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+    have hpar_old : ∀ x, x ≠ vm → C'.parents x = C.parents x := fun x hx => by
+      rw [hparents]; simp [hx]
+    have hpar_new : C'.parents vm = [v₁, v₂] := by rw [hparents]; simp
+    have hver_old : ∀ x, x ≠ vm → C'.ver x = C.ver x := fun x hx => by
+      rw [hver]; simp [hx]
+    refine ⟨hbase, hInv.store₀, ?_, ?_, ?_⟩
+    · intro v' hv'
+      rw [hpar_old v'
+        (fun h => not_alloc₀_of_fresh hInv.toGCInv h_vm (h ▸ hv'))]
+      exact hInv.parentsExt v' hv'
+    · intro r' v' hh hv₀
+      simp only [hhead] at hh
+      by_cases hr : r' = r₁
+      · rw [if_pos hr, Option.some.injEq] at hh
+        subst hh
+        exact absurd hv₀ (not_alloc₀_of_fresh hInv.toGCInv h_vm)
+      · rw [if_neg hr] at hh
+        exact hInv.headGate r' v' hh hv₀
+    · intro v' hv' hv₀' w hw₀ hr
+      by_cases hvn : v' = vm
+      · subst hvn
+        exact gateway_new_node hInv h_vm hpar_old hpar_new
+          (by intro p hp
+              rcases List.mem_cons.mp hp with rfl | hp'
+              · exact ⟨r₁, h_head₁⟩
+              · rw [List.mem_singleton] at hp'; subst hp'
+                exact ⟨r₂, h_head₂⟩)
+          (by intro p hp
+              rcases List.mem_cons.mp hp with rfl | hp'
+              · rw [h_ver₁]; rfl
+              · rw [List.mem_singleton] at hp'; subst hp'
+                rw [h_ver₂]; rfl)
+          hw₀ hr
+      · have hv'C : (C.ver v').isSome := by rw [← hver_old v' hvn]; exact hv'
+        exact gateway_old_node hInv h_vm hpar_old hv'C hv₀' hw₀ hr
+
+/-- **Closure transfer (`mcaClosure_not_dropped`, the `lca_not_dropped` analog)**: a
+prune-time-allocated member of the *current* heads' MCA closure lies in the
+*prune-time* closure, or is the root. Induction over the closure derivation: heads
+transfer by `headGate`; an MCA of closure members routes each side through a
+prune-time closure member (`gateway` / the side's own transfer), and **maximality
+transfers downward** — a dominating common ancestor of the gateway pair would
+dominate the original pair too. -/
+theorem mcaClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {x : Version} (hx : InMcasClosure C x) (hx₀ : (C₀.ver x).isSome) :
+    x = 0 ∨ InMcasClosure C₀ x := by
+  induction hx with
+  | @head v hh halloc =>
+    obtain ⟨r, hr⟩ := hh
+    rcases hInv.headGate r v hr hx₀ with hh₀ | h0
+    · exact Or.inr (InMcasClosure.head hh₀ hx₀)
+    · exact Or.inl h0
+  | @mca a b m ha hb hm iha ihb =>
+    have hside : ∀ t, InMcasClosure C t →
+        ((C₀.ver t).isSome → (t = 0 ∨ InMcasClosure C₀ t)) →
+        Reaches C.parents m t →
+        m = 0 ∨ ∃ g, InMcasClosure C₀ g ∧
+          Reaches C.parents m g ∧ Reaches C.parents g t := by
+      intro t ht iht hmt
+      by_cases ht₀ : (C₀.ver t).isSome
+      · rcases iht ht₀ with rfl | hcl₀
+        · exact Or.inl
+            (Nat.le_antisymm (reaches_le C.parents_lt hmt) (Nat.zero_le m))
+        · exact Or.inr ⟨t, hcl₀, hmt, Relation.ReflTransGen.refl⟩
+      · have htC : (C.ver t).isSome := inMcasClosure_alloc hInv.store ht
+        rcases hInv.gateway t htC ht₀ m hx₀ hmt with h0 | ⟨h, hh, hh₀, hmh, hht⟩
+        · exact Or.inl h0
+        · exact Or.inr ⟨h, InMcasClosure.head hh hh₀, hmh, hht⟩
+    obtain ⟨⟨u, hu, hmu⟩, hmb⟩ := hm.1
+    rcases hu with rfl
+    rcases hside u ha iha hmu with h0 | ⟨ga, hga₀, hmga, hgaa⟩
+    · exact Or.inl h0
+    rcases hside b hb ihb hmb with h0 | ⟨gb, hgb₀, hmgb, hgbb⟩
+    · exact Or.inl h0
+    have hgaA : (C₀.ver ga).isSome := inMcasClosure_alloc hInv.store₀ hga₀
+    have hgbA : (C₀.ver gb).isSome := inMcasClosure_alloc hInv.store₀ hgb₀
+    refine Or.inr (InMcasClosure.mca hga₀ hgb₀
+      ⟨⟨⟨ga, rfl, hInv.reaches_restrict hmga hgaA⟩,
+        hInv.reaches_restrict hmgb hgbA⟩, ?_⟩)
+    rintro y ⟨⟨u', hu', hyga⟩, hygb⟩ hmy
+    rcases hu' with rfl
+    have hyA : (C₀.ver y).isSome := reaches_alloc hInv.store₀ hyga hgaA
+    exact hm.2 y
+      ⟨⟨u, rfl, (hInv.reaches_extend hyga hgaA).trans hgaa⟩,
+        (hInv.reaches_extend hygb hgbA).trans hgbb⟩
+      (hInv.reaches_extend hmy hyA)
+
+/-- Every member of the current closure survives the revised pruning: prune-time
+members transfer into the prune-time closure (kept by `keepSetV`), post-prune members
+were never dropped. -/
+theorem inMcasClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {x : Version} (hx : InMcasClosure C x) : x ∉ droppedSetV C₀ := by
+  rintro ⟨hAlloc, hNK⟩
+  rcases mcaClosure_not_dropped hInv hx hAlloc with rfl | hcl₀
+  · exact hNK (Or.inr rfl)
+  · obtain ⟨⟨sx, ex⟩, hvx⟩ := Option.isSome_iff_exists.mp hAlloc
+    exact hNK (inMcasClosure_mem_keepSetV hcl₀ hvx)
+
+/-- Allocated heads survive the revised pruning (closure base + transfer). -/
+theorem heads_keptV {C₀ C : Configuration D} (hInv : GCInvV C₀ C) :
+    ∀ r v, C.head r = some v → (C.ver v).isSome → v ∉ droppedSetV C₀ :=
+  fun r v hh hsome =>
+    inMcasClosure_not_dropped hInv (InMcasClosure.head ⟨r, hh⟩ hsome)
+
+/-- Allocated LCAs of current heads survive the revised pruning: an LCA is the
+singleton MCA of the head pair, closure layer one. (The `lca_not_dropped` argument,
+re-derived through the closure.) -/
+theorem lca_not_droppedV {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {r₁ r₂ : Replica} {v₁ v₂ vT : Version} {s₁ s₂ : D.State}
+    {ev₁ ev₂ : Set (Op D.AppOp)}
+    (h_head₁ : C.head r₁ = some v₁) (h_head₂ : C.head r₂ = some v₂)
+    (h_ver₁ : C.ver v₁ = some (s₁, ev₁)) (h_ver₂ : C.ver v₂ = some (s₂, ev₂))
+    (h_lca : IsLCA C.parents v₁ v₂ vT) :
+    vT ∉ droppedSetV C₀ :=
+  inMcasClosure_not_dropped hInv
+    (InMcasClosure.mca
+      (.head ⟨r₁, h_head₁⟩ (by rw [h_ver₁]; rfl))
+      (.head ⟨r₂, h_head₂⟩ (by rw [h_ver₂]; rfl))
+      (isMCA_singleton_of_isLCA C.parents_lt h_lca))
+
+/-! ### §6V.2  The recursion reads only closure members: pruning commutes with the
+virtual state (pure congruence — `parents`, hence every MCA query and the measure,
+is shared by the pruned store). -/
+
+private theorem vfoldAux_agree {C : Configuration D}
+    (ver' : Version → Option (D.State × Set (Op D.AppOp)))
+    (hagree : ∀ v, InMcasClosure C v → ver' v = C.ver v)
+    {n : ℕ}
+    (IH : ∀ k, k < n → ∀ (S : Finset Version) (w : Version),
+      (supportOf C.parents (S ∪ {w})).card = k →
+      (∀ x ∈ S, InMcasClosure C x) → InMcasClosure C w →
+      vlcaAux ver' C.parents C.parents_lt S w
+        = vlcaAux C.ver C.parents C.parents_lt S w)
+    {S₀ : Finset Version} {w₀ : Version}
+    (hcl : ∀ x ∈ mcaFinset C.parents S₀ w₀, InMcasClosure C x)
+    (hstrict : (supportOf C.parents (mcaFinset C.parents S₀ w₀)).card < n)
+    (pending : List Version) :
+    ∀ (accS : Finset Version) (acc : D.State),
+      (∀ x ∈ accS, x ∈ mcaFinset C.parents S₀ w₀) →
+      (∀ x ∈ pending, x ∈ mcaFinset C.parents S₀ w₀) →
+      vfoldAux ver' C.parents C.parents_lt accS acc pending
+        = vfoldAux C.ver C.parents C.parents_lt accS acc pending := by
+  induction pending with
+  | nil =>
+    intro accS acc _ _
+    rw [vfoldAux_nil, vfoldAux_nil]
+  | cons m ms ih =>
+    intro accS acc haccS hpend
+    rw [vfoldAux_cons, vfoldAux_cons]
+    have hmM := hpend m List.mem_cons_self
+    have hstateD : stateD ver' m = stateD C.ver m := by
+      unfold stateD
+      rw [hagree m (hcl m hmM)]
+    have hsub : accS ∪ {m} ⊆ mcaFinset C.parents S₀ w₀ := by
+      intro x hx
+      rcases Finset.mem_union.mp hx with hx | hx
+      · exact haccS x hx
+      · rw [Finset.mem_singleton] at hx; subst hx; exact hmM
+    have hcard : (supportOf C.parents (accS ∪ {m})).card < n :=
+      Nat.lt_of_le_of_lt
+        (Finset.card_le_card (supportOf_mono C.parents C.parents_lt hsub)) hstrict
+    have hinner : vlcaAux ver' C.parents C.parents_lt accS m
+        = vlcaAux C.ver C.parents C.parents_lt accS m :=
+      IH _ hcard accS m rfl (fun x hx => hcl x (haccS x hx)) (hcl m hmM)
+    rw [hstateD, hinner]
+    exact ih (accS ∪ {m}) _ (fun x hx => hsub hx)
+      (fun x hx => hpend x (List.mem_cons_of_mem m hx))
+
+/-- **The virtual state reads only the closure**: any store agreeing with `C`'s on
+the current MCA closure computes the same `vlcaAux` at closure-supported pairs. -/
+theorem vlcaAux_agree {C : Configuration D}
+    (ver' : Version → Option (D.State × Set (Op D.AppOp)))
+    (hagree : ∀ v, InMcasClosure C v → ver' v = C.ver v) :
+    ∀ (n : ℕ) (S : Finset Version) (w : Version),
+      (supportOf C.parents (S ∪ {w})).card = n →
+      (∀ x ∈ S, InMcasClosure C x) → InMcasClosure C w →
+      vlcaAux ver' C.parents C.parents_lt S w
+        = vlcaAux C.ver C.parents C.parents_lt S w := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n IH =>
+    intro S w hmeas hS hw
+    have hcl : ∀ x ∈ mcaFinset C.parents S w, InMcasClosure C x := fun x hx =>
+      inMcasClosure_of_mcaFinset hS hw hx
+    rcases hsort : (mcaFinset C.parents S w).sort (· ≤ ·) with _ | ⟨m₁, ms₁⟩
+    · rw [vlcaAux_of_sort_nil ver' C.parents C.parents_lt hsort,
+        vlcaAux_of_sort_nil C.ver C.parents C.parents_lt hsort]
+    · have hm₁M : m₁ ∈ mcaFinset C.parents S w := by
+        rw [← Finset.mem_sort (· ≤ ·), hsort]
+        exact List.mem_cons_self
+      have hstateD : stateD ver' m₁ = stateD C.ver m₁ := by
+        unfold stateD
+        rw [hagree m₁ (hcl m₁ hm₁M)]
+      rw [vlcaAux_of_sort_cons ver' C.parents C.parents_lt hsort,
+        vlcaAux_of_sort_cons C.ver C.parents C.parents_lt hsort, hstateD]
+      rcases ms₁ with _ | ⟨m₂, ms₂⟩
+      · rw [vfoldAux_nil, vfoldAux_nil]
+      · have hm₂M : m₂ ∈ mcaFinset C.parents S w := by
+          rw [← Finset.mem_sort (· ≤ ·), hsort]
+          exact List.mem_cons_of_mem _ List.mem_cons_self
+        have hne : m₁ ≠ m₂ := by
+          have hnd := Finset.sort_nodup (mcaFinset C.parents S w) (· ≤ ·)
+          rw [hsort, List.nodup_cons] at hnd
+          intro h
+          exact hnd.1 (h ▸ List.mem_cons_self)
+        have hstrict : (supportOf C.parents (mcaFinset C.parents S w)).card < n :=
+          hmeas ▸ Finset.card_lt_card
+            (supportOf_mca_ssubset C.parents C.parents_lt hm₁M hm₂M hne)
+        exact vfoldAux_agree ver' hagree IH hcl hstrict (m₂ :: ms₂) {m₁} _
+          (fun x hx => by rw [Finset.mem_singleton] at hx; subst hx; exact hm₁M)
+          (fun x hx => by
+            rw [← Finset.mem_sort (· ≤ ·), hsort]
+            exact List.mem_cons_of_mem _ hx)
+
+open Classical in
+/-- Pruning to `keepSetV` preserves the virtual LCA state of a head pair. -/
+theorem virtualLCAState_dropVerV {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
+    {r₁ r₂ : Replica} {v₁ v₂ : Version}
+    (h_head₁ : C.head r₁ = some v₁) (h_head₂ : C.head r₂ = some v₂)
+    (h_alloc₁ : (C.ver v₁).isSome) (h_alloc₂ : (C.ver v₂).isSome) :
+    virtualLCAState
+        (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀) (heads_keptV hInv)) v₁ v₂
+      = virtualLCAState C v₁ v₂ := by
+  have hagree : ∀ v, InMcasClosure C v →
+      (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀) (heads_keptV hInv)).ver v
+        = C.ver v := by
+    intro v hv
+    rw [dropVer_ver, if_neg (inMcasClosure_not_dropped hInv hv)]
+  exact vlcaAux_agree (C := C) _ hagree _ {v₁} v₂ rfl
+    (fun x hx => by
+      rw [Finset.mem_singleton] at hx
+      subst hx
+      exact .head ⟨r₁, h_head₁⟩ h_alloc₁)
+    (.head ⟨r₂, h_head₂⟩ h_alloc₂)
+
+/-! ### §6V.3  Prune commutation and the headline, widened LTS -/
+
+open Classical in
+/-- **Prune commutation, virtual form** (`step_dropVer` on the widened LTS with the
+`keepSetV` pruning): every `Step3V` step is matched, same label, by the pruned
+images. The gated merge's LCA read survives via `lca_not_droppedV`; the virtual
+merge's recursion reads survive via `inMcasClosure_not_dropped`, and the virtual
+state is computed identically (`virtualLCAState_dropVerV`). -/
+theorem step_dropVerV {C₀ C C' : Configuration D} {ℓ : Label3 D}
+    (hInv : GCInvV C₀ C) (hstep : Step3V D C ℓ C')
+    (hh' : ∀ r v, C'.head r = some v → (C'.ver v).isSome → v ∉ droppedSetV C₀) :
+    Step3V D
+      (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀) (heads_keptV hInv)) ℓ
+      (dropVer C' (droppedSetV C₀) (zero_not_droppedV C₀) hh') := by
+  cases hstep with
+  | base hstep' =>
+    refine Step3V.base ?_
+    cases hstep' with
+    | @createReplica r h_fresh C'' hN hL hvis hver hhead hparents =>
+      refine Step3.createReplica ?_ _ ?_ ?_ ?_ ?_ ?_ ?_
+      · exact h_fresh
+      · exact hN
+      · exact hL
+      · exact hvis
+      · funext w
+        simp only [dropVer_ver, hver]
+      · exact hhead
+      · exact hparents
+    | @apply t r o v s ev vnew h_head h_ver h_fresh_t h_fresh_store h_vnew h_rank
+        C'' hN hL hvis hver hhead hparents =>
+      have hvKeep : v ∉ droppedSetV C₀ :=
+        heads_keptV hInv r v h_head (by rw [h_ver]; rfl)
+      have hvnewKeep : vnew ∉ droppedSetV C₀ := fun hm =>
+        not_alloc₀_of_fresh hInv.toGCInv h_vnew hm.1
+      refine Step3.apply (v := v) (s := s) (ev := ev) (vnew := vnew)
+        ?_ ?_ ?_ ?_ ?_ h_rank _ ?_ ?_ ?_ ?_ ?_ ?_
+      · exact h_head
+      · show (if v ∈ droppedSetV C₀ then none else C.ver v) = some (s, ev)
+        rw [if_neg hvKeep]; exact h_ver
+      · exact h_fresh_t
+      · intro w sw Ew hw
+        by_cases hwS : w ∈ droppedSetV C₀
+        · rw [dropVer_ver, if_pos hwS] at hw; cases hw
+        · rw [dropVer_ver, if_neg hwS] at hw
+          exact h_fresh_store w sw Ew hw
+      · show (if vnew ∈ droppedSetV C₀ then none else C.ver vnew) = none
+        rw [if_neg hvnewKeep]; exact h_vnew
+      · exact hN
+      · exact hL
+      · exact hvis
+      · funext w
+        simp only [dropVer_ver, hver]
+        by_cases hw : w = vnew
+        · subst hw; simp [hvnewKeep]
+        · simp [hw]
+      · exact hhead
+      · exact hparents
+    | @merge r₁ r₂ v₁ v₂ vT vm s₁ s₂ sT ev₁ ev₂ evT h_head₁ h_head₂ h_ver₁ h_ver₂
+        h_lca h_verT h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+      have hv₁Keep : v₁ ∉ droppedSetV C₀ :=
+        heads_keptV hInv r₁ v₁ h_head₁ (by rw [h_ver₁]; rfl)
+      have hv₂Keep : v₂ ∉ droppedSetV C₀ :=
+        heads_keptV hInv r₂ v₂ h_head₂ (by rw [h_ver₂]; rfl)
+      have hvTKeep : vT ∉ droppedSetV C₀ :=
+        lca_not_droppedV hInv h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca
+      have hvmKeep : vm ∉ droppedSetV C₀ := fun hm =>
+        not_alloc₀_of_fresh hInv.toGCInv h_vm hm.1
+      refine Step3.merge (v₁ := v₁) (v₂ := v₂) (vT := vT) (vm := vm)
+        (s₁ := s₁) (s₂ := s₂) (sT := sT) (ev₁ := ev₁) (ev₂ := ev₂) (evT := evT)
+        ?_ ?_ ?_ ?_ ?_ ?_ ?_ h_rank₁ h_rank₂ _ ?_ ?_ ?_ ?_ ?_ ?_
+      · exact h_head₁
+      · exact h_head₂
+      · show (if v₁ ∈ droppedSetV C₀ then none else C.ver v₁) = some (s₁, ev₁)
+        rw [if_neg hv₁Keep]; exact h_ver₁
+      · show (if v₂ ∈ droppedSetV C₀ then none else C.ver v₂) = some (s₂, ev₂)
+        rw [if_neg hv₂Keep]; exact h_ver₂
+      · exact h_lca
+      · show (if vT ∈ droppedSetV C₀ then none else C.ver vT) = some (sT, evT)
+        rw [if_neg hvTKeep]; exact h_verT
+      · show (if vm ∈ droppedSetV C₀ then none else C.ver vm) = none
+        rw [if_neg hvmKeep]; exact h_vm
+      · exact hN
+      · exact hL
+      · exact hvis
+      · funext w
+        simp only [dropVer_ver, hver]
+        by_cases hw : w = vm
+        · subst hw; simp [hvmKeep]
+        · simp [hw]
+      · exact hhead
+      · exact hparents
+    | @query r q vq s h_s h_val =>
+      exact Step3.query (s := s) h_s h_val
+  | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂ h_head₁ h_head₂ h_ver₁ h_ver₂
+      h_vm h_rank₁ h_rank₂ C'' hN hL hvis hver hhead hparents =>
+    have hv₁Keep : v₁ ∉ droppedSetV C₀ :=
+      heads_keptV hInv r₁ v₁ h_head₁ (by rw [h_ver₁]; rfl)
+    have hv₂Keep : v₂ ∉ droppedSetV C₀ :=
+      heads_keptV hInv r₂ v₂ h_head₂ (by rw [h_ver₂]; rfl)
+    have hvmKeep : vm ∉ droppedSetV C₀ := fun hm =>
+      not_alloc₀_of_fresh hInv.toGCInv h_vm hm.1
+    have hvirt := virtualLCAState_dropVerV hInv h_head₁ h_head₂
+      (by rw [h_ver₁]; rfl) (by rw [h_ver₂]; rfl)
+    refine Step3V.mergeVirtual (v₁ := v₁) (v₂ := v₂) (vm := vm)
+      (s₁ := s₁) (s₂ := s₂) (ev₁ := ev₁) (ev₂ := ev₂)
+      ?_ ?_ ?_ ?_ ?_ h_rank₁ h_rank₂ _ ?_ ?_ ?_ ?_ ?_ ?_
+    · exact h_head₁
+    · exact h_head₂
+    · show (if v₁ ∈ droppedSetV C₀ then none else C.ver v₁) = some (s₁, ev₁)
+      rw [if_neg hv₁Keep]; exact h_ver₁
+    · show (if v₂ ∈ droppedSetV C₀ then none else C.ver v₂) = some (s₂, ev₂)
+      rw [if_neg hv₂Keep]; exact h_ver₂
+    · show (if vm ∈ droppedSetV C₀ then none else C.ver vm) = none
+      rw [if_neg hvmKeep]; exact h_vm
+    · rw [hvirt]
+      exact hN
+    · exact hL
+    · exact hvis
+    · funext w
+      rw [hvirt]
+      simp only [dropVer_ver, hver]
+      by_cases hw : w = vm
+      · subst hw; simp [hvmKeep]
+      · simp [hw]
+    · exact hhead
+    · exact hparents
+
+/-- A labelled `Step3V` run (finite trace on the widened LTS). -/
+inductive StepsV (D : ConditionedMRDTSig) :
+    Configuration D → List (Label3 D) → Configuration D → Prop where
+  | nil (C : Configuration D) : StepsV D C [] C
+  | cons {C C' C'' : Configuration D} {ℓ : Label3 D} {ℓs : List (Label3 D)} :
+      Step3V D C ℓ C' → StepsV D C' ℓs C'' → StepsV D C (ℓ :: ℓs) C''
+
+/-- Every gated run is a widened run. -/
+theorem stepsV_of_steps {C : Configuration D} {ℓs : List (Label3 D)}
+    {C' : Configuration D} (hrun : Steps D C ℓs C') : StepsV D C ℓs C' := by
+  induction hrun with
+  | nil C => exact StepsV.nil C
+  | cons hstep _ ih => exact StepsV.cons (Step3V.base hstep) ih
+
+/-- `GCInvV` along a widened run. -/
+theorem gcInvV_steps {C₀ : Configuration D} {C ℓs C'}
+    (hrun : StepsV D C ℓs C') : GCInvV C₀ C → GCInvV C₀ C' := by
+  induction hrun with
+  | nil => exact id
+  | cons hstep _ ih => exact fun hInv => ih (gcInvV_step hInv hstep)
+
+/-- Run-level prune commutation on the widened LTS. -/
+theorem steps_dropVerV {C₀ : Configuration D} {C ℓs C'}
+    (hrun : StepsV D C ℓs C') (hInv : GCInvV C₀ C)
+    (hh : ∀ r v, C.head r = some v → (C.ver v).isSome → v ∉ droppedSetV C₀)
+    (hh' : ∀ r v, C'.head r = some v → (C'.ver v).isSome → v ∉ droppedSetV C₀) :
+    StepsV D (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀) hh) ℓs
+      (dropVer C' (droppedSetV C₀) (zero_not_droppedV C₀) hh') := by
+  induction hrun with
+  | nil => exact StepsV.nil _
+  | @cons Ca Cb Cc ℓ ℓs hstep hrest ih =>
+    exact StepsV.cons
+      (step_dropVerV hInv hstep (heads_keptV (gcInvV_step hInv hstep)))
+      (ih (gcInvV_step hInv hstep) (heads_keptV (gcInvV_step hInv hstep)) hh')
+
+/-- The prune-point configuration under the revised keep set. -/
+noncomputable def pruneKeepV (C₀ : Configuration D)
+    (hStore : StoreInv C₀.ver C₀.parents) : Configuration D :=
+  dropVer C₀ (droppedSetV C₀) (zero_not_droppedV C₀)
+    (heads_keptV (gcInvV_init C₀ hStore))
+
+/-- **HEADLINE — commit GC safety on the widened LTS** (`gc_safety` restated, task
+#90): pruning the store to the MCA-closure keep set
+`keepSetV = {v : ∃ w ∈ mcasClosure(heads), E(w) ⊆ E(v)} ∪ {0}` preserves every
+`Step3V` run — gated merges AND virtual (recursive) merges, same label trace — and
+every head read, from the single hypothesis `StoreInv C₀`. -/
+theorem gc_safetyV (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.parents)
+    {ℓs : List (Label3 D)} {C : Configuration D} (hRun : StepsV D C₀ ℓs C) :
+    StepsV D (pruneKeepV C₀ hStore) ℓs
+      (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀)
+        (heads_keptV (gcInvV_steps hRun (gcInvV_init C₀ hStore))))
+    ∧ ∀ r, (dropVer C (droppedSetV C₀) (zero_not_droppedV C₀)
+        (heads_keptV (gcInvV_steps hRun (gcInvV_init C₀ hStore)))).N r = C.N r :=
+  ⟨steps_dropVerV hRun (gcInvV_init C₀ hStore) _ _, fun _ => rfl⟩
+
+/-! ### Axiom audit (task #90 GC layer) -/
+
+#print axioms gcInvV_step
+#print axioms mcaClosure_not_dropped
+#print axioms lca_not_droppedV
+#print axioms virtualLCAState_dropVerV
+#print axioms step_dropVerV
+#print axioms gc_safetyV
+
 end GC
 
 /-! ## §7 SPOT + the head-sync necessity countermodel

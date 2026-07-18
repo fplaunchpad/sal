@@ -68,6 +68,30 @@ def IsLCA (parents : Version → List Version) (v₁ v₂ vT : Version) : Prop :
   Reaches parents vT v₁ ∧ Reaches parents vT v₂ ∧
     ∀ w, Reaches parents w v₁ → Reaches parents w v₂ → Reaches parents w vT
 
+/-! ## Virtual LCAs (task #90): common ancestors of a support set, and MCAs
+
+In a criss-cross configuration no version satisfies `IsLCA` and the ternary Merge is
+disabled. The virtual-LCA extension (`whiteboard/virtual-lca-note.md`) merges the
+antichain of **maximal common ancestors** recursively. The recursion's sub-pairs pair a
+*scratch node* (identified with its finite real support `S`) against a version `w`, so
+the predicates are stated in **set-support form**: `S = {v₁}` recovers the head pair. -/
+
+/-- Common ancestors of a support set `S` and a version `w`: versions reaching some
+member of `S` and reaching `w`. With `S = {v₁}` this is the plain common-ancestor set
+of the pair `(v₁, w)`. -/
+def CommonAnc (parents : Version → List Version) (S : Set Version) (w : Version) :
+    Set Version :=
+  {x | (∃ u ∈ S, Reaches parents x u) ∧ Reaches parents x w}
+
+/-- `m` is a **maximal common ancestor** (MCA) of the support `S` and `w`: a common
+ancestor dominated by no other. In a criss-cross configuration the MCA set has two or
+more elements and no `IsLCA` version exists; when it is a singleton `{m}`, `m` is the
+LCA (`isMCA_singleton_of_isLCA` / `isLCA_of_isMCA_forall_eq`, `LCA_Lemma.lean`). -/
+def IsMCA (parents : Version → List Version) (S : Set Version) (w : Version)
+    (m : Version) : Prop :=
+  m ∈ CommonAnc parents S w ∧
+    ∀ x ∈ CommonAnc parents S w, Reaches parents m x → x = m
+
 /-! ## Well-foundedness from `parents_lt`
 
 `parents_lt : p ∈ parents v → p < v` makes the parent-step relation a subrelation of `<` on

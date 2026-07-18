@@ -279,3 +279,27 @@ mechanization. A candidate follow-up question: whether `keepSetV` is tight,
 i.e. whether every closure member is readable by some future virtual merge
 (the converse of future-proofing; T5's `c1` shows non-members can be dead, but
 tightness of the closure itself is unexamined).
+
+## Addendum: errata from the mechanization pass
+
+1. The extension landed as a conservative NEW step relation `Step3V`
+   (with `Step3V.base` embedding every old step and `mergeVirtual` the
+   one new case) rather than a new constructor inside `Step3`. Forced:
+   in-place widening breaks exhaustive `Step3` case analyses in
+   instance files the bill omitted (`Peritext_Composed/Supplies.lean`,
+   `RGA_Rehoming/RGA_Honest_Residual.lean`, `RGA_HHext_Discharge.lean`).
+2. Section 7's claim that everything beyond the two new proofs is case
+   duplication is wrong for the H, NF, and Eq-quotient layers: their
+   merge cases consume the registered slot's layer canonicity, so each
+   owes its own fold induction, and the GenDisc route additionally
+   owes GenDisc at intermediate antichain unions (consistent with
+   section 5, contradicting section 7's classification). These mirrors
+   are the recorded residue; the production Eq-quotient capstones do
+   not yet run over `Step3V`.
+3. `GCInvV` extends `GCInv` (keeping the tier-1 artifact intact) and
+   needed two fields beyond the gateway: `parentsExt` (prune-time
+   parent lists immutable) and `store₀`; the maximality-transfer moves
+   genuinely consume both. The well-founded measure landed in
+   LCA_Lemma.lean, not ExecutionModel.lean (import surface).
+4. `gc_safetyV` kept the headline shape of `gc_safety` unchanged; the
+   gateway forced no statement change.
