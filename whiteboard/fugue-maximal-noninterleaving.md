@@ -598,3 +598,166 @@ at the Fugue file's `succOf`, executed here at the variant; porting it
 back to the recency kernel's backward-run adjacency is now a transcription
 job rather than an open design question. G2 remains the substantive open
 item for both policies.
+
+## 9. The traversal theory and the forward discharge (task #88)
+
+*Written 2026-07-18. Executable check: `whiteboard/litmus/traversal_check.py`.
+Mechanization: `Sal/MRDTs/RGA_Embed/Sided_Traversal.lean` (the kernel
+interval form) and
+`Sal/ConditionedMRDTs/MRDT_Instances/SidedRGA/SidedRGA_NonInterleaving.lean`
+(the FugueMax condition-(1) discharge). Paper reference: Lemma 7, Lemma 8,
+and the Theorem 9 proof of arXiv:2305.00583v3, re-read from the PDF on
+2026-07-18, not from memory.*
+
+### 9.1 The traversal, in two forms
+
+The paper's Lemma 7 layer says: the list order of a forward
+non-interleaving algorithm is a depth-first pre-order traversal of the
+left-origin tree; Lemma 8(a) computes left origins by a walk up the
+algorithm's own tree. On the embedded-chain family the algorithm's tree is
+implicit in the chains, and the marker theorems
+(`sdisplay_iff_schainBefore`, `fmdisplay_iff_fmChainBefore`) already state
+that the display order IS the in-order rule on chains: L-subtrees, node,
+R-subtrees, siblings by the kernel's entry order. So the traversal theorem
+splits into two deliverables with different natural homes.
+
+**The executable form** lives in Python (`traversal_check.py`): build the
+tree from the minted chains (each node's parent is its chain minus the
+last entry), emit the recursive in-order traversal with the kernel's
+sibling orders (plain sided: L ascending stamp then node then R descending
+stamp; FugueMax: L ascending stamp then node then R by reverse right
+origin, ties ascending stamp), and check that the emission equals the
+descending-key sort of all minted elements, dead included, on the directed
+cases and randomized sweeps of both policies.
+
+**The interval form** lives in Lean and is what the discharges consume.
+For a prefix p, the subtree of p is the display interval around p:
+`schain_subtree_convex` / `fm_subtree_convex` give contiguity (already in
+the kernels), and the new `Sided_Traversal.lean` lemmas pin the sides:
+an extension displays after the node iff it is R-headed and before iff it
+is L-headed (`schain_ext_after_is_R`, `schain_ext_before_is_L`,
+`schain_ext_side`), shared prefixes strip and lift
+(`schainBefore_append_strip`, `schainBefore_append_lift`), and the chain
+order is transitive on positive chains (`schainBefore_trans`, via the
+marker theorem and `keyLt_trans`). A recursive emission function in Lean
+was designed and deliberately not built: every consumer below needs only
+the interval lemmas, and the emission adds a fueled recursion over the
+chain set with no downstream client. The Python twin carries the
+executable statement instead.
+
+### 9.2 Lemma 8(a) in chain form: the loShape invariant
+
+The bridge from recorded left origins to chain geometry is the paper's
+walk-up rule, which in chain form is a single shape statement.
+
+**loShape**: every minted element x satisfies
+`chain(x) = chain(lo(x)) ++ (R-entry) :: ls` with `ls` all-L.
+
+R mints satisfy it with `ls = []` (the existing LinkR clause). L mints
+need the new content: the tombstone-visible successor n of an anchor a
+with an R-child satisfies `chain(n) = chain(a) ++ (R-entry) :: all-L`.
+The existing `succ_R_descendant` gives the decomposition with an
+unconstrained rest; the all-L upgrade is an argmax argument: if the rest
+contained an R entry, the node just above that entry (minted, by
+ancestor closure `chain_prefix_minted`) would display after a and before
+n, beating the argmax (`succOfM_max`). Contradiction. The L mint then
+extends n by one L entry, preserving the shape. Under the Fugue policy
+the same statement holds by the same argument (the sibling order is
+never consulted), but the Fugue file's `GInv` carries no link clauses at
+all, so the entire link layer would have to be built there first; see
+9.5.
+
+### 9.3 The first-after descent, and the forward discharge
+
+The paper's condition-(1) proof identifies B with the first node the
+traversal visits among A's right descendants. The chain replay avoids
+naming that node: it is a descent on the left-origin walk.
+
+**Descent lemma**: if c is minted and `chain(c) = chain(A) ++ (R-entry)
+:: ext`, then some minted D has `lo(D) = A` and displays before or equal
+to c. Proof by strong induction on chain length: loShape(c) writes
+`chain(c) = chain(lo(c)) ++ (R-entry) :: all-L`. Both `chain(A)` and
+`chain(lo(c))` are prefixes of `chain(c)`, hence comparable. Equal:
+telescoping sums force `lo(c) = A`, take D = c. `chain(lo(c))` shorter
+than `chain(A)`: then the R entry that A's decomposition places inside
+the all-L tail of lo(c)'s decomposition is an L entry, contradiction, so
+this case is vacuous. Longer: `chain(lo(c))` extends `chain(A)`
+R-headedly, lo(c) displays before c (it is an R-ancestor), recurse on
+lo(c).
+
+**Forward non-interleaving** (`forwardNIM_of_inv`): given lo(B) = A with
+B display-earliest among elements with left origin A (strict reading),
+loShape(B) makes B an R-extension of A, so A displays before B. Any live
+c strictly between lands in A's subtree by convexity, is R-headed by the
+side lemma, and the descent produces a minted D with lo(D) = A
+displaying before or equal to c, hence strictly before B; minimality
+says B displays before D; `keyLt_trans` plus `keyLt_irrefl` close the
+cycle. Nothing else is needed: no traversal emission, no causal
+reasoning, no liveness of the in-between witness beyond mintedness.
+
+Mechanized as `fuguemax_forward_ni : FugueMaxForwardNonInterleaving Γ`,
+concluding the stated def, with the supplementary reachability invariant
+`maxReach_inv2` carrying exactly the one new clause (the all-L successor
+shape for L mints, `SLC`), transported through inserts, deletes, and
+syncs the same way the main bundle is. Full Theorem 9 for the variant
+now reduces to the backward condition alone
+(`fuguemax_theorem9_of_backward`).
+
+### 9.4 What breaks on dishonest states
+
+loShape is a generation-discipline fact. A state that stores an L entry
+whose parent is not the anchor's successor, or an R entry minted while
+the anchor already had an R-child, displays fine (the kernel total order
+does not care) but breaks the walk-up rule: the descent then produces a
+D whose recorded lo is wrong, and condition (1) genuinely fails (mint
+c as a deep L-descendant with a forged lo and it sits between A and its
+first child with no element with lo = A before it). The honesty clause
+that excludes this is precisely the MaxReach mint rule: side and parent
+come from `mGenInsAfter`, never from the op payload.
+
+### 9.5 The Fugue-policy forward condition: deferred, with the cost known
+
+`FugueForwardNonInterleaving` (the plain sided kernel, recency
+tiebreak) is believed true with the SAME proof: the argmax argument,
+the descent, and the discharge never consult the sibling order. What is
+missing is infrastructure, not mathematics: the Fugue file's `GInv` has
+no link clauses, so the LinkR/LinkL layer, the closure walk
+(`chain_prefix_minted`), `chain_head_R`, and the transports would all
+have to be rebuilt over `FugueReach` (roughly the 900-line §2 of the
+FugueMax file) before the ~350 lines above replay. Deferred as a
+transcription job; no open design question remains for it.
+
+### 9.6 The backward condition: design state, honest
+
+Condition (2) for FugueMax remains open. The design so far, validated on
+paper against the paper's own proof:
+
+* Case lo(A) = lo(B), A an L mint: LinkL makes A a child of B, so A
+  displays before B, and the in-between analysis splits by convexity at
+  B. Later L-siblings of A are refuted by A-latest (the sibling's parent
+  is B by chain cancellation, so it too has right origin B and displays
+  after A, contradiction). In-betweens inside A's own R-subtree need the
+  paper's first-R-child argument, which needs TWO further mint-time
+  clauses not yet carried: (NR) an R mint with recorded end origin has an
+  all-R chain (else its parent's ancestors, minted by closure, would have
+  been successor candidates); and a stable form of "the first R-child of
+  A saw B as its successor". Both are provable at the mint step by the
+  same closure technique; neither is in the tree yet.
+* Case lo(A) = lo(B), A an R mint: impossible. The existing LinkR
+  geometry clause says B is not an R-descendant of lo(A); loShape(B)
+  says it is.
+* Case lo(A) ≠ lo(B): A is an R mint (an L mint forces equal left
+  origins: both loShape(B) and the strengthened LinkL decompose
+  chain(B) at its LAST R entry, so the two lo's chains coincide and
+  telescoping sums equate them). The tag of A's R entry is B's full key,
+  which yields a kernel-level fact with no analogue in the paper: B
+  cannot lie in A's subtree, because the tag embeds B's key in two
+  symbols per symbol and lengths collapse. The exception witness
+  construction (the paper picks a causally minimal in-between element)
+  is the genuinely open part: causal minimality has no invariant-level
+  replay yet, and the candidate replacement (walk to the subtree root of
+  the in-between element below lo(A)) is designed but not validated.
+
+The two-clause extension plus the exception construction is the honest
+residue of Theorem 9. Everything else (condition 3, condition 1, the
+reduction) is kernel-clean.
