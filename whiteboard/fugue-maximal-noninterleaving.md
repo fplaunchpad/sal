@@ -761,3 +761,452 @@ paper against the paper's own proof:
 The two-clause extension plus the exception construction is the honest
 residue of Theorem 9. Everything else (condition 3, condition 1, the
 reduction) is kernel-clean.
+
+### 9.7 The backward condition: a refutation of the live-witness reading, and the exception-witness construction (task #92 item 1)
+
+*Written 2026-07-18, design phase only (pen and paper, then Python; no
+Lean here). Executable check: `whiteboard/litmus/fuguemax_backward_check.py`
+(run of record: `python3 fuguemax_backward_check.py 1000`). The paper's
+Definition 4, Lemma 5, and the Theorem 9 Condition (2) proof were
+re-extracted from the arXiv:2305.00583v3 PDF on 2026-07-18, not from
+memory.*
+
+**Headline.** Two results. First, a refutation: the Lean statement
+`BackwardExceptionM` as it stands requires the Lemma-5 exception witness
+C to be LIVE, and that reading is FALSE on this realization. The paper's
+own Figure-7 execution followed by one delete is a countermodel, and the
+randomized sweeps confirm it on three further states once branches are
+allowed to delete (the section-8.5 sweeps never were: their branches are
+insert-only, which is why this survived until now). The corrected
+statement lets C range over all minted elements, tombstones included,
+which is the paper's own quantification. Second, the construction: for
+the corrected statement, the causal-minimality step of the paper's proof
+is replaced by a state-definable exception witness, backed by three new
+mint-time invariant clauses (sharpening the two forecast in 9.6). The
+construction is validated on 12 directed cases and 4500 randomized
+states: the corrected condition, the witness, and the clauses are clean
+everywhere, and the witness function reproduces the paper's own C on the
+Figure-7 family.
+
+#### 9.7.1 The paper's condition, and the exact step being replaced
+
+Definition 4, condition (2), verbatim:
+
+> "(Backward non-interleaving, with exceptions) If B is the right origin
+> of A, and A appears later in the list than any other element that has
+> B as right origin, then A and B are consecutive list elements, unless
+> Theorem 5 below says otherwise."
+
+The exception (the paper's Lemma 5, quoted in full in section 1): A and
+B have different left origins, and there is a C in the current list
+state with A.leftOrigin < C < B such that C is not a descendant of
+A.leftOrigin in the left-origin tree.
+
+The Theorem 9 Condition (2) proof splits on whether the left origins are
+equal. The equal case is closed by tree geometry. The unequal case must
+EXHIBIT the C of the exception, and the paper does it causally:
+
+> "Since A and B are not consecutive, there exist one or more elements
+> in between A and B; take C to be an in-between element that is not
+> causally later than any other element between A and B."
+
+Causal minimality is then consumed three times: a descendant of a
+sibling is excluded ("otherwise the sibling would be a causally prior
+element between A and B"), a descendant of A is excluded ("C's right
+origin is an in-between element that is causally prior to C,
+contradicting our choice of C"), and a sibling of A with a different
+right origin is excluded ("C's right origin is a causally prior
+in-between element, again contradicting our choice of C"). This
+minimal-element selection is the step our reachability formulation
+cannot replay: the invariant carries per-record facts about the current
+knowledge, not a well-founded causal order to minimize over. The
+replacement below selects the witness by chain geometry instead, and the
+three new invariant clauses are exactly the mint-time facts the paper's
+three exclusions extracted from causal priority.
+
+#### 9.7.2 The refutation: the witness must be allowed to be dead
+
+The current Lean definition (`SidedRGA_FugueMax.lean`):
+
+    def BackwardExceptionM Γ K A B : Prop :=
+      mLoOf K A ≠ mLoOf K B ∧
+      ∃ C ∈ mMintedIds K, mLive Γ K C ∧
+        mBefore Γ K (mLoOf K A) C ∧ mBefore Γ K C B ∧
+        ¬ mLoDesc K C (mLoOf K A)
+
+The `mLive` conjunct was our adaptation decision, made when everything
+in the harness happened to be alive. It does not survive deletes.
+Countermodel: run the paper's Figure-7 execution exactly as in 8.4 (the
+paper's letters map to ids 3, 4, 5 for the three roots and X = 6 with
+recorded origins (lo, ro) = (3, 5), Y = 7 with (3, 4); display
+`[3, 6, 7, 4, 5]`), then delete 4. The visible document is
+`[3, 6, 7, 5]`. Take the condition-(2) pair (A, B) = (6, 5), the
+paper's (X, C):
+
+* the premises hold: 6 and 5 are live, `ro(6) = 5`, and 6 is the ONLY
+  minted element with right origin 5, so it is trivially display-last
+  among them (strict reading, tombstones included);
+* they are not consecutive: 7 is live and sits between;
+* the exception's first half holds: `lo(6) = 3 ≠ 0 = lo(5)`;
+* but no LIVE witness exists: the only elements strictly between
+  `lo(6) = 3` and 5 in the full order are 6, 7 (both have recorded left
+  origin 3, hence are descendants of 3 in the left-origin tree) and the
+  dead 4.
+
+So `BackwardNIExcM` as stated is false at this reachable configuration.
+The witness the situation wants is the tombstone 4: it is exactly the C
+the paper's proof produces for this execution. The paper's Lemma 5
+quantifies C over "the current list state", and its list state contains
+every inserted element (deletion only overwrites the value with a
+tombstone marker; right origins are even defined via "the list including
+tombstones"). The corrected definition therefore drops the one conjunct
+`mLive Γ K C`, and nothing else:
+
+    def BackwardExceptionM Γ K A B : Prop :=
+      mLoOf K A ≠ mLoOf K B ∧
+      ∃ C ∈ mMintedIds K,
+        mBefore Γ K (mLoOf K A) C ∧ mBefore Γ K C B ∧
+        ¬ mLoDesc K C (mLoOf K A)
+
+Two remarks on the corrected reading. First, it is strictly
+paper-faithful and strictly weaker as a non-interleaving guarantee: a
+pair excused by a dead witness is a pair the visible document may
+interleave. That is forced, not chosen: the countermodel shows the live
+reading is simply not a theorem of this algorithm (and, since the
+realization is the paper's algorithm on these traces, of FugueMax
+itself; the paper never claimed it, its C was never required visible).
+Second, the conclusion `mConsecutive` KEEPS its live reading (no live
+element strictly between): that is the visible-document property and it
+is the one the corrected statement proves. The refutation is
+machine-checked in the new harness on both Figure-7 mint orders plus two
+further directed families (the beta0 cases below, where the dead witness
+is not a root sibling but a concurrent run element), and fired on 3 of
+4500 randomized states once branch deletes were enabled. The historical
+`check_wk` in `fugue_noninterleave_check.py` implements the live reading
+and is left untouched; its section-8.5 verdicts stand for the states it
+saw, but its C2 clause should not be quoted for delete-bearing traces.
+
+#### 9.7.3 The mint-time invariant clauses, sharpened
+
+Notation, all native to `SidedRGA_FugueMax.lean`: ch(x) = `mChainOf K x`
+(the immutable birth chain; ch(0) = []), key(x) = `mKey Γ K x`, x < y is
+the strong-list display order `mBefore Γ K x y` (tombstones included; 0
+= start is before every minted element because every minted chain is
+R-headed, see (RHead) below), lo/ro are the recorded origins, and
+Subtree(p) = the minted x with ch(p) a prefix of ch(x). An R mint is a
+record with op `ins a Side.R` (its chain is ch(a) plus one tagged R
+entry, and a = lo); an L mint has op `ins n Side.L` (chain ch(n) plus
+one L entry, n = the parent = the recorded ro). The chain shape
+determines the branch: the last entry's side is the op's side, so a
+minted element whose chain is ch(P) plus one L entry has a record with
+op `ins P Side.L` and hence ro = some P (LinkL), and dually for R. This
+record-shape inversion is used silently below.
+
+Section 9.6 forecast two further clauses: (NR), the all-R chain of an
+end-origin R mint, and a stable form of "the first R-child of A saw B as
+its successor". The construction actually needs THREE clauses, all on R
+mints, and (NR) turns out to be unnecessary. For every R-mint record g
+with anchor a = g.lo:
+
+* **(R0)** if a = 0 then g.ro = none. (A root-anchored R mint happens
+  only in a knowledge with no minted elements: any minted element's
+  chain is R-headed, so by ancestor closure the root would have a minted
+  R-child and the policy would take the L branch. Hence there was no
+  successor to record.)
+* **(RSA)** if g.ro = some n then a < n in display. (The successor
+  candidates are filtered by "displays after the anchor" at mint time;
+  keys are immutable, so the comparison persists verbatim.)
+* **(RSuccL)** if a ≠ 0 and a's record is an L mint with parent P: then
+  g.ro = some n, and either n = P, or there is a minted s with ch(s) =
+  ch(P) ++ [L entry], a < s in display, and ch(s) a prefix of ch(n).
+  (In words: an R mint under an L-minted anchor records, as successor,
+  the anchor's parent or an element inside the subtree of a LATER
+  L-sibling of the anchor; that sibling s is the stable witness.)
+* **(RSuccR)** if a ≠ 0 and a's record is an R mint with recorded
+  ro = some m: then g.ro = some n with key(n) ≥ key(m), that is, n = m
+  or n displays before m. (The anchor's own recorded successor m was
+  minted in the minter's knowledge, by the anchor's LinkR clause
+  holding there, and displayed after a; the argmax successor therefore
+  displays no later than m.)
+
+Two derived facts, no new clauses: **(RHead)** every minted chain is
+R-headed (strong induction on chain length through loShape: the bottom
+block extends ch(0) = [] by an R entry, and higher chains inherit their
+head), and the L-mint counterpart of (RSA) (an L mint's parent displays
+after its left origin) is already a consequence of LinkL + SLC via the
+kernel's extR display lemma.
+
+Why these are provable AT THE MINT STEP, over the minter's knowledge
+K_D, in Lean-ready detail. (R0): as in the parenthesis, from
+`hasRChildM K_D 0 = false` plus (RHead) plus `chain_prefix_minted`.
+(RSA): unfold `succCandM`; the a ≠ 0 branch filters by
+`keyLt (key n) (key a)`; the a = 0 branch is (R0)-vacuous. (RSuccR): m
+is minted in K_D by the anchor's LinkR clause there, a < m by the
+anchor's (RSA) there, so (m, key m) is a successor candidate and
+`foldl_maxKey_not_beaten` pins key(n) ≥ key(m). (RSuccL): P is minted in
+K_D with a < P (LinkL of the anchor plus extR), so the candidate set is
+nonempty and n exists; if n ≠ P then key(n) > key(P) by the argmax
+against candidate P plus key injectivity (`fmCoordOf_inj`), so
+a < n < P; convexity of Subtree(P) (`fm_subtree_convex`, corners a and
+P) puts n in Subtree(P), the before-side lemma makes its extension
+L-headed, and the L-child of P on n's path (minted by
+`chain_prefix_minted`) is the witness s; s ≠ a because s = a would put
+n inside Subtree(a) after a, exhibiting by closure a minted R-child of
+a, against the R branch's `hasRChildM K_D a = false`; a < s because
+s < a would trap a inside Subtree(s) by convexity and force s = a by
+chain lengths and telescoping sums. Every ingredient is a fact about K_D, which satisfies
+the full invariant bundle by induction, so no appeal to "what the minter
+had seen" beyond the knowledge itself is ever made. This is the
+invariant-level replacement for causal minimality: a universal fact
+about the mint-time knowledge does not transport, but an EXISTENTIAL
+witness (the sibling s, the origin m) does, because minted records,
+chains, and keys are stable under knowledge growth.
+
+#### 9.7.4 Step 0 and the case dichotomy
+
+Fix K with the invariant bundles and a premise pair: A, B minted and
+live, ro(A) = some B, and LAST(A, B): every minted D ≠ A with ro(D) =
+some B has D < A (the strict reading, tombstones included).
+
+**Step 0: A < B, always.** If A is an L mint, its parent is B (LinkL, ro
+= parent) and an L extension displays before its node. If A is an R mint
+with anchor a: a ≠ 0 by (R0), a < B by (RSA); if B < A held, then a < B
+< A with a and A in Subtree(a) would trap B in Subtree(a) by convexity,
+R-headedly by the after-side lemma since a < B, contradicting the LinkR
+geometry clause (the recorded successor is not an R-descendant of the
+anchor; B = A itself is the degenerate instance of the same
+contradiction). So A < B, and B is not in Subtree(a) at all (an L-headed
+extension would put B before a), hence B displays after EVERYTHING in
+Subtree(a): x in Subtree(a) with B < x would trap B by convexity between
+a and x.
+
+**Dichotomy: A is an L mint iff lo(A) = lo(B).** If A is an L mint, SLC
+gives ch(B) = ch(lo A) ++ R entry :: all-L, and loShape(B) gives ch(B) =
+ch(lo B) ++ R entry :: all-L; both decompositions cut ch(B) at its LAST
+R entry, so the prefixes coincide and telescoping sums give lo(A) =
+lo(B). If A is an R mint: loShape(B) makes B an R-descendant of lo(B),
+and LinkR(A) says B is NOT an R-descendant of lo(A); so lo(A) ≠ lo(B).
+This dichotomy is exactly the paper's split "(i) false / (i) true", and
+it delivers the exception's first conjunct for free in the R case.
+
+#### 9.7.5 The construction
+
+**The L case: consecutive outright.** Let A be an L mint (parent B) and
+suppose some live c has A < c < B; derive a contradiction. c is minted
+(live implies minted). A and B are in Subtree(B), so convexity puts c in
+Subtree(B), before B, hence with an L-headed extension (before-side
+lemma). Let S be the L-child of B on c's path (ch(S) = ch(B) ++ [first
+entry of the extension], minted by ancestor closure). Three subcases.
+If S < A: convexity (S < A < c, with S and c in Subtree(S)) traps A in
+Subtree(S), so ch(S) is a prefix of ch(A); both are ch(B) plus one L
+entry, so S = A, contradiction. If S ≠ A and not S < A: totality gives
+A < S; S is an L mint with parent B by record-shape inversion, so ro(S)
+= some B, and LAST forces S < A, contradiction. So S = A, c is a proper
+R-descendant of A (its extension over A is R-headed by the after-side
+lemma since A < c), and the R-child D of A on c's path is minted, an R
+mint with anchor A. Now consume **(RSuccL)** at D (anchor A is an L
+mint with parent B): ro(D) = some n, and either n = B, in which case D
+is a minted element ≠ A with right origin B and A < D (extR),
+contradicting LAST; or a witness s exists with ch(s) = ch(B) + one L
+entry and A < s, in which case s is an L mint with parent B (inversion
+again), ro(s) = some B, s ≠ A, A < s, contradicting LAST. So no live
+in-between exists: A and B are consecutive. Note what happened: the
+paper's "let D be a right child of A such that A did not have any other
+right child when D was inserted" became a clause about EVERY R-child of
+A, so the concurrent-first-children subtlety (several D each minted
+believing A childless) never arises.
+
+**The R case: the witness.** Let A be an R mint, a = lo(A) ≠ 0 (by (R0)
+plus ro(A) = some B), lo(A) ≠ lo(B) by the dichotomy, and let c be live
+with A < c < B. The witness function, deterministic in the state:
+
+1. **(alpha)** If ch(a) is NOT a prefix of ch(c): C := c.
+2. Otherwise c is in Subtree(a), after a, so the entry of ch(c) at
+   position |ch(a)| is an R entry; let E be the minted node at ch(a) ++
+   [that entry] (an R mint with anchor a, sibling of A or A itself).
+   * **(beta1)** If E ≠ A: C := the recorded ro(E).
+   * **(beta0)** If E = A: c is a proper R-descendant of A; let D be
+     the R-child of A on c's path and n_D its recorded ro (some, by
+     (RSuccR) at D, since D's anchor A is an R mint with a recorded
+     successor).
+     * **(beta0-direct)** If ch(a) is not a prefix of ch(n_D): C := n_D.
+     * **(beta0-ladder)** Else let E' be the R-child of a on n_D's
+       path; C := the recorded ro(E').
+
+Correctness, case by case, with the consumed clauses.
+
+*(alpha)*: lo(A) < C: a < A < c. C < B: given. Not a lo-descendant:
+loShape makes ch(lo x) a prefix of ch(x) for every minted x, so
+lo-iteration only visits prefixes; if some iterate of c reached a, ch(a)
+would be a prefix of ch(c), excluded. (This prefix lemma, loDesc to
+prefix, is the only fact about `mLoDesc` the whole proof needs.)
+
+*(beta1)*: E ≠ A, and A < E: otherwise E < A < c with E, c in
+Subtree(E) traps A, forcing ch(E) prefix of ch(A) and E = A. A and E are
+R-siblings under a, so the kernel divergence order at their R entries
+gives: tag(A) < tag(E) lexicographically, or equal tags with a smaller
+delta on A's side. The tags are, by LinkR at each record, tagK of the
+recorded origins: tag(A) = key(B) (a real key, B minted), tag(E) = [0]
+if ro(E) = none, else key(ro E). The end tag [0] is lexicographically
+below every real key (real tags have a nonzero, non-marker head), so
+tag(A) ≤ tag(E) rules ro(E) = none out: ro(E) = some n_E, tag(E) =
+key(n_E). If the tags are EQUAL: key(n_E) = key(B) forces n_E = B (key
+injectivity), so E is a minted element ≠ A with right origin B and
+A < E, contradicting LAST; the tie case is vacuous. So key(n_E) >
+key(B) strictly, i.e. n_E displays before B and n_E ≠ B. Now place n_E:
+a < n_E by (RSA) at E; n_E is not an R-descendant of a by LinkR at E,
+and not an L-descendant (those display before a), so n_E is outside
+Subtree(a) and hence displays after all of it, in particular A < n_E.
+Summary: C = n_E is minted (LinkR at E), a < C, C < B, and ¬loDesc by
+the prefix lemma since ch(a) is not a prefix of ch(n_E).
+
+*(beta0)*: D is an R mint with anchor A, and A is itself an R mint with
+ro(A) = some B, so **(RSuccR)** applies at D: ro(D) = some n_D with
+key(n_D) ≥ key(B). Equality would give n_D = B, making D a minted
+element ≠ A (a proper descendant) with right origin B and A < D,
+against LAST; so key(n_D) > key(B), n_D displays before B, n_D ≠ B. By
+(RSA) at D: A = lo(D) < n_D. By LinkR at D, n_D is not an R-descendant
+of A, and A < n_D rules out L-descendants, so n_D is outside
+Subtree(A). If n_D is also outside Subtree(a) *(beta0-direct)*: C = n_D
+is minted, a < A < n_D < B, ¬loDesc by the prefix lemma. If n_D is
+inside Subtree(a) *(beta0-ladder)*: its entry above ch(a) is R (n_D is
+after a), the R-child E' of a on its path is minted, E' ≠ A (else n_D
+would be in Subtree(A)), and E' with n_D in its subtree is EXACTLY the
+beta1 configuration with n_D in place of c; note beta1 nowhere used
+liveness of c. Replaying it: A < E', the tie tag(E') = key(B) is a LAST
+contradiction, and otherwise C = ro(E') is minted, a < C < B, outside
+Subtree(a), ¬loDesc. The construction terminates in at most two
+unfoldings; there is no recursion.
+
+Why a witness EXISTS at every reachable violating configuration, in one
+sentence: the R-children of lo(A) at or after A, and the R-children of A
+itself, all carry recorded right origins whose keys are pinned at or
+above key(B) by the sibling order and the two RSucc clauses, and the
+first such origin that escapes Subtree(lo A) (at worst two steps out) is
+an element strictly between lo(A) and B that the left-origin walk from
+anywhere inside Subtree(lo A) can never reach.
+
+#### 9.7.6 The induction through ins, del, sync
+
+The three clauses are per-record predicates over (K, g), exactly the
+shape of `SLC`, and the supplementary reachability theorem (call it
+`maxReach_inv3`, carrying `RBk Γ K g` = (R0) ∧ (RSA) ∧ (RSuccL) ∧
+(RSuccR) for every g in every G q) transports the same way
+`maxReach_inv2` does:
+
+* **ins**: old records keep their clauses by a `slc_transport`-style
+  lemma: every ingredient (mintedness of n, m, s; chains; keys; the
+  display comparisons; the prefix conditions) is stated about ids that
+  are 0 or minted in the old knowledge, so `mChainOf_append_stable`
+  rewrites them across the append. The FRESH record is the real work:
+  the four mint-step proofs of 9.7.3, each over the pre-step knowledge
+  G r, which satisfies KInv (`maxReach_inv`) and SLC (`maxReach_inv2`)
+  by the outer induction. The (RSuccL)/(RSuccR) hypotheses refer to the
+  ANCHOR's record, which lives in G r, so its LinkR/LinkL/SLC clauses
+  are available there directly.
+* **del**: the appended record is not a mint, every clause is vacuous
+  on it, and chains are untouched (`mChainOf_snoc_del`).
+* **sync**: records come from one of the two sides; transport with the
+  `hchainL`/`hchainR` chain-agreement facts, which rest on cross-replica
+  uniqueness (`MInv.cross`), verbatim as in `maxReach_inv2`'s sync case.
+
+The discharge theorem then reads: for K with KInv, the SLC bundle, and
+the RBk bundle, `BackwardNIM Γ K` holds (the corrected `BackwardNIExcM`
+of 9.7.2), by the case tree of 9.7.4 and 9.7.5; and
+`fuguemax_backward_ni : FugueMaxBackwardNonInterleaving Γ` follows at
+every replica of every reachable configuration, closing Theorem 9 via
+the existing reduction `fuguemax_theorem9_of_backward`.
+
+#### 9.7.7 Python validation (run of record: `python3 fuguemax_backward_check.py 1000`)
+
+The harness checks, per state: (a) the backward condition under BOTH
+witness readings; (b) the witness function of 9.7.5 on EVERY premise
+pair that is not live-consecutive and EVERY live in-between c of that
+pair, verifying the returned C is minted, strictly between lo(A) and B,
+and not a left-origin-tree descendant of lo(A), and additionally that
+the pair has an R-mint A with distinct left origins (the L case must
+never be non-consecutive); (c) the clauses (R0), (RSA), (RSuccL),
+(RSuccR) on every minted record, plus the loShape re-check imported from
+`traversal_check.py`.
+
+* Directed, 12 cases: Figure 7 in both mint orders, each also with the
+  element 4 deleted; L19 backward; the forward twin; the dead-sibling
+  pair from 8.4 and its del-9 variant; the beta0-direct and beta0-ladder
+  constructions (three concurrent root inserts 1, 2, 3; A = 4 an R-child
+  of 1 minted in view {1, 3} so ro(4) = 3; then an R-child of 4 minted
+  in a wider view, whose recorded origin either escapes Subtree(1)
+  directly, display `[1, 4, 5, 2, 3]`, or lands in the subtree of the
+  later sibling 6, display `[1, 4, 7, 6, 2, 3]`), each also with the
+  witness 2 deleted. All 12: corrected reading, witness, and clauses
+  CLEAN; the live reading fires on exactly the four delete variants
+  built to refute it (fig7 + del 4 twice, beta0 + del 2 twice) and
+  nowhere else.
+* Randomized: 3000 delete-enabled states (2-branch, 3-branch, and
+  Figure-7-shaped two-epoch, deletes at rate 0.35 inside concurrent
+  branches; this is the shape 8.5's sweeps lacked) plus 1500 insert-only
+  states re-using `fuguemax_check.random_run_scenario`. Hard failures:
+  0 of 4500. Live-reading violations: 3 states, all in the two-epoch
+  delete shape.
+* Witness routes exercised: alpha 253, beta1 22, beta0-direct 2,
+  beta0-ladder 2, dead witness 8 (the five directed pair-instances plus
+  the three randomized states). The beta0 routes were reached only by
+  the directed constructions; random sweeps of this size never produce
+  them, which is why they were built by hand.
+* Oracle self-test (scratchpad, PASS+FAIL discipline): corrupting
+  ro(7) to none on the beta0 ladder trips both (RSuccR) and the witness
+  function; forging ro(6) = 3 does NOT trip anything because it breaks
+  the LAST premise instead, which is precisely the tie-case reasoning
+  of beta1; forging A's side to L trips the L-case check; removing the
+  witness 2 from the record set trips the corrected backward check
+  itself.
+
+#### 9.7.8 Lean-readiness, and the honest bill
+
+What the mechanization needs, in dependency order:
+
+1. **The definition edit**: drop `mLive Γ K C` from
+   `BackwardExceptionM`. One line; `BackwardNIExcM`,
+   `FugueMaxBackwardNonInterleaving`, and the reduction re-elaborate
+   unchanged. Widening the witness domain weakens the overall backward
+   statement (more pairs are excused); the change is forced by the
+   9.7.2 countermodel and matches the paper's quantification, so this
+   is a corrected goal, not a silently renamed one.
+2. **Kernel additions** (`SidedMax_ChainLex.lean` consumers, likely one
+   small file): the before-side lemma (`fm_ext_before_is_L`, the L twin
+   of `fm_ext_after_is_R`), and a divergence inversion for same-parent
+   R-siblings (from `fmChainBefore (p ++ [R t d]) (p ++ [R t' d'] ++ u)`
+   read off tag-lex-or-tie-delta; the pieces exist as `fmEntryBefore`
+   inversion + strip). Both are marker-theorem bookkeeping, no new
+   ideas.
+3. **Record-shape inversion**: a minted x with ch(x) = ch(P) ++ [one
+   entry] has op `ins P side-of-that-entry`, hence the matching
+   LinkR/LinkL clause; provable from `mRecOfId` + the wf sum + the two
+   link clauses (the wrong side gives the wrong last entry). Used five
+   times; worth a lemma.
+4. **The supplementary bundle** `RBk` + `maxReach_inv3`, structured
+   exactly like `SLC` + `maxReach_inv2` (transport lemma + three-case
+   induction; the mint case proves (R0), (RSA), (RSuccR) cheaply and
+   (RSuccL) by the 9.7.3 argument, which is `succ_R_desc_allL`-grade
+   work: argmax + convexity + closure). This is the right home; folding
+   the clauses into `LinkR`/`KInv` would touch every existing transport
+   and re-open the proved bundle for no benefit (the 24-VC lesson: do
+   not edit clauses that are already load-bearing).
+5. **The prefix lemma** loDesc-implies-chain-prefix (induction on the
+   iterate count through loShape; only this direction is needed).
+6. **The discharge** `backwardNIM_of_inv`: the 9.7.4/9.7.5 case tree.
+   Comparable in size to `forwardNIM_of_inv` plus its two helper
+   sections; the L case and beta1 are the bulk; beta0 reuses beta1 as a
+   lemma on a minted (not necessarily live) in-between, so state beta1
+   accordingly.
+
+Expected hard points: the (RSuccL) mint-step proof (the successor
+argmax against a candidate it did not pick, plus the two convexity
+traps; everything else in the file has a template); the record-shape
+inversion's uniqueness bookkeeping; and keeping the beta1 lemma stated
+over minted in-betweens so beta0-ladder can call it. Nothing here needs
+the traversal emission, causal pasts, or any history-indexed structure:
+the paper's causal minimality is fully absorbed by three existential
+mint-time clauses and a two-step chain walk, which was the design
+question this section set out to answer. Estimated size: kernel ~150
+lines, bundle ~400, discharge ~450, SPOTs (the four delete variants of
+9.7.7 as PASS+FAIL pairs, witness values pinned) ~120.
