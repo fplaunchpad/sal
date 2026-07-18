@@ -32,6 +32,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_EliasDelta
 import Sal.ConditionedMRDTs.MRDT_Instances.SeqSpec_Flat
 import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue_SeqSpec
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_SeqSpec
+import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Intent
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
