@@ -1,0 +1,1200 @@
+{
+ "meta": {
+  "solver": "z3",
+  "version": "4.16.0",
+  "timeout_ms": 10000,
+  "wall_time_s": 30.25
+ },
+ "results": {
+  "calibration_good": {
+   "Counter": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "PN": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "GSet": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "ORSet": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "fold-abstraction",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[x = K(Tag, False),\n y = K(Tag, True),\n l = K(Tag, False),\n c = K(Tag, False),\n m = K(Tag, True)]"
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[c2_app = add(7),\n _cp = mk(2, 7),\n _cs = K(Tag, False),\n c2_ts = 2,\n c1_ts = 3,\n c1_app = rem(7),\n re = [else -> 7],\n ae = [add(7) -> 7, else -> 4]]"
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ],
+   "LWW": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ]
+  },
+  "mutations": {
+   "Counter(no-LCA-sub)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[c = 1]"
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "PN(max-merge)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[s = -1]"
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "GSet(proj-a)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[a = K(Int, True), b = K(Int, False)]"
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[s = K(Int, True)]"
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "LWW(ts-only,tie->first)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[b = w(0, 6, 7), a = w(0, 4, 5)]"
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[x = w(-1, 11, 12), c = w(31892, 7, 8), y = w(31892, 9, 10)]"
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[x2 = w(25906, 7, 8),\n c = w(25906, 9, 10),\n x1 = w(-1, 11, 12)]"
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[c2_rep = 5,\n _cs = w(2240, 11, 12),\n c2_ts = 2241,\n c1_rep = 8,\n c1_app = write(9),\n c2_app = write(6),\n c1_ts = 2241]"
+    }
+   ],
+   "ORSet(no-L-sub)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "fold-abstraction",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[b = K(Tag, False), l = K(Tag, True), a = K(Tag, True)]"
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[l = K(Tag, True),\n c = K(Tag, True),\n x = K(Tag, False),\n y = K(Tag, False),\n m = K(Tag, True)]"
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[c2_app = add(7),\n _cp = mk(2, 7),\n c1_app = rem(7),\n c2_ts = 2,\n _cs = Store(K(Tag, True), mk(5, 6), False),\n c1_ts = 3,\n re = [else -> 7],\n ae = [add(7) -> 7, else -> 4]]"
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ]
+  },
+  "success_49": {
+   "RwSet": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[l = Store(K(RwTag, cell(False, True)),\n           mk(1, 2),\n           cell(True, False)),\n _p = mk(0, 2),\n c = K(RwTag, cell(False, True)),\n m = K(RwTag, cell(False, False))]"
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.003,
+     "model": "[_p = mk(30612, 3),\n c = K(RwTag, cell(False, True)),\n m = K(RwTag, cell(False, False)),\n x2 = K(RwTag, cell(True, False))]"
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    }
+   ],
+   "RwSetC(compacted)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ]
+  },
+  "kills_49": {
+   "RwSet(eager-GC)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[_p = mk(-1, 2),\n s = Store(K(RwTag, cell(False, True)),\n           mk(0, 2),\n           cell(True, False))]"
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "timeout",
+     "quantified": false,
+     "time": 10.026,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.008,
+     "model": "[c = K(RwTag,\n       If(And(Var(0) == mk(146132, 10),\n              Not(Var(0) == mk(22908, 4)),\n              Not(Var(0) == mk(155079, 9)),\n              Not(Var(0) == mk(44359, 6)),\n              Not(Var(0) == mk(23775, 5))),\n          cell(False, True),\n          cell(False, False))),\n _p = mk(146132, 10),\n x0 = K(RwTag, cell(True, False)),\n m = K(RwTag,\n       If(And(Var(0) == mk(146132, 10),\n              Not(Var(0) == mk(22908, 4)),\n              Not(Var(0) == mk(155079, 9)),\n              Not(Var(0) == mk(44359, 6)),\n              Not(Var(0) == mk(23775, 5))),\n          cell(False, True),\n          cell(False, False))),\n x1 = K(RwTag, cell(False, False)),\n x2 = K(RwTag, cell(False, False)),\n k!2806 = [else ->\n           If(And(Var(0) == mk(146132, 10),\n                  Not(Var(0) == mk(22908, 4)),\n                  Not(Var(0) == mk(155079, 9)),\n                  Not(Var(0) == mk(44359, 6)),\n                  Not(Var(0) == mk(23775, 5))),\n              cell(False, True),\n              cell(False, False))]]"
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ],
+   "RwSet(add-wins-tie)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[a = Store(K(RwTag, cell(False, True)),\n           mk(1, 2),\n           cell(True, False)),\n _p = mk(0, 2),\n b = K(RwTag, cell(False, False))]"
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.001,
+     "model": "[_p = mk(0, 2),\n s = Store(K(RwTag, cell(False, True)),\n           mk(1, 2),\n           cell(True, False))]"
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "timeout",
+     "quantified": false,
+     "time": 10.032,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "timeout",
+     "quantified": false,
+     "time": 10.022,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ],
+   "RwSetC(min-rem)": [
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "underspec(~comm->edge)",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "rc_non_comm_directional",
+     "sub": "overspec(edge->~comm)",
+     "result": "unsat",
+     "quantified": true,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "no_rc_chain",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "cond_comm_lift",
+     "sub": "rc-Either-vacuous",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.0,
+     "model": null
+    },
+    {
+     "vc": "mergeL_comm",
+     "sub": "-",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_init",
+     "sub": "mergeL_init",
+     "result": "sat",
+     "quantified": false,
+     "time": 0.0,
+     "model": "[s = K(Int, rpair(bot, rv(2)))]"
+    },
+    {
+     "vc": "feasible_local_redistribute",
+     "sub": "local_redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    },
+    {
+     "vc": "feasible_redistribute",
+     "sub": "redistribute",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "CDVC3",
+     "sub": "via-all_comm",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.002,
+     "model": null
+    },
+    {
+     "vc": "update_pointwise",
+     "sub": "soundness",
+     "result": "unsat",
+     "quantified": false,
+     "time": 0.001,
+     "model": null
+    }
+   ]
+  }
+ }
+}
