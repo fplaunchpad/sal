@@ -41,6 +41,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet_Stability
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Stability_Bridge
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_AnchorsFactor
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_CompactEliasDelta
+import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge_V
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin_V
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_VirtualLCA_Spot

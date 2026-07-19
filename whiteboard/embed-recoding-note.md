@@ -390,3 +390,49 @@ and three way, zero band-aware order surprises.)
    spells endContent on the concurrent traces too, with zero sibling
    ties. FugueMax with tag rewriting remains out of scope (keys inside
    tags need a tag-structure congruence).
+
+## Addendum 4: multi-epoch composition (mechanized)
+
+The single-epoch theorem left a gap: a re-coded configuration is not a
+native honest configuration, so a SECOND compaction could not re-invoke
+the theorem. This is now closed on the data plane
+(EmbedRGA\_MultiEpoch.lean, kernel-clean).
+
+1. THE ROUTE. The semantic residue of one compaction is a
+   StablePrefixMap; the residue of n compactions is their composition,
+   and the composition of two StablePrefixMaps is again one
+   (StablePrefixMap.comp, axiom-free): H2 composes because
+   order-isomorphisms compose, H3 composes at the boundary because an
+   epoch-1 mint (pi, d) once epoch-1-remapped is an epoch-2 mint
+   (F1.f pi, d) with the delta codeword untouched, H1 is derived. The
+   n-fold form chainSPM composes a CompatChain list; the headline
+   multiEpoch_settled_reads: after arbitrarily many settled-cut
+   compactions any beyond-all-cuts continuation, its lagging ops
+   translated through every epoch map, reads exactly as the
+   uncompacted run.
+2. THE SUBTLETY (what makes it non-trivial). Naive composition on the
+   FIRST-epoch domain is UNSOUND under rank reclaim: if epoch 2
+   reclaims the rank of a record that died between the epochs, the dead
+   coordinate and the reclaimed live coordinate collide under
+   F2.f after F1.f. The fix is to carry the composite's OWN surviving
+   domain (the coordinates alive at epoch 2, coordinate-addressed);
+   CompatOn states the four boundary conditions on that domain. Pinned
+   as the kernel fact naive_composition_collides.
+3. FRESHNESS ACROSS EPOCHS. rED_le_self (renumbering never grows a
+   delta) and rED_fresh_dominates (a delta fresh against original
+   sibling deltas stays fresh against renumbered ordinals, without
+   inspecting the deltas' meaning): the order-iso side composes
+   cleanly whether stored deltas are timestamp differences or
+   epoch-k ordinals. No generation-discipline wall.
+4. The addendum-2 id-addressing erratum is now the kernel fact
+   id_addressing_breaks: after epoch one a renumbered coordinate's
+   decode no longer equals its event id, so an id-addressed second cut
+   resolves to nothing while a coordinate-addressed cut resolves
+   correctly (the JS second-compaction bug).
+
+What remains is the protocol half at the epoch boundary: discharging
+CompatChain for consecutive compactRanked maps at nested settled cuts
+directly from honest reachability (the coordinate-addressed cut
+bookkeeping, the all-heads-visibility layer of section 6). The order-iso
+half is shown achievable; the remaining piece is the same deferred
+protocol layer as the single-epoch theorem, now at the boundary.
