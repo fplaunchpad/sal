@@ -98,8 +98,11 @@
 \large Metatheory, the Embedded-Chain Family, and Sequential
 Specifications}
 \author{Sal / FP Launchpad (KC + Claude)}
-\date{July 17, 2026\\[2pt] \small one document consolidating three
-earlier notes (of July 7, July 14, and July 16--17, 2026)}
+\date{July 19, 2026\\[2pt] \small one document consolidating three
+earlier notes (of July 7, July 14, and July 16--17, 2026),\\
+\small extended July 18--19 with the runtime arc (virtual LCAs, commit
+GC, the stability VC)\\
+\small and the storage layer (re-coding, compaction, the run table)}
 
 \begin{document}
 \maketitle
@@ -127,7 +130,15 @@ birth chains carried as entropy-coded coordinates, with the encoding
 contract and entropy law, kernel-checked RA-linearizability parametric
 in the code, the compaction theorem identifying its reads with the
 published tombstoned RGA's, and the sided generalization that makes
-two-sidedness a parameter and hosts the Fugue/FugueMax arc. Part~III
+two-sidedness a parameter and hosts the Fugue/FugueMax arc; its
+extension closes the Weidner--Kleppmann maximal-non-interleaving
+theorem (the first mechanized such result, we believe), proves a
+representation impossibility naming the exact information a delete must
+leave behind, and adds a measured storage layer (re-coding at settled
+cuts, a verified concrete compaction, the run table). Part~I is
+correspondingly extended with the runtime metatheory: virtual LCAs for
+criss-cross merges, commit GC with a proved keep set, and a stability
+VC under which state compaction is observationally invisible. Part~III
 records the sequential-specification campaign: for every production RDT
 in Sal, a kernel-checked theorem that the fold of any sequentially
 honest single-replica history equals the output of an independent naive
@@ -149,11 +160,20 @@ July~7, the embedded-chain design note of July~14, and the
 sequential-specification campaign note of July~16--17); reused material
 keeps its original wording, duplicated material appears once, and the
 previously separate open-question lists and mechanization maps are
-merged. One editorial rule governs the whole document: the
+merged. A July 18--19 extension adds, to Part~I, the runtime-facing
+metatheory (virtual LCAs for criss-cross merges, \S\ref{sec:vlca};
+commit GC and its keep set, \S\ref{sec:gc}; the stability VC for
+verified compaction callbacks, \S\ref{sec:stability}) and, to Part~II,
+the closed maximal-non-interleaving theorem (\S\ref{sec:theorem9}), the
+chain-price impossibility (\S\ref{sec:chainprice}), and the storage
+layer with its measurements (\S\ref{sec:storage}). One editorial rule
+governs the whole document: the
 \emph{rehoming} tombstone-free RGA, an earlier design demoted after its
 sequential refutation, receives no narrative treatment here; it appears
-only as the campaign's named countermodel (Part~III) and in one-line
-contrasts where the separation needs the losing side.
+only as the campaign's named countermodel (Part~III), in one-line
+contrasts where the separation needs the losing side, and once as a
+generality stress test (\S\ref{sec:vlca}), where its role is again that
+of the hardest available instance rather than a design of interest.
 
 \tableofcontents
 
@@ -270,6 +290,17 @@ consumes a small, contextual VC surface. Its contributions:
   graph admits no $\rcrel$ assignment at all, is the flagship of the
   direct-witness species: Peepul's merge is its own linearization
   certificate. The same route carries Part~II's embedded-chain RGA.
+\item \textbf{The model meets its runtime}
+  (\S\ref{sec:vlca}--\S\ref{sec:stability}): the criss-cross gate on
+  Merge is lifted by a recursive virtual-LCA rule whose synthesized base
+  provably carries exactly the intersection event set, with no new
+  per-datatype VC for join-lemma datatypes; commit GC is proved safe
+  against a keep set read off pairwise head intersections, with a
+  countermodel showing head-sync is load-bearing; and state-level
+  compaction (the GC callback into the datatype) gets a six-clause
+  stability VC whose metatheorem makes compaction observationally
+  invisible, with the OR-set as first instance and a refuted naive gate
+  as the shaping countermodel.
 \end{enumerate}
 
 Everything stated as a theorem below is mechanized with zero
@@ -518,8 +549,8 @@ published proof asserts the generator-uniqueness step without the
 induction that sustains it. An erratum-sized gap: the statement survives,
 the proof as written does not. (A related boundary fact:
 \emph{criss-cross} merges can defeat the \emph{existence} of an
-LCA --- they gate merge-enabledness, not the lemma. Open
-Question~\ref{oq:crisscross} takes up the extension.)
+LCA --- they gate merge-enabledness, not the lemma. \S\ref{sec:vlca}
+lifts the gate.)
 
 \subsection{A fully LCA-legal execution defeats the soundness proof}
 \label{sec:defeater}
@@ -1468,6 +1499,605 @@ precisely the boundary the safety metatheorem's \lean{SafetyStep} draws).
 A merge-based register is a reservation, confirmed only at causal
 stability; it is never a mutex.
 
+\section{Virtual LCAs: merging without a common-ancestor version}
+\label{sec:vlca}
+
+The transition system of \S\ref{sec:setting} gates Merge on the
+existence of an LCA: a version $v_\ell$ that reaches both heads and
+dominates every common ancestor. In a \emph{criss-cross} configuration
+the common ancestors of two heads have two or more maximal elements, no
+version satisfies the predicate, and Merge is disabled. This is not an
+exotic corner. The shape's routine genesis is two replicas each merging
+the \emph{same} pair of diverged heads: both create a version with the
+same event set, neither reaches the other, and every later pair of
+descendants has both rivals as maximal common ancestors
+(Figure~\ref{fig:crisscross}). The JS runtime built on this model makes
+the gate explicit, and its randomized testing shows how routine the
+shape is under honest peer-to-peer syncing: 592 gated sync attempts in
+220 randomized trials. The gap is exactly where git reaches for its
+\emph{recursive} merge strategy: merge the maximal common ancestors
+into a virtual base, then merge the heads against that. This section
+develops that extension inside the metatheory and reports what it
+costs: nothing, for join-lemma datatypes.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[>=Stealth, node distance=0.5cm and 0.9cm,
+  ver/.style={draw, rounded corners, inner sep=3pt, font=\small},
+  lca/.style={draw, rounded corners, inner sep=3pt, font=\small,
+    fill=blue!8},
+  lbl/.style={font=\scriptsize, text=black!60}]
+\node[ver] (v0) at (0,0) {$v_0:\ \varnothing$};
+\node[lca] (v1) at (-2.0,-1.3) {$v_1:\ \{x\}$};
+\node[lca] (v2) at ( 2.0,-1.3) {$v_2:\ \{y\}$};
+\node[ver] (v3) at (-2.0,-2.6) {$v_3:\ \{x,y\}$};
+\node[ver] (v4) at ( 2.0,-2.6) {$v_4:\ \{x,y\}$};
+\node[ver] (v5) at (-2.0,-3.9) {$v_5:\ \{x,y,\del_x\}$};
+\node[ver] (v6) at ( 2.0,-3.9) {$v_6:\ \{x,y,\del_y\}$};
+\draw[->] (v0) -- (v1); \draw[->] (v0) -- (v2);
+\draw[->] (v1) -- (v3); \draw[->] (v2) -- (v3);
+\draw[->] (v1) -- (v4); \draw[->] (v2) -- (v4);
+\draw[->] (v3) -- (v5); \draw[->] (v4) -- (v6);
+\node[lbl, right=0.15cm of v4, align=left]
+  {rival merges of the\\ same head pair};
+\node[lbl, below=0.12cm of v5] {head $p$};
+\node[lbl, below=0.12cm of v6] {head $q$};
+\end{tikzpicture}
+\caption{The criss-cross store used for the machine pins (the store of
+\lean{VirtualLCA\_Spot.lean}, drawn top-down; edges parent to child).
+Replicas $p$ and $q$ concurrently add $x$ and $y$; each then merges the
+same diverged pair $(v_1, v_2)$, creating the rivals $v_3, v_4$ with
+equal event sets; each deletes one element. The common ancestors of the
+heads $v_5, v_6$ are $\{v_0, v_1, v_2\}$ with \emph{two} maximal
+elements $v_1, v_2$: no version is an LCA, and the gated Merge cannot
+fire. Note $E(v_1) \cup E(v_2) = \{x, y\} = E(v_5) \cap E(v_6)$: the
+antichain's union is exactly the meet, which is
+Proposition~\ref{prop:cover}.}
+\label{fig:crisscross}
+\end{figure}
+
+\paragraph{The rule.} Write $\mathrm{MCA}(v_1, v_2)$ for the maximal
+common ancestors of two versions (maximal in the reachability order,
+which is a partial order because a version's identifier is its
+allocation rank). $\mathsf{VirtualLCA}(v_1, v_2)$:
+\begin{itemize}[leftmargin=2em]
+\item $M := \mathrm{MCA}(v_1, v_2)$. It is nonempty (the pinned root is
+  a common ancestor), and when the heads are incomparable every member
+  is a strict ancestor of both.
+\item If $M = \{m\}$: return $m$. This is the existing rule, and
+  Lemma~\ref{lem:lca} applies unchanged.
+\item Otherwise sort $M$ ascending by rank (deterministic: version ids
+  are allocation ranks) as $m_1 < \cdots < m_k$ and fold: start with
+  $m_1$; at each step, merge the accumulator with the next member
+  $m_i$ through the recursively resolved LCA of the sub-pair,
+  materializing a \emph{scratch node} whose state is that ternary merge
+  and whose event set is the union so far. Return the final
+  accumulator.
+\end{itemize}
+The head merge then runs the ordinary ternary merge with the returned
+state in the LCA slot. The scratch nodes exist so the nested MCA
+queries are well posed; nothing references them afterwards, so they are
+never ancestors of real heads and cannot perturb later queries.
+Termination is unconditional: measuring a call on $(a,b)$ by the number
+of allocated versions in the pair's joint ancestry, every version in a
+sub-pair's support is a common ancestor of the original heads while
+$v_1$ itself is not, so the measure strictly drops at each nesting
+level, and within a level the fold index drops. In the mechanization
+the extension lands as a conservative \emph{new} step relation
+\lean{Step3V}, with a base case embedding every old step and
+\lean{mergeVirtual} the one new case; widening \lean{Step3} in place
+was tried and rejected, because it breaks every exhaustive case
+analysis over the old relation in instance files. Only the final
+virtual node is allocated; the store invariant extends across the new
+step.
+
+\paragraph{The covering proposition.} The Merge rule's semantic
+requirement on the LCA slot is Lemma~\ref{lem:lca}: its event set must
+be the head intersection. The virtual construction meets it exactly, on
+the strength of invariants the store already carries.
+
+\begin{proposition}[covering]
+\label{prop:cover}
+Let $S$ be a finite nonempty set of allocated versions and $w$ an
+allocated version; let $\mathrm{MCA}(S, w)$ be the maximal elements of
+$\{x : x \text{ reaches some } u \in S \text{ and reaches } w\}$. Under
+the store invariant,
+\[
+  \bigcup_{m \in \mathrm{MCA}(S, w)} E(m)
+  \;=\;
+  \Bigl(\bigcup_{u \in S} E(u)\Bigr) \cap E(w).
+\]
+\hfill\lean{mca\_events\_cover}
+\end{proposition}
+
+With $S = \{v_1\}$, $w = v_2$ this covers the head pair; with $S$ the
+support of a scratch node it covers every sub-pair of the recursion;
+with a singleton MCA it degenerates to Lemma~\ref{lem:lca}. The subset
+direction is event-set monotonicity along reachability, twice. The
+superset direction is where the store invariant earns its keep: an
+event in both sides has, by the \emph{origin} invariant of
+\S\ref{sec:lca} (each event appears first at a unique generator
+version), a single birth version that reaches every version whose event
+set contains it; that generator is a common ancestor, every common
+ancestor reaches a maximal one, and monotonicity carries the event up
+into it. Since the fold unions event sets, the returned virtual node
+has event set $\bigcup_i E(m_i) = E(v_1) \cap E(v_2)$: exactly what the
+Merge rule requires. An earlier forecast (recorded in the GC analysis,
+\S\ref{sec:gc}) had guessed the union approximates the intersection
+from below; under the carried invariants the approximation is
+\emph{exact}, even though each antichain member individually sits
+strictly below the meet.
+
+One delimitation is worth stating, because it marks the model boundary
+the proposition rests on. The origin invariant is load-bearing: in a
+model that can apply the \emph{same} event at two incomparable versions
+(op-based redelivery, with no store-wide timestamp freshness), the
+event has two incomparable birth sites, neither a common ancestor, and
+the union strictly undershoots the intersection. Countermodel: apply
+$e$ independently at the root on both branches; then
+$E(v_1) \cap E(v_2) = \{e\}$ while the sole MCA is the root with empty
+event set. The transition system excludes this by store-wide timestamp
+freshness (an op is born at exactly one version), so the covering
+invariant is not a new obligation: it is \lean{StoreInv.origin} plus
+monotonicity, already carried and maintained.
+
+\paragraph{Canonicity: one fold induction, and the VC surface does not
+move.} The adequacy induction of \S\ref{sec:adequacy} consumed two
+facts about the LCA slot: its event set is the intersection (now
+Proposition~\ref{prop:cover}) and its registered state is canonical for
+that event set. The virtual construction re-supplies the second from
+the one per-datatype hypothesis the framework already centers on, the
+per-configuration Join Lemma:
+
+\begin{claim}[virtual join]
+If every allocated version's state is canonical for its event set and
+\lean{JoinLemma3At} holds at the configuration, then every scratch
+node's state is canonical for its union event set; in particular the
+returned virtual state is canonical for $E(v_1) \cap E(v_2)$.
+\hfill\lean{virtualLCAState\_canonical}
+\end{claim}
+
+The proof is an induction over the ascending-rank fold: the antichain
+members are allocated, hence canonical by hypothesis; at each step the
+sub-pair's inner LCA slot is canonical by the inner recursion plus
+Proposition~\ref{prop:cover}, and the Join Lemma yields canonicity at
+the union. Backward closure is preserved by union and intersection, so
+all intermediate sets stay in the hypothesis class; and canonicity is a
+property of a (configuration, event set, state) triple, not of
+allocated versions, so scratch states need no allocation to carry it.
+The same induction instantiates at the witness-classed join
+(\lean{virtualLCAState\_canonicalF}), and the merge case of the
+honest-reachability metatheorem gains the sibling case
+(\lean{goodConfig3\_mergeVirtual\_at},
+\lean{ra\_linearizable3\_of\_honest\_reachV}). The headline is what did
+\emph{not} change: \lean{Framework/VC\_Set.lean} is untouched. For any
+datatype that discharges its join at every configuration, the criss-cross
+gate lifts with \textbf{no new per-datatype verification condition};
+the per-datatype VC surface does not move.
+
+Two statement-hygiene facts, both machine-witnessed. First,
+determinism: the fold order is fixed (ascending rank), and for
+join-lemma datatypes order-insensitivity of the \emph{returned} state
+is a theorem, since canonical states of a fixed event set are unique.
+Git's own recursive strategy folds in commit-date order and is known to
+be order-sensitive on conflicting merges; rank fold plus canonicity is
+what removes that defect here. Second, the insensitivity claim must be
+scoped to the result: on a directed three-member antichain the
+\emph{intermediate} scratch states of the ascending and descending
+folds genuinely differ (each is canonical for its own, different,
+union), and only the final states coincide. Any mirror lemma stating
+canonicity of intermediates across fold orders is false.
+
+\paragraph{The single-MCA shortcut, machine-refuted.} The tempting
+implementation shortcut (pick \emph{some} maximal common ancestor and
+use it as the LCA; no recursion, no scratch nodes) is not a
+simplification but a soundness bug, and the store of
+Figure~\ref{fig:crisscross} pins it. Resolving the head pair
+$(v_5, v_6)$ through the virtual base folds $v_1$ and $v_2$ over the
+root into the state with both adds visible; the head merge then sees
+each delete on its own side against a base that \emph{contains} the
+deleted element, and both deletions survive: the merged state is empty,
+the meet's fold. Picking the single MCA $v_1$ instead puts a base
+without $y$ in the LCA slot, so $y$ on $v_6$'s side reads as a fresh
+add and the deleted $y$ \emph{resurrects}; picking $v_2$ dually
+resurrects $x$
+(\lean{t1f\_pick\_u\_resurrects\_y},
+\lean{t1f\_pick\_v\_resurrects\_x},
+\lean{Metatheory/VirtualLCA\_Spot.lean}; the harness twin is the
+\code{T1F} fail companion of \code{virtual\_lca\_check.py}). Every
+single-MCA pick is wrong on this store; the recursion is not
+dispensable. Nor is its depth boundable in practice: in a dense
+randomized probe (200 trials, 6 replicas, sync-heavy), criss-crosses
+arose in 176 of 200 trials with resolution nesting up to depth 7,
+because rivalry propagates upward (rival joins of rival joins); a
+depth-limited implementation would simply re-erect the gate.
+
+\paragraph{The quotient layers, and the rehoming stress test.} The
+claim above serves the raw layer. The framework's quotient layers
+(the $\eqobs$-indexed contracts of \S\ref{sec:meta}) each thread their
+own merge case, and their bill was probed on the hardest instance
+available: the rehoming RGA, the one production datatype whose proof
+route runs through an equivalence quotient with a
+reachability-anchored honesty stack (its only role here; it is the
+generality stress test, nothing more). Two findings. First, the
+dividing line at antichain unions is exactly the per-event versus
+prefix-state line: honesty components that speak about an event's
+\emph{own} causal past (born accuracy, dependency-prefix correctness)
+restrict to every scratch union for free, and the probe confirms them
+at every union of 590 randomized trials; components that speak about
+\emph{applicability along an enumeration} (\lean{noopFeasible},
+applicable delivery) are \emph{false} at antichain unions, in three
+named shapes (an insert whose anchor a concurrent kill has already
+removed fired 390 times across the probes; stale delete and insert
+paths fired 68 and 80 times), while every one of those states remained
+canonical for its union. So union-level obligations must be
+generation-discipline shaped, never applicability shaped. Second, the
+bill collapsed on execution: exactly \emph{one} fold induction was owed
+beyond the raw layer (at the H layer, whose merge case consumes the
+registered slot's layer canonicity); the Eq-quotient layers contain no
+step destructs and re-thread mechanically
+(\lean{rga\_ra\_linearizable3\_eq\_V}, and the flat production
+catalogue over \lean{Step3V} via \lean{FlatGeneric\_Bridge\_V}); and
+the NF layer is precisely the refuted \lean{noopFeasible} route with no
+production consumer, so its mirror was \emph{deliberately not built}.
+The refuted predicate marks a dead proof route, not a defect of the
+construction.
+
+\paragraph{The queue, as a corollary.} The mergeable queue of
+\S\ref{sec:route} is the instructive consumer: its join is already
+per-configuration (\lean{q\_join\_at}), which is exactly the hook the
+virtual fold induction consumes, so lifting the criss-cross gate costs
+the queue nothing beyond restating reachability over the widened LTS.
+The capstone \lean{queue\_ra\_linearizable3\_V} (RA-linearizability at
+every honestly reachable configuration with virtual merges enabled) is
+ten lines, all of them plumbing. This is the factored architecture of
+\S\ref{sec:route} paying out: the framework extension multiplied
+across instances at the join boundary, with zero new per-datatype
+content.
+
+\section{Commit GC: the keep set and the GC-safety theorem}
+\label{sec:gc}
+
+The version store only ever grows, and merges arbitrarily far in the
+future reach back into it for their LCA state, so a runtime cannot
+reclaim ``everything below the heads.'' The GC question is which store
+entries may be dropped without changing any future behavior; the answer
+is a keep set computable from the current heads, and a forward
+simulation showing pruning outside it is invisible.
+
+\paragraph{The keep set.} Fix a configuration $C_0$ (the prune point)
+with current heads $H$. Over allocated versions define
+\[
+  \mathrm{Keep}(C_0) \;=\; \bigl\{\, v \;:\; \exists\, h_1, h_2 \in H
+  \ (h_1 = h_2 \text{ allowed}),\ \ E(h_1) \cap E(h_2) \subseteq E(v)
+  \,\bigr\} \;\cup\; \{0\},
+\]
+the \emph{upward event-set closure of the pairwise head intersections},
+with the root $0$ pinned separately (the model fixes
+$\mathrm{ver}\,0 = (\Sinit, \varnothing)$ forever, and fresh replicas
+are created there). Taking $h_1 = h_2$ shows every head is kept, and
+with it everything event-set-above any single head. Pruning drops the
+store \emph{payload} only: entries outside the keep set become
+unallocated, while the replica cores and the DAG skeleton
+($\mathrm{parents}$, a map of ids, not states) are untouched. Retaining
+the skeleton is forced, not a convenience: restricting the parent
+relation to kept versions changes the LCA predicate itself, since
+removing common ancestors makes the domination clause easier to
+satisfy, so new LCA triples can appear whose event sets violate
+Lemma~\ref{lem:lca}, and the pruned structure would fail its own
+invariant. The reclaimable memory is the states and event sets, which
+is where the memory is; the skeleton stays.
+
+\paragraph{The theorem.} Safety is a forward simulation, built from
+three lemmas. \emph{Monotonicity} (disjunctive): along any run from
+$C_0$, every current head either event-set-dominates some prune-time
+head, or its only prune-time ancestor is the pinned root. The
+disjunction is forced by replica creation: a fresh replica's head is
+the root, and its lineage grows from empty until it first merges with a
+dominating lineage, at which point it becomes dominating itself.
+\emph{Intersection containment}: if a future merge fires with heads
+$v_1, v_2$ and allocated LCA $v_\ell$, then $v_\ell$ was not dropped;
+when both sides dominate prune-time heads $h_1, h_2$, Lemma~\ref{lem:lca}
+gives $E_0(h_1) \cap E_0(h_2) \subseteq E(v_1) \cap E(v_2) =
+E(v_\ell)$, which is membership in the keep set, and when either side
+is virgin the LCA can only be the pinned root. \emph{Prune
+commutation}: every step of the unpruned run is matched, with the same
+label, on the pruned store; apply reads only the issuing head and a
+fresh slot (never dropped: dropped slots were allocated at prune time
+and allocation is permanent), and merge reads the two heads and the
+LCA, which the previous lemma keeps.
+
+\begin{theorem}[GC safety]
+For every run $C_0 \to \cdots \to C_n$, the pruned configuration admits
+a run with the same label sequence, and every replica read at every
+point is unchanged. \hfill\lean{gc\_safety}
+\end{theorem}
+
+One scope note, recorded because it is a genuine asymmetry: the
+converse simulation is deliberately not mechanized. A pruned store can
+exhibit steps the unpruned one cannot (a freed slot can be
+re-allocated; store-wide timestamp freshness quantifies over fewer
+entries), and the asymmetry is unobservable only via a reachability
+invariant (every allocated version sits below some current head) that
+is not part of the configuration structure. The direction GC-safety
+needs (nothing is lost) is the mechanized one.
+
+\paragraph{The head-sync countermodel.} Head-sync is the discipline
+that future merge arguments are current heads; the Merge rule enforces
+it syntactically. The keep set is calibrated to exactly that
+discipline, and the calibration is tight: a merge from an old interior
+version genuinely needs a version outside the keep set. The
+countermodel, worked concretely (replicas $A, B$; events
+$e_1, e_2, e_3$ on $A$, $e_4$ on $B$):
+
+\begin{center}\small
+\begin{tabular}{@{}clllc@{}}
+\toprule
+version & created by & events & parents & kept? \\
+\midrule
+0 & root & $\varnothing$ & $[\,]$ & pinned \\
+1 & $A$ applies $e_1$ at $0$ & $\{e_1\}$ & $[0]$ & \textbf{dropped} \\
+2 & $A$ applies $e_2$ at $1$ & $\{e_1,e_2\}$ & $[1]$ & kept \\
+3 & $B$ merges $A$ (LCA $0$) & $\{e_1,e_2\}$ & $[0,2]$ & kept \\
+4 & $A$ applies $e_3$ at $2$ (head) & $\{e_1,e_2,e_3\}$ & $[2]$ & kept \\
+5 & $B$ applies $e_4$ at $3$ (head) & $\{e_1,e_2,e_4\}$ & $[3]$ & kept \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The pairwise head intersection is $E(4) \cap E(5) =
+\{e_1,e_2\}$; version $1$, with $E(1) = \{e_1\}$, contains no pairwise
+intersection and is dropped, strictly (the store genuinely returns
+nothing at $1$ after pruning). The future head merge is safe: the LCA
+of $(4,5)$ is version $2$, kept. But version $1$ satisfies the LCA
+predicate for the \emph{interior} pair $(1,5)$, so any widened Merge
+that accepted a non-head argument (a rewound replica, a checkpoint
+restore, a replica missing from the head map) would demand the dropped
+entry. Every out-of-band way of resurrecting an old version breaks the
+keep set; head-sync is a hypothesis of the metatheorem, not pessimism.
+
+\paragraph{The revision under virtual merges.} \S\ref{sec:vlca} widens
+what a merge reads: where no exact LCA exists, the resolution reads the
+maximal common ancestors, whose event sets sit strictly \emph{below}
+the pairwise meet, while the keep set above retains versions
+\emph{above} some pairwise meet. Under the widened rule the original
+keep set prunes away exactly what the recursion needs. The revision:
+let $\mathrm{mcasClosure}(H)$ be the least superset of the head set
+closed under pairwise MCA (finite: ranks only decrease), and keep the
+upward event-set closure of its members
+(\lean{mcasClosure}, \lean{keepSetV}). This contains the old keep set,
+and covers every recursion read: sub-pair MCAs are contained in
+real-pair MCAs, iterated. One might hope the one-layer seed (the
+pairwise MCAs of the current heads, without the fixpoint) suffices; it
+is one closure layer short, machine-witnessed: on a directed nested
+criss-cross, a depth-2 resolution reads the MCAs of the MCAs, pruning
+by the one-layer rule kills them (the sync raises a pruned-store
+error), and pruning by the closure rule keeps them while still pruning
+a genuinely dead interior commit, with the post-GC sync equal to the
+no-GC control. Future-proofing (the analogue of intersection
+containment) needs one new reachability fact, the \emph{gateway}
+lemma: after the prune point, every ancestry path from a prune-time
+version to a post-prune version passes through a prune-time head or
+the pinned root, so a prune-time version that a future virtual
+resolution reads is an MCA of prune-time heads (layer one of the
+closure), and deeper reads stay in the closure. The widened theorem
+\lean{gc\_safetyV} keeps the headline shape of \lean{gc\_safety}
+unchanged; the gateway forced no statement change.
+
+\paragraph{One frontier, three consumers.} The meet of the current
+heads, $\bigcap_{h \in H} E(h)$, is the \emph{stable cut}: the events
+every replica has already incorporated, below which no future merge can
+ever again place a concurrent event. Three parts of this document
+consume that one frontier. The garbage collector reads it from
+\emph{above}: the keep set retains the upward closure of the pairwise
+meets, and what pruning reclaims is exactly the versions no future LCA
+lookup can name. The stability VC of \S\ref{sec:stability} reads it
+from \emph{below}: facts certified at the cut stay true under all
+future merges, which is what licenses compaction. And the storage layer
+of Part~II (\S\ref{sec:storage}) consumes it as the epoch boundary for
+coordinate re-coding, where the in-flight-anchor argument needs
+visibility of all current heads. A runtime that tracks the frontier
+once serves all three consumers from the same bookkeeping, at pairwise
+rather than global granularity where GC needs it.
+
+\section{The stability VC: verified GC callbacks}
+\label{sec:stability}
+
+Commit GC (\S\ref{sec:gc}) reclaims \emph{versions}; it never touches
+the states themselves. But states also accumulate redundancy: an OR-set
+holding two add instances of the same element needs only one once both
+are known everywhere, and the embedded-chain RGA's coordinates carry
+dead history that a re-coding epoch could shed (\S\ref{sec:storage}).
+The runtime therefore wants to call back \emph{into the datatype} so
+the concrete state can compact. The question is what the datatype must
+prove for such a \code{compact} to be sound, and what exactly the
+runtime must promise it. Both halves have sharp answers, and both were
+shaped by countermodels.
+
+\paragraph{The naive gate is unsound: the discriminating remove.} The
+obvious runtime promise (``the cut $S$ is contained in every current
+head'') does not suffice, by a near miss that shapes everything after
+it. Adds of element $a$ at stamps $t_1 < t_2$, both below every head.
+Replica $A$ compacts, dropping the older instance $t_1$. But a remove,
+minted long ago by a replica that had observed \emph{only} $t_2$ (the
+remove is concurrent with the add $t_1$), is still at or below some
+head and arrives later. In the full execution the remove kills only
+$t_2$ and the element survives through $t_1$; in the compacted
+execution $t_1$ is gone and the element is absent. Reads diverge
+(Figure~\ref{fig:discrem}). The countermodel fires mechanically in the
+validation harness under the naive gate, and once (seed 2026, trial
+218) it was found by the randomized twin runs rather than injected.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[>=Stealth,
+  ver/.style={draw, rounded corners, inner sep=3pt, font=\small},
+  bad/.style={draw, rounded corners, inner sep=3pt, font=\small,
+    fill=orange!12},
+  lbl/.style={font=\scriptsize, text=black!60}]
+\node[ver] (r)  at (0,0)     {$v_0$};
+\node[ver] (a1) at (-2.6,-1.2) {$v_1:\ \add_a^{t_1}$};
+\node[ver] (a2) at ( 2.6,-1.2) {$v_2:\ \add_a^{t_2}$};
+\node[ver] (m)  at (-1.2,-2.4) {$v_3:\ \{t_1, t_2\}$};
+\node[bad] (rm) at ( 3.4,-2.4) {$v_4:\ \rem\,\{t_2\}$};
+\node[bad] (cp) at (-1.2,-3.6) {$v_5:\ \mathrm{compact}$, drop $t_1$};
+\node[ver] (fin) at ( 1.2,-4.8) {$v_6:\ \text{merge}$};
+\draw[->] (r) -- (a1); \draw[->] (r) -- (a2);
+\draw[->] (a1) -- (m); \draw[->] (a2) -- (m);
+\draw[->] (a2) -- (rm);
+\draw[->] (m) -- (cp);
+\draw[->] (cp) -- (fin); \draw[->] (rm) -- (fin);
+\node[lbl, right=0.15cm of rm, align=left]
+  {minted seeing only $t_2$:\\ concurrent with $\add^{t_1}$};
+\node[lbl, below=0.12cm of fin, align=center]
+  {full: $a$ survives through $t_1$\\
+   compacted: $a$ absent; reads diverge};
+\end{tikzpicture}
+\caption{The discriminating remove (top-down; edges parent to child).
+Both adds of $a$ sit below every head of the compacting replica, yet an
+in-flight remove that observed only $t_2$ can still arrive. Dropping
+the older instance $t_1$ under the naive ``below every head'' gate
+changes the read: the remove kills $t_2$ alone, and only the full state
+still holds $a$. The repair is SettledAt: compaction must wait until
+every event concurrent with the cut is already absorbed.}
+\label{fig:discrem}
+\end{figure}
+
+\paragraph{The interface: SettledAt.} The repair is a version-level
+condition. A cut $S$ is \emph{SettledAt} version $v$ when (i) $S
+\subseteq E(v)$ and $S$ is causally downward closed, and (ii) every
+event concurrent with an event of $S$ \emph{that exists anywhere} is
+already in $E(v)$. Clause (ii) looks like a global quantification the
+runtime could never check; it is dischargeable by evidence the commit
+DAG already contains. An event concurrent with $s \in S$ was minted by
+some replica $j$ before $j$ saw $s$; the evidence that $j$ saw $s$ is a
+commit $c_j$ with $s \in E(c_j)$; the concurrent event precedes $c_j$
+at $j$. So if $v$ has absorbed such an evidence commit \emph{for every
+replica} ($v$ has heard from everyone since $S$), all concurrency of
+$S$ is inside $E(v)$
+(\lean{settledAt\_of\_evidence}). This is causal stability in the sense
+of Baquero, Almeida, and Shoker, transplanted from op-based delivery to
+the commit DAG: there the argument rides on causal delivery order, here
+on downward closure of event sets. Two operational sharpenings from the
+mechanization. The gate is SettledAt \emph{and} all-heard: settledness
+alone is not stable under future mints by replicas that have not yet
+heard of $S$, so the all-heads frontier (the same one \S\ref{sec:gc}
+tracks) keeps it stable, and replica creation after a compaction is
+policy-gated (the open-membership deferral made operational). And
+evidence is \emph{commit}-shaped, not event-shaped: a pull that brings
+no new events can still bring the evidence commit that opens the gate,
+so a runtime that skips event-subsumed pulls silently starves the
+callback.
+
+\paragraph{Two species of compaction.} \emph{Drop} (OR-set, MVR,
+remove-record GC): \code{compact} removes records; under a live-set
+merge rule a removed record propagates exactly like a deletion, so
+compaction spreads through merges with no protocol. \emph{Remap} (the
+embedded-chain RGA's coordinate re-coding, \S\ref{sec:storage}):
+\code{compact} rewrites coordinates by an order isomorphism below the
+cut, and mixed states need translation on ingest. One VC skeleton
+covers both, with the simulation relation $R_S$ instantiated to
+``differ only by $S$-redundant records'' for the drop species and to
+the graph of the coordinate isomorphism for the remap species.
+
+\paragraph{The six VCs.} Fix a conditioned MRDT, a cut $S$, a
+compaction $\mathrm{compact} : \Sigma \to \Sigma$, and a simulation
+relation $R_S \subseteq \Sigma \times \Sigma$ (full state on the left,
+compacted on the right). The bundle (\lean{StabilityVC}):
+\begin{itemize}[leftmargin=2.4em]
+\item[\textbf{S1}] \emph{Entry.} At a gated version ($\mathrm{SettledAt}$
+  plus all-heard), $\sigma_v \mathrel{R_S} \mathrm{compact}(\sigma_v)$.
+\item[\textbf{S2}] \emph{Observation.} $\sigma \mathrel{R_S} \tau$
+  implies every query of the read interface agrees on $\sigma$ and
+  $\tau$.
+\item[\textbf{S3}] \emph{Step preservation.} $R_S$ is preserved by
+  applying any op minted with $S$ in its causal past (all future ops,
+  by stability). The design note carried a second class here,
+  in-flight ops referencing dropped records; in the state-based ternary
+  model those effects arrive only through merge branch states, so the
+  class is absorbed into S4 and the step VC covers new mints alone.
+\item[\textbf{S4}] \emph{Merge congruence, argumentwise and
+  reachability-indexed.} $\mergeL$ respects $R_S$ in each argument
+  independently, so that mixed executions (a compacted head merging
+  against a full LCA payload, or against a replica that never
+  compacted) stay related. Argumentwise is forced, because mixed is the
+  normal case. And the congruence is \emph{not} free: unconditioned, it
+  is false for the OR-set instance (a related LCA pair, an $A$ past a
+  remove that killed the kept twin, and a $B$ still carrying the
+  dropped instance live make the two merges read differently). The
+  offending triple is unreachable (any state descending from the
+  compacted LCA sheds the drop at its first absorption merge), so the
+  VC is stated over triples arising at genuine merge premises under an
+  auxiliary pair-invariant threaded through the simulation, not as a
+  free equation.
+\item[\textbf{S5}] \emph{Contract preservation.} $R_S$ preserves
+  $\Inv$, the applicable set up to redundant references, and the
+  honesty contract the capstone consumes. This is the clause that
+  composes compaction with the conditioned framework, and the one with
+  no analogue in unverified systems.
+\item[\textbf{S6}] \emph{Epoch coherence, observational.} Compacting at
+  $S$ and then at $S' \supseteq S$ lands in the same observational
+  class as compacting at $S'$ directly, so staggered and repeated
+  compactions across replicas stay related. Observational is the
+  correct strength: as a same-$R$-class statement it is false (a tag
+  dropped at the first epoch whose second-epoch keeper has since died
+  is kept by the direct coarser compaction; reads still agree).
+\end{itemize}
+
+\paragraph{The metatheorem, and the stuttering-self-merge trick.}
+Lifting $R_S$ to configurations (versions pointwise related, DAG shape
+shared), the six VCs plus the runtime contract give: every step of the
+execution model preserves the lifted relation, compaction itself
+included, and every version of every reachable configuration reads
+identically in the compacted and uncompacted executions
+(\lean{stability\_simulation}, \lean{stability\_reads\_equal}); the
+compacted system inherits RA-linearizability up to $\eqobs$
+observationally from the uncompacted capstone
+(\lean{stability\_ra\_inherited}). The proof device worth recording:
+compaction projects, on the full side, to a \emph{stuttering
+self-merge}. The LCA predicate is reflexive and $E \cup E = E$, so
+merging a head with itself is a legal step that allocates a new version
+with the same event set; the full run performs that stutter exactly
+where the compacted run compacts, and the twin DAGs stay \emph{literally
+identical} in shape, so no version-map bisimulation is ever needed.
+That one trick is why the metatheorem's axiom bill is
+$\{\lean{propext}, \lean{Quot.sound}\}$: no choice, no classical
+reasoning, just the step relation walked in lockstep.
+
+One consequence deserves its own sentence, because it constrains future
+representation work: \emph{compaction makes the payload no longer a
+function of the event set}. Resolving an LCA by event set alone is
+sound before compaction and unsound after (a same-event-set version
+from an unrelated lineage used as the LCA slot resurrects a dropped
+instance); the framework's structural LCA already resolves within
+shared ancestry, so the model is right as it stands, but any
+representation swap that identifies versions by clocks or event sets
+must retain enough lineage, or restrict lookup to $R_S$-compatible
+payloads.
+
+\paragraph{First instance: the OR-set, and the refuted static drop.}
+The redundancy predicate: among the \emph{live} instances of an
+element, the adds in $S$ that are not the kept witness. Under SettledAt
+every remove that could discriminate between two $S$-instances is
+already applied (that is Figure~\ref{fig:discrem} inverted), so the
+surviving $S$-instances live and die together from here on, and
+dropping all but a live kept witness preserves every read. Two
+mechanization findings. The drop set must be \emph{state-dependent}
+even under the settled gate: a static drop set (computed once from the
+cut) is unsound when the kept twin has already died before compaction
+fires, machine-refuted as \lean{static\_drop\_unsound}; the sound
+callback is the twin-liveness-guarded drop, and newest-first is not
+needed for soundness (any live kept witness works). And the interesting
+S4 case is a remove minted elsewhere against a full state whose kill
+set names a dropped instance: on the compacted side the kill is a
+partial no-op, and the states stay related because the dropped
+instance's fate is determined by the kept one. The instance discharges
+all six clauses (\lean{orStabilityVC},
+\lean{ORSet\_stability\_reads}); the remap species' standing cut
+hypothesis is discharged by the same gate
+(\lean{eRecode\_settled\_bridge}, the bridge \S\ref{sec:storage}
+consumes).
+
 %======================================================================
 \part{The embedded-chain family}
 %======================================================================
@@ -2400,21 +3030,23 @@ ticks once per event, making $\delta$ an event-count gap; if
 wall-clock order is ever wanted, it belongs in a display-layer
 tiebreak, never in the minted coordinate.
 
-\paragraph{What remains open.} Dead chain entries concatenated into
-survivors' strings are the conservation law's irreducible content
-(\S\ref{sec:design}); reclaiming them under \emph{causal stability}
-(renumber once every replica has seen the delete, the only
-condition under which rewriting geometry is safe, since no verdict
-involving the dead can be contested again) is the deepest of the
-open cost items, and it is orthogonal to correctness. The wider
-compression headroom is catalogued with its research questions in
-the companion assessment
-\code{whiteboard/order-coding-compression-notes.md}:
-context-conditioned per-anchor codes (licensed by comparison
-locality: a chain-lex first difference never crosses anchors),
-coalescing $\delta{=}1$ runs, Steiner-sharing dead prefixes across
-co-heirs, stability-gated rank re-coding, and the Elias-$\delta$
-constant (step 2 above).
+\paragraph{What the storage layer now delivers.} Dead chain entries
+concatenated into survivors' strings are the conservation law's
+irreducible content (\S\ref{sec:design}); at the time of the original
+design note, reclaiming them under \emph{causal stability} (renumber
+once every replica has seen the delete, the only condition under which
+rewriting geometry is safe, since no verdict involving the dead can be
+contested again) was the deepest of the open cost items. That item is
+now closed, and the answer occupies its own section
+(\S\ref{sec:storage}): a verified re-coding theorem cluster at settled
+cuts (rank renumbering and spine fusion, gated by
+\S\ref{sec:stability}'s SettledAt), and, one level further down, the
+run table, a lossless re-representation of the live chains that
+collapses the per-record cost by one to two orders of magnitude with
+\emph{no} stability gate at all. The residual headroom (per-anchor
+context codes, Steiner-sharing dead prefixes across co-heirs, the
+Elias-$\delta$ constant of step 2) remains catalogued in the companion
+assessment \code{whiteboard/order-coding-compression-notes.md}.
 
 \section{The insert prefix: for the proof, and the proof alone}
 \label{sec:prefix}
@@ -2832,6 +3464,1001 @@ randomized version-DAG PBT, all four models & 120 + 300 clean \\
 kernel and the sided conditioned instance, capstone included) has
 landed kernel-clean; \S\ref{sec:mechanization} records it.
 
+\section{Maximal non-interleaving, closed: the traversal theory and
+Theorem 9}
+\label{sec:theorem9}
+
+The sided kernel of \S\ref{sec:sided} hosts the Fugue family, and the
+Weidner--Kleppmann paper (TPDS'25) supplies that family's ordering
+specification. This section states the specification natively, presents
+the theory that discharges it, and records the closure: all three
+conditions of the paper's Definition~4 are kernel-checked for the
+FugueMax variant, which is, to our knowledge, the first fully
+mechanized maximal non-interleaving theorem for a sequence datatype.
+Along the way three findings recur on one theme: \textbf{the dead are
+load-bearing}, in stating the specification, in achieving it, and in
+proving it.
+
+\paragraph{The specification, natively.} Fix an execution. The
+\emph{left origin} of an element is the element directly preceding its
+insertion position at the time of insertion (or a start sentinel); its
+\emph{right origin} is the element directly following the left origin
+\emph{in the list including tombstones} at that moment (or an end
+sentinel). The paper's Definition~4 (\emph{maximal non-interleaving})
+demands, over all reachable list states:
+\begin{itemize}[leftmargin=2em]
+\item[(1)] \emph{forward}: if $A$ is the left origin of $B$ and $B$
+  displays earliest among elements with left origin $A$, then $A$ and
+  $B$ are consecutive;
+\item[(2)] \emph{backward, with exceptions}: if $B$ is the right origin
+  of $A$ and $A$ displays latest among elements with right origin $B$,
+  then $A$ and $B$ are consecutive, unless the exception holds: $A$ and
+  $B$ have different left origins and some $C$ in the list state sits
+  strictly between $\mathrm{lo}(A)$ and $B$ without being a descendant
+  of $\mathrm{lo}(A)$ in the left-origin tree;
+\item[(3)] \emph{arbitration}: same left and right origins order by
+  lower identifier first.
+\end{itemize}
+Both origin definitions and both ``earliest/latest among'' quantifiers
+range over the list \emph{including tombstones}: that is the first of
+the three places the dead carry the statement. The conditions are
+formalized over reachable configurations of the FugueMax kernel variant
+(the recorded origins are the generation policy's, the display order
+the kernel's), with the conclusion ``consecutive'' read over the
+\emph{visible} document, which is the property an editor's user sees.
+
+\paragraph{The traversal theory.} The paper's proofs run through a
+tree traversal (its Lemma~7: the list order of a forward
+non-interleaving algorithm is a depth-first traversal of the
+left-origin tree; its Lemma~8 computes origins by walking the
+algorithm's own tree). On the embedded-chain family the algorithm's
+tree is implicit in the chains, and the marker theorems of
+\S\ref{sec:sided} already state that the display order \emph{is} the
+in-order rule on chains. What the discharges consume is therefore not
+an emission function but an \emph{interval} form of traversal theory
+(\code{Sided\_Traversal.lean}): subtree convexity (a chain prefix's
+extensions display as one contiguous block around it), the side lemmas
+(an extension displays after the node iff its first added entry is
+R-headed, before iff L-headed), prefix strip-and-lift, and transitivity
+of the chain order. A recursive emission function was designed and
+deliberately not built: every consumer needs only the interval lemmas,
+and the emission would add a fueled recursion with no downstream
+client; the executable emission lives in the Python twin
+(\code{traversal\_check.py}), checked against the descending-key sort
+on both policies.
+
+The bridge from recorded origins to chain geometry is one shape
+invariant, the chain form of the paper's walk-up rule.
+\emph{loShape}: every minted element $x$ satisfies
+\[
+  \chain(x) \;=\; \chain(\mathrm{lo}(x)) \cdot \langle \text{R
+  entry}\rangle \cdot \ell s, \qquad \ell s \text{ all-L}.
+\]
+R mints satisfy it with $\ell s$ empty; for L mints the content is that
+the tombstone-visible successor of an anchor with an R-child is itself
+an all-L descendant of that R-child, proved by an argmax argument (an R
+entry inside the rest would exhibit a minted element displaying between
+anchor and successor, beating the successor's maximality). loShape is a
+\emph{generation-discipline} fact, not a kernel fact: a forged state
+that stores an L entry under the wrong parent displays fine (the total
+order does not care) but breaks the walk-up rule, and condition (1)
+then genuinely fails; the honesty clause excluding it is precisely that
+side and parent come from the policy at mint time, never from op
+payload.
+
+\paragraph{The forward discharge.} With loShape in hand, the paper's
+``first node the traversal visits among $A$'s right descendants'' is
+replaced by a \emph{descent}: if a minted $c$ is an R-headed extension
+of $A$, then some minted $D$ with $\mathrm{lo}(D) = A$ displays at or
+before $c$ (strong induction on chain length, comparing the two prefix
+decompositions of $\chain(c)$). Condition (1) follows: any live $c$
+strictly between $A$ and its earliest left-origin child $B$ lands in
+$A$'s subtree by convexity, is R-headed by the side lemma, and the
+descent produces a $D$ with $\mathrm{lo}(D) = A$ displaying before $B$,
+contradicting $B$'s minimality
+(\lean{fuguemax\_forward\_ni}, kernel-clean; the one new invariant
+clause, the all-L successor shape for L mints, transported through
+insert, delete, and sync like the main bundle). Condition (3) was
+already the positive twin of the Fugue refutation
+(\lean{fuguemax\_same\_origin\_low\_first},
+\S\ref{sec:mechanization}). Everything so far never consults the
+sibling order, and the same proof discharges the \emph{plain Fugue}
+policy's forward condition as stated
+(\lean{fugue\_forward\_ni}, \code{SidedRGA\_Fugue\_ForwardNI.lean}):
+the link layer was rebuilt as an external invariant over an untouched
+\lean{FugueReach}, with roughly 85 percent of the FugueMax machinery
+transferring verbatim. Plain Fugue's conditions (2) and (3) remain
+false, as the paper itself proves; the machine-checked
+Fugue-versus-FugueMax separation of \S\ref{sec:mechanization} stands.
+
+\paragraph{The backward condition: the live-witness refutation.} The
+Lean statement of the exception, as first adapted, required the witness
+$C$ to be \emph{live}. That reading is false, and the countermodel is
+the paper's own Figure-7 execution followed by one delete. In that
+execution (elements here named by their ids) the display is
+$[3, 6, 7, 4, 5]$ with $\mathrm{ro}(6) = 5$ and
+$\mathrm{lo}(6) = 3 \ne \mathrm{lo}(5)$; delete $4$, so the visible
+document is $[3, 6, 7, 5]$. The premise pair $(A, B) = (6, 5)$ holds:
+$6$ is the only minted element with right origin $5$, hence trivially
+display-latest among them. The pair is not consecutive: $7$ sits
+between. The exception's first half holds. But no \emph{live} witness
+exists: the only elements strictly between $\mathrm{lo}(6) = 3$ and $5$
+are $6$ and $7$ (both descendants of $3$ in the left-origin tree) and
+the \emph{dead} $4$, which is exactly the $C$ the paper's own proof
+produces for this execution. The paper's Lemma~5 quantifies $C$ over
+the list state including tombstones, so the corrected definition drops
+the one liveness conjunct and nothing else. Second load-bearing role of
+the dead: without them the specification itself is not a theorem of
+FugueMax (the refutation fired on the directed families and on 3 of
+4500 randomized delete-enabled states; the earlier insert-only sweeps
+could never see it). Two remarks. The corrected reading is strictly
+paper-faithful and strictly weaker as a guarantee: a pair excused by a
+dead witness is a pair the visible document may interleave; that is
+forced, not chosen. And the \emph{conclusion} keeps its live reading
+(no live element strictly between): the visible-document property is
+the one proved. Per this project's standing rule, the goal was
+corrected in the open, forced by a countermodel and matching the
+paper's own quantification, never silently renamed.
+
+\paragraph{Replacing causal minimality.} The paper's condition-(2)
+proof exhibits its exception witness by choosing an in-between element
+``not causally later than any other,'' then consumes that minimality
+three times. A reachability-invariant formulation cannot replay this:
+the invariant carries per-record facts about the current knowledge, not
+a well-founded causal order to minimize over. The replacement is
+geometric. Three mint-time clauses on R-mint records (a supplementary
+invariant bundle, transported exactly like the existing ones): a
+root-anchored R mint records no successor; a recorded successor
+displays after the anchor; and the two \emph{RSucc} clauses pin, for an
+R mint whose anchor is itself an L or R mint, a stable witness (the
+anchor's parent, a later L-sibling, or the anchor's own recorded
+successor) whose key bounds the recorded successor's. With those, a
+deterministic, state-definable witness function replaces the causal
+choice: it inspects the in-between element's chain, walks at most two
+steps (four routes, exercised as $\alpha$ 253 times, $\beta_1$ 22,
+$\beta_0$-direct 2, $\beta_0$-ladder 2 across 4500 validation states,
+the $\beta_0$ routes reachable only by directed construction), and
+returns a minted element strictly between $\mathrm{lo}(A)$ and $B$ that
+the left-origin walk can never reach. The methodological point: a
+\emph{universal} fact about the minter's knowledge does not transport
+to later states, but an \emph{existential} witness does, because minted
+records, chains, and keys are stable under knowledge growth. Third
+load-bearing role of the dead: the constructed witness may itself be a
+tombstone (it is, in the Figure-7 family), and the intermediate lemmas
+are deliberately stated over minted, not live, elements so the ladder
+case can call them.
+
+\paragraph{The capstone.} The discharge
+(\code{SidedRGA\_Backward.lean}) closes the arc:
+\code{fuguemax\_maximally\_noninterleaving} delivers all three
+Definition-4 conditions at every replica of every reachable FugueMax
+configuration, kernel-clean on $\{\lean{propext},
+\lean{Classical.choice}, \lean{Quot.sound}\}$. The reduction theorem and the forward file
+recompiled with zero edits after the definition correction, as the
+design phase predicted. SPOTs pin the witness values on all four
+delete-bearing directed variants, PASS and FAIL shaped.
+
+\paragraph{The convergence capstone, and the TagsOK finding.} Ordering
+intent is only half the variant's bill. The FugueMax realization writes
+records over a \emph{different block format} (R entries carry the
+mint-time successor's key as an order-reversing tag before the
+complemented delta code), so RA-linearizability for the tagged datatype
+was owed separately and is paid
+(\code{fuguemax\_ra\_linearizable3},
+\code{SidedRGA\_FugueMax\_RA\_Lin.lean}): same canonical sorted-list
+state, same mergeable-queue route, fold canonicity as
+\lean{f\_fold\_canon}. The finding worth a name: \textbf{the
+right-origin tag is convergence-load-bearing}, not merely
+intent-load-bearing. Unique decodability of the variant coordinate
+format (\lean{fmCoordOf\_inj}), which key injectivity and hence fold
+canonicity run through, is only unambiguous on \emph{wellformed} tags,
+so the honesty contract carries a \lean{TagsOK} clause alongside chain
+positivity; the generation layer supplies it for free, but a
+hand-forged tag would break convergence itself, not just the display
+intent. Convergence is otherwise insensitive to what the coordinates
+contain, exactly as the policy/datatype split predicts: coordinates are
+injectively minted, immutable, and consumed only through key
+comparisons.
+
+\subsection{Where the family sits in the published table}
+\label{sec:table1}
+
+The Weidner--Kleppmann paper's Table~1 is the nearest published designs
+$\times$ anomalies matrix: roughly ten list CRDTs classified by hand
+against the interleaving conditions. The placement this repository
+contributes is not a new row but a change in how rows are occupied:
+\textbf{one kernel datatype, verified once, whose generation policy
+selects the row, each placement by theorem}.
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+policy / variant & row occupied & by which theorem \\
+\midrule
+always-R & RGA & fragment theorem + compaction theorem: \\
+ & & read-equal to the published RGA, \\
+ & & anomalies \emph{included} (L19 inherited by theorem) \\
+Fugue policy & Fugue & forward NI as stated
+  (\lean{fugue\_forward\_ni}); \\
+ & & \emph{not} maximally non-interleaving: the paper's \\
+ & & own separation, machine-checked on its \\
+ & & Figure-7 execution \\
+FugueMax variant & FugueMax & Theorem~9 mechanized \\
+ & & (\lean{fuguemax\_maximally\_noninterleaving}); \\
+ & & convergence separately
+  (\lean{fuguemax\_ra\_linearizable3}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Two readings of the table. First, the one-sided
+embedded-chain RGA occupies the RGA row \emph{by theorem}: the
+compaction theorem (\S\ref{sec:mechanization}) makes it the published
+RGA's reads verbatim, so every property Table~1 records for RGA,
+favorable or not, transfers; the design does not get to keep the good
+rows and disown L19. Second, the convergence column is
+policy-independent (sides and tags are payload to the merge; the sided
+capstone quantifies over every side assignment) while the interleaving
+column is per-policy, which is the policy/datatype split of
+\S\ref{sec:sided} rendered as table structure. What no policy can do is
+leave the family's \emph{delete-insensitive} rows altogether: display
+keys are immutable and deletion is pure removal for every policy, so a
+policy selects among the retention-faithful orders and nothing else.
+The row a splice-based design would occupy is unreachable by policy,
+and the next section proves that unreachability is not an accident of
+this kernel but an information-theoretic fact.
+
+\section{The chain price: what delete must remember}
+\label{sec:chainprice}
+
+The conservation law of \S\ref{sec:design} (the sort key must retain
+dead ancestors' timestamps) was stated as an empirical regularity of
+the design sweep: every design that forgets them has a named
+countermodel. This section upgrades it to a characterization. The
+question that forced it (KC, 2026-07-18): the embed RGA works, but its
+proof rests on keeping a deleted node's memory alive inside live
+descendants' coordinates; could a \emph{sibling-edge} implementation,
+which splices a dead node out and lifts its children a level up, be
+shown equivalent to the embed RGA with no such retention? The answer is
+no, by a four-event fooling pair
+(\lean{Refutations/SiblingSplice\_Fooling.lean}), and the counterexample
+names exactly the information the splice destroys.
+
+\paragraph{The mechanism.} In the embed order, a lifted child displays
+at its dead ancestor's rank: the subtree keyed by the ancestor's stamp
+holds its \emph{slot}, and the child sits in that slot. Splice-and-lift
+erases the ancestor and re-ranks the child among its new siblings by
+the child's \emph{own} stamp. Whenever a concurrent sibling's stamp
+lies strictly between the dead ancestor's and the child's, the two
+rankings disagree, and no trace of the disagreement survives in the
+spliced state.
+
+\paragraph{The fooling pair, walked.} Timestamps only; slot keys
+shown. Both worlds share the LCA and the concurrent branch $B$; only
+branch $A$ differs, and its two variants land on \emph{equal} spliced
+states.
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & world 1 & world 2 \\
+\midrule
+shared LCA & $\ins\ a$ (stamp 1) at the root & same \\
+shared branch $B$ & $\ins\ c$ (stamp 2) at the root, & same \\
+ & concurrent with all of $A$ & \\
+branch $A$ & $\ins\ b$ (5) \emph{under} $a$; $\del\ a$ (6) &
+  $\del\ a$ (4); $\ins\ b$ (5) at the root \\
+spliced $A$-state & the one-node forest $[\,b(5)\,]$ &
+  $[\,b(5)\,]$: \textbf{equal}, machine-checked \\
+$b$'s slot key (embed) & $1$ (dead $a$'s slot) & $5$ (its own) \\
+owed read after merge & $[\,c,\, b\,]$ ($1 < 2$) &
+  $[\,b,\, c\,]$ ($5 > 2$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The knob is the stamp crossing $a < c < b$ with $b$ and $c$
+on \emph{different} branches, and it rides on concurrency: $B$ saw only
+the LCA, so its stamp $2$ is Lamport-honest, and every stamp on $A$
+exceeds everything its issuer observed ($1 < 5 < 6$; $1 < 4 < 5$).
+Sequentially the crossing is impossible (a later insert has a larger
+stamp than everything visible, the dead anchor included), which is why
+no sequential test can see this and why the pair had to be built on a
+version DAG. The impossibility is then three lines: a ternary merge
+function on the splice representation receives \emph{identical}
+arguments in the two worlds (the LCA and branch $B$ verbatim, the
+$A$-states by the machine-checked equality) and owes \emph{different}
+answers, so there is none
+(\lean{sibling\_splice\_no\_merge\_function}, quantified over every
+$f : \mathrm{St} \times \mathrm{St} \times \mathrm{St} \to
+\text{read}$; the PASS pins are the two hand-derived embed reads, the
+FAIL pin their inequality).
+
+\paragraph{The retention characterization.} The fooling pair is a
+\emph{lower} bound: any state representation that forgets a lifted
+child's dead slot key admits the pair, so no merge over it can
+reproduce the embed's reads. The capstone is the matching \emph{upper}
+bound: keeping the whole dead chain suffices for everything
+(\lean{embed\_ra\_linearizable3}, the compaction theorem, the
+sequential spec, delete-order preservation). Between them: \emph{the
+chain of dead slot keys is exactly the information content of delete}.
+Deletion's semantic content in this family is ``the subtree keeps its
+slot,'' and the slot chain is both necessary and sufficient to honor
+it. What remains negotiable is only \emph{where} the memory lives
+(coordinate prefixes here, carried spine paths in the validated
+sibling-edge design, tombstone records in the published RGA: three
+encodings of the same bits) and \emph{how many bits} it costs
+(\S\ref{sec:encoding}, \S\ref{sec:storage}); whether it lives is not.
+
+\paragraph{The two-by-two.} Retention crossed with display rank sorts
+the four named designs of this document's arc:
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+design & key retains the dead chain? & lifted child ranks by &
+  verdict \\
+\midrule
+embed RGA & yes: coordinate prefix & dead ancestor's slot key &
+  capstone + seq.\ spec \\
+RGA$_\dagger$ (tombstoned) & yes: tombstone records &
+  dead ancestor's slot key & read-equal to embed \\
+ & & & (compaction theorem) \\
+rehoming (flat TF) & truncated at each rehoming &
+  own stamp, after the climb & RA-lin; seq.\ spec \\
+ & & & \emph{refuted} (Part~III) \\
+Shesha (splice) & no & own stamp, after the splice &
+  no merge function \\
+ & & & (the fooling pair) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Reading down the rows: full retention with slot-key display
+gives the two read-equal designs (tombstone-free and tombstoned differ
+only in encoding); truncating the chain at each rehoming preserves
+convergence but breaks the sequential specification; discarding it
+altogether leaves nothing for any merge function to work with. The
+verdicts degrade exactly as the retained information does.
+
+\paragraph{The delete-sensitivity separation.} \S\ref{sec:table1}
+showed the generation policy selecting rows of the interleaving table.
+Here is what no policy can select. For every policy over the retaining
+kernel, display keys are immutable and deletion is record removal, so a
+delete never moves survivors (\lean{eUpdate\_del\_sublist} is
+policy-free): the whole family is \emph{delete-insensitive}. Shesha's
+row is delete-\emph{sensitive} (the splice moves survivors), and the
+fooling pair shows the sensitivity is not a stylistic difference but an
+information-theoretic one: the splice state cannot support the
+retention family's reads at all. Policies span the interleaving axis;
+nothing spans the retention axis. The two degrees of freedom are
+orthogonal, and only one of them is free.
+
+\paragraph{No coding escapes.} Could a cleverer coordinate code rescue
+the splice? No, in both directions. Downward: the impossibility
+theorem quantifies over \emph{every} merge function on the splice
+states, and an encoding is a function of the state, so any coded splice
+inherits the fooling pair verbatim (the two worlds' encodings are equal
+bit for bit, being encodings of equal states). Upward: the positive
+theorems are parametric in the code (\S\ref{sec:mechanization}: one
+proof, three instantiated codes), so the entire coding freedom provably
+lives in what retention \emph{costs}, never in whether it happens.
+Coding moves bits; it cannot manufacture information the state has
+discarded. That is the chain price: the storage layer of the next
+section spends considerable effort making the price small, and none
+trying to evade it.
+
+\section{The storage layer: re-coding, compaction, and the run table}
+\label{sec:storage}
+
+The datatype's costs were settled upstairs (\S\ref{sec:encoding}: pay
+the entropy of the anchor gaps at mint time) and its obligations
+downstairs (\S\ref{sec:chainprice}: the dead chain must be retained).
+This section is the layer between: what a running system does about
+accumulated weight. The arc has three rungs, and stating them up front
+keeps the bookkeeping honest. \emph{Chains carry the semantics}: birth
+constants, never edited, the objects of every correctness theorem.
+\emph{Runs carry the representation}: an invertible re-encoding of the
+current state, valid with no hypotheses at all. \emph{Stability is
+needed only for forgetting}: epoch maps that genuinely discard dead
+history rewrite geometry, and rewriting is safe only at a settled cut
+(\S\ref{sec:stability}). Every measurement below reproduces from the
+cited harnesses, and each table's accounting model is stated with it.
+
+\subsection{Re-coding at a settled cut: the theorem cluster}
+\label{sec:recoding}
+
+\paragraph{The epoch problem.} Coordinates are birth constants and
+never shrink: a live record whose birth chain passed through nine
+deleted ancestors carries all nine dead codewords as a prefix forever.
+Tombstone-freedom removed the dead \emph{records}; their
+\emph{codewords} survive inside every descendant, so long editing
+accumulates coordinate weight proportional to total history, not to the
+live document. A GC epoch should re-code: assign live records fresh,
+short coordinates inducing the same display order, and let new mints
+extend the fresh coordinates.
+
+\paragraph{Lazy translation, and why it is the only nontrivial
+formulation.} Replicas cannot switch codes in lockstep: a message
+minted against old coordinates may be in flight while the receiver has
+already compacted. The model is therefore \emph{lazy translation}: the
+re-map is a pure function on coordinates, applied once to the state at
+rest and to each incoming record or op minted in the old code (the op's
+carried anchor prefix is translated; its delta codeword is not
+touched). Formally, fix a set $S$ of \emph{stable} coordinates,
+downward closed under the ancestor relation. Downward closure is not a
+design choice but a fact about cuts: a coordinate's proper
+codeword-prefixes are exactly its ancestors' coordinates, ancestors
+causally precede their descendants, and any causally downward-closed
+notion of stable therefore contains the ancestors of everything it
+contains. Given a compaction $\rho$ on $S$, the induced re-map factors
+every coordinate at the cut:
+\[
+  \hat\rho(c) \;=\; \rho(\mathrm{stab}\ c) \,\|\, \mathrm{rest}\ c,
+\]
+where $\mathrm{stab}\ c$ is the longest stable prefix (it is exactly
+one chain prefix, again by downward closure) and the unstable tail is
+kept verbatim. The theorems consume two hypotheses, both relativized to
+the coordinates \emph{at hand} (the cut state's records plus the mints
+applied beyond the cut), never to all bit strings: \textbf{H2}, order
+preservation ($\hat\rho$ preserves the fold's key comparator, stated as
+a Boolean equation so it carries both directions), and \textbf{H3},
+extension commuting ($\hat\rho(\pi \,\|\, \mathrm{enc}\ d) = \hat\rho(\pi)
+\,\|\, \mathrm{enc}\ d$ for mints beyond the cut, which is automatic for
+a genuine stable-prefix map). Injectivity is free: H2 already implies
+it on its domain, so the Lean bundle carries H2 and H3 and derives H1
+(\lean{StablePrefixMap}).
+
+The cluster (\code{EmbedRGA\_Recoding.lean}, payload- and
+code-generic, kernel-clean):
+\begin{itemize}[leftmargin=2em]
+\item \textbf{T1, fold congruence, cut-parametric}
+  (\lean{eRecode\_applySeq}): folding translated ops over the
+  translated cut state is the translation of the untranslated fold.
+\item \textbf{The global-collapse negative}
+  (\lean{eRecode\_ext\_global\_collapse}): one might hope to state T1
+  over the whole history (map every op ever issued, re-fold from the
+  initial state). That statement forces H3 at every historical mint,
+  and H3 at every mint provably collapses the re-map to a
+  constant-prefix prepend that compacts \emph{nothing}. Re-coding is
+  inherently an epoch operation on states, not a history rewrite; the
+  lazy, cut-parametric formulation is not a convenience but the only
+  nontrivial one. A finding, mechanized.
+\item \textbf{T2, reads identical}
+  (\lean{eRecode\_reads\_identical}): the element sequence of the
+  translated fold equals the untranslated one, verbatim; compression is
+  invisible to every observer. The contentful half hides in T1: the
+  translated side re-sorts by the \emph{new} keys, so equality of reads
+  is exactly the statement that the new keys induce the old order, H2
+  doing its job. The negative control earns its keep here: an
+  injective, H3-satisfying but order-breaking map genuinely flips the
+  read, pinning H2 as the load-bearing hypothesis.
+\item \textbf{T3, transport} (\lean{eRecode\_fold\_canon},
+  \lean{eRecode\_sorted}, \lean{eRecode\_version\_sorted},
+  \lean{eRecode\_ra\_transport}): canonicity, sortedness, and the
+  capstone's per-version witness statement all transport along the
+  isomorphism. Honest scope note: the transport is at the level of
+  states and witnesses, not configurations; the re-coded history is
+  \emph{not} itself an honest configuration of the same datatype
+  (compacted coordinates deliberately forget dead chain segments, so
+  the chain-generation honesty clause fails for them). Re-basing
+  honesty modulo an order-embedding, so the capstone can be re-invoked
+  natively in the new epoch, is the deferred protocol half, together
+  with agreement on a common cut; the cut hypothesis itself is
+  discharged by \S\ref{sec:stability}'s SettledAt gate
+  (\lean{eRecode\_settled\_bridge}).
+\end{itemize}
+
+\paragraph{Measurement 1: the microbenchmark.} Directed, hand-computed
+worked example (unary code; history: insert $a$ at the root, $b$ under
+$a$, $c$ under $b$, delete $a$ and $b$; then, beyond the cut, insert
+$d$ under $c$ and $e$ at the root). Accounting: the numbers are
+\emph{coordinate bit lengths of live records}, order metadata alone,
+identical convention to the entropy tables of \S\ref{sec:encoding};
+characters are excluded.
+
+\begin{center}\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+live record & original coordinate & re-coded \\
+\midrule
+$c$ (two dead codewords carried) & 6 bits & 2 bits \\
+$d$ (minted beyond the cut, under $c$) & 10 bits & 6 bits \\
+$e$ (minted beyond the cut, at the root) & 8 bits & 8 bits \\
+\midrule
+total & 24 bits & 16 bits \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Reads are identical on both sides (hand-checked and pinned as
+SPOTs); the dead-chain share of $c$ and $d$'s bits is gone entirely,
+and $e$, which never passed through the dead region, is untouched. The
+same harness's delete-heavy directed case (a 200-deep chain, binary
+code) drops live coordinate weight from 200 bits to 1 bit, the
+\textbf{200$\times$} figure quoted in the arc's motivation; 500
+randomized histories (random cut, two replicas forked beyond the cut
+with concurrent ops and a merge at the end) pass reads-identical and
+the T1 record-for-record correspondence at every step, and the
+order-breaking negative control flips the read exactly as predicted.
+
+\subsection{The verified concrete compaction, and what real traces say}
+\label{sec:compactED}
+
+\paragraph{compactEliasDelta.} The theorem cluster is parametric in the
+re-map; the concrete v1 compaction instantiates it
+(\code{EmbedRGA\_CompactEliasDelta.lean}): \emph{(a) drop dead ranges}
+(a stable chain is carried forward iff a live descendant or a declared
+in-flight coordinate passes through it; everything else is dropped and
+its sibling rank reclaimed) and \emph{(b) rank-renumber} (in each
+sibling group the surviving deltas are renumbered to $1..k$
+order-isomorphically and re-encoded with the same ordered prefix code).
+Its H2 discharge runs the per-group order isomorphism through the
+chain-lex theorem, with renumbered ranks dominated by Lamport-fresh
+future deltas; the headline
+(\lean{compactEliasDelta\_settled\_reads}) discharges everything at a
+settled cut of an honest configuration.
+
+\paragraph{The in-flight wrinkle, pinned both ways.} Renumbering a
+sibling group is only an order isomorphism against the deltas it can
+see. If an op minted in the old code is still in flight with a delta in
+that group, dense renumbering can slide a surviving sibling past it:
+the FAIL SPOT pins exactly this (an in-flight root insert; the
+unguarded renumbering sends a surviving delta $9 \mapsto 2$, and the
+delivered op lands on the wrong side: the pinned read flips). The v1
+resolution is the guard \lean{skipAt}: sibling groups with a known
+in-flight child delta are skipped this epoch, and the PASS SPOT pins
+that the guarded construction skips exactly that group, preserves the
+read, and still compresses. Both pins are hand-derived, PASS and FAIL
+shaped.
+
+\paragraph{AnchorsFactorBeyond: the residue is a theorem.} The bridge
+from SettledAt to the cluster left one named residue: every op minted
+with the cut in its causal past must carry an anchor prefix that
+factors at the map. This is \emph{not} dischargeable from bare honest
+reachability (countermodel: the chain-generation clause constrains the
+minted coordinate, not the carried split, so a dishonest split
+satisfies it while defeating the factorization). It \emph{is} a theorem
+of the generation discipline: under the framework's honest generation
+(the same hypotheses the capstone's honesty discharge consumes), every
+insert's carried prefix is the stored coordinate of an actual anchor
+record in the fold of its causal past, so the factorization sits on a
+codeword boundary by construction
+(\lean{anchorsFactorBeyond\_of\_anchored}), and the bridge is restated
+residue-free (\lean{eRecode\_settled\_bridge\_honest}). Scope, honestly
+delimited: the single-epoch statement, with cut-side data addressed by
+coordinates and chains, never by event ids resolved through prefix sums
+(the runtime twin's erratum: renumbered coordinates no longer telescope
+to ids, so id-addressed cuts break after epoch one). Concurrent
+divergent compactions (an epoch DAG with common-refinement translation)
+remain the deferred protocol half.
+
+\paragraph{Measurement 2: real traces, and where the bits actually
+sit.} The full epoch stack (rank renumbering plus \emph{spine fusion}:
+collapse each maximal settled dead chain with exactly one child branch
+and no in-flight anchor into a single level) was run over the standard
+collaborative-editing replay corpus (the josephg traces). Accounting:
+per record, the sum over its kept-chain levels of $|D(\delta)|$ bits,
+$D$ the flipped Elias-$\delta$ code of \S\ref{sec:encoding}; totals
+divided by live characters; character payloads excluded; ``fused'' is
+after the renumber-plus-fusion epoch at a settled cut.
+
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+trace (one-sided) & chain b/ch, raw & chain b/ch, fused & ratio \\
+\midrule
+friendsforever & 1622.5 & 856.5 & 1.9$\times$ \\
+clownschool & 2488.7 & 1471.0 & 1.7$\times$ \\
+seph-blog1 & 2974.9 & 917.2 & 3.2$\times$ \\
+automerge-paper & 2304.5 & 1279.4 & 1.8$\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Three findings, in causal order. \emph{(i)} Rank renumbering
+alone recovers only 1.1--1.8$\times$: typing runs mint $\delta{=}1$
+chains, and every level costs at least one bit even at ordinal 1, so
+the residual cost is \emph{spine depth}, which is what fusion owns.
+\emph{(ii)} Fusion then removes essentially everything removable:
+surviving dead levels cost 3 to 76 bits per character in total, and the
+fused column equals the code cost of the \emph{live tree shape} alone,
+verified by a per-level attribution that accounts for every bit.
+\emph{(iii)} The few-bits-per-character hope fails for a reason worth
+the number: the live shape is itself expensive. Real traces anchor
+typing runs in \emph{live} chains of mean depth 835 to 1468 levels at
+about one bit per level, and 97 to 99.8 percent of the post-fusion bits
+sit on live ancestor levels that no epoch map may touch (they are the
+retained semantics, \S\ref{sec:chainprice}). History independence holds
+three ways (staggered cuts, one final cut, and from-scratch compaction
+land on bit-identical totals), and the fused display spells the trace's
+final content on every sequential trace. Conclusion: the epoch stack
+removes the dead-history share; what survives is a
+\emph{representation} cost, which is the run table's brief
+(\S\ref{sec:runtable}).
+
+\paragraph{Measurement 3: the sided instantiation.} The same stack,
+band-aware (renumber within each parent-band group; fusion carries the
+head's band and codeword), replayed under the Fugue policy. Same
+accounting, plus one side bit per level, which is precisely the point:
+
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+trace (sided, Fugue) & chain b/ch, raw & chain b/ch, fused & ratio \\
+\midrule
+friendsforever & 2582.0 & 1735.7 & 1.5$\times$ \\
+clownschool & 4058.5 & 2988.1 & 1.4$\times$ \\
+seph-blog1 & 5559.1 & 1919.8 & 2.9$\times$ \\
+automerge-paper & 4448.0 & 2583.7 & 1.7$\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The ratios sit \emph{systematically below} the one-sided
+1.7--3.2$\times$, and the naive expectation that the ratio would be
+preserved is falsified by its own arithmetic: adding the same flat
+per-level side cost to numerator and denominator pulls the quotient
+toward the \emph{level-count} ratio, which is below the payload ratio.
+Where the sides pay: the fused sided state costs about twice the fused
+one-sided state, and the premium is \emph{entirely the flat side flag};
+the sided delta payload exceeds the one-sided payload by only 1.0 to
+4.7 percent (on these traces the Fugue tree is payload-equivalent to
+RGA's). The flag costs a flat 1.000 bit per level against a true side
+entropy of 0.19 to 0.27 bits (L-mints are 3.0 to 4.6 percent of mints
+under Fugue on real traces): a \textbf{4--5$\times$ overpay} on the
+side channel, load-bearing for lexicographic band separation, and 94 to
+98 percent of the side bits sit on live levels no epoch map can touch.
+Both residues (live depth, flat flags) point at the same lever: a
+different representation of the same immutable chain data.
+
+\subsection{The run table: the representation lever}
+\label{sec:runtable}
+
+\paragraph{Runs.} Work over the \emph{kept tree}: the live records plus
+their dead ancestors (every other node has been removed outright;
+tombstone-freedom is unchanged). Call the edge from node $p$ to child
+$c$ \emph{fusible} when (1) $c$ is the unique kept child of $p$, (2)
+$\delta(c) = 1$, (3) $c$'s side is R (vacuous one-sided), and (4) $c$
+and $p$ have the same liveness. A \emph{run} is a maximal chain of
+fusible edges. Fusibility is a per-edge predicate and condition (1)
+gives each node at most one fusible out-edge, so the runs are a
+canonical partition of the kept tree into chains: a function of the
+state, independent of arrival order. A table entry is one run, with
+header (liveness flag, parent entry, offset in parent, side, head
+delta, length); members after the head implicitly have delta 1 and side
+R, and liveness is uniform along a run. A record's address is
+\emph{(run id, offset)}. Dead entries carry no records, only the
+structure live descendants' coordinates pass through. The design's
+starting observation: what typing mints \emph{is} exactly a fusible
+chain, so real documents decompose into few long runs.
+
+Two properties before any numbers. \emph{No stability gate}: the run
+table is an invertible re-representation of the current state, whatever
+that state is, unsettled suffixes included, and in particular the
+freshly typed hot end of the document where the depth cost is being
+minted; the PBT exploits this by rebuilding the table mid-flight
+between merges after every event. \emph{Lossless in the strong sense}:
+from the table alone one recovers every kept node's delta (head delta
+from the header, 1 elsewhere), side, liveness, and pre-epoch timestamp
+(deltas summed along the contracted path), hence every coordinate,
+hence the state; the harness gates exactly this, with zero tolerance,
+on every record of every trace.
+
+\paragraph{The tail-attachment lemma.} \emph{In the canonical table,
+every entry attaches at its parent entry's last member.} (If an entry
+attached at an interior member $m$, then $m$'s run successor and the
+entry's head would be two kept children of $m$, contradicting
+fusibility of $m$'s outgoing run edge.) Three consequences: the
+``offset in parent'' header field is derivable (always parent length
+minus one; the accounting still counts it and reports it recoverable);
+the cross-run comparator only ever diverges at a tail or inside a
+shared run, so it consults entry chains and header fields only and
+\emph{never materializes a coordinate}; and it is cheap to assert,
+which the harness does on every table built.
+
+\paragraph{The comparator.} Within a run, display order is offset
+order (each member is the R delta-1 child of its predecessor, hence
+displays directly after it). Across runs, compare the two entry chains
+from the root; by the lemma every step exits at a tail, and at the
+first difference either one chain is a prefix of the other (the deeper
+record is inside the shallower's continuation subtree; one-sided the
+shallower displays first, sided an L branch displays first) or two
+branch entries hang at the same tail and the branch headers decide
+(one-sided newest first; sided by the banded order). The
+$(\mathrm{ts}, \mathrm{agent})$ concurrency tiebreak is \emph{not}
+encoded in either representation's counted bits; the tie oracle rides
+outside the representation on both sides and is charged to neither,
+preserving parity with the chain measurements. The cost of a comparison
+is the \emph{contracted} depth: one entry per run on the path instead
+of one level per node.
+
+\paragraph{Mutation, and the forced coalesce.} Splits mutate the table,
+never the semantics: stored chain data is immutable, only the partition
+changes. Insert at anchor $a$: if $a$ is interior, split its entry
+after $a$; attach the new record as a singleton; then \emph{coalesce}
+(a fusible singleton that is the tail's unique attachment fuses into
+the parent entry), which is how typing extends a run in $O(1)$ table
+work. Delete of $x$: split to make $x$ a tail; if $x$ still has kept
+children, carve it out as a dead singleton (a liveness split);
+childless, it simply vanishes, dropping newly unkept dead tails upward
+and re-coalescing the parent with a now-unique fusible child. Coalesce
+is the inverse of split \emph{and it is not optional}: without it,
+deleting a concurrent interloper leaves the two halves of the old run
+split forever and the table drifts from the canonical partition (found
+during design, pinned by a directed case and by the PBT's
+incremental-equals-canonical-rebuild gate after every event). Delivery
+under a vanished anchor (the anchor chain passed through nodes deleted
+while childless here) re-materializes the missing levels as dead
+entries from the op's carried coordinate: the run-table cost of
+tombstone-freedom, paid with information the embed op already carries.
+Merges deliver the other side's events through the same two rules;
+epochs rebuild the table over the compacted tree (sound because the
+table is a function of the state).
+
+\paragraph{The accounting model.} Applied identically to both
+representations; every pointer and every header bit counted, no hidden
+structure. $D$ is the flipped Elias-$\delta$ code; $W = \lceil \log_2
+(N_{\mathrm{entries}} + 1) \rceil$ is the id width.
+\begin{align*}
+  \text{per record:}&\quad W + |D(\mathrm{offset}+1)| \\
+  \text{per entry:}&\quad 1 + W + |D(\mathrm{poff}+1)| +
+  |D(\mathrm{head}\ \delta)| + |D(\mathrm{len})|
+  \ \ (+\ 1 \text{ side bit, sided}).
+\end{align*}
+Totals are per live character, reported with the full per-field
+breakdown so every number is auditable back to a field. Not charged on
+either side: the tie oracle (above). Two fields are counted although
+the canonical table makes them recoverable, and the breakdown lets a
+reader subtract them: the parent offset (the tail-attachment lemma) and
+the per-record run id when records are stored grouped by run (it is
+then positional).
+
+\paragraph{Measurement 4: the run table.} Same traces and replay as
+measurements 2 and 3. Columns: the raw chain representation
+(``chain''), the chain after its best epoch (``fused,'' the previous
+subsection's current best), the run table over the \emph{raw
+uncompacted} chains with no epoch and no settled cut (``rt''), and the
+run table rebuilt after the epoch (``rtc'').
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+trace & family & chain & fused & rt & rtc & fused/rtc \\
+\midrule
+friendsforever\_flat & 1-sided & 1622.5 & 856.5 & 22.13 & 22.30 & 38.4$\times$ \\
+friendsforever\_flat & sided/F & 2582.0 & 1735.7 & 22.54 & 20.98 & 82.7$\times$ \\
+clownschool\_flat & 1-sided & 2488.7 & 1471.0 & 22.42 & 22.64 & 65.0$\times$ \\
+clownschool\_flat & sided/F & 4058.5 & 2988.1 & 24.11 & 21.20 & 140.9$\times$ \\
+seph-blog1 & 1-sided & 2974.9 & 917.2 & 26.00 & 23.16 & 39.6$\times$ \\
+seph-blog1 & sided/F & 5559.1 & 1919.8 & 27.21 & 24.99 & 76.8$\times$ \\
+automerge-paper & 1-sided & 2304.5 & 1279.4 & 23.76 & 23.92 & 53.5$\times$ \\
+automerge-paper & sided/F & 4448.0 & 2583.7 & 25.21 & 24.58 & 105.1$\times$ \\
+friendsforever & 1-sided & 1243.2 & 856.5 & 20.92 & 22.30 & 38.4$\times$ \\
+friendsforever & sided/F & 2189.2 & 1735.6 & 22.36 & 20.98 & 82.7$\times$ \\
+clownschool & 1-sided & 1863.1 & 1471.0 & 20.85 & 22.64 & 65.0$\times$ \\
+clownschool & sided/F & 3421.3 & 2988.1 & 22.29 & 21.20 & 140.9$\times$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent All values in bits per live character under the accounting
+model above; the \code{\_flat} traces are the concurrent traces
+replayed single-author, their unsuffixed twins the concurrent
+originals. The verdict: \textbf{20.9 to 27.2 bits per character, 38 to
+141 times below the fused chains}, confirming the design prediction
+(per-record cost collapses from $\Theta(\mathrm{depth})$ to $O(1)$
+amortized plus a log-sized offset) with margin. Where the remaining
+bits sit, from the audited breakdown:
+\begin{itemize}[leftmargin=2em]
+\item The per-record \emph{run id} now dominates (10 to 14 of the 21 to
+  27 bits, the flat id width): the deep-chain cost did not shrink to
+  the offset code, it shrank to \emph{one pointer}. An implementation
+  storing records grouped by run makes this field positional and free,
+  putting totals at 9 to 14 bits per character; the model charges it
+  because the pre-registered accounting does.
+\item Offsets cost 5.2 to 12.1 bits per character; all header fields
+  together amortize to 0.6 to 6.4.
+\item The side channel collapses from one flat bit per live level
+  (867.8 to 1494.1 bits per character after fusion) to one bit per
+  \emph{entry}: \textbf{0.061 to 0.174 bits per character}, three to
+  four orders of magnitude, and below even an entropy-coded per-level
+  flag ($H(\mathrm{side})$ times 850 to 1500 levels); the explicit
+  L-entry-list alternative is computable from the reported entry counts
+  and is dearer at these sizes.
+\item The epoch stack becomes \emph{bit-wise marginal} under this
+  representation: the composed column beats raw by at most 2.9 bits per
+  character (sided) and loses to raw by up to 1.8 (one-sided, where
+  longer post-renumber runs make offsets dearer than the headers they
+  save). The run table alone, with no settled cut at all, already
+  delivers the collapse. What the epoch still buys is \emph{structure},
+  not bits: entries drop up to 7$\times$, the id width shrinks, raw
+  cursor-jump boundaries vanish under renumbering, and the contracted
+  depth drops up to 11.8$\times$.
+\item The honest limit: the \emph{bit} cost per record is $O(1)$
+  amortized plus the offset code, but the comparator's \emph{time} is
+  still $\Theta(\text{contracted depth})$ per cross-run comparison
+  (mean 19.6 to 261 runs per path against chain depths of 850 to
+  1500). Collapsing comparison time further (an order index over the
+  contracted tree) is a separate, orthogonal layer; nothing here needs
+  it for the metadata claim.
+\end{itemize}
+Gates, all passing: display identity on all six traces, both families,
+raw and composed (walk order equals the chain display; text equals the
+final content); about 198k sampled pairwise comparator verdicts
+matching display positions with antisymmetry checked; losslessness
+exact on every record; the tail-attachment invariant on every entry of
+every table; and a 150-trial PBT (8{,}186 events, three replicas,
+concurrent edits and merges) gating walk identity, the all-pairs
+comparator, and incremental-equals-canonical after every event, while
+exercising 872 merges, 315 mid-run splits, 438 liveness splits, 551
+coalesces, and 26 vanished-anchor materializations.
+
+The Lean mechanization of this subsection is owed, and the
+implementation pass fixed what the theorem must say: a representation
+isomorphism stated over labels, sides, and liveness (post-epoch,
+\emph{not} timestamps: rank ordinals deliberately forget time, so a
+timestamp-preserving iso would be false after the first epoch), the
+tail-attachment lemma as the load-bearing kernel, comparator and walk
+agreement, six mutation-commutes-with-canonicalization lemmas (with
+coalesce, the piece a paper proof would most plausibly hand-wave), and
+the epoch composition, the only clause with a stability hypothesis.
+Recorded as Open Question~\ref{oq:runtable}.
+
+\subsection{The cross-system benchmark}
+\label{sec:crossbench}
+
+The storage layer's internal measurements say how far the design's own
+representations sit from each other; the external question is where the
+shipped artifact sits against production CRDT libraries. The benchmark
+(\code{benchmarks/}, task \#98) runs our runtime (the unverified ESM
+transliteration of the verified embed kernel, flipped Elias-$\delta$
+code) against Yjs 13.6, Automerge 3.3 (wasm), Loro 1.13 (wasm), and
+list-positions 2.0, on three workloads: the sequential trace replay of
+the previous subsections applied one character at a time, a
+deterministic two-replica concurrent session (seeded, byte-identical op
+stream to every system), and a delete-heavy churn cycle. Every cell
+comes from a run of the checked-in scripts on one machine (node
+v26.3.1, Apple M4 Pro); nothing is quoted from literature, and each
+system's convergence and final text are gated before any number is
+reported.
+
+\paragraph{Fair play: what each column contains.} Save sizes across
+CRDT systems are not comparable without saying what a save
+\emph{contains}, so every row is labeled. Automerge's \code{save} is
+the \emph{full change history}, compressed (the library has no
+state-only mode). Loro's \code{snapshot} carries state plus full
+history; its \code{shallow-snapshot} drops history at the current
+frontiers and is state-only. Yjs's update encoding drops deleted
+content but cannot drop tombstone \emph{id structure} (v2 is the same
+content, run-length compressed). list-positions saves live characters
+plus position metadata as JSON. Ours saves \emph{live state only}
+(delete is pure removal). Symmetrically, our side is three
+clearly-labeled columns: \emph{as shipped} (measured: the datatype's
+JSON, plus a \emph{binary estimate}, a defined packed encoding computed
+from the same state, honest about the fact that no packed encoder is
+shipped); \emph{with compaction} (measured, shipped code: the state
+after \code{compactEliasDelta} at a settled cut, legitimate on these
+workloads since replay and churn are single-writer and the session is
+fully synced at the end); and the \emph{run-table projection}
+(measured-in-model, \textbf{not shipped}: the accounting of
+\S\ref{sec:runtable} executed on the same trace, order-metadata bits
+plus UTF-8 text). The projection is anchored to the shipped code
+bit-for-bit: the model's chain accounting reproduces the shipped
+state's coordinate bits exactly (34{,}660{,}055 bits before and
+18{,}296{,}270 after compaction on \code{friendsforever\_flat}), so the
+column measures the representation, not a different datatype.
+
+\paragraph{The condensed save-size comparison} (bytes per live
+character, final state of each sequential trace; ``history'' rows carry
+the whole edit log, ``state'' rows do not):
+
+\begin{center}\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+system, variant & contains & \code{ff\_flat} & \code{cs\_flat} &
+  \code{seph} & \code{am-paper} \\
+\midrule
+ours, as shipped (binary est.) & state & 207.2 & 315.5 & 376.3 & 292.5 \\
+ours, with compaction (binary est.) & state & 111.5 & 188.3 & 119.1 & 164.4 \\
+ours, run-table \emph{projection} & state (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
+Yjs update-v1 & state + tombstone ids & 3.8 & 4.4 & 6.0 & 3.0 \\
+Yjs update-v2 & same, run-length coded & 1.9 & 2.0 & 2.4 & 1.5 \\
+Automerge save & full history & 1.3 & 1.2 & 3.6 & 1.2 \\
+Loro snapshot & state + full history & 2.9 & 3.1 & 5.9 & 2.4 \\
+Loro shallow-snapshot & state only & 1.0 & 1.1 & 0.9 & 0.6 \\
+list-positions & state (JSON) & 4.7 & 2.9 & 10.1 & 4.7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent (Traces abbreviated: \code{friendsforever\_flat},
+\code{clownschool\_flat}, \code{seph-blog1}, \code{automerge-paper};
+final documents 21k, 21k, 57k, 105k characters.) Read bottom-up: the
+as-shipped absolute-coordinate representation is two orders of
+magnitude above production, compaction roughly halves it, and the
+run-table projection lands at 3.8 to 4.0 bytes per character, within
+1.4$\times$ of Yjs update-v1 on every trace but still 3 to 6$\times$
+above the smallest state-only production saves (Loro shallow-snapshot,
+Yjs v2). The projection closes the representation gap to rough parity
+with Yjs v1; it does not win save size outright, and it must never be
+read as a shipped number.
+
+\paragraph{The honest headline.} Where we lose, as shipped: per-char
+apply, by three to four orders of magnitude. Median 347 to 364~$\mu$s
+on the 21k-character documents, 1.66~ms at 57k, 3.16~ms at 105k, and
+the trend is the diagnosis: the persistent \code{apply} returns a fresh
+Map, an $O(\text{live set})$ copy per op, so cost grows linearly with
+document size. This is \emph{interface-inherited} (the persistent-state
+datatype interface the verified semantics is stated over), not order
+machinery; Automerge sits at a flat 24 to 27~$\mu$s and
+Yjs/Loro/list-positions at a flat 0.5 to 1.7~$\mu$s, and a transient or
+batched apply path would move ours toward the microsecond class without
+touching the verified semantics. Load (JSON parse plus the coordinate
+sort) is 31 to 253~ms against Loro's sub-millisecond snapshot load,
+though within range of Automerge's full-history load. Retained memory
+is small (2 to 12~MB: absolute coordinates share prefixes structurally
+as cons strings, so the bit cost materializes only at serialization),
+paid for as allocation churn during replay.
+
+Where we are competitive or winning, as shipped: merge/sync. The
+unique-LCA three-way merge under the head-sync runtime syncs at
+73~$\mu$s median (frequent-sync preset) and 731~$\mu$s (bulk), which is
+Yjs-level (90~$\mu$s, 1.13~ms) and 20 to 25$\times$ faster than
+Automerge and Loro in these sessions, with commit GC running outside
+the timed window at millisecond totals. The honest caveat: these are
+small documents (1.8k and 3.6k characters), and our merge is
+$O(\text{live set})$, so the numbers do not extrapolate to 100k-char
+documents. And storage on delete: our save \emph{never grows on
+delete}; it shrinks by construction, since delete is record removal.
+
+\paragraph{The churn table} (5 cycles of insert 2000 then delete 1800
+characters, then a final 200-char insert; save bytes after selected
+phases; the question per row is whether the save \emph{grows across a
+delete phase}):
+
+\begin{center}\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}lrrrrrl@{}}
+\toprule
+system, variant & c1-ins & c1-del & c5-ins & c5-del & final &
+  grows on delete? \\
+\midrule
+ours (binary est.) & 22278 & 2191 & 72322 & 25891 & 31596 & never \\
+ours, compacted (binary est.) & 11576 & 1090 & 18884 & 6524 & 7882 & never \\
+Yjs update-v1 & 32931 & 31671 & 163331 & 161995 & 165395 & never \\
+Yjs update-v2 & 9539 & 8812 & 45776 & 44841 & 45856 & never \\
+Automerge save & 8004 & 11387 & 56294 & 59724 & 60742 & \textbf{always} \\
+Loro snapshot & 13349 & 15337 & 76144 & 78290 & 79679 & \textbf{always} \\
+Loro shallow-snapshot & 6170 & 878 & 8677 & 3296 & 3882 & never \\
+list-positions & 121933 & 94172 & 454518 & 428465 & 436314 & never \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The final document is 1200 live characters in every row.
+Automerge's save grows by roughly 3.4~KB across \emph{every} delete
+phase (history-carrying, monotone by design), and Loro's full snapshot
+likewise; Yjs never grows but cannot shed tombstone structure, so it
+retains 165~KB (v1) for those 1200 characters against our compacted
+7.9~KB and Loro's shallow 3.9~KB. Ours shrinks on every delete phase in
+every variant. This is the storage-on-delete axis of the retention
+taxonomy (\S\ref{sec:related}) measured live: tombstone-freedom is not
+a benchmark trick, it is the design's semantics showing up as the only
+save that gets smaller when the document does.
+
+Methodology caveats, stated so the numbers cannot be over-read: timer
+overhead (30 to 60~ns per op) is not subtracted and biases the
+sub-microsecond medians; Automerge is driven one change per character
+(the automerge-perf convention; batching would lower its cost and
+history size); list-positions is a positions library rather than a full
+CRDT, and its sync row is its documented op-log integration; heap
+numbers are not comparable across the wasm boundary; and cross-system
+merged \emph{order} may legitimately differ on concurrent insertions,
+so only intra-system convergence is gated.
+
 \section{Comparison with Eg-walker}
 \label{sec:egwalker}
 
@@ -2892,7 +4519,9 @@ while the one-sided design inherits RGA's anomaly by construction,
 being read-equal to RGA); the sided generalization of
 \S\ref{sec:sided} adopts exactly that two-sidedness as a parameter,
 closing the gap while keeping the one-sided datatype as its all-R
-fragment. \emph{(iii)} The verification gap runs
+fragment; the FugueMax variant's maximal non-interleaving, which
+Eg-walker's shipped ordering only conjectures, is here a kernel-checked
+theorem (\S\ref{sec:theorem9}). \emph{(iii)} The verification gap runs
 the other way: Eg-walker's replay-transform-clear loop is
 algorithmically sophisticated and only informally proved; here the
 merge performs no arbitration at all, the metatheory is one-line at
@@ -3145,9 +4774,10 @@ right ORIGIN, not expressible by any re-banding of deltas (the mirror
 control machine-witnesses this), so R-entries carry the mint-time
 successor's key as an order-reversing tag; condition (3) is proved in
 full (\code{fuguemax\_same\_origin\_low\_first}, the positive twin
-of the refutation) and full Theorem~9 is reduced to the
-display-to-traversal theory (task \#88; Open
-Question~\ref{oq:traversal}). The sided
+of the refutation), and full Theorem~9 has since been \textbf{closed}
+(\S\ref{sec:theorem9}: the traversal theory discharges condition (1),
+the corrected backward exception discharges condition (2), and
+\code{fuguemax\_maximally\_noninterleaving} is kernel-clean). The sided
 sequential spec also landed (\code{sided\_seq\_sound}: a
 sentinel-rooted two-sided buffer, R-inserts splice after their
 anchor, L-inserts immediately before). The tag has a COST: at
@@ -3843,10 +5473,14 @@ guards are discharged on the witness.
 \label{sec:open}
 
 The consolidated list: the framework questions of the metatheory
-(Part~I), the campaign's successor question (Part~III), and two
-questions raised by the FugueMax arc (Part~II). One resolved question
-is kept at the end in compressed form, because the later parts depend
-on its correction.
+(Part~I), the campaign's successor question (Part~III), the retention
+question of the FugueMax arc (Part~II), and the questions opened by the
+runtime and storage extension (virtual LCAs, GC, stability, the run
+table). Two resolved questions are kept at the end in compressed form,
+because the later parts depend on their corrections; the
+Weidner--Kleppmann Theorem-9 gap, listed as open in the previous
+revision of this document, is closed (\S\ref{sec:theorem9}) and no
+longer appears.
 
 \begin{openq}[Is there a rely-guarantee program logic for MRDTs?]
 \label{oq:proglogic}
@@ -3930,23 +5564,54 @@ observed uniformity of the discharges ($\sigma$-characterization by
 sandwich invariant + absorber trichotomy) suggests the scheme exists.
 \end{openq}
 
-\begin{openq}[criss-cross merges and virtual LCAs]
-\label{oq:crisscross}
-The transition system gates Merge on the existence of an LCA
-(\S\ref{sec:lca}); criss-cross configurations are reachable, and every
-version in them linearizes, but their heads cannot merge --- the model
-is silent exactly where git reaches for its \emph{recursive} strategy
-(merge the maximal common ancestors into a virtual base, then merge with
-that). The metatheory looks ready for the extension: the ternary Join
-Lemma is stated over backward-closed \emph{event sets}, and
-$E_1 \cap E_2$ needs no witnessing store version. What remains is a
-virtual-LCA Merge rule plus one per-data-type question: do the eight VCs
-imply that the recursively computed base equals
-$\sigma(E_1 \cap E_2)$? For the counter this is inclusion--exclusion
-once more --- exact iff the maximal common ancestors jointly cover the
-intersection, itself a candidate store invariant; for the OR-set, a
-pointwise Boolean check. A positive answer closes the one visible gap
-between the model and practice.
+\begin{openq}[tightness of the MCA-closure keep set]
+\label{oq:mcastight}
+Under virtual merges the keep set retains the upward event-set closure
+of $\mathrm{mcasClosure}(\mathrm{heads})$, and safety is proved: every
+future virtual resolution reads only kept versions
+(\lean{gc\_safetyV}, \S\ref{sec:gc}). Tightness is the unexamined
+converse: is every closure member actually readable by some future
+virtual merge? The harness already shows non-members can be dead, but
+whether the closure itself over-retains is open; a negative answer
+(some closure members are unreadable in every future) would license a
+strictly smaller keep set, and the gateway lemma's structure suggests
+where to look: closure members reachable only through non-head
+prune-time versions.
+\end{openq}
+
+\begin{openq}[evidence certificates for SettledAt]
+\label{oq:evidence}
+The stability gate (\S\ref{sec:stability}) is discharged by evidence
+commits: the compacting version has heard from every replica since the
+cut. Two operational gaps remain. Open membership: the evidence
+quantifies over a known replica set, and replica creation after a
+compaction is policy-gated rather than derived; a model where the
+replica set itself is a grow-only MRDT could make the gate a theorem.
+And certificate transport: can a replica hand a peer a compact,
+checkable certificate of SettledAt (a frontier vector plus the
+evidence commits) so the callback can fire at nodes that did not
+compute the frontier themselves? The commit-shaped-not-event-shaped
+erratum constrains the answer: the certificate must name commits, since
+an event-set summary can miss the pull that carries no new events yet
+opens the gate.
+\end{openq}
+
+\begin{openq}[concurrent compaction: the epoch DAG]
+\label{oq:epochdag}
+The mechanized stability metatheorem covers compaction epochs that are
+linearized per replica (the v1 runtime refuses compaction off the
+newest epoch), and VC-S6 gives observational coherence for nested cuts
+on one lineage. Concurrent \emph{divergent} compactions are the open
+protocol half: two replicas compact at incomparable cuts $S$, $S'$, and
+their states must still merge. The conjectured shape is an epoch DAG
+with common-refinement translation (translate both sides to the join
+epoch before merging), and the remap species makes the obligation
+concrete: two rank-renumberings of overlapping sibling groups must
+commute observationally after refinement. The harness finding that
+epoch commits perturb the subject's commit graph (a control
+fast-forward can be a subject merge) says the twin-execution proof
+technique will need the version-map generality the self-merge trick
+deliberately avoided.
 \end{openq}
 
 \begin{openq}[$\rcrel$-expressiveness: chains, LWW, and
@@ -4090,19 +5755,79 @@ non-transitivity). The embed's immutable coordinates remove that
 refutation's mechanism, but no proof exists in either direction.
 \end{openq}
 
-\begin{openq}[the display-to-traversal theory, and the first mechanized
-maximal non-interleaving]
-\label{oq:traversal}
-The FugueMax arc (\S\ref{sec:mechanization}) formalized the
-Weidner--Kleppmann maximal-non-interleaving Definition~4 over reachable
-configurations, refuted it for the Fugue-with-recency policy (the
-paper's own Fugue-vs-FugueMax separation, machine-checked), and proved
-its condition (3) for the FugueMax kernel variant
-(\lean{fuguemax\_same\_origin\_low\_first}). What remains of the full
-Theorem~9 is the display-to-traversal theory (task \#88): relating the
-kernel's displayed order to the tree traversal the definition
-quantifies over. Completing it would yield the first fully mechanized
-maximal non-interleaving theorem for a sequence datatype.
+\begin{openq}[the chain-price program: possibility and impossibility of
+retention]
+\label{oq:chainprice}
+The fooling pair of \S\ref{sec:chainprice} gives this document its
+first \emph{representation}-level impossibility (previous negatives
+were all specification-level), and it suggests a program: for each
+intent tier (the RGA reads, Fugue, FugueMax; delete-order
+preservation), characterize the exact information a tombstone-free
+state must retain, fooling pairs as lower bounds, capstones as upper
+bounds. Three concrete instances. (i)~Is the \emph{full} dead chain
+necessary, or only its order type relative to live stamps? The
+renumber epoch already exploits rank-compressibility below settled
+cuts; is the settled gate exactly the boundary of compressibility, or
+can unsettled retention also be rank-coded against a fooling-pair
+obstruction? (ii)~The FugueMax tag retention
+(Open Question~\ref{oq:retention}) is this program's maximal-intent
+instance. (iii)~Delete sensitivity: is every delete-sensitive read
+function unimplementable over retention-free states, the general form
+of ``no policy reaches Shesha''?
+\end{openq}
+
+\begin{openq}[the run-table theorems]
+\label{oq:runtable}
+The run table (\S\ref{sec:runtable}) is machine-validated and its Lean
+bill is fixed by the implementation pass: \emph{T-repr}, the
+representation isomorphism between canonical tables and kept trees,
+stated post-epoch over labels, sides, and liveness, deliberately not
+timestamps (rank ordinals forget time; a timestamp-preserving statement
+is false after the first epoch); \emph{T-tail}, the tail-attachment
+lemma, proved once and consumed by the rest; \emph{T-cmp}, the two-case
+path comparator equals the fold's key order, parametric in the tie
+oracle exactly as the chain comparator is; \emph{T-walk}, the
+structural walk equals the display sequence; \emph{T-mut}, six
+mutation-commutes-with-canonicalization simulation lemmas, of which the
+coalesce half is the one a paper proof would hand-wave and the
+vanished-anchor rule must take the op's carried coordinate as input;
+and \emph{T-epoch}, composition with the re-coding cluster, the only
+clause with a stability hypothesis. Nothing conceptually new is
+expected; the value is the usual one, that the mutation rules were
+already corrected twice by hand-derivation during design. The
+cross-system benchmark (\S\ref{sec:crossbench}) adds an engineering
+face to the same item: a shipped run-table serializer would turn the
+projection column from measured-in-model into measured, and a transient
+or batched apply path would remove the interface-inherited per-op copy.
+\end{openq}
+
+\begin{openq}[FugueMax tag re-mapping]
+\label{oq:fmremap}
+The re-coding cluster (\S\ref{sec:recoding}) rewrites coordinates at
+the record's top level. The FugueMax variant embeds keys \emph{inside}
+R-entry tags, so an epoch re-map must rewrite coordinates occurring
+inside tag payloads, applying the stable-prefix factorization under a
+congruence over the tag structure. The TagsOK finding
+(\S\ref{sec:theorem9}) raises the stakes: tag wellformedness is
+convergence-load-bearing, so an ill-formed tag re-map would break
+convergence itself, not merely display intent. Neither the congruence
+nor its H2 argument exists yet.
+\end{openq}
+
+\begin{openq}[generation-discipline dependence of storage arguments]
+\label{oq:gendisc}
+\lean{AnchorsFactorBeyond} (\S\ref{sec:compactED}) is a theorem under
+the generation discipline and refutable from bare honest reachability
+(the countermodel forges the carried split while keeping the minted
+coordinate honest). How much of the storage layer has this shape? The
+conjecture: every storage-layer hypothesis that quantifies over
+\emph{carried payloads} (op prefixes, tags, in-flight declarations) is
+dischargeable from generation honesty and refutable without it, so that
+a uniform metatheorem (``payload facts come from the mint,'' the
+storage echo of Part~I's \lean{GenHonest} shape) would collapse the
+per-instance discharges. A refutation instance would be equally
+informative: a payload fact needed by some compaction that generation
+honesty does not pin.
 \end{openq}
 
 \begin{openq}[the retention lower bound for tombstone-free maximal
@@ -4116,8 +5841,25 @@ any tombstone-free design achieving maximal non-interleaving carry the
 right origin's ordering information in its keys? The question has a
 Myhill--Nerode shape (task \#89): distinguish states that demand
 different verdicts, and count what any key scheme must remember. It is
-the entropy law of \S\ref{sec:encoding} meeting the ordering intent.
+the entropy law of \S\ref{sec:encoding} meeting the ordering intent,
+and the fooling-pair technique of \S\ref{sec:chainprice} is the
+designated tool: exhibit two histories whose tag-free states coincide
+while maximal non-interleaving owes them different orders.
 \end{openq}
+
+\paragraph{Resolved: criss-cross merges and virtual LCAs.} The previous
+revision asked whether the eight VCs imply that a recursively computed
+virtual base equals $\sigma(E_1 \cap E_2)$, guessing inclusion-exclusion
+arguments per datatype and a candidate new store invariant. The answer
+landed stronger and cheaper than forecast (\S\ref{sec:vlca}): the
+covering proposition makes the virtual base's event set \emph{exactly}
+the intersection from invariants already carried
+(\lean{StoreInv.origin} plus monotonicity, no new invariant), one fold
+induction from the per-configuration Join Lemma gives canonicity of the
+virtual state, and the per-datatype VC surface does not move. The
+per-datatype question dissolved into the hook the framework already
+demanded. The residue that remains open is operational, not semantic:
+keep-set tightness (Open Question~\ref{oq:mcastight}).
 
 \paragraph{Resolved: the self-referential-spec limit.}
 RA-linearizability certifies that a version's state is the fold of some
@@ -4186,6 +5928,22 @@ $\cd$ independent of core+delta (OQ~\ref{oq:cd}) & \lean{cdvc3\_not\_derivable\_
 impossibility kill-tests & --- & \lean{Refutations/Impossibility.lean} \\
 findings journal & --- & \lean{Development/MRDT\_METATHEORY\_DRAFT.md} \\
 \midrule
+\multicolumn{3}{@{}l}{\emph{Part I: the runtime arc (\S\ref{sec:vlca}--\S\ref{sec:stability})}} \\
+virtual-merge step relation & \lean{Step3V} (base embedding + \lean{mergeVirtual}) & \lean{Metatheory/LCA\_Lemma.lean} \\
+covering proposition (Prop.~\ref{prop:cover}) & \lean{mca\_events\_cover} & \lean{Metatheory/LCA\_Lemma.lean} \\
+virtual fold induction & \lean{virtualLCAState\_canonical}, \lean{goodConfig3\_mergeVirtual\_at} & \lean{Metatheory/Adequacy.lean} \\
+honest reachability over \lean{Step3V} & \lean{HonestReachV}, \lean{ra\_linearizable3\_of\_honest\_reachV} & \lean{Metatheory/HonestReach.lean} \\
+single-MCA picks refuted (criss-cross pins) & \lean{t1f\_pick\_u\_resurrects\_y}, \lean{t1f\_pick\_v\_resurrects\_x} & \lean{Metatheory/VirtualLCA\_Spot.lean} \\
+H-layer + flat catalogue over \lean{Step3V} & \lean{flat\_ra\_linearizable3\_eq\_V} & \lean{Metatheory/GoodConfig3H\_V.lean}, \lean{Metatheory/FlatGeneric\_Bridge\_V.lean} \\
+queue over virtual merges (\S\ref{sec:vlca}) & \lean{queue\_ra\_linearizable3\_V} & \lean{MRDT\_Instances/MergeableQueue/} \\
+rehoming Eq capstone over \lean{Step3V} (stress test) & \lean{rga\_ra\_linearizable3\_eq\_V} & \lean{MRDT\_Instances/RGA\_Rehoming/RA\_Lin\_V.lean} \\
+commit GC: keep set + safety (\S\ref{sec:gc}) & \lean{keepSet}, \lean{gc\_safety}, \lean{lca\_not\_dropped} & \lean{Metatheory/GC\_Safety.lean} \\
+GC under virtual merges & \lean{mcasClosure}, \lean{keepSetV}, \lean{gc\_safetyV} & \lean{Metatheory/GC\_Safety.lean} \\
+SettledAt + evidence discharge (\S\ref{sec:stability}) & \lean{SettledAt}, \lean{settledAt\_of\_evidence} & \lean{Metatheory/Stability\_VC.lean} \\
+stability VC bundle + metatheorem & \lean{StabilityVC}, \lean{stability\_simulation}, \lean{stability\_ra\_inherited} & \lean{Metatheory/Stability\_VC.lean} \\
+OR-set stability instance & \lean{orStabilityVC}, \lean{ORSet\_stability\_reads} & \lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean} \\
+static drop set refuted & \lean{static\_drop\_unsound} & \lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean} \\
+\midrule
 \multicolumn{3}{@{}l}{\emph{Part I: instances (Table~\ref{tab:catalog})}} \\
 catalogue instance theorems & all instance theorems & \lean{MRDT\_Instances/} (one directory per RDT) \\
 the flat instances, generically & \lean{$\ast$\_ra\_linearizable3\_eq} (11) & \lean{MRDT\_Instances/} (per-RDT) \\
@@ -4204,6 +5962,19 @@ sided chain-lex kernel & \lean{sdisplay\_iff\_schainBefore}, \lean{schainBefore\
 sided RGA + per-policy intent & \lean{sided\_embed\_ra\_linearizable3}, \lean{sFold\_liftOp} & \lean{MRDT\_Instances/SidedRGA/} \\
 Fugue/FugueMax vs.\ W--K Def.~4 & \lean{fugue\_not\_maximally\_noninterleaving}, \lean{fuguemax\_same\_origin\_low\_first} & \lean{MRDT\_Instances/SidedRGA/}, \lean{Sal/MRDTs/RGA\_Embed/SidedMax\_ChainLex.lean} \\
 Peritext on the embed kernel & \lean{peritextEmbed\_ra\_linearizable3}, \lean{renderIds\_del} & \lean{MRDT\_Instances/Peritext\_Embed/} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Part II: Theorem~9 and the storage layer (\S\ref{sec:theorem9}--\S\ref{sec:storage})}} \\
+traversal theory, interval form & \lean{schain\_ext\_after\_is\_R}, \lean{schain\_ext\_before\_is\_L} & \lean{Sal/MRDTs/RGA\_Embed/Sided\_Traversal.lean} \\
+forward NI, FugueMax & \lean{fuguemax\_forward\_ni} & \lean{MRDT\_Instances/SidedRGA/SidedRGA\_NonInterleaving.lean} \\
+forward NI, plain Fugue (as stated) & \lean{fugue\_forward\_ni} & \lean{MRDT\_Instances/SidedRGA/SidedRGA\_Fugue\_ForwardNI.lean} \\
+Theorem~9 capstone (\S\ref{sec:theorem9}) & \lean{fuguemax\_maximally\_noninterleaving} & \lean{MRDT\_Instances/SidedRGA/SidedRGA\_Backward.lean} \\
+FugueMax convergence (TagsOK) & \lean{fuguemax\_ra\_linearizable3}, \lean{f\_fold\_canon} & \lean{MRDT\_Instances/SidedRGA/SidedRGA\_FugueMax\_RA\_Lin.lean} \\
+sibling-splice fooling pair (\S\ref{sec:chainprice}) & \lean{sibling\_splice\_no\_merge\_function} & \lean{Refutations/SiblingSplice\_Fooling.lean} \\
+re-coding cluster, T1--T3 + collapse (\S\ref{sec:recoding}) & \lean{eRecode\_applySeq}, \lean{eRecode\_reads\_identical}, \lean{eRecode\_ext\_global\_collapse} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_Recoding.lean} \\
+SettledAt bridge, remap species & \lean{eRecode\_settled\_bridge} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_Stability\_Bridge.lean} \\
+anchors factor at the cut & \lean{anchorsFactorBeyond\_of\_anchored}, \lean{eRecode\_settled\_bridge\_honest} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_AnchorsFactor.lean} \\
+verified concrete compaction (\S\ref{sec:compactED}) & \lean{compactEliasDelta\_settled\_reads} + in-flight SPOTs & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompactEliasDelta.lean} \\
+run table (\S\ref{sec:runtable}; Lean owed, OQ~\ref{oq:runtable}) & --- & \code{whiteboard/litmus/run\_table\_measure.py} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Part III: the sequential-specification campaign}} \\
 tier 1: eleven flat RDTs & \lean{$\ast$\_seq\_sound} (per RDT) & \lean{MRDT\_Instances/SeqSpec\_Flat.lean} \\
