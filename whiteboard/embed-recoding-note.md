@@ -356,3 +356,37 @@ spells endContent on every sequential trace. The next cost lever is
 therefore RE-CODING LIVE RUNS (run/offset coding of live delta-1
 chains, the isometric-fold/path-2 representation layer, task #73's
 territory), a representation change, not a better epoch map.
+
+## Addendum 3: the sided (Fugue) instantiation, measured
+
+(`litmus/embed_sided_compact_measure.py`; real traces replayed through
+the sided model under the Fugue policy, band-aware compaction:
+renumber within each parent-band group, fusion carrying the head's
+band and codeword. All gates pass: endContent 6/6 via the sided
+display, reads identical 80/80 across cuts, history independence two
+and three way, zero band-aware order surprises.)
+
+1. THE NUMBERS. Sided/Fugue reductions are 1.36x to 2.90x sequential
+   (1.14x to 1.26x concurrent single-cut), SYSTEMATICALLY BELOW the
+   one-sided 1.69x to 3.24x. The naive expectation that the ratio is
+   preserved is falsified for the reason it itself cites: adding the
+   same flat per-level side cost to numerator and denominator pulls
+   the quotient toward the level-count ratio, which is below the
+   payload ratio.
+2. WHERE SIDES PAY. The fused sided state costs about 2x the fused
+   one-sided state, and the premium is entirely the flat side flag:
+   the sided payload exceeds the one-sided payload by only 1.0 to 4.7
+   percent (the Fugue tree is payload-equivalent to RGA's on these
+   traces). 94 to 98 percent of side bits sit on LIVE ancestor levels
+   that no epoch map can touch. The flag costs a flat 1.000 bit per
+   level against a true side entropy of 0.19 to 0.27 bits (L-mints
+   are only 3.0 to 4.6 percent under Fugue on real traces): a 4x to
+   5x overpay on the side channel, load-bearing for lex band
+   separation, hence recoverable only at the representation layer
+   (entropy-coded sides, run-coding of live all-R chains) alongside
+   the live-depth cost: both point at task #73's isometric-fold
+   territory.
+3. Bonus observation: with the (ts, agent) tiebreak the sided walk
+   spells endContent on the concurrent traces too, with zero sibling
+   ties. FugueMax with tag rewriting remains out of scope (keys inside
+   tags need a tag-structure congruence).
