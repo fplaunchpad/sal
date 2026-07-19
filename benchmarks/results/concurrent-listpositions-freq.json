@@ -1,0 +1,57 @@
+{
+ "workload": "concurrent",
+ "system": "listpositions",
+ "systemVersion": "2.0.0",
+ "preset": "freq",
+ "config": {
+  "rounds": 60,
+  "burst": 25,
+  "seed": 42,
+  "insRatio": 0.8
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:20:56.228Z"
+ },
+ "finalChars": 1804,
+ "gates": {
+  "converged": true
+ },
+ "sync": {
+  "count": 60,
+  "warmupExcluded": 0,
+  "meanUs": 47.29235,
+  "medianUs": 33.5,
+  "p95Us": 160.5,
+  "p99Us": 362.708,
+  "maxUs": 362.708,
+  "totalMs": 2.837541
+ },
+ "syncPayloadBytes": {
+  "total": 395312,
+  "perSyncMean": 6588.533333333334
+ },
+ "localOps": {
+  "count": 3000,
+  "totalMs": 7.0150010000000025,
+  "meanUs": 2.3383336666666676
+ },
+ "saves": [
+  {
+   "label": "json-text+order",
+   "bytes": 196682,
+   "estimated": false
+  }
+ ],
+ "compaction": null,
+ "runtimeGcMsTotal": null,
+ "memory": {
+  "baselineHeap": 4682280,
+  "peakHeapSampled": 9497800,
+  "retainedHeapAfterGc": 2071400,
+  "externalDelta": 40,
+  "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+ }
+}

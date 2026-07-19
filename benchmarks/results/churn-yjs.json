@@ -1,0 +1,159 @@
+{
+ "workload": "churn",
+ "system": "yjs",
+ "systemVersion": "13.6.31",
+ "config": {
+  "cycles": 5,
+  "insPerCycle": 2000,
+  "delPerCycle": 1800,
+  "finalIns": 200,
+  "seed": 7
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:20:58.571Z"
+ },
+ "finalChars": 1200,
+ "gates": {
+  "lenOk": true
+ },
+ "phases": [
+  {
+   "phase": "start",
+   "liveChars": 0,
+   "phaseMs": 0,
+   "saves": {
+    "update-v1": 2,
+    "update-v2": 13
+   }
+  },
+  {
+   "phase": "cycle1-ins",
+   "liveChars": 2000,
+   "phaseMs": 8.037291,
+   "saves": {
+    "update-v1": 32931,
+    "update-v2": 9539
+   }
+  },
+  {
+   "phase": "cycle1-del",
+   "liveChars": 200,
+   "phaseMs": 5.554334,
+   "saves": {
+    "update-v1": 31671,
+    "update-v2": 8812
+   }
+  },
+  {
+   "phase": "cycle2-ins",
+   "liveChars": 2200,
+   "phaseMs": 5.990875,
+   "saves": {
+    "update-v1": 65568,
+    "update-v2": 18657
+   }
+  },
+  {
+   "phase": "cycle2-del",
+   "liveChars": 400,
+   "phaseMs": 3.7075,
+   "saves": {
+    "update-v1": 64250,
+    "update-v2": 17791
+   }
+  },
+  {
+   "phase": "cycle3-ins",
+   "liveChars": 2400,
+   "phaseMs": 4.795792,
+   "saves": {
+    "update-v1": 98213,
+    "update-v2": 27715
+   }
+  },
+  {
+   "phase": "cycle3-del",
+   "liveChars": 600,
+   "phaseMs": 3.715708,
+   "saves": {
+    "update-v1": 96897,
+    "update-v2": 26870
+   }
+  },
+  {
+   "phase": "cycle4-ins",
+   "liveChars": 2600,
+   "phaseMs": 3.907167,
+   "saves": {
+    "update-v1": 130880,
+    "update-v2": 36867
+   }
+  },
+  {
+   "phase": "cycle4-del",
+   "liveChars": 800,
+   "phaseMs": 3.360875,
+   "saves": {
+    "update-v1": 129377,
+    "update-v2": 35661
+   }
+  },
+  {
+   "phase": "cycle5-ins",
+   "liveChars": 2800,
+   "phaseMs": 4.140792,
+   "saves": {
+    "update-v1": 163331,
+    "update-v2": 45776
+   }
+  },
+  {
+   "phase": "cycle5-del",
+   "liveChars": 1000,
+   "phaseMs": 3.950916,
+   "saves": {
+    "update-v1": 161995,
+    "update-v2": 44841
+   }
+  },
+  {
+   "phase": "final-ins",
+   "liveChars": 1200,
+   "phaseMs": 0.371833,
+   "saves": {
+    "update-v1": 165395,
+    "update-v2": 45856
+   }
+  }
+ ],
+ "growthOnDelete": {
+  "update-v1": {
+   "deltasBytes": [
+    -1260,
+    -1318,
+    -1316,
+    -1503,
+    -1336
+   ],
+   "growsOnDelete": "never"
+  },
+  "update-v2": {
+   "deltasBytes": [
+    -727,
+    -866,
+    -845,
+    -1206,
+    -935
+   ],
+   "growsOnDelete": "never"
+  }
+ },
+ "memory": {
+  "baselineHeap": 5652256,
+  "retainedHeapAfterGc": 2662264,
+  "externalDelta": 20777
+ }
+}

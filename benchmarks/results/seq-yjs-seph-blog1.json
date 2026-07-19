@@ -1,0 +1,70 @@
+{
+ "workload": "seq",
+ "system": "yjs",
+ "systemVersion": "13.6.31",
+ "trace": "seph-blog1",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:08:28.201Z"
+ },
+ "ops": {
+  "total": 368209,
+  "inserts": 212489
+ },
+ "finalChars": 56769,
+ "apply": {
+  "totalMs": 743.357125,
+  "count": 368209,
+  "warmupExcluded": 1000,
+  "meanUs": 1.9802321321100518,
+  "medianUs": 1.417,
+  "p95Us": 5.292,
+  "p99Us": 12.084,
+  "maxUs": 434.25
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "update-v1",
+   "bytes": 338289,
+   "timeMs": 4.764542,
+   "note": "full update encoding v1 (state incl. tombstone structure, no deleted content)",
+   "estimated": false
+  },
+  {
+   "label": "update-v2",
+   "bytes": 135225,
+   "timeMs": 2.8245,
+   "note": "v2 encoding (run-length compressed)",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "update-v1",
+   "medianMs": 9.052083,
+   "runs": 5,
+   "allMs": [
+    7.624209,
+    8.519125,
+    9.052083,
+    9.143209,
+    11.603917
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 55115368,
+  "peakHeapSampled": 95503760,
+  "retainedHeapAfterGc": 4812616,
+  "externalDelta": 2966449,
+  "arrayBuffersDelta": 2945672,
+  "rssEnd": 238764032,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

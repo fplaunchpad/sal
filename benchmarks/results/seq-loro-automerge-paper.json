@@ -1,0 +1,70 @@
+{
+ "workload": "seq",
+ "system": "loro",
+ "systemVersion": "1.13.7",
+ "trace": "automerge-paper",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:20:54.570Z"
+ },
+ "ops": {
+  "total": 259778,
+  "inserts": 182315
+ },
+ "finalChars": 104852,
+ "apply": {
+  "totalMs": 201.226083,
+  "count": 259778,
+  "warmupExcluded": 1000,
+  "meanUs": 0.7327992294553632,
+  "medianUs": 0.459,
+  "p95Us": 1.417,
+  "p99Us": 2.125,
+  "maxUs": 209.625
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "snapshot",
+   "bytes": 251015,
+   "timeMs": 12.216375,
+   "note": "state + full history",
+   "estimated": false
+  },
+  {
+   "label": "shallow-snapshot",
+   "bytes": 65066,
+   "timeMs": 3.1605,
+   "note": "state with history dropped at current frontiers",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "snapshot",
+   "medianMs": 0.336542,
+   "runs": 5,
+   "allMs": [
+    0.323166,
+    0.324417,
+    0.336542,
+    0.350458,
+    1.74225
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 76576160,
+  "peakHeapSampled": 87822512,
+  "retainedHeapAfterGc": 299184,
+  "externalDelta": 2099257,
+  "arrayBuffersDelta": 2078480,
+  "rssEnd": 262324224,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

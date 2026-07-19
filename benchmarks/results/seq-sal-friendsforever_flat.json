@@ -1,0 +1,96 @@
+{
+ "workload": "seq",
+ "system": "sal",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "friendsforever_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T05:58:58.900Z"
+ },
+ "ops": {
+  "total": 26078,
+  "inserts": 23720
+ },
+ "finalChars": 21362,
+ "apply": {
+  "totalMs": 9487.418792,
+  "count": 26078,
+  "warmupExcluded": 1000,
+  "meanUs": 377.75857664088045,
+  "medianUs": 363.541,
+  "p95Us": 715.75,
+  "p99Us": 795.083,
+  "maxUs": 4213.959
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "json-shipped",
+   "bytes": 34971320,
+   "timeMs": 31.168625,
+   "note": "JSON, coord bit-strings at 1 byte/bit (shipped repr)",
+   "estimated": false
+  },
+  {
+   "label": "binary-estimate",
+   "bytes": 4427040,
+   "timeMs": null,
+   "note": "packed-bits estimate, computed not implemented",
+   "estimated": true
+  }
+ ],
+ "loads": [
+  {
+   "label": "json-shipped",
+   "medianMs": 31.1715,
+   "runs": 5,
+   "allMs": [
+    30.021541,
+    30.107208,
+    31.1715,
+    31.346708,
+    32.947834
+   ]
+  }
+ ],
+ "compaction": {
+  "ms": 265.690333,
+  "stats": {
+   "symbolsBefore": 34660055,
+   "symbolsAfter": 18296270,
+   "groupsRenumbered": 20844,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 39,
+   "levelsRemoved": 370,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "json-shipped+compacted",
+    "bytes": 18607535,
+    "timeMs": 12.782125
+   },
+   {
+    "label": "binary-estimate+compacted",
+    "bytes": 2381219,
+    "timeMs": null,
+    "estimated": true
+   }
+  ],
+  "textOk": true
+ },
+ "memory": {
+  "baselineHeap": 11265272,
+  "peakHeapSampled": 105879704,
+  "retainedHeapAfterGc": 2261432,
+  "externalDelta": 202508,
+  "arrayBuffersDelta": 208624,
+  "rssEnd": 162807808,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

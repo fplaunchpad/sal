@@ -1,0 +1,98 @@
+{
+ "model": "run_table_measure.py (task #73), family 1-sided",
+ "note": "measured-in-model, not a shipped serializer; bits exclude (ts,agent) ids and text; projected_save_bytes = ceil(bits/8) + utf8(endContent)",
+ "traces": {
+  "friendsforever_flat": {
+   "chars": 21362,
+   "utf8_text_bytes": 21362,
+   "gates_ok": true,
+   "bits": {
+    "chain_before": 34660055,
+    "chain_fused": 18296270,
+    "run_table_raw": 472745,
+    "run_table_composed": 476343
+   },
+   "bits_per_char": {
+    "chain_before": 1622.5098305402116,
+    "chain_fused": 856.4867521767625,
+    "run_table_raw": 22.130184439659207,
+    "run_table_composed": 22.298614361951127
+   },
+   "projected_save_bytes": {
+    "chain_before": 4353869,
+    "chain_fused": 2308396,
+    "run_table_raw": 80456,
+    "run_table_composed": 80905
+   }
+  },
+  "clownschool_flat": {
+   "chars": 21148,
+   "utf8_text_bytes": 21148,
+   "gates_ok": true,
+   "bits": {
+    "chain_before": 52630540,
+    "chain_fused": 31107745,
+    "run_table_raw": 474128,
+    "run_table_composed": 478753
+   },
+   "bits_per_char": {
+    "chain_before": 2488.676943446189,
+    "chain_fused": 1470.9544637790807,
+    "run_table_raw": 22.419519576319274,
+    "run_table_composed": 22.63821637979951
+   },
+   "projected_save_bytes": {
+    "chain_before": 6599966,
+    "chain_fused": 3909617,
+    "run_table_raw": 80414,
+    "run_table_composed": 80993
+   }
+  },
+  "seph-blog1": {
+   "chars": 56769,
+   "utf8_text_bytes": 56769,
+   "gates_ok": true,
+   "bits": {
+    "chain_before": 168884309,
+    "chain_fused": 52066426,
+    "run_table_raw": 1476002,
+    "run_table_composed": 1314975
+   },
+   "bits_per_char": {
+    "chain_before": 2974.938945551269,
+    "chain_fused": 917.1629938875091,
+    "run_table_raw": 26.00014092198207,
+    "run_table_composed": 23.163610421180575
+   },
+   "projected_save_bytes": {
+    "chain_before": 21167308,
+    "chain_fused": 6565073,
+    "run_table_raw": 241270,
+    "run_table_composed": 221141
+   }
+  },
+  "automerge-paper": {
+   "chars": 104852,
+   "utf8_text_bytes": 104852,
+   "gates_ok": true,
+   "bits": {
+    "chain_before": 241629632,
+    "chain_fused": 134145065,
+    "run_table_raw": 2491316,
+    "run_table_composed": 2507561
+   },
+   "bits_per_char": {
+    "chain_before": 2304.48281387098,
+    "chain_fused": 1279.375357646969,
+    "run_table_raw": 23.76030976996147,
+    "run_table_composed": 23.91524243695876
+   },
+   "projected_save_bytes": {
+    "chain_before": 30308556,
+    "chain_fused": 16872986,
+    "run_table_raw": 416267,
+    "run_table_composed": 418298
+   }
+  }
+ }
+}

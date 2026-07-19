@@ -1,0 +1,137 @@
+{
+ "workload": "churn",
+ "system": "automerge",
+ "systemVersion": "3.3.2",
+ "config": {
+  "cycles": 5,
+  "insPerCycle": 2000,
+  "delPerCycle": 1800,
+  "finalIns": 200,
+  "seed": 7
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:20:59.126Z"
+ },
+ "finalChars": 1200,
+ "gates": {
+  "lenOk": true
+ },
+ "phases": [
+  {
+   "phase": "start",
+   "liveChars": 0,
+   "phaseMs": 0,
+   "saves": {
+    "save-full-history": 124
+   }
+  },
+  {
+   "phase": "cycle1-ins",
+   "liveChars": 2000,
+   "phaseMs": 64.279208,
+   "saves": {
+    "save-full-history": 8004
+   }
+  },
+  {
+   "phase": "cycle1-del",
+   "liveChars": 200,
+   "phaseMs": 46.604042,
+   "saves": {
+    "save-full-history": 11387
+   }
+  },
+  {
+   "phase": "cycle2-ins",
+   "liveChars": 2200,
+   "phaseMs": 48.455666,
+   "saves": {
+    "save-full-history": 19766
+   }
+  },
+  {
+   "phase": "cycle2-del",
+   "liveChars": 400,
+   "phaseMs": 39.963166,
+   "saves": {
+    "save-full-history": 23093
+   }
+  },
+  {
+   "phase": "cycle3-ins",
+   "liveChars": 2400,
+   "phaseMs": 46.554875,
+   "saves": {
+    "save-full-history": 31699
+   }
+  },
+  {
+   "phase": "cycle3-del",
+   "liveChars": 600,
+   "phaseMs": 39.276916,
+   "saves": {
+    "save-full-history": 35082
+   }
+  },
+  {
+   "phase": "cycle4-ins",
+   "liveChars": 2600,
+   "phaseMs": 46.947667,
+   "saves": {
+    "save-full-history": 43918
+   }
+  },
+  {
+   "phase": "cycle4-del",
+   "liveChars": 800,
+   "phaseMs": 38.903083,
+   "saves": {
+    "save-full-history": 47288
+   }
+  },
+  {
+   "phase": "cycle5-ins",
+   "liveChars": 2800,
+   "phaseMs": 46.739458,
+   "saves": {
+    "save-full-history": 56294
+   }
+  },
+  {
+   "phase": "cycle5-del",
+   "liveChars": 1000,
+   "phaseMs": 38.762667,
+   "saves": {
+    "save-full-history": 59724
+   }
+  },
+  {
+   "phase": "final-ins",
+   "liveChars": 1200,
+   "phaseMs": 4.88075,
+   "saves": {
+    "save-full-history": 60742
+   }
+  }
+ ],
+ "growthOnDelete": {
+  "save-full-history": {
+   "deltasBytes": [
+    3383,
+    3327,
+    3383,
+    3370,
+    3430
+   ],
+   "growsOnDelete": "always"
+  }
+ },
+ "memory": {
+  "baselineHeap": 4607504,
+  "retainedHeapAfterGc": 801768,
+  "externalDelta": 182891
+ }
+}

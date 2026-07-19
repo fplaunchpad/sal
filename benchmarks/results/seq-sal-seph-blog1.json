@@ -1,0 +1,96 @@
+{
+ "workload": "seq",
+ "system": "sal",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "seph-blog1",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:08:27.150Z"
+ },
+ "ops": {
+  "total": 368209,
+  "inserts": 212489
+ },
+ "finalChars": 56769,
+ "apply": {
+  "totalMs": 546917.7675,
+  "count": 368209,
+  "warmupExcluded": 1000,
+  "meanUs": 1489.2979263934162,
+  "medianUs": 1656.959,
+  "p95Us": 2200.833,
+  "p99Us": 2461.375,
+  "maxUs": 20855.708
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "json-shipped",
+   "bytes": 169774875,
+   "timeMs": 172.330291,
+   "note": "JSON, coord bit-strings at 1 byte/bit (shipped repr)",
+   "estimated": false
+  },
+  {
+   "label": "binary-estimate",
+   "bytes": 21362422,
+   "timeMs": null,
+   "note": "packed-bits estimate, computed not implemented",
+   "estimated": true
+  }
+ ],
+ "loads": [
+  {
+   "label": "json-shipped",
+   "medianMs": 165.963875,
+   "runs": 5,
+   "allMs": [
+    159.301459,
+    160.33075,
+    165.963875,
+    172.722334,
+    188.045417
+   ]
+  }
+ ],
+ "compaction": {
+  "ms": 1187.1595,
+  "stats": {
+   "symbolsBefore": 168884309,
+   "symbolsAfter": 52066426,
+   "groupsRenumbered": 56371,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 1394,
+   "levelsRemoved": 26118,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "json-shipped+compacted",
+    "bytes": 52956992,
+    "timeMs": 42.508708
+   },
+   {
+    "label": "binary-estimate+compacted",
+    "bytes": 6759513,
+    "timeMs": null,
+    "estimated": true
+   }
+  ],
+  "textOk": true
+ },
+ "memory": {
+  "baselineHeap": 53301344,
+  "peakHeapSampled": 334175576,
+  "retainedHeapAfterGc": 7361672,
+  "externalDelta": 2939556,
+  "arrayBuffersDelta": 2945672,
+  "rssEnd": 239616000,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

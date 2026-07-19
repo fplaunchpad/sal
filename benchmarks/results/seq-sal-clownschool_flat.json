@@ -1,0 +1,96 @@
+{
+ "workload": "seq",
+ "system": "sal",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "clownschool_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T05:59:10.899Z"
+ },
+ "ops": {
+  "total": 24326,
+  "inserts": 22737
+ },
+ "finalChars": 21148,
+ "apply": {
+  "totalMs": 8560.29525,
+  "count": 24326,
+  "warmupExcluded": 1000,
+  "meanUs": 366.3874031124068,
+  "medianUs": 347.125,
+  "p95Us": 723.25,
+  "p99Us": 806.292,
+  "maxUs": 5022.792
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "json-shipped",
+   "bytes": 52938278,
+   "timeMs": 47.1235,
+   "note": "JSON, coord bit-strings at 1 byte/bit (shipped repr)",
+   "estimated": false
+  },
+  {
+   "label": "binary-estimate",
+   "bytes": 6672560,
+   "timeMs": null,
+   "note": "packed-bits estimate, computed not implemented",
+   "estimated": true
+  }
+ ],
+ "loads": [
+  {
+   "label": "json-shipped",
+   "medianMs": 43.700959,
+   "runs": 5,
+   "allMs": [
+    40.141791,
+    42.813083,
+    43.700959,
+    45.036542,
+    45.121
+   ]
+  }
+ ],
+ "compaction": {
+  "ms": 459.961166,
+  "stats": {
+   "symbolsBefore": 52630540,
+   "symbolsAfter": 31107745,
+   "groupsRenumbered": 20902,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 15,
+   "levelsRemoved": 81,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "json-shipped+compacted",
+    "bytes": 31415483,
+    "timeMs": 22.592959
+   },
+   {
+    "label": "binary-estimate+compacted",
+    "bytes": 3982162,
+    "timeMs": null,
+    "estimated": true
+   }
+  ],
+  "textOk": true
+ },
+ "memory": {
+  "baselineHeap": 10532416,
+  "peakHeapSampled": 132208344,
+  "retainedHeapAfterGc": 2242344,
+  "externalDelta": 188492,
+  "arrayBuffersDelta": 194608,
+  "rssEnd": 162365440,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

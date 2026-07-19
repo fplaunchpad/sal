@@ -1,0 +1,63 @@
+{
+ "workload": "seq",
+ "system": "listpositions",
+ "systemVersion": "2.0.0",
+ "trace": "friendsforever_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T05:59:00.224Z"
+ },
+ "ops": {
+  "total": 26078,
+  "inserts": 23720
+ },
+ "finalChars": 21362,
+ "apply": {
+  "totalMs": 23.746459,
+  "count": 26078,
+  "warmupExcluded": 1000,
+  "meanUs": 0.8130221309514316,
+  "medianUs": 0.625,
+  "p95Us": 1.542,
+  "p99Us": 3.625,
+  "maxUs": 228.917
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "json-text+order",
+   "bytes": 100337,
+   "timeMs": 0.680333,
+   "note": "library-native JSON saved states (Order metadata + char runs)",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "json-text+order",
+   "medianMs": 0.753958,
+   "runs": 5,
+   "allMs": [
+    0.643708,
+    0.704208,
+    0.753958,
+    0.76075,
+    1.716375
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 12098592,
+  "peakHeapSampled": 20943112,
+  "retainedHeapAfterGc": 783056,
+  "externalDelta": 208664,
+  "arrayBuffersDelta": 208624,
+  "rssEnd": 92995584,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

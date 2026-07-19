@@ -1,0 +1,96 @@
+{
+ "workload": "seq",
+ "system": "sal",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "automerge-paper",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-07-19T06:20:44.130Z"
+ },
+ "ops": {
+  "total": 259778,
+  "inserts": 182315
+ },
+ "finalChars": 104852,
+ "apply": {
+  "totalMs": 713277.069667,
+  "count": 259778,
+  "warmupExcluded": 1000,
+  "meanUs": 2756.200765474654,
+  "medianUs": 3163.584,
+  "p95Us": 4374.291,
+  "p99Us": 4785.125,
+  "maxUs": 30745.583
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "json-shipped",
+   "bytes": 243276637,
+   "timeMs": 229.435958,
+   "note": "JSON, coord bit-strings at 1 byte/bit (shipped repr)",
+   "estimated": false
+  },
+  {
+   "label": "binary-estimate",
+   "bytes": 30668998,
+   "timeMs": null,
+   "note": "packed-bits estimate, computed not implemented",
+   "estimated": true
+  }
+ ],
+ "loads": [
+  {
+   "label": "json-shipped",
+   "medianMs": 253.301958,
+   "runs": 5,
+   "allMs": [
+    224.975167,
+    225.661458,
+    253.301958,
+    257.137875,
+    257.894208
+   ]
+  }
+ ],
+ "compaction": {
+  "ms": 2323.377125,
+  "stats": {
+   "symbolsBefore": 241629632,
+   "symbolsAfter": 134145065,
+   "groupsRenumbered": 104237,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 941,
+   "levelsRemoved": 17137,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "json-shipped+compacted",
+    "bytes": 135792070,
+    "timeMs": 135.396833
+   },
+   {
+    "label": "binary-estimate+compacted",
+    "bytes": 17233096,
+    "timeMs": null,
+    "estimated": true
+   }
+  ],
+  "textOk": true
+ },
+ "memory": {
+  "baselineHeap": 75064928,
+  "peakHeapSampled": 453478008,
+  "retainedHeapAfterGc": 12615808,
+  "externalDelta": 2072108,
+  "arrayBuffersDelta": 2078224,
+  "rssEnd": 260210688,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}
