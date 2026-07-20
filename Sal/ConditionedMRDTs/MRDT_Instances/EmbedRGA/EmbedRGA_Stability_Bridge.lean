@@ -31,9 +31,13 @@ provable today:
 **Achieved strength, honestly**: VC-S1/S2/S3-analogues of the `StabilityVC`
 interface hold for the remap species at a `SettledAt` cut, with the mint
 hypothesis reduced (via the dichotomy) to `AnchorsFactorBeyond`. The **merge
-clause (VC-S4) is not bridged**: `eRecode` is stated at fold/state level and
-the embed RGA's merge-vs-remap congruence belongs to the deferred protocol
-half, together with the discharge of `AnchorsFactorBeyond` itself.
+clause (VC-S4) is now discharged on the data plane** in
+`EmbedRGA_MergeCongr.lean` (`merge_remap_congr` / `eRemapRel_merge`): the lazy
+translation commutes with the embed RGA's ternary merge on the coordinates at
+hand, so a merge of three re-mapped versions is the re-map of the merge —
+exactly `vc_merge`'s conclusion for the coordinate-iso relation. What remains
+deferred to the protocol half is the discharge of `AnchorsFactorBeyond` itself
+and the wiring into a full (reflexive-seedable) `StabilityVC` bundle.
 -/
 
 namespace Sal.ConditionedMRDTs

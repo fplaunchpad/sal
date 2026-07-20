@@ -436,3 +436,41 @@ directly from honest reachability (the coordinate-addressed cut
 bookkeeping, the all-heads-visibility layer of section 6). The order-iso
 half is shown achievable; the remaining piece is the same deferred
 protocol layer as the single-epoch theorem, now at the boundary.
+
+## Addendum 5: errata from the #97/#73 finish pass
+
+From the mechanization of spine fusion, merge-vs-remap VC-S4, the
+CompatChain reduction, and the run-table residue.
+
+1. Addendum 2 errata 2, sharpened: because fusion runs AFTER the rank
+   pass, the head codeword the fusion map sees is already the ordinal
+   (or the retained delta for a skipped group), so the mechanized
+   fuseChain keeps the head Q' = P ++ [d1] verbatim and drops only the
+   interior d2..dk. Class-2 order preservation is therefore trivial
+   (head unchanged), not a separate "block inherits d1's rank"
+   argument: the rank pass having installed the ordinal is what makes
+   it hold.
+2. Addendum 2, class 3: the "dead spine nodes have no records"
+   vacuity is one domain hypothesis, hthru: reaching the fused head
+   forces passing the whole spine (exactly-one-child + no interior
+   records).
+3. The merge-vs-remap congruence needs the "at hand" domain only on
+   the two merged branches, not on the LCA argument (the LCA enters
+   merge solely through its id set).
+4. Addendum 4, the CompatChain residue is SHARPER than "coordinate
+   bookkeeping": the mechanization CLOSES both the causal-stability
+   half (nested_cuts_settled, from settledAt_compatStep +
+   allHeardSince_antitone) and the order-iso freshness half
+   (rED_hocc_fresh). The sole remaining obligation is (*): exhibit an
+   epoch-2 configuration honest MODULO the coordinate order-embedding
+   F1, so eAnchored_exists re-derives at the boundary. This is
+   re-based honesty, identical in nature to the single-epoch
+   eRecode_ra_transport / AnchorsFactorBeyond gap, now relocated to
+   the epoch boundary: ONE shared honesty-rebasing lemma is the whole
+   remaining multi-epoch protocol half.
+5. Sided run table (SidedRunTable.lean): the sided structural core
+   (stail_attachment, the SRTEntry with an explicit side field, L
+   entries stored explicitly per note s6, the band-order comparator
+   seed sided_keyLt_iff_schainBefore) is in place; the full sided repr
+   iso round trip and the sided structural walk mirror the ~3000-line
+   one-sided development and are owed.

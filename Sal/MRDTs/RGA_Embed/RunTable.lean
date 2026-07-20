@@ -2983,6 +2983,587 @@ theorem tableOf_insert_extend :
 
 end InsertExtend
 
+/-! ## §7¼  T-mut — the four remaining mutation rules, as generic perturbations
+
+`tableOf_insert_extend` (§7) is the happy insert path (childless live anchor,
+`delta = 1`: coalesce-after-attach, one `len` bump). The four rules that the
+predecessor left SPOT-pinned are promoted here to **generic** state-level
+theorems, each stated as the perturbation of `keptL`/`fusible`/`isHead` (hence
+`headOf`, `lenOf`, `tableOf`) under the operation on the live-chain set.
+These are exactly the structural facts the instance SPOTs D1/D2/D4/D5 pin
+concretely. As everywhere in this file, no stability or honesty hypothesis
+appears. -/
+
+/-- **Insert-family `keptL` perturbation** (the shared root of D1/D5 and the
+`tableOf_insert_extend` keptL side): adding a chain `w` to the live set adds
+exactly `w`'s nonempty prefixes to the kept tree. -/
+theorem mem_keptL_snoc {L : List (List ℕ)} {w x : List ℕ} :
+    x ∈ keptL (L ++ [w]) ↔ x ∈ keptL L ∨ (x ≠ [] ∧ x <+: w) := by
+  rw [mem_keptL, mem_keptL]
+  constructor
+  · rintro ⟨hne, l, hl, hp⟩
+    rcases List.mem_append.mp hl with hl | hl
+    · exact Or.inl ⟨hne, l, hl, hp⟩
+    · rw [List.mem_singleton] at hl; subst hl; exact Or.inr ⟨hne, hp⟩
+  · rintro (⟨hne, l, hl, hp⟩ | ⟨hne, hp⟩)
+    · exact ⟨hne, l, List.mem_append_left _ hl, hp⟩
+    · exact ⟨hne, w, List.mem_append_right _ (by simp), hp⟩
+
+/-! ### D2 — delete of a node with kept children: the liveness split
+
+Deleting `x` (which still has a kept descendant) leaves the kept tree
+untouched (`delete_keptL_eq`) but flips `x` dead, breaking fusibility on both
+of `x`'s incident edges when the neighbours are live: the run carrying `x`
+splits into the live prefix, the dead singleton `x`, and the live suffix
+(SPOT `spot_d2_liveness_split`). -/
+
+section DeleteLiveness
+
+variable {L L' : List (List ℕ)} {x : List ℕ}
+  (hxne : x ≠ [])
+  (hchild : ∃ e, x ++ [e] ∈ keptL L)
+  (hmem' : ∀ c, c ∈ L' ↔ (c ∈ L ∧ c ≠ x))
+
+include hchild hmem' in
+/-- **D2, keptL invariance**: a delete that keeps a descendant leaves the kept
+tree pointwise unchanged (the dead node survives as a dead ancestor). -/
+theorem delete_keptL_eq (c : List ℕ) : c ∈ keptL L' ↔ c ∈ keptL L := by
+  rw [mem_keptL, mem_keptL]
+  constructor
+  · rintro ⟨hne, l, hl, hp⟩
+    exact ⟨hne, l, ((hmem' l).mp hl).1, hp⟩
+  · rintro ⟨hne, l, hl, hp⟩
+    by_cases hlx : l = x
+    · obtain ⟨e, he⟩ := hchild
+      obtain ⟨-, l', hl', hp'⟩ := mem_keptL.mp he
+      have hl'x : l' ≠ x := by
+        intro heq
+        have hle := hp'.length_le
+        rw [heq] at hle
+        simp only [List.length_append, List.length_cons, List.length_nil]
+          at hle
+        omega
+      refine ⟨hne, l', (hmem' l').mpr ⟨hl', hl'x⟩, ?_⟩
+      rw [hlx] at hp
+      exact hp.trans ((List.prefix_append x [e]).trans hp')
+    · exact ⟨hne, l, (hmem' l).mpr ⟨hl, hlx⟩, hp⟩
+
+include hmem' in
+theorem delete_x_dead : x ∉ L' := fun hm => ((hmem' x).mp hm).2 rfl
+
+include hxne hmem' in
+/-- **D2, the run breaks *before* `x`**: with `x` dead and its (live) parent
+still live, `x`'s incoming edge is no longer fusible — `x` becomes a head. -/
+theorem delete_fusible_x_false (hpar : x.dropLast ∈ L) :
+    fusible L' x = false := by
+  cases hf : fusible L' x with
+  | false => rfl
+  | true =>
+      exfalso
+      have hlv := fusible_live hf
+      have hxL' : x ∉ L' := delete_x_dead hmem'
+      have hdxne : x.dropLast ≠ x := by
+        intro heq
+        have hpos := List.length_pos_iff.mpr hxne
+        have := congrArg List.length heq
+        rw [List.length_dropLast] at this; omega
+      exact hxL' (hlv.mpr ((hmem' x.dropLast).mpr ⟨hpar, hdxne⟩))
+
+include hmem' in
+/-- **D2, the run breaks *after* `x`**: `x`'s (live) run successor loses its
+fusible edge into the now-dead `x` — a second head. -/
+theorem delete_fusible_succ_false {e : ℕ} (hsucc : x ++ [e] ∈ L) :
+    fusible L' (x ++ [e]) = false := by
+  cases hf : fusible L' (x ++ [e]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have hlv := fusible_live hf
+      rw [List.dropLast_concat] at hlv
+      have hxL' : x ∉ L' := delete_x_dead hmem'
+      have hsne : x ++ [e] ≠ x := by
+        intro heq; have := congrArg List.length heq; simp at this
+      exact hxL' (hlv.mp ((hmem' (x ++ [e])).mpr ⟨hsucc, hsne⟩))
+
+end DeleteLiveness
+
+/-! ### D1 — concurrent insert at an interior node: the mid-run split
+
+Anchoring a second child `a ++ [d]` (`d ≠ 1`) at a node `a` that already has a
+run successor `a ++ [1]` turns `a` into a branch point: **both** children
+become heads, so the run carrying `a` splits into the `a`-prefix run, the
+`a ++ [1]` suffix run, and the `a ++ [d]` singleton (SPOT `spot_d1_split`). -/
+
+section MidRunSplit
+
+variable {L : List (List ℕ)} {a : List ℕ} {d : ℕ}
+  (hsucc : a ++ [1] ∈ keptL L) (hd : d ≠ 1)
+
+theorem split_new_kept : a ++ [d] ∈ keptL (L ++ [a ++ [d]]) :=
+  mem_keptL_snoc.mpr (Or.inr ⟨by simp, List.prefix_refl _⟩)
+
+include hsucc in
+theorem split_succ_kept : a ++ [1] ∈ keptL (L ++ [a ++ [d]]) :=
+  mem_keptL_snoc.mpr (Or.inl hsucc)
+
+include hd in
+/-- **D1, the new child is a head**: `delta = d ≠ 1` fails fusibility. -/
+theorem split_new_isHead : isHead (L ++ [a ++ [d]]) (a ++ [d]) = true := by
+  refine isHead_of_kept_not_fusible split_new_kept ?_
+  cases hf : fusible (L ++ [a ++ [d]]) (a ++ [d]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have hg := (fusible_eq_true_iff.mp hf).2.2.1
+      rw [List.getLastD_concat] at hg
+      exact hd hg
+
+include hsucc hd in
+/-- **D1, the former run successor becomes a head**: `a` now has two kept
+children, so `a ++ [1]` is no longer `a`'s unique kept child — the run splits
+here. -/
+theorem split_succ_isHead : isHead (L ++ [a ++ [d]]) (a ++ [1]) = true := by
+  refine isHead_of_kept_not_fusible (split_succ_kept hsucc) ?_
+  cases hf : fusible (L ++ [a ++ [d]]) (a ++ [1]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have huniq := (fusible_eq_true_iff.mp hf).2.2.2.1
+      have heq := huniq (a ++ [d]) split_new_kept
+        (by rw [List.dropLast_concat, List.dropLast_concat])
+      have := List.append_cancel_left heq
+      injection this with h'
+      exact hd h'
+
+end MidRunSplit
+
+/-! ### D5 — delivery under a vanished anchor: materialization
+
+An op delivered against an anchor `m` that vanished locally (deleted while
+childless, so `m ∉ keptL L`) carries `m`'s coordinate. Attaching the op's
+chain `m ++ [d]` re-materializes `m` as **dead** kept structure: `m` becomes
+kept again (`materialize_kept`) yet is not live (`materialize_dead`) — the
+run-table cost of tombstone-freedom, paid with information the op carries
+(SPOT `spot_d5_materialize`). -/
+
+section Materialize
+
+variable {L : List (List ℕ)} {m : List ℕ} {d : ℕ}
+  (hmne : m ≠ []) (hvanished : m ∉ keptL L)
+
+include hmne in
+theorem materialize_kept : m ∈ keptL (L ++ [m ++ [d]]) :=
+  mem_keptL_snoc.mpr (Or.inr ⟨hmne, List.prefix_append m [d]⟩)
+
+include hmne hvanished in
+theorem materialize_dead : m ∉ (L ++ [m ++ [d]]) := by
+  intro hm
+  rcases List.mem_append.mp hm with hm | hm
+  · exact hvanished (kept_of_live hm hmne)
+  · rw [List.mem_singleton] at hm
+    have := congrArg List.length hm; simp at this
+
+end Materialize
+
+/-! ### D4 — deleting the interloper re-coalesces: the FORCED delete-inverse
+
+The inverse of D1, and the finding the note flags a paper proof would hand-wave
+(§10): removing the childless interloper `a ++ [d]` makes `a ++ [1]` `a`'s
+**unique** kept child again, so the edge re-fuses. Without this coalesce the
+table stays split and drifts from canonical (SPOT `spot_d4_coalesce_necessity`).
+`honly` records that in the pre-delete state `a`'s only kept children are the
+run successor and the interloper. -/
+
+section Coalesce
+
+variable {L L' : List (List ℕ)} {a : List ℕ} {d : ℕ}
+  (hane : a ≠ []) (hd : d ≠ 1)
+  (hleaf : ∀ e, (a ++ [d]) ++ [e] ∉ keptL L)
+  (hsucc : a ++ [1] ∈ keptL L)
+  (hlv : (a ++ [1] ∈ L) ↔ (a ∈ L))
+  (honly : ∀ c' ∈ keptL L, c'.dropLast = a → c' = a ++ [1] ∨ c' = a ++ [d])
+  (hmem' : ∀ c, c ∈ L' ↔ (c ∈ L ∧ c ≠ a ++ [d]))
+
+include hleaf hmem' in
+/-- **D4, the interloper vanishes**: a childless leaf, once removed, leaves no
+kept trace. -/
+theorem coalesce_vanished : a ++ [d] ∉ keptL L' := by
+  intro hk
+  obtain ⟨-, l, hl, hp⟩ := mem_keptL.mp hk
+  have hlne : l ≠ a ++ [d] := ((hmem' l).mp hl).2
+  obtain ⟨e, he⟩ := take_succ_of_prefix hp (fun heq => hlne heq.symm)
+  exact hleaf e (mem_keptL.mpr ⟨by simp, l, ((hmem' l).mp hl).1, he⟩)
+
+include hd hleaf hsucc hmem' in
+/-- **D4, keptL perturbation**: the kept tree loses exactly the interloper. -/
+theorem coalesce_keptL (c : List ℕ) :
+    c ∈ keptL L' ↔ (c ∈ keptL L ∧ c ≠ a ++ [d]) := by
+  constructor
+  · intro hk
+    obtain ⟨hne, l, hl, hp⟩ := mem_keptL.mp hk
+    exact ⟨mem_keptL.mpr ⟨hne, l, ((hmem' l).mp hl).1, hp⟩,
+      fun hceq => (coalesce_vanished hleaf hmem') (hceq ▸ hk)⟩
+  · rintro ⟨hk, hcne⟩
+    obtain ⟨hne, l, hl, hp⟩ := mem_keptL.mp hk
+    by_cases hlx : l = a ++ [d]
+    · have hca : c <+: a := by
+        rw [hlx] at hp
+        have := prefix_dropLast_of_ne hp hcne
+        rwa [List.dropLast_concat] at this
+      obtain ⟨-, l₁, hl₁, hp₁⟩ := mem_keptL.mp hsucc
+      have hl₁ne : l₁ ≠ a ++ [d] := by
+        intro heq
+        rw [heq] at hp₁
+        have heqp := hp₁.eq_of_length (by simp)
+        have := List.append_cancel_left heqp
+        injection this with h'; exact hd h'.symm
+      exact mem_keptL.mpr ⟨hne, l₁, (hmem' l₁).mpr ⟨hl₁, hl₁ne⟩,
+        hca.trans ((List.prefix_append a [1]).trans hp₁)⟩
+    · exact mem_keptL.mpr ⟨hne, l, (hmem' l).mpr ⟨hl, hlx⟩, hp⟩
+
+include hane hd hleaf hsucc hlv honly hmem' in
+/-- **D4, the edge re-fuses**: after the delete, `a ++ [1]`'s incoming edge is
+fusible again — the coalesce. (In the pre-delete state it was split, D1.) -/
+theorem coalesce_restored : fusible L' (a ++ [1]) = true := by
+  have hkiff := coalesce_keptL (L := L) (L' := L') hd hleaf hsucc hmem'
+  have hane_d : a ≠ a ++ [d] := fun heq => by
+    have := congrArg List.length heq; simp at this
+  have hsucc_d : a ++ [1] ≠ a ++ [d] := fun heq => by
+    have := List.append_cancel_left heq; injection this with h'; exact hd h'.symm
+  have hak : a ∈ keptL L := kept_of_prefix hsucc (List.prefix_append a [1]) hane
+  rw [fusible_eq_true_iff]
+  refine ⟨(hkiff (a ++ [1])).mpr ⟨hsucc, hsucc_d⟩, ?_, ?_, ?_, ?_⟩
+  · rw [List.dropLast_concat]; exact (hkiff a).mpr ⟨hak, hane_d⟩
+  · rw [List.getLastD_concat]
+  · intro c' hc' hpar
+    rw [List.dropLast_concat] at hpar
+    have hc'p := (hkiff c').mp hc'
+    rcases honly c' hc'p.1 hpar with h | h
+    · exact h
+    · exact absurd h hc'p.2
+  · rw [List.dropLast_concat]
+    constructor
+    · intro hm
+      exact (hmem' a).mpr ⟨hlv.mp ((hmem' (a ++ [1])).mp hm).1, hane_d⟩
+    · intro hm
+      exact (hmem' (a ++ [1])).mpr ⟨hlv.mpr ((hmem' a).mp hm).1, hsucc_d⟩
+
+end Coalesce
+
+/-! ## §7½  T-repr, image side — `tableOf` always lands in `Canonical`
+
+`tableOf_stateOf` (§4) is the retraction on canonical inputs. Here is the
+image direction: **every** `tableOf L` is a canonical table. Together with
+`stateOf_tableOf` and `tableOf_stateOf` this closes the representation iso to
+a genuine bijection between live-chain sets (up to `keptL`) and canonical
+tables — the note §10's characterization "canonical = maximal fusible chains,
+uniform liveness, tail attachment" is not just *recognized* by `Canonical`,
+it is exactly the image of `tableOf`. No stability hypothesis. -/
+
+/-- Indexing `tableOf` at `i`: the head sitting there is a head at index `i`,
+compiling to that entry — packaged without a dependent `getElem` in scope. -/
+theorem tableOf_entry_head (L : List (List ℕ)) (i : ℕ)
+    (hi : i < (tableOf L).length) :
+    ∃ h, isHead L h = true ∧ (headsList L).idxOf h = i
+      ∧ (tableOf L)[i] = entryOfHead L h := by
+  have hi' : i < (headsList L).length := by
+    simpa only [tableOf, List.length_map] using hi
+  refine ⟨(headsList L)[i], mem_headsList.mp (List.getElem_mem _),
+    idxOf_getElem_nodup (nodup_headsList L) hi', ?_⟩
+  simp only [tableOf, List.getElem_map]
+
+/-- `getElem` at equal indices, dodging the dependent-proof motive block. -/
+theorem getElem_idx_eq {T : Table} {i j : ℕ} (hi : i < T.length)
+    (hj : j < T.length) (hij : i = j) : T[i]'hi = T[j]'hj := by
+  subst hij; rfl
+
+/-- Indexing `tableOf` at a known head's position: compiles that head. -/
+theorem tableOf_getElem_idxOf (L : List (List ℕ)) {h : List ℕ}
+    (hh : isHead L h = true)
+    (hlt : (headsList L).idxOf h < (tableOf L).length) :
+    (tableOf L)[(headsList L).idxOf h] = entryOfHead L h := by
+  have hm : h ∈ headsList L := mem_headsList.mpr hh
+  simp only [tableOf, List.getElem_map]
+  congr 1
+  exact List.getElem_idxOf (List.idxOf_lt_length_of_mem hm)
+
+/-- **T-repr, image side**: `tableOf L` is a canonical table, for every `L`. -/
+theorem canonical_tableOf (L : List (List ℕ)) : Canonical (tableOf L) := by
+  have hlen : (tableOf L).length = (headsList L).length := by simp [tableOf]
+  refine ⟨?len_pos, ?par_back, ?par_tail, ?no_fuse, ?leaves_live, ?sorted⟩
+  case len_pos =>
+    intro e he
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.mp he
+    obtain ⟨h, hh, -, hentry⟩ := tableOf_entry_head L i hi
+    rw [hentry]; exact lenOf_pos hh
+  case sorted =>
+    rw [headsOf_tableOf]; exact sorted_headsList L
+  case par_back =>
+    intro i hi p hp
+    obtain ⟨h, hh, hidxh, hentry⟩ := tableOf_entry_head L i hi
+    rw [hentry] at hp; simp only [entryOfHead] at hp
+    by_cases hpk : h.dropLast ∈ keptL L
+    · rw [if_pos hpk] at hp
+      have hpe : p = ((headsList L).idxOf (headOf L h.dropLast),
+          h.dropLast.length - (headOf L h.dropLast).length) := by
+        injection hp with hp; exact hp.symm
+      rw [hpe]; dsimp only
+      set g := headOf L h.dropLast with hg_def
+      have hgm : g ∈ headsList L := mem_headsList.mpr (headOf_isHead hpk)
+      have hne : h ≠ [] := kept_ne_nil (isHead_kept hh)
+      have hglt : hLt g h = true := by
+        have h1 : g.length ≤ h.dropLast.length := (headOf_prefix L _).length_le
+        have h2 : h.dropLast.length < h.length := by
+          rw [List.length_dropLast]
+          have : 0 < h.length := List.length_pos_iff.mpr hne
+          omega
+        simp only [hLt, Bool.or_eq_true, decide_eq_true_eq]
+        exact Or.inl (by omega)
+      have := idxOf_lt_of_hLt (sorted_headsList L) hgm
+        (mem_headsList.mpr hh) hglt
+      rwa [hidxh] at this
+    · rw [if_neg hpk] at hp; exact absurd hp (by simp)
+  case par_tail =>
+    intro i hi p hp hj
+    obtain ⟨h, hh, hidxh, hentry⟩ := tableOf_entry_head L i hi
+    rw [hentry] at hp; simp only [entryOfHead] at hp
+    by_cases hpk : h.dropLast ∈ keptL L
+    · rw [if_pos hpk] at hp
+      have hpe : p = ((headsList L).idxOf (headOf L h.dropLast),
+          h.dropLast.length - (headOf L h.dropLast).length) := by
+        injection hp with hp; exact hp.symm
+      set g := headOf L h.dropLast with hg_def
+      have hp1 : p.1 = (headsList L).idxOf g := by rw [hpe]
+      have hp2 : p.2 = h.dropLast.length - g.length := by rw [hpe]
+      have hjg : (headsList L).idxOf g < (tableOf L).length := hp1 ▸ hj
+      rw [hp2, getElem_idx_eq hj hjg hp1,
+        tableOf_getElem_idxOf L (headOf_isHead hpk) hjg]
+      simp only [entryOfHead]
+      have htail := head_parent_is_tail hh hpk
+      rw [← hg_def] at htail
+      have hlenpos := lenOf_pos (headOf_isHead hpk)
+      have hdl : h.dropLast.length = g.length + (lenOf L g - 1) := by
+        conv_lhs => rw [htail, tailOf]
+        simp
+      rw [hdl, ← hg_def]; omega
+    · rw [if_neg hpk] at hp; exact absurd hp (by simp)
+  case no_fuse =>
+    intro i hi p hp hj hd1 hlive
+    obtain ⟨h, hh, hidxh, hentry⟩ := tableOf_entry_head L i hi
+    rw [hentry] at hp hd1 hlive; simp only [entryOfHead] at hp hd1 hlive
+    by_cases hpk : h.dropLast ∈ keptL L
+    · rw [if_pos hpk] at hp
+      have hpe : p = ((headsList L).idxOf (headOf L h.dropLast),
+          h.dropLast.length - (headOf L h.dropLast).length) := by
+        injection hp with hp; exact hp.symm
+      set g := headOf L h.dropLast with hg_def
+      have hp1 : p.1 = (headsList L).idxOf g := by rw [hpe]
+      have hjg : (headsList L).idxOf g < (tableOf L).length := hp1 ▸ hj
+      rw [getElem_idx_eq hj hjg hp1,
+        tableOf_getElem_idxOf L (headOf_isHead hpk) hjg] at hlive
+      simp only [entryOfHead] at hlive
+      rw [← hg_def] at hlive
+      have hdm : h.dropLast ∈ runMembers L g :=
+        mem_runMembers.mpr ⟨hpk, hg_def.symm⟩
+      have hlifted : (h ∈ L) ↔ (h.dropLast ∈ L) := by
+        rw [run_liveness_uniform hdm, decide_eq_decide.mp hlive]
+      have hnf : fusible L h = false := isHead_not_fusible hh
+      have hkh : h ∈ keptL L := isHead_kept hh
+      have hnu : ¬ (∀ c' ∈ keptL L, c'.dropLast = h.dropLast → c' = h) := by
+        intro huniq
+        rw [fusible_eq_true_iff.mpr ⟨hkh, hpk, hd1, huniq, hlifted⟩] at hnf
+        exact Bool.noConfusion hnf
+      push_neg at hnu
+      obtain ⟨c', hc'k, hc'd, hc'ne⟩ := hnu
+      have hc'nf : fusible L c' = false := by
+        cases hf : fusible L c' with
+        | false => rfl
+        | true => exact absurd (fusible_unique hf hkh (by rw [hc'd])).symm hc'ne
+      have hc'h : isHead L c' = true := isHead_of_kept_not_fusible hc'k hc'nf
+      have hc'm : c' ∈ headsList L := mem_headsList.mpr hc'h
+      have hc'lt : (headsList L).idxOf c' < (tableOf L).length :=
+        (List.idxOf_lt_length_of_mem hc'm).trans_eq hlen.symm
+      refine ⟨(headsList L).idxOf c', hc'lt, ?_, ?_⟩
+      · intro heq
+        exact hc'ne ((List.idxOf_inj hc'm).mp (heq.trans hidxh.symm))
+      · rw [hpe, tableOf_getElem_idxOf L hc'h hc'lt]
+        simp only [entryOfHead]
+        rw [if_pos (by rw [hc'd]; exact hpk), hc'd]
+    · rw [if_neg hpk] at hp; exact absurd hp (by simp)
+  case leaves_live =>
+    intro i hi hlivef
+    obtain ⟨h, hh, hidxh, hentry⟩ := tableOf_entry_head L i hi
+    rw [hentry] at hlivef; simp only [entryOfHead] at hlivef
+    have hhnl : h ∉ L := of_decide_eq_false hlivef
+    have hkh : h ∈ keptL L := isHead_kept hh
+    obtain ⟨hhne, l, hl, hpre⟩ := mem_keptL.mp hkh
+    have hlm : l ∈ keptL L :=
+      kept_of_live hl (fun hnil => hhne (List.prefix_nil.mp (hnil ▸ hpre)))
+    have hnm : headOf L l ≠ h := by
+      intro heq
+      exact hhnl ((run_liveness_uniform (mem_runMembers.mpr ⟨hlm, heq⟩)).mp hl)
+    obtain ⟨q, hqh, hqd, hqc⟩ := escape_run hh hlm hpre hnm
+    have hqm : q ∈ headsList L := mem_headsList.mpr hqh
+    have hqlt : (headsList L).idxOf q < (tableOf L).length :=
+      (List.idxOf_lt_length_of_mem hqm).trans_eq hlen.symm
+    have htk : tailOf L h ∈ keptL L := (mem_runMembers.mp (tailOf_mem hh)).1
+    have hth : headOf L (tailOf L h) = h := (mem_runMembers.mp (tailOf_mem hh)).2
+    refine ⟨(headsList L).idxOf q, hqlt, q.dropLast.length - h.length, ?_⟩
+    rw [tableOf_getElem_idxOf L hqh hqlt]
+    simp only [entryOfHead]
+    rw [if_pos (by rw [hqd]; exact htk), hqd, hth, hidxh]
+
+/-! ## §7¾  T-walk, representation faithfulness — the walk survives the round trip
+
+`chainBefore` is a strict linear order (irreflexive, antisymmetric, total), so
+a `Nodup` list that is pairwise `chainBefore` is the *unique* sorted
+enumeration of its element set (`chainBefore_sorted_ext`). Hence the walk is
+determined by the live-chain set alone: building the run table, recovering the
+state, and walking it reproduces the original walk verbatim
+(`walk_stateOf_tableOf`). This is the display-identity gate at the level of
+the representation round trip. (The fully table-*direct* structural walk —
+emitting run by run without materializing `stateOf` — is SPOT-verified at D1
+in the instance file; its generic promotion is the remaining T-walk item.) -/
+
+/-- Inversion of `chainBefore` into its two verdict shapes. -/
+theorem chainBefore_inv {c1 c2 : List ℕ} (h : chainBefore c1 c2) :
+    (∃ ext, ext ≠ [] ∧ c2 = c1 ++ ext) ∨
+    (∃ p d e t1 t2, e < d ∧ c1 = p ++ d :: t1 ∧ c2 = p ++ e :: t2) := by
+  cases h with
+  | ancestor ch ext hne => exact Or.inl ⟨ext, hne, rfl⟩
+  | newer p d e t1 t2 hlt => exact Or.inr ⟨p, d, e, t1, t2, hlt, rfl, rfl⟩
+
+theorem chainBefore_ne {c1 c2 : List ℕ} (h : chainBefore c1 c2) : c1 ≠ c2 := by
+  cases h with
+  | ancestor ch ext hne =>
+      intro heq
+      have hl := congrArg List.length heq
+      simp only [List.length_append] at hl
+      exact hne (by rw [← List.length_eq_zero_iff]; omega)
+  | newer p d e t1 t2 hlt =>
+      intro heq
+      have h2 := List.append_cancel_left heq
+      injection h2 with h3 _
+      omega
+
+theorem chainBefore_irrefl (x : List ℕ) : ¬ chainBefore x x :=
+  fun h => chainBefore_ne h rfl
+
+theorem chainBefore_nil_right {z : List ℕ} (h : chainBefore z []) : False := by
+  rcases chainBefore_inv h with ⟨ext, hne, heq⟩ | ⟨p, d, e, t1, t2, hlt, h1, h2⟩
+  · exact hne (by rw [← List.length_eq_zero_iff]
+                  have := congrArg List.length heq
+                  simp only [List.length_append, List.length_nil] at this
+                  omega)
+  · simp at h2
+
+/-- A shared head strips off the chain order. -/
+theorem chainBefore_cons_strip {x : ℕ} {a b : List ℕ}
+    (h : chainBefore (x :: a) (x :: b)) : chainBefore a b := by
+  rcases chainBefore_inv h with ⟨ext, hne, heq⟩ | ⟨p, d, e, t1, t2, hlt, ha, hb⟩
+  · rw [List.cons_append] at heq
+    injection heq with _ h2
+    rw [h2]
+    exact chainBefore.ancestor a ext hne
+  · cases p with
+    | nil =>
+        simp only [List.nil_append] at ha hb
+        injection ha with h3 _
+        injection hb with h5 _
+        rw [← h3, ← h5] at hlt
+        exact absurd hlt (Nat.lt_irrefl x)
+    | cons y p' =>
+        rw [List.cons_append] at ha hb
+        injection ha with _ h4
+        injection hb with _ h6
+        rw [h4, h6]
+        exact chainBefore.newer p' d e t1 t2 hlt
+
+/-- Distinct heads decide the chain order at position 0: the larger label
+displays first. -/
+theorem chainBefore_cons_head_lt {x y : ℕ} {xs ys : List ℕ} (hxy : x ≠ y)
+    (h : chainBefore (x :: xs) (y :: ys)) : y < x := by
+  rcases chainBefore_inv h with ⟨ext, hne, heq⟩ | ⟨p, d, e, t1, t2, hlt, ha, hb⟩
+  · rw [List.cons_append] at heq
+    injection heq with hyx _
+    exact absurd hyx.symm hxy
+  · cases p with
+    | nil =>
+        simp only [List.nil_append] at ha hb
+        injection ha with hxd _
+        injection hb with hye _
+        rw [hxd, hye]; exact hlt
+    | cons z p' =>
+        rw [List.cons_append] at ha hb
+        injection ha with hxz _
+        injection hb with hyz _
+        exact absurd (hxz.trans hyz.symm) hxy
+
+theorem chainBefore_asymm : ∀ {c1 c2 : List ℕ},
+    chainBefore c1 c2 → ¬ chainBefore c2 c1 := by
+  intro c1
+  induction c1 with
+  | nil => intro c2 _ h'; exact chainBefore_nil_right h'
+  | cons x xs ih =>
+      intro c2 h h'
+      cases c2 with
+      | nil => exact chainBefore_nil_right h
+      | cons y ys =>
+          by_cases hxy : x = y
+          · subst hxy
+            exact ih (chainBefore_cons_strip h) (chainBefore_cons_strip h')
+          · have h1 := chainBefore_cons_head_lt hxy h
+            have h2 := chainBefore_cons_head_lt (Ne.symm hxy) h'
+            omega
+
+/-- **Uniqueness of the sorted enumeration**: a `Nodup`, pairwise-`chainBefore`
+list is fixed by its element set (`chainBefore` is a strict linear order). -/
+theorem chainBefore_sorted_ext : ∀ {l l' : List (List ℕ)},
+    l.Pairwise chainBefore → l'.Pairwise chainBefore →
+    (∀ c, c ∈ l ↔ c ∈ l') → l = l'
+  | [], [], _, _, _ => rfl
+  | [], _ :: _, _, _, hmem =>
+      absurd ((hmem _).mpr List.mem_cons_self) (by simp)
+  | _ :: _, [], _, _, hmem =>
+      absurd ((hmem _).mp List.mem_cons_self) (by simp)
+  | x :: xs, y :: ys, hs, hs', hmem => by
+      rcases List.pairwise_cons.mp hs with ⟨hx, hxs⟩
+      rcases List.pairwise_cons.mp hs' with ⟨hy, hys⟩
+      have hxy : x = y := by
+        rcases List.mem_cons.mp ((hmem x).mp List.mem_cons_self) with h | h
+        · exact h
+        · rcases List.mem_cons.mp ((hmem y).mpr List.mem_cons_self) with h' | h'
+          · exact h'.symm
+          · exact absurd (hy x h) (chainBefore_asymm (hx y h'))
+      subst hxy
+      have htails : ∀ z, z ∈ xs ↔ z ∈ ys := by
+        intro z
+        constructor
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mp (List.mem_cons_of_mem _ hz))
+            with rfl | h
+          · exact absurd (hx z hz) (chainBefore_irrefl _)
+          · exact h
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mpr (List.mem_cons_of_mem _ hz))
+            with rfl | h
+          · exact absurd (hy z hz) (chainBefore_irrefl _)
+          · exact h
+      rw [chainBefore_sorted_ext hxs hys htails]
+
+/-- **T-walk, representation round trip**: building the run table from `L`,
+recovering the state, and walking it reproduces `walk L` exactly — the walk is
+a function of the live-chain set, so it survives the representation round trip
+losslessly. No stability hypothesis. -/
+theorem walk_stateOf_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
+    walk (stateOf (tableOf L)) = walk L := by
+  have hiff := (stateOf_tableOf L hnil).2
+  have hnil' : [] ∉ stateOf (tableOf L) := fun h => hnil ((hiff []).mp h)
+  refine chainBefore_sorted_ext (walk_pairwise _) (walk_pairwise _) ?_
+  intro c
+  rw [mem_walk hnil', mem_walk hnil]
+  exact hiff c
+
 /-! ## §8  Axiom audit -/
 
 #print axioms tail_attachment
@@ -2995,5 +3576,15 @@ end InsertExtend
 #print axioms walk_pairwise_keyLt
 #print axioms tableOf_congr
 #print axioms tableOf_insert_extend
+#print axioms canonical_tableOf
+#print axioms mem_keptL_snoc
+#print axioms delete_keptL_eq
+#print axioms delete_fusible_x_false
+#print axioms split_succ_isHead
+#print axioms materialize_kept
+#print axioms coalesce_restored
+#print axioms chainBefore_asymm
+#print axioms chainBefore_sorted_ext
+#print axioms walk_stateOf_tableOf
 
 end Sal.EmbedRGA.RunTable
