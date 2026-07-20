@@ -36,6 +36,7 @@
 import { Dag } from './dag.js';
 import { lca } from './lca.js';
 import { runGc } from './gc.js';
+import { frontierOf, stableCut, insertIds } from './frontier.js';
 
 export class Runtime {
   constructor(datatype) {
@@ -73,10 +74,21 @@ export class Runtime {
     return r;
   }
 
-  /** Run the commit GC against the CURRENT heads of the registered replicas. */
+  /** Run the commit GC against the CURRENT heads of the registered replicas.
+   *  ONE FRONTIER, read from above: the keep-set retains the upward closure
+   *  of the pairwise meets of these heads, while the stability producer
+   *  (replica.compactStable) reads the same head/frontier data from below to
+   *  find what is settled (src/frontier.js; runtime-gc-note section 6). Both
+   *  consume the current-heads knowledge; neither invents a fact the other
+   *  cannot see. */
   gc() {
     return runGc(this.dag, this.replicas.map((r) => r.head.id));
   }
+
+  /** The registered replica names, closed at call time (open-membership
+   *  caveat: registration is refused once gc prunes the root). The certified
+   *  cut quantifies over exactly this set. */
+  registeredNames() { return this.replicas.map((r) => r.name); }
 }
 
 export class Replica {
@@ -87,10 +99,17 @@ export class Replica {
     this.name = name;
     this.#head = runtime.root;
     this.seq = 0;
+    // THE FRONTIER (task #106): replicaName -> { id, seq } = the latest commit
+    // of that replica this head has absorbed (its evidence commit). Rebuilt
+    // from ancestry on every commit/sync (erratum 9.3: commit-shaped, never
+    // gated on event-subsumption -- a no-new-events pull still advances it).
+    this.frontier = frontierOf(runtime.dag, this.#head.id);
   }
 
   /** Current head commit (read-only; there is no way to set it from outside). */
   get head() { return this.#head; }
+
+  #refreshFrontier() { this.frontier = frontierOf(this.runtime.dag, this.#head.id); }
 
   /** Apply an op payload on this replica's own current head. */
   commit(payload) {
@@ -103,6 +122,7 @@ export class Replica {
       state,
     });
     this.runtime.epochOf.set(this.#head.id, epoch);
+    this.#refreshFrontier();
     return this.#head;
   }
 
@@ -130,6 +150,7 @@ export class Replica {
     const c = rt.dag.add({ parents: [this.#head.id], op: null, state });
     rt.epochOf.set(c.id, e + 1);
     this.#head = c;
+    this.#refreshFrontier(); // unauthored commit: same authored set, new head id
     return { head: c, stats };
   }
 
@@ -143,10 +164,12 @@ export class Replica {
     if (a.id === b.id) return a;
     if (dag.isAncestor(a.id, b.id)) {           // fast-forward: b subsumes a
       this.#head = b;
+      this.#refreshFrontier();                  // erratum 9.3: advance on ancestry
       return b;
     }
     if (dag.isAncestor(b.id, a.id)) {           // fast-forward: a subsumes b
       other.#head = a;
+      other.#refreshFrontier();
       return a;
     }
     const l = lca(dag, a.id, b.id);             // unique LCA or CrissCrossError (#90 gate)
@@ -164,7 +187,66 @@ export class Replica {
     rt.epochOf.set(c.id, eT);
     this.#head = c;
     other.#head = c;
+    this.#refreshFrontier();
+    other.#refreshFrontier();
     return c;
+  }
+
+  /** THE CERTIFIED STABLE CUT this replica can prove from its frontier: the
+   *  meet of the event sets of every other registered replica's evidence
+   *  commit (src/frontier.js). Returns { complete, meet, missing, ... };
+   *  complete === false names the replicas not yet heard from since the cut. */
+  stableCut() {
+    return stableCut(
+      this.runtime.dag, this.#head.id, this.runtime.registeredNames(), this.name);
+  }
+
+  /** THE EVIDENCE PRODUCER (task #106, practical half). State-GC at the
+   *  largest cut this replica can CERTIFY from its frontier, replacing the
+   *  ASSERTED settledness of replica.compact / src/compact.js. Exact
+   *  correspondence to Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean:
+   *
+   *    frontier (per replica evidence commits c_j)  ==  AllHeardSince C v S
+   *    stableCut = meet of E(c_j)                    ==  the maximal such S
+   *    certificate present (complete)                ==  the hypothesis hAll
+   *    reads preserved by the resulting compaction   ==  settledAt_of_allHeard
+   *                                                      feeding StabilityVC
+   *
+   *  The certificate is CHECKED: if any registered replica has not been heard
+   *  from since the cut (its evidence commit is absent), compaction is
+   *  REFUSED (a no-op returning { compacted: false, missing }). This is the
+   *  runtime witness of settledAt_of_allHeard's not-heard breaker
+   *  (createReplica / EvidenceDischarge section 3).
+   *
+   *  THE IN-FLIGHT DISCHARGE (the point of #106 over compact.js's v1). compact
+   *  .js's cut.inflight was the crutch for asserted-settledness: an in-flight
+   *  op concurrent with the cut, whose frozen delta a dense renumber could
+   *  flip. Under a CERTIFIED cut no such op exists -- every op concurrent with
+   *  the cut is already delivered (SettledAt condition 2), so it is an at-rest
+   *  member that compact.js's own per-group stability gate refuses to
+   *  renumber; every UNdelivered op is Lamport-fresh future work that sorts
+   *  past the compacted block and translates verbatim. So we pass
+   *  inflight: [] and it is PROVED sufficient, not asserted. This delivers the
+   *  "computing evidence certificates is a follow-on" promised in
+   *  compact.js's contract note and stability-vc-note.md section 2. */
+  compactStable(opts) {
+    const rt = this.runtime;
+    const e = rt.epochOf.get(this.#head.id);
+    if (e !== rt.epochs.length - 1) {
+      return { compacted: false, reason: 'stale epoch; sync to the newest epoch first' };
+    }
+    const { complete, meet, missing } = this.stableCut();
+    if (!complete) {
+      return { compacted: false, missing,
+        reason: `certificate absent: not heard from ${missing.join(', ')} since the cut` };
+    }
+    const settledIds = insertIds(meet);
+    if (settledIds.size === 0) {
+      return { compacted: false, reason: 'the certified stable cut is empty' };
+    }
+    // inflight: [] is discharged by the certificate (see the doc above).
+    const { head, stats } = this.compact({ settledIds, inflight: [] }, opts);
+    return { compacted: true, head, stats, cutSize: settledIds.size };
   }
 
   /** Datatype read of the current head state. */

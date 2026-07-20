@@ -19,7 +19,19 @@ const b = rt.replica('B');
 a.commit({ type: 'ins', id: 1, el: 'x', anchorId: null }); // op on OWN head
 b.sync(a);                              // join the two CURRENT heads
 a.read();                               // datatype read of a's head state
-rt.gc();                                // keep-set GC -> { kept, dropped }
+rt.gc();                                // keep-set commit GC -> { kept, dropped }
+a.compactStable();                      // certified state GC (needs a compactible
+                                        // datatype); { compacted, ... } or
+                                        // { compacted: false, missing } if the
+                                        // evidence certificate is absent
+```
+
+```js
+// Separate stores over the wire (src/sync.js):
+import { Peer, syncPeers } from './src/sync.js';
+const p = new Peer(embedRGA, 'A'), q = new Peer(embedRGA, 'B');
+p.commit({ type: 'ins', id: 1, el: 'x', anchorId: null });
+syncPeers(p, q);                        // exchange deltas + converge; reports payload bytes
 ```
 
 - `src/dag.js` -- commit store. A commit is
@@ -43,6 +55,15 @@ rt.gc();                                // keep-set GC -> { kept, dropped }
   reflexive upward (descendant) closure of the seeds; everything else is
   dropped. Surviving commits may then reference pruned parents; DAG
   traversals skip them (ancestry truncated at the GC horizon).
+- `src/frontier.js` -- THE ONE FRONTIER (task #106). `frontierOf(dag, head)`
+  gives, per replica, its latest absorbed commit (its *evidence commit*);
+  `stableCut(dag, head, registered, self)` intersects those event sets into
+  the largest cut this head can CERTIFY. This is exactly `AllHeardSince` /
+  `settledAt_of_allHeard` of
+  `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean` (see below).
+- `src/sync.js` -- the delta/op WIRE protocol (task #104 item 3): content-
+  addressed `Peer`s over SEPARATE stores exchange head frontiers and ship the
+  ancestor-set difference as a delta, converging by merge (see below).
 
 A datatype is `{ init, apply(state, op), merge3(l, a, b), read(state) }`,
 all pure (`apply`/`merge3` return fresh states: commits keep old states).
@@ -171,6 +192,94 @@ ratios, coalesce/tail-attachment, and a 120-trial merge/delete round-trip
 PBT). Measured in `benchmarks/` (`tools/run_table_shipped.mjs`, column 3 of
 the save-size matrix).
 
+## The delta/op sync wire (task #104, item 3)
+
+`src/sync.js` is an Automerge-repo-style gossip protocol between `Peer`s that
+hold SEPARATE commit stores (unlike the shared-DAG `Runtime`, which merges
+in-process). Two peers exchange their DAG frontier (head content-ids), each
+computes which commits the other lacks (an ancestor-set difference), and ships
+those as a DELTA: per commit only the op payload + parent refs + author
+replica-id, never the whole state. A whole-state snapshot (`src/serialize.js`)
+is used only for a genuine bulk catch-up (`deltaOrSnapshot` picks it when the
+delta would be larger, e.g. a brand-new or very-far-behind peer).
+
+- CONTENT ADDRESSING. Separate stores assign different local ids to the same
+  commit, so the wire speaks global content-ids: an authored commit is
+  `replica#seq`, a merge commit a short hash of its SORTED parent global-ids
+  (so `merge(a,b)` and `merge(b,a)` are the SAME commit and never diverge into
+  a spurious criss-cross), the root the fixed id `root`. Peers dedup on the
+  global id and RECOMPUTE each ingested commit's state (`apply` for authored,
+  `merge3` for merges) -- a transmitted state is never trusted; the recomputed
+  id must match the wire id (a content-address gate). A model hash; #95's
+  persistence layer would swap in SHA.
+- CONVERGENCE. `syncPeers(a, b)` runs one bidirectional round: both compute the
+  other's delta from the pre-merge frontiers, both ingest, both merge their
+  head with the other's advertised head. After the round both stores hold every
+  commit and (content-addressing the shared merge) their heads carry equal
+  reads. `test/sync.test.js` gossips N peers to convergence (a criss-cross-free
+  linear fold), pins per-round read equality, and measures the payload: the
+  per-round delta is a function of that round's ops, CONSTANT across rounds,
+  while a whole-state resync grows with the document, so in steady state the
+  delta is well under half the whole-state baseline. (The delta is JSON
+  op-encoding; a binary framing would shrink it further, the same
+  representation gap the save-size story documents.)
+- HEAD-SYNC PRESERVED. A peer only ever merges its current head with the
+  current head another peer just advertised, never a stale interior commit --
+  the hypothesis `gc_safety` consumes. Merges go through the same `lca()`
+  criss-cross gate as the shared-store runtime.
+
+The concurrent benchmark (`benchmarks/`) fills its previously-`n/a` sync
+payload column with `sharedDelta`: the bidirectional wire delta a sync would
+ship, measured on the shared-store pair before the merge (comparable to
+Yjs/Automerge's update-bytes column).
+
+## Certified state GC: the evidence producer (task #106)
+
+`replica.compactStable(opts)` replaces `replica.compact`'s ASSERTED settledness
+with a CHECKED certificate built from the frontier (`src/frontier.js`). The
+exact correspondence to `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean`:
+
+| runtime                                   | formal target                       |
+| ----------------------------------------- | ----------------------------------- |
+| the frontier (per-replica evidence commit `c_j`) | `AllHeardSince C v S`        |
+| `stableCut` = meet of `E(c_j)`            | the maximal such `S`                |
+| certificate present (`complete`)          | the hypothesis `hAll`               |
+| reads preserved by the compaction         | `settledAt_of_allHeard` -> StabilityVC |
+
+The certificate is CHECKED: if any registered replica has not been heard from
+since the cut (its evidence commit is absent from this head's ancestry),
+compaction is REFUSED (a no-op returning `{ compacted: false, missing }`). That
+is the runtime witness of `settledAt_of_allHeard`'s not-heard breaker (the
+`createReplica` case, EvidenceDischarge section 3): absence of evidence is
+refusal, never assumption. `test/sync.test.js` pins this directed at
+runtime level with the discriminating-remove countermodel
+(`stability-vc-note.md` section 2): a concurrent op held by a lagging replica
+makes `compactStable` refuse, then fire once that replica is heard from, reads
+identical to a never-compacted control throughout -- with a FAIL companion
+showing the OLD asserted compaction at the same point DIVERGES (a frozen-delta
+order flip), so the certificate's refusal is load-bearing, not pessimism.
+
+THE IN-FLIGHT DISCHARGE (the point of #106 over `compact.js`'s v1). `compact.js`
+carried a `cut.inflight` crutch: an in-flight op concurrent with the cut whose
+frozen delta a dense renumber could flip. Under a CERTIFIED cut no such op
+exists -- every op concurrent with the cut is already delivered (SettledAt
+condition 2), so it is an at-rest member that compact.js's own per-group
+stability gate refuses to renumber; every UNdelivered op is Lamport-fresh
+future work that sorts past the compacted block and translates verbatim. So
+`compactStable` passes `inflight: []` and it is PROVED sufficient, not asserted
+-- delivering the "computing evidence certificates is a follow-on" of
+`stability-vc-note.md` section 2.
+
+ONE FRONTIER, TWO CONSUMERS (`runtime-gc-note.md` section 6). The commit GC
+(`rt.gc()`) reads the current-heads frontier from ABOVE (retain the upward
+closure of the pairwise head meets); this stability producer reads the same
+frontier from BELOW (what is settled). `rt.registeredNames()` is the closed
+replica set both quantify over (the open-membership caveat). Note that
+aggressive commit GC truncates ancestry at the keep horizon, which can hide the
+very evidence commits `compactStable` needs -- interleaving the two is the
+deferred historical-payload interaction (`stability-vc-note.md` section 8); the
+tests exercise each consumer against its own frontier, not both at once.
+
 ## The head-sync discipline, and why
 
 The GC is sound ONLY if every merge is between two CURRENT heads. This is
@@ -234,7 +343,27 @@ compaction with pinned symbol counts, the in-flight negative control and
 its guarded companion, lazy translation on ingest, dead-range keeping,
 future mints past the compacted block, the v1 epoch guards, and a
 140-trial twin PBT compacting at explicitly-settled points against a
-never-compacting control).
+never-compacting control), `test/sync.test.js` (the sync/gossip layer: N-peer
+delta-sync convergence with the bounded-payload assertion; the wire-vs-snapshot
+chooser; the directed refuse-then-fire evidence test plus its divergence FAIL
+companion; and a 160-trial twin PBT of certified GC vs a no-compaction control,
+per-step read equality, both certificate branches exercised -- 746 fires /
+1060 refuses on this machine).
+
+## What #95 (the p2p demo) still needs on top of this
+
+`src/sync.js` gives the wire FORMAT and the convergence protocol in-process
+(peers as JS objects exchanging JSON messages). The #95 p2p demo adds, on top:
+
+- a TRANSPORT binding -- carry the `{ t: 'delta', c: [...] }` / snapshot
+  messages over a real channel (WebSocket / WebRTC / a sync server), with the
+  have/want negotiation driven by `Peer.ancestryGids()` + `Peer.delta(...)`;
+- GIT-STYLE PERSISTENCE -- durable per-peer stores (the content-ids are already
+  git-like; a real deployment would swap the model FNV hash for SHA and persist
+  commits + heads to disk / IndexedDB so a peer survives restart);
+- an authenticated content hash (SHA) closing the model-hash collision gap;
+- open-membership handling on the wire (registration/eviction), the same closed
+  set the certificate and commit GC quantify over.
 
 ## Datatype ports are UNVERIFIED transliterations
 

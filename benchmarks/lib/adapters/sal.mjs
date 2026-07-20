@@ -25,6 +25,7 @@ import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
 import { encode as rtEncode } from '../../../runtime/src/serialize.js';
 import { Runtime } from '../../../runtime/src/runtime.js';
+import { sharedDelta, wireBytes } from '../../../runtime/src/sync.js';
 import { timed } from '../bench.mjs';
 
 /** Task #104 SHIPPED run-table serializer: encode(state) -> Uint8Array.
@@ -157,8 +158,17 @@ export function mkAdapter() {
         lenA: () => p.viewA.length,
         lenB: () => p.viewB.length,
         /** Timed portion: the head-sync (merge3 via unique LCA). Commit GC
-         *  and view rebuild are outside the timed window, reported apart. */
+         *  and view rebuild are outside the timed window, reported apart.
+         *  payloadBytes = the bidirectional DELTA the wire protocol
+         *  (runtime/src/sync.js) would ship for this sync: the commits each
+         *  head lacks from the other, as op payloads + parent refs + author
+         *  id (NOT whole state). Measured BEFORE the merge, when the heads
+         *  still diverge; comparable to Yjs/Automerge's update-bytes column. */
         sync() {
+          const aH = rA.head.id, bH = rB.head.id;
+          const toB = sharedDelta(runtime.dag, aH, bH);
+          const toA = sharedDelta(runtime.dag, bH, aH);
+          const payloadBytes = wireBytes({ t: 'delta', c: toB }) + wireBytes({ t: 'delta', c: toA });
           const [, ms] = timed(() => rA.sync(rB));
           const [, gcMs] = timed(() => runtime.gc());
           p.gcMsTotal += gcMs;
@@ -166,7 +176,7 @@ export function mkAdapter() {
           p.lamA = lam; p.lamB = lam;
           const ids = dt.readIds(rA.head.state);
           p.viewA = [...ids]; p.viewB = [...ids];
-          return { ms, payloadBytes: null }; // shared-DAG runtime: no wire format
+          return { ms, payloadBytes };
         },
         textA: () => dt.read(rA.head.state).join(''),
         textB: () => dt.read(rB.head.state).join(''),
