@@ -1,4 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.GC_Safety
+import Sal.ConditionedMRDTs.Metatheory.GC_BoundedState
+import Sal.ConditionedMRDTs.Metatheory.EvidenceDischarge
 import Sal.ConditionedMRDTs.Metatheory.VirtualLCA_Spot
 import Sal.ConditionedMRDTs.MRDT_Instances.GSet.GSet
 import Sal.ConditionedMRDTs.MRDT_Instances.Counter.Counter
