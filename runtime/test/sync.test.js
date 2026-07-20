@@ -61,13 +61,18 @@ test('delta-sync convergence: N peers gossip over the wire, converge to equal re
   // function of that round's ops (constant across rounds), while a whole-state
   // resync grows with the document. In steady state (second half, big doc) the
   // delta is well below the whole-state baseline, and the last round tighter.
+  // (Thresholds carry the honest SHA-40 content-id cost #108 unified onto: a
+  // 40-hex commit id + its parent refs cost more per wire commit than the old
+  // FNV base36 / "replica#seq" ids, so the ratio is higher than under the model
+  // hash, but the two STRUCTURAL claims stand -- the delta beats whole-state
+  // resync, and per-round it stays bounded by the ops, not the document.)
   const half = ROUNDS >> 1;
   const sum = (a, lo) => a.slice(lo).reduce((x, y) => x + y, 0);
   const dHalf = sum(perRoundDelta, half), bHalf = sum(perRoundBase, half);
   const lastDelta = perRoundDelta[ROUNDS - 1], lastBase = perRoundBase[ROUNDS - 1];
-  assert.ok(dHalf < bHalf * 0.5,
+  assert.ok(dHalf < bHalf * 0.75,
     `steady-state delta ${dHalf} must beat whole-state-resync ${bHalf}`);
-  assert.ok(lastDelta < lastBase * 0.35,
+  assert.ok(lastDelta < lastBase * 0.6,
     `last-round delta ${lastDelta} not bounded vs whole-state ${lastBase}`);
   // and the per-round delta does NOT grow with the document (bounded by ops):
   assert.ok(lastDelta < perRoundDelta[half] * 2.5,

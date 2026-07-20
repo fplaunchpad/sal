@@ -332,9 +332,16 @@ export function remapState(state, translate) {
   return s;
 }
 
-/** The embed RGA with the state-GC hooks the runtime looks for. */
+/** The embed RGA with the state-GC hooks the runtime looks for. compact +
+ *  remapState drive the certified state GC; encodeState + decodeState are the
+ *  wire/disk (de)serialization of a COMPACTION commit's inline state, which
+ *  cannot be recomputed from a parent (src/replica.js ships/ingests it
+ *  parametrically through these -- a datatype that never compacts needs
+ *  neither). */
 export const compactibleEmbedRGA = {
   ...embedRGA,
   compact: compactEliasDelta,
   remapState,
+  encodeState: (state) => [...state.entries()].map(([id, r]) => [id, r.coord, r.el]),
+  decodeState: (enc) => new Map(enc.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
 };

@@ -8,9 +8,13 @@ network transport and converge, a replica's whole history is savable in a **git
 repository** (point at the repo, get the doc), and certified GC fires *while the
 session is live*.
 
-Nothing in `../runtime/src` was modified; this package **imports** it. The only
-new machinery here is glue: a SHA content-address, a git codec, a WebSocket
-transport, and a browser UI.
+This package **imports** the runtime. As of task #108 the p2p replica itself is
+a first-class runtime object (`DistributedReplica` in `../runtime/src/replica.js`:
+one SHA-addressed store with both wire sync and the certified GCs); the demo's
+`Node` is a thin re-export of it, and the SHA content hash lives in the core
+(`../runtime/src/hash.js`), shared by wire and disk. The only new machinery
+**here** is the deployment skin: a git codec, a WebSocket transport, and a
+browser UI.
 
 ```
 npm install          # once (pulls `ws`, the relay's only dependency)
@@ -23,7 +27,7 @@ npm run relay        # serves the browser editor + the sync relay on one port
 
 | Demo shows | Verified-underneath (see `../runtime/README.md`) | Demo glue (here) |
 | --- | --- | --- |
-| replicas converge to one doc | commit-DAG merge, LCA + criss-cross gate, delta/ingest content-address gate | the SHA id, the wire framing over WebSocket |
+| replicas converge to one doc | `DistributedReplica` delta gossip, LCA + criss-cross gate, delta/ingest content-address gate, the SHA content id | the wire framing over WebSocket |
 | GC fires mid-session, reads unchanged | `compactStable` = the evidence-frontier stability cut + `settledAt_of_allHeard`; `compactEliasDelta` re-coding | the settled **barrier** that linearizes epochs across peers |
 | "point at a git repo, get the doc" | the run-table serializer (`serialize.js`), the coordinate representation | the git directory codec + fencing |
 | a new peer clones and catches up | the same delta gossip that converges in-process | reconnect + fold over the transport |
@@ -51,25 +55,28 @@ consequences (equal reads, reads unchanged by GC, git round-trip).
                  └─────────────────────────┘  inspects the CRDT payload
 ```
 
-- **`src/node.js` -- the p2p replica.** A separate commit store (imported
-  `Dag`) that unifies two things the runtime keeps apart: `sync.js`'s
-  `Peer` (delta gossip: `ancestryGids`/`delta`/`ingest`/`mergeWithGid`) and
-  `runtime.js`'s `Replica.compactStable` (certified state GC), which the
-  separate-store `Peer` does not have. Every load-bearing primitive is imported
-  (`lca`, `frontierOf`/`stableCut`/`insertIds`, `compactEliasDelta`,
-  `serialize`). `test/node.test.js` cross-checks a `Node` against the reference
-  `Peer` on the same op stream (identical reads + convergence), so this
-  combination is pinned to the runtime, not merely plausible.
+- **`src/node.js` -- the p2p replica, a thin adapter.** `Node` is now just
+  `DistributedReplica` (`../runtime/src/replica.js`) with the demo's historical
+  defaults (the embed RGA, name `n0`). The runtime's first-class object is the
+  fold that used to live here: ONE content-addressed store that has BOTH the
+  delta gossip (`ancestryGids`/`delta`/`ingest`/`mergeWithGid`) sync.js's `Peer`
+  had and the certified state GC (`compactStable`) runtime.js's `Replica` had,
+  plus the keep-set commit GC, datatype-parametric. `test/node.test.js` pins the
+  demo surface (SHA re-export, wire convergence, compaction refuse/fire); the
+  parametric core coverage (embed **and** orset) is in
+  `../runtime/test/replica.test.js`.
 
-- **SHA content addressing (`src/hash.js`).** #95 asks the demo to swap the
-  sync layer's model FNV hash for a real SHA. `Node` names every commit by the
-  SHA-256 of its canonical content, a Merkle DAG (a commit's id folds in its
-  parents'):
+- **SHA content addressing (`src/hash.js` -> `../runtime/src/hash.js`).** #108
+  moved the content hash into the core and unified it. `DistributedReplica`
+  (hence `Node`) names every commit by the SHA-256 of its canonical content, a
+  Merkle DAG (a commit's id folds in its parents'):
   `root = sha({root:true})`, `authored = sha({p,replica,seq,payload})`,
   `merge = sha({p: sorted parents})`, `compaction = sha({compact,p,fp})`. The
   same id names the same commit on **every** peer and **on disk**, so the wire
-  dedups and git persistence content-addresses with one hash. The pure-JS
-  SHA-256 is checked bit-for-bit against `node:crypto` (NIST vectors + random).
+  dedups and git persistence content-addresses with **one** hash -- the FNV/SHA
+  seam is gone (`sync.js`'s `Peer` uses the same core hash now). The demo's
+  `src/hash.js` is a thin re-export of the core; the pure-JS SHA-256 is checked
+  bit-for-bit against `node:crypto` (NIST vectors + random) in the runtime.
 
 - **`src/gitstore.js` -- git persistence.** `persist(node, repoPath)` writes
   `commits/<sha>.json` (one per commit) + `heads.json` + a materialized
@@ -185,24 +192,21 @@ the scripted scenario below.
   handled; a real system needs a membership protocol and a liveness policy.
 - **Compaction is linearized (the barrier).** Truly concurrent divergent
   compaction -- two peers compacting different cuts without a barrier, then
-  merging across epochs -- is the runtime's own deferred protocol half. `Node`
-  refuses a cross-epoch merge rather than guess.
+  merging across epochs -- is the runtime's own deferred protocol half (the #97
+  multi-epoch `CompatChain`). `DistributedReplica` refuses a cross-epoch merge
+  rather than guess; `barrierCompact` keeps peers on one epoch.
 - **Criss-cross merges are gated, not resolved.** Virtual-LCA (recursive merge
   of the maximal common ancestors, git-style) is runtime task #90. The
   deterministic linear fold (`converge`) stays inside the criss-cross-free
   regime; opportunistic browser merges catch a criss-cross and defer it.
-- **Two hashes are consistent but not one.** The demo uses SHA everywhere; the
-  reference `sync.js` still uses its FNV model hash. Unifying them means editing
-  `runtime/src` (making the runtime gid = SHA), which #95 forbids. `Node` is the
-  SHA-based version cross-checked against the FNV reference.
 - **`embedRGA` is an unverified transliteration** of the verified embed kernel
   (see `../runtime/README.md`); the demo inherits that caveat.
 
 ## Files
 
 ```
-src/hash.js        pure-JS SHA-256 + canonical content id  (checked vs node:crypto)
-src/node.js        the p2p replica: SHA-addressed store + gossip + certified GC
+src/hash.js        re-export of the core content hash (../runtime/src/hash.js)
+src/node.js        thin adapter: Node = DistributedReplica with the demo defaults
 src/gitstore.js    persist()/load() a Node to/from a git repo; git fencing
 src/transport.js   WsTransport, NetworkNode, converge(), barrierCompact()
 src/relay.mjs      ws relay + static server (npm run relay)

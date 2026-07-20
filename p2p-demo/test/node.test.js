@@ -1,6 +1,11 @@
-// Node unit tests: the SHA hash is correct, the SHA-addressed wire sync
-// converges and matches the reference sync.js Peer, and certified compaction
-// fires / refuses exactly as runtime.js Replica.compactStable does.
+// Node unit tests: the demo's Node is now a thin adapter over the runtime's
+// first-class DistributedReplica (task #108 folded the ad-hoc combination into
+// the core, unifying the hash). These pin the DEMO surface: the SHA re-export is
+// correct, the SHA-addressed wire sync converges, and certified compaction fires
+// / refuses. The old FNV-vs-SHA cross-check against sync.js's Peer is GONE --
+// wire and disk now share one hash, so there is no rival hash to cross-check
+// against (core convergence-vs-orset parametricity lives in
+// runtime/test/replica.test.js).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,8 +13,6 @@ import { createHash } from 'node:crypto';
 import { Node } from '../src/node.js';
 import { sha256hex } from '../src/hash.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
-import { embedRGA } from '../../runtime/src/datatypes/embedRGA.js';
-import { Peer, syncPeers } from '../../runtime/src/sync.js';
 
 const dt = compactibleEmbedRGA;
 
@@ -56,38 +59,31 @@ test('Node: content-address gate dedups and gates on the SHA', () => {
   assert.throws(() => c.ingest(bad), /content-address mismatch/);
 });
 
-test('Node converges over the wire and MATCHES the reference sync.js Peer', () => {
+test('Node converges over the SHA-addressed wire (N-node linear fold)', () => {
   const rng = mulberry32(0xBEEF);
   const N = 3;
   const nodes = Array.from({ length: N }, (_, i) => new Node(dt, 'p' + i));
-  const peers = Array.from({ length: N }, (_, i) => new Peer(embedRGA, 'p' + i));
   let mint = 0;
   for (let round = 0; round < 20; round++) {
     for (let i = 0; i < N; i++) {
-      const view = embedRGA.readIds(nodes[i].head.state);
+      const view = dt.readIds(nodes[i].head.state);
       if (view.length > 3 && rng() < 0.25) {
-        const id = pick(rng, view);
-        nodes[i].commit({ type: 'del', id }); peers[i].commit({ type: 'del', id });
+        nodes[i].commit({ type: 'del', id: pick(rng, view) });
       } else {
         const id = ++mint;
         const anchorId = view.length && rng() < 0.7 ? pick(rng, view) : null;
-        const op = { type: 'ins', id, el: String.fromCharCode(97 + (id % 26)), anchorId };
-        nodes[i].commit(op); peers[i].commit(op);
+        nodes[i].commit({ type: 'ins', id, el: String.fromCharCode(97 + (id % 26)), anchorId });
       }
     }
-    // linear fold into index 0 (criss-cross-free), then broadcast back -- on
-    // BOTH the Nodes and the reference Peers, in lockstep, so their per-replica
-    // views stay identical (a valid anchor on one is valid on the other)
-    for (let pass = 0; pass < 2; pass++) for (let k = 1; k < N; k++) {
-      syncNodes(nodes[0], nodes[k]); syncPeers(peers[0], peers[k]);
-    }
+    // linear fold into index 0 (criss-cross-free), then broadcast back
+    for (let pass = 0; pass < 2; pass++) for (let k = 1; k < N; k++) syncNodes(nodes[0], nodes[k]);
     const nread = nodes.map((n) => n.read().join(''));
     for (let i = 1; i < N; i++) assert.equal(nread[i], nread[0], `round ${round}: Node p${i} diverged`);
-    // the SHA-addressed Node and the FNV-addressed reference Peer agree on the
-    // converged document at every round
-    assert.equal(nodes[0].read().join(''), peers[0].read().join(''),
-      `round ${round}: Node vs reference Peer diverged`);
+    // content addressing is deterministic: same converged history -> same head SHA
+    for (let i = 1; i < N; i++) assert.equal(nodes[i].headGid, nodes[0].headGid,
+      `round ${round}: converged nodes must hold the identical head SHA`);
   }
+  assert.equal(nodes[0].headGid.length, 40, 'commit ids are 40-hex SHA content ids');
 });
 
 test('Node.compactStable: refuses without a certificate, fires with one, reads unchanged', () => {

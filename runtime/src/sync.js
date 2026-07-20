@@ -7,13 +7,16 @@
 // genuinely warranted -- an initial bulk catch-up, offered when the delta
 // would exceed the snapshot (see deltaOrSnapshot).
 //
-// CONTENT ADDRESSING. Two separate stores assign different LOCAL ids ('c0'..)
-// to the same commit, so the wire speaks GLOBAL content-ids: an authored
-// commit is named "replica#seq" (semantically unique), a merge commit by a
-// short hash of its SORTED parent global-ids (so merge(a,b) and merge(b,a)
-// are the SAME commit and never diverge into a spurious criss-cross), the
-// root by the fixed id "root". Peers dedup on the global id: a commit already
-// held is skipped. (A model hash; #95's persistence layer would swap in SHA.)
+// CONTENT ADDRESSING (task #108: the ONE hash). Two separate stores assign
+// different LOCAL ids ('c0'..) to the same commit, so the wire speaks GLOBAL
+// content-ids minted by the core Merkle-DAG derivation commitContentId
+// (src/hash.js): an authored commit hashes {parents, replica, seq, payload},
+// a merge commit hashes its SORTED parent ids (so merge(a,b) and merge(b,a)
+// are the SAME commit and never diverge into a spurious criss-cross), the root
+// hashes {root:true}. Peers dedup on the global id: a commit already held is
+// skipped. This is the SAME content id the git-persistence demo uses on disk
+// (WIRE and DISK agree), replacing the FNV model hash a `Peer` used to carry.
+// The `hash` constructor argument is pluggable (default: the SHA content id).
 //
 // HEAD-SYNC DISCIPLINE preserved: a peer only ever merges its CURRENT head
 // with the CURRENT head another peer just advertised over the wire (now local
@@ -32,24 +35,18 @@ import { Dag } from './dag.js';
 import { lca, CrissCrossError } from './lca.js';
 import { frontierOf, stableCut } from './frontier.js';
 import { encode as encodeSnapshot } from './serialize.js';
+import { commitContentId, contentId } from './hash.js';
 
 const utf8 = new TextEncoder();
 /** Byte size of a JSON-serializable wire message (browser-safe; no Buffer). */
 export const wireBytes = (msg) => utf8.encode(JSON.stringify(msg)).length;
 
-const ROOT_GID = 'root';
-/** FNV-1a over a string -> base36 (merge-commit content hash). */
-function fnv1a(s) {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); }
-  return (h >>> 0).toString(36);
-}
-
 export class Peer {
   #headId;
-  constructor(datatype, name) {
+  constructor(datatype, name, { hash = contentId } = {}) {
     this.datatype = datatype;
     this.name = name;
+    this.hash = hash;
     this.dag = new Dag();
     this.seq = 0;
     this.gid = new Map();          // local id -> global content id
@@ -66,10 +63,8 @@ export class Peer {
   read() { return this.datatype.read(this.head.state); }
 
   #gidOf(commit) {
-    if (commit.parents.length === 0) return ROOT_GID;
-    if (commit.op !== null) return `${commit.op.replica}#${commit.op.seq}`;
-    const pg = commit.parents.map((p) => this.gid.get(p)).sort();
-    return 'm' + fnv1a(pg.join(','));
+    const pg = commit.parents.map((p) => this.gid.get(p));
+    return commitContentId(commit, pg, { fingerprint: this.datatype.fingerprint, hash: this.hash });
   }
   #index(commit) {
     const g = this.#gidOf(commit);

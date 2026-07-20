@@ -34,6 +34,19 @@ p.commit({ type: 'ins', id: 1, el: 'x', anchorId: null });
 syncPeers(p, q);                        // exchange deltas + converge; reports payload bytes
 ```
 
+```js
+// The first-class distributed replica (src/replica.js): one SHA-addressed store
+// with BOTH wire sync and the certified GCs, datatype-parametric.
+import { DistributedReplica, syncReplicas } from './src/replica.js';
+const a = new DistributedReplica(embedRGA, 'A');  // datatype defaults to compactibleEmbedRGA
+const b = new DistributedReplica(embedRGA, 'B');
+a.register('B'); b.register('A');
+a.commit({ type: 'ins', id: 1, el: 'x', anchorId: null });
+syncReplicas(a, b);                     // delta gossip + converge (SHA content-ids)
+a.compactStable();                      // certified state GC (compactible datatypes)
+a.gc();                                 // keep-set commit GC over its own DAG
+```
+
 - `src/dag.js` -- commit store. A commit is
   `{ id, parents: [ids], op, state }`, `op = { replica, seq, payload }` or
   `null` for merge commits (and the root). Ancestry defines the event set
@@ -64,6 +77,17 @@ syncPeers(p, q);                        // exchange deltas + converge; reports p
 - `src/sync.js` -- the delta/op WIRE protocol (task #104 item 3): content-
   addressed `Peer`s over SEPARATE stores exchange head frontiers and ship the
   ancestor-set difference as a delta, converging by merge (see below).
+- `src/hash.js` -- THE CONTENT HASH (task #108). A pure-JS SHA-256 (checked
+  bit-for-bit against `node:crypto`) and `commitContentId`, the single
+  Merkle-DAG derivation every content-addressed store mints commit ids through
+  (`hash` argument pluggable, default the SHA). Replaces the FNV model hash the
+  `Peer` used to carry, so WIRE and DISK name the same commit the same way.
+- `src/replica.js` -- THE FIRST-CLASS DISTRIBUTED REPLICA (task #108):
+  `DistributedReplica`, ONE content-addressed store with BOTH wire sync AND the
+  certified state GC (plus the keep-set commit GC), datatype-parametric (see
+  below). This is the two-store split (`Replica` = GC-but-no-wire, `Peer` =
+  wire-but-no-GC) resolved into one object; the p2p demo's `Node` is now a thin
+  re-export of it.
 
 A datatype is `{ init, apply(state, op), merge3(l, a, b), read(state) }`,
 all pure (`apply`/`merge3` return fresh states: commits keep old states).
@@ -203,15 +227,18 @@ replica-id, never the whole state. A whole-state snapshot (`src/serialize.js`)
 is used only for a genuine bulk catch-up (`deltaOrSnapshot` picks it when the
 delta would be larger, e.g. a brand-new or very-far-behind peer).
 
-- CONTENT ADDRESSING. Separate stores assign different local ids to the same
-  commit, so the wire speaks global content-ids: an authored commit is
-  `replica#seq`, a merge commit a short hash of its SORTED parent global-ids
-  (so `merge(a,b)` and `merge(b,a)` are the SAME commit and never diverge into
-  a spurious criss-cross), the root the fixed id `root`. Peers dedup on the
-  global id and RECOMPUTE each ingested commit's state (`apply` for authored,
-  `merge3` for merges) -- a transmitted state is never trusted; the recomputed
-  id must match the wire id (a content-address gate). A model hash; #95's
-  persistence layer would swap in SHA.
+- CONTENT ADDRESSING (task #108: the ONE hash). Separate stores assign
+  different local ids to the same commit, so the wire speaks global content-ids
+  minted by `commitContentId` (`src/hash.js`): a SHA-256 Merkle DAG folding in
+  parent ids -- authored commits hash `{parents, replica, seq, payload}`, a
+  merge commit hashes its SORTED parent ids (so `merge(a,b)` and `merge(b,a)`
+  are the SAME commit and never diverge into a spurious criss-cross), the root
+  hashes `{root:true}`. Peers dedup on the global id and RECOMPUTE each ingested
+  commit's state (`apply` for authored, `merge3` for merges) -- a transmitted
+  state is never trusted; the recomputed id must match the wire id (a
+  content-address gate). This is the SAME id git persistence uses on disk, so
+  wire and disk agree; it replaces the FNV model hash a `Peer` used to carry.
+  The `hash` constructor argument is pluggable (default: the SHA content id).
 - CONVERGENCE. `syncPeers(a, b)` runs one bidirectional round: both compute the
   other's delta from the pre-merge frontiers, both ingest, both merge their
   head with the other's advertised head. After the round both stores hold every
@@ -280,6 +307,48 @@ very evidence commits `compactStable` needs -- interleaving the two is the
 deferred historical-payload interaction (`stability-vc-note.md` section 8); the
 tests exercise each consumer against its own frontier, not both at once.
 
+## The first-class distributed replica (task #108)
+
+`src/replica.js`'s `DistributedReplica` folds the runtime's TWO-STORE SPLIT into
+one object. Before #108 the two halves were kept apart:
+
+| object              | store   | wire sync | certified GC | commit GC | hash |
+| ------------------- | ------- | --------- | ------------ | --------- | ---- |
+| `runtime.js` Replica| shared  | no        | yes          | yes       | n/a  |
+| `sync.js` Peer      | separate| yes       | no           | no        | FNV  |
+| **`DistributedReplica`** | **separate** | **yes** | **yes** | **yes** | **SHA** |
+
+It is ONE content-addressed store that has BOTH capabilities: local ops
+(`commit`), delta gossip (`ancestryGids`/`delta`/`ingest`/`mergeWithGid`, the
+content-address re-computation gate), the certified stability GC (`stableCut` ->
+`compactStable`, the evidence frontier adapted to the single store), and the
+keep-set commit GC (`gc()`, `src/gc.js` over its own DAG, defaulting the head
+set to this head plus the frontier's per-replica evidence commits), all under
+SHA content addressing (`commitContentId`). `syncReplicas(a, b)` runs one
+bidirectional round.
+
+DATATYPE-PARAMETRIC. Everything except state compaction is datatype-agnostic
+(`init`/`apply`/`merge3`/`read`). A datatype that also provides `{compact,
+remapState, encodeState, decodeState}` additionally gets `compactStable` (the
+last two (de)serialize a compaction commit's inline state on the wire and on
+disk); one that does not -- e.g. `orset` -- gets everything else and
+`compactStable` returns `{ compacted: false, reason: 'does not support state
+compaction' }`. `test/replica.test.js` runs convergence, the SHA round-trip /
+tamper gate, and commit GC over BOTH `embedRGA` and `orset`, and the certified
+state GC over `embedRGA` (refuse-then-fire) with `orset` refusing.
+
+THE EPOCH BARRIER (concurrent divergent compaction is NOT claimed).
+`compactStable` opens a new epoch, and a cross-epoch merge THROWS: the runtime
+LINEARIZES compaction epochs. Two replicas compacting different cuts and then
+merging across epochs is the deferred protocol half -- the #97 multi-epoch
+`CompatChain` not yet discharged for cross-replica different cuts
+(`stability-vc-note.md` section 8, `embed-recoding-note.md` section 6). A
+deployment reaches a common epoch with a coordinated CHECKPOINT barrier (every
+replica absorbs the converged history, then all compact the identical cut to the
+identical re-coding / same SHA); `test/replica.test.js` pins that a peer which
+has not itself reached the new epoch is refused a cross-epoch merge, rather than
+guessing.
+
 ## The head-sync discipline, and why
 
 The GC is sound ONLY if every merge is between two CURRENT heads. This is
@@ -331,8 +400,13 @@ cd runtime && npm test        # or: node --test test/*.test.js
 v26 no longer accepts a bare directory as a `--test` positional; the glob
 form is equivalent.)
 
-Suites: `test/dag.test.js` (DAG/LCA units, criss-cross construction),
-`test/embed.test.js` (litmus fixtures, below), `test/code.test.js`
+Suites: `test/hash.test.js` (the content hash: SHA-256 vs `node:crypto`,
+key-order-invariant stable stringify, `commitContentId`'s Merkle DAG),
+`test/replica.test.js` (the first-class `DistributedReplica`: convergence via
+gossip, the SHA round-trip / tamper gate, certified state GC refuse-then-fire,
+commit GC, and the cross-epoch-merge refusal -- run over BOTH `embedRGA` and
+`orset` where applicable), `test/dag.test.js` (DAG/LCA units, criss-cross
+construction), `test/embed.test.js` (litmus fixtures, below), `test/code.test.js`
 (Lean-pinned codewords, code-invariance, the cost gap), `test/gc.test.js`
 (GC genuinely prunes; post-GC merges match a no-GC control; the membership
 gate), `test/gc-pbt.test.js` (the GC-safety PBT: 220 embedRGA + 120 orset
@@ -352,18 +426,27 @@ per-step read equality, both certificate branches exercised -- 746 fires /
 
 ## What #95 (the p2p demo) still needs on top of this
 
-`src/sync.js` gives the wire FORMAT and the convergence protocol in-process
-(peers as JS objects exchanging JSON messages). The #95 p2p demo adds, on top:
+As of task #108 the demo's core replica object IS `DistributedReplica` above
+(one content-addressed store, wire sync + both GCs, SHA throughout); the demo's
+`Node` is a thin re-export. The FNV/SHA seam is gone (`src/hash.js` is the one
+hash for wire and disk). What the #95 demo still adds on top is the deployment
+skin, not runtime machinery:
 
 - a TRANSPORT binding -- carry the `{ t: 'delta', c: [...] }` / snapshot
   messages over a real channel (WebSocket / WebRTC / a sync server), with the
-  have/want negotiation driven by `Peer.ancestryGids()` + `Peer.delta(...)`;
-- GIT-STYLE PERSISTENCE -- durable per-peer stores (the content-ids are already
-  git-like; a real deployment would swap the model FNV hash for SHA and persist
-  commits + heads to disk / IndexedDB so a peer survives restart);
-- an authenticated content hash (SHA) closing the model-hash collision gap;
+  have/want negotiation driven by `DistributedReplica.ancestryGids()` +
+  `.delta(...)`;
+- GIT-STYLE PERSISTENCE -- durable per-peer stores keyed by the SHA content id
+  (commits + heads to disk / IndexedDB so a peer survives restart);
+- AUTHENTICATED IDENTITY -- the SHA content-address gate bounds tampering with a
+  commit's content, but not *who* may author; a real deployment needs the
+  replica id to be a key, not a string;
 - open-membership handling on the wire (registration/eviction), the same closed
-  set the certificate and commit GC quantify over.
+  set the certificate and commit GC quantify over;
+- CONCURRENT DIVERGENT COMPACTION -- the demo uses a coordinated checkpoint
+  barrier to keep epochs linearized; lifting that (cross-replica different cuts)
+  is the runtime's own deferred protocol half (the #97 multi-epoch
+  `CompatChain`).
 
 ## Datatype ports are UNVERIFIED transliterations
 

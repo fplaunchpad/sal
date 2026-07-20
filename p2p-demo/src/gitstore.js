@@ -70,8 +70,10 @@ function commitRecord(node, cid) {
       op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
   }
   if (c.parents.length === 1) {
-    return { sha, kind: 'compact', parents, epoch,
-      state: [...c.state.entries()].map(([id, r]) => [id, r.coord, r.el]) };
+    // compaction commit: its re-coded state is not recomputable from a parent,
+    // so persist it inline via the datatype's own encoder (the same encoding the
+    // core DistributedReplica.ingest decodes through datatype.decodeState).
+    return { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
   }
   return { sha, kind: 'merge', parents, epoch };
 }
