@@ -94,6 +94,70 @@ all pure (`apply`/`merge3` return fresh states: commits keep old states).
 The bundled datatypes also expose an optional `fingerprint(state)` used by
 the twin tests, and `embedRGA` adds `readIds`/`readEntries`/`symbolCount`,
 `orset` adds `observe` (helpers for honest op construction and cost probes).
+THREE datatypes ship: `embedRGA` (a sequence), `orset` (a set), and
+`peritext` (rich text = the verified document-order mark model over
+`embedRGA`, see its own section below).
+
+## Peritext: verified document-order rich text over embedRGA (task #55 → #107)
+
+`src/datatypes/peritext.js` is the THIRD datatype: rich text, built as the
+Lean-verified DOCUMENT-ORDER mark read model layered on the sequence datatype.
+It plugs into `DistributedReplica` over the same `{init, apply, merge3, read}`
+contract as `embedRGA`/`orset`, so rich text gets delta gossip + SHA content
+addressing + commit GC with NO Peritext-specific runtime code — the whole
+datatype is the only new piece (the parametricity payoff, proven directly in
+`test/peritext.test.js`).
+
+- STATE `= { text: { shadow, deleted }, marks }`. `text.shadow` is an
+  insert-only `embedRGA` state holding every character (birth order + reading
+  order, reused verbatim: insert, reading order, and merge all delegate to
+  `embedRGA`); `text.deleted` is a grow-only set of logically deleted ids;
+  `marks` is a `Map` `mid → { mtype, value, startId, endId, startSide, endSide,
+  ts, removed }`. This is `DocD` from the verified spec — a delete is LOGICAL
+  (the birth is kept), because the resolver rehomes a dead boundary anchor to
+  its nearest surviving neighbour *in reading order*, which needs the dead
+  anchor's birth position. `live = birth order minus deleted` (the embed
+  capstone's P3).
+- OPS: character `{type:'ins'|'del'}` (delegated to `embedRGA` on the shadow /
+  the deleted set); mark `{type:'addMark'|'removeMark', mid, mtype, value,
+  startId, endId, startSide, endSide, ts}`. A `removeMark` is a first-class
+  negative mark (`removed:true`); per `(char, mtype)` last-writer-wins by `mid`
+  resolves add-vs-remove at READ time.
+- `merge3`: text births by `embedRGA.merge3` (union of insert-only shadows),
+  deletes by union (delete-wins), marks by union on `mid` (a grow-only G-map;
+  `mid` is globally unique). `read` = `renderMarksDoc`: characters in reading
+  order each paired with their active mark set; a dead boundary anchor rehomes
+  to the nearest survivor on its gravity side, GROWTH IS END-SIDE ONLY (an
+  `endSide=after` end grows right over the newer-than-mark run; a `before` start
+  is stable).
+- MATCHES THE VERIFIED MODEL exactly:
+  `whiteboard/litmus/peritext_read_model.py` (the executable
+  `DocumentOrderResolver`) and
+  `Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Embed/PeritextEmbed_MarkIntent.lean`
+  (`doc_no_backward_leak`, `doc_delete_can_respan`, the Ex1–8 renderings).
+  `test/peritext.test.js` pins the Ex1–8 paper examples, the directed
+  no-backward-leak (delete a bold start anchor; the boundary rehomes forward,
+  earlier text stays plain — never the retracted backward tree-ancestry leak),
+  the gravity contrast (bold grows at its end, a link does not), the honest
+  atomicity re-span (`doc_delete_can_respan`), and mark-permutation convergence
+  — each PASS with a `≠` FAIL companion. Expected values are EXTRACTED by
+  running the Python reference (invocation cited in the test header), never read
+  back from the JS implementation.
+- STATE COMPACTION is deliberately NOT supported (`peritext` provides no
+  `compact`/`remapState`, so `compactStable` cleanly refuses, the `orset`
+  path): pruning a dead anchor's coordinate would break mark rehoming, so epoch
+  compaction is the wrong tool here by construction. `encodeState`/`decodeState`
+  give a lossless snapshot round-trip (the durable-persistence surface), and the
+  text still benefits from `embedRGA`'s coordinate cost.
+
+WHAT #107 (THE EDITOR) STILL NEEDS on top of this datatype: an
+EDITOR-WIDGET BINDING (a ProseMirror/CodeMirror-style view that maps
+`read()`'s `[{id, char, marks}]` to rendered spans and maps user
+keystrokes/formatting gestures back to `ins`/`del`/`addMark`/`removeMark` ops
+on a `DistributedReplica`), and PRESENCE (live cursors/selections and peer
+identity — ephemeral, off-DAG state carried alongside the document, not a CRDT
+op). Everything below the widget — convergence, persistence, catch-up — is the
+runtime the datatype already rides on.
 
 ## The delta code is pluggable; the default is the verified Elias-delta
 
@@ -422,7 +486,13 @@ delta-sync convergence with the bounded-payload assertion; the wire-vs-snapshot
 chooser; the directed refuse-then-fire evidence test plus its divergence FAIL
 companion; and a 160-trial twin PBT of certified GC vs a no-compaction control,
 per-step read equality, both certificate branches exercised -- 746 fires /
-1060 refuses on this machine).
+1060 refuses on this machine), `test/peritext.test.js` (the rich-text datatype:
+the Ex1-8 paper renderings, `doc_no_backward_leak`, the gravity contrast,
+`doc_delete_can_respan`, and mark-permutation convergence -- each with a `≠`
+FAIL companion, all expected values extracted from the validated
+`peritext_read_model.py`; plus the parametricity payoff running Peritext through
+`DistributedReplica` to convergence with wire clone/catch-up and a snapshot
+round-trip).
 
 ## What #95 (the p2p demo) still needs on top of this
 
