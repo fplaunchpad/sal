@@ -98,11 +98,13 @@
 \large Metatheory, the Embedded-Chain Family, and Sequential
 Specifications}
 \author{Sal / FP Launchpad (KC + Claude)}
-\date{July 19, 2026\\[2pt] \small one document consolidating three
+\date{July 20, 2026\\[2pt] \small one document consolidating three
 earlier notes (of July 7, July 14, and July 16--17, 2026),\\
 \small extended July 18--19 with the runtime arc (virtual LCAs, commit
-GC, the stability VC)\\
-\small and the storage layer (re-coding, compaction, the run table)}
+GC, the stability VC) and the storage layer (re-coding, compaction, the
+run table),\\
+\small and July 20 with the verified peer-to-peer runtime, a
+cross-system performance study, and a push-button SMT layer}
 
 \begin{document}
 \maketitle
@@ -144,17 +146,33 @@ in Sal, a kernel-checked theorem that the fold of any sequentially
 honest single-replica history equals the output of an independent naive
 sequential program, together with three machine-checked refutations
 giving a two-axis separation between do-faithfulness and
-merge-faithfulness. Everything stated as a theorem is mechanized in
+merge-faithfulness. A final part turns the design into a running system:
+a verified peer-to-peer MRDT runtime, datatype-parametric and
+content-addressed, whose garbage collectors are the executable form of
+the GC-safety and stability theorems and whose git-backed store persists
+the commit DAG; a performance section measures the shipped artifact
+against Yjs, Automerge, Loro, and list-positions on the standard
+editing-trace corpus, honest about a three-to-four-orders apply-latency
+loss to an interface-inherited state copy and about the design's
+categorical storage win, the only save that shrinks on delete; and an SMT
+translation-validation layer that makes the flat verification conditions
+push-button. Everything stated as a theorem is mechanized in
 Lean~4 with zero \lean{sorry}s in the cited chains; the negative results
-are machine-checked countermodels.
+are machine-checked countermodels, and every performance number is a
+labeled run of checked-in scripts.
 \end{abstract}
 
-\paragraph*{How this document is organized.} The three parts are
+\paragraph*{How this document is organized.} The four parts are
 followed by a single consolidated open-questions section and a single
 mechanization map. Part~I is the metatheory and can be read alone;
 Part~II depends on Part~I's signature and its factored discharge route
 (\S\ref{sec:route}); Part~III depends on both, since its refutations
-calibrate what Part~I's convergence theorems do and do not certify. The
+calibrate what Part~I's convergence theorems do and do not certify;
+Part~IV is the systems pillar, a verified peer-to-peer runtime
+(\S\ref{sec:runtime}) with a cross-system performance study
+(\S\ref{sec:perf}) and a push-button SMT layer (\S\ref{sec:smt}), and it
+depends on the embed kernel of Part~II and the GC and stability
+metatheory of Part~I. The
 document consolidates three earlier notes (the metatheory note of
 July~7, the embedded-chain design note of July~14, and the
 sequential-specification campaign note of July~16--17); reused material
@@ -166,7 +184,12 @@ commit GC and its keep set, \S\ref{sec:gc}; the stability VC for
 verified compaction callbacks, \S\ref{sec:stability}) and, to Part~II,
 the closed maximal-non-interleaving theorem (\S\ref{sec:theorem9}), the
 chain-price impossibility (\S\ref{sec:chainprice}), and the storage
-layer with its measurements (\S\ref{sec:storage}). One editorial rule
+layer with its measurements (\S\ref{sec:storage}). A July~20 extension
+adds Part~IV (the verified runtime, its performance study, and the SMT
+layer) and closes the storage layer's mechanization (spine fusion, the
+merge-remap merge clause, multi-epoch composition, and the one-sided run
+table), leaving one shared honesty-rebasing lemma as the single remaining
+single-replica compaction obligation. One editorial rule
 governs the whole document: the
 \emph{rehoming} tombstone-free RGA, an earlier design demoted after its
 sequential refutation, receives no narrative treatment here; it appears
@@ -1884,6 +1907,50 @@ closure), and deeper reads stay in the closure. The widened theorem
 \lean{gc\_safetyV} keeps the headline shape of \lean{gc\_safety}
 unchanged; the gateway forced no statement change.
 
+\paragraph{Bounded state: dropping the skeleton by a clock swap.} The
+theorem above reclaims the payload but keeps the parent map, so the
+pruned store still costs $O(\text{commits ever minted})$: it retains
+history's shape, not its states. The skeleton was forced only for the
+parent-relation representation, where restricting $\mathrm{parents}$
+mints new LCA triples that falsify $\mathrm{lca\_events}$
+(the argument of the keep-set paragraph). A change of representation
+removes it. The commit graph is a delta-compression of event sets, so a
+version's ancestry role is already carried by its event set used as a
+\emph{clock}: ancestry is $\subseteq$, and the LCA of a head pair is the
+kept version at the \emph{clock meet} $E(v_1) \cap E(v_2)$, which is
+exactly what $\mathrm{lca\_events}$ says the structural LCA carries. The
+bounded store keeps only the kept payloads and sets $\mathrm{parents}
+\equiv [\,]$; with no edges, structural reachability collapses to
+equality and $\mathrm{lca\_events}$ holds trivially, so there is no
+history to store and the state is $O(|\mathrm{Keep}|)$
+(\lean{clockPrune}, \lean{gc\_safety\_bounded}, \code{GC\_BoundedState.lean}).
+Completeness is free (\lean{clockLCA\_complete}: every head pair with a
+structural LCA has it recovered at the clock meet, kept by
+\lean{lca\_not\_dropped}), so the swap never disables a merge the
+skeleton enabled.
+
+The swap has exactly one hazard, and it is the lineage collision that
+\S\ref{sec:stability} isolates. Resolving the LCA by clock alone is sound
+while the payload is a function of the event set, and unsound once
+datatype compaction breaks that: a same-clock version from an unrelated
+lineage, used as a merge's $L$, resurrects a dropped instance. The
+structural $\mathrm{IsLCA}$ sidesteps it by resolving within shared
+ancestry; a bare clock lookup cannot, so it is guarded by
+\lean{ClockCoherent} --- two kept versions with the same clock carry the
+same state, i.e.\ the payload is a function of the clock on the keep set,
+which is precisely the $R_S$-compatibility of \S\ref{sec:stability}.
+Under it every clock LCA carries the structural LCA's state
+(\lean{clockLCA\_sound}), so the bounded LTS $\mathrm{Step3C}$ resolves
+each merge at the clock meet and reads identically to the unpruned run.
+The boundary is machine-checked both ways: a PASS SPOT where a future
+head-pair merge finds its LCA at the clock meet and reads correctly, and
+a FAIL SPOT (\lean{spot\_lineage\_resurrection}) exhibiting the
+unrelated-lineage collision that resurrects a dropped instance, with
+$\mathrm{ClockCoherent}$ on that configuration provably false. One case
+is deliberately not covered: a criss-cross antichain of MCAs has no
+single clock meet, so the bounded form of a \emph{virtual} merge needs
+the retained lineage among the MCA closure, and is left owed.
+
 \paragraph{One frontier, three consumers.} The meet of the current
 heads, $\bigcap_{h \in H} E(h)$, is the \emph{stable cut}: the events
 every replica has already incorporated, below which no future merge can
@@ -1968,17 +2035,32 @@ condition. A cut $S$ is \emph{SettledAt} version $v$ when (i) $S
 \subseteq E(v)$ and $S$ is causally downward closed, and (ii) every
 event concurrent with an event of $S$ \emph{that exists anywhere} is
 already in $E(v)$. Clause (ii) looks like a global quantification the
-runtime could never check; it is dischargeable by evidence the commit
-DAG already contains. An event concurrent with $s \in S$ was minted by
-some replica $j$ before $j$ saw $s$; the evidence that $j$ saw $s$ is a
-commit $c_j$ with $s \in E(c_j)$; the concurrent event precedes $c_j$
-at $j$. So if $v$ has absorbed such an evidence commit \emph{for every
-replica} ($v$ has heard from everyone since $S$), all concurrency of
-$S$ is inside $E(v)$
-(\lean{settledAt\_of\_evidence}). This is causal stability in the sense
+runtime could never check, and in the design note it was carried as a
+hypothesis the runtime would somehow certify. It is now a
+\emph{discharged theorem}: on an honestly reachable configuration, the
+purely local, checkable predicate $\mathrm{AllHeardSince}(C, v, S)$ ---
+$v$ has absorbed, for every registered replica $j$, a commit $c_j$ with
+$S \subseteq E(c_j)$ --- \emph{implies} $\mathrm{SettledAt}(C, v, S)$
+(\lean{settledAt\_of\_allHeard}, \code{EvidenceDischarge.lean}). The
+argument is the evidence one made rigorous: an event $e$ concurrent with
+some $s \in S$ was minted by a replica $j$ before $j$ saw $s$; the
+absorbed evidence commit $c_j$ has $s \in E(c_j)$, so $e$ precedes $c_j$
+at $j$ and $e \in E(c_j) \subseteq E(v)$. The impossible case (were $e$
+still outside $E(v)$) would place the cut event $s$ in $e$'s minter's
+past, contradicting concurrency. This is causal stability in the sense
 of Baquero, Almeida, and Shoker, transplanted from op-based delivery to
 the commit DAG: there the argument rides on causal delivery order, here
-on downward closure of event sets. Two operational sharpenings from the
+on downward closure of event sets. Two facts make it a genuine
+discharge rather than a relabeled assumption. The frontier the runtime
+maintains --- the per-replica latest-absorbed commit, meeting to the
+largest certifiable cut --- is tracked \emph{axiom-free}: no choice, no
+classical step enters the version-level payoff. And
+$\mathrm{createReplica}$ is the \emph{one} breaker: a replica that joins
+after a compaction has heard nothing since $S$, so it falsifies
+$\mathrm{AllHeardSince}$ until it catches up, which is exactly the
+open-membership gate (the deferral of \S\ref{sec:stability} made a side
+condition of the theorem, not an unproved promise). Two operational
+sharpenings from the
 mechanization. The gate is SettledAt \emph{and} all-heard: settledness
 alone is not stable under future mints by replicas that have not yet
 heard of $S$, so the all-heads frontier (the same one \S\ref{sec:gc}
@@ -4033,6 +4115,85 @@ to ids, so id-addressed cuts break after epoch one). Concurrent
 divergent compactions (an epoch DAG with common-refinement translation)
 remain the deferred protocol half.
 
+\paragraph{Spine fusion, mechanized.} Rank renumbering alone leaves the
+\emph{spine depth}: typing runs mint $\delta{=}1$ chains, and every level
+costs at least one codeword even at ordinal $1$ (Measurement 2 quantifies
+this). Fusion removes the dead levels themselves. A \emph{fusible spine}
+is a maximal chain of settled dead nodes, each with exactly one child
+branch (counting every known coordinate, in-flight prefixes included) and
+no in-flight op anchored on it; it collapses to a single level at the
+spine head's codeword, so a typing-run-then-delete chain of depth $k$
+costs one codeword instead of $k$. Composed after the rank pass this is
+the full iteration-two map, and reads survive it
+(\lean{compactThenFuse\_reads}, \code{EmbedRGA\_Fusion.lean},
+kernel-clean). Order preservation is a three-class H2 argument:
+(1)~within a fused block the common prefix is replaced wholesale,
+relative order untouched; (2)~a block against the spine head's siblings
+is decided at the head's level, whose codeword fusion keeps; (3)~the
+anchor-versus-extension corner is vacuous, since dead spine nodes hold no
+records and no key ends at a fused-away level. The mechanization sharpens
+class~2 into triviality: because fusion runs \emph{after} the rank pass,
+the head codeword it sees is already the ordinal, so the fusion map keeps
+the head verbatim and drops only the strict interior, and the class-2
+comparison is unchanged by construction rather than by a separate
+``block inherits the rank'' argument. The guard is conservative (any
+known in-flight branch or anchor blocks its node from every spine);
+through-traffic below a blocked node still fuses.
+
+\paragraph{The merge clause, discharged (VC-S4 for the remap species).}
+The stability bundle's argumentwise merge congruence
+(\S\ref{sec:stability}, VC-S4) is, for the coordinate re-map, the
+statement that lazy translation commutes with the ternary merge: merging
+three re-mapped states equals the re-map of the merge
+(\lean{merge\_remap\_congr}, \code{EmbedRGA\_MergeCongr.lean}). The
+``at hand'' domain hypothesis is needed only on the two \emph{merged
+branches}; the LCA argument enters the live-set rule solely through its
+id set, so no hypothesis on $l$ is required. This is precisely what lets
+a compacted head merge against a full LCA payload, the mixed case
+\S\ref{sec:stability} calls the normal one.
+
+\paragraph{Multi-epoch composition.} A single re-coded configuration is
+not a native honest configuration (T3's gap), so a \emph{second}
+compaction cannot naively re-invoke the cluster. The data-plane half is
+now closed (\code{EmbedRGA\_MultiEpoch.lean}, kernel-clean). The semantic
+residue of one epoch is a $\mathrm{StablePrefixMap}$; two compose into
+one (\lean{StablePrefixMap.comp}, axiom-free: H2 composes because
+order-isomorphisms do; H3 composes at the boundary, since an epoch-$1$
+mint $(\pi, d)$ once remapped is an epoch-$2$ mint $(F_1\pi, d)$ with the
+delta codeword untouched; H1 is derived), and the $n$-fold form gives the
+headline --- after arbitrarily many settled-cut compactions, any
+beyond-all-cuts continuation, its lagging ops translated through every
+epoch map, reads exactly as the uncompacted run
+(\lean{multiEpoch\_settled\_reads}). The subtlety that makes this
+non-trivial is \emph{rank reclaim}: naive composition on the first
+epoch's domain is unsound, because if epoch~$2$ reclaims the rank of a
+record that died between the epochs, the dead coordinate and the
+reclaimed live coordinate collide under $F_2 \circ F_1$ (pinned as
+\lean{naive\_composition\_collides}). The fix carries the composite's own
+surviving domain, coordinate-addressed; the companion erratum
+\lean{id\_addressing\_breaks} records why id-addressed cuts fail after
+epoch one. Freshness across epochs is representation-agnostic
+(\lean{rED\_le\_self}, \lean{rED\_fresh\_dominates}: a delta fresh against
+original sibling deltas stays fresh against renumbered ordinals without
+inspecting their meaning), so the order-iso half composes whether stored
+deltas are timestamp differences or epoch-$k$ ordinals.
+
+\paragraph{The one remaining compaction obligation, named.} Two residues
+above --- the single-epoch honesty re-basing (T3's gap: the re-coded
+history is honest only \emph{modulo} the coordinate order-embedding) and
+the multi-epoch $\mathrm{CompatChain}$ residue --- are the \emph{same}
+obligation. Both its causal-stability half (\lean{nested\_cuts\_settled},
+from $\mathrm{settledAt\_of\_allHeard}$ and cut-antitonicity of the
+frontier, \code{EmbedRGA\_CompatChain.lean}) and its order-iso freshness
+half (\lean{rED\_hocc\_fresh}) are closed. What is left is one lemma,
+which we call $(\ast)$: exhibit an epoch-$2$ configuration honest
+\emph{modulo} the order-embedding $F_1$, so that anchored-existence
+re-derives at the epoch boundary. Discharging $(\ast)$ closes both halves
+at once; it is the whole remaining \emph{single-replica} compaction
+protocol, and everything downstream (agreement on a common cut,
+concurrent divergent compaction across replicas) is the multi-replica
+layer proper (Open Questions~\ref{oq:starlemma},~\ref{oq:epochdag}).
+
 \paragraph{Measurement 2: real traces, and where the bits actually
 sit.} The full epoch stack (rank renumbering plus \emph{spine fusion}:
 collapse each maximal settled dead chain with exactly one child branch
@@ -4295,169 +4456,55 @@ comparator, and incremental-equals-canonical after every event, while
 exercising 872 merges, 315 mid-run splits, 438 liveness splits, 551
 coalesces, and 26 vanished-anchor materializations.
 
-The Lean mechanization of this subsection is owed, and the
-implementation pass fixed what the theorem must say: a representation
-isomorphism stated over labels, sides, and liveness (post-epoch,
-\emph{not} timestamps: rank ordinals deliberately forget time, so a
-timestamp-preserving iso would be false after the first epoch), the
-tail-attachment lemma as the load-bearing kernel, comparator and walk
-agreement, six mutation-commutes-with-canonicalization lemmas (with
-coalesce, the piece a paper proof would most plausibly hand-wave), and
-the epoch composition, the only clause with a stability hypothesis.
-Recorded as Open Question~\ref{oq:runtable}.
+The Lean mechanization of this subsection, owed in the previous
+revision, is now in place (\code{RunTable.lean}, state-level and
+hypothesis-free except where noted). The load-bearing kernel is the
+tail-attachment lemma (\lean{tail\_attachment}). The representation
+isomorphism is a genuine \emph{bijection}: $\mathrm{tableOf}$ and
+$\mathrm{stateOf}$ are mutual inverses on canonical tables
+(\lean{canonical\_tableOf}, \lean{stateOf\_tableOf},
+\lean{tableOf\_stateOf}), stated over labels, sides, and liveness ---
+\emph{not} timestamps, the exact correction the implementation forced
+(rank ordinals forget time, so a timestamp-preserving iso is false after
+the first epoch). The comparator equals the fold's key order
+(\lean{cmpTable\_eq\_keyLt}), the structural walk equals the display
+(\lean{walk\_display}, via \lean{walkE\_sound}/\lean{walkE\_complete}),
+and the mutation rules are machine-checked perturbation lemmas: mid-run
+split, liveness split, vanished-anchor materialization, and the forced
+coalesce (the delete-inverse a paper proof would most plausibly
+hand-wave; its necessity is pinned by \lean{spot\_d4\_coalesce\_necessity}
+and canonicalization under mutation by \lean{tableOf\_congr}). Only the
+epoch-composition clause (\lean{runTable\_epoch}) carries a stability
+hypothesis. The sided run table is under way: its structural core is in
+place (\code{SidedRunTable.lean}: \lean{stail\_attachment}, an entry type
+with an explicit side field, and the band-order comparator seed
+\lean{sided\_keyLt\_iff\_schainBefore}); the full sided repr iso and walk
+mirror the one-sided development and are the remaining owed piece
+(Open Question~\ref{oq:runtable}).
 
-\subsection{The cross-system benchmark}
+\subsection{From projection to shipped bytes, and the cross-system question}
 \label{sec:crossbench}
 
-The storage layer's internal measurements say how far the design's own
-representations sit from each other; the external question is where the
-shipped artifact sits against production CRDT libraries. The benchmark
-(\code{benchmarks/}, task \#98) runs our runtime (the unverified ESM
-transliteration of the verified embed kernel, flipped Elias-$\delta$
-code) against Yjs 13.6, Automerge 3.3 (wasm), Loro 1.13 (wasm), and
-list-positions 2.0, on three workloads: the sequential trace replay of
-the previous subsections applied one character at a time, a
-deterministic two-replica concurrent session (seeded, byte-identical op
-stream to every system), and a delete-heavy churn cycle. Every cell
-comes from a run of the checked-in scripts on one machine (node
-v26.3.1, Apple M4 Pro); nothing is quoted from literature, and each
-system's convergence and final text are gated before any number is
-reported.
-
-\paragraph{Fair play: what each column contains.} Save sizes across
-CRDT systems are not comparable without saying what a save
-\emph{contains}, so every row is labeled. Automerge's \code{save} is
-the \emph{full change history}, compressed (the library has no
-state-only mode). Loro's \code{snapshot} carries state plus full
-history; its \code{shallow-snapshot} drops history at the current
-frontiers and is state-only. Yjs's update encoding drops deleted
-content but cannot drop tombstone \emph{id structure} (v2 is the same
-content, run-length compressed). list-positions saves live characters
-plus position metadata as JSON. Ours saves \emph{live state only}
-(delete is pure removal). Symmetrically, our side is three
-clearly-labeled columns: \emph{as shipped} (measured: the datatype's
-JSON, plus a \emph{binary estimate}, a defined packed encoding computed
-from the same state, honest about the fact that no packed encoder is
-shipped); \emph{with compaction} (measured, shipped code: the state
-after \code{compactEliasDelta} at a settled cut, legitimate on these
-workloads since replay and churn are single-writer and the session is
-fully synced at the end); and the \emph{run-table projection}
-(measured-in-model, \textbf{not shipped}: the accounting of
-\S\ref{sec:runtable} executed on the same trace, order-metadata bits
-plus UTF-8 text). The projection is anchored to the shipped code
-bit-for-bit: the model's chain accounting reproduces the shipped
-state's coordinate bits exactly (34{,}660{,}055 bits before and
-18{,}296{,}270 after compaction on \code{friendsforever\_flat}), so the
-column measures the representation, not a different datatype.
-
-\paragraph{The condensed save-size comparison} (bytes per live
-character, final state of each sequential trace; ``history'' rows carry
-the whole edit log, ``state'' rows do not):
-
-\begin{center}\small
-\setlength{\tabcolsep}{4.5pt}
-\begin{tabular}{@{}llrrrr@{}}
-\toprule
-system, variant & contains & \code{ff\_flat} & \code{cs\_flat} &
-  \code{seph} & \code{am-paper} \\
-\midrule
-ours, as shipped (binary est.) & state & 207.2 & 315.5 & 376.3 & 292.5 \\
-ours, with compaction (binary est.) & state & 111.5 & 188.3 & 119.1 & 164.4 \\
-ours, run-table \emph{projection} & state (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
-Yjs update-v1 & state + tombstone ids & 3.8 & 4.4 & 6.0 & 3.0 \\
-Yjs update-v2 & same, run-length coded & 1.9 & 2.0 & 2.4 & 1.5 \\
-Automerge save & full history & 1.3 & 1.2 & 3.6 & 1.2 \\
-Loro snapshot & state + full history & 2.9 & 3.1 & 5.9 & 2.4 \\
-Loro shallow-snapshot & state only & 1.0 & 1.1 & 0.9 & 0.6 \\
-list-positions & state (JSON) & 4.7 & 2.9 & 10.1 & 4.7 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent (Traces abbreviated: \code{friendsforever\_flat},
-\code{clownschool\_flat}, \code{seph-blog1}, \code{automerge-paper};
-final documents 21k, 21k, 57k, 105k characters.) Read bottom-up: the
-as-shipped absolute-coordinate representation is two orders of
-magnitude above production, compaction roughly halves it, and the
-run-table projection lands at 3.8 to 4.0 bytes per character, within
-1.4$\times$ of Yjs update-v1 on every trace but still 3 to 6$\times$
-above the smallest state-only production saves (Loro shallow-snapshot,
-Yjs v2). The projection closes the representation gap to rough parity
-with Yjs v1; it does not win save size outright, and it must never be
-read as a shipped number.
-
-\paragraph{The honest headline.} Where we lose, as shipped: per-char
-apply, by three to four orders of magnitude. Median 347 to 364~$\mu$s
-on the 21k-character documents, 1.66~ms at 57k, 3.16~ms at 105k, and
-the trend is the diagnosis: the persistent \code{apply} returns a fresh
-Map, an $O(\text{live set})$ copy per op, so cost grows linearly with
-document size. This is \emph{interface-inherited} (the persistent-state
-datatype interface the verified semantics is stated over), not order
-machinery; Automerge sits at a flat 24 to 27~$\mu$s and
-Yjs/Loro/list-positions at a flat 0.5 to 1.7~$\mu$s, and a transient or
-batched apply path would move ours toward the microsecond class without
-touching the verified semantics. Load (JSON parse plus the coordinate
-sort) is 31 to 253~ms against Loro's sub-millisecond snapshot load,
-though within range of Automerge's full-history load. Retained memory
-is small (2 to 12~MB: absolute coordinates share prefixes structurally
-as cons strings, so the bit cost materializes only at serialization),
-paid for as allocation churn during replay.
-
-Where we are competitive or winning, as shipped: merge/sync. The
-unique-LCA three-way merge under the head-sync runtime syncs at
-73~$\mu$s median (frequent-sync preset) and 731~$\mu$s (bulk), which is
-Yjs-level (90~$\mu$s, 1.13~ms) and 20 to 25$\times$ faster than
-Automerge and Loro in these sessions, with commit GC running outside
-the timed window at millisecond totals. The honest caveat: these are
-small documents (1.8k and 3.6k characters), and our merge is
-$O(\text{live set})$, so the numbers do not extrapolate to 100k-char
-documents. And storage on delete: our save \emph{never grows on
-delete}; it shrinks by construction, since delete is record removal.
-
-\paragraph{The churn table} (5 cycles of insert 2000 then delete 1800
-characters, then a final 200-char insert; save bytes after selected
-phases; the question per row is whether the save \emph{grows across a
-delete phase}):
-
-\begin{center}\small
-\setlength{\tabcolsep}{4.5pt}
-\begin{tabular}{@{}lrrrrrl@{}}
-\toprule
-system, variant & c1-ins & c1-del & c5-ins & c5-del & final &
-  grows on delete? \\
-\midrule
-ours (binary est.) & 22278 & 2191 & 72322 & 25891 & 31596 & never \\
-ours, compacted (binary est.) & 11576 & 1090 & 18884 & 6524 & 7882 & never \\
-Yjs update-v1 & 32931 & 31671 & 163331 & 161995 & 165395 & never \\
-Yjs update-v2 & 9539 & 8812 & 45776 & 44841 & 45856 & never \\
-Automerge save & 8004 & 11387 & 56294 & 59724 & 60742 & \textbf{always} \\
-Loro snapshot & 13349 & 15337 & 76144 & 78290 & 79679 & \textbf{always} \\
-Loro shallow-snapshot & 6170 & 878 & 8677 & 3296 & 3882 & never \\
-list-positions & 121933 & 94172 & 454518 & 428465 & 436314 & never \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent The final document is 1200 live characters in every row.
-Automerge's save grows by roughly 3.4~KB across \emph{every} delete
-phase (history-carrying, monotone by design), and Loro's full snapshot
-likewise; Yjs never grows but cannot shed tombstone structure, so it
-retains 165~KB (v1) for those 1200 characters against our compacted
-7.9~KB and Loro's shallow 3.9~KB. Ours shrinks on every delete phase in
-every variant. This is the storage-on-delete axis of the retention
-taxonomy (\S\ref{sec:related}) measured live: tombstone-freedom is not
-a benchmark trick, it is the design's semantics showing up as the only
-save that gets smaller when the document does.
-
-Methodology caveats, stated so the numbers cannot be over-read: timer
-overhead (30 to 60~ns per op) is not subtracted and biases the
-sub-microsecond medians; Automerge is driven one change per character
-(the automerge-perf convention; batching would lower its cost and
-history size); list-positions is a positions library rather than a full
-CRDT, and its sync row is its documented op-log integration; heap
-numbers are not comparable across the wasm boundary; and cross-system
-merged \emph{order} may legitimately differ on concurrent insertions,
-so only intra-system convergence is gated.
+Two external facts close the representation arc; both are measured, and
+both are laid out with their full methodology in the performance section
+(\S\ref{sec:perf}), so only the headline belongs here. First, the
+run-table projection of \S\ref{sec:runtable} is no longer merely
+measured-in-model: task~\#104 ships a lossless run-table serializer
+(\code{runtime/src/serialize.js}), whose \lean{accountingBits} routine
+reproduces the projection's bit totals \emph{bit-for-bit} on every trace,
+while the shipped bytes land \emph{below} the projection (the model
+charges the recoverable positional fields --- per-record run id and
+offset, and the tail-attachment parent offset --- that a real encoder
+drops). Over a settled-cut compacted state the serializer reaches $1.1$
+to $1.3$ bytes per character on the josephg traces, at production save
+size and an order of magnitude below the packed absolute-chain estimate.
+Second, placed against production CRDT libraries this closes the save-size
+gap to rough parity with the smallest state-only production saves, and it
+confirms the design's one categorical storage win: tombstone-freedom
+means the save \emph{shrinks} on delete where the history-carrying systems
+grow. The full cross-system matrix --- per-character apply latency, merge
+and sync, load, all four save representations, sync payload, and the
+grows-on-delete reproduction --- is developed in \S\ref{sec:perf}.
 
 \section{Comparison with Eg-walker}
 \label{sec:egwalker}
@@ -5466,6 +5513,394 @@ refuted \emph{statements} are quantified properties whose honesty
 guards are discharged on the witness.
 
 %======================================================================
+\part{The verified peer-to-peer runtime}
+%======================================================================
+
+The preceding parts are a metatheory and its instances: theorems about
+what a merge computes and what a compaction preserves. This part is a
+systems pillar built on them. The same design runs as a general
+peer-to-peer MRDT runtime, datatype-parametric over the framework
+signature, of which collaborative sequence editing is one instance; the
+runtime's garbage collectors are the executable form of Part~I's
+GC-safety and stability theorems, its save format is the run table of
+Part~II, and a benchmark measures it against production CRDT libraries on
+the standard editing-trace corpus. One boundary is drawn throughout: the
+Lean development is the verified artifact, and the JavaScript runtime is
+an \emph{unverified transliteration} of the verified kernel that mirrors
+its semantics and whose GC callbacks correspond, named theorem by named
+theorem, to the mechanized results. The runtime does not re-prove
+convergence; it exercises the semantics the theorems certify and asserts
+the observable consequences (equal reads, reads unchanged by GC, git
+round-trip). Every performance number is a run of checked-in scripts on
+one machine, labeled measured or measured-in-model.
+
+\section{The runtime: one content-addressed replica}
+\label{sec:runtime}
+
+\paragraph{Datatype-parametric, proven over two datatypes.} The core
+object is \code{DistributedReplica} (\code{runtime/src/replica.js},
+tasks \#94/\#108): a single content-addressed commit store carrying
+three capabilities at once --- delta gossip over the wire, the certified
+stability GC, and the keep-set commit GC --- every one of them
+datatype-agnostic (\code{init}/\code{apply}/\code{merge3}/\code{read})
+except state compaction, which a datatype opts into by additionally
+providing \code{compact}/\code{remapState}. The runtime is therefore not
+a text editor with a CRDT inside; sequence editing is one instance. The
+test suite runs convergence, the content-address round-trip and tamper
+gate, and the commit GC over \emph{both} the embedded-chain RGA and an
+OR-set, and the certified state GC over the RGA (refuse-then-fire) with
+the OR-set correctly declining it (an OR-set has no coordinate re-coding
+to do). The pieces that Part~I proved generic run generically.
+
+\paragraph{Content addressing: one hash for wire and disk.} Separate
+peers assign different local ids to the same commit, so every commit is
+named by the SHA-256 of its canonical content, a Merkle DAG folding in
+parent ids (\code{runtime/src/hash.js}, \#108): an authored commit hashes
+$\{\text{parents}, \text{replica}, \text{seq}, \text{payload}\}$, a merge
+commit hashes its \emph{sorted} parent ids (so $\merge(a,b)$ and
+$\merge(b,a)$ are literally the same commit and never diverge into a
+spurious criss-cross), the root hashes $\{\text{root}\}$. Ingest is
+guarded: a peer recomputes each incoming commit's state
+(\code{apply} for authored, \code{merge3} for merges) and the recomputed
+content id must match the wire id, so a transmitted state is never trusted. The
+pure-JS SHA is checked bit-for-bit against the platform crypto library.
+The \emph{same} id names a commit on the wire and on disk, which is what
+makes git persistence content-addressed with no second hash.
+
+\paragraph{Delta sync, head-sync preserved.} Two peers exchange their DAG
+frontiers (head content-ids), each computes the ancestor-set difference
+the other lacks, and ships it as a \emph{delta}: per commit only the op
+payload, parent refs, and author, never a whole state. A whole-state
+snapshot (the run-table serializer below) is used only for a genuine bulk
+catch-up, chosen when the delta would be larger (a brand-new or
+very-far-behind peer). Crucially a peer only ever merges its current head
+with a head another peer just advertised, never a stale interior commit:
+this is exactly the head-sync hypothesis the GC-safety theorem
+(\S\ref{sec:gc}) consumes, made structural rather than advisory. Merges
+route through the same criss-cross gate as the in-process runtime.
+
+\paragraph{The document is a git repository.} Persistence writes one
+JSON file per commit named by its SHA, a heads file, and a materialized
+\code{doc.txt}, then commits them \emph{in a git repository}; loading
+replays the commits into a fresh replica whose reads equal the original
+and which re-enters the live wire with identical SHAs. \code{git clone}
+of the repository therefore yields a self-contained, loadable document
+(clone is a join; a fresh replica id is a fork), and because
+\code{doc.txt} tracks the content, plain \code{git log -p} reads as
+sensible edit history. The content-address SHA is the git-object
+discipline reused: the same id on disk as on the wire.
+
+\paragraph{Certified GC in the running system.} The stability callback is
+the executable \lean{settledAt\_of\_allHeard} (\S\ref{sec:stability}).
+\code{compactStable} replaces asserted settledness with a \emph{checked}
+certificate built from the frontier: if any registered replica has not
+been heard from since the cut, compaction is refused --- a no-op
+reporting the missing replica --- and fires only once that replica is
+heard from. Absence of evidence is refusal, never assumption; this is the
+runtime witness of the theorem's $\mathrm{createReplica}$ breaker. The
+directed test drives the discriminating-remove countermodel of
+\S\ref{sec:stability}: a lagging replica makes \code{compactStable}
+refuse, then fire when heard from, with reads identical to a
+never-compacted control throughout, and a FAIL companion in which the
+\emph{old} asserted compaction at the same point diverges (a frozen-delta
+order flip), so the certificate's refusal is load-bearing, not pessimism.
+Under a certified cut the in-flight crutch vanishes: every op concurrent
+with the cut is already delivered (SettledAt), so passing an empty
+in-flight set is \emph{proved} sufficient rather than asserted. The
+keep-set commit GC runs off the same frontier read from above
+(\S\ref{sec:gc}), and the run-table serializer (\S\ref{sec:crossbench})
+supplies the save format.
+
+\paragraph{Honest limits.} The demo (\code{p2p-demo/}, task \#95) shows
+several replicas editing one document over a real WebSocket transport,
+converging, saving to and cloning from git, and firing certified GC while
+the session is live. What it is not: the transport is a \emph{star
+relay}, not a network-layer mesh (the transport interface is shaped so a
+WebRTC data-channel mesh drops in unchanged); there is no authenticated
+identity (the SHA gate bounds tampering with a commit's content, not who
+may author); open membership is cooperative, over the closed replica set
+the stability certificate and the commit GC both quantify over; and
+compaction is \emph{linearized} by a coordinated checkpoint barrier,
+because concurrent divergent compaction across replicas --- two peers
+compacting incomparable cuts and then merging across epochs --- is the
+deferred protocol half, the multi-replica layer above the single-replica
+lemma $(\ast)$ of \S\ref{sec:compactED}. A cross-epoch merge throws
+rather than guess. And the datatype is the unverified transliteration
+noted above.
+
+\section{Performance}
+\label{sec:perf}
+
+Where does the shipped artifact sit against production CRDT libraries?
+The benchmark (\code{benchmarks/}, task \#98) runs the runtime against
+Yjs 13.6, Automerge 3.3 (wasm), Loro 1.13 (wasm), and list-positions 2.0
+on three workloads, and every cell is a run of the checked-in scripts on
+one machine (node v26.3.1, Apple M4 Pro, 24\,GB); nothing is quoted from
+literature, and each system's convergence and final text are gated before
+any number is reported. The corpus is the standard collaborative-editing
+replay set (the josephg traces: \code{automerge-paper} is Kleppmann's
+LaTeX-editing trace, \code{seph-blog1} is Gentle's blog draft, and
+\code{friendsforever}/\code{clownschool} are concurrent sessions, here
+also replayed single-author as the \code{\_flat} twins). One honesty note
+up front: we benchmark \emph{on} this corpus but not \emph{against}
+Eg-walker's own implementation (\S\ref{sec:egwalker}), which is an event-
+graph replay engine rather than a state library; that comparison is a
+genuine gap.
+
+\paragraph{Per-metric methodology, stated natively.} \emph{Apply} is
+timed with a high-resolution clock around each single-character op,
+reported as median and p95 after a 1000-op warmup (JIT and wasm lazy
+init); timer overhead of 30 to 60~ns per op is \emph{not} subtracted and
+biases the sub-microsecond medians upward. For ours each op includes the
+adapter's position-to-id bookkeeping (an id-array splice) on top of the
+datatype \code{apply}. \emph{Save size} is the bytes of each library's
+native serialization, and what a save \emph{contains} differs, so every
+row is labeled: Automerge's \code{save} is the full change history
+(compressed; no state-only mode exists), Loro's \code{snapshot} carries
+state plus history while \code{shallow-snapshot} drops history at the
+frontiers, Yjs's update drops deleted content but not tombstone id
+structure (v2 run-length codes the same content), list-positions saves
+live characters plus position metadata as JSON, and ours saves live state
+only (delete is pure removal). Ours is reported in four labeled
+representations, discussed below. \emph{Load} is from the primary save
+into a fresh document, median of five, including materializing the text
+once; for ours it includes re-deriving the display order (the coordinate
+sort). \emph{Merge/sync} times the bidirectional exchange per round in
+the concurrent workload. \emph{Heap} numbers are flagged not comparable
+across the wasm boundary (Automerge and Loro hold state in wasm linear
+memory, invisible to the JS heap counter). Labels throughout distinguish
+\emph{measured} from \emph{measured-in-model}.
+
+\paragraph{The honest headline: apply latency.} Where we lose, as
+shipped, is per-character apply, by three to four orders of magnitude
+(median apply, by trace and final size):
+
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+apply, median & \code{ff\_flat} & \code{cs\_flat} & \code{seph} & \code{am-paper} \\
+(final chars) & (21k) & (21k) & (57k) & (105k) \\
+\midrule
+ours (embed RGA, shipped) & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
+Yjs & 1.5\,$\mu$s & 1.7\,$\mu$s & 1.4\,$\mu$s & 1.4\,$\mu$s \\
+Automerge & 24\,$\mu$s & 26\,$\mu$s & 27\,$\mu$s & 27\,$\mu$s \\
+Loro & 0.6\,$\mu$s & 0.8\,$\mu$s & 0.6\,$\mu$s & 0.5\,$\mu$s \\
+list-positions & 0.6\,$\mu$s & 0.7\,$\mu$s & 1.0\,$\mu$s & 0.7\,$\mu$s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The diagnosis is in the trend: ours grows with document size
+while Automerge is flat and the rest are flat and sub-microsecond. The
+persistent \code{apply} returns a fresh Map, an $O(\text{live set})$ copy
+per op, so cost is linear in the document. This is
+\emph{interface-inherited} --- the persistent-state datatype interface the
+verified semantics is stated over --- not order machinery, and a transient
+or batched apply path would move ours toward the microsecond class without
+touching the verified semantics. Load sits at 31 to 253~ms (JSON parse
+plus the coordinate sort) against Loro's sub-millisecond snapshot load,
+though within range of Automerge's full-history load (on
+\code{automerge-paper}, ours 253~ms versus Automerge's 319~ms). Retained
+heap after replay is small (2 to 12~MB: absolute coordinates share
+prefixes structurally as cons strings, so the bit cost materializes only
+at serialization), paid for as allocation churn.
+
+\paragraph{Where we compete: merge and sync.} The unique-LCA three-way
+merge under the head-sync runtime is Yjs-level and 20 to 25$\times$ faster
+than the wasm libraries in these sessions:
+
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & \multicolumn{2}{c}{sync median} & \multicolumn{2}{c}{wire payload/sync} \\
+system & freq & bulk & freq & bulk \\
+\midrule
+ours (embed RGA, shipped) & 73\,$\mu$s & 731\,$\mu$s & \multicolumn{2}{c}{in-process$^\dagger$} \\
+Yjs & 90\,$\mu$s & 1.13\,ms & 1.6\,KB & 15.1\,KB \\
+Automerge & 1.82\,ms & 18.3\,ms & \multicolumn{2}{c}{in-process} \\
+Loro & 6.29\,ms & 17.1\,ms & 0.4\,KB & 4.6\,KB \\
+list-positions & 34\,$\mu$s & 626\,$\mu$s & 6.4\,KB & 123.6\,KB \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent (\code{freq} = 60 rounds of 25 ops/replica, final 1804 chars;
+\code{bulk} = 6 rounds of 500 ops/replica, final 3604 chars; commit GC
+runs outside the timed window at millisecond totals.) The honest caveat:
+these are small documents, and our merge is $O(\text{live set})$, so the
+numbers do not extrapolate to 100k-character documents. $^\dagger$The
+shared-store benchmark merges in-process, so the payload column is not
+applicable; the separate-store wire protocol (\S\ref{sec:runtime}) ships
+a delta that is a function of that round's ops, constant across rounds
+while a whole-state resync grows with the document, and the runtime's
+sync tests measure it at 0.28 to 0.60$\times$ the whole-state baseline in
+steady state.
+
+\paragraph{Save size, four representations.} Our shipped runtime stores
+absolute chain coordinates as bit-strings, so the naive save is far above
+production; the run table (\S\ref{sec:runtable}) is the designed
+successor, and task~\#104 ships it as a real serializer. The four
+representations, in bytes per live character (final state of each
+sequential trace):
+
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+representation (ours) & \code{ff} & \code{cs} & \code{seph} & \code{am-p} \\
+\midrule
+as-shipped JSON & 1637 & 2503 & 2991 & 2320 \\
+\quad + settled-cut compaction & 871 & 1486 & 933 & 1295 \\
+run-table serialized, SHIPPED & 1.5 & 1.6 & 1.6 & 1.2 \\
+\quad + compaction, SHIPPED & 1.1 & 1.1 & 1.3 & 1.1 \\
+run-table projection (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent In absolute terms the shipped, compacted run-table save is
+\textbf{24 / 22 / 73 / 120~KB} for the four traces, down from the
+as-shipped JSON's \textbf{35 / 53 / 170 / 243~MB}: four orders of
+magnitude, lossless (\code{decode(encode(s))} reads identically, gated on
+every trace and by a 120-trial merge/delete property test). The
+serializer is anchored to the shipped state, not a different datatype:
+its \code{accountingBits} routine reproduces the projection's bit totals
+bit-for-bit, and the shipped bytes sit \emph{below} the projection
+because the model deliberately charges the recoverable positional fields
+(per-record run id and offset, and the tail-attachment parent offset)
+that a real encoder drops. Against production, the shipped run-table save
+reaches rough parity with the smallest state-only saves:
+
+\begin{center}\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+system, variant & contains & \code{ff} & \code{cs} & \code{seph} & \code{am-p} \\
+\midrule
+ours, run-table + compaction (SHIPPED) & state & 1.1 & 1.1 & 1.3 & 1.1 \\
+ours, run-table projection & state (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
+Yjs update-v1 & state + tombstone ids & 3.8 & 4.4 & 6.0 & 3.0 \\
+Yjs update-v2 & run-length coded & 1.9 & 2.0 & 2.4 & 1.5 \\
+Automerge save & full history & 1.3 & 1.2 & 3.6 & 1.2 \\
+Loro snapshot & state + history & 2.9 & 3.1 & 5.9 & 2.4 \\
+Loro shallow-snapshot & state only & 1.0 & 1.1 & 0.9 & 0.6 \\
+list-positions & state (JSON) & 4.7 & 2.9 & 10.1 & 4.7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The shipped save is below Yjs update-v2 and Automerge's
+compressed history and on par with Loro's shallow-snapshot (0.6 to
+1.1~B/char, still the smallest); history-carrying rows (Automerge always,
+Loro snapshot) are never compared against state-only rows without the
+label saying so.
+
+\paragraph{The categorical win: storage on delete.} Ours is the only save
+that shrinks when the document does. The churn workload runs five cycles
+of insert 2000 then delete 1800 characters, then a final 200-character
+insert, and asks per row whether the save \emph{grows across a delete
+phase} (bytes, ours in the packed binary estimate):
+
+\begin{center}\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}lrrrrrl@{}}
+\toprule
+system, variant & c1-ins & c1-del & c5-ins & c5-del & final & grows? \\
+\midrule
+ours (binary est.) & 22278 & 2191 & 72322 & 25891 & 31596 & never \\
+ours, compacted (est.) & 11576 & 1090 & 18884 & 6524 & 7882 & never \\
+Yjs update-v1 & 32931 & 31671 & 163331 & 161995 & 165395 & never \\
+Yjs update-v2 & 9539 & 8812 & 45776 & 44841 & 45856 & never \\
+Automerge save & 8004 & 11387 & 56294 & 59724 & 60742 & \textbf{always} \\
+Loro snapshot & 13349 & 15337 & 76144 & 78290 & 79679 & \textbf{always} \\
+Loro shallow-snapshot & 6170 & 878 & 8677 & 3296 & 3882 & never \\
+list-positions & 121933 & 94172 & 454518 & 428465 & 436314 & never \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The final document is 1200 live characters in every row.
+Automerge's save grows by roughly 3.4~KB across every delete phase
+(history-carrying, monotone by design) and Loro's full snapshot likewise;
+Yjs never grows but cannot shed tombstone structure (165~KB v1 for those
+1200 characters against our compacted 7.9~KB and Loro's shallow 3.9~KB).
+This is the storage-on-delete axis of the retention taxonomy
+(\S\ref{sec:related}) measured live: tombstone-freedom is the design's
+semantics showing up as the only save that gets smaller when the document
+does.
+
+\paragraph{Caveats, so the numbers cannot be over-read.} Timer overhead
+is not subtracted and biases the sub-microsecond medians; Automerge is
+driven one change per character (the automerge-perf convention; batching
+would lower its per-op cost and history size); list-positions is a
+positions library, not a full CRDT, and its sync row is its documented
+op-log integration with an unoptimized JSON payload; heap numbers are not
+comparable across the wasm boundary; and cross-system merged \emph{order}
+may legitimately differ on concurrent insertions, so only intra-system
+convergence is gated.
+
+\section{Push-button discharge: an SMT translation-validation layer}
+\label{sec:smt}
+
+This is a tool, not a theorem, and the section labels it as such. The
+eight verification conditions the flat capstone consumes
+(\S\ref{sec:cvcs}, \lean{flat\_ra\_linearizable3\_eq}) are, for a flat
+instance, algebraic enough to hand to an SMT solver, and the \code{smt/}
+layer (tasks \#99/\#49) does exactly that: per instance it discharges the
+eight by z3, via unconditional laws that each \emph{imply} the
+corresponding conditioned VC (the \lean{DeltaVCs3} on-ramp for the
+feasible laws, \lean{all\_comm} for the causal-delta bound). This is
+\emph{translation validation}: the Lean metatheory stays the source of
+truth, and the trust gap is the fidelity of the hand-mirrored z3 term to
+the Lean signature, closed by calibration rather than by a verified
+translator.
+
+\paragraph{Calibration, exact against Lean.} Four shapes span the space:
+Counter/PN (numeric group), GSet (set lattice), LWW (timestamp lex), and
+ORSet (instance-set with kill sets, non-commuting). The first four return
+UNSAT (VC valid) on all eight, matching their Lean discharges exactly.
+The OR-set is the informative one: six of eight are push-button, and the
+two that come back \code{sat} are precisely the two that are
+\emph{configuration-conditioned in Lean} (its \code{feasible\_local\_%
+redistribute}, which needs canonical-state tag-freshness, and
+\code{CDVC3}, which needs the maximal-remove trichotomy). Their
+unconditional over-approximation is genuinely false, so the solver's
+\code{sat} is not a mismatch with Lean but a precise identification of the
+two VCs that required hand proof. Five deliberately broken mutants (drop
+the $-l$ in a counter merge, \code{max}-merge a PN, project a GSet merge,
+arbitrate LWW on the timestamp alone, drop the $\neg l$ guard in the
+OR-set) are each caught with a readable countermodel.
+
+\paragraph{The \#49 loop, and the normal form it forced.} The success
+metric was a remove-wins set whose remove-records are garbage-collected
+against the LCA. Its literal specification comes back \code{sat} on both
+feasible-redistribute laws, and the loop's finding is why: the
+LCA-conditioned supersession drop is \emph{order-sensitive} (whether a
+remove is collected depends on adds introduced by the very delta being
+redistributed), so the merge is not a convergent semilattice and the
+delta laws fail unconditionally, with a countermodel exhibited. The
+repair the loop forces is a \emph{normal form}: normalize each element's
+remove-records to the per-element maximum timestamp (a remove superseded
+by a higher one is intrinsically absent), and likewise its adds; the
+merge becomes a product of two \code{max}-semilattices, LCA-blind, and all
+eight VCs then discharge push-button, zero hand proof, with the semantics
+preserved exactly (an element is present iff its maximum add strictly
+exceeds its maximum remove). Two further kill-tests (eager GC without the
+LCA guard; \code{min}-ing the remove timestamp) are refuted with
+countermodels. The SMT loop therefore did not merely certify \#49's spec;
+it refuted the literal one and pushed the design to the max-timestamp
+normal form under which the whole bundle is push-button.
+
+\paragraph{Recommendation.} The right integration is certificate replay:
+use the SMT layer as a pre-flight oracle that tells a new flat instance's
+author instantly which VCs hold and which need conditioning (the
+OR-set-style boundary) and produces the countermodel when a design is
+broken, with a thin Lean tactic re-proving the UNSAT cells natively (most
+already close by \code{omega} or \code{cases <;> rfl}). The residual hand
+proof then shrinks to exactly the configuration-conditioned cells the
+triage flags --- for the whole commuting class, and for the repaired
+\#49 design, empty.
+
+%======================================================================
 \part{Open questions and the mechanization map}
 %======================================================================
 
@@ -5579,31 +6014,55 @@ where to look: closure members reachable only through non-head
 prune-time versions.
 \end{openq}
 
-\begin{openq}[evidence certificates for SettledAt]
+\begin{openq}[open membership and certificate transport for stability]
 \label{oq:evidence}
-The stability gate (\S\ref{sec:stability}) is discharged by evidence
-commits: the compacting version has heard from every replica since the
-cut. Two operational gaps remain. Open membership: the evidence
-quantifies over a known replica set, and replica creation after a
-compaction is policy-gated rather than derived; a model where the
-replica set itself is a grow-only MRDT could make the gate a theorem.
-And certificate transport: can a replica hand a peer a compact,
-checkable certificate of SettledAt (a frontier vector plus the
-evidence commits) so the callback can fire at nodes that did not
-compute the frontier themselves? The commit-shaped-not-event-shaped
-erratum constrains the answer: the certificate must name commits, since
-an event-set summary can miss the pull that carries no new events yet
-opens the gate.
+The stability gate is no longer assumed. On an honestly reachable
+configuration $\mathrm{AllHeardSince}$ (a purely local frontier fact)
+implies $\mathrm{SettledAt}$ (\lean{settledAt\_of\_allHeard},
+\S\ref{sec:stability}), and the running system realizes the theorem as
+\code{compactStable}'s refuse-then-fire (\S\ref{sec:runtime}). Two
+operational gaps remain. \emph{Open membership}: the certificate
+quantifies over a known replica set, and a replica that joins after a
+compaction is the theorem's one breaker ($\mathrm{createReplica}$),
+handled today by a policy gate; a model where the replica set is itself a
+grow-only MRDT could turn the gate into a theorem. \emph{Certificate
+transport}: can a replica hand a peer a compact, checkable certificate of
+SettledAt (a frontier vector plus the evidence commits) so the callback
+fires at nodes that did not compute the frontier themselves? The
+commit-shaped-not-event-shaped erratum constrains the answer: the
+certificate must name commits, since an event-set summary can miss the
+pull that carries no new events yet opens the gate.
+\end{openq}
+
+\begin{openq}[the honesty-rebasing lemma $(\ast)$]
+\label{oq:starlemma}
+The single-epoch honesty gap (T3: the re-coded history is honest only
+\emph{modulo} the coordinate order-embedding, \S\ref{sec:recoding}) and
+the multi-epoch $\mathrm{CompatChain}$ residue (\S\ref{sec:compactED})
+are the \emph{same} obligation, and both of their supporting halves are
+already mechanized: the causal-stability half (\lean{nested\_cuts\_settled},
+from $\mathrm{settledAt\_of\_allHeard}$ and frontier antitonicity) and the
+order-iso freshness half (\lean{rED\_hocc\_fresh}). What remains is one
+lemma $(\ast)$: exhibit an epoch-$2$ configuration honest \emph{modulo}
+the order-embedding $F_1$, so that anchored-existence re-derives at the
+epoch boundary and the capstone re-invokes natively in the new epoch.
+This is the whole remaining \emph{single-replica} compaction protocol, and
+Open Question~\ref{oq:epochdag} is the multi-replica layer above it. A
+refutation would be as informative: an honest re-coded configuration that
+no order-embedding rebasing can certify.
 \end{openq}
 
 \begin{openq}[concurrent compaction: the epoch DAG]
 \label{oq:epochdag}
 The mechanized stability metatheorem covers compaction epochs that are
-linearized per replica (the v1 runtime refuses compaction off the
-newest epoch), and VC-S6 gives observational coherence for nested cuts
-on one lineage. Concurrent \emph{divergent} compactions are the open
-protocol half: two replicas compact at incomparable cuts $S$, $S'$, and
-their states must still merge. The conjectured shape is an epoch DAG
+linearized per replica (the v1 runtime, and the demo's checkpoint
+barrier, refuse compaction off the newest epoch), VC-S6 gives
+observational coherence for nested cuts on one lineage, and the
+single-replica multi-epoch composition is now closed up to the shared
+honesty-rebasing lemma (Open Question~\ref{oq:starlemma}). Concurrent
+\emph{divergent} compactions are the remaining, multi-replica, protocol
+half: two replicas compact at incomparable cuts $S$, $S'$, and their
+states must still merge. The conjectured shape is an epoch DAG
 with common-refinement translation (translate both sides to the join
 epoch before merging), and the remap species makes the obligation
 concrete: two rank-renumberings of overlapping sibling groups must
@@ -5776,29 +6235,27 @@ function unimplementable over retention-free states, the general form
 of ``no policy reaches Shesha''?
 \end{openq}
 
-\begin{openq}[the run-table theorems]
+\begin{openq}[the sided run table, and the batched-apply engineering face]
 \label{oq:runtable}
-The run table (\S\ref{sec:runtable}) is machine-validated and its Lean
-bill is fixed by the implementation pass: \emph{T-repr}, the
-representation isomorphism between canonical tables and kept trees,
-stated post-epoch over labels, sides, and liveness, deliberately not
-timestamps (rank ordinals forget time; a timestamp-preserving statement
-is false after the first epoch); \emph{T-tail}, the tail-attachment
-lemma, proved once and consumed by the rest; \emph{T-cmp}, the two-case
-path comparator equals the fold's key order, parametric in the tie
-oracle exactly as the chain comparator is; \emph{T-walk}, the
-structural walk equals the display sequence; \emph{T-mut}, six
-mutation-commutes-with-canonicalization simulation lemmas, of which the
-coalesce half is the one a paper proof would hand-wave and the
-vanished-anchor rule must take the op's carried coordinate as input;
-and \emph{T-epoch}, composition with the re-coding cluster, the only
-clause with a stability hypothesis. Nothing conceptually new is
-expected; the value is the usual one, that the mutation rules were
-already corrected twice by hand-derivation during design. The
-cross-system benchmark (\S\ref{sec:crossbench}) adds an engineering
-face to the same item: a shipped run-table serializer would turn the
-projection column from measured-in-model into measured, and a transient
-or batched apply path would remove the interface-inherited per-op copy.
+The \emph{one-sided} run table (\S\ref{sec:runtable}) is now mechanized
+(\code{RunTable.lean}): T-tail (\lean{tail\_attachment}), T-repr as a
+genuine bijection ($\mathrm{tableOf}/\mathrm{stateOf}$ mutually inverse on
+canonical tables, over labels, sides, and liveness, deliberately not
+timestamps), T-cmp (\lean{cmpTable\_eq\_keyLt}), T-walk
+(\lean{walk\_display}), T-mut (split, liveness split, materialize, and the
+forced coalesce), and the single stability-conditioned clause T-epoch
+(\lean{runTable\_epoch}). What remains theorem-side is the \emph{sided}
+run table: its structural core is in place (\code{SidedRunTable.lean}:
+\lean{stail\_attachment}, an explicit side field, the band-order
+comparator seed), and the full sided repr iso and walk mirror the
+one-sided development. Two engineering faces of the same item, both now
+half-closed by the shipped artifact: task~\#104's serializer already
+turned the projection column from measured-in-model into measured bytes
+(\S\ref{sec:perf}), so what is left there is a delta/op \emph{wire format}
+for sync (the concurrent payload column is still in-process) and a
+transient or \emph{batched apply} path to remove the interface-inherited
+$O(\text{live set})$ per-op copy that dominates apply latency, neither of
+which touches the verified semantics.
 \end{openq}
 
 \begin{openq}[FugueMax tag re-mapping]
@@ -5939,8 +6396,9 @@ queue over virtual merges (\S\ref{sec:vlca}) & \lean{queue\_ra\_linearizable3\_V
 rehoming Eq capstone over \lean{Step3V} (stress test) & \lean{rga\_ra\_linearizable3\_eq\_V} & \lean{MRDT\_Instances/RGA\_Rehoming/RA\_Lin\_V.lean} \\
 commit GC: keep set + safety (\S\ref{sec:gc}) & \lean{keepSet}, \lean{gc\_safety}, \lean{lca\_not\_dropped} & \lean{Metatheory/GC\_Safety.lean} \\
 GC under virtual merges & \lean{mcasClosure}, \lean{keepSetV}, \lean{gc\_safetyV} & \lean{Metatheory/GC\_Safety.lean} \\
-SettledAt + evidence discharge (\S\ref{sec:stability}) & \lean{SettledAt}, \lean{settledAt\_of\_evidence} & \lean{Metatheory/Stability\_VC.lean} \\
-stability VC bundle + metatheorem & \lean{StabilityVC}, \lean{stability\_simulation}, \lean{stability\_ra\_inherited} & \lean{Metatheory/Stability\_VC.lean} \\
+bounded-state GC: clock swap (\S\ref{sec:gc}) & \lean{clockPrune}, \lean{ClockCoherent}, \lean{clockLCA\_sound}, \lean{gc\_safety\_bounded} & \lean{Metatheory/GC\_BoundedState.lean} \\
+SettledAt discharged from the frontier (\S\ref{sec:stability}) & \lean{AllHeardSince}, \lean{settledAt\_of\_allHeard} & \lean{Metatheory/EvidenceDischarge.lean} \\
+SettledAt def + stability bundle + metatheorem & \lean{SettledAt}, \lean{StabilityVC}, \lean{stability\_simulation}, \lean{stability\_ra\_inherited} & \lean{Metatheory/Stability\_VC.lean} \\
 OR-set stability instance & \lean{orStabilityVC}, \lean{ORSet\_stability\_reads} & \lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean} \\
 static drop set refuted & \lean{static\_drop\_unsound} & \lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean} \\
 \midrule
@@ -5974,7 +6432,12 @@ re-coding cluster, T1--T3 + collapse (\S\ref{sec:recoding}) & \lean{eRecode\_app
 SettledAt bridge, remap species & \lean{eRecode\_settled\_bridge} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_Stability\_Bridge.lean} \\
 anchors factor at the cut & \lean{anchorsFactorBeyond\_of\_anchored}, \lean{eRecode\_settled\_bridge\_honest} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_AnchorsFactor.lean} \\
 verified concrete compaction (\S\ref{sec:compactED}) & \lean{compactEliasDelta\_settled\_reads} + in-flight SPOTs & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompactEliasDelta.lean} \\
-run table (\S\ref{sec:runtable}; Lean owed, OQ~\ref{oq:runtable}) & --- & \code{whiteboard/litmus/run\_table\_measure.py} \\
+spine fusion (\S\ref{sec:compactED}) & \lean{compactThenFuse\_reads} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_Fusion.lean} \\
+merge-vs-remap (VC-S4, \S\ref{sec:compactED}) & \lean{merge\_remap\_congr} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_MergeCongr.lean} \\
+multi-epoch composition (\S\ref{sec:compactED}) & \lean{StablePrefixMap.comp}, \lean{multiEpoch\_settled\_reads}, \lean{naive\_composition\_collides} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_MultiEpoch.lean} \\
+nested settled cuts ($(\ast)$'s closed halves) & \lean{nested\_cuts\_settled}, \lean{rED\_hocc\_fresh} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompatChain.lean} \\
+run table, one-sided (\S\ref{sec:runtable}) & \lean{tail\_attachment}, \lean{canonical\_tableOf}, \lean{cmpTable\_eq\_keyLt}, \lean{walk\_display}, T-mut & \lean{Sal/MRDTs/RGA\_Embed/RunTable.lean}, \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_RunTable.lean} \\
+run table, sided core (full iso owed, OQ~\ref{oq:runtable}) & \lean{stail\_attachment}, \lean{sided\_keyLt\_iff\_schainBefore} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Part III: the sequential-specification campaign}} \\
 tier 1: eleven flat RDTs & \lean{$\ast$\_seq\_sound} (per RDT) & \lean{MRDT\_Instances/SeqSpec\_Flat.lean} \\
@@ -5987,6 +6450,13 @@ render fix theorem & \lean{renderIds\_del} & \lean{MRDT\_Instances/Peritext\_Emb
 negative: rehoming RGA & \lean{rehoming\_seq\_refuted} & \lean{MRDT\_Instances/RGA\_Rehoming/RGA\_SeqSpec\_Refuted.lean} \\
 negative: rehoming Peritext & \lean{fused\_delete\_reformats\_survivor} & \lean{MRDT\_Instances/Peritext\_Rehoming/Peritext\_Read.lean} \S10 \\
 negative: Shesha merge & \lean{Shesha\_Rows\_Refuted} & \lean{MRDT\_Instances/Shesha/Shesha\_Rows\_Refuted.lean} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{The runtime pillar: engineering artifacts (unverified, mirror the verified kernel)}} \\
+p2p runtime replica (\S\ref{sec:runtime}) & \code{DistributedReplica}, \code{compactStable} & \code{runtime/src/replica.js} \\
+run-table serializer (\S\ref{sec:perf}) & \code{encode}/\code{decode}, \code{accountingBits} & \code{runtime/src/serialize.js} \\
+git persistence + p2p demo (\S\ref{sec:runtime}) & \code{persist}/\code{load}, \code{WsTransport} & \code{p2p-demo/src/} \\
+cross-system benchmark (\S\ref{sec:perf}) & the matrix & \code{benchmarks/} \\
+SMT discharge --- a \emph{tool}, not a theorem (\S\ref{sec:smt}) & z3 translation-validation of the 8 flat VCs & \code{smt/} \\
 \bottomrule
 \end{tabular}}
 \end{center}
