@@ -47,6 +47,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Fusion
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MergeCongr
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_CompatChain
+import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_HonestyRebase
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_MarkIntent
 import Sal.MRDTs.RGA_Embed.SidedRunTable
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge_V
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin_V
