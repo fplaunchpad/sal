@@ -22,6 +22,8 @@ const conc = files.filter((f) => f.startsWith('concurrent-')).map(read);
 const churn = files.filter((f) => f.startsWith('churn-')).map(read);
 const projection = existsSync(join(RESULTS, 'projection.json'))
   ? read('projection.json') : null;
+const shipped = existsSync(join(RESULTS, 'run_table_shipped.json'))
+  ? read('run_table_shipped.json') : null; // task #104 SHIPPED run-table serializer
 
 const kb = (b) => b >= 1048576 ? `${(b / 1048576).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`;
 const us = (v) => v >= 1000 ? `${(v / 1000).toFixed(2)} ms` : `${v.toFixed(2)} us`;
@@ -85,6 +87,15 @@ for (const t of traces) {
         (v.bytes / meta.finalChars).toFixed(1),
         v.timeMs != null ? `${v.timeMs.toFixed(1)} ms` : '--',
         NOTES[v.label] ?? v.note ?? '']);
+    }
+    if (r.system === 'sal' && shipped?.traces?.[t]) {
+      const sh = shipped.traces[t];
+      row(['ours (run-table serialized, SHIPPED)', 'run-table-serialized', sh.shipped_bytes.raw,
+        (sh.shipped_bytes.raw / meta.finalChars).toFixed(1), '--',
+        `live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection`]);
+      row(['ours (run-table serialized, SHIPPED)', 'run-table-serialized+compacted', sh.shipped_bytes.compacted,
+        (sh.shipped_bytes.compacted / meta.finalChars).toFixed(1), '--',
+        `SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at ${(sh.shipped_bytes.compacted / meta.finalChars).toFixed(1)} B/char (< the model's ${(sh.projection_save_bytes.composed / meta.finalChars).toFixed(1)} B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops)`]);
     }
     if (r.system === 'sal' && projection?.traces?.[t]) {
       const p = projection.traces[t];

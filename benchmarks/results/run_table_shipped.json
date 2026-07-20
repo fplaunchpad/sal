@@ -1,0 +1,174 @@
+{
+ "tool": "run_table_shipped.mjs (task #104)",
+ "note": "SHIPPED run-table serializer bytes (runtime/src/serialize.js) over the as-shipped final state and its settled-cut compaction; gates + projection cross-check. Save size is a function of the final state, built here by a fast mutable replay (identical to the seq.mjs harness state).",
+ "traces": {
+  "friendsforever_flat": {
+   "chars": 21362,
+   "shipped_bytes": {
+    "raw": 31457,
+    "compacted": 24126
+   },
+   "shipped_bytes_per_char": {
+    "raw": 1.4725681116000375,
+    "compacted": 1.1293886340230315
+   },
+   "model_bits": {
+    "raw": 472745,
+    "composed": 476343
+   },
+   "projection_save_bytes": {
+    "raw": 80456,
+    "composed": 80905
+   },
+   "entries": {
+    "raw": 3233,
+    "composed": 1189
+   },
+   "reconciliation": {
+    "recoverable_bits_raw": 392009,
+    "recoverable_bits_composed": 454256,
+    "shipped_meta_bits_raw": 80736,
+    "shipped_meta_bits_composed": 22087,
+    "identity_holds": true
+   },
+   "projection_match": {
+    "raw": true,
+    "composed": true
+   },
+   "gates": {
+    "readOk": true,
+    "walkRawOk": true,
+    "walkCmpOk": true,
+    "roundTripRawOk": true,
+    "roundTripCmpOk": true,
+    "compTextOk": true
+   }
+  },
+  "clownschool_flat": {
+   "chars": 21148,
+   "shipped_bytes": {
+    "raw": 32782,
+    "compacted": 22438
+   },
+   "shipped_bytes_per_char": {
+    "raw": 1.5501229430679024,
+    "compacted": 1.0609986759977303
+   },
+   "model_bits": {
+    "raw": 474128,
+    "composed": 478753
+   },
+   "projection_save_bytes": {
+    "raw": 80414,
+    "composed": 80993
+   },
+   "entries": {
+    "raw": 4029,
+    "composed": 573
+   },
+   "reconciliation": {
+    "recoverable_bits_raw": 381084,
+    "recoverable_bits_composed": 468457,
+    "shipped_meta_bits_raw": 93044,
+    "shipped_meta_bits_composed": 10296,
+    "identity_holds": true
+   },
+   "projection_match": {
+    "raw": true,
+    "composed": true
+   },
+   "gates": {
+    "readOk": true,
+    "walkRawOk": true,
+    "walkCmpOk": true,
+    "roundTripRawOk": true,
+    "roundTripCmpOk": true,
+    "compTextOk": true
+   }
+  },
+  "seph-blog1": {
+   "chars": 56769,
+   "shipped_bytes": {
+    "raw": 88120,
+    "compacted": 72848
+   },
+   "shipped_bytes_per_char": {
+    "raw": 1.5522556324754708,
+    "compacted": 1.283235568708274
+   },
+   "model_bits": {
+    "raw": 1476002,
+    "composed": 1314975
+   },
+   "projection_save_bytes": {
+    "raw": 241270,
+    "composed": 221141
+   },
+   "entries": {
+    "raw": 8733,
+    "composed": 6270
+   },
+   "reconciliation": {
+    "recoverable_bits_raw": 1225220,
+    "recoverable_bits_composed": 1186374,
+    "shipped_meta_bits_raw": 250782,
+    "shipped_meta_bits_composed": 128601,
+    "identity_holds": true
+   },
+   "projection_match": {
+    "raw": true,
+    "composed": true
+   },
+   "gates": {
+    "readOk": true,
+    "walkRawOk": true,
+    "walkCmpOk": true,
+    "roundTripRawOk": true,
+    "roundTripCmpOk": true,
+    "compTextOk": true
+   }
+  },
+  "automerge-paper": {
+   "chars": 104852,
+   "shipped_bytes": {
+    "raw": 130300,
+    "compacted": 120276
+   },
+   "shipped_bytes_per_char": {
+    "raw": 1.2427040018311524,
+    "compacted": 1.1471025826879793
+   },
+   "model_bits": {
+    "raw": 2491316,
+    "composed": 2507561
+   },
+   "projection_save_bytes": {
+    "raw": 416267,
+    "composed": 418298
+   },
+   "entries": {
+    "raw": 7451,
+    "composed": 5918
+   },
+   "reconciliation": {
+    "recoverable_bits_raw": 2287763,
+    "recoverable_bits_composed": 2384194,
+    "shipped_meta_bits_raw": 203553,
+    "shipped_meta_bits_composed": 123367,
+    "identity_holds": true
+   },
+   "projection_match": {
+    "raw": true,
+    "composed": true
+   },
+   "gates": {
+    "readOk": true,
+    "walkRawOk": true,
+    "walkCmpOk": true,
+    "roundTripRawOk": true,
+    "roundTripCmpOk": true,
+    "compTextOk": true
+   }
+  }
+ }
+}

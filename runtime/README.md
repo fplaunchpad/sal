@@ -141,6 +141,36 @@ follow-on. Epochs are also linearized per runtime (concurrent divergent
 compactions are the deferred protocol half,
 `whiteboard/embed-recoding-note.md` section 6).
 
+## Save/load: the run-table serializer (task #104)
+
+`src/serialize.js` is the SHIPPED lossless serializer, the successor to the
+JSON/binary absolute-chain saves. `encode(state) -> Uint8Array`,
+`decode(bytes) -> state`. It builds the canonical RUN TABLE of the state
+(the run-table PROJECTION of `whiteboard/run-table-note.md` / task #73, made
+real): decode every live record's coordinate into a shared kept tree, cut it
+into maximal FUSIBLE chains (a node's unique kept child at delta 1 and equal
+liveness, side vacuously R), and address each record as `(run-id, offset)`.
+The buffer is a varint count, a mode byte, bit-packed per-entry headers
+(liveness, parent ref, Elias-delta head delta, Elias-delta length), then the
+elements (one byte/char for single-code-point elements). The run-id, offset
+and parent-offset are NOT stored: records sit positionally in their run and
+the parent-offset is the tail by the tail-attachment lemma.
+
+Lossless: coordinates reconstruct exactly, so `decode(encode(s))` reads
+identically to `s` (ids are the (ts,agent) tie-break the representation does
+not encode; decode assigns fresh ids and coordinates are injective).
+`accountingBits(state)` reproduces `run_table_measure.py`'s bit accounting
+BIT-FOR-BIT (the projection), and the shipped metadata bit count equals that
+total minus the recoverable positional fields it drops -- an identity the
+tests assert. `tableWalk(table)` reproduces the display without materializing
+chains. Compose it AFTER `compactEliasDelta` for the smallest output: on the
+josephg traces it lands at 1.1-1.3 bytes/char (an order of magnitude below
+the packed absolute-chain estimate, at production save size). Tests:
+`test/serialize.test.js` (directed accounting vs the Python model, size
+ratios, coalesce/tail-attachment, and a 120-trial merge/delete round-trip
+PBT). Measured in `benchmarks/` (`tools/run_table_shipped.mjs`, column 3 of
+the save-size matrix).
+
 ## The head-sync discipline, and why
 
 The GC is sound ONLY if every merge is between two CURRENT heads. This is

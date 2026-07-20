@@ -23,8 +23,18 @@
 
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
+import { encode as rtEncode } from '../../../runtime/src/serialize.js';
 import { Runtime } from '../../../runtime/src/runtime.js';
 import { timed } from '../bench.mjs';
+
+/** Task #104 SHIPPED run-table serializer: encode(state) -> Uint8Array.
+ *  Realizes the task #73 run-table PROJECTION as actual bytes: entry headers
+ *  (liveness, parent ref, head delta, length) bit-packed + records stored
+ *  positionally (run-id and offset positional, parent-offset derivable by the
+ *  tail-attachment lemma) + text packed at 1 byte/char. Lossless: decode
+ *  reads identically (runtime/test/serialize.test.js). This is the shipped
+ *  successor to the absolute-chain json-shipped/binary-estimate columns. */
+export function saveRunTable(state) { return rtEncode(state); }
 
 const dt = embedRGA;
 
@@ -95,9 +105,11 @@ export function mkAdapter() {
     saveVariants(doc) {
       return [
         { label: 'json-shipped', mk: () => saveJson(doc.state),
-          note: 'JSON, coord bit-strings at 1 byte/bit (shipped repr)' },
+          note: 'live state only; coord bit-strings at 1 byte/bit (shipped)' },
         { label: 'binary-estimate', estimate: () => binaryEstimate(doc.state),
-          note: 'packed-bits estimate, computed not implemented' },
+          note: 'live state only; packed coord bits + varint ids (computed estimate, no shipped encoder)' },
+        { label: 'run-table-serialized', mk: () => saveRunTable(doc.state),
+          note: 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read' },
       ];
     },
     load(data) { return loadJson(data); },
@@ -163,6 +175,8 @@ export function mkAdapter() {
           return [
             { label: 'json-shipped', mk: () => saveJson(st) },
             { label: 'binary-estimate', estimate: () => binaryEstimate(st) },
+            { label: 'run-table-serialized', mk: () => saveRunTable(st),
+              note: 'task #104 SHIPPED run-table binary (lossless)' },
           ];
         },
         compactFinal() {

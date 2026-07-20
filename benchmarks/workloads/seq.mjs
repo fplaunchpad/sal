@@ -71,11 +71,14 @@ let compaction = null;
 if (adapter.compact) {
   const { ms, stats, compacted } = adapter.compact(d);
   const compSaves = [];
-  const { saveJson, binaryEstimate } = await import('../lib/adapters/sal.mjs');
+  const { saveJson, binaryEstimate, saveRunTable } = await import('../lib/adapters/sal.mjs');
   const [json, jsonMs] = timed(() => saveJson(compacted.state));
   compSaves.push({ label: 'json-shipped+compacted', bytes: byteLength(json), timeMs: jsonMs });
   compSaves.push({ label: 'binary-estimate+compacted',
     bytes: binaryEstimate(compacted.state), timeMs: null, estimated: true });
+  const [rt, rtMs] = timed(() => saveRunTable(compacted.state));
+  compSaves.push({ label: 'run-table-serialized+compacted', bytes: byteLength(rt), timeMs: rtMs,
+    note: 'task #104 SHIPPED run-table binary over the compacted state (lossless)' });
   const { embedRGA } = await import('../../runtime/src/datatypes/embedRGA.js');
   const compTextOk = embedRGA.read(compacted.state).join('') === doc.endContent;
   compaction = { ms, stats, saves: compSaves, textOk: compTextOk };

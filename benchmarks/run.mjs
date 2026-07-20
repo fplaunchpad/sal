@@ -46,6 +46,10 @@ if (!skipProjection) {
   jobs.push({ id: 'projection', cmd: 'python3',
     argv: [join(HERE, 'tools', 'run_table_projection.py'), ...SEQ_TRACES] });
 }
+// SHIPPED run-table serializer (task #104): fast final-state serialization +
+// round-trip gates + projection cross-check. Runs after projection.
+jobs.push({ id: 'run-table-shipped', cmd: 'node',
+  argv: [join(HERE, 'tools', 'run_table_shipped.mjs'), ...SEQ_TRACES] });
 jobs.push({ id: 'summarize', cmd: 'node', argv: [join(HERE, 'tools', 'summarize.mjs')] });
 
 const failures = [];
