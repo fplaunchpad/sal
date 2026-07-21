@@ -152,8 +152,10 @@ content-addressed, whose garbage collectors are the executable form of
 the GC-safety and stability theorems and whose git-backed store persists
 the commit DAG; a performance section measures the shipped artifact
 against Yjs, Automerge, Loro, and list-positions on the standard
-editing-trace corpus, honest about a three-to-four-orders apply-latency
-loss to an interface-inherited state copy and about the design's
+editing-trace corpus, records the experiment that closed its one large
+loss (a three-to-four-orders apply-latency gap, diagnosed as an
+interface-inherited state copy and removed by a persistent-map container
+swap with every observable byte unchanged), and reports the design's
 categorical storage win, the only save that shrinks on delete; and an SMT
 translation-validation layer that makes the flat verification conditions
 push-button. Everything stated as a theorem is mechanized in
@@ -5671,9 +5673,27 @@ across the wasm boundary (Automerge and Loro hold state in wasm linear
 memory, invisible to the JS heap counter). Labels throughout distinguish
 \emph{measured} from \emph{measured-in-model}.
 
-\paragraph{The honest headline: apply latency.} Where we lose, as
-shipped, is per-character apply, by three to four orders of magnitude
-(median apply, by trace and final size):
+\paragraph{The former headline loss: apply latency, and the experiment
+that closed it.} As first shipped, per-character apply lost to
+production by three to four orders of magnitude, and the previous
+revision of this section diagnosed the loss as
+\emph{interface-inherited}: the persistent \code{apply} returned a fresh
+\code{Map}, an $O(\text{live set})$ copy per keystroke, linear in the
+document (order machinery contributes nothing measurable: minting a
+coordinate is $O(1)$ and inserts never compare), and predicted that a
+transient or batched apply path would reach the microsecond class
+without touching the verified semantics. Task~\#111 ran that
+experiment: the state container is now a persistent hash-array-mapped
+trie (\code{pmap.js}, dependency-free; \code{set} returns a new root
+sharing all but an $O(\log n)$ path, with transients for batched
+application and deterministic sorted iteration), the three-way merge
+became a delta merge from the LCA, and nothing else moved. The swap is
+licensed by \lean{tableOf\_congr} (the state is a function of the
+live-chain set); the datatype interface, commit granularity, and wire
+format are unchanged, and every save byte, fingerprint, and content id
+is bit-identical (92 runtime plus 10 p2p tests, the serializer gates,
+and the Python projection cross-check). The diagnosis was confirmed
+with margin (median apply, by trace and final size):
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -5681,7 +5701,8 @@ shipped, is per-character apply, by three to four orders of magnitude
 apply, median & \code{ff\_flat} & \code{cs\_flat} & \code{seph} & \code{am-paper} \\
 (final chars) & (21k) & (21k) & (57k) & (105k) \\
 \midrule
-ours (embed RGA, shipped) & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
+ours (shipped, persistent HAMT) & 0.50\,$\mu$s & 0.38\,$\mu$s & 3.96\,$\mu$s & 4.08\,$\mu$s \\
+ours, copied-Map interface (pre-\#111) & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
 Yjs & 1.5\,$\mu$s & 1.7\,$\mu$s & 1.4\,$\mu$s & 1.4\,$\mu$s \\
 Automerge & 24\,$\mu$s & 26\,$\mu$s & 27\,$\mu$s & 27\,$\mu$s \\
 Loro & 0.6\,$\mu$s & 0.8\,$\mu$s & 0.6\,$\mu$s & 0.5\,$\mu$s \\
@@ -5690,23 +5711,25 @@ list-positions & 0.6\,$\mu$s & 0.7\,$\mu$s & 1.0\,$\mu$s & 0.7\,$\mu$s \\
 \end{tabular}
 \end{center}
 
-\noindent The diagnosis is in the trend: ours grows with document size
-while Automerge is flat and the rest are flat and sub-microsecond. The
-persistent \code{apply} returns a fresh Map, an $O(\text{live set})$ copy
-per op, so cost is linear in the document. This is
-\emph{interface-inherited} --- the persistent-state datatype interface the
-verified semantics is stated over --- not order machinery, and a transient
-or batched apply path would move ours toward the microsecond class without
-touching the verified semantics. Load sits at 31 to 253~ms (JSON parse
-plus the coordinate sort) against Loro's sub-millisecond snapshot load,
-though within range of Automerge's full-history load (on
-\code{automerge-paper}, ours 253~ms versus Automerge's 319~ms). Retained
-heap after replay is small (2 to 12~MB: absolute coordinates share
-prefixes structurally as cons strings, so the bit cost materializes only
-at serialization), paid for as allocation churn.
+\noindent That is 418 to 913$\times$ on the medians (whole-trace replay
+on \code{automerge-paper}: 713\,s down to 1.94\,s), landing in the same
+decade as Yjs and Loro, with Automerge now the slowest applier in the
+table. The residual size trend in our row (0.4 to 4\,$\mu$s) is not the
+datatype: instrumented separately, the datatype \code{apply} is a flat
+0.49\,$\mu$s mean on \code{automerge-paper}, and the growth is the
+benchmark adapter's own $O(n)$ position-to-id bookkeeping (an id-array
+splice per op), outside the datatype. Allocation behavior improved with
+the copies gone: peak heap on \code{automerge-paper} fell from 433 to
+132\,MB, with retained heap at 4 to 22\,MB (the trie retains
+structurally what the copies used to churn; absolute coordinates still
+share prefixes as cons strings, so the bit cost materializes only at
+serialization). Load sits at 38 to 289~ms (JSON parse plus the
+coordinate sort) against Loro's sub-millisecond snapshot load, though
+within range of Automerge's full-history load (on \code{automerge-paper},
+ours 289~ms versus Automerge's 319~ms).
 
 \paragraph{Where we compete: merge and sync.} The unique-LCA three-way
-merge under the head-sync runtime is Yjs-level and 20 to 25$\times$ faster
+merge under the head-sync runtime is Yjs-level and 17 to 59$\times$ faster
 than the wasm libraries in these sessions:
 
 \begin{center}\small
@@ -5715,7 +5738,7 @@ than the wasm libraries in these sessions:
  & \multicolumn{2}{c}{sync median} & \multicolumn{2}{c}{wire payload/sync} \\
 system & freq & bulk & freq & bulk \\
 \midrule
-ours (embed RGA, shipped) & 73\,$\mu$s & 731\,$\mu$s & \multicolumn{2}{c}{in-process$^\dagger$} \\
+ours (embed RGA, shipped) & 107\,$\mu$s & 754\,$\mu$s & \multicolumn{2}{c}{in-process$^\dagger$} \\
 Yjs & 90\,$\mu$s & 1.13\,ms & 1.6\,KB & 15.1\,KB \\
 Automerge & 1.82\,ms & 18.3\,ms & \multicolumn{2}{c}{in-process} \\
 Loro & 6.29\,ms & 17.1\,ms & 0.4\,KB & 4.6\,KB \\
@@ -5726,9 +5749,16 @@ list-positions & 34\,$\mu$s & 626\,$\mu$s & 6.4\,KB & 123.6\,KB \\
 
 \noindent (\code{freq} = 60 rounds of 25 ops/replica, final 1804 chars;
 \code{bulk} = 6 rounds of 500 ops/replica, final 3604 chars; commit GC
-runs outside the timed window at millisecond totals.) The honest caveat:
-these are small documents, and our merge is $O(\text{live set})$, so the
-numbers do not extrapolate to 100k-character documents. $^\dagger$The
+runs outside the timed window at millisecond totals.) Two honest
+caveats. First, the HAMT swap shows up here as a mild regression at this
+scale: the pre-\#111 \code{freq} sync median was 73\,$\mu$s, and per-id
+lookups are now $O(\log n)$ trie walks rather than $O(1)$ Map hits (the
+same swap cut the local op in this workload from 26 to 2.4\,$\mu$s, so
+the trade buys three orders on typing for a fraction of one on small-doc
+sync). Second, these are small documents, and while the delta merge no
+longer \emph{rebuilds} the live set in memory, it still scans
+$O(\text{live set})$ in time, so the numbers do not extrapolate to
+100k-character documents. $^\dagger$The
 shared-store benchmark merges in-process, so the payload column is not
 applicable; the separate-store wire protocol (\S\ref{sec:runtime}) ships
 a delta that is a function of that round's ops, constant across rounds
@@ -5761,7 +5791,10 @@ run-table projection (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
 \textbf{24 / 22 / 73 / 120~KB} for the four traces, down from the
 as-shipped JSON's \textbf{35 / 53 / 170 / 243~MB}: four orders of
 magnitude, lossless (\code{decode(encode(s))} reads identically, gated on
-every trace and by a 120-trial merge/delete property test). The
+every trace and by a 120-trial merge/delete property test). Its
+save-time cost is the honest column: the run-table encode takes 0.2 to
+1.7\,s across the traces where production saves are milliseconds,
+pre-existing and unchanged by the apply fast path. The
 serializer is anchored to the shipped state, not a different datatype:
 its \code{accountingBits} routine reproduces the projection's bit totals
 bit-for-bit, and the shipped bytes sit \emph{below} the projection
@@ -6252,10 +6285,11 @@ one-sided development. Two engineering faces of the same item, both now
 half-closed by the shipped artifact: task~\#104's serializer already
 turned the projection column from measured-in-model into measured bytes
 (\S\ref{sec:perf}), so what is left there is a delta/op \emph{wire format}
-for sync (the concurrent payload column is still in-process) and a
-transient or \emph{batched apply} path to remove the interface-inherited
-$O(\text{live set})$ per-op copy that dominates apply latency, neither of
-which touches the verified semantics.
+for sync (the concurrent payload column is still in-process); the other
+half closed as task~\#111, whose persistent-HAMT container swap removed
+the interface-inherited $O(\text{live set})$ per-op copy without touching
+the verified semantics and confirmed the diagnosis experimentally
+(\S\ref{sec:perf}).
 \end{openq}
 
 \begin{openq}[FugueMax tag re-mapping]
