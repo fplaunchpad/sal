@@ -55,6 +55,8 @@
 // KeyErrors); its PBT harness only ever anchors on the current read. The
 // port makes the precondition explicit and throws.
 
+import { PMap, isPMap, eachEntry } from '../pmap.js';
+
 /** Unary code: enc(d) = '1'^d '0'. Kept for readability in examples and
  *  for the code-invariance tests; its cost is LINEAR in the delta, and
  *  cross-replica Lamport deltas grow with the GLOBAL op count, so it is
@@ -106,37 +108,64 @@ export function makeEmbedRGA(code = eliasDeltaCode) {
     return code.enc(d);
   };
 
+  // The record an insert op mints in `state` (validation included). Pure:
+  // reads the state through get/has only, so it serves the persistent
+  // apply, the transient applyBatch, and legacy plain-Map states alike.
+  const insRecord = (state, op) => {
+    const { id, el, anchorId } = op;
+    if (state.has(id)) throw new Error(`duplicate insert id ${id}`);
+    let coord;
+    if (anchorId === null || anchorId === undefined) {
+      coord = enc(id); // root anchor sits at ts 0
+    } else {
+      const a = state.get(anchorId);
+      if (!a) {
+        throw new Error(
+          `anchor ${anchorId} not live: honest inserts anchor on the ` +
+          `current read (the applicability precondition)`
+        );
+      }
+      coord = a.coord + enc(id - anchorId);
+    }
+    return Object.freeze({ coord, el });
+  };
+
   return {
     code,
 
-    /** state: Map id -> { coord, el } (immutable; apply/merge3 copy) */
-    init() { return new Map(); },
+    /** state: PMap id -> { coord, el } (persistent: apply/merge3 return new
+     *  maps with structural sharing -- O(log n) per op, no live-set copy).
+     *  Legacy plain-Map states (tests, tools) are still accepted read-only
+     *  and copied on write. */
+    init() { return PMap.empty(); },
 
     apply(state, op) {
-      const s = new Map(state);
+      const p = isPMap(state);
       if (op.type === 'ins') {
-        const { id, el, anchorId } = op;
-        if (s.has(id)) throw new Error(`duplicate insert id ${id}`);
-        let coord;
-        if (anchorId === null || anchorId === undefined) {
-          coord = enc(id); // root anchor sits at ts 0
-        } else {
-          const a = s.get(anchorId);
-          if (!a) {
-            throw new Error(
-              `anchor ${anchorId} not live: honest inserts anchor on the ` +
-              `current read (the applicability precondition)`
-            );
-          }
-          coord = a.coord + enc(id - anchorId);
-        }
-        s.set(id, Object.freeze({ coord, el }));
-      } else if (op.type === 'del') {
-        s.delete(op.id); // pure removal; absent id is a no-op (model: `if d in s`)
-      } else {
-        throw new Error(`unknown embedRGA op type: ${op.type}`);
+        const rec = insRecord(state, op);
+        return p ? state.set(op.id, rec) : new Map(state).set(op.id, rec);
       }
-      return s;
+      if (op.type === 'del') {
+        // pure removal; absent id is a no-op (model: `if d in s`)
+        if (p) return state.delete(op.id);
+        const s = new Map(state);
+        s.delete(op.id);
+        return s;
+      }
+      throw new Error(`unknown embedRGA op type: ${op.type}`);
+    },
+
+    /** Batch apply in ONE transient pass (op-for-op identical to folding
+     *  apply, frozen at the end): for burst ingestion outside the DAG's
+     *  one-op-per-commit granularity. */
+    applyBatch(state, ops) {
+      const t = (isPMap(state) ? state : PMap.from(state)).begin();
+      for (const op of ops) {
+        if (op.type === 'ins') t.set(op.id, insRecord(t, op));
+        else if (op.type === 'del') t.delete(op.id);
+        else throw new Error(`unknown embedRGA op type: ${op.type}`);
+      }
+      return t.freeze();
     },
 
     /** Elements in display order: descending lexicographic coordinate keys. */
@@ -156,25 +185,43 @@ export function makeEmbedRGA(code = eliasDeltaCode) {
     readIds(state) { return this.readEntries(state).map(([id]) => id); },
 
     /** Ternary merge: live ids = (A ∩ B) ∪ (A ∖ L) ∪ (B ∖ L); records
-     *  (coordinates) carried unchanged: they are birth constants. */
+     *  (coordinates) carried unchanged: they are birth constants. On PMap
+     *  states this is a DELTA MERGE from A -- equivalently
+     *  A ∖ (L ∖ B) ∪ (B ∖ L) -- touching only the ids B deleted or added,
+     *  with structural sharing of A's untouched trie; a∩b coordinate
+     *  agreement is checked exactly as before. Hash-order scans are safe:
+     *  the output is a content-canonical set, insertion order unobservable. */
     merge3(l, a, b) {
-      const s = new Map();
-      const take = (id) => {
-        const ra = a.get(id), rb = b.get(id);
-        if (ra && rb && ra.coord !== rb.coord) {
+      const chk = (id, ra, rb) => {
+        if (ra.coord !== rb.coord) {
           throw new Error(`coordinate divergence at id ${id}: birth constants must agree`);
         }
-        s.set(id, ra ?? rb);
       };
-      for (const id of a.keys()) if (b.has(id) || !l.has(id)) take(id);
-      for (const id of b.keys()) if (!l.has(id) && !s.has(id)) take(id);
-      return s;
+      if (isPMap(a)) {
+        const t = a.begin();
+        eachEntry(l, (id) => { if (!b.has(id)) t.delete(id); }); // dropped by B (or never in A: no-op)
+        eachEntry(b, (id, rb) => {
+          const ra = a.get(id);
+          if (ra !== undefined) chk(id, ra, rb);                 // a∩b: birth-constant gate
+          else if (!l.has(id)) t.set(id, rb);                    // B's fresh mints
+        });
+        return t.freeze();
+      }
+      // legacy plain-Map inputs: rebuild into one transient
+      const t = PMap.empty().begin();
+      eachEntry(a, (id, ra) => {
+        const rb = b.get(id);
+        if (rb !== undefined) { chk(id, ra, rb); t.set(id, ra); }
+        else if (!l.has(id)) t.set(id, ra);
+      });
+      eachEntry(b, (id, rb) => { if (!l.has(id) && !t.has(id)) t.set(id, rb); });
+      return t.freeze();
     },
 
     /** Total coordinate symbol count over the live records (cost probe). */
     symbolCount(state) {
       let n = 0;
-      for (const r of state.values()) n += r.coord.length;
+      eachEntry(state, (_id, r) => { n += r.coord.length; });
       return n;
     },
 

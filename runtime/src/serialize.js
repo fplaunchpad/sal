@@ -32,6 +32,7 @@
 
 import { embedRGA, eliasDeltaCode } from './datatypes/embedRGA.js';
 import { decodeOne } from './compact.js';
+import { PMap } from './pmap.js';
 
 const enc = eliasDeltaCode.enc;
 const ONE = enc(1); // '0': every non-head run member has delta 1
@@ -226,7 +227,7 @@ export function encode(state) {
   return out;
 }
 
-/** decode(bytes) -> Map id -> { coord, el } (a valid embed RGA state; ids
+/** decode(bytes) -> PMap id -> { coord, el } (a valid embed RGA state; ids
  *  are fresh sequential integers, coordinates reconstructed exactly). */
 export function decode(u8) {
   const c = { i: 0 };
@@ -251,7 +252,7 @@ export function decode(u8) {
     e.head = base + enc(e.delta);
     e.tail = e.head + ONE.repeat(e.len - 1);
   }
-  const state = new Map();
+  const state = PMap.empty().begin();
   const ec = { i: br.pos >> 3 };
   let id = 1;
   const cps = mode === 0 ? [...dutf8.decode(u8.subarray(ec.i))] : null;
@@ -265,7 +266,7 @@ export function decode(u8) {
       state.set(id++, Object.freeze({ coord: e.head + ONE.repeat(j), el }));
     }
   }
-  return state;
+  return state.freeze();
 }
 
 /** Losslessness gate helper: the multiset {coord -> el} of decode(encode(s))

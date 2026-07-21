@@ -32,6 +32,14 @@
 // coordinate would break mark rehoming (see the note at the bottom).
 
 import { embedRGA } from './embedRGA.js';
+import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
+
+// Members of a PSet (hash order) or a legacy plain Set (insertion order):
+// order-insensitive scans only (unions into content-canonical containers).
+const eachMember = (s, fn) => {
+  if (isPSet(s)) s.forEachRaw(fn);
+  else for (const x of s) fn(x);
+};
 
 // ---------------------------------------------------------------- resolver ctx
 // One pass over the shadow builds everything the resolver reads.
@@ -136,8 +144,11 @@ const frozenMark = (op) => Object.freeze({
 });
 
 export const peritext = {
+  /** state: { text: { shadow: PMap (via embedRGA), deleted: PSet }, marks:
+   *  PMap } -- persistent containers: apply is O(log n), no live-set copy.
+   *  Legacy Set/Map sub-states are accepted read-only and copied on write. */
   init() {
-    return { text: { shadow: embedRGA.init(), deleted: new Set() }, marks: new Map() };
+    return { text: { shadow: embedRGA.init(), deleted: PSet.empty() }, marks: PMap.empty() };
   },
 
   apply(state, op) {
@@ -147,26 +158,56 @@ export const peritext = {
       return { text: { shadow, deleted: state.text.deleted }, marks: state.marks };
     }
     if (op.type === 'del') {
-      const deleted = new Set(state.text.deleted);
-      deleted.add(op.id);                      // logical delete (birth kept in shadow)
+      // logical delete (birth kept in shadow)
+      const deleted = isPSet(state.text.deleted)
+        ? state.text.deleted.add(op.id)
+        : new Set(state.text.deleted).add(op.id);
       return { text: { shadow: state.text.shadow, deleted }, marks: state.marks };
     }
     if (op.type === 'addMark' || op.type === 'removeMark') {
-      const marks = new Map(state.marks);
-      marks.set(op.mid, frozenMark(op));       // mid is globally unique (add-only map)
+      // mid is globally unique (add-only map)
+      const marks = isPMap(state.marks)
+        ? state.marks.set(op.mid, frozenMark(op))
+        : new Map(state.marks).set(op.mid, frozenMark(op));
       return { text: state.text, marks };
     }
     throw new Error(`unknown peritext op type: ${op.type}`);
   },
 
+  /** Batch apply in ONE transient pass per component (identical to folding
+   *  apply: ins/del/mark ops touch disjoint components, and each component
+   *  sees its own ops in order). */
+  applyBatch(state, ops) {
+    const insOps = [];
+    const deleted = (isPSet(state.text.deleted)
+      ? state.text.deleted : PSet.from(state.text.deleted)).begin();
+    const marks = (isPMap(state.marks) ? state.marks : PMap.from(state.marks)).begin();
+    for (const op of ops) {
+      if (op.type === 'ins') insOps.push({ type: 'ins', id: op.id, el: op.el, anchorId: op.anchorId });
+      else if (op.type === 'del') deleted.add(op.id);
+      else if (op.type === 'addMark' || op.type === 'removeMark') marks.set(op.mid, frozenMark(op));
+      else throw new Error(`unknown peritext op type: ${op.type}`);
+    }
+    const shadow = insOps.length ? embedRGA.applyBatch(state.text.shadow, insOps) : state.text.shadow;
+    return { text: { shadow, deleted: deleted.freeze() }, marks: marks.freeze() };
+  },
+
   // Text: births by embedRGA.merge3 (union of insert-only shadows); deletes by
   // union (grow-only, delete-wins); marks by union on mid (grow-only G-map).
+  // Unions extend A's containers in a transient (structural sharing; adding
+  // an already-present member is an allocation-free no-op). mid is globally
+  // unique, so a mark present under one mid is the same mark everywhere and
+  // is never overwritten. Hash-order scans: content-canonical outputs.
   merge3(l, a, b) {
     const shadow = embedRGA.merge3(l.text.shadow, a.text.shadow, b.text.shadow);
-    const deleted = new Set([...l.text.deleted, ...a.text.deleted, ...b.text.deleted]);
-    const marks = new Map();
-    for (const src of [l.marks, a.marks, b.marks]) for (const [mid, m] of src) marks.set(mid, m);
-    return { text: { shadow, deleted }, marks };
+    const ad = a.text.deleted;
+    const deleted = (isPSet(ad) ? ad : PSet.from(ad)).begin();
+    eachMember(l.text.deleted, (x) => deleted.add(x));
+    eachMember(b.text.deleted, (x) => deleted.add(x));
+    const marks = (isPMap(a.marks) ? a.marks : PMap.from(a.marks)).begin();
+    eachEntry(l.marks, (mid, m) => { if (!marks.has(mid)) marks.set(mid, m); });
+    eachEntry(b.marks, (mid, m) => { if (!marks.has(mid)) marks.set(mid, m); });
+    return { text: { shadow, deleted: deleted.freeze() }, marks: marks.freeze() };
   },
 
   // The DOCUMENT-ORDER rich-text read: [{ id, char, marks:[{mtype,value}] }].
@@ -196,10 +237,10 @@ export const peritext = {
   decodeState(enc) {
     return {
       text: {
-        shadow: new Map(enc.text.shadow.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
-        deleted: new Set(enc.text.deleted),
+        shadow: PMap.from(enc.text.shadow.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
+        deleted: PSet.from(enc.text.deleted),
       },
-      marks: new Map(enc.marks.map((m) => [m.mid, Object.freeze(m)])),
+      marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze(m)])),
     };
   },
 

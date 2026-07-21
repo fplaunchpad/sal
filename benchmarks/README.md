@@ -11,7 +11,7 @@ literature.
 
 | key | system | what is measured |
 | --- | --- | --- |
-| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh Map (an O(live-set) copy per op), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
+| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container, task #111) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing; before #111 it copied the whole live-set Map per op), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
 | `yjs` | Yjs 13.6.31 | `Y.Text` |
 | `automerge` | @automerge/automerge 3.3.2 (wasm) | text field, one `Automerge.change` per char (the automerge-perf convention) |
 | `loro` | loro-crdt 1.13.7 (wasm) | `LoroText` |
@@ -71,7 +71,10 @@ matrix (embedded below).
    subtracted; sub-microsecond medians (Yjs, Loro, list-positions) carry
    that additive bias. For `sal` the op includes the adapter's
    position-to-id bookkeeping (an id-array splice) plus the datatype
-   `apply`; the Map copy inside the shipped `apply` dominates.
+   `apply` (an O(log n) persistent-HAMT path copy since task #111; the
+   pre-#111 interface copied the whole live-set Map per op and dominated
+   every trace -- those numbers are kept below as the pre-HAMT interface
+   cost).
 2. **Save size**: bytes of each library's NATIVE serialization, measured
    (`Buffer.byteLength` on strings, `.length` on Uint8Array). What each
    save CONTAINS differs and is stated per row: Automerge `save` is the
@@ -173,15 +176,45 @@ label saying so.
 
 ## The honest headline
 
+### The HAMT switch (task #111): the interface cost, removed
+
+The pre-#111 `apply` returned a fresh `Map` per op: an O(live-set) copy
+per keystroke, ~100% of the measured apply cost. Task #111 swapped the
+state container for a persistent HAMT (`runtime/src/pmap.js`, O(log n)
+path copy, structural sharing) with byte-identical observables (same
+reads, fingerprints, SHA content ids, serialized bytes; both suites and
+all gates unchanged). Old numbers are kept as the PRE-HAMT INTERFACE
+COST; the matrix below carries the HAMT numbers.
+
+| trace | apply median pre-HAMT | apply median HAMT | speedup | total pre-HAMT | total HAMT |
+| --- | --- | --- | --- | --- | --- |
+| friendsforever_flat (26k ops) | 363.54 us | 0.50 us | 727x | 9.49 s | 0.02 s |
+| clownschool_flat (24k ops) | 347.13 us | 0.38 us | 913x | 8.56 s | 0.02 s |
+| seph-blog1 (368k ops) | 1.66 ms | 3.96 us | 418x | 546.92 s | 1.74 s |
+| automerge-paper (260k ops) | 3.16 ms | 4.08 us | 775x | 713.28 s | 1.94 s |
+
+Concurrent sessions (same seed): local op mean 25.65 -> 2.44 us (freq),
+62.80 -> 16.41 us (bulk); sync median 73.46 -> 107.4 us (freq), 730.92 ->
+753.5 us (bulk) -- merge3 is now a structural-sharing delta merge from
+one parent, but per-id lookups are O(log n) HAMT walks instead of O(1)
+Map hits, and the remaining sync time is dominated by DAG bookkeeping
+(LCA + frontier ancestry walks), not the datatype. Save bytes are
+byte-identical in every variant, every workload.
+
 Where we lose, as shipped:
 
-* **Per-char apply.** Median 347-364 us on ~21k-char docs, 1.66 ms at 57k
-  chars, 3.16 ms at 105k chars: the persistent `apply` copies the live-set
-  Map on every op, so cost grows linearly with document size. That is
-  ~15-120x slower than Automerge (24-27 us, flat) and 3 to 4 orders of
-  magnitude slower than Yjs / Loro / list-positions (0.5-1.7 us, flat).
-  Whole-trace replay: 713 s on automerge-paper vs 0.2 s (Loro), 0.67 s
-  (Yjs), 7.1 s (Automerge).
+* **Per-char apply (HISTORICAL, pre-HAMT).** Median 347-364 us on
+  ~21k-char docs, 1.66 ms at 57k chars, 3.16 ms at 105k chars: the
+  pre-#111 `apply` copied the live-set Map on every op, so cost grew
+  linearly with document size -- ~15-120x slower than Automerge and 3 to 4
+  orders of magnitude slower than Yjs / Loro / list-positions; 713 s
+  whole-trace replay on automerge-paper. NOW CLOSED by the HAMT (table
+  above): 0.38-4.08 us medians, within ~6x of Yjs/Loro (0.5-1.7 us, with
+  ~30-60 ns of the gap being timer overhead) and faster than Automerge
+  (24-27 us) on every trace; whole-trace replay 1.9 s on automerge-paper
+  vs 0.2 s (Loro), 0.67 s (Yjs), 7.1 s (Automerge). The residue at 100k+
+  chars (4 us median vs 0.5 us on small docs) is the O(log n) trie depth
+  plus the adapter's O(n) id-array splice, not a live-set copy.
 * **Save size, absolute-chain representation.** 1637-2991 bytes/char as
   JSON (243 MB for the 105k-char doc) vs 0.6-10 bytes/char for every
   production save. Packing the same bits (binary-estimate) still leaves
@@ -189,28 +222,33 @@ Where we lose, as shipped:
   fusion) cuts the coordinate bits by 1.9-3.2x, leaving 112-188 B/char.
   Two orders of magnitude worse than production; this is the known
   absolute-chain-coordinate gap -- CLOSED by the run-table serializer below.
-* **Load.** 31-253 ms (JSON parse + coordinate sort), vs Loro 0.2-0.3 ms
-  and Yjs 2-9 ms. Automerge's full-history load is in our range (29-446
-  ms); on automerge-paper ours loads in 253 ms vs Automerge's 319 ms.
+* **Load.** 39-289 ms (JSON parse + HAMT build + coordinate sort), vs
+  Loro 0.2-0.3 ms and Yjs 2-9 ms. Automerge's full-history load is in our
+  range (29-446 ms); on automerge-paper ours loads in 289 ms vs
+  Automerge's 319 ms.
 
 Where we are competitive or win, as shipped:
 
-* **Merge/sync.** Unique-LCA `merge3` under the head-sync Runtime: 73 us
-  median (freq preset), 731 us (bulk), Yjs-level (90 us / 1.13 ms) and
-  20-25x faster than Automerge (1.8 / 18.3 ms) and Loro (6.3 / 17.1 ms)
+* **Merge/sync.** Unique-LCA `merge3` under the head-sync Runtime: 107 us
+  median (freq preset), 754 us (bulk), Yjs-level (90 us / 1.13 ms) and
+  17-24x faster than Automerge (1.8 / 18.3 ms) and Loro (6.3 / 17.1 ms)
   in these sessions. Only list-positions' raw op-log apply is comparable
-  (34 / 626 us). Caveat: small docs (1.8k / 3.6k chars); our merge is
-  O(live set), so this does not extrapolate to 100k-char documents.
+  (34 / 626 us). Caveat: small docs (1.8k / 3.6k chars); since #111 the
+  merge is a structural-sharing delta from one parent (it touches the ids
+  the other side added or deleted, plus two O(n log n) membership scans),
+  so large-doc syncs no longer pay a full live-set rebuild; the scans
+  still keep it short of O(delta).
 * **Storage on delete.** Our save never grows on delete, it shrinks by
   construction (delete = pure record removal): measured 20-46 KB shrink
   per 1800-char delete phase (binary-estimate). See the churn table for
   the production comparison.
-* **Resident memory.** Retained heap after full replay is 2-12 MB: the
+* **Resident memory.** Retained heap after full replay is 4-22 MB: the
   absolute coordinates share prefixes structurally (V8 cons strings along
   the anchor chain), so the in-heap state is compact and the bit cost
-  only materializes at serialization. The price is allocation churn
-  instead: sampled peak heap up to 433 MB during the automerge-paper
-  replay (GC-noise caveat applies).
+  only materializes at serialization. The HAMT swap cut the allocation
+  churn ~3x (sampled peak heap 132 MB on the automerge-paper replay, was
+  433 MB pre-HAMT; GC-noise caveat applies) at the price of a few MB of
+  retained trie nodes (12 -> 22 MB on that trace).
 
 The Automerge-grows-on-delete cell (reproduced): across the five delete
 phases Automerge's save grew by +3383, +3327, +3383, +3370, +3430 bytes
@@ -257,7 +295,7 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | apply median | apply p95 | total | load (median of 5) | peak heap* | retained heap | gates |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 3.16 ms | 4.37 ms | 713.28 s | 253.3 ms (json-shipped) | 432.5 MB | 12.0 MB | text OK |
+| ours (embed RGA, as shipped) | 4.08 us | 21.63 us | 1.94 s | 288.9 ms (json-shipped) | 131.9 MB | 21.9 MB | text OK |
 | Yjs | 1.38 us | 10.88 us | 0.67 s | 5.5 ms (update-v1) | 113.0 MB | 3.5 MB | text OK |
 | Automerge | 26.83 us | 32.96 us | 7.09 s | 319.3 ms (save-full-history) | 105.2 MB | 0.8 MB | text OK |
 | Loro | 0.46 us | 1.42 us | 0.20 s | 0.3 ms (snapshot) | 83.8 MB | 0.3 MB | text OK |
@@ -269,10 +307,12 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | variant | bytes | bytes/char | save time | contains |
 | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | json-shipped | 243276637 | 2320.2 | 229.4 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
+| ours (embed RGA, as shipped) | json-shipped | 243276637 | 2320.2 | 285.8 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 30668998 | 292.5 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | json-shipped+compacted | 135792070 | 1295.1 | 135.4 ms | live state after settled-cut compaction (measured, shipped code) |
+| ours (embed RGA, as shipped) | run-table-serialized | 130300 | 1.2 | 1718.6 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | json-shipped+compacted | 135792070 | 1295.1 | 137.6 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 17233096 | 164.4 | -- | packed-bits estimate of the compacted state |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 120276 | 1.1 | 1129.7 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
 | ours (run-table serialized, SHIPPED) | run-table-serialized | 130300 | 1.2 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 120276 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 4.0 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
 | ours (PROJECTION, run table) | run-table composed (model) | 418298 | 4.0 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 23.9 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
@@ -287,7 +327,7 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | apply median | apply p95 | total | load (median of 5) | peak heap* | retained heap | gates |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 347.13 us | 723.25 us | 8.56 s | 43.7 ms (json-shipped) | 126.1 MB | 2.1 MB | text OK |
+| ours (embed RGA, as shipped) | 0.38 us | 1.88 us | 0.02 s | 52.0 ms (json-shipped) | 20.3 MB | 4.3 MB | text OK |
 | Yjs | 1.67 us | 2.38 us | 0.05 s | 2.8 ms (update-v1) | 21.6 MB | 1.7 MB | text OK |
 | Automerge | 26.25 us | 32.96 us | 0.66 s | 28.6 ms (save-full-history) | 18.8 MB | 0.8 MB | text OK |
 | Loro | 0.75 us | 1.71 us | 0.03 s | 0.3 ms (snapshot) | 12.9 MB | 0.2 MB | text OK |
@@ -299,10 +339,12 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | variant | bytes | bytes/char | save time | contains |
 | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | json-shipped | 52938278 | 2503.2 | 47.1 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
+| ours (embed RGA, as shipped) | json-shipped | 52938278 | 2503.2 | 53.6 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 6672560 | 315.5 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | json-shipped+compacted | 31415483 | 1485.5 | 22.6 ms | live state after settled-cut compaction (measured, shipped code) |
+| ours (embed RGA, as shipped) | run-table-serialized | 32782 | 1.6 | 456.2 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | json-shipped+compacted | 31415483 | 1485.5 | 27.7 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 3982162 | 188.3 | -- | packed-bits estimate of the compacted state |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 22438 | 1.1 | 402.7 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
 | ours (run-table serialized, SHIPPED) | run-table-serialized | 32782 | 1.6 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 22438 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 3.8 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
 | ours (PROJECTION, run table) | run-table composed (model) | 80993 | 3.8 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 22.6 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
@@ -317,7 +359,7 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | apply median | apply p95 | total | load (median of 5) | peak heap* | retained heap | gates |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 363.54 us | 715.75 us | 9.49 s | 31.2 ms (json-shipped) | 101.0 MB | 2.2 MB | text OK |
+| ours (embed RGA, as shipped) | 0.50 us | 1.58 us | 0.02 s | 38.5 ms (json-shipped) | 27.0 MB | 4.3 MB | text OK |
 | Yjs | 1.54 us | 2.42 us | 0.05 s | 2.2 ms (update-v1) | 20.4 MB | 1.4 MB | text OK |
 | Automerge | 24.33 us | 31.79 us | 0.67 s | 30.4 ms (save-full-history) | 20.3 MB | 0.8 MB | text OK |
 | Loro | 0.63 us | 1.67 us | 0.03 s | 0.2 ms (snapshot) | 13.7 MB | 0.2 MB | text OK |
@@ -329,10 +371,12 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | variant | bytes | bytes/char | save time | contains |
 | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | json-shipped | 34971320 | 1637.1 | 31.2 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
+| ours (embed RGA, as shipped) | json-shipped | 34971320 | 1637.1 | 39.1 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 4427040 | 207.2 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | json-shipped+compacted | 18607535 | 871.1 | 12.8 ms | live state after settled-cut compaction (measured, shipped code) |
+| ours (embed RGA, as shipped) | run-table-serialized | 31457 | 1.5 | 275.3 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | json-shipped+compacted | 18607535 | 871.1 | 19.7 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 2381219 | 111.5 | -- | packed-bits estimate of the compacted state |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 24126 | 1.1 | 219.4 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
 | ours (run-table serialized, SHIPPED) | run-table-serialized | 31457 | 1.5 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 24126 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 3.8 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
 | ours (PROJECTION, run table) | run-table composed (model) | 80905 | 3.8 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 22.3 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
@@ -347,7 +391,7 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | apply median | apply p95 | total | load (median of 5) | peak heap* | retained heap | gates |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 1.66 ms | 2.20 ms | 546.92 s | 166.0 ms (json-shipped) | 318.7 MB | 7.0 MB | text OK |
+| ours (embed RGA, as shipped) | 3.96 us | 12.25 us | 1.74 s | 165.0 ms (json-shipped) | 99.6 MB | 12.7 MB | text OK |
 | Yjs | 1.42 us | 5.29 us | 0.74 s | 9.1 ms (update-v1) | 91.1 MB | 4.6 MB | text OK |
 | Automerge | 26.71 us | 31.71 us | 9.91 s | 446.2 ms (save-full-history) | 84.5 MB | 0.9 MB | text OK |
 | Loro | 0.58 us | 1.33 us | 0.30 s | 0.2 ms (snapshot) | 67.6 MB | 0.3 MB | text OK |
@@ -359,10 +403,12 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | variant | bytes | bytes/char | save time | contains |
 | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | json-shipped | 169774875 | 2990.6 | 172.3 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
+| ours (embed RGA, as shipped) | json-shipped | 169774875 | 2990.6 | 183.2 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 21362422 | 376.3 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | json-shipped+compacted | 52956992 | 932.9 | 42.5 ms | live state after settled-cut compaction (measured, shipped code) |
+| ours (embed RGA, as shipped) | run-table-serialized | 88120 | 1.6 | 1059.6 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | json-shipped+compacted | 52956992 | 932.9 | 55.0 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 6759513 | 119.1 | -- | packed-bits estimate of the compacted state |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 72848 | 1.3 | 448.2 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
 | ours (run-table serialized, SHIPPED) | run-table-serialized | 88120 | 1.6 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 72848 | 1.3 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.3 B/char (< the model's 3.9 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
 | ours (PROJECTION, run table) | run-table composed (model) | 221141 | 3.9 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 23.2 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
@@ -377,25 +423,25 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 
 | system | sync median | sync p95 | sync total | payload/sync | local op mean | primary save | converged |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 73.46 us | 168.75 us | 5.2 ms | n/a (in-process) | 25.65 us | 170693 B (json-shipped) | yes |
+| ours (embed RGA, as shipped) | 107.42 us | 162.17 us | 6.7 ms | 5.9 KB | 2.44 us | 170693 B (json-shipped) | yes |
 | Yjs | 89.54 us | 307.08 us | 7.1 ms | 1.6 KB | 3.98 us | 39782 B (update-v1) | yes |
 | Automerge | 1.82 ms | 2.19 ms | 117.2 ms | n/a (in-process) | 35.48 us | 12698 B (save-full-history) | yes |
 | Loro | 6.29 ms | 11.40 ms | 381.4 ms | 0.4 KB | 3.04 us | 19642 B (snapshot) | yes |
 | list-positions | 33.50 us | 160.50 us | 2.8 ms | 6.4 KB | 2.34 us | 196682 B (json-text+order) | yes |
 
-ours, post-session settled-cut compaction: 3.8 ms, json-shipped+compacted = 58788 B, binary-estimate+compacted = 10448 B; runtime commit-GC total 2.6 ms (outside sync timing).
+ours, post-session settled-cut compaction: 3.8 ms, json-shipped+compacted = 58788 B, binary-estimate+compacted = 10448 B; runtime commit-GC total 2.7 ms (outside sync timing).
 
 ## Concurrent 2-replica session, preset bulk (6 rounds x 500 ops/replica/round, seed 42, final 3604 chars)
 
 | system | sync median | sync p95 | sync total | payload/sync | local op mean | primary save | converged |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ours (embed RGA, as shipped) | 730.92 us | 1.12 ms | 4.7 ms | n/a (in-process) | 62.80 us | 386110 B (json-shipped) | yes |
+| ours (embed RGA, as shipped) | 753.46 us | 810.50 us | 4.4 ms | 118.7 KB | 16.41 us | 386110 B (json-shipped) | yes |
 | Yjs | 1.13 ms | 3.67 ms | 8.0 ms | 15.1 KB | 3.20 us | 80667 B (update-v1) | yes |
 | Automerge | 18.32 ms | 19.21 ms | 108.0 ms | n/a (in-process) | 30.87 us | 24774 B (save-full-history) | yes |
 | Loro | 17.12 ms | 22.04 ms | 98.8 ms | 4.6 KB | 2.30 us | 39130 B (snapshot) | yes |
 | list-positions | 626.33 us | 1.01 ms | 4.0 ms | 123.6 KB | 2.02 us | 353262 B (json-text+order) | yes |
 
-ours, post-session settled-cut compaction: 5.9 ms, json-shipped+compacted = 129449 B, binary-estimate+compacted = 22324 B; runtime commit-GC total 8.1 ms (outside sync timing).
+ours, post-session settled-cut compaction: 7.2 ms, json-shipped+compacted = 129449 B, binary-estimate+compacted = 22324 B; runtime commit-GC total 5.2 ms (outside sync timing).
 
 ## Delete-heavy churn (5 cycles of +2000/-1800 chars, then +200; final 1200 chars)
 
@@ -405,6 +451,7 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | ours (embed RGA, as shipped) | json-shipped | 150121 | 14666 | 525107 | 188008 | 229695 | NEVER |
 | ours (embed RGA, as shipped) | binary-estimate | 22278 | 2191 | 72322 | 25891 | 31596 | NEVER |
+| ours (embed RGA, as shipped) | run-table-serialized | 8759 | 1657 | 19059 | 11111 | 12098 | NEVER |
 | ours (embed RGA, as shipped) | json-shipped+compacted | 64529 | 5899 | 115753 | 39481 | 47848 | NEVER |
 | ours (embed RGA, as shipped) | binary-estimate+compacted | 11576 | 1090 | 18884 | 6524 | 7882 | NEVER |
 | Yjs | update-v1 | 32931 | 31671 | 163331 | 161995 | 165395 | NEVER |
@@ -440,14 +487,20 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   production save size. Remaining #104 items, explicitly OUT OF SCOPE this
   round: (a) a BATCHED-APPLY path (the mutable/transient fast path below),
   and (b) a WIRE FORMAT -- the serializer is a save/load (whole-state)
-  encoder; a delta/op wire format for sync (the concurrent payload column
-  is still n/a) is separate.
-* A mutable or batched apply path: the O(live-set) Map copy per op is
-  inherited from the persistent datatype interface, not from the order
-  machinery; a transient-state fast path would move per-char apply toward
-  the microsecond class without touching the verified semantics.
+  encoder; a delta/op wire format for sync is separate (the concurrent
+  payload column now reports the runtime's JSON wire-delta bytes via
+  `sharedDelta`, unoptimized JSON rather than a designed binary format).
+* DONE (task #111): the mutable/batched apply follow-on. The O(live-set)
+  Map copy per op was inherited from the state container, not the order
+  machinery; the persistent HAMT (`runtime/src/pmap.js`) moved per-char
+  apply into the microsecond class (0.4-4.1 us medians, table above)
+  without touching the semantics -- observables are byte-identical. Each
+  datatype also gained `applyBatch(state, ops)` (one transient pass,
+  proven equal to folding `apply` in `runtime/test/applybatch.test.js`);
+  the DAG granularity is unchanged (one op per commit).
 * Concurrent sessions at realistic document sizes (the merge numbers here
-  are small-doc), and a wire format for our sync (payload column is n/a).
+  are small-doc), and a binary wire format for our sync (the payload
+  column is unoptimized JSON delta bytes).
 
 ## Files
 
@@ -459,6 +512,9 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   wires the SHIPPED run-table serializer (`saveRunTable`, column 3).
 * `lib/traces.mjs`, `lib/bench.mjs`: trace loading/flattening, timing and
   heap helpers.
+* `../runtime/src/pmap.js`: the persistent HAMT state container (task
+  #111) behind the `sal` apply/merge numbers; unit-tested by
+  `../runtime/test/pmap.test.js`.
 * `../runtime/src/serialize.js`: the SHIPPED run-table serializer
   (task #104): `encode`/`decode`, `buildRunTable`, `accountingBits` (the
   task #73 model, bit-for-bit), `tableWalk`. Tested by

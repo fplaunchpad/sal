@@ -117,6 +117,7 @@
 // they do not count toward groupsRenumbered; levelsRemoved counts them.
 
 import { embedRGA, eliasDeltaCode } from './datatypes/embedRGA.js';
+import { PMap } from './pmap.js';
 
 const enc = eliasDeltaCode.enc;
 
@@ -299,13 +300,14 @@ export function compactEliasDelta(state, cut, opts = {}) {
     });
   }
 
-  // --- state': at-rest records re-coded
-  const s2 = new Map();
+  // --- state': at-rest records re-coded (one transient pass -> PMap)
+  const s2t = PMap.empty().begin();
   for (const [id, rec] of state) {
     const nc = nodeOf.get(id).newCoord;
     stats.symbolsAfter += nc.length;
-    s2.set(id, Object.freeze({ coord: nc, el: rec.el }));
+    s2t.set(id, Object.freeze({ coord: nc, el: rec.el }));
   }
+  const s2 = s2t.freeze();
 
   // --- translate: rho-hat(c) = rho(stab c) ++ rest c
   const translate = (coord) => {
@@ -325,11 +327,11 @@ export function compactEliasDelta(state, cut, opts = {}) {
 
 /** Record-wise coordinate translation (the runtime's epoch-lifting hook). */
 export function remapState(state, translate) {
-  const s = new Map();
+  const s = PMap.empty().begin();
   for (const [id, rec] of state) {
     s.set(id, Object.freeze({ coord: translate(rec.coord), el: rec.el }));
   }
-  return s;
+  return s.freeze();
 }
 
 /** The embed RGA with the state-GC hooks the runtime looks for. compact +
@@ -343,5 +345,5 @@ export const compactibleEmbedRGA = {
   compact: compactEliasDelta,
   remapState,
   encodeState: (state) => [...state.entries()].map(([id, r]) => [id, r.coord, r.el]),
-  decodeState: (enc) => new Map(enc.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
+  decodeState: (enc) => PMap.from(enc.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
 };

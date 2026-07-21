@@ -88,9 +88,24 @@ a.gc();                                 // keep-set commit GC over its own DAG
   below). This is the two-store split (`Replica` = GC-but-no-wire, `Peer` =
   wire-but-no-GC) resolved into one object; the p2p demo's `Node` is now a thin
   re-export of it.
+- `src/pmap.js` -- THE STATE CONTAINER (task #111). `PMap`/`PSet`, a
+  dependency-free browser-safe persistent HAMT: `set`/`delete` return a new
+  map in O(log n) by path copy with structural sharing, killing the
+  O(live-set)-copy-per-op the datatypes previously paid (`new Map(state)`
+  per keystroke). Public iteration (`entries`/`keys`/`values`/iterator) is
+  DETERMINISTIC (sorted by key), so no consumer can depend on hash order;
+  `forEachRaw` is the hash-order escape hatch for order-insensitive bulk
+  scans only. Transients (`begin()`/`freeze()`) give the batch-build fast
+  path; each datatype exposes `applyBatch(state, ops)` over one transient
+  pass, proven equal to folding `apply` (`test/applybatch.test.js`).
+  Observables (reads, fingerprints, SHA content ids, serialized bytes) are
+  byte-identical to the Map-backed representation. `test/pmap.test.js` is
+  the randomized Map-equivalence / structural-sharing / collision suite.
 
 A datatype is `{ init, apply(state, op), merge3(l, a, b), read(state) }`,
-all pure (`apply`/`merge3` return fresh states: commits keep old states).
+all pure (`apply`/`merge3` return fresh states: commits keep old states;
+since task #111 "fresh" is O(log n) structural sharing over `src/pmap.js`,
+and `merge3` on persistent states is a delta merge from one parent).
 The bundled datatypes also expose an optional `fingerprint(state)` used by
 the twin tests, and `embedRGA` adds `readIds`/`readEntries`/`symbolCount`,
 `orset` adds `observe` (helpers for honest op construction and cost probes).
@@ -112,7 +127,7 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   insert-only `embedRGA` state holding every character (birth order + reading
   order, reused verbatim: insert, reading order, and merge all delegate to
   `embedRGA`); `text.deleted` is a grow-only set of logically deleted ids;
-  `marks` is a `Map` `mid → { mtype, value, startId, endId, startSide, endSide,
+  `marks` is a map (`PMap`) `mid → { mtype, value, startId, endId, startSide, endSide,
   ts, removed }`. This is `DocD` from the verified spec — a delete is LOGICAL
   (the birth is kept), because the resolver rehomes a dead boundary anchor to
   its nearest surviving neighbour *in reading order*, which needs the dead
@@ -492,7 +507,12 @@ the Ex1-8 paper renderings, `doc_no_backward_leak`, the gravity contrast,
 FAIL companion, all expected values extracted from the validated
 `peritext_read_model.py`; plus the parametricity payoff running Peritext through
 `DistributedReplica` to convergence with wire clone/catch-up and a snapshot
-round-trip).
+round-trip), `test/pmap.test.js` (the persistent HAMT: randomized Map
+equivalence over mixed set/delete batches for number and string keys,
+structural-sharing sanity, transient freeze correctness, real birthday-found
+32-bit hash collisions, deterministic sorted iteration),
+`test/applybatch.test.js` (`applyBatch` == fold of `apply` for all three
+datatypes, including honesty preconditions and intra-batch anchoring).
 
 ## What #95 (the p2p demo) still needs on top of this
 

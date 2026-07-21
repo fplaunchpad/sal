@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T05:58:58.900Z"
+  "date": "2026-07-21T01:38:23.470Z"
  },
  "ops": {
   "total": 26078,
@@ -15,14 +15,14 @@
  },
  "finalChars": 21362,
  "apply": {
-  "totalMs": 9487.418792,
+  "totalMs": 20.541834,
   "count": 26078,
   "warmupExcluded": 1000,
-  "meanUs": 377.75857664088045,
-  "medianUs": 363.541,
-  "p95Us": 715.75,
-  "p99Us": 795.083,
-  "maxUs": 4213.959
+  "meanUs": 0.7262939229603638,
+  "medianUs": 0.5,
+  "p95Us": 1.584,
+  "p99Us": 2.459,
+  "maxUs": 461.834
  },
  "gates": {
   "textOk": true
@@ -31,34 +31,41 @@
   {
    "label": "json-shipped",
    "bytes": 34971320,
-   "timeMs": 31.168625,
-   "note": "JSON, coord bit-strings at 1 byte/bit (shipped repr)",
+   "timeMs": 39.0625,
+   "note": "live state only; coord bit-strings at 1 byte/bit (shipped)",
    "estimated": false
   },
   {
    "label": "binary-estimate",
    "bytes": 4427040,
    "timeMs": null,
-   "note": "packed-bits estimate, computed not implemented",
+   "note": "live state only; packed coord bits + varint ids (computed estimate, no shipped encoder)",
    "estimated": true
+  },
+  {
+   "label": "run-table-serialized",
+   "bytes": 31457,
+   "timeMs": 275.315875,
+   "note": "live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read",
+   "estimated": false
   }
  ],
  "loads": [
   {
    "label": "json-shipped",
-   "medianMs": 31.1715,
+   "medianMs": 38.457958,
    "runs": 5,
    "allMs": [
-    30.021541,
-    30.107208,
-    31.1715,
-    31.346708,
-    32.947834
+    36.49025,
+    36.580459,
+    38.457958,
+    41.143167,
+    43.859625
    ]
   }
  ],
  "compaction": {
-  "ms": 265.690333,
+  "ms": 284.4135,
   "stats": {
    "symbolsBefore": 34660055,
    "symbolsAfter": 18296270,
@@ -73,24 +80,30 @@
    {
     "label": "json-shipped+compacted",
     "bytes": 18607535,
-    "timeMs": 12.782125
+    "timeMs": 19.659458
    },
    {
     "label": "binary-estimate+compacted",
     "bytes": 2381219,
     "timeMs": null,
     "estimated": true
+   },
+   {
+    "label": "run-table-serialized+compacted",
+    "bytes": 24126,
+    "timeMs": 219.448708,
+    "note": "task #104 SHIPPED run-table binary over the compacted state (lossless)"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 11265272,
-  "peakHeapSampled": 105879704,
-  "retainedHeapAfterGc": 2261432,
-  "externalDelta": 202508,
+  "baselineHeap": 11404328,
+  "peakHeapSampled": 28283528,
+  "retainedHeapAfterGc": 4498376,
+  "externalDelta": 208664,
   "arrayBuffersDelta": 208624,
-  "rssEnd": 162807808,
+  "rssEnd": 112001024,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

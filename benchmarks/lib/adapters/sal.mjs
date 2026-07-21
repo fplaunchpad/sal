@@ -3,10 +3,12 @@
 // settled cut.
 //
 // AS-SHIPPED means: the persistent datatype interface (apply returns a
-// fresh Map: O(live-set) copy per op), records carrying ABSOLUTE chain
-// coordinates as '0'/'1' bit-strings under the flipped Elias-delta code.
-// Both are known representation choices; the save-size gap vs the
-// run-table PROJECTION is reported separately and honestly.
+// fresh persistent-HAMT state, runtime/src/pmap.js: O(log n) path copy per
+// op with structural sharing -- task #111 replaced the earlier
+// O(live-set)-Map-copy-per-op interface cost), records carrying ABSOLUTE
+// chain coordinates as '0'/'1' bit-strings under the flipped Elias-delta
+// code. The save-size gap vs the run-table PROJECTION is reported
+// separately and honestly.
 //
 // Position bookkeeping: the trace speaks positions, the datatype speaks
 // (id, anchorId). The adapter maintains the display-order id list (view)
@@ -22,6 +24,7 @@
 // discipline (runtime/src/runtime.js) with commit GC after each sync.
 
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
+import { PMap } from '../../../runtime/src/pmap.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
 import { encode as rtEncode } from '../../../runtime/src/serialize.js';
 import { Runtime } from '../../../runtime/src/runtime.js';
@@ -55,10 +58,11 @@ export function saveJson(state) {
 }
 
 export function loadJson(str) {
-  const s = new Map();
+  const t = PMap.empty().begin();
   for (const [id, coord, el] of JSON.parse(str)) {
-    s.set(id, Object.freeze({ coord, el }));
+    t.set(id, Object.freeze({ coord, el }));
   }
+  const s = t.freeze();
   // A load must re-derive the display order to render: include the sort.
   const view = dt.readIds(s);
   return { state: s, view };
