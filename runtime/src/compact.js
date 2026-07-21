@@ -223,6 +223,27 @@ export function compactEliasDelta(state, cut, opts = {}) {
     if (i >= c.length && node !== root) node.inflightHere = true;
   }
 
+  // --- FROZEN-ANCHOR declarations (cut.frozenAnchorCoords, additive; the
+  // --- marks-layer GC of src/compact-peritext.js). Each entry is the
+  // --- CURRENT-epoch coordinate of a KEPT record at which a declared
+  // --- in-flight op is anchored ('' = the document root): that anchor's
+  // --- child group receives the op's already-minted frozen delta, so it
+  // --- is marked exactly like an inflightChild group and skipped by the
+  // --- renumbering. This is the harness's frozen_parents-by-coordinate
+  // --- semantics (whiteboard/litmus/marks_gc_check.py build_cut): no
+  // --- telescoped-id addressing, hence exact in EVERY epoch, unlike the
+  // --- cut.inflight walk above (v1-approximate across epochs).
+  for (const c of (cut?.frozenAnchorCoords ?? [])) {
+    let node = root, i = 0;
+    while (i < c.length) {
+      const [d, j] = decodeOne(c, i);
+      node = childOf(node, d);
+      node.seedSettled = true;
+      i = j;
+    }
+    node.inflightChild = true;
+  }
+
   // --- settled evidence, bottom-up (post-order): a node is evidenced
   // --- settled by its own listed record, by the in-flight walk, or by any
   // --- evidenced descendant (cuts are causally downward closed, so a

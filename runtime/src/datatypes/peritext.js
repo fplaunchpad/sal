@@ -255,10 +255,12 @@ export const peritext = {
     });
   },
 
-  // NO compact / remapState: state compaction is deliberately NOT supported.
-  // Pruning a dead anchor's coordinate would destroy the birth position a mark
-  // needs to rehome (buildCtx.birth), so compactStable MUST refuse for this
-  // datatype (it returns { compacted:false, reason:'does not support...' }, the
-  // orset path). The text still gets the run-table SERIALIZER cost via
-  // encodeState; epoch compaction is the wrong tool here by construction.
+  // NO compact / remapState HERE: on this plain object compactStable refuses
+  // (the orset path). The marks-layer GC lives in ../compact-peritext.js
+  // (`compactiblePeritext`): the keep-set retains live ids UNION mark
+  // boundary anchors UNION declared in-flight anchors, so pruning never
+  // destroys a birth position the resolver needs (buildCtx.birth) -- the
+  // VALIDATED retention-roots design of whiteboard/marks-gc-note.md (#110).
+  // Blind pruning WOULD flip reads (note D6); that negative control is kept
+  // executable as opts.noRetention in compact-peritext.js.
 };

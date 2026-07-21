@@ -190,9 +190,12 @@ test('DistributedReplica carries Peritext: concurrent text+mark edits gossip and
   const roundTrip = peritext.decodeState(peritext.encodeState(a.head.state));
   assert.equal(eq(peritext.read(roundTrip)), eq(a.read()), 'snapshot encode/decode preserves the render');
 
-  // State compaction is (correctly) REFUSED: dead-anchor coordinates are load-bearing.
+  // The PLAIN datatype (no compact/remapState hooks) still refuses state
+  // compaction, the orset path. The marks-layer GC that FIRES instead --
+  // retention roots + the A3 guarded pair-drop (#110) -- is
+  // `compactiblePeritext` in src/compact-peritext.js, test/peritext-gc.test.js.
   const r = a.compactStable();
-  assert.equal(r.compacted, false, 'Peritext refuses epoch compaction (dead anchors must persist)');
+  assert.equal(r.compacted, false, 'plain peritext (hookless) refuses epoch compaction');
   assert.match(r.reason, /does not support state compaction/);
 });
 

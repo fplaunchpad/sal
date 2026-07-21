@@ -212,9 +212,15 @@ export class DistributedReplica {
     }
     const settledIds = insertIds(meet);
     if (settledIds.size === 0) return { compacted: false, reason: 'the certified stable cut is empty' };
-    const { state, translate, stats } = this.datatype.compact(
-      this.head.state, { settledIds, inflight: [] }, opts); // inflight [] discharged by the cert
-    if (stats.symbolsAfter === stats.symbolsBefore) {
+    // A datatype may shape its own cut from the certified meet (peritext:
+    // settled deletes + settled mark mids, src/compact-peritext.js); either
+    // way every in-flight field is empty, discharged by the certificate.
+    const cut = typeof this.datatype.cutFromMeet === 'function'
+      ? this.datatype.cutFromMeet(meet)
+      : { settledIds, inflight: [] };
+    const { state, translate, stats } = this.datatype.compact(this.head.state, cut, opts);
+    if (stats.symbolsAfter === stats.symbolsBefore
+        && !(stats.recordsDropped > 0 || stats.markPairsDropped > 0)) {
       return { compacted: false, reason: 'nothing to compact at this cut', stats };
     }
     this.epochs.push(translate);

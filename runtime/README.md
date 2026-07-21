@@ -158,12 +158,27 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   — each PASS with a `≠` FAIL companion. Expected values are EXTRACTED by
   running the Python reference (invocation cited in the test header), never read
   back from the JS implementation.
-- STATE COMPACTION is deliberately NOT supported (`peritext` provides no
-  `compact`/`remapState`, so `compactStable` cleanly refuses, the `orset`
-  path): pruning a dead anchor's coordinate would break mark rehoming, so epoch
-  compaction is the wrong tool here by construction. `encodeState`/`decodeState`
-  give a lossless snapshot round-trip (the durable-persistence surface), and the
-  text still benefits from `embedRGA`'s coordinate cost.
+- STATE COMPACTION now FIRES (task #110): the old refusal is replaced by the
+  VALIDATED marks-layer GC of `src/compact-peritext.js` (`compactiblePeritext`;
+  design + machine verdicts in `whiteboard/marks-gc-note.md`, reference
+  semantics `whiteboard/litmus/marks_gc_check.py`). The keep-set is live ids ∪
+  mark boundary anchor ids ∪ declared in-flight anchors: retained dead anchors
+  survive as re-coded dead records (still listed in `deleted`), so rehoming
+  never loses a birth position; every other settled-dead record drops exactly
+  as for plain `embedRGA` (same `compactEliasDelta` machinery, same certified
+  cut and skipped-group guard, with the peritext refinement that a record is
+  freed only once its DELETE is settled, not just its insert). On top, the A3
+  guarded pair-drop removes an (add, remove) pair with equal boundary tuples
+  and frees its retention roots under three guards (removal settled; no other
+  same-mtype mark below the remove's mid, declared in-flight marks included;
+  no id inside the growth window). Blind pruning demonstrably flips reads (the
+  note's D6; kept executable as the `noRetention`/`unguardedPairDrop` negative
+  controls); the plain hookless `peritext` object still refuses.
+  `test/peritext-gc.test.js` carries the directed PASS+FAIL family and a
+  multi-epoch twin PBT against a never-compacted control; cost measured there:
+  retained dead records ≤ 2 per mark record (structural bound, met with max
+  2.000). `encodeState`/`decodeState` give the lossless snapshot round-trip
+  (also carrying compaction commits over the wire).
 
 WHAT #107 (THE EDITOR) STILL NEEDS on top of this datatype: an
 EDITOR-WIDGET BINDING (a ProseMirror/CodeMirror-style view that maps
@@ -412,9 +427,14 @@ remapState, encodeState, decodeState}` additionally gets `compactStable` (the
 last two (de)serialize a compaction commit's inline state on the wire and on
 disk); one that does not -- e.g. `orset` -- gets everything else and
 `compactStable` returns `{ compacted: false, reason: 'does not support state
-compaction' }`. `test/replica.test.js` runs convergence, the SHA round-trip /
-tamper gate, and commit GC over BOTH `embedRGA` and `orset`, and the certified
-state GC over `embedRGA` (refuse-then-fire) with `orset` refusing.
+compaction' }`. A datatype may additionally provide `cutFromMeet(meet)` to
+shape its own cut from the certified meet (`compactiblePeritext` extracts
+settled deletes and settled mark mids this way; in-flight fields stay empty,
+discharged by the certificate). `test/replica.test.js` runs convergence, the
+SHA round-trip / tamper gate, and commit GC over BOTH `embedRGA` and `orset`,
+and the certified state GC over `embedRGA` (refuse-then-fire) with `orset`
+refusing; `test/peritext-gc.test.js` does the same refuse-then-fire for
+`compactiblePeritext`.
 
 THE EPOCH BARRIER (concurrent divergent compaction is NOT claimed).
 `compactStable` opens a new epoch, and a cross-epoch merge THROWS: the runtime
@@ -507,7 +527,14 @@ the Ex1-8 paper renderings, `doc_no_backward_leak`, the gravity contrast,
 FAIL companion, all expected values extracted from the validated
 `peritext_read_model.py`; plus the parametricity payoff running Peritext through
 `DistributedReplica` to convergence with wire clone/catch-up and a snapshot
-round-trip), `test/pmap.test.js` (the persistent HAMT: randomized Map
+round-trip), `test/peritext-gc.test.js` (the marks-layer state GC #110:
+retention roots + A3 guarded pair-drop, hand-derived directed cases D6/D1/D3/D7
+each PASS with its FAIL companion -- the no-retention read flip, the alpha
+undeclared-straggler flip, the beta growth-window flip, the unguarded-renumber
+order flip -- plus refuse-then-fire under the certificate, the settled-delete
+gate, and a 150-trial multi-epoch twin PBT with declared stragglers against a
+never-compacted control, cost bound retained ≤ 2 per mark record asserted),
+`test/pmap.test.js` (the persistent HAMT: randomized Map
 equivalence over mixed set/delete batches for number and string keys,
 structural-sharing sanity, transient freeze correctness, real birthday-found
 32-bit hash collisions, deterministic sorted iteration),
