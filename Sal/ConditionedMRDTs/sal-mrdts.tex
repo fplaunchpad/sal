@@ -104,7 +104,9 @@ earlier notes (of July 7, July 14, and July 16--17, 2026),\\
 GC, the stability VC) and the storage layer (re-coding, compaction, the
 run table),\\
 \small and July 20 with the verified peer-to-peer runtime, a
-cross-system performance study, and a push-button SMT layer}
+cross-system performance study, and a push-button SMT layer,\\
+\small and July 21 with the rich-text marks arc (the document-order
+mark read model and the marks-layer GC)}
 
 \begin{document}
 \maketitle
@@ -149,7 +151,10 @@ giving a two-axis separation between do-faithfulness and
 merge-faithfulness. A final part turns the design into a running system:
 a verified peer-to-peer MRDT runtime, datatype-parametric and
 content-addressed, whose garbage collectors are the executable form of
-the GC-safety and stability theorems and whose git-backed store persists
+the GC-safety and stability theorems, now covering the rich-text marks
+layer as well (dead mark anchors survive as counted retention roots,
+at most two per mark record, and the compaction is render-invisible by
+theorem), and whose git-backed store persists
 the commit DAG; a performance section measures the shipped artifact
 against Yjs, Automerge, Loro, and list-positions on the standard
 editing-trace corpus, records the experiment that closed its one large
@@ -191,7 +196,11 @@ adds Part~IV (the verified runtime, its performance study, and the SMT
 layer) and closes the storage layer's mechanization (spine fusion, the
 merge-remap merge clause, multi-epoch composition, and the one-sided run
 table), leaving one shared honesty-rebasing lemma as the single remaining
-single-replica compaction obligation. One editorial rule
+single-replica compaction obligation. A July~21 extension adds to
+Part~II the rich-text marks arc (\S\ref{sec:marks}): the
+document-order mark read model and the marks-layer GC, with the
+runtime's Peritext datatype accordingly promoted from GC-refusal to
+certified fire. One editorial rule
 governs the whole document: the
 \emph{rehoming} tombstone-free RGA, an earlier design demoted after its
 sequential refutation, receives no narrative treatment here; it appears
@@ -4178,7 +4187,11 @@ epoch one. Freshness across epochs is representation-agnostic
 (\lean{rED\_le\_self}, \lean{rED\_fresh\_dominates}: a delta fresh against
 original sibling deltas stays fresh against renumbered ordinals without
 inspecting their meaning), so the order-iso half composes whether stored
-deltas are timestamp differences or epoch-$k$ ordinals.
+deltas are timestamp differences or epoch-$k$ ordinals. The
+\lean{StablePrefixMap} bundle is not text-specific: the rich-text marks
+layer instantiates the same interface a second time as its keep-set
+relabeling, and composes through the same route
+(\S\ref{sec:marks}).
 
 \paragraph{The one remaining compaction obligation, named.} Two residues
 above --- the single-epoch honesty re-basing (T3's gap: the re-coded
@@ -4507,6 +4520,506 @@ means the save \emph{shrinks} on delete where the history-carrying systems
 grow. The full cross-system matrix --- per-character apply latency, merge
 and sync, load, all four save representations, sync payload, and the
 grows-on-delete reproduction --- is developed in \S\ref{sec:perf}.
+
+\section{The marks layer: document-order rich text, and its GC}
+\label{sec:marks}
+
+Rich text is the family's first \emph{effect-coupled} extension: marks
+(bold, links, comments) are anchored in the sequence but are not
+sequence elements. The repository holds two mark encodings. Part~III's
+fused Peritext (\S\ref{sec:specs}) encodes a mark as a pair of
+in-sequence boundary inserts; the model of this section is the other
+encoding, the one the runtime ships as its third datatype
+(\S\ref{sec:runtime}): characters live in the embed order, and marks
+are \emph{separate immutable records} that name their boundary anchors
+by id. Two campaigns are recorded here. Task~\#55 built the read model
+and its theorems (\code{Peritext\_Embed/PeritextEmbed\_MarkIntent.lean}),
+replacing a retracted claim; task~\#110 built its garbage collector
+(design and validation \code{whiteboard/marks-gc-note.md} with harness
+\code{whiteboard/litmus/marks\_gc\_check.py}; mechanization
+\code{PeritextEmbed\_MarksGC.lean} and
+\code{PeritextEmbed\_MarksGC\_A3.lean}; runtime
+\code{runtime/src/compact-peritext.js}), moving the runtime's Peritext
+state GC from a justified refusal to a certified fire. Verdicts below
+are labeled by provenance, as everywhere in this document:
+\emph{proved} is kernel-checked Lean, \emph{measured-in-model} is the
+checked-in Python harness, \emph{measured} is the shipped JavaScript
+runtime's checked-in tests.
+
+\subsection{The document-order mark read model}
+\label{sec:markmodel}
+
+\paragraph{State.} Text is an insert-only shadow: a map from character
+id (a Lamport stamp, globally unique, exceeding the id of the insert's
+anchor) to its immutable birth coordinate, plus a \emph{grow-only set
+of deleted ids}. Text deletes are logical because the resolver below
+needs the birth positions of \emph{dead} anchors; that retention is
+exactly what the GC half of this section must then contend with. Marks
+are a grow-only map from mark id $\mathit{mid}$ (the same Lamport
+space) to an immutable record $(\mathit{mid}, \mathit{mtype},
+\mathit{op}, \mathit{startId}, \mathit{endId}, \mathit{startSide},
+\mathit{endSide})$ with $\mathit{op} \in \{\mathsf{add},
+\mathsf{remove}\}$: a \textsf{removeMark} is a first-class negative
+record, and per $(\text{character}, \mathit{mtype})$ the covering mark
+with the highest $\mathit{mid}$ wins (LWW), a winning remove
+suppressing the formatting. A per-mark value (a link url, a colour)
+rides outside the LWW key. Reading order is the embed order of
+\S\ref{sec:design} (birth-chain lexicographic, newer children first);
+the live order is that order filtered by the deleted set.
+
+\paragraph{Boundary resolution.} Each boundary resolves to a live
+position. For a live anchor the side is gravity, and ``newer than the
+mark'' means character id $> \mathit{mid}$; \emph{growth is end-side
+only}, the one design decision carried in from validation: an end with
+$\mathit{endSide} = \mathit{after}$ grows right over the
+newer-than-mark run (typing at the end of a bold span stays bold),
+while a $\mathit{before}$ start does \emph{not} grow left, else it
+grabs unrelated newer siblings and diverges from the Peritext paper's
+semantics. For a dead anchor the boundary \emph{rehomes}: the nearest
+surviving character in reading order, scanning from the anchor's birth
+position in the side's direction. The eight cases:
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+boundary & anchor & side & resolution \\
+\midrule
+start & live & $\mathit{before}$ & the span starts at the anchor \\
+start & live & $\mathit{after}$ & starts after the anchor, skipping
+  the newer-than-mark run \\
+start & dead & $\mathit{before}$ & rehome right; scan exhausted: the
+  mark collapses \\
+start & dead & $\mathit{after}$ & rehome left; exhausted: document
+  start \\
+end & live & $\mathit{after}$ & ends at the anchor, then \emph{grows}
+  right over the newer-than-mark run \\
+end & live & $\mathit{before}$ & ends before the anchor, stepping back
+  over the newer-than-mark run \\
+end & dead & $\mathit{after}$ & rehome left; exhausted: the mark
+  collapses \\
+end & dead & $\mathit{before}$ & rehome right; exhausted: document
+  end \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The render (\lean{renderMarksDoc}) is the live order with
+each character's winning marks per type.
+
+\paragraph{The positive theorem, and the retraction it replaces.} An
+earlier composed-Peritext read resolved a dead boundary by climbing
+\emph{tree} ancestry (frozen path snapshots), and carried a
+\lean{mark\_*\_no\_leak} theorem asserting that formatting never leaks
+under deletion. That claim was \textbf{false} and is retracted: a tree
+ancestor sits \emph{earlier in reading order} than its descendants, so
+a dead boundary anchor migrates backward in the document and formats
+text that was never in the span. The document-order model is built so
+that the replacement is provable: rehoming scans \emph{reading} order,
+so a single-replica rehome can only shrink or hold a span, never
+migrate it backward. The general positive is
+\lean{doc\_no\_backward\_leak} (proved; axioms $\{\mathrm{propext}\}$
+alone): no character strictly before a mark's rehomed start carries
+that mark's formatting. The retracted claim survives as a
+machine-checked negative control:
+\lean{tree\_backward\_leak\_refutes\_noleak} exhibits a state and a
+mark whose tree-ancestry coverage formats a character the
+document-order read does not. Concretely (\lean{leak\_doc\_shrinks}):
+delete a bold span's start anchor; document order rehomes the start
+forward to the next survivor, while the tree read climbs to the
+anchor's parent and formats text that was never bold.
+
+\paragraph{The Litt et al.\ pins.} The model is pinned against the
+worked examples of the Peritext paper (Litt et al.\ CSCW'22), each a
+concrete SPOT with a hand-derived expected render and a $\neq$
+companion refuting the tempting degenerate: insertion within a bold
+span is formatted (Ex\,1); overlapping bold and italic carry both on
+the overlap (Ex\,2); marking a span, deleting the whole span, and
+reinserting yields plain text under document order, while the tree
+control leaks the formatting back (Ex\,3, the leak made concrete);
+concurrent add versus removeMark resolves LWW by $\mathit{mid}$, and
+swapping which is newer flips the verdict (Ex\,5); typing at the end
+of a bold span is grabbed exactly when the typed text is newer than
+the mark (Ex\,7); and the gravity contrast (Ex\,8): on the same
+insertion, a bold span ($\mathit{endSide} = \mathit{after}$) expands
+and a link ($\mathit{endSide} = \mathit{before}$) does not.
+Convergence is watched at the same grain: the render is a function of
+the mark \emph{set} (permutation invariance, with a dropped-mark FAIL
+pin); character order converges by the embed capstone.
+
+\paragraph{The honesty theorem: the atomicity cost, stated.} The
+substrate is tombstone-free and live, so the mark-positioning trilemma
+(atomic mark placement, tombstone-freedom, live state: pick two;
+\S\ref{sec:specs}) charges this model too, and it pays on the growth
+rule. \lean{doc\_delete\_can\_respan} (proved, concrete): deleting a
+plain character $C$, touched by no boundary, re-formats an untouched
+survivor $D$, because $C$ (older than the mark) blocked the end-growth
+run and its deletion makes $D$ contiguous with the span. The
+post-delete render is provably \emph{not} the pre-delete render minus
+the deleted character. This is a membership re-span, not a backward
+leak (the no-leak theorem is untouched), and the contrast with the
+fused encoding is exact: the fused design has no growth rule and
+proves \lean{renderIds\_del} (a character delete re-formats nothing);
+the marks model trades that theorem for the paper's
+expand-at-the-end behaviour, and the price is stated as a theorem
+rather than hidden.
+
+\subsection{The GC problem, and why refusal was correct}
+\label{sec:marksrefusal}
+
+The state-GC pass of \S\ref{sec:compactED}, as shipped in the runtime
+(\S\ref{sec:runtime}), drops settled-dead records and re-codes
+coordinates. For plain text that is sound; for this datatype, pruning
+a dead anchor's record destroys exactly the birth position a mark
+needs to rehome, and the runtime therefore \emph{refused} to compact
+Peritext at all. The refusal was correct, and the justification is a
+directed flip (D6 in the note's numbering, hand-derived). Geometry,
+reused throughout this section: $R$ (id 1) and $L$ (id 2) minted
+concurrently at the root, so $L$ is newer and reads first; $d$ (id 3)
+a child of $L$; reading order $L\,d\,R$. Mark $[\text{start } L\
+\mathit{before},\ \text{end } d\ \mathit{after}]$, $\mathit{mid} = 5$;
+delete $d$; compact at a settled cut with no retention. The
+never-compacted twin: the dead end anchor $d$ scans left and finds
+$L$; covered $\{L\}$, so $L$ is bold. The unretained subject: $d$ has
+no record, the resolver cannot place the scan and degrades to the
+collapse branch; covered $\{\}$, $L$ is plain. The read flips. The
+companion pins the cause: the same compactor with all mark anchors
+\emph{live} reads twin-identical, so the refusal's reason is precisely
+dead mark anchors, nothing else. Randomized (measured-in-model): the
+no-retention control flips 351 of 600 randomized DAG trials.
+
+\subsection{Two attacks, falsifiable forms first}
+\label{sec:marksattacks}
+
+The settled-cut contract is the text layer's (\S\ref{sec:compactED}):
+every replica has delivered everything at or below the cut, and every
+op concurrent with the cut that is not yet delivered is
+\emph{declared} in flight (its id and anchor id). The compaction map
+is also the text layer's: drop settled-dead records outside the
+keep-set, renumber each sibling group of the kept tree
+order-preservingly except groups receiving a declared in-flight delta
+(frozen verbatim, the \lean{skipAt} guard), and let beyond-cut mints
+derive their coordinate from the re-coded anchor record plus the fresh
+delta (the extension law H3 realized as derive-at-ingest). The two
+attacks differ only in the keep-set and the mark treatment, and each
+was stated as a falsifiable reads-identical claim before any trial
+ran.
+
+\paragraph{H-A: retention roots, validated.} Keep-set $=$ live ids
+$\cup$ the boundary anchor ids of every present mark record (add and
+remove records both) $\cup$ declared in-flight anchors. Dead boundary
+anchors survive as dead records with re-coded coordinates; the marks
+map is untouched. Falsifier: any version, on any beyond-cut
+continuation (text and mark ops on any replica, merged in any order,
+declared stragglers delivered late, successive cuts composed), whose
+render differs from the never-compacted twin. Verdict
+(measured-in-model): \textbf{validated}, 2000/2000 randomized DAG
+trials (4048 cuts, 2214 with declared stragglers), zero divergences.
+Cost (measured-in-model): 0.296 retained dead records per mark record,
+maximum 2.000 against the structural bound of 2 (a mark has two
+boundaries); 30.6 percent of settled-dead records dropped under a
+deliberately mark-heavy random workload (real traces mark far fewer
+characters per edit and would drop a larger share).
+
+\paragraph{H-B: early re-anchoring, refuted.} At the cut, rewrite each
+\emph{dead} mark boundary to the resolver's own cut-time rehoming
+target (side kept; an exhausted scan becomes the side's collapse
+sentinel), then retain nothing for marks. The rewrite commits at the
+cut to information the resolver would otherwise read at render time
+(the dead anchor's position among \emph{later} arrivals), and the
+minimal countermodel family (D1, all cells hand-derived, then
+machine-confirmed cell by cell) makes that exact. Same geometry as D6;
+one continuation character $n$: (a) a beyond-cut insert, id 10 (newer
+than the mark), anchored at $L$; (b) a declared straggler, id 4
+(\emph{older} than the mark), anchored at $L$, delivered after
+compaction; (c) the same straggler anchored at $d$ itself. Covered
+sets, twin versus H-B subject, per boundary combination (the mark's
+boundary at $d$, the other on a survivor):
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+combo (boundary at $d$) & (a) id 10 at $L$ & (b) id 4 at $L$ &
+  (c) id 4 at $d$ \\
+\midrule
+start $\mathit{before}$ (inner) & $\{R\} = \{R\}$ & $\{R\} = \{R\}$ &
+  $\{n,R\}$ vs $\{R\}$: \textbf{diverges} \\
+start $\mathit{after}$ (outer) & $\{R\} = \{R\}$ &
+  $\{R\}$ vs $\{n,R\}$: \textbf{diverges} & $\{n,R\} = \{n,R\}$ \\
+end $\mathit{after}$ (inner) & $\{L,n\} = \{L,n\}$ &
+  $\{L,n\}$ vs $\{L\}$: \textbf{diverges} & $\{L\} = \{L\}$ \\
+end $\mathit{before}$ (outer) & $\{L\} = \{L\}$ & $\{L,n\} = \{L,n\}$ &
+  $\{L\}$ vs $\{L,n\}$: \textbf{diverges} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Worked sample, end $\mathit{after}$, variant (b). Twin:
+birth order $L\,n\,d\,R$; the dead end anchor $d$ scans left and finds
+$n$ live, so the span ends at $n$: covered $\{L, n\}$. H-B rewrote the
+end at the cut, before $n$ existed, to $L$; at render the end sits at
+$L$ and end-growth does not cross $n$, whose id 4 is below the mark's
+$\mathit{mid}$ 5: covered $\{L\}$. The straggler sits inside the
+twin's span and outside the subject's.
+
+\paragraph{The compensation finding.} Column (a) is the negative space
+of the countermodel, and it is exact rather than lucky: with only a
+beyond-cut \emph{newer} insert, all four combinations agree. Every
+character that appears between the rewrite target and the dead
+anchor's old position after a settled cut is either a beyond-cut mint
+(id above every settled id, hence above the mark's $\mathit{mid}$, so
+the newer-run growth and skip rules cross it on \emph{both} sides of
+the comparison) or a declared straggler, the only source of ids below
+the mark's $\mathit{mid}$. And nothing beyond-cut can land between a
+settled-dead anchor and its reading-order successor without anchoring
+in the dead subtree, which a settled cut makes invisible to future
+minters; only a straggler anchored at the dead node itself can, which
+is column (c). So the naive recency candidate (a beyond-cut newer
+insert alone) \emph{provably cannot fire}: the H-B countermodel needs
+a straggler older than the mark (columns b, c) or the death of the
+rewrite target. The latter is D1(d), hand-derived: chain $L$ (1) at
+the root, $d$ (2) a child of $L$; mark $[\text{start } L\
+\mathit{before},\ \text{end } d\ \mathit{after}]$, $\mathit{mid} = 5$;
+delete $d$; cut (H-B rewrites the end to $L$); beyond the cut insert
+$n$ (10) under $L$, then delete $L$. Twin: birth $L\,n\,d$, live
+$\{n\}$; the start rehomes right to $n$, the dead end $d$ scans left
+and finds $n$: covered $\{n\}$, $n$ is bold. Subject: the rewritten
+end anchor $L$ is now dead too and scans \emph{left} from $L$'s
+position, where nothing lives ($n$ sits to $L$'s right, unreachable by
+that scan): the mark collapses and $n$ is plain. It diverges with no
+straggler anywhere: the rewrite also forgot that $d$ sat to the
+\emph{right} of $L$, so the re-rehoming scans from the wrong birth
+position.
+
+\paragraph{The weaker true statement, labeled as what it is.} The
+rewrite is computed once at the common settled cut, so every compacted
+replica shares it, and all compacted replicas \emph{converge among
+themselves}: machine-checked separately, 2000/2000 trials. This is
+\textbf{licensed divergence}, a semantic change at a settled cut, and
+it is never reads-identical: 156 of the 2000 randomized trials
+diverged from the never-compacted twin, on top of the directed family
+above. It must not be stated as H-B succeeding, and is recorded here
+as the price a re-anchoring design would pay, not as a result.
+
+\paragraph{D3: a dead run keeps its internal order.} Two boundaries
+inside one dead run are observably \emph{ordered}. Chars $A$ (1) at
+the root, $x$ (2) under $A$, $y$ (3) under $x$, $B$ (4) under $y$;
+mark $m_1$ covers $[A..x]$ ($\mathit{mid}$ 10), $m_2$ covers $[A..y]$
+($\mathit{mid}$ 11), both inner sides; delete $x$ and $y$ (one dead
+run); cut; declared straggler $g$ (5) anchored at $x$, delivered after
+compaction. $g$ is a newer child of $x$ than $y$, so birth order is
+$A\,x\,g\,y\,B$. Twin: $m_1$'s end ($x$, dead) scans left to $A$:
+covered $\{A\}$; $m_2$'s end ($y$, dead) scans left to the live $g$:
+covered $\{A, g\}$. So $g$ carries $m_2$ and not $m_1$: the two
+boundaries' order inside the dead run is observable. H-B rewrote both
+ends to $A$ at the cut (the run's left survivor): both marks cover
+$\{A\}$ and $g$ loses $m_2$. H-A retains $x$ and $y$ as dead records
+whose re-coded coordinates keep their relative order, and reads
+exactly as the twin; that order preservation on retained-dead pairs is
+the A1 obligation the mechanization below discharges.
+
+\subsection{The growth window: the guarded root-freeing drop}
+\label{sec:markswindow}
+
+Plain H-A retains a mark's anchors as long as the mark record exists,
+and mark records are grow-only, so a heavily reformatted document
+accumulates $(\mathsf{add}, \mathsf{remove})$ pairs whose anchors are
+retained forever. The A3 refinement drops such a pair and frees its
+retention roots: an add $m$ and a remove $r$ of the same
+$\mathit{mtype}$ with \emph{equal boundary tuples} (ids and sides) and
+$r.\mathit{mid} > m.\mathit{mid}$ resolve to the same covered interval
+forever, and $r$ beats $m$ on every covered character, so dropping
+both looks render-neutral. It is sound only under \emph{three} guards,
+each with a hand-derived countermodel:
+\begin{itemize}[leftmargin=2em]
+\item \emph{Removal settled, declared in-flights included} (the
+  $\alpha$ flip): a concurrent same-type add $s$ with $m.\mathit{mid}
+  < s.\mathit{mid} < r.\mathit{mid}$, still in flight at the drop, is
+  suppressed by $r$ on the overlap while the pair is present and
+  formats it once the pair is dropped.
+\item \emph{No LWW shadowing}: no other same-type mark with
+  $\mathit{mid}$ below $r.\mathit{mid}$ may exist, because spans move
+  under later edits, so a no-overlap check \emph{now} does not
+  persist; dropping $r$ could resurrect the older mark on a future
+  overlap.
+\item \emph{The growth window} (the $\beta$ flip, the discovery of
+  this phase): no settled or declared id may lie strictly inside
+  $(m.\mathit{mid}, r.\mathit{mid})$. A character $w$ with
+  $m.\mathit{mid} < w.\mathit{id} < r.\mathit{mid}$ is grabbed by the
+  add's end-growth ($w.\mathit{id} > m.\mathit{mid}$) but \emph{not}
+  by the remove's ($w.\mathit{id} < r.\mathit{mid}$ fails its newer
+  test), so $w$ is bold with the pair present and plain after the
+  drop: the pair is not render-neutral even though its boundaries are
+  identical. Beyond-cut mints are Lamport-fresh (above
+  $r.\mathit{mid}$), so checking the settled and declared ids at the
+  cut is sufficient.
+\end{itemize}
+Both unguarded flips and the guarded positive (with a genuinely dead
+root freed that plain H-A would have retained) are hand-derived and
+machine-checked. Guarded, on top of H-A (measured-in-model): 600/600
+twin trials with 44 pair-drops fired; each drop removes two mark
+records and frees their anchors for the next cut.
+
+\subsection{The mechanization}
+\label{sec:marksmech}
+
+The note's obligations O1--O4 are mechanized in
+\code{PeritextEmbed\_MarksGC.lean} (O1--O3) and
+\code{PeritextEmbed\_MarksGC\_A3.lean} (O4); O5, the settled-cut
+protocol half, is deliberately \emph{not} taken on, being the
+already-tracked residue below.
+
+\paragraph{O1: the keep-set is a stable-prefix map, not a new
+notion.} \lean{KeepSpec}/\lean{keepSPM} package the retention-roots
+relabeling as an instance of the \emph{existing}
+\lean{StablePrefixMap} bundle of \S\ref{sec:recoding}, with the kept
+coordinate set (live $\cup$ mark-boundary anchors $\cup$ declared
+in-flight anchors) as its domain. H2 on kept pairs is the validation's
+A1 (\lean{keepSPM\_A1}, axiom-free: the relabeling preserves the
+display comparator on the whole kept set, retained-dead pairs
+included, which is what D3 consumes); H1 is derived, not assumed
+(\lean{keepSPM\_injOn\_kept}); H3 covers fresh mints \emph{and}
+declared stragglers, whose frozen sibling groups are exactly the text
+layer's skipped-groups side condition, with the FAIL companion
+\lean{freeze\_guard\_violation} pinning the flip (deltas $2 < 5$
+in-flight $< 9$ renumber to $1, 2$ and the frozen $5$ jumps the
+ex-$9$).
+
+\paragraph{O2: scan factorization, a pure list lemma.}
+\lean{scanRight\_filter} and \lean{scanLeft\_filter}: removing
+non-surviving, non-anchor elements from a sequence never changes the
+first survivor on either side of a retained element, because every
+dropped element is a non-survivor the scan skips anyway. No datatype
+content: \lean{List.filter} and \lean{find?} over an arbitrary split.
+
+\paragraph{O3: the render-congruence capstone.}
+\lean{marksGC\_render\_congr} (proved, kernel-clean):
+\lean{renderMarksDoc} is a function of the live id sequence, the
+boundary anchors' positions relative to it, and the id order; it never
+reads a coordinate. Hence: drop the settled-dead non-anchor records,
+re-code the kept coordinates by \emph{any} keep-set stable-prefix map,
+translate the continuation's carried prefixes, and every beyond-cut
+render equals the uncompacted twin's, for every mark and every type.
+The proof chains the re-coding cluster's T1
+(\lean{eRecode\_applySeq} transports the compacted fold), coordinate
+invisibility of the render, commutation of the continuation with the
+drop, and O2 plus the retention roots. Its hypotheses are explicit and
+honest: the drop touches only settled-dead ids, every present mark's
+boundaries are kept, and \lean{ContOK}, the continuation discipline
+(fresh Lamport ids, duplicate-free insert ids, mint keys fresh against
+the cut state and pairwise distinct). \lean{ContOK} is what any honest
+beyond-cut continuation satisfies; \emph{deriving} it, together with
+the straggler declarations, from honest reachability at a certified
+cut is nothing marks-specific: it is the note's O5, the same
+settled-cut protocol residue already tracked for the text layer (the
+$(\ast)$ lemma of \S\ref{sec:compactED}; Open
+Questions~\ref{oq:starlemma} and~\ref{oq:epochdag}). The marks layer
+adds no new obligation to it.
+
+\paragraph{O3, two epochs.} \lean{marksGC\_render\_congr\_twoEpoch}
+(proved, kernel-clean): compact at a settled cut, continue, compact
+again on the already re-coded records, and deliver a twice-lagging
+continuation translated through the composed map; the final render
+equals the never-compacted twin's. The composite is the existing
+\lean{StablePrefixMap.comp} carried at its own \emph{surviving}
+domain: a retention root freed between the epochs (by an A3 pair-drop)
+is exactly the rank-reclaim collision shape
+\lean{naive\_composition\_collides} pins (\S\ref{sec:compactED}), and
+restricting the composite's domain to the survivors is the fix that
+file already provides. $n$-epoch towers follow by the same
+\lean{chainSPM}/\lean{CompatOn} route.
+
+\paragraph{O4: the guarded drop.} \lean{a3\_guarded\_drop} (proved):
+removing an $(\mathsf{add}, \mathsf{remove})$ pair with equal boundary
+tuples and $r.\mathit{mid} > m.\mathit{mid}$ preserves
+\lean{renderMarksDoc} under the three guards, stated over the final
+delivered document and mark list (the shadowing guard ranges over
+declared in-flight marks too; the window guard is the $\beta$ clause;
+beyond-cut Lamport freshness makes the cut-time check sufficient).
+Only $r.\mathit{op} = \mathsf{remove}$ is load-bearing for the
+verdict. The SPOT block is PASS+FAIL shaped throughout: the guarded
+positive fired \emph{through the theorem}, the freed-root payoff (the
+next cut drops the ex-anchor's record and still matches the twin that
+holds both marks), a surviving-rival-mark variant, and both flips
+($\alpha$, $\beta$) each with a guard-refuses companion.
+
+\paragraph{One honest flag.} The Lean model and the Python harness
+diverge on one degenerate branch: a boundary anchor with \emph{no
+record at all}. The Lean resolver's scan then starts past the end of
+the birth order (finding the last, respectively first, survivor); the
+Python harness degrades to the side's collapse sentinel. The two
+disagree on the degenerate \emph{value}, but D6 flips against the twin
+either way, which is the only load-bearing fact, pinned on both sides
+(\lean{d6\_no\_retention\_flip}; the harness's D6), and the positive
+obligations never touch the branch: retained anchors always have
+records. The general lemmas and both capstones are kernel-clean; the
+SPOTs use \lean{native\_decide} under the document's SPOT convention.
+
+\subsection{The runtime: refuse becomes fire-with-certificate}
+\label{sec:marksruntime}
+
+\paragraph{The shipped compactor.} \code{compact-peritext.js}
+transliterates the harness semantics. The keep-set is as above; the
+re-coding, the order-preserving rank renumbering, and the in-flight
+freeze guard reuse the text layer's \code{compactEliasDelta} verbatim
+over the kept shadow; marks reference \emph{ids}, which re-coding
+never rewrites, so the mark map itself needs no translation; retained
+dead anchors stay listed in the deleted set. \code{compactiblePeritext}
+plugs the hooks into \code{DistributedReplica}: \code{compactStable}
+for Peritext now \emph{fires} under the same frontier certificate as
+the text layer (\S\ref{sec:runtime}), where it previously refused,
+and the A3 pair-drop runs first so freed roots leave the keep-set in
+the same epoch.
+
+\paragraph{The delete-must-settle refinement.} One contract refinement
+goes beyond the harness. Peritext deletes are logical, so a record may
+be freed only once its \emph{delete} is settled, not merely its
+insert: an id whose delete is still propagating is live somewhere and
+may yet be marked or anchored on. The harness's full-exchange barrier
+settles both at once and cannot see the distinction; the runtime's
+certificate separates them (settled insert ids versus settled delete
+ids, both extracted from the certified meet), and a directed test pins
+the refusal while a delete propagates and the fire once it settles.
+
+\paragraph{Deviations, all conservative.} Under a certified cut every
+in-flight field is empty: every op concurrent with the cut is already
+delivered (SettledAt), so passing empty declarations is proved
+sufficient rather than asserted, exactly as for the text layer. A
+declared in-flight insert whose anchor has no kept record throws
+rather than guesses. And the justifying countermodels stay executable
+against the shipped code as negative controls (\code{noRetention},
+\code{unguardedPairDrop}, the unguarded renumber), so the flips above
+are reproducible in the artifact, not only in the model.
+
+\paragraph{Measured.} With the marks GC wired, the full runtime suite
+passes 103/103 and the p2p-demo suite 10/10. The dedicated file
+(\code{runtime/test/peritext-gc.test.js}) carries the directed
+PASS+FAIL family (D6, the D1 straggler cells, the frozen-group order
+flip through the Peritext path, D3, both A3 flips with their
+guard-refuses companions), certified refuse-then-fire with wire
+catch-up across the compaction commit and a \emph{new} mark anchored
+on a retained dead record in the new epoch, the delete-must-settle
+directed pair, and a 150-trial multi-epoch twin PBT with declared
+stragglers (300 cuts, 179 with stragglers, 217 of 730 settled-dead
+records dropped, 10 guarded pair-drops): zero divergences from the
+never-compacted twin. Measured cost on this workload: 444 retained
+dead records over 1780 mark records, 0.249 per mark record, per-cut
+maximum 2.000 against the structural bound of 2. The 60-trial
+no-retention control flips 35 trials: the old refusal stays justified
+against the shipped code.
+
+\paragraph{The stack, closed.} \S\ref{sec:chainprice} characterized
+what a tombstone-free sequence must remember: the dead chain's slot
+keys, surviving as order ordinals inside live coordinates, with the
+fooling pair as the lower bound. The marks layer adds one further
+debt, and pays it counted. With retention-roots GC and the guarded
+pair-drop, the entire Peritext state is $O(\mathrm{live})$: live
+characters, present mark records, and dead information surviving
+\emph{only} as (i) the provably necessary order ordinals of
+\S\ref{sec:chainprice} and (ii) at most two mark-anchor retention
+roots per present mark record (the structural bound; measured 0.25 to
+0.30). Everything else, dead text and settled mark pairs alike, is
+dropped, and the invisibility of the drop is a kernel-checked theorem
+plus a twin-checked measurement, not a hope.
 
 \section{Comparison with Eg-walker}
 \label{sec:egwalker}
@@ -5185,6 +5698,10 @@ load-bearing in the delete theorem: deleting a \emph{character}
 re-formats nothing (\code{renderIds\_del}), while deleting a
 \emph{boundary} is mark removal and must re-format its span
 (machine-checked necessary: \code{boundary\_delete\_breaks\_filter\_eq}).
+The boundary-pair encoding is one of the repository's two mark models;
+the other, the document-order model of separate mark records that the
+runtime ships, with its own read rules, no-leak theorem, and garbage
+collector, is \S\ref{sec:marks}.
 
 \section{The proofs: four tiers, three kinds of invariant}
 \label{sec:tiers}
@@ -5539,7 +6056,7 @@ one machine, labeled measured or measured-in-model.
 \section{The runtime: one content-addressed replica}
 \label{sec:runtime}
 
-\paragraph{Datatype-parametric, proven over two datatypes.} The core
+\paragraph{Datatype-parametric, proven over three datatypes.} The core
 object is \code{DistributedReplica} (\code{runtime/src/replica.js},
 tasks \#94/\#108): a single content-addressed commit store carrying
 three capabilities at once --- delta gossip over the wire, the certified
@@ -5549,10 +6066,11 @@ except state compaction, which a datatype opts into by additionally
 providing \code{compact}/\code{remapState}. The runtime is therefore not
 a text editor with a CRDT inside; sequence editing is one instance. The
 test suite runs convergence, the content-address round-trip and tamper
-gate, and the commit GC over \emph{both} the embedded-chain RGA and an
+gate, and the commit GC over the embedded-chain RGA and an
 OR-set, and the certified state GC over the RGA (refuse-then-fire) with
 the OR-set correctly declining it (an OR-set has no coordinate re-coding
-to do). The pieces that Part~I proved generic run generically.
+to do). The pieces that Part~I proved generic run generically; the
+third datatype, rich text, follows the certified-GC paragraph below.
 
 \paragraph{Content addressing: one hash for wire and disk.} Separate
 peers assign different local ids to the same commit, so every commit is
@@ -5612,6 +6130,20 @@ in-flight set is \emph{proved} sufficient rather than asserted. The
 keep-set commit GC runs off the same frontier read from above
 (\S\ref{sec:gc}), and the run-table serializer (\S\ref{sec:crossbench})
 supplies the save format.
+
+\paragraph{The third datatype: rich text, with a firing marks GC.}
+Peritext ships as a ported datatype
+(\code{runtime/src/datatypes/peritext.js}): the document-order mark
+model of \S\ref{sec:marks} layered on the embed shadow, plugging into
+\code{DistributedReplica} over the same
+\code{init}/\code{apply}/\code{merge3}/\code{read} contract with no
+Peritext-specific runtime code, so rich text inherits delta gossip,
+content addressing, and commit GC by parametricity. Its state GC no
+longer refuses: \code{compactStable} fires under the same certificate
+through the marks keep-set (\code{compact-peritext.js}), with the
+delete-must-settle refinement, the conservative deviations, and the
+measured suite and cost numbers of \S\ref{sec:marks}; the flip that
+justified the old refusal stays executable as a negative control.
 
 \paragraph{Honest limits.} The demo (\code{p2p-demo/}, task \#95) shows
 several replicas editing one document over a real WebSocket transport,
@@ -6082,7 +6614,10 @@ epoch boundary and the capstone re-invokes natively in the new epoch.
 This is the whole remaining \emph{single-replica} compaction protocol, and
 Open Question~\ref{oq:epochdag} is the multi-replica layer above it. A
 refutation would be as informative: an honest re-coded configuration that
-no order-embedding rebasing can certify.
+no order-embedding rebasing can certify. The marks-layer capstone
+(\S\ref{sec:marks}) consumes the same residue and adds nothing to it:
+its \lean{ContOK} and straggler-declaration hypotheses are the
+per-continuation face of exactly this protocol half.
 \end{openq}
 
 \begin{openq}[concurrent compaction: the epoch DAG]
@@ -6197,7 +6732,10 @@ uniform coupling --- key \emph{removal}, reaching into the value layer the
 same way for every value type (one generic obligation: a reset element and
 a $\mathsf{remove} \parallel v$-op policy) --- and ad-hoc effect coupling
 (rich-text marks anchored in a sequence), where nothing is expected to
-compose automatically. The convergence half is now mechanized
+compose automatically; the marks layer of \S\ref{sec:marks} is that
+coupling made concrete, and its read model and GC are indeed
+discharged directly at the render level rather than through the
+product kit. The convergence half is now mechanized
 (\lean{Metatheory/Product.lean}): the binary heterogeneous product
 $D_1 \otimes D_2$ composes at exactly the \lean{JoinLemma3At} boundary ---
 cross-component pairs commute definitionally, so $\loE{E}$ has \emph{no}
@@ -6472,6 +7010,9 @@ multi-epoch composition (\S\ref{sec:compactED}) & \lean{StablePrefixMap.comp}, \
 nested settled cuts ($(\ast)$'s closed halves) & \lean{nested\_cuts\_settled}, \lean{rED\_hocc\_fresh} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompatChain.lean} \\
 run table, one-sided (\S\ref{sec:runtable}) & \lean{tail\_attachment}, \lean{canonical\_tableOf}, \lean{cmpTable\_eq\_keyLt}, \lean{walk\_display}, T-mut & \lean{Sal/MRDTs/RGA\_Embed/RunTable.lean}, \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_RunTable.lean} \\
 run table, sided core (full iso owed, OQ~\ref{oq:runtable}) & \lean{stail\_attachment}, \lean{sided\_keyLt\_iff\_schainBefore} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
+document-order mark read model (\S\ref{sec:marks}) & \lean{doc\_no\_backward\_leak}, \lean{doc\_delete\_can\_respan}, \lean{tree\_backward\_leak\_refutes\_noleak} & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarkIntent.lean} \\
+marks GC O1--O3 (\S\ref{sec:marks}) & \lean{keepSPM\_A1}, \lean{scanRight\_filter}, \lean{marksGC\_render\_congr} (single- and two-epoch) & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC.lean} \\
+marks GC O4, guarded pair-drop (\S\ref{sec:marks}) & \lean{a3\_guarded\_drop} + $\alpha$/$\beta$ flip SPOTs & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC\_A3.lean} \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Part III: the sequential-specification campaign}} \\
 tier 1: eleven flat RDTs & \lean{$\ast$\_seq\_sound} (per RDT) & \lean{MRDT\_Instances/SeqSpec\_Flat.lean} \\
@@ -6487,6 +7028,7 @@ negative: Shesha merge & \lean{Shesha\_Rows\_Refuted} & \lean{MRDT\_Instances/Sh
 \midrule
 \multicolumn{3}{@{}l}{\emph{The runtime pillar: engineering artifacts (unverified, mirror the verified kernel)}} \\
 p2p runtime replica (\S\ref{sec:runtime}) & \code{DistributedReplica}, \code{compactStable} & \code{runtime/src/replica.js} \\
+peritext marks GC (\S\ref{sec:marks}, \S\ref{sec:runtime}) & \code{compactPeritext}, \code{compactiblePeritext} & \code{runtime/src/compact-peritext.js} \\
 run-table serializer (\S\ref{sec:perf}) & \code{encode}/\code{decode}, \code{accountingBits} & \code{runtime/src/serialize.js} \\
 git persistence + p2p demo (\S\ref{sec:runtime}) & \code{persist}/\code{load}, \code{WsTransport} & \code{p2p-demo/src/} \\
 cross-system benchmark (\S\ref{sec:perf}) & the matrix & \code{benchmarks/} \\
