@@ -4490,17 +4490,211 @@ coalesce (the delete-inverse a paper proof would most plausibly
 hand-wave; its necessity is pinned by \lean{spot\_d4\_coalesce\_necessity}
 and canonicalization under mutation by \lean{tableOf\_congr}). Only the
 epoch-composition clause (\lean{runTable\_epoch}) carries a stability
-hypothesis. The four mutation rules have since been promoted from
-SPOT-pinned perturbations to closed \lean{tableOf} equations, the
-table-direct walk is literal (\lean{tableWalk\_tableOf}: the display
-emitted run by run without materializing \lean{stateOf}), and the
-\emph{sided} run table is complete (\code{SidedRunTable.lean}): the repr
-iso both directions over labels, sides, and liveness, the two-case
-comparator \lean{scmpTable\_eq\_keyLt} for every code, the O(1) typing
-equation, the in-order walk with its literal \lean{stableWalk}, and the
-all-R lockstep bridge (\lean{sTableOf\_liftR}: on an all-R set the sided
-table is the one-sided table with the side bit stamped). The one open
-face is the wire format (Open Question~\ref{oq:runtable}).
+hypothesis. Task~\#73 has since closed the remaining theorem bill on
+this subsection: the four mutation rules are promoted from SPOT-pinned
+perturbation lemmas to \emph{closed} \lean{tableOf} equations, and the
+walk is promoted to a literal, table-direct reading procedure. The next
+two paragraphs state both; the sided run table has its own subsection
+(\S\ref{sec:sidedruntable}); the one face still open is the wire format
+(Open Question~\ref{oq:runtable}).
+
+\paragraph{The mutation rules, as closed equations.} Each rule is now
+an equation: \lean{tableOf} of the mutated state equals an explicit
+rewrite of pre-mutation data. New heads enter the enumeration by sorted
+insertion, removed heads leave by filtration, surviving entries keep
+their fields except the announced parent rehoming and length
+arithmetic, and parent references are re-indexed into the new
+enumeration (itself closed, being the equation's own head list). No
+stability or honesty hypothesis appears in any of the four. The engine
+is a pair of characterization lemmas that force the right-hand sides
+rather than check them: any strictly sorted enumeration of the heads
+\emph{is} the canonical head list (\lean{headsList\_eq\_of\_iff}), and a
+run's length follows from an explicit offset enumeration of its members
+(\lean{lenOf\_eq\_of\_iff}). One equation displayed, the rest in prose.
+\emph{D1, the mid-run split} (\lean{tableOf\_insert\_split}): let the
+anchor $a$ sit at offset $j$ in the run headed by $g$, of length
+$\ell$, with $a$ interior (its run successor $a \cdot 1$ is fused), and
+let $a \cdot d$ ($d \neq 1$) be the fresh record. The new table is the
+old one with
+\[
+  \begin{array}{l@{\;\;}l}
+    g: & \mathrm{len} := j + 1 \quad (\text{the anchor run cut at the
+         offset}),\\[2pt]
+    a \cdot 1: & \langle\, \mathrm{par} = (g,\, j),\ \delta = 1,\
+         \mathrm{len} = \ell - j - 1 \,\rangle \quad (\text{the suffix,
+         re-headed}),\\[2pt]
+    a \cdot d: & \langle\, \mathrm{par} = (g,\, j),\ \delta = d,\
+         \mathrm{len} = 1 \,\rangle \quad (\text{the fresh live
+         singleton}),\\[2pt]
+    h \text{ attached in } g\text{'s run}: & \mathrm{par} :=
+         (a \cdot 1,\ \mathrm{off} - (j{+}1)) \quad (\text{rehomed to
+         the suffix}),\\[2pt]
+    \text{every other } h: & \text{unchanged},
+  \end{array}
+\]
+the two new heads entering at their sorted positions and the suffix
+keeping the run's (uniform) liveness; by tail attachment the rehomed
+entries are exactly those at the old tail. (The childless-anchor happy
+path stays the O(1) typing equation \lean{tableOf\_insert\_extend}.)
+\emph{D2, the delete liveness split} (\lean{tableOf\_delete\_split}):
+deleting a run-interior record $x$ leaves the kept tree untouched and
+cuts the run at the liveness break, in three: the live prefix keeps the
+old head with length cut to $x$'s offset; $x$ survives as a dead
+singleton entry; the live suffix re-heads at $x \cdot 1$; entries
+attached at the old tail rehome to the suffix. The equation is stated
+for the interior case (fused incoming and outgoing edges); the boundary
+shapes ($x$ a run head, $x$ the tail) split in two rather than three
+and are the same construction with one empty side. \emph{D4, the
+coalesce} (\lean{tableOf\_coalesce}), the closed delete-inverse of D1:
+deleting the childless interloper $a \cdot d$ whose presence had split
+the run at $a$ removes both the interloper's entry and the suffix entry
+$a \cdot 1$; the anchor's run absorbs the suffix, with length the sum
+of the two, and every entry attached at the suffix's tail rehomes into
+the merged run. \emph{D5, materialization}
+(\lean{tableOf\_materialize}): delivering $m \cdot d$ under the
+vanished anchor $m$ (live, childless parent) inserts two singleton
+entries at their sorted head positions, the dead materialized anchor
+$m$ and the live record below it, with parent references re-indexed.
+This is the directed single-anchor shape; the general vanished-path
+cascade (a whole dead spine re-materializing, with cuts at non-unit
+labels and a possible mid-run split at the re-attachment point) is
+deliberately presented as the composite of this rule, applied once per
+vanished level, with D1-shaped splits: it is a genuine cascade and is
+not forced into one equation.
+
+\paragraph{The literal walk.} The structural walk behind
+\lean{walk\_display} still consults the state. Its promoted form,
+\lean{tableWalk}, consults nothing but the table: entry headers, parent
+references, and address arithmetic (each entry's head recovered by
+summing deltas along the contracted parent path, each run emitted as
+that head followed by its offset extensions, recursion into the entries
+attached at the run's tail, newest label first). \lean{stateOf} is
+never materialized, and the recursion fuel (one more than the total of
+the length fields) is proved sufficient: \lean{walkT\_eq\_walkE} is the
+simulation at matched fuel, and the capstone is
+\lean{tableWalk\_tableOf}: build the table, read it back, obtain the
+display of the live-chain set verbatim, with no stability hypothesis.
+This is the formal face of the reading claim the measurement bullets
+priced: a full read is one pass over the entries in walk order,
+emission per record with no coordinate materialized. The
+$\Theta(\text{contracted depth})$ comparator time of the honest-limit
+bullet above is a \emph{random-access} cost; a sequential read never
+pays it, because the table itself is the order index. The instance file
+pins the generic procedure on the D1 state
+(\lean{spot\_d1\_tableWalk\_generic}: the concrete SPOT and the
+faithfulness theorem name the same reading procedure).
+
+\subsection{The sided run table: the same lever under Fugue}
+\label{sec:sidedruntable}
+
+Measurements 3 and 4 already ran the sided (Fugue) family through the
+same accounting and reported the decisive number: the side channel
+collapses from one flat bit per live level to one bit per entry, 0.061
+to 0.174 bits per character. This subsection is that family's verified
+counterpart (\code{SidedRunTable.lean}): the full mirror of the
+one-sided development of \S\ref{sec:runtable}, over the sided chain
+kernel of \S\ref{sec:sided}, state-level and hypothesis-free
+throughout (no stability gate, no honest-delivery hypothesis).
+
+\paragraph{Entries, runs, and where the L data lives.} A sided entry
+adds one field to the one-sided header: (parent entry and offset,
+liveness, \emph{side}, head delta, length). Fusibility condition (3) of
+\S\ref{sec:runtable} (the child's side is R), vacuous one-sided, is now
+live: a fusible edge's last step is $(R, 1)$ with the parent's
+liveness, so runs are uniformly R (\lean{sfusible\_side\_R}) and member
+sides cost nothing. Every kept L node fails condition (3), so it is a
+head with its own explicit entry (\lean{Lentry\_isHead}). The entire L
+content of a state is therefore the side bits of the entry headers,
+which is the verified shape of the measured collapse: the
+representation stores L data nowhere else.
+
+\paragraph{The canonical order and the iso.} The head enumeration is
+sorted by \lean{shLt}, short-lex over an \emph{injective} flattening of
+the sided word stream: each head chain flattens to its alternating
+(side, delta) word, injectivity makes the order strict and total,
+parents strictly precede children (flattened lengths double), and the
+tie-break is inherited wholesale from the one-sided head order.
+Canonical tables (\lean{SCanonical}) carry the side-aware
+\lean{no\_fuse} condition: only an R, delta-1, same-liveness
+\emph{lone} attachment counts as a missed fuse, so an L singleton
+hanging alone at a tail is canonical. The representation iso holds in
+both directions (\lean{sStateOf\_sTableOf} losslessness,
+\lean{sTableOf\_sStateOf} canonicity, field for field; image side
+\lean{scanonical\_sTableOf}) over labels, sides, and liveness. It is
+deliberately \emph{not} stated over timestamps, for the same reason as
+one-sided: rank ordinals forget time, so a timestamp-preserving iso is
+false after the first epoch, and the iso is stated over exactly what
+survives one.
+
+\paragraph{The comparator: the offset-vs-tail exit-side rule.} The
+two-case structure of \S\ref{sec:runtable} survives, licensed by the
+sided tail-attachment lemma (\lean{stail\_attachment}), and the
+divergence case is still a header verdict: two branch entries at the
+same tail compare by the banded entry order (L before R; among L
+siblings the older label first, among R the newer first). The new
+structural content is in the prefix case. One-sided, an ancestor simply
+displays before its continuation subtree. Sided, the comparator
+consults the ancestor's offset against its run length: a strictly
+interior ancestor precedes its subtree \emph{regardless of the exit
+side}, while exactly at the run tail the exit side decides (an R exit
+displays after the ancestor, an L exit before). This is the run-table
+shadow of the kernel's in-order display rule: runs are uniformly R, so
+strictly inside a run the only continuation is the $(R,1)$ step toward
+the tail, an R extension, and the ancestor wins; an L edge can hang
+only at a tail, where every attachment lives, so sidedness surfaces
+exactly there. The capstone is \lean{scmpTable\_eq\_keyLt}: the
+comparator over the contracted sided run tree equals the fold's key
+order on the sided coordinates, for \emph{every} ordered prefix code,
+refining the kernel's in-order marker theorem to the storage layer.
+The cost is unchanged from one-sided: contracted depth, header fields
+only, no coordinate materialized.
+
+\paragraph{Congruence and the typing equation.} \lean{sTableOf\_congr}:
+the sided table is a function of the live sided-chain set, so merges
+land wherever delivery order put them and the table cannot tell.
+\lean{sTableOf\_insert\_extend}: appending an $(R,1)$ child to a
+childless live node changes exactly one length field, O(1) sided table
+work per keystroke, exactly as one-sided.
+
+\paragraph{The in-order walk, and its literal form.} The sided walk of
+one run: interior members in offset order, then the L subtrees at the
+tail (ascending, older label first), then the tail member itself, then
+the R subtrees (descending, newer label first); at the virtual root,
+the L-rooted subtrees ascending, then the R-rooted descending.
+\lean{swalk\_display} packages the verdict: duplicate-free, exactly the
+live chains, pairwise in the in-order display order (and descending in
+the coordinate key order for every ordered prefix code,
+\lean{swalk\_pairwise\_keyLt}). The literal form, \lean{stableWalk},
+consults entry headers, parent references, and the same address
+arithmetic only, with \lean{sStateOf} never materialized; its
+faithfulness theorem is \lean{stableWalk\_sTableOf}: build the sided
+table, read it back, obtain the in-order display verbatim.
+
+\paragraph{The all-R lockstep bridge.} On an all-R live set the sided
+development projects to the one-sided one in lockstep.
+\lean{sTableOf\_liftR}: the sided table of a lifted all-R state
+\emph{is} the one-sided table with the side bit stamped R on every
+entry. \lean{swalk\_liftR}: the sided in-order walk of that state is
+the one-sided walk, lifted (consuming the kernel's fragment theorem
+\code{schainBefore\_liftR}). This is the storage-layer analog of the
+convergence-layer ``sides are payload'' theorem
+(\S\ref{sec:mechanization}): the one-sided datatype is the
+L-uninhabited fragment of the sided one, so every one-sided storage
+result of \S\ref{sec:runtable} transports to the sided table on that
+fragment with no re-proof.
+
+Per house discipline the file closes with hand-derived PASS+FAIL
+executions: the L child that does not fuse where the R child does; the
+band order pinned both in the entry order and in the coordinate keys;
+the L-band mint displaying L band, then node, then R band; the band
+\emph{direction} with its FAIL companion (sorting the L band
+newest-first, like the R band, provably flips the display: the tempting
+degenerate order is itself refuted); the table-direct walk on the mint
+case; and the all-R lockstep pinned on the one-sided D1 state, table
+half and walk half. Every capstone named in this subsection and in
+\S\ref{sec:runtable} passes its \code{\#print axioms} audit at
+\code{propext}/\code{Classical.choice}/\code{Quot.sound} or below;
+\code{native\_decide} is confined to the SPOTs.
 
 \subsection{From projection to shipped bytes, and the cross-system question}
 \label{sec:crossbench}
@@ -6814,26 +7008,14 @@ of ``no policy reaches Shesha''?
 \begin{openq}[the run-table wire format: the one face still open]
 \label{oq:runtable}
 The run-table \emph{theorem} bill is now closed on both sides
-(task~\#73). One-sided (\code{RunTable.lean}): T-tail
-(\lean{tail\_attachment}), T-repr as a genuine bijection, T-cmp
-(\lean{cmpTable\_eq\_keyLt}), T-epoch (\lean{runTable\_epoch}), the four
-T-mut rules promoted from SPOT-pinned perturbations to \emph{closed
-equations} (\lean{tableOf\_insert\_split},
-\lean{tableOf\_delete\_split}, \lean{tableOf\_coalesce},
-\lean{tableOf\_materialize}; the general vanished-path cascade is
-documented as the composite of materialization with insert splits,
-deliberately not forced into one equation), and the literal table-direct
-walk with its capstone \lean{tableWalk\_tableOf} (the display emitted
-run by run, \lean{stateOf} never materialized: the formal face of the
-O(display) reading claim). Sided (\code{SidedRunTable.lean}): the full
-mirror --- repr iso both directions over labels, sides, and liveness
-(timestamps deliberately excluded, the same post-epoch reason), the
-two-case comparator \lean{scmpTable\_eq\_keyLt} for every code with the
-offset-vs-tail exit-side rule, congruence, the O(1) typing equation, the
-in-order walk and its literal \lean{stableWalk}, and the all-R lockstep
-bridge \lean{sTableOf\_liftR}/\lean{swalk\_liftR}: on an all-R set the
-sided table \emph{is} the one-sided table with the side bit stamped.
-What remains is one engineering face: task~\#104's serializer turned the
+(task~\#73), and the results are presented natively upstream: the four
+closed T-mut equations and the literal table-direct walk
+(\lean{tableWalk\_tableOf}) in \S\ref{sec:runtable}; the sided mirror
+(the repr iso over labels, sides, and liveness, the offset-vs-tail
+comparator \lean{scmpTable\_eq\_keyLt}, the in-order walk with its
+literal \lean{stableWalk}, and the all-R lockstep bridge
+\lean{sTableOf\_liftR}/\lean{swalk\_liftR}) in
+\S\ref{sec:sidedruntable}. What remains is one engineering face: task~\#104's serializer turned the
 projection column into measured bytes (\S\ref{sec:perf}), and
 task~\#111's persistent-HAMT swap removed the interface-inherited
 per-op copy, so the open item is a delta/op \emph{wire format} for sync
@@ -7019,7 +7201,7 @@ merge-vs-remap (VC-S4, \S\ref{sec:compactED}) & \lean{merge\_remap\_congr} & \le
 multi-epoch composition (\S\ref{sec:compactED}) & \lean{StablePrefixMap.comp}, \lean{multiEpoch\_settled\_reads}, \lean{naive\_composition\_collides} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_MultiEpoch.lean} \\
 nested settled cuts ($(\ast)$'s closed halves) & \lean{nested\_cuts\_settled}, \lean{rED\_hocc\_fresh} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompatChain.lean} \\
 run table, one-sided (\S\ref{sec:runtable}) & \lean{tail\_attachment}, \lean{canonical\_tableOf}, \lean{cmpTable\_eq\_keyLt}, \lean{walk\_display}, T-mut & \lean{Sal/MRDTs/RGA\_Embed/RunTable.lean}, \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_RunTable.lean} \\
-run table, sided (full mirror: iso, comparator, walks, all-R lockstep) & \lean{sTableOf\_sStateOf}, \lean{scmpTable\_eq\_keyLt}, \lean{stableWalk\_sTableOf}, \lean{sTableOf\_liftR} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
+run table, sided (\S\ref{sec:sidedruntable}: iso, comparator, walks, all-R lockstep) & \lean{sTableOf\_sStateOf}, \lean{scmpTable\_eq\_keyLt}, \lean{stableWalk\_sTableOf}, \lean{sTableOf\_liftR} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
 document-order mark read model (\S\ref{sec:marks}) & \lean{doc\_no\_backward\_leak}, \lean{doc\_delete\_can\_respan}, \lean{tree\_backward\_leak\_refutes\_noleak} & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarkIntent.lean} \\
 marks GC O1--O3 (\S\ref{sec:marks}) & \lean{keepSPM\_A1}, \lean{scanRight\_filter}, \lean{marksGC\_render\_congr} (single- and two-epoch) & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC.lean} \\
 marks GC O4, guarded pair-drop (\S\ref{sec:marks}) & \lean{a3\_guarded\_drop} + $\alpha$/$\beta$ flip SPOTs & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC\_A3.lean} \\
