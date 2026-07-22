@@ -95,3 +95,36 @@ test('a tampered durable record trips the content-address gate on load', async (
   await assert.rejects(store.loadNode('doc-3'), /content-address mismatch/,
     'a corrupted durable store cannot silently load wrong data');
 });
+
+test('peritext round-trip: marks survive; a NEW session name resumes the doc', async () => {
+  const { MemoryKV, RefStore } = await import('../src/idbstore.js');
+  const { compactiblePeritext } = await import('../../runtime/src/compact-peritext.js');
+  const { Node } = await import('../src/node.js');
+
+  const store = new RefStore(new MemoryKV());
+  const n1 = new Node(compactiblePeritext, 'alice');
+  const mint = (k) => k * 1000 + 7;
+  n1.commitBatch([
+    { type: 'ins', id: mint(1), el: 'h', anchorId: null },
+    { type: 'ins', id: mint(2), el: 'i', anchorId: mint(1) },
+    { type: 'addMark', mid: mint(3), mtype: 'bold', startId: mint(1), endId: mint(2), startSide: 'before', endSide: 'after', ts: mint(3) },
+  ]);
+  await store.persistNode('doc-p', n1);
+
+  // same name: reads, marks, head, and the authoring seq all resume
+  const back = await store.loadNode('doc-p', compactiblePeritext);
+  assert.equal(back.read().map((e) => e.char).join(''), 'hi');
+  assert.ok(back.read().every((e) => e.marks.some((m) => m.mtype === 'bold')), 'marks intact');
+  assert.equal(back.headGid, n1.headGid, 'same head SHA');
+  assert.equal(back.seq, n1.seq, 'seq resumes for the SAME author');
+
+  // different session name: history + roster intact, seq starts FRESH
+  const other = await store.loadNode('doc-p', compactiblePeritext, { name: 'alice-2' });
+  assert.equal(other.read().map((e) => e.char).join(''), 'hi');
+  assert.equal(other.name, 'alice-2');
+  assert.ok(other.registered.has('alice'), 'past author still rostered');
+  assert.notEqual(other.seq, n1.seq === 0 ? -1 : n1.seq, 'seq NOT resumed for a different author');
+  // and the reopened doc keeps working: a new commit under the new name
+  other.commit({ type: 'ins', id: mint(9), el: '!', anchorId: mint(2) });
+  assert.equal(other.read().map((e) => e.char).join(''), 'hi!');
+});

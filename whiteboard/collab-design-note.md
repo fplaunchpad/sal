@@ -370,10 +370,14 @@ marks-aware op layer + browser view; `test/peritextbind.test.js`). The remaining
 2. DONE: peritext editor binding (`peritextbind.js` + `web/richtext.js`) and
    PRESENCE (`presence.js`, ephemeral off-DAG cursors/selections painted into
    the rendered doc). `test/peritextbind.test.js`, `test/presence.test.js`.
-3. Wire `idbstore.js` into the browser app (`web/app.js`): persist on each
-   commit batch, `loadNode` on open, so a browser peer survives reload and edits
-   offline. (The store and its `openIdbKV` adapter exist; only the app wiring is
-   left. The DONE half was backend-generalizing the RefStore off the git dir.)
+3. DONE: `idbstore.js` wired into the rich-text editor: load-before-connect
+   keyed by room (top-level await), re-persist on every head change
+   (gid-guarded), reopen-under-a-new-name via `rebuildNode` opts, and the
+   record shape split into the browser-safe `src/records.js` (gitstore was
+   Node-only and un-importable in a tab). Browser-verified across two
+   reload cycles with the relay stateless. Remaining offline polish: a
+   service worker for the app shell (the DATA is durable; the PAGE still
+   needs the network to load).
 4. Promote `relay.mjs` to a SyncServer (headless replica + RefStore) so the hub
    merges and persists; central compaction dodges edges B-partial and C.
 5. Invite links + local directory (`listDocs`, exists) for discovery (rooms

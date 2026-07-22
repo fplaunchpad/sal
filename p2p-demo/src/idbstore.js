@@ -21,7 +21,7 @@
 // browser backend (`openIdbKV`) is a thin adapter over the real IndexedDB API,
 // exercised in the browser/integration path, not the node unit test.
 
-import { nodeRecords, rebuildNode } from './gitstore.js';
+import { nodeRecords, rebuildNode } from './records.js'; // browser-safe (gitstore shells out to git)
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
 
 // objects are keyed `docId + SEP + sha`; refs are keyed `docId`. SEP is NUL,
@@ -112,11 +112,12 @@ export class RefStore {
     await this.setMeta(docId, heads);
     return { head: heads.head, commits: records.length };
   }
-  async loadNode(docId, datatype = compactibleEmbedRGA) {
+  async loadNode(docId, datatype = compactibleEmbedRGA, opts = {}) {
     const heads = await this.getMeta(docId);
     if (!heads) return null; // no such doc: do NOT fabricate an empty one
     const records = await this.getRecords(docId);
-    return rebuildNode(records, heads, datatype); // content-address gated in ingest
+    // content-address gated in ingest; opts.name reopens as a new session name
+    return rebuildNode(records, heads, datatype, opts);
   }
 
   async drop(docId) {

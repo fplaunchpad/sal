@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 33 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, text + rich-text bindings, presence
+npm test             # 36 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -90,14 +90,21 @@ bridge honest, and what would shrink the distance.
   changes when the doc changes, plain `git log -p` reads as sensible edit
   history.
 
-- **`src/idbstore.js` -- the browser sibling of git persistence.** `gitstore.js`
-  shells out to `git` and cannot run in a browser tab, where the editor lives.
-  `RefStore` persists the SAME commit records (shared `nodeRecords`/`rebuildNode`
-  from `gitstore.js`) into IndexedDB instead, so a browser peer survives tab
-  close/reload and can open/edit offline. It is written over a tiny async KV
-  (`MemoryKV` for headless tests, `openIdbKV()` in the browser), so it needs no
-  new dependency. Same content-address gate: a tampered stored record is
-  rejected on load. See `whiteboard/collab-design-note.md` section 7.1.
+- **`src/idbstore.js` -- the browser sibling of git persistence, WIRED IN.**
+  `gitstore.js` shells out to `git` and cannot run in a browser tab, so the
+  shared record shape + rebuild now live in the browser-safe `src/records.js`
+  (the durable format IS the wire format; gitstore re-exports for compat).
+  `RefStore` persists those records into IndexedDB over a tiny async KV
+  (`MemoryKV` for headless tests, `openIdbKV()` in the browser); same
+  content-address gate: a tampered stored record is rejected on load. The
+  RICH-TEXT EDITOR uses it (local-first): load-before-connect keyed by room
+  (top-level await, so the doc is on screen before any peer answers),
+  re-persist on every head change (gid-guarded, idempotent puts), a
+  `local store: restored N` chip, and reopening under a new session name
+  keeps history + roster while starting a fresh authoring seq
+  (`rebuildNode` opts). Browser-verified: edit, reload, doc restored from
+  IndexedDB alone (the relay is stateless); edit again, reload, both edits
+  restored. See `whiteboard/collab-design-note.md` section 7.1.
 
 - **`src/transport.js` -- the wire.** `WsTransport` carries the gossip over a
   WebSocket (browser and Node both use the global `WebSocket`). `NetworkNode`
@@ -317,7 +324,8 @@ the scripted scenario below.
 src/hash.js        re-export of the core content hash (../runtime/src/hash.js)
 src/node.js        thin adapter: Node = DistributedReplica with the demo defaults
 src/gitstore.js    persist()/load() a Node to/from a git repo; git fencing
-src/idbstore.js    RefStore over IndexedDB (browser durable store); MemoryKV for tests
+src/records.js     the persistence record shape + rebuild (browser-safe; wire == durable)
+src/idbstore.js    RefStore over IndexedDB (browser durable store, wired into the editor)
 src/transport.js   WsTransport, NetworkNode, converge(), barrierCompact()
 src/relay.mjs      ws relay + static server (npm run relay)
 src/editbind.js    textarea-edit -> ins/del ops (browser-safe, tested)
@@ -328,6 +336,6 @@ web/app.js         the plain-text browser editor logic
 web/richtext.html  the rich-text editor shell (toolbar + import map for prosemirror ESM)
 web/richtext.js    the ProseMirror <-> Peritext binding (#107)
 scripts/demo.mjs   the scripted scenario (npm run demo)
-test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, editbind, peritextbind, presence (33 tests)
+test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, editbind, peritextbind, presence (36 tests)
 data/              (gitignored) any demo repos created here are SEPARATE git repos
 ```

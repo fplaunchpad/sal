@@ -28,6 +28,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Node } from './node.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
+import { commitRecord, nodeRecords, rebuildNode, topoOrder } from './records.js';
+
+// the record shape + rebuild now live in the BROWSER-SAFE src/records.js
+// (this file shells out to git and can never load in a tab); re-exported
+// here so existing importers keep working
+export { commitRecord, nodeRecords, rebuildNode, topoOrder };
 
 const SAL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..'); // p2p-demo/src -> sal
 
@@ -56,63 +62,6 @@ function assertOwnRepo(repoPath) {
   if (top !== real(repoPath)) {
     throw new Error(`git-fencing: ${repoPath} resolves to a DIFFERENT repo toplevel ${top}; aborting`);
   }
-}
-
-/** Serialize a Node's commit at local id `cid` to its on-disk record. */
-export function commitRecord(node, cid) {
-  const c = node.dag.get(cid);
-  const sha = node.gid.get(cid);
-  const parents = c.parents.map((p) => node.gid.get(p));
-  const epoch = node.epochOf.get(cid);
-  if (c.parents.length === 0) return { sha, kind: 'root', parents, epoch };
-  if (c.op !== null) {
-    return { sha, kind: 'op', parents, epoch,
-      op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
-  }
-  if (c.parents.length === 1) {
-    // compaction commit: its re-coded state is not recomputable from a parent,
-    // so persist it inline via the datatype's own encoder (the same encoding the
-    // core DistributedReplica.ingest decodes through datatype.decodeState).
-    return { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
-  }
-  return { sha, kind: 'merge', parents, epoch };
-}
-
-/** Pure: a node's whole DAG as on-disk records + the heads meta. No I/O, so
- *  it is shared by the git backend (this file) and the IndexedDB backend
- *  (src/idbstore.js): both persist through the SAME record shape and therefore
- *  round-trip identically. `rebuildNode` is the inverse. */
-export function nodeRecords(node) {
-  const records = [];
-  for (const c of node.dag.values()) records.push(commitRecord(node, c.id));
-  const heads = { head: node.headGid, replica: node.name, seq: node.seq,
-    epoch: node.epoch, roster: [...node.registered], datatype: 'embedRGA' };
-  return { records, heads };
-}
-
-/** Pure inverse of `nodeRecords`: rebuild a working Node from records + heads.
- *  Replays the records through `ingest` (content-address gated: a tampered
- *  record throws) then `mergeWithGid` to the persisted head. Shared by both
- *  backends. */
-export function rebuildNode(records, heads, datatype = compactibleEmbedRGA) {
-  const ordered = topoOrder(records);
-  const node = new Node(datatype, heads.replica);
-  for (const name of heads.roster ?? []) node.register(name);
-  const wire = [];
-  for (const r of ordered) {
-    if (r.kind === 'root') continue; // the fresh Node already has the shared root
-    if (r.kind === 'op') {
-      wire.push({ gid: r.sha, kind: 'op', parents: r.parents, op: r.op, payload: r.payload });
-    } else if (r.kind === 'merge') {
-      wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
-    } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
-    }
-  }
-  node.ingest(wire);
-  node.mergeWithGid(heads.head); // fast-forward to the persisted head
-  node.seq = heads.seq;          // resume authoring at the right seq
-  return node;
 }
 
 /** Persist `node`'s whole commit DAG into the git repo at `repoPath`, then
@@ -144,20 +93,6 @@ export function persist(node, repoPath, { message = 'p2p-demo snapshot' } = {}) 
   if (status) { git(repo, ['commit', '-q', '-m', message]); gitSha = git(repo, ['rev-parse', 'HEAD']); }
   else { try { gitSha = git(repo, ['rev-parse', 'HEAD']); } catch { gitSha = null; } }
   return { headSha: node.headGid, commits: n, docBytes: Buffer.byteLength(docText), gitSha };
-}
-
-/** Topologically order records (parents before children). */
-export function topoOrder(records) {
-  const byId = new Map(records.map((r) => [r.sha, r]));
-  const out = [], seen = new Set();
-  const visit = (sha) => {
-    if (seen.has(sha) || !byId.has(sha)) return;
-    seen.add(sha);
-    for (const p of byId.get(sha).parents) visit(p);
-    out.push(byId.get(sha));
-  };
-  for (const r of records) visit(r.sha);
-  return out;
 }
 
 /** Rebuild a working Node from the git repo at `repoPath`. Reads equal the

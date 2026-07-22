@@ -30,6 +30,7 @@ import {
   textEditOps, formatOps, commitOps, selectionHas, coveringMarkTypes, markSpan, specRead,
 } from '../src/peritextbind.js';
 import { Presence, presenceSpan } from '../src/presence.js';
+import { openIdbKV, RefStore } from '../src/idbstore.js';
 // the COMPACTIBLE peritext: same datatype + the certified marks-layer GC
 // hooks (#110), so compactStable FIRES here instead of refusing
 import { compactiblePeritext } from '../../runtime/src/compact-peritext.js';
@@ -46,7 +47,33 @@ const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique 
 $('me').textContent = NAME;
 $('room').textContent = 'room ' + ROOM;
 
-const node = new Node(compactiblePeritext, NAME);
+let node = new Node(compactiblePeritext, NAME);
+
+// ---- DURABLE STORE (local-first): the doc lives in IndexedDB, keyed by the
+// room id. LOAD-BEFORE-CONNECT (top-level await): close the tab, reopen the
+// same room, and the doc is there before any peer answers; the relay stays
+// stateless. Every head change re-persists (content-addressed puts are
+// idempotent; a tampered stored record trips the ingest gate on load).
+// Reopening under a NEW session name keeps the history and roster and starts
+// a fresh authoring seq (src/records.js).
+let store = null;
+let restoredCommits = 0;
+try {
+  store = new RefStore(await openIdbKV());
+  const restored = await store.loadNode(ROOM, compactiblePeritext, { name: NAME });
+  if (restored) { node = restored; restoredCommits = restored.dag.size - 1; }
+} catch (e) {
+  console.warn('[idb] local store unavailable:', e?.message ?? e);
+  store = null;
+}
+let persistedGid = node.headGid;
+function persistIfChanged() {
+  if (!store) return;
+  const g = node.headGid;
+  if (g === persistedGid || node.dag.size <= 1) return; // nothing authored yet
+  persistedGid = g;
+  store.persistNode(ROOM, node).catch((e) => console.warn('[idb] persist failed:', e?.message ?? e));
+}
 
 // ---- DEBOUNCED FLUSH: the default commit granularity is a typing RUN -------
 // Local ops buffer in `pending`; the editor renders the SPECULATIVE state
@@ -533,6 +560,7 @@ function renderStats() {
     ['wire summary', node.ancestryGids().size],
     ['epoch', node.epoch],
     ['stable cut', sc.complete ? `${sc.meet.size} settled` : `waiting: ${sc.missing.join(',') || '?'}`],
+    ['local store', store ? (restoredCommits ? `restored ${restoredCommits}` : 'on') : 'off'],
   ];
   $('statsRow').innerHTML = chips.map(([k, v]) =>
     `<span class="stat"><span class="sk">${k}</span> ${v}</span>`).join('');
@@ -578,6 +606,7 @@ function renderConv() {
   if (net.manual) mb.textContent = `merge ⤵ ${net.staged.size}`;
   renderComments(); // doc-derived, kept in step with every state change
   renderStats();
+  persistIfChanged(); // durable store follows every head change (gid-guarded)
 }
 
 renderConv();
