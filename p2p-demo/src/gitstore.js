@@ -59,7 +59,7 @@ function assertOwnRepo(repoPath) {
 }
 
 /** Serialize a Node's commit at local id `cid` to its on-disk record. */
-function commitRecord(node, cid) {
+export function commitRecord(node, cid) {
   const c = node.dag.get(cid);
   const sha = node.gid.get(cid);
   const parents = c.parents.map((p) => node.gid.get(p));
@@ -78,6 +78,43 @@ function commitRecord(node, cid) {
   return { sha, kind: 'merge', parents, epoch };
 }
 
+/** Pure: a node's whole DAG as on-disk records + the heads meta. No I/O, so
+ *  it is shared by the git backend (this file) and the IndexedDB backend
+ *  (src/idbstore.js): both persist through the SAME record shape and therefore
+ *  round-trip identically. `rebuildNode` is the inverse. */
+export function nodeRecords(node) {
+  const records = [];
+  for (const c of node.dag.values()) records.push(commitRecord(node, c.id));
+  const heads = { head: node.headGid, replica: node.name, seq: node.seq,
+    epoch: node.epoch, roster: [...node.registered], datatype: 'embedRGA' };
+  return { records, heads };
+}
+
+/** Pure inverse of `nodeRecords`: rebuild a working Node from records + heads.
+ *  Replays the records through `ingest` (content-address gated: a tampered
+ *  record throws) then `mergeWithGid` to the persisted head. Shared by both
+ *  backends. */
+export function rebuildNode(records, heads, datatype = compactibleEmbedRGA) {
+  const ordered = topoOrder(records);
+  const node = new Node(datatype, heads.replica);
+  for (const name of heads.roster ?? []) node.register(name);
+  const wire = [];
+  for (const r of ordered) {
+    if (r.kind === 'root') continue; // the fresh Node already has the shared root
+    if (r.kind === 'op') {
+      wire.push({ gid: r.sha, kind: 'op', parents: r.parents, op: r.op, payload: r.payload });
+    } else if (r.kind === 'merge') {
+      wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
+    } else if (r.kind === 'compact') {
+      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
+    }
+  }
+  node.ingest(wire);
+  node.mergeWithGid(heads.head); // fast-forward to the persisted head
+  node.seq = heads.seq;          // resume authoring at the right seq
+  return node;
+}
+
 /** Persist `node`'s whole commit DAG into the git repo at `repoPath`, then
  *  commit. Returns { headSha, commits, docBytes, gitSha }. */
 export function persist(node, repoPath, { message = 'p2p-demo snapshot' } = {}) {
@@ -91,16 +128,11 @@ export function persist(node, repoPath, { message = 'p2p-demo snapshot' } = {}) 
   assertOwnRepo(repo); // hard guard: this is its OWN repo, not sal
 
   // fresh commits/ each time: the DAG is the source of truth, doc.txt the view
+  const { records, heads } = nodeRecords(node);
   const cdir = path.join(repo, 'commits');
   for (const f of fs.readdirSync(cdir)) if (f.endsWith('.json')) fs.rmSync(path.join(cdir, f));
-  let n = 0;
-  for (const c of node.dag.values()) {
-    const rec = commitRecord(node, c.id);
-    fs.writeFileSync(path.join(cdir, rec.sha + '.json'), JSON.stringify(rec));
-    n++;
-  }
-  const heads = { head: node.headGid, replica: node.name, seq: node.seq,
-    epoch: node.epoch, roster: [...node.registered], datatype: 'embedRGA' };
+  for (const rec of records) fs.writeFileSync(path.join(cdir, rec.sha + '.json'), JSON.stringify(rec));
+  const n = records.length;
   fs.writeFileSync(path.join(repo, 'heads.json'), JSON.stringify(heads, null, 2));
   const docText = node.read().join('');
   fs.writeFileSync(path.join(repo, 'doc.txt'), docText);
@@ -115,7 +147,7 @@ export function persist(node, repoPath, { message = 'p2p-demo snapshot' } = {}) 
 }
 
 /** Topologically order records (parents before children). */
-function topoOrder(records) {
+export function topoOrder(records) {
   const byId = new Map(records.map((r) => [r.sha, r]));
   const out = [], seen = new Set();
   const visit = (sha) => {
@@ -136,23 +168,5 @@ export function load(repoPath, datatype = compactibleEmbedRGA) {
   const cdir = path.join(repo, 'commits');
   const records = fs.readdirSync(cdir).filter((f) => f.endsWith('.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(cdir, f), 'utf8')));
-  const ordered = topoOrder(records);
-
-  const node = new Node(datatype, heads.replica);
-  for (const name of heads.roster ?? []) node.register(name);
-  const wire = [];
-  for (const r of ordered) {
-    if (r.kind === 'root') continue; // the fresh Node already has the shared root
-    if (r.kind === 'op') {
-      wire.push({ gid: r.sha, kind: 'op', parents: r.parents, op: r.op, payload: r.payload });
-    } else if (r.kind === 'merge') {
-      wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
-    } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
-    }
-  }
-  node.ingest(wire);
-  node.mergeWithGid(heads.head); // fast-forward to the persisted head
-  node.seq = heads.seq;          // resume authoring at the right seq
-  return node;
+  return rebuildNode(records, heads, datatype);
 }
