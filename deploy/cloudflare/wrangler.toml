@@ -1,0 +1,21 @@
+# Cloudflare deployment of the sal p2p demo. Run ./build.sh first (it stages
+# the served tree into public/), then `npx wrangler dev` to test locally or
+# `npx wrangler deploy` to publish. Durable Objects on the free plan require
+# the SQLite-backed class migration below.
+
+name = "sal-p2p"
+main = "src/worker.mjs"
+compatibility_date = "2026-07-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+html_handling = "none" # serve the exact paths the import map and links use
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
