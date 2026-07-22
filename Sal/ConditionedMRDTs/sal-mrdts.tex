@@ -4490,12 +4490,17 @@ coalesce (the delete-inverse a paper proof would most plausibly
 hand-wave; its necessity is pinned by \lean{spot\_d4\_coalesce\_necessity}
 and canonicalization under mutation by \lean{tableOf\_congr}). Only the
 epoch-composition clause (\lean{runTable\_epoch}) carries a stability
-hypothesis. The sided run table is under way: its structural core is in
-place (\code{SidedRunTable.lean}: \lean{stail\_attachment}, an entry type
-with an explicit side field, and the band-order comparator seed
-\lean{sided\_keyLt\_iff\_schainBefore}); the full sided repr iso and walk
-mirror the one-sided development and are the remaining owed piece
-(Open Question~\ref{oq:runtable}).
+hypothesis. The four mutation rules have since been promoted from
+SPOT-pinned perturbations to closed \lean{tableOf} equations, the
+table-direct walk is literal (\lean{tableWalk\_tableOf}: the display
+emitted run by run without materializing \lean{stateOf}), and the
+\emph{sided} run table is complete (\code{SidedRunTable.lean}): the repr
+iso both directions over labels, sides, and liveness, the two-case
+comparator \lean{scmpTable\_eq\_keyLt} for every code, the O(1) typing
+equation, the in-order walk with its literal \lean{stableWalk}, and the
+all-R lockstep bridge (\lean{sTableOf\_liftR}: on an all-R set the sided
+table is the one-sided table with the side bit stamped). The one open
+face is the wire format (Open Question~\ref{oq:runtable}).
 
 \subsection{From projection to shipped bytes, and the cross-system question}
 \label{sec:crossbench}
@@ -6806,28 +6811,33 @@ function unimplementable over retention-free states, the general form
 of ``no policy reaches Shesha''?
 \end{openq}
 
-\begin{openq}[the sided run table, and the batched-apply engineering face]
+\begin{openq}[the run-table wire format: the one face still open]
 \label{oq:runtable}
-The \emph{one-sided} run table (\S\ref{sec:runtable}) is now mechanized
-(\code{RunTable.lean}): T-tail (\lean{tail\_attachment}), T-repr as a
-genuine bijection ($\mathrm{tableOf}/\mathrm{stateOf}$ mutually inverse on
-canonical tables, over labels, sides, and liveness, deliberately not
-timestamps), T-cmp (\lean{cmpTable\_eq\_keyLt}), T-walk
-(\lean{walk\_display}), T-mut (split, liveness split, materialize, and the
-forced coalesce), and the single stability-conditioned clause T-epoch
-(\lean{runTable\_epoch}). What remains theorem-side is the \emph{sided}
-run table: its structural core is in place (\code{SidedRunTable.lean}:
-\lean{stail\_attachment}, an explicit side field, the band-order
-comparator seed), and the full sided repr iso and walk mirror the
-one-sided development. Two engineering faces of the same item, both now
-half-closed by the shipped artifact: task~\#104's serializer already
-turned the projection column from measured-in-model into measured bytes
-(\S\ref{sec:perf}), so what is left there is a delta/op \emph{wire format}
-for sync (the concurrent payload column is still in-process); the other
-half closed as task~\#111, whose persistent-HAMT container swap removed
-the interface-inherited $O(\text{live set})$ per-op copy without touching
-the verified semantics and confirmed the diagnosis experimentally
-(\S\ref{sec:perf}).
+The run-table \emph{theorem} bill is now closed on both sides
+(task~\#73). One-sided (\code{RunTable.lean}): T-tail
+(\lean{tail\_attachment}), T-repr as a genuine bijection, T-cmp
+(\lean{cmpTable\_eq\_keyLt}), T-epoch (\lean{runTable\_epoch}), the four
+T-mut rules promoted from SPOT-pinned perturbations to \emph{closed
+equations} (\lean{tableOf\_insert\_split},
+\lean{tableOf\_delete\_split}, \lean{tableOf\_coalesce},
+\lean{tableOf\_materialize}; the general vanished-path cascade is
+documented as the composite of materialization with insert splits,
+deliberately not forced into one equation), and the literal table-direct
+walk with its capstone \lean{tableWalk\_tableOf} (the display emitted
+run by run, \lean{stateOf} never materialized: the formal face of the
+O(display) reading claim). Sided (\code{SidedRunTable.lean}): the full
+mirror --- repr iso both directions over labels, sides, and liveness
+(timestamps deliberately excluded, the same post-epoch reason), the
+two-case comparator \lean{scmpTable\_eq\_keyLt} for every code with the
+offset-vs-tail exit-side rule, congruence, the O(1) typing equation, the
+in-order walk and its literal \lean{stableWalk}, and the all-R lockstep
+bridge \lean{sTableOf\_liftR}/\lean{swalk\_liftR}: on an all-R set the
+sided table \emph{is} the one-sided table with the side bit stamped.
+What remains is one engineering face: task~\#104's serializer turned the
+projection column into measured bytes (\S\ref{sec:perf}), and
+task~\#111's persistent-HAMT swap removed the interface-inherited
+per-op copy, so the open item is a delta/op \emph{wire format} for sync
+(the concurrent payload column is still in-process).
 \end{openq}
 
 \begin{openq}[FugueMax tag re-mapping]
@@ -7009,7 +7019,7 @@ merge-vs-remap (VC-S4, \S\ref{sec:compactED}) & \lean{merge\_remap\_congr} & \le
 multi-epoch composition (\S\ref{sec:compactED}) & \lean{StablePrefixMap.comp}, \lean{multiEpoch\_settled\_reads}, \lean{naive\_composition\_collides} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_MultiEpoch.lean} \\
 nested settled cuts ($(\ast)$'s closed halves) & \lean{nested\_cuts\_settled}, \lean{rED\_hocc\_fresh} & \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_CompatChain.lean} \\
 run table, one-sided (\S\ref{sec:runtable}) & \lean{tail\_attachment}, \lean{canonical\_tableOf}, \lean{cmpTable\_eq\_keyLt}, \lean{walk\_display}, T-mut & \lean{Sal/MRDTs/RGA\_Embed/RunTable.lean}, \lean{MRDT\_Instances/EmbedRGA/EmbedRGA\_RunTable.lean} \\
-run table, sided core (full iso owed, OQ~\ref{oq:runtable}) & \lean{stail\_attachment}, \lean{sided\_keyLt\_iff\_schainBefore} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
+run table, sided (full mirror: iso, comparator, walks, all-R lockstep) & \lean{sTableOf\_sStateOf}, \lean{scmpTable\_eq\_keyLt}, \lean{stableWalk\_sTableOf}, \lean{sTableOf\_liftR} & \lean{Sal/MRDTs/RGA\_Embed/SidedRunTable.lean} \\
 document-order mark read model (\S\ref{sec:marks}) & \lean{doc\_no\_backward\_leak}, \lean{doc\_delete\_can\_respan}, \lean{tree\_backward\_leak\_refutes\_noleak} & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarkIntent.lean} \\
 marks GC O1--O3 (\S\ref{sec:marks}) & \lean{keepSPM\_A1}, \lean{scanRight\_filter}, \lean{marksGC\_render\_congr} (single- and two-epoch) & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC.lean} \\
 marks GC O4, guarded pair-drop (\S\ref{sec:marks}) & \lean{a3\_guarded\_drop} + $\alpha$/$\beta$ flip SPOTs & \lean{MRDT\_Instances/Peritext\_Embed/PeritextEmbed\_MarksGC\_A3.lean} \\
