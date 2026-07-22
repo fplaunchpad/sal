@@ -76,6 +76,7 @@
 // (a mark has two boundaries).
 
 import { peritext } from './datatypes/peritext.js';
+import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
 
@@ -240,11 +241,13 @@ export function remapPeritextState(state, translate) {
 export function peritextCutFromMeet(meet) {
   const settledIds = new Set(), settledDelIds = new Set(), settledMarkMids = new Set();
   for (const op of meet.values()) {
-    const p = op.payload;
-    if (!p) continue;
-    if (p.type === 'ins') settledIds.add(p.id);
-    else if (p.type === 'del') settledDelIds.add(p.id);
-    else if (p.type === 'addMark' || p.type === 'removeMark') settledMarkMids.add(p.mid);
+    // op.payload is a single op, or an op ARRAY for a group-op (batch) commit.
+    const ps = Array.isArray(op.payload) ? op.payload : op.payload ? [op.payload] : [];
+    for (const p of ps) {
+      if (p.type === 'ins') settledIds.add(p.id);
+      else if (p.type === 'del') settledDelIds.add(p.id);
+      else if (p.type === 'addMark' || p.type === 'removeMark') settledMarkMids.add(p.mid);
+    }
   }
   return { settledIds, settledDelIds, settledMarkMids, inflightIns: [], inflightMarks: [] };
 }
@@ -258,4 +261,7 @@ export const compactiblePeritext = {
   compact: compactPeritext,
   remapState: remapPeritextState,
   cutFromMeet: peritextCutFromMeet,
+  // the coordinate-cost probe compaction shrinks: the text shadow IS an
+  // embedRGA state, so its symbol count is the peritext coordinate cost
+  symbolCount: (state) => embedRGA.symbolCount(state.text.shadow),
 };

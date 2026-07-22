@@ -209,3 +209,56 @@ test('DistributedReplica Peritext: SHA content-address round-trip and dedup', ()
   b.mergeWithGid(a.headGid);
   assert.equal(eq(a.read()), eq(b.read()), 'reads round-trip over the wire');
 });
+
+// ------------------------------------------------ comments (unique-mtype encoding)
+// The paper's COMMENTS: overlapping annotations that must COEXIST, not
+// collapse. The read model resolves per (char, mtype) by LWW, so the encoding
+// is one mtype PER COMMENT (`comment:<id>`, note text in `value`); distinct
+// mtypes never compete. Expected values here are HAND-DERIVED from the same
+// per-mtype resolution rules the extracted Ex1-8 fixtures pin (each mtype
+// resolves independently, exactly as 'bold' vs 'link' do in Ex8); the FAIL
+// companion pins the collapse that makes the naive same-mtype encoding wrong.
+
+const commentMarks = (s) =>
+  peritext.read(s).map((e) => [e.char, e.marks.map((m) => `${m.mtype}=${m.value}`).join('|')]);
+
+test('comments: overlapping distinct-mtype comments COEXIST on the overlap', () => {
+  const s = build([ins(1, 'a', null), ins(2, 'b', 1), ins(3, 'c', 2), ins(4, 'd', 3),
+    mark(10, 'comment:r1', 1, 3, 'before', 'after', { value: 'first note' }),   // a..c
+    mark(11, 'comment:r2', 2, 4, 'before', 'after', { value: 'second note' })]); // b..d
+  assert.deepEqual(commentMarks(s), [
+    ['a', 'comment:r1=first note'],
+    ['b', 'comment:r1=first note|comment:r2=second note'],
+    ['c', 'comment:r1=first note|comment:r2=second note'],
+    ['d', 'comment:r2=second note'],
+  ], 'the overlap (b,c) carries BOTH comments, each with its own note');
+
+  // FAIL companion: the NAIVE encoding (both marks share mtype 'comment')
+  // collapses -- per (char,'comment') the higher mid wins, so on b,c the first
+  // note is LOST. This is exactly why the editor mints one mtype per comment.
+  const naive = build([ins(1, 'a', null), ins(2, 'b', 1), ins(3, 'c', 2), ins(4, 'd', 3),
+    mark(10, 'comment', 1, 3, 'before', 'after', { value: 'first note' }),
+    mark(11, 'comment', 2, 4, 'before', 'after', { value: 'second note' })]);
+  const naiveB = peritext.read(naive)[1];
+  assert.equal(naiveB.marks.length, 1, 'naive: ONE surviving comment on b');
+  assert.equal(naiveB.marks[0].value, 'second note', 'naive: the higher mid clobbers');
+  assert.notEqual(eq(commentMarks(naive)), eq(commentMarks(s)),
+    'the two encodings genuinely differ');
+});
+
+test('comments: removeMark deletes ONE comment by its mtype, the overlap survives', () => {
+  const s = build([ins(1, 'a', null), ins(2, 'b', 1), ins(3, 'c', 2), ins(4, 'd', 3),
+    mark(10, 'comment:r1', 1, 3, 'before', 'after', { value: 'first note' }),
+    mark(11, 'comment:r2', 2, 4, 'before', 'after', { value: 'second note' }),
+    unmark(12, 'comment:r1', 1, 3)]);
+  assert.deepEqual(commentMarks(s), [
+    ['a', ''],
+    ['b', 'comment:r2=second note'],
+    ['c', 'comment:r2=second note'],
+    ['d', 'comment:r2=second note'],
+  ], 'r1 is retracted everywhere; r2 is untouched');
+  // FAIL companions: removal is targeted (r2 survives), and text is intact.
+  assert.ok(peritext.read(s)[3].marks.some((m) => m.mtype === 'comment:r2'),
+    'removing r1 did not take r2 with it');
+  assert.equal(order(s).join(''), 'abcd', 'removal touches marks, never text');
+});

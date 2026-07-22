@@ -47,6 +47,7 @@ export class DistributedReplica {
     this.gid = new Map();               // local id -> content id (sha)
     this.byGid = new Map();             // content id -> local id
     this.registered = new Set([name]);  // replica ids heard of / rostered
+    this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
     this.epochs = [null];               // e -> translate(epoch e-1 -> e)
     this.epochOf = new Map();           // local id -> epoch number
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
@@ -83,6 +84,37 @@ export class DistributedReplica {
     this.#headId = c.id;
     this.#refresh();
     return this.gid.get(c.id);
+  }
+
+  /** Apply a BATCH of ops as ONE commit (the group-op commit the editor batches
+   *  into): the whole list is applied in a single transient pass (applyBatch,
+   *  proven == folding apply) and sealed under one seq. The commit's op payload
+   *  IS the op array, which the content-id folds in like any payload, so `delta`
+   *  ships it verbatim and `ingest` replays it via applyBatch with no wire or
+   *  hash change. Zero ops: no-op. One op: a canonical single-op commit (byte-
+   *  identical wire to commit()), so single ops never take the array shape. */
+  commitBatch(ops) {
+    if (ops.length === 0) return this.headGid;
+    if (ops.length === 1) return this.commit(ops[0]);
+    const state = this.#applyOps(this.head.state, ops);
+    const c = this.dag.add({
+      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: ops }, state });
+    this.epochOf.set(c.id, this.epochOf.get(this.#headId));
+    this.#index(c);
+    this.#headId = c.id;
+    this.#refresh();
+    return this.gid.get(c.id);
+  }
+
+  /** Apply an op payload (single op, or an op ARRAY = a batch). applyBatch is
+   *  proven == folding apply, so the state is identical whichever a peer uses;
+   *  content-address determinism does not depend on the choice (authored ids
+   *  hash the payload, not the state). */
+  #applyOps(state, payload) {
+    if (!Array.isArray(payload)) return this.datatype.apply(state, payload);
+    return typeof this.datatype.applyBatch === 'function'
+      ? this.datatype.applyBatch(state, payload)
+      : payload.reduce((s, op) => this.datatype.apply(s, op), state);
   }
 
   /** Global ids in this head's reflexive ancestry (the have-summary). */
@@ -144,9 +176,10 @@ export class DistributedReplica {
       let op = null, state, epoch;
       if (wc.kind === 'op') {
         op = { replica: wc.op.replica, seq: wc.op.seq, payload: wc.payload };
-        state = this.datatype.apply(this.dag.get(localParents[0]).state, wc.payload);
+        state = this.#applyOps(this.dag.get(localParents[0]).state, wc.payload);
         epoch = this.epochOf.get(localParents[0]);
         this.registered.add(wc.op.replica);
+        this.authors.add(wc.op.replica);
       } else if (wc.kind === 'compact') {
         state = this.datatype.decodeState(wc.state);
         epoch = this.epochOf.get(localParents[0]) + 1;
@@ -193,6 +226,16 @@ export class DistributedReplica {
    *  this when a peer JOINS, so compactStable can REFUSE for a member never
    *  heard from (the open-membership / not-heard-from breaker). */
   register(name) { this.registered.add(name); }
+
+  /** Drop `name` from the roster IFF it never AUTHORED a commit here. A
+   *  joined-then-left lurker holds no ops the stability cut must wait for
+   *  (if it returns and writes, the epoch gate handles it); a WRITER stays
+   *  registered conservatively (the GC-horizon-vs-offline-peers edge).
+   *  Returns true if dropped. */
+  unregister(name) {
+    if (name === this.name || this.authors.has(name)) return false;
+    return this.registered.delete(name);
+  }
 
   /** The certified stable cut over the registered (rostered) replica set. */
   stableCut() { return stableCut(this.dag, this.#headId, [...this.registered], this.name); }

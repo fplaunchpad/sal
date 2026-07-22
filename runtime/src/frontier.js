@@ -117,7 +117,9 @@ export function stableCut(dag, headId, registeredNames, self) {
 export function insertIds(meet) {
   const ids = new Set();
   for (const op of meet.values()) {
-    if (op.payload && op.payload.type === 'ins') ids.add(op.payload.id);
+    // op.payload is a single op, or an op ARRAY for a group-op (batch) commit.
+    const ps = Array.isArray(op.payload) ? op.payload : op.payload ? [op.payload] : [];
+    for (const p of ps) if (p.type === 'ins') ids.add(p.id);
   }
   return ids;
 }

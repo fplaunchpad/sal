@@ -6,6 +6,11 @@ LCA, and the keep-set commit GC from the verified design. Pure
 dependency-free ESM; runs in the browser and in Node unchanged (no
 Node-only APIs in `src/`).
 
+This runtime is a TESTED MIRROR of the Lean proofs, not an extraction:
+`../whiteboard/verification-distance.md` records, layer by layer, how each
+piece connects to the proved artifacts, which layers have no Lean counterpart
+(the replica/wire machinery), and what would shrink the distance.
+
 ## API
 
 ```js
@@ -178,16 +183,58 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   multi-epoch twin PBT against a never-compacted control; cost measured there:
   retained dead records ≤ 2 per mark record (structural bound, met with max
   2.000). `encodeState`/`decodeState` give the lossless snapshot round-trip
-  (also carrying compaction commits over the wire).
+  (also carrying compaction commits over the wire). `compactiblePeritext` also
+  carries the `symbolCount` cost probe (its text shadow IS an embedRGA state),
+  and the #107 editor runs on it: a metadata-cost panel plus a certified-GC
+  button gated on the complete stability cut (see `p2p-demo/README.md`).
 
-WHAT #107 (THE EDITOR) STILL NEEDS on top of this datatype: an
-EDITOR-WIDGET BINDING (a ProseMirror/CodeMirror-style view that maps
-`read()`'s `[{id, char, marks}]` to rendered spans and maps user
-keystrokes/formatting gestures back to `ins`/`del`/`addMark`/`removeMark` ops
-on a `DistributedReplica`), and PRESENCE (live cursors/selections and peer
-identity — ephemeral, off-DAG state carried alongside the document, not a CRDT
-op). Everything below the widget — convergence, persistence, catch-up — is the
-runtime the datatype already rides on.
+WHAT #107 (THE EDITOR) IS. A working editor exists in the #95 demo skin over
+this datatype: a PROSEMIRROR view (`p2p-demo/web/richtext.js`, browser-verified
+across two live tabs) whose transactions are diffed into ops by
+`p2p-demo/src/peritextbind.js` (the op layer: a text edit -> `ins`/`del`, a
+format gesture over a selection -> one `addMark`/`removeMark`, a toggle-off ->
+the LWW-winning `removeMark`). ProseMirror owns the DOM; `read()` owns the
+truth: after each local transaction the PM doc is reconciled against it, so on
+mark-boundary questions (does a char typed at a span edge inherit bold?) the
+verified semantics win. Presence renders as PM decorations. The editor exposes
+the datatype's full mark surface: bold/italic/underline (growing boolean
+marks), links (a value mark with the exclusive, never-growing end gravity of
+Ex8), and comments (one mtype per comment, `comment:<id>` with the note in
+`value`, so overlapping comments COEXIST under the per-(char,mtype) LWW --
+pinned in `test/peritext.test.js`'s comments block, including the FAIL
+companion showing the naive same-mtype encoding collapses). Headless-tested in
+`test/peritextbind.test.js` against the datatype (Ex7 end-side growth, Ex8
+exclusive-end links, overlapping comments, mark survival across a delete) and
+a real replica. It generalizes the plain-text precursor `editbind.js`.
+
+BATCHING is done. The replica now has a GROUP-OP COMMIT: `commitBatch(ops)`
+(`replica.js`) seals a gesture's op list as ONE commit, applied via `applyBatch`
+(one transient pass, proven equal to folding `apply`). The commit's payload is
+the op ARRAY; the content-id folds it in opaquely, so `delta` ships it verbatim
+and `ingest` replays it via `applyBatch` with no wire or hash change (the two
+certified-GC id-collectors, `frontier.insertIds` and
+`compact-peritext.peritextCutFromMeet`, were generalized to iterate array
+payloads). `test/commitbatch.test.js` pins batch==fold-as-one-commit, the wire
+round-trip under the content-address gate, convergence with mixed batch/single
+commits, peritext batches, and the cut collecting a batch's ids.
+`peritextbind.commitOps` uses it, and the editor buffers local ops in a
+DEBOUNCED queue (rendering the speculative head+pending state via
+`peritextbind.specRead`; flush on ~400ms idle / blur / pre-format / pre-merge /
+unload), so a typing RUN, a paste, or a multi-char format lands as a single
+commit, not one per character. The buffered run is proven equal to the
+per-keystroke fold (`p2p-demo/test/peritextbind.test.js`).
+
+PRESENCE is done. `p2p-demo/src/presence.js` is the ephemeral, OFF-DAG peer-
+awareness registry (live cursors/selections + identity), carried as plain
+`presence` room broadcasts over the same transport, never ingested, merged, or
+persisted; `web/richtext.js` renders remote carets and selections as
+ProseMirror decorations inside the one editing surface.
+`test/presence.test.js` covers the registry (ttl prune, departure, span
+normalization, stable per-peer color). Everything below the widget:
+convergence, persistence, catch-up: is the runtime the datatype rides on.
+Remaining #107 polish: collaborative undo (inverting my own ops rather than PM
+history, which a replace-from-read() model bypasses) and block-level structure
+beyond paragraphs (headings, lists) as mark-like metadata.
 
 ## The delta code is pluggable; the default is the verified Elias-delta
 
@@ -564,6 +611,15 @@ skin, not runtime machinery:
   barrier to keep epochs linearized; lifting that (cross-replica different cuts)
   is the runtime's own deferred protocol half (the #97 multi-epoch
   `CompatChain`).
+
+Much of this skin is already built in `p2p-demo/`: `gitstore.js` (durable store
+= a fenced real git repo of SHA-addressed commit records + `doc.txt`; `load()`
+replays them through `ingest` + `mergeWithGid`), `relay.mjs` (a dumb star relay,
+rooms = doc ids), `transport.js` (WsTransport have/req/delta), and
+`editbind.js` (a plain-text embedRGA binding). `whiteboard/collab-design-note.md`
+reconciles those against the remaining #107/#95 work: the peritext (marks)
+editor binding, batching, promoting the dumb relay to an always-on merging hub
+for asynchronous collaboration, and identity/auth.
 
 ## Datatype ports are UNVERIFIED transliterations
 
