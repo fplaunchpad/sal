@@ -327,11 +327,17 @@ the MCAs of every KNOWN peer head, including offline peers (track last-known
 heads per subscriber), or bound how long a peer may stay dark. This is the one
 place "close it and come back in a month" can fail.
 
-B. **Multi-MCA merge is not implemented (#90).** The verified merge assumes a
-usable LCA. Criss-cross histories from many concurrent editors produce multiple
-MCAs whose correct resolution is a recursive merge of the MCAs (git's recursive
-strategy). Until #90 lands, genuinely N-way concurrent editing can hit merges
-the current path cannot resolve uniquely.
+B. **Multi-MCA merge: RESOLVED (#90 landed).** The metatheory closed the
+question (sal-mrdts.tex 14: `Step3V`, `mca_events_cover`,
+`virtualLCAState_canonical`, kernel-clean; single-MCA picks machine-refuted),
+and `DistributedReplica` now transliterates the recursive rule: the LCA slot
+of a criss-crossed pair gets the virtual base folded over the MCA antichain
+(content-id sorted; result canonical hence order-insensitive for join-lemma
+datatypes), and the commit-GC keep set widened to the MCA closure
+(`keepSetV`). Pinned in `runtime/test/virtual-lca.test.js` (directed
+countermodel with hand-derived resurrection FAILs + a randomized mesh that
+previously gated). N-way concurrent editing no longer defers on
+criss-crosses; the transport defer path remains for cross-epoch only (C).
 
 C. **Concurrent divergent compaction is deferred (#97).** `ingest` throws
 `cross-epoch merge` when two sides compacted at different cuts; the runtime

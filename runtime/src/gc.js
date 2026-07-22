@@ -35,12 +35,24 @@
 
 import { mcas } from './lca.js';
 
-/** The keep-set (Set of commit ids) for the given current head ids. */
+/** The keep-set (Set of commit ids) for the given current head ids.
+ *  Seeds are the MCA CLOSURE of the heads (the least superset closed under
+ *  pairwise MCA, keepSetV / mcasClosure on the Lean side): virtual
+ *  criss-cross resolution reads MCAs of MCAs, and the one-layer seed is
+ *  machine-witnessed to be one closure layer short. Finite: ranks only
+ *  decrease. */
 export function keepSet(dag, headIds) {
-  const seeds = new Set();
-  for (let i = 0; i < headIds.length; i++) {
-    for (let j = i; j < headIds.length; j++) { // j = i included: the heads themselves
-      for (const m of mcas(dag, headIds[i], headIds[j])) seeds.add(m);
+  const seeds = new Set(headIds);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    const arr = [...seeds];
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = i; j < arr.length; j++) { // j = i included: members kept
+        for (const m of mcas(dag, arr[i], arr[j])) {
+          if (!seeds.has(m)) { seeds.add(m); grew = true; }
+        }
+      }
     }
   }
   // Upward closure: reflexive descendants of every seed.

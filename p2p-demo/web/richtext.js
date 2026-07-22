@@ -508,6 +508,16 @@ view.dom.addEventListener('click', (e) => {
 // (evidence from every registered peer), preserves reads, and advances the
 // epoch. Epochs are linearized: after one peer compacts, others' merges are
 // deferred until they GC too (the button turns into the barrier).
+// the SAVE cost (run-table serializer, task #104) is computed per HEAD, not
+// per keystroke: the encode is the real serializer, cheap at demo scale but
+// not free, and the head only moves on flush/merge/GC
+let saveCache = { gid: null, bytes: 0 };
+function saveBytesCached() {
+  const g = node.headGid;
+  if (saveCache.gid !== g) saveCache = { gid: g, bytes: node.saveBytes() };
+  return saveCache.bytes;
+}
+
 function renderStats() {
   const st = node.head.state;
   const chars = node.read().length;
@@ -517,7 +527,8 @@ function renderStats() {
     ['tombstones', st.text.deleted.size],
     ['mark records', st.marks.size],
     ['coord symbols', node.symbolCount()],
-    ['state bytes', node.snapshotBytes()],
+    ['in-memory bytes', node.snapshotBytes()],
+    ['save bytes (run table)', saveBytesCached()],
     ['commits', node.dag.size],
     ['wire summary', node.ancestryGids().size],
     ['epoch', node.epoch],

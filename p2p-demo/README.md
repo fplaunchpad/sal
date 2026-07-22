@@ -301,10 +301,13 @@ the scripted scenario below.
   merging across epochs -- is the runtime's own deferred protocol half (the #97
   multi-epoch `CompatChain`). `DistributedReplica` refuses a cross-epoch merge
   rather than guess; `barrierCompact` keeps peers on one epoch.
-- **Criss-cross merges are gated, not resolved.** Virtual-LCA (recursive merge
-  of the maximal common ancestors, git-style) is runtime task #90. The
-  deterministic linear fold (`converge`) stays inside the criss-cross-free
-  regime; opportunistic browser merges catch a criss-cross and defer it.
+- **Criss-cross merges are RESOLVED (virtual LCAs, #90 landed).**
+  `DistributedReplica` now computes the virtual base for a criss-crossed
+  pair by the mechanized recursive rule (runtime README; pinned in
+  `../runtime/test/virtual-lca.test.js`), so opportunistic browser merges
+  no longer defer on criss-crosses (the transport's defer path remains for
+  cross-epoch merges only). The deterministic linear fold (`converge`)
+  still stays inside the criss-cross-free regime by construction.
 - **`embedRGA` is an unverified transliteration** of the verified embed kernel
   (see `../runtime/README.md`); the demo inherits that caveat.
 

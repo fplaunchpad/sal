@@ -45,10 +45,14 @@ away from the proofs.
    in `runtime/src/datatypes/peritext.js` that the fixture suite happens not
    to exercise would ship. (The comment-encoding tests are hand-derived, not
    reference-extracted: one notch weaker than the Ex1-8 pins.)
-2. THE REPLICA/WIRE LAYER IS UNFORMALIZED: LCA selection, the criss-cross
-   gate (#90 deferred), epoch handling, content addressing. The convergence
-   theorem assumes the three-way merges it models are the ones actually
-   performed.
+2. THE REPLICA/WIRE LAYER IS PARTLY FORMALIZED, ALL OF IT TRANSLITERATED:
+   virtual-LCA resolution (#90) and the GC keep set now mirror mechanized
+   constructions (`Step3V`/`mca_events_cover`, `keepSetV`), and the
+   stability certificate mirrors `settledAt_of_allHeard`; but the
+   JS implementations are tested transliterations, not extractions, and
+   epoch handling plus content addressing have no Lean counterpart at all.
+   The convergence theorem assumes the three-way merges it models are the
+   ones actually performed.
 3. NO IDENTITY OR AUTHENTICATION: the proofs assume well-formed ops from
    honest replicas; today any connection can author ops under any name
    (design-note sharp edge D). This matters more now that a URL is public.

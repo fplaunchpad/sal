@@ -516,18 +516,30 @@ The GC-safety PBT (`test/gc-pbt.test.js`) is the empirical twin of the
 theorem: identical random head-sync runs on two runtimes, GC invoked
 aggressively on one, reads and states asserted identical throughout.
 
-## The criss-cross gate (task #90)
+## Virtual LCAs (task #90): the criss-cross gate, lifted in DistributedReplica
 
 Criss-cross merges genuinely arise under honest head-sync (two disjoint
 replica pairs merge the same diverged heads `x`,`y` into rival merge
-commits; any later sync across them finds MCAs `{x, y}`). Virtual LCAs
-(recursive merging of the MCAs, git style) are task #90 and not yet in the
-verified model, so `lca()` throws `CrissCrossError` -- an explicit gate,
-never a silent pick. Consequence: a criss-crossed replica pair cannot sync
-until #90 lands; the PBT skips gated syncs (and asserts both twins return
-the SAME verdict: a GC-induced verdict flip would itself be a safety
-violation). `gc()` uses `mcas()` directly (keeping every MCA is sound
-without uniqueness), so GC never throws this.
+commits; any later sync across them finds MCAs `{x, y}`). The mechanized
+construction landed (sal-mrdts.tex 14: `Step3V`, the covering proposition
+`mca_events_cover`, `virtualLCAState_canonical`, single-MCA picks refuted
+as `t1f_pick_*_resurrects_*`), and `DistributedReplica` now transliterates
+it: when a head pair has several MCAs, the LCA slot gets the VIRTUAL base,
+the fold of the antichain (sorted by content id for cross-replica
+determinism; the result is order-insensitive for join-lemma datatypes,
+which all of ours are), each step merging the accumulator with the next
+member over the recursively resolved sub-base. Scratch states are
+transient, never committed. `test/virtual-lca.test.js` pins the directed
+countermodel shape (both deletes stick; either single-MCA pick would
+resurrect one, hand-derived), wire re-ingest under the content gate, and a
+randomized 3-replica mesh that previously gated and now converges.
+`gc()`'s keep-set seeds are correspondingly the MCA CLOSURE of the heads
+(`keepSetV`: MCAs of MCAs, to the fixpoint), since virtual resolution
+reads them. The OLDER layers keep the explicit gate: `lca()` still throws
+`CrissCrossError`, and `runtime.js`/`sync.js` (the historical in-process
+runtime and `Peer`) still consume it; their PBTs skip gated syncs (and
+assert both twins return the SAME verdict: a GC-induced verdict flip would
+itself be a safety violation).
 
 ## Open-membership caveat
 

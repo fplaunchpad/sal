@@ -30,7 +30,7 @@
 // checkpoint barrier (barrierCompact, below).
 
 import { Dag } from './dag.js';
-import { lca } from './lca.js';
+import { mcas } from './lca.js';
 import { runGc } from './gc.js';
 import { frontierOf, stableCut, insertIds } from './frontier.js';
 import { commitContentId, contentId } from './hash.js';
@@ -187,8 +187,7 @@ export class DistributedReplica {
       } else { // merge
         const [a, b] = localParents;
         epoch = this.#mergeEpoch(a, b);
-        const l = lca(this.dag, a, b);
-        state = this.datatype.merge3(this.dag.get(l).state, this.dag.get(a).state, this.dag.get(b).state);
+        state = this.datatype.merge3(this.#baseState([a], b), this.dag.get(a).state, this.dag.get(b).state);
       }
       const c = this.dag.add({ parents: localParents, op, state });
       this.epochOf.set(c.id, epoch);
@@ -201,7 +200,8 @@ export class DistributedReplica {
   }
 
   /** Merge this replica's head with the (now-local) commit `gid`: fast-forward
-   *  if one subsumes the other, else a head-sync merge through the unique lca. */
+   *  if one subsumes the other, else a head-sync merge whose LCA slot is the
+   *  unique MCA, or the VIRTUAL base when the pair criss-crosses (#90). */
   mergeWithGid(gid) {
     const b = this.byGid.get(gid);
     if (b === undefined) throw new Error(`mergeWithGid: ${gid} not present (ingest first)`);
@@ -210,14 +210,65 @@ export class DistributedReplica {
     if (this.dag.isAncestor(a, b)) { this.#headId = b; this.#refresh(); return this.headGid; }
     if (this.dag.isAncestor(b, a)) return this.headGid;
     const epoch = this.#mergeEpoch(a, b);
-    const l = lca(this.dag, a, b);
-    const merged = this.datatype.merge3(this.dag.get(l).state, this.dag.get(a).state, this.dag.get(b).state);
+    const merged = this.datatype.merge3(this.#baseState([a], b), this.dag.get(a).state, this.dag.get(b).state);
     const c = this.dag.add({ parents: [a, b], op: null, state: merged });
     this.epochOf.set(c.id, epoch);
     this.#index(c);
     this.#headId = c.id;
     this.#refresh();
     return this.headGid;
+  }
+
+  // ---- VIRTUAL LCAs (#90): the recursive-merge rule of the mechanized
+  // construction (sal-mrdts.tex 14; Lean: Step3V / mca_events_cover /
+  // virtualLCAState_canonical, all kernel-clean). When a head pair has
+  // several maximal common ancestors (a criss-cross), the base state for
+  // the LCA slot is the FOLD of the antichain: start from one member, and
+  // at each step three-way-merge the accumulator with the next member over
+  // the recursively resolved base of the sub-pair. The covering
+  // proposition makes the fold's event set EXACTLY the head intersection,
+  // and for join-lemma datatypes (all of ours) the resulting state is
+  // canonical for that set, so the fold order cannot affect the result;
+  // sorting by content id just fixes the computation deterministically
+  // across replicas. Single-MCA shortcuts are machine-refuted
+  // (t1f_pick_*_resurrects_*): picking one member resurrects deletes.
+  // Scratch states are transient (never committed, never ancestors).
+
+  /** Base state for the LCA slot of a merge between the union-ancestry of
+   *  the id set S and the commit w: the unique MCA's state, or the virtual
+   *  fold of the MCA antichain. */
+  #baseState(S, w) {
+    const m = S.length === 1 ? mcas(this.dag, S[0], w) : this.#mcasOfSet(S, w);
+    if (m.length === 0) throw new Error(`no common ancestor of [${S}] and ${w}`);
+    if (m.length === 1) return this.dag.get(m[0]).state;
+    // cross-epoch antichains are not resolvable (epochs are linearized;
+    // members of one epoch segment share the segment's compact base)
+    const e0 = this.epochOf.get(m[0]);
+    for (const x of m) {
+      if (this.epochOf.get(x) !== e0) throw new Error('cross-epoch merge: virtual base spans epochs');
+    }
+    const sorted = [...m].sort((x, y) => (this.gid.get(x) < this.gid.get(y) ? -1 : 1));
+    let acc = this.dag.get(sorted[0]).state;
+    const support = [sorted[0]];
+    for (let k = 1; k < sorted.length; k++) {
+      const mi = sorted[k];
+      acc = this.datatype.merge3(this.#baseState(support, mi), acc, this.dag.get(mi).state);
+      support.push(mi);
+    }
+    return acc;
+  }
+
+  /** Maximal common ancestors of (union ancestry of the id set S) and w:
+   *  the set form the covering proposition is stated over. */
+  #mcasOfSet(S, w) {
+    const A = new Set();
+    for (const s of S) for (const x of this.dag.ancestorSet(s)) A.add(x);
+    const B = this.dag.ancestorSet(w);
+    const ca = new Set();
+    for (const x of A) if (B.has(x)) ca.add(x);
+    const nonMax = new Set();
+    for (const c of ca) for (const p of this.dag.get(c).parents) if (ca.has(p)) nonMax.add(p);
+    return [...ca].filter((c) => !nonMax.has(c));
   }
 
   /** Roster membership: declare `name` a member of the closed replica set the
@@ -294,6 +345,15 @@ export class DistributedReplica {
       }
     }
     return res;
+  }
+
+  /** What a SAVE costs: the datatype's run-table-backed probe when it has
+   *  one (peritext, embed), else the snapshot JSON. The honest durable
+   *  number, vs snapshotBytes' in-memory representation cost. */
+  saveBytes() {
+    return typeof this.datatype.saveBytes === 'function'
+      ? this.datatype.saveBytes(this.head.state)
+      : this.snapshotBytes();
   }
 
   /** Whole-state snapshot bytes (a cost probe / bulk-catch-up baseline).

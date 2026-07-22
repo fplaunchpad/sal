@@ -78,6 +78,7 @@
 import { peritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
+import { encode as encodeRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
 
 // Members of a PSet (hash order) or a legacy plain Set (insertion order).
@@ -264,4 +265,18 @@ export const compactiblePeritext = {
   // the coordinate-cost probe compaction shrinks: the text shadow IS an
   // embedRGA state, so its symbol count is the peritext coordinate cost
   symbolCount: (state) => embedRGA.symbolCount(state.text.shadow),
+  // what a SAVE costs (task #104's run-table serializer, the representation
+  // lever of the design doc's storage layer): the shadow's run-table bytes
+  // plus a compact JSON of the deleted set and mark records. This is the
+  // honest durable-cost number; the in-memory coordinate JSON (encodeState)
+  // is orders of magnitude above it on chain-heavy docs.
+  saveBytes(state) {
+    const shadow = encodeRunTable(state.text.shadow).length;
+    const aux = JSON.stringify([
+      [...state.text.deleted].sort((x, y) => x - y),
+      [...state.marks.entries()].sort(([x], [y]) => x - y)
+        .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId, m.startSide, m.endSide, m.ts, m.removed]),
+    ]);
+    return shadow + new TextEncoder().encode(aux).length;
+  },
 };
