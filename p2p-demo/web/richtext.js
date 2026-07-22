@@ -29,6 +29,7 @@ import { WsTransport, NetworkNode } from '../src/transport.js';
 import {
   textEditOps, formatOps, commitOps, selectionHas, coveringMarkTypes, markSpan, specRead,
 } from '../src/peritextbind.js';
+import { shouldCompact } from '../src/autogc.js';
 import { Presence, presenceSpan } from '../src/presence.js';
 import { openIdbKV, RefStore } from '../src/idbstore.js';
 // the COMPACTIBLE peritext: same datatype + the certified marks-layer GC
@@ -567,24 +568,51 @@ function renderStats() {
   $('gcBtn').disabled = !sc.complete || sc.meet.size === 0;
 }
 
-$('gcBtn').addEventListener('click', () => {
+function runCertifiedGc(label) {
   flush(); // seal my typing run first
   const b = { syms: node.symbolCount(), bytes: node.snapshotBytes(), tomb: node.head.state.text.deleted.size, marks: node.head.state.marks.size };
   const r = node.compactStable();
   const st = $('gcStatus');
   if (!r.compacted) {
     st.className = 'status warnc';
-    st.textContent = `refused: ${r.reason ?? JSON.stringify(r.missing ?? r)}`;
+    st.textContent = `${label} refused: ${r.reason ?? JSON.stringify(r.missing ?? r)}`;
   } else {
     st.className = 'status good';
-    st.textContent = `compacted (epoch ${node.epoch}): ${b.syms}→${node.symbolCount()} symbols, `
+    st.textContent = `${label} compacted (epoch ${node.epoch}): ${b.syms}→${node.symbolCount()} symbols, `
       + `${b.bytes}→${node.snapshotBytes()} bytes, ${b.tomb}→${node.head.state.text.deleted.size} tombstones, `
-      + `${b.marks}→${node.head.state.marks.size} mark records. Reads preserved. `
-      + `Other peers defer my deltas until they GC too (epochs are linearized).`;
+      + `${b.marks}→${node.head.state.marks.size} mark records. Reads preserved.`;
   }
   renderConv();
   net.announce();
-});
+  return r.compacted;
+}
+$('gcBtn').addEventListener('click', () => runCertifiedGc(''));
+
+// AUTO-GC: the leader fires the certified compaction when the coordinate
+// cost crosses the policy threshold (src/autogc.js; the leader guard keeps
+// epochs linear -- followers reach the new epoch by fast-forward). Checked
+// on a slow tick; one attempt per head (a refusal is not retried until the
+// head moves).
+let autoGcTried = null;
+// fire only on real growth past the last outcome; seeded with the LOADED
+// state so a restored doc is its own baseline (no spurious boot attempt)
+let autoGcFloor = node.symbolCount();
+setInterval(() => {
+  if (node.headGid === autoGcTried) return;
+  const sc = node.stableCut();
+  if (!shouldCompact({
+    symbols: node.symbolCount(),
+    visibleChars: node.read().length,
+    cutComplete: sc.complete,
+    meetSize: sc.meet.size,
+    name: NAME,
+    roster: node.registered,
+    floorSymbols: autoGcFloor,
+  })) return;
+  autoGcTried = node.headGid;
+  runCertifiedGc('auto-GC:');
+  autoGcFloor = node.symbolCount();
+}, 5000);
 
 // ---- convergence badge -----------------------------------------------------
 function renderConv() {

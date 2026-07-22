@@ -78,8 +78,62 @@
 import { peritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
-import { encode as encodeRunTable } from './serialize.js';
+import { encode as encodeRunTable, decode as decodeRunTable, buildRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
+
+// ---- the v2 SNAPSHOT ENCODING: run-table shadow + id sidecar ---------------
+// encodeState v1 (the plain datatype's) writes every record's ABSOLUTE
+// coordinate as a '0'/'1' string: one byte per bit, the whole ancestor chain
+// repeated per record -- Theta(depth^2) JSON for a typing run. v2 sends the
+// shadow through the SHIPPED run-table serializer (task #104) instead, plus
+// an ID SIDECAR: record ids in the serializer's deterministic element order
+// (entries in table order, members in order), zigzag-varint gap-coded. The
+// sidecar is required because ids are NOT recoverable as delta sums after a
+// compaction epoch (rank renumbering forgets time -- the RunTable.lean
+// correction), and the marks/deleted layers anchor on real ids. The
+// fingerprint is untouched, so compact-commit content ids do not move; only
+// the stored/wire snapshot bytes change.
+
+const b64encode = (u8) => {
+  let s = '';
+  for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000));
+  return btoa(s);
+};
+const b64decode = (str) => Uint8Array.from(atob(str), (ch) => ch.charCodeAt(0));
+
+const zig = (n) => (n < 0 ? -2 * n - 1 : 2 * n);
+const unzig = (z) => (z % 2 ? -(z + 1) / 2 : z / 2);
+const writeVar = (arr, n) => { while (n >= 128) { arr.push((n & 127) | 128); n = Math.floor(n / 128); } arr.push(n); };
+
+/** Ids in the serializer's element order, gap-coded. */
+function idSidecar(shadow) {
+  const bytes = [];
+  let prev = 0;
+  for (const e of buildRunTable(shadow).entries) {
+    if (!e.live) continue;
+    for (const m of e.members) { writeVar(bytes, zig(m.rid - prev)); prev = m.rid; }
+  }
+  return b64encode(Uint8Array.from(bytes));
+}
+
+/** Rebuild the true-id shadow from decode()'s fresh-sequential-id state (its
+ *  keys 1..n are assigned in exactly the element order the sidecar uses; PMap
+ *  iterates key-sorted, so the orders align). */
+function rekeyShadow(decoded, sidecarB64) {
+  const u8 = b64decode(sidecarB64);
+  const ids = [];
+  let i = 0, prev = 0;
+  while (i < u8.length) {
+    let n = 0, s = 0, b;
+    do { b = u8[i++]; n += (b & 127) * 2 ** s; s += 7; } while (b & 128);
+    prev += unzig(n); ids.push(prev);
+  }
+  const out = PMap.empty().begin();
+  let k = 0;
+  for (const [, rec] of decoded.entries()) out.set(ids[k++], rec);
+  if (k !== ids.length) throw new Error(`id sidecar mismatch: ${ids.length} ids for ${k} records`);
+  return out.freeze();
+}
 
 // Members of a PSet (hash order) or a legacy plain Set (insertion order).
 const eachMember = (s, fn) => {
@@ -262,6 +316,27 @@ export const compactiblePeritext = {
   compact: compactPeritext,
   remapState: remapPeritextState,
   cutFromMeet: peritextCutFromMeet,
+  // v2 snapshot: run-table shadow + id sidecar (above); decode accepts the
+  // plain datatype's legacy v1 shape too (previously persisted records)
+  encodeState(state) {
+    return {
+      v: 2,
+      rt: b64encode(encodeRunTable(state.text.shadow)),
+      ids: idSidecar(state.text.shadow),
+      deleted: [...state.text.deleted].sort((x, y) => x - y),
+      marks: [...state.marks.entries()].sort(([x], [y]) => x - y).map(([, m]) => m),
+    };
+  },
+  decodeState(enc) {
+    if (!enc || enc.v !== 2) return peritext.decodeState(enc); // legacy v1
+    return {
+      text: {
+        shadow: rekeyShadow(decodeRunTable(b64decode(enc.rt)), enc.ids),
+        deleted: PSet.from(enc.deleted),
+      },
+      marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze({ ...m })])),
+    };
+  },
   // the coordinate-cost probe compaction shrinks: the text shadow IS an
   // embedRGA state, so its symbol count is the peritext coordinate cost
   symbolCount: (state) => embedRGA.symbolCount(state.text.shadow),

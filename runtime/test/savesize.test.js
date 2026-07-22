@@ -27,13 +27,20 @@ function buildDoc(n) {
   return r;
 }
 
-test('saveBytes is the run-table cost: far below snapshot JSON, grows with content', () => {
+test('saveBytes is the run-table cost: far below the NAIVE coordinate JSON, grows with content', () => {
   const r = buildDoc(60);
   const save = r.saveBytes();
-  const json = r.snapshotBytes();
+  // the naive v1-style coordinate JSON (absolute '0'/'1' chains per record):
+  // the representation both saveBytes and encodeState v2 exist to beat
+  const naive = new TextEncoder().encode(JSON.stringify(
+    [...r.head.state.text.shadow.entries()].map(([id, c]) => [id, c.coord, c.el]))).length;
   assert.ok(save > 0, 'nonzero');
-  assert.ok(save < json / 10,
-    `run-table save (${save}B) is an order below the coordinate JSON (${json}B)`);
+  assert.ok(save < naive / 10,
+    `run-table save (${save}B) is an order below the coordinate JSON (${naive}B)`);
+  // and the v2 snapshot (what snapshotBytes now measures) is in the same
+  // small regime as the save, no longer the naive JSON
+  assert.ok(r.snapshotBytes() < naive / 5,
+    `v2 snapshot (${r.snapshotBytes()}B) also far below naive (${naive}B)`);
 
   // FAIL companions: not a constant (more content costs more), and the
   // datatype-less fallback is the JSON itself
@@ -45,4 +52,37 @@ test('saveBytes is the run-table cost: far below snapshot JSON, grows with conte
 test('the shadow serialization is lossless (reads identical after decode)', () => {
   const r = buildDoc(40);
   assert.equal(roundTripReads(r.head.state.text.shadow), true, 'round-trip reads equal');
+});
+
+test('encodeState v2: run-table shadow + id sidecar round-trips, incl. POST-GC', () => {
+  const r = buildDoc(60);
+  const dt = compactiblePeritext;
+
+  // pre-compaction round-trip: reads, marks, and the fingerprint all survive
+  const enc = dt.encodeState(r.head.state);
+  assert.equal(enc.v, 2, 'the v2 shape');
+  const back = dt.decodeState(enc);
+  assert.deepEqual(dt.read(back), dt.read(r.head.state), 'reads equal (chars + marks + ids)');
+  assert.equal(dt.fingerprint(back), dt.fingerprint(r.head.state), 'fingerprint equal');
+
+  // the snapshot is FAR below the v1 coordinate JSON (the point of v2)
+  const v2Bytes = new TextEncoder().encode(JSON.stringify(enc)).length;
+  const v1Bytes = new TextEncoder().encode(JSON.stringify(
+    { text: { shadow: [...r.head.state.text.shadow.entries()].map(([id, c]) => [id, c.coord, c.el]),
+      deleted: [...r.head.state.text.deleted] },
+      marks: [...r.head.state.marks.entries()].map(([, m]) => m) })).length;
+  assert.ok(v2Bytes < v1Bytes / 10, `v2 (${v2Bytes}B) an order below v1 (${v1Bytes}B)`);
+
+  // POST-COMPACTION: ids are no longer delta sums (rank renumbering), so this
+  // is the case the sidecar exists for
+  const g = r.compactStable();
+  assert.equal(g.compacted, true, 'compaction fired (solo replica: cut trivially complete)');
+  const enc2 = dt.encodeState(r.head.state);
+  const back2 = dt.decodeState(enc2);
+  assert.deepEqual(dt.read(back2), dt.read(r.head.state), 'post-GC reads equal');
+  assert.equal(dt.fingerprint(back2), dt.fingerprint(r.head.state), 'post-GC fingerprint equal');
+
+  // FAIL companion: legacy v1 input still decodes (back-compat dispatch)
+  const legacy = dt.decodeState({ text: { shadow: [[5, '1001', 'z']], deleted: [] }, marks: [] });
+  assert.equal(dt.read(legacy).map((e) => e.char).join(''), 'z', 'v1 shape still accepted');
 });
