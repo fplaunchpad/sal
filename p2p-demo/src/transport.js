@@ -23,20 +23,51 @@ export class WsTransport {
   constructor(url, room, name) {
     this.url = url; this.room = room; this.name = name;
     this.handlers = new Map();
-    this.ws = new WS(url);
-    this.ready = new Promise((resolve, reject) => {
-      this.ws.addEventListener('open', () => this.#raw({ t: 'join', room, name }));
-      this.ws.addEventListener('error', (e) => reject(e.error ?? new Error('ws error')));
-      this._resolveReady = resolve;
-    });
-    this.ws.addEventListener('message', (ev) => {
+    this.closed = false;        // close() was called by us
+    this.everConnected = false; // a roster was received at least once
+    this.attempt = 0;           // reconnect backoff counter
+    this.ready = new Promise((resolve, reject) => { this._resolveReady = resolve; this._rejectReady = reject; });
+    this.#connect();
+  }
+
+  // Connect (or RECONNECT: browsers close sockets of long-backgrounded tabs;
+  // without this the page becomes a zombie that says "connected" and silently
+  // drops every send). After a successful re-join the transport emits a
+  // synthetic local 'up' event; a drop emits 'down'. If the relay was never
+  // reachable at all, ready rejects and no reconnect loop starts.
+  #connect() {
+    // room/name ride the URL too: the node relay ignores them, but the
+    // Cloudflare deployment routes the upgrade to a per-room Durable Object
+    // BEFORE any message can arrive (deploy/cloudflare/src/worker.mjs)
+    const sep = this.url.includes('?') ? '&' : '?';
+    const ws = this.ws = new WS(
+      `${this.url}${sep}room=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.name)}`);
+    ws.addEventListener('open', () => { ws.send(JSON.stringify({ t: 'join', room: this.room, name: this.name })); });
+    ws.addEventListener('error', () => {}); // 'close' always follows; the retry lives there
+    ws.addEventListener('message', (ev) => {
       let msg; try { msg = JSON.parse(typeof ev.data === 'string' ? ev.data : ev.data.toString()); } catch { return; }
-      if (msg.t === 'roster') { this.roster = msg.names; this._resolveReady(msg.names); }
-      const hs = this.handlers.get(msg.t);
-      if (hs) for (const h of hs) h(msg);
+      const rejoin = msg.t === 'roster' && this.everConnected;
+      if (msg.t === 'roster') {
+        this.roster = msg.names; this.attempt = 0;
+        if (!this.everConnected) { this.everConnected = true; this._resolveReady(msg.names); }
+      }
+      this.#emit(msg);
+      if (rejoin) this.#emit({ t: 'up', names: msg.names });
+    });
+    ws.addEventListener('close', () => {
+      if (this.closed) return;
+      // retry BOTH a mid-session drop and a failed FIRST connection (a
+      // transient handshake failure must not brick the page: keep trying and
+      // the session heals itself when the relay is reachable again). 'down'
+      // is only emitted after a successful join, so early retries are silent.
+      if (this.everConnected) this.#emit({ t: 'down' });
+      const delay = Math.min(250 * 2 ** this.attempt++, 5000);
+      setTimeout(() => { if (!this.closed) this.#connect(); }, delay);
     });
   }
-  #raw(obj) { this.ws.send(JSON.stringify(obj)); }
+
+  #emit(msg) { const hs = this.handlers.get(msg.t); if (hs) for (const h of hs) h(msg); }
+  #raw(obj) { if (this.ws.readyState === 1) this.ws.send(JSON.stringify(obj)); } // drop while down; gossip self-heals on 'up'
   /** Broadcast to the room. */
   send(obj) { this.#raw(obj); }
   /** Address a single peer by name. */
@@ -45,7 +76,7 @@ export class WsTransport {
     if (!this.handlers.has(type)) this.handlers.set(type, []);
     this.handlers.get(type).push(handler);
   }
-  close() { try { this.ws.close(); } catch {} }
+  close() { this.closed = true; try { this.ws.close(); } catch {} }
 }
 
 export class NetworkNode {
@@ -53,11 +84,18 @@ export class NetworkNode {
   // headless test runs passive so convergence is driven ONLY by converge()'s
   // deterministic fold (no concurrent-merge criss-cross). The live UI runs
   // active (opportunistic announce) for a responsive editor.
-  constructor(node, transport, { onChange, passive = false } = {}) {
+  constructor(node, transport, { onChange, passive = false, manual = false } = {}) {
     this.node = node;
     this.tp = transport;
     this.onChange = onChange ?? (() => {});
     this.passive = passive;
+    // manual: GIT-STYLE explicit merge. Deltas are still FETCHED eagerly
+    // (ingest: content-addressed, head untouched -- `git fetch`), but
+    // mergeWithGid (`git merge`) waits for mergeStaged(). Because merge3 is
+    // total, merging never conflicts; manual is a consent policy, not a
+    // safety one. An explicit pull() always merges (it IS an explicit sync).
+    this.manual = manual;
+    this.staged = new Set(); // fetched-not-merged peer heads
     this.rid = 0;
     this.pending = new Map(); // rid -> resolve
     this.#wire();
@@ -70,6 +108,12 @@ export class NetworkNode {
     const t = this.tp, n = this.node;
     t.on('roster', (m) => { for (const nm of m.names) n.register(nm); });
     t.on('join', (m) => { n.register(m.name); if (!this.passive) this.announce(); });
+    // a departed peer that never AUTHORED anything is dropped from the roster
+    // (else a drive-by lurker blocks the certified GC's stability cut forever)
+    t.on('leave', (m) => { if (typeof n.unregister === 'function') n.unregister(m.name); });
+    // reconnected after a drop: announce to catch up BOTH ways (peers send
+    // back what I lack; my advertised head triggers their pull-on-have)
+    t.on('up', () => { if (!this.passive) this.announce(); });
     t.on('req', (m) => {
       const c = n.delta(new Set(m.have));
       t.sendTo(m.from, { t: 'delta', rid: m.rid, c, head: n.headGid });
@@ -77,27 +121,58 @@ export class NetworkNode {
     t.on('have', (m) => {
       const c = n.delta(new Set(m.gids));
       if (c.length) t.sendTo(m.from, { t: 'delta', c, head: n.headGid });
+      // The announcer advertised a head OUTSIDE my ancestry: they hold commits
+      // I lack, so pull (a have only tops up the ANNOUNCER; without this, a
+      // lone typist's edits never reach an idle peer). Active mode only --
+      // passive stays pure-pull so converge()'s fold remains deterministic.
+      if (!this.passive && m.head && !n.ancestryGids().has(m.head))
+        t.sendTo(m.from, { t: 'req', have: [...n.ancestryGids()], head: n.headGid });
     });
     t.on('delta', (m) => {
       if (m.rid !== undefined && this.pending.has(m.rid)) {
-        this.#absorb(m); const r = this.pending.get(m.rid); this.pending.delete(m.rid); r(m);
+        this.#absorb(m, { forceMerge: true }); // an awaited pull is an EXPLICIT sync
+        const r = this.pending.get(m.rid); this.pending.delete(m.rid); r(m);
       } else {
         this.#absorb(m); if (!this.passive) this.announce(); // push: catch up, re-advertise
       }
     });
   }
 
-  #absorb(m) {
+  #absorb(m, { forceMerge = false } = {}) {
     const before = this.node.headGid;
     try {
-      if (m.c && m.c.length) this.node.ingest(m.c);
-      if (m.head) this.node.mergeWithGid(m.head);
+      if (m.c && m.c.length) this.node.ingest(m.c); // fetch: always, cheap, content-addressed
+      if (m.head) {
+        if (this.manual && !forceMerge) {
+          if (!this.node.ancestryGids().has(m.head)) this.staged.add(m.head);
+        } else this.node.mergeWithGid(m.head);
+      }
     } catch (e) {
       // a genuine criss-cross (task #90) or a cross-epoch merge (a peer GC'd
       // alone; the demo linearizes epochs at a barrier) is DEFERRED, not fatal
       if (!(e instanceof CrissCrossError) && !/cross-epoch/.test(e.message)) throw e;
     }
     if (this.node.headGid !== before) this.onChange(this.node);
+  }
+
+  /** Switch merge policy. Leaving manual mode merges everything staged. */
+  setManual(on) {
+    this.manual = !!on;
+    if (!this.manual) this.mergeStaged();
+  }
+
+  /** The explicit `git merge`: fold every staged head into mine (three-way
+   *  merges over commits ALREADY fetched -- works offline). Returns the count
+   *  still staged (a deferred criss-cross stays for the next round). */
+  mergeStaged() {
+    const before = this.node.headGid;
+    for (const g of [...this.staged]) {
+      try { this.node.mergeWithGid(g); this.staged.delete(g); }
+      catch (e) { if (!(e instanceof CrissCrossError) && !/cross-epoch/.test(e.message)) throw e; }
+    }
+    for (const g of [...this.staged]) if (this.node.ancestryGids().has(g)) this.staged.delete(g);
+    if (this.node.headGid !== before) { this.onChange(this.node); if (!this.passive) this.announce(); }
+    return this.staged.size;
   }
 
   /** Advertise my current ancestry + head to the room (push). */

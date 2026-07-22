@@ -50,8 +50,19 @@ export function startRelay(port = 0, { host = '127.0.0.1' } = {}) {
   const roomOf = (r) => { if (!rooms.has(r)) rooms.set(r, new Map()); return rooms.get(r); };
   const send = (ws, obj) => { if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj)); };
 
+  // keepalive: terminate connections that stop answering pings (browsers pong
+  // at the protocol level, so live tabs survive; dead sockets get cleaned up
+  // and the 'close' handler below broadcasts their leave)
+  const heartbeat = setInterval(() => {
+    for (const ws of wss.clients) {
+      if (ws.isAlive === false) { ws.terminate(); continue; }
+      ws.isAlive = false; ws.ping();
+    }
+  }, 30000);
+
   wss.on('connection', (ws) => {
     ws.name = null; ws.room = null;
+    ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
     ws.on('message', (buf) => {
       let msg; try { msg = JSON.parse(buf.toString()); } catch { return; }
       if (msg.t === 'join') {
@@ -81,7 +92,7 @@ export function startRelay(port = 0, { host = '127.0.0.1' } = {}) {
   return new Promise((resolve) => {
     server.listen(port, host, () => resolve({
       server, port: server.address().port, rooms,
-      close: () => new Promise((res) => { wss.close(); server.close(res); }),
+      close: () => new Promise((res) => { clearInterval(heartbeat); wss.close(); server.close(res); }),
     }));
   });
 }

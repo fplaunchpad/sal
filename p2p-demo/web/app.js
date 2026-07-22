@@ -34,6 +34,8 @@ const net = new NetworkNode(node, tp, { passive: false, onChange: () => { render
 tp.on('have', (m) => { if (m.from) { peerHeads.set(m.from, m.head); renderPanels(); } });
 tp.on('delta', (m) => { if (m.from && m.head) { peerHeads.set(m.from, m.head); renderPanels(); } });
 tp.on('leave', (m) => { peerHeads.delete(m.name); renderPanels(); });
+tp.on('down', () => { $('conn').textContent = 'reconnecting…'; $('connDot').className = 'dot'; });
+tp.on('up', () => { $('conn').textContent = 'connected'; $('connDot').className = 'dot on'; renderPanels(); });
 tp.ready.then(() => { $('conn').textContent = 'connected'; $('connDot').className = 'dot on'; net.announce(); renderPanels(); })
   .catch(() => { $('conn').textContent = 'no relay'; });
 
