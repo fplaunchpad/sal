@@ -17,8 +17,8 @@ one SHA-addressed store with both wire sync and the certified GCs); the demo's
 browser UI.
 
 ```
-npm install          # once (pulls `ws`, the relay's only dependency)
-npm test             # 10 headless tests: node, git, transport, editor binding
+npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
+npm test             # 33 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -36,6 +36,9 @@ The runtime's theorems are about the CRDT semantics (convergence up to `≈`, th
 GC preserving reads under a certified cut). This demo does not re-prove them; it
 exercises the JS runtime that mirrors them and asserts the observable
 consequences (equal reads, reads unchanged by GC, git round-trip).
+`../whiteboard/verification-distance.md` is the layer-by-layer accounting of
+how far the deployed editor sits from the proofs, what keeps each testing
+bridge honest, and what would shrink the distance.
 
 ## Architecture
 
@@ -87,23 +90,126 @@ consequences (equal reads, reads unchanged by GC, git round-trip).
   changes when the doc changes, plain `git log -p` reads as sensible edit
   history.
 
+- **`src/idbstore.js` -- the browser sibling of git persistence.** `gitstore.js`
+  shells out to `git` and cannot run in a browser tab, where the editor lives.
+  `RefStore` persists the SAME commit records (shared `nodeRecords`/`rebuildNode`
+  from `gitstore.js`) into IndexedDB instead, so a browser peer survives tab
+  close/reload and can open/edit offline. It is written over a tiny async KV
+  (`MemoryKV` for headless tests, `openIdbKV()` in the browser), so it needs no
+  new dependency. Same content-address gate: a tampered stored record is
+  rejected on load. See `whiteboard/collab-design-note.md` section 7.1.
+
 - **`src/transport.js` -- the wire.** `WsTransport` carries the gossip over a
   WebSocket (browser and Node both use the global `WebSocket`). `NetworkNode`
   binds a `Node` to a transport and speaks `have`/`req`/`delta`. A `pull` is an
   awaited request/reply, giving the headless test a deterministic,
   criss-cross-free **linear fold** (`converge`). `barrierCompact` reaches a
-  common compaction epoch across peers (below).
+  common compaction epoch across peers (below). In active mode a `have`
+  advertising a head outside my ancestry triggers a `req` back at the
+  announcer (pull-on-have), so a lone typist's edits reach idle peers; passive
+  mode stays pure-pull so `converge` remains deterministic
+  (`test/livepush.test.js` pins both).
 
 - **`src/relay.mjs` -- the server.** A `ws` relay that broadcasts within a room
   (or routes a `to:`-addressed message) and also serves the sal tree
   statically, so the browser editor imports the runtime ESM directly and the
   demo is one command.
 
-- **`web/` -- the editor.** A textarea bound to an embed-RGA `Node`
-  (`src/editbind.js` turns each edit into ins/del ops; `test/editbind.test.js`
-  proves 400 random contiguous edits reproduce the target text). Panels show
-  live convergence, the roster, the commit DAG, the certified stable cut, and a
-  GC button.
+- **`web/` -- the editors.** `web/app.js` is the plain-text editor: a textarea
+  bound to an embed-RGA `Node` (`src/editbind.js` turns each edit into ins/del
+  ops; `test/editbind.test.js` proves 400 random contiguous edits reproduce the
+  target text). Panels show live convergence, the roster, the commit DAG, the
+  certified stable cut, and a GC button.
+
+- **`web/richtext.js` -- the RICH-TEXT editor (task #107).** A PROSEMIRROR view
+  over the verified Peritext datatype: one directly-edited surface (typing,
+  Enter, paste; Bold/Italic/Underline, links, comments via toolbar or
+  Cmd/Ctrl+B/I/U/K), no preview pane. ProseMirror owns the DOM (caret, IME,
+  block structure); the datatype owns the truth: every transaction is diffed
+  into ops by `src/peritextbind.js` (a text edit -> ins/del; a format gesture
+  -> one addMark/removeMark; toggling off emits the LWW-winning removeMark),
+  the marks analog of `editbind.js`, headless-tested in
+  `test/peritextbind.test.js` (including Ex7 end-side growth and mark survival
+  across a delete). After each local transaction the PM doc is reconciled
+  against `read()`: on mark-boundary questions (does a char typed at a span
+  edge inherit bold?) the verified semantics win. The full mark surface:
+  bold/italic/underline are growing boolean marks; a LINK is a value mark with
+  the exclusive (never-growing) end gravity (Ex8); a COMMENT is one mtype per
+  comment (`comment:<id>`, note in `value`), so OVERLAPPING comments coexist
+  under the per-(char,mtype) LWW (pinned in the runtime's
+  `test/peritext.test.js` comments block; PM side uses a `comment` mark with
+  `excludes:''`). The doc model is flat (chars + `\n`); PM paragraphs are
+  presentation (`flatToPm`/`pmToFlat`). ProseMirror loads as plain ESM via an
+  import map into `node_modules` -- still no bundler. Commit granularity is a
+  TYPING RUN, not a keystroke: local ops buffer in a DEBOUNCED queue while the
+  editor renders the speculative state (`specRead`: head + pending, one
+  transient `applyBatch` pass), and a flush (300ms idle OR a 1s max-latency
+  deadline so a continuous typist still syncs, blur, tab-hide -- browsers
+  freeze hidden tabs' timers -- before a format gesture or a manual merge, on
+  unload) seals the buffer as ONE group-op commit (`node.commitBatch`) and
+  announces once. Pending ops are
+  self-contained CRDT ops, so a remote merge landing mid-buffer is harmless.
+  A paste is likewise one commit. Pinned in `test/peritextbind.test.js`
+  (buffered run == per-keystroke twin, one commit vs five) and runtime
+  `test/commitbatch.test.js`.
+
+- **`src/presence.js` -- PRESENCE (task #107).** Ephemeral, OFF-DAG peer
+  awareness: live cursors/selections + identity, broadcast as plain `presence`
+  room messages over the same transport, never committed, merged, or persisted.
+  A pure registry (ttl prune, stable per-peer color) tested in
+  `test/presence.test.js`; `web/richtext.js` renders peers as ProseMirror
+  DECORATIONS (inline highlights for selections, caret widgets with name
+  flags).
+
+- **Reconnect (zombie-tab fix).** Browsers close the sockets of tabs that sit
+  in the background; before, the page kept saying "connected" while every send
+  was silently dropped. `WsTransport` now detects the drop (`down`), rejoins
+  with backoff (`up`), and `NetworkNode` re-announces on `up`, which catches up
+  BOTH directions (peers top me up; my advertised head triggers their
+  pull-on-have). The relay pings clients and terminates the unresponsive
+  (broadcasting their `leave`). Pinned in `test/reconnect.test.js`, including
+  edits made on both sides DURING the outage.
+
+- **CERTIFIED GC IN THE RICH-TEXT EDITOR.** The editor runs on
+  `compactiblePeritext` (the marks-layer GC of #110, with a `symbolCount`
+  probe over the embed shadow), shows a METADATA-COST panel (visible chars vs
+  tombstones, mark records, coordinate symbols, encoded-state bytes, commits,
+  wire-summary size, epoch, stable-cut status), and has a `run certified GC`
+  button: enabled only when the stability cut is complete (evidence from
+  every registered peer), it fires `compactStable`, preserves reads, and
+  advances the epoch. Epochs are linearized: each peer GCs in turn (a
+  peer that converged before compacting fast-forwards onto the compacted
+  chain). ROSTER HYGIENE: a peer that leaves WITHOUT ever authoring a commit
+  is dropped from the roster (`replica.unregister`, wired to the transport's
+  `leave`), else a drive-by visitor would block the stability cut forever; a
+  departed WRITER stays registered conservatively (the GC-horizon vs
+  offline-peers edge, design note 8A). `test/roster.test.js` pins both plus
+  the full block -> leave -> barrier-compact cycle. Browser-measured on a 57-char doc with 22 tombstones: 49231→1803
+  coordinate symbols, 50719→2830 state bytes, tombstones to 0, the bold's
+  mark record retained.
+
+- Links render as real anchors and OPEN with Cmd/Ctrl+Click (plain clicks
+  keep editing; contentEditable swallows them). Only http(s) hrefs are
+  emitted (no script-scheme vectors); bare `example.org` input is normalized
+  to `https://`.
+
+- **MANUAL MERGE (git-style explicit sync).** `NetworkNode` has two merge
+  policies. Auto (default): every received delta merges immediately (live
+  co-editing). Manual: deltas are still FETCHED eagerly (`ingest`:
+  content-addressed, head untouched -- `git fetch`) but `mergeWithGid`
+  (`git merge`) waits for `mergeStaged()`; the editor's `merge: auto/manual`
+  toggle and `merge ⤵ N` button drive it. Because `merge3` is total there is
+  never a conflict prompt; manual is a consent/review policy, not a safety
+  one. The staged merge needs no network (the commits are already local), so
+  review-then-merge works OFFLINE; an awaited `pull()` is an explicit sync and
+  always merges. Pinned in `test/manualmerge.test.js`.
+
+- **Cloudflare deployment (`../deploy/cloudflare/`).** One Worker serves the
+  static tree and routes WebSocket upgrades to a DURABLE OBJECT per room, the
+  serverless twin of `relay.mjs` (same protocol; hibernation-friendly, so idle
+  rooms cost nothing on the free plan). `WsTransport` sends `?room=` on the
+  upgrade URL so the Worker can pick the DO before any message arrives, and
+  speaks `wss://` under https. `./build.sh && npx wrangler deploy`.
 
 ## Certified GC across peers: the barrier
 
@@ -208,12 +314,17 @@ the scripted scenario below.
 src/hash.js        re-export of the core content hash (../runtime/src/hash.js)
 src/node.js        thin adapter: Node = DistributedReplica with the demo defaults
 src/gitstore.js    persist()/load() a Node to/from a git repo; git fencing
+src/idbstore.js    RefStore over IndexedDB (browser durable store); MemoryKV for tests
 src/transport.js   WsTransport, NetworkNode, converge(), barrierCompact()
 src/relay.mjs      ws relay + static server (npm run relay)
 src/editbind.js    textarea-edit -> ins/del ops (browser-safe, tested)
-web/index.html     the editor shell + panels
-web/app.js         the browser editor logic
+src/peritextbind.js rich-text gestures -> ins/del/addMark/removeMark, batched (tested, #107)
+src/presence.js    ephemeral off-DAG peer cursors/selections registry (tested, #107)
+web/index.html     the plain-text editor shell + panels
+web/app.js         the plain-text browser editor logic
+web/richtext.html  the rich-text editor shell (toolbar + import map for prosemirror ESM)
+web/richtext.js    the ProseMirror <-> Peritext binding (#107)
 scripts/demo.mjs   the scripted scenario (npm run demo)
-test/*.test.js     node, gitstore, integration, editbind (10 tests)
+test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, editbind, peritextbind, presence (33 tests)
 data/              (gitignored) any demo repos created here are SEPARATE git repos
 ```

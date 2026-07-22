@@ -1,0 +1,572 @@
+// Browser RICH-TEXT editor (task #107): a PROSEMIRROR view over the verified
+// Peritext datatype. One editing surface, edited directly; no preview pane.
+//
+// Division of labor:
+//   - ProseMirror owns the DOM: caret behavior, IME, paste, block structure.
+//   - The verified peritext datatype owns the TRUTH: every gesture is diffed
+//     into ins/del/addMark/removeMark ops via src/peritextbind.js (headless-
+//     tested) and lands as ONE batched commit (commitBatch). After each local
+//     transaction the PM doc is RECONCILED against read(): if PM's optimistic
+//     mark inheritance disagrees with the datatype's span-boundary semantics
+//     (e.g. whether a char typed at a span edge is bold), read() wins.
+//   - The doc model is flat (chars + '\n'); PM paragraphs are presentation.
+//     flatToPm/pmToFlat convert offsets (each paragraph boundary costs 2).
+//   - Presence (ephemeral, off-DAG) renders as PM DECORATIONS: inline
+//     highlights for selections, widgets for carets. Never committed.
+//
+// MERGING IS AUTOMATIC: each local gesture commits and announces; NetworkNode
+// absorbs peer deltas with ingest + mergeWithGid on arrival (three-way merge
+// over the DAG, fast-forward when there is no divergence). No manual step.
+
+import { Schema } from 'prosemirror-model';
+import { EditorState, Plugin, TextSelection } from 'prosemirror-state';
+import { EditorView, Decoration, DecorationSet } from 'prosemirror-view';
+import { keymap } from 'prosemirror-keymap';
+import { baseKeymap } from 'prosemirror-commands';
+
+import { Node } from '../src/node.js';
+import { WsTransport, NetworkNode } from '../src/transport.js';
+import {
+  textEditOps, formatOps, commitOps, selectionHas, coveringMarkTypes, markSpan, specRead,
+} from '../src/peritextbind.js';
+import { Presence, presenceSpan } from '../src/presence.js';
+// the COMPACTIBLE peritext: same datatype + the certified marks-layer GC
+// hooks (#110), so compactStable FIRES here instead of refusing
+import { compactiblePeritext } from '../../runtime/src/compact-peritext.js';
+
+const $ = (id) => document.getElementById(id);
+const short = (g) => (g ? g.slice(0, 8) : '?');
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+// ---- identity + room -------------------------------------------------------
+const params = new URLSearchParams(location.search);
+const ROOM = params.get('room') || 'rtdoc';
+const NAME = params.get('name') || 'peer-' + Math.random().toString(16).slice(2, 6);
+const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique ids
+$('me').textContent = NAME;
+$('room').textContent = 'room ' + ROOM;
+
+const node = new Node(compactiblePeritext, NAME);
+
+// ---- DEBOUNCED FLUSH: the default commit granularity is a typing RUN -------
+// Local ops buffer in `pending`; the editor renders the SPECULATIVE state
+// (head + pending, src/peritextbind.js specRead). flush() seals the buffer as
+// ONE group-op commit (commitBatch) and announces. Triggers: a short idle
+// pause, a MAX-LATENCY DEADLINE (a continuous typist must still sync: the
+// idle timer alone would defer forever), blur, before a format gesture,
+// before a manual merge, on unload. Pending ops are self-contained CRDT ops,
+// so a remote merge landing mid-buffer is harmless (specRead re-derives on
+// the new head).
+const FLUSH_IDLE_MS = 300;  // seal after this pause...
+const FLUSH_MAX_MS = 1000;  // ...but never later than this after the first buffered op
+let pending = [];
+let flushTimer = null;
+let deadlineTimer = null;
+const curDoc = () => specRead(node, pending);
+
+function flush() {
+  if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+  if (deadlineTimer) { clearTimeout(deadlineTimer); deadlineTimer = null; }
+  if (!pending.length) return;
+  commitOps(node, pending.splice(0)); // one commit for the whole run
+  net.announce();
+  renderConv();
+}
+function scheduleFlush() {
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = setTimeout(flush, FLUSH_IDLE_MS);
+  if (!deadlineTimer) deadlineTimer = setTimeout(flush, FLUSH_MAX_MS);
+}
+window.addEventListener('beforeunload', flush);
+// browsers FREEZE hidden tabs (timers fully suspended): seal + announce the
+// run at the moment of hiding, or it would sit unflushed until refocus
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+
+// mint: strictly-increasing, unique per peer, and ABOVE every char id already
+// in the doc (so a new mark's ts outranks pre-existing chars: end-side growth
+// grabs only text typed after the mark). Scans the SPECULATIVE doc (pending
+// included), salted per peer.
+let lamport = 0;
+function mint() {
+  let mx = 0; for (const e of curDoc()) if (e.id > mx) mx = e.id;
+  lamport = Math.max(lamport, Math.floor(mx / 1000)) + 1;
+  return lamport * 1000 + SALT;
+}
+
+// ---- state cache: flat text + char ids aligned with it (speculative) -------
+let lastText = '';
+let lastIds = [];
+function refreshCache() {
+  const doc = curDoc();
+  lastIds = doc.map((e) => e.id);
+  lastText = doc.map((e) => e.char).join('');
+}
+
+// ---- PM schema: paragraphs are presentation; the model is flat -------------
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'paragraph+' },
+    paragraph: { content: 'text*', toDOM: () => ['p', 0], parseDOM: [{ tag: 'p' }] },
+    text: {},
+  },
+  marks: {
+    bold: { toDOM: () => ['strong', 0], parseDOM: [{ tag: 'strong' }, { tag: 'b' }] },
+    italic: { toDOM: () => ['em', 0], parseDOM: [{ tag: 'em' }, { tag: 'i' }] },
+    underline: { toDOM: () => ['u', 0], parseDOM: [{ tag: 'u' }] },
+    // inclusive:false matches the datatype's exclusive-end gravity (PM then
+    // does not extend these under typing at the edge; read() is the truth
+    // either way via the reconcile)
+    link: {
+      attrs: { href: { default: '' } }, inclusive: false,
+      // href only for http(s) (no javascript: vectors); Cmd/Ctrl+Click opens
+      toDOM: (m) => {
+        const safe = /^https?:\/\//i.test(m.attrs.href) ? m.attrs.href : null;
+        return ['a', { ...(safe ? { href: safe } : {}), title: `${m.attrs.href} (Cmd/Ctrl+Click opens)`, class: 'plink' }, 0];
+      },
+      parseDOM: [{ tag: 'a' }],
+    },
+    // excludes:'' lets DIFFERENT comments coexist on the same char -- the PM
+    // face of the datatype's unique-mtype encoding (comment:<id>, note in value)
+    comment: {
+      attrs: { id: {}, text: { default: '' } }, inclusive: false, excludes: '',
+      toDOM: (m) => ['span', { class: 'pcomment', title: m.attrs.text }, 0],
+      parseDOM: [],
+    },
+  },
+});
+
+/** The PM marks for one read() entry (unknown mtypes are preserved in state
+ *  but not rendered). */
+function pmMarksForEntry(e) {
+  const out = [];
+  for (const m of e.marks) {
+    if (m.mtype === 'bold') out.push(schema.marks.bold.create());
+    else if (m.mtype === 'italic') out.push(schema.marks.italic.create());
+    else if (m.mtype === 'underline') out.push(schema.marks.underline.create());
+    else if (m.mtype === 'link') out.push(schema.marks.link.create({ href: m.value ?? '' }));
+    else if (m.mtype.startsWith('comment:')) {
+      out.push(schema.marks.comment.create({ id: m.mtype.slice(8), text: m.value ?? '' }));
+    }
+  }
+  return out;
+}
+
+/** read() -> PM doc: '\n' splits paragraphs, mark runs become marked text. */
+function pmDocFromRead() {
+  const paras = [];
+  let inl = [], run = '', sig = null, cur = [];
+  const emit = () => { if (run) { inl.push(schema.text(run, cur)); run = ''; } };
+  for (const e of curDoc()) { // SPECULATIVE doc: head + pending
+    if (e.char === '\n') { emit(); paras.push(schema.node('paragraph', null, inl)); inl = []; sig = null; continue; }
+    const k = JSON.stringify(e.marks); // marks are mtype-sorted in read()
+    if (k !== sig) { emit(); sig = k; cur = pmMarksForEntry(e); }
+    run += e.char;
+  }
+  emit(); paras.push(schema.node('paragraph', null, inl));
+  return schema.node('doc', null, paras);
+}
+
+/** PM doc -> flat text (paragraph boundaries are '\n'). */
+function flatFromDoc(d) {
+  const parts = [];
+  d.forEach((p) => parts.push(p.textContent));
+  return parts.join('\n');
+}
+
+// flat offset f <-> PM position: each char costs 1, each '\n' (a paragraph
+// boundary: close + open) costs 2, and the first paragraph open costs 1.
+function flatToPm(f, flat) {
+  let nl = 0;
+  for (let i = 0; i < f; i++) if (flat[i] === '\n') nl++;
+  return 1 + f + nl;
+}
+function pmToFlat(pos, flat) {
+  for (let f = 0; f <= flat.length; f++) if (flatToPm(f, flat) >= pos) return f;
+  return flat.length;
+}
+
+function selFlat(state) {
+  const flat = flatFromDoc(state.doc);
+  return { anchor: pmToFlat(state.selection.anchor, flat), focus: pmToFlat(state.selection.head, flat) };
+}
+function setFlatSel(tr, anchor, focus) {
+  const flat = flatFromDoc(tr.doc);
+  const c = (x) => Math.max(0, Math.min(x, flat.length));
+  try { tr.setSelection(TextSelection.create(tr.doc, flatToPm(c(anchor), flat), flatToPm(c(focus), flat))); } catch {}
+  return tr;
+}
+
+/** Carry a caret across a remote change by char ids: keep it after the
+ *  nearest SURVIVING char it used to sit after. */
+function mapOffset(oldIds, newIds, off) {
+  for (let i = Math.min(off, oldIds.length) - 1; i >= 0; i--) {
+    const j = newIds.indexOf(oldIds[i]);
+    if (j !== -1) return j + 1;
+  }
+  return 0;
+}
+
+// ---- transport + presence ---------------------------------------------------
+const peerHeads = new Map();
+// ttl generous (90s): hidden tabs get their timers throttled to ~1/min, so a
+// backgrounded peer's heartbeat stretches; leave/keepalive still removes the
+// genuinely departed promptly
+const presence = new Presence(90000);     // ephemeral, off-DAG peer cursors/selections
+let connected = false;
+const tp = new WsTransport(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`, ROOM, NAME);
+const net = new NetworkNode(node, tp, { passive: false, onChange: () => onRemote() });
+tp.on('have', (m) => { if (m.from) { peerHeads.set(m.from, m.head); renderConv(); } });
+tp.on('delta', (m) => { if (m.from && m.head) { peerHeads.set(m.from, m.head); renderConv(); } });
+tp.on('leave', (m) => { peerHeads.delete(m.name); presence.remove(m.name); renderConv(); presenceTick(); });
+// PRESENCE is a plain room broadcast the relay forwards (tagged with `from`);
+// never ingested, merged, or persisted -- it just paints where peers are.
+tp.on('presence', (m) => {
+  if (m.from && m.from !== NAME) { presence.update(m.from, { anchor: m.anchor, focus: m.focus }, Date.now()); presenceTick(); }
+});
+tp.on('join', () => sendPresence()); // greet a newcomer with my cursor
+// the transport auto-reconnects after a drop (backgrounded tabs get their
+// sockets closed); on 'up' NetworkNode already re-announces to catch up
+tp.on('down', () => { $('conn').textContent = 'reconnecting…'; $('connDot').className = 'dot'; });
+tp.on('up', () => { $('conn').textContent = 'connected'; $('connDot').className = 'dot on'; sendPresence(); renderConv(); });
+tp.ready.then(() => { connected = true; $('conn').textContent = 'connected'; $('connDot').className = 'dot on'; net.announce(); sendPresence(); renderConv(); })
+  .catch(() => { $('conn').textContent = 'no relay (local only)'; });
+
+// presence is THROTTLED (every caret move used to broadcast: that is the
+// dominant message volume, and Durable Object requests are metered): at most
+// one send per PRESENCE_MIN_MS with a trailing send, plus a slow heartbeat
+const PRESENCE_MIN_MS = 300;
+let lastPresence = { anchor: 0, focus: 0 };
+let lastPresenceAt = 0;
+let presenceTrailer = null;
+/** Broadcast my caret/selection (flat offsets). Ephemeral: fire-and-forget. */
+function sendPresence(sel) {
+  if (!connected) return;
+  let s = sel;
+  if (!s) { try { s = selFlat(view.state); } catch { s = lastPresence; } }
+  lastPresence = { anchor: s.anchor, focus: s.focus };
+  const now = Date.now();
+  if (now - lastPresenceAt < PRESENCE_MIN_MS) {
+    if (!presenceTrailer) {
+      presenceTrailer = setTimeout(() => { presenceTrailer = null; sendPresence(); },
+        PRESENCE_MIN_MS - (now - lastPresenceAt));
+    }
+    return; // the trailing send will carry the latest lastPresence
+  }
+  lastPresenceAt = now;
+  try { tp.send({ t: 'presence', anchor: s.anchor, focus: s.focus }); } catch {}
+}
+setInterval(() => sendPresence(), 20000);                                   // heartbeat
+setInterval(() => { presence.prune(Date.now()); presenceTick(); }, 10000);  // drop the vanished
+
+// ---- presence rendering: PM decorations + the chip bar ---------------------
+function caretElt(p) {
+  const bar = document.createElement('span');
+  bar.className = 'pcaret'; bar.style.borderColor = p.color;
+  const flag = document.createElement('span');
+  flag.className = 'pflag'; flag.style.background = p.color; flag.textContent = p.name;
+  bar.appendChild(flag);
+  return bar;
+}
+
+const presencePlugin = new Plugin({
+  props: {
+    decorations(state) {
+      const flat = flatFromDoc(state.doc);
+      const len = flat.length;
+      const decos = [];
+      for (const p of presence.list()) {
+        const [lo, hi] = presenceSpan(p);
+        const a = Math.min(lo, len), b = Math.min(hi, len);
+        if (b > a) decos.push(Decoration.inline(flatToPm(a, flat), flatToPm(b, flat),
+          { style: `background: color-mix(in srgb, ${p.color} 25%, transparent)` }));
+        decos.push(Decoration.widget(flatToPm(Math.min(p.focus ?? 0, len), flat),
+          () => caretElt(p), { key: `caret-${p.name}` }));
+      }
+      return DecorationSet.create(state.doc, decos);
+    },
+  },
+});
+
+/** Nudge the view so decorations recompute, and refresh the chip bar. */
+function presenceTick() {
+  renderPresenceBar();
+  try { view.dispatch(view.state.tr.setMeta('remote', true)); } catch {}
+}
+
+function renderPresenceBar() {
+  $('presenceBar').innerHTML = presence.list().map((p) => {
+    const [lo, hi] = presenceSpan(p);
+    const where = lo === hi ? `@${lo}` : `${lo}-${hi}`;
+    return `<span class="ptag" style="border-color:${p.color}"><span class="pdot" style="background:${p.color}"></span>${esc(p.name)} ${where}</span>`;
+  }).join('');
+}
+
+// ---- the editor view --------------------------------------------------------
+/** All transactions funnel here. Local doc changes are diffed into ops and
+ *  committed (ONE batched commit per gesture), then reconciled against
+ *  read(). Remote-flagged transactions are display-only. */
+function dispatch(tr) {
+  let newState = view.state.apply(tr);
+  if (!tr.getMeta('remote') && tr.docChanged) {
+    const neu = flatFromDoc(newState.doc);
+    const ops = textEditOps(lastIds, lastText, neu, mint);
+    pending.push(...ops);   // DEBOUNCED: buffer the ops, commit on flush
+    scheduleFlush();
+    refreshCache();
+    const target = pmDocFromRead(); // speculative read() wins on mark boundaries
+    if (!newState.doc.eq(target)) {
+      const sel = selFlat(newState);
+      let fix = newState.tr.replaceWith(0, newState.doc.content.size, target.content).setMeta('remote', true);
+      fix = setFlatSel(fix, sel.anchor, sel.focus);
+      newState = newState.apply(fix);
+    }
+    view.updateState(newState);
+    renderConv(); // announce happens at flush, not per keystroke
+  } else {
+    view.updateState(newState);
+  }
+  const s = selFlat(newState);
+  if (s.anchor !== lastPresence.anchor || s.focus !== lastPresence.focus) sendPresence(s);
+}
+
+/** A remote delta was absorbed (already MERGED automatically): swap in the
+ *  new doc, carrying my caret across the change by char ids. */
+function onRemote() {
+  const oldIds = lastIds;
+  const sel = selFlat(view.state);
+  refreshCache();
+  const target = pmDocFromRead();
+  let tr = view.state.tr.replaceWith(0, view.state.doc.content.size, target.content).setMeta('remote', true);
+  tr = setFlatSel(tr, mapOffset(oldIds, lastIds, sel.anchor), mapOffset(oldIds, lastIds, sel.focus));
+  view.dispatch(tr);
+  renderConv();
+}
+
+// ---- formatting: toggle a mark / link / comment on the selection -----------
+/** Commit format ops as ONE batch, rebuild from read(), restore selection.
+ *  Flushes the typing buffer first so the run precedes the mark in the DAG. */
+function applyFormatOps(ops, sel) {
+  if (!ops.length) return;
+  flush();
+  commitOps(node, ops);
+  refreshCache();
+  const st = view.state;
+  const target = pmDocFromRead();
+  let tr = st.tr.replaceWith(0, st.doc.content.size, target.content).setMeta('remote', true);
+  tr = setFlatSel(tr, sel.anchor, sel.focus);
+  view.dispatch(tr);
+  view.focus();
+  net.announce();
+  renderConv();
+}
+
+/** The current selection as {sel, from, to}, or null if collapsed. */
+function selRange() {
+  const sel = selFlat(view.state);
+  const from = Math.min(sel.anchor, sel.focus), to = Math.max(sel.anchor, sel.focus);
+  return to <= from ? null : { sel, from, to };
+}
+
+function applyMark(mtype) {
+  const r = selRange(); if (!r) return;
+  const remove = selectionHas(curDoc(), r.from, r.to, mtype); // fully set -> toggle off
+  applyFormatOps(formatOps(lastIds, r.from, r.to, mtype, mint, { remove }), r.sel);
+}
+
+/** Link: toggle off if the selection is linked, else ask for a URL (inline
+ *  input, never window.prompt). Links use the NON-GROWING gravity. */
+function applyLink() {
+  const r = selRange(); if (!r) return;
+  if (selectionHas(curDoc(), r.from, r.to, 'link')) {
+    applyFormatOps(formatOps(lastIds, r.from, r.to, 'link', mint, { remove: true }), r.sel);
+  } else {
+    openArgbar('link', 'URL for the selection', r);
+  }
+}
+
+/** Comment: if comments fully cover the selection, remove each over its WHOLE
+ *  span; else ask for the note. One comment = one `comment:<id>` mtype (note
+ *  in value), so overlapping comments coexist. Non-growing gravity. */
+function applyComment() {
+  const r = selRange(); if (!r) return;
+  const doc = curDoc();
+  const covering = coveringMarkTypes(doc, r.from, r.to, 'comment:');
+  if (covering.length) {
+    const ops = covering.flatMap((mt) => {
+      const [lo, hi] = markSpan(doc, mt);
+      return formatOps(lastIds, lo, hi, mt, mint, { remove: true });
+    });
+    applyFormatOps(ops, r.sel); // one batch removes them all
+  } else {
+    openArgbar('comment', 'Comment on the selection', r);
+  }
+}
+
+// the inline argument bar (URL / comment text)
+let pendingArg = null;
+function openArgbar(kind, label, r) {
+  pendingArg = { kind, r };
+  $('argLabel').textContent = label;
+  $('argbar').classList.add('show');
+  const inp = $('argInput'); inp.value = ''; inp.focus();
+}
+function closeArgbar() {
+  pendingArg = null;
+  $('argbar').classList.remove('show');
+  view.focus();
+}
+function applyArgbar() {
+  if (!pendingArg) return closeArgbar();
+  const { kind, r } = pendingArg;
+  let text = $('argInput').value.trim();
+  if (text) {
+    if (kind === 'link') {
+      // bare "example.org" becomes a real URL (the renderer only links http(s))
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(text)) text = 'https://' + text;
+      applyFormatOps(formatOps(lastIds, r.from, r.to, 'link', mint,
+        { value: text, endSide: 'before' }), r.sel);
+    } else {
+      applyFormatOps(formatOps(lastIds, r.from, r.to, `comment:${mint()}`, mint,
+        { value: text, endSide: 'before' }), r.sel);
+    }
+  }
+  closeArgbar();
+}
+$('argApply').addEventListener('click', applyArgbar);
+$('argCancel').addEventListener('click', closeArgbar);
+$('argInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); applyArgbar(); }
+  if (e.key === 'Escape') { e.preventDefault(); closeArgbar(); }
+});
+
+// mousedown preventDefault keeps focus (and the selection) in the editor
+for (const [id, fn] of [
+  ['boldBtn', () => applyMark('bold')], ['italicBtn', () => applyMark('italic')],
+  ['underBtn', () => applyMark('underline')], ['linkBtn', applyLink], ['commentBtn', applyComment],
+]) {
+  $(id).addEventListener('mousedown', (e) => e.preventDefault());
+  $(id).addEventListener('click', fn);
+}
+
+// ---- merge policy: auto (live co-editing) vs manual (git-style fetch/merge) --
+$('modeBtn').addEventListener('click', () => {
+  flush(); // my typing run is committed before any policy change merges
+  net.setManual(!net.manual); // leaving manual drains the staged backlog
+  $('modeBtn').textContent = net.manual ? 'merge: manual' : 'merge: auto';
+  renderConv();
+});
+$('mergeBtn').addEventListener('click', () => { flush(); net.mergeStaged(); renderConv(); });
+
+/** The live comment chips: every comment:<id> in the doc with its note + span. */
+function renderComments() {
+  const doc = curDoc();
+  const seen = new Map(); // mtype -> {value, lo, hi}
+  for (let i = 0; i < doc.length; i++) {
+    for (const m of doc[i].marks) {
+      if (!m.mtype.startsWith('comment:')) continue;
+      const c = seen.get(m.mtype);
+      if (c) c.hi = i + 1; else seen.set(m.mtype, { value: m.value, lo: i, hi: i + 1 });
+    }
+  }
+  $('commentsBar').innerHTML = [...seen.entries()].map(([mt, c]) =>
+    `<span class="ptag ctag" title="${esc(mt)}">💬 ${esc(c.value ?? '')} <span class="cwhere">${c.lo}-${c.hi}</span></span>`
+  ).join('');
+}
+
+refreshCache();
+const view = new EditorView($('editor'), {
+  state: EditorState.create({
+    doc: pmDocFromRead(),
+    plugins: [
+      keymap({
+        'Mod-b': () => { applyMark('bold'); return true; },
+        'Mod-i': () => { applyMark('italic'); return true; },
+        'Mod-u': () => { applyMark('underline'); return true; },
+        'Mod-k': () => { applyLink(); return true; },
+      }),
+      keymap(baseKeymap),
+      presencePlugin,
+    ],
+  }),
+  dispatchTransaction: dispatch,
+});
+view.dom.addEventListener('blur', flush); // leaving the editor seals the run
+// contentEditable swallows plain clicks on links; Cmd/Ctrl+Click opens them
+view.dom.addEventListener('click', (e) => {
+  const a = e.target.closest ? e.target.closest('a.plink') : null;
+  if (a && a.href && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    window.open(a.href, '_blank', 'noopener');
+  }
+});
+
+// ---- metadata cost + certified GC ------------------------------------------
+// The COST PANEL shows what the doc drags around beyond its visible text:
+// tombstones, mark records, coordinate symbols, encoded-state bytes, commit
+// count, wire-summary size. The GC button runs the CERTIFIED compactStable
+// (marks-layer GC #110): it fires only when the stability cut is complete
+// (evidence from every registered peer), preserves reads, and advances the
+// epoch. Epochs are linearized: after one peer compacts, others' merges are
+// deferred until they GC too (the button turns into the barrier).
+function renderStats() {
+  const st = node.head.state;
+  const chars = node.read().length;
+  const sc = node.stableCut();
+  const chips = [
+    ['chars', chars],
+    ['tombstones', st.text.deleted.size],
+    ['mark records', st.marks.size],
+    ['coord symbols', node.symbolCount()],
+    ['state bytes', node.snapshotBytes()],
+    ['commits', node.dag.size],
+    ['wire summary', node.ancestryGids().size],
+    ['epoch', node.epoch],
+    ['stable cut', sc.complete ? `${sc.meet.size} settled` : `waiting: ${sc.missing.join(',') || '?'}`],
+  ];
+  $('statsRow').innerHTML = chips.map(([k, v]) =>
+    `<span class="stat"><span class="sk">${k}</span> ${v}</span>`).join('');
+  $('gcBtn').disabled = !sc.complete || sc.meet.size === 0;
+}
+
+$('gcBtn').addEventListener('click', () => {
+  flush(); // seal my typing run first
+  const b = { syms: node.symbolCount(), bytes: node.snapshotBytes(), tomb: node.head.state.text.deleted.size, marks: node.head.state.marks.size };
+  const r = node.compactStable();
+  const st = $('gcStatus');
+  if (!r.compacted) {
+    st.className = 'status warnc';
+    st.textContent = `refused: ${r.reason ?? JSON.stringify(r.missing ?? r)}`;
+  } else {
+    st.className = 'status good';
+    st.textContent = `compacted (epoch ${node.epoch}): ${b.syms}→${node.symbolCount()} symbols, `
+      + `${b.bytes}→${node.snapshotBytes()} bytes, ${b.tomb}→${node.head.state.text.deleted.size} tombstones, `
+      + `${b.marks}→${node.head.state.marks.size} mark records. Reads preserved. `
+      + `Other peers defer my deltas until they GC too (epochs are linearized).`;
+  }
+  renderConv();
+  net.announce();
+});
+
+// ---- convergence badge -----------------------------------------------------
+function renderConv() {
+  const mine = node.headGid;
+  const others = [...peerHeads.entries()].filter(([n]) => n !== NAME);
+  const badge = $('convBadge');
+  if (others.length === 0) { badge.className = 'conv no'; badge.textContent = 'solo'; }
+  else {
+    const agree = others.filter(([, h]) => h === mine).length;
+    if (agree === others.length) { badge.className = 'conv yes'; badge.textContent = `✓ converged (${others.length})`; }
+    else { badge.className = 'conv no'; badge.textContent = `syncing ${agree}/${others.length}`; }
+  }
+  const roster = [...node.registered].sort();
+  const pend = pending.length ? ` · ${pending.length} pending` : '';
+  $('peers').textContent = roster.length ? `peers: ${roster.map((n) => (n === NAME ? n + ' (you)' : n)).join(', ')} · head ${short(mine)}${pend}` : '';
+  // manual-merge affordances: the merge button appears with the staged count
+  const mb = $('mergeBtn');
+  mb.style.display = net.manual ? '' : 'none';
+  if (net.manual) mb.textContent = `merge ⤵ ${net.staged.size}`;
+  renderComments(); // doc-derived, kept in step with every state change
+  renderStats();
+}
+
+renderConv();
