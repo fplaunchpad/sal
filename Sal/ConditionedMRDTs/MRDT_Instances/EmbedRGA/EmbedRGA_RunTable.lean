@@ -244,6 +244,14 @@ theorem spot_d1_walk :
 theorem spot_d1_tableWalk : tableWalk (tableOf L7) = walk L7 := by
   native_decide
 
+/-- PASS: the GENERIC table-direct walk (`RunTable.tableWalk`, the §7⅞
+theorem-bearing definition, proved faithful in `tableWalk_tableOf`) agrees
+on the D1 pin too — the SPOT and the generic theorem name the same reading
+procedure. -/
+theorem spot_d1_tableWalk_generic :
+    Sal.EmbedRGA.RunTable.tableWalk (tableOf L7) = walk L7 := by
+  native_decide
+
 /-- The no-split rival: `abcdef` kept as ONE run, `X` hung at interior
 offset 2 — violating tail attachment. -/
 def rival : Table := [⟨none, true, 1, 6⟩, ⟨some (0, 2), true, 4, 1⟩]

@@ -2552,10 +2552,11 @@ table is the rebuild — no order or arrival dependence), and it is what makes
 every other rule statable set-wise. The typing rule (`tableOf_insert_extend`)
 is proved generically: extending a childless live node by a delta-1 child
 bumps ONE `len` field — O(1) table work for a keystroke. The remaining rules
-(mid-run split, the delete liveness split, delete-vanish with cascade,
-coalesce as the forced delete-inverse, vanished-anchor materialization) are
-pinned by the instance SPOTs (D1–D5 shapes) and their generic forms are
-recorded as owed. -/
+(mid-run split, the delete liveness split, coalesce as the forced
+delete-inverse, vanished-anchor materialization) are pinned by the instance
+SPOTs (D1–D5 shapes), their generic perturbation lemmas live in §7¼, and
+their CLOSED `tableOf` equations in §7⅜ (`tableOf_insert_split`,
+`tableOf_delete_split`, `tableOf_coalesce`, `tableOf_materialize`). -/
 
 theorem keptL_congr {L L' : List (List ℕ)} (hmem : ∀ c, c ∈ L ↔ c ∈ L') :
     ∀ x, x ∈ keptL L ↔ x ∈ keptL L' := by
@@ -2926,7 +2927,9 @@ a childless live node re-canonicalizes to the SAME table with ONE `len`
 field bumped — the coalesce-after-attach path, O(1) table work per
 keystroke. The other insert shape (anchor interior or label ≠ 1, the mid-run
 split / new-entry rule) and the delete family are pinned concretely by the
-instance SPOTs; their generic forms are recorded as owed. -/
+instance SPOTs and CLOSED generically in §7⅜ (D1 `tableOf_insert_split`,
+D2 `tableOf_delete_split`, D4 `tableOf_coalesce`,
+D5 `tableOf_materialize`). -/
 theorem tableOf_insert_extend :
     tableOf (L ++ [a ++ [1]])
       = (headsList L).map (fun h =>
@@ -3250,6 +3253,2350 @@ theorem coalesce_restored : fusible L' (a ++ [1]) = true := by
 
 end Coalesce
 
+/-! ## §7⅜  T-mut, closed equations — the four rules as explicit table rewrites
+
+Each §7¼ rule is promoted here to a CLOSED-FORM `tableOf` equation in the
+style of `tableOf_insert_extend`: the table after the mutation as an explicit
+function of pre-mutation data (`headsList L`, `entryOfHead L`, `headOf L`,
+`lenOf L`). New heads enter by sorted insertion (`mergeSort hLe`), removed
+heads leave by `filter`, old entries keep their fields except the announced
+`par` rehoming and `len` split/merge, and parent references are re-indexed by
+`idxOf` into the new enumeration — itself closed, being the equation's own
+head list. No stability or honesty hypothesis anywhere. -/
+
+/-- `mergeSort hLe` of a `Nodup` list is strictly `hLt`-sorted. -/
+theorem mergeSort_hLt_sorted {l : List (List ℕ)} (hnd : l.Nodup) :
+    (l.mergeSort hLe).Pairwise (fun a b => hLt a b = true) := by
+  have hle : (l.mergeSort hLe).Pairwise (fun a b => hLe a b = true) := by
+    apply List.pairwise_mergeSort
+    · intro a b c h1 h2
+      exact hLe_trans h1 h2
+    · intro a b
+      exact hLe_total a b
+  have hnd' : (l.mergeSort hLe).Nodup :=
+    (List.mergeSort_perm l hLe).nodup_iff.mpr hnd
+  refine (hle.and hnd').imp ?_
+  rintro a b ⟨hab, hne⟩
+  simp only [hLe, Bool.not_eq_true'] at hab
+  rcases hLt_total hne with h | h
+  · exact h
+  · rw [h] at hab
+    exact Bool.noConfusion hab
+
+/-- `headsList`, characterized: any strictly sorted enumeration of the heads
+IS the canonical head list. -/
+theorem headsList_eq_of_iff {L' M : List (List ℕ)}
+    (hM : M.Pairwise (fun a b => hLt a b = true))
+    (hiff : ∀ c, isHead L' c = true ↔ c ∈ M) : headsList L' = M :=
+  hLt_sorted_ext (sorted_headsList _) hM
+    (fun c => by rw [mem_headsList]; exact hiff c)
+
+/-- Run length via an explicit offset enumeration of the members. -/
+theorem lenOf_eq_of_iff {L' : List (List ℕ)} {h : List ℕ} {n : ℕ}
+    (hiff : ∀ c, (c ∈ keptL L' ∧ headOf L' c = h)
+      ↔ ∃ k < n, c = h ++ List.replicate k 1) :
+    lenOf L' h = n := by
+  have hperm : (runMembers L' h).Perm
+      ((List.range n).map (fun k => h ++ List.replicate k 1)) := by
+    refine (List.perm_ext_iff_of_nodup ((nodup_keptL _).filter _) ?_).mpr ?_
+    · refine List.Nodup.map_on ?_ List.nodup_range
+      intro j₁ _ j₂ _ heq
+      exact replicate_offset_inj heq
+    · intro c
+      show c ∈ runMembers L' h ↔ _
+      rw [mem_runMembers, hiff c, List.mem_map]
+      constructor
+      · rintro ⟨k, hk, rfl⟩
+        exact ⟨k, List.mem_range.mpr hk, rfl⟩
+      · rintro ⟨k, hk, rfl⟩
+        exact ⟨k, List.mem_range.mp hk, rfl⟩
+  have := hperm.length_eq
+  rw [lenOf, this, List.length_map, List.length_range]
+
+/-! ### D5, closed — the directed vanished-anchor materialization
+
+The directed D5 shape (`spot_d5_materialize`): the anchor `m` vanished while
+its parent `m.dropLast` is a live, childless kept node. Delivering `m ++ [d]`
+re-materializes `m` as a DEAD singleton entry plus the live `m ++ [d]`
+singleton below it; every old entry keeps its fields, parent references
+re-indexed. (The general vanished-PATH shape — a whole dead spine
+re-materializing, splitting at non-`1` labels, plus a possible mid-run split
+at the re-attachment point — is a genuine cascade: it is exactly the
+composite of this rule applied once per vanished label with D1-shaped splits,
+and does not admit a single closed equation.) -/
+
+section MaterializeClosed
+
+variable {L : List (List ℕ)} {m : List ℕ} {d : ℕ}
+  (hnil : ([] : List ℕ) ∉ L)
+  (hpar : m.dropLast ∈ L)
+  (hchildless : ∀ e, m.dropLast ++ [e] ∉ keptL L)
+
+include hnil hpar in
+theorem mat_mne : m ≠ [] := by
+  intro h
+  rw [h] at hpar
+  exact hnil hpar
+
+include hnil hpar in
+theorem mat_pne : m.dropLast ≠ [] := fun h => hnil (h ▸ hpar)
+
+include hnil hpar hchildless in
+theorem mat_vanished : m ∉ keptL L := by
+  intro hk
+  have := hchildless (m.getLastD 0)
+  rw [← concat_getLastD (mat_mne hnil hpar)] at this
+  exact this hk
+
+include hnil hpar hchildless in
+theorem mat_new_not_kept : m ++ [d] ∉ keptL L := by
+  intro hk
+  exact mat_vanished hnil hpar hchildless
+    (kept_of_prefix hk (List.prefix_append m [d]) (mat_mne hnil hpar))
+
+include hnil hpar hchildless in
+theorem mat_kept_iff (x : List ℕ) :
+    x ∈ keptL (L ++ [m ++ [d]]) ↔ x ∈ keptL L ∨ x = m ∨ x = m ++ [d] := by
+  rw [mem_keptL_snoc]
+  constructor
+  · rintro (hx | ⟨hne, hp⟩)
+    · exact Or.inl hx
+    · by_cases hxd : x = m ++ [d]
+      · exact Or.inr (Or.inr hxd)
+      · have hxm : x <+: m := by
+          have := prefix_dropLast_of_ne hp hxd
+          rwa [List.dropLast_concat] at this
+        by_cases hxm' : x = m
+        · exact Or.inr (Or.inl hxm')
+        · exact Or.inl (kept_of_prefix
+            (kept_of_live hpar (mat_pne hnil hpar))
+            (prefix_dropLast_of_ne hxm hxm') hne)
+  · rintro (hx | h1 | h1)
+    · exact Or.inl hx
+    · rw [h1]
+      exact Or.inr ⟨mat_mne hnil hpar, List.prefix_append m [d]⟩
+    · rw [h1]
+      exact Or.inr ⟨by simp, List.prefix_refl _⟩
+
+include hnil hpar hchildless in
+theorem mat_m_not_live : m ∉ L ++ [m ++ [d]] := by
+  intro hx
+  rcases List.mem_append.mp hx with hx | hx
+  · exact mat_vanished hnil hpar hchildless
+      (kept_of_live hx (mat_mne hnil hpar))
+  · rw [List.mem_singleton] at hx
+    have := congrArg List.length hx
+    simp at this
+
+include hnil hpar hchildless in
+theorem mat_fusible_old {x : List ℕ} (hx : x ∈ keptL L) :
+    fusible (L ++ [m ++ [d]]) x = fusible L x := by
+  have hxm : x ≠ m := fun h =>
+    mat_vanished hnil hpar hchildless (h ▸ hx)
+  have hxd : x ≠ m ++ [d] := fun h =>
+    mat_new_not_kept hnil hpar hchildless (h ▸ hx)
+  have hdm : x.dropLast ≠ m := by
+    intro h
+    apply mat_vanished hnil hpar hchildless
+    rw [← h]
+    exact kept_of_prefix hx (List.dropLast_prefix x)
+      (by rw [h]; exact mat_mne hnil hpar)
+  have hdd : x.dropLast ≠ m ++ [d] := by
+    intro h
+    apply mat_new_not_kept hnil hpar hchildless
+    rw [← h]
+    exact kept_of_prefix hx (List.dropLast_prefix x) (by rw [h]; simp)
+  have hkiff := mat_kept_iff (d := d) hnil hpar hchildless
+  have hmemx : (x ∈ L ++ [m ++ [d]]) ↔ (x ∈ L) := by
+    rw [List.mem_append, List.mem_singleton]
+    exact ⟨fun h => h.resolve_right (fun h' => absurd h' hxd), Or.inl⟩
+  have hmemd : (x.dropLast ∈ L ++ [m ++ [d]]) ↔ (x.dropLast ∈ L) := by
+    rw [List.mem_append, List.mem_singleton]
+    exact ⟨fun h => h.resolve_right (fun h' => absurd h' hdd), Or.inl⟩
+  rw [Bool.eq_iff_iff, fusible_eq_true_iff, fusible_eq_true_iff]
+  constructor
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    have hd : x.dropLast ∈ keptL L := by
+      rcases (hkiff x.dropLast).mp h2 with h | h | h
+      · exact h
+      · exact absurd h hdm
+      · exact absurd h hdd
+    refine ⟨hx, hd, h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      exact h4 c' ((hkiff c').mpr (Or.inl hc')) hparc
+    · rw [← hmemx, ← hmemd]
+      exact h5
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨(hkiff x).mpr (Or.inl hx),
+      (hkiff x.dropLast).mpr (Or.inl h2), h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      rcases (hkiff c').mp hc' with hc' | h1 | h1
+      · exact h4 c' hc' hparc
+      · exfalso
+        rw [h1] at hparc
+        apply hchildless (x.getLastD 0)
+        rw [← child_of_parent_eq (kept_ne_nil hx) hparc.symm]
+        exact hx
+      · exfalso
+        rw [h1, List.dropLast_concat] at hparc
+        exact hdm hparc.symm
+    · rw [hmemx, hmemd]
+      exact h5
+
+include hnil hpar hchildless in
+theorem mat_fusible_m : fusible (L ++ [m ++ [d]]) m = false := by
+  cases hf : fusible (L ++ [m ++ [d]]) m with
+  | false => rfl
+  | true =>
+      exfalso
+      have hlv := fusible_live hf
+      exact mat_m_not_live hnil hpar hchildless
+        (hlv.mpr (List.mem_append_left _ hpar))
+
+include hnil hpar hchildless in
+theorem mat_fusible_new : fusible (L ++ [m ++ [d]]) (m ++ [d]) = false := by
+  cases hf : fusible (L ++ [m ++ [d]]) (m ++ [d]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have hlv := fusible_live hf
+      rw [List.dropLast_concat] at hlv
+      exact mat_m_not_live hnil hpar hchildless
+        (hlv.mp (List.mem_append_right _ (by simp)))
+
+include hnil hpar hchildless in
+theorem mat_isHead_iff (c : List ℕ) :
+    isHead (L ++ [m ++ [d]]) c = true
+      ↔ (isHead L c = true ∨ c = m ∨ c = m ++ [d]) := by
+  constructor
+  · intro h
+    rcases (mat_kept_iff hnil hpar hchildless c).mp (isHead_kept h)
+      with hc | h1 | h1
+    · left
+      refine isHead_of_kept_not_fusible hc ?_
+      rw [← mat_fusible_old hnil hpar hchildless hc]
+      exact isHead_not_fusible h
+    · exact Or.inr (Or.inl h1)
+    · exact Or.inr (Or.inr h1)
+  · rintro (h | h1 | h1)
+    · exact isHead_of_kept_not_fusible
+        ((mat_kept_iff hnil hpar hchildless c).mpr (Or.inl (isHead_kept h)))
+        (by rw [mat_fusible_old hnil hpar hchildless (isHead_kept h)]
+            exact isHead_not_fusible h)
+    · rw [h1]
+      exact isHead_of_kept_not_fusible
+        ((mat_kept_iff hnil hpar hchildless m).mpr (Or.inr (Or.inl rfl)))
+        (mat_fusible_m hnil hpar hchildless)
+    · rw [h1]
+      exact isHead_of_kept_not_fusible
+        ((mat_kept_iff hnil hpar hchildless _).mpr (Or.inr (Or.inr rfl)))
+        (mat_fusible_new hnil hpar hchildless)
+
+include hnil hpar hchildless in
+theorem mat_headOf_old : ∀ (c : List ℕ), c ∈ keptL L →
+    headOf (L ++ [m ++ [d]]) c = headOf L c := by
+  intro c
+  fun_induction headOf L c with
+  | case1 c hf ih =>
+      intro hk
+      have hf' : fusible (L ++ [m ++ [d]]) c = true := by
+        rw [mat_fusible_old hnil hpar hchildless hk]
+        exact hf
+      rw [headOf_of_fusible hf']
+      exact ih (fusible_parent_kept hf)
+  | case2 c hf =>
+      intro hk
+      have hf' : fusible (L ++ [m ++ [d]]) c = false := by
+        rw [mat_fusible_old hnil hpar hchildless hk]
+        exact Bool.eq_false_iff.mpr hf
+      exact headOf_of_not_fusible hf'
+
+include hnil hpar hchildless in
+theorem mat_headOf_m : headOf (L ++ [m ++ [d]]) m = m :=
+  headOf_of_not_fusible (mat_fusible_m hnil hpar hchildless)
+
+include hnil hpar hchildless in
+theorem mat_headOf_new : headOf (L ++ [m ++ [d]]) (m ++ [d]) = m ++ [d] :=
+  headOf_of_not_fusible (mat_fusible_new hnil hpar hchildless)
+
+include hnil hpar hchildless in
+theorem mat_lenOf_old {h : List ℕ} (hh : isHead L h = true) :
+    lenOf (L ++ [m ++ [d]]) h = lenOf L h := by
+  rw [lenOf, lenOf, runMembers, runMembers]
+  have hiff : ∀ c, (c ∈ keptL (L ++ [m ++ [d]])
+        ∧ headOf (L ++ [m ++ [d]]) c = h)
+      ↔ (c ∈ keptL L ∧ headOf L c = h) := by
+    intro c
+    constructor
+    · rintro ⟨hk, hhd⟩
+      rcases (mat_kept_iff hnil hpar hchildless c).mp hk with hc | h1 | h1
+      · exact ⟨hc, by
+          rw [← mat_headOf_old hnil hpar hchildless c hc]; exact hhd⟩
+      · exfalso
+        rw [h1, mat_headOf_m hnil hpar hchildless] at hhd
+        apply mat_vanished hnil hpar hchildless
+        rw [hhd]
+        exact isHead_kept hh
+      · exfalso
+        rw [h1, mat_headOf_new hnil hpar hchildless] at hhd
+        apply mat_new_not_kept hnil hpar hchildless
+        rw [hhd]
+        exact isHead_kept hh
+    · rintro ⟨hk, hhd⟩
+      exact ⟨(mat_kept_iff hnil hpar hchildless c).mpr (Or.inl hk), by
+        rw [mat_headOf_old hnil hpar hchildless c hk]; exact hhd⟩
+  have hperm : ((keptL (L ++ [m ++ [d]])).filter
+        (fun c => headOf (L ++ [m ++ [d]]) c == h)).Perm
+      ((keptL L).filter (fun c => headOf L c == h)) := by
+    refine (List.perm_ext_iff_of_nodup ((nodup_keptL _).filter _)
+      ((nodup_keptL _).filter _)).mpr ?_
+    intro c
+    simp only [List.mem_filter, beq_iff_eq]
+    exact hiff c
+  exact hperm.length_eq
+
+include hnil hpar hchildless in
+theorem mat_lenOf_m : lenOf (L ++ [m ++ [d]]) m = 1 := by
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    refine ⟨0, by omega, ?_⟩
+    simp only [List.replicate_zero, List.append_nil]
+    rcases (mat_kept_iff hnil hpar hchildless c).mp hk with hc | h1 | h1
+    · exfalso
+      rw [mat_headOf_old hnil hpar hchildless c hc] at hhd
+      apply mat_vanished hnil hpar hchildless
+      rw [← hhd]
+      exact headOf_kept hc
+    · exact h1
+    · exfalso
+      rw [h1, mat_headOf_new hnil hpar hchildless] at hhd
+      have := congrArg List.length hhd
+      simp at this
+  · rintro ⟨k, hk, rfl⟩
+    have : k = 0 := by omega
+    subst this
+    simp only [List.replicate_zero, List.append_nil]
+    exact ⟨(mat_kept_iff hnil hpar hchildless m).mpr (Or.inr (Or.inl rfl)),
+      mat_headOf_m hnil hpar hchildless⟩
+
+include hnil hpar hchildless in
+theorem mat_lenOf_new : lenOf (L ++ [m ++ [d]]) (m ++ [d]) = 1 := by
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    refine ⟨0, by omega, ?_⟩
+    simp only [List.replicate_zero, List.append_nil]
+    rcases (mat_kept_iff hnil hpar hchildless c).mp hk with hc | h1 | h1
+    · exfalso
+      rw [mat_headOf_old hnil hpar hchildless c hc] at hhd
+      apply mat_new_not_kept hnil hpar hchildless
+      rw [← hhd]
+      exact headOf_kept hc
+    · exfalso
+      rw [h1, mat_headOf_m hnil hpar hchildless] at hhd
+      have := congrArg List.length hhd
+      simp at this
+    · exact h1
+  · rintro ⟨k, hk, rfl⟩
+    have : k = 0 := by omega
+    subst this
+    simp only [List.replicate_zero, List.append_nil]
+    exact ⟨(mat_kept_iff hnil hpar hchildless _).mpr (Or.inr (Or.inr rfl)),
+      mat_headOf_new hnil hpar hchildless⟩
+
+include hnil hpar hchildless in
+theorem mat_headsList :
+    headsList (L ++ [m ++ [d]])
+      = (headsList L ++ [m, m ++ [d]]).mergeSort hLe := by
+  refine headsList_eq_of_iff (mergeSort_hLt_sorted ?_) ?_
+  · rw [List.nodup_append]
+    refine ⟨nodup_headsList L, ?_, ?_⟩
+    · refine List.nodup_cons.mpr ⟨?_, List.nodup_singleton _⟩
+      rw [List.mem_singleton]
+      intro h
+      have := congrArg List.length h
+      simp at this
+    · intro x hx y hy heq
+      have hxk : x ∈ keptL L := isHead_kept (mem_headsList.mp hx)
+      rcases List.mem_cons.mp hy with h1 | h1
+      · rw [heq, h1] at hxk
+        exact mat_vanished hnil hpar hchildless hxk
+      · rw [List.mem_singleton] at h1
+        rw [heq, h1] at hxk
+        exact mat_new_not_kept hnil hpar hchildless hxk
+  · intro c
+    rw [mat_isHead_iff hnil hpar hchildless c, List.mem_mergeSort,
+      List.mem_append, mem_headsList]
+    simp only [List.mem_cons, List.not_mem_nil, or_false]
+
+include hnil hpar hchildless in
+/-- **D5, closed (directed materialization)**: delivering `m ++ [d]` under
+the vanished anchor `m` (live childless parent) re-canonicalizes to the old
+table with TWO singleton entries inserted at their sorted head positions —
+the DEAD materialized anchor `m` and the live record below it — and parent
+references re-indexed. A closed equation: every field on the right is
+pre-mutation data. -/
+theorem tableOf_materialize :
+    tableOf (L ++ [m ++ [d]])
+      = ((headsList L ++ [m, m ++ [d]]).mergeSort hLe).map (fun h =>
+          if h = m then
+            ⟨some (((headsList L ++ [m, m ++ [d]]).mergeSort hLe).idxOf
+                     (headOf L m.dropLast),
+                   m.dropLast.length - (headOf L m.dropLast).length),
+             false, m.getLastD 0, 1⟩
+          else if h = m ++ [d] then
+            ⟨some (((headsList L ++ [m, m ++ [d]]).mergeSort hLe).idxOf m, 0),
+             true, d, 1⟩
+          else if h.dropLast ∈ keptL L then
+            { entryOfHead L h with
+              par := some (((headsList L ++ [m, m ++ [d]]).mergeSort hLe).idxOf
+                             (headOf L h.dropLast),
+                           h.dropLast.length - (headOf L h.dropLast).length) }
+          else entryOfHead L h) := by
+  rw [tableOf, mat_headsList hnil hpar hchildless]
+  refine List.map_congr_left ?_
+  intro h hh
+  rw [List.mem_mergeSort, List.mem_append] at hh
+  by_cases hm : h = m
+  · subst hm
+    rw [if_pos rfl]
+    have hdk : h.dropLast ∈ keptL L :=
+      kept_of_live hpar (mat_pne hnil hpar)
+    rw [entryOfHead,
+      if_pos ((mat_kept_iff hnil hpar hchildless _).mpr (Or.inl hdk)),
+      mat_headsList hnil hpar hchildless,
+      mat_headOf_old hnil hpar hchildless _ hdk]
+    refine RTEntry.ext' rfl ?_ rfl ?_
+    · exact decide_eq_false (mat_m_not_live hnil hpar hchildless)
+    · exact mat_lenOf_m hnil hpar hchildless
+  · by_cases hmd : h = m ++ [d]
+    · subst hmd
+      rw [if_neg hm, if_pos rfl]
+      have hdk : (m ++ [d]).dropLast ∈ keptL (L ++ [m ++ [d]]) := by
+        rw [List.dropLast_concat]
+        exact (mat_kept_iff hnil hpar hchildless m).mpr (Or.inr (Or.inl rfl))
+      rw [entryOfHead, if_pos hdk, mat_headsList hnil hpar hchildless]
+      have hho : headOf (L ++ [m ++ [d]]) (m ++ [d]).dropLast = m := by
+        rw [List.dropLast_concat]
+        exact mat_headOf_m hnil hpar hchildless
+      rw [hho]
+      refine RTEntry.ext' ?_ ?_ ?_ ?_
+      · show some (_, (m ++ [d]).dropLast.length - m.length) = some (_, 0)
+        rw [List.dropLast_concat]
+        simp
+      · show decide (m ++ [d] ∈ L ++ [m ++ [d]]) = true
+        exact decide_eq_true (List.mem_append_right _ (by simp))
+      · show (m ++ [d]).getLastD 0 = d
+        rw [List.getLastD_concat]
+      · exact mat_lenOf_new hnil hpar hchildless
+    · rw [if_neg hm, if_neg hmd]
+      have hhL : isHead L h = true := by
+        rcases hh with hh | hh
+        · exact mem_headsList.mp hh
+        · exfalso
+          rcases List.mem_cons.mp hh with h1 | h1
+          · exact hm h1
+          · rw [List.mem_singleton] at h1
+            exact hmd h1
+      have hkh : h ∈ keptL L := isHead_kept hhL
+      have hne_d : h ≠ m ++ [d] := hmd
+      have hdm : h.dropLast ≠ m := by
+        intro heq
+        apply mat_vanished hnil hpar hchildless
+        rw [← heq]
+        exact kept_of_prefix hkh (List.dropLast_prefix h)
+          (by rw [heq]; exact mat_mne hnil hpar)
+      have hdd : h.dropLast ≠ m ++ [d] := by
+        intro heq
+        apply mat_new_not_kept hnil hpar hchildless
+        rw [← heq]
+        exact kept_of_prefix hkh (List.dropLast_prefix h) (by rw [heq]; simp)
+      have hlive : decide (h ∈ L ++ [m ++ [d]]) = decide (h ∈ L) := by
+        refine decide_eq_decide.mpr ?_
+        rw [List.mem_append, List.mem_singleton]
+        exact ⟨fun h' => h'.resolve_right (fun h'' => absurd h'' hne_d),
+          Or.inl⟩
+      have hkd : h.dropLast ∈ keptL (L ++ [m ++ [d]])
+          ↔ h.dropLast ∈ keptL L := by
+        rw [mat_kept_iff hnil hpar hchildless]
+        exact ⟨fun hor => (hor.resolve_right (fun h' =>
+          h'.elim (fun h'' => absurd h'' hdm) (fun h'' => absurd h'' hdd))),
+          Or.inl⟩
+      by_cases hdk : h.dropLast ∈ keptL L
+      · rw [if_pos hdk, entryOfHead, if_pos (hkd.mpr hdk),
+          mat_headsList hnil hpar hchildless,
+          mat_headOf_old hnil hpar hchildless _ hdk]
+        refine RTEntry.ext' rfl ?_ ?_ ?_
+        · show decide (h ∈ L ++ [m ++ [d]]) = (entryOfHead L h).live
+          rw [hlive]
+          rfl
+        · rfl
+        · show lenOf (L ++ [m ++ [d]]) h = (entryOfHead L h).len
+          rw [mat_lenOf_old hnil hpar hchildless hhL]
+          rfl
+      · rw [if_neg hdk, entryOfHead, entryOfHead,
+          if_neg (fun h' => hdk (hkd.mp h')), if_neg hdk]
+        refine RTEntry.ext' rfl ?_ rfl ?_
+        · rw [hlive]
+        · exact mat_lenOf_old hnil hpar hchildless hhL
+
+end MaterializeClosed
+
+/-- Padding monotonicity: more `1`s extend fewer. -/
+theorem replicate_pad_prefix {g : List ℕ} {i k : ℕ} (h : i ≤ k) :
+    g ++ List.replicate i 1 <+: g ++ List.replicate k 1 := by
+  refine ⟨List.replicate (k - i) 1, ?_⟩
+  rw [List.append_assoc, ← List.replicate_add]
+  congr 2
+  omega
+
+theorem replicate_pad_prefix_le {g : List ℕ} {i k : ℕ}
+    (h : g ++ List.replicate i 1 <+: g ++ List.replicate k 1) : i ≤ k := by
+  have := h.length_le
+  simp only [List.length_append, List.length_replicate] at this
+  omega
+
+/-! ### D1, closed — the mid-run split
+
+The D1 shape (`spot_d1_split`): a fresh chain `a ++ [d]` lands at an anchor
+`a` whose run successor `a ++ [1]` is fused (`a` is interior or the pre-tail
+of its run). The run carrying `a` splits in three: the `a`-prefix keeps the
+old head with `len` cut to `a`'s offset + 1, the suffix re-heads at `a ++ [1]`
+(and every entry that attached at the old tail REHOMES to it), and `a ++ [d]`
+is a fresh singleton. `d ≠ 1` is forced by freshness, not assumed. -/
+
+section MidRunSplitClosed
+
+variable {L : List (List ℕ)} {a : List ℕ} {d : ℕ}
+  (hfs : fusible L (a ++ [1]) = true)
+  (hfresh : a ++ [d] ∉ keptL L)
+
+include hfs in
+theorem splitc_anchor_kept : a ∈ keptL L := by
+  have := fusible_parent_kept hfs
+  rwa [List.dropLast_concat] at this
+
+include hfs hfresh in
+theorem splitc_d_ne_one : d ≠ 1 := fun h => hfresh (h ▸ fusible_kept hfs)
+
+include hfs in
+theorem splitc_succ_headOf : headOf L (a ++ [1]) = headOf L a := by
+  rw [headOf_of_fusible hfs, List.dropLast_concat]
+
+include hfs in
+theorem splitc_succ_pad :
+    a ++ [1] = headOf L a
+      ++ List.replicate (a.length - (headOf L a).length + 1) 1 := by
+  have hform : a = headOf L a
+      ++ List.replicate (a.length - (headOf L a).length) 1 :=
+    runMember_form (mem_runMembers.mpr ⟨splitc_anchor_kept hfs, rfl⟩)
+  conv_lhs => rw [hform]
+  rw [List.append_assoc, ← List.replicate_succ']
+
+include hfs in
+theorem splitc_succ_offset_lt :
+    a.length - (headOf L a).length + 1 < lenOf L (headOf L a) := by
+  have hmem : a ++ [1] ∈ runMembers L (headOf L a) :=
+    mem_runMembers.mpr ⟨fusible_kept hfs, splitc_succ_headOf hfs⟩
+  rw [splitc_succ_pad hfs] at hmem
+  exact runMember_offset_lt hmem
+
+include hfs hfresh in
+theorem splitc_kept_iff (x : List ℕ) :
+    x ∈ keptL (L ++ [a ++ [d]]) ↔ x ∈ keptL L ∨ x = a ++ [d] := by
+  rw [mem_keptL_snoc]
+  constructor
+  · rintro (hx | ⟨hne, hp⟩)
+    · exact Or.inl hx
+    · by_cases hxd : x = a ++ [d]
+      · exact Or.inr hxd
+      · have hxa : x <+: a := by
+          have := prefix_dropLast_of_ne hp hxd
+          rwa [List.dropLast_concat] at this
+        exact Or.inl (kept_of_prefix (splitc_anchor_kept hfs) hxa hne)
+  · rintro (hx | h1)
+    · exact Or.inl hx
+    · rw [h1]
+      exact Or.inr ⟨by simp, List.prefix_refl _⟩
+
+include hfs hfresh in
+theorem splitc_fusible_old {x : List ℕ} (hx : x ∈ keptL L)
+    (hxs : x ≠ a ++ [1]) :
+    fusible (L ++ [a ++ [d]]) x = fusible L x := by
+  have hxd : x ≠ a ++ [d] := fun h => hfresh (h ▸ hx)
+  have hdd : x.dropLast ≠ a ++ [d] := by
+    intro h
+    apply hfresh
+    rw [← h]
+    exact kept_of_prefix hx (List.dropLast_prefix x) (by rw [h]; simp)
+  have hkiff := splitc_kept_iff (d := d) hfs hfresh
+  have hmemx : (x ∈ L ++ [a ++ [d]]) ↔ (x ∈ L) := by
+    rw [List.mem_append, List.mem_singleton]
+    exact ⟨fun h => h.resolve_right (fun h' => absurd h' hxd), Or.inl⟩
+  have hmemd : (x.dropLast ∈ L ++ [a ++ [d]]) ↔ (x.dropLast ∈ L) := by
+    rw [List.mem_append, List.mem_singleton]
+    exact ⟨fun h => h.resolve_right (fun h' => absurd h' hdd), Or.inl⟩
+  rw [Bool.eq_iff_iff, fusible_eq_true_iff, fusible_eq_true_iff]
+  constructor
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    have hd2 : x.dropLast ∈ keptL L := by
+      rcases (hkiff x.dropLast).mp h2 with h | h
+      · exact h
+      · exact absurd h hdd
+    refine ⟨hx, hd2, h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      exact h4 c' ((hkiff c').mpr (Or.inl hc')) hparc
+    · rw [← hmemx, ← hmemd]
+      exact h5
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨(hkiff x).mpr (Or.inl hx),
+      (hkiff x.dropLast).mpr (Or.inl h2), h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      rcases (hkiff c').mp hc' with hc' | h1'
+      · exact h4 c' hc' hparc
+      · exfalso
+        rw [h1', List.dropLast_concat] at hparc
+        -- x is a kept child of `a`, so by `hfs`-uniqueness x = a ++ [1]
+        exact hxs (fusible_unique hfs hx
+          (by rw [List.dropLast_concat]; exact hparc.symm))
+    · rw [hmemx, hmemd]
+      exact h5
+
+include hfs hfresh in
+theorem splitc_fusible_succ :
+    fusible (L ++ [a ++ [d]]) (a ++ [1]) = false :=
+  isHead_not_fusible
+    (split_succ_isHead (fusible_kept hfs) (splitc_d_ne_one hfs hfresh))
+
+include hfs hfresh in
+theorem splitc_fusible_new :
+    fusible (L ++ [a ++ [d]]) (a ++ [d]) = false :=
+  isHead_not_fusible (split_new_isHead (splitc_d_ne_one hfs hfresh))
+
+include hfs hfresh in
+theorem splitc_isHead_iff (c : List ℕ) :
+    isHead (L ++ [a ++ [d]]) c = true
+      ↔ (isHead L c = true ∨ c = a ++ [1] ∨ c = a ++ [d]) := by
+  constructor
+  · intro h
+    rcases (splitc_kept_iff hfs hfresh c).mp (isHead_kept h) with hc | h1
+    · by_cases hcs : c = a ++ [1]
+      · exact Or.inr (Or.inl hcs)
+      · left
+        refine isHead_of_kept_not_fusible hc ?_
+        rw [← splitc_fusible_old hfs hfresh hc hcs]
+        exact isHead_not_fusible h
+    · exact Or.inr (Or.inr h1)
+  · rintro (h | h1 | h1)
+    · have hcs : c ≠ a ++ [1] := by
+        intro heq
+        rw [heq] at h
+        rw [isHead_eq_false_of_fusible hfs] at h
+        exact Bool.noConfusion h
+      exact isHead_of_kept_not_fusible
+        ((splitc_kept_iff hfs hfresh c).mpr (Or.inl (isHead_kept h)))
+        (by rw [splitc_fusible_old hfs hfresh (isHead_kept h) hcs]
+            exact isHead_not_fusible h)
+    · rw [h1]
+      exact split_succ_isHead (fusible_kept hfs) (splitc_d_ne_one hfs hfresh)
+    · rw [h1]
+      exact split_new_isHead (splitc_d_ne_one hfs hfresh)
+
+include hfs hfresh in
+theorem splitc_headOf_old : ∀ (c : List ℕ), c ∈ keptL L →
+    ¬(a ++ [1] <+: c ∧ headOf L c = headOf L a) →
+    headOf (L ++ [a ++ [d]]) c = headOf L c := by
+  intro c
+  fun_induction headOf L c with
+  | case1 c hf ih =>
+      intro hk hinv
+      have hcne : c ≠ a ++ [1] := by
+        rintro rfl
+        exact hinv ⟨List.prefix_refl _, by rw [List.dropLast_concat]⟩
+      have hf' : fusible (L ++ [a ++ [d]]) c = true := by
+        rw [splitc_fusible_old hfs hfresh hk hcne]
+        exact hf
+      rw [headOf_of_fusible hf']
+      refine ih (fusible_parent_kept hf) ?_
+      rintro ⟨hpre, hhd⟩
+      exact hinv ⟨hpre.trans (List.dropLast_prefix c), hhd⟩
+  | case2 c hf =>
+      intro hk hinv
+      have hcne : c ≠ a ++ [1] := by
+        rintro rfl
+        exact hf hfs
+      have hf' : fusible (L ++ [a ++ [d]]) c = false := by
+        rw [splitc_fusible_old hfs hfresh hk hcne]
+        exact Bool.eq_false_iff.mpr hf
+      exact headOf_of_not_fusible hf'
+
+include hfs hfresh in
+theorem splitc_headOf_new :
+    headOf (L ++ [a ++ [d]]) (a ++ [d]) = a ++ [d] :=
+  headOf_of_not_fusible (splitc_fusible_new hfs hfresh)
+
+include hfs hfresh in
+theorem splitc_headOf_ge : ∀ k,
+    a.length - (headOf L a).length + 1 ≤ k → k < lenOf L (headOf L a) →
+    headOf (L ++ [a ++ [d]]) (headOf L a ++ List.replicate k 1)
+      = a ++ [1] := by
+  intro k
+  induction k with
+  | zero =>
+      intro h1 _
+      omega
+  | succ k ih =>
+      intro h1 h2
+      by_cases hk : k + 1 = a.length - (headOf L a).length + 1
+      · rw [hk, ← splitc_succ_pad hfs]
+        exact headOf_of_not_fusible (splitc_fusible_succ hfs hfresh)
+      · have hg : isHead L (headOf L a) = true :=
+          headOf_isHead (splitc_anchor_kept hfs)
+        have hmem : headOf L a ++ List.replicate (k + 1) 1
+            ∈ runMembers L (headOf L a) := runMember_of_lt hg h2
+        have hfusL := runMember_fusible hmem
+        have hne : headOf L a ++ List.replicate (k + 1) 1 ≠ a ++ [1] := by
+          rw [splitc_succ_pad hfs]
+          intro heq
+          exact hk (replicate_offset_inj heq)
+        have hfus' : fusible (L ++ [a ++ [d]])
+            (headOf L a ++ List.replicate (k + 1) 1) = true := by
+          rw [splitc_fusible_old hfs hfresh (mem_runMembers.mp hmem).1 hne]
+          exact hfusL
+        rw [headOf_of_fusible hfus', dropLast_append_replicate_succ]
+        exact ih (by omega) (by omega)
+
+include hfs hfresh in
+/-- Classify an old kept chain's new run head by its position relative to the
+split: members of the anchor's run at or past the successor re-head at
+`a ++ [1]`, everything else keeps its head. -/
+theorem splitc_headOf_classify {c : List ℕ} (hc : c ∈ keptL L) :
+    (headOf L c = headOf L a ∧ a ++ [1] <+: c
+      ∧ headOf (L ++ [a ++ [d]]) c = a ++ [1])
+    ∨ (¬(a ++ [1] <+: c ∧ headOf L c = headOf L a)
+      ∧ headOf (L ++ [a ++ [d]]) c = headOf L c) := by
+  by_cases hcase : a ++ [1] <+: c ∧ headOf L c = headOf L a
+  · obtain ⟨hpre, hhd⟩ := hcase
+    have hmem : c ∈ runMembers L (headOf L a) := mem_runMembers.mpr ⟨hc, hhd⟩
+    have hform := runMember_form hmem
+    have hoff : a.length - (headOf L a).length + 1
+        ≤ c.length - (headOf L a).length := by
+      have := hpre.length_le
+      have h1 := congrArg List.length (splitc_succ_pad hfs)
+      simp only [List.length_append, List.length_cons, List.length_nil,
+        List.length_replicate] at h1 this ⊢
+      omega
+    have hlt : c.length - (headOf L a).length < lenOf L (headOf L a) :=
+      runMember_offset_lt (hform ▸ hmem)
+    refine Or.inl ⟨hhd, hpre, ?_⟩
+    conv_lhs => rw [hform]
+    exact splitc_headOf_ge hfs hfresh _ hoff hlt
+  · exact Or.inr ⟨hcase, splitc_headOf_old hfs hfresh c hc hcase⟩
+
+include hfs hfresh in
+theorem splitc_lenOf_g :
+    lenOf (L ++ [a ++ [d]]) (headOf L a)
+      = a.length - (headOf L a).length + 1 := by
+  have hg : isHead L (headOf L a) = true :=
+    headOf_isHead (splitc_anchor_kept hfs)
+  have hglen : headOf L a ≠ a ++ [1] := by
+    intro heq
+    have h1 := (headOf_prefix L a).length_le
+    have h2 := congrArg List.length heq
+    simp only [List.length_append, List.length_cons, List.length_nil] at h2
+    omega
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    rcases (splitc_kept_iff hfs hfresh c).mp hk with hc | h1
+    · rcases splitc_headOf_classify hfs hfresh hc with
+        ⟨hL, hpre, hnew⟩ | ⟨hninv, hnew⟩
+      · exfalso
+        rw [hnew] at hhd
+        exact hglen hhd.symm
+      · rw [hnew] at hhd
+        have hmem : c ∈ runMembers L (headOf L a) :=
+          mem_runMembers.mpr ⟨hc, hhd⟩
+        have hform := runMember_form hmem
+        refine ⟨c.length - (headOf L a).length, ?_, hform⟩
+        by_contra hge
+        apply hninv
+        refine ⟨?_, hhd⟩
+        rw [hform, splitc_succ_pad hfs]
+        exact replicate_pad_prefix (by omega)
+    · exfalso
+      rw [h1, splitc_headOf_new hfs hfresh] at hhd
+      apply hfresh
+      rw [hhd]
+      exact headOf_kept (splitc_anchor_kept hfs)
+  · rintro ⟨k, hk, rfl⟩
+    have hklt : k < lenOf L (headOf L a) := by
+      have := splitc_succ_offset_lt hfs
+      omega
+    have hmem : headOf L a ++ List.replicate k 1
+        ∈ runMembers L (headOf L a) := runMember_of_lt hg hklt
+    have hnpre : ¬(a ++ [1] <+: headOf L a ++ List.replicate k 1
+        ∧ headOf L (headOf L a ++ List.replicate k 1) = headOf L a) := by
+      rintro ⟨hpre, -⟩
+      rw [splitc_succ_pad hfs] at hpre
+      have := replicate_pad_prefix_le hpre
+      omega
+    refine ⟨(splitc_kept_iff hfs hfresh _).mpr
+        (Or.inl (mem_runMembers.mp hmem).1), ?_⟩
+    rw [splitc_headOf_old hfs hfresh _ (mem_runMembers.mp hmem).1 hnpre]
+    exact (mem_runMembers.mp hmem).2
+
+include hfs hfresh in
+theorem splitc_lenOf_succ :
+    lenOf (L ++ [a ++ [d]]) (a ++ [1])
+      = lenOf L (headOf L a) - (a.length - (headOf L a).length) - 1 := by
+  have hg : isHead L (headOf L a) = true :=
+    headOf_isHead (splitc_anchor_kept hfs)
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    rcases (splitc_kept_iff hfs hfresh c).mp hk with hc | h1
+    · rcases splitc_headOf_classify hfs hfresh hc with
+        ⟨hL, hpre, hnew⟩ | ⟨hninv, hnew⟩
+      · have hmem : c ∈ runMembers L (headOf L a) :=
+          mem_runMembers.mpr ⟨hc, hL⟩
+        have hform := runMember_form hmem
+        have hlt : c.length - (headOf L a).length < lenOf L (headOf L a) :=
+          runMember_offset_lt (hform ▸ hmem)
+        have hge : a.length - (headOf L a).length + 1
+            ≤ c.length - (headOf L a).length := by
+          rw [hform, splitc_succ_pad hfs] at hpre
+          exact replicate_pad_prefix_le hpre
+        refine ⟨c.length - (headOf L a).length
+            - (a.length - (headOf L a).length) - 1, by omega, ?_⟩
+        rw [splitc_succ_pad hfs, List.append_assoc, ← List.replicate_add]
+        conv_lhs => rw [hform]
+        congr 2
+        omega
+      · exfalso
+        rw [hnew] at hhd
+        have := headOf_isHead hc
+        rw [hhd, isHead_eq_false_of_fusible hfs] at this
+        exact Bool.noConfusion this
+    · exfalso
+      rw [h1, splitc_headOf_new hfs hfresh] at hhd
+      have := List.append_cancel_left hhd
+      injection this with h'
+      exact splitc_d_ne_one hfs hfresh h'
+  · rintro ⟨k, hk, rfl⟩
+    have hpad : (a ++ [1]) ++ List.replicate k 1
+        = headOf L a ++ List.replicate
+            (a.length - (headOf L a).length + 1 + k) 1 := by
+      rw [splitc_succ_pad hfs, List.append_assoc, ← List.replicate_add]
+    have hklt : a.length - (headOf L a).length + 1 + k
+        < lenOf L (headOf L a) := by omega
+    have hmem : headOf L a ++ List.replicate
+        (a.length - (headOf L a).length + 1 + k) 1
+        ∈ runMembers L (headOf L a) := runMember_of_lt hg hklt
+    refine ⟨(splitc_kept_iff hfs hfresh _).mpr
+        (Or.inl (by rw [hpad]; exact (mem_runMembers.mp hmem).1)), ?_⟩
+    rw [hpad]
+    exact splitc_headOf_ge hfs hfresh _ (by omega) hklt
+
+include hfs hfresh in
+theorem splitc_lenOf_new : lenOf (L ++ [a ++ [d]]) (a ++ [d]) = 1 := by
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    refine ⟨0, by omega, ?_⟩
+    simp only [List.replicate_zero, List.append_nil]
+    rcases (splitc_kept_iff hfs hfresh c).mp hk with hc | h1
+    · exfalso
+      rcases splitc_headOf_classify hfs hfresh hc with
+        ⟨hL, hpre, hnew⟩ | ⟨hninv, hnew⟩
+      · rw [hnew] at hhd
+        have := List.append_cancel_left hhd
+        injection this with h'
+        exact splitc_d_ne_one hfs hfresh h'.symm
+      · rw [hnew] at hhd
+        apply hfresh
+        rw [← hhd]
+        exact headOf_kept hc
+    · exact h1
+  · rintro ⟨k, hk, rfl⟩
+    have : k = 0 := by omega
+    subst this
+    simp only [List.replicate_zero, List.append_nil]
+    exact ⟨(splitc_kept_iff hfs hfresh _).mpr (Or.inr rfl),
+      splitc_headOf_new hfs hfresh⟩
+
+include hfs hfresh in
+theorem splitc_lenOf_old {h : List ℕ} (hh : isHead L h = true)
+    (hne1 : h ≠ headOf L a) :
+    lenOf (L ++ [a ++ [d]]) h = lenOf L h := by
+  rw [lenOf, lenOf, runMembers, runMembers]
+  have hiff : ∀ c, (c ∈ keptL (L ++ [a ++ [d]])
+        ∧ headOf (L ++ [a ++ [d]]) c = h)
+      ↔ (c ∈ keptL L ∧ headOf L c = h) := by
+    intro c
+    constructor
+    · rintro ⟨hk, hhd⟩
+      rcases (splitc_kept_iff hfs hfresh c).mp hk with hc | h1
+      · rcases splitc_headOf_classify hfs hfresh hc with
+          ⟨hL, hpre, hnew⟩ | ⟨hninv, hnew⟩
+        · exfalso
+          rw [hnew] at hhd
+          rw [← hhd, isHead_eq_false_of_fusible hfs] at hh
+          exact Bool.noConfusion hh
+        · rw [hnew] at hhd
+          exact ⟨hc, hhd⟩
+      · exfalso
+        rw [h1, splitc_headOf_new hfs hfresh] at hhd
+        apply hfresh
+        rw [hhd]
+        exact isHead_kept hh
+    · rintro ⟨hk, hhd⟩
+      have hninv : ¬(a ++ [1] <+: c ∧ headOf L c = headOf L a) := by
+        rintro ⟨-, hg⟩
+        exact hne1 (hhd ▸ hg ▸ rfl)
+      exact ⟨(splitc_kept_iff hfs hfresh c).mpr (Or.inl hk),
+        by rw [splitc_headOf_old hfs hfresh c hk hninv]; exact hhd⟩
+  have hperm : ((keptL (L ++ [a ++ [d]])).filter
+        (fun c => headOf (L ++ [a ++ [d]]) c == h)).Perm
+      ((keptL L).filter (fun c => headOf L c == h)) := by
+    refine (List.perm_ext_iff_of_nodup ((nodup_keptL _).filter _)
+      ((nodup_keptL _).filter _)).mpr ?_
+    intro c
+    simp only [List.mem_filter, beq_iff_eq]
+    exact hiff c
+  exact hperm.length_eq
+
+include hfs hfresh in
+theorem splitc_headsList :
+    headsList (L ++ [a ++ [d]])
+      = (headsList L ++ [a ++ [1], a ++ [d]]).mergeSort hLe := by
+  refine headsList_eq_of_iff (mergeSort_hLt_sorted ?_) ?_
+  · rw [List.nodup_append]
+    refine ⟨nodup_headsList L, ?_, ?_⟩
+    · refine List.nodup_cons.mpr ⟨?_, List.nodup_singleton _⟩
+      rw [List.mem_singleton]
+      intro heq
+      have := List.append_cancel_left heq
+      injection this with h'
+      exact splitc_d_ne_one hfs hfresh h'.symm
+    · intro x hx y hy heq
+      have hxh : isHead L x = true := mem_headsList.mp hx
+      rcases List.mem_cons.mp hy with h1 | h1
+      · rw [heq, h1, isHead_eq_false_of_fusible hfs] at hxh
+        exact Bool.noConfusion hxh
+      · rw [List.mem_singleton] at h1
+        rw [heq, h1] at hxh
+        exact hfresh (isHead_kept hxh)
+  · intro c
+    rw [splitc_isHead_iff hfs hfresh c, List.mem_mergeSort,
+      List.mem_append, mem_headsList]
+    simp only [List.mem_cons, List.not_mem_nil, or_false]
+
+include hfs hfresh in
+/-- **D1, closed (the mid-run split)**: delivering the fresh `a ++ [d]` at an
+anchor whose run successor is fused re-canonicalizes to the old table with
+the anchor's run CUT at the anchor (`len` becomes offset + 1), TWO new
+entries inserted at their sorted positions — the re-headed suffix `a ++ [1]`
+and the `a ++ [d]` singleton, both attached at the anchor — and every entry
+that attached at the old tail REHOMED to the suffix entry. All right-hand
+data is pre-mutation. -/
+theorem tableOf_insert_split :
+    tableOf (L ++ [a ++ [d]])
+      = ((headsList L ++ [a ++ [1], a ++ [d]]).mergeSort hLe).map (fun h =>
+          if h = a ++ [1] then
+            ⟨some (((headsList L ++ [a ++ [1], a ++ [d]]).mergeSort hLe).idxOf
+                     (headOf L a),
+                   a.length - (headOf L a).length),
+             decide (a ++ [1] ∈ L), 1,
+             lenOf L (headOf L a) - (a.length - (headOf L a).length) - 1⟩
+          else if h = a ++ [d] then
+            ⟨some (((headsList L ++ [a ++ [1], a ++ [d]]).mergeSort hLe).idxOf
+                     (headOf L a),
+                   a.length - (headOf L a).length),
+             true, d, 1⟩
+          else
+            { entryOfHead L h with
+              par := (entryOfHead L h).par.map (fun pr =>
+                if headOf L h.dropLast = headOf L a
+                then (((headsList L
+                          ++ [a ++ [1], a ++ [d]]).mergeSort hLe).idxOf
+                        (a ++ [1]),
+                      h.dropLast.length - (a.length + 1))
+                else (((headsList L
+                          ++ [a ++ [1], a ++ [d]]).mergeSort hLe).idxOf
+                        (headOf L h.dropLast), pr.2)),
+              len := if h = headOf L a
+                     then a.length - (headOf L a).length + 1
+                     else (entryOfHead L h).len }) := by
+  have hane : a ≠ [] := kept_ne_nil (splitc_anchor_kept hfs)
+  have hsd : (a ++ [1] : List ℕ) ≠ a ++ [d] := by
+    intro heq
+    have := List.append_cancel_left heq
+    injection this with h'
+    exact splitc_d_ne_one hfs hfresh h'.symm
+  rw [tableOf, splitc_headsList hfs hfresh]
+  refine List.map_congr_left ?_
+  intro h hh
+  rw [List.mem_mergeSort, List.mem_append] at hh
+  by_cases hs : h = a ++ [1]
+  · rw [if_pos hs]
+    subst hs
+    have hdk : (a ++ [1]).dropLast ∈ keptL (L ++ [a ++ [d]]) := by
+      rw [List.dropLast_concat]
+      exact (splitc_kept_iff hfs hfresh a).mpr
+        (Or.inl (splitc_anchor_kept hfs))
+    rw [entryOfHead, if_pos hdk, splitc_headsList hfs hfresh]
+    have hnpre : ¬(a ++ [1] <+: a ∧ headOf L a = headOf L a) := by
+      rintro ⟨hpre, -⟩
+      have := hpre.length_le
+      simp at this
+    have hho : headOf (L ++ [a ++ [d]]) (a ++ [1]).dropLast = headOf L a := by
+      rw [List.dropLast_concat]
+      exact splitc_headOf_old hfs hfresh a (splitc_anchor_kept hfs) hnpre
+    rw [hho]
+    refine RTEntry.ext' ?_ ?_ ?_ ?_
+    · show some (_, (a ++ [1]).dropLast.length - (headOf L a).length)
+        = some (_, a.length - (headOf L a).length)
+      rw [List.dropLast_concat]
+    · show decide (a ++ [1] ∈ L ++ [a ++ [d]]) = decide (a ++ [1] ∈ L)
+      refine decide_eq_decide.mpr ?_
+      rw [List.mem_append, List.mem_singleton]
+      exact ⟨fun h' => h'.resolve_right (fun h'' => absurd h'' hsd), Or.inl⟩
+    · show (a ++ [1]).getLastD 0 = 1
+      rw [List.getLastD_concat]
+    · exact splitc_lenOf_succ hfs hfresh
+  · rw [if_neg hs]
+    by_cases hd' : h = a ++ [d]
+    · rw [if_pos hd']
+      subst hd'
+      have hdk : (a ++ [d]).dropLast ∈ keptL (L ++ [a ++ [d]]) := by
+        rw [List.dropLast_concat]
+        exact (splitc_kept_iff hfs hfresh a).mpr
+          (Or.inl (splitc_anchor_kept hfs))
+      rw [entryOfHead, if_pos hdk, splitc_headsList hfs hfresh]
+      have hnpre : ¬(a ++ [1] <+: a ∧ headOf L a = headOf L a) := by
+        rintro ⟨hpre, -⟩
+        have := hpre.length_le
+        simp at this
+      have hho : headOf (L ++ [a ++ [d]]) (a ++ [d]).dropLast
+          = headOf L a := by
+        rw [List.dropLast_concat]
+        exact splitc_headOf_old hfs hfresh a (splitc_anchor_kept hfs) hnpre
+      rw [hho]
+      refine RTEntry.ext' ?_ ?_ ?_ ?_
+      · show some (_, (a ++ [d]).dropLast.length - (headOf L a).length)
+          = some (_, a.length - (headOf L a).length)
+        rw [List.dropLast_concat]
+      · show decide (a ++ [d] ∈ L ++ [a ++ [d]]) = true
+        exact decide_eq_true (List.mem_append_right _ (by simp))
+      · show (a ++ [d]).getLastD 0 = d
+        rw [List.getLastD_concat]
+      · exact splitc_lenOf_new hfs hfresh
+    · rw [if_neg hd']
+      have hhL : isHead L h = true := by
+        rcases hh with hh | hh
+        · exact mem_headsList.mp hh
+        · exfalso
+          rcases List.mem_cons.mp hh with h1 | h1
+          · exact hs h1
+          · rw [List.mem_singleton] at h1
+            exact hd' h1
+      have hkh : h ∈ keptL L := isHead_kept hhL
+      have hne_d : h ≠ a ++ [d] := hd'
+      have hdd : h.dropLast ≠ a ++ [d] := by
+        intro heq
+        apply hfresh
+        rw [← heq]
+        exact kept_of_prefix hkh (List.dropLast_prefix h) (by rw [heq]; simp)
+      have hlive : decide (h ∈ L ++ [a ++ [d]]) = decide (h ∈ L) := by
+        refine decide_eq_decide.mpr ?_
+        rw [List.mem_append, List.mem_singleton]
+        exact ⟨fun h' => h'.resolve_right (fun h'' => absurd h'' hne_d),
+          Or.inl⟩
+      have hkd : h.dropLast ∈ keptL (L ++ [a ++ [d]])
+          ↔ h.dropLast ∈ keptL L := by
+        rw [splitc_kept_iff hfs hfresh]
+        exact ⟨fun hor => hor.resolve_right (fun h' => absurd h' hdd),
+          Or.inl⟩
+      have hlen : lenOf (L ++ [a ++ [d]]) h
+          = if h = headOf L a then a.length - (headOf L a).length + 1
+            else lenOf L h := by
+        by_cases hg : h = headOf L a
+        · rw [if_pos hg, hg]
+          exact splitc_lenOf_g hfs hfresh
+        · rw [if_neg hg]
+          exact splitc_lenOf_old hfs hfresh hhL hg
+      by_cases hdk : h.dropLast ∈ keptL L
+      · rw [entryOfHead, if_pos (hkd.mpr hdk), splitc_headsList hfs hfresh]
+        have hph : isHead L (headOf L h.dropLast) = true := headOf_isHead hdk
+        have htail := head_parent_is_tail hhL hdk
+        by_cases hgg : headOf L h.dropLast = headOf L a
+        · -- the parent run is the split run: the parent node is its old
+          -- tail, which re-heads at `a ++ [1]`
+          have hglen0 : 0 < lenOf L (headOf L a) :=
+            lenOf_pos (headOf_isHead (splitc_anchor_kept hfs))
+          have hoffl := splitc_succ_offset_lt hfs
+          have hho : headOf (L ++ [a ++ [d]]) h.dropLast = a ++ [1] := by
+            rw [htail, hgg, tailOf]
+            exact splitc_headOf_ge hfs hfresh _ (by omega) (by omega)
+          rw [hho]
+          refine RTEntry.ext' ?_ ?_ ?_ ?_
+          · dsimp only
+            rw [entryOfHead, if_pos hdk]
+            simp only [Option.map_some]
+            rw [if_pos hgg]
+            simp
+          · show decide (h ∈ L ++ [a ++ [d]]) = (entryOfHead L h).live
+            rw [hlive]
+            rfl
+          · rfl
+          · show lenOf (L ++ [a ++ [d]]) h = _
+            rw [hlen]
+            by_cases hg : h = headOf L a
+            · rw [if_pos hg, if_pos hg]
+            · rw [if_neg hg, if_neg hg]
+              rfl
+        · have hninv : ¬(a ++ [1] <+: h.dropLast
+              ∧ headOf L h.dropLast = headOf L a) := by
+            rintro ⟨-, hgv⟩
+            exact hgg hgv
+          have hho : headOf (L ++ [a ++ [d]]) h.dropLast
+              = headOf L h.dropLast :=
+            splitc_headOf_old hfs hfresh h.dropLast hdk hninv
+          rw [hho]
+          refine RTEntry.ext' ?_ ?_ ?_ ?_
+          · dsimp only
+            rw [entryOfHead, if_pos hdk]
+            simp only [Option.map_some]
+            rw [if_neg hgg]
+          · show decide (h ∈ L ++ [a ++ [d]]) = (entryOfHead L h).live
+            rw [hlive]
+            rfl
+          · rfl
+          · show lenOf (L ++ [a ++ [d]]) h = _
+            rw [hlen]
+            by_cases hg : h = headOf L a
+            · rw [if_pos hg, if_pos hg]
+            · rw [if_neg hg, if_neg hg]
+              rfl
+      · rw [entryOfHead, if_neg (fun h' => hdk (hkd.mp h'))]
+        refine RTEntry.ext' ?_ ?_ ?_ ?_
+        · rw [entryOfHead, if_neg hdk]
+          rfl
+        · show decide (h ∈ L ++ [a ++ [d]]) = (entryOfHead L h).live
+          rw [hlive]
+          rfl
+        · rfl
+        · show lenOf (L ++ [a ++ [d]]) h = _
+          rw [hlen]
+          by_cases hg : h = headOf L a
+          · rw [if_pos hg, if_pos hg]
+          · rw [if_neg hg, if_neg hg]
+            rfl
+
+end MidRunSplitClosed
+
+/-! ### D2, closed — the interior delete liveness split
+
+The D2 shape (`spot_d2_liveness_split`): delete a run-interior record `x`
+(fused incoming edge, fused outgoing edge — so `x` is neither its run's head
+nor its tail). The kept tree is unchanged; the run carrying `x` splits in
+three at the liveness break: the live prefix keeps the old head with `len`
+cut to `x`'s offset, `x` survives as a DEAD singleton entry, the live suffix
+re-heads at `x ++ [1]` (and the entries attached at the old tail rehome to
+it). The boundary shapes (`x` a run head, `x` the tail) split in two, not
+three, and are the same construction with one empty side. -/
+
+section DeleteLivenessClosed
+
+variable {L L' : List (List ℕ)} {x : List ℕ}
+  (hxl : x ∈ L)
+  (hfx : fusible L x = true)
+  (hfsucc : fusible L (x ++ [1]) = true)
+  (hmem' : ∀ c, c ∈ L' ↔ (c ∈ L ∧ c ≠ x))
+
+include hfx in
+theorem dlc_x_kept : x ∈ keptL L := fusible_kept hfx
+
+include hfx in
+theorem dlc_x_pad :
+    x = headOf L x ++ List.replicate (x.length - (headOf L x).length) 1 :=
+  runMember_form (mem_runMembers.mpr ⟨dlc_x_kept hfx, rfl⟩)
+
+include hfx in
+theorem dlc_j_pos : 1 ≤ x.length - (headOf L x).length := by
+  have h1 : headOf L x = headOf L x.dropLast := headOf_of_fusible hfx
+  have h2 := (headOf_prefix L x.dropLast).length_le
+  rw [← h1] at h2
+  have h3 : 0 < x.length :=
+    List.length_pos_iff.mpr (kept_ne_nil (dlc_x_kept hfx))
+  rw [List.length_dropLast] at h2
+  omega
+
+include hfsucc in
+theorem dlc_succ_headOf : headOf L (x ++ [1]) = headOf L x := by
+  rw [headOf_of_fusible hfsucc, List.dropLast_concat]
+
+include hfx hfsucc in
+theorem dlc_succ_pad :
+    x ++ [1] = headOf L x
+      ++ List.replicate (x.length - (headOf L x).length + 1) 1 := by
+  conv_lhs => rw [dlc_x_pad hfx]
+  rw [List.append_assoc, ← List.replicate_succ']
+
+include hfx hfsucc in
+theorem dlc_succ_offset_lt :
+    x.length - (headOf L x).length + 1 < lenOf L (headOf L x) := by
+  have hmem : x ++ [1] ∈ runMembers L (headOf L x) :=
+    mem_runMembers.mpr ⟨fusible_kept hfsucc, dlc_succ_headOf hfsucc⟩
+  rw [dlc_succ_pad hfx hfsucc] at hmem
+  exact runMember_offset_lt hmem
+
+include hfx hxl in
+theorem dlc_g_live : headOf L x ∈ L :=
+  (run_liveness_uniform (mem_runMembers.mpr ⟨dlc_x_kept hfx, rfl⟩)).mp hxl
+
+include hfx hxl hfsucc in
+theorem dlc_succ_live : x ++ [1] ∈ L :=
+  (run_liveness_uniform (mem_runMembers.mpr
+    ⟨fusible_kept hfsucc, dlc_succ_headOf hfsucc⟩)).mpr (dlc_g_live hxl hfx)
+
+include hfx hxl in
+theorem dlc_par_live : x.dropLast ∈ L := (fusible_live hfx).mp hxl
+
+include hfsucc hmem' in
+theorem dlc_kept_iff (c : List ℕ) : c ∈ keptL L' ↔ c ∈ keptL L :=
+  delete_keptL_eq ⟨1, fusible_kept hfsucc⟩ hmem' c
+
+include hfx hxl hmem' in
+theorem dlc_fusible_x : fusible L' x = false :=
+  delete_fusible_x_false (kept_ne_nil (dlc_x_kept hfx)) hmem'
+    (dlc_par_live hxl hfx)
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_fusible_succ : fusible L' (x ++ [1]) = false :=
+  delete_fusible_succ_false hmem' (dlc_succ_live hxl hfx hfsucc)
+
+include hfsucc hmem' in
+theorem dlc_fusible_old {c : List ℕ} (hc : c ∈ keptL L)
+    (hc1 : c ≠ x) (hc2 : c ≠ x ++ [1]) :
+    fusible L' c = fusible L c := by
+  have hkiff := dlc_kept_iff (L := L) (L' := L') hfsucc hmem'
+  have hdx : c.dropLast ≠ x := by
+    intro heq
+    apply hc2
+    have := child_of_parent_eq (kept_ne_nil hc) heq
+    have huniq := fusible_unique hfsucc hc
+      (by rw [List.dropLast_concat]; exact heq)
+    exact huniq
+  have hmemc : (c ∈ L') ↔ (c ∈ L) := by
+    rw [hmem' c]
+    exact ⟨fun h => h.1, fun h => ⟨h, hc1⟩⟩
+  have hmemd : (c.dropLast ∈ L') ↔ (c.dropLast ∈ L) := by
+    rw [hmem' c.dropLast]
+    exact ⟨fun h => h.1, fun h => ⟨h, hdx⟩⟩
+  rw [Bool.eq_iff_iff, fusible_eq_true_iff, fusible_eq_true_iff]
+  constructor
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨(hkiff c).mp h1, (hkiff c.dropLast).mp h2, h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      exact h4 c' ((hkiff c').mpr hc') hparc
+    · rw [← hmemc, ← hmemd]
+      exact h5
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨(hkiff c).mpr h1, (hkiff c.dropLast).mpr h2, h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      exact h4 c' ((hkiff c').mp hc') hparc
+    · rw [hmemc, hmemd]
+      exact h5
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_isHead_iff (c : List ℕ) :
+    isHead L' c = true
+      ↔ (isHead L c = true ∨ c = x ∨ c = x ++ [1]) := by
+  constructor
+  · intro h
+    by_cases hc1 : c = x
+    · exact Or.inr (Or.inl hc1)
+    · by_cases hc2 : c = x ++ [1]
+      · exact Or.inr (Or.inr hc2)
+      · left
+        have hck : c ∈ keptL L :=
+          (dlc_kept_iff hfsucc hmem' c).mp (isHead_kept h)
+        refine isHead_of_kept_not_fusible hck ?_
+        rw [← dlc_fusible_old hfsucc hmem' hck hc1 hc2]
+        exact isHead_not_fusible h
+  · rintro (h | h1 | h1)
+    · have hc1 : c ≠ x := by
+        intro heq
+        rw [heq, isHead_eq_false_of_fusible hfx] at h
+        exact Bool.noConfusion h
+      have hc2 : c ≠ x ++ [1] := by
+        intro heq
+        rw [heq, isHead_eq_false_of_fusible hfsucc] at h
+        exact Bool.noConfusion h
+      exact isHead_of_kept_not_fusible
+        ((dlc_kept_iff hfsucc hmem' c).mpr (isHead_kept h))
+        (by rw [dlc_fusible_old hfsucc hmem' (isHead_kept h) hc1 hc2]
+            exact isHead_not_fusible h)
+    · rw [h1]
+      exact isHead_of_kept_not_fusible
+        ((dlc_kept_iff hfsucc hmem' x).mpr (dlc_x_kept hfx))
+        (dlc_fusible_x hxl hfx hmem')
+    · rw [h1]
+      exact isHead_of_kept_not_fusible
+        ((dlc_kept_iff hfsucc hmem' _).mpr (fusible_kept hfsucc))
+        (dlc_fusible_succ hxl hfx hfsucc hmem')
+
+include hfx hfsucc hmem' in
+theorem dlc_headOf_old : ∀ (c : List ℕ), c ∈ keptL L →
+    ¬(x <+: c ∧ headOf L c = headOf L x) →
+    headOf L' c = headOf L c := by
+  intro c
+  fun_induction headOf L c with
+  | case1 c hf ih =>
+      intro hk hinv
+      have hc1 : c ≠ x := by
+        rintro rfl
+        exact hinv ⟨List.prefix_refl _, (headOf_of_fusible hf).symm⟩
+      have hc2 : c ≠ x ++ [1] := by
+        rintro rfl
+        exact hinv ⟨List.prefix_append _ _, by rw [List.dropLast_concat]⟩
+      have hf' : fusible L' c = true := by
+        rw [dlc_fusible_old hfsucc hmem' hk hc1 hc2]
+        exact hf
+      rw [headOf_of_fusible hf']
+      refine ih (fusible_parent_kept hf) ?_
+      rintro ⟨hpre, hhd⟩
+      exact hinv ⟨hpre.trans (List.dropLast_prefix c), hhd⟩
+  | case2 c hf =>
+      intro hk hinv
+      have hc1 : c ≠ x := by
+        rintro rfl
+        exact hf hfx
+      have hc2 : c ≠ x ++ [1] := by
+        rintro rfl
+        exact hf hfsucc
+      have hf' : fusible L' c = false := by
+        rw [dlc_fusible_old hfsucc hmem' hk hc1 hc2]
+        exact Bool.eq_false_iff.mpr hf
+      exact headOf_of_not_fusible hf'
+
+include hfx hxl hmem' in
+theorem dlc_headOf_x : headOf L' x = x :=
+  headOf_of_not_fusible (dlc_fusible_x hxl hfx hmem')
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_headOf_ge : ∀ k,
+    x.length - (headOf L x).length + 1 ≤ k → k < lenOf L (headOf L x) →
+    headOf L' (headOf L x ++ List.replicate k 1) = x ++ [1] := by
+  intro k
+  induction k with
+  | zero =>
+      intro h1 _
+      omega
+  | succ k ih =>
+      intro h1 h2
+      by_cases hk : k + 1 = x.length - (headOf L x).length + 1
+      · rw [hk, ← dlc_succ_pad hfx hfsucc]
+        exact headOf_of_not_fusible (dlc_fusible_succ hxl hfx hfsucc hmem')
+      · have hg : isHead L (headOf L x) = true :=
+          headOf_isHead (dlc_x_kept hfx)
+        have hmem : headOf L x ++ List.replicate (k + 1) 1
+            ∈ runMembers L (headOf L x) := runMember_of_lt hg h2
+        have hfusL := runMember_fusible hmem
+        have hne1 : headOf L x ++ List.replicate (k + 1) 1 ≠ x := by
+          conv_rhs => rw [dlc_x_pad hfx]
+          intro heq
+          have := replicate_offset_inj heq
+          omega
+        have hne2 : headOf L x ++ List.replicate (k + 1) 1 ≠ x ++ [1] := by
+          rw [dlc_succ_pad hfx hfsucc]
+          intro heq
+          exact hk (replicate_offset_inj heq)
+        have hfus' : fusible L' (headOf L x ++ List.replicate (k + 1) 1)
+            = true := by
+          rw [dlc_fusible_old hfsucc hmem' (mem_runMembers.mp hmem).1
+            hne1 hne2]
+          exact hfusL
+        rw [headOf_of_fusible hfus', dropLast_append_replicate_succ]
+        exact ih (by omega) (by omega)
+
+include hfx hxl hfsucc hmem' in
+/-- Classify an old kept chain's new run head by its position relative to
+the two liveness breaks. -/
+theorem dlc_headOf_classify {c : List ℕ} (hc : c ∈ keptL L) :
+    (c = x ∧ headOf L' c = x)
+    ∨ (headOf L c = headOf L x ∧ x ++ [1] <+: c
+        ∧ headOf L' c = x ++ [1])
+    ∨ (¬(x <+: c ∧ headOf L c = headOf L x)
+        ∧ headOf L' c = headOf L c) := by
+  by_cases hcx : c = x
+  · refine Or.inl ⟨hcx, ?_⟩
+    rw [hcx]
+    exact dlc_headOf_x hxl hfx hmem'
+  · by_cases hcase : x ++ [1] <+: c ∧ headOf L c = headOf L x
+    · obtain ⟨hpre, hhd⟩ := hcase
+      have hmem : c ∈ runMembers L (headOf L x) :=
+        mem_runMembers.mpr ⟨hc, hhd⟩
+      have hform := runMember_form hmem
+      have hlt : c.length - (headOf L x).length < lenOf L (headOf L x) :=
+        runMember_offset_lt (hform ▸ hmem)
+      have hge : x.length - (headOf L x).length + 1
+          ≤ c.length - (headOf L x).length := by
+        have h1 := hpre.length_le
+        have h2 := congrArg List.length (dlc_x_pad hfx)
+        simp only [List.length_append, List.length_cons, List.length_nil,
+          List.length_replicate] at h1 h2
+        omega
+      refine Or.inr (Or.inl ⟨hhd, hpre, ?_⟩)
+      conv_lhs => rw [hform]
+      exact dlc_headOf_ge hxl hfx hfsucc hmem' _ hge hlt
+    · refine Or.inr (Or.inr ⟨?_, ?_⟩)
+      · rintro ⟨hpre, hhd⟩
+        apply hcase
+        refine ⟨?_, hhd⟩
+        have hmem : c ∈ runMembers L (headOf L x) :=
+          mem_runMembers.mpr ⟨hc, hhd⟩
+        have hform := runMember_form hmem
+        have hxle : x.length ≤ c.length := hpre.length_le
+        have hoffne : c.length - (headOf L x).length
+            ≠ x.length - (headOf L x).length := by
+          intro heq
+          apply hcx
+          rw [hform, heq, ← dlc_x_pad hfx]
+        have h2 := congrArg List.length (dlc_x_pad hfx)
+        simp only [List.length_append, List.length_replicate] at h2
+        rw [dlc_succ_pad hfx hfsucc]
+        conv_rhs => rw [hform]
+        exact replicate_pad_prefix (by omega)
+      · refine dlc_headOf_old hfx hfsucc hmem' c hc ?_
+        rintro ⟨hpre, hhd⟩
+        apply hcase
+        refine ⟨?_, hhd⟩
+        have hmem : c ∈ runMembers L (headOf L x) :=
+          mem_runMembers.mpr ⟨hc, hhd⟩
+        have hform := runMember_form hmem
+        have hxle : x.length ≤ c.length := hpre.length_le
+        have hoffne : c.length - (headOf L x).length
+            ≠ x.length - (headOf L x).length := by
+          intro heq
+          apply hcx
+          rw [hform, heq, ← dlc_x_pad hfx]
+        have h2 := congrArg List.length (dlc_x_pad hfx)
+        simp only [List.length_append, List.length_replicate] at h2
+        rw [dlc_succ_pad hfx hfsucc]
+        conv_rhs => rw [hform]
+        exact replicate_pad_prefix (by omega)
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_lenOf_g :
+    lenOf L' (headOf L x) = x.length - (headOf L x).length := by
+  have hg : isHead L (headOf L x) = true := headOf_isHead (dlc_x_kept hfx)
+  have hgx : headOf L x ≠ x := by
+    intro heq
+    have := dlc_j_pos hfx
+    have h2 := congrArg List.length heq
+    omega
+  have hgs : headOf L x ≠ x ++ [1] := by
+    intro heq
+    have h1 := (headOf_prefix L x).length_le
+    have h2 := congrArg List.length heq
+    simp only [List.length_append, List.length_cons, List.length_nil] at h2
+    omega
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    have hck : c ∈ keptL L := (dlc_kept_iff hfsucc hmem' c).mp hk
+    rcases dlc_headOf_classify hxl hfx hfsucc hmem' hck with
+      ⟨h1, h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2⟩
+    · exfalso
+      rw [h2] at hhd
+      exact hgx hhd.symm
+    · exfalso
+      rw [h3] at hhd
+      exact hgs hhd.symm
+    · rw [h2] at hhd
+      have hmem : c ∈ runMembers L (headOf L x) :=
+        mem_runMembers.mpr ⟨hck, hhd⟩
+      have hform := runMember_form hmem
+      refine ⟨c.length - (headOf L x).length, ?_, hform⟩
+      by_contra hge
+      apply h1
+      refine ⟨?_, hhd⟩
+      conv_lhs => rw [dlc_x_pad hfx]
+      conv_rhs => rw [hform]
+      exact replicate_pad_prefix (by omega)
+  · rintro ⟨k, hk, rfl⟩
+    have hklt : k < lenOf L (headOf L x) := by
+      have h1 := dlc_succ_offset_lt hfx hfsucc
+      omega
+    have hmem : headOf L x ++ List.replicate k 1
+        ∈ runMembers L (headOf L x) := runMember_of_lt hg hklt
+    have hninv : ¬(x <+: headOf L x ++ List.replicate k 1
+        ∧ headOf L (headOf L x ++ List.replicate k 1) = headOf L x) := by
+      rintro ⟨hpre, -⟩
+      have hpre' : headOf L x
+            ++ List.replicate (x.length - (headOf L x).length) 1
+          <+: headOf L x ++ List.replicate k 1 := by
+        rw [← dlc_x_pad hfx]
+        exact hpre
+      have := replicate_pad_prefix_le hpre'
+      omega
+    refine ⟨(dlc_kept_iff hfsucc hmem' _).mpr (mem_runMembers.mp hmem).1, ?_⟩
+    rw [dlc_headOf_old hfx hfsucc hmem' _ (mem_runMembers.mp hmem).1 hninv]
+    exact (mem_runMembers.mp hmem).2
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_lenOf_x : lenOf L' x = 1 := by
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    refine ⟨0, by omega, ?_⟩
+    simp only [List.replicate_zero, List.append_nil]
+    have hck : c ∈ keptL L := (dlc_kept_iff hfsucc hmem' c).mp hk
+    rcases dlc_headOf_classify hxl hfx hfsucc hmem' hck with
+      ⟨h1, h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2⟩
+    · exact h1
+    · exfalso
+      rw [h3] at hhd
+      have := congrArg List.length hhd
+      simp at this
+    · exfalso
+      rw [h2] at hhd
+      have := headOf_isHead hck
+      rw [hhd, isHead_eq_false_of_fusible hfx] at this
+      exact Bool.noConfusion this
+  · rintro ⟨k, hk, rfl⟩
+    have : k = 0 := by omega
+    subst this
+    simp only [List.replicate_zero, List.append_nil]
+    exact ⟨(dlc_kept_iff hfsucc hmem' x).mpr (dlc_x_kept hfx),
+      dlc_headOf_x hxl hfx hmem'⟩
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_lenOf_succ :
+    lenOf L' (x ++ [1])
+      = lenOf L (headOf L x) - (x.length - (headOf L x).length) - 1 := by
+  have hg : isHead L (headOf L x) = true := headOf_isHead (dlc_x_kept hfx)
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    have hck : c ∈ keptL L := (dlc_kept_iff hfsucc hmem' c).mp hk
+    rcases dlc_headOf_classify hxl hfx hfsucc hmem' hck with
+      ⟨h1, h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2⟩
+    · exfalso
+      rw [h2] at hhd
+      have := congrArg List.length hhd
+      simp at this
+    · have hmem : c ∈ runMembers L (headOf L x) :=
+        mem_runMembers.mpr ⟨hck, h1⟩
+      have hform := runMember_form hmem
+      have hlt : c.length - (headOf L x).length < lenOf L (headOf L x) :=
+        runMember_offset_lt (hform ▸ hmem)
+      have hge : x.length - (headOf L x).length + 1
+          ≤ c.length - (headOf L x).length := by
+        have h4 := h2.length_le
+        have h5 := congrArg List.length (dlc_x_pad hfx)
+        simp only [List.length_append, List.length_cons, List.length_nil,
+          List.length_replicate] at h4 h5
+        omega
+      refine ⟨c.length - (headOf L x).length
+          - (x.length - (headOf L x).length) - 1, by omega, ?_⟩
+      rw [dlc_succ_pad hfx hfsucc, List.append_assoc, ← List.replicate_add]
+      conv_lhs => rw [hform]
+      congr 2
+      omega
+    · exfalso
+      rw [h2] at hhd
+      have := headOf_isHead hck
+      rw [hhd, isHead_eq_false_of_fusible hfsucc] at this
+      exact Bool.noConfusion this
+  · rintro ⟨k, hk, rfl⟩
+    have hpad : (x ++ [1]) ++ List.replicate k 1
+        = headOf L x ++ List.replicate
+            (x.length - (headOf L x).length + 1 + k) 1 := by
+      rw [dlc_succ_pad hfx hfsucc, List.append_assoc, ← List.replicate_add]
+    have hklt : x.length - (headOf L x).length + 1 + k
+        < lenOf L (headOf L x) := by omega
+    have hmem : headOf L x ++ List.replicate
+        (x.length - (headOf L x).length + 1 + k) 1
+        ∈ runMembers L (headOf L x) := runMember_of_lt hg hklt
+    refine ⟨(dlc_kept_iff hfsucc hmem' _).mpr
+        (by rw [hpad]; exact (mem_runMembers.mp hmem).1), ?_⟩
+    rw [hpad]
+    exact dlc_headOf_ge hxl hfx hfsucc hmem' _ (by omega) hklt
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_lenOf_old {h : List ℕ} (hh : isHead L h = true)
+    (hne1 : h ≠ headOf L x) :
+    lenOf L' h = lenOf L h := by
+  rw [lenOf, lenOf, runMembers, runMembers]
+  have hiff : ∀ c, (c ∈ keptL L' ∧ headOf L' c = h)
+      ↔ (c ∈ keptL L ∧ headOf L c = h) := by
+    intro c
+    constructor
+    · rintro ⟨hk, hhd⟩
+      have hck : c ∈ keptL L := (dlc_kept_iff hfsucc hmem' c).mp hk
+      rcases dlc_headOf_classify hxl hfx hfsucc hmem' hck with
+        ⟨h1, h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2⟩
+      · exfalso
+        rw [h2] at hhd
+        rw [← hhd, isHead_eq_false_of_fusible hfx] at hh
+        exact Bool.noConfusion hh
+      · exfalso
+        rw [h3] at hhd
+        rw [← hhd, isHead_eq_false_of_fusible hfsucc] at hh
+        exact Bool.noConfusion hh
+      · rw [h2] at hhd
+        exact ⟨hck, hhd⟩
+    · rintro ⟨hk, hhd⟩
+      have hninv : ¬(x <+: c ∧ headOf L c = headOf L x) := by
+        rintro ⟨-, hgv⟩
+        exact hne1 (hhd ▸ hgv ▸ rfl)
+      exact ⟨(dlc_kept_iff hfsucc hmem' c).mpr hk,
+        by rw [dlc_headOf_old hfx hfsucc hmem' c hk hninv]; exact hhd⟩
+  have hperm : ((keptL L').filter (fun c => headOf L' c == h)).Perm
+      ((keptL L).filter (fun c => headOf L c == h)) := by
+    refine (List.perm_ext_iff_of_nodup ((nodup_keptL _).filter _)
+      ((nodup_keptL _).filter _)).mpr ?_
+    intro c
+    simp only [List.mem_filter, beq_iff_eq]
+    exact hiff c
+  exact hperm.length_eq
+
+include hfx hxl hfsucc hmem' in
+theorem dlc_headsList :
+    headsList L' = (headsList L ++ [x, x ++ [1]]).mergeSort hLe := by
+  refine headsList_eq_of_iff (mergeSort_hLt_sorted ?_) ?_
+  · rw [List.nodup_append]
+    refine ⟨nodup_headsList L, ?_, ?_⟩
+    · refine List.nodup_cons.mpr ⟨?_, List.nodup_singleton _⟩
+      rw [List.mem_singleton]
+      intro heq
+      have := congrArg List.length heq
+      simp at this
+    · intro y hy z hz heq
+      have hyh : isHead L y = true := mem_headsList.mp hy
+      rcases List.mem_cons.mp hz with h1 | h1
+      · rw [heq, h1, isHead_eq_false_of_fusible hfx] at hyh
+        exact Bool.noConfusion hyh
+      · rw [List.mem_singleton] at h1
+        rw [heq, h1, isHead_eq_false_of_fusible hfsucc] at hyh
+        exact Bool.noConfusion hyh
+  · intro c
+    rw [dlc_isHead_iff hxl hfx hfsucc hmem' c, List.mem_mergeSort,
+      List.mem_append, mem_headsList]
+    simp only [List.mem_cons, List.not_mem_nil, or_false]
+
+include hxl hfx hfsucc hmem' in
+/-- **D2, closed (the interior delete liveness split)**: deleting the
+run-interior record `x` re-canonicalizes to the old table with the run
+carrying `x` CUT at the liveness break — the old head keeps the prefix
+(`len` becomes `x`'s offset), `x` becomes a DEAD singleton entry, the suffix
+re-heads at `x ++ [1]` — and every entry attached at the old tail REHOMED to
+the suffix entry. The kept tree is untouched; only liveness/len bookkeeping
+moves. All right-hand data is pre-mutation. -/
+theorem tableOf_delete_split :
+    tableOf L'
+      = ((headsList L ++ [x, x ++ [1]]).mergeSort hLe).map (fun h =>
+          if h = x then
+            ⟨some (((headsList L ++ [x, x ++ [1]]).mergeSort hLe).idxOf
+                     (headOf L x),
+                   x.dropLast.length - (headOf L x).length),
+             false, 1, 1⟩
+          else if h = x ++ [1] then
+            ⟨some (((headsList L ++ [x, x ++ [1]]).mergeSort hLe).idxOf x, 0),
+             true, 1,
+             lenOf L (headOf L x) - (x.length - (headOf L x).length) - 1⟩
+          else
+            { entryOfHead L h with
+              par := (entryOfHead L h).par.map (fun pr =>
+                if headOf L h.dropLast = headOf L x
+                then (((headsList L ++ [x, x ++ [1]]).mergeSort hLe).idxOf
+                        (x ++ [1]),
+                      h.dropLast.length - (x.length + 1))
+                else (((headsList L ++ [x, x ++ [1]]).mergeSort hLe).idxOf
+                        (headOf L h.dropLast), pr.2)),
+              len := if h = headOf L x
+                     then x.length - (headOf L x).length
+                     else (entryOfHead L h).len }) := by
+  have hxne : x ≠ [] := kept_ne_nil (dlc_x_kept hfx)
+  have hgne : (headOf L x) ≠ [] := kept_ne_nil (headOf_kept (dlc_x_kept hfx))
+  have hglen : 1 ≤ (headOf L x).length := List.length_pos_iff.mpr hgne
+  have hjpos := dlc_j_pos hfx
+  have hxlen : 2 ≤ x.length := by
+    have := congrArg List.length (dlc_x_pad hfx)
+    simp only [List.length_append, List.length_replicate] at this
+    omega
+  have hdne : x.dropLast ≠ [] := by
+    have : 0 < x.dropLast.length := by
+      rw [List.length_dropLast]
+      omega
+    exact List.length_pos_iff.mp this
+  have hdk_x : x.dropLast ∈ keptL L :=
+    kept_of_prefix (dlc_x_kept hfx) (List.dropLast_prefix x) hdne
+  rw [tableOf, dlc_headsList hxl hfx hfsucc hmem']
+  refine List.map_congr_left ?_
+  intro h hh
+  rw [List.mem_mergeSort, List.mem_append] at hh
+  by_cases hhx : h = x
+  · rw [if_pos hhx]
+    subst hhx
+    rw [entryOfHead,
+      if_pos ((dlc_kept_iff hfsucc hmem' _).mpr hdk_x),
+      dlc_headsList hxl hfx hfsucc hmem']
+    have hninv : ¬(h <+: h.dropLast ∧ headOf L h.dropLast = headOf L h) := by
+      rintro ⟨hpre, -⟩
+      have := hpre.length_le
+      rw [List.length_dropLast] at this
+      omega
+    have hho : headOf L' h.dropLast = headOf L h := by
+      rw [dlc_headOf_old hfx hfsucc hmem' _ hdk_x hninv]
+      exact (headOf_of_fusible hfx).symm
+    rw [hho]
+    refine RTEntry.ext' rfl ?_ ?_ ?_
+    · exact decide_eq_false (delete_x_dead hmem')
+    · show h.getLastD 0 = 1
+      conv_lhs => rw [fusible_concat hfx]
+      rw [List.getLastD_concat]
+    · exact dlc_lenOf_x hxl hfx hfsucc hmem'
+  · rw [if_neg hhx]
+    by_cases hhs : h = x ++ [1]
+    · rw [if_pos hhs]
+      subst hhs
+      have hdk : (x ++ [1]).dropLast ∈ keptL L' := by
+        rw [List.dropLast_concat]
+        exact (dlc_kept_iff hfsucc hmem' x).mpr (dlc_x_kept hfx)
+      rw [entryOfHead, if_pos hdk, dlc_headsList hxl hfx hfsucc hmem']
+      have hho : headOf L' (x ++ [1]).dropLast = x := by
+        rw [List.dropLast_concat]
+        exact dlc_headOf_x hxl hfx hmem'
+      rw [hho]
+      refine RTEntry.ext' ?_ ?_ ?_ ?_
+      · show some (_, (x ++ [1]).dropLast.length - x.length) = some (_, 0)
+        rw [List.dropLast_concat]
+        simp
+      · show decide (x ++ [1] ∈ L') = true
+        refine decide_eq_true ((hmem' _).mpr
+          ⟨dlc_succ_live hxl hfx hfsucc, ?_⟩)
+        intro heq
+        have := congrArg List.length heq
+        simp at this
+      · show (x ++ [1]).getLastD 0 = 1
+        rw [List.getLastD_concat]
+      · exact dlc_lenOf_succ hxl hfx hfsucc hmem'
+    · rw [if_neg hhs]
+      have hhL : isHead L h = true := by
+        rcases hh with hh | hh
+        · exact mem_headsList.mp hh
+        · exfalso
+          rcases List.mem_cons.mp hh with h1 | h1
+          · exact hhx h1
+          · rw [List.mem_singleton] at h1
+            exact hhs h1
+      have hkh : h ∈ keptL L := isHead_kept hhL
+      have hlive : decide (h ∈ L') = decide (h ∈ L) := by
+        refine decide_eq_decide.mpr ?_
+        rw [hmem' h]
+        refine ⟨fun h' => h'.1, fun h' => ⟨h', ?_⟩⟩
+        intro heq
+        rw [heq, isHead_eq_false_of_fusible hfx] at hhL
+        exact Bool.noConfusion hhL
+      have hlen : lenOf L' h
+          = if h = headOf L x then x.length - (headOf L x).length
+            else lenOf L h := by
+        by_cases hg : h = headOf L x
+        · rw [if_pos hg, hg]
+          exact dlc_lenOf_g hxl hfx hfsucc hmem'
+        · rw [if_neg hg]
+          exact dlc_lenOf_old hxl hfx hfsucc hmem' hhL hg
+      by_cases hdk : h.dropLast ∈ keptL L
+      · rw [entryOfHead, if_pos ((dlc_kept_iff hfsucc hmem' _).mpr hdk),
+          dlc_headsList hxl hfx hfsucc hmem']
+        have htail := head_parent_is_tail hhL hdk
+        by_cases hgg : headOf L h.dropLast = headOf L x
+        · have hglenpos : 0 < lenOf L (headOf L x) :=
+            lenOf_pos (headOf_isHead (dlc_x_kept hfx))
+          have hoffl := dlc_succ_offset_lt hfx hfsucc
+          have hho : headOf L' h.dropLast = x ++ [1] := by
+            rw [htail, hgg, tailOf]
+            exact dlc_headOf_ge hxl hfx hfsucc hmem' _ (by omega) (by omega)
+          rw [hho]
+          refine RTEntry.ext' ?_ ?_ ?_ ?_
+          · dsimp only
+            rw [entryOfHead, if_pos hdk]
+            simp only [Option.map_some]
+            rw [if_pos hgg]
+            simp
+          · show decide (h ∈ L') = (entryOfHead L h).live
+            rw [hlive]
+            rfl
+          · rfl
+          · show lenOf L' h = _
+            rw [hlen]
+            by_cases hg : h = headOf L x
+            · rw [if_pos hg, if_pos hg]
+            · rw [if_neg hg, if_neg hg]
+              rfl
+        · have hninv : ¬(x <+: h.dropLast
+              ∧ headOf L h.dropLast = headOf L x) := by
+            rintro ⟨-, hgv⟩
+            exact hgg hgv
+          have hho : headOf L' h.dropLast = headOf L h.dropLast :=
+            dlc_headOf_old hfx hfsucc hmem' h.dropLast hdk hninv
+          rw [hho]
+          refine RTEntry.ext' ?_ ?_ ?_ ?_
+          · dsimp only
+            rw [entryOfHead, if_pos hdk]
+            simp only [Option.map_some]
+            rw [if_neg hgg]
+          · show decide (h ∈ L') = (entryOfHead L h).live
+            rw [hlive]
+            rfl
+          · rfl
+          · show lenOf L' h = _
+            rw [hlen]
+            by_cases hg : h = headOf L x
+            · rw [if_pos hg, if_pos hg]
+            · rw [if_neg hg, if_neg hg]
+              rfl
+      · rw [entryOfHead,
+          if_neg (fun h' => hdk ((dlc_kept_iff hfsucc hmem' _).mp h'))]
+        refine RTEntry.ext' ?_ ?_ ?_ ?_
+        · rw [entryOfHead, if_neg hdk]
+          rfl
+        · show decide (h ∈ L') = (entryOfHead L h).live
+          rw [hlive]
+          rfl
+        · rfl
+        · show lenOf L' h = _
+          rw [hlen]
+          by_cases hg : h = headOf L x
+          · rw [if_pos hg, if_pos hg]
+          · rw [if_neg hg, if_neg hg]
+            rfl
+
+end DeleteLivenessClosed
+
+/-! ### D4, closed — the coalesce, as a full table rewrite
+
+The D4 shape (`spot_d4_coalesce_necessity`): delete the childless interloper
+`a ++ [d]` whose presence had split the run at `a` (`a` is its run's tail;
+its only other kept child is the run successor `a ++ [1]`, same liveness as
+`a`). The interloper's entry AND the suffix entry both leave the table: the
+suffix re-fuses into the anchor's run (`len` becomes the SUM), and every
+entry attached at the suffix's tail rehomes to the merged run. This is the
+closed form of the FORCED delete-inverse (`coalesce_restored`). -/
+
+section CoalesceClosed
+
+variable {L L' : List (List ℕ)} {a : List ℕ} {d : ℕ}
+  (hane : a ≠ [])
+  (hd : d ≠ 1)
+  (hint : a ++ [d] ∈ L)
+  (hleaf : ∀ e, (a ++ [d]) ++ [e] ∉ keptL L)
+  (hsucc : a ++ [1] ∈ keptL L)
+  (hlv : (a ++ [1] ∈ L) ↔ (a ∈ L))
+  (honly : ∀ c' ∈ keptL L, c'.dropLast = a → c' = a ++ [1] ∨ c' = a ++ [d])
+  (hmem' : ∀ c, c ∈ L' ↔ (c ∈ L ∧ c ≠ a ++ [d]))
+
+include hsucc hane in
+theorem clc_a_kept : a ∈ keptL L :=
+  kept_of_prefix hsucc (List.prefix_append a [1]) hane
+
+include hint in
+theorem clc_int_kept : a ++ [d] ∈ keptL L := kept_of_live hint (by simp)
+
+include hd hint in
+theorem clc_succ_not_fusible : fusible L (a ++ [1]) = false := by
+  cases hf : fusible L (a ++ [1]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have heq := fusible_unique hf (clc_int_kept hint)
+        (by rw [List.dropLast_concat, List.dropLast_concat])
+      have := List.append_cancel_left heq
+      injection this with h'
+      exact hd h'
+
+include hd in
+theorem clc_int_not_fusible : fusible L (a ++ [d]) = false := by
+  cases hf : fusible L (a ++ [d]) with
+  | false => rfl
+  | true =>
+      exfalso
+      have := (fusible_eq_true_iff.mp hf).2.2.1
+      rw [List.getLastD_concat] at this
+      exact hd this
+
+include hane hsucc in
+theorem clc_a_pad :
+    a = headOf L a ++ List.replicate (a.length - (headOf L a).length) 1 :=
+  runMember_form (mem_runMembers.mpr ⟨clc_a_kept hane hsucc, rfl⟩)
+
+include hane hsucc in
+theorem clc_succ_pad :
+    a ++ [1] = headOf L a
+      ++ List.replicate (a.length - (headOf L a).length + 1) 1 := by
+  conv_lhs => rw [clc_a_pad hane hsucc]
+  rw [List.append_assoc, ← List.replicate_succ']
+
+include hane hd hint hsucc in
+/-- `a` is the TAIL of its run: its offset is the run length minus one. -/
+theorem clc_a_tail :
+    a.length - (headOf L a).length = lenOf L (headOf L a) - 1 := by
+  have hg : isHead L (headOf L a) = true :=
+    headOf_isHead (clc_a_kept hane hsucc)
+  have hmem : a ∈ runMembers L (headOf L a) :=
+    mem_runMembers.mpr ⟨clc_a_kept hane hsucc, rfl⟩
+  have hlt : a.length - (headOf L a).length < lenOf L (headOf L a) := by
+    have hmem2 : headOf L a
+        ++ List.replicate (a.length - (headOf L a).length) 1
+        ∈ runMembers L (headOf L a) := by
+      rw [← clc_a_pad hane hsucc]
+      exact hmem
+    exact runMember_offset_lt hmem2
+  by_contra hne
+  have hlt' : a.length - (headOf L a).length + 1 < lenOf L (headOf L a) := by
+    omega
+  have hmem' := runMember_of_lt hg hlt'
+  have hfus := runMember_fusible
+    (by rw [show a.length - (headOf L a).length + 1
+          = (a.length - (headOf L a).length) + 1 from rfl] at hmem'
+        exact hmem')
+  rw [← clc_succ_pad hane hsucc] at hfus
+  rw [clc_succ_not_fusible hd hint] at hfus
+  exact Bool.noConfusion hfus
+
+include hane hd hint hsucc in
+theorem clc_succ_pad_n :
+    a ++ [1] = headOf L a
+      ++ List.replicate (lenOf L (headOf L a)) 1 := by
+  have h1 : 1 ≤ lenOf L (headOf L a) :=
+    lenOf_pos (headOf_isHead (clc_a_kept hane hsucc))
+  rw [clc_succ_pad hane hsucc, clc_a_tail hane hd hint hsucc]
+  congr 2
+  omega
+
+include hd hleaf hsucc hmem' in
+theorem clc_kept_iff (c : List ℕ) :
+    c ∈ keptL L' ↔ (c ∈ keptL L ∧ c ≠ a ++ [d]) :=
+  coalesce_keptL hd hleaf hsucc hmem' c
+
+include hd hint hleaf hsucc honly hmem' in
+theorem clc_fusible_old {c : List ℕ} (hc : c ∈ keptL L)
+    (hc1 : c ≠ a ++ [1]) (hc2 : c ≠ a ++ [d]) :
+    fusible L' c = fusible L c := by
+  have hkiff := clc_kept_iff (L := L) (L' := L') hd hleaf hsucc hmem'
+  have hdd : c.dropLast ≠ a ++ [d] := by
+    intro heq
+    apply hleaf (c.getLastD 0)
+    rw [← heq, ← child_of_parent_eq (kept_ne_nil hc) rfl]
+    exact hc
+  have hmemc : (c ∈ L') ↔ (c ∈ L) := by
+    rw [hmem' c]
+    exact ⟨fun h => h.1, fun h => ⟨h, hc2⟩⟩
+  have hmemd : (c.dropLast ∈ L') ↔ (c.dropLast ∈ L) := by
+    rw [hmem' c.dropLast]
+    exact ⟨fun h => h.1, fun h => ⟨h, hdd⟩⟩
+  rw [Bool.eq_iff_iff, fusible_eq_true_iff, fusible_eq_true_iff]
+  constructor
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨((hkiff c).mp h1).1, ((hkiff c.dropLast).mp h2).1, h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      by_cases hci : c' = a ++ [d]
+      · exfalso
+        rw [hci, List.dropLast_concat] at hparc
+        rcases honly c hc hparc.symm with h' | h'
+        · exact hc1 h'
+        · exact hc2 h'
+      · exact h4 c' ((hkiff c').mpr ⟨hc', hci⟩) hparc
+    · rw [← hmemc, ← hmemd]
+      exact h5
+  · rintro ⟨h1, h2, h3, h4, h5⟩
+    refine ⟨(hkiff c).mpr ⟨hc, hc2⟩, (hkiff c.dropLast).mpr ⟨h2, hdd⟩,
+      h3, ?_, ?_⟩
+    · intro c' hc' hparc
+      exact h4 c' ((hkiff c').mp hc').1 hparc
+    · rw [hmemc, hmemd]
+      exact h5
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_fusible_succ : fusible L' (a ++ [1]) = true :=
+  coalesce_restored hane hd hleaf hsucc hlv honly hmem'
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_isHead_iff (c : List ℕ) :
+    isHead L' c = true
+      ↔ (isHead L c = true ∧ c ≠ a ++ [1] ∧ c ≠ a ++ [d]) := by
+  constructor
+  · intro h
+    obtain ⟨hck, hci⟩ := (clc_kept_iff hd hleaf hsucc hmem' c).mp
+      (isHead_kept h)
+    have hc1 : c ≠ a ++ [1] := by
+      intro heq
+      have := isHead_not_fusible h
+      rw [heq, clc_fusible_succ hane hd hint hleaf hsucc hlv honly hmem']
+        at this
+      exact Bool.noConfusion this
+    refine ⟨isHead_of_kept_not_fusible hck ?_, hc1, hci⟩
+    rw [← clc_fusible_old hd hint hleaf hsucc honly hmem' hck hc1 hci]
+    exact isHead_not_fusible h
+  · rintro ⟨h, hc1, hc2⟩
+    exact isHead_of_kept_not_fusible
+      ((clc_kept_iff hd hleaf hsucc hmem' c).mpr ⟨isHead_kept h, hc2⟩)
+      (by rw [clc_fusible_old hd hint hleaf hsucc honly hmem' (isHead_kept h)
+            hc1 hc2]
+          exact isHead_not_fusible h)
+
+include hd hint hleaf hsucc honly hmem' in
+theorem clc_headOf_old : ∀ (c : List ℕ), c ∈ keptL L → c ≠ a ++ [d] →
+    headOf L c ≠ a ++ [1] →
+    headOf L' c = headOf L c := by
+  intro c
+  fun_induction headOf L c with
+  | case1 c hf ih =>
+      intro hk hci hinv
+      have hc1 : c ≠ a ++ [1] := by
+        rintro rfl
+        rw [clc_succ_not_fusible hd hint] at hf
+        exact Bool.noConfusion hf
+      have hdd : c.dropLast ≠ a ++ [d] := by
+        intro heq
+        apply hleaf (c.getLastD 0)
+        rw [← heq, ← child_of_parent_eq (kept_ne_nil hk) rfl]
+        exact hk
+      have hf' : fusible L' c = true := by
+        rw [clc_fusible_old hd hint hleaf hsucc honly hmem' hk hc1 hci]
+        exact hf
+      rw [headOf_of_fusible hf']
+      exact ih (fusible_parent_kept hf) hdd hinv
+  | case2 c hf =>
+      intro hk hci hinv
+      have hc1 : c ≠ a ++ [1] := fun heq => hinv (heq ▸ rfl)
+      have hf' : fusible L' c = false := by
+        rw [clc_fusible_old hd hint hleaf hsucc honly hmem' hk hc1 hci]
+        exact Bool.eq_false_iff.mpr hf
+      exact headOf_of_not_fusible hf'
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_headOf_merge : ∀ i, i < lenOf L (a ++ [1]) →
+    headOf L' ((a ++ [1]) ++ List.replicate i 1) = headOf L a := by
+  have hsh : isHead L (a ++ [1]) :=
+    isHead_of_kept_not_fusible hsucc (clc_succ_not_fusible hd hint)
+  intro i
+  induction i with
+  | zero =>
+      intro _
+      simp only [List.replicate_zero, List.append_nil]
+      rw [headOf_of_fusible
+        (clc_fusible_succ hane hd hint hleaf hsucc hlv honly hmem'),
+        List.dropLast_concat]
+      refine clc_headOf_old hd hint hleaf hsucc honly hmem' a
+        (clc_a_kept hane hsucc) ?_ ?_
+      · intro heq
+        have := congrArg List.length heq
+        simp at this
+      · intro heq
+        have h1 := (headOf_prefix L a).length_le
+        have h2 := congrArg List.length heq
+        simp only [List.length_append, List.length_cons, List.length_nil]
+          at h2
+        omega
+  | succ i ih =>
+      intro hi
+      have hmem : (a ++ [1]) ++ List.replicate (i + 1) 1
+          ∈ runMembers L (a ++ [1]) := runMember_of_lt hsh hi
+      have hfusL := runMember_fusible hmem
+      have hc1 : (a ++ [1]) ++ List.replicate (i + 1) 1 ≠ a ++ [1] := by
+        intro heq
+        have := congrArg List.length heq
+        simp at this
+      have hc2 : (a ++ [1]) ++ List.replicate (i + 1) 1 ≠ a ++ [d] := by
+        intro heq
+        have := congrArg List.length heq
+        simp at this
+      have hfus' : fusible L' ((a ++ [1]) ++ List.replicate (i + 1) 1)
+          = true := by
+        rw [clc_fusible_old hd hint hleaf hsucc honly hmem'
+          (mem_runMembers.mp hmem).1 hc1 hc2]
+        exact hfusL
+      rw [headOf_of_fusible hfus', dropLast_append_replicate_succ]
+      exact ih (by omega)
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_lenOf_g :
+    lenOf L' (headOf L a)
+      = lenOf L (headOf L a) + lenOf L (a ++ [1]) := by
+  have hg : isHead L (headOf L a) = true :=
+    headOf_isHead (clc_a_kept hane hsucc)
+  have hsh : isHead L (a ++ [1]) :=
+    isHead_of_kept_not_fusible hsucc (clc_succ_not_fusible hd hint)
+  have hgs : headOf L a ≠ a ++ [1] := by
+    intro heq
+    have h1 := (headOf_prefix L a).length_le
+    have h2 := congrArg List.length heq
+    simp only [List.length_append, List.length_cons, List.length_nil] at h2
+    omega
+  refine lenOf_eq_of_iff ?_
+  intro c
+  constructor
+  · rintro ⟨hk, hhd⟩
+    obtain ⟨hck, hci⟩ := (clc_kept_iff hd hleaf hsucc hmem' c).mp hk
+    by_cases hcs : headOf L c = a ++ [1]
+    · -- a member of the old suffix run: re-indexed past the old length
+      have hmem : c ∈ runMembers L (a ++ [1]) := mem_runMembers.mpr ⟨hck, hcs⟩
+      have hform := runMember_form hmem
+      have hlt : c.length - (a ++ [1]).length < lenOf L (a ++ [1]) :=
+        runMember_offset_lt (hform ▸ hmem)
+      refine ⟨lenOf L (headOf L a) + (c.length - (a ++ [1]).length),
+        by omega, ?_⟩
+      conv_lhs => rw [hform]
+      rw [clc_succ_pad_n hane hd hint hsucc, List.append_assoc,
+        ← List.replicate_add]
+    · rw [clc_headOf_old hd hint hleaf hsucc honly hmem' c hck hci hcs] at hhd
+      have hmem : c ∈ runMembers L (headOf L a) :=
+        mem_runMembers.mpr ⟨hck, hhd⟩
+      have hform := runMember_form hmem
+      have hlt : c.length - (headOf L a).length < lenOf L (headOf L a) :=
+        runMember_offset_lt (hform ▸ hmem)
+      exact ⟨c.length - (headOf L a).length, by omega, hform⟩
+  · rintro ⟨k, hk, rfl⟩
+    by_cases hkn : k < lenOf L (headOf L a)
+    · have hmem : headOf L a ++ List.replicate k 1
+          ∈ runMembers L (headOf L a) := runMember_of_lt hg hkn
+      have hck := (mem_runMembers.mp hmem).1
+      have hci : headOf L a ++ List.replicate k 1 ≠ a ++ [d] := by
+        intro heq
+        have hih : isHead L (a ++ [d]) :=
+          isHead_of_kept_not_fusible (clc_int_kept hint)
+            (clc_int_not_fusible hd)
+        have := (mem_runMembers.mp hmem).2
+        rw [heq] at this
+        rw [headOf_eq_self_of_isHead hih] at this
+        have h2 := congrArg List.length this
+        have h3 := (headOf_prefix L a).length_le
+        simp only [List.length_append, List.length_cons, List.length_nil]
+          at h2
+        omega
+      have hcs : headOf L (headOf L a ++ List.replicate k 1) ≠ a ++ [1] := by
+        rw [(mem_runMembers.mp hmem).2]
+        exact hgs
+      refine ⟨(clc_kept_iff hd hleaf hsucc hmem' _).mpr ⟨hck, hci⟩, ?_⟩
+      rw [clc_headOf_old hd hint hleaf hsucc honly hmem' _ hck hci hcs]
+      exact (mem_runMembers.mp hmem).2
+    · have hpad : headOf L a ++ List.replicate k 1
+          = (a ++ [1]) ++ List.replicate (k - lenOf L (headOf L a)) 1 := by
+        rw [clc_succ_pad_n hane hd hint hsucc, List.append_assoc,
+          ← List.replicate_add]
+        congr 2
+        omega
+      have hilt : k - lenOf L (headOf L a) < lenOf L (a ++ [1]) := by omega
+      have hmem : (a ++ [1]) ++ List.replicate (k - lenOf L (headOf L a)) 1
+          ∈ runMembers L (a ++ [1]) := runMember_of_lt hsh hilt
+      have hck := (mem_runMembers.mp hmem).1
+      have hci : (a ++ [1]) ++ List.replicate (k - lenOf L (headOf L a)) 1
+          ≠ a ++ [d] := by
+        intro heq
+        have := congrArg List.length heq
+        simp only [List.length_append, List.length_replicate,
+          List.length_cons, List.length_nil] at this
+        have h0 : k - lenOf L (headOf L a) = 0 := by omega
+        rw [h0, List.replicate_zero, List.append_nil] at heq
+        have := List.append_cancel_left heq
+        injection this with h'
+        exact hd h'.symm
+      refine ⟨(clc_kept_iff hd hleaf hsucc hmem' _).mpr
+          (by rw [hpad]; exact ⟨hck, hci⟩), ?_⟩
+      rw [hpad]
+      exact clc_headOf_merge hane hd hint hleaf hsucc hlv honly hmem' _ hilt
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_lenOf_old {h : List ℕ} (hh : isHead L h = true)
+    (hne1 : h ≠ headOf L a) (hne2 : h ≠ a ++ [1]) (hne3 : h ≠ a ++ [d]) :
+    lenOf L' h = lenOf L h := by
+  rw [lenOf, lenOf, runMembers, runMembers]
+  have hiff : ∀ c, (c ∈ keptL L' ∧ headOf L' c = h)
+      ↔ (c ∈ keptL L ∧ headOf L c = h) := by
+    intro c
+    constructor
+    · rintro ⟨hk, hhd⟩
+      obtain ⟨hck, hci⟩ := (clc_kept_iff hd hleaf hsucc hmem' c).mp hk
+      by_cases hcs : headOf L c = a ++ [1]
+      · exfalso
+        have hmem : c ∈ runMembers L (a ++ [1]) :=
+          mem_runMembers.mpr ⟨hck, hcs⟩
+        have hform := runMember_form hmem
+        have hlt : c.length - (a ++ [1]).length < lenOf L (a ++ [1]) :=
+          runMember_offset_lt (hform ▸ hmem)
+        rw [hform] at hhd
+        rw [clc_headOf_merge hane hd hint hleaf hsucc hlv honly hmem' _ hlt]
+          at hhd
+        exact hne1 hhd.symm
+      · rw [clc_headOf_old hd hint hleaf hsucc honly hmem' c hck hci hcs] at hhd
+        exact ⟨hck, hhd⟩
+    · rintro ⟨hck, hhd⟩
+      have hci : c ≠ a ++ [d] := by
+        intro heq
+        apply hne3
+        rw [← hhd, heq]
+        exact (headOf_eq_self_of_isHead (isHead_of_kept_not_fusible
+          (clc_int_kept hint) (clc_int_not_fusible hd)))
+      have hcs : headOf L c ≠ a ++ [1] := fun h' => hne2 (hhd ▸ h' ▸ rfl)
+      exact ⟨(clc_kept_iff hd hleaf hsucc hmem' c).mpr ⟨hck, hci⟩,
+        by rw [clc_headOf_old hd hint hleaf hsucc honly hmem' c hck hci hcs]
+           exact hhd⟩
+  have hperm : ((keptL L').filter (fun c => headOf L' c == h)).Perm
+      ((keptL L).filter (fun c => headOf L c == h)) := by
+    refine (List.perm_ext_iff_of_nodup ((nodup_keptL _).filter _)
+      ((nodup_keptL _).filter _)).mpr ?_
+    intro c
+    simp only [List.mem_filter, beq_iff_eq]
+    exact hiff c
+  exact hperm.length_eq
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+theorem clc_headsList :
+    headsList L' = (headsList L).filter
+      (fun h => decide (h ≠ a ++ [1]) && decide (h ≠ a ++ [d])) := by
+  refine headsList_eq_of_iff ?_ ?_
+  · exact (sorted_headsList L).sublist List.filter_sublist
+  · intro c
+    rw [clc_isHead_iff hane hd hint hleaf hsucc hlv honly hmem' c,
+      List.mem_filter, mem_headsList]
+    simp only [Bool.and_eq_true, decide_eq_true_eq, and_assoc]
+
+include hane hd hint hleaf hsucc hlv honly hmem' in
+/-- **D4, closed (the coalesce)**: deleting the childless interloper
+`a ++ [d]` re-canonicalizes to the old table with BOTH the interloper's
+entry and the suffix entry `a ++ [1]` REMOVED, the anchor's run absorbing
+the suffix (`len` becomes the sum of the two), and every entry attached at
+the suffix's tail rehomed into the merged run. The closed inverse of
+`tableOf_insert_split`. All right-hand data is pre-mutation. -/
+theorem tableOf_coalesce :
+    tableOf L'
+      = ((headsList L).filter
+          (fun h => decide (h ≠ a ++ [1]) && decide (h ≠ a ++ [d]))).map
+        (fun h =>
+          { entryOfHead L h with
+            par := (entryOfHead L h).par.map (fun pr =>
+              if headOf L h.dropLast = a ++ [1]
+              then (((headsList L).filter (fun h' => decide (h' ≠ a ++ [1])
+                        && decide (h' ≠ a ++ [d]))).idxOf (headOf L a),
+                    h.dropLast.length - (headOf L a).length)
+              else (((headsList L).filter (fun h' => decide (h' ≠ a ++ [1])
+                        && decide (h' ≠ a ++ [d]))).idxOf
+                      (headOf L h.dropLast), pr.2)),
+            len := if h = headOf L a
+                   then lenOf L (headOf L a) + lenOf L (a ++ [1])
+                   else (entryOfHead L h).len }) := by
+  have hsh : isHead L (a ++ [1]) :=
+    isHead_of_kept_not_fusible hsucc (clc_succ_not_fusible hd hint)
+  have hm1 : 1 ≤ lenOf L (a ++ [1]) := lenOf_pos hsh
+  rw [tableOf, clc_headsList hane hd hint hleaf hsucc hlv honly hmem']
+  refine List.map_congr_left ?_
+  intro h hh
+  rw [List.mem_filter, mem_headsList] at hh
+  obtain ⟨hhL, hcond⟩ := hh
+  simp only [Bool.and_eq_true, decide_eq_true_eq] at hcond
+  obtain ⟨hne2, hne3⟩ := hcond
+  have hkh : h ∈ keptL L := isHead_kept hhL
+  have hlive : decide (h ∈ L') = decide (h ∈ L) := by
+    refine decide_eq_decide.mpr ?_
+    rw [hmem' h]
+    exact ⟨fun h' => h'.1, fun h' => ⟨h', hne3⟩⟩
+  have hlen : lenOf L' h
+      = if h = headOf L a
+        then lenOf L (headOf L a) + lenOf L (a ++ [1])
+        else lenOf L h := by
+    by_cases hg : h = headOf L a
+    · rw [if_pos hg, hg]
+      exact clc_lenOf_g hane hd hint hleaf hsucc hlv honly hmem'
+    · rw [if_neg hg]
+      exact clc_lenOf_old hane hd hint hleaf hsucc hlv honly hmem'
+        hhL hg hne2 hne3
+  have hkd_iff : h.dropLast ∈ keptL L' ↔ h.dropLast ∈ keptL L := by
+    rw [clc_kept_iff hd hleaf hsucc hmem']
+    refine ⟨fun h' => h'.1, fun h' => ⟨h', ?_⟩⟩
+    intro heq
+    apply hleaf (h.getLastD 0)
+    rw [← heq, ← child_of_parent_eq (kept_ne_nil hkh) rfl]
+    exact hkh
+  by_cases hdk : h.dropLast ∈ keptL L
+  · rw [entryOfHead, if_pos (hkd_iff.mpr hdk),
+      clc_headsList hane hd hint hleaf hsucc hlv honly hmem']
+    have htail := head_parent_is_tail hhL hdk
+    by_cases hgg : headOf L h.dropLast = a ++ [1]
+    · have hho : headOf L' h.dropLast = headOf L a := by
+        rw [htail, hgg, tailOf]
+        exact clc_headOf_merge hane hd hint hleaf hsucc hlv honly hmem' _
+          (by omega)
+      rw [hho]
+      refine RTEntry.ext' ?_ ?_ ?_ ?_
+      · dsimp only
+        rw [entryOfHead, if_pos hdk]
+        simp only [Option.map_some]
+        rw [if_pos hgg]
+      · show decide (h ∈ L') = (entryOfHead L h).live
+        rw [hlive]
+        rfl
+      · rfl
+      · show lenOf L' h = _
+        rw [hlen]
+        by_cases hg : h = headOf L a
+        · rw [if_pos hg, if_pos hg]
+        · rw [if_neg hg, if_neg hg]
+          rfl
+    · have hci : h.dropLast ≠ a ++ [d] := by
+        intro heq
+        apply hleaf (h.getLastD 0)
+        rw [← heq, ← child_of_parent_eq (kept_ne_nil hkh) rfl]
+        exact hkh
+      have hho : headOf L' h.dropLast = headOf L h.dropLast :=
+        clc_headOf_old hd hint hleaf hsucc honly hmem' h.dropLast hdk hci hgg
+      rw [hho]
+      refine RTEntry.ext' ?_ ?_ ?_ ?_
+      · dsimp only
+        rw [entryOfHead, if_pos hdk]
+        simp only [Option.map_some]
+        rw [if_neg hgg]
+      · show decide (h ∈ L') = (entryOfHead L h).live
+        rw [hlive]
+        rfl
+      · rfl
+      · show lenOf L' h = _
+        rw [hlen]
+        by_cases hg : h = headOf L a
+        · rw [if_pos hg, if_pos hg]
+        · rw [if_neg hg, if_neg hg]
+          rfl
+  · rw [entryOfHead, if_neg (fun h' => hdk (hkd_iff.mp h'))]
+    refine RTEntry.ext' ?_ ?_ ?_ ?_
+    · rw [entryOfHead, if_neg hdk]
+      rfl
+    · show decide (h ∈ L') = (entryOfHead L h).live
+      rw [hlive]
+      rfl
+    · rfl
+    · show lenOf L' h = _
+      rw [hlen]
+      by_cases hg : h = headOf L a
+      · rw [if_pos hg, if_pos hg]
+      · rw [if_neg hg, if_neg hg]
+        rfl
+
+end CoalesceClosed
+
 /-! ## §7½  T-repr, image side — `tableOf` always lands in `Canonical`
 
 `tableOf_stateOf` (§4) is the retraction on canonical inputs. Here is the
@@ -3421,9 +5768,10 @@ enumeration of its element set (`chainBefore_sorted_ext`). Hence the walk is
 determined by the live-chain set alone: building the run table, recovering the
 state, and walking it reproduces the original walk verbatim
 (`walk_stateOf_tableOf`). This is the display-identity gate at the level of
-the representation round trip. (The fully table-*direct* structural walk —
-emitting run by run without materializing `stateOf` — is SPOT-verified at D1
-in the instance file; its generic promotion is the remaining T-walk item.) -/
+the representation round trip. The fully table-*direct* structural walk —
+emitting run by run without ever materializing `stateOf` — is `tableWalk`
+(§7⅞ below), with `tableWalk_tableOf` its generic faithfulness theorem; the
+D1 instance SPOT pins it concretely. -/
 
 /-- Inversion of `chainBefore` into its two verdict shapes. -/
 theorem chainBefore_inv {c1 c2 : List ℕ} (h : chainBefore c1 c2) :
@@ -3564,6 +5912,475 @@ theorem walk_stateOf_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
   rw [mem_walk hnil', mem_walk hnil]
   exact hiff c
 
+/-! ## §7⅞  The literal T-walk — emit the display from the TABLE alone
+
+`walk` (§6) consults the state; `tableWalk` below consults nothing but the
+table — entry headers, parent references, and the `hsAt` address arithmetic;
+`stateOf` is never materialized. This is the formal face of the O(display)
+reading claim: one pass over the entries in walk order emits the document.
+`tableWalk_tableOf` is the generic faithfulness theorem (the D1 SPOT
+`spot_d1_tableWalk` pins it concretely). -/
+
+/-- Entry at an index, total (defaulted out of range). -/
+def entryAt (T : Table) (j : ℕ) : RTEntry := T.getD j ⟨none, false, 0, 0⟩
+
+theorem entryAt_eq {T : Table} {j : ℕ} (hj : j < T.length) :
+    entryAt T j = T[j] := by
+  rw [entryAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]
+  rfl
+
+/-- The indices of the entries attached at entry `i`, newest label first. -/
+def attachedAt (T : Table) (i : ℕ) : List ℕ :=
+  ((List.range T.length).filter
+    (fun j => (entryAt T j).par.map Prod.fst == some i)).mergeSort
+    (fun j k => decide ((entryAt T k).delta ≤ (entryAt T j).delta))
+
+/-- The root entries, newest label first. -/
+def rootsAt (T : Table) : List ℕ :=
+  ((List.range T.length).filter
+    (fun j => (entryAt T j).par == none)).mergeSort
+    (fun j k => decide ((entryAt T k).delta ≤ (entryAt T j).delta))
+
+/-- The walk below one entry, consulting the table alone. -/
+def walkT (T : Table) : ℕ → ℕ → List (List ℕ)
+  | 0, _ => []
+  | fuel + 1, i =>
+      (if (entryAt T i).live
+       then (List.range (entryAt T i).len).map
+         (fun k => hsAt T i ++ List.replicate k 1)
+       else [])
+      ++ (attachedAt T i).flatMap (walkT T fuel)
+
+/-- Table fuel: the `len` total bounds every chain length (`maxLen`). -/
+def fuelOf (T : Table) : ℕ := (T.map RTEntry.len).sum + 1
+
+/-- **The literal T-walk**: the display, emitted run by run directly from
+the table. -/
+def tableWalk (T : Table) : List (List ℕ) :=
+  (rootsAt T).flatMap (walkT T (fuelOf T))
+
+theorem mem_attachedAt {T : Table} {i j : ℕ} :
+    j ∈ attachedAt T i
+      ↔ j < T.length ∧ ∃ off, (entryAt T j).par = some (i, off) := by
+  rw [attachedAt, List.mem_mergeSort, List.mem_filter, List.mem_range]
+  constructor
+  · rintro ⟨h1, h2⟩
+    refine ⟨h1, ?_⟩
+    rw [beq_iff_eq] at h2
+    cases hp : (entryAt T j).par with
+    | none =>
+        rw [hp] at h2
+        simp at h2
+    | some pr =>
+        obtain ⟨p1, p2⟩ := pr
+        rw [hp] at h2
+        simp only [Option.map_some] at h2
+        injection h2 with h2
+        exact ⟨p2, by rw [h2]⟩
+  · rintro ⟨h1, off, h2⟩
+    exact ⟨h1, by rw [beq_iff_eq, h2]; rfl⟩
+
+theorem mem_rootsAt {T : Table} {j : ℕ} :
+    j ∈ rootsAt T ↔ j < T.length ∧ (entryAt T j).par = none := by
+  rw [rootsAt, List.mem_mergeSort, List.mem_filter, List.mem_range]
+  constructor
+  · rintro ⟨h1, h2⟩
+    rw [beq_iff_eq] at h2
+    exact ⟨h1, h2⟩
+  · rintro ⟨h1, h2⟩
+    exact ⟨h1, by rw [beq_iff_eq]; exact h2⟩
+
+/-- Strictly delta-descending lists are fixed by their member set. -/
+theorem deltaDesc_sorted_ext : ∀ {l l' : List (List ℕ)},
+    l.Pairwise (fun a b => b.getLastD 0 < a.getLastD 0) →
+    l'.Pairwise (fun a b => b.getLastD 0 < a.getLastD 0) →
+    (∀ c, c ∈ l ↔ c ∈ l') → l = l'
+  | [], [], _, _, _ => rfl
+  | [], y :: ys, _, _, hmem =>
+      absurd ((hmem y).mpr List.mem_cons_self) (by simp)
+  | x :: xs, [], _, _, hmem =>
+      absurd ((hmem x).mp List.mem_cons_self) (by simp)
+  | x :: xs, y :: ys, hs, hs', hmem => by
+      rcases List.pairwise_cons.mp hs with ⟨hx, hxs⟩
+      rcases List.pairwise_cons.mp hs' with ⟨hy, hys⟩
+      have hxy : x = y := by
+        rcases List.mem_cons.mp ((hmem x).mp List.mem_cons_self) with h | h
+        · exact h
+        · rcases List.mem_cons.mp ((hmem y).mpr List.mem_cons_self)
+            with h' | h'
+          · exact h'.symm
+          · have h1 := hy x h
+            have h2 := hx y h'
+            omega
+      subst hxy
+      have htails : ∀ z, z ∈ xs ↔ z ∈ ys := by
+        intro z
+        constructor
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mp (List.mem_cons_of_mem _ hz))
+            with heq | h
+          · rw [heq] at hz
+            have := hx x hz
+            omega
+          · exact h
+        · intro hz
+          rcases List.mem_cons.mp ((hmem z).mpr (List.mem_cons_of_mem _ hz))
+            with heq | h
+          · rw [heq] at hz
+            have := hy x hz
+            omega
+          · exact h
+      rw [deltaDesc_sorted_ext hxs hys htails]
+
+theorem childHeads_pairwise_strict (L : List (List ℕ)) (m : List ℕ) :
+    (childHeads L m).Pairwise (fun a b => b.getLastD 0 < a.getLastD 0) := by
+  have hs := (sorted_childHeads L m).and
+    (List.nodup_iff_pairwise_ne.mp (nodup_childHeads L m))
+  refine hs.imp_of_mem ?_
+  intro q q' hqm hqm' hqq
+  obtain ⟨hle, hne⟩ := hqq
+  rcases Nat.lt_or_ge (q'.getLastD 0) (q.getLastD 0) with h | h
+  · exact h
+  · exfalso
+    apply hne
+    have e1 := (mem_childHeads.mp hqm).2
+    have e2 := (mem_childHeads.mp hqm').2
+    have hd : q.getLastD 0 = q'.getLastD 0 := by omega
+    conv_lhs => rw [concat_getLastD
+      (kept_ne_nil (isHead_kept (mem_childHeads.mp hqm).1))]
+    conv_rhs => rw [concat_getLastD
+      (kept_ne_nil (isHead_kept (mem_childHeads.mp hqm').1))]
+    rw [e1, e2, hd]
+
+theorem attachedAt_nodup (T : Table) (i : ℕ) : (attachedAt T i).Nodup :=
+  (List.mergeSort_perm _ _).nodup_iff.mpr (List.nodup_range.filter _)
+
+theorem rootsAt_nodup (T : Table) : (rootsAt T).Nodup :=
+  (List.mergeSort_perm _ _).nodup_iff.mpr (List.nodup_range.filter _)
+
+theorem attachedAt_pairwise_delta (T : Table) (i : ℕ) :
+    (attachedAt T i).Pairwise (fun j k =>
+      decide ((entryAt T k).delta ≤ (entryAt T j).delta) = true) := by
+  apply List.pairwise_mergeSort
+  · intro a b c h1 h2
+    rw [decide_eq_true_eq] at h1 h2 ⊢
+    omega
+  · intro a b
+    simp only [Bool.or_eq_true, decide_eq_true_eq]
+    omega
+
+theorem rootsAt_pairwise_delta (T : Table) :
+    (rootsAt T).Pairwise (fun j k =>
+      decide ((entryAt T k).delta ≤ (entryAt T j).delta) = true) := by
+  apply List.pairwise_mergeSort
+  · intro a b c h1 h2
+    rw [decide_eq_true_eq] at h1 h2 ⊢
+    omega
+  · intro a b
+    simp only [Bool.or_eq_true, decide_eq_true_eq]
+    omega
+
+/-- Attached entries map to the child heads at the parent's tail — order
+included (both are strictly delta-descending). -/
+theorem attachedAt_map_hsAt {T : Table} (hC : Canonical T) {i : ℕ}
+    (hi : i < T.length) :
+    (attachedAt T i).map (hsAt T)
+      = childHeads (stateOf T) (tailOf (stateOf T) (hsAt T i)) := by
+  refine deltaDesc_sorted_ext ?_ (childHeads_pairwise_strict _ _) ?_
+  · rw [List.pairwise_map]
+    refine ((attachedAt_pairwise_delta T i).and
+      (List.nodup_iff_pairwise_ne.mp (attachedAt_nodup T i))).imp_of_mem ?_
+    intro j k hj hk hjk
+    obtain ⟨hle, hne⟩ := hjk
+    rw [decide_eq_true_eq] at hle
+    obtain ⟨hjl, offj, hpj⟩ := mem_attachedAt.mp hj
+    obtain ⟨hkl, offk, hpk⟩ := mem_attachedAt.mp hk
+    rw [entryAt_eq hjl] at hpj
+    rw [entryAt_eq hkl] at hpk
+    rw [entryAt_eq hjl, entryAt_eq hkl] at hle
+    have hjb := hC.par_back j hjl _ hpj
+    have hkb := hC.par_back k hkl _ hpk
+    have hformj := hsAt_some hjl hpj hjb
+    have hformk := hsAt_some hkl hpk hkb
+    have hgj : (hsAt T j).getLastD 0 = T[j].delta := by
+      rw [hformj, List.getLastD_concat]
+    have hgk : (hsAt T k).getLastD 0 = T[k].delta := by
+      rw [hformk, List.getLastD_concat]
+    rw [hgj, hgk]
+    rcases Nat.lt_or_ge T[k].delta T[j].delta with h | h
+    · exact h
+    · exfalso
+      have hdeq : T[j].delta = T[k].delta := by omega
+      have hoffj : offj = T[i].len - 1 := hC.par_tail j hjl _ hpj hi
+      have hoffk : offk = T[i].len - 1 := hC.par_tail k hkl _ hpk hi
+      exact hne (hsAt_inj hC hjl hkl
+        (by rw [hformj, hformk, hdeq, hoffj, hoffk]))
+  · intro c
+    rw [List.mem_map, mem_childHeads]
+    constructor
+    · rintro ⟨j, hj, rfl⟩
+      obtain ⟨hjl, off, hpj⟩ := mem_attachedAt.mp hj
+      rw [entryAt_eq hjl] at hpj
+      have hjb : i < j := hC.par_back j hjl _ hpj
+      have hform := hsAt_some hjl hpj hjb
+      have hofftail : off = T[i].len - 1 := hC.par_tail j hjl _ hpj hi
+      refine ⟨(isHead_stateOf_iff hC).mpr ⟨j, hjl, rfl⟩, ?_⟩
+      rw [hform, List.dropLast_concat, tailOf, lenOf_stateOf hC hi, hofftail]
+    · rintro ⟨hqh, hqd⟩
+      obtain ⟨j, hjl, rfl⟩ := (isHead_stateOf_iff hC).mp hqh
+      refine ⟨j, mem_attachedAt.mpr ⟨hjl, ?_⟩, rfl⟩
+      cases hp : T[j].par with
+      | none =>
+          exfalso
+          have hform := hsAt_none hjl hp
+          rw [hform] at hqd
+          have htne : tailOf (stateOf T) (hsAt T i) ≠ [] := by
+            rw [tailOf]
+            intro hnil2
+            have := congrArg List.length hnil2
+            simp only [List.length_append, List.length_replicate,
+              List.length_nil] at this
+            have h2 := List.length_pos_iff.mpr (hsAt_ne_nil hC hi)
+            omega
+          exact htne (by rw [← hqd]; rfl)
+      | some pr =>
+          have hjb := hC.par_back j hjl pr hp
+          have hplen : pr.1 < T.length := by omega
+          have hform := hsAt_some hjl hp hjb
+          have hptail : pr.2 = T[pr.1].len - 1 :=
+            hC.par_tail j hjl pr hp hplen
+          rw [hform, List.dropLast_concat, tailOf, lenOf_stateOf hC hi]
+            at hqd
+          have hlp : 1 ≤ T[pr.1].len :=
+            hC.len_pos _ (List.getElem_mem hplen)
+          have hli : 1 ≤ T[i].len := hC.len_pos _ (List.getElem_mem hi)
+          obtain ⟨hpe, hoe⟩ := memChain_inj' hC hplen (by omega) hi
+            (by omega) hqd
+          refine ⟨pr.2, ?_⟩
+          rw [entryAt_eq hjl, hp, ← hpe]
+
+theorem rootsAt_map_hsAt {T : Table} (hC : Canonical T) :
+    (rootsAt T).map (hsAt T) = childHeads (stateOf T) [] := by
+  refine deltaDesc_sorted_ext ?_ (childHeads_pairwise_strict _ _) ?_
+  · rw [List.pairwise_map]
+    refine ((rootsAt_pairwise_delta T).and
+      (List.nodup_iff_pairwise_ne.mp (rootsAt_nodup T))).imp_of_mem ?_
+    intro j k hj hk hjk
+    obtain ⟨hle, hne⟩ := hjk
+    rw [decide_eq_true_eq] at hle
+    obtain ⟨hjl, hpj⟩ := mem_rootsAt.mp hj
+    obtain ⟨hkl, hpk⟩ := mem_rootsAt.mp hk
+    rw [entryAt_eq hjl] at hpj
+    rw [entryAt_eq hkl] at hpk
+    rw [entryAt_eq hjl, entryAt_eq hkl] at hle
+    have hgj : hsAt T j = [T[j].delta] := hsAt_none hjl hpj
+    have hgk : hsAt T k = [T[k].delta] := hsAt_none hkl hpk
+    rw [hgj, hgk]
+    show T[k].delta < T[j].delta
+    rcases Nat.lt_or_ge T[k].delta T[j].delta with h | h
+    · exact h
+    · exfalso
+      have hdeq : T[j].delta = T[k].delta := by omega
+      exact hne (hsAt_inj hC hjl hkl (by rw [hgj, hgk, hdeq]))
+  · intro c
+    rw [List.mem_map, mem_childHeads]
+    constructor
+    · rintro ⟨j, hj, rfl⟩
+      obtain ⟨hjl, hpj⟩ := mem_rootsAt.mp hj
+      rw [entryAt_eq hjl] at hpj
+      refine ⟨(isHead_stateOf_iff hC).mpr ⟨j, hjl, rfl⟩, ?_⟩
+      rw [hsAt_none hjl hpj]
+      rfl
+    · rintro ⟨hqh, hqd⟩
+      obtain ⟨j, hjl, rfl⟩ := (isHead_stateOf_iff hC).mp hqh
+      refine ⟨j, mem_rootsAt.mpr ⟨hjl, ?_⟩, rfl⟩
+      rw [entryAt_eq hjl]
+      cases hp : T[j].par with
+      | none => rfl
+      | some pr =>
+          exfalso
+          have hjb := hC.par_back j hjl pr hp
+          have hform := hsAt_some hjl hp hjb
+          rw [hform, List.dropLast_concat] at hqd
+          have := hsAt_ne_nil hC (show pr.1 < T.length by omega)
+          cases hs : hsAt T pr.1 with
+          | nil => exact this hs
+          | cons a as =>
+              rw [hs] at hqd
+              simp at hqd
+
+theorem flatMap_congr_mem {α β : Type} {l : List α} {f g : α → List β}
+    (h : ∀ a ∈ l, f a = g a) : l.flatMap f = l.flatMap g := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+      rw [List.flatMap_cons, List.flatMap_cons, h a List.mem_cons_self,
+        ih (fun a' ha' => h a' (List.mem_cons_of_mem _ ha'))]
+
+theorem flatMap_map' {α β γ : Type} (l : List α) (f : α → β)
+    (g : β → List γ) :
+    (l.map f).flatMap g = l.flatMap (fun a => g (f a)) := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+      rw [List.map_cons, List.flatMap_cons, List.flatMap_cons, ih]
+
+/-- **The T-walk simulation**: at matched fuel, the table-direct walk below
+entry `i` IS the state walk below its head. -/
+theorem walkT_eq_walkE {T : Table} (hC : Canonical T) :
+    ∀ fuel i, i < T.length →
+      walkT T fuel i = walkE (stateOf T) fuel (hsAt T i) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro i hi
+      rfl
+  | succ fuel ih =>
+      intro i hi
+      rw [walkT, walkE, entryAt_eq hi]
+      have hlive : (hsAt T i ∈ stateOf T) ↔ T[i].live = true := by
+        have := memChain_live_iff hC hi (hC.len_pos _ (List.getElem_mem hi))
+        simpa using this
+      have hchild : (attachedAt T i).flatMap (walkT T fuel)
+          = (childHeads (stateOf T) (tailOf (stateOf T) (hsAt T i))).flatMap
+              (walkE (stateOf T) fuel) := by
+        rw [← attachedAt_map_hsAt hC hi, flatMap_map']
+        refine flatMap_congr_mem ?_
+        intro j hj
+        exact ih j (mem_attachedAt.mp hj).1
+      rw [hchild, lenOf_stateOf hC hi]
+      by_cases hl : T[i].live = true
+      · rw [if_pos hl, if_pos (hlive.mpr hl)]
+      · rw [if_neg hl, if_neg (fun hm => hl (hlive.mp hm))]
+
+/-- Recovered-head lengths are bounded by the prefix `len` total. -/
+theorem hsAt_length_le {T : Table} (hC : Canonical T) :
+    ∀ i, i < T.length →
+      (hsAt T i).length ≤ ((T.take i).map RTEntry.len).sum + 1 := by
+  intro i
+  induction i using Nat.strongRecOn with
+  | ind i ih =>
+      intro hi
+      cases hp : T[i].par with
+      | none =>
+          rw [hsAt_none hi hp]
+          simp
+      | some p =>
+          have hpb := hC.par_back i hi p hp
+          have hpl : p.1 < T.length := by omega
+          rw [hsAt_some hi hp hpb]
+          have h1 := ih p.1 hpb hpl
+          have hp2 : p.2 = T[p.1].len - 1 := hC.par_tail i hi p hp hpl
+          have hlp : 1 ≤ T[p.1].len := hC.len_pos _ (List.getElem_mem hpl)
+          have hmin : min (p.1 + 1) i = p.1 + 1 := by omega
+          have h2 : T.take i = T.take (p.1 + 1) ++ (T.take i).drop (p.1 + 1)
+              := by
+            conv_lhs => rw [← List.take_append_drop (p.1 + 1) (T.take i)]
+            rw [List.take_take, hmin]
+          have h3 : ((T.take i).map RTEntry.len).sum
+              = ((T.take (p.1 + 1)).map RTEntry.len).sum
+                + (((T.take i).drop (p.1 + 1)).map RTEntry.len).sum := by
+            conv_lhs => rw [h2]
+            rw [List.map_append, List.sum_append]
+          have h4 : T.take (p.1 + 1) = T.take p.1 ++ [T[p.1]] := by
+            rw [List.take_succ, List.getElem?_eq_getElem hpl]
+            rfl
+          have h5 : ((T.take (p.1 + 1)).map RTEntry.len).sum
+              = ((T.take p.1).map RTEntry.len).sum + T[p.1].len := by
+            rw [h4, List.map_append, List.sum_append]
+            simp [RTEntry.len]
+          simp only [List.length_append, List.length_replicate,
+            List.length_cons, List.length_nil]
+          omega
+
+theorem foldr_max_le {S : ℕ} : ∀ (l : List ℕ), (∀ y ∈ l, y ≤ S) →
+    l.foldr max 0 ≤ S
+  | [], _ => by simp
+  | y :: ys, hall => by
+      simp only [List.foldr_cons]
+      exact Nat.max_le.mpr ⟨hall y List.mem_cons_self,
+        foldr_max_le ys (fun z hz => hall z (List.mem_cons_of_mem _ hz))⟩
+
+/-- The table's `len` total bounds every kept-chain length of its state. -/
+theorem maxLen_stateOf_le {T : Table} (hC : Canonical T) :
+    maxLen (stateOf T) ≤ (T.map RTEntry.len).sum := by
+  rw [maxLen]
+  refine foldr_max_le _ ?_
+  intro y hy
+  obtain ⟨c, hc, rfl⟩ := List.mem_map.mp hy
+  obtain ⟨i, hi, k, hk, rfl⟩ := (kept_stateOf_iff hC).mp hc
+  have h1 := hsAt_length_le hC i hi
+  have h2 : ((T.take i).map RTEntry.len).sum + T[i].len
+      ≤ (T.map RTEntry.len).sum := by
+    have hdrop : T.drop i = T[i] :: T.drop (i + 1) :=
+      List.drop_eq_getElem_cons hi
+    have h3 : (T.map RTEntry.len).sum
+        = ((T.take i).map RTEntry.len).sum
+          + ((T.drop i).map RTEntry.len).sum := by
+      conv_lhs => rw [← List.take_append_drop i T]
+      rw [List.map_append, List.sum_append]
+    rw [h3, hdrop]
+    simp only [List.map_cons, List.sum_cons]
+    omega
+  simp only [List.length_append, List.length_replicate]
+  omega
+
+/-- Fuel irrelevance: any two sufficient fuels emit the same walk. -/
+theorem walkE_fuel_ext {L : List (List ℕ)} (hnil : [] ∉ L) {h : List ℕ}
+    (hh : isHead L h = true) {f1 f2 : ℕ}
+    (h1 : maxLen L + 1 - h.length ≤ f1)
+    (h2 : maxLen L + 1 - h.length ≤ f2) :
+    walkE L f1 h = walkE L f2 h := by
+  refine chainBefore_sorted_ext (walkE_pairwise f1 h hh)
+    (walkE_pairwise f2 h hh) ?_
+  intro c
+  have hmemf : ∀ f, maxLen L + 1 - h.length ≤ f →
+      (c ∈ walkE L f h ↔ c ∈ L ∧ h <+: c) := by
+    intro f hf
+    constructor
+    · intro hc
+      exact walkE_sound f h c hh hc
+    · rintro ⟨hcl, hpre⟩
+      exact walkE_complete f h c hh hcl
+        (kept_of_live hcl (fun hn => hnil (hn ▸ hcl))) hpre hf
+  rw [hmemf f1 h1, hmemf f2 h2]
+
+theorem stateOf_nil_not_mem {T : Table} (hC : Canonical T) :
+    [] ∉ stateOf T := by
+  intro hm
+  obtain ⟨i, hi, k, hk, heq⟩ := mem_stateOf.mp hm
+  have hne := hsAt_ne_nil hC hi
+  cases hs : hsAt T i with
+  | nil => exact hne hs
+  | cons a as =>
+      rw [hs] at heq
+      simp at heq
+
+/-- **T-walk, literal (canonical tables)**: the table-direct walk of any
+canonical table IS the state walk of its denotation. -/
+theorem tableWalk_eq_walk {T : Table} (hC : Canonical T) :
+    tableWalk T = walk (stateOf T) := by
+  have hnil := stateOf_nil_not_mem hC
+  rw [tableWalk, walk, ← rootsAt_map_hsAt hC, flatMap_map']
+  refine flatMap_congr_mem ?_
+  intro j hj
+  obtain ⟨hjl, hpar⟩ := mem_rootsAt.mp hj
+  rw [walkT_eq_walkE hC _ j hjl]
+  refine walkE_fuel_ext hnil ((isHead_stateOf_iff hC).mpr ⟨j, hjl, rfl⟩)
+    ?_ ?_
+  · have hb := maxLen_stateOf_le hC
+    rw [fuelOf]
+    omega
+  · omega
+
+/-- **T-walk, literal — the generic faithfulness theorem**: building the run
+table and reading it back with the table-direct walk reproduces the display
+of the live-chain set, verbatim. The O(display)-time reading claim's formal
+face; no stability hypothesis. -/
+theorem tableWalk_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
+    tableWalk (tableOf L) = walk L :=
+  (tableWalk_eq_walk (canonical_tableOf L)).trans (walk_stateOf_tableOf hnil)
+
 /-! ## §8  Axiom audit -/
 
 #print axioms tail_attachment
@@ -3586,5 +6403,11 @@ theorem walk_stateOf_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
 #print axioms chainBefore_asymm
 #print axioms chainBefore_sorted_ext
 #print axioms walk_stateOf_tableOf
+#print axioms tableOf_materialize
+#print axioms tableOf_insert_split
+#print axioms tableOf_delete_split
+#print axioms tableOf_coalesce
+#print axioms tableWalk_eq_walk
+#print axioms tableWalk_tableOf
 
 end Sal.EmbedRGA.RunTable
