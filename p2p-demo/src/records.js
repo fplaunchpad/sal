@@ -33,7 +33,14 @@ export function commitRecord(node, cid) {
 
 /** Pure: a node's whole DAG as records + the heads meta. Shared by the git
  *  backend and the IndexedDB backend. `rebuildNode` is the inverse. */
-export function nodeRecords(node, { datatypeLabel = 'embedRGA' } = {}) {
+/** Which datatype a node carries, detected structurally (records.js must
+ *  not import datatype modules): peritext states are { text, marks }. */
+export function datatypeLabelOf(node) {
+  const st = node.head.state;
+  return st && typeof st === 'object' && st.text && st.marks !== undefined ? 'peritext' : 'embedRGA';
+}
+
+export function nodeRecords(node, { datatypeLabel = datatypeLabelOf(node) } = {}) {
   const records = [];
   for (const c of node.dag.values()) records.push(commitRecord(node, c.id));
   const heads = { head: node.headGid, replica: node.name, seq: node.seq,
@@ -55,6 +62,26 @@ export function topoOrder(records) {
   return out;
 }
 
+/** Records -> ingest-shaped wire commits (parents-before-children; the
+ *  shared root is skipped: every fresh Node already has it). Used by
+ *  rebuildNode and by IMPORT-into-an-existing-node (the editor's
+ *  open-.saldoc), where ingest's content-address gate + SHA dedup make the
+ *  operation tamper-proof and idempotent. */
+export function wireFromRecords(records) {
+  const wire = [];
+  for (const r of topoOrder(records)) {
+    if (r.kind === 'root') continue;
+    if (r.kind === 'op') {
+      wire.push({ gid: r.sha, kind: 'op', parents: r.parents, op: r.op, payload: r.payload });
+    } else if (r.kind === 'merge') {
+      wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
+    } else if (r.kind === 'compact') {
+      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
+    }
+  }
+  return wire;
+}
+
 /** Pure inverse of `nodeRecords`: rebuild a working Node from records + heads.
  *  Replays the records through `ingest` (content-address gated: a tampered
  *  record throws) then `mergeWithGid` to the persisted head.
@@ -64,21 +91,9 @@ export function topoOrder(records) {
  *  the name matches the persisted author (else it starts fresh). */
 export function rebuildNode(records, heads, datatype = compactibleEmbedRGA, opts = {}) {
   const asName = opts.name ?? heads.replica;
-  const ordered = topoOrder(records);
   const node = new Node(datatype, asName);
   for (const name of heads.roster ?? []) node.register(name);
-  const wire = [];
-  for (const r of ordered) {
-    if (r.kind === 'root') continue; // the fresh Node already has the shared root
-    if (r.kind === 'op') {
-      wire.push({ gid: r.sha, kind: 'op', parents: r.parents, op: r.op, payload: r.payload });
-    } else if (r.kind === 'merge') {
-      wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
-    } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
-    }
-  }
-  node.ingest(wire);
+  node.ingest(wireFromRecords(records));
   node.mergeWithGid(heads.head); // fast-forward to the persisted head
   if (asName === heads.replica) node.seq = heads.seq; // resume authoring
   return node;

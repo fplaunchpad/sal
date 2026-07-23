@@ -32,7 +32,7 @@ import {
 import { shouldCompact } from '../src/autogc.js';
 import { Presence, presenceSpan } from '../src/presence.js';
 import { openIdbKV, RefStore } from '../src/idbstore.js';
-import { nodeRecords } from '../src/records.js';
+import { nodeRecords, wireFromRecords } from '../src/records.js';
 // the COMPACTIBLE peritext: same datatype + the certified marks-layer GC
 // hooks (#110), so compactStable FIRES here instead of refusing
 import { compactiblePeritext } from '../../runtime/src/compact-peritext.js';
@@ -607,6 +607,32 @@ $('dlBtn').addEventListener('click', () => {
   st.className = 'status good';
   st.textContent = `downloaded ${ROOM}.saldoc.json (${bundle.records.length} commits). `
     + `To git: node scripts/bundle2git.mjs ~/Downloads/${ROOM}.saldoc.json --repo <path>`;
+});
+
+// OPEN (restore/import) a .saldoc bundle into THIS room: ingest through the
+// content-address gate (tamper-proof, SHA-dedup idempotent), then merge.
+// Same lineage fast-forwards; a different doc merges as a CRDT union.
+$('openBtn').addEventListener('click', () => $('openFile').click());
+$('openFile').addEventListener('change', async () => {
+  const st = $('gcStatus');
+  const f = $('openFile').files[0];
+  $('openFile').value = '';
+  if (!f) return;
+  try {
+    const bundle = JSON.parse(await f.text());
+    if (bundle.v !== 1 || !Array.isArray(bundle.records) || !bundle.heads) throw new Error('not a v1 .saldoc bundle');
+    if (bundle.datatype !== 'peritext') throw new Error(`bundle datatype is ${bundle.datatype}; this editor is peritext`);
+    flush();
+    const added = node.ingest(wireFromRecords(bundle.records));
+    node.mergeWithGid(bundle.heads.head);
+    onRemote(); // rebuild the view from the merged read, caret carried by ids
+    net.announce();
+    st.className = 'status good';
+    st.textContent = `imported ${f.name}: ${added} new commits (${bundle.records.length} in bundle), head ${short(node.headGid)}`;
+  } catch (e) {
+    st.className = 'status warnc';
+    st.textContent = `import failed: ${e.message}`;
+  }
 });
 
 // AUTO-GC: the leader fires the certified compaction when the coordinate
