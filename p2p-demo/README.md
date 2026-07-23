@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 46 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
+npm test             # 47 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, history pruning, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -151,6 +151,15 @@ bridge honest, and what would shrink the distance.
   durability, peritext marks; verified LIVE against the deployed Durable
   Object (author pushes, disconnects; a later reader converges).
 
+  The hub also **forgets settled history** (epoch-base pruning, below): on
+  each persist it attempts `pruneToEpochBase()` and mirrors the store to the
+  surviving dag (`pruneStored`), so a room's storage and wake-replay cost
+  stay O(document), not O(everything ever typed). Pinned in
+  `test/hub.test.js`: after a settled compaction the stored record count
+  drops to a handful, the genesis record is gone, the PRUNED store survives
+  a relay restart, and a fresh peer both converges from the epoch base and
+  keeps authoring on it.
+
 - **`src/relay.mjs` -- the server.** A `ws` relay that broadcasts within a room
   (or routes a `to:`-addressed message) and also serves the sal tree
   statically, so the browser editor imports the runtime ESM directly and the
@@ -266,6 +275,28 @@ full pre-checkpoint history, identical across peers, so every peer's
 `compactStable` computes the **identical** re-coding (same SHA) and the final
 `converge` dedups them. That is the demo's honest "GC under live sync": the
 certificate is the runtime's; the barrier is the demo linearizing epochs.
+
+## Epoch-base pruning: history is not forever
+
+Compaction shrinks the STATE; the commit DAG (and every durable store over
+it) still grew without bound, and a hub's wake-replay was O(history). The
+runtime's `pruneToEpochBase()` (see `../runtime/README.md`) closes this: once
+a compaction SETTLES -- the stability cut is complete and every author's
+frontier evidence has reached the compact epoch -- no registered peer can
+ever need the commits below it for a delta or a merge LCA, so they are
+dropped and the compact commit becomes a parent-free **epoch base**. Its
+content id still verifies without the parent (the hash covers the parent's
+gid string plus the state fingerprint), so `delta` to an empty peer ships the
+base instead of genesis, `ingest` gates it as usual, and a pristine replica
+adopts the head directly: a fresh peer bootstraps at O(document). The hub
+prunes on persist and mirrors its store; the editor attempts the prune on
+its slow tick (the compactor's own evidence is below the new epoch until its
+next authored run, so pruning trails GC by one flush) and drops the same
+records from IndexedDB. A returning writer is safe by the gate itself: its
+evidence at the epoch means everything it can still send descends from the
+base. `../runtime/test/epochbase.test.js` and the pruning test in
+`test/hub.test.js` pin bootstrap, refusal shapes, tamper rejection, and the
+pruned store surviving a restart.
 
 ## Running each stage
 

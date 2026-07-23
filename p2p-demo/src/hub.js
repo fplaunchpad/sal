@@ -96,7 +96,12 @@ export class HubPeer {
       await new Promise((r) => setTimeout(r, 300)); // coalesce bursts
       this.#persisting = null;
       try {
-        await this.store.persistNode(this.room, this.node, { datatypeLabel: this.datatypeLabel });
+        // certified history pruning: below a settled compact epoch nothing can
+        // be needed again (gate inside pruneToEpochBase); fresh peers
+        // bootstrap from the epoch base, so wake + storage stay O(document)
+        if (typeof this.node.pruneToEpochBase === 'function') this.node.pruneToEpochBase();
+        await this.store.persistNode(this.room, this.node,
+          { datatypeLabel: this.datatypeLabel, pruneStored: true });
       } catch (e) { console.warn(`[hub ${this.room}] persist failed: ${e.message}`); }
     })();
   }

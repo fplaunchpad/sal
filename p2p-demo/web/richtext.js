@@ -661,6 +661,32 @@ setInterval(() => {
   autoGcFloor = node.symbolCount();
 }, 5000);
 
+// EPOCH-BASE PRUNING (the answer to "why keep full history?"): once a
+// compaction SETTLES -- the cut is complete and every author's evidence has
+// reached the compact epoch -- history below the compact commit can never be
+// needed again (no delta, no LCA), so drop it. The compact commit becomes a
+// parent-free epoch base whose content id still verifies, fresh peers
+// bootstrap from it at O(document), and the local store forgets the same
+// records. pruneToEpochBase carries the gate; a refusal is just "not yet".
+// NOT inside runCertifiedGc: right after compacting, the compactor's own
+// evidence is still below the new epoch, so the gate opens only after the
+// next authored run. One attempt per head, on the same slow cadence.
+let pruneTried = null;
+setInterval(() => {
+  if (node.epoch === 0 || node.headGid === pruneTried) return;
+  pruneTried = node.headGid;
+  const pr = node.pruneToEpochBase();
+  if (!pr.pruned) return;
+  const st = $('gcStatus');
+  st.className = 'status good';
+  st.textContent = `history pruned: ${pr.pruned} commits below epoch ${pr.epoch} forgotten (${node.dag.size} kept)`;
+  renderStats();
+  if (store) {
+    store.persistNode(ROOM, node, { pruneStored: true }) // drop the same records from IndexedDB
+      .catch((e) => console.warn('[idb] prune persist failed:', e?.message ?? e));
+  }
+}, 5000);
+
 // ---- convergence badge -----------------------------------------------------
 function renderConv() {
   const mine = node.headGid;

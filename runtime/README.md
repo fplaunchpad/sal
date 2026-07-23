@@ -495,6 +495,24 @@ identical re-coding / same SHA); `test/replica.test.js` pins that a peer which
 has not itself reached the new epoch is refused a cross-epoch merge, rather than
 guessing.
 
+EPOCH-BASE PRUNING (history is not forever). `pruneToEpochBase()` drops all
+commits below the newest compact commit in the head's ancestry, turning that
+commit into a parent-free EPOCH BASE. The gate is the certified condition
+for forgetting: the stability cut must be COMPLETE and every replica in the
+frontier must have evidence AT OR ABOVE the compact epoch -- then no
+registered peer can ever need the dropped commits for a delta (its authored
+chain descends from its evidence, hence from the base) or a merge LCA (every
+future meet lands at or above the base). Refusals return `{ pruned: 0,
+reason }`. The compact commit's content id survives the surgery because the
+hash covers the parent's GID STRING plus the state fingerprint, not the
+parent object: `delta` to an unheard peer ships the base with its wire
+parent and epoch, `ingest` verifies a parent-less compact by recomputation
+(a tampered base state is refused), and `mergeWithGid` lets a PRISTINE
+replica (head = the shared root, nothing authored) adopt the incoming head
+directly -- so a fresh peer bootstraps at O(document), not O(history).
+`test/epochbase.test.js` pins bootstrap + post-bootstrap authoring, both
+refusal shapes, the tamper gate, and the records-layer round-trip.
+
 ## The head-sync discipline, and why
 
 The GC is sound ONLY if every merge is between two CURRENT heads. This is

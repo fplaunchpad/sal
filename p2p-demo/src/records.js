@@ -17,7 +17,16 @@ export function commitRecord(node, cid) {
   const sha = node.gid.get(cid);
   const parents = c.parents.map((p) => node.gid.get(p));
   const epoch = node.epochOf.get(cid);
-  if (c.parents.length === 0) return { sha, kind: 'root', parents, epoch };
+  if (c.parents.length === 0) {
+    // an EPOCH BASE (pruned history): re-serialize as a compact record with
+    // its original wire parent, so its content id checks out on ingest
+    const eb = node.epochBase?.get(cid);
+    if (eb) {
+      return { sha, kind: 'compact', parents: [eb], epoch,
+        state: node.datatype.encodeState(c.state) };
+    }
+    return { sha, kind: 'root', parents, epoch };
+  }
   if (c.op !== null) {
     return { sha, kind: 'op', parents, epoch,
       op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };

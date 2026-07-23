@@ -405,6 +405,20 @@ marks-aware op layer + browser view; `test/peritextbind.test.js`). The remaining
    and GC. Availability + durability + peritext round-trip pinned in
    `test/hub.test.js`; live-verified on the deployed DO (push, leave, a
    later peer converges from the hub alone).
+4b. DONE: EPOCH-BASE PRUNING (the "O(history) is scary" answer). The
+   runtime's `pruneToEpochBase()` drops history below the newest compact
+   commit once the compaction has SETTLED (cut complete + every author's
+   evidence at the epoch); the compact commit becomes a parent-free epoch
+   base whose content id still verifies (hash covers the parent gid string
+   + state fingerprint), `delta` ships it to unheard peers, `ingest` gates
+   it by recomputation, and a pristine replica adopts the head, so fresh
+   peers bootstrap at O(document). The hub prunes on persist and mirrors
+   its store (`pruneStored`); the editor prunes on its slow tick and drops
+   the same records from IndexedDB. This also RELIEVES edge A for readers:
+   only authors pin the horizon now (their evidence gates the prune), and
+   an author's returning chain descends from its evidence, hence from the
+   base. `runtime/test/epochbase.test.js` + the pruning test in
+   `test/hub.test.js` (pruned store survives a relay restart).
 5. Invite links + local directory (`listDocs`, exists) for discovery (rooms
    exist too).
 6. Keypair identity, signatures, payload encryption (edge D).

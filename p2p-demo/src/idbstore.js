@@ -110,6 +110,15 @@ export class RefStore {
     const { records, heads } = nodeRecords(node, opts);
     await this.putObjects(docId, records); // idempotent: re-putting an existing sha is a no-op overwrite
     await this.setMeta(docId, heads);
+    if (opts.pruneStored) {
+      // mirror the dag exactly: drop stored records the node no longer holds
+      // (epoch-base pruning removed them; content addressing keeps this safe)
+      const keep = new Set(records.map((r) => r.sha));
+      const pre = docId + SEP;
+      for (const [k] of await this.kv.entries('objects')) {
+        if (k.startsWith(pre) && !keep.has(k.slice(pre.length))) await this.kv.delete('objects', k);
+      }
+    }
     return { head: heads.head, commits: records.length };
   }
   async loadNode(docId, datatype = compactibleEmbedRGA, opts = {}) {

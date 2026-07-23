@@ -49,6 +49,7 @@ export class DistributedReplica {
     this.registered = new Set([name]);  // replica ids heard of / rostered
     this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
     this.epochs = [null];               // e -> translate(epoch e-1 -> e)
+    this.epochBase = new Map();         // local id -> pruned parent's gid (epoch bases)
     this.epochOf = new Map();           // local id -> epoch number
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
     this.epochOf.set(root.id, 0);
@@ -132,7 +133,7 @@ export class DistributedReplica {
     for (const cid of this.dag.ancestorSet(this.#headId)) {
       if (theirGids.has(this.gid.get(cid))) continue;
       const c = this.dag.get(cid);
-      if (c.parents.length === 0) continue; // root shared, never shipped
+      if (c.parents.length === 0 && !this.epochBase.has(cid)) continue; // root shared, never shipped
       missing.push(cid);
     }
     missing.sort((x, y) => Number(x.slice(1)) - Number(y.slice(1)));
@@ -143,8 +144,10 @@ export class DistributedReplica {
         return { gid: this.gid.get(cid), kind: 'op', parents,
           op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
       }
-      if (c.parents.length === 1) {
-        return { gid: this.gid.get(cid), kind: 'compact', parents,
+      const eb = this.epochBase.get(cid);
+      if (c.parents.length === 1 || eb) {
+        return { gid: this.gid.get(cid), kind: 'compact',
+          parents: eb ? [eb] : parents,
           epoch: this.epochOf.get(cid), state: this.datatype.encodeState(c.state) };
       }
       return { gid: this.gid.get(cid), kind: 'merge', parents };
@@ -170,7 +173,8 @@ export class DistributedReplica {
     for (const wc of wireCommits) {
       if (this.byGid.has(wc.gid)) continue;
       const localParents = wc.parents.map((g) => this.byGid.get(g));
-      if (localParents.some((p) => p === undefined)) {
+      if (localParents.some((p) => p === undefined)
+          && !(wc.kind === 'compact' && wc.parents.length === 1)) {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);
       }
       let op = null, state, epoch;
@@ -181,6 +185,28 @@ export class DistributedReplica {
         this.registered.add(wc.op.replica);
         this.authors.add(wc.op.replica);
       } else if (wc.kind === 'compact') {
+        if (localParents[0] === undefined) {
+          // EPOCH-BASE BOOTSTRAP: a compact commit whose parent was pruned
+          // below a settled cut. Its content id is verifiable WITHOUT the
+          // parent (hash({compact, p, fp}): p is the parent's gid STRING from
+          // the wire, fp recomputes from the inline state), so the content
+          // gate holds; structurally it enters as an epoch root (parents [],
+          // the wire parent kept for identity/serialization). This is what
+          // lets a fresh peer join a pruned history at O(document) instead
+          // of replaying genesis.
+          if (!Number.isInteger(wc.epoch)) throw new Error('epoch base without an epoch');
+          state = this.datatype.decodeState(wc.state);
+          const c = this.dag.add({ parents: [], op: null, state });
+          this.epochBase.set(c.id, wc.parents[0]); // pruned parent's gid: hash + re-serialization
+          this.epochOf.set(c.id, wc.epoch);
+          while (this.epochs.length <= wc.epoch) this.epochs.push(null);
+          const g = commitContentId({ parents: [null], op: null, state }, [wc.parents[0]],
+            { fingerprint: this.datatype.fingerprint, hash: this.hash });
+          if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+          this.gid.set(c.id, g); this.byGid.set(g, c.id);
+          added++;
+          continue;
+        }
         state = this.datatype.decodeState(wc.state);
         epoch = this.epochOf.get(localParents[0]) + 1;
         while (this.epochs.length <= epoch) this.epochs.push(null);
@@ -207,6 +233,14 @@ export class DistributedReplica {
     if (b === undefined) throw new Error(`mergeWithGid: ${gid} not present (ingest first)`);
     const a = this.#headId;
     if (a === b) return this.headGid;
+    // PRISTINE ADOPT: a replica that holds only the shared root (never
+    // authored, never merged) may not share ancestry with a PRUNED history
+    // (its chain starts at an epoch base, not the root). Nothing local can
+    // be lost, so adopt the target head outright.
+    const headC = this.dag.get(a);
+    if (this.seq === 0 && headC.parents.length === 0 && !this.epochBase.has(a) && headC.op === null) {
+      this.#headId = b; this.#refresh(); return this.headGid;
+    }
     if (this.dag.isAncestor(a, b)) { this.#headId = b; this.#refresh(); return this.headGid; }
     if (this.dag.isAncestor(b, a)) return this.headGid;
     const epoch = this.#mergeEpoch(a, b);
@@ -342,6 +376,7 @@ export class DistributedReplica {
         this.byGid.delete(this.gid.get(cid));
         this.gid.delete(cid);
         this.epochOf.delete(cid);
+        this.epochBase.delete(cid);
       }
     }
     return res;
@@ -354,6 +389,47 @@ export class DistributedReplica {
     return typeof this.datatype.saveBytes === 'function'
       ? this.datatype.saveBytes(this.head.state)
       : this.snapshotBytes();
+  }
+
+  /** PRUNE HISTORY BELOW THE NEWEST COMPACT COMMIT, turning it into an
+   *  EPOCH BASE (parents [], wire parent kept for its content id). Gated on
+   *  the certified condition for forgetting: the stability cut is complete
+   *  AND every registered replica's evidence has reached the compact epoch,
+   *  so no registered peer can ever need the dropped commits for a delta or
+   *  an LCA again; fresh peers bootstrap from the base (delta ships it,
+   *  ingest verifies it parent-free, a pristine replica adopts it). Returns
+   *  { pruned, epoch } or { pruned: 0, reason }. */
+  pruneToEpochBase() {
+    let K = null, eK = -1;
+    for (const cid of this.dag.ancestorSet(this.#headId)) {
+      const c = this.dag.get(cid);
+      const isCompact = c.op === null && (c.parents.length === 1 || this.epochBase.has(cid));
+      const e = this.epochOf.get(cid);
+      if (isCompact && e > eK) { K = cid; eK = e; }
+    }
+    if (K === null) return { pruned: 0, reason: 'no compact commit in ancestry' };
+    const c = this.dag.get(K);
+    if (c.parents.length === 0) return { pruned: 0, reason: 'already the epoch base' };
+    const sc = this.stableCut();
+    if (!sc.complete) return { pruned: 0, reason: `cut incomplete: missing ${sc.missing.join(',') || '?'}` };
+    for (const [rep, e] of this.frontier) {
+      if ((this.epochOf.get(e.id) ?? 0) < eK) {
+        return { pruned: 0, reason: `evidence from ${rep} still below epoch ${eK}` };
+      }
+    }
+    const below = this.dag.ancestorSet(c.parents[0]); // reflexive: everything at/under K's parent
+    this.epochBase.set(K, this.gid.get(c.parents[0]));
+    this.dag.sever(K);
+    let pruned = 0;
+    for (const cid of below) {
+      if (!this.dag.has(cid)) continue;
+      this.dag.remove(cid);
+      const g = this.gid.get(cid);
+      this.byGid.delete(g); this.gid.delete(cid); this.epochOf.delete(cid); this.epochBase.delete(cid);
+      pruned++;
+    }
+    this.#refresh();
+    return { pruned, epoch: eK };
   }
 
   /** Whole-state snapshot bytes (a cost probe / bulk-catch-up baseline).

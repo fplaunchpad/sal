@@ -19,6 +19,14 @@ export class Dag {
   #nextId = 0;
 
   /** Append a commit. Parents must already be in the store. */
+  /** Replace a commit with a PARENTLESS clone keeping the same id (epoch-
+   *  base severing after certified pruning). State/op/id untouched. */
+  sever(id) {
+    const c = this.#commits.get(id);
+    if (!c) throw new Error(`sever: unknown commit ${id}`);
+    this.#commits.set(id, Object.freeze({ id: c.id, parents: Object.freeze([]), op: c.op, state: c.state }));
+  }
+
   add({ parents = [], op = null, state }) {
     for (const p of parents) {
       if (!this.#commits.has(p)) throw new Error(`unknown parent commit: ${p}`);
