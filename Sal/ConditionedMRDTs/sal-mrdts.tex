@@ -22,6 +22,7 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{vc}{VC}
+\newtheorem{fvc}{Flat VC}
 \newtheorem*{finding}{Finding}
 
 % ---------- notation: the metatheory (Part I) ----------
@@ -351,24 +352,45 @@ under \lean{Development/}; each cited theorem kernel-checked).
 \paragraph{Data type and implementation.} A replicated data type of
 \emph{type} $\tau = \langle O_\tau, Q_\tau, \mathit{Val}_\tau\rangle$
 exposes a set of update operations $O_\tau$, a set of query operations
-$Q_\tau$, and a domain of query return values $\mathit{Val}_\tau$. An
-\emph{MRDT implementation} of $\tau$ is a tuple
+$Q_\tau$, and a domain of query return values $\mathit{Val}_\tau$.
+
+\begin{definition}[flat MRDT signature]
+\label{def:mrdtsig}
+An \emph{MRDT implementation} of $\tau$ is a tuple
 \[
   \M{D} \;=\; \langle \Sigma,\; \Sinit,\; \mathsf{do},\; \mergeL,\;
   \mathsf{query},\; \rcrel \rangle ,
 \]
 where $\Sigma$ is the space of replica states with initial state
-$\Sinit$; $\mathsf{do} : \Sigma \times \M{E} \to \Sigma$ applies an
-\emph{event} --- an update-operation instance $e = (t, r, o)$ carrying a
-globally unique timestamp $t$, its origin replica $r$, and the operation
-$o \in O_\tau$; $\mergeL : \Sigma^3 \to \Sigma$ is the three-way merge,
-whose first argument is the state at the lowest common ancestor of the
-two versions being merged; $\mathsf{query} : \Sigma \times Q_\tau \to
-\mathit{Val}_\tau$ reads a state; and $\rcrel \subseteq O_\tau
-\times O_\tau$ is the \emph{conflict-resolution} relation, consulted to
-order concurrent non-commuting operations (it is the data-type designer's
-declaration of who wins a race). Queries never change state and play no
-role in the metatheory; the theory below reads the implementation as
+$\Sinit \in \Sigma$; $\mathsf{do} : \Sigma \times \M{E} \to \Sigma$
+applies an \emph{event} --- an update-operation instance $e = (t, r, o)$
+carrying a globally unique timestamp $t$, its origin replica $r$, and
+the operation $o \in O_\tau$; $\mergeL : \Sigma^3 \to \Sigma$ is the
+three-way merge, whose first argument is the state at the lowest common
+ancestor of the two versions being merged; $\mathsf{query} : \Sigma
+\times Q_\tau \to \mathit{Val}_\tau$ reads a state; and $\rcrel :
+\M{E} \times \M{E} \to \{\textsf{Fst\_then\_snd},\,
+\textsf{Snd\_then\_fst},\, \Either\}$ is the
+\emph{conflict-resolution} relation, consulted to order concurrent
+non-commuting operations (it is the data-type designer's declaration of
+who wins a race; $\textsf{Snd\_then\_fst}$ is the conventional mirror of
+$\textsf{Fst\_then\_snd}$, and production instances do return it, so the
+VCs below only ever test the $\textsf{Fst\_then\_snd}$ direction); we
+write $e_1 \rc e_2$ for $\rcrel(e_1,e_2) =
+\textsf{Fst\_then\_snd}$.%
+\footnote{In the mechanization the ternary signature \lean{MRDTSig}
+extends the binary \lean{CRDTSig} (which contributes $\Sigma$, $\Sinit$,
+$\mathsf{do}$, $\mathsf{query}$, $\rcrel$, and a \emph{binary}
+$\Merge$) with the field $\mergeL$ and one reuse contract,
+\lean{merge\_init\_slice}: $\forall a\, b,\ \mergeL(\Sinit, a, b) =
+\Merge(a, b)$, pinning the inherited binary merge to the
+$l \coloneqq \Sinit$ slice so the binary corpus runs unchanged on the
+init-LCA sub-family.}
+\hfill\lean{MRDTSig}
+\end{definition}
+
+Queries never change state and play no role in the metatheory; the
+theory below reads the implementation as
 $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL, \rcrel\rangle$.
 
 \paragraph{Describing an MRDT: the counter.} To describe an MRDT one
@@ -406,23 +428,41 @@ added. Such data types are \emph{flat}, and for them the metatheory of
 states. But a data type whose operations carry \emph{preconditions} ---
 insert under a node that must exist, delete a node that must be live ---
 breaks that quantification: its commutation equations are simply false at
-nonsense states. The full signature therefore extends the tuple with
-three declarations (\lean{ConditionedMRDTSig}; formalized in
-\S\ref{sec:cvcs}):
+nonsense states. The full signature therefore extends the tuple.
+
+\begin{definition}[conditioned MRDT signature]
+\label{def:condsig}
+A \emph{conditioned} MRDT implementation extends the flat tuple with two
+declarations,
 \[
   \M{D} \;=\; \langle \Sigma, \Sinit, \mathsf{do}, \mergeL, \rcrel,\;
-  \Inv,\; \app \rangle
-  \quad\text{together with}\quad {\eqobs} \subseteq \Sigma \times \Sigma ,
-\]
-where $\Inv$ is a state invariant (a shape over-approximation of
-reachability), $\app$ an applicability predicate (when an event is
-sensible at a state), and $\eqobs$ an observational equivalence (what
-queries can distinguish; representation residue is quotiented away).
-Commutation is then required only at $\Inv$-states where both events are
-applicable. Flat data types take $\Inv = \app = \top$ and
-${\eqobs} = {=}$, collapsing the general signature to the plain one ---
-one framework, of which \S\ref{sec:setting}--\S\ref{sec:catalog} is the
-flat instance and \S\ref{sec:condmeta} onwards the general case.
+  \Inv,\; \app \rangle, \qquad
+  \Inv : \Sigma \to \mathrm{Prop}, \quad
+  \app : \M{E} \times \Sigma \to \mathrm{Prop},
+  \]
+together with an observational equivalence
+${\eqobs} \subseteq \Sigma \times \Sigma$: $\Inv$ is a state invariant
+(a shape over-approximation of reachability), $\app$ an applicability
+predicate (when an event is sensible at a state --- it may read the
+event's timestamp, so it is a generation-time guard, not a shape
+predicate), and $\eqobs$ an observational equivalence (what queries can
+distinguish; representation residue is quotiented away). In the
+mechanization $\Inv$ and $\app$ are fields of the signature; $\eqobs$
+is not --- the quotient layers carry it as a parameter --- which is why
+the tuple above says ``together with''.
+\hfill\lean{ConditionedMRDTSig}
+\end{definition}
+
+Commutation is then required only at $\Inv$-states where both events
+are applicable: the derived \emph{conditioned commutation}
+(\lean{ConditionedMRDTSig.commutesOn}) demands
+$e_1(e_2(\sigma)) = e_2(e_1(\sigma))$ only for $\sigma$ with
+$\Inv(\sigma)$, $\app(e_1,\sigma)$, and $\app(e_2,\sigma)$. Its VCs are
+formalized in \S\ref{sec:cvcs}. Flat data types take
+$\Inv = \app = \top$ and ${\eqobs} = {=}$, collapsing the general
+signature to the plain one --- one framework, of which
+\S\ref{sec:setting}--\S\ref{sec:catalog} is the flat instance and
+\S\ref{sec:condmeta} onwards the general case.
 
 \paragraph{The running hard example: sequences with physical deletion.}
 The datatype class that forces the general signature is the replicated
@@ -458,20 +498,144 @@ deliver. The definitions are the paper's, with one correction flagged
 where it occurs.
 
 \paragraph{Signature.} An MRDT is $\langle \Sigma, \Sinit, \mathsf{do},
-\mergeL, \rcrel\rangle$ as in \S\ref{sec:mrdts}, read flat for now
-($\Inv = \app = \top$, ${\eqobs} = {=}$; the general case resumes in
-\S\ref{sec:condmeta}). We write $e(\sigma)$ for
+\mergeL, \rcrel\rangle$ as in Definition~\ref{def:mrdtsig}, read flat
+for now ($\Inv = \app = \top$, ${\eqobs} = {=}$; the general case
+resumes in \S\ref{sec:condmeta}). We write $e(\sigma)$ for
 $\mathsf{do}(\sigma,e)$, and $e_1 \comm e_2$ when
-$e_1(e_2(\sigma)) = e_2(e_1(\sigma))$ for every $\sigma$.
+$e_1(e_2(\sigma)) = e_2(e_1(\sigma))$ for every $\sigma$
+(\lean{CRDTSig.commutes}).
+
+\paragraph{Formal preliminaries.} Events are triples $e = (t,r,o)$ with
+$\mathsf{time}(e) = t$, $\mathsf{rep}(e) = r$, $\mathsf{op}(e) = o$. We
+write $\fold(\sigma, \pi)$ for the left fold
+$e^n(\cdots e^1(\sigma)\cdots)$ of a list $\pi = e^1 \cdots e^n$
+(\lean{applySeq}). Two events are \emph{distinct}
+(\lean{distinctOps}) when their \emph{timestamps} differ --- timestamps
+are globally unique, so between events of one execution this is
+inequality of the events --- and \emph{cross-replica}
+(\lean{differentReplicas}) when their origin replicas differ. A list
+$\pi$ \emph{enumerates} a set $E$ (\lean{listPermOf}) when it is
+duplicate-free and contains exactly the elements of $E$; $\pi$
+\emph{respects} a relation $R$ (\lean{respects}) when no pair occurs
+against $R$: $i < j$ implies $\neg R(e^j, e^i)$ (stated elementwise;
+$R$ need not be transitive). The \emph{recorded past} of an event
+(\lean{downset}), relative to the ambient configuration's visibility,
+is
+\[
+  \dow{e} \;\coloneqq\;
+  \{\, x \mid x = e \;\vee\; x \,({\vis} \wedge {\ncomm})^{+}\, e \,\},
+\]
+the transitive closure into $e$ of visible \emph{non-commuting}
+predecessor edges together with $e$ itself: the fragment of $e$'s causal
+past that a fold can still see (commuting predecessors are invisible to
+states).
+
+\emph{Convention (plumbing).} Three pieces of Lean plumbing are folded
+out of every display below, once and for all: (i) every signature
+carries decidable equality on $\Sigma$ and on the operation alphabet
+(fields \lean{dec\_state}, \lean{dec\_op} of \lean{CRDTSig}), and
+framework files use classical choice; (ii) the $\sigma$-layer
+definitions (the set-relative order, canonical states, the join and the
+merge VCs) are stated over the \emph{replica-keyed core} of a
+configuration --- its events and visibility only --- and a ternary
+configuration $C$ enters them through the forgetful
+\lean{Configuration.core}; the displays do not distinguish $C$ from its
+core; (iii) where a display quantifies over configurations, the six core
+invariants of Definition~\ref{def:config} are ambient; (iv) the pruning
+operators of \S\ref{sec:gc} carry two definedness side conditions (the
+pinned root and every allocated head lie outside the dropped set),
+discharged once by the GC run invariant, and displays write the pruned
+configuration without repeating them. No other
+hypothesis is elided.
 
 \paragraph{Executions.} A configuration carries a \emph{store}: a DAG of
 versions, each holding a state and the set of events that produced it,
-with per-replica heads. Transitions fork a replica, apply a fresh event at
-a head, query, or \textbf{merge}: pick heads $v_1, v_2$, find their LCA
-$v_\ell$ in the DAG, and install a new version with state
-$\mergeL(\sigma_{v_\ell}, \sigma_{v_1}, \sigma_{v_2})$ and event set
-$L(v_1) \cup L(v_2)$. Visibility $\vis$ records what each event's issuing
-replica had seen.
+with per-replica heads; transitions fork a replica, apply a fresh event
+at a head, merge two heads through their LCA, or query. The model is
+fixed by the next two definitions.
+
+\begin{definition}[ternary configuration]
+\label{def:config}
+A configuration $C$ of $\M{D}$ consists of:
+\begin{itemize}[leftmargin=2em]
+\item a \emph{replica-keyed core}: partial per-replica maps $N$ (head
+  state) and $L$ (observed event set) and a visibility relation $\vis$
+  over events, subject to six invariants --- $N$ and $L$ share a
+  domain; every $\vis$-edge has its source, and its target, observed at
+  some replica; causal closure ($a \vis b$ and $b$ observed at $r$
+  imply $a$ observed at $r$); timestamp uniqueness across observed
+  events; causal monotonicity ($a \vis b$ implies
+  $\mathsf{time}(a) < \mathsf{time}(b)$, the Lamport-clock guarantee);
+  and same-replica totality (two distinct observed events of one
+  replica are $\vis$-comparable). $E(C)$ denotes the set of events
+  observed anywhere (\lean{Configuration.events});
+\item a \emph{ranked version store}: a partial map $\mathsf{ver}$ from
+  versions ($v \in \mathbb{N}$, the allocation rank) to pairs
+  $(\sigma_v, L(v))$ of a state and an event set, a partial per-replica
+  head-version map, and a parent list $\mathsf{parents}(v)$, subject
+  to: parents have strictly smaller rank; version $0$ is
+  $(\Sinit, \emptyset)$; a replica's head version carries exactly that
+  replica's $(N(r), L(r))$; every registered state satisfies $\Inv$;
+  and the \emph{lca-events shape} --- for all registered $v_1, v_2,
+  v_\ell$ with $v_\ell$ an LCA of $v_1, v_2$,
+  $L(v_\ell) = L(v_1) \cap L(v_2)$. The last clause is carried as a
+  structure field; \S\ref{sec:lca} proves it maintainable, so it is an
+  invariant of the system, not an assumption
+  (Remark~\ref{rem:lcafield}).
+\end{itemize}
+Ancestry and LCAs are read off the parent lists:
+$\mathsf{Reaches}(a, v)$ is the reflexive--transitive closure of the
+parent edge $p \in \mathsf{parents}(v)$ (\lean{Reaches}), and $v_\ell$
+is an \emph{LCA} of $v_1, v_2$ when it reaches both and dominates every
+common ancestor (\lean{IsLCA}):
+\[
+  \mathsf{Reaches}(v_\ell, v_1) \,\wedge\, \mathsf{Reaches}(v_\ell, v_2)
+  \,\wedge\, \forall w.\;
+  \mathsf{Reaches}(w, v_1) \wedge \mathsf{Reaches}(w, v_2)
+  \Rightarrow \mathsf{Reaches}(w, v_\ell).
+\]
+\hfill\lean{Configuration}
+\end{definition}
+
+\begin{definition}[the ternary transition system]
+\label{def:step3}
+The labelled transition system $\mathsf{Step3}$ has four rules:
+\begin{itemize}[leftmargin=2em]
+\item \textsc{CreateReplica}$(r)$: requires $N(r)$ undefined; installs
+  $N(r) \coloneqq \Sinit$, $L(r) \coloneqq \emptyset$, head at
+  version~$0$; store and visibility unchanged.
+\item \textsc{Apply}$(t,r,o)$: requires $r$'s head version $v$ with
+  $\mathsf{ver}(v) = (\sigma, E_v)$, \emph{store-wide} timestamp
+  freshness (no event observed anywhere in $C$, and no event of any
+  registered version, has timestamp $t$), and a fresh slot
+  $v_{\mathrm{new}} > v$; allocates $v_{\mathrm{new}} \coloneqq
+  (e(\sigma),\, E_v \cup \{e\})$ for $e = (t,r,o)$ with parent $[v]$,
+  extends $\vis$ by $E_v \times \{e\}$, and moves $r$'s head to
+  $v_{\mathrm{new}}$.
+\item \textsc{Merge}$(r_1,r_2)$ --- the rule the metatheory lives in:
+  \[
+  \frac{\begin{array}{c}
+    \mathsf{head}(r_1) = v_1 \quad \mathsf{head}(r_2) = v_2 \quad
+    \mathsf{ver}(v_i) = (\sigma_i, E_i) \quad
+    \mathsf{IsLCA}(v_1, v_2, v_\ell) \quad
+    \mathsf{ver}(v_\ell) = (\sigma_\ell, E_\ell) \\
+    \mathsf{ver}(v_m)\ \text{unallocated} \quad v_1 < v_m \quad v_2 < v_m
+  \end{array}}{%
+    \mathsf{ver}(v_m) \coloneqq
+    \bigl(\mergeL(\sigma_\ell, \sigma_1, \sigma_2),\; E_1 \cup E_2\bigr),
+    \quad \mathsf{parents}(v_m) \coloneqq [v_1, v_2],
+    \quad \mathsf{head}(r_1) \coloneqq v_m}
+  \]
+  with visibility unchanged. Merge is \emph{gated} on the existence of
+  an LCA; criss-cross configurations disable it (\S\ref{sec:vlca} lifts
+  the gate).
+\item \textsc{Query}$(r,q)$: reads $N(r)$; configuration unchanged.
+\end{itemize}
+The initial configuration (\lean{initConfig}) has one replica at
+$\Sinit$ observing no events and the one-node DAG $\{0\}$; reachability
+is along $\mathsf{Step3}$ (\lean{labeledTS3}).
+\hfill\lean{Step3}
+\end{definition}
 
 \paragraph{RA-linearizability, per version.} Write $e_1 \parallel e_2$
 when neither $e_1 \vis e_2$ nor $e_2 \vis e_1$ (concurrency).
@@ -489,9 +653,13 @@ a visible non-commuting pair is ordered by visibility; a concurrent pair
 whose conflict $\rcrel$ resolves is ordered by $\rcrel$ ---
 unless $e_2$ is already \emph{absorbed} (overwritten) by a later
 non-commuting event of $E$. The paper's order $\mathsf{lo}$ is the
-variant whose absorber clause ranges over the whole configuration; since
-a $\mathsf{lo}$-edge asserts \emph{no absorber anywhere},
-$\mathsf{lo} \subseteq \loE{E}$ pointwise, for every $E$.
+variant whose absorber clause ranges over the whole configuration
+(\lean{Sal.Emulation.lo}; ternary mirror \lean{Configuration.lo});
+since a $\mathsf{lo}$-edge asserts \emph{no absorber anywhere},
+$\mathsf{lo} \subseteq \loE{E}$ pointwise, for every $E$
+(\lean{loOn\_of\_lo}), and $\loE{E}$ is antitone in $E$ --- growing the
+set only adds absorbers, hence removes edges (\lean{loOn\_mono}).
+\hfill\lean{loOn}
 \end{definition}
 
 \begin{definition}[RA-linearizability]
@@ -564,27 +732,80 @@ rather than the sides (\S\ref{sec:defeater}).
 published proof}
 \label{sec:lca}
 
-Everything above silently used:
+Everything above silently used the LCA lemma: in every reachable
+configuration, an LCA's event set is the intersection of the two sides'.
+This is what lets merge VCs be stated over \emph{event sets}: the state
+the merge receives as $l$ is the canonical state of exactly the
+intersection of the two sides' histories. The lemma is true --- but it
+is a \emph{global induction over the reachable store}, not a local
+fact. The invariant the induction threads is:
+
+\begin{definition}[store invariant]
+\label{def:storeinv}
+For a version store $(\mathsf{ver}, \mathsf{parents})$, the
+\emph{store invariant} demands:
+\begin{itemize}[leftmargin=2em]
+\item \emph{parents allocated}: $p \in \mathsf{parents}(v)$ implies
+  $\mathsf{ver}(p)$ is defined;
+\item \emph{event monotonicity}: $p \in \mathsf{parents}(v)$,
+  $\mathsf{ver}(p) = (\sigma_p, E_p)$, and
+  $\mathsf{ver}(v) = (\sigma_v, E_v)$ imply $E_p \subseteq E_v$;
+\item \emph{origin} (generator uniqueness): if
+  $\mathsf{ver}(v) = (\sigma, E)$ and $e \in E$, then there is a
+  version $v_0$ with $\mathsf{ver}(v_0) = (\sigma_0, E_0)$ and
+  $e \in E_0$ such that \emph{every} version $w$ with
+  $\mathsf{ver}(w) = (\sigma_w, E_w)$ and $e \in E_w$ satisfies
+  $\mathsf{Reaches}(v_0, w)$.
+\end{itemize}
+\hfill\lean{StoreInv}
+\end{definition}
 
 \begin{lemma}[LCA lemma]
 \label{lem:lca}
-In every reachable configuration, if $v_\ell$ is an LCA of versions $v_1,
-v_2$ in the store's DAG, then $L(v_\ell) = L(v_1) \cap L(v_2)$.
+Let $(\mathsf{ver}, \mathsf{parents})$ satisfy the store invariant
+(Definition~\ref{def:storeinv}), let $v_\ell$ be an LCA of $v_1, v_2$,
+and let all three versions be registered:
+$\mathsf{ver}(v_1) = (\sigma_1, E_1)$,
+$\mathsf{ver}(v_2) = (\sigma_2, E_2)$,
+$\mathsf{ver}(v_\ell) = (\sigma_\ell, E_\ell)$. Then
+\[
+  E_\ell \;=\; E_1 \cap E_2 .
+\]
+\hfill\lean{lca\_events\_of\_storeInv}
 \end{lemma}
 
-This is what lets merge VCs be stated over \emph{event sets}: the state
-the merge receives as $l$ is the canonical state of exactly the
-intersection of the two sides' histories. The lemma is true --- but it is
-a \emph{global induction over the reachable store}, not a local fact. Its
-mechanized proof threads a store invariant (all parents allocated; event
-sets monotone along edges; and an \emph{origin} invariant --- each event
-appears first at a unique generator version) through every transition; the
-published proof asserts the generator-uniqueness step without the
-induction that sustains it. An erratum-sized gap: the statement survives,
-the proof as written does not. (A related boundary fact:
+\begin{theorem}[the store invariant is a reachability invariant]
+\label{thm:storeinv}
+For every $\M{D}$ with $\Inv(\Sinit)$ and every configuration $C$
+reachable from the initial configuration in the ternary transition
+system, $(C.\mathsf{ver}, C.\mathsf{parents})$ satisfies the store
+invariant.
+\hfill\lean{storeInv\_reachable}
+\end{theorem}
+
+The published proof asserts the generator-uniqueness step (the
+\emph{origin} clause) without the induction that sustains it;
+Theorem~\ref{thm:storeinv} is that induction, mechanized
+(\lean{storeInv\_init}, \lean{storeInv\_step}). An erratum-sized gap:
+the statement survives, the proof as written does not. The LCA, when it
+exists, is unique --- two LCAs dominate each other and the rank order
+is antisymmetric (\lean{isLCA\_unique}). (A related boundary fact:
 \emph{criss-cross} merges can defeat the \emph{existence} of an
 LCA --- they gate merge-enabledness, not the lemma. \S\ref{sec:vlca}
 lifts the gate.)
+
+\begin{remark}[the lca-events field]
+\label{rem:lcafield}
+In the mechanization the LCA lemma's \emph{shape} is also carried as a
+field of \lean{Configuration} (the lca-events clause of
+Definition~\ref{def:config}), and \lean{merged\_store\_lca\_events} /
+\lean{applied\_store\_lca\_events} prove the field maintainable under
+Merge and Apply for stores satisfying the invariant --- so
+$\mathsf{Step3}$'s merge rule is never blocked by it. The
+``reachability invariant'' claim above is the pair: the field plus
+Theorem~\ref{thm:storeinv}'s maintenance. The field is an invariant of
+the system, not an assumption smuggled into the model.
+\end{remark}
 
 \subsection{A fully LCA-legal execution defeats the soundness proof}
 \label{sec:defeater}
@@ -641,8 +862,44 @@ tempting linearization $[A_p, R_p, A_q, R_q]$ is a valid witness of the
 the all-dead state, not $\mathrm{head}_q$'s actual state (live $A_p$): it
 is not assembled from a state-correct side witness, which is exactly what
 the induction requires. All three facts are mechanized
-(\lean{InterLca2op\_Defeater\_Arbiter}: \lean{awset\_rem\_output\_empty},
-\lean{no\_inter\_lca\_2op\_rem\_peel\_of\_defeater}, \lean{crack1\_witness}).
+(file \lean{Refutations/InterLca2op\_Defeater\_Arbiter.lean}):
+
+\begin{proposition}[the defeater's three mechanized facts]
+\label{prop:defeater}
+In the add-wins skeleton of Example~\ref{ex:defeater} --- writing
+$\mathrm{live}(A,D) = A \setminus D$, with events
+$A_p = (1,p,\add)$, $R_p = (3,p,\rem)$, $A_q = (2,q,\add)$,
+$R_q = (4,q,\rem)$, and $\mathrm{head}_p, \mathrm{head}_q$ the two head
+states of Figure~\ref{fig:defeater}:
+\begin{enumerate}[leftmargin=2.2em]
+\item \textbf{(rem-images are all-dead)} for every state $\sigma$ and
+  every event $e$ with $\mathsf{op}(e) = \rem$:
+  $\mathrm{live}(e(\sigma)) = \emptyset$.
+  \hfill\lean{awset\_rem\_output\_empty}
+\item \textbf{(no 2-OP rem-peel)} no instantiation of the
+  \textsc{BottomUp-2-OP} merge shape peels a remove from either head:
+  \[
+    \neg\, \exists\, a, b \in \Sigma,\; o_l, o_1, o_2 \in \M{E}.\;\;
+    \mathsf{op}(o_1) = \rem \;\wedge\;
+    o_1(o_l(a)) = \mathrm{head}_p \;\wedge\;
+    o_2(o_l(b)) = \mathrm{head}_q ,
+  \]
+  and symmetrically with $\mathrm{head}_p$ and $\mathrm{head}_q$
+  interchanged.
+  \hfill\lean{no\_inter\_lca\_2op\_rem\_peel\_of\_defeater}
+\item \textbf{(a valid merged witness that is not side-correct)} the
+  list $w = [A_p, R_p, A_q, R_q]$ satisfies
+  $\mathrm{live}(\fold(\Sinit, w)) = \emptyset$ and
+  $\fold(\Sinit, w) = \sigma_{v_\top}$ (the merged state) --- a valid
+  witness of the merged version --- yet its restriction to
+  $\mathrm{head}_q$'s event set,
+  $w{\restriction} = [A_p, A_q, R_q]$, has
+  $\fold(\Sinit, w{\restriction}) \neq \sigma_{\mathrm{head}_q}$ and
+  $\mathrm{live}(\fold(\Sinit, w{\restriction})) \neq
+  \mathrm{live}(\sigma_{\mathrm{head}_q})$.
+  \hfill\lean{crack1\_witness}
+\end{enumerate}
+\end{proposition}
 
 \begin{figure}[t]
 \centering
@@ -711,9 +968,18 @@ one theorem is stated over the update signature $\langle \Sigma, \Sinit,
 
 \begin{theorem}[convergence]
 \label{thm:conv}
-Assume the update-layer VCs (items 1--3 of \S\ref{sec:vcs}). Then any
-two $\loE{E}$-respecting enumerations of a finite event set $E$ fold
-from $\Sinit$ to the same state.
+Assume the update-layer VCs (Flat VCs
+\ref{fvc:rcnc}--\ref{fvc:condcomm} of \S\ref{sec:vcs}; Lean bundle
+\lean{UpdateVCs}). Let $C$ be a configuration, $E \subseteq E(C)$ an
+event set, and $\pi_1, \pi_2$ two enumerations of $E$ each respecting
+$\loE{E}$. Then, for \emph{every} start state $\sigma$,
+\[
+  \fold(\sigma, \pi_1) \;=\; \fold(\sigma, \pi_2) .
+\]
+The paper-facing statement is the $\sigma \coloneqq \Sinit$ instance;
+the start-state genericity is consumed by the adequacy induction
+(Lemma~\ref{lem:adeq}).
+\hfill\lean{convergence\_on\_u}
 \end{theorem}
 
 This is where the set-relative reading of \S\ref{sec:setting} earns
@@ -725,14 +991,29 @@ licenses a definition:
 
 \begin{definition}[canonical state]
 \label{def:sigma}
-For a finite event set $E$, the \emph{canonical state} $\sigma(E)$ is
-the state obtained by folding any $\loE{E}$-respecting enumeration of
-$E$ from $\Sinit$. At least one respecting enumeration exists because
-$\loE{E}$ is acyclic (VC~2); the result is independent of the choice by
-Theorem~\ref{thm:conv}; and $\sigma(\emptyset) = \Sinit$. We write
-$\sigma(E)$ for the canonical state of an event set, and $\sigma_v$ for
-the state a version $v$ happens to hold in the store --- proving that
-the two coincide is precisely the metatheorem's job.
+A state $s$ is \emph{a canonical state of} the finite event set $E$ in
+$C$, written $\mathrm{Can}_C(E, s)$, when some enumeration of $E$
+respecting $\loE{E}$ folds to it from the initial state:
+\[
+  \mathrm{Can}_C(E,\, s) \;:\Longleftrightarrow\; \exists \rho.\;\;
+  \rho \text{ enumerates } E \;\wedge\;
+  \rho \text{ respects } \loE{E} \;\wedge\;
+  \fold(\Sinit, \rho) = s .
+\]
+Under the update-layer VCs the definite article is earned: a canonical
+state \emph{exists} whenever $\vis$ is transitive and irreflexive on
+$C$, $E \subseteq E(C)$, and $E$ admits an enumeration
+(\lean{isCanonicalState\_exists\_u}; the required acyclicity of
+$\loE{E}$ is Flat VC~\ref{fvc:chain}'s contribution), and it is
+\emph{unique} for $E \subseteq E(C)$
+(\lean{isCanonicalState\_unique\_u}, from Theorem~\ref{thm:conv}). We
+then write $\sigma(E)$ for the canonical state, with
+$\sigma(\emptyset) = \Sinit$, and $\sigma_v$ for the state a version
+$v$ happens to hold in the store --- proving that the two coincide is
+precisely the metatheorem's job. Displays below keep hypothesis
+positions in the predicate form $\mathrm{Can}_C(E, s)$, which does not
+presuppose uniqueness.
+\hfill\lean{IsCanonicalState}
 \end{definition}
 
 With canonical states in hand, witness lists disappear as promised: a
@@ -743,12 +1024,31 @@ $\sigma$ of its events'') instead of constructing sequences. The one
 genuinely ternary statement is what the merge must produce:
 
 \begin{definition}[ternary Join Lemma]
-For backward-closed event sets $E_1, E_2$ of a reachable configuration,
+\label{def:join}
+Call an event set $E$ \emph{weakly closed} in $C$ when it is
+backward-closed under non-commuting visibility: $a \vis b$,
+$a \ncomm b$, and $b \in E$ imply $a \in E$. The \emph{ternary Join
+Lemma at $C$} (\lean{JoinLemma3At}, the framework's per-configuration
+hook) is the statement: for all event sets $E_1, E_2$ and states
+$s_0, s_1, s_2$, if
+\begin{itemize}[leftmargin=2em]
+\item[(i)] $\vis$ is transitive and irreflexive on $C$;
+\item[(ii)] $E_1, E_2 \subseteq E(C)$;
+\item[(iii)] $E_1$ and $E_2$ are each weakly closed in $C$; and
+\item[(iv)] $\mathrm{Can}_C(E_1 \cap E_2,\, s_0)$,
+  $\mathrm{Can}_C(E_1,\, s_1)$, $\mathrm{Can}_C(E_2,\, s_2)$,
+\end{itemize}
+then
 \[
-  \sigma(E_1 \cup E_2)
-  \;=\;
-  \mergeL\bigl(\sigma(E_1 \cap E_2),\; \sigma(E_1),\; \sigma(E_2)\bigr).
+  \mathrm{Can}_C\bigl(E_1 \cup E_2,\;\; \mergeL(s_0, s_1, s_2)\bigr).
 \]
+The \emph{ternary Join Lemma} (\lean{JoinLemma3}) is its closure over
+all configurations. In $\sigma$-notation the conclusion reads
+$\sigma(E_1 \cup E_2) = \mergeL(\sigma(E_1 \cap E_2), \sigma(E_1),
+\sigma(E_2))$; but the closure premise (iii) is part of the contract,
+not scaffolding --- the enable-wins-flag asymmetry of
+\S\ref{sec:adequacy} turns on exactly that clause.
+\hfill\lean{JoinLemma3}, \lean{JoinLemma3At}
 \end{definition}
 
 By Lemma~\ref{lem:lca} the first argument is exactly the state the store
@@ -842,6 +1142,10 @@ equate two honestly-formed merges:
   \mergeL\bigl(\mergeL(m,x_0,c),\, \mergeL(m,x_1,c),\, \mergeL(m,x_2,c)\bigr)\\
   &\qquad\qquad\qquad\;=\; \mergeL\bigl(m,\, \mergeL(x_0,x_1,x_2),\, c\bigr).
 \end{align*}
+Both laws are quantified over \emph{all} states $l, m, x, x_i, c, y$ ---
+this is the unconditional form, the one the group and lattice classes
+satisfy outright.
+\hfill\lean{DeltaVCs3}
 \end{definition}
 
 Read $c$ as a \emph{delta relative to $m$} (in the induction, $c$ will be
@@ -881,11 +1185,12 @@ zero counter.)
 \end{finding}
 
 Accordingly the delta laws enter the final contract in
-feasibility-conditioned form: quantified over canonical states of
-backward-closed event sets, with every $\mergeL$ node at its honest LCA.
-The unconditional form remains available as a one-line \emph{on-ramp} (it
-trivially implies the conditioned form) for the group and lattice
-classes.
+feasibility-conditioned form (\lean{FeasibleDeltaVCs3}, displayed as
+Flat VCs \ref{fvc:unit}--\ref{fvc:redist}): quantified over canonical
+states of weakly closed event sets, with every $\mergeL$ node at its
+honest LCA. The unconditional form remains available as a one-line
+\emph{on-ramp} for the group and lattice classes --- it implies the
+conditioned form outright (\lean{feasibleDeltaVCs3\_of\_delta}).
 
 \section{The eight verification conditions}
 \label{sec:vcs}
@@ -939,63 +1244,169 @@ The update-side obligations of \S\ref{sec:join} and the merge-side laws
 of \S\ref{sec:whydelta} now assemble into the full contract --- a
 \emph{new} VC set, replacing the paper's catalogue of twenty-four. For
 an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
-\rcrel\rangle$, the contract is:
+\rcrel\rangle$, the contract is the eight conditions below. In the
+mechanization they are carried by three bundles ---
+$\co$ (Flat VCs \ref{fvc:rcnc}--\ref{fvc:sym}: the update triple
+\lean{UpdateVCs} plus merge symmetry), $\fd$ (Flat VCs
+\ref{fvc:unit}--\ref{fvc:redist}), and $\cd$ (Flat
+VC~\ref{fvc:cd}) --- and the canonical route is
+$\co + \fd + \cd \Rightarrow \text{Join Lemma} \Rightarrow
+\text{RA-lin}$.%
+\footnote{A historical wider bundle \lean{CoreVCs3} adds three laws
+(\lean{mergeL\_init}, \lean{lem\_0op3}, \lean{merge\_peel\_comm3}) that
+the causal-delta route never consumes; it is not part of the contract.}
 
 \paragraph{Update layer (unconditional, SMT-shaped).}
-\begin{enumerate}[leftmargin=2.2em]
-\item \textbf{rc-non-comm (guarded)} --- for distinct events \emph{from
-  different replicas}: they fail to commute iff $\rcrel$ orders them
-  in exactly one direction. \emph{The conflict table is the commutativity
-  table, with a direction.} The different-replica guard is a semantic
-  necessity, not a convenience: same-replica events are totally ordered
-  by program order, so they are never concurrent and there is no
-  conflict for $\rcrel$ to resolve. An unguarded VC would instead
-  demand that $\rcrel$ order \emph{every} non-commuting pair ---
-  unsatisfiable for real data types: the \emph{optimized OR-set}'s
-  same-replica same-element adds do not commute (the newer add evicts
-  the older tag), yet they can never race, and its $\rcrel$
-  rightly ignores them. (The paper's F\textsuperscript{*} artifact
-  carries exactly this guard in its interface ---
-  \lean{App\_mrdt.fsti}: \texttt{requires distinct\_ops o1 o2
-  /\char`\\\ get\_rid o1 <> get\_rid o2}.)
-\item \textbf{no-rc-chain} --- conflict priorities do not chain: never
-  $o_1 \rc o_2$ and $o_2 \rc o_3$. This is what makes the linearization
-  order acyclic, so maximal events exist --- the entire peel-and-recurse
-  architecture stands on it.
-\item \textbf{cond-comm} --- a resolved conflict is invisible once an
-  absorber runs: swapping an $\rcrel$-ordered concurrent pair deep in
-  a fold changes nothing for any later non-commuting event, across
-  arbitrary intervening events. This is the engine of convergence.
-\end{enumerate}
+
+\begin{fvc}[rc-non-comm, guarded]
+\label{fvc:rcnc}
+For all events $o_1, o_2$ that are distinct and cross-replica:
+\[
+  o_1 \ncomm o_2
+  \quad\Longleftrightarrow\quad
+  \bigl(o_1 \rc o_2 \;\vee\; o_2 \rc o_1\bigr).
+\]
+\hfill\lean{UpdateVCs.rc\_non\_comm\_directional}
+\end{fvc}
+
+\emph{The conflict table is the commutativity table, with a direction.}
+Both guards are semantic content. The different-replica guard is a
+necessity, not a convenience: same-replica events are totally ordered
+by program order, so they are never concurrent and there is no
+conflict for $\rcrel$ to resolve. An unguarded VC would instead
+demand that $\rcrel$ order \emph{every} non-commuting pair ---
+unsatisfiable for real data types: the \emph{optimized OR-set}'s
+same-replica same-element adds do not commute (the newer add evicts
+the older tag), yet they can never race, and its $\rcrel$
+rightly ignores them. (The paper's F\textsuperscript{*} artifact
+carries exactly this guard in its interface ---
+\lean{App\_mrdt.fsti}: \texttt{requires distinct\_ops o1 o2
+/\char`\\\ get\_rid o1 <> get\_rid o2}.)
+
+\begin{fvc}[no-rc-chain]
+\label{fvc:chain}
+For all events $o_1, o_2, o_3$ with $o_1, o_2$ distinct and
+$o_2, o_3$ distinct:
+\[
+  \neg\,\bigl(o_1 \rc o_2 \;\wedge\; o_2 \rc o_3\bigr).
+\]
+\hfill\lean{UpdateVCs.no\_rc\_chain}
+\end{fvc}
+
+Conflict priorities do not chain. This is what makes the linearization
+order acyclic, so maximal events exist --- the entire peel-and-recurse
+architecture stands on it.
+
+\begin{fvc}[cond-comm]
+\label{fvc:condcomm}
+For every state $\sigma$, all pairwise-distinct events $e, e', e''$,
+and every event list $\pi$: if $e \rc e'$ and $e' \ncomm e''$, then
+\[
+  e''\bigl(\fold(e(e'(\sigma)),\, \pi)\bigr)
+  \;=\;
+  e''\bigl(\fold(e'(e(\sigma)),\, \pi)\bigr).
+\]
+\hfill\lean{UpdateVCs.cond\_comm\_lift}
+\end{fvc}
+
+A resolved conflict is invisible once an absorber runs: swapping an
+$\rcrel$-ordered concurrent pair deep in a fold changes nothing for any
+later non-commuting event $e''$, across arbitrary intervening events
+(the $\pi$). This is the engine of convergence.
 
 \paragraph{Merge layer.}
-\begin{enumerate}[leftmargin=2.2em]\setcounter{enumi}{3}
-\item \textbf{merge symmetry} --- $\mergeL(l,a,b) = \mergeL(l,b,a)$.
-\item \textbf{feasible unit} --- $\mergeL(\Sinit,\Sinit,\sigma(E)) =
-  \sigma(E)$: merging over nothing is a no-op, on states that can arise.
-\item \textbf{feasible local-redistribute} and
-\item \textbf{feasible redistribute} --- Definition~\ref{def:delta},
-  quantified over canonical tuples at honest LCAs.
-\item \textbf{the causal-delta equation ($\cd$)} --- for a
-  $\loE{U}$-maximal event $e$ of a backward-closed $U$, with
-  $A = \sigma(U\setminus\{e\})$ and $B = \sigma(\dow{e}\setminus\{e\})$
-  the canonical state of $e$'s own causal past:
-  \[
-    \mergeL\bigl(B,\; A,\; e(B)\bigr) \;=\; e(A).
-  \]
-  \emph{What an event does is determined by what it saw}
-  (Figure~\ref{fig:cd}): applying $e$ to the whole world equals computing
-  $e$'s delta on its causal past and merging it in over that past.
-\end{enumerate}
 
-Items 1--4 are one-liners for every data type we have discharged; items
-6--7 frequently hold unconditionally anyway (for the OR-set,
+\begin{fvc}[merge symmetry]
+\label{fvc:sym}
+$\mergeL(l, a, b) = \mergeL(l, b, a)$ for all states $l, a, b$.
+\hfill\lean{CoreVCs3CD.mergeL\_comm}
+\end{fvc}
+
+\begin{fvc}[feasible unit]
+\label{fvc:unit}
+For every configuration $C$, event set $E \subseteq E(C)$, and state
+$s$ with $\mathrm{Can}_C(E, s)$:
+\[
+  \mergeL(\Sinit, \Sinit, s) \;=\; s .
+\]
+\hfill\lean{FeasibleDeltaVCs3.feasible\_init}
+\end{fvc}
+
+Merging over nothing is a no-op --- on states that can arise (the
+unconditional form is false for the enable-wins flag, the Finding of
+\S\ref{sec:whydelta}). The next two are the delta laws of
+Definition~\ref{def:delta} on feasible tuples: every canonicity
+hypothesis pins one component to its history, and every $\mergeL$ node
+sits at its honest LCA.
+
+\begin{fvc}[feasible local-redistribute]
+\label{fvc:lredist}
+Let $\vis$ be transitive and irreflexive on $C$; let
+$E_1, E_2 \subseteq E(C)$ be weakly closed in $C$
+(Definition~\ref{def:join}); let $e \in E_1$, $e \notin E_2$, and let
+$e$ be $\loE{E_1 \cup E_2}$-maximal:
+$\forall x \in E_1 \cup E_2,\ x \neq e \Rightarrow
+\neg\, (e \mathrel{\loE{E_1 \cup E_2}} x)$. If
+$\mathrm{Can}_C(E_1 \cap E_2,\, s_0)$,
+$\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$,
+$\mathrm{Can}_C(E_1 \setminus \{e\},\, t_1)$, and
+$\mathrm{Can}_C(E_2,\, s_2)$, then
+\[
+  \mergeL\bigl(s_0,\; \mergeL(B, t_1, e(B)),\; s_2\bigr)
+  \;=\;
+  \mergeL\bigl(B,\; \mergeL(s_0, t_1, s_2),\; e(B)\bigr).
+\]
+\hfill\lean{FeasibleDeltaVCs3.feasible\_local\_redistribute}
+\end{fvc}
+
+\begin{fvc}[feasible redistribute]
+\label{fvc:redist}
+In the same context ($\vis$ transitive and irreflexive on $C$;
+$E_1, E_2 \subseteq E(C)$ weakly closed in $C$), now with $e \in E_1$,
+$e \in E_2$, and $e$ $\loE{E_1 \cup E_2}$-maximal as above: if
+$\mathrm{Can}_C((E_1 \cap E_2) \setminus \{e\},\, t_0)$,
+$\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$,
+$\mathrm{Can}_C(E_1 \setminus \{e\},\, t_1)$, and
+$\mathrm{Can}_C(E_2 \setminus \{e\},\, t_2)$, then
+\[
+  \mergeL\bigl(\mergeL(B, t_0, e(B)),\; \mergeL(B, t_1, e(B)),\;
+    \mergeL(B, t_2, e(B))\bigr)
+  \;=\;
+  \mergeL\bigl(B,\; \mergeL(t_0, t_1, t_2),\; e(B)\bigr).
+\]
+\hfill\lean{FeasibleDeltaVCs3.feasible\_redistribute}
+\end{fvc}
+
+\begin{fvc}[the causal-delta equation, $\cd$]
+\label{fvc:cd}
+Let $\vis$ be transitive and irreflexive on $C$; let
+$U \subseteq E(C)$ be weakly closed in $C$; let $e \in U$ be
+$\loE{U}$-maximal
+($\forall x \in U,\ x \neq e \Rightarrow \neg\,(e \mathrel{\loE{U}} x)$);
+and let $\mathrm{Can}_C(U \setminus \{e\},\, A)$ and
+$\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$. Then
+\[
+  \mergeL\bigl(B,\; A,\; e(B)\bigr) \;=\; e(A).
+\]
+\hfill\lean{CDVC3}
+\end{fvc}
+
+\emph{What an event does is determined by what it saw}
+(Figure~\ref{fig:cd}): applying $e$ to the whole world $A$ equals
+computing $e$'s delta on its recorded past $\dow{e} \setminus \{e\}$
+and merging it in over that past. The merge sits at its honest LCA:
+$(U \setminus \{e\}) \cap \dow{e} = \dow{e} \setminus \{e\}$.
+
+Flat VCs \ref{fvc:rcnc}--\ref{fvc:sym} are one-liners for every data
+type we have discharged; Flat VCs \ref{fvc:lredist}--\ref{fvc:redist}
+frequently hold unconditionally anyway (for the OR-set,
 \textsc{redistribute} is a pointwise Boolean tautology); essentially the
-entire per-data-type proof effort concentrates in item 8, whose discharge
-follows a uniform recipe: characterize $\sigma(E)$ (a ``sandwich''
-invariant along canonical enumerations), then a \emph{trichotomy} placing
-every event the maximal $e$ interacts with either inside $\dow{e}$ or
-absorbed on a side that owns it.
+entire per-data-type proof effort concentrates in Flat
+VC~\ref{fvc:cd}, whose discharge follows a uniform recipe:
+characterize $\sigma(E)$ (a ``sandwich'' invariant along canonical
+enumerations), then a \emph{trichotomy} placing every event the maximal
+$e$ interacts with either inside $\dow{e}$ or absorbed on a side that
+owns it.
 
 Compare the published catalogue: 24~VCs per data type, plus five more the
 soundness proof uses silently. Seventeen of the~24 --- the
@@ -1018,25 +1429,55 @@ data types, as part of the execution model.
 
 \begin{theorem}[soundness of the eight VCs]
 \label{thm:main}
-If an MRDT satisfies VCs 1--8, then every configuration reachable from
-the initial configuration in the ternary transition system is
-RA-linearizable, per version.
+Let $\M{D}$ satisfy Flat VCs \ref{fvc:rcnc}--\ref{fvc:cd} --- the
+bundles $\co\ \M{D}$, $\fd\ \M{D}$, $\cd\ \M{D}$ --- and let
+$\Inv(\Sinit)$ hold (for flat data types, trivially). Then every
+configuration $C$ reachable from the initial configuration in the
+ternary transition system (Definition~\ref{def:step3}) is
+RA-linearizable, per version (Definition~\ref{def:ralin}):
+$\mathsf{IsRALinearizable3}(C)$.
 \hfill\lean{ra\_linearizable\_of\_core\_feasible\_cd3}
 \end{theorem}
 
 The proof shape: the update layer powers the set-relative convergence
-theorem, hence canonical states; the transition induction maintains
-``every store version is canonical for its event set'' (fork and query
-are trivial; apply is the extend lemma); the merge case reduces, via
-Lemma~\ref{lem:lca}, to the ternary Join Lemma, which is proved from VCs
-4--8 by strong induction on $|E_1 \cup E_2|$: select a
+theorem, hence canonical states; the transition induction maintains a
+five-clause invariant:
+
+\begin{definition}[good configuration]
+\label{def:good}
+$\mathsf{GoodConfig3}(C)$ demands:
+\begin{enumerate}[leftmargin=2.2em]
+\item \emph{canonical}: every registered version is canonical for its
+  event set --- $\mathsf{ver}(v) = (s, E)$ implies
+  $\mathrm{Can}_C(E, s)$;
+\item \emph{vis-transitivity} and
+\item \emph{vis-irreflexivity} of $C$'s visibility;
+\item \emph{universe}: registered event sets sit inside the observed
+  universe --- $\mathsf{ver}(v) = (s, E)$ implies $E \subseteq E(C)$;
+\item \emph{causal closure}: registered event sets are \emph{fully}
+  $\vis$-closed --- $\mathsf{ver}(v) = (s, E)$, $a \vis b$, $b \in E$
+  imply $a \in E$.
+\end{enumerate}
+Clause 1 delivers per-version RA-linearizability outright
+(\lean{isRALinearizable3\_of\_good}); clause 5 is what makes \emph{full}
+closure available to data types that need it --- the asymmetry below.
+\hfill\lean{GoodConfig3}
+\end{definition}
+
+In the induction, fork and query are trivial and apply is the extend
+lemma; the merge case (\lean{goodConfig3\_merge\_at}) reduces, via
+Lemma~\ref{lem:lca}, to the ternary Join Lemma, which is proved from
+Flat VCs \ref{fvc:sym}--\ref{fvc:cd} by strong induction on
+$|E_1 \cup E_2|$ (\lean{join\_lemma3\_of\_cd\_feasible}): select a
 $\loE{E_1\cup E_2}$-maximal $e$, decompose each side containing $e$
 through $\dow{e}$ (\textsc{local-redistribute} at the honest LCA
 $\dow{e}\setminus\{e\}$), cancel the shared delta
-(\textsc{redistribute}), close the principal step with $\cd$, and recurse.
-The buried-event pathology of Example~\ref{ex:defeater} dissolves
-structurally: no step ever asks how a \emph{side's} state factors ---
-every factoring happens through the join.
+(\textsc{redistribute}), close the principal step with $\cd$, and
+recurse; the join-to-RA-lin bridge is
+\lean{ra\_linearizable3\_of\_join}. The buried-event pathology of
+Example~\ref{ex:defeater} dissolves structurally: no step ever asks how
+a \emph{side's} state factors --- every factoring happens through the
+join.
 
 Everything else one might fear owing is proved once, for all data types,
 as an execution-model invariant: visibility transitivity, per-version
@@ -1055,23 +1496,75 @@ other side --- on which the production merge computes the wrong flag. Full
 excludes it, and the flag is discharged through a full-closure variant of
 the join. The finding: \textbf{required closure strength is a function of
 the merge's shape} --- commutation-closure suffices for set-shaped merges,
-counter-comparison merges need full causal closure. Reunifying the two
-routes was expected to be routine --- ``full closure only strengthens what
-a data type may assume.'' Mechanization shows it is not
-(\lean{JoinLemma3C}: \lean{no\_proper\_back\_block},
-\lean{no\_proper\_front\_block}): the naive reunification --- re-run the
-Join Lemma induction with full-closure hypotheses --- is refuted, because
-no single-event (or block) peel preserves full closure. What survives is a
-\emph{closure-indexed} contract in which the data type \emph{declares} its
-closure strength; the soundness bridge is uniform across strengths, so no
-reunification into one strength is needed. In the mechanization the
-closure-indexed contract $\mathsf{JoinLemma3C}\,\mathcal{C}$ has the
-single soundness bridge \lean{ra\_linearizable3\_of\_joinC} (store
-versions are fully causally closed, so the bridge applies for any
-$\mathcal{C}$ that full closure implies), and all nine production
-discharges route through it unchanged
-(\lean{AllMRDTs\_viaContract}): eight at weak closure, the enable-wins
-flag at full.
+counter-comparison merges need full causal closure.
+
+\begin{definition}[full-closure and closure-indexed joins]
+\label{def:joinc}
+Call $E$ \emph{fully closed} in $C$ when $a \vis b$ and $b \in E$
+imply $a \in E$ (all visible predecessors, commuting or not;
+\lean{fullClosure}); weak closure is the predicate of
+Definition~\ref{def:join} (\lean{weakClosure}). $\mathsf{JoinLemma3F}$
+is Definition~\ref{def:join} with both instances of premise (iii)
+strengthened from weakly to fully closed (\lean{JoinLemma3F}).
+Generalizing, a \emph{closure predicate} is any
+$\mathcal{C} : (C, E) \mapsto \mathrm{Prop}$ reading only visibility
+and commutation (\lean{ClosurePred}), and the \emph{closure-indexed
+join} $\mathsf{JoinLemma3C}\ \M{D}\ \mathcal{C}$ is
+Definition~\ref{def:join} with premise (iii) replaced by
+$\mathcal{C}(C, E_1)$ and $\mathcal{C}(C, E_2)$. At
+$\mathcal{C} \coloneqq$ weak (resp.\ full) closure it is
+\emph{definitionally} the Join Lemma (resp.\ $\mathsf{JoinLemma3F}$)
+--- \lean{joinLemma3C\_weak}, \lean{joinLemma3C\_full} --- and it is
+antitone in the index: strengthening the closure demanded of the sides
+weakens the lemma (\lean{JoinLemma3C.anti}).
+\hfill\lean{JoinLemma3C}
+\end{definition}
+
+Reunifying the two routes was expected to be routine --- ``full closure
+only strengthens what a data type may assume.'' Mechanization shows it
+is not: the naive reunification --- re-run the Join Lemma induction
+with full-closure hypotheses --- is refuted, because no single-event
+(or block) peel preserves full closure:
+
+\begin{proposition}[no proper block peel]
+\label{prop:noblock}
+On the concrete four-event kill test --- the set
+$U = \{e_{Ay}, e_{Rx}, e_{Ax}, e_{Ry}\}$ of the two-key datatype
+\lean{K2} in its configuration $C$ --- no proper sub-block can be
+peeled from the back while preserving full closure: there is no
+$B \subseteq U$, nonempty and $\neq U$, that is upward closed under
+visibility within $U$
+($a \in B$, $b \in U$, $a \vis b$ imply $b \in B$) and exits along no
+$\loE{U}$-edge
+($e \in B$, $x \in U \setminus B$ imply
+$\neg\,(e \mathrel{\loE{U}} x)$). Dually, no proper down-closed front
+block with no entering $\loE{U}$-edge exists.
+\hfill\lean{no\_proper\_back\_block}, \lean{no\_proper\_front\_block}
+\end{proposition}
+
+What survives is the closure-indexed contract, in which the data type
+\emph{declares} its closure strength; the soundness bridge is uniform
+across strengths, so no reunification into one strength is needed:
+
+\begin{theorem}[closure-indexed soundness bridge]
+\label{thm:joinc}
+Let $\mathcal{C}$ be a closure predicate such that full closure implies
+it ($\forall C\, E$, $E$ fully closed in $C$ $\Rightarrow$
+$\mathcal{C}(C, E)$ --- the ``declares its strength'' side condition:
+store versions arrive fully closed, by Definition~\ref{def:good}
+clause~5), let $\M{D}$ satisfy
+$\mathsf{JoinLemma3C}\ \M{D}\ \mathcal{C}$, and let $\Inv(\Sinit)$
+hold. Then every configuration reachable from the initial configuration
+is RA-linearizable, per version.
+\hfill\lean{ra\_linearizable3\_of\_joinC}
+\end{theorem}
+
+All nine production discharges route through this bridge unchanged ---
+the file \lean{Development/AllMRDTs\_viaContract.lean} carries the nine
+\lean{*\_adequate\_viaContract} theorems (OR-set, optimized OR-set,
+enable-wins flag, grow-only set and map, increment-only and PN
+counters, tombstone RGA, Peritext): eight at weak closure, the
+enable-wins flag at full.
 
 \section{The catalogue, discharged}
 \label{sec:catalog}
@@ -1088,8 +1581,8 @@ Grow-only set & unconditional & \lean{GOSet\_ra\_linearizable3\_eq} & union of a
 Grow-only map & unconditional & \lean{GOMap\_ra\_linearizable3\_eq} & union of $(k,v)$ records \\
 Incr.-only counter & unconditional & \lean{IOC\_ra\_linearizable3\_eq} & $\#$events \\
 PN-counter & unconditional & \lean{PN\_ra\_linearizable3\_eq} & $\#\mathsf{inc}-\#\mathsf{dec}$ \\
-RGA (tombstone) & unconditional & \lean{RGAM\_ra\_linearizable3\_eq} & grow-only nodes + tombstones \\
-Peritext & unconditional & \lean{Peritext\_ra\_linearizable3\_eq} & grow-only mark records \\
+RGA (tombstone) & unconditional & \lean{rgaWithTombstones\_ra\_linearizable3\_eq} & grow-only nodes + tombstones \\
+Peritext & unconditional & \lean{peritextWithTombstones\_ra\_linearizable3\_eq} & grow-only mark records \\
 OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} & tag live iff added, no vis-later $\rem$ \\
 OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} & \dots{} or same-replica $\add$ later (eviction) \\
 Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key: ctr $=\#$enables; flag iff unkilled enable \\
@@ -1191,15 +1684,34 @@ on states and $\app$ a predicate on (operation, state) pairs (Lean:
 \begin{vc}[Discipline]\label{vc:disc}
 $\Inv\,\ini$ holds; $\dodo$ preserves $\Inv$ on applicable operations; and generation is
 disciplined: every operation is $\app$ and \emph{fresh} at its birth state, with globally
-unique, monotone ids. (This is the execution model, Lean:
-\lean{ConditionedConfiguration}, \lean{Framework/ConditionedExecutionModel.lean} --- kernel-clean,
-axiom-free.)
+unique, monotone ids. Formally, the execution model is the \emph{conditioned
+configuration}: an event set $E(C)$ with a visibility relation $\vis$ subject to
+\begin{itemize}[leftmargin=2em]
+\item[(i)] irreflexivity, transitivity, and endpoint membership (both ends of every
+  $\vis$-edge are events);
+\item[(ii)] global timestamp uniqueness: distinct events of $E(C)$ carry distinct
+  timestamps;
+\item[(iii)] Lamport monotonicity: $a \vis b$ implies
+  $\mathsf{time}(a) < \mathsf{time}(b)$ (the generation clock increases along
+  $\vis$);
+\item[(iv)] the two invariant clauses: $\Inv(\ini)$, and
+  $\Inv(\st) \wedge \app(e, \st) \Rightarrow \Inv(\dodo(\st, e))$.
+\end{itemize}
+App-at-birth is deliberately \emph{not} a structure field: it is carried by the
+honesty contracts of \S\ref{sec:route}, which is where ``fresh and applicable at its
+birth state'' becomes consumable. (Kernel-clean, axiom-free.)
+\hfill\lean{ConditionedConfiguration}, \lean{Framework/ConditionedExecutionModel.lean}
 \end{vc}
 
 \begin{vc}[Conditioned commutation --- the swap witness]\label{vc:comm}
 For concurrent operations $a,b$ and any state $\st$ with $\Inv\,\st$ at which both are
-applicable in the relevant reorder sense, $\dodo\,(\dodo\,\st\,a)\,b \eqobs
-\dodo\,(\dodo\,\st\,b)\,a$.
+applicable in the relevant reorder sense, the \emph{swap witness} holds:
+\[
+  \mathrm{EqSwap}(a, b, \st) \;:\Longleftrightarrow\;
+  \dodo\,(\dodo\,\st\,a)\,b \;\eqobs\; \dodo\,(\dodo\,\st\,b)\,a .
+\]
+The states $\st$ at which the witness is owed are pinned by VC~\ref{vc:inv}.
+\hfill\lean{EqSwap}
 \end{vc}
 
 \begin{vc}[Threadable reorder invariant]\label{vc:inv}
@@ -1207,13 +1719,46 @@ An auxiliary invariant $J$ on (state, pending-event) that (i) certifies applicab
 swap precondition of VC~\ref{vc:comm} at reorder states, (ii) holds at the enabling fold of
 each event, and (iii) is preserved by each reorder step. Only the \emph{enabled} events ---
 those whose causal past is folded --- need be certified; that scope is exactly what a
-linearization repair ever transposes.
+linearization repair ever transposes. Formally, VCs \ref{vc:comm} and \ref{vc:inv} are
+jointly the \emph{swap oracle} of the convergence engine
+(Theorem~\ref{thm:eqconv}): for a pending set $E$, a duplicate-free
+$\loE{E}$-respecting prefix list $\pi$ drawn from $E$, and events
+$a, b \in E \setminus \pi$ with $a \neq b$, $a$ and $b$ $\loE{E}$-incomparable, and both
+\emph{enabled} at $\pi$
+\[
+  \bigl(\forall z \in E.\;\; z \neq a \wedge z \mathrel{\loE{E}} a \Rightarrow z \in
+  \pi, \text{ and likewise for } b\bigr),
+\]
+the oracle must supply $\mathrm{EqSwap}(a, b, \fold(\st, \pi))$. The enabledness
+restriction is clause (ii)+(iii) made precise: the oracle is consulted only at prefixes
+containing both swapped events' whole $\loE{E}$-past, exactly the prefixes a repair
+visits.
 \end{vc}
 
 \begin{vc}[Merge--linearization bridge --- the conditioned Join Lemma]\label{vc:merge}
 For a reachable LCA state $l$ and branches $a,b$ obtained from $l$ by disjoint concurrent
 event lists, $\merge\,l\,a\,b \eqobs \fold\,l\,\pi$ for a $\loE{E}$-respecting enumeration $\pi$
-of the branch events.
+of the branch events. Formally: at ${\eqobs} = {=}$ this is exactly the
+per-configuration ternary Join Lemma of Definition~\ref{def:join}
+(\lean{JoinLemma3At}). At a nontrivial quotient it is the $\eqobs$-relaxed form
+(\lean{EqJoinLemma3C}, \lean{Metatheory/GenericEqQuotient.lean}): with canonicity up
+to $\eqobs$
+\[
+  \mathrm{Can}^{\eqobs}_C(E,\, s) \;:\Longleftrightarrow\; \exists \rho.\;\;
+  \rho \text{ enumerates } E \;\wedge\;
+  \rho \text{ respects } \mathsf{lo}^{E}_{\eqobs} \;\wedge\;
+  \fold(\Sinit, \rho) \eqobs s
+\]
+(\lean{IsCanonicalStateEq}; $\mathsf{lo}^{E}_{\eqobs}$ is $\loE{E}$ with commutation
+read as $\eqobs$-commutation on $\Inv$-states), the join demands: for $\Inv$-satisfying
+$s_0, s_1, s_2$ and \emph{fully closed} sides $E_1, E_2$, each of which,
+\emph{and their union} $E_1 \cup E_2$, satisfies the
+datatype's generation-discipline predicate (a bundle parameter), canonicity of
+$s_0, s_1, s_2$ at $E_1 \cap E_2, E_1, E_2$ implies
+$\mathrm{Can}^{\eqobs}_C(E_1 \cup E_2,\; \mergeL(s_0, s_1, s_2))$. The fold is the
+\emph{raw} update: the quotient layer's internal guard is discharged at the transfer,
+so the datatype states its $\eqobs$-join over its own $\dodo$, not a guarded
+surrogate.
 \end{vc}
 
 For flat datatypes $\Inv = \app = \mathsf{true}$, VC~\ref{vc:comm} degenerates to
@@ -1222,10 +1767,23 @@ the ordinary Join Lemma --- recovering the unconditioned methodology.
 
 \section{The metatheorem}\label{sec:meta}
 
-\begin{theorem}[Soundness --- conditioned VCs $\Rightarrow$ RA-linearizability]\label{thm:meta}
+\begin{theorem}[Soundness --- conditioned VCs $\Rightarrow$ RA-linearizability
+(\emph{pen and paper})]\label{thm:meta}
 Any MRDT satisfying VCs~\ref{vc:disc}--\ref{vc:merge} is RA-linearizable
 (Definition~\ref{def:ralin}, read up to $\eqobs$).
 \end{theorem}
+
+\emph{Status of the theorem.} This general form (arbitrary $\Inv$, $\app$, $\eqobs$)
+is a paper-level statement, proved below by two paper-level lemmas; deliberately, no
+single Lean declaration carries it, and none is cited on it. What is mechanized is its
+\emph{instances}, which are the capstones the catalogue actually rests on: the flat
+instance ($\Inv = \app = \top$, ${\eqobs} = {=}$) is Theorem~\ref{thm:joinc}
+(\lean{ra\_linearizable3\_of\_joinC}); the convergence engine consumed by
+Lemma~\ref{lem:conv} is Theorem~\ref{thm:eqconv} (\lean{eq\_convergence}); and the
+$\eqobs$-quotient layers (\lean{Metatheory/GenericEqQuotient.lean},
+\lean{GenericEqQuotient\_H.lean}, \lean{GoodConfig3H.lean}, capstone shape
+\lean{IsRALinearizable3Eq}) mechanize the adequacy induction at the quotient for the
+production instances of \S\ref{sec:route} and Part~II.
 
 The proof is generic --- it never inspects a particular datatype --- and factors through two
 lemmas, each proved over the abstract signature with $\eqobs$ an arbitrary congruence for
@@ -1249,6 +1807,43 @@ The engine consumes only that $\eqobs$ is an equivalence, $\dodo$ is $\eqobs$-co
 swap oracle of the shape VC~\ref{vc:comm}$+$\ref{vc:inv} provides (Lean: \lean{eq\_convergence},
 kernel-clean).
 \end{proof}
+
+The engine itself is a displayable theorem, and its statement is the precise form of
+the two VCs' joint content:
+
+\begin{theorem}[the generic $\eqobs$-convergence engine]\label{thm:eqconv}
+Fix an update $\dodo$ over a state space with an equivalence $\eqobs$ for which the
+fold is congruent, and \emph{any} binary relation $\ell$ on events (the engine is
+order-agnostic; Lemma~\ref{lem:conv} instantiates $\ell \coloneqq \loE{E}$). Let $E$
+be a finite event set and $\pi_1, \pi_2$ two enumerations of $E$, each respecting
+$\ell$, and let $\st$ be any start state. Suppose the swap oracle holds at $\st$:
+for every duplicate-free $\ell$-respecting list
+$\pi$ drawn from $E$ and every pair $a, b \in E \setminus \pi$ with $a \neq b$,
+$\neg\,\ell(a,b)$, $\neg\,\ell(b,a)$, and both enabled at $\pi$ (every
+$\ell$-predecessor in $E$ of $a$, and of $b$, lies in $\pi$),
+$\mathrm{EqSwap}(a, b, \fold(\st, \pi))$. Then
+\[
+  \fold(\st, \pi_1) \;\eqobs\; \fold(\st, \pi_2).
+\]
+\hfill\lean{eq\_convergence}
+\end{theorem}
+
+\begin{remark}[where the engine lives, and what is generic in the mechanization]
+\label{rem:eqconvhome}
+The declaration's home is
+\lean{MRDT\_Instances/RGA\_Rehoming/RGA\_ConditionedConvergence.lean}: an instance
+directory, not \lean{Framework/} or \lean{Metatheory/}, a bookkeeping accident of its
+genesis in the rehoming stress test. Its statement is payload-generic (the element
+type is a parameter) and order-generic in $\ell$, but it is stated over that file's
+concrete sequence-state functor with its concrete $\eqobs$ (proved an equivalence with
+congruent fold in the same file), not over an abstract signature; the fully abstract
+reading is exactly Lemma~\ref{lem:conv}'s pen-and-paper step. Two mechanization
+details folded out of the display: the Lean statement threads an explicit length
+parameter for the strong induction (universally quantified, hence eliminable), and the
+oracle restriction to enabled prefixes is load-bearing: quantifying $\pi$ over all
+lists is unsatisfiable, since several swap-discharge conjuncts are provably false at
+junk prefixes.
+\end{remark}
 
 \begin{lemma}[Canonical adequacy]\label{lem:adeq}
 VC~\ref{vc:merge} and Lemma~\ref{lem:conv} imply that every reachable version state is
@@ -1309,16 +1904,35 @@ common structure across the conditioned instances is a theorem rather
 than a convention. The developments all ran the same induction ---
 thread a per-configuration honesty contract through reachability, invoke
 a Join Lemma at each merge --- and that induction is
-extracted once (\lean{Metatheory/HonestReach.lean}):
-\lean{HonestReach}~$D$~$H$ is LTS reachability where every step leaves a
-configuration satisfying the contract $H$, and the metatheorem
-(\lean{ra\_linearizable3\_of\_honest\_reach}; axioms \lean{propext},
-\lean{Quot.sound}) states that if every $H$-configuration admits the Join
-at its core (\lean{JoinLemma3At}), every $H$-honestly reachable
-configuration is per-version RA-linearizable. Plain reachability is the
-degenerate contract $H = \top$, recovering the unconditional bridge; the
-queue's and the bounded counter's bespoke inductions are one-line
-corollaries of the extracted form.
+extracted once (\lean{Metatheory/HonestReach.lean}), as the next
+definition and theorem; the queue's and the bounded counter's bespoke
+inductions are one-line corollaries of the extracted form.
+
+\begin{definition}[honest reachability]
+\label{def:honestreach}
+Fix a per-configuration contract $H$ and the hypothesis $\Inv(\Sinit)$
+(displayed here and in every consumer below; flat data types discharge
+it trivially). $\mathsf{HonestReach}\ \M{D}\ H$ is the least predicate
+on configurations containing the initial configuration
+(Definition~\ref{def:step3}) and closed under: if $C$ is honestly
+reachable, $H(C)$ holds, and $C \xrightarrow{\ell} C'$ is a
+$\mathsf{Step3}$ transition, then $C'$ is honestly reachable. The
+contract is checked at the \emph{pre-step} configuration.
+\hfill\lean{HonestReach}
+\end{definition}
+
+\begin{theorem}[the factored metatheorem]
+\label{thm:honestreach}
+Let $H$ be a contract such that every $H$-configuration admits the Join
+at its core: for all $C'$, $H(C')$ implies
+$\mathsf{JoinLemma3At}\ \M{D}\ C'$ (Definition~\ref{def:join}). Then,
+with $\Inv(\Sinit)$, every $H$-honestly reachable configuration is
+RA-linearizable, per version. Axioms: \lean{propext}, \lean{Quot.sound}.
+Plain reachability is the degenerate contract $H = \top$
+(\lean{honestReach\_of\_reachable}), recovering the unconditional
+bridge.
+\hfill\lean{ra\_linearizable3\_of\_honest\_reach}
+\end{theorem}
 
 What does \emph{not} factorize is the join discharge, and that is the
 finding: the instances discharge \lean{JoinLemma3At} by
@@ -1346,11 +1960,55 @@ worth recording: the production honesty contracts all have the shape
 ``$P$ holds of each event at the fold of
 its causal past'' --- anchor liveness for the sequence family, slack for
 the counter, head-ness for the queue --- with $P$ the
-signature's client-checkable $\app$ (or its accuracy analogue). That shape
-is extracted once (\lean{GenHonest}, with \lean{AppHonest} its $\app$
-instance and \lean{ra\_linearizable3\_of\_genHonest\_reach} the composite
-metatheorem; \lean{Metatheory/GenHonest.lean}), and the counter's and the
-queue's contracts are re-derived as instantiations
+signature's client-checkable $\app$ (or its accuracy analogue). That
+shape is extracted once (\lean{Metatheory/GenHonest.lean}):
+
+\begin{definition}[the generic honesty shape]
+\label{def:genhonest}
+For a predicate $P$ on (event, state) pairs,
+\[
+\begin{aligned}
+  \mathsf{GenHonest}\ \M{D}\ P\ C \;:\Longleftrightarrow\;
+  \forall e \in E(C).\;\; \forall \pi.\;\;
+  &\pi \text{ enumerates } \{e' \in E(C) : e' \vis e\}\\
+  &\;\Longrightarrow\; P\bigl(e,\, \fold(\Sinit, \pi)\bigr) ,
+\end{aligned}
+\]
+$P$ of every event at the fold of \emph{every} enumeration of its causal
+past. $\mathsf{AppHonest}\ \M{D} \coloneqq
+\mathsf{GenHonest}\ \M{D}\ \app$ is the canonical instance. The
+companion side condition $\mathsf{CausalPastEnumerable}$ (every event's
+causal past admits an enumeration) holds in reachable configurations,
+whose event sets are finite, but is kept as an explicit hypothesis where
+consumed: the repository carries no generic finiteness result for
+reachable event sets.
+\hfill\lean{GenHonest}, \lean{AppHonest}
+\end{definition}
+
+\begin{remark}[two honesty names: $\forall$ versus $\exists$]
+\label{rem:honestnames}
+The mechanization carries two near-collision names, and both are load-bearing.
+\lean{AppHonest} (\lean{Metatheory/GenHonest.lean}) is the $\forall$-form above:
+$\app$ at the fold of \emph{every} enumeration of the causal past.
+\lean{HonestApp} (\lean{Metatheory/GenericSafety.lean},
+Definition~\ref{def:honestapp} below) is the $\exists$-form: $\app$ at
+\emph{some causal} fold of the causal past, the one the issuing replica
+materialized. The $\forall$-form feeds convergence contracts, whose guards are
+fold-order-insensitive; the $\exists$-form feeds the safety metatheorem, because for
+order-sensitive datatypes the $\forall$-form is unsatisfiable once a past holds two
+surviving candidates (different enumerations materialize different heads).
+\end{remark}
+
+\begin{theorem}[the composite generic-honesty metatheorem]
+\label{thm:genhonest}
+For any $P$: if every $(\mathsf{GenHonest}\ \M{D}\ P)$-configuration
+admits the Join at its core, then, with $\Inv(\Sinit)$, every
+configuration honestly reachable under the contract
+$\mathsf{GenHonest}\ \M{D}\ P$ is RA-linearizable, per version.
+\hfill\lean{ra\_linearizable3\_of\_genHonest\_reach}
+\end{theorem}
+
+The counter's and the queue's contracts are re-derived as instantiations
 (\lean{BCHonest\_iff\_genHonest}, \lean{qHonest\_of\_genHonest}). A generic \emph{safety}
 metatheorem completes the factorization; it is the subject of a
 paragraph below, and the counter's counting argument indeed turned out
@@ -1379,11 +2037,44 @@ branches (in LCA order), then each branch's new arrivals (in branch order).
 The client-facing API is unchanged --- $\mathsf{dequeue}()$ at a replica
 reads its local head --- but the \emph{operation} records which element that
 call removed: $\app$ for $\mathsf{deq}\,t$ is ``$t$ is the head of the
-issuing replica's state''. As with the sequence family, the generation
-discipline is the
-datatype's natural client behaviour, captured rather than imposed.
+issuing replica's state''
+($\mathsf{qApplicable}(\deq\,t, \st) :\Leftrightarrow \exists v.\;
+\mathsf{head?}(\st) = (t, v)$; enqueues are unconditional). As with the
+sequence family, the generation discipline is the datatype's natural
+client behaviour, captured rather than imposed.
 
-The proof exhibits Peepul's merge as its own certificate. The Join Lemma
+\begin{definition}[the queue's honesty contract]
+\label{def:qhonest}
+$\mathsf{QHonest}(C)$: every dequeue names a tag its issuer had observed as an
+enqueue,
+\[
+  \forall e \in E(C).\;\; \mathsf{op}(e) = \deq\,t \;\Longrightarrow\;
+  \exists a \in E(C).\;\; a \vis e \;\wedge\; \mathsf{time}(a) = t
+  \;\wedge\; \exists v.\;\; \mathsf{op}(a) = \enq\,v .
+\]
+The same clause read on the replica-keyed core is \lean{QHonestCore}; the ternary
+form transfers to it (\lean{qHonest\_core}).
+\hfill\lean{QHonest}
+\end{definition}
+
+\begin{theorem}[the queue's join, at every honest configuration]
+\label{thm:qjoin}
+At every core configuration satisfying $\mathsf{QHonest}$, the ternary Join Lemma
+holds: $\mathsf{JoinLemma3At}\ Q\ C$.
+\hfill\lean{q\_join\_at}
+\end{theorem}
+
+\begin{theorem}[the queue capstone]
+\label{thm:queue}
+Every configuration honestly reachable under $\mathsf{QHonest}$ (the
+instance $\mathsf{QReach} \coloneqq \mathsf{HonestReach}\ Q\
+\mathsf{QHonest}$ of Definition~\ref{def:honestreach}, with
+$\Inv(\Sinit)$ trivial) is RA-linearizable, per version.
+\hfill\lean{queue\_ra\_linearizable3}
+\end{theorem}
+
+The proof of Theorem~\ref{thm:qjoin} exhibits Peepul's merge as its own
+certificate. The Join Lemma
 asks for a delivery-respecting enumeration of $E_1 \cup E_2$ whose fold is
 $\mathsf{mergeL}(\sigma_0, \sigma_1, \sigma_2)$; the witness is the
 concatenation $\rho_0 \cdot (\rho_1 \setminus E_0) \cdot (\rho_2 \setminus
@@ -1391,10 +2082,10 @@ E_0)$ of the given enumerations --- exactly the merge's shape, no
 reordering. Three facts make the fold of that concatenation compute the
 merge, all consequences of the closure premise (branch event sets are
 backward-closed under $\vis$ among non-commuting pairs), timestamp
-uniqueness, and an honest-history contract (\lean{QHonest}: every dequeue
-names a tag whose enqueue is $\vis$-prior --- the queue's
-honest-delivery contract, discharged by the $\app$ head-check via
-\lean{qHonest\_of\_applicable}): a fold from the empty queue is ``the
+uniqueness, and the honesty contract (discharged by the $\app$ head-check via
+\lean{qHonest\_of\_applicable}: applicability at \emph{some} fold of the
+issuer's causal past suffices, the $\exists$-form of
+Remark~\ref{rem:honestnames}): a fold from the empty queue is ``the
 enqueues, in order, minus the dequeued tags'' (the fold formula, which
 needs honesty --- a dequeue preceding its enqueue would consume nothing); a
 delta's tags are fresh with respect to the LCA (uniqueness); and a
@@ -1440,13 +2131,41 @@ per-replica escrow invariant
 ($0 \le \mathsf{decs}\,r \le \mathsf{incs}\,r$), $\app$ is
 the client's check (a $\mathsf{Dec}$ needs slack in the \emph{issuing
 replica's own} slots --- positive, and checkable against the issuing
-replica's state), and the contract on executions
-(\lean{BCHonest}: every decrement was applicable at the fold of its causal
-past) is the counter's honest-delivery contract. The theorem
-(\lean{bc\_version\_inv}, kernel-clean): in every reachable configuration
-with honest history, \emph{every version --- heads, LCAs, everything the
-store registered --- satisfies the invariant}; hence the counter's value is
-non-negative everywhere (\lean{bc\_value\_nonneg}). The proof is a
+replica's state), and the contract on executions is the counter's
+honest-delivery contract:
+
+\begin{definition}[the counter's honesty contract]
+\label{def:bchonest}
+$\mathsf{BCHonest}(C)$: every decrement was applicable at the fold of its causal
+past,
+\[
+  \forall e \in E(C).\;\; \mathsf{op}(e) = \mathsf{dec} \;\Longrightarrow\;
+  \forall \pi.\;\; \pi \text{ enumerates } \{e' \in E(C) : e' \vis e\}
+  \;\Longrightarrow\; \app\bigl(e, \fold(\Sinit, \pi)\bigr),
+\]
+with $\app(\mathsf{dec} \text{ by } r,\, \st)$ the issuer's own-slot slack check
+$\mathsf{decs}_r(\st) + 1 \le \mathsf{incs}_r(\st)$. This is exactly the generic shape
+of Definition~\ref{def:genhonest} at $P \coloneqq \app$: the $\mathsf{dec}$-guard is
+immaterial because $\app$ is $\top$ on increments
+(\lean{BCHonest\_iff\_genHonest}).
+\hfill\lean{BCHonest}
+\end{definition}
+
+\begin{theorem}[the bound, per version]
+\label{thm:bcinv}
+In every configuration reachable in the plain LTS (from the initial configuration,
+$\Inv(\Sinit)$ trivial) whose history satisfies $\mathsf{BCHonest}$, every
+registered version satisfies the escrow invariant: $\mathsf{ver}(v) = (s, E)$
+implies $0 \le \mathsf{decs}_r(s) \le \mathsf{incs}_r(s)$ for every replica $r$
+(heads, LCAs, everything the store registered). Hence, for every finite replica list
+$rs$, the readable value is non-negative:
+$0 \le \sum_{r \in rs}\bigl(\mathsf{incs}_r(s) - \mathsf{decs}_r(s)\bigr)$
+(\lean{bc\_value\_nonneg}).
+\hfill\lean{bc\_version\_inv}
+\end{theorem}
+
+What the CRDT development could only promise operationally is here a consequence of
+the formal client contract. The original proof is a
 counting argument riding the flat machinery: every version's state is a fold
 of its event set (canonicity), fold slots \emph{are} per-replica event
 counts (the group merge is inclusion--exclusion on counts, via the LCA
@@ -1469,29 +2188,118 @@ is a perfectly canonical enumeration of an honest version, and its
 intermediate state violates the escrow invariant. Only \emph{endpoints}
 of canonical folds are guaranteed; commuting causal predecessors may
 float behind the event that needs them. The repair is to restrict the
-witness class, not the induction: a \emph{causal} witness additionally
-linearizes $\vis$ (\lean{CausalCanonical}), and its prefixes are exactly
-the vis-closed, future-free sets containing each event's whole causal
-past. Over those, the metatheorem holds
-(\lean{version\_inv\_of\_causal\_canonical}; axioms \lean{propext},
-\lean{Quot.sound}): $\Inv$ at every version, from honesty
-(\lean{HonestApp}: $\app$ at some causal fold of the event's causal past
---- what the issuer's own state witnesses) and one per-datatype
-obligation \lean{SafetyStep} (applicability transfers from the causal
-past to any admissible prefix, fused with $\Inv$-preservation). For
-datatypes whose operations all commute the causal witness is free
-(\lean{causalCanonical\_of\_all\_comm\_rc\_either}, a pointwise
-permutation argument). The bounded counter discharges \lean{SafetyStep}
+witness class, not the induction:
+
+\begin{definition}[causal folds; causal canonical witnesses]
+\label{def:causalcanon}
+$\sigma$ is a \emph{causal fold} of $E$ in $C$ (\lean{CausalFold}) when some
+enumeration $\rho$ of $E$ respecting $\vis$ folds to it:
+$\fold(\Sinit, \rho) = \sigma$. Prefixes of such an enumeration are exactly the
+vis-backward-closed subsets of $E$. $C$ is \emph{causally canonical} when every
+registered version carries a witness linearizing both orders:
+$\mathsf{ver}(v) = (s, E)$ implies some enumeration $\rho$ of $E$ respects $\vis$
+\emph{and} respects $\loE{E}$ and folds to $s$, strictly refining clause 1 of
+Definition~\ref{def:good}.
+\hfill\lean{CausalCanonical}
+\end{definition}
+
+\begin{definition}[$\exists$-form honesty]
+\label{def:honestapp}
+For a guard $A$ on (event, state) pairs, $\mathsf{HonestAppOn}\ \M{D}\ A\ C$: every
+event satisfies $A$ at \emph{some} causal fold of its causal past,
+\[
+  \forall e \in E(C).\;\; \exists \sigma.\;\;
+  \sigma \text{ a causal fold of } \{e' \in E(C) : e' \vis e\} \text{ in } C
+  \;\wedge\; A(e, \sigma) .
+\]
+$\mathsf{HonestApp}\ \M{D}$ is the instance $A \coloneqq \app$: what the issuer's own
+materialized state witnesses. Being an $\exists$-statement it carries its own
+enumeration witness, so no enumerability side condition is owed; the contrast with the
+$\forall$-form \lean{AppHonest} is Remark~\ref{rem:honestnames}.
+\hfill\lean{HonestApp}
+\end{definition}
+
+\begin{definition}[the per-datatype safety obligation]
+\label{def:safetystep}
+$\mathsf{SafetyStepOn}\ \M{D}\ I\ A$, over an explicit conditioning pair $(I, A)$:
+for every configuration $C$, event sets $E, S$, event $e$, and states
+$\sigma_S, \sigma_P$ with
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] $E \subseteq E(C)$; \quad (ii) $E$ vis-closed ($a \vis b$, $b \in E$
+  imply $a \in E$); \quad (iii) $e \in E$;
+\item[(iv)] $S \subseteq E$; \quad (v) $e \notin S$; \quad (vi) $S$ vis-closed;
+\item[(vii)] $S$ future-free for $e$: $x \in S$ implies $\neg\, e \vis x$; \quad
+  (viii) $\mathrm{past}(e) \subseteq S$: $x \vis e$ implies $x \in S$;
+\item[(ix)] $\sigma_S$ a causal fold of $S$; \quad (x) $\sigma_P$ a causal fold of
+  $\mathrm{past}(e) = \{e' \in E(C) : e' \vis e\}$,
+\end{itemize}
+it holds that $I(\sigma_S) \wedge A(e, \sigma_P) \Rightarrow
+I(\dodo(\sigma_S, e))$: applicability transfers from the causal past to any
+admissible prefix, fused with $I$-preservation so unconditionally-safe operations owe
+no guard. $\mathsf{SafetyStep}\ \M{D}$ is the instance $(I, A) \coloneqq
+(\Inv, \app)$.
+\hfill\lean{SafetyStep}
+\end{definition}
+
+\begin{theorem}[generic safety, causal-witness form]
+\label{thm:gensafety}
+If $\Inv(\Sinit)$, $\mathsf{SafetyStep}\ \M{D}$, and $C$ satisfies the
+good-configuration invariant (Definition~\ref{def:good}), is causally canonical, and
+satisfies $\mathsf{HonestApp}\ \M{D}$, then every registered version state satisfies
+$\Inv$. Axioms: \lean{propext}, \lean{Quot.sound}.
+\hfill\lean{version\_inv\_of\_causal\_canonical}
+\end{theorem}
+
+\begin{theorem}[the causal witness is free for all-comm datatypes]
+\label{thm:ccfree}
+If all operation pairs commute and $\rcrel \equiv \Either$, then every configuration
+satisfying Definition~\ref{def:good} is causally canonical: a pointwise permutation
+argument, no reachability induction.
+\hfill\lean{causalCanonical\_of\_all\_comm\_rc\_either}
+\end{theorem}
+
+The bounded counter discharges \lean{SafetyStep}
 in three lines --- extras in a prefix are other replicas' events and
-cannot touch the issuer's slots --- and \lean{bc\_version\_inv} is
+cannot touch the issuer's slots (\lean{bc\_safetyStep}) --- and
+Theorem~\ref{thm:bcinv} is
 re-derived as a corollary, retiring the bespoke vis-maximal counting
 apparatus, which is thereby revealed as compensation for inducting over
 non-causal witnesses. A second, independent route generalizes that
-retired argument itself: for datatypes \emph{measured} by affine
-observations (fold values = event-set counts), an \emph{escrow
-metatheorem} (\lean{escrow\_version\_inv}) yields the same conclusions
-with no causal witness and no $\Inv$-preservation at all;
-\lean{bc\_version\_inv} is derived a second time this way. The queue,
+retired argument itself, with no causal witness and no
+$\Inv$-preservation at all:
+
+\begin{definition}[measured datatypes]
+\label{def:measured}
+$\M{D}$ is \emph{measured} over an index type $\kappa$ when it carries observations
+$\mathsf{obs}_k : \Sigma \to \mathbb{Z}$ and per-operation weights
+$\mu_k : \M{E} \to \mathbb{N}$ with $\mathsf{obs}_k(\Sinit) = 0$ and the affine update
+law $\mathsf{obs}_k(\dodo(\st, e)) = \mathsf{obs}_k(\st) + \mu_k(e)$. Folds of
+measured observations compute set measures, so enumeration-independence is free.
+\hfill\lean{Measured}
+\end{definition}
+
+\begin{theorem}[the escrow metatheorem]
+\label{thm:escrow}
+Let $\M{D}$ be measured, $k_c$ (consuming) and $k_f$ (funding) indices, and $A$ a
+guard, with
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] $\mu_{k_c}(e) \le 1$ for every event $e$;
+\item[(ii)] the guard supplies slack: $\mu_{k_c}(e) = 1$ and $A(e, \sigma)$ imply
+  $\mathsf{obs}_{k_c}(\sigma) + 1 \le \mathsf{obs}_{k_f}(\sigma)$;
+\item[(iii)] $C$ satisfies the good-configuration invariant
+  (Definition~\ref{def:good});
+\item[(iv)] consumption is serial: distinct events $a, b \in E(C)$ with
+  $\mu_{k_c}(a) = \mu_{k_c}(b) = 1$ are $\vis$-comparable (the counter obtains this
+  from same-replica totality, per slot);
+\item[(v)] $\mathsf{GenHonest}\ \M{D}\ A\ C$ (the $\forall$-form: measured guards are
+  fold-order-insensitive).
+\end{itemize}
+Then every registered version state $s$ satisfies
+$0 \le \mathsf{obs}_{k_c}(s) \le \mathsf{obs}_{k_f}(s)$.
+\hfill\lean{escrow\_version\_inv}
+\end{theorem}
+
+Theorem~\ref{thm:bcinv} is derived a second time this way. The queue,
 by contrast, \emph{refuses} \lean{SafetyStep} --- ``$t$ is the head'' is
 not stable under a concurrent honest dequeue of the same head, and
 correctly so: the double-dequeue execution satisfies any sound
@@ -1510,16 +2318,49 @@ arbitration, and what honesty cannot buy.} A register claimable once (a
 seat, a username): sequentially the first claim wins; concurrently, the
 winner is the claim that is first in \emph{Lamport} time. This is the
 positive complement to the metadata-free kill-test
-(\lean{lww\_merge\_needs\_timestamps}): arbitration whose key is not in the
+(Proposition~\ref{prop:lwwmeta} below): arbitration whose key is not in the
 state is impossible, and arbitration whose key \emph{is} in the state is a
 semilattice triviality --- the state is the minimum claim
 $(\mathsf{ts}, \mathsf{rep}, v)$ under the lexicographic order (or unset),
 update and merge are $\min$, and the entire eight-VC discharge is
-$\min$-algebra (${\sim}300$ lines, the smallest conditioned instance). The
-characterization theorem (\lean{fww\_version\_min}) is honesty-free ---
-semilattice folds are enumeration-independent --- and says: at every
-version of every reachable configuration the register holds exactly the
-minimum-timestamp claim of its event set, unset exactly on the empty set.
+$\min$-algebra (${\sim}300$ lines, the smallest conditioned instance).
+
+\begin{theorem}[the FWW winner, per version]
+\label{thm:fww}
+In every configuration reachable in the plain LTS ($\Inv(\Sinit)$ trivial), every
+registered version $\mathsf{ver}(v) = (s, E)$ satisfies
+\[
+  \bigl(\forall e \in E.\;\; s \le \mathrm{claim}(e)\bigr)
+  \;\wedge\; \bigl(s = \top \Leftrightarrow E = \emptyset\bigr)
+  \;\wedge\; \bigl(\forall m.\;\; s = m \Rightarrow \exists e \in E.\;\;
+  \mathrm{claim}(e) = m\bigr):
+\]
+the register holds exactly the minimum-timestamp claim of its event set (a lower
+bound, attained), unset exactly on the empty set. No honesty hypothesis: semilattice
+folds are enumeration-independent.
+\hfill\lean{fww\_version\_min}
+\end{theorem}
+
+\begin{proposition}[metadata-free arbitration is impossible]
+\label{prop:lwwmeta}
+Let $\mathrm{canon}(\mathit{init}, L)$ be the LWW specification value of
+a finite write history $L$ from initial value $\mathit{init}$ (the value
+of the timestamp-maximal write, $\mathit{init}$ if $L$ is empty). There
+is no function $m : \mathrm{value}^3 \to \mathrm{value}$ with
+\[
+  m\bigl(\mathrm{canon}(\mathit{init}, L),\;
+  \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_a),\;
+  \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_b)\bigr)
+  \;=\; \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_a
+  \mathbin{+\!\!+} \Delta_b)
+  \quad \text{for all } \mathit{init}, L, \Delta_a, \Delta_b :
+\]
+two executions present the identical value triple $(10, 20, 30)$ with opposite stamp
+orders, forcing $m(10,20,30) = 30$ and $m(10,20,30) = 20$. The timestamp is forced
+into the state by the \emph{merge}, not by replay order.
+\hfill\lean{lww\_merge\_needs\_timestamps}
+\end{proposition}
+
 Since timestamps respect causality, a causally later claim never displaces
 an installed one; the $\min$ rule arbitrates only among \emph{concurrent}
 claimants, and it must, on pain of divergence. The instructive part is the
@@ -1532,6 +2373,53 @@ extension} (contrast the escrow counter's own-slot slack, which is ---
 precisely the boundary the safety metatheorem's \lean{SafetyStep} draws).
 A merge-based register is a reservation, confirmed only at causal
 stability; it is never a mutex.
+
+\paragraph{The join hook is also the composition boundary.} The factored
+interface earns one more dividend: data types compose \emph{at the
+per-configuration join}, and only there. Finished capstones never
+compose, because reachability does not project (a second-component apply
+is a version-duplicating stutter for the first component's projection);
+per-configuration certificates do, which retroactively forces the
+interface of this section. The binary heterogeneous product
+(\lean{Metatheory/Product.lean}) makes this a theorem pair: cross-component
+pairs commute definitionally, so $\loE{E}$ has no mixed edges and the
+glued join witness is a plain concatenation of the component witnesses,
+with no interleaving combinatorics.
+
+\begin{theorem}[the product join gluing]
+\label{thm:prodjoin}
+Let $\M{D}_1 \otimes \M{D}_2$ be the binary heterogeneous product
+(\lean{prodSig}): state $\Sigma_1 \times \Sigma_2$, operations the sum
+$O_1 \oplus O_2$, with $\dodo$, $\mergeL$, $\Inv$, and $\app$
+componentwise, and $\rcrel$ per component on same-side pairs and
+$\Either$ on mixed pairs (forced: cross pairs commute, so any mixed
+$\mathsf{Fst\_then\_snd}$ would violate Flat VC~\ref{fvc:rcnc}). For any
+product configuration $C$: if $\mathsf{JoinLemma3At}\ \M{D}_1$ holds at
+the first core projection of $C$ and $\mathsf{JoinLemma3At}\ \M{D}_2$ at
+the second, then $\mathsf{JoinLemma3At}\ (\M{D}_1 \otimes \M{D}_2)\ C$.
+\hfill\lean{joinLemma3At\_prod}
+\end{theorem}
+
+\begin{theorem}[the composite product metatheorem]
+\label{thm:prodmeta}
+Let $H_1, H_2$ be component contracts and
+$H_\otimes(C) \coloneqq H_1(\pi_1\, C) \wedge H_2(\pi_2\, C)$ the product
+contract over the core projections (\lean{prodContract}). If every
+$H_1$-configuration admits $\M{D}_1$'s join and every $H_2$-configuration
+admits $\M{D}_2$'s, then, with the product's $\Inv(\Sinit)$ (both
+components'), every $H_\otimes$-honestly reachable product configuration
+is RA-linearizable, per version. Axioms: \lean{propext},
+\lean{Quot.sound}.
+\hfill\lean{prod\_ra\_linearizable3\_of\_honest\_reach}
+\end{theorem}
+
+The component certificates are consumed at the \emph{projections} of
+product-reachable cores, which is exactly why they must be
+configuration-level, not reachability-indexed. A queue $\otimes$ counter
+capstone with zero bespoke proof (\lean{MRDT\_Instances/ProductDemo/})
+demonstrates consumability; the safety and $\eqobs$-quotient kits, the
+boundary findings, and what remains open are collected in Open
+Question~\ref{oq:compose}.
 
 \section{Virtual LCAs: merging without a common-ancestor version}
 \label{sec:vlca}
@@ -1623,7 +2511,76 @@ the extension lands as a conservative \emph{new} step relation
 was tried and rejected, because it breaks every exhaustive case
 analysis over the old relation in instance files. Only the final
 virtual node is allocated; the store invariant extends across the new
-step.
+step. The next three definitions pin the rule formally.
+
+\begin{definition}[common ancestors and MCAs, set-support form]
+\label{def:mca}
+The recursion pairs a scratch node, identified with its finite real support $S$,
+against a version $w$; $S = \{v_1\}$ recovers the head pair. Over the parent
+relation,
+\[
+  \mathrm{CommonAnc}(S, w) \;=\;
+  \{\, x \;:\; (\exists u \in S.\; \mathsf{Reaches}(x, u)) \,\wedge\,
+  \mathsf{Reaches}(x, w) \,\},
+\]
+and $m$ is a \emph{maximal common ancestor} ($\mathsf{IsMCA}$) of $(S, w)$ when
+$m \in \mathrm{CommonAnc}(S, w)$ and every $x \in \mathrm{CommonAnc}(S, w)$ with
+$\mathsf{Reaches}(m, x)$ equals $m$. The antichain is materialized as a finite set
+(\lean{mcaFinset}; ranks are bounded by $w$, so the bound is intrinsic), and LCAs are
+exactly the singleton case (\lean{isMCA\_singleton\_of\_isLCA} and its converse).
+\hfill\lean{CommonAnc}, \lean{IsMCA}
+\end{definition}
+
+\begin{definition}[the virtual-LCA state]
+\label{def:vlca}
+Write $\sigma_v$ for the state registered at $v$, defaulting to $\Sinit$
+(\lean{stateD}; the canonicity theorems carry the allocation hypotheses that make
+the default unreachable). Sort $\mathrm{MCA}(S, w)$ ascending by rank as
+$m_1 < \cdots < m_k$; then the recursion of the rule above is
+(\lean{vlcaAux}, \lean{vfoldAux}):
+\begin{align*}
+  \mathrm{vlca}(S, w) &=
+  \begin{cases}
+    \Sinit & k = 0\\
+    \mathrm{vfold}(\{m_1\},\, \sigma_{m_1},\, [m_2, \dots, m_k]) & k \ge 1
+  \end{cases}\\
+  \mathrm{vfold}(A, \mathit{acc}, [\,]) &= \mathit{acc}\\
+  \mathrm{vfold}(A, \mathit{acc}, m :: ms) &=
+  \mathrm{vfold}\bigl(A \cup \{m\},\;
+  \mergeL(\mathrm{vlca}(A, m),\, \mathit{acc},\, \sigma_m),\; ms\bigr),
+\end{align*}
+and $\mathsf{VirtualLCA}(v_1, v_2) \coloneqq \mathrm{vlca}(\{v_1\}, v_2)$.
+The empty-antichain base is not a junk case: under the store invariant
+its event set, the empty union, is exactly the then-empty meet.
+Noncomputable but total, by the rank measure of the termination argument above.
+\hfill\lean{virtualLCAState}
+\end{definition}
+
+\begin{definition}[the widened transition system]
+\label{def:step3v}
+$\mathsf{Step3V}$ embeds every $\mathsf{Step3}$ rule
+(Definition~\ref{def:step3}) through a base constructor and adds one rule,
+\textsc{MergeVirtual}$(r_1, r_2)$:
+\[
+\frac{\begin{array}{c}
+  \mathsf{head}(r_1) = v_1 \quad \mathsf{head}(r_2) = v_2 \quad
+  \mathsf{ver}(v_i) = (\sigma_i, E_i) \\
+  \mathsf{ver}(v_m)\ \text{unallocated} \quad v_1 < v_m \quad v_2 < v_m
+\end{array}}{\begin{array}{c}
+  \mathsf{ver}(v_m) \coloneqq
+  \bigl(\mergeL(\mathsf{VirtualLCA}(v_1, v_2),\, \sigma_1,\, \sigma_2),\;
+  E_1 \cup E_2\bigr), \\
+  \mathsf{parents}(v_m) \coloneqq [v_1, v_2],
+  \quad \mathsf{head}(r_1) \coloneqq v_m
+\end{array}}
+\]
+with visibility unchanged: this is \textsc{Merge} of Definition~\ref{def:step3} with the
+$\mathsf{IsLCA}$ gate and its $\mathsf{ver}(v_\ell)$ read replaced by the recursive
+antichain merge in the LCA slot; with a singleton antichain the virtual state
+\emph{is} the registered LCA state, so the rule strictly generalizes
+\textsc{Merge}. The widened LTS is \lean{labeledTS3V}.
+\hfill\lean{Step3V}
+\end{definition}
 
 \paragraph{The covering proposition.} The Merge rule's semantic
 requirement on the LCA slot is Lemma~\ref{lem:lca}: its event set must
@@ -1632,15 +2589,25 @@ the strength of invariants the store already carries.
 
 \begin{proposition}[covering]
 \label{prop:cover}
-Let $S$ be a finite nonempty set of allocated versions and $w$ an
-allocated version; let $\mathrm{MCA}(S, w)$ be the maximal elements of
-$\{x : x \text{ reaches some } u \in S \text{ and reaches } w\}$. Under
-the store invariant,
+Let $\mathsf{ver}, \mathsf{parents}$ be a raw store with (i) the store
+invariant of Definition~\ref{def:storeinv}, (ii) rank-decreasing parents
+($p \in \mathsf{parents}(v)$ implies $p < v$), (iii) every $u \in S$
+allocated, and (iv) $w$ allocated. Then, pointwise in the event $e$,
+\[
+  \bigl(\exists m.\;\; \mathsf{IsMCA}(S, w, m) \wedge e \in E(m)\bigr)
+  \;\Longleftrightarrow\;
+  \bigl(\exists u \in S.\;\; e \in E(u)\bigr) \wedge e \in E(w) ;
+\]
+by extensionality,
 \[
   \bigcup_{m \in \mathrm{MCA}(S, w)} E(m)
   \;=\;
   \Bigl(\bigcup_{u \in S} E(u)\Bigr) \cap E(w).
 \]
+Neither finiteness nor nonemptiness of $S$ is assumed, and the degenerate
+cases come for free: an empty MCA set forces an empty intersection (the
+$\supseteq$ direction \emph{constructs} an MCA from a shared event's
+origin), and a singleton MCA set recovers Lemma~\ref{lem:lca}.
 \hfill\lean{mca\_events\_cover}
 \end{proposition}
 
@@ -1684,10 +2651,19 @@ the one per-datatype hypothesis the framework already centers on, the
 per-configuration Join Lemma:
 
 \begin{claim}[virtual join]
-If every allocated version's state is canonical for its event set and
-\lean{JoinLemma3At} holds at the configuration, then every scratch
-node's state is canonical for its union event set; in particular the
-returned virtual state is canonical for $E(v_1) \cap E(v_2)$.
+\label{claim:vjoin}
+Let $C$ satisfy (i) the store invariant on its ranked store
+(Definition~\ref{def:storeinv}), (ii) the good-configuration invariant
+(Definition~\ref{def:good}; in particular every allocated version's
+state is canonical for its event set), and (iii) the per-configuration
+Join Lemma $\mathsf{JoinLemma3At}$ at its core
+(Definition~\ref{def:join}). Then, for any registered pair
+$\mathsf{ver}(v_1) = (s_1, E_1)$, $\mathsf{ver}(v_2) = (s_2, E_2)$,
+\[
+  \mathrm{Can}_C\bigl(E_1 \cap E_2,\;\; \mathsf{VirtualLCA}(v_1, v_2)\bigr),
+\]
+and along the fold every scratch node's state is canonical for its union
+event set.
 \hfill\lean{virtualLCAState\_canonical}
 \end{claim}
 
@@ -1701,9 +2677,24 @@ property of a (configuration, event set, state) triple, not of
 allocated versions, so scratch states need no allocation to carry it.
 The same induction instantiates at the witness-classed join
 (\lean{virtualLCAState\_canonicalF}), and the merge case of the
-honest-reachability metatheorem gains the sibling case
-(\lean{goodConfig3\_mergeVirtual\_at},
-\lean{ra\_linearizable3\_of\_honest\_reachV}). The headline is what did
+honest-reachability metatheorem gains the sibling case:
+
+\begin{theorem}[the widened metatheorem]
+\label{thm:reachV}
+Let $\mathsf{HonestReachV}$ be honest reachability
+(Definition~\ref{def:honestreach}) with $\mathsf{Step3}$ replaced by
+$\mathsf{Step3V}$ (Definition~\ref{def:step3v}). If every
+$H$-configuration admits the Join at its core, then, with
+$\Inv(\Sinit)$, every $H$-honestly reachable configuration of the
+widened LTS is RA-linearizable, per version: the \emph{same} join
+obligation. The induction gains one case
+(\lean{goodConfig3\_mergeVirtual\_at}), whose extra store-invariant
+hypothesis reachability itself supplies
+(\lean{storeInv\_of\_honest\_reachV}).
+\hfill\lean{ra\_linearizable3\_of\_honest\_reachV}
+\end{theorem}
+
+The headline is what did
 \emph{not} change: \lean{Framework/VC\_Set.lean} is untouched. For any
 datatype that discharges its join at every configuration, the criss-cross
 gate lifts with \textbf{no new per-datatype verification condition};
@@ -1734,11 +2725,30 @@ deleted element, and both deletions survive: the merged state is empty,
 the meet's fold. Picking the single MCA $v_1$ instead puts a base
 without $y$ in the LCA slot, so $y$ on $v_6$'s side reads as a fresh
 add and the deleted $y$ \emph{resurrects}; picking $v_2$ dually
-resurrects $x$
-(\lean{t1f\_pick\_u\_resurrects\_y},
-\lean{t1f\_pick\_v\_resurrects\_x},
-\lean{Metatheory/VirtualLCA\_Spot.lean}; the harness twin is the
-\code{T1F} fail companion of \code{virtual\_lca\_check.py}). Every
+resurrects $x$.
+
+\begin{proposition}[every single-MCA pick resurrects a deleted element]
+\label{prop:singlemca}
+On the store of Figure~\ref{fig:crisscross}
+(\lean{Metatheory/VirtualLCA\_Spot.lean}, a two-element OR-pair
+datatype; $\mathrm{query}_y$ is the membership read of $y$, $\sigma_v$
+the registered states, and the pair resolved is the heads
+$(v_5, v_6)$):
+\[
+  \mathrm{query}_y\bigl(\mergeL(\sigma_{v_1}, \sigma_{v_5},
+  \sigma_{v_6})\bigr) = \mathsf{true}
+  \;\;\wedge\;\;
+  \mathrm{query}_y\bigl(\mergeL(\mathsf{VirtualLCA}(v_5, v_6),
+  \sigma_{v_5}, \sigma_{v_6})\bigr) = \mathsf{false} ,
+\]
+and dually the pick $v_2$ resurrects $x$
+(\lean{t1f\_pick\_v\_resurrects\_x}); neither pick's merged state equals
+the virtual resolution's (\lean{t1f\_picks\_ne}). The harness twin is
+the \code{T1F} fail companion of \code{virtual\_lca\_check.py}.
+\hfill\lean{t1f\_pick\_u\_resurrects\_y}
+\end{proposition}
+
+Every
 single-MCA pick is wrong on this store; the recursion is not
 dispensable. Nor is its depth boundable in practice: in a dense
 randomized probe (200 trials, 6 replicas, sync-heavy), criss-crosses
@@ -1799,14 +2809,28 @@ entries may be dropped without changing any future behavior; the answer
 is a keep set computable from the current heads, and a forward
 simulation showing pruning outside it is invisible.
 
-\paragraph{The keep set.} Fix a configuration $C_0$ (the prune point)
-with current heads $H$. Over allocated versions define
+\paragraph{The keep set.} Fix a configuration $C_0$ (the prune point).
+A version is a \emph{head} (\lean{IsHead}) when some replica's head map
+points to it; write $H$ for the current heads.
+
+\begin{definition}[the keep set]
+\label{def:keepset}
+Over allocated versions (heads and $v$ allocated, with the displayed
+event sets),
 \[
   \mathrm{Keep}(C_0) \;=\; \bigl\{\, v \;:\; \exists\, h_1, h_2 \in H
   \ (h_1 = h_2 \text{ allowed}),\ \ E(h_1) \cap E(h_2) \subseteq E(v)
-  \,\bigr\} \;\cup\; \{0\},
+  \,\bigr\},
 \]
-the \emph{upward event-set closure of the pairwise head intersections},
+\[
+  \mathrm{Keep}'(C_0) \;=\; \mathrm{Keep}(C_0) \cup \{0\},
+\]
+and $\mathrm{Dropped}(C_0) = \{\, v \text{ allocated} : v \notin
+\mathrm{Keep}'(C_0) \,\}$ is what pruning removes.
+\hfill\lean{keepSet}, \lean{keepSet'}, \lean{droppedSet}
+\end{definition}
+
+This is the \emph{upward event-set closure of the pairwise head intersections},
 with the root $0$ pinned separately (the model fixes
 $\mathrm{ver}\,0 = (\Sinit, \varnothing)$ forever, and fresh replicas
 are created there). Taking $h_1 = h_2$ shows every head is kept, and
@@ -1823,7 +2847,28 @@ invariant. The reclaimable memory is the states and event sets, which
 is where the memory is; the skeleton stays.
 
 \paragraph{The theorem.} Safety is a forward simulation, built from
-three lemmas. \emph{Monotonicity} (disjunctive): along any run from
+three lemmas, the first two packaged as a run invariant:
+
+\begin{definition}[the GC run invariant]
+\label{def:gcinv}
+$\mathrm{HeadDom}(C_0, e)$: some allocated prune-time head's event set
+is contained in $e$. $\mathrm{Virgin}(C_0, v)$: every
+prune-time-allocated ancestor of $v$ (along the current parent
+relation) is the root. $\mathrm{GCInv}(C_0, C)$:
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] \emph{permanence}: allocation is permanent and entries
+  immutable, so $v$ allocated in $C_0$ implies
+  $\mathsf{ver}_C(v) = \mathsf{ver}_{C_0}(v)$;
+\item[(ii)] \emph{monotonicity} (disjunctive): every current head $v$
+  with $\mathsf{ver}_C(v) = (s, e)$ satisfies $\mathrm{HeadDom}(C_0, e)
+  \vee \mathrm{Virgin}(C_0, v)$;
+\item[(iii)] the store invariant of Definition~\ref{def:storeinv} at
+  $C$.
+\end{itemize}
+\hfill\lean{GCInv}, \lean{HeadDom}, \lean{Virgin}
+\end{definition}
+
+\emph{Monotonicity} is clause (ii): along any run from
 $C_0$, every current head either event-set-dominates some prune-time
 head, or its only prune-time ancestor is the pinned root. The
 disjunction is forced by replica creation: a fresh replica's head is
@@ -1834,7 +2879,8 @@ $v_1, v_2$ and allocated LCA $v_\ell$, then $v_\ell$ was not dropped;
 when both sides dominate prune-time heads $h_1, h_2$, Lemma~\ref{lem:lca}
 gives $E_0(h_1) \cap E_0(h_2) \subseteq E(v_1) \cap E(v_2) =
 E(v_\ell)$, which is membership in the keep set, and when either side
-is virgin the LCA can only be the pinned root. \emph{Prune
+is virgin the LCA can only be the pinned root
+(\lean{lca\_not\_dropped}). \emph{Prune
 commutation}: every step of the unpruned run is matched, with the same
 label, on the pruned store; apply reads only the issuing head and a
 fresh slot (never dropped: dropped slots were allocated at prune time
@@ -1842,9 +2888,23 @@ and allocation is permanent), and merge reads the two heads and the
 LCA, which the previous lemma keeps.
 
 \begin{theorem}[GC safety]
-For every run $C_0 \to \cdots \to C_n$, the pruned configuration admits
-a run with the same label sequence, and every replica read at every
-point is unchanged. \hfill\lean{gc\_safety}
+\label{thm:gcsafety}
+Let $C_0$ satisfy the store invariant (supplied by plain reachability,
+Theorem~\ref{thm:storeinv}), and let
+$C_0 \xrightarrow{\ell_1 \cdots \ell_n} C$ be any labelled
+$\mathsf{Step3}$ run. Then the pruned prune point admits the same run
+against the correspondingly pruned endpoint,
+\[
+  C_0 \setminus \mathrm{Dropped}(C_0)
+  \;\xrightarrow{\ell_1 \cdots \ell_n}\;
+  C \setminus \mathrm{Dropped}(C_0)
+  \qquad\text{(\lean{pruneKeep}, \lean{dropVer}),}
+\]
+with the same label sequence (in particular every query, whose value
+rides on the label), and every replica read at every point is unchanged:
+$N_{C \setminus \mathrm{Dropped}(C_0)} = N_C$. Prune-definedness is
+convention (iv) of \S\ref{sec:setting}.
+\hfill\lean{gc\_safety}
 \end{theorem}
 
 One scope note, recorded because it is a genuine asymmetry: the
@@ -1889,6 +2949,23 @@ that accepted a non-head argument (a rewound replica, a checkpoint
 restore, a replica missing from the head map) would demand the dropped
 entry. Every out-of-band way of resurrecting an old version breaks the
 keep set; head-sync is a hypothesis of the metatheorem, not pessimism.
+The countermodel is machine-checked:
+
+\begin{proposition}[head-sync is load-bearing]
+\label{prop:headsync}
+In the store $C_{\mathrm{ex}}$ of the table above
+(\lean{GC\_Safety.lean}, over the framework-resident conditioned
+grow-only set),
+\[
+  \mathsf{IsLCA}(1, 5, 1)
+  \;\wedge\; \neg\, \mathsf{IsHead}(C_{\mathrm{ex}}, 1)
+  \;\wedge\; 1 \in \mathrm{Dropped}(C_{\mathrm{ex}})
+  \;\wedge\; \mathsf{ver}_{\mathrm{pruned}}(1) = \mathsf{none} :
+\]
+the dropped interior version is the LCA of the interior pair $(1, 5)$,
+so a non-head-sync merge demands a pruned entry.
+\hfill\lean{gc\_needs\_head\_sync}
+\end{proposition}
 
 \paragraph{The revision under virtual merges.} \S\ref{sec:vlca} widens
 what a merge reads: where no exact LCA exists, the resolution reads the
@@ -1896,10 +2973,32 @@ maximal common ancestors, whose event sets sit strictly \emph{below}
 the pairwise meet, while the keep set above retains versions
 \emph{above} some pairwise meet. Under the widened rule the original
 keep set prunes away exactly what the recursion needs. The revision:
-let $\mathrm{mcasClosure}(H)$ be the least superset of the head set
-closed under pairwise MCA (finite: ranks only decrease), and keep the
-upward event-set closure of its members
-(\lean{mcasClosure}, \lean{keepSetV}). This contains the old keep set,
+
+\begin{definition}[the MCA closure, the revised keep set, and the widened invariant]
+\label{def:mcasclosure}
+$\mathrm{mcasClosure}(C)$ is the least set of versions containing every
+allocated head and closed under pairwise MCAs of its members
+(inductively: rules \textsc{head} and \textsc{mca}, the latter over
+$\mathsf{IsMCA}(\{a\}, b, m)$ for members $a, b$; finite, since ranks
+only decrease). The revised keep set is the upward event-set closure of
+its members, plus the pinned root:
+\[
+  \mathrm{Keep}_V(C_0) \;=\; \bigl\{\, v \text{ allocated} \;:\;
+  \exists w \in \mathrm{mcasClosure}(C_0) \text{ allocated},\;\;
+  E(w) \subseteq E(v) \,\bigr\} \;\cup\; \{0\}.
+\]
+The run invariant $\mathrm{GCInv}_V$ extends
+Definition~\ref{def:gcinv} with: the \emph{prune-time} store invariant;
+parent-list immutability at prune-time versions; the \emph{head gate}
+(a current head allocated at prune time is a prune-time head or the
+root); and the \emph{gateway} invariant: for every $v$ allocated after
+the prune point and every prune-time-allocated $w$ with
+$\mathsf{Reaches}(w, v)$, either $w = 0$ or some prune-time head $h$ has
+$\mathsf{Reaches}(w, h)$ and $\mathsf{Reaches}(h, v)$.
+\hfill\lean{mcasClosure}, \lean{keepSetV}, \lean{GCInvV}
+\end{definition}
+
+$\mathrm{Keep}_V$ contains the old keep set,
 and covers every recursion read: sub-pair MCAs are contained in
 real-pair MCAs, iterated. One might hope the one-layer seed (the
 pairwise MCAs of the current heads, without the fixpoint) suffices; it
@@ -1914,9 +3013,25 @@ lemma: after the prune point, every ancestry path from a prune-time
 version to a post-prune version passes through a prune-time head or
 the pinned root, so a prune-time version that a future virtual
 resolution reads is an MCA of prune-time heads (layer one of the
-closure), and deeper reads stay in the closure. The widened theorem
-\lean{gc\_safetyV} keeps the headline shape of \lean{gc\_safety}
-unchanged; the gateway forced no statement change.
+closure), and deeper reads stay in the closure.
+
+\begin{theorem}[GC safety, widened LTS]
+\label{thm:gcsafetyV}
+Let $C_0$ satisfy the store invariant, and let
+$C_0 \xrightarrow{\ell_1 \cdots \ell_n} C$ be any labelled
+$\mathsf{Step3V}$ run (gated \emph{and} virtual merges,
+Definition~\ref{def:step3v}). Then, pruning to $\mathrm{Keep}_V(C_0)$,
+\[
+  C_0 \setminus \mathrm{Dropped}_V(C_0)
+  \;\xrightarrow{\ell_1 \cdots \ell_n}\;
+  C \setminus \mathrm{Dropped}_V(C_0)
+\]
+as a $\mathsf{Step3V}$ run with the same label sequence, and every
+replica read at every point is unchanged. The headline shape of
+Theorem~\ref{thm:gcsafety} is kept verbatim; the gateway forced no
+statement change.
+\hfill\lean{gc\_safetyV}
+\end{theorem}
 
 \paragraph{Bounded state: dropping the skeleton by a clock swap.} The
 theorem above reclaims the payload but keeps the parent map, so the
@@ -1933,12 +3048,63 @@ exactly what $\mathrm{lca\_events}$ says the structural LCA carries. The
 bounded store keeps only the kept payloads and sets $\mathrm{parents}
 \equiv [\,]$; with no edges, structural reachability collapses to
 equality and $\mathrm{lca\_events}$ holds trivially, so there is no
-history to store and the state is $O(|\mathrm{Keep}|)$
-(\lean{clockPrune}, \lean{gc\_safety\_bounded}, \code{GC\_BoundedState.lean}).
-Completeness is free (\lean{clockLCA\_complete}: every head pair with a
-structural LCA has it recovered at the clock meet, kept by
-\lean{lca\_not\_dropped}), so the swap never disables a merge the
-skeleton enabled.
+history to store and the state is $O(|\mathrm{Keep}'|)$
+(\code{GC\_BoundedState.lean}).
+
+\begin{definition}[the bounded store and the clock lookup]
+\label{def:clockstore}
+$\mathrm{clockPrune}(C)$ prunes the payload to $\mathrm{Keep}'(C)$
+\emph{and} sets $\mathrm{parents} \equiv [\,]$: its $\mathsf{ver}$
+support is contained in $\mathrm{Keep}'(C)$
+(\lean{clockPrune\_support}) and its skeleton is the constant empty
+function (\lean{clockPrune\_no\_skeleton}).
+$\mathrm{ClockLCA}(cc, v_1, v_2, u, s_u)$: the heads are allocated with
+event sets $e_1, e_2$ and $\mathsf{ver}_{cc}(u) = (s_u,\, e_1 \cap
+e_2)$; the lookup reads event sets only, never parents.
+$\mathrm{ClockCoherent}(cc)$, the \emph{lineage guard}: any two
+allocated versions with the same event-set clock carry the same state
+(the payload is a function of the clock).
+\hfill\lean{clockPrune}, \lean{ClockLCA}, \lean{ClockCoherent}
+\end{definition}
+
+\begin{theorem}[the clock lookup is complete; under the guard, sound]
+\label{thm:clocklca}
+\emph{Completeness} (guard-free): if $C$ satisfies the store invariant
+and a head pair $v_1, v_2$ (both allocated, at heads $r_1, r_2$) has a
+structural LCA $v_T$ with $\mathsf{ver}(v_T) = (s_T, e_T)$, then
+$\mathrm{ClockLCA}(\mathrm{clockPrune}(C), v_1, v_2, v_T, s_T)$: the
+swap never disables a merge the skeleton enabled (the LCA is kept,
+\lean{lca\_not\_dropped}). \emph{Soundness} (guarded): if
+$\mathrm{ClockCoherent}(cc)$ and both
+$\mathrm{ClockLCA}(cc, v_1, v_2, u, s_u)$ and
+$\mathrm{ClockLCA}(cc, v_1, v_2, u', s_{u'})$, then $s_u = s_{u'}$.
+Combined: under the guard, every clock LCA of a head pair in the
+bounded store carries exactly the structural LCA's state
+(\lean{clockLCA\_recovers}).
+\hfill\lean{clockLCA\_complete}, \lean{clockLCA\_sound}
+\end{theorem}
+
+\begin{theorem}[bounded-state GC safety]
+\label{thm:gcbounded}
+Let $C_0$ satisfy the store invariant and
+$C_0 \xrightarrow{\ell_1 \cdots \ell_n} C$ be any $\mathsf{Step3}$ run.
+On the bounded LTS $\mathsf{Step3C}$ (every rule of
+Definition~\ref{def:step3} with $\mathrm{parents}$ frozen at $[\,]$, and
+\textsc{Merge} reading its LCA state by $\mathrm{ClockLCA}$ instead of
+$\mathsf{IsLCA}$ plus $\mathsf{ver}(v_\ell)$):
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] $\mathrm{clockPrune}(C_0) \xrightarrow{\ell_1 \cdots \ell_n}
+  C \setminus_{\flat} \mathrm{Dropped}(C_0)$, the whole trace, label for
+  label (the flat drop $\setminus_{\flat}$ also empties the skeleton);
+\item[(ii)] every replica read at every point is unchanged;
+\item[(iii)] the bounded store's payload support is contained in
+  $\mathrm{Keep}'(C_0)$; and
+\item[(iv)] its parent map is constantly empty,
+\end{itemize}
+so the state costs $O(|\mathrm{Keep}'|)$, not $O(\text{commits
+ever})$.
+\hfill\lean{gc\_safety\_bounded}
+\end{theorem}
 
 The swap has exactly one hazard, and it is the lineage collision that
 \S\ref{sec:stability} isolates. Resolving the LCA by clock alone is sound
@@ -1947,17 +3113,33 @@ datatype compaction breaks that: a same-clock version from an unrelated
 lineage, used as a merge's $L$, resurrects a dropped instance. The
 structural $\mathrm{IsLCA}$ sidesteps it by resolving within shared
 ancestry; a bare clock lookup cannot, so it is guarded by
-\lean{ClockCoherent} --- two kept versions with the same clock carry the
-same state, i.e.\ the payload is a function of the clock on the keep set,
-which is precisely the $R_S$-compatibility of \S\ref{sec:stability}.
-Under it every clock LCA carries the structural LCA's state
-(\lean{clockLCA\_sound}), so the bounded LTS $\mathrm{Step3C}$ resolves
-each merge at the clock meet and reads identically to the unpruned run.
-The boundary is machine-checked both ways: a PASS SPOT where a future
-head-pair merge finds its LCA at the clock meet and reads correctly, and
-a FAIL SPOT (\lean{spot\_lineage\_resurrection}) exhibiting the
-unrelated-lineage collision that resurrects a dropped instance, with
-$\mathrm{ClockCoherent}$ on that configuration provably false. One case
+$\mathrm{ClockCoherent}$ (Definition~\ref{def:clockstore}), which is
+precisely the $R_S$-compatibility of \S\ref{sec:stability}; soundness
+under the guard is Theorem~\ref{thm:clocklca}. The boundary is
+machine-checked both ways: a PASS SPOT where a future head-pair merge
+finds its LCA at the clock meet and reads correctly, and a FAIL SPOT:
+
+\begin{proposition}[the lineage collision]
+\label{prop:lineage}
+On the compacted store $C_{\mathrm{coll}}$
+(\lean{GC\_BoundedState.lean}, two lineages compacted to the same
+clock),
+\[
+  \mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 1, \{10\})
+  \;\wedge\; \mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 2, \emptyset)
+  \;\wedge\; \{10\} \neq \emptyset
+  \;\wedge\; \neg\, \mathrm{ClockCoherent}(C_{\mathrm{coll}}) :
+\]
+the head pair $(3,4)$'s clock lookup returns two same-clock candidates
+with divergent states, so clock identification alone resurrects the
+dropped instance (picking version $1$) or loses it (picking $2$), and
+the guard is provably false on this store; conversely, had the guard
+held, Theorem~\ref{thm:clocklca} would have forced the two lookups
+equal (\lean{spot\_guard\_would\_fix}).
+\hfill\lean{spot\_lineage\_resurrection}
+\end{proposition}
+
+One case
 is deliberately not covered: a criss-cross antichain of MCAs has no
 single clock meet, so the bounded form of a \emph{virtual} merge needs
 the retained lineage among the MCA closure, and is left owed.
@@ -2004,7 +3186,25 @@ $t_2$ and the element survives through $t_1$; in the compacted
 execution $t_1$ is gone and the element is absent. Reads diverge
 (Figure~\ref{fig:discrem}). The countermodel fires mechanically in the
 validation harness under the naive gate, and once (seed 2026, trial
-218) it was found by the randomized twin runs rather than injected.
+218) it was found by the randomized twin runs rather than injected. It
+is also machine-checked in Lean, on the concrete merge states:
+
+\begin{proposition}[the discriminating remove]
+\label{prop:discrem}
+Let $l_V$ hold both adds of $a$ live (the shared LCA payload of
+Figure~\ref{fig:discrem}), $a_{\mathrm{naive}}$ the naively compacted
+head (older instance $t_1$ dropped), and $b_{\mathrm{rem}}$ the branch
+where the in-flight remove killed only $t_2$. Then
+\[
+  a \in \mathrm{read}\bigl(\mergeL(l_V,\, l_V,\, b_{\mathrm{rem}})\bigr)
+  \;\;\wedge\;\;
+  a \notin \mathrm{read}\bigl(\mergeL(l_V,\, a_{\mathrm{naive}},\,
+  b_{\mathrm{rem}})\bigr) :
+\]
+the control and the naively compacted merge diverge on $a$
+(\lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean}).
+\hfill\lean{countermodel\_diverges}
+\end{proposition}
 
 \begin{figure}[t]
 \centering
@@ -2042,17 +3242,66 @@ every event concurrent with the cut is already absorbed.}
 \end{figure}
 
 \paragraph{The interface: SettledAt.} The repair is a version-level
-condition. A cut $S$ is \emph{SettledAt} version $v$ when (i) $S
-\subseteq E(v)$ and $S$ is causally downward closed, and (ii) every
-event concurrent with an event of $S$ \emph{that exists anywhere} is
-already in $E(v)$. Clause (ii) looks like a global quantification the
+condition.
+
+\begin{definition}[SettledAt]
+\label{def:settled}
+Events $e, a$ are \emph{concurrent} in $C$ (\lean{ConcOp}) when
+$e \neq a$ and neither is $\vis$ the other. A cut $S$ is settled
+against an event set $E$ (\lean{SettledAtOn}) when
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] $S \subseteq E$;
+\item[(ii)] $S$ is causally downward closed ($a \vis b$, $b \in S$
+  imply $a \in S$); and
+\item[(iii)] every $e \in E(C)$ concurrent with some member of $S$
+  (\emph{existing anywhere in the configuration}) is already in $E$.
+\end{itemize}
+$\mathrm{SettledAt}(C, v, S)$: $v$ is allocated with event set $E(v)$
+and $S$ is settled against $E(v)$.
+\hfill\lean{SettledAt}
+\end{definition}
+
+Clause (iii) looks like a global quantification the
 runtime could never check, and in the design note it was carried as a
 hypothesis the runtime would somehow certify. It is now a
-\emph{discharged theorem}: on an honestly reachable configuration, the
-purely local, checkable predicate $\mathrm{AllHeardSince}(C, v, S)$ ---
-$v$ has absorbed, for every registered replica $j$, a commit $c_j$ with
-$S \subseteq E(c_j)$ --- \emph{implies} $\mathrm{SettledAt}(C, v, S)$
-(\lean{settledAt\_of\_allHeard}, \code{EvidenceDischarge.lean}). The
+\emph{discharged theorem}: a purely local, checkable frontier predicate
+implies it.
+
+\begin{definition}[evidence commits; the frontier predicates]
+\label{def:evidence}
+$\mathrm{EvidenceCommit}(C, v, S, j)$: some version $c$ reaching $v$
+(along parents) is allocated with event set $E(c) \supseteq S$ and
+certifies replica $j$ by the chain clause: every $j$-authored event
+outside $E(c)$ has all of $S$ in its causal past
+($\forall e \in E(C)$, $\mathsf{rep}(e) = j$, $e \notin E(c)$ imply
+$\forall a \in S$, $a \vis e$). With
+$\mathrm{Registered}(C, j)$ (replica $j$ has a head state):
+\[
+  \mathrm{AllHeardSince}(C, v, S) \;:\Longleftrightarrow\;
+  \forall j.\;\; \mathrm{Registered}(C, j) \Rightarrow
+  \mathrm{EvidenceCommit}(C, v, S, j) .
+\]
+Separately, $\mathrm{AllHeard}(C, S)$, the \emph{all-heads frontier}:
+every current head's event set contains $S$ (as a gate alone this is
+the naive contract and unsound, Proposition~\ref{prop:discrem}; it
+enters only as the stability side of the runtime contract).
+\hfill\lean{AllHeardSince}, \lean{AllHeard}
+\end{definition}
+
+\begin{theorem}[the evidence discharge]
+\label{thm:evidence}
+Let $C$ satisfy the reachability bundle $\mathrm{ReachInvE}$: (i) the
+store invariant of Definition~\ref{def:storeinv}, (ii) every event
+author is registered, (iii) the root replica $0$ is registered; the
+bundle is supplied by plain or honest reachability
+(\lean{reachInvE\_reachable}, \lean{reachInvE\_honestReach}). If $v$ is
+allocated, $S$ is causally downward closed (the hypothesis the runtime
+must hand: its cut is a downward-closed set), and
+$\mathrm{AllHeardSince}(C, v, S)$, then $\mathrm{SettledAt}(C, v, S)$.
+\hfill\lean{settledAt\_of\_allHeard}
+\end{theorem}
+
+The
 argument is the evidence one made rigorous: an event $e$ concurrent with
 some $s \in S$ was minted by a replica $j$ before $j$ saw $s$; the
 absorbed evidence commit $c_j$ has $s \in E(c_j)$, so $e$ precedes $c_j$
@@ -2093,25 +3342,50 @@ covers both, with the simulation relation $R_S$ instantiated to
 ``differ only by $S$-redundant records'' for the drop species and to
 the graph of the coordinate isomorphism for the remap species.
 
-\paragraph{The six VCs.} Fix a conditioned MRDT, a cut $S$, a
-compaction $\mathrm{compact} : \Sigma \to \Sigma$, and a simulation
-relation $R_S \subseteq \Sigma \times \Sigma$ (full state on the left,
-compacted on the right). The bundle (\lean{StabilityVC}):
+\paragraph{The six VCs.}
+
+\begin{definition}[the stability VC bundle]
+\label{def:stabvc}
+Fix a conditioned MRDT. A stability bundle consists of data and six
+proof obligations. The data: a cut $S$; a compaction
+$\mathrm{compact} : \Sigma \to \Sigma$; a
+simulation relation $R_S \subseteq \Sigma \times \Sigma$ (full state on
+the left, compacted on the right; reflexive, so the pre-compaction run
+is related); a read interface $\mathrm{obs} : \Sigma \to \mathrm{Obs}$;
+an auxiliary pair invariant $\mathrm{Aux}$ on configuration pairs; a
+compaction gate, which must imply $\mathrm{SettledAt}$ at the gated
+version (field \lean{gate\_settled}); and a replica-creation policy
+$\mathrm{canCreate}$. The obligations:
 \begin{itemize}[leftmargin=2.4em]
-\item[\textbf{S1}] \emph{Entry.} At a gated version ($\mathrm{SettledAt}$
-  plus all-heard), $\sigma_v \mathrel{R_S} \mathrm{compact}(\sigma_v)$.
-\item[\textbf{S2}] \emph{Observation.} $\sigma \mathrel{R_S} \tau$
-  implies every query of the read interface agrees on $\sigma$ and
-  $\tau$.
-\item[\textbf{S3}] \emph{Step preservation.} $R_S$ is preserved by
-  applying any op minted with $S$ in its causal past (all future ops,
-  by stability). The design note carried a second class here,
+\item[\textbf{S1}] \emph{Entry} (\lean{vc\_entry}). Under the lifted
+  relation and $\mathrm{Aux}$, at a gated version $v$ (a head, allocated
+  on both sides with the shared event set),
+  $\mergeL(\sigma_v, \sigma_v, \sigma_v) \mathrel{R_S}
+  \mathrm{compact}(\hat{\sigma}_v)$: the full side's stutter payload
+  against the compacted callback.
+\item[\textbf{S2}] \emph{Observation} (\lean{vc\_obs}).
+  $\sigma \mathrel{R_S} \tau$
+  implies $\mathrm{obs}(\sigma) = \mathrm{obs}(\tau)$.
+\item[\textbf{S3}] \emph{Step preservation} (\lean{vc\_step}). Under
+  the lifted relation and $\mathrm{Aux}$, at a related head ($v$
+  allocated on both sides with the shared event set, states
+  $\sigma \mathrel{R_S} \hat{\sigma}$) and a \emph{store-wide fresh}
+  timestamp $t$ (no observed event, and no event of any registered
+  version, carries $t$):
+  $\dodo(\sigma, e) \mathrel{R_S} \dodo(\hat{\sigma}, e)$ for
+  $e = (t, r, o)$: any op minted with $S$ in its causal past (all
+  future ops, by stability). The design note carried a second class here,
   in-flight ops referencing dropped records; in the state-based ternary
   model those effects arrive only through merge branch states, so the
   class is absorbed into S4 and the step VC covers new mints alone.
 \item[\textbf{S4}] \emph{Merge congruence, argumentwise and
-  reachability-indexed.} $\mergeL$ respects $R_S$ in each argument
-  independently, so that mixed executions (a compacted head merging
+  reachability-indexed} (\lean{vc\_merge}). Under the lifted relation
+  and $\mathrm{Aux}$, at \emph{genuine merge premises} (heads
+  $v_1, v_2$, an $\mathsf{IsLCA}$ witness $v_T$, all three registered
+  on both sides with shared event sets):
+  $\mergeL(\sigma_T, \sigma_1, \sigma_2) \mathrel{R_S}
+  \mergeL(\hat{\sigma}_T, \hat{\sigma}_1, \hat{\sigma}_2)$, so that
+  mixed executions (a compacted head merging
   against a full LCA payload, or against a replica that never
   compacted) stay related. Argumentwise is forced, because mixed is the
   normal case. And the congruence is \emph{not} free: unconditioned, it
@@ -2119,16 +3393,22 @@ compacted on the right). The bundle (\lean{StabilityVC}):
   remove that killed the kept twin, and a $B$ still carrying the
   dropped instance live make the two merges read differently). The
   offending triple is unreachable (any state descending from the
-  compacted LCA sheds the drop at its first absorption merge), so the
-  VC is stated over triples arising at genuine merge premises under an
-  auxiliary pair-invariant threaded through the simulation, not as a
-  free equation.
-\item[\textbf{S5}] \emph{Contract preservation.} $R_S$ preserves
-  $\Inv$, the applicable set up to redundant references, and the
-  honesty contract the capstone consumes. This is the clause that
+  compacted LCA sheds the drop at its first absorption merge), which is
+  exactly why the VC fires only under the threaded $\mathrm{Aux}$, not
+  as a free equation.
+\item[\textbf{S5}] \emph{Contract preservation} (\lean{vc\_inv}).
+  $R_S$ preserves $\Inv$: $\sigma \mathrel{R_S} \tau$ and $\Inv(\sigma)$
+  imply $\Inv(\tau)$. This is the clause that
   composes compaction with the conditioned framework, and the one with
-  no analogue in unverified systems.
-\item[\textbf{S6}] \emph{Epoch coherence, observational.} Compacting at
+  no analogue in unverified systems. (The design note's wider reading,
+  preservation of the applicable set and of the honesty contract,
+  is \emph{not} a bundle field; it is recovered observationally by the
+  metatheorem's third conclusion, Theorem~\ref{thm:stabsim}(iii).)
+\item[\textbf{S6}] \emph{Epoch coherence, observational}
+  (the standalone \lean{EpochCoherentObs}, across two bundles $V, V'$
+  with the same read interface): for every state $\sigma$,
+  $\mathrm{obs}(\mathrm{compact}'(\mathrm{compact}(\sigma))) =
+  \mathrm{obs}(\mathrm{compact}'(\sigma))$. That is: compacting at
   $S$ and then at $S' \supseteq S$ lands in the same observational
   class as compacting at $S'$ directly, so staggered and repeated
   compactions across replicas stay related. Observational is the
@@ -2136,23 +3416,70 @@ compacted on the right). The bundle (\lean{StabilityVC}):
   dropped at the first epoch whose second-epoch keeper has since died
   is kept by the direct coarser compaction; reads still agree).
 \end{itemize}
+The bundle closes with the $\mathrm{Aux}$-threading obligations
+(\lean{aux\_init}, \lean{aux\_create}, \lean{aux\_apply},
+\lean{aux\_merge}, \lean{aux\_compact}): $\mathrm{Aux}$ holds initially
+and is preserved by each matched step (creation gated by
+$\mathrm{canCreate}$) and by the gated compaction.
+\hfill\lean{StabilityVC}
+\end{definition}
 
 \paragraph{The metatheorem, and the stuttering-self-merge trick.}
-Lifting $R_S$ to configurations (versions pointwise related, DAG shape
-shared), the six VCs plus the runtime contract give: every step of the
-execution model preserves the lifted relation, compaction itself
-included, and every version of every reachable configuration reads
-identically in the compacted and uncompacted executions
-(\lean{stability\_simulation}, \lean{stability\_reads\_equal}); the
-compacted system inherits RA-linearizability up to $\eqobs$
-observationally from the uncompacted capstone
-(\lean{stability\_ra\_inherited}). The proof device worth recording:
+
+\begin{definition}[the lifted relation, and the paired run]
+\label{def:stabreach}
+$\mathrm{ConfigRelS}\ R\ C\ \hat{C}$ (\lean{ConfigRelS}): the two
+configurations share $L$, $\vis$, $\mathsf{head}$, and
+$\mathsf{parents}$ verbatim; on the full side heads are allocated and
+headless replicas are stateless (two reachability facts carried in the
+relation, so the matching lemmas close without a reachability detour);
+event sets agree slot for slot
+($\mathsf{ver}$-projections to event sets equal); and payloads are
+pointwise related: $\mathsf{ver}_C(v) = (s, E)$ and
+$\mathsf{ver}_{\hat{C}}(v) = (\hat{s}, \hat{E})$ imply
+$R\ s\ \hat{s}$. The \emph{paired run} $\mathrm{StabReach}\ V$
+(\lean{StabReach}, for a bundle $V$ and $\Inv(\Sinit)$): from the
+initial pair, either a matched $\mathsf{Step3}$ pair with mutating
+labels matched verbatim (queries may answer each side's own value), or
+a gated compaction (the full side takes the stuttering self-merge
+$\mathsf{merge}(r, r)$, the compacted side the callback move), each
+case carrying the re-established
+$\mathrm{ConfigRelS} \wedge \mathrm{Aux}$ (supplied by the matching
+lemmas \lean{stability\_match} / \lean{stability\_compact}).
+\end{definition}
+
+\begin{theorem}[the stability metatheorem]
+\label{thm:stabsim}
+Along every paired run $\mathrm{StabReach}\ V\ C\ \hat{C}$:
+\begin{itemize}[leftmargin=2.2em]
+\item[(i)] $\mathrm{ConfigRelS}\ V\!.R\ C\ \hat{C}$ and
+  $V\!.\mathrm{Aux}\ C\ \hat{C}$ hold, and the full side $C$ is
+  ordinary $\mathsf{Step3}$-reachable (compactions project to
+  stuttering self-merges): \lean{stability\_simulation};
+\item[(ii)] reads are equal at every version: $\mathsf{ver}_C(v) =
+  (s, E)$ and $\mathsf{ver}_{\hat{C}}(v) = (\hat{s}, \hat{E})$ imply
+  $\hat{E} = E$ and $\mathrm{obs}(\hat{s}) = \mathrm{obs}(s)$:
+  \lean{stability\_reads\_equal};
+\item[(iii)] RA-linearizability is inherited observationally: if $C$ is
+  RA-linearizable per version (Definition~\ref{def:ralin}), then every
+  version $(\hat{s}, \hat{E})$ of $\hat{C}$ admits an enumeration $\pi$
+  of $\hat{E}$ respecting the linearization order of $\hat{C}$'s
+  \emph{own} core with $\mathrm{obs}(\fold(\Sinit, \pi)) =
+  \mathrm{obs}(\hat{s})$: \lean{stability\_ra\_inherited}.
+\end{itemize}
+Axioms: \lean{propext}, \lean{Quot.sound}.
+\end{theorem}
+
+The proof device worth recording:
 compaction projects, on the full side, to a \emph{stuttering
 self-merge}. The LCA predicate is reflexive and $E \cup E = E$, so
 merging a head with itself is a legal step that allocates a new version
 with the same event set; the full run performs that stutter exactly
 where the compacted run compacts, and the twin DAGs stay \emph{literally
 identical} in shape, so no version-map bisimulation is ever needed.
+The device is mechanized as the reflexive LCA and the self-merge
+configuration (\lean{isLCA\_self}, \lean{selfMergeCfg},
+\lean{stability\_compact}).
 That one trick is why the metatheorem's axiom bill is
 $\{\lean{propext}, \lean{Quot.sound}\}$: no choice, no classical
 reasoning, just the step relation walked in lockstep.
@@ -2176,17 +3503,53 @@ already applied (that is Figure~\ref{fig:discrem} inverted), so the
 surviving $S$-instances live and die together from here on, and
 dropping all but a live kept witness preserves every read. Two
 mechanization findings. The drop set must be \emph{state-dependent}
-even under the settled gate: a static drop set (computed once from the
-cut) is unsound when the kept twin has already died before compaction
-fires, machine-refuted as \lean{static\_drop\_unsound}; the sound
-callback is the twin-liveness-guarded drop, and newest-first is not
-needed for soundness (any live kept witness works). And the interesting
+even under the settled gate:
+
+\begin{proposition}[the static drop is unsound]
+\label{prop:staticdrop}
+At the settled state $s_{\mathrm{afterRem}}$ (the kept twin $(t_2, a)$
+already dead before compaction fires, only $(t_1, a)$ live), the
+static, twin-blind drop computed once from the cut erases the element's
+only surviving instance:
+\[
+  \mathrm{compact}_{\mathrm{static}}(s_{\mathrm{afterRem}})(t_1, a)
+  = \mathsf{false}
+  \;\;\wedge\;\;
+  a \notin \mathrm{read}\bigl(
+  \mathrm{compact}_{\mathrm{static}}(s_{\mathrm{afterRem}})\bigr),
+\]
+while the twin-liveness-guarded callback refuses and is the identity
+there (\lean{settled\_refusal\_id}). Newest-first is not needed for
+soundness: any live kept witness works.
+\hfill\lean{static\_drop\_unsound}
+\end{proposition}
+
+And the interesting
 S4 case is a remove minted elsewhere against a full state whose kill
 set names a dropped instance: on the compacted side the kill is a
 partial no-op, and the states stay related because the dropped
 instance's fate is determined by the kept one. The instance discharges
-all six clauses (\lean{orStabilityVC},
-\lean{ORSet\_stability\_reads}); the remap species' standing cut
+all six clauses:
+
+\begin{theorem}[the OR-set stability instance]
+\label{thm:orstab}
+For any cut specification (\lean{CutSpec}~$S$~$K$~$nt$: $K$ marks the
+droppable $S$-adds, $nt$ names each marked tag's kept newer twin, with
+the coherence clauses tying both to $S$: marked tags and their twins
+are $S$-adds of the same element, twins are strictly newer and
+themselves unmarked), the bundle with $R_S \coloneqq$ ``differ only by
+$S$-redundant records'' (\lean{orRel}), $\mathrm{obs} \coloneqq$ the
+membership read, $\mathrm{compact} \coloneqq$ the twin-liveness-guarded
+drop (\lean{orCompactC}), and gate $\coloneqq \mathrm{SettledAt} \wedge
+\mathrm{AllHeard}$ discharges all six VCs of
+Definition~\ref{def:stabvc}. Consequently every paired run reads
+identically at every version (\lean{ORSet\_stability\_reads}) and
+inherits RA-linearizability observationally
+(\lean{ORSet\_stability\_ra}), by Theorem~\ref{thm:stabsim}.
+\hfill\lean{orStabilityVC}
+\end{theorem}
+
+The remap species' standing cut
 hypothesis is discharged by the same gate
 (\lean{eRecode\_settled\_bridge}, the bridge \S\ref{sec:storage}
 consumes).
@@ -6934,16 +8297,12 @@ a $\mathsf{remove} \parallel v$-op policy) --- and ad-hoc effect coupling
 compose automatically; the marks layer of \S\ref{sec:marks} is that
 coupling made concrete, and its read model and GC are indeed
 discharged directly at the render level rather than through the
-product kit. The convergence half is now mechanized
-(\lean{Metatheory/Product.lean}): the binary heterogeneous product
-$D_1 \otimes D_2$ composes at exactly the \lean{JoinLemma3At} boundary ---
-cross-component pairs commute definitionally, so $\loE{E}$ has \emph{no}
-mixed edges and the glued join witness is a plain concatenation
-$\iota_1\rho^1 \mathbin{+\!\!+} \iota_2\rho^2$
-(\lean{joinLemma3At\_prod}; composite metatheorem
-\lean{prod\_ra\_linearizable3\_of\_honest\_reach}, axioms \lean{propext},
-\lean{Quot.sound}; consumability demo: a queue $\otimes$ counter capstone
-with zero bespoke proof, \lean{MRDT\_Instances/ProductDemo/}). Two
+product kit. The convergence half is now mechanized and stated in
+Part~I: the binary heterogeneous product $D_1 \otimes D_2$ composes at
+exactly the \lean{JoinLemma3At} boundary
+(Theorems~\ref{thm:prodjoin} and~\ref{thm:prodmeta}, end of
+\S\ref{sec:route}; consumability demo: a queue $\otimes$ counter
+capstone with zero bespoke proof, \lean{MRDT\_Instances/ProductDemo/}). Two
 boundary findings from the pen-and-paper pass
 (\lean{Development/COMPOSITION\_PENPAPER.md}): \emph{reachability does
 not project} (a second-component apply is a version-duplicating stutter
