@@ -551,21 +551,34 @@ function renderStats() {
   const st = node.head.state;
   const chars = node.read().length;
   const sc = node.stableCut();
+  // [label, value, hover explanation] -- the third entry becomes a native
+  // title tooltip, so each chip says what it counts and why it matters
   const chips = [
-    ['chars', chars],
-    ['tombstones', st.text.deleted.size],
-    ['mark records', st.marks.size],
-    ['coord symbols', node.symbolCount()],
-    ['in-memory bytes', node.snapshotBytes()],
-    ['save bytes (run table)', saveBytesCached()],
-    ['commits', node.dag.size],
-    ['wire summary', node.ancestryGids().size],
-    ['epoch', node.epoch],
-    ['stable cut', sc.complete ? `${sc.meet.size} settled` : `waiting: ${sc.missing.join(',') || '?'}`],
-    ['local store', store ? (restoredCommits ? `restored ${restoredCommits}` : 'on') : 'off'],
+    ['chars', chars,
+      'Visible characters in the document. Everything else on this row is overhead the doc carries beyond this.'],
+    ['tombstones', st.text.deleted.size,
+      'Deleted characters still remembered as markers. Concurrent edits need them (an insert next to a deleted char still has an anchor). Certified GC removes the settled ones.'],
+    ['mark records', st.marks.size,
+      'Formatting records (bold, links, comments): each carries its range and a timestamp for conflict resolution. GC drops the ones fully overwritten or unmarked.'],
+    ['coord symbols', node.symbolCount(),
+      'Position-identifier building blocks across all characters, live and deleted. Each char’s identity is a path; this counts the path pieces. The main thing GC shrinks.'],
+    ['in-memory bytes', node.snapshotBytes(),
+      'Size of the whole document state as kept in memory right now (encoded form). Falls after GC re-codes coordinates.'],
+    ['save bytes (run table)', saveBytesCached(),
+      'What the document costs on disk or wire using the run-table serializer: consecutive typing compresses into runs. The honest durable size (roughly 1-2 bytes per char after GC).'],
+    ['commits', node.dag.size,
+      'Version-history entries held locally (like git commits: one per typing run, merge, or GC). History pruning forgets settled ones, keeping recent commits only.'],
+    ['wire summary', node.ancestryGids().size,
+      'Commit ids advertised when syncing, so peers can compute exactly what to send. Shrinks with history pruning.'],
+    ['epoch', node.epoch,
+      'How many certified GC compactions this document has been through. Peers must reach the same epoch before merging (they fast-forward onto the compacted chain).'],
+    ['stable cut', sc.complete ? `${sc.meet.size} settled` : `waiting: ${sc.missing.join(',') || '?'}`,
+      'Operations every known peer has provably seen: these can never conflict again, so GC may forget their bookkeeping. “waiting: X” means peer X has not been heard from since the cut, so GC refuses.'],
+    ['local store', store ? (restoredCommits ? `restored ${restoredCommits}` : 'on') : 'off',
+      'IndexedDB copy in this browser: the doc survives tab close and reload, and opens offline. “restored N” = commits loaded from it on startup.'],
   ];
-  $('statsRow').innerHTML = chips.map(([k, v]) =>
-    `<span class="stat"><span class="sk">${k}</span> ${v}</span>`).join('');
+  $('statsRow').innerHTML = chips.map(([k, v, tip]) =>
+    `<span class="stat" title="${tip}"><span class="sk">${k}</span> ${v}</span>`).join('');
   $('gcBtn').disabled = !sc.complete || sc.meet.size === 0;
 }
 
