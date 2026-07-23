@@ -83,7 +83,9 @@ export function persist(node, repoPath, { message = 'p2p-demo snapshot' } = {}) 
   for (const rec of records) fs.writeFileSync(path.join(cdir, rec.sha + '.json'), JSON.stringify(rec));
   const n = records.length;
   fs.writeFileSync(path.join(repo, 'heads.json'), JSON.stringify(heads, null, 2));
-  const docText = node.read().join('');
+  // datatype-aware materialization: embedRGA reads are chars, peritext reads
+  // are {id, char, marks} entries; doc.txt is the human view either way
+  const docText = node.read().map((e) => (e && typeof e === 'object' && 'char' in e ? e.char : String(e))).join('');
   fs.writeFileSync(path.join(repo, 'doc.txt'), docText);
 
   git(repo, ['add', '-A']);

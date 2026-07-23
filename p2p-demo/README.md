@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 36 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, text + rich-text bindings, presence
+npm test             # 41 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -80,6 +80,15 @@ bridge honest, and what would shrink the distance.
   seam is gone (`sync.js`'s `Peer` uses the same core hash now). The demo's
   `src/hash.js` is a thin re-export of the core; the pure-JS SHA-256 is checked
   bit-for-bit against `node:crypto` (NIST vectors + random) in the runtime.
+
+- **`scripts/doc2git.mjs` -- push YOUR live doc to a git repo.** A headless
+  peer joins the room, pulls the document from whoever is online (your open
+  browser tab; the relay is stateless), and persists it via `gitstore.js`:
+  `node scripts/doc2git.mjs --room <room> --repo <path>` (add `--plain` for
+  plain-text rooms, `--relay wss://...` for a deployed relay). The target
+  repo is then plain git: add a remote and push. The script authors nothing,
+  so the roster hygiene drops it on disconnect (it never blocks certified
+  GC).
 
 - **`src/gitstore.js` -- git persistence.** `persist(node, repoPath)` writes
   `commits/<sha>.json` (one per commit) + `heads.json` + a materialized
@@ -336,6 +345,6 @@ web/app.js         the plain-text browser editor logic
 web/richtext.html  the rich-text editor shell (toolbar + import map for prosemirror ESM)
 web/richtext.js    the ProseMirror <-> Peritext binding (#107)
 scripts/demo.mjs   the scripted scenario (npm run demo)
-test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, editbind, peritextbind, presence (36 tests)
+test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, autogc, editbind, peritextbind, presence (41 tests)
 data/              (gitignored) any demo repos created here are SEPARATE git repos
 ```

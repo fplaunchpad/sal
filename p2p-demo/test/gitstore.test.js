@@ -87,3 +87,22 @@ test('git-fencing: the sal repo is refused', () => {
   assert.throws(() => persist(new Node(undefined, 'A'), path.resolve(import.meta.dirname, '../..')),
     /git-fencing/);
 });
+
+test('peritext doc persists: doc.txt is the chars, load round-trips marks', async () => {
+  const { compactiblePeritext } = await import('../../runtime/src/compact-peritext.js');
+  const repo = mkrepo('peritext');
+  const n = new Node(compactiblePeritext, 'A');
+  const mint = (k) => k * 1000 + 7;
+  n.commitBatch([
+    { type: 'ins', id: mint(1), el: 'h', anchorId: null },
+    { type: 'ins', id: mint(2), el: 'i', anchorId: mint(1) },
+    { type: 'addMark', mid: mint(3), mtype: 'bold', startId: mint(1), endId: mint(2), startSide: 'before', endSide: 'after', ts: mint(3) },
+  ]);
+  const r = persist(n, repo);
+  assert.equal(fs.readFileSync(path.join(repo, 'doc.txt'), 'utf8'), 'hi',
+    'doc.txt is the characters, not [object Object]');
+  const back = load(repo, compactiblePeritext);
+  assert.equal(back.read().map((e) => e.char).join(''), 'hi');
+  assert.ok(back.read().every((e) => e.marks.some((m) => m.mtype === 'bold')), 'marks survive the repo');
+  assert.equal(back.headGid, r.headSha, 'same head SHA after clone-shaped load');
+});
