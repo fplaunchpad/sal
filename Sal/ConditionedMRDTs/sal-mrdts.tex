@@ -196,8 +196,12 @@ layer with its measurements (\S\ref{sec:storage}). A July~20 extension
 adds Part~IV (the verified runtime, its performance study, and the SMT
 layer) and closes the storage layer's mechanization (spine fusion, the
 merge-remap merge clause, multi-epoch composition, and the one-sided run
-table), leaving one shared honesty-rebasing lemma as the single remaining
-single-replica compaction obligation. A July~21 extension adds to
+table); the honesty-rebasing lemma $(\ast)$ that extension left open is
+since closed in Lean (the coded-forest cluster of \S\ref{sec:compactED}),
+leaving the multi-replica protocol half (a common cut, concurrent
+divergent compaction, and the derivation of the per-continuation
+$\mathrm{ContOK}$ discipline from a delivery protocol) as the remaining
+compaction residue. A July~21 extension adds to
 Part~II the rich-text marks arc (\S\ref{sec:marks}): the
 document-order mark read model and the marks-layer GC, with the
 runtime's Peritext datatype accordingly promoted from GC-refusal to
@@ -3599,6 +3603,52 @@ Timestamps $t \in \mathbb{N}^{+}$ are Lamport stamps, globally unique,
 and double as element identities. Causality gives: the anchor of every
 insert carries a smaller timestamp than the insert itself.
 
+\emph{Convention (Part~II plumbing).} Four pieces of plumbing are
+folded out of every Part~II display below, once and for all; Part~I's
+convention (\S\ref{sec:setting}) remains in force. (i)~\emph{The
+code}: $\Gamma$ ranges over ordered prefix codes
+(Definition~\ref{def:opc}), and every display is parametric in
+$\Gamma$ unless a concrete instance (\lean{unaryCode},
+\lean{binaryCode}, \lean{eliasDeltaCode}) is named. Chains in
+displays are \emph{positive} (every delta $\ge 1$, the shape Lamport
+causality forces); displays write ``positive chain'' and elide
+nothing else, the mechanized statements carrying the positivity as
+explicit \lean{PosChain}/\lean{PosSChain} antecedents.
+(ii)~\emph{The comparator}: \lean{key} maps a coordinate's bits into
+symbols ($\code{0} \mapsto 1$, $\code{1} \mapsto 2$) and appends the
+terminator $3$; \lean{keyLt} is strict first-difference comparison of
+symbol strings; the sided \lean{sKey} (\S\ref{sec:sided}) appends the
+same terminator to symbols already banded $\{1,2\} < 3 < \{4,5\}$.
+Displays write ``the display comparator'' for this apparatus and
+$\mathrm{before}$ for the induced strict display order on live ids
+(\lean{before}: both live, keys descending). (iii)~\emph{Axiom
+provenance}: displayed capstones are kernel-checked on
+$\{\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}\}$;
+displayed countermodels evaluate concrete executions by
+\lean{native\_decide} under the document's SPOT convention (adding
+the compiler axioms), exactly like unit tests. Per-display axiom
+notes appear only where a display departs from this split.
+(iv)~\emph{The generation layer} (\S\ref{sec:theorem9} only): the
+Fugue-family ordering theorems quantify over per-replica lists of
+generation records (\lean{Know}, \lean{KnowM}) under the reachability
+relations \lean{FugueReach}, \lean{MaxReach}, declared once there;
+the record-reading functions (left/right origin, display order,
+liveness) are named there and never re-derived per display.
+(v)~\emph{The at-hand domain} (the storage layer, \S\ref{sec:recoding}
+onward): for a stable-prefix re-map bundle $F$
+(Definition~\ref{def:spm}) with at-rest domain $\mathrm{Rest}$ and
+declared beyond-cut mints $\mathrm{MintAt}$, a coordinate $c$ is
+\emph{at hand} ($F.\mathrm{Dom}\ c$) when $\mathrm{Rest}\ c$ holds or
+$c = \pi \cdot \Gamma.\mathrm{enc}(d)$ for some declared mint
+$\mathrm{MintAt}\ \pi\ d$. The storage displays' recurring hypothesis
+pair, ``$s$ at hand, $\tau$ declared at $F$'', abbreviates exactly:
+every record coordinate of the cut state $s$ satisfies
+$F.\mathrm{Dom}$, and every insert $(t, r, \ins(e, \pi, a)) \in \tau$
+satisfies $F.\mathrm{MintAt}\ \pi\ (t - a)$; both quantifiers appear
+explicitly, in this form, in every mechanized statement.
+Timestamps throughout Part~II are plain Lamport stamps in
+$\mathbb{N}$.
+
 \paragraph{The birth tree.} Every insert names an anchor. The event
 set therefore induces a tree: the root is the front sentinel $0$; the
 \emph{birth parent} of each element is its anchor. The tree is
@@ -3648,6 +3698,30 @@ its descendants). Among same-parent siblings this is exactly RGA's
 newest-first rule; equivalently, the canonical order is the RGA
 traversal of the birth tree restricted to survivors.
 
+\begin{definition}[the chain display order]
+\label{def:chainbefore}
+In the mechanization a chain is its list of \emph{deltas}, each
+entry the timestamp gap to its parent, partial sums recovering the
+timestamps; at a first divergence the two entries share an anchor, so
+the larger delta and the larger timestamp are the same verdict.
+$\mathrm{chainBefore}$ is the least relation closed under two rules:
+\[
+  \mathrm{chainBefore}\ ch\ (ch \cdot ext)
+  \ \ (ext \ne \langle\rangle),
+  \qquad
+  \mathrm{chainBefore}\ (p \cdot \langle d \rangle \cdot c_1)\
+  (p \cdot \langle e \rangle \cdot c_2)
+  \ \ (e < d) :
+\]
+an ancestor precedes everything in its subtree, and at the first
+divergence the larger delta (the newer sibling) precedes. Distinct
+chains are always comparable (\lean{chainBefore\_total}). The read
+above is: sort survivors by $\mathrm{chainBefore}$ on their birth
+chains; every ordering theorem of this part is stated against this
+relation.
+\hfill\lean{chainBefore}
+\end{definition}
+
 \paragraph{merge.} $\mathrm{merge}(\mathit{L}, A, B)$, where
 $\mathit{L}$ is the LCA (the branches' lowest common ancestor
 version, the merge context the MRDT model stores and supplies). The
@@ -3670,6 +3744,49 @@ form.
 \paragraph{$\approx$.} Equality. The state is a canonical function of
 the event set (Theorem~\ref{thm:chain}), so no quotient is needed:
 convergence is literal state equality.
+
+The components above are mechanized twice, one datatype, two
+carriers; every Part~II theorem names one of the two.
+
+\begin{definition}[the embedded-chain RGA, as mechanized]
+\label{def:embed}
+\emph{The model layer}
+(\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_MRDT.lean}) stores a finite
+map $\sigma : t \mapsto (\mathrm{el},\ c)$ from live ids to (element,
+absolute coordinate) pairs, coordinates as bit strings:
+\[
+  \dodo_\Gamma\bigl(\sigma,\ (t, r, \ins(e, \pi, a))\bigr)
+  = \sigma\bigl[t \mapsto (e,\ \pi \cdot \Gamma.\mathrm{enc}(t -
+  a))\bigr],
+  \qquad
+  \dodo_\Gamma\bigl(\sigma,\ (t, r, \del(x))\bigr) = \sigma \setminus x ,
+\]
+the insert writing the \emph{mint} of its carried prefix (never
+reading the state; \lean{mint}, \lean{do\_}), the delete removing the
+record (no path, nothing rehomed). The merge is OR-set survival on
+identities, values read off any input holding the id (immutable, so
+the choice is immaterial):
+\[
+  \mathrm{dom}\bigl(\merge(l, a, b)\bigr)
+  = (l \cap a \cap b) \cup (a \setminus l) \cup (b \setminus l)
+  \qquad (\lean{merge}) .
+\]
+$\rcrel = \Either$ everywhere (\lean{rc}, \S\ref{sec:prefix});
+observational equality is extensional map equality, equal domains and
+equal records (\lean{eq}). \emph{The instance layer}
+(\code{Sal/ConditionedMRDTs/MRDT\_Instances/EmbedRGA/EmbedRGA.lean})
+is the same datatype on the canonical carrier: the state a list of
+records $(t, \mathrm{el}, c)$ strictly descending by key
+(\lean{EState}); insert a sorted insertion, idempotent on a present
+id, delete a filter (\lean{eUpdate}); the ternary merge the same
+survival formula re-canonicalized by a sorted two-merge
+(\lean{eMergeL}); the fold of an operation list \lean{eFold}. It is
+packaged as the conditioned signature of Part~I with $\Inv = \app =
+\top$ and ${\eqobs} = {=}$ (honesty lives in the configuration layer,
+\S\ref{sec:mechanization}), parametric in $\Gamma$ and in the element
+payload $\alpha$.
+\hfill\lean{do\_}, \lean{merge}, \lean{rc}, \lean{E}
+\end{definition}
 
 \paragraph{The metatheory, which is nearly definitional.} At this
 layer the design's theorems all but evaporate; we record them because
@@ -3702,6 +3819,31 @@ timestamps in $\mathbb{N}$, and uniqueness of Lamport stamps \emph{is}
 the no-tie property; prefix pairs are ancestor/descendant, ordered by
 the prefix rule.
 \end{proof}
+
+\noindent Mechanized: (i) is fold canonicity, \lean{e\_fold\_canon}
+(\S\ref{sec:mechanization}); (ii) is definitional there (records are
+written once, then only removed or copied); (iii) is unique
+decodability plus totality of the chain order
+(Theorem~\ref{thm:uniquedecode}, \lean{chainBefore\_total}). One more
+design-layer fact belongs beside them, the litmus g-column
+(non-interleaving of concurrent runs) as one lemma. It is stated one
+layer down, over stored coordinates, because that is where it is
+consumed; by unique decodability a coordinate prefix is exactly a
+birth-chain prefix.
+
+\begin{theorem}[subtree convexity, one-sided]
+\label{thm:subtreeconvex}
+In any state $s$ (no honesty, no reachability): if
+$\mathrm{before}\ s\ t_1\ t_2$ and $\mathrm{before}\ s\ t_2\ t_3$,
+and a coordinate $c$ prefixes both stored coordinates
+$\mathrm{pos}_s(t_1)$ and $\mathrm{pos}_s(t_3)$, then $c$ prefixes
+$\mathrm{pos}_s(t_2)$. Instantiated at an anchor's coordinate:
+everything displayed between two members of a subtree is in the
+subtree, so runs typed under distinct anchors cannot interleave. The
+proof is pure lexicographic convexity of prefix sets; no property of
+the code is consumed.
+\hfill\lean{subtree\_convex}
+\end{theorem}
 
 \paragraph{The one-line separation, and the conservation law.} The
 natural first attempt at tombstone-freedom is the \emph{rehoming}
@@ -3922,6 +4064,61 @@ the correctness story. One requirement cuts across all four
 operations: the arithmetic is exact, never rounded (see the binary64
 refutation below).
 
+The contract's two structural properties are one Lean structure, and
+the coordinate is one recursion over it; these two displays are what
+every theorem of this part is parametric in.
+
+\begin{definition}[ordered prefix code]
+\label{def:opc}
+An \emph{ordered prefix code} is $\Gamma = (\mathrm{enc} : \mathbb{N}
+\to \{0,1\}^{*})$ satisfying, for all $d, e$:
+\begin{itemize}[leftmargin=2em]
+\item[(m)] \emph{monotone}: $1 \le d$ and $d < e$ imply
+  $\mathrm{enc}(d) <_{\mathrm{lex}} \mathrm{enc}(e)$ (strict
+  first-difference order on bit strings, $\code{0} < \code{1}$);
+\item[(p)] \emph{prefix-free}: $1 \le d$, $1 \le e$, and $d \ne e$
+  imply $\mathrm{enc}(d)$ is not a prefix of $\mathrm{enc}(e)$.
+\end{itemize}
+Both laws are conditioned on positivity: $\mathrm{enc}$ is only ever
+consumed at $\delta \ge 1$ (causality). The contract's third bullet
+(universal, with a cheap floor) is deliberately \emph{not} a field:
+it is the cost requirement, selecting among inhabitants and entering
+no proof.
+\hfill\lean{OrderedPrefixCode}
+\end{definition}
+
+\begin{definition}[coordinate and mint, stored form]
+\label{def:coordmint}
+The mechanization's coordinate is the bare codeword concatenation
+along the delta chain, on \code{List Bool}:
+\[
+  \mathrm{coordOf}_\Gamma(\langle\rangle) = \varepsilon,
+  \qquad
+  \mathrm{coordOf}_\Gamma(\langle d \rangle \cdot ch)
+  = \Gamma.\mathrm{enc}(d) \cdot \mathrm{coordOf}_\Gamma(ch),
+\]
+a homomorphism from chain concatenation to string concatenation
+(\lean{coordOf\_append}). The \emph{mint} of an insert $(t, \ins(x
+\leftarrow a))$ carrying prefix $\pi$ appends one codeword:
+$\mathrm{mint}_\Gamma(\pi, t, a) = \pi \cdot \Gamma.\mathrm{enc}(t -
+a)$ (\lean{mint}; instance form \lean{eCoord}). The three framing
+bits of the interval realization below (the leading $1$ and the
+quarter-selecting \code{01}) buy positivity and subtree interiority
+of the dyadic cells alone and are dropped in the stored form (the
+carrier paragraph below); nothing in the maintenance or faithfulness
+story changes.
+\hfill\lean{coordOf}, \lean{mint}
+\end{definition}
+
+\begin{theorem}[unique decodability]
+\label{thm:uniquedecode}
+For positive chains $ch_1, ch_2$: $\mathrm{coordOf}_\Gamma(ch_1) =
+\mathrm{coordOf}_\Gamma(ch_2)$ implies $ch_1 = ch_2$. Prefix-free
+concatenations decode uniquely, so distinct birth chains mint
+distinct coordinates and coordinates are honest names.
+\hfill\lean{coordOf\_inj}
+\end{theorem}
+
 \paragraph{Step 1: differential coding.} By causality
 $\delta = x - a \ge 1$. A chain-lex first difference always compares
 two entries with the \emph{same} anchor (the shared prefix), and for
@@ -3986,6 +4183,39 @@ wins only from $\delta \ge 32$ and loses at $\delta \in \{2,3\} \cup
 tails are thin, so on real traces the two flips are a wash; the
 dominance shows in race-heavy shapes (the entropy-law table below)
 and in the asymptotics.
+
+\begin{proposition}[three proved instances]
+\label{prop:instances}
+Three inhabitants of Definition~\ref{def:opc} are proved and
+packaged; every parametric theorem of this part is inherited at each
+verbatim.
+\begin{itemize}[leftmargin=2em]
+\item \emph{Unary} (\lean{unaryCode}): $\mathrm{enc}(d) =
+  1^{d}\,0$; monotonicity and prefix-freedom by two short inductions
+  (\lean{unaryEnc\_mono}, \lean{unaryEnc\_not\_prefix}); $\Theta(d)$
+  bits per level, the cost-control arm.
+\item \emph{The $\gamma$-flip} (\lean{binaryCode}): $\mathrm{enc}(d)
+  = 1^{L-1}\,0\,(d \text{ minus its leading bit})$ with $L$ the
+  bit-length of $d$; $|\mathrm{enc}(d)| = 2L - 1$ at $1 \le d$
+  (\lean{binEnc\_length}); monotone at $1 \le d$, $d < e$
+  (\lean{binEnc\_mono}) and prefix-free at $1 \le d$, $1 \le e$,
+  $d \ne e$ (\lean{binEnc\_prefixFree}).
+\item \emph{The $\delta$-flip} (\lean{eliasDeltaCode}):
+  $\mathrm{enc}(d) = \mathrm{binEnc}(L) \cdot (d \text{ minus its
+  leading bit})$, the length field itself $\gamma$-flip-coded;
+  $|\mathrm{enc}(d)| = L + 2\,\mathrm{len}(L) - 2$ at $1 \le d$
+  (\lean{dEnc\_length}); \lean{dEnc\_mono},
+  \lean{dEnc\_prefixFree}, the same hypothesis shapes. The per-level
+  crossover of the honest footnote is kernel spot-checked at
+  $\delta \in \{2, 8, 16, 32, 1024\}$ in the same file.
+\end{itemize}
+The $\gamma$- and $\delta$-flips are cross-validated against the
+Python codes by kernel \code{decide} on concrete codewords (4 and 10
+codeword pins respectively; the unary code has no pins, its
+$\mathrm{enc}$ being definitional); per code, this is
+Theorem~\ref{thm:faithful}(i).
+\hfill\lean{unaryCode}, \lean{binaryCode}, \lean{eliasDeltaCode}
+\end{proposition}
 
 \paragraph{The mint.} Writing $b = 1 \cdot C(\delta)$ (a leading 1
 keeps coordinates positive) and $w = 2^{-|b|-2}$, the mint is the
@@ -4359,6 +4589,10 @@ element's interval strictly higher.
 \item[(iii)] \emph{Exact maintenance:} in every reachable state,
 every live node's stored records compose to exactly $\alpha(u)$.
 \end{itemize}
+\noindent (Paper-level statement, proved below; its mechanized
+counterparts are the code laws of Definition~\ref{def:opc} with
+Theorem~\ref{thm:uniquedecode}, and the stored form is
+Theorem~\ref{thm:chainlex}.)
 \end{theorem}
 \begin{proof}
 (i) $C$ is prefix-free: codes of lengths $2L{-}1 < 2M{-}1$ differ at
@@ -4400,7 +4634,25 @@ randomized executions, all clean; over $19{,}531$ multi-member sibling
 groups, own-timestamp order violated $3{,}481$ times (exactly the
 post-fold heir groups; forcing own-ts there is the refuted
 dissolution behavior), \textbf{chain-lex violated $0$ times}.
+(Paper-level corollary of Theorem~\ref{thm:faithful}; the mechanized
+form of the display-order claim is Theorem~\ref{thm:chainlex}.)
 \end{corollary}
+
+\begin{theorem}[the chain-lex theorem, stored form]
+\label{thm:chainlex}
+For distinct positive chains $ch_1, ch_2$:
+\[
+  \mathrm{keyLt}\bigl(\mathrm{key}(\mathrm{coordOf}_\Gamma(ch_2)),\
+  \mathrm{key}(\mathrm{coordOf}_\Gamma(ch_1))\bigr) = \mathsf{true}
+  \;\iff\; \mathrm{chainBefore}\ ch_1\ ch_2 :
+\]
+the display comparator on stored coordinates (keys descending)
+computes exactly the chain order of
+Definition~\ref{def:chainbefore}, for every ordered prefix code.
+This is Corollary~\ref{cor:lex} as one flat comparison of immutable
+bit strings, the form the read executes.
+\hfill\lean{display\_iff\_chainBefore}
+\end{theorem}
 
 \paragraph{The entropy law.} A coordinate is the concatenation of the
 codes along the birth chain: $\Theta(\sum_i \log \delta_i)$ bits,
@@ -4571,15 +4823,68 @@ over it anyway, and $\pi$ exists exactly to make that corner total.}
 \label{fig:commute}
 \end{figure}
 
+The commutation kernel is stated with its guards displayed in full:
+this is a \emph{conditioned} commutation, and per the framework's
+standing post-mortem, a commutation whose quantifier was edited is
+exactly where a verification effort can fool itself, so the guard
+list is the content.
+
+\begin{definition}[conditioned commutation, embed form]
+\label{def:embedcomm}
+For ops $o_1, o_2$, $\mathrm{commutesWith}'_\Gamma(o_1, o_2)$
+demands, for \emph{every} state $s$ satisfying all five guards:
+\begin{itemize}[leftmargin=2em]
+\item $0$ is not a stored key of $s$;
+\item $o_1$ and $o_2$ are each \emph{accurate} at $s$
+  (\lean{accurate}: an insert's anchor precedes it, $a < t$, and the
+  carried prefix is the anchor's stored coordinate, or the anchor is
+  the root and the prefix empty; a delete's target is live);
+\item $o_1$ and $o_2$ each have \emph{fresh} timestamps
+  (\lean{fresh\_ts}: an insert's $t$ is nonzero and unstored;
+  vacuous for deletes),
+\end{itemize}
+that $o_2(o_1(s)) \equiv o_1(o_2(s))$, where $\equiv$ is extensional
+map equality (equal domains, equal records: the carrier's literal
+equality, not a quotient).
+\hfill\lean{commutes\_with'}
+\end{definition}
+
+\begin{theorem}[$\rcrel = \Either$ is honest]
+\label{thm:rceither}
+For all $o_1, o_2$ with distinct timestamps and distinct origin
+replicas:
+\[
+  \rcrel(o_1, o_2) = \Either
+  \;\iff\;
+  \mathrm{commutesWith}'_\Gamma(o_1, o_2) .
+\]
+Since $\rcrel$ is $\Either$ everywhere, the content is the forward
+direction: every distinct cross-replica pair commutes on guarded
+states, to equality. The one clause with teeth is that a delete's
+live target is never a fresh insert's timestamp (accuracy plus
+freshness), ruling out the causally impossible
+insert-then-delete-it shape.
+\hfill\lean{rc\_non\_comm'}
+(\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_MRDT.lean})
+\end{theorem}
+
 \paragraph{Ghost, in the strict sense.} On every reachable state the
 anchor is live at application (honesty), and the application reads
-only the state and the two timestamps: $\pi$ is never consulted. The
-Lean artifact carries this as \code{ins\_prefix\_ghost}
-(\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_MRDT.lean}): on accurate
-ops the always-$\pi$ transition and the state-reading transition are
-literally the same function: the two conventions of this section
-coincide on every honest state. An implementation may therefore drop
-$\pi$ from the wire
+only the state and the two timestamps: $\pi$ is never consulted.
+The Lean form is exact:
+
+\begin{theorem}[the prefix is ghost]
+\label{thm:ghost}
+If $0$ is not a stored key of $s$ and $o$ is accurate at $s$, then
+$\dodo_\Gamma(s, o) = \dodo^{\mathrm{run}}_\Gamma(s, o)$: the
+always-$\pi$ transition and the state-reading transition
+(\lean{do\_run}, which mints from $\mathrm{pos}_s(a)$, or from
+$\varepsilon$ at the root) are literally the same function on
+accurate ops.
+\hfill\lean{ins\_prefix\_ghost}
+\end{theorem}
+
+\noindent An implementation may therefore drop $\pi$ from the wire
 entirely; the \emph{proof} may not, because the verification
 conditions quantify over reorderings that visit unreachable states,
 and there application without $\pi$ is partial. The prefix costs
@@ -4700,7 +5005,73 @@ virtual terminator, and the sided symbol alphabet is ordered
 with the L band \emph{mirrored} (among L-siblings the newer sits
 adjacent to the node). Marker above the R band puts a node before its
 R-extensions; marker below the L band puts L-extensions before the
-node.
+node. The three displays that carry this section:
+
+\begin{definition}[the sided chain and its coordinate]
+\label{def:schain}
+A sided chain is a list of entries $(\mathrm{side}, \delta)$,
+$\mathrm{side} \in \{R, L\}$, deltas positive (\lean{SEntry},
+\lean{SChain}, \lean{PosSChain}). Its stored coordinate concatenates
+one symbol block per entry (\lean{sBlock}, \lean{sidedCoordOf}):
+\[
+  \mathrm{block}(R, \delta) = \Gamma.\mathrm{enc}(\delta)
+  \text{ in the R band},
+  \qquad
+  \mathrm{block}(L, \delta) =
+  \overline{\Gamma.\mathrm{enc}(\delta)}
+  \text{ in the L band},
+\]
+the R band mapping $\code{0} \mapsto 1$, $\code{1} \mapsto 2$, the L
+band $\code{0} \mapsto 4$, $\code{1} \mapsto 5$, and
+$\overline{\,\cdot\,}$ the bitwise complement (\lean{compl}: the
+order-reversing twin at identical lengths, prefix-freedom
+preserved); equivalently, one band-symbol map per side, L
+pre-composing the complement (\lean{sBlock\_eq}, \lean{sideSym}).
+The sort key appends the marker, $\mathrm{sKey}(c) = c \cdot
+\langle 3 \rangle$, and the bands straddle it: $\{1,2\} < 3 <
+\{4,5\}$.
+\hfill\lean{sidedCoordOf}, \lean{sKey}
+\end{definition}
+
+\begin{definition}[the in-order rule]
+\label{def:schainbefore}
+Entry divergence at a shared anchor (\lean{sEntryBefore}): among
+R-siblings the newer first ($(R,d)$ before $(R,e)$ iff $e < d$);
+among L-siblings the older first ($(L,d)$ before $(L,e)$ iff
+$d < e$, the mirror); every L entry before every R entry. The
+display order on sided chains is the least relation closed under
+three rules:
+\[
+  ch \cdot \langle (L,d) \rangle \cdot rest \;\prec\; ch,
+  \qquad
+  ch \;\prec\; ch \cdot \langle (R,d) \rangle \cdot rest,
+  \qquad
+  q \cdot \langle e_1 \rangle \cdot c_1 \;\prec\;
+  q \cdot \langle e_2 \rangle \cdot c_2
+  \ \ (e_1 \text{ before } e_2) :
+\]
+L-extensions precede the node, the node precedes its R-extensions,
+divergences by the entry order. Distinct chains are always
+comparable (\lean{schainBefore\_total}).
+\hfill\lean{schainBefore}
+\end{definition}
+
+\begin{theorem}[the sided marker theorem]
+\label{thm:sidedmarker}
+For distinct positive sided chains $c_1, c_2$:
+\[
+  \mathrm{keyLt}\bigl(\mathrm{sKey}(\mathrm{sidedCoordOf}_\Gamma(c_2)),\
+  \mathrm{sKey}(\mathrm{sidedCoordOf}_\Gamma(c_1))\bigr) =
+  \mathsf{true}
+  \;\iff\; \mathrm{schainBefore}\ c_1\ c_2 :
+\]
+two-sidedness is plain lexicographic comparison over the marker
+alphabet; no bespoke three-way prefix clause survives into the read.
+Unique decodability holds alongside (\lean{sidedCoordOf\_inj}: the
+side is recoverable from the first symbol's band, the delta by
+per-band prefix-freedom).
+\hfill\lean{sdisplay\_iff\_schainBefore}
+\end{theorem}
 
 On the example, the Fugue anchoring rule (the generation-policy
 paragraph below) sends each ``insert at head'' to the \emph{successor}
@@ -4737,19 +5108,62 @@ out as follows, writing $M$ for the marker:
   \[
     \langle\, 50, 30, 10,\ 61, 41, 21,\ 1 \,\rangle .
   \]
-  This is the datatype-level theorem \code{schain\_subtree\_convex}
-  (a subtree is an in-order interval; \S\ref{sec:mechanization}):
-  \emph{any} policy that keeps a run inside one subtree gets
-  non-interleaving from the datatype, for free.
+  This is the datatype-level subtree convexity
+  (Theorem~\ref{thm:sconvex}): \emph{any} policy that keeps a run
+  inside one subtree gets non-interleaving from the datatype, for
+  free.
 \end{itemize}
+
+\begin{theorem}[sided subtree convexity]
+\label{thm:sconvex}
+For every prefix $p$ and sided chains $c_x, c_y, c_z$: if $c_x$ and
+$c_y$ extend $p$, $\mathrm{schainBefore}\ c_x\ c_z$, and
+$\mathrm{schainBefore}\ c_z\ c_y$, then $c_z$ extends $p$. With the
+empty extension allowed, the node itself is a member: a subtree's
+display interval is L-descendants, the node, R-descendants, with
+nothing foreign between. A pure chain lemma: no state, no honesty,
+no property of the code.
+\hfill\lean{schain\_subtree\_convex}
+\end{theorem}
 
 The current datatype is the all-R fragment of this order,
 \emph{exactly}: with L uninhabited the in-order rule degenerates to the
 prefix rule, and the existing key of \S\ref{sec:encoding} (the
 $\mathrm{sym}$-mapped bits plus terminator) is literally this
-construction with the L band empty. That is a theorem, not a slogan:
-the mechanization's fragment theorem (\S\ref{sec:mechanization}) proves
-all-R chains order exactly as one-sided chains.
+construction with the L band empty. That is a theorem, not a slogan,
+twice: once on chains, once on folds.
+
+\begin{theorem}[the all-R fragment theorem]
+\label{thm:fragment}
+For distinct positive one-sided chains $c_1, c_2$, with
+$\mathrm{liftR}$ tagging every entry $R$:
+\[
+  \mathrm{schainBefore}\ (\mathrm{liftR}\ c_1)\ (\mathrm{liftR}\ c_2)
+  \;\iff\; \mathrm{chainBefore}\ c_1\ c_2,
+\]
+via the key identity
+$\mathrm{sKey}(\mathrm{sidedCoordOf}_\Gamma(\mathrm{liftR}\ c)) =
+\mathrm{key}(\mathrm{coordOf}_\Gamma(c))$ (\lean{sKey\_liftR}): with
+L uninhabited, the in-order rule is the prefix rule, symbol for
+symbol.
+\hfill\lean{schainBefore\_liftR}
+\end{theorem}
+
+\begin{theorem}[the fragment at the instance]
+\label{thm:sfoldlift}
+For every operation list $\rho$ of the one-sided instance,
+\[
+  \mathrm{sFold}_\Gamma(\mathrm{map}\ \mathrm{liftOp}\ \rho)
+  = \mathrm{map}\ \mathrm{liftRec}\ (\mathrm{eFold}_\Gamma\ \rho),
+\]
+record for record.
+Unconditional: no honesty, no sortedness hypotheses, a pure
+simulation; the reads agree as a corollary
+(\lean{sided\_allR\_read\_eq}). Chained with the compaction theorem
+(\S\ref{sec:mechanization}), the all-R sided instance reads as the
+published tombstoned RGA.
+\hfill\lean{sFold\_liftOp}
+\end{theorem}
 
 \begin{figure}[h]
 \centering
@@ -4917,8 +5331,32 @@ randomized version-DAG PBT, all four models & 120 + 300 clean \\
 \end{center}
 
 \noindent The Lean mechanization of both layers (the sided chain-lex
-kernel and the sided conditioned instance, capstone included) has
-landed kernel-clean; \S\ref{sec:mechanization} records it.
+kernel and the sided conditioned instance) has landed kernel-clean;
+its capstone is the policy/datatype split as a quantifier.
+
+\begin{theorem}[the sided capstone]
+\label{thm:sidedcapstone}
+Call a configuration $C$ of the sided instance \emph{honest}
+(\lean{SHonest}) when (a) every delete's target has a visible prior
+insert, and (b) one global chain assignment exists: some
+$\mathrm{chainOf} : \mathbb{N} \to \mathrm{SChain}$ such that every
+insert event $o$ of $C$ has $\mathrm{chainOf}(t_o)$ positive, stored
+coordinate $\mathrm{sidedCoordOf}_\Gamma(\mathrm{chainOf}(t_o))$,
+and deltas telescoping to the id: $\sum \mathrm{chainOf}(t_o) =
+t_o$. Let $\mathrm{SReach}$ be honest reachability at this contract
+(Definition~\ref{def:honestreach}). Then every
+$\mathrm{SReach}$-reachable configuration is RA-linearizable, per
+version, for every ordered prefix code and for \emph{every side
+assignment}: sides are payload to convergence. The discharge is the
+direct-join route of \S\ref{sec:route} (\lean{s\_join\_at}); the
+generation discipline supplies the contract
+(\lean{sHonest\_of\_applicable}) and fold canonicity mirrors the
+one-sided \lean{e\_fold\_canon} as \lean{s\_fold\_canon}.
+\hfill\lean{sided\_embed\_ra\_linearizable3}
+\end{theorem}
+
+\noindent \S\ref{sec:mechanization} records the surrounding
+mechanization inventory.
 
 \section{Maximal non-interleaving, closed: the traversal theory and
 Theorem 9}
@@ -4963,6 +5401,64 @@ formalized over reachable configurations of the FugueMax kernel variant
 the kernel's), with the conclusion ``consecutive'' read over the
 \emph{visible} document, which is the property an editor's user sees.
 
+\emph{The knowledge model} (the generation-layer fold of
+\S\ref{sec:design}, declared here once). A global configuration is a
+map $G$ from replica to its list of \emph{generation records}; a
+record carries $(\mathrm{ts}, \mathrm{rep}, \mathrm{op},
+\mathrm{lo}, \mathrm{ro}, \mathrm{chain})$: the Lamport id, the
+issuing replica, the op, the recorded left origin ($0$ = start), the
+recorded right origin (the tombstone-visible successor at mint time;
+none = end), and the minted birth chain. For the plain Fugue policy
+the record list is \lean{Know} with reachability \lean{FugueReach}
+(local positional inserts with globally fresh, locally dominant
+Lamport ids; positional deletes; pairwise whole-knowledge sync); for
+the FugueMax variant, \lean{KnowM} and \lean{MaxReach}, same shape
+over the tagged records. The readers, per knowledge state $K$:
+$\mathrm{lo}(x)$ and $\mathrm{ro}(x)$ read the minted record
+(\lean{mLoOf}, \lean{mRoOf}); $x \prec y$ is ``displays before,
+tombstones included,'' the display comparator on the strong-list
+keys (\lean{mBefore}); $\mathrm{live}(x)$ is membership in the
+visible document (\lean{mLive}); $\mathrm{minted}(K)$ the minted
+ids, tombstones included (\lean{mMintedIds}); left-origin ancestry
+is the iterated-$\mathrm{lo}$ relation (\lean{mLoDesc}). Plain-Fugue
+twins carry g-names (\lean{gLoOf}, \lean{gBefore}, \dots).
+
+\begin{definition}[adapted Definition 4, the quantified form]
+\label{def:wkdef4}
+Over a knowledge state $K$ (FugueMax readers shown; the plain-Fugue
+twins are verbatim over g-readers):
+\begin{itemize}[leftmargin=2em]
+\item[(1)] \emph{forward} (\lean{ForwardNIM}): for all minted $A,
+  B$, both live, with $\mathrm{lo}(B) = A$ and $B$ display-earliest
+  among minted elements with left origin $A$ (every minted $D \ne B$
+  with $\mathrm{lo}(D) = A$ has $B \prec D$): $A$ and $B$ are
+  \emph{consecutive}, i.e.\ $A \prec B$ with no \emph{live} $c$
+  strictly between (\lean{mConsecutive}).
+\item[(2)] \emph{backward, with the exception}
+  (\lean{BackwardNIExcM}): for all minted live $A, B$ with
+  $\mathrm{ro}(A) = B$ and $A$ display-latest among minted elements
+  with right origin $B$: if the exception fails, $A$ and $B$ are
+  consecutive. The exception (\lean{BackwardExceptionM}):
+  $\mathrm{lo}(A) \ne \mathrm{lo}(B)$, and some \emph{minted} $C$
+  (tombstones included) has $\mathrm{lo}(A) \prec C \prec B$ and is
+  not a left-origin descendant of $\mathrm{lo}(A)$.
+\item[(3)] \emph{arbitration} (\lean{SameOriginLowFirstM}): minted
+  live $A, B$ with equal left origins, equal right origins, and
+  $A < B$ display $A \prec B$.
+\end{itemize}
+$\mathrm{MaxNonInterleaving}(K)$ is the conjunction of the three;
+the quantified statement
+$\mathrm{FugueMaxMaximallyNonInterleaving}(\Gamma)$ demands it at
+every replica of every \lean{MaxReach}-reachable $G$. The premise
+quantifiers and both origins range over minted elements, tombstones
+included; the conclusion is live (the visible document). The
+plain-Fugue twin of the exception (\lean{BackwardException})
+carries one extra conjunct, a \emph{live} witness: that reading is
+refuted below and is retained as the negative control.
+\hfill\lean{MaxNonInterleavingM},
+\lean{FugueMaxMaximallyNonInterleaving}
+\end{definition}
+
 \paragraph{The traversal theory.} The paper's proofs run through a
 tree traversal (its Lemma~7: the list order of a forward
 non-interleaving algorithm is a depth-first traversal of the
@@ -4994,7 +5490,9 @@ R mints satisfy it with $\ell s$ empty; for L mints the content is that
 the tombstone-visible successor of an anchor with an R-child is itself
 an all-L descendant of that R-child, proved by an argmax argument (an R
 entry inside the rest would exhibit a minted element displaying between
-anchor and successor, beating the successor's maximality). loShape is a
+anchor and successor, beating the successor's maximality; the invariant
+and its key lemma are \lean{loShape} and \lean{succ\_R\_desc\_allL},
+\code{SidedRGA\_NonInterleaving.lean}). loShape is a
 \emph{generation-discipline} fact, not a kernel fact: a forged state
 that stores an L entry under the wrong parent displays fine (the total
 order does not care) but breaks the walk-up rule, and condition (1)
@@ -5011,21 +5509,67 @@ decompositions of $\chain(c)$). Condition (1) follows: any live $c$
 strictly between $A$ and its earliest left-origin child $B$ lands in
 $A$'s subtree by convexity, is R-headed by the side lemma, and the
 descent produces a $D$ with $\mathrm{lo}(D) = A$ displaying before $B$,
-contradicting $B$'s minimality
-(\lean{fuguemax\_forward\_ni}, kernel-clean; the one new invariant
-clause, the all-L successor shape for L mints, transported through
-insert, delete, and sync like the main bundle). Condition (3) was
-already the positive twin of the Fugue refutation
-(\lean{fuguemax\_same\_origin\_low\_first},
-\S\ref{sec:mechanization}). Everything so far never consults the
-sibling order, and the same proof discharges the \emph{plain Fugue}
-policy's forward condition as stated
-(\lean{fugue\_forward\_ni}, \code{SidedRGA\_Fugue\_ForwardNI.lean}):
-the link layer was rebuilt as an external invariant over an untouched
-\lean{FugueReach}, with roughly 85 percent of the FugueMax machinery
-transferring verbatim. Plain Fugue's conditions (2) and (3) remain
-false, as the paper itself proves; the machine-checked
-Fugue-versus-FugueMax separation of \S\ref{sec:mechanization} stands.
+contradicting $B$'s minimality. The one new invariant clause, the
+all-L successor shape for L mints, transports through insert, delete,
+and sync like the main bundle. Condition (3) was already the positive
+twin of the Fugue refutation
+(\lean{fuguemax\_same\_origin\_low\_first}: at every replica of every
+\lean{MaxReach}-reachable $G$, same-origin pairs display lower id
+first).
+
+\begin{theorem}[forward non-interleaving, FugueMax]
+\label{thm:fwdmax}
+For every ordered prefix code $\Gamma$: every replica of every
+\lean{MaxReach}-reachable configuration satisfies condition (1) of
+Definition~\ref{def:wkdef4}. No hypotheses beyond reachability;
+every invariant consumed is internal. Kernel axioms only.
+\hfill\lean{fuguemax\_forward\_ni}
+\end{theorem}
+
+Everything in the forward proof never consults the sibling order, and
+the same argument discharges the \emph{plain Fugue} policy's forward
+condition as stated: the link layer was rebuilt as an external
+invariant over an untouched \lean{FugueReach}, with roughly 85
+percent of the FugueMax machinery transferring verbatim.
+
+\begin{theorem}[forward non-interleaving, plain Fugue]
+\label{thm:fwdfugue}
+For every ordered prefix code $\Gamma$: every replica of every
+\lean{FugueReach}-reachable configuration satisfies condition (1)
+in its g-reader form (\lean{ForwardNI}). Kernel axioms only.
+\hfill\lean{fugue\_forward\_ni}
+(\code{SidedRGA\_Fugue\_ForwardNI.lean})
+\end{theorem}
+
+Plain Fugue's conditions (2) and (3) remain false, as the paper
+itself proves, and the separation is machine-checked at reachable
+configurations:
+
+\begin{proposition}[the plain-Fugue refutations]
+\label{prop:fuguerefuted}
+At the unary code:
+\begin{itemize}[leftmargin=2em]
+\item \emph{Condition (3) fails}: on the reachable two-concurrent-%
+front-inserts configuration (\lean{GTie}), ids $1$ and $2$ share
+both origins and display $[2, 1]$: the kernel's newest-first sibling
+order is the exact reverse of the paper's (by its Theorem~10, not
+optional) lowest-id-first arbitration. Hence
+$\neg\,\mathrm{FugueMaximallyNonInterleaving}(\mathrm{unary})$.
+\hfill\lean{fugue\_not\_maximally\_noninterleaving}
+\item \emph{Condition (2) fails}, on the paper's own Figure-7
+execution (\lean{KFig}): the pair $(A, B) = (7, 4)$ satisfies the
+backward premises, the live $6$ sits strictly between, and every
+candidate exception witness is refuted pointwise, so
+$\neg\,\mathrm{BackwardNIExc}(\mathrm{unary}, K_{\mathrm{Fig}})$
+(\lean{fugue\_backward\_gap}); lifted to the full statement at the
+reachable configuration as
+\lean{fugue\_not\_maximally\_noninterleaving\_backward}. This is
+the paper's own Fugue-versus-FugueMax gap, so the separation does
+not hinge on the tiebreak clause.
+\end{itemize}
+Both close by \lean{native\_decide} on the real fold, under the SPOT
+convention (\S\ref{sec:design}).
+\end{proposition}
 
 \paragraph{The backward condition: the live-witness refutation.} The
 Lean statement of the exception, as first adapted, required the witness
@@ -5068,7 +5612,8 @@ root-anchored R mint records no successor; a recorded successor
 displays after the anchor; and the two \emph{RSucc} clauses pin, for an
 R mint whose anchor is itself an L or R mint, a stable witness (the
 anchor's parent, a later L-sibling, or the anchor's own recorded
-successor) whose key bounds the recorded successor's. With those, a
+successor) whose key bounds the recorded successor's (the \lean{RBk}
+bundle, \code{SidedRGA\_Backward.lean}). With those, a
 deterministic, state-definable witness function replaces the causal
 choice: it inspects the in-between element's chain, walks at most two
 steps (four routes, exercised as $\alpha$ 253 times, $\beta_1$ 22,
@@ -5084,36 +5629,81 @@ tombstone (it is, in the Figure-7 family), and the intermediate lemmas
 are deliberately stated over minted, not live, elements so the ladder
 case can call them.
 
-\paragraph{The capstone.} The discharge
-(\code{SidedRGA\_Backward.lean}) closes the arc:
-\code{fuguemax\_maximally\_noninterleaving} delivers all three
-Definition-4 conditions at every replica of every reachable FugueMax
-configuration, kernel-clean on $\{\lean{propext},
-\lean{Classical.choice}, \lean{Quot.sound}\}$. The reduction theorem and the forward file
-recompiled with zero edits after the definition correction, as the
-design phase predicted. SPOTs pin the witness values on all four
-delete-bearing directed variants, PASS and FAIL shaped.
+\paragraph{The capstone.} The backward discharge
+(\code{SidedRGA\_Backward.lean}, \lean{fuguemax\_backward\_ni})
+closes the arc.
+
+\begin{theorem}[Theorem 9, mechanized]
+\label{thm:t9}
+For every ordered prefix code $\Gamma$:
+$\mathrm{FugueMaxMaximallyNonInterleaving}(\Gamma)$, that is, all
+three conditions of Definition~\ref{def:wkdef4} hold at every
+replica of every \lean{MaxReach}-reachable FugueMax configuration.
+No hypotheses beyond reachability and the code; kernel-clean on
+$\{\lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}\}$.
+Assembled from conditions (1) and (3)
+(Theorem~\ref{thm:fwdmax}, \lean{fuguemax\_same\_origin\_low\_first})
+and the backward condition (\lean{fuguemax\_backward\_ni}) by the
+reduction theorem \lean{fuguemax\_theorem9\_of\_backward}.
+\hfill\lean{fuguemax\_maximally\_noninterleaving}
+\end{theorem}
+
+\noindent The reduction theorem and the forward file recompiled with
+zero edits after the definition correction, as the design phase
+predicted. SPOTs pin the witness values on all four delete-bearing
+directed variants, PASS and FAIL shaped.
 
 \paragraph{The convergence capstone, and the TagsOK finding.} Ordering
 intent is only half the variant's bill. The FugueMax realization writes
 records over a \emph{different block format} (R entries carry the
 mint-time successor's key as an order-reversing tag before the
 complemented delta code), so RA-linearizability for the tagged datatype
-was owed separately and is paid
-(\code{fuguemax\_ra\_linearizable3},
-\code{SidedRGA\_FugueMax\_RA\_Lin.lean}): same canonical sorted-list
-state, same mergeable-queue route, fold canonicity as
-\lean{f\_fold\_canon}. The finding worth a name: \textbf{the
-right-origin tag is convergence-load-bearing}, not merely
-intent-load-bearing. Unique decodability of the variant coordinate
-format (\lean{fmCoordOf\_inj}), which key injectivity and hence fold
-canonicity run through, is only unambiguous on \emph{wellformed} tags,
-so the honesty contract carries a \lean{TagsOK} clause alongside chain
-positivity; the generation layer supplies it for free, but a
+was owed separately and is paid: same canonical sorted-list state,
+same mergeable-queue route, fold canonicity mirrored as
+\lean{f\_fold\_canon}. The honesty contract needs one clause the sided
+contract did not:
+
+\begin{definition}[wellformed tags]
+\label{def:tagsok}
+A right-origin tag $t$ is \emph{wellformed} when it is the end tag
+$\langle 0 \rangle$, or a real key: $t = (h \cdot c) \cdot \langle 3
+\rangle$ with head $h \notin \{0, 3\}$, $h \le 5$, and every symbol
+of $c$ marker-free and bounded ($\ne 3$, $\le 5$). The obligation
+applies to R entries (L entries carry no tag);
+$\mathrm{TagsOK}(ch)$ demands it of every entry of the chain.
+\hfill\lean{TagOK}, \lean{TagsOK}
+\end{definition}
+
+\begin{theorem}[FugueMax convergence]
+\label{thm:fmralin}
+Call a configuration $C$ of the tagged instance \emph{honest}
+(\lean{FMHonest}) when (a) every delete's target has a visible prior
+insert, and (b) one global chain assignment exists: some
+$\mathrm{chainOf}$ with, for every insert event $o$ of $C$, the chain
+positive, its tags wellformed
+($\mathrm{TagsOK}(\mathrm{chainOf}(t_o))$, the new clause), the
+stored coordinate equal to the chain's tagged coordinate
+(\lean{fmCoordOf}), and deltas telescoping to the id. With
+$\mathrm{FMReach}$ honest reachability at this contract
+(Definition~\ref{def:honestreach}): every
+$\mathrm{FMReach}$-reachable configuration is RA-linearizable, per
+version, for every ordered prefix code. The right-origin tags ops
+carry are payload to this theorem, exactly as sides were to
+Theorem~\ref{thm:sidedcapstone}.
+\hfill\lean{fuguemax\_ra\_linearizable3}
+(\code{SidedRGA\_FugueMax\_RA\_Lin.lean})
+\end{theorem}
+
+\noindent The finding worth a name: \textbf{the right-origin tag is
+convergence-load-bearing}, not merely intent-load-bearing. Unique
+decodability of the variant coordinate format
+(\lean{fmCoordOf\_inj}), which key injectivity and hence fold
+canonicity run through, is only unambiguous on wellformed tags: the
+generation layer supplies $\mathrm{TagsOK}$ for free, but a
 hand-forged tag would break convergence itself, not just the display
 intent. Convergence is otherwise insensitive to what the coordinates
-contain, exactly as the policy/datatype split predicts: coordinates are
-injectively minted, immutable, and consumed only through key
+contain, exactly as the policy/datatype split predicts: coordinates
+are injectively minted, immutable, and consumed only through key
 comparisons.
 
 \subsection{Where the family sits in the published table}
@@ -5224,27 +5814,56 @@ version DAG. The impossibility is then three lines: a ternary merge
 function on the splice representation receives \emph{identical}
 arguments in the two worlds (the LCA and branch $B$ verbatim, the
 $A$-states by the machine-checked equality) and owes \emph{different}
-answers, so there is none
-(\lean{sibling\_splice\_no\_merge\_function}, quantified over every
-$f : \mathrm{St} \times \mathrm{St} \times \mathrm{St} \to
-\text{read}$; the PASS pins are the two hand-derived embed reads, the
-FAIL pin their inequality).
+answers, so there is none.
 
-\paragraph{The retention characterization.} The fooling pair is a
-\emph{lower} bound: any state representation that forgets a lifted
-child's dead slot key admits the pair, so no merge over it can
-reproduce the embed's reads. The capstone is the matching \emph{upper}
-bound: keeping the whole dead chain suffices for everything
+\begin{proposition}[the fooling pair: no merge function over spliced
+states]
+\label{prop:foolpair}
+Let $w_L$ and $w_B$ be the spliced LCA and branch-$B$ states,
+$w_{1A}$, $w_{2A}$ the two worlds' branch-$A$ states, and $\rho_1$,
+$\rho_2$ the two worlds' embed histories (unary code; payloads $101 /
+105 / 102$ for $a / b / c$; $\mathrm{read}$ is the element projection
+of the fold). The supporting pins, expected values hand-derived:
+\[
+  w_{1A} = w_{2A}, \qquad
+  \mathrm{read}(\mathrm{eFold}\ \rho_1) = [102, 105], \qquad
+  \mathrm{read}(\mathrm{eFold}\ \rho_2) = [105, 102]
+\]
+(\lean{states\_equal\_A}, \lean{embed\_read\_w1},
+\lean{embed\_read\_w2}; the FAIL pin \lean{embed\_reads\_differ} is
+the inequality of the two reads). The impossibility, quantified over
+\emph{every} merge function on the splice representation: for all
+$f : \mathrm{St} \to \mathrm{St} \to \mathrm{St} \to
+\mathrm{List}\ \mathbb{N}$,
+\[
+  \neg\bigl(\, f\ w_L\ w_{1A}\ w_B = \mathrm{read}(\mathrm{eFold}\
+  \rho_1) \;\wedge\; f\ w_L\ w_{2A}\ w_B =
+  \mathrm{read}(\mathrm{eFold}\ \rho_2) \,\bigr).
+\]
+The proof is the three lines above; the pins close under the SPOT
+convention (fold~(iii), \S\ref{sec:design}).
+\hfill\lean{sibling\_splice\_no\_merge\_function}
+\end{proposition}
+
+\begin{finding}[the retention characterization]
+The fooling pair (Proposition~\ref{prop:foolpair}) is a \emph{lower}
+bound: any state representation that forgets a lifted child's dead
+slot key admits the pair, so no merge over it can reproduce the
+embed's reads. The capstone is the matching \emph{upper} bound:
+keeping the whole dead chain suffices for everything
 (\lean{embed\_ra\_linearizable3}, the compaction theorem, the
-sequential spec, delete-order preservation). Between them: \emph{the
-chain of dead slot keys is exactly the information content of delete}.
-Deletion's semantic content in this family is ``the subtree keeps its
-slot,'' and the slot chain is both necessary and sufficient to honor
-it. What remains negotiable is only \emph{where} the memory lives
-(coordinate prefixes here, carried spine paths in the validated
-sibling-edge design, tombstone records in the published RGA: three
-encodings of the same bits) and \emph{how many bits} it costs
-(\S\ref{sec:encoding}, \S\ref{sec:storage}); whether it lives is not.
+sequential spec, delete-order preservation;
+\S\ref{sec:mechanization}). Between them: \emph{the chain of dead slot
+keys is exactly the information content of delete}. Deletion's
+semantic content in this family is ``the subtree keeps its slot,'' and
+the slot chain is both necessary and sufficient to honor it. What
+remains negotiable is only \emph{where} the memory lives (coordinate
+prefixes here, carried spine paths in the validated sibling-edge
+design, tombstone records in the published RGA: three encodings of the
+same bits) and \emph{how many bits} it costs (\S\ref{sec:encoding},
+\S\ref{sec:storage}); whether it lives is not. This is the pairing of
+two mechanized bounds, not a single Lean name.
+\end{finding}
 
 \paragraph{The two-by-two.} Retention crossed with display rank sorts
 the four named designs of this document's arc:
@@ -5279,10 +5898,23 @@ verdicts degrade exactly as the retained information does.
 
 \paragraph{The delete-sensitivity separation.} \S\ref{sec:table1}
 showed the generation policy selecting rows of the interleaving table.
-Here is what no policy can select. For every policy over the retaining
-kernel, display keys are immutable and deletion is record removal, so a
-delete never moves survivors (\lean{eUpdate\_del\_sublist} is
-policy-free): the whole family is \emph{delete-insensitive}. Shesha's
+Here is what no policy can select.
+
+\begin{theorem}[delete never moves survivors]
+\label{thm:delfree}
+For every ordered prefix code $\Gamma$, every state $s$, and every
+delete operation: $\mathrm{eUpdate}\ \Gamma\ s\ (t, r, \del\ x)$ is a
+\emph{sublist} of $s$ (the survivors, in unchanged order). No
+hypotheses: no honesty, no reachability, no policy. The proof is one
+line (\code{List.filter\_sublist}); the theorem carries the separation
+because it is unconditional.
+\hfill\lean{eUpdate\_del\_sublist}
+\end{theorem}
+
+\noindent For every policy over the retaining kernel, display keys are
+immutable and deletion is record removal, so a delete never moves
+survivors (Theorem~\ref{thm:delfree} is policy-free): the whole family
+is \emph{delete-insensitive}. Shesha's
 row is delete-\emph{sensitive} (the splice moves survivors), and the
 fooling pair shows the sensitivity is not a stylistic difference but an
 information-theoretic one: the splice state cannot support the
@@ -5355,55 +5987,144 @@ every coordinate at the cut:
 where $\mathrm{stab}\ c$ is the longest stable prefix (it is exactly
 one chain prefix, again by downward closure) and the unstable tail is
 kept verbatim. The theorems consume two hypotheses, both relativized to
-the coordinates \emph{at hand} (the cut state's records plus the mints
-applied beyond the cut), never to all bit strings: \textbf{H2}, order
-preservation ($\hat\rho$ preserves the fold's key comparator, stated as
-a Boolean equation so it carries both directions), and \textbf{H3},
-extension commuting ($\hat\rho(\pi \,\|\, \mathrm{enc}\ d) = \hat\rho(\pi)
-\,\|\, \mathrm{enc}\ d$ for mints beyond the cut, which is automatic for
-a genuine stable-prefix map). Injectivity is free: H2 already implies
-it on its domain, so the Lean bundle carries H2 and H3 and derives H1
-(\lean{StablePrefixMap}).
+the coordinates \emph{at hand} (convention~(v), \S\ref{sec:design}),
+never to all bit strings; injectivity is free. The Lean bundle
+(\code{EmbedRGA\_Recoding.lean}, payload- and code-generic,
+kernel-clean):
 
-The cluster (\code{EmbedRGA\_Recoding.lean}, payload- and
-code-generic, kernel-clean):
+\begin{definition}[the stable-prefix re-map bundle]
+\label{def:spm}
+A \emph{stable-prefix map} for $\Gamma$ is $F = (f, \mathrm{Rest},
+\mathrm{MintAt}, \mathrm{ext}, \mathrm{ord})$: a coordinate map $f$,
+the at-rest domain $\mathrm{Rest}$ (the cut state's records), the
+declared beyond-cut mints $\mathrm{MintAt}$, and two laws:
 \begin{itemize}[leftmargin=2em]
-\item \textbf{T1, fold congruence, cut-parametric}
-  (\lean{eRecode\_applySeq}): folding translated ops over the
-  translated cut state is the translation of the untranslated fold.
-\item \textbf{The global-collapse negative}
-  (\lean{eRecode\_ext\_global\_collapse}): one might hope to state T1
-  over the whole history (map every op ever issued, re-fold from the
-  initial state). That statement forces H3 at every historical mint,
-  and H3 at every mint provably collapses the re-map to a
-  constant-prefix prepend that compacts \emph{nothing}. Re-coding is
-  inherently an epoch operation on states, not a history rewrite; the
-  lazy, cut-parametric formulation is not a convenience but the only
-  nontrivial one. A finding, mechanized.
-\item \textbf{T2, reads identical}
-  (\lean{eRecode\_reads\_identical}): the element sequence of the
-  translated fold equals the untranslated one, verbatim; compression is
-  invisible to every observer. The contentful half hides in T1: the
-  translated side re-sorts by the \emph{new} keys, so equality of reads
-  is exactly the statement that the new keys induce the old order, H2
-  doing its job. The negative control earns its keep here: an
-  injective, H3-satisfying but order-breaking map genuinely flips the
-  read, pinning H2 as the load-bearing hypothesis.
-\item \textbf{T3, transport} (\lean{eRecode\_fold\_canon},
-  \lean{eRecode\_sorted}, \lean{eRecode\_version\_sorted},
-  \lean{eRecode\_ra\_transport}): canonicity, sortedness, and the
-  capstone's per-version witness statement all transport along the
-  isomorphism. Honest scope note: the transport is at the level of
-  states and witnesses, not configurations; the re-coded history is
-  \emph{not} itself an honest configuration of the same datatype
-  (compacted coordinates deliberately forget dead chain segments, so
-  the chain-generation honesty clause fails for them). Re-basing
-  honesty modulo an order-embedding, so the capstone can be re-invoked
-  natively in the new epoch, is the deferred protocol half, together
-  with agreement on a common cut; the cut hypothesis itself is
-  discharged by \S\ref{sec:stability}'s SettledAt gate
-  (\lean{eRecode\_settled\_bridge}).
+\item[(H3)] \emph{extension commuting, guarded by} $\mathrm{MintAt}$:
+  $\mathrm{MintAt}\ \pi\ d$ implies $f(\pi \cdot
+  \Gamma.\mathrm{enc}(d)) = f(\pi) \cdot \Gamma.\mathrm{enc}(d)$;
+\item[(H2)] \emph{order preservation on the domain}: for $c$, $c'$ at
+  hand, $\mathrm{keyLt}(\mathrm{key}(f\,c))\,(\mathrm{key}(f\,c')) =
+  \mathrm{keyLt}(\mathrm{key}\ c)\,(\mathrm{key}\ c')$, a Boolean
+  equation carrying both directions of the display comparator.
 \end{itemize}
+``At hand'' ($F.\mathrm{Dom}\ c$) is $\mathrm{Rest}\ c \vee \exists
+\pi\, d,\ \mathrm{MintAt}\ \pi\ d \wedge c = \pi \cdot
+\Gamma.\mathrm{enc}(d)$. There is no injectivity field.
+\hfill\lean{StablePrefixMap}, \lean{StablePrefixMap.Dom}
+\end{definition}
+
+\begin{lemma}[H1 is derived]
+\label{lem:spmh1}
+For $c$, $c'$ at hand with $f\,c = f\,c'$: $c = c'$. (H2 at the pair,
+plus totality and irreflexivity of $\mathrm{keyLt}$ and injectivity of
+$\mathrm{key}$: a strict first-difference order admits no two-sided
+tie except equality.)
+\hfill\lean{StablePrefixMap.injOn}
+\end{lemma}
+
+\noindent Writing $\mathrm{remap}_F$ for the translation of records,
+states, and ops by $F.f$ (\lean{eRemapSt}, \lean{eRemapOp}: an op's
+carried anchor prefix is translated; its delta codeword and deletes
+are untouched):
+
+\begin{theorem}[T1: cut-parametric fold congruence]
+\label{thm:recode1}
+For a stable-prefix map $F$, cut state $s$, and continuation $\tau$
+with $s$ at hand and $\tau$ declared at $F$:
+\[
+  \mathrm{applySeq}\ (\mathrm{remap}_F\ s)\
+  (\tau.\mathrm{map}\ \mathrm{remap}_F)
+  \;=\; \mathrm{remap}_F\ (\mathrm{applySeq}\ s\ \tau) :
+\]
+folding the translated continuation over the translated cut state is
+the translation of the untranslated fold.
+\hfill\lean{eRecode\_applySeq}
+\end{theorem}
+
+\begin{proposition}[the global-collapse negative]
+\label{prop:globalcollapse}
+One might hope to state T1 over the whole history (map every op ever
+issued, re-fold from the initial state); that statement forces H3 at
+every historical mint. If a coordinate map $f$ satisfies H3 at
+\emph{every} positive mint ($\forall \pi\, d$, $1 \le d$ implies
+$f(\pi \cdot \Gamma.\mathrm{enc}(d)) = f(\pi) \cdot
+\Gamma.\mathrm{enc}(d)$), then for every positive chain $\mathit{ch}$
+\[
+  f(\mathrm{coordOf}_\Gamma\ \mathit{ch}) \;=\; f(\varepsilon) \cdot
+  \mathrm{coordOf}_\Gamma\ \mathit{ch} :
+\]
+a constant-prefix prepend, which compacts \emph{nothing}. Re-coding is
+inherently an epoch operation on states, not a history rewrite; the
+lazy, cut-parametric formulation is the only nontrivial one. A
+finding, mechanized; kernel-clean (a theorem over all such maps, not a
+SPOT).
+\hfill\lean{eRecode\_ext\_global\_collapse}
+\end{proposition}
+
+\begin{theorem}[T2: reads identical]
+\label{thm:recode2}
+Under exactly the hypotheses of T1 ($s$ at hand, $\tau$ declared at
+$F$), the query of the translated run equals the untranslated one:
+\[
+  \mathrm{query}\bigl(\mathrm{applySeq}\ (\mathrm{remap}_F\ s)\
+  (\tau.\mathrm{map}\ \mathrm{remap}_F)\bigr)
+  \;=\; \mathrm{query}\bigl(\mathrm{applySeq}\ s\ \tau\bigr) :
+\]
+compression is invisible to every observer.
+\hfill\lean{eRecode\_reads\_identical}
+\end{theorem}
+
+\noindent The contentful half of T2 hides in T1: the translated side
+re-sorts by the \emph{new} keys, so equality of reads is exactly the
+statement that the new keys induce the old order, H2 doing its job.
+The negative control earns its keep here: an injective, H3-satisfying
+but order-breaking map genuinely flips the read (the \code{badMap}
+FAIL companion of the file's SPOT), pinning H2 as the load-bearing
+hypothesis.
+
+\begin{theorem}[T3: the capstone's witness statement transports]
+\label{thm:recode3}
+Hypothesis: $\mathrm{EReach}\ \Gamma\ C$ (honest reachability,
+\S\ref{sec:mechanization}); no at-hand hypothesis. For every
+registered version $C.\mathrm{ver}\ v = (s, E_v)$ there is a witness
+enumeration $\pi$ with: $\pi$ a permutation of $E_v$
+(\lean{listPermOf}); $\pi$ respecting the delivery order of $C$'s
+core; and
+\[
+  \mathrm{remap}_F\ s = \mathrm{remap}_F\ (\mathrm{eFold}_\Gamma\
+  \pi), \qquad
+  \mathrm{query}(\mathrm{remap}_F\ s) =
+  \mathrm{query}(\mathrm{eFold}_\Gamma\ \pi).
+\]
+Canonicity, sortedness, and version-level sortedness transport too,
+each under its own side conditions: canonicity needs $\mathrm{EWf}$ of
+both enumerations, a membership condition, and declared mints
+(\lean{eRecode\_fold\_canon}); sortedness needs the at-hand hypothesis
+of convention~(v) (\lean{eRecode\_sorted}); version-level sortedness
+needs \emph{EHonest in addition to EReach} (honesty at the endpoint,
+which honest reachability alone does not supply) plus at-hand
+(\lean{eRecode\_version\_sorted}).
+\hfill\lean{eRecode\_ra\_transport}
+\end{theorem}
+
+\noindent Honest scope note. The transport is at the level of states
+and witnesses, not configurations: the re-coded history is \emph{not}
+itself an honest configuration of the same datatype (compacted
+coordinates deliberately forget dead chain segments, so the
+chain-generation honesty clause fails for them). Re-basing honesty
+across the epoch, so that the capstone re-invokes natively in the new
+epoch, was the deferred obligation of this cluster's first revision
+and is now closed: the $(\ast)$ cluster of \S\ref{sec:compactED}
+(Definition~\ref{def:caf} through Corollary~\ref{cor:itwoepoch});
+what stays open downstream is the multi-replica half (agreement on a
+common cut, Open Question~\ref{oq:epochdag}). The cut hypothesis
+itself is discharged by \S\ref{sec:stability}'s SettledAt gate:
+\lean{eRecode\_settled\_bridge} (in
+\code{EmbedRGA\_Stability\_Bridge.lean}, with the stability import,
+not in the re-coding file) packages T1${}+{}$T2 at a settled cut
+against the named residue \lean{AnchorsFactorBeyond}, and is
+superseded by the residue-free honest form
+(Theorem~\ref{thm:bridgehonest}).
 
 \paragraph{Measurement 1: the microbenchmark.} Directed, hand-computed
 worked example (unary code; history: insert $a$ at the root, $b$ under
@@ -5451,9 +6172,60 @@ sibling group the surviving deltas are renumbered to $1..k$
 order-isomorphically and re-encoded with the same ordered prefix code).
 Its H2 discharge runs the per-group order isomorphism through the
 chain-lex theorem, with renumbered ranks dominated by Lamport-fresh
-future deltas; the headline
-(\lean{compactEliasDelta\_settled\_reads}) discharges everything at a
-settled cut of an honest configuration.
+future deltas; the headline discharges everything at a settled cut of
+an honest configuration.
+
+\begin{theorem}[the concrete compaction preserves every read at a
+settled cut]
+\label{thm:compacted}
+Let $C$ be a configuration at the Elias-$\delta$ code with
+(i)~$\mathrm{EReach}\ C$ (honest reachability,
+\S\ref{sec:mechanization}), (ii)~$\mathrm{GenHonest}$ at
+$\mathrm{eApplicable}$ (the generation discipline), and
+(iii)~$\mathrm{CausalPastEnumerable}\ C$; let (iv)~$C.\mathrm{ver}\ v
+= (s, E_v)$ be a registered version with
+(v)~$\mathrm{SettledAtOn}\ C\ E_v\ S$ a settled cut
+(\S\ref{sec:stability}). Let $\mathit{tree}$, $\mathit{live}$,
+$\mathit{inflight}$ be the compactor's inputs with
+(vi)~every $\mathit{tree}$ chain positive ($h_{\mathrm{tpos}}$);
+(vii)~$\mathit{tree}$ exactly the settled inserts' chains, in both
+directions ($h_{\mathrm{Tree}}$: every settled insert's coordinate is
+some $\mathit{tree}$ chain's coordinate; $h_{\mathrm{TreeS}}$: every
+$\mathit{tree}$ chain is some settled insert's);
+(viii)~$h_{\mathrm{Live}}$: a $\mathit{tree}$ chain whose insert no
+delete of $S$ targets carries $\mathit{live} = \mathrm{true}$; and
+(ix)~$h_{\mathrm{Inflight}}$: every insert of $E_v$ escaping $S$ is
+declared in $\mathit{inflight}$ with its (positive) chain. Then there
+is a stable-prefix map $F$ with
+\[
+  F.f = \mathrm{fStab}\ \bigl(\mathrm{rED}\ (\mathrm{ePruneKeep}\
+  \mathit{tree}\ \mathit{live}\ \mathit{inflight})\
+  \mathit{inflight}\bigr)\ (\mathrm{ePruneKeep}\ \mathit{tree}\
+  \mathit{live}\ \mathit{inflight})
+\]
+(drop dead ranges, rank-renumber outside \lean{skipAt}-guarded groups,
+re-encode) such that every continuation $\tau$ of events existing
+beyond the cut ($o \in C.\mathrm{events}$, $o \notin E_v$) satisfies
+both the T1 fold congruence and T2 reads-identical of
+\S\ref{sec:recoding}.
+\hfill\lean{compactEliasDelta\_settled\_reads}
+\end{theorem}
+
+\begin{remark}
+Display compressions, for the record: the mechanized statement phrases
+(vii)--(ix) per operation, over $\mathrm{eIsIns}\ o = \mathrm{true}$
+with coordinate matching $\mathrm{coordOf}\ k = \mathrm{eCoord}\ o$;
+each per-operation quantifier there additionally ranges over $o \in
+C.\mathrm{events}$ (a conjunct the display drops: it is redundant
+under hypothesis~(i), which bounds every registered version's events
+by $C.\mathrm{events}$ through $\mathrm{GoodConfig3}$, but it is
+present in the mechanized statement); and (viii)'s undeleted clause
+compares payloads, $\forall \mathit{dl} \in S$, $\mathit{dl} \neq
+\del(o.1)$ read at the payload of $\mathit{dl}$. The theorem is the
+Elias-$\delta$ instantiation of the code-parametric engine
+\lean{compactRanked\_settled\_reads}, whose hypothesis list is
+identical.
+\end{remark}
 
 \paragraph{The in-flight wrinkle, pinned both ways.} Renumbering a
 sibling group is only an order isomorphism against the deltas it can
@@ -5463,10 +6235,34 @@ the FAIL SPOT pins exactly this (an in-flight root insert; the
 unguarded renumbering sends a surviving delta $9 \mapsto 2$, and the
 delivered op lands on the wrong side: the pinned read flips). The v1
 resolution is the guard \lean{skipAt}: sibling groups with a known
-in-flight child delta are skipped this epoch, and the PASS SPOT pins
-that the guarded construction skips exactly that group, preserves the
-read, and still compresses. Both pins are hand-derived, PASS and FAIL
-shaped.
+in-flight child delta are skipped this epoch. Both pins are
+hand-derived, PASS and FAIL shaped.
+
+\begin{proposition}[the in-flight wrinkle, pinned both ways]
+\label{prop:inflight}
+On the file's directed cut (root sibling group $\{1,2,3,4,9\}$,
+survivor $4$, dead-but-kept $9$; an epoch-0 in-flight root insert with
+chain $[6]$, payload $110$; hand-derived control read $[106, 110,
+104]$):
+\begin{itemize}[leftmargin=2em]
+\item[FAIL] the \emph{unguarded} dense renumbering (the tempting
+degenerate, \lean{rED} fed an empty in-flight list) yields
+\[
+  \mathrm{read}(\text{unguarded}) = [110, 106, 104] \;\neq\;
+  [106, 110, 104] = \mathrm{read}(\text{control}) :
+\]
+$9 \mapsto 2$ slides the compacted survivor under the in-flight $6$
+and the late op jumps to the front
+(\lean{unguarded\_flips\_order});
+\item[PASS] the \emph{guarded} construction skips exactly the root
+group (\lean{skip\_guard}: $\mathrm{skipAt} = \mathrm{true}$ there,
+$\mathrm{false}$ at the in-flight-free $[9]$ group), keeps the read
+pinned at $[106, 110, 104]$, and still compresses: coordinate weight
+$19$ against the control's $23$
+(\lean{guarded\_skips\_group}).
+\end{itemize}
+\hfill\lean{unguarded\_flips\_order}, \lean{guarded\_skips\_group}
+\end{proposition}
 
 \paragraph{AnchorsFactorBeyond: the residue is a theorem.} The bridge
 from SettledAt to the cluster left one named residue: every op minted
@@ -5479,9 +6275,46 @@ of the generation discipline: under the framework's honest generation
 (the same hypotheses the capstone's honesty discharge consumes), every
 insert's carried prefix is the stored coordinate of an actual anchor
 record in the fold of its causal past, so the factorization sits on a
-codeword boundary by construction
-(\lean{anchorsFactorBeyond\_of\_anchored}), and the bridge is restated
-residue-free (\lean{eRecode\_settled\_bridge\_honest}). Scope, honestly
+codeword boundary by construction, and the bridge is restated
+residue-free.
+
+\begin{theorem}[the residue is a theorem of the discipline]
+\label{thm:anchorsfactor}
+Call $(\pi, \delta)$ a \emph{canonical chain-aligned mint beyond the
+cut} $S$ (\lean{ChainMintBeyond}) when $1 \le \delta$ and $\pi =
+\mathrm{coordOf}_\Gamma(\mathit{ch}_A)$ for a positive chain
+$\mathit{ch}_A$, witnessed by an actual insert event $o \in
+C.\mathrm{events}$ with $S$ entirely in its causal past ($\forall a
+\in S$, $\mathrm{vis}\ a\ o$) and $\mathrm{chainOf}(o.1) =
+\mathit{ch}_A \cdot \delta$. Hypotheses: (i)~$\mathrm{EAnchored}\
+\Gamma\ C\ \mathrm{chainOf}$ (the anchor certificate the honesty
+discharge produces); (ii)~$F.\mathrm{MintAt}$ contains every canonical
+chain-aligned mint beyond $S$. Conclusion:
+$\mathrm{AnchorsFactorBeyond}\ \Gamma\ F\ C\ S$, i.e.\ every op minted
+with the whole cut in its causal past carries an anchor prefix that
+factors at the map. The containment (ii) is definitional for the
+stage-2 construction; the residue is a theorem of the anchored
+geometry, not an extra hypothesis.
+\hfill\lean{anchorsFactorBeyond\_of\_anchored}
+\end{theorem}
+
+\begin{theorem}[the bridge, residue-free]
+\label{thm:bridgehonest}
+Hypotheses: a stable-prefix map $F$; $\mathrm{GenHonest}$ at
+$\mathrm{eApplicable}$; $\mathrm{CausalPastEnumerable}\ C$;
+$C.\mathrm{ver}\ v = (s, E_v)$; $\mathrm{SettledAtOn}\ C\ E_v\ S$;
+$s$ at hand for $F$; and the construction-checkable containment: for
+\emph{every} anchored assignment $\mathrm{chainOf}$ certified by
+$\mathrm{EAnchored}$, the canonical chain-aligned mints beyond $S$ lie
+in $F.\mathrm{MintAt}$. Conclusion: every continuation $\tau$ of
+events existing beyond the cut folds and reads identically under the
+lazy translation (T1 $\wedge$ T2). The $\mathrm{AnchorsFactorBeyond}$
+hypothesis of \lean{eRecode\_settled\_bridge} is \emph{gone}; no
+$\mathrm{vis}$-side condition survives in the interface.
+\hfill\lean{eRecode\_settled\_bridge\_honest}
+\end{theorem}
+
+\noindent Scope, honestly
 delimited: the single-epoch statement, with cut-side data addressed by
 coordinates and chains, never by event ids resolved through prefix sums
 (the runtime twin's erratum: renumbered coordinates no longer telescope
@@ -5499,8 +6332,34 @@ no in-flight op anchored on it; it collapses to a single level at the
 spine head's codeword, so a typing-run-then-delete chain of depth $k$
 costs one codeword instead of $k$. Composed after the rank pass this is
 the full iteration-two map, and reads survive it
-(\lean{compactThenFuse\_reads}, \code{EmbedRGA\_Fusion.lean},
-kernel-clean). Order preservation is a three-class H2 argument:
+(\code{EmbedRGA\_Fusion.lean}, kernel-clean).
+
+\begin{theorem}[fusion composes with the rank pass, reads intact]
+\label{thm:fusereads}
+Let $F$ be the rank-pass map. Fusion data: a positive spine $Q$
+($h_{Q\mathrm{pos}}$), its surviving head $Q'$ a prefix of $Q$
+($h_{Q'}$), and a chain domain $\mathcal{D}$ with (i)~every
+$\mathcal{D}$ chain positive ($h_{\mathcal{D}\mathrm{pos}}$) and
+(ii)~\emph{through-traffic passes the whole spine} ($h_{\mathrm{thru}}$:
+a $\mathcal{D}$ chain extending $Q'$ extends $Q$). Let the two maps be
+compatible at a surviving domain $(\mathrm{Rest}', \mathrm{MintAt}')$
+($\mathrm{CompatOn}$, Definition~\ref{def:spmcomp}), and let the cut
+state $s$ be at hand and the continuation $\tau$ declared at the
+\emph{composite} $F.\mathrm{comp}\ (\mathrm{fuseSPM}\ \Gamma\ Q\ Q'\
+\mathcal{D}\ \ldots)$. Then the reads of any beyond-cut continuation
+survive the two-pass translation $\mathrm{fuseBits} \circ F.f$:
+\[
+  \mathrm{query}\bigl(\mathrm{applySeq}\
+  (\mathrm{remap}\ s)\ (\tau\ \text{translated})\bigr)
+  = \mathrm{query}\bigl(\mathrm{applySeq}\ s\ \tau\bigr).
+\]
+(\lean{fuseSPM} packages the fusion as a stable-prefix bundle over
+$\mathrm{fuseBits}$, its bit-level map; the fusion-alone form is
+\lean{fuse\_reads\_identical}; both are direct re-invocations of T2.)
+\hfill\lean{compactThenFuse\_reads}
+\end{theorem}
+
+\noindent Order preservation is a three-class H2 argument:
 (1)~within a fused block the common prefix is replaced wholesale,
 relative order untouched; (2)~a block against the spine head's siblings
 is decided at the head's level, whose codeword fusion keeps; (3)~the
@@ -5517,36 +6376,114 @@ through-traffic below a blocked node still fuses.
 \paragraph{The merge clause, discharged (VC-S4 for the remap species).}
 The stability bundle's argumentwise merge congruence
 (\S\ref{sec:stability}, VC-S4) is, for the coordinate re-map, the
-statement that lazy translation commutes with the ternary merge: merging
-three re-mapped states equals the re-map of the merge
-(\lean{merge\_remap\_congr}, \code{EmbedRGA\_MergeCongr.lean}). The
-``at hand'' domain hypothesis is needed only on the two \emph{merged
-branches}; the LCA argument enters the live-set rule solely through its
-id set, so no hypothesis on $l$ is required. This is precisely what lets
-a compacted head merge against a full LCA payload, the mixed case
-\S\ref{sec:stability} calls the normal one.
+statement that lazy translation commutes with the ternary merge
+(\code{EmbedRGA\_MergeCongr.lean}).
+
+\begin{theorem}[the merge clause]
+\label{thm:mergeremap}
+For a stable-prefix map $F$ and states $l$, $a$, $b$ with $a$ and $b$
+at hand for $F$ (\emph{no} hypothesis on the LCA $l$):
+\[
+  \mathrm{eMergeL}\ (\mathrm{remap}_F\ l)\ (\mathrm{remap}_F\ a)\
+  (\mathrm{remap}_F\ b) \;=\; \mathrm{remap}_F\ (\mathrm{eMergeL}\ l\
+  a\ b).
+\]
+The LCA enters the survival rule solely through its id set, which the
+re-map preserves; this is what lets a compacted head merge against a
+full LCA payload, the mixed case \S\ref{sec:stability} calls the
+normal one. The VC-S4 packaging: the simulation relation
+$\mathrm{eRemapRel}$ (compacted $=$ translation of full, full at hand)
+is preserved by the ternary merge (\lean{eRemapRel\_merge}), literally
+the \code{vc\_merge} conclusion for the remap species;
+\lean{embed\_merge\_remap\_congr} restates the congruence at
+$(E\ \Gamma\ \alpha).\mathrm{mergeL}$.
+\hfill\lean{merge\_remap\_congr}
+\end{theorem}
 
 \paragraph{Multi-epoch composition.} A single re-coded configuration is
 not a native honest configuration (T3's gap), so a \emph{second}
 compaction cannot naively re-invoke the cluster. The data-plane half is
-now closed (\code{EmbedRGA\_MultiEpoch.lean}, kernel-clean). The semantic
-residue of one epoch is a $\mathrm{StablePrefixMap}$; two compose into
-one (\lean{StablePrefixMap.comp}, axiom-free: H2 composes because
-order-isomorphisms do; H3 composes at the boundary, since an epoch-$1$
-mint $(\pi, d)$ once remapped is an epoch-$2$ mint $(F_1\pi, d)$ with the
-delta codeword untouched; H1 is derived), and the $n$-fold form gives the
-headline --- after arbitrarily many settled-cut compactions, any
-beyond-all-cuts continuation, its lagging ops translated through every
-epoch map, reads exactly as the uncompacted run
-(\lean{multiEpoch\_settled\_reads}). The subtlety that makes this
-non-trivial is \emph{rank reclaim}: naive composition on the first
-epoch's domain is unsound, because if epoch~$2$ reclaims the rank of a
-record that died between the epochs, the dead coordinate and the
-reclaimed live coordinate collide under $F_2 \circ F_1$ (pinned as
-\lean{naive\_composition\_collides}). The fix carries the composite's own
-surviving domain, coordinate-addressed; the companion erratum
-\lean{id\_addressing\_breaks} records why id-addressed cuts fail after
-epoch one. Freshness across epochs is representation-agnostic
+now closed (\code{EmbedRGA\_MultiEpoch.lean}, kernel-clean): the
+semantic residue of one epoch is a stable-prefix map, and maps compose.
+
+\begin{definition}[epoch composition at the surviving domain]
+\label{def:spmcomp}
+For maps $F$ (earlier) and $G$ (later), $\mathrm{CompatOn}\ F\ G\
+\mathrm{Rest}'\ \mathrm{MintAt}'$ carries the \emph{composite's own}
+at-hand domain, the coordinates surviving to $G$'s epoch, and demands
+four boundary clauses: $\mathrm{restF}$ ($\mathrm{Rest}'\ c$ implies
+$F.\mathrm{Dom}\ c$), $\mathrm{restG}$ ($\mathrm{Rest}'\ c$ implies
+$G.\mathrm{Dom}\ (F.f\ c)$), and $\mathrm{mintF}$/$\mathrm{mintG}$
+(the same two clauses for declared mints, the later mint at the
+translated prefix $F.f\ \pi$). Under them $F.\mathrm{comp}\ G$ is
+again a stable-prefix map: $f = G.f \circ F.f$ over
+$(\mathrm{Rest}', \mathrm{MintAt}')$; H3 chains through both maps'
+$\mathrm{ext}$ (an epoch-$1$ mint $(\pi, d)$ once remapped is an
+epoch-$2$ mint $(F.f\,\pi, d)$, the delta codeword untouched); H2
+chains because order-isomorphisms compose; H1 is derived as always.
+The no-reclaim special case $\mathrm{Compat}$ (every $F$-at-hand
+coordinate stays $G$-at-hand after remapping, every $F$-mint stays a
+$G$-mint) collapses the four clauses to two at $F$'s full domain. The
+$n$-fold closure $\mathrm{chainSPM}$ composes a whole
+$\mathrm{CompatChain}$ of maps into one, carrying the \emph{earliest}
+map's domain.
+\hfill\lean{CompatOn}, \lean{StablePrefixMap.comp}, \lean{chainSPM}
+\end{definition}
+
+\begin{theorem}[the $n$-epoch headline]
+\label{thm:multiepoch}
+For a compatibility chain $\mathrm{CompatChain}\ (F :: F_s)$, cut
+state $s$ at hand for the \emph{first} map $F$, and continuation
+$\tau$ declared at $F$:
+\[
+  \mathrm{query}\bigl(\mathrm{applySeq}\
+  (\mathrm{remap}_{\mathrm{chainSPM}\,(F :: F_s)}\ s)\
+  (\tau\ \text{translated through every epoch's map})\bigr)
+  = \mathrm{query}\bigl(\mathrm{applySeq}\ s\ \tau\bigr) :
+\]
+after arbitrarily many settled-cut compactions, a beyond-all-cuts
+continuation, its lagging ops translated through every epoch map,
+reads exactly as the uncompacted run. (The fold-congruence twin is
+\lean{multiEpoch\_applySeq}; both are direct re-invocations of T1/T2
+on the composite.)
+\hfill\lean{multiEpoch\_settled\_reads}
+\end{theorem}
+
+\noindent The subtlety that makes this non-trivial is \emph{rank
+reclaim}, pinned by the first of two companion negatives; the second
+records the runtime twin's erratum.
+
+\begin{proposition}[rank reclaim defeats naive composition]
+\label{prop:rankreclaim}
+Unary code. With the epoch-$1$ map $gc_1$ ($\mathrm{enc}\ 3 \mapsto
+\mathrm{enc}\ 1$, $\mathrm{enc}\ 7 \mapsto \mathrm{enc}\ 2$) and the
+reclaiming epoch-$2$ map $gc_2$ ($\mathrm{enc}\ 2 \mapsto
+\mathrm{enc}\ 1$):
+\[
+  (gc_2 \circ gc_1)(\mathrm{enc}\ 3) = (gc_2 \circ
+  gc_1)(\mathrm{enc}\ 7)
+  \quad\text{while}\quad \mathrm{enc}\ 3 \neq \mathrm{enc}\ 7 :
+\]
+a dead coordinate and a live one collide on the reclaimed rank, H1
+fails, and the composite is not a stable-prefix map on the full
+first-epoch domain. This is exactly why $\mathrm{comp}$ carries the
+surviving domain.
+\hfill\lean{naive\_composition\_collides}
+\end{proposition}
+
+\begin{proposition}[the id-addressing erratum]
+\label{prop:idaddr}
+After epoch one a renumbered coordinate no longer telescopes to its
+event id: with the unary telescope decode $\mathrm{unaryId}$ (the
+count of $1$-bits), $\mathrm{unaryId}(\mathrm{enc}\ 7) = 7$ but
+$\mathrm{unaryId}(gc_1(\mathrm{enc}\ 7)) \neq 7$, and an id-addressed
+second cut at $\{7\}$ resolves to \emph{no} record of the renumbered
+state while the coordinate-addressed cut resolves the record exactly.
+Second cuts must be coordinate- or record-addressed.
+\hfill\lean{id\_addressing\_breaks}
+\end{proposition}
+
+\noindent Freshness across epochs is representation-agnostic
 (\lean{rED\_le\_self}, \lean{rED\_fresh\_dominates}: a delta fresh against
 original sibling deltas stays fresh against renumbered ordinals without
 inspecting their meaning), so the order-iso half composes whether stored
@@ -5556,21 +6493,114 @@ layer instantiates the same interface a second time as its keep-set
 relabeling, and composes through the same route
 (\S\ref{sec:marks}).
 
-\paragraph{The one remaining compaction obligation, named.} Two residues
+\paragraph{The honesty-rebasing lemma $(\ast)$, closed.} Two residues
 above --- the single-epoch honesty re-basing (T3's gap: the re-coded
 history is honest only \emph{modulo} the coordinate order-embedding) and
 the multi-epoch $\mathrm{CompatChain}$ residue --- are the \emph{same}
-obligation. Both its causal-stability half (\lean{nested\_cuts\_settled},
+obligation. Its causal-stability half (\lean{nested\_cuts\_settled},
 from $\mathrm{settledAt\_of\_allHeard}$ and cut-antitonicity of the
 frontier, \code{EmbedRGA\_CompatChain.lean}) and its order-iso freshness
-half (\lean{rED\_hocc\_fresh}) are closed. What is left is one lemma,
-which we call $(\ast)$: exhibit an epoch-$2$ configuration honest
-\emph{modulo} the order-embedding $F_1$, so that anchored-existence
-re-derives at the epoch boundary. Discharging $(\ast)$ closes both halves
-at once; it is the whole remaining \emph{single-replica} compaction
-protocol, and everything downstream (agreement on a common cut,
-concurrent divergent compaction across replicas) is the multi-replica
-layer proper (Open Questions~\ref{oq:starlemma},~\ref{oq:epochdag}).
+half (\lean{rED\_hocc\_fresh}) closed first; what remained was one
+lemma, which we called $(\ast)$: exhibit an epoch-$2$ configuration
+honest \emph{modulo} the order-embedding $F_1$, so that
+anchored-existence re-derives at the epoch boundary. $(\ast)$ is now
+discharged (\code{EmbedRGA\_HonestyRebase.lean}, kernel-clean), and the
+shape of the discharge is itself the finding: honesty is not
+\emph{re-derived} at epoch~2, it is \emph{re-based}. The invariant that
+crosses the boundary is not $\mathrm{EHonest}$ (false of a compacted
+state, whose coordinates are no longer birth-chain telescopes) but a
+history-free \emph{coded-forest} invariant $I$ over the live coordinate
+set: honest configurations satisfy $I$ (S1), every chain-aligned
+stable-prefix map preserves $I$ (S2), and $I$ alone discharges the
+epoch-boundary obligations of the next epoch's map (S4), with no
+epoch-2 honesty assumption anywhere.
+
+\begin{definition}[the coded anchored forest invariant $I$]
+\label{def:caf}
+For a code $\Gamma$ and a list $L$ of live coordinates, $I(L)$
+($\mathrm{CodedAnchoredForest}\ \Gamma\ L$) has two fields:
+(\emph{nodup}) $L$ is duplicate-free; (\emph{decode}) every $c \in L$
+is $\mathrm{coordOf}_\Gamma(\mathit{ch})$ for some \emph{nonempty
+positive} birth chain $\mathit{ch}$. History-free: a predicate on the
+coordinate set alone, which is the whole point --- a re-coded
+configuration has no honest history but still carries $I$. (The
+nearest-live-ancestor forest is reconstructed from $I$ by
+prefix-freeness alone: \lean{caf\_ancestor\_factor},
+\lean{caf\_ancestor\_shorter}, \lean{caf\_chain\_inj}.)
+\hfill\lean{CodedAnchoredForest}
+\end{definition}
+
+\begin{theorem}[S1: honest configurations satisfy $I$]
+\label{thm:ehonesti}
+Hypotheses: $\mathrm{GenHonest}$ at $\mathrm{eApplicable}$;
+$\mathrm{CausalPastEnumerable}\ C$; a well-formed enumeration
+$\mathrm{EWf}\ \Gamma\ \rho$; every op of $\rho$ in
+$C.\mathrm{events}$. Conclusion: $I$ of the live coordinate set of
+$\mathrm{eFold}_\Gamma\ \rho$. (The anchor certificate gives each live
+insert's coordinate as its chain's; nodup is sortedness; nonemptiness
+is the nonzero id.)
+\hfill\lean{ehonest\_implies\_I}
+\end{theorem}
+
+\noindent Call a map $F$ \emph{chain-aligned} via $\varphi$
+(\lean{ChainAligned}) when $F.f(\mathrm{coordOf}_\Gamma\ \mathit{ch})
+= \mathrm{coordOf}_\Gamma(\varphi\ \mathit{ch})$ on positive chains
+and $\varphi$ preserves positivity and nonemptiness: the
+stable/unstable split lands on a codeword boundary and the tail rides
+verbatim. Both shipped passes are chain-aligned
+(\lean{chainAligned\_compactSPM}, \lean{chainAligned\_fuseSPM}), and
+chain-alignment composes (\lean{chainAligned\_comp}).
+
+\begin{theorem}[S2, load-bearing: stable-prefix maps preserve $I$]
+\label{thm:spmpreservesI}
+Hypotheses: $F$ chain-aligned via $\varphi$; $I(L)$; every $c \in L$
+at hand for $F$. Conclusion: $I(L.\mathrm{map}\ F.f)$. Decodability
+survives through $\varphi$; distinctness survives because $F$ is
+injective on its domain (H1, Lemma~\ref{lem:spmh1}). Honesty rebases:
+no re-derivation of $\mathrm{EHonest}$ on the re-coded set.
+\hfill\lean{stablePrefixMap\_preserves\_I}
+\end{theorem}
+
+\begin{theorem}[S4: the epoch boundary discharged from $I$]
+\label{thm:starclosed}
+Hypotheses: epoch-1's map $F_1$ chain-aligned via $\varphi_1$; a
+domain $\mathcal{D}_1$ of positive chains; and the two
+construction-shape clauses, true of the shipped compaction and fusion
+maps: $h_{\mathrm{RestShape}}$ (every $F_1.\mathrm{Rest}$ coordinate
+is $\mathrm{coordOf}$ of a $\mathcal{D}_1$ chain) and
+$h_{\mathrm{MintShape}}$ (every declared mint $(\pi, d)$ has $\pi =
+\mathrm{coordOf}(\mathit{ch}_A)$ with $\mathit{ch}_A$ positive,
+$\mathit{ch}_A \cdot d \in \mathcal{D}_1$, $1 \le d$). Conclusion:
+\[
+  \mathrm{CompatOn}\ F_1\ (\mathrm{rebaseSPM}\ \Gamma\ \mathcal{D}_1\
+  \varphi_1\ \ldots)\ F_1.\mathrm{Rest}\ F_1.\mathrm{MintAt} :
+\]
+the epoch-boundary obligations $\mathrm{restG}$/$\mathrm{mintG}$ of
+Definition~\ref{def:spmcomp} are met by epoch~2 built over the
+\emph{rebased image domain} (\lean{rebaseSPM}, \lean{rebasedDom}: the
+$\varphi_1$-images of epoch-1's at-hand chains), a survivor's image at
+hand by chain-alignment and a beyond-cut mint's image a declared mint
+by the snoc-commute (\lean{chainAligned\_snoc}). No epoch-2 honesty
+assumption; this is $(\ast)$, closed. ($I$ is also exactly the
+at-hand certificate a next-epoch compaction's domain needs:
+\lean{I\_implies\_atHand}, S3.)
+\hfill\lean{twoEpoch\_compatOn\_of\_I}
+\end{theorem}
+
+\begin{corollary}[$I$ rebases across two epochs]
+\label{cor:itwoepoch}
+For $F_1$, $F_2$ chain-aligned via $\varphi_1$, $\varphi_2$, $I(L)$,
+and the two domain coverages: $I((L.\mathrm{map}\
+F_1.f).\mathrm{map}\ F_2.f)$ --- the invariant survives both
+compactions, so the second epoch operates on the $I$-carried rebased
+domain, not by transport through the first.
+\hfill\lean{I\_preserved\_two\_epoch}
+\end{corollary}
+
+\noindent What is left downstream is the protocol layer: deriving the
+per-continuation hypotheses from a delivery protocol, and everything
+multi-replica (agreement on a common cut, concurrent divergent
+compaction), Open Questions~\ref{oq:starlemma},~\ref{oq:epochdag}.
 
 \paragraph{Measurement 2: real traces, and where the bits actually
 sit.} The full epoch stack (rank renumbering plus \emph{spine fusion}:
@@ -5672,6 +6702,31 @@ structure live descendants' coordinates pass through. The design's
 starting observation: what typing mints \emph{is} exactly a fusible
 chain, so real documents decompose into few long runs.
 
+\begin{definition}[the run table]
+\label{def:runtable}
+Over the kept tree of a live chain set $L$ (\lean{keptL}: the live
+chains plus their nonempty prefixes, deduplicated), the edge into $c$
+is \emph{fusible} (\lean{fusible}) when $c$ and its parent are kept,
+$c$'s label is $1$, $c$ is the parent's \emph{unique} kept child, and
+$c$ and the parent have equal liveness ($c \in L \leftrightarrow
+c.\mathrm{dropLast} \in L$); a \emph{head} (\lean{isHead}) is a kept
+node whose incoming edge is not fusible. Runs are the fibers of the
+climb \lean{headOf}; every member is its head extended by a block of
+$1$ labels. An entry (\lean{RTEntry}) is the header
+$\langle \mathrm{par} : \mathrm{Option}(\text{parent index} \times
+\text{offset}),\ \mathrm{live},\ \delta,\ \mathrm{len} \rangle$; the
+table (\lean{tableOf}) maps the canonical head enumeration
+(\lean{headsList}, sorted by the short-lex \lean{hLt}: shorter first,
+so parents precede children, \lean{keyLt} within a length) through the
+entry compiler (\lean{entryOfHead}); the abstraction (\lean{stateOf})
+recovers each live entry's members from headers alone.
+\lean{Canonical} recognizes the image: positive lengths, backward
+parent references, tail attachment (\code{par\_tail}), maximal fusion
+(\code{no\_fuse}), dead leaves pruned (\code{leaves\_live}), sorted
+head enumeration.
+\hfill\lean{RTEntry}, \lean{tableOf}, \lean{stateOf}, \lean{Canonical}
+\end{definition}
+
 Two properties before any numbers. \emph{No stability gate}: the run
 table is an invertible re-representation of the current state, whatever
 that state is, unsettled suffixes included, and in particular the
@@ -5684,11 +6739,24 @@ from the header, 1 elsewhere), side, liveness, and pre-epoch timestamp
 hence the state; the harness gates exactly this, with zero tolerance,
 on every record of every trace.
 
-\paragraph{The tail-attachment lemma.} \emph{In the canonical table,
-every entry attaches at its parent entry's last member.} (If an entry
-attached at an interior member $m$, then $m$'s run successor and the
-entry's head would be two kept children of $m$, contradicting
-fusibility of $m$'s outgoing run edge.) Three consequences: the
+\begin{theorem}[tail attachment]
+\label{thm:tailattach}
+In the canonical table, every entry attaches at its parent entry's
+last member. Kernel form: if $h$ is a head, the edge into
+$h.\mathrm{dropLast} \cdot 1$ is not fusible,
+\[
+  \mathrm{isHead}\ L\ h = \mathrm{true} \;\Longrightarrow\;
+  \mathrm{fusible}\ L\ (h.\mathrm{dropLast} \cdot 1) =
+  \mathrm{false}.
+\]
+(If an entry attached at an interior member $m$, then $m$'s run
+successor and the entry's head would be two kept children of $m$,
+contradicting fusibility of $m$'s outgoing run edge.) No honesty, no
+stability, no reachability hypothesis.
+\hfill\lean{tail\_attachment}
+\end{theorem}
+
+\noindent Three consequences: the
 ``offset in parent'' header field is derivable (always parent length
 minus one; the accounting still counts it and reports it recoverable);
 the cross-run comparator only ever diverges at a tail or inside a
@@ -5836,30 +6904,72 @@ coalesces, and 26 vanished-anchor materializations.
 
 The Lean mechanization of this subsection, owed in the previous
 revision, is now in place (\code{RunTable.lean}, state-level and
-hypothesis-free except where noted). The load-bearing kernel is the
-tail-attachment lemma (\lean{tail\_attachment}). The representation
-isomorphism is a genuine \emph{bijection}: $\mathrm{tableOf}$ and
-$\mathrm{stateOf}$ are mutual inverses on canonical tables
-(\lean{canonical\_tableOf}, \lean{stateOf\_tableOf},
-\lean{tableOf\_stateOf}), stated over labels, sides, and liveness ---
-\emph{not} timestamps, the exact correction the implementation forced
-(rank ordinals forget time, so a timestamp-preserving iso is false after
-the first epoch). The comparator equals the fold's key order
-(\lean{cmpTable\_eq\_keyLt}), the structural walk equals the display
-(\lean{walk\_display}, via \lean{walkE\_sound}/\lean{walkE\_complete}),
-and the mutation rules are machine-checked perturbation lemmas: mid-run
-split, liveness split, vanished-anchor materialization, and the forced
-coalesce (the delete-inverse a paper proof would most plausibly
-hand-wave; its necessity is pinned by \lean{spot\_d4\_coalesce\_necessity}
-and canonicalization under mutation by \lean{tableOf\_congr}). Only the
-epoch-composition clause (\lean{runTable\_epoch}) carries a stability
-hypothesis. Task~\#73 has since closed the remaining theorem bill on
-this subsection: the four mutation rules are promoted from SPOT-pinned
-perturbation lemmas to \emph{closed} \lean{tableOf} equations, and the
-walk is promoted to a literal, table-direct reading procedure. The next
-two paragraphs state both; the sided run table has its own subsection
-(\S\ref{sec:sidedruntable}); the one face still open is the wire format
-(Open Question~\ref{oq:runtable}).
+hypothesis-free except where noted); the load-bearing kernel is
+Theorem~\ref{thm:tailattach}. Only the epoch-composition clause
+(\lean{runTable\_epoch}: sorted state, at-hand domain, chain
+representation; walk and read identity after the epoch) carries a
+stability hypothesis. Task~\#73 has since closed the remaining theorem
+bill: the four mutation rules are promoted from SPOT-pinned
+perturbation lemmas (canonicalization under mutation:
+\lean{tableOf\_congr}) to \emph{closed} \lean{tableOf} equations, and
+the walk is promoted to a literal, table-direct reading procedure. The
+sided run table has its own subsection (\S\ref{sec:sidedruntable});
+the one face still open is the wire format (Open
+Question~\ref{oq:runtable}).
+
+\begin{theorem}[the representation iso, over labels and liveness]
+\label{thm:runiso}
+Losslessness: for $[] \notin L$, $\mathrm{stateOf}(\mathrm{tableOf}\
+L)$ is duplicate-free and membership-exact,
+\[
+  (\mathrm{stateOf}(\mathrm{tableOf}\ L)).\mathrm{Nodup}
+  \;\wedge\; \forall c,\ c \in \mathrm{stateOf}(\mathrm{tableOf}\ L)
+  \leftrightarrow c \in L
+\]
+(\lean{stateOf\_tableOf}; this membership form is the load-bearing
+declaration, its unconditional sibling \lean{stateOf\_tableOf\_eq}
+being the flatMap computation the proof runs on). Canonicity: for
+$\mathrm{Canonical}\ T$, $\mathrm{tableOf}(\mathrm{stateOf}\ T) = T$,
+field for field (\lean{tableOf\_stateOf}); without \code{no\_fuse}
+this direction is false (a run split in two re-canonicalizes to one
+entry, the drift the coalesce rule exists to prevent). Image: every
+$\mathrm{tableOf}\ L$ is canonical (\lean{canonical\_tableOf}), so the
+pair is a genuine bijection between live-chain sets and canonical
+tables. Stated over labels, sides (vacuously R), and liveness,
+\emph{not} timestamps: the exact correction the implementation forced,
+rank ordinals forgetting time after the first epoch.
+\hfill\lean{stateOf\_tableOf}, \lean{tableOf\_stateOf},
+\lean{canonical\_tableOf}
+\end{theorem}
+
+\begin{theorem}[the contracted comparator equals the key order]
+\label{thm:runcmp}
+For every ordered prefix code $\Gamma$: if every chain of $L$ is
+positive, and $x$, $y$ are kept nodes with $x \neq y$, then
+\[
+  \mathrm{cmpTable}\ L\ x\ y \;=\; \mathrm{keyLt}\
+  (\mathrm{key}(\mathrm{coordOf}_\Gamma\ y))\
+  (\mathrm{key}(\mathrm{coordOf}_\Gamma\ x)),
+\]
+the display comparator of the coded fold. The chain form
+(\lean{cmpTable\_iff\_chainBefore}) is the two-case rule of the design
+prose; the label order stands where the $(\mathrm{ts},
+\mathrm{agent})$ tie oracle rides, on both sides identically.
+\hfill\lean{cmpTable\_eq\_keyLt}
+\end{theorem}
+
+\begin{theorem}[the structural walk is the display]
+\label{thm:runwalk}
+For $[] \notin L$: $\mathrm{walk}\ L$ is duplicate-free, contains
+exactly the live chains, and is pairwise in $\mathrm{chainBefore}$
+order (via \lean{walkE\_sound}/\lean{walkE\_complete}), which pins it
+to \emph{the} display sequence, strict orders having unique sorted
+enumerations. Key form: descending in $\mathrm{keyLt}$ on the coded
+coordinates for every ordered prefix code
+(\lean{walk\_pairwise\_keyLt}, adding the positivity hypothesis). No
+stability hypothesis.
+\hfill\lean{walk\_display}
+\end{theorem}
 
 \paragraph{The mutation rules, as closed equations.} Each rule is now
 an equation: \lean{tableOf} of the mutated state equals an explicit
@@ -5873,12 +6983,19 @@ is a pair of characterization lemmas that force the right-hand sides
 rather than check them: any strictly sorted enumeration of the heads
 \emph{is} the canonical head list (\lean{headsList\_eq\_of\_iff}), and a
 run's length follows from an explicit offset enumeration of its members
-(\lean{lenOf\_eq\_of\_iff}). One equation displayed, the rest in prose.
-\emph{D1, the mid-run split} (\lean{tableOf\_insert\_split}): let the
-anchor $a$ sit at offset $j$ in the run headed by $g$, of length
-$\ell$, with $a$ interior (its run successor $a \cdot 1$ is fused), and
-let $a \cdot d$ ($d \neq 1$) be the fresh record. The new table is the
-old one with
+(\lean{lenOf\_eq\_of\_iff}). One equation displayed, the other three
+grouped.
+
+\begin{theorem}[D1: the mid-run split, closed]
+\label{thm:d1split}
+Hypotheses, exactly two: $\mathrm{fusible}\ L\ (a \cdot 1) =
+\mathrm{true}$ (the anchor $a$ is run-interior: its run successor is
+fused) and $a \cdot d \notin \mathrm{keptL}\ L$ (the delivered record
+is fresh); $d \neq 1$ is \emph{derived}
+(\code{splitc\_d\_ne\_one}), not assumed. Writing $g :=
+\mathrm{headOf}\ L\ a$, $j := |a| - |g|$ (the anchor's offset), $\ell
+:= \mathrm{lenOf}\ L\ g$: the new table $\mathrm{tableOf}(L + [a
+\cdot d])$ is the old one with
 \[
   \begin{array}{l@{\;\;}l}
     g: & \mathrm{len} := j + 1 \quad (\text{the anchor run cut at the
@@ -5898,46 +7015,90 @@ old one with
 the two new heads entering at their sorted positions and the suffix
 keeping the run's (uniform) liveness; by tail attachment the rehomed
 entries are exactly those at the old tail. (The childless-anchor happy
-path stays the O(1) typing equation \lean{tableOf\_insert\_extend}.)
-\emph{D2, the delete liveness split} (\lean{tableOf\_delete\_split}):
-deleting a run-interior record $x$ leaves the kept tree untouched and
-cuts the run at the liveness break, in three: the live prefix keeps the
-old head with length cut to $x$'s offset; $x$ survives as a dead
-singleton entry; the live suffix re-heads at $x \cdot 1$; entries
-attached at the old tail rehome to the suffix. The equation is stated
-for the interior case (fused incoming and outgoing edges); the boundary
+path stays the O(1) typing equation, grouped below.)
+\hfill\lean{tableOf\_insert\_split}
+\end{theorem}
+
+\begin{remark}
+Display dictionary: in the mechanized equation the new enumeration is
+literally $(\mathrm{headsList}\ L + [a \cdot 1, a \cdot d])$
+re-sorted, parent references re-indexed by index-of into it, and the
+suffix liveness is $a \cdot 1 \in L$; the table above is that term
+with $g$, $j$, $\ell$ substituted. Nothing else is elided.
+\end{remark}
+
+\begin{theorem}[the remaining closed equations: typing, D2, D4, D5]
+\label{thm:mutrules}
+Each is an equation with all right-hand data pre-mutation; none
+carries a stability or honesty hypothesis.
+\begin{itemize}[leftmargin=2em]
+\item \emph{Typing} (\lean{tableOf\_insert\_extend}). Hypotheses: $a
+\in L$, $[] \notin L$, $a$ childless in the kept tree ($\forall d$,
+$a \cdot d \notin \mathrm{keptL}\ L$). Appending the delta-1 child
+re-canonicalizes to the same table with ONE $\mathrm{len}$ field
+bumped, at $\mathrm{headOf}\ L\ a$: O(1) table work per keystroke.
+\item \emph{D2, the delete liveness split}
+(\lean{tableOf\_delete\_split}). Hypotheses: $x \in L$, both edges of
+$x$ fused ($\mathrm{fusible}\ L\ x$, $\mathrm{fusible}\ L\ (x \cdot
+1)$), and $L'$ = $L$ minus $x$ (membership-exact). The kept tree is
+untouched; the run cuts in three at the liveness break: the live
+prefix keeps the old head with length cut to $x$'s offset, $x$
+survives as a dead singleton entry, the live suffix re-heads at $x
+\cdot 1$, and old-tail attachments rehome to the suffix. The boundary
 shapes ($x$ a run head, $x$ the tail) split in two rather than three
-and are the same construction with one empty side. \emph{D4, the
-coalesce} (\lean{tableOf\_coalesce}), the closed delete-inverse of D1:
-deleting the childless interloper $a \cdot d$ whose presence had split
-the run at $a$ removes both the interloper's entry and the suffix entry
-$a \cdot 1$; the anchor's run absorbs the suffix, with length the sum
-of the two, and every entry attached at the suffix's tail rehomes into
-the merged run. \emph{D5, materialization}
-(\lean{tableOf\_materialize}): delivering $m \cdot d$ under the
-vanished anchor $m$ (live, childless parent) inserts two singleton
-entries at their sorted head positions, the dead materialized anchor
-$m$ and the live record below it, with parent references re-indexed.
-This is the directed single-anchor shape; the general vanished-path
-cascade (a whole dead spine re-materializing, with cuts at non-unit
-labels and a possible mid-run split at the re-attachment point) is
-deliberately presented as the composite of this rule, applied once per
-vanished level, with D1-shaped splits: it is a genuine cascade and is
-not forced into one equation.
+and are the same construction with one empty side.
+\item \emph{D4, the coalesce} (\lean{tableOf\_coalesce}), the closed
+delete-inverse of D1. Hypotheses: $a \neq []$, $d \neq 1$, the
+interloper $a \cdot d \in L$ and childless in the kept tree, the
+suffix $a \cdot 1$ kept with $a$'s liveness ($a \cdot 1 \in L
+\leftrightarrow a \in L$), $a$'s only kept children $a \cdot 1$ and
+$a \cdot d$, and $L'$ = $L$ minus $a \cdot d$. Both the interloper's
+entry and the suffix entry are removed, the anchor's run absorbs the
+suffix ($\mathrm{len}$ the sum of the two), and suffix-tail
+attachments rehome into the merged run.
+\item \emph{D5, directed materialization}
+(\lean{tableOf\_materialize}). Hypotheses: $[] \notin L$, the
+vanished anchor's parent $m.\mathrm{dropLast} \in L$ and childless in
+the kept tree. Delivering $m \cdot d$ inserts two singleton entries
+at their sorted head positions, the dead materialized anchor $m$ and
+the live record below it, parent references re-indexed. This is the
+directed single-anchor shape; the general vanished-path cascade (a
+whole dead spine re-materializing, with cuts at non-unit labels and a
+possible mid-run split at the re-attachment point) is deliberately
+presented as the composite of this rule, applied once per vanished
+level, with D1-shaped splits: a genuine cascade, not forced into one
+equation.
+\end{itemize}
+The necessity of D4 is pinned by
+\lean{spot\_d4\_coalesce\_necessity}.
+\hfill\lean{tableOf\_insert\_extend}, \lean{tableOf\_delete\_split},
+\lean{tableOf\_coalesce}, \lean{tableOf\_materialize}
+\end{theorem}
 
 \paragraph{The literal walk.} The structural walk behind
-\lean{walk\_display} still consults the state. Its promoted form,
+Theorem~\ref{thm:runwalk} still consults the state. Its promoted form,
 \lean{tableWalk}, consults nothing but the table: entry headers, parent
 references, and address arithmetic (each entry's head recovered by
 summing deltas along the contracted parent path, each run emitted as
 that head followed by its offset extensions, recursion into the entries
 attached at the run's tail, newest label first). \lean{stateOf} is
 never materialized, and the recursion fuel (one more than the total of
-the length fields) is proved sufficient: \lean{walkT\_eq\_walkE} is the
-simulation at matched fuel, and the capstone is
-\lean{tableWalk\_tableOf}: build the table, read it back, obtain the
-display of the live-chain set verbatim, with no stability hypothesis.
-This is the formal face of the reading claim the measurement bullets
+the length fields) is proved sufficient.
+
+\begin{theorem}[the literal walk is faithful]
+\label{thm:tablewalk}
+For $[] \notin L$:
+\[
+  \mathrm{tableWalk}\ (\mathrm{tableOf}\ L) \;=\; \mathrm{walk}\ L :
+\]
+build the table, read it back table-directly, obtain the display of
+the live-chain set verbatim. The simulation at matched fuel is
+\lean{walkT\_eq\_walkE}; the canonical-table form is
+\lean{tableWalk\_eq\_walk}. No stability hypothesis.
+\hfill\lean{tableWalk\_tableOf}
+\end{theorem}
+
+\noindent This is the formal face of the reading claim the measurement bullets
 priced: a full read is one pass over the entries in walk order,
 emission per record with no coordinate materialized. The
 $\Theta(\text{contracted depth})$ comparator time of the honest-limit
@@ -5963,13 +7124,24 @@ throughout (no stability gate, no honest-delivery hypothesis).
 adds one field to the one-sided header: (parent entry and offset,
 liveness, \emph{side}, head delta, length). Fusibility condition (3) of
 \S\ref{sec:runtable} (the child's side is R), vacuous one-sided, is now
-live: a fusible edge's last step is $(R, 1)$ with the parent's
-liveness, so runs are uniformly R (\lean{sfusible\_side\_R}) and member
-sides cost nothing. Every kept L node fails condition (3), so it is a
-head with its own explicit entry (\lean{Lentry\_isHead}). The entire L
-content of a state is therefore the side bits of the entry headers,
-which is the verified shape of the measured collapse: the
-representation stores L data nowhere else.
+live.
+
+\begin{theorem}[runs are uniformly R; L nodes are heads]
+\label{thm:sidedL}
+A fusible sided edge's last step is $(R, 1)$ with the parent's
+liveness: $\mathrm{sfusible}\ L\ c = \mathrm{true}$ implies the side
+of $c$'s last element is R (\lean{sfusible\_side\_R}), so runs are
+uniformly R and member sides cost nothing. And every kept node whose
+last element is L-sided fails condition (3)
+(\lean{Lentry\_not\_fusible}), hence is a head with its own explicit
+entry: \lean{Lentry\_isHead}, with hypotheses $c \in \mathrm{skeptL}\
+L$ and $c$'s last side $= L$. No further hypotheses.
+\hfill\lean{sfusible\_side\_R}, \lean{Lentry\_isHead}
+\end{theorem}
+
+\noindent The entire L content of a state is therefore the side bits
+of the entry headers, which is the verified shape of the measured
+collapse: the representation stores L data nowhere else.
 
 \paragraph{The canonical order and the iso.} The head enumeration is
 sorted by \lean{shLt}, short-lex over an \emph{injective} flattening of
@@ -5980,14 +7152,23 @@ tie-break is inherited wholesale from the one-sided head order.
 Canonical tables (\lean{SCanonical}) carry the side-aware
 \lean{no\_fuse} condition: only an R, delta-1, same-liveness
 \emph{lone} attachment counts as a missed fuse, so an L singleton
-hanging alone at a tail is canonical. The representation iso holds in
-both directions (\lean{sStateOf\_sTableOf} losslessness,
-\lean{sTableOf\_sStateOf} canonicity, field for field; image side
-\lean{scanonical\_sTableOf}) over labels, sides, and liveness. It is
-deliberately \emph{not} stated over timestamps, for the same reason as
-one-sided: rank ordinals forget time, so a timestamp-preserving iso is
-false after the first epoch, and the iso is stated over exactly what
-survives one.
+hanging alone at a tail is canonical.
+
+\begin{theorem}[the sided representation iso]
+\label{thm:sidediso}
+Losslessness: for $[] \notin L$, $\mathrm{sStateOf}(\mathrm{sTableOf}\
+L)$ is duplicate-free and membership-exact for $L$
+(\lean{sStateOf\_sTableOf}). Canonicity: for $\mathrm{SCanonical}\ T$,
+$\mathrm{sTableOf}(\mathrm{sStateOf}\ T) = T$, field for field, the
+side field included (\lean{sTableOf\_sStateOf}). Image: every sided
+table of a state is canonical (\lean{scanonical\_sTableOf}). Over
+labels, sides, and liveness; deliberately \emph{not} over timestamps,
+for the same reason as one-sided: rank ordinals forget time, so a
+timestamp-preserving iso is false after the first epoch, and the iso
+is stated over exactly what survives one.
+\hfill\lean{sStateOf\_sTableOf}, \lean{sTableOf\_sStateOf},
+\lean{scanonical\_sTableOf}
+\end{theorem}
 
 \paragraph{The comparator: the offset-vs-tail exit-side rule.} The
 two-case structure of \S\ref{sec:runtable} survives, licensed by the
@@ -6005,12 +7186,25 @@ shadow of the kernel's in-order display rule: runs are uniformly R, so
 strictly inside a run the only continuation is the $(R,1)$ step toward
 the tail, an R extension, and the ancestor wins; an L edge can hang
 only at a tail, where every attachment lives, so sidedness surfaces
-exactly there. The capstone is \lean{scmpTable\_eq\_keyLt}: the
-comparator over the contracted sided run tree equals the fold's key
-order on the sided coordinates, for \emph{every} ordered prefix code,
-refining the kernel's in-order marker theorem to the storage layer.
-The cost is unchanged from one-sided: contracted depth, header fields
-only, no coordinate materialized.
+exactly there.
+
+\begin{theorem}[the sided comparator equals the sided key order]
+\label{thm:sidedcmp}
+For every ordered prefix code $\Gamma$: if every chain of $L$ is a
+positive sided chain, and $x$, $y$ are kept with $x \neq y$, then
+\[
+  \mathrm{scmpTable}\ L\ x\ y \;=\; \mathrm{keyLt}\
+  (\mathrm{sKey}(\mathrm{sidedCoordOf}_\Gamma\ y))\
+  (\mathrm{sKey}(\mathrm{sidedCoordOf}_\Gamma\ x)),
+\]
+refining the kernel's in-order marker theorem (\S\ref{sec:sided}) to
+the storage layer; the chain form is
+\lean{scmpTable\_iff\_schainBefore}.
+\hfill\lean{scmpTable\_eq\_keyLt}
+\end{theorem}
+
+\noindent The cost is unchanged from one-sided: contracted depth,
+header fields only, no coordinate materialized.
 
 \paragraph{Congruence and the typing equation.} \lean{sTableOf\_congr}:
 the sided table is a function of the live sided-chain set, so merges
@@ -6024,22 +7218,45 @@ one run: interior members in offset order, then the L subtrees at the
 tail (ascending, older label first), then the tail member itself, then
 the R subtrees (descending, newer label first); at the virtual root,
 the L-rooted subtrees ascending, then the R-rooted descending.
-\lean{swalk\_display} packages the verdict: duplicate-free, exactly the
-live chains, pairwise in the in-order display order (and descending in
-the coordinate key order for every ordered prefix code,
-\lean{swalk\_pairwise\_keyLt}). The literal form, \lean{stableWalk},
-consults entry headers, parent references, and the same address
-arithmetic only, with \lean{sStateOf} never materialized; its
-faithfulness theorem is \lean{stableWalk\_sTableOf}: build the sided
-table, read it back, obtain the in-order display verbatim.
+\begin{theorem}[the sided walk is the in-order display]
+\label{thm:sidedwalk}
+For $[] \notin L$: $\mathrm{swalk}\ L$ is duplicate-free,
+membership-exact for the live sided chains, and pairwise in
+$\mathrm{schainBefore}$ order (\lean{swalk\_display}); descending in
+$\mathrm{keyLt}$ on the sided coordinates for every ordered prefix
+code (\lean{swalk\_pairwise\_keyLt}, adding the positivity
+hypothesis). The literal form, \lean{stableWalk}, consults entry
+headers, parent references, and the same address arithmetic only, with
+$\mathrm{sStateOf}$ never materialized; its faithfulness theorem is
+\lean{stableWalk\_sTableOf}, mirroring Theorem~\ref{thm:tablewalk}:
+build the sided table, read it back, obtain the in-order display
+verbatim.
+\hfill\lean{swalk\_display}
+\end{theorem}
 
 \paragraph{The all-R lockstep bridge.} On an all-R live set the sided
 development projects to the one-sided one in lockstep.
-\lean{sTableOf\_liftR}: the sided table of a lifted all-R state
-\emph{is} the one-sided table with the side bit stamped R on every
-entry. \lean{swalk\_liftR}: the sided in-order walk of that state is
-the one-sided walk, lifted (consuming the kernel's fragment theorem
-\code{schainBefore\_liftR}). This is the storage-layer analog of the
+
+\begin{theorem}[the all-R lockstep bridge]
+\label{thm:liftR}
+Table half, no hypotheses:
+\[
+  \mathrm{sTableOf}\ (L.\mathrm{map}\ \mathrm{liftR}) \;=\;
+  (\mathrm{tableOf}\ L).\mathrm{map}\ \mathrm{liftEntry} :
+\]
+the sided table of a lifted all-R state \emph{is} the one-sided table
+with the side bit stamped R on every entry (\lean{sTableOf\_liftR}).
+Walk half, hypotheses every chain of $L$ positive and $[] \notin L$:
+\[
+  \mathrm{swalk}\ (L.\mathrm{map}\ \mathrm{liftR}) \;=\;
+  (\mathrm{walk}\ L).\mathrm{map}\ \mathrm{liftR},
+\]
+consuming the kernel's fragment theorem \lean{schainBefore\_liftR}
+(\S\ref{sec:sided}).
+\hfill\lean{sTableOf\_liftR}, \lean{swalk\_liftR}
+\end{theorem}
+
+\noindent This is the storage-layer analog of the
 convergence-layer ``sides are payload'' theorem
 (\S\ref{sec:mechanization}): the one-sided datatype is the
 L-uninhabited fragment of the sided one, so every one-sided storage
@@ -6149,24 +7366,69 @@ boundary & anchor & side & resolution \\
 start & live & $\mathit{before}$ & the span starts at the anchor \\
 start & live & $\mathit{after}$ & starts after the anchor, skipping
   the newer-than-mark run \\
-start & dead & $\mathit{before}$ & rehome right; scan exhausted: the
-  mark collapses \\
-start & dead & $\mathit{after}$ & rehome left; exhausted: document
+start & dead & $\mathit{before}$ & rehome right, the span starting at
+  the survivor; scan exhausted: the mark collapses \\
+start & dead & $\mathit{after}$ & rehome left, then as the live case
+  (the skip applies to the survivor); exhausted: document
   start \\
 end & live & $\mathit{after}$ & ends at the anchor, then \emph{grows}
   right over the newer-than-mark run \\
 end & live & $\mathit{before}$ & ends before the anchor, stepping back
   over the newer-than-mark run \\
-end & dead & $\mathit{after}$ & rehome left; exhausted: the mark
+end & dead & $\mathit{after}$ & rehome left, then as the live case
+  (the growth applies to the survivor); exhausted: the mark
   collapses \\
-end & dead & $\mathit{before}$ & rehome right; exhausted: document
+end & dead & $\mathit{before}$ & rehome right, then as the live case
+  (the step-back applies to the survivor); exhausted: document
   end \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent The render (\lean{renderMarksDoc}) is the live order with
-each character's winning marks per type.
+\begin{definition}[the mark-record state and the document-order read]
+\label{def:markmodel}
+The document is $d = (\mathit{shadow}, \mathit{deleted})$
+(\lean{DocD}): an insert-only embed state (every insert ever applied,
+payload the codepoint) plus the grow-only deleted-id list. The
+\emph{birth order} is the shadow's id sequence in embed reading order
+(\lean{DocD.birthIds}); the \emph{live order} is the birth order
+filtered by $\mathit{deleted}$ (\lean{DocD.liveIds}). A mark is the
+immutable record $(\mathit{mid}, \mathit{mtype}, \mathit{op},
+\mathit{value}, \mathit{startId}, \mathit{endId}, \mathit{startSide},
+\mathit{endSide})$ (\lean{MarkD}; two frozen ancestry snapshots ride
+along for the retracted tree control alone and are ignored by the
+resolver). The resolver returns option-valued \emph{live indices}:
+$\mathrm{startIncl}\ d\ m$ is the first covered index and
+$\mathrm{endExcl}\ d\ m$ the exclusive upper index, each computed by
+the eight-case table above, in \emph{resolve-then-side} order: a dead
+anchor first rehomes by the side's nearest-survivor scan from its
+birth position (exhaustion giving the side's collapse or document
+sentinel), and the boundary anchor, live or so rehomed, then takes
+its side's rule (gravity; the newer-than-mark run --- contiguous live
+ids $> \mathit{mid}$ --- skipped at an $\mathit{after}$ start and
+grown over at an $\mathit{after}$ end); $\mathrm{none}$ is the
+collapsed span. Coverage is the
+half-open interval:
+\[
+  \mathrm{markCoversPos}\ d\ m\ k \;=\;
+  \bigl(f \le k \,\wedge\, k < e\bigr)
+  \quad\text{when}\quad
+  \mathrm{startIncl}\ d\ m = \mathrm{some}\ f,\
+  \mathrm{endExcl}\ d\ m = \mathrm{some}\ e,
+\]
+and false when either boundary collapses. Per $(\text{position},
+\mathit{mtype})$ the covering mark with the largest $\mathit{mid}$
+wins (\lean{bestCover}), and the position is formatted iff that
+winner is an \textsf{add} (\lean{fmtAt}). The render
+$\mathrm{renderMarksDoc}\ d\ \mathit{marks}\ \mathit{mt}$ is the live
+order with each character's flag,
+$\mathrm{renderFlagWith}\ d\ (\mathrm{markCoversPos}\ d)$; the
+retracted control $\mathrm{renderMarksTree}$ is the same render over
+$\mathrm{treeCoversPos}$ (climb the frozen path to the nearest live
+ancestor and cover the inclusive interval between the two resolved
+anchors, sides ignored).
+\hfill\lean{DocD}, \lean{MarkD}, \lean{renderMarksDoc}
+\end{definition}
 
 \paragraph{The positive theorem, and the retraction it replaces.} An
 earlier composed-Peritext read resolved a dead boundary by climbing
@@ -6178,17 +7440,48 @@ a dead boundary anchor migrates backward in the document and formats
 text that was never in the span. The document-order model is built so
 that the replacement is provable: rehoming scans \emph{reading} order,
 so a single-replica rehome can only shrink or hold a span, never
-migrate it backward. The general positive is
-\lean{doc\_no\_backward\_leak} (proved; axioms $\{\mathrm{propext}\}$
-alone): no character strictly before a mark's rehomed start carries
-that mark's formatting. The retracted claim survives as a
-machine-checked negative control:
-\lean{tree\_backward\_leak\_refutes\_noleak} exhibits a state and a
-mark whose tree-ancestry coverage formats a character the
-document-order read does not. Concretely (\lean{leak\_doc\_shrinks}):
-delete a bold span's start anchor; document order rehomes the start
-forward to the next survivor, while the tree read climbs to the
-anchor's parent and formats text that was never bold.
+migrate it backward.
+
+\begin{theorem}[no backward leak, document order]
+\label{thm:noleak}
+For every document $d$, mark $m$, type $\mathit{mt}$, and live
+indices $f$, $k$: if $\mathrm{startIncl}\ d\ m = \mathrm{some}\ f$
+and $k < f$, then
+\[
+  \mathrm{fmtAt}\ (\mathrm{markCoversPos}\ d)\ [m]\ \mathit{mt}\ k
+  \;=\; \mathsf{false} :
+\]
+no character strictly before the mark's rehomed start carries that
+mark's formatting. Stated at the singleton mark list $[m]$, which is
+exactly the per-mark claim: $\mathrm{markCoversPos}$ is
+list-independent, so in any larger list $m$ still covers nothing
+before $f$, and a position there can be formatted only by
+\emph{another} mark's own span. Proved on axioms
+$\{\mathrm{propext}\}$ alone, below even the document's kernel-clean
+baseline.
+\hfill\lean{doc\_no\_backward\_leak}
+\end{theorem}
+
+\begin{proposition}[the tree-ancestry read leaks backward]
+\label{prop:treeleak}
+There exist a document $d$, a mark $m$, and a live position $k$ with
+\[
+  \mathrm{markCoversPos}\ d\ m\ k = \mathsf{false}
+  \quad\wedge\quad
+  \mathrm{treeCoversPos}\ d\ m\ k = \mathsf{true} :
+\]
+the retracted claim's own resolver formats a character the
+document-order read does not, so no analogue of
+Theorem~\ref{thm:noleak} holds for the frozen-path read. The witness
+is concrete: delete a bold span's start anchor; document order
+rehomes the start forward to the next survivor
+(\lean{leak\_doc\_shrinks\_doc}), while the tree read climbs to the
+anchor's parent and formats text that was never bold
+(\lean{leak\_doc\_shrinks\_tree}), with the $\ne$ companion
+\lean{leak\_doc\_shrinks} pinning that the two renders genuinely
+differ.
+\hfill\lean{tree\_backward\_leak\_refutes\_noleak}
+\end{proposition}
 
 \paragraph{The Litt et al.\ pins.} The model is pinned against the
 worked examples of the Peritext paper (Litt et al.\ CSCW'22), each a
@@ -6212,13 +7505,32 @@ pin); character order converges by the embed capstone.
 substrate is tombstone-free and live, so the mark-positioning trilemma
 (atomic mark placement, tombstone-freedom, live state: pick two;
 \S\ref{sec:specs}) charges this model too, and it pays on the growth
-rule. \lean{doc\_delete\_can\_respan} (proved, concrete): deleting a
-plain character $C$, touched by no boundary, re-formats an untouched
-survivor $D$, because $C$ (older than the mark) blocked the end-growth
-run and its deletion makes $D$ contiguous with the span. The
-post-delete render is provably \emph{not} the pre-delete render minus
-the deleted character. This is a membership re-span, not a backward
-leak (the no-leak theorem is untouched), and the contrast with the
+rule.
+
+\begin{proposition}[a delete can re-span: the trilemma horn]
+\label{prop:respan}
+There is a four-character document and a bold mark --- concretely:
+$A, B$ marked ($\mathit{endSide} = \mathit{after}$), $C$ older than
+the mark blocking the growth run, $D$ newer, with the hand-derived
+render pins \lean{respan\_before} ($A, B$ bold; $C, D$ plain) and
+\lean{respan\_after} ($A, B, D$ bold) --- such that deleting the
+plain, boundary-untouched $C$ (id $3$) changes an untouched
+survivor's formatting:
+\[
+  \mathrm{renderMarksDocIds}\ d_{\mathrm{after}}\ [m]\ \mathsf{bold}
+  \;\ne\;
+  (\mathrm{renderMarksDocIds}\ d_{\mathrm{before}}\ [m]\
+  \mathsf{bold}).\mathrm{filter}\ (\lambda e.\ e.1 \ne 3) :
+\]
+the post-delete render is \emph{not} the pre-delete render minus the
+deleted character's entry, because $C$'s deletion makes $D$
+contiguous with the span and the $\mathit{after}$-end growth run
+reaches it.
+\hfill\lean{doc\_delete\_can\_respan}
+\end{proposition}
+
+\noindent This is a membership re-span, not a backward leak
+(Theorem~\ref{thm:noleak} is untouched), and the contrast with the
 fused encoding is exact: the fused design has no growth rule and
 proves \lean{renderIds\_del} (a character delete re-formats nothing);
 the marks model trades that theorem for the paper's
@@ -6431,74 +7743,240 @@ protocol half, is deliberately \emph{not} taken on, being the
 already-tracked residue below.
 
 \paragraph{O1: the keep-set is a stable-prefix map, not a new
-notion.} \lean{KeepSpec}/\lean{keepSPM} package the retention-roots
-relabeling as an instance of the \emph{existing}
-\lean{StablePrefixMap} bundle of \S\ref{sec:recoding}, with the kept
-coordinate set (live $\cup$ mark-boundary anchors $\cup$ declared
-in-flight anchors) as its domain. H2 on kept pairs is the validation's
-A1 (\lean{keepSPM\_A1}, axiom-free: the relabeling preserves the
-display comparator on the whole kept set, retained-dead pairs
-included, which is what D3 consumes); H1 is derived, not assumed
-(\lean{keepSPM\_injOn\_kept}); H3 covers fresh mints \emph{and}
-declared stragglers, whose frozen sibling groups are exactly the text
-layer's skipped-groups side condition, with the FAIL companion
-\lean{freeze\_guard\_violation} pinning the flip (deltas $2 < 5$
-in-flight $< 9$ renumber to $1, 2$ and the frozen $5$ jumps the
-ex-$9$).
+notion.}
+
+\begin{definition}[the keep-set stable-prefix map]
+\label{def:keepspm}
+A keep-set is $K = (\mathrm{live}, \mathrm{markAnchor},
+\mathrm{inflight})$ (\lean{KeepSpec}), three coordinate predicates,
+with $K.\mathrm{kept}\ c = \mathrm{live}\ c \vee
+\mathrm{markAnchor}\ c \vee \mathrm{inflight}\ c$: the live records,
+the boundary anchors of present and declared in-flight mark records
+(dead anchors included --- the retention roots), and the anchors of
+declared in-flight text ops. Given a relabeling $f$ and declared
+mints $\mathrm{Mint}$ satisfying
+\begin{itemize}[leftmargin=2em]
+\item[($h_{\mathrm{ext}}$)] $\mathrm{Mint}\ \pi\ d$ implies
+  $f(\pi \cdot \Gamma.\mathrm{enc}(d)) = f(\pi) \cdot
+  \Gamma.\mathrm{enc}(d)$, and
+\item[($h_{\mathrm{ord}}$)] for $c$, $c'$ each kept or mint-shaped
+  ($\exists \pi\, d$, $\mathrm{Mint}\ \pi\ d \wedge c = \pi \cdot
+  \Gamma.\mathrm{enc}(d)$):
+  $\mathrm{keyLt}(\mathrm{key}(f\,c))\,(\mathrm{key}(f\,c')) =
+  \mathrm{keyLt}(\mathrm{key}\ c)\,(\mathrm{key}\ c')$,
+\end{itemize}
+$\mathrm{keepSPM}\ \Gamma\ K\ f\ \mathrm{Mint}$ is the
+\emph{existing} stable-prefix bundle of Definition~\ref{def:spm} with
+$\mathrm{Rest} := K.\mathrm{kept}$ and $\mathrm{MintAt} :=
+\mathrm{Mint}$: $h_{\mathrm{ext}}$ is H3 and $h_{\mathrm{ord}}$ is
+H2, field for field. H3's $\mathrm{Mint}$ covers fresh mints
+\emph{and} declared stragglers, whose frozen sibling groups are
+exactly the text layer's skipped-groups side condition, with the FAIL
+companion \lean{freeze\_guard\_violation} pinning the flip (deltas
+$2 < 5$ in-flight $< 9$ renumber to $1, 2$ and the frozen $5$ jumps
+the ex-$9$).
+\hfill\lean{KeepSpec}, \lean{keepSPM}
+\end{definition}
+
+\begin{lemma}[A1, with H1 derived]
+\label{lem:keepa1}
+For kept coordinates $c$, $c'$:
+\[
+  \mathrm{keyLt}(\mathrm{key}(f\,c))\,(\mathrm{key}(f\,c'))
+  \;=\; \mathrm{keyLt}(\mathrm{key}\ c)\,(\mathrm{key}\ c') :
+\]
+the relabeling preserves the display comparator on the whole kept
+set, retained-dead pairs included, which is exactly what the D3
+observation (\S\ref{sec:marksattacks}) consumes. Injectivity on kept
+pairs is derived through the bundle
+(\lean{keepSPM\_injOn\_kept}), not assumed. \lean{keepSPM\_A1} is
+proved with \emph{no axioms at all}.
+\hfill\lean{keepSPM\_A1}
+\end{lemma}
 
 \paragraph{O2: scan factorization, a pure list lemma.}
-\lean{scanRight\_filter} and \lean{scanLeft\_filter}: removing
-non-surviving, non-anchor elements from a sequence never changes the
-first survivor on either side of a retained element, because every
-dropped element is a non-survivor the scan skips anyway. No datatype
-content: \lean{List.filter} and \lean{find?} over an arbitrary split.
 
-\paragraph{O3: the render-congruence capstone.}
-\lean{marksGC\_render\_congr} (proved, kernel-clean):
-\lean{renderMarksDoc} is a function of the live id sequence, the
-boundary anchors' positions relative to it, and the id order; it never
-reads a coordinate. Hence: drop the settled-dead non-anchor records,
-re-code the kept coordinates by \emph{any} keep-set stable-prefix map,
-translate the continuation's carried prefixes, and every beyond-cut
-render equals the uncompacted twin's, for every mark and every type.
-The proof chains the re-coding cluster's T1
-(\lean{eRecode\_applySeq} transports the compacted fold), coordinate
-invisibility of the render, commutation of the continuation with the
-drop, and O2 plus the retention roots. Its hypotheses are explicit and
-honest: the drop touches only settled-dead ids, every present mark's
-boundaries are kept, and \lean{ContOK}, the continuation discipline
-(fresh Lamport ids, duplicate-free insert ids, mint keys fresh against
-the cut state and pairwise distinct). \lean{ContOK} is what any honest
-beyond-cut continuation satisfies; \emph{deriving} it, together with
-the straggler declarations, from honest reachability at a certified
-cut is nothing marks-specific: it is the note's O5, the same
-settled-cut protocol residue already tracked for the text layer (the
-$(\ast)$ lemma of \S\ref{sec:compactED}; Open
-Questions~\ref{oq:starlemma} and~\ref{oq:epochdag}). The marks layer
-adds no new obligation to it.
+\begin{lemma}[scan factorization]
+\label{lem:scanfactor}
+For every split $l_1 \cdot a \cdot l_2$ of the birth order, deleted
+list $\mathit{del}$, and keep predicate $p$ with $p\,a =
+\mathsf{true}$, $a \notin l_1$, and every survivor of $l_2$ kept
+($\forall x \in l_2$, $x \notin \mathit{del} \Rightarrow p\,x =
+\mathsf{true}$):
+\[
+  \mathrm{scanRight}\ \bigl((l_1 \cdot a \cdot
+  l_2).\mathrm{filter}\ p\bigr)\ \mathit{del}\
+  \bigl(\mathrm{idxOf}\ ((l_1 \cdot a \cdot l_2).\mathrm{filter}\
+  p)\ a\bigr)
+  \;=\;
+  \mathrm{scanRight}\ (l_1 \cdot a \cdot l_2)\ \mathit{del}\
+  \bigl(\mathrm{idxOf}\ (l_1 \cdot a \cdot l_2)\ a\bigr) :
+\]
+the first survivor strictly right of the retained element $a$ is the
+same in the filtered and the full sequence, because every dropped
+element is a non-survivor the scan skips anyway. Mirror statement
+\lean{scanLeft\_filter}, with the kept-survivors hypothesis on $l_1$.
+No datatype content: \lean{List.filter} and \lean{find?} over an
+arbitrary split.
+\hfill\lean{scanRight\_filter}, \lean{scanLeft\_filter}
+\end{lemma}
 
-\paragraph{O3, two epochs.} \lean{marksGC\_render\_congr\_twoEpoch}
-(proved, kernel-clean): compact at a settled cut, continue, compact
-again on the already re-coded records, and deliver a twice-lagging
-continuation translated through the composed map; the final render
-equals the never-compacted twin's. The composite is the existing
+\paragraph{O3: the render-congruence capstone.} The load-bearing
+observation: \lean{renderMarksDoc} is a function of the live id
+sequence, the boundary anchors' positions relative to it, and the id
+order; it never reads a coordinate. Its hypothesis structure is
+displayed first:
+
+\begin{definition}[the continuation discipline]
+\label{def:contok}
+$\mathrm{ContOK}\ \Gamma\ s\ \tau$, for a cut state $s$ and
+continuation $\tau$, has four fields:
+\begin{itemize}[leftmargin=2em]
+\item[(\emph{freshId})] every insert $(t, r, \ins(e, \pi, a)) \in
+  \tau$ has $t \notin \mathrm{ids}(s)$;
+\item[(\emph{nodupIns})] $\tau$'s insert ids are duplicate-free;
+\item[(\emph{freshKeySt})] every insert of $\tau$ mints a key
+  $\mathrm{key}(\pi \cdot \Gamma.\mathrm{enc}(t - a))$ distinct from
+  every stored record's key;
+\item[(\emph{freshKeyPair})] distinct inserts of $\tau$ mint
+  distinct keys.
+\end{itemize}
+This is what any honest beyond-cut continuation satisfies (Lamport
+freshness plus unique decodability); \emph{deriving} it, together
+with the straggler declarations, from honest reachability at a
+certified cut is nothing marks-specific: it is the note's O5, the
+per-continuation face of the settled-cut protocol residue. The
+honesty-rebasing half of that residue, the $(\ast)$ lemma, is
+\emph{closed} for the text layer
+(Definition~\ref{def:caf}--Theorem~\ref{thm:starclosed},
+\S\ref{sec:compactED}); what remains is the protocol half --- Open
+Questions~\ref{oq:starlemma} and~\ref{oq:epochdag} --- and the marks
+layer adds no new obligation to it.
+\hfill\lean{ContOK}
+\end{definition}
+
+\begin{theorem}[O3: render congruence under retention-roots
+compaction]
+\label{thm:marksgc}
+For a stable-prefix map $F$; cut state $s$; continuation $\tau$; keep
+predicate $\mathit{kp}$; deleted list $\mathit{del}$; mark list
+$\mathit{marks}$; type $\mathit{mt}$; under the hypotheses:
+\begin{itemize}[leftmargin=2em]
+\item[($h_{\mathrm{sort}}$, $h_{\mathrm{nd}}$)] $s$ is strictly
+  key-sorted and its ids are duplicate-free;
+\item[($h_{\mathrm{ok}}$)] $\mathrm{ContOK}\ \Gamma\ s\ \tau$
+  (Definition~\ref{def:contok});
+\item[($h_{\mathrm{kp}}$)] every insert of $\tau$ is kept
+  ($\mathit{kp}$ true at its id);
+\item[($h_{\mathrm{dom}}$)] every kept record of $s$ is at hand
+  ($F.\mathrm{Dom}$ of its coordinate);
+\item[($h_{\mathrm{mint}}$)] every insert $(t, r, \ins(e, \pi, a))
+  \in \tau$ is a declared mint ($F.\mathrm{MintAt}\ \pi\ (t - a)$);
+\item[($h_{\mathrm{dead}}$)] every dropped record's id is recorded
+  dead ($\mathit{kp}$ false at $r.1$ implies $r.1 \in \mathit{del}$);
+\item[($h_{\mathrm{anchor}}$)] every present mark's two boundary ids
+  are kept (the retention roots),
+\end{itemize}
+the compacted-and-continued document renders equal to the
+never-compacted twin:
+\[
+  \mathrm{renderMarksDoc}\ \bigl(\mathrm{applySeq}\
+  (\mathrm{remap}_F\ (s.\mathrm{filter}\ \mathit{kp}))\
+  (\tau.\mathrm{map}\ \mathrm{remap}_F),\ \mathit{del}\bigr)\
+  \mathit{marks}\ \mathit{mt}
+  \;=\;
+  \mathrm{renderMarksDoc}\ \bigl(\mathrm{applySeq}\ s\ \tau,\
+  \mathit{del}\bigr)\ \mathit{marks}\ \mathit{mt},
+\]
+for every mark and every type. Kernel-clean. The proof chains the
+re-coding cluster's T1 (Theorem~\ref{thm:recode1} transports the
+compacted fold), coordinate invisibility of the render, commutation
+of the continuation with the drop, and O2
+(Lemma~\ref{lem:scanfactor}) plus the retention roots.
+\hfill\lean{marksGC\_render\_congr}
+\end{theorem}
+
+\begin{theorem}[O3, two epochs]
+\label{thm:marksgc2}
+For maps $F_1$, $F_2$ with $\mathrm{CompatOn}\ F_1\ F_2\
+\mathrm{Rest}'\ \mathrm{MintAt}'$ (Definition~\ref{def:spmcomp});
+keep predicates $\mathit{kp}_1$, $\mathit{kp}_2$; continuations
+$\tau_1$, $\tau_2$; under Theorem~\ref{thm:marksgc}'s hypothesis
+list taken twice: epoch~1's clauses ($h_{\mathrm{ok}_1}$,
+$h_{\mathrm{kp}_1}$, $h_{\mathrm{dom}_1}$, $h_{\mathrm{mint}_1}$)
+verbatim at $(s, \tau_1, \mathit{kp}_1, F_1)$, and epoch~2's at the
+once-continued state and the \emph{composite}: $h_{\mathrm{ok}_2}$
+at $\mathrm{applySeq}\ s\ \tau_1$; $h_{\mathrm{kp}_2}$,
+$h_{\mathrm{dead}}$, $h_{\mathrm{anchor}}$ at the conjunction
+$\mathit{kp}_1 \wedge \mathit{kp}_2$; $h_{\mathrm{dom}G}$,
+$h_{\mathrm{mint}G}$ at $F_1.\mathrm{comp}\ F_2$'s surviving domain
+$(\mathrm{Rest}', \mathrm{MintAt}')$. Conclusion: compact at a
+settled cut, continue, compact again on the already re-coded
+records, and deliver the twice-lagging $\tau_2$ translated through
+the composite; the final render equals the never-compacted twin's
+(the display elides the nested remaps; the mechanized statement
+carries them in full). Kernel-clean. The composite is the existing
 \lean{StablePrefixMap.comp} carried at its own \emph{surviving}
-domain: a retention root freed between the epochs (by an A3 pair-drop)
-is exactly the rank-reclaim collision shape
-\lean{naive\_composition\_collides} pins (\S\ref{sec:compactED}), and
-restricting the composite's domain to the survivors is the fix that
-file already provides. $n$-epoch towers follow by the same
+domain: a retention root freed between the epochs (by an A3
+pair-drop) is exactly the rank-reclaim collision shape
+\lean{naive\_composition\_collides} pins (\S\ref{sec:compactED}),
+and restricting the composite's domain to the survivors is the fix
+that file already provides. $n$-epoch towers follow by the same
 \lean{chainSPM}/\lean{CompatOn} route.
+\hfill\lean{marksGC\_render\_congr\_twoEpoch}
+\end{theorem}
 
-\paragraph{O4: the guarded drop.} \lean{a3\_guarded\_drop} (proved):
-removing an $(\mathsf{add}, \mathsf{remove})$ pair with equal boundary
-tuples and $r.\mathit{mid} > m.\mathit{mid}$ preserves
-\lean{renderMarksDoc} under the three guards, stated over the final
-delivered document and mark list (the shadowing guard ranges over
-declared in-flight marks too; the window guard is the $\beta$ clause;
-beyond-cut Lamport freshness makes the cut-time check sufficient).
+\paragraph{O4: the guarded drop.}
+
+\begin{theorem}[O4: the guarded pair-drop]
+\label{thm:a3drop}
+For a document $d$, mark list $\mathit{marks}$, and $m, r \in
+\mathit{marks}$ with $m.\mathit{op} = \mathsf{add}$, $r.\mathit{op}
+= \mathsf{remove}$, $r.\mathit{mtype} = m.\mathit{mtype}$,
+$m.\mathit{mid} < r.\mathit{mid}$, equal boundary tuples
+($r.\mathit{startId} = m.\mathit{startId}$, $r.\mathit{endId} =
+m.\mathit{endId}$, $r.\mathit{startSide} = m.\mathit{startSide}$,
+$r.\mathit{endSide} = m.\mathit{endSide}$), and
+$\mathit{marks}$'s $\mathit{mid}$s duplicate-free; under the three
+guards:
+\begin{itemize}[leftmargin=2em]
+\item[(G1)] \emph{removal settled, declared in-flights included}:
+  the statement is over the \emph{final delivered} document and mark
+  list, so a cut-time drop is licensed exactly when the settled
+  marks plus the declared in-flight marks exhaust the final list's
+  candidates --- beyond-cut Lamport freshness (every later
+  $\mathit{mid}$ above $r.\mathit{mid}$) covers the rest, which is
+  the $\alpha$ flip's discharge;
+\item[(G2)] \emph{no LWW shadowing} ($h_{\mathrm{others}}$): every
+  other same-type mark $o \in \mathit{marks}$ (with $o.\mathit{mid}
+  \ne m.\mathit{mid}$, $o.\mathit{mid} \ne r.\mathit{mid}$) has
+  $r.\mathit{mid} < o.\mathit{mid}$;
+\item[(G3)] \emph{the growth window} ($h_{\mathrm{window}}$, the
+  $\beta$ clause, the discovery of this phase): every birth id $c$
+  of $d$ satisfies
+  \[
+    c \le m.\mathit{mid} \;\vee\; r.\mathit{mid} < c :
+  \]
+  \emph{no id in the half-open window} $(m.\mathit{mid},
+  r.\mathit{mid}]$ (the formula also excludes $c = r.\mathit{mid}$):
+  such a character is grabbed by the add's end-growth but not
+  the remove's, so the pair is not render-neutral even with
+  identical boundaries,
+\end{itemize}
+dropping the pair preserves the render:
+\[
+  \mathrm{renderMarksDoc}\ d\
+  \bigl(\mathit{marks}.\mathrm{filter}\ (\lambda o.\ o.\mathit{mid}
+  \notin \{m.\mathit{mid}, r.\mathit{mid}\})\bigr)\ \mathit{mt}
+  \;=\; \mathrm{renderMarksDoc}\ d\ \mathit{marks}\ \mathit{mt} .
+\]
 Only $r.\mathit{op} = \mathsf{remove}$ is load-bearing for the
-verdict. The SPOT block is PASS+FAIL shaped throughout: the guarded
+verdict (the $\mathsf{add}$ hypothesis names the shape, the proof
+never consults it).
+\hfill\lean{a3\_guarded\_drop}
+\end{theorem}
+
+\noindent The SPOT block is PASS+FAIL shaped throughout: the guarded
 positive fired \emph{through the theorem}, the freed-root payoff (the
 next cut drops the ex-anchor's record and still matches the twin that
 holds both marks), a surviving-rival-mark variant, and both flips
@@ -6747,16 +8225,49 @@ are relative to the Sal repository.
 
 \textbf{The capstone is proved} (2026-07-15, kernel-clean on
 $\{\mathrm{propext}, \mathrm{Classical.choice},
-\mathrm{Quot.sound}\}$):
+\mathrm{Quot.sound}\}$). Its honesty hypothesis is displayed in
+full, never folded:
+
+\begin{definition}[embed honesty, and honest reachability]
+\label{def:ehonest}
+$\mathrm{EHonest}\ \Gamma\ C$ has two components.
+(\emph{Delete provenance}): for every $e \in C.\mathrm{events}$ with
+$e = (\cdot, \cdot, \del(x))$ there is an $a \in C.\mathrm{events}$
+with $C.\mathrm{vis}\ a\ e$, $a.1 = x$, and $a$ an insert.
+(\emph{Chain generation}): there is a global assignment
+$\mathrm{chainOf} : \mathbb{N} \to \mathrm{List}\ \mathbb{N}$ such
+that every insert $o \in C.\mathrm{events}$ satisfies
 \[
-  \code{embed\_ra\_linearizable3} \;:\;
-  \mathrm{EReach}\ \Gamma\ C \to \mathrm{IsRALinearizable3}\ C
+  \mathrm{PosChain}\ (\mathrm{chainOf}\ o.1), \qquad
+  \mathrm{coord}(o) = \mathrm{coordOf}_\Gamma\
+  (\mathrm{chainOf}\ o.1), \qquad
+  (\mathrm{chainOf}\ o.1).\mathrm{sum} = o.1 :
 \]
-i.e.\ RA-linearizability per version at every honestly reachable
+the carried coordinate is a positive birth chain's, and the chain's
+deltas telescope to the op's own id. $\mathrm{EReach}\ \Gamma$ is
+$\mathrm{HonestReach}\ (E\ \Gamma\ \alpha)\ (\mathrm{EHonest}\
+\Gamma)$: LTS reachability where every step is taken from a
+configuration with an honest history, instantiating Part~I's generic
+metatheorem exactly as the mergeable queue does.
+\hfill\lean{EHonest}, \lean{EReach}
+\end{definition}
+
+\begin{theorem}[the embed capstone]
+\label{thm:embedcapstone}
+For every ordered prefix code $\Gamma$ and configuration $C$:
+\[
+  \mathrm{EReach}\ \Gamma\ C \;\to\; \mathrm{IsRALinearizable3}\ C ,
+\]
+RA-linearizability per version at every honestly reachable
 configuration, \emph{parametric in the code} $\Gamma$: the unary
 code, the binary delta code, and the flipped Elias-$\delta$ code are
 all proved \code{OrderedPrefixCode} instances, three encodings on
-one proof. The factoring is exactly this
+one proof (the Elias-$\delta$ inheritance corollary
+\lean{embed\_ra\_linearizable3\_eliasDelta} is one line).
+\hfill\lean{embed\_ra\_linearizable3}
+\end{theorem}
+
+\noindent The factoring is exactly this
 part's design--encoding split, which is itself evidence for the split:
 
 \begin{enumerate}
@@ -6790,33 +8301,117 @@ set, which is Theorem~\ref{thm:chain}(i).
 Landed: the canonical sorted-list state; strictly-sorted
 extensionality (\code{esorted\_ext}: sorted lists with the same
 members are equal, replacing any canonical-list formula);
-\textbf{fold-canonicity} (\code{e\_fold\_canon}: well-formed
-enumerations of one event set fold to the \emph{same} state;
-Theorem~\ref{thm:chain}(i) mechanized); the honesty core and its
-bridge to well-formedness; the merge membership characterization
+\textbf{fold-canonicity}, the Join, and the honesty discharge
+(Theorems~\ref{thm:efoldcanon}, \ref{thm:ejoin},
+\ref{thm:ehonestapp} below); the honesty core and its bridge to
+well-formedness; the merge membership characterization
 (\code{e\_mergeL\_mem}, OR-set survival with honesty closing the
-cross-branch-delete corner); the Join (\code{e\_join\_at}: the
-merge is its own linearization witness); the capstone; the honesty
-discharge from the framework's generation discipline
-(\code{eHonest\_of\_applicable}: applicable generation forces the
-honesty core, so per-op honesty needs no bespoke oracle); and the
-instance intent theorems: delete-order preservation \emph{is}
-sublist stability (\code{eUpdate\_del\_sublist} is literally
+cross-branch-delete corner); the capstone
+(Theorem~\ref{thm:embedcapstone}); and the instance intent theorems:
+delete-order preservation \emph{is} sublist stability
+(\code{eUpdate\_del\_sublist} is literally
 \code{List.filter\_sublist}: a delete's successor state is a sublist
 of its predecessor, so the surviving display order is untouched;
 the merge preserves each input's survivor order on both sides).
 \end{enumerate}
 
+\begin{theorem}[fold canonicity: Theorem~\ref{thm:chain}(i)
+mechanized]
+\label{thm:efoldcanon}
+Call an enumeration $\rho$ \emph{well-formed}
+($\mathrm{EWf}\ \Gamma\ \rho$) when its insert ids are
+duplicate-free, no id is deleted before its insert, and distinct
+inserts mint distinct keys --- the three consequences honesty
+supplies on any enumeration of a closed event set. For $\rho$,
+$\rho'$ with $\mathrm{EWf}\ \Gamma\ \rho$, $\mathrm{EWf}\ \Gamma\
+\rho'$, and $\forall o$, $o \in \rho \iff o \in \rho'$:
+\[
+  \mathrm{eFold}_\Gamma\ \rho \;=\; \mathrm{eFold}_\Gamma\ \rho' ,
+\]
+well-formed enumerations of one event set fold to the \emph{same}
+state.
+\hfill\lean{e\_fold\_canon}
+\end{theorem}
+
+\begin{theorem}[the Join: the merge is its own linearization
+witness]
+\label{thm:ejoin}
+For every configuration whose core history is honest
+($\mathrm{EHonestCore}\ \Gamma\ C$, the two components of
+Definition~\ref{def:ehonest} stated at the core):
+$\mathrm{JoinLemma3At}\ (E\ \Gamma\ \alpha)\ C$. The witness
+enumeration for a merged pair is the LCA's enumeration, then branch
+one's delta in branch order, then branch two's news; its
+delivery-respect obligation falls to closure (a later event sitting
+in an earlier block would have been pulled into the earlier event
+set), the within-block orders transferring verbatim because the
+local order is event-set independent under $\rcrel = \Either$.
+\hfill\lean{e\_join\_at}
+\end{theorem}
+
+\begin{theorem}[the honesty discharge: applicable generation forces
+honesty]
+\label{thm:ehonestapp}
+The issuer-side guard $\mathrm{eApplicable}\ o\ s$: for an insert
+$(t, r, \ins(e, \pi, a))$, $a < t$ and either $a = 0 \wedge \pi =
+\varepsilon$ (the root) or some record $(a, \mathit{el}, \pi) \in s$
+--- the anchor stored with \emph{exactly} the carried prefix as its
+coordinate; for a delete, the target id is stored. If every $e \in
+C.\mathrm{events}$ admits an enumeration $\pi$ of its causal past
+($\mathrm{listPermOf}\ \pi\ \{e' \in C.\mathrm{events} \mid
+C.\mathrm{vis}\ e'\ e\}$) with $e$ applicable at
+$\mathrm{eFold}_\Gamma\ \pi$, then $\mathrm{EHonest}\ \Gamma\ C$:
+per-op honesty needs no bespoke oracle. The delete component is fold
+provenance; the chain component builds the global assignment by
+strong induction on ids (anchors have smaller stamps, and the
+anchor's record in any fold of the issuer's past is op-determined,
+forcing the carried prefix to be the anchor's chain's coordinate).
+The framework form: $\mathrm{GenHonest}$ at $\mathrm{eApplicable}$
+plus $\mathrm{CausalPastEnumerable}\ C$ supply exactly this
+hypothesis (\lean{eHonest\_of\_genHonest}).
+\hfill\lean{eApplicable}, \lean{eHonest\_of\_applicable}
+\end{theorem}
+
 \noindent\textbf{The compaction theorem is proved} (2026-07-15,
 kernel-clean): $\mathrm{read} \circ \mathrm{embed} = \mathrm{read}
-\circ \mathrm{RGA}_\dagger$ on honest executions, as
-\code{rga\_read\_eq\_embed\_read}
-(\code{EmbedRGA\_ReadEquiv.lean}): for every well-formed enumeration
-of an honest event set, \emph{any} enumeration of the tombstoned
-fold's visible ids in the published RGA's own relational order
-(\code{visible\_lt}) equals the embed fold's id sequence, with
-element agreement (\code{embed\_rec\_readSeq}). The proof is
-\emph{against the published definition}: the order core
+\circ \mathrm{RGA}_\dagger$ on honest executions.
+
+\begin{theorem}[the compaction theorem]
+\label{thm:compactread}
+Hypotheses: the generation discipline $\mathrm{EAppDiscipline}\
+\Gamma\ C$ (every op applicable at some fold of its issuer's causal
+past --- the same hypothesis Theorem~\ref{thm:ehonestapp}
+discharges honesty from, named); an enumeration $\rho$ with
+$\mathrm{listPermOf}\ \rho\ C.\mathrm{events}$ and $\mathrm{EWf}\
+\Gamma\ \rho$; and a list $L$ that meets the published RGA's own
+relational read specification at the tombstoned fold:
+\[
+  L\ \text{pairwise-sorted by}\
+  \mathrm{visible\_lt}\ (\mathrm{rgaFold}\ \rho),
+  \qquad
+  \forall t,\ t \in L \iff
+  \mathrm{visible}\ (\mathrm{rgaFold}\ \rho)\ t .
+\]
+Conclusion: $L = \mathrm{eIds}\ (\mathrm{eFold}_\Gamma\ \rho)$ ---
+\emph{any} enumeration of the tombstoned fold's visible ids in the
+published order is the embed fold's id sequence --- with element
+agreement: every record $(t, \mathit{el}, c) \in
+\mathrm{eFold}_\Gamma\ \rho$ satisfies
+$\mathrm{readSeq\_visible}\ (\mathrm{rgaFold}\ \rho)\ t\
+\mathit{el}$ (\lean{embed\_rec\_readSeq}, hypothesis $\mathrm{EWf}\
+\Gamma\ \rho$ alone). The consumed relations are the published
+side's own: \lean{visible\_lt} here is the inductive of
+\code{Sal/MRDTs/RGA\_with\_tombstones/RGA\_ReadSide.lean}
+(parent-child, newest-first siblings, left-descendant, transitive);
+the file is named because the repository carries four homonymous
+\lean{visible\_lt} declarations across its CRDT and MRDT trees, and
+the compaction theorem consumes exactly this one.
+\hfill\lean{rga\_read\_eq\_embed\_read},
+\lean{embed\_rec\_readSeq}
+\end{theorem}
+
+\noindent The proof is \emph{against the published definition}: the
+order core
 (\code{Sal/MRDTs/RGA\_Embed/RGA\_Embed\_ReadEquiv.lean}) shows
 \code{visible\_lt} coincides with chain-lex on the shared birth tree
 (soundness by induction on derivations, completeness by realizing
@@ -6870,22 +8465,56 @@ discharge). The conditioned instance
 (\code{MRDT\_Instances/SidedRGA/}, nine sections mirroring the
 one-sided instance with the sided key): fold-canonicity
 (\code{s\_fold\_canon}), the Join by the same mergeable-queue route,
-and the capstone
+and the capstone:
+
+\begin{theorem}[the sided capstone, restated from
+Theorem~\ref{thm:sidedcapstone}]
+\label{thm:sidedcapstone-mech}
+For every ordered prefix code $\Gamma$ and configuration $C$:
 \[
-  \code{sided\_embed\_ra\_linearizable3} \;:\;
-  \mathrm{SReach}\ \Gamma\ C \to \mathrm{IsRALinearizable3}\ C
+  \mathrm{SReach}\ \Gamma\ C \;\to\; \mathrm{IsRALinearizable3}\ C ,
 \]
-\emph{for every side assignment}: sides are payload to convergence,
-which is the policy/datatype split of \S\ref{sec:sided} as a theorem,
-with \code{sHonest\_of\_applicable} discharging honesty from the
-generation guard exactly as one-sided. The per-policy intent
+where $\mathrm{SReach}\ \Gamma = \mathrm{HonestReach}\ (S\ \Gamma)\
+(\mathrm{SHonest}\ \Gamma)$ and $\mathrm{SHonest}$ is the verbatim
+sided mirror of Definition~\ref{def:ehonest} (delete provenance;
+sided chain generation, the mint a positive \emph{sided} chain's
+coordinate with telescoping deltas). The theorem holds \emph{for
+every side assignment}: the guard constrains the anchor, never the
+side, so sides are payload to convergence --- the policy/datatype
+split of \S\ref{sec:sided} as a theorem --- with
+\code{sHonest\_of\_applicable} discharging honesty from the
+generation guard exactly as one-sided
+(Theorem~\ref{thm:ehonestapp}).
+\hfill\lean{sided\_embed\_ra\_linearizable3}
+\end{theorem}
+
+\noindent The per-policy intent
 theorems have since landed, and the policy story is a machine-checked
-three-act arc (2026-07-16/17). \emph{Act one}: \code{sFold\_liftOp},
-the all-R sided fold IS the one-sided fold, unconditionally (the sort
-keys coincide definitionally), so every one-sided theorem transports;
-and \code{sided\_fold\_subtree\_convex}, subtrees display as
-contiguous blocks in any chain-generated fold, so runs that chain
-never interleave (\code{fugue\_reachable\_runs\_no\_interleave}).
+three-act arc (2026-07-16/17). \emph{Act one}:
+
+\begin{theorem}[act one: the all-R fragment at the instance]
+\label{thm:allr}
+For every history $\rho$ --- no honesty, no sortedness hypotheses, a
+pure simulation:
+\[
+  \mathrm{sFold}_\Gamma\ (\rho.\mathrm{map}\ \mathrm{liftOp})
+  \;=\; (\mathrm{eFold}_\Gamma\ \rho).\mathrm{map}\
+  \mathrm{liftRec} ,
+\]
+the sided fold of an all-R-lifted history IS the one-sided fold,
+record for record (the sort keys coincide definitionally), so every
+one-sided theorem transports; the reads corollary
+\lean{sided\_allR\_read\_eq} agrees id-and-element for
+id-and-element, and chained with tier~3 and
+Theorem~\ref{thm:compactread}, the all-R sided instance $=$ the
+naive text buffer $=$ the published tombstoned RGA.
+\hfill\lean{sFold\_liftOp}
+\end{theorem}
+
+\noindent Also in act one: \code{sided\_fold\_subtree\_convex},
+subtrees display as contiguous blocks in any chain-generated fold,
+so runs that chain never interleave
+(\code{fugue\_reachable\_runs\_no\_interleave}).
 \emph{Act two}: the Weidner--Kleppmann maximal-non-interleaving
 Definition~4 was formalized over reachable configurations
 (\code{SidedRGA\_Fugue.lean}) and REFUTED twice for this Fugue
@@ -8161,22 +9790,31 @@ certificate must name commits, since an event-set summary can miss the
 pull that carries no new events yet opens the gate.
 \end{openq}
 
-\begin{openq}[the honesty-rebasing lemma $(\ast)$]
+\begin{openq}[beyond the closed honesty-rebasing lemma $(\ast)$: the
+protocol face]
 \label{oq:starlemma}
-The single-epoch honesty gap (T3: the re-coded history is honest only
-\emph{modulo} the coordinate order-embedding, \S\ref{sec:recoding}) and
-the multi-epoch $\mathrm{CompatChain}$ residue (\S\ref{sec:compactED})
-are the \emph{same} obligation, and both of their supporting halves are
-already mechanized: the causal-stability half (\lean{nested\_cuts\_settled},
-from $\mathrm{settledAt\_of\_allHeard}$ and frontier antitonicity) and the
-order-iso freshness half (\lean{rED\_hocc\_fresh}). What remains is one
-lemma $(\ast)$: exhibit an epoch-$2$ configuration honest \emph{modulo}
-the order-embedding $F_1$, so that anchored-existence re-derives at the
-epoch boundary and the capstone re-invokes natively in the new epoch.
-This is the whole remaining \emph{single-replica} compaction protocol, and
-Open Question~\ref{oq:epochdag} is the multi-replica layer above it. A
-refutation would be as informative: an honest re-coded configuration that
-no order-embedding rebasing can certify. The marks-layer capstone
+The lemma this question originally named is closed. The single-epoch
+honesty gap (T3: the re-coded history is honest only \emph{modulo} the
+coordinate order-embedding, \S\ref{sec:recoding}) and the multi-epoch
+$\mathrm{CompatChain}$ residue (\S\ref{sec:compactED}) were one
+obligation, $(\ast)$: exhibit an epoch-$2$ configuration honest modulo
+the embedding $F_1$, so that anchored-existence re-derives at the
+boundary. Its discharge is the coded-forest cluster
+(Definition~\ref{def:caf}, Theorems~\ref{thm:ehonesti},
+\ref{thm:spmpreservesI}, \ref{thm:starclosed},
+Corollary~\ref{cor:itwoepoch}): honesty is not re-derived but
+\emph{re-based}, the history-free invariant $I$ crossing the epoch
+boundary where $\mathrm{EHonest}$ cannot. What remains open is the
+protocol half. Single replica, the closed cluster consumes
+construction-shaped hypotheses
+($h_{\mathrm{RestShape}}$/$h_{\mathrm{MintShape}}$, true of the
+shipped compaction and fusion maps); the question is which
+\emph{delivery protocol} discharges the per-continuation face: derive
+$\mathrm{ContOK}$ and the straggler-declaration hypotheses
+(\S\ref{sec:marksmech}) from an honest transport layer rather than
+assuming them per continuation. Multi-replica, agreement on a common
+cut and concurrent divergent compaction remain Open
+Question~\ref{oq:epochdag}. The marks-layer capstone
 (\S\ref{sec:marks}) consumes the same residue and adds nothing to it:
 its \lean{ContOK} and straggler-declaration hypotheses are the
 per-continuation face of exactly this protocol half.
@@ -8188,8 +9826,14 @@ The mechanized stability metatheorem covers compaction epochs that are
 linearized per replica (the v1 runtime, and the demo's checkpoint
 barrier, refuse compaction off the newest epoch), VC-S6 gives
 observational coherence for nested cuts on one lineage, and the
-single-replica multi-epoch composition is now closed up to the shared
-honesty-rebasing lemma (Open Question~\ref{oq:starlemma}). Concurrent
+single-replica multi-epoch composition is closed: the shared
+honesty-rebasing lemma $(\ast)$ it once waited on is discharged by the
+coded-forest cluster (Definition~\ref{def:caf},
+Theorems~\ref{thm:spmpreservesI} and~\ref{thm:starclosed}), and what
+remains on the single-replica side is only the protocol face of Open
+Question~\ref{oq:starlemma} --- deriving the per-continuation
+hypotheses ($\mathrm{ContOK}$, the straggler declarations) from a
+delivery protocol. Concurrent
 \emph{divergent} compactions are the remaining, multi-replica, protocol
 half: two replicas compact at incomparable cuts $S$, $S'$, and their
 states must still merge. The conjectured shape is an epoch DAG
