@@ -351,6 +351,27 @@ D. **Identity and access.** Replica id is a string. A real deployment needs
 under a read-cap so an untrusted relay cannot read content. Content-addressing
 gives integrity, not authorization.
 
+## 8.5 Decision (2026-07-23): git integration is FROZEN at one-way
+
+Git cannot be a source of truth for this system, only a mirror: hand edits
+to `doc.txt` have no ops to become, hand edits to `commits/*.json` are
+rejected by the content-address gate, and git-level merges are not the
+verified `merge3`. A two-way integration would advertise a collaboration
+surface that is read-only in disguise. The frozen posture:
+
+- `.saldoc.json` BUNDLES are the interchange primitive: the editor's
+  `download .saldoc` / `open .saldoc` buttons save and restore whole-history
+  files anywhere, no git involved (durable == wire == bundle format,
+  SHA-gated on import).
+- Git is an ARCHIVAL SINK only: `bundle2git` / `doc2git` mint a snapshot
+  repo (readable `git log -p`, open format, pushable) when wanted.
+- NOT built, deliberately: browser-native git (isomorphic-git + CORS proxy
+  + tokens in the page), git-as-sync-transport, workspace repo layouts.
+  The steelman (git remote as a serverless async transport with
+  per-replica ref files) is coherent but competes with the DO SyncServer,
+  which is native and planned; revisit only if "no custom server" becomes
+  a hard requirement.
+
 ## 9. Suggested build order
 
 Already built (reuse, do not rewrite): `gitstore.js` (RefStore, git backend),
