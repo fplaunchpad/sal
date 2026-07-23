@@ -29,7 +29,7 @@ function mint() {
 
 // ---- transport -------------------------------------------------------------
 const peerHeads = new Map(); // name -> head gid last advertised
-const tp = new WsTransport(`ws://${location.host}`, ROOM, NAME);
+const tp = new WsTransport(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`, ROOM, NAME, { dt: 'embedRGA' });
 const net = new NetworkNode(node, tp, { passive: false, onChange: () => { renderFromState(); renderPanels(); } });
 tp.on('have', (m) => { if (m.from) { peerHeads.set(m.from, m.head); renderPanels(); } });
 tp.on('delta', (m) => { if (m.from && m.head) { peerHeads.set(m.from, m.head); renderPanels(); } });

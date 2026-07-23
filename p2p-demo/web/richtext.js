@@ -242,7 +242,7 @@ const peerHeads = new Map();
 // genuinely departed promptly
 const presence = new Presence(90000);     // ephemeral, off-DAG peer cursors/selections
 let connected = false;
-const tp = new WsTransport(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`, ROOM, NAME);
+const tp = new WsTransport(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`, ROOM, NAME, { dt: 'peritext' });
 const net = new NetworkNode(node, tp, { passive: false, onChange: () => onRemote() });
 tp.on('have', (m) => { if (m.from) { peerHeads.set(m.from, m.head); renderConv(); } });
 tp.on('delta', (m) => { if (m.from && m.head) { peerHeads.set(m.from, m.head); renderConv(); } });

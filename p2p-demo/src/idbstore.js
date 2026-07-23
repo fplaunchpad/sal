@@ -106,8 +106,8 @@ export class RefStore {
   }
 
   // --- whole-node convenience (mirrors gitstore persist/load) ---
-  async persistNode(docId, node) {
-    const { records, heads } = nodeRecords(node);
+  async persistNode(docId, node, opts = {}) {
+    const { records, heads } = nodeRecords(node, opts);
     await this.putObjects(docId, records); // idempotent: re-putting an existing sha is a no-op overwrite
     await this.setMeta(docId, heads);
     return { head: heads.head, commits: records.length };

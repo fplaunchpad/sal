@@ -399,8 +399,12 @@ marks-aware op layer + browser view; `test/peritextbind.test.js`). The remaining
    reload cycles with the relay stateless. Remaining offline polish: a
    service worker for the app shell (the DATA is durable; the PAGE still
    needs the network to load).
-4. Promote `relay.mjs` to a SyncServer (headless replica + RefStore) so the hub
-   merges and persists; central compaction dodges edges B-partial and C.
+4. DONE: the SYNC HUB (`src/hub.js`): a transport-agnostic headless replica
+   per room, run by BOTH the node relay and the Cloudflare Durable Object
+   (DO storage adapter), persisting via the RefStore. Invisible to rosters
+   and GC. Availability + durability + peritext round-trip pinned in
+   `test/hub.test.js`; live-verified on the deployed DO (push, leave, a
+   later peer converges from the hub alone).
 5. Invite links + local directory (`listDocs`, exists) for discovery (rooms
    exist too).
 6. Keypair identity, signatures, payload encryption (edge D).

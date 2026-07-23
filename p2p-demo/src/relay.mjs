@@ -21,6 +21,8 @@
 
 import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'node:url';
+import { HubPeer, HUB_NAME } from './hub.js';
+import { MemoryKV } from './idbstore.js';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -43,12 +45,29 @@ function serveStatic(req, res) {
 
 /** Start a relay + static server. port 0 picks an ephemeral port (tests).
  *  Returns { server, port, close, rooms }. */
-export function startRelay(port = 0, { host = '127.0.0.1' } = {}) {
+export function startRelay(port = 0, { host = '127.0.0.1', hub = false, hubKV = null } = {}) {
   const server = http.createServer(serveStatic);
   const wss = new WebSocketServer({ server });
   const rooms = new Map(); // room -> Map(name -> ws)
   const roomOf = (r) => { if (!rooms.has(r)) rooms.set(r, new Map()); return rooms.get(r); };
   const send = (ws, obj) => { if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj)); };
+
+  // THE SYNC HUB (src/hub.js): one headless replica per room, speaking the
+  // same protocol, persisting through hubKV (MemoryKV by default), so the
+  // doc survives everyone disconnecting. Invisible: never in rosters.
+  const kv = hub ? (hubKV ?? new MemoryKV()) : null;
+  const hubs = new Map(); // room -> Promise<HubPeer>
+  const ensureHub = (r, dt) => {
+    if (!hub) return null;
+    if (!hubs.has(r)) {
+      hubs.set(r, new HubPeer({
+        room: r, datatypeLabel: dt, kv,
+        broadcast: (obj) => { for (const [, peer] of roomOf(r)) send(peer, obj); },
+        sendTo: (name, obj) => { const p = roomOf(r).get(name); if (p) send(p, obj); },
+      }).init());
+    }
+    return hubs.get(r);
+  };
 
   // keepalive: terminate connections that stop answering pings (browsers pong
   // at the protocol level, so live tabs survive; dead sockets get cleaned up
@@ -72,26 +91,32 @@ export function startRelay(port = 0, { host = '127.0.0.1' } = {}) {
         room.set(msg.name, ws);
         send(ws, { t: 'roster', names });
         for (const [nm, peer] of room) if (nm !== msg.name) send(peer, { t: 'join', name: msg.name });
+        ensureHub(msg.room, msg.dt)?.then((h) => h.onPeerJoin(msg.name));
         return;
       }
       if (!ws.room) return;
       const room = roomOf(ws.room);
       const tagged = { ...msg, from: ws.name };
+      if (msg.to === HUB_NAME) { hubs.get(ws.room)?.then((h) => h.onMessage(tagged)); return; }
       if (msg.to) { const peer = room.get(msg.to); if (peer) send(peer, tagged); }
-      else for (const [nm, peer] of room) if (nm !== ws.name) send(peer, tagged);
+      else {
+        for (const [nm, peer] of room) if (nm !== ws.name) send(peer, tagged);
+        hubs.get(ws.room)?.then((h) => h.onMessage(tagged)); // hub hears broadcasts
+      }
     });
     ws.on('close', () => {
       if (!ws.room) return;
       const room = roomOf(ws.room);
       if (room.get(ws.name) === ws) room.delete(ws.name);
       for (const [, peer] of room) send(peer, { t: 'leave', name: ws.name });
+      hubs.get(ws.room)?.then((h) => h.onPeerLeave(ws.name));
       if (room.size === 0) rooms.delete(ws.room);
     });
   });
 
   return new Promise((resolve) => {
     server.listen(port, host, () => resolve({
-      server, port: server.address().port, rooms,
+      server, port: server.address().port, rooms, hubs,
       close: () => new Promise((res) => { clearInterval(heartbeat); wss.close(); server.close(res); }),
     }));
   });
@@ -101,7 +126,7 @@ export function startRelay(port = 0, { host = '127.0.0.1' } = {}) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = Number(process.env.PORT) || 8787;
   const host = process.env.HOST || '127.0.0.1';
-  startRelay(port, { host }).then(({ port }) => {
-    console.log(`[relay] ws + UI on http://${host}:${port}/  (open in 2+ tabs; Ctrl-C to stop)`);
+  startRelay(port, { host, hub: true }).then(({ port }) => {
+    console.log(`[relay] ws + UI + SYNC HUB on http://${host}:${port}/  (docs survive disconnects; Ctrl-C to stop)`);
   });
 }

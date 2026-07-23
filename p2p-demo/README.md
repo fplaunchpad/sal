@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 42 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
+npm test             # 46 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -134,6 +134,22 @@ bridge honest, and what would shrink the distance.
   announcer (pull-on-have), so a lone typist's edits reach idle peers; passive
   mode stays pure-pull so `converge` remains deterministic
   (`test/livepush.test.js` pins both).
+
+- **`src/hub.js` -- the SYNC HUB (design-note step 4): docs survive
+  disconnects.** One headless replica per room, living with the relay,
+  speaking the SAME have/req/delta protocol as any peer and persisting
+  through a RefStore (MemoryKV locally, Durable Object storage in the cloud;
+  debounced, content-addressed). A peer pushes and leaves; a later peer
+  joins an empty room and catches up from the hub alone -- previously
+  impossible (the stateless-relay FAIL shape is pinned). INVISIBLE by
+  construction: never sends `join`, never authors, never broadcasts
+  presence, so clients never roster it and it cannot block the certified
+  GC or compete for auto-GC leadership. The datatype label rides the join
+  message (`dt`); a restored hub trusts its STORED label (a hibernated
+  Durable Object can wake on any message). `test/hub.test.js`:
+  availability, the hubless FAIL companion, store-outlives-process
+  durability, peritext marks; verified LIVE against the deployed Durable
+  Object (author pushes, disconnects; a later reader converges).
 
 - **`src/relay.mjs` -- the server.** A `ws` relay that broadcasts within a room
   (or routes a `to:`-addressed message) and also serves the sal tree
@@ -354,6 +370,6 @@ web/app.js         the plain-text browser editor logic
 web/richtext.html  the rich-text editor shell (toolbar + import map for prosemirror ESM)
 web/richtext.js    the ProseMirror <-> Peritext binding (#107)
 scripts/demo.mjs   the scripted scenario (npm run demo)
-test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, autogc, editbind, peritextbind, presence (42 tests)
+test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, autogc, hub, editbind, peritextbind, presence (46 tests)
 data/              (gitignored) any demo repos created here are SEPARATE git repos
 ```

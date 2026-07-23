@@ -20,8 +20,9 @@ import { CrissCrossError } from '../../runtime/src/lca.js';
 const WS = globalThis.WebSocket; // Node >=22 and every browser expose this
 
 export class WsTransport {
-  constructor(url, room, name) {
+  constructor(url, room, name, { dt } = {}) {
     this.url = url; this.room = room; this.name = name;
+    this.dt = dt; // datatype label for the room's HUB (peritext | embedRGA)
     this.handlers = new Map();
     this.closed = false;        // close() was called by us
     this.everConnected = false; // a roster was received at least once
@@ -42,7 +43,7 @@ export class WsTransport {
     const sep = this.url.includes('?') ? '&' : '?';
     const ws = this.ws = new WS(
       `${this.url}${sep}room=${encodeURIComponent(this.room)}&name=${encodeURIComponent(this.name)}`);
-    ws.addEventListener('open', () => { ws.send(JSON.stringify({ t: 'join', room: this.room, name: this.name })); });
+    ws.addEventListener('open', () => { ws.send(JSON.stringify({ t: 'join', room: this.room, name: this.name, dt: this.dt })); });
     ws.addEventListener('error', () => {}); // 'close' always follows; the retry lives there
     ws.addEventListener('message', (ev) => {
       let msg; try { msg = JSON.parse(typeof ev.data === 'string' ? ev.data : ev.data.toString()); } catch { return; }
@@ -102,6 +103,12 @@ export class NetworkNode {
     // the 'roster' reply arrives with tp.ready, BEFORE this NetworkNode's
     // handler is attached, so seed the roster the transport already captured
     if (transport.roster) for (const nm of transport.roster) node.register(nm);
+    // and ANNOUNCE: over node's ws, several frames from one TCP read fire as
+    // back-to-back synchronous message events, so a have sent right after the
+    // roster (a hub greeting a joiner) can arrive before these handlers
+    // existed. Advertising now makes any lost greeting self-healing: the
+    // other side's have-handler sends back what we lack.
+    if (!this.passive && transport.roster) this.announce();
   }
 
   #wire() {
