@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 41 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
+npm test             # 42 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -80,6 +80,15 @@ bridge honest, and what would shrink the distance.
   seam is gone (`sync.js`'s `Peer` uses the same core hash now). The demo's
   `src/hash.js` is a thin re-export of the core; the pure-JS SHA-256 is checked
   bit-for-bit against `node:crypto` (NIST vectors + random) in the runtime.
+
+- **Download `.saldoc.json` -- the doc as one JSON file.** The editor's
+  `download .saldoc` button exports the replica's WHOLE commit DAG (records
+  + heads, wire SHAs) as plain JSON; `scripts/bundle2git.mjs <file> --repo
+  <path>` turns it into the git repo below. Works against ANY relay
+  (including the deployed one): the export is built client-side from the
+  tab's own replica. Full history rides along: deleted text and authorship
+  are recoverable from a bundle, so share it as you would share history,
+  not as you would share a rendered document.
 
 - **`scripts/doc2git.mjs` -- push YOUR live doc to a git repo.** A headless
   peer joins the room, pulls the document from whoever is online (your open
@@ -345,6 +354,6 @@ web/app.js         the plain-text browser editor logic
 web/richtext.html  the rich-text editor shell (toolbar + import map for prosemirror ESM)
 web/richtext.js    the ProseMirror <-> Peritext binding (#107)
 scripts/demo.mjs   the scripted scenario (npm run demo)
-test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, autogc, editbind, peritextbind, presence (41 tests)
+test/*.test.js     node, gitstore, idbstore, integration, livepush, reconnect, manualmerge, autogc, editbind, peritextbind, presence (42 tests)
 data/              (gitignored) any demo repos created here are SEPARATE git repos
 ```

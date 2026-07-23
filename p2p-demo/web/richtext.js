@@ -32,6 +32,7 @@ import {
 import { shouldCompact } from '../src/autogc.js';
 import { Presence, presenceSpan } from '../src/presence.js';
 import { openIdbKV, RefStore } from '../src/idbstore.js';
+import { nodeRecords } from '../src/records.js';
 // the COMPACTIBLE peritext: same datatype + the certified marks-layer GC
 // hooks (#110), so compactStable FIRES here instead of refusing
 import { compactiblePeritext } from '../../runtime/src/compact-peritext.js';
@@ -587,6 +588,26 @@ function runCertifiedGc(label) {
   return r.compacted;
 }
 $('gcBtn').addEventListener('click', () => runCertifiedGc(''));
+
+// DOWNLOAD the doc as a .saldoc bundle: the WHOLE commit DAG (records +
+// heads, wire SHAs) as plain JSON -- the same shape every durable backend
+// uses. scripts/bundle2git.mjs turns it into a pushable git repo; load()
+// of that repo rejoins live sync with identical SHAs. Full history: deleted
+// text and authorship ride along (say so in the UI title).
+$('dlBtn').addEventListener('click', () => {
+  flush(); // seal the typing run so the bundle carries it
+  const bundle = { v: 1, doc: ROOM, datatype: 'peritext', ...nodeRecords(node, { datatypeLabel: 'peritext' }) };
+  const blob = new Blob([JSON.stringify(bundle)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${ROOM}.saldoc.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const st = $('gcStatus');
+  st.className = 'status good';
+  st.textContent = `downloaded ${ROOM}.saldoc.json (${bundle.records.length} commits). `
+    + `To git: node scripts/bundle2git.mjs ~/Downloads/${ROOM}.saldoc.json --repo <path>`;
+});
 
 // AUTO-GC: the leader fires the certified compaction when the coordinate
 // cost crosses the policy threshold (src/autogc.js; the leader guard keeps

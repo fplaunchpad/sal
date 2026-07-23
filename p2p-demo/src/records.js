@@ -33,11 +33,11 @@ export function commitRecord(node, cid) {
 
 /** Pure: a node's whole DAG as records + the heads meta. Shared by the git
  *  backend and the IndexedDB backend. `rebuildNode` is the inverse. */
-export function nodeRecords(node) {
+export function nodeRecords(node, { datatypeLabel = 'embedRGA' } = {}) {
   const records = [];
   for (const c of node.dag.values()) records.push(commitRecord(node, c.id));
   const heads = { head: node.headGid, replica: node.name, seq: node.seq,
-    epoch: node.epoch, roster: [...node.registered], datatype: 'embedRGA' };
+    epoch: node.epoch, roster: [...node.registered], datatype: datatypeLabel };
   return { records, heads };
 }
 

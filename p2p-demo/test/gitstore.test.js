@@ -106,3 +106,31 @@ test('peritext doc persists: doc.txt is the chars, load round-trips marks', asyn
   assert.ok(back.read().every((e) => e.marks.some((m) => m.mtype === 'bold')), 'marks survive the repo');
   assert.equal(back.headGid, r.headSha, 'same head SHA after clone-shaped load');
 });
+
+test('bundle2git CLI: a .saldoc bundle becomes a loadable git repo', async () => {
+  const { compactiblePeritext } = await import('../../runtime/src/compact-peritext.js');
+  const { nodeRecords } = await import('../src/records.js');
+  const n = new Node(compactiblePeritext, 'kc');
+  const mint = (k) => k * 1000 + 3;
+  n.commitBatch([
+    { type: 'ins', id: mint(1), el: 'o', anchorId: null },
+    { type: 'ins', id: mint(2), el: 'k', anchorId: mint(1) },
+  ]);
+  const bundle = { v: 1, doc: 'cli-doc', datatype: 'peritext', ...nodeRecords(n, { datatypeLabel: 'peritext' }) };
+  const file = path.join(mkrepo('bundlejson'), 'doc.saldoc.json');
+  fs.writeFileSync(file, JSON.stringify(bundle));
+  const repo = mkrepo('bundlerepo');
+  const out = execFileSync('node', ['scripts/bundle2git.mjs', file, '--repo', repo], { encoding: 'utf8' });
+  assert.match(out, /persisted 2 commits/);
+  assert.equal(fs.readFileSync(path.join(repo, 'doc.txt'), 'utf8'), 'ok');
+  const back = load(repo, compactiblePeritext);
+  assert.equal(back.headGid, n.headGid, 'same head SHA through download -> CLI -> repo');
+  // FAIL companion: a tampered record trips the SHA gate through the same CLI
+  const bad = structuredClone(bundle);
+  const op = bad.records.find((r) => r.kind === 'op');
+  op.payload[0].el = 'X';
+  const badFile = path.join(mkrepo('bundlebad'), 'bad.saldoc.json');
+  fs.writeFileSync(badFile, JSON.stringify(bad));
+  assert.throws(() => execFileSync('node', ['scripts/bundle2git.mjs', badFile, '--repo', mkrepo('badrepo')], { encoding: 'utf8', stdio: 'pipe' }),
+    /content-address mismatch/);
+});
