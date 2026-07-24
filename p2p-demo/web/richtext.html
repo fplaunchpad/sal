@@ -36,13 +36,15 @@
     .docTitle h1 { font-size: 25px; font-weight: 700; margin: 0; line-height: 1.1; }
     .docTitle .docicon { font-size: 20px; }
     .ident { font-size: 13px; color: #888; }
-    .ident b { color: inherit; font-weight: 600; }
+    .namebtn { font: inherit; font-weight: 600; color: inherit; background: none; border: none;
+      padding: 0; cursor: pointer; border-bottom: 1px dashed #8888; }
+    .namebtn:hover { border-bottom-color: currentColor; }
     .docctl { display: flex; gap: 8px; align-items: center; }
     .docctl select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid #8888;
       border-radius: 6px; background: transparent; cursor: pointer; }
     .docctl button { font-size: 13px; padding: 5px 11px; }
-    #newDocBar { margin: 0 0 14px; }
-    #newDocBar.show { display: flex; }
+    #newDocBar, #nameBar { margin: 0 0 14px; }
+    #newDocBar.show, #nameBar.show { display: flex; }
     .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
     .bar .sp { flex: 1; }
     button { font: inherit; padding: 5px 12px; border: 1px solid #8888; border-radius: 6px; background: transparent; cursor: pointer; }
@@ -101,7 +103,7 @@
         <span class="docicon">📄</span>
         <h1 id="docName" title="this document's id (the room). Docs are identified by name; share the URL to collaborate.">?</h1>
       </div>
-      <div class="ident">editing as <b id="me">?</b>
+      <div class="ident">editing as <button id="me" class="namebtn" title="click to change your display name">?</button>
         · <span id="connDot" class="dot"></span><span id="conn">connecting…</span></div>
     </div>
     <div class="docctl">
@@ -114,6 +116,12 @@
     <input id="newDocInput" type="text" placeholder="e.g. meeting-notes" />
     <button id="newDocCreate">create</button>
     <button id="newDocCancel">cancel</button>
+  </div>
+  <div id="nameBar" class="argbar">
+    <span class="arglabel">your display name</span>
+    <input id="nameInput" type="text" placeholder="e.g. kc" />
+    <button id="nameSave">save</button>
+    <button id="nameCancel">cancel</button>
   </div>
   <p class="sub">
     Open this URL in another tab or browser (same <code>?room=</code>) to

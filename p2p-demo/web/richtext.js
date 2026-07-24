@@ -44,7 +44,26 @@ const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>':
 // ---- identity + room -------------------------------------------------------
 const params = new URLSearchParams(location.search);
 const ROOM = params.get('room') || 'rtdoc';
-const NAME = params.get('name') || 'peer-' + Math.random().toString(16).slice(2, 6);
+// a name / room slug: room ids and replica names ride query + ws upgrade URLs
+const slug = (s) => s.trim().replace(/\s+/g, '-').replace(/[^A-Za-z0-9._-]/g, '');
+// YOUR DISPLAY NAME = the replica/session identity. Resolution: an explicit
+// ?name= wins (per-session, e.g. two tabs testing) and is then SCRUBBED from
+// the address bar, so a shared URL never carries your name into a
+// collaborator's tab (they get their own); otherwise a name remembered in
+// THIS browser (set via the UI), else a fresh random one that is then
+// remembered. Changing it reopens the doc under the new name (src/records.js:
+// history + roster kept, fresh authoring seq).
+const NAME_KEY = 'sal.p2p.name';
+const readSavedName = () => { try { return localStorage.getItem(NAME_KEY); } catch { return null; } };
+const rememberName = (n) => { try { localStorage.setItem(NAME_KEY, n); } catch {} };
+let NAME = params.get('name');
+if (NAME) {
+  const u = new URL(location.href); u.searchParams.delete('name'); // keep the address bar shareable
+  try { history.replaceState(null, '', u.toString()); } catch {}
+} else {
+  NAME = readSavedName() || 'peer-' + Math.random().toString(16).slice(2, 6);
+  rememberName(NAME);
+}
 const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique ids
 $('me').textContent = NAME;
 $('docName').textContent = ROOM;
@@ -101,9 +120,7 @@ $('newDocBtn').addEventListener('click', () => {
 });
 $('newDocCancel').addEventListener('click', () => $('newDocBar').classList.remove('show'));
 function createDoc() {
-  // room names ride the ?room= query and the ws upgrade URL, so keep them to a
-  // safe slug (spaces -> dashes, drop anything else)
-  const room = $('newDocInput').value.trim().replace(/\s+/g, '-').replace(/[^A-Za-z0-9._-]/g, '');
+  const room = slug($('newDocInput').value);
   if (!room) { $('newDocInput').focus(); return; }
   if (room === ROOM) { $('newDocBar').classList.remove('show'); return; } // already here
   gotoDoc(room);
@@ -114,6 +131,30 @@ $('newDocInput').addEventListener('keydown', (e) => {
   else if (e.key === 'Escape') $('newDocBar').classList.remove('show');
 });
 populateDocPicker();
+
+// ---- RENAME (your display name) --------------------------------------------
+// Click your name to change it. Renaming REOPENS the doc under the new name
+// (a reload with ?name=): the history and roster are kept, a fresh authoring
+// seq starts, and the choice is remembered in this browser for future docs.
+$('me').addEventListener('click', () => {
+  $('nameBar').classList.add('show'); $('nameInput').value = NAME; $('nameInput').select();
+});
+$('nameCancel').addEventListener('click', () => $('nameBar').classList.remove('show'));
+function commitRename() {
+  const name = slug($('nameInput').value);
+  if (!name) { $('nameInput').focus(); return; }
+  if (name === NAME) { $('nameBar').classList.remove('show'); return; }
+  rememberName(name); // sticky, then reopen under it (?name= is scrubbed on load)
+  const u = new URL(location.href);
+  u.searchParams.set('room', ROOM);
+  u.searchParams.set('name', name);
+  location.href = u.toString();
+}
+$('nameSave').addEventListener('click', commitRename);
+$('nameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') commitRename();
+  else if (e.key === 'Escape') $('nameBar').classList.remove('show');
+});
 
 // ---- DEBOUNCED FLUSH: the default commit granularity is a typing RUN -------
 // Local ops buffer in `pending`; the editor renders the SPECULATIVE state
