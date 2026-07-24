@@ -243,6 +243,24 @@ bridge honest, and what would shrink the distance.
   coordinate symbols, 50719→2830 state bytes, tombstones to 0, the bold's
   mark record retained.
 
+- **LIVENESS-AWARE ROSTER + FORGET (the departed-writer stall).** A departed
+  writer stays registered (above), so its frontier evidence PINS the GC
+  horizon at its last-synced position: nothing typed since can be reclaimed.
+  The roster line marks each peer live (green) or DARK (grey, absent from
+  presence), and a dark peer carries a `✕ forget`. Forgetting calls
+  `replica.forget` (drops it from BOTH the roster and the authors set, unlike
+  the conservative `unregister`), which releases the horizon so the cut rises
+  and GC (then epoch-base pruning) advances. SOUNDNESS is the operator's to
+  grant: a forgotten peer that returns re-bootstraps from the epoch base as a
+  fresh peer (`pruneToEpochBase` + pristine adopt) and FORFEITS any edits it
+  authored offline and never shared -- the local-first tradeoff, stated on the
+  button's tooltip. Runtime-pinned in `runtime/test/epochbase.test.js` ("forget
+  lifts a departed author": the cut is capped while the dark author is
+  rostered, then GC + prune fire after the forget, reads preserved, and a
+  fresh peer still bootstraps). Browser-verified: forgetting a closed tab's
+  author drove 2761→171 coord symbols and pruned 3 commits below the new
+  epoch, text intact.
+
 - Links render as real anchors and OPEN with Cmd/Ctrl+Click (plain clicks
   keep editing; contentEditable swallows them). Only http(s) hrefs are
   emitted (no script-scheme vectors); bare `example.org` input is normalized

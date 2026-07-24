@@ -322,6 +322,23 @@ export class DistributedReplica {
     return this.registered.delete(name);
   }
 
+  /** FORGET `name` entirely: drop it from BOTH the roster and the authors set,
+   *  even if it authored. Unlike `unregister` (which conservatively keeps
+   *  writers), this LIFTS the stability-cut horizon that a departed author
+   *  otherwise pins at its last-synced position -- the deliberate operator- or
+   *  lease-driven answer to "an offline writer stalls the GC". SOUNDNESS: the
+   *  cut (and epoch-base prune) may now settle ABOVE `name`'s evidence, so
+   *  `name` must not return and merge a delta against its stale head; on
+   *  return it re-bootstraps from the epoch base as a FRESH peer (pristine
+   *  adopt), forfeiting any edits it authored offline and never shared. That
+   *  data-loss tradeoff is the price of forgetting, and callers surface it.
+   *  Returns true if the roster changed. */
+  forget(name) {
+    if (name === this.name) return false;
+    this.authors.delete(name);
+    return this.registered.delete(name);
+  }
+
   /** The certified stable cut over the registered (rostered) replica set. */
   stableCut() { return stableCut(this.dag, this.#headId, [...this.registered], this.name); }
 
@@ -412,8 +429,16 @@ export class DistributedReplica {
     if (c.parents.length === 0) return { pruned: 0, reason: 'already the epoch base' };
     const sc = this.stableCut();
     if (!sc.complete) return { pruned: 0, reason: `cut incomplete: missing ${sc.missing.join(',') || '?'}` };
-    for (const [rep, e] of this.frontier) {
-      if ((this.epochOf.get(e.id) ?? 0) < eK) {
+    // Every REGISTERED replica's evidence must have reached the compact epoch,
+    // so no registered peer can ever need the dropped commits. Quantify over
+    // the roster, not the raw frontier: a FORGOTTEN author's stale evidence no
+    // longer gates the prune (it will re-bootstrap from the base on return).
+    // When the cut is complete, every registered non-self peer has a frontier
+    // entry (that is what completeness means).
+    for (const rep of this.registered) {
+      if (rep === this.name) continue;
+      const e = this.frontier.get(rep);
+      if (e && (this.epochOf.get(e.id) ?? 0) < eK) {
         return { pruned: 0, reason: `evidence from ${rep} still below epoch ${eK}` };
       }
     }

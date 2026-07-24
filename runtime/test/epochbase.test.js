@@ -84,6 +84,45 @@ test('FAIL companions: tampered base refused; unsettled prune refused', () => {
   }
 });
 
+test('forget lifts a departed author: the horizon advances, GC + prune fire', () => {
+  // P holds Q's evidence, then Q goes dark. Q pins the cut at its last commit,
+  // so even a real deletion below that point cannot be reclaimed.
+  const p = new DistributedReplica(compactiblePeritext, 'P');
+  p.commitBatch([...Array(12)].map((_, i) =>
+    ({ type: 'ins', id: mint(i + 1), el: 'abcdefghij'[i % 10], anchorId: i === 0 ? null : mint(i) })));
+  const q = new DistributedReplica(compactiblePeritext, 'Q');
+  q.commit({ type: 'ins', id: mint(99), el: 'z', anchorId: null });
+  p.ingest(q.delta(p.ancestryGids()));
+  p.mergeWithGid(q.headGid);           // P registered Q and holds its evidence
+  // P keeps editing well past Q's frozen frontier, then deletes a run
+  for (let i = 13; i <= 20; i++) p.commit({ type: 'ins', id: mint(i), el: 'x', anchorId: mint(i - 1) });
+  for (let d = 3; d <= 12; d += 3) p.commit({ type: 'del', id: mint(d) });
+  const readBefore = p.read().map((e) => e.char).join('');
+
+  // WITH Q registered but dark: the cut caps at Q's position, so nothing new is
+  // settled and compaction cannot reclaim the deletes above it
+  const blocked = p.compactStable();
+  assert.equal(blocked.compacted, false, 'dark author caps the horizon: GC refused');
+  assert.equal([...p.registered].includes('Q'), true, 'Q still rostered');
+
+  // FORGET Q: the horizon is released, GC fires, reads are preserved
+  assert.equal(p.forget('Q'), true, 'Q dropped from the roster');
+  assert.equal(p.forget('Q'), false, 'idempotent: already gone');
+  const g = p.compactStable();
+  assert.equal(g.compacted, true, 'horizon advanced: GC reclaimed the settled deletes');
+  assert.equal(p.read().map((e) => e.char).join(''), readBefore, 'reads preserved across forget+GC');
+
+  // and prune now fires (Q no longer gates it), a fresh peer still bootstraps
+  p.commit({ type: 'ins', id: mint(21), el: '!', anchorId: mint(20) }); // evidence past the epoch
+  const pr = p.pruneToEpochBase();
+  assert.ok(pr.pruned > 0, `history pruned past the forgotten author (${pr.pruned})`);
+  const fresh = new DistributedReplica(compactiblePeritext, 'R');
+  fresh.ingest(p.delta(fresh.ancestryGids()));
+  fresh.mergeWithGid(p.headGid);
+  assert.equal(fresh.read().map((e) => e.char).join(''), p.read().map((e) => e.char).join(''),
+    'fresh peer bootstraps from the base after the forget');
+});
+
 test('persistence round-trips an epoch base (records layer)', async () => {
   const { nodeRecords, rebuildNode } = await import('../../p2p-demo/src/records.js');
   const a = buildCompacted();

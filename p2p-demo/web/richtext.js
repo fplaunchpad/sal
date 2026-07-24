@@ -779,6 +779,45 @@ setInterval(() => {
   }
 }, 5000);
 
+// THE ROSTER, with LIVENESS + a forget control. A registered peer that is not
+// currently in presence is DARK (grey dot). A dark peer that authored pins the
+// certified GC's horizon at its last-synced position (a departed writer stays
+// registered conservatively), so it gets a ✕: forgetting it drops it from the
+// roster (node.forget) and lets the horizon advance. The tradeoff is on the
+// tooltip -- a forgotten peer that returns re-syncs fresh from the current
+// version and loses edits it made offline and never shared.
+function renderRoster() {
+  const el = $('peers');
+  const roster = [...node.registered].sort();
+  if (!roster.length) { el.textContent = ''; return; }
+  const live = new Set(presence.peers.keys());
+  const tail = ` · head ${short(node.headGid)}${pending.length ? ` · ${pending.length} pending` : ''}`;
+  el.innerHTML = 'peers: ' + roster.map((n) => {
+    if (n === NAME) return `<span class="pchip"><span class="pdot on"></span>${esc(n)} (you)</span>`;
+    if (live.has(n)) return `<span class="pchip"><span class="pdot on"></span>${esc(n)}</span>`;
+    const tip = `forget ${esc(n)}: this peer looks offline and pins the certified GC's `
+      + `horizon at its last-synced position. Forgetting it lets GC advance; if `
+      + `${esc(n)} returns it re-syncs fresh from the current version and loses any `
+      + `edits it made offline and never shared.`;
+    return `<span class="pchip"><span class="pdot"></span>${esc(n)}`
+      + `<button class="forget" data-peer="${esc(n)}" title="${tip}">✕ forget</button></span>`;
+  }).join(' ') + tail;
+  for (const b of el.querySelectorAll('.forget')) {
+    b.addEventListener('click', () => forgetPeer(b.getAttribute('data-peer')));
+  }
+}
+function forgetPeer(name) {
+  if (!node.forget(name)) return;
+  const st = $('gcStatus');
+  st.className = 'status good';
+  st.textContent = `forgot ${name}: the certified GC horizon can now advance past it.`;
+  // reclaim right away if the cut is now complete + non-empty
+  const sc = node.stableCut();
+  if (sc.complete && sc.meet.size) runCertifiedGc('after forget:');
+  else renderConv();
+  net.announce();
+}
+
 // ---- convergence badge -----------------------------------------------------
 function renderConv() {
   const mine = node.headGid;
@@ -790,9 +829,7 @@ function renderConv() {
     if (agree === others.length) { badge.className = 'conv yes'; badge.textContent = `✓ converged (${others.length})`; }
     else { badge.className = 'conv no'; badge.textContent = `syncing ${agree}/${others.length}`; }
   }
-  const roster = [...node.registered].sort();
-  const pend = pending.length ? ` · ${pending.length} pending` : '';
-  $('peers').textContent = roster.length ? `peers: ${roster.map((n) => (n === NAME ? n + ' (you)' : n)).join(', ')} · head ${short(mine)}${pend}` : '';
+  renderRoster();
   // manual-merge affordances: the merge button appears with the staged count
   const mb = $('mergeBtn');
   mb.style.display = net.manual ? '' : 'none';

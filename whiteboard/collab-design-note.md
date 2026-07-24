@@ -319,13 +319,29 @@ commit says, not WHO authored it.
 
 ## 8. Sharp edges (open problems, not hand-waves)
 
-A. **GC horizon vs. offline peers.** The commit GC prunes interior commits to a
-keep-set (MCAs of current heads + descendant cone). If a peer edits offline long
-enough that the server GCs past that peer's branch point, the MCA is gone and
-`mergeWithGid` has no common ancestor. Requirement: `SyncServer.gc` must retain
-the MCAs of every KNOWN peer head, including offline peers (track last-known
-heads per subscriber), or bound how long a peer may stay dark. This is the one
-place "close it and come back in a month" can fail.
+A. **GC horizon vs. offline peers. PARTLY ADDRESSED.** Two sub-problems, now
+separated:
+  - *Readers* no longer pin anything: epoch-base pruning (8.6 below) only
+    forgets history below a SETTLED compaction, and a returning reader
+    bootstraps from the epoch base at O(document). A peer that merely reads
+    can "close it and come back in a month" freely.
+  - *A departed WRITER* still pins the certified GC's horizon at its
+    last-synced position (its frontier evidence caps the stable cut; it stays
+    registered conservatively so an unheard concurrent op is never assumed
+    away). The lever is `replica.forget(name)`: drop it from the roster AND
+    the authors set, releasing the horizon. This is SOUND only because the
+    forgotten peer, on return, re-bootstraps from the epoch base as a fresh
+    peer and forfeits any edits it authored offline and never shared -- an
+    explicit local-first tradeoff, exposed as the editor's `✕ forget` control
+    on dark peers (with the data-loss note on the tooltip) and pinned in
+    `runtime/test/epochbase.test.js`. What remains for a fuller answer: make
+    forgetting a room-consensual event (today it is a local/operator call; in
+    the star topology the hub is the natural arbiter), and a graceful
+    "reset to the room's current version" recovery for a returning forgotten
+    writer that still holds an offline branch (today it would hit the
+    cross-epoch/missing-LCA guard rather than re-bootstrap automatically). A
+    time-lease that auto-forgets dark writers is the automation on top, but
+    the data-loss contract means it should stay opt-in, not silent.
 
 B. **Multi-MCA merge: RESOLVED (#90 landed).** The metatheory closed the
 question (sal-mrdts.tex 14: `Step3V`, `mca_events_cover`,
@@ -371,6 +387,27 @@ surface that is read-only in disguise. The frozen posture:
   per-replica ref files) is coherent but competes with the DO SyncServer,
   which is native and planned; revisit only if "no custom server" becomes
   a hard requirement.
+
+## 8.6 Epoch-base pruning: history is not O(everything)
+
+Compaction shrinks the STATE, but the commit DAG (and every durable store
+over it, and a hub's wake-replay) kept growing. `replica.pruneToEpochBase()`
+closes this: once a compaction has SETTLED -- the stability cut is complete
+AND every registered replica's frontier evidence has reached the compact
+epoch -- no registered peer can ever need the commits below the compact
+commit for a delta or a merge LCA, so they are dropped and the compact commit
+becomes a parent-free EPOCH BASE. Its content id still verifies without the
+parent (the hash covers the parent's gid STRING plus the state fingerprint),
+so `delta` ships the base to an unheard peer, `ingest` gates it by
+recomputation (a tampered base is refused), and a PRISTINE replica (head =
+the shared root, nothing authored) adopts the incoming head directly. A fresh
+peer therefore bootstraps at O(document), not O(history). The hub prunes on
+persist and mirrors its store (`pruneStored`); the editor prunes on its slow
+tick and drops the same IndexedDB records. Pinned in
+`runtime/test/epochbase.test.js` and the pruning test in
+`p2p-demo/test/hub.test.js` (the pruned store survives a relay restart). This
+is what makes 8A's `forget` sound: the returning forgotten peer has an epoch
+base to bootstrap from.
 
 ## 9. Suggested build order
 

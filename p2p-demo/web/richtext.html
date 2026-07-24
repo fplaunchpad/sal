@@ -83,6 +83,12 @@
     .conv.yes { background: #d6f5d6; color: #185018; }
     .conv.no { background: #f5ecd6; color: #6a5310; }
     .peers { font-size: 12px; color: #888; margin-top: 6px; }
+    .pchip { display: inline-block; margin-right: 10px; white-space: nowrap; }
+    .pchip .pdot { background: #bbb; }      /* dark / offline peer */
+    .pchip .pdot.on { background: #3a3; }   /* live peer (or you) */
+    .forget { font: inherit; font-size: 11px; line-height: 1; padding: 1px 5px; margin-left: 3px;
+      border: 1px solid #c336; border-radius: 5px; background: none; color: #c33; cursor: pointer; vertical-align: middle; }
+    .forget:hover { background: #c331; }
     code { background: #8881; padding: 1px 4px; border-radius: 4px; }
     /* presence decorations: remote carets/selections INSIDE the editor view */
     .pcaret { display: inline-block; position: relative; width: 0; border-left: 2px solid; margin: 0 -1px;
