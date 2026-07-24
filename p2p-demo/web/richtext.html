@@ -200,10 +200,13 @@
     .sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
 
     /* the "verified core" badge + its honest explainer panel */
-    .vbadge { font: inherit; font-size: 11px; font-weight: 600; margin-left: 9px; padding: 2px 9px;
+    .vbadge { font: inherit; font-size: 11px; font-weight: 600; margin-left: 9px; padding: 3px 10px;
       border-radius: var(--radius-pill); border: 1px solid var(--good); background: var(--good-weak);
-      color: var(--good); cursor: pointer; text-transform: none; letter-spacing: 0; vertical-align: middle; }
-    .vbadge:hover { filter: brightness(1.04); }
+      color: var(--good); cursor: pointer; text-transform: none; letter-spacing: 0; vertical-align: middle;
+      display: inline-flex; align-items: center; gap: 5px; transition: background .12s, color .12s; }
+    .vbadge:hover, .vbadge[aria-expanded="true"] { background: var(--good); color: var(--good-weak); }
+    .vcaret { font-size: 8px; transition: transform .15s; }
+    .vbadge[aria-expanded="true"] .vcaret { transform: rotate(180deg); }
     .verified-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
       padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: var(--text); }
     .verified-panel p { margin: 0 0 9px; }
@@ -223,7 +226,7 @@
 <body>
   <header class="topbar">
     <div class="brand-row">
-      <div class="brand">sal · rich text · #107<button id="verifiedBadge" class="vbadge" aria-expanded="false" title="what the document core proves, and what is unverified glue">✓ verified core</button></div>
+      <div class="brand">sal · rich text<button id="verifiedBadge" class="vbadge" aria-expanded="false" title="what the document core proves, and what is unverified glue">✓ verified core <span class="vcaret">▾</span></button></div>
       <div class="header-actions">
         <select id="docPicker" title="switch to another document saved in this browser"></select>
         <button id="newDocBtn" class="ghost" title="start a new document (opens a new room)">＋ New</button>
@@ -245,13 +248,13 @@
     <ul>
       <li><strong>Rich-text semantics.</strong> How bold/italic/underline grow, how a link's
         end stays put, how overlapping comments coexist, how concurrent formatting resolves —
-        the verified document-order Peritext read model (#55 → #110).</li>
+        the verified document-order Peritext read model.</li>
       <li><strong>Convergence.</strong> The sequence CRDT (embedded-chain RGA) and its three-way
         merge converge every replica to one document.</li>
       <li><strong>Certified GC.</strong> Compaction shrinks the document's metadata only at a
         settled cut and preserves every read (the stability VC).</li>
       <li><strong>Cross-epoch merge.</strong> Two peers that compacted differently still merge to
-        the same document — the mechanized epoch diamond (#112, kernel-clean).</li>
+        the same document — the mechanized epoch diamond (kernel-clean).</li>
     </ul>
     <p>The JavaScript runtime is a <strong>tested mirror</strong> of these proofs (checked against
       them, not extracted from Lean). <span class="unverified">The editor, the networking (relay /
