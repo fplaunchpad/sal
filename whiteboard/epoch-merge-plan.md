@@ -32,27 +32,20 @@ Landed in `runtime/src/replica.js`, faithful to #97:
   a natural 2-epoch-in-one-merge lift is not reachable. Composition is correct by
   construction (the `#liftState` loop) but not separately fixture-tested.
 
-### Case 2 (metatheory) -- IN PROGRESS
-Goal: discharge the multi-replica protocol half so two peers compacting
-incomparable cuts can merge across epochs (or a principled refusal condition
-that is weaker than "any two distinct epochs"). The #97 summary names the open
-obligations: `oq:starlemma`, `oq:epochdag` -- deriving `ContOK`/straggler
-declarations from a real delivery protocol, and composing two replicas' epoch
-DAGs without the rank-reclaim collision.
+### Case 2 (metatheory) -- OWNED BY ANOTHER AGENT (do not collide)
+The multi-replica protocol half (two peers compacting incomparable cuts,
+composing two epoch DAGs without the rank-reclaim collision) is being worked by
+a SEPARATE agent on the Lean side. The live #97 artifacts are
+`Sal/ConditionedMRDTs/MRDT_Instances/EmbedRGA/`:
+`EmbedRGA_Recoding.lean`, `EmbedRGA_HonestyRebase.lean`, `EmbedRGA_CompatChain.lean`,
+`EmbedRGA_MultiEpoch.lean` (plus `naive_composition_collides` as the countermodel).
 
-Plan (to be refined after reading the #97 Lean + tex):
-1. Read the state: `Sal/.../EmbedRGA_Recoding.lean`, `EmbedRGA_HonestyRebase.lean`,
-   the `naive_composition_collides` countermodel, and the tex Part II storage
-   sections (`def:spm` through the `(*)` cluster). Pin down the EXACT open
-   obligations and why the naive composition collides (the shape of the
-   countermodel tells us what a sound composition must avoid).
-2. Decide the target theorem: a `CompatChain`/epoch-DAG that composes two
-   re-codings at incomparable cuts, OR a decidable predicate that says when two
-   epochs ARE composable (a common refinement exists) vs not.
-3. Prove it (or reduce to a clearly-stated residual), keeping the kernel clean.
-4. Only THEN wire the JS: lift Case 2's refusal to the proven condition.
-   (Standing rule: JS mirrors PROVEN theory -- do not ship Case 2 in JS ahead of
-   the proof.)
-
-Before touching Lean: read `AgentNotes.md` (RGA attempt index) and confirm which
-files are the live #97 artifacts.
+Coordination: this plan's JS side does NOT touch those files. When the Case 2
+metatheory lands (a composition theorem or a decidable "composable epochs"
+predicate weaker than "any two distinct epochs"), the JS follow-on is:
+- lift `#mergeStates`/`#liftState`'s refusal to the proven condition (today it
+  refuses on `epochConflict`); and
+- if composition needs a translate BETWEEN two incomparable re-codings, extend
+  `#absorbEpoch` to obtain/recompute it the same content-gated way Case 1 does.
+Standing rule (see the verified-JS memory): JS mirrors PROVEN theory -- do not
+ship Case 2 in JS ahead of the proof.
