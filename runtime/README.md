@@ -483,17 +483,35 @@ and the certified state GC over `embedRGA` (refuse-then-fire) with `orset`
 refusing; `test/peritext-gc.test.js` does the same refuse-then-fire for
 `compactiblePeritext`.
 
-THE EPOCH BARRIER (concurrent divergent compaction is NOT claimed).
-`compactStable` opens a new epoch, and a cross-epoch merge THROWS: the runtime
-LINEARIZES compaction epochs. Two replicas compacting different cuts and then
-merging across epochs is the deferred protocol half -- the #97 multi-epoch
-`CompatChain` not yet discharged for cross-replica different cuts
-(`stability-vc-note.md` section 8, `embed-recoding-note.md` section 6). A
-deployment reaches a common epoch with a coordinated CHECKPOINT barrier (every
-replica absorbs the converged history, then all compact the identical cut to the
-identical re-coding / same SHA); `test/replica.test.js` pins that a peer which
-has not itself reached the new epoch is refused a cross-epoch merge, rather than
-guessing.
+CROSS-EPOCH MERGE: two cases. `compactStable` opens a new epoch (re-coded
+coordinates); merging heads at different epochs splits into a case that is now
+SUPPORTED and one that stays refused.
+
+- CASE 1 -- one compactor, a straggler with local edits, single epoch line.
+  The straggler LIFTS its edits (and the LCA base) into the newer epoch, record
+  by record, through the per-epoch translate maps: `#mergeStates` raises both
+  sides to `eT = max(epochs)` via `#liftState` (compose `remapState`) and then
+  `merge3`. Identity when nobody compacted, so ordinary merges are unchanged.
+  This is #97's lazy translation (`eRecode_ra_transport`,
+  `eRecode_reads_identical`) wired for the DISTRIBUTED store: the translate is a
+  non-serializable closure, so a peer that INGESTED a compaction recomputes it
+  from the compact commit's parent state + the CUT that produced it. The cut
+  rides the wire (and the persistence records) as a non-hashed hint;
+  `#absorbEpoch` recomputes `compact(parentState, cut)` and trusts the translate
+  only if its state's fingerprint matches the shipped state (a wrong/forged cut
+  is caught, never mislifted). Pinned in `test/crossepoch.test.js` (embed +
+  peritext lift == never-compacted control, survives a persist/rebuild, tampered
+  cut refused) and `test/replica.test.js`.
+- CASE 2 -- two peers compacting INCOMPARABLE cuts. Still REFUSED: two distinct
+  re-codings claim the same epoch, so `epochOwner`/`epochConflict` mark the epoch
+  CONFLICTED and any lift through it throws rather than compose two coordinate
+  systems (`naive_composition_collides`; id-addressing breaks after epoch one).
+  This is the #97 residue -- the multi-epoch `CompatChain` not yet discharged for
+  cross-replica different cuts (`stability-vc-note.md` section 8,
+  `embed-recoding-note.md` section 6). A deployment still reaches a common epoch
+  via the leader/checkpoint discipline (converged peers compact the identical cut
+  to the identical SHA); `test/replica.test.js` and `test/crossepoch.test.js` pin
+  the refusal.
 
 EPOCH-BASE PRUNING (history is not forever). `pruneToEpochBase()` drops all
 commits below the newest compact commit in the head's ancestry, turning that

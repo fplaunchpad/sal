@@ -36,6 +36,23 @@ import { frontierOf, stableCut, insertIds } from './frontier.js';
 import { commitContentId, contentId } from './hash.js';
 import { compactibleEmbedRGA } from './compact.js';
 
+// A compaction CUT rides the wire as a hint (never hashed) so a peer can
+// recompute the epoch's translate deterministically (Case 1). Cuts hold Set
+// fields (settledIds, settledMarkMids) and plain arrays; convert Sets both ways
+// datatype-agnostically. The recomputed state's fingerprint is verified against
+// the compact commit before the translate is trusted, so a wrong/forged cut is
+// caught, not mislifted.
+export function cutToWire(cut) {
+  const w = {};
+  for (const [k, v] of Object.entries(cut)) w[k] = (v instanceof Set) ? { $set: [...v] } : v;
+  return w;
+}
+export function cutFromWire(w) {
+  const cut = {};
+  for (const [k, v] of Object.entries(w)) cut[k] = (v && typeof v === 'object' && Array.isArray(v.$set)) ? new Set(v.$set) : v;
+  return cut;
+}
+
 export class DistributedReplica {
   #headId;
   constructor(datatype = compactibleEmbedRGA, name = 'r0', { hash = contentId } = {}) {
@@ -48,9 +65,20 @@ export class DistributedReplica {
     this.byGid = new Map();             // content id -> local id
     this.registered = new Set([name]);  // replica ids heard of / rostered
     this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
-    this.epochs = [null];               // e -> translate(epoch e-1 -> e)
+    this.epochs = [null];               // e -> translate(epoch e-1 -> e) closure
     this.epochBase = new Map();         // local id -> pruned parent's gid (epoch bases)
     this.epochOf = new Map();           // local id -> epoch number
+    // CROSS-EPOCH LIFT (Case 1, #97 lazy translation): to lift an older-epoch
+    // state on ingest a replica needs each epoch's translate CLOSURE, which is
+    // not serializable. It is recomputed deterministically from the compact
+    // commit's parent state + the CUT that produced it (shipped as a non-hashed
+    // hint, verified by fingerprint). compactCut carries the cut; epochOwner
+    // records which compact commit opened each epoch here, so a SECOND, DIFFERENT
+    // compaction claiming the same epoch (Case 2, incomparable cuts) marks the
+    // epoch CONFLICTED and any lift through it is refused rather than mislifted.
+    this.compactCut = new Map();        // compact commit local id -> cut used
+    this.epochOwner = new Map();        // epoch number -> the compact commit id that opened it here
+    this.epochConflict = new Set();     // epochs seen opened by >1 distinct compaction (Case 2)
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
     this.epochOf.set(root.id, 0);
     this.#index(root);
@@ -146,23 +174,76 @@ export class DistributedReplica {
       }
       const eb = this.epochBase.get(cid);
       if (c.parents.length === 1 || eb) {
-        return { gid: this.gid.get(cid), kind: 'compact',
+        const wire = { gid: this.gid.get(cid), kind: 'compact',
           parents: eb ? [eb] : parents,
           epoch: this.epochOf.get(cid), state: this.datatype.encodeState(c.state) };
+        // ship the cut so the peer can recompute this epoch's translate and
+        // lift its own older-epoch edits across it (Case 1). Absent for an
+        // epoch base whose parent is pruned (the peer bootstraps, never lifts).
+        const cut = this.compactCut.get(cid);
+        if (cut && !eb) wire.cut = cutToWire(cut);
+        return wire;
       }
       return { gid: this.gid.get(cid), kind: 'merge', parents };
     });
   }
 
-  #mergeEpoch(p0, p1) {
-    const e0 = this.epochOf.get(p0), e1 = this.epochOf.get(p1);
-    if (e0 !== e1) {
-      throw new Error(
-        `cross-epoch merge (${e0} vs ${e1}): the runtime linearizes compaction ` +
-        `epochs with a settled barrier; concurrent divergent compaction is the ` +
-        `deferred protocol half (README, stability-vc-note section 8)`);
+  // ---- CROSS-EPOCH LIFT (Case 1, #97 lazy translation) ---------------------
+  // Merge two heads possibly at different epochs by lifting the lower-epoch
+  // side (and the LCA base) into the newer epoch, record by record, through the
+  // per-epoch translate maps. Identity when nobody compacted, so single-epoch
+  // merges are unchanged. Refuses (throws) when a translate on the lift path is
+  // missing or conflicted -- incomparable-cut compaction (Case 2) stays the
+  // deferred protocol half, faithfully mirroring what #97 leaves open.
+
+  /** On ingesting a compaction, obtain this epoch's translate so future
+   *  cross-epoch merges can lift across it. Recompute compact(parentState, cut)
+   *  and verify it reproduces the shipped state (a wrong/forged cut is caught
+   *  by the fingerprint, never trusted). A DIFFERENT compaction already owning
+   *  this epoch means incomparable cuts (Case 2): mark it CONFLICTED so any
+   *  lift through it refuses. */
+  #absorbEpoch(epoch, cid, parentState, wireCut, compactState) {
+    const owner = this.epochOwner.get(epoch);
+    if (owner === cid) return;                              // already absorbed
+    if (owner !== undefined) { this.epochConflict.add(epoch); return; } // Case 2
+    if (!wireCut || typeof this.datatype.compact !== 'function') return; // cannot recompute: no lift
+    const cut = cutFromWire(wireCut);
+    let rec;
+    try { rec = this.datatype.compact(parentState, cut); } catch { return; }
+    if (this.datatype.fingerprint(rec.state) !== this.datatype.fingerprint(compactState)) return;
+    this.epochs[epoch] = rec.translate;
+    this.epochOwner.set(epoch, cid);
+    this.compactCut.set(cid, cut);
+  }
+
+  /** Lift a state coded in epoch `from` up to epoch `to` (identity if equal);
+   *  null if any epoch on the path lacks a translate or is conflicted. */
+  #liftState(state, from, to) {
+    let s = state;
+    for (let e = from + 1; e <= to; e++) {
+      if (this.epochConflict.has(e) || !this.epochs[e]) return null;
+      s = this.datatype.remapState(s, this.epochs[e]);
     }
-    return e0;
+    return s;
+  }
+
+  /** The merged state + epoch for heads a, b: lift the lower side and the LCA
+   *  base into eT = max(epochs), then merge3. Throws if the lift is unavailable
+   *  (Case 2 / a not-yet-absorbed epoch). */
+  #mergeStates(a, b) {
+    const eA = this.epochOf.get(a), eB = this.epochOf.get(b);
+    const eT = Math.max(eA, eB);
+    const base = this.#baseFor([a], b);
+    const lBase = this.#liftState(base.state, base.epoch, eT);
+    const lA = this.#liftState(this.dag.get(a).state, eA, eT);
+    const lB = this.#liftState(this.dag.get(b).state, eB, eT);
+    if (lBase === null || lA === null || lB === null) {
+      throw new Error(
+        `cross-epoch merge (${eA} vs ${eB}): a translate on the lift path is ` +
+        `missing or conflicted; incomparable-cut compaction is the deferred ` +
+        `protocol half (README, stability-vc-note section 8)`);
+    }
+    return { state: this.datatype.merge3(lBase, lA, lB), epoch: eT };
   }
 
   /** Ingest a delta: add each missing commit, recomputing state (apply/merge3)
@@ -207,13 +288,23 @@ export class DistributedReplica {
           added++;
           continue;
         }
+        // compact with a PRESENT parent. Add the commit, then try to obtain
+        // this epoch's translate (recomputed from the parent state + the
+        // shipped cut) so future cross-epoch merges can LIFT across it (Case 1).
         state = this.datatype.decodeState(wc.state);
         epoch = this.epochOf.get(localParents[0]) + 1;
         while (this.epochs.length <= epoch) this.epochs.push(null);
+        const cc = this.dag.add({ parents: localParents, op: null, state });
+        this.epochOf.set(cc.id, epoch);
+        const gc = this.#index(cc);
+        if (gc !== wc.gid) throw new Error(`content-address mismatch: recomputed ${gc} != wire ${wc.gid}`);
+        this.#absorbEpoch(epoch, cc.id, this.dag.get(localParents[0]).state, wc.cut, state);
+        added++;
+        continue;
       } else { // merge
         const [a, b] = localParents;
-        epoch = this.#mergeEpoch(a, b);
-        state = this.datatype.merge3(this.#baseState([a], b), this.dag.get(a).state, this.dag.get(b).state);
+        const r = this.#mergeStates(a, b); // lifts the lower-epoch side (Case 1) or throws (Case 2)
+        epoch = r.epoch; state = r.state;
       }
       const c = this.dag.add({ parents: localParents, op, state });
       this.epochOf.set(c.id, epoch);
@@ -243,8 +334,7 @@ export class DistributedReplica {
     }
     if (this.dag.isAncestor(a, b)) { this.#headId = b; this.#refresh(); return this.headGid; }
     if (this.dag.isAncestor(b, a)) return this.headGid;
-    const epoch = this.#mergeEpoch(a, b);
-    const merged = this.datatype.merge3(this.#baseState([a], b), this.dag.get(a).state, this.dag.get(b).state);
+    const { state: merged, epoch } = this.#mergeStates(a, b); // Case-1 lift, or throw (Case 2)
     const c = this.dag.add({ parents: [a, b], op: null, state: merged });
     this.epochOf.set(c.id, epoch);
     this.#index(c);
@@ -267,6 +357,15 @@ export class DistributedReplica {
   // across replicas. Single-MCA shortcuts are machine-refuted
   // (t1f_pick_*_resurrects_*): picking one member resurrects deletes.
   // Scratch states are transient (never committed, never ancestors).
+
+  /** #baseState plus the epoch its coordinates are coded in (the MCA antichain
+   *  shares one epoch, enforced by #baseState's guard). The lift raises this
+   *  base to the merge's target epoch. */
+  #baseFor(S, w) {
+    const m = S.length === 1 ? mcas(this.dag, S[0], w) : this.#mcasOfSet(S, w);
+    if (m.length === 0) throw new Error(`no common ancestor of [${S}] and ${w}`);
+    return { state: this.#baseState(S, w), epoch: this.epochOf.get(m[0]) };
+  }
 
   /** Base state for the LCA slot of a merge between the union-ancestry of
    *  the id set S and the commit w: the unique MCA's state, or the virtual
@@ -368,11 +467,15 @@ export class DistributedReplica {
         && !(stats.recordsDropped > 0 || stats.markPairsDropped > 0)) {
       return { compacted: false, reason: 'nothing to compact at this cut', stats };
     }
-    this.epochs.push(translate);
     const newEpoch = this.epochOf.get(this.#headId) + 1;
+    this.epochs[newEpoch] = translate;
     const c = this.dag.add({ parents: [this.#headId], op: null, state });
     this.epochOf.set(c.id, newEpoch);
     this.#index(c);
+    // remember the cut (for re-shipping + peers' translate recompute) and that
+    // THIS compact commit owns newEpoch here (Case 2 conflict detection)
+    this.compactCut.set(c.id, cut);
+    this.epochOwner.set(newEpoch, c.id);
     this.#headId = c.id;
     this.#refresh();
     return { compacted: true, head: c, stats, cutSize: settledIds.size, epoch: newEpoch };
@@ -394,6 +497,7 @@ export class DistributedReplica {
         this.gid.delete(cid);
         this.epochOf.delete(cid);
         this.epochBase.delete(cid);
+        this.compactCut.delete(cid); // epochs[]/epochOwner stay: keyed by epoch, still valid for lifts
       }
     }
     return res;
@@ -451,6 +555,7 @@ export class DistributedReplica {
       this.dag.remove(cid);
       const g = this.gid.get(cid);
       this.byGid.delete(g); this.gid.delete(cid); this.epochOf.delete(cid); this.epochBase.delete(cid);
+      this.compactCut.delete(cid);
       pruned++;
     }
     this.#refresh();

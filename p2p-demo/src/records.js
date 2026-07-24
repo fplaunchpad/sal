@@ -10,6 +10,7 @@
 
 import { Node } from './node.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
+import { cutToWire } from '../../runtime/src/replica.js';
 
 /** One commit as a pure-data record (content-addressed by its sha). */
 export function commitRecord(node, cid) {
@@ -34,8 +35,13 @@ export function commitRecord(node, cid) {
   if (c.parents.length === 1) {
     // compaction commit: its re-coded state is not recomputable from a parent,
     // so persist it inline via the datatype's own encoder (the same encoding the
-    // core DistributedReplica.ingest decodes through datatype.decodeState).
-    return { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
+    // core DistributedReplica.ingest decodes through datatype.decodeState). Also
+    // persist the CUT (a non-hashed hint) so a reloaded replica can recompute
+    // this epoch's translate and still lift older-epoch edits across it (Case 1).
+    const rec = { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
+    const cut = node.compactCut?.get(cid);
+    if (cut) rec.cut = cutToWire(cut);
+    return rec;
   }
   return { sha, kind: 'merge', parents, epoch };
 }
@@ -85,7 +91,7 @@ export function wireFromRecords(records) {
     } else if (r.kind === 'merge') {
       wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
     } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
+      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state, cut: r.cut });
     }
   }
   return wire;

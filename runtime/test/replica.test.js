@@ -147,22 +147,61 @@ test('commit GC prunes below the pairwise-meet horizon, reads preserved (embed +
   }
 });
 
-// ------------------------------------------- (e) the epoch barrier (deferred half)
-test('cross-epoch merge is REFUSED: concurrent divergent compaction is the deferred half', () => {
+// -------------------------------------- (e) cross-epoch merge: Case 1 vs Case 2
+// CASE 1 (one compactor, a straggler with local edits, single epoch line): the
+// straggler LIFTS its edits across the compaction and converges. This is #97's
+// lazy translation (eRecode_ra_transport), now wired distributed: the compactor
+// ships its cut, the straggler recomputes the epoch's translate from parent +
+// cut (verified by fingerprint) and lifts. CASE 2 (two peers compacting
+// incomparable cuts) stays REFUSED -- the deferred protocol half.
+test('CASE 1: a straggler with local edits lifts across a compaction and converges', () => {
   const a = new DistributedReplica(compactibleEmbedRGA, 'A'), b = new DistributedReplica(compactibleEmbedRGA, 'B');
   a.register('B'); b.register('A');
   a.commit({ type: 'ins', id: 50, el: 'a', anchorId: null });
-  a.commit({ type: 'ins', id: 80, el: 'b', anchorId: null });
+  a.commit({ type: 'ins', id: 80, el: 'b', anchorId: 50 });
   syncReplicas(a, b);
-  b.commit({ type: 'ins', id: 120, el: 'c', anchorId: null }); // B's evidence covers 50,80,120
+  b.commit({ type: 'ins', id: 120, el: 'c', anchorId: 80 }); // B's evidence covers 50,80,120
   syncReplicas(a, b); // converge at epoch 0
+  const readConverged = a.read().join('');
   // A compacts alone -> A at epoch 1, B still at epoch 0
   assert.equal(a.compactStable().compacted, true);
   assert.equal(a.epoch, 1); assert.equal(b.epoch, 0);
-  // B authors more, then tries to merge A's epoch-1 head: cross-epoch, refused
-  b.commit({ type: 'ins', id: 150, el: 'd', anchorId: null });
-  const toB = a.delta(b.ancestryGids());
-  b.ingest(toB); // ingesting the compaction commit is fine (it opens epoch 1 locally)
-  assert.throws(() => b.mergeWithGid(a.headGid), /cross-epoch merge/,
-    'a peer that has not itself reached the new epoch cannot merge across it');
+  // B authors a LOCAL edit on its epoch-0 head (the straggler branch), then
+  // pulls A's epoch-1 head and MERGES ACROSS the epoch (Case 1: lift, not throw)
+  b.commit({ type: 'ins', id: 150, el: 'd', anchorId: 120 });
+  b.ingest(a.delta(b.ancestryGids())); // carries A's compaction WITH its cut
+  b.mergeWithGid(a.headGid);           // was a throw; now lifts B's 'd' into epoch 1
+  assert.equal(b.epoch, 1, 'B reached epoch 1 by lifting');
+  assert.equal(b.read().join(''), readConverged + 'd', 'B kept its edit AND absorbed the compaction');
+  // and A converges symmetrically on B's lifted head
+  a.ingest(b.delta(a.ancestryGids()));
+  a.mergeWithGid(b.headGid);
+  assert.equal(a.read().join(''), b.read().join(''), 'A and B converge across the epoch');
+  assert.equal(a.headGid, b.headGid, 'same head SHA');
+  // twin: an UNCOMPACTED control that took the same ops reads identically
+  const ctl = new DistributedReplica(compactibleEmbedRGA, 'C');
+  for (const op of [
+    { type: 'ins', id: 50, el: 'a', anchorId: null }, { type: 'ins', id: 80, el: 'b', anchorId: 50 },
+    { type: 'ins', id: 120, el: 'c', anchorId: 80 }, { type: 'ins', id: 150, el: 'd', anchorId: 120 },
+  ]) ctl.commit(op);
+  assert.equal(a.read().join(''), ctl.read().join(''), 'lifted reads == never-compacted control');
+});
+
+test('CASE 2: two peers compacting INCOMPARABLE cuts stay REFUSED (deferred half)', () => {
+  const a = new DistributedReplica(compactibleEmbedRGA, 'A'), b = new DistributedReplica(compactibleEmbedRGA, 'B');
+  a.register('B'); b.register('A');
+  a.commit({ type: 'ins', id: 50, el: 'a', anchorId: null });
+  a.commit({ type: 'ins', id: 80, el: 'b', anchorId: 50 });
+  syncReplicas(a, b);
+  b.commit({ type: 'ins', id: 120, el: 'c', anchorId: 80 });
+  syncReplicas(a, b); // converge at epoch 0
+  // BOTH compact independently -> two DIFFERENT epoch-1 re-codings (incomparable
+  // cuts). A ingests B's rival epoch-1 head; the epoch is CONFLICTED, so merging
+  // across it is refused rather than mislifted (naive_composition_collides).
+  assert.equal(a.compactStable().compacted, true);
+  assert.equal(b.compactStable().compacted, true);
+  assert.notEqual(a.headGid, b.headGid, 'two distinct epoch-1 compactions');
+  a.ingest(b.delta(a.ancestryGids()));
+  assert.throws(() => a.mergeWithGid(b.headGid), /cross-epoch merge/,
+    'incomparable-cut compaction is the deferred protocol half');
 });
