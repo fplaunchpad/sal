@@ -6531,6 +6531,113 @@ Second cuts must be coordinate- or record-addressed.
 \hfill\lean{id\_addressing\_breaks}
 \end{proposition}
 
+\paragraph{The diamond: incomparable cuts, and the barrier removed.}
+Everything above composes cuts that are \emph{comparable} (each a
+refinement of the last). The distributed question is the incomparable
+case: two replicas compact at settled cuts $S_1$ and $S_2$ that neither
+refines, then merge. The result is that they merge with \emph{no}
+coordination, and the finding is that this is not a new algebraic
+obstruction at all. Since $S_1 \subseteq W$ and $S_2 \subseteq W$ for the
+join $W = S_1 \cup S_2$, each leg $S_i \to W$ is a comparable (nested)
+step, hence a genuine $\mathrm{StablePrefixMap}$ by the same $\mathrm{comp}$
+closure; the only new content is that the two legs and the one-shot
+$W$-compaction \emph{agree}, and agreement is determinism of the
+$W$-map in its certificate. The join map is produced by a builder that
+is a function of a $\mathrm{JoinCert}$ alone (surviving coordinates,
+settled-dead, declared mints), so two replicas that computed the same
+certificate install the same map:
+\[
+  c_1 = c_2 \;\Rightarrow\; \mathcal{C}(c_1) = \mathcal{C}(c_2)
+  \qquad (\lean{certMap\_deterministic}).
+\]
+This \code{congrArg} \emph{is} the ``without coordination'' content:
+equal certificates give equal maps by definition, not by reconciliation.
+Agreement then upgrades to bit-identical states.
+
+\begin{theorem}[the epoch diamond at $s1$]
+\label{thm:diamond}
+For maps $\mathrm{spm}_{S_1}, \mathrm{spm}_{S_2}, \mathrm{rel}_A,
+\mathrm{rel}_B, \mathrm{spm}_W$ and a carried domain $D$, if every
+record of the cut state $s$ has its coordinate in $D$, and both relative
+composites agree with the one-shot on $D$
+($\mathrm{rel}_A(\mathrm{spm}_{S_1}\,c) = \mathrm{spm}_W\,c$ and
+$\mathrm{rel}_B(\mathrm{spm}_{S_2}\,c) = \mathrm{spm}_W\,c$ for all $c \in
+D$), then the two-leg compactions and the one-shot compaction produce
+\emph{bit-identical} states, not merely equal reads:
+\[
+\begin{aligned}
+  &\mathrm{remap}_{\mathrm{rel}_A \circ \mathrm{spm}_{S_1}}\ s
+    = \mathrm{remap}_{\mathrm{spm}_W}\ s
+    = \mathrm{remap}_{\mathrm{rel}_B \circ \mathrm{spm}_{S_2}}\ s, \\
+  &\quad\text{and their reads coincide.}
+\end{aligned}
+\]
+\hfill\lean{diamond\_confluence} (via \lean{diamond\_confluence\_comp}
+through $\mathrm{comp}$)
+\end{theorem}
+
+\noindent The one genuinely new obstruction is the carried domain. It
+must be the join cut's kept id-set transported to epoch-$0$ coordinates
+\emph{by record identity},
+$\mathrm{transportedDom}\ s\ \mathrm{kept}_W = \{\,c : \exists x \in s,\
+\mathrm{kept}_W(x.\mathrm{id}) \wedge x.\mathrm{coord} = c\,\}$
+(\lean{transportedDom}, coordinate-nodup on a sorted state by
+\lean{transportedDom\_coords\_nodup}, so it never decodes a renumbered
+coordinate and the id-addressing erratum does not apply). The naive
+membership pullback aliases, the incomparable-cut twin of
+Proposition~\ref{prop:rankreclaim}:
+
+\begin{proposition}[naive pullback aliases]
+\label{prop:pullbackalias}
+Unary code. A dropped coordinate falls through a leg's map verbatim onto
+a kept later coordinate: $(\mathrm{rel} \circ gc)(\mathrm{enc}\ 3) =
+(\mathrm{rel} \circ gc)(\mathrm{enc}\ 4)$ while $\mathrm{enc}\ 3 \neq
+\mathrm{enc}\ 4$. Intersecting the two legs' kept sets would admit the
+aliased coordinate; the record-identity transported domain excludes it.
+\hfill\lean{naive\_pullback\_aliases}
+\end{proposition}
+
+\noindent Two more obligations close the protocol. Dropping a superseded
+epoch's map is a fold no-op once that map fixes every live coordinate and
+every continuation anchor (the ack-plus-\lean{AllHeardSince} certificate
+supplies exactly these hypotheses; the ack-only shortcut is machine-refuted
+as its \textsc{fail} companion):
+\[
+  \mathrm{applySeq}\ (\mathrm{remap}_F\ s)\ (\tau.\mathrm{map}\
+  \mathrm{remap}_F) = \mathrm{applySeq}\ s\ \tau
+  \qquad (\lean{mapDrop\_sound}),
+\]
+and continuation freshness survives the join epoch (dense renumbering
+never grows a delta, so a fresh delta stays key-distinct from every
+renumbered ordinal, \lean{contOK\_root\_key\_fresh},
+\lean{rED\_fresh\_dominates\_join}) --- the theorem face of the
+$11029/0$ \code{ContOK} observation in the model harness. The model
+(\code{whiteboard/epoch\_diamond\_check.py}) validated the whole diamond
+at $s1$ across $2400$ trials before any of this was stated.
+
+\begin{remark}[what the runtime realizes, and an honest gap]
+\label{rem:glb}
+The shipped runtime (\code{runtime/src/epoch.js}, task \#112) turns the
+per-replica epoch integer into a cut-indexed DAG and replaces the old
+cross-epoch \emph{throw} with the certificate-determined join. Building
+it surfaced that the model's ``relative-compact each side to $W$, merge
+in epoch $W$'' is unsound under \emph{partial straggler visibility}: a
+settled record's group freezes on the side holding a straggler and
+renumbers on the side without it, so the two sides disagree on shared
+coordinates. The sound protocol lifts both heads \emph{down} to their
+common base (the greatest lower bound) via inverse coordinate maps and
+merges there; this is read- and fold-equivalent to the $W$-merge
+\emph{by} Theorem~\ref{thm:diamond}, and coordination-free (both sides
+lift deterministically to the same frame). The merged head therefore
+de-compacts to the base frame, recovering compactness only on the next
+certified compaction: a compaction frame is minted solely by the
+content-addressed \code{compactStable}, never re-derived at a merge from
+divergent local holdings, which is arguably the correct discipline
+rather than a compromise. The twin property-based test is clean across
+the $2000$-trial validation sweep, of which $600$ are committed to CI
+(\code{runtime/test/epoch.test.js}).
+\end{remark}
+
 \noindent Freshness across epochs is representation-agnostic
 (\lean{rED\_le\_self}, \lean{rED\_fresh\_dominates}: a delta fresh against
 original sibling deltas stays fresh against renumbered ordinals without
@@ -10408,9 +10515,10 @@ shipped compaction and fusion maps); the question is which
 \emph{delivery protocol} discharges the per-continuation face: derive
 $\mathrm{ContOK}$ and the straggler-declaration hypotheses
 (\S\ref{sec:marksmech}) from an honest transport layer rather than
-assuming them per continuation. Multi-replica, agreement on a common
-cut and concurrent divergent compaction remain Open
-Question~\ref{oq:epochdag}. The marks-layer capstone
+assuming them per continuation. Multi-replica, concurrent divergent
+compaction is now closed at $s1$ (Theorem~\ref{thm:diamond},
+Open Question~\ref{oq:epochdag}); the per-continuation face here is the
+sole single-replica residue. The marks-layer capstone
 (\S\ref{sec:marks}) consumes the same residue and adds nothing to it:
 its \lean{ContOK} and straggler-declaration hypotheses are the
 per-continuation face of exactly this protocol half.
@@ -10430,17 +10538,32 @@ remains on the single-replica side is only the protocol face of Open
 Question~\ref{oq:starlemma} --- deriving the per-continuation
 hypotheses ($\mathrm{ContOK}$, the straggler declarations) from a
 delivery protocol. Concurrent
-\emph{divergent} compactions are the remaining, multi-replica, protocol
-half: two replicas compact at incomparable cuts $S$, $S'$, and their
-states must still merge. The conjectured shape is an epoch DAG
-with common-refinement translation (translate both sides to the join
-epoch before merging), and the remap species makes the obligation
-concrete: two rank-renumberings of overlapping sibling groups must
-commute observationally after refinement. The harness finding that
-epoch commits perturb the subject's commit graph (a control
-fast-forward can be a subject merge) says the twin-execution proof
-technique will need the version-map generality the self-merge trick
-deliberately avoided.
+\emph{divergent} compaction, two replicas compacting at incomparable
+cuts $S$, $S'$ and still merging, was the conjectured shape of this
+question: an epoch DAG with common-refinement translation. It is now
+\emph{done}, at all three registers. The model validated it at $s1$
+(bit-identical) across $2400$ trials
+(\code{whiteboard/epoch\_diamond\_check.py}); the mechanization is
+Theorem~\ref{thm:diamond} with its transported carried domain
+(\lean{transportedDom}, the aliasing negative
+Proposition~\ref{prop:pullbackalias}), the map-drop certificate
+(\lean{mapDrop\_sound}, ack-only refuted), and the join-epoch freshness
+discharge (\lean{contOK\_root\_key\_fresh}); the runtime ships it as a
+cut-indexed epoch DAG replacing the cross-epoch throw
+(Remark~\ref{rem:glb}). Three residues remain, and they are honest.
+(i)~The \emph{general} derivation of leg-agreement for arbitrary
+histories from the renumber-and-fusion composition algebra is reduced to
+the pointwise certificate-agreement condition and validated on the
+directed cases plus the $2400$ trials, not mechanized in full
+generality. (ii)~The runtime realizes the join at the greatest lower
+bound rather than the join cut (Remark~\ref{rem:glb}); its inverse-map
+garbage collection, distinct from the forward-map drop closed above,
+is a follow-on. (iii)~The \emph{liveness} half is untouched and may be
+genuinely hard: a single replica withholding its heard-from evidence
+blocks the certificate and so blocks compaction forever, which either is
+an impossibility result or wants an eviction rule, and lands with the
+Byzantine and liveness questions (both, to our knowledge, unclaimed for
+CRDT metadata management).
 \end{openq}
 
 \begin{openq}[$\rcrel$-expressiveness: chains, LWW, and
