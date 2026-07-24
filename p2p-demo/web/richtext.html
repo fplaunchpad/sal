@@ -199,6 +199,19 @@
     code { font-family: var(--font-mono); font-size: .92em; background: var(--surface-3); padding: 1px 5px; border-radius: 5px; }
     .sub { color: var(--muted); margin: 0 0 16px; font-size: 13px; }
 
+    /* the "verified core" badge + its honest explainer panel */
+    .vbadge { font: inherit; font-size: 11px; font-weight: 600; margin-left: 9px; padding: 2px 9px;
+      border-radius: var(--radius-pill); border: 1px solid var(--good); background: var(--good-weak);
+      color: var(--good); cursor: pointer; text-transform: none; letter-spacing: 0; vertical-align: middle; }
+    .vbadge:hover { filter: brightness(1.04); }
+    .verified-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2);
+      padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: var(--text); }
+    .verified-panel p { margin: 0 0 9px; }
+    .verified-panel ul { margin: 0 0 9px; padding-left: 18px; }
+    .verified-panel li { margin: 3px 0; }
+    .verified-panel .unverified { color: var(--muted); }
+    .verified-panel a { color: var(--accent); }
+
     /* presence carets INSIDE the editor */
     .pcaret { display: inline-block; position: relative; width: 0; border-left: 2px solid; margin: 0 -1px;
       height: 1.15em; vertical-align: text-bottom; animation: blink 1.1s step-end infinite; }
@@ -210,7 +223,7 @@
 <body>
   <header class="topbar">
     <div class="brand-row">
-      <div class="brand">sal · verified peritext · #107</div>
+      <div class="brand">sal · rich text · #107<button id="verifiedBadge" class="vbadge" aria-expanded="false" title="what the document core proves, and what is unverified glue">✓ verified core</button></div>
       <div class="header-actions">
         <select id="docPicker" title="switch to another document saved in this browser"></select>
         <button id="newDocBtn" class="ghost" title="start a new document (opens a new room)">＋ New</button>
@@ -225,6 +238,26 @@
     <div class="ident">editing as <button id="me" class="namebtn" title="click to change your display name">?</button>
       · <span id="connDot" class="dot"></span><span id="conn">connecting…</span></div>
   </header>
+
+  <div id="verifiedPanel" class="verified-panel" hidden>
+    <p>The document <strong>core is a mirror of machine-checked Lean proofs</strong> — and
+      nothing more. What the document DOES is proven; the runtime adds no unproven behavior on the core side:</p>
+    <ul>
+      <li><strong>Rich-text semantics.</strong> How bold/italic/underline grow, how a link's
+        end stays put, how overlapping comments coexist, how concurrent formatting resolves —
+        the verified document-order Peritext read model (#55 → #110).</li>
+      <li><strong>Convergence.</strong> The sequence CRDT (embedded-chain RGA) and its three-way
+        merge converge every replica to one document.</li>
+      <li><strong>Certified GC.</strong> Compaction shrinks the document's metadata only at a
+        settled cut and preserves every read (the stability VC).</li>
+      <li><strong>Cross-epoch merge.</strong> Two peers that compacted differently still merge to
+        the same document — the mechanized epoch diamond (#112, kernel-clean).</li>
+    </ul>
+    <p>The JavaScript runtime is a <strong>tested mirror</strong> of these proofs (checked against
+      them, not extracted from Lean). <span class="unverified">The editor, the networking (relay /
+      hub), the browser UI, and local storage are ordinary UNVERIFIED code — the untrusted shell
+      around the verified core.</span></p>
+  </div>
 
   <div id="newDocBar" class="argbar">
     <span class="arglabel">new document name</span>

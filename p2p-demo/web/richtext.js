@@ -119,6 +119,13 @@ if (drawer) {
   drawer.addEventListener('toggle', () => { try { localStorage.setItem('sal.p2p.drawer', drawer.open ? '1' : '0'); } catch {} });
 }
 
+// "verified core" explainer: what's proven vs what's unverified glue
+$('verifiedBadge')?.addEventListener('click', () => {
+  const p = $('verifiedPanel'), show = p.hasAttribute('hidden');
+  p.toggleAttribute('hidden', !show);
+  $('verifiedBadge').setAttribute('aria-expanded', String(show));
+});
+
 // PERSISTENT LOCAL FORGET (per doc, this browser). Runtime `forget` is
 // transient: roster/join/ingest re-register a peer, and a reload rebuilds the
 // roster from the stored authors, so a forgotten peer keeps coming back. This
