@@ -44,28 +44,35 @@ const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>':
 // ---- identity + room -------------------------------------------------------
 const params = new URLSearchParams(location.search);
 const ROOM = params.get('room') || 'rtdoc';
-// a name / room slug: room ids and replica names ride query + ws upgrade URLs
+// a name / room slug: room ids and replica names ride query + ws upgrade URLs.
+// `~` is reserved as the display~session separator, so it is not a slug char.
 const slug = (s) => s.trim().replace(/\s+/g, '-').replace(/[^A-Za-z0-9._-]/g, '');
-// YOUR DISPLAY NAME = the replica/session identity. Resolution: an explicit
-// ?name= wins (per-session, e.g. two tabs testing) and is then SCRUBBED from
-// the address bar, so a shared URL never carries your name into a
-// collaborator's tab (they get their own); otherwise a name remembered in
-// THIS browser (set via the UI), else a fresh random one that is then
-// remembered. Changing it reopens the doc under the new name (src/records.js:
-// history + roster kept, fresh authoring seq).
+// TWO-LEVEL IDENTITY. The DISPLAY name is human-facing and remembered;
+// resolution: an explicit ?name= wins (per-session) and is then SCRUBBED from
+// the address bar so a shared URL never carries your name into a
+// collaborator's tab; otherwise a name remembered in THIS browser (set via
+// the UI), else a fresh random one that is then remembered.
 const NAME_KEY = 'sal.p2p.name';
 const readSavedName = () => { try { return localStorage.getItem(NAME_KEY); } catch { return null; } };
 const rememberName = (n) => { try { localStorage.setItem(NAME_KEY, n); } catch {} };
-let NAME = params.get('name');
-if (NAME) {
+let DISPLAY = params.get('name');
+if (DISPLAY) {
   const u = new URL(location.href); u.searchParams.delete('name'); // keep the address bar shareable
   try { history.replaceState(null, '', u.toString()); } catch {}
 } else {
-  NAME = readSavedName() || 'peer-' + Math.random().toString(16).slice(2, 6);
-  rememberName(NAME);
+  DISPLAY = readSavedName() || 'peer-' + Math.random().toString(16).slice(2, 6);
+  rememberName(DISPLAY);
 }
+DISPLAY = slug(DISPLAY.replace(/~.*/, '')) || 'peer'; // strip any session tag, then slug
+// The REPLICA id must be UNIQUE PER SESSION: two tabs (or two devices) sharing
+// a display name are DISTINCT CRDT replicas -- one shared id means colliding
+// seq/event keys and a corrupt frontier. A short session token disambiguates;
+// `displayOf` strips it back to the human name for the UI and roster.
+const SESSION = Math.random().toString(16).slice(2, 6);
+const NAME = `${DISPLAY}~${SESSION}`;
+const displayOf = (n) => n.split('~')[0];
 const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique ids
-$('me').textContent = NAME;
+$('me').textContent = DISPLAY;
 $('docName').textContent = ROOM;
 document.title = `${ROOM} · sal rich text`;
 
@@ -105,7 +112,7 @@ function persistIfChanged() {
 function gotoDoc(room) {
   const u = new URL(location.href);
   u.searchParams.set('room', room);
-  u.searchParams.set('name', NAME); // keep the same editor identity across docs
+  u.searchParams.set('name', DISPLAY); // carry the display name (a fresh session id is minted on load)
   location.href = u.toString();
 }
 async function populateDocPicker() {
@@ -137,13 +144,13 @@ populateDocPicker();
 // (a reload with ?name=): the history and roster are kept, a fresh authoring
 // seq starts, and the choice is remembered in this browser for future docs.
 $('me').addEventListener('click', () => {
-  $('nameBar').classList.add('show'); $('nameInput').value = NAME; $('nameInput').select();
+  $('nameBar').classList.add('show'); $('nameInput').value = DISPLAY; $('nameInput').select();
 });
 $('nameCancel').addEventListener('click', () => $('nameBar').classList.remove('show'));
 function commitRename() {
-  const name = slug($('nameInput').value);
+  const name = slug($('nameInput').value.replace(/~.*/, ''));
   if (!name) { $('nameInput').focus(); return; }
-  if (name === NAME) { $('nameBar').classList.remove('show'); return; }
+  if (name === DISPLAY) { $('nameBar').classList.remove('show'); return; }
   rememberName(name); // sticky, then reopen under it (?name= is scrubbed on load)
   const u = new URL(location.href);
   u.searchParams.set('room', ROOM);
@@ -371,7 +378,7 @@ function caretElt(p) {
   const bar = document.createElement('span');
   bar.className = 'pcaret'; bar.style.borderColor = p.color;
   const flag = document.createElement('span');
-  flag.className = 'pflag'; flag.style.background = p.color; flag.textContent = p.name;
+  flag.className = 'pflag'; flag.style.background = p.color; flag.textContent = displayOf(p.name);
   bar.appendChild(flag);
   return bar;
 }
@@ -395,9 +402,12 @@ const presencePlugin = new Plugin({
   },
 });
 
-/** Nudge the view so decorations recompute, and refresh the chip bar. */
+/** Nudge the view so decorations recompute, and refresh the chip bar AND the
+ *  roster (its live/dark dots read presence, so they must update when presence
+ *  moves, not only when the head changes). */
 function presenceTick() {
   renderPresenceBar();
+  renderRoster();
   try { view.dispatch(view.state.tr.setMeta('remote', true)); } catch {}
 }
 
@@ -405,7 +415,7 @@ function renderPresenceBar() {
   $('presenceBar').innerHTML = presence.list().map((p) => {
     const [lo, hi] = presenceSpan(p);
     const where = lo === hi ? `@${lo}` : `${lo}-${hi}`;
-    return `<span class="ptag" style="border-color:${p.color}"><span class="pdot" style="background:${p.color}"></span>${esc(p.name)} ${where}</span>`;
+    return `<span class="ptag" style="border-color:${p.color}"><span class="pdot" style="background:${p.color}"></span>${esc(displayOf(p.name))} ${where}</span>`;
   }).join('');
 }
 
@@ -663,6 +673,14 @@ function renderStats() {
 
 function runCertifiedGc(label) {
   flush(); // seal my typing run first
+  // NEVER compact while diverged: a compaction opens a new epoch, and two peers
+  // on different epochs cannot merge (the runtime linearizes epochs). Compact
+  // only when the room agrees on a head, so followers fast-forward.
+  if (!convergedWithPeers()) {
+    const st = $('gcStatus'); st.className = 'status warnc';
+    st.textContent = `${label || 'GC'} deferred: syncing with peers first (compacting while diverged would split epochs).`;
+    return false;
+  }
   const b = { syms: node.symbolCount(), bytes: node.snapshotBytes(), tomb: node.head.state.text.deleted.size, marks: node.head.state.marks.size };
   const r = node.compactStable();
   const st = $('gcStatus');
@@ -727,17 +745,31 @@ $('openFile').addEventListener('change', async () => {
   }
 });
 
+// CONVERGED = every peer I currently track shares my head (solo => true). This
+// is the gate for ALL compaction: two peers that compact while diverged (or a
+// non-leader compacting) land on DIFFERENT epochs, and a cross-epoch merge is
+// refused -- they would never reconcile (that is the divergence you get if you
+// GC mid-edit). When everyone is converged the leader compacts and everyone
+// else fast-forwards onto the identical compact commit; converged peers even
+// compute the SAME compact SHA, so simultaneous firing dedups instead of
+// splitting.
+function convergedWithPeers() {
+  for (const [n, h] of peerHeads) if (n !== NAME && h !== node.headGid) return false;
+  return true;
+}
+
 // AUTO-GC: the leader fires the certified compaction when the coordinate
 // cost crosses the policy threshold (src/autogc.js; the leader guard keeps
 // epochs linear -- followers reach the new epoch by fast-forward). Checked
 // on a slow tick; one attempt per head (a refusal is not retried until the
-// head moves).
+// head moves). Gated on convergence: never compact while diverged.
 let autoGcTried = null;
 // fire only on real growth past the last outcome; seeded with the LOADED
 // state so a restored doc is its own baseline (no spurious boot attempt)
 let autoGcFloor = node.symbolCount();
 setInterval(() => {
   if (node.headGid === autoGcTried) return;
+  if (!convergedWithPeers()) return; // wait until the room agrees on a head
   const sc = node.stableCut();
   if (!shouldCompact({
     symbols: node.symbolCount(),
@@ -791,15 +823,21 @@ function renderRoster() {
   const roster = [...node.registered].sort();
   if (!roster.length) { el.textContent = ''; return; }
   const live = new Set(presence.peers.keys());
+  // show the HUMAN name; when two sessions share one (e.g. two tabs both
+  // "kc-laptop") disambiguate with the session tag so the roster is honest
+  const counts = {};
+  for (const n of roster) { const d = displayOf(n); counts[d] = (counts[d] || 0) + 1; }
+  const label = (n) => counts[displayOf(n)] > 1 ? `${displayOf(n)}·${n.split('~')[1] ?? '?'}` : displayOf(n);
   const tail = ` · head ${short(node.headGid)}${pending.length ? ` · ${pending.length} pending` : ''}`;
   el.innerHTML = 'peers: ' + roster.map((n) => {
-    if (n === NAME) return `<span class="pchip"><span class="pdot on"></span>${esc(n)} (you)</span>`;
-    if (live.has(n)) return `<span class="pchip"><span class="pdot on"></span>${esc(n)}</span>`;
-    const tip = `forget ${esc(n)}: this peer looks offline and pins the certified GC's `
-      + `horizon at its last-synced position. Forgetting it lets GC advance; if `
-      + `${esc(n)} returns it re-syncs fresh from the current version and loses any `
+    const lab = esc(label(n));
+    if (n === NAME) return `<span class="pchip"><span class="pdot on"></span>${lab} (you)</span>`;
+    if (live.has(n)) return `<span class="pchip"><span class="pdot on"></span>${lab}</span>`;
+    const tip = `forget ${esc(displayOf(n))}: this peer looks offline and pins the certified GC's `
+      + `horizon at its last-synced position. Forgetting it lets GC advance; if it `
+      + `returns it re-syncs fresh from the current version and loses any `
       + `edits it made offline and never shared.`;
-    return `<span class="pchip"><span class="pdot"></span>${esc(n)}`
+    return `<span class="pchip"><span class="pdot"></span>${lab}`
       + `<button class="forget" data-peer="${esc(n)}" title="${tip}">✕ forget</button></span>`;
   }).join(' ') + tail;
   for (const b of el.querySelectorAll('.forget')) {
@@ -810,8 +848,9 @@ function forgetPeer(name) {
   if (!node.forget(name)) return;
   const st = $('gcStatus');
   st.className = 'status good';
-  st.textContent = `forgot ${name}: the certified GC horizon can now advance past it.`;
-  // reclaim right away if the cut is now complete + non-empty
+  st.textContent = `forgot ${displayOf(name)}: the certified GC horizon can now advance past it.`;
+  // try to reclaim, but runCertifiedGc self-guards on convergence: if we are
+  // mid-sync it defers (compacting while diverged would split epochs)
   const sc = node.stableCut();
   if (sc.complete && sc.meet.size) runCertifiedGc('after forget:');
   else renderConv();

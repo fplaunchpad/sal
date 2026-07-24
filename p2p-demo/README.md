@@ -202,11 +202,18 @@ bridge honest, and what would shrink the distance.
   A paste is likewise one commit. Pinned in `test/peritextbind.test.js`
   (buffered run == per-keystroke twin, one commit vs five) and runtime
   `test/commitbatch.test.js`. The header names WHICH doc (the room id, a
-  large title) and WHO is editing (the session name), and a DOC SWITCHER
+  large title) and WHO is editing (the display name), and a DOC SWITCHER
   makes the "docs are rooms" model visible: a picker of the docs saved in
   this browser (`RefStore.listDocs`) and a `+ New doc` field that slugifies
-  a name and opens it. There is no rename (a doc is identified by its name);
-  switching or creating navigates, carrying the editor identity along.
+  a name and opens it. There is no rename of a DOC (a doc is identified by
+  its name); switching or creating navigates, carrying the display name.
+  TWO-LEVEL IDENTITY: the human DISPLAY name (editable, remembered in
+  `localStorage`, kept out of shared URLs via `replaceState`) is separate
+  from the REPLICA id, which is `display~<session>` and UNIQUE PER SESSION.
+  Two tabs (or devices) that share a display name are therefore distinct
+  CRDT replicas -- a shared replica id would mean colliding `seq`/event keys
+  and a corrupt frontier. The roster shows the display name and
+  disambiguates duplicates with the session tag (`kc-laptop·b6e9`).
 
 - **`src/presence.js` -- PRESENCE (task #107).** Ephemeral, OFF-DAG peer
   awareness: live cursors/selections + identity, broadcast as plain `presence`
@@ -234,7 +241,16 @@ bridge honest, and what would shrink the distance.
   every registered peer), it fires `compactStable`, preserves reads, and
   advances the epoch. Epochs are linearized: each peer GCs in turn (a
   peer that converged before compacting fast-forwards onto the compacted
-  chain). ROSTER HYGIENE: a peer that leaves WITHOUT ever authoring a commit
+  chain). CONVERGENCE GATE: every compaction path (the button, auto-GC, and
+  the forget-triggered reclaim) refuses unless this peer is CONVERGED with
+  every peer it tracks (`convergedWithPeers`: all known heads equal mine, or
+  solo). Compacting while diverged would open a new epoch on a divergent
+  branch, and a cross-epoch merge is refused (the runtime linearizes epochs),
+  so the two peers could never reconcile -- the "why is the text different"
+  failure. Gated on convergence, the leader compacts and everyone else
+  fast-forwards onto the identical compact commit (converged peers even
+  compute the same compact SHA, so simultaneous firing dedups instead of
+  splitting). ROSTER HYGIENE: a peer that leaves WITHOUT ever authoring a commit
   is dropped from the roster (`replica.unregister`, wired to the transport's
   `leave`), else a drive-by visitor would block the stability cut forever; a
   departed WRITER stays registered conservatively (the GC-horizon vs
