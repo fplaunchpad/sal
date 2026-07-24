@@ -76,6 +76,37 @@ $('me').textContent = DISPLAY;
 $('docName').textContent = ROOM;
 document.title = `${ROOM} · sal rich text`;
 
+// ---- THEME (system / light / dark), remembered in this browser ------------
+// The saved theme is applied pre-paint by an inline <head> script (no flash);
+// here we wire the header toggle and keep 'system' following the OS live.
+const THEME_KEY = 'sal.p2p.theme';
+const THEMES = ['system', 'light', 'dark'];
+const THEME_ICON = { system: '◐', light: '☀', dark: '☾' };
+let theme = (() => { try { return localStorage.getItem(THEME_KEY) || 'system'; } catch { return 'system'; } })();
+function applyTheme(t) {
+  const root = document.documentElement;
+  if (t === 'system') delete root.dataset.theme; else root.dataset.theme = t;
+  const btn = $('themeBtn');
+  if (btn) { btn.textContent = THEME_ICON[t]; btn.title = `theme: ${t} — click for ${THEMES[(THEMES.indexOf(t) + 1) % 3]}`; }
+  const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = dark ? '#0e1014' : '#ffffff';
+}
+applyTheme(theme);
+$('themeBtn')?.addEventListener('click', () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  applyTheme(theme);
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (theme === 'system') applyTheme('system'); });
+
+// ---- research drawer: remember open/closed (collapsed by default) ---------
+const drawer = $('infoDrawer');
+if (drawer) {
+  try { drawer.open = localStorage.getItem('sal.p2p.drawer') === '1'; } catch {}
+  drawer.addEventListener('toggle', () => { try { localStorage.setItem('sal.p2p.drawer', drawer.open ? '1' : '0'); } catch {} });
+}
+
 let node = new Node(compactiblePeritext, NAME);
 
 // ---- DURABLE STORE (local-first): the doc lives in IndexedDB, keyed by the
@@ -445,6 +476,7 @@ function dispatch(tr) {
   }
   const s = selFlat(newState);
   if (s.anchor !== lastPresence.anchor || s.focus !== lastPresence.focus) sendPresence(s);
+  refreshToolbar(); // active-mark states follow the caret/selection
 }
 
 /** A remote delta was absorbed (already MERGED automatically): swap in the
@@ -458,6 +490,7 @@ function onRemote() {
   tr = setFlatSel(tr, mapOffset(oldIds, lastIds, sel.anchor), mapOffset(oldIds, lastIds, sel.focus));
   view.dispatch(tr);
   renderConv();
+  refreshToolbar();
 }
 
 // ---- formatting: toggle a mark / link / comment on the selection -----------
@@ -476,6 +509,25 @@ function applyFormatOps(ops, sel) {
   view.focus();
   net.announce();
   renderConv();
+  refreshToolbar();
+}
+
+/** Light up the toolbar buttons whose mark covers the current selection (or,
+ *  for a bare cursor, the character to its left). Read-only; runs on every
+ *  transaction and selection move. Null-safe on buttons not yet present. */
+function refreshToolbar() {
+  if (!view) return;
+  const s = selFlat(view.state);
+  const from = Math.min(s.anchor, s.focus), to = Math.max(s.anchor, s.focus);
+  const lo = to > from ? from : Math.max(0, from - 1);
+  const hi = to > from ? to : from;
+  const doc = curDoc();
+  const has = (mtype) => hi > lo && selectionHas(doc, lo, hi, mtype);
+  for (const [id, mtype] of [['boldBtn', 'bold'], ['italicBtn', 'italic'], ['underBtn', 'underline'],
+    ['strikeBtn', 'strike'], ['linkBtn', 'link']]) {
+    $(id)?.classList.toggle('is-active', has(mtype));
+  }
+  $('commentBtn')?.classList.toggle('is-active', hi > lo && coveringMarkTypes(doc, lo, hi, 'comment:').length > 0);
 }
 
 /** The current selection as {sel, from, to}, or null if collapsed. */
@@ -879,3 +931,4 @@ function renderConv() {
 }
 
 renderConv();
+refreshToolbar();
