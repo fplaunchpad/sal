@@ -23,6 +23,10 @@
 \newtheorem{remark}[theorem]{Remark}
 \newtheorem{vc}{VC}
 \newtheorem{fvc}{Flat VC}
+
+% Every \part opens on a fresh page (article's \part runs in-page).
+\let\salInlinePart\part
+\renewcommand{\part}{\clearpage\salInlinePart}
 \newtheorem*{finding}{Finding}
 
 % ---------- notation: the metatheory (Part I) ----------
@@ -1373,10 +1377,12 @@ $\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$,
 $\mathrm{Can}_C(E_1 \setminus \{e\},\, t_1)$, and
 $\mathrm{Can}_C(E_2 \setminus \{e\},\, t_2)$, then
 \[
-  \mergeL\bigl(\mergeL(B, t_0, e(B)),\; \mergeL(B, t_1, e(B)),\;
-    \mergeL(B, t_2, e(B))\bigr)
-  \;=\;
+\begin{aligned}
+  &\mergeL\bigl(\mergeL(B, t_0, e(B)),\; \mergeL(B, t_1, e(B)),\;
+    \mergeL(B, t_2, e(B))\bigr) \\
+  &\qquad=\;
   \mergeL\bigl(B,\; \mergeL(t_0, t_1, t_2),\; e(B)\bigr).
+\end{aligned}
 \]
 \hfill\lean{FeasibleDeltaVCs3.feasible\_redistribute}
 \end{fvc}
@@ -1575,49 +1581,84 @@ enable-wins flag at full.
 
 \begin{table}[t]
 \centering
-\footnotesize
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}llll@{}}
+\small
+\newcommand{\sigrow}[1]{\multicolumn{3}{@{}p{\dimexpr\textwidth-1em\relax}@{}}{\footnotesize\hspace*{1em}$\sigma$: #1}\\ \addlinespace[3pt]}
+\begin{tabular}{@{}lll@{}}
 \toprule
-MRDT & contract tier & end-to-end theorem & $\sigma$-characterization (one line) \\
+MRDT & contract tier & end-to-end theorem \\
 \midrule
-Grow-only set & unconditional & \lean{GOSet\_ra\_linearizable3\_eq} & union of adds \\
-Grow-only map & unconditional & \lean{GOMap\_ra\_linearizable3\_eq} & union of $(k,v)$ records \\
-Incr.-only counter & unconditional & \lean{IOC\_ra\_linearizable3\_eq} & $\#$events \\
-PN-counter & unconditional & \lean{PN\_ra\_linearizable3\_eq} & $\#\mathsf{inc}-\#\mathsf{dec}$ \\
-RGA (tombstone) & unconditional & \lean{rgaWithTombstones\_ra\_linearizable3\_eq} & grow-only nodes + tombstones \\
-Peritext & unconditional & \lean{peritextWithTombstones\_ra\_linearizable3\_eq} & grow-only mark records \\
-OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} & tag live iff added, no vis-later $\rem$ \\
-OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} & \dots{} or same-replica $\add$ later (eviction) \\
-Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} & per key: ctr $=\#$enables; flag iff unkilled enable \\
-\midrule
-Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} & tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$ \\
-Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} & the OR-set pattern on A; grow-only I \\
-Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} & convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv}) \\
-FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} & payload arbitration (min-ts semilattice); winner characterized at every version (\lean{fww\_version\_min}) \\
-LWW register & all-comm & \lean{LWW\_ra\_linearizable3\_eq} & payload arbitration (max-ts semilattice), the last-writer twin of FWW; winner characterized (\lean{lww\_version\_max}); \emph{end-to-end mechanized}, unlike the flat CRDT LWW (sorry-carrying VC bridge) \\
-BudgetCart & or-set $\rcrel$ & \lean{BCart\_ra\_linearizable3\_eq} & budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon}) \\
-Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} & no $\rcrel$ exists (enqueue clique); the merge itself is the linearization witness \\
-RGA (embedded-chain) & \emph{direct join} & \multicolumn{2}{l}{\lean{embed\_ra\_linearizable3}: RA-lin at every honestly reachable configuration; canonical sorted state, fold-canonical (\lean{e\_fold\_canon}); code-parametric (Part~II)} \\
-RGA (sided, two-sided) & \emph{direct join} & \multicolumn{2}{l}{\lean{sided\_embed\_ra\_linearizable3}: for every side assignment; the one-sided datatype is its all-R fragment (Part~II)} \\
-Peritext (embed kernel, fused) & \emph{instantiation} & \multicolumn{2}{l}{\lean{peritextEmbed\_ra\_linearizable3}: one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; deleting a character never re-formats another (\lean{renderIds\_del}; Parts~II--III)} \\
+Grow-only set & unconditional & \lean{GOSet\_ra\_linearizable3\_eq} \\
+\sigrow{union of adds}
+Grow-only map & unconditional & \lean{GOMap\_ra\_linearizable3\_eq} \\
+\sigrow{union of $(k,v)$ records}
+Incr.-only counter & unconditional & \lean{IOC\_ra\_linearizable3\_eq} \\
+\sigrow{$\#$events}
+PN-counter & unconditional & \lean{PN\_ra\_linearizable3\_eq} \\
+\sigrow{$\#\mathsf{inc}-\#\mathsf{dec}$}
+RGA (tombstone) & unconditional & \lean{rgaWithTombstones\_ra\_linearizable3\_eq} \\
+\sigrow{grow-only nodes + tombstones}
+Peritext & unconditional & \lean{peritextWithTombstones\_ra\_linearizable3\_eq} \\
+\sigrow{grow-only mark records}
+OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} \\
+\sigrow{tag live iff added, no vis-later $\rem$}
+OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} \\
+\sigrow{\dots{} or same-replica $\add$ later (eviction)}
+Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} \\
+\sigrow{per key: ctr $=\#$enables; flag iff unkilled enable}
 \bottomrule
-\end{tabular}}
-\caption{The Sal production catalogue. The flat data types conclude
-through the ONE generic conditioned metatheorem
+\end{tabular}
+\caption{The Sal production catalogue, flat tier; each entry's second
+line is its one-line $\sigma$-characterization. The flat data types
+conclude through the ONE generic conditioned metatheorem
 (\S\ref{sec:condmeta}--\S\ref{sec:meta}) at the identity instantiation
 ($\eqobs = {=}$, their VC bundles feeding the flat collapse
 \lean{FlatGeneric\_Bridge.lean}, instance theorems in
-\lean{MRDT\_Instances/} (per-RDT)); the direct-join instances conclude
-through the per-configuration join hook under honest reachability
-(\S\ref{sec:route}). The contract-tier column is each data type's
-Join-Lemma discharge content (\lean{MRDT\_Instances/}, one directory per
-RDT); the historical flat corollaries over the raw system remain there
-as internal steps.}
+\lean{MRDT\_Instances/} (per-RDT)). The contract-tier column is each
+data type's Join-Lemma discharge content; the historical flat
+corollaries over the raw system remain in the instance directories as
+internal steps.}
 \label{tab:catalog}
 \end{table}
 
-Table~\ref{tab:catalog} is the empirical heart of the metatheory: the VC
+\begin{table}[t]
+\centering
+\small
+\newcommand{\sigrow}[1]{\multicolumn{3}{@{}p{\dimexpr\textwidth-1em\relax}@{}}{\footnotesize\hspace*{1em}$\sigma$: #1}\\ \addlinespace[3pt]}
+\begin{tabular}{@{}lll@{}}
+\toprule
+MRDT & contract tier & end-to-end theorem \\
+\midrule
+Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} \\
+\sigrow{tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$}
+Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} \\
+\sigrow{the OR-set pattern on A; grow-only I}
+Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} \\
+\sigrow{convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv})}
+FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} \\
+\sigrow{payload arbitration (min-ts semilattice); winner characterized at every version (\lean{fww\_version\_min})}
+LWW register & all-comm & \lean{LWW\_ra\_linearizable3\_eq} \\
+\sigrow{payload arbitration (max-ts semilattice), the last-writer twin of FWW; winner characterized (\lean{lww\_version\_max}); \emph{end-to-end mechanized}, unlike the flat CRDT LWW (sorry-carrying VC bridge)}
+BudgetCart & or-set $\rcrel$ & \lean{BCart\_ra\_linearizable3\_eq} \\
+\sigrow{budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon})}
+Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} \\
+\sigrow{no $\rcrel$ exists (enqueue clique); the merge itself is the linearization witness}
+RGA (embedded-chain) & \emph{direct join} & \lean{embed\_ra\_linearizable3} \\
+\sigrow{RA-lin at every honestly reachable configuration; canonical sorted state, fold-canonical (\lean{e\_fold\_canon}); code-parametric (Part~II)}
+RGA (sided, two-sided) & \emph{direct join} & \lean{sided\_embed\_ra\_linearizable3} \\
+\sigrow{for every side assignment; the one-sided datatype is its all-R fragment (Part~II)}
+Peritext (embed kernel, fused) & \emph{instantiation} & \lean{peritextEmbed\_ra\_linearizable3} \\
+\sigrow{one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; deleting a character never re-formats another (\lean{renderIds\_del}; Parts~II--III)}
+\bottomrule
+\end{tabular}
+\caption{The Sal production catalogue, conditioned and direct-join
+tiers (continuing Table~\ref{tab:catalog}). The direct-join instances
+conclude through the per-configuration join hook under honest
+reachability (\S\ref{sec:route}); the conditioned instances carry
+their safety content as separate displayed theorems where noted.}
+\label{tab:catalog2}
+\end{table}
+
+Tables~\ref{tab:catalog} and~\ref{tab:catalog2} are the empirical heart of the metatheory: the VC
 set is not merely adequate in principle --- the data types people actually
 ship satisfy it. Three lessons from the sweep:
 
@@ -2352,12 +2393,14 @@ a finite write history $L$ from initial value $\mathit{init}$ (the value
 of the timestamp-maximal write, $\mathit{init}$ if $L$ is empty). There
 is no function $m : \mathrm{value}^3 \to \mathrm{value}$ with
 \[
-  m\bigl(\mathrm{canon}(\mathit{init}, L),\;
+\begin{aligned}
+  &m\bigl(\mathrm{canon}(\mathit{init}, L),\;
   \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_a),\;
-  \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_b)\bigr)
-  \;=\; \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_a
+  \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_b)\bigr) \\
+  &\qquad=\; \mathrm{canon}(\mathit{init}, L \mathbin{+\!\!+} \Delta_a
   \mathbin{+\!\!+} \Delta_b)
-  \quad \text{for all } \mathit{init}, L, \Delta_a, \Delta_b :
+  \qquad \text{for all } \mathit{init}, L, \Delta_a, \Delta_b :
+\end{aligned}
 \]
 two executions present the identical value triple $(10, 20, 30)$ with opposite stamp
 orders, forcing $m(10,20,30) = 30$ and $m(10,20,30) = 20$. The timestamp is forced
@@ -3129,10 +3172,12 @@ On the compacted store $C_{\mathrm{coll}}$
 (\lean{GC\_BoundedState.lean}, two lineages compacted to the same
 clock),
 \[
-  \mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 1, \{10\})
-  \;\wedge\; \mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 2, \emptyset)
-  \;\wedge\; \{10\} \neq \emptyset
+\begin{aligned}
+  &\mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 1, \{10\})
+  \;\wedge\; \mathrm{ClockLCA}(C_{\mathrm{coll}}, 3, 4, 2, \emptyset) \\
+  &\qquad\wedge\; \{10\} \neq \emptyset
   \;\wedge\; \neg\, \mathrm{ClockCoherent}(C_{\mathrm{coll}}) :
+\end{aligned}
 \]
 the head pair $(3,4)$'s clock lookup returns two same-clock candidates
 with divergent states, so clock identification alone resurrects the
@@ -5186,7 +5231,7 @@ published tombstoned RGA.
       \textcolor{orange!80!black}{21}\;10\;1\,\rangle$};
   \node[capt] at (0,-4.2) {one-sided: runs interleaved (L19)};
   % ---- right: sided under the Fugue policy, backward runs = L-chains
-  \begin{scope}[shift={(9.4,0)}]
+  \begin{scope}[shift={(8.95,0)}]
   \node[rootvtx] (sr) at (0,0) {$\diamond$};
   \node[vtx, fill=black!6] (s1) at (0,-1.1) {\small$1$};
   \node[vtx]                 (s10) at (-1.1,-2.2) {\small$10$};
@@ -5208,7 +5253,7 @@ published tombstoned RGA.
   \node[capt] at (0,-6.4) {sided, Fugue policy: blocks contiguous};
   \end{scope}
 \end{tikzpicture}
-\caption{L19 under the two anchoring rules, the battery's own trace.
+\caption{\sloppy L19 under the two anchoring rules, the battery's own trace.
 LCA document $\langle 1\rangle$; replica A (blue) types backward
 $10, 30, 50$ before the head while replica B (orange) concurrently
 types backward $21, 41, 61$. One-sided (left): every insert-before
@@ -5220,7 +5265,7 @@ $1$, and the in-order read keeps the blocks contiguous: L-extensions
 precede the node ($50, 30, 10$ before their parents' line ending at
 $1$), and among the L-siblings $10, 21$ of node $1$ the older run
 displays first (the L band is mirrored). Both display strips are
-machine outputs of \code{embed\_sided.py}.}
+outputs of the sided model harness, \code{embed\_sided.py}.}
 \label{fig:sided-l19}
 \end{figure}
 
@@ -5869,9 +5914,10 @@ two mechanized bounds, not a single Lean name.
 the four named designs of this document's arc:
 
 \begin{center}\small
+\setlength{\tabcolsep}{4pt}%
 \begin{tabular}{@{}llll@{}}
 \toprule
-design & key retains the dead chain? & lifted child ranks by &
+design & retains the dead chain? & lifted child ranks by &
   verdict \\
 \midrule
 embed RGA & yes: coordinate prefix & dead ancestor's slot key &
@@ -6436,10 +6482,12 @@ For a compatibility chain $\mathrm{CompatChain}\ (F :: F_s)$, cut
 state $s$ at hand for the \emph{first} map $F$, and continuation
 $\tau$ declared at $F$:
 \[
-  \mathrm{query}\bigl(\mathrm{applySeq}\
+\begin{aligned}
+  &\mathrm{query}\bigl(\mathrm{applySeq}\
   (\mathrm{remap}_{\mathrm{chainSPM}\,(F :: F_s)}\ s)\
-  (\tau\ \text{translated through every epoch's map})\bigr)
-  = \mathrm{query}\bigl(\mathrm{applySeq}\ s\ \tau\bigr) :
+  (\tau\ \text{translated through every epoch's map})\bigr) \\
+  &\qquad= \mathrm{query}\bigl(\mathrm{applySeq}\ s\ \tau\bigr) :
+\end{aligned}
 \]
 after arbitrarily many settled-cut compactions, a beyond-all-cuts
 continuation, its lagging ops translated through every epoch map,
@@ -7359,7 +7407,7 @@ surviving character in reading order, scanning from the anchor's birth
 position in the side's direction. The eight cases:
 
 \begin{center}\small
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lllp{6.1cm}@{}}
 \toprule
 boundary & anchor & side & resolution \\
 \midrule
@@ -7410,11 +7458,13 @@ grown over at an $\mathit{after}$ end); $\mathrm{none}$ is the
 collapsed span. Coverage is the
 half-open interval:
 \[
-  \mathrm{markCoversPos}\ d\ m\ k \;=\;
-  \bigl(f \le k \,\wedge\, k < e\bigr)
-  \quad\text{when}\quad
+\begin{aligned}
+  &\mathrm{markCoversPos}\ d\ m\ k \;=\;
+  \bigl(f \le k \,\wedge\, k < e\bigr) \\
+  &\qquad\text{when}\quad
   \mathrm{startIncl}\ d\ m = \mathrm{some}\ f,\
   \mathrm{endExcl}\ d\ m = \mathrm{some}\ e,
+\end{aligned}
 \]
 and false when either boundary collapses. Per $(\text{position},
 \mathit{mtype})$ the covering mark with the largest $\mathit{mid}$
@@ -7804,13 +7854,15 @@ list $\mathit{del}$, and keep predicate $p$ with $p\,a =
 ($\forall x \in l_2$, $x \notin \mathit{del} \Rightarrow p\,x =
 \mathsf{true}$):
 \[
-  \mathrm{scanRight}\ \bigl((l_1 \cdot a \cdot
+\begin{aligned}
+  &\mathrm{scanRight}\ \bigl((l_1 \cdot a \cdot
   l_2).\mathrm{filter}\ p\bigr)\ \mathit{del}\
   \bigl(\mathrm{idxOf}\ ((l_1 \cdot a \cdot l_2).\mathrm{filter}\
-  p)\ a\bigr)
-  \;=\;
+  p)\ a\bigr) \\
+  &\qquad=\;
   \mathrm{scanRight}\ (l_1 \cdot a \cdot l_2)\ \mathit{del}\
   \bigl(\mathrm{idxOf}\ (l_1 \cdot a \cdot l_2)\ a\bigr) :
+\end{aligned}
 \]
 the first survivor strictly right of the retained element $a$ is the
 same in the filtered and the full sequence, because every dropped
@@ -7880,13 +7932,15 @@ $\mathit{marks}$; type $\mathit{mt}$; under the hypotheses:
 the compacted-and-continued document renders equal to the
 never-compacted twin:
 \[
-  \mathrm{renderMarksDoc}\ \bigl(\mathrm{applySeq}\
+\begin{aligned}
+  &\mathrm{renderMarksDoc}\ \bigl(\mathrm{applySeq}\
   (\mathrm{remap}_F\ (s.\mathrm{filter}\ \mathit{kp}))\
   (\tau.\mathrm{map}\ \mathrm{remap}_F),\ \mathit{del}\bigr)\
-  \mathit{marks}\ \mathit{mt}
-  \;=\;
+  \mathit{marks}\ \mathit{mt} \\
+  &\qquad=\;
   \mathrm{renderMarksDoc}\ \bigl(\mathrm{applySeq}\ s\ \tau,\
   \mathit{del}\bigr)\ \mathit{marks}\ \mathit{mt},
+\end{aligned}
 \]
 for every mark and every type. Kernel-clean. The proof chains the
 re-coding cluster's T1 (Theorem~\ref{thm:recode1} transports the
@@ -7965,10 +8019,12 @@ guards:
 \end{itemize}
 dropping the pair preserves the render:
 \[
-  \mathrm{renderMarksDoc}\ d\
+\begin{aligned}
+  &\mathrm{renderMarksDoc}\ d\
   \bigl(\mathit{marks}.\mathrm{filter}\ (\lambda o.\ o.\mathit{mid}
-  \notin \{m.\mathit{mid}, r.\mathit{mid}\})\bigr)\ \mathit{mt}
-  \;=\; \mathrm{renderMarksDoc}\ d\ \mathit{marks}\ \mathit{mt} .
+  \notin \{m.\mathit{mid}, r.\mathit{mid}\})\bigr)\ \mathit{mt} \\
+  &\qquad=\; \mathrm{renderMarksDoc}\ d\ \mathit{marks}\ \mathit{mt} .
+\end{aligned}
 \]
 Only $r.\mathit{op} = \mathsf{remove}$ is load-bearing for the
 verdict (the $\mathsf{add}$ hypothesis names the shape, the proof
