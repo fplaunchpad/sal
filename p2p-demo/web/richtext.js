@@ -64,11 +64,23 @@ if (DISPLAY) {
   rememberName(DISPLAY);
 }
 DISPLAY = slug(DISPLAY.replace(/~.*/, '')) || 'peer'; // strip any session tag, then slug
-// The REPLICA id must be UNIQUE PER SESSION: two tabs (or two devices) sharing
-// a display name are DISTINCT CRDT replicas -- one shared id means colliding
+// The REPLICA id must be UNIQUE PER TAB: two tabs (or two devices) sharing a
+// display name are DISTINCT CRDT replicas -- one shared id means colliding
 // seq/event keys and a corrupt frontier. A short session token disambiguates;
 // `displayOf` strips it back to the human name for the UI and roster.
-const SESSION = Math.random().toString(16).slice(2, 6);
+//
+// The token lives in sessionStorage keyed by the doc, NOT re-minted per load:
+// sessionStorage survives a RELOAD (same tab -> same replica id, so refreshing
+// does not spawn a new author), is isolated per TAB (two tabs stay distinct),
+// and clears on tab close (a genuinely new session is then a new replica).
+const SESSION = (() => {
+  const key = `sal.p2p.session.${ROOM}`;
+  try {
+    let s = sessionStorage.getItem(key);
+    if (!s) { s = Math.random().toString(16).slice(2, 6); sessionStorage.setItem(key, s); }
+    return s;
+  } catch { return Math.random().toString(16).slice(2, 6); }
+})();
 const NAME = `${DISPLAY}~${SESSION}`;
 const displayOf = (n) => n.split('~')[0];
 const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique ids
