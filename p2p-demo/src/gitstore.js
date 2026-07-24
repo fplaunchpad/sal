@@ -28,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Node } from './node.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
+import { serializeCut } from '../../runtime/src/epoch.js';
 
 const SAL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..'); // p2p-demo/src -> sal
 
@@ -72,8 +73,11 @@ function commitRecord(node, cid) {
   if (c.parents.length === 1) {
     // compaction commit: its re-coded state is not recomputable from a parent,
     // so persist it inline via the datatype's own encoder (the same encoding the
-    // core DistributedReplica.ingest decodes through datatype.decodeState).
-    return { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
+    // core DistributedReplica.ingest decodes through datatype.decodeState). Its
+    // settled CUT (the certificate) is persisted too, so a reloaded replica keys
+    // the same cut-indexed epoch and recomputes the same maps (#112 phase 3).
+    const cut = node.epochDag.get(node.epochOf.get(cid))?.cut;
+    return { sha, kind: 'compact', parents, epoch, cut: serializeCut(cut ?? {}), state: node.datatype.encodeState(c.state) };
   }
   return { sha, kind: 'merge', parents, epoch };
 }
@@ -148,7 +152,7 @@ export function load(repoPath, datatype = compactibleEmbedRGA) {
     } else if (r.kind === 'merge') {
       wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
     } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state });
+      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, cut: r.cut, state: r.state });
     }
   }
   node.ingest(wire);

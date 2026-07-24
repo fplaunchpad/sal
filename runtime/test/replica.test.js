@@ -8,7 +8,8 @@
 //   (b) SHA content addressing: round-trip, dedup, gate  -- embed AND orset
 //   (c) certified state GC: refuse-then-fire, reads kept -- embed (orset refuses)
 //   (d) commit GC: prune below the horizon, reads kept   -- embed AND orset
-//   (e) the epoch barrier: cross-epoch merge is refused  -- the deferred half
+//   (e) cross-epoch merge: the certificate-determined join (#112 phase 3;
+//       was the deferred half -- a throw -- now a translation, reads == twin)
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -147,22 +148,24 @@ test('commit GC prunes below the pairwise-meet horizon, reads preserved (embed +
   }
 });
 
-// ------------------------------------------- (e) the epoch barrier (deferred half)
-test('cross-epoch merge is REFUSED: concurrent divergent compaction is the deferred half', () => {
+// -------------------------------- (e) cross-epoch merge = the certificate join
+test('cross-epoch merge TRANSLATES (reads == twin); the throw is gone (#112 phase 3)', () => {
   const a = new DistributedReplica(compactibleEmbedRGA, 'A'), b = new DistributedReplica(compactibleEmbedRGA, 'B');
+  const ta = new DistributedReplica(compactibleEmbedRGA, 'A'), tb = new DistributedReplica(compactibleEmbedRGA, 'B'); // never-compacted twin
   a.register('B'); b.register('A');
-  a.commit({ type: 'ins', id: 50, el: 'a', anchorId: null });
-  a.commit({ type: 'ins', id: 80, el: 'b', anchorId: null });
-  syncReplicas(a, b);
-  b.commit({ type: 'ins', id: 120, el: 'c', anchorId: null }); // B's evidence covers 50,80,120
-  syncReplicas(a, b); // converge at epoch 0
-  // A compacts alone -> A at epoch 1, B still at epoch 0
+  for (const r of [a, ta]) { r.commit({ type: 'ins', id: 50, el: 'a', anchorId: null }); r.commit({ type: 'ins', id: 80, el: 'b', anchorId: null }); }
+  syncReplicas(a, b); syncReplicas(ta, tb);
+  b.commit({ type: 'ins', id: 120, el: 'c', anchorId: null }); tb.commit({ type: 'ins', id: 120, el: 'c', anchorId: null });
+  syncReplicas(a, b); syncReplicas(ta, tb); // converge at epoch 0
+  // A compacts alone -> A at epoch 1, B still at epoch 0 (a divergent-epoch pair)
   assert.equal(a.compactStable().compacted, true);
   assert.equal(a.epoch, 1); assert.equal(b.epoch, 0);
-  // B authors more, then tries to merge A's epoch-1 head: cross-epoch, refused
-  b.commit({ type: 'ins', id: 150, el: 'd', anchorId: null });
-  const toB = a.delta(b.ancestryGids());
-  b.ingest(toB); // ingesting the compaction commit is fine (it opens epoch 1 locally)
-  assert.throws(() => b.mergeWithGid(a.headGid), /cross-epoch merge/,
-    'a peer that has not itself reached the new epoch cannot merge across it');
+  // B authors a straggler, ingests A's epoch-1 head, then MERGES ACROSS the epoch:
+  // once a throw, now the certificate-determined join (coordinate translation).
+  b.commit({ type: 'ins', id: 150, el: 'd', anchorId: null }); tb.commit({ type: 'ins', id: 150, el: 'd', anchorId: null });
+  b.ingest(a.delta(b.ancestryGids()));
+  assert.doesNotThrow(() => b.mergeWithGid(a.headGid), 'the cross-epoch throw is replaced by translation');
+  syncReplicas(ta, tb);
+  assert.equal(b.read().join(''), tb.read().join(''), 'the merged read equals the never-compacted twin');
+  assert.equal(b.read().join(''), 'dcba', 'hand-derived: [150,120,80,50] = d,c,b,a');
 });

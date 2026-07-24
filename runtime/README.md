@@ -276,9 +276,9 @@ translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
 settled at the compacting replica (all concurrency delivered:
 heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
 section 2); the caller asserts it, and evidence certificates are a
-follow-on. Epochs are also linearized per runtime (concurrent divergent
-compactions are the deferred protocol half,
-`whiteboard/embed-recoding-note.md` section 6).
+follow-on. This shared-store `Runtime` still linearizes epochs; the
+first-class `DistributedReplica` (below) instead merges divergent epochs
+via the certificate-determined join (task #112 phase 3, THE EPOCH DIAMOND).
 
 ## Save/load: the run-table serializer (task #104)
 
@@ -436,17 +436,31 @@ and the certified state GC over `embedRGA` (refuse-then-fire) with `orset`
 refusing; `test/peritext-gc.test.js` does the same refuse-then-fire for
 `compactiblePeritext`.
 
-THE EPOCH BARRIER (concurrent divergent compaction is NOT claimed).
-`compactStable` opens a new epoch, and a cross-epoch merge THROWS: the runtime
-LINEARIZES compaction epochs. Two replicas compacting different cuts and then
-merging across epochs is the deferred protocol half -- the #97 multi-epoch
-`CompatChain` not yet discharged for cross-replica different cuts
-(`stability-vc-note.md` section 8, `embed-recoding-note.md` section 6). A
-deployment reaches a common epoch with a coordinated CHECKPOINT barrier (every
-replica absorbs the converged history, then all compact the identical cut to the
-identical re-coding / same SHA); `test/replica.test.js` pins that a peer which
-has not itself reached the new epoch is refused a cross-epoch merge, rather than
-guessing.
+THE EPOCH DIAMOND (concurrent divergent compaction, task #112 phase 3). Epoch
+identity in `DistributedReplica` is the SETTLED CUT plus its certificate, held in
+a CUT-INDEXED DAG (`src/epoch.js`) whose nodes are cuts and whose edges are
+compaction refinements and JOINS (`W = U ∪ V`), NOT a per-replica integer. A
+cross-epoch merge no longer THROWS: it is the certificate-determined join,
+validated (`whiteboard/epoch-protocol-note.md`) and mechanized
+(`Sal/.../EmbedRGA_EpochDiamond.lean`, `diamond_confluence` at s1). Two heads at
+INCOMPARABLE cuts merge by lifting both DOWN to their common base frame through
+the per-epoch INVERSE maps (`buildInverseTranslate`) and `merge3`-ing there; the
+merged read equals the never-compacted twin, with no coordination (both replicas
+lift deterministically to the same frame). Coordinate translation, not op-replay,
+is the sound realization -- it rewrites dead-ancestor prefixes a re-application
+cannot reconstruct; a forward MAP lift of a divergently-compacted peer's head is
+unsound (a concurrently-minted record it never saw would be squeezed into a wrong
+ordinal). The frame stays coordination-free because a compaction frame is minted
+ONLY by the shipped, content-addressed `compactStable` (keyed by the commit's
+content id, so two frames that freeze stragglers differently stay distinct),
+never re-derived at merge. Translation maps are GC'd per the A3 DOUBLE
+certificate (`dropEpochMap`: everyone advanced past `e` AND every pre-advance
+mint heard everywhere); the ack-only shortcut is unsound and refused.
+`test/epoch.test.js` pins the c1 diamond (s1, bit-identical), the c4 flip
+(translation necessary), the aliasing negative, the A3 map-drop, and a 600-trial
+twin PBT of incomparable-cut merges vs the never-compacted twin. This change is
+ADDITIVE: same-epoch merges are byte-identical; only cross-epoch merges change
+from throw to translate.
 
 ## The head-sync discipline, and why
 
@@ -503,8 +517,13 @@ Suites: `test/hash.test.js` (the content hash: SHA-256 vs `node:crypto`,
 key-order-invariant stable stringify, `commitContentId`'s Merkle DAG),
 `test/replica.test.js` (the first-class `DistributedReplica`: convergence via
 gossip, the SHA round-trip / tamper gate, certified state GC refuse-then-fire,
-commit GC, and the cross-epoch-merge refusal -- run over BOTH `embedRGA` and
-`orset` where applicable), `test/dag.test.js` (DAG/LCA units, criss-cross
+commit GC, and the cross-epoch-merge join -- reads == the never-compacted twin,
+run over BOTH `embedRGA` and `orset` where applicable), `test/epoch.test.js` (the
+epoch diamond #112 phase 3: the cut-indexed DAG units, the inverse-map
+round-trip, the c1 diamond at s1, the aliasing negative, the c4 no-translation
+flip, the A3 double-certificate map-drop, and a 600-trial twin PBT of
+incomparable-cut merges vs the never-compacted twin -- each PASS with a FAIL
+companion), `test/dag.test.js` (DAG/LCA units, criss-cross
 construction), `test/embed.test.js` (litmus fixtures, below), `test/code.test.js`
 (Lean-pinned codewords, code-invariance, the cost gap), `test/gc.test.js`
 (GC genuinely prunes; post-GC merges match a no-GC control; the membership
@@ -560,10 +579,10 @@ skin, not runtime machinery:
   replica id to be a key, not a string;
 - open-membership handling on the wire (registration/eviction), the same closed
   set the certificate and commit GC quantify over;
-- CONCURRENT DIVERGENT COMPACTION -- the demo uses a coordinated checkpoint
-  barrier to keep epochs linearized; lifting that (cross-replica different cuts)
-  is the runtime's own deferred protocol half (the #97 multi-epoch
-  `CompatChain`).
+- CONCURRENT DIVERGENT COMPACTION -- now landed in the core `DistributedReplica`
+  as the certificate-determined epoch join (task #112 phase 3, `src/epoch.js`);
+  the demo's checkpoint barrier is no longer required for correctness, though it
+  is still the cheapest path when replicas can coordinate.
 
 ## Datatype ports are UNVERIFIED transliterations
 
