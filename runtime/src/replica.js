@@ -65,6 +65,7 @@ export class DistributedReplica {
     this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
     this.epochDag = new EpochDag();     // cut-indexed epoch DAG (src/epoch.js)
     this.epochOf = new Map();           // local commit id -> epoch cut key
+    this.epochBase = new Map();         // local id -> pruned parent's gid (parent-free epoch bases)
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
     this.epochOf.set(root.id, EPOCH0);
     this.#index(root);
@@ -148,7 +149,7 @@ export class DistributedReplica {
     for (const cid of this.dag.ancestorSet(this.#headId)) {
       if (theirGids.has(this.gid.get(cid))) continue;
       const c = this.dag.get(cid);
-      if (c.parents.length === 0) continue; // root shared, never shipped
+      if (c.parents.length === 0 && !this.epochBase.has(cid)) continue; // root shared; epoch bases DO ship
       missing.push(cid);
     }
     missing.sort((x, y) => Number(x.slice(1)) - Number(y.slice(1)));
@@ -159,14 +160,16 @@ export class DistributedReplica {
         return { gid: this.gid.get(cid), kind: 'op', parents,
           op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
       }
-      if (c.parents.length === 1) {
-        // A compaction commit carries its settled CUT (the certificate): the
-        // receiver recomputes the epoch's translate map from parentState + cut
-        // (note §9.1), never trusting a shipped map. Inline state is kept as the
-        // content-address witness (gid is over its fingerprint).
+      // A compaction commit -- or an EPOCH BASE (a pruned compaction, parent-free
+      // locally but shipped with its wire parent gid STRING so the content id
+      // still checks) -- carries its settled CUT (the certificate): the receiver
+      // recomputes the epoch's translate from parentState + cut, never trusting a
+      // shipped map. Inline state is the content-address witness.
+      const eb = this.epochBase.get(cid);
+      if (c.parents.length === 1 || eb) {
         const node = this.epochDag.get(this.epochOf.get(cid));
-        return { gid: this.gid.get(cid), kind: 'compact', parents,
-          cut: serializeCut(node.cut), state: this.datatype.encodeState(c.state) };
+        return { gid: this.gid.get(cid), kind: 'compact', parents: eb ? [eb] : parents,
+          cut: serializeCut(node?.cut ?? {}), state: this.datatype.encodeState(c.state) };
       }
       return { gid: this.gid.get(cid), kind: 'merge', parents };
     });
@@ -259,7 +262,11 @@ export class DistributedReplica {
     for (const wc of wireCommits) {
       if (this.byGid.has(wc.gid)) continue;
       const localParents = wc.parents.map((g) => this.byGid.get(g));
-      if (localParents.some((p) => p === undefined)) {
+      // an epoch base (a pruned compaction) arrives with its parent ABSENT; its
+      // content id verifies WITHOUT the parent, so it is the one allowed exception
+      // to ancestor-closure.
+      const isEpochBaseWire = wc.kind === 'compact' && wc.parents.length === 1;
+      if (localParents.some((p) => p === undefined) && !isEpochBaseWire) {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);
       }
       let op = null, state, epochKey;
@@ -269,6 +276,24 @@ export class DistributedReplica {
         epochKey = this.epochOf.get(localParents[0]);
         this.registered.add(wc.op.replica);
         this.authors.add(wc.op.replica);
+      } else if (wc.kind === 'compact' && localParents[0] === undefined) {
+        // EPOCH-BASE BOOTSTRAP: the parent was pruned below a settled cut. Verify
+        // the gid over the wire parent STRING + fingerprint (parent-free but
+        // content-gated), enter it as a parent-free base, and register its
+        // epochDag node with the shipped cut (its settledIds drive subcut/compare;
+        // a pristine peer that adopts it never lifts below it, so no map needed).
+        state = this.datatype.decodeState(wc.state);
+        const cut = deserializeCut(wc.cut ?? {});
+        const cc = this.dag.add({ parents: [], op: null, state });
+        this.epochBase.set(cc.id, wc.parents[0]);
+        const g = commitContentId({ parents: [null], op: null, state }, [wc.parents[0]],
+          { fingerprint: this.datatype.fingerprint, hash: this.hash });
+        if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+        this.gid.set(cc.id, g); this.byGid.set(g, cc.id);
+        this.epochDag.compaction(g, { settledIds: cut.settledIds ?? new Set(), cut, parentKey: EPOCH0 });
+        this.epochOf.set(cc.id, g);
+        added++;
+        continue;
       } else if (wc.kind === 'compact') {
         // decode the inline state (the content-address witness), and RECOMPUTE
         // this epoch's translate map from parentState + the shipped cut -- the
@@ -310,6 +335,15 @@ export class DistributedReplica {
     if (b === undefined) throw new Error(`mergeWithGid: ${gid} not present (ingest first)`);
     const a = this.#headId;
     if (a === b) return this.headGid;
+    // PRISTINE ADOPT: a replica holding only the shared root (never authored,
+    // never merged) may not share ancestry with a PRUNED history (whose chain
+    // starts at an epoch base, not the root). Nothing local can be lost, so it
+    // adopts the target head outright -- this is how a fresh peer bootstraps
+    // from an epoch base at O(document).
+    const headC = this.dag.get(a);
+    if (this.seq === 0 && headC.op === null && headC.parents.length === 0 && !this.epochBase.has(a)) {
+      this.#headId = b; this.#refresh(); return this.headGid;
+    }
     if (this.dag.isAncestor(a, b)) { this.#headId = b; this.#refresh(); return this.headGid; }
     if (this.dag.isAncestor(b, a)) return this.headGid;
     const { state: merged, epochKey } = this.#joinState(a, b);
@@ -483,9 +517,62 @@ export class DistributedReplica {
         this.byGid.delete(this.gid.get(cid));
         this.gid.delete(cid);
         this.epochOf.delete(cid);
+        this.epochBase.delete(cid);
       }
     }
     return res;
+  }
+
+  /** PRUNE HISTORY BELOW THE NEWEST SETTLED COMPACTION, turning it into a
+   *  parent-free EPOCH BASE. Its content id is preserved without the parent:
+   *  the compaction hash covers the parent's gid STRING + the state fingerprint
+   *  (commitContentId), so `ingest` verifies it parent-free. Gated on the
+   *  certified condition for forgetting: the stability cut is complete AND every
+   *  registered replica's evidence has ADVANCED PAST the compaction's cut
+   *  (epochDag.subcut) -- then no registered peer can need the dropped commits
+   *  for a delta or a cross-epoch lift (a returning FORGOTTEN peer re-bootstraps
+   *  from the base). Soundness is the model-independent "a settled cut licenses
+   *  forgetting" (the stability VC), so this rides the #112 cut-keyed epochs
+   *  unchanged: pruning removes only history BELOW the base; every future merge
+   *  lifts down to at most the base. Returns { pruned, epoch } or
+   *  { pruned: 0, reason }. */
+  pruneToEpochBase() {
+    let K = null, kNum = -1;
+    for (const cid of this.dag.ancestorSet(this.#headId)) {
+      const c = this.dag.get(cid);
+      const isCompact = c.op === null && (c.parents.length === 1 || this.epochBase.has(cid));
+      if (!isCompact) continue;
+      const n = this.epochDag.get(this.epochOf.get(cid));
+      if (n && n.num > kNum) { K = cid; kNum = n.num; }
+    }
+    if (K === null) return { pruned: 0, reason: 'no compaction in ancestry' };
+    const c = this.dag.get(K);
+    if (c.parents.length === 0) return { pruned: 0, reason: 'already the epoch base' };
+    const kKey = this.epochOf.get(K);
+    const sc = this.stableCut();
+    if (!sc.complete) return { pruned: 0, reason: `cut incomplete: missing ${sc.missing.join(',') || '?'}` };
+    // every REGISTERED replica's evidence must have advanced past K's cut, so
+    // no registered peer holds a below-K head that would need the pruned history
+    for (const rep of this.registered) {
+      if (rep === this.name) continue;
+      const e = this.frontier.get(rep);
+      if (e && !this.epochDag.subcut(kKey, this.epochOf.get(e.id))) {
+        return { pruned: 0, reason: `evidence from ${rep} has not reached the compaction cut` };
+      }
+    }
+    const below = this.dag.ancestorSet(c.parents[0]); // reflexive: at/under K's parent
+    this.epochBase.set(K, this.gid.get(c.parents[0]));
+    this.dag.sever(K); // K becomes parent-free; its STORED gid is left untouched
+    let pruned = 0;
+    for (const cid of below) {
+      if (!this.dag.has(cid)) continue;
+      this.dag.remove(cid);
+      const g = this.gid.get(cid);
+      this.byGid.delete(g); this.gid.delete(cid); this.epochOf.delete(cid); this.epochBase.delete(cid);
+      pruned++;
+    }
+    this.#refresh();
+    return { pruned, epoch: kNum };
   }
 
   /** What a SAVE costs: the datatype's run-table-backed probe when it has one

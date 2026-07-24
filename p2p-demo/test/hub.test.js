@@ -120,3 +120,53 @@ test('peritext room: marks survive the hub round-trip', async () => {
     b.tp.close();
   } finally { await relay.close(); }
 });
+
+test('history pruning: the hub forgets below a settled epoch; late joiners bootstrap from the base', async () => {
+  const kv = new MemoryKV();
+  let relay = await startRelay(0, { hub: true, hubKV: kv });
+  let url = `ws://127.0.0.1:${relay.port}`;
+  const stored = async () => (await kv.entries('objects')).filter(([k]) => k.startsWith('doc-prune')).map(([, r]) => r);
+  const mint = (k) => k * 1000 + 7;
+
+  // alice builds real history in a peritext room, with deletes for the GC to reclaim
+  const a = await makeNet(url, 'doc-prune', 'alice', { datatype: compactiblePeritext, dt: 'peritext' });
+  a.node.commitBatch([...Array(20)].map((_, i) => ({ type: 'ins', id: mint(i + 1), el: 'abcdefghij'[i % 10], anchorId: i === 0 ? null : mint(i) })));
+  for (let i = 21; i <= 30; i++) a.node.commit({ type: 'ins', id: mint(i), el: 'x', anchorId: mint(i - 1) });
+  for (let d = 2; d <= 14; d += 3) a.node.commit({ type: 'del', id: mint(d) });
+  a.announce();
+  const hub = await relay.hubs.get('doc-prune');
+  assert.ok(await until(() => hub.node.headGid === a.node.headGid), 'hub caught up');
+  await hub.flushPersist();
+  const before = await stored();
+  assert.ok(before.some((r) => r.kind === 'root'), 'genesis stored: nothing pruned yet');
+
+  // alice compacts (solo cut complete) and types past the epoch, so her evidence
+  // advances past the compaction cut and the hub's prune gate opens
+  const g = a.node.compactStable();
+  assert.equal(g.compacted, true, 'fixture compacted');
+  a.node.commit({ type: 'ins', id: mint(31), el: '!', anchorId: mint(30) });
+  a.announce();
+  assert.ok(await until(() => hub.node.headGid === a.node.headGid), 'hub past the epoch');
+  await hub.flushPersist();
+  const after = await stored();
+  assert.ok(after.length < before.length, `store shrank (${before.length} -> ${after.length})`);
+  assert.ok(after.some((r) => r.kind === 'compact'), 'epoch base stored');
+  assert.ok(!after.some((r) => r.kind === 'root'), 'genesis forgotten');
+  const aHead = a.node.headGid;
+  const aRead = a.node.read().map((e) => e.char).join('');
+  a.tp.close();
+  await relay.close(); // the PROCESS dies; the PRUNED store survives
+
+  relay = await startRelay(0, { hub: true, hubKV: kv }); // wake from the pruned store
+  url = `ws://127.0.0.1:${relay.port}`;
+  try {
+    const b = await makeNet(url, 'doc-prune', 'bob', { datatype: compactiblePeritext, dt: 'peritext' });
+    assert.ok(await until(() => b.node.read().map((e) => e.char).join('') === aRead), 'bob bootstrapped from the epoch base');
+    assert.equal(b.node.headGid, aHead, 'same head SHA through prune + restart');
+    b.node.commit({ type: 'ins', id: mint(99), el: '.', anchorId: mint(31) });
+    b.announce();
+    const hub2 = await relay.hubs.get('doc-prune');
+    assert.ok(await until(() => hub2.node.read().map((e) => e.char).join('') === aRead + '.'), 'post-bootstrap edit reached the hub');
+    b.tp.close();
+  } finally { await relay.close(); }
+});

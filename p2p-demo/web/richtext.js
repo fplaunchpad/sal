@@ -849,10 +849,7 @@ setInterval(() => {
 // next authored run. One attempt per head, on the same slow cadence.
 let pruneTried = null;
 setInterval(() => {
-  // epoch-base pruning is DEFERRED pending its re-port onto the #112 cut-keyed
-  // epoch model (was built on the old integer-epoch model). Skip when the
-  // runtime does not expose it.
-  if (typeof node.pruneToEpochBase !== 'function') return;
+  if (typeof node.pruneToEpochBase !== 'function') return; // defensive
   if (node.epoch === 0 || node.headGid === pruneTried) return;
   pruneTried = node.headGid;
   const pr = node.pruneToEpochBase();

@@ -513,10 +513,20 @@ a name IFF it never authored (a lurker), keeping writers conservatively, and
 `forget(name)` drops it unconditionally (the operator-directed lever to
 release the GC horizon a departed author pins). Pinned in `test/forget.test.js`.
 
-EPOCH-BASE HISTORY PRUNING is temporarily DEFERRED: it was built on the old
-integer-epoch model and needs a re-port onto the #112 cut-keyed epoch DAG (the
-content-addressing of a parent-less compaction base differs). The p2p
-consumers keep guarded call sites so it re-enables cleanly.
+EPOCH-BASE HISTORY PRUNING (`pruneToEpochBase`). After a SETTLED compaction,
+history below it is dropped and the compaction becomes a parent-free EPOCH
+BASE whose content id still verifies (the hash covers the wire parent gid
+STRING + the state fingerprint, so `ingest` gates it parent-free); a fresh
+peer bootstraps from the base at O(document). The gate is the certified
+condition for forgetting: the stability cut is complete AND every registered
+replica's evidence has ADVANCED PAST the compaction's cut (`epochDag.subcut`),
+so no registered peer holds a below-base head. Soundness is the
+model-independent "a settled cut licenses forgetting" (the stability VC), so
+it rides the #112 cut-keyed epochs unchanged: pruning removes only history
+below the base, and every future merge lifts down to at most the base. Pinned
+in `test/pruning.test.js` (bootstrap + post-bootstrap authoring, tamper gate,
+under-evidenced refusal, records round-trip) and the hub pruning test in
+`../p2p-demo/test/hub.test.js`.
 
 ## Open-membership caveat
 

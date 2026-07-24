@@ -18,7 +18,18 @@ export function commitRecord(node, cid) {
   const sha = node.gid.get(cid);
   const parents = c.parents.map((p) => node.gid.get(p));
   const epoch = node.epochOf.get(cid); // cut key (the cut-indexed epoch identity, #112)
-  if (c.parents.length === 0) return { sha, kind: 'root', parents, epoch };
+  if (c.parents.length === 0) {
+    // an EPOCH BASE (pruned history): re-serialize as a compact record with its
+    // original wire parent gid + cut, so its content id checks out on ingest and
+    // a reloaded replica keys the same cut-indexed epoch.
+    const eb = node.epochBase?.get(cid);
+    if (eb) {
+      const cutNode = node.epochDag.get(node.epochOf.get(cid));
+      return { sha, kind: 'compact', parents: [eb], epoch,
+        cut: serializeCut(cutNode?.cut ?? {}), state: node.datatype.encodeState(c.state) };
+    }
+    return { sha, kind: 'root', parents, epoch };
+  }
   if (c.op !== null) {
     return { sha, kind: 'op', parents, epoch,
       op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
