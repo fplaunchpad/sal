@@ -24,9 +24,25 @@
   <link rel="stylesheet" href="/p2p-demo/node_modules/prosemirror-view/style/prosemirror.css" />
   <style>
     :root { color-scheme: light dark; }
-    body { font: 14px/1.5 system-ui, sans-serif; margin: 0; padding: 20px; max-width: 820px; }
+    /* the editing column is centered on the page */
+    body { font: 14px/1.5 system-ui, sans-serif; margin: 0 auto; padding: 24px 20px 48px; max-width: 860px; }
     h1 { font-size: 18px; margin: 0 0 4px; }
     .sub { color: #888; margin: 0 0 16px; font-size: 13px; }
+    /* HEADER: which doc, who is editing, and the doc controls */
+    .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px 24px;
+      flex-wrap: wrap; border-bottom: 1px solid #8883; padding-bottom: 14px; margin-bottom: 14px; }
+    .brand { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #999; }
+    .docTitle { display: flex; align-items: baseline; gap: 9px; margin: 3px 0 5px; }
+    .docTitle h1 { font-size: 25px; font-weight: 700; margin: 0; line-height: 1.1; }
+    .docTitle .docicon { font-size: 20px; }
+    .ident { font-size: 13px; color: #888; }
+    .ident b { color: inherit; font-weight: 600; }
+    .docctl { display: flex; gap: 8px; align-items: center; }
+    .docctl select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid #8888;
+      border-radius: 6px; background: transparent; cursor: pointer; }
+    .docctl button { font-size: 13px; padding: 5px 11px; }
+    #newDocBar { margin: 0 0 14px; }
+    #newDocBar.show { display: flex; }
     .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
     .bar .sp { flex: 1; }
     button { font: inherit; padding: 5px 12px; border: 1px solid #8888; border-radius: 6px; background: transparent; cursor: pointer; }
@@ -78,12 +94,30 @@
   </style>
 </head>
 <body>
-  <h1>sal p2p rich text <span style="color:#999;font-weight:400">(#107: ProseMirror over the verified Peritext datatype)</span></h1>
+  <header class="topbar">
+    <div>
+      <div class="brand">sal · p2p rich text · #107 ProseMirror over verified Peritext</div>
+      <div class="docTitle">
+        <span class="docicon">📄</span>
+        <h1 id="docName" title="this document's id (the room). Docs are identified by name; share the URL to collaborate.">?</h1>
+      </div>
+      <div class="ident">editing as <b id="me">?</b>
+        · <span id="connDot" class="dot"></span><span id="conn">connecting…</span></div>
+    </div>
+    <div class="docctl">
+      <select id="docPicker" title="switch to another document saved in this browser"></select>
+      <button id="newDocBtn" title="start a new document (opens a new room)">＋ New doc</button>
+    </div>
+  </header>
+  <div id="newDocBar" class="argbar">
+    <span class="arglabel">new document name</span>
+    <input id="newDocInput" type="text" placeholder="e.g. meeting-notes" />
+    <button id="newDocCreate">create</button>
+    <button id="newDocCancel">cancel</button>
+  </div>
   <p class="sub">
-    You are <b id="me">?</b> in <b id="room">?</b>.
-    <span id="connDot" class="dot"></span><span id="conn">connecting…</span>.
-    Open this URL in another tab (same <code>?room=</code>) to collaborate.
-    Edit the document directly; select text for B / I / U, 🔗 (a link: a value
+    Open this URL in another tab or browser (same <code>?room=</code>) to
+    collaborate. Edit directly; select text for B / I / U, 🔗 (a link: a value
     mark that never grows) or 💬 (comments: overlapping ones coexist).
     Merging is automatic on every received delta; peers' live cursors are
     presence decorations (ephemeral, off-DAG).

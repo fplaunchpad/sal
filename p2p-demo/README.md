@@ -201,7 +201,12 @@ bridge honest, and what would shrink the distance.
   self-contained CRDT ops, so a remote merge landing mid-buffer is harmless.
   A paste is likewise one commit. Pinned in `test/peritextbind.test.js`
   (buffered run == per-keystroke twin, one commit vs five) and runtime
-  `test/commitbatch.test.js`.
+  `test/commitbatch.test.js`. The header names WHICH doc (the room id, a
+  large title) and WHO is editing (the session name), and a DOC SWITCHER
+  makes the "docs are rooms" model visible: a picker of the docs saved in
+  this browser (`RefStore.listDocs`) and a `+ New doc` field that slugifies
+  a name and opens it. There is no rename (a doc is identified by its name);
+  switching or creating navigates, carrying the editor identity along.
 
 - **`src/presence.js` -- PRESENCE (task #107).** Ephemeral, OFF-DAG peer
   awareness: live cursors/selections + identity, broadcast as plain `presence`

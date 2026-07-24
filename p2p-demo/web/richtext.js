@@ -47,7 +47,8 @@ const ROOM = params.get('room') || 'rtdoc';
 const NAME = params.get('name') || 'peer-' + Math.random().toString(16).slice(2, 6);
 const SALT = Math.floor(Math.random() * 1000); // per-peer tie-break for unique ids
 $('me').textContent = NAME;
-$('room').textContent = 'room ' + ROOM;
+$('docName').textContent = ROOM;
+document.title = `${ROOM} · sal rich text`;
 
 let node = new Node(compactiblePeritext, NAME);
 
@@ -76,6 +77,43 @@ function persistIfChanged() {
   persistedGid = g;
   store.persistNode(ROOM, node).catch((e) => console.warn('[idb] persist failed:', e?.message ?? e));
 }
+
+// ---- DOC SWITCHER ----------------------------------------------------------
+// Docs are identified by their room name (no rename): this makes creating and
+// switching between them a visible affordance instead of hand-editing the URL.
+// The picker lists docs saved in THIS browser (RefStore.listDocs) plus the
+// current one; creating or picking a doc navigates, carrying the editor name.
+function gotoDoc(room) {
+  const u = new URL(location.href);
+  u.searchParams.set('room', room);
+  u.searchParams.set('name', NAME); // keep the same editor identity across docs
+  location.href = u.toString();
+}
+async function populateDocPicker() {
+  const names = new Set([ROOM]); // the current doc is always listed and selected
+  if (store) { try { for (const d of await store.listDocs()) names.add(d.docId); } catch {} }
+  $('docPicker').innerHTML = [...names].sort().map((n) =>
+    `<option value="${esc(n)}"${n === ROOM ? ' selected' : ''}>${esc(n)}</option>`).join('');
+}
+$('docPicker').addEventListener('change', (e) => { if (e.target.value !== ROOM) gotoDoc(e.target.value); });
+$('newDocBtn').addEventListener('click', () => {
+  $('newDocBar').classList.add('show'); $('newDocInput').value = ''; $('newDocInput').focus();
+});
+$('newDocCancel').addEventListener('click', () => $('newDocBar').classList.remove('show'));
+function createDoc() {
+  // room names ride the ?room= query and the ws upgrade URL, so keep them to a
+  // safe slug (spaces -> dashes, drop anything else)
+  const room = $('newDocInput').value.trim().replace(/\s+/g, '-').replace(/[^A-Za-z0-9._-]/g, '');
+  if (!room) { $('newDocInput').focus(); return; }
+  if (room === ROOM) { $('newDocBar').classList.remove('show'); return; } // already here
+  gotoDoc(room);
+}
+$('newDocCreate').addEventListener('click', createDoc);
+$('newDocInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') createDoc();
+  else if (e.key === 'Escape') $('newDocBar').classList.remove('show');
+});
+populateDocPicker();
 
 // ---- DEBOUNCED FLUSH: the default commit granularity is a typing RUN -------
 // Local ops buffer in `pending`; the editor renders the SPECULATIVE state
