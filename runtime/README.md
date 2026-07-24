@@ -6,11 +6,6 @@ LCA, and the keep-set commit GC from the verified design. Pure
 dependency-free ESM; runs in the browser and in Node unchanged (no
 Node-only APIs in `src/`).
 
-This runtime is a TESTED MIRROR of the Lean proofs, not an extraction:
-`../whiteboard/verification-distance.md` records, layer by layer, how each
-piece connects to the proved artifacts, which layers have no Lean counterpart
-(the replica/wire machinery), and what would shrink the distance.
-
 ## API
 
 ```js
@@ -183,58 +178,16 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   multi-epoch twin PBT against a never-compacted control; cost measured there:
   retained dead records ≤ 2 per mark record (structural bound, met with max
   2.000). `encodeState`/`decodeState` give the lossless snapshot round-trip
-  (also carrying compaction commits over the wire). `compactiblePeritext` also
-  carries the `symbolCount` cost probe (its text shadow IS an embedRGA state),
-  and the #107 editor runs on it: a metadata-cost panel plus a certified-GC
-  button gated on the complete stability cut (see `p2p-demo/README.md`).
+  (also carrying compaction commits over the wire).
 
-WHAT #107 (THE EDITOR) IS. A working editor exists in the #95 demo skin over
-this datatype: a PROSEMIRROR view (`p2p-demo/web/richtext.js`, browser-verified
-across two live tabs) whose transactions are diffed into ops by
-`p2p-demo/src/peritextbind.js` (the op layer: a text edit -> `ins`/`del`, a
-format gesture over a selection -> one `addMark`/`removeMark`, a toggle-off ->
-the LWW-winning `removeMark`). ProseMirror owns the DOM; `read()` owns the
-truth: after each local transaction the PM doc is reconciled against it, so on
-mark-boundary questions (does a char typed at a span edge inherit bold?) the
-verified semantics win. Presence renders as PM decorations. The editor exposes
-the datatype's full mark surface: bold/italic/underline (growing boolean
-marks), links (a value mark with the exclusive, never-growing end gravity of
-Ex8), and comments (one mtype per comment, `comment:<id>` with the note in
-`value`, so overlapping comments COEXIST under the per-(char,mtype) LWW --
-pinned in `test/peritext.test.js`'s comments block, including the FAIL
-companion showing the naive same-mtype encoding collapses). Headless-tested in
-`test/peritextbind.test.js` against the datatype (Ex7 end-side growth, Ex8
-exclusive-end links, overlapping comments, mark survival across a delete) and
-a real replica. It generalizes the plain-text precursor `editbind.js`.
-
-BATCHING is done. The replica now has a GROUP-OP COMMIT: `commitBatch(ops)`
-(`replica.js`) seals a gesture's op list as ONE commit, applied via `applyBatch`
-(one transient pass, proven equal to folding `apply`). The commit's payload is
-the op ARRAY; the content-id folds it in opaquely, so `delta` ships it verbatim
-and `ingest` replays it via `applyBatch` with no wire or hash change (the two
-certified-GC id-collectors, `frontier.insertIds` and
-`compact-peritext.peritextCutFromMeet`, were generalized to iterate array
-payloads). `test/commitbatch.test.js` pins batch==fold-as-one-commit, the wire
-round-trip under the content-address gate, convergence with mixed batch/single
-commits, peritext batches, and the cut collecting a batch's ids.
-`peritextbind.commitOps` uses it, and the editor buffers local ops in a
-DEBOUNCED queue (rendering the speculative head+pending state via
-`peritextbind.specRead`; flush on ~400ms idle / blur / pre-format / pre-merge /
-unload), so a typing RUN, a paste, or a multi-char format lands as a single
-commit, not one per character. The buffered run is proven equal to the
-per-keystroke fold (`p2p-demo/test/peritextbind.test.js`).
-
-PRESENCE is done. `p2p-demo/src/presence.js` is the ephemeral, OFF-DAG peer-
-awareness registry (live cursors/selections + identity), carried as plain
-`presence` room broadcasts over the same transport, never ingested, merged, or
-persisted; `web/richtext.js` renders remote carets and selections as
-ProseMirror decorations inside the one editing surface.
-`test/presence.test.js` covers the registry (ttl prune, departure, span
-normalization, stable per-peer color). Everything below the widget:
-convergence, persistence, catch-up: is the runtime the datatype rides on.
-Remaining #107 polish: collaborative undo (inverting my own ops rather than PM
-history, which a replace-from-read() model bypasses) and block-level structure
-beyond paragraphs (headings, lists) as mark-like metadata.
+WHAT #107 (THE EDITOR) STILL NEEDS on top of this datatype: an
+EDITOR-WIDGET BINDING (a ProseMirror/CodeMirror-style view that maps
+`read()`'s `[{id, char, marks}]` to rendered spans and maps user
+keystrokes/formatting gestures back to `ins`/`del`/`addMark`/`removeMark` ops
+on a `DistributedReplica`), and PRESENCE (live cursors/selections and peer
+identity — ephemeral, off-DAG state carried alongside the document, not a CRDT
+op). Everything below the widget — convergence, persistence, catch-up — is the
+runtime the datatype already rides on.
 
 ## The delta code is pluggable; the default is the verified Elias-delta
 
@@ -323,9 +276,9 @@ translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
 settled at the compacting replica (all concurrency delivered:
 heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
 section 2); the caller asserts it, and evidence certificates are a
-follow-on. Epochs are also linearized per runtime (concurrent divergent
-compactions are the deferred protocol half,
-`whiteboard/embed-recoding-note.md` section 6).
+follow-on. This shared-store `Runtime` still linearizes epochs; the
+first-class `DistributedReplica` (below) instead merges divergent epochs
+via the certificate-determined join (task #112 phase 3, THE EPOCH DIAMOND).
 
 ## Save/load: the run-table serializer (task #104)
 
@@ -483,53 +436,31 @@ and the certified state GC over `embedRGA` (refuse-then-fire) with `orset`
 refusing; `test/peritext-gc.test.js` does the same refuse-then-fire for
 `compactiblePeritext`.
 
-CROSS-EPOCH MERGE: two cases. `compactStable` opens a new epoch (re-coded
-coordinates); merging heads at different epochs splits into a case that is now
-SUPPORTED and one that stays refused.
-
-- CASE 1 -- one compactor, a straggler with local edits, single epoch line.
-  The straggler LIFTS its edits (and the LCA base) into the newer epoch, record
-  by record, through the per-epoch translate maps: `#mergeStates` raises both
-  sides to `eT = max(epochs)` via `#liftState` (compose `remapState`) and then
-  `merge3`. Identity when nobody compacted, so ordinary merges are unchanged.
-  This is #97's lazy translation (`eRecode_ra_transport`,
-  `eRecode_reads_identical`) wired for the DISTRIBUTED store: the translate is a
-  non-serializable closure, so a peer that INGESTED a compaction recomputes it
-  from the compact commit's parent state + the CUT that produced it. The cut
-  rides the wire (and the persistence records) as a non-hashed hint;
-  `#absorbEpoch` recomputes `compact(parentState, cut)` and trusts the translate
-  only if its state's fingerprint matches the shipped state (a wrong/forged cut
-  is caught, never mislifted). Pinned in `test/crossepoch.test.js` (embed +
-  peritext lift == never-compacted control, survives a persist/rebuild, tampered
-  cut refused) and `test/replica.test.js`.
-- CASE 2 -- two peers compacting INCOMPARABLE cuts. Still REFUSED: two distinct
-  re-codings claim the same epoch, so `epochOwner`/`epochConflict` mark the epoch
-  CONFLICTED and any lift through it throws rather than compose two coordinate
-  systems (`naive_composition_collides`; id-addressing breaks after epoch one).
-  This is the #97 residue -- the multi-epoch `CompatChain` not yet discharged for
-  cross-replica different cuts (`stability-vc-note.md` section 8,
-  `embed-recoding-note.md` section 6). A deployment still reaches a common epoch
-  via the leader/checkpoint discipline (converged peers compact the identical cut
-  to the identical SHA); `test/replica.test.js` and `test/crossepoch.test.js` pin
-  the refusal.
-
-EPOCH-BASE PRUNING (history is not forever). `pruneToEpochBase()` drops all
-commits below the newest compact commit in the head's ancestry, turning that
-commit into a parent-free EPOCH BASE. The gate is the certified condition
-for forgetting: the stability cut must be COMPLETE and every replica in the
-frontier must have evidence AT OR ABOVE the compact epoch -- then no
-registered peer can ever need the dropped commits for a delta (its authored
-chain descends from its evidence, hence from the base) or a merge LCA (every
-future meet lands at or above the base). Refusals return `{ pruned: 0,
-reason }`. The compact commit's content id survives the surgery because the
-hash covers the parent's GID STRING plus the state fingerprint, not the
-parent object: `delta` to an unheard peer ships the base with its wire
-parent and epoch, `ingest` verifies a parent-less compact by recomputation
-(a tampered base state is refused), and `mergeWithGid` lets a PRISTINE
-replica (head = the shared root, nothing authored) adopt the incoming head
-directly -- so a fresh peer bootstraps at O(document), not O(history).
-`test/epochbase.test.js` pins bootstrap + post-bootstrap authoring, both
-refusal shapes, the tamper gate, and the records-layer round-trip.
+THE EPOCH DIAMOND (concurrent divergent compaction, task #112 phase 3). Epoch
+identity in `DistributedReplica` is the SETTLED CUT plus its certificate, held in
+a CUT-INDEXED DAG (`src/epoch.js`) whose nodes are cuts and whose edges are
+compaction refinements and JOINS (`W = U ∪ V`), NOT a per-replica integer. A
+cross-epoch merge no longer THROWS: it is the certificate-determined join,
+validated (`whiteboard/epoch-protocol-note.md`) and mechanized
+(`Sal/.../EmbedRGA_EpochDiamond.lean`, `diamond_confluence` at s1). Two heads at
+INCOMPARABLE cuts merge by lifting both DOWN to their common base frame through
+the per-epoch INVERSE maps (`buildInverseTranslate`) and `merge3`-ing there; the
+merged read equals the never-compacted twin, with no coordination (both replicas
+lift deterministically to the same frame). Coordinate translation, not op-replay,
+is the sound realization -- it rewrites dead-ancestor prefixes a re-application
+cannot reconstruct; a forward MAP lift of a divergently-compacted peer's head is
+unsound (a concurrently-minted record it never saw would be squeezed into a wrong
+ordinal). The frame stays coordination-free because a compaction frame is minted
+ONLY by the shipped, content-addressed `compactStable` (keyed by the commit's
+content id, so two frames that freeze stragglers differently stay distinct),
+never re-derived at merge. Translation maps are GC'd per the A3 DOUBLE
+certificate (`dropEpochMap`: everyone advanced past `e` AND every pre-advance
+mint heard everywhere); the ack-only shortcut is unsound and refused.
+`test/epoch.test.js` pins the c1 diamond (s1, bit-identical), the c4 flip
+(translation necessary), the aliasing negative, the A3 map-drop, and a 600-trial
+twin PBT of incomparable-cut merges vs the never-compacted twin. This change is
+ADDITIVE: same-epoch merges are byte-identical; only cross-epoch merges change
+from throw to translate.
 
 ## The head-sync discipline, and why
 
@@ -552,30 +483,40 @@ The GC-safety PBT (`test/gc-pbt.test.js`) is the empirical twin of the
 theorem: identical random head-sync runs on two runtimes, GC invoked
 aggressively on one, reads and states asserted identical throughout.
 
-## Virtual LCAs (task #90): the criss-cross gate, lifted in DistributedReplica
+## The criss-cross gate (task #90)
 
 Criss-cross merges genuinely arise under honest head-sync (two disjoint
 replica pairs merge the same diverged heads `x`,`y` into rival merge
-commits; any later sync across them finds MCAs `{x, y}`). The mechanized
-construction landed (sal-mrdts.tex 14: `Step3V`, the covering proposition
-`mca_events_cover`, `virtualLCAState_canonical`, single-MCA picks refuted
-as `t1f_pick_*_resurrects_*`), and `DistributedReplica` now transliterates
-it: when a head pair has several MCAs, the LCA slot gets the VIRTUAL base,
-the fold of the antichain (sorted by content id for cross-replica
-determinism; the result is order-insensitive for join-lemma datatypes,
-which all of ours are), each step merging the accumulator with the next
-member over the recursively resolved sub-base. Scratch states are
-transient, never committed. `test/virtual-lca.test.js` pins the directed
-countermodel shape (both deletes stick; either single-MCA pick would
-resurrect one, hand-derived), wire re-ingest under the content gate, and a
-randomized 3-replica mesh that previously gated and now converges.
-`gc()`'s keep-set seeds are correspondingly the MCA CLOSURE of the heads
-(`keepSetV`: MCAs of MCAs, to the fixpoint), since virtual resolution
-reads them. The OLDER layers keep the explicit gate: `lca()` still throws
-`CrissCrossError`, and `runtime.js`/`sync.js` (the historical in-process
-runtime and `Peer`) still consume it; their PBTs skip gated syncs (and
-assert both twins return the SAME verdict: a GC-induced verdict flip would
-itself be a safety violation).
+commits; any later sync across them finds MCAs `{x, y}`). Virtual LCAs
+(recursive merging of the MCAs, git style) are task #90 and not yet in the
+verified model, so `lca()` throws `CrissCrossError` -- an explicit gate,
+never a silent pick. Consequence: a criss-crossed replica pair cannot sync
+until #90 lands; the PBT skips gated syncs (and asserts both twins return
+the SAME verdict: a GC-induced verdict flip would itself be a safety
+violation). `gc()` uses `mcas()` directly (keeping every MCA is sound
+without uniqueness), so GC never throws this.
+
+VIRTUAL LCAs IN `DistributedReplica` (#90, landed). The distributed replica
+now RESOLVES criss-crosses rather than gating them: its merge base is the
+`#baseState` fold of the MCA antichain (sorted by content id, recursively
+resolved sub-bases), which feeds the #112 epoch join exactly as a single LCA
+would (`#baseFor` also returns the base's epoch key). A criss-cross whose
+antichain also SPANS epochs (incomparable cuts AND a criss-cross) is the
+doubly-hard case neither #90 nor #112 claims; it throws `CrissCrossError` so
+consumers defer it, as every criss-cross deferred before. Pinned in
+`test/virtual-lca.test.js`. The in-process `runtime.js`/`sync.js` still use
+`lca()` (the gate above).
+
+ROSTER HYGIENE + FORGET. `DistributedReplica` tracks `authors` (replicas that
+have authored a commit here) alongside `registered`; `unregister(name)` drops
+a name IFF it never authored (a lurker), keeping writers conservatively, and
+`forget(name)` drops it unconditionally (the operator-directed lever to
+release the GC horizon a departed author pins). Pinned in `test/forget.test.js`.
+
+EPOCH-BASE HISTORY PRUNING is temporarily DEFERRED: it was built on the old
+integer-epoch model and needs a re-port onto the #112 cut-keyed epoch DAG (the
+content-addressing of a parent-less compaction base differs). The p2p
+consumers keep guarded call sites so it re-enables cleanly.
 
 ## Open-membership caveat
 
@@ -598,8 +539,13 @@ Suites: `test/hash.test.js` (the content hash: SHA-256 vs `node:crypto`,
 key-order-invariant stable stringify, `commitContentId`'s Merkle DAG),
 `test/replica.test.js` (the first-class `DistributedReplica`: convergence via
 gossip, the SHA round-trip / tamper gate, certified state GC refuse-then-fire,
-commit GC, and the cross-epoch-merge refusal -- run over BOTH `embedRGA` and
-`orset` where applicable), `test/dag.test.js` (DAG/LCA units, criss-cross
+commit GC, and the cross-epoch-merge join -- reads == the never-compacted twin,
+run over BOTH `embedRGA` and `orset` where applicable), `test/epoch.test.js` (the
+epoch diamond #112 phase 3: the cut-indexed DAG units, the inverse-map
+round-trip, the c1 diamond at s1, the aliasing negative, the c4 no-translation
+flip, the A3 double-certificate map-drop, and a 600-trial twin PBT of
+incomparable-cut merges vs the never-compacted twin -- each PASS with a FAIL
+companion), `test/dag.test.js` (DAG/LCA units, criss-cross
 construction), `test/embed.test.js` (litmus fixtures, below), `test/code.test.js`
 (Lean-pinned codewords, code-invariance, the cost gap), `test/gc.test.js`
 (GC genuinely prunes; post-GC merges match a no-GC control; the membership
@@ -655,19 +601,10 @@ skin, not runtime machinery:
   replica id to be a key, not a string;
 - open-membership handling on the wire (registration/eviction), the same closed
   set the certificate and commit GC quantify over;
-- CONCURRENT DIVERGENT COMPACTION -- the demo uses a coordinated checkpoint
-  barrier to keep epochs linearized; lifting that (cross-replica different cuts)
-  is the runtime's own deferred protocol half (the #97 multi-epoch
-  `CompatChain`).
-
-Much of this skin is already built in `p2p-demo/`: `gitstore.js` (durable store
-= a fenced real git repo of SHA-addressed commit records + `doc.txt`; `load()`
-replays them through `ingest` + `mergeWithGid`), `relay.mjs` (a dumb star relay,
-rooms = doc ids), `transport.js` (WsTransport have/req/delta), and
-`editbind.js` (a plain-text embedRGA binding). `whiteboard/collab-design-note.md`
-reconciles those against the remaining #107/#95 work: the peritext (marks)
-editor binding, batching, promoting the dumb relay to an always-on merging hub
-for asynchronous collaboration, and identity/auth.
+- CONCURRENT DIVERGENT COMPACTION -- now landed in the core `DistributedReplica`
+  as the certificate-determined epoch join (task #112 phase 3, `src/epoch.js`);
+  the demo's checkpoint barrier is no longer required for correctness, though it
+  is still the cheapest path when replicas can coordinate.
 
 ## Datatype ports are UNVERIFIED transliterations
 

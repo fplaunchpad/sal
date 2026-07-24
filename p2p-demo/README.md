@@ -18,7 +18,7 @@ browser UI.
 
 ```
 npm install          # once (pulls `ws` for the relay + prosemirror-* for the rich-text editor)
-npm test             # 47 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, history pruning, text + rich-text bindings, presence
+npm test             # 46 headless tests: node, git, IndexedDB, transport, live push, reconnect, manual merge, auto-GC, forget, text + rich-text bindings, presence
 npm run demo         # scripted multi-node scenario, prints a transcript
 npm run relay        # serves the browser editor + the sync relay on one port
 ```
@@ -151,14 +151,9 @@ bridge honest, and what would shrink the distance.
   durability, peritext marks; verified LIVE against the deployed Durable
   Object (author pushes, disconnects; a later reader converges).
 
-  The hub also **forgets settled history** (epoch-base pruning, below): on
-  each persist it attempts `pruneToEpochBase()` and mirrors the store to the
-  surviving dag (`pruneStored`), so a room's storage and wake-replay cost
-  stay O(document), not O(everything ever typed). Pinned in
-  `test/hub.test.js`: after a settled compaction the stored record count
-  drops to a handful, the genesis record is gone, the PRUNED store survives
-  a relay restart, and a fresh peer both converges from the epoch base and
-  keeps authoring on it.
+  (Epoch-base HISTORY PRUNING on the hub is temporarily DEFERRED: it was
+  built on the old integer-epoch model and needs a re-port onto the #112
+  cut-keyed epoch DAG. The hub's persist path keeps the guarded call site.)
 
 - **`src/relay.mjs` -- the server.** A `ws` relay that broadcasts within a room
   (or routes a `to:`-addressed message) and also serves the sal tree
@@ -266,16 +261,11 @@ bridge honest, and what would shrink the distance.
   presence), and a dark peer carries a `✕ forget`. Forgetting calls
   `replica.forget` (drops it from BOTH the roster and the authors set, unlike
   the conservative `unregister`), which releases the horizon so the cut rises
-  and GC (then epoch-base pruning) advances. SOUNDNESS is the operator's to
-  grant: a forgotten peer that returns re-bootstraps from the epoch base as a
-  fresh peer (`pruneToEpochBase` + pristine adopt) and FORFEITS any edits it
-  authored offline and never shared -- the local-first tradeoff, stated on the
-  button's tooltip. Runtime-pinned in `runtime/test/epochbase.test.js` ("forget
+  and GC advances. SOUNDNESS is the operator's to grant: a forgotten peer that
+  returns must re-sync fresh (forfeiting un-shared offline edits), not merge a
+  stale-head delta. Runtime-pinned in `runtime/test/forget.test.js` ("forget
   lifts a departed author": the cut is capped while the dark author is
-  rostered, then GC + prune fire after the forget, reads preserved, and a
-  fresh peer still bootstraps). Browser-verified: forgetting a closed tab's
-  author drove 2761→171 coord symbols and pruned 3 commits below the new
-  epoch, text intact.
+  rostered, then GC fires after the forget, reads preserved).
 
 - Links render as real anchors and OPEN with Cmd/Ctrl+Click (plain clicks
   keep editing; contentEditable swallows them). Only http(s) hrefs are
@@ -302,10 +292,10 @@ bridge honest, and what would shrink the distance.
 
 ## Certified GC across peers: the barrier
 
-The runtime's `compactStable` re-codes coordinates and opens an **epoch**; a
-cross-epoch merge is undefined in v1 (the runtime linearizes epochs; concurrent
-divergent compaction is its deferred protocol half). In a p2p setting a single
-peer compacting alone would diverge in epoch from the others. `barrierCompact`
+The runtime's `compactStable` re-codes coordinates and opens an **epoch**.
+Cross-epoch merge is now the certificate-determined JOIN (#112 phase 3, the
+mechanized epoch diamond): two heads at different cuts merge by lifting to a
+common frame, so a peer compacting alone no longer strands the others. `barrierCompact`
 keeps them together: after `converge`, every peer holds the same DAG but a
 *different* certified cut (each excludes itself from the frontier meet). One
 no-op **checkpoint** round fixes that -- once every peer has published a commit
@@ -315,27 +305,16 @@ full pre-checkpoint history, identical across peers, so every peer's
 `converge` dedups them. That is the demo's honest "GC under live sync": the
 certificate is the runtime's; the barrier is the demo linearizing epochs.
 
-## Epoch-base pruning: history is not forever
+## Epoch-base pruning: history is not forever (DEFERRED)
 
-Compaction shrinks the STATE; the commit DAG (and every durable store over
-it) still grew without bound, and a hub's wake-replay was O(history). The
-runtime's `pruneToEpochBase()` (see `../runtime/README.md`) closes this: once
-a compaction SETTLES -- the stability cut is complete and every author's
-frontier evidence has reached the compact epoch -- no registered peer can
-ever need the commits below it for a delta or a merge LCA, so they are
-dropped and the compact commit becomes a parent-free **epoch base**. Its
-content id still verifies without the parent (the hash covers the parent's
-gid string plus the state fingerprint), so `delta` to an empty peer ships the
-base instead of genesis, `ingest` gates it as usual, and a pristine replica
-adopts the head directly: a fresh peer bootstraps at O(document). The hub
-prunes on persist and mirrors its store; the editor attempts the prune on
-its slow tick (the compactor's own evidence is below the new epoch until its
-next authored run, so pruning trails GC by one flush) and drops the same
-records from IndexedDB. A returning writer is safe by the gate itself: its
-evidence at the epoch means everything it can still send descends from the
-base. `../runtime/test/epochbase.test.js` and the pruning test in
-`test/hub.test.js` pin bootstrap, refusal shapes, tamper rejection, and the
-pruned store surviving a restart.
+Epoch-base history pruning -- dropping commits below a settled compaction and
+turning it into a parent-free base so a fresh peer bootstraps at O(document) --
+was implemented on the OLD integer-epoch model. The #112 merge replaced that
+model with the cut-keyed epoch DAG, whose content-addressing does not (yet)
+support the parent-less-compact base trick the pruning relied on. Pruning is
+therefore temporarily REMOVED pending a re-port onto the new model (coordinated
+with the epoch-DAG owner). The guarded call sites remain (hub persist, editor
+tick), so it re-enables cleanly once `pruneToEpochBase` returns.
 
 ## Running each stage
 
@@ -407,11 +386,12 @@ the scripted scenario below.
   is the closed replica set the stability certificate quantifies over. Eviction,
   Byzantine members, and members who never settle (blocking GC forever) are not
   handled; a real system needs a membership protocol and a liveness policy.
-- **Compaction is linearized (the barrier).** Truly concurrent divergent
-  compaction -- two peers compacting different cuts without a barrier, then
-  merging across epochs -- is the runtime's own deferred protocol half (the #97
-  multi-epoch `CompatChain`). `DistributedReplica` refuses a cross-epoch merge
-  rather than guess; `barrierCompact` keeps peers on one epoch.
+- **Cross-epoch merge is the certificate-determined JOIN (#112 phase 3).**
+  Two peers compacting different cuts and then merging across epochs no longer
+  throws: the mechanized epoch diamond (`runtime/src/epoch.js`,
+  `Sal/.../EmbedRGA_EpochDiamond.lean`) lifts both heads to a common frame and
+  merges there. The editor still prefers to compact only when converged (a
+  policy, not a necessity now).
 - **Criss-cross merges are RESOLVED (virtual LCAs, #90 landed).**
   `DistributedReplica` now computes the virtual base for a criss-crossed
   pair by the mechanized recursive rule (runtime README; pinned in

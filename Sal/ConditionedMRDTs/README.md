@@ -309,4 +309,13 @@ The negative results that shaped all of this: [`Refutations/`](Refutations/).
 Everything else: [`Development/`](Development/).
 
 Lean namespace: `Sal.ConditionedMRDTs`. Build:
-`lake build Sal.ConditionedMRDTs.MRDT_Instances.MRDT_Instances`.
+`lake build Sal.ConditionedMRDTs.MRDT_Instances.MRDT_Instances`
+(the production capstones) **and**
+`lake build Sal.ConditionedMRDTs.Refutations.Refutations`
+(the negative results). The second target exists because refutations
+are import leaves by design (nothing in
+Framework/Metatheory/MRDT_Instances may import one except where a
+counterexample is consumed as a gate): without its umbrella, PDF-cited
+modules such as `InterLca2op_Defeater_Arbiter` and
+`SiblingSplice_Fooling` sit outside every build target and can rot
+silently.

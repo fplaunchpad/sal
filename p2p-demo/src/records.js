@@ -10,24 +10,15 @@
 
 import { Node } from './node.js';
 import { compactibleEmbedRGA } from '../../runtime/src/compact.js';
-import { cutToWire } from '../../runtime/src/replica.js';
+import { serializeCut } from '../../runtime/src/epoch.js';
 
 /** One commit as a pure-data record (content-addressed by its sha). */
 export function commitRecord(node, cid) {
   const c = node.dag.get(cid);
   const sha = node.gid.get(cid);
   const parents = c.parents.map((p) => node.gid.get(p));
-  const epoch = node.epochOf.get(cid);
-  if (c.parents.length === 0) {
-    // an EPOCH BASE (pruned history): re-serialize as a compact record with
-    // its original wire parent, so its content id checks out on ingest
-    const eb = node.epochBase?.get(cid);
-    if (eb) {
-      return { sha, kind: 'compact', parents: [eb], epoch,
-        state: node.datatype.encodeState(c.state) };
-    }
-    return { sha, kind: 'root', parents, epoch };
-  }
+  const epoch = node.epochOf.get(cid); // cut key (the cut-indexed epoch identity, #112)
+  if (c.parents.length === 0) return { sha, kind: 'root', parents, epoch };
   if (c.op !== null) {
     return { sha, kind: 'op', parents, epoch,
       op: { replica: c.op.replica, seq: c.op.seq }, payload: c.op.payload };
@@ -36,12 +27,11 @@ export function commitRecord(node, cid) {
     // compaction commit: its re-coded state is not recomputable from a parent,
     // so persist it inline via the datatype's own encoder (the same encoding the
     // core DistributedReplica.ingest decodes through datatype.decodeState). Also
-    // persist the CUT (a non-hashed hint) so a reloaded replica can recompute
-    // this epoch's translate and still lift older-epoch edits across it (Case 1).
-    const rec = { sha, kind: 'compact', parents, epoch, state: node.datatype.encodeState(c.state) };
-    const cut = node.compactCut?.get(cid);
-    if (cut) rec.cut = cutToWire(cut);
-    return rec;
+    // persist its settled CUT (the certificate), so a reloaded replica keys the
+    // same cut-indexed epoch and recomputes the same maps (#112 phase 3).
+    const cut = node.epochDag.get(node.epochOf.get(cid))?.cut;
+    return { sha, kind: 'compact', parents, epoch, cut: serializeCut(cut ?? {}),
+      state: node.datatype.encodeState(c.state) };
   }
   return { sha, kind: 'merge', parents, epoch };
 }
@@ -91,7 +81,7 @@ export function wireFromRecords(records) {
     } else if (r.kind === 'merge') {
       wire.push({ gid: r.sha, kind: 'merge', parents: r.parents });
     } else if (r.kind === 'compact') {
-      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, epoch: r.epoch, state: r.state, cut: r.cut });
+      wire.push({ gid: r.sha, kind: 'compact', parents: r.parents, cut: r.cut, state: r.state });
     }
   }
   return wire;
