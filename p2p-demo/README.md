@@ -270,6 +270,16 @@ bridge honest, and what would shrink the distance.
   stale-head delta. Runtime-pinned in `runtime/test/forget.test.js` ("forget
   lifts a departed author": the cut is capped while the dark author is
   rostered, then GC fires after the forget, reads preserved).
+  PERSISTENT (this device): runtime `forget` is transient -- roster/join/ingest
+  re-register a peer, and a reload rebuilds the roster from the stored authors,
+  so a forgotten peer keeps coming back. The editor keeps a per-doc `forgotten`
+  set in `localStorage` and RE-APPLIES it on every render (`enforceForgotten`),
+  so a peer you forget stays gone on this device until you un-forget it. It
+  REFUSES to forget a peer that is live right now (forget is for peers that have
+  left), and NUDGES ("↩ X is back · un-forget") if a forgotten peer reappears in
+  presence. Local only: other peers' rosters are unaffected (a room-consensual
+  forget is the deferred protocol half). Browser-verified: forget a dark author,
+  reload, and it stays out of the roster though its ops are still in the DAG.
 
 - Links render as real anchors and OPEN with Cmd/Ctrl+Click (plain clicks
   keep editing; contentEditable swallows them). Only http(s) hrefs are

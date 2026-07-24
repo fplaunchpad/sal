@@ -107,6 +107,17 @@ if (drawer) {
   drawer.addEventListener('toggle', () => { try { localStorage.setItem('sal.p2p.drawer', drawer.open ? '1' : '0'); } catch {} });
 }
 
+// PERSISTENT LOCAL FORGET (per doc, this browser). Runtime `forget` is
+// transient: roster/join/ingest re-register a peer, and a reload rebuilds the
+// roster from the stored authors, so a forgotten peer keeps coming back. This
+// set is persisted and RE-APPLIED on every render (`enforceForgotten`), so a
+// peer you forget stays forgotten on THIS device until you un-forget it. Local
+// only (other peers are unaffected); the runtime `forget` is the mechanism.
+const FORGOTTEN_KEY = `sal.p2p.forgotten.${ROOM}`;
+const forgotten = (() => { try { return new Set(JSON.parse(localStorage.getItem(FORGOTTEN_KEY) || '[]')); } catch { return new Set(); } })();
+const saveForgotten = () => { try { localStorage.setItem(FORGOTTEN_KEY, JSON.stringify([...forgotten])); } catch {} };
+function enforceForgotten() { for (const n of forgotten) node.forget(n); } // idempotent re-apply
+
 let node = new Node(compactiblePeritext, NAME);
 
 // ---- DURABLE STORE (local-first): the doc lives in IndexedDB, keyed by the
@@ -872,6 +883,7 @@ setInterval(() => {
 // tooltip -- a forgotten peer that returns re-syncs fresh from the current
 // version and loses edits it made offline and never shared.
 function renderRoster() {
+  enforceForgotten(); // keep forgotten peers out of the roster across re-registration
   const el = $('peers');
   const roster = [...node.registered].sort();
   if (!roster.length) { el.textContent = ''; return; }
@@ -893,21 +905,40 @@ function renderRoster() {
     return `<span class="pchip"><span class="pdot"></span>${lab}`
       + `<button class="forget" data-peer="${esc(n)}" title="${tip}">✕ forget</button></span>`;
   }).join(' ') + tail;
-  for (const b of el.querySelectorAll('.forget')) {
-    b.addEventListener('click', () => forgetPeer(b.getAttribute('data-peer')));
+  // NUDGE: a peer you forgot is live again -> offer to un-forget (a forgotten
+  // peer that stays gone shows nothing; only a returning one nudges).
+  const back = [...forgotten].filter((n) => presence.peers.has(n));
+  if (back.length) {
+    el.innerHTML += '<div class="forgot-back">' + back.map((n) =>
+      `↩ ${esc(displayOf(n))} is back · <button class="unforget" data-peer="${esc(n)}">un-forget</button>`).join(' &nbsp; ') + '</div>';
   }
+  for (const b of el.querySelectorAll('.forget')) b.addEventListener('click', () => forgetPeer(b.getAttribute('data-peer')));
+  for (const b of el.querySelectorAll('.unforget')) b.addEventListener('click', () => unforget(b.getAttribute('data-peer')));
 }
 function forgetPeer(name) {
-  if (!node.forget(name)) return;
-  const st = $('gcStatus');
-  st.className = 'status good';
-  st.textContent = `forgot ${displayOf(name)}: the certified GC horizon can now advance past it.`;
-  // try to reclaim, but runCertifiedGc self-guards on convergence: if we are
-  // mid-sync it defers (compacting while diverged would split epochs)
+  // refuse to forget a LIVE peer: forget is for peers that have left. Forgetting
+  // an active peer while GC advances past it is the unsound case (it should
+  // stay, or re-bootstrap on return).
+  if (presence.peers.has(name)) {
+    const st = $('gcStatus'); st.className = 'status warnc';
+    st.textContent = `${displayOf(name)} is live right now; forget is for peers that have left.`;
+    return;
+  }
+  forgotten.add(name); saveForgotten(); // remembered on this device across reloads/reconnects
+  node.forget(name);
+  const st = $('gcStatus'); st.className = 'status good';
+  st.textContent = `forgot ${displayOf(name)} (remembered on this device); the GC horizon can advance past it.`;
   const sc = node.stableCut();
   if (sc.complete && sc.meet.size) runCertifiedGc('after forget:');
   else renderConv();
   net.announce();
+}
+function unforget(name) {
+  forgotten.delete(name); saveForgotten();
+  node.register(name);
+  const st = $('gcStatus'); st.className = 'status good';
+  st.textContent = `un-forgot ${displayOf(name)}: back in the roster.`;
+  renderConv();
 }
 
 // ---- convergence badge -----------------------------------------------------
