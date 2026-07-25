@@ -140,11 +140,18 @@ export class NetworkNode {
         this.#absorb(m, { forceMerge: true }); // an awaited pull is an EXPLICIT sync
         const r = this.pending.get(m.rid); this.pending.delete(m.rid); r(m);
       } else {
-        this.#absorb(m); if (!this.passive) this.announce(); // push: catch up, re-advertise
+        // push: catch up, then re-advertise ONLY IF the merge actually advanced
+        // our head. Re-advertising after a no-op or a DEFERRED merge (a
+        // criss-cross / cross-epoch that was swallowed below, head unchanged)
+        // makes the peer pull + push again, and we absorb + defer + re-announce
+        // again: a tight ping-pong that pegs the CPU and never terminates
+        // because nothing changes. Gate the re-advertise on real progress.
+        if (this.#absorb(m) && !this.passive) this.announce();
       }
     });
   }
 
+  /** Absorb a delta; return true iff it ADVANCED our head (real progress). */
   #absorb(m, { forceMerge = false } = {}) {
     const before = this.node.headGid;
     try {
@@ -155,11 +162,13 @@ export class NetworkNode {
         } else this.node.mergeWithGid(m.head);
       }
     } catch (e) {
-      // a genuine criss-cross (task #90) or a cross-epoch merge (a peer GC'd
-      // alone; the demo linearizes epochs at a barrier) is DEFERRED, not fatal
+      // a genuine criss-cross (task #90) or a cross-epoch merge that cannot be
+      // resolved is DEFERRED, not fatal
       if (!(e instanceof CrissCrossError) && !/cross-epoch/.test(e.message)) throw e;
     }
-    if (this.node.headGid !== before) this.onChange(this.node);
+    const changed = this.node.headGid !== before;
+    if (changed) this.onChange(this.node);
+    return changed;
   }
 
   /** Switch merge policy. Leaving manual mode merges everything staged. */
