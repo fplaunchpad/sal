@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.Arbitration_Refactor
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
@@ -293,8 +294,86 @@ theorem LWW_ra_linearizable3_eq
 
 end
 
+/-! ## §5  The arbitration refactor: LWW's arbitration is NATIVE, not in `rc`
+
+Task #114 phase 3b (`Metatheory/Arbitration_Refactor.lean`). LWW confirms
+`oq:rcchain`: a total-order arbitration policy is inexpressible in the `rc`
+mechanism, and LWW does not try — it makes its writes *commute* (`max` is
+commutative) and moves the arbitration into the payload fold. Two consequences,
+both proved below, together the LWW-native discovery:
+
+* `lww_loOn_empty`: the linearization order `loOn` is **empty** on LWW. Each of
+  its arms needs a non-commuting pair (`vis` arm) or an `rc`-resolved concurrent
+  pair (`rc` arm), and LWW has neither (`LWW_all_comm`, `rc = Either`). So the
+  `rc` mechanism produces the *discrete* arbitration — no order at all.
+* `lwwTsArbitration` : the timestamp total order **is** an `AcyclicArbitration`,
+  a genuinely non-trivial arbitration `rc` cannot express, and
+  `lww_isRALinearizable3Arb_ts` shows LWW is RA-linearizable against it. LWW's
+  arbitration lives in `do_`/`mergeL` (the `max` on the lex-timestamp payload),
+  not in `loOn`. The abstraction admits it; the published `loOn`-form does not. -/
+
+open Sal.Emulation in
+/-- `loOn` is empty on LWW: all writes commute and `rc = Either`, so neither
+`loOn` arm can fire. The `rc` mechanism yields the discrete arbitration. -/
+theorem lww_loOn_empty (C : Configuration LWW) {E : Set (Op LWWOp)}
+    {x y : Op LWWOp} (hx : x ∈ (Configuration.core C).events)
+    (hy : y ∈ (Configuration.core C).events) (hne : x ≠ y) :
+    ¬ loOn (Configuration.core C) E x y :=
+  loOn_empty_of_all_comm_u LWW_updateVCs LWW_all_comm hx hy hne
+
+/-- The timestamp arbitration: order writes by their lex-timestamp payload. This
+is the arbitration `rc` cannot express (it is a total order on concurrent
+writes). -/
+def lwwArb (_E : Set (Op LWWOp)) (a b : Op LWWOp) : Prop := lwwWrite a < lwwWrite b
+
+/-- **The timestamp order is an `AcyclicArbitration`** — for *every* LWW
+configuration, with no hypotheses. Acyclicity is strictness of `<` lifted through
+`TransGen`; extends-`vis` is vacuous (LWW has no non-commuting pairs). This is the
+native arbitration the `rc` mechanism (which gives the empty `loOn`) cannot
+supply. -/
+def lwwTsArbitration (C : Configuration LWW) : AcyclicArbitration C where
+  arb := lwwArb
+  extends_vis := by intro _E a b _ha _hb _hv hnc; exact absurd (LWW_all_comm a b) hnc
+  acyclic := by
+    intro E _hin a hcyc
+    have hlt : ∀ p q : Op LWWOp,
+        Relation.TransGen (arbNe E lwwArb) p q → lwwWrite p < lwwWrite q := by
+      intro p q h
+      induction h with
+      | single hpq => exact hpq.2.2.2
+      | tail _ hpq ih => exact lt_trans ih hpq.2.2.2
+    exact absurd (hlt a a hcyc) (lt_irrefl _)
+
+open LabeledTS in
+/-- **LWW is RA-linearizable against its native timestamp arbitration.** For every
+version, the timestamp-sorted enumeration of its event set respects `lwwArb` and
+folds (order-independently, by `lww_fold_maximum`) to the stored max-timestamp
+write. So the abstraction `IsRALinearizable3Arb` admits the timestamp total order,
+an arbitration strictly finer than the empty `loOn` the `rc` mechanism produces. -/
+theorem lww_isRALinearizable3Arb_ts (C : Configuration LWW)
+    (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
+    IsRALinearizable3Arb C lwwArb := by
+  classical
+  intro v s E hv
+  obtain ⟨l, hpl, _, hsl⟩ := (lww_goodConfig3 C hReach).canonical v s E hv
+  let r : Op LWWOp → Op LWWOp → Prop := fun x y => lwwWrite x ≤ lwwWrite y
+  haveI : DecidableRel r := fun a b => inferInstanceAs (Decidable (lwwWrite a ≤ lwwWrite b))
+  haveI : IsTrans (Op LWWOp) r := ⟨fun _ _ _ hab hbc => le_trans hab hbc⟩
+  haveI : Std.Total r := ⟨fun a b => le_total (lwwWrite a) (lwwWrite b)⟩
+  have hperm : List.Perm (List.insertionSort r l) l := List.perm_insertionSort r l
+  refine ⟨List.insertionSort r l, ⟨hperm.nodup_iff.mpr hpl.1,
+      fun a => hperm.mem_iff.trans (hpl.2 a)⟩, ?_, ?_⟩
+  · -- respects lwwArb: the sorted list is `≤`-pairwise, so never `<`-reversed.
+    exact (List.pairwise_insertionSort r l).imp (fun hab => not_lt.mpr hab)
+  · -- fold: order-independent (`= maximum`), and the maps are perms of `E`.
+    rw [lww_fold_maximum, ← hsl, lww_fold_maximum]
+    exact List.Perm.maximum_eq (hperm.map lwwWrite)
+
 #print axioms lww_ra_linearizable3
 #print axioms lww_version_max
 #print axioms LWW_ra_linearizable3_eq
+#print axioms lww_loOn_empty
+#print axioms lwwTsArbitration
+#print axioms lww_isRALinearizable3Arb_ts
 
 end Sal.ConditionedMRDTs
