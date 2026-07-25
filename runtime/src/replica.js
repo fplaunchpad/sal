@@ -134,6 +134,12 @@ export class DistributedReplica {
       : payload.reduce((s, op) => this.datatype.apply(s, op), state);
   }
 
+  /** The coordinate-bearing sub-state the epoch translate maps act on (the whole
+   *  state for embedRGA; the text shadow for peritext). The epoch inverse-translate
+   *  builder walks it; without this a peritext cross-epoch merge cannot lift and
+   *  DEFERS. */
+  #coord(state) { return typeof this.datatype.coordState === 'function' ? this.datatype.coordState(state) : state; }
+
   /** Global ids in this head's reflexive ancestry (the have-summary). */
   ancestryGids() {
     const s = new Set();
@@ -307,7 +313,7 @@ export class DistributedReplica {
         // (always available). The FORWARD map is RECOMPUTED from parentState + cut
         // (the certificate) -- best-effort, only the LCA-up lift consults it.
         let translateInv = null, translate = null;
-        try { translateInv = buildInverseTranslate(parentState, state); } catch { translateInv = null; }
+        try { translateInv = buildInverseTranslate(this.#coord(parentState), this.#coord(state)); } catch { translateInv = null; }
         if (typeof this.datatype.compact === 'function') {
           try { translate = this.datatype.compact(parentState, cut).translate; } catch { translate = null; }
         }
@@ -485,7 +491,7 @@ export class DistributedReplica {
     // cross-epoch merge lift this state DOWN to a common frame. Buildable from
     // the pre/post coordinate correspondence; skipped for non-coord-map states.
     let translateInv = null;
-    try { translateInv = buildInverseTranslate(this.head.state, state); } catch { translateInv = null; }
+    try { translateInv = buildInverseTranslate(this.#coord(this.head.state), this.#coord(state)); } catch { translateInv = null; }
     const parentKey = this.epochOf.get(this.#headId);
     const cutSettled = cut.settledIds ?? settledIds;
     // Create the compaction commit, THEN key the epoch by its content id (the

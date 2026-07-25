@@ -316,6 +316,12 @@ export const compactiblePeritext = {
   compact: compactPeritext,
   remapState: remapPeritextState,
   cutFromMeet: peritextCutFromMeet,
+  // the coordinate-bearing sub-state the epoch translate maps act on: the text
+  // SHADOW (an embedRGA state). compact/remapState already route through it;
+  // the epoch INVERSE-translate builder must too, else a cross-epoch merge
+  // cannot lift a peritext state down and DEFERS (the whole {text,marks} object
+  // is not the coord map buildInverseTranslate walks).
+  coordState: (s) => s.text.shadow,
   // v2 snapshot: run-table shadow + id sidecar (above); decode accepts the
   // plain datatype's legacy v1 shape too (previously persisted records)
   encodeState(state) {

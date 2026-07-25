@@ -365,6 +365,10 @@ export const compactibleEmbedRGA = {
   ...embedRGA,
   compact: compactEliasDelta,
   remapState,
+  // the coordinate-bearing sub-state (a Map id -> { coord, el }) that the epoch
+  // translate maps act on. For embedRGA the whole state IS that map; the epoch
+  // inverse-translate builder walks it. (Peritext's is its text shadow.)
+  coordState: (s) => s,
   encodeState: (state) => [...state.entries()].map(([id, r]) => [id, r.coord, r.el]),
   decodeState: (enc) => PMap.from(enc.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
 };
