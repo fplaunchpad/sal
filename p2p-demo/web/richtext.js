@@ -439,7 +439,15 @@ function sendPresence(sel) {
   try { tp.send({ t: 'presence', anchor: s.anchor, focus: s.focus }); } catch {}
 }
 setInterval(() => sendPresence(), 20000);                                   // heartbeat
-setInterval(() => { presence.prune(Date.now()); presenceTick(); }, 10000);  // drop the vanished
+setInterval(() => {
+  presence.prune(Date.now());                       // drop vanished presence
+  const live = presence.peers;                      // and their stale advertised heads:
+  for (const n of [...peerHeads.keys()]) {           // a gone peer must not linger as "syncing"
+    if (n !== NAME && n !== '#hub' && !live.has(n)) peerHeads.delete(n);
+  }
+  presenceTick();
+  renderConv();                                     // refresh the badge (a peer may have dropped out)
+}, 10000);
 
 // ---- presence rendering: PM decorations + the chip bar ---------------------
 function caretElt(p) {
@@ -834,16 +842,17 @@ $('openFile').addEventListener('change', async () => {
   }
 });
 
-// CONVERGED = every peer I currently track shares my head (solo => true). This
-// is the gate for ALL compaction: two peers that compact while diverged (or a
-// non-leader compacting) land on DIFFERENT epochs, and a cross-epoch merge is
-// refused -- they would never reconcile (that is the divergence you get if you
-// GC mid-edit). When everyone is converged the leader compacts and everyone
-// else fast-forwards onto the identical compact commit; converged peers even
-// compute the SAME compact SHA, so simultaneous firing dedups instead of
-// splitting.
+// CONVERGED = every LIVE peer shares my head (solo => true). The gate for all
+// compaction: two peers that compact while diverged land on different epochs,
+// so we compact only when the room agrees. Quantify over LIVE peers (in
+// presence), NOT the accumulated peerHeads: a peer that left without a clean
+// leave lingers in peerHeads with a STALE head, and it cannot diverge from us
+// anymore (it re-bootstraps on return), so it must not block the GC. A live
+// peer whose head we have not learned yet counts as not-converged (conservative
+// -- wait until we know it).
+function livePeers() { return [...presence.peers.keys()].filter((n) => n !== NAME && n !== '#hub'); }
 function convergedWithPeers() {
-  for (const [n, h] of peerHeads) if (n !== NAME && h !== node.headGid) return false;
+  for (const n of livePeers()) if (peerHeads.get(n) !== node.headGid) return false;
   return true;
 }
 
@@ -970,11 +979,11 @@ function unforget(name) {
 // ---- convergence badge -----------------------------------------------------
 function renderConv() {
   const mine = node.headGid;
-  const others = [...peerHeads.entries()].filter(([n]) => n !== NAME);
+  const others = livePeers(); // only LIVE peers count -- gone peers left stale heads
   const badge = $('convBadge');
   if (others.length === 0) { badge.className = 'conv no'; badge.textContent = 'solo'; }
   else {
-    const agree = others.filter(([, h]) => h === mine).length;
+    const agree = others.filter((n) => peerHeads.get(n) === mine).length;
     if (agree === others.length) { badge.className = 'conv yes'; badge.textContent = `✓ converged (${others.length})`; }
     else { badge.className = 'conv no'; badge.textContent = `syncing ${agree}/${others.length}`; }
   }
