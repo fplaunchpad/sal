@@ -413,11 +413,10 @@ complete example:
   \mathsf{do}(\sigma, (t,r,\mathsf{inc})) = \sigma + 1, \qquad
   \mergeL(l,a,b) = a + b - l, \qquad \rcrel = \emptyset .
 \]
-All operations commute, so $\rcrel$ is empty --- yet the merge
-genuinely uses its LCA argument: $a + b$ alone would double-count the
-history shared by the two branches, and the $-\,l$ subtracts it exactly
-once. This ``read the shared past off the LCA'' pattern recurs
-throughout the catalogue.
+All operations commute, so $\rcrel$ is empty, yet the merge still reads
+the shared past off its LCA: $-\,l$ subtracts the common history that
+$a + b$ alone would double-count. The pattern recurs throughout the
+catalogue.
 
 \paragraph{A data type with races: the OR-set.} The add-wins observed-remove
 set stores tagged elements: $\add$ inserts a tag unique to the adding
@@ -702,33 +701,14 @@ the paper's order, and Definition~\ref{def:ralin} is delivered exactly
 as the paper states it.
 
 \paragraph{Running examples.} Three data types exercise every corner of
-the theory:
-\begin{itemize}[leftmargin=2em]
-\item the \textbf{counter}: $\Sigma = \mathbb{Z}$,
-  $\mathsf{inc}(\sigma) = \sigma+1$, $\mergeL(l,a,b) = a+b-l$; all
-  operations commute, but the merge genuinely uses its LCA;
-\item the \textbf{OR-set} (tagged add-wins set): elements are tagged by
-  the adding event's timestamp; $\rem$ deletes the tags it has seen;
-  concurrently, $\rem \rc \add$ resolves in favour of the add. The merge
-  keeps an element iff \emph{both} sides have it or \emph{some} side added
-  it since the fork:
-  \[
-    \mergeL(l,a,b) \;=\; (a \cap b) \,\cup\, (a \setminus l) \,\cup\, (b
-    \setminus l)
-  \]
-  --- pointwise, ``if the tag is in $l$, require it in both branches
-  (nobody deleted it); otherwise one branch suffices (somebody added
-  it).'' Here the LCA acts as a \emph{tombstone set}: deletion is
-  represented by \emph{absence relative to} $l$, so the state itself needs
-  no graveyard;
-\item the \textbf{enable-wins flag}: per-replica pairs
-  $(\text{counter},\text{flag})$; enabling bumps your own counter and sets
-  your flag; disabling clears all flags; the merge compares each
-  replica's counter against the LCA's to decide whether an enable
-  ``happened since the fork'' on that replica. Its merge \emph{compares}
-  counters rather than accumulating sets --- and that difference will be
-  visible in the metatheory (\S\ref{sec:catalog}).
-\end{itemize}
+the theory: the \textbf{counter} and the \textbf{OR-set} of
+\S\ref{sec:mrdts}, and the \textbf{enable-wins flag} --- per-replica
+pairs $(\text{counter},\text{flag})$; enabling bumps your own counter and
+sets your flag; disabling clears all flags; the merge compares each
+replica's counter against the LCA's to decide whether an enable
+``happened since the fork'' on that replica. That the flag's merge
+\emph{compares} counters rather than accumulating sets will be visible in
+the metatheory (\S\ref{sec:catalog}).
 
 \section{Three facts the metatheory must respect}
 
@@ -1078,8 +1058,8 @@ no LCA --- merge-coherence is lattice-flavoured: associativity,
 idempotence, inflation of updates. None of the three transfers to the
 ternary merge: their free-tuple forms are the wrong equations for an
 LCA-aware merge, and their honest instances are too weak to power a
-lattice-style proof. This section works through why, because the shape
-of what fails to transfer reveals the contract that succeeds.
+lattice-style proof. The shape of what fails to transfer reveals the
+contract that succeeds.
 
 \paragraph{Idempotence: the free-tuple form is the wrong equation.}
 The \emph{diagonal} law $\mergeL(a,a,a) = a$ --- the paper's own
@@ -1099,9 +1079,8 @@ no meaningful side-idempotence \emph{law}: its honest instances are the
 trivial diagonal, and demanding it unconditionally would exclude
 precisely the LCA-sensitive data types the ternary theorem exists for.
 
-The general principle, which the rest of this section instantiates: the
-algebraic properties of an LCA-aware merge are properties of the
-\emph{causal history}, not of the concrete state. Two sides merge
+The general principle: the algebraic properties of an LCA-aware merge
+are properties of the \emph{causal history}, not of the concrete state. Two sides merge
 idempotently when their \emph{histories} coincide --- which is what
 forces $l = a$ --- not when their states happen to be equal; equal
 states with different histories rightly merge differently. The lattice
@@ -1310,9 +1289,8 @@ carries exactly this guard in its interface ---
 \hfill\lean{UpdateVCs.no\_rc\_chain}
 \end{fvc}
 
-Conflict priorities do not chain. This is what makes the linearization
-order acyclic, so maximal events exist --- the entire peel-and-recurse
-architecture stands on it.
+Conflict priorities do not chain, which makes $\loE{E}$ acyclic, so
+maximal events exist for the peel-and-recurse to select.
 
 \begin{fvc}[cond-comm]
 \label{fvc:condcomm}
@@ -1342,9 +1320,9 @@ $\mergeL(l, a, b) = \mergeL(l, b, a)$ for all states $l, a, b$.
 
 \begin{fvc}[feasible unit]
 \label{fvc:unit}
-For every configuration $C$, event set $E \subseteq E(C)$, and state
-$s$ with $\mathrm{Can}_C(E, s)$:
 \[
+  E \subseteq E(C) \;\wedge\; \mathrm{Can}_C(E, s)
+  \;\Longrightarrow\;
   \mergeL(\Sinit, \Sinit, s) \;=\; s .
 \]
 \hfill\lean{FeasibleDeltaVCs3.feasible\_init}
@@ -1362,17 +1340,22 @@ sits at its honest LCA.
 Let $\vis$ be transitive and irreflexive on $C$; let
 $E_1, E_2 \subseteq E(C)$ be weakly closed in $C$
 (Definition~\ref{def:join}); let $e \in E_1$, $e \notin E_2$, and let
-$e$ be $\loE{E_1 \cup E_2}$-maximal:
-$\forall x \in E_1 \cup E_2,\ x \neq e \Rightarrow
-\neg\, (e \mathrel{\loE{E_1 \cup E_2}} x)$. If
-$\mathrm{Can}_C(E_1 \cap E_2,\, s_0)$,
-$\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$,
-$\mathrm{Can}_C(E_1 \setminus \{e\},\, t_1)$, and
-$\mathrm{Can}_C(E_2,\, s_2)$, then
+$e$ be $\loE{E_1 \cup E_2}$-maximal
+($\forall x \in E_1 \cup E_2,\ x \neq e \Rightarrow
+\neg\, (e \mathrel{\loE{E_1 \cup E_2}} x)$). Then
 \[
-  \mergeL\bigl(s_0,\; \mergeL(B, t_1, e(B)),\; s_2\bigr)
-  \;=\;
-  \mergeL\bigl(B,\; \mergeL(s_0, t_1, s_2),\; e(B)\bigr).
+\begin{aligned}
+  &\mathrm{Can}_C(E_1 \cap E_2,\, s_0) \,\wedge\,
+   \mathrm{Can}_C(\dow{e} \setminus \{e\},\, B) \\
+  &\quad{}\wedge\,
+   \mathrm{Can}_C(E_1 \setminus \{e\},\, t_1) \,\wedge\,
+   \mathrm{Can}_C(E_2,\, s_2)
+  \;\;\Longrightarrow\;\;\\
+  &\qquad
+   \mergeL\bigl(s_0,\; \mergeL(B, t_1, e(B)),\; s_2\bigr)
+   \;=\;
+   \mergeL\bigl(B,\; \mergeL(s_0, t_1, s_2),\; e(B)\bigr).
+\end{aligned}
 \]
 \hfill\lean{FeasibleDeltaVCs3.feasible\_local\_redistribute}
 \end{fvc}
@@ -1381,16 +1364,19 @@ $\mathrm{Can}_C(E_2,\, s_2)$, then
 \label{fvc:redist}
 In the same context ($\vis$ transitive and irreflexive on $C$;
 $E_1, E_2 \subseteq E(C)$ weakly closed in $C$), now with $e \in E_1$,
-$e \in E_2$, and $e$ $\loE{E_1 \cup E_2}$-maximal as above: if
-$\mathrm{Can}_C((E_1 \cap E_2) \setminus \{e\},\, t_0)$,
-$\mathrm{Can}_C(\dow{e} \setminus \{e\},\, B)$,
-$\mathrm{Can}_C(E_1 \setminus \{e\},\, t_1)$, and
-$\mathrm{Can}_C(E_2 \setminus \{e\},\, t_2)$, then
+$e \in E_2$, and $e$ $\loE{E_1 \cup E_2}$-maximal as above:
 \[
 \begin{aligned}
-  &\mergeL\bigl(\mergeL(B, t_0, e(B)),\; \mergeL(B, t_1, e(B)),\;
+  &\mathrm{Can}_C((E_1 \cap E_2) \setminus \{e\},\, t_0) \,\wedge\,
+   \mathrm{Can}_C(\dow{e} \setminus \{e\},\, B) \\
+  &\quad{}\wedge\,
+   \mathrm{Can}_C(E_1 \setminus \{e\},\, t_1) \,\wedge\,
+   \mathrm{Can}_C(E_2 \setminus \{e\},\, t_2)
+  \;\;\Longrightarrow\;\;\\
+  &\qquad
+  \mergeL\bigl(\mergeL(B, t_0, e(B)),\; \mergeL(B, t_1, e(B)),\;
     \mergeL(B, t_2, e(B))\bigr) \\
-  &\qquad=\;
+  &\qquad\qquad=\;
   \mergeL\bigl(B,\; \mergeL(t_0, t_1, t_2),\; e(B)\bigr).
 \end{aligned}
 \]
@@ -1443,9 +1429,8 @@ leaves (\S\ref{sec:open}).
 \section{Adequacy}
 \label{sec:adequacy}
 
-The contract delivers. Everything a data type owes is the eight
-equations of \S\ref{sec:vcs}; everything else is proved once, for all
-data types, as part of the execution model.
+The contract delivers: a data type owes exactly the eight equations of
+\S\ref{sec:vcs}.
 
 \begin{theorem}[soundness of the eight VCs]
 \label{thm:main}
@@ -1705,31 +1690,37 @@ known-broken sibling: a global-counter variant whose compositional VC
 (\lean{inter\_right\_1op}) fails on DAG-shaped executions, the very defect
 per-replica counters were introduced to fix. The mechanized $\sigma$-facts
 prove the production merge computes exactly union-liveness ---
-\emph{verified on precisely the corner where the sibling fails}. This is
-the methodology working as intended: the metatheory does not merely bless
-the catalogue, it explains \emph{why} the fixed design is right.
+\emph{verified on precisely the corner where the sibling fails}: the
+metatheory explains \emph{why} the fixed design is right, not merely that
+it converges.
 
 
 \section{The conditioned metatheorem}
 \label{sec:condmeta}
 
-The eight VCs of \S\ref{sec:vcs} quantify over \emph{all} states, and
-\S\ref{sec:catalog} showed that is right for flat data types and fatal
-for state-dependent ones: for a sequence datatype with physical
-deletion, two concurrent operations commute only on well-formed states
-at which both are applicable, and written over all states the
-commutation VC is simply false. The remedy is the general signature of
-\S\ref{sec:mrdts}: condition every VC on the state invariant $\Inv$ and
-the applicability predicate $\app$, relax the witness fold of
-Definition~\ref{def:ralin} to the data type's observational equivalence
-$\eqobs$, and prove RA-linearizability from the conditioned VCs once and
-for all. The developer's burden is only to describe sensible operations;
-the metatheorem does the rest. This section and the next two state the
-conditioned VCs and the metatheorem with its pen-and-paper proof;
-\S\ref{sec:route} then presents the factored discharge route the
-production instances actually use.
+The eight VCs of \S\ref{sec:vcs} quantify over \emph{all} states, which
+\S\ref{sec:catalog} showed is fatal for state-dependent datatypes: a
+sequence with physical deletion has two concurrent operations commuting
+only on well-formed states at which both are applicable, so over all
+states the commutation VC is false. The remedy is the general signature
+of \S\ref{sec:mrdts}: condition every VC on $\Inv$ and $\app$, relax the
+witness fold of Definition~\ref{def:ralin} to the observational
+equivalence $\eqobs$, and prove RA-linearizability from the conditioned
+VCs once. This section and the next two state the conditioned VCs and
+the metatheorem with its pen-and-paper proof; \S\ref{sec:route} then
+gives the factored discharge route the production instances use.
 
 \section{The conditioned verification conditions}\label{sec:cvcs}
+
+The conditioned signature
+$\langle \text{State}, \ini, \dodo, \merge, \Inv, \app \rangle$ is richer
+than the flat tuple of \S\ref{sec:vcs}: it adds $\Inv$ and $\app$. The
+four VCs below are the general contract, and the eight flat VCs of
+\S\ref{sec:vcs} are their identity instantiation
+($\Inv = \app = \top$, ${\eqobs} = {=}$), discharged through
+\lean{FlatGeneric\_Bridge}. The two are one ladder, not two catalogues: a
+flat datatype supplies the eight, a conditioned datatype the four, never
+all twelve.
 
 A datatype presents a signature
 $\langle \text{State}, \ini, \dodo, \merge, \Inv, \app \rangle$ where $\Inv$ is a predicate
@@ -1815,10 +1806,6 @@ $\mathrm{Can}^{\eqobs}_C(E_1 \cup E_2,\; \mergeL(s_0, s_1, s_2))$. The fold is t
 so the datatype states its $\eqobs$-join over its own $\dodo$, not a guarded
 surrogate.
 \end{vc}
-
-For flat datatypes $\Inv = \app = \mathsf{true}$, VC~\ref{vc:comm} degenerates to
-unconditioned commutation, VC~\ref{vc:inv} to $J = \mathsf{true}$, and VC~\ref{vc:merge} to
-the ordinary Join Lemma --- recovering the unconditioned methodology.
 
 \section{The metatheorem}\label{sec:meta}
 
@@ -1956,12 +1943,10 @@ Part~II's embedded-chain RGA is discharged by exactly this route.
 
 \paragraph{The factorization: one metatheorem, three join species.} The
 common structure across the conditioned instances is a theorem rather
-than a convention. The developments all ran the same induction ---
-thread a per-configuration honesty contract through reachability, invoke
-a Join Lemma at each merge --- and that induction is
-extracted once (\lean{Metatheory/HonestReach.lean}), as the next
-definition and theorem; the queue's and the bounded counter's bespoke
-inductions are one-line corollaries of the extracted form.
+than a convention: the shared induction is extracted once
+(\lean{Metatheory/HonestReach.lean}), as the next definition and
+theorem, and the queue's and the bounded counter's bespoke inductions
+are one-line corollaries of the extracted form.
 
 \begin{definition}[honest reachability]
 \label{def:honestreach}
@@ -2010,8 +1995,8 @@ Shesha investigation of Part~III) extends the hook to datatypes whose
 canonical states are unique only per witness-classed enumerations; and
 the instance layer is payload-generic where it should be (the embed
 instance of Part~II takes its element type as a defaulted parameter, so
-the fused Peritext is a pure instantiation). One further regularity is
-worth recording: the production honesty contracts all have the shape
+the fused Peritext is a pure instantiation). One further regularity: the
+production honesty contracts all have the shape
 ``$P$ holds of each event at the fold of
 its causal past'' --- anchor liveness for the sequence family, slack for
 the counter, head-ness for the queue --- with $P$ the
@@ -2219,8 +2204,7 @@ $0 \le \sum_{r \in rs}\bigl(\mathsf{incs}_r(s) - \mathsf{decs}_r(s)\bigr)$
 \hfill\lean{bc\_version\_inv}
 \end{theorem}
 
-What the CRDT development could only promise operationally is here a consequence of
-the formal client contract. The original proof is a
+The original proof is a
 counting argument riding the flat machinery: every version's state is a fold
 of its event set (canonicity), fold slots \emph{are} per-replica event
 counts (the group merge is inclusion--exclusion on counts, via the LCA
@@ -2686,8 +2670,8 @@ from below; under the carried invariants the approximation is
 \emph{exact}, even though each antichain member individually sits
 strictly below the meet.
 
-One delimitation is worth stating, because it marks the model boundary
-the proposition rests on. The origin invariant is load-bearing: in a
+One delimitation marks the model boundary the proposition rests on. The
+origin invariant is load-bearing: in a
 model that can apply the \emph{same} event at two incomparable versions
 (op-based redelivery, with no store-wide timestamp freshness), the
 event has two incomparable birth sites, neither a common ancestor, and
@@ -2805,9 +2789,8 @@ the \code{T1F} fail companion of \code{virtual\_lca\_check.py}.
 \hfill\lean{t1f\_pick\_u\_resurrects\_y}
 \end{proposition}
 
-Every
-single-MCA pick is wrong on this store; the recursion is not
-dispensable. Nor is its depth boundable in practice: in a dense
+The recursion is not dispensable, nor is its depth boundable in
+practice: in a dense
 randomized probe (200 trials, 6 replicas, sync-heavy), criss-crosses
 arose in 176 of 200 trials with resolution nesting up to depth 7,
 because rivalry propagates upward (rival joins of rival joins); a
@@ -2851,10 +2834,8 @@ virtual fold induction consumes, so lifting the criss-cross gate costs
 the queue nothing beyond restating reachability over the widened LTS.
 The capstone \lean{queue\_ra\_linearizable3\_V} (RA-linearizability at
 every honestly reachable configuration with virtual merges enabled) is
-ten lines, all of them plumbing. This is the factored architecture of
-\S\ref{sec:route} paying out: the framework extension multiplied
-across instances at the join boundary, with zero new per-datatype
-content.
+ten lines, all of them plumbing: the framework extension multiplies
+across instances at the join boundary.
 
 \section{Commit GC: the keep set and the GC-safety theorem}
 \label{sec:gc}
@@ -3369,26 +3350,22 @@ still outside $E(v)$) would place the cut event $s$ in $e$'s minter's
 past, contradicting concurrency. This is causal stability in the sense
 of Baquero, Almeida, and Shoker, transplanted from op-based delivery to
 the commit DAG: there the argument rides on causal delivery order, here
-on downward closure of event sets. Two facts make it a genuine
+on downward closure of event sets. Three facts make it a genuine
 discharge rather than a relabeled assumption. The frontier the runtime
 maintains --- the per-replica latest-absorbed commit, meeting to the
 largest certifiable cut --- is tracked \emph{axiom-free}: no choice, no
-classical step enters the version-level payoff. And
-$\mathrm{createReplica}$ is the \emph{one} breaker: a replica that joins
-after a compaction has heard nothing since $S$, so it falsifies
+classical step enters the version-level payoff. The gate is SettledAt
+\emph{and} all-heard: settledness alone is not stable under future mints
+by replicas that have not yet heard of $S$, so the all-heads frontier
+(the same one \S\ref{sec:gc} tracks) keeps it stable, and
+$\mathrm{createReplica}$ is the \emph{one} breaker --- a replica joining
+after a compaction has heard nothing since $S$, falsifying
 $\mathrm{AllHeardSince}$ until it catches up, which is exactly the
-open-membership gate (the deferral of \S\ref{sec:stability} made a side
-condition of the theorem, not an unproved promise). Two operational
-sharpenings from the
-mechanization. The gate is SettledAt \emph{and} all-heard: settledness
-alone is not stable under future mints by replicas that have not yet
-heard of $S$, so the all-heads frontier (the same one \S\ref{sec:gc}
-tracks) keeps it stable, and replica creation after a compaction is
-policy-gated (the open-membership deferral made operational). And
-evidence is \emph{commit}-shaped, not event-shaped: a pull that brings
-no new events can still bring the evidence commit that opens the gate,
-so a runtime that skips event-subsumed pulls silently starves the
-callback.
+open-membership gate (a side condition of the theorem, not an unproved
+promise). And evidence is \emph{commit}-shaped, not event-shaped: a pull
+that brings no new events can still bring the evidence commit that opens
+the gate, so a runtime that skips event-subsumed pulls silently starves
+the callback.
 
 \paragraph{Two species of compaction.} \emph{Drop} (OR-set, MVR,
 remove-record GC): \code{compact} removes records; under a live-set
