@@ -10,6 +10,9 @@
 \usepackage{enumitem}
 \usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
 \usepackage{microtype}
+% Clickable notation (proof-of-concept: the conflict-eligible guard glyph).
+\usepackage[xcolor,hyperref]{knowledge}
+\knowledge{conflict-eligible pair}{color=blue!55!black}
 \usepackage{graphicx}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -1265,7 +1268,8 @@ $\co + \fd + \cd \Rightarrow \text{Join Lemma} \Rightarrow
 the causal-delta route never consumes; it is not part of the contract.}
 
 \paragraph{Update layer (unconditional, SMT-shaped).} Write $o_1
-\mathrel{\bowtie} o_2$ for a \emph{conflict-eligible} pair: distinct
+\mathrel{\intro[conflict-eligible pair]{\bowtie}} o_2$ for a
+\emph{conflict-eligible} pair: distinct
 (\lean{distinctOps}) and cross-replica (\lean{differentReplicas}). Only
 conflict-eligible pairs can race, so this guard sits on every
 update-layer VC below.
@@ -1273,7 +1277,7 @@ update-layer VC below.
 \begin{fvc}[rc-non-comm]
 \label{fvc:rcnc}
 \[
-  o_1 \mathrel{\bowtie} o_2
+  o_1 \mathrel{\kl[conflict-eligible pair]{\bowtie}} o_2
   \;\Longrightarrow\;
   \bigl(o_1 \ncomm o_2
     \;\Longleftrightarrow\;
