@@ -94,12 +94,19 @@ document.title = `${ROOM} · sal rich text`;
 const THEME_KEY = 'sal.p2p.theme';
 const THEMES = ['system', 'light', 'dark'];
 const THEME_ICON = { system: '◐', light: '☀', dark: '☾' };
+const THEME_LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' };
 let theme = (() => { try { return localStorage.getItem(THEME_KEY) || 'system'; } catch { return 'system'; } })();
 function applyTheme(t) {
   const root = document.documentElement;
   if (t === 'system') delete root.dataset.theme; else root.dataset.theme = t;
   const btn = $('themeBtn');
-  if (btn) { btn.textContent = THEME_ICON[t]; btn.title = `theme: ${t} — click for ${THEMES[(THEMES.indexOf(t) + 1) % 3]}`; }
+  if (btn) {
+    // show the CURRENT mode with a label so it reads as a theme control, not a
+    // bare glyph; the tooltip names what the next click switches to
+    const next = THEMES[(THEMES.indexOf(t) + 1) % 3];
+    btn.textContent = `${THEME_ICON[t]} ${THEME_LABEL[t]}`;
+    btn.title = `Theme: ${THEME_LABEL[t]} (${t === 'system' ? 'follows your OS' : t}) — click for ${THEME_LABEL[next]}`;
+  }
   const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = dark ? '#0e1014' : '#ffffff';
@@ -115,7 +122,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { 
 // ---- research drawer: remember open/closed (collapsed by default) ---------
 const drawer = $('infoDrawer');
 if (drawer) {
-  try { drawer.open = localStorage.getItem('sal.p2p.drawer') === '1'; } catch {}
+  try { drawer.open = localStorage.getItem('sal.p2p.drawer') !== '0'; } catch {} // default OPEN, unless explicitly collapsed
   drawer.addEventListener('toggle', () => { try { localStorage.setItem('sal.p2p.drawer', drawer.open ? '1' : '0'); } catch {} });
 }
 

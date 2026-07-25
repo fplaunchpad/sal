@@ -105,6 +105,7 @@
     button.ghost { background: none; border-color: transparent; color: var(--muted); }
     button.ghost:hover { background: var(--surface-2); color: var(--text); }
     .icon-btn { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+    .theme-btn { font-size: 13px; padding: 6px 11px; min-width: 82px; text-align: center; }
     select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong);
       border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer; }
     select:focus-visible { outline: none; box-shadow: var(--ring); }
@@ -230,7 +231,7 @@
       <div class="header-actions">
         <select id="docPicker" title="switch to another document saved in this browser"></select>
         <button id="newDocBtn" class="ghost" title="start a new document (opens a new room)">＋ New</button>
-        <button id="themeBtn" class="icon-btn ghost" title="theme">☾</button>
+        <button id="themeBtn" class="ghost theme-btn" title="theme">☾ Dark</button>
       </div>
     </div>
     <div class="doc-line">
@@ -305,7 +306,7 @@
   <div id="presenceBar"></div>
   <div class="peers" id="peers"></div>
 
-  <details id="infoDrawer" class="drawer">
+  <details id="infoDrawer" class="drawer" open>
     <summary>Document info &amp; certified GC</summary>
     <div class="drawer-body">
       <p class="sub" style="margin-top:4px">
