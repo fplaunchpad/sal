@@ -1,4 +1,6 @@
 import Sal.ConditionedMRDTs.Refutations.CD_Not_Derivable_Ternary
+import Sal.ConditionedMRDTs.Refutations.FeasibleInit_Not_Derivable_At_Empty
+import Sal.ConditionedMRDTs.Refutations.LocalRedistribute_Not_Derivable
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 import Sal.ConditionedMRDTs.Refutations.G2_Applicability_Aware
 import Sal.ConditionedMRDTs.Refutations.Impossibility
@@ -26,6 +28,10 @@ The catalogue:
 
 - `CD_Not_Derivable_Ternary` — the causal-delta bound is not derivable
   from the ternary laws (the CD ladder negative).
+- `FeasibleInit_Not_Derivable_At_Empty` — VC5° (the nullary unit) is
+  independent: the poisoned-empty G-set (#114 phase 2, T2).
+- `LocalRedistribute_Not_Derivable` — VC6 (feasible local-redistribute)
+  is independent: the change-wins flag (#114 phase 2, T1).
 - `G2_Transport_Probe`, `G2_Applicability_Aware` — the G2 gate probes
   (also imported by Development and the gate files).
 - `Impossibility` — the flat impossibility theorem.
