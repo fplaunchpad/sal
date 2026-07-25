@@ -1264,15 +1264,20 @@ $\co + \fd + \cd \Rightarrow \text{Join Lemma} \Rightarrow
 (\lean{mergeL\_init}, \lean{lem\_0op3}, \lean{merge\_peel\_comm3}) that
 the causal-delta route never consumes; it is not part of the contract.}
 
-\paragraph{Update layer (unconditional, SMT-shaped).}
+\paragraph{Update layer (unconditional, SMT-shaped).} Write $o_1
+\mathrel{\bowtie} o_2$ for a \emph{conflict-eligible} pair: distinct
+(\lean{distinctOps}) and cross-replica (\lean{differentReplicas}). Only
+conflict-eligible pairs can race, so this guard sits on every
+update-layer VC below.
 
-\begin{fvc}[rc-non-comm, guarded]
+\begin{fvc}[rc-non-comm]
 \label{fvc:rcnc}
-For all events $o_1, o_2$ that are distinct and cross-replica:
 \[
-  o_1 \ncomm o_2
-  \quad\Longleftrightarrow\quad
-  \bigl(o_1 \rc o_2 \;\vee\; o_2 \rc o_1\bigr).
+  o_1 \mathrel{\bowtie} o_2
+  \;\Longrightarrow\;
+  \bigl(o_1 \ncomm o_2
+    \;\Longleftrightarrow\;
+    o_1 \rc o_2 \;\vee\; o_2 \rc o_1\bigr).
 \]
 \hfill\lean{UpdateVCs.rc\_non\_comm\_directional}
 \end{fvc}
@@ -1293,9 +1298,9 @@ carries exactly this guard in its interface ---
 
 \begin{fvc}[no-rc-chain]
 \label{fvc:chain}
-For all events $o_1, o_2, o_3$ with $o_1, o_2$ distinct and
-$o_2, o_3$ distinct:
 \[
+  o_1 \ne o_2 \;\wedge\; o_2 \ne o_3
+  \;\Longrightarrow\;
   \neg\,\bigl(o_1 \rc o_2 \;\wedge\; o_2 \rc o_3\bigr).
 \]
 \hfill\lean{UpdateVCs.no\_rc\_chain}
@@ -1307,8 +1312,9 @@ architecture stands on it.
 
 \begin{fvc}[cond-comm]
 \label{fvc:condcomm}
-For every state $\sigma$, all pairwise-distinct events $e, e', e''$,
-and every event list $\pi$: if $e \rc e'$ and $e' \ncomm e''$, then
+For every state $\sigma$, events $e, e', e''$, and event list $\pi$:
+if $e, e', e''$ are pairwise distinct, $e \rc e'$, and $e' \ncomm e''$,
+then
 \[
   e''\bigl(\fold(e(e'(\sigma)),\, \pi)\bigr)
   \;=\;
