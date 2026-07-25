@@ -391,38 +391,47 @@ export class DistributedReplica {
     return this.registered.delete(name);
   }
 
-  // ---- VIRTUAL LCAs (#90): the criss-cross-resolving base for a merge. The
-  // LCA slot of a merge between the union-ancestry of an id set S and a commit
-  // w is the unique MCA's state, or the FOLD of the MCA antichain (sorted by
-  // content id for cross-replica determinism; recursively resolved sub-bases).
-  // #baseFor also returns the epoch (cut key) the base is coded in, which the
-  // epoch join lifts from. The antichain shares one epoch (guarded).
+  // ---- VIRTUAL LCAs (#90) x EPOCH LIFT (#112): the criss-cross-resolving base.
+  // The LCA slot of a merge between the union-ancestry of an id set S and a
+  // commit w is the unique MCA's state, or the FOLD of the MCA antichain (sorted
+  // by content id for cross-replica determinism; recursively resolved
+  // sub-bases). #baseFor also returns the epoch the base is coded in, which the
+  // epoch join lifts from. When the antichain SPANS EPOCHS (a criss-cross that
+  // ALSO straddles a compaction) the members are lifted DOWN to a common lower
+  // frame (EPOCH0, reached by the epoch inverse maps) and folded there, rather
+  // than deferred -- so a returning offline peer's edits still converge.
   #baseFor(S, w) {
     const m = S.length === 1 ? mcas(this.dag, S[0], w) : this.#mcasOfSet(S, w);
     if (m.length === 0) throw new Error(`no common ancestor of [${S}] and ${w}`);
-    return { state: this.#baseState(S, w), epoch: this.epochOf.get(m[0]) };
+    const e0 = this.epochOf.get(m[0]);
+    const target = m.every((x) => this.epochOf.get(x) === e0) ? e0 : EPOCH0;
+    return { state: this.#baseState(S, w, target), epoch: target };
   }
 
-  #baseState(S, w) {
+  /** Lift `state` from epoch `from` DOWN to `target` (identity if equal). If the
+   *  inverse chain is unavailable the criss-cross is genuinely unresolvable, so
+   *  raise CrissCrossError to DEFER (as every criss-cross was deferred before). */
+  #liftDown(state, from, target, antichain) {
+    if (from === target) return state;
+    const lifted = this.#toEpoch(state, from, target);
+    if (lifted === null) throw new CrissCrossError(antichain);
+    return lifted;
+  }
+
+  #baseState(S, w, target) {
     const m = S.length === 1 ? mcas(this.dag, S[0], w) : this.#mcasOfSet(S, w);
     if (m.length === 0) throw new Error(`no common ancestor of [${S}] and ${w}`);
-    if (m.length === 1) return this.dag.get(m[0]).state;
-    // A criss-cross whose MCA antichain also SPANS EPOCHS (incomparable cuts
-    // AND a criss-cross) is the doubly-hard case neither #90 nor #112 claims:
-    // signal it as a CrissCrossError so consumers DEFER it, exactly as they
-    // deferred every criss-cross before virtual bases resolved the same-epoch
-    // ones. Same-epoch criss-crosses fall through and fold below.
-    const e0 = this.epochOf.get(m[0]);
-    for (const x of m) if (this.epochOf.get(x) !== e0) throw new CrissCrossError(m);
+    if (m.length === 1) return this.#liftDown(this.dag.get(m[0]).state, this.epochOf.get(m[0]), target, m);
     const sorted = [...m].sort((x, y) => (this.gid.get(x) < this.gid.get(y) ? -1 : 1));
-    let acc = this.dag.get(sorted[0]).state;
+    let acc = this.#liftDown(this.dag.get(sorted[0]).state, this.epochOf.get(sorted[0]), target, m);
     const support = [sorted[0]];
     for (let k = 1; k < sorted.length; k++) {
       const mi = sorted[k];
-      acc = this.datatype.merge3(this.#baseState(support, mi), acc, this.dag.get(mi).state);
+      acc = this.datatype.merge3(this.#baseState(support, mi, target), acc,
+        this.#liftDown(this.dag.get(mi).state, this.epochOf.get(mi), target, m));
       support.push(mi);
     }
-    return acc;
+    return acc; // coded in `target`
   }
 
   /** Maximal common ancestors of (union ancestry of id set S) and w. */
