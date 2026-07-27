@@ -255,6 +255,37 @@ theorem converse_vc_merge {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     hin₁ hin₂ hcl₁ hcl₂ hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂
   exact isCanonicalStateEq_congr hu hmu
 
+/-- **`mergeRealizable_iff_join` (T3, resolved).** `MergeRealizable` is not a step
+weaker than the conditioned Join that convergence could bridge: the two are
+*equivalent*. The forward is `converse_vc_merge` with `CanonicalRALin3Eq` deleted
+(convergence is genuinely unused — the recorded T3 finding, now a theorem); the
+reverse takes `u := mergeL s₀ s₁ s₂` with `≈`-reflexivity. So `MergeRealizable` IS
+the conditioned Join VC (`EqJoinLemma3C`) repackaged from "the merge lands on a
+fold" into "the merge is `≈` some fold". This settles "is `MergeRealizable`
+dischargeable?": NO in general (it is the datatype's merge=fold obligation, not a
+theorem about arbitrary `D`), and its status is exactly the flat converse's — RA-lin
+forces it on *reachable* merge tuples (RA-lin asserts every merge version is a
+canonical fold of its event set), while over the abstract tuple domain it is not
+forced (the abstract/reachable gap, the same gap the full flat converse refutes).
+Hence the flat `Converse.CanonicalRALin3` carries `join` as an assumed field with no
+apology; the conditioned converse's "conjectured realizability step" was the same
+Join wearing a different name. -/
+theorem mergeRealizable_iff_join {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
+    {GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop} :
+    MergeRealizable D E W GenDisc ↔ EqJoinLemma3C D E W GenDisc := by
+  constructor
+  · intro hR vis events ev₁ ev₂ s₀ s₁ s₂ hs₀ hs₁ hs₂ htr hirr hin₁ hin₂ hcl₁ hcl₂
+      hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂
+    obtain ⟨u, hu, hmu⟩ := hR vis events ev₁ ev₂ s₀ s₁ s₂ hs₀ hs₁ hs₂ htr hirr
+      hin₁ hin₂ hcl₁ hcl₂ hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂
+    exact isCanonicalStateEq_congr hu hmu
+  · intro hJ vis events ev₁ ev₂ s₀ s₁ s₂ hs₀ hs₁ hs₂ htr hirr hin₁ hin₂ hcl₁ hcl₂
+      hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂
+    exact ⟨D.mergeL s₀ s₁ s₂,
+      hJ vis events ev₁ ev₂ s₀ s₁ s₂ hs₀ hs₁ hs₂ htr hirr hin₁ hin₂ hcl₁ hcl₂
+        hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂,
+      E.equiv.refl _⟩
+
 /-! ## §5. The #123 experiment: RA-lin over an abstract antitone arbitration (T4)
 
 The rc-free recast (`ra-lin-definition-note.md`, #123): replace `rc`/`loOnEq` by an
@@ -349,6 +380,7 @@ theorem ra_lin_arb_transport (E : EqEquiv D) (W : Op D.AppOp → D.State → Pro
 #print axioms loOnEq_mono
 #print axioms sig_peel_maximal_eq
 #print axioms converse_vc_merge
+#print axioms mergeRealizable_iff_join
 #print axioms loOnArb_mono
 #print axioms ra_lin_arb_transport
 

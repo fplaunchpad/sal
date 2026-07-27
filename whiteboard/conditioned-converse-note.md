@@ -170,6 +170,25 @@ realizability is the conditioned analog of the flat converse's
 reachable-canonical closure and it is standard, but it is not proved here, so the
 domain-closure step is **CONJECTURED**.
 
+Mechanized sharpening (`mergeRealizable_iff_join`, kernel-clean). The abstract
+realizability statement `MergeRealizable` (every `GenDisc` fully-closed `Inv` tuple
+has a canonical fold `u` of the union with `mergeL(s0,s1,s2) ≈ u`) is *equivalent*
+to `EqJoinLemma3C` (the merge IS a canonical fold of the union): the forward is
+`≈`-congruence, the reverse takes `u := mergeL(s0,s1,s2)` with reflexivity. Two
+consequences. First, convergence is not consumed by the abstract step: the
+`CanonicalRALin3Eq` hypothesis of `converse_vc_merge` is dead code, because the two
+propositions are already interchangeable. Convergence does its real work on the
+*reachable* side, where existence at the merge version says `mergeL(l,a,b)` is a
+raw fold and convergence promotes it to `≈ σcan≈`. Second, "is `MergeRealizable`
+dischargeable?" has a definite answer: no in general, because it is the datatype's
+own merge=fold obligation, not a theorem about an arbitrary signature. So vc:merge
+is forced in exactly the flat converse's reachability-relative sense (RA-lin asserts
+every merge version is a fold of its event set); over the abstract tuple domain it
+is not forced (the same abstract-versus-reachable gap the full flat converse
+refutes). The flat `CanonicalRALin3` already carries `join` as an assumed field of
+the RA-lin hypothesis with no apology; the conditioned "conjectured realizability
+step" is that same Join under a different name.
+
 Probe: the OR-set and the rehoming RGA both discharge their Join in production
 (`ORSetE_join`, `RGA_EqJoin_NF`); the converse says RA-lin would recover it. GSET
 Probe B confirms the checker forces the Join on a convergent datatype and detects
