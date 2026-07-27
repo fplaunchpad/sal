@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.Arbitration_Refactor
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
@@ -369,11 +370,39 @@ theorem lww_isRALinearizable3Arb_ts (C : Configuration LWW)
     rw [lww_fold_maximum, ← hsl, lww_fold_maximum]
     exact List.Perm.maximum_eq (hperm.map lwwWrite)
 
+/-- `loOn` is the empty relation on LWW, for **all** pairs (not just distinct
+events): the `vis` arm needs a non-commuting pair (`LWW_all_comm`) and the `rc`
+arm needs `rc = Fst_then_snd` (`LWW_rc_either` gives `Either`). Neither fires. -/
+theorem lww_loOn_false (C : Configuration LWW) (E : Set (Op LWWOp))
+    (a b : Op LWWOp) : ¬ loOn (Configuration.core C) E a b := by
+  rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
+  · exact hnc (LWW_all_comm a b)
+  · rw [LWW_rc_either] at hrc; exact RcRes.noConfusion hrc
+
+open LabeledTS in
+/-- **LWW's timestamp arbitration, certified via the GENERIC adequacy theorem.**
+`lwwArb` refines the empty `loOn` (`lww_loOn_false`, vacuously), and it is an
+`AcyclicArbitration` (`lwwTsArbitration`), so
+`isRALinearizable3Arb_of_acyclicArb_refines_loOn` applies: LWW is
+RA-linearizable against its native timestamp total order through the *same*
+generic engine that certifies `loOn` (`loOn_isRALinearizable3Arb_via_generic`).
+Compare `lww_isRALinearizable3Arb_ts`, which proved the same conclusion directly
+via the `max`-fold; here the fold-uniqueness is delegated to the generic
+theorem's reuse of `loOn` convergence. -/
+theorem lww_isRALinearizable3Arb_ts_via_generic (C : Configuration LWW)
+    (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
+    IsRALinearizable3Arb C lwwArb :=
+  isRALinearizable3Arb_of_acyclicArb_refines_loOn LWW_updateVCs
+    (lwwTsArbitration C)
+    (by intro E a b hlo; exact absurd hlo (lww_loOn_false C E a b))
+    (lww_goodConfig3 C hReach)
+
 #print axioms lww_ra_linearizable3
 #print axioms lww_version_max
 #print axioms LWW_ra_linearizable3_eq
 #print axioms lww_loOn_empty
 #print axioms lwwTsArbitration
 #print axioms lww_isRALinearizable3Arb_ts
+#print axioms lww_isRALinearizable3Arb_ts_via_generic
 
 end Sal.ConditionedMRDTs
