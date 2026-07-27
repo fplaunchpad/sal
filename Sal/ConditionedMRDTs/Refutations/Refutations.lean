@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Refutations.CD_Not_Derivable_Ternary
+import Sal.ConditionedMRDTs.Refutations.EqSwap_Not_Forced
 import Sal.ConditionedMRDTs.Refutations.FeasibleInit_Not_Derivable_At_Empty
 import Sal.ConditionedMRDTs.Refutations.LocalRedistribute_Not_Derivable
 import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
@@ -28,6 +29,9 @@ The catalogue:
 
 - `CD_Not_Derivable_Ternary` — the causal-delta bound is not derivable
   from the ternary laws (the CD ladder negative).
+- `EqSwap_Not_Forced` — the conditioned converse (#122): vc:comm+vc:inv
+  are NOT forced by conditioned RA-lin (`eqswap_not_forced`, datatype
+  RESET), and vc:disc is EXTRA (`vc_disc_extra`, the two-Inv G-set).
 - `FeasibleInit_Not_Derivable_At_Empty` — VC5° (the nullary unit) is
   independent: the poisoned-empty G-set (#114 phase 2, T2).
 - `LocalRedistribute_Not_Derivable` — VC6 (feasible local-redistribute)
