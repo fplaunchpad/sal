@@ -58,6 +58,7 @@ import Sal.ConditionedMRDTs.Metatheory.Converse
 import Sal.ConditionedMRDTs.Metatheory.ConverseEq
 import Sal.ConditionedMRDTs.Metatheory.ArbAdequacy
 import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyFull
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin_V
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_VirtualLCA_Spot
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA

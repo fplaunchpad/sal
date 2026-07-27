@@ -1,6 +1,7 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.Arbitration_Refactor
 import Sal.ConditionedMRDTs.Metatheory.ArbAdequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
@@ -397,6 +398,69 @@ theorem lww_isRALinearizable3Arb_ts_via_generic (C : Configuration LWW)
     (by intro E a b hlo; exact absurd hlo (lww_loOn_false C E a b))
     (lww_goodConfig3 C hReach)
 
+/-! ## §5  The timestamp arbitration through the FULLY-GENERIC engine
+
+`lww_isRALinearizable3Arb_ts_via_generic` (§4) routes through the loOn-*refining*
+partial (`isRALinearizable3Arb_of_acyclicArb_refines_loOn`), which still reuses `loOn`
+convergence as the fold oracle. Here `lwwArb` is certified through the *fully*-generic
+`ra_linearizable3Arb_of_core_feasible_cd` — the arbitration order **and** the fold
+uniqueness are both the abstract timestamp order (`ArbConvergence` from all-commute), with
+`loOn` absent from the certificate. -/
+
+/-- `Lex` compares the timestamp component first, so a smaller first component is a
+smaller write. -/
+theorem lwwWrite_lt_of_fst_lt {a b : Op LWWOp} (h : a.1 < b.1) :
+    lwwWrite a < lwwWrite b := by
+  unfold lwwWrite
+  rw [Prod.Lex.toLex_lt_toLex]
+  exact Or.inl h
+
+/-- **`lwwArb` is vis-consistent** — Lamport-monotone, from the configuration's
+`causal_mono` field: `vis b a ⟹ b.1 < a.1 ⟹ lwwWrite b < lwwWrite a`, so `a` is never
+timestamp-ordered before an event it observed. This is the clause the generic apply pillar
+consumes; LWW discharges it through the Lamport clock (no honesty hypothesis). -/
+theorem lww_vis_consistent (C : Configuration LWW) :
+    VisConsistentArbitration C lwwArb := by
+  intro E a b _ha _hb hvis hlt
+  have hba : b.1 < a.1 := C.causal_mono hvis
+  exact absurd hlt (not_lt.mpr (le_of_lt (lwwWrite_lt_of_fst_lt hba)))
+
+/-- **`lwwArb` is convergent** — all LWW writes commute, so the fold of any enumeration is
+the maximum write (`lww_fold_acc`), and two enumerations of the same set are permutations
+(`listPermOf_perm`) hence have equal maximum. -/
+theorem lww_arbConvergence (C : Configuration LWW) : ArbConvergence C lwwArb := by
+  intro E s₀ π₁ π₂ _hin hp₁ hp₂ _hr₁ _hr₂
+  rw [lww_fold_acc, lww_fold_acc]
+  congr 1
+  exact List.Perm.maximum_eq ((listPermOf_perm hp₁ hp₂).map lwwWrite)
+
+/-- **The LWW timestamp family**: `lwwArb` (config- and set-independent) discharges all
+six `ArbFamily` clauses — acyclicity via `lwwTsArbitration`, extends-`vis` vacuously
+(`LWW_all_comm`), antitone/vis-local trivially (set-independent), vis-consistency via the
+Lamport clock, convergence via the `max` fold. -/
+def lwwFamily : ArbFamily LWW where
+  arb := fun _C => lwwArb
+  extends_vis := by intro C E a b _ha _hb _hv hnc; exact absurd (LWW_all_comm a b) hnc
+  acyclic := by intro C _h_tr _h_ir E h_in a; exact (lwwTsArbitration C).acyclic E h_in a
+  antitone := by intro C E' E'' a b _hsub h; exact h
+  vis_consistent := by intro C _h_tr _h_ir; exact lww_vis_consistent C
+  convergent := by intro C; exact lww_arbConvergence C
+  vis_local := by intro C C' E _hva a _ha b _hb; exact Iff.rfl
+
+open LabeledTS in
+/-- **LWW's timestamp arbitration through the FULLY-GENERIC capstone.** Every reachable
+configuration is RA-linearizable against the abstract timestamp total order `lwwArb` via
+`ra_linearizable3Arb_of_core_feasible_cd`, the fold pinned by `lwwArb`'s own
+`ArbConvergence` (all-commute) rather than by `loOn`. The arb-form VCs come from the
+all-commuting converters (`cdvc3Arb_of_all_comm`, `feasibleDeltaVCs3Arb_of_delta`). -/
+theorem lww_isRALinearizable3Arb_ts_via_capstone (C : Configuration LWW)
+    (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
+    IsRALinearizable3Arb C lwwArb :=
+  ra_linearizable3Arb_of_core_feasible_cd lwwFamily LWW_coreVCs3.toCD
+    (fun C' => cdvc3Arb_of_all_comm LWW_coreVCs3 LWW_all_comm C' lwwArb)
+    (fun C' => feasibleDeltaVCs3Arb_of_delta LWW_coreVCs3 LWW_deltaVCs3 C' lwwArb)
+    C hReach
+
 #print axioms lww_ra_linearizable3
 #print axioms lww_version_max
 #print axioms LWW_ra_linearizable3_eq
@@ -404,5 +468,6 @@ theorem lww_isRALinearizable3Arb_ts_via_generic (C : Configuration LWW)
 #print axioms lwwTsArbitration
 #print axioms lww_isRALinearizable3Arb_ts
 #print axioms lww_isRALinearizable3Arb_ts_via_generic
+#print axioms lww_isRALinearizable3Arb_ts_via_capstone
 
 end Sal.ConditionedMRDTs
