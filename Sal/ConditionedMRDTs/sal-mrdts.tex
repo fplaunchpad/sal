@@ -59,6 +59,7 @@
 \newcommand{\fold}{\mathsf{fold}}
 \newcommand{\Inv}{\mathsf{Inv}}
 \newcommand{\app}{\mathsf{app}}
+\newcommand{\arb}{\mathsf{arb}}
 \newcommand{\sigmacan}{\st^{\ast}}
 % ---------- notation: the embedded-chain family and the campaign (Parts II--III) ----------
 \newcommand{\code}[1]{\texttt{#1}}
@@ -1182,7 +1183,156 @@ honest LCA. The unconditional form remains available as a one-line
 \emph{on-ramp} for the group and lattice classes --- it implies the
 conditioned form outright (\lean{feasibleDeltaVCs3\_of\_delta}).
 
-\section{The eight verification conditions}
+\section{The arbitration contract}
+\label{sec:arb}
+
+The eight equations of \S\ref{sec:vcs} are not the framework's primitive
+contract. They are one \emph{recipe} for building the object the adequacy
+proof actually consumes: an \emph{arbitration}. This section states that
+object and its contract directly; \S\ref{sec:vcs} then derives the standard
+$\rcrel$-based order $\loE{}$ as one instance and shows the eight VCs are
+exactly what that instance owes.
+
+\paragraph{What the proof consumes.} Trace $\rcrel$ through the adequacy
+argument (\S\ref{sec:adequacy}): it appears only through $\loE{E}$, and
+$\loE{E}$ appears only as a per-event-set relation that orders the events
+of a version. Nothing downstream inspects how the relation was built.
+Abstract it. An \emph{arbitration} is a configuration-indexed, set-relative
+relation $\arb\,C\,E$ that orders the operations of the event set $E$ at
+configuration $C$; the canonical state of $E$ is the fold along any
+$\arb\,C\,E$-respecting enumeration (\lean{IsCanonicalStateArb}), and
+RA-linearizability is per-version canonicity against $\arb$
+(\lean{IsRALinearizable3Arb}).
+
+\begin{definition}[arbitration family, flat]
+\label{def:arbfamily}
+An arbitration family $\M{F}$ supplies $\arb$ with six clauses, each a
+property the adequacy induction consumes at a named step:
+\begin{enumerate}[leftmargin=2.4em]
+\item \emph{extends-vis}: every visible non-commuting pair inside $E$ is
+  ordered --- $a,b \in E$, $a \vis b$, $a \ncomm b \Rightarrow
+  \arb\,C\,E\,a\,b$;
+\item \emph{acyclic}: $\arb\,C\,E$ has no cycle (maximal events exist for
+  the peel), gated on $\vis$ being a strict partial order at the reachable
+  $C$;
+\item \emph{antitone}: shrinking the carrier never flips an edge ---
+  $E' \subseteq E''$, $\arb\,C\,E''\,a\,b \Rightarrow \arb\,C\,E'\,a\,b$;
+\item \emph{vis-consistent}: $\arb$ never orders an event before one it
+  observed --- $b \vis a \Rightarrow \neg\,\arb\,C\,E\,a\,b$, on any pair;
+\item \emph{convergent}: all $\arb\,C\,E$-respecting enumerations of $E$
+  fold to one state (\lean{ArbConvergence});
+\item \emph{vis-local}: $\arb\,C\,E$ reads only $\vis$ restricted to $E$
+  --- two configurations agreeing on $\vis$ over $E$ agree on
+  $\arb\,{-}\,E$.
+\end{enumerate}
+\hfill\lean{ArbAdequacyReach.ArbFamily}
+\end{definition}
+
+Three of the six were not in the design; the mechanization forced them. The
+paper-level recast (\S\ref{sec:open}) named acyclic, extends-vis, and
+convergence. Re-threading the adequacy induction over an abstract $\arb$
+surfaced \emph{antitone} (the re-attach step
+\lean{isCanonicalStateArb\_snoc} needs a maximal event to stay maximal on
+the smaller carrier), \emph{vis-consistent} (an $\arb$ ordering a fresh
+event before a \emph{commuting} predecessor stays acyclic and convergent
+yet breaks apply-maximality), and \emph{vis-local} (the
+$\mathrm{createReplica}$ and merge congruence steps need $\arb$ blind to
+concurrent context outside $E$). Each is a genuine design requirement, and
+both instances below satisfy all six; but the theorem is mis-stated without
+them.
+
+\begin{theorem}[adequacy over an arbitration, flat]
+\label{thm:arbadequacy}
+Let $\M{F}$ be an arbitration family and let the datatype supply the
+\emph{merge content} against $\M{F}$'s order --- merge symmetry, and the
+feasible-delta and causal-delta equations of \S\ref{sec:vcs} read with
+$\loE{}$ replaced by $\arb$ (\lean{FeasibleDeltaVCs3Arb}, \lean{CDVC3Arb}).
+Then every reachable configuration is RA-linearizable per version against
+$\arb$: $\mathsf{IsRALinearizable3Arb}(C, \arb\,C)$.
+\hfill\lean{ra\_linearizable3Arb\_of\_core\_feasible\_cd}
+\end{theorem}
+
+The order clauses and the merge content are the two halves of adequacy,
+cleanly separated: the clauses make $\arb$ a usable linearization order
+(maximal events, one fold, stable across the transitions); the merge
+content makes $\mergeL$ land on that fold. $\loE{}$ is absent from both the
+statement and the proof --- the fold is pinned solely by clause~5,
+convergence --- so the engine is genuinely order-agnostic.
+
+\paragraph{The conditioned family: one clause.} Over the observational
+quotient (\S\ref{sec:cvcs}: $\Inv$-guarded states, ${\eqobs}$ for $=$) the
+picture inverts. The conditioned engine does not \emph{build} its Join from
+the delta laws; it takes the $\eqobs$-Join as a primitive obligation
+(VC~\ref{vc:merge}). So the conditioned arbitration family carries exactly
+\emph{one} genuine clause, the $\eqobs$-Join against $\arb$, and the other
+five hold \emph{for free}: extends-vis and vis-consistency are
+$\arb$-independent (the visibility arm of $\mathsf{lo}_{\eqobs}$ decides
+them), antitone is \lean{loOnArb\_mono} for any $\arb$, and
+acyclic/convergent are not levers on a Join that is assumed rather than
+derived.
+
+\begin{theorem}[adequacy over an arbitration, conditioned]
+\label{thm:arbadequacyeq}
+Let $\M{F}$ supply $\arb$ and the $\eqobs$-Join against it
+(\lean{EqJoinLemma3C\_ArbH}), with the honesty and discipline conditions of
+\S\ref{sec:route}. Then every reachable $\Inv$-configuration is
+RA-linearizable per version against $\arb$, up to $\eqobs$.
+\hfill\lean{ra\_linearizable3ArbEq\_of\_reach}
+\end{theorem}
+
+\begin{finding}[six versus one]
+The flat family needs six order clauses; the conditioned family needs one.
+The asymmetry is structural, not incidental. The flat engine \emph{derives}
+its Join from the delta and causal-delta VCs, and each of the six clauses
+is a lever in that derivation; the conditioned engine is \emph{handed} its
+Join as VC~\ref{vc:merge}, so the order clauses that built it fall away.
+Flat pays six clauses to construct the merge fact; conditioned pays one
+because it assumes it.
+\end{finding}
+
+\paragraph{Completeness: the contract is forced, on reachable states.} The
+arbitration contract is not only sufficient but, on the states that arise,
+necessary. Reading the adequacy hypotheses off a datatype already known
+RA-linearizable recovers them.
+
+\begin{theorem}[converse, flat]
+\label{thm:converse}
+If a flat datatype's canonical merge is a fold and converges (the content
+of RA-linearizability), then it satisfies the four-law core of
+\S\ref{sec:vcs} --- feasible unit, the two feasible-redistribute laws, and
+the causal-delta equation --- on every reachable, causally closed event
+set.
+\hfill\lean{Converse.converse\_core}
+\end{theorem}
+
+The converse is deliberately reachability-relative, and it is not a
+biconditional. RA-linearizability constrains the merge only on the tuples
+an execution produces; over abstract tuples the contract says strictly
+more, and no datatype is forced to the \emph{specific} arbitration
+$\loE{}$. The RESET datatype (write/write/reset) is RA-linearizable yet
+falsifies the conditioned swap witness VC~\ref{vc:comm}
+(\lean{eqswap\_not\_forced}), and its invariant discipline VC~\ref{vc:disc}
+is a datatype choice, not a consequence (\lean{vc\_disc\_extra}). The
+arbitration recast is thus a \emph{sound abstraction of the sufficient
+condition}, exact on reachable states, not a characterization of
+RA-linearizability itself.
+
+\paragraph{\texorpdfstring{$\loE{}$}{lo} is one arbitration.} The standard
+order $\loE{E}$ is $\arb$ instantiated at $\rcrel$: its
+non-commuting-visibility arm is extends-vis, its concurrent arm consults
+$\rcrel$, and its absorber clause is what supplies antitonicity
+(\lean{loOn\_isArb}, at
+$\arb \coloneqq (\rcrel = \mathsf{Fst\_then\_snd})$). The next section is
+that instance --- the eight VCs are the clauses of
+Definition~\ref{def:arbfamily} and the merge content of
+Theorem~\ref{thm:arbadequacy}, spelled out for $\loE{}$. A datatype with a
+different arbitration --- the LWW register orders by timestamp, an order
+$\rcrel$ cannot express --- skips $\rcrel$ and the eight VCs entirely and
+discharges the six clauses directly (\lean{lwwFamily}); there
+vis-consistency rests on the Lamport-clock invariant, not on $\rcrel$.
+
+\section{Deriving \texorpdfstring{$\loE{}$}{lo}: the eight verification
+conditions}
 \label{sec:vcs}
 
 \begin{figure}[t]
@@ -1230,11 +1380,22 @@ cannot amplify what $e$ does.}
 \label{fig:cd}
 \end{figure}
 
-The update-side obligations of \S\ref{sec:join} and the merge-side laws
-of \S\ref{sec:whydelta} now assemble into the full contract --- a
-\emph{new} VC set, replacing the paper's catalogue of twenty-four. For
-an MRDT $\langle \Sigma, \Sinit, \mathsf{do}, \mergeL,
-\rcrel\rangle$, the contract is the eight conditions below. In the
+These eight equations are the $\loE{}$ instance of the arbitration
+contract (\S\ref{sec:arb}): the update-side obligations of
+\S\ref{sec:join} and the merge-side laws of \S\ref{sec:whydelta} are
+exactly what make $\loE{}$, the order built from $\rcrel$, an arbitration
+family (Definition~\ref{def:arbfamily}) and supply its merge content
+(Theorem~\ref{thm:arbadequacy}). Of the six order clauses only two are
+carried by the update VCs --- no-rc-chain (Flat VC~\ref{fvc:chain}) gives
+acyclicity, cond-comm (Flat VC~\ref{fvc:condcomm}) gives convergence ---
+while extends-vis, antitone, vis-consistency, and vis-locality are
+structural properties of $\loE{}$'s definition (its visibility arm and its
+absorber), and rc-non-comm (Flat VC~\ref{fvc:rcnc}) calibrates the
+concurrent arm to commutation. Flat VCs \ref{fvc:unit}--\ref{fvc:cd} supply
+the merge content. Assembled, they are a \emph{new} VC set, replacing the
+paper's catalogue of twenty-four. For an MRDT
+$\langle \Sigma, \Sinit, \mathsf{do}, \mergeL, \rcrel\rangle$, the
+contract is the eight conditions below. In the
 mechanization they are carried by three bundles ---
 $\co$ (Flat VCs \ref{fvc:rcnc}--\ref{fvc:sym}: the update triple
 \lean{UpdateVCs} plus merge symmetry), $\fd$ (Flat VCs
@@ -1720,7 +1881,12 @@ four VCs below are the general contract, and the eight flat VCs of
 ($\Inv = \app = \top$, ${\eqobs} = {=}$), discharged through
 \lean{FlatGeneric\_Bridge}. The two are one ladder, not two catalogues: a
 flat datatype supplies the eight, a conditioned datatype the four, never
-all twelve.
+all twelve. Like the eight, the four are an arbitration instance
+(\S\ref{sec:arb}): they make $\mathsf{lo}_{\eqobs}$, the order from
+$\rcrel$ read up to $\eqobs$, the conditioned arbitration family of
+Theorem~\ref{thm:arbadequacyeq}, whose one genuine clause is the
+$\eqobs$-Join --- VC~\ref{vc:merge} below --- the other five holding for
+any arbitration.
 
 A datatype presents a signature
 $\langle \text{State}, \ini, \dodo, \merge, \Inv, \app \rangle$ where $\Inv$ is a predicate

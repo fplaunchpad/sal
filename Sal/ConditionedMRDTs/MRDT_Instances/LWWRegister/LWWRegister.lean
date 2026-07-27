@@ -456,7 +456,7 @@ all-commuting converters (`cdvc3Arb_of_all_comm`, `feasibleDeltaVCs3Arb_of_delta
 theorem lww_isRALinearizable3Arb_ts_via_capstone (C : Configuration LWW)
     (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
     IsRALinearizable3Arb C lwwArb :=
-  ra_linearizable3Arb_of_core_feasible_cd lwwFamily LWW_coreVCs3.toCD
+  ra_linearizable3Arb_of_core_feasible_cd lwwFamily LWW_coreVCs3.toCD.mergeL_comm
     (fun C' => cdvc3Arb_of_all_comm LWW_coreVCs3 LWW_all_comm C' lwwArb)
     (fun C' => feasibleDeltaVCs3Arb_of_delta LWW_coreVCs3 LWW_deltaVCs3 C' lwwArb)
     C hReach

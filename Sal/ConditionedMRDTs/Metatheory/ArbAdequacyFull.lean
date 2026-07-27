@@ -372,7 +372,8 @@ Existence is `isCanonicalStateArb_exists` (acyclicity), the maximal event is
 `isCanonicalStateArb_snoc` (antitone), and the CD/feasible equations are the
 arb-form VCs. -/
 theorem join_lemma3AtArb_of_cd_feasible {C : Configuration D}
-    (hVC : CoreVCs3CD D) (arb : AcyclicArbitration C)
+    (hMC : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a)
+    (arb : AcyclicArbitration C)
     (h_anti : ∀ {E' E'' : Set (Op D.AppOp)} {a b : Op D.AppOp},
        E' ⊆ E'' → arb.arb E'' a b → arb.arb E' a b)
     (hConv : ArbConvergence C arb.arb)
@@ -405,7 +406,7 @@ theorem join_lemma3AtArb_of_cd_feasible {C : Configuration D}
       have hs₀ : s₀ = D.init := isCanonicalStateArb_empty h_int hc₀
       have hinit := hFΔ.feasible_init ev₁ s₁ h_in₁ hc₁
       subst h_e₂
-      rw [hs₀, hs₂, hVC.mergeL_comm, hinit, Set.union_empty]
+      rw [hs₀, hs₂, hMC, hinit, Set.union_empty]
       exact hc₁
     -- Select an arb(∪)-maximal event; build A = σ(U∖e), B = σ(↓e∖e).
     have h_inU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
@@ -599,8 +600,8 @@ theorem join_lemma3AtArb_of_cd_feasible {C : Configuration D}
       have h_lr := hFΔ.feasible_local_redistribute ev₂ ev₁ s₀ B t₂ s₁ e
         h_tr h_ir h_in₂ h_in₁ h_cl₂ h_cl₁ he₂ he₁ h_max'
         hc₀_swap hB ht₂ hc₁
-      rw [hs₂d, hVC.mergeL_comm s₀ s₁, h_lr,
-        hVC.mergeL_comm s₀ t₂ s₁, h_mid, h_cd]
+      rw [hs₂d, hMC s₀ s₁, h_lr,
+        hMC s₀ t₂ s₁, h_mid, h_cd]
       exact h_target
 
 /-! ## §4. The apply-case obstruction (vis-consistency), pinned for the
@@ -716,7 +717,7 @@ theorem join_lemma3AtArb_loOn {C : Configuration D}
     (h_tr : ∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a) :
     JoinLemma3AtArb C (fun E => loOn (Configuration.core C) E) :=
-  join_lemma3AtArb_of_cd_feasible hVC (loOnArbitration C hU h_tr h_ir)
+  join_lemma3AtArb_of_cd_feasible hVC.mergeL_comm (loOnArbitration C hU h_tr h_ir)
     (fun {_ _ _ _} hsub h => loOn_mono hsub h) (loOn_arbConvergence hU)
     (feasibleDeltaVCs3Arb_of_feasible hFΔ C) (cdvc3Arb_of_cdvc3 hCD C)
 

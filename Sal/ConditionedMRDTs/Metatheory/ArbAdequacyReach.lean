@@ -336,7 +336,8 @@ theorem goodConfig3ArbF_apply (F : ArbFamily D)
 /-- **Merge**: the fresh version's arb-canonical state is delivered by the generic ternary
 Join Lemma (built from the family's five clauses + the arb-form VCs); every old version
 transfers by `isCanonicalStateArb_congr` (`vis` unchanged). -/
-theorem goodConfig3ArbF_merge (F : ArbFamily D) (hVC : CoreVCs3CD D)
+theorem goodConfig3ArbF_merge (F : ArbFamily D)
+    (hMC : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a)
     {C C' : Configuration D} {r₁ : Replica}
     {v₁ v₂ vT vm : Version} {s₁ s₂ sT : D.State}
     {ev₁ ev₂ evT : Set (Op D.AppOp)}
@@ -351,7 +352,7 @@ theorem goodConfig3ArbF_merge (F : ArbFamily D) (hVC : CoreVCs3CD D)
       then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3ArbF F C) : GoodConfig3ArbF F C' := by
   have hJoin : JoinLemma3AtArb C (F.arb C) :=
-    join_lemma3AtArb_of_cd_feasible hVC
+    join_lemma3AtArb_of_cd_feasible hMC
       ⟨F.arb C, F.extends_vis C, F.acyclic C h.vis_trans h.vis_irrefl⟩
       (fun hsub hab => F.antitone C hsub hab) (F.convergent C) hFΔc hCDc
   have hco := C.head_coherent r₁ v₁ h_head₁
@@ -434,7 +435,8 @@ open LabeledTS in
 /-- **`GoodConfig3ArbF` holds at every reachable configuration.** The `GoodConfig3`
 transition induction (`ra_linearizable3_of_join`), re-threaded over `IsCanonicalStateArb`
 and driven by the four §3 lemmas. -/
-theorem goodConfig3ArbF_of_reach (F : ArbFamily D) (hVC : CoreVCs3CD D)
+theorem goodConfig3ArbF_of_reach (F : ArbFamily D)
+    (hMC : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a)
     (hCD : ∀ C : Configuration D, CDVC3Arb C (F.arb C))
     (hFΔ : ∀ C : Configuration D, FeasibleDeltaVCs3Arb C (F.arb C))
     {hInit : D.Inv D.init}
@@ -453,17 +455,25 @@ theorem goodConfig3ArbF_of_reach (F : ArbFamily D) (hVC : CoreVCs3CD D)
       exact goodConfig3ArbF_apply F h_head h_ver h_fresh_t h_vnew hL hvis hver ih
     | merge h_head₁ h_head₂ h_ver₁ h_ver₂ h_lca h_verT h_vm h_rank₁
         h_rank₂ C' hN hL hvis hver hhead hparents =>
-      exact goodConfig3ArbF_merge F hVC (hCD _) (hFΔ _)
+      exact goodConfig3ArbF_merge F hMC (hCD _) (hFΔ _)
         h_head₁ h_ver₁ h_ver₂ h_lca h_verT hL hvis hver ih
     | query h_s h_val => exact ih
 
 open LabeledTS in
-/-- **THE CAPSTONE.** From a six-clause arbitration family + the ternary core VCs in
-arb-form (`CoreVCs3CD` for the Join Lemma, `CDVC3Arb`/`FeasibleDeltaVCs3Arb` per config),
-every reachable configuration is RA-linearizable against the family's arbitration —
-`loOn` absent, the fold pinned solely by the family's `ArbConvergence`. Composes
-`goodConfig3ArbF_of_reach` with `isRALinearizable3Arb_of_goodConfig3Arb`. -/
-theorem ra_linearizable3Arb_of_core_feasible_cd (F : ArbFamily D) (hVC : CoreVCs3CD D)
+/-- **THE CAPSTONE.** From a six-clause arbitration family + the merge content in
+arb-form (merge symmetry for the Join Lemma, `CDVC3Arb`/`FeasibleDeltaVCs3Arb` per
+config), every reachable configuration is RA-linearizable against the family's
+arbitration — `loOn` absent, the fold pinned solely by the family's `ArbConvergence`.
+Composes `goodConfig3ArbF_of_reach` with `isRALinearizable3Arb_of_goodConfig3Arb`.
+The merge-side hypothesis is exactly merge symmetry (`∀ l a b, mergeL l a b =
+mergeL l b a`), NOT the full `CoreVCs3CD`: the rc-shaped `UpdateVCs` in that bundle
+is never consumed by the arb engine (verified: only `.mergeL_comm` is touched, down
+through `join_lemma3AtArb_of_cd_feasible`), so the flat arb adequacy is genuinely
+rc-free at the signature level — the substance of the #123 recast. The `loOn` and
+LWW instances re-introduce their own order structure (`UpdateVCs` for `loOn`, the
+timestamp order for LWW); the abstract contract does not. -/
+theorem ra_linearizable3Arb_of_core_feasible_cd (F : ArbFamily D)
+    (hMC : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a)
     (hCD : ∀ C : Configuration D, CDVC3Arb C (F.arb C))
     (hFΔ : ∀ C : Configuration D, FeasibleDeltaVCs3Arb C (F.arb C))
     {hInit : D.Inv D.init}
@@ -472,7 +482,7 @@ theorem ra_linearizable3Arb_of_core_feasible_cd (F : ArbFamily D) (hVC : CoreVCs
     IsRALinearizable3Arb C (F.arb C) :=
   isRALinearizable3Arb_of_goodConfig3Arb
     (fun v s E hv =>
-      (goodConfig3ArbF_of_reach F hVC hCD hFΔ C hReach).canonical v s E hv)
+      (goodConfig3ArbF_of_reach F hMC hCD hFΔ C hReach).canonical v s E hv)
 
 /-! ## §5. Generic converters (arb-form VCs for the all-commuting class) -/
 
@@ -591,7 +601,7 @@ theorem loOn_isRALinearizable3Arb_via_capstone
     {hInit : D.Inv D.init} (C : Configuration D)
     (hReach : (labeledTS3 D).ReachableFrom (initConfig D hInit) C) :
     IsRALinearizable3Arb C (fun E => loOn (Configuration.core C) E) :=
-  ra_linearizable3Arb_of_core_feasible_cd (loOnFamily hU) hVC
+  ra_linearizable3Arb_of_core_feasible_cd (loOnFamily hU) hVC.mergeL_comm
     (fun C' => cdvc3Arb_of_cdvc3 hCD C')
     (fun C' => feasibleDeltaVCs3Arb_of_feasible hFΔ C') C hReach
 
