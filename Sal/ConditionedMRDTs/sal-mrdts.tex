@@ -1729,72 +1729,49 @@ three $e$-images merge to a single $e(B)$ factored out
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[>=Stealth, scale=0.92,
-  mg/.style={circle, draw, minimum size=3.9mm, inner sep=0pt, font=\scriptsize},
-  lf/.style={font=\scriptsize},
-  lc/.style={font=\scriptsize, text=blue!55!black},
-  dl/.style={font=\scriptsize, text=red!70!black}]
-\node[mg] (M)  at (0,0) {$m$};
-\node[lc] (s0) at (-1.15,-0.92) {$s_0$};
-\node[mg] (Mp) at (0,-0.92) {$m$};
-\node[lf] (s2) at (1.15,-0.92) {$s_2$};
-\node[lc] (B)  at (-0.72,-1.84) {$B$};
-\node[lf] (t1) at (0,-1.84) {$t_1$};
-\node[dl] (eB) at (0.8,-1.84) {$e(B)$};
-\draw[->] (s0)--(M); \draw[->] (Mp)--(M); \draw[->] (s2)--(M);
-\draw[->] (B)--(Mp); \draw[->] (t1)--(Mp); \draw[->] (eB)--(Mp);
-\node at (2.55,-0.92) {$=$};
-\node[mg] (N)  at (4.95,0) {$m$};
-\node[lc] (B2) at (3.8,-0.92) {$B$};
-\node[mg] (Np) at (4.95,-0.92) {$m$};
-\node[dl] (eB2)at (6.1,-0.92) {$e(B)$};
-\node[lc] (s0b)at (4.25,-1.84) {$s_0$};
-\node[lf] (t1b)at (4.95,-1.84) {$t_1$};
-\node[lf] (s2b)at (5.65,-1.84) {$s_2$};
-\draw[->] (B2)--(N); \draw[->] (Np)--(N); \draw[->] (eB2)--(N);
-\draw[->] (s0b)--(Np); \draw[->] (t1b)--(Np); \draw[->] (s2b)--(Np);
-\draw[->,red!70!black,dashed,shorten >=2pt] (eB) to[bend right=22] (eB2);
-\node[font=\scriptsize] at (3.05,-1.95) {(a)};
+\begin{tikzpicture}[>=Stealth,
+  ver/.style={draw, rounded corners, inner sep=3pt, font=\small},
+  lca/.style={draw, rounded corners, inner sep=3pt, font=\small, fill=blue!8},
+  op/.style={->, orange!85!black},
+  mrg/.style={->, teal!70!black, dashed},
+  ev/.style={font=\scriptsize, text=magenta!85!black},
+  lbl/.style={font=\scriptsize, text=black!60}]
+% (a) Flat VC6: e in one branch
+\begin{scope}
+\node[lca] (l) at (0,0)        {$\sigma(E_1\cap E_2)$};
+\node[ver] (a) at (-1.85,-1.5) {$\sigma(E_1)$};
+\node[ver] (b) at (1.85,-1.5)  {$\sigma(E_2)$};
+\node[ver] (m) at (0,-3.0)     {$\sigma(E_1\cup E_2)$};
+\node[ev] at (-2.55,-2.05) {$\ni e$};
+\draw[op] (l) -- (a); \draw[op] (l) -- (b);
+\draw[mrg] (a) -- (m); \draw[mrg] (b) -- (m);
+\draw[mrg] (l) to[bend right=58] (m);
+\node[lbl] at (0,-3.7) {\textbf{(a)} Flat VC~\ref{fvc:lredist}: $e$ in one branch};
+\end{scope}
+% (b) Flat VC7: e in the LCA and both branches
+\begin{scope}[xshift=6.5cm]
+\node[lca] (l2) at (0,0)        {$\sigma(E_1\cap E_2)$};
+\node[ver] (a2) at (-1.85,-1.5) {$\sigma(E_1)$};
+\node[ver] (b2) at (1.85,-1.5)  {$\sigma(E_2)$};
+\node[ver] (m2) at (0,-3.0)     {$\sigma(E_1\cup E_2)$};
+\node[ev] at (1.35,0.02)   {$\ni e$};
+\node[ev] at (-2.55,-2.05) {$\ni e$};
+\node[ev] at (2.55,-2.05)  {$\ni e$};
+\draw[op] (l2) -- (a2); \draw[op] (l2) -- (b2);
+\draw[mrg] (a2) -- (m2); \draw[mrg] (b2) -- (m2);
+\draw[mrg] (l2) to[bend right=58] (m2);
+\node[lbl] at (0,-3.7) {\textbf{(b)} Flat VC~\ref{fvc:redist}: $e$ in LCA and both branches};
+\end{scope}
 \end{tikzpicture}
-\hfill
-\begin{tikzpicture}[>=Stealth, scale=0.92,
-  mg/.style={circle, draw, minimum size=3.9mm, inner sep=0pt, font=\scriptsize},
-  sm/.style={circle, draw, minimum size=3.3mm, inner sep=0pt, font=\tiny},
-  lf/.style={font=\scriptsize},
-  lc/.style={font=\scriptsize, text=blue!55!black},
-  dl/.style={font=\scriptsize, text=red!70!black}]
-\node[mg] (M) at (0,0) {$m$};
-\node[sm] (a) at (-1.95,-0.95) {$m$};
-\node[sm] (b) at (0,-0.95) {$m$};
-\node[sm] (c) at (1.95,-0.95) {$m$};
-\draw[->] (a)--(M); \draw[->] (b)--(M); \draw[->] (c)--(M);
-\foreach \n/\t/\x in {a/t_0/-1.95, b/t_1/0, c/t_2/1.95}{
-  \node[lc,scale=0.82] at (\x-0.52,-1.9) {$B$};
-  \node[lf,scale=0.82] at (\x,-1.9) {$\t$};
-  \node[dl,scale=0.82] at (\x+0.6,-1.9) {$e(B)$};
-  \draw[->] (\x-0.48,-1.73) -- (\n);
-  \draw[->] (\x,-1.73) -- (\n);
-  \draw[->] (\x+0.55,-1.73) -- (\n);
-}
-\node at (3.55,-0.95) {$=$};
-\node[mg] (N)  at (6.1,0) {$m$};
-\node[lc] (B2) at (4.95,-0.95) {$B$};
-\node[mg] (Np) at (6.1,-0.95) {$m$};
-\node[dl] (eB2)at (7.25,-0.95) {$e(B)$};
-\node[lf] (t0b)at (5.4,-1.9) {$t_0$};
-\node[lf] (t1b)at (6.1,-1.9) {$t_1$};
-\node[lf] (t2b)at (6.8,-1.9) {$t_2$};
-\draw[->] (B2)--(N); \draw[->] (Np)--(N); \draw[->] (eB2)--(N);
-\draw[->] (t0b)--(Np); \draw[->] (t1b)--(Np); \draw[->] (t2b)--(Np);
-\node[font=\scriptsize] at (3.55,-1.95) {(b)};
-\end{tikzpicture}
-\caption{The two redistribute laws as peels of the $\loE{}$-maximal event
-$e$ from a ternary merge. Each node $m$ is a $\mergeL$ (leftmost input the
-LCA slot, blue); red is $e$'s delta $e(B)$ over its past
-$B = \sigma(\dow{e}\setminus\{e\})$. \textbf{(a)} Flat VC~\ref{fvc:lredist}:
-$e$ in one branch slides out over the enclosing merge, leaving it $e$-free
-(over $E_1{\cup}E_2 \setminus\{e\}$). \textbf{(b)} Flat VC~\ref{fvc:redist}:
-$e$ in all three inputs factors out once.}
+\caption{The peel of the $\loE{}$-maximal event $e$ from the Join Lemma's
+three-way merge: the LCA $\sigma(E_1\cap E_2)$ (shaded) and the branches
+$\sigma(E_1)$, $\sigma(E_2)$ merge to $\sigma(E_1\cup E_2)$ (solid arrows
+apply a branch's events, dashed arrows feed the merge). \textbf{(a)} Flat
+VC~\ref{fvc:lredist} peels $e$ (magenta) when it lies in one branch: its
+delta slides out over the merge, applied over its own past
+$B = \sigma(\dow{e}\setminus\{e\})$. \textbf{(b)} Flat VC~\ref{fvc:redist}
+peels $e$ when it lies in the LCA and both branches: its three copies factor
+out once.}
 \label{fig:redist}
 \end{figure}
 
