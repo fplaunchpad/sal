@@ -1331,6 +1331,61 @@ $\rcrel$ cannot express --- skips $\rcrel$ and the eight VCs entirely and
 discharges the six clauses directly (\lean{lwwFamily}); there
 vis-consistency rests on the Lamport-clock invariant, not on $\rcrel$.
 
+\paragraph{Worked example: the LWW register by timestamp.} The recast is
+not idle generality. The last-writer-wins register is a datatype whose
+arbitration $\rcrel$ \emph{cannot} express, and it routes through the
+adequacy engine unchanged.
+
+\emph{The datatype.} A state is $\bot$ (unset) or a winning write, a
+lex-ordered triple $w = (\mathsf{time}, \text{replica}, \text{value})$
+(\lean{LWWWrite}). Update installs a write by semilattice max,
+$\dodo(s, e) = \max(s, w_e)$; the three-way merge drops its LCA slot,
+$\mergeL(l, a, b) = \max(a, b)$, since the state only ever moves up. The
+conflict resolver is trivial, $\rcrel = \mathsf{Either}$
+(\lean{LWW\_rc\_either}).
+
+\emph{$\loE{}$ degenerates to nothing.} With $\rcrel = \mathsf{Either}$ and
+all writes commuting ($\max$ is commutative, \lean{LWW\_all\_comm}),
+\emph{both} arms of $\loE{E}$ are dead: the visibility arm needs a
+non-commuting pair, the concurrent arm needs
+$\rcrel = \mathsf{Fst\_then\_snd}$. So $\loE{E}$ is the \emph{empty}
+relation on LWW (\lean{lww\_loOn\_false}); the $\rcrel$ recipe produces the
+discrete arbitration, no order at all. LWW's arbitration does not live in
+$\rcrel$ --- it lives in the payload, the $\max$ on lex-timestamps.
+
+\emph{The timestamp arbitration.} Take
+$\arb\,E\,a\,b \coloneqq w_a < w_b$, the total order on writes by timestamp
+(\lean{lwwArb}). It discharges the six clauses of
+Definition~\ref{def:arbfamily}, and the discharge reads off where each
+clause's content sits (\lean{lwwFamily}): \emph{acyclic} is strictness of
+$<$; \emph{extends-vis} is vacuous (no non-commuting pairs);
+\emph{antitone} and \emph{vis-local} are immediate because $\arb$ ignores
+the carrier $E$ entirely; \emph{convergent} is the $\max$-fold being
+order-independent; and \emph{vis-consistent} is the one clause with
+content --- $\vis\,b\,a$ forces $\mathsf{time}(b) < \mathsf{time}(a)$ by
+the Lamport clock (\lean{Configuration.causal\_mono}), hence $w_b < w_a$,
+so $\arb$ never orders a write ahead of one it observed. That clause rests
+on the generation clock, \emph{not} on the apply rule (which enforces only
+timestamp freshness): exactly where ``the timestamp order respects
+causality'' comes from.
+
+\begin{theorem}[LWW through the arbitration engine]
+\label{thm:lww}
+Every reachable LWW configuration is RA-linearizable against the timestamp
+arbitration $\arb$, through the \emph{same} capstone
+(Theorem~\ref{thm:arbadequacy}) that certifies $\loE{}$ --- $\loE{}$
+absent, the fold pinned by $\arb$'s own convergence.
+\hfill\lean{lww\_isRALinearizable3Arb\_ts\_via\_capstone}
+\end{theorem}
+
+LWW is the witness that the abstraction is load-bearing: a datatype the
+$\rcrel$-based catalogue can certify only by making its order vanish is
+linearized, at full strength, by the arbitration contract. (LWW also
+carries its ordinary flat discharge, \lean{lww\_ra\_linearizable3}, against
+that empty $\loE{}$ with $\max$-convergence pinning the fold; the two
+agree, and the timestamp arbitration is the honest account of the order the
+register actually realizes.)
+
 \section{Deriving \texorpdfstring{$\loE{}$}{lo}: the eight verification
 conditions}
 \label{sec:vcs}
