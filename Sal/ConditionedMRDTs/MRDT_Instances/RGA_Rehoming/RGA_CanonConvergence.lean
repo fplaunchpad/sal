@@ -4,9 +4,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 /-!
 # RGA update convergence via the direct canonical-state characterization
 
-Per `CANONICAL_STATE_DESIGN.md`: two per-event-disciplined folds of the same
-event set converge because each fold state is observationally a pure function
-of the applied event SET — domain = `survivors F`, per-survivor anchor =
+Two per-event-disciplined folds of the same event set converge because each
+fold state is observationally a pure function of the applied event SET —
+domain = `survivors F`, per-survivor anchor =
 `canonAnc F` (the recorded chain resolved against the survivor set), payload =
 recorded element.  No swap oracle, no per-prefix `Faithful`, no `DepComp`: this
 file does not even import them.

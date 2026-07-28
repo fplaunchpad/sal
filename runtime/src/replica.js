@@ -1,47 +1,36 @@
-// THE FIRST-CLASS DISTRIBUTED REPLICA (task #108): the runtime's two-store
-// split resolved into ONE object over ONE commit store that has BOTH wire sync
-// AND certified compaction.
-//
-// The split it folds together:
-//   - src/runtime.js `Replica` had ONE shared store with the certified state GC
-//     (frontier -> stableCut -> compactStable) and the keep-set commit GC, but
-//     NO wire: replicas shared a store and merged by moving head pointers.
-//   - src/sync.js `Peer` had its OWN separate store with delta gossip
-//     (ancestryGids / delta / ingest, content-address gated), but NO compaction.
-// The p2p demo needed both, and glued them ad hoc under an ad-hoc SHA hash.
-// DistributedReplica IS that combination, promoted into the core: a separate
-// content-addressed store with (a) local ops, (b) delta gossip, (c) the
-// certified stability GC, (d) the keep-set commit GC, (e) SHA content
-// addressing throughout (src/hash.js). The p2p demo's Node is now a thin
-// re-export of this object.
+// THE FIRST-CLASS DISTRIBUTED REPLICA: ONE object over ONE content-addressed
+// commit store with BOTH wire sync AND certified compaction:
+//   (a) local ops,
+//   (b) delta gossip (ancestryGids / delta / ingest, content-address gated),
+//   (c) the certified stability GC (frontier -> stableCut -> compactStable),
+//   (d) the keep-set commit GC,
+//   (e) SHA content addressing throughout (src/hash.js).
+// The p2p demo's Node re-exports this object.
 //
 // DATATYPE-PARAMETRIC. Everything except state compaction is datatype-agnostic
 // (init/apply/merge3/read). A datatype that also provides {compact, remapState,
 // encodeState, decodeState} additionally gets the certified state GC; one that
-// does not (e.g. orset) gets everything else and refuses compactStable. Both
-// embedRGA and orset are exercised in test/replica.test.js.
+// does not (e.g. orset) gets everything else and refuses compactStable.
 //
-// EPOCHS / CONCURRENT COMPACTION (task #112 phase 3; the validated + mechanized
-// epoch diamond, whiteboard/epoch-protocol-note.md section 9,
-// Sal/.../EmbedRGA_EpochDiamond.lean). compactStable opens a new epoch (re-coded
+// EPOCHS / CONCURRENT COMPACTION. compactStable opens a new epoch (re-coded
 // coordinates), and epoch identity is the SETTLED CUT + its certificate, held in
 // a CUT-INDEXED DAG (src/epoch.js), not a per-replica integer. A cross-epoch
-// merge no longer THROWS: it is the certificate-determined JOIN. Two heads at
+// merge is the certificate-determined JOIN, not a throw. Two heads at
 // COMPARABLE cuts (one ⊆ the other) merge by lifting the lower side UP into the
 // higher (shipped, content-addressed) epoch through its recomputed map (the
 // linear-epoch path, byte-identical to the never-compacted twin). Two heads at
 // INCOMPARABLE (divergent) cuts merge by op-REPLAY to their common base epoch:
 // the JS runtime is id-addressed (an insert carries its anchor's id, and a
-// record's coordinate is re-derived from its anchor -- the H3 extension law), so
+// record's coordinate is re-derived from its anchor, the H3 extension law), so
 // lifting an epoch is re-applying id-addressed ops, the id-addressed analogue of
-// the Lean/note coordinate-map translation (THE ONE MODELLING GAP, note §9
-// "Model limits"; see #joinState). The join cut W = U ∪ V is registered in the
-// cut-DAG; a subsequent certified compactStable re-codes the merged head up to a
-// cut ⊇ W (compaction frames are only ever MINTED by compactStable and shipped
-// content-addressed, never re-derived at merge from divergent local holdings --
-// that is what keeps the frame coordination-free). Translation maps are GC'd per
-// the A3 DOUBLE certificate (src/epoch.js doubleCertificate); the ack-only
-// shortcut is unsound and is refused.
+// coordinate-map translation (THE ONE MODELLING GAP; see #joinState). The join
+// cut W = U ∪ V is registered in the cut-DAG; a subsequent certified
+// compactStable re-codes the merged head up to a cut ⊇ W (compaction frames are
+// only ever MINTED by compactStable and shipped content-addressed, never
+// re-derived at merge from divergent local holdings, which is what keeps the
+// frame coordination-free). Translation maps are GC'd per the DOUBLE certificate
+// (src/epoch.js doubleCertificate); the ack-only shortcut is unsound and is
+// refused.
 
 import { Dag } from './dag.js';
 import { mcas, CrissCrossError } from './lca.js';
@@ -210,24 +199,24 @@ export class DistributedReplica {
     return s;
   }
 
-  /** THE CROSS-EPOCH JOIN (note §9.2). Merge heads `aId` and `bId`, returning the
+  /** THE CROSS-EPOCH JOIN. Merge heads `aId` and `bId`, returning the
    *  merged state and the epoch key it lands in. Same epoch throughout: unchanged
    *  merge3 (byte-identical). Same epoch heads over a lower LCA: lift the LCA UP,
    *  stay compact. Cross-epoch (comparable OR incomparable cuts): lift both heads
    *  DOWN to the LCA's frame through the inverse maps -- coordinate translation is
-   *  the sound realization of the note's translation (a forward MAP lift of a
+   *  the sound realization of the translation (a forward MAP lift of a
    *  head is unsound here: a divergently-compacted peer renumbered its OWN view,
-   *  and a concurrently-minted record this side holds -- unseen by that
-   *  compaction, its id possibly inside the cut's id range -- would be squeezed
+   *  and a concurrently-minted record this side holds (unseen by that
+   *  compaction, its id possibly inside the cut's id range) would be squeezed
    *  into a wrong ordinal). The merged head sits at the common base epoch; a later
    *  certified compactStable re-codes it up to a cut ⊇ W (the join cut W = U ∪ V,
    *  registered in the cut-DAG). Compaction frames are minted only by the shipped,
-   *  content-addressed compactStable, never re-derived at merge -- that is what
-   *  keeps the frame coordination-free. */
+   *  content-addressed compactStable, never re-derived at merge, which keeps
+   *  the frame coordination-free. */
   #joinState(aId, bId) {
     const ea = this.epochOf.get(aId), eb = this.epochOf.get(bId);
     const aState = this.dag.get(aId).state, bState = this.dag.get(bId).state;
-    // The LCA slot is the VIRTUAL base (#90): the unique MCA's state, or the
+    // The LCA slot is the VIRTUAL base: the unique MCA's state, or the
     // fold of the MCA antichain when the pair criss-crosses (mcas of mcas). It
     // returns the base state AND the epoch its coordinates are coded in, which
     // feeds the epoch lift below exactly as a single LCA would.
@@ -302,9 +291,9 @@ export class DistributedReplica {
         continue;
       } else if (wc.kind === 'compact') {
         // decode the inline state (the content-address witness), and RECOMPUTE
-        // this epoch's translate map from parentState + the shipped cut -- the
-        // certificate travels, the map does not (note §9.1). The gid gate below
-        // confirms the recomputed compaction matches the peer's.
+        // this epoch's translate map from parentState + the shipped cut: the
+        // certificate travels, the map does not. The gid gate below confirms
+        // the recomputed compaction matches the peer's.
         state = this.datatype.decodeState(wc.state);
         const parentKey = this.epochOf.get(localParents[0]);
         const parentState = this.dag.get(localParents[0]).state;
@@ -391,7 +380,7 @@ export class DistributedReplica {
     return this.registered.delete(name);
   }
 
-  // ---- VIRTUAL LCAs (#90) x EPOCH LIFT (#112): the criss-cross-resolving base.
+  // ---- VIRTUAL LCAs x EPOCH LIFT: the criss-cross-resolving base.
   // The LCA slot of a merge between the union-ancestry of an id set S and a
   // commit w is the unique MCA's state, or the FOLD of the MCA antichain (sorted
   // by content id for cross-replica determinism; recursively resolved
@@ -410,7 +399,7 @@ export class DistributedReplica {
 
   /** Lift `state` from epoch `from` DOWN to `target` (identity if equal). If the
    *  inverse chain is unavailable the criss-cross is genuinely unresolvable, so
-   *  raise CrissCrossError to DEFER (as every criss-cross was deferred before). */
+   *  raise CrissCrossError to DEFER. */
   #liftDown(state, from, target, antichain) {
     if (from === target) return state;
     const lifted = this.#toEpoch(state, from, target);
@@ -449,14 +438,13 @@ export class DistributedReplica {
   /** The certified stable cut over the registered (rostered) replica set. */
   stableCut() { return stableCut(this.dag, this.#headId, [...this.registered], this.name); }
 
-  /** GC epoch `key`'s translation map under the A3 DOUBLE certificate (note §9.4,
-   *  src/epoch.js `doubleCertificate`; the Lean `mapDrop_sound`). BOTH halves are
-   *  required and supplied by the caller (the frontier producer, as for
-   *  stableCut's certificate): `everyoneAdvanced` (every registered replica past
-   *  epoch e) AND `allHeardOverAckFrontier` (every pre-advance mint heard
-   *  everywhere). The ack-ONLY shortcut is UNSOUND and REFUSED here -- an epoch-e
-   *  straggler minted before its minter advanced can still arrive and needs the
-   *  map (the Lean `a3_ack_only_unsound` FAIL). Returns { dropped, reason }. */
+  /** GC epoch `key`'s translation map under the DOUBLE certificate (src/epoch.js
+   *  `doubleCertificate`). BOTH halves are required and supplied by the caller
+   *  (the frontier producer, as for stableCut's certificate): `everyoneAdvanced`
+   *  (every registered replica past epoch e) AND `allHeardOverAckFrontier` (every
+   *  pre-advance mint heard everywhere). The ack-ONLY shortcut is UNSOUND and
+   *  REFUSED here: an epoch-e straggler minted before its minter advanced can
+   *  still arrive and needs the map. Returns { dropped, reason }. */
   dropEpochMap(key, certificate = {}) {
     const node = this.epochDag.get(key);
     if (!node) return { dropped: false, reason: `no such epoch ${key}` };
@@ -470,10 +458,9 @@ export class DistributedReplica {
     return { dropped: true, key };
   }
 
-  /** CERTIFIED STATE GC (src/runtime.js Replica.compactStable, over the separate
-   *  store): compact at the largest cut this replica can PROVE from its frontier.
-   *  Refuses (no-op) when the certificate is incomplete. Opens a new epoch.
-   *  Only for datatypes that provide the compaction hooks. */
+  /** CERTIFIED STATE GC: compact at the largest cut this replica can PROVE from
+   *  its frontier. Refuses (no-op) when the certificate is incomplete. Opens a
+   *  new epoch. Only for datatypes that provide the compaction hooks. */
   compactStable(opts) {
     if (typeof this.datatype.compact !== 'function' || typeof this.datatype.remapState !== 'function') {
       return { compacted: false, reason: 'datatype does not support state compaction (needs compact + remapState)' };
@@ -544,13 +531,12 @@ export class DistributedReplica {
    *  (commitContentId), so `ingest` verifies it parent-free. Gated on the
    *  certified condition for forgetting: the stability cut is complete AND every
    *  registered replica's evidence has ADVANCED PAST the compaction's cut
-   *  (epochDag.subcut) -- then no registered peer can need the dropped commits
+   *  (epochDag.subcut), so no registered peer can need the dropped commits
    *  for a delta or a cross-epoch lift (a returning FORGOTTEN peer re-bootstraps
    *  from the base). Soundness is the model-independent "a settled cut licenses
-   *  forgetting" (the stability VC), so this rides the #112 cut-keyed epochs
-   *  unchanged: pruning removes only history BELOW the base; every future merge
-   *  lifts down to at most the base. Returns { pruned, epoch } or
-   *  { pruned: 0, reason }. */
+   *  forgetting" (the stability VC): pruning removes only history BELOW the base;
+   *  every future merge lifts down to at most the base. Returns { pruned, epoch }
+   *  or { pruned: 0, reason }. */
   pruneToEpochBase() {
     let K = null, kNum = -1;
     for (const cid of this.dag.ancestorSet(this.#headId)) {

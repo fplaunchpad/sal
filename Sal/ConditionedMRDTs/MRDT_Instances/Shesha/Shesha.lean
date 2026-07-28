@@ -1,20 +1,20 @@
 /-!
-# Shesha — the sibling-linked tombstone-free replicated list (phase 1)
+# Shesha — the sibling-linked tombstone-free replicated list
 
 Design record: `whiteboard/sibling-linked-rga-notes.md`. Pen-and-paper proofs:
 `whiteboard/sibling-linked-proof.md`. Executable reference semantics (THE oracle
 for this port): `whiteboard/sl_pbt.py` — every definition here is
 observationally cross-validated against it in `Shesha_SPOT.lean`.
 
-**Phase-1 status.** This file delivers the executable datatype (`read`,
+**Scope of this file.** This file delivers the executable datatype (`read`,
 `insert`, `delete`, the three-way `merge`), the tombstoned oracle
 (`oracleRead`), the naive sequential list model, and the machine-checked
 sequential soundness theorems (Theorem S, Corollary S1) — all kernel-clean, no
 `sorry`. The 24 RA-linearizability VCs, the merge lemmas M0–M3, Theorem P
-(causal pairwise display stability), and the `ConditionedMRDTSig` packaging are
-phase 2; this module is deliberately NOT imported by
-`MRDT_Instances/MRDT_Instances.lean` (the umbrella imports conditioned
-capstones only).
+(causal pairwise display stability), and the `ConditionedMRDTSig` packaging
+live in the other `Shesha_*.lean` files; this module is deliberately NOT
+imported by `MRDT_Instances/MRDT_Instances.lean` (the umbrella imports
+conditioned capstones only).
 
 ## Representation
 
@@ -25,8 +25,8 @@ forest, each node's row stored in place, head = first list element,
 `sib(u)` = the next list element. The two encodings carry exactly the same
 information (the sibling chain *is* the row), and the explicit form is what
 `sl_pbt.py`'s own merge computes internally (`out_rows`); the O(1)-per-node
-boundedness claim lives in the pointer encoding, which phase 2 can add back
-with an encoding isomorphism. What the rows form buys phase 1: `read`,
+boundedness claim lives in the pointer encoding, recoverable from this one via
+an encoding isomorphism. What the explicit-rows form buys: `read`,
 `insert`, `delete` are fuel-free structural recursions, so Theorem S is an
 honest structural induction — no well-formedness hypotheses, no fuel
 bookkeeping. Observational agreement with the pointer-based Python reference
@@ -256,7 +256,7 @@ theorem read_steps :
 
 /-- **Theorem S (sequential soundness).** For any op list applied
 single-replica from the empty document, the datatype's read equals the
-naive-list fold of the same ops (`sibling-linked-proof.md` §2, [proved]). -/
+naive-list fold of the same ops (`sibling-linked-proof.md` §2). -/
 theorem sequential_soundness (ops : List Op) : read (fold ops) = seqFold ops :=
   read_steps ops init
 
@@ -505,8 +505,8 @@ def buildF (rows : List (Nat × List Nat)) (isMarker : Nat → Bool) (mfuel : Na
         (fun c => Tree.node c (buildF rows isMarker mfuel fuel c))
 
 /-- **The three-way merge** (`merge L A B`, `L` = LCA) — `sl_pbt.py`'s
-`merge`, ported faithfully. Phase 2 owes M0 (well-formedness), M1 (symmetry),
-M2/M3 (order extension), and Theorem P on top of this definition. -/
+`merge`, ported faithfully. Owed on top of this definition: M0
+(well-formedness), M1 (symmetry), M2/M3 (order extension), and Theorem P. -/
 def merge (L A B : St) : St :=
   let rows := outRows L A B
   let n := (read L).length + (read A).length + (read B).length + 1

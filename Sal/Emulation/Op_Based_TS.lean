@@ -21,8 +21,7 @@ Differences from the state-based TS in `CRDT_TS.lean`:
 
 The signatures (`OpCRDTSig`) and the `CRDTSig` of `CRDT_Signature.lean`
 share `State`, `init`, `Query`, `Value`, `Op`, `rc`, but differ on the
-update/merge hooks. The canonical emulation $\mathcal{G}$ (step 9 of
-PLAN.md) relates them.
+update/merge hooks. The canonical emulation $\mathcal{G}$ relates them.
 -/
 
 namespace Sal.Emulation

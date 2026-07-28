@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 import Sal.ConditionedMRDTs.Metatheory.Stability_VC
 
 /-!
-# The eRecode ⇄ SettledAt bridge (task #96 stage 4, connecting #97)
+# The eRecode ⇄ SettledAt bridge
 
 The re-coding cluster (`eRecode_applySeq` and friends) is *cut-parametric*: it
 takes the cut as data — a state whose coordinates the stable-prefix map
@@ -14,7 +14,7 @@ provable today:
   settled event set, every existing event outside it has the *whole* cut in
   its causal past. This is the class-(a)/(b) collapse for the remap species:
   there are no in-flight ops straddling a settled cut; everything beyond it
-  was minted in the new epoch. (New; proved from `SettledAtOn` alone.)
+  was minted in the new epoch. (Proved from `SettledAtOn` alone.)
 * `AnchorsFactorBeyond` — the *named residue*: ops minted with the cut in
   their causal past carry anchor prefixes that factor at the stable-prefix
   map. This is the re-based-honesty obligation recorded as open in
@@ -25,13 +25,14 @@ provable today:
   the map covers, given `AnchorsFactorBeyond`, every continuation of events
   existing beyond the cut reads identically under the re-map — the remap
   species meets the stability interface's observation clause (VC-S2) with the
-  gate supplied by the #96 contract instead of by bare data. `vc_step`'s
-  analogue is `eUpdate_remap`, already in the cluster.
+  gate supplied by the `SettledAt` contract (`whiteboard/stability-vc-note.md`)
+  instead of by bare data. `vc_step`'s analogue is `eUpdate_remap`, already in
+  the cluster.
 
 **Achieved strength, honestly**: VC-S1/S2/S3-analogues of the `StabilityVC`
 interface hold for the remap species at a `SettledAt` cut, with the mint
 hypothesis reduced (via the dichotomy) to `AnchorsFactorBeyond`. The **merge
-clause (VC-S4) is now discharged on the data plane** in
+clause (VC-S4) is discharged on the data plane** in
 `EmbedRGA_MergeCongr.lean` (`merge_remap_congr` / `eRemapRel_merge`): the lazy
 translation commutes with the embed RGA's ternary merge on the coordinates at
 hand, so a merge of three re-mapped versions is the re-map of the merge —
@@ -107,7 +108,8 @@ theorem eRecode_settled_bridge {Γ : OrderedPrefixCode}
     eRecode_reads_identical F s τ hrest hτ⟩
 
 /-- The version-level packaging: the gate is the same `SettledAt` the OR-set
-instance consumes — one frontier, three consumers (note §2). -/
+instance consumes — one frontier, three consumers
+(`whiteboard/stability-vc-note.md` §2). -/
 theorem eRecode_settled_bridge' {Γ : OrderedPrefixCode}
     (F : StablePrefixMap Γ)
     {C : Configuration (E Γ α)} {v : Version} {S : Set (Op (EOp α))}

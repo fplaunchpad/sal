@@ -19,9 +19,9 @@ the union at all.
 
 `ev₁ = {e1,e2,e4,e5}` (branch A), `ev₂ = {e1,e3}` (branch B),
 `ev₁ ∩ ev₂ = {e1}`. Because the only common insert is `e1`, `SCoh` is
-**vacuous** — the coherence layer that repaired the earlier `W`-join
-refutations does not exclude this instance. The three canonical folds are
-forced:
+**vacuous** — the coherence layer that addresses the `W`-join refutations
+(`Shesha_Join_Refuted.lean`, `Shesha_Presplice_Refuted.lean`) does not
+exclude this instance. The three canonical folds are forced:
 
     s₀ = fold[e1]          = [1]
     s₁ = fold[e1,e2,e4,e5] = [4, 2]      (1 deleted; 2 re-homed to root after 4)
@@ -48,8 +48,9 @@ unsatisfiable: **no `preRows` exists.**
 
 ## Scope of the finding
 
-This is the ghost-re-homing failure the frontier note flagged as the risk,
-realised: the merge re-homes a *marker's own-branch-deleted* child (`2`) to a
+This is the ghost-re-homing failure identified as the residual difficulty in
+`shesha_rows_residue`'s frontier note (`Shesha_Presplice.lean`): the merge
+re-homes a *marker's own-branch-deleted* child (`2`) to a
 different slot than the marker's live-branch child (`3`). The output `[3,4,2]`
 is not the fold of any causal linearization of `{ins1,ins2,ins3,ins4,del1}`
 (deleting `1` splices its children contiguously; no root sibling can land

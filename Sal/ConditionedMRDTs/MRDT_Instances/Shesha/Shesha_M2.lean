@@ -1,9 +1,9 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_M0
 
-/-! # Shesha — M2: the L-extension order theorem (phase 2b, block 3)
+/-! # Shesha — M2: the L-extension order theorem
 
 Closes `merge_L_filter` (the skeleton-DFS-order = L-document-order core) and
-hosts `merge_extends_L`, both previously owed in
+hosts `merge_extends_L`, both stated as owed in
 `Shesha_Merge_Lemmas.lean`.
 
 Route: the L-filter of the merge's read computes, level by level, the DFS

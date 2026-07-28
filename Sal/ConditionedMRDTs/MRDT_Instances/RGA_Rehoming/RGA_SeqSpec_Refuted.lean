@@ -5,7 +5,7 @@ open RGA_TF_Read
 /-!
 # Sequential-spec REFUTATION: the rehoming RGA is not the naive text buffer
 
-The negative row of the sequential-spec campaign (#65). The campaign proves,
+The negative row of the sequential-spec campaign. The campaign proves,
 per RDT, that the fold of any single-replica history equals a straightforward
 sequential program: tier 1 the eleven flat RDTs, tier 2 the mergeable queue =
 a plain FIFO, tier 3 the embedded-chain RGA = the naive insert-at-index text
@@ -33,9 +33,9 @@ independently failable):
 | **rehoming RGA** | **REFUTED (this file)** | sound (`rga_ra_linearizable3_eq`) |
 | Shesha | sound (`sequential_soundness`) | REFUTED (`Shesha_Rows_Refuted`) |
 
-The rehoming row is why the design is demoted from the canonical seat: its
-convergence certificate is real, but convergence is to its own fold
-(`oq:linspec`), and its own fold is not a text buffer. Downstream, fused
+The rehoming row shows this design cannot serve as a drop-in text-buffer
+implementation: its convergence certificate is real, but convergence is to its
+own fold (`oq:linspec`), and its own fold is not a text buffer. Downstream, fused
 Peritext inherits this at the render (`fused_delete_reformats_survivor`,
 `Peritext/Peritext_Read.lean`).
 

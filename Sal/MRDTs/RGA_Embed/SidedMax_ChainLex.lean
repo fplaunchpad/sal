@@ -1,7 +1,7 @@
 import Sal.MRDTs.RGA_Embed.Sided_ChainLex
 
 /-!
-# The FugueMax chain-lex kernel — right-origin-tagged R entries (task #87a)
+# The FugueMax chain-lex kernel: right-origin-tagged R entries
 
 Weidner-Kleppmann Definition 6 (arXiv:2305.00583v3): FugueMax is Fugue
 with the tree traversal visiting right-side siblings in the REVERSE order
@@ -977,7 +977,7 @@ example : keyLt (sKey (fmCoordOf unaryCode [.R [0] 1, .L 20]))
 #print axioms fmCoordOf_inj
 #print axioms tagOK_key
 
-/-! ## Backward-condition bookkeeping (task #92 item 1)
+/-! ## Backward-condition bookkeeping
 
 The two marker-theorem consumers the backward discharge needs: the
 before-side twin of `fm_ext_after_is_R`, and the divergence inversion for

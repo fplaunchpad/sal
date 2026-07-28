@@ -4,11 +4,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Assembly
 /-!
 # The honest-execution residual DISCHARGED — hHon + hBA from per-step delivery honesty
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 `rga_RA_linearizable_final`'s residual (`hHon`, `hBA`) quantifies over all reachable
 configurations and speaks in framework vocabulary (`GenDisc2C`, `qapplicable`).  This file
-grinds it down to a SINGLE per-step assumption about what an honest system delivers
+reduces it to a SINGLE per-step assumption about what an honest system delivers
 (`HonestDelivery`), and proves the rest by reachability induction:
 
 * **Free from the structure**: the metatheory `Configuration` carries `causal_mono` (Lamport
@@ -22,9 +22,8 @@ grinds it down to a SINGLE per-step assumption about what an honest system deliv
   (`t > x-insert's time ≥ 0` in `ℕ` forces `t ≥ 1`).
 * **The genuinely irreducible clause** — *born accuracy*: each delivered op was generated
   accurately against a causal fold of the events it had seen (this is how an RGA client works:
-  it reads its replica's state).  This is exactly the generation-discipline assumption the
-  whole development identified as forced by tombstone-freedom; `genDisc2C_of_born` converts it
-  to `GenDisc2C` at every reachable core.
+  it reads its replica's state).  This is exactly the generation-discipline assumption forced by
+  tombstone-freedom; `genDisc2C_of_born` converts it to `GenDisc2C` at every reachable core.
 
 `HonestDelivery` = born accuracy + `hBA`'s applicable-delivery clause.  Everything else is
 induction (`HonCore`) over `Step3`.

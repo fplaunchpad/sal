@@ -280,7 +280,6 @@ theorem ind_lca_2op (l: concrete_st) (o1 o2 ol: op_t) :
 →
  eq (merge (do_ (do_ l ol) o1) (do_ (do_ l ol) o2)) (do_ (merge (do_ l ol) (do_ (do_ l ol) o2)) o1)
 := by
-  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
   unfold rc distinct_ops eq
   rintro ⟨ h1, h2, h3, h4, h5, h6, h7 ⟩
   constructor
@@ -373,7 +372,6 @@ theorem ind_left_2op (a b:concrete_st) (o1 o2 o1':op_t) :
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b o2)) (do_ (merge (do_ a o1') (do_ b o2)) o1)
 := by
-  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
   unfold rc distinct_ops get_rid
   unfold eq
   intro h
@@ -409,7 +407,6 @@ distinct_ops o1 ol ∧
 →
  eq (merge (do_ (do_ l ol) o1) (do_ l ol)) (do_ (merge (do_ l ol) (do_ l ol)) o1)
 := by
-  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
   intro h
   rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases ol with ⟨ _, _, _ | _ ⟩ <;>
     simp +decide [ *, eq ] at *
@@ -477,7 +474,6 @@ theorem ind_left_1op (a b:concrete_st) (o1 o1' ol:op_t) :
 →
  eq (merge (do_ (do_ a o1') o1) (do_ b ol)) (do_ (merge (do_ a o1') (do_ b ol)) o1)
  := by
-  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
   rcases o1 with ⟨ _, _, _ | _ ⟩ <;> rcases o1' with ⟨ _, _, _ | _ ⟩ <;>
     rcases ol with ⟨ _, _, _ | _ ⟩ <;> simp +decide [ * ] at *
   · grind
@@ -504,7 +500,6 @@ theorem ind_right_1op (a b: concrete_st) (o2 o2' ol:op_t) :
 
 theorem lem_0op (a b:concrete_st) (ol:op_t) :
 eq (merge (do_ a ol) (do_ b ol)) (do_ (merge a b) ol) := by
-  -- Proof produced by Aristotle (Harmonic), 2026-04-21.
   rcases ol with ⟨ _, _, ol ⟩
   cases ol <;> simp +decide [ eq, do_, merge ]
   · grind

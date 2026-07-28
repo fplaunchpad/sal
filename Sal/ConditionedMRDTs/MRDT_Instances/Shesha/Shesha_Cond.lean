@@ -17,20 +17,20 @@ counterexample at an honest configuration:
   it incompatibly, breaking the branch agreement (Lemma B) the merge's
   run placement relies on.
 
-The corrected route (`WitnessCoherence.lean`) threads the missing datum —
+This route (`WitnessCoherence.lean`) threads the missing datum —
 **same-anchor insert coherence** (`SCoh`), branch agreement at the witness
-level — along the store's version ancestry: the hook now receives the
+level — along the store's version ancestry: the hook receives the
 three slots' witnesses aligned (`SCoh ρ₀ ρ₁`, `SCoh ρ₀ ρ₂`), and owes the
 merged witness aligned with both branches.
 
-The pre-splice obligation `shesha_presplice` is now **proved down to the
+The pre-splice obligation `shesha_presplice` is **proved down to the
 row level** (`Shesha_Presplice.lean`): the forest is built from a row
 store by the graded builder (`Shesha_Out.lean`), and every clause — WF,
 rows, anti-`vis` order, the branch-order extensions, and the collapse
 equation — is discharged from the row-store package. The **single owed
 residue** `shesha_rows_residue` (documented `sorry`) is the store itself.
 
-**⚠️ REFUTED (2026-07, `Shesha_Rows_Refuted.lean`, machine-checked):**
+**Refuted** (`Shesha_Rows_Refuted.lean`, machine-checked):
 `shesha_rows_residue` is **FALSE**. At an honest, `SCoh`-aligned config
 (`SCoh` vacuous — only one common insert) the merge of the canonical folds
 of `LCA=[ins 1]`, `A=[ins 2←1, ins 4←⌂, del 1]`, `B=[ins 3←1]` is
@@ -38,7 +38,7 @@ of `LCA=[ins 1]`, `A=[ins 2←1, ins 4←⌂, del 1]`, `B=[ins 3←1]` is
 sibling `4` — no pre-splice forest collapses to it, and `[3,4,2]` is not the
 fold of any `loOn`-respecting linearization of the union. So the pre-splice
 route cannot close this capstone as stated, and `shesha_ra_linearizable3`
-below — proved *from* this `sorry` — rests on a now-known-false lemma; its
+below — proved *from* this `sorry` — rests on a known-false lemma; its
 statement is itself unsatisfiable at this reachable merge. The split is caused
 by Shesha's *local-order-preserving splice over a mutable forest* — **not** by
 anchor-forgetting: `RGA_Tombstone_Free` also forgets the anchor on delete, but
@@ -48,8 +48,8 @@ a fold (⇒ RA-linearizable) at the cost of reordering survivors
 order (`delete_preserves_survivor_order`), so a single replica is delete-order-
 faithful but the merge of two mutable forests is not a global fold — the
 **sequence-CRDT trilemma** (local-order-preserving delete ⊻ merge RA-lin). The
-dissolution is not anchor-retention but **immutable stored positions** (KC+Kartik
-`Development/RGA_OrderPreserving_Reference.lean`, task #63): freeze the ancestry
+dissolution is not anchor-retention but **immutable stored positions** (KC+Kartik,
+`Development/RGA_OrderPreserving_Reference.lean`): freeze the ancestry
 path at insert, read = lex-sort by frozen position, delete = drop; positions
 never move, so both delete-order holds and the read is a fold — on this trace
 `2`,`3` keep contiguous frozen paths so `4` cannot split them. A restatement to a
@@ -134,9 +134,9 @@ row is the ghost expansion of the stored row
 `hK6`; absent keys — both sides die by the live-set identity
 (`slots_live_iff` + `merge_ids`). The single remaining `sorry` is the
 row store itself (`shesha_rows_residue`): the merge-correctness core in
-pure row combinatorics, with the corrected hypotheses `SCoh ρ₀ ρ₁`,
-`SCoh ρ₀ ρ₂` (branch agreement at the join — exactly what the phase-2e
-refutation showed indispensable). -/
+pure row combinatorics, with hypotheses `SCoh ρ₀ ρ₁`,
+`SCoh ρ₀ ρ₂` (branch agreement at the join, indispensable per the
+refutation in `Shesha_Presplice_Refuted.lean`). -/
 theorem shesha_presplice
     (C' : Configuration SheshaD) (hH : SheshaHonest C')
     (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)

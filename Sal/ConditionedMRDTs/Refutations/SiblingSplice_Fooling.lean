@@ -4,13 +4,12 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 /-!
 # Sibling edges without retention cannot implement the embed RGA
 
-KC's question (2026-07-18): the embed RGA works, but its proof rests on
-keeping a deleted node's memory alive inside live descendants'
-coordinates. Could a sibling-edge implementation, which splices a dead
-node and lifts its children a level up, be shown equivalent to the embed
-RGA, with no such retention? This file is the answer: **no**, by a
-four-event fooling pair, and the counterexample names exactly the
-information the splice destroys.
+The embed RGA works, but its proof rests on keeping a deleted node's
+memory alive inside live descendants' coordinates. Could a sibling-edge
+implementation, which splices a dead node and lifts its children a level
+up, be shown equivalent to the embed RGA, with no such retention? The
+answer is **no**, by a four-event fooling pair; the counterexample names
+exactly the information the splice destroys.
 
 **The mechanism.** In the embed order, a lifted child displays at its
 dead ancestor's rank: the subtree keyed by the ancestor's stamp holds its
@@ -40,8 +39,8 @@ none. The knob: `a < c < b`, with `b` and `c` on different branches.
 **What this does and does not say.** It kills sibling edges *without
 retention* (the rose-tree splice, the state here being Shesha's own
 `List Tree` with its splice delete: the sibling-edge story and the
-rose-tree story are the same story). It does not touch the validated
-sibling-edge design with carried spine paths: that design retains the
+rose-tree story are the same story). It does not touch the sibling-edge
+design with carried spine paths: that design retains the
 dead ancestor's key inside the path, which is the same memory the embed
 keeps, in different clothes. The moral is the retention thesis with a
 sharper edge: the living must remember the coordinates of the dead they

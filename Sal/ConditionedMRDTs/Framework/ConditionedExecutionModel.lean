@@ -1,15 +1,12 @@
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 
 /-!
-# M2 — the conditioned execution model (Phase 0)
-
-*Roadmap `ROADMAP_END_TO_END.md` M2.  Additive; modifies no existing file.*
+# The conditioned execution model
 
 This file supplies the execution model that **derives** the reachability premises that
-`RGA_ConditionedConvergence.lean`'s `RGA_conditioned_convergence_bothFaithful` currently
-takes as the `hReady`-shaped hypothesis.  It is stated **generically over an arbitrary
-`ConditionedMRDTSig`** — there are no RGA internals here (per the roadmap: M2 is the
-generic execution-model milestone).
+`RGA_ConditionedConvergence.lean`'s `RGA_conditioned_convergence_bothFaithful` takes as the
+`hReady`-shaped hypothesis.  It is stated **generically over an arbitrary
+`ConditionedMRDTSig`**: there are no RGA internals here.
 
 ## The model
 
@@ -26,11 +23,10 @@ structural fields —
   invariant that, for the RGA, packages `wf ∧ contains 0 = false ∧ id_mono`).
 
 `BackClosed C E` (§1) is the delivered/backward-closed condition on an event set.  A
-*delivery prefix* is a `noopFeasible` list of `E`-events (`noopFeasible` reused verbatim
-from `UpdateFeasibility_Gate.lean`: at each prefix the next op is `applicable` **or** a
-Lean-`Eq` no-op there).
+*delivery prefix* is a `noopFeasible` list of `E`-events (at each prefix the next op is
+`applicable` **or** a Lean-`Eq` no-op there).
 
-## What is derived (mapping to the NON-`Faithful` conjuncts of `hReady`)
+## What is derived (mapping to the non-`Faithful` conjuncts of `hReady`)
 
 For every backward-closed `E`, every delivery prefix `pre`, every `vis`-incomparable pair
 `a, b ∈ E` pending at `pre`:
@@ -40,21 +36,20 @@ For every backward-closed `E`, every delivery prefix `pre`, every `vis`-incompar
 | `a.1 ≠ b.1` (distinct ts)               | `distinctTs`  (1)                            |
 | `wf ∧ contains 0 = false ∧ id_mono`     | `D.Inv (fold pre)` via `inv_fold`            |
 | `fresh_ts a`, `fresh_ts b`              | `freshTs` (3): id-freshness at the fold      |
-| `NoFreshClash a b`, `NoFreshClash b a`  | `noFreshClash_concurrent` (4), relocated     |
-| `Faithful a`, `Faithful b`              | *NOT derived* — the per-MRDT residue (M1/M3) |
+| `NoFreshClash a b`, `NoFreshClash b a`  | `noFreshClash_concurrent` (4)               |
+| `Faithful a`, `Faithful b`              | *not derived*: the per-MRDT residue          |
 
 `mono_alloc` (2) is `causal_mono` re-exposed (and `vis_wf`, its well-foundedness).  These
-are bundled as **`conditioned_premises`** (§4): the packaged premise-supplier that emits
-exactly the non-`Faithful` conjuncts.
+are bundled as **`conditioned_premises`** (§4): the premise-supplier that emits exactly the
+non-`Faithful` conjuncts.
 
 ## (5) existence of a `loOnA`-respecting `noopFeasible` delivery enumeration
 
-Two independent, mechanized pieces (§5):
+Two independent pieces (§5):
 
 * `exists_loOnA_enum` — a generic **topological sort** (`exists_respecting`): from
-  acyclicity of `loOnA` on a finite enumeration of `E` (the *satisfiability* condition —
-  the same content the two decisive cases of `UpdateFeasibility_Gate.lean` discharge
-  concretely) there **exists** a `loOnA`-respecting permutation of `E`.
+  acyclicity of `loOnA` on a finite enumeration of `E` (the *satisfiability* condition)
+  there **exists** a `loOnA`-respecting permutation of `E`.
 * `noopFeasible_of_prefixApp` — the born-applicable **delivery discipline** (each op is
   `applicable`-or-no-op at its own prefix fold) is *exactly* `noopFeasible`, packaged as a
   reusable bridge.  `exists_loOnA_noopFeasible_enum` combines the two.
@@ -64,10 +59,9 @@ Two independent, mechanized pieces (§5):
 Everything above is **derived** from the model's fields.  The RGA-state predicates
 `wf`/`id_mono`/`fresh_ts`/`NoFreshClash`/`Faithful` are *not* reached into: `Inv` is the
 generic stand-in for the first block, id-freshness/clash are the timestamp-level facts, and
-`Faithful` is deliberately left as the per-MRDT residue (the located obstruction of
-`RGA_ConditionedConvergence.lean` §6, i.e. M1/M3).  The one genuinely *assumed* input is the
+`Faithful` is left as the per-MRDT residue.  The one genuinely *assumed* input is the
 **acyclicity of `loOnA` on `E`** (satisfiability) and the **born-applicable discipline**
-(feasibility) that (5) consumes — both are properties a real execution provides by
+(feasibility) that (5) consumes: both are properties a real execution provides by
 construction and neither is RGA-specific.
 -/
 
@@ -87,7 +81,8 @@ The `events`/`vis` core is a strict partial order (causal order); the four *disc
 fields (`distinct_ts`, `causal_mono`, `inv_init`, `inv_step`) encode the generation regime:
 globally-unique timestamps, Lamport-monotone id allocation, and an `applicable`-preserved
 state-shape invariant.  Mirrors the shape of `Sal.Emulation.Configuration` /
-`Sal.ConditionedMRDTs.Configuration` but keeps only what the M2 derivations consume. -/
+`Sal.ConditionedMRDTs.Configuration` but keeps only what the derivations in this file
+consume. -/
 structure ConditionedConfiguration (D : ConditionedMRDTSig) where
   /-- The events in play. -/
   events : Set (Op D.AppOp)
@@ -123,7 +118,7 @@ def BackClosed (C : ConditionedConfiguration D) (E : Set (Op D.AppOp)) : Prop :=
 def Concurrent (C : ConditionedConfiguration D) (a b : Op D.AppOp) : Prop :=
   ¬ C.vis a b ∧ ¬ C.vis b a
 
-/-! ## §2  `mono_alloc` and its well-foundedness (roadmap item (2)) -/
+/-! ## §2  `mono_alloc` and its well-foundedness -/
 
 /-- **(2) Monotone allocation**, re-exposed: an ancestor's Lamport id is strictly smaller. -/
 theorem mono_alloc (C : ConditionedConfiguration D) {a b : Op D.AppOp} (h : C.vis a b) :
@@ -131,7 +126,7 @@ theorem mono_alloc (C : ConditionedConfiguration D) {a b : Op D.AppOp} (h : C.vi
   C.causal_mono h
 
 /-- `vis` is **well-founded** (hence acyclic): it is a subrelation of `<` on the Lamport id.
-This is the acyclicity backbone of the version DAG — the `vis`-part of `loOnA` never cycles;
+This is the acyclicity backbone of the version DAG: the `vis`-part of `loOnA` never cycles;
 only its rc-part carries a genuine satisfiability obligation (see §5). -/
 theorem vis_wf (C : ConditionedConfiguration D) : WellFounded C.vis := by
   have hsub : Subrelation C.vis (fun a b : Op D.AppOp => a.1 < b.1) := by
@@ -179,7 +174,7 @@ theorem freshTs (C : ConditionedConfiguration D) (E : Set (Op D.AppOp))
   have hxa : x ≠ a := by rintro rfl; exact hanp hx
   exact C.distinct_ts (hE.1 hxE) (hE.1 ha) hxa
 
-/-- **(4) `NoFreshClash` for concurrent events**, relocated and generalized from
+/-- **(4) `NoFreshClash` for concurrent events**, generalized from
 `RGA_ConditionedConvergence.noFreshClash_concurrent`.  For `b` not a causal ancestor of `a`
 (in particular when `a ‖ b`), `b`'s id clashes with none of the ids recorded by `a` (its own
 id or any causal ancestor's) — a consequence of global timestamp uniqueness, since every such
@@ -196,9 +191,9 @@ theorem noFreshClash_concurrent (C : ConditionedConfiguration D) {a b : Op D.App
 /-! ## §4  The packaged premise-supplier
 
 `conditioned_premises` emits, for a `vis`-incomparable pair pending at a `noopFeasible`
-delivery prefix, exactly the NON-`Faithful` conjuncts of `hReady` (in their generic forms;
-see the file header's mapping table).  `Faithful a` / `Faithful b` are deliberately absent —
-they are the per-MRDT residue that M1/M3 discharge, not the execution model. -/
+delivery prefix, exactly the non-`Faithful` conjuncts of `hReady` (in their generic forms;
+see the file header's mapping table).  `Faithful a` / `Faithful b` are absent: they are the
+per-MRDT residue, not part of the execution model. -/
 theorem conditioned_premises (C : ConditionedConfiguration D) (E : Set (Op D.AppOp))
     (hE : C.BackClosed E)
     (pre : List (Op D.AppOp)) (hpre_sub : ∀ x ∈ pre, x ∈ E)
@@ -257,8 +252,8 @@ theorem exists_respecting {α : Type} [DecidableEq α] (R : α → α → Prop) 
 
 /-- **(5a) A `loOnA`-respecting delivery enumeration exists.**  From acyclicity of `loOnA` on
 a finite enumeration of the delivered set `E`, `exists_respecting` produces a permutation of
-`E` respecting `loOnA`.  Acyclicity is the *satisfiability* half — the very thing
-`UpdateFeasibility_Gate.lean` discharges concretely on its two decisive cases. -/
+`E` respecting `loOnA`.  Acyclicity is the *satisfiability* half, discharged concretely for
+the decisive cases in `UpdateFeasibility_Gate.lean`. -/
 theorem exists_loOnA_enum
     (Cfg : Sal.Emulation.Configuration D.toCRDTSig) (E : Set (Op D.AppOp))
     (lE : List (Op D.AppOp)) (hnd : lE.Nodup) (henum : ∀ a, a ∈ lE ↔ a ∈ E)
@@ -326,11 +321,11 @@ def emptyConfig (D : ConditionedMRDTSig) (hInit : D.Inv D.init)
 
 end ConditionedConfiguration
 
-/-! ## §7  Axiom audit — every M2 result kernel-clean
+/-! ## §7  Axiom audit
 
 All decls depend only on `propext`, `Classical.choice`, `Quot.sound`: no `sorryAx`, no
 `native_decide`.  In particular the `Merge_Linearization_Set` sorries reachable through the
-import chain are NOT transitively touched (nothing here uses `convergence_on_u`). -/
+import chain are not transitively touched (nothing here uses `convergence_on_u`). -/
 
 #print axioms ConditionedConfiguration.mono_alloc
 #print axioms ConditionedConfiguration.vis_wf

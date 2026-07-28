@@ -1,29 +1,30 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 
 /-!
-# Spine fusion — iteration two of the embed GC (#97)
+# Spine fusion for the embed GC
 
-The v1 compaction (`compactEliasDelta`, drop dead ranges + rank-renumber)
+The compaction (`compactEliasDelta`, drop dead ranges + rank-renumber)
 recovers 1.1x–1.8x on real traces; the residual cost is **spine depth**: a
 typing run mints a delta-1 chain, and after edits the interior of that chain is
 dead-but-kept (kept only because a live descendant hangs off its tail — the
 `[9]` node of the CompactEliasDelta SPOT). Every dead level still costs a
 codeword. **Fusion** removes the dead levels themselves.
 
-**The map** (recoding note, Addendum 2 + errata). A *fusible spine* is a
-maximal chain of dead unary nodes `d₁, …, d_k` (`k ≥ 2`, errata 1) below the
-cut, each with exactly one child branch (counting in-flight), no in-flight op
-anchored at any `d_i`, and no declared in-flight coordinate ending at one
-(errata 3). Write `Q = P ++ [d₁, …, d_k]` for the whole dead spine chain and
-`Q' = P ++ [d₁]` for its head. Fusion collapses the spine to its head:
+**The map** (`whiteboard/embed-recoding-note.md` Addendum 2 + errata). A
+*fusible spine* is a maximal chain of dead unary nodes `d₁, …, d_k` (`k ≥ 2`,
+errata 1) below the cut, each with exactly one child branch (counting
+in-flight), no in-flight op anchored at any `d_i`, and no declared in-flight
+coordinate ending at one (errata 3). Write `Q = P ++ [d₁, …, d_k]` for the
+whole dead spine chain and `Q' = P ++ [d₁]` for its head. Fusion collapses the
+spine to its head:
 
     fuseChain Q Q' c = if Q <+: c then Q' ++ c.drop |Q| else c
 
 i.e. every coordinate *through* the spine (`Q <+: c`) keeps its parent block
 `P`, keeps the head codeword `d₁` (this is the **head group codeword**: post
 rank-renumber the head delta *is* its ordinal, errata 2), and drops the dead
-interior `d₂…d_k`; everything else is unchanged. Composition with the v1
-rank-renumber (`StablePrefixMap.comp`) is the full iteration-two map.
+interior `d₂…d_k`; everything else is unchanged. Composition with the
+rank-renumber (`StablePrefixMap.comp`) is the full fusion map.
 
 **Why order survives (the H2 argument), three comparison classes.**
 `fuseChain_chainBefore` proves `chainBefore` is preserved; H2 (`ord`) then
@@ -371,7 +372,7 @@ def fuseSPM (Γ : OrderedPrefixCode) (Q Q' : List ℕ) (𝒟 : List ℕ → Prop
 
 Both are direct re-invocations of the re-coding cluster's T2
 (`eRecode_reads_identical`) on the fusion bundle and on its composite with the
-v1 rank-renumber pass. -/
+rank-renumber pass. -/
 
 /-- **Fusion preserves every read.** Folding a beyond-cut continuation (its
 mints translated) over the fused cut state reads exactly as the uncompacted
@@ -391,8 +392,8 @@ theorem fuse_reads_identical {Γ : OrderedPrefixCode} {Q Q' : List ℕ}
       = (E Γ α).query (applySeq (E Γ α).toCRDTSig s τ) () :=
   eRecode_reads_identical (fuseSPM Γ Q Q' 𝒟 hQpos hQ' hDpos hthru) s τ hs hτ
 
-/-- **The iteration-two headline (composed): rank-renumber, then fusion,
-preserves every read.** `F` is the v1 rank-renumber pass (`compactRanked`),
+/-- **The composed headline: rank-renumber, then fusion,
+preserves every read.** `F` is the rank-renumber pass (`compactRanked`),
 `fuseSPM …` the fusion, composed at their shared surviving domain
 `(Rest', MintAt')` via `StablePrefixMap.comp` (the between-pass compatibility
 `h` is what the settled-cut protocol supplies). The two-pass coordinate

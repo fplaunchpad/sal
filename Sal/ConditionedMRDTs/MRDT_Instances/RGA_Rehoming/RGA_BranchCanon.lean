@@ -22,8 +22,8 @@ This file supplies those residuals from the *canonical state* of the folds:
   `canonBirthBridge_holds` with `hout` discharged and `hsplit`/`hpreDead`/`hin`
   reduced to their branch-canonical inputs.
 
-The STATUS block (§4) records exactly which residual closes and which is the
-irreducible two-sided content (the `hin` recorded-tail↔`l`-chain reconciliation).
+§4 records exactly which residual closes and which is the irreducible two-sided
+content (the `hin` recorded-tail↔`l`-chain reconciliation).
 -/
 
 set_option maxHeartbeats 1000000
@@ -172,20 +172,20 @@ theorem hin_of_survFilterEq (l : concrete_st α) (F : List (op_t α)) (bw : ℕ)
 
 #print axioms hin_of_survFilterEq
 
-/-! ## §4  STATUS — which merge-side residual closed, and the exact residual
+/-! ## §4  Which merge-side residual closes, and the exact remaining content
 
 **Both `#print axioms` are kernel-clean** (`[propext, Classical.choice,
 Quot.sound]`).  The three `CanonBirthBridge` residuals split as follows.
 
-* **`hout` — CLOSED, clean (§2).**  The off-forest branch-final anchor of a
-  survivor survives `F` straight from the *two-sided* fold's own canonical state
-  (`hcm : CanonMatch F fold` + `hD` + `betaf_start`).  No branch fold, no
-  single-vs-two-sided reconciliation.  (Caveat: needs `birthAnc ≠ 0`; the `bw = 0`
-  root-anchored case is off-forest but non-surviving and is instead handled by
-  `canonAnc F rc = 0` directly.)
+* **`hout` (§2).**  The off-forest branch-final anchor of a survivor survives `F`
+  straight from the *two-sided* fold's own canonical state (`hcm : CanonMatch F
+  fold` + `hD` + `betaf_start`).  No branch fold, no single-vs-two-sided
+  reconciliation.  (Caveat: needs `birthAnc ≠ 0`; the `bw = 0` root-anchored case
+  is off-forest but non-surviving and is instead handled by `canonAnc F rc = 0`
+  directly.)
 
-* **`hpreDead` — REDUCED, mechanized (§1).**  The nearer recorded entries are
-  non-`F`-survivors *because they were deleted in the branch fold*: `notSurv_of_
+* **`hpreDead` (§1).**  The nearer recorded entries are non-`F`-survivors
+  *because they were deleted in the branch fold*: `notSurv_of_
   branchDeleted` turns `deletedIn Fa c` into `¬ survP F c` via `Fa ⊆ F` (the
   branch's own `Del` events are also in the two-sided `F`).  The input
   `deletedIn Fa c` for the prefix entries is a real branch-fold fact (they sit
@@ -196,44 +196,44 @@ Quot.sound]`).  The three `CanonBirthBridge` residuals split as follows.
   (`subchain_resolve` / `CanonInv`'s `LiveChain`), hence sits on `rc`.  A real
   execution fact; taken as input to the composed bridge.
 
-* **`hin` — the LOCATED two-sided residual (§3.5).**  Pinned to a single crisp
+* **`hin` — the irreducible two-sided residual (§3.5).**  Pinned to a single crisp
   fact: `rcSuf.filter (survB F) = cw.filter (survB F)` — `bw`'s `F`-surviving
-  recorded ancestors equal its `F`-surviving `l`-ancestors, in order.  ALL climb
+  recorded ancestors equal its `F`-surviving `l`-ancestors, in order.  All climb
   algebra around it is discharged (`canonAnc_filter_surv` + `hin_of_survFilterEq`).
 
 **The exact mismatch (single-sided vs two-sided).**  `canon_fold` on the *branch*
 `a = applySeqR l Ea` gives `CanonMatch Fa a`, i.e. `anc a k = canonAnc Fa (rc)` —
 `k`'s branch-final anchor is `canonAnc` over the **branch** survivor set `Fa`.  But
 `CanonBirthBridge` is stated over `canonAnc F` with `F` the **two-sided** applied
-set (`Fa ∪ Fb`).  The reconciliation `canonAnc Fa → canonAnc F` is NOT a corollary
+set (`Fa ∪ Fb`).  The reconciliation `canonAnc Fa → canonAnc F` is not a corollary
 of the branch's canonical state; it needs cross-branch structure that a single
 branch fold does not carry:
 
-  1. `Fa ⊆ F` (branch `Del`s ⊆ two-sided `Del`s) — supplied here as an explicit
-     set-inclusion premise; drives `hpreDead` (§1).  Clean.
+  1. `Fa ⊆ F` (branch `Del`s ⊆ two-sided `Del`s): supplied here as an explicit
+     set-inclusion premise; drives `hpreDead` (§1).
   2. an off-forest `bw = anc a k` (a branch-new node) is not deleted by the *other*
-     branch — here obtained via `betaf_start` (a-new ⇒ survivor) + `hD` + `hcm`,
-     so `hout` needs no separate faithfulness premise.  Clean.
+     branch: obtained via `betaf_start` (a-new ⇒ survivor) + `hD` + `hcm`, so
+     `hout` needs no separate faithfulness premise.
   3. `bw`'s recorded rootward tail `rcSuf` (captured in *branch-`a`-at-insert*) and
      `bw`'s LCA-forest chain `cw` have the same `F`-surviving subsequence.  This is
-     `hin`.  It is TRUE — the entries of `cw` missing from `rcSuf` were deleted in
+     `hin`.  It is true: the entries of `cw` missing from `rcSuf` were deleted in
      `Ea` before `k`'s insert (hence `F`-dead), and `rcSuf` adds no non-`l` entries
-     (insertion never splices into an existing ancestor chain) — but establishing
+     (insertion never splices into an existing ancestor chain); but establishing
      the subsequence coincidence is a *branch-fold event-list induction*
      (`foldChain_of_goodFold`, the `RGA_MergeBranchNew` OBSTRUCTION), threading a
      chain-level analogue of `BranchInv`'s I4 across `Ea ++ Eb`.  It is exactly the
-     "resolve a node's recorded chain over the ACTUAL fold forest vs. climb the
-     DISTINCT LCA forest" gap the OBSTRUCTION block named as irreducible two-sided
-     content — NOT expressible as, or derivable from, a single branch's
-     `CanonMatch`.
+     gap between resolving a node's recorded chain over the actual fold forest and
+     climbing the distinct LCA forest: the OBSTRUCTION block names it as
+     irreducible two-sided content, not expressible as, or derivable from, a
+     single branch's `CanonMatch`.
 
-**VERDICT.**  `canon_fold` on the branch discharges `hout` (via the full two-sided
+**Summary.**  `canon_fold` on the branch discharges `hout` (via the full two-sided
 `CanonMatch`, not the branch one), and reduces `hpreDead` to `Fa ⊆ F`
-monotonicity; `hsplit` is the branch `LiveChain` head.  It does NOT discharge
+monotonicity; `hsplit` is the branch `LiveChain` head.  It does not discharge
 `hin`: `birthAnc` is `canonAnc Fa` (single-sided) while the bridge is `canonAnc F`
 (two-sided), and the recorded-tail↔`l`-chain survivor coincidence they must share
-is `foldChain_of_goodFold` — a genuine single-vs-two-sided gap, now pinned (§3.5)
-to the crisp subsequence equality `rcSuf.filter (survB F) = cw.filter (survB F)`,
+is `foldChain_of_goodFold`, a genuine single-vs-two-sided gap pinned (§3.5) to
+the crisp subsequence equality `rcSuf.filter (survB F) = cw.filter (survB F)`,
 sorry-free, with every surrounding step mechanized. -/
 
 end RGABranchCanon

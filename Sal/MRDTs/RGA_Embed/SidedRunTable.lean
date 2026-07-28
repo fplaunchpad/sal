@@ -4,7 +4,7 @@ import Sal.MRDTs.RGA_Embed.Sided_ChainLex
 import Sal.MRDTs.RGA_Embed.RunTable
 
 /-!
-# The sided run table — the run-table representation over the sided (Fugue) kernel (#73)
+# The sided run table: the run-table representation over the sided (Fugue) kernel
 
 Design + measurement: `whiteboard/run-table-note.md` §6 (the side channel);
 executable reference `whiteboard/litmus/run_table_measure.py` (the sided/Fugue
@@ -12,7 +12,7 @@ family, `build_table` with `side` set). This file extends the one-sided run
 table (`Sal/MRDTs/RGA_Embed/RunTable.lean`) to the sided chain kernel
 (`Sided_ChainLex`): entries carry a **side** field, runs are uniformly-`R`
 maximal fusible chains (fusibility condition 3 `side(c) = R`, vacuous
-one-sided, is now live), and `L` entries are stored explicitly (note §6: the
+one-sided, live here), and `L` entries are stored explicitly (note §6: the
 side channel collapses from one bit per level to one bit per entry).
 
 The state is the list of live **sided** birth chains (`List SChain`, an
@@ -25,7 +25,7 @@ hypothesis appears: every theorem is a state-level fact about a representation
 change (the measured no-stability-gate finding, sided family).
 
 This file carries the FULL sided mirror of the one-sided run-table
-development (#73): the sided tail-attachment lemma (`stail_attachment`) and
+development: the sided tail-attachment lemma (`stail_attachment`) and
 run structure (§5); the canonical sided head order (§6, `shLt` over the
 flattened word stream); the representation iso BOTH directions over
 labels + SIDES + liveness — deliberately NOT timestamps, for the same

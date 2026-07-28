@@ -2,13 +2,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.MergeableQueue.MergeableQueue
 import Sal.ConditionedMRDTs.MRDT_Instances.SeqSpec_Flat
 
 /-!
-# Sequential-spec soundness — tier 2: the mergeable queue (task #79 / #65)
+# Sequential-spec soundness: the mergeable queue
 
 The Peepul queue, single-replica, against the naive functional FIFO: enq
 pushes the value at the back, deq pops the head. The RDT's deq removes by
 TAG; the two agree under the sequential honesty the datatype itself
 prescribes (`applicable`'s head-check: a deq names the current head), and
-the proof needs one discovered invariant: **tags are nodup** — freshness
+the proof needs one invariant: **tags are nodup** — freshness
 of enqueue stamps survives filtering, and is exactly what makes
 filter-by-tag pop precisely one element.
 -/
@@ -46,8 +46,8 @@ theorem qSpecFold_snoc (ρ : List (Op QOp)) (o : Op QOp) :
   rw [List.foldl_append]
   rfl
 
-/-- **The discovered invariant: tags are nodup.** Fresh enqueue stamps
-append disjointly; dequeue filters, and nodup survives sublists. -/
+/-- **The invariant: tags are nodup.** Fresh enqueue stamps append
+disjointly; dequeue filters, and nodup survives sublists. -/
 theorem q_tags_nodup {ρ : List (Op QOp)} (hOK : qOK ρ) :
     (qTags (seqFold Q ρ)).Nodup := by
   induction ρ using List.reverseRecOn with

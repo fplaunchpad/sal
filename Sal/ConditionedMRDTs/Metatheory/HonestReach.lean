@@ -18,7 +18,7 @@ reachable configuration is per-version RA-linearizable. Plain reachability is
 the degenerate instance `H := fun _ => True` (`honestReach_of_reachable`),
 recovering the unconditional bridge `ra_linearizable3_of_join`.
 
-The join discharge is the per-datatype residue. Three species so far:
+The join discharge is the per-datatype residue. Three species:
 
 * **conditioned commutation** — the CD-route VC bundles
   (`join_lemma3_of_cd` and friends, `Adequacy.lean`); contract `⊤`;
@@ -89,7 +89,7 @@ theorem honestReach_of_reachable {C : Configuration D}
     obtain ⟨ℓ, hstep⟩ := hs
     exact ih.step trivial hstep
 
-/-! ## The widened form (task #90): honest reachability with virtual merges
+/-! ## The widened form: honest reachability with virtual merges
 
 `HonestReachV` is `HonestReach` over `Step3V` (the criss-cross gate lifted,
 `LCA_Lemma.lean` §9). The merge induction gains the sibling `mergeVirtual` case,

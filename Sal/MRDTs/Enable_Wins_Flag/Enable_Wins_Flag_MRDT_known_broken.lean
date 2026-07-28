@@ -33,8 +33,8 @@ closed-form MRDT laws (left identity, right identity, commutativity
 of merge) all still hold — the bug is a DAG-level property that
 surfaces only when you compose a specific sequence of ops and merges.
 
-The file is kept in the suite to drive Plausible's counterexample
-generator and as a regression for the ProofWidgets visualizer.
+The file drives Plausible's counterexample
+generator and serves as a regression for the ProofWidgets visualizer.
 -/
 
 /-- Σ = (Int × Bool): the auxiliary counter and the flag itself. -/

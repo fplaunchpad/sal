@@ -6,7 +6,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_FiltEq
 /-!
 # hbridge DISCHARGED — per-survivor `CanonBirthBridge` from the join context
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 The per-survivor bridge of `hMergeInputs`, discharged at `HonJ := rgaHonJ` GIVEN the sibling
 `hcaus` bundle (the per-id causal set-algebra — a separate leaf; its merge-domain consequence

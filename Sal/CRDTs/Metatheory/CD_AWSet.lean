@@ -3,30 +3,30 @@ import Sal.CRDTs.Metatheory.JoinLemma_Of_CD
 /-!
 # `AWSet` discharges the causal-delta bound
 
-The second instantiation of the (b″) bundle
+The second instantiation of the CD bundle
 (`CoreVCs + LatticeVCsPlus + CDVC`), and the demonstration that the
-new per-CRDT VC is *usable*: `AWSet` — the add-wins skeleton with
-non-trivial `rc`, state-dependent removes, and the A3 defeater
-configurations — satisfies
+per-CRDT `CDVC` is *usable*: `AWSet` (the add-wins skeleton with
+non-trivial `rc`, state-dependent removes, and the defeater
+configurations) satisfies
 
 * `LatticeVCsPlus` (`AWSet_latticeVCsPlus`): unions are ACI and both
   update shapes inflate (an add inserts; a rem moves `added` into
   `dead`) — definitional for a real state-based CRDT;
 * `CDVC` (`AWSet_cdVC`): for `e = add`, the bound is *context-free*
   set algebra (an add's delta is its own timestamp, already generated
-  by `update B e`). For `e = rem` it is exactly the A7 trichotomy,
+  by `update B e`). For `e = rem` it is exactly the trichotomy,
   one inclusion:
 
       adds(U∖e) ⊆ killed(U∖e) ∪ adds(↓e∖e)
 
-  — every add `a` of `U∖e` either observed `e`'s issue point
+  Every add `a` of `U∖e` either observed `e`'s issue point
   (`a vis e`, putting `a` in the causal past `↓e∖e`), or, since
   union-maximality of `e` cancels the rc-edge `e → a`, has an
   absorber `z ≠ e` in `U`, i.e. is already dead in `U∖e`.
 
 Consequences: `AWSet_joinLemma_via_cd` and
-`AWSet_ra_linearizable_via_cd` — the full metatheorem for `AWSet`
-through the (b″) route. Compared with the direct `JoinPeelVCs`
+`AWSet_ra_linearizable_via_cd`, the full metatheorem for `AWSet`
+through the CD route. Compared with the direct `JoinPeelVCs`
 discharge (`AWSet_joinPeelVCs`, which needs the σ-characterization
 *plus* four set-algebra lemmas, the `no_absorber_of_max` argument and
 two 30-line peel proofs), the CD discharge consumes the same
@@ -88,7 +88,7 @@ theorem AWSet_cdVC : CDVC AWSet := by
     · ext t
       simp only [Set.mem_union]
       tauto
-  · -- e = rem: the A7 trichotomy, as one inclusion.
+  · -- e = rem: the trichotomy, as one inclusion.
     have h_key : awAdds (U \ {e}) ⊆
         awKilled C (U \ {e}) ∪ awAdds (downset C e \ {e}) := by
       rintro t ⟨a, ⟨haU, hane⟩, hadd, ht⟩
@@ -133,7 +133,7 @@ theorem AWSet_cdVC : CDVC AWSet := by
 
 /-! ### Consequences -/
 
-/-- The Join Lemma for `AWSet`, re-derived through the (b″) bundle. -/
+/-- The Join Lemma for `AWSet`, derived through the CD bundle. -/
 theorem AWSet_joinLemma_via_cd : JoinLemma AWSet :=
   join_lemma_of_cd AWSet_coreVCs AWSet_latticeVCsPlus AWSet_cdVC
 

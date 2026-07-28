@@ -4,16 +4,14 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_WfOpA_VCs
 /-!
 # RGA instantiation of the born-applicable `≈`-metatheorem
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
 Plugs the tombstone-free RGA into `GoodConfig3NF.RA_linearizable_up_to_eq_NF` at the
 honest guard `W := WfOpA`.  Discharges `hInvCong` (`qInv` is `≈`-invariant) and the
 four quotient VCs (`rgaInvPresA`, `(rgaCongVC' α)`, `rgaInvInvVCA`, and the
-`GuardNoopChain` guard-transparency — all done).  The result is per-version
+`GuardNoopChain` guard-transparency).  The result is per-version
 RA-linearizability of any reachable RGA configuration under the born-applicable
-discipline — GATED ONLY on `EqJoinLemma3C_NF` (the merge residual, WALL 1) and the
+discipline, gated only on `EqJoinLemma3C_NF` (the merge residual) and the
 two honest-execution hypotheses `hBA` (clients apply accurate ops) and `hgenW`
-(events genuine).  `GenDisc2CEq` is GONE.
+(events genuine).
 -/
 
 set_option maxHeartbeats 1000000
@@ -39,7 +37,7 @@ theorem rga_invCong {s s' : concrete_st α} (h : (rgaEqEquiv' α).eqv s s')
 /-- **RGA per-version RA-linearizability over born-applicable delivery.**  The RGA
 instance of `RA_linearizable_up_to_eq_NF` at `W := WfOpA`, with `hInvCong`
 discharged by `rga_invCong` and the four VCs plugged in.  Remaining honest inputs:
-`hJoinNF` (= the RGA merge residual, WALL 1), `hBA` (born-applicable delivery),
+`hJoinNF` (the RGA merge residual), `hBA` (born-applicable delivery),
 `hgenW` (genuine events). -/
 theorem rga_RA_linearizable_NF
     (hJoinNF : EqJoinLemma3C_NF (RGACondSig' α) (rgaEqEquiv' α) WfOpA)

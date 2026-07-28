@@ -1,41 +1,40 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 /-!
-# The stability VC: verified GC callbacks (task #96)
+# The stability VC: verified GC callbacks
 
-Mechanization of `whiteboard/stability-vc-note.md` (all sections, errata §9
-applied). The runtime learns which events have reached every replica and calls
+The runtime learns which events have reached every replica and calls
 back into the datatype to shed redundant records. This file provides:
 
-* **§1 `SettledAt`** (note §2): the semantic cut condition — `S ⊆ E(v)`,
-  downward closed, all *existing* concurrency inside `E(v)` — and the
-  runtime-facing **commit-shaped** evidence form (erratum §9.3), with the lemma
+* **§1 `SettledAt`**: the semantic cut condition (`S ⊆ E(v)`,
+  downward closed, all *existing* concurrency inside `E(v)`) and the
+  runtime-facing **commit-shaped** evidence form, with the lemma
   `settledAtOn_of_evidence`: heard-from-everyone-since-`S` implies concurrency
   containment. Evidence quantifies over a covered replica set `J` (open
-  membership is deferred, note §8).
-* **§2 the VC bundle** `StabilityVC` (note §4) and the lifted configuration
-  relation `ConfigRelS`. Erratum §9.2 applied: VC-S4 (`vc_merge`) is **not** a
-  free argumentwise congruence — it is stated over related reachable pairs,
+  membership is deferred).
+* **§2 the VC bundle** `StabilityVC` and the lifted configuration
+  relation `ConfigRelS`. VC-S4 (`vc_merge`) is **not** a
+  free argumentwise congruence: it is stated over related reachable pairs,
   encoded by threading the instance's auxiliary pair-invariant `Aux` (the
   external-invariant pattern) through every VC.
-* **§3 the metatheorem** `stability_simulation` (note §5): every `Step3` step
+* **§3 the metatheorem** `stability_simulation`: every `Step3` step
   of the full run is matched, same label (query readback up to the observation),
-  by the compacted run; a `SettledAt` compaction is a *stuttering* step — the
+  by the compacted run; a `SettledAt` compaction is a *stuttering* step, where the
   full side takes a self-merge (a genuine `Step3.merge r r`, legal because
-  `IsLCA` is reflexive), the compacted side registers `compact ŝ` at the same
+  `IsLCA` is reflexive) and the compacted side registers `compact ŝ` at the same
   fresh slot, so DAG shapes never diverge. Reads are equal at every version
   (`stability_reads_equal`), and RA-linearizability is inherited
   *observationally* (`stability_ra_inherited`).
 
-**Scope notes (deviations recorded for the note's §10).**
+**Scope notes.**
 1. VC-S3's class (b) (in-flight ops referencing dropped records) has no
    separate update-time clause here: in the state-based ternary model in-flight
    effects arrive exclusively through `Step3.merge` branch states, so class (b)
    is absorbed into VC-S4. `vc_step` covers exactly class (a) (fresh mints).
 2. `createReplica` is gated by the bundle's `canCreate`: a replica minted at
    the root after a compaction can mint events concurrent with the cut,
-   destroying settledness — this is the note §8 open-membership deferral made
-   operational. Instances that never compact take `canCreate := ⊤`.
+   destroying settledness (the open-membership deferral made
+   operational). Instances that never compact take `canCreate := ⊤`.
 3. Query labels carry the raw `D.Value`; the compacted side answers with its
    own raw value (`LabelSim.query` leaves it free) and the guarantee is
    observational (`stability_reads_equal` / `reads_replica_equal`).
@@ -63,7 +62,7 @@ variable {D : ConditionedMRDTSig}
 def ConcOp (C : Configuration D) (e a : Op D.AppOp) : Prop :=
   e ≠ a ∧ ¬ C.vis e a ∧ ¬ C.vis a e
 
-/-- **The semantic settled condition** (note §2), stated against the event set
+/-- **The semantic settled condition**, stated against the event set
 `E` of the settling version: the cut is inside `E` and causally downward
 closed, and every event *existing anywhere in the configuration* that is
 concurrent with a cut member is already in `E`. -/
@@ -79,7 +78,7 @@ structure SettledAtOn (C : Configuration D) (E S : Set (Op D.AppOp)) : Prop wher
 def SettledAt (C : Configuration D) (v : Version) (S : Set (Op D.AppOp)) : Prop :=
   ∃ s E, C.ver v = some (s, E) ∧ SettledAtOn C E S
 
-/-- **Commit-shaped per-replica evidence** (erratum §9.3): a version `c`
+/-- **Commit-shaped per-replica evidence**: a version `c`
 absorbed by `v` (`Reaches`), containing `S`, certified as replica `j`'s commit
 by the chain clause: every `j`-event outside `E(c)` post-dates it, in
 particular has all of `S` in its causal past. A pull that brings no new events
@@ -89,9 +88,9 @@ def EvidenceCommit (C : Configuration D) (v : Version) (S : Set (Op D.AppOp))
   ∃ c sc Ec, Reaches C.parents c v ∧ C.ver c = some (sc, Ec) ∧ S ⊆ Ec ∧
     ∀ e ∈ C.events, Op.rep e = j → e ∉ Ec → ∀ a ∈ S, C.vis a e
 
-/-- **The evidence lemma** (note §2): if `v` has absorbed an evidence commit
+/-- **The evidence lemma**: if `v` has absorbed an evidence commit
 for every replica of a set `J` covering all event authors, then all existing
-concurrency with `S` is inside `E(v)` — the runtime's per-replica commits
+concurrency with `S` is inside `E(v)`: the runtime's per-replica commits
 discharge the semantic condition. The only store fact consumed is
 `events_mono` along `Reaches` (`StoreInv`). -/
 theorem settledAtOn_of_evidence {C : Configuration D}
@@ -123,7 +122,7 @@ theorem settledAt_of_evidence {C : Configuration D}
   ⟨s, E, hv, settledAtOn_of_evidence hStore hv hsub hdown hJ hev⟩
 
 open LabeledTS in
-/-- **Step3V compatibility** (cheap corollary): the evidence lemma is available
+/-- **Step3V compatibility**: the evidence lemma is available
 at every configuration reachable in the *widened* system `Step3V`, because
 `StoreInv` is a `Step3V` reachability invariant. Nothing else in `SettledAt`
 mentions the step relation. -/
@@ -139,11 +138,11 @@ theorem settledAt_of_evidence_reachableV {hInit : D.Inv D.init}
     SettledAt C v S :=
   settledAt_of_evidence (storeInv_reachableV hReach) hv hsub hdown hJ hev
 
-/-- **Event-shaped witness ⟹ commit-shaped evidence** (the bridge the erratum
-warns is *not* a definition but is a valid *strengthening*): an event `w ∈ E(v)`
+/-- **Event-shaped witness ⟹ commit-shaped evidence** (a valid *strengthening*,
+not a definition): an event `w ∈ E(v)`
 by `j` with all of `S` visible to it certifies `v` itself as `j`'s evidence
 commit. Uses `vis` transitivity, per-version causal closure and the structural
-same-replica totality — all supplied by `GoodConfig3` below. -/
+same-replica totality, all supplied by `GoodConfig3` below. -/
 theorem evidenceCommit_of_witness {C : Configuration D}
     (hTrans : ∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c)
     {v : Version} {s : D.State} {E S : Set (Op D.AppOp)}
@@ -181,8 +180,8 @@ theorem evidenceCommit_of_witness_good {C : Configuration D}
 
 /-- **The all-heads frontier condition**: every current head's event set
 contains `S`. This is the same all-heads knowledge the commit GC (`gc_safety`)
-requires; as a compaction *gate* alone it is the naive contract and UNSOUND
-(the OR-set SPOT pins the countermodel) — instances use it only as the
+requires; as a compaction *gate* alone it is unsound
+(the OR-set SPOT pins the countermodel), so instances use it only as the
 stability side of the runtime contract, alongside `SettledAt`. -/
 def AllHeard (C : Configuration D) (S : Set (Op D.AppOp)) : Prop :=
   ∀ r v s E, C.head r = some v → C.ver v = some (s, E) → S ⊆ E
@@ -195,7 +194,7 @@ variable {D : ConditionedMRDTSig}
 
 /-! ## §2 The lifted configuration relation -/
 
-/-- **The lifted relation** (note §5): DAG shape, heads, visibility and event
+/-- **The lifted relation**: DAG shape, heads, visibility and event
 sets shared verbatim; version payloads pointwise `R`-related (full on the left,
 compacted on the right). `heads_alloc`/`head_none` are the two head-hygiene
 facts of the full side that every reachable configuration enjoys; they are
@@ -445,24 +444,24 @@ section Bundle
 
 variable {D : ConditionedMRDTSig}
 
-/-! ## §2c The VC bundle (note §4, errata applied) -/
+/-! ## §2c The VC bundle -/
 
 /-- **The stability VC bundle** for a fixed cut `S` and callback `compact`.
 
-* `R` — the simulation relation (full left, compacted right); `vc_refl` keeps
+* `R`: the simulation relation (full left, compacted right); `vc_refl` keeps
   the pre-compaction run related.
-* `obs` — the datatype's read interface; **VC-S2** is `vc_obs`.
-* `Aux` — the instance's auxiliary pair-invariant: the *reachable-triples*
-  side condition of erratum §9.2, threaded through `vc_step`/`vc_merge`/
+* `obs`: the datatype's read interface; **VC-S2** is `vc_obs`.
+* `Aux`: the instance's auxiliary pair-invariant, the *reachable-triples*
+  side condition threaded through `vc_step`/`vc_merge`/
   `vc_entry` and maintained by the `aux_*` obligations (external-invariant
-  pattern, no instance file edited).
+  pattern).
 * **VC-S1** is `vc_entry` (the full side's stuttering self-merge payload
   `mergeL s s s` against `compact ŝ`), gated by `gate`, which must imply
-  `SettledAt` (`gate_settled`) — the note §2 contract.
-* **VC-S3** is `vc_step` — class (a) only; class (b) is absorbed into VC-S4
-  (file header, scope note 1).
-* **VC-S4** is `vc_merge` — *not* a free congruence: it fires only under
-  `ConfigRelS ∧ Aux` at genuine merge premises (erratum §9.2).
+  `SettledAt` (`gate_settled`).
+* **VC-S3** is `vc_step`, class (a) only; class (b) is absorbed into VC-S4
+  (scope note 1).
+* **VC-S4** is `vc_merge`, *not* a free congruence: it fires only under
+  `ConfigRelS ∧ Aux` at genuine merge premises.
 * **VC-S5** is `vc_inv` (state-shape contract preservation; the honesty
   contract is inherited observationally by `stability_ra_inherited`).
 * **VC-S6** (epoch coherence) is the standalone `EpochCoherentObs` below.
@@ -534,8 +533,8 @@ structure StabilityVC (D : ConditionedMRDTSig) where
     Ĉ'.ver = (fun w => if w = vm then some (compact ŝ, E ∪ E) else Ĉ.ver w) →
     ConfigRelS R C' Ĉ' → Aux C' Ĉ'
 
-/-- **VC-S6, epoch coherence, observational form** (deviation recorded in the
-final report): compacting at `S` and then at `S' ⊇ S` lands in the same
+/-- **VC-S6, epoch coherence, observational form**: compacting at `S` and then
+at `S' ⊇ S` lands in the same
 *observational* class as compacting at `S'` directly. (As a same-`R`-class
 statement it is false for graph-shaped relations: a tag dropped at the first
 epoch whose second-epoch keeper has since died is kept by the direct `S'`
@@ -810,7 +809,7 @@ theorem stability_match_apply {C Ĉ C' : Configuration D} {t : Timestamp}
 
 /-- Merge is matched verbatim: same heads, same LCA version, same fresh slot;
 the merged payloads are related by **VC-S4** (`vc_merge`), which fires exactly
-at the reachable-pair premises threaded here (erratum §9.2). -/
+at the reachable-pair premises threaded here. -/
 theorem stability_match_merge {C Ĉ C' : Configuration D} {r₁ r₂ : Replica}
     (rel : ConfigRelS V.R C Ĉ) (aux : V.Aux C Ĉ)
     (hstep : Step3 D C (.merge r₁ r₂) C') :
@@ -990,7 +989,7 @@ theorem isLCA_self (parents : Version → List Version) (v : Version) :
   ⟨Relation.ReflTransGen.refl, Relation.ReflTransGen.refl, fun _ h₁ _ => h₁⟩
 
 /-- The full-side stuttering target: a self-merge at `r`'s head `v`, allocated
-at the fresh slot `vm`. The causal core is untouched — the merged event set is
+at the fresh slot `vm`. The causal core is untouched: the merged event set is
 `E ∪ E = E`, so `L` is even pointwise unchanged. -/
 def selfMergeCfg (C : Configuration D) (r : Replica) (v vm : Version)
     (s : D.State) (E : Set (Op D.AppOp))
@@ -1090,10 +1089,10 @@ def selfMergeCfg (C : Configuration D) (r : Replica) (v vm : Version)
       (fun w hw => by simp [hw])
       hlca h1 h2 hT
 
-/-- **The compaction diamond** (note §5): under the gate, the full side takes
+/-- **The compaction diamond**: under the gate, the full side takes
 the stuttering self-merge and the compacted side installs `compact ŝ` at the
 same fresh slot; the lifted relation and the instance invariant survive. The
-compacted side's move is the GC callback itself — deliberately *not* a `Step3`
+compacted side's move is the GC callback itself, deliberately *not* a `Step3`
 step. -/
 theorem stability_compact {C Ĉ : Configuration D} {r : Replica}
     {v vm : Version} {s ŝ : D.State} {E : Set (Op D.AppOp)}
@@ -1295,7 +1294,7 @@ theorem stability_match {C Ĉ C' : Configuration D} {ℓ : Label3 D}
 
 /-- **The paired (twin) run**: the full run on the left, the compacted run on
 the right. `step` records a matched `Step3` pair (produced by
-`stability_match`); `compact` records a gated compaction — the full side's
+`stability_match`); `compact` records a gated compaction, the full side's
 stuttering self-merge (a genuine `Step3`, so the left projection of a
 `StabReach` trace is an ordinary reachable run) against the compacted side's
 callback move (produced by `stability_compact`). -/
@@ -1312,7 +1311,7 @@ inductive StabReach (V : StabilityVC D) (hInit : D.Inv D.init) :
       StabReach V hInit C' Ĉ'
 
 open LabeledTS in
-/-- **The stability metatheorem** (note §5): along every paired run, the
+/-- **The stability metatheorem**: along every paired run, the
 lifted relation and the instance invariant hold, and the full side is an
 ordinary `Step3`-reachable configuration (compactions project to stuttering
 self-merges). With `stability_match` / `stability_compact` supplying the
@@ -1332,7 +1331,7 @@ theorem stability_simulation {V : StabilityVC D} {hInit : D.Inv D.init}
   | @compact C Ĉ C' Ĉ' r _ hstep hrel haux ih =>
     exact ⟨hrel, haux, Relation.ReflTransGen.tail ih.2.2 ⟨_, hstep⟩⟩
 
-/-- **Reads equal at every version** (note §5): a version allocated on the
+/-- **Reads equal at every version**: a version allocated on the
 compacted side carries the full side's event set verbatim and reads
 identically through the datatype's read interface. -/
 theorem stability_reads_equal {V : StabilityVC D} {hInit : D.Inv D.init}
@@ -1362,10 +1361,10 @@ theorem reads_replica_equal {V : StabilityVC D} {hInit : D.Inv D.init}
   subst hĉ
   exact (V.vc_obs hR).symm
 
-/-- **RA-linearizability inherited observationally** (note §5): every version
+/-- **RA-linearizability inherited observationally**: every version
 of the compacted run has a permutation witness of its (shared) event set,
 respecting the linearization order of the compacted run's own causal core,
-whose fold reads exactly as the compacted state — transported from the full
+whose fold reads exactly as the compacted state, transported from the full
 side's per-version RA-linearizability. -/
 theorem stability_ra_inherited {V : StabilityVC D} {hInit : D.Inv D.init}
     {C Ĉ : Configuration D} (h : StabReach V hInit C Ĉ)

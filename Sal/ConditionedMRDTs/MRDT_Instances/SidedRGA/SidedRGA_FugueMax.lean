@@ -2,22 +2,18 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
 import Sal.MRDTs.RGA_Embed.SidedMax_ChainLex
 
 /-!
-# The FugueMax policy on the embedded-chain family: the positive twin (task #87a)
+# The FugueMax policy on the embedded-chain family: the positive twin
 
 Weidner-Kleppmann Definition 6 / Theorem 9 (arXiv:2305.00583v3): FugueMax
 is Fugue with right-side siblings traversed in the REVERSE order of their
 right origins (ties ascending by ID), and it IS maximally non-interleaving.
-The completed #84 arc refuted the full statement for the repo's
+`SidedRGA_Fugue.lean` refutes the full statement for the repo's
 Fugue-with-recency-tiebreak policy; this file realizes FugueMax and proves
-the positive twin of that arc's first refutation.
+the positive twin of that refutation.
 
-**The realization** (design section in
-`whiteboard/fugue-maximal-noninterleaving.md`; Python validation
-`whiteboard/litmus/fuguemax_check.py`, gauntlet + directed cases + 1500
-randomized states all clean): the R-sibling order depends on the right
+**The realization**: the R-sibling order depends on the right
 origin, which is not a function of `(side, delta)`, so no re-banding of
-the sided alphabet realizes FugueMax (the Python `mirror` control fails
-condition (2) on the adverse Figure-7 trace). The realization is the
+the sided alphabet realizes FugueMax. The realization is the
 kernel VARIANT alphabet `Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean`:
 R entries carry the mint-time KEY of the right origin (`[0]` for end),
 R-siblings compare tags first (smaller tag = display-later right origin =
@@ -55,22 +51,22 @@ Layers:
 * **§5 Run contiguity**: `fuguemax_reachable_runs_no_interleave`, the
   variant transport of the Fugue file's candidate (a).
 
-* **§6 SPOTs** (PASS+FAIL, hand-derived, Python-matched): two front
+* **§6 SPOTs** (PASS+FAIL, hand-derived): two front
   inserts `[1,2]`, the forward twin (lower-ID block first), L19 backward
   (unchanged), the mixed case, and BOTH Figure-7 mint orders — the
   adverse one is the trace that kills every plain re-banding.
 
-**Status: all three Definition-4 conditions are now theorems.**
-Condition (1) is discharged in `SidedRGA_NonInterleaving.lean`
+All three Definition-4 conditions are theorems. Condition (1) is
+discharged in `SidedRGA_NonInterleaving.lean`
 (`fuguemax_forward_ni`, via the traversal theory), condition (2) in
 `SidedRGA_Backward.lean` (`fuguemax_backward_ni`, via the `RBk`
-mint-time clause bundle and the four-route witness construction; note
-the corrected exception statement below quantifies the witness over
-minted records, tombstones included: the live reading was
-machine-refuted, note section 9.7.2), and condition (3) here. The
-capstone `fuguemax_maximally_noninterleaving` (full adapted Theorem 9,
-kernel-clean) lives in `SidedRGA_Backward.lean`; the convergence
-capstone for this variant is `SidedRGA_FugueMax_RA_Lin.lean`.
+mint-time clause bundle and the four-route witness construction; the
+exception statement below quantifies the witness over minted records,
+tombstones included: the live reading is refuted), and condition (3)
+here. The capstone `fuguemax_maximally_noninterleaving` (full adapted
+Theorem 9, kernel-clean) lives in `SidedRGA_Backward.lean`; the
+convergence capstone for this variant is
+`SidedRGA_FugueMax_RA_Lin.lean`.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -1438,16 +1434,13 @@ def mLoDesc (K : KnowM) (c p : ℕ) : Prop := ∃ nn : ℕ, (mLoOf K)^[nn] c = p
 
 The witness `C` ranges over ALL minted elements, tombstones included —
 the paper's own quantification (its list state keeps tombstones; right
-origins are defined "including tombstones"). An earlier revision of this
-def carried an `mLive Γ K C` conjunct; that live reading is FALSE on
-this realization: run the paper's Figure-7 execution (ids 3, 4, 5 roots;
-X = 6 with origins (3, 5), Y = 7 with (3, 4); display `[3, 6, 7, 4, 5]`),
-then delete 4. At the pair (A, B) = (6, 5) the premises of condition (2)
-hold, 7 sits live between, and the ONLY witness strictly between
-lo(6) = 3 and 5 that is not a lo-descendant of 3 is the TOMBSTONE 4.
-Countermodel and 4500-state validation:
-`whiteboard/fugue-maximal-noninterleaving.md` §9.7.2,
-`whiteboard/litmus/fuguemax_backward_check.py`. The conclusion
+origins are defined "including tombstones"). Quantifying only over LIVE
+witnesses is FALSE on this realization: run the paper's Figure-7
+execution (ids 3, 4, 5 roots; X = 6 with origins (3, 5), Y = 7 with
+(3, 4); display `[3, 6, 7, 4, 5]`), then delete 4. At the pair
+(A, B) = (6, 5) the premises of condition (2) hold, 7 sits live
+between, and the ONLY witness strictly between lo(6) = 3 and 5 that is
+not a lo-descendant of 3 is the TOMBSTONE 4. The conclusion
 `mConsecutive` keeps its live reading (the visible-document property). -/
 def BackwardExceptionM (Γ : OrderedPrefixCode) (K : KnowM)
     (A B : ℕ) : Prop :=
@@ -1486,14 +1479,12 @@ reachable FugueMax configuration satisfies all three conditions. -/
 def FugueMaxMaximallyNonInterleaving (Γ : OrderedPrefixCode) : Prop :=
   ∀ G : ℕ → KnowM, MaxReach Γ G → ∀ r, MaxNonInterleavingM Γ (G r)
 
-/-- Condition (1) over reachability. Stated; Python-clean over 1500
-randomized states and every directed case; unproved here (the
+/-- Condition (1) over reachability. Stated; unproved here (needs the
 display-to-tree-traversal theory, gap G2). -/
 def FugueMaxForwardNonInterleaving (Γ : OrderedPrefixCode) : Prop :=
   ∀ G : ℕ → KnowM, MaxReach Γ G → ∀ r, ForwardNIM Γ (G r)
 
-/-- Condition (2) over reachability. Stated; Python-clean; unproved here
-(same gap). -/
+/-- Condition (2) over reachability. Stated; unproved here (same gap). -/
 def FugueMaxBackwardNonInterleaving (Γ : OrderedPrefixCode) : Prop :=
   ∀ G : ℕ → KnowM, MaxReach Γ G → ∀ r, BackwardNIExcM Γ (G r)
 
@@ -1582,7 +1573,7 @@ theorem sameOriginLowFirst_of_KInv {Γ : OrderedPrefixCode} {K : KnowM}
           rw [hkA, hkB]
           exact hdisp
 
-/-- **The positive twin of the completed arc's first refutation**:
+/-- **The positive twin of `SidedRGA_Fugue.lean`'s first refutation**:
 condition (3) of the W-K Definition 4 HOLDS for the FugueMax variant at
 every replica of every reachable configuration. -/
 theorem fuguemax_same_origin_low_first (Γ : OrderedPrefixCode)
@@ -1756,7 +1747,7 @@ theorem fuguemax_reachable_runs_no_interleave (Γ : OrderedPrefixCode)
 
 #print axioms fuguemax_reachable_runs_no_interleave
 
-/-! ## §6  SPOTs (PASS+FAIL, hand-derived, matching fuguemax_check.py) -/
+/-! ## §6  SPOTs (PASS+FAIL, hand-derived) -/
 
 namespace FugueMaxSPOT
 
@@ -1845,7 +1836,7 @@ def kFigA : KnowM := syncM k17a k27a
 /-- PASS: the ADVERSE mint order (Y = 6 minted before X = 7). X still
 displays first: the right-origin tag overrides both recency and ID order.
 This is the trace on which every plain re-banding of the sided alphabet
-fails condition (2) (the Python `mirror` control). -/
+fails condition (2). -/
 theorem fig7_adverse_display :
     mView unaryCode kFigA = [3, 7, 6, 4, 5] := by native_decide
 

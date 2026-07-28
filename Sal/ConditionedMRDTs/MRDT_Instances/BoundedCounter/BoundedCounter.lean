@@ -9,12 +9,11 @@ import Sal.ConditionedMRDTs.Metatheory.EscrowSafety
 /-!
 # Bounded Counter — convergence, the client contract, and the bound as a theorem
 
-The second genuinely conditioned MRDT instance (after the tombstone-free RGA).
-Mirror of `Sal/CRDTs/Bounded_Counter` (Sypytkowski's state-based bounded
-counter, per-replica escrow; transfers omitted in this first instance): state
-is a pair of per-replica grow-only tallies `(incs, decs)`, `Inc`/`Dec` bump the
-issuing replica's own slot, and the three-way merge is per-slot group merge
-`a + b − l` (inclusion–exclusion on event counts).
+A genuinely conditioned MRDT instance. Mirror of `Sal/CRDTs/Bounded_Counter`
+(Sypytkowski's state-based bounded counter, per-replica escrow; transfers
+omitted here): state is a pair of per-replica grow-only tallies `(incs, decs)`,
+`Inc`/`Dec` bump the issuing replica's own slot, and the three-way merge is
+per-slot group merge `a + b − l` (inclusion–exclusion on event counts).
 
 Three layers:
 
@@ -35,12 +34,11 @@ Three layers:
   honest execution satisfies the invariant**; corollary `bc_value_nonneg`, the
   counter's value (over any finite set of replicas) is non-negative. It is a
   corollary of the generic safety metatheorem
-  (`version_inv_on_of_causal_canonical`, Route A′ of
-  `Development/GENERIC_SAFETY_PENPAPER.md`): the counter discharges
+  (`version_inv_on_of_causal_canonical`): the counter discharges
   `CausalCanonical` pointwise (all ops commute, `rc ≡ Either`) and the fused
-  stability obligation `SafetyStepOn` in the memo's three steps (§5) — extras
-  in a causal prefix are cross-replica, slots are order-free per-slot event
-  counts (§4), and the guard reads only the issuer's own slots.
+  stability obligation `SafetyStepOn`, whose residue is that extras in a causal
+  prefix are cross-replica, slots are order-free per-slot event counts (§4),
+  and the guard reads only the issuer's own slots.
 -/
 
 set_option maxHeartbeats 1000000
@@ -321,17 +319,14 @@ theorem bc_fold_decs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
       push_cast
       omega
 
-/-! ## §5  The safety obligations discharged (Route A′, memo §4.2.1)
+/-! ## §5  The safety obligations discharged
 
 `bc_version_inv` is a corollary of the generic
 `version_inv_on_of_causal_canonical` (`Metatheory/GenericSafety.lean`). The
-per-instance residue is exactly the memo's three steps: extras in a causal
-prefix are cross-replica (the generic `countP_prefix_eq_causal_past`), slots
-are order-free counts (`bc_fold_incs`/`bc_fold_decs`), and the guard reads
-only the issuer's own slots (`bcApplicable_inv_pres` closes). The former
-vis-maximal-decrement apparatus (`exists_rel_max`, `countP_split`,
-`countP_le_one_of_unique`, the stray-dec bound) was compensation for the
-non-causal witness and is retired. -/
+per-instance residue is: extras in a causal prefix are cross-replica (the
+generic `countP_prefix_eq_causal_past`), slots are order-free counts
+(`bc_fold_incs`/`bc_fold_decs`), and the guard reads only the issuer's own
+slots (`bcApplicable_inv_pres` closes). -/
 
 theorem bc_inv_init : BCInv BC.init := fun _ => ⟨le_refl 0, le_refl 0⟩
 
@@ -349,12 +344,11 @@ private theorem bcIsDecAt_rep {r : ℕ} {x : Op BCOp}
   | inc => simp [bcIsDecAt] at h
   | dec => simpa [bcIsDecAt] using h
 
-/-- **The fused stability obligation** (memo §4.2 (P2)) for the counter's
-conditioning pair `(BCInv, bcApplicable)`: an `inc` needs no guard; for a
-`dec` by `r`, both `r`-slots agree between the causal-prefix fold and the
-causal-past fold — the slots are event counts and every extra event of the
-prefix is cross-replica — so the issuer's own slack check transfers and
-`bcApplicable_inv_pres` closes. -/
+/-- **The fused stability obligation** for the counter's conditioning pair
+`(BCInv, bcApplicable)`: an `inc` needs no guard; for a `dec` by `r`, both
+`r`-slots agree between the causal-prefix fold and the causal-past fold (the
+slots are event counts and every extra event of the prefix is cross-replica),
+so the issuer's own slack check transfers and `bcApplicable_inv_pres` closes. -/
 theorem bc_safetyStep : SafetyStepOn BC BCInv bcApplicable := by
   intro C E S e σS σP hEev hEcl heE hSsub heS hScl hfut hpast hσS hσP hInv happ
   obtain ⟨ts, r, op⟩ := e
@@ -437,13 +431,12 @@ theorem bc_honestAppOn {C : Configuration BC}
 
 open LabeledTS in
 /-- **The bound, as a reachability theorem.** In every reachable configuration
-whose history is honest, every version — heads, LCAs, everything the store
-ever registered — satisfies the escrow invariant. What the CRDT development
-could only promise operationally is here a consequence of the formal client
-contract. Corollary of the generic safety metatheorem (Route A′): the
-counter's `CausalCanonical` comes pointwise from all-comm + `rc ≡ Either`,
-and its `SafetyStepOn`/`HonestAppOn` discharges are §5 and
-`bc_honestAppOn`. -/
+whose history is honest, every version (heads, LCAs, everything the store ever
+registered) satisfies the escrow invariant. What the CRDT development could
+only promise operationally is here a consequence of the formal client
+contract. Corollary of the generic safety metatheorem: the counter's
+`CausalCanonical` comes pointwise from all-comm + `rc ≡ Either`, and its
+`SafetyStepOn`/`HonestAppOn` discharges are §5 and `bc_honestAppOn`. -/
 theorem bc_version_inv
     (C : Configuration BC)
     (hReach : (labeledTS3 BC).ReachableFrom (initConfig BC trivial) C)
@@ -503,15 +496,14 @@ theorem BC_ra_linearizable3_eq
 
 end
 
-/-! ## §8  Route B cross-check: the escrow metatheorem instance
+/-! ## §8  Cross-check: the escrow metatheorem instance
 
-The counting shape of the original `bc_version_inv` proof generalizes to the
-escrow metatheorem (`Metatheory/EscrowSafety.lean`, memo §5), which needs
-neither a causal witness nor `Inv`-preservation: the counter is *measured* —
-its slots are affine event counts ((B1) below is `bc_fold_incs`/
-`bc_fold_decs` in structural form) — and the bound re-derives from
-(B1)–(B5). `bc_version_inv_escrow` is an independent second derivation of
-`bc_version_inv`'s statement. -/
+The counting shape of the `bc_version_inv` proof generalizes to the escrow
+metatheorem (`Metatheory/EscrowSafety.lean`), which needs neither a causal
+witness nor `Inv`-preservation: the counter is *measured* (its slots are
+affine event counts, (B1) below is `bc_fold_incs`/`bc_fold_decs` in structural
+form), and the bound re-derives from (B1)–(B5). `bc_version_inv_escrow` is an
+independent derivation of `bc_version_inv`'s statement. -/
 
 /-- The counter's observation family: slot `k.2` of the `inc` (resp. `dec`)
 tally. -/
@@ -580,9 +572,9 @@ private theorem bcMu_dec_rep {r : ℕ} {e : Op BCOp}
     omega
 
 open LabeledTS in
-/-- **The bound, re-derived through Route B** (`escrow_version_inv`): same
-statement as `bc_version_inv`, no causal witness and no
-`bcApplicable_inv_pres` — (B3) is `bcApplicable`'s definition, (B4) is
+/-- **The bound, re-derived through the escrow metatheorem**
+(`escrow_version_inv`): same statement as `bc_version_inv`, no causal witness
+and no `bcApplicable_inv_pres`. (B3) is `bcApplicable`'s definition, (B4) is
 issuer-determined classes (`class_total_of_same_rep`), (B5) is `BCHonest`
 verbatim (the ∀-form is exactly the measured-guard shape). -/
 theorem bc_version_inv_escrow

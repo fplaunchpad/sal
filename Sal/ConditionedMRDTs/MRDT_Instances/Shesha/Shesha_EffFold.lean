@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Replay
 
-/-! # Shesha — effective-fold theory (phase 2e, piece i)
+/-! # Shesha — effective-fold theory
 
 The structure theory of folds of **effective** enumerations, feeding the
 join hook `shesha_join_at_eff` (`Shesha_Cond.lean`):

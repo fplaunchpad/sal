@@ -1,15 +1,15 @@
 import Sal.ConditionedMRDTs.Framework.ExecutionModel
--- `Nat.findGreatest` for the maximal-common-ancestor selection (§7, task #90).
+-- `Nat.findGreatest` for the maximal-common-ancestor selection (§7).
 import Mathlib.Data.Nat.Find
 -- `Finset.sort` (the canonical ascending-rank fold order), `Finset.sup` (rank bounds
--- for the finite MCA antichain and the well-founded support measure), §8, task #90.
+-- for the finite MCA antichain and the well-founded support measure), §8.
 import Mathlib.Data.Finset.Sort
 import Mathlib.Data.Finset.Lattice.Fold
 
 /-!
-# The LCA Lemma as a store invariant, and the ternary transition system (mission N1)
+# The LCA Lemma as a store invariant, and the ternary transition system
 
-Two deliverables (see `MRDT_METATHEORY_DRAFT.md` T1):
+Two results:
 
 1. **`lca_events_of_storeInv`** — the paper's Lemma LCA (`lin.tex:160`,
    `L(v_⊤) = L(v₁) ∩ L(v₂)`) proved from an explicit invariant bundle `StoreInv` over the
@@ -24,7 +24,7 @@ Two deliverables (see `MRDT_METATHEORY_DRAFT.md` T1):
    descent termination; here the origin is carried as an invariant, so no descent is
    needed at all.
 
-2. **`Step3`** — the ternary labeled transition system over the Phase-0 `Configuration`
+2. **`Step3`** — the ternary labeled transition system over the `Configuration`
    (Apply / Merge / CreateReplica / Query, paper Fig. `sem`), with the Merge rule gated on
    `IsLCA` (the paper's `v_⊤ = LCA(H(r₁), H(r₂))` premise; criss-cross configurations
    therefore disable Merge rather than falsify the lemma — the paper's own potential-LCA
@@ -33,7 +33,7 @@ Two deliverables (see `MRDT_METATHEORY_DRAFT.md` T1):
    * `merged_store_lca_events` / `applied_store_lca_events` — **maintainability / non-
      vacuity**: the `lca_events` *field* that a `Step3` target `Configuration` must carry
      is derivable for the extended store, so the invariant-laden structure never blocks a
-     transition whose premises hold. (Phase-0 deferred exactly this obligation.)
+     transition whose premises hold.
 
 The Apply rule's timestamp freshness is **store-wide** (`h_fresh_store`), quantifying over
 all versions' event sets — faithful to the paper's `∀ e' ∈ ⋃ range(L)` where `L` is
@@ -88,7 +88,7 @@ theorem storeInv_events_mono_reaches
     obtain ⟨⟨sm, Em⟩, hm⟩ := Option.isSome_iff_exists.mp hmid
     exact (ih ha hm).trans (hInv.events_mono c mid hstep hm hc)
 
-/-! ## §2. The LCA lemma (mission N1, paper Lemma LCA) -/
+/-! ## §2. The LCA lemma (paper Lemma LCA) -/
 
 /-- **Lemma LCA** (`lin.tex:160`), from the store invariant alone: if `v_⊤` is an LCA of
 `v₁, v₂` and all three are allocated, `E(v_⊤) = E(v₁) ∩ E(v₂)`.
@@ -425,8 +425,8 @@ end Maintenance
 
 Emulation style: the target `C'` is posited with field equations, so the `Configuration`
 invariants are carried by the structure. The **maintainability** of the store-side
-invariants — in particular the `lca_events` field, whose Phase-0 maintenance was
-deferred — is discharged in §6, so the invariant-laden structure never blocks a step. -/
+invariants, in particular the `lca_events` field, is discharged in §6, so the
+invariant-laden structure never blocks a step. -/
 
 /-- Transition labels (paper Fig. `sem`). -/
 inductive Label3 (D : ConditionedMRDTSig) where
@@ -572,8 +572,8 @@ theorem storeInv_reachable {C : Configuration D} {hInit : D.Inv D.init}
 /-- **Maintainability of the `lca_events` field under Merge** (non-vacuity of `Step3`):
 for a store satisfying `StoreInv`, the merge-extended store satisfies the `lca_events`
 shape for *every* LCA triple — so the invariant-laden `Configuration` a `Step3.merge`
-must produce is never blocked by its `lca_events` field. (Phase-0 deferred exactly this
-maintenance obligation; combined with `storeInv_reachable`, it is discharged.) -/
+must produce is never blocked by its `lca_events` field. (Combined with
+`storeInv_reachable`, it is discharged.) -/
 theorem merged_store_lca_events
     {ver : Version → Option (D.State × Set (Op D.AppOp))}
     {parents : Version → List Version}
@@ -626,11 +626,11 @@ theorem applied_store_lca_events
         hver_new hver_old hpar_new hpar_old)
       hLCA ha hb hc
 
-/-! ## §7. Virtual LCAs (task #90): the MCA covering lemma
+/-! ## §7. Virtual LCAs: the MCA covering lemma
 
-`whiteboard/virtual-lca-note.md` §3, Proposition 1 in set-support form. Under
+The MCA covering lemma in set-support form. Under
 `StoreInv`, the event sets of the maximal common ancestors of `(S, w)` **cover exactly**
-the intersection `(⋃_{u∈S} E(u)) ∩ E(w)` — the event set the Merge rule demands of an
+the intersection `(⋃_{u∈S} E(u)) ∩ E(w)`, the event set the Merge rule demands of an
 LCA. At a singleton MCA set this degenerates to `lca_events_of_storeInv`
 (`mca_events_cover_of_isLCA` below). `origin` is load-bearing: with op-based redelivery
 (two incomparable birth sites) the union strictly undershoots the intersection. -/
@@ -677,7 +677,7 @@ theorem commonAnc_reaches_mca {parents : Version → List Version}
     exact Nat.findGreatest_is_greatest (Nat.not_le.mp hlt') hyw hPy
   exact Nat.le_antisymm hyz (reaches_le hlt hzy)
 
-/-- **Proposition 1 (covering), set-support form.** Under `StoreInv` (+ the rank order),
+/-- **The covering lemma (set-support form).** Under `StoreInv` (+ the rank order),
 an event lies in some MCA's event set **iff** it lies in some support member's and in
 `w`'s: `⋃_{m ∈ MCA(S,w)} E(m) = (⋃_{u∈S} E(u)) ∩ E(w)`. Degenerate cases for free: an
 empty MCA set forces an empty intersection (the ⊇ direction *constructs* an MCA from a
@@ -732,15 +732,15 @@ theorem isMCA_eq_of_isLCA {parents : Version → List Version}
   have hTCA : vT ∈ CommonAnc parents {u} v₂ := ⟨⟨u, rfl, hLCA.1⟩, hLCA.2.1⟩
   exact (hmax vT hTCA (hLCA.2.2 m hmu hmw)).symm
 
-/-! ## §8. The virtual-LCA state: the recursive antichain merge (task #90)
+/-! ## §8. The virtual-LCA state: the recursive antichain merge
 
-The rule (`whiteboard/virtual-lca-note.md` §2): sort the MCA antichain ascending by
-rank (the canonical order — version ids are allocation ranks) and fold, merging each
+The rule: sort the MCA antichain ascending by
+rank (the canonical order, version ids are allocation ranks) and fold, merging each
 member against the accumulated scratch node through *their* virtual LCA, recursively.
 A scratch node is identified with its **support** — the finite set of antichain members
 it joins (`CommonAnc` over a downward-closed support only consults the maximal ones).
 
-Termination is unconditional (note §4): a call is measured by the joint real support
+Termination is unconditional: a call is measured by the joint real support
 `supportOf (S ∪ {w})`; every sub-pair's support lies inside the common-ancestor set,
 which `w` never belongs to when the antichain is proper, so the support strictly
 shrinks at each nesting level; within a level the pending list shrinks. Only
@@ -865,7 +865,7 @@ open Classical in
 node's support (the antichain prefix already folded), `acc` its state; each pending
 member `m` is merged through the *virtual LCA of the sub-pair* `(accS, m)` — the
 recursive occurrence on the sub-pair's own MCA antichain. Termination is by the joint
-support measure, lexicographic with the pending length (note §4). -/
+support measure, lexicographic with the pending length. -/
 noncomputable def vfoldAux (hlt : ∀ v p, p ∈ parents v → p < v)
     (accS : Finset Version) (acc : D.State) : List Version → D.State
   | [] => acc
@@ -921,7 +921,7 @@ decreasing_by
     exact Prod.Lex.right _ (Nat.lt_succ_self _)
 
 open Classical in
-/-- **The virtual-LCA state of a support/version pair** (note §2, `VirtualLCA`):
+/-- **The virtual-LCA state of a support/version pair** (`VirtualLCA`):
 sort the MCA antichain ascending by rank and fold. An empty antichain returns `σ₀`
 (under `StoreInv` its event set — the empty union — is exactly the then-empty
 intersection, so this is not a junk case); a singleton returns the registered state
@@ -979,20 +979,20 @@ theorem vfoldAux_cons (hlt : ∀ v p, p ∈ parents v → p < v)
 
 end VirtualState
 
-/-- **The virtual LCA state of a head pair** (note §2): the recursive antichain merge
+/-- **The virtual LCA state of a head pair**: the recursive antichain merge
 of `MCA(v₁, v₂)`, read off the configuration's ranked store. This is the state the
 widened merge rule (`Step3V.mergeVirtual`) places in the LCA slot. -/
 noncomputable def virtualLCAState (C : Configuration D) (v₁ v₂ : Version) : D.State :=
   vlcaAux C.ver C.parents C.parents_lt {v₁} v₂
 
-/-! ## §9. The widened step relation: `Step3V` (task #90)
+/-! ## §9. The widened step relation: `Step3V`
 
-`Step3` plus the virtual-merge rule. The note's bill widens `Step3` in place with a
-`mergeVirtual` constructor; here the widening is a **conservative-extension layer**
-(`.base` embeds every `Step3` step) because in-place widening breaks the exhaustive
+`Step3` plus the virtual-merge rule. Rather than widen `Step3` in place with a
+`mergeVirtual` constructor, the widening is a **conservative-extension layer**
+(`.base` embeds every `Step3` step), because in-place widening breaks the exhaustive
 `Step3` case analyses of the instance-level honesty layers
 (`MRDT_Instances/Peritext_Composed/Supplies.lean`, `RGA_Rehoming/RGA_Honest_Residual.lean`,
-`RGA_HHext_Discharge.lean`) — files outside this task's blast radius. Every metatheory
+`RGA_HHext_Discharge.lean`). Every metatheory
 result over `Step3` lifts through `.base`; `mergeVirtual` is the one genuinely new case.
 
 `mergeVirtual` allocates **only** the final `vm` (scratch nodes never enter the store);
@@ -1075,7 +1075,7 @@ theorem storeInv_reachableV {C : Configuration D} {hInit : D.Inv D.init}
 
 end
 
-/-! ## Axiom audit (task #90 kernel layer) -/
+/-! ## Axiom audit (kernel layer) -/
 
 #print axioms mca_events_cover
 #print axioms vfoldAux_cons

@@ -4,16 +4,16 @@ import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient_NF
 /-!
 # The RGA `≈`-Join over born-applicable delivery — union canonical-state shape (NF)
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 The `noopFeasible` (NF) analogue of `RGA_Instance_Final`'s union shape assembly,
-parametric in the guard `W` (so it applies at the re-base's `W := WfOpA`).  The
+parametric in the guard `W` (so it applies at `W := WfOpA`).  The
 guard-hardcoded order lemmas generalize for free — `loOnEqQ_reduce`'s proof reads
 only `rc = Either`, which is guard-independent.  The `noopFeasible` clause of the
 union witness `ρ₀ ++ π₀` is composed from the two sides via `noopFeasible_append`.
 
 This closes the union canonical-state SHAPE for `EqJoinLemma3C_NF`, isolating the
-merge=delta-fold residual (the same WALL 1 the `GenDisc2CEq` version faced, now on
+merge=delta-fold residual (the same WALL 1 the `GenDisc2CEq` version faced, here on
 the honest born-applicable foundation — WALL 0's config facts come from the
 `noopFeasible`/`WfOpGenQ` discipline, not a strengthened `GenDisc`).
 -/
@@ -66,7 +66,7 @@ theorem mergeFold_transport {σ₀' σ₁' σ₂' X s₀ s₁ s₂ : concrete_st
 /-! ## §3  `EqJoinLemma3C_NF`, reduced to the merge=delta-fold residual
 
 Mirror of `RGA_Instance_Final.rga_eqJoin_of_mergeFoldResidual`, over the NF
-interface: the `GenDisc` premises are GONE (the born-applicable discipline is
+interface: no `GenDisc` premises are needed (the born-applicable discipline is
 carried by the `noopFeasible` witnesses), and the residual additionally produces a
 `noopFeasible` delta enumeration.  Everything ABOVE the residual — the union
 canonical-state shape — is closed by §2. -/
@@ -75,7 +75,7 @@ canonical-state shape — is closed by §2. -/
 `noopFeasible`) and the two sides' born-applicable canonical states, a
 `loOnEq`-respecting, `noopFeasible` delta enumeration `π₀` of the symmetric-
 difference whose continued fold from `ρ₀` is `≈ mergeL`.  The merge=delta-fold
-bridge, now carrying feasibility. -/
+bridge, carrying feasibility. -/
 def RgaEqJoinResidual_NF (W : op_t α → concrete_st α → Prop) : Prop :=
   ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α))
     (s₀ s₁ s₂ : concrete_st α) (ρ₀ : List (op_t α)),

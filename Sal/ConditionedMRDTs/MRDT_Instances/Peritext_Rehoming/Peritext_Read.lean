@@ -8,7 +8,7 @@ set_option maxHeartbeats 1000000
 /-!
 # Peritext (FUSED) — the read model and the GENUINE positional intent theorem
 
-The Phase-1 capstone (`Peritext.lean`) certifies state convergence up to `≈`.
+The capstone in `Peritext.lean` certifies state convergence up to `≈`.
 It says nothing about the sequence a user reads.  This file:
 
 1. **Read model.**  Generalises the tombstone-free RGA document read
@@ -37,7 +37,7 @@ It says nothing about the sequence a user reads.  This file:
    start boundary is never formatted by that mark.  This is precisely the guarantee
    the frozen-path product design **fails** — there, deleting a mark's anchor makes
    the boundary climb tree-ancestry and migrate backward, leaking formatting to
-   earlier text (`Peritext_Composed/MarkIntent.lean`, the retracted `mark_*_no_leak`).  Here
+   earlier text (`Peritext_Composed/MarkIntent.lean`, the refuted `mark_*_no_leak`).  Here
    boundaries are live RGA nodes, so a character's formatting is decided by its
    reading-order position, and no boundary migration occurs.
 
@@ -55,8 +55,8 @@ re-sort of the physical sequence, never by a boundary jumping backward to unrela
 earlier text.  The fused corner trades atomicity (the third horn of the trilemma)
 for live positioning; that residual is inherited from the RGA and is exactly
 `del_can_reorder_survivors`, demonstrated concretely below — the wins
-(`fused_no_leak_spot`, `fused_delete_interior_no_leak` vs. the product
-retraction) AND the loss (`fused_delete_reformats_survivor`: deleting a plain
+(`fused_no_leak_spot`, `fused_delete_interior_no_leak` vs. the product's
+refuted no-leak claim) AND the loss (`fused_delete_reformats_survivor`: deleting a plain
 character moves an untouched survivor across a mark boundary, re-formatting
 it — the do-level sequential-spec failure, machine-checked).
 -/

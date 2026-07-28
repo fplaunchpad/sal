@@ -1,69 +1,62 @@
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
-# The binary product combinator `D₁ ⊗ D₂` — the raw composition kit
+# The binary product combinator `D₁ ⊗ D₂`: the raw composition kit
 
-Mechanizes the raw layer of `Development/COMPOSITION_PENPAPER.md` (obligations
-O1–O10 of its §5.5 plan, plus the §2.4.1 free-direction `GenHonest` lift and
-the composite convenience theorem of §2.3.5): the product of two conditioned
-MRDT signatures composes at exactly the boundary the factored framework
-predicts — `JoinLemma3At` — because cross-component pairs commute *by `rfl`*
-(the (D-cross) kernel fact), so `loOn` localizes, folds and configurations
-project field-for-field, and the glued join witness is a plain concatenation.
+The product of two conditioned MRDT signatures composes at the boundary
+`JoinLemma3At`: cross-component pairs commute *by `rfl`* (the (D-cross) fact),
+so `loOn` localizes, folds and configurations project field-for-field, and
+the glued join witness is a plain concatenation.
 
 Layering: this file imports only `Metatheory.GenHonest` (hence the framework
-and the generic metatheory); it imports **no** instance files. The demo
-capstone consuming this kit is `MRDT_Instances/ProductDemo/ProductDemo.lean`.
+and the generic metatheory); it imports no instance files. The demo capstone
+consuming this kit is `MRDT_Instances/ProductDemo/ProductDemo.lean`.
 
-Contents, by memo obligation:
+Contents:
 
-* **O1** — event injections/projections (`inlOp`/`inrOp`/`oplOp`/`oprOp`/
+* Event injections/projections (`inlOp`/`inrOp`/`oplOp`/`oprOp`/
   `projList₁`/`projList₂`/`evRes₁`/`evRes₂`) with their roundtrip kit, and
   the combinator `prodSig D₁ D₂ : ConditionedMRDTSig` with its `rfl` simp
   kit (`prodSig_update_inl`, `prodSig_rc_cross`, …). The mixed `rc` is
-  `Either` — forced, not chosen: cross pairs commute, so any mixed
-  `Fst_then_snd` would violate `rc_non_comm_directional` (memo §5.4.5).
-* **O2** — (F1) fold projection `applySeq_prod` and its block corollaries.
-  No commutation is used: this identity is where "interleaving order between
-  components cannot matter" is discharged once and for all.
-* **O3** — the two definitional kernel facts (memo §1.2): (D-cross)
-  `commutes_prod_cross` (cross pairs commute by `rfl`) and (D-proj)
+  `Either`, forced not chosen: cross pairs commute, so any mixed
+  `Fst_then_snd` would violate `rc_non_comm_directional`.
+* Fold projection `applySeq_prod` and its block corollaries. No commutation
+  is used: this identity, not an exchange argument, is where "interleaving
+  order between components cannot matter" is discharged once and for all.
+* The two definitional kernel facts: (D-cross) `commutes_prod_cross` (cross
+  pairs commute by `rfl`) and (D-proj)
   `commutes_prod_inl_iff`/`commutes_prod_inr_iff` (same-side commutation is
   the component's; the forward direction instantiates the untouched
   component at its `init`).
-* **O4** — (F1) the binary replica-keyed core projects field-for-field:
+* The binary replica-keyed core projects field-for-field:
   `projCore₁`/`projCore₂`, with `mem_projCore₁_events` etc.
-* **O5** — the ternary ranked-store `Configuration` projects too:
-  `projConf₁`/`projConf₂` (every store field restricts cleanly; consumed by
-  the F5 contract lifts). NOTE (memo §2.1.4): *reachability* does NOT
-  project — the projection of a product-reachable configuration is in
-  general unreachable for the component's own LTS. That is why everything
-  below consumes configuration-level certificates only.
-* **O6** — (F3) `loOn` localization: mixed pairs carry no edge in either
-  direction (`loOn_prod_cross_lr`/`_rl` — both arms, including the absorber
-  existential), same-side edges coincide with the component's
+* The ternary ranked-store `Configuration` projects too:
+  `projConf₁`/`projConf₂` (every store field restricts; consumed by the
+  contract lifts). Reachability does NOT project: the projection of a
+  product-reachable configuration is in general unreachable for the
+  component's own LTS. That is why everything below consumes
+  configuration-level certificates only.
+* `loOn` localization: mixed pairs carry no edge in either direction
+  (`loOn_prod_cross_lr`/`_rl`, both arms, including the absorber existential),
+  same-side edges coincide with the component's
   (`loOn_prod_inl_iff`/`_inr_iff`), and the `respects`/`listPermOf`
   splitting kit.
-* **O7** — `updateVCs_prod`: the guarded update-layer VC bundle composes.
-* **O8** — canonical states and enumerations project
+* `updateVCs_prod`: the guarded update-layer VC bundle composes.
+* Canonical states and enumerations project
   (`isCanonicalState_proj₁`/`_proj₂`).
-* **O9** — the closure-free concatenation gluing `canonical_glue` (memo
-  §2.3.3): component canonical states at the restricted sets assemble into
-  the product canonical state at the mixed set, witness `ι₁ρ¹ ++ ι₂ρ²`,
-  no re-interleaving.
-* **O10** — (F4) the join gluings `joinLemma3At_prod` (visNC-closure
-  premises) and `joinLemma3FAt_prod` (full-closure premises, over the new
-  per-configuration `JoinLemma3FAt`), both instances of the one closure-free
-  core O9; plus the composite convenience theorem
+* The closure-free concatenation gluing `canonical_glue`: component canonical
+  states at the restricted sets assemble into the product canonical state at
+  the mixed set, witness `ι₁ρ¹ ++ ι₂ρ²`, no re-interleaving.
+* The join gluings `joinLemma3At_prod` (visNC-closure premises) and
+  `joinLemma3FAt_prod` (full-closure premises, over the per-configuration
+  `JoinLemma3FAt`), both instances of the one closure-free concatenation
+  core; plus the composite convenience theorem
   `prod_ra_linearizable3_of_honest_reach` (contract `prodContract H₁ H₂`,
   component contracts precomposed with the core projections).
-* **F5, contract part** — the free direction of the `GenHonest` lift
-  (`genHonest_prod`, memo §2.4.1 (⇐)). The `⇒` direction (needs causal-past
-  enumerability), the `HonestApp` lift and its pinned-linear-extension
-  lemma, `SafetyStepOn`, and `CausalCanonical` are the memo's O12–O15
-  (`Product_Safety.lean`) — a later phase, per the memo's assignment.
-
-The ≈-kit (memo O16–O20, `ProductEq.lean`) is likewise a later phase.
+* The free direction of the `GenHonest` lift (`genHonest_prod`). The `⇒`
+  direction (needs causal-past enumerability), the `HonestApp` lift and its
+  pinned-linear-extension lemma, `SafetyStepOn`, and `CausalCanonical` live
+  in `Product_Safety.lean`; the ≈-kit lives in `ProductEq.lean`.
 -/
 
 set_option maxHeartbeats 1000000
@@ -73,40 +66,40 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## §O1a  Event injections and projections -/
+/-! ## Event injections and projections -/
 
 section OpKit
 variable {A₁ A₂ : Type}
 
 /-- Inject a component-1 event into the sum payload, preserving the `(t, r)`
-prefix (memo §0 `ι₁`). -/
+prefix (`ι₁`). -/
 def inlOp (e : Op A₁) : Op (A₁ ⊕ A₂) := (e.1, e.2.1, Sum.inl e.2.2)
 
-/-- Inject a component-2 event (memo §0 `ι₂`). -/
+/-- Inject a component-2 event (`ι₂`). -/
 def inrOp (e : Op A₂) : Op (A₁ ⊕ A₂) := (e.1, e.2.1, Sum.inr e.2.2)
 
-/-- Partial projection onto component 1 (memo §0 `opl`). -/
+/-- Partial projection onto component 1 (`opl`). -/
 def oplOp (x : Op (A₁ ⊕ A₂)) : Option (Op A₁) :=
   match x.2.2 with
   | Sum.inl o => some (x.1, x.2.1, o)
   | Sum.inr _ => none
 
-/-- Partial projection onto component 2 (memo §0 `opr`). -/
+/-- Partial projection onto component 2 (`opr`). -/
 def oprOp (x : Op (A₁ ⊕ A₂)) : Option (Op A₂) :=
   match x.2.2 with
   | Sum.inl _ => none
   | Sum.inr o => some (x.1, x.2.1, o)
 
-/-- List projection onto component 1 (memo §0 `π₁`). -/
+/-- List projection onto component 1 (`π₁`). -/
 def projList₁ (ρ : List (Op (A₁ ⊕ A₂))) : List (Op A₁) := ρ.filterMap oplOp
 
-/-- List projection onto component 2 (memo §0 `π₂`). -/
+/-- List projection onto component 2 (`π₂`). -/
 def projList₂ (ρ : List (Op (A₁ ⊕ A₂))) : List (Op A₂) := ρ.filterMap oprOp
 
-/-- Event-set restriction to component 1: the `ι₁`-preimage (memo §0 `↾₁`). -/
+/-- Event-set restriction to component 1: the `ι₁`-preimage (`↾₁`). -/
 def evRes₁ (ev : Set (Op (A₁ ⊕ A₂))) : Set (Op A₁) := {e | inlOp e ∈ ev}
 
-/-- Event-set restriction to component 2 (memo §0 `↾₂`). -/
+/-- Event-set restriction to component 2 (`↾₂`). -/
 def evRes₂ (ev : Set (Op (A₁ ⊕ A₂))) : Set (Op A₂) := {e | inrOp e ∈ ev}
 
 theorem inlOp_injective : Function.Injective (inlOp (A₁ := A₁) (A₂ := A₂)) := by
@@ -142,7 +135,7 @@ theorem oplOp_inrOp (b : Op A₂) : oplOp (A₁ := A₁) (inrOp b) = none := rfl
 theorem oprOp_inlOp (a : Op A₁) : oprOp (A₂ := A₂) (inlOp a) = none := rfl
 theorem oprOp_inrOp (b : Op A₂) : oprOp (A₁ := A₁) (inrOp b) = some b := rfl
 
-/-- `oplOp x = some a ↔ x = inlOp a` — `oplOp` is the partial inverse of
+/-- `oplOp x = some a ↔ x = inlOp a`: `oplOp` is the partial inverse of
 `inlOp`. -/
 theorem oplOp_eq_some {x : Op (A₁ ⊕ A₂)} {a : Op A₁} :
     oplOp x = some a ↔ x = inlOp a := by
@@ -227,14 +220,14 @@ theorem mem_evRes₁ {ev : Set (Op (A₁ ⊕ A₂))} {a : Op A₁} :
 theorem mem_evRes₂ {ev : Set (Op (A₁ ⊕ A₂))} {b : Op A₂} :
     b ∈ evRes₂ ev ↔ inrOp b ∈ ev := Iff.rfl
 
-/-- Preimages commute with intersection (memo §0). -/
+/-- Preimages commute with intersection. -/
 theorem evRes₁_inter (ev₁ ev₂ : Set (Op (A₁ ⊕ A₂))) :
     evRes₁ (ev₁ ∩ ev₂) = evRes₁ ev₁ ∩ evRes₁ ev₂ := rfl
 
 theorem evRes₂_inter (ev₁ ev₂ : Set (Op (A₁ ⊕ A₂))) :
     evRes₂ (ev₁ ∩ ev₂) = evRes₂ ev₁ ∩ evRes₂ ev₂ := rfl
 
-/-- Preimages commute with union (memo §0). -/
+/-- Preimages commute with union. -/
 theorem evRes₁_union (ev₁ ev₂ : Set (Op (A₁ ⊕ A₂))) :
     evRes₁ (ev₁ ∪ ev₂) = evRes₁ ev₁ ∪ evRes₁ ev₂ := rfl
 
@@ -260,8 +253,7 @@ theorem nodup_projList₂ {ρ : List (Op (A₁ ⊕ A₂))} (h : ρ.Nodup) :
     rw [hx, hx']
 
 /-- Enumerations project: `π₁` of an enumeration of `ev` enumerates `ev↾₁`
-(memo §2.2.1 corollary; with `evRes₁_union` this is the union-splitting of
-enumerations). -/
+(with `evRes₁_union` this is the union-splitting of enumerations). -/
 theorem listPermOf_projList₁ {ρ : List (Op (A₁ ⊕ A₂))} {ev : Set (Op (A₁ ⊕ A₂))}
     (h : listPermOf ρ ev) : listPermOf (projList₁ ρ) (evRes₁ ev) :=
   ⟨nodup_projList₁ h.1, fun a => (mem_projList₁).trans (h.2 (inlOp a))⟩
@@ -272,14 +264,14 @@ theorem listPermOf_projList₂ {ρ : List (Op (A₁ ⊕ A₂))} {ev : Set (Op (A
 
 end OpKit
 
-/-! ## §O1b  The combinator `prodSig D₁ D₂` -/
+/-! ## The combinator `prodSig D₁ D₂` -/
 
 variable (D₁ D₂ : ConditionedMRDTSig)
 
-/-- **The binary heterogeneous product** `D₁ ⊗ D₂` (memo §1.1). State is the
-product, ops the sum; `update`/`mergeL`/`Inv`/`applicable` componentwise;
-`rc` per component on same-side pairs and `Either` on mixed pairs (forced:
-cross pairs commute by (D-cross), so any mixed `Fst_then_snd` would violate
+/-- **The binary heterogeneous product** `D₁ ⊗ D₂`. State is the product, ops
+the sum; `update`/`mergeL`/`Inv`/`applicable` componentwise; `rc` per
+component on same-side pairs and `Either` on mixed pairs (forced: cross pairs
+commute by (D-cross), so any mixed `Fst_then_snd` would violate
 `rc_non_comm_directional`). The only law field, `merge_init_slice`, is the
 `Prod.ext` of the components'. -/
 def prodSig : ConditionedMRDTSig where
@@ -357,13 +349,13 @@ theorem prodSig_applicable_inr (e : Op D₂.AppOp) (s : (prodSig D₁ D₂).Stat
 theorem prodSig_inv_init (h₁ : D₁.Inv D₁.init) (h₂ : D₂.Inv D₂.init) :
     (prodSig D₁ D₂).Inv (prodSig D₁ D₂).init := ⟨h₁, h₂⟩
 
-/-! ## §O3  The two definitional kernel facts (memo §1.2) -/
+/-! ## The two definitional kernel facts -/
 
 /-- **(D-cross)** Cross-component pairs commute **by `rfl`**: both orders
 reduce to the same pair because each update produces an explicit pair
 constructor and the other side's update projects off it. This single
 definitional fact is what kills mixed `loOn` edges, localizes the absorber
-existential, and makes the F4 witness a plain concatenation. -/
+existential, and makes the join witness a plain concatenation. -/
 theorem commutes_prod_cross (e : Op D₁.AppOp) (f : Op D₂.AppOp) :
     (prodSig D₁ D₂).toCRDTSig.commutes (inlOp e) (inrOp f) :=
   fun _ => rfl
@@ -388,8 +380,8 @@ theorem commutes_prod_inr_of {a b : Op D₂.AppOp}
   rw [h s.2]
 
 /-- **(D-proj)** Same-side commutation is the component's. The forward
-direction instantiates the product hypothesis at `(s₁, D₂.init)` — `S₂`
-inhabited via `init`, no `Inv` needed (memo §1.2). -/
+direction instantiates the product hypothesis at `(s₁, D₂.init)`: `S₂` is
+inhabited via `init`, so no `Inv` is needed. -/
 theorem commutes_prod_inl_iff (a b : Op D₁.AppOp) :
     (prodSig D₁ D₂).toCRDTSig.commutes (inlOp a) (inlOp b)
       ↔ D₁.toCRDTSig.commutes a b :=
@@ -400,12 +392,12 @@ theorem commutes_prod_inr_iff (a b : Op D₂.AppOp) :
       ↔ D₂.toCRDTSig.commutes a b :=
   ⟨fun h s₂ => congrArg Prod.snd (h (D₁.init, s₂)), commutes_prod_inr_of⟩
 
-/-! ## §O2  (F1) Folds project — `applySeq_prod` -/
+/-! ## Folds project: `applySeq_prod` -/
 
-/-- **(F1)** The product fold of a mixed list is the pair of component folds
-of the filtered sublists, from any start state. **No commutation is used**:
-this identity, not an exchange argument, is where "interleaving order between
-components cannot matter" is discharged once and for all (memo §2.1.1). -/
+/-- The product fold of a mixed list is the pair of component folds of the
+filtered sublists, from any start state. **No commutation is used**: this
+identity, not an exchange argument, is where "interleaving order between
+components cannot matter" is discharged once and for all. -/
 theorem applySeq_prod (s : (prodSig D₁ D₂).State)
     (ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))) :
     applySeq (prodSig D₁ D₂).toCRDTSig s ρ
@@ -421,7 +413,7 @@ theorem applySeq_prod (s : (prodSig D₁ D₂).State)
     | inr o₂ =>
       exact ih ((s.1, D₂.update s.2 (t, r, o₂)) : (prodSig D₁ D₂).State)
 
-/-- F1 corollary: a pure component-1 block folds as `(fold₁, id)`. -/
+/-- A pure component-1 block folds as `(fold₁, id)`. -/
 theorem applySeq_prod_inl_block (s : (prodSig D₁ D₂).State)
     (ρ : List (Op D₁.AppOp)) :
     applySeq (prodSig D₁ D₂).toCRDTSig s (ρ.map inlOp)
@@ -429,7 +421,7 @@ theorem applySeq_prod_inl_block (s : (prodSig D₁ D₂).State)
   rw [applySeq_prod, projList₁_map_inlOp, projList₂_map_inlOp]
   rfl
 
-/-- F1 corollary: a pure component-2 block folds as `(id, fold₂)`. -/
+/-- A pure component-2 block folds as `(id, fold₂)`. -/
 theorem applySeq_prod_inr_block (s : (prodSig D₁ D₂).State)
     (ρ : List (Op D₂.AppOp)) :
     applySeq (prodSig D₁ D₂).toCRDTSig s (ρ.map inrOp)
@@ -437,12 +429,12 @@ theorem applySeq_prod_inr_block (s : (prodSig D₁ D₂).State)
   rw [applySeq_prod, projList₁_map_inrOp, projList₂_map_inrOp]
   rfl
 
-/-! ## §O4  (F1) The binary replica-keyed core projects (memo §2.1.2) -/
+/-! ## The binary replica-keyed core projects -/
 
 /-- Projection of the product's binary core onto component 1: states by
 `Prod.fst`, event sets by the `ι₁`-preimage, `vis` by restriction along
-`ι₁`. Every structural field restricts cleanly — total on configurations,
-no reachability hypothesis (memo §2.1.2). -/
+`ι₁`. Every structural field restricts, total on configurations, with no
+reachability hypothesis. -/
 def projCore₁ (C : Sal.Emulation.Configuration (prodSig D₁ D₂).toCRDTSig) :
     Sal.Emulation.Configuration D₁.toCRDTSig where
   N := fun r => (C.N r).map Prod.fst
@@ -506,8 +498,8 @@ theorem projCore₁_vis (a b : Op D₁.AppOp) :
 theorem projCore₂_vis (a b : Op D₂.AppOp) :
     (projCore₂ C).vis a b ↔ C.vis (inrOp a) (inrOp b) := Iff.rfl
 
-/-- The projected core's event universe is the restriction of the product's
-(memo §2.1.2 consequence `(proj₁ C).events = (C.events)↾₁`). -/
+/-- The projected core's event universe is the restriction of the product's:
+`(proj₁ C).events = (C.events)↾₁`. -/
 theorem mem_projCore₁_events {a : Op D₁.AppOp} :
     a ∈ (projCore₁ C).events ↔ inlOp a ∈ C.events := by
   constructor
@@ -526,11 +518,11 @@ theorem mem_projCore₂_events {b : Op D₂.AppOp} :
   · rintro ⟨r, s, hL, hs⟩
     exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
 
-/-! ## §O6  (F3) `loOn` localization (memo §2.2.1) -/
+/-! ## `loOn` localization -/
 
 /-- **Mixed pairs carry no `loOn` edge, ever** (`inl → inr` direction). Arm 1
-needs `¬commutes` — refuted by (D-cross); arm 2 needs a mixed
-`rc = Fst_then_snd` — mixed `rc` is `Either` by definition. -/
+needs `¬commutes`, refuted by (D-cross); arm 2 needs a mixed
+`rc = Fst_then_snd`, but mixed `rc` is `Either` by definition. -/
 theorem loOn_prod_cross_lr {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a : Op D₁.AppOp) (b : Op D₂.AppOp) :
     ¬ loOn C ev (inlOp a) (inrOp b) := by
@@ -549,8 +541,8 @@ theorem loOn_prod_cross_rl {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 /-- **Same-side `loOn` edges coincide with the component's** at the restricted
 set. The absorber existential transfers in both directions: a component
 absorber lifts (contrapositive of (D-proj)(⇒)), and a product absorber of an
-`inl` event **must itself be `inl`** — if `inr`, (D-cross) refutes its
-`¬commutes` — and then projects (memo §2.2.1, the load-bearing spot). -/
+`inl` event must itself be `inl` (if `inr`, (D-cross) refutes its
+`¬commutes`), and then projects. -/
 theorem loOn_prod_inl_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₁.AppOp) :
     loOn C ev (inlOp a) (inlOp b) ↔ loOn (projCore₁ C) (evRes₁ ev) a b := by
@@ -613,11 +605,11 @@ theorem respects_projList₂ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
   subst hxa; subst hyb
   exact fun hlo => hxy ((loOn_prod_inr_iff b a).mpr hlo)
 
-/-! ## §O8  Canonical states project (memo §2.1.5) -/
+/-! ## Canonical states project -/
 
 /-- Canonical states project onto component 1: the witness is the
 `π₁`-sublist, Nodup/enumeration/`respects`/fold all transferring through the
-F1/F3 kit. -/
+fold and localization kit. -/
 theorem isCanonicalState_proj₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {s : (prodSig D₁ D₂).State}
     (h : IsCanonicalState C ev s) :
@@ -634,14 +626,15 @@ theorem isCanonicalState_proj₂ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
   exact ⟨projList₂ ρ, listPermOf_projList₂ hp, respects_projList₂ hr,
     congrArg Prod.snd ((applySeq_prod (prodSig D₁ D₂).init ρ).symm.trans hf)⟩
 
-/-! ## §O9  The concatenation gluing (memo §2.3.3) — closure-free core -/
+/-! ## The concatenation gluing: closure-free core -/
 
 /-- **The glued witness is a plain concatenation** `ι₁ρ¹ ++ ι₂ρ²`: component
 canonical states at the restricted sets assemble into the product canonical
 state at the mixed set. No re-interleaving, no closure hypothesis of any
-kind: cross pairs carry no `loOn` edge in either direction (F3), the blocks
-are disjoint images of injections (a), within-block `respects` transfers
-along the same-side iff (b), and the fold is F1 plus the roundtrips (c). -/
+kind: cross pairs carry no `loOn` edge in either direction, the blocks are
+disjoint images of injections (a), within-block `respects` transfers along
+the same-side iff (b), and the fold is `applySeq_prod` plus the roundtrips
+(c). -/
 theorem canonical_glue {U : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {m₁ : D₁.State} {m₂ : D₂.State}
     (h₁ : IsCanonicalState (projCore₁ C) (evRes₁ U) m₁)
@@ -682,7 +675,7 @@ theorem canonical_glue {U : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
       obtain ⟨a, _, rfl⟩ := hx
       obtain ⟨b, _, rfl⟩ := hy
       exact loOn_prod_cross_rl b a
-  · -- (c) fold: F1 + roundtrips
+  · -- (c) fold: applySeq_prod + roundtrips
     rw [applySeq_prod, projList₁_append, projList₂_append,
       projList₁_map_inlOp, projList₁_map_inrOp,
       projList₂_map_inlOp, projList₂_map_inrOp,
@@ -691,14 +684,15 @@ theorem canonical_glue {U : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
       = (m₁, m₂)
     rw [hf₁, hf₂]
 
-/-! ## §O7  `updateVCs_prod` (memo §2.2.2) -/
+/-! ## `updateVCs_prod` -/
 
 /-- The guarded update-layer VC bundle composes. Same-side pairs transfer
 componentwise ((D-proj), `rc⊗ = rcᵢ`, `(t,r)`-prefix preserved by the
 injections); mixed pairs are vacuous (cross pairs commute, mixed `rc` is
 `Either`); a mixed `cond_comm_lift` triple is impossible (its `rc`-edge or
-its `¬commutes` premise dies), and the all-one-side case projects with F1 —
-the untouched component folds the *same* list on both sides. -/
+its `¬commutes` premise dies), and the all-one-side case projects with
+`applySeq_prod`: the untouched component folds the *same* list on both
+sides. -/
 theorem updateVCs_prod (hU₁ : UpdateVCs D₁.toCRDTSig)
     (hU₂ : UpdateVCs D₂.toCRDTSig) :
     UpdateVCs (prodSig D₁ D₂).toCRDTSig := by
@@ -753,7 +747,7 @@ theorem updateVCs_prod (hU₁ : UpdateVCs D₁.toCRDTSig)
     case inr.inl => exact absurd hrc (by rw [prodSig_rc_inr_inl]; exact fun h => RcRes.noConfusion h)
     case inl.inl =>
       rcases op_sum_cases e'' with ⟨c, rfl⟩ | ⟨c, rfl⟩
-      · -- all component 1: project with F1
+      · -- all component 1: project with applySeq_prod
         rw [prodSig_update_inl, prodSig_update_inl,
           prodSig_update_inl, prodSig_update_inl,
           applySeq_prod, applySeq_prod]
@@ -784,15 +778,14 @@ theorem updateVCs_prod (hU₁ : UpdateVCs D₁.toCRDTSig)
           (hU₂.cond_comm_lift s.2 a b c (projList₂ π) hd₁ hd₂ hd₃ hrc
             fun hcomm => hnc (commutes_prod_inr_of hcomm))
 
-/-! ## §O10  (F4) The join gluings -/
+/-! ## The join gluings -/
 
-/-- **The join gluing** (memo §2.3): the product satisfies `JoinLemma3At` at
-`C` whenever the components do at the projections. Premise projection: `vis`
-facts restrict; visNC-closure projects because every component NC-edge is a
-product NC-edge ((D-proj), an *iff* on same-side pairs — no strength is
-silently lost); canonical states project (O8); preimages commute with
-`∩`/`∪`. The witness is the O9 concatenation — no interleaving
-combinatorics. -/
+/-- **The join gluing**: the product satisfies `JoinLemma3At` at `C` whenever
+the components do at the projections. Premise projection: `vis` facts
+restrict; visNC-closure projects because every component NC-edge is a product
+NC-edge ((D-proj), an *iff* on same-side pairs, so no strength is silently
+lost); canonical states project; preimages commute with `∩`/`∪`. The witness
+is the concatenation gluing, with no interleaving combinatorics. -/
 theorem joinLemma3At_prod
     (h₁ : JoinLemma3At D₁ (projCore₁ C)) (h₂ : JoinLemma3At D₂ (projCore₂ C)) :
     JoinLemma3At (prodSig D₁ D₂) C := by
@@ -824,9 +817,10 @@ theorem joinLemma3At_prod
   exact canonical_glue hJ₁ hJ₂
 
 /-- The ternary Join Lemma under **full causal closure**, at a single
-configuration — the per-`C` body of `JoinLemma3F` (`VC_Set.lean:211`),
-mirroring `JoinLemma3At`. Components proved via the full-closure route
-(Enable-wins-flag-like) supply this to the F-gluing below (memo §2.3.4). -/
+configuration: the per-`C` body of `JoinLemma3F` (`VC_Set.lean:211`),
+mirroring `JoinLemma3At`. Components whose Join Lemma is proved under full
+closure (as with an Enable-wins flag) supply this to the full-closure gluing
+below. -/
 def JoinLemma3FAt (D : ConditionedMRDTSig)
     (C : Sal.Emulation.Configuration D.toCRDTSig) : Prop :=
   ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
@@ -844,9 +838,9 @@ theorem JoinLemma3F.at {D : ConditionedMRDTSig} (h : JoinLemma3F D)
   fun ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2 =>
     h C ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2
 
-/-- The F4 gluing, full-closure form (memo §2.3.4): the concatenation core is
+/-- The join gluing, full-closure form: the concatenation core is
 closure-free, and full vis-closure projects the same way (dropping the
-NC-conjunct — component `vis`-edges are product `vis`-edges outright). -/
+NC-conjunct: component `vis`-edges are product `vis`-edges outright). -/
 theorem joinLemma3FAt_prod
     (h₁ : JoinLemma3FAt D₁ (projCore₁ C)) (h₂ : JoinLemma3FAt D₂ (projCore₂ C)) :
     JoinLemma3FAt (prodSig D₁ D₂) C := by
@@ -873,12 +867,12 @@ theorem joinLemma3FAt_prod
     (isCanonicalState_proj₂ hc₂)
   exact canonical_glue hJ₁ hJ₂
 
-/-! ## §O5  The ternary ranked-store `Configuration` projects (memo §2.1.3)
+/-! ## The ternary ranked-store `Configuration` projects
 
-Every store field restricts cleanly; the projection is total on
-configurations, with no reachability hypothesis. What does NOT transfer is
-reachability itself (memo §2.1.4) — which is precisely why the kit consumes
-configuration-level certificates only. -/
+Every store field restricts; the projection is total on configurations, with
+no reachability hypothesis. What does NOT transfer is reachability itself,
+which is precisely why the kit consumes configuration-level certificates
+only. -/
 
 /-- Projection of a ternary product configuration onto component 1: the
 replica-keyed core as in `projCore₁`, the store by projecting each version's
@@ -1010,7 +1004,7 @@ section TernaryProj
 variable {CT : Configuration (prodSig D₁ D₂)}
 
 /-- The ternary projection commutes with the core projection: taking the
-binary core of `projConf₁` is `projCore₁` of the core (definitional — both
+binary core of `projConf₁` is `projCore₁` of the core (definitional: both
 sides carry the same `N`/`L`/`vis` data). -/
 theorem projConf₁_core :
     Configuration.core (projConf₁ CT) = projCore₁ (Configuration.core CT) := rfl
@@ -1038,11 +1032,11 @@ theorem mem_projConf₂_events {b : Op D₂.AppOp} :
 
 end TernaryProj
 
-/-! ## F5, contract part: the `GenHonest` lift (memo §2.4.1, free direction) -/
+/-! ## The `GenHonest` lift, free direction -/
 
 /-- Componentwise honesty predicate on the product: an `inl` event is judged
 by `P₁` at the first component of the fold, an `inr` event by `P₂` at the
-second (memo §2.4.1 `P⊗`). -/
+second (`P⊗`). -/
 def prodPred (P₁ : Op D₁.AppOp → D₁.State → Prop)
     (P₂ : Op D₂.AppOp → D₂.State → Prop) :
     Op (D₁.AppOp ⊕ D₂.AppOp) → D₁.State × D₂.State → Prop :=
@@ -1061,15 +1055,16 @@ theorem prodPred_inr (P₁ : Op D₁.AppOp → D₁.State → Prop)
     (s : D₁.State × D₂.State) :
     prodPred P₁ P₂ (inrOp e) s ↔ P₂ e s.2 := Iff.rfl
 
-/-- **`GenHonest` lifts componentwise** (memo §2.4.1, the free (⇐)
-direction): if each component's honesty holds at its projection, the product
-is honest for the componentwise predicate. Key identity:
-`past₁(e) = (past⊗(ι₁ e))↾₁` — `vis`/`events` of the projection are
-restrictions — so `π₁` of a product enumeration of the past enumerates the
-component past, and F1 reads the component fold off the product fold.
+/-- **`GenHonest` lifts componentwise** (the free (⇐) direction): if each
+component's honesty holds at its projection, the product is honest for the
+componentwise predicate. Key identity:
+`past₁(e) = (past⊗(ι₁ e))↾₁` (`vis`/`events` of the projection are
+restrictions), so `π₁` of a product enumeration of the past enumerates the
+component past, and `applySeq_prod` reads the component fold off the product
+fold.
 
-(The (⇒) direction needs enumerability of the opposite side's past — memo
-§2.4.1; deferred to `Product_Safety.lean` with the rest of O12–O15.) -/
+(The (⇒) direction needs enumerability of the opposite side's past; it is in
+`Product_Safety.lean`.) -/
 theorem genHonest_prod {P₁ : Op D₁.AppOp → D₁.State → Prop}
     {P₂ : Op D₂.AppOp → D₂.State → Prop} {C : Configuration (prodSig D₁ D₂)}
     (h₁ : GenHonest D₁ P₁ (projConf₁ C)) (h₂ : GenHonest D₂ P₂ (projConf₂ C)) :
@@ -1093,11 +1088,11 @@ theorem genHonest_prod {P₁ : Op D₁.AppOp → D₁.State → Prop}
     rw [← hres]
     exact listPermOf_projList₂ hπ
 
-/-! ## The composite convenience theorem (memo §2.3.5) -/
+/-! ## The composite convenience theorem -/
 
 /-- The product contract `H⊗`: component configuration-contracts precomposed
-with the core projections (memo §2.3.1). Contracts thread through the gluing
-untouched — nothing in F4 reads their content. -/
+with the core projections. Contracts thread through the gluing untouched:
+nothing in the join reads their content. -/
 def prodContract (H₁ : Sal.Emulation.Configuration D₁.toCRDTSig → Prop)
     (H₂ : Sal.Emulation.Configuration D₂.toCRDTSig → Prop) :
     Configuration (prodSig D₁ D₂) → Prop :=
@@ -1106,10 +1101,10 @@ def prodContract (H₁ : Sal.Emulation.Configuration D₁.toCRDTSig → Prop)
 /-- **The composite metatheorem**: per-version RA-linearizability of the
 product at every `H⊗`-honestly reachable configuration, from the component
 joins-under-contracts. This is `ra_linearizable3_of_honest_reach`
-instantiated with the F4 gluing — the component certificates are consumed at
+instantiated with the join gluing; the component certificates are consumed at
 the *projections* of product-reachable cores, which is exactly why they must
 be configuration-level (`JoinLemma3At` under a configuration predicate), not
-reachability-indexed (memo §2.1.4). -/
+reachability-indexed. -/
 theorem prod_ra_linearizable3_of_honest_reach
     {H₁ : Sal.Emulation.Configuration D₁.toCRDTSig → Prop}
     {H₂ : Sal.Emulation.Configuration D₂.toCRDTSig → Prop}

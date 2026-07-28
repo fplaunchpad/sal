@@ -3,10 +3,10 @@ import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# PN-Counter — flat VC discharge and the conditioned capstone
+# PN-Counter: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production PN-Counter as a `ConditionedMRDTSig`, its RA-linearizability VC
+discharge, and the conditioned capstone over the generic framework.
 -/
 
 set_option maxHeartbeats 1000000

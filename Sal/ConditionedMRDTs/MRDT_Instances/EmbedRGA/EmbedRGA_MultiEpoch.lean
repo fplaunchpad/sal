@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_CompactEliasDelta
 
 /-!
-# Multi-epoch composition for the embed GC (#97 residue)
+# Multi-epoch composition for the embed GC
 
 The single-epoch story is closed: at a `SettledAtOn` cut of a disciplined
 honest configuration, one compaction (`compactEliasDelta_settled_reads`)
@@ -12,7 +12,7 @@ re-invoke the single-epoch theorem on it. This file supplies the composed
 statement: arbitrarily many settled-cut compactions preserve reads, by a
 statement that re-invokes at every epoch.
 
-**Route 1 carried (composition closure).** The semantic residue of one
+**Composition closure carried.** The semantic residue of one
 compaction is a `StablePrefixMap`; the semantic residue of *n* compactions is
 their composition, and the composition of two `StablePrefixMap`s is again one.
 H2 (`ord`) composes because order-isomorphisms compose; H3 (`ext`/`MintAt`)
@@ -20,7 +20,7 @@ composes at the boundary — an epoch-1 mint `(π, d)`, once epoch-1-remapped,
 is an epoch-2 mint `(F₁.f π, d)` (the delta codeword is never touched by any
 map); H1 (injectivity) is derived per the bundle.
 
-**The one subtlety that makes it non-trivial (a finding).** Naive composition
+**The one subtlety that makes it non-trivial.** Naive composition
 *on the full first-epoch domain* is unsound whenever epoch 2 reclaims the rank
 of a record that died between the two epochs: the dead coordinate and the
 reclaimed live coordinate collide under `F₂.f ∘ F₁.f`, so `ord`/`injOn` fail.
@@ -43,7 +43,7 @@ Contents:
 * §5 `rED_le_self` — the future-mint-freshness-post-epoch lemma (renumbering
   never grows a delta, so freshness/domination survives every epoch).
 * §7 SPOTs (PASS: a directed two-epoch scenario, reads pinned throughout;
-  FAIL: id-addressing breaks after epoch one; FINDING: the dead-rank collision).
+  FAIL: id-addressing breaks after epoch one, and the dead-rank collision).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -340,7 +340,7 @@ theorem multiEpoch_settled_reads {Γ : OrderedPrefixCode} (F : StablePrefixMap �
 
 /-! ## §5  Future-mint freshness survives every epoch
 
-The order-iso side of Route 1: `compactRanked`'s `rED_iso` needs, at each
+The order-iso side of the composition closure: `compactRanked`'s `rED_iso` needs, at each
 unskipped group, that every occurring delta is a surviving kid or *fresh*
 (dominates every kid). The renumbering `rED` never grows a delta, so this
 domination is invariant under composition: a delta fresh against epoch-`k`'s
@@ -457,7 +457,7 @@ def gc1c (c : List Bool) : List Bool :=
 def gc2c (c : List Bool) : List Bool :=
   if c = unaryCode.enc 2 then unaryCode.enc 1 else c
 
-/-- **FAIL (finding)**: naive composition on the FULL first-epoch domain is
+/-- **FAIL**: naive composition on the FULL first-epoch domain is
 unsound under reclaim — the dead coordinate `enc 3` and the live `enc 7` collide
 on the reclaimed rank `enc 1` under `gc2 ∘ gc1`, so the composite is not
 injective (H1 fails) and cannot be a stable-prefix map on the full domain. This

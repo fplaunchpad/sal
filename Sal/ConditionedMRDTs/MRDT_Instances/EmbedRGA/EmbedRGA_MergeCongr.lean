@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 
 /-!
-# Merge-vs-remap congruence — the VC-S4 discharge for the embed remap species (#97)
+# Merge-vs-remap congruence — the VC-S4 discharge for the embed remap species
 
 `EmbedRGA_Stability_Bridge.lean` bridges the re-coding cluster to the
 `StabilityVC` interface at a `SettledAt` cut, but leaves **VC-S4 (the merge
@@ -9,7 +9,7 @@ clause, `vc_merge`) unbridged**: the re-coding theorems (`eRecode_applySeq` and
 friends) live at the *fold/state* level, and the embed RGA's merge congruence
 was deferred to the protocol half. This file closes that gap on the data plane.
 
-**The route** (recoding note §5, lifted to the ternary merge). The embed merge
+**The route** (`whiteboard/embed-recoding-note.md` §5, lifted to the ternary merge). The embed merge
 `eMergeL l a b` is a *function of the (id, coordinate) records*: it (i) filters
 `a`, `b` by **id** membership (`eIds`), then (ii) re-canonicalizes with the
 sorted 2-merge `eMerge2`, which compares only **keys of coordinates**. The lazy

@@ -2,19 +2,18 @@ import Sal.CRDTs.Metatheory.Merge_Linearization_Set
 import Mathlib.Data.Fintype.Prod
 
 /-!
-# Gate G1 kill-test: the full-closure peel does NOT exist
+# Kill-test: the full-closure peel does NOT exist
 
-Machine-checks the **Gate G1 refutation** of
-`Development/CONDITIONED_METATHEORY_PLAN.md`: the naive OQ3 reunification
-route — re-running the `JoinLemma3` induction with the *full-closure*
-hypotheses of `JoinLemma3F` (`Sal/MRDTs/Metatheory/VC_Set.lean:191`, the
-closure `GoodConfig3.ver_causal` supplies) — needs to peel an event `e`
+Machine-checks the refutation: the naive reunification
+route (re-running the `JoinLemma3` induction with the *full-closure*
+hypotheses of `JoinLemma3F`, `Sal/MRDTs/Metatheory/VC_Set.lean:191`, the
+closure `GoodConfig3.ver_causal` supplies) needs to peel an event `e`
 from a fully causally closed union `U` such that
 
 1. `e` is `loOn C U`-maximal (it may be placed last in the witness), AND
 2. `e` is **vis-maximal** in `U` (so `U ∖ {e}` stays *fully* closed: full
    closure is about all vis-predecessors, so the peeled event must have no
-   vis-successor at all — commuting or not; `loOn`-maximality only excludes
+   vis-successor at all, commuting or not; `loOn`-maximality only excludes
    the non-commuting ones).
 
 This file exhibits a concrete configuration and a fully closed 4-event `U`
@@ -36,8 +35,8 @@ structure: a last-writer flag per key (`Bool × Bool`); the add-wins
 conflict resolution lives entirely in `rc`, which is all the peel
 obligation reads.
 
-Replica `p = 0` runs `A_y` (t=0) then `R_x` (t=1) — program order gives
-`vis A_y R_x`. Replica `q = 1` runs `A_x` (t=2) then `R_y` (t=3) — `vis
+Replica `p = 0` runs `A_y` (t=0) then `R_x` (t=1), program order gives
+`vis A_y R_x`. Replica `q = 1` runs `A_x` (t=2) then `R_y` (t=3), `vis
 A_x R_y`. No communication. `U = {A_y, R_x, A_x, R_y}` is fully causally
 closed (`U_fully_closed`). The rc-edge `R_x →loOn(U) A_x` survives because
 `A_x`'s only vis-successor `R_y` *commutes* with it (cross-key), so the
@@ -46,10 +45,10 @@ symmetrically `R_y →loOn(U) A_y` (`rc_edge_survives_y`).
 
 ## Scope notes
 
-* The kill-test is at the **configuration level** — a concrete
+* The kill-test is at the **configuration level**, a concrete
   `Configuration` with transitive, irreflexive `vis`
   (`peelConfig_vis_trans`, `peelConfig_vis_irrefl`) and a fully closed
-  `U ⊆ C.events` — exactly the shape the generic full-closure induction
+  `U ⊆ C.events`, exactly the shape the generic full-closure induction
   would have to quantify over. Reachability in the Step transition system
   is NOT required and not proved: `peelConfig` is the evident 6-step
   execution (two creates, four applies), and `U` is the event set the
@@ -57,18 +56,18 @@ symmetrically `R_y →loOn(U) A_y` (`rc_edge_survives_y`).
 * The **weak-closure route is untouched**: both vis-edges are cross-key,
   hence commuting, so *every* subset of events is `vis ∧ ¬commutes`-closed
   (`weak_closure_trivial`) and a `loOn(U)`-maximal peel event exists
-  (`weak_peel_exists` — e.g. `A_x`). This configuration is handled by
-  today's `JoinLemma3`; the obstruction is only against the
+  (`weak_peel_exists`, e.g. `A_x`). This configuration is handled by
+  the `JoinLemma3`; the obstruction is only against the
   *strengthened* closure, i.e. against the naive reunification of the
   weak-closure route with the `JoinLemma3F` (EWFlag) route.
 * `K2` genuinely inhabits the order-theoretic class the `loOn` machinery
   operates on: `rc_non_comm_directional` and `no_rc_chain` hold
   (`K2_rc_non_comm_directional`, `K2_no_rc_chain`), so the obstruction is
   not an artifact of a pathological signature. Merge-layer VCs are
-  irrelevant here — the peel obligation mentions only `vis`, `rc`, and
+  irrelevant here: the peel obligation mentions only `vis`, `rc`, and
   `commutes`.
 
-Consequence (plan doc): reunification must change the *induction* (block
+Consequence: reunification must change the *induction* (block
 peel / wider induction class / disjunctive contract), not merely the
 closure hypotheses.
 -/
@@ -87,7 +86,7 @@ inductive K2Op : Type where
   | remY
   deriving DecidableEq, Repr
 
-/-- The state: a last-writer live-flag per key `(x-flag, y-flag)` — the
+/-- The state: a last-writer live-flag per key `(x-flag, y-flag)`, the
 minimal state making same-key `add/rem` non-commuting and cross-key ops
 commuting. -/
 abbrev K2State : Type := Bool × Bool
@@ -135,7 +134,7 @@ def K2 : CRDTSig where
 /-! ## §2. Op algebra: commutation structure and the order-theoretic VCs -/
 
 /-- Commutation of events reduces to commutation of op-component effects
-(definitional — `update` ignores timestamp and replica). -/
+(definitional: `update` ignores timestamp and replica). -/
 theorem K2_commutes_iff_eff (e₁ e₂ : Op K2Op) :
     K2.commutes e₁ e₂ ↔
       ∀ σ : K2State,
@@ -296,7 +295,7 @@ noncomputable def peelConfig : Configuration K2 where
 
 /-! ## §4. `U` and its full closure -/
 
-/-- `U`: the merged version's event set — all four events. -/
+/-- `U`: the merged version's event set, all four events. -/
 def peelU : Set (Op K2.AppOp) := {eAy, eRx, eAx, eRy}
 
 theorem eAy_mem_U : eAy ∈ peelU := Or.inl rfl
@@ -314,7 +313,7 @@ theorem peelU_in_C : ∀ a ∈ peelU, a ∈ peelConfig.events := by
   · exact ⟨1, {eAx, eRy}, by simp [peelConfig], Or.inl rfl⟩
   · exact ⟨1, {eAx, eRy}, by simp [peelConfig], Or.inr rfl⟩
 
-/-- **(1) `U` is fully causally closed** — unconditionally: every
+/-- **(1) `U` is fully causally closed**, unconditionally: every
 vis-edge has its source in `U`. -/
 theorem U_fully_closed :
     ∀ a b, peelConfig.vis a b → b ∈ peelU → a ∈ peelU := by
@@ -344,12 +343,12 @@ theorem vis_Ay_Rx : peelConfig.vis eAy eRx := Or.inl ⟨rfl, rfl⟩
 /-- **(3b)** `vis A_x R_y` (program order at replica `q`). -/
 theorem vis_Ax_Ry : peelConfig.vis eAx eRy := Or.inr ⟨rfl, rfl⟩
 
-/-- **(3) The two vis-edges** of the plan doc, packaged. -/
+/-- **(3) The two vis-edges**, packaged. -/
 theorem vis_edges : peelConfig.vis eAy eRx ∧ peelConfig.vis eAx eRy :=
   ⟨vis_Ay_Rx, vis_Ax_Ry⟩
 
 /-- `R_x` is vis-maximal (globally: it is not the source of any
-vis-edge) — so it *fails* `loOn(U)`-maximality below, not vis-maximality. -/
+vis-edge), so it *fails* `loOn(U)`-maximality below, not vis-maximality. -/
 theorem Rx_vis_maximal : ∀ e' : Op K2.AppOp, ¬ peelConfig.vis eRx e' := by
   rintro e' (⟨h, -⟩ | ⟨h, -⟩) <;> simp [eAy, eRx, eAx] at h
 
@@ -364,7 +363,7 @@ theorem not_vis_Ay_Ry : ¬ peelConfig.vis eAy eRy := by
   rintro (⟨-, h⟩ | ⟨h, -⟩) <;> simp [eAy, eRx, eAx, eRy] at h
 
 /-- **(2a) The rc-edge `R_x → A_x` survives in `loOn(U)`**: the pair is
-concurrent and `rc`-ordered, and the absorber clause cannot fire — `A_x`'s
+concurrent and `rc`-ordered, and the absorber clause cannot fire: `A_x`'s
 only vis-successor is `R_y`, which *commutes* with `A_x` (cross-key). -/
 theorem rc_edge_survives_x : loOn peelConfig peelU eRx eAx := by
   refine Or.inr ⟨Rx_vis_maximal eAx, not_vis_Ax_Rx, rfl, ?_⟩
@@ -373,7 +372,7 @@ theorem rc_edge_survives_x : loOn peelConfig peelU eRx eAx := by
   · simp [eAy, eAx] at h
   · exact hnc K2_comm_Ax_Ry
 
-/-- **(2b) The rc-edge `R_y → A_y` survives in `loOn(U)`** — symmetric. -/
+/-- **(2b) The rc-edge `R_y → A_y` survives in `loOn(U)`**, symmetric. -/
 theorem rc_edge_survives_y : loOn peelConfig peelU eRy eAy := by
   refine Or.inr ⟨Ry_vis_maximal eAy, not_vis_Ay_Ry, rfl, ?_⟩
   rintro ⟨e₃, -, hvis, hnc⟩
@@ -383,7 +382,7 @@ theorem rc_edge_survives_y : loOn peelConfig peelU eRy eAy := by
 
 /-- `A_x` is `loOn(U)`-maximal: no vis-flavored edge out of it (its only
 vis-successor commutes), and no rc-flavored edge starts at an add. So the
-*weak*-closure peel can take `A_x` — it fails only vis-maximality. -/
+*weak*-closure peel can take `A_x`; it fails only vis-maximality. -/
 theorem Ax_loOn_maximal :
     ∀ e' ∈ peelU, ¬ loOn peelConfig peelU eAx e' := by
   rintro e' he' (⟨hvis, hnc⟩ | ⟨-, -, hrc, -⟩)
@@ -407,8 +406,8 @@ theorem Ay_loOn_maximal :
 
 /-! ## §6. The cycle and the headline -/
 
-/-- **The cycle** `A_y →vis R_x →rc A_x →vis R_y →rc A_y` (plan doc,
-Gate G1): vis-flavored and surviving rc-flavored `loOn(U)`-edges
+/-- **The cycle** `A_y →vis R_x →rc A_x →vis R_y →rc A_y`:
+vis-flavored and surviving rc-flavored `loOn(U)`-edges
 alternate around all four events, so vis-maximality and
 `loOn(U)`-maximality can never coincide. -/
 theorem the_cycle :
@@ -416,7 +415,7 @@ theorem the_cycle :
     peelConfig.vis eAx eRy ∧ loOn peelConfig peelU eRy eAy :=
   ⟨vis_Ay_Rx, rc_edge_survives_x, vis_Ax_Ry, rc_edge_survives_y⟩
 
-/-- **(4) HEADLINE — no full-closure-preserving peel exists.** No event of
+/-- **(4) No full-closure-preserving peel exists.** No event of
 the fully closed `U` is simultaneously `loOn(U)`-maximal (placeable last)
 and vis-maximal (removable without breaking full closure): the adds
 `A_y, A_x` fail vis-maximality (each has a program-order successor), and
@@ -444,27 +443,27 @@ theorem vis_implies_commutes :
   · exact K2_comm_Ay_Rx
   · exact K2_comm_Ax_Ry
 
-/-- Every subset of events is `vis ∧ ¬commutes`-closed — the weak-closure
+/-- Every subset of events is `vis ∧ ¬commutes`-closed: the weak-closure
 hypotheses of `JoinLemma3` hold for *any* peel here. -/
 theorem weak_closure_trivial (V : Set (Op K2.AppOp)) :
     ∀ a b, peelConfig.vis a b → ¬ K2.commutes a b → b ∈ V → a ∈ V :=
   fun a b hvis hnc _ => absurd (vis_implies_commutes a b hvis) hnc
 
 /-- A `loOn(U)`-maximal peel event exists (`A_x`): the weak route handles
-this configuration today. Only the *full-closure* peel is obstructed. -/
+this configuration. Only the *full-closure* peel is obstructed. -/
 theorem weak_peel_exists :
     ∃ e ∈ peelU, ∀ e' ∈ peelU, ¬ loOn peelConfig peelU e e' :=
   ⟨eAx, eAx_mem_U, Ax_loOn_maximal⟩
 
 /-! ## §8. The packaged refutation -/
 
-/-- **Gate G1, packaged.** There is a CRDT signature, a configuration with
-transitive and irreflexive `vis`, and a nonempty *fully causally closed*
-`U ⊆ C.events` containing no event that is both `loOn(U)`-maximal and
-vis-maximal. Hence no single-event peel can drive an induction that
-maintains full causal closure of the event set: the naive OQ3
+/-- **The packaged refutation.** There is a CRDT signature, a configuration
+with transitive and irreflexive `vis`, and a nonempty *fully causally
+closed* `U ⊆ C.events` containing no event that is both `loOn(U)`-maximal
+and vis-maximal. Hence no single-event peel can drive an induction that
+maintains full causal closure of the event set: the naive
 reunification route (re-running the Join induction with `JoinLemma3F`'s
-closure hypotheses) is dead as stated, and reunification must change the
+closure hypotheses) does not go through, and reunification must change the
 induction itself. -/
 theorem reunification_peel_obstruction :
     ∃ (D : CRDTSig) (C : Configuration D) (U : Set (Op D.AppOp)),

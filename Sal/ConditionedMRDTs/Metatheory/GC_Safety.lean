@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.Metatheory.LCA_Lemma
 import Mathlib.Data.Set.Insert
 
 /-!
-# Commit GC-safety for the ranked version store (task #94)
+# Commit GC-safety for the ranked version store
 
 Which store entries may a runtime reclaim without changing any future behavior? Merges
 arbitrarily far in the future reach back into the store for their LCA state
@@ -49,8 +49,8 @@ pruning removed. Head-sync is a hypothesis, not pessimism.
 **Criss-cross boundary** (honest scope): the Merge rule fires only when a version
 satisfying `IsLCA` EXISTS and is allocated. In criss-cross configurations no such
 version exists, no merge fires there, and this theorem is vacuously unaffected. The
-virtual-LCA extension (task #90) will widen the step relation to synthesize a merge
-input from *potential* LCAs — whose event sets sit strictly BELOW the pairwise head
+virtual-LCA extension (§6V) widens the step relation to synthesize a merge
+input from *potential* LCAs, whose event sets sit strictly BELOW the pairwise head
 intersection, while this `Keep` retains versions ABOVE some pairwise intersection. Under
 that widening this `Keep` prunes exactly what the virtual merge needs; the keep set must
 then be revisited (retain the below-approximations of each pairwise meet as well).
@@ -63,8 +63,7 @@ is a reachability invariant, not a structural one; the converse simulation is
 deliberately out of scope. GC-safety (nothing is *lost*) is the mechanized direction.
 
 Layering: Metatheory imports Framework only; the §7 SPOT uses the Framework-resident
-`GSetCond`, no `MRDT_Instances` import. See `whiteboard/runtime-gc-note.md` for the
-paper-style companion (including the stability-frontier connection).
+`GSetCond`, no `MRDT_Instances` import.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -179,9 +178,9 @@ open Classical in
 
 /-! ## §3 Monotonicity: lemma (1), disjunctive form
 
-The design's "every future head's event set contains some current head's" is FALSE in
-this framework: `createReplica` rebases fresh replicas at the root, whose lineages start
-from the empty event set. The forced correction is the disjunction below: a future head
+A future head's event set need not contain any current head's: `createReplica` rebases
+fresh replicas at the root, whose lineages start from the empty event set. The invariant
+is therefore the disjunction below: a future head
 either event-set-dominates a prune-time head (`HeadDom`) or is a *virgin lineage* whose
 only prune-time-allocated ancestor is the root (`Virgin`). A virgin lineage becomes
 `HeadDom` the moment it merges with a `HeadDom` one. -/
@@ -507,15 +506,15 @@ noncomputable def pruneKeep (C₀ : Configuration D)
   dropVer C₀ (droppedSet C₀) (zero_not_dropped C₀)
     (heads_kept (gcInv_init C₀ hStore))
 
-/-- **HEADLINE — commit GC safety.** Pruning the version store to the keep set
+/-- **Commit GC safety.** Pruning the version store to the keep set
 `Keep' = {v : ∃ heads hᵢ hⱼ, E(hᵢ) ∩ E(hⱼ) ⊆ E(v)} ∪ {0}` preserves every `Step3` run
 (same label trace, so in particular every query, whose value rides on the label) and
 every head read (`N` agrees definitionally at every point of the transported run).
 
 The step relation is head-sync by construction (Merge's arguments are read off the head
 map); §7's `gc_needs_head_sync` shows a widened, non-head-sync merge genuinely escapes
-`Keep'`. Under the virtual-LCA extension (task #90) the step relation widens and this
-keep set must be revisited — see the file header. -/
+`Keep'`. Under the virtual-LCA extension (§6V) the step relation widens and this
+keep set must be revisited; see the file header. -/
 theorem gc_safety (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.parents)
     {ℓs : List (Label3 D)} {C : Configuration D} (hRun : Steps D C₀ ℓs C) :
     Steps D (pruneKeep C₀ hStore) ℓs
@@ -527,17 +526,17 @@ theorem gc_safety (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.pare
 
 #print axioms gc_safety
 
-/-! ## §6V  GC under virtual LCAs (task #90): the MCA-closure keep set
+/-! ## §6V  GC under virtual LCAs: the MCA-closure keep set
 
 Under the widened step relation (`Step3V`, `LCA_Lemma.lean` §9) a merge may read the
 states of **maximal common ancestors** — versions strictly below the pairwise head
 meets — and of the MCAs of MCAs, recursively. The keep set is reseeded by the
-**pairwise-MCA closure** of the prune-time heads (`mcasClosure`); the future-proofing
+**pairwise-MCA closure** of the prune-time heads (`mcasClosure`); the
 argument needs two invariant strengthenings of `GCInv` (packaged in `GCInvV`):
 
 * `headGate` — a current head that was allocated at prune time is a prune-time head
   (or the pinned root): heads only ever move to freshly allocated versions or to `0`;
-* `gateway` — **the gateway invariant** (the note's main new GC proof): every ancestry
+* `gateway` — **the gateway invariant**: every ancestry
   path from a prune-time-allocated version to a post-prune version passes through a
   prune-time head (or collapses to the root).
 
@@ -554,7 +553,7 @@ inductive InMcasClosure (C : Configuration D) : Version → Prop where
   | mca {a b m : Version} (ha : InMcasClosure C a) (hb : InMcasClosure C b)
       (hm : IsMCA C.parents {a} b m) : InMcasClosure C m
 
-/-- The closure as a set (the note's `mcasClosure(heads C)`). -/
+/-- The closure as a set (`mcasClosure(heads C)`). -/
 def mcasClosure (C : Configuration D) : Set Version := {v | InMcasClosure C v}
 
 /-- Closure members are allocated (an MCA reaches a member, and heads are). -/
@@ -566,7 +565,7 @@ theorem inMcasClosure_alloc {C : Configuration D}
   | mca _ _ hm _ ihb => exact reaches_alloc hStore hm.1.2 ihb
 
 /-- Sub-pair MCAs decompose into pairwise MCAs: a maximal element of the union of
-common-ancestor sets is maximal in any member set containing it (note §2), so every
+common-ancestor sets is maximal in any member set containing it, so every
 `mcaFinset` read over a closure-supported pair stays in the closure. -/
 theorem inMcasClosure_of_mcaFinset {C : Configuration D}
     {S : Finset Version} {w m : Version}
@@ -578,14 +577,14 @@ theorem inMcasClosure_of_mcaFinset {C : Configuration D}
   rcases hu' with rfl
   exact hmax x ⟨⟨u', huS, hxu⟩, hxw⟩ hmx
 
-/-- **The revised keep set** (note §6): allocated versions event-set-above some
+/-- **The MCA-closure keep set**: allocated versions event-set-above some
 prune-time closure member, plus the pinned root. Every recursion read of every future
 virtual resolution lies here (`mcaClosure_not_dropped` + `inMcasClosure_of_mcaFinset`). -/
 def keepSetV (C : Configuration D) : Set Version :=
   {v | ∃ s e w sw ew, InMcasClosure C w ∧ C.ver w = some (sw, ew) ∧
         C.ver v = some (s, e) ∧ ew ⊆ e} ∪ {0}
 
-/-- What the revised pruning removes. -/
+/-- What the `keepSetV` pruning removes. -/
 def droppedSetV (C : Configuration D) : Set Version :=
   {v | (C.ver v).isSome ∧ v ∉ keepSetV C}
 
@@ -779,8 +778,8 @@ private theorem gateway_old_node {C₀ C C' : Configuration D} (hInv : GCInvV C�
       reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hwh hhC,
       reaches_new_of_old hInv.store.parents_alloc h_vm hpar_old hhv hv'C⟩
 
-/-- **`GCInvV` is a `Step3V` invariant** — the gateway invariant's preservation, the
-note's main new GC proof (§6): after the prune point versions extend only current
+/-- **`GCInvV` is a `Step3V` invariant**: the gateway invariant's preservation. After the
+prune point, versions extend only current
 heads, and `headGate`/`gateway` route every prune-time ancestor through a prune-time
 head (or the root). -/
 theorem gcInvV_step {C₀ C C' : Configuration D} {ℓ : Label3 D}
@@ -967,7 +966,7 @@ theorem mcaClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
         (hInv.reaches_extend hygb hgbA).trans hgbb⟩
       (hInv.reaches_extend hmy hyA)
 
-/-- Every member of the current closure survives the revised pruning: prune-time
+/-- Every member of the current closure survives pruning to `keepSetV`: prune-time
 members transfer into the prune-time closure (kept by `keepSetV`), post-prune members
 were never dropped. -/
 theorem inMcasClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
@@ -978,13 +977,13 @@ theorem inMcasClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀
   · obtain ⟨⟨sx, ex⟩, hvx⟩ := Option.isSome_iff_exists.mp hAlloc
     exact hNK (inMcasClosure_mem_keepSetV hcl₀ hvx)
 
-/-- Allocated heads survive the revised pruning (closure base + transfer). -/
+/-- Allocated heads survive pruning to `keepSetV` (closure base + transfer). -/
 theorem heads_keptV {C₀ C : Configuration D} (hInv : GCInvV C₀ C) :
     ∀ r v, C.head r = some v → (C.ver v).isSome → v ∉ droppedSetV C₀ :=
   fun r v hh hsome =>
     inMcasClosure_not_dropped hInv (InMcasClosure.head ⟨r, hh⟩ hsome)
 
-/-- Allocated LCAs of current heads survive the revised pruning: an LCA is the
+/-- Allocated LCAs of current heads survive pruning to `keepSetV`: an LCA is the
 singleton MCA of the head pair, closure layer one. (The `lca_not_dropped` argument,
 re-derived through the closure.) -/
 theorem lca_not_droppedV {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
@@ -1277,14 +1276,14 @@ theorem steps_dropVerV {C₀ : Configuration D} {C ℓs C'}
       (step_dropVerV hInv hstep (heads_keptV (gcInvV_step hInv hstep)))
       (ih (gcInvV_step hInv hstep) (heads_keptV (gcInvV_step hInv hstep)) hh')
 
-/-- The prune-point configuration under the revised keep set. -/
+/-- The prune-point configuration under the MCA-closure keep set. -/
 noncomputable def pruneKeepV (C₀ : Configuration D)
     (hStore : StoreInv C₀.ver C₀.parents) : Configuration D :=
   dropVer C₀ (droppedSetV C₀) (zero_not_droppedV C₀)
     (heads_keptV (gcInvV_init C₀ hStore))
 
-/-- **HEADLINE — commit GC safety on the widened LTS** (`gc_safety` restated, task
-#90): pruning the store to the MCA-closure keep set
+/-- **Commit GC safety on the widened LTS**: pruning the store to the
+MCA-closure keep set
 `keepSetV = {v : ∃ w ∈ mcasClosure(heads), E(w) ⊆ E(v)} ∪ {0}` preserves every
 `Step3V` run — gated merges AND virtual (recursive) merges, same label trace — and
 every head read, from the single hypothesis `StoreInv C₀`. -/
@@ -1297,7 +1296,7 @@ theorem gc_safetyV (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.par
         (heads_keptV (gcInvV_steps hRun (gcInvV_init C₀ hStore)))).N r = C.N r :=
   ⟨steps_dropVerV hRun (gcInvV_init C₀ hStore) _ _, fun _ => rfl⟩
 
-/-! ### Axiom audit (task #90 GC layer) -/
+/-! ### Axiom audit -/
 
 #print axioms gcInvV_step
 #print axioms mcaClosure_not_dropped

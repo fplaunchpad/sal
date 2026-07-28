@@ -1,23 +1,18 @@
-// Embedded-chain RGA, ported from the Python model
-// whiteboard/litmus/embed_tree.py (EmbedTree / EmbedTreeCode / EmbedTreeCodeD).
+// Embedded-chain RGA over an immutable per-record chain coordinate.
 //
-// UNVERIFIED TRANSLITERATION: the Lean-verified artifact is the embed
-// kernel; this port is pinned to the model's semantics by fixtures
-// extracted by RUNNING the Python model (see test/embed.test.js) and, for
-// the delta code, by the kernel-checked example values in
-// Sal/MRDTs/RGA_Embed/Embed_Code_EliasDelta.lean (see test/code.test.js).
+// UNVERIFIED TRANSLITERATION: the Lean-verified artifact is the embed kernel;
+// this is a transliteration of it, not itself machine-checked.
 //
-// Representation (a deliberate, equivalence-preserving deviation from the
-// Python file, documented in ../../README.md): the model stores
-// parent-relative Fraction intervals and refolds on delete (isometric
-// fold) and on merge. By the model's own P3 the ABSOLUTE coordinate of a
-// record is a birth constant, so we store it directly: every record
-// carries its full immutable chain coordinate, a bit-string
+// Representation: every record carries its full immutable chain coordinate, a
+// bit-string
 //
 //   coord(x anchored at a) = coord(a) ++ code.enc(ts(x) - ts(a))
 //   (root anchor: coord = code.enc(ts))
 //
-// under a pluggable ORDER-PRESERVING PREFIX-FREE DELTA CODE. Then:
+// under a pluggable ORDER-PRESERVING PREFIX-FREE DELTA CODE. The ABSOLUTE
+// coordinate of a record is a birth constant (P3), so it is stored directly
+// rather than as a parent-relative interval refolded on delete and merge.
+// Then:
 //   - delete   = pure record removal (the fold becomes a no-op on absolutes);
 //   - merge    = live-set rule on record ids, coordinates carried UNCHANGED;
 //   - display  = descending lexicographic coordinate order with an anchor
@@ -29,20 +24,18 @@
 // CODE-PARAMETRICITY: the comparator only needs the code to be monotone
 // (d < e => enc d <lex enc e) and prefix-free (so unequal codewords are
 // decided at a real first difference, never by one running out). Every
-// read is therefore identical under any such code -- the Lean theorems
-// are parametric in the OrderedPrefixCode structure; test/code.test.js
-// checks the invariance executably. The '2' sentinel is NOT part of any
-// codeword: it is the comparator's end-of-coordinate mark, ranking an
-// anchor above the extensions that prefix-freeness keeps comparable.
+// read is therefore identical under any such code (the comparator is
+// parametric in the ordered-prefix-code structure). The '2' sentinel is NOT
+// part of any codeword: it is the comparator's end-of-coordinate mark, ranking
+// an anchor above the extensions that prefix-freeness keeps comparable.
 //
-// SYMBOL-ALPHABET MAPPING (Lean -> JS): the Lean codewords are List Bool
-// with bitLt = lexicographic on Bool (false < true). Here a codeword is a
-// string over {'0','1'} with false -> '0', true -> '1', MSB first; string
-// order on {'0','1'} coincides with bitLt, and '2' sits above both.
+// SYMBOL-ALPHABET MAPPING: a codeword is a string over {'0','1'} (MSB first);
+// string order on {'0','1'} is the lexicographic bit order (false -> '0',
+// true -> '1'), and '2' sits above both.
 //
 // Dead-ancestor prefixes are the point: a record's coordinate keeps its
 // dead anchor's coordinate as a prefix forever (P4, "the credential
-// persists"), which is what the sibling-splice fooling-pair worlds pin.
+// persists").
 //
 // Ops:  { type: 'ins', id, el, anchorId }   anchorId null = root anchor
 //       { type: 'del', id }
@@ -50,47 +43,42 @@
 // insert after something you have seen: Lamport-style minting).
 //
 // PRECONDITION (honesty / applicability): 'ins' requires the anchor to be
-// LIVE in the state the op is applied to. The Python model silently
-// malfunctions on a dead anchor (the record becomes unreachable, merge
-// KeyErrors); its PBT harness only ever anchors on the current read. The
-// port makes the precondition explicit and throws.
+// LIVE in the state the op is applied to. A dead anchor makes the record
+// unreachable and breaks merge, so the precondition is explicit and throws.
 
 import { PMap, isPMap, eachEntry } from '../pmap.js';
 
-/** Unary code: enc(d) = '1'^d '0'. Kept for readability in examples and
- *  for the code-invariance tests; its cost is LINEAR in the delta, and
- *  cross-replica Lamport deltas grow with the GLOBAL op count, so it is
- *  not the design's measured point (see the cost-gap test). */
+/** Unary code: enc(d) = '1'^d '0'. Readable in examples and code-invariance
+ *  checks; its cost is LINEAR in the delta, and cross-replica Lamport deltas
+ *  grow with the GLOBAL op count, so it is not the code the design uses in
+ *  practice. */
 export const unaryCode = {
   name: 'unary',
   enc: (d) => '1'.repeat(d) + '0',
 };
 
-// --- The flipped Elias-delta code, transliterated from the Lean instance
-// --- `eliasDeltaCode` in Sal/MRDTs/RGA_Embed/Embed_Code_EliasDelta.lean
-// --- (header `binEnc` from Embed_Code_Binary.lean). For d >= 1,
-// --- d.toString(2) is d's bits MSB-first, so
-// ---   Nat.size d         = b.length     (bit-length)
-// ---   bitsW (size-1) d   = b.slice(1)   (low size-1 bits MSB first
-// ---                                      = d minus its always-1 leading bit)
+// --- The flipped Elias-delta code. For d >= 1, d.toString(2) is d's bits
+// --- MSB-first, so
+// ---   size d           = b.length     (bit-length)
+// ---   bitsW (size-1) d = b.slice(1)   (low size-1 bits MSB first
+// ---                                    = d minus its always-1 leading bit)
 
-/** Lean `binEnc d = replicate (size d - 1) true ++ false :: bitsW (size d - 1) d`:
+/** binEnc d = replicate (size d - 1) true ++ false :: bitsW (size d - 1) d:
  *  the flipped-gamma header, |binEnc d| = 2*size d - 1. */
 export const binEnc = (d) => {
   const b = d.toString(2);
   return '1'.repeat(b.length - 1) + '0' + b.slice(1);
 };
 
-/** Lean `dEnc d = binEnc d.size ++ bitsW (d.size - 1) d`: binEnc on the
- *  bit-length, then the payload. |dEnc d| = size d + 2*size(size d) - 2
+/** dEnc d = binEnc d.size ++ bitsW (d.size - 1) d: binEnc on the bit-length,
+ *  then the payload. |dEnc d| = size d + 2*size(size d) - 2
  *  = log2 d + O(log log d). */
 export const dEnc = (d) => {
   const b = d.toString(2);
   return binEnc(b.length) + b.slice(1);
 };
 
-/** The DEFAULT code: the flipped Elias-delta, matching the verified Lean
- *  instance exactly (its kernel-checked values are pinned in test/code.test.js). */
+/** The DEFAULT code: the flipped Elias-delta. */
 export const eliasDeltaCode = {
   name: 'eliasDelta',
   enc: dEnc,
@@ -189,7 +177,7 @@ export function makeEmbedRGA(code = eliasDeltaCode) {
      *  states this is a DELTA MERGE from A -- equivalently
      *  A ∖ (L ∖ B) ∪ (B ∖ L) -- touching only the ids B deleted or added,
      *  with structural sharing of A's untouched trie; a∩b coordinate
-     *  agreement is checked exactly as before. Hash-order scans are safe:
+     *  agreement is checked the same way. Hash-order scans are safe:
      *  the output is a content-canonical set, insertion order unobservable. */
     merge3(l, a, b) {
       const chk = (id, ra, rb) => {
@@ -236,5 +224,5 @@ export function makeEmbedRGA(code = eliasDeltaCode) {
   };
 }
 
-/** The default instance: flipped Elias-delta, the verified design's code. */
+/** The default instance: flipped Elias-delta. */
 export const embedRGA = makeEmbedRGA(eliasDeltaCode);

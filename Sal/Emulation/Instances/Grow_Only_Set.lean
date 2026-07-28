@@ -5,7 +5,7 @@ import Mathlib.Data.List.Induction
 /-!
 # Grow-Only Set as an emulation `CRDTSig`
 
-Smoke test for the Phase 1 architecture: wrap `Sal/CRDTs/Grow_Only_Set_CRDT.lean`
+Smoke test for the emulation architecture: wrap `Sal/CRDTs/Grow_Only_Set_CRDT.lean`
 as a `Sal.Emulation.CRDTSig` and discharge `SatisfiesVCs` by
 plugging the file's existing 24 `by sal`-closed theorems into the
 struct fields. If this compiles, we have end-to-end confidence that

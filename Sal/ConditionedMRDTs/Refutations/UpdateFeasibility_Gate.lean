@@ -3,82 +3,79 @@ import Sal.ConditionedMRDTs.Framework.NoopFeasible
 import Sal.ConditionedMRDTs.Framework.ConditionedConvergence
 
 /-!
-# Task #4: the update-feasibility gate — `loOnA + noopFeasible` as the feasibility notion
+# The update-feasibility gate: `loOnA + noopFeasible` as the feasibility notion
 
-The GATE for the feasible update layer (the last open item on the `Inv`-nontrivial
-column of `CONDITIONED_METATHEORY_PLAN.md`).  Two prior files set the stage, and every
+The gate for the feasible update layer. Two prior files set the stage, and every
 definition below reuses theirs:
 
-* `G2_Transport_Probe.lean` refuted the NAIVE conditioned convergence: plugging
+* `G2_Transport_Probe.lean` refutes the NAIVE conditioned convergence: plugging
   `commutesOn` into the linearization order (`loOnC`) admits both `[insOpE, delOpE]` and
   the infeasible `[delOpE, insOpE]` (`delOpE` folded at `init`, where it is not applicable),
   which fold to different states.
-* `G2_Applicability_Aware.lean` (task #7) settled that strict `applicabilityValid` (repair
-  (b)) is strictly more general than the syntactic `loOnA` (repair (a)) — BUT surfaced the
-  open worry (`separating_inequivalence`): for reachable *redundant-concurrent* versions
+* `G2_Applicability_Aware.lean` establishes that strict `applicabilityValid`
+  is strictly more general than the syntactic `loOnA`, but surfaces a worry
+  (`separating_inequivalence`): for reachable *redundant-concurrent* versions
   (two concurrent deletes of one node) NO enumeration is `applicabilityValid`, because
   whichever delete runs second finds its target already gone.  So the strict notion is
-  *unsatisfiable* there; the plan flags "applicable OR no-op here" as the refined OQ4.
+  *unsatisfiable* there, which motivates the "applicable OR no-op" relaxation.
 
-## The hypothesis this file tests (the research crux)
+## The hypothesis this file tests
 
 The correct feasibility notion for conditioned convergence is
-**applicability-aware order `loOnA` (already defined in G2_Applicability_Aware) + no-op-feasible
-enumeration** — NOT the strict `applicabilityValid` of task #7.  Formally, `noopFeasible`
+**applicability-aware order `loOnA` (defined in `G2_Applicability_Aware`) + no-op-feasible
+enumeration**, NOT strict `applicabilityValid`.  Formally, `noopFeasible`
 RELAXES `applicabilityValid`: at each prefix the next op must be applicable **or act as the
 identity** (`D.update s o = s`) on that prefix state.
 
 ## Verdicts (all mechanized below, 0 sorries, kernel-clean)
 
-* **del@init is a genuine Lean-`Eq` no-op** — `del_at_init_noop : do_ init_st delOpE = init_st`
-  is proved BY `rfl`, i.e. it holds *definitionally* in this RGA model.  KC's framing claim
-  is confirmed: `Del` of an absent node with an empty path is identity (the map's mappings
-  are untouched and the empty domain absorbs `remove`).  This is what makes `noopFeasible`
-  well-defined.
+* **del@init is a genuine Lean-`Eq` no-op**: `del_at_init_noop : do_ init_st delOpE = init_st`
+  is proved BY `rfl`, i.e. it holds *definitionally* in this RGA model.  `Del` of an absent
+  node with an empty path is identity (the map's mappings are untouched and the empty domain
+  absorbs `remove`).  This is what makes `noopFeasible` well-defined.
 
 * **Case 1 (DEPENDENCY, `{insOpE, delOpE}`, `del` depends on `ins`):**
   - `del_ins_noopFeasible`: `[delOpE, insOpE]` IS `noopFeasible` (via the no-op branch on
-    `del@init`) — so no-op-feasibility ALONE does NOT exclude it.  This is exactly why
-    relaxing (b) to (a-noop) re-opens the failure and why the order layer must do the work.
-  - `not_respects_del_ins_loOnA` (reused from task #7): `loOnA` KEEPS the `ins→del`
+    `del@init`), so no-op-feasibility ALONE does NOT exclude it.  This is why
+    relaxing to no-op re-opens the failure and why the order layer must do the work.
+  - `not_respects_del_ins_loOnA`: `loOnA` KEEPS the `ins→del`
     generation-dependency edge, so `[delOpE, insOpE]` does NOT respect `loOnA`.
   - `dependency_case_converges`: over enumerations that are BOTH `loOnA`-respecting AND
     `noopFeasible`, only `[insOpE, delOpE]` qualifies, so convergence HOLDS.
 
 * **Case 2 (REDUNDANCY, `{insOpE, delOpE, delY}`, two concurrent deletes of node 1):**
   - `no_applicabilityValid_enum`: STRICT `applicabilityValid` admits NO enumeration of the
-    3-event set (whichever delete is second is non-applicable) — mechanized satisfiability
-    failure of task #7's repair (b).
+    3-event set (whichever delete is second is non-applicable): a mechanized satisfiability
+    failure of the strict notion.
   - `ins_del_delY_noopFeasible`, `ins_delY_del_noopFeasible`: under `noopFeasible` BOTH
     delete-orders qualify (the second delete is a no-op, `del1_idem`), and both respect
-    `loOnA` (config-generally, via `sep_loOnC_imp_loOnA` and its mirror — the two deletes
+    `loOnA` (config-generally, via `sep_loOnC_imp_loOnA` and its mirror: the two deletes
     carry no generation-dependency between them).
   - `redundancy_folds_agree`: both admitted orders fold to the SAME state (node 1 deleted).
-    So convergence HOLDS and the admitted set is SATISFIABLE — packaged as
+    So convergence HOLDS and the admitted set is SATISFIABLE, packaged as
     `redundancy_case_converges_and_satisfiable`.
 
 * **THE VERDICT** (`loOnA_noopFeasible_verdict`): `loOnA + noopFeasible` is
   convergent-and-satisfiable on BOTH cases, whereas
-  - strict-(b) `applicabilityValid` fails *satisfiability* on case 2
+  - strict `applicabilityValid` fails *satisfiability* on case 2
     (`no_applicabilityValid_enum`), and
-  - plain-`loOnC` + `noopFeasible` fails *convergence* on case 1
+  - plain `loOnC` + `noopFeasible` fails *convergence* on case 1
     (`plain_loOnC_noopFeasible_diverges`: G2's `[delOpE, insOpE]` counterexample is re-admitted
     because it is `noopFeasible` and `loOnC`-respecting).
 
-  This validates the plan's revised feasibility notion (the "(a) applicability-aware order +
-  no-op-feasible enumeration" design), and shows strict-(b) alone is both too weak on the
-  order side (needs `loOnA`) and too strong on the applicability side (unsatisfiable on
-  redundancy).
+  So `loOnA + noopFeasible` is the notion that works, and strict `applicabilityValid` alone
+  is both too weak on the order side (needs `loOnA`) and too strong on the applicability side
+  (unsatisfiable on redundancy).
 
-## One structural finding, reported not forced
+## One structural finding
 
 All three ops carry replica id `0`.  `Configuration.vis_total_same_replica`
 (`CRDT_TS.lean`) forces two distinct events with the SAME replica id to be `vis`-comparable,
 so a *fully well-formed* single-rid `Configuration` cannot realise `delOpE ‖ delY` as
-genuinely concurrent — an order would be forced.  This is exactly why task #7 stated the
-3-event separation config-GENERALLY (`∀ C ev`, hypothesising `respects loOnC`), and why the
+genuinely concurrent: an order would be forced.  This is why the
+3-event separation is stated config-GENERALLY (`∀ C ev`, hypothesising `respects loOnC`), and why the
 `loOnA`-admission facts here are the config-general reductions `respects loOnC → respects
-loOnA` rather than a constructed `Csep`.  The finding does not weaken the verdict: the
+loOnA` rather than a constructed `Csep`.  It does not weaken the verdict: the
 `loOnA` layer adds nothing over `loOnC` on the two deletes (they carry no positive
 creation-reference between them), which is the substantive content.
 -/
@@ -93,7 +90,7 @@ open Sal.ConditionedMRDTs.RGASig
 open Sal.ConditionedMRDTs.G2AppAware
 open Sal.ConditionedMRDTs.RGASig (RGACondSig)
 
-/-! ## §0  `noopFeasible` — moved to `NoopFeasible.lean` (namespace
+/-! ## §0  `noopFeasible` lives in `NoopFeasible.lean` (namespace
 `Sal.ConditionedMRDTs`); this file keeps the gate: the `Del` no-op algebra and the
 two-case verdict that `loOnA + noopFeasible` is the right feasibility notion. -/
 
@@ -105,8 +102,7 @@ as a genuine Lean `Eq`.  From it we get `del@init` (definitionally) and `Del`-id
 
 /-- **del@init is a genuine Lean-`Eq` no-op.**  Proved by `rfl`: it holds *definitionally*.
 `init_st`'s mappings are untouched (no entry has anchor `1`) and its empty domain absorbs the
-`remove`.  This confirms KC's framing: `Del` of an absent node here is identity, not a
-failure. -/
+`remove`.  `Del` of an absent node here is identity, not a failure. -/
 theorem del_at_init_noop : do_ init_st delOpE = init_st := by rfl
 
 /-- A delete of node `1` (empty path) makes node `1` absent, for any prior state. -/
@@ -124,7 +120,7 @@ theorem anc_del1_ne (s : concrete_st) (t r k : ℕ) :
   · rw [if_neg h]; exact h
 
 /-- **`Del` no-op lemma.**  If `x` is absent and no key has anchor `x`, then deleting `x`
-(any timestamp/replica, any path) is the identity — a genuine Lean `Eq`, via map
+(any timestamp/replica, any path) is the identity, a genuine Lean `Eq`, via map
 extensionality (`sel` and `contains` agree pointwise). -/
 theorem del_noop_general (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
     (hx : contains s x = false) (hanc : ∀ k, anc s k ≠ x) :
@@ -143,14 +139,14 @@ theorem del_noop_general (s : concrete_st) (t r x : ℕ) (pre : List ℕ)
       rw [hb]; simp
 
 /-- **`Del`-idempotence for node `1`, empty path.**  A second delete of node `1` after a
-first one is a no-op — the first delete leaves node `1` absent (`contains_doDel_node1`) and
+first one is a no-op: the first delete leaves node `1` absent (`contains_doDel_node1`) and
 every anchor `≠ 1` (`anc_del1_ne`), so `del_noop_general` fires. -/
 theorem del1_idem (s : concrete_st) (t r t' r' : ℕ) :
     do_ (do_ s (t, r, .Del [] 1)) (t', r', .Del [] 1) = do_ s (t, r, .Del [] 1) :=
   del_noop_general (do_ s (t, r, .Del [] 1)) t' r' 1 []
     (contains_doDel_node1 s t r) (fun k => anc_del1_ne s t r k)
 
-/-! ## §2  Case 1 — the DEPENDENCY case `{insOpE, delOpE}` (`del` depends on `ins`) -/
+/-! ## §2  Case 1: the DEPENDENCY case `{insOpE, delOpE}` (`del` depends on `ins`) -/
 
 /-- `[insOpE, delOpE]` is `noopFeasible` (both ops strictly applicable at their prefixes). -/
 theorem ins_del_noopFeasible : noopFeasible RGACondSig [insOpE, delOpE] init_st := by
@@ -160,13 +156,13 @@ theorem ins_del_noopFeasible : noopFeasible RGACondSig [insOpE, delOpE] init_st 
 /-- **`noopFeasible` ALONE does not exclude the bad order.**  `[delOpE, insOpE]` IS
 `noopFeasible`: `delOpE` at `init` is not applicable but is a no-op (`del_at_init_noop`),
 and `insOpE` is applicable at the state reached (which is definitionally `init`).  This is
-why relaxing (b) to no-op re-opens the failure, and why the ORDER layer must exclude it. -/
+why relaxing to no-op re-opens the failure, and why the ORDER layer must exclude it. -/
 theorem del_ins_noopFeasible : noopFeasible RGACondSig [delOpE, insOpE] init_st := by
   refine ⟨Or.inr del_at_init_noop, ?_⟩
   exact ⟨Or.inl insOpE_applicable_at_init, trivial⟩
 
 /-- The two facts together: no-op-feasibility does not exclude `[delOpE, insOpE]`, but
-`loOnA` (repair (a), reused from task #7) does. -/
+`loOnA` does. -/
 theorem dependency_case_noop_alone_insufficient :
     noopFeasible RGACondSig [delOpE, insOpE] init_st
     ∧ ¬ respects [delOpE, insOpE] (loOnA Ccex evCex) :=
@@ -183,7 +179,7 @@ theorem loOnA_perm_forces_ins_del (π : List (Op app_op_t))
 
 /-- **Case 1 verdict: `loOnA + noopFeasible` CONVERGES.**  Over enumerations of
 `{insOpE, delOpE}` that are BOTH `loOnA`-respecting AND `noopFeasible`, only `[insOpE, delOpE]`
-qualifies (`loOnA` excludes `[delOpE, insOpE]` — which `noopFeasible` alone admits), so all
+qualifies (`loOnA` excludes `[delOpE, insOpE]`, which `noopFeasible` alone admits), so all
 qualifying folds agree.  (`loOnA` is already the binding constraint; the `noopFeasible`
 hypotheses are carried but not consulted.) -/
 theorem dependency_case_converges
@@ -200,7 +196,7 @@ theorem dependency_case_folds_to_deleted :
   rw [applySeq_two]
   exact contains_doDel_node1 (do_ init_st insOpE) 2 0
 
-/-! ## §3  Case 2 — the REDUNDANCY case `{insOpE, delOpE, delY}` (two concurrent deletes) -/
+/-! ## §3  Case 2: the REDUNDANCY case `{insOpE, delOpE, delY}` (two concurrent deletes) -/
 
 /-- The redundancy version: insert node 1, then two concurrent deletes of node 1. -/
 def evSep : Set (Op app_op_t) := {insOpE, delOpE, delY}
@@ -224,10 +220,11 @@ theorem delNode1_not_applicable (t r : ℕ) (s : concrete_st)
   · exact one_ne_zero h
   · rw [h1] at h; exact Bool.noConfusion h
 
-/-- **STRICT `applicabilityValid` (repair (b)) admits NO enumeration of the redundancy set.**
+/-- **STRICT `applicabilityValid` admits NO enumeration of the redundancy set.**
 The head must be applicable at `init`, so it must be `insOpE` (both deletes fail `accurate`
 at `init`); then the tail contains both deletes, and whichever runs second finds node `1`
-already gone and is non-applicable.  Mechanized satisfiability failure of task #7's (b). -/
+already gone and is non-applicable.  A mechanized satisfiability failure of the strict
+notion. -/
 theorem no_applicabilityValid_enum (π : List (Op app_op_t))
     (hperm : listPermOf π evSep) :
     ¬ applicabilityValid RGACondSig π init_st := by
@@ -289,7 +286,7 @@ theorem delY_applicable_after_ins :
   delOpE_applicable_after_ins
 
 /-- **Under `noopFeasible`, order `[insOpE, delOpE, delY]` qualifies.**  `insOpE`, then
-`delOpE` (both applicable), then `delY` — a no-op, since node `1` is already deleted
+`delOpE` (both applicable), then `delY`, a no-op, since node `1` is already deleted
 (`del1_idem`). -/
 theorem ins_del_delY_noopFeasible :
     noopFeasible RGACondSig [insOpE, delOpE, delY] init_st := by
@@ -297,7 +294,7 @@ theorem ins_del_delY_noopFeasible :
   refine ⟨Or.inl delOpE_applicable_after_ins, ?_⟩
   exact ⟨Or.inr (del1_idem (do_ init_st insOpE) 2 0 3 0), trivial⟩
 
-/-- **Under `noopFeasible`, order `[insOpE, delY, delOpE]` also qualifies** — symmetric to
+/-- **Under `noopFeasible`, order `[insOpE, delY, delOpE]` also qualifies**, symmetric to
 the above (`delY` applicable, then `delOpE` a no-op). -/
 theorem ins_delY_del_noopFeasible :
     noopFeasible RGACondSig [insOpE, delY, delOpE] init_st := by
@@ -306,9 +303,8 @@ theorem ins_delY_del_noopFeasible :
   exact ⟨Or.inr (del1_idem (do_ init_st insOpE) 3 0 2 0), trivial⟩
 
 /-- **`loOnA` admits `[insOpE, delOpE, delY]`** (config-generally): whenever the order
-respects the base `loOnC`, it respects `loOnA` — the generation-dependency layer adds no
-backward edge (the two deletes carry no positive creation-reference).  Reused verbatim from
-task #7. -/
+respects the base `loOnC`, it respects `loOnA`, the generation-dependency layer adds no
+backward edge (the two deletes carry no positive creation-reference). -/
 theorem redundancy_loOnA_admits_ins_del_delY
     (C : Sal.Emulation.Configuration RGACondSig.toCRDTSig) (ev : Set (Op app_op_t))
     (h : respects [insOpE, delOpE, delY] (loOnC RGACondSig C ev)) :
@@ -348,8 +344,8 @@ theorem redundancy_folds_agree :
       = applySeq RGACondSig.toCRDTSig init_st [insOpE, delY, delOpE] := by
   rfl
 
-/-- **Case 2 verdict: `loOnA + noopFeasible` is SATISFIABLE-and-CONVERGENT** where strict (b)
-is unsatisfiable.  Bundles: (i) strict `applicabilityValid` admits nothing; (ii)+(iii) both
+/-- **Case 2 verdict: `loOnA + noopFeasible` is SATISFIABLE-and-CONVERGENT** where strict
+`applicabilityValid` is unsatisfiable.  Bundles: (i) strict `applicabilityValid` admits nothing; (ii)+(iii) both
 delete-orders are `noopFeasible`; (iv)+(v) both respect `loOnA` (config-generally);
 (vi) both fold to the same state. -/
 theorem redundancy_case_converges_and_satisfiable :
@@ -368,7 +364,7 @@ theorem redundancy_case_converges_and_satisfiable :
    redundancy_loOnA_admits_ins_del_delY, redundancy_loOnA_admits_ins_delY_del,
    redundancy_folds_agree⟩
 
-/-! ## §4  The verdict — the theorem-backed comparison
+/-! ## §4  The verdict: the theorem-backed comparison
 
 `loOnA + noopFeasible` is convergent-and-satisfiable on BOTH cases, where the two strictly
 weaker/stronger alternatives each fail on one case. -/
@@ -394,16 +390,16 @@ theorem plain_loOnC_noopFeasible_diverges :
   rw [applySeq_two, applySeq_two] at h
   exact folds_differ h
 
-/-- **THE HEADLINE.**  A theorem-backed comparison of the three feasibility notions:
+/-- A theorem-backed comparison of the three feasibility notions:
 
 1. plain `loOnC` + `noopFeasible` fails CONVERGENCE on the dependency case (case 1);
 2. strict `applicabilityValid` fails SATISFIABILITY on the redundancy case (case 2);
 3. `loOnA` + `noopFeasible` CONVERGES on the dependency case; and
 4. `loOnA` + `noopFeasible` is SATISFIABLE-and-CONVERGENT on the redundancy case.
 
-Hence `loOnA + noopFeasible` is the feasibility notion that works on both decisive cases —
-confirming the plan's revised "(a) applicability-aware order + no-op-feasible enumeration"
-design over strict-(b). -/
+Hence `loOnA + noopFeasible` is the feasibility notion that works on both decisive cases:
+the applicability-aware order plus no-op-feasible enumeration, over strict
+`applicabilityValid` alone. -/
 theorem loOnA_noopFeasible_verdict :
     (¬ (∀ (π₁ π₂ : List (Op app_op_t)),
           listPermOf π₁ evCex → listPermOf π₂ evCex →
@@ -428,7 +424,7 @@ theorem loOnA_noopFeasible_verdict :
    dependency_case_converges,
    ⟨ins_del_delY_noopFeasible, ins_delY_del_noopFeasible, redundancy_folds_agree⟩⟩
 
-/-! ## §5  Axiom audit — all kernel-checked (no `native_decide`, no `sorryAx`) -/
+/-! ## §5  Axiom audit: all kernel-checked (no `native_decide`, no `sorryAx`) -/
 
 #print axioms del_at_init_noop
 #print axioms del1_idem
@@ -444,7 +440,7 @@ theorem loOnA_noopFeasible_verdict :
 Status of the three ingredients for instantiating §3 (or the §4 route) at the
 tombstone-free RGA `RGACondSig`:
 
-1. **Order VC `dependency_covers_vacuity` — DISCHARGEABLE.**  The witnessing
+1. **Order VC `dependency_covers_vacuity`: DISCHARGEABLE.**  The witnessing
    instance is proved below (`rga_appliesDependsOn_del_ins`): the counterexample
    pair `insOpE → delOpE` (the edge conditioning drops, `no_loOnC_edge`) does
    carry a generic generation dependency, because `delOpE` is inapplicable at
@@ -453,16 +449,16 @@ tombstone-free RGA `RGACondSig`:
    creation-before-use pair (RGA non-commutation is create/use-shaped), whence
    `appliesDependsOn b a`.
 
-2. **Semantic VCs `UpdateVCs D.toCRDTSig` (headline §3) — NOT available.**
+2. **Semantic VCs `UpdateVCs D.toCRDTSig` (headline §3): NOT available.**
    `rc = Either` and the RGA commutation lemmas conclude observational `eq`, not
    Lean `Eq` (`G2_Transport_Probe.lean`'s hosting gap), so the `commutes`-based
    `cond_comm_lift` / `rc_non_comm_directional` fail at the Lean-`Eq` level.
-   The RGA therefore needs the §4 `commutesOn`-only route — and hits §5's
+   The RGA therefore needs the §4 `commutesOn`-only route, and hits §5's
    obstruction.
 
-3. **`UpdateVCsC` (§4) — the `rc_non_comm_directional` field is vacuously
+3. **`UpdateVCsC` (§4): the `rc_non_comm_directional` field is vacuously
    awkward for the RGA** (with `rc = Either` both rc-disjuncts are false, so the
-   field asserts `commutesOn` for all distinct different-replica pairs — the
+   field asserts `commutesOn` for all distinct different-replica pairs, the
    RGA's actual different-replica commutation, again observational).  So the RGA
    sits exactly at the `commutesOn`-only frontier §5 maps. -/
 

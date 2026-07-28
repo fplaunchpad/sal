@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Skel
 
-/-! # Shesha — M0: the placed-exactly-once accounting (phase 2b, block 2)
+/-! # Shesha — M0: the placed-exactly-once accounting
 
 Closes the survivor-set identity (`merge_ids`) and the `Nodup` half of
 `merge_WF` (`merge_read_nodup`) — the two obligations
@@ -1797,10 +1797,10 @@ theorem lvl_edge {L A B : St} (mok : ModelOK L A B)
       if_pos (contains_iff.mpr hcB)]
     omega
 
-/-! ### The `Nodup` half of Lemma M0, closed -/
+/-! ### The `Nodup` half of Lemma M0 -/
 
 /-- **`merge_read_nodup`**: the merge places every id at most once — the
-`Nodup` half of `merge_WF`, previously owed
+`Nodup` half of `merge_WF`
 (`whiteboard/sibling-linked-proof.md` §4, Lemma M0). -/
 theorem merge_read_nodup {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) :

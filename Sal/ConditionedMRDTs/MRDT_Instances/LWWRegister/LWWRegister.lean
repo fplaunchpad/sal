@@ -299,11 +299,10 @@ end
 
 /-! ## §5  The arbitration refactor: LWW's arbitration is NATIVE, not in `rc`
 
-Task #114 phase 3b (`Metatheory/Arbitration_Refactor.lean`). LWW confirms
-`oq:rcchain`: a total-order arbitration policy is inexpressible in the `rc`
-mechanism, and LWW does not try — it makes its writes *commute* (`max` is
-commutative) and moves the arbitration into the payload fold. Two consequences,
-both proved below, together the LWW-native discovery:
+A total-order arbitration policy is inexpressible in the `rc` mechanism, and
+LWW does not try: it makes its writes *commute* (`max` is commutative) and
+moves the arbitration into the payload fold. Two consequences, both proved
+below:
 
 * `lww_loOn_empty`: the linearization order `loOn` is **empty** on LWW. Each of
   its arms needs a non-commuting pair (`vis` arm) or an `rc`-resolved concurrent

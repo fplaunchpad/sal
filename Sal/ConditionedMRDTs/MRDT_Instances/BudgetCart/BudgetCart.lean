@@ -49,10 +49,9 @@ Three layers:
   prefix fold and the causal-past fold. `bcart_safetyStep_of_spend_mono`
   proves `SafetyStepOn` from the explicitly-hypothesized transfer
   (`BCartSpendMono`), and `bcart_version_inv_gated` composes it with the
-  generic metatheorem — gated on `CausalCanonical`, which is OPEN for
-  rc-nontrivial datatypes (OQ8 / `JoinLemma3AtC`, the witness-maintenance
-  species of `Development/GENERIC_SAFETY_PENPAPER.md` §4.2 (P1)). BudgetCart
-  is the instance that forces that gate.
+  generic metatheorem, gated on `CausalCanonical`, which is open for
+  rc-nontrivial datatypes (the witness-maintenance species, `JoinLemma3AtC`).
+  BudgetCart is the instance that forces that gate.
 -/
 
 set_option maxHeartbeats 1000000
@@ -66,7 +65,7 @@ open Classical
 
 The op/state types are DEFINITIONALLY the parametric OR-set core's at payload
 `(item, price)`: `BCartElem = ℕ × ℕ × (ℕ × ℕ) = ℕ × ℕ × ℕ × ℕ` (`×` is
-right-associative), so instances read exactly as before —
+right-associative), so instances read exactly as
 `(ts, rep, item, price)` with `q.2.2.1` the item and `q.2.2.2` the price. -/
 
 /-- BudgetCart ops: `add (item, price)` stakes a priced instance; `rem item`
@@ -355,18 +354,17 @@ theorem bcart_safetyStep_of_spend_mono (hMono : BCartSpendMono alloc) :
     show bcartSpend r (bcartUpdate σS (ts, rr, OSOp.rem item)) ≤ alloc r
     exact le_trans (bcartSpend_update_rem_le σS ts rr item r) (hInv r)
 
-/-- **The budget bound at every version, hypothesis-gated** — the composition
-of the generic safety metatheorem (`version_inv_on_of_causal_canonical`) with
-the gated SafetyStep.
+/-- **The budget bound at every version, hypothesis-gated**: the composition of
+the generic safety metatheorem (`version_inv_on_of_causal_canonical`) with the
+gated SafetyStep.
 
-The `CausalCanonical` hypothesis is **open for rc-nontrivial datatypes**:
-its known discharges are the pointwise species (all-comm + `rc ≡ Either` —
-unavailable here, the BudgetCart has a genuine `rc`) and the
-witness-maintenance species (OQ8 / `JoinLemma3AtC`,
-`Development/GENERIC_SAFETY_PENPAPER.md` §4.2 (P1)), which is unproven.
-The BudgetCart is the instance that forces that gate. `BCartSpendMono` is
-the additional (kindred) open transfer this instance needs because
-`SafetyStepOn`'s interface forgets the rc-orientation of its folds. -/
+The `CausalCanonical` hypothesis is **open for rc-nontrivial datatypes**: its
+known discharges are the pointwise species (all-comm + `rc ≡ Either`,
+unavailable here, the BudgetCart has a genuine `rc`) and the witness-maintenance
+species (`JoinLemma3AtC`), which is unproven. The BudgetCart is the instance
+that forces that gate. `BCartSpendMono` is the additional (kindred) open
+transfer this instance needs because `SafetyStepOn`'s interface forgets the
+rc-orientation of its folds. -/
 theorem bcart_version_inv_gated (hMono : BCartSpendMono alloc)
     {C : Configuration (BudgetCart alloc)}
     (hCC : CausalCanonical C)

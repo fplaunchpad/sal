@@ -4,8 +4,6 @@ import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient_NF
 /-!
 # The born-applicable reachability invariant `GoodConfig3NF` (datatype-side)
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
 The `≈`-route reachability invariant that carries a BORN-APPLICABLE canonical
 witness for every version.  `GoodConfig3NF = GoodConfig3 ∧ canonicalNF`, where
 
@@ -15,16 +13,16 @@ i.e. each version's class `s` is `qmk` of a representative `σ` that has a
 `noopFeasible` (over the RAW `do_` fold) canonical witness.  This is the
 DATATYPE-side design (`IsCanonicalStateEqNF`, over `D`).
 
-The exec-side alternative (`noopFeasible` over the guarded `qdo`) was found VACUOUS
-(`appOrNoop_qsig` makes every `QSig` step `appOrNoop` unconditionally), so it could
-not feed `EqJoinLemma3C_NF`; the datatype-side clause is the meaningful one and lets
-the merge feed the NF join DIRECTLY (via `qmergeL_qmk`, no bridge).
+The exec-side alternative (`noopFeasible` over the guarded `qdo`) is vacuous
+(`appOrNoop_qsig` makes every `QSig` step `appOrNoop` unconditionally), so it cannot
+feed `EqJoinLemma3C_NF`; the datatype-side clause is the meaningful one and lets
+the merge feed the NF join directly (via `qmergeL_qmk`, no bridge).
 
 * apply — `isCanonicalStateNF_extend` (via `isCanonicalStateEqNF_extend`), with a
   per-apply honest premise `qapplicable e s` (the client applies `e` where it is
   applicable) and `hgenW : applicable e ⟹ W e` (from `e`'s genuineness).
 * merge — `goodConfig3NF_merge_of_canonical` (store bookkeeping) + `h_mergedNF` from
-  the NF join (`EqJoinLemma3C_NF`, gated on the merge residual WALL 1).
+  the NF join (`EqJoinLemma3C_NF`, gated on the merge residual).
 -/
 
 set_option maxHeartbeats 1000000
@@ -276,7 +274,7 @@ theorem goodConfig3NF_merge_of_canonical (E : EqEquiv D) (W : Op D.AppOp → D.S
 With the datatype-side design the join is DIRECT — no exec↔datatype bridge:
 extract the three representatives, apply `EqJoinLemma3C_NF` to them, and repackage
 via `qmergeL_qmk`.  This supplies `h_mergedNF` to `goodConfig3NF_merge_of_canonical`.
-Gated only on `EqJoinLemma3C_NF` (the RGA's merge residual, WALL 1). -/
+Gated only on `EqJoinLemma3C_NF` (the RGA's merge residual). -/
 theorem mergedNF_of_join (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (hJoinNF : EqJoinLemma3C_NF D E W)
@@ -358,7 +356,7 @@ skip). -/
 
 open Sal.ConditionedMRDTs (Configuration Step3 Label3 IsLCA initConfig) in
 /-- **`GoodConfig3NF` from born-applicable reachability.**  Gated on
-`EqJoinLemma3C_NF` (the merge residual, WALL 1) and the honest conditions
+`EqJoinLemma3C_NF` (the merge residual) and the honest conditions
 `hgenW`/`hBA`.  No `GenDisc`, no `GDSupply`, no `WfOpReachable`. -/
 theorem goodConfig3NF_of_reachF (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)

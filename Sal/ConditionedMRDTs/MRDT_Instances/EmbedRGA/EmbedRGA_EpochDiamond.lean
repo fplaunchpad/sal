@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_HonestyRebase
 
 /-!
-# The epoch diamond: confluence of incomparable compactions (#112 phase 2)
+# The epoch diamond: confluence of incomparable compactions
 
 Design + Python validation: `whiteboard/epoch-protocol-note.md` (§8 states the
 four obligations this file discharges), `whiteboard/litmus/epoch_diamond_check.py`
@@ -24,7 +24,8 @@ is exactly two facts:
 
 * **O1 confluence = certificate-determinism.** All three maps (leg A, leg B, the
   one-shot at `W`) must AGREE. They do because the join map is a function of
-  `W`'s certificate data ALONE (`OB-map-from-certificate`, note §2/§5.2): both
+  `W`'s certificate data ALONE (`OB-map-from-certificate`,
+  `whiteboard/epoch-protocol-note.md` §2/§5.2): both
   replicas feed the same certificate to the same builder, so `spm W` is the same
   term on both sides — the "without coordination" content, captured here as
   definitional determinism (`certMap_deterministic`). Given agreement on the
@@ -40,7 +41,8 @@ is exactly two facts:
   coordinate, so `id_addressing_breaks` does not apply.
 
 O3 (`mapDrop_sound`) and O4 (`rED_*_join`, `ContOK`) are the GC and freshness
-residues. The SPOTs replay the note's directed cases c1–c4 and A3.
+residues. The SPOTs replay directed cases c1–c4 and A3 from
+`whiteboard/epoch-protocol-note.md`.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -96,7 +98,7 @@ certificate data, so both replicas compute the identical map. Then the diamond
 reduces to pointwise agreement of the two relative composites with the one-shot
 on the carried surviving domain; from agreement we get bit-identical states. -/
 
-/-- **The certificate data of a cut** (note §2): the settled surviving
+/-- **The certificate data of a cut** (`whiteboard/epoch-protocol-note.md` §2): the settled surviving
 coordinates, the settled-dead subset, and the declared in-flight set — and
 NOTHING of a replica's private unsettled records. Two replicas holding the same
 certificates hold the same `JoinCert`. -/
@@ -105,7 +107,7 @@ structure JoinCert (Γ : OrderedPrefixCode) where
   settledDead : List (List Bool)
   declared : List (List Bool × ℕ)
 
-/-- **`OB-map-from-certificate` (note §5.2), as determinism.** The join map is
+/-- **`OB-map-from-certificate` (`whiteboard/epoch-protocol-note.md` §5.2), as determinism.** The join map is
 produced by a builder `𝒞` that is a function of the `JoinCert` ONLY. Hence two
 replicas that computed the same join certificate install the *same* map with no
 round trips — this `congrArg` IS the "without coordination" content: given equal
@@ -163,7 +165,7 @@ theorem diamond_confluence_fn {f1 f2 fa fb fw : List Bool → List Bool}
 
 /-- **O1 stated with the composition closure.** Leg A's composite as an actual
 `StablePrefixMap.comp` (carrying the surviving domain `RA`/`MA`) equals the
-one-shot `spmW` at rest, and symmetrically for leg B — the note's
+one-shot `spmW` at rest, and symmetrically for leg B:
 `relSPM(S1→W).comp(spm S1) = spm W = relSPM(S2→W).comp(spm S2)` at the state
 level. -/
 theorem diamond_confluence_comp {Γ : OrderedPrefixCode}
@@ -189,7 +191,7 @@ IDENTITY to epoch-0 coordinates: read each kept record's epoch-0 coordinate off
 the original state. It is NOT computed by membership pullback (aliasing) nor by
 intersecting the two maps' kept sets (evicts later-settled records). -/
 
-/-- **The transported domain** (note §5.1): the epoch-0 coordinates of the records
+/-- **The transported domain** (`whiteboard/epoch-protocol-note.md` §5.1): the epoch-0 coordinates of the records
 the join cut keeps, addressed by record identity `keptW : id → Prop` against the
 original (never-compacted) state `s`. -/
 def transportedDom (s : EState α) (keptW : ℕ → Prop) : List Bool → Prop :=
@@ -324,10 +326,10 @@ theorem contOK_root_key_fresh {Γ : OrderedPrefixCode} {s : EState α} {d : ℕ}
 #print axioms rED_fresh_dominates_join
 #print axioms contOK_root_key_fresh
 
-/-! ## §6  SPOTs — the note's directed cases c1–c4, A3 (PASS + FAIL shaped)
+/-! ## §6  SPOTs — directed cases c1–c4, A3 (PASS + FAIL shaped)
 
 Unary code (`enc d = 1^d 0`). Every expected value is hand-derived from the
-note's §4 tables, never `#eval`'d from the maps under test. The FAIL companions
+`whiteboard/epoch-protocol-note.md` §4 tables, never `#eval`'d from the maps under test. The FAIL companions
 are the required negatives: `naive_pullback_aliases` (a dropped coordinate falls
 through verbatim and aliases a kept coordinate — the incomparable analogue of
 `naive_composition_collides`), `c4_no_translation_flips` and `a3_ack_only_unsound`
@@ -338,7 +340,7 @@ namespace DiamondSPOT
 
 open Sal.EmbedRGA (unaryCode)
 
-/-! ### c1 — rank reclaim across the diamond, two-sided (note §4 c1)
+/-! ### c1 — rank reclaim across the diamond, two-sided (`whiteboard/epoch-protocol-note.md` §4 c1)
 
 Root inserts x1=(1), x2=(2), x3=(3), x4=(4); `del x1` settles only in S2,
 `del x3` only in S1. `W` survivors: x2, x4 (x1, x3 dead). Hand-derived maps:
@@ -406,7 +408,7 @@ theorem c1_straggler_reads_twin :
     SPOT.readE pathA' = [90, 40, 20] ∧ SPOT.readE pathC' = [90, 40, 20]
       ∧ SPOT.readE twinStr = [90, 40, 20] := by native_decide
 
-/-- **FAIL companion — the aliasing negative (O2, note §5.1).** Membership
+/-- **FAIL companion — the aliasing negative (O2, `whiteboard/epoch-protocol-note.md` §5.1).** Membership
 pullback is unsound: the coordinate `enc 3` DROPPED by leg A falls through the
 composite verbatim onto the reclaimed rank and ALIASES the kept `enc 4`, so a
 domain computed by "is `f c` in range" is non-injective. The record-identity
@@ -441,7 +443,7 @@ theorem c1_via_theorem :
   · rintro c (rfl | rfl) <;> decide
   · rintro c (rfl | rfl) <;> decide
 
-/-! ### c3 — the in-flight guard across the diamond (note §4 c3)
+/-! ### c3 — the in-flight guard across the diamond (`whiteboard/epoch-protocol-note.md` §4 c3)
 
 Root group a=(1), b=(2) dead, c=(3); f=(5) declared in flight at S1 (root group
 FROZEN), settled under S2; d=(6) minted after S2, settled under S1. Both paths
@@ -483,7 +485,7 @@ theorem c3_reads_twin :
     SPOT.readE (eRemapSt (relA_c3 ∘ gcS1_c3) sW_c3) = [60, 50, 30, 10]
       ∧ SPOT.readE (eRemapSt gcW_c3 sW_c3) = [60, 50, 30, 10] := by native_decide
 
-/-! ### c2 — fusion asymmetry (note §4 c2)
+/-! ### c2 — fusion asymmetry (`whiteboard/epoch-protocol-note.md` §4 c2)
 
 Unary spine r1..r4 with a live leaf x below; dels of r1,r2 settle in S1 only,
 r3,r4 in S2 only. Path A fuses the prefix (r1,r2) then the rest, path B the
@@ -519,7 +521,7 @@ theorem c2_reads_twin :
     SPOT.readE (eRemapSt (relA_c2 ∘ gcS1_c2) sW_c2) = [50]
       ∧ SPOT.readE (eRemapSt gcW_c2 sW_c2) = [50] := by native_decide
 
-/-! ### c4 — the no-translation control, the required FAIL (note §4 c4)
+/-! ### c4 — the no-translation control, the required FAIL (`whiteboard/epoch-protocol-note.md` §4 c4)
 
 x1=(1), x2=(2) at root, `del x1` settled. Compaction: x1 dropped, x2 (2)↦(1).
 R2 (still epoch 0) mints y anchored at x2, coordinate (2,7). A raw union WITHOUT
@@ -545,7 +547,7 @@ theorem c4_no_translation_flips :
       ∧ SPOT.readE rawMerge_c4 ≠ SPOT.readE twin_c4
       ∧ SPOT.readE fixMerge_c4 = SPOT.readE twin_c4 := by native_decide
 
-/-! ### A3 — the ack-only map-drop certificate is UNSOUND (note §4 A3)
+/-! ### A3 — the ack-only map-drop certificate is UNSOUND (`whiteboard/epoch-protocol-note.md` §4 A3)
 
 `Fdrop` is the epoch-0→1 map (renumber (2)↦(1)). A declared epoch-0 straggler
 x (coordinate `enc 2`) arrives after every replica has acked. Under ack-only the
@@ -576,7 +578,7 @@ map (`Fdrop (enc 1) = enc 1`). That is exactly `mapDrop_sound`'s hypothesis. -/
 theorem a3_strong_cert_fixes :
     Fdrop (unaryCode.enc 1) = unaryCode.enc 1 := by native_decide
 
-/-! ### O4 — ContOK at a join epoch (note §8 ContOK, the 11029/0 target) -/
+/-! ### O4 — ContOK at a join epoch (`whiteboard/epoch-protocol-note.md` §8 ContOK, the 11029/0 target) -/
 
 /-- A compacted (join-epoch) root state: two siblings at ranks (2), (1). -/
 def sJoin : EState ℕ := [(2, 20, unaryCode.enc 2), (1, 10, unaryCode.enc 1)]

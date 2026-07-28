@@ -7,10 +7,8 @@ import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 /-!
 # The payload-parametric OR-set core (composition level L0)
 
-The OR-set-of-instances convergence discharge, extracted ONCE, parametrically
-in the payload. This is the factored §1–§8 of the BudgetCart
-(`MRDT_Instances/BudgetCart/BudgetCart.lean`), whose proofs nowhere depend on
-the payload being `(item, price)` — only on three structural facts:
+The OR-set-of-instances convergence discharge, parametric in the payload. The
+proofs nowhere depend on the payload type, only on three structural facts:
 
 * instances are `(ts, rep, payload)` triples, so an instance **names its
   adding event** (the self-naming/freshness property every σ-fact rides on);
@@ -30,16 +28,16 @@ The pieces:
   (`Q`/`V`/`qy`) **also a parameter**: the convergence discharge never
   touches the query, so quantifying over it lets any concrete datatype BE an
   instantiation, definitionally;
-* §2–§8 — the full OR-set-route discharge (`CoreVCs3CD` +
-  `FeasibleDeltaVCs3` + `CDVC3` ⇒ `JoinLemma3`), re-proved once over the
-  `Finset` representation, ending in `oscore_ra_linearizable3` and the
-  conditioned capstone `OSCore_ra_linearizable3_eq`.
+* §2–§8: the full OR-set-route discharge (`CoreVCs3CD` +
+  `FeasibleDeltaVCs3` + `CDVC3` ⇒ `JoinLemma3`) over the `Finset`
+  representation, ending in `oscore_ra_linearizable3` and the conditioned
+  capstone `OSCore_ra_linearizable3_eq`.
 
 **Composition level L0** (payload instantiation): a client datatype defines
 its op/state types AS `OSOp γ`/`OSState γ` for its payload `γ`, its sig as
 `OSCore γ key Q V qy`, and inherits every convergence capstone by
-instantiation — zero convergence proof obligations. The BudgetCart is the
-first client (payload `(item, price)`, key `Prod.fst`).
+instantiation, with zero convergence proof obligations. The BudgetCart is a
+client (payload `(item, price)`, key `Prod.fst`).
 -/
 
 set_option maxHeartbeats 1000000
@@ -94,9 +92,9 @@ def osFold {β : Type} [DecidableEq β] (key : β → ℕ)
   π.foldl (osUpdate key) s
 
 /-- **The payload-parametric OR-set core**, as a `ConditionedMRDTSig`. The
-sig-level `Inv`/`applicable` are `⊤` (repo convention — a client's contract
+sig-level `Inv`/`applicable` are `⊤` (repo convention: a client's contract
 lives beside ITS signature, as with the BudgetCart's budget); the query is a
-parameter, untouched by the convergence discharge. -/
+parameter the convergence discharge does not use. -/
 def OSCore (β : Type) [DecidableEq β] (key : β → ℕ)
     (Q V : Type) (qy : OSState β → Q → V) : ConditionedMRDTSig where
   State := OSState β

@@ -18,17 +18,17 @@ with two consequences:
 1. **(CD) is the weakest sufficient residual** (`cdVC_weakest`): any
    hypothesis `X` that closes the metatheorem
    (`X → JoinLemma D`) already implies `CDVC D`. There is no weaker
-   bridge VC to look for — open (b″) ("is (CD) derivable from
-   `CoreVCs + LatticeVCsPlus` alone?") is *equivalent* to the endgame
-   question "does `CoreVCs + LatticeVCsPlus` imply the Join Lemma /
+   bridge VC to look for: the question ("is (CD) derivable from
+   `CoreVCs + LatticeVCsPlus` alone?") is *equivalent* to
+   "does `CoreVCs + LatticeVCsPlus` imply the Join Lemma /
    RA-linearizability?". (CD) is its exact Skolemization.
-2. The old per-CRDT bundle strictly subsumes the new one:
-   `cdVC_of_joinPeelVCs` — every `JoinPeelVCs` discharge yields a
+2. The per-CRDT `JoinPeelVCs` bundle strictly subsumes `CDVC`:
+   `cdVC_of_joinPeelVCs`, every `JoinPeelVCs` discharge yields a
    (CD) discharge for free (given the lattice contract).
 
-## Status of (b″) after this file (see `A12_DRAFT.md`)
+## The derivability question
 
-Both attack directions on (b″) itself were pushed and hit
+Both attack directions on the derivability question hit
 characterizable walls:
 
 * **Mutual induction (positive attack).** Absorbing (CD) into
@@ -38,19 +38,19 @@ characterizable walls:
   axioms when the peeled `loOn`-maximal `x` commutes with all of
   `↓e ∪ {e}` (`merge_peel_comm`), and when `¬commutes(e,x)` with
   `x vis e` or an absorber (maximality + `M(<n)` absorption). The two
-  surviving shapes — `x ∥ e` with `rc x e = Fst`, and
-  `commutes(e,x)` with `x` rc/vis-entangled in `↓e` — are *provably
+  surviving shapes (`x ∥ e` with `rc x e = Fst`, and
+  `commutes(e,x)` with `x` rc/vis-entangled in `↓e`) are *provably
   circular*: unwinding them with `lem_0op`/commutation reproduces the
   size-`n` (CD) goal verbatim. No axiom mentions the pair
   `(x-then-e, rc x e = Fst)` when `e` has no absorber, so the
   induction cannot cross it.
 * **Countermodels (negative attack).** Four further families died on
-  a now-sharp forcing dichotomy: a delta of `e` that reads state
-  written by `y ∥ e` either makes `(y,e)` non-commuting — then
-  `rc`-directionality + `cond_comm_lift` + update-inflationarity
-  force every writer to *pre-push* the read's image (tagged or not)
+  a sharp forcing dichotomy: a delta of `e` that reads state
+  written by `y ∥ e` either makes `(y,e)` non-commuting, forcing (via
+  `rc`-directionality + `cond_comm_lift` + update-inflationarity)
+  every writer to *pre-push* the read's image (tagged or not)
   into the state, creating exactly the accumulation invariant that
-  validates (CD) — or leaves them commuting, and `merge_peel_comm`
+  validates (CD); or leaves them commuting, and `merge_peel_comm`
   directly forbids the delta from growing under merged-in commuting
   context. `no_rc_chain` blocks all three-op-kind escapes (the
   `rc`-Fst digraph on kinds must be 2-path-free). All these forcing
@@ -106,8 +106,8 @@ theorem cdVC_of_joinLemma (hVC : CoreVCs D) (hL : LatticeVCsPlus D)
 
 /-- **Exactness**: under `CoreVCs + LatticeVCsPlus`, the causal-delta
 bound and the Join Lemma are equivalent. (CD) is not one workable
-residual among many — it is *the* residual: open (b″) is equivalent
-to the unconditional metatheorem question. -/
+residual among many, it is *the* residual: the derivability question
+is equivalent to the unconditional metatheorem question. -/
 theorem joinLemma_iff_cdVC (hVC : CoreVCs D) (hL : LatticeVCsPlus D) :
     JoinLemma D ↔ CDVC D :=
   ⟨cdVC_of_joinLemma hVC hL, join_lemma_of_cd hVC hL⟩
@@ -120,7 +120,7 @@ theorem cdVC_weakest {X : Prop} (hVC : CoreVCs D)
     X → CDVC D :=
   fun hx => cdVC_of_joinLemma hVC hL (hX hx)
 
-/-- The A9 per-CRDT bundle subsumes the (b″) one: a `JoinPeelVCs`
+/-- The `JoinPeelVCs` per-CRDT bundle subsumes the CD one: a `JoinPeelVCs`
 discharge yields a (CD) discharge for free (given the lattice
 contract). -/
 theorem cdVC_of_joinPeelVCs (hVC : CoreVCs D) (hL : LatticeVCsPlus D)

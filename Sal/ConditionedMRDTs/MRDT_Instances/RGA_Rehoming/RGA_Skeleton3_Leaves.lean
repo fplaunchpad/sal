@@ -4,16 +4,14 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon_Fix
 /-!
 # Skeleton 3 leaf reduction — `hCanon` from a MINIMAL merge bundle
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
 In the H-world the witnesses CARRY the engine discipline (`CanonFoldOK [] (init_st (α := α)) ρᵢ`), so:
 
 * every `CanonMatch` derives directly (`canon_fold` + `canonMatch_of_canonInv`) — **no
   `EngineReady`, no `RefEdge`, no `hReady` leg anywhere**;
 * `CanonInv` at every fold is free, so the σ-forest facts (`Hstay`/`h0`/branch `wf`) and the
   per-survivor membership bundle (`hins_branch`) are DERIVED, not leaves;
-* the corrected merge glue (`canonMatch_merge_of_inputs'`, `RGA_MergeCanon_Fix`) needs only
-  `CanonBirthBridge` per survivor — the false 0-or-survivor conjunct is gone.
+* the merge glue (`canonMatch_merge_of_inputs'`, `RGA_MergeCanon_Fix`) needs only
+  `CanonBirthBridge` per survivor: the false 0-or-survivor conjunct is not required.
 
 `hCanon_of_leaves3` therefore reduces Skeleton 3's `hCanon` to THREE leaves:
 `Hdec` (σ₀' id-monotonicity — a fold invariant from honest payload bounds), `hcaus` (the per-id

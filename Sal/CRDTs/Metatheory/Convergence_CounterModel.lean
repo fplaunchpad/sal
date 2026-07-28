@@ -3,15 +3,9 @@ import Sal.CRDTs.Metatheory.Merge_Linearization_Set
 /-!
 # Counter-model: convergence over backward-closed replica sets is FALSE
 
-This file machine-checks finding **A1** of
-`Sal/CRDTs/Metatheory/FINDINGS.md`: the lemma that `FINDINGS.md` §5
-identified as the sole remaining blocker of the merge-linearization
-induction —
-
-> *convergence over merely backward-closed reachable replica event
-> sets* (w.r.t. the configuration-global `lo C`)
-
-— is **false**, even for a `D` that satisfies every property the
+This file machine-checks that convergence over merely backward-closed
+reachable replica event sets (w.r.t. the configuration-global `lo C`)
+is **false**, even for a `D` that satisfies every property the
 `convergence` proof machinery consumes (`rc_non_comm` +
 `rc_non_comm_directional` + `no_rc_chain` + `cond_comm_base` +
 `cond_comm_lift` + `merge_comm/idem/init` + `lem_0op`).
@@ -24,7 +18,7 @@ induction —
   the live set is `added \ dead`.
 * `add` inserts its timestamp into `added`.
 * `rem` kills everything currently added: `dead := added ∪ dead`
-  (state-dependent — this is what makes `add`/`rem` non-commuting).
+  (state-dependent: this is what makes `add`/`rem` non-commuting).
 * `merge` is the pairwise union (a join-semilattice).
 * `rc rem add = Fst_then_snd` (add wins over a concurrent remove),
   the paper's OR-set resolution.
@@ -51,7 +45,7 @@ this: `loOn C ev` *keeps* the edge `y → e` (no absorber inside
 `ev`), so only the fold-correct `[y, e]` respects it —
 `loOn_keeps_the_edge` below.
 
-## Bonus finding (A3 corollary)
+## Bonus finding
 
 `SatisfiesVCs.shared_peel_1op` — the "missing VC" added to the
 bundle as a crutch for the shared-event peel — is **false for
@@ -573,9 +567,8 @@ the entire toolkit the `convergence` proof machinery consumes,
 together with a configuration, a backward-closed sub-set `ev` of its
 events, and two `lo C`-respecting enumerations of `ev` whose folds
 differ. Hence "convergence over backward-closed (replica) event sets
-w.r.t. `lo C`" — the blocker lemma proposed by `FINDINGS.md` §5 — is
-false, and no weakening of `convergence`'s overwriter-closure
-hypothesis to backward closure can be proved. -/
+w.r.t. `lo C`" is false, and no weakening of `convergence`'s
+overwriter-closure hypothesis to backward closure can be proved. -/
 theorem convergence_over_backward_closed_subsets_false :
     ∃ (D : CRDTSig) (C : Configuration D) (ev : Set (Op D.AppOp))
       (π₁ π₂ : List (Op D.AppOp)),
@@ -682,7 +675,7 @@ dead (the vis-edge to the absorber is mandatory), and everything
 dead is absorbed within `ev` (a rem cannot precede an unabsorbed
 concurrent add — the rc-edge `rem → add` would be mandatory).
 
-The peel identities then reduce to set algebra plus the A5
+The peel identities then reduce to set algebra plus the
 trichotomy (`awAdds_killed_of_rem_max`): under union-maximality of a
 rem `e` and backward closure, *every* add of `ev₁ ∪ ev₂` is absorbed
 on the side that owns it. This yields `AWSet_joinLemma` — the Join
@@ -841,8 +834,8 @@ private theorem AWSet_char_aux {C : Configuration AWSet}
           exact ⟨a, ha', hadd, rfl⟩
       · intro t ht
         rcases ht with ht | ht
-        · -- t was alive in the prefix: the A5 argument produces an
-          -- absorber of its add inside ev.
+        · -- t was alive in the prefix: the trichotomy argument produces
+          -- an absorber of its add inside ev.
           rw [ih_add] at ht
           obtain ⟨a, ha, hadd, ht'⟩ := ht
           have h_nc : ¬ AWSet.commutes x a :=
@@ -972,7 +965,7 @@ theorem awKilled_diff_add {C : Configuration AWSet}
     exact absurd hrem (fun h' => nomatch h')
   exact ⟨a, ⟨ha, ha_ne⟩, hadd, ht, z, ⟨hz, hz_ne⟩, hvis, hrem⟩
 
-/-- **The A5 trichotomy**: with a union-maximal rem `e ∈ ev₁` and
+/-- **The trichotomy**: with a union-maximal rem `e ∈ ev₁` and
 backward-closed sides, every add of the union is absorbed on a side
 that owns it. -/
 theorem awAdds_killed_of_rem_max {C : Configuration AWSet}
@@ -1089,8 +1082,8 @@ theorem AWSet_joinPeelVCs : JoinPeelVCs AWSet := by
           · exact Or.inl (awKilled_mono (fun a ha => ha.1) h)
           · exact Or.inr (awKilled_mono (fun a ha => ha.1) h)
 
-/-- **The Join Lemma holds for `AWSet`** — a CRDT with non-trivial
-`rc`, state-dependent updates, and instances (the A3 defeater shape)
+/-- **The Join Lemma holds for `AWSet`**, a CRDT with non-trivial
+`rc`, state-dependent updates, and instances (the defeater shape)
 on which the paper's own bottom-up proof breaks. -/
 theorem AWSet_joinLemma : JoinLemma AWSet :=
   join_lemma_of_peel AWSet_coreVCs AWSet_joinPeelVCs

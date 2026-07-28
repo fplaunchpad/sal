@@ -3,7 +3,7 @@ import Mathlib.Data.List.Induction
 import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 
 /-!
-# The run table — the certified representation layer of the embed RGA (#73)
+# The run table: the certified representation layer of the embed RGA
 
 Design + measurement: `whiteboard/run-table-note.md` (20.9–27.2 b/ch, 38x–141x
 below fused chains); executable reference `whiteboard/litmus/run_table_measure.py`
@@ -2555,7 +2555,7 @@ bumps ONE `len` field — O(1) table work for a keystroke. The remaining rules
 (mid-run split, the delete liveness split, coalesce as the forced
 delete-inverse, vanished-anchor materialization) are pinned by the instance
 SPOTs (D1–D5 shapes), their generic perturbation lemmas live in §7¼, and
-their CLOSED `tableOf` equations in §7⅜ (`tableOf_insert_split`,
+their closed-form `tableOf` equations in §7⅜ (`tableOf_insert_split`,
 `tableOf_delete_split`, `tableOf_coalesce`, `tableOf_materialize`). -/
 
 theorem keptL_congr {L L' : List (List ℕ)} (hmem : ∀ c, c ∈ L ↔ c ∈ L') :
@@ -2927,7 +2927,7 @@ a childless live node re-canonicalizes to the SAME table with ONE `len`
 field bumped — the coalesce-after-attach path, O(1) table work per
 keystroke. The other insert shape (anchor interior or label ≠ 1, the mid-run
 split / new-entry rule) and the delete family are pinned concretely by the
-instance SPOTs and CLOSED generically in §7⅜ (D1 `tableOf_insert_split`,
+instance SPOTs and closed generically in §7⅜ (D1 `tableOf_insert_split`,
 D2 `tableOf_delete_split`, D4 `tableOf_coalesce`,
 D5 `tableOf_materialize`). -/
 theorem tableOf_insert_extend :
@@ -3255,7 +3255,7 @@ end Coalesce
 
 /-! ## §7⅜  T-mut, closed equations — the four rules as explicit table rewrites
 
-Each §7¼ rule is promoted here to a CLOSED-FORM `tableOf` equation in the
+Each §7¼ rule is promoted here to a closed-form `tableOf` equation in the
 style of `tableOf_insert_extend`: the table after the mutation as an explicit
 function of pre-mutation data (`headsList L`, `entryOfHead L`, `headOf L`,
 `lenOf L`). New heads enter by sorted insertion (`mergeSort hLe`), removed

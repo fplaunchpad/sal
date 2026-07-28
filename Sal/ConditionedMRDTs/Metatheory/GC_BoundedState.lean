@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Metatheory.GC_Safety
 
 /-!
-# Bounded-state commit GC: the clock representation swap (task #102)
+# Bounded-state commit GC: the clock representation swap
 
 `GC_Safety.lean`'s `gc_safety` prunes the **payload** (the `ver` states and event sets)
 while keeping the DAG **skeleton** (`parents`) verbatim. The skeleton is a total function
@@ -15,7 +15,7 @@ falsify that invariant, even though no reachable `Step3` ever queries such a pai
 kept interior nodes above different frontier MCAs can have all their common ancestors
 dropped.
 
-**This file removes the skeleton.** Route B of the task design (representation swap): the
+**This file removes the skeleton** by a representation swap: the
 commit graph is a delta-compression of event sets, so a version's ancestry role is
 carried by its event set used as a **clock**. Ancestry becomes `⊆` (pointwise `≤` on the
 per-event clock), and the LCA of a head pair is the kept version at the **clock meet**
@@ -24,17 +24,17 @@ payloads and drops `parents` to the constant empty function: `lca_events` is the
 discharged trivially (`Reaches (fun _ => []) = (·=·)`, so the only structural LCA is the
 reflexive one), and there is no history to store.
 
-**The lineage-collision constraint** (task #96, `whiteboard/stability-vc-note.md` §9.1).
+**The lineage-collision constraint.**
 Identifying the LCA by clock *alone* is sound before datatype-level compaction (the
 payload is then a function of the event set) and UNSOUND after: a same-clock version from
 an unrelated lineage, used as the merge's `L`, resurrects a dropped instance. The
 framework's structural `IsLCA` sidesteps this because it resolves within shared ancestry.
-A clock swap cannot, so it must **restrict LCA lookup to `R_S`-compatible payloads**. We
-take that route explicitly: the guard `ClockCoherent` ("two kept versions with the same
+A clock swap cannot, so it must **restrict LCA lookup to `R_S`-compatible payloads**. The
+guard `ClockCoherent` ("two kept versions with the same
 event-set clock carry the same state", i.e. the payload is a function of the clock on the
 keep set) is precisely `R_S`-compatibility, and it is exactly what compaction threatens.
 `clockLCA_sound` needs it; `spot_lineage_resurrection` witnesses the resurrection when it
-is dropped, echoing stability-vc-note §9.1 item 1.
+is dropped.
 
 **What is proved here.**
 * `clockPrune` (§1): the bounded store, a genuine `Configuration` with `parents ≡ []` and
@@ -204,8 +204,8 @@ theorem clockLCA_complete (C : Configuration D) (hStore : StoreInv C.ver C.paren
 
 /-! ## §4  The lineage guard: `R_S`-compatible payloads
 
-Clock identification alone is unsound once datatype-level compaction exists (task #96,
-stability-vc-note §9.1): a same-clock version from an unrelated lineage, used as `L`,
+Clock identification alone is unsound once datatype-level compaction exists: a same-clock
+version from an unrelated lineage, used as `L`,
 resurrects a dropped instance. The framework's structural `IsLCA` sidesteps this by
 resolving within shared ancestry; the clock swap cannot, so it **restricts LCA lookup to
 `R_S`-compatible payloads**, formalized as `ClockCoherent`. -/
@@ -432,9 +432,9 @@ theorem steps_clockFlat {C₀ : Configuration D} {C ℓs C'}
       (step_clockFlat hInv hstep (heads_kept (gcInv_step hInv hstep)))
       (ih (gcInv_step hInv hstep) (heads_kept (gcInv_step hInv hstep)) hh')
 
-/-! ## §5.1  The headline: `gc_safety_bounded` -/
+/-! ## §5.1  The main theorem `gc_safety_bounded` -/
 
-/-- **HEADLINE — bounded-state commit GC (task #102).** Pruning to the clock store
+/-- **Bounded-state commit GC.** Pruning to the clock store
 `clockPrune C₀` (the keep-set payloads, DAG skeleton dropped) over the keep set `Keep'`:
 
 1. **preserves every head run** — the entire `Step3` trace replays, label for label, on the
@@ -482,7 +482,7 @@ is a function of the event set): the future head-pair merge of heads `4, 5` find
 at the clock meet `E(4) ∩ E(5) = {e1,e2} = E(2)`, and the bounded store still carries
 `(S2, {e1,e2})` at version `2`, so the merge reads the correct LCA state with no skeleton.
 
-**FAIL** (the lineage resurrection, stability-vc-note §9.1 item 1): a *compacted* store
+**FAIL** (the lineage resurrection): a *compacted* store
 `Ccoll` where two versions share the event-set clock `{a1,…}` but carry different states
 (`{10}` on the kept lineage, `∅` on the compacted lineage). The clock lookup for the head
 pair `(3,4)` — whose meet clock is exactly that shared clock — returns *both* states, so
@@ -625,12 +625,11 @@ theorem St10_ne_empty : St10 ≠ (∅ : Set Nat) := by
   have : (10 : Nat) ∈ St10 := rfl
   rw [h] at this; exact this
 
-/-- **SPOT FAIL — the lineage resurrection.** For the same head pair `(3,4)` in the
+/-- **SPOT FAIL: the lineage resurrection.** For the same head pair `(3,4)` in the
 compacted store, the clock lookup returns version `1` with state `{10}` AND version `2`
 with state `∅`: identical clock (the meet `Ehead3 ∩ Ehead4`), divergent state. Clock
 identification alone resurrects the dropped `10` (picking `1`) or loses it (picking `2`),
-and the guard `ClockCoherent` is provably false. This is stability-vc-note §9.1 item 1
-machine-checked. -/
+and the guard `ClockCoherent` is provably false. -/
 theorem spot_lineage_resurrection :
     ClockLCA Ccoll 3 4 1 St10 ∧ ClockLCA Ccoll 3 4 2 (∅ : Set Nat) ∧
     St10 ≠ (∅ : Set Nat) ∧ ¬ ClockCoherent Ccoll := by

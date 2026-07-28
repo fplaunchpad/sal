@@ -3,7 +3,7 @@ import Sal.CRDTs.Metatheory.Merge_Linearization_Set
 /-!
 # RA-linearizability from `CoreVCs + JoinPeelVCs`
 
-The end-to-end bridge theorem on the corrected (set-relative)
+The end-to-end bridge theorem on the set-relative
 foundation: for any `D` with `CoreVCs D` and `JoinPeelVCs D`, every
 configuration reachable in the transition system is RA-linearizable.
 
@@ -14,8 +14,8 @@ irreflexivity of `vis` (reachability facts the σ-machinery consumes).
 The Merge case is the Join Lemma (`join_lemma_of_peel`); the Apply
 case is `isCanonicalState_extend`; Def-lin follows via
 `isCanonicalState_lo_witness`. Combined with the discharges of
-`JoinPeelVCs` (commuting class; `AWSet`), this replaces the broken
-`ra_linearizable_of_vcs` route end to end.
+`JoinPeelVCs` (commuting class; `AWSet`), this yields RA-linearizability
+end to end.
 -/
 
 namespace Sal.Emulation
@@ -219,7 +219,7 @@ theorem goodConfig_merge (hJoin : JoinLemma D)
     exact h_same _ _ (h_can r' s' E' hN' hL')
 
 open LabeledTS in
-/-- **The bridge theorem, corrected.** For a CRDT satisfying the core
+/-- **The bridge theorem.** For a CRDT satisfying the core
 bundle and the peel identities, every reachable configuration is
 RA-linearizable. -/
 theorem ra_linearizable_of_core_join

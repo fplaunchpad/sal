@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_M2
 
-/-! # Shesha — honest branch evolution (phase 2c, block 1)
+/-! # Shesha — honest branch evolution
 
 The delivery contract and the invariants it buys. A branch evolves from
 the LCA by honest steps: inserts carry globally fresh nonzero ids (Lamport

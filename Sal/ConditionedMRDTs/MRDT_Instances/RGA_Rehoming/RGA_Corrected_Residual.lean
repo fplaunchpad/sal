@@ -3,27 +3,28 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_EqJoin_NF
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance_NF
 
 /-!
-# The CORRECTED literal-fold residual — union re-enumerability instead of `noopFeasible π₀`
+# The literal-fold merge residual via union re-enumerability
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
-`RGA_HEnum_Refutation` proved the old residual shape unsatisfiable: `noopFeasible π₀` from the LCA
-fold is impossible when an LCA delete is concurrent with a delta insert anchored on the deleted node
-(the LCA-first shape `ρ₀ ++ π₀` pre-applies the kill; no ordering freedom within `π₀` can undo it).
+`RGA_HEnum_Refutation` proves the `noopFeasible π₀` residual shape unsatisfiable: `noopFeasible π₀`
+from the LCA fold is impossible when an LCA delete is concurrent with a delta insert anchored on the
+deleted node (the LCA-first shape `ρ₀ ++ π₀` pre-applies the kill; no ordering freedom within `π₀`
+can undo it).
 
-The corrected residual replaces that clause with the natural induction invariant: **the merged state
+This file's residual replaces that clause with the natural induction invariant: **the merged state
 is reachable by an honest (born-applicable) from-`init` delivery of the union** —
 
 * `RgaEqJoinResidualLit2` — from the three born-applicable deliveries, produce `ρᵤ` enumerating
   `ev₁ ∪ ev₂`, `loOnEq`-respecting, `noopFeasible` from `(init_st (α := α))` (from-init there IS enough freedom:
   rehome-affected inserts can be delivered before their concurrent anchor-kills), whose fold equals
   the merge of the three literal folds.
-* `rga_eqJoin_of_residualLit_NF2` — the corrected residual still discharges `EqJoinLemma3C_NF`
-  verbatim: `ρᵤ` itself is the union's `IsCanonicalStateEqNF` witness (the old assembly's only use of
-  `noopFeasible π₀` was to build that witness as `ρ₀ ++ π₀`).
+* `rga_eqJoin_of_residualLit_NF2` — discharges `EqJoinLemma3C_NF` verbatim, with `ρᵤ` itself as the
+  union's `IsCanonicalStateEqNF` witness, in place of the `ρ₀ ++ π₀` construction that would need
+  `noopFeasible π₀`.
 * `canonFoldOK_concat` — the general two-list composition of the per-event discipline
-  (`CanonFoldOK F s π₁` then `CanonFoldOK` continued from the prefix fold), the engine-side glue the
-  corrected skeleton uses to run `canon_fold` mid-stream from the LCA.
+  (`CanonFoldOK F s π₁` then `CanonFoldOK` continued from the prefix fold), the engine-side glue this
+  residual uses to run `canon_fold` mid-stream from the LCA.
 -/
 
 set_option maxHeartbeats 1000000
@@ -62,11 +63,11 @@ theorem canonFoldOK_concat :
     rw [show (F ++ [o]) ++ rest = F ++ o :: rest from by simp]
     exact h2
 
-/-- **The corrected literal-fold merge residual.**  From the three born-applicable deliveries `ρ₀`
+/-- **The literal-fold merge residual.**  From the three born-applicable deliveries `ρ₀`
 (LCA), `ρ₁`/`ρ₂` (branches), produce a `loOnEq`-respecting, from-`init` `noopFeasible` enumeration
-`ρᵤ` of the UNION whose fold equals the RGA `merge` of the three literal folds.  The refuted
-`noopFeasible π₀ (applySeqR (init_st (α := α)) ρ₀)` clause is GONE — nothing is required to be born-applicable
-at the LCA-first fold. -/
+`ρᵤ` of the UNION whose fold equals the RGA `merge` of the three literal folds.  No
+`noopFeasible π₀ (applySeqR (init_st (α := α)) ρ₀)` clause is required (that shape is unsatisfiable,
+`RGA_HEnum_Refutation`): nothing is required to be born-applicable at the LCA-first fold. -/
 def RgaEqJoinResidualLit2 (W : op_t α → concrete_st α → Prop) : Prop :=
   ∀ (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ : List (op_t α)),
     (∀ {a b c : op_t α}, vis a b → vis b c → vis a c) → (∀ a : op_t α, ¬ vis a a) →
@@ -86,7 +87,7 @@ def RgaEqJoinResidualLit2 (W : op_t α → concrete_st α → Prop) : Prop :=
       eq (merge (applySeqR (init_st (α := α)) ρ₀) (applySeqR (init_st (α := α)) ρ₁) (applySeqR (init_st (α := α)) ρ₂))
         (applySeqR (init_st (α := α)) ρᵤ)
 
-/-- **`EqJoinLemma3C_NF` from the corrected residual.**  Mirror of
+/-- **`EqJoinLemma3C_NF` from the literal-fold residual.**  Mirror of
 `rga_eqJoin_of_residualLit_NF`, with `ρᵤ` itself as the union's `IsCanonicalStateEqNF` witness —
 no `ρ₀ ++ π₀` assembly, no `noopFeasible_append`, no feasibility at the LCA-first fold. -/
 theorem rga_eqJoin_of_residualLit_NF2

@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 
 /-!
-# The re-coding theorem — state-level GC for the embed RGA (#97)
+# The re-coding theorem — state-level GC for the embed RGA
 
 Coordinates are birth constants: a live record carries every dead ancestor's
 codeword forever, so coordinate weight grows with history, not with the live
@@ -11,8 +11,8 @@ coordinates applied to the state at rest and to each incoming op's carried
 anchor prefix (the delta codeword an op mints is never touched).
 
 The hypothesis bundle `StablePrefixMap` is the semantic residue of the
-stable-prefix factorization `ρ̂ c = ρ (stab c) ++ rest c` (design note
-`whiteboard/embed-recoding-note.md`): H2 = `ord` (the re-map preserves the
+stable-prefix factorization `ρ̂ c = ρ (stab c) ++ rest c`
+(`whiteboard/embed-recoding-note.md`): H2 = `ord` (the re-map preserves the
 fold's key comparator on the coordinates at hand), H3 = `ext` (the re-map
 commutes with beyond-cut extensions), and H1 (injectivity) is *derived*
 (`StablePrefixMap.injOn`). The cluster:
@@ -26,16 +26,17 @@ commutes with beyond-cut extensions), and H1 (injectivity) is *derived*
   `eRecode_version_sorted` (the re-coded version is still canonical, no
   re-sort), `eRecode_ra_transport` (the capstone's per-version witness
   survives the re-map);
-* the **finding** `eRecode_ext_global_collapse`: demanding H3 at *every*
-  historical mint collapses the re-map to a constant-prefix prepend, so the
-  whole-history congruence is trivial and the cut-parametric statement is
-  the only nontrivial formulation — re-coding is an epoch operation on
-  states, not a history rewrite.
+* `eRecode_ext_global_collapse`: demanding H3 at *every* historical mint
+  collapses the re-map to a constant-prefix prepend, so the whole-history
+  congruence is trivial and the cut-parametric statement is the only
+  nontrivial formulation — re-coding is an epoch operation on states, not a
+  history rewrite.
 
-Out of scope (deferred, see the note §6): the protocol half choosing a
-common cut (stable delete alone does not preclude in-flight anchors; it
-takes all-heads visibility), and the FugueMax tagged variant (keys occur
-inside tags; the re-map would have to rewrite under the tag structure).
+Out of scope (`whiteboard/embed-recoding-note.md` §6): the protocol half
+choosing a common cut (stable delete alone does not preclude in-flight
+anchors; it takes all-heads visibility), and the FugueMax tagged variant
+(keys occur inside tags; the re-map would have to rewrite under the tag
+structure).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -279,7 +280,7 @@ theorem eRecode_reads_identical {Γ : OrderedPrefixCode}
   rw [eRecode_applySeq F τ s hs hτ]
   exact eRemapSt_query Γ F.f _
 
-/-- **The finding: whole-history extension commuting collapses the re-map.**
+/-- **Whole-history extension commuting collapses the re-map.**
 If H3 is demanded at *every* positive mint (as the whole-history fold
 congruence would require), the re-map is a constant-prefix prepend on every
 chain coordinate, and compacts nothing. This is why T1 is stated from the
@@ -360,7 +361,7 @@ witness's fold, and it reads exactly as the witness fold reads. The
 transport is at the level of states and witnesses: the re-coded history is
 NOT itself an `EHonest` configuration (compacted coordinates are no longer
 birth-chain telescopes), so re-invoking the capstone natively in the new
-epoch is deferred with the protocol half (note §6). -/
+epoch is deferred with the protocol half (`whiteboard/embed-recoding-note.md` §6). -/
 theorem eRecode_ra_transport {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
     {C : Configuration (E Γ α)} (hReach : EReach Γ C) :
     ∀ (v : Version) (s : EState α) (Ev : Set (Op (EOp α))),
@@ -391,7 +392,7 @@ theorem eRecode_ra_transport {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
 
 /-! ## §7  SPOT — the worked compaction, hand-derived (PASS + FAIL shaped)
 
-The note's worked example, unary code. History: `a`(t1)←root, `b`(t2)←a,
+The `whiteboard/embed-recoding-note.md` worked example, unary code. History: `a`(t1)←root, `b`(t2)←a,
 `c`(t3)←b, then delete `a` and `b`. Cut state: one live record
 `(3, 12, 101010)`, two dead codewords baked in. Compaction `gc`: the live
 coordinate collapses to `10`; extensions keep their tails. Beyond the cut:

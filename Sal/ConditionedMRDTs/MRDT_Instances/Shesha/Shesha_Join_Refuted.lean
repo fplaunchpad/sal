@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Cond
 
 /-! # Shesha — the join hook, as originally stated, is FALSE
 
-`shesha_join_at` (the phase-2c formulation: *every* `SheshaHonest`
+`shesha_join_at` (*every* `SheshaHonest`
 configuration admits `JoinLemma3At`) is **refuted** here by an explicit
 honest configuration and an explicit misaligned canonical triple.
 
@@ -22,8 +22,8 @@ branches but absent from the LCA, classifies it as *born twice*, and emits
 it twice: `merge [] [2] [2] = [2,2]` — not the fold of any enumeration.
 
 The queue's direct-witness route never met this because the queue's
-canonical states are unique per event set; Shesha's are not. The corrected
-hook (`Shesha_Cond.lean`) restricts the witness class to **effective**
+canonical states are unique per event set; Shesha's are not. The hook in
+`Shesha_Cond.lean` restricts the witness class to **effective**
 enumerations (every insert applies), which real executions produce and
 which realigns the three slots' live sets.
 
@@ -361,7 +361,7 @@ theorem cx_closed : ∀ a b, (Configuration.core Cx).vis a b →
   rintro a b ⟨rfl, -⟩ - -
   exact Or.inl rfl
 
-/-- **The join hook of phase 2c is FALSE.** An honest configuration exists at
+/-- **The join hook is FALSE.** An honest configuration exists at
 which `JoinLemma3At` fails: the misaligned canonical triple
 `s₀ = [], s₁ = s₂ = [2]` makes `merge` emit `2` twice, and `[2,2]` is not
 the fold of any `loOn`-respecting enumeration of the union. -/

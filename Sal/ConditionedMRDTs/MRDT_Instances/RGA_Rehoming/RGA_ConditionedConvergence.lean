@@ -210,12 +210,12 @@ the reachable-state invariants (`RgaInv`/`id_mono`, imported) transport; but
 swap state, and at a HYBRID fold state (interleaving two enumerations' prefixes) a
 concurrent operand may be staled by concurrent deletes so that NEITHER is
 `accurate` — the same "swaps visit states no execution visits" wall recorded in
-`ConditionedConvergence` §5 and `RGA_BubbleWiring` §3.3, now in the `eq`-route. -/
+`ConditionedConvergence` §5 and `RGA_BubbleWiring` §3.3, here in the `eq`-route. -/
 
 /-- Generic `eq`-convergence engine: strong induction on `π₁.length`, peeling the
 head, bubbling it to the front of `π₂`, and recursing.  Order-agnostic in `lo`.
 
-**The oracle is RESTRICTED (GAP-1 fix).**  Rather than quantifying `pre` over ALL
+**The oracle is RESTRICTED.**  Rather than quantifying `pre` over ALL
 lists — which is unsatisfiable, since several `EqSwap`-discharge conjuncts are
 provably false at junk prefixes (`contains (fold [Ins 0 …]) 0 = false`;
 `Faithful a` off `a`'s enablement) — the oracle is supplied only at the prefixes

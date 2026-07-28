@@ -2,47 +2,44 @@ import Sal.ConditionedMRDTs.Metatheory.Product
 import Sal.ConditionedMRDTs.Metatheory.GenericSafety
 
 /-!
-# The product safety kit — contract and safety lifts for `D₁ ⊗ D₂`
+# The product safety kit: contract and safety lifts for `D₁ ⊗ D₂`
 
-Mechanizes the F5 layer of `Development/COMPOSITION_PENPAPER.md` (obligations
-O12–O15 of its §5.5 plan): the `GenericSafety` predicates compose across the
-binary product `prodSig D₁ D₂`, so the generic per-version safety metatheorem
+The `GenericSafety` predicates compose across the binary product
+`prodSig D₁ D₂`, so the generic per-version safety metatheorem
 `version_inv_on_of_causal_canonical` fires at the product from component
-certificates plus the memo's one-sided conditions.
+certificates plus the one-sided conditions.
 
-Contents, by memo obligation:
+Contents:
 
-* **O12** — the **pinned-extension lemma** (memo §2.4.2):
-  `exists_extension_pinned` / `exists_extension_pinned₂`. For transitive
-  irreflexive `vis` on a finite disjoint union `X = X₁ ⊎ X₂` enumerated by
-  lists, any `vis`-respecting enumeration `ℓ₁` of the first part extends to a
-  `vis`-respecting enumeration `ρ` of the whole with `π₁ ρ = ℓ₁`. Mechanized
-  by **insertion induction** (each second-part element is inserted after all
-  its `vis`-predecessors — `exists_insert_pinned`), not the memo's
-  acyclicity/topological-sort argument; the statement is the memo's.
-  Transitivity + irreflexivity are taken globally (every consumer —
-  `GoodConfig3` — supplies them globally).
-* **O13** — the honesty lifts: `genHonest_prod_iff` (the ∀-enumeration shape
-  is componentwise **iff**, given `CrossPastEnumerable` — the ⇐ direction is
-  `Product.lean`'s `genHonest_prod`), and `honestAppOn_prod` (the ∃-causal-
-  fold shape composes via pinned extension with ONE side pinned; the free
-  side's enumeration is arbitrary because `A⊗` on an `inl` event does not
-  read `.2`). `CrossPastEnumerable` states the memo's enumerability side
-  condition — the opposite-side part of every event's causal past admits an
-  enumeration — `CausalPastEnumerable`-style, an explicit hypothesis per the
+* The **pinned-extension lemma** `exists_extension_pinned` /
+  `exists_extension_pinned₂`. For transitive irreflexive `vis` on a finite
+  disjoint union `X = X₁ ⊎ X₂` enumerated by lists, any `vis`-respecting
+  enumeration `ℓ₁` of the first part extends to a `vis`-respecting
+  enumeration `ρ` of the whole with `π₁ ρ = ℓ₁`. Mechanized by insertion
+  induction: each second-part element is inserted after all its
+  `vis`-predecessors (`exists_insert_pinned`). Transitivity and irreflexivity
+  are taken globally, since every consumer (`GoodConfig3`) supplies them
+  globally.
+* The honesty lifts: `genHonest_prod_iff` (the ∀-enumeration shape is
+  componentwise **iff**, given `CrossPastEnumerable`; the ⇐ direction is
+  `Product.lean`'s `genHonest_prod`), and `honestAppOn_prod` (the
+  ∃-causal-fold shape composes via pinned extension with ONE side pinned; the
+  free side's enumeration is arbitrary because `A⊗` on an `inl` event does
+  not read `.2`). `CrossPastEnumerable` states the enumerability side
+  condition, that the opposite-side part of every event's causal past admits
+  an enumeration, `CausalPastEnumerable`-style, an explicit hypothesis per the
   repo convention (holds in reachable configurations).
-* **O14** — `safetyStepOn_prod` (memo §2.4.3): the fused stability +
-  `Inv`-preservation obligation is componentwise. The untouched component is
-  definitional (`(upd⊗ σS e).2 = σS.2` at an `inl` step); the stepped
-  component's hypotheses project through the raw kit (`projConf₁/₂`,
+* `safetyStepOn_prod`: the fused stability + `Inv`-preservation obligation is
+  componentwise. The untouched component is definitional
+  (`(upd⊗ σS e).2 = σS.2` at an `inl` step); the stepped component's
+  hypotheses project through the raw kit (`projConf₁/₂`,
   `causalFold_proj₁/₂`).
-* **O15** — `causalCanonical_prod_of_one_sided` (memo §2.4.4): the sound
-  **one-sided** repair. The naive two-sided statement is REFUTED — see the
-  theorem's docstring.
+* `causalCanonical_prod_of_one_sided`: the sound **one-sided** repair. The
+  naive two-sided statement is false; see the theorem's docstring.
 
 The composite product safety metatheorem `prod_version_inv_on_of_one_sided`
-is `version_inv_on_of_causal_canonical` at the product with O12–O15 supplying
-its hypotheses (memo §2.4.5).
+is `version_inv_on_of_causal_canonical` at the product with these lemmas
+supplying its hypotheses.
 -/
 
 set_option maxHeartbeats 1000000
@@ -52,11 +49,10 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## §O12a  Pinned insertion — the generic list machinery
+/-! ## Pinned insertion: the generic list machinery
 
-The engine of the memo §2.4.2 lemma, in insertion form: a
-transitive-irreflexive-respecting list admits an insertion point for any new
-element — after all its `R`-predecessors — and the insertion preserves
+A transitive-irreflexive-respecting list admits an insertion point for any
+new element, after all its `R`-predecessors, and the insertion preserves
 `respects`. Iterating over a batch yields the extension; the pinning is that
 insertions never disturb the base list's relative order (recorded as
 `filterMap`-invariance along any function vanishing on the batch). -/
@@ -66,10 +62,11 @@ section PinnedInsertion
 variable {α : Type} {R : α → α → Prop}
 
 /-- **One pinned insertion**: an `R`-respecting list `l` splits as `π ++ τ`
-such that `π ++ x :: τ` still respects `R` — descend past the head while some
-remaining element is an `R`-predecessor of `x`. Transitivity + irreflexivity
-enter exactly once: a kept-prefix element `R`-above `x` would chain with the
-`R`-predecessor of `x` below it into a violation of `l`'s own order. -/
+such that `π ++ x :: τ` still respects `R`: descend past the head while some
+remaining element is an `R`-predecessor of `x`. Transitivity and
+irreflexivity enter exactly once: a kept-prefix element `R`-above `x` would
+chain with the `R`-predecessor of `x` below it into a violation of `l`'s own
+order. -/
 private theorem exists_insert_pinned
     (htrans : ∀ {a b c : α}, R a b → R b c → R a c)
     (hirrefl : ∀ a : α, ¬ R a a) :
@@ -114,7 +111,7 @@ private theorem exists_insert_pinned
 /-- **Iterated pinned insertion**: extend an `R`-respecting base list by any
 batch, one insertion at a time. The result is a permutation of the
 concatenation, respects `R`, and its `filterMap` along any function vanishing
-on the batch equals the base's — the base's relative order is untouched. -/
+on the batch equals the base's, so the base's relative order is untouched. -/
 private theorem exists_extension_of_respects
     (htrans : ∀ {a b c : α}, R a b → R b c → R a c)
     (hirrefl : ∀ a : α, ¬ R a a) :
@@ -143,7 +140,7 @@ private theorem exists_extension_of_respects
 
 end PinnedInsertion
 
-/-! ## §O12b  The pinned-extension lemma at the disjoint union (memo §2.4.2) -/
+/-! ## The pinned-extension lemma at the disjoint union -/
 
 section OpPinnedExtension
 
@@ -180,16 +177,15 @@ theorem listPermOf_glue {X : Set (Op (A₁ ⊕ A₂))}
       · exact Or.inl ⟨a, (h₁.2 a).mpr hx, rfl⟩
       · exact Or.inr ⟨b, (h₂.2 b).mpr hx, rfl⟩
 
-/-- **The pinned-extension lemma** (memo §2.4.2): for `vis` transitive and
-irreflexive on a finite disjoint union `X = X₁ ⊎ X₂` enumerated by lists, any
-`vis`-respecting enumeration `ℓ₁` of the first part extends to a
-`vis`-respecting enumeration `ρ` of the whole with `π₁ ρ = ℓ₁`.
+/-- **The pinned-extension lemma**: for `vis` transitive and irreflexive on a
+finite disjoint union `X = X₁ ⊎ X₂` enumerated by lists, any `vis`-respecting
+enumeration `ℓ₁` of the first part extends to a `vis`-respecting enumeration
+`ρ` of the whole with `π₁ ρ = ℓ₁`.
 
-Mechanized by insertion induction — each second-part element is inserted at
-the earliest position after all its `vis`-predecessors — rather than the
-memo's acyclicity/topological-sort argument; the statement is the memo's.
-(`htrans`/`hirrefl` are taken globally: every consumer — `GoodConfig3` —
-supplies them globally.) -/
+Mechanized by insertion induction: each second-part element is inserted at
+the earliest position after all its `vis`-predecessors. (`htrans`/`hirrefl`
+are taken globally, since every consumer (`GoodConfig3`) supplies them
+globally.) -/
 theorem exists_extension_pinned
     {vis : Op (A₁ ⊕ A₂) → Op (A₁ ⊕ A₂) → Prop}
     (htrans : ∀ {a b c}, vis a b → vis b c → vis a c)
@@ -218,7 +214,7 @@ theorem exists_extension_pinned
     rw [hfm oplOp hnone]
     exact projList₁_map_inlOp ℓ₁
 
-/-- The pinned-extension lemma, second part pinned (`π₂ ρ = ℓ₂`) — the dual
+/-- The pinned-extension lemma, second part pinned (`π₂ ρ = ℓ₂`): the dual
 consumed at `inr` events. -/
 theorem exists_extension_pinned₂
     {vis : Op (A₁ ⊕ A₂) → Op (A₁ ⊕ A₂) → Prop}
@@ -250,7 +246,8 @@ theorem exists_extension_pinned₂
 /-- `Pairwise` over a list transfers back from `Pairwise` over its `π₁`-image:
 a pairwise fact about the projected sublist yields, on the full list, the
 tagged form guarded by both elements being `inl` (the reverse of the
-`respects_projList₁` direction; consumed by O15's `loOn` clause). -/
+`respects_projList₁` direction; consumed by the `loOn` clause of
+`causalCanonical_prod_of_one_sided`). -/
 private theorem pairwise_of_pairwise_projList₁
     {ρ : List (Op (A₁ ⊕ A₂))} {P : Op A₁ → Op A₁ → Prop}
     (h : (projList₁ ρ).Pairwise P) :
@@ -283,10 +280,10 @@ variable {D₁ D₂ : ConditionedMRDTSig}
 
 The two identities every lift below reads: the component projection of a
 product causal past is the projected configuration's causal past
-(`evRes₁_past`/`evRes₂_past` — `vis`/`events` of `projConf₁/₂` are
-restrictions), and causal folds project (`causalFold_proj₁/₂`, memo §2.1.5 —
-a sublist of a vis-respecting list vis-respects, since component `vis` edges
-are product `vis` edges). -/
+(`evRes₁_past`/`evRes₂_past`, since `vis`/`events` of `projConf₁/₂` are
+restrictions), and causal folds project (`causalFold_proj₁/₂`: a sublist of a
+vis-respecting list vis-respects, since component `vis` edges are product
+`vis` edges). -/
 
 theorem evRes₁_past {C : Configuration (prodSig D₁ D₂)} (a : Op D₁.AppOp) :
     evRes₁ {e' ∈ C.events | C.vis e' (inlOp a)}
@@ -298,9 +295,9 @@ theorem evRes₂_past {C : Configuration (prodSig D₁ D₂)} (b : Op D₂.AppOp
       = {e' ∈ (projConf₂ C).events | (projConf₂ C).vis e' b} :=
   Set.ext fun _ => and_congr mem_projConf₂_events.symm Iff.rfl
 
-/-- Causal folds project onto component 1 (memo §2.1.5): the witness is the
-`π₁`-sublist — `listPermOf` restricts, `respects vis` restricts (component
-edges are product edges), and the fold is F1. -/
+/-- Causal folds project onto component 1: the witness is the `π₁`-sublist.
+`listPermOf` restricts, `respects vis` restricts (component edges are product
+edges), and the fold is `applySeq_prod`. -/
 theorem causalFold_proj₁
     {Cb : Sal.Emulation.Configuration (prodSig D₁ D₂).toCRDTSig}
     {S : Set (Op (D₁.AppOp ⊕ D₂.AppOp))} {σ : (prodSig D₁ D₂).State}
@@ -336,13 +333,13 @@ theorem causalFold_proj₂
     exact fun hv => hxy hv
   · exact congrArg Prod.snd ((applySeq_prod (prodSig D₁ D₂).init ρ).symm.trans hf)
 
-/-! ## §O13  The honesty lifts (memo §2.4.1–§2.4.2) -/
+/-! ## The honesty lifts -/
 
-/-- **The enumerability side condition** (memo §2.4.1 (⇒) / §2.4.2): the
-opposite-side part of every event's causal past admits an enumeration.
-`CausalPastEnumerable`-style: holds in reachable configurations, whose event
-sets are finite, but the repo has no generic finiteness result for reachable
-configurations' event sets, so it is kept as an explicit hypothesis. -/
+/-- **The enumerability side condition**: the opposite-side part of every
+event's causal past admits an enumeration. `CausalPastEnumerable`-style:
+holds in reachable configurations, whose event sets are finite, but the repo
+has no generic finiteness result for reachable configurations' event sets, so
+it is kept as an explicit hypothesis. -/
 def CrossPastEnumerable (C : Configuration (prodSig D₁ D₂)) : Prop :=
   (∀ a : Op D₁.AppOp, inlOp a ∈ C.events →
     ∃ π : List (Op D₂.AppOp),
@@ -351,10 +348,10 @@ def CrossPastEnumerable (C : Configuration (prodSig D₁ D₂)) : Prop :=
     ∃ π : List (Op D₁.AppOp),
       listPermOf π (evRes₁ {e' ∈ C.events | C.vis e' (inrOp b)}))
 
-/-- **`GenHonest` is componentwise, iff** (memo §2.4.1): the (⇐) direction is
-free (`genHonest_prod`, `Product.lean`); the (⇒) direction glues each
-component enumeration of a past with an arbitrary enumeration of its
-opposite-side part — this is where `CrossPastEnumerable` is load-bearing. -/
+/-- **`GenHonest` is componentwise, iff**: the (⇐) direction is free
+(`genHonest_prod`, `Product.lean`); the (⇒) direction glues each component
+enumeration of a past with an arbitrary enumeration of its opposite-side
+part, which is where `CrossPastEnumerable` is load-bearing. -/
 theorem genHonest_prod_iff
     {P₁ : Op D₁.AppOp → D₁.State → Prop} {P₂ : Op D₂.AppOp → D₂.State → Prop}
     {C : Configuration (prodSig D₁ D₂)}
@@ -391,14 +388,13 @@ theorem genHonest_prod_iff
   · rintro ⟨hG₁, hG₂⟩
     exact genHonest_prod hG₁ hG₂
 
-/-- **`HonestAppOn` composes** (memo §2.4.2 corollary): component `HonestAppOn`
-on both projections + enumerability of the opposite-side parts of causal
-pasts + componentwise `A⊗` give `HonestAppOn` of the product. For an `inl`
-event, component honesty hands a causal enumeration `ρ¹` of `past₁(e)` whose
-fold satisfies `A₁`; pin it and extend over `past⊗(e)` (pinned extension —
-only ONE side is pinned: the other side's enumeration is free because
-`A⊗ (ι₁ e)` does not read `.2`), and F1 reads the pinned component fold off
-the product fold. -/
+/-- **`HonestAppOn` composes**: component `HonestAppOn` on both projections +
+enumerability of the opposite-side parts of causal pasts + componentwise `A⊗`
+give `HonestAppOn` of the product. For an `inl` event, component honesty
+hands a causal enumeration `ρ¹` of `past₁(e)` whose fold satisfies `A₁`; pin
+it and extend over `past⊗(e)` (pinned extension, only ONE side is pinned: the
+other side's enumeration is free because `A⊗ (ι₁ e)` does not read `.2`), and
+`applySeq_prod` reads the pinned component fold off the product fold. -/
 theorem honestAppOn_prod
     {A₁ : Op D₁.AppOp → D₁.State → Prop} {A₂ : Op D₂.AppOp → D₂.State → Prop}
     {C : Configuration (prodSig D₁ D₂)}
@@ -444,9 +440,9 @@ theorem honestAppOn_prod
     rw [hfold]
     exact hA
 
-/-! ## §O14  `SafetyStepOn` is componentwise (memo §2.4.3) -/
+/-! ## `SafetyStepOn` is componentwise -/
 
-/-- The componentwise product invariant `I₁ ×ᵖ I₂` (memo §2.4.3). -/
+/-- The componentwise product invariant `I₁ ×ᵖ I₂`. -/
 def prodInv (I₁ : D₁.State → Prop) (I₂ : D₂.State → Prop) :
     (prodSig D₁ D₂).State → Prop :=
   fun s => I₁ s.1 ∧ I₂ s.2
@@ -455,13 +451,13 @@ theorem prodInv_iff (I₁ : D₁.State → Prop) (I₂ : D₂.State → Prop)
     (s : (prodSig D₁ D₂).State) :
     prodInv I₁ I₂ s ↔ I₁ s.1 ∧ I₂ s.2 := Iff.rfl
 
-/-- **`SafetyStepOn` composes** (memo §2.4.3): at an `inl` step the untouched
-component is definitional (`(upd⊗ σS e).2 = σS.2`, so `I₂` carries over
-verbatim) and every stepped-component hypothesis projects — memberships and
-closures through the preimage, future-freeness and `past ⊆ S` by
-contrapositives through `ι₁`, causal folds by `causalFold_proj₁` with
-`(past⊗(ι₁ e))↾₁ = past₁(e)`. The component obligation is applied at
-`projConf₁ C` — configuration-level, no reachability (memo §2.1.4). -/
+/-- **`SafetyStepOn` composes**: at an `inl` step the untouched component is
+definitional (`(upd⊗ σS e).2 = σS.2`, so `I₂` carries over verbatim) and
+every stepped-component hypothesis projects: memberships and closures through
+the preimage, future-freeness and `past ⊆ S` by contrapositives through `ι₁`,
+causal folds by `causalFold_proj₁` with `(past⊗(ι₁ e))↾₁ = past₁(e)`. The
+component obligation is applied at `projConf₁ C`, configuration-level, with no
+reachability. -/
 theorem safetyStepOn_prod {I₁ : D₁.State → Prop}
     {A₁ : Op D₁.AppOp → D₁.State → Prop} {I₂ : D₂.State → Prop}
     {A₂ : Op D₂.AppOp → D₂.State → Prop}
@@ -510,26 +506,25 @@ theorem safetyStepOn_prod {I₁ : D₁.State → Prop}
     rw [prodSig_update_inr]
     exact ⟨hI.1, hstep⟩
 
-/-! ## §O15  `CausalCanonical`, one-sided (memo §2.4.4) -/
+/-! ## `CausalCanonical`, one-sided -/
 
-/-- **`CausalCanonical` of the product, one-sided pinning** (memo §2.4.4):
+/-- **`CausalCanonical` of the product, one-sided pinning**:
 `GoodConfig3 C` + `CausalCanonical (projConf₁ C)` + `D₂` all-comm with
 `rc₂ ≡ Either` give `CausalCanonical C`. Pin component 1's causal witness and
 extend by pinned extension; `loOn⊗` edges are `inl`/`inl` only (mixed dead by
-F3, `inr`/`inr` dead by all-comm + `Either`), so the extension respects
-`loOn⊗` through the pinned `π₁`-order; the free side's fold agrees with the
-projected canonical fold by all-comm permutation-invariance
+localization, `inr`/`inr` dead by all-comm + `Either`), so the extension
+respects `loOn⊗` through the pinned `π₁`-order; the free side's fold agrees
+with the projected canonical fold by all-comm permutation-invariance
 (`perm_ext_iff_of_nodup` + `applySeq_perm_of_all_comm`), the canonical fold
 supplied by `GoodConfig3.canonical` at the product.
 
-**The naive two-sided statement is REFUTED** (memo §2.4.4, execution checked
-realizable in §5.3) — do not pose it: with 4 events, `vis|E = {c→a, b→d}`
-(`a, b` component 1; `c, d` component 2), the component causal witnesses
-`ℓ₁ = [a, b]` and `ℓ₂ = [d, c]` are each legitimate, but a joint extension
-needs `a<b`, `d<c`, `c<a`, `b<d` — the cycle `a<b<d<c<a`. No product causal
-enumeration extends both; the failure is the two-sided pinning itself. When
-both components are rc-nontrivial/order-sensitive, product `CausalCanonical`
-inherits the open status of OQ8 — composition is neutral there. -/
+**The naive two-sided statement is false**: with 4 events,
+`vis|E = {c→a, b→d}` (`a, b` component 1; `c, d` component 2), the component
+causal witnesses `ℓ₁ = [a, b]` and `ℓ₂ = [d, c]` are each legitimate, but a
+joint extension needs `a<b`, `d<c`, `c<a`, `b<d`, the cycle `a<b<d<c<a`. No
+product causal enumeration extends both; the failure is the two-sided pinning
+itself. When both components are rc-nontrivial/order-sensitive, product
+`CausalCanonical` is not decided by composition alone. -/
 theorem causalCanonical_prod_of_one_sided
     {C : Configuration (prodSig D₁ D₂)} (hG : GoodConfig3 C)
     (hCC₁ : CausalCanonical (projConf₁ C))
@@ -550,7 +545,7 @@ theorem causalCanonical_prod_of_one_sided
     (fun {x y z} h1 h2 => hG.vis_trans h1 h2) hG.vis_irrefl
     hp₁ hvis₁' (listPermOf_projList₂ hpc)
   refine ⟨ρ, hp, hvisR, ?_, ?_⟩
-  · -- `loOn⊗` respect: `inl`/`inl` via the pinned `π₁`-order and the F3
+  · -- `loOn⊗` respect: `inl`/`inl` via the pinned `π₁`-order and the
     -- localization; mixed and `inr`/`inr` edges are dead outright.
     have hloρ : (projList₁ ρ).Pairwise (fun x y =>
         ¬ loOn (Configuration.core (projConf₁ C)) (evRes₁ E) y x) := by
@@ -588,14 +583,15 @@ theorem causalCanonical_prod_of_one_sided
       _ = (s.1, s.2) := by rw [hπ₁, hf₁, hfold₂]
       _ = s := rfl
 
-/-! ## The composite product safety metatheorem (memo §2.4.5) -/
+/-! ## The composite product safety metatheorem -/
 
 /-- **Product safety, end to end**: `version_inv_on_of_causal_canonical` at
-the product, with O12–O15 supplying its hypotheses — the product invariant
-`I₁ ×ᵖ I₂` holds at every version of `C` from the two component certificates
-(`SafetyStepOn`, `HonestAppOn` at the projections) plus the one-sided
-conditions (component 1 causally canonical at the projection; component 2
-all-comm with `rc ≡ Either`) and the enumerability side condition. -/
+the product, with the lemmas above supplying its hypotheses. The product
+invariant `I₁ ×ᵖ I₂` holds at every version of `C` from the two component
+certificates (`SafetyStepOn`, `HonestAppOn` at the projections) plus the
+one-sided conditions (component 1 causally canonical at the projection;
+component 2 all-comm with `rc ≡ Either`) and the enumerability side
+condition. -/
 theorem prod_version_inv_on_of_one_sided
     {I₁ : D₁.State → Prop} {A₁ : Op D₁.AppOp → D₁.State → Prop}
     {I₂ : D₂.State → Prop} {A₂ : Op D₂.AppOp → D₂.State → Prop}

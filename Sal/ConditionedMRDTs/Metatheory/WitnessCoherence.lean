@@ -618,8 +618,7 @@ theorem goodConfigWC_of_genHonest_reach {hInit : D.Inv D.init}
 
 /-- **The conditioned metatheorem, coherent-witness form**: per-version
 RA-linearizability at every `GenHonest`-honestly reachable configuration,
-from the ancestry-aligned join. This is the corrected replacement for
-`ra_linearizable3_of_genHonest_reachW` — sound even for datatypes whose
+from the ancestry-aligned join. Sound even for datatypes whose
 `loOn`-free choices survive in the state (where the plain `W`-join is
 refutable, `Shesha_Presplice_Refuted.lean`). -/
 theorem ra_linearizable3_of_genHonest_reachWC {hInit : D.Inv D.init}

@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Hook_Facts
 
-/-! # Shesha — the witness assembly (phase 2e, piece ii-interface)
+/-! # Shesha — the witness assembly
 
 Given a **pre-splice forest** for the union of two branches' events — a
 WF anchored forest whose rows are exactly the union's inserts, ordered
@@ -466,7 +466,7 @@ theorem presplice_canonical_wit {C : Configuration SheshaD}
         exact absurd ⟨t, r, hdu ▸ (hpermu.2 _).mp (mem_delBlock.mp he).1⟩ hd
 
 open Classical in
-/-- **The witness assembly**, existential form (the phase-2e statement). -/
+/-- **The witness assembly**, existential form. -/
 theorem presplice_canonical {C : Configuration SheshaD}
     {E : Set (Op SAppOp)} {ρu : List (Op SAppOp)}
     (hH : SheshaHonest C)

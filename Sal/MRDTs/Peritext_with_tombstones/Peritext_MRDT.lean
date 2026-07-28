@@ -72,7 +72,7 @@ abbrev CharRec := OpId × OpId × ℕ
   * `chars`   : `set CharRec` — every `Insert` stakes a `(id, after, ch)`.
   * `removed` : `set OpId`    — tombstones on char ids.
   * `marks`   : `set AnchorAttachment` — one entry per (mark op, anchor
-                side); flat-set representation per the CRDT refactor. -/
+                side); flat-set representation. -/
 @[simp] abbrev concrete_st :=
   set CharRec × set OpId × set AnchorAttachment
 

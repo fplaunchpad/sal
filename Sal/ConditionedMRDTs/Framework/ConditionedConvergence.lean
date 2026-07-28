@@ -3,89 +3,79 @@ import Sal.ConditionedMRDTs.Framework.LoOnC
 import Sal.ConditionedMRDTs.Framework.NoopFeasible
 
 /-!
-# The general conditioned convergence theorem (task #9, stage 6)
+# The general conditioned convergence theorem
 
-This file generalizes the *unconditioned* convergence machinery of
+This file generalizes the unconditioned convergence machinery of
 `Sigma_LoOn3.lean` (`convergence_on_u`, built on `loOn` + `UpdateVCs`,
-`CRDTSig.commutes`-based) to the **conditioned** update layer over an arbitrary
-`ConditionedMRDTSig D`, using the feasibility notion validated in
-`UpdateFeasibility_Gate.lean`: the applicability-aware order `loOnA` plus
-no-op-feasible enumerations `noopFeasible`.
+`CRDTSig.commutes`-based) to the conditioned update layer over an arbitrary
+`ConditionedMRDTSig D`, using the applicability-aware order `loOnA` together
+with the no-op-feasible enumeration predicate `noopFeasible`.
 
-Everything here is over an ABSTRACT `D : ConditionedMRDTSig`; the RGA appears
-only in §6's instantiation sketch.  No existing file is modified.
+Everything here is over an abstract `D : ConditionedMRDTSig`.
 
-## The headline result and the sharp decomposition it produces
+## The headline result and its decomposition
 
-The main theorem `conditioned_convergence_on` (§3) is CLOSED (0 sorries,
-kernel-clean).  The route by which it closes is itself the central finding:
+The main theorem `conditioned_convergence_on` (§3) factors the conditioned
+convergence problem into two independent halves:
 
-> **Order-repair is complete; the residue is purely the semantic swap VCs.**
+> **Order-repair is complete; the residue is the semantic swap VCs.**
 
-Concretely, the conditioned problem factors into two independent halves:
-
-* **(order half — SOLVED here)** `loOnA` exactly repairs the linearization
-  edges that conditioning (`commutes ↦ commutesOn`) drops.  Under a *single*
-  order VC `dependency_covers_vacuity` — "a vis-edge that `commutesOn` makes
-  vacuous is a generation dependency" — we prove the pointwise inclusion
-  `loOn C ev ⊆ loOnA D C ev` (`loOn_imp_loOnA`), hence
-  `respects π (loOnA) → respects π (loOn)` (`respects_loOn_of_loOnA`).  This is
-  the complete, closed answer to "which edges must `loOnA` add back": exactly
-  the ones `dependency_covers_vacuity` names.
-* **(semantic half — the residue)** With the order repaired, convergence
-  *reduces verbatim* to the already-proved unconditioned `convergence_on_u`,
-  which discharges the actual state-algebra via the `commutes`-based
-  `UpdateVCs`.
+* **(order half)** `loOnA` repairs exactly the linearization edges that
+  conditioning (`commutes ↦ commutesOn`) drops.  Under a single order VC
+  `dependency_covers_vacuity` ("a vis-edge that `commutesOn` makes vacuous is a
+  generation dependency") the pointwise inclusion `loOn C ev ⊆ loOnA D C ev`
+  holds (`loOn_imp_loOnA`), hence `respects π (loOnA) → respects π (loOn)`
+  (`respects_loOn_of_loOnA`).  The edges `loOnA` adds back are exactly the ones
+  `dependency_covers_vacuity` names.
+* **(semantic half)** With the order repaired, convergence reduces to the
+  unconditioned `convergence_on_u`, which discharges the state-algebra via the
+  `commutes`-based `UpdateVCs`.
 
 So `conditioned_convergence_on` is stated under `UpdateVCs D.toCRDTSig`
-(unconditioned semantic VCs) **+** `dependency_covers_vacuity` (the order VC).
+(unconditioned semantic VCs) together with `dependency_covers_vacuity` (the
+order VC).
 
-### Two findings that fall out of this route
+Two consequences of this route:
 
-1. **`noopFeasible` is NOT needed for convergence under the unconditioned
-   semantic VCs.**  The theorem carries the two `noopFeasible` hypotheses (to
-   match the stage-6 signature) but never consults them — the reduction to
-   `convergence_on_u` closes without them.  `noopFeasible`'s job is
-   *satisfiability* (existence of admissible enumerations for reachable
-   redundant-concurrent versions, `UpdateFeasibility_Gate.lean`) and it becomes
-   load-bearing for *convergence* only on the genuinely-conditioned route
-   below, where the semantic swap must be justified by `commutesOn` at
-   *applicable* states rather than by `commutes` everywhere.
+1. `noopFeasible` is not needed for convergence under the unconditioned
+   semantic VCs.  The theorem carries the two `noopFeasible` hypotheses but
+   never consults them: the reduction to `convergence_on_u` closes without
+   them.  `noopFeasible`'s role is satisfiability (existence of admissible
+   enumerations for reachable redundant-concurrent versions); it becomes
+   load-bearing for convergence only on the genuinely-conditioned route (§4-5),
+   where the semantic swap must be justified by `commutesOn` at applicable
+   states rather than by `commutes` everywhere.
 
-2. **The genuinely-conditioned route (`commutesOn`-only VCs, §4–5) is
-   OBSTRUCTED, and the obstruction is now precisely located** (§5): it is NOT
-   in the swap step (the conditioned swap `applySeq_swap_loOnA_incomparable_C`
-   CLOSES given `Inv`+`applicable` of the two events at the swap state), but in
-   the *bubble*'s discharge of those side conditions.  The bubble swaps events
-   at **hybrid** fold states `applySeq init (peeled-π₁-heads ++ σ-prefix)` that
-   neither source enumeration visits, so `noopFeasible π₁` / `noopFeasible π₂`
-   (which control only π₁-prefix and π₂-prefix states) do not supply
-   applicability there.  This is exactly the "swaps visit states no execution
-   visits" obstruction that `G2_Transport_Probe.lean` flagged, now pinned to a
-   single side condition of a single lemma.
+2. The genuinely-conditioned route (`commutesOn`-only VCs, §4-5) is obstructed,
+   and the obstruction is located (§5): it is not in the swap step (the
+   conditioned swap `applySeq_swap_loOnA_incomparable_C` closes given
+   `Inv`+`applicable` of the two events at the swap state), but in the bubble's
+   discharge of those side conditions.  The bubble swaps events at hybrid fold
+   states `applySeq init (peeled-π₁-heads ++ σ-prefix)` that neither source
+   enumeration visits, so `noopFeasible π₁` / `noopFeasible π₂` (which control
+   only π₁-prefix and π₂-prefix states) do not supply applicability there.  The
+   swaps visit states no single execution visits.
 
-## Why the RGA needs the residue (and thus the obstruction bites)
+## Why the RGA needs the semantic half (and thus the obstruction bites)
 
 For the RGA `rc = Either` and its commutation lemmas conclude only the
-*observational* `eq`, not Lean `Eq` (the hosting gap noted in
-`G2_Transport_Probe.lean`).  So the RGA does **not** satisfy `UpdateVCs`
+observational `eq`, not Lean `Eq`.  So the RGA does not satisfy `UpdateVCs`
 (`commutes`-based) at the Lean-`Eq` level, and the headline reduction does not
-fire for it.  The order VC `dependency_covers_vacuity`, by contrast, IS
-dischargeable for the RGA — §6 proves the witnessing instance
-(`rga_appliesDependsOn_del_ins`).  Hence the RGA is precisely the case that
-forces the `commutesOn`-only route and hits the located obstruction.
+fire for it.  The order VC `dependency_covers_vacuity`, by contrast, is
+dischargeable for the RGA (the witnessing instance is
+`rga_appliesDependsOn_del_ins`).  So the RGA forces the `commutesOn`-only route
+and meets the located obstruction.
 
 ## Contents
 
-* §0  Generic definitions: `appliesDependsOn` (generic, semantic), `loOnA`,
-  `appOrNoop`.  `noopFeasible` is REUSED from `UpdateFeasibility_Gate.lean`.
-* §1  `commutes_imp_commutesOn`, `commutesOn_symm` — free structural lemmas.
+* §0  Generic definitions: `appliesDependsOn` (semantic), `loOnA`, `appOrNoop`.
+* §1  `commutes_imp_commutesOn`, `commutesOn_symm`: structural lemmas.
 * §2  The order-repair scaffolding: `loOn_imp_loOnA`, `respects_loOn_of_loOnA`.
-* §3  **`conditioned_convergence_on`** — the closed headline (reduction).
+* §3  `conditioned_convergence_on`: the headline reduction.
 * §4  `UpdateVCsC` (the `commutesOn`-based target bundle) and the conditioned
-  swap primitives, which CLOSE given applicability at the swap state.
-* §5  The bubble frontier — the located obstruction, as commented goal-states.
-* §6  RGA instantiation sketch.
+  swap primitives, which close given applicability at the swap state.
+* §5  The bubble frontier: the located obstruction, as commented goal-states.
+* §6  RGA instantiation.
 * §7  Axiom audit.
 -/
 
@@ -101,12 +91,11 @@ open Classical
 
 /-! ## §0  Generic definitions
 
-`noopFeasible D π s` is reused verbatim from `UpdateFeasibility_Gate.lean`:
-every prefix-fold of `π` keeps the next op `D.applicable` OR a Lean-`Eq`
-identity at that state.
+`noopFeasible D π s`: every prefix-fold of `π` keeps the next op `D.applicable`
+OR a Lean-`Eq` identity at that state.
 
-`loOnC D C ev` is reused from `G2_Transport_Probe.lean`: the set-relative
-conditioned order (`Sal.Emulation.loOn` with `commutes ↦ commutesOn`). -/
+`loOnC D C ev`: the set-relative conditioned order (`Sal.Emulation.loOn` with
+`commutes ↦ commutesOn`). -/
 
 /-- **Generic generation dependency.**  `appliesDependsOn D e₂ e₁` : "applying
 `e₁` can change whether `e₂` is applicable" — there is a state where `e₂`'s
@@ -115,11 +104,10 @@ applicability differs before vs. after `e₁`.
 This is the `ConditionedMRDTSig`-level generalization of the RGA-syntactic
 `Sal.ConditionedMRDTs.G2AppAware.appliesDependsOn` (`e₂` names `e₁`'s Ins-timestamp).
 The syntactic form is a *sufficient* condition for this semantic one; the
-semantic form is what the order VC `dependency_covers_vacuity` actually needs,
-and it is provable for the RGA counterexample pair (§6,
-`rga_appliesDependsOn_del_ins`).  Chosen because it is exactly the negation of
-"`e₁` never affects `e₂`'s applicability", which is what a vacuous `commutesOn`
-edge witnesses. -/
+semantic form is what the order VC `dependency_covers_vacuity` needs, and it is
+provable for the RGA counterexample pair (`rga_appliesDependsOn_del_ins`).  It
+is exactly the negation of "`e₁` never affects `e₂`'s applicability", which is
+what a vacuous `commutesOn` edge witnesses. -/
 def appliesDependsOn (D : ConditionedMRDTSig) (e₂ e₁ : Op D.AppOp) : Prop :=
   ∃ s, D.applicable e₂ s ≠ D.applicable e₂ (D.update s e₁)
 
@@ -158,8 +146,8 @@ The single order VC:
       ∀ a b, C.vis a b → ¬ commutes a b → commutesOn a b → appliesDependsOn b a
 
 reads: "if a vis-edge `a → b` fails to commute unconditionally but `commutesOn`
-makes it vacuous, then `b`'s applicability depends on `a`" — precisely the
-edges conditioning drops from `loOn` are the ones `loOnA` re-adds.  With it,
+makes it vacuous, then `b`'s applicability depends on `a`".  The edges
+conditioning drops from `loOn` are exactly the ones `loOnA` re-adds.  With it,
 `loOn ⊆ loOnA` pointwise. -/
 
 /-- **The order-repair inclusion.**  Every `loOn C ev`-edge is a `loOnA`-edge.
@@ -197,13 +185,13 @@ theorem respects_loOn_of_loOnA (D : ConditionedMRDTSig) (C : Sal.Emulation.Confi
     respects π (loOn C ev) :=
   h.imp (fun hn hlo => hn (loOn_imp_loOnA D C ev hdep hlo))
 
-/-! ## §3  The headline: general conditioned convergence
+/-! ## §3  General conditioned convergence
 
 Two `loOnA`-respecting, `noopFeasible` enumerations of a set `ev` fold from
 `D.init` to the same state.  Proof: `respects_loOn_of_loOnA` turns both into
 `loOn`-respecting enumerations, and the unconditioned `convergence_on_u`
-finishes.  The `noopFeasible` hypotheses are carried (stage-6 signature) but
-UNUSED — recorded as finding (1) in the header. -/
+finishes.  The `noopFeasible` hypotheses are carried but unused, as noted in
+the header. -/
 theorem conditioned_convergence_on
     (D : ConditionedMRDTSig)
     (hU : UpdateVCs D.toCRDTSig)
@@ -222,12 +210,12 @@ theorem conditioned_convergence_on
 
 /-! ## §4  The `commutesOn`-only target bundle and the conditioned swap
 
-This is the genuinely-conditioned route the plan asks for: convergence using
-ONLY `commutesOn` in the semantic VCs (so that `Inv`-nontrivial MRDTs like the
-RGA, which lack the `commutes`-based `UpdateVCs`, can instantiate it).  The
-bundle mirrors `UpdateVCs` with `commutes ↦ commutesOn`; `cond_comm_liftC`
-additionally carries the base-state invariant `D.Inv s` (the minimal side
-condition under which its per-MRDT discharge is expected to hold). -/
+The genuinely-conditioned route: convergence using only `commutesOn` in the
+semantic VCs, so that `Inv`-nontrivial MRDTs like the RGA, which lack the
+`commutes`-based `UpdateVCs`, can instantiate it.  The bundle mirrors
+`UpdateVCs` with `commutes ↦ commutesOn`; `cond_comm_liftC` additionally
+carries the base-state invariant `D.Inv s` (the minimal side condition under
+which its per-MRDT discharge holds). -/
 
 /-- The `commutesOn` analogue of `UpdateVCs`.  Its per-MRDT discharge is a
 separate obligation (e.g. the RGA's observational commutation lemmas); here it
@@ -257,7 +245,7 @@ structure UpdateVCsC (D : ConditionedMRDTSig) : Prop where
 
 /-- **Direct conditioned swap.**  Two events that `commutesOn` and are both
 `applicable` at an `Inv` fold state swap.  This is the `commutesOn` analogue of
-`applySeq_swap_commute`; it fires `commutesOn` at exactly one state — the swap
+`applySeq_swap_commute`; it fires `commutesOn` at exactly one state, the swap
 state `applySeq s pfx`. -/
 theorem applySeq_swap_commutesOn (D : ConditionedMRDTSig) {a b : Op D.AppOp}
     (pfx sfx : List (Op D.AppOp)) (s : D.State)
@@ -307,14 +295,13 @@ theorem applySeq_swap_via_cond_comm_liftC (D : ConditionedMRDTSig) (hC : UpdateV
 
 /-- **The conditioned incomparable-swap lemma.**  The `commutesOn` analogue of
 `applySeq_swap_loOn_incomparable_u`.  Two `loOnA`-incomparable adjacent events
-swap, GIVEN they are `Inv`+`applicable` at the swap state `applySeq s pfx` and
-the conditioned overwriter form `h_ov`.
-
-This CLOSES.  Its three branches mirror the unconditioned proof:
-* `commutesOn a b`  → `applySeq_swap_commutesOn` (uses `hInv`, `ha`, `hb`);
+swap, given they are `Inv`+`applicable` at the swap state `applySeq s pfx` and
+the conditioned overwriter form `h_ov`.  Its three branches mirror the
+unconditioned proof:
+* `commutesOn a b` → `applySeq_swap_commutesOn` (uses `hInv`, `ha`, `hb`);
 * `¬commutesOn`, same replica → `vis_total_same_replica` gives a vis-edge which,
-  by incomparability, is impossible (using `dependency_covers_vacuity` is NOT
-  even needed here — a bare `loOnC` vis-edge already contradicts);
+  by incomparability, is impossible (a bare `loOnC` vis-edge already
+  contradicts, so `dependency_covers_vacuity` is not needed here);
 * `¬commutesOn`, different replica → `h_ov` + `applySeq_swap_via_cond_comm_liftC`.
 
 The applicability premises `hInv`, `ha`, `hb` at the swap state are exactly the
@@ -356,53 +343,52 @@ theorem applySeq_swap_loOnA_incomparable_C (D : ConditionedMRDTSig) (hC : Update
         exact (applySeq_swap_via_cond_comm_liftC D hC h_dist_ba h_dae h_dbe
           h_rc_ba h_nc_ae pfx α β s hInv).symm
 
-/-! ## §5  The bubble frontier — the located obstruction
+/-! ## §5  The bubble frontier and the obstruction
 
 The unconditioned bubble `applySeq_bubble_to_front_loOn_u` (`Sigma_LoOn3.lean`)
 walks a peeled event `e` leftward through `σ`, calling
 `applySeq_swap_loOn_incomparable_u` at each step to swap `e` past the σ-element
 `y` at the fold state `applySeq s pfx` where `pfx` is a σ-prefix.  In
 `convergence_on_u`, the outer accumulator `s` is `applySeq D.init (peeled heads
-of π₁)`, so each swap fires at the **hybrid** state
+of π₁)`, so each swap fires at the hybrid state
 
     applySeq D.init  (peeled-π₁-heads  ++  σ-prefix)
 
 with `peeled-π₁-heads` a prefix of the `loOnA`-respecting `π₁` and `σ-prefix` a
 prefix of `σ ⊆ π₂`.
 
-To run the CONDITIONED bubble with `applySeq_swap_loOnA_incomparable_C` we must
+To run the conditioned bubble with `applySeq_swap_loOnA_incomparable_C` we must
 supply, at every such hybrid state, its three applicability side conditions:
 
     hInv : D.Inv       (applySeq D.init (peeled-π₁-heads ++ σ-prefix))
     ha   : D.applicable e  (applySeq D.init (peeled-π₁-heads ++ σ-prefix))
     hb   : D.applicable y  (applySeq D.init (peeled-π₁-heads ++ σ-prefix))
 
-**`hInv` is DISCHARGEABLE** (obligation (A) of `G2_Transport_Probe.lean`): it is
-`Inv_transport_generic` applied to the concatenated list — provided every op
-satisfies the op-only invariant-step condition.  Generically this is the field
+`hInv` is dischargeable: it is `Inv_transport_generic` applied to the
+concatenated list, provided every op satisfies the op-only invariant-step
+condition.  Generically this is the field
 
     hInvStep : ∀ s o, o ∈ ev → D.Inv s → D.Inv (D.update s o)
 
-(the RGA's `RgaInv_do_opOK` under `opOK`, extracted once at generation by
+(the RGA's `RgaInv_do_opOK` under `opOK`, extracted at generation by
 `opOK_of_generation`).
 
-**`ha` / `hb` are the OBSTRUCTION.**  `noopFeasible D π₁ D.init` gives
-`appOrNoop` only at **π₁-prefix** states `applySeq D.init (π₁-prefix)`, and
-`noopFeasible D π₂ D.init` only at **π₂-prefix** states.  The hybrid state
-`applySeq D.init (peeled-π₁-heads ++ σ-prefix)` is neither: it interleaves a
-π₁-prefix with a π₂-prefix (`σ` is drawn from π₂).  Nothing in the two
-`noopFeasible` hypotheses constrains the applicability of `e` or `y` there.
-This is precisely `G2_Transport_Probe.lean`'s "swaps visit states no execution
-visits", now pinned to the `ha`/`hb` premises of
-`applySeq_swap_loOnA_incomparable_C` at the σ-walk of the bubble.
+`ha` / `hb` are the obstruction.  `noopFeasible D π₁ D.init` gives `appOrNoop`
+only at π₁-prefix states `applySeq D.init (π₁-prefix)`, and `noopFeasible D π₂
+D.init` only at π₂-prefix states.  The hybrid state `applySeq D.init
+(peeled-π₁-heads ++ σ-prefix)` is neither: it interleaves a π₁-prefix with a
+π₂-prefix (`σ` is drawn from π₂).  Nothing in the two `noopFeasible` hypotheses
+constrains the applicability of `e` or `y` there: the swaps visit states no
+single execution visits, at the `ha`/`hb` premises of
+`applySeq_swap_loOnA_incomparable_C` on the σ-walk of the bubble.
 
-What WOULD close the bubble is the strictly stronger *interleaving-feasibility*
-oracle below — no-op-feasibility of **every** admissible interleaving, not just
-of `π₁` and `π₂`.  `noopFeasible π₁ ∧ noopFeasible π₂` does not imply it. -/
+What would close the bubble is the strictly stronger interleaving-feasibility
+oracle below: no-op-feasibility of every admissible interleaving, not just of
+`π₁` and `π₂`.  `noopFeasible π₁ ∧ noopFeasible π₂` does not imply it. -/
 
 /-- The interleaving-feasibility oracle that the conditioned bubble needs: every
 `Inv`-fold state of every `nodup` sub-list of `ev` keeps its next op
-applicable-or-no-op.  STRICTLY stronger than `noopFeasible D π₁ D.init ∧
+applicable-or-no-op.  Strictly stronger than `noopFeasible D π₁ D.init ∧
 noopFeasible D π₂ D.init`; not implied by it.  Stated (not assumed) to name the
 exact gap. -/
 def interleavingFeasible (D : ConditionedMRDTSig) (ev : Set (Op D.AppOp)) : Prop :=
@@ -412,27 +398,27 @@ def interleavingFeasible (D : ConditionedMRDTSig) (ev : Set (Op D.AppOp)) : Prop
 
 /- ── Sub-obstruction: no-op tolerance does not compose through a swap ──
 
-Even granting `appOrNoop` at the swap state, a NO-OP branch does not yield the
+Even granting `appOrNoop` at the swap state, a no-op branch does not yield the
 swap.  If `a` is a no-op at `s' = applySeq s pfx` (`update s' a = s'`) but `b`
 is applied, then
 
     applySeq s' (a :: b :: sfx) = applySeq s' (b :: sfx)           -- a absorbed
     applySeq s' (b :: a :: sfx) = applySeq (update (update s' b) a) sfx
 
-and these agree only if `a` is ALSO a no-op at `update s' b` — i.e. the no-op is
-stable under `b`.  That is an extra idempotence-commutation fact NOT implied by
+and these agree only if `a` is also a no-op at `update s' b`, i.e. the no-op is
+stable under `b`.  That is an extra idempotence-commutation fact not implied by
 `commutesOn` (for the RGA it is `del1_idem`: a delete stays a no-op after
-another delete).  So `applySeq_swap_loOnA_incomparable_C` deliberately requires
-genuine `applicable` (not `appOrNoop`) of both events at the swap state:
-`noopFeasible` controls the FINAL fold (its no-ops are absorbed there), but the
-SWAP needs applicability.  In the redundancy case
-(`UpdateFeasibility_Gate.lean`), at every actual swap state (`s₁ = do_ init ins`)
-BOTH deletes are genuinely applicable — the no-op only surfaces in the final
-fold — so no idempotence VC is needed there; the obstruction is solely `ha`/`hb`
-at hybrid states, above. -/
+another delete).  So `applySeq_swap_loOnA_incomparable_C` requires genuine
+`applicable` (not `appOrNoop`) of both events at the swap state: `noopFeasible`
+controls the final fold (its no-ops are absorbed there), but the swap needs
+applicability.  In the redundancy case (`UpdateFeasibility_Gate.lean`), at every
+actual swap state (`s₁ = do_ init ins`) both deletes are genuinely applicable
+(the no-op only surfaces in the final fold), so no idempotence VC is needed
+there; the obstruction is solely `ha`/`hb` at hybrid states, above. -/
 
-/-! ## §7  Axiom audit — kernel-clean, no `sorryAx` on any headline decl.
-The imported `Merge_Linearization_Set` carries 2 pre-existing `sorry`s in the
+/-! ## §7  Axiom audit
+
+The imported `Merge_Linearization_Set` carries two `sorry`s in the
 merge-linearization induction; the audit below confirms none is transitively
 reached by these results (only `propext`/`Classical.choice`/`Quot.sound`). -/
 

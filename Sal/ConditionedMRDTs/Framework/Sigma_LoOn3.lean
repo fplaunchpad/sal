@@ -4,16 +4,15 @@ import Sal.ConditionedMRDTs.Framework.ExecutionModel
 /-!
 # The σ/`loOn` layer for the ternary setting
 
-The set-relative linearization machinery of the binary development
-(`Sal/CRDTs/Metatheory/Merge_Linearization_Set.lean`), re-hosted on the
-merge-free **guarded** `UpdateVCs` fragment (three fields: guarded
-`rc_non_comm_directional` — the `differentReplicas` guard is the paper's own
-F* interface form — `no_rc_chain`, `cond_comm_lift`), plus the **core
-projection**: the ternary `Configuration`'s replica-keyed core *is* a binary
+The set-relative linearization machinery of
+`Sal/CRDTs/Metatheory/Merge_Linearization_Set.lean`, re-hosted on the merge-free
+**guarded** `UpdateVCs` fragment (three fields: guarded `rc_non_comm_directional`,
+where the `differentReplicas` guard is the paper's F* interface form, plus
+`no_rc_chain` and `cond_comm_lift`), together with the **core projection**: the
+ternary `Configuration`'s replica-keyed core *is* a binary
 `Emulation.Configuration`, so `loOn`/`IsCanonicalState`/`convergence_on` and
-friends are reused, not re-proved. See `Development/MRDT_METATHEORY_DRAFT.md`
-(T4, T9.3, T10.2) for why the merge-shaped fields of the historical
-`CoreVCs3` cannot be demanded of real MRDTs.
+friends are reused, not re-proved. The merge-shaped fields of `CoreVCs3` cannot
+be demanded of real MRDTs.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -26,10 +25,10 @@ open Classical
 section UpdateLayer
 variable {D : CRDTSig}
 
-/-- The three update-layer fields of the 2-way `CoreVCs` — the exact fragment the
-`loOn`/convergence/canonical-state machinery consumes. An MRDT's `CoreVCs3` (§B)
-supplies these unchanged; the binary *merge* fields of `CoreVCs` are deliberately NOT
-required (they are false for LCA-sensitive MRDTs such as the counter, §D). -/
+/-- The three update-layer fields of the 2-way `CoreVCs`, the fragment the
+`loOn`/convergence/canonical-state machinery consumes. An MRDT's `CoreVCs3`
+supplies these unchanged; the binary *merge* fields of `CoreVCs` are not
+required (they are false for LCA-sensitive MRDTs such as the counter). -/
 structure UpdateVCs (D : CRDTSig) : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
@@ -367,8 +366,8 @@ theorem applySeq_bubble_to_front_loOn_u
     exact hswap
 
 /-- Verbatim `Merge_Linearization_Set.lean:577` (`convergence_on`): two
-`loOn C ev`-respecting permutations of `ev` fold to the same state — no closure
-hypotheses. -/
+`loOn C ev`-respecting permutations of `ev` fold to the same state (no closure
+hypotheses). -/
 theorem convergence_on_u
     (hU : UpdateVCs D) {C : Sal.Emulation.Configuration D}
     (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
@@ -728,7 +727,7 @@ section Core
 variable {D : ConditionedMRDTSig}
 
 /-- **The core projection**: the ternary `Configuration`'s replica-keyed core *is* a
-2-way `Emulation.Configuration` — field for field. This is what makes the entire
+2-way `Emulation.Configuration`, field for field. This is what makes the entire
 `loOn`/σ layer literally reusable (not merely portable) in the ternary setting. -/
 def Configuration.core (C : Configuration D) :
     Sal.Emulation.Configuration D.toCRDTSig where

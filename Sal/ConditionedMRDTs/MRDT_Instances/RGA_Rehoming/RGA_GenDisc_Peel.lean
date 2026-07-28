@@ -3,10 +3,10 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_K1_Wiring
 /-!
 # GenDisc2C discharge, part 1 — the pointwise peel and its bricks
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
-The critical-path leaf after K1 is `GenDisc2C Cfg E` (task #32): each event accurate at the fold
-of its dependency prefix.  Discharge design (recorded in `AgentNotes.md`): born-applicability gives
+The critical-path leaf after K1 is `GenDisc2C Cfg E`: each event accurate at the fold
+of its dependency prefix.  Born-applicability gives
 accuracy at the fold of the FULL causal past; a past-op `z` that is NOT a dependency satisfies
 `¬ appliesDependsOn o z` — *by definition* its application never flips `o`'s applicability at ANY
 state — so non-dependencies **peel pointwise off the end** of a deps-first past enumeration, with

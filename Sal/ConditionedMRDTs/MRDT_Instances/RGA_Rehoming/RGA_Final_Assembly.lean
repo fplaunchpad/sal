@@ -5,9 +5,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_HHext_Discharge
 /-!
 # FINAL ASSEMBLY — RGA RA-linearizability up to ≈, on the honest-execution residual
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
-Every proof-theoretic leaf of the raw-≈ capstone is now DISCHARGED and instantiated here:
+Every proof-theoretic leaf of the raw-≈ capstone is discharged and instantiated here:
 
 * `hEnum`  := `rga_hEnum_discharged`  — the delta enum + K1 discipline continuation;
 * `hCanon` := `hCanon_of_leaves3 rgaHonJ rga_hMergeInputs_discharged` — both canonical facts,

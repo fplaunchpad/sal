@@ -3,8 +3,6 @@ import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 /-!
 # Gate G2 (OQ4), fork: applicability-aware `lo` vs applicability-restricted convergence
 
-Task #7 of `CONDITIONED_METATHEORY_PLAN.md` (the "Gate G2 … verdict in" continuation).
-
 `G2_Transport_Probe.lean` refuted the NAIVE conditioned convergence: swapping
 `CRDTSig.commutes ↦ ConditionedMRDTSig.commutesOn` inside the linearization order, keeping
 all other convergence hypotheses, is falsified by the 2-event RGA execution `insOpE`
@@ -27,7 +25,7 @@ research question of whether they are the same exclusion.
   only over enumerations whose every prefix keeps the next op applicable from `init`.
   `[delOpE, insOpE]` is then excluded because `delOpE` is not applicable at `init`.
 
-## Verdicts (all mechanized below, 0 sorries, kernel-clean)
+## Verdicts
 
 * **(b) positive check** — `applicabilityValid_ins_del`, `not_applicabilityValid_del_ins`,
   and `b_convergence_holds`: on the counterexample instance, restricting to
@@ -73,13 +71,12 @@ positive create-before-use.  Justification:
   `applicabilityValid` obligation reduces to "respects `loOnA`" (the provable inclusion
   `b ⊆ a`, whose instance is `instance_equivalence`).
 
-**Surfaced research subtlety (open):** for the concurrent-delete version `{insOpE, delOpE,
+**Research subtlety (open):** for the concurrent-delete version `{insOpE, delOpE,
 delY}`, NO enumeration is `applicabilityValid` (whichever delete runs first makes the other
 non-applicable), yet the merged state is well-defined.  So (b)'s "strict applicability at
 every prefix" can be *unsatisfiable* for genuinely reachable versions with redundant
 concurrent ops — the update layer needs an applicability notion that tolerates
-idempotent/absorbed re-application (e.g. "applicable OR a no-op here").  See
-`G2_FORK_FINDINGS.md`.
+idempotent/absorbed re-application (e.g. "applicable OR a no-op here").
 -/
 
 set_option maxHeartbeats 1000000
@@ -389,7 +386,7 @@ theorem separating_inequivalence :
         → respects [insOpE, delOpE, delY] (loOnA C ev)) :=
   ⟨not_applicabilityValid_sep, sep_loOnC_imp_loOnA⟩
 
-/-! ## §5  Axiom audit — all kernel-checked (no `native_decide`, no `sorryAx`) -/
+/-! ## §5  Axiom audit -/
 
 #print axioms b_convergence_holds
 #print axioms instance_equivalence

@@ -2,9 +2,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Honest_Residual
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H_V
 
 /-!
-# RGA (rehoming) — RA-linearizability up to `≈` over the widened LTS `Step3V` (task #90)
+# RGA (rehoming) — RA-linearizability up to `≈` over the widened LTS `Step3V`
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 The production capstone `rga_ra_linearizable3_eq` re-derived at every configuration
 reachable in the ternary system **with the criss-cross gate lifted** — merges may resolve
@@ -16,8 +16,8 @@ induction consumes the RGA's `≈`-Join (`rgaJoinH_of_canon` over `rga_hEnum_dis
 leaves were already stated for arbitrary closed event-set pairs under the ambient
 `rgaHonJ`, so the K1/`GenDisc2C` route (the union restricted through
 `isDepPreC_of_restrict` inside `rga_hEnum_discharged`) covers the unions verbatim.  **No
-`noopFeasible` obligation appears at any union** (the probe's refutation is respected:
-the H discipline `rgaH = CanonFoldOK + HonestPayloads` replaced it).
+`noopFeasible` obligation appears at any union**: the H discipline
+`rgaH = CanonFoldOK + HonestPayloads` does not require it.
 
 On the honesty side merges consume no honesty: `HonCore` transfers through
 `mergeVirtual` by the same `honCore_merge` (it never read the LCA slot), and the
@@ -99,7 +99,7 @@ def HonestDeliveryV : Prop :=
     (∀ s', (RGACondSig' α).applicable (t, r, o) s' → WfOpA (t, r, o) s')
 
 /-- The widened residual implies the gated one (gated reachability embeds by
-`reachableV_of_reachable`): assuming `HonestDeliveryV` never weakens the old capstone. -/
+`reachableV_of_reachable`): assuming `HonestDeliveryV` never weakens the gated capstone. -/
 theorem honestDelivery_of_honestDeliveryV (h : HonestDeliveryV (α := α)) :
     HonestDelivery (α := α) :=
   fun hreach hstep hhead hver =>

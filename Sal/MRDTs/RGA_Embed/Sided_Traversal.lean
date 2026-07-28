@@ -1,7 +1,7 @@
 import Sal.MRDTs.RGA_Embed.Sided_ChainLex
 
 /-!
-# The sided traversal theory, interval form (task #88)
+# The sided traversal theory, interval form
 
 The display order of the sided kernel IS the depth-first in-order
 traversal of the origin tree implicit in the chains: L-subtrees, node,

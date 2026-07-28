@@ -1,6 +1,6 @@
 // PMap: a dependency-free, browser-safe persistent hash-array-mapped trie
-// (HAMT) for string/number keys -- the state container that kills the
-// O(live-set) Map copy per op in the datatypes (task #111).
+// (HAMT) for string/number keys, the state container that avoids the
+// O(live-set) Map copy per op in the datatypes.
 //
 // API (the Map surface the runtime's consumers actually use):
 //   PMap.empty()            the shared empty map

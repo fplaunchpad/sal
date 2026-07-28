@@ -32,7 +32,7 @@ need resolve/rehome/climb algebra. Here:
   direction flipped.
 
 The read side (display = chain-lex; L1 delete-order as a SPOT theorem;
-non-interleaving; RGA† read-equivalence) is the next layer — see `PLAN.md`.
+non-interleaving; RGA† read-equivalence) is a separate layer.
 -/
 
 namespace Sal.EmbedRGA

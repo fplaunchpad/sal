@@ -9,18 +9,16 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Corrected_Residual
 /-!
 # SKELETON 3 — the RAW-≈ capstone for the tombstone-free RGA
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The corrected end-to-end chain at the corrected TARGET (`IsRALinearizable3Eq` — raw datatype folds,
-up to `≈`; FINDING #4 made the guarded `IsRALinearizable3` unsatisfiable) over the corrected WITNESS
-discipline (`H := CanonFoldOK [] (init_st (α := α))` — the K2 refutation made `noopFeasible` witnesses
+The end-to-end chain, stated at the target `IsRALinearizable3Eq` (raw datatype folds,
+up to `≈`; the guarded `IsRALinearizable3` is unsatisfiable) over the witness
+discipline `H := CanonFoldOK [] (init_st (α := α))` (`noopFeasible` witnesses are
 unsatisfiable at merge unions).
 
 * `rgaJoinH_of_canon` — the RGA's H-join (`EqJoinLemma3C_H`) from the two canonical leaves:
   `hEnum` (K1 — a delta enum with the engine-native discipline continued from the LCA fold) and
   `hCanon` (merge and δ-fold are both the canonical state of `ρ₀ ++ π₀`).  **The union witness is
   `ρ₀ ++ π₀` itself**: its discipline is `canonFoldOK_concat` (no from-init feasibility of any
-  reordering — K2 dissolved), its `respects` is the LCA-first assembly (cross edges die on the
+  reordering is needed), its `respects` is the LCA-first assembly (cross edges die on the
   branch closures), its fold is the merge by canonical uniqueness (`eq_of_canonMatch2`).
 * `rga_RA_linearizable_skeleton3` — **THE CAPSTONE**: reachable `C` + honest premises
   (`hBA` born-applicability, `hHext` the discipline extension at applies) + the two canonical
@@ -183,7 +181,7 @@ theorem rgaJoinH_of_canon
       have hva := ((Sal.ConditionedMRDTs.RGAEqJoinNF.loOnEqQ_reduce_gen WfOpA vis (ev₁ ∪ ev₂) b a).mp hR).1
       have haI := hmemρ a ha
       exact (hmemπ b hb).2 ⟨hcl1 b a hva haI.1, hcl2 b a hva haI.2⟩
-  · -- the discipline clause: `ρ₀ ++ π₀` is CanonFoldOK from init (K2 dissolved), and its
+  · -- the discipline clause: `ρ₀ ++ π₀` is CanonFoldOK from init, and its
     -- payload honesty lifts branchwise (HonestPayloads is set-level)
     show rgaH (ρ₀ ++ π₀)
     refine ⟨canonFoldOK_concat ρ₀ [] (init_st (α := α)) π₀ h₀OK hπOK, ?_, ?_⟩

@@ -3,10 +3,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# OR-Set-efficient — flat VC discharge and the conditioned capstone
+# OR-Set-efficient: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production OR-Set-efficient as a `ConditionedMRDTSig`, its
+RA-linearizability VC discharge, and the conditioned capstone over the generic
+framework.
 -/
 
 set_option maxHeartbeats 1000000

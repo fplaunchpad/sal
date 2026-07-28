@@ -3,10 +3,11 @@ import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# Multi-Valued Register — flat VC discharge and the conditioned capstone (T11.3)
+# Multi-Valued Register: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production Multi-Valued Register as a `ConditionedMRDTSig`, its
+RA-linearizability VC discharge, and the conditioned capstone over the generic
+framework.
 -/
 
 set_option maxHeartbeats 1000000
@@ -23,14 +24,14 @@ The classical replace-on-write MVR (mirror of
 deviation: the op's overwritten-set payload is carried as a `List ℕ`, read
 through its membership function).  State: timestamp-tagged writes × the
 overwritten-log accumulator; both components grow-only under `do`, so ALL
-operations commute — yet the merge is the OR-shaped
+operations commute, yet the merge is the OR-shaped
 `(l∩a∩b) ∪ (a∖l) ∪ (b∖l)` per component, which fails the unconditional delta
 laws on infeasible tuples (the `c∩l` corner).  MVR therefore sits in the
-FEASIBLE class despite commuting: the T11.3 recipe.  All-commutation makes
-every punctured downset empty (`B = init`), so no trichotomies are needed;
-the two nontrivial feasible laws reduce to Boolean tautologies plus one
-σ-monotonicity fact (canonical states of nested event sets are pointwise
-nested — both components are unions over events). -/
+FEASIBLE class despite commuting.  All-commutation makes every punctured
+downset empty (`B = init`), so no trichotomies are needed; the two nontrivial
+feasible laws reduce to Boolean tautologies plus one σ-monotonicity fact
+(canonical states of nested event sets are pointwise nested, both components
+are unions over events). -/
 
 inductive MVROp : Type where
   | write : ℕ → List ℕ → MVROp
@@ -382,7 +383,7 @@ open Sal.ConditionedMRDTs.GoodConfig3H
 open Sal.ConditionedMRDTs.FlatGeneric
 
 /-- **Multi-Valued Register over the generic framework** (feasible class,
-all-commuting — the T11.3 discharge). -/
+all-commuting). -/
 theorem MVR_ra_linearizable3_eq
     (C : Configuration (QSig (eqOfEq Sal.ConditionedMRDTs.MVR) (WTop Sal.ConditionedMRDTs.MVR)
       (invPresTop fun _ => trivial) (congVCEq Sal.ConditionedMRDTs.MVR)

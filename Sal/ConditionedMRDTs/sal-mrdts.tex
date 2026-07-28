@@ -107,15 +107,7 @@
 \large Metatheory, the Embedded-Chain Family, and Sequential
 Specifications}
 \author{Sal / FP Launchpad (KC + Claude)}
-\date{July 20, 2026\\[2pt] \small one document consolidating three
-earlier notes (of July 7, July 14, and July 16--17, 2026),\\
-\small extended July 18--19 with the runtime arc (virtual LCAs, commit
-GC, the stability VC) and the storage layer (re-coding, compaction, the
-run table),\\
-\small and July 20 with the verified peer-to-peer runtime, a
-cross-system performance study, and a push-button SMT layer,\\
-\small and July 21 with the rich-text marks arc (the document-order
-mark read model and the marks-layer GC)}
+\date{July 20, 2026}
 
 \begin{document}
 \maketitle
@@ -166,10 +158,10 @@ at most two per mark record, and the compaction is render-invisible by
 theorem), and whose git-backed store persists
 the commit DAG; a performance section measures the shipped artifact
 against Yjs, Automerge, Loro, and list-positions on the standard
-editing-trace corpus, records the experiment that closed its one large
-loss (a three-to-four-orders apply-latency gap, diagnosed as an
-interface-inherited state copy and removed by a persistent-map container
-swap with every observable byte unchanged), and reports the design's
+editing-trace corpus, closes its one large loss (a three-to-four-orders
+apply-latency gap, an interface-inherited state copy removed by a
+persistent-map container swap with every observable byte unchanged), and
+reports the design's
 categorical storage win, the only save that shrinks on delete; and an SMT
 translation-validation layer that makes the flat verification conditions
 push-button. Everything stated as a theorem is mechanized in
@@ -188,35 +180,27 @@ Part~IV is the systems pillar, a verified peer-to-peer runtime
 (\S\ref{sec:runtime}) with a cross-system performance study
 (\S\ref{sec:perf}) and a push-button SMT layer (\S\ref{sec:smt}), and it
 depends on the embed kernel of Part~II and the GC and stability
-metatheory of Part~I. The
-document consolidates three earlier notes (the metatheory note of
-July~7, the embedded-chain design note of July~14, and the
-sequential-specification campaign note of July~16--17); reused material
-keeps its original wording, duplicated material appears once, and the
-previously separate open-question lists and mechanization maps are
-merged. A July 18--19 extension adds, to Part~I, the runtime-facing
-metatheory (virtual LCAs for criss-cross merges, \S\ref{sec:vlca};
-commit GC and its keep set, \S\ref{sec:gc}; the stability VC for
-verified compaction callbacks, \S\ref{sec:stability}) and, to Part~II,
+metatheory of Part~I. Part~I's runtime-facing
+metatheory covers virtual LCAs for criss-cross merges (\S\ref{sec:vlca}),
+commit GC and its keep set (\S\ref{sec:gc}), and the stability VC for
+verified compaction callbacks (\S\ref{sec:stability}); Part~II adds
 the closed maximal-non-interleaving theorem (\S\ref{sec:theorem9}), the
-chain-price impossibility (\S\ref{sec:chainprice}), and the storage
-layer with its measurements (\S\ref{sec:storage}). A July~20 extension
-adds Part~IV (the verified runtime, its performance study, and the SMT
-layer) and closes the storage layer's mechanization (spine fusion, the
-merge-remap merge clause, multi-epoch composition, and the one-sided run
-table); the honesty-rebasing lemma $(\ast)$ that extension left open is
-since closed in Lean (the coded-forest cluster of \S\ref{sec:compactED}),
-leaving the multi-replica protocol half (a common cut, concurrent
-divergent compaction, and the derivation of the per-continuation
-$\mathrm{ContOK}$ discipline from a delivery protocol) as the remaining
-compaction residue. A July~21 extension adds to
-Part~II the rich-text marks arc (\S\ref{sec:marks}): the
-document-order mark read model and the marks-layer GC, with the
-runtime's Peritext datatype accordingly promoted from GC-refusal to
-certified fire. One editorial rule
+chain-price impossibility (\S\ref{sec:chainprice}), the storage
+layer with its measurements (\S\ref{sec:storage}), and the rich-text
+marks arc (\S\ref{sec:marks}: the document-order mark read model and the
+marks-layer GC, with the runtime's Peritext datatype promoted from
+GC-refusal to certified fire). Part~IV is the verified runtime, its
+performance study, and the SMT layer, and it closes the storage layer's
+mechanization (spine fusion, the merge-remap merge clause, multi-epoch
+composition, and the one-sided run table). The honesty-rebasing lemma
+$(\ast)$ is closed in Lean (the coded-forest cluster of
+\S\ref{sec:compactED}), leaving the multi-replica protocol half (a common
+cut, concurrent divergent compaction, and the derivation of the
+per-continuation $\mathrm{ContOK}$ discipline from a delivery protocol) as
+the remaining compaction residue. One editorial rule
 governs the whole document: the
-\emph{rehoming} tombstone-free RGA, an earlier design demoted after its
-sequential refutation, receives no narrative treatment here; it appears
+\emph{rehoming} tombstone-free RGA, an earlier design refuted by its
+sequential specification (Part~III), receives no narrative treatment here; it appears
 only as the campaign's named countermodel (Part~III), in one-line
 contrasts where the separation needs the losing side, and once as a
 generality stress test (\S\ref{sec:vlca}), where its role is again that
@@ -497,8 +481,8 @@ embedded-chain RGA, the sequence datatype that holds the repository's
 canonical seat, together with its end-to-end discharge through the
 factored route of \S\ref{sec:route}; a predecessor design that carried
 recorded ancestor paths and rehomed orphans on delete was proved
-RA-linearizable in the same framework and was later demoted by its
-sequential refutation (Part~III).
+RA-linearizable in the same framework but refuted at its
+sequential specification (Part~III).
 
 \section{The ternary setting}
 \label{sec:setting}
@@ -1128,8 +1112,7 @@ the two LCA measures, and they agree because
 \]
 by inclusion--exclusion. The law holds, but only \emph{through the
 set-algebra of intersections}: over four unconstrained states it is false.
-Honest associativity is inherently a feasible-tuple fact --- and, the
-mechanization's pleasant surprise, \textbf{the corrected induction never
+Honest associativity is inherently a feasible-tuple fact --- and \textbf{the corrected induction never
 needs it}. Every merge the induction forms already sits at its honest LCA;
 the only laws consumed are two \emph{redistribution} identities that
 equate two honestly-formed merges:
@@ -1240,7 +1223,8 @@ property the adequacy induction consumes at a named step:
 \hfill\lean{ArbAdequacyReach.ArbFamily}
 \end{definition}
 
-Three of the six were not in the design; the mechanization forced them. The
+Three of the six are forced by the re-attach and congruence steps, not by
+the surface design. The
 definition audit (\S\ref{sec:audit}) named acyclic, extends-vis, and
 convergence. Re-threading the adequacy induction over an abstract $\arb$
 surfaced \emph{antitone} (the re-attach step
@@ -1847,9 +1831,8 @@ weakens the lemma (\lean{JoinLemma3C.anti}).
 \hfill\lean{JoinLemma3C}
 \end{definition}
 
-Reunifying the two routes was expected to be routine --- ``full closure
-only strengthens what a data type may assume.'' Mechanization shows it
-is not: the naive reunification --- re-run the Join Lemma induction
+Reunifying the two routes might look routine --- ``full closure
+only strengthens what a data type may assume.'' It is not: the naive reunification --- re-run the Join Lemma induction
 with full-closure hypotheses --- is refuted, because no single-event
 (or block) peel preserves full closure:
 
@@ -2991,8 +2974,8 @@ set contains it; that generator is a common ancestor, every common
 ancestor reaches a maximal one, and monotonicity carries the event up
 into it. Since the fold unions event sets, the returned virtual node
 has event set $\bigcup_i E(m_i) = E(v_1) \cap E(v_2)$: exactly what the
-Merge rule requires. An earlier forecast (recorded in the GC analysis,
-\S\ref{sec:gc}) had guessed the union approximates the intersection
+Merge rule requires. A natural expectation (the GC analysis of
+\S\ref{sec:gc}) is that the union only approximates the intersection
 from below; under the carried invariants the approximation is
 \emph{exact}, even though each antichain member individually sits
 strictly below the meet.
@@ -3629,8 +3612,8 @@ and $S$ is settled against $E(v)$.
 \end{definition}
 
 Clause (iii) looks like a global quantification the
-runtime could never check, and in the design note it was carried as a
-hypothesis the runtime would somehow certify. It is now a
+runtime could never check, and might be carried as a
+hypothesis the runtime would somehow certify. It is instead a
 \emph{discharged theorem}: a purely local, checkable frontier predicate
 implies it.
 
@@ -3737,7 +3720,7 @@ $\mathrm{canCreate}$. The obligations:
   version, carries $t$):
   $\dodo(\sigma, e) \mathrel{R_S} \dodo(\hat{\sigma}, e)$ for
   $e = (t, r, o)$: any op minted with $S$ in its causal past (all
-  future ops, by stability). The design note carried a second class here,
+  future ops, by stability). A second class could arise here,
   in-flight ops referencing dropped records; in the state-based ternary
   model those effects arrive only through merge branch states, so the
   class is absorbed into S4 and the step VC covers new mints alone.
@@ -3763,7 +3746,7 @@ $\mathrm{canCreate}$. The obligations:
   $R_S$ preserves $\Inv$: $\sigma \mathrel{R_S} \tau$ and $\Inv(\sigma)$
   imply $\Inv(\tau)$. This is the clause that
   composes compaction with the conditioned framework, and the one with
-  no analogue in unverified systems. (The design note's wider reading,
+  no analogue in unverified systems. (A wider reading,
   preservation of the applicable set and of the honesty contract,
   is \emph{not} a bundle field; it is recovered observationally by the
   metatheorem's third conclusion, Theorem~\ref{thm:stabsim}(iii).)
@@ -5082,8 +5065,8 @@ turns the 0.5 KB sequential run above into $\sim$3 KB at $k = 10$.
 Cheaper: extend the mint's code to the pair, $C(\Delta t)$ followed
 by a $k$-bit id. The pair code is still order-preserving prefix-free
 (lex on $(\Delta t, r)$), and costs $k$ bits only where the level is
-minted. A further option, unvalidated against the battery and
-recorded as a design note, is to order sibling ids \emph{relative to
+minted. A further option, unvalidated against the battery, is to order
+sibling ids \emph{relative to
 the anchor's} (any deterministic per-anchor id order is a legitimate
 tiebreak; convergence needs agreement, not a uniform order), making
 ``same author as my anchor'', i.e.\ sequential typing, cost $\sim$1
@@ -5099,8 +5082,8 @@ tiebreak, never in the minted coordinate.
 
 \paragraph{What the storage layer now delivers.} Dead chain entries
 concatenated into survivors' strings are the conservation law's
-irreducible content (\S\ref{sec:design}); at the time of the original
-design note, reclaiming them under \emph{causal stability} (renumber
+irreducible content (\S\ref{sec:design}); reclaiming them under
+\emph{causal stability} (renumber
 once every replica has seen the delete, the only condition under which
 rewriting geometry is safe, since no verdict involving the dead can be
 contested again) was the deepest of the open cost items. That item is
@@ -5259,9 +5242,9 @@ accompanying Sal repository
 Notation: RGA$_\dagger$ is the published tombstoned RGA (Roh et
 al.; \S\ref{sec:related}); the \emph{rehoming} RGA is the
 convergence-verified flat tombstone-free design of \S\ref{sec:design}
-(since demoted repo-wide: the L1 row below was generalized into the
+(refuted repo-wide: the L1 row below generalizes into the
 kernel-checked sequential refutation of Part~III,
-\S\ref{sec:refuted}, and this design took the canonical
+\S\ref{sec:refuted}, and the embedded-chain design holds the canonical
 seat). The L1--L25
 battery is the litmus suite accumulated over this project's
 design sweep; each entry is the named countermodel that killed at
@@ -5690,7 +5673,7 @@ randomized version-DAG PBT, all four models & 120 + 300 clean \\
 \end{center}
 
 \noindent The Lean mechanization of both layers (the sided chain-lex
-kernel and the sided conditioned instance) has landed kernel-clean;
+kernel and the sided conditioned instance) is kernel-clean;
 its capstone is the policy/datatype split as a quantifier.
 
 \begin{theorem}[the sided capstone]
@@ -6120,7 +6103,7 @@ The conservation law of \S\ref{sec:design} (the sort key must retain
 dead ancestors' timestamps) was stated as an empirical regularity of
 the design sweep: every design that forgets them has a named
 countermodel. This section upgrades it to a characterization. The
-question that forced it (KC, 2026-07-18): the embed RGA works, but its
+question that forces it: the embed RGA works, but its
 proof rests on keeping a deleted node's memory alive inside live
 descendants' coordinates; could a \emph{sibling-edge} implementation,
 which splices a dead node out and lifts its children a level up, be
@@ -6473,8 +6456,7 @@ itself an honest configuration of the same datatype (compacted
 coordinates deliberately forget dead chain segments, so the
 chain-generation honesty clause fails for them). Re-basing honesty
 across the epoch, so that the capstone re-invokes natively in the new
-epoch, was the deferred obligation of this cluster's first revision
-and is now closed: the $(\ast)$ cluster of \S\ref{sec:compactED}
+epoch, is closed by the $(\ast)$ cluster of \S\ref{sec:compactED}
 (Definition~\ref{def:caf} through Corollary~\ref{cor:itwoepoch});
 what stays open downstream is the multi-replica half (agreement on a
 common cut, Open Question~\ref{oq:epochdag}). The cut hypothesis
@@ -6931,10 +6913,10 @@ at $s1$ across $2400$ trials before any of this was stated.
 
 \begin{remark}[what the runtime realizes, and an honest gap]
 \label{rem:glb}
-The shipped runtime (\code{runtime/src/epoch.js}, task \#112) turns the
+The shipped runtime (\code{runtime/src/epoch.js}) turns the
 per-replica epoch integer into a cut-indexed DAG and replaces the old
-cross-epoch \emph{throw} with the certificate-determined join. Building
-it surfaced that the model's ``relative-compact each side to $W$, merge
+cross-epoch \emph{throw} with the certificate-determined join. The
+model's ``relative-compact each side to $W$, merge
 in epoch $W$'' is unsound under \emph{partial straggler visibility}: a
 settled record's group freezes on the side holding a straggler and
 renumbers on the side without it, so the two sides disagree on shared
@@ -7371,14 +7353,14 @@ comparator, and incremental-equals-canonical after every event, while
 exercising 872 merges, 315 mid-run splits, 438 liveness splits, 551
 coalesces, and 26 vanished-anchor materializations.
 
-The Lean mechanization of this subsection, owed in the previous
-revision, is now in place (\code{RunTable.lean}, state-level and
+The Lean mechanization of this subsection is in place
+(\code{RunTable.lean}, state-level and
 hypothesis-free except where noted); the load-bearing kernel is
 Theorem~\ref{thm:tailattach}. Only the epoch-composition clause
 (\lean{runTable\_epoch}: sorted state, at-hand domain, chain
 representation; walk and read identity after the epoch) carries a
-stability hypothesis. Task~\#73 has since closed the remaining theorem
-bill: the four mutation rules are promoted from SPOT-pinned
+stability hypothesis. The remaining theorem bill is closed: the four
+mutation rules are promoted from SPOT-pinned
 perturbation lemmas (canonicalization under mutation:
 \lean{tableOf\_congr}) to \emph{closed} \lean{tableOf} equations, and
 the walk is promoted to a literal, table-direct reading procedure. The
@@ -7752,7 +7734,7 @@ Two external facts close the representation arc; both are measured, and
 both are laid out with their full methodology in the performance section
 (\S\ref{sec:perf}), so only the headline belongs here. First, the
 run-table projection of \S\ref{sec:runtable} is no longer merely
-measured-in-model: task~\#104 ships a lossless run-table serializer
+measured-in-model: the runtime ships a lossless run-table serializer
 (\code{runtime/src/serialize.js}), whose \lean{accountingBits} routine
 reproduces the projection's bit totals \emph{bit-for-bit} on every trace,
 while the shipped bytes land \emph{below} the projection (the model
@@ -7780,15 +7762,14 @@ in-sequence boundary inserts; the model of this section is the other
 encoding, the one the runtime ships as its third datatype
 (\S\ref{sec:runtime}): characters live in the embed order, and marks
 are \emph{separate immutable records} that name their boundary anchors
-by id. Two campaigns are recorded here. Task~\#55 built the read model
-and its theorems (\code{Peritext\_Embed/PeritextEmbed\_MarkIntent.lean}),
-replacing a retracted claim; task~\#110 built its garbage collector
-(design and validation \code{whiteboard/marks-gc-note.md} with harness
-\code{whiteboard/litmus/marks\_gc\_check.py}; mechanization
+by id. The model has two components. The read model and its theorems
+(\code{Peritext\_Embed/PeritextEmbed\_MarkIntent.lean}); and its garbage
+collector (design and validation \code{whiteboard/marks-gc-note.md} with
+harness \code{whiteboard/litmus/marks\_gc\_check.py}; mechanization
 \code{PeritextEmbed\_MarksGC.lean} and
 \code{PeritextEmbed\_MarksGC\_A3.lean}; runtime
-\code{runtime/src/compact-peritext.js}), moving the runtime's Peritext
-state GC from a justified refusal to a certified fire. Verdicts below
+\code{runtime/src/compact-peritext.js}), which moves the runtime's
+Peritext state GC from a justified refusal to a certified fire. Verdicts below
 are labeled by provenance, as everywhere in this document:
 \emph{proved} is kernel-checked Lean, \emph{measured-in-model} is the
 checked-in Python harness, \emph{measured} is the shipped JavaScript
@@ -8017,7 +7998,7 @@ coordinates. For plain text that is sound; for this datatype, pruning
 a dead anchor's record destroys exactly the birth position a mark
 needs to rehome, and the runtime therefore \emph{refused} to compact
 Peritext at all. The refusal was correct, and the justification is a
-directed flip (D6 in the note's numbering, hand-derived). Geometry,
+directed flip (D6, hand-derived). Geometry,
 reused throughout this section: $R$ (id 1) and $L$ (id 2) minted
 concurrently at the root, so $L$ is newer and reads first; $d$ (id 3)
 a child of $L$; reading order $L\,d\,R$. Mark $[\text{start } L\
@@ -8317,7 +8298,7 @@ continuation $\tau$, has four fields:
 This is what any honest beyond-cut continuation satisfies (Lamport
 freshness plus unique decodability); \emph{deriving} it, together
 with the straggler declarations, from honest reachability at a
-certified cut is nothing marks-specific: it is the note's O5, the
+certified cut is nothing marks-specific: it is O5, the
 per-continuation face of the settled-cut protocol residue. The
 honesty-rebasing half of that residue, the $(\ast)$ lemma, is
 \emph{closed} for the text layer
@@ -8700,7 +8681,7 @@ theorem}
 The verification framework is Part~I's metatheory; file paths below
 are relative to the Sal repository.
 
-\textbf{The capstone is proved} (2026-07-15, kernel-clean on
+\textbf{The capstone is proved} (kernel-clean on
 $\{\mathrm{propext}, \mathrm{Classical.choice},
 \mathrm{Quot.sound}\}$). Its honesty hypothesis is displayed in
 full, never folded:
@@ -8849,8 +8830,7 @@ hypothesis (\lean{eHonest\_of\_genHonest}).
 \hfill\lean{eApplicable}, \lean{eHonest\_of\_applicable}
 \end{theorem}
 
-\noindent\textbf{The compaction theorem is proved} (2026-07-15,
-kernel-clean): $\mathrm{read} \circ \mathrm{embed} = \mathrm{read}
+\noindent\textbf{The compaction theorem is proved} (kernel-clean): $\mathrm{read} \circ \mathrm{embed} = \mathrm{read}
 \circ \mathrm{RGA}_\dagger$ on honest executions.
 
 \begin{theorem}[the compaction theorem]
@@ -8901,8 +8881,8 @@ strictly-live compaction preserving every read. The lockstep rows of
 
 \medskip
 \noindent\textbf{The sequential specification is proved, and the
-design holds the canonical seat} (2026-07-16). The campaign of
-Part~III proved \code{embed\_seq\_sound}: on every sequentially honest
+design holds the canonical seat}. Part~III proves
+\code{embed\_seq\_sound}: on every sequentially honest
 single-replica history the canonical sorted state is the naive
 insert-at-position text buffer, record for record, with the adjacency
 lemma (\code{chainBefore\_snoc\_iff}: a fresh insert's delta beats
@@ -8910,8 +8890,8 @@ every existing child's by sum-telescoping) as the geometric heart
 (\S\ref{sec:tiers}). The published RGA$_\dagger$ inherits the same
 buffer spec through the compaction theorem
 (\code{rga\_seq\_read\_eq\_buffer}), and the same statement is refuted
-for the rehoming design (\S\ref{sec:refuted}), which demoted it
-repo-wide: the embedded-chain family is the repository's canonical
+for the rehoming design (\S\ref{sec:refuted}): the embedded-chain family
+is the repository's canonical
 sequence RDT, and the canonical fused Peritext was re-based onto this
 kernel (\code{Peritext\_Embed/}: capstone by pure instantiation of the
 payload-generic instance; \code{renderIds\_del}, deleting a character
@@ -8925,8 +8905,8 @@ ordering of the union''; the dead-anchor corner
 fold.
 
 \medskip
-\noindent\textbf{The sided generalization is proved} (2026-07-15,
-kernel-clean), in the same two layers as \S\ref{sec:sided} presents
+\noindent\textbf{The sided generalization is proved} (kernel-clean), in
+the same two layers as \S\ref{sec:sided} presents
 it. The sided chain-lex kernel
 (\code{Sal/MRDTs/RGA\_Embed/Sided\_ChainLex.lean}): the sided marker
 theorem \code{sdisplay\_iff\_schainBefore} (display comparison of
@@ -8966,8 +8946,8 @@ generation guard exactly as one-sided
 \end{theorem}
 
 \noindent The per-policy intent
-theorems have since landed, and the policy story is a machine-checked
-three-act arc (2026-07-16/17). \emph{Act one}:
+theorems make the policy story a machine-checked
+three-act arc. \emph{Act one}:
 
 \begin{theorem}[act one: the all-R fragment at the instance]
 \label{thm:allr}
@@ -9004,18 +8984,18 @@ right ORIGIN, not expressible by any re-banding of deltas (the mirror
 control machine-witnesses this), so R-entries carry the mint-time
 successor's key as an order-reversing tag; condition (3) is proved in
 full (\code{fuguemax\_same\_origin\_low\_first}, the positive twin
-of the refutation), and full Theorem~9 has since been \textbf{closed}
+of the refutation), and full Theorem~9 is \textbf{closed}
 (\S\ref{sec:theorem9}: the traversal theory discharges condition (1),
 the corrected backward exception discharges condition (2), and
 \code{fuguemax\_maximally\_noninterleaving} is kernel-clean). The sided
-sequential spec also landed (\code{sided\_seq\_sound}: a
+sequential spec is also proved (\code{sided\_seq\_sound}: a
 sentinel-rooted two-sided buffer, R-inserts splice after their
 anchor, L-inserts immediately before). The tag has a COST: at
 contested inserts the coordinate embeds the successor's key,
 $\Theta(|\text{key}|)$ where plain Fugue pays zero, and whether that
 retention is a lower bound for tombstone-free maximal
 non-interleaving is an open question with a Myhill--Nerode shape
-(task \#89; Open Question~\ref{oq:retention}): the entropy law of
+(Open Question~\ref{oq:retention}): the entropy law of
 \S\ref{sec:encoding} meeting the ordering intent.
 
 \paragraph{Provenance.} \code{whiteboard/litmus/embed\_tree.py} (the
@@ -9189,7 +9169,7 @@ already consume.
 Three method rules were fixed in advance and held throughout.
 \emph{Falsifiable statement first}: each tier states its equality
 before proof work begins, and a refutation is a first-class outcome
-(three landed, \S\ref{sec:refuted}). \emph{The spec is external}: the
+(three, \S\ref{sec:refuted}). \emph{The spec is external}: the
 sequential program is written from the datatype's user-facing intent,
 never read off the implementation; where the two disagree, the
 disagreement is the result. \emph{Tests carry both polarities}: every
@@ -9821,7 +9801,7 @@ same statement is false (\S\ref{sec:refuted}).
 \label{sec:refuted}
 
 The statement shape is falsifiable per datatype, and three refutations
-landed, all machine-checked, each with its honesty guards discharged
+follow, all machine-checked, each with its honesty guards discharged
 on the witness so the failure is never an artifact of a malformed
 trace.
 
@@ -9878,8 +9858,8 @@ departure. In-file audits printed for both halves.
 \end{proposition}
 
 \noindent The design's convergence capstone is untouched: it
-converges, to its own reordering fold. This refutation is what
-demoted the design from the repository's canonical seat.
+converges, to its own reordering fold. This refutation is why the design
+does not hold the repository's canonical seat.
 
 \begin{figure}[h]
 \centering
@@ -10157,11 +10137,11 @@ to stand on.
 \section{The verified matrix}
 \label{sec:matrix}
 
-The anomaly-comparison matrix (task \#64,
-\code{whiteboard/anomaly-matrix/}) ran six implementations and four
+The anomaly-comparison matrix
+(\code{whiteboard/anomaly-matrix/}) ran six implementations and four
 production libraries through 25{,}917 merges per row, every cell
-backed by executed code. Its in-repo rows have since been upgraded
-from machine-run to kernel-checked; the table below is the matrix's
+backed by executed code. Its in-repo rows are kernel-checked, not
+merely machine-run; the table below is the matrix's
 load-bearing core with each cell a Lean identifier. External libraries
 (Yjs, Automerge, Loro, list-positions) remain empirical by nature;
 their rows live in the matrix report unchanged.
@@ -10249,8 +10229,8 @@ one machine, labeled measured or measured-in-model.
 \label{sec:runtime}
 
 \paragraph{Datatype-parametric, proven over three datatypes.} The core
-object is \code{DistributedReplica} (\code{runtime/src/replica.js},
-tasks \#94/\#108): a single content-addressed commit store carrying
+object is \code{DistributedReplica} (\code{runtime/src/replica.js}): a
+single content-addressed commit store carrying
 three capabilities at once --- delta gossip over the wire, the certified
 stability GC, and the keep-set commit GC --- every one of them
 datatype-agnostic (\code{init}/\code{apply}/\code{merge3}/\code{read})
@@ -10267,7 +10247,7 @@ third datatype, rich text, follows the certified-GC paragraph below.
 \paragraph{Content addressing: one hash for wire and disk.} Separate
 peers assign different local ids to the same commit, so every commit is
 named by the SHA-256 of its canonical content, a Merkle DAG folding in
-parent ids (\code{runtime/src/hash.js}, \#108): an authored commit hashes
+parent ids (\code{runtime/src/hash.js}): an authored commit hashes
 $\{\text{parents}, \text{replica}, \text{seq}, \text{payload}\}$, a merge
 commit hashes its \emph{sorted} parent ids (so $\merge(a,b)$ and
 $\merge(b,a)$ are literally the same commit and never diverge into a
@@ -10342,7 +10322,7 @@ delete-must-settle refinement, the conservative deviations, and the
 measured suite and cost numbers of \S\ref{sec:marks}; the flip that
 justified the old refusal stays executable as a negative control.
 
-\paragraph{Honest limits.} The demo (\code{p2p-demo/}, task \#95) shows
+\paragraph{Honest limits.} The demo (\code{p2p-demo/}) shows
 several replicas editing one document over a real WebSocket transport,
 converging, saving to and cloning from git, and firing certified GC while
 the session is live. What it is not: the transport is a \emph{star
@@ -10365,7 +10345,7 @@ noted above.
 \label{sec:perf}
 
 Where does the shipped artifact sit against production CRDT libraries?
-The benchmark (\code{benchmarks/}, task \#98) runs the runtime against
+The benchmark (\code{benchmarks/}) runs the runtime against
 Yjs 13.6, Automerge 3.3 (wasm), Loro 1.13 (wasm), and list-positions 2.0
 on three workloads, and every cell is a run of the checked-in scripts on
 one machine (node v26.3.1, Apple M4 Pro, 24\,GB); nothing is quoted from
@@ -10404,29 +10384,28 @@ across the wasm boundary (Automerge and Loro hold state in wasm linear
 memory, invisible to the JS heap counter). Labels throughout distinguish
 \emph{measured} from \emph{measured-in-model}.
 
-\paragraph{The former headline loss: apply latency, and the experiment
-that closed it.} As first shipped, per-character apply lost to
-production by three to four orders of magnitude, and the previous
-revision of this section diagnosed the loss as
+\paragraph{Apply latency: the interface-inherited loss.} With a
+copied-\code{Map} interface, per-character apply lost to
+production by three to four orders of magnitude. The loss is
 \emph{interface-inherited}: the persistent \code{apply} returned a fresh
 \code{Map}, an $O(\text{live set})$ copy per keystroke, linear in the
 document (order machinery contributes nothing measurable: minting a
-coordinate is $O(1)$ and inserts never compare), and predicted that a
-transient or batched apply path would reach the microsecond class
-without touching the verified semantics. Task~\#111 ran that
-experiment: the state container is now a persistent hash-array-mapped
+coordinate is $O(1)$ and inserts never compare), and a
+transient or batched apply path reaches the microsecond class
+without touching the verified semantics. The state container is
+therefore a persistent hash-array-mapped
 trie (\code{pmap.js}, dependency-free; \code{set} returns a new root
 sharing all but an $O(\log n)$ path, with transients for batched
 application and deterministic sorted iteration), the three-way merge
-became a delta merge from the LCA, and nothing else moved. The swap is
+is a delta merge from the LCA, and nothing else moves. The swap is
 licensed by \lean{tableOf\_congr} (the state is a function of the
 live-chain set, \S\ref{sec:runtable}); the datatype interface, commit
 granularity, and wire format are unchanged, and every save byte,
-fingerprint, and content id is bit-identical (the full suites at the
-swap, 92 runtime plus 10 p2p tests, since grown to 103 runtime with
-the marks-GC tests of \S\ref{sec:marksruntime}; the serializer gates
-and the Python projection cross-check, bit-for-bit). The diagnosis was confirmed
-with margin (median apply, by trace and final size):
+fingerprint, and content id is bit-identical (the full suites, 103
+runtime plus 10 p2p tests including the marks-GC tests of
+\S\ref{sec:marksruntime}, agree; the serializer gates
+and the Python projection cross-check, bit-for-bit). The measurement
+confirms this with margin (median apply, by trace and final size):
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -10435,7 +10414,7 @@ apply, median & \code{ff\_flat} & \code{cs\_flat} & \code{seph} & \code{am-paper
 (final chars) & (21k) & (21k) & (57k) & (105k) \\
 \midrule
 ours (shipped, persistent HAMT) & 0.50\,$\mu$s & 0.38\,$\mu$s & 3.96\,$\mu$s & 4.08\,$\mu$s \\
-ours, copied-Map interface (pre-\#111) & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
+ours, copied-Map interface & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
 Yjs & 1.5\,$\mu$s & 1.7\,$\mu$s & 1.4\,$\mu$s & 1.4\,$\mu$s \\
 Automerge & 24\,$\mu$s & 26\,$\mu$s & 27\,$\mu$s & 27\,$\mu$s \\
 Loro & 0.6\,$\mu$s & 0.8\,$\mu$s & 0.6\,$\mu$s & 0.5\,$\mu$s \\
@@ -10484,7 +10463,7 @@ list-positions & 34\,$\mu$s & 626\,$\mu$s & 6.4\,KB & 123.6\,KB \\
 \code{bulk} = 6 rounds of 500 ops/replica, final 3604 chars; commit GC
 runs outside the timed window at millisecond totals.) Two honest
 caveats. First, the HAMT swap shows up here as a mild regression at this
-scale: the pre-\#111 \code{freq} sync median was 73\,$\mu$s, and per-id
+scale: the copied-Map \code{freq} sync median was 73\,$\mu$s, and per-id
 lookups are now $O(\log n)$ trie walks rather than $O(1)$ Map hits (the
 same swap cut the local op in this workload from 26 to 2.4\,$\mu$s, so
 the trade buys three orders on typing for a fraction of one on small-doc
@@ -10502,7 +10481,7 @@ steady state.
 \paragraph{Save size, four representations.} Our shipped runtime stores
 absolute chain coordinates as bit-strings, so the naive save is far above
 production; the run table (\S\ref{sec:runtable}) is the designed
-successor, and task~\#104 ships it as a real serializer. The four
+successor, and the runtime ships it as a real serializer. The four
 representations, in bytes per live character (final state of each
 sequential trace):
 
@@ -10611,7 +10590,7 @@ This is a tool, not a theorem, and the section labels it as such. The
 eight verification conditions the flat capstone consumes
 (\S\ref{sec:cvcs}, \lean{flat\_ra\_linearizable3\_eq}) are, for a flat
 instance, algebraic enough to hand to an SMT solver, and the \code{smt/}
-layer (tasks \#99/\#49) does exactly that: per instance it discharges the
+layer does exactly that: per instance it discharges the
 eight by z3, via unconditional laws that each \emph{imply} the
 corresponding conditioned VC (the \lean{DeltaVCs3} on-ramp
 (\lean{feasibleDeltaVCs3\_of\_delta}, Definition~\ref{def:delta}) for
@@ -10640,7 +10619,7 @@ the $-l$ in a counter merge, \code{max}-merge a PN, project a GSet merge,
 arbitrate LWW on the timestamp alone, drop the $\neg l$ guard in the
 OR-set) are each caught with a readable countermodel.
 
-\paragraph{The \#49 loop, and the normal form it forced.} The success
+\paragraph{The remove-wins loop, and the normal form it forces.} The success
 metric was a remove-wins set whose remove-records are garbage-collected
 against the LCA. Its literal specification comes back \code{sat} on both
 feasible-redistribute laws, and the loop's finding is why: the
@@ -10659,7 +10638,7 @@ the LCA guard; an add-wins tie-break; \code{min}-ing the remove
 timestamp) are each refuted by at least one genuine \code{sat}
 countermodel; a few individual kill queries hit the solver timeout
 instead of returning, but every killed variant carries \code{sat}
-verdicts independent of those (\code{smt/results/results.json}). The SMT loop therefore did not merely certify \#49's spec;
+verdicts independent of those (\code{smt/results/results.json}). The SMT loop therefore did not merely certify the remove-wins spec;
 it refuted the literal one and pushed the design to the max-timestamp
 normal form under which the whole bundle is push-button.
 
@@ -10671,7 +10650,7 @@ broken, with a thin Lean tactic re-proving the UNSAT cells natively (most
 already close by \code{omega} or \code{cases <;> rfl}). The residual hand
 proof then shrinks to exactly the configuration-conditioned cells the
 triage flags --- for the whole commuting class, and for the repaired
-\#49 design, empty.
+remove-wins design, empty.
 
 %======================================================================
 \part{Open questions and the mechanization map}
@@ -11054,18 +11033,19 @@ of ``no policy reaches Shesha''?
 
 \begin{openq}[the run-table wire format: the one face still open]
 \label{oq:runtable}
-The run-table \emph{theorem} bill is now closed on both sides
-(task~\#73), and the results are presented natively upstream: the four
+The run-table \emph{theorem} bill is now closed on both sides,
+and the results are presented natively upstream: the four
 closed T-mut equations and the literal table-direct walk
 (\lean{tableWalk\_tableOf}) in \S\ref{sec:runtable}; the sided mirror
 (the repr iso over labels, sides, and liveness, the offset-vs-tail
 comparator \lean{scmpTable\_eq\_keyLt}, the in-order walk with its
 literal \lean{stableWalk}, and the all-R lockstep bridge
 \lean{sTableOf\_liftR}/\lean{swalk\_liftR}) in
-\S\ref{sec:sidedruntable}. What remains is one engineering face: task~\#104's serializer turned the
-projection column into measured bytes (\S\ref{sec:perf}), and
-task~\#111's persistent-HAMT swap removed the interface-inherited
-per-op copy, so the open item is a delta/op \emph{wire format} for sync
+\S\ref{sec:sidedruntable}. What remains is one engineering face: the
+serializer turned the projection column into measured bytes
+(\S\ref{sec:perf}), and the persistent-HAMT swap removed the
+interface-inherited per-op copy, so the open item is a delta/op
+\emph{wire format} for sync
 (the concurrent payload column is still in-process).
 \end{openq}
 
@@ -11107,7 +11087,7 @@ $\Theta(|\text{origin key}|)$ coordinate cost where plain Fugue pays
 zero (\S\ref{sec:mechanization}). Is that retention a lower bound: must
 any tombstone-free design achieving maximal non-interleaving carry the
 right origin's ordering information in its keys? The question has a
-Myhill--Nerode shape (task \#89): distinguish states that demand
+Myhill--Nerode shape: distinguish states that demand
 different verdicts, and count what any key scheme must remember. It is
 the entropy law of \S\ref{sec:encoding} meeting the ordering intent,
 and the fooling-pair technique of \S\ref{sec:chainprice} is the
@@ -11115,18 +11095,18 @@ designated tool: exhibit two histories whose tag-free states coincide
 while maximal non-interleaving owes them different orders.
 \end{openq}
 
-\paragraph{Resolved: criss-cross merges and virtual LCAs.} The previous
-revision asked whether the eight VCs imply that a recursively computed
-virtual base equals $\sigma(E_1 \cap E_2)$, guessing inclusion-exclusion
-arguments per datatype and a candidate new store invariant. The answer
-landed stronger and cheaper than forecast (\S\ref{sec:vlca}): the
+\paragraph{Resolved: criss-cross merges and virtual LCAs.} The
+virtual-LCA question is whether the eight VCs imply that a recursively
+computed virtual base equals $\sigma(E_1 \cap E_2)$; a per-datatype route
+would guess inclusion-exclusion arguments and a candidate new store
+invariant. The framework answer is stronger and cheaper (\S\ref{sec:vlca}): the
 covering proposition makes the virtual base's event set \emph{exactly}
 the intersection from invariants already carried
 (\lean{StoreInv.origin} plus monotonicity, no new invariant), one fold
 induction from the per-configuration Join Lemma gives canonicity of the
 virtual state, and the per-datatype VC surface does not move. The
-per-datatype question dissolved into the hook the framework already
-demanded. The residue that remains open is operational, not semantic:
+per-datatype question dissolves into the hook the framework already
+demands. The residue that remains open is operational, not semantic:
 keep-set tightness (Open Question~\ref{oq:mcastight}).
 
 \paragraph{Resolved: the self-referential-spec limit.}

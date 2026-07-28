@@ -3,15 +3,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
 /-!
 # `loOnEq` collapses to pure causal non-commutation for the RGA
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The δ-A unlock.  `loOnEq` (`GenericEqQuotient`) has two disjuncts: (A) causal non-commutation
+`loOnEq` (`GenericEqQuotient`) has two disjuncts: (A) causal non-commutation
 `vis a b ∧ ¬ eqCommutesOn a b`, and (B) a concurrent tiebreak requiring `D.rc a b = RcRes.Fst_then_snd`.
 The RGA's conflict-resolution is `RGAM.rc = fun _ _ => RcRes.Either` (`RGA_EqQuotient` §, `G2_Transport_Probe`),
 so `rc a b = Either ≠ Fst_then_snd` **always** — clause (B) is unsatisfiable.  Hence for the RGA
 `loOnEq` is EXACTLY clause (A): a purely causal order (`loOnEq ⊆ vis`), with no concurrent tiebreak.
 
-Consequences (used by δ-A / `hEnum`): every `loOnEq` edge is a `vis` edge; eq-commuting pairs are
+Consequences (used by `hEnum`): every `loOnEq` edge is a `vis` edge; eq-commuting pairs are
 `loOnEq`-unordered in BOTH directions; so any causal linearization that additionally orders inserts
 before concurrent deletes-of-their-anchor is `loOnEq`-respecting (the tiebreak can't forbid it).
 -/
@@ -68,8 +66,8 @@ theorem respects_loOnEq_of_respects_vis (W : op_t α → concrete_st α → Prop
 
 /-- **No backward `loOnEq` edge without a backward `vis` edge.**  Contrapositive of `loOnEq_imp_vis`:
 if `a` does not causally see `b` (`¬ vis a b`), then there is no `loOnEq a b` edge — regardless of
-commutation.  THIS, not eq-commutation, is the correct tool for δ-A: to move an insert before a
-concurrent delete-of-its-anchor, rule out the forced order `loOnEq (Del) (Ins)` via `¬ vis (Del) (Ins)`
+commutation.  THIS, not eq-commutation, is the correct tool to move an insert before a
+concurrent delete-of-its-anchor: rule out the forced order `loOnEq (Del) (Ins)` via `¬ vis (Del) (Ins)`
 — an insert in a `noopFeasible` branch never causally follows the deletion of its own anchor (else it
 would be applied at a dead anchor, non-accurate and non-noop).  Eq-commutation is UNRELIABLE here
 (`Del` can reparent an insert into/out of accuracy, flipping the `doW` guard), so the visibility route

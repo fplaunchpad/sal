@@ -18,7 +18,7 @@ countermodel refutes).
 ## The two results
 
 1. **Ternary exactness** (`cdVC3_of_joinLemma3`, `joinLemma3_iff_cdVC3`,
-   `cdVC3_weakest`).  The lift of the binary A12 result
+   `cdVC3_weakest`).  The lift of the binary result
    (`Sal/CRDTs/Metatheory/CD_Exact.lean`): under `CoreVCs3`, the Join Lemma
    *implies* `CDVC3` — so given `DeltaVCs3` the two are equivalent, and no
    strictly weaker bridge VC exists.  Notably the ternary backward direction
@@ -29,7 +29,7 @@ countermodel refutes).
    DeltaVCs3 ⇒ JoinLemma3`".
 
 2. **The countermodel** (`AWSetF3`, `cdvc3_not_derivable_from_core_delta`).
-   `AWSetF3` is the LCA-blind ternary lift of the binary A10 separator
+   `AWSetF3` is the LCA-blind ternary lift of the binary separator
    `AWSetF` (`Sal/CRDTs/Metatheory/Assoc_CounterModel.lean`): state is an
    add-wins set together with a Boolean flag written by every op (`add ↦ true`,
    `rem ↦ false`), the ternary merge is the pairwise join `mergeL l a b = a ⊔ b`
@@ -49,8 +49,7 @@ countermodel refutes).
    binary lattice contract (`LatticeVCsPlus`) supplies as a separate axiom;
    `DeltaVCs3` does not, and `AWSetF3` exhibits the gap.
 
-Self-contained kill-test in the sense of
-`Refutations/LWW_Merge_Needs_Timestamps.lean`: the concrete signature, the two
+Self-contained kill-test: the concrete signature, the two
 positive VC bundles, the refuted target, and `#print axioms` at the end.
 -/
 
@@ -183,7 +182,7 @@ theorem cdVC3_weakest {D : ConditionedMRDTSig} {X : Prop}
 
 /-! ## §5. The `CDVC3` refutation for `AWSetF3`
 
-Reuses the binary A10 refuting configuration `flagConfig`: replica 0 holds
+Reuses the binary refuting configuration `flagConfig`: replica 0 holds
 `{aF (add), eF (rem)}` with `vis aF eF`, replica 1 holds `{aF}`. Take
 `U = {aF, eF}`, `e = eF`, `A = B = σ({aF}) = sF₂` (both `U∖e` and `↓e∖e`
 equal `{aF}` here). All `CDVC3` contextual hypotheses hold; the equation fails

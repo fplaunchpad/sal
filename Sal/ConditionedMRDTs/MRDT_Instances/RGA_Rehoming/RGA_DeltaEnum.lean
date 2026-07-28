@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 /-!
 # δ-B — a `loOnEq`-respecting enumeration of the delta exists
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 hEnum, step B (the order-existence half).  The generic `exists_respecting`
 (`ConditionedExecutionModel`) turns an acyclicity witness (a minimal element in every nonempty

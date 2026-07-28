@@ -14,8 +14,8 @@ State is a `map ℕ (ℕ × ℕ)` — key → (timestamp, value). Both `do_` and
 `merge` are defined pointwise per key using the same lexicographic max
 on pairs (higher timestamp wins, ties broken by larger value). Writing
 the two in terms of the same `lex_max` function is what lets the
-VCs go through — earlier attempts that used strict `>` in `do_` but
-value-tiebreak in `merge` failed `lem_0op` on arbitrary equal-timestamp
+VCs go through: a mismatched definition (strict `>` in `do_` but
+value-tiebreak in `merge`) fails `lem_0op` on arbitrary equal-timestamp
 state pairs.
 -/
 

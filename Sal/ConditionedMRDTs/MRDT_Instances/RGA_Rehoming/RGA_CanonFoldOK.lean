@@ -10,14 +10,14 @@ import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 /-!
 # Discharging `CanonFoldOK` from the per-event generation discipline
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 `RGA_CanonConvergence.RGA_update_convergence_canon` proves update convergence
 conditional on `CanonFoldOK [] (init_st (α := α)) π` — the per-event discipline at each
 event's OWN application point along the enumeration.  This file derives that
 discipline from an honest per-event GENERATION hypothesis (`GenDisc2C`, §1:
-`accurate` at the event's dependency prefix — the closure-corrected `GenDisc2`
-of `RGA_GenDischarge2`) plus the execution-model allocation facts
+`accurate` at the event's dependency prefix, the transitive-closure form of
+`RGA_GenDischarge2`'s `GenDisc2`) plus the execution-model allocation facts
 (`ConditionedConfiguration.distinctTs`, nonzero ids), for any `loOnA`-respecting
 enumeration of the delivered set.  Headline: `RGA_update_convergence_final`
 (§6) — two `loOnA`-respecting enumerations of `E` fold from `(init_st (α := α))` to
@@ -52,7 +52,7 @@ enumeration `F ++ [o]`, `CanonStepOK F (fold F) o` (§4) is assembled from:
 * `ChainOK`/`DelOK` — the transport §3: `o`'s accurate chain at its dependency
   fold `s_d`, the induction hypothesis's `CanonInv` at BOTH `s_d` and the
   application fold `s_F` (the dependency prefix is a strictly shorter good
-  enumeration — this is where the closure correction is load-bearing), and
+  enumeration — this is where the transitive closure is load-bearing), and
   `IsAncPath`-uniqueness pin each surviving entry's stored anchor at `s_F` to
   the next `F`-surviving entry of `o`'s recorded chain.  This is exactly the
   regime where `accurate o` FAILS at `s_F` (a concurrent `Del` of `o`'s anchor
@@ -74,7 +74,7 @@ open Sal.ConditionedMRDTs.RGASig (RGACondSig)
 open RGAMergeLinearization (applySeqR applySeqR_nil applySeqR_cons)
 open RGACanonConvergence
 
-/-! ## §1  The closure-corrected per-event generation discipline -/
+/-! ## §1  The per-event generation discipline via transitive closure -/
 
 /-- An `E`-internal dependency edge: an `loOnA`-edge whose source is delivered. -/
 def DepE (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
@@ -90,8 +90,8 @@ def DepC (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
   Relation.TransGen (DepE Cfg E)
 
 /-- **`IsDepPreC Cfg E o d`** — `d` is a `loOnA`-respecting `Nodup` enumeration
-of exactly `o`'s strict TRANSITIVE dependencies in `E`.  The closure-corrected
-`RGA_GenDischarge2.IsDepPre`: membership is pinned both ways, so the prefix set
+of exactly `o`'s strict TRANSITIVE dependencies in `E`.  The transitive-closure
+form of `RGA_GenDischarge2.IsDepPre`: membership is pinned both ways, so the prefix set
 is unique; unlike the direct-predecessor set it is backward-closed under
 `loOnA` — the dependency prefix is itself a genuine execution prefix. -/
 def IsDepPreC (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)

@@ -3,10 +3,10 @@ import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.MRDT_Instances.GSet.GSet
 
 /-!
-# Counter (`a+b−l`) — the counter-group demo kernel (unconditional delta route)
+# Counter (`a+b−l`): the counter-group demo kernel (unconditional delta route)
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The counter MRDT as a `ConditionedMRDTSig`, its RA-linearizability via the
+delta/CD route, and the G-Set delta instance alongside it.
 -/
 
 set_option maxHeartbeats 1000000

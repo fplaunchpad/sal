@@ -14,7 +14,7 @@ import Sal.ConditionedMRDTs.Refutations.SiblingSplice_Fooling
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!
-# Refutations — umbrella
+# Refutations: umbrella
 
 One import per refutation module, so `lake build
 Sal.ConditionedMRDTs.Refutations.Refutations` compiles the whole
@@ -27,30 +27,30 @@ target and can rot silently. Build this target alongside
 
 The catalogue:
 
-- `CD_Not_Derivable_Ternary` — the causal-delta bound is not derivable
+- `CD_Not_Derivable_Ternary`: the causal-delta bound is not derivable
   from the ternary laws (the CD ladder negative).
-- `EqSwap_Not_Forced` — the conditioned converse (#122): vc:comm+vc:inv
+- `EqSwap_Not_Forced`: the conditioned converse: vc:comm+vc:inv
   are NOT forced by conditioned RA-lin (`eqswap_not_forced`, datatype
   RESET), and vc:disc is EXTRA (`vc_disc_extra`, the two-Inv G-set).
-- `FeasibleInit_Not_Derivable_At_Empty` — VC5° (the nullary unit) is
-  independent: the poisoned-empty G-set (#114 phase 2, T2).
-- `LocalRedistribute_Not_Derivable` — VC6 (feasible local-redistribute)
-  is independent: the change-wins flag (#114 phase 2, T1).
-- `G2_Transport_Probe`, `G2_Applicability_Aware` — the G2 gate probes
+- `FeasibleInit_Not_Derivable_At_Empty`: VC5° (the nullary unit) is
+  independent: the poisoned-empty G-set.
+- `LocalRedistribute_Not_Derivable`: VC6 (feasible local-redistribute)
+  is independent: the change-wins flag.
+- `G2_Transport_Probe`, `G2_Applicability_Aware`: the G2 gate probes
   (also imported by Development and the gate files).
-- `Impossibility` — the flat impossibility theorem.
-- `InterLca2op_Defeater_Arbiter` — the fully LCA-legal execution that
+- `Impossibility`: the flat impossibility theorem.
+- `InterLca2op_Defeater_Arbiter`: the fully LCA-legal execution that
   defeats the published bottom-up soundness induction
   (`awset_rem_output_empty`, `no_inter_lca_2op_rem_peel_of_defeater`,
   `crack1_witness`).
-- `JoinLemma3F_Of_AlmostClosed` — the almost-closed route refutation.
-- `LWW_Merge_Needs_Timestamps` — LWW arbitration cannot be recovered
+- `JoinLemma3F_Of_AlmostClosed`: the almost-closed route refutation.
+- `LWW_Merge_Needs_Timestamps`: LWW arbitration cannot be recovered
   from the order-free state.
-- `Reunification_Peel_Obstruction` — the peel obstruction consumed by
+- `Reunification_Peel_Obstruction`: the peel obstruction consumed by
   `JoinLemma3C`.
-- `RGA_Rehoming_Gate` — the rehoming RGA's gate refutation.
-- `SiblingSplice_Fooling` — the sibling-splice fooling pair (the
+- `RGA_Rehoming_Gate`: the rehoming RGA's gate refutation.
+- `SiblingSplice_Fooling`: the sibling-splice fooling pair (the
   retention lower bound: `sibling_splice_no_merge_function`).
-- `UpdateFeasibility_Gate` — the feasibility gate (also imported by
+- `UpdateFeasibility_Gate`: the feasibility gate (also imported by
   Development and the NF files).
 -/

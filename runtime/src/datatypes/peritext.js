@@ -1,16 +1,8 @@
 // PERITEXT: the verified DOCUMENT-ORDER rich-text mark model as a runtime
-// datatype (task #55 -> #107). This is the bridge from the Lean-verified read
-// model to the editor: it plugs into DistributedReplica over the SAME
-// {init, apply, merge3, read} contract as embedRGA and orset, so rich text gets
-// delta gossip + content addressing + commit GC "for free" -- no Peritext-
-// specific runtime code (the parametricity payoff, test/peritext.test.js).
-//
-// PORTED FROM (read-side matched precisely):
-//   * whiteboard/litmus/peritext_read_model.py -- DocumentOrderResolver, the
-//     Ex1-8 renders, gravity, leak, trilemma (the executable reference).
-//   * Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Embed/PeritextEmbed_MarkIntent.lean
-//     -- DocD (shadow + deleted), startIncl/endExcl, renderMarksDoc,
-//     doc_no_backward_leak, doc_delete_can_respan (the verified spec).
+// datatype. This is the bridge from the verified read model to the editor: it
+// plugs into DistributedReplica over the SAME {init, apply, merge3, read}
+// contract as embedRGA and orset, so rich text gets delta gossip + content
+// addressing + commit GC for free, with no Peritext-specific runtime code.
 //
 // STATE = { text: { shadow, deleted }, marks }
 //   * text.shadow : an embedRGA state holding EVERY inserted character (birth
@@ -25,11 +17,11 @@
 // the document-order resolver rehomes a DEAD boundary anchor to its nearest
 // surviving neighbour IN READING ORDER, which needs the dead anchor's birth
 // position. embedRGA.del erases the record (and its coordinate), destroying
-// exactly that. So this is DocD from the verified spec: births are kept, a
-// separate deleted set marks the survivors. live = birth order minus deleted
-// (the embed capstone's P3, the same identity embedRGA.merge preserves). This
-// is ALSO why state compaction is (correctly) refused: pruning a dead anchor's
-// coordinate would break mark rehoming (see the note at the bottom).
+// exactly that. So this is DocD: births are kept, a separate deleted set marks
+// the survivors. live = birth order minus deleted (P3, the same identity
+// embedRGA.merge preserves). This is ALSO why state compaction is (correctly)
+// refused here: pruning a dead anchor's coordinate would break mark rehoming
+// (see the note at the bottom).
 
 import { embedRGA } from './embedRGA.js';
 import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
@@ -66,9 +58,9 @@ function scan(birth, deleted, i, step) {
   return null;
 }
 
-// First covered live index (null = the span collapsed). Mirrors Python
-// DocumentOrderResolver._start_index. Growth compares char id > mark.ts
-// ("newer than the mark"), the RGA opId tiebreak (ts defaults to mid).
+// First covered live index (null = the span collapsed). Growth compares
+// char id > mark.ts ("newer than the mark"), the RGA opId tiebreak (ts
+// defaults to mid).
 function startIndex(m, ctx) {
   const { live, birth, pos, bpos, deleted } = ctx;
   let a = m.startId;
@@ -83,8 +75,8 @@ function startIndex(m, ctx) {
   return first;
 }
 
-// Last covered live index INCLUSIVE (null = collapse). Mirrors Python
-// DocumentOrderResolver._end_index. endSide=after GROWS right; before does not.
+// Last covered live index INCLUSIVE (null = collapse). endSide=after GROWS
+// right; before does not.
 function endIndex(m, ctx) {
   const { live, birth, pos, bpos, deleted } = ctx;
   const n = live.length;
@@ -114,7 +106,7 @@ function coveredIds(m, ctx) {
 
 // The full document-order render: per live char, its ACTIVE mark set. Per
 // (char, mtype) the covering mark with the highest mid wins (LWW); an active
-// mark is one whose winner is not a removeMark. Mirrors Python render().
+// mark is one whose winner is not a removeMark.
 function renderDoc(state) {
   const ctx = buildCtx(state);
   const best = new Map();                      // live id -> Map(mtype -> {mid, removed, value})
@@ -213,8 +205,8 @@ export const peritext = {
   // The DOCUMENT-ORDER rich-text read: [{ id, char, marks:[{mtype,value}] }].
   read(state) { return renderDoc(state); },
 
-  // Flag projection [(char, isMtype)] -- the paper's rendered view (Python
-  // render_flags). A pure projection of read(), not a re-derivation.
+  // Flag projection [(char, isMtype)], the rendered flag view. A pure
+  // projection of read(), not a re-derivation.
   flags(state, mtype) {
     return renderDoc(state).map((e) => [e.char, e.marks.some((m) => m.mtype === mtype)]);
   },
@@ -259,8 +251,7 @@ export const peritext = {
   // (the orset path). The marks-layer GC lives in ../compact-peritext.js
   // (`compactiblePeritext`): the keep-set retains live ids UNION mark
   // boundary anchors UNION declared in-flight anchors, so pruning never
-  // destroys a birth position the resolver needs (buildCtx.birth) -- the
-  // VALIDATED retention-roots design of whiteboard/marks-gc-note.md (#110).
-  // Blind pruning WOULD flip reads (note D6); that negative control is kept
-  // executable as opts.noRetention in compact-peritext.js.
+  // destroys a birth position the resolver needs (buildCtx.birth), the
+  // retention-roots design. Blind pruning WOULD flip reads; that negative
+  // control is kept executable as opts.noRetention in compact-peritext.js.
 };

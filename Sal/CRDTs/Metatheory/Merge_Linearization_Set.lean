@@ -6,9 +6,9 @@ import Sal.CRDTs.Metatheory.Merge_Linearization
 ## Why this file exists
 
 The merge-linearization induction in `Merge_Linearization.lean` is
-blocked (6 `sorry`s) on what `FINDINGS.md` called *"a convergence
-lemma valid over merely backward-closed reachable replica sets"* —
-i.e. `convergence` with the overwriter-closure hypothesis dropped.
+blocked (6 `sorry`s) on a convergence lemma valid over merely
+backward-closed reachable replica sets: `convergence` with the
+overwriter-closure hypothesis dropped.
 
 **That lemma is false.** Counter-model (OR-set, add-wins,
 `rem →rc add`, all 24 VCs hold): replica B executes `rem_a` (event
@@ -21,7 +21,7 @@ configuration `C` (which contains `e₃`) the relation `lo C` orders
 fold to different states (`{a-tag}` vs `∅`). Convergence over the
 replica set w.r.t. `lo C` therefore fails.
 
-## The fix: set-relative `lo`
+## Set-relative `lo`
 
 The absorber existential in `lo` must range over the *event set of
 the version being linearized*, not over the whole configuration:
@@ -973,12 +973,11 @@ reduces to a single state-level statement — the **Join Lemma**:
     IsCanonicalState (ev₁ ∪ ev₂) (merge s₁ s₂)
 
 for backward-closed `ev₁, ev₂`. Witness lists disappear from the
-induction entirely; `isCanonicalState_peel` (below, proved) is the
-engine that replaces the unsound side-witness re-permutation of the
-paper. The Join Lemma itself is the remaining open obligation — see
-`FINDINGS.md` addendum A5 for why its peel step is *true* under
-`loOn`-maximality + backward closure but not expressible as an
-unconditional per-CRDT VC. -/
+induction entirely; `isCanonicalState_peel` (below) is the
+engine that avoids the unsound side-witness re-permutation of the
+paper. The Join Lemma itself is the open obligation: its peel step
+is *true* under `loOn`-maximality + backward closure but not
+expressible as an unconditional per-CRDT VC. -/
 
 /-- `s` is the canonical state of `ev`: the fold of some (hence, by
 `convergence_on`, of every) `loOn C ev`-respecting enumeration. -/
@@ -1088,18 +1087,17 @@ theorem isCanonicalState_extend {C : Configuration D}
         exact h_nvis_ye (h_e_sees y hy_ev)
   · rw [applySeq_append_single, hs]
 
-/-- **The Join Lemma** — after this file, the *entire* merge case of
+/-- **The Join Lemma.** The *entire* merge case of
 the RA-linearizability metatheorem reduces to this one state-level
 statement (see `merge_linearization_of_join`). It is TRUE on every
-worked instance including the A3 defeater of `FINDINGS.md`, and its
+worked instance including the associative counter-model, and its
 peel step is valid under `loOn`-maximality + backward closure; but
-it is NOT derivable from the current VC bundle (the A3 defeater
+it is NOT derivable from the VC bundle (the associative counter-model
 kills every bottom-up derivation), and its peel identities are
-irreducibly contextual — no unconditional per-CRDT equation
-captures them (FINDINGS A5). Discharging it — from cond-comm-style
-leaf VCs via a new contextual induction, or from lattice VCs
-(merge associativity + update inflation/monotonicity) — is the open
-obligation. -/
+irreducibly contextual: no unconditional per-CRDT equation
+captures them. Discharging it (from cond-comm-style leaf VCs via a
+contextual induction, or from lattice VCs (merge associativity +
+update inflation/monotonicity)) is the open obligation. -/
 def JoinLemma (D : CRDTSig) : Prop :=
   ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
@@ -1112,12 +1110,11 @@ def JoinLemma (D : CRDTSig) : Prop :=
 
 /-- **Reduction: the Join Lemma closes the merge case.** Given the
 strengthened (set-relative) witnesses for the two replicas, the Join
-Lemma delivers the merged witness — respecting `loOn` of the merged
-set, hence in particular the paper's `lo C`. This is the corrected
-replacement for `merge_linearization_exists`, with the false
-forward-closure hypotheses gone and the unsound re-permutation
-replaced by `isCanonicalState_peel`-based reasoning inside
-`JoinLemma`. -/
+Lemma delivers the merged witness, respecting `loOn` of the merged
+set, hence in particular the paper's `lo C`. It stands in for
+`merge_linearization_exists` without the (false) forward-closure
+hypotheses and without the unsound re-permutation, using
+`isCanonicalState_peel`-based reasoning inside `JoinLemma`. -/
 theorem merge_linearization_of_join {D : CRDTSig}
     (hJoin : JoinLemma D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -1152,8 +1149,7 @@ The Join Lemma's induction peels a `loOn(ev₁ ∪ ev₂)`-maximal event
 `e` from the union. Everything about that induction — maximal-event
 selection, closure preservation, the measure, re-attachment — is
 proved below. The two *state equations* it consumes are exactly the
-contextual identities of FINDINGS A5, isolated here as the
-`JoinPeelVCs` bundle:
+contextual identities isolated here as the `JoinPeelVCs` bundle:
 
 * `peel_local`:  `merge s₁ s₂ = update (merge t₁ s₂) e` when `e` is
   union-maximal and local to side 1 (`t₁` canonical for `ev₁ ∖ {e}`);
@@ -1161,8 +1157,8 @@ contextual identities of FINDINGS A5, isolated here as the
   union-maximal and shared.
 
 They are stated over canonical states *with their full context*
-(union-maximality, backward closure) because — as A5 shows with the
-two-key OR-set — no unconditional equation over raw states is both
+(union-maximality, backward closure) because, as the two-key OR-set
+shows, no unconditional equation over raw states is both
 true and sufficient. `join_lemma_of_peel` then closes the Join Lemma
 completely. `joinPeelVCs_of_all_comm` discharges the bundle for the
 commuting class (every pair of events commutes — G-Set and friends),
@@ -1321,10 +1317,10 @@ theorem isCanonicalState_snoc {D : CRDTSig} {C : Configuration D}
     exact h_max y hy_ev hy_ne
   · rw [applySeq_append_single, hf]
 
-/-- **The peel identities** — the two contextual state equations the
+/-- **The peel identities**: the two contextual state equations the
 Join Lemma's induction consumes, isolated as an explicit bundle.
-See the section header and FINDINGS A5 for why they are stated over
-canonical states with the union-maximality context. -/
+See the section header for why they are stated over canonical states
+with the union-maximality context. -/
 structure JoinPeelVCs (D : CRDTSig) : Prop where
   /-- Peel a union-maximal event local to side 1. -/
   peel_local :

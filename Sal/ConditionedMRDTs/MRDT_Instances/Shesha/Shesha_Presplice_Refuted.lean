@@ -1,8 +1,8 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Join_Refuted
 
-/-! # Shesha — the `W`-join hook (phase 2e) is ALSO false: slot orders misalign
+/-! # Shesha — the `W`-join hook is ALSO false: slot orders misalign
 
-`shesha_join_at_eff` (the phase-2e formulation: every `SheshaHonest`
+`shesha_join_at_eff` (every `SheshaHonest`
 configuration admits `JoinLemma3AtW` at the **effective** witness class) is
 **refuted** here, and with it `shesha_presplice` as stated.
 
@@ -32,7 +32,7 @@ In real executions the misaligned triple is **unreachable**: a version's
 state inherits the LCA's display of common pairs (branch agreement is an
 *evolution* invariant, not a per-slot property). The repair therefore
 threads a cross-slot **coherence** relation along version ancestry
-(`Metatheory/WitnessCoherence.lean`), and the corrected hook receives
+(`Metatheory/WitnessCoherence.lean`), and the hook then receives
 branch-agreement-aligned witnesses.
 
 Axiom note: the merge computation runs through `List.mergeSort`, so the
@@ -370,11 +370,11 @@ theorem fold_head_three {ρ : List (Op SAppOp)}
         from rfl,
       Shesha.insert, if_pos rfl]
 
-/-- **The phase-2e join hook is FALSE**: an honest configuration exists at
+/-- **The `W`-join hook is FALSE**: an honest configuration exists at
 which `JoinLemma3AtW` at the effective class fails — the misaligned (but
 individually canonical and effective) triple `st0, st1, st0` makes the merge
 display `1 3 2`, which no `loOn`-respecting enumeration of the union folds
-to. This is the exact statement of the former `shesha_join_at_eff`. -/
+to. This is the exact statement of `shesha_join_at_eff`. -/
 theorem shesha_join_at_eff_refuted :
     ¬ (∀ C', SheshaHonest C' →
         JoinLemma3AtW SheshaD SheshaEff (Configuration.core C')) := by

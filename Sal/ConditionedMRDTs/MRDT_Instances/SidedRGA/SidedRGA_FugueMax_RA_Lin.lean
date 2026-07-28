@@ -1,21 +1,22 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_FugueMax
 
 /-!
-# The FugueMax variant alphabet as a conditioned MRDT instance (task #92, item 3)
+# The FugueMax variant alphabet as a conditioned MRDT instance
 
 `SidedRGA.lean`'s capstone `sided_embed_ra_linearizable3` covers plain sided
 coordinates (`sBlock`); the FugueMax realization (`SidedRGA_FugueMax.lean`)
 writes records over the VARIANT alphabet of
 `Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean` — R entries carry an immutable
 right-origin tag (`fwTag`) before the delta code — which is a different block
-format, so RA-linearizability for the FM datatype was owed. This file pays it.
+format, so RA-linearizability for the FM datatype needs a separate proof,
+which this file gives.
 
 The route is the sided instance's, verbatim in structure: the state is the
 same canonical sorted list (`SState`, strictly descending by `sKey`), so the
 whole §2/§2½ list algebra of `SidedRGA.lean` (`ssorted_ext`, `sInsert`,
 `sMerge2`, `sMergeL`) is REUSED; what changes is the op alphabet (`FOp`
 carries a coordinate prefix and one `FMEntry`) and the key-injectivity
-discharge, which now runs through the variant's unique decodability
+discharge, which runs through the variant's unique decodability
 `fmCoordOf_inj` — this is where the FM format differs materially: the
 variant needs `TagsOK` (wellformed right-origin tags) alongside chain
 positivity, so the honesty contract `FMHonest` carries both. Convergence is
@@ -870,13 +871,13 @@ theorem fm_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (FMSig Γ)}
     hReach
 
 /-- **The FugueMax variant datatype is RA-linearizable, per version, at
-every honestly reachable configuration** — closing task #92 item (3): the
-sided capstone re-instantiated for the FM-tagged coordinate format. The
-right-origin tags ops carry are payload to this theorem, exactly as sides
-were to the sided capstone — which is the mechanized form of the design's
-policy/datatype split: `mGenInsAfter` (the FugueMax mint of
-`SidedRGA_FugueMax.lean`) is a generation policy above this one verified
-kernel. Parametric in the delta code Γ. -/
+every honestly reachable configuration**: the sided capstone
+re-instantiated for the FM-tagged coordinate format. The right-origin
+tags ops carry are payload to this theorem, exactly as sides were to the
+sided capstone. This separates the policy from the datatype:
+`mGenInsAfter` (the FugueMax mint of `SidedRGA_FugueMax.lean`) is a
+generation policy above this one verified kernel. Parametric in the
+delta code Γ. -/
 theorem fuguemax_ra_linearizable3 {Γ : OrderedPrefixCode}
     {C : Configuration (FMSig Γ)} (hReach : FMReach Γ C) :
     IsRALinearizable3 C :=

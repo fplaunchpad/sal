@@ -3,35 +3,34 @@ import Sal.ConditionedMRDTs.Metatheory.ConditionedContract
 /-!
 # The generic `≈`-quotient functor and the conditioned metatheorem up to `≈`
 
-`Development/GENERIC_FRAMEWORK_DESIGN.md`, steps 1–3. Everything here is
-generic over an abstract `D : ConditionedMRDTSig` — no datatype specifics.
+Everything here is generic over an abstract `D : ConditionedMRDTSig`, with no
+datatype specifics.
 
 * **§1** the VC bundle a datatype supplies for the `≈`-route, over a
   datatype-declared operation-wellformedness predicate `W` (`WfOp`): `EqEquiv D`
   (the observational relation with its equivalence proof), `InvPres D W`
-  (`Inv` holds initially, is preserved by the RAW `update` **on `W`-well-formed
-  ops** — `W` is WEAKER than `applicable`, and is what the execution model's
-  timestamp freshness actually guarantees — and by `mergeL`), `CongVC D E`
-  (`update`/`mergeL`/`query` respect `≈` **on `Inv`-states** — conditioned, per
+  (`Inv` holds initially, is preserved by the raw `update` on `W`-well-formed
+  ops (`W` is weaker than `applicable`, and is what the execution model's
+  timestamp freshness guarantees), and by `mergeL`), `CongVC D E`
+  (`update`/`mergeL`/`query` respect `≈` on `Inv`-states, conditioned since
   `merge_eq_congr_l_fails`), `InvInvVC D E W` (`W` and `applicable` are
   `≈`-invariant on `Inv`-states), and `WfOpReachable D W` (the datatype VC that
   seats each fold step: any distinct-timestamp enumeration folds from `init` with
-  `W` at every prefix — the RGA discharges this from monotone ids / path
-  structure). `Inv` itself needs no invariance VC — the subtype quotient carries
+  `W` at every prefix; the RGA discharges this from monotone ids / path
+  structure). `Inv` itself needs no invariance VC: the subtype quotient carries
   it.
 
-  **Why a guard survives inside `qdo` (honest note).** `ConditionedMRDTSig.update`
-  is TOTAL and `applySeq` folds it unconditionally, so `qdo : QState → Op →
-  QState` must be total into the `Inv`-subtype quotient; with RAW `update` that
+  **Why a guard survives inside `qdo`.** `ConditionedMRDTSig.update`
+  is total and `applySeq` folds it unconditionally, so `qdo : QState → Op →
+  QState` must be total into the `Inv`-subtype quotient; with raw `update` that
   needs `Inv (update s o)`, i.e. `W o s`, which is a reachability-level fact
   `qdo` (a signature field) cannot see. So `qdo` retains a totality guard `doW`
-  (identity on `¬W`) — NOT the earlier `applicable`-guard. The un-distortion:
-  `doW` is TRANSPARENT on every reachable fold (`W` holds at each prefix by
-  `WfOpReachable`), so `applySeqW = applySeq` (raw) there, and `IsCanonicalStateEq`
-  / `EqJoinLemma3C` / the readback are all stated over the RAW `applySeq`,
-  matching the RGA's raw `applySeqR`.
+  (identity on `¬W`). `doW` is transparent on every reachable fold (`W` holds at
+  each prefix by `WfOpReachable`), so `applySeqW = applySeq` (raw) there, and
+  `IsCanonicalStateEq` / `EqJoinLemma3C` / the readback are all stated over the
+  raw `applySeq`, matching the RGA's raw `applySeqR`.
 * **§2** the functor `D ↦ D≈`: `QState` is the quotient of the
-  `Inv`-subtype `{s // D.Inv s}` by `≈` (the subtype — not the plain —
+  `Inv`-subtype `{s // D.Inv s}` by `≈` (the subtype, not the plain,
   quotient, so `CongVC`'s `Inv` hypotheses are in scope at every lift),
   with `qdo`/`qmergeL`/`qquery`/`qapplicable` lifted and the signature
   `QSig` assembled (`Inv := True` upstairs: every class already carries a
@@ -39,13 +38,13 @@ generic over an abstract `D : ConditionedMRDTSig` — no datatype specifics.
 * **§3** the transfer: `=` on `QState` *is* `≈` downstairs, so the
   datatype's `≈`-Join (`EqJoinLemma3C`, stated over `D`'s own
   configurations with the `≈`-conditioned linearization order `loOnEq`)
-  becomes the literal `JoinLemma3C (QSig …)` — `joinC_quotient`.
+  becomes the literal `JoinLemma3C (QSig …)`, `joinC_quotient`.
 * **§4** the metatheorem `RA_linearizable_up_to_eq`:
   `ra_linearizable3_of_joinC (QSig …) ∘ joinC_quotient`, plus the explicit
-  readback `RA_linearizable_up_to_eq_readback` — every version state of a
+  readback `RA_linearizable_up_to_eq_readback`: every version state of a
   reachable `QSig`-configuration is `≈` to a fold of an `lo`-respecting
   enumeration of its event set. RA-linearizability up to `≈`.
-* **§5** the `app`-conditioning audit (documentation, end of file).
+* **§5** the `app`-conditioning audit (end of file).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -66,25 +65,25 @@ structure EqEquiv (D : ConditionedMRDTSig) where
   /-- `≈` is an equivalence. -/
   equiv : Equivalence eqv
 
-/-- **`InvPres D W`** — `Inv` holds at `init`, is preserved by the RAW `update`
-**on `W`-well-formed ops** (`W` = the datatype-declared operation-wellformedness
+/-- **`InvPres D W`** — `Inv` holds at `init`, is preserved by the raw `update`
+on `W`-well-formed ops (`W` = the datatype-declared operation-wellformedness
 predicate, `WfOp`), and is preserved by `mergeL`. This is the datatype's
 `inv_step`; `ConditionedMRDTSig` does not carry it as a field, so it is an
 explicit VC here.
 
-`inv_update` is `W`-CONDITIONED, **not** `applicable`-conditioned — this is the
-un-distortion. The EXECUTION MODEL (`Step3.apply`, `LCA_Lemma.lean:451`) applies
-the RAW `D.update s (t,r,o)` with NO `applicable` guard, but WITH timestamp
-freshness (`h_fresh_t`/`h_fresh_store`). So the guarantee the runtime actually
-provides for each applied event is *well-formedness* `W` — weaker than
-`applicable` — not `applicable`. `W` is datatype-SPECIFIC (RGA: `id ≠ 0 ∧
-Ins-freshness ∧ the `Del`-resolve fact`; the `Ins` part comes from
-Step3-freshness, the `Del` part from the datatype's own `id_mono`/path structure)
-and is discharged along reachable folds by the `WfOpReachable` VC below. A
-`ConditionedMRDTSig`'s `update` need not preserve `Inv` on a `¬W` op, so demanding
-unconditional preservation would make `InvPres` UNSATISFIABLE by the very
-datatypes this framework hosts. `inv_mergeL` stays unconditional: the hosting
-datatype picks an `Inv` strong enough (the RGA's `qInv`, carrying `id_mono`;
+`inv_update` is `W`-conditioned, not `applicable`-conditioned. The execution
+model (`Step3.apply`, `LCA_Lemma.lean:451`) applies the raw `D.update s (t,r,o)`
+with no `applicable` guard, but with timestamp freshness
+(`h_fresh_t`/`h_fresh_store`). So the guarantee the runtime provides for each
+applied event is *well-formedness* `W` (weaker than `applicable`), not
+`applicable`. `W` is datatype-specific (RGA: `id ≠ 0 ∧ Ins-freshness ∧ the
+`Del`-resolve fact`; the `Ins` part comes from Step3-freshness, the `Del` part
+from the datatype's own `id_mono`/path structure) and is discharged along
+reachable folds by the `WfOpReachable` VC below. A `ConditionedMRDTSig`'s
+`update` need not preserve `Inv` on a `¬W` op, so demanding unconditional
+preservation would make `InvPres` unsatisfiable for the datatypes this framework
+hosts. `inv_mergeL` stays unconditional: the hosting datatype picks an `Inv`
+strong enough (the RGA's `qInv`, carrying `id_mono`;
 `RGA_VCPackage.rga_inv_mergeL_of_idmono`). -/
 structure InvPres (D : ConditionedMRDTSig)
     (W : Op D.AppOp → D.State → Prop) : Prop where
@@ -95,11 +94,11 @@ structure InvPres (D : ConditionedMRDTSig)
     D.Inv l → D.Inv a → D.Inv b → D.Inv (D.mergeL l a b)
 
 /-- **`CongVC D E`** — the congruence VC: `update`, `mergeL` and `query`
-respect `≈` **on `Inv`-states**. The conditioning on `Inv` is forced: the
-full-type `mergeL` congruence is FALSE for the RGA
+respect `≈` on `Inv`-states. The conditioning on `Inv` is forced: the
+full-type `mergeL` congruence is false for the RGA
 (`RGA_EqQuotient.merge_eq_congr_l_fails`); it holds only on the reachable
 subfamily, which `Inv` over-approximates. `query_congr` is not consumed by
-the metatheorem — it only carries the `query` field through the quotient
+the metatheorem; it only carries the `query` field through the quotient
 (and is the literal reading of "`≈` is observational equivalence"). -/
 structure CongVC (D : ConditionedMRDTSig) (E : EqEquiv D) : Prop where
   update_congr : ∀ (o : Op D.AppOp) {s s' : D.State},
@@ -115,7 +114,7 @@ structure CongVC (D : ConditionedMRDTSig) (E : EqEquiv D) : Prop where
 state-dependent predicates that descend to the quotient: the guard predicate `W`
 (`WfOp`, needed to lift the guarded step `doW`), and `applicable` (carried through
 as `QSig.applicable`). RGA: `wf`/`fresh`-`eq_iff` for `W`,
-`accurate_eq_iff ∧ fresh_ts_eq_iff` for `applicable`. `Inv` itself needs NO
+`accurate_eq_iff ∧ fresh_ts_eq_iff` for `applicable`. `Inv` itself needs no
 invariance VC: the quotient is the `Inv`-subtype, so every class carries `Inv`. -/
 structure InvInvVC (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop) : Prop where
@@ -152,28 +151,24 @@ theorem qmk_eq_iff (E : EqEquiv D) {s s' : D.State}
     qmk E s hs = qmk E s' hs' ↔ E.eqv s s' :=
   ⟨fun h => Quotient.exact h, fun h => Quotient.sound h⟩
 
-/-! ### The `WfOp`-guarded step (a TOTALITY device) and the raw-fold bridge
+/-! ### The `WfOp`-guarded step (a totality device) and the raw-fold bridge
 
-`ConditionedMRDTSig.update : State → Op → State` is TOTAL, and the emulation's
+`ConditionedMRDTSig.update : State → Op → State` is total, and the emulation's
 `applySeq D s π = π.foldl D.update s` folds it unconditionally. So the quotient's
-`update` (`qdo`) must be a TOTAL `QState → Op → QState`; since `QState` is the
+`update` (`qdo`) must be a total `QState → Op → QState`; since `QState` is the
 `Inv`-subtype quotient, every output must carry an `Inv` proof of its
-representative. With RAW `D.update` that proof is `Inv (D.update s o)`, which the
+representative. With raw `D.update` that proof is `Inv (D.update s o)`, which the
 `W`-conditioned `inv_update` supplies only given `W o s`. `W o s` is a
-per-`(o,s)` fact the runtime provides only at the CONFIGURATION/reachability
-level — strictly downstream of `qdo`, which is a signature field with no access
-to any configuration. **So `qdo` cannot be a guard-free raw lift; the guard
-`doW` (identity on `¬W`) is FORCED by totality**, independent of whether the
-guard is on `applicable` or `W`. This is not silent: the guard is a pure totality
-artifact, and — crucially — it is TRANSPARENT on every fold the execution model
-produces, because those folds carry `W` at every prefix (`WfOpReachable`), so the
-guarded fold `applySeqW` EQUALS the raw fold `applySeq`
+per-`(o,s)` fact the runtime provides only at the configuration/reachability
+level, strictly downstream of `qdo`, which is a signature field with no access
+to any configuration. So `qdo` cannot be a guard-free raw lift; the guard `doW`
+(identity on `¬W`) is forced by totality. The guard is transparent on every fold
+the execution model produces, because those folds carry `W` at every prefix
+(`WfOpReachable`), so the guarded fold `applySeqW` equals the raw fold `applySeq`
 (`applySeqW_eq_applySeq_of_wfChain`). That equality is what lets
-`IsCanonicalStateEq`/`EqJoinLemma3C`/readback be stated over RAW `applySeq`
-(matching the RGA's raw `applySeqR`) even though `qdo` internally guards. The
-un-distortion vs. the earlier `applicable`-guard: `doW` skips only `¬W`
-(non-fresh) ops the runtime NEVER applies, whereas the `applicable`-guard skipped
-`applicable`-but-fresh ops the runtime DOES apply. -/
+`IsCanonicalStateEq`/`EqJoinLemma3C`/readback be stated over raw `applySeq`
+(matching the RGA's raw `applySeqR`) even though `qdo` internally guards. `doW`
+skips only `¬W` (non-fresh) ops the runtime never applies. -/
 
 /-- One `W`-guarded step: apply `o` when `W`-well-formed, else keep the state.
 Identity fallback is the forced totality device (see the `§` note above). -/
@@ -252,16 +247,16 @@ theorem InvPres.inv_applySeq_of_wfChain {W : Op D.AppOp → D.State → Prop}
 
 /-- **`WfOpReachable D W WfOpGen`** — the datatype VC that seats each fold step,
 carrying a per-event **generation-wellformedness** premise `WfOpGen`. Any `Nodup`
-enumeration with pairwise-distinct timestamps AND all-`WfOpGen` events folds from
+enumeration with pairwise-distinct timestamps and all-`WfOpGen` events folds from
 `init` with `W` at every prefix. `WfOpGen` is the honest per-op side condition a
 real execution supplies (via `applicable` at generation) that `Nodup +
-distinct-ts` alone do NOT (RGA: `Ins` needs `t ≠ 0`; `Del pre x` needs `x ∉ pre ∧
-x ≠ 0`). Without it the VC is UNSATISFIABLE — a genuinely-applicable root delete
+distinct-ts` alone do not (RGA: `Ins` needs `t ≠ 0`; `Del pre x` needs `x ∉ pre ∧
+x ≠ 0`). Without it the VC is unsatisfiable: a genuinely-applicable root delete
 `Del [] 0` is `Nodup`/distinct-ts-legal yet `resolve init [] = 0 = x`, so `W`
-fails (kernel-refuted as `RGA_WfOpReachable.rga_wfOpReachable_false` against the
-old 2-argument shape). With the premise the datatype discharges it: RGA's
-`rga_wfChain_of_genuine` proves exactly `∀ ρ, Nodup → distinct-ts →
-(∀ o ∈ ρ, WfOpGen o) → WfChain`. `W`/`WfOpGen` are datatype-SPECIFIC. -/
+fails (`RGA_WfOpReachable.rga_wfOpReachable_false`). With the premise the
+datatype discharges it: RGA's `rga_wfChain_of_genuine` proves exactly
+`∀ ρ, Nodup → distinct-ts → (∀ o ∈ ρ, WfOpGen o) → WfChain`. `W`/`WfOpGen` are
+datatype-specific. -/
 def WfOpReachable (D : ConditionedMRDTSig)
     (W : Op D.AppOp → D.State → Prop) (WfOpGen : Op D.AppOp → Prop) : Prop :=
   ∀ ρ : List (Op D.AppOp), ρ.Nodup →
@@ -368,10 +363,10 @@ noncomputable def QSig : ConditionedMRDTSig where
 
 /-- `applySeq` commutes with the quotient: folding the lifted (guarded) `update`
 over a class is the class of the guarded fold `applySeqW`. The guard `doW` is
-baked into BOTH sides — `qdo` upstairs, `doW` downstairs — so this holds
-UNCONDITIONALLY in `ρ` (the totality guard is on both sides). The bridge to the
-RAW fold happens later, at the use sites, via `applySeqW_eq_applySeq_of_wfChain`
-fed by `WfOpReachable`. -/
+baked into both sides (`qdo` upstairs, `doW` downstairs), so this holds
+unconditionally in `ρ` (the totality guard is on both sides). The bridge to the
+raw fold happens at the use sites, via `applySeqW_eq_applySeq_of_wfChain` fed by
+`WfOpReachable`. -/
 theorem qapplySeq (ρ : List (Op D.AppOp)) (s : D.State) (hs : D.Inv s) :
     Sal.Emulation.applySeq (QSig E W hP hC hA).toCRDTSig (qmk E s hs) ρ
       = qmk E (applySeqW D W s ρ) (hP.applySeqW ρ s hs) := by
@@ -893,15 +888,15 @@ theorem goodConfig3_of_reachF_wfgen
         (ih (fun o ho => hGenc o (hmono o ho)) hGDpred)
     | query h_s h_val => exact ih (fun o ho => hGenc o (hmono o ho)) hGDpred
 
-/-- **`RA_linearizable_up_to_eq`** — THE generic conditioned metatheorem.
-A `ConditionedMRDTSig` `D` supplying the `≈`-route VCs — `EqEquiv`, `InvPres`,
-`CongVC`, `InvInvVC`, `WfOpReachable D W WfOpGen` (now carrying the per-event
-generation-wellformedness premise), and `EqJoinLemma3C` — makes its quotient
+/-- **`RA_linearizable_up_to_eq`** — the generic conditioned metatheorem.
+A `ConditionedMRDTSig` `D` supplying the `≈`-route VCs (`EqEquiv`, `InvPres`,
+`CongVC`, `InvInvVC`, `WfOpReachable D W WfOpGen`, carrying the per-event
+generation-wellformedness premise, and `EqJoinLemma3C`) makes its quotient
 signature `QSig` per-version RA-linearizable on every reachable configuration
-whose events are all `WfOpGen`. The last hypothesis `hGenC` is the HONEST
+whose events are all `WfOpGen`. The last hypothesis `hGenC` is the honest
 execution condition: the reachable config's events were generated sensibly (the
-RGA discharges it via `wfOpGen_ins`/`wfOpGen_del_live`). It CANNOT be dropped —
-`WfOpReachable` is unsatisfiable without it (`rga_wfOpReachable_false`) — and it
+RGA discharges it via `wfOpGen_ins`/`wfOpGen_del_live`). It cannot be dropped
+(`WfOpReachable` is unsatisfiable without it, `rga_wfOpReachable_false`), and it
 is scoped to the config's events (a global `∀ o, WfOpGen o` would be false for the
 RGA, making the theorem vacuous). Proof: `goodConfig3_of_reachF_wfgen` then
 `isRALinearizable3_of_good`. -/
@@ -967,45 +962,42 @@ theorem RA_linearizable_up_to_eq_readback
     rw [heq] at hev
     exact hev
 
-/-! ## §5. `WfOp`-conditioning audit (option 2)
+/-! ## §5. `WfOp`-conditioning
 
-`Step3.apply` (`LCA_Lemma.lean:451`) applies the RAW `D.update s (t,r,o)` with NO
-`applicable` precondition — its guard is timestamp FRESHNESS (`h_fresh_t` /
+`Step3.apply` (`LCA_Lemma.lean:451`) applies the raw `D.update s (t,r,o)` with no
+`applicable` precondition: its guard is timestamp freshness (`h_fresh_t` /
 `h_fresh_store`), not applicability. So the guarantee the execution model provides
-for each applied event is a WEAKER *well-formedness* `W` (`WfOp`), not
-`applicable`. Conditioning `InvPres.inv_update` on `applicable` (the previous
-design) therefore over-restricted the update and DISTORTED the metatheorem: its
-guarded fold skipped `applicable`-but-fresh ops that the runtime DOES apply.
+for each applied event is a weaker *well-formedness* `W` (`WfOp`), not
+`applicable`. Conditioning `InvPres.inv_update` on `applicable` would over-restrict
+the update: the guarded fold would skip `applicable`-but-fresh ops that the runtime
+applies. Conditioning on `W` characterizes the raw update instead:
 
-Option 2 fixes this by conditioning on `W` and characterizing the REAL raw update:
-
-* `InvPres.inv_update` is `W`-conditioned (`Inv s → W o s → Inv (update s o)`) —
-  weaker premise, and matched by the RGA's `rgaInv_doOp_fresh`.
-* `W` is datatype-SPECIFIC (RGA: `id ≠ 0 ∧ Ins-freshness ∧ Del-resolve ≠ x`); the
+* `InvPres.inv_update` is `W`-conditioned (`Inv s → W o s → Inv (update s o)`), the
+  weaker premise, matched by the RGA's `rgaInv_doOp_fresh`.
+* `W` is datatype-specific (RGA: `id ≠ 0 ∧ Ins-freshness ∧ Del-resolve ≠ x`); the
   `Ins` part comes from Step3 freshness, the `Del` part from the RGA's own
-  `id_mono`/path structure. So `W` is NOT extracted generically from the execution
-  model — the datatype DECLARES it and discharges `WfOpReachable D W` (distinct
+  `id_mono`/path structure. So `W` is not extracted generically from the execution
+  model: the datatype declares it and discharges `WfOpReachable D W` (distinct
   timestamps ⟹ `W` at every fold prefix), which the transfer consumes to seat each
   raw fold step.
-* **The one guard that survives is a TOTALITY device, not a semantic choice.**
+* **The one guard that survives is a totality device, not a semantic choice.**
   `ConditionedMRDTSig.update : State → Op → State` is total and `applySeq` folds it
   unconditionally, so `qdo` must be a total map into the `Inv`-subtype quotient;
   with raw `update` that needs `Inv (update s o)`, i.e. `W o s`, a
   reachability-level fact a signature field cannot see. Hence `qdo` keeps the
-  `¬W`-identity fallback `doW`. But `doW` is transparent on every reachable fold
+  `¬W`-identity fallback `doW`. `doW` is transparent on every reachable fold
   (`WfOpReachable` gives `W` at each prefix), so `applySeqW = applySeq` there, and
-  `IsCanonicalStateEq`/`EqJoinLemma3C`/the readback are stated over the RAW
+  `IsCanonicalStateEq`/`EqJoinLemma3C`/the readback are stated over the raw
   `applySeq D.toCRDTSig D.init π` (= `π.foldl D.update`, matching the RGA's
   `applySeqR`). The distinctness that fires `WfOpReachable` is read off the
   configuration (`Configuration.timestamps_distinct` + `GoodConfig3.ver_events_sub`,
   re-derived from reachability by `goodConfig3_of_reachF`).
 
-**Verdict.** `W`/`WfOpReachable` is the load-bearing content — the datatype-VC
-route (freshness alone is insufficient because of the `Del` part). The guard is
-now the correct `W`-guard, forced only by totality and provably transparent on the
-execution model's domain. `inv_mergeL` stays unconditional (RGA's `qInv`/`id_mono`,
-`RGA_VCPackage.rga_inv_mergeL_of_idmono`). The metatheorem's conclusion
-(`IsRALinearizable3`) is unchanged; its readback is over the datatype's REAL raw
+`W`/`WfOpReachable` is the load-bearing content: the datatype-VC route, since
+freshness alone is insufficient because of the `Del` part. The guard is the
+`W`-guard, forced only by totality and transparent on the execution model's
+domain. `inv_mergeL` stays unconditional (RGA's `qInv`/`id_mono`,
+`RGA_VCPackage.rga_inv_mergeL_of_idmono`). The readback is over the datatype's raw
 update. -/
 
 #print axioms RA_linearizable_up_to_eq

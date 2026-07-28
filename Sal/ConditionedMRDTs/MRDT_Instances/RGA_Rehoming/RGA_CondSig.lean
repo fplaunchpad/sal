@@ -18,9 +18,9 @@ obligation:
 * `Inv_transport_generic`/`obligation_A_RGA` — hence `RgaInv` holds at every
   prefix-fold of every enumeration, including mid-bubble hybrids.
 
-This layer was first developed inside the G2 probe
-(`G2_Transport_Probe.lean`, which keeps the ⚑-site map and the obligation-(B)
-refutation) and moved here because the entire chain consumes it.
+`G2_Transport_Probe.lean` keeps the ⚑-site map and the obligation-(B)
+refutation; the transport layer itself lives here because the entire chain
+consumes it.
 -/
 
 set_option maxHeartbeats 1000000
@@ -280,7 +280,7 @@ theorem opOK_of_generation (o : Op (app_op_t α)) (s : concrete_st α)
 split validated in `RGA_Reachability_Invariant.lean`.  `rc = Either`
 everywhere, so ALL `lo`-edges hinge on `¬ commutesOn`.
 
-NOTE (recorded hosting gap, see G2_FINDINGS.md): the RGA's commutation lemmas
+NOTE (recorded hosting gap): the RGA's commutation lemmas
 (`rc_non_comm'`, `RGA_Tombstone_Free_MRDT.lean:928`) conclude the observational
 `eq`, not Lean `Eq`, so the *positive* `commutesOn` facts for non-vacuous pairs
 are not directly available at this signature — the counterexample below only

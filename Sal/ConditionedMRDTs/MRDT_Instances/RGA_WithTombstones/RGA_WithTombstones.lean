@@ -5,9 +5,6 @@ import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
 # RGA (tombstone-based) — flat VC discharge and the conditioned capstone
-
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
 -/
 
 set_option maxHeartbeats 1000000

@@ -1,13 +1,10 @@
-// Run-table serializer for the embed RGA (task #104, SERIALIZER item).
-//
-// Turns the run-table PROJECTION of whiteboard/litmus/run_table_measure.py
-// (task #73) into a SHIPPED encoder/decoder. The state is the embed RGA's
+// Run-table serializer for the embed RGA: an encoder/decoder over the state
 //   Map id -> { coord, el }
 // with absolute chain coordinates under the flipped Elias-delta code
 // (src/datatypes/embedRGA.js; src/compact.js's decodeOne is reused). This
 // serializer composes AFTER compaction (compact.js), where cuts are settled
 // and the coordinate tree is at its smallest, but it is a pure function of
-// the state and needs NO stability gate -- it applies to any state.
+// the state and needs NO stability gate: it applies to any state.
 //
 // THE REPRESENTATION (one-sided; the shipped runtime carries no side bit).
 // Build the KEPT TREE: decode every live record's coordinate into its chain
@@ -19,16 +16,16 @@
 // (run-id, offset). By the tail-attachment lemma every entry attaches at its
 // parent entry's LAST member, so the parent-offset is derivable and NOT
 // stored, and records sit positionally in their run (run-id and offset are
-// positional, also NOT stored) -- the section-9.1 positional saving over the
-// model, which charges those recoverable fields. accountingBits() reproduces
-// the model's charged total exactly for cross-check against the projection.
+// positional, also NOT stored): the positional saving over storing those
+// recoverable fields. accountingBits() reports the charged total WITH those
+// fields included, for the accounting cross-check.
 //
 // LOSSLESS: from the entry headers alone (liveness, parent ref, head delta,
 // length) every kept node's delta (head delta at offset 0, else 1) and hence
 // every coordinate is recovered, so decode(encode(s)) reads identically to s.
-// Ids are the (ts,agent) tie-break the representation does not encode (note
-// section 4); decode assigns fresh ids -- coordinates are injective, so the
-// read order is a function of coordinates alone and ids never break a tie.
+// Ids are the (ts,agent) tie-break the representation does not encode;
+// decode assigns fresh ids -- coordinates are injective, so the read order is
+// a function of coordinates alone and ids never break a tie.
 
 import { embedRGA, eliasDeltaCode } from './datatypes/embedRGA.js';
 import { decodeOne } from './compact.js';
@@ -40,7 +37,7 @@ const ONE = enc(1); // '0': every non-head run member has delta 1
 /** Bit length of a nonneg int (Python int.bit_length): 0->0, 3->2, 8->4. */
 export function bitLength(n) { let b = 0; while (n > 0) { b++; n = Math.floor(n / 2); } return b; }
 
-/** |flipped-Elias-delta(d)| for d>=1, == enc(d).length == entropy_measure.bits_D. */
+/** |flipped-Elias-delta(d)| for d>=1, == enc(d).length. */
 export function bitsD(d) { const L = bitLength(d); return (2 * bitLength(L) - 1) + (L - 1); }
 
 const utf8 = new TextEncoder();
@@ -93,10 +90,9 @@ function coordTree(state) {
   return root;
 }
 
-/** Canonical partition into maximal fusible chains (mirrors
- *  run_table_measure.build_table). Returns entries in a parents-before-
- *  children order; each entry: { live, parent (eid|-1), poff, delta,
- *  members: node[] }. att[eid] = child eids, all attached at the tail. */
+/** Canonical partition into maximal fusible chains. Returns entries in a
+ *  parents-before-children order; each entry: { live, parent (eid|-1), poff,
+ *  delta, members: node[] }. att[eid] = child eids, all attached at the tail. */
 export function buildRunTable(state) {
   const root = coordTree(state);
   const entries = [];
@@ -131,10 +127,9 @@ export function buildRunTable(state) {
 }
 
 // -------------------------------------------------------------- accounting
-/** The pre-registered bit accounting of run_table_measure.account(t, False):
- *  per record run-id (W) + offset D(off+1); per entry liveness + parent ref
- *  (W) + parent-offset D(poff+1) + head-delta D(delta) + length D(len).
- *  Reproduces the projection totals bit-for-bit on the same table. */
+/** The full bit accounting: per record run-id (W) + offset D(off+1); per entry
+ *  liveness + parent ref (W) + parent-offset D(poff+1) + head-delta D(delta) +
+ *  length D(len). */
 export function accountingBits(table) {
   const { entries } = table;
   const nEnt = entries.length;
@@ -157,8 +152,7 @@ export function accountingBits(table) {
  *  materialization: pre-order over the contracted tree, live members in
  *  offset order (an anchor sorts above its subtree), branches at the tail
  *  newest-first = head-delta descending. Siblings have distinct deltas (the
- *  coordinate tree keys children by delta), so the order is total. Mirrors
- *  run_table_measure.table_walk for the one-sided family. */
+ *  coordinate tree keys children by delta), so the order is total. */
 export function tableWalk(table) {
   const { entries, att } = table;
   const kids = (list) => list.slice().sort((a, b) => entries[b].delta - entries[a].delta);
@@ -182,12 +176,11 @@ export function tableWalk(table) {
  *  Elias-delta(length); byte-align; then the elements in storage order (each
  *  live entry, members in offset order). Element modes: mode 0 (every element
  *  a single Unicode code point, the text case) packs the code points as one
- *  self-delimiting UTF-8 blob at 1 byte/char for ASCII, matching the
- *  projection's text term exactly; mode 1 (general) writes varint(utf8
- *  len)++utf8 per element. The metadata bit count equals accountingBits.total
- *  minus the recoverable rec_id, rec_off and hdr_poff (asserted in the
- *  tests): the run-id/offset are positional and the parent-offset derivable,
- *  the section-9.1 saving the model charges but a real encoder drops. */
+ *  self-delimiting UTF-8 blob at 1 byte/char for ASCII; mode 1 (general) writes
+ *  varint(utf8 len)++utf8 per element. The metadata bit count equals
+ *  accountingBits.total minus the recoverable rec_id, rec_off and hdr_poff:
+ *  the run-id/offset are positional and the parent-offset derivable, dropped
+ *  here rather than stored. */
 export function encode(state) {
   const table = buildRunTable(state);
   const { entries } = table;
@@ -223,7 +216,7 @@ export function encode(state) {
   }
   const out = new Uint8Array(head.length + meta.length + els.length);
   out.set(head, 0); out.set(meta, head.length); out.set(els, head.length + meta.length);
-  out.metaBits = metaBits; // annotation for the reconciliation test
+  out.metaBits = metaBits; // metadata bit count, exposed for accounting checks
   return out;
 }
 

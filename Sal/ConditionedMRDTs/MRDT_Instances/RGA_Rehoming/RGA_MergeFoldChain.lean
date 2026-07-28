@@ -9,7 +9,7 @@ fold-chain identity `FoldBirthChain l a b (applySeqR l π₀) k` (for branch-new
 survivors `k`), and its own residual `foldChain_of_goodFold` was stuck on an
 event-list induction over the branch fold.
 
-`RGA_CanonConvergence.canon_fold` now supplies exactly the per-id anchor
+`RGA_CanonConvergence.canon_fold` supplies exactly the per-id anchor
 characterization that induction was after: a disciplined fold of an applied
 event set `F` is observationally the *canonical state* of `F` — its domain is
 the survivor set, and every survivor's stored anchor is `canonAnc F` of its
@@ -23,8 +23,8 @@ The genuinely two-sided content — that `k`'s *branch-final* birth-anchor
 together with its LCA chain resolves to the same survivor as the recorded
 chain — is isolated as the pure event-set/LCA-forest predicate
 `CanonBirthBridge`.  That predicate mentions no fold state at all; it is the
-cross-branch identity discharged by the branch canonical characterizations
-(workstream A / GenDisc2), strictly below `FoldBirthChain`.
+cross-branch identity discharged by the branch canonical characterizations,
+strictly below `FoldBirthChain`.
 -/
 
 set_option maxHeartbeats 1000000

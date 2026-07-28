@@ -112,7 +112,7 @@ contains s t = false`, on `Del` just `resolve s pre ≠ x`).  `mono_alloc` is no
 order-respecting-stable (a fold may apply a large-id `Ins` then a small-id one),
 so it is a merge-fold reachability oracle, not a `W`-level fact.  Hence a full
 `InvPres (RGACondSig' α) WfOp` cannot be assembled here; it is threaded as a
-hypothesis into the capstone (§8).  See the final report. -/
+hypothesis into the capstone (§8). -/
 
 /-- `inv_init` for `qInv`: `Inv_init` (root-free + wf) plus `id_mono_init`. -/
 theorem rga_inv_init' : (RGACondSig' α).Inv (RGACondSig' α).init :=
@@ -157,9 +157,7 @@ open Sal.ConditionedMRDTs.RGAInstance (RGACondSig')
 
 variable {α : Type} [DecidableEq α] [Inhabited α]
 
-/-- `rc` is `Either` on every pair — for the primed hosting signature too.
-(Relocated from `RGA_OrderBridge.lean` when the swap route retired; the full
-name is unchanged.) -/
+/-- `rc` is `Either` on every pair, for the primed hosting signature too. -/
 theorem rc_is_Either' (o₁ o₂ : Op (app_op_t α)) :
     (RGACondSig' α).rc o₁ o₂ = RcRes.Either := rfl
 

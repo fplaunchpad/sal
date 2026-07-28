@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_EqQuotient
 import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 /-!
-# The `l`-argument merge `≈`-congruence, CONDITIONED on the RGA `Inv` (M5)
+# The `l`-argument merge `≈`-congruence, CONDITIONED on the RGA `Inv`
 
 `RGA_EqQuotient` proved the two *branch*-argument merge `≈`-congruences
 (`merge_eq_congr_a`, `merge_eq_congr_b`) unconditionally, and proved the

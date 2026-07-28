@@ -9,17 +9,15 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 /-!
 # The RGA capstone, over `WfOpQ` — assembly + the honestly-pinned Join residual
 
-*Additive; modifies no existing file; 0 `sorry`.*
+`RGA_Instance.lean`'s capstone carries two hypotheses beyond the strengthened guard:
+`hP : InvPres (RGACondSig' α) WfOp` (§5, not provable at `WfOp`) and `hJoinEq` (§7,
+blocked by the `loOnA`/`loOnEq` order mismatch and the merge `hin` residual).
 
-`RGA_Instance.lean` threaded TWO hypotheses into its capstone: `hP : InvPres
-(RGACondSig' α) WfOp` (§5, unprovable at `WfOp`) and `hJoinEq` (§7, blocked on the
-`loOnA`/`loOnEq` order mismatch and the merge `hin` residual).  Since then:
-`RGA_InvUpdateQ` closed the FULL `InvPres` at the strengthened guard `WfOpQ`
-(`rgaInvPresQ`, with `rga_wfOpReachableQ` at `WfOpGenQ`), `RGA_ConvergenceEq`
-re-derived convergence over the framework's own order `loOnEq (rgaEqEquiv' α) WfOpQ`
-(no order mismatch left), and `RGA_HinFilterEq` closed the merge bridge's `hin`.
-
-This file re-bases the whole wiring on `WfOpQ`:
+This file re-bases the whole wiring on `WfOpQ`, at which `RGA_InvUpdateQ` gives the
+full `InvPres` (`rgaInvPresQ`, with `rga_wfOpReachableQ` at `WfOpGenQ`),
+`RGA_ConvergenceEq` gives convergence over the framework's own order
+`loOnEq (rgaEqEquiv' α) WfOpQ` (no order mismatch), and `RGA_HinFilterEq` closes the
+merge bridge's `hin`:
 
 * **§1** `rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ` — `WfOp`'s
   `wf_congr` re-proved for the strengthened guard (its extra conjuncts are
@@ -36,7 +34,7 @@ This file re-bases the whole wiring on `WfOpQ`:
   on `ev₁ ∪ ev₂`, and `MergeFoldOracle` (the merge-fold identity
   `eq_merge_two_sided_eq` would discharge given its `hD`/`hB`/`hBE`/`hcm`/
   `hbridge`/`hMSR` package).  These pin EXACTLY what still separates the RGA
-  from the unconditioned `EqJoinLemma3C` — see the STATUS block.
+  from the unconditioned `EqJoinLemma3C`.
 * **§5** the capstone `RGA_is_RA_linearizable`, `RA_linearizable_up_to_eq`
   wired with the five CONCRETE `WfOpQ`-VCs; `hJoinEq` is its one remaining
   non-execution hypothesis.

@@ -4,9 +4,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_DeltaEnum
 /-!
 # K1 wiring — discharging `canonFoldOK_delta`'s closure hypotheses
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The three inputs `canonFoldOK_delta` still carries, discharged from the corrected skeleton's
+The three inputs `canonFoldOK_delta` still carries, discharged from Skeleton 3's
 premise vocabulary (closures of `ev₁`/`ev₂`, perms, `respects`):
 
 * `lcaClosed_deps` — the LCA set is dependency-closed: `DepC ⊆ vis` and `ev₁ ∩ ev₂` is
@@ -166,11 +164,11 @@ theorem exists_loOnA_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toC
 
 /-! ## §4  The K1 bundle -/
 
-/-- **K1, assembled.**  `CanonFoldOK ρ₀ (fold ρ₀) π₀` — the corrected skeleton's delta-discipline
+/-- **K1, assembled.**  `CanonFoldOK ρ₀ (fold ρ₀) π₀` — Skeleton 3's delta-discipline
 leaf — from the honest residual only:
 
 * `hGen : GenDisc2C Cfg (ev₁ ∪ ev₂)` — each event accurate at its own dependency fold (the
-  born-applicable generation content; task #32's discharge target);
+  born-applicable generation content);
 * `hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀` — the LCA's own discipline (the existing noopFeasible
   engine route on the born-applicable `ρ₀`);
 * `hπr : respects π₀ (loOnA …)` — the delta enum is causally sorted (constructible: any

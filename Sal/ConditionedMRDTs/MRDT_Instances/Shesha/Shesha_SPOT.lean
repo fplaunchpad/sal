@@ -44,8 +44,8 @@ executions. -/
 LCA: `1` under root, siblings `3, 2` under `1` (newest first). A inserts `10`
 under `3` then deletes `3`; B inserts `20` under `2` then deletes `2`. The
 dead `3`, `2` are *markers* — each still live in one input — and hold the
-slots: `[1, 10, 20]`, no timestamp comparison anywhere. (Killed the flat
-sequential-merge phase-2 design.) -/
+slots: `[1, 10, 20]`, no timestamp comparison anywhere. This refutes the
+flat sequential-merge design. -/
 
 def t2L : St := fold [ins 1 0, ins 2 1, ins 3 1]
 def t2A : St := steps t2L [ins 10 3, del 3]
@@ -79,8 +79,8 @@ theorem litmus_CXF : read (merge cxL cxA cxL) = [4, 2] := by native_decide
 /-! ### Stale-LCA replay — the post-splice state is order-self-contained
 
 Merging the CX-F result against the *old* fork point (idle fork, late merge)
-must not lose or reorder anything: `[4, 2]` again. (Killed
-rebuild-with-carried-graves.) -/
+must not lose or reorder anything: `[4, 2]` again. This refutes
+rebuild-with-carried-graves. -/
 
 def cxM : St := merge cxL cxA cxL
 
@@ -114,8 +114,7 @@ theorem litmus_bothDel : read (merge bdL bdA bdB) = [10, 9] := by native_decide
 L: `3` and `1` at root, `4` under `3`. A inserts fresh `5` at the root;
 B occupies dead `3`'s slot before `4` (insert `6` under `3`, `7` under `6`,
 delete `6`, delete `3`). The skeleton/continuation rule gives
-`[5, 7, 4, 1]` — a greedy head-to-head weave would misplace `7`.
-(The session bug, caught by writing the algorithm down.) -/
+`[5, 7, 4, 1]` — a greedy head-to-head weave would misplace `7`. -/
 
 def wsL : St := fold [ins 1 0, ins 3 0, ins 4 3]
 def wsA : St := steps wsL [ins 5 0]

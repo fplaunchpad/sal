@@ -3,64 +3,59 @@ import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# The product `≈`-lift kit — the quotient layer composes at the pragmatic cut
+# The product `≈`-lift kit: the quotient layer composes at the pragmatic cut
 
-Mechanizes the `≈`-lift phase of `Development/COMPOSITION_PENPAPER.md` (§2.5,
-obligations O16–O20 of its §5.5 plan) **at the pragmatic cut** (§2.5.7,
-adopted): component 1 carries a full quotient bundle
+The quotient layer composes across the binary product **at the pragmatic
+cut**: component 1 carries a full quotient bundle
 `(E₁, W₁, hP₁, hC₁, hA₁, H₁, HonJ₁, …)`; component 2 is FLAT and enters
 through `FlatGeneric_Bridge`'s identity instantiation
 (`≈₂ = Eq` via `eqOfEq`, `W₂ = ⊤` via `WTop`, `Inv₂ = ⊤` via `hInvT₂`,
 `H₂ = ⊤`). This is all Peritext (RGA-TF ⊗ flat MarkStore) needs; the
-symmetric general `E₁ × E₂` form is explicitly out of scope (same proofs,
-double the plumbing — memo §2.5.7).
+symmetric general `E₁ × E₂` form is out of scope (same proofs, double the
+plumbing).
 
-Contents, by memo obligation:
+Contents:
 
-* **O16** — the product bundle: `prodEqEquiv` (`E⊗ := ≈₁ × Eq`), `prodW`
+* The product bundle: `prodEqEquiv` (`E⊗ := ≈₁ × Eq`), `prodW`
   (`W⊗` reads component 1 on `inl`, `⊤` on `inr`), `prodWfOpGen`, and the
   lifted VC bundle `prodInvPres`/`prodCongVC`/`prodInvInvVC`/`prodInvCong`,
-  each discharged per the memo's §2.5.1 table (componentwise; the untouched
-  side of an update is definitional, the flat side's congruences are
-  rewriting).
-* **O17** — `eqCommutesOn` localization (memo §2.5.2): `doW⊗` leaves the
-  untouched component fixed in BOTH branches of the `W`-guard, so cross
-  pairs `≈`-commute by reflexivity (`eqCommutesOn_prod_cross`/`'`); same-side
-  `inl` pairs are component 1's (`eqCommutesOn_prod_inl_iff` — the `⇒`
-  direction instantiates `.2 := D₂.init`, `Inv₂ = ⊤` supplying the side
-  condition); `inr` pairs degenerate to structural commutation
-  (`eqCommutesOn_prod_inr_iff`), which is the flat identity instantiation's
-  `eqCommutesOn` (`…_iff_flat`). Hence `loOnEq` localizes exactly as the raw
-  `loOn` did (`loOnEq_prod_cross_lr`/`_rl`, `loOnEq_prod_inl_iff`,
+  each componentwise: the untouched side of an update is definitional, the
+  flat side's congruences are rewriting.
+* `eqCommutesOn` localization: `doW⊗` leaves the untouched component fixed in
+  BOTH branches of the `W`-guard, so cross pairs `≈`-commute by reflexivity
+  (`eqCommutesOn_prod_cross`/`'`); same-side `inl` pairs are component 1's
+  (`eqCommutesOn_prod_inl_iff`: the `⇒` direction instantiates
+  `.2 := D₂.init`, `Inv₂ = ⊤` supplying the side condition); `inr` pairs
+  degenerate to structural commutation (`eqCommutesOn_prod_inr_iff`), which
+  is the flat identity instantiation's `eqCommutesOn` (`…_iff_flat`). Hence
+  `loOnEq` localizes exactly as the raw `loOn` does
+  (`loOnEq_prod_cross_lr`/`_rl`, `loOnEq_prod_inl_iff`,
   `loOnEq_prod_inr_iff`), absorber existential included.
-* **O18** — `wfOpReachable_prod` (memo §2.5.5): the interleaving induction
-  `wfChain_prod_of_proj` threads component 1's `WfChain` through a mixed
-  list; `W₂ = ⊤` makes the `inr` steps trivial at the cut.
-* **O19** — `eqJoinLemma3C_H_prod` (memo §2.5.4 — easier than the raw F4:
-  no configuration at all): the abstract-`(vis, events)` gluing with
-  `H⊗ ρ := H₁ (π₁ ρ)` (`H₂ = ⊤` at the cut) and
-  `HonJ⊗ := HonJ₁∘res₁ ∧ HonJ₂∘res₂`; premises project
+* `wfOpReachable_prod`: the interleaving induction `wfChain_prod_of_proj`
+  threads component 1's `WfChain` through a mixed list; `W₂ = ⊤` makes the
+  `inr` steps trivial at the cut.
+* `eqJoinLemma3C_H_prod` (easier than the raw join: no configuration at all):
+  the abstract-`(vis, events)` gluing with `H⊗ ρ := H₁ (π₁ ρ)` (`H₂ = ⊤` at
+  the cut) and `HonJ⊗ := HonJ₁∘res₁ ∧ HonJ₂∘res₂`; premises project
   (`isCanonicalStateEqH_proj₁`/`₂`), the witness is the plain concatenation
-  (`eqCanonicalH_glue` — mixed `loOnEq` edges dead, `H⊗` of the
-  concatenation is `H₁ ρ¹` by roundtrip), and the fold clause needs no
-  congruence chasing (raw F1 `applySeq_prod` + `E⊗` componentwise).
-* **O20** — the product `≈`-capstone `prod_ra_linearizable_up_to_eq_H`:
-  the generic `RA_linearizable_up_to_eq_H` instantiated at the product
-  parameters, consuming the component-1 bundle, the flat side's
-  full-closure Join Lemma through `eqJoinH_of_joinC`, and the
-  reachability-derived supplies (`hHon₁`/`hHext`/`hBA` — the §2.5.6 rerun,
-  Peritext-phase) as hypotheses; the flat half of `HonJ⊗` is discharged
-  STRUCTURALLY (`prodFlatHonJ` — same-replica `vis`-totality is a field of
-  every configuration). Plus the premise-discharge wrappers
-  `prodHext_of_hext₁` (config-free component extension ⟹ the product
-  `hHext` obligation; `inr` steps are free — `π₁` drops them) and
-  `prodGenW_of_genW₁` (the state-free half of `hBA`).
+  (`eqCanonicalH_glue`: mixed `loOnEq` edges dead, `H⊗` of the concatenation
+  is `H₁ ρ¹` by roundtrip), and the fold clause needs no congruence chasing
+  (`applySeq_prod` + `E⊗` componentwise).
+* The product `≈`-capstone `prod_ra_linearizable_up_to_eq_H`: the generic
+  `RA_linearizable_up_to_eq_H` instantiated at the product parameters,
+  consuming the component-1 bundle, the flat side's full-closure Join Lemma
+  through `eqJoinH_of_joinC`, and the reachability-derived supplies
+  (`hHon₁`/`hHext`/`hBA`) as hypotheses; the flat half of `HonJ⊗` is
+  discharged STRUCTURALLY (`prodFlatHonJ`: same-replica `vis`-totality is a
+  field of every configuration). Plus the premise-discharge wrappers
+  `prodHext_of_hext₁` (config-free component extension ⟹ the product `hHext`
+  obligation; `inr` steps are free, `π₁` drops them) and `prodGenW_of_genW₁`
+  (the state-free half of `hBA`).
 
-Layering: imports `Metatheory.Product` (the raw kit), the
-`GenericEqQuotient` family via `GoodConfig3H`, and `FlatGeneric_Bridge`
-(the identity bundles). No instance files. Per memo §2.5.3, everything
-works directly at `QSig (prodSig D₁ D₂) E⊗ …` — no `QSig₁ ⊗ QSig₂`, no
-signature isomorphism.
+Layering: imports `Metatheory.Product` (the raw kit), the `GenericEqQuotient`
+family via `GoodConfig3H`, and `FlatGeneric_Bridge` (the identity bundles).
+No instance files. Everything works directly at `QSig (prodSig D₁ D₂) E⊗ …`,
+with no `QSig₁ ⊗ QSig₂` and no signature isomorphism.
 -/
 
 set_option maxHeartbeats 1000000
@@ -75,10 +70,10 @@ open Classical
 
 variable {D₁ D₂ : ConditionedMRDTSig}
 
-/-! ## §O16a  The product bundle data at the cut -/
+/-! ## The product bundle data at the cut -/
 
 /-- `vis` restricted to component 1 along `ι₁` (the abstract-`vis` analogue of
-`projCore₁`'s visibility; memo §2.5.4). -/
+`projCore₁`'s visibility). -/
 def visRes₁ (vis : Op (D₁.AppOp ⊕ D₂.AppOp) → Op (D₁.AppOp ⊕ D₂.AppOp) → Prop) :
     Op D₁.AppOp → Op D₁.AppOp → Prop :=
   fun a b => vis (inlOp a) (inlOp b)
@@ -90,9 +85,8 @@ def visRes₂ (vis : Op (D₁.AppOp ⊕ D₂.AppOp) → Op (D₁.AppOp ⊕ D₂.
 
 variable (E₁ : EqEquiv D₁) (W₁ : Op D₁.AppOp → D₁.State → Prop)
 
-/-- **`E⊗ := ≈₁ × Eq`** — the product observational equivalence at the
-pragmatic cut: component 1's `≈₁` on firsts, literal equality on seconds
-(memo §2.5.1, §2.5.7). -/
+/-- **`E⊗ := ≈₁ × Eq`**, the product observational equivalence at the
+pragmatic cut: component 1's `≈₁` on firsts, literal equality on seconds. -/
 def prodEqEquiv : EqEquiv (prodSig D₁ D₂) where
   eqv := fun s s' => E₁.eqv s.1 s'.1 ∧ s.2 = s'.2
   equiv :=
@@ -100,17 +94,17 @@ def prodEqEquiv : EqEquiv (prodSig D₁ D₂) where
      fun h => ⟨E₁.equiv.symm h.1, h.2.symm⟩,
      fun h₁ h₂ => ⟨E₁.equiv.trans h₁.1 h₂.1, h₁.2.trans h₂.2⟩⟩
 
-/-- **`W⊗`** — the product wellformedness guard at the cut: `W₁` at `.1` on
-`inl` ops, `⊤` on `inr` ops (`W₂ = ⊤`). Componentwise BY DESIGN (memo
-§2.5.2's trap: `doW` reads `W`, and `eqCommutesOn`/`loOnEq` localization
-dies the moment a guard reads the other component). -/
+/-- **`W⊗`**, the product wellformedness guard at the cut: `W₁` at `.1` on
+`inl` ops, `⊤` on `inr` ops (`W₂ = ⊤`). Componentwise BY DESIGN: `doW` reads
+`W`, and `eqCommutesOn`/`loOnEq` localization dies the moment a guard reads
+the other component. -/
 def prodW : Op (D₁.AppOp ⊕ D₂.AppOp) → (prodSig D₁ D₂).State → Prop :=
   fun e s =>
     match e.2.2 with
     | Sum.inl o => W₁ (e.1, e.2.1, o) s.1
     | Sum.inr _ => True
 
-/-- **`WfOpGen⊗`** — per-event generation wellformedness: component 1's on
+/-- **`WfOpGen⊗`**, per-event generation wellformedness: component 1's on
 `inl`, `⊤` on `inr` (the flat side has no generation discipline at the cut). -/
 def prodWfOpGen (WfOpGen₁ : Op D₁.AppOp → Prop) : Op (D₁.AppOp ⊕ D₂.AppOp) → Prop :=
   fun e =>
@@ -118,16 +112,16 @@ def prodWfOpGen (WfOpGen₁ : Op D₁.AppOp → Prop) : Op (D₁.AppOp ⊕ D₂.
     | Sum.inl o => WfOpGen₁ (e.1, e.2.1, o)
     | Sum.inr _ => True
 
-/-- **`H⊗ ρ := H₁ (π₁ ρ)`** — the product witness discipline at the cut
-(`H₂ = ⊤`, so the memo's conjunction `H₁ (π₁ ρ) ∧ H₂ (π₂ ρ)` collapses to
-its first conjunct; memo §2.5.4). -/
+/-- **`H⊗ ρ := H₁ (π₁ ρ)`**, the product witness discipline at the cut
+(`H₂ = ⊤`, so the conjunction `H₁ (π₁ ρ) ∧ H₂ (π₂ ρ)` collapses to its first
+conjunct). -/
 def prodH (H₁ : List (Op D₁.AppOp) → Prop) :
     List (Op (D₁.AppOp ⊕ D₂.AppOp)) → Prop :=
   fun ρ => H₁ (projList₁ ρ)
 
-/-- **`HonJ⊗`** — the product join context: the conjunction of the two
-components' contexts at the restrictions (memo §2.5.4; the supply obligation
-moves to the capstone's `hHon` premise — §2.5.6). -/
+/-- **`HonJ⊗`**, the product join context: the conjunction of the two
+components' contexts at the restrictions (the supply obligation moves to the
+capstone's `hHon` premise). -/
 def prodHonJ
     (HonJ₁ : (Op D₁.AppOp → Op D₁.AppOp → Prop) → Set (Op D₁.AppOp) → Prop)
     (HonJ₂ : (Op D₂.AppOp → Op D₂.AppOp → Prop) → Set (Op D₂.AppOp) → Prop) :
@@ -138,8 +132,8 @@ def prodHonJ
 /-! ### The guarded-step kit: `doW⊗` acts componentwise -/
 
 /-- `doW` at the product on an `inl` op: the guard `W⊗` reads only `.1`, so
-BOTH branches leave `.2` at `s.2` — the guarded step is `(doW₁, id)`. This
-single fact is what keeps cross pairs `≈`-commuting (memo §2.5.2). -/
+BOTH branches leave `.2` at `s.2`, and the guarded step is `(doW₁, id)`. This
+single fact is what keeps cross pairs `≈`-commuting. -/
 theorem doW_prod_inl (e : Op D₁.AppOp) (s : (prodSig D₁ D₂).State) :
     doW (prodSig D₁ D₂) (prodW W₁) (inlOp e) s = (doW D₁ W₁ e s.1, s.2) := by
   by_cases h : W₁ e s.1
@@ -165,9 +159,9 @@ theorem doW_prod_inr (f : Op D₂.AppOp) (s : (prodSig D₁ D₂).State) :
   rw [h1]
   exact prodSig_update_inr s f
 
-/-! ## §O16b  The lifted VC bundle (memo §2.5.1 table) -/
+/-! ## The lifted VC bundle -/
 
-/-- **`InvPres⊗`** — `Inv⊗ = Inv₁ ∧ ⊤`: `inl` updates step component 1 with
+/-- **`InvPres⊗`**, `Inv⊗ = Inv₁ ∧ ⊤`: `inl` updates step component 1 with
 `W⊗ = W₁` at `.1` and leave `.2` untouched; `inr` updates leave `.1`
 untouched and `Inv₂ = ⊤` absorbs the rest; `mergeL` is componentwise. -/
 theorem prodInvPres (hP₁ : InvPres D₁ W₁) (hInvT₂ : ∀ s : D₂.State, D₂.Inv s) :
@@ -181,10 +175,10 @@ theorem prodInvPres (hP₁ : InvPres D₁ W₁) (hInvT₂ : ∀ s : D₂.State, 
   inv_mergeL := fun l a b hl ha hb =>
     ⟨hP₁.inv_mergeL l.1 a.1 b.1 hl.1 ha.1 hb.1, hInvT₂ _⟩
 
-/-- **`CongVC⊗`** — component congruence on the stepped side, the carried
+/-- **`CongVC⊗`**, component congruence on the stepped side, the carried
 `≈`/`Eq` fact on the other; the flat side's congruence is rewriting; the sum
-`query` reads one side (memo §2.5.1 table rows `update_congr`,
-`mergeL_congr`, `query_congr`). -/
+`query` reads one side (the `update_congr`, `mergeL_congr`, `query_congr`
+rows). -/
 theorem prodCongVC (hC₁ : CongVC D₁ E₁) :
     CongVC (prodSig D₁ D₂) (prodEqEquiv E₁) where
   update_congr := fun o {s s'} hs hs' h => by
@@ -203,10 +197,9 @@ theorem prodCongVC (hC₁ : CongVC D₁ E₁) :
     | inl q₁ => exact congrArg Sum.inl (hC₁.query_congr q₁ hs.1 hs'.1 h.1)
     | inr q₂ => exact congrArg (fun x => Sum.inr (D₂.query x q₂)) h.2
 
-/-- **`InvInvVC⊗`** — `W⊗` and `applicable⊗` each read one side (the base
-combinator's `applicable` is componentwise — memo §1.1; read-coupled guards
-are §3's L2 territory, out of scope here): component 1's congruences on
-`inl`, rewriting on `inr`. -/
+/-- **`InvInvVC⊗`**: `W⊗` and `applicable⊗` each read one side (the base
+combinator's `applicable` is componentwise; read-coupled guards are out of
+scope here): component 1's congruences on `inl`, rewriting on `inr`. -/
 theorem prodInvInvVC (hA₁ : InvInvVC D₁ E₁ W₁) :
     InvInvVC (prodSig D₁ D₂) (prodEqEquiv E₁) (prodW W₁) where
   wf_congr := fun o {s s'} hs hs' h => by
@@ -226,7 +219,7 @@ theorem prodInvInvVC (hA₁ : InvInvVC D₁ E₁ W₁) :
       show D₂.applicable (t, r, o₂) s.2 ↔ D₂.applicable (t, r, o₂) s'.2
       rw [h.2]
 
-/-- **`hInvCong⊗`** — `Inv⊗` is `E⊗`-invariant: component 1's invariance on
+/-- **`hInvCong⊗`**: `Inv⊗` is `E⊗`-invariant: component 1's invariance on
 firsts, `Inv₂ = ⊤` on seconds. -/
 theorem prodInvCong
     (hInvCong₁ : ∀ {s s' : D₁.State}, E₁.eqv s s' → D₁.Inv s → D₁.Inv s')
@@ -235,14 +228,13 @@ theorem prodInvCong
       (prodEqEquiv E₁).eqv s s' → (prodSig D₁ D₂).Inv s → (prodSig D₁ D₂).Inv s' :=
   fun h hi => ⟨hInvCong₁ h.1 hi.1, hInvT₂ _⟩
 
-/-! ## §O17  `eqCommutesOn` localization (memo §2.5.2) -/
+/-! ## `eqCommutesOn` localization -/
 
 /-- **Cross pairs `≈`-commute.** `doW⊗ (ι₁ e)` leaves `.2` fixed in both
 branches of the `W`-guard and `doW⊗ (ι₂ f)` leaves `.1` fixed, so the two
-composites are literally the same pair — `E⊗`-reflexivity closes it. This is
-the quotient analogue of the raw (D-cross), and the one place the quotient
-layer is more fragile than the raw one: it needs `W⊗` componentwise (memo
-§2.5.2). -/
+composites are literally the same pair, and `E⊗`-reflexivity closes it. This
+is the quotient analogue of the raw (D-cross), and the one place the quotient
+layer is more fragile than the raw one: it needs `W⊗` componentwise. -/
 theorem eqCommutesOn_prod_cross (e : Op D₁.AppOp) (f : Op D₂.AppOp) :
     eqCommutesOn (prodEqEquiv E₁) (prodW W₁) (inlOp e) (inrOp f) := by
   intro s _
@@ -257,9 +249,9 @@ theorem eqCommutesOn_prod_cross' (f : Op D₂.AppOp) (e : Op D₁.AppOp) :
   exact ⟨E₁.equiv.refl _, rfl⟩
 
 /-- **Same-side `inl` `≈`-commutation is component 1's.** (⇐) componentwise
-with the carried side reflexive; (⇒) instantiate `.2 := D₂.init` — `Inv₂ = ⊤`
+with the carried side reflexive; (⇒) instantiate `.2 := D₂.init`: `Inv₂ = ⊤`
 at the cut supplies the `Inv⊗` side condition with no appeal to component 2
-data (memo §2.5.2). -/
+data. -/
 theorem eqCommutesOn_prod_inl_iff (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
     (a b : Op D₁.AppOp) :
     eqCommutesOn (prodEqEquiv (D₂ := D₂) E₁) (prodW W₁) (inlOp a) (inlOp b)
@@ -290,7 +282,7 @@ theorem eqCommutesOn_prod_inr_iff (hP₁ : InvPres D₁ W₁)
     simp only [doW_prod_inr]
     exact ⟨E₁.equiv.refl _, h s.2⟩
 
-/-- The `inr` localization phrased at the flat identity instantiation — the
+/-- The `inr` localization phrased at the flat identity instantiation: the
 form the flat side's `IsCanonicalStateEqH` witnesses actually carry
 (`eqCommutesOn (eqOfEq D₂) (WTop D₂)`, via `eqCommutesOn_iff_commutes`). -/
 theorem eqCommutesOn_prod_inr_iff_flat (hP₁ : InvPres D₁ W₁)
@@ -300,7 +292,7 @@ theorem eqCommutesOn_prod_inr_iff_flat (hP₁ : InvPres D₁ W₁)
   (eqCommutesOn_prod_inr_iff E₁ W₁ hP₁ hInvT₂ a b).trans
     (eqCommutesOn_iff_commutes hInvT₂ a b).symm
 
-/-! ### `loOnEq` localization (memo §2.2.1 rerun with `eqCommutesOn`) -/
+/-! ### `loOnEq` localization -/
 
 /-- **Mixed pairs carry no `loOnEq` edge** (`inl → inr`): arm 1's
 `¬eqCommutesOn` is refuted by the cross lemma; arm 2's mixed `rc` is `Either`
@@ -325,8 +317,8 @@ theorem loOnEq_prod_cross_rl
 /-- **Same-side `inl` `loOnEq` edges coincide with component 1's** at the
 restricted `(vis, ev)`. The absorber existential transfers both ways: a
 component absorber lifts along `ι₁`; a product absorber of an `inl` event
-must itself be `inl` — an `inr` candidate `≈`-commutes by the cross lemma —
-and then projects (memo §2.5.2, mirroring the raw §2.2.1). -/
+must itself be `inl` (an `inr` candidate `≈`-commutes by the cross lemma),
+and then projects. -/
 theorem loOnEq_prod_inl_iff (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
     {vis : Op (D₁.AppOp ⊕ D₂.AppOp) → Op (D₁.AppOp ⊕ D₂.AppOp) → Prop}
     {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))} (a b : Op D₁.AppOp) :
@@ -351,7 +343,7 @@ theorem loOnEq_prod_inl_iff (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
       · exact hnc₃ (eqCommutesOn_prod_cross E₁ W₁ b c)
 
 /-- **Same-side `inr` `loOnEq` edges coincide with the flat identity
-instantiation's** at the restricted `(vis, ev)` — the order the flat side's
+instantiation's** at the restricted `(vis, ev)`: the order the flat side's
 witnesses respect (`loOnEq (eqOfEq D₂) (WTop D₂)`). -/
 theorem loOnEq_prod_inr_iff (hP₁ : InvPres D₁ W₁)
     (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
@@ -410,12 +402,12 @@ theorem respects_loOnEq_projList₂ (hP₁ : InvPres D₁ W₁)
   subst hxa; subst hyb
   exact fun hlo => hxy ((loOnEq_prod_inr_iff E₁ W₁ hP₁ hInvT₂ b a).mpr hlo)
 
-/-! ## §O19a  `H`-disciplined canonical states project and glue -/
+/-! ## `H`-disciplined canonical states project and glue -/
 
 /-- The product `H⊗`-witness projects onto component 1: `π₁` of the witness
 is Nodup, enumerates `ev↾₁`, respects `loOnEq₁` (localization), carries
-`H₁ (π₁ ρ)` — which IS `H⊗ ρ` — and its raw fold is `.1` of the product fold
-(F1) with `E⊗ ⟹ E₁` on firsts (memo §2.5.4 premise projection). -/
+`H₁ (π₁ ρ)` (which IS `H⊗ ρ`), and its raw fold is `.1` of the product fold
+(`applySeq_prod`) with `E⊗ ⟹ E₁` on firsts. -/
 theorem isCanonicalStateEqH_proj₁ (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
     {H₁ : List (Op D₁.AppOp) → Prop}
     {vis : Op (D₁.AppOp ⊕ D₂.AppOp) → Op (D₁.AppOp ⊕ D₂.AppOp) → Prop}
@@ -443,13 +435,13 @@ theorem isCanonicalStateEqH_proj₂ (hP₁ : InvPres D₁ W₁)
   exact ⟨projList₂ ρ, listPermOf_projList₂ hp,
     respects_loOnEq_projList₂ E₁ W₁ hP₁ hInvT₂ hr, trivial, hf.2⟩
 
-/-- **The `≈`-glue is a plain concatenation** `ι₁ρ¹ ++ ι₂ρ²` (memo §2.5.4):
-component `H`-witnesses at the restrictions assemble into the product
-`H⊗`-witness at the mixed set. `respects loOnEq⊗` as in the raw gluing —
-mixed `loOnEq` edges are dead in both directions, within-block edges
-transfer along the same-side iffs; `H⊗` of the concatenation is `H₁ ρ¹` by
-the `π₁`-roundtrip; the fold clause is raw F1 plus `E⊗` componentwise — NO
-congruence chasing. -/
+/-- **The `≈`-glue is a plain concatenation** `ι₁ρ¹ ++ ι₂ρ²`: component
+`H`-witnesses at the restrictions assemble into the product `H⊗`-witness at
+the mixed set. `respects loOnEq⊗` as in the raw gluing: mixed `loOnEq` edges
+are dead in both directions, within-block edges transfer along the same-side
+iffs; `H⊗` of the concatenation is `H₁ ρ¹` by the `π₁`-roundtrip; the fold
+clause is `applySeq_prod` plus `E⊗` componentwise, with NO congruence
+chasing. -/
 theorem eqCanonicalH_glue (hP₁ : InvPres D₁ W₁)
     (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
     {H₁ : List (Op D₁.AppOp) → Prop}
@@ -502,16 +494,16 @@ theorem eqCanonicalH_glue (hP₁ : InvPres D₁ W₁)
     rw [projList₁_append, projList₁_map_inlOp, projList₁_map_inrOp,
       List.append_nil]
     exact hH₁
-  · -- fold: raw F1 + roundtrips, then E⊗ componentwise
+  · -- fold: raw applySeq_prod + roundtrips, then E⊗ componentwise
     rw [applySeq_prod, projList₁_append, projList₂_append,
       projList₁_map_inlOp, projList₁_map_inrOp,
       projList₂_map_inlOp, projList₂_map_inrOp,
       List.append_nil, List.nil_append]
     exact ⟨hf₁, hf₂⟩
 
-/-! ## §O19b  The `≈`-join gluing (memo §2.5.4) -/
+/-! ## The `≈`-join gluing -/
 
-/-- **`EqJoinLemma3C_H` glues** (easier than the raw F4 — no configuration
+/-- **`EqJoinLemma3C_H` glues** (easier than the raw join: no configuration
 at all): if component 1's `≈`-join holds at `(E₁, W₁, H₁, HonJ₁)` and the
 flat side's holds at the identity instantiation
 (`eqOfEq/WTop/⊤`, e.g. via `eqJoinH_of_joinC`), then the product satisfies
@@ -559,12 +551,13 @@ theorem eqJoinLemma3C_H_prod (hP₁ : InvPres D₁ W₁)
     (isCanonicalStateEqH_proj₂ E₁ W₁ hP₁ hInvT₂ hc₂)
   exact eqCanonicalH_glue E₁ W₁ hP₁ hInvT₂ g₁ g₂
 
-/-! ## §O18  `WfOpReachable⊗` (memo §2.5.5) -/
+/-! ## `WfOpReachable⊗` -/
 
 /-- The interleaving induction: a component-1 `WfChain` along `π₁ ρ` threads
 through the mixed list. An `inl` head demands `W₁` at `.1` of the running
-fold — exactly the component chain's head clause (F1 keeps `.1` in sync);
-an `inr` head demands `⊤` (`W₂ = ⊤` at the cut) and leaves `.1` untouched. -/
+fold, exactly the component chain's head clause (`applySeq_prod` keeps `.1`
+in sync); an `inr` head demands `⊤` (`W₂ = ⊤` at the cut) and leaves `.1`
+untouched. -/
 theorem wfChain_prod_of_proj (ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))) :
     ∀ s : (prodSig D₁ D₂).State,
       WfChain D₁ W₁ s.1 (projList₁ ρ) →
@@ -584,11 +577,11 @@ theorem wfChain_prod_of_proj (ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))) :
     | inr o₂ =>
       exact ⟨True.intro, ih ((prodSig D₁ D₂).update s (t, r, Sum.inr o₂)) h⟩
 
-/-- **`WfOpReachable⊗` from component 1's** (memo §2.5.5): any Nodup,
-distinct-timestamp, all-`WfOpGen⊗` product enumeration `WfChain⊗`s from
-`init⊗` — `π₁ ρ` inherits Nodup/distinct-ts/`WfOpGen₁` through the injective,
-timestamp-preserving `ι₁`, component 1's VC yields `WfChain₁`, and the
-interleaving lemma threads it through. No mixing. -/
+/-- **`WfOpReachable⊗` from component 1's**: any Nodup, distinct-timestamp,
+all-`WfOpGen⊗` product enumeration `WfChain⊗`s from `init⊗`. `π₁ ρ` inherits
+Nodup/distinct-ts/`WfOpGen₁` through the injective, timestamp-preserving
+`ι₁`, component 1's VC yields `WfChain₁`, and the interleaving lemma threads
+it through. No mixing. -/
 theorem wfOpReachable_prod {WfOpGen₁ : Op D₁.AppOp → Prop}
     (hW₁ : WfOpReachable D₁ W₁ WfOpGen₁) :
     WfOpReachable (prodSig D₁ D₂) (prodW W₁) (prodWfOpGen WfOpGen₁) := by
@@ -601,14 +594,14 @@ theorem wfOpReachable_prod {WfOpGen₁ : Op D₁.AppOp → Prop}
   · intro o ho
     exact hgen (inlOp o) (mem_projList₁.mp ho)
 
-/-! ## §O20a  Premise-discharge wrappers (memo §2.5.1 rows `hHext`/`hBA`) -/
+/-! ## Premise-discharge wrappers -/
 
 /-- **`hHext⊗` wrapper**: a CONFIG-FREE component-1 extension discipline
-("`applicable` at the witness fold extends `H₁`" — the RGA's
+("`applicable` at the witness fold extends `H₁`", the RGA's
 `canonFoldOK_append` shape) discharges the product extension obligation.
-An `inl` op extends `π₁ ρ` — its `applicable⊗` at the product fold reads
-`D₁.applicable` at `.1 = fold₁ (π₁ ρ)` (F1); an `inr` op is FREE — `π₁`
-drops it, so `H⊗` is untouched (`H₂ = ⊤` at the cut). -/
+An `inl` op extends `π₁ ρ`, its `applicable⊗` at the product fold reads
+`D₁.applicable` at `.1 = fold₁ (π₁ ρ)` (`applySeq_prod`); an `inr` op is
+FREE, `π₁` drops it, so `H⊗` is untouched (`H₂ = ⊤` at the cut). -/
 theorem prodHext_of_hext₁ {H₁ : List (Op D₁.AppOp) → Prop}
     (hHextC₁ : ∀ (e : Op D₁.AppOp) (ev : Set (Op D₁.AppOp))
       (ρ₁ : List (Op D₁.AppOp)), listPermOf ρ₁ ev → H₁ ρ₁ →
@@ -637,10 +630,10 @@ theorem prodHext_of_hext₁ {H₁ : List (Op D₁.AppOp) → Prop}
     exact hH
 
 /-- **The state-free half of `hBA⊗`**: component 1's "applicable implies
-wellformed" fact gives the product's — `inl` ops read `.1` on both sides
-(the quantifier over product states specializes componentwise), `inr` ops
-have `W⊗ = ⊤`. The `qapplicable` half of `hBA` is the per-step honest
-delivery on the PRODUCT LTS (memo §2.5.6) and stays a capstone premise. -/
+wellformed" fact gives the product's. `inl` ops read `.1` on both sides (the
+quantifier over product states specializes componentwise), `inr` ops have
+`W⊗ = ⊤`. The `qapplicable` half of `hBA` is the per-step honest delivery on
+the PRODUCT LTS and stays a capstone premise. -/
 theorem prodGenW_of_genW₁
     (hgenW₁ : ∀ (e : Op D₁.AppOp) (s₁ : D₁.State), D₁.applicable e s₁ → W₁ e s₁)
     (e : Op (D₁.AppOp ⊕ D₂.AppOp)) :
@@ -652,17 +645,16 @@ theorem prodGenW_of_genW₁
   | inl o₁ => exact hgenW₁ (t, r, o₁) s'.1 happ
   | inr o₂ => exact True.intro
 
-/-! ## §O20b  The product `≈`-capstone (memo §2.5.7) -/
+/-! ## The product `≈`-capstone -/
 
 section Capstone
 
 variable (hP₁ : InvPres D₁ W₁) (hC₁ : CongVC D₁ E₁) (hA₁ : InvInvVC D₁ E₁ W₁)
 variable (hInvT₂ : ∀ s : D₂.State, D₂.Inv s)
 
-/-- The quotient signature of the product at the pragmatic cut — `QSig` at
+/-- The quotient signature of the product at the pragmatic cut: `QSig` at
 `(E⊗, W⊗)` with the lifted bundle. Reducible so downstream statements match
-`QSig …` syntactically (memo §2.5.3: work directly here, never form
-`QSig₁ ⊗ QSig₂`). -/
+`QSig …` syntactically (work directly here, never form `QSig₁ ⊗ QSig₂`). -/
 noncomputable abbrev prodQSig : ConditionedMRDTSig :=
   QSig (prodEqEquiv E₁) (prodW W₁) (prodInvPres W₁ hP₁ hInvT₂)
     (prodCongVC E₁ hC₁) (prodInvInvVC E₁ W₁ hA₁)
@@ -670,7 +662,7 @@ noncomputable abbrev prodQSig : ConditionedMRDTSig :=
 /-- **The flat half of `HonJ⊗` is structural**: same-replica `vis`-totality
 restricted along `ι₂` is a field of EVERY configuration
 (`vis_total_same_replica`), so the capstone's `hHon` premise only owes the
-component-1 context (the §2.5.6 supply rerun). -/
+component-1 context. -/
 theorem prodFlatHonJ
     (Cb : Sal.Emulation.Configuration
       (prodQSig E₁ W₁ hP₁ hC₁ hA₁ hInvT₂).toCRDTSig) :
@@ -681,7 +673,7 @@ theorem prodFlatHonJ
   exact Cb.vis_total_same_replica hLa hsa hLb hsb
     (fun h => hne (inrOp_injective h)) hrep
 
-/-- **THE PRODUCT `≈`-CAPSTONE (pragmatic cut)** — memo §2.5.7: the generic
+/-- **THE PRODUCT `≈`-CAPSTONE (pragmatic cut)**: the generic
 `RA_linearizable_up_to_eq_H` instantiated at the product parameters
 `(E⊗ = ≈₁ × Eq, W⊗, H⊗ = H₁ ∘ π₁, HonJ⊗)`, consuming
 
@@ -692,16 +684,14 @@ theorem prodFlatHonJ
   `eqJoinH_of_joinC hInvT₂ hJoin₂` (at `eqOfEq/WTop/⊤/flatHonJ`), and the
   flat half of `HonJ⊗` is discharged structurally (`prodFlatHonJ`);
 * the **reachability-derived supplies over the PRODUCT LTS** as hypotheses
-  (`hHon₁`, `hHext`, `hBA` — the §2.5.6 rerun is instance-phase, not the
-  kit's; `hHnil` is `H₁ []` since `π₁ [] = []`).
+  (`hHon₁`, `hHext`, `hBA`; `hHnil` is `H₁ []` since `π₁ [] = []`).
 
-Conclusion: `IsRALinearizable3Eq` at the product — every version of a
+Conclusion: `IsRALinearizable3Eq` at the product: every version of a
 reachable product-`QSig` configuration is `qmk` of a representative that is
 the RAW product fold of a `lo`-respecting linearization of its events, up to
-`E⊗` (component 1 up to `≈₁`, component 2 literally). This is what
-composes: the certificate bundle re-fed to the one generic capstone — NOT
-the finished component theorems (reachability does not project, memo
-§2.1.4). -/
+`E⊗` (component 1 up to `≈₁`, component 2 literally). This is what composes:
+the certificate bundle re-fed to the one generic capstone, NOT the finished
+component theorems (reachability does not project). -/
 theorem prod_ra_linearizable_up_to_eq_H
     {H₁ : List (Op D₁.AppOp) → Prop}
     {HonJ₁ : (Op D₁.AppOp → Op D₁.AppOp → Prop) → Set (Op D₁.AppOp) → Prop}

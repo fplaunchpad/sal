@@ -23,11 +23,11 @@ The candidate **state** invariant is `RgaInv s := (contains s 0 = false) ∧ wf 
 `accurate`/`fresh_ts` are *op-generation* conditions (they relate an op to a
 state, not a state to itself), so they are NOT part of the state invariant; they
 enter the inductive steps as hypotheses, exactly as they would be discharged from
-the execution model (Phase 0) at the point an event is generated.
+the execution model at the point an event is generated.
 
 ## Results (see the VERDICT block at the bottom for the full write-up)
 
-* `Inv_init`, `Inv_doIns`, `Inv_doDel` — **PRIMARY, closed, `sorry`-free.**
+* `Inv_init`, `Inv_doIns`, `Inv_doDel`: **closed, `sorry`-free.**
   `Inv` is inductive under `init_st` and under both `do_` cases.  The `Del`
   case is the load-bearing **R2** test: `Del x` physically removes `x` yet
   rehomes its children to `resolve s pre = anc s x`, which is `0`-or-live (by
@@ -40,7 +40,7 @@ the execution model (Phase 0) at the point an event is generated.
   sufficient when anchor ids strictly decrease along the LCA chain; without that
   the climb stops on a deleted, non-root node.  See the VERDICT.
 
-* `Inv_merge` — **STRETCH, `sorry` on the `wf` conjunct** (the `contains 0`
+* `Inv_merge`: **`sorry` on the `wf` conjunct** (the `contains 0`
   conjunct is closed).  The `sorry` is *documented-false*: it is refuted by
   `merge_breaks_wf` and needs extra hypotheses (id-monotone anchors on `l`, plus
   cross-branch anchor compatibility of `a`,`b` into `l`'s forest) that `Inv`
@@ -59,7 +59,7 @@ Named `RgaInv` rather than `Inv` to avoid a clash with Mathlib's `Inv` typeclass
 (the `⁻¹` class), which otherwise shadows a bare `Inv` in some binder positions. -/
 def RgaInv (s : concrete_st α) : Prop := contains s 0 = false ∧ wf s
 
-/-! ## PRIMARY 1 — `init_st` -/
+/-! ## `init_st` -/
 
 /-- `Inv` holds at the initial (empty) state: `wf` is vacuous and `0 ∉ dom`. -/
 theorem Inv_init [Inhabited α] : RgaInv (init_st (α := α)) := by
@@ -68,7 +68,7 @@ theorem Inv_init [Inhabited α] : RgaInv (init_st (α := α)) := by
   · intro t ht
     simp [init_st] at ht
 
-/-! ## PRIMARY 2 — `do_` of an `Ins`
+/-! ## `do_` of an `Ins`
 
 New key `t ≠ 0` (by `fresh_ts`) keeps `contains 0` false; the stored anchor
 `resolve s (a :: pre)` is the live anchor `a` (or `0` when `a = 0`), so `wf`
@@ -122,7 +122,7 @@ theorem Inv_doIns (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : Lis
       · refine Or.inr ?_
         rw [lemma_InDomUpd1, hancl]; simp only [Bool.or_true]
 
-/-! ## PRIMARY 3 — `do_` of a `Del` (the load-bearing R2 test)
+/-! ## `do_` of a `Del` (the load-bearing R2 test)
 
 `Del x` physically removes `x` from the domain.  Under `accurate` the reparent
 target is `resolve s pre = anc s x` (`isAncPath_resolve`), which by `wf s` is
@@ -353,7 +353,7 @@ theorem betaf_start (l a b : concrete_st α)
           simp only [survivors, union, intersection, difference, contains, domain, mem] at h hlb ⊢
           grind
 
-/-! ## STRETCH 4 — `Inv_merge`, now CLOSED under `id_mono l`
+/-! ## `Inv_merge` under `id_mono l`
 
 The `contains 0 = false` conjunct holds from `Inv l/a/b`.  The `wf` conjunct —
 refuted from `Inv l/a/b` alone by `merge_breaks_wf` — goes through under the
@@ -539,7 +539,7 @@ Partly, and the partition is sharp:
   false) ∧ wf` is inductive for the local effect.
 * Under `merge`: **NO** from `Inv l/a/b` alone (`merge_breaks_wf` is a
   machine-checked counterexample), but **YES** once the LCA is id-monotone.
-  `Inv_merge` is now closed, `sorry`-free, under the single extra premise
+  `Inv_merge` is closed, `sorry`-free, under the single extra premise
   `id_mono l`: `climb_aux_walk` proves that id-monotone anchors make `climb`'s
   fuel (`= the node id`) sufficient, and `betaf_start` shows the walk's start
   condition for every survivor's birth-anchor is supplied *for free* by `wf l/a/b`
@@ -556,7 +556,7 @@ Partly, and the partition is sharp:
 * *State invariants* (relate a state to itself; live in `Inv`): `contains s 0 =
   false` and `wf s`.  Both are inductive under `do_` (proved here).
 * *Op-generation conditions* (relate an op to the state it is applied to; need the
-  execution model / Phase 0): `accurate o s` and `fresh_ts o s`.  These are NOT
+  execution model): `accurate o s` and `fresh_ts o s`.  These are NOT
   state predicates and cannot be "preserved" — they are discharged at the moment
   an event is generated (the `apply` rule's premises), and appear here precisely
   as hypotheses of `Inv_doIns`/`Inv_doDel`.  This matches the blueprint's
@@ -579,8 +579,8 @@ fixed fuel makes `wf`-preservation depend on monotone anchor ids, which `wf` doe
 not supply and which `fresh_ts` does not even make a `do_`-invariant — but is
 **recovered** under the generation-time discipline of monotone timestamp
 allocation (id-decreasing anchors), captured by `id_mono` + `mono_alloc`.  That
-obligation, flagged in the original write-up as "the precise remaining obligation
-for closing the RGA soundness composition", is now **discharged**: `id_mono` is
+obligation, the precise remaining obligation
+for closing the RGA soundness composition, is **discharged**: `id_mono` is
 established as a genuine reachable-execution invariant (`id_mono_init`/
 `id_mono_doIns`/`id_mono_doDel`/`id_mono_merge`) and it closes `Inv_merge`.  The
 headline: **`RgaInv ∧ id_mono` is a reachable invariant under monotone

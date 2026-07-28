@@ -34,11 +34,11 @@ and three operations: `Add elem value`, `Inc elem amount`, `Rmv elem`.
 encode that in SAL's state-based `⟨Σ, σ₀, do, merge, rc⟩` model — which
 has no separate prepare — we push prepare-time data INTO the op payload:
 `Rmv` carries the tombstone snapshot `D ⊆ (ℕ × ℕ)` as a constructor
-parameter. `do_` for Rmv then only unions `D` into `R` — a pure
+parameter. `do_` for Rmv then only unions `D` into `R`, a pure
 pointwise-∨ that does not read the current A. This is what preserves
 Add/Rmv commutativity at the `do_` level (and thereby `rc_non_comm` /
-`base_2op`); an earlier version of this file computed the snapshot
-inside `do_` and failed those VCs as a result.
+`base_2op`); computing the snapshot inside `do_` would read the
+current A and fail those VCs.
 
 The paper's `inc` similarly iterates `A \ R` at prepare-time. We
 simplify: record each `inc` as a standalone `(elem, inc_ts, amount)`

@@ -1,11 +1,11 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha
 
-/-! # Shesha — merge lemmas, block 1 (phase 2a): M0, M1, M2
+/-! # Shesha — merge lemmas: M0, M1, M2
 
 Pen-and-paper source: `whiteboard/sibling-linked-proof.md` §4 (Lemmas M0, M1,
 M2); model hypotheses from `whiteboard/sibling-linked-rga-notes.md` §3 (the
-membership table; pattern-8 exclusion). M3 and Theorem P are phase 2b and
-deliberately absent.
+membership table; pattern-8 exclusion). M3 and Theorem P are deliberately
+out of scope for this file.
 
 Contents:
 

@@ -2,21 +2,20 @@ import Sal.ConditionedMRDTs.Framework.Sigma_LoOn3
 import Sal.CRDTs.Metatheory.JoinLemma_Of_CD
 
 /-!
-# THE VC SET for RA-linearizable MRDTs
+# The VC set for RA-linearizable MRDTs
 
-The validated bundle, in one place. The canonical route (all discharged
-instances except the Enable-wins flag) is
+The bundle in one place. The canonical derivation (all discharged instances except
+the Enable-wins flag) is
 
     CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3  ⇒  JoinLemma3  ⇒  RA-lin
 
-— **eight verification conditions**: the three guarded update-layer fields of
+with **eight verification conditions**: the three guarded update-layer fields of
 `UpdateVCs` (in `Sigma_LoOn3.lean`), `mergeL_comm`, the three feasible delta
 laws, and the causal-delta equation. `DeltaVCs3` is the *unconditional*
-on-ramp (group ⊕ lattice classes: Counter, G-Set); `CoreVCs3` is the
-historical wider bundle it rides on; `JoinLemma3F` is the **full-closure**
-join notion used by the Enable-wins route (counter-comparison merges need
-full causal closure — Development draft T10.7). Adequacy of the set is
-`Adequacy.lean`; the discharges are `MRDT_Instances.lean`.
+on-ramp (group ⊕ lattice classes: Counter, G-Set); `CoreVCs3` is the wider
+bundle it rides on; `JoinLemma3F` is the **full-closure** join notion the
+Enable-wins derivation uses (counter-comparison merges need full causal closure).
+Adequacy of the set is `Adequacy.lean`; the discharges are `MRDT_Instances.lean`.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -27,18 +26,16 @@ open Classical
 section
 variable {D : ConditionedMRDTSig}
 
-/-- **The ternary core VC bundle** — audited against what the ternary Join induction
-actually consumes (do NOT read it off the 2-way bundle):
+/-- **The ternary core VC bundle**, exactly what the ternary Join induction consumes:
 
 * the three update-layer fields, unchanged (`update_core`);
 * `mergeL_comm` — commutativity in the two *branch* arguments;
-* `mergeL_init` — the unit law `mergeL σ₀ σ₀ s = s` (note: the paper's
-  `MergeIdempotence` `mergeL l s s = s` is NOT consumed anywhere in the corrected
-  induction);
+* `mergeL_init` — the unit law `mergeL σ₀ σ₀ s = s` (the paper's `MergeIdempotence`
+  `mergeL l s s = s` is not consumed anywhere in the induction);
 * `lem_0op3` — the ternary 0-OP peel, **with the LCA argument carrying the event**:
   a union-maximal shared event is an LCA event, so all three components peel it.
-  This is where ternary-ness is load-bearing: the counter (§D) satisfies `lem_0op3`
-  but provably violates the binary `lem_0op`;
+  This is where ternary-ness is load-bearing: the counter satisfies `lem_0op3`
+  but violates the binary `lem_0op`;
 * `merge_peel_comm3` — the local peel against fold-shaped LCA and other-branch
   arguments, for events commuting with both. -/
 structure CoreVCs3 (D : ConditionedMRDTSig) : Prop where
@@ -58,10 +55,10 @@ structure CoreVCs3 (D : ConditionedMRDTSig) : Prop where
         = D.update (D.mergeL (applySeq D.toCRDTSig D.init π₀) a
             (applySeq D.toCRDTSig D.init π₂)) e
 
-/-- **The ternary Join Lemma** (mission N2): for backward-closed `E₁, E₂` with
-canonical states `s₁, s₂` and the canonical state `s₀` of the LCA event set
-`E₁ ∩ E₂` (which is what the LCA version holds, by the LCA lemma —
-`LCA_Lemma.lean`), the ternary merge produces the canonical state of the union. -/
+/-- **The ternary Join Lemma**: for backward-closed `E₁, E₂` with canonical states
+`s₁, s₂` and the canonical state `s₀` of the LCA event set `E₁ ∩ E₂` (which is what the
+LCA version holds, by the LCA lemma, `LCA_Lemma.lean`), the ternary merge produces the
+canonical state of the union. -/
 def JoinLemma3 (D : ConditionedMRDTSig) : Prop :=
   ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
@@ -74,7 +71,7 @@ def JoinLemma3 (D : ConditionedMRDTSig) : Prop :=
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
-/-- The ternary Join Lemma **at a single configuration** — the per-`C` body of
+/-- The ternary Join Lemma **at a single configuration**, the per-`C` body of
 `JoinLemma3`. Instances whose join holds only under configuration-level
 hypotheses (an honest-history contract, say) supply this directly to
 `goodConfig3_merge_at`; `JoinLemma3` is the `∀ C` closure. -/
@@ -94,7 +91,7 @@ theorem JoinLemma3.at {D : ConditionedMRDTSig} (h : JoinLemma3 D)
     (C : Sal.Emulation.Configuration D.toCRDTSig) : JoinLemma3At D C :=
   fun ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2 => h C ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2
 
-/-- **The delta contract** — the ternary replacement for the binary lattice
+/-- **The delta contract**, the ternary replacement for the binary lattice
 laws (`LatticeVCsPlus`). See the file header for the reading of `mergeL m · c`
 as delta application, and for the two classes (group, lattice) that satisfy it
 unconditionally. -/
@@ -112,16 +109,16 @@ structure DeltaVCs3 (D : ConditionedMRDTSig) : Prop where
     ∀ (l m x c y : D.State),
       D.mergeL l (D.mergeL m x c) y = D.mergeL m (D.mergeL l x y) c
 
-/-- **(CD3), the ternary causal-delta bound** — the single contextual per-MRDT
-obligation of the ternary route B: for a `loOn(U)`-maximal `e`, with
+/-- **(CD3), the ternary causal-delta bound**: the single contextual per-MRDT
+obligation of the causal-delta derivation. For a `loOn(U)`-maximal `e`, with
 `A = σ(U∖e)` and `B = σ(↓e∖e)`,
 
     mergeL B A (update B e) = update A e.
 
-Unlike the binary `CDVC` this is an *equation*, not a `⊑`-inequality — the
-Counter's degenerate order leaves no antisymmetry to combine two halves (file
-header). Note the merge on the left sits at its honest LCA: the true LCA set of
-`U∖e` and `↓e` is `(U∖e) ∩ ↓e = ↓e∖{e}`, whose canonical state is `B`. -/
+Unlike the binary `CDVC` this is an *equation*, not a `⊑`-inequality: the Counter's
+degenerate order leaves no antisymmetry to combine two halves. The merge on the left sits
+at its honest LCA: the true LCA set of `U∖e` and `↓e` is `(U∖e) ∩ ↓e = ↓e∖{e}`, whose
+canonical state is `B`. -/
 def CDVC3 (D : ConditionedMRDTSig) : Prop :=
   ∀ (C : Sal.Emulation.Configuration D.toCRDTSig) (U : Set (Op D.AppOp))
     (A B : D.State) (e : Op D.AppOp),
@@ -135,10 +132,10 @@ def CDVC3 (D : ConditionedMRDTSig) : Prop :=
     IsCanonicalState C (downset C e \ {e}) B →
     D.mergeL B A (D.update B e) = D.update A e
 
-/-- The *unconditional* core the CD route actually consumes: update-layer +
-commutativity of `mergeL` in its branch arguments. (`mergeL_init`,
-`lem_0op3`, `merge_peel_comm3` of `CoreVCs3` are all feasibility-bounded for
-real LCA-sensitive MRDTs — see the file header — and are NOT required.) -/
+/-- The *unconditional* core the CD derivation consumes: update-layer plus
+commutativity of `mergeL` in its branch arguments. (`mergeL_init`, `lem_0op3`,
+`merge_peel_comm3` of `CoreVCs3` are all feasibility-bounded for real
+LCA-sensitive MRDTs and are not required.) -/
 structure CoreVCs3CD (D : ConditionedMRDTSig) : Prop where
   update_core : UpdateVCs D.toCRDTSig
   mergeL_comm : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a
@@ -149,12 +146,12 @@ theorem CoreVCs3.toCD (hVC : CoreVCs3 D) : CoreVCs3CD D :=
 
 /-! ### 1. The feasible-tuple contract -/
 
-/-- **The feasible delta contract**: the T8 laws (plus the unit law) restricted
+/-- **The feasible delta contract**: the redistribution laws (plus the unit law) restricted
 to canonical tuples at honest LCAs of a configuration. Field by field:
 
 * `feasible_init` — `mergeL σ₀ σ₀ s = s` for `s` canonical (the raw law is
   false for `EWFlag`: an infeasible state with a set flag but zero counter);
-* `feasible_local_redistribute` — the T8 `local_redistribute` instance the
+* `feasible_local_redistribute` — the `local_redistribute` instance the
   induction consumes in the local-peel case: `s₀ = σ(E₁∩E₂)`, `B = σ(↓e∖e)`,
   `t₁ = σ(E₁∖e)`, `s₂ = σ(E₂)`, `e` union-maximal and local to side 1. Every
   `mergeL` node of both sides is at its honest LCA: LHS-inner `(E₁∖e) ⊔ ↓e`
@@ -204,10 +201,9 @@ structure FeasibleDeltaVCs3 (D : ConditionedMRDTSig) : Prop where
           (D.mergeL B t₂ (D.update B e))
         = D.mergeL B (D.mergeL t₀ t₁ t₂) (D.update B e)
 
-/-- The ternary Join Lemma under **full causal closure** of the sides — what
-`GoodConfig3.ver_causal` actually supplies. Counter-comparison merges (this
-file's finding) need it: the weak (`¬commutes`) closure is defeated by
-commuting same-replica enables. -/
+/-- The ternary Join Lemma under **full causal closure** of the sides, what
+`GoodConfig3.ver_causal` supplies. Counter-comparison merges need it: the weak
+(`¬commutes`) closure is defeated by commuting same-replica enables. -/
 def JoinLemma3F (D : ConditionedMRDTSig) : Prop :=
   ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),

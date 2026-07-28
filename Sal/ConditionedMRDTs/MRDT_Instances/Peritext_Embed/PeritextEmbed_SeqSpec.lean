@@ -4,8 +4,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_SeqSpec
 /-!
 # Sequential-spec soundness — tier 4: fused Peritext vs the naive editor
 
-The campaign's final tier (task #81/#65), against the canonical embed-based
-fused Peritext: on every sequentially honest single-replica history, the
+The campaign's final tier, against the canonical embed-based fused Peritext:
+on every sequentially honest single-replica history, the
 datatype's rendered rich text IS the screen of a **naive marked-text
 editor** — the sequential program a programmer would write for this op
 alphabet with no replication in mind:
@@ -18,9 +18,9 @@ alphabet with no replication in mind:
   matching close removes it, characters display with the marks open at
   them, boundaries are invisible.
 
-The proof is a composition, which is the payoff of the re-base: tier 3's
-buffer soundness (`embed_seq_sound`, now payload-generic) says the fold's
-`(id, element)` sequence IS the naive buffer, and the render layers of the
+The proof is a composition: tier 3's buffer soundness (`embed_seq_sound`,
+payload-generic) says the fold's `(id, element)` sequence IS the naive
+buffer, and the render layers of the
 datatype and the editor are literally the same pure fold over that
 sequence. The rehoming-based fused Peritext fails this theorem at the
 four-op witness (`fused_delete_reformats_survivor`): its delete departs

@@ -2,21 +2,22 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 import Sal.MRDTs.RGA_Embed.RunTable
 
 /-!
-# The run table at the instance — display identity, T-epoch, SPOTs (#73)
+# The run table at the instance — display identity, T-epoch, SPOTs
 
 The kernel theory (`Sal/MRDTs/RGA_Embed/RunTable.lean`: T-tail, T-repr,
 T-cmp, T-walk, T-mut) is state-level and hypothesis-free. This file:
 
 * **display identity** (`runTable_display_identity`): the table walk over a
   version's birth chains reproduces the canonical document's coordinate
-  sequence exactly — the note §8's walk-order gate as a theorem;
+  sequence exactly — `whiteboard/run-table-note.md` §8's walk-order gate as
+  a theorem;
 * **T-epoch** (`runTable_epoch`): composition with the re-coding cluster.
   This is the ONLY theorem in the whole run-table stack that carries a
   settled-cut hypothesis (the `StablePrefixMap` bundle + `Dom` coverage it
   inherits from the epoch map it composes with). Its absence everywhere
   else — T-tail, T-repr, T-cmp, T-walk, T-mut are unconditioned — is the
-  formal content of the measured **no-stability-gate** finding: the run
-  table exists for every state, unsettled suffixes included;
+  formal content of the **no-stability-gate** property: the run table
+  exists for every state, unsettled suffixes included;
 * **SPOTs** (PASS + FAIL, hand-derived, matching the Python's directed
   cases): the typing table with `(run-id, offset)` addresses, D1's mid-run
   split with the no-split rival pinned to the wrong display
@@ -120,8 +121,8 @@ The **only** settled-cut hypothesis in the run-table stack lives here: `F`
 is a stable-prefix map (H2 = `ord`, H3 = `ext`) and `hdom` says the state at
 rest is covered by the cut — exactly the contract `eRecode_*` inherits from
 the epoch protocol. Everything else in this development holds at every
-state, which is the formal content of the measured no-stability-gate
-finding (run table ≈ 21–27 b/ch with NO settled cut, note §8). -/
+state, which is the formal content of the no-stability-gate property (run
+table ≈ 21–27 b/ch with NO settled cut, `whiteboard/run-table-note.md` §8). -/
 
 /-- **T-epoch**: after a re-coding epoch, rebuilding the run table over the
 re-mapped chains again reproduces the (re-mapped) document verbatim, and the
@@ -164,9 +165,9 @@ theorem runTable_epoch_version (Γ : OrderedPrefixCode)
 /-! ## §5  SPOTs — concrete executions, PASS + FAIL, hand-derived
 
 Chains at the kernel level (one label per keystroke, typing = delta-1
-chains); expected tables and walks derived by hand from the note §2/§5,
-never `#eval`'d from the implementation. The directed shapes match the
-Python harness's D1–D5. -/
+chains); expected tables and walks derived by hand from
+`whiteboard/run-table-note.md` §2/§5, never `#eval`'d from the
+implementation. The directed shapes match the Python harness's D1–D5. -/
 
 namespace RunTableSPOT
 

@@ -9,9 +9,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergen
 /-!
 # GAP-1 (`hBN`): the branch-new survivor anchor coincidence
 
-*Additive; not committed; 0 `sorry` in what is kept.*
-
-`RGA_MergeThreadDischarge.eq_merge_two_sided_of_reachable` reduced the two-sided
+`RGA_MergeThreadDischarge.eq_merge_two_sided_of_reachable` reduces the two-sided
 merge bridge to four fold-level pieces, all discharged EXCEPT the branch-new
 survivor anchor clause `hBN`.  For a survivor `k` with `¬ contains l k`,
 
@@ -22,14 +20,14 @@ the LHS is `k`'s anchor in the FOLD forest; the RHS is the merge's `climb` over
 the survivor set from `k`'s birth-anchor up the LCA forest.  The two compute
 `k`'s merged anchor over DIFFERENT forests and must agree.
 
-This file isolates the **cross-forest reconciliation** the OBSTRUCTION block
-flagged as genuinely new, and factors `hBN` into
+This file isolates the **cross-forest reconciliation** this identity requires, and
+factors `hBN` into
 
   * a *climb-algebra* bridge (`resolve_climb_start`), proved here, and
   * the *survivor↔fold-liveness* bridge (`hD`, already a premise), and
   * a single residual *fold-chain* identity (`FoldBirthChain`) — the branch-new
     node's fold ancestor chain agrees with its birth-anchor's LCA chain.  This is
-    the irreducible event-list content; see the RESIDUAL block at the bottom.
+    the irreducible event-list content (§3, below).
 -/
 
 set_option maxHeartbeats 1000000
@@ -95,7 +93,7 @@ branch-new survivor `k` whose birth-anchor `w := birthAnc l a b k`:
 /-- **The residual fold-chain identity.**  For a branch-new node `k` in the fold
 state `p`, its stored anchor is the `resolve` of its birth-anchor's LCA chain
 (in-forest birth-anchor) or the birth-anchor itself (off-forest).  This is the
-event-list content the climb algebra cannot supply — see the RESIDUAL block. -/
+event-list content the climb algebra cannot supply. -/
 def FoldBirthChain (l a b p : concrete_st α) (k : ℕ) : Prop :=
   (contains l (birthAnc l a b k) = true →
       ∃ cw, IsAncPath l (birthAnc l a b k) cw

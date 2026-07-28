@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 
 /-!
-# Sided RGA — per-policy intent theorems (task #84)
+# Sided RGA — per-policy intent theorems
 
 The capstone (`sided_embed_ra_linearizable3`) is policy-free: sides are
 payload to convergence. This file is the other half of "one kernel, two
@@ -44,8 +44,7 @@ children, else left child of the successor") needs a generation model
 the framework does not yet have: intent-level ops ("insert before
 position i"), the policy as a function of the replica-local tree, and a
 per-replica run notion. That layer — and the maximal-non-interleaving
-statement of Weidner & Kleppmann — is the remaining #84 residue, to be
-designed on paper first.
+statement of Weidner & Kleppmann — is not covered by this file.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -209,11 +208,11 @@ theorem sided_fold_subtree_convex (Γ : OrderedPrefixCode)
 
 /-! ## §3  SPOT — L19, contiguous, PASS and FAIL shaped
 
-The battery's L19 trace under the Fugue policy's anchor choices (the
-sides the Python policy computes), replayed through the datatype's own
-fold: two concurrent backward runs become L-chains and display as
-contiguous blocks, `[50, 30, 10, 61, 41, 21, 1]`. The FAIL pin is the
-one-sided fan's interleaved verdict on the same stamps. -/
+The L19 trace under the Fugue policy's anchor choices, replayed through
+the datatype's own fold: two concurrent backward runs become L-chains
+and display as contiguous blocks, `[50, 30, 10, 61, 41, 21, 1]`. The
+FAIL pin is the one-sided fan's interleaved verdict on the same
+stamps. -/
 
 namespace SidedSPOT
 
@@ -239,8 +238,7 @@ def opsL19 : List (Op SOp) :=
   , (41, 1, .ins 41 (cOf ch21) 21 Side.L)
   , (61, 1, .ins 61 (cOf ch41) 41 Side.L) ]
 
-/-- PASS: the display keeps each run contiguous — the design note's and
-the Python battery's verdict, through the Lean fold. -/
+/-- PASS: the display keeps each run contiguous. -/
 theorem l19_blocks_contiguous :
     (sFold unaryCode opsL19).map (fun r => r.2.1)
       = [50, 30, 10, 61, 41, 21, 1] := by native_decide

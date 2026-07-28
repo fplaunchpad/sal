@@ -2,10 +2,10 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# Enable-wins flag — direct full-closure join and the conditioned capstone
+# Enable-wins flag: direct full-closure join and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production Enable-wins flag as a `ConditionedMRDTSig`, its full-closure
+join discharge, and the conditioned capstone over the generic framework.
 -/
 
 set_option maxHeartbeats 1000000
@@ -170,10 +170,9 @@ theorem EWFlag_no_rc_chain :
       exact RcRes.noConfusion (show RcRes.Snd_then_fst = _ from h1)
     | disable => exact RcRes.noConfusion (show RcRes.Either = _ from h1)
 
-/-- The guarded field. NOTE (T10.7): the `differentReplicas` guard is NOT
-load-bearing for the Enable-wins flag — it has no `rc = Either`
-non-commuting pairs (same-replica Enables commute; Enable/Disable is
-rc-ordered at any replica pair). -/
+/-- The guarded field. The `differentReplicas` guard is not load-bearing for
+the Enable-wins flag: it has no `rc = Either` non-commuting pairs (same-replica
+Enables commute; Enable/Disable is rc-ordered at any replica pair). -/
 theorem EWFlag_rc_non_comm_directional :
     ∀ o₁ o₂ : Op EWFlag.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
@@ -964,11 +963,9 @@ end
 
 /-! ## Adequacy through the contract spine -/
 
-/-- **(full, ⊤) corner recovered — the production Enable-wins flag.** Counter-
-comparison merges need full causal closure, so its contract sits at
-`𝒞 = fullClosure`. Adequacy is recovered by routing `EWFlag_joinLemma3F` through
-`ConditionedContract.ofJoinF` — the flag's own `EWFlag_ra_linearizable3` is
-untouched. -/
+/-- **(full, ⊤) corner, the production Enable-wins flag.** Counter-comparison
+merges need full causal closure, so its contract sits at `𝒞 = fullClosure`.
+Adequacy routes `EWFlag_joinLemma3F` through `ConditionedContract.ofJoinF`. -/
 theorem EWFlag_adequate_viaContract
     (C : Configuration EWFlag)
     (hReach : (labeledTS3 EWFlag).ReachableFrom (initConfig EWFlag trivial) C) :

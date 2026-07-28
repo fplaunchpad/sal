@@ -6,14 +6,14 @@ import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 /-!
 # The embedded-chain RGA as a conditioned MRDT instance — §1, the datatype
 
-Route decision (recorded): the **mergeable-queue route**, not the RGA_TF
-55-file chain. The queue's `JoinLemma3At` hook requires canonical states to
-be *unique per event set* (`Shesha_Join_Refuted` shows the hook is false
+This instance is built as a **mergeable queue**, not via the RGA_TF 55-file
+chain. The queue's `JoinLemma3At` hook requires canonical states to be
+*unique per event set* (`Shesha_Join_Refuted` shows the hook is false
 without it; the queue was immune because its canonical states are unique).
 The embedded-chain RGA has exactly that property — coordinates are birth
 constants and the display is their sort, so the state is a function of the
-event set (design doc Thm 4; `q_fold_canon`'s analogue) — which is why this
-instance exists at all.
+event set (`sal-mrdts.tex` Thm 4; `q_fold_canon`'s analogue) — which is why
+this instance exists at all.
 
 The framework needs `DecidableEq State`, so the instance state is the
 **canonical sorted association list** — the document itself, records
@@ -63,7 +63,7 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 def eIds (s : EState α) : List ℕ := s.map Prod.fst
 
 /-- The coordinate an insert writes — a function of the op alone (the carried
-prefix + the delta codeword; design doc §3: the prefix is for the proof). -/
+prefix + the delta codeword; `sal-mrdts.tex` §3: the prefix is for the proof). -/
 def eCoord (Γ : OrderedPrefixCode) (o : Op (EOp α)) : List Bool :=
   match o.2.2 with
   | .ins _ π a => π ++ Γ.enc (o.1 - a)
@@ -344,8 +344,8 @@ theorem eMergeL_sorted {l a b : EState α}
 
 `e_fold_canon`: any two well-formed enumerations of one event set fold to
 the **same** state — the mechanized "state is a function of the event set"
-(design doc Thm 4), by `esorted_ext` + a fold membership characterization.
-No explicit canonical-list formula is needed. -/
+(`sal-mrdts.tex` Thm 4), by `esorted_ext` + a fold membership
+characterization. No explicit canonical-list formula is needed. -/
 
 def eFold (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : EState α :=
   applySeq (E Γ α).toCRDTSig (E Γ α).init ρ
@@ -579,7 +579,7 @@ theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
               ⟨(IH r).mpr ⟨⟨o, hm', hi, hrec⟩, hnd.1⟩, by
                 simpa using hnd.2⟩
 
-/-- **Fold-canonicity** (design doc Thm 4, mechanized): well-formed
+/-- **Fold-canonicity** (`sal-mrdts.tex` Thm 4, mechanized): well-formed
 enumerations of one event set fold to the SAME state. The state is a
 function of the event set — the property `Shesha_Join_Refuted` shows the
 join hook cannot live without, and the reason this instance exists. -/

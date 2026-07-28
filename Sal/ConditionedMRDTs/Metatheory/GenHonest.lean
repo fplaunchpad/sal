@@ -3,7 +3,7 @@ import Sal.ConditionedMRDTs.Metatheory.HonestReach
 /-!
 # The generic honesty shape
 
-Every conditioned instance's honesty contract so far has the same shape: a
+Every conditioned instance's honesty contract has the same shape: a
 predicate `P` holds of each event at the fold of (any enumeration of) its
 causal past. `GenHonest D P` mechanizes that shape once, over the ternary
 configuration.
@@ -30,13 +30,12 @@ executions (the queue's head check: two surviving enqueues in a past
 materialize different heads under different orders) — such instances want
 the existential causal-fold form, taken directly by their bridges
 (`qHonest_of_applicable`) and to be provided generically as `HonestApp`
-with the safety metatheorem (see
-`Development/GENERIC_SAFETY_PENPAPER.md` §3).
+with the safety metatheorem.
 
 `CausalPastEnumerable` isolates the side condition the bridges need: every
 event's causal past admits a `listPermOf`-enumeration. This holds in
 reachable configurations, whose event sets are finite, but the repo has no
-generic finiteness result for reachable configurations' event sets yet (only
+generic finiteness result for reachable configurations' event sets (only
 the RGA carries a per-instance one), so it is kept as an explicit hypothesis.
 
 The composite metatheorem `ra_linearizable3_of_genHonest_reach` instantiates

@@ -1,26 +1,23 @@
-// THE CUT-INDEXED EPOCH DAG (task #112 phase 3; whiteboard/epoch-protocol-note.md
-// section 9, the four-step runtime change). Epoch identity becomes the SETTLED
-// CUT plus its certificate (the coordinate-addressed cut = the settled insert
-// ids, the declared set, the heard frontiers), NOT a per-replica integer. The
-// old `epochs` array of maps becomes a CUT-INDEXED DAG whose nodes are cuts and
-// whose edges are compaction refinements (one parent) and JOINS (two parents,
-// W = U ∪ V).
+// THE CUT-INDEXED EPOCH DAG. Epoch identity is the SETTLED CUT plus its
+// certificate (the coordinate-addressed cut = the settled insert ids, the
+// declared set, the heard frontiers), NOT a per-replica integer. The epochs
+// form a CUT-INDEXED DAG whose nodes are cuts and whose edges are compaction
+// refinements (one parent) and JOINS (two parents, W = U ∪ V).
 //
 // WHY CUT-ADDRESSED. Two replicas that compacted the SAME settled cut compute
-// the SAME map from the SAME certificate (OB-map-from-certificate, note §2/§5.2;
-// the Lean `certMap_deterministic`), so they must land on the SAME epoch node.
-// A per-replica integer cannot express that two replicas' "epoch 1" are the same
-// epoch, nor that two divergent "epoch 1"s are INCOMPARABLE. The cut key is the
-// canonical identity: two epochs are the same iff their settled cuts are equal,
-// comparable iff one cut ⊆ the other, incomparable (divergent) otherwise.
+// the SAME map from the SAME certificate, so they must land on the SAME epoch
+// node. A per-replica integer cannot express that two replicas' "epoch 1" are
+// the same epoch, nor that two divergent "epoch 1"s are INCOMPARABLE. The cut
+// key is the canonical identity: two epochs are the same iff their settled cuts
+// are equal, comparable iff one cut ⊆ the other, incomparable (divergent)
+// otherwise.
 //
-// THE JOIN (note §9.2). Merging heads at incomparable epochs U and V forms
-// W = U ∪ V. Because the map at W is a function of W's certificate alone, each
-// side computes it deterministically with no round trips; the merged state
-// converges bit-identically (the Lean `diamond_confluence`, H-D s1). Here the
-// join is recorded as a DAG node with parents [U, V]; the merge itself is
-// realized in src/replica.js (op-replay to the common base, the id-addressed
-// analogue of coordinate-map translation -- see the modelling-gap note there).
+// THE JOIN. Merging heads at incomparable epochs U and V forms W = U ∪ V.
+// Because the map at W is a function of W's certificate alone, each side
+// computes it deterministically with no round trips; the merged state converges
+// bit-identically. The join is recorded as a DAG node with parents [U, V]; the
+// merge itself is realized in src/replica.js (op-replay to the common base, the
+// id-addressed analogue of coordinate-map translation).
 
 import { decodeOne } from './compact.js';
 
@@ -75,16 +72,16 @@ export function buildInverseTranslate(preState, postState) {
 }
 
 /** Canonical cut key: the settled insert ids, sorted ascending, comma-joined.
- *  Equal cuts ⟹ equal keys ⟹ the same epoch node (OB-map-from-certificate). */
+ *  Equal cuts ⟹ equal keys ⟹ the same epoch node. */
 export function cutKey(settledIds) {
   return [...settledIds].map(Number).sort((x, y) => x - y).join(',');
 }
 
 /** Serialize a compaction cut for the wire (its Set fields become sorted
  *  arrays; array fields pass through). The receiver RECOMPUTES the epoch's
- *  translate map from parentState + this cut -- the certificate travels, the
- *  map does not (note §9.1: "each side computes the join map from the shared
- *  certificate data"). */
+ *  translate map from parentState + this cut: the certificate travels, the map
+ *  does not (each side computes the join map from the shared certificate
+ *  data). */
 export function serializeCut(cut) {
   const out = {};
   for (const [k, v] of Object.entries(cut ?? {})) {
@@ -142,8 +139,8 @@ export class EpochDag {
   }
 
   /** Register the JOIN of two epochs: W = U ∪ V, the cut-DAG node with parents
-   *  [U, V] (note §9.2, `decl(W) = (decl(U) | decl(V)) - W`; under a certified
-   *  cut the declared sets are empty). Idempotent by cut key. Returns W's key. */
+   *  [U, V] (decl(W) = (decl(U) | decl(V)) - W; under a certified cut the
+   *  declared sets are empty). Idempotent by cut key. Returns W's key. */
   join(keyU, keyV) {
     const U = this.nodes.get(keyU), V = this.nodes.get(keyV);
     const settled = new Set([...U.settledIds, ...V.settledIds]);
@@ -197,17 +194,16 @@ export class EpochDag {
   }
 }
 
-// ------------------------------------------------------------------ map GC (A3)
+// ------------------------------------------------------------------ map GC
 //
-// A translation map is GARBAGE-COLLECTED per the A3 DOUBLE certificate (note
-// §4/§9.4): everyone advanced past epoch e AND every pre-advance mint has been
-// heard everywhere (acks PLUS AllHeardSince over the ack frontier). The
-// ack-ONLY shortcut is UNSOUND: an epoch-e straggler minted before its minter
-// advanced can still arrive after the acks, is old-space (its coordinate is an
-// epoch-e coordinate needing the e-1→e map), and translating it needs the map.
-// This is the Lean `mapDrop_sound` hypothesis vs the `a3_ack_only_unsound` FAIL.
+// A translation map is GARBAGE-COLLECTED per the DOUBLE certificate: everyone
+// advanced past epoch e AND every pre-advance mint has been heard everywhere
+// (acks PLUS AllHeardSince over the ack frontier). The ack-ONLY shortcut is
+// UNSOUND: an epoch-e straggler minted before its minter advanced can still
+// arrive after the acks, is old-space (its coordinate is an epoch-e coordinate
+// needing the e-1→e map), and translating it needs the map.
 
-/** Does the A3 DOUBLE certificate justify dropping epoch e's map?
+/** Does the DOUBLE certificate justify dropping epoch e's map?
  *  - everyoneAdvanced: every registered replica's evidence sits at an epoch
  *    whose cut ⊋ e's cut (advanced strictly past e);
  *  - allHeardOverAckFrontier: every op minted before its minter's advance is in
@@ -217,9 +213,9 @@ export function doubleCertificate({ everyoneAdvanced, allHeardOverAckFrontier })
   return everyoneAdvanced === true && allHeardOverAckFrontier === true;
 }
 
-/** The UNSOUND ack-only shortcut, kept as a NAMED NEGATIVE CONTROL so tests can
- *  show it would drop a map the double certificate retains (and that dropping it
- *  flips a read). Never call this to gate a real drop. */
+/** The UNSOUND ack-only shortcut, kept as a NAMED NEGATIVE CONTROL: it would
+ *  drop a map the double certificate retains (and dropping it flips a read).
+ *  Never call this to gate a real drop. */
 export function ackOnlyCertificate({ everyoneAdvanced }) {
   return everyoneAdvanced === true;
 }

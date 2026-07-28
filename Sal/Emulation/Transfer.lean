@@ -4,7 +4,7 @@ import Sal.CRDTs.Metatheory.RA_Linearizability
 /-!
 # Transfer theorem: state-based RA-lin ⇒ op-based RA-lin
 
-The capstone of Phase 1. Composes:
+The capstone. Composes:
 
 1. **Bridge** (`ra_linearizable_of_vcs`): every reachable state-based
    configuration satisfying the 24 VCs is RA-linearizable.
@@ -19,9 +19,9 @@ original `D` is RA-linearizable on every reachable configuration.
 
 This file states the end-to-end meta-theorem with all the machinery
 connected. The proof is `sorry`, because it requires:
-* A complete bridge (steps 3–4 close).
-* A complete `weakSim_sound` (step 8).
-* A complete simulation for `canonicalG` (step 10).
+* A complete bridge.
+* A complete `weakSim_sound`.
+* A complete simulation for `canonicalG`.
 * Reformulating RA-lin as a trace property for the op-based side.
 -/
 
@@ -40,7 +40,7 @@ the form required for Liittschwager's trace-transfer theorem. -/
 def OpIsRALinearizable (D : OpCRDTSig)
     (_hb : D.Msg → D.Msg → Prop)
     (_trace : List (OpEvent D)) : Prop :=
-  -- TODO: flesh out. Roughly:
+  -- Placeholder. The intended definition:
   --   for every `(r, qry[q], resp[v])` suffix of `trace`,
   --   there exists `π : List (D.AppOp)` matching the `update` events
   --   visible at `r`, respecting `D.rc`, with
@@ -64,6 +64,6 @@ theorem op_RA_linearizable_of_vcs
   --   4. Use weak-trace equivalence (from `weakSim_sound` + reverse sim)
   --      to transfer to op-based trace.
   --   5. Unfold `OpIsRALinearizable` as a trace property; done.
-  trivial  -- placeholder: OpIsRALinearizable = True for now
+  trivial  -- placeholder: OpIsRALinearizable = True
 
 end Sal.Emulation

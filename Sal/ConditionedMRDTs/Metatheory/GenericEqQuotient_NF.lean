@@ -2,18 +2,15 @@ import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 import Sal.ConditionedMRDTs.Framework.NoopFeasible
 
 /-!
-# The `≈`-metatheorem over born-applicable delivery — the `noopFeasible` layer
-
-*Additive; modifies no existing file; 0 `sorry`.*
+# The `≈`-metatheorem over born-applicable delivery: the `noopFeasible` layer
 
 The `GenDisc`-free replacement for the generation-discipline threading
-(`GenericEqQuotient`'s `EqJoinLemma3C` / `GDSupply`, Task A).  The pen-and-paper
-analysis (`LOONA_VS_LOONEQ_ANALYSIS.md`) showed the set-level `GenDisc` (the RGA's
-`GenDisc2CEq`) to be un-dischargeable from honest generation.  The honest
-discipline is a PER-WITNESS one: the canonical-state enumeration is
+(`GenericEqQuotient`'s `EqJoinLemma3C` / `GDSupply`).  The set-level `GenDisc`
+(the RGA's `GenDisc2CEq`) is un-dischargeable from honest generation; the honest
+discipline is per-witness: the canonical-state enumeration is
 `noopFeasible` (`applicable`-or-no-op at every prefix).  This file re-states the
-`≈`-canonical state and the datatype's `≈`-Join VC carrying that clause, with the
-`GenDisc` premises DELETED.
+`≈`-canonical state and the datatype's `≈`-Join VC carrying that clause, without
+the `GenDisc` premises.
 
 * `IsCanonicalStateEqNF` — `IsCanonicalStateEq` with a `noopFeasible` witness.
 * `EqJoinLemma3C_NF` — `EqJoinLemma3C` over `IsCanonicalStateEqNF`, no `GenDisc`.
@@ -56,15 +53,15 @@ theorem isCanonicalStateEq_of_NF (E : EqEquiv D) (W : Op D.AppOp → D.State →
 
 /-- **The datatype's `≈`-Join Lemma over born-applicable delivery**
 (`EqJoinLemma3C_NF`).  `EqJoinLemma3C` with `IsCanonicalStateEq` replaced by
-`IsCanonicalStateEqNF` and the `GenDisc` premises DELETED: the feasibility clause
-in the canonical-state hypotheses now carries the honest discipline the datatype's
+`IsCanonicalStateEqNF` and the `GenDisc` premises removed: the feasibility clause
+in the canonical-state hypotheses carries the honest discipline the datatype's
 `canon_fold` consumes, so no separate set-level generation discipline is asserted.
 
-`hdts` (**timestamp uniqueness on `events`**) is the ONE generic execution-model fact the datatype
-Join may consume: distinct events have distinct ids. It is NOT an RDT obligation — every reachable
+`hdts` (**timestamp uniqueness on `events`**) is the one generic execution-model fact the datatype
+Join may consume: distinct events have distinct ids. It is not an RDT obligation; every reachable
 configuration provides it (`Configuration.timestamps_distinct`), so `RA_linearizable_up_to_eq_NF`
 supplies it from the reachable config. Carrying it here (rather than re-bundling a config witness per
-RDT, à la the old `GenDisc`) keeps the framework generic and the per-RDT residual minimal. -/
+RDT, as a per-RDT `GenDisc` would) keeps the framework generic and the per-RDT residual minimal. -/
 def EqJoinLemma3C_NF (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop) : Prop :=
   ∀ (vis : Op D.AppOp → Op D.AppOp → Prop) (events : Set (Op D.AppOp))

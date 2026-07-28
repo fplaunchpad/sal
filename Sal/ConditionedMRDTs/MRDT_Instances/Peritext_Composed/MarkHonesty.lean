@@ -47,7 +47,7 @@ Three facts, each mechanized below:
    and BudgetCart's rem-observed check are decorative for their capstones.
    Where it becomes load-bearing is the read layer: `endpointAccurate_resolve`
    shows that at an accurate state resolution lands on the recorded character
-   itself — the seed of the render-intent theorems (gap 2, `#55`), which is
+   itself — the seed of the render-intent theorems (gap 2), which is
    where mark-anchor honesty pays for itself.
 
 The general lesson, lifting the FWW/BudgetCart taxonomy to the compositional
@@ -154,7 +154,7 @@ theorem markAccurate_congr₁ {σ σ' : concrete_st} (h : eq σ σ')
 `PeritextHonestDelivery` (character born accuracy + applicable delivery) *and*
 that every delivered mark record is `MarkAccurate` against a causal fold of
 the RGA fragment of the head version's events — the exact mirror of the
-character clause, now on the `inr` (mark-add) steps the base contract leaves
+character clause, here on the `inr` (mark-add) steps the base contract leaves
 free. The removal ops (`OSOp.rem`) carry no record, so they are unconstrained.
 
 Stated as a conjunction so that `→ PeritextHonestDelivery` is immediate: this

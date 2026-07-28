@@ -9,28 +9,29 @@ only up to observational `eq` (`≈`), not Lean `=` — can be presented to the
 structural-`=` metatheorem template (`Adequacy.IsRALinearizable3`,
 `ConditionedContract.ra_linearizable3_of_joinC`).
 
-Design: `EQ_QUOTIENT_DESIGN.md`. The plan is to quotient `concrete_st α` by `≈` so
-that `=` on `QState` *is* `≈` downstairs, letting the RGA's `≈`-results become
-`QState` `=`-results for free.
+The plan quotients `concrete_st α` by `≈` so that `=` on `QState` *is* `≈`
+downstairs, letting the RGA's `≈`-results become `QState` `=`-results for free.
 
-## Status of the scaffolding (what this file establishes, 0 sorry)
+## What this file establishes (0 sorry)
 
 * **§1** `eq_equiv`, `rgaSetoid`, `QState := Quotient rgaSetoid`, and the operation
-  lift `qdo` (via `do_eq_congr`, which is *unconditional*). CLOSED.
+  lift `qdo` (via `do_eq_congr`, which is *unconditional*).
 * **§2** the per-argument merge `≈`-congruences. `merge_eq_congr_a` /
-  `merge_eq_congr_b` (in the two branch arguments) are CLOSED and *unconditional*.
+  `merge_eq_congr_b` (the two branch arguments) hold *unconditionally*.
   The `l`-argument congruence — needed to compose the ternary congruence for
   `Quotient.lift₃` — is **FALSE unconditionally**: `merge_eq_congr_l_fails` is a
   kernel-checked counterexample. See §2 for the precise gap.
 * **§3** the invariance lemmas (`wf`, `contains · 0 = false`, `id_mono`,
-  `accurate`, `fresh_ts` are `≈`-invariant). CLOSED.
-* **§4** the instance skeleton and the pending payoff, marked PENDING (blocked on
-  the `l`-congruence gap, i.e. on the pending update/merge convergence workstream).
+  `accurate`, `fresh_ts` are `≈`-invariant).
+* **§4** the instance skeleton and the target payoff; both are blocked on the
+  `l`-congruence gap, i.e. on the update/merge convergence result restricted to
+  the reachable-state subfamily.
 
 The headline finding: **`qmerge` cannot be a `Quotient.lift₃` on the *full* type**,
 because merge does not respect `≈` in its LCA argument. The `≈`-quotient must be
 taken over the `wf ∧ id_mono ∧ (structural forest)` subfamily (the reachable
-states), which is exactly what the pending convergence workstream supplies.
+states), which needs the update/merge convergence result restricted to that
+subfamily (not yet established).
 -/
 
 set_option maxHeartbeats 1000000
@@ -283,13 +284,13 @@ theorem contains_zero_eq_iff {s s' : concrete_st α} (h : eq s s') :
     contains s 0 = false ↔ contains s' 0 = false :=
   ⟨contains_zero_eq_invariant h, contains_zero_eq_invariant (eq_symm s s' h)⟩
 
-/-! ## §4. The lifted `Inv`/`applicable`, the instance skeleton, and the payoff
+/-! ## §4. The lifted `Inv`/`applicable`, the instance skeleton, and the target payoff
 
 The invariance lemmas of §3 let the RGA's state-shape invariant and applicability
-guard *descend to `QState`* — these two defs are REAL (they compile), proving the
-descent. The remaining `ConditionedMRDTSig` data field `mergeL` is BLOCKED by the
-`l`-congruence gap (`merge_eq_congr_l_fails`), so the full instance and the payoff
-are marked PENDING below. -/
+guard *descend to `QState`* — these two defs compile, proving the descent. The
+remaining `ConditionedMRDTSig` data field `mergeL` needs the `l`-congruence gap
+(`merge_eq_congr_l_fails`) resolved on the reachable-state subfamily, so the full
+instance and the payoff below are not yet established. -/
 
 /-- The RGA state-shape invariant lifted to `QState` (`= wf ∧ root-free ∧
 id_mono`). Well-defined by §3. This is the `ConditionedMRDTSig.Inv` slot. -/
@@ -311,13 +312,13 @@ def qapplicable (o : op_t ℕ) : QState → Prop :=
     qapplicable o (⟦s⟧ : QState) = (accurate o s ∧ fresh_ts o s) := rfl
 
 /-!
-### The instance skeleton (PENDING — blocked on `qmerge`)
+### The instance skeleton (blocked on `qmerge`)
 
-With `qmerge : QState → QState → QState → QState` in hand, the RGA would
-instantiate `ConditionedMRDTSig` as below. Every field marked ✓ is available
-NOW (in this file or upstream); the `mergeL`/`merge`/`merge_init_slice` fields are
-the DECLARED HOLE. `Op (app_op_t α) = op_t α` definitionally, so `update`/`rc`/
-`applicable` typecheck directly.
+With `qmerge : QState → QState → QState → QState` in hand, the RGA instantiates
+`ConditionedMRDTSig` as below. Every field marked ✓ is available (in this file or
+upstream); the `mergeL`/`merge`/`merge_init_slice` fields need `qmerge`.
+`Op (app_op_t α) = op_t α` definitionally, so `update`/`rc`/`applicable` typecheck
+directly.
 
 ```
 noncomputable def rgaQSig : ConditionedMRDTSig where
@@ -333,32 +334,31 @@ noncomputable def rgaQSig : ConditionedMRDTSig where
   rc               := fun _ _ => RcRes.Either          -- ✓  (RGA rc = Either)
   Inv              := qInv                             -- ✓ §4  (wf ∧ root-free ∧ id_mono)
   applicable       := qapplicable                      -- ✓ §4  (accurate ∧ fresh_ts)
-  -- ── DECLARED HOLE (needs the ≈-quotient merge, blocked by merge_eq_congr_l_fails) ──
-  mergeL           := qmerge                           -- PENDING workstream A/B
-  merge            := fun a b => qmerge qinit a b      -- PENDING (init-LCA slice)
-  merge_init_slice := (by intro a b; rfl)              -- PENDING (holds once mergeL := qmerge)
+  -- ── needs the ≈-quotient merge, blocked by merge_eq_congr_l_fails ──
+  mergeL           := qmerge
+  merge            := fun a b => qmerge qinit a b      -- init-LCA slice
+  merge_init_slice := (by intro a b; rfl)              -- holds once mergeL := qmerge
 ```
 
 `qmerge` requires the ternary `merge` `≈`-congruence, whose `l`-step is FALSE on
 the raw type (`merge_eq_congr_l_fails`). The fix is NOT a missing lemma about `≈`
 alone: it is to quotient the `wf ∧ id_mono ∧ (structural forest)` **subfamily** of
-reachable states — precisely the states the pending update+merge convergence
-workstream (`RGA_UpdateConvergence*`, the simultaneous induction, `hBN`) certifies.
+reachable states — precisely the states the update+merge convergence result
+(`RGA_UpdateConvergence*`, the simultaneous induction, `hBN`) is to certify.
 On that subfamily the climb only ever applies `anc l` to `{0}∪domain l` nodes
 (`RGA_Reachability_Invariant.climb_aux_walk` under `id_mono l`), so the `l`-step
 closes. Equivalently: define `qmerge` on `Quotient (subtype-setoid)` where the
 subtype carries the forest invariant.
 
-### The pending payoff (PENDING — do NOT prove here)
+### The target payoff
 
 Once `qmerge` exists and the RGA's `≈`-Join Lemma + `≈`-convergence are ported
 across the quotient (they become `QState` `=`-statements *by definition of the
-quotient*, per `EQ_QUOTIENT_DESIGN.md` §3), the payoff is the following, obtained
-by feeding `rgaQSig` + its `=`-Join to `ra_linearizable3_of_joinC`
-(`ConditionedContract.lean`):
+quotient*), the payoff is the following, obtained by feeding `rgaQSig` + its
+`=`-Join to `ra_linearizable3_of_joinC` (`ConditionedContract.lean`):
 
 ```
--- PENDING: the RGA-on-QState RA-linearizability payoff.
+-- the RGA-on-QState RA-linearizability payoff, once `qmerge` exists.
 theorem RGA_is_RA_linearizable
     {hInit : rgaQSig.Inv rgaQSig.init}
     (C : Sal.Emulation.Configuration rgaQSig.toCRDTSig)
@@ -369,9 +369,9 @@ theorem RGA_is_RA_linearizable
 
 Reading the conclusion back through the quotient (`⟦·⟧` injective on `≈`-classes)
 gives the concrete RGA state `≈ σ*(E)` — RA-linearizability up to observational
-`≈` (Def 2.1). SEC follows. This assembly waits on: (i) `qmerge` (this file's
-hole), (ii) `eq_merge_two_sided` with `hBN` discharged, (iii) the ≈-convergence
-simultaneous induction — all in other workstreams.
+`≈` (Def 2.1). SEC follows. This assembly needs: (i) `qmerge` (this file's
+gap), (ii) `eq_merge_two_sided` with `hBN` discharged, (iii) the ≈-convergence
+simultaneous induction — all defined elsewhere.
 -/
 
 end Sal.ConditionedMRDTs.RGAEqQuotient

@@ -8,8 +8,7 @@ silent (τ) transitions. Follows Liittschwager et al. §2.2 + §4 and
 Milner's standard presentation.
 
 This file lays down the types and soundness statement. The simulation
-step diagram and the soundness proof are scaffolded with `sorry`s; see
-PLAN.md step 8 for the remaining work.
+step diagram and the soundness proof are scaffolded with `sorry`s.
 -/
 
 namespace Sal.Emulation

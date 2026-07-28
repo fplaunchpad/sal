@@ -10,8 +10,6 @@ import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 /-!
 # The MERGE half of `hCanon` — `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')`
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
 The RGA-specific fact: the OR-set merge computes the canonical state of the union events. Two clauses:
 * **domain** (`merge_domain_clause`): `contains (merge …) = survP (ρ₀++π₀)` — the OR-set = union
   survivor set. A Boolean/causal identity: OR-set survival over the branch survivor sets equals union
@@ -149,7 +147,7 @@ theorem merge_anc_clause
 
 /-- **`CanonMatch F (merge σ₀' σ₁' σ₂')`** — the RGA merge computes the canonical state of the union
 events, assembled from the three per-clause results (domain / el / anc). This is the SOLE RGA-specific
-input to the canonical route (`RGA_EndToEnd.hCanon`'s merge half); everything else is generic. -/
+input `hCanon`'s merge half needs; everything else is generic. -/
 theorem merge_canonMatch
     (σ₀' σ₁' σ₂' : concrete_st α) (F : List (op_t α))
     (hdomain : ∀ c, contains (merge σ₀' σ₁' σ₂') c = true ↔ survP F c)

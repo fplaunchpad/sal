@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Peel
 /-!
 # hEnum DISCHARGED — the delta enum from the join context
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 Skeleton 3's `hEnum` leaf, discharged at `HonJ := rgaHonJ`:
 

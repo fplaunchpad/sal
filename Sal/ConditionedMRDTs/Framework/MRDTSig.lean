@@ -1,11 +1,9 @@
 import Sal.CRDTs.Metatheory.RA_Linearizability
 
 /-!
-# Ternary MRDT signature and conditioned linearization (Phase-0, step **S1**)
+# Ternary MRDT signature and conditioned linearization
 
-This is the foundation step of the Neem soundness meta-theory (Phase-0, TTL+RV
-design; see `Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.1–§1.2 and §4 S1). It lays down the
-*Thin-Ternary-Layer* over the existing binary `Sal.Emulation.CRDTSig`:
+The Thin-Ternary-Layer over the binary `Sal.Emulation.CRDTSig`:
 
 * `MRDTSig extends CRDTSig` — adds the ternary merge `mergeL l a b`
   (paper `merge(σ_⊤, σ₁, σ₂)`) and pins the inherited binary `merge` to be exactly
@@ -14,21 +12,16 @@ design; see `Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.1–§1.2 and §4 S1). It 
   (`Configuration`, `lo`, `SatisfiesVCs`, the proved bridge cases) applies verbatim to
   the `l := init` slice.
 * `ConditionedMRDTSig extends MRDTSig` — adds the state-shape `Inv` and the
-  generation-time `applicable` guard (Design-3 conditioning split).
+  generation-time `applicable` guard (the conditioning split).
 * `commutesOn` — commutation required only on `Inv`/`applicable` reachable states.
 * the ternary `lo` — the linearization order with `commutes → commutesOn` at the two
   ⇄-sites, otherwise identical in shape to `Sal.Emulation.lo`.
 
-**Exit criteria (PHASE0_PLAN §4 S1), all discharged in this file:**
-1. compiles clean, no `sorry`;
-2. `commutesOn` / `lo` collapse to their binary counterparts (`CRDTSig.commutes` /
-   `Sal.Emulation.lo`) whenever `Inv`/`applicable` are trivially true — see
-   `commutesOn_iff_commutes`, `commutesOn_eq_commutes`, `lo_iff_binary`, `lo_eq_binary`;
-3. a `Grow_Only_Set` (G-Set) `MRDTSig` instance (`GSet`) supplies `mergeL` and makes
-   `merge_init_slice` hold **definitionally**.
-
-Downstream (S2 Configuration + ranked store, S6 merge induction) build on the `def`/
-`structure` seams here; see the NOTE comments below for the exact hand-off points.
+`commutesOn` and `lo` collapse to their binary counterparts (`CRDTSig.commutes` /
+`Sal.Emulation.lo`) whenever `Inv`/`applicable` are trivially true (see
+`commutesOn_iff_commutes`, `commutesOn_eq_commutes`, `lo_iff_binary`, `lo_eq_binary`); the
+`Grow_Only_Set` instance `GSet` supplies `mergeL` and makes `merge_init_slice` hold
+definitionally, witnessing that `MRDTSig` is inhabited.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -51,7 +44,7 @@ structure MRDTSig extends CRDTSig where
   `mergeL`. -/
   merge_init_slice : ∀ a b, mergeL init a b = merge a b
 
-/-- **Conditioned ternary signature.** Adds the Design-3 conditioning split:
+/-- **Conditioned ternary signature.** Adds the conditioning split:
 
 * `Inv` — a state-SHAPE reachability over-approximation (e.g. RGA's `RgaInv`), inductive
   under `update`;
@@ -66,26 +59,22 @@ structure ConditionedMRDTSig extends MRDTSig where
   /-- Generation-time applicability guard on an event at a state. -/
   applicable : Op AppOp → State → Prop
 
-/-- **Conditioned commutation** (PHASE0_PLAN §1.1; `BLUEPRINT.md:437`). Commutation of
-`o₁, o₂` is required ONLY at states that are `Inv`-reachable and at which both events are
-`applicable`. This is the conditioned replacement for `CRDTSig.commutes` at every ⚑ site
-of the proof skeleton. -/
+/-- **Conditioned commutation.** Commutation of `o₁, o₂` is required only at states that are
+`Inv`-reachable and at which both events are `applicable`. This is the conditioned
+replacement for `CRDTSig.commutes` at every ⚑ site of the proof skeleton. -/
 def ConditionedMRDTSig.commutesOn (D : ConditionedMRDTSig) (o₁ o₂ : Op D.AppOp) : Prop :=
   ∀ s, D.Inv s → D.applicable o₁ s → D.applicable o₂ s →
     D.update (D.update s o₁) o₂ = D.update (D.update s o₂) o₁
 
-/-! ## §1.2 — The linearization order over `commutesOn`
+/-! ## The linearization order over `commutesOn`
 
 Identical in shape to `Sal.Emulation.lo` (`RA_Linearizability.lean:88`), with
-`commutes → commutesOn` at the two ⇄-sites (spec ⚑1). Paper-faithful because `lo C` is
-only ever read at events of a *reachable* `C`.
+`commutes → commutesOn` at the two ⇄-sites. Read only at events of a reachable `C`.
 
-NOTE for S2: `lo` reads only `C.vis` off the configuration. It is stated here over the
-*binary* `Configuration D.toCRDTSig` (whose replica-keyed core is, per PHASE0_PLAN §1.3,
-retained VERBATIM in the ternary configuration). When S2 introduces the ranked-version
-store, either make the ternary `Configuration` carry / extend this binary core, or restate
-`lo` over the new structure reading its `.vis`; `lo_eq_binary` shows the two coincide on
-the flat slice. -/
+`lo` reads only `C.vis` off the configuration. It is stated over the binary
+`Configuration D.toCRDTSig`, whose replica-keyed core is retained in the ternary
+configuration; `lo_eq_binary` shows the ternary and binary orders coincide on the flat
+slice. -/
 def lo (D : ConditionedMRDTSig) (C : Configuration D.toCRDTSig) (e₁ e₂ : Op D.AppOp) :
     Prop :=
   (C.vis e₁ e₂ ∧ ¬ D.commutesOn e₁ e₂)
@@ -95,15 +84,15 @@ def lo (D : ConditionedMRDTSig) (C : Configuration D.toCRDTSig) (e₁ e₂ : Op 
 
 /-! ## Collapse lemmas: `commutesOn`/`lo` reduce to the binary counterparts
 
-The exit criterion asks that, under `Inv := fun _ => True` / `applicable := fun _ _ => True`,
-`commutesOn` and `lo` reduce to `CRDTSig.commutes` and `Sal.Emulation.lo`.
+Under `Inv := fun _ => True` / `applicable := fun _ _ => True`, `commutesOn` and `lo` reduce
+to `CRDTSig.commutes` and `Sal.Emulation.lo`.
 
-DEVIATION (minor, expected): the reduction is a propositional `Iff`/`Eq` closed by `simp`,
-*not* strict `rfl`. `commutesOn` carries three guard arrows `Inv s → applicable o₁ s →
-applicable o₂ s → …`; even when each guard is `True`, `True → P` is not definitionally `P`
-in Lean, so the guards must be *discharged* rather than *erased*. The hypothesis form below
-(`∀ s, D.Inv s` and `∀ o s, D.applicable o s`) is strictly more general than the literal
-`= fun _ => True`, and is what the `ReachInv`-backed discharge at each ⚑ site will supply. -/
+The reduction is a propositional `Iff`/`Eq` closed by `simp`, not strict `rfl`. `commutesOn`
+carries three guard arrows `Inv s → applicable o₁ s → applicable o₂ s → …`; even when each
+guard is `True`, `True → P` is not definitionally `P` in Lean, so the guards must be
+*discharged* rather than *erased*. The hypothesis form below (`∀ s, D.Inv s` and
+`∀ o s, D.applicable o s`) is strictly more general than the literal `= fun _ => True`, and
+is what the `ReachInv`-backed discharge at each ⚑ site supplies. -/
 
 /-- `commutesOn` collapses to the binary `CRDTSig.commutes` (pointwise) when `Inv` and
 `applicable` hold everywhere. -/
@@ -139,10 +128,10 @@ theorem lo_eq_binary (D : ConditionedMRDTSig)
   funext e₁ e₂
   exact propext (lo_iff_binary D hInv hApp C e₁ e₂)
 
-/-! ## §4 S1 exit — the Grow-Only Set (G-Set) instance
+/-! ## The Grow-Only Set (G-Set) instance
 
 The simplest flat RDT: state is `Set ℕ`, `update` adds the op's element, and both binary
-`merge` and ternary `mergeL` are set union — so `mergeL` *ignores* the LCA state `l`
+`merge` and ternary `mergeL` are set union, so `mergeL` ignores the LCA state `l`
 (join-semilattice: the LCA is irrelevant for a G-Set) and `merge_init_slice` holds by
 `rfl`. This witnesses that `MRDTSig` is inhabited and that the reuse contract is
 definitional for a flat RDT. -/

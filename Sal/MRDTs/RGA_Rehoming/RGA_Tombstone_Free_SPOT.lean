@@ -20,7 +20,7 @@ namespace RGA_TF_SPOT
 
 State: id `5` under the root. Insert `10` (element `90`) after `5` — `5` is a
 root child so its ancestor path (root excluded) is `[]`. The read must place
-`10` right after `5`. (Fig. "the fix", insert half.) -/
+`10` right after `5`. -/
 
 def s_ins : concrete_st := mk [(5, 83, 0)]
 

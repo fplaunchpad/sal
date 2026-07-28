@@ -1,47 +1,45 @@
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
-# Generic safety for conditioned MRDTs — Route A′ (causal witnesses)
+# Generic safety for conditioned MRDTs (causal witnesses)
 
-Mechanization of `Development/GENERIC_SAFETY_PENPAPER.md` §3–§4.2: the
-per-version invariant theorem for conditioned MRDTs, by induction along a
+The per-version invariant theorem for conditioned MRDTs, by induction along a
 **causal canonical witness** (an enumeration that linearizes `vis` in addition
-to `loOn`). The naive Route A over arbitrary canonical witnesses is *false*
-(memo §4.1: the bounded counter's `[dec, inc]` witness has an `Inv`-violating
+to `loOn`). Over arbitrary canonical witnesses the per-version invariant is
+false (the bounded counter's `[dec, inc]` witness has an `Inv`-violating
 intermediate state); restricting to causal witnesses makes every prefix a
 vis-backward-closed, future-free superset of each event's causal past, which
 is exactly what the per-datatype `SafetyStep` obligation can be sound over.
 
 Contents:
 
-* `CausalFold` — a state is the fold of some vis-linearizing enumeration of a
-  set (memo §3); `HonestApp` — every event was `applicable` at SOME causal
+* `CausalFold`: a state is the fold of some vis-linearizing enumeration of a
+  set; `HonestApp`: every event was `applicable` at some causal
   fold of its causal past (the client-checkable, ∃-form honesty);
-* `CausalCanonical` — every version state is the fold of a vis-linearizing
-  AND `loOn`-respecting enumeration (strictly refines `GoodConfig3.canonical`);
-* `SafetyStep` — the fused stability + `Inv`-preservation obligation (memo
-  §4.2 (P2));
-* `version_inv_of_causal_canonical` — the metatheorem: `Inv init` +
+* `CausalCanonical`: every version state is the fold of a vis-linearizing
+  and `loOn`-respecting enumeration (strictly refines `GoodConfig3.canonical`);
+* `SafetyStep`: the fused stability + `Inv`-preservation obligation;
+* `version_inv_of_causal_canonical`: the metatheorem: `Inv init` +
   `SafetyStep` + `GoodConfig3` + `CausalCanonical` + `HonestApp` give `Inv`
   at every version. Configuration-level: no `Step3` induction;
-* `causalCanonical_of_all_comm_rc_either` — the pointwise discharge species
+* `causalCanonical_of_all_comm_rc_either`: the pointwise discharge species
   (all-comm + `rc ≡ Either`): any canonical witness reorders into a causal
   one with the same fold;
-* `ObservedRegistered` / `observedRegistered_of_honest_reach` — every
+* `ObservedRegistered` / `observedRegistered_of_honest_reach`: every
   replica-observed set is registered at some version (the one reachability
   fact the honesty bridges need to *enumerate* causal pasts);
-* `honestAppOn_of_genHonest` — the ∀-enumeration honesty shape (`GenHonest`)
+* `honestAppOn_of_genHonest`: the ∀-enumeration honesty shape (`GenHonest`)
   discharges the ∃-form: the registering version's causal witness restricts
   by `filter` to a causal enumeration of each causal past;
-* `countP_prefix_eq_causal_past` — the reusable issuer-local discharge core
-  (memo §4.2.1 steps 1–2 / §4.2.2): counts of own-replica events agree
-  between any admissible causal prefix and the causal past.
+* `countP_prefix_eq_causal_past`: the reusable issuer-local discharge core;
+  counts of own-replica events agree between any admissible causal prefix and
+  the causal past.
 
 The predicates come in an `…On` form over an explicit conditioning pair
-`(I, A)` with the memo's `D.Inv`/`D.applicable` form as an abbreviation. The
+`(I, A)` with the `D.Inv`/`D.applicable` form as an abbreviation. The
 explicit pair is what instances whose contract lives *beside* the signature
 consume (the bounded counter: the configuration is over the flat `BC`, the
-contract is `BCInv`/`bcApplicable` — transporting a `Configuration BC` to
+contract is `BCInv`/`bcApplicable`, and transporting a `Configuration BC` to
 `Configuration BCCond` is impossible without already knowing the theorem's
 conclusion, since the `ver_inv` structure field demands `Inv` of every
 registered state).
@@ -54,8 +52,8 @@ open Classical
 
 /-! ## §1  Causal folds, honesty, causal canonicity, and the step obligation -/
 
-/-- **Causal fold** (memo §3): `σ` is the fold of some enumeration of `E`
-that linearizes `vis` — no later element is `vis`-before an earlier one.
+/-- **Causal fold**: `σ` is the fold of some enumeration of `E`
+that linearizes `vis` (no later element is `vis`-before an earlier one).
 Prefixes of such an enumeration are exactly the vis-backward-closed subsets
 of `E`. -/
 def CausalFold {D' : CRDTSig} (C : Sal.Emulation.Configuration D')
@@ -67,24 +65,24 @@ section
 variable {D : ConditionedMRDTSig}
 
 /-- The ∃-form honesty over an explicit guard `A`: every event satisfies `A`
-at SOME causal fold of its causal past. Existential because the issuer holds
+at some causal fold of its causal past. Existential because the issuer holds
 only the one fold its replica materialized (order-sensitive datatypes:
 different causal enumerations of the same past can fold differently). Being
-an ∃-statement, it carries its own enumeration witness — no separate
+an ∃-statement, it carries its own enumeration witness, with no separate
 enumerability side condition. -/
 def HonestAppOn (D : ConditionedMRDTSig)
     (A : Op D.AppOp → D.State → Prop) (C : Configuration D) : Prop :=
   ∀ e ∈ C.events, ∃ σ : D.State,
     CausalFold (Configuration.core C) {e' ∈ C.events | C.vis e' e} σ ∧ A e σ
 
-/-- **`HonestApp`** (memo §3): the ∃-form honesty at the datatype's own
+/-- **`HonestApp`**: the ∃-form honesty at the datatype's own
 generation-time guard. -/
 abbrev HonestApp (D : ConditionedMRDTSig) (C : Configuration D) : Prop :=
   HonestAppOn D D.applicable C
 
-/-- **Causal canonical witness** (memo §4.2 (P1)): every version state is the
-fold of an enumeration of its event set that linearizes `vis` AND respects
-`loOn` — strictly refining `GoodConfig3.canonical`. -/
+/-- **Causal canonical witness**: every version state is the
+fold of an enumeration of its event set that linearizes `vis` and respects
+`loOn`, strictly refining `GoodConfig3.canonical`. -/
 def CausalCanonical (C : Configuration D) : Prop :=
   ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
     C.ver v = some (s, E) →
@@ -93,7 +91,7 @@ def CausalCanonical (C : Configuration D) : Prop :=
       respects ρ (loOn (Configuration.core C) E) ∧
       applySeq D.toCRDTSig D.init ρ = s
 
-/-- **The per-datatype safety obligation** (memo §4.2 (P2)), over an explicit
+/-- **The per-datatype safety obligation**, over an explicit
 conditioning pair `(I, A)`: over vis-closed, future-free causal prefixes `S`
 with `past(e) ⊆ S ⊆ E` and causal folds `σS` of `S`, `σP` of `past(e)`,
 `I σS → A e σP → I (update σS e)`. Fused with `I`-preservation so that
@@ -112,7 +110,7 @@ def SafetyStepOn (D : ConditionedMRDTSig) (I : D.State → Prop)
     CausalFold (Configuration.core C) {e' ∈ C.events | C.vis e' e} σP →
     I σS → A e σP → I (D.update σS e)
 
-/-- **`SafetyStep`** (memo §4.2 (P2)): the obligation at the datatype's own
+/-- **`SafetyStep`**: the obligation at the datatype's own
 conditioning split. -/
 abbrev SafetyStep (D : ConditionedMRDTSig) : Prop :=
   SafetyStepOn D D.Inv D.applicable
@@ -120,10 +118,10 @@ abbrev SafetyStep (D : ConditionedMRDTSig) : Prop :=
 /-! ## §2  The metatheorem: induction along the causal witness
 
 Snoc-forward along the causal witness ρ of a version `(s, E)`, maintaining
-`I` at every prefix fold. The bookkeeping (memo §4.2's proof sketch): a
+`I` at every prefix fold. The bookkeeping: a
 prefix set of a `respects · vis` enumeration of the (fully causally closed,
 `GoodConfig3.ver_causal`) set `E` is vis-backward-closed, future-free, and
-contains the whole causal past of the next element — all read off the
+contains the whole causal past of the next element, all read off the
 `Pairwise` structure of `π ++ e :: τ`. -/
 
 /-- **Generic safety, causal-witness form, explicit conditioning pair.** -/
@@ -205,10 +203,10 @@ theorem version_inv_on_of_causal_canonical
     rw [applySeq_append_single]
     exact hstep
 
-/-- **Generic safety, causal-witness form** (memo §4.2's theorem): if
+/-- **Generic safety, causal-witness form**: if
 `D.Inv D.init`, `SafetyStep D`, and `C` satisfies `GoodConfig3`,
 `CausalCanonical`, `HonestApp`, then every version state satisfies `D.Inv`.
-Configuration-level — reachability rides the existing `HonestReach`
+Configuration-level: reachability rides the `HonestReach`
 machinery. -/
 theorem version_inv_of_causal_canonical
     (hInit : D.Inv D.init) (hStep : SafetyStep D)
@@ -318,12 +316,11 @@ theorem applySeq_perm_of_all_comm {D' : CRDTSig}
     rw [hcomm y x s]
   | trans _ _ ih₁ ih₂ => intro s; exact (ih₁ s).trans (ih₂ s)
 
-/-- **The pointwise `CausalCanonical` discharge** (memo §4.2 (P1), first
-species): all-comm + `rc ≡ Either` upgrade `GoodConfig3.canonical` to a
-causal witness — reorder the canonical enumeration into a vis-linearization
-(same fold by all-comm); the `loOn`-respect conjunct is vacuous (`loOn = ∅`:
-vis-arm dead by all-comm, rc-arm dead by `Either`). No reachability
-induction. -/
+/-- **The pointwise `CausalCanonical` discharge** (first species): all-comm +
+`rc ≡ Either` upgrade `GoodConfig3.canonical` to a causal witness. Reorder the
+canonical enumeration into a vis-linearization (same fold by all-comm); the
+`loOn`-respect conjunct is vacuous (`loOn = ∅`: vis-arm dead by all-comm, rc-arm
+dead by `Either`). No reachability induction. -/
 theorem causalCanonical_of_all_comm_rc_either
     (hcomm : ∀ a b : Op D.AppOp, D.toCRDTSig.commutes a b)
     (hrc : ∀ a b : Op D.AppOp, D.toCRDTSig.rc a b = RcRes.Either)
@@ -362,15 +359,15 @@ theorem listPermOf_filter_subset {α : Type} {ρ : List α} {T S : Set α}
 
 /-- Every replica-observed event set is registered at some version of the
 store. A reachability fact (`observedRegistered_of_honest_reach`); it is what
-lets the honesty bridges *produce* enumerations of causal pasts — the repo
-has no generic finiteness result for reachable event universes, but the
-store's canonical witnesses enumerate every registered set. -/
+lets the honesty bridges *produce* enumerations of causal pasts: there is no
+generic finiteness result for reachable event universes, but the store's
+canonical witnesses enumerate every registered set. -/
 def ObservedRegistered (C : Configuration D) : Prop :=
   ∀ (r : Replica) (ev : Set (Op D.AppOp)), C.L r = some ev →
     ∃ (v : Version) (s : D.State), C.ver v = some (s, ev)
 
 /-- `ObservedRegistered` is preserved by every `Step3` transition: the store
-registers every head — CreateReplica points at version `0` (`ver_init`),
+registers every head. CreateReplica points at version `0` (`ver_init`),
 Apply and Merge allocate the version carrying exactly the new observed
 set. -/
 private theorem observedRegistered_step {C C' : Configuration D}
@@ -442,9 +439,9 @@ theorem observedRegistered_of_honest_reach {H : Configuration D → Prop}
       simp at hL0
   | step _ _ hstep ih => exact observedRegistered_step hstep ih
 
-/-- `ObservedRegistered` is preserved by every widened step (task #90): the
+/-- `ObservedRegistered` is preserved by every widened step: the
 `mergeVirtual` case registers the merged head at the fresh `vm` exactly as the gated
-merge does — the LCA slot's contents are irrelevant to registration. -/
+merge does; the LCA slot's contents are irrelevant to registration. -/
 private theorem observedRegistered_stepV {C C' : Configuration D}
     {ℓ : Label3 D} (hstep : Step3V D C ℓ C') (ih : ObservedRegistered C) :
     ObservedRegistered C' := by
@@ -468,8 +465,7 @@ private theorem observedRegistered_stepV {C C' : Configuration D}
         simp at hv'
       exact ⟨v', s', by rw [hver_old v' hne]; exact hv'⟩
 
-/-- `ObservedRegistered` at every widened honestly reachable configuration
-(task #90 case duplication). -/
+/-- `ObservedRegistered` at every widened honestly reachable configuration. -/
 theorem observedRegistered_of_honest_reachV {H : Configuration D → Prop}
     {hInit : D.Inv D.init} {C : Configuration D}
     (hReach : HonestReachV D H hInit C) : ObservedRegistered C := by
@@ -511,13 +507,13 @@ theorem honestAppOn_of_genHonest {A : Op D.AppOp → D.State → Prop}
   exact ⟨applySeq D.toCRDTSig D.init ρP, ⟨ρP, hpermP, hrespP, rfl⟩,
     hGen e ⟨r, ev, hL, he_ev⟩ ρP hpermP⟩
 
-/-! ## §5  The reusable issuer-local discharge core (memo §4.2.2)
+/-! ## §5  The reusable issuer-local discharge core
 
-The bounded-counter discharge (memo §4.2.1) used only: (i) the guard reads
+The bounded-counter discharge used only: (i) the guard reads
 state components only same-replica events modify, (ii) those components are
 order-free counts. Step (i)+(ii)'s joint content is this lemma: the count of
 any own-replica predicate agrees between any admissible causal prefix and
-the causal past — the extras `S \ past(e)` are all cross-replica
+the causal past, since the extras `S \ past(e)` are all cross-replica
 (`vis_total_same_replica`: a same-replica extra would be vis-comparable with
 `e`, and both directions are excluded). Escrow-style instances discharge
 `SafetyStepOn` from this plus their per-slot fold formulas. -/

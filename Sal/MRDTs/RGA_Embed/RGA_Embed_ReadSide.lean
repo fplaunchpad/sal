@@ -21,7 +21,7 @@ descending coordinates, ancestors first). This file:
 
 Sortedness characterization of `document` (Pairwise/perm lemmas connecting it
 to `before`) and the chain-lex theorem need the key-order algebra
-(totality/transitivity + prefix-free concatenation) — next layer, `PLAN.md`.
+(totality/transitivity + prefix-free concatenation).
 -/
 
 namespace Sal.EmbedRGA

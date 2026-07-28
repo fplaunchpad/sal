@@ -15,8 +15,8 @@ with `bw = birthAnc l a b k` (`k`'s branch-final anchor) and `rc = a_k :: p_k`
 
 This file supplies the clean `canonAnc` climb algebra (§1) and closes
 `canonBirthBridge_holds` (§2) from the sharpened birth-anchor↔recorded-chain
-reconciliation.  See the STATUS block (§3) for exactly which part is clean set
-bookkeeping and which is the located branch-canonical residual.
+reconciliation.  See §3 for exactly which part is clean set bookkeeping and
+which is the located branch-canonical residual.
 -/
 
 set_option maxHeartbeats 1000000
@@ -113,7 +113,7 @@ theorem canonBirthBridge_holds
 
 #print axioms canonBirthBridge_holds
 
-/-! ## §3  STATUS — clean bookkeeping vs. the located branch residual
+/-! ## §3  Clean bookkeeping vs. the located branch residual
 
 **Both cases close, sorry-free, kernel-clean** (`canonBirthBridge_holds`:
 `[propext, Classical.choice, Quot.sound]` only).  What each half needed:

@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Forest
 
-/-! # Shesha — skeleton layer (phase 2b, block 1)
+/-! # Shesha — skeleton layer
 
 Exact characterization of `skelOf`:
 

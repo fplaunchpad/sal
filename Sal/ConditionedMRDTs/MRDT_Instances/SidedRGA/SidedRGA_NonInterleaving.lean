@@ -2,11 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_FugueMax
 import Sal.MRDTs.RGA_Embed.Sided_Traversal
 
 /-!
-# FugueMax forward non-interleaving: the condition-(1) discharge (task #88)
-
-Design: `whiteboard/fugue-maximal-noninterleaving.md` section 9; Python
-twin: `whiteboard/litmus/traversal_check.py` (traversal = display and the
-loShape invariant, 12 directed cases + 1800 randomized states, clean).
+# FugueMax forward non-interleaving: the condition-(1) discharge
 
 This file discharges the stated def `FugueMaxForwardNonInterleaving`
 (Weidner-Kleppmann Definition 4 condition (1), strict reading) at every
@@ -535,7 +531,7 @@ theorem fuguemax_theorem9_of_backward {Γ : OrderedPrefixCode}
 
 #print axioms fuguemax_theorem9_of_backward
 
-/-! ## §4  SPOTs (PASS+FAIL, hand-derived, matching traversal_check.py)
+/-! ## §4  SPOTs (PASS+FAIL, hand-derived)
 
 The loShape invariant watched concretely on the Figure-7 and L19 traces
 of the FugueMax file, and the condition-(1) content (A adjacent to its

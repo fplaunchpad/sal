@@ -3,12 +3,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_InvUpdateQ
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
 
 /-!
-# Born-applicability from the quotient guard — the foundation of the re-base
+# Born-applicability from the quotient guard
 
-*Additive; modifies no existing file; 0 `sorry`, kernel-clean.*
+*0 `sorry`, kernel-clean.*
 
-The re-base's pivot (`LOONA_VS_LOONEQ_ANALYSIS.md`, and KC's framing that
-`applicable` is a first-class field of the extended MRDT definition): the honest
+`applicable` is a first-class field of the extended MRDT definition: the honest
 conditioned execution model must guard its updates with **`applicable`**, not a
 weaker well-formedness proxy.  This file certifies the two enabling facts.
 
@@ -31,10 +30,10 @@ at the version state FOR FREE.
 ## §2 (RGA).  The guard `WfOpA := WfOpQ ∧ accurate`
 
 `WfOpQ` (fresh + the monotone `resolve < t` bound) already discharges
-`InvPres` (`RGA_InvUpdateQ.rgaInvPresQ` — closing the old `W = WfOp`
-`inv_update` gap via `idMono_doIns_wfq` / `idMono_doDel_wfq`), but it is strictly
-WEAKER than `applicable` (it never demands `accurate`).  The re-base's guard adds
-accuracy back:
+`InvPres` (`RGA_InvUpdateQ.rgaInvPresQ`, discharging the `inv_update` obligation
+for `W = WfOp` via `idMono_doIns_wfq` / `idMono_doDel_wfq`), but it is strictly
+WEAKER than `applicable` (it never demands `accurate`).  `WfOpA` adds accuracy
+back:
 
 * `WfOpA ⟹ WfOpQ` keeps the full `InvPres` (`rgaInvPresA`);
 * `WfOpA ⟹ applicable` (`= accurate ∧ fresh_ts`) feeds `appOrNoop_qsig` — born

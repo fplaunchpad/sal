@@ -12,20 +12,19 @@ import Sal.ConditionedMRDTs.MRDT_Instances.FWWRegister.FWWRegister
 import Sal.ConditionedMRDTs.MRDT_Instances.LWWRegister.LWWRegister
 
 /-!
-# Sequential-spec soundness — tier 1: the flat RDTs (task #78 / #65)
+# Sequential-spec soundness: the flat RDTs
 
 The campaign: for every RDT, prove its `do` matches a straightforward
-sequential implementation — the intent complement to RA-linearizability,
+sequential implementation, the intent complement to RA-linearizability,
 which certifies convergence to the datatype's OWN fold and is blind to a
-wrong `do_` (the spec-limit lesson). Template: Shesha's
-`sequential_soundness`.
+wrong `do_` (the spec-limit lesson).
 
 Shape per RDT: a *view* (the observable a user reads), an independent
 *naive sequential program* over plain values, and the theorem that on any
 single-replica history the view of the fold IS the naive program's
-result. For this tier no inductive invariant is needed — each view is a
-fold homomorphism (the interesting invariants start at MVR and the
-sequence datatypes, tiers 2–4).
+result. No inductive invariant is needed here: each view is a fold
+homomorphism (the interesting invariants start at MVR and the sequence
+datatypes).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -298,14 +297,14 @@ theorem orsete_seq_sound (ρ : List (Op ORSetE.AppOp)) (e : ℕ) :
             obtain ⟨r, t, hs⟩ := ih.mpr h
             exact ⟨r, t, hs, fun h => hne h.symm⟩
 
-/-! ## Multi-Valued Register: the first genuine inductive invariant
+/-! ## Multi-Valued Register: a genuine inductive invariant
 
 Sequentially the MVR must read as a plain last-write-wins register. The
 op payload `O` (the overwritten tags) is honest exactly when it lists the
-issuer's currently-visible tags, and stamps are fresh — `mvrOK`. Under
-it, the theorem needs a real auxiliary invariant, discovered here:
-**every overwritten stamp is a staked tag** (`mvr_over_tags`), which is
-what makes a fresh stamp provably not-yet-overwritten. -/
+issuer's currently-visible tags, and stamps are fresh (`mvrOK`). Under
+it, the theorem needs a real auxiliary invariant: **every overwritten
+stamp is a staked tag** (`mvr_over_tags`), which is what makes a fresh
+stamp provably not-yet-overwritten. -/
 
 /-- `n` is a staked write stamp. -/
 def mvrTag (s : MVR.State) (n : ℕ) : Prop := ∃ v, s.1 (n, v) = true
@@ -341,7 +340,7 @@ theorem mvrSpecFold_snoc (ρ : List (Op MVROp)) (ts r w : ℕ) (O : List ℕ) :
   rw [List.foldl_append]
   rfl
 
-/-- **The discovered invariant**: every overwritten stamp is staked. -/
+/-- **The invariant**: every overwritten stamp is staked. -/
 theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
     ∀ n, (seqFold MVR ρ).2 n = true → mvrTag (seqFold MVR ρ) n := by
   induction ρ using List.reverseRecOn with
@@ -441,9 +440,8 @@ Sequentially the AWPQ state is pinned by two theorems: membership behaves
 as the plain add/remove set (increments are membership-inert), and the
 increment component is a grow-only log of exactly the issued increments.
 Together they determine both components pointwise. (A priority-sum view
-needs finite aggregation over the log — meaningful only against the
-read-side companion, task #53; the state-level spec is complete without
-it.) -/
+needs finite aggregation over the log, meaningful only against the
+read-side companion; the state-level spec is complete without it.) -/
 
 /-- Membership view: `e` has a live add record. -/
 def awpqMemView (s : AWPQ.State) (e : ℕ) : Prop :=

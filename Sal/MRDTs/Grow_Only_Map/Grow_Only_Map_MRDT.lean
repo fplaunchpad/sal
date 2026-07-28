@@ -37,7 +37,7 @@ values). Sal's `Map_Extended` interface handles this via a custom
 `eq` that compares per-key with `mysel` (zero-default lookup) rather
 than requiring exact pointwise function equality — that's what keeps
 the 24 VCs tractable. For future ports of nested-set data types,
-consider flattening to `set (key × value)` (as Peritext's refactor
+consider flattening to `set (key × value)` (as Peritext
 demonstrates).
 
 All op pairs commute: `Put(k, v)` is idempotent on the inner set and

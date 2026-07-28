@@ -1,4 +1,4 @@
-// THE DELTA/OP SYNC WIRE (task #104, item 3): an Automerge-repo-style
+// THE DELTA/OP SYNC WIRE: an Automerge-repo-style
 // gossip protocol between peers that hold SEPARATE commit stores. Two peers
 // exchange their DAG frontier (head content-ids), each computes which commits
 // the other lacks (ancestor-set difference), and ships those as a DELTA:
@@ -7,7 +7,7 @@
 // genuinely warranted -- an initial bulk catch-up, offered when the delta
 // would exceed the snapshot (see deltaOrSnapshot).
 //
-// CONTENT ADDRESSING (task #108: the ONE hash). Two separate stores assign
+// CONTENT ADDRESSING (the ONE hash). Two separate stores assign
 // different LOCAL ids ('c0'..) to the same commit, so the wire speaks GLOBAL
 // content-ids minted by the core Merkle-DAG derivation commitContentId
 // (src/hash.js): an authored commit hashes {parents, replica, seq, payload},
@@ -15,21 +15,21 @@
 // are the SAME commit and never diverge into a spurious criss-cross), the root
 // hashes {root:true}. Peers dedup on the global id: a commit already held is
 // skipped. This is the SAME content id the git-persistence demo uses on disk
-// (WIRE and DISK agree), replacing the FNV model hash a `Peer` used to carry.
-// The `hash` constructor argument is pluggable (default: the SHA content id).
+// (WIRE and DISK agree). The `hash` constructor argument is pluggable
+// (default: the SHA content id).
 //
 // HEAD-SYNC DISCIPLINE preserved: a peer only ever merges its CURRENT head
 // with the CURRENT head another peer just advertised over the wire (now local
 // after ingest), never with a stale interior commit -- exactly the hypothesis
-// the commit GC's gc_safety consumes (runtime-gc-note.md section 4). merges
-// go through the same lca() criss-cross gate as the shared-store runtime.
+// the commit GC's gc_safety consumes. merges go through the same lca()
+// criss-cross gate as the shared-store runtime.
 //
 // THE FRONTIER IS BUILT FROM THE WIRE. Each peer maintains the same evidence
 // frontier as the shared-store Replica (src/frontier.js), here fed by what
 // arrives over sync: absorbing a peer's commits advances the per-replica
 // evidence commits, so stableCut() is certifiable exactly once the peer has
-// heard from everyone. This is the coupling in #106's framing -- the sync
-// wire and the evidence-certificate producer are one subsystem.
+// heard from everyone. This coupling makes the sync wire and the
+// evidence-certificate producer one subsystem.
 
 import { Dag } from './dag.js';
 import { lca, CrissCrossError } from './lca.js';
@@ -147,7 +147,7 @@ export class Peer {
 
   /** Merge this peer's current head with the (now-local) commit named `gid`.
    *  Fast-forwards when one subsumes the other, else a head-sync merge through
-   *  the unique lca (CrissCrossError on a criss-cross, the #90 gate). */
+   *  the unique lca (CrissCrossError on a criss-cross, the criss-cross gate). */
   mergeWithGid(gid) {
     const b = this.byGid.get(gid);
     if (b === undefined) throw new Error(`mergeWithGid: ${gid} not present (ingest first)`);
@@ -182,8 +182,8 @@ export class Peer {
  *  ingest, then both merge their head with the other's advertised head. After
  *  the round both stores hold every commit and (content-addressing the shared
  *  merge) their heads carry equal reads -- unless the pair criss-crosses, in
- *  which case the merges are gated (merged=false) like the shared-store PBT.
- *  Returns the DELTA payload bytes exchanged and the whole-state baseline. */
+ *  which case the merges are gated (merged=false). Returns the DELTA payload
+ *  bytes exchanged and the whole-state baseline. */
 export function syncPeers(a, b) {
   const hasA = a.ancestryGids(), hasB = b.ancestryGids();
   const toB = a.delta(hasB); // commits B lacks, from A

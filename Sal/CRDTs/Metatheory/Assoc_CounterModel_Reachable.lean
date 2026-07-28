@@ -5,7 +5,7 @@ import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 # The lattice counter-model breaks RA-linearizability on a REACHABLE
 # configuration
 
-`Assoc_CounterModel.lean` refutes open (b′): `AWSetF` satisfies
+`Assoc_CounterModel.lean` shows `AWSetF` satisfies
 `CoreVCs` + the full bounded-semilattice laws yet violates
 `JoinPeelVCs` and the Join Lemma. That alone leaves a loophole: maybe
 `JoinPeelVCs`/`JoinLemma` are stronger than the metatheorem needs, and
@@ -26,8 +26,8 @@ only `lo`-respecting enumeration of `{aF, eF}` is `[aF, eF]`
 (`vis aF eF` and add/rem do not commute), which folds to flag
 `false`.
 
-Headline: `ra_linearizability_fails_for_lattice_CRDTs` — the
-corrected metatheorem's per-CRDT hypothesis (`JoinPeelVCs`) cannot be
+Headline: `ra_linearizability_fails_for_lattice_CRDTs`. The
+metatheorem's per-CRDT hypothesis (`JoinPeelVCs`) cannot be
 weakened to the ACI lattice laws: *the conclusion itself* fails for a
 `CoreVCs`+ACI signature on a reachable configuration. The missing
 demarcation is update-inflationarity

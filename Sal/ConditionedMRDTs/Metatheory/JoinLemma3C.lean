@@ -5,10 +5,9 @@ import Mathlib.Data.Fintype.Prod
 /-!
 # The closure-indexed Join Lemma (`JoinLemma3C`) and the peel-compatibility boundary
 
-Stage 1 of `Development/CONDITIONED_METATHEORY_PLAN.md` (task #2): one Join
-Lemma, indexed by a closure predicate `𝒞`, with the peel step of the
+One Join Lemma, indexed by a closure predicate `𝒞`, with the peel step of the
 `join_lemma3_of_cd_feasible` induction (`Adequacy.lean:960`) isolated as an
-explicit per-`𝒞` obligation — and the machine-checked verdict on which peel
+explicit per-`𝒞` obligation, and the machine-checked verdict on which peel
 granularities survive the Gate-G1 counterexample
 (`Reunification_Peel_Obstruction.lean`).
 
@@ -20,30 +19,29 @@ granularities survive the Gate-G1 counterexample
    `joinLemma3C_full : JoinLemma3C D (fullClosure _) ↔ JoinLemma3F D`, both
    `Iff.rfl`. `JoinLemma3C` is antitone in the index (`JoinLemma3C.anti`);
    in particular `JoinLemma3 D → JoinLemma3F D`
-   (`joinLemma3F_of_joinLemma3`) — the hard direction of reunification is
+   (`joinLemma3F_of_joinLemma3`). The hard direction of reunification is
    the converse, which is exactly what the EWFlag route needs and what the
    kill-test obstructs.
 
-2. **`PeelCompatible D 𝒞`** — "every finite nonempty `𝒞`-closed `U` has a
+2. **`PeelCompatible D 𝒞`**: "every finite nonempty `𝒞`-closed `U` has a
    `loOn(U)`-maximal event whose removal preserves `𝒞` on every `𝒞`-closed
-   subset of `U`" — the exact shape of the peel step of the existing
+   subset of `U`", the exact shape of the peel step of the
    induction.
    * Weak closure IS peel-compatible for every signature satisfying the
      update-layer VCs (`weakClosure_peelCompatible`, via
      `closure_diff_of_max`): this factors the peel argument out of
      `join_lemma3_of_cd_feasible` unchanged.
    * Full closure is NOT (`K2_fullClosure_not_peelCompatible`,
-     `fullClosure_not_peelCompatible`) — direct corollary of the kill-test's
+     `fullClosure_not_peelCompatible`), a direct corollary of the kill-test's
      `no_peelable_event`. The *same* signature `K2` witnesses both sides of
      the boundary: it satisfies `UpdateVCs` (`K2_updateVCs`, including
      `cond_comm_lift`, proved here), so
      `K2_weakClosure_peelCompatible` holds while the full-closure instance
      is refuted.
 
-3. **VERDICT ON BLOCK PEELS (redesign (a) of the plan): DEAD.** The plan
-   hoped a *block* peel — remove a vis-upward-closed `B ⊆ U` all of whose
-   events are jointly late-placeable — would restore the full-closure
-   induction. The two conditions are pinned generically
+3. **Block peels do not restore the induction.** A *block* peel removes a
+   vis-upward-closed `B ⊆ U` all of whose
+   events are jointly late-placeable. The two conditions are pinned generically
    (`diff_fullClosure_iff`: removal preserves full closure **iff** `B` is
    vis-upward-closed within `U`; `block_suffix_no_exit`: an enumeration
    ending in `B` forces no `loOn(U)`-edge to leave `B`), and then refuted on
@@ -52,19 +50,19 @@ granularities survive the Gate-G1 counterexample
    back-block equal to all of `U` (`back_block_forces_all`,
    `no_proper_back_block`), so no block peel makes progress. Front blocks
    (vis-downward-closed, jointly early-placeable) die symmetrically on the
-   same cycle (`front_block_forces_all`, `no_proper_front_block`) — the
+   same cycle (`front_block_forces_all`, `no_proper_front_block`): the
    asymmetry between fronts and backs does not help, because the cycle is
-   direction-agnostic. The single-event obstruction is re-derived as the
+   direction-agnostic. The single-event obstruction is the
    `B = {e}` special case (`no_peelable_event_of_blocks`), so the block
    theorem strictly strengthens the kill-test. Packaged:
    `block_peel_obstruction`.
 
-4. **Redesign (b), the wider induction class**: `AlmostClosed` = fully
+4. **The wider induction class**: `AlmostClosed` = fully
    closed set minus a `loOn(U)`-upward-closed peel set. Its
-   *order-theoretic* half is mechanized and healthy: the class contains all
+   *order-theoretic* half is mechanized: the class contains all
    fully closed sets (`almostClosed_of_fullClosure`), is stable under
    peeling any `loOn`-maximal event (`AlmostClosed.peel`), and such a peel
-   always exists (`almostClosed_peel_exists`) — so the induction is
+   always exists (`almostClosed_peel_exists`), so the induction is
    well-founded on the order side, with no analogue of the peel
    obstruction. The kill-test's `U ∖ {A_x}` inhabits the class
    (`peelU_diff_Ax_almostClosed`) while NOT being fully closed
@@ -72,12 +70,14 @@ granularities survive the Gate-G1 counterexample
    first peel on the kill-test `U` itself goes through
    (`killTest_almostClosed_first_peel`).
 
-## What remains open (documented, not sorried)
+## What remains open
 
-Since (a) is dead at *every* granularity on this `U`, redesigns (b) and (c)
-of the plan doc are the only live routes to reunification:
+Since block peels are dead at *every* granularity on this `U`, the wider
+induction class and the disjunctive contract are the only live routes to
+reunification:
 
-* **(b)** needs the *state-side* re-founding: the Join statement must carry
+* **The wider induction class** needs the *state-side* re-founding: the Join
+  statement must carry
   `AlmostClosed` sides (fully-closed-minus-peel-set as data, not just
   prop), and the contextual hypotheses of `CDVC3` /
   `FeasibleDeltaVCs3`-style laws must be restated at `AlmostClosed` sets.
@@ -85,9 +85,9 @@ of the plan doc are the only live routes to reunification:
   equation's shape survives; what changes is which closure the sides and
   the union satisfy at re-entry of the IH. A generic `JoinLemma3C`-from-
   `PeelCompatible` induction would also need `𝒞` closed under union
-  (`ev₁ ∪ ev₂` must be `𝒞`-closed when the sides are) — true for both
+  (`ev₁ ∪ ev₂` must be `𝒞`-closed when the sides are), true for both
   instances here, an explicit obligation for exotic `𝒞`.
-* **(c)** (disjunctive contract) needs no new mathematics: `JoinLemma3C`
+* **The disjunctive contract** needs no new mathematics: `JoinLemma3C`
   is already the single statement both routes instantiate
   (`joinLemma3C_weak` / `joinLemma3C_full`), so the typeclass packaging
   can dispatch on the index.
@@ -100,19 +100,19 @@ open Classical
 
 /-! ## §1. The closure index -/
 
-/-- A closure predicate on event sets of a configuration — the index of the
+/-- A closure predicate on event sets of a configuration: the index of the
 closure-indexed Join Lemma. Stated at the `CRDTSig` level: closure reads only
 `vis` and `commutes`, never the merge. -/
 abbrev ClosurePred (D : CRDTSig) : Type _ :=
   Sal.Emulation.Configuration D → Set (Op D.AppOp) → Prop
 
 /-- **Weak closure**: closed under vis-predecessors along *non-commuting*
-edges — verbatim the closure hypothesis of `JoinLemma3`
+edges, verbatim the closure hypothesis of `JoinLemma3`
 (`VC_Set.lean:65`). -/
 def weakClosure (D : CRDTSig) : ClosurePred D :=
   fun C ev => ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev
 
-/-- **Full causal closure**: closed under *all* vis-predecessors — verbatim
+/-- **Full causal closure**: closed under *all* vis-predecessors, verbatim
 the closure hypothesis of `JoinLemma3F` (`VC_Set.lean:191`), and what
 `GoodConfig3.ver_causal` actually supplies. -/
 def fullClosure (D : CRDTSig) : ClosurePred D :=
@@ -147,13 +147,13 @@ def JoinLemma3C (D : ConditionedMRDTSig) (𝒞 : ClosurePred D.toCRDTSig) :
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
 /-- **Instantiation, weak**: at `weakClosure` the indexed lemma *is*
-`JoinLemma3` — definitionally. -/
+`JoinLemma3`, definitionally. -/
 theorem joinLemma3C_weak (D : ConditionedMRDTSig) :
     JoinLemma3C D (weakClosure D.toCRDTSig) ↔ JoinLemma3 D :=
   Iff.rfl
 
 /-- **Instantiation, full**: at `fullClosure` the indexed lemma *is*
-`JoinLemma3F` — definitionally. -/
+`JoinLemma3F`, definitionally. -/
 theorem joinLemma3C_full (D : ConditionedMRDTSig) :
     JoinLemma3C D (fullClosure D.toCRDTSig) ↔ JoinLemma3F D :=
   Iff.rfl
@@ -167,10 +167,10 @@ theorem JoinLemma3C.anti {𝒞 𝒞' : ClosurePred D.toCRDTSig}
   exact hJ C ev₁ ev₂ s₀ s₁ s₂ h_tr h_ir h_in₁ h_in₂
     (h_str C ev₁ h_cl₁) (h_str C ev₂ h_cl₂) hc₀ hc₁ hc₂
 
-/-- The easy direction of reunification, now a two-liner: the weak-closure
+/-- The easy direction of reunification: the weak-closure
 Join Lemma implies the full-closure one. The research problem (Gate G1) is
-the *converse* — establishing `JoinLemma3F` for MRDTs whose weak-closure
-VCs fail (EWFlag) via a single induction — and the rest of this file
+the *converse*: establishing `JoinLemma3F` for MRDTs whose weak-closure
+VCs fail (EWFlag) via a single induction. The rest of this file
 locates exactly where that induction breaks. -/
 theorem joinLemma3F_of_joinLemma3 (h : JoinLemma3 D) : JoinLemma3F D :=
   (joinLemma3C_full D).mp
@@ -184,16 +184,16 @@ end JoinLemmaC
 The `join_lemma3_of_cd_feasible` induction (`Adequacy.lean:960`) makes
 progress by (i) selecting a `loOn(U)`-maximal event `e` of the union
 (`exists_loOn_maximal_u`) and (ii) re-entering the IH at `U ∖ {e}` with the
-sides `evᵢ ∖ {e}` — which requires the side-closure hypotheses to survive
+sides `evᵢ ∖ {e}`, which requires the side-closure hypotheses to survive
 the removal (`closure_diff_of_max`). `PeelCompatible` is exactly that
 obligation, indexed by `𝒞`. (A generic `JoinLemma3C 𝒞` induction would
-additionally need `𝒞` to be closed under union — sides closed ⇒ union
-closed — which holds for both instances here; noted, not formalized.) -/
+additionally need `𝒞` to be closed under union, sides closed ⇒ union
+closed, which holds for both instances here; noted, not formalized.) -/
 
 /-- **Peel-compatibility of a closure predicate.** Every finite
 (`listPermOf`-enumerable) nonempty `𝒞`-closed `U` contains a
 `loOn(U)`-maximal event whose removal preserves `𝒞` on every `𝒞`-closed
-subset of `U` — in particular on `U` itself and on each side of a join. -/
+subset of `U`, in particular on `U` itself and on each side of a join. -/
 def PeelCompatible (D : CRDTSig) (𝒞 : ClosurePred D) : Prop :=
   ∀ (C : Sal.Emulation.Configuration D) (U : Set (Op D.AppOp))
     (lU : List (Op D.AppOp)),
@@ -206,7 +206,7 @@ def PeelCompatible (D : CRDTSig) (𝒞 : ClosurePred D) : Prop :=
       (∀ x ∈ U, x ≠ e → ¬ loOn C U e x) ∧
       ∀ ev, ev ⊆ U → 𝒞 C ev → 𝒞 C (ev \ {e})
 
-/-- **(a) Weak closure is peel-compatible** — for *every* signature
+/-- **(a) Weak closure is peel-compatible**, for *every* signature
 satisfying the update-layer VCs. This is the peel step of
 `join_lemma3_of_cd_feasible`, factored: a `loOn(U)`-maximal event has no
 non-commuting vis-successor inside `U` (such a successor would be a
@@ -220,13 +220,13 @@ theorem weakClosure_peelCompatible {D : CRDTSig} (hU : UpdateVCs D) :
   exact ⟨e, heU, h_max,
     fun ev h_sub h_cl => closure_diff_of_max h_sub h_cl h_max⟩
 
-/-! ## §4. Full closure is NOT peel-compatible — the kill-test, imported
+/-! ## §4. Full closure is NOT peel-compatible: the kill-test
 
 The refutation instantiates `PeelCompatible` at the kill-test configuration:
 a peel event for `U = peelU` at full closure would be simultaneously
 `loOn(U)`-maximal (clause one) and vis-maximal (removal of `e` from the
 fully closed `U` itself must keep `U ∖ {e}` fully closed, which forces `e`
-to have no vis-successor in `U`) — contradicting `no_peelable_event`.
+to have no vis-successor in `U`), contradicting `no_peelable_event`.
 
 The witness signature `K2` also satisfies the update-layer VC bundle
 (`K2_updateVCs`, with `cond_comm_lift` proved below via the componentwise
@@ -257,8 +257,8 @@ theorem peelU_loOn_irrefl : ∀ e ∈ peelU, ¬ loOn peelConfig peelU e e := by
 
 /-! ### `K2` satisfies the update-layer VCs
 
-`k2Eff` acts componentwise — each op writes one key's flag and passes the
-other through — so (i) equal input components stay equal under any op
+`k2Eff` acts componentwise (each op writes one key's flag and passes the
+other through), so (i) equal input components stay equal under any op
 sequence, and (ii) a trailing write to the disputed key erases an upstream
 same-key transposition. That is exactly `cond_comm_lift`. -/
 
@@ -354,7 +354,7 @@ theorem K2_cond_comm_lift :
         rw [K2_commutes_iff_eff, h₂, h₃]; decide) h_nc
     · exact absurd (show K2.commutes e' e'' by
         rw [K2_commutes_iff_eff, h₂, h₃]; decide) h_nc
-  · -- `e ↦ remY`, `e' ↦ addY` — mirror.
+  · -- `e ↦ remY`, `e' ↦ addY`: mirror.
     rcases h₃ : e''.2.2
     · exact absurd (show K2.commutes e' e'' by
         rw [K2_commutes_iff_eff, h₂, h₃]; decide) h_nc
@@ -375,7 +375,7 @@ theorem K2_weakClosure_peelCompatible :
     PeelCompatible K2 (weakClosure K2) :=
   weakClosure_peelCompatible K2_updateVCs
 
-/-- **(b) Full closure is NOT peel-compatible** — on the very signature
+/-- **(b) Full closure is NOT peel-compatible**, on the very signature
 where weak closure is. A full-closure peel event of `peelU` would have to
 be `loOn(U)`-maximal *and* (because `peelU ∖ {e}` must stay fully closed,
 with `peelU` itself a fully closed `𝒞`-closed subset) vis-maximal in
@@ -407,25 +407,25 @@ theorem fullClosure_not_peelCompatible :
     ∃ D : CRDTSig, ¬ PeelCompatible D (fullClosure D) :=
   ⟨K2, K2_fullClosure_not_peelCompatible⟩
 
-/-! ## §5. Block peels — redesign (a) — are DEAD
+/-! ## §5. Block peels do not restore the induction
 
 A **back-block peel** removes a set `B ⊆ U` and places its events at the
 end of the enumeration. Its two obligations, pinned generically:
 
 * *removal preserves full closure* **iff** `B` is vis-upward-closed within
-  `U` — no event of `U ∖ B` has a vis-predecessor in `B`
-  (`diff_fullClosure_iff`);
+  `U` (no event of `U ∖ B` has a vis-predecessor in `B`,
+  `diff_fullClosure_iff`);
 * *jointly late-placeable*: a `loOn(U)`-respecting enumeration ending in
   the events of `B` can exist only if no `loOn(U)`-edge leaves `B` into
-  `U ∖ B` (`block_suffix_no_exit`; the converse — such an enumeration
-  exists whenever no edge leaves — is the existing re-permutation
-  machinery, `perm_ending_in_loOn_max` generalized, not needed for the
+  `U ∖ B` (`block_suffix_no_exit`; the converse, such an enumeration
+  exists whenever no edge leaves, is the re-permutation
+  machinery `perm_ending_in_loOn_max` generalized, not needed for the
   refutation).
 
 On the kill-test `U` the two conditions chase each other around the cycle
 `A_y →vis R_x →loOn A_x →vis R_y →loOn A_y`: upward-closure propagates
 membership along vis-edges, exit-freeness along the surviving rc-edges, so
-any nonempty `B` swallows all of `U` — no *proper* block exists and the
+any nonempty `B` swallows all of `U`, no *proper* block exists and the
 induction cannot make progress. Front blocks (prefix of the enumeration:
 vis-*downward*-closed so the block is itself a closed set, and no
 `loOn(U)`-edge *entering* `B`) chase the same cycle backwards and die the
@@ -499,7 +499,7 @@ theorem back_block_forces_all {B : Set (Op K2.AppOp)}
   · exact h_all.2.2.1
   · exact h_all.2.2.2
 
-/-- **Front-blocks force everything too** — fronts and backs are not
+/-- **Front-blocks force everything too**: fronts and backs are not
 symmetric in general, but the cycle is direction-agnostic: vis-*downward*
 closure and `loOn(U)`-*entry*-freeness chase the same cycle backwards. -/
 theorem front_block_forces_all {B : Set (Op K2.AppOp)}
@@ -564,7 +564,7 @@ theorem no_proper_front_block :
 
 /-- Consistency anchor: the kill-test's single-event obstruction
 (`no_peelable_event`) is the `B = {e}` special case of the back-block
-theorem — the block result strictly strengthens the kill-test. -/
+theorem, so the block result strictly strengthens the kill-test. -/
 theorem no_peelable_event_of_blocks :
     ¬ ∃ e ∈ peelU,
         (∀ e' ∈ peelU, ¬ loOn peelConfig peelU e e') ∧
@@ -589,15 +589,15 @@ theorem no_peelable_event_of_blocks :
   have h3 : eAy = eRx := h1.trans h2.symm
   simp [eAy, eRx] at h3
 
-/-- **HEADLINE — the block-peel obstruction, packaged.** There is a CRDT
-signature (satisfying the update-layer VCs — `K2_updateVCs`), a
+/-- **The block-peel obstruction, packaged.** There is a CRDT
+signature (satisfying the update-layer VCs, `K2_updateVCs`), a
 configuration with transitive irreflexive `vis`, and a nonempty fully
 closed `U ⊆ C.events` on which every closure-preserving late-placeable
 back-block and every closure-shaped early-placeable front-block is the
-whole of `U`. Redesign (a) of the plan doc — peel a block instead of an
-event — is therefore dead at *every* granularity, for both enumeration
-ends: the induction cannot make progress. Redesigns (b) (wider induction
-class, §6) and (c) (disjunctive contract) are the only live routes. -/
+whole of `U`. Peeling a block instead of an
+event is therefore dead at *every* granularity, for both enumeration
+ends: the induction cannot make progress. The wider induction
+class (§6) and the disjunctive contract are the only live routes. -/
 theorem block_peel_obstruction :
     ∃ (D : CRDTSig) (C : Sal.Emulation.Configuration D)
       (U : Set (Op D.AppOp)),
@@ -621,15 +621,15 @@ theorem block_peel_obstruction :
     fun _ h_sub h_ne h_down h_entry =>
       front_block_forces_all h_sub h_down h_entry h_ne⟩
 
-/-! ## §6. Redesign (b): the `AlmostClosed` induction class
+/-! ## §6. The `AlmostClosed` induction class
 
 If no set-shaped peel preserves full closure, the induction must stop
 demanding it: widen the class to "fully closed minus what has already been
 peeled". A peeled prefix of the induction is a union of `loOn(U)`-maximal
 events, i.e. a `loOn(U)`-*upward-closed* subset. The class is
-order-theoretically self-sustaining — peels exist and stay in the class —
+order-theoretically self-sustaining (peels exist and stay in the class),
 which is exactly the part the full-closure route lacked. What this file
-does NOT provide (the open state-side of redesign (b)): a Join statement
+does NOT provide (the open state-side): a Join statement
 over `AlmostClosed` sides and the `CDVC3`/feasible-delta laws restated at
 `AlmostClosed` sets. -/
 
@@ -660,7 +660,7 @@ theorem almostClosed_of_fullClosure {C : Sal.Emulation.Configuration D}
     (Set.diff_empty).symm⟩
 
 /-- **The class is peel-stable**: removing any event that is
-`loOn`-maximal *within the remainder* stays in the class — the new peel
+`loOn`-maximal *within the remainder* stays in the class: the new peel
 set `S ∪ {e}` is still `loOn(U)`-upward-closed because `e`'s
 `loOn(U)`-successors inside the remainder are excluded by maximality
 (`loOn C U ⊆ loOn C V` on `V ⊆ U` by antitonicity) and those inside `S`
@@ -689,8 +689,8 @@ theorem AlmostClosed.peel {C : Sal.Emulation.Configuration D}
 
 /-- **Peels exist in the class**: every finite nonempty `AlmostClosed` set
 admits a `loOn`-maximal event whose removal stays `AlmostClosed`. Together
-with `AlmostClosed.peel` this is the order-theoretic half of redesign (b);
-no analogue of `no_peelable_event` obstructs it. -/
+with `AlmostClosed.peel` this is the order-theoretic half of the wider
+induction class; no analogue of `no_peelable_event` obstructs it. -/
 theorem almostClosed_peel_exists (hU : UpdateVCs D)
     {C : Sal.Emulation.Configuration D}
     (h_tr : ∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c)
@@ -729,8 +729,8 @@ theorem peelU_diff_Ax_not_fullyClosed :
   exact (h eAx eRy vis_Ax_Ry hRy).2 rfl
 
 /-- On the kill-test `U` the widened induction *starts*: `U` is in the
-class (it is fully closed) and admits a first peel that stays in the class
-— in contrast to the full-closure induction, which `no_peelable_event`
+class (it is fully closed) and admits a first peel that stays in the class,
+in contrast to the full-closure induction, which `no_peelable_event`
 stops at this very set. -/
 theorem killTest_almostClosed_first_peel :
     ∃ e ∈ peelU, (∀ x ∈ peelU, x ≠ e → ¬ loOn peelConfig peelU e x) ∧

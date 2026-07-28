@@ -3,7 +3,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Hbridge_Discharge
 /-!
 # hcaus + Hdec DISCHARGED — hMergeInputs COMPLETE at `HonJ := rgaHonJ`
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 The two remaining `hMergeInputs` leaves, and the assembled `hMergeInputs` itself:
 

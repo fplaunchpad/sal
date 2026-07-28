@@ -4,10 +4,10 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Common
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# Grow-Only Set — flat VC discharge and the conditioned capstone
+# Grow-Only Set: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production Grow-Only Set as a `ConditionedMRDTSig`, its RA-linearizability
+VC discharge, and the conditioned capstone over the generic framework.
 -/
 
 set_option maxHeartbeats 1000000

@@ -16,22 +16,19 @@
 // all pure: apply/merge3 must return fresh states (commits keep old states
 // alive forever, or until gc).
 //
-// STATE GC (task #97): a datatype may additionally provide
+// STATE GC: a datatype may additionally provide
 //   compact(state, cut)        -> { state, translate, stats }
 //   remapState(state, translate) -> state
 // (src/compact.js provides both for the embed RGA). replica.compact(cut)
 // then re-codes the replica's head under the SETTLED-CUT CONTRACT
 // documented in src/compact.js: sound only when the cut is settled at the
-// compacting replica (heard from everyone since the cut,
-// whiteboard/stability-vc-note.md section 2); in v1 the caller asserts it.
-// Each compaction opens a new EPOCH with a translate function from the
+// compacting replica (heard from everyone since the cut); the caller asserts
+// it. Each compaction opens a new EPOCH with a translate function from the
 // previous epoch's coordinates; merges lift the lower-epoch side (and the
-// LCA payload) into the newer epoch record by record -- the lazy
-// stable-prefix translation on ingest. v1 restriction: epochs are
-// LINEARIZED per runtime (a compaction is refused unless the compactor's
-// head already sits at the newest epoch); concurrent divergent compactions
-// are the deferred protocol half (whiteboard/embed-recoding-note.md
-// section 6).
+// LCA payload) into the newer epoch record by record, the lazy stable-prefix
+// translation on ingest. This runtime LINEARIZES epochs (a compaction is
+// refused unless the compactor's head already sits at the newest epoch);
+// concurrent divergent compactions are out of scope here.
 
 import { Dag } from './dag.js';
 import { lca } from './lca.js';
@@ -78,9 +75,8 @@ export class Runtime {
    *  ONE FRONTIER, read from above: the keep-set retains the upward closure
    *  of the pairwise meets of these heads, while the stability producer
    *  (replica.compactStable) reads the same head/frontier data from below to
-   *  find what is settled (src/frontier.js; runtime-gc-note section 6). Both
-   *  consume the current-heads knowledge; neither invents a fact the other
-   *  cannot see. */
+   *  find what is settled (src/frontier.js). Both consume the current-heads
+   *  knowledge; neither invents a fact the other cannot see. */
   gc() {
     return runGc(this.dag, this.replicas.map((r) => r.head.id));
   }
@@ -99,10 +95,10 @@ export class Replica {
     this.name = name;
     this.#head = runtime.root;
     this.seq = 0;
-    // THE FRONTIER (task #106): replicaName -> { id, seq } = the latest commit
-    // of that replica this head has absorbed (its evidence commit). Rebuilt
-    // from ancestry on every commit/sync (erratum 9.3: commit-shaped, never
-    // gated on event-subsumption -- a no-new-events pull still advances it).
+    // THE FRONTIER: replicaName -> { id, seq } = the latest commit of that
+    // replica this head has absorbed (its evidence commit). Rebuilt from
+    // ancestry on every commit/sync (commit-shaped, never gated on
+    // event-subsumption: a no-new-events pull still advances it).
     this.frontier = frontierOf(runtime.dag, this.#head.id);
   }
 
@@ -127,10 +123,10 @@ export class Replica {
   }
 
   /** State GC: re-code this replica's head over a SETTLED cut (contract in
-   *  src/compact.js; the caller asserts settledness in v1). Opens a new
-   *  epoch whose translate function lifts older-epoch states on ingest.
-   *  opts is passed through to datatype.compact (the unguardedRenumber
-   *  negative-control knob lives there; never set it in production). */
+   *  src/compact.js; the caller asserts settledness). Opens a new epoch whose
+   *  translate function lifts older-epoch states on ingest. opts is passed
+   *  through to datatype.compact (the unguardedRenumber negative-control knob
+   *  lives there; never set it in production). */
   compact(cut, opts) {
     const rt = this.runtime;
     const dt = rt.datatype;
@@ -142,7 +138,7 @@ export class Replica {
       throw new Error(
         'stale-epoch compaction refused: v1 linearizes compaction epochs; ' +
         'sync to the newest epoch first (concurrent compaction is the ' +
-        'deferred protocol half, embed-recoding-note section 6)'
+        'deferred protocol half)'
       );
     }
     const { state, translate, stats } = dt.compact(this.#head.state, cut, opts);
@@ -164,7 +160,7 @@ export class Replica {
     if (a.id === b.id) return a;
     if (dag.isAncestor(a.id, b.id)) {           // fast-forward: b subsumes a
       this.#head = b;
-      this.#refreshFrontier();                  // erratum 9.3: advance on ancestry
+      this.#refreshFrontier();                  // advance on ancestry (commit-shaped)
       return b;
     }
     if (dag.isAncestor(b.id, a.id)) {           // fast-forward: a subsumes b
@@ -172,7 +168,7 @@ export class Replica {
       other.#refreshFrontier();
       return a;
     }
-    const l = lca(dag, a.id, b.id);             // unique LCA or CrissCrossError (#90 gate)
+    const l = lca(dag, a.id, b.id);             // unique LCA or CrissCrossError
     const dt = this.runtime.datatype;
     const rt = this.runtime;
     // Epoch lifting (state GC): merge in the NEWEST epoch of the two heads;
@@ -201,34 +197,28 @@ export class Replica {
       this.runtime.dag, this.#head.id, this.runtime.registeredNames(), this.name);
   }
 
-  /** THE EVIDENCE PRODUCER (task #106, practical half). State-GC at the
-   *  largest cut this replica can CERTIFY from its frontier, replacing the
-   *  ASSERTED settledness of replica.compact / src/compact.js. Exact
-   *  correspondence to Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean:
+  /** THE EVIDENCE PRODUCER: state-GC at the largest cut this replica can
+   *  CERTIFY from its frontier, in place of the ASSERTED settledness of
+   *  replica.compact. The correspondence to the formal target:
    *
    *    frontier (per replica evidence commits c_j)  ==  AllHeardSince C v S
    *    stableCut = meet of E(c_j)                    ==  the maximal such S
    *    certificate present (complete)                ==  the hypothesis hAll
-   *    reads preserved by the resulting compaction   ==  settledAt_of_allHeard
-   *                                                      feeding StabilityVC
+   *    reads preserved by the resulting compaction   ==  the stability VC
    *
    *  The certificate is CHECKED: if any registered replica has not been heard
    *  from since the cut (its evidence commit is absent), compaction is
    *  REFUSED (a no-op returning { compacted: false, missing }). This is the
-   *  runtime witness of settledAt_of_allHeard's not-heard breaker
-   *  (createReplica / EvidenceDischarge section 3).
+   *  runtime witness of the not-heard breaker.
    *
-   *  THE IN-FLIGHT DISCHARGE (the point of #106 over compact.js's v1). compact
-   *  .js's cut.inflight was the crutch for asserted-settledness: an in-flight
-   *  op concurrent with the cut, whose frozen delta a dense renumber could
-   *  flip. Under a CERTIFIED cut no such op exists -- every op concurrent with
-   *  the cut is already delivered (SettledAt condition 2), so it is an at-rest
-   *  member that compact.js's own per-group stability gate refuses to
-   *  renumber; every UNdelivered op is Lamport-fresh future work that sorts
-   *  past the compacted block and translates verbatim. So we pass
-   *  inflight: [] and it is PROVED sufficient, not asserted. This delivers the
-   *  "computing evidence certificates is a follow-on" promised in
-   *  compact.js's contract note and stability-vc-note.md section 2. */
+   *  THE IN-FLIGHT DISCHARGE. cut.inflight is the crutch for asserted
+   *  settledness: an in-flight op concurrent with the cut, whose frozen delta a
+   *  dense renumber could flip. Under a CERTIFIED cut no such op exists: every
+   *  op concurrent with the cut is already delivered (SettledAt condition 2),
+   *  so it is an at-rest member that compact.js's own per-group stability gate
+   *  refuses to renumber; every UNdelivered op is Lamport-fresh future work
+   *  that sorts past the compacted block and translates verbatim. So we pass
+   *  inflight: [] and it is sufficient, not asserted. */
   compactStable(opts) {
     const rt = this.runtime;
     const e = rt.epochOf.get(this.#head.id);

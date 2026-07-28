@@ -25,12 +25,12 @@ High-level construction:
 The reconstruction helper `effectiveState` folds `D.effect` over the
 message set in a causal order. Picking a canonical order requires
 additional machinery (topological sort on `hb`); we expose it as a
-parameter for now.
+parameter.
 
 This file scaffolds the types and the signature-level map. The
-`WeakSim opLabeledTS (labeledTS (canonicalG D))` construction — the
-actual emulation theorem (Liittschwager §4.2, Theorems 1 and 2) — is
-tracked as step 10 of PLAN.md and stubbed at the bottom.
+`WeakSim opLabeledTS (labeledTS (canonicalG D))` construction (the
+actual emulation theorem, Liittschwager §4.2, Theorems 1 and 2) is
+stubbed at the bottom.
 -/
 
 namespace Sal.Emulation
@@ -54,7 +54,7 @@ representation or classical choice plus a commutativity witness. -/
 noncomputable def effectiveState
     (_hb : D.Msg → D.Msg → Prop)
     (_delivered : Set D.Msg) : D.State :=
-  D.init  -- TODO: fold D.effect over `delivered` in a causal order.
+  D.init  -- Placeholder: the effective state folds `D.effect` over `delivered` in a causal order.
 
 /-- Lift an op-based CRDT into a state-based CRDT via canonical
 emulation. -/
@@ -89,17 +89,17 @@ Stating this formally in Lean requires a shared label type: here,
 the op-based labels `OpLabel D` and the state-based labels
 `Label (canonicalG D hb)` differ syntactically, so we need a
 translation on labels (observable-label morphism) alongside the
-simulation relation itself. That's future work.
+simulation relation itself.
 
-The skeleton below records the statement we are aiming at. -/
+The skeleton below records the target statement. -/
 
 /-- **Emulation theorem (statement sketch).** For every op-based CRDT
 `D` with causal-order `hb`, the op-based and state-based TSs related
 by `canonicalG` are weakly trace equivalent from their respective
 initial configurations.
 
-TODO (PLAN.md step 10): state precisely with a label morphism, then
-prove via mutual weak simulations. -/
+The precise statement uses a label morphism; the proof goes via
+mutual weak simulations. -/
 theorem emulation_G_weak_bisim {D : OpCRDTSig} (_hb : D.Msg → D.Msg → Prop) :
     True := by
   trivial

@@ -3,9 +3,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Peel
 /-!
 # GenDisc2C DISCHARGED — the strong induction from born accuracy
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
-The centerpiece of task #32, assembling the bricks of `RGA_GenDisc_Peel`:
+The centerpiece result, assembling the bricks of `RGA_GenDisc_Peel`:
 
 **`genDisc2C_of_born`** — the generation discipline `GenDisc2C Cfg E` (each event accurate at the
 fold of any enumeration of its transitive dependencies) follows from **born accuracy**
@@ -214,7 +214,7 @@ theorem genDisc2C_of_born_aux (Cfg : Sal.Emulation.Configuration (RGACondSig α)
     rw [hsplit, hpeel] at happW
     exact happW.1
 
-/-- **GenDisc2C from born accuracy** — task #32's discharge.  Each event accurate at the fold of
+/-- **GenDisc2C from born accuracy.**  Each event accurate at the fold of
 SOME causally-ordered enumeration of its full past (the honest generation content) ⟹ accurate at
 the fold of EVERY enumeration of its transitive dependencies. -/
 theorem genDisc2C_of_born (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)

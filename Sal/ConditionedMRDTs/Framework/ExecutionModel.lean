@@ -5,52 +5,44 @@ import Sal.ConditionedMRDTs.Framework.MRDTSig
 import Mathlib.Data.Set.Basic
 
 /-!
-# Ternary execution model: replica-keyed Configuration + ranked-version store (Phase-0 **S2**)
+# Ternary execution model: replica-keyed Configuration + ranked-version store
 
-This is step **S2** of the Neem soundness meta-theory (Phase-0, TTL+RV design; see
-`Sal/MRDTs/Metatheory/PHASE0_PLAN.md` §1.3, §1.7 and §4 S2). It builds the *execution model* for a
-`ConditionedMRDTSig` on top of the S1 foundation (`Sal.ConditionedMRDTs.MRDTSig`):
+The execution model for a `ConditionedMRDTSig`, built on the `MRDTSig` foundation
+(`Sal.ConditionedMRDTs.MRDTSig`):
 
 * the ternary **`Configuration`** — the *replica-keyed core* (`N`/`L`/`vis` + the six
-  invariants ported VERBATIM from `Sal.Emulation.CRDT_TS`), PLUS the *additive* **ranked
-  version store** `ver`/`head`/`parents` with the DAG-rank field `parents_lt` and the four
-  store-coherence invariants `ver_init`/`head_coherent`/`ver_inv`/`lca_events`;
+  invariants, retyped from `Sal.Emulation.CRDT_TS` over `ConditionedMRDTSig`), plus the
+  *additive* **ranked version store** `ver`/`head`/`parents` with the DAG-rank field
+  `parents_lt` and the four store-coherence invariants
+  `ver_init`/`head_coherent`/`ver_inv`/`lca_events`;
 * **`Reaches`** (reachability in the version DAG) and **`IsLCA`** (the LCA predicate the
   ternary merge reads), together with the fact that `parents_lt` makes the parent-step
   relation **well-founded** (`parentStep_wf` / `Configuration.parents_wf`);
-* **`initConfig`** with *every* Configuration invariant — replica-keyed core AND ranked store
-  — discharged sorry-free.
+* **`initConfig`** with every Configuration invariant, replica-keyed core and ranked store,
+  discharged sorry-free.
 
-**Design (Version = allocation rank).** A `Version` *is* its allocation rank (`Nat`); the DAG
-field `parents_lt : p ∈ parents v → p < v` fuses acyclicity and the generation clock into one
+**Version = allocation rank.** A `Version` *is* its allocation rank (`Nat`); the DAG field
+`parents_lt : p ∈ parents v → p < v` fuses acyclicity and the generation clock into one
 decidable fact. This is the structural home for the generation-time id-monotonicity invariant
-`AllocMono`/`id_mono` (S5, `RGA_Reachability_Invariant.lean:227`), which plugs onto the store
-as a `Configuration D → Prop` — see `AllocMonoTrivial` (the flat-RDT hook) below.
+`AllocMono`/`id_mono` (`RGA_Reachability_Invariant.lean:227`), which plugs onto the store as a
+`Configuration D → Prop`; see `AllocMonoTrivial` (the flat-RDT hook) below.
 
-**Exit criteria (PHASE0_PLAN §4 S2), all discharged here:**
-1. compiles clean, no `sorry`;
-2. `initConfig` satisfies every Configuration invariant (core + store), sorry-free;
-3. `Reaches` is well-founded, derived from `parents_lt` (`parentStep_wf`).
+`lca_events` maintenance under `Step.merge` is not treated here; for `initConfig` it holds
+unconditionally because the only registered version is `0` (all event sets are `∅`).
 
-**Deferred, per §4 S2 scope note.** `lca_events` maintenance under `Step.merge` is deferred
-post-Phase-0 (`appendix.tex:6-37`). Here it is only *discharged for `initConfig`* — where it
-holds unconditionally because the only registered version is `0` (all event sets are `∅`), so
-**no sorry is needed at S2**.
-
-**Deviation from §1.3 (documented).** `initConfig` takes an extra hypothesis
-`hInit : D.Inv D.init`. The store invariant `ver_inv` demands `Inv` of every registered state,
-and `ver_init` registers `D.init` at version `0`; for an arbitrary `ConditionedMRDTSig` there
-is no free proof of `Inv init`. This is exactly S5's `ReachInv.init_inv`
-(`PHASE0_PLAN §1.7`), so threading it here is faithful and unavoidable.
+`initConfig` takes the hypothesis `hInit : D.Inv D.init`. The store invariant `ver_inv`
+demands `Inv` of every registered state, and `ver_init` registers `D.init` at version `0`;
+for an arbitrary `ConditionedMRDTSig` there is no free proof of `Inv init`, so it is threaded
+as a hypothesis.
 -/
 
 namespace Sal.ConditionedMRDTs
 
 open Sal.Emulation
 
-/-! ## §1.3 — Version DAG: `Reaches` and `IsLCA` -/
+/-! ## Version DAG: `Reaches` and `IsLCA` -/
 
-/-- A version id **is** its allocation rank (Design 2). The ranked store keys states by
+/-- A version id **is** its allocation rank. The ranked store keys states by
 `Version`, and `parents_lt` orders them, giving the generation clock a decidable home. -/
 abbrev Version : Type := Nat
 
@@ -68,13 +60,13 @@ def IsLCA (parents : Version → List Version) (v₁ v₂ vT : Version) : Prop :
   Reaches parents vT v₁ ∧ Reaches parents vT v₂ ∧
     ∀ w, Reaches parents w v₁ → Reaches parents w v₂ → Reaches parents w vT
 
-/-! ## Virtual LCAs (task #90): common ancestors of a support set, and MCAs
+/-! ## Virtual LCAs: common ancestors of a support set, and MCAs
 
 In a criss-cross configuration no version satisfies `IsLCA` and the ternary Merge is
-disabled. The virtual-LCA extension (`whiteboard/virtual-lca-note.md`) merges the
-antichain of **maximal common ancestors** recursively. The recursion's sub-pairs pair a
-*scratch node* (identified with its finite real support `S`) against a version `w`, so
-the predicates are stated in **set-support form**: `S = {v₁}` recovers the head pair. -/
+disabled. The virtual-LCA extension merges the antichain of **maximal common ancestors**
+recursively. The recursion's sub-pairs pair a *scratch node* (identified with its finite
+real support `S`) against a version `w`, so the predicates are stated in **set-support
+form**: `S = {v₁}` recovers the head pair. -/
 
 /-- Common ancestors of a support set `S` and a version `w`: versions reaching some
 member of `S` and reaching `w`. With `S = {v₁}` this is the plain common-ancestor set
@@ -95,10 +87,9 @@ def IsMCA (parents : Version → List Version) (S : Set Version) (w : Version)
 /-! ## Well-foundedness from `parents_lt`
 
 `parents_lt : p ∈ parents v → p < v` makes the parent-step relation a subrelation of `<` on
-`Nat`, hence well-founded. This is the exit-criterion "`Reaches` well-founded, derived from
-`parents_lt`": it justifies well-founded recursion over the version DAG (the S6 lex carving
-runs above it) and it forces `Reaches` to increase rank (`reaches_le`), so an LCA has strictly
-smaller rank than its descendants — the fact `Step.merge`'s `h_alloc : v₁,v₂ < vm` relies on. -/
+`Nat`, hence well-founded. It justifies well-founded recursion over the version DAG and it
+forces `Reaches` to increase rank (`reaches_le`), so an LCA has strictly smaller rank than
+its descendants, the fact `Step.merge`'s `h_alloc : v₁,v₂ < vm` relies on. -/
 
 /-- The parent-step relation `a ∈ parents b` is **well-founded** whenever `parents_lt` holds:
 it is a subrelation of `<` on `Nat`. -/
@@ -120,18 +111,17 @@ theorem reaches_le {parents : Version → List Version}
   | refl => exact Nat.le_refl a
   | tail _prev hstep ih => exact Nat.le_of_lt (Nat.lt_of_le_of_lt ih (h _ _ hstep))
 
-/-! ## §1.3 — The ternary Configuration
+/-! ## The ternary Configuration
 
-The **replica-keyed core** (`N`/`L`/`vis` + the six invariants) is ported VERBATIM from
-`Sal.Emulation.CRDT_TS.Configuration` (`CRDT_TS.lean:39-75`), retyped over `ConditionedMRDTSig`
-— this keeps `IsRALinearizable`/the four replica-keyed bridge cases reusable byte-for-byte
-(PHASE0_PLAN §1.3 "Why replica-keyed core"). The **ranked version store** is the sole new
-structural content and is *additive*: it is read only by the (S3) `Step.merge` and the (S5)
-conditioning layer, so it never perturbs the reused cases. -/
+The **replica-keyed core** (`N`/`L`/`vis` + the six invariants) is retyped from
+`Sal.Emulation.CRDT_TS.Configuration` (`CRDT_TS.lean:39-75`) over `ConditionedMRDTSig`, which
+keeps `IsRALinearizable` and the four replica-keyed bridge cases reusable field-for-field. The
+**ranked version store** is the additional structural content and is *additive*: it is read
+only by `Step.merge` and the conditioning layer, so it never perturbs the reused cases. -/
 
 /-- A ternary configuration for `D : ConditionedMRDTSig`. -/
 structure Configuration (D : ConditionedMRDTSig) where
-  -- ── replica-keyed core (ported verbatim from `CRDT_TS.lean:39-75`) ──────────────────────
+  -- ── replica-keyed core (retyped from `CRDT_TS.lean:39-75`) ─────────────────────────────
   /-- Per-replica head state. -/
   N : Replica → Option D.State
   /-- Per-replica set of observed events. -/
@@ -164,7 +154,7 @@ structure Configuration (D : ConditionedMRDTSig) where
     ∀ {a b : Op D.AppOp} {r s r' s'},
       L r = some s → s a → L r' = some s' → s' b →
       a ≠ b → a.2.1 = b.2.1 → vis a b ∨ vis b a
-  -- ── additive ranked version store (the only new structural content) ─────────────────────
+  -- ── additive ranked version store ──────────────────────────────────────────────────────
   /-- Version ↦ its `(state, event-set)`. `none` = unallocated. -/
   ver : Version → Option (D.State × Set (Op D.AppOp))
   /-- Replica ↦ its head version id. -/
@@ -183,8 +173,8 @@ structure Configuration (D : ConditionedMRDTSig) where
   registered version — the conditioning discharge in §3 reads this). -/
   ver_inv : ∀ v s e, ver v = some (s, e) → D.Inv s
   /-- **Lemma LCA / N10** (`lin.tex:160`): the LCA's event set is the intersection of the two
-  merged event sets. Discharged for `initConfig` here; its `Step.merge` maintenance is deferred
-  post-Phase-0 (`appendix.tex:6-37`, PHASE0_PLAN §4 S2 scope note). -/
+  merged event sets. Established for `initConfig`; its `Step.merge` maintenance is not treated
+  here (`appendix.tex:6-37`). -/
   lca_events : ∀ {v₁ v₂ vT s₁ e₁ s₂ e₂ sT eT},
     IsLCA parents v₁ v₂ vT →
     ver v₁ = some (s₁, e₁) → ver v₂ = some (s₂, e₂) → ver vT = some (sT, eT) →
@@ -194,8 +184,7 @@ namespace Configuration
 
 variable {D : ConditionedMRDTSig}
 
-/-- Set of all events witnessed anywhere in the configuration (ported from
-`CRDT_TS.lean:80`; consumed by S5's `events_applicable`). -/
+/-- Set of all events witnessed anywhere in the configuration (as in `CRDT_TS.lean:80`). -/
 def events (C : Configuration D) : Set (Op D.AppOp) :=
   fun e => ∃ r s, C.L r = some s ∧ s e
 
@@ -208,9 +197,9 @@ def verState (C : Configuration D) (v : Version) : Option D.State :=
 def verEvents (C : Configuration D) (v : Version) : Option (Set (Op D.AppOp)) :=
   (C.ver v).map Prod.snd
 
-/-- The parent-step relation of `C` is well-founded (from the `parents_lt` field). This is the
-`Configuration`-level form of the S2 well-foundedness exit criterion; it drives well-founded
-recursion / induction over `C`'s version DAG in S6. -/
+/-- The parent-step relation of `C` is well-founded (from the `parents_lt` field). The
+`Configuration`-level form of `parentStep_wf`; it drives well-founded recursion and induction
+over `C`'s version DAG. -/
 theorem parents_wf (C : Configuration D) :
     WellFounded (fun a b : Version => a ∈ C.parents b) :=
   parentStep_wf C.parents_lt
@@ -221,8 +210,8 @@ theorem reaches_le' (C : Configuration D) {a b : Version}
   reaches_le C.parents_lt hr
 
 /-- The ternary linearization order over the ternary `Configuration` (mirror of
-`Sal.ConditionedMRDTs.lo`, reading this configuration's own `.vis`; the S6 merge induction reads it).
-On the flat slice it coincides with `Sal.ConditionedMRDTs.lo`/`Sal.Emulation.lo` (S1 collapse). -/
+`Sal.ConditionedMRDTs.lo`, reading this configuration's own `.vis`). On the flat slice it
+coincides with `Sal.ConditionedMRDTs.lo`/`Sal.Emulation.lo`. -/
 def lo (C : Configuration D) (e₁ e₂ : Op D.AppOp) : Prop :=
   (C.vis e₁ e₂ ∧ ¬ D.commutesOn e₁ e₂)
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
@@ -231,27 +220,26 @@ def lo (C : Configuration D) (e₁ e₂ : Op D.AppOp) : Prop :=
 
 end Configuration
 
-/-! ## Seam for S5: the generation-time `AllocMono` hook
+/-! ## The generation-time `AllocMono` hook
 
 `AllocMono : Configuration D → Prop` is the per-RDT generation-time predicate hosted on the
-ranked store (PHASE0_PLAN §1.7). It is established at `apply` (fresh-max id) and maintained
-across `merge` (`vm > v₁,v₂`), and it is what `ReachInv.merge_preserves` consumes to close the
+ranked store. It is established at `apply` (fresh-max id) and maintained across `merge`
+(`vm > v₁,v₂`), and it is what `ReachInv.merge_preserves` consumes to close the
 `merge_breaks_wf` gap. For RGA it is the id-monotone anchor invariant
 
   `∀ v t s e, ver v = some (s,e) → contains s t → anc s t = 0 ∨ anc s t < t`
   (`RGA_Reachability_Invariant.lean:227`).
 
-For flat RDTs it collapses to the trivial predicate below. S5 defines the real per-RDT
-`AllocMono` over exactly this store shape (`ver`/`parents`/`parents_lt`); S2 only fixes the
-seam. -/
+For flat RDTs it collapses to the trivial predicate below. The per-RDT `AllocMono` is defined
+over exactly this store shape (`ver`/`parents`/`parents_lt`); this file only fixes the seam. -/
 def AllocMonoTrivial {D : ConditionedMRDTSig} (_ : Configuration D) : Prop := True
 
-/-! ## §1.3 / §4 S2 — the initial configuration, all invariants discharged
+/-! ## The initial configuration
 
 `initConfig D hInit`: a single replica `r₀ = 0` at `D.init` observing no events, with a
 one-node version DAG (version `0 = (init, ∅)`, no parents). Every replica-keyed core invariant
-(ported verbatim) AND every ranked-store invariant is discharged sorry-free. See the top-of-file
-note on the `hInit : D.Inv D.init` hypothesis (this is S5's `init_inv`). -/
+and every ranked-store invariant is discharged. See the top-of-file note on the
+`hInit : D.Inv D.init` hypothesis. -/
 
 /-- The only registered version in `initConfig`'s store is `0`, carrying `(init, ∅)`: a
 `ver v = some (s,e)` forces `v = 0`, `s = init`, `e = ∅`. Powers the four store-invariant
@@ -268,7 +256,7 @@ private theorem initVer_decompose {D : ConditionedMRDTSig}
 
 /-- Initial configuration with all invariants discharged. -/
 def initConfig (D : ConditionedMRDTSig) (hInit : D.Inv D.init) : Configuration D where
-  -- replica-keyed core (values + proofs ported verbatim from `CRDT_TS.lean:147-168`)
+  -- replica-keyed core (values and proofs as in `CRDT_TS.lean:147-168`)
   N := fun r => if r = 0 then some D.init else none
   L := fun r => if r = 0 then some ∅ else none
   vis := fun _ _ => False
@@ -319,7 +307,7 @@ def initConfig (D : ConditionedMRDTSig) (hInit : D.Inv D.init) : Configuration D
     -- goal: (∅ : Set _) = ∅ ∩ ∅
     rw [Set.empty_inter]
 
-/-! ## Axiom audit (exit-criterion lemmas) -/
+/-! ## Axiom audit -/
 
 #print axioms parentStep_wf
 #print axioms reaches_le

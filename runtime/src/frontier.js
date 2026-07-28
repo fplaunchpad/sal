@@ -1,12 +1,10 @@
-// THE ONE FRONTIER (task #106; whiteboard/runtime-gc-note.md section 6,
-// "one frontier, N consumers"). A single, pure computation read by the
-// evidence-certificate producer here, the stability cut of src/compact.js,
-// and (from above) the keep-set commit GC of src/gc.js.
+// THE ONE FRONTIER: a single, pure computation read by the evidence-certificate
+// producer here, the stability cut of src/compact.js, and the keep-set commit
+// GC of src/gc.js.
 //
 // A replica's FRONTIER at a head version v is, per registered replica j, the
 // LATEST commit authored by j that lies in v's reflexive ancestry. This is
-// exactly the "evidence commit c_j" of AllHeardSince in the formal target
-// Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean:
+// exactly the "evidence commit c_j" of AllHeardSince:
 //
 //   AllHeardSince C v S  :=  for every registered replica j, v's ancestry
 //     contains a commit c_j (reaching v) with S subseteq E(c_j) and a
@@ -16,17 +14,16 @@
 // assumed. The certification comes for free from the commit shape: j's
 // authored commits form a CHAIN by ancestry (each commit() extends j's own
 // head; merges only splice branches below it), so every j-event not in
-// E(c_j) is a descendant of c_j, hence causally after everything in E(c_j) --
-// in particular after all of S once S subseteq E(c_j). That is precisely
-// EvidenceCommit's cert clause.
+// E(c_j) is a descendant of c_j, hence causally after everything in E(c_j),
+// in particular after all of S once S subseteq E(c_j). That is precisely the
+// evidence commit's cert clause.
 //
-// ERRATUM section 9.3 (commit-shaped, not event-shaped): the frontier is a
-// function of ANCESTRY, never of "did this pull bring new events". A pull
-// that adds no new events can still move c_j forward in the DAG (it is now an
-// ancestor), which can be what opens SettledAt. Callers therefore recompute
-// the frontier from the head id on every commit/sync, and never gate the
-// update on event-subsumption. `frontierOf` reads the ancestry directly, so
-// this is structural.
+// COMMIT-SHAPED, NOT EVENT-SHAPED: the frontier is a function of ANCESTRY,
+// never of "did this pull bring new events". A pull that adds no new events can
+// still move c_j forward in the DAG (it is now an ancestor), which can be what
+// opens SettledAt. Callers therefore recompute the frontier from the head id on
+// every commit/sync, and never gate the update on event-subsumption.
+// `frontierOf` reads the ancestry directly, so this is structural.
 
 /** frontierOf(dag, headId) -> Map replicaName -> { id, seq }.
  *  The latest authored commit per replica in headId's reflexive ancestry.
@@ -66,13 +63,12 @@ export function eventOps(dag, id) {
  *  headId), so self is excluded from the meet: including it would only shrink
  *  the cut to self's last local commit, never enlarge it.
  *
- *  THE NOT-HEARD-FROM BREAKER (EvidenceDischarge section 3; the createReplica
- *  case): a registered replica j != self with NO frontier commit in headId's
- *  ancestry has not been heard from -- it may hold an op concurrent with the
- *  cut that this replica has never absorbed. The certificate is then
- *  INCOMPLETE and no non-empty cut may be certified. Absence of evidence is
- *  refusal, never assumption. This is the exact runtime witness of
- *  settledAt_of_allHeard's not-heard breaker.
+ *  THE NOT-HEARD-FROM BREAKER: a registered replica j != self with NO frontier
+ *  commit in headId's ancestry has not been heard from, so it may hold an op
+ *  concurrent with the cut that this replica has never absorbed. The
+ *  certificate is then INCOMPLETE and no non-empty cut may be certified.
+ *  Absence of evidence is refusal, never assumption. This is the runtime
+ *  witness of the not-heard breaker.
  *
  *  Soundness of excluding a heard replica j: its frontier commit c_j has
  *  meet subseteq E(c_j), so any event e concurrent with a cut event s was
@@ -112,8 +108,7 @@ export function stableCut(dag, headId, registeredNames, self) {
  *  deleted-but-settled id stays listed via its insert op (its dead-ancestor
  *  chain persists); a delete op needs no separate listing (its record is
  *  already absent, and a future delete carries no coordinate). Under a
- *  certified cut this is sound with cut.inflight EMPTY: see certifiedInflight
- *  below. */
+ *  certified cut this is sound with cut.inflight EMPTY. */
 export function insertIds(meet) {
   const ids = new Set();
   for (const op of meet.values()) {

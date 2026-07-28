@@ -1,27 +1,22 @@
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient_NF
 
 /-!
-# The H-parameterized canonical witness — feasibility clause replaced by a delivery discipline
+# The H-parameterized canonical witness: feasibility clause replaced by a delivery discipline
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The K2 refutation (`AgentNotes.md`, criss-cross rehoming) shows `IsCanonicalStateEqNF`'s
-`noopFeasible` clause is UNSATISFIABLE at merge unions for the tombstone-free RGA: two branches
-can record incompatible delete-orders in their survivors' parents, and no single born-applicable
-sequence replays both.  The clause was never what consumers needed — it fed (a) the join residual's
-premises and (b) guard transparency for the final (guarded) extraction, and the guarded extraction
-target is itself unsatisfiable (FINDING #4).
-
-This file re-parameterizes the datatype-side witness by an abstract per-datatype **delivery
-discipline** `H : List (Op D.AppOp) → Prop` (for the RGA: `CanonFoldOK [] init_st` — the
-engine-native, rehome-tolerant discipline, which merge unions DO satisfy via `canonFoldOK_concat`):
+`IsCanonicalStateEqNF`'s `noopFeasible` clause is unsatisfiable at merge unions
+for the tombstone-free RGA: two branches can record incompatible delete-orders
+in their survivors' parents, and no single born-applicable sequence replays both
+(`AgentNotes.md`, criss-cross rehoming).  This file re-parameterizes the
+datatype-side witness by an abstract per-datatype **delivery discipline**
+`H : List (Op D.AppOp) → Prop` (for the RGA: `CanonFoldOK [] init_st`, the
+rehome-tolerant discipline, which merge unions satisfy via `canonFoldOK_concat`):
 
 * `IsCanonicalStateEqH` — `IsCanonicalStateEq` + the `H` clause (mirror of `IsCanonicalStateEqNF`
   with `noopFeasible D · D.init ↦ H ·`).
 * `EqJoinLemma3C_H` — the datatype's `≈`-Join Lemma over `H`-disciplined witnesses.
 * `isCanonicalStateEqH_congr` / `isCanonicalStateEqH_extend` — the two transport lemmas the
   reachability induction needs; the extension takes the `H`-extension fact as an explicit
-  hypothesis (`hHext` — for the RGA: `canonFoldOK_append` from born accuracy).
+  hypothesis (`hHext`, for the RGA: `canonFoldOK_append` from born accuracy).
 -/
 
 set_option maxHeartbeats 1000000

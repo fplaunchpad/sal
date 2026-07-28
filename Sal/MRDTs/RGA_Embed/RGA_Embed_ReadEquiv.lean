@@ -4,7 +4,7 @@ import Sal.MRDTs.RGA_with_tombstones.RGA_ReadSide
 /-!
 # Read-equivalence with the published tombstoned RGA — the order core
 
-Task #75 (the compaction theorem), step 4 of the plan in `PLAN.md`: the
+The compaction theorem: the
 embedded-chain RGA's display order **is** the published RGA's visible
 order, on the shared birth tree of one honest event set.
 
@@ -301,7 +301,7 @@ theorem chainBefore_visible_lt (B : BirthEnv s chainOf) {a b : ℕ}
 
 /-! ## The order equivalence -/
 
-/-- **The read-equivalence order core** (task #75, step 4): on the birth
+/-- **The read-equivalence order core**: on the birth
 tree of a birth environment, the published RGA's visible order and the
 embedded-chain RGA's chain order are the same relation. -/
 theorem visible_lt_iff_chainBefore (B : BirthEnv s chainOf) {a b : ℕ}
@@ -342,7 +342,7 @@ coordinates are chain-generated (`chainState`, the reachability
 invariant) and any RGA† state forming a birth environment over the *same*
 chains, the embed display order `before` and the published `visible_lt`
 coincide on shared live ids. Instantiating both states as the two folds
-of one honest event set is the remaining wiring of task #75. -/
+of one honest event set is the remaining wiring. -/
 theorem before_iff_visible_lt {α : Type} [DecidableEq α]
     (Γ : OrderedPrefixCode) (se : concrete_st α)
     (hcs : chainState Γ se chainOf) (B : BirthEnv s chainOf) {t1 t2 : ℕ}

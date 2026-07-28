@@ -21,9 +21,7 @@ and climbing can skip surviving siblings. So under deletion of its anchor a
 boundary **migrates backward in the document** — formatting extends to text
 that was never in the span. That is a genuine leak, not staleness, and it
 means the frozen-path design does **not** match the paper's positional
-semantics. (An earlier version of this file named the theorems below
-`mark_*_no_leak` and the note claimed a "formatting does not leak" guarantee;
-both overclaimed and are corrected here.)
+semantics.
 
 What the theorems below *do* establish is weaker and honest:
 

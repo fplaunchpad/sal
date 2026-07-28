@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_CompatChain
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Fusion
 
 /-!
-# Honesty rebasing: the coded anchored forest invariant `I` (#97 (⋆))
+# Honesty rebasing: the coded anchored forest invariant `I` (⋆)
 
 This file discharges the single remaining obligation across the embed-GC
 compaction stack: the `(⋆)` re-based-honesty lemma isolated in
@@ -29,12 +29,13 @@ It is **not circular**: `I` is established from `EHonest` for the first epoch
 natively `EHonest`, which it is not. "honest modulo the order-embedding" is
 precisely: carry `I`, not `EHonest`, across epochs.
 
-**Erratum applied (note §7.1).** Condition 1 reads "`w` is a nonempty decodable
-code-word SEQUENCE" (one word per intervening dead level), NOT a single word.
-`CodedAnchoredForest.decode` therefore decodes each live coordinate to a whole
-positive chain; the nearest-live-ancestor factorization (`caf_ancestor_factor`)
-splits it by prefix-freeness alone (`coordOf_inj`), no dead-head-key field
-needed (note §7.2).
+**Erratum applied (`whiteboard/honesty-rebasing-note.md` §7.1).** Condition 1
+reads "`w` is a nonempty decodable code-word SEQUENCE" (one word per
+intervening dead level), NOT a single word. `CodedAnchoredForest.decode`
+therefore decodes each live coordinate to a whole positive chain; the
+nearest-live-ancestor factorization (`caf_ancestor_factor`) splits it by
+prefix-freeness alone (`coordOf_inj`), no dead-head-key field needed
+(`whiteboard/honesty-rebasing-note.md` §7.2).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -51,10 +52,12 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-- **`I(C)`, the coded anchored forest invariant**, over a configuration's LIVE
 coordinate set `L` (the coordinates of the live records). History-free:
-* `nodup`, distinct live coordinates are distinct (note condition 3);
+* `nodup`, distinct live coordinates are distinct
+  (`whiteboard/honesty-rebasing-note.md` condition 3);
 * `decode`, every live coordinate is the coordinate of a *nonempty positive
   birth chain*: a decodable code-word SEQUENCE, well founded to the sentinel
-  `[]` (note conditions 1+2, with the §7.1 sequence reading).
+  `[]` (`whiteboard/honesty-rebasing-note.md` conditions 1+2, with the §7.1
+  sequence reading).
 
 This is exactly what `eAnchored_exists` returns, stated intrinsically over the
 coordinate set instead of over the operation history, the whole point being
@@ -119,15 +122,18 @@ theorem ehonest_implies_I {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 
 #print axioms ehonest_implies_I
 
-/-! ## §2½  The forest reconstructed from `I` (note conditions 1–3 explicit)
+/-! ## §2½  The forest reconstructed from `I`
+(`whiteboard/honesty-rebasing-note.md` conditions 1–3 explicit)
 
-`I` carries only decodability + distinctness; the note's nearest-live-ancestor
-FOREST is reconstructed from the coordinate set (as `check_I` does). Here we
-expose it: condition 1 (`caf_ancestor_factor`: every coded ancestor splits off a
-nonempty decodable code-word sequence), condition 2 (`caf_ancestor_shorter`: the
-ancestor chain is strictly shorter, so iterating reaches the sentinel `[]`), and
-condition 3 (`caf_chain_inj`: distinct live coordinates have distinct chains).
-No dead-head keys (note §7.2): the split is by prefix-freeness alone. -/
+`I` carries only decodability + distinctness; the nearest-live-ancestor
+FOREST (`whiteboard/honesty-rebasing-note.md`) is reconstructed from the
+coordinate set (as `check_I` does). Here we expose it: condition 1
+(`caf_ancestor_factor`: every coded ancestor splits off a nonempty decodable
+code-word sequence), condition 2 (`caf_ancestor_shorter`: the ancestor chain
+is strictly shorter, so iterating reaches the sentinel `[]`), and condition 3
+(`caf_chain_inj`: distinct live coordinates have distinct chains). No
+dead-head keys (`whiteboard/honesty-rebasing-note.md` §7.2): the split is by
+prefix-freeness alone. -/
 
 /-- **Condition 1 (the factorization).** For a coded ancestor `a` of `c` (its
 chain a proper prefix), `c = a ++ w'` with `w'` the coordinate of a *nonempty
@@ -218,7 +224,8 @@ theorem chainAligned_compactSPM (Γ : OrderedPrefixCode) (keep : List (List ℕ)
 /-- **Fusion is chain-aligned** (`φ = fuseChain Q Q'`; the load-bearing case):
 `fuseBits_coordOf` gives `align`, `fuseChain_pos` gives `pos`. A fused live
 coordinate stays nonempty because the surviving head `Q'` is nonempty (`hQ'ne`):
-a fused tail is a nonempty code-word SEQUENCE (note §7.2, R1). -/
+a fused tail is a nonempty code-word SEQUENCE
+(`whiteboard/honesty-rebasing-note.md` §7.2, R1). -/
 theorem chainAligned_fuseSPM (Γ : OrderedPrefixCode) (Q Q' : List ℕ)
     (𝒟 : List ℕ → Prop) (hQpos : PosChain Q) (hQ' : Q' <+: Q)
     (hDpos : ∀ ch, 𝒟 ch → PosChain ch)
@@ -288,7 +295,8 @@ theorem I_implies_atHand {Γ : OrderedPrefixCode} {L : List (List Bool)}
 /-- **The snoc-commute.** For a beyond-cut mint on anchor chain `chA` with fresh
 delta `d`, the chain map `φ` commutes with the append: `φ (chA ++ [d]) =
 φ chA ++ [d]`. Derived purely from `F.ext` (H3) + chain-alignment + unique
-decodability, the minted delta rides through untouched (note §2). -/
+decodability, the minted delta rides through untouched
+(`whiteboard/honesty-rebasing-note.md` §2). -/
 theorem chainAligned_snoc {Γ : OrderedPrefixCode} {F : StablePrefixMap Γ}
     {φ : List ℕ → List ℕ} (hCA : ChainAligned Γ F φ) {chA : List ℕ} {d : ℕ}
     (hposA : PosChain chA) (hd : 1 ≤ d)
@@ -311,7 +319,7 @@ theorem chainAligned_snoc {Γ : OrderedPrefixCode} {F : StablePrefixMap Γ}
   rw [hcd, hCA.align (chA ++ [d]) hposd, hCA.align chA hposA, hrd] at hext
   exact coordOf_inj Γ (hCA.pos (chA ++ [d]) hposd) hposφd hext
 
-/-- **The rebased epoch-2 domain** (note §4): the `φ₁`-images of epoch-1's
+/-- **The rebased epoch-2 domain** (`whiteboard/honesty-rebasing-note.md` §4): the `φ₁`-images of epoch-1's
 at-hand chains. Building epoch 2 over THIS domain is what "honest modulo the
 embedding" means, the domain is carried by `I`, not re-derived from a fresh
 honesty assumption at epoch 2. -/
@@ -336,8 +344,8 @@ true of `compactSPM` and `fuseSPM`), the epoch-boundary obligations
 `CompatOn`'s `restG`/`mintG` are met by epoch 2 = `rebaseSPM` over the image
 domain: a survivor's `F₁`-image is at hand for epoch 2 by chain-alignment
 (`restG`), and a beyond-cut mint's `F₁`-image is an epoch-2 mint by the
-snoc-commute (`mintG`). This is the residue the `CompatChain` note isolated,
-closed from `I`, no epoch-2 honesty assumption. -/
+snoc-commute (`mintG`). This is the residue `EmbedRGA_CompatChain.lean`
+isolates as `(⋆)`, closed from `I`, no epoch-2 honesty assumption. -/
 theorem twoEpoch_compatOn_of_I {Γ : OrderedPrefixCode} (F₁ : StablePrefixMap Γ)
     {φ₁ : List ℕ → List ℕ} (hCA₁ : ChainAligned Γ F₁ φ₁)
     (𝒟₁ : List ℕ → Prop) (h𝒟pos : ∀ ch, 𝒟₁ ch → PosChain ch)

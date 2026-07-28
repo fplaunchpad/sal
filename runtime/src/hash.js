@@ -1,16 +1,11 @@
-// CONTENT ADDRESSING for the commit DAG (task #108): a pure-JS SHA-256 and the
-// canonical content-id scheme the whole runtime mints commit ids with. This is
-// the CORE hash; the p2p demo (git persistence, the wire) imports it, so WIRE
-// and DISK name the same commit the same way. It supersedes the FNV model hash
-// that src/sync.js's Peer used to carry (a merge-only base36 hash that disagreed
-// with the demo's SHA, forcing an FNV-vs-SHA cross-check seam #108 removes).
+// CONTENT ADDRESSING for the commit DAG: a pure-JS SHA-256 and the canonical
+// content-id scheme the whole runtime mints commit ids with. This is the CORE
+// hash; the p2p demo (git persistence, the wire) imports it, so WIRE and DISK
+// name the same commit the same way.
 //
 // Pure-JS and dependency-free (browser + Node, no node:crypto, no Buffer), so
 // src/ stays runnable unchanged in both. The SHA-256 is a standard FIPS-180-4
-// implementation over a UTF-8 string, checked bit-for-bit against node:crypto
-// (empty-string and "abc" NIST vectors plus randomized agreement) in
-// test/hash.test.js -- the runtime does not rest on a hand-rolled hash being
-// merely plausible.
+// implementation over a UTF-8 string.
 //
 // A commit is CONTENT-ADDRESSED as a Merkle DAG, git style: a commit's id folds
 // in its parents' ids, so the same logical commit gets the same id on every

@@ -4,97 +4,93 @@ import Sal.ConditionedMRDTs.Metatheory.JoinLemma3C
 /-!
 # The full-closure Join Lemma via the wider `AlmostClosed` induction class
 
-Task #6 of `Development/CONDITIONED_METATHEORY_PLAN.md` — redesign (b). The
-Gate-G1 kill-test (`Reunification_Peel_Obstruction.lean`) showed the *naive*
-reunification (re-run the `join_lemma3_of_cd_feasible` induction with
-`JoinLemma3F`'s full-closure hypotheses) is dead: no single-event, and no
-set-shaped block, peel preserves full causal closure. Redesign (b) widens the
-induction class to `AlmostClosed` = "fully closed minus a `loOn(U)`-upward-closed
-peel set" (`JoinLemma3C.lean`, §6). This file carries redesign (b) through the
-*state side* and reports the verdict.
+The *naive* reunification (re-run the `join_lemma3_of_cd_feasible` induction
+with `JoinLemma3F`'s full-closure hypotheses) does not go through: no
+single-event, and no set-shaped block, peel preserves full causal closure
+(`Reunification_Peel_Obstruction.lean`). This file widens the induction class
+to `AlmostClosed` = "fully closed minus a `loOn(U)`-upward-closed peel set"
+(`JoinLemma3C.lean`, §6) and carries it through the *state side*.
 
 ## What is settled here (0 sorries in everything kept)
 
 1. **`JoinLemma3A := JoinLemma3C D AlmostClosed`** and the reunification bridge
    `joinLemma3F_of_joinLemma3A` (near-definitional, via `JoinLemma3C.anti` and
-   `almostClosed_of_fullClosure`). Deliverable 1.
+   `almostClosed_of_fullClosure`).
 
 2. **`AlmostClosed` is a strengthening of weak closure**
    (`weakClosure_of_almostClosed`): every `AlmostClosed` set is
    `weakClosure`-closed, because a vis-non-commuting edge *is* a `loOn(U)`-edge
    (`loOn_of_vis_noncomm`), and the peel set is `loOn(U)`-upward-closed. Two
    consequences pin the VC verdict:
-   * `joinLemma3A_of_joinLemma3` — `JoinLemma3A` follows *for free* from
-     `JoinLemma3` with the **existing weak VCs**. So restricting the sides to
-     `AlmostClosed` adds nothing on its own; the reunification cannot help
-     EWFlag by this route unless the *VCs are weakened*.
-   * `cdVC3A_of_cdVC3` / `feasibleDeltaVCs3A_of_feasibleDeltaVCs3` — the
+   * `joinLemma3A_of_joinLemma3`: `JoinLemma3A` follows *for free* from
+     `JoinLemma3` with the **weak VCs**. So restricting the sides to
+     `AlmostClosed` adds nothing on its own; the reunification can help
+     EWFlag only if the *VCs are weakened*.
+   * `cdVC3A_of_cdVC3` / `feasibleDeltaVCs3A_of_feasibleDeltaVCs3`: the
      `AlmostClosed`-restated VCs `CDVC3A` / `FeasibleDeltaVCs3A` are **weaker**
-     obligations (implied by the weak-closure VCs), so every existing discharge
+     obligations (implied by the weak-closure VCs), so every discharge
      is preserved; and an MRDT (EWFlag is the candidate) could satisfy the
      restated set without the weak one. This is the *only* way the restatement
      buys anything.
 
-3. **The two-sided peel step is realizable — over a *common* `U`.** The obstacle
+3. **The two-sided peel step is realizable, over a *common* `U`.** The obstacle
    to running the induction is not the peel: for two sides that share one fully
    closed `U` (`CommonU`), a `loOn(ev₁∪ev₂)`-maximal event peels off both sides
    and the union while keeping everyone in the class (`CommonU.peel`,
    `CommonU.peel_exists`), and the union and intersection are `AlmostClosed` with
    the same `U` (`almostClosed_union_common`, `almostClosed_inter_common`). The
-   mechanized crux: a `loOn(U)`-edge `e → b` with `b` in the (shrinking) union
+   crux: a `loOn(U)`-edge `e → b` with `b` in the (shrinking) union
    contradicts union-maximality via `loOn_mono` (union ⊆ U), and a `b ∈ U`
-   outside the union already lies in the peel set — `loOnUpClosed_insert_of_max`.
+   outside the union already lies in the peel set (`loOnUpClosed_insert_of_max`).
 
 ## THE OBSTRUCTION (why the induction does NOT close generically)
 
-The induction needs the sides `AlmostClosed`, and — to invoke `CDVC3A` at the
-whole union and to recurse — needs the union/intersection/peels to stay in the
+The induction needs the sides `AlmostClosed`, and, to invoke `CDVC3A` at the
+whole union and to recurse, needs the union/intersection/peels to stay in the
 class. §3 shows that all holds **iff the two sides share a common fully closed
-`U` with `loOn(U)`-upward-closed complements**. But that invariant is a *pincer*:
+`U` with `loOn(U)`-upward-closed complements**. That invariant is a *pincer*:
 
-* **(P0 — initialization) `JoinLemma3F`'s hypothesis cannot supply `CommonU`.**
+* **(P0, initialization) `JoinLemma3F`'s hypothesis cannot supply `CommonU`.**
   The Join Lemma's sides are only *individually* fully closed; there is in
   general no common `U` decomposing both as `U ∖ (loOn(U)-upclosed)`. Refuted on
-  the very kill-test (`killTest_no_common_U`): with `ev₁ = {A_y, R_x}`,
+  the kill-test (`killTest_no_common_U`): with `ev₁ = {A_y, R_x}`,
   `ev₂ = {A_x, R_y}` (both fully closed, union `= peelU` fully closed), the only
   candidate `U = peelU` forces `S₂ = {A_y, R_x}`, which is **not**
-  `loOn(peelU)`-upward-closed — the surviving cross-side rc-edge
+  `loOn(peelU)`-upward-closed: the surviving cross-side rc-edge
   `R_x →loOn A_x` (`rc_edge_survives_x`) leaves `S₂`. Concurrent rc-edges
   between the two versions' exclusive events are exactly what full closure does
   *not* control. So the induction cannot be *started* from `JoinLemma3F`.
 
-* **(P0' — independent witnesses don't compose) `JoinLemma3A` (independent
+* **(P0', independent witnesses don't compose) `JoinLemma3A` (independent
   `AlmostClosed` witnesses per side) is initializable but its peel does not
   compose.** With per-side witnesses `(U₁,S₁) ≠ (U₂,S₂)`, `AlmostClosed.peel`
   needs `loOn(evᵢ)`-maximality of the peeled `e`, whereas the union peel only
   gives `loOn(ev₁∪ev₂)`-maximality; the two do not agree (an rc-edge
   `e → x ∈ evᵢ` can gain an absorber in `ev_j ∖ Uᵢ`, so it is `loOn(Uᵢ)` but not
-  `loOn(union)`). Documented in `§4`; this is the independent-witness analogue of
-  the common-`U` `loOnUpClosed_insert_of_max` step, which has no proof.
+  `loOn(union)`). This is the independent-witness analogue of the common-`U`
+  `loOnUpClosed_insert_of_max` step, and has no proof.
 
-* **(P5 — the downset side) the CD `B`-argument's set is only weakly closed.**
+* **(P5, the downset side) the CD `B`-argument's set is only weakly closed.**
   Even granting `CommonU`, `side_decompositionF` (`Adequacy.lean`) recurses with
   the principal downset `↓e = downset C e` as one side. `downset` is built from
-  `visNC` (vis-**non-commuting**) transitive predecessors — it is `weakClosure`-
+  `visNC` (vis-**non-commuting**) transitive predecessors: it is `weakClosure`-
   closed (`downset_closed`) but **not** fully closed, hence not `AlmostClosed`
   with the ambient `U` (its complement `U ∖ ↓e` is not `loOn(U)`-upward-closed:
   an rc-edge into `↓e` need not have its source in `↓e`). So the inner recursion
-  of the state-side decomposition leaves the class. The natural repair —
-  redefine the CD `B`-argument over the **full-closure** downset `↓⁺e` (all
-  vis-predecessors) — changes `CDVC3A`'s content and is left as a design note.
+  of the state-side decomposition leaves the class. The natural repair
+  redefines the CD `B`-argument over the **full-closure** downset `↓⁺e` (all
+  vis-predecessors), which changes `CDVC3A`'s content.
 
-**Verdict.** Route (b)'s order theory is healthy *within* a common `U`
+**Verdict.** The order theory is healthy *within* a common `U`
 (mechanized here and in `JoinLemma3C.lean` §6), but the class is caught between
 initialization (P0/P0') and the downset (P5). `joinLemma3A_of_cd_feasible` is
-therefore **not** provided (it cannot be closed as a generic theorem, and the
-task forbids sorried theorems / forced weaker ones); the exact stuck steps are
-the two named preservation facts that have no proof —
+therefore **not** provided: it cannot be closed as a generic theorem. The exact
+stuck steps are the two named preservation facts that have no proof,
 `loOnUpClosed_insert` for independent witnesses (P0') and "downset is
-`AlmostClosed`" (P5) — recorded as commented goal-states in §4. This sends
-reunification back to design: either strengthen the Join hypothesis to carry
-`CommonU` as data (and re-found the downset over `↓⁺e`), or take route (c) (the
-disjunctive contract), which needs no new mathematics
-(`JoinLemma3C` already unifies the two statements).
+`AlmostClosed`" (P5), given as commented goal-states in §4. Two repairs remain
+open: strengthen the Join hypothesis to carry `CommonU` as data (and re-found
+the downset over `↓⁺e`), or take the disjunctive contract, which needs no new
+mathematics (`JoinLemma3C` already unifies the two statements).
 
 The unconditional tier is intact: the Counter (group class) satisfies the
 restated VC set unconditionally (`Counter_cdVC3A`, `Counter_feasibleDeltaVCs3A`).
@@ -130,12 +126,12 @@ end StrengthLadder
 section JoinLemmaA
 variable {D : ConditionedMRDTSig}
 
-/-- **The `AlmostClosed`-sided ternary Join Lemma** — `JoinLemma3C` at the
+/-- **The `AlmostClosed`-sided ternary Join Lemma**: `JoinLemma3C` at the
 `AlmostClosed` index. Its restriction to fully closed sides is `JoinLemma3F`. -/
 def JoinLemma3A (D : ConditionedMRDTSig) : Prop :=
   JoinLemma3C D (AlmostClosed (D := D.toCRDTSig))
 
-/-- **Deliverable 1 — the reunification bridge.** `JoinLemma3A` restricted to
+/-- **The reunification bridge.** `JoinLemma3A` restricted to
 fully closed sides *is* `JoinLemma3F`: near-definitional, `JoinLemma3C.anti`
 against `almostClosed_of_fullClosure`. -/
 theorem joinLemma3F_of_joinLemma3A (h : JoinLemma3A D) : JoinLemma3F D :=
@@ -144,13 +140,13 @@ theorem joinLemma3F_of_joinLemma3A (h : JoinLemma3A D) : JoinLemma3F D :=
 
 /-- **VC verdict, half one.** `JoinLemma3A` follows *for free* from the ordinary
 weak-closure `JoinLemma3` (`JoinLemma3C.anti` against `weakClosure_of_almostClosed`).
-So merely restricting the sides to `AlmostClosed` buys nothing over the existing
-weak route — the reunification can help EWFlag only if the *VCs* are weakened. -/
+So merely restricting the sides to `AlmostClosed` buys nothing over the weak-closure
+route, the reunification can help EWFlag only if the *VCs* are weakened. -/
 theorem joinLemma3A_of_joinLemma3 (h : JoinLemma3 D) : JoinLemma3A D :=
   JoinLemma3C.anti (fun _ _ h_ac => weakClosure_of_almostClosed h_ac)
     ((joinLemma3C_weak D).mpr h)
 
-/-- **`CDVC3A`** — `CDVC3` with the weak-closure hypothesis on `U` replaced by
+/-- **`CDVC3A`**: `CDVC3` with the weak-closure hypothesis on `U` replaced by
 `AlmostClosed C U`. A strictly weaker obligation. -/
 def CDVC3A (D : ConditionedMRDTSig) : Prop :=
   ∀ (C : Sal.Emulation.Configuration D.toCRDTSig) (U : Set (Op D.AppOp))
@@ -165,7 +161,7 @@ def CDVC3A (D : ConditionedMRDTSig) : Prop :=
     IsCanonicalState C (downset C e \ {e}) B →
     D.mergeL B A (D.update B e) = D.update A e
 
-/-- **`FeasibleDeltaVCs3A`** — `FeasibleDeltaVCs3` with the two side-closure
+/-- **`FeasibleDeltaVCs3A`**: `FeasibleDeltaVCs3` with the two side-closure
 hypotheses replaced by `AlmostClosed`. (The unit law `feasible_init` carries no
 closure hypothesis and is copied verbatim.) -/
 structure FeasibleDeltaVCs3A (D : ConditionedMRDTSig) : Prop where
@@ -207,7 +203,7 @@ structure FeasibleDeltaVCs3A (D : ConditionedMRDTSig) : Prop where
           (D.mergeL B t₂ (D.update B e))
         = D.mergeL B (D.mergeL t₀ t₁ t₂) (D.update B e)
 
-/-- **VC verdict, half two — the restated VCs are weaker (discharges preserved).**
+/-- **VC verdict, half two: the restated VCs are weaker (discharges preserved).**
 `CDVC3 ⇒ CDVC3A`: the `AlmostClosed U` hypothesis is downgraded to `weakClosure`
 before applying `CDVC3`. -/
 theorem cdVC3A_of_cdVC3 (h : CDVC3 D) : CDVC3A D := by
@@ -238,10 +234,10 @@ end JoinLemmaA
 
 The induction consumes `AlmostClosed` of the sides, of their union (for
 `CDVC3A`), of their intersection (for the LCA side of `side_decomposition`), and
-of the peels (to recurse). All four hold — and the two-sided peel of a
-`loOn(union)`-maximal event stays in the class — **provided both sides share one
+of the peels (to recurse). All four hold, and the two-sided peel of a
+`loOn(union)`-maximal event stays in the class, **provided both sides share one
 fully closed `U`**. This section proves exactly that; §4 shows the shared-`U`
-hypothesis is the residual obligation route (b) cannot discharge. -/
+hypothesis is the residual obligation that cannot be discharged. -/
 
 section CommonU
 variable {D : CRDTSig}
@@ -366,9 +362,10 @@ theorem CommonU.almostClosed_inter {C : Sal.Emulation.Configuration D}
   obtain ⟨U, S₁, S₂, h_cl, h_s1, h_s2, h_up1, h_up2, rfl, rfl⟩ := h
   exact almostClosed_inter_common h_cl h_s1 h_s2 h_up1 h_up2
 
-/-- **The two-sided peel exists and preserves the class** — the common-`U`
+/-- **The two-sided peel exists and preserves the class**: the common-`U`
 analogue of `almostClosed_peel_exists`, and the full peel step the induction
-would take at each level. No analogue of the Gate-G1 obstruction blocks it. -/
+would take at each level. No analogue of the full-closure peel obstruction
+blocks it. -/
 theorem CommonU.peel_exists (hU : UpdateVCs D)
     {C : Sal.Emulation.Configuration D}
     (h_tr : ∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c)
@@ -400,12 +397,12 @@ theorem killEv₁_union_killEv₂ : killEv₁ ∪ killEv₂ = peelU := by
   ext x; simp only [killEv₁, killEv₂, peelU, Set.mem_union, Set.mem_insert_iff,
     Set.mem_singleton_iff]; tauto
 
-/-- **(P0) — fully closed sides do NOT admit a common `U`.** For any fully
+/-- **(P0): fully closed sides do NOT admit a common `U`.** For any fully
 closed `U ⊆ peelU` decomposing `killEv₁ = U ∖ S₁` and `killEv₂ = U ∖ S₂` with
 `loOn(U)`-upward-closed peels, the surviving rc-edge `R_x →loOn A_x`
 (`rc_edge_survives_x`) forces `A_x ∈ S₂`, contradicting `A_x ∈ killEv₂ = U ∖ S₂`.
 So `CommonU`, the invariant the induction needs, cannot be initialized from the
-`JoinLemma3F` hypothesis — route (b)'s pincer. -/
+`JoinLemma3F` hypothesis: the pincer. -/
 theorem killTest_no_common_U :
     ¬ ∃ (U S₁ S₂ : Set (Op K2.AppOp)),
         fullClosure K2 peelConfig U ∧ U ⊆ peelU ∧
@@ -435,7 +432,7 @@ theorem killTest_no_common_U :
     loOn_mono hUsub rc_edge_survives_x
   exact hAxnS₂ (hup2 eRx hRxS₂ eAx hAxU hedge)
 
-/-! ### The two documented stuck steps (P0', P5) — goal-states, not sorries
+/-! ### The two stuck steps (P0', P5): goal-states, not sorries
 
 **(P0') Independent-witness peel.** For `JoinLemma3A` with *per-side* witnesses,
 the peel step would need, at a side `evᵢ = Uᵢ ∖ Sᵢ` and a `loOn(ev₁∪ev₂)`-maximal
@@ -449,7 +446,7 @@ common-`U` proof (`loOnUpClosed_insert_of_max`) discharges this from
 a `loOn(U)`-edge into a `loOn(union)`-edge. With `Uᵢ ≠ U` the two `loOn`
 relations are incomparable: an rc-edge `e → b` (`b ∈ evᵢ`) can acquire an
 absorber in `ev_j ∖ Uᵢ`, making it `loOn(Uᵢ)` but not `loOn(union)`, so
-union-maximality does not exclude it. No proof — and no repair short of forcing a
+union-maximality does not exclude it. No proof, and no repair short of forcing a
 common `U`, which P0 shows is unavailable.
 
 **(P5) The downset side.** `side_decompositionF` recurses (`Adequacy.lean:938`)
@@ -464,20 +461,20 @@ vis-predecessors, so it is `weakClosure`-closed but not fully closed, and
 `U ∖ ↓e` is not `loOn(U)`-upward-closed (an rc-edge into `↓e` need not originate
 in `↓e`). No proof. The natural repair redefines the CD `B`-argument over the
 **full** downset `↓⁺e = {x | x = e ∨ TransGen C.vis x e}`, which *is* fully
-closed — but that changes `CDVC3A`'s statement (a different `B`), a design step
+closed, but that changes `CDVC3A`'s statement (a different `B`), a change
 outside this file.
 
-Because P0' (or, with a common `U`, P0) and P5 both lack proofs and the task
-forbids sorried theorems, `joinLemma3A_of_cd_feasible : CoreVCs3CD →
+Because P0' (or, with a common `U`, P0) and P5 both lack proofs,
+`joinLemma3A_of_cd_feasible : CoreVCs3CD →
 FeasibleDeltaVCs3A → CDVC3A → JoinLemma3A` is **not** stated. Everything the
 induction would consume *except* these two facts is mechanized above. -/
 
-/-! ## §5. Sanity anchor — the counter satisfies the restated VCs unconditionally
+/-! ## §5. Sanity anchor: the counter satisfies the restated VCs unconditionally
 
-Route (b) must not lose the unconditional tier. The Counter (group class,
+The unconditional tier must survive the restatement. The Counter (group class,
 `mergeL l a b = a + b − l`, all ops commute) satisfies `CDVC3A` and
 `FeasibleDeltaVCs3A` with no side conditions, via the collapse lemmas from its
-existing `CDVC3` / `FeasibleDeltaVCs3`. -/
+`CDVC3` / `FeasibleDeltaVCs3`. -/
 
 /-- The Counter's slim core (needed alongside the VCs by any `join_*_of_cd`). -/
 theorem Counter_coreVCs3CD_anchor : CoreVCs3CD Counter := Counter_coreVCs3.toCD

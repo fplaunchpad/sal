@@ -2,19 +2,19 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed
 
 /-!
 # Peritext — the DOCUMENT-ORDER mark read model, and the leak the tree-ancestry
-read hides (task #55, Lean phase)
+read hides
 
 Companion design + validation: `whiteboard/peritext-read-model-note.md` (§8 gives
 the exact theorem statements) and the executable reference
 `whiteboard/litmus/peritext_read_model.py` (passes end to end).
 
-The `Peritext_Composed/` frozen-path read once carried a `mark_*_no_leak`
-theorem asserting formatting never leaks under deletion.  It was FALSE and is
-retracted (`Peritext_Composed/MarkIntent.lean` now carries only the honest
-containment bound `mark_*_within_recorded_ancestry`).  The cause: the
-frozen-path `resolve` climbs TREE ancestry, and a tree ancestor sits EARLIER in
-reading order than its descendants, so a dead boundary anchor migrates BACKWARD
-in the document and formats text that was never in the span.
+A `mark_*_no_leak` theorem asserting formatting never leaks under deletion is
+false for the `Peritext_Composed/` frozen-path read (`Peritext_Composed/MarkIntent.lean`
+states the honest containment bound `mark_*_within_recorded_ancestry` in its
+place). The cause: the frozen-path `resolve` climbs TREE ancestry, and a tree
+ancestor sits EARLIER in reading order than its descendants, so a dead
+boundary anchor migrates BACKWARD in the document and formats text that was
+never in the span.
 
 This file builds the paper-faithful alternative — a DOCUMENT-ORDER read model —
 directly on the embed-RGA reading order, validates it on the Litt et al.
@@ -334,7 +334,7 @@ theorem ex3_doc : renderMarksDoc dEx3 [mEx3] MType.bold = [(100, false)] := by n
 
 /-- The LEAK COMPANION: the tree-ancestry control climbs both boundaries to the
 dead root, so the span becomes the whole document and the brand-new `d` renders
-bold.  This is the retracted read formatting fresh text. -/
+bold.  This is the tree-ancestry read formatting fresh text. -/
 theorem ex3_tree : renderMarksTree dEx3 [mEx3] MType.bold = [(100, true)] := by native_decide
 
 theorem ex3_doc_ne_tree :
@@ -401,14 +401,14 @@ theorem ex8_link_ne_bold :
 
 end SPOT
 
-/-! ## §8  The retracted no-leak claim, made concrete and refuted
+/-! ## §8  The no-leak claim, made concrete and refuted
 
 Chain `W, A, B, C` (reading order = id order), `bold[A, B]` with
 `startSide=before, endSide=after`, delete the start anchor `A`.  Document-order
 rehomes the start to the nearest surviving neighbour to the right (`B`), so
 `bold = {B}` and `W` stays plain.  Tree-ancestry climbs `A`'s path to its parent
 `W` (earlier in reading order), so `bold = {W, B}` — `W`, never in the span, is
-formatted.  This is the retracted `mark_*_no_leak` error, concretely. -/
+formatted.  This is the `mark_*_no_leak` error, concretely. -/
 
 namespace LEAK
 
@@ -451,9 +451,9 @@ theorem markCoversPos_before (d : DocD) (m : MarkD) (f k : ℕ)
 
 /-- **`doc_no_backward_leak` (general).**  Every character positioned strictly
 before a mark's rehomed start (live index `< f`) carries no activation of that
-mark, in reading order — the paper-faithful guarantee that REPLACES the
-retracted `mark_*_no_leak`.  Shaped like `render_span_before`
-(`Peritext_Rehoming/Peritext_Read.lean`), now with the boundary a rehomed live
+mark, in reading order — the paper-faithful guarantee that replaces
+`mark_*_no_leak`, refuted above.  Shaped like `render_span_before`
+(`Peritext_Rehoming/Peritext_Read.lean`), with the boundary a rehomed live
 position rather than a boundary node. -/
 theorem doc_no_backward_leak (d : DocD) (m : MarkD) (mt : MType) (f k : ℕ)
     (hf : startIncl d m = some f) (hk : k < f) :

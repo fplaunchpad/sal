@@ -2,8 +2,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Sig
 
 /-! # Shesha — event-level facts feeding the join hook
 
-The bridge between the framework hypotheses of the join hook (now
-`shesha_join_at_effC`)
+The bridge between the framework hypotheses of the join hook
+(`shesha_join_at_effC`)
 (honesty, `loOn`-respect, effectiveness, closure) and the datatype-level
 effective-fold theory (`Shesha_EffFold.lean`):
 

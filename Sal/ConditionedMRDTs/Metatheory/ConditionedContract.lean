@@ -1,43 +1,37 @@
 import Sal.ConditionedMRDTs.Metatheory.JoinLemma3C
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 /-!
-# The conditioned contract spine (route (c), the closure-indexed disjunctive contract)
+# The conditioned contract spine (the closure-indexed disjunctive contract)
 
-Task #8 of `Development/CONDITIONED_METATHEORY_PLAN.md`. This file BUILDS the
-framework spine the OQ3/OQ4 investigation converged on — the "no new
-mathematics" route (c) of the plan's Net verdict: one adequacy bridge indexed
-by a closure predicate `𝒞`, one contract bundle, and the two production
-corners recovered as instances through it. It uses only what is already
-verified (`JoinLemma3C.lean`, `Adequacy.lean`, `MRDT_Instances.lean`) — no new
-induction, no new counterexample.
+The framework spine: one adequacy bridge indexed by a closure predicate `𝒞`,
+one contract bundle, and two production corners recovered as instances through
+it. It builds on `JoinLemma3C.lean`, `Adequacy.lean`, and `MRDT_Instances.lean`.
 
-## The one insight, stated precisely
+## The closure side-condition
 
 `GoodConfig3.ver_causal` (`Adequacy.lean:56`) says every allocated store
 version's event set is **fully causally closed**: `∀ a b, vis a b → b ∈ E →
-a ∈ E`, i.e. `fullClosure (core C) E`. Full closure is the STRONGEST closure in
+a ∈ E`, i.e. `fullClosure (core C) E`. Full closure is the strongest closure in
 the ladder (`weakClosure_of_fullClosure`, `JoinLemma3C.lean:123`). Therefore a
-closure-indexed Join Lemma `JoinLemma3C D 𝒞` can be fed store versions **for
-any `𝒞` that full closure implies** — because the sides arrive fully closed,
-they are automatically `𝒞`-closed whenever `fullClosure ⟹ 𝒞`.
+closure-indexed Join Lemma `JoinLemma3C D 𝒞` can be fed store versions for any
+`𝒞` that full closure implies: the sides arrive fully closed, so they are
+automatically `𝒞`-closed whenever `fullClosure ⟹ 𝒞`.
 
-That side-condition — `𝒞` is *no stronger than* full closure — is the honest,
-necessary form of the plan's "applies regardless of `𝒞`". It is NOT vacuous
-sloppiness: a `𝒞` strictly *stronger* than full closure would make
-`JoinLemma3C D 𝒞` (antitone in `𝒞`, `JoinLemma3C.anti`) too weak a hypothesis
-to be adequate, and the bridge would — correctly — fail to apply. Both indices
-of interest sit at or below full closure:
+That side-condition (`𝒞` is no stronger than full closure) is necessary: a `𝒞`
+strictly stronger than full closure would make `JoinLemma3C D 𝒞` (antitone in
+`𝒞`, `JoinLemma3C.anti`) too weak a hypothesis to be adequate, and the bridge
+would fail to apply. Both indices of interest sit at or below full closure:
 
-* `weakClosure` — implied by full closure (`weakClosure_of_fullClosure`);
-* `fullClosure` — implied by itself.
+* `weakClosure`: implied by full closure (`weakClosure_of_fullClosure`);
+* `fullClosure`: implied by itself.
 
-So the caveat costs nothing at the two corners while pinning the exact class of
-`𝒞` the spine serves. The bridge is then literally
+So the side-condition costs nothing at the two corners while pinning the exact
+class of `𝒞` the spine serves. The bridge is
 `ra_linearizable3_of_joinF ∘ (strengthen 𝒞 to fullClosure via JoinLemma3C.anti)`.
 
 ## What is here
 
-1. **`ra_linearizable3_of_joinC`** — the unified closure-indexed adequacy
+1. **`ra_linearizable3_of_joinC`**: the unified closure-indexed adequacy
    bridge (`§1`). Given `𝒞`, a proof `fullClosure ⟹ 𝒞`, and `JoinLemma3C D 𝒞`,
    every reachable `GoodConfig3` configuration `IsRALinearizable3`. Both library
    bridges factor through it:
@@ -46,70 +40,68 @@ So the caveat costs nothing at the two corners while pinning the exact class of
      `JoinLemma3 → JoinLemma3C weakClosure` (`joinLemma3C_weak`);
    * `ra_linearizable3_of_joinF_viaC` recovers `Adequacy.ra_linearizable3_of_joinF`
      at `𝒞 := fullClosure`.
-   Both corollaries carry the VERBATIM signatures of the library bridges (diff
-   them against `Adequacy.lean:774` / `Adequacy.lean:1301`), so their compilation
-   is the machine-checked recovery. Note the weak corner is here reproved *through
-   full closure* — a genuine finding: `ra_linearizable3_of_join` never needed its
+   Both corollaries carry the signatures of the library bridges
+   (`Adequacy.lean:774` / `Adequacy.lean:1301`). The weak corner is recovered
+   *through full closure*: `ra_linearizable3_of_join` does not need its
    weak-closure `goodConfig3_merge`, because store versions are fully closed
    regardless.
 
-2. **`ConditionedContract`** — the contract bundle (`§2`): a `ConditionedMRDTSig`,
+2. **`ConditionedContract`**: the contract bundle (`§2`), a `ConditionedMRDTSig`,
    a declared index `𝒞`, the Join Lemma `JoinLemma3C D 𝒞`, the side-condition
    `closure_below_full : fullClosure ⟹ 𝒞`, and `inv_init : D.Inv D.init`.
    `ConditionedContract.adequate` discharges per-version RA-linearizability via
    `§1`. Two smart constructors realize the disjunctive dispatch:
-   * `ofVCs` — the update layer (`CoreVCs3CD`) + feasible delta laws
-     (`FeasibleDeltaVCs3`) + `CDVC3`, wired through the existing
+   * `ofVCs`: the update layer (`CoreVCs3CD`) + feasible delta laws
+     (`FeasibleDeltaVCs3`) + `CDVC3`, wired through
      `join_lemma3_of_cd_feasible` into `JoinLemma3 = JoinLemma3C weakClosure`;
-   * `ofJoinF` — a direct `JoinLemma3F = JoinLemma3C fullClosure` (EWFlag-style).
+   * `ofJoinF`: a direct `JoinLemma3F = JoinLemma3C fullClosure` (EWFlag-style).
 
 3. **Instances through the spine** (`§3`): the generic corners
-   (`adequate_ofVCs`, `adequate_ofJoinF`) and the two PRODUCTION recoveries —
+   (`adequate_ofVCs`, `adequate_ofJoinF`) and the two production recoveries,
    `ORSet_adequate_viaContract` (weak corner, reusing `ORSet_coreVCs3CD` /
    `ORSet_feasibleDeltaVCs3` / `ORSet_cdVC3`) and `EWFlag_adequate_viaContract`
    (full corner, reusing `EWFlag_joinLemma3F`). Neither re-proves the MRDT; each
-   routes its existing discharge through `ConditionedContract`.
+   routes its discharge through `ConditionedContract`.
 
 ## The two-axis class map (`𝒞` × `Inv`)
 
-The §8 class map of the note becomes a table indexed by closure strength `𝒞`
-(rows) and the state invariant `Inv` (columns). Every production MRDT verified
-today lives in the `Inv = ⊤` (flat) column:
+The class map is a table indexed by closure strength `𝒞` (rows) and the state
+invariant `Inv` (columns). Every production MRDT verified here lives in the
+`Inv = ⊤` (flat) column:
 
 ```
               Inv = ⊤ (flat)                              Inv nontrivial (conditioned)
   𝒞 = weak   Counter, G-Set, OR-Set, OR-Set-eff,         (empty)
              GOSet, GOMap, IOC, PN, RGA(M), Peritext          ↑
-  𝒞 = full   EWFlag                                       the DECLARED HOLE
-                                                          (RGA hosting, OQ4)
+  𝒞 = full   EWFlag                                       the declared hole
+                                                          (RGA hosting)
 ```
 
-* `𝒞 = weak, Inv = ⊤` — the set/register/list family: their VC bundles discharge
+* `𝒞 = weak, Inv = ⊤`: the set/register/list family. Their VC bundles discharge
   the weak-closure `JoinLemma3` (`ra_linearizable3_of_join` /
   `ra_linearizable_of_core_delta_cd3`). Contract via `ofVCs`.
-* `𝒞 = full, Inv = ⊤` — the Enable-wins flag: counter-comparison merges need full
+* `𝒞 = full, Inv = ⊤`: the Enable-wins flag. Counter-comparison merges need full
   causal closure, so it discharges `JoinLemma3F` directly. Contract via `ofJoinF`.
-* `Inv nontrivial` — **UNPOPULATED, and this is the declared hole (deliverable 4).**
+* `Inv nontrivial`: **unpopulated; the declared hole.**
 
-## The update-layer hole (deliverable 4 — honest status)
+## The update-layer hole
 
-This spine keeps the UNCONDITIONAL update layer (`CoreVCs3CD`, whose
-`UpdateVCs` demand `commutes`, not `commutesOn`) and merely PARAMETERIZES
-`Inv`/`applicable` through `ConditionedMRDTSig` for future RGA hosting. It does
-**not** re-found convergence over `commutesOn`. The plan's Gate G2 kernel-refuted
-the naive `commutes ↦ commutesOn` transcription
-(`G2_Transport_Probe.lean:G2_conditioned_convergence_refuted`) and the OQ4 fork
-(`G2_Applicability_Aware.lean`) established that the right feasibility notion is
-"applicable OR no-op at every prefix" (the refined OQ4) — neither of which is
-mechanized as a convergence layer yet.
+This spine keeps the unconditional update layer (`CoreVCs3CD`, whose
+`UpdateVCs` demand `commutes`, not `commutesOn`) and parameterizes
+`Inv`/`applicable` through `ConditionedMRDTSig` for RGA hosting. It does
+**not** re-found convergence over `commutesOn`. The naive `commutes ↦
+commutesOn` transcription is refuted
+(`G2_Transport_Probe.lean:G2_conditioned_convergence_refuted`); the right
+feasibility notion is "applicable OR no-op at every prefix"
+(`G2_Applicability_Aware.lean`), which is not mechanized as a convergence layer
+here.
 
 Consequently: the `Inv`-nontrivial column of the class map is empty, and no
-theorem in this file conditions its update layer. **The flat/EWFlag corners work
-today** (the two `*_adequate_viaContract` recoveries below are kernel-checked);
-**the genuinely-conditioned RGA corner awaits the update-layer piece** and is
-here a parameter slot, not a discharge. That is the load-bearing residual: route
-(c) delivers the *packaging* (a single adequacy bridge covering both closure
-strengths); it does not by itself re-found convergence for nontrivial `Inv`.
+theorem in this file conditions its update layer. The flat and EWFlag corners
+(the two `*_adequate_viaContract` recoveries) hold; the genuinely-conditioned
+RGA corner is here a parameter slot, not a discharge. The spine delivers the
+packaging (a single adequacy bridge covering both closure strengths); it does
+not by itself re-found convergence for nontrivial `Inv`.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -119,13 +111,13 @@ open Classical
 
 /-! ## §1. The unified closure-indexed adequacy bridge
 
-The spine of route (c). `JoinLemma3C.anti` strengthens the declared index `𝒞`
-up to `fullClosure` using the side-condition `fullClosure ⟹ 𝒞`, producing
-`JoinLemma3F` (definitionally, `joinLemma3C_full`); the existing full-closure
-bridge `ra_linearizable3_of_joinF` then finishes. No merge-preservation lemma is
-re-copied: the whole `GoodConfig3` induction is reused verbatim through
-`ra_linearizable3_of_joinF`, and the closure gap is bridged by antitonicity plus
-`GoodConfig3.ver_causal` (which `ra_linearizable3_of_joinF` already consumes). -/
+`JoinLemma3C.anti` strengthens the declared index `𝒞` up to `fullClosure` using
+the side-condition `fullClosure ⟹ 𝒞`, producing `JoinLemma3F` (definitionally,
+`joinLemma3C_full`); the full-closure bridge `ra_linearizable3_of_joinF` then
+finishes. No merge-preservation lemma is re-copied: the whole `GoodConfig3`
+induction is reused through `ra_linearizable3_of_joinF`, and the closure gap is
+bridged by antitonicity plus `GoodConfig3.ver_causal` (which
+`ra_linearizable3_of_joinF` already consumes). -/
 
 section Bridge
 variable {D : ConditionedMRDTSig}
@@ -135,9 +127,9 @@ closure implies (`h_full`), a data type providing `JoinLemma3C D 𝒞` makes eve
 reachable `GoodConfig3` configuration per-version RA-linearizable. The two
 library bridges are the `weakClosure` / `fullClosure` instances (below).
 
-`h_full` is the honest, necessary side-condition: store versions arrive fully
-closed (`GoodConfig3.ver_causal`), so the Join Lemma's `𝒞`-closed side premises
-are met exactly when `fullClosure ⟹ 𝒞`. -/
+`h_full` is the necessary side-condition: store versions arrive fully closed
+(`GoodConfig3.ver_causal`), so the Join Lemma's `𝒞`-closed side premises are met
+exactly when `fullClosure ⟹ 𝒞`. -/
 theorem ra_linearizable3_of_joinC (𝒞 : ClosurePred D.toCRDTSig)
     (h_full : ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
         (ev : Set (Op D.AppOp)),
@@ -155,10 +147,9 @@ theorem ra_linearizable3_of_joinC (𝒞 : ClosurePred D.toCRDTSig)
 /-- **Recovery of the weak bridge.** `Adequacy.ra_linearizable3_of_join`
 factors as `ra_linearizable3_of_joinC weakClosure` composed with the
 definitional `JoinLemma3 → JoinLemma3C weakClosure` (`joinLemma3C_weak`). The
-signature is verbatim identical to `Adequacy.lean:774`; that it compiles is the
-machine-checked factoring. (This reproves the weak bridge *through* full
-closure — the weak-closure `goodConfig3_merge` is not needed, because store
-versions are fully closed regardless.) -/
+signature matches `Adequacy.lean:774`. The weak bridge is recovered *through*
+full closure: the weak-closure `goodConfig3_merge` is not needed, because store
+versions are fully closed regardless. -/
 theorem ra_linearizable3_of_join_viaC (hJoin : JoinLemma3 D)
     {hInit : D.Inv D.init}
     (C : Configuration D)
@@ -169,8 +160,8 @@ theorem ra_linearizable3_of_join_viaC (hJoin : JoinLemma3 D)
     ((joinLemma3C_weak D).mpr hJoin) C hReach
 
 /-- **Recovery of the full bridge.** `Adequacy.ra_linearizable3_of_joinF`
-factors as `ra_linearizable3_of_joinC fullClosure`. Signature verbatim identical
-to `Adequacy.lean:1301`. -/
+factors as `ra_linearizable3_of_joinC fullClosure`. Signature matches
+`Adequacy.lean:1301`. -/
 theorem ra_linearizable3_of_joinF_viaC (hJoin : JoinLemma3F D)
     {hInit : D.Inv D.init}
     (C : Configuration D)
@@ -184,11 +175,11 @@ end Bridge
 
 /-! ## §2. The contract bundle
 
-`ConditionedContract` is the disjunctive contract of route (c) as a first-class
-structure: the data type, its declared closure index, the join lemma at that
-index, the `fullClosure ⟹ 𝒞` side-condition the spine needs, and the initial
-invariant. `adequate` is `§1` applied to the fields. The two smart constructors
-`ofVCs` / `ofJoinF` are the two dispatch arms. -/
+`ConditionedContract` is the disjunctive contract as a first-class structure:
+the data type, its declared closure index, the join lemma at that index, the
+`fullClosure ⟹ 𝒞` side-condition the spine needs, and the initial invariant.
+`adequate` is `§1` applied to the fields. The two smart constructors `ofVCs` /
+`ofJoinF` are the two dispatch arms. -/
 
 /-- The closure-indexed disjunctive contract. A data type is `adequate` (every
 reachable configuration per-version RA-linearizable) as soon as it supplies a

@@ -1,7 +1,7 @@
 import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 
 /-!
-# The sided chain-lex kernel — two-sidedness as a parameter (task #83)
+# The sided chain-lex kernel: two-sidedness as a parameter
 
 Design: `whiteboard/sided-embed-design-note.md`; Python validation:
 `whiteboard/litmus/embed_sided.py` (battery clean, L19 flips under the

@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Stability_Bridge
 
 /-!
-# AnchorsFactorBeyond discharged — the stable-prefix geometry of honest mints (#97 stage 1)
+# AnchorsFactorBeyond discharged — the stable-prefix geometry of honest mints
 
 `EmbedRGA_Stability_Bridge.lean` left one named residue: `AnchorsFactorBeyond`,
 the claim that every op minted with a settled cut in its causal past carries an
@@ -20,7 +20,7 @@ chain-aligned mints (`ChainMintBeyond`) satisfies `AnchorsFactorBeyond`
 (`anchorsFactorBeyond_of_anchored`), and the bridge is restated without the
 residue (`eRecode_settled_bridge_honest`).
 
-**Erratum notes (deltas against the statement as left).**
+**Remarks (hypotheses and scope).**
 * The residue is *not* dischargeable from bare honest reachability
   (`EReach`/`EHonest` alone): `chain_gen` constrains the minted coordinate,
   not the carried split. Countermodel: unary code, `ins e 1^{t-1} (t-1)` at
@@ -33,12 +33,13 @@ residue (`eRecode_settled_bridge_honest`).
   — the `MintAt` guard needs no special case.
 * Per the runtime twin's erratum (id-addressed cuts break after epoch one:
   renumbered coordinates no longer telescope to event ids), the cut-side data
-  in stage 2 are addressed by *coordinates/chains*, never by ids resolved
-  through prefix sums; the id-arithmetic in this file (`sum` fields,
-  `causal_mono` freshness) is used only *inside* the honest epoch-zero
-  configuration. **Scope: the single-epoch statement** — one compaction applied
-  at a settled cut of an honest configuration; re-basing honesty for later
-  epochs remains with the deferred protocol half (recoding note §6).
+  in the concrete compaction construction are addressed by
+  *coordinates/chains*, never by ids resolved through prefix sums; the
+  id-arithmetic in this file (`sum` fields, `causal_mono` freshness) is used
+  only *inside* the honest epoch-zero configuration. **Scope: the
+  single-epoch statement** — one compaction applied at a settled cut of an
+  honest configuration; re-basing honesty for later epochs remains open,
+  addressed by the protocol construction in `EmbedRGA_Recoding.lean` §6.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -253,8 +254,8 @@ theorem eAnchored_exists {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 
 /-- **Ancestor realization**: every node of an honest insert's chain is minted
 by an actual insert event of the configuration (strong induction along the
-anchor recursion). This is what lets stage 2 classify every coordinate
-occurrence by the epoch of its minting event. -/
+anchor recursion). This is what lets the concrete compaction construction
+classify every coordinate occurrence by the epoch of its minting event. -/
 theorem EAnchored.realize {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     {chainOf : ℕ → List ℕ} (hA : EAnchored Γ C chainOf) :
     ∀ o, o ∈ C.events → eIsIns o = true → ∀ p d, (p ++ [d]) <+: chainOf o.1 →
@@ -301,8 +302,8 @@ theorem EAnchored.realize {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 /-! ## §4 The residue, discharged
 
 `AnchorsFactorBeyond` reduces to a containment: the bundle's `MintAt` must
-contain the *canonical chain-aligned mints beyond the cut*. For the stage-2
-construction this containment is definitional. -/
+contain the *canonical chain-aligned mints beyond the cut*. For the concrete
+verified compaction construction this containment is definitional. -/
 
 /-- The canonical mint predicate at a cut `S`: `(π, δ)` is minted beyond the
 cut by an actual event, `π` a positive chain's coordinate and `δ` its one new
@@ -314,9 +315,9 @@ def ChainMintBeyond (Γ : OrderedPrefixCode) (C : Configuration (E Γ α))
     ∃ o, o ∈ C.events ∧ eIsIns o = true ∧ (∀ a ∈ S, C.vis a o) ∧
       chainOf o.1 = chA ++ [δ]
 
-/-- **The stage-1 lemma: `AnchorsFactorBeyond` holds** for every bundle whose
-`MintAt` contains the canonical chain-aligned mints — the bridge's named
-residue is a theorem of the anchored geometry, not an extra hypothesis. -/
+/-- **`AnchorsFactorBeyond` holds** for every bundle whose `MintAt` contains
+the canonical chain-aligned mints — the bridge's named residue is a theorem
+of the anchored geometry, not an extra hypothesis. -/
 theorem anchorsFactorBeyond_of_anchored {Γ : OrderedPrefixCode}
     {C : Configuration (E Γ α)} {chainOf : ℕ → List ℕ}
     (hA : EAnchored Γ C chainOf) (F : StablePrefixMap Γ)

@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_SeqSpec
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_ReadEquiv
 
 /-!
-# The tombstoned RGA, sequentially = the naive text buffer (task #80)
+# The tombstoned RGA, sequentially = the naive text buffer
 
 The corollary that closes tier 3: composing sequential soundness
 (`embed_seq_sound`) with the compaction machinery gives the published
@@ -17,8 +17,10 @@ core's `BirthEnv` directly (the sequential mirror of
 sequential chain lemma and pinned by unique decodability.
 
 Standalone build target (imports the tombstoned RGA model through the
-read-equivalence file — the umbrella cannot reach it; see the note
-there). Build:
+read-equivalence file — the top-level names of the published tombstoned RGA
+model collide with the rehoming RGA model the umbrella file
+`MRDT_Instances.lean` already reaches, so the umbrella cannot reach this
+file). Build:
 `lake build Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_SeqSpec_RGA`.
 -/
 

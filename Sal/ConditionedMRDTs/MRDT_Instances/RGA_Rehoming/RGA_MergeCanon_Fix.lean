@@ -1,13 +1,11 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon
 
 /-!
-# Merge-canon correction — the birth-anchor 0-or-survivor premise, weakened and DERIVED
-
-*Additive; modifies no existing file; 0 `sorry`.*
+# Merge canon: the birth-anchor 0-or-survivor premise, weakened and derived
 
 `canonMatch_merge_of_inputs` carries the per-survivor premise `hbwsurv : birthAnc = 0 ∨ survivors
-birthAnc` — which is FALSE in general (criss-cross rehoming: node 7's birth anchor is the LCA node
-2, deleted in the other branch, hence dead in the merge; see `AgentNotes.md`).  Inspection of
+birthAnc`, which is FALSE in general (criss-cross rehoming: node 7's birth anchor is the LCA node
+2, deleted in the other branch, hence dead in the merge). Inspection of
 `merge_anc_clause` shows the premise fires ONLY in the `¬ contains σ₀' bw` branch (the climb
 fixpoint) — and THERE it is derivable: a birth anchor read off a branch-final state is live at that
 branch (`wf`), so a non-LCA birth anchor is a branch-born survivor (`da ∖ dl ⊆ I`), and an LCA-read
@@ -15,8 +13,8 @@ birth anchor under `¬ contains σ₀'` is the root (`Hstay`).
 
 * `merge_anc_clause'` — the anchor clause with the CONDITIONAL premise.
 * `bwsurv_of_wf` — the derivation of that premise from the branch `wf` facts.
-* `canonMatch_merge_of_inputs'` — the corrected glue: the bridge bundle needs ONLY
-  `CanonBirthBridge` per survivor; the 0-or-survivor conjunct is GONE (derived). -/
+* `canonMatch_merge_of_inputs'` — the merge glue whose bridge bundle needs ONLY
+  `CanonBirthBridge` per survivor; the 0-or-survivor conjunct is derived, not required. -/
 
 set_option maxHeartbeats 1000000
 set_option linter.unusedSectionVars false
@@ -100,8 +98,8 @@ theorem bwsurv_of_wf (σ₀' σ₁' σ₂' : concrete_st α) (t : ℕ)
       · exact Or.inl h
       · exact Or.inr (survivors_of_branch σ₀' σ₁' σ₂' _ hnl (Or.inr h))
 
-/-- **The corrected merge glue.**  As `canonMatch_merge_of_inputs`, with the birth-anchor
-0-or-survivor conjunct REMOVED from the bridge bundle (it is derived from the branch `wf` facts),
+/-- **The merge glue.**  As `canonMatch_merge_of_inputs`, but the birth-anchor
+0-or-survivor conjunct is dropped from the bridge bundle (it is derived from the branch `wf` facts),
 so the per-survivor leaf is `CanonBirthBridge` alone. -/
 theorem canonMatch_merge_of_inputs'
     (σ₀' σ₁' σ₂' : concrete_st α) (ρ₀ π₀ ρ₁ ρ₂ : List (op_t α))

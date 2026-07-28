@@ -2,10 +2,10 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# OR-Set — flat VC discharge and the conditioned capstone
+# OR-Set: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production OR-Set as a `ConditionedMRDTSig`, its RA-linearizability VC
+discharge, and the conditioned capstone over the generic framework.
 -/
 
 set_option maxHeartbeats 1000000
@@ -30,8 +30,8 @@ def orUpdate (s : (ℕ × ℕ) → Bool) (o : Op ORSetOp) : (ℕ × ℕ) → Boo
   | .add e => fun t => s t || decide (t = (o.1, e))
   | .rem e => fun t => s t && !(decide (t.2 = e))
 
-/-- Production three-way merge: `(l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)` — the
-T8.6 shape, on tagged elements. -/
+/-- Production three-way merge `(l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)`, on tagged
+elements. -/
 def orMergeL (l a b : (ℕ × ℕ) → Bool) : (ℕ × ℕ) → Bool :=
   fun t => (l t && (a t && b t)) || ((a t && !(l t)) || (b t && !(l t)))
 
@@ -893,8 +893,8 @@ theorem ORSet_joinLemma3 : JoinLemma3 ORSet :=
     ORSet_cdVC3
 
 open LabeledTS in
-/-- **End-to-end RA-linearizability for the production OR-Set** — the first
-LCA-sensitive, non-commuting real MRDT through the metatheory. -/
+/-- **End-to-end RA-linearizability for the production OR-Set**, an
+LCA-sensitive, non-commuting MRDT. -/
 theorem ORSet_ra_linearizable3
     (C : Configuration ORSet)
     (hReach : (labeledTS3 ORSet).ReachableFrom
@@ -931,11 +931,10 @@ end
 
 /-! ## Adequacy through the contract spine -/
 
-/-- **(weak, ⊤) corner recovered — the production OR-Set.** Its `Inv`/`applicable`
-are `⊤` and its discharge is the set-shaped VC bundle, so its contract sits at
-`𝒞 = weakClosure`. Adequacy is recovered by routing `ORSet_coreVCs3CD`,
-`ORSet_feasibleDeltaVCs3`, `ORSet_cdVC3` through `ConditionedContract.ofVCs` —
-the OR-Set's own `ORSet_ra_linearizable3` is untouched. -/
+/-- **(weak, ⊤) corner, the production OR-Set.** Its `Inv`/`applicable` are `⊤`
+and its discharge is the set-shaped VC bundle, so its contract sits at
+`𝒞 = weakClosure`. Adequacy routes `ORSet_coreVCs3CD`, `ORSet_feasibleDeltaVCs3`,
+`ORSet_cdVC3` through `ConditionedContract.ofVCs`. -/
 theorem ORSet_adequate_viaContract
     (C : Configuration ORSet)
     (hReach : (labeledTS3 ORSet).ReachableFrom (initConfig ORSet trivial) C) :

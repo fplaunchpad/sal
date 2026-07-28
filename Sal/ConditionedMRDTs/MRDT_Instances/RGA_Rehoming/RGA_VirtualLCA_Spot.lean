@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CondSig
 import Sal.ConditionedMRDTs.Metatheory.LCA_Lemma
 
 /-!
-# SPOT: the virtual-LCA rule on a concrete criss-cross REHOMING store (task #90)
+# SPOT: the virtual-LCA rule on a concrete criss-cross REHOMING store
 
 Concrete-execution pins for the recursive antichain merge on the rehoming RGA itself,
 hand-derived from the probe's directed T1 case

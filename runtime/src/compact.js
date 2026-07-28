@@ -1,5 +1,5 @@
-// State-level GC for the embed RGA (task #97, practical tail):
-// compactEliasDelta v1, a PURE function  state x cut -> { state', translate }.
+// State-level GC for the embed RGA: compactEliasDelta, a PURE function
+// state x cut -> { state', translate }.
 //
 // The state is the embed RGA's Map id -> { coord, el } with immutable chain
 // coordinates under the flipped Elias-delta code (the verified default of
@@ -30,13 +30,12 @@
 //       renumbering against it can FLIP an order (siblings 2 < 5(inflight)
 //       < 7 renumber to 1,2 and the frozen 5 jumps the ex-7); the
 //       negative-control knob opts.unguardedRenumber demonstrates exactly
-//       that flip in test/compact.test.js and must never be set in
-//       production. Groups containing an unsettled AT-REST member are
-//       likewise never renumbered (its coordinate is a birth constant with
-//       copies elsewhere; rewriting it would diverge at merge).
+//       that flip and must never be set in production. Groups containing an
+//       unsettled AT-REST member are likewise never renumbered (its
+//       coordinate is a birth constant with copies elsewhere; rewriting it
+//       would diverge at merge).
 //
-//   (2b) SPINE FUSION (iteration two, opt-in via opts.fuseSpines;
-//       whiteboard/embed-recoding-note.md Addendum 2). A fusible spine is
+//   (2b) SPINE FUSION (opt-in via opts.fuseSpines). A fusible spine is
 //       a maximal chain of DEAD nodes d1..dk, each below the cut (settled,
 //       via the same downward-closure evidence as step 2), each with
 //       EXACTLY ONE child branch counting every known coordinate INCLUDING
@@ -46,8 +45,8 @@
 //         prefix(parent) ++ block(d1) ++ .. ++ block(dk) ++ rest
 //           -> prefix(parent) ++ enc(head's ordinal-or-delta) ++ rest,
 //       i.e. in the tree all spine nodes share the head's newCoord and
-//       dk's single child group continues below it. Order survives by the
-//       three-class H2 argument of Addendum 2: (i) inside the block the
+//       dk's single child group continues below it. Order survives by a
+//       three-class argument: (i) inside the block the
 //       common prefix is replaced wholesale; (ii) against the head's
 //       siblings the comparison is decided at the head's level, whose
 //       codeword fusion keeps; (iii) no key ends at a fused-away level
@@ -74,18 +73,16 @@
 //       through merges, see src/runtime.js). Post-settlement mints are
 //       Lamport-fresh: their delta exceeds every original delta of the
 //       group, hence every ordinal, so they sort newest-first past the
-//       compacted block with no flip (see the future-mint test).
+//       compacted block with no flip.
 //
-// THE SETTLED-CUT CONTRACT (whiteboard/stability-vc-note.md section 2):
-// compaction is sound only when the cut is SETTLED at the compacting
-// replica -- causally downward closed, and every event concurrent with a
-// cut event that exists anywhere is already delivered here. The runtime
-// can discharge this by heard-from-everyone-since-the-cut evidence (an
-// absorbed commit from every replica that witnesses the cut), against the
+// THE SETTLED-CUT CONTRACT: compaction is sound only when the cut is SETTLED
+// at the compacting replica, i.e. causally downward closed, and every event
+// concurrent with a cut event that exists anywhere is already delivered here.
+// The runtime can discharge this by heard-from-everyone-since-the-cut evidence
+// (an absorbed commit from every replica that witnesses the cut), against the
 // replica set closed at cut time (the open-membership caveat, as for the
-// commit GC). In this v1 the CALLER ASSERTS settledness via cut.settledIds
-// and declares any known in-flight coordinates via cut.inflight; computing
-// evidence certificates is a follow-on.
+// commit GC). The CALLER ASSERTS settledness via cut.settledIds and declares
+// any known in-flight coordinates via cut.inflight.
 //
 // cut = {
 //   settledIds: Set of insert-event ids (integer timestamps) asserted
@@ -100,12 +97,11 @@
 //     closed), so it stays correct across epochs even though renumbered
 //     coordinates no longer telescope to ids.
 //   inflight:   array of coordinate bit-strings known minted but not yet
-//     delivered here, given in the CURRENT epoch's code (v1:
-//     caller-supplied). Dead ranges they pass through are addressed by
-//     telescoped prefix-sum ids, which is exact in the mint code; the
-//     in-flight x multi-epoch combination (declaring in-flights whose
-//     dead-range path was itself renumbered in an earlier epoch) is
-//     approximated in v1 and owned by the evidence-certificate follow-on.
+//     delivered here, given in the CURRENT epoch's code (caller-supplied).
+//     Dead ranges they pass through are addressed by telescoped prefix-sum
+//     ids, which is exact in the mint code; the in-flight x multi-epoch
+//     combination (declaring in-flights whose dead-range path was itself
+//     renumbered in an earlier epoch) is approximated here.
 // }
 //
 // Returns { state', translate, stats } with stats =
@@ -183,7 +179,7 @@ export function compactEliasDelta(state, cut, opts = {}) {
   const settled = cut?.settledIds ?? new Set();
   const inflight = cut?.inflight ?? [];
   const unguarded = opts.unguardedRenumber === true; // NEGATIVE-CONTROL ONLY
-  const fuse = opts.fuseSpines === true;             // iteration two (step 2b)
+  const fuse = opts.fuseSpines === true;             // spine fusion (step 2b)
 
   const root = mkNode(0, null);
   const childOf = (node, d) => {
@@ -210,7 +206,7 @@ export function compactEliasDelta(state, cut, opts = {}) {
   // --- seed the SETTLED prefixes of known in-flight coordinates (keeps
   // --- dead ranges they pass through) and mark the group receiving the
   // --- first frozen (unsettled) codeword. Prefix-sum id addressing: exact
-  // --- in the mint code (see the contract note on multi-epoch in-flights).
+  // --- in the mint code.
   for (const c of inflight) {
     let node = root, i = 0;
     while (i < c.length) {
@@ -229,10 +225,9 @@ export function compactEliasDelta(state, cut, opts = {}) {
   // --- in-flight op is anchored ('' = the document root): that anchor's
   // --- child group receives the op's already-minted frozen delta, so it
   // --- is marked exactly like an inflightChild group and skipped by the
-  // --- renumbering. This is the harness's frozen_parents-by-coordinate
-  // --- semantics (whiteboard/litmus/marks_gc_check.py build_cut): no
-  // --- telescoped-id addressing, hence exact in EVERY epoch, unlike the
-  // --- cut.inflight walk above (v1-approximate across epochs).
+  // --- renumbering. This addressing is by coordinate, not telescoped id,
+  // --- hence exact in EVERY epoch, unlike the cut.inflight walk above
+  // --- (approximate across epochs).
   for (const c of (cut?.frozenAnchorCoords ?? [])) {
     let node = root, i = 0;
     while (i < c.length) {

@@ -3,7 +3,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Skeleton3
 /-!
 # hHext DISCHARGED — the discipline extends at applicable applies
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 Skeleton 3's `hHext` leaf: at an apply step, the H-witness `ρ` for the head version's events
 extends by the new op — `rgaH (ρ ++ [(t, r, o)])` — given only that the op is `applicable`
@@ -41,7 +41,7 @@ open Sal.ConditionedMRDTs.RGACanonFoldOK (canonFoldOK_append insertedIn_of_conta
 /-- **hHext, discharged — reachability-free core.**  The witness discipline `rgaH`
 extends at an applicable apply.  Only the `Step3.apply` step itself is consumed (its
 store-wide timestamp freshness); no reachability premise — so the same discharge serves
-both the gated (`labeledTS3`) and the widened (`labeledTS3V`, task #90) inductions. -/
+both the gated (`labeledTS3`) and the widened (`labeledTS3V`) inductions. -/
 theorem rga_hHext_discharged_core
     {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
         (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}

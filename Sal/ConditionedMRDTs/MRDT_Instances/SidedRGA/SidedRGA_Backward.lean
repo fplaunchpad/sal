@@ -1,16 +1,11 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_NonInterleaving
 
 /-!
-# FugueMax backward non-interleaving: the condition-(2) discharge (task #92 item 1)
-
-Design: `whiteboard/fugue-maximal-noninterleaving.md` §9.7 (witness
-construction, invariant clauses, mechanization bill); Python twin:
-`whiteboard/litmus/fuguemax_backward_check.py` (12 directed cases + 4500
-randomized states, corrected reading + witness + clauses clean).
+# FugueMax backward non-interleaving: the condition-(2) discharge
 
 This file discharges the stated def `FugueMaxBackwardNonInterleaving`
 (Weidner-Kleppmann Definition 4 condition (2) with the Lemma-5 exception,
-strict reading, the corrected minted-witness quantification of §9.7.2) at
+strict reading, the minted-witness quantification of §9.7.2) at
 every replica of every `MaxReach`-reachable configuration, kernel-clean,
 and with it the full adapted Theorem 9
 (`fuguemax_maximally_noninterleaving`).
@@ -26,8 +21,8 @@ and with it the full adapted Theorem 9
   (RSA), (RSuccL), (RSuccR) on R-mint records, their mint-step proofs
   (the paper's causal-minimality exclusions as stable existential
   witnesses), transport, and `maxReach_inv3` (structured like `SLC` +
-  `maxReach_inv2`; `MInv`/`KInv`/`LinkR` are NOT edited — the note
-  records why: folding the clauses in would re-open the proved bundle).
+  `maxReach_inv2`; `MInv`/`KInv`/`LinkR` are used unmodified, since
+  folding the clauses in would reopen the proved bundle).
 
 * **§4 The loDesc-to-prefix lemma**: the only fact about `mLoDesc` the
   discharge needs.
@@ -1262,10 +1257,8 @@ theorem fuguemax_backward_ni (Γ : OrderedPrefixCode) :
 
 /-! ## §6  SPOTs (PASS+FAIL, hand-derived from §9.7.2/9.7.5/9.7.7)
 
-The four delete variants of the design note, witness values pinned. All
-expected values are hand-derived from the note's directed cases (the
-Python harness `fuguemax_backward_check.py` is the independent twin,
-never the oracle). -/
+The four delete variants, witness values pinned. All expected values
+are hand-derived, never taken from the implementation under test. -/
 
 namespace BackwardSPOT
 
@@ -1427,7 +1420,7 @@ end BackwardSPOT
 
 /-- **FugueMax is maximally non-interleaving** (Weidner-Kleppmann
 arXiv:2305.00583v3 Theorem 9, adapted statement over `MaxReach`, strict
-reading, the corrected minted-witness Lemma-5 exception): forward
+reading, the minted-witness Lemma-5 exception): forward
 non-interleaving, backward non-interleaving with exceptions, and the
 same-origin low-first tiebreak all hold at every replica of every
 reachable FugueMax configuration. Conditions (1) and (3) are

@@ -4,16 +4,14 @@ import Sal.ConditionedMRDTs.Metatheory.GoodConfig3NF
 /-!
 # The H-disciplined reachability invariant and the RAW-≈ metatheorem
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The raw-≈ replacement for the `GoodConfig3NF` chain, forced by FINDING #4 (`AgentNotes.md`): the
+The raw-≈ route to RA-linearizability, for datatypes where the
 guarded final target `IsRALinearizable3` is unsatisfiable at `QSig …WfOpA…` for the tombstone-free
 RGA (the criss-cross union admits no guarded replay), and the base `GoodConfig3.canonical` clause
 (guarded) is equally unmaintainable at merges.  This file:
 
 * `GoodConfig3S` — the STRUCTURAL fields of `GoodConfig3` (vis-strictness, event-universe bounds,
   causal closure) as a standalone invariant, with its own step preservations (the structural
-  bullets of `Adequacy.goodConfig3_*`, extracted verbatim; the guarded canonical clause is gone).
+  bullets of `Adequacy.goodConfig3_*`, without the guarded canonical clause).
 * `IsCanonicalStateH` — per-version: the class is `qmk` of a representative carrying an
   `H`-disciplined RAW-fold witness (`IsCanonicalStateEqH`).
 * `IsRALinearizable3Eq` — **the raw-≈ capstone statement**: every version's class is `qmk` of a

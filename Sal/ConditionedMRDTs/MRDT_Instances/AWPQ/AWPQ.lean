@@ -3,10 +3,11 @@ import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# Add-Wins Priority Queue — flat VC discharge and the conditioned capstone (T11.3)
+# Add-Wins Priority Queue: flat VC discharge and the conditioned capstone
 
-Split out of the original monolithic `MRDT_Instances.lean`; declarations
-verbatim, names unchanged.
+The production Add-Wins Priority Queue as a `ConditionedMRDTSig`, its
+RA-linearizability VC discharge, and the conditioned capstone over the generic
+framework.
 -/
 
 set_option maxHeartbeats 1000000
@@ -16,7 +17,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## The Add-Wins Priority Queue discharge (feasible class, T11.3)
+/-! ## The Add-Wins Priority Queue discharge (feasible class)
 
 Mirror of `Sal/MRDTs/Add_Win_Priority_Queue/Add_Win_Priority_Queue_MRDT.lean`:
 the A-component (tagged `(ts, elem, value)` records; `Rmv` filter-kills by
@@ -1090,8 +1091,8 @@ open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.GoodConfig3H
 open Sal.ConditionedMRDTs.FlatGeneric
 
-/-- **Add-Wins Priority Queue over the generic framework** (feasible class —
-the OR-Set pattern on the add component, grow-only increments; T11.3). -/
+/-- **Add-Wins Priority Queue over the generic framework** (feasible class: the
+OR-Set pattern on the add component, grow-only increments). -/
 theorem AWPQ_ra_linearizable3_eq
     (C : Configuration (QSig (eqOfEq Sal.ConditionedMRDTs.AWPQ) (WTop Sal.ConditionedMRDTs.AWPQ)
       (invPresTop fun _ => trivial) (congVCEq Sal.ConditionedMRDTs.AWPQ)

@@ -67,7 +67,7 @@ text as a user would read it — is a **read-side projection** of this
 state, computed by a deterministic traversal that linearises the
 `afterId` DAG into a total order. That traversal is not part of the
 CRDT state or the convergence proof; it lives in a separate
-`readSeq : concrete_st → List (ℕ × ℕ × ℕ)` function (TODO, not in
+`readSeq : concrete_st → List (ℕ × ℕ × ℕ)` function (not in
 this file) and produces the same list for any two `eq`-equivalent
 states.
 

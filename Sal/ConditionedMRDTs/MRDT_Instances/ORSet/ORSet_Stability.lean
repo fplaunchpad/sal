@@ -2,27 +2,26 @@ import Sal.ConditionedMRDTs.MRDT_Instances.ORSet.ORSet
 import Sal.ConditionedMRDTs.Metatheory.Stability_VC
 
 /-!
-# OR-set drop-species compaction under `SettledAt` (task #96, note §6)
+# OR-set drop-species compaction under `SettledAt`
 
-The first instance of the stability VC bundle: the production OR-set sheds
-redundant add instances once the cut is settled.
+An instance of the stability VC bundle: the production OR-set sheds redundant
+add instances once the cut is settled.
 
-* `orCompactC K nt` — the callback: drop a tag `y ∈ K` exactly when its kept
-  twin `nt y` is live (the state-dependent guard is forced: a *static* drop
-  set is unsound even under the settled gate — `SPOT.static_drop_unsound`
-  pins it; deviation recorded for the note's §10).
-* `CutSpec` — what the cut data must satisfy: `K`-tags are staked by `S`-adds
+* `orCompactC K nt`: the callback drops a tag `y ∈ K` exactly when its kept
+  twin `nt y` is live. The state-dependent guard is required: a *static* drop
+  set is unsound even under the settled gate (`SPOT.static_drop_unsound` pins
+  it).
+* `CutSpec`: what the cut data must satisfy: `K`-tags are staked by `S`-adds
   and each has a strictly newer `S`-add twin outside `K`.
-* the σ-toolkit (`orAlive_add` … `orSettled_cover`) — the five canonical-state
-  facts the merge discharge runs on, wrapped from the OR-set σ-lemmas; the
+* the σ-toolkit (`orAlive_add` … `orSettled_cover`): the five canonical-state
+  facts the merge discharge runs on, versions of the OR-set σ-lemmas; the
   settled-discriminator lemma `orSettled_cover` is where `SettledAtOn` does
   its work (a cover of the newer twin minted outside a settled event set
   covers the older twin too).
-* the SPOT layer — the note §2 countermodel (naive gate: reads diverge), the
-  settled refusal (rem absorbed ⟹ nothing redundant), and the harness's
-  mixed-merge VC-S4 case, all hand-derived against
-  `whiteboard/litmus/stability_vc_check.py` (tags there are `(elem, stamp)`,
-  here `(stamp, elem)`).
+* the SPOT layer: the countermodel (naive gate: reads diverge), the settled
+  refusal (rem absorbed ⟹ nothing redundant), and the mixed-merge VC-S4 case,
+  all hand-derived against `whiteboard/litmus/stability_vc_check.py` (tags
+  there are `(elem, stamp)`, here `(stamp, elem)`).
 -/
 
 set_option maxHeartbeats 1000000
@@ -38,18 +37,18 @@ open Classical
 def orRead (s : ORSet.State) : ℕ → Prop :=
   fun e => ∃ ts, s (ts, e) = true
 
-/-- **The drop-species callback** (note §6, sharpened): drop `y ∈ K` exactly
-when its kept twin `nt y` is currently live. The twin-liveness guard is
-load-bearing: dropping on `K` alone loses the element when the kept twin has
-already been removed (`SPOT.static_drop_unsound`). -/
+/-- **The drop-species callback**: drop `y ∈ K` exactly when its kept twin
+`nt y` is currently live. The twin-liveness guard is load-bearing: dropping on
+`K` alone loses the element when the kept twin has already been removed
+(`SPOT.static_drop_unsound`). -/
 def orCompactC (K : ℕ × ℕ → Bool) (nt : ℕ × ℕ → ℕ × ℕ)
     (s : ORSet.State) : ORSet.State :=
   fun y => s y && !(K y && s (nt y))
 
 /-- **The cut data contract**: `K`-tags are staked by adds of the cut `S`,
-and each has a strictly newer same-element `S`-add twin outside `K`. (The
-"newest" of the note's `Redundant_S` is not needed for soundness — any live
-kept witness preserves the read; recorded as a deviation.) -/
+and each has a strictly newer same-element `S`-add twin outside `K`. The
+"newest" twin is not needed for soundness: any live kept witness preserves the
+read. -/
 structure CutSpec (S : Set (Op ORSetOp)) (K : ℕ × ℕ → Bool)
     (nt : ℕ × ℕ → ℕ × ℕ) : Prop where
   addK : ∀ y, K y = true → ∃ rd, (y.1, rd, ORSetOp.add y.2) ∈ S
@@ -981,7 +980,7 @@ end StepTransfer
 
 /-- **VC-S6, observationally**: staggered re-compaction reads as the direct
 coarser compaction (`EpochCoherentObs`); the same-`R`-class form is false for
-graph relations — recorded as an erratum candidate. -/
+graph relations. -/
 theorem orEpoch_obs {S S' : Set (Op ORSetOp)} {K K' : ℕ × ℕ → Bool}
     {nt nt' : ℕ × ℕ → ℕ × ℕ}
     (hcut : CutSpec S K nt) (hcut' : CutSpec S' K' nt') (s : ORSet.State) :
@@ -995,12 +994,11 @@ theorem orEpoch_obs {S S' : Set (Op ORSetOp)} {K K' : ℕ × ℕ → Bool}
 def ORFlagged (C Ĉ : Configuration ORSet) : Prop :=
   ∃ v s E ŝ Ê, C.ver v = some (s, E) ∧ Ĉ.ver v = some (ŝ, Ê) ∧ ŝ ≠ s
 
-/-- **The OR-set pair-invariant** (the reachable-triples residue of erratum
-§9.2): the full side is reachable; every version's compacted payload is the
-full one or its callback image *at a settled, cut-containing event set*;
-compactedness is inherited down the DAG; and once any compaction is absorbed,
-every head has heard the cut (the note §2/§8 runtime frontier, which is what
-keeps settledness stable under new mints). -/
+/-- **The OR-set pair-invariant**: the full side is reachable; every version's
+compacted payload is the full one or its callback image *at a settled,
+cut-containing event set*; compactedness is inherited down the DAG; and once
+any compaction is absorbed, every head has heard the cut (the runtime frontier
+that keeps settledness stable under new mints). -/
 structure ORAux (S : Set (Op ORSetOp)) (K : ℕ × ℕ → Bool)
     (nt : ℕ × ℕ → ℕ × ℕ) (C Ĉ : Configuration ORSet) : Prop where
   reach : (labeledTS3 ORSet).ReachableFrom (initConfig ORSet trivial) C
@@ -1743,7 +1741,7 @@ theorem orMergeL_live {l a b : ORSet.State} {y : ℕ × ℕ}
         rw [hl, ha, hb] at h
         exact Bool.noConfusion h
 
-/-! ### The discriminating-remove countermodel (note §2; harness §(2)+(3))
+/-! ### The discriminating-remove countermodel (harness §(2)+(3))
 
 Delivery merge at R2 against the in-flight rem's branch: LCA payload `V'`
 (both adds live), R2's head (full vs naively compacted), R1's branch where the
@@ -1811,8 +1809,8 @@ theorem settled_refusal_id : orCompactC Kc ntc sAfterRem = sAfterRem := by
     decide
   · exact orCompactC_off _ (decide_eq_false hy)
 
-/-- **FAIL companion (design sharpening for §10)**: the *static* drop — the
-tempting twin-blind callback — loses the element at the very same state. -/
+/-- **FAIL companion**: the *static* drop (the tempting twin-blind callback)
+loses the element at the very same state. -/
 def orCompactStatic (K : ℕ × ℕ → Bool) (s : ORSet.State) : ORSet.State :=
   fun y => s y && !(K y)
 

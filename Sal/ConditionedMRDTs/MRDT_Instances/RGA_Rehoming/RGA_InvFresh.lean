@@ -1,7 +1,7 @@
 import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 /-!
-# `RgaInv` is preserved on any FRESH op — accuracy is NOT needed (option 2)
+# `RgaInv` is preserved on any FRESH op — accuracy is NOT needed
 
 `Inv_doIns`/`Inv_doDel` in `RGA_Reachability_Invariant.lean` are *stated* with
 `accurate`, but for **invariant preservation** the accuracy hypothesis is only
@@ -14,10 +14,10 @@ definition (`resolve_zero_or_live`).  So `RgaInv` preservation needs only
   `resolve_zero_or_live`.  Needs only `fresh_ts` (in fact only `t ≠ 0`).
 * `inv_doDel_free` — `Inv_doDel` with `accurate` DROPPED.  Del needs **one genuine
   path fact** that freshness does not supply: `resolve s pre ≠ x` (the reparent
-  target differs from the node being removed).  See the finding block at the end:
-  `resolve s pre = x` really does break `wf` (a child of `x` is rehomed onto the
-  now-deleted `x`), and `fresh_ts` for `Del` is `True`, so it cannot rule it out.
-  This is the minimal condition, strictly weaker than `accurate`.
+  target differs from the node being removed): `resolve s pre = x` really does
+  break `wf` (a child of `x` is rehomed onto the now-deleted `x`), and `fresh_ts`
+  for `Del` is `True`, so it cannot rule it out.  This is the minimal condition,
+  strictly weaker than `accurate` (detailed below).
 * `WfOp` / `rgaInv_doOp_fresh` — the combined "well-formed op" precondition the RGA
   supplies to the framework: `RgaInv s → WfOp o s → RgaInv (do_ s o)`.
 -/
@@ -120,10 +120,10 @@ theorem inv_doDel_free (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
 #print axioms inv_doDel_free
 
 /-- The **well-formed op** precondition the RGA supplies to the framework for
-invariant preservation (option 2).  For `Ins` it is exactly `fresh_ts`
+invariant preservation.  For `Ins` it is exactly `fresh_ts`
 (`t ≠ 0 ∧ contains s t = false`; only `t ≠ 0` is actually consumed).  For `Del`
 it is the single path fact `resolve s pre ≠ x` — freshness (`= True` for `Del`)
-is NOT enough, see the finding block below. -/
+is NOT enough (detailed below). -/
 def WfOp (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ contains s t = false
@@ -148,10 +148,10 @@ theorem rgaInv_doOp_fresh (s : concrete_st α) (o : op_t α)
 
 #print axioms rgaInv_doOp_fresh
 
-/-! ## FINDING — Del genuinely needs a path fact beyond freshness
+/-! ## `Del` genuinely needs a path fact beyond freshness
 
 `inv_doIns_fresh` closes with **freshness only** (indeed only `t ≠ 0`): accuracy is
-fully removable for `Ins`, exactly as option 2 predicts.
+fully removable for `Ins`.
 
 For `Del` the story is sharper.  Invariant preservation needs `resolve s pre ≠ x`,
 and `fresh_ts (_, _, .Del _ _) s = True` cannot supply it.  The failure is real:
@@ -165,8 +165,8 @@ i.e. `wf` broken.  `accurate` rules this out because `IsAncPath s x pre` forces
 strictly weaker.
 
 So the WfOp shape the RGA needs is NOT "id ≠ 0" uniformly: it is
-`Ins → fresh_ts` (really `t ≠ 0`) **and** `Del → resolve s pre ≠ x`.  Option 2
-holds unconditionally for `Ins`; for `Del` it holds under this one path-distinctness
-side condition, which is a `do_`-time consequence of a correct prefix but is not a
-freshness fact.
+`Ins → fresh_ts` (really `t ≠ 0`) **and** `Del → resolve s pre ≠ x`.  Freshness alone
+suffices unconditionally for `Ins`; for `Del` it suffices only under this one
+path-distinctness side condition, which is a `do_`-time consequence of a correct
+prefix but is not a freshness fact.
 -/

@@ -14,24 +14,23 @@ existence of a witness for the merged configuration.
 
 ## Why existential, not constructive
 
-A previous design attempted a three-lemma decomposition
-`merge_witness_{perm, respects, state}` against a concrete witness
-definition. That design fails: **any elementary witness definition
-couples `_respects` and `_state`**. The concurrent, `rc`-ordered
-cross case in `_respects` has no contradiction from permutation /
-respect hypotheses alone — closing it requires knowing the state
-equation being proved. The paper's own proof handles this by
+A three-lemma decomposition `merge_witness_{perm, respects, state}`
+against a concrete witness definition does not work: **any elementary
+witness definition couples `_respects` and `_state`**. The concurrent,
+`rc`-ordered cross case in `_respects` has no contradiction from
+permutation / respect hypotheses alone; closing it requires knowing the
+state equation being proved. The paper's own proof handles this by
 **co-constructing** the witness and the lo-respect property inside
 a single bottom-up induction; separating them is a mechanisation
 artifact that doesn't reflect the proof.
 
 We therefore state the merge-case as a single existential theorem
 `merge_linearization_exists` (paper Lemma 1 / Theorem 1, lin.tex
-§3.3 + appendix §A.2–A.4) and will prove it by induction on the
+§3.3 + appendix §A.2–A.4). The proof is by induction on the
 total event count, pulling events out of `merge` one at a time via
 the 24 VCs (`base_*`, `ind_*`, `inter_*`, `lem_0op`).
 
-The `restrictTo` helper is kept for use inside the induction's
+The `restrictTo` helper is used inside the induction's
 inductive-case argument. -/
 
 namespace Sal.Emulation
@@ -69,9 +68,8 @@ linearised early) or not (can be appended at the end):
 * `L_b C ev_local` — local events `lo`-before some shared event or
   transitively `lo`-before another local `L_b` event.
 
-These definitions set up the structure the next session's
-inductive argument will use. No lemmas about them are proved
-here yet. -/
+These definitions set up the structure used by the
+inductive argument. -/
 
 /-- Shared events of a 2-way CRDT merge. -/
 def L_top (ev₁ ev₂ : Set (Op D.AppOp)) : Set (Op D.AppOp) := ev₁ ∩ ev₂
@@ -290,7 +288,7 @@ theorem L_top_vis_closed
     a ∈ L_top ev₁ ev₂ :=
   ⟨h_ev₁_closed a b h_vis h_b.1, h_ev₂_closed a b h_vis h_b.2⟩
 
-/-! **`L_b` depth audit (paper-side, 2026-04-25, post-fix).**
+/-! **`L_b` depth audit (paper-side).**
 
 Per `appendix.tex:262`, `L_1^b` accepts events with a lo-path of
 length 1 OR 2 to `L_⊤`:
@@ -306,11 +304,10 @@ length 1 OR 2 to `L_⊤`:
 The depth is bounded at 2 by `no_rc_chain` (at most one `rc`-edge
 per lo-path; vis-chains collapse via vis-transitivity).
 
-**Fix landed (this session).** `L_b` and `L_a` above now match
-the paper's depth-1-or-2 form. `L_a_union_L_b` and
-`L_a_inter_L_b` re-proved against the new definitions. The
-partition layer is now appendix-faithful before the distinct-last
-branch consumes it. -/
+`L_b` and `L_a` above match the paper's depth-1-or-2 form.
+`L_a_union_L_b` and `L_a_inter_L_b` hold against these
+definitions. The partition layer is appendix-faithful before the
+distinct-last branch consumes it. -/
 
 /-! ### Convergence
 
@@ -346,7 +343,7 @@ The proof is structured in four layers:
      in some direction, contradicting incomparability. Closed.
    - different replica, commutes: direct from (1).
    - different replica, `¬commutes`: needs overwriter + cond_comm.
-     **Remaining sorry.**
+     Left as `sorry`.
 3. `applySeq_bubble_lo_max` — bubble a lo-maximal event to the end
    of a list via repeated (2). Closed modulo (2).
 4. `convergence` — strong induction on `π₁.length`, picking last
@@ -698,7 +695,7 @@ theorem convergence
           have hy_ne_e : y ≠ e := fun h => he_notin_σ (h ▸ hy)
           exact h_e_lo_min y (h_σ_sub_ev y hy) hy_ne_e
         -- Discharge h_ov for the bubble using directional VC + closure.
-        -- Sketch (full derivation in `MERGE_PROOF.md`):
+        -- Sketch:
         -- * `rc(y, e) = Fst` case: ¬lo(y, e)'s disjunct-2 forces an
         --   overwriter `e₃` of `e`. By closure `e₃ ∈ ev`, hence in π₂.
         --   π₂'s lo-respect places `e₃` after `e`, so `e₃ ∈ τ`. Use
@@ -706,9 +703,8 @@ theorem convergence
         -- * `rc(e, y) = Fst` case: symmetric overwriter of `y`. By
         --   closure and lo-respect, in σ-after-y or τ. Use second
         --   h_ov disjunct.
-        -- An edge case (overwriter same replica with rc=Either)
-        -- remains; consolidating to a single sorry until that's
-        -- handled. The Path 1 structural close (peel-first, closure-
+        -- An edge case (overwriter same replica with rc=Either) is
+        -- left as a `sorry`. The structural close (peel-first, closure-
         -- preserving recursion, generalized state, bubble-to-front)
         -- is otherwise complete.
         have h_ov : ∀ α β y, σ = α ++ y :: β →
@@ -1110,8 +1106,8 @@ the 24 VCs as standalone statements. The Sal paper (appendix §A.2)
 proves them as byproducts of its nested induction that combines
 the outer event-set-size induction with the inner VC applications.
 
-Each is stated here with a sorry so `merge_linearization_exists`
-can invoke them; they will be closed in future sessions by either
+Each is stated here with a `sorry` so `merge_linearization_exists`
+can invoke them; they can be closed by either
 (a) porting the paper's nested induction, or (b) adding the
 required invariants to `Configuration` and re-deriving. -/
 
@@ -2094,7 +2090,7 @@ directly imply it (every VC that extends a single side requires
 operation, which fails when both sides share `ol`).  We therefore take
 the property as an explicit hypothesis `h_shared_peel`, to be
 discharged by extending `SatisfiesVCs` with this additional VC (or by
-proving it from a lattice structure) in a future session. -/
+proving it from a lattice structure). -/
 theorem merge_peel_1op_shared_base
     {D : CRDTSig} (hVC : SatisfiesVCs D)
     (o₁ ol : Op D.AppOp)
@@ -4432,12 +4428,12 @@ theorem merge_linearization_exists
               exact hresp_split₂.2.2 x hx_π₂' e₁ (by simp)
           · rw [applySeq_append_single, hπ'state, ← hVC.lem_0op, h₁s, h₂s]
         · -- Distinct last events e₁ ≠ e₂.
-          -- The shared-ol peel property is now a SatisfiesVCs field
+          -- The shared-ol peel property is a SatisfiesVCs field
           -- (`shared_peel_1op`); discharge each per-CRDT instance.
           -- Forward closure: at the top-level call site these follow
           -- from `Configuration.vis_causal` on each replica, which
           -- gives unconditional closure.
-          -- Discharge is deferred follow-up work; sorry here.
+          -- Left as `sorry` here.
           have h_ev₁_fwd : ∀ a b, C.vis a b → ¬ D.commutes a b →
               a ∈ ev₁ → b ∈ ev₁ := by
             sorry

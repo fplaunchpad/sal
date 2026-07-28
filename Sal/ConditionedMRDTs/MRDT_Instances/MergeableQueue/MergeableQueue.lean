@@ -814,8 +814,7 @@ that fold through a `vis`-prior enqueue. This is the queue's analogue of the
 RGA's applicable-delivery layer, and the formal content of "dequeue names
 the head its issuer observed". (Existential form: quantifying over ALL
 enumerations of the causal past would be unsatisfiable once a past holds two
-surviving enqueues — different orders materialize different heads; see
-`Development/GENERIC_SAFETY_PENPAPER.md` §3.) -/
+surviving enqueues — different orders materialize different heads.) -/
 theorem qHonest_of_applicable (C : Configuration Q)
     (hApp : ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
       ∃ π : List (Op QOp),
@@ -855,7 +854,7 @@ theorem qHonest_of_genHonest (C : Configuration Q)
 
 #print axioms qHonest_of_genHonest
 
-/-! ## The widened LTS: the queue over virtual merges (task #90 residue)
+/-! ## The widened LTS: the queue over virtual merges
 
 The queue rides the PLAIN `JoinLemma3At`, supplied per honest
 configuration by `q_join_at`; the virtual-LCA fold induction

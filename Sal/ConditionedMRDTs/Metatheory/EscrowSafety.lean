@@ -1,36 +1,34 @@
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
-# The escrow safety metatheorem — Route B (counting/abstraction)
+# The escrow safety metatheorem: Route B (counting/abstraction)
 
-Mechanization of `Development/GENERIC_SAFETY_PENPAPER.md` §5: the
-generalization of the *original* `bc_version_inv` proof shape. A datatype is
+A generalization of the `bc_version_inv` proof shape. A datatype is
 **measured** if a family of observations is affine under `update`
 ((B1): `obs k (update s e) = obs k s + μ k e` with ℕ-valued weights); then
-folds compute *set* measures — enumeration-independence is free, no
+folds compute *set* measures: enumeration-independence is free, no
 commutativity, no causal witness, no `Inv`-preservation lemma. The escrow
 theorem bounds a `{0,1}`-weighted *consuming* observation by a *funding* one
 at every version, given: the guard–measure link ((B3): an applicable
 consuming event certifies slack), consumption seriality ((B4): consuming
-events are pairwise vis-comparable — typically issuer-determined classes via
+events are pairwise vis-comparable, typically issuer-determined classes via
 `class_total_of_same_rep`), and honesty ((B5): each event was `applicable`
-at a fold of its causal past — the ∀-enumeration `GenHonest` form, which is
+at a fold of its causal past, the ∀-enumeration `GenHonest` form, which is
 exactly right here because measured guards are fold-order-insensitive). The
-guard is an explicit parameter `A` (the repo keeps instance contracts beside
-the flat signature — the bounded counter's configuration is over `BC`, whose
-own `applicable` field is `⊤`; the contract is `bcApplicable`).
+guard is an explicit parameter `A`: instance contracts live beside the flat
+signature, so the bounded counter's configuration is over `BC`, whose
+own `applicable` field is `⊤` and whose contract is `bcApplicable`.
 
 Route B needs neither `CausalCanonical` nor `SafetyStep` and tolerates
-arbitrary canonical witnesses; its price is (B1) — the state must literally
+arbitrary canonical witnesses; its price is (B1): the state must literally
 count (the mergeable queue fails it: `deq` is an idempotent filter, not a
 decrement). Neither Route A′ (`GenericSafety.lean`) nor Route B subsumes the
 other; they overlap on the bounded counter (`bc_version_inv_escrow` is the
 Route B re-derivation).
 
-Also hosted here, per the memo's §7.4: the datatype-generic counting toolkit
-formerly in `BoundedCounter.lean` §5 (`exists_rel_max`, `countP_split`,
-`countP_le_one_of_unique`), consumed by the theorem's vis-maximal-event
-argument.
+Also hosted here: the datatype-generic counting toolkit
+(`exists_rel_max`, `countP_split`, `countP_le_one_of_unique`), consumed by
+the theorem's vis-maximal-event argument.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -38,7 +36,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## §1  The counting toolkit (re-homed from `BoundedCounter.lean`) -/
+/-! ## §1  The counting toolkit -/
 
 /-- Any nonempty duplicate-free list whose elements are pairwise comparable by
 a transitive relation `R` has an `R`-maximal element. -/
@@ -120,7 +118,7 @@ theorem countP_split {α : Type} (l : List α) (p q : α → Bool) :
 
 /-! ## §2  Measured datatypes ((B1)) and the measure calculus -/
 
-/-- **A measured datatype** (memo §5 (B1)): a family of observations
+/-- **A measured datatype** ((B1)): a family of observations
 `obs k : State → ℤ`, zero initially and affine under `update` with ℕ-valued
 per-op weights `μ k`. Folds of measured observations compute set measures:
 enumeration-independence is free. -/
@@ -209,14 +207,14 @@ theorem class_total_of_same_rep {C : Configuration D}
   exact C.vis_total_same_replica hL₁ hs₁ hL₂ hs₂ hne
     ((hp a hpa).trans (hp b hpb).symm)
 
-/-- **The escrow safety theorem** (memo §5): for a measured datatype with a
+/-- **The escrow safety theorem**: for a measured datatype with a
 `{0,1}`-weighted consuming observation `kc` and a funding observation `kf`
 linked by the guard ((B3)), serial consumption ((B4)), and honest generation
-((B5), the ∀-enumeration `GenHonest` form — measured guards are
+((B5), the ∀-enumeration `GenHonest` form, measured guards being
 fold-order-insensitive), every version satisfies
 `0 ≤ obs kc ≤ obs kf`.
 
-Proof = the original `bc_version_inv` argument at the measure level: version
+Proof = the `bc_version_inv` argument at the measure level: version
 observations are set measures of the canonical enumeration; take the
 vis-maximal consuming event `ê` ((B4) + `vis_trans` via `exists_rel_max`);
 every other consuming event is vis-before `ê`, hence inside `past(ê) ⊆ E`

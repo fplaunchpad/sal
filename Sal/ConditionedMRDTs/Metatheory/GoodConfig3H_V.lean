@@ -1,9 +1,7 @@
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H
 
 /-!
-# The H-disciplined metatheorem over the widened LTS `Step3V` (task #90)
-
-*Additive; modifies no existing file; 0 `sorry`.*
+# The H-disciplined metatheorem over the widened LTS `Step3V`
 
 The virtual-LCA extension (`LCA_Lemma.lean` §8–§9, `Adequacy.lean` §VirtualLCA) carried
 the PLAIN `GoodConfig3` adequacy through the widened step relation `Step3V`.  This file
@@ -21,8 +19,8 @@ identity-Eq capstones) can run at every `Step3V`-reachable configuration:
   (`fullClosureRel` is union-closed), and everything else in the hook's premise list is
   ambient.  For the rehoming RGA the hook's own discharge routes the union through
   K1/`GenDisc2C` (`rga_hEnum_discharged` + `isDepPreC_of_restrict`); **no `noopFeasible`
-  clause appears anywhere at unions** (the H layer replaced it — the probe's refutation
-  of `noopFeasible` at antichain unions is respected by construction).
+  clause appears anywhere at unions**: `noopFeasible` is refutable at antichain unions,
+  and this construction respects that by never invoking it.
 * `virtualLCAState_canonicalH` — the head-pair corollary: the recursive antichain merge
   is `H`-canonical for the pair's event-set intersection.
 * `goodConfig3H_mergeVirtual` — the mergeVirtual preservation step (mirror of
@@ -32,10 +30,9 @@ identity-Eq capstones) can run at every `Step3V`-reachable configuration:
   SAME per-datatype hypotheses as the gated theorem (the honest premises now quantified
   over `Step3V`-reachable configurations).
 
-**Statement hygiene** (from the rehoming probe, `whiteboard/rehoming-vlca-probe.md` §4):
-scratch-node canonicity is stated per node FOR ITS OWN UNION ONLY (`VCanonAtH` fixes the
-pair `(S, w)` and speaks of `unionEvents S ∩ E(w)`), and nothing is claimed about
-intermediate scratch states across fold orders — the probe's 3-antichain shows they are
+**Statement hygiene**: scratch-node canonicity is stated per node FOR ITS OWN UNION ONLY
+(`VCanonAtH` fixes the pair `(S, w)` and speaks of `unionEvents S ∩ E(w)`), and nothing is
+claimed about intermediate scratch states across fold orders: a 3-antichain shows they are
 enumeration-order-dependent; only the returned LCA state is order-independent, and the
 fixed ascending-rank fold makes even that claim unnecessary here.
 -/
@@ -133,7 +130,7 @@ private theorem vfold_canonicalH {C : Configuration (QSig E W hP hC hA)}
     have hinner := IH _ hcard accS m sm Em rfl
       (fun u hu => halloc u (haccS u hu)) hm
     -- the join's side conditions at (unionEvents accS, Em): membership and closure,
-    -- both UNION-CLOSED from the structural invariant (probe §5: per-event components)
+    -- both UNION-CLOSED from the structural invariant (per-event components)
     have h1 : ∀ a ∈ unionEvents (D := QSig E W hP hC hA) C accS,
         a ∈ (Sal.ConditionedMRDTs.Configuration.core C).events := by
       rintro a ⟨u, hu, su, Eu, hu', ha⟩
@@ -341,7 +338,7 @@ theorem goodConfig3H_mergeVirtual
 
 open LabeledTS in
 /-- **`GoodConfig3H` at every `Step3V`-reachable configuration** — `StoreInv` is carried
-alongside (the virtual case reads it); every gated case is the existing per-step lemma;
+alongside (the virtual case reads it); every gated case is the per-step lemma;
 the honest premises (`hHon`/`hHext`/`hBA`) are the gated theorem's, quantified over
 widened reachability. -/
 theorem goodConfig3H_of_reachV

@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_MarkInte
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 
 /-!
-# Marks-layer GC for Peritext over the embed compaction stack (#110 phase 2)
+# Marks-layer GC for Peritext over the embed compaction stack
 
 Design + Python validation: `whiteboard/marks-gc-note.md` (H-A, retention
 roots, 2000/2000 trials) and `whiteboard/litmus/marks_gc_check.py`.  This file
@@ -1025,7 +1025,7 @@ theorem eRemapSt_filter (f : List Bool → List Bool) (kp : ℕ → Bool) :
 
 /-! ## §5  O3 — the render-congruence capstone
 
-Hypothesis roles, note §8 / task glossary:
+Hypothesis roles:
 * `F` with `hdom`/`hmint`: the O1 keep-set stable-prefix map — its domain the
   kept records, its `MintAt` the beyond-cut mints AND declared stragglers
   (whose frozen groups are what makes `ext` dischargeable);

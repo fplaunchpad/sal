@@ -2,9 +2,9 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_AnchorsFactor
 import Sal.MRDTs.RGA_Embed.Embed_Code_EliasDelta
 
 /-!
-# `compactEliasDelta` — the concrete verified compaction (#97 stage 2 + 3)
+# `compactEliasDelta` — the concrete verified compaction
 
-The v1 compaction for the embed RGA, as a `StablePrefixMap` producer:
+The compaction for the embed RGA, as a `StablePrefixMap` producer:
 
 * **(a) DROP dead ranges** — `ePruneKeep`: a stable chain is carried forward
   iff it has a live descendant in the stable tree or a known in-flight
@@ -14,8 +14,8 @@ The v1 compaction for the embed RGA, as a `StablePrefixMap` producer:
   in-flight child delta** (`skipAt = false`), the surviving deltas are
   renumbered to `1..k` order-isomorphically (`rankIn`) and re-encoded with
   the same ordered prefix code; groups *with* in-flight children are skipped
-  this epoch (the v1 resolution of the in-flight wrinkle). Spine fusion is
-  out of scope (iteration two).
+  this epoch. Spine fusion for such groups is a separate construction
+  (`EmbedRGA_Fusion.lean`).
 
 Soundness: H2 (`ord`) is `remapChain_keyLt` — per-group order-isomorphism
 composed through the chain-lex theorem (`chainBefore_display`, where the
@@ -25,7 +25,7 @@ H3 (`ext`) holds by construction (the re-map rewrites the stable chain
 prefix wholesale and never touches the minted delta codeword); H1 is derived
 by the bundle. The headline (`compactRanked_settled_reads`,
 `compactEliasDelta_settled_reads`) discharges everything at a `SettledAtOn`
-cut of a disciplined honest configuration via stage 1: freshness comes from
+cut of a disciplined honest configuration: freshness comes from
 `Configuration.causal_mono` (the Lamport clause) through
 `settledAt_dichotomy`.
 
@@ -382,7 +382,7 @@ def compactSPM (Γ : OrderedPrefixCode) (keep : List (List ℕ))
       fStab_coordOf Γ hKpos hrOff (hDpos _ hch')]
     exact remapChain_keyLt Γ hDpos hrPos hiso hch hch'
 
-/-! ## §6 The concrete v1 renumbering: drop dead ranges, rank-renumber
+/-! ## §6 The concrete renumbering: drop dead ranges, rank-renumber
 in-flight-free sibling groups -/
 
 /-- The child deltas of `p` recorded in a chain list. -/
@@ -521,7 +521,7 @@ theorem ePruneKeep_prefix {tree : List (List ℕ)} {live : List ℕ → Bool}
 
 /-- **(b) RANK-RENUMBER**: dense ranks in kept, in-flight-free sibling
 groups; identity everywhere else (off-tree nodes, and groups with known
-in-flight children — the v1 skip). -/
+in-flight children, which are skipped). -/
 def rED (keep : List (List ℕ)) (inflight : List (List ℕ))
     (p : List ℕ) (d : ℕ) : ℕ :=
   if (p ++ [d]) ∈ keep ∧ skipAt inflight p = false
@@ -859,8 +859,8 @@ theorem compactRanked_settled_reads {Γ : OrderedPrefixCode}
   exact ⟨F, rfl, fun τ hτ =>
     eRecode_settled_bridge F hv hsettled hAF hrest τ hτ⟩
 
-/-- **The composed #97 headline, at the Elias-δ code**: at a `SettledAtOn`
-cut of a disciplined honest configuration, the v1 compaction — drop dead
+/-- **The composed headline, at the Elias-δ code**: at a `SettledAtOn`
+cut of a disciplined honest configuration, the compaction — drop dead
 ranges, rank-renumber in-flight-free sibling groups, re-encode with the
 flipped Elias-δ code — preserves the fold and every read of every beyond-cut
 continuation. Pure instantiation of `compactRanked_settled_reads`. -/
@@ -906,7 +906,7 @@ theorem compactEliasDelta_settled_reads
 #print axioms compactRanked_settled_reads
 #print axioms compactEliasDelta_settled_reads
 
-/-! ## §9 SPOT — the worked v1 compaction, hand-derived (PASS + FAIL)
+/-! ## §9 SPOT — the worked compaction, hand-derived (PASS + FAIL)
 
 **PASS**: a delete-heavy epoch-0 history at the Elias-δ code (six inserts,
 four deletes). Root group `{1,2,3,4,9}`, survivor `4`; `9` dead but kept (its
@@ -959,7 +959,7 @@ is kept (live descendant). NOT the whole tree, NOT only the live leaves. -/
 theorem keep_drops_dead : keep0 = [[4], [9], [9, 5]] ∧ keep0 ≠ tree0 := by
   native_decide
 
-/-- The v1 translation: rank-renumber + Elias-δ re-encode below `keep0`. -/
+/-- The translation: rank-renumber + Elias-δ re-encode below `keep0`. -/
 def gcf : List Bool → List Bool := fStab eliasDeltaCode (rED keep0 []) keep0
 
 /-- **(b) RENUMBER pinned at codeword level**: `4 ↦ 1` (5 bits → 1),
@@ -1014,7 +1014,7 @@ theorem skip_guard :
     skipAt inflight1 [] = true ∧ skipAt inflight1 [9] = false := by
   native_decide
 
-/-- Guarded v1 map (skips the root group). -/
+/-- Guarded map (skips the root group). -/
 def gcfG : List Bool → List Bool :=
   fStab eliasDeltaCode (rED keepF inflight1) keepF
 

@@ -3,13 +3,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Assembly
 /-!
 # hFiltEq DISCHARGED — record coherence from the generation discipline
 
-*Additive; modifies no existing file; 0 `sorry`.*
+*0 `sorry`.*
 
 The last deep leaf of the raw-≈ capstone: for a union survivor `t` with recorded chain `a :: p`
 split at an LCA-live birth anchor `bw`, the recorded suffix and `bw`'s own LCA chain have the same
 first-`F`-survivor (`hin` of `canonBirthBridge_via_branchCanon`).
 
-**The discovery that makes this a THEOREM of the existing stack, with no new engine invariant:**
+**This is a THEOREM of the existing stack, with no new engine invariant:**
 the coherence statement is `F`-static (it never mentions a fold state), so it need only be
 ESTABLISHED once — and the right place is `t`'s DEPENDENCY fold `s_d`, where the generation
 discipline (`GenDisc2C`, discharged from born accuracy) makes `t`'s ENTIRE recorded chain live:

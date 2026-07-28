@@ -9,8 +9,7 @@ its head state must be obtained by applying some permutation of its
 seen events, respecting the linearization relation `lo_C`.
 
 The bridge theorem "24 VCs ⟹ RA-linearizable" is stated at the bottom
-as `ra_linearizable_of_vcs`, stubbed with `sorry`. Mechanizing its proof
-is the main remaining task of this phase.
+as `ra_linearizable_of_vcs`, stubbed with `sorry`.
 -/
 
 namespace Sal.Emulation
@@ -488,8 +487,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   with `e`), the merge equation can peel `e` from the left side:
   `merge (update a e) b = update (merge a b) e`.
 
-  Aristotle's analysis (project 444d5bcd) identified this as the
-  "missing" peel rule for the all-commuting carving case. The 24 VCs'
+  This is the peel rule for the all-commuting carving case. The 24 VCs'
   `ind_right_2op` requires `rc = Fst_then_snd`, which doesn't fire
   when all events commute (e.g., G-Set). The paper's BottomUpTemplate
   is stated unconditionally; this conditional form is its
@@ -525,10 +523,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
 
   Consumed by `merge_peel_shared` (the 2-op shared-event peel) which
   is in turn consumed by Case 3a-shared sub-cases of
-  `distinct_last_case`. Vacuous for trivial-rc CRDTs (Grow-Only Set).
-
-  Identified as a missing VC by Aristotle (project 1fe349b4) during
-  the merge-case formalization. -/
+  `distinct_last_case`. Vacuous for trivial-rc CRDTs (Grow-Only Set). -/
   shared_peel_1op :
     ∀ (o₁ ol : Op D.AppOp), distinctOps o₁ ol →
       ∀ (a b : D.State),

@@ -1,22 +1,20 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Intent
 
 /-!
-# Sided RGA under the Fugue policy: the Weidner-Kleppmann statement (task #84)
+# Sided RGA under the Fugue policy: the Weidner-Kleppmann statement
 
 The maximal non-interleaving statement of Weidner and Kleppmann ("The Art
 of the Fugue", arXiv:2305.00583v3, Definition 4 + Lemma 5), adapted to the
-sided embedded-chain RGA under the Fugue side-selection policy, per the
-design note `whiteboard/fugue-maximal-noninterleaving.md` and the Python
-validation `whiteboard/litmus/fugue_noninterleave_check.py`.
+sided embedded-chain RGA under the Fugue side-selection policy.
 
 Layers in this file:
 
 * **§1 The generation layer.** `GRec` records a datatype op together with
   its generation-time metadata (left origin = the intent anchor, right
   origin = the tombstone-visible successor, the minted birth chain);
-  `fugueChoose` is the paper's insert rule, mirroring the Python `choose`
-  exactly (right child of the anchor when it has never had a right child,
-  dead nodes included, else left child of the anchor's successor);
+  `fugueChoose` is the paper's insert rule exactly (right child of the
+  anchor when it has never had a right child, dead nodes included, else
+  left child of the anchor's successor);
   `genInsAt` is the positional intent op ("insert at index i of my view");
   `FugueReach` is reachability by local Fugue inserts (Lamport-fresh ids),
   local deletes, and pairwise knowledge sync (causal delivery is automatic
@@ -28,8 +26,8 @@ Layers in this file:
   and the algorithm-level `FugueMaximallyNonInterleaving` /
   `FugueForwardNonInterleaving` over `FugueReach`. The comparison
   quantifiers range over ALL minted elements, tombstones included, in the
-  key order (the strict reading): the design note's countermodel shows the
-  live-only reading is unsatisfiable for the whole Fugue family.
+  key order (the strict reading): a countermodel shows the live-only
+  reading is unsatisfiable for the whole Fugue family.
 
 * **§3 Invariants.** `fugueReach_inv` / `fugueReach_chain_gen`: every
   reachable knowledge is chain-generated in exactly the honesty layer's
@@ -55,7 +53,7 @@ Layers in this file:
   `fugue_backward_gap`: condition (2) fails on the paper's own Figure-7
   execution with the Lemma-5 exception refuted pointwise; this is the
   Fugue-vs-FugueMax gap the paper proves, so it is independent of the
-  tiebreak clause. Both are the Lean form of the Python findings.
+  tiebreak clause.
 
 * **§7 SPOTs**, PASS+FAIL shaped: the positional generator replays L19
   (and literally regenerates `SidedSPOT.opsL19`), the forward twin, the
@@ -68,9 +66,9 @@ holes): (G1) backward-run chaining needs "the successor of the fixed
 anchor is the previously minted run element" (newest-mint adjacency); the
 kernel lemma is here, the `succOf`-to-`schainBefore` bridge is not, so
 backward runs enter §4 through the `RunChains` hypothesis (discharged
-concretely in the SPOTs). (G2) `FugueForwardNonInterleaving` is stated,
-Python-clean over 1500 randomized states, and unproved: a proof needs the
-display-to-tree-traversal theory (the paper's Lemma 7/8 layer). (G3) the
+concretely in the SPOTs). (G2) `FugueForwardNonInterleaving` is stated
+and unproved: a proof needs the display-to-tree-traversal theory (the
+paper's Lemma 7/8 layer). (G3) the
 prefix-incomparability of concurrent run heads is a hypothesis of §4; the
 telescoping argument and the `GInv` invariants that feed it are in place.
 -/
@@ -222,8 +220,8 @@ The list order `<` (the strong list specification's total order, elements
 including tombstones) is `gBefore`: descending key order over minted
 coordinates. The comparison quantifiers range over `gMintedIds` (all
 minted elements, dead included): the strict reading, which is the one the
-paper's Theorem-9 proof requires (see the design note's countermodel for
-the live-only reading). `start` is the empty chain (the root key); under
+paper's Theorem-9 proof requires (the live-only reading is unsatisfiable
+for this family). `start` is the empty chain (the root key); under
 the Fugue policy every minted element sits below it, so "start before
 everything" holds literally in the key order. -/
 
@@ -310,8 +308,7 @@ def FugueMaximallyNonInterleaving (Γ : OrderedPrefixCode) : Prop :=
   ∀ G : ℕ → Know, FugueReach Γ G → ∀ r, MaxNonInterleaving Γ (G r)
 
 /-- **Forward non-interleaving** for the sided embed under the Fugue
-policy (Definition 2). Stated; Python-clean over 1500 randomized final
-states plus every directed case; unproved here (gap G2: needs the
+policy (Definition 2). Stated; unproved here (gap G2: needs the
 display-to-tree-traversal theory, the paper's Lemma 7/8 layer). -/
 def FugueForwardNonInterleaving (Γ : OrderedPrefixCode) : Prop :=
   ∀ G : ℕ → Know, FugueReach Γ G → ∀ r, ForwardNI Γ (G r)
@@ -988,9 +985,8 @@ theorem schainBefore_snoc_newest {ca cm : SChain} {δ : ℕ}
 
 /-! ## §6  The refutations
 
-Both are reachable-trace countermodels, machine-checked end to end. They
-are the Lean form of the Python findings (design note §3): the full W-K
-statement fails for THIS policy at condition (3) (the tiebreak: the
+Both are reachable-trace countermodels, machine-checked end to end: the
+full W-K statement fails for THIS policy at condition (3) (the tiebreak: the
 kernel's newest-first R-sibling order is the reverse of the paper's
 lowest-ID-first choice) and, independently, at condition (2) (the
 Figure-7 execution: the repo policy is Fugue, not FugueMax, and this is
@@ -1146,10 +1142,9 @@ theorem fugue_not_maximally_noninterleaving_backward :
 
 /-! ## §7  SPOTs (PASS+FAIL shaped, hand-derived expected values)
 
-Every display below was derived by hand in the design note (§4) and
-cross-checked against the Python model's directed cases; the FAIL pins
-assert the interleaved (or FugueMax-ordered) alternative is NOT what the
-datatype displays. -/
+Every display below was derived by hand; the FAIL pins assert the
+interleaved (or FugueMax-ordered) alternative is NOT what the datatype
+displays. -/
 
 namespace FugueSPOT
 

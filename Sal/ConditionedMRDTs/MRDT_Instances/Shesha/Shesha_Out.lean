@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_EffFold
 
-/-! # Shesha — output rows and the forest builder (phase 2g)
+/-! # Shesha — output rows and the forest builder
 
 The two missing *generic* engines feeding the pre-splice obligation
 (`shesha_presplice`, `Shesha_Cond.lean`):

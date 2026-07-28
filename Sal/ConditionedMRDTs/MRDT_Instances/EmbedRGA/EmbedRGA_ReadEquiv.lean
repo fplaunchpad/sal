@@ -4,16 +4,16 @@ import Sal.MRDTs.RGA_Embed.RGA_Embed_ReadEquiv
 /-!
 # The compaction theorem: the embed read IS the published RGA's read
 
-Task #75, steps 1–3 and 5 (step 4, the order core, is
-`Sal/MRDTs/RGA_Embed/RGA_Embed_ReadEquiv.lean`). One event set, two folds:
+This file supplies everything but the order core, which is
+`Sal/MRDTs/RGA_Embed/RGA_Embed_ReadEquiv.lean`. One event set, two folds:
 
 * the **embed fold** `eFold Γ ρ` — live records sorted by coordinate; its
   id sequence *is* the read;
 * the **RGA† fold** `rgaFold ρ` — the published tombstoned RGA
   (`Sal/MRDTs/RGA_with_tombstones`) folded over the same enumeration with
-  the ghost prefix `π` dropped (`toRgaOp` — the wire format of the design
-  doc §3); its read is relational: the `visible` ids in `visible_lt`
-  order.
+  the ghost prefix `π` dropped (`toRgaOp` — the wire format of
+  `sal-mrdts.tex` §3); its read is relational: the `visible` ids in
+  `visible_lt` order.
 
 The capstone (`rga_read_eq_embed_read`): **any** `visible_lt`-sorted
 enumeration of the RGA† fold's visible ids equals the embed fold's id
@@ -40,7 +40,7 @@ open Sal.EmbedRGA (OrderedPrefixCode keyLt key PosChain coordOf coordOf_inj
 /-! ## §1  The wire translation and the RGA† fold -/
 
 /-- Translate an embed op to the published RGA's op type. The ghost prefix
-`π` is DROPPED — this is the design doc's claim that `π` may be omitted
+`π` is DROPPED — this is `sal-mrdts.tex`'s claim that `π` may be omitted
 from the wire, made syntactic. -/
 def toRgaOp : Op EOp → _root_.op_t
   | (t, r, .ins e _ a) => (t, r, _root_.app_op_t.Add_after a e)
@@ -413,7 +413,7 @@ theorem sorted_unique {R : ℕ → ℕ → Prop}
           · exact h'
       rw [sorted_unique hasym t1 t2 h1' h2' hmem']
 
-/-- **The compaction theorem** (task #75): any `visible_lt`-sorted
+/-- **The compaction theorem**: any `visible_lt`-sorted
 enumeration of the RGA† fold's visible ids IS the embed fold's id
 sequence. The published tombstoned RGA's read — whatever executable form
 realizes its relational specification — equals the embedded-chain RGA's

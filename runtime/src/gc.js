@@ -1,4 +1,4 @@
-// Commit GC: the keep-set from the verified design.
+// Commit GC: the keep-set.
 //
 // Given the CURRENT heads h_1..h_n of the registered replicas:
 //
@@ -10,11 +10,11 @@
 //
 // gc() drops every commit outside Keep.
 //
-// SOUNDNESS CAVEATS (both from the Lean side):
+// SOUNDNESS CAVEATS:
 //
 // 1. Sound ONLY under the head-sync discipline: every future merge is
 //    between two CURRENT heads. That is exactly the hypothesis of the
-//    gc_safety theorem being proved concurrently on the Lean side. If a
+//    gc_safety theorem. If a
 //    replica could merge against an OLD commit (pull of a stale head), the
 //    LCA of that merge could lie strictly below the keep-set horizon and be
 //    gone, so the merge would run with a wrong (higher or missing) LCA
@@ -37,10 +37,8 @@ import { mcas } from './lca.js';
 
 /** The keep-set (Set of commit ids) for the given current head ids.
  *  Seeds are the MCA CLOSURE of the heads (the least superset closed under
- *  pairwise MCA, keepSetV / mcasClosure on the Lean side): virtual
- *  criss-cross resolution reads MCAs of MCAs, and the one-layer seed is
- *  machine-witnessed to be one closure layer short. Finite: ranks only
- *  decrease. */
+ *  pairwise MCA): virtual criss-cross resolution reads MCAs of MCAs, and a
+ *  one-layer seed is one closure layer short. Finite: ranks only decrease. */
 export function keepSet(dag, headIds) {
   const seeds = new Set(headIds);
   let grew = true;

@@ -4,15 +4,13 @@ import Sal.MRDTs.RGA_Embed.Sided_ChainLex
 import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
 /-!
-# The sided embedded-chain RGA as a conditioned MRDT instance (task #83)
+# The sided embedded-chain RGA as a conditioned MRDT instance
 
 The two-sided generalization of `MRDT_Instances/EmbedRGA/EmbedRGA.lean`:
 an insert names an anchor **and a side**, records carry sided symbol
 coordinates (`Sal/MRDTs/RGA_Embed/Sided_ChainLex.lean`), and the display
 is their descending marker-lex sort. The one-sided instance is the all-R
-fragment (design note `whiteboard/sided-embed-design-note.md`; Python
-validation `whiteboard/litmus/embed_sided.py` — Fugue policy flips L19
-clean, all-R lockstep-exact with the one-sided embed).
+fragment.
 
 Route: the **mergeable-queue route**, exactly as one-sided — the Join
 hook needs canonical states unique per event set, and this file's §3
@@ -32,11 +30,8 @@ sorted 2-merge · §3 well-formed enumerations and fold-canonicity ·
 witness) · §7 the capstone `sided_embed_ra_linearizable3` (kernel-clean,
 via `HonestReach`) · §8 `applicable` discharges honesty · §9 intent
 theorems (sublist stability). The capstone holds for EVERY side
-assignment: sides are payload to convergence, which is the mechanized
-form of the design's policy/datatype split. Owed next: the per-policy
-intent theorems (all-R read-equivalence to the one-sided instance via
-`schainBefore_liftR`; Fugue non-interleaving via `schain_subtree_convex`)
-and the sided adjacency lemma for the seq-spec campaign.
+assignment: sides are payload to convergence, separating the policy from
+the datatype.
 -/
 
 namespace Sal.ConditionedMRDTs

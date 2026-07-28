@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Coherence
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Out
 
-/-! # Shesha — the pre-splice assembly (phase 2g)
+/-! # Shesha — the pre-splice assembly
 
 Reduces the pre-splice obligation (`shesha_presplice`,
 `Shesha_Cond.lean`) from the **forest** level to the **row** level: given
@@ -674,8 +674,8 @@ theorem born_key_expand {C' : Configuration SheshaD}
 /-! ## §6 the row-store residue (the owed core) -/
 
 open Classical in
-/-- **⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked,
-2026-07): this residue is **FALSE** — no `preRows` exists in general. The
+/-- **⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked):
+this residue is **FALSE** — no `preRows` exists in general. The
 minimal honest countermodel: LCA `[ins 1]`; branch A = `ins 2←1, ins 4←⌂,
 del 1` (fold `[4,2]`); branch B = `ins 3←1` (fold `[1,[3]]`). `ev₁∩ev₂ =
 {ins 1}` so `SCoh` is **vacuous** (the coherence repair does not exclude it),
@@ -705,8 +705,8 @@ not a global fold, which is exactly the `[3,4,2]` split. So this is the
 RA-linearizability.
 
 The anomaly *is* an artifact of the **mutable** rose-tree, and the dissolution
-is **not** anchor-retention but **immutable stored positions** (KC+Kartik
-`Development/RGA_OrderPreserving_Reference.lean`, task #63): freeze each node's
+is **not** anchor-retention but **immutable stored positions** (KC+Kartik,
+`Development/RGA_OrderPreserving_Reference.lean`): freeze each node's
 ancestry path at insert, `read = lex-sort by frozen position`, `delete = drop`.
 Positions never move, so both delete-order holds *and* the read is a fold; on
 this countermodel `2`,`3` keep contiguous frozen paths `[k₁,k₂]`,`[k₁,k₃]` while
@@ -714,7 +714,7 @@ this countermodel `2`,`3` keep contiguous frozen paths `[k₁,k₂]`,`[k₁,k₃
 trilemma reasserts only at the *insert-after-already-deleted-anchor* corner (the
 frozen path needs the dead anchor's position — an append-only position map, i.e.
 a metadata tombstone, or default-to-root that loses order); the reference model
-dodges that corner. The theorem below keeps its `sorry` — now known-false —
+dodges that corner. The theorem below keeps its `sorry` — known-false —
 pending either the immutable-position re-encoding or a capstone restatement to
 Shesha's actual guarantee (convergence + licensed divergence).
 
@@ -762,14 +762,14 @@ plus `witness_nf`'s rows (reversed `anchIds`) make the three slots agree
 on every common same-anchor pair, and the merge preserves the skeleton
 order (`merge_extends_L`) and run order (M3, owed here).
 
-**Frontier note (this session).** The obligation is *order-dependent*:
+**Frontier note.** The obligation is *order-dependent*:
 `hK6`'s two sides are ordered lists, so `preRows` must carry the merge's
 *exact* display order (`sortRunsDesc` tiebreak included) — a wrong-order
 witness would make `hK6` a *false* `sorry`. Hence `hK4`/`hK5` for the
 forced construction are entangled with the M3 run-order theorem, which is
 still owed (`merge_extends_L` only settles the skeleton/`L`-projection,
 not the branch-born run interleaving). There is thus no order-free prefix
-to split off. What *is* now isolated: via `merge_row` the RHS is
+to split off. What *is* isolated: via `merge_row` the RHS is
 `expandRow (outRows …) (markerp …)`, and `markerp_imp_delUnion` (§2)
 shows every id the merge splices is `DelIn (ev₁ ∪ ev₂)` — so on the
 merge-present ids the two marker predicates agree and the merge's splices

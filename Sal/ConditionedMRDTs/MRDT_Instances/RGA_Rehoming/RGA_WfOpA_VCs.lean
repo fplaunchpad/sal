@@ -4,8 +4,6 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance_Final
 /-!
 # The remaining quotient VC at the born-applicable guard `WfOpA`
 
-*Additive; modifies no existing file; 0 `sorry`, kernel-clean.*
-
 The re-base guards the quotient with `WfOpA = WfOpQ ∧ accurate`.  Three of the four
 quotient VCs transfer immediately: `InvPres` is `rgaInvPresA`
 (`BornApplicable_Guard`); `CongVC` is guard-independent (`(rgaCongVC' α)`); the

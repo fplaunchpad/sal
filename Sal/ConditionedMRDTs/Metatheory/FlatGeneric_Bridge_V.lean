@@ -2,9 +2,7 @@ import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H_V
 
 /-!
-# The flat identity-Eq capstone over the widened LTS `Step3V` (task #90)
-
-*Additive; modifies no existing file; 0 `sorry`.*
+# The flat identity-Eq capstone over the widened LTS `Step3V`
 
 `flat_ra_linearizable3_eq` re-derived at every configuration reachable in the ternary
 system **with the criss-cross gate lifted** (`labeledTS3V`): every flat MRDT with a

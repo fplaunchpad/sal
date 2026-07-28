@@ -1,26 +1,25 @@
 import Sal.CRDTs.Metatheory.Convergence_CounterModel
 
 /-!
-# A kernel-checked arbiter: can `inter_lca_2op` linearize the defeater?
+# Can `inter_lca_2op` linearize the defeater?
 
-This file is a *neutral* mechanized referee for a technical dispute about
-the corrected MRDT metatheory note (`docs/metatheory-note`, §3.3, "the
-defeater"):
+This file mechanically decides whether a bottom-up interchange rule of the
+catalogue, in particular `inter_lca_2op` (BottomUp-2-OP), can linearize the
+defeater execution by peeling a *remove* last. The two candidate answers:
 
-* **The note's claim.** No bottom-up interchange rule of the paper's
-  catalogue — in particular `inter_lca_2op` (BottomUp-2-OP) — can peel a
-  *remove* off either head of the defeater's final merge, because a side
-  must lie *in the image of the remove operation* to have a remove peeled,
-  and neither head does (each head has a nonempty live set).
+* **No.** No bottom-up interchange rule can peel a *remove* off either
+  head of the defeater's final merge, because a side must lie *in the
+  image of the remove operation* to have a remove peeled, and neither head
+  does (each head has a nonempty live set).
 
-* **The lead author's claim.** `inter_lca_2op` **does** apply and
-  linearizes the execution by peeling a remove last.
+* **Yes.** `inter_lca_2op` applies and linearizes the execution by peeling
+  a remove last.
 
-We settle it against the actual add-wins skeleton `AWSet` of
+The test is against the add-wins skeleton `AWSet` of
 `Sal/CRDTs/Metatheory/Convergence_CounterModel.lean` (state `(A,D)`,
 live set `A ∖ D`, `rem` sets `D := A ∪ D`, `merge` = componentwise union
-ignoring its LCA argument). The `inter_lca_2op` statement we test against
-is the exact MRDT one (`_references/neem_fstar_repo/.../App_mrdt.fsti`,
+ignoring its LCA argument). The `inter_lca_2op` statement tested against
+is the MRDT one (`_references/neem_fstar_repo/.../App_mrdt.fsti`,
 lines 137–143), whose conclusion peels `o1` off the **second** merge
 argument, which therefore must have the syntactic shape `do (do a ol) o1`
 with `o1` outermost.
@@ -39,19 +38,18 @@ Tags/replicas: `A_p = add@1` on replica 0, `A_q = add@2` on replica 1,
 
 ## Verdict (proved below)
 
-**The note is correct.** Each head has a nonempty live set, hence is *not*
+**The answer is No.** Each head has a nonempty live set, hence is *not*
 in the image of `rem` (`awset_rem_output_empty`), hence cannot be written
 `do (do a ol) o1` (resp. `do (do b ol) o2`) with the peeled op a remove
 (`no_rem_peelable_from_defeater_heads`, `crux_no_rem_peel_from_defeater`,
-`no_inter_lca_2op_rem_peel_of_defeater`). And the author's own merged
-linearization `[A_p,R_p,A_q,R_q]` — a valid witness for the all-dead
-merged version — restricts, on head_q's own event set, to a sequence that
+`no_inter_lca_2op_rem_peel_of_defeater`). And the merged
+linearization `[A_p,R_p,A_q,R_q]`, a valid witness for the all-dead
+merged version, restricts on head_q's own event set to a sequence that
 folds to the *wrong* state (`crack1_witness`): a valid merged witness that
-is not assembled from state-correct side witnesses. This is exactly the
-gap §3.3 describes.
+is not assembled from state-correct side witnesses.
 
 Everything here is kernel-checked with clean axioms
-(`propext, Classical.choice, Quot.sound`); the sorries pre-existing in the
+(`propext, Classical.choice, Quot.sound`); the sorries in the
 transitively-imported `Merge_Linearization.lean` are *not* touched by any
 theorem in this file (verified via `#print axioms`).
 -/
@@ -68,11 +66,11 @@ def awLive (σ : AWState) : Set Timestamp := σ.1 \ σ.2
 
 theorem awLive_eq_query (σ : AWState) : awLive σ = AWSet.query σ () := rfl
 
-/-! ## Deliverable 1 — the remove operation outputs an empty live set -/
+/-! ## Deliverable 1: the remove operation outputs an empty live set -/
 
 /-- **`awset_rem_output_empty`.** For *any* state `s` and *any* remove
 event `e`, the AWSet remove produces an empty live set:
-`(A ∖ (A ∪ D)) = ∅`. This is the algebraic heart of the whole file — a
+`(A ∖ (A ∪ D)) = ∅`. This is the algebraic heart of the file: a
 state is in the image of `rem` only if it is all-dead. -/
 theorem awset_rem_output_empty (s : AWState) {e : Op AWOp}
     (he : e.2.2 = AWOp.rem) :
@@ -83,7 +81,7 @@ theorem awset_rem_output_empty (s : AWState) {e : Op AWOp}
     iff_false]
   tauto
 
-/-! ## Deliverable 2 — the defeater's three states as faithful folds -/
+/-! ## Deliverable 2: the defeater's three states as faithful folds -/
 
 /-- `A_p = add` at replica 0, tag 1. -/
 def A_p : Op AWOp := (1, 0, AWOp.add)
@@ -101,18 +99,18 @@ theorem hRq : R_q.2.2 = AWOp.rem := rfl
 theorem tAp : A_p.1 = (1 : Timestamp) := rfl
 theorem tAq : A_q.1 = (2 : Timestamp) := rfl
 
-/-- `v_s = merge({A_p}, {A_q})` — the staging version, the honest LCA. -/
+/-- `v_s = merge({A_p}, {A_q})`, the staging version, the honest LCA. -/
 noncomputable def LCA : AWState :=
   awMerge (applySeq AWSet AWSet.init [A_p]) (applySeq AWSet AWSet.init [A_q])
 
-/-- `state[A_p, R_p]` — replica p's post-remove one-key version (`p2`). -/
+/-- `state[A_p, R_p]`, replica p's post-remove one-key version (`p2`). -/
 noncomputable def sp : AWState := applySeq AWSet AWSet.init [A_p, R_p]
-/-- `state[A_q, R_q]` — replica q's post-remove one-key version (`q2`). -/
+/-- `state[A_q, R_q]`, replica q's post-remove one-key version (`q2`). -/
 noncomputable def sq : AWState := applySeq AWSet AWSet.init [A_q, R_q]
 
-/-- `head_p = merge(state[A_p,R_p], v_s)` — the version `p3`. -/
+/-- `head_p = merge(state[A_p,R_p], v_s)`, the version `p3`. -/
 noncomputable def head_p : AWState := awMerge sp LCA
-/-- `head_q = merge(state[A_q,R_q], v_s)` — the version `q3`. -/
+/-- `head_q = merge(state[A_q,R_q], v_s)`, the version `q3`. -/
 noncomputable def head_q : AWState := awMerge sq LCA
 
 theorem sp_eq : sp = ((({1} : Set Timestamp)), (({1} : Set Timestamp))) := by
@@ -174,7 +172,7 @@ theorem head_q_eq :
     simp only [Set.mem_union, Set.mem_insert_iff, Set.mem_singleton_iff,
       Set.mem_empty_iff_false] <;> grind
 
-/-- Live set of the honest LCA `v_s` is `{1,2}` — the realized
+/-- Live set of the honest LCA `v_s` is `{1,2}`, the realized
 intersection `L(head_p) ∩ L(head_q)`. -/
 theorem LCA_live : awLive LCA = (({1, 2} : Set Timestamp)) := by
   simp only [awLive, LCA_eq]
@@ -183,14 +181,14 @@ theorem LCA_live : awLive LCA = (({1, 2} : Set Timestamp)) := by
     Set.mem_empty_iff_false]
   grind
 
-/-- **head_p lives on exactly `A_q`'s tag** — live set `{2}`, nonempty. -/
+/-- **head_p lives on exactly `A_q`'s tag**: live set `{2}`, nonempty. -/
 theorem head_p_live : awLive head_p = (({2} : Set Timestamp)) := by
   simp only [awLive, head_p_eq]
   ext x
   simp only [Set.mem_diff, Set.mem_insert_iff, Set.mem_singleton_iff]
   grind
 
-/-- **head_q lives on exactly `A_p`'s tag** — live set `{1}`, nonempty. -/
+/-- **head_q lives on exactly `A_p`'s tag**: live set `{1}`, nonempty. -/
 theorem head_q_live : awLive head_q = (({1} : Set Timestamp)) := by
   simp only [awLive, head_q_eq]
   ext x
@@ -205,7 +203,7 @@ theorem two_live_in_head_p : (2 : Timestamp) ∈ awLive head_p := by
 theorem one_live_in_head_q : (1 : Timestamp) ∈ awLive head_q := by
   rw [head_q_live]; simp
 
-/-! ## Deliverable 3 — HEADLINE: neither head is in the image of `rem` -/
+/-! ## Deliverable 3: neither head is in the image of `rem` -/
 
 /-- **`no_rem_peelable_from_defeater_heads`.** Neither defeater head is in
 the image of the AWSet remove: for every state `s` and every remove event
@@ -213,7 +211,7 @@ the image of the AWSet remove: for every state `s` and every remove event
 
 Consequence: `inter_lca_2op`'s conclusion, whose second merge argument is
 `do (do a ol) o1` with `o1` outermost, can never be instantiated with a
-head as that argument and `o1` a remove — nor can BottomUp-1-OP/0-OP,
+head as that argument and `o1` a remove, nor can BottomUp-1-OP/0-OP,
 which share the same `do … o1` peel shape. -/
 theorem no_rem_peelable_from_defeater_heads :
     (∀ (s : AWState) (e : Op AWOp), e.2.2 = AWOp.rem →
@@ -234,7 +232,7 @@ theorem no_rem_peelable_from_defeater_heads :
     rw [h_empty] at h1
     exact absurd h1 (by simp)
 
-/-! ## Deliverable 4 — THE CRUX CHECK (neutral)
+/-! ## Deliverable 4: THE CRUX CHECK
 
 Can `inter_lca_2op`'s conclusion merge
 
@@ -247,7 +245,7 @@ arguments; the rule is nevertheless applied to a *specific* merge whose
 second argument is the a-side head written `do (do a ol) o1` and whose
 third is the b-side head written `do (do b ol) o2`. If either of those
 outermost ops is a remove, the corresponding head is forced into the image
-of `rem` — impossible by Deliverable 3. We prove it CANNOT, in every
+of `rem`, impossible by Deliverable 3. We prove it CANNOT, in every
 assignment of the two heads to the two peelable sides. -/
 
 /-- Neither the peeled a-side op `o1` (matched to either head) nor the
@@ -272,10 +270,10 @@ theorem crux_no_rem_peel_from_defeater :
 /-- **The crux, on the exact `inter_lca_2op` merge shape.** There is *no*
 instantiation of the conclusion `merge (do l ol) (do (do a ol) o1)
 (do (do b ol) o2)` matching the defeater's merge `merge(LCA, head_p,
-head_q)` — in either assignment of the two heads to the a-side (the side
-`o1` is peeled from) and b-side — in which the peeled op `o1` is a remove.
+head_q)`, in either assignment of the two heads to the a-side (the side
+`o1` is peeled from) and b-side, in which the peeled op `o1` is a remove.
 Hence `inter_lca_2op` cannot linearize the defeater by peeling a remove:
-the note's §3.3 obstruction holds. -/
+the obstruction holds. -/
 theorem no_inter_lca_2op_rem_peel_of_defeater :
     (¬ ∃ (a b : AWState) (ol o1 o2 : Op AWOp),
         o1.2.2 = AWOp.rem ∧
@@ -290,14 +288,14 @@ theorem no_inter_lca_2op_rem_peel_of_defeater :
   · rintro ⟨a, b, ol, o1, o2, ho1, ha, _⟩; exact cp a ol o1 ho1 ha
   · rintro ⟨a, b, ol, o1, o2, ho1, ha, _⟩; exact cq a ol o1 ho1 ha
 
-/-! ## Deliverable 5 — the crack-#1 witness
+/-! ## Deliverable 5: the crack-1 witness
 
-The author's merged-version linearization `w = [A_p, R_p, A_q, R_q]`:
-(i) is a *valid* witness for the merged version — it folds to the all-dead
+The merged-version linearization `w = [A_p, R_p, A_q, R_q]`:
+(i) is a *valid* witness for the merged version, it folds to the all-dead
 merged state; yet (ii) its restriction to head_q's own event set folds to
 a state whose live set is `∅ ≠ {1} = L(head_q)`. So `w` is a valid
 merged-version witness that is *not* assembled from a state-correct witness
-for head_q — the precise gap §3.3 identifies. -/
+for head_q. -/
 
 /-- The merged version's state = `merge(head_p, head_q)` (the 3-way merge
 ignores its LCA argument): all-dead. -/
@@ -319,10 +317,10 @@ theorem mergedState_live : awLive mergedState = (∅ : Set Timestamp) := by
     Set.mem_empty_iff_false]
   grind
 
-/-- The author's linearization of the merged version. -/
+/-- The linearization of the merged version. -/
 def w : List (Op AWOp) := [A_p, R_p, A_q, R_q]
 
-/-- head_q's own event set (as a list): `{A_p, A_q, R_q}` — it merged in
+/-- head_q's own event set (as a list): `{A_p, A_q, R_q}`, it merged in
 `v_s`, which contains `A_p`; `R_p` is *not* one of its events. -/
 def evHeadQ : List (Op AWOp) := [A_p, A_q, R_q]
 
@@ -333,7 +331,7 @@ def wRestrQ : List (Op AWOp) := w.filter (fun e => decide (e ∈ evHeadQ))
 keeps head_q's own `A_p, A_q, R_q` in `w`'s order. -/
 theorem wRestrQ_eq : wRestrQ = [A_p, A_q, R_q] := by decide
 
-/-- `w` folds to the all-dead merged state — a valid merged-version
+/-- `w` folds to the all-dead merged state, a valid merged-version
 witness. -/
 theorem w_fold : applySeq AWSet AWSet.init w
     = ((({1, 2} : Set Timestamp)), (({1, 2} : Set Timestamp))) := by
@@ -345,7 +343,7 @@ theorem w_fold : applySeq AWSet AWSet.init w
       Set.mem_empty_iff_false] <;> grind
 
 /-- The restriction to head_q's event set folds to the all-dead state
-`({1,2},{1,2})` — *not* head_q's actual state `({1,2},{2})`. -/
+`({1,2},{1,2})`, *not* head_q's actual state `({1,2},{2})`. -/
 theorem wRestrQ_fold : applySeq AWSet AWSet.init wRestrQ
     = ((({1, 2} : Set Timestamp)), (({1, 2} : Set Timestamp))) := by
   rw [wRestrQ_eq]
@@ -356,12 +354,12 @@ theorem wRestrQ_fold : applySeq AWSet AWSet.init wRestrQ
     simp only [Set.mem_union, Set.mem_insert_iff, Set.mem_singleton_iff,
       Set.mem_empty_iff_false] <;> grind
 
-/-- **`crack1_witness`.** The author's merged linearization `w`:
-(i) folds to the all-dead merged state (live `∅`) — valid;
+/-- **`crack1_witness`.** The merged linearization `w`:
+(i) folds to the all-dead merged state (live `∅`), valid;
 (ii) but its restriction to head_q's event set folds to a state
      `≠ head_q`, whose live set is `∅ ≠ {1} = L(head_q)`.
 A valid merged-version witness that is **not** built from a state-correct
-head_q witness — the exact §3.3 gap. -/
+head_q witness. -/
 theorem crack1_witness :
     -- (i) valid merged-version witness: folds to all-dead merged state.
     awLive (applySeq AWSet AWSet.init w) = ∅ ∧

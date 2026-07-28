@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
-/-! # Witness-class canonicity — the corrected direct-witness route
+/-! # Witness-class canonicity: the direct-witness route
 
 `IsCanonicalState` is existential in its enumeration, and for datatypes whose
 canonical states are **not unique** per event set (Shesha: a concurrent
@@ -11,7 +11,7 @@ of such a misaligned triple need not be canonical at all. This is not
 hypothetical: `Shesha_Join_Refuted.lean` machine-checks a counterexample at
 an honest configuration.
 
-The repair: real executions only ever register folds of a restricted
+Real executions only ever register folds of a restricted
 **witness class** `W` (for Shesha: *effective* enumerations — every insert
 applies). This file parameterizes the direct-witness route by `W`:
 
@@ -125,7 +125,7 @@ section GoodW
 variable {D : ConditionedMRDTSig}
 
 /-- The ternary Join Lemma over `W`-witnesses, at a single configuration:
-the per-datatype hook of the corrected direct-witness route. Note the inputs
+the per-datatype hook of the direct-witness route. Note the inputs
 are `W`-aligned *and* the output owes a `W`-witness. -/
 def JoinLemma3AtW (D : ConditionedMRDTSig) (W : List (Op D.AppOp) → Prop)
     (C : Sal.Emulation.Configuration D.toCRDTSig) : Prop :=
@@ -432,9 +432,9 @@ theorem goodConfigW_of_genHonest_reach {hInit : D.Inv D.init}
 
 /-- **The conditioned metatheorem, witness-class form**: per-version
 RA-linearizability at every `GenHonest`-honestly reachable configuration,
-from the `W`-join. This is the corrected replacement for feeding a plain
-`JoinLemma3At` to `ra_linearizable3_of_honest_reach` — sound even for
-datatypes whose canonical states are not unique per event set. -/
+from the `W`-join. Sound even for datatypes whose canonical states are not
+unique per event set, where feeding a plain `JoinLemma3At` to
+`ra_linearizable3_of_honest_reach` would not be. -/
 theorem ra_linearizable3_of_genHonest_reachW {hInit : D.Inv D.init}
     (hW0 : W [])
     (hWstep : ∀ (e : Op D.AppOp) (ρ : List (Op D.AppOp)) (s : D.State),

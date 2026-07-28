@@ -2,16 +2,16 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 import Sal.ConditionedMRDTs.Metatheory.EvidenceDischarge
 
 /-!
-# The CompatChain protocol half at the epoch boundary (#97, attempted)
+# The CompatChain protocol half at the epoch boundary
 
 `EmbedRGA_MultiEpoch.lean` closes the *order-iso* half of multi-epoch
 composition: two `StablePrefixMap`s compose (`StablePrefixMap.comp`) at their
 surviving domain (`CompatOn`), and the n-fold `chainSPM`/`multiEpoch_settled_reads`
 give reads-preservation across a whole tower — **once** `CompatOn` (or the
-full-domain `CompatChain`) is supplied. What was left open (recoding note
-Addendum 4, final paragraph) is discharging `CompatChain`/`CompatOn` for two
-consecutive `compactRanked` maps at **nested settled cuts, directly from honest
-reachability**. This file records how far that goes and pins the exact blocker.
+full-domain `CompatChain`) is supplied. What remains open is discharging
+`CompatChain`/`CompatOn` for two consecutive `compactRanked` maps at **nested
+settled cuts, directly from honest reachability**. This file records how far
+that goes and pins the exact blocker.
 
 ## What closes: the causal-stability input
 
@@ -38,7 +38,7 @@ pin each event's birth chain via `chainOf`). The epoch-2 configuration is the
 epoch-1 *compaction*, and that is **not** a native honest configuration:
 compaction deliberately forgets dead chain segments, so `EHonest.chain_gen`
 fails for a renumbered coordinate (exactly the gap flagged in
-`eRecode_ra_transport`'s docstring and recoding note §5/§6). Concretely, the
+`eRecode_ra_transport`'s docstring). Concretely, the
 blocking obligation is:
 
 > **`(⋆)` re-based honesty**: exhibit an honest configuration `C₂` (honest

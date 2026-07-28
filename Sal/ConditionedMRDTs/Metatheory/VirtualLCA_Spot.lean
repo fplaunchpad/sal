@@ -3,10 +3,9 @@ import Sal.ConditionedMRDTs.Metatheory.GC_Safety
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 
 /-!
-# SPOT: virtual LCAs on a concrete criss-cross store (task #90)
+# SPOT: virtual LCAs on a concrete criss-cross store
 
-Concrete-execution pins for the recursive antichain merge, hand-derived from the
-directed Python cases (`whiteboard/litmus/virtual_lca_check.py` T1 / T1F / T3) — the
+Concrete-execution pins for the recursive antichain merge. The
 expected values below are derived by hand in the comments, never `#eval`'d from the
 implementation under test.
 
@@ -40,9 +39,9 @@ picking `2` dually resurrects `x`.
 **T3 (pair 7,8, nested).** `MCA(7,8) = {3,4}` — and resolving the sub-pair `(3,4)`
 again finds the proper antichain `{1,2}`: recursion depth 2, pinned structurally
 (`mca34`) plus the no-registered-LCA pin for the sub-pair (a depth-limited
-implementation would gate again — the note §8's "rivalry propagates upward").
+implementation would gate again: rivalry propagates upward).
 
-**Covering instance (P1).** `E(1) ∪ E(2) = {ex,ey} = E(5) ∩ E(6)`: the antichain's
+**Covering instance.** `E(1) ∪ E(2) = {ex,ey} = E(5) ∩ E(6)`: the antichain's
 event-set union is exactly the pair's meet, pinned by hand on this store.
 -/
 
@@ -384,7 +383,7 @@ theorem t1_no_registered_lca : ¬ ∃ vT, IsLCA parEx 5 6 vT := by
   exact absurd (h1.trans h2.symm) (by decide)
 
 /-- The nested sub-pair `(3,4)` is ALSO ungated-unresolvable: rivalry propagates
-upward — a depth-limited implementation would gate again (note §8, T2 finding). -/
+upward, and a depth-limited implementation would gate again. -/
 theorem t3_no_registered_lca_nested : ¬ ∃ vT, IsLCA parEx 3 4 vT := by
   rintro ⟨vT, hlca⟩
   have h1 : (1 : Version) = vT :=
@@ -529,10 +528,10 @@ theorem t3_merge :
       (stateD verEx 7) (stateD verEx 8) = ((true, true) : Bool × Bool) := by
   rw [vlca78]; decide
 
-/-! ## §9 The covering instance (P1 on this store) -/
+/-! ## §9 The covering instance -/
 
-/-- `E(1) ∪ E(2) = E(5) ∩ E(6)`: the antichain's event-set union IS the pair's meet —
-Proposition 1 checked by hand on the concrete store (`{ex} ∪ {ey} = {ex,ey}`;
+/-- `E(1) ∪ E(2) = E(5) ∩ E(6)`: the antichain's event-set union IS the pair's meet,
+the covering lemma checked by hand on the concrete store (`{ex} ∪ {ey} = {ex,ey}`;
 `dx`/`dy` are each on one side only). -/
 theorem t1_covering :
     (({ex} : Set O) ∪ {ey}) = (({ex, ey, dx} : Set O) ∩ {ex, ey, dy}) := by
@@ -563,7 +562,7 @@ theorem t1_covering :
 #print axioms t3_no_registered_lca_nested
 #print axioms t1_covering
 
-/-! The campaign headliners, re-audited from the SPOT context. -/
+/-! Axiom audit of the main results. -/
 
 #print axioms Sal.ConditionedMRDTs.mca_events_cover
 #print axioms Sal.ConditionedMRDTs.virtualLCAState_canonical

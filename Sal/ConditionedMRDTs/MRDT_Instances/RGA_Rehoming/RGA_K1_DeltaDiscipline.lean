@@ -3,9 +3,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonFoldOK
 /-!
 # K1 — the delta discipline: `CanonFoldOK ρ₀ (fold ρ₀) π₀` from the generation discipline
 
-*Additive; modifies no existing file; 0 `sorry`.*
-
-The corrected skeleton's K1 leaf (`RGA_Skeleton2.hEnum`, conjunct 4): the delta enumeration `π₀`
+Skeleton 3's K1 leaf (`hEnum`, conjunct 4): the delta enumeration `π₀`
 satisfies the per-event canonical discipline CONTINUED FROM the LCA fold.  The engine's own
 `canonStepOK_of_gen` cannot be applied verbatim: its `GoodEnum (F ++ [o])` interface threads the
 application prefix's `loOnA`-respect, and the LCA enum `ρ₀` (an NF canonical-state witness) is only
@@ -28,8 +26,8 @@ Main results:
   set `F` (no order hypothesis on `F`).
 * `canonFoldOK_delta` — **K1**: `CanonFoldOK ρ₀ (fold ρ₀) π₀`, given the LCA's own discipline
   (`CanonFoldOK [] init ρ₀` — from the noopFeasible engine route), dependency closure of the LCA
-  set, and per-position dependency closure of `π₀` (`hδdeps`; its discharge from
-  `respects π₀ (loOnA …)` + branch closures is the follow-up step).
+  set, and per-position dependency closure of `π₀` (`hδdeps`; discharged from
+  `respects π₀ (loOnA …)` + branch closures by `deltaDeps_discharge` in `RGA_K1_Wiring`).
 -/
 
 set_option maxHeartbeats 1000000

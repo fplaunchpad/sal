@@ -30,7 +30,7 @@ Add-wins for marks is *inherited*: it is the RGA's OR-set node survival, not a
 bespoke rule.  Gravity / expansion (Litt et al. Ex 7–8) is a **read-layer** policy
 `Mark → Gravity` (see `Peritext_Read.lean`), never stored.
 
-## What is inherited (Phase 1, this file)
+## What is inherited (this file)
 
 Because the element is opaque, **nothing** about convergence is re-proved here.
 `peritext_ra_linearizable_up_to_eq` is a one-line instantiation of the RGA

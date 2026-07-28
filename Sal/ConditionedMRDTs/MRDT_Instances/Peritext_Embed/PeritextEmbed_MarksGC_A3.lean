@@ -1,27 +1,26 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_MarksGC
 
 /-!
-# O4 — the A3 guarded pair-drop (#110 phase 2, note §5.5 / §8)
+# O4 — the A3 guarded pair-drop
 
 An `(add m, remove r)` pair with EQUAL boundary tuples (ids and sides) and
 `m.mid < r.mid` resolves to the same covered interval forever, and `r` beats
 `m` on every covered character, so dropping both records (and, downstream,
-their retention roots) looks render-neutral.  The Python phase found that the
-naive settledness guard is NOT enough; `a3_guarded_drop` proves render
-preservation under the full guard, and the two SPOT FAIL companions pin each
-clause's necessity:
+their retention roots) looks render-neutral.  The naive settledness guard is
+NOT enough; `a3_guarded_drop` proves render preservation under the full
+guard, and the two SPOT FAIL companions pin each clause's necessity:
 
 * **(alpha)** settledness / declared in-flights: a concurrent same-mtype mark
   with mid below `r.mid` (delivered late) is resurrected by the drop —
   `alpha_undeclared_flip`; the `hothers` clause (which ranges over declared
   in-flight marks too) refuses it.
-* **(beta) — THE NEW FINDING of this phase**: a character id strictly inside
-  `(m.mid, r.mid)` is grabbed by the add's end-growth (`id > m.mid`) but NOT
-  by the remove's (`id < r.mid` fails its newer-run test), so the pair is not
-  render-neutral even though its boundaries are identical —
-  `beta_growth_window_flip`; the `hwindow` clause refuses it.  Checking the
-  settled + declared ids at the cut suffices: beyond-cut mints are
-  Lamport-fresh (above `r.mid`), so they satisfy `hwindow` automatically.
+* **(beta)**: a character id strictly inside `(m.mid, r.mid)` is grabbed by
+  the add's end-growth (`id > m.mid`) but NOT by the remove's (`id < r.mid`
+  fails its newer-run test), so the pair is not render-neutral even though
+  its boundaries are identical — `beta_growth_window_flip`; the `hwindow`
+  clause refuses it.  Checking the settled + declared ids at the cut
+  suffices: beyond-cut mints are Lamport-fresh (above `r.mid`), so they
+  satisfy `hwindow` automatically.
 
 The theorem is stated over the FINAL delivered document and mark list; the
 cut-time guards of the harness (`a3_pairs`: removal settled, no same-mtype
@@ -395,7 +394,7 @@ theorem a3_guarded_drop (d : DocD) (marks : List MarkD) (m r : MarkD) (mt : MTyp
   rw [fmtAt_drop_pair d marks m r mt hm hr hopr hty hlt hsid heid hss hes
     hnodup hothers hwindow k]
 
-/-! ## §4  SPOTs — note §5.5, hand-derived, PASS + FAIL shaped -/
+/-! ## §4  SPOTs, hand-derived, PASS + FAIL shaped -/
 
 namespace SPOT_A3
 
@@ -496,7 +495,7 @@ theorem gamma2_renders :
     renderMarksDoc dGamTwin [bigG] MType.bold = [(65, true), (120, true)] := by
   native_decide
 
-/-! ### (beta) FAIL — the growth window (THE NEW FINDING of this phase)
+/-! ### (beta) FAIL — the growth window
 
 `A` = 1, `B` = 2 (child of `A`), `w` = 4 (child of `B`, LIVE, settled); add
 bold `[A..B]` mid 3, remove bold `[A..B]` mid 5 — identical boundaries, both

@@ -1,21 +1,21 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.MRDT_Instances
 /-!
-# Impossibility and separation results (FINDINGS, not junk)
+# Impossibility and separation results
 
-The machine-checked boundary of the theory — each theorem here forced a
-design decision recorded in `MRDT_METATHEORY_DRAFT.md`:
+The machine-checked boundary of the theory. Each theorem states a
+separation:
 
-* `Counter_binary_lem_0op_false` (T4) — the LCA argument is load-bearing:
-  the Counter satisfies the ternary 0-OP law but refutes the binary one, so
-  the ternary theory strictly exceeds the binary one;
-* `*_local_redistribute_false` (T9.2) — all three production MRDTs refute
-  the *unconditional* delta contract: unconditional = group ⊕ lattice
-  exactly, real LCA-sensitive MRDTs are strictly feasible-class;
-* `ORSet_merge_peel_comm3_false`, `EWFlag_mergeL_init_false` (T9.3) — even
-  the 0-OP and unit laws are feasibility-bounded, forcing the slim
-  `CoreVCs3CD` core;
-* `ORSetE_rc_non_comm_directional_false` (T10.2) — the forcing corner for
-  the `differentReplicas` guard (= the F* artifact's own interface form);
+* `Counter_binary_lem_0op_false`: the LCA argument is load-bearing. The
+  Counter satisfies the ternary 0-OP law but refutes the binary one, so
+  the ternary theory strictly exceeds the binary one.
+* `*_local_redistribute_false`: all three production MRDTs refute the
+  *unconditional* delta contract. Unconditional = group ⊕ lattice
+  exactly; real LCA-sensitive MRDTs are strictly feasible-class.
+* `ORSet_merge_peel_comm3_false`, `EWFlag_mergeL_init_false`: even the
+  0-OP and unit laws are feasibility-bounded, forcing the slim
+  `CoreVCs3CD` core.
+* `ORSetE_rc_non_comm_directional_false`: the forcing corner for the
+  `differentReplicas` guard (the F* artifact's own interface form).
 * the classification facts (`*_not_all_comm`, `*_lca_sensitive`) placing
   each production mirror as LCA-sensitive and non-commuting.
 -/
@@ -85,12 +85,12 @@ theorem EWFlag_lca_sensitive :
 
 /-! ## §5. Class placement: all three falsify the unconditional contracts
 
-The witnesses are the T8.6 infeasible tuples, now against the real
-definitions: an element (tag) sitting in `c ∩ l` only, or a flag set with a
-zero counter — states no execution produces. -/
+The witnesses are infeasible tuples against the real definitions: an
+element (tag) sitting in `c ∩ l` only, or a flag set with a zero counter,
+states no execution produces. -/
 
-/-- **OR-Set falsifies unconditional `local_redistribute`** (T8.6 witness:
-tag in `c ∩ l` only — the LHS drops it, the RHS keeps it). The production
+/-- **OR-Set falsifies unconditional `local_redistribute`** (witness:
+tag in `c ∩ l` only, the LHS drops it, the RHS keeps it). The production
 OR-Set is therefore NOT in the group ⊕ lattice classes: it needs the
 feasible-tuple contract. -/
 theorem ORSet_local_redistribute_false :
@@ -126,7 +126,7 @@ theorem EWFlag_local_redistribute_false :
     (fun _ => ((0 : ℕ), false)) (fun _ => ((1 : ℕ), true))) 0
   simp [EWFlag_mergeL_eq, ewMergeCF] at h0
 
-/-- **OR-Set falsifies `CoreVCs3.merge_peel_comm3`** — when the LCA fold
+/-- **OR-Set falsifies `CoreVCs3.merge_peel_comm3`**: when the LCA fold
 already contains the peeled add's tag (infeasible: timestamps are fresh in
 executions). This is why the feasible route runs on the slim `CoreVCs3CD`:
 even the 0-OP-shaped laws of `CoreVCs3` are feasibility-bounded for tagged
@@ -150,7 +150,7 @@ theorem ORSet_merge_peel_comm3_false :
   simp [applySeq, ORSet_update_eq, ORSet_mergeL_eq, ORSet_init_eq,
     orUpdate, orMergeL] at h0
 
-/-- **Enable-wins falsifies `CoreVCs3.mergeL_init`** — on the infeasible
+/-- **Enable-wins falsifies `CoreVCs3.mergeL_init`**: on the infeasible
 state "flag set, counter zero" (every reachable set flag has a positive
 counter). The unit law itself is feasibility-bounded; hence
 `FeasibleDeltaVCs3.feasible_init`. -/
@@ -160,7 +160,7 @@ theorem EWFlag_mergeL_init_false :
   have h0 := congrFun (h (fun _ => ((0 : ℕ), true))) 0
   simp [EWFlag_mergeL_eq, EWFlag_init_eq, ewMergeCF] at h0
 
-/-- **The separation: the binary `lem_0op` is FALSE for the counter** — so the
+/-- **The separation: the binary `lem_0op` is FALSE for the counter**, so the
 counter, although all-commuting, cannot instantiate the 2-way `CoreVCs`, and the
 binary metatheorem cannot host it. Ternary-ness (the LCA argument in `lem_0op3`)
 is load-bearing, not an inert third argument. -/

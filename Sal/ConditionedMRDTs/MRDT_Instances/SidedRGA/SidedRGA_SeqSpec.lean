@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Intent
 
 /-!
-# Sequential-spec soundness — the sided embedded-chain RGA (task #87c)
+# Sequential-spec soundness — the sided embedded-chain RGA
 
 Tier 3 (`EmbedRGA_SeqSpec.lean`) at the sided instance: the naive
 TWO-SIDED text buffer. Entries are `(id, element)` pairs plus a root
@@ -927,16 +927,16 @@ theorem sided_seq_read {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
 
 /-! ## §J  SPOTs (PASS+FAIL, hand-derived)
 
-The L19 trace's buffer replay reproduces the design note's display, and a
-genuinely sequential two-sided trace with a delete exercises both splice
-directions plus the filter. -/
+The L19 trace's buffer replay reproduces the datatype's own display, and
+a genuinely sequential two-sided trace with a delete exercises both
+splice directions plus the filter. -/
 
 namespace SidedSeqSPOT
 
 open SidedSPOT (cOf ch1 ch10 ch30 opsL19)
 
 /-- PASS: the two-sided buffer program replays the L19 trace to exactly
-the design note's display (sentinel first; elements = ids). Note the L19
+the datatype's own display (sentinel first; elements = ids). The L19
 trace is a MERGED two-replica history, not a sequential one — the buffer
 program still reproduces the fold on it. -/
 theorem l19_spec_replay :

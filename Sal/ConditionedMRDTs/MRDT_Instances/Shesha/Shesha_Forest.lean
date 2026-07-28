@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Merge_Lemmas
 
-/-! # Shesha — forest layer: parent chains and depth (phase 2b, block 0)
+/-! # Shesha — forest layer: parent chains and depth
 
 The parent-chain/depth machinery shared by the M0/M2 merge lemmas
 (`merge_ids`, `merge_read_nodup` — both closed in `Shesha_M0.lean` — and

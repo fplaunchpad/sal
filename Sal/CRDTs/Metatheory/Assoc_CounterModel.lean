@@ -2,17 +2,16 @@ import Sal.CRDTs.Metatheory.Convergence_CounterModel
 
 /-!
 # Counter-model: `CoreVCs` + merge associativity + idempotence do NOT
-# imply `JoinPeelVCs` — open question (b′) of FINDINGS A8 is REFUTED
+# imply `JoinPeelVCs`
 
-`FINDINGS.md` A8 established `∃ D, CoreVCs D ∧ ¬ JoinPeelVCs D` via the
-phantom-conflict merge `AWSetX`, whose merge is *not associative*, and
-conjectured (open (b′)) that adding associativity (+ idempotence) to
-`CoreVCs` would force the peel identities generically. This file
-refutes (b′): there is a `D` whose merge is a **bona fide bounded
-join-semilattice** (commutative, associative, idempotent, `init`-unital)
-satisfying every field of `CoreVCs`, for which `peel_local` — and the
-Join Lemma itself — fails on a two-event, visibly-reachable
-configuration.
+The phantom-conflict merge `AWSetX`, whose merge is *not associative*,
+establishes `∃ D, CoreVCs D ∧ ¬ JoinPeelVCs D`. The natural conjecture
+is that adding associativity (+ idempotence) to `CoreVCs` would force
+the peel identities generically. This file refutes that conjecture:
+there is a `D` whose merge is a **bona fide bounded join-semilattice**
+(commutative, associative, idempotent, `init`-unital) satisfying every
+field of `CoreVCs`, for which `peel_local` (and the Join Lemma itself)
+fails on a two-event, visibly-reachable configuration.
 
 ## The model: `AWSetF` = `AWSet` × a last-op flag
 
@@ -31,8 +30,8 @@ The update-level fields (`rc_non_comm_directional`, `no_rc_chain`,
 `cond_comm_lift`) compare states produced by update sequences **ending
 in the same event**, so the flags agree trivially; the base components
 are `AWSet`'s, proved in `Convergence_CounterModel.lean`. (The flag
-does not disturb `commutes` either: it makes add/rem non-commuting —
-they already were — and leaves add/add, rem/rem commuting.)
+does not disturb `commutes` either: it makes add/rem non-commuting
+(they already were) and leaves add/add, rem/rem commuting.)
 
 The merge-level fields constrain only *synchronized* or *commuting*
 situations, where the flag is again invisible:
@@ -67,17 +66,17 @@ enumeration `[a, e]` folds to flag `false`).
 
 `AWSetF`'s update is **not inflationary** w.r.t. the merge order
 (`rem` strictly *decreases* the flag: `s ⊔ update s rem ≠ update s
-rem` — `AWSetF_update_not_inflationary`). Every genuine state-based
-CRDT has inflationary updates — that is the other half of the
+rem`, `AWSetF_update_not_inflationary`). Every genuine state-based
+CRDT has inflationary updates, the other half of the
 convergent-replication contract, alongside the ACI merge. The
-sharpened open question is therefore
+sharpened question is therefore
 
-> **(b″): does `CoreVCs D` + merge ACI + update-inflationarity
+> **does `CoreVCs D` + merge ACI + update-inflationarity
 > (`∀ s e, merge s (update s e) = update s e`) imply `JoinPeelVCs D`?**
 
-This model shows (b″) is tight from below in the new direction:
+This model shows the question is tight from below:
 drop inflationarity and it is false, *even with the full semilattice
-laws*. (A8 showed the same for associativity.)
+laws*. (The non-associative separator shows the same for associativity.)
 -/
 
 namespace Sal.Emulation
@@ -86,7 +85,7 @@ open Classical
 
 /-! ### 0. The lattice VC bundle -/
 
-/-- The lattice laws conjectured by open (b′) to close the gap between
+/-- The lattice laws conjectured to close the gap between
 `CoreVCs` and `JoinPeelVCs` (`merge_comm` and `merge_init` are already
 in `CoreVCs`; together these make `merge` a bounded join-semilattice).
 This file refutes the conjecture: `AWSetF` below satisfies
@@ -630,9 +629,9 @@ theorem AWSetF_not_joinLemma : ¬ JoinLemma AWSetF := by
     · exact absurd rfl hxy
 
 /-- **Where the lattice laws stop short**: `AWSetF`'s update is not
-inflationary w.r.t. the merge order — `rem` strictly *decreases* the
+inflationary w.r.t. the merge order, `rem` strictly *decreases* the
 flag. Every genuine state-based CRDT satisfies
-`merge s (update s e) = update s e`; this is the axiom the (b′)
+`merge s (update s e) = update s e`; this is the axiom the lattice
 bundle is missing, and this model shows it is not derivable from
 `CoreVCs` + ACI. -/
 theorem AWSetF_update_not_inflationary :
@@ -642,9 +641,10 @@ theorem AWSetF_update_not_inflationary :
   have h0 := congrArg Prod.snd (h (AWSetF.update AWSetF.init aF) eF)
   exact Bool.noConfusion (show (true : Bool) = false from h0)
 
-/-- **Open question (b′) of FINDINGS A8 is REFUTED.** There is a CRDT
-signature whose merge is a bounded join-semilattice (commutative,
-associative, idempotent, `init`-unital) satisfying every field of
+/-- `CoreVCs` together with a bounded-join-semilattice merge do not
+imply `JoinPeelVCs`. There is a CRDT signature whose merge is a
+bounded join-semilattice (commutative, associative, idempotent,
+`init`-unital) satisfying every field of
 `CoreVCs`, for which both the peel identities and the Join Lemma fail.
 Associativity + idempotence do **not** close the gap between
 `CoreVCs` and `JoinPeelVCs`; the missing ingredient is

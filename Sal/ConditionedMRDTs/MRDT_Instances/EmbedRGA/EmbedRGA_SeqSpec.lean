@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.SeqSpec_Flat
 
 /-!
-# Sequential-spec soundness — tier 3: the embedded-chain RGA (task #80/#65)
+# Sequential-spec soundness — tier 3: the embedded-chain RGA
 
 The embed RGA, single-replica, against the naive sequential text buffer:
 insert splices immediately after its anchor, delete removes. The theorem

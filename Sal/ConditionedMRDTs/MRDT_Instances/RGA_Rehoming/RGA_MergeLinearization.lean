@@ -1,7 +1,7 @@
 import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 /-!
-# M3 — the merge-linearization bridge for the tombstone-free RGA
+# The merge-linearization bridge for the tombstone-free RGA
 
 Goal (up to observational `eq`):
 
@@ -10,7 +10,7 @@ Goal (up to observational `eq`):
 for a reachable LCA `l`, branches `a`/`b` folded from disjoint concurrent event
 lists over `l`, and a `loOnA`-respecting interleave `π` of `Ea ++ Eb`.
 
-## Route (per the coordinator's decomposition)
+## Approach
 
 The merge is defined by a **survivor set** `I` plus a **per-survivor climb**, so it
 is inherently per-id.  We match that shape: reduce `eq (merge …) f` to the
@@ -21,7 +21,7 @@ and discharge the anchor obligation by the **anchor-coincidence** invariant
     `climb (anc l) (dom branch) (anc l k) = anc branch k`
     — merge's LCA-climb lands where the fold's `resolve`-rehoming lands.
 
-This file mechanizes the **single-sided** core (`b = l`, i.e. 3b):
+This file mechanizes the **single-sided** core (`b = l`):
 
   * §1 framework: `applySeqR`, `eq` reflexivity/transitivity.
   * §2 the `climb` algebra (fuel-stability, live-unfold, removal lemmas) — the
@@ -482,7 +482,7 @@ theorem branchInv_doDel (l a : concrete_st α) (t r x : ℕ) (pre : List ℕ)
         rw [contains_doDel a t r x pre k, Bool.and_eq_true] at hak'; exact hak'.1
       rw [hanceq k hak]; exact hI3 k hlk hak
 
-/-! ## §6  Fold corollary and the single-sided headline (3b)
+/-! ## §6  Fold corollary and the single-sided headline
 
 A branch is built by folding a list of *good* branch events over the LCA: each is
 an accurate, fresh, monotonically-allocated `Ins` whose id is new to the LCA, or an
@@ -534,7 +534,7 @@ theorem branchInv_triple_fold (l : concrete_st α) (hlwf : wf l) (hlmono : id_mo
         (id_mono_doDel s t r x pre hR.1 hm hstep)
         (branchInv_doDel l s t r x pre hR.1 hlwf hlmono hm hstep hB) hrest
 
-/-- **Single-sided headline (3b).**  For a reachable LCA `l` and a branch built by
+/-- **Single-sided headline.**  For a reachable LCA `l` and a branch built by
 a good fold `Ea` of concurrent events over `l`, merging the branch against the
 unchanged LCA observationally reproduces the branch:
 
@@ -558,33 +558,30 @@ theorem eq_merge_branch_single (l : concrete_st α) (Ea : List (op_t α))
 #print axioms branchInv_doDel
 #print axioms eq_merge_branch_single
 
-/- ═══════════════════════════════════════════════════════════════════════════
-   TOWARD THE TWO-SIDED HEADLINE (3a/3c) — what remains.
+/-! ## Generalizing to the two-sided merge
 
-   The single-sided bridge (§6) closes the mathematical crux for one branch: the
-   per-id anchor coincidence `climb (anc l) (dom a) (anc l k) = anc a k`, proved
-   as the reachable invariant `BranchInv` whose Del-step is the rehoming-through-x
-   argument (`climb_remove_eq_result`).
+The single-sided bridge (§6) settles the mathematical crux for one branch: the
+per-id anchor coincidence `climb (anc l) (dom a) (anc l k) = anc a k`, proved
+as the reachable invariant `BranchInv` whose `Del`-step is the rehoming-through-`x`
+argument (`climb_remove_eq_result`).
 
-   The TWO-SIDED `eq (merge l a b) (applySeqR l π)` (π a `loOnA`-interleave of
-   Ea++Eb) extends this along two orthogonal axes, both known-shape:
+The two-sided identity `eq (merge l a b) (applySeqR l π)` (`π` a `loOnA`-interleave
+of `Ea ++ Eb`) extends this along two orthogonal axes:
 
-   (3a) survivor set.  Generalize `survivors_single` : `survivors l a b` is the
-        add/del image of `Ea ∪ Eb` over `dom l`.  For a `loOnA`-respecting fold
-        this equals the domain of `applySeqR l π` (an `applySeqR`-domain induction,
-        cf. `contains_doDel`/`lemma_InDomUpd1`).
+* the survivor set: `survivors l a b` (generalizing `survivors_single`) is the
+  add/del image of `Ea ∪ Eb` over `dom l`, and for a `loOnA`-respecting fold this
+  equals the domain of `applySeqR l π` (an `applySeqR`-domain induction, cf.
+  `contains_doDel`/`lemma_InDomUpd1`);
+* the anchor coincidence for the merged forest: `BranchInv` generalizes to
+  `BranchInv2 l a b`, with the birth-anchor read by `birthAnc l a b` and the
+  stop-set `survivors l a b`; the same climb-vs-rehoming argument applies, because
+  a surviving node's anchor still climbs the `l`-forest to the nearest two-sided
+  survivor.  The interleave-order independence needed to identify `applySeqR l π`
+  for two `loOnA`-respecting `π` comes from the `RGA_conditioned_convergence`
+  engine (fold-swap over `eq`), via `general_swap_bothFaithful`.
 
-   (3b→3c) anchor coincidence for the merged forest.  Generalize `BranchInv` to
-        `BranchInv2 l a b` with the birth-anchor read by `birthAnc l a b` and the
-        stop-set `survivors l a b`; the same climb-vs-rehoming argument applies
-        because a surviving node's anchor still climbs the l-forest to the nearest
-        two-sided survivor.  The interleave-order independence needed to identify
-        `applySeqR l π` for two `loOnA`-respecting π is the imported
-        `RGA_conditioned_convergence` engine (fold-swap over `eq`), whose swap
-        oracle is `general_swap_bothFaithful`.
-
-   Neither axis reopens the design question the single-sided bridge settled; both
-   are additive to this file.
-   ═══════════════════════════════════════════════════════════════════════════ -/
+Neither axis reopens the design question the single-sided bridge settles; both are
+additive to this file. `RGA_MergeLinearization_TwoSided` carries out this
+generalization. -/
 
 end RGAMergeLinearization

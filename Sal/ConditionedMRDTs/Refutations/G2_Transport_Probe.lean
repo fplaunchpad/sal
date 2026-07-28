@@ -6,7 +6,7 @@ import Sal.ConditionedMRDTs.Framework.LoOnC
 /-!
 # Gate G2 (OQ4): permutation-transport of the RGA invariant — the probe
 
-Task #3 of `CONDITIONED_METATHEORY_PLAN.md`. The feasible update layer wants the
+The feasible update layer wants the
 convergence induction (`convergence_on_u`, `Sigma_LoOn3.lean:372`) to run with
 `CRDTSig.commutes` replaced by `ConditionedMRDTSig.commutesOn` (`MRDTSig.lean:73`)
 at every ⚑ site. This file maps the ⚑ sites, discharges obligation (A)
@@ -33,7 +33,7 @@ So the conditioned induction needs, at every hybrid prefix-fold state `σ*`:
 because `commutesOn` (`MRDTSig.lean:73`) only yields the swap under
 `Inv σ* → applicable e₁ σ* → applicable e₂ σ*`.
 
-## Verdicts (mechanized below, 0 sorries)
+## Verdicts
 
 * **(A) = PROVABLE, unconditionally, and decoupled from (B).**
   `Inv_doIns`/`Inv_doDel` (`RGA_Reachability_Invariant.lean`) take the
@@ -66,8 +66,7 @@ Consequence for the feasible update layer: the conditioned `lo` must be
 **applicability-aware** — a vis-edge `e₁ → e₂` must survive not only when
 `¬ commutesOn e₁ e₂` but also when `e₂`'s applicability *depends on* `e₁`
 (generation dependency; for the RGA this is op-syntactic: `e₂` references
-`e₁`'s timestamp as Del-target / Ins-anchor / path member).  See
-`G2_FINDINGS.md` for the proposed interface.
+`e₁`'s timestamp as Del-target / Ins-anchor / path member).
 -/
 
 set_option maxHeartbeats 1000000
@@ -77,12 +76,12 @@ namespace Sal.ConditionedMRDTs.G2Probe
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig
 
-/-! ## §1–§3 — moved to `RGA_CondSig.lean`
+/-! ## §1–§3 — in `RGA_CondSig.lean`
 
 The generic Inv-transport (§1), the op-only `opOK` layer (§2), and the
-packaged signature `RGAM`/`RGACondSig` (§3) now live in `RGA_CondSig.lean`
-(namespace `Sal.ConditionedMRDTs.RGASig`); the set-relative order `loOnC` lives in
-`LoOnC.lean` (namespace `Sal.ConditionedMRDTs`).  This file keeps the ⚑-site map
+packaged signature `RGAM`/`RGACondSig` (§3) are defined in `RGA_CondSig.lean`
+(namespace `Sal.ConditionedMRDTs.RGASig`); the set-relative order `loOnC` is defined in
+`LoOnC.lean` (namespace `Sal.ConditionedMRDTs`).  This file contains the ⚑-site map
 and the obligation-(B) refutation. -/
 
 /-! ## §4 Obligation (B): the counterexample
@@ -426,7 +425,7 @@ theorem bad_enumeration_stays_in_Inv :
   exact RgaInv_do_opOK (do_ init_st delOpE) insOpE h1
     (show (1 : ℕ) ≠ 0 from one_ne_zero)
 
-/-! ## §5 Axiom audit — all kernel-checked (no `native_decide`) -/
+/-! ## §5 Axiom audit -/
 
 #print axioms G2_conditioned_convergence_refuted
 #print axioms binary_respects_excludes_bad_order
@@ -462,7 +461,7 @@ monotonically destroys the linearization order.  `bad_enumeration_stays_in_Inv`
 shows the failing enumeration is `Inv`-internal, so no swap-closed state
 envelope exists that excludes it.
 
-**What the feasible update layer actually needs** (see G2_FINDINGS.md):
+**What the feasible update layer actually needs:**
 an applicability-aware `lo` — keep the vis-edge `e₁ → e₂` when
 `¬ commutesOn e₁ e₂` OR when `e₂`'s applicability depends on `e₁`
 (for the RGA an op-syntactic, decidable dependency: `e₂` mentions `e₁`'s

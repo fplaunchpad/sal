@@ -38,7 +38,7 @@ until the merge disabuses one. "Unset" is not stable under concurrent
 honest extension — contrast the bounded counter's own-slot slack, which is.
 A reservation is confirmed only at causal stability; a merge-based register
 is never a mutex. (Formal contract shape: `GenHonest FWW fwwApplicable`;
-no theorem consumes it, and per the safety memo none should.)
+no theorem consumes it, and none should.)
 -/
 
 set_option maxHeartbeats 400000
@@ -268,10 +268,8 @@ concurrent honest extension (two honest claimants both see `⊤`), so honesty
 buys no exclusivity — the min-timestamp payload arbitrates, and
 `fww_version_min` holds without any honesty hypothesis. The check's value is
 client-side (don't waste a claim that will lose to a causally earlier one);
-exclusivity exists only after causal stability. This is the boundary the
-safety memo (`Development/GENERIC_SAFETY_PENPAPER.md`) draws: conditioning
-delivers safety exactly for invariants stable under concurrent honest
-extension. -/
+exclusivity exists only after causal stability. Conditioning delivers safety
+exactly for invariants stable under concurrent honest extension. -/
 def fwwApplicable (_e : Op FWWOp) (s : FWWState) : Prop := s = ⊤
 
 section
