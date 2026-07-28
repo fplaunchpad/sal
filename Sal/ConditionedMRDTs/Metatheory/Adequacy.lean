@@ -812,17 +812,13 @@ theorem ra_linearizable3_of_join (hJoin : JoinLemma3 D)
         hL hvis hver ih
     | query h_s h_val => exact ih
 
-open LabeledTS in
-/-- **The ternary route-B bridge** ((b′₃) form): `CoreVCs3` + the delta
-contract + the ternary causal-delta bound imply per-version
-RA-linearizability of every reachable configuration. -/
-theorem ra_linearizable_of_core_delta_cd3
-    (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D) (hCD : CDVC3 D)
-    {hInit : D.Inv D.init}
-    (C : Configuration D)
-    (hReach : (labeledTS3 D).ReachableFrom (initConfig D hInit) C) :
-    IsRALinearizable3 C :=
-  ra_linearizable3_of_join (join_lemma3_of_cd hVC hΔ hCD) C hReach
+-- RETIRED (one engine). The loOn-specific VC entry points
+-- `ra_linearizable_of_core_delta_cd3` and `ra_linearizable_of_core_feasible_cd3`
+-- are removed: every VC-bearing datatype now routes through the single abstract-
+-- arbitration capstone `ra_linearizable3_via_capstone`
+-- (Metatheory/ArbAdequacyReach.lean), with `rc` supplied as the recipe `loOnFamily`.
+-- The Join-level entry `ra_linearizable3_of_join` (above) stays: it is the entry
+-- for direct-join datatypes, which prove their Join directly without any VCs.
 
 
 /-- The unconditional contract implies the feasible one (context discarded);
@@ -1210,16 +1206,8 @@ theorem join_lemma3_of_cd' (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
     (hCD : CDVC3 D) : JoinLemma3 D :=
   join_lemma3_of_cd_feasible hVC.toCD (feasibleDeltaVCs3_of_delta hVC hΔ) hCD
 
-open LabeledTS in
-/-- **The feasible route-B bridge**: slim core + feasible delta contract +
-(CD3) imply per-version RA-linearizability of every reachable configuration. -/
-theorem ra_linearizable_of_core_feasible_cd3
-    (hVC : CoreVCs3CD D) (hFΔ : FeasibleDeltaVCs3 D) (hCD : CDVC3 D)
-    {hInit : D.Inv D.init}
-    (C : Configuration D)
-    (hReach : (labeledTS3 D).ReachableFrom (initConfig D hInit) C) :
-    IsRALinearizable3 C :=
-  ra_linearizable3_of_join (join_lemma3_of_cd_feasible hVC hFΔ hCD) C hReach
+-- `ra_linearizable_of_core_feasible_cd3` RETIRED here (see the one-engine note
+-- above): superseded by `ra_linearizable3_via_capstone`.
 
 
 end

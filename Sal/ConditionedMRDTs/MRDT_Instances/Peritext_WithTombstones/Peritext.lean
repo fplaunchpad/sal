@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.MRDT_Instances.Common
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
@@ -171,7 +172,8 @@ theorem peritext_ra_linearizable3
     (hReach : (labeledTS3 Peritext).ReachableFrom
       (initConfig Peritext trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 Peritext_coreVCs3 Peritext_deltaVCs3
+  ra_linearizable3_via_capstone Peritext_coreVCs3.toCD Peritext_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta Peritext_coreVCs3 Peritext_deltaVCs3)
     (cdVC3_of_all_comm Peritext_coreVCs3 Peritext_all_comm) C hReach
 
 

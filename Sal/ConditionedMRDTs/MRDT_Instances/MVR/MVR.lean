@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
@@ -369,8 +370,8 @@ theorem mvr_ra_linearizable3
     (C : Configuration MVR)
     (hReach : (labeledTS3 MVR).ReachableFrom (initConfig MVR trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_feasible_cd3 MVR_coreVCs3CD MVR_feasibleDeltaVCs3
-    MVR_cdVC3 C hReach
+  ra_linearizable3_via_capstone MVR_coreVCs3CD MVR_coreVCs3CD.update_core
+    MVR_feasibleDeltaVCs3 MVR_cdVC3 C hReach
 
 
 /-! ## The conditioned capstone — identity instantiation of the generic framework -/

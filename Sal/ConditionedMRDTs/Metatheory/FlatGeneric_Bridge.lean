@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H
 import Sal.ConditionedMRDTs.Metatheory.ConditionedContract
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReachEq
 
 /-!
 # The flat collapse of the generic conditioned framework
@@ -317,10 +318,15 @@ theorem flat_ra_linearizable3_eq
         (congVCEq D) (invInvVCTop D)) trivial) C) :
     IsRALinearizable3Eq (eqOfEq D) (WTop D) (invPresTop hInvT)
       (congVCEq D) (invInvVCTop D) C :=
-  RA_linearizable_up_to_eq_H (H := fun _ => True) (flatHonJ D) (eqOfEq D) (WTop D)
+  -- Routed through the SINGLE adequacy engine: the abstract-arbitration capstone at
+  -- `arb = rcArb`. `RA_linearizable_up_to_eq_H` (the old loOn-specific entry) is
+  -- retired in favour of `loOnEq_isRALinearizable3Eq_via_arb_capstone`, so every
+  -- `≈`-instance built on this bridge now flows through `ra_linearizable3ArbEq_of_reach`.
+  Sal.ConditionedMRDTs.ArbReachEq.loOnEq_isRALinearizable3Eq_via_arb_capstone
+    (eqOfEq D) (WTop D) (fun _ => True) (flatHonJ D)
+    (eqJoinH_of_joinC hInvT hJoin)
     (invPresTop hInvT) (congVCEq D) (invInvVCTop D)
     (fun {_ s'} _ _ => hInvT s')
-    (eqJoinH_of_joinC hInvT hJoin)
     (fun {C₀} _ => flatHonJ_of_config hInvT C₀)
     trivial
     (fun _ _ _ _ _ _ _ _ => trivial)

@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
@@ -129,7 +130,8 @@ theorem pn_ra_linearizable3
     (hReach : (labeledTS3 PN).ReachableFrom
       (initConfig PN trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 PN_coreVCs3 PN_deltaVCs3
+  ra_linearizable3_via_capstone PN_coreVCs3.toCD PN_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta PN_coreVCs3 PN_deltaVCs3)
     (cdVC3_of_all_comm PN_coreVCs3 PN_all_comm) C hReach
 
 

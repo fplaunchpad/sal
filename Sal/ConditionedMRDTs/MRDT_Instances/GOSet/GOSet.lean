@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.MRDT_Instances.Common
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
@@ -95,7 +96,8 @@ theorem goset_ra_linearizable3
     (hReach : (labeledTS3 GOSet).ReachableFrom
       (initConfig GOSet trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 GOSet_coreVCs3 GOSet_deltaVCs3
+  ra_linearizable3_via_capstone GOSet_coreVCs3.toCD GOSet_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta GOSet_coreVCs3 GOSet_deltaVCs3)
     (cdVC3_of_all_comm GOSet_coreVCs3 GOSet_all_comm) C hReach
 
 

@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
@@ -207,7 +208,8 @@ theorem bc_ra_linearizable3
     (hReach : (labeledTS3 BC).ReachableFrom
       (initConfig BC trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 BC_coreVCs3 BC_deltaVCs3
+  ra_linearizable3_via_capstone BC_coreVCs3.toCD BC_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta BC_coreVCs3 BC_deltaVCs3)
     (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm) C hReach
 
 /-! ## §3  The client contract: invariant and applicability -/

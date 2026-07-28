@@ -176,7 +176,8 @@ theorem lww_ra_linearizable3
     (C : Configuration LWW)
     (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 LWW_coreVCs3 LWW_deltaVCs3
+  ra_linearizable3_via_capstone LWW_coreVCs3.toCD LWW_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta LWW_coreVCs3 LWW_deltaVCs3)
     (cdVC3_of_all_comm LWW_coreVCs3 LWW_all_comm) C hReach
 
 /-! ## §3  The fold is a list maximum; the version characterization -/

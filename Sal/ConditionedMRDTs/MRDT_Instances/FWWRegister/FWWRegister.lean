@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
@@ -167,7 +168,8 @@ theorem fww_ra_linearizable3
     (C : Configuration FWW)
     (hReach : (labeledTS3 FWW).ReachableFrom (initConfig FWW trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_delta_cd3 FWW_coreVCs3 FWW_deltaVCs3
+  ra_linearizable3_via_capstone FWW_coreVCs3.toCD FWW_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta FWW_coreVCs3 FWW_deltaVCs3)
     (cdVC3_of_all_comm FWW_coreVCs3 FWW_all_comm) C hReach
 
 /-! ## §3  The fold is a list minimum; the version characterization -/

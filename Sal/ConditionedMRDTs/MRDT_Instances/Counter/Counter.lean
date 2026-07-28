@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.MRDT_Instances.GSet.GSet
 
 /-!
@@ -149,7 +150,9 @@ theorem counter_ra_linearizable3_cd
     (hReach : (labeledTS3 Counter).ReachableFrom
       (initConfig Counter trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable3_of_join Counter_joinLemma3_cd C hReach
+  ra_linearizable3_via_capstone Counter_coreVCs3.toCD Counter_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta Counter_coreVCs3 Counter_deltaVCs3)
+    (cdVC3_of_all_comm Counter_coreVCs3 Counter_all_comm) C hReach
 
 open LabeledTS in
 /-- End-to-end RA-linearizability for G-Set via the delta/CD route. -/
@@ -158,7 +161,9 @@ theorem gset_ra_linearizable3_cd
     (hReach : (labeledTS3 GSetCond).ReachableFrom
       (initConfig GSetCond trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable3_of_join GSet_joinLemma3_cd C hReach
+  ra_linearizable3_via_capstone GSet_coreVCs3.toCD GSet_coreVCs3.update_core
+    (feasibleDeltaVCs3_of_delta GSet_coreVCs3 GSet_deltaVCs3)
+    (cdVC3_of_all_comm GSet_coreVCs3 GSet_all_comm) C hReach
 
 
 end Sal.ConditionedMRDTs

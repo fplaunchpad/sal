@@ -5,8 +5,8 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 Mechanization of the VC-minimality sweep (`whiteboard/vc-minimality-note.md`).
 The flat bundle `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3` (eight verification
-conditions) is adequate for RA-linearizability
-(`ra_linearizable_of_core_feasible_cd3`); this file mechanizes the *shrink*
+conditions) is adequate for RA-linearizability (now through the single
+arbitration capstone `ra_linearizable3_via_capstone`); this file mechanizes the *shrink*
 direction: the shell conditions VC1..VC4 are consumed only in weakened forms,
 and VC5 (`feasible_init`) splits into an independent nullary unit plus a
 derivable nonempty half.
@@ -14,9 +14,9 @@ derivable nonempty half.
 ## The consumption-site inventory (audited against `Adequacy.lean` and
 `Sigma_LoOn3.lean`)
 
-The adequacy chain is
-`ra_linearizable_of_core_feasible_cd3 = ra_linearizable3_of_join ∘
-join_lemma3_of_cd_feasible`. The reachability induction
+The adequacy chain is `ra_linearizable3_via_capstone` (the arbitration
+capstone, `rc` supplied as `loOnFamily`) bottoming out in the reachability
+induction `ra_linearizable3_of_join` (the `GoodConfig3` fold). That induction
 (`ra_linearizable3_of_join`, the `GoodConfig3` fold) consumes ONLY the Join
 Lemma; every VC consumption happens inside `join_lemma3_of_cd_feasible` and
 the σ-machinery it invokes. Per shell VC:

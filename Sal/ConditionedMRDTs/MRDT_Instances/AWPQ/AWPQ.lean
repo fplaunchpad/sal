@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReach
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
@@ -1078,8 +1079,8 @@ theorem awpq_ra_linearizable3
     (C : Configuration AWPQ)
     (hReach : (labeledTS3 AWPQ).ReachableFrom (initConfig AWPQ trivial) C) :
     IsRALinearizable3 C :=
-  ra_linearizable_of_core_feasible_cd3 AWPQ_coreVCs3CD AWPQ_feasibleDeltaVCs3
-    AWPQ_cdVC3 C hReach
+  ra_linearizable3_via_capstone AWPQ_coreVCs3CD AWPQ_coreVCs3CD.update_core
+    AWPQ_feasibleDeltaVCs3 AWPQ_cdVC3 C hReach
 
 
 /-! ## The conditioned capstone — identity instantiation of the generic framework -/
