@@ -2,15 +2,13 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 import Sal.ConditionedMRDTs.Framework.Sigma_LoOn3
 
 /-!
-# The arbitration refactor (task #114, phase 3b)
+# The arbitration refactor
 
-The falsifiable capstone of the RA-linearizability definitional audit
-(`whiteboard/ra-lin-definition-note.md`). This file mechanizes the **arbitration
-abstraction** conjectured in §4 of that note and, in the same stroke, **bounds**
-the thesis: it locates the one place in the adequacy chain that consumes the
-`rc` *form* rather than merely its acyclicity consequence.
+The **arbitration abstraction** of the RA-linearizability definitional audit, which
+also **bounds** the thesis: it locates the one place in the adequacy chain that
+consumes the `rc` *form* rather than merely its acyclicity consequence.
 
-## The thesis and its bound (Step-1 verdict, mechanized here)
+## The thesis and its bound
 
 The thesis: RA-linearizability's invariant content is "a version's state is the
 fold of some enumeration extending an **acyclic arbitration** that extends `vis`
@@ -18,13 +16,13 @@ on non-commuting pairs, up to the fold quotient", and the `rc` mechanism
 (directionality, `no_rc_chain`, the absorber) is merely a device for discharging
 that arbitration's *acyclicity*.
 
-Diagnostic result (Step 1): the adequacy chain splits its consumption of
-`loOn`/`rc` into two independent sub-obligations.
+The adequacy chain splits its consumption of `loOn`/`rc` into two independent
+sub-obligations.
 
 * **Existence** (`isCanonicalState_exists_u` ← `loOnNe_acyclic_u` ←
   `no_rc_chain` + the absorber): a witness enumeration *exists*. This is
-  **acyclicity-only**, exactly as the thesis claims. `AcyclicArbitration.acyclic`
-  below is its abstract form; `loOn` discharges it via `loOnNe_acyclic_u`.
+  **acyclicity-only**, as the thesis claims. `AcyclicArbitration.acyclic` below is
+  its abstract form; `loOn` discharges it via `loOnNe_acyclic_u`.
 * **Convergence** (`isCanonicalState_unique_u` ← `convergence_on_u` ←
   `applySeq_bubble_to_front_loOn_u` ← `applySeq_swap_via_cond_comm_lift_u` ←
   `cond_comm_lift`, VC3, with the `rc` value supplied by
@@ -35,39 +33,37 @@ Diagnostic result (Step 1): the adequacy chain splits its consumption of
   premise to narrow the pair to `(rem x, add x)` and pick the erasable member),
   which acyclicity alone does **not** supply.
 
-So the thesis is **BOUNDED at the convergence site**. The rc mechanism discharges
-*both* obligations, and the note's conjecture ("the four demoted clauses reappear
-as lemmas discharging acyclicity") accounts only for the first. The corrected
-invariant content is:
+So the thesis is **BOUNDED at the convergence site**: the rc mechanism discharges
+*both* obligations, and acyclicity accounts only for the first. The full invariant
+content is:
 
 > a version's state is, up to `eqObs`, the fold of some enumeration extending an
 > acyclic arbitration that (i) extends `vis` on non-commuting pairs **and**
-> (ii) is *convergent* — all respecting enumerations fold equally.
+> (ii) is *convergent*, all respecting enumerations fold equally.
 
-Clause (ii) — `ArbConvergence` below — is the missing half. It is *stronger than
+Clause (ii), `ArbConvergence` below, is the second half. It is *stronger than
 acyclicity* (`acyclicity_insufficient_for_convergence`) and *weaker than the full
 rc form* (its content is the rc-free "an absorbed non-commuting-concurrent pair is
 fold-swap-invariant"; the absorbed member is identified by `vis`-overwrite, not by
 `rc`). `rc + cond_comm_lift` is *one* construction discharging both (i) and (ii);
 LWW's `max`-payload discharges (ii) trivially (all writes commute) and takes a
-*finer* (i) — the timestamp total order — that `rc` cannot express (see
+*finer* (i), the timestamp total order, that `rc` cannot express (see
 `MRDT_Instances/LWWRegister/LWWRegister.lean`, `lww_isRALinearizable3Arb_ts`).
 
-## What lands here (all kernel-clean, axioms ⊆ {propext, Classical.choice,
-Quot.sound})
+## Contents (kernel-clean, axioms ⊆ {propext, Classical.choice, Quot.sound})
 
-* `AcyclicArbitration`, `IsRALinearizable3Arb` — the abstraction (a,b).
-* `loOnArbitration` — `loOn` **is** an `AcyclicArbitration` (c): its acyclicity is
+* `AcyclicArbitration`, `IsRALinearizable3Arb`: the abstraction (a,b).
+* `loOnArbitration`: `loOn` **is** an `AcyclicArbitration` (c): its acyclicity is
   `loOnNe_acyclic_u` (= the absorber + `no_rc_chain` halves), its extends-`vis` is
   `loOn_of_vis_noncomm`.
 * `isRALinearizable3Arb_loOn_of_goodConfig3`,
-  `isRALinearizable3_of_isRALinearizable3Arb_loOn` — the adequacy **factoring** (d):
-  the published `GoodConfig3 ⇒ IsRALinearizable3` re-derives *through* the
-  abstraction, via the existing pieces, with no re-run of the 1200-line induction.
-* `ArbConvergence`, `loOn_arbConvergence` — the convergence obligation and the
-  fact that `loOn` discharges it *via `convergence_on_u`, i.e. the rc-keyed
+  `isRALinearizable3_of_isRALinearizable3Arb_loOn`: the adequacy **factoring** (d):
+  `GoodConfig3 ⇒ IsRALinearizable3` re-derives *through* the abstraction, via the
+  existing pieces, with no re-run of the reachability induction.
+* `ArbConvergence`, `loOn_arbConvergence`: the convergence obligation and the fact
+  that `loOn` discharges it *via `convergence_on_u`, i.e. the rc-keyed
   `cond_comm_lift`*. This is the B-site made explicit.
-* `acyclicity_insufficient_for_convergence` — the bounded-thesis pin: an acyclic
+* `acyclicity_insufficient_for_convergence`: the bounded-thesis pin, an acyclic
   arbitration whose two respecting enumerations fold to different states, so
   clause (ii) is independent of clause (i).
 -/
@@ -90,9 +86,9 @@ def arbNe (E : Set (Op D.AppOp))
 
 /-- **(a) An acyclic arbitration** on a configuration `C`: a set-relative
 relation `arb E` that (i) extends `vis` on non-commuting pairs and (ii) is
-acyclic on every configuration event set. This is the invariant-content relation
-the audit isolates: the rc arm, `no_rc_chain`, and the absorber are one *device*
-for producing such an `arb`, not part of its specification. -/
+acyclic on every configuration event set. This is the invariant-content relation:
+the rc arm, `no_rc_chain`, and the absorber are one *device* for producing such an
+`arb`, not part of its specification. -/
 structure AcyclicArbitration (C : Configuration D) where
   /-- The arbitration relation, ranging over the version's own event set. -/
   arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop
@@ -105,7 +101,7 @@ structure AcyclicArbitration (C : Configuration D) where
 
 /-- **(b) RA-linearizability against an arbitration.** Every stored version's
 state is the fold of *some* enumeration of its event set that respects `arb`.
-With `arb := loOn (core C)` this is exactly `GoodConfig3.canonical`; the published
+With `arb := loOn (core C)` this is exactly `GoodConfig3.canonical`;
 `IsRALinearizable3` is its `lo`-coarsening (Def-lin). -/
 def IsRALinearizable3Arb (C : Configuration D)
     (arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop) : Prop :=
@@ -115,7 +111,7 @@ def IsRALinearizable3Arb (C : Configuration D)
       listPermOf π E ∧ respects π (arb E) ∧
       applySeq D.toCRDTSig D.init π = s
 
-/-! ## §2. `loOn` is an acyclic arbitration (c) — the rc-instance
+/-! ## §2. `loOn` is an acyclic arbitration (c): the rc-instance
 
 The absorber and `no_rc_chain` are exactly what discharge `loOn`'s acyclicity
 obligation (`loOnNe_acyclic_u`); its extends-`vis` is the definitional vis arm
@@ -135,7 +131,7 @@ def loOnArbitration (C : Configuration D) (hU : UpdateVCs D.toCRDTSig)
 
 /-! ## §3. The adequacy factoring (d)
 
-The published adequacy `isRALinearizable3_of_good : GoodConfig3 C →
+The adequacy `isRALinearizable3_of_good : GoodConfig3 C →
 IsRALinearizable3 C` re-derives *through* the abstraction as the composite of two
 one-liners: `GoodConfig3` gives `IsRALinearizable3Arb (loOn (core C))` (the
 `canonical` field unfolds to the arb-witness), and the loOn-form transports down
@@ -150,7 +146,7 @@ theorem isRALinearizable3Arb_loOn_of_goodConfig3 {C : Configuration D}
   fun v s E hv => h.canonical v s E hv
 
 /-- **(d, out)** Arb-RA-linearizability at `loOn` transports down to the
-published `lo`-form Def-lin: a `loOn(E)`-respecting witness is a `lo`-respecting
+`lo`-form Def-lin: a `loOn(E)`-respecting witness is a `lo`-respecting
 witness (`respects_lo_of_respects_loOn`). -/
 theorem isRALinearizable3_of_isRALinearizable3Arb_loOn {C : Configuration D}
     (h : IsRALinearizable3Arb C (fun E => loOn (Configuration.core C) E)) :
@@ -159,7 +155,7 @@ theorem isRALinearizable3_of_isRALinearizable3Arb_loOn {C : Configuration D}
   obtain ⟨π, hp, hr, hs⟩ := h v s E hv
   exact ⟨π, hp, respects_lo_of_respects_loOn hr, hs⟩
 
-/-- **(d)** The published adequacy, factored through the abstraction: the same
+/-- **(d)** The adequacy, factored through the abstraction: the same
 `GoodConfig3 ⇒ IsRALinearizable3` implication, composed as
 `(out) ∘ (loOn-instance) ∘ (in)`. -/
 theorem isRALinearizable3_of_good_via_arb {C : Configuration D}
@@ -173,13 +169,13 @@ theorem isRALinearizable3_of_good_via_arb {C : Configuration D}
 enumerations could fold to different states. Well-definedness is the separate
 **convergence** obligation. For `loOn` it is discharged by `convergence_on_u`,
 which routes through `applySeq_swap_via_cond_comm_lift_u` and hence consumes
-`cond_comm_lift` (VC3) — a swap *keyed to* `rc e e' = Fst_then_snd`. This is the
+`cond_comm_lift` (VC3), a swap *keyed to* `rc e e' = Fst_then_snd`. This is the
 single place the adequacy chain consumes the rc *form* rather than mere
 acyclicity, and it is why the thesis is bounded. -/
 
 /-- **The convergence obligation** for an arbitration: on every configuration
 event set, all `arb`-respecting enumerations fold to the same state (from any
-start). This is what makes the canonical state — hence `op(v)` — well-defined.
+start). This is what makes the canonical state, hence `op(v)`, well-defined.
 It is *not* implied by `AcyclicArbitration` (see
 `acyclicity_insufficient_for_convergence`). -/
 def ArbConvergence (C : Configuration D)
@@ -201,8 +197,8 @@ theorem loOn_arbConvergence {C : Configuration D} (hU : UpdateVCs D.toCRDTSig) :
     convergence_on_u hU s₀ h_in hp₁ hp₂ hr₁ hr₂
 
 /-- **Acyclicity is insufficient for convergence** (the bounded-thesis pin). The
-discrete (empty) arbitration is vacuously acyclic and — on a datatype whose
-concurrent pair does not `vis`-relate — vacuously extends-`vis`-on-noncomm, yet
+discrete (empty) arbitration is vacuously acyclic and, on a datatype whose
+concurrent pair does not `vis`-relate, vacuously extends-`vis`-on-noncomm, yet
 two enumerations respecting it fold to *different* states whenever `update` is
 order-sensitive on that pair. Witnessed on the overwrite fold `fun _ e => e`:
 `[a, b]` folds to `b`, `[b, a]` folds to `a`. Hence `ArbConvergence` is a genuine

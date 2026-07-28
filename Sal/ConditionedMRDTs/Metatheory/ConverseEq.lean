@@ -1,24 +1,20 @@
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient
 
 /-!
-# The conditioned converse of adequacy — the `eqObs`-quotient lift (task #122, phase 2)
+# The conditioned converse of adequacy: the `eqObs`-quotient lift
 
-The flat converse (`Metatheory/Converse.lean`) settled that a *canonical
+The flat converse (`Metatheory/Converse.lean`) shows that a *canonical
 RA-linearizable* flat MRDT satisfies the four core VCs on its reachable,
 weakly-closed event sets. This file lifts the completeness picture to the
-CONDITIONED framework — RA-linearizability read up to the observational
-equivalence `eqObs` (`≈`), at every reachable `Inv`-configuration — following the
-verdicts settled pen-and-paper + Python in phase 1
-(`whiteboard/conditioned-converse-note.md`, harness
-`whiteboard/litmus/conditioned_converse_check.py`).
+CONDITIONED framework: RA-linearizability read up to the observational equivalence
+`eqObs` (`≈`), at every reachable `Inv`-configuration.
 
-The headline of the note is the *lift* of the flat core/shell split, with one new
-phenomenon (antitonicity) made concrete:
+The lift of the flat core/shell split carries one new phenomenon, antitonicity:
 
 * **vc:merge (the conditioned Join) is FORCED** by existence-plus-convergence-up-to
-  `≈`, exactly as the flat Join was — `converse_vc_merge` below, on the
-  reachable-realizable domain (the one CONJECTURED domain step is an explicit
-  hypothesis, per the note, not forced).
+  `≈`, exactly as the flat Join was: `converse_vc_merge` below, on the
+  reachable-realizable domain (the one conjectured domain step is an explicit
+  hypothesis, not forced).
 * **vc:comm + vc:inv (the swap oracle) are NOT forced.** They are a *sufficient
   device* strictly stronger than the convergence content RA-lin forces. Refuted by
   the RESET witness (`Refutations/EqSwap_Not_Forced.lean`, `eqswap_not_forced`).
@@ -28,10 +24,10 @@ phenomenon (antitonicity) made concrete:
 
 This file carries the SHARED definitions consumed by both the positive direction
 and the refutations (`EqSwap`, `ConvergesEq`, `EqSwapOracle`, `CanonicalRALin3Eq`),
-the positive residue of vc:comm (`sig_peel_maximal_eq` — what convergence *does*
+the positive residue of vc:comm (`sig_peel_maximal_eq`, what convergence *does*
 force, the maximal swap packaged as a fold-peel), the vc:merge lift
-(`converse_vc_merge`), and the #123 abstract-arbitration experiment
-(`loOnArb`, `IsRALinearizable3ArbEq`, `loOnEq_isArb`).
+(`converse_vc_merge`), and the abstract-arbitration recast (`loOnArb`,
+`IsRALinearizable3ArbEq`, `loOnEq_isArb`).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -45,8 +41,8 @@ variable {D : ConditionedMRDTSig}
 /-! ## §1. The shared conditioned-converse vocabulary
 
 These four are the `eqObs`-conditioned readings of the notions the flat converse
-used over `=`. They are `def`s (not theorems), so this file compiles regardless of
-how far the positive direction below closes; the refutations import them. -/
+used over `=`. They are `def`s (not theorems), consumed by both the positive
+direction below and the refutations. -/
 
 /-- **`EqSwap` (vc:comm, the local swap witness).** The `≈`-relaxed local
 commutation `do (do s a) b ≈ do (do s b) a`, at a single enabling state `s`. The
@@ -58,8 +54,8 @@ def EqSwap (E : EqEquiv D) (a b : Op D.AppOp) (s : D.State) : Prop :=
 /-- **`ConvergesEq` (the convergence-up-to-`≈` content of conditioned RA-lin).**
 On an event set `ev`, all `loOnEq`-respecting raw folds land `≈`-equal, so the
 canonical class `σcan≈(ev)` is single-valued up to `≈`. This is the `converges`
-half the note determines the faithful conditioned hypothesis to be — the
-`eqObs`-lift of `Converse.Converges`, read over `IsCanonicalStateEq`. -/
+half of the faithful conditioned hypothesis, the `eqObs`-lift of
+`Converse.Converges`, read over `IsCanonicalStateEq`. -/
 def ConvergesEq (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (vis : Op D.AppOp → Op D.AppOp → Prop) (ev : Set (Op D.AppOp)) : Prop :=
   ∀ s s' : D.State,
@@ -85,23 +81,22 @@ def EqSwapOracle (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
 /-- **`Discipline` (the load-bearing clause of vc:disc).** `Inv` holds at `init`
 and is preserved by the raw `update` on *applicable* operations. The generation
 half of vc:disc is carried by the `ConditionedConfiguration` execution model
-(presupposed by the converse statement, per the note), so this is the clause a
-datatype's *chosen* `Inv` decides; the two-Inv witness separates it. -/
+(presupposed by the converse statement), so this is the clause a datatype's
+*chosen* `Inv` decides; the two-Inv witness separates it. -/
 def Discipline (D : ConditionedMRDTSig) : Prop :=
   D.Inv D.init ∧
     ∀ (s : D.State) (o : Op D.AppOp), D.Inv s → D.applicable o s → D.Inv (D.update s o)
 
-/-! ## §2. Antitonicity of `loOnEq` and `≈`-closure of canonicity (T3 support)
+/-! ## §2. Antitonicity of `loOnEq` and `≈`-closure of canonicity
 
 The two structural facts the positive direction rests on, lifted from the flat
 `loOn_mono` / the `IsCanonicalState` closure. `loOnEq` has FEWER edges on a larger
-set (growing the set only adds absorbers — the rc-arm's `¬∃` clause weakens), and
+set (growing the set only adds absorbers, so the rc-arm's `¬∃` clause weakens), and
 `IsCanonicalStateEq` is closed under `≈` on its state (existence read up to `≈`). -/
 
-/-- **Antitonicity of `loOnEq`** (the note's central new phenomenon, made concrete):
-`loOnEq` is monotone-decreasing in the event set — the exact `eqObs`-lift of the
-flat `loOn_mono`. The vis arm is set-free; the rc arm's absorber clause `¬∃ e₃ ∈ ev`
-only weakens as `ev` grows. -/
+/-- **Antitonicity of `loOnEq`**: `loOnEq` is monotone-decreasing in the event set,
+the `eqObs`-lift of the flat `loOn_mono`. The vis arm is set-free; the rc arm's
+absorber clause `¬∃ e₃ ∈ ev` only weakens as `ev` grows. -/
 theorem loOnEq_mono {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {vis : Op D.AppOp → Op D.AppOp → Prop} {ev ev' : Set (Op D.AppOp)}
     (h_sub : ev ⊆ ev') {e₁ e₂ : Op D.AppOp}
@@ -121,16 +116,15 @@ theorem isCanonicalStateEq_congr {E : EqEquiv D} {W : Op D.AppOp → D.State →
   obtain ⟨ρ, hp, hr, hf⟩ := h
   exact ⟨ρ, hp, hr, E.equiv.trans hf (E.equiv.symm heq)⟩
 
-/-! ## §3. The fold-peel `sig_peel_maximal_eq` (T3 — the positive residue of vc:comm)
+/-! ## §3. The fold-peel `sig_peel_maximal_eq` (the positive residue of vc:comm)
 
 The `eqObs`-lift of `Converse.sig_peel_maximal`. What convergence-up-to-`≈` DOES
 force is the *maximal* swap, packaged as `σcan≈(U) ≈ do (σcan≈(U∖e)) e` for a
-`loOnEq(U)`-maximal `e`. The one place the `eqObs` relaxation costs more than the
-flat proof: appending `e` to the punctured fold needs `update` to respect `≈`
-(`CongVC.update_congr`), which needs `Inv` at both folds — supplied here as the
-explicit `hInvUe` / `hInvFold` premises (the framework discharges the latter from
-`WfOpReachable` along reachable folds; stated explicitly here, as the flat
-converse stated `converges`). -/
+`loOnEq(U)`-maximal `e`. Under the `eqObs` relaxation, appending `e` to the
+punctured fold needs `update` to respect `≈` (`CongVC.update_congr`), which needs
+`Inv` at both folds: supplied here as the explicit `hInvUe` / `hInvFold` premises
+(the framework discharges the latter from `WfOpReachable` along reachable folds;
+stated explicitly here, as the flat converse stated `converges`). -/
 
 /-- The `eqObs`-lift of `isCanonicalState_snoc`: append a `loOnEq(U)`-maximal `e`
 to a canonical fold of `U∖e`. Uses `loOnEq_mono` (antitonicity) for the respects
@@ -173,8 +167,8 @@ theorem isCanonicalStateEq_snoc {E : EqEquiv D} {W : Op D.AppOp → D.State → 
   · rw [applySeq_append_single]
     exact hC.update_congr e (hInvFold ρ hp hr) hInvUe hf
 
-/-- **`sig_peel_maximal_eq`** — `σcan≈(U) ≈ do (σcan≈(U∖e)) e` for a
-`loOnEq(U)`-maximal `e`, from convergence and antitonicity, exactly as
+/-- **`sig_peel_maximal_eq`**: `σcan≈(U) ≈ do (σcan≈(U∖e)) e` for a
+`loOnEq(U)`-maximal `e`, from convergence and antitonicity, as
 `Converse.sig_peel_maximal`. This is the positive residue of vc:comm: convergence
 forces precisely the maximal swap. -/
 theorem sig_peel_maximal_eq {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
@@ -192,18 +186,17 @@ theorem sig_peel_maximal_eq {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop
   hconv sU (D.update sUe e) hU
     (isCanonicalStateEq_snoc hC h_e_in h_max hInvUe hInvFold hUe)
 
-/-! ## §4. The conditioned RA-lin hypothesis and the vc:merge lift (T3)
+/-! ## §4. The conditioned RA-lin hypothesis and the vc:merge lift
 
 `CanonicalRALin3Eq` is the faithful conditioned converse hypothesis, following the
 flat `Converse.CanonicalRALin3` but WITHOUT a Join field: the conditioned framework
 takes the Join as a primitive VC, and existence+convergence *derives* it, so
-packaging it in would be circular (per the note). The one gap the note flags —
-that every abstract `GenDisc` fully-closed `Inv` merge tuple is realized as a
-reachable merge whose merge state is `≈` a canonical fold of the union — is the
-`MergeRealizable` hypothesis below, stated EXPLICITLY (not forced), as the note
-directs. The vc:merge lift then follows by `≈`-closure. -/
+packaging it in would be circular. The one gap, that every abstract `GenDisc`
+fully-closed `Inv` merge tuple is realized as a reachable merge whose merge state is
+`≈` a canonical fold of the union, is the `MergeRealizable` hypothesis below, stated
+EXPLICITLY (not forced). The vc:merge lift then follows by `≈`-closure. -/
 
-/-- **`CanonicalRALin3Eq`** — the faithful conditioned-converse hypothesis:
+/-- **`CanonicalRALin3Eq`**: the faithful conditioned-converse hypothesis,
 convergence up to `≈` on every fully-closed set (the canonical class is
 single-valued up to `≈`). The `eqObs`-lift of `Converse.CanonicalRALin3` minus its
 `join` field (vc:merge is derived, not assumed). -/
@@ -213,14 +206,13 @@ structure CanonicalRALin3Eq (D : ConditionedMRDTSig) (E : EqEquiv D)
   converges : ∀ (vis : Op D.AppOp → Op D.AppOp → Prop) (ev : Set (Op D.AppOp)),
     fullClosureRel vis ev → ConvergesEq E W vis ev
 
-/-- **`MergeRealizable`** — the CONJECTURED domain-realizability step of vc:merge,
-made an explicit hypothesis (per the note, "stated as an explicit hypothesis, as
-the flat converse stated `converges`"). Over every abstract `GenDisc` fully-closed
-`Inv` merge tuple of `EqJoinLemma3C`'s domain, the merge state `mergeL s₀ s₁ s₂`
-is `≈` to a canonical fold of the union — the config-free stand-in for "the merge
-tuple is a reachable merge version whose existence RA-lin asserts." This is the one
-step NOT forced (the abstract Join domain is not automatically a reachable-config
-domain), which is exactly the note's CONJECTURED label. -/
+/-- **`MergeRealizable`**: the conjectured domain-realizability step of vc:merge,
+made an explicit hypothesis (as the flat converse stated `converges`). Over every
+abstract `GenDisc` fully-closed `Inv` merge tuple of `EqJoinLemma3C`'s domain, the
+merge state `mergeL s₀ s₁ s₂` is `≈` to a canonical fold of the union: the
+config-free stand-in for "the merge tuple is a reachable merge version whose
+existence RA-lin asserts." This is the one step NOT forced, since the abstract Join
+domain is not automatically a reachable-config domain. -/
 def MergeRealizable (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop)
     (GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop) : Prop :=
@@ -237,13 +229,13 @@ def MergeRealizable (D : ConditionedMRDTSig) (E : EqEquiv D)
     ∃ u : D.State,
       IsCanonicalStateEq E W vis (ev₁ ∪ ev₂) u ∧ E.eqv (D.mergeL s₀ s₁ s₂) u
 
-/-- **`converse_vc_merge` (the vc:merge lift, T3).** Conditioned RA-lin plus the
+/-- **`converse_vc_merge` (the vc:merge lift).** Conditioned RA-lin plus the
 explicit realizability step forces the conditioned Join `EqJoinLemma3C`. The
 derivation is the flat `converse_VC6`/`_VC8` Join step transported through `≈`: the
 merge lands `≈` a canonical fold of the union (`MergeRealizable`), hence IS a
 canonical state of the union by `≈`-closure (`isCanonicalStateEq_congr`).
 Convergence (`CanonicalRALin3Eq`) secures well-definedness of the canonical class
-the realizability names; the realizability itself is the CONJECTURED domain step,
+the realizability names; the realizability itself is the conjectured domain step,
 not forced. -/
 theorem converse_vc_merge {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop}
@@ -255,21 +247,20 @@ theorem converse_vc_merge {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     hin₁ hin₂ hcl₁ hcl₂ hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂
   exact isCanonicalStateEq_congr hu hmu
 
-/-- **`mergeRealizable_iff_join` (T3, resolved).** `MergeRealizable` is not a step
-weaker than the conditioned Join that convergence could bridge: the two are
-*equivalent*. The forward is `converse_vc_merge` with `CanonicalRALin3Eq` deleted
-(convergence is genuinely unused — the recorded T3 finding, now a theorem); the
-reverse takes `u := mergeL s₀ s₁ s₂` with `≈`-reflexivity. So `MergeRealizable` IS
-the conditioned Join VC (`EqJoinLemma3C`) repackaged from "the merge lands on a
-fold" into "the merge is `≈` some fold". This settles "is `MergeRealizable`
-dischargeable?": NO in general (it is the datatype's merge=fold obligation, not a
-theorem about arbitrary `D`), and its status is exactly the flat converse's — RA-lin
-forces it on *reachable* merge tuples (RA-lin asserts every merge version is a
-canonical fold of its event set), while over the abstract tuple domain it is not
-forced (the abstract/reachable gap, the same gap the full flat converse refutes).
-Hence the flat `Converse.CanonicalRALin3` carries `join` as an assumed field with no
-apology; the conditioned converse's "conjectured realizability step" was the same
-Join wearing a different name. -/
+/-- **`mergeRealizable_iff_join`.** `MergeRealizable` is not a step weaker than the
+conditioned Join that convergence could bridge: the two are *equivalent*. The
+forward is `converse_vc_merge` with `CanonicalRALin3Eq` deleted (convergence is
+genuinely unused); the reverse takes `u := mergeL s₀ s₁ s₂` with `≈`-reflexivity.
+So `MergeRealizable` IS the conditioned Join VC (`EqJoinLemma3C`) repackaged from
+"the merge lands on a fold" into "the merge is `≈` some fold". It is therefore not
+dischargeable in general: it is the datatype's merge=fold obligation, not a theorem
+about arbitrary `D`, and its status is exactly the flat converse's. RA-lin forces
+it on *reachable* merge tuples (RA-lin asserts every merge version is a canonical
+fold of its event set), while over the abstract tuple domain it is not forced (the
+abstract/reachable gap, the same gap the full flat converse refutes). Hence the
+flat `Converse.CanonicalRALin3` carries `join` as an assumed field, and the
+conditioned converse's "conjectured realizability step" is the same Join wearing a
+different name. -/
 theorem mergeRealizable_iff_join {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {GenDisc : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop} :
     MergeRealizable D E W GenDisc ↔ EqJoinLemma3C D E W GenDisc := by
@@ -286,19 +277,18 @@ theorem mergeRealizable_iff_join {E : EqEquiv D} {W : Op D.AppOp → D.State →
         hgd₁ hgd₂ hgdU hc₀ hc₁ hc₂,
       E.equiv.refl _⟩
 
-/-! ## §5. The #123 experiment: RA-lin over an abstract antitone arbitration (T4)
+/-! ## §5. RA-lin over an abstract antitone arbitration
 
-The rc-free recast (`ra-lin-definition-note.md`, #123): replace `rc`/`loOnEq` by an
-abstract arbitration `arb`, required only acyclic and (here) antitone. The
-convergence engine (`eq_convergence`) is already order-agnostic, so the swap oracle
-over an abstract `arb` feeds it unchanged. This section lands the abstraction and
-the transport shape; the residue is named at the end. -/
+The rc-free recast: replace `rc`/`loOnEq` by an abstract arbitration `arb`,
+required only acyclic and (here) antitone. The convergence engine (`eq_convergence`)
+is already order-agnostic, so the swap oracle over an abstract `arb` feeds it
+unchanged. This section carries the abstraction and the transport shape. -/
 
 /-- The concrete arbitration `loOnEq` uses: `rc = Fst_then_snd`. -/
 def rcArb (D : ConditionedMRDTSig) : Op D.AppOp → Op D.AppOp → Prop :=
   fun e₁ e₂ => D.rc e₁ e₂ = RcRes.Fst_then_snd
 
-/-- **`loOnArb`** — `loOnEq` with the rc-arm's `rc = Fst_then_snd` replaced by an
+/-- **`loOnArb`**: `loOnEq` with the rc-arm's `rc = Fst_then_snd` replaced by an
 abstract arbitration `arb`. The vis arm and the absorber are unchanged. -/
 def loOnArb (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (vis : Op D.AppOp → Op D.AppOp → Prop) (arb : Op D.AppOp → Op D.AppOp → Prop)
@@ -343,9 +333,9 @@ theorem isCanonicalStateEq_iff_arb (E : EqEquiv D) (W : Op D.AppOp → D.State �
     IsCanonicalStateEq E W vis ev s ↔ IsCanonicalStateArbEq E W vis (rcArb D) ev s :=
   Iff.rfl
 
-/-- **`IsRALinearizable3ArbEq`** — the #123 recast of RA-linearizability over an
-abstract arbitration: every stored version's state is an `arb`-respecting canonical
-fold of its event set (existence-only per version, read up to `≈`). `versions ev s`
+/-- **`IsRALinearizable3ArbEq`**: the recast of RA-linearizability over an abstract
+arbitration, every stored version's state is an `arb`-respecting canonical fold of
+its event set (existence-only per version, read up to `≈`). `versions ev s`
 abstracts "`ev` is a stored version's event set with state `s`"; keeping it abstract
 is what makes the statement config-agnostic, hence order-agnostic. -/
 def IsRALinearizable3ArbEq (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -357,17 +347,15 @@ def IsRALinearizable3ArbEq (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
 /-- **The recast admits the conditioned layer.** The conditioned per-version RA-lin
 (over `loOnEq`) IS the abstract-arbitration RA-lin at `arb = rcArb`: the two
 canonical-state notions coincide (`isCanonicalStateEq_iff_arb`), so the forward
-(adequacy) direction transports with no rc-specific residue. This is the #123
-pivot's YES for the conditioned layer.
+(adequacy) direction transports with no rc-specific residue.
 
-**Residue.** The FULL framework-wide adequacy — the `GoodConfig3` reachability
-induction (`goodConfig3_of_reachF_wfgen`) re-threaded so that every merge step's
-Join runs over the abstract `arb` rather than `loOnEq` — is the same mechanical
-re-derivation named for the flat recast (#119 / #123, the `B-full` re-thread): a
-copy of the reachability layer over `loOnArb`, not a composition. It carries no new
-mathematical obstruction (the engine is order-agnostic and `loOnArb_mono` supplies
-antitonicity for any `arb`), so it is deferred, exactly as `Converse.flat_completeness`
-defers the tight biconditional to #119. -/
+The full framework-wide adequacy (the `GoodConfig3` reachability induction
+`goodConfig3_of_reachF_wfgen` re-threaded so that every merge step's Join runs over
+the abstract `arb` rather than `loOnEq`) is a copy of the reachability layer over
+`loOnArb`, not a composition. It carries no new mathematical obstruction (the engine
+is order-agnostic and `loOnArb_mono` supplies antitonicity for any `arb`), and is
+not carried out here, as `Converse.flat_completeness` does not establish the tight
+biconditional. -/
 theorem ra_lin_arb_transport (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (vis : Op D.AppOp → Op D.AppOp → Prop)
     (versions : Set (Op D.AppOp) → D.State → Prop) :

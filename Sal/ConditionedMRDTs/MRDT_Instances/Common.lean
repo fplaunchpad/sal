@@ -21,9 +21,9 @@ unions (`mergeL l a b = l ∪ a ∪ b`, componentwise) — Grow-Only Set, Grow-O
 Map, RGA (tombstone), Peritext — for which every merge law is a Boolean
 tautology (the `bor_*` kernel below); two are the counter group form
 (`mergeL l a b = a + b − l`) — Increment-Only Counter, PN-Counter. All six
-land end-to-end via the single arbitration capstone
-`ra_linearizable3_via_capstone` (feeding `feasibleDeltaVCs3_of_delta` and
-`cdVC3_of_all_comm` as the merge content).
+land end-to-end via the arbitration capstone `ra_linearizable3_via_capstone`
+(feeding `feasibleDeltaVCs3_of_delta` and `cdVC3_of_all_comm` as the merge
+content).
 
 Faithfulness notes: `set α = α → Bool` mirrors as before; Grow-Only Map's
 `map ℕ (set ℕ)` is mirrored uncurried as `(ℕ × ℕ) → Bool` (its

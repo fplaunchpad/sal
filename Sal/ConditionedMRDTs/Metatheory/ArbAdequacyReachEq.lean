@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.Metatheory.ConverseEq
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H
 
 /-!
-# Conditioned reachability arbitration adequacy — the `eqObs`-quotient lift (task #122 T4 / #123)
+# Conditioned reachability arbitration adequacy: the `eqObs`-quotient lift
 
 The `eqObs`-quotient (`≈`) analog of the flat capstone
 `Metatheory/ArbAdequacyReach.lean` (`ra_linearizable3Arb_of_core_feasible_cd`). It
@@ -11,11 +11,10 @@ lifts the CONDITIONED per-version arb-transport of `Metatheory/ConverseEq.lean`
 `arb = rcArb`) to the FULL reachability adequacy, so the rc-free recast is
 established over genuine observational equivalence (not `=`), at every reachable
 `Inv`-configuration, framework-wide. The payoff (`loOnEqArbFamily`,
-`loOnEq_isRALinearizable3Eq_via_arb_capstone`) re-derives the published conditioned
-RA-lin `GoodConfig3H.IsRALinearizable3Eq` as the `arb = rcArb` instantiation — the
-conditioned analog of #119A.
+`loOnEq_isRALinearizable3Eq_via_arb_capstone`) re-derives the conditioned RA-lin
+`GoodConfig3H.IsRALinearizable3Eq` as the `arb = rcArb` instantiation.
 
-## The architecture, and the central FINDING
+## The architecture
 
 The flat `ArbAdequacyReach` re-threads the `GoodConfig3` reachability induction over
 `IsCanonicalStateArb`, and its `ArbFamily` carries SIX clauses (extends-`vis`,
@@ -23,25 +22,25 @@ acyclic, antitone, vis-consistent, convergent, vis-local) because the flat engin
 DERIVES its ternary Join Lemma from the CD/feasible VCs, and that derivation needs
 the arbitration to be well-behaved.
 
-The CONDITIONED engine is different, and this is the finding: it runs over the
-`Inv`-subtype quotient `QSig` (which carries `Inv`, needed to keep `≈`-congruence
-of `update`/`mergeL` in scope — the plain execution model has no `Inv`), mirroring
-`Metatheory/GoodConfig3H.lean`, and it takes the `≈`-Join as a PRIMITIVE VC
-(`EqJoinLemma3C_ArbH`), not a derived lemma. Consequently **five of the flat six
-`ArbFamily` clauses collapse for the conditioned layer**:
+The CONDITIONED engine is different: it runs over the `Inv`-subtype quotient `QSig`
+(which carries `Inv`, needed to keep `≈`-congruence of `update`/`mergeL` in scope,
+as the plain execution model has no `Inv`), mirroring `Metatheory/GoodConfig3H.lean`,
+and it takes the `≈`-Join as a PRIMITIVE VC (`EqJoinLemma3C_ArbH`), not a derived
+lemma. Consequently **five of the flat six `ArbFamily` clauses collapse for the
+conditioned layer**:
 
 * **antitone** is FREE for any `arb` (`loOnArb_mono`, ConverseEq);
 * **extends-`vis`**, **vis-consistent**, **vis-local** hold structurally for any
-  `arb` over the `loOnArb` layer (the vis-arm and absorber are arb-independent) —
-  recorded here as `arbFamilyEq_extends_vis` / `_vis_consistent` / `_vis_local`,
-  and used only to discharge the arb-agnostic congruence/extension lemmas;
-* **acyclic** and **convergent** are NOT needed — they were the flat DERIVATION's
+  `arb` over the `loOnArb` layer (the vis-arm and absorber are arb-independent),
+  stated here as `arbFamilyEq_extends_vis` / `_vis_consistent` / `_vis_local`, and
+  used only to discharge the arb-agnostic congruence/extension lemmas;
+* **acyclic** and **convergent** are NOT needed: they were the flat derivation's
   levers on the Join, and here the Join is the single primitive VC.
 
 So `ArbFamilyEq` carries exactly the ONE genuine clause the conditioned engine
 consumes: the abstract-arbitration `≈`-Join (`arb` + `join`). The apply re-attach
 (`isCanonicalStateArbEqH_extend`) is arb-agnostic: the fresh causally-latest event's
-maximality is killed by `vis`, never by `arb`. This mirrors, over `≈`, exactly the
+maximality is killed by `vis`, never by `arb`. This mirrors, over `≈`, the
 per-version transport `ConverseEq.ra_lin_arb_transport`, now at every reachable
 configuration.
 
@@ -51,8 +50,7 @@ configuration.
   `IsCanonicalStateArbEqH`, `isCanonicalStateArbEqH_congr` (the createReplica
   congruence), `isCanonicalStateArbEqH_extend` (the apply re-attach, arb-agnostic),
   `EqJoinLemma3C_ArbH` (the merge VC). All `loOnEq ↦ loOnArb … arb`.
-* **§2** the `ArbFamilyEq` structure and the five free/collapsed clauses (the
-  finding, as theorems).
+* **§2** the `ArbFamilyEq` structure and the five free/collapsed clauses, as theorems.
 * **§3** the QSig-level per-version witness `IsCanonicalStateArbH` with its congr /
   extend / merged wrappers.
 * **§4** `GoodConfig3ArbFEq` and the four transition lemmas
@@ -61,8 +59,8 @@ configuration.
 * **§5** the reachability induction `goodConfig3ArbFEq_of_reachF` and THE CAPSTONE
   `ra_linearizable3ArbEq_of_reach` (`IsRALinearizable3ArbEq` at every reachable
   `Inv`-config), composed with `ConverseEq.ra_lin_arb_transport`.
-* **§6** THE INSTANCE: `loOnEqArbFamily` (`arb = rcArb`, `join` = the published
-  `EqJoinLemma3C_H`) and `loOnEq_isRALinearizable3Eq_via_arb_capstone`, re-deriving
+* **§6** THE INSTANCE: `loOnEqArbFamily` (`arb = rcArb`, `join` = `EqJoinLemma3C_H`)
+  and `loOnEq_isRALinearizable3Eq_via_arb_capstone`, re-deriving
   `GoodConfig3H.IsRALinearizable3Eq` through the abstract engine.
 -/
 
@@ -82,7 +80,7 @@ variable {D : ConditionedMRDTSig}
 
 /-! ## §1. The arb-forms of the `GenericEqQuotient_H` datatype support -/
 
-/-- **Arb-canonical state up to `≈`, `H`-disciplined** — `IsCanonicalStateArbEqH`.
+/-- **Arb-canonical state up to `≈`, `H`-disciplined**, `IsCanonicalStateArbEqH`.
 `GenericEqQuotient.IsCanonicalStateEqH` with the linearization order `loOnEq`
 replaced by the abstract-arbitration order `loOnArb … arb` (ConverseEq): the fold
 is RAW (`applySeq D.toCRDTSig D.init ρ`), lands `≈`-equal, and the witness carries
@@ -117,9 +115,9 @@ theorem isCanonicalStateArbEq_eqClosed
   obtain ⟨ρ, hp, hr, hf⟩ := h
   exact ⟨ρ, hp, hr, E.equiv.trans hf (E.equiv.symm heq)⟩
 
-/-- **The createReplica congruence** — transport `IsCanonicalStateArbEqH` under
-`vis`-agreement on `ev`. Verbatim `isCanonicalStateEqH_congr` with `loOnEq ↦
-loOnArb … arb`: the arb-arm `arb e₁ e₂` is `vis`-independent, so it passes through
+/-- **The createReplica congruence**: transport `IsCanonicalStateArbEqH` under
+`vis`-agreement on `ev`. The arb-form of `isCanonicalStateEqH_congr` (`loOnEq ↦
+loOnArb … arb`): the arb-arm `arb e₁ e₂` is `vis`-independent, so it passes through
 untouched; only the vis-arm and the absorber transport. -/
 theorem isCanonicalStateArbEqH_congr (H : List (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -142,13 +140,13 @@ theorem isCanonicalStateArbEqH_congr (H : List (Op D.AppOp) → Prop)
     rintro ⟨e₃, he₃, hv, hnc⟩
     exact h4 ⟨e₃, he₃, (h_vis a ha_E e₃ he₃).mpr hv, hnc⟩
 
-/-- **The apply re-attach**, `H`-disciplined and ARB-AGNOSTIC. Verbatim
-`isCanonicalStateEqH_extend` with `loOnEq ↦ loOnArb … arb` and `loOnEq_antimono ↦
-loOnArb_mono`. The fresh, causally-latest, `applicable` event `e` extends the
+/-- **The apply re-attach**, `H`-disciplined and ARB-AGNOSTIC. The arb-form of
+`isCanonicalStateEqH_extend` (`loOnEq ↦ loOnArb … arb`, `loOnEq_antimono ↦
+loOnArb_mono`). The fresh, causally-latest, `applicable` event `e` extends the
 witness. The maximality discharge touches only the vis-arm (`h_e_last`) and the
-absorber's `¬ vis e₂ e₁` (`h_e_sees`) — the arb-arm `arb e y` is never consulted,
-so the re-attach holds for EVERY `arb`. This is exactly why the conditioned engine
-needs no acyclicity/vis-consistency clause on `arb`. -/
+absorber's `¬ vis e₂ e₁` (`h_e_sees`); the arb-arm `arb e y` is never consulted, so
+the re-attach holds for EVERY `arb`. This is why the conditioned engine needs no
+acyclicity/vis-consistency clause on `arb`. -/
 theorem isCanonicalStateArbEqH_extend (H : List (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (arb : Op D.AppOp → Op D.AppOp → Prop)
@@ -197,10 +195,9 @@ theorem isCanonicalStateArbEqH_extend (H : List (Op D.AppOp) → Prop)
   · rw [applySeq_append_single]
     exact hC.update_congr e hInvFold hσ hf
 
-/-- **The abstract-arbitration `≈`-Join VC** — `EqJoinLemma3C_H` with `loOnEq ↦
+/-- **The abstract-arbitration `≈`-Join VC**: `EqJoinLemma3C_H` with `loOnEq ↦
 loOnArb … arb`. The single genuine clause the conditioned reachability engine
-consumes about `arb`. At `arb = rcArb` this IS the published `EqJoinLemma3C_H`
-(definitionally). -/
+consumes about `arb`. At `arb = rcArb` this IS `EqJoinLemma3C_H` (definitionally). -/
 def EqJoinLemma3C_ArbH (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop) (H : List (Op D.AppOp) → Prop)
     (arb : Op D.AppOp → Op D.AppOp → Prop)
@@ -224,19 +221,19 @@ def EqJoinLemma3C_ArbH (D : ConditionedMRDTSig) (E : EqEquiv D)
 /-- **The conditioned arbitration family.** The single genuine clause the conditioned
 reachability engine consumes about the abstract rc-arm arbitration `arb`: the
 abstract-arbitration `≈`-Join (`EqJoinLemma3C_ArbH`). The flat `ArbFamily`'s other
-five clauses collapse (see the file header FINDING and the free-clause theorems
-below): antitone is `loOnArb_mono`, extends-`vis`/vis-consistent/vis-local hold for
-any `arb`, and acyclic/convergent were the flat derivation's levers on a Join that
-is here a primitive VC. -/
+five clauses collapse (see the free-clause theorems below): antitone is
+`loOnArb_mono`, extends-`vis`/vis-consistent/vis-local hold for any `arb`, and
+acyclic/convergent were the flat derivation's levers on a Join that is here a
+primitive VC. -/
 structure ArbFamilyEq (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop) (H : List (Op D.AppOp) → Prop)
     (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop) where
   /-- The abstract rc-arm arbitration (a plain binary relation on operations). -/
   arb : Op D.AppOp → Op D.AppOp → Prop
-  /-- The abstract-arbitration `≈`-Join VC — the merge pillar. -/
+  /-- The abstract-arbitration `≈`-Join VC, the merge pillar. -/
   join : EqJoinLemma3C_ArbH D E W H arb HonJ
 
-/-- **Free clause — extends-`vis`.** Every visible non-`≈`-commuting pair is ordered
+/-- **Free clause, extends-`vis`.** Every visible non-`≈`-commuting pair is ordered
 by `loOnArb`, for ANY `arb` (the vis-arm is arb-independent). -/
 theorem arbFamilyEq_extends_vis {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {vis arb : Op D.AppOp → Op D.AppOp → Prop} {ev : Set (Op D.AppOp)}
@@ -244,15 +241,15 @@ theorem arbFamilyEq_extends_vis {E : EqEquiv D} {W : Op D.AppOp → D.State → 
     loOnArb E W vis arb ev a b :=
   Or.inl ⟨hvis, hnc⟩
 
-/-- **Free clause — antitone.** `loOnArb` is monotone-decreasing in the event set
-for ANY `arb` (this is `ConverseEq.loOnArb_mono`, recorded here as the family clause). -/
+/-- **Free clause, antitone.** `loOnArb` is monotone-decreasing in the event set for
+ANY `arb` (`ConverseEq.loOnArb_mono`, stated here as the family clause). -/
 theorem arbFamilyEq_antitone {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {vis arb : Op D.AppOp → Op D.AppOp → Prop} {ev ev' : Set (Op D.AppOp)}
     (h_sub : ev ⊆ ev') {a b : Op D.AppOp}
     (h : loOnArb E W vis arb ev' a b) : loOnArb E W vis arb ev a b :=
   loOnArb_mono h_sub h
 
-/-- **Free clause — vis-consistent.** `loOnArb` never orders `a` before an event `b`
+/-- **Free clause, vis-consistent.** `loOnArb` never orders `a` before an event `b`
 that `a` observed, for ANY `arb` (both arms vacuous on an observed pair). -/
 theorem arbFamilyEq_vis_consistent {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {vis arb : Op D.AppOp → Op D.AppOp → Prop}
@@ -264,7 +261,7 @@ theorem arbFamilyEq_vis_consistent {E : EqEquiv D} {W : Op D.AppOp → D.State �
   · exact h_ir a (h_tr hab hvis)
   · exact hnba hvis
 
-/-- **Free clause — vis-local.** `loOnArb` on `ev` depends only on `vis` restricted
+/-- **Free clause, vis-local.** `loOnArb` on `ev` depends only on `vis` restricted
 to `ev`, for ANY `arb` (the arb-arm is `vis`-independent). -/
 theorem arbFamilyEq_vis_local {E : EqEquiv D} {W : Op D.AppOp → D.State → Prop}
     {arb : Op D.AppOp → Op D.AppOp → Prop}
@@ -385,7 +382,7 @@ def GoodConfig3ArbFEq (H : List (Op D.AppOp) → Prop)
     C.ver v = some (s, Ev) →
     IsCanonicalStateArbH H E W arb hP hC hA (Configuration.core C) Ev s
 
-/-- **Init.** Version `0 = (init, ∅)`, witness `[]` — needs `H []`. -/
+/-- **Init.** Version `0 = (init, ∅)`, witness `[]`, needs `H []`. -/
 theorem goodConfig3ArbFEq_init (H : List (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (arb : Op D.AppOp → Op D.AppOp → Prop)
@@ -566,8 +563,8 @@ open LabeledTS in
 /-- **`GoodConfig3ArbFEq` from reachability.** The `GoodConfig3H` reachability
 induction re-threaded over the abstract-arbitration witness, driven by the four §4
 transition lemmas. Gated on the family's arb-Join (`F.join`), the join context
-`hHon`, and the honest/discipline conditions `hHnil`/`hHext`/`hBA`/`hInvCong` — the
-same bundle `GoodConfig3H.goodConfig3H_of_reachF` consumes, `loOnEq ↦ loOnArb … arb`. -/
+`hHon`, and the honest/discipline conditions `hHnil`/`hHext`/`hBA`/`hInvCong` (the
+same bundle `GoodConfig3H.goodConfig3H_of_reachF` consumes, `loOnEq ↦ loOnArb … arb`). -/
 theorem goodConfig3ArbFEq_of_reachF (H : List (Op D.AppOp) → Prop)
     (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -679,9 +676,9 @@ theorem ra_linearizable3ArbEq_of_reach
   exact isCanonicalStateArbEq_eqClosed
     (isCanonicalStateArbEq_of_H H E W _ F.arb ev σ' hcs) heqv
 
-/-! ## §6. THE INSTANCE — `loOnEq` through the abstract engine (arb = rcArb) -/
+/-! ## §6. THE INSTANCE: `loOnEq` through the abstract engine (arb = rcArb) -/
 
-/-- **Transport in (definitional).** The published `≈`-Join `EqJoinLemma3C_H` IS the
+/-- **Transport in (definitional).** The `≈`-Join `EqJoinLemma3C_H` IS the
 abstract-arbitration Join at `arb = rcArb` (`loOnArb … rcArb = loOnEq`, hence
 `IsCanonicalStateArbEqH … rcArb = IsCanonicalStateEqH`, hence the two Join VCs
 coincide). This is the `H`-layer form of `ConverseEq.loOnEq_isArb`. -/
@@ -691,10 +688,10 @@ theorem eqJoinLemma3C_ArbH_rcArb (E : EqEquiv D) (W : Op D.AppOp → D.State →
     (hJoinH : EqJoinLemma3C_H D E W H HonJ) :
     EqJoinLemma3C_ArbH D E W H (rcArb D) HonJ := hJoinH
 
-/-- **The `loOnEq` family**: `arb = rcArb`, `join` = the published `EqJoinLemma3C_H`.
-Since `loOnArb … rcArb = loOnEq`, this is the concrete conditioned arbitration read
-as one `ArbFamilyEq`; everything stated over the abstract engine specializes to the
-published conditioned layer. -/
+/-- **The `loOnEq` family**: `arb = rcArb`, `join` = `EqJoinLemma3C_H`. Since
+`loOnArb … rcArb = loOnEq`, this is the concrete conditioned arbitration read as one
+`ArbFamilyEq`; everything stated over the abstract engine specializes to the
+conditioned layer. -/
 def loOnEqArbFamily (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (H : List (Op D.AppOp) → Prop)
     (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
@@ -703,14 +700,14 @@ def loOnEqArbFamily (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
   join := eqJoinLemma3C_ArbH_rcArb E W H HonJ hJoinH
 
 open LabeledTS in
-/-- **THE PAYOFF — the published conditioned RA-lin re-derived through the abstract
-engine.** For any datatype supplying the `≈`-route VCs (the same bundle
+/-- **The conditioned RA-lin re-derived through the abstract engine.** For any
+datatype supplying the `≈`-route VCs (the same bundle
 `GoodConfig3H.RA_linearizable_up_to_eq_H` consumes), every reachable
-`Inv`-configuration is `GoodConfig3H.IsRALinearizable3Eq` — routed through the
+`Inv`-configuration is `GoodConfig3H.IsRALinearizable3Eq`, routed through the
 fully-generic `goodConfig3ArbFEq_of_reachF` at `arb = rcArb`, the linearization order
 pinned by the abstract `loOnArb` and only definitionally collapsed back to `loOnEq`
-(and thence the paper `lo`). The conditioned analog of #119A
-(`ArbAdequacyReach.ra_linearizable3_via_capstone`). -/
+(and thence the paper `lo`). Companion of
+`ArbAdequacyReach.ra_linearizable3_via_capstone`. -/
 theorem loOnEq_isRALinearizable3Eq_via_arb_capstone
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (H : List (Op D.AppOp) → Prop)

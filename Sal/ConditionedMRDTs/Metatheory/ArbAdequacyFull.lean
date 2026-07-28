@@ -1,69 +1,66 @@
 import Sal.ConditionedMRDTs.Metatheory.ArbAdequacy
 
 /-!
-# Fully-generic arbitration adequacy (task #119, half B-full; the rc-free recast #123)
+# Fully-generic arbitration adequacy: the rc-free recast
 
-The falsifiable tail named by `Metatheory/ArbAdequacy.lean` (§4, FINDING) and
-`Metatheory/Arbitration_Refactor.lean` (phase-3b "no obstruction" claim): the
-adequacy chain re-threaded over the **abstract** acyclic *antitone* arbitration,
+The adequacy chain re-threaded over the **abstract** acyclic *antitone* arbitration,
 with the fold pinned by `ArbConvergence` and `loOn` **absent** even as the fold
 oracle. Compare `isRALinearizable3Arb_of_acyclicArb_refines_loOn` (ArbAdequacy §3),
-which reuses `loOn` convergence and asks `arb` only to refine `loOn`; here the
-order **and** the fold uniqueness are both the abstract `arb`.
+which reuses `loOn` convergence and asks `arb` only to refine `loOn`; here the order
+**and** the fold uniqueness are both the abstract `arb`.
 
-## What lands here (kernel-clean; `#print axioms` at the foot)
+## Contents (kernel-clean; `#print axioms` at the foot)
 
-* **§1 arb-canonical support**: `isCanonicalStateArb_empty`,
-  `downset_max_arb` (an `arb`-maximal-in-its-own-downset fact from **acyclicity +
-  extends-`vis`**, not `loOn`), `closure_diff_of_max_arb` (from **extends-`vis`**).
-  These re-derive over the abstract `arb` the three `loOn`-flavoured facts the
-  Join induction consumes about the linearization order beyond the three
-  ArbAdequacy pillars.
+* **§1 arb-canonical support**: `isCanonicalStateArb_empty`, `downset_max_arb` (an
+  `arb`-maximal-in-its-own-downset fact from **acyclicity + extends-`vis`**, not
+  `loOn`), `closure_diff_of_max_arb` (from **extends-`vis`**). These re-derive over
+  the abstract `arb` the three `loOn`-flavoured facts the Join induction consumes
+  about the linearization order beyond the three ArbAdequacy pillars.
 
-* **§2 the arb-form VCs**: `CDVC3Arb`, `FeasibleDeltaVCs3Arb` — the ternary CD
+* **§2 the arb-form VCs**: `CDVC3Arb`, `FeasibleDeltaVCs3Arb`, the ternary CD
   equation and the feasible delta contract with their `loOn`-maximality premise
   **re-keyed** to `arb`-maximality (`∀ x ∈ U, x ≠ e → ¬ arb U e x`). At `arb :=
-  loOn (core C)` these are definitionally the published `CDVC3` /
-  `FeasibleDeltaVCs3` at that configuration (`IsCanonicalStateArb C (loOn (core C))
-  = IsCanonicalState (core C)` definitionally).
+  loOn (core C)` these are definitionally `CDVC3` / `FeasibleDeltaVCs3` at that
+  configuration (`IsCanonicalStateArb C (loOn (core C)) = IsCanonicalState (core C)`
+  definitionally).
 
 * **§3 the generic Join Lemma** `join_lemma3AtArb_of_cd_feasible`: from
   `CoreVCs3CD + AcyclicArbitration + antitone + ArbConvergence + CDVC3Arb +
-  FeasibleDeltaVCs3Arb`, a ternary merge of `arb`-canonical sides at their `arb`-
-  canonical LCA is the `arb`-canonical state of the union — the ~340-line
-  `join_lemma3_of_cd_feasible` re-threaded verbatim over `IsCanonicalStateArb`,
-  consuming the ArbAdequacy pillars (`isCanonicalStateArb_exists/_unique/_snoc`)
-  and the §1 facts in place of the `loOn` machinery. **This is the MERGE case of
-  the fully-generic transition induction, discharged loOn-free.**
+  FeasibleDeltaVCs3Arb`, a ternary merge of `arb`-canonical sides at their
+  `arb`-canonical LCA is the `arb`-canonical state of the union. This is
+  `join_lemma3_of_cd_feasible` over `IsCanonicalStateArb`, consuming the ArbAdequacy
+  pillars (`isCanonicalStateArb_exists/_unique/_snoc`) and the §1 facts in place of
+  the `loOn` machinery. **This is the MERGE case of the fully-generic transition
+  induction, discharged loOn-free.**
 
-## FINDING (the apply-case obstruction, refining the ArbAdequacy §3 FINDING)
+## The apply-case obstruction: vis-consistency
 
-ArbAdequacy §3 named the fully-generic engine's residue as "(i) the antitone
-clause + (ii) a re-thread of the Join Lemma and the `GoodConfig3` transition
-induction". Mechanizing the re-thread here closes (i) and the **merge** half of
-(ii). The **apply** half of (ii) is *not* a pure re-thread: it needs a fourth
-arbitration clause the ArbAdequacy dichotomy omitted.
+The fully-generic engine's residue is (i) the antitone clause and (ii) a re-thread
+of the Join Lemma and the `GoodConfig3` transition induction. This file closes (i)
+and the **merge** half of (ii). The **apply** half of (ii) needs a fourth
+arbitration clause beyond the acyclicity/convergence/antitone bundle.
 
 The apply step re-attaches a causally-latest fresh event `e` (it observes all of
 the parent set `E`) and must place it *last* in the witness, i.e. `e` must be
-`arb`-maximal in `insert e E`. For `loOn` this is automatic (`isCanonicalState_
-extend`): a `loOn`-edge `e → x` needs either `vis e x` (false, `e` is latest) or
-concurrency `¬vis x e` (false, `e` observed `x`). For a **general** `arb` it is
-NOT derivable from acyclicity + extends-`vis` + antitone + convergence: those
-constrain only *non-commuting* pairs (via extends-`vis`), so an `arb` that orders
-`e` **before** a *commuting* old event `x` stays acyclic, antitone, and convergent
-yet breaks `e`'s maximality. The missing clause is **vis-consistency**:
+`arb`-maximal in `insert e E`. For `loOn` this is automatic
+(`isCanonicalState_extend`): a `loOn`-edge `e → x` needs either `vis e x` (false,
+`e` is latest) or concurrency `¬vis x e` (false, `e` observed `x`). For a
+**general** `arb` it is NOT derivable from acyclicity + extends-`vis` + antitone +
+convergence: those constrain only *non-commuting* pairs (via extends-`vis`), so an
+`arb` that orders `e` **before** a *commuting* old event `x` stays acyclic,
+antitone, and convergent yet breaks `e`'s maximality. The missing clause is
+**vis-consistency**:
 
 > `∀ E {a b}, a ∈ E → b ∈ E → C.vis b a → ¬ arb E a b`
 > (`arb` never orders `a` before an event `b` that `a` observed).
 
-Both target instances satisfy it — `loOn` because both its arms are vacuous on an
-observed pair, `lwwArb` because the timestamp order respects causality — but it is
+Both target instances satisfy it: `loOn` because both its arms are vacuous on an
+observed pair, `lwwArb` because the timestamp order respects causality. It is
 independent of the stated bundle and is the precise obligation the `goodConfig3_
-apply` re-thread requires. It is recorded here (`VisConsistentArbitration`,
+apply` re-thread requires. It is stated here (`VisConsistentArbitration`,
 `arb_extend_of_visConsistent`) so the transition-induction continuation
-(`GoodConfig3Arb` via reachability, the remaining #119B-full tail) has an exact
-contract; the merge case it depends on is already discharged below.
+(`GoodConfig3Arb` via reachability) has an exact contract; the merge case it depends
+on is discharged below.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -87,10 +84,10 @@ theorem isCanonicalStateArb_empty {C : Configuration D}
   | [], _ => rw [← hf]; rfl
   | x :: _, hp => exact absurd ((hp.2 x).mp List.mem_cons_self) id
 
-/-- **`e` is `arb`-maximal in its own downset** — the abstract
-`downset_max`, from **acyclicity + extends-`vis`** (no `loOn`). An out-edge
-`arb(↓e) e x` closes an `arb`-cycle: the `vis`-noncomm chain `x → … → e` is an
-`arb`-chain by extends-`vis`, and the out-edge closes it. -/
+/-- **`e` is `arb`-maximal in its own downset**: the abstract `downset_max`, from
+**acyclicity + extends-`vis`** (no `loOn`). An out-edge `arb(↓e) e x` closes an
+`arb`-cycle: the `vis`-noncomm chain `x → … → e` is an `arb`-chain by extends-`vis`,
+and the out-edge closes it. -/
 theorem downset_max_arb {C : Configuration D} (arb : AcyclicArbitration C)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a) {e : Op D.AppOp}
     (h_ds_in : ∀ a ∈ downset (Configuration.core C) e, a ∈ C.events) :
@@ -207,7 +204,7 @@ structure FeasibleDeltaVCs3Arb (C : Configuration D)
 /-! ## §3. The generic Join Lemma (the merge case, loOn-free) -/
 
 /-- The ternary Join Lemma against an abstract arbitration, at a single
-configuration `C` with a single arbitration `arb` — the arb-form of
+configuration `C` with a single arbitration `arb`, the arb-form of
 `JoinLemma3At`. -/
 def JoinLemma3AtArb (C : Configuration D)
     (arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop) : Prop :=
@@ -267,8 +264,8 @@ private theorem exists_listPermOf_subsetA {α : Type} {l : List α}
   · intro ha
     exact ⟨(h.2 a).mpr (hsub ha), decide_eq_true ha⟩
 
-/-- **Side decomposition (arb-form)**, verbatim `side_decompositionF` with the
-`loOn` machinery replaced by the ArbAdequacy pillars and the §1 facts. -/
+/-- **Side decomposition (arb-form)**: the arb-form of `side_decompositionF`, with
+the `loOn` machinery replaced by the ArbAdequacy pillars and the §1 facts. -/
 private theorem side_decompositionArb {C : Configuration D}
     (arb : AcyclicArbitration C)
     (h_anti : ∀ {E' E'' : Set (Op D.AppOp)} {a b : Op D.AppOp},
@@ -364,9 +361,9 @@ private theorem side_decompositionArb {C : Configuration D}
       exact h_merge_can
     exact isCanonicalStateArb_unique hConv h_inE hs h_merge_can'
 
-/-- **The generic ternary Join Lemma** — the ~340-line `join_lemma3_of_cd_
-feasible` re-threaded over `IsCanonicalStateArb`, `loOn` absent throughout.
-Existence is `isCanonicalStateArb_exists` (acyclicity), the maximal event is
+/-- **The generic ternary Join Lemma**: `join_lemma3_of_cd_feasible` over
+`IsCanonicalStateArb`, `loOn` absent throughout. Existence is
+`isCanonicalStateArb_exists` (acyclicity), the maximal event is
 `exists_maximal_of_acyclic` (acyclicity), fold-uniqueness is
 `isCanonicalStateArb_unique` (`ArbConvergence`), re-attach is
 `isCanonicalStateArb_snoc` (antitone), and the CD/feasible equations are the
@@ -604,14 +601,13 @@ theorem join_lemma3AtArb_of_cd_feasible {C : Configuration D}
         hMC s₀ t₂ s₁, h_mid, h_cd]
       exact h_target
 
-/-! ## §4. The apply-case obstruction (vis-consistency), pinned for the
-transition-induction continuation. -/
+/-! ## §4. The apply-case obstruction (vis-consistency) -/
 
 /-- **vis-consistency of an arbitration**: `arb` never orders `a` before an event
-`b` that `a` observed. The clause the `goodConfig3_apply` re-thread needs (see the
-file-header FINDING); independent of acyclicity/extends-`vis`/antitone/convergence,
-satisfied by `loOn` (both arms vacuous on an observed pair) and by `lwwArb`
-(timestamp order respects causality). -/
+`b` that `a` observed. The clause the `goodConfig3_apply` re-thread needs;
+independent of acyclicity/extends-`vis`/antitone/convergence, satisfied by `loOn`
+(both arms vacuous on an observed pair) and by `lwwArb` (timestamp order respects
+causality). -/
 def VisConsistentArbitration (C : Configuration D)
     (arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop) : Prop :=
   ∀ (E : Set (Op D.AppOp)) {a b : Op D.AppOp},
@@ -677,21 +673,21 @@ theorem isCanonicalStateArb_congr {C C' : Configuration D}
 Join Lemma from the SAME VC bundle.
 
 `IsCanonicalStateArb C (loOn (core C)) = IsCanonicalState (core C)` definitionally,
-so the arb-form VCs at `arb := loOn (core C)` are the published `CDVC3` /
+so the arb-form VCs at `arb := loOn (core C)` are `CDVC3` /
 `FeasibleDeltaVCs3` specialised to `core C`. Together with `loOnArbitration`
-(acyclicity), `loOn_mono` (antitone), and `loOn_arbConvergence` (convergence) —
-all pre-existing — the generic `join_lemma3AtArb_of_cd_feasible` reproduces the
-`loOn` ternary Join Lemma from exactly `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3`,
-confirming the abstraction is faithful (not vacuous). -/
+(acyclicity), `loOn_mono` (antitone), and `loOn_arbConvergence` (convergence), the
+generic `join_lemma3AtArb_of_cd_feasible` reproduces the `loOn` ternary Join Lemma
+from exactly `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3`, so the abstraction is
+faithful (not vacuous). -/
 
-/-- The arb-form CD equation at `loOn` is the published `CDVC3` (definitional). -/
+/-- The arb-form CD equation at `loOn` is `CDVC3` (definitional). -/
 theorem cdvc3Arb_of_cdvc3 (hCD : CDVC3 D) (C : Configuration D) :
     CDVC3Arb C (fun E => loOn (Configuration.core C) E) :=
   fun U A B e h_tr h_ir h_inU h_clU he_U h_max hA hB =>
     hCD (Configuration.core C) U A B e h_tr h_ir h_inU h_clU he_U h_max hA hB
 
-/-- The arb-form feasible delta contract at `loOn` is the published
-`FeasibleDeltaVCs3` (definitional, field for field). -/
+/-- The arb-form feasible delta contract at `loOn` is `FeasibleDeltaVCs3`
+(definitional, field for field). -/
 theorem feasibleDeltaVCs3Arb_of_feasible (hFΔ : FeasibleDeltaVCs3 D)
     (C : Configuration D) :
     FeasibleDeltaVCs3Arb C (fun E => loOn (Configuration.core C) E) where
@@ -707,10 +703,10 @@ theorem feasibleDeltaVCs3Arb_of_feasible (hFΔ : FeasibleDeltaVCs3 D)
         h_tr h_ir h1 h2 hcl1 hcl2 he1 he2 h_max ht0 hB ht1 ht2
 
 /-- **The generic Join Lemma reproduces the `loOn` Join Lemma** from
-`CoreVCs3CD + UpdateVCs + FeasibleDeltaVCs3 + CDVC3` — the same bundle the
-concrete `join_lemma3_of_cd_feasible` consumes. Faithfulness of the abstraction:
-the merge case of adequacy factors through the fully-generic engine with `loOn`
-as one instance. -/
+`CoreVCs3CD + UpdateVCs + FeasibleDeltaVCs3 + CDVC3`, the same bundle the concrete
+`join_lemma3_of_cd_feasible` consumes. Faithfulness of the abstraction: the merge
+case of adequacy factors through the fully-generic engine with `loOn` as one
+instance. -/
 theorem join_lemma3AtArb_loOn {C : Configuration D}
     (hVC : CoreVCs3CD D) (hU : UpdateVCs D.toCRDTSig)
     (hFΔ : FeasibleDeltaVCs3 D) (hCD : CDVC3 D)

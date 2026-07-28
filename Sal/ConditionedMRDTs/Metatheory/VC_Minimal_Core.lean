@@ -1,18 +1,16 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 /-!
-# The minimal VC core (task #114, phase 2)
+# The minimal VC core
 
-Mechanization of the VC-minimality sweep (`whiteboard/vc-minimality-note.md`).
-The flat bundle `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3` (eight verification
-conditions) is adequate for RA-linearizability (now through the single
-arbitration capstone `ra_linearizable3_via_capstone`); this file mechanizes the *shrink*
-direction: the shell conditions VC1..VC4 are consumed only in weakened forms,
-and VC5 (`feasible_init`) splits into an independent nullary unit plus a
+The VC-minimality sweep. The flat bundle `CoreVCs3CD + FeasibleDeltaVCs3 + CDVC3`
+(eight verification conditions) is adequate for RA-linearizability (through the
+arbitration capstone `ra_linearizable3_via_capstone`); this file establishes the
+*shrink* direction: the shell conditions VC1..VC4 are consumed only in weakened
+forms, and VC5 (`feasible_init`) splits into an independent nullary unit plus a
 derivable nonempty half.
 
-## The consumption-site inventory (audited against `Adequacy.lean` and
-`Sigma_LoOn3.lean`)
+## The consumption-site inventory (against `Adequacy.lean` and `Sigma_LoOn3.lean`)
 
 The adequacy chain is `ra_linearizable3_via_capstone` (the arbitration
 capstone, `rc` supplied as `loOnFamily`) bottoming out in the reachability
@@ -51,42 +49,37 @@ the σ-machinery it invokes. Per shell VC:
   weak closure of the event set in scope (the raw field demands none of
   them). Split: `FeasibleInitAtEmpty` (VC5°, the nullary unit, independent:
   see `Refutations/FeasibleInit_Not_Derivable_At_Empty.lean`) plus the
-  derivable nonempty half (`feasible_init_nonempty_w` below, the note's VC5⁺
+  derivable nonempty half (`feasible_init_nonempty_w` below, the VC5⁺
   induction).
 
-## The theorems (delivered) and the re-close residue
-
-Delivered (all kernel-clean):
+## The theorems and the re-close residue
 
 * `WeakUpdateVCs`, `WeakShellVCs`: the weakened shell; `CoreVCs3CD.toWeakShell`
   shows it is genuinely a weakening (and is axiom-free).
 * `feasibleDeltaVCs3_iff_split`, `FeasibleInitVC.atEmpty`, `FeasibleInitConsumed`:
   the VC5 split apparatus (VC5° = the empty-set instance).
-* `feasible_init_nonempty_w` (**T3**): VC5 away from the empty set is derivable
-  from `CoreVCs3CD` (VC1–VC4) + VC6 + VC8 on weakly closed event sets. Both
+* `feasible_init_nonempty_w`: VC5 away from the empty set is derivable from
+  `CoreVCs3CD` (VC1–VC4) + VC6 + VC8 on weakly closed event sets. Both
   `mergeL_comm` uses are on canonical tuples, so the *weakened* VC4 already
   suffices; the update layer is used at full strength through the σ-machinery.
-* `feasibleInitConsumed_of_split` (**T4, the split at the sites**): the
-  consumed form of `feasible_init` (matching `Adequacy.lean:999,1007`, where
-  closure + `vis`-structure are in scope) is exactly `VC5°` plus the VC5⁺
-  derivation. This is the mechanized content of the VC5 shrink.
+* `feasibleInitConsumed_of_split`, the split at the sites: the consumed form of
+  `feasible_init` (matching `Adequacy.lean:999,1007`, where closure + `vis`-structure
+  are in scope) is exactly `VC5°` plus the VC5⁺ derivation. This is the content of
+  the VC5 shrink.
 
-**The re-close residue** (honest partial; not mechanized here). Gluing the
-weakened bundle into `JoinLemma3` by *composition* with the existing
-`join_lemma3_of_cd_feasible` is BLOCKED: that theorem consumes the raw
-`FeasibleDeltaVCs3.feasible_init` field, which is stated WITHOUT the closure /
-`vis` hypotheses that the VC5⁺ derivation requires, so it is strictly stronger
-than `FeasibleInitConsumed` and is NOT reconstructible from the split. A
-genuine re-close therefore needs (a) re-threading the `join_lemma3_of_cd_feasible`
-induction to consume `FeasibleInitConsumed` at sites 999/1007 and
-`mergeL_comm_canonical` at 1009/1203/1204 (all in-scope there); and (b)
+The re-close residue is not carried out here. Gluing the weakened bundle into
+`JoinLemma3` by *composition* with `join_lemma3_of_cd_feasible` is BLOCKED: that
+theorem consumes the raw `FeasibleDeltaVCs3.feasible_init` field, which is stated
+WITHOUT the closure / `vis` hypotheses that the VC5⁺ derivation requires, so it is
+strictly stronger than `FeasibleInitConsumed` and is NOT reconstructible from the
+split. A genuine re-close therefore needs (a) re-threading the
+`join_lemma3_of_cd_feasible` induction to consume `FeasibleInitConsumed` at sites
+999/1007 and `mergeL_comm_canonical` at 1009/1203/1204 (all in-scope there); and (b)
 re-hosting the σ-machinery (`convergence_on_u`, `loOnNe_acyclic_u`,
-`isCanonicalState_unique_u`/`_exists_u`) on `WeakUpdateVCs` + `ReachState` in
-place of the bundled `UpdateVCs`. Both are mechanical (~500 lines) with NO
-mathematical obstruction — the consumption-site audit above shows every
-consumption is at a reachable state / config-event set — but they are a
-re-derivation, not a composition. Named as the phase-2 tail per the note's
-"a full re-derivation of the metatheory ... is the phase-2 Lean obligation".
+`isCanonicalState_unique_u`/`_exists_u`) on `WeakUpdateVCs` + `ReachState` in place
+of the bundled `UpdateVCs`. Both are mechanical with NO mathematical obstruction
+(every consumption is at a reachable state / config-event set, per the inventory
+above), but they are a re-derivation, not a composition.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -326,14 +319,14 @@ theorem CoreVCs3CD.toWeakShell {D : ConditionedMRDTSig}
   mergeL_comm_canonical :=
     fun _C _ev₁ _ev₂ l a b _ _ _ _ _ _ _ _ _ => hVC.mergeL_comm l a b
 
-/-! ## §3. T3 — VC5⁺ is derivable off the empty set
+/-! ## §3. VC5⁺ is derivable off the empty set
 
 `feasible_init` at a **nonempty** canonical state follows from
 `CoreVCs3CD` (VC1–VC4) + `feasible_local_redistribute` (VC6) + `CDVC3` (VC8),
-on weakly-closed event sets. This is the note's strong-induction derivation.
-Both `mergeL_comm` uses land on canonical tuples (`(σ∅, σ(E∖e), σ∅)` and
-`(σ∅, σE, σ∅)`), so the *weakened* VC4 already suffices; the update layer is
-used at full strength through the σ-machinery. -/
+on weakly-closed event sets, by strong induction. Both `mergeL_comm` uses land on
+canonical tuples (`(σ∅, σ(E∖e), σ∅)` and `(σ∅, σE, σ∅)`), so the *weakened* VC4
+already suffices; the update layer is used at full strength through the
+σ-machinery. -/
 
 /-- A subset of an enumerable set is enumerable (public copy of the `private`
 `exists_listPermOf_subsetF`). -/
@@ -347,9 +340,9 @@ theorem exists_listPermOf_sub {α : Type} {l : List α}
   · rintro ⟨_, hd⟩; exact of_decide_eq_true hd
   · intro ha; exact ⟨(h.2 a).mpr (hsub ha), decide_eq_true ha⟩
 
-/-- **T3: VC5⁺.** On weakly-closed nonempty event sets, `feasible_init` is a
-theorem of `CoreVCs3CD + VC6 + VC8` (strong induction on `|ev|`; base = `CDVC3`
-at `U = {e}`, step = `VC6` at `(ev, ∅)`). -/
+/-- **VC5⁺.** On weakly-closed nonempty event sets, `feasible_init` is a theorem of
+`CoreVCs3CD + VC6 + VC8` (strong induction on `|ev|`; base = `CDVC3` at `U = {e}`,
+step = `VC6` at `(ev, ∅)`). -/
 theorem feasible_init_nonempty_w {D : ConditionedMRDTSig}
     (hVC : CoreVCs3CD D) (hVC6 : FeasibleLocalRedistributeVC D) (hCD : CDVC3 D)
     {C : Sal.Emulation.Configuration D.toCRDTSig}
@@ -420,15 +413,15 @@ theorem feasible_init_nonempty_w {D : ConditionedMRDTSig}
       rw [hs_eq, hVC.mergeL_comm]
       exact hVC6i
 
-/-! ## §4. T4 — the split at the consumption sites
+/-! ## §4. The split at the consumption sites
 
 `feasible_init` as the adequacy induction consumes it (`FeasibleInitConsumed`,
 matching sites `Adequacy.lean:999,1007` where closure + `vis`-structure are in
 scope) is exactly `VC5°` (empty side) plus `VC5⁺` (nonempty side). This is the
-mechanized shrink of VC5: the raw `feasible_init` field's surplus over
-`FeasibleInitConsumed` (it omits closure/`vis`) is never consumed, and its
-consumed content splits into the independent nullary unit `VC5°` and the
-`CoreVCs3CD + VC6 + VC8`-derivable nonempty half. -/
+shrink of VC5: the raw `feasible_init` field's surplus over `FeasibleInitConsumed`
+(it omits closure/`vis`) is never consumed, and its consumed content splits into the
+independent nullary unit `VC5°` and the `CoreVCs3CD + VC6 + VC8`-derivable nonempty
+half. -/
 
 /-- **VC5 splits at the consumption sites**: `FeasibleInitConsumed` is exactly
 `VC5°` (`FeasibleInitAtEmpty`) plus the `CoreVCs3CD + VC6 + VC8` core. -/

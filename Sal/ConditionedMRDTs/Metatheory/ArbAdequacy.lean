@@ -1,32 +1,29 @@
 import Sal.ConditionedMRDTs.Metatheory.Arbitration_Refactor
 
 /-!
-# Arbitration-generic adequacy (task #119, half B; enabler for #123)
+# Arbitration-generic adequacy
 
-The falsifiable next step of the arbitration refactor
-(`Metatheory/Arbitration_Refactor.lean`, `whiteboard/ra-lin-definition-note.md`
-§4): re-derive RA-linearizability against the **abstract** acyclic arbitration
-rather than the concrete `loOn`, so that `loOn` becomes *one* instance and LWW's
-timestamp total order *another*, both certified through the same generic engine.
+Re-derive RA-linearizability against the **abstract** acyclic arbitration rather
+than the concrete `loOn`, so that `loOn` becomes *one* instance and LWW's timestamp
+total order *another*, both certified through the same generic engine. Builds on the
+arbitration refactor (`Metatheory/Arbitration_Refactor.lean`).
 
-## What lands here (all kernel-clean, axioms ⊆ {propext, Classical.choice,
-Quot.sound}); each theorem's `#print axioms` is checked below.
+## Contents (kernel-clean; each theorem's `#print axioms` is checked below)
 
 * **§1 The arbitration topological sort** (`exists_maximal_of_acyclic`,
   `exists_respecting_perm_fixed`): from *acyclicity alone*, i.e. the
   `AcyclicArbitration.acyclic` field, a respecting enumeration of any event set
-  exists. This is the **existence** obligation, re-derived over the abstract
-  `arb` with **no** `loOn` structure and, crucially, with the relation held fixed
-  while the carrier shrinks, so it consumes no monotonicity. (The published
-  `exists_loOn_respecting_perm_u` re-indexes `loOn C T` by the carrier `T`, and so
-  leans on `loOn`'s antitonicity `loOn_mono`; the fixed-relation topological sort
-  here does not.)
+  exists. This is the **existence** obligation over the abstract `arb`, with **no**
+  `loOn` structure and with the relation held fixed while the carrier shrinks, so it
+  consumes no monotonicity. (The `loOn`-form `exists_loOn_respecting_perm_u`
+  re-indexes `loOn C T` by the carrier `T` and so leans on `loOn`'s antitonicity
+  `loOn_mono`; the fixed-relation topological sort here does not.)
 
 * **§2 The generic canonical state** (`IsCanonicalStateArb`) and its two pillars:
   `isCanonicalStateArb_exists` (from acyclicity, §1) and
   `isCanonicalStateArb_unique` (from `ArbConvergence`). Plus
-  `isCanonicalStateArb_snoc`, re-attaching an `arb`-maximal event, which is the
-  one piece that consumes a **third** arbitration property (see the FINDING).
+  `isCanonicalStateArb_snoc`, re-attaching an `arb`-maximal event, which is the one
+  piece that consumes a **third** arbitration property (§ below).
 
 * **§3 The generic adequacy theorem** `isRALinearizable3Arb_of_acyclicArb_refines_loOn`:
   any acyclic arbitration that **refines** `loOn` (every `loOn`-edge is an
@@ -35,16 +32,14 @@ Quot.sound}); each theorem's `#print axioms` is checked below.
   (`loOn_isRALinearizable3Arb_via_generic`), and LWW's `lwwArb` refines the empty
   `loOn` (`lww_loOn_empty`), so both are certified by the same theorem.
 
-## FINDING: the arbitration thesis needs a THIRD clause beyond acyclicity and
-convergence (a refinement of the phase-3b diagnostic).
+## The third arbitration clause beyond acyclicity and convergence
 
-Phase-3b (`Arbitration_Refactor.lean` §4) split the adequacy chain's consumption
-of `loOn` into two independent obligations: **existence** ("acyclicity-only") and
-**convergence** (`ArbConvergence`, the B-site). Mechanizing the re-thread here
-shows that split is incomplete. The Join Lemma / apply layer additionally
-consumes `isCanonicalState_snoc` (re-attaching an order-maximal event to the
-canonical state of the set-minus-it), and that lemma consumes, via
-`respects_loOn_mono` / `loOn_mono`, a **third** structural property:
+The adequacy chain's consumption of `loOn` splits into two obligations,
+**existence** (acyclicity-only) and **convergence** (`ArbConvergence`, the B-site).
+That split is incomplete: the Join Lemma / apply layer additionally consumes
+`isCanonicalState_snoc` (re-attaching an order-maximal event to the canonical state
+of the set-minus-it), and that lemma consumes, via `respects_loOn_mono` /
+`loOn_mono`, a **third** structural property:
 
 > **antitonicity under carrier restriction**: `E' ⊆ E'' → arb E'' a b → arb E' a b`
 > (growing the event set only *removes* order edges; equivalently, removing an
@@ -55,28 +50,26 @@ This is NOT implied by acyclicity, extends-`vis`, and convergence. A set-indexed
 convergent on every fixed set, yet `isCanonicalStateArb_snoc` fails for it: the
 canonical state of `E∖{e}` no longer respects `arb E`. It is the set-relative
 absorber scope (the reason `loOn` is indexed by the event set at all, Strike 4 of
-the definition note) that forces the clause. Both target instances discharge it:
+the `loOn` definition) that forces the clause. Both target instances discharge it:
 `loOn` by `loOn_mono`, and `lwwArb` because it is set-*independent*
 (`lwwArb _E = (· < ·) on lwwWrite`, antitone vacuously). So the clause does not
 bound the thesis toward `rc`; it is a monotonicity artifact satisfied by every
-arbitration of interest. But it *is* a genuine third requirement that the
-phase-3b existence/convergence dichotomy omitted, and it is mechanized here as
-the explicit hypothesis of `isCanonicalStateArb_snoc`.
+arbitration of interest, but it is a genuine third requirement beyond the
+existence/convergence dichotomy, mechanized here as the explicit hypothesis of
+`isCanonicalStateArb_snoc`.
 
 Consequence for the *fully*-generic form (arb-canonical states throughout, folds
-pinned by `ArbConvergence`, with `loOn` absent from the statement): it goes
-through as a re-thread, with **no** mathematical obstruction (confirming
-phase-3b's "no obstruction" claim), once given (i) the third clause above and
-(ii) a re-threading of the ~340-line ternary Join Lemma and ~450-line
-`GoodConfig3` transition induction over `IsCanonicalStateArb` in place of
-`IsCanonicalState`. The theorem delivered here (§3) instead **reuses** the
-published `loOn` convergence (`convergence_on_u`) as the fold oracle, and asks the
-abstract `arb` only to be acyclic and to *refine* `loOn`. It is short,
-kernel-clean, and certifies both instances, at the cost of still routing the
-fold-pinning through `loOn`. The fully-generic engine (`IsRALinearizable3Arb`
-from `{VC5-empty,VC6,VC7,VC8} + AcyclicArbitration + antitone + ArbConvergence`)
-is named as the remaining #119(B-full) tail; `GoodConfig3Arb` (§4) is its target
-invariant, and its `→ IsRALinearizable3Arb` lifting is discharged here.
+pinned by `ArbConvergence`, with `loOn` absent from the statement): it goes through
+with **no** mathematical obstruction, once given (i) the third clause above and
+(ii) a re-threading of the ternary Join Lemma and the `GoodConfig3` transition
+induction over `IsCanonicalStateArb` in place of `IsCanonicalState`. The theorem
+delivered here (§3) instead **reuses** the `loOn` convergence (`convergence_on_u`)
+as the fold oracle, and asks the abstract `arb` only to be acyclic and to *refine*
+`loOn`. It is short, kernel-clean, and certifies both instances, at the cost of
+still routing the fold-pinning through `loOn`. The fully-generic engine
+(`IsRALinearizable3Arb` from `{VC5-empty,VC6,VC7,VC8} + AcyclicArbitration +
+antitone + ArbConvergence`) is the remaining tail; `GoodConfig3Arb` (§4) is its
+target invariant, and its `→ IsRALinearizable3Arb` lifting is discharged here.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -104,9 +97,7 @@ theorem arbNe_eq_stepNe (E : Set (Op D.AppOp))
 /-- **A maximal element from acyclicity** (abstract `exists_loOn_maximal_u`).
 A finite (`listPermOf`-enumerable) nonempty carrier `S` under a relation `R`
 whose `stepNe S R` is acyclic contains an `R`-maximal element: nothing in `S`
-sits `R`-after it. The walk is verbatim the published proof, with
-`loOnNe_acyclic_u` replaced by the *given* acyclicity, which is the sole place
-acyclicity is consumed. -/
+sits `R`-after it. Acyclicity is the sole property consumed. -/
 theorem exists_maximal_of_acyclic {R : Op D.AppOp → Op D.AppOp → Prop}
     {S : Set (Op D.AppOp)}
     (h_acyc : ∀ a, ¬ Relation.TransGen (stepNe S R) a a)
@@ -151,7 +142,7 @@ theorem exists_maximal_of_acyclic {R : Op D.AppOp → Op D.AppOp → Prop}
 /-- **A respecting enumeration from acyclicity** (abstract, fixed-relation
 `exists_loOn_respecting_perm_u`). Topological sort of a finite acyclic relation:
 the carrier shrinks by peeling a maximal element while the relation `R` stays
-fixed, so (unlike the `loOn` proof) **no antitonicity is used**. -/
+fixed, so **no antitonicity is used**. -/
 theorem exists_respecting_perm_fixed {R : Op D.AppOp → Op D.AppOp → Prop}
     {S : Set (Op D.AppOp)}
     (h_acyc : ∀ a, ¬ Relation.TransGen (stepNe S R) a a)
@@ -241,8 +232,7 @@ theorem isCanonicalStateArb_exists {C : Configuration D}
   exact ⟨applySeq D.toCRDTSig D.init ρ, ρ, hp, hr, rfl⟩
 
 /-- **Uniqueness** of the canonical state: exactly the `ArbConvergence`
-obligation (the phase-3b B-site, abstracted). Two `arb E`-respecting folds of the
-same `E` agree. -/
+obligation. Two `arb E`-respecting folds of the same `E` agree. -/
 theorem isCanonicalStateArb_unique {C : Configuration D}
     {arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop}
     {E : Set (Op D.AppOp)} {s s' : D.State}
@@ -258,10 +248,10 @@ theorem isCanonicalStateArb_unique {C : Configuration D}
 /-- **Re-attaching an `arb`-maximal event** (abstract `isCanonicalState_snoc`).
 This is the piece that consumes the THIRD arbitration clause, **antitonicity**
 `h_anti : E' ⊆ E'' → arb E'' a b → arb E' a b`, via the step
-`respects ρ (arb (E∖{e})) → respects ρ (arb E)`. See the file-header FINDING:
-`loOn` supplies `h_anti` by `loOn_mono`; a set-indexed arbitration that flips
-an edge on element removal would break this lemma while remaining acyclic and
-convergent, so `h_anti` is independent of the other clauses. -/
+`respects ρ (arb (E∖{e})) → respects ρ (arb E)`. `loOn` supplies `h_anti` by
+`loOn_mono`; a set-indexed arbitration that flips an edge on element removal would
+break this lemma while remaining acyclic and convergent, so `h_anti` is independent
+of the other clauses. -/
 theorem isCanonicalStateArb_snoc {C : Configuration D}
     {arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop}
     {E : Set (Op D.AppOp)} {t : D.State} {e : Op D.AppOp}
@@ -304,7 +294,7 @@ Any acyclic arbitration that **refines** `loOn` (every `loOn`-edge is an
 `arb`-edge) certifies RA-linearizability of every good configuration against
 `arb`. The proof: from `arb`'s acyclicity a respecting enumeration `ρ` of the
 version's event set exists (§1); refinement makes `ρ` also `loOn`-respecting; and
-the published `loOn` convergence (`convergence_on_u`) pins `ρ`'s fold to the
+the `loOn` convergence (`convergence_on_u`) pins `ρ`'s fold to the
 version's (already `loOn`-canonical) state. So the *order* is the abstract `arb`;
 the *fold uniqueness* is still `loOn`'s. Both target instances refine `loOn`. -/
 
@@ -327,9 +317,9 @@ theorem isRALinearizable3Arb_of_acyclicArb_refines_loOn {C : Configuration D}
   have hconv := convergence_on_u hU D.init hE_evC hp hplo hr_lo hrlo
   rw [hconv, hflo]
 
-/-- **loOn as an instance of the generic theorem.** `loOn` refines itself, so
-the published `loOn`-form RA-linearizability is now the `arb := loOn` corollary
-of `isRALinearizable3Arb_of_acyclicArb_refines_loOn` (compare the direct
+/-- **loOn as an instance of the generic theorem.** `loOn` refines itself, so the
+`loOn`-form RA-linearizability is the `arb := loOn` corollary of
+`isRALinearizable3Arb_of_acyclicArb_refines_loOn` (compare the direct
 `isRALinearizable3Arb_loOn_of_goodConfig3`). -/
 theorem loOn_isRALinearizable3Arb_via_generic {C : Configuration D}
     (hU : UpdateVCs D.toCRDTSig) (h : GoodConfig3 C) :
@@ -342,11 +332,10 @@ theorem loOn_isRALinearizable3Arb_via_generic {C : Configuration D}
 
 The fully-generic engine (arb-canonical states throughout, folds pinned by
 `ArbConvergence`, `loOn` absent from the statement) establishes this invariant by
-re-threading the transition induction; its `→ IsRALinearizable3Arb` lifting is
-the trivial unfold discharged here. The induction itself (Join Lemma + apply/
-merge cases over `IsCanonicalStateArb`, consuming §1/§2 in place of the `loOn`
-machinery and the antitone clause of `isCanonicalStateArb_snoc`) is the named
-#119(B-full) residue; see the file-header FINDING. -/
+re-threading the transition induction; its `→ IsRALinearizable3Arb` lifting is the
+trivial unfold discharged here. The induction itself (Join Lemma + apply/merge
+cases over `IsCanonicalStateArb`, consuming §1/§2 in place of the `loOn` machinery
+and the antitone clause of `isCanonicalStateArb_snoc`) is the remaining residue. -/
 
 /-- Every stored version holds the `arb`-canonical state of its event set. -/
 def GoodConfig3Arb (C : Configuration D)

@@ -1,39 +1,39 @@
 import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyFull
 
 /-!
-# Fully-generic arbitration adequacy — the reachability wiring (task #119, half B-full pt.2)
+# Fully-generic arbitration adequacy: the reachability wiring
 
-Part 1 (`Metatheory/ArbAdequacyFull.lean`) closed the mathematical core loOn-free:
-the generic ternary Join Lemma `join_lemma3AtArb_of_cd_feasible` (the MERGE
-pillar), `isCanonicalStateArb_extend` (the APPLY pillar), `isCanonicalStateArb_congr`
-(the CREATEREPLICA pillar), and it *found* the fifth arbitration clause the reachability
-layer needs — **vis-consistency** (`VisConsistentArbitration`).
+`Metatheory/ArbAdequacyFull.lean` establishes the mathematical core loOn-free: the
+generic ternary Join Lemma `join_lemma3AtArb_of_cd_feasible` (the MERGE pillar),
+`isCanonicalStateArb_extend` (the APPLY pillar), `isCanonicalStateArb_congr` (the
+CREATEREPLICA pillar), and the fifth arbitration clause the reachability layer needs,
+**vis-consistency** (`VisConsistentArbitration`).
 
 This file assembles those pillars into the **end-to-end reachability theorem**: the
-`GoodConfig3` transition induction re-threaded over `IsCanonicalStateArb`, so that RA-
-linearizability against a fully-abstract arbitration holds at every reachable
+`GoodConfig3` transition induction re-threaded over `IsCanonicalStateArb`, so that
+RA-linearizability against a fully-abstract arbitration holds at every reachable
 configuration, with `loOn` **absent** from the statement and the fold pinned solely by
 `ArbConvergence`.
 
-## What lands here (kernel-clean; `#print axioms` at the foot)
+## Contents (kernel-clean; `#print axioms` at the foot)
 
-* **§1 `ArbFamily`** — a *reachability-gated arbitration family* `arb C E` with six
+* **§1 `ArbFamily`**: a *reachability-gated arbitration family* `arb C E` with six
   clauses: extends-`vis`-on-noncomm, acyclic-on-reachable (gated on the two `vis`
-  facts, per the part-1 FINDING), antitone, vis-consistent (gated), convergent, and
-  **vis-local** (the arbitration on `E` depends only on `vis|E` — the applicability
-  condition of the `isCanonicalStateArb_congr` pillar, made an explicit clause). This
-  is the "not a fixed relation" arbitration the reachability layer requires.
+  facts), antitone, vis-consistent (gated), convergent, and **vis-local** (the
+  arbitration on `E` depends only on `vis|E`, the applicability condition of the
+  `isCanonicalStateArb_congr` pillar, made an explicit clause). This is the "not a
+  fixed relation" arbitration the reachability layer requires.
 
-* **§2 `GoodConfig3ArbF`** — the reachability invariant re-threaded over
+* **§2 `GoodConfig3ArbF`**: the reachability invariant re-threaded over
   `IsCanonicalStateArb`: the arb-canonical field plus the four `GoodConfig3` base fields
-  (`vis_trans`, `vis_irrefl`, `ver_events_sub`, `ver_causal`, pure copies), which carry
-  the `vis` facts the family's per-config acyclicity/vis-consistency are gated on.
+  (`vis_trans`, `vis_irrefl`, `ver_events_sub`, `ver_causal`), which carry the `vis`
+  facts the family's per-config acyclicity/vis-consistency are gated on.
 
 * **§3 the four transition lemmas** `goodConfig3ArbF_init / _createReplica / _apply /
-  _merge` — the three canonical-preservation cases are the delivered pillars
-  (merge = the Join Lemma, apply = `isCanonicalStateArb_extend`, createReplica/old =
+  _merge`: the three canonical-preservation cases are the pillars (merge = the Join
+  Lemma, apply = `isCanonicalStateArb_extend`, createReplica/old =
   `isCanonicalStateArb_congr`); the base-field preservation mirrors the flat
-  `goodConfig3_*` lemmas verbatim.
+  `goodConfig3_*` lemmas.
 
 * **§4 the reachability bridge + the capstone** `goodConfig3ArbF_of_reach` and
   `ra_linearizable3Arb_of_core_feasible_cd`: from the six-clause family + the ternary
@@ -41,15 +41,15 @@ configuration, with `loOn` **absent** from the statement and the fold pinned sol
   composing with `isRALinearizable3Arb_of_goodConfig3Arb`.
 
 * **§5 the generic converters** `cdvc3Arb_of_all_comm`, `feasibleDeltaVCs3Arb_of_delta`,
-  `listPermOf_perm` — the arb-form VCs for the all-commuting class (needed for the LWW
+  `listPermOf_perm`: the arb-form VCs for the all-commuting class (needed for the LWW
   instance) and a small list helper.
 
 * **§6 the `loOn` instance corollary** `loOn_isRALinearizable3Arb_via_capstone`, routed
   through the GENERIC capstone (not the loOn-refining partial of ArbAdequacy §3): the
   `loOn` family (`loOnFamily`) discharges all six clauses, so any datatype whose VCs hold
   is RA-linearizable against `loOn` **through the abstract engine**, fold pinned by
-  `ArbConvergence`. #119A (`ra_linearizable3` from the weakened bundle) is the `lo`-
-  coarsening of this corollary (`ra_linearizable3_via_capstone`).
+  `ArbConvergence`. `ra_linearizable3` from the weakened bundle is the `lo`-coarsening of
+  this corollary (`ra_linearizable3_via_capstone`).
 
 The LWW-ts instance (its family `lwwFamily` + the capstone corollary) lives in
 `MRDT_Instances/LWWRegister/LWWRegister.lean`, which owns `lwwArb`.
@@ -71,16 +71,16 @@ variable {D : ConditionedMRDTSig}
 (acyclic-on-reachable, antitone, extends-`vis`-on-noncomm, vis-consistent, convergent)
 plus **vis-locality**: the arbitration on an event set `E` depends only on `vis`
 restricted to `E`. The two gated clauses (`acyclic`, `vis_consistent`) take the `vis`
-strict-partial-order facts as hypotheses — they hold only at reachable configurations,
-which is exactly what `GoodConfig3ArbF` carries (the part-1 FINDING). Both target
-instances (`loOnFamily`, `lwwFamily`) are `ArbFamily`s. -/
+strict-partial-order facts as hypotheses, since they hold only at reachable
+configurations, which is exactly what `GoodConfig3ArbF` carries. Both target instances
+(`loOnFamily`, `lwwFamily`) are `ArbFamily`s. -/
 structure ArbFamily (D : ConditionedMRDTSig) where
   /-- The configuration-indexed set-relative arbitration. -/
   arb : Configuration D → Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop
   /-- Every visible non-commuting pair is ordered. -/
   extends_vis : ∀ (C : Configuration D) (E : Set (Op D.AppOp)) {a b : Op D.AppOp},
     a ∈ E → b ∈ E → C.vis a b → ¬ D.toCRDTSig.commutes a b → arb C E a b
-  /-- Acyclic on every event set — gated on the two `vis` facts of a reachable config. -/
+  /-- Acyclic on every event set, gated on the two `vis` facts of a reachable config. -/
   acyclic : ∀ (C : Configuration D),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -89,7 +89,7 @@ structure ArbFamily (D : ConditionedMRDTSig) where
   /-- Antitone under carrier restriction (config fixed). -/
   antitone : ∀ (C : Configuration D) {E' E'' : Set (Op D.AppOp)} {a b : Op D.AppOp},
     E' ⊆ E'' → arb C E'' a b → arb C E' a b
-  /-- Never orders an event before one it observed — gated on the two `vis` facts. -/
+  /-- Never orders an event before one it observed, gated on the two `vis` facts. -/
   vis_consistent : ∀ (C : Configuration D),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -463,15 +463,15 @@ open LabeledTS in
 /-- **THE CAPSTONE.** From a six-clause arbitration family + the merge content in
 arb-form (merge symmetry for the Join Lemma, `CDVC3Arb`/`FeasibleDeltaVCs3Arb` per
 config), every reachable configuration is RA-linearizable against the family's
-arbitration — `loOn` absent, the fold pinned solely by the family's `ArbConvergence`.
+arbitration, `loOn` absent, the fold pinned solely by the family's `ArbConvergence`.
 Composes `goodConfig3ArbF_of_reach` with `isRALinearizable3Arb_of_goodConfig3Arb`.
 The merge-side hypothesis is exactly merge symmetry (`∀ l a b, mergeL l a b =
 mergeL l b a`), NOT the full `CoreVCs3CD`: the rc-shaped `UpdateVCs` in that bundle
-is never consumed by the arb engine (verified: only `.mergeL_comm` is touched, down
-through `join_lemma3AtArb_of_cd_feasible`), so the flat arb adequacy is genuinely
-rc-free at the signature level — the substance of the #123 recast. The `loOn` and
-LWW instances re-introduce their own order structure (`UpdateVCs` for `loOn`, the
-timestamp order for LWW); the abstract contract does not. -/
+is never consumed by the arb engine (only `.mergeL_comm` is touched, down through
+`join_lemma3AtArb_of_cd_feasible`), so the flat arb adequacy is genuinely rc-free at
+the signature level. The `loOn` and LWW instances re-introduce their own order
+structure (`UpdateVCs` for `loOn`, the timestamp order for LWW); the abstract
+contract does not. -/
 theorem ra_linearizable3Arb_of_core_feasible_cd (F : ArbFamily D)
     (hMC : ∀ l a b : D.State, D.mergeL l a b = D.mergeL l b a)
     (hCD : ∀ C : Configuration D, CDVC3Arb C (F.arb C))
@@ -495,7 +495,7 @@ theorem listPermOf_perm {α : Type} {l₁ l₂ : List α} {E : Set α}
 
 /-- **(CD3) in arb-form for the all-commuting class**, for *any* arbitration: when every
 pair commutes the noncomm-downset is empty, so `B = init` and the equation is
-`merge_peel_comm3` — the arb-maximality premise and the respecting witnesses are inert.
+`merge_peel_comm3`; the arb-maximality premise and the respecting witnesses are inert.
 (The arb-form of `cdVC3_of_all_comm`.) -/
 theorem cdvc3Arb_of_all_comm (hVC : CoreVCs3 D)
     (h_comm : ∀ a b : Op D.AppOp, D.toCRDTSig.commutes a b) (C : Configuration D)
@@ -526,8 +526,8 @@ theorem cdvc3Arb_of_all_comm (hVC : CoreVCs3 D)
 
 /-- **The feasible delta contract in arb-form**, for *any* arbitration, from the raw
 `DeltaVCs3` laws (the arb-form of `feasibleDeltaVCs3_of_delta`; the canonical witnesses
-and arb-maximality premises are discarded — the redistribution laws are raw `mergeL`
-algebra). -/
+and arb-maximality premises are discarded, since the redistribution laws are raw
+`mergeL` algebra). -/
 theorem feasibleDeltaVCs3Arb_of_delta (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
     (C : Configuration D)
     (arb : Set (Op D.AppOp) → Op D.AppOp → Op D.AppOp → Prop) :
@@ -540,13 +540,12 @@ theorem feasibleDeltaVCs3Arb_of_delta (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
     fun _ _ t₀ t₁ t₂ B e _ _ _ _ _ _ _ _ _ _ _ _ _ =>
       hΔ.redistribute B t₀ t₁ t₂ (D.update B e)
 
-/-! ## §6. The `loOn` instance corollary — through the GENERIC capstone -/
+/-! ## §6. The `loOn` instance corollary, through the GENERIC capstone -/
 
 /-- `loOn` is **vis-consistent**: given the `vis` strict-partial-order facts, `loOn`
-never orders `a` before an event `b` that `a` observed. Both arms are vacuous — the
+never orders `a` before an event `b` that `a` observed. Both arms are vacuous: the
 `vis`-arm because `vis a b ∧ vis b a` contradicts irreflexivity via transitivity, the
-`rc`-arm because it demands `¬ vis b a`. (The clause the part-1 apply-case FINDING
-named; discharged here for `loOn`.) -/
+`rc`-arm because it demands `¬ vis b a`. -/
 theorem loOn_vis_consistent {C : Configuration D}
     (h_tr : ∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a) :
@@ -592,7 +591,7 @@ def loOnFamily (hU : UpdateVCs D.toCRDTSig) : ArbFamily D where
 
 open LabeledTS in
 /-- **`loOn` RA-linearizability through the GENERIC engine.** For any datatype whose VCs
-hold, every reachable configuration is RA-linearizable against `loOn` — routed through the
+hold, every reachable configuration is RA-linearizable against `loOn`, routed through the
 fully-generic `ra_linearizable3Arb_of_core_feasible_cd`, the fold pinned by `loOn`'s
 `ArbConvergence` (not the loOn-refining partial of `ArbAdequacy §3`). -/
 theorem loOn_isRALinearizable3Arb_via_capstone
@@ -606,8 +605,8 @@ theorem loOn_isRALinearizable3Arb_via_capstone
     (fun C' => feasibleDeltaVCs3Arb_of_feasible hFΔ C') C hReach
 
 open LabeledTS in
-/-- **#119A — the weakened flat bundle implies Def-lin**, as the `loOn` instantiation of
-the capstone: `IsRALinearizable3Arb` at `loOn` transports to the published `lo`-form
+/-- **The weakened flat bundle implies Def-lin**, as the `loOn` instantiation of the
+capstone: `IsRALinearizable3Arb` at `loOn` transports to the `lo`-form
 `IsRALinearizable3` (`isRALinearizable3_of_isRALinearizable3Arb_loOn`). So the flat
 adequacy re-derives through the abstract engine with the fold pinned by `ArbConvergence`. -/
 theorem ra_linearizable3_via_capstone

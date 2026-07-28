@@ -1,18 +1,14 @@
 import Sal.ConditionedMRDTs.Metatheory.VC_Minimal_Core
 
 /-!
-# Kill-test: `VC6` (feasible local-redistribute) is INDEPENDENT (task #114, phase 2, T1)
+# `VC6` (feasible local-redistribute) is INDEPENDENT
 
-Settles the `VC6` verdict of the VC-minimality sweep
-(`whiteboard/vc-minimality-note.md`, the VC6 section): the feasible
-local-redistribute law is NOT derivable from the other seven verification
-conditions — it is the CHANGE-WINS FLAG.
-
-**Verdict: independent.** The **change-wins flag** `CWFlag` satisfies
-`CoreVCs3CD` (VC1–VC4), `FeasibleInitVC` (VC5), `FeasibleRedistributeVC` (VC7)
-and `CDVC3` (VC8), yet its merge of the note's four-event countermodel is not a
-canonical state, so it is not RA-linearizable (`CWFlag_not_joinLemma3`). The
-single failing condition is `VC6`.
+The feasible local-redistribute law is NOT derivable from the other seven
+verification conditions. The **change-wins flag** `CWFlag` satisfies `CoreVCs3CD`
+(VC1–VC4), `FeasibleInitVC` (VC5), `FeasibleRedistributeVC` (VC7) and `CDVC3`
+(VC8), yet its merge of a four-event countermodel is not a canonical state, so it
+is not RA-linearizable (`CWFlag_not_joinLemma3`). The single failing condition is
+`VC6`.
 
 ## The datatype
 
@@ -26,14 +22,14 @@ single failing condition is `VC6`.
 
 Since `do` is constant, `commutes o₁ o₂ ↔ o₁.2.2 = o₂.2.2`
 (`cw_commutes_iff`). VC1–VC4, VC5, VC7 reduce to `Bool` identities. VC8 (CDVC3)
-is NOT a finite identity — `mergeL true false u = u` fails for `u = set` — and
+is NOT a finite identity (`mergeL true false u = u` fails for `u = set`), and
 its greenness rests on the configuration structure: since `do` is constant,
 `σ(ev)` is the written value of the `loOn(ev)`-maximal event
 (`cw_canon_value`), and for `e = set` the maximal element of `↓e∖e` is a
 `clear` (immediate causal predecessor, `cw_downMax_ne`), forcing `B = false`;
 the `e = clear` corner uses add-wins to force `A = false` (`cw_A_false`).
 
-## The countermodel (from the note, LHS = 0 vs RHS = 1)
+## The countermodel (LHS = 0 vs RHS = 1)
 
 Events `sA = set`, `cL = clear` with `vis sA cL`, `sE = set` concurrent with
 `cL`. Sides `E₁ = {sA, sE}`, `E₂ = {sA, cL}`, LCA `{sA}`. Canonical states
@@ -443,7 +439,7 @@ theorem cw_canon_union : IsCanonicalState cwConfig (E1 ∪ E2) true := by
 
 /-! ### The Join failure (non-RA-linearizability) -/
 
-/-- **The Join fails at the note's four-event countermodel.**
+/-- **The Join fails at the four-event countermodel.**
 `mergeL (σ(E₁∩E₂)) (σ(E₁)) (σ(E₂)) = mergeL true true false = false`, but
 `σ(E₁∪E₂) = true`: the change-wins merge cannot see the concurrent re-assertion
 `sE`. -/
@@ -460,7 +456,7 @@ theorem CWFlag_not_joinLemma3 : ¬ JoinLemma3 CWFlag := by
   have huniq := isCanonicalState_unique_u CWFlag_updateVCs cw_inU hjoin cw_canon_union
   simp [CW_mergeL, cwMergeL] at huniq
 
-/-! ### The VC6 failure pin (the note's LHS = 0 vs RHS = 1) -/
+/-! ### The VC6 failure pin (LHS = 0 vs RHS = 1) -/
 
 /-- FAIL pin: at the countermodel canonical states `s₀ = 1`, `B = 0`, `t₁ = 1`,
 `s₂ = 0`, `u = do 0 sE = 1`, the local-redistribute equation reads `0 = 1`. -/

@@ -1,15 +1,12 @@
 import Sal.ConditionedMRDTs.Metatheory.VC_Minimal_Core
 
 /-!
-# Kill-test: the nullary unit `VC5°` is an INDEPENDENT rule (task #114, phase 2, T2)
+# The nullary unit `VC5°` is an INDEPENDENT rule
 
-Settles the `VC5°` half of the VC-minimality sweep
-(`whiteboard/vc-minimality-note.md`, the VC5 section): the nullary unit law
-`mergeL σ₀ σ₀ σ₀ = σ₀` (`FeasibleInitAtEmpty`, the `feasible_init` instance at
-`ev = ∅`) is NOT derivable from the other seven verification conditions.
-
-**Verdict: independent.** The **poisoned-empty-merge G-set** `GSetPoison`
-satisfies `CoreVCs3CD` (VC1–VC4), `FeasibleLocalRedistributeVC` (VC6),
+The nullary unit law `mergeL σ₀ σ₀ σ₀ = σ₀` (`FeasibleInitAtEmpty`, the
+`feasible_init` instance at `ev = ∅`) is NOT derivable from the other seven
+verification conditions. The **poisoned-empty-merge G-set** `GSetPoison` satisfies
+`CoreVCs3CD` (VC1–VC4), `FeasibleLocalRedistributeVC` (VC6),
 `FeasibleRedistributeVC` (VC7) and `CDVC3` (VC8), yet its merge of two fresh
 replicas is not a canonical state, so it is not RA-linearizable
 (`GSetPoison_not_joinLemma3`). The single failing condition is `VC5°`.
@@ -22,7 +19,7 @@ replicas is not a canonical state, so it is not RA-linearizable
   `a ∨ b`, EXCEPT the LCA-and-both-branches-empty cell `(false,false,false)`
   is poisoned to `true`.
 
-## Why every other condition is green (hand-derivation, from the note)
+## Why every other condition is green (hand-derivation)
 
 The only op writes `true`, so the delta `u = do(B,e) = true` at *every*
 `CDVC3`/`VC6`/`VC7` slot. `u = true` misses the poisoned cell entirely: every
@@ -30,7 +27,7 @@ The only op writes `true`, so the delta `u = do(B,e) = true` at *every*
 `true ∨ _ = true`, so those three laws collapse to `true = true` for *all*
 `Bool` inputs (`gp_cd_id`, `gp_redis_id`, `gp_lredis_id`, each `by decide`).
 VC1–VC3 are vacuous (one commuting kind, `rc = Either`); VC4 is the symmetry
-of the merge table. Only `VC5°` — `mergeL false false false` — hits the poison:
+of the merge table. Only `VC5°` (`mergeL false false false`) hits the poison:
 `mergeL σ₀ σ₀ σ₀ = true ≠ false = σ₀`.
 
 ## The countermodel (the two-fresh-replica merge)
@@ -105,7 +102,7 @@ theorem gp_comm_id : ∀ l a b : Bool, gpMergeL l a b = gpMergeL l b a := by dec
 
 /-! ## §2. The seven green conditions
 
-VC1–VC3 (the update layer): vacuous — every pair commutes and `rc = Either`. -/
+VC1–VC3 (the update layer): vacuous, every pair commutes and `rc = Either`. -/
 
 theorem GSetPoison_updateVCs : UpdateVCs GSetPoison.toCRDTSig where
   rc_non_comm_directional := fun o₁ o₂ _ _ =>
@@ -169,7 +166,7 @@ theorem GSetPoison_not_feasibleInitVC : ¬ FeasibleInitVC GSetPoison :=
 example : GSetPoison.mergeL false false true = true := rfl
 /-- PASS: `mergeL · · true` is constantly `true` (delta dodges the poison). -/
 example : GSetPoison.mergeL true false true = true := rfl
-/-- FAIL: the poisoned cell — `VC5°`'s left side is `true`, not `σ₀ = false`. -/
+/-- FAIL: the poisoned cell, `VC5°`'s left side is `true`, not `σ₀ = false`. -/
 example : GSetPoison.mergeL false false false = true := rfl
 example : GSetPoison.mergeL GSetPoison.init GSetPoison.init GSetPoison.init
     ≠ GSetPoison.init := by simp [GSetPoison_mergeL, GSetPoison_init, gpMergeL]

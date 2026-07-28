@@ -1,13 +1,11 @@
 import Sal.ConditionedMRDTs.Metatheory.ConverseEq
 
 /-!
-# Refutations: vc:comm+vc:inv are NOT forced (T1), vc:disc is EXTRA (T2) — task #122
+# Refutations: vc:comm+vc:inv are NOT forced, vc:disc is EXTRA
 
-The mechanized forms of Probe C and Probe A of
-`whiteboard/litmus/conditioned_converse_check.py`, the load-bearing results of the
-conditioned converse (`whiteboard/conditioned-converse-note.md`).
+The load-bearing results of the conditioned converse.
 
-## T1 — `eqswap_not_forced` (datatype RESET, the load-bearing refutation)
+## `eqswap_not_forced` (datatype RESET): vc:comm+vc:inv are not forced
 
 RESET is a write/reset log: `write v` appends `v`, `reset` erases the log to a
 sentinel `Z`, `read` is the last element, `eqObs` compares reads, `Inv = app = ⊤`.
@@ -23,10 +21,10 @@ non-maximal (both order before `oc`). RESET is convergent up to `eqObs` on `ev`
 conditioned-RA-lin hypothesis (`ConvergesEq`); yet the swap oracle
 `EqSwap(oa, ob, init)` is owed (incomparable, both enabled at the empty prefix)
 and FAILS: `read [oa,ob] = B ≠ A = read [ob,oa]`. So vc:comm and vc:inv are not
-forced by conditioned RA-lin — they are a sufficient device strictly stronger than
+forced by conditioned RA-lin: they are a sufficient device strictly stronger than
 the convergence RA-lin actually forces.
 
-## T2 — `vc_disc_extra` (datatype GSET, two invariants)
+## `vc_disc_extra` (datatype GSET, two invariants)
 
 The grow-only set with `eqObs = =` converges regardless of `Inv` (folds are
 order-independent). Under `Inv₁ = ⊤` the vc:disc preservation clause is green;
@@ -34,7 +32,7 @@ under `Inv₂ = (2 ∉ s)` it reddens at `add 2` (applicable, `Inv₂` holds,
 `Inv₂(s ∪ {2})` false). Same datatype, same RA-lin verdict, different vc:disc
 verdict: vc:disc's universal preservation is EXTRA, a property of the chosen `Inv`.
 
-Every expected value is HAND-DERIVED (see the block comments); the RESET
+Every expected value is hand-derived (see the block comments); the RESET
 convergence + EqSwap-failure and the two-Inv green/red are the SPOT pins.
 -/
 
@@ -54,7 +52,7 @@ inductive RVal | A | B | Z
 inductive RAppOp | wr (v : RVal) | rst
   deriving DecidableEq, Repr
 
-/-- `read` — the last element of the log (append-order sensitive). -/
+/-- `read`: the last element of the log (append-order sensitive). -/
 def reset_read : List RVal → Option RVal
   | [] => none
   | [v] => some v
@@ -149,11 +147,11 @@ theorem not_vis_ob_ob : ¬ reset_vis ob ob := by
 theorem not_vis_oa_oa : ¬ reset_vis oa oa := by
   rintro (⟨_, h⟩ | ⟨h, _⟩) <;> exact absurd h (by decide)
 
-/-! ### The `¬ eqCommutesOn` facts — the absorber does not `eqObs`-commute
+/-! ### The `¬ eqCommutesOn` facts: the absorber does not `eqObs`-commute
 
 Each is refuted at `s = init = []` by a single hand-derived read mismatch. -/
 
-/-- `oa, ob` do NOT `eqObs`-commute: `read [A,B] = B ≠ A = read [B,A]`. (Probe C [1].) -/
+/-- `oa, ob` do NOT `eqObs`-commute: `read [A,B] = B ≠ A = read [B,A]`. -/
 theorem not_eqComm_oa_ob : ¬ eqCommutesOn RE RW oa ob := by
   intro h
   have h0 := h [] trivial
@@ -184,9 +182,9 @@ theorem loOnEq_oa_oc : loOnEq RE RW reset_vis evABC oa oc :=
 theorem loOnEq_ob_oc : loOnEq RE RW reset_vis evABC ob oc :=
   Or.inl ⟨vis_ob_oc, not_eqComm_ob_oc⟩
 
-/-- `oa ∥ ob`: NO `oa → ob` edge — the rc-edge is absorbed by `oc`
+/-- `oa ∥ ob`: NO `oa → ob` edge, the rc-edge is absorbed by `oc`
 (a vis-noncommuting successor of `ob`). This is the crux: the absorber cancels the
-rc-edge in the larger set. (Probe C [2].) -/
+rc-edge in the larger set. -/
 theorem not_loOnEq_oa_ob : ¬ loOnEq RE RW reset_vis evABC oa ob := by
   rintro (⟨hv, _⟩ | ⟨_, _, _, hnabs⟩)
   · exact not_vis_oa_ob hv
@@ -250,9 +248,9 @@ theorem fold_reset {ρ : List (Op RAppOp)}
     rw [he_eq, applySeq_append_single]
     rfl
 
-/-- **RESET converges up to `eqObs` on `{oa, ob, oc}`** — the canonical class is
+/-- **RESET converges up to `eqObs` on `{oa, ob, oc}`**: the canonical class is
 single-valued (every respecting fold reads `Z`). This is the conditioned-RA-lin
-hypothesis `ConvergesEq` satisfied at the witness set. (Probe C [3], [6].) -/
+hypothesis `ConvergesEq` satisfied at the witness set. -/
 theorem reset_converges : ConvergesEq RE RW reset_vis evABC := by
   rintro s s' ⟨ρ, hp, hr, hf⟩ ⟨ρ', hp', hr', hf'⟩
   have e1 : applySeq RESET.toCRDTSig RESET.init ρ = [RVal.Z] := fold_reset hp hr
@@ -263,7 +261,7 @@ theorem reset_converges : ConvergesEq RE RW reset_vis evABC := by
 
 /-! ## §3. The swap oracle FAILS (vc:comm + vc:inv not forced) -/
 
-/-- `EqSwap(oa, ob, init)` FAILS: `read [A,B] = B ≠ A = read [B,A]`. (Probe C [4].) -/
+/-- `EqSwap(oa, ob, init)` FAILS: `read [A,B] = B ≠ A = read [B,A]`. -/
 theorem reset_eqSwap_fails : ¬ EqSwap RE oa ob RESET.init := by
   intro h
   simp only [EqSwap, RESET_update, RESET_init, oa, ob, reset_do, reset_read,
@@ -299,13 +297,13 @@ theorem reset_not_eqSwapOracle : ¬ EqSwapOracle RE RW reset_vis evABC := by
   rw [show applySeq RESET.toCRDTSig RESET.init [] = RESET.init from rfl] at hswap
   exact reset_eqSwap_fails hswap
 
-/-! ## §4. The T1 refutation -/
+/-! ## §4. The vc:comm+vc:inv refutation -/
 
-/-- **T1 — `eqswap_not_forced`.** There is a conditioned datatype (RESET) and an
-event set on which the convergence-up-to-`eqObs` content of conditioned RA-lin
-holds (`ConvergesEq`) yet the swap oracle vc:comm+vc:inv fails
-(`¬ EqSwapOracle`). So vc:comm and vc:inv are NOT forced by conditioned RA-lin;
-they are a sufficient device strictly stronger than the convergence it forces. -/
+/-- **`eqswap_not_forced`.** There is a conditioned datatype (RESET) and an event
+set on which the convergence-up-to-`eqObs` content of conditioned RA-lin holds
+(`ConvergesEq`) yet the swap oracle vc:comm+vc:inv fails (`¬ EqSwapOracle`). So
+vc:comm and vc:inv are NOT forced by conditioned RA-lin; they are a sufficient
+device strictly stronger than the convergence it forces. -/
 theorem eqswap_not_forced :
     ∃ (D : ConditionedMRDTSig) (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
       (vis : Op D.AppOp → Op D.AppOp → Prop) (ev : Set (Op D.AppOp)),
@@ -314,7 +312,7 @@ theorem eqswap_not_forced :
 
 /-! ### SPOT pins (PASS + FAIL, hand-derived) -/
 
-/-- PASS pin (Probe C [5]): the τ-burdened equality convergence gives —
+/-- PASS pin: the τ-burdened equality convergence gives
 `fold [oa,ob,oc] ≈ fold [ob,oa,oc]` (append `oc` reconciles), both reading `Z`. -/
 theorem reset_tau_reconciles :
     reset_eqv (applySeq RESET.toCRDTSig RESET.init [oa, ob, oc])
@@ -323,16 +321,16 @@ theorem reset_tau_reconciles :
 /-- PASS pin: both witness linearizations fold to `[Z]` (read `Z`). -/
 theorem reset_fold_abc : applySeq RESET.toCRDTSig RESET.init [oa, ob, oc] = [RVal.Z] := by decide
 theorem reset_fold_bac : applySeq RESET.toCRDTSig RESET.init [ob, oa, oc] = [RVal.Z] := by decide
-/-- FAIL pin (Probe C [4]): the LOCAL swap does not reconcile — `[oa,ob]` reads `B`,
+/-- FAIL pin: the LOCAL swap does not reconcile, `[oa,ob]` reads `B`,
 `[ob,oa]` reads `A`, so `EqSwap(oa,ob,init)` fails. -/
 theorem reset_fold_ab : applySeq RESET.toCRDTSig RESET.init [oa, ob] = [RVal.A, RVal.B] := by decide
 theorem reset_fold_ba : applySeq RESET.toCRDTSig RESET.init [ob, oa] = [RVal.B, RVal.A] := by decide
 theorem reset_read_ab_ne_ba :
     reset_read [RVal.A, RVal.B] ≠ reset_read [RVal.B, RVal.A] := by decide
 
-/-- PASS pin (Probe C [2b]): the antitone contrast — in `ev' = {oa, ob}` (no
-absorber) the edge `oa → ob` IS present via the rc arm. The pair is incomparable
-only once `oc` enlarges the set. -/
+/-- PASS pin: the antitone contrast, in `ev' = {oa, ob}` (no absorber) the edge
+`oa → ob` IS present via the rc arm. The pair is incomparable only once `oc`
+enlarges the set. -/
 theorem loOnEq_oa_ob_small : loOnEq RE RW reset_vis ({oa, ob} : Set (Op RAppOp)) oa ob := by
   refine Or.inr ⟨not_vis_oa_ob, not_vis_ob_oa, ?_, ?_⟩
   · simp only [RESET_rc]; decide
@@ -342,7 +340,7 @@ theorem loOnEq_oa_ob_small : loOnEq RE RW reset_vis ({oa, ob} : Set (Op RAppOp))
     · exact not_vis_ob_oa hv
     · exact not_vis_ob_ob hv
 
-/-! ## §5. The GSET datatype (grow-only set) for T2 -/
+/-! ## §5. The GSET datatype (grow-only set) -/
 
 /-- The grow-only set base signature: state `Set ℕ`, `update` inserts the op's
 element, `mergeL` is union, `rc = Either`. `noncomputable` (classical `Set ℕ`
@@ -435,7 +433,7 @@ theorem gs1_converges (vis : Op GS1.AppOp → Op GS1.AppOp → Prop)
   rw [← hf2, ← hf2']
   exact gset_fold_perm_eq hp hp'
 
-/-- **GSET converges up to `=` under `Inv₂`, for any config** — the SAME verdict
+/-- **GSET converges up to `=` under `Inv₂`, for any config**: the SAME verdict
 as under `Inv₁` (order-independence does not read `Inv`). -/
 theorem gs2_converges (vis : Op GS2.AppOp → Op GS2.AppOp → Prop)
     (ev : Set (Op GS2.AppOp)) : ConvergesEq EG2 WG2 vis ev := by
@@ -462,13 +460,13 @@ theorem gs2_not_discipline : ¬ Discipline GS2 := by
     hpres (∅ : Set Nat) op_poison (Set.notMem_empty 2) trivial
   exact hbad (Set.mem_insert 2 ∅)
 
-/-! ## §6. The T2 refutation -/
+/-! ## §6. The vc:disc refutation -/
 
-/-- **T2 — `vc_disc_extra`.** One datatype (GSET), one RA-lin verdict
-(`ConvergesEq` under both invariants), two `Inv` choices: vc:disc is green under
-`Inv₁` and red under `Inv₂`. So vc:disc's universal `Inv`-preservation clause is
-EXTRA — a property of the datatype's chosen `Inv`, not forced by RA-lin (the
-failure is off the reachable-canonical domain). -/
+/-- **`vc_disc_extra`.** One datatype (GSET), one RA-lin verdict (`ConvergesEq`
+under both invariants), two `Inv` choices: vc:disc is green under `Inv₁` and red
+under `Inv₂`. So vc:disc's universal `Inv`-preservation clause is EXTRA, a property
+of the datatype's chosen `Inv`, not forced by RA-lin (the failure is off the
+reachable-canonical domain). -/
 theorem vc_disc_extra :
     ∃ (D₁ D₂ : ConditionedMRDTSig) (E₁ : EqEquiv D₁) (E₂ : EqEquiv D₂)
       (W₁ : Op D₁.AppOp → D₁.State → Prop) (W₂ : Op D₂.AppOp → D₂.State → Prop),

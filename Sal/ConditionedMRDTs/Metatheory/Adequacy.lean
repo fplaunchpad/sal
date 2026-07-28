@@ -812,15 +812,6 @@ theorem ra_linearizable3_of_join (hJoin : JoinLemma3 D)
         hL hvis hver ih
     | query h_s h_val => exact ih
 
--- RETIRED (one engine). The loOn-specific VC entry points
--- `ra_linearizable_of_core_delta_cd3` and `ra_linearizable_of_core_feasible_cd3`
--- are removed: every VC-bearing datatype now routes through the single abstract-
--- arbitration capstone `ra_linearizable3_via_capstone`
--- (Metatheory/ArbAdequacyReach.lean), with `rc` supplied as the recipe `loOnFamily`.
--- The Join-level entry `ra_linearizable3_of_join` (above) stays: it is the entry
--- for direct-join datatypes, which prove their Join directly without any VCs.
-
-
 /-- The unconditional contract implies the feasible one (context discarded);
 `mergeL_init` supplies the unit law. T8's route is thereby a corollary of the
 feasible route (`join_lemma3_of_cd'` below). -/
@@ -1205,10 +1196,6 @@ feasible one. -/
 theorem join_lemma3_of_cd' (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
     (hCD : CDVC3 D) : JoinLemma3 D :=
   join_lemma3_of_cd_feasible hVC.toCD (feasibleDeltaVCs3_of_delta hVC hΔ) hCD
-
--- `ra_linearizable_of_core_feasible_cd3` RETIRED here (see the one-engine note
--- above): superseded by `ra_linearizable3_via_capstone`.
-
 
 end
 

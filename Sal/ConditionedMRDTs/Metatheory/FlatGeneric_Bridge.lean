@@ -318,10 +318,6 @@ theorem flat_ra_linearizable3_eq
         (congVCEq D) (invInvVCTop D)) trivial) C) :
     IsRALinearizable3Eq (eqOfEq D) (WTop D) (invPresTop hInvT)
       (congVCEq D) (invInvVCTop D) C :=
-  -- Routed through the SINGLE adequacy engine: the abstract-arbitration capstone at
-  -- `arb = rcArb`. `RA_linearizable_up_to_eq_H` (the old loOn-specific entry) is
-  -- retired in favour of `loOnEq_isRALinearizable3Eq_via_arb_capstone`, so every
-  -- `≈`-instance built on this bridge now flows through `ra_linearizable3ArbEq_of_reach`.
   Sal.ConditionedMRDTs.ArbReachEq.loOnEq_isRALinearizable3Eq_via_arb_capstone
     (eqOfEq D) (WTop D) (fun _ => True) (flatHonJ D)
     (eqJoinH_of_joinC hInvT hJoin)

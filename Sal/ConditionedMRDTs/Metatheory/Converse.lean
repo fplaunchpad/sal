@@ -1,70 +1,62 @@
 import Sal.ConditionedMRDTs.Metatheory.VC_Minimal_Core
 
 /-!
-# The restricted converse of adequacy — the completeness direction (task #114, phase 3)
+# The restricted converse of adequacy: the completeness direction
 
-Adequacy (`Adequacy.lean`) is `{VC1..VC8} ⟹ RA-linearizable`. This file mechanizes
-the **converse** validated pen-and-paper + Python in phase 2
-(`whiteboard/converse-note.md`, harness `whiteboard/litmus/converse_check.py`):
+Adequacy (`Adequacy.lean`) is `{VC1..VC8} ⟹ RA-linearizable`. This file establishes
+the **converse**:
 
 > A **canonical RA-linearizable** flat MRDT satisfies the four *core* verification
 > conditions {VC5-at-empty, VC6, VC7, VC8} on its reachable, weakly-closed event sets.
 
-The full converse (RA-lin ⟹ all eight VCs) is refuted — the four *shell* VCs
+The full converse (RA-lin ⟹ all eight VCs) is false: the four *shell* VCs
 (VC1..VC4) quantify over the whole op/state universe and have RA-linearizable
 violators off the reachable-canonical domain. Only the four config-driven core
-laws, on reachable weakly-closed sets, admit the converse. This is the mirror of
-the phase-1 shrink: adequacy shrank its contract to the four-law core
-(`VC_Minimal_Core.lean`), and the converse recovers exactly that core from RA-lin.
+laws, on reachable weakly-closed sets, admit the converse. This mirrors adequacy:
+adequacy shrinks its contract to the four-law core (`VC_Minimal_Core.lean`), and
+the converse recovers exactly that core from RA-lin.
 
-## The hypothesis (`CanonicalRALin3`), stated faithfully
+## The hypothesis (`CanonicalRALin3`)
 
 The Lean `IsRALinearizable3` (`Adequacy.lean:35`) is **existence-only** and
 **per-configuration**: it says each version's state is *some* `lo`-respecting fold
-of its event set. It does **not** supply the two ingredients the note's
-"canonical RA-linearizable" needs — the *Join* (a merge lands on the canonical
-state of the union) and *convergence* (folds are unique, so `sig` is a function).
-So `IsRALinearizable3` alone is too weak to be the converse hypothesis. Following
-the note's definitional setup ("existence + convergence" plus "the merge is that
-fold"), the faithful hypothesis is the pair
+of its event set. It does **not** supply the two ingredients "canonical
+RA-linearizable" needs: the *Join* (a merge lands on the canonical state of the
+union) and *convergence* (folds are unique, so `sig` is a function). So
+`IsRALinearizable3` alone is too weak to be the converse hypothesis. The faithful
+hypothesis, "existence + convergence" plus "the merge is that fold", is the pair
 
-* **`join`** : `JoinLemma3 D` — the operational half, `mergeL(σ(E₁∩E₂), σ(E₁),
-  σ(E₂)) = σ(E₁∪E₂)` on backward-closed sides (existing framework definition);
+* **`join`** : `JoinLemma3 D`, the operational half, `mergeL(σ(E₁∩E₂), σ(E₁),
+  σ(E₂)) = σ(E₁∪E₂)` on backward-closed sides;
 * **`converges`** : canonical states are **unique** on every reachable
-  weakly-closed set (`sig` is a well-defined function) — the convergence half,
-  taken as an explicit hypothesis because the framework only *derives* it from the
-  update layer (`isCanonicalState_unique_u`), which the converse does not assume.
+  weakly-closed set (`sig` is a well-defined function), the convergence half, taken
+  as an explicit hypothesis because the framework only *derives* it from the update
+  layer (`isCanonicalState_unique_u`), which the converse does not assume.
 
-This is exactly the "add the convergence/canonical hypothesis" the phase-3 brief
-mandates, not a silent strengthening: convergence is guarded by the note's own
-domain (reachable, weakly-closed), and only its uniqueness half is used (existence
-of every canonical state below is supplied by the concrete `IsCanonicalState`
-witnesses each VC already carries and by the Join).
+Convergence is guarded by its domain (reachable, weakly-closed), and only its
+uniqueness half is used: existence of every canonical state below is supplied by
+the concrete `IsCanonicalState` witnesses each VC already carries and by the Join.
 
-## What is forced by what (matches the note's table)
+## What is forced by what
 
 | core VC | forced by | Join instances | convergence |
 |---------|-----------|----------------|-------------|
 | VC5-empty / VC5⁺ | the Join | 1 | uniqueness on the set |
 | VC6 | the Join | 4 | uniqueness on `E₁∪E₂` |
-| VC7 | the Join | 6 (note: "5 distinct") | uniqueness on `E₁∪E₂` |
+| VC7 | the Join | 6 | uniqueness on `E₁∪E₂` |
 | VC8 | the Join **and** convergence | 1 | via `sig_peel_maximal` |
 
 VC5-empty, VC6, VC7 are pure Join reductions: every merge node rewrites to "the
 merge produces the canonical state of the union," and the two sides collapse to
 `σ(union)`; convergence closes each as the *uniqueness* of that canonical state.
 VC8 additionally invokes the fold-peel `sig(U) = e(sig(U∖e))`
-(`sig_peel_maximal`), the one genuinely new lemma, whose content is convergence
-used as an equation. So the converse reduces to `JoinLemma3` (all four) plus
-`sig_peel_maximal` (only VC8).
+(`sig_peel_maximal`), whose content is convergence used as an equation. So the
+converse reduces to `JoinLemma3` (all four) plus `sig_peel_maximal` (only VC8).
 
-## Note-derivation audit
-
-Every step of the note's "The derivation" section went through in Lean unchanged.
-The structural facts L1 (`wc_union`/`wc_inter`), L2 (`closure_diff_of_max`), L3
-(`downset_subset`/`downset_max`), L4 (`loOn_mono`, inside `isCanonicalState_snoc`)
-and L5/L6 (`sig_peel_maximal` = `isCanonicalState_snoc` + convergence) were all
-either present in the framework or one-liners. No note step failed.
+The structural facts used are L1 (`wc_union`/`wc_inter`), L2
+(`closure_diff_of_max`), L3 (`downset_subset`/`downset_max`), L4 (`loOn_mono`,
+inside `isCanonicalState_snoc`) and L5/L6 (`sig_peel_maximal` =
+`isCanonicalState_snoc` + convergence).
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -72,7 +64,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## §1. Structural set lemmas (the note's L1, plus the diff/inter rewrites) -/
+/-! ## §1. Structural set lemmas (L1, plus the diff/inter rewrites) -/
 
 /-- Removing a point from `E` and intersecting with a subset `S ⊆ E` is the same
 as puncturing `S`. (The `s₀`-slot rewrite of every Join instance below: a merge's
@@ -124,19 +116,19 @@ theorem wc_inter {D : ConditionedMRDTSig}
 
 variable {D : ConditionedMRDTSig}
 
-/-- **Convergence on `ev`** — the note's "`sig(ev)` is a well-defined function":
-all `loOn C ev`-respecting folds agree, i.e. the canonical state of `ev` is
-unique. (Existence, the other half of the note's convergence, is supplied at every
-use site by the concrete `IsCanonicalState` witnesses and by the Join, so only
-uniqueness is packaged here.) -/
+/-- **Convergence on `ev`**: `sig(ev)` is a well-defined function, i.e. all
+`loOn C ev`-respecting folds agree, so the canonical state of `ev` is unique.
+Existence, the other half of convergence, is supplied at every use site by the
+concrete `IsCanonicalState` witnesses and by the Join, so only uniqueness is
+packaged here. -/
 def Converges (C : Sal.Emulation.Configuration D.toCRDTSig)
     (ev : Set (Op D.AppOp)) : Prop :=
   ∀ s s' : D.State, IsCanonicalState C ev s → IsCanonicalState C ev s' → s = s'
 
 /-- **Canonical RA-linearizability** (the faithful converse hypothesis; see the
-file header). The note's "canonical RA-linearizable" = *existence + convergence*
-(here `converges`, the uniqueness of the fold on reachable weakly-closed sets)
-plus *the merge is that fold* (here `join`, `JoinLemma3`). The framework's
+file header). "Canonical RA-linearizable" is *existence + convergence* (here
+`converges`, the uniqueness of the fold on reachable weakly-closed sets) plus *the
+merge is that fold* (here `join`, `JoinLemma3`). The framework's
 `IsRALinearizable3` is the strictly weaker existence-only, per-config notion and
 does **not** imply either field. -/
 structure CanonicalRALin3 (D : ConditionedMRDTSig) : Prop where
@@ -151,11 +143,11 @@ structure CanonicalRALin3 (D : ConditionedMRDTSig) : Prop where
     (∀ a b, C.vis a b → ¬ D.toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) →
     Converges C ev
 
-/-- **The four core laws on the reachable-canonical domain** — the converse's
-conclusion. `vc5` is `FeasibleInitConsumed` (VC5 on **weakly-closed** `ev`, the
-note's domain restriction; `feasible_init`'s surplus over non-weakly-closed `ev`
-is off-domain and not a converse target). `vc6`/`vc7` are the feasible
-redistribute laws verbatim; `vc8` is the causal-delta equation `CDVC3`. -/
+/-- **The four core laws on the reachable-canonical domain**, the converse's
+conclusion. `vc5` is `FeasibleInitConsumed` (VC5 on **weakly-closed** `ev`;
+`feasible_init`'s surplus over non-weakly-closed `ev` is off-domain and not a
+converse target). `vc6`/`vc7` are the feasible redistribute laws verbatim; `vc8`
+is the causal-delta equation `CDVC3`. -/
 structure ReachableCoreVCs (D : ConditionedMRDTSig) : Prop where
   /-- VC5 on weakly-closed `ev` (the reachable-canonical domain of the unit law). -/
   vc5 : FeasibleInitConsumed D
@@ -166,7 +158,7 @@ structure ReachableCoreVCs (D : ConditionedMRDTSig) : Prop where
   /-- VC8, the causal-delta equation. -/
   vc8 : CDVC3 D
 
-/-! ## §3. The fold-peel lemma (the note's L5, the one genuinely new lemma) -/
+/-! ## §3. The fold-peel lemma (L5) -/
 
 /-- **`sig_peel_maximal` (L5): `sig(U) = e(sig(U∖e))` for a `loOn(U)`-maximal `e`.**
 Take the `loOn(U∖e)`-respecting enumeration underlying `sUe`; by antitonicity of
@@ -254,20 +246,20 @@ theorem converse_VC6 (h : CanonicalRALin3 D) : FeasibleLocalRedistributeVC D := 
     · rintro ⟨hx₁ | hx₂, hne⟩
       · exact Or.inl ⟨hx₁, hne⟩
       · exact Or.inr hx₂
-  -- inner-left `mergeL B t₁ (update B e) = σ(E₁)` — Join at `(E₁∖e, ↓e)`.
+  -- inner-left `mergeL B t₁ (update B e) = σ(E₁)`, via the Join at `(E₁∖e, ↓e)`.
   have hP := h.join C (ev₁ \ {e}) (downset C e) B t₁ (D.update B e)
     h_tr h_ir h_in_e₁ h_in_de h_cl_e₁ downset_closed
     (by rw [diff_inter_of_subset h_dsub₁]; exact hB) ht₁ hBde
   rw [diff_union_of_subset h_dsub₁ self_mem_downset] at hP
-  -- LHS `= σ(E₁∪E₂)` — Join at `(E₁, E₂)`.
+  -- LHS `= σ(E₁∪E₂)`, via the Join at `(E₁, E₂)`.
   have hLHS := h.join C ev₁ ev₂ s₀ (D.mergeL B t₁ (D.update B e)) s₂
     h_tr h_ir h_in₁ h_in₂ h_cl₁ h_cl₂ hs₀ hP hs₂
-  -- inner-right `mergeL s₀ t₁ s₂ = σ((E₁∪E₂)∖e)` — Join at `(E₁∖e, E₂)`.
+  -- inner-right `mergeL s₀ t₁ s₂ = σ((E₁∪E₂)∖e)`, via the Join at `(E₁∖e, E₂)`.
   have hQ := h.join C (ev₁ \ {e}) ev₂ s₀ t₁ s₂
     h_tr h_ir h_in_e₁ h_in₂ h_cl_e₁ h_cl₂
     (by rw [set_c]; exact hs₀) ht₁ hs₂
   rw [set_d] at hQ
-  -- RHS `= σ(E₁∪E₂)` — Join at `((E₁∪E₂)∖e, ↓e)`.
+  -- RHS `= σ(E₁∪E₂)`, via the Join at `((E₁∪E₂)∖e, ↓e)`.
   have hRHS := h.join C ((ev₁ ∪ ev₂) \ {e}) (downset C e) B (D.mergeL s₀ t₁ s₂)
     (D.update B e) h_tr h_ir h_in_Um h_in_de h_cl_Um downset_closed
     (by rw [diff_inter_of_subset h_dsubU]; exact hB) hQ hBde
@@ -313,31 +305,31 @@ theorem converse_VC7 (h : CanonicalRALin3 D) : FeasibleRedistributeVC D := by
   have set_d : (ev₁ \ {e}) ∪ (ev₂ \ {e}) = (ev₁ ∪ ev₂) \ {e} := by
     ext x
     simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]; tauto
-  -- `mergeL B t₀ (update B e) = σ(E₁∩E₂)` — Join at `((E₁∩E₂)∖e, ↓e)`.
+  -- `mergeL B t₀ (update B e) = σ(E₁∩E₂)`, via the Join at `((E₁∩E₂)∖e, ↓e)`.
   have hP₀ := h.join C ((ev₁ ∩ ev₂) \ {e}) (downset C e) B t₀ (D.update B e)
     h_tr h_ir h_in_i₀ h_in_de h_cl_i₀ downset_closed
     (by rw [diff_inter_of_subset h_dsubI]; exact hB) ht₀ hBde
   rw [diff_union_of_subset h_dsubI self_mem_downset] at hP₀
-  -- `mergeL B t₁ (update B e) = σ(E₁)` — Join at `(E₁∖e, ↓e)`.
+  -- `mergeL B t₁ (update B e) = σ(E₁)`, via the Join at `(E₁∖e, ↓e)`.
   have hP₁ := h.join C (ev₁ \ {e}) (downset C e) B t₁ (D.update B e)
     h_tr h_ir h_in_e₁ h_in_de h_cl_e₁ downset_closed
     (by rw [diff_inter_of_subset h_dsub₁]; exact hB) ht₁ hBde
   rw [diff_union_of_subset h_dsub₁ self_mem_downset] at hP₁
-  -- `mergeL B t₂ (update B e) = σ(E₂)` — Join at `(E₂∖e, ↓e)`.
+  -- `mergeL B t₂ (update B e) = σ(E₂)`, via the Join at `(E₂∖e, ↓e)`.
   have hP₂ := h.join C (ev₂ \ {e}) (downset C e) B t₂ (D.update B e)
     h_tr h_ir h_in_e₂ h_in_de h_cl_e₂ downset_closed
     (by rw [diff_inter_of_subset h_dsub₂]; exact hB) ht₂ hBde
   rw [diff_union_of_subset h_dsub₂ self_mem_downset] at hP₂
-  -- LHS `= σ(E₁∪E₂)` — Join at `(E₁, E₂)`.
+  -- LHS `= σ(E₁∪E₂)`, via the Join at `(E₁, E₂)`.
   have hLHS := h.join C ev₁ ev₂ (D.mergeL B t₀ (D.update B e))
     (D.mergeL B t₁ (D.update B e)) (D.mergeL B t₂ (D.update B e))
     h_tr h_ir h_in₁ h_in₂ h_cl₁ h_cl₂ hP₀ hP₁ hP₂
-  -- inner `mergeL t₀ t₁ t₂ = σ((E₁∪E₂)∖e)` — Join at `(E₁∖e, E₂∖e)`.
+  -- inner `mergeL t₀ t₁ t₂ = σ((E₁∪E₂)∖e)`, via the Join at `(E₁∖e, E₂∖e)`.
   have hQ := h.join C (ev₁ \ {e}) (ev₂ \ {e}) t₀ t₁ t₂
     h_tr h_ir h_in_e₁ h_in_e₂ h_cl_e₁ h_cl_e₂
     (by rw [set_c]; exact ht₀) ht₁ ht₂
   rw [set_d] at hQ
-  -- RHS `= σ(E₁∪E₂)` — Join at `((E₁∪E₂)∖e, ↓e)`.
+  -- RHS `= σ(E₁∪E₂)`, via the Join at `((E₁∪E₂)∖e, ↓e)`.
   have hRHS := h.join C ((ev₁ ∪ ev₂) \ {e}) (downset C e) B (D.mergeL t₀ t₁ t₂)
     (D.update B e) h_tr h_ir h_in_Um h_in_de h_cl_Um downset_closed
     (by rw [diff_inter_of_subset h_dsubU]; exact hB) hQ hBde
@@ -357,7 +349,7 @@ theorem converse_VC8 (h : CanonicalRALin3 D) : CDVC3 D := by
   have h_cl_Ue := closure_diff_of_max h_subU h_cl h_max
   have hBde : IsCanonicalState C (downset C e) (D.update B e) :=
     isCanonicalState_snoc self_mem_downset (downset_max h_tr h_ir) hB
-  -- LHS `= σ(U)` — Join at `(U∖e, ↓e)`.
+  -- LHS `= σ(U)`, via the Join at `(U∖e, ↓e)`.
   have hJoin := h.join C (U \ {e}) (downset C e) B A (D.update B e)
     h_tr h_ir h_in_Ue h_in_de h_cl_Ue downset_closed
     (by rw [diff_inter_of_subset h_dsub]; exact hB) hA hBde
@@ -367,7 +359,7 @@ theorem converse_VC8 (h : CanonicalRALin3 D) : CDVC3 D := by
 
 /-! ## §5. The converse, packaged -/
 
-/-- **`converse_core`** — the restricted converse of adequacy. A canonical
+/-- **`converse_core`**: the restricted converse of adequacy. A canonical
 RA-linearizable flat MRDT satisfies the four core VCs on its reachable,
 weakly-closed event sets. Two ingredients only: `JoinLemma3` (all four laws) and
 `sig_peel_maximal` (VC8's convergence half). -/
@@ -379,7 +371,7 @@ theorem converse_core (h : CanonicalRALin3 D) : ReachableCoreVCs D where
 
 /-! ## §6. The completeness corollary
 
-The two task-#114 directions meet at the four-law core / the Join. Adequacy
+The two directions meet at the four-law core / the Join. Adequacy
 (`join_lemma3_of_cd_feasible`, then `ra_linearizable3_of_join`) runs
 `{VC1..VC8} ⟹ JoinLemma3 ⟹ RA-lin`; this file's `converse_core` runs
 `canonical-RA-lin ⟹ {VC5°, VC6, VC7, VC8}` on reachable states. Both pivot on
@@ -396,16 +388,13 @@ canonical-RA-lin forces the four reachable-core laws. Adequacy (`adequacy_join`,
 then `ra_linearizable3_of_join`): the raw eight-VC bundle forces `JoinLemma3` and
 hence per-config RA-lin. They meet at the four-law core / `JoinLemma3` pivot.
 
-**The biconditional gap (#119, not done).** A *tight* biconditional at the
-four-reachable-core level — `ReachableCoreVCs D ∧ (convergence) ↔ CanonicalRALin3 D`
-— needs the backward implication `ReachableCoreVCs + convergence + weakened update
-layer ⟹ JoinLemma3`. That is exactly the phase-2 "weakened-adequacy re-thread"
-named as the residue in `VC_Minimal_Core.lean` (re-hosting `convergence_on_u`,
-`loOnNe_acyclic_u`, `isCanonicalState_unique_u`/`_exists_u` on `WeakUpdateVCs` +
-`ReachState`, and re-threading `join_lemma3_of_cd_feasible` to consume the
-`FeasibleInitConsumed` / canonical-tuple forms). Mechanical (~500 lines), no
-mathematical obstruction, but a re-derivation rather than a composition — so the
-tight `↔` is deferred to #119, and what is proved now is the pair below. -/
+A *tight* biconditional at the four-reachable-core level
+(`ReachableCoreVCs D ∧ (convergence) ↔ CanonicalRALin3 D`) is not established here:
+it would need the backward implication `ReachableCoreVCs + convergence + weakened
+update layer ⟹ JoinLemma3`, i.e. re-hosting `convergence_on_u`, `loOnNe_acyclic_u`,
+`isCanonicalState_unique_u`/`_exists_u` on `WeakUpdateVCs` + `ReachState` and
+re-threading `join_lemma3_of_cd_feasible` to consume the `FeasibleInitConsumed` /
+canonical-tuple forms. What is proved here is the pair below. -/
 theorem flat_completeness :
     (CanonicalRALin3 D → ReachableCoreVCs D) ∧
       (CoreVCs3CD D → FeasibleDeltaVCs3 D → CDVC3 D → JoinLemma3 D) :=
