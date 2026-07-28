@@ -1709,6 +1709,130 @@ computing $e$'s delta on its recorded past $\dow{e} \setminus \{e\}$
 and merging it in over that past. The merge sits at its honest LCA:
 $(U \setminus \{e\}) \cap \dow{e} = \dow{e} \setminus \{e\}$.
 
+\paragraph{What the delta contract buys: one peel, three cases.} The three
+feasible-delta laws are the three cases of a single move the Join Lemma
+(\S\ref{sec:adequacy}) makes on repeat: peel the $\loE{E_1 \cup E_2}$-maximal
+event $e$ out of the ternary merge, so the merge loses one event and the
+induction recurses. Flat VC~\ref{fvc:cd} ($\cd$) is the atom: an event's
+effect on the whole world is its delta $e(B)$, computed on its own past
+$B = \sigma(\dow{e} \setminus \{e\})$, merged back in over $B$
+(Figure~\ref{fig:cd}). It ties an event's effect to \emph{what it saw}, and
+it closes every peel, collapsing $\mergeL(B, \text{rest}, e(B))$ to
+$e(\text{rest})$. Flat VC~\ref{fvc:lredist} peels $e$ when it lies in one
+side: its delta, buried in that branch, slides out and up over the whole
+merge (Figure~\ref{fig:redist}(a)); because the delta is taken over the
+shared past $B$, the merge cannot alter it, so it commutes past. Flat
+VC~\ref{fvc:redist} peels $e$ when it lies in both sides and the LCA, so its
+delta sits in all three inputs; the LCA slot cancels the triple-count and the
+three $e$-images merge to a single $e(B)$ factored out
+(Figure~\ref{fig:redist}(b)), the ternary stand-in for idempotence.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.92,
+  mg/.style={circle, draw, minimum size=3.9mm, inner sep=0pt, font=\scriptsize},
+  lf/.style={font=\scriptsize},
+  lc/.style={font=\scriptsize, text=blue!55!black},
+  dl/.style={font=\scriptsize, text=red!70!black}]
+\node[mg] (M)  at (0,0) {$m$};
+\node[lc] (s0) at (-1.15,-0.92) {$s_0$};
+\node[mg] (Mp) at (0,-0.92) {$m$};
+\node[lf] (s2) at (1.15,-0.92) {$s_2$};
+\node[lc] (B)  at (-0.72,-1.84) {$B$};
+\node[lf] (t1) at (0,-1.84) {$t_1$};
+\node[dl] (eB) at (0.8,-1.84) {$e(B)$};
+\draw[->] (s0)--(M); \draw[->] (Mp)--(M); \draw[->] (s2)--(M);
+\draw[->] (B)--(Mp); \draw[->] (t1)--(Mp); \draw[->] (eB)--(Mp);
+\node at (2.55,-0.92) {$=$};
+\node[mg] (N)  at (4.95,0) {$m$};
+\node[lc] (B2) at (3.8,-0.92) {$B$};
+\node[mg] (Np) at (4.95,-0.92) {$m$};
+\node[dl] (eB2)at (6.1,-0.92) {$e(B)$};
+\node[lc] (s0b)at (4.25,-1.84) {$s_0$};
+\node[lf] (t1b)at (4.95,-1.84) {$t_1$};
+\node[lf] (s2b)at (5.65,-1.84) {$s_2$};
+\draw[->] (B2)--(N); \draw[->] (Np)--(N); \draw[->] (eB2)--(N);
+\draw[->] (s0b)--(Np); \draw[->] (t1b)--(Np); \draw[->] (s2b)--(Np);
+\draw[->,red!70!black,dashed,shorten >=2pt] (eB) to[bend right=22] (eB2);
+\node[font=\scriptsize] at (3.05,-1.95) {(a)};
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[>=Stealth, scale=0.92,
+  mg/.style={circle, draw, minimum size=3.9mm, inner sep=0pt, font=\scriptsize},
+  sm/.style={circle, draw, minimum size=3.3mm, inner sep=0pt, font=\tiny},
+  lf/.style={font=\scriptsize},
+  lc/.style={font=\scriptsize, text=blue!55!black},
+  dl/.style={font=\scriptsize, text=red!70!black}]
+\node[mg] (M) at (0,0) {$m$};
+\node[sm] (a) at (-1.95,-0.95) {$m$};
+\node[sm] (b) at (0,-0.95) {$m$};
+\node[sm] (c) at (1.95,-0.95) {$m$};
+\draw[->] (a)--(M); \draw[->] (b)--(M); \draw[->] (c)--(M);
+\foreach \n/\t/\x in {a/t_0/-1.95, b/t_1/0, c/t_2/1.95}{
+  \node[lc,scale=0.82] at (\x-0.52,-1.9) {$B$};
+  \node[lf,scale=0.82] at (\x,-1.9) {$\t$};
+  \node[dl,scale=0.82] at (\x+0.6,-1.9) {$e(B)$};
+  \draw[->] (\x-0.48,-1.73) -- (\n);
+  \draw[->] (\x,-1.73) -- (\n);
+  \draw[->] (\x+0.55,-1.73) -- (\n);
+}
+\node at (3.55,-0.95) {$=$};
+\node[mg] (N)  at (6.1,0) {$m$};
+\node[lc] (B2) at (4.95,-0.95) {$B$};
+\node[mg] (Np) at (6.1,-0.95) {$m$};
+\node[dl] (eB2)at (7.25,-0.95) {$e(B)$};
+\node[lf] (t0b)at (5.4,-1.9) {$t_0$};
+\node[lf] (t1b)at (6.1,-1.9) {$t_1$};
+\node[lf] (t2b)at (6.8,-1.9) {$t_2$};
+\draw[->] (B2)--(N); \draw[->] (Np)--(N); \draw[->] (eB2)--(N);
+\draw[->] (t0b)--(Np); \draw[->] (t1b)--(Np); \draw[->] (t2b)--(Np);
+\node[font=\scriptsize] at (3.55,-1.95) {(b)};
+\end{tikzpicture}
+\caption{The two redistribute laws as peels of the $\loE{}$-maximal event
+$e$ from a ternary merge. Each node $m$ is a $\mergeL$ (leftmost input the
+LCA slot, blue); red is $e$'s delta $e(B)$ over its past
+$B = \sigma(\dow{e}\setminus\{e\})$. \textbf{(a)} Flat VC~\ref{fvc:lredist}:
+$e$ in one branch slides out over the enclosing merge, leaving it $e$-free
+(over $E_1{\cup}E_2 \setminus\{e\}$). \textbf{(b)} Flat VC~\ref{fvc:redist}:
+$e$ in all three inputs factors out once.}
+\label{fig:redist}
+\end{figure}
+
+\paragraph{Reconciling the defeater.} Example~\ref{ex:defeater}, where the
+bottom-up route was stuck, peels cleanly. Its final merge is
+$\mergeL(\sigma(v_s), \mathrm{head}_p, \mathrm{head}_q)$, with
+$v_s = \{A_p, A_q\}$, $E_1 = \{A_p, R_p, A_q\}$ ($\mathrm{head}_p$, live
+$A_q$), $E_2 = \{A_p, A_q, R_q\}$ ($\mathrm{head}_q$, live $A_p$), and
+$U = E_1 \cup E_2$. The absorber makes
+$\loE{U} = \{A_p \!\to\! R_p,\ A_q \!\to\! R_q\}$: each add is absorbed by
+its own following remove, so the add-wins cross-edges vanish, and the
+maximal events are $R_p, R_q$.
+\begin{itemize}[leftmargin=1.6em]
+\item \emph{Peel $R_q$ with VC~\ref{fvc:lredist}.} $R_q$ lies in $E_2$ only;
+  its past is $\dow{R_q} = \{A_q\}$. VC~\ref{fvc:lredist} slides its delta out,
+  leaving a merge over $U \setminus \{R_q\}$, and VC~\ref{fvc:cd} closes it to
+  $R_q(\sigma(U \setminus \{R_q\}))$. $R_q$ is applied to what it saw,
+  $\{A_q\}$, killing $A_q$ alone.
+\item \emph{Peel $A_q$ with VC~\ref{fvc:redist}.} In the merge over
+  $U \setminus \{R_q\} = \{A_p, R_p, A_q\}$ the maximal event is now $A_q$
+  (with $R_q$ gone, $A_q$ is no longer absorbed), and it sits in both branches
+  and the LCA; VC~\ref{fvc:redist} factors its delta out once
+  ($\dow{A_q} = \emptyset$, a fresh add), and VC~\ref{fvc:cd} closes to
+  $A_q(\sigma(\{A_p, R_p\}))$.
+\item \emph{Peel $R_p$, then $A_p$.} Two more one-sided peels finish it:
+  $\sigma(U) = R_q(A_q(R_p(A_p(\Sinit)))) = \fold(\Sinit,
+  [A_p, R_p, A_q, R_q])$, the all-dead state, which is $\sigma(U)$.
+\end{itemize}
+The order the peel produces is exactly the witness $[A_p, R_p, A_q, R_q]$ of
+Proposition~\ref{prop:defeater}, but reached without ever restricting it to a
+side. VC~\ref{fvc:cd} ties each remove to its own past ($R_q$ to $\{A_q\}$,
+$R_p$ to $\{A_p\}$), so a remove kills only what it saw and the concurrent
+add it never saw survives by add-wins. The bottom-up route failed because it
+read that witness backwards off $\mathrm{head}_q$, where the restriction
+folds to all-dead; the delta contract never restricts, it peels the union's
+maximal event through the merge, and $\cd$ supplies the causal-past semantics
+the flat list cannot.
+
 Flat VCs \ref{fvc:rcnc}--\ref{fvc:sym} are one-liners for every data
 type we have discharged; Flat VCs \ref{fvc:lredist}--\ref{fvc:redist}
 frequently hold unconditionally anyway (for the OR-set,
