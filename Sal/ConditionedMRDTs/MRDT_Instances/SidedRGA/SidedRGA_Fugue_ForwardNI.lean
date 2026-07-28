@@ -8,9 +8,9 @@ This file discharges the stated def `FugueForwardNonInterleaving` of
 `SidedRGA_Fugue.lean` (Weidner-Kleppmann Definition 4 condition (1),
 strict reading) at every replica of every `FugueReach`-reachable
 configuration, kernel-clean. The proof is the SAME loShape +
-first-after-descent argument as the FugueMax discharge — the argmax
+first-after-descent argument as the FugueMax discharge, the argmax
 argument, the descent, and the discharge never consult the sibling
-order — but `SidedRGA_Fugue.lean`'s `GInv` carries no link clauses, so
+order, but `SidedRGA_Fugue.lean`'s `GInv` carries no link clauses, so
 the entire link layer is built here first, EXTERNALLY (this file adds
 invariants over `FugueReach`; it does not touch the Fugue file):
 
@@ -25,7 +25,7 @@ invariants over `FugueReach`; it does not touch the Fugue file):
   R-headedness (`chain_head_R`), and the two successor lemmas
   (`succ_R_descendant`, `succ_R_desc_allL`) on the PLAIN sided kernel
   (`Sided_ChainLex`/`Sided_Traversal`; entries are `(Side, δ)`, no
-  tags — the FugueMax variant alphabet never appears).
+  tags, the FugueMax variant alphabet never appears).
 
 * **§3 loShape, the descent, the discharge**: `loShape_of_inv`,
   `lo_child_before`, `forwardNI_of_inv`, and
@@ -605,7 +605,7 @@ theorem hasR_of_R_descendant {Γ : OrderedPrefixCode} {K : Know}
       exact ⟨c, hcK, e0, π, by rw [hcop, hpclo]⟩
 
 /-- **Geometry, L mint**: when the anchor HAS an R-child, its successor
-IS an R-descendant of it — the argmax lands in the R-subtree, by
+IS an R-descendant of it, the argmax lands in the R-subtree, by
 convexity. -/
 theorem succ_R_descendant {Γ : OrderedPrefixCode} {K : Know}
     (inv : FInv Γ K) {a n : ℕ}
@@ -691,7 +691,7 @@ theorem succ_R_descendant {Γ : OrderedPrefixCode} {K : Know}
 
 /-- **The all-L successor shape** (the mint-step engine): the successor
 of an anchor with an R-child extends the anchor by one R entry and L
-entries only — if the rest held an R entry, the node just above it
+entries only, if the rest held an R entry, the node just above it
 (minted by ancestor closure) would beat the argmax. -/
 theorem succ_R_desc_allL {Γ : OrderedPrefixCode} {K : Know}
     (inv : FInv Γ K) {a n : ℕ}
@@ -797,7 +797,7 @@ theorem genInsAfter_eq {Γ : OrderedPrefixCode} {K : Know} {a : ℕ}
   rw [hc]
 
 /-- The freshly generated insert satisfies every clause of the bundle,
-over the mint knowledge — including the all-L successor shape. -/
+over the mint knowledge, including the all-L successor shape. -/
 theorem genInsAfter_props (Γ : OrderedPrefixCode) {K : Know}
     (inv : FInv Γ K) (rep : Replica) {x a : ℕ} (hx : 0 < x)
     (hlam : ∀ m ∈ gMintedIds K, m < x)
@@ -1307,7 +1307,7 @@ consecutive in the view. -/
 theorem fig7_forward_adjacent :
     (gView unaryCode KFig).take 2 = [5, 7] := by native_decide
 
-/-- FAIL pin: the FugueMax rival verdict — 6 seated next to 5 — is NOT
+/-- FAIL pin: the FugueMax rival verdict, 6 seated next to 5, is NOT
 what the recency policy displays. -/
 theorem fig7_not_fuguemax_adjacent :
     (gView unaryCode KFig).take 2 ≠ [5, 6] := by native_decide

@@ -1,4 +1,4 @@
-// EPOCH-BASE HISTORY PRUNING, re-ported onto the #112 cut-keyed epoch model.
+// EPOCH-BASE HISTORY PRUNING on the cut-keyed epoch model.
 // After a SETTLED compaction, pruneToEpochBase drops everything below the
 // compaction (gated on: cut complete + every registered replica's evidence has
 // ADVANCED PAST the compaction's cut, epochDag.subcut). The compaction commit

@@ -12,13 +12,13 @@ This file supplies the execution model that **derives** the reachability premise
 
 `ConditionedConfiguration D` (§1) carries: an event set `events`; a causal-order relation
 `vis` that is a strict partial order on the events; and the **generation discipline** as
-structural fields —
+structural fields:
 
-* `distinct_ts`  — distinct events carry distinct timestamps (global uniqueness, the
+* `distinct_ts`: distinct events carry distinct timestamps (global uniqueness, the
   `apply`-rule freshness of `CRDT_TS.lean` accumulated over the run);
-* `causal_mono`  — `vis a b → a.1 < b.1`: a causal predecessor was allocated a strictly
+* `causal_mono`, `vis a b → a.1 < b.1`: a causal predecessor was allocated a strictly
   smaller Lamport id (**monotone id allocation across replicas**);
-* `inv_init` / `inv_step`  — the state-shape invariant `D.Inv` holds at `init` and is
+* `inv_init` / `inv_step`: the state-shape invariant `D.Inv` holds at `init` and is
   preserved by every **applicable** op (the conditioned analogue of the reachability
   invariant that, for the RGA, packages `wf ∧ contains 0 = false ∧ id_mono`).
 
@@ -47,10 +47,10 @@ non-`Faithful` conjuncts.
 
 Two independent pieces (§5):
 
-* `exists_loOnA_enum` — a generic **topological sort** (`exists_respecting`): from
+* `exists_loOnA_enum`, a generic **topological sort** (`exists_respecting`): from
   acyclicity of `loOnA` on a finite enumeration of `E` (the *satisfiability* condition)
   there **exists** a `loOnA`-respecting permutation of `E`.
-* `noopFeasible_of_prefixApp` — the born-applicable **delivery discipline** (each op is
+* `noopFeasible_of_prefixApp`: the born-applicable **delivery discipline** (each op is
   `applicable`-or-no-op at its own prefix fold) is *exactly* `noopFeasible`, packaged as a
   reusable bridge.  `exists_loOnA_noopFeasible_enum` combines the two.
 
@@ -99,7 +99,7 @@ structure ConditionedConfiguration (D : ConditionedMRDTSig) where
   /-- **Global timestamp uniqueness.**  Distinct events carry distinct timestamps. -/
   distinct_ts : ∀ {a b : Op D.AppOp}, a ∈ events → b ∈ events → a ≠ b → a.1 ≠ b.1
   /-- **Monotone id allocation.**  A causal predecessor was allocated a strictly smaller
-  Lamport id — the generation clock increases along `vis`. -/
+  Lamport id: the generation clock increases along `vis`. -/
   causal_mono : ∀ {a b : Op D.AppOp}, vis a b → a.1 < b.1
   /-- The state-shape invariant holds at `init`. -/
   inv_init : D.Inv D.init
@@ -164,7 +164,7 @@ theorem inv_fold (C : ConditionedConfiguration D) :
     exact ih (D.update s o) hupd hrest
 
 /-- **(3) Freshness at the fold.**  A pending event's timestamp differs from every timestamp
-already recorded in a delivery prefix — the id-level content of the RGA's `fresh_ts a s'`. -/
+already recorded in a delivery prefix, the id-level content of the RGA's `fresh_ts a s'`. -/
 theorem freshTs (C : ConditionedConfiguration D) (E : Set (Op D.AppOp))
     (hE : C.BackClosed E) {a : Op D.AppOp} (ha : a ∈ E)
     (pre : List (Op D.AppOp)) (hpre : ∀ x ∈ pre, x ∈ E) (hanp : a ∉ pre) :
@@ -177,7 +177,7 @@ theorem freshTs (C : ConditionedConfiguration D) (E : Set (Op D.AppOp))
 /-- **(4) `NoFreshClash` for concurrent events**, generalized from
 `RGA_ConditionedConvergence.noFreshClash_concurrent`.  For `b` not a causal ancestor of `a`
 (in particular when `a ‖ b`), `b`'s id clashes with none of the ids recorded by `a` (its own
-id or any causal ancestor's) — a consequence of global timestamp uniqueness, since every such
+id or any causal ancestor's), a consequence of global timestamp uniqueness, since every such
 recorded event is distinct from `b`. -/
 theorem noFreshClash_concurrent (C : ConditionedConfiguration D) {a b : Op D.AppOp}
     (hb : b ∈ C.events) (hab : a ≠ b) (hnba : ¬ C.vis b a) :
@@ -220,7 +220,7 @@ theorem conditioned_premises (C : ConditionedConfiguration D) (E : Set (Op D.App
 
 /-- **Generic topological sort.**  Any finite list `l` admits a permutation that is
 `respects`-ordered for `R` (no `R`-edge points backward), provided every nonempty sub-list of
-`l` has an `R`-minimal element — the acyclicity/extendability condition.  Proof: strong
+`l` has an `R`-minimal element, the acyclicity/extendability condition.  Proof: strong
 induction on length, peeling an `R`-minimal head. -/
 theorem exists_respecting {α : Type} [DecidableEq α] (R : α → α → Prop) :
     ∀ (n : ℕ) (l : List α), l.length = n →
@@ -282,7 +282,7 @@ theorem noopFeasible_of_prefixApp (π : List (Op D.AppOp)) (s : D.State)
       simpa [applySeq] using hh
 
 /-- **(5) A `loOnA`-respecting *and* `noopFeasible` delivery enumeration exists.**  Combines
-(5a) — existence from acyclicity — with the born-applicable delivery discipline `hdisc`
+(5a): existence from acyclicity, with the born-applicable delivery discipline `hdisc`
 (applicable-or-no-op at every `loOnA`-respecting prefix fold).  The two hypotheses are the
 satisfiability and feasibility halves respectively; both are properties a genuine execution
 supplies, neither is RGA-specific. -/

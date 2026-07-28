@@ -24,12 +24,12 @@ set_option autoImplicit false
 open Classical
 
 /-!
-# LWW-Element-Set — state-based CRDT
+# LWW-Element-Set: state-based CRDT
 
 Last-Writer-Wins set using two timestamp maps: per-element "latest add
 timestamp" and per-element "latest remove timestamp". An element is
 live iff its max add-ts strictly exceeds its max remove-ts; ties favour
-the remove (a conservative choice — the classical LWW-Set lets this
+the remove (a conservative choice, the classical LWW-Set lets this
 convention vary).
 
 Merge is per-element max on each of the two maps (grow-only on both).
@@ -38,7 +38,7 @@ commutative regardless of key, value, or which replica wrote.
 
 Contrast with `OR_Set_CRDT`: LWW-Element-Set uses timestamps to decide
 visibility, while OR-Set uses per-add tags and tombstones. LWW is
-simpler but requires some reasonable clock — concurrent writes at the
+simpler but requires some reasonable clock, concurrent writes at the
 same timestamp are resolved by the add-vs-remove tiebreak policy
 encoded above.
 -/

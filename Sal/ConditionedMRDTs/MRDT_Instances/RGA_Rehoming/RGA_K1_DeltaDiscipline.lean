@@ -1,13 +1,13 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonFoldOK
 
 /-!
-# K1 — the delta discipline: `CanonFoldOK ρ₀ (fold ρ₀) π₀` from the generation discipline
+# K1, the delta discipline: `CanonFoldOK ρ₀ (fold ρ₀) π₀` from the generation discipline
 
 Skeleton 3's K1 leaf (`hEnum`, conjunct 4): the delta enumeration `π₀`
 satisfies the per-event canonical discipline CONTINUED FROM the LCA fold.  The engine's own
 `canonStepOK_of_gen` cannot be applied verbatim: its `GoodEnum (F ++ [o])` interface threads the
 application prefix's `loOnA`-respect, and the LCA enum `ρ₀` (an NF canonical-state witness) is only
-`loOnEq`-respecting — its internal order is adversarial.
+`loOnEq`-respecting, its internal order is adversarial.
 
 **The fix (this file): the prefix's ORDER is irrelevant; only its set and its fold matter.**
 * Every order-sensitive ingredient is re-based on a FREELY CHOSEN `loOnA`-respecting enumeration
@@ -15,17 +15,17 @@ application prefix's `loOnA`-respect, and the LCA enum `ρ₀` (an NF canonical-
   `isDepPreC_depList`, `chain_entries_mem` and the engine `canonFoldOK_of_gen` apply to them
   verbatim.
 * The application prefix `F = ρ₀ ++ π₀-consumed` enters only through `CanonInv F (fold F)`
-  (maintained incrementally, order-free) and SET-inclusions — exactly what the §5 transports
+  (maintained incrementally, order-free) and SET-inclusions, exactly what the §5 transports
   (`anc_transport`, `chainOK_transport`) consume.
 * `loOnA ⊆ vis` for the RGA (`rc = Either` kills `loOnC`'s concurrent arm), so `DepC` is
   irreflexive and dependency chains from delta ops never cross back out of the delta
   (used by the closure bookkeeping).
 
 Main results:
-* `canonStepOK_delta` — `CanonStepOK F (fold F) o` for any dep-closed, `CanonInv`-carrying prefix
+* `canonStepOK_delta`, `CanonStepOK F (fold F) o` for any dep-closed, `CanonInv`-carrying prefix
   set `F` (no order hypothesis on `F`).
-* `canonFoldOK_delta` — **K1**: `CanonFoldOK ρ₀ (fold ρ₀) π₀`, given the LCA's own discipline
-  (`CanonFoldOK [] init ρ₀` — from the noopFeasible engine route), dependency closure of the LCA
+* `canonFoldOK_delta`, **K1**: `CanonFoldOK ρ₀ (fold ρ₀) π₀`, given the LCA's own discipline
+  (`CanonFoldOK [] init ρ₀`, from the noopFeasible engine route), dependency closure of the LCA
   set, and per-position dependency closure of `π₀` (`hδdeps`; discharged from
   `respects π₀ (loOnA …)` + branch closures by `deltaDeps_discharge` in `RGA_K1_Wiring`).
 -/
@@ -164,9 +164,9 @@ theorem chains_closed_depList_of_perm (Cfg : Sal.Emulation.Configuration (RGACon
       exact depC_irrefl Cfg E htr hirr _ (Relation.TransGen.trans hxdep hzdep)
     exact mem_depList.mpr ⟨hxU, hxo, hdep⟩
 
-/-! ## §3  The per-step delta discipline — no order hypothesis on the prefix -/
+/-! ## §3  The per-step delta discipline: no order hypothesis on the prefix -/
 
-/-- **`canonStepOK_delta`** — the application discipline for `o` at a prefix `F` that carries
+/-- **`canonStepOK_delta`**, the application discipline for `o` at a prefix `F` that carries
 `CanonInv` and the dependency closures, with NO order hypothesis on `F`.  Mirror of
 `canonStepOK_of_gen` with every dep-list carved from the freely-chosen full enumeration `U`. -/
 theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
@@ -265,7 +265,7 @@ theorem canonStepOK_delta (Cfg : Sal.Emulation.Configuration (RGACondSig α).toC
         exact Bool.noConfusion hxl
       · exact (anc_transport F d hdsubF hinvF hinvD hchains x hxl hcx p hpath).symm
 
-/-! ## §4  K1 — the induction along the delta -/
+/-! ## §4  K1: the induction along the delta -/
 
 /-- The workhorse induction: extend a dep-closed, `CanonInv`-carrying prefix `F` along a delta
 list `π`, maintaining the invariants. -/
@@ -333,10 +333,10 @@ theorem canonFoldOK_delta_aux (Cfg : Sal.Emulation.Configuration (RGACondSig α)
       hFclosed' hδdeps'
     rwa [hfold'] at this
 
-/-- **K1 — the delta discipline.**  `CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀` from:
-the generation discipline (`GenDisc2C` — each event accurate at its own dependency fold, the
-condition that survives concurrent anchor-kills), the LCA's own discipline (`CanonFoldOK [] init ρ₀`
-— from the noopFeasible engine route on the given born-applicable `ρ₀`), dependency closure of the
+/-- **K1, the delta discipline.**  `CanonFoldOK ρ₀ (applySeqR (init_st (α := α)) ρ₀) π₀` from:
+the generation discipline (`GenDisc2C`, each event accurate at its own dependency fold, the
+condition that survives concurrent anchor-kills), the LCA's own discipline (`CanonFoldOK [] init ρ₀`,
+from the noopFeasible engine route on the given born-applicable `ρ₀`), dependency closure of the
 LCA set, and per-position dependency closure of the delta (`hδdeps`).  NO order hypothesis on `ρ₀`. -/
 theorem canonFoldOK_delta (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α))

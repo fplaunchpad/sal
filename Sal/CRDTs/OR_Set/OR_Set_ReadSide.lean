@@ -18,10 +18,10 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # OR-Set (CRDT) — read-side projection
+/-! # OR-Set (CRDT): read-side projection
 
 The 24 RA-linearizability VCs in `OR_Set_CRDT.lean` prove that the
-state `(adds, tombstones)` converges under merge — both are grow-only
+state `(adds, tombstones)` converges under merge, both are grow-only
 sets, joined by union. They say nothing about the headline OR-Set
 semantics: an element `e` is live iff it has an add-tag that has
 not been observed-removed, and a concurrent `Rem` that did not
@@ -30,14 +30,14 @@ observe a particular `Add` does not retract it.
 This file lifts those headline claims into Lean, mirroring the
 Peritext / AW-CRPQ readside methodology:
 
-1. `lookup s e` — element `e` is live iff some `(e, ts)` add-tag is
+1. `lookup s e`: element `e` is live iff some `(e, ts)` add-tag is
    not in the tombstones set.
 2. **Convergence at the read.**
 3. **Three intent theorems:**
-   - `lookup_after_add` — fresh `Add` makes the element live.
-   - `add_wins_over_concurrent_remove` — an `Add` whose tag is not
+   - `lookup_after_add`: fresh `Add` makes the element live.
+   - `add_wins_over_concurrent_remove`: an `Add` whose tag is not
      in the merged tombstones survives.
-   - `add_then_remove_extinguishes` — sequential `Add e; Rem e`
+   - `add_then_remove_extinguishes`: sequential `Add e; Rem e`
      leaves `e` not-live.
 
 Reference: Marc Shapiro, Nuno Preguiça, Carlos Baquero, Marek
@@ -87,12 +87,12 @@ theorem lookup_after_add
 /-- **Add-wins over concurrent Remove (headline).** Two replicas
 diverge from common state `s`: one applies `Add e` at fresh `ts`,
 the other applies `Rem e`. The `Rem`'s effect is a state-read at
-its replica — it tombstones every `(e, _)` it observed locally,
+its replica, it tombstones every `(e, _)` it observed locally,
 which does *not* include the new `(e, ts)` (concurrent on the other
 replica). After merge, `(e, ts)` is in the union of `adds` and is
 not in the union of tombstones, so `lookup` finds it.
 
-Premises: `(e, ts) ∉ Prod.fst s` and `(e, ts) ∉ Prod.snd s` —
+Premises: `(e, ts) ∉ Prod.fst s` and `(e, ts) ∉ Prod.snd s`,
 both follow from `distinct_ops`/state freshness in any reachable
 execution. -/
 theorem add_wins_over_concurrent_remove
@@ -122,6 +122,6 @@ theorem add_then_remove_extinguishes
   -- After Add e: adds = add (e, ts1) s.1.
   -- After Rem e: tombs = s.2 ∪ filter (add (e, ts1) s.1) (·.1 = e).
   -- Any (e, ts) in the new adds has first coord = e and so is in the filter,
-  -- hence in the new tombs — contradicting h_not_tomb.
+  -- hence in the new tombs, contradicting h_not_tomb.
   simp [do_] at h_in h_not_tomb
   grind

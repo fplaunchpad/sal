@@ -1,15 +1,15 @@
 /-!
-# Shesha — the sibling-linked tombstone-free replicated list
+# Shesha: the sibling-linked tombstone-free replicated list
 
 Design record: `whiteboard/sibling-linked-rga-notes.md`. Pen-and-paper proofs:
 `whiteboard/sibling-linked-proof.md`. Executable reference semantics (THE oracle
-for this port): `whiteboard/sl_pbt.py` — every definition here is
+for this port): `whiteboard/sl_pbt.py`, every definition here is
 observationally cross-validated against it in `Shesha_SPOT.lean`.
 
 **Scope of this file.** This file delivers the executable datatype (`read`,
 `insert`, `delete`, the three-way `merge`), the tombstoned oracle
 (`oracleRead`), the naive sequential list model, and the machine-checked
-sequential soundness theorems (Theorem S, Corollary S1) — all kernel-clean, no
+sequential soundness theorems (Theorem S, Corollary S1), all kernel-clean, no
 `sorry`. The 24 RA-linearizability VCs, the merge lemmas M0–M3, Theorem P
 (causal pairwise display stability), and the `ConditionedMRDTSig` packaging
 live in the other `Shesha_*.lean` files; this module is deliberately NOT
@@ -28,12 +28,12 @@ information (the sibling chain *is* the row), and the explicit form is what
 boundedness claim lives in the pointer encoding, recoverable from this one via
 an encoding isomorphism. What the explicit-rows form buys: `read`,
 `insert`, `delete` are fuel-free structural recursions, so Theorem S is an
-honest structural induction — no well-formedness hypotheses, no fuel
+honest structural induction, no well-formedness hypotheses, no fuel
 bookkeeping. Observational agreement with the pointer-based Python reference
 is machine-checked litmus-by-litmus in `Shesha_SPOT.lean`.
 
-Ids are Lamport timestamps (`Nat`), the root is the implicit `0`, and — as in
-`sl_pbt.py` — nodes carry no payload: the id doubles as the element.
+Ids are Lamport timestamps (`Nat`), the root is the implicit `0`, and, as in
+`sl_pbt.py`, nodes carry no payload: the id doubles as the element.
 -/
 
 namespace Shesha
@@ -42,7 +42,7 @@ namespace Shesha
 
 `St` is the root row; each `Tree.node i cs` is a live node `i` with its row
 `cs` (children, display order, newest-first among concurrent same-anchor
-inserts by construction). A deleted node appears **nowhere** — the state never
+inserts by construction). A deleted node appears **nowhere**, the state never
 mentions a dead id. -/
 
 /-- A live node: id and its row (ordered children). -/
@@ -84,7 +84,7 @@ end
 
 instance : DecidableEq Tree := decEqT
 
-/-! ## `read` — depth-first document order
+/-! ## `read`: depth-first document order
 
 Per node: emit the id, then recurse into its row. Siblings are read in row
 order (newest concurrent insert first). Structural recursion, total, no fuel. -/
@@ -100,7 +100,7 @@ end
 /-- The document: depth-first from the root. -/
 def read (s : St) : List Nat := readF s
 
-/-! ## `insert (x after a)` — x becomes the head of a's row
+/-! ## `insert (x after a)`: x becomes the head of a's row
 
 Nothing else changes (`sl_pbt.py` `insert`: `par(x) := a`,
 `sib(x) := old head`). `a = 0` inserts at the front of the root row. On
@@ -122,9 +122,9 @@ end
 def insert (s : St) (x a : Nat) : St :=
   if a = 0 then .node x [] :: s else insF x a s
 
-/-! ## `delete d` — the splice
+/-! ## `delete d`: the splice
 
-`d`'s row replaces `d` in its parent's row, in place; then `d` is gone —
+`d`'s row replaces `d` in its parent's row, in place; then `d` is gone,
 **after this line the state contains no trace of d** (`sl_pbt.py` `delete`).
 Locally order-preserving by construction (Corollary S1 below). No-op when `d`
 is absent. -/
@@ -166,7 +166,7 @@ The obvious spec: a flat `List Nat`; `ins x a` places `x` immediately after
 the datatype (insert after every occurrence of the anchor, no-op when absent),
 so the simulation below is unconditional. -/
 
-/-- `SeqList` — the naive sequential document. -/
+/-- `SeqList`, the naive sequential document. -/
 abbrev SeqList := List Nat
 
 /-- Pointwise insert action: after the anchor, emit the new element. -/
@@ -186,11 +186,11 @@ def seqApply (l : SeqList) : Op → SeqList
 /-- The naive-list fold from the empty document. -/
 def seqFold (ops : List Op) : SeqList := ops.foldl seqApply []
 
-/-! ## Theorem S — sequential soundness
+/-! ## Theorem S: sequential soundness
 
 `read` is a simulation from Shesha states to naive lists: every op commutes
 with `read`. Structural induction over the forest, unconditional (no
-well-formedness needed — the totality choices of both sides agree). This is
+well-formedness needed, the totality choices of both sides agree). This is
 the per-datatype "obvious spec" theorem (`sibling-linked-proof.md` §2), and
 precisely the property the flat tombstone-free RGA *fails*
 (`tombstone_free_violates_delete_order`, `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean`). -/
@@ -262,7 +262,7 @@ theorem sequential_soundness (ops : List Op) : read (fold ops) = seqFold ops :=
 
 /-- **Corollary S1 (sequential delete-order preservation).** A delete never
 reorders survivors: the post-delete read is the pre-delete read with the
-target filtered out — for *every* state, not just reachable ones. This is the
+target filtered out, for *every* state, not just reachable ones. This is the
 anomaly the flat tombstone-free RGA exhibits (its witness: `b a c → del a →
 c b`) and the original motivation for the sibling-linked design: here order is
 stored in the links and the splice preserves it by construction. -/
@@ -316,10 +316,10 @@ end
 /-- Parent id of `u` in `s` (`0` = root level; also `0` when absent). -/
 def parOf (s : St) (u : Nat) : Nat := (parF 0 u s).getD 0
 
-/-! ## The three-way merge — `sl_pbt.py`'s algorithm, ported clause by clause
+/-! ## The three-way merge: `sl_pbt.py`'s algorithm, ported clause by clause
 
 Membership analysis (design record §3): `liveM` = patterns 2/6/7, `markers` =
-L-nodes live in exactly one branch (patterns 3/4 — dead, but their entries in
+L-nodes live in exactly one branch (patterns 3/4, dead, but their entries in
 the surviving input still position things). Then: skeleton in L-document order
 grouped under the deepest surviving L-ancestor (attach-deep); branch-born
 wholesale rows; runs with predecessor-riding / head jump-back over own-deleted
@@ -406,8 +406,8 @@ def bbrows (L X : St) : List (Nat × List Nat) :=
     let r := row X q
     if r.isEmpty then none else some (q, r))
 
-/-- Hosts: parents (in `X`) of branch-born nodes that are the root or L-nodes
-— the rows whose branch-born runs need placing. -/
+/-- Hosts: parents (in `X`) of branch-born nodes that are the root or L-nodes,
+the rows whose branch-born runs need placing. -/
 def hosts (L X : St) : List Nat :=
   dedupNat (((bornIds L X).map (fun u => parOf X u)).filter
     (fun p => p == 0 || contains L p))
@@ -488,7 +488,7 @@ def outRows (L A B : St) : List (Nat × List Nat) :=
     ++ bbrows L A ++ bbrows L B
 
 /-- The marker splice: replace each marker in a row by its own (recursively
-expanded) row — the same splice as `delete`, performed at assembly (fueled). -/
+expanded) row, the same splice as `delete`, performed at assembly (fueled). -/
 def expandRow (rows : List (Nat × List Nat)) (isMarker : Nat → Bool) :
     Nat → List Nat → List Nat
   | 0, r => r
@@ -504,7 +504,7 @@ def buildF (rows : List (Nat × List Nat)) (isMarker : Nat → Bool) (mfuel : Na
       (expandRow rows isMarker mfuel (alGet rows p)).map
         (fun c => Tree.node c (buildF rows isMarker mfuel fuel c))
 
-/-- **The three-way merge** (`merge L A B`, `L` = LCA) — `sl_pbt.py`'s
+/-- **The three-way merge** (`merge L A B`, `L` = LCA), `sl_pbt.py`'s
 `merge`, ported faithfully. Owed on top of this definition: M0
 (well-formedness), M1 (symmetry), M2/M3 (order extension), and Theorem P. -/
 def merge (L A B : St) : St :=
@@ -516,8 +516,8 @@ def merge (L A B : St) : St :=
 
 `sl_pbt.py`'s `oracle_read`: the full tree of *original* insert anchors
 (graves included as position-holders), siblings by descending id, graves emit
-nothing. Takes the global op history — `inserts` as `(id, original anchor)`
-pairs, `deleted` as the set of deleted ids — because no tombstone-free state
+nothing. Takes the global op history, `inserts` as `(id, original anchor)`
+pairs, `deleted` as the set of deleted ids, because no tombstone-free state
 retains it; that gap is exactly the fooling-pair impossibility (I1) checked in
 `Shesha_SPOT.lean`. -/
 

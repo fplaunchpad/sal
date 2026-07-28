@@ -13,7 +13,7 @@ set_option synthInstance.maxSize 128
 
 /-! ## Read-side projection and rich-text merge-semantic characterizations
 
-Mirror of the CRDT additions — see `Sal/CRDTs/Peritext/Peritext_ReadSide.lean`
+Mirror of the CRDT additions, see `Sal/CRDTs/Peritext/Peritext_ReadSide.lean`
 for the full scope, caveats, and semantic motivation. The MRDT's state
 shape differs (chars as a flat `set CharRec` of `(id, after, ch)`
 triples, a `set OpId` tombstone set, and the `set AnchorAttachment`
@@ -22,8 +22,8 @@ the same content.
 
 The paper-faithful read-side is built on `in_span_visible`:
 
-1. `readRichText_visible_convergent` — pointwise-`eq` implies identical rich-text read.
-2. `anchors_survive_tombstones_visible` — tombstoning any interior
+1. `readRichText_visible_convergent`: pointwise-`eq` implies identical rich-text read.
+2. `anchors_survive_tombstones_visible`: tombstoning any interior
    character leaves the formatting of the other visible characters unchanged.
 3. Ex 2 (`partial_overlap_all_adds_formatted_visible`) / Ex 3
    (`different_type_adds_coexist_visible`) / Ex 5 positive+negative
@@ -67,7 +67,7 @@ noncomputable def after_of (s : concrete_st) (c target : OpId) : Bool :=
 
 /-- Priority: Add beats Remove, else LWW by opId.
 
-Paper §4.4: LWW on opId — the highest-opId op wins, regardless
+Paper §4.4: LWW on opId, the highest-opId op wins, regardless
 of `isAdd`. -/
 def mark_beats (a b : MarkOp) : Bool :=
   decide (opid_max a.opId b.opId = a.opId)
@@ -381,7 +381,7 @@ theorem no_add_cover_implies_unformatted_visible
 /-- **Paper Ex 5 positive: an Add with the highest opId wins.**
 
 "Concurrent Add wins over concurrent Remove" requires the Add to
-have the higher opId — including over the Remove. The caller
+have the higher opId, including over the Remove. The caller
 discharges that as part of the universal "beats every other
 covering mark" premise. -/
 theorem add_wins_over_concurrent_remove_visible
@@ -770,7 +770,7 @@ theorem bold_expand_reach_preserved_under_insert
       exact h_after
     exact bold_expand_reach.step h_after' ih h_opid
 
-/-- **Ex 1 (MRDT) — insert-within-span fully paper-faithful.** -/
+/-- **Ex 1 (MRDT): insert-within-span fully paper-faithful.** -/
 theorem insert_within_span_in_span_visible
     (s_pre : concrete_st) (m : MarkOp)
     (ts rid : ℕ) (ch : ℕ) (c_after : OpId) :
@@ -881,7 +881,7 @@ theorem ex7_bold_older_sibling_in_span
 
 /-- Constructor-level helper: an afters-descendant of `endId` is `visible_lt`
 after it. This is a `visible_lt` constructor applied to its hypothesis
-(definitional — it restates how `visible_lt` is built, so it catches no bug);
+(definitional, it restates how `visible_lt` is built, so it catches no bug);
 it is NOT itself the Ex 8 guarantee. The genuine Ex 8 ("link-boundary
 insertion does not expand") is the *negative* theorem
 `ex8_link_descendant_not_in_span_visible_of_wf`, which uses `wf_afters`
@@ -893,7 +893,7 @@ theorem ex8_link_descendant_visible_lt_endId
     visible_lt s m.endId c_new :=
   fun h => visible_lt.parent_child h
 
-/-- **Paper Ex 8 full negation (link case, MRDT)** — given RGA acyclicity.
+/-- **Paper Ex 8 full negation (link case, MRDT)**: given RGA acyclicity.
 
 Under link semantics (`endSide = false`), an afters-descendant of `endId`
 is *not* in the span. Under bold-expand (`endSide = true`) this no
@@ -921,7 +921,7 @@ theorem ex8_link_descendant_not_in_span_visible_of_wf
     ¬ in_span_visible s m c_new := fun h_wf h_eSide h_after =>
   ex8_link_descendant_not_in_span_visible s m c_new h_eSide h_after (h_wf _)
 
-/-- **Paper Ex 7 (bold-expand, MRDT) — post-endId inserts in the
+/-- **Paper Ex 7 (bold-expand, MRDT): post-endId inserts in the
 bold-expand region are in span.** See the CRDT side for discussion. -/
 theorem bold_expand_in_span_visible
     (s : concrete_st) (m : MarkOp) (c : OpId) :

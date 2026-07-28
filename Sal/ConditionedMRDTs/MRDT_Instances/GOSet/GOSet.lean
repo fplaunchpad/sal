@@ -101,7 +101,7 @@ theorem goset_ra_linearizable3
     (cdVC3_of_all_comm GOSet_coreVCs3 GOSet_all_comm) C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

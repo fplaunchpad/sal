@@ -33,8 +33,8 @@ and with it the full adapted Theorem 9
   `fuguemax_backward_ni : FugueMaxBackwardNonInterleaving Γ`.
 
 * **§6 SPOTs** (PASS+FAIL, hand-derived from §9.7.2/9.7.5/9.7.7): the
-  four delete variants — Figure 7 both mint orders + delete 4, the beta0
-  direct and ladder constructions + delete 2 — with the witness values
+  four delete variants, Figure 7 both mint orders + delete 4, the beta0
+  direct and ladder constructions + delete 2, with the witness values
   pinned.
 
 * **§7 The capstone**: `fuguemax_maximally_noninterleaving`, full
@@ -583,8 +583,8 @@ theorem mGenInsAfter_rbk {Γ : OrderedPrefixCode} {K : KnowM}
               rw [h] at hnb
               exact Bool.noConfusion hnb
 
-/-- Transport under knowledge growth: every clause ingredient — records,
-chains, keys, display comparisons, prefixes — is about ids minted in the
+/-- Transport under knowledge growth: every clause ingredient, records,
+chains, keys, display comparisons, prefixes, is about ids minted in the
 old knowledge, so lookups and keys are stable. -/
 theorem rbk_transport {Γ : OrderedPrefixCode} {K K' : KnowM} {g : MRec}
     (h : RBk Γ K g) (inv : KInv Γ K) (hlkR : LinkR Γ K g)
@@ -818,7 +818,7 @@ theorem mLoOf_iterate_zero {K : KnowM} (hpos : ∀ g ∈ K, 1 ≤ g.ts) :
   | succ n ihn => rw [Function.iterate_succ_apply, mLoOf_zero hpos, ihn]
 
 /-- **loDesc to prefix** (§9.7.8 item 5): a left-origin-walk ancestor's
-chain is a chain prefix — the only fact about `mLoDesc` the discharge
+chain is a chain prefix, the only fact about `mLoDesc` the discharge
 needs (loShape makes every walk step strip an R-then-all-L block). -/
 theorem loDesc_prefix {Γ : OrderedPrefixCode} {K : KnowM}
     (inv : KInv Γ K) (inv2 : ∀ g ∈ K, SLC Γ K g) :
@@ -1295,7 +1295,7 @@ theorem fig7_del_witness :
   native_decide
 
 /-- FAIL pin (the §9.7.2 refutation content): the pair (6, 5) is NOT
-consecutive — 7 is a LIVE in-between — and every live strict in-between
+consecutive, 7 is a LIVE in-between, and every live strict in-between
 (6 and 7) is a left-origin child of 3, so no LIVE witness exists. -/
 theorem fig7_del_no_live_witness :
     (7 ∈ mView unaryCode kFigD ∧
@@ -1352,7 +1352,7 @@ theorem bdir_route :
       mLoOf bDir 5 = 4 ∧ mLoOf bDir 2 = 0) := by
   native_decide
 
-/-- FAIL pin: D's recorded origin is NOT B — the argmax escaped strictly
+/-- FAIL pin: D's recorded origin is NOT B, the argmax escaped strictly
 past it (kills the tempting `ro(D) = B` reading, which would be a LAST
 violation, not a witness). -/
 theorem bdir_ro5_not_B : mRoOf bDir 5 ≠ some 3 := by native_decide
@@ -1376,7 +1376,7 @@ theorem bdir_del_not_noop : mView unaryCode bDirD ≠ [1, 4, 5, 2, 3] := by
 def bL6 : KnowM := FugueMaxSPOT.gIns (syncM b1 b2) 0 6 1
 
 /-- 7 = R-child of 4 minted in view {1, 3, 4, 2, 6}: ro(7) = 6, which
-lands INSIDE Subtree(1) — the ladder must re-aim through E' = 6. -/
+lands INSIDE Subtree(1), the ladder must re-aim through E' = 6. -/
 def bLad : KnowM := FugueMaxSPOT.gIns (syncM bA bL6) 0 7 2
 
 def bLadD : KnowM := gDel bLad 0 99 4
@@ -1393,7 +1393,7 @@ theorem blad_route :
       mRoOf bLad 6 = some 2 ∧ mLoOf bLad 2 = 0) := by
   native_decide
 
-/-- FAIL pin: the first hop does NOT escape — lo(n_D) is 1, not 0: the
+/-- FAIL pin: the first hop does NOT escape, lo(n_D) is 1, not 0: the
 ladder is genuinely two steps (kills the `beta0-direct always suffices`
 reading). -/
 theorem blad_first_hop_not_escape : mLoOf bLad 6 ≠ 0 := by native_decide

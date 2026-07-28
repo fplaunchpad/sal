@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Common
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# Peritext — flat VC discharge and the conditioned capstone
+# Peritext: flat VC discharge and the conditioned capstone
 -/
 
 set_option maxHeartbeats 1000000
@@ -14,7 +14,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## Peritext (production mirror: `Sal/MRDTs/Peritext`) — three grow-only
+/-! ## Peritext (production mirror: `Sal/MRDTs/Peritext`): three grow-only
 components (chars, tombstones, anchor-attached marks; `RemoveMark` *adds* a
 mark record with `isAdd = false`), `rc = Either`, all pairs commute. -/
 
@@ -174,7 +174,7 @@ theorem peritext_ra_linearizable3
     (cdVC3_of_all_comm Peritext_coreVCs3 Peritext_all_comm) C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone: identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

@@ -9,7 +9,7 @@ all other convergence hypotheses, is falsified by the 2-event RGA execution `ins
 (insert node 1) then `delOpE` (delete node 1).  The two ops are never jointly applicable
 (`fresh_ts insOpE` wants node 1 absent, `accurate delOpE` wants it present), so
 `commutesOn` is VACUOUSLY true, the conditioned `lo` drops the `ins → del` edge, and the
-bad order `[delOpE, insOpE]` — which folds `delOpE` at `init`, where it is NOT applicable —
+bad order `[delOpE, insOpE]`, which folds `delOpE` at `init`, where it is NOT applicable,
 respects the order yet folds differently.
 
 The refutation quantifies over *all* `loOnC`-respecting enumerations, including
@@ -17,32 +17,32 @@ applicability-invalid folds.  Two candidate repairs restore convergence on the f
 update layer; this file formalizes BOTH on the SAME 2-event instance and then settles the
 research question of whether they are the same exclusion.
 
-* **(a) applicability-aware `lo` (`loOnA`)** — a vis-edge `e₁ → e₂` survives whenever `e₂`'s
+* **(a) applicability-aware `lo` (`loOnA`)**: a vis-edge `e₁ → e₂` survives whenever `e₂`'s
   applicability *depends on* `e₁` (generation dependency; for the RGA, op-syntactic:
   `e₂` names `e₁`'s Ins-timestamp as its Del-target / Ins-anchor / path member), not only
   when `¬ commutesOn`.  Captured by `appliesDependsOn` + `loOnA`.
-* **(b) applicability-restricted convergence (`applicabilityValid`)** — quantify convergence
+* **(b) applicability-restricted convergence (`applicabilityValid`)**: quantify convergence
   only over enumerations whose every prefix keeps the next op applicable from `init`.
   `[delOpE, insOpE]` is then excluded because `delOpE` is not applicable at `init`.
 
 ## Verdicts
 
-* **(b) positive check** — `applicabilityValid_ins_del`, `not_applicabilityValid_del_ins`,
+* **(b) positive check**: `applicabilityValid_ins_del`, `not_applicabilityValid_del_ins`,
   and `b_convergence_holds`: on the counterexample instance, restricting to
   `applicabilityValid` enumerations leaves ONLY `[insOpE, delOpE]`, so the repaired
   convergence statement HOLDS (is not refuted).  Notably `applicabilityValid` alone pins
-  the order down — the `loOnC`-respects hypotheses are not even consulted.
-* **(a) positive check** — `loOnA_keeps_edge`, `respects_ins_del_loOnA`,
+  the order down: the `loOnC`-respects hypotheses are not even consulted.
+* **(a) positive check**: `loOnA_keeps_edge`, `respects_ins_del_loOnA`,
   `not_respects_del_ins_loOnA`: `loOnA` keeps the `ins → del` edge via the
   generation-dependency disjunct, so the bad order `[delOpE, insOpE]` does not respect
   `loOnA` and is excluded.
-* **Instance equivalence** — `instance_equivalence`: over the permutations of
+* **Instance equivalence**, `instance_equivalence`: over the permutations of
   `{insOpE, delOpE}`, "respects `loOnA`" coincides EXACTLY with
   "`applicabilityValid` ∧ respects `loOnC`".  Both admit exactly `[insOpE, delOpE]`.
-* **General verdict: (b) is STRICTLY more general than (a)** — `separating_inequivalence`.
+* **General verdict: (b) is STRICTLY more general than (a)**, `separating_inequivalence`.
   The 3-event set `{insOpE, delOpE, delY}` (insert node 1, then two concurrent deletes of
   node 1) has an enumeration `[insOpE, delOpE, delY]` that is applicability-invalid (`delY`
-  deletes the already-absent node 1) but inverts NO generation-dependency edge — because
+  deletes the already-absent node 1) but inverts NO generation-dependency edge, because
   the only Ins (the sole creator) already comes first, and `appliesDependsOn` is blind
   between the two Del's.  So `loOnC`-respecting `⟹` `loOnA`-respecting on this order
   (`sep_loOnC_imp_loOnA`), i.e. (a)'s added edges exclude nothing here, while (b)'s
@@ -60,7 +60,7 @@ positive create-before-use.  Justification:
 * On the counterexample instance the two coincide (`instance_equivalence`), so (a) is a
   faithful repair there and (b) loses nothing.
 * But (a) is INCOMPLETE: `separating_inequivalence` exhibits an applicability-invalid
-  enumeration that (a) fails to exclude — the generation-dependency edge set (the only
+  enumeration that (a) fails to exclude, the generation-dependency edge set (the only
   thing `loOnA` adds over `loOnC`) cannot see use-before-delete / anti-dependencies, nor
   combination dependencies.  A convergence theorem quantified by (a) would therefore still
   admit infeasible folds; only (b) captures *all* feasibility.
@@ -75,7 +75,7 @@ positive create-before-use.  Justification:
 delY}`, NO enumeration is `applicabilityValid` (whichever delete runs first makes the other
 non-applicable), yet the merged state is well-defined.  So (b)'s "strict applicability at
 every prefix" can be *unsatisfiable* for genuinely reachable versions with redundant
-concurrent ops — the update layer needs an applicability notion that tolerates
+concurrent ops: the update layer needs an applicability notion that tolerates
 idempotent/absorbed re-application (e.g. "applicable OR a no-op here").
 -/
 
@@ -145,7 +145,7 @@ theorem permOf_evCex_cases (π : List (Op app_op_t)) (hπ : listPermOf π evCex)
     · exact Or.inl rfl
     · exact Or.inr rfl
     · exact absurd rfl hab
-  · -- π = a :: b :: c :: t  — pigeonhole: three distinct elements in a 2-element set
+  · -- π = a :: b :: c :: t, pigeonhole: three distinct elements in a 2-element set
     exfalso
     have ha : a = insOpE ∨ a = delOpE := (hiff a).mp List.mem_cons_self
     have hb : b = insOpE ∨ b = delOpE :=
@@ -171,9 +171,9 @@ theorem applicabilityValid_perm_forces_ins_del (π : List (Op app_op_t))
   · exact h
   · rw [h] at hav; exact absurd hav not_applicabilityValid_del_ins
 
-/-- **Repair (b), decisive positive check.**  The repaired convergence statement — the
+/-- **Repair (b), decisive positive check.**  The repaired convergence statement, the
 conditioned convergence RESTRICTED to `applicabilityValid`, `loOnC`-respecting enumerations
-of `{insOpE, delOpE}` — HOLDS on the very execution that refuted the naive version.  Both
+of `{insOpE, delOpE}`, HOLDS on the very execution that refuted the naive version.  Both
 qualifying enumerations collapse to `[insOpE, delOpE]`, so the folds agree.  (The
 `loOnC`-respects hypotheses are unused: on this instance `applicabilityValid` is already the
 binding constraint.) -/
@@ -190,7 +190,7 @@ theorem b_convergence_holds
   rw [applicabilityValid_perm_forces_ins_del π₁ hperm₁ hav₁,
       applicabilityValid_perm_forces_ins_del π₂ hperm₂ hav₂]
 
-/-- Corollary: adding `applicabilityValid` genuinely breaks the refutation — the bad order
+/-- Corollary: adding `applicabilityValid` genuinely breaks the refutation: the bad order
 `[delOpE, insOpE]` no longer qualifies. -/
 theorem b_repair_breaks_refutation :
     ¬ applicabilityValid RGACondSig [delOpE, insOpE] init_st :=
@@ -199,7 +199,7 @@ theorem b_repair_breaks_refutation :
 /-! ## §2  Repair (a): applicability-aware linearization order `loOnA`
 
 `appliesDependsOn e₂ e₁`: "`e₂`'s applicability depends on `e₁`", i.e. `e₁` is an Ins that
-creates a node (its own timestamp) that `e₂` names — as its Del-target / Ins-anchor
+creates a node (its own timestamp) that `e₂` names, as its Del-target / Ins-anchor
 (`opLeaf`) or as a path member (`opPath`).  This is the RGA's op-syntactic, per-data-type
 generation-dependency relation.  `loOnA` is `loOnC` plus the disjunct
 "`vis e₁ e₂ ∧ appliesDependsOn e₂ e₁`". -/
@@ -220,7 +220,7 @@ theorem appliesDependsOn_del_ins : appliesDependsOn delOpE insOpE := by
   simp [appliesDependsOn, insOpE, delOpE]
 
 /-- **Repair (a), keeps the edge.**  `loOnA` retains the `insOpE → delOpE` vis-edge that
-`loOnC` dropped — via the generation-dependency disjunct, not `commutesOn`. -/
+`loOnC` dropped, via the generation-dependency disjunct, not `commutesOn`. -/
 theorem loOnA_keeps_edge : loOnA Ccex evCex insOpE delOpE :=
   Or.inr ⟨⟨rfl, rfl⟩, appliesDependsOn_del_ins⟩
 
@@ -246,7 +246,7 @@ theorem not_respects_del_ins_loOnA :
 /-! ## §3  The equivalence question, part 1: coincidence on the 2-event instance
 
 Over the permutations of `{insOpE, delOpE}`, repair (a) ("respects `loOnA`") and repair (b)
-("`applicabilityValid` ∧ respects `loOnC`") admit EXACTLY the same set — namely
+("`applicabilityValid` ∧ respects `loOnC`") admit EXACTLY the same set, namely
 `{[insOpE, delOpE]}`.  So on the counterexample instance the two repairs are the same
 exclusion. -/
 
@@ -290,7 +290,7 @@ The `⟹` direction FAILS.  Witness `delY` = a second delete of node 1, and the 
 `[insOpE, delOpE, delY]` is applicability-invalid (`delY` deletes the already-absent node 1)
 but inverts NO generation-dependency edge: the sole creator `insOpE` is already first, and
 `appliesDependsOn` is identically `False` between two Del's.  Hence `loOnA` cannot exclude
-this order beyond what `loOnC` already does — but `applicabilityValid` does exclude it.
+this order beyond what `loOnC` already does, but `applicabilityValid` does exclude it.
 The applicability failure is an ANTI-dependency ("`delOpE` must not precede `delY`") that no
 positive creation-reference edge can express: `(b)-admitted ⊊ (a)-admitted`, strictly. -/
 
@@ -305,7 +305,7 @@ theorem dep_i_d : ¬ appliesDependsOn insOpE delOpE := by
 theorem dep_i_y : ¬ appliesDependsOn insOpE delY := by
   simp [appliesDependsOn, delY]
 
-/-- `delOpE` does not depend on `delY` — the two deletes have no generation dependency
+/-- `delOpE` does not depend on `delY`: the two deletes have no generation dependency
 between them, so `loOnA`'s added layer cannot order them. -/
 theorem dep_d_y : ¬ appliesDependsOn delOpE delY := by
   simp [appliesDependsOn, delY]
@@ -344,7 +344,7 @@ theorem not_applicabilityValid_sep :
   · rw [hL] at h1; exact Bool.noConfusion h1
 
 /-- **On `[insOpE, delOpE, delY]`, `loOnA` excludes nothing that `loOnC` admits.**  Whenever
-the order respects `loOnC` it also respects `loOnA` — the generation-dependency disjunct
+the order respects `loOnC` it also respects `loOnA`: the generation-dependency disjunct
 never fires backward here (`dep_i_d`, `dep_i_y`, `dep_d_y`).  Config-general. -/
 theorem sep_loOnC_imp_loOnA (C : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
     (ev : Set (Op app_op_t))
@@ -372,7 +372,7 @@ theorem sep_loOnC_imp_loOnA (C : Sal.Emulation.Configuration RGACondSig.toCRDTSi
 /-- **The decisive separation: (a) and (b) are NOT the same exclusion.**
 
 * `.1`: repair (b) EXCLUDES `[insOpE, delOpE, delY]` (`applicabilityValid` fails).
-* `.2`: repair (a) does NOT — for every configuration, whenever the base order `loOnC`
+* `.2`: repair (a) does NOT, for every configuration, whenever the base order `loOnC`
   admits this enumeration, so does `loOnA`; the added generation-dependency edges exclude
   nothing here.
 

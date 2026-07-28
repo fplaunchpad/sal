@@ -24,7 +24,7 @@ set_option autoImplicit false
 open Classical
 
 /-!
-# Replicated Growable Array (RGA) — state-based CRDT
+# Replicated Growable Array (RGA): state-based CRDT
 
 ## What this is
 
@@ -48,22 +48,22 @@ framework.
 `OpId = ℕ × ℕ` = `(timestamp, replica id)`. Timestamps are globally
 unique per the paper's `distinct_ops` assumption, so different
 characters always have different `OpId`s. The sentinel `(0, 0)` is
-reserved as the "start of document" anchor — no real op has it.
+reserved as the "start of document" anchor, no real op has it.
 
 **State.** Three grow-only maps, all keyed by `OpId`:
 
-* `chars : Map OpId ℕ` — the character codepoint of the insert op
+* `chars : Map OpId ℕ`, the character codepoint of the insert op
   with that `OpId`. Set once (by the Insert that created the opId),
   never updated.
-* `afters : Map OpId OpId` — the `afterId` predecessor of the insert
+* `afters : Map OpId OpId`, the `afterId` predecessor of the insert
   op with that `OpId`. Also set-once.
-* `deleted : Map OpId Bool` — monotonic tombstone flag. Starts false
+* `deleted : Map OpId Bool`, monotonic tombstone flag. Starts false
   (implicit, via the zero-default lookup), flips true on `Remove`,
   never flips back.
 
 The state is a pure snapshot of all ops this replica has
-(directly or transitively) seen. The *canonical RGA sequence* — the
-text as a user would read it — is a **read-side projection** of this
+(directly or transitively) seen. The *canonical RGA sequence*, the
+text as a user would read it, is a **read-side projection** of this
 state, computed by a deterministic traversal that linearises the
 `afterId` DAG into a total order. That traversal is not part of the
 CRDT state or the convergence proof; it lives in a separate
@@ -212,7 +212,7 @@ match o with
   entries to the maps. The new opId is `(ts, rid)`, the character is
   `ch`, the predecessor is `after`.
 * `Remove target`: flips `deleted[target]` to `true`. The op's own
-  `(ts, rid)` identifies the issuer but does not appear in state —
+  `(ts, rid)` identifies the issuer but does not appear in state,
   each distinct replica that removes the same `target` writes the
   same `true` to the same slot (idempotent join).
 

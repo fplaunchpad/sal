@@ -6,14 +6,14 @@ set_option linter.mathlibStandardSet false
 
 open Classical
 
-/-! # Multi-Valued Register (MRDT, classical) — SPOTs
+/-! # Multi-Valued Register (MRDT, classical): SPOTs
 
 Small Proof-Oriented Tests: concrete `do`/`merge` scenarios with
 expected `is_visible_value` outcomes, machine-checked. Two roles:
 
-* **regression tests** — small instances of the operational semantics
+* **regression tests**: small instances of the operational semantics
   proved by reduction (cheap path, this file);
-* **verified API documentation** — the same scenarios that the
+* **verified API documentation**: the same scenarios that the
   `demos/` MVR page renders interactively, here pinned by proof.
 
 Each SPOT is named after the headline read-side claim it exercises.
@@ -21,7 +21,7 @@ Reference: Shapiro et al. INRIA RR-7506 §3.2.2 Spec 14. -/
 
 namespace MVR_SPOT
 
-/-- **SPOT 1 — concurrent writes both visible.**
+/-- **SPOT 1: concurrent writes both visible.**
 
 Two replicas concurrently `Write` distinct values from the initial
 state (each with empty prepare-time snapshot, since neither sees the
@@ -34,13 +34,13 @@ example :
     is_visible_value σ 42 ∧ is_visible_value σ 99 := by
   refine ⟨⟨1, ?_, ?_⟩, ⟨2, ?_, ?_⟩⟩ <;> decide
 
-/-- **SPOT 2 — sequential write supersedes prior.**
+/-- **SPOT 2: sequential write supersedes prior.**
 
 A single replica writes `42` (ts = 1), then writes `99` (ts = 2) with
 prepare-time snapshot `{1}` (it has observed the prior write). The
 prior `42` is no longer visible because its only witness ts is now
 in `removed`. The negative half applies
-`sequential_write_supersedes_value` — `99 ≠ 42` and σ₁'s only visible
+`sequential_write_supersedes_value`, `99 ≠ 42` and σ₁'s only visible
 witness for `42` is `ts = 1`, which is in `O₂ = {1}`. -/
 example :
     let σ₁ : concrete_st := do_ init_st (1, 0, app_op_t.Write 42 empty)
@@ -57,7 +57,7 @@ example :
     subst h_in
     decide
 
-/-- **SPOT 3 — concurrent writes both supersede a common ancestor.**
+/-- **SPOT 3: concurrent writes both supersede a common ancestor.**
 
 Replica 0 writes `42` (ts = 1). Replicas 1 and 2 each fork from this
 state and concurrently write `99` (ts = 2) and `77` (ts = 3) with

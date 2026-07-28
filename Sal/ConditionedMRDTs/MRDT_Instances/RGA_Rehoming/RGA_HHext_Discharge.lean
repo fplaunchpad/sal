@@ -1,20 +1,20 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Skeleton3
 
 /-!
-# hHext DISCHARGED — the discipline extends at applicable applies
+# hHext DISCHARGED: the discipline extends at applicable applies
 
 *0 `sorry`.*
 
 Skeleton 3's `hHext` leaf: at an apply step, the H-witness `ρ` for the head version's events
-extends by the new op — `rgaH (ρ ++ [(t, r, o)])` — given only that the op is `applicable`
+extends by the new op, `rgaH (ρ ++ [(t, r, o)])`, given only that the op is `applicable`
 (accurate + fresh) at the witness fold.  The two ingredients beyond `applicable`:
 
 * **the step's own stored-freshness side-condition** (`h_fresh_store`, extracted by inverting the
-  `Step3.apply` constructor): no event stored at ANY version of `C₀` — in particular none in
-  `evh` — carries time `t`.  This is what makes the *no-id-reuse* clauses of `CanonStepOK`
+  `Step3.apply` constructor): no event stored at ANY version of `C₀`, in particular none in
+  `evh`, carries time `t`.  This is what makes the *no-id-reuse* clauses of `CanonStepOK`
   (never-deleted, absent from prior chains) provable: `HonestPayloads` turns any recorded
-  occurrence of `t` into an INSERT of `t` in `ρ ⊆ evh`, whose time is `t` — contradiction.
-* **payload honesty of the extension**: the new op's own payload is honest at the fold —
+  occurrence of `t` into an INSERT of `t` in `ρ ⊆ evh`, whose time is `t`, contradiction.
+* **payload honesty of the extension**: the new op's own payload is honest at the fold,
   `accurate` makes a delete's nonzero target and an insert's chain entries LIVE, and ids enter a
   fold only by their own `Ins` (`insertedIn_of_contains_fold`).
 
@@ -38,9 +38,9 @@ open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonInv CanonStepOK CanonFoldOK insertedIn)
 open Sal.ConditionedMRDTs.RGACanonFoldOK (canonFoldOK_append insertedIn_of_contains_fold)
 
-/-- **hHext, discharged — reachability-free core.**  The witness discipline `rgaH`
+/-- **hHext, discharged, reachability-free core.**  The witness discipline `rgaH`
 extends at an applicable apply.  Only the `Step3.apply` step itself is consumed (its
-store-wide timestamp freshness); no reachability premise — so the same discharge serves
+store-wide timestamp freshness); no reachability premise, so the same discharge serves
 both the gated (`labeledTS3`) and the widened (`labeledTS3V`) inductions. -/
 theorem rga_hHext_discharged_core
     {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
@@ -81,7 +81,7 @@ theorem rga_hHext_discharged_core
     have hstepOK : CanonStepOK ρ (applySeqR (init_st (α := α)) ρ) (t, r, app_op_t.Ins e p a) := by
       refine ⟨hfr.1, hfr.2, ?_, ?_, ?_,
         RGACanonConvergence.chainOK_of_accurate _ t r e a p h0 hacc⟩
-      · -- no id reuse: a recorded delete of t names an inserted id — freshness contra
+      · -- no id reuse: a recorded delete of t names an inserted id, freshness contra
         rintro ⟨t', r', p', hm'⟩
         rcases hHP.1 t' r' t p' hm' with h0' | hins
         · exact hfr.1 h0'
@@ -102,7 +102,7 @@ theorem rga_hHext_discharged_core
             · exact isAncPath_mem _ a p hpath t h
           rw [hfr.2] at hlive
           exact Bool.noConfusion hlive
-      · -- t not in prior chains: honest payloads make entries inserted — freshness contra
+      · -- t not in prior chains: honest payloads make entries inserted, freshness contra
         intro t' r' e' p' a' hm' htmem
         rcases hHP.2 t' r' e' a' p' hm' t htmem with h0' | hins
         · exact hfr.1 h0'
@@ -171,7 +171,7 @@ theorem rga_hHext_discharged_core
         simp at hEq
 
 /-- **hHext, discharged** (the gated-form wrapper: the reachability premise was never
-consumed — `rga_hHext_discharged_core` is the content). -/
+consumed, `rga_hHext_discharged_core` is the content). -/
 theorem rga_hHext_discharged
     {C₀ C₁ : Sal.ConditionedMRDTs.Configuration
         (QSig (rgaEqEquiv' α) WfOpA rgaInvPresA (rgaCongVC' α) rgaInvInvVCA)}

@@ -2,19 +2,19 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance_Final
 import Sal.ConditionedMRDTs.Metatheory.GenericEqQuotient_NF
 
 /-!
-# The RGA `≈`-Join over born-applicable delivery — union canonical-state shape (NF)
+# The RGA `≈`-Join over born-applicable delivery: union canonical-state shape (NF)
 
 *0 `sorry`.*
 
 The `noopFeasible` (NF) analogue of `RGA_Instance_Final`'s union shape assembly,
 parametric in the guard `W` (so it applies at `W := WfOpA`).  The
-guard-hardcoded order lemmas generalize for free — `loOnEqQ_reduce`'s proof reads
+guard-hardcoded order lemmas generalize for free, `loOnEqQ_reduce`'s proof reads
 only `rc = Either`, which is guard-independent.  The `noopFeasible` clause of the
 union witness `ρ₀ ++ π₀` is composed from the two sides via `noopFeasible_append`.
 
 This closes the union canonical-state SHAPE for `EqJoinLemma3C_NF`, isolating the
 merge=delta-fold residual (the same WALL 1 the `GenDisc2CEq` version faced, here on
-the honest born-applicable foundation — WALL 0's config facts come from the
+the honest born-applicable foundation, WALL 0's config facts come from the
 `noopFeasible`/`WfOpGenQ` discipline, not a strengthened `GenDisc`).
 -/
 
@@ -34,7 +34,7 @@ open RGAMergeLinearization (applySeqR)
 
 /-! ## §1  The guard-generic order reductions (`rc = Either` is guard-independent) -/
 
-/-- `loOnEq` collapses to its vis-arm at ANY guard `W` — `rc = Either` empties the
+/-- `loOnEq` collapses to its vis-arm at ANY guard `W`, `rc = Either` empties the
 rc-tiebreak arm.  Generalizes `RGAConvergenceEq.loOnEqQ_reduce` (`W := WfOpQ`). -/
 theorem loOnEqQ_reduce_gen (W : op_t α → concrete_st α → Prop)
     (vis : op_t α → op_t α → Prop) (ev : Set (op_t α)) (e₁ e₂ : op_t α) :
@@ -68,8 +68,8 @@ theorem mergeFold_transport {σ₀' σ₁' σ₂' X s₀ s₁ s₂ : concrete_st
 Mirror of `RGA_Instance_Final.rga_eqJoin_of_mergeFoldResidual`, over the NF
 interface: no `GenDisc` premises are needed (the born-applicable discipline is
 carried by the `noopFeasible` witnesses), and the residual additionally produces a
-`noopFeasible` delta enumeration.  Everything ABOVE the residual — the union
-canonical-state shape — is closed by §2. -/
+`noopFeasible` delta enumeration.  Everything ABOVE the residual, the union
+canonical-state shape, is closed by §2. -/
 
 /-- **The NF `≈`-Join residual.**  From the LCA enumeration `ρ₀` (with its
 `noopFeasible`) and the two sides' born-applicable canonical states, a

@@ -25,7 +25,7 @@ set_option autoImplicit false
 open Classical
 
 /-!
-# Peritext — state-based CRDT for rich text (characters + formatting spans)
+# Peritext: state-based CRDT for rich text (characters + formatting spans)
 
 ## What this is
 
@@ -48,18 +48,18 @@ read-side projection not captured by the VCs.
 
 **Characters and tombstones (inherited from RGA):**
 
-* `chars   : Map OpId ℕ`    — char codepoint of the Insert with that opId.
-* `afters  : Map OpId OpId` — `afterId` predecessor of that Insert.
-* `deleted : Map OpId Bool` — monotonic tombstone flag.
+* `chars   : Map OpId ℕ`, char codepoint of the Insert with that opId.
+* `afters  : Map OpId OpId`, `afterId` predecessor of that Insert.
+* `deleted : Map OpId Bool`, monotonic tombstone flag.
 
 **Formatting spans (Peritext-specific):**
 
 A Peritext formatting operation (an `AddMark` or `RemoveMark`) carries
 a `start` anchor and an `end` anchor. Each anchor is an `(OpId, Side)`
 pair where `Side` encodes whether the anchor attaches *before* or
-*after* the referenced character. The paper's key innovation — that a
+*after* the referenced character. The paper's key innovation, that a
 mark can "expand" or "contract" under concurrent inserts at its
-boundary, depending on anchor side — lives entirely in this anchor
+boundary, depending on anchor side, lives entirely in this anchor
 data.
 
 We represent this in state by a single map:
@@ -70,7 +70,7 @@ We represent this in state by a single map:
        `side = true` means "after".
 
 A single mark op (an `AddMark` or `RemoveMark`) is stored at *two*
-keys in this map — at its start anchor and at its end anchor — so
+keys in this map (at its start anchor and at its end anchor) so
 its lookup from either boundary is direct.
 
 **`MarkOp` payload.** Each mark op records:
@@ -100,7 +100,7 @@ commutes at the state level for all op pairs.
 
 ## What this file verifies
 
-**State convergence only** — the 24 RA-linearizability VCs, same
+**State convergence only**: the 24 RA-linearizability VCs, same
 shape as `RGA_CRDT`. Guarantees that two replicas that have delivered
 the same set of ops converge pointwise on
 `(chars, afters, deleted, marks)`.
@@ -119,7 +119,7 @@ quickly once the VC file is cached.
 ## Relationship to existing CRDTs
 
 Extends `RGA_CRDT` by exactly one additional grow-only component
-(`marks`). Verification effort is comparable — the 24 VCs split into
+(`marks`). Verification effort is comparable, the 24 VCs split into
 the same pattern buckets (`rc_non_comm` + `base_*` via rcases+simp+
 grind+ring; `ind_*` and `lem_0op` via rcases+simp+grind; the rest via
 `by sal`). The main extra work is the 4-way rcases on the op family
@@ -153,13 +153,13 @@ abbrev MarkOp :=
 
 /-- An "anchor attachment": a single mark op attached at a specific
 `(anchor_charId, anchor_side)` position. A single mark op typically
-appears as two `AnchorAttachment`s in state — one for its start
+appears as two `AnchorAttachment`s in state, one for its start
 anchor, one for its end anchor.
 
 Flattening the paper's `Map anchor (Set MarkOp)` layout into a
 single top-level `set AnchorAttachment` keeps the state as a
 product of simple `map`s and `set`s (Sal's `a → Bool` predicate
-type) — which the 24 VCs' automation handles natively — instead of
+type), which the 24 VCs' automation handles natively, instead of
 nesting a `set` inside a `map` value, which would defeat `grind`'s
 pointwise reasoning (function-valued map entries need `funext`). -/
 abbrev AnchorAttachment :=

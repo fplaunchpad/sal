@@ -2,11 +2,11 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Skeleton3
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon_Fix
 
 /-!
-# Skeleton 3 leaf reduction — `hCanon` from a MINIMAL merge bundle
+# Skeleton 3 leaf reduction: `hCanon` from a MINIMAL merge bundle
 
 In the H-world the witnesses CARRY the engine discipline (`CanonFoldOK [] (init_st (α := α)) ρᵢ`), so:
 
-* every `CanonMatch` derives directly (`canon_fold` + `canonMatch_of_canonInv`) — **no
+* every `CanonMatch` derives directly (`canon_fold` + `canonMatch_of_canonInv`), **no
   `EngineReady`, no `RefEdge`, no `hReady` leg anywhere**;
 * `CanonInv` at every fold is free, so the σ-forest facts (`Hstay`/`h0`/branch `wf`) and the
   per-survivor membership bundle (`hins_branch`) are DERIVED, not leaves;
@@ -14,9 +14,9 @@ In the H-world the witnesses CARRY the engine discipline (`CanonFoldOK [] (init_
   `CanonBirthBridge` per survivor: the false 0-or-survivor conjunct is not required.
 
 `hCanon_of_leaves3` therefore reduces Skeleton 3's `hCanon` to THREE leaves:
-`Hdec` (σ₀' id-monotonicity — a fold invariant from honest payload bounds), `hcaus` (the per-id
+`Hdec` (σ₀' id-monotonicity, a fold invariant from honest payload bounds), `hcaus` (the per-id
 causal set-algebra; its two provenance clauses are the honest content), and `hbridge`
-(per-survivor `CanonBirthBridge` — the `BranchInv`-I4 kernel).
+(per-survivor `CanonBirthBridge`, the `BranchInv`-I4 kernel).
 -/
 
 set_option maxHeartbeats 1000000
@@ -48,7 +48,7 @@ theorem canonMatch_of_canonFoldOK (ρ : List (op_t α)) (h : CanonFoldOK [] (ini
     CanonMatch ρ (applySeqR (init_st (α := α)) ρ) :=
   canonMatch_of_canonInv ρ _ (canonInv_of_canonFoldOK ρ h)
 
-/-- **All four `CanonMatch`es from the Skeleton-3 disciplines** — no `EngineReady` anywhere. -/
+/-- **All four `CanonMatch`es from the Skeleton-3 disciplines**, no `EngineReady` anywhere. -/
 theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α))
     (h₀OK : CanonFoldOK [] (init_st (α := α)) ρ₀)
     (h₁OK : CanonFoldOK [] (init_st (α := α)) ρ₁)
@@ -67,9 +67,9 @@ theorem hFoldCanon3 (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α))
   rw [happ] at hcm
   exact hcm
 
-/-- **Skeleton 3's `hCanon` from the MINIMAL merge bundle** — `Hdec` (σ₀' id-monotonicity),
-`hcaus` (per-id causal set-algebra), and per-survivor `CanonBirthBridge`.  Everything else —
-the four `CanonMatch`es, the σ-forest facts, the branch `wf`s, and the per-survivor membership —
+/-- **Skeleton 3's `hCanon` from the MINIMAL merge bundle**, `Hdec` (σ₀' id-monotonicity),
+`hcaus` (per-id causal set-algebra), and per-survivor `CanonBirthBridge`.  Everything else,
+the four `CanonMatch`es, the σ-forest facts, the branch `wf`s, and the per-survivor membership,
 is derived from the carried disciplines. -/
 theorem hCanon_of_leaves3
     (HonJ : (op_t α → op_t α → Prop) → Set (op_t α) → Prop)

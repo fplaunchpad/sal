@@ -8,8 +8,8 @@ foundation: for any `D` with `CoreVCs D` and `JoinPeelVCs D`, every
 configuration reachable in the transition system is RA-linearizable.
 
 The induction carries the **strengthened invariant**
-`IsCanonicallyLinearizable` — every replica holds the *canonical
-state* of its event set — together with transitivity and
+`IsCanonicallyLinearizable`, every replica holds the *canonical
+state* of its event set, together with transitivity and
 irreflexivity of `vis` (reachability facts the σ-machinery consumes).
 The Merge case is the Join Lemma (`join_lemma_of_peel`); the Apply
 case is `isCanonicalState_extend`; Def-lin follows via
@@ -186,7 +186,7 @@ theorem goodConfig_apply {C C' : Configuration D}
     · exact h_ir a ha
     · exact he_not_ev ha_ev
 
-/-- **Merge preserves the invariant** — the Join Lemma at work. -/
+/-- **Merge preserves the invariant**: the Join Lemma at work. -/
 theorem goodConfig_merge (hJoin : JoinLemma D)
     {C C' : Configuration D} {r₁ r₂ : Replica}
     {s₁ s₂ : D.State} {ev₁ ev₂ : Set (Op D.AppOp)}

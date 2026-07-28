@@ -2,17 +2,17 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Honest_Residual
 import Sal.ConditionedMRDTs.Metatheory.GoodConfig3H_V
 
 /-!
-# RGA (rehoming) — RA-linearizability up to `≈` over the widened LTS `Step3V`
+# RGA (rehoming): RA-linearizability up to `≈` over the widened LTS `Step3V`
 
 *0 `sorry`.*
 
 The production capstone `rga_ra_linearizable3_eq` re-derived at every configuration
-reachable in the ternary system **with the criss-cross gate lifted** — merges may resolve
+reachable in the ternary system **with the criss-cross gate lifted**, merges may resolve
 a proper MCA antichain through the recursive virtual-LCA fold (`Step3V.mergeVirtual`).
 
 What is genuinely new is all in the generic H-layer (`GoodConfig3H_V.lean`): the fold
 induction consumes the RGA's `≈`-Join (`rgaJoinH_of_canon` over `rga_hEnum_discharged` +
-`hCanon_of_leaves3`) at every intermediate antichain union `(E(acc), E(mᵢ))` — those
+`hCanon_of_leaves3`) at every intermediate antichain union `(E(acc), E(mᵢ))`, those
 leaves were already stated for arbitrary closed event-set pairs under the ambient
 `rgaHonJ`, so the K1/`GenDisc2C` route (the union restricted through
 `isDepPreC_of_restrict` inside `rga_hEnum_discharged`) covers the unions verbatim.  **No
@@ -83,7 +83,7 @@ theorem goodConfig3S_of_reachV {C : Cfg3} (hReach : Reach3V C) : GoodConfig3S C 
 
 /-- **The honest-delivery residual, widened**: `HonestDelivery` with the per-apply-step
 quantification over `Step3V`-reachable configurations (the step itself is still a
-`Step3.apply` — `mergeVirtual` adds no apply steps).  Same two clauses: born accuracy and
+`Step3.apply`, `mergeVirtual` adds no apply steps).  Same two clauses: born accuracy and
 born-applicable delivery. -/
 def HonestDeliveryV : Prop :=
   ∀ {C₀ C₁ : Cfg3} {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica}
@@ -105,7 +105,7 @@ theorem honestDelivery_of_honestDeliveryV (h : HonestDeliveryV (α := α)) :
   fun hreach hstep hhead hver =>
     h (Sal.ConditionedMRDTs.reachableV_of_reachable hreach) hstep hhead hver
 
-/-- The honest-core invariant at every `Step3V`-reachable configuration — **merges
+/-- The honest-core invariant at every `Step3V`-reachable configuration, **merges
 consume no honesty**: both merge cases are `honCore_merge` (events/vis bookkeeping only;
 the LCA slot is never read). -/
 theorem honCore_of_reachV (hHD : HonestDeliveryV (α := α)) {C : Cfg3}
@@ -134,7 +134,7 @@ theorem honCore_of_reachV (hHD : HonestDeliveryV (α := α)) {C : Cfg3}
       exact honCore_merge h_head₁ h_head₂ h_ver₁ h_ver₂ hL hvis ih
 
 /-- **hHon over `Step3V`, discharged**: the join context `rgaHonJ` at every
-`Step3V`-reachable core — same witness (the re-typed core itself), same structural
+`Step3V`-reachable core, same witness (the re-typed core itself), same structural
 fields, generation discipline from born accuracy via the widened `HonCore`. -/
 theorem rga_hHon_dischargedV (hHD : HonestDeliveryV (α := α)) :
     ∀ {C₀ : Cfg3}, Reach3V C₀ →
@@ -163,7 +163,7 @@ theorem rga_hHon_dischargedV (hHD : HonestDeliveryV (α := α)) :
 
 /-- **RGA RA-linearizability up to `≈` over the widened LTS, on the honest-delivery
 residual alone.**  The datatype-side leaves are the gated theorem's, verbatim:
-`rga_hEnum_discharged` (K1/`GenDisc2C` — already general in the event-set pair, so the
+`rga_hEnum_discharged` (K1/`GenDisc2C`, already general in the event-set pair, so the
 intermediate antichain unions of the virtual fold are instances), `hCanon_of_leaves3`,
 `rga_hHext_discharged_core`. -/
 theorem rga_RA_linearizable_honestV (hHD : HonestDeliveryV (α := α))
@@ -195,7 +195,7 @@ open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv' WfOpA rgaInvPresA
 open Sal.ConditionedMRDTs.RGASkeleton3 (HonestDeliveryV)
 
 /-- **The rehoming RGA is RA-linearizable up to `≈` at every honestly-reachable-V
-configuration** — `rga_ra_linearizable3_eq` with the criss-cross gate lifted
+configuration**, `rga_ra_linearizable3_eq` with the criss-cross gate lifted
 (`labeledTS3V`: merges may resolve a proper MCA antichain through the recursive
 virtual-LCA fold), under the widened honest-delivery residual `HonestDeliveryV` (born
 accuracy + born-applicable delivery, per apply step, at `Step3V`-reachable configs).

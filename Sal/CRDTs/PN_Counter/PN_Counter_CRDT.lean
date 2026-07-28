@@ -24,11 +24,11 @@ set_option autoImplicit false
 open Classical
 
 /-!
-# PN-Counter — state-based CRDT
+# PN-Counter: state-based CRDT
 
 A counter that supports both `Inc` and `Dec`. Implemented as two
-G-counters glued together — one tracking per-replica increments, one
-tracking per-replica decrements — because a single `max`-merged map
+G-counters glued together, one tracking per-replica increments, one
+tracking per-replica decrements, because a single `max`-merged map
 can't unambiguously distinguish "R0 did 3 incs" from "R0 did 2 incs
 then 1 dec" once merges fold the state.
 
@@ -62,7 +62,7 @@ def eq (a b: concrete_st) :=
 
 /-- `Inc` and `Dec` each bump the sender's slot by 1 in the appropriate
 map. No payload; amount is always +1 (matches `Increment_Only_Counter`
-convention — N ops move N units). -/
+convention, N ops move N units). -/
 inductive app_op_t : Type where
 | Inc
 | Dec

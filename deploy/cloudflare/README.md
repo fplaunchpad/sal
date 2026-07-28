@@ -23,19 +23,19 @@ Notes:
 - FREE-TIER QUOTA: Durable Object requests are metered per day, and every
   incoming WebSocket message counts. When the cap is hit, upgrades return 500
   ("Exceeded allowed volume of requests in Durable Objects free tier") until
-  the daily reset (UTC midnight); static assets keep serving. The client now
+  the daily reset (UTC midnight); static assets keep serving. The client
   retries with backoff, so open tabs heal on reset. Presence is throttled
   (min 300ms between sends, 20s heartbeat) to keep idle burn low; Workers
   Paid removes the cap if the deployment should be reliably public.
 
 - `build.sh` re-stages `public/` from the repo; run it before every deploy.
-- The DO relay is DUMB (never inspects the CRDT payload). The design note's
-  next step turns this same DO into a merging SyncServer hub: it would hold a
-  headless `DistributedReplica` + persist records to DO storage, so peers can
-  collaborate asynchronously without any browser online.
+- The DO relay is DUMB (never inspects the CRDT payload). This same DO can
+  become a merging SyncServer hub: it would hold a headless
+  `DistributedReplica` and persist records to DO storage, so peers collaborate
+  asynchronously without any browser online.
 - `html_handling = "none"` keeps asset URLs verbatim (the import map depends
   on exact paths).
 - What of this is actually verified: see
   `../../whiteboard/verification-distance.md` (the deployed editor is a
   tested mirror of the Lean proofs; the relay is deliberately outside the
-  TCB, but commits are unauthenticated today).
+  TCB, but commits are unauthenticated).

@@ -3,20 +3,20 @@ import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
 
 /-!
-# The mergeable queue — Peepul's case study, through the one framework
+# The mergeable queue, Peepul's case study, through the one framework
 
 The queue of *Certified Mergeable Replicated Data Types* (Soundarapandian,
 Kamath, Nagar, Sivaramakrishnan; PLDI 2022), re-proved here. Enqueue mints a
-timestamped element; dequeue removes a **named** element — the head its issuer
+timestamped element; dequeue removes a **named** element, the head its issuer
 observed (the op carries the tag; the client API is unchanged, the replica
 captures its generation context, and this is what Peepul's `max(i,j)` merge
-was implicitly doing). The three-way merge is Peepul's: the LCA's survivors —
-elements still present in both branches — in LCA order, then each branch's
+was implicitly doing). The three-way merge is Peepul's: the LCA's survivors
+(elements still present in both branches) in LCA order, then each branch's
 new arrivals in branch order.
 
 Why this instance is structurally forced OUT of the flat engine: concurrent
 enqueues genuinely do not commute (queue order is arrival order) and they
-conflict with their own class — a clique — so no `rc` assignment satisfies
+conflict with their own class, a clique, so no `rc` assignment satisfies
 `rc_non_comm_directional` + `no_rc_chain`. The route here instead proves the
 ternary **Join Lemma directly** (`q_join_at`): Peepul's merge *is* the
 linearization witness (LCA-enumeration ++ branch-one news ++ branch-two news,
@@ -32,7 +32,7 @@ dependent. Headline:
     queue_ra_linearizable3 :
       QHonest C → reachable C → IsRALinearizable3 C
 
-— per-version RA-linearizability of the raw system, no quotient (the state is
+Per-version RA-linearizability of the raw system, no quotient (the state is
 kept in canonical single-list form; Peepul's two-list balancing is an `≈`-away
 representation refinement, deferred).
 -/
@@ -57,7 +57,7 @@ abbrev QState : Type := List (ℕ × ℕ)
 def qTags (s : QState) : List ℕ := s.map Prod.fst
 
 /-- Enqueue appends a fresh-tagged element (the tag is the event's own
-timestamp); dequeue removes the named element wherever it sits — strictness
+timestamp); dequeue removes the named element wherever it sits: strictness
 about *which* element lives in `applicable`, not in the effect. -/
 def qUpdate (s : QState) (o : Op QOp) : QState :=
   match o.2.2 with
@@ -183,7 +183,7 @@ theorem qTags_qCanonList {ρ : List (Op QOp)} {t : ℕ} :
 
 /-- Well-formedness of an enumeration: distinct events, enqueue tags unique,
 and no dequeue precedes the enqueue of its tag (in honest closed sets this is
-forced by `respects` — the enqueue is `vis`-before the dequeue and they do
+forced by `respects`: the enqueue is `vis`-before the dequeue and they do
 not commute). -/
 structure QWf (ρ : List (Op QOp)) : Prop where
   nd : ρ.Nodup
@@ -249,7 +249,7 @@ theorem qCanonList_snoc_deq (ρ : List (Op QOp)) (ts r t : ℕ) :
       simp [h1, h2]
 
 /-- **The fold formula**: over a well-formed enumeration, the fold from the
-empty queue is the canonical content — the enqueues, in enumeration order,
+empty queue is the canonical content: the enqueues, in enumeration order,
 minus the dequeued tags. -/
 theorem q_fold_canon : ∀ (ρ : List (Op QOp)), QWf ρ →
     applySeq Q.toCRDTSig Q.init ρ = qCanonList ρ := by
@@ -310,7 +310,7 @@ theorem q_loOn_iff (C : Sal.Emulation.Configuration Q.toCRDTSig)
 
 /-! ## §5  Honest histories, well-formedness of enumerations -/
 
-/-- Honest histories: every dequeue names a tag its issuer had observed — a
+/-- Honest histories: every dequeue names a tag its issuer had observed, a
 `vis`-prior enqueue with that tag. The queue's `HonestDelivery`. -/
 def QHonestCore (C : Sal.Emulation.Configuration Q.toCRDTSig) : Prop :=
   ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
@@ -400,7 +400,7 @@ theorem q_wf_of_enum (hHon : QHonestCore C)
       | deq t' => exact ⟨t', rfl⟩
     exact ⟨hvis, q_pair_not_comm hae' hdd' ha't⟩
 
-/-! ## §6  The Join — Peepul's merge is the linearization witness -/
+/-! ## §6  The Join: Peepul's merge is the linearization witness -/
 
 /-- Set-level "some dequeue of `t`". -/
 def qDeqIn (ev : Set (Op QOp)) (t : ℕ) : Prop :=
@@ -704,7 +704,7 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
 /-! ## §7  Honest reachability and the capstone -/
 
 /-- Honest histories, at the ternary configuration: every dequeue names a tag
-its issuer had observed — a `vis`-prior enqueue with that tag exists. -/
+its issuer had observed: a `vis`-prior enqueue with that tag exists. -/
 def QHonest (C : Configuration Q) : Prop :=
   ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = t ∧ ∃ v, a.2.2 = QOp.enq v
@@ -720,8 +720,8 @@ theorem qHonest_core {C : Configuration Q} (h : QHonest C) :
 
 /-- **Honest reachability**: LTS reachability where every step is taken from
 a configuration with an honest history. This is the queue's `HonestDelivery`
-— the per-step contract under which the Join Lemma is available at each
-merge — instantiating the generic `HonestReach`. -/
+(the per-step contract under which the Join Lemma is available at each
+merge), instantiating the generic `HonestReach`. -/
 def QReach : Configuration Q → Prop := HonestReach Q QHonest trivial
 
 /-- The generic honest-reachability induction
@@ -735,7 +735,7 @@ theorem q_goodConfig3 {C : Configuration Q} (hReach : QReach C) :
 /-- **The mergeable queue is RA-linearizable, per version, at every honestly
 reachable configuration**: every version the store ever registers is the fold
 of a linearization of its event set that respects delivery order. Peepul's
-PLDI'22 queue, in the one framework — the specification is the generic
+PLDI'22 queue, in the one framework: the specification is the generic
 RA-linearizability statement, with no bespoke partial-order spec language and
 no head-recovery clause. -/
 theorem queue_ra_linearizable3 {C : Configuration Q} (hReach : QReach C) :
@@ -748,7 +748,7 @@ theorem queue_ra_linearizable3 {C : Configuration Q} (hReach : QReach C) :
 
 /-- What a well-behaved replica checks before issuing `deq t`: the element
 tagged `t` is the **head** of the queue it currently sees. (Enqueues are
-unconditional.) The dequeue carries the tag of the head its issuer observed —
+unconditional.) The dequeue carries the tag of the head its issuer observed:
 the client-facing API is still argumentless `dequeue`; the replica records
 which element that call removed. -/
 def qApplicable (o : Op QOp) (s : QState) : Prop :=
@@ -807,14 +807,14 @@ theorem qTags_fold_sub : ∀ (π : List (Op QOp)) (t : ℕ),
       exact ⟨a, List.mem_append_left _ ha, h1, h2⟩
 
 /-- **The `applicable` discipline discharges honesty.** If every dequeue was
-applicable at SOME fold of its issuer's causal past — the issuer's own
+applicable at SOME fold of its issuer's causal past (the issuer's own
 materialized state is such a fold, so this is exactly what an honest client
-witnesses — then the history is honest: the head's tag can only have entered
+witnesses), then the history is honest: the head's tag can only have entered
 that fold through a `vis`-prior enqueue. This is the queue's analogue of the
 RGA's applicable-delivery layer, and the formal content of "dequeue names
 the head its issuer observed". (Existential form: quantifying over ALL
 enumerations of the causal past would be unsatisfiable once a past holds two
-surviving enqueues — different orders materialize different heads.) -/
+surviving enqueues: different orders materialize different heads.) -/
 theorem qHonest_of_applicable (C : Configuration Q)
     (hApp : ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
       ∃ π : List (Op QOp),

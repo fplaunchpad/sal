@@ -8,13 +8,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 import Sal.ConditionedMRDTs.Refutations.UpdateFeasibility_Gate
 
 /-!
-# The MERGE half of `hCanon` — `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')`
+# The MERGE half of `hCanon`: `CanonMatch (ρ₀++π₀) (merge σ₀' σ₁' σ₂')`
 
 The RGA-specific fact: the OR-set merge computes the canonical state of the union events. Two clauses:
-* **domain** (`merge_domain_clause`): `contains (merge …) = survP (ρ₀++π₀)` — the OR-set = union
+* **domain** (`merge_domain_clause`): `contains (merge …) = survP (ρ₀++π₀)`, the OR-set = union
   survivor set. A Boolean/causal identity: OR-set survival over the branch survivor sets equals union
   survival, using id-uniqueness (`I₀↔I₁∧I₂`), closed-deletes (`Dⱼ→Iⱼ`), and subset (`D₀→Dⱼ`).
-* **anchor** (later): `anc (merge …) t = canonAnc (ρ₀++π₀) (a::p)` — via `canonBirthBridge_of_branchChain`.
+* **anchor** (later): `anc (merge …) t = canonAnc (ρ₀++π₀) (a::p)`, via `canonBirthBridge_of_branchChain`.
 
 The causal facts are carried as explicit hypotheses here (skeleton-first); they are discharged from
 `fullClosureRel` + distinctness + the branch perms in the execution-model plumbing step.
@@ -63,7 +63,7 @@ theorem merge_domain_clause
     (hDu : deletedIn (ρ₀ ++ π₀) c ↔ deletedIn ρ₁ c ∨ deletedIn ρ₂ c) :
     contains (merge σ₀' σ₁' σ₂') c = true ↔ survP (ρ₀ ++ π₀) c := by
   rw [contains_merge]
-  -- (1) the pure Boolean shape of `survivors` — no `survP`, cheap 8-way on concrete Bools
+  -- (1) the pure Boolean shape of `survivors`, no `survP`, cheap 8-way on concrete Bools
   have key : survivors σ₀' σ₁' σ₂' c = true ↔
       ((contains σ₀' c = true ∧ contains σ₁' c = true ∧ contains σ₂' c = true)
         ∨ (contains σ₁' c = true ∧ contains σ₀' c ≠ true)
@@ -145,7 +145,7 @@ theorem merge_anc_clause
 
 #print axioms merge_anc_clause
 
-/-- **`CanonMatch F (merge σ₀' σ₁' σ₂')`** — the RGA merge computes the canonical state of the union
+/-- **`CanonMatch F (merge σ₀' σ₁' σ₂')`**, the RGA merge computes the canonical state of the union
 events, assembled from the three per-clause results (domain / el / anc). This is the SOLE RGA-specific
 input `hCanon`'s merge half needs; everything else is generic. -/
 theorem merge_canonMatch

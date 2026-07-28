@@ -12,7 +12,7 @@ coordinates (`Sal/MRDTs/RGA_Embed/Sided_ChainLex.lean`), and the display
 is their descending marker-lex sort. The one-sided instance is the all-R
 fragment.
 
-Route: the **mergeable-queue route**, exactly as one-sided — the Join
+Route: the **mergeable-queue route**, exactly as one-sided, the Join
 hook needs canonical states unique per event set, and this file's §3
 (`s_fold_canon`) is that property for the sided datatype. Side selection
 is a *generation policy* (honesty-layer, like the mint), so the datatype
@@ -51,14 +51,14 @@ deriving DecidableEq
 /-- A record: `(id, element, absolute sided symbol coordinate)`. -/
 abbrev SRec : Type := ℕ × ℕ × List ℕ
 
-/-- State: the document — records strictly descending by `sKey`. Canonical
+/-- State: the document, records strictly descending by `sKey`. Canonical
 single-list form (sortedness is the `Inv`-grade invariant, established by
 fold-canonicity in §3, not baked into the type). -/
 abbrev SState : Type := List SRec
 
 def sIds (s : SState) : List ℕ := s.map Prod.fst
 
-/-- The coordinate an insert writes — a function of the op alone: the
+/-- The coordinate an insert writes, a function of the op alone: the
 carried prefix + the entry's sided block (`sBlock` composes the band and
 the per-band code, complemented on L). -/
 def sCoord (Γ : OrderedPrefixCode) (o : Op SOp) : List ℕ :=
@@ -85,7 +85,7 @@ def sUpdate (Γ : OrderedPrefixCode) (s : SState) (o : Op SOp) : SState :=
   | .del x => s.filter (fun r => decide (r.1 ≠ x))
 
 /-- Merge of two sorted lists, descending by key (ties cannot occur between
-distinct ids on chain-generated states — `sidedCoordOf_inj`). -/
+distinct ids on chain-generated states, `sidedCoordOf_inj`). -/
 def sMerge2 : SState → SState → SState
   | [], ys => ys
   | xs, [] => xs
@@ -104,7 +104,7 @@ def sMergeL (l a b : SState) : SState :=
     (b.filter (fun r => decide (r.1 ∉ sIds l ∧ r.1 ∉ sIds a)))
 
 /-- The sided embedded-chain RGA, parametric in the code (one `Γ` covers
-both bands — the L band is `Γ` complemented, inside `sBlock`). The side is
+both bands, the L band is `Γ` complemented, inside `sBlock`). The side is
 datatype-blind: `Inv`/`applicable` are trivially true, and side *selection*
 (all-R = published RGA, Fugue = non-interleaving) is a generation policy
 of the honesty layer. -/
@@ -167,7 +167,7 @@ characterization. -/
 
 open Sal.EmbedRGA (keyLt_trans keyLt_asymm keyLt_total keyLt_irrefl)
 
-/-- Strictly descending by key — the canonical form. -/
+/-- Strictly descending by key, the canonical form. -/
 def SSorted (s : SState) : Prop :=
   s.Pairwise (fun r r' => keyLt (sKey r'.2.2) (sKey r.2.2) = true)
 
@@ -320,7 +320,7 @@ theorem sMerge2_sorted : ∀ {as bs : SState}, SSorted as → SSorted bs →
           exact keyLt_trans (ha z hz'') hab
       · exact hb z hz'
 
-/-- The merge of canonical inputs is canonical (sorted), given no key ties —
+/-- The merge of canonical inputs is canonical (sorted), given no key ties,
 supplied on chain-generated states by unique decodability
 (`sidedCoordOf_inj`). -/
 theorem sMergeL_sorted {l a b : SState}
@@ -340,7 +340,7 @@ theorem sMergeL_sorted {l a b : SState}
 /-! ## §3  Well-formed enumerations and fold-canonicity
 
 `s_fold_canon`: any two well-formed enumerations of one event set fold to
-the **same** state — the sided form of "state is a function of the event
+the **same** state, the sided form of "state is a function of the event
 set", by `ssorted_ext` + a fold membership characterization. The side rides
 along inertly: it is consumed by `sCoord` at record-creation time and never
 consulted again, which is why every proof below is the one-sided proof with
@@ -402,7 +402,7 @@ theorem sDels_append (ρ σ : List (Op SOp)) :
 
 /-- Well-formed enumerations: insert ids are unique, nothing is deleted
 before its insert, and distinct inserts mint distinct keys (supplied on
-honest histories by sided chain-generation + unique decodability —
+honest histories by sided chain-generation + unique decodability,
 `sidedCoordOf_inj`). -/
 structure SWf (Γ : OrderedPrefixCode) (ρ : List (Op SOp)) : Prop where
   ins_nodup : (sInsIds ρ).Nodup
@@ -509,7 +509,7 @@ theorem s_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op SOp)},
 
 /-- **The fold membership characterization**: under well-formedness a record
 is in the fold iff its insert is in the enumeration and its id is never
-deleted — an ORDER-FREE description. -/
+deleted, an ORDER-FREE description. -/
 theorem s_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op SOp)},
     SWf Γ ρ → ∀ (r : SRec),
     (r ∈ sFold Γ ρ ↔
@@ -581,7 +581,7 @@ theorem s_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op SOp)},
                 simpa using hnd.2⟩
 
 /-- **Fold-canonicity**, sided: well-formed enumerations of one event set
-fold to the SAME state. The state is a function of the event set — the
+fold to the SAME state. The state is a function of the event set, the
 property the queue-route Join hook cannot live without, and the reason the
 side can be a policy: the datatype's canonical state never depends on
 enumeration order, whichever sides the ops carry. -/
@@ -606,7 +606,7 @@ theorem s_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op SOp)}
 
 `SHonestCore` is the sided analogue of the embed instance's honesty: every
 delete names an id its issuer had observed (a `vis`-prior insert), and
-inserts are chain-generated — the mint is a positive sided birth chain's
+inserts are chain-generated, the mint is a positive sided birth chain's
 coordinate whose timestamp components telescope to the id. The side is
 part of the minted entry, not a separate obligation: whichever side the
 generation policy picks, the chain is a chain. Its three consequences are
@@ -671,7 +671,7 @@ theorem s_del_ins_mem {Γ : OrderedPrefixCode}
   exact ⟨a, hcl a d hvis hncomm hd, hains, hax, hvis⟩
 
 /-- **A `loOn`-respecting enumeration of a closed honest set is
-well-formed** — the bridge from the configuration layer to `SWf`, one
+well-formed**, the bridge from the configuration layer to `SWf`, one
 honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 sided unique decodability give `keys_inj`. -/
@@ -732,7 +732,7 @@ theorem s_wf_of_enum {Γ : OrderedPrefixCode}
 /-! ## §6a  The survival algebra
 
 The record-level membership of the ternary merge, characterized order-free
-against the union event set — the mathematical core of the Join. §6b turns
+against the union event set, the mathematical core of the Join. §6b turns
 it into `JoinLemma3At` by exhibiting the witness enumeration. -/
 
 theorem s_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op SOp)}
@@ -772,7 +772,7 @@ theorem s_keys_inj_events {Γ : OrderedPrefixCode}
 /-- **The merge membership characterization.** At a join site (three
 canonical enumerations over an honest configuration), a record is in the
 ternary merge iff its insert is somewhere in the union and its id is deleted
-nowhere in the union — the union's order-free membership. OR-set survival,
+nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
 theorem s_mergeL_mem {Γ : OrderedPrefixCode}
@@ -904,12 +904,12 @@ theorem s_mergeL_mem {Γ : OrderedPrefixCode}
         exact ⟨hnot hp₀ hwf₀ (fun a ha => hin₁ a ha.1) (fun a ha => ha.1),
                hnot hp₁ hwf₁ hin₁ (fun a ha => ha)⟩
 
-/-! ## §6b  The Join — the merge is its own linearization witness
+/-! ## §6b  The Join: the merge is its own linearization witness
 
 Witness enumeration for the union: the LCA's enumeration, then branch one's
 delta (in branch order), then branch two's news. Its `respects` obligation
-falls to CLOSURE — a `loOn`-later event sitting in an earlier block would
-have been pulled into the earlier event set — and `loOn` is event-set
+falls to CLOSURE, a `loOn`-later event sitting in an earlier block would
+have been pulled into the earlier event set, and `loOn` is event-set
 independent under `rc = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
@@ -1098,7 +1098,7 @@ theorem sHonest_core {Γ : OrderedPrefixCode} {C : Configuration (S Γ)}
     exact ho
 
 /-- **Honest reachability**: LTS reachability where every step is taken from
-a configuration with an honest history — instantiating the generic
+a configuration with an honest history, instantiating the generic
 `HonestReach`, exactly as the one-sided embed and the mergeable queue do. -/
 def SReach (Γ : OrderedPrefixCode) : Configuration (S Γ) → Prop :=
   HonestReach (S Γ) (SHonest Γ) trivial
@@ -1109,7 +1109,7 @@ theorem s_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (S Γ)}
     hReach
 
 /-- **The sided embedded-chain RGA is RA-linearizable, per version, at every
-honestly reachable configuration** — for EVERY side assignment: the sides
+honestly reachable configuration**, for EVERY side assignment: the sides
 ops carry are payload to this theorem, which is exactly the design's
 policy/datatype split (all-R = the published RGA order, the Fugue rule =
 non-interleaving; both ride on this one capstone). Parametric in the
@@ -1126,7 +1126,7 @@ theorem sided_embed_ra_linearizable3 {Γ : OrderedPrefixCode}
 What a well-behaved replica checks before issuing an op at the state it
 sees. Both `SHonest` components are consequences: the delete half exactly as
 the queue (fold provenance is unconditioned), the chain half by building the
-global chain assignment by strong induction on ids — anchors have smaller
+global chain assignment by strong induction on ids, anchors have smaller
 timestamps, and the anchor's record in ANY fold of the issuer's past is
 op-determined, so the carried prefix is forced to be the anchor's chain's
 coordinate. The side rides into the minted entry untouched: the guard
@@ -1219,8 +1219,8 @@ theorem s_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (S Γ))
           omega
 
 /-- **The `applicable` discipline discharges honesty.** If every op was
-applicable at SOME fold of its issuer's causal past — the issuer's own
-materialized state is such a fold — then the history is honest: a delete's
+applicable at SOME fold of its issuer's causal past, the issuer's own
+materialized state is such a fold, then the history is honest: a delete's
 target can only have entered that fold through a `vis`-prior insert, and the
 carried prefixes are forced to be sided birth-chain coordinates. -/
 theorem sHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (S Γ))
@@ -1327,7 +1327,7 @@ theorem sMerge2_sublist_right : ∀ (as bs : SState), List.Sublist bs (sMerge2 a
       exact List.Sublist.cons₂ b ih
 
 /-- **Merge stability (S4 at the instance)**: the merge displays branch
-`a`'s survivors — those shared with `b` or new since the LCA — as a sublist
+`a`'s survivors, those shared with `b` or new since the LCA, as a sublist
 of `a`'s own document: in `a`'s order, never reordered. Symmetrically for
 `b`'s news via `sMerge2_sublist_right`. -/
 theorem sMergeL_stable_left (l a b : SState) :

@@ -1,25 +1,25 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Hbridge_Discharge
 
 /-!
-# hcaus + Hdec DISCHARGED — hMergeInputs COMPLETE at `HonJ := rgaHonJ`
+# hcaus + Hdec DISCHARGED, hMergeInputs COMPLETE at `HonJ := rgaHonJ`
 
 *0 `sorry`.*
 
 The two remaining `hMergeInputs` leaves, and the assembled `hMergeInputs` itself:
 
-* **`rga_hcaus_discharged`** — the per-id causal set-algebra.  Five of the seven clauses are
+* **`rga_hcaus_discharged`**, the per-id causal set-algebra.  Five of the seven clauses are
   pure membership algebra over the enum perms (`ρ₀ ~ ev₁ ∩ ev₂` etc., with id-uniqueness
-  identifying same-id inserts across branches).  The two with content — *a branch-deleted id is
-  branch-inserted* — are dependency-fold provenance (`del_target_inserted`): the delete is
+  identifying same-id inserts across branches).  The two with content, *a branch-deleted id is
+  branch-inserted*, are dependency-fold provenance (`del_target_inserted`): the delete is
   `accurate` at its dependency fold (`GenDisc2C`, restricted to the branch), its target is
   nonzero (`rgaHonJ`'s no-root-deletes), so the target is LIVE there, and ids enter a fold only
   by their own `Ins` (`insertedIn_of_contains_fold`).
-* **`rga_Hdec_discharged`** — σ₀ id-monotonicity, WITHOUT any fold induction: the stored anchor
+* **`rga_Hdec_discharged`**, σ₀ id-monotonicity, WITHOUT any fold induction: the stored anchor
   is `canonAnc` of the insert's recorded chain (`CanonMatch` at the LCA fold), `canonAnc` picks a
   chain entry or `0` (`canonAnc_mem`), chain entries are dependencies of the insert
   (`chain_entries_mem`), dependencies are `vis`-past (`depC_imp_vis`), and `vis` is
   Lamport-monotone (`rgaHonJ`'s clock clause).
-* **`rga_hMergeInputs_discharged`** — `{Hdec, hcaus, hbridge}` assembled: the FULL
+* **`rga_hMergeInputs_discharged`**, `{Hdec, hcaus, hbridge}` assembled: the FULL
   `hMergeInputs` premise of `hCanon_of_leaves3`, at `HonJ := rgaHonJ`.
 -/
 
@@ -62,7 +62,7 @@ theorem canonAnc_mem (F : List (op_t α)) :
       · exact Or.inl h0
       · exact Or.inr (List.mem_cons_of_mem c hm)
 
-/-- **A deleted nonzero id is inserted** — dependency-fold provenance: the delete is `accurate`
+/-- **A deleted nonzero id is inserted**, dependency-fold provenance: the delete is `accurate`
 at its dependency fold (`GenDisc2C`), so its nonzero target is live there, and ids enter a fold
 only by their own `Ins`. -/
 theorem del_target_inserted (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
@@ -83,7 +83,7 @@ theorem del_target_inserted (Cfg : Sal.Emulation.Configuration (RGACondSig α).t
     obtain ⟨rc, ec, pc, ac, hm⟩ := hins
     exact ⟨rc, ec, pc, ac, (hUp.2 _).mp (mem_depList.mp hm).1⟩
 
-/-! ## §2  Hdec — σ₀ id-monotonicity, no fold induction -/
+/-! ## §2  Hdec: σ₀ id-monotonicity, no fold induction -/
 
 /-- **Hdec, discharged**: the LCA fold's stored anchors strictly decrease.  The anchor is
 `canonAnc` of the recorded chain (`CanonMatch`); chain entries are dependencies of the insert;
@@ -150,7 +150,7 @@ theorem rga_Hdec_discharged
       rw [hanc]
       exact hlt
 
-/-! ## §3  hcaus — the per-id causal set-algebra -/
+/-! ## §3  hcaus: the per-id causal set-algebra -/
 
 /-- **hcaus, discharged**: five clauses are membership algebra over the enum perms; the two
 branch `del ⟹ ins` clauses are `del_target_inserted` at the branch's restricted discipline. -/

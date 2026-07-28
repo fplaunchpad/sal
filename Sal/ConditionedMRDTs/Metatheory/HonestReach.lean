@@ -8,7 +8,7 @@ from a single per-datatype obligation: **configurations satisfying the
 honesty contract admit the ternary Join**.
 
 `HonestReach D H hInit` is LTS reachability through `Step3` where every step
-is taken from a configuration satisfying the per-configuration contract `H` —
+is taken from a configuration satisfying the per-configuration contract `H`,
 a client/delivery discipline such as "every dequeue names an enqueue its
 issuer had observed" (the mergeable queue) or the trivial `⊤` (any instance
 whose join is unconditional). The metatheorem
@@ -20,10 +20,10 @@ recovering the unconditional bridge `ra_linearizable3_of_join`.
 
 The join discharge is the per-datatype residue. Three species:
 
-* **conditioned commutation** — the CD-route VC bundles
+* **conditioned commutation**: the CD-route VC bundles
   (`join_lemma3_of_cd` and friends, `Adequacy.lean`); contract `⊤`;
-* **flat** — the flat-engine bridge (`FlatGeneric_Bridge.lean`); `⊤` again;
-* **direct witness** — the merge itself is the linearization witness, valid
+* **flat**: the flat-engine bridge (`FlatGeneric_Bridge.lean`); `⊤` again;
+* **direct witness**: the merge itself is the linearization witness, valid
   only under an honest-history contract (`MergeableQueue.lean`'s
   `q_join_at`).
 -/
@@ -94,7 +94,7 @@ theorem honestReach_of_reachable {C : Configuration D}
 `HonestReachV` is `HonestReach` over `Step3V` (the criss-cross gate lifted,
 `LCA_Lemma.lean` §9). The merge induction gains the sibling `mergeVirtual` case,
 discharged by `goodConfig3_mergeVirtual_at` with `StoreInv` carried alongside; the
-per-datatype residue is the *same* `JoinLemma3At` obligation — nothing new is owed by
+per-datatype residue is the *same* `JoinLemma3At` obligation: nothing new is owed by
 join-lemma datatypes. -/
 
 open LabeledTS in

@@ -31,17 +31,17 @@ open LabeledTS
 /-- Op-based CRDT signature: `⟨Σ, σ₀, prepare, effect, query, rc⟩`.
 
 Glossary:
-* `State`  — Σ, replica state space.
-* `init`   — σ₀, initial state.
-* `AppOp`  — set of abstract client-facing update operations.
-* `Msg`    — set of messages; op-based CRDTs broadcast these rather
+* `State`: Σ, replica state space.
+* `init`: σ₀, initial state.
+* `AppOp`: set of abstract client-facing update operations.
+* `Msg`: set of messages; op-based CRDTs broadcast these rather
   than full states. Typically `Msg = AppOp × VectorClock` or similar.
-* `Query` / `Value` — observable queries.
-* `prepare` — `(r, op, s) ↦ m`: generates the message to broadcast when
+* `Query` / `Value`: observable queries.
+* `prepare`, `(r, op, s) ↦ m`: generates the message to broadcast when
   client issues `op` on replica `r` at state `s`.
-* `effect`  — `(m, s) ↦ s'`: applies a delivered message.
-* `query`   — `(s, q) ↦ v`: observable query.
-* `rc`      — same as state-based: the linearization-order spec over ops.
+* `effect`, `(m, s) ↦ s'`: applies a delivered message.
+* `query`, `(s, q) ↦ v`: observable query.
+* `rc`, same as state-based: the linearization-order spec over ops.
 -/
 structure OpCRDTSig where
   State : Type
@@ -141,7 +141,7 @@ Rules (one per constructor):
 * **OpDeliver**: deliver an enabled message from buffer.
 
 Unlike the state-based TS, there is no fresh-timestamp premise on
-`OpUpdate` — timestamps live inside messages (via vector clocks etc.)
+`OpUpdate`, timestamps live inside messages (via vector clocks etc.)
 and are the concern of the caller. -/
 inductive OpStep (D : OpCRDTSig) (hb : D.Msg → D.Msg → Prop) :
     OpConfiguration D → OpLabel D → OpConfiguration D → Prop where
@@ -181,7 +181,7 @@ inductive OpStep (D : OpCRDTSig) (hb : D.Msg → D.Msg → Prop) :
       OpStep D hb C (.deliver r m) C'
 
 /-- The initial op-based configuration: empty trace, replica 0 at σ₀,
-empty buffer. (Dynamic replicas — matching `initConfig` in
+empty buffer. (Dynamic replicas, matching `initConfig` in
 `CRDT_TS.lean`. Paper pins all of `R` to σ₀ up front; we relax for
 symmetry with the state-based side.) -/
 def opInitConfig (D : OpCRDTSig) : OpConfiguration D where
@@ -190,7 +190,7 @@ def opInitConfig (D : OpCRDTSig) : OpConfiguration D where
   buffer := ∅
 
 /-- Lift to a `LabeledTS`. The `hb` parameter is bound at the call
-site — different causal-delivery orderings (Lamport, vector clocks,
+site, different causal-delivery orderings (Lamport, vector clocks,
 dotted versions) produce different TSs. -/
 def opLabeledTS (D : OpCRDTSig) (hb : D.Msg → D.Msg → Prop) : LabeledTS where
   State := OpConfiguration D

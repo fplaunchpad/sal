@@ -3,20 +3,20 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.MarkStore
 
 /-!
-# The supply rerun — the RGA's honesty supplies over the PRODUCT LTS
+# The supply rerun: the RGA's honesty supplies over the PRODUCT LTS
 
 *The cost center of the Peritext composite* (memo
 `Development/COMPOSITION_PENPAPER.md` §2.5.6): the RGA's reachability-derived
 supplies (`hHon` = the join context `rgaHonJ` at every reachable core; the
 freshness half of `hHext`) were discharged by induction over the RGA's OWN
 `Step3` (`RGA/RGA_Honest_Residual.lean`), and reachability does
-not project (memo §2.1.4) — so they must be re-derived over the product LTS
+not project (memo §2.1.4), so they must be re-derived over the product LTS
 `Peritext_Composed := RGA_TF ⊗ MarkStore`. The rerun's verdict, file-checked:
 
 * **`inl`-apply steps affect the `proj₁` fragment of `(vis, events)` exactly
-  as RGA-apply steps do** — `honCoreP_apply_inl` is the RGA's
+  as RGA-apply steps do**, `honCoreP_apply_inl` is the RGA's
   `honCore_apply` with events/`vis` read through `inlOp`;
-* **every other step is a stutter for the fragment** — `inr`-applies add an
+* **every other step is a stutter for the fragment**, `inr`-applies add an
   `inr` event and only `… ∧ b = (t,r,inr o₂)` vis-edges, neither of which the
   `inl` fragment sees (`honCoreP_apply_inr`); createReplica/merge/query
   preserve `(vis, events)` outright (`honCoreP_transfer`);
@@ -27,12 +27,12 @@ not project (memo §2.1.4) — so they must be re-derived over the product LTS
   (the `coreR` trick of `RGA_Honest_Residual` §1, composed with the
   `projCore₁` field transfers of `Metatheory/Product.lean` §O4);
 * the RGA's `hHext` discharge (`RGA_HHext_Discharge`) used its reachability
-  hypothesis for exactly ONE fact — stored timestamp freshness. Its body is
+  hypothesis for exactly ONE fact, stored timestamp freshness. Its body is
   otherwise config-free, so it is restated here as `rgaH_extend_of_fresh`
   (freshness over the witness list as a hypothesis) and the product `hHext`
   extracts the freshness from the product step's own `h_fresh_store` field.
 
-The single behavioural assumption is `PeritextHonestDelivery` — the RGA's
+The single behavioural assumption is `PeritextHonestDelivery`, the RGA's
 `HonestDelivery` read through `proj₁` (memo §4 item 3): per `inl`-apply step,
 born accuracy against a causal fold of the `inl` fragment of the head events,
 plus born-applicable delivery. **Mark applies are unguarded**: their
@@ -93,7 +93,7 @@ private theorem updateRep_other {α} (f : Replica → Option α) {r r' : Replica
 /-! ## §1  The honest-delivery residual, read through `proj₁`
 
 The RGA's `HonestDelivery` relativized to the product LTS (memo §4 item 3):
-only `inl` (character) applies are constrained — born accuracy against a
+only `inl` (character) applies are constrained, born accuracy against a
 causal fold of the `inl` fragment of the head version's events (the issuing
 replica's RGA component IS that fold), `qapplicable` delivery at the head
 class, and `applicable ⟹ WfOpA` for the delivered op. Mark applies carry no
@@ -115,7 +115,7 @@ def PeritextHonestDelivery : Prop :=
 
 /-- The delivered `inl` op is `WfOpQ` somewhere: extract a representative of
 the head class from the delivery clauses (the product analogue of
-`RGA_Honest_Residual.wfOpQ_of_hBA` — the representative is a product state,
+`RGA_Honest_Residual.wfOpQ_of_hBA`, the representative is a product state,
 and its first component witnesses). -/
 theorem wfOpQ_of_hBA_P {t : ℕ} {r : ℕ} {o₁ : app_op_t}
     {sh : QState (prodSig RGACondSig' MarkStore) (prodEqEquiv rgaEqEquiv')}
@@ -272,7 +272,7 @@ theorem honCoreP_init : HonCoreP (initConfig PQD trivial) := by
     fun o ho => (hev _ ho).elim⟩
 
 /-- Events-preserving, vis-preserving steps transfer the whole invariant
-(createReplica, merge — and query, which does not even change `C`). -/
+(createReplica, merge, and query, which does not even change `C`). -/
 theorem honCoreP_transfer {C C' : PCfg}
     (hE : ∀ e : POp, e ∈ C'.events ↔ e ∈ C.events)
     (hvis : C'.vis = C.vis)
@@ -346,7 +346,7 @@ theorem honCoreP_apply_inr {C C' : PCfg} {t : Timestamp} {r : Replica} {o₂ : M
     · exact (and_congr (hE₁ z) (hvis₁ z o)).symm
     · exact hπr.imp fun hn hv => hn ((hvis₁ _ _).mp hv)
 
-/-- **The `inl` (character) apply** — the RGA's `honCore_apply`
+/-- **The `inl` (character) apply**, the RGA's `honCore_apply`
 (`RGA_Honest_Residual.lean:241`) with the universe and visibility read through
 `inlOp`: freshness, the post-configuration's structural Lamport field, born
 accuracy of the delivered op against the `inl` fragment of the head events,
@@ -476,7 +476,7 @@ theorem honCoreP_apply_inl {C C' : PCfg} {t : Timestamp} {r : Replica} {o₁ : a
         · exact hn hv
         · exact hnew_not (heq' ▸ hevh_sub _ ((hπp.2 a).mp ha))
 
-/-- The honest-core invariant at every product-reachable configuration —
+/-- The honest-core invariant at every product-reachable configuration,
 the §2.5.6 rerun's induction. -/
 theorem honCoreP_of_reach (hHD : PeritextHonestDelivery) {C : PCfg}
     (hReach : PReach C) : HonCoreP C := by
@@ -553,8 +553,8 @@ context `rgaHonJ` holds at the `inl` fragment of every product-reachable
 core. The witness is the re-typed projected core; visibility restriction is
 `vis_src`/`vis_tgt`, Lamport is the structural `causal_mono`, id-uniqueness
 is `timestamps_distinct` (all through `inlOp`, which preserves the `(t, r)`
-prefix), and the generation discipline is `genDisc2C_of_born` — the RGA
-content lemma, re-consumed, not re-proved — at the product honest-core
+prefix), and the generation discipline is `genDisc2C_of_born`, the RGA
+content lemma, re-consumed, not re-proved, at the product honest-core
 invariant. -/
 theorem peritext_hHon_discharged (hHD : PeritextHonestDelivery) :
     ∀ {C₀ : PCfg}, PReach C₀ →
@@ -593,7 +593,7 @@ against the head version's events. Everything else in its body is config-free.
 `rgaH_extend_of_fresh` is that body with the freshness as a hypothesis over
 the witness list; the product `hHext` extracts the freshness from the PRODUCT
 step's own `h_fresh_store` field and restricts it along `projList₁`. An `inr`
-op is free — `projList₁` drops it, so the discipline is untouched. -/
+op is free, `projList₁` drops it, so the discipline is untouched. -/
 
 /-- The RGA witness discipline `rgaH` extends at an applicable apply, given
 freshness of the new timestamp against the witness list (config-free core of
@@ -625,7 +625,7 @@ theorem rgaH_extend_of_fresh (t r : ℕ) (o : app_op_t) (ρ : List op_t)
     have hstepOK : CanonStepOK ρ (applySeqR init_st ρ) (t, r, app_op_t.Ins e p a) := by
       refine ⟨hfr.1, hfr.2, ?_, ?_, ?_,
         RGACanonConvergence.chainOK_of_accurate _ t r e a p h0 hacc⟩
-      · -- no id reuse: a recorded delete of t names an inserted id — freshness contra
+      · -- no id reuse: a recorded delete of t names an inserted id, freshness contra
         rintro ⟨t', r', p', hm'⟩
         rcases hHP.1 t' r' t p' hm' with h0' | hins
         · exact hfr.1 h0'
@@ -646,7 +646,7 @@ theorem rgaH_extend_of_fresh (t r : ℕ) (o : app_op_t) (ρ : List op_t)
             · exact isAncPath_mem _ a p hpath t h
           rw [hfr.2] at hlive
           exact Bool.noConfusion hlive
-      · -- t not in prior chains: honest payloads make entries inserted — freshness contra
+      · -- t not in prior chains: honest payloads make entries inserted, freshness contra
         intro t' r' e' p' a' hm' htmem
         rcases hHP.2 t' r' e' a' p' hm' t htmem with h0' | hins
         · exact hfr.1 h0'
@@ -759,7 +759,7 @@ theorem peritext_hHext_discharged
 
 /-- **The product `hBA` supply**: `inl` (character) applies are
 born-applicable by `PeritextHonestDelivery`; `inr` (mark) applies are
-UNGUARDED — the mark store's `applicable` is `⊤`, so their `qapplicable` is
+UNGUARDED, the mark store's `applicable` is `⊤`, so their `qapplicable` is
 discharged outright at any representative and the `W`-half is trivial
 (`prodW`'s `inr` arm is `⊤`). The composite assumes nothing about mark
 delivery. -/

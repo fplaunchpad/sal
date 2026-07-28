@@ -258,7 +258,7 @@ noncomputable def flagC4 : Configuration AWSetF where
         | exact Or.inl ⟨rfl, rfl⟩
         | exact Or.inr ⟨rfl, rfl⟩
 
-/-- After the final `merge r1 ← r0` — the refuting configuration. -/
+/-- After the final `merge r1 ← r0`, the refuting configuration. -/
 noncomputable def flagC5 : Configuration AWSetF where
   N := N5
   L := L5

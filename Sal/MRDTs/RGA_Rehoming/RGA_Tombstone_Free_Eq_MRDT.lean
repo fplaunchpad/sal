@@ -8,13 +8,13 @@ The tombstone-free RGA converges only up to its observational equivalence `eq`
 representation carries *ghost payloads at deleted keys*: `del` shrinks the
 domain but keeps the mapping, `iter_upd` rewrites mappings at every key
 (ghosts included), and `merge` manufactures payloads outside its survivor set.
-Different replay orders leave different ghosts — this is the entire content of
+Different replay orders leave different ghosts, this is the entire content of
 the `≈` in `rga_ra_linearizable3_eq`
 (the conditioned RGA capstone in `Sal/ConditionedMRDTs/MRDT_Instances/RGA_Rehoming/`).
 
 This file shows the `≈` is **purely representational** by exhibiting the
 normalizing variant: `doN`/`mergeN` behave identically on live data
-(`doN_eq_do`, `mergeN_eq_merge` — pointwise `eq` at every input state) but pin
+(`doN_eq_do`, `mergeN_eq_merge`, pointwise `eq` at every input state) but pin
 every out-of-domain payload to the default `(0, 0)` (`Norm`, an invariant of
 the variant: `norm_init`/`norm_doN`/`norm_mergeN`). On normalized states the
 observational equivalence **is** structural equality (`eq_iff_eq_of_norm`),

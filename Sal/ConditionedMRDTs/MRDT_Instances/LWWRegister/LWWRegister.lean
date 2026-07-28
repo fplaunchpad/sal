@@ -10,7 +10,7 @@ import Mathlib.Data.Prod.Lex
 import Mathlib.Data.List.MinMax
 
 /-!
-# LWW register — last-writer-wins, conditioned and kernel-clean end-to-end
+# LWW register, last-writer-wins, conditioned and kernel-clean end-to-end
 
 The max twin of `FWWRegister`. A register whose value is the write with the
 **largest** timestamp: last writer wins, "last" arbitrated in Lamport time.
@@ -32,7 +32,7 @@ instance exists as a *conditioned* datatype rather than a flat CRDT:
   end-to-end theorems, kernel-clean (axioms ⊆ {propext, Classical.choice,
   Quot.sound}).
 
-* **The purest payload-arbitration register — no discipline at all.** FWW
+* **The purest payload-arbitration register, no discipline at all.** FWW
   carries a (decorative, theorem-free) claim-when-unset discipline. LWW
   carries *none*: a write is always allowed and always overwrites a
   causally-earlier one (timestamps respect causality, so a causally later
@@ -80,7 +80,7 @@ def lwwUpdate (s : LWWState) (e : Op LWWOp) : LWWState :=
   max s ↑(lwwWrite e)
 
 /-- Three-way merge, degenerate: the state only ever moves *up* the
-semilattice, so the LCA slot is redundant — `max` of the branches. -/
+semilattice, so the LCA slot is redundant: `max` of the branches. -/
 def lwwMergeL (_l a b : LWWState) : LWWState := max a b
 
 noncomputable def LWW : ConditionedMRDTSig where
@@ -169,7 +169,7 @@ theorem LWW_deltaVCs3 : DeltaVCs3 LWW := by
     simp [max_comm, max_left_comm]
 
 open LabeledTS in
-/-- End-to-end RA-linearizability (convergence) for the LWW register —
+/-- End-to-end RA-linearizability (convergence) for the LWW register,
 through the framework's *mechanized* bridge, not the flat CRDT's
 sorry-carrying one. -/
 theorem lww_ra_linearizable3
@@ -207,7 +207,7 @@ theorem lww_fold_maximum (ρ : List (Op LWWOp)) :
 
 open LabeledTS in
 /-- `GoodConfig3` for the register: the generic honest-reachability induction
-under the trivial contract (the Join is unconditional — the CD route). -/
+under the trivial contract (the Join is unconditional, the CD route). -/
 theorem lww_goodConfig3
     (C : Configuration LWW)
     (hReach : (labeledTS3 LWW).ReachableFrom (initConfig LWW trivial) C) :
@@ -222,7 +222,7 @@ open LabeledTS in
 every version of every reachable configuration**: it is an upper bound on all
 writes, it is attained by one of them, and it is unset exactly on the empty
 set. Deterministic last-writer-wins, with "last" arbitrated in Lamport time
-among concurrent writers. No honesty hypothesis — writes are unconditional
+among concurrent writers. No honesty hypothesis: writes are unconditional
 and semilattice folds are enumeration-free. -/
 theorem lww_version_max
     (C : Configuration LWW)
@@ -269,7 +269,7 @@ theorem lww_version_max
 /-! ## §4  The generic-framework capstone
 
 No `applicable` discipline: LWW writes are unconditional (`applicable = ⊤`).
-The register is the purest payload-arbitration instance — arbitration is
+The register is the purest payload-arbitration instance: arbitration is
 entirely in the max-ts payload, nothing is conditioned. -/
 
 section
@@ -307,7 +307,7 @@ below:
 * `lww_loOn_empty`: the linearization order `loOn` is **empty** on LWW. Each of
   its arms needs a non-commuting pair (`vis` arm) or an `rc`-resolved concurrent
   pair (`rc` arm), and LWW has neither (`LWW_all_comm`, `rc = Either`). So the
-  `rc` mechanism produces the *discrete* arbitration — no order at all.
+  `rc` mechanism produces the *discrete* arbitration, no order at all.
 * `lwwTsArbitration` : the timestamp total order **is** an `AcyclicArbitration`,
   a genuinely non-trivial arbitration `rc` cannot express, and
   `lww_isRALinearizable3Arb_ts` shows LWW is RA-linearizable against it. LWW's
@@ -328,7 +328,7 @@ is the arbitration `rc` cannot express (it is a total order on concurrent
 writes). -/
 def lwwArb (_E : Set (Op LWWOp)) (a b : Op LWWOp) : Prop := lwwWrite a < lwwWrite b
 
-/-- **The timestamp order is an `AcyclicArbitration`** — for *every* LWW
+/-- **The timestamp order is an `AcyclicArbitration`**, for *every* LWW
 configuration, with no hypotheses. Acyclicity is strictness of `<` lifted through
 `TransGen`; extends-`vis` is vacuous (LWW has no non-commuting pairs). This is the
 native arbitration the `rc` mechanism (which gives the empty `loOn`) cannot
@@ -403,7 +403,7 @@ theorem lww_isRALinearizable3Arb_ts_via_generic (C : Configuration LWW)
 `lww_isRALinearizable3Arb_ts_via_generic` (§4) routes through the loOn-*refining*
 partial (`isRALinearizable3Arb_of_acyclicArb_refines_loOn`), which still reuses `loOn`
 convergence as the fold oracle. Here `lwwArb` is certified through the *fully*-generic
-`ra_linearizable3Arb_of_core_feasible_cd` — the arbitration order **and** the fold
+`ra_linearizable3Arb_of_core_feasible_cd`: the arbitration order **and** the fold
 uniqueness are both the abstract timestamp order (`ArbConvergence` from all-commute), with
 `loOn` absent from the certificate. -/
 
@@ -415,7 +415,7 @@ theorem lwwWrite_lt_of_fst_lt {a b : Op LWWOp} (h : a.1 < b.1) :
   rw [Prod.Lex.toLex_lt_toLex]
   exact Or.inl h
 
-/-- **`lwwArb` is vis-consistent** — Lamport-monotone, from the configuration's
+/-- **`lwwArb` is vis-consistent**, Lamport-monotone, from the configuration's
 `causal_mono` field: `vis b a ⟹ b.1 < a.1 ⟹ lwwWrite b < lwwWrite a`, so `a` is never
 timestamp-ordered before an event it observed. This is the clause the generic apply pillar
 consumes; LWW discharges it through the Lamport clock (no honesty hypothesis). -/
@@ -425,7 +425,7 @@ theorem lww_vis_consistent (C : Configuration LWW) :
   have hba : b.1 < a.1 := C.causal_mono hvis
   exact absurd hlt (not_lt.mpr (le_of_lt (lwwWrite_lt_of_fst_lt hba)))
 
-/-- **`lwwArb` is convergent** — all LWW writes commute, so the fold of any enumeration is
+/-- **`lwwArb` is convergent**: all LWW writes commute, so the fold of any enumeration is
 the maximum write (`lww_fold_acc`), and two enumerations of the same set are permutations
 (`listPermOf_perm`) hence have equal maximum. -/
 theorem lww_arbConvergence (C : Configuration LWW) : ArbConvergence C lwwArb := by
@@ -435,7 +435,7 @@ theorem lww_arbConvergence (C : Configuration LWW) : ArbConvergence C lwwArb := 
   exact List.Perm.maximum_eq ((listPermOf_perm hp₁ hp₂).map lwwWrite)
 
 /-- **The LWW timestamp family**: `lwwArb` (config- and set-independent) discharges all
-six `ArbFamily` clauses — acyclicity via `lwwTsArbitration`, extends-`vis` vacuously
+six `ArbFamily` clauses: acyclicity via `lwwTsArbitration`, extends-`vis` vacuously
 (`LWW_all_comm`), antitone/vis-local trivially (set-independent), vis-consistency via the
 Lamport clock, convergence via the `max` fold. -/
 def lwwFamily : ArbFamily LWW where

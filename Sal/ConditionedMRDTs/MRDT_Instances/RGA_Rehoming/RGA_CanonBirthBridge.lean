@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeFoldChain
 
 /-!
-# `CanonBirthBridge` — the last merge-side residual, on the applied SET
+# `CanonBirthBridge`: the last merge-side residual, on the applied SET
 
 `RGA_MergeFoldChain` reduced the two-sided merge bridge to the pure event-set /
 LCA-forest predicate `CanonBirthBridge l F bw rc` (no fold state):
@@ -10,7 +10,7 @@ LCA-forest predicate `CanonBirthBridge l F bw rc` (no fold state):
   ∧ (contains l bw = false → canonAnc F rc = bw)
 
 with `bw = birthAnc l a b k` (`k`'s branch-final anchor) and `rc = a_k :: p_k`
-(`k`'s recorded ancestor chain).  Both sides are `canonAnc F` — the nearest
+(`k`'s recorded ancestor chain).  Both sides are `canonAnc F`, the nearest
 `F`-survivor up a recorded/forest chain.
 
 This file supplies the clean `canonAnc` climb algebra (§1) and closes
@@ -34,8 +34,8 @@ open RGAMergeFoldChain (CanonBirthBridge)
 /-! ## §1  The `canonAnc` climb algebra (pure, clean)
 
 `canonAnc F L` is the first entry of `L` that survives `F` (else `0`).  These
-three facts — skip a non-survivor head, stop at a survivor head, and skip a
-whole non-surviving prefix — are the algebra the reconciliation runs on. -/
+three facts, skip a non-survivor head, stop at a survivor head, and skip a
+whole non-surviving prefix, are the algebra the reconciliation runs on. -/
 
 /-- A surviving head is the canonical anchor. -/
 theorem canonAnc_pos (F : List (op_t α)) (c : ℕ) (cs : List ℕ) (h : survP F c) :
@@ -75,14 +75,14 @@ The bridge closes from three reconciliation facts about how `k`'s recorded chain
 `rc` relates to its branch-final anchor `bw`, each a pure `survP F` / `IsAncPath l`
 statement (NO fold state):
 
-* `hsplit`+`hpreDead` — `bw` sits on `rc` (`rc = rcPre ++ bw :: rcSuf`) with every
+* `hsplit`+`hpreDead`, `bw` sits on `rc` (`rc = rcPre ++ bw :: rcSuf`) with every
   recorded entry *nearer* than `bw` a non-`F`-survivor.  This is the branch
   resolution (`bw = anc (owning branch) k = resolve · rc`) composed with the
   OR-set survivor reconciliation (a branch-dead recorded ancestor cannot survive
   the merge).  It says the `F`-climb of `rc` reaches `bw`'s recorded position.
-* `hout` — an off-forest `bw` (branch-new anchor) survives `F` (it lies in a
+* `hout`, an off-forest `bw` (branch-new anchor) survives `F` (it lies in a
   branch's `difference` set, hence in `survivors l a b`).
-* `hin` — for an in-forest `bw` (an original `l`-node), `bw`'s `l`-ancestor chain
+* `hin`, for an in-forest `bw` (an original `l`-node), `bw`'s `l`-ancestor chain
   and its recorded rootward tail `rcSuf` reach the *same* nearest `F`-survivor.
 
 Given these, the two `canonAnc` obligations are pure climb algebra (§1): strip the
@@ -118,8 +118,8 @@ theorem canonBirthBridge_holds
 **Both cases close, sorry-free, kernel-clean** (`canonBirthBridge_holds`:
 `[propext, Classical.choice, Quot.sound]` only).  What each half needed:
 
-* The `canonAnc` **climb algebra** (§1) — skip a non-survivor, stop at a
-  survivor, drop a dead prefix, push a shared head — is genuinely clean pure
+* The `canonAnc` **climb algebra** (§1), skip a non-survivor, stop at a
+  survivor, drop a dead prefix, push a shared head, is genuinely clean pure
   set bookkeeping, and does all the assembly.
 * The **off-forest** case reduces to `survP F bw` (`hout`) after the dead-prefix
   strip: clean.
@@ -140,7 +140,7 @@ event-list facts flagged in `RGA_MergeBranchNew`'s OBSTRUCTION block
 (`foldChain_of_goodFold`).  The `RGA_MergeFoldChain` reduction **relocated** the
 crux from the fold state to `F`'s survivor set; it did not dissolve it into clean
 bookkeeping.  The remaining supply obligation is the branch-canonical
-characterization of `rc` relative to `birthAnc` — an induction over `Ea ++ Eb`,
+characterization of `rc` relative to `birthAnc`, an induction over `Ea ++ Eb`,
 strictly below `FoldBirthChain`, and the sole input `canonBirthBridge_holds`
 still consumes. -/
 

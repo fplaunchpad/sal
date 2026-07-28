@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RA_Lin
 
 /-!
-# Peritext (FUSED, tombstone-free) — the instance
+# Peritext (FUSED, tombstone-free): the instance
 
 Rich text as **one** tombstone-free RGA over a payload that carries both characters
 and formatting boundaries, instead of a *product* of an RGA (characters) and a
@@ -14,8 +14,8 @@ current document position rather than a frozen snapshot of tree-ancestry.
 
 `PeritextElt` is opaque to the RGA (which only needs `DecidableEq` + `Inhabited`):
 
-* `char c`   — a character, codepoint `c`;
-* `bound markId mark isStart` — a formatting boundary.  A mark instance is a
+* `char c`, a character, codepoint `c`;
+* `bound markId mark isStart`, a formatting boundary.  A mark instance is a
   *pair* of boundary nodes sharing a fresh `markId`: `isStart := true` opens the
   span, `isStart := false` closes it.
 
@@ -23,7 +23,7 @@ The MRDT operations are **exactly** RGACore's `Ins`/`Del` at `α := PeritextElt`
 
 * typing a character `c` after anchor `a` is `Ins (char c) pre a`;
 * "bold this range" is two `Ins` of `bound markId .bold true/false` with a fresh
-  `markId` — the start anchored where the span begins, the end where it ends;
+  `markId`, the start anchored where the span begins, the end where it ends;
 * removing a mark is `Del` of its two boundary nodes.
 
 Add-wins for marks is *inherited*: it is the RGA's OR-set node survival, not a
@@ -40,12 +40,12 @@ transport verbatim.
 
 ## The ONE honesty contract (the trilemma payoff)
 
-The whole datatype — characters *and* mark boundaries — runs under the SINGLE RGA
+The whole datatype, characters *and* mark boundaries, runs under the SINGLE RGA
 contract `HonestDelivery (α := PeritextElt)` (born accuracy + born-applicable
 delivery).  The product design `Peritext_Composed/` needed **two** contracts: the RGA's
 honest delivery for characters *and* a separate `MarkAccurate` discipline for the
 mark store's frozen recorded paths.  Here a boundary insert is just an RGA `Ins`, so
-it is covered by the same clause as a character insert — one contract, uniformly.
+it is covered by the same clause as a character insert, one contract, uniformly.
 -/
 
 namespace Sal.ConditionedMRDTs.Peritext
@@ -96,14 +96,14 @@ noncomputable abbrev PFSig :=
   QSig (rgaEqEquiv' PeritextElt) (WfOpA (α := PeritextElt)) (rgaInvPresA (α := PeritextElt))
     (rgaCongVC' PeritextElt) (rgaInvInvVCA (α := PeritextElt))
 
-/-! ## §3  The capstone — pure instantiation, nothing re-proved -/
+/-! ## §3  The capstone: pure instantiation, nothing re-proved -/
 
 /-- **The fused tombstone-free Peritext is RA-linearizable up to `≈`** at every
 reachable configuration of the ternary execution model, under the single honest
 delivery contract `HonestDelivery (α := PeritextElt)`.
 
 This is `rga_ra_linearizable3_eq` at `α := PeritextElt`, verbatim.
-Convergence and per-version RA-linearizability-up-to-`≈` are therefore *inherited* —
+Convergence and per-version RA-linearizability-up-to-`≈` are therefore *inherited*,
 the payload is opaque to the RGA, so specialising the element type from `ℕ`
 (characters only) to `char ⊕ boundary` (characters + marks) costs no new
 convergence proof.  The observable reading guarantee is the separate read layer

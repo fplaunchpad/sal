@@ -25,7 +25,7 @@ set_option autoImplicit false
 
 
 /-!
-# Grow-Only Map — state-based MRDT
+# Grow-Only Map: state-based MRDT
 
 A map from keys to grow-only sets of values. `Put(k, v)` inserts `v`
 into `state[k]`. Merge unions each key's set from all three sides.
@@ -35,7 +35,7 @@ valued map entry" pattern that typically makes `grind` struggle (the
 inner `set` is `ℕ → Bool`, so map-level equality needs `funext` on
 values). Sal's `Map_Extended` interface handles this via a custom
 `eq` that compares per-key with `mysel` (zero-default lookup) rather
-than requiring exact pointwise function equality — that's what keeps
+than requiring exact pointwise function equality, that's what keeps
 the 24 VCs tractable. For future ports of nested-set data types,
 consider flattening to `set (key × value)` (as Peritext
 demonstrates).

@@ -7,18 +7,18 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # RGA (MRDT) — SPOTs
+/-! # RGA (MRDT): SPOTs
 
 Small Proof-Oriented Tests for the canonical RGA semantic claims.
-The state is `set (ts × (afterId × elem)) × set ts` — insert records
-and tombstones — with sentinel root id `0`.
+The state is `set (ts × (afterId × elem)) × set ts`, insert records
+and tombstones, with sentinel root id `0`.
 
 Each SPOT is named after the headline read-side claim it exercises.
 Reference: Sal/MRDTs/.../Replicated_Growable_Array_ReadSide.lean. -/
 
 namespace RGA_MRDT_SPOT
 
-/-- **SPOT 1 — Insert makes id visible.**
+/-- **SPOT 1: Insert makes id visible.**
 
 Inserting `'A'` (codepoint 65) after the sentinel root (id = 0)
 produces an insert record `(1, 0, 65)` and no tombstone, so `id = 1`
@@ -28,7 +28,7 @@ example :
     visible σ 1 := by
   refine ⟨⟨0, 65, ?_⟩, ?_⟩ <;> decide
 
-/-- **SPOT 2 — causal order across an Insert chain.**
+/-- **SPOT 2: causal order across an Insert chain.**
 
 `σ₀` = Insert 'A' after root; `σ` = `σ₀` then Insert 'B' after 'A'.
 The `afters_reach σ 2 0` chain (B→A→root) yields `visible_lt σ 0 2`
@@ -45,7 +45,7 @@ example :
     afters_reach.step h_ba (afters_reach.step h_a0 (afters_reach.refl _))
   exact causal_order_visible_lt σ 2 0 h_reach (by decide)
 
-/-- **SPOT 3 — Remove tombstones its target.**
+/-- **SPOT 3: Remove tombstones its target.**
 
 After Inserting 'A' at id = 1 and then Removing id = 1, id = 1 is
 no longer visible. Direct application of `remove_tombstones_target`. -/
@@ -56,11 +56,11 @@ example :
     ¬ visible σ 1 :=
   remove_tombstones_target _ 2 0 1
 
-/-- **SPOT 4 — concurrent Inserts at same anchor get deterministic order.**
+/-- **SPOT 4: concurrent Inserts at same anchor get deterministic order.**
 
 Two replicas concurrently insert 'A' (ts = 1, rid = 0) and 'B'
 (ts = 2, rid = 1) after the sentinel. After merging both insert
-records, `visible_lt σ 2 1` holds — the higher ts comes first by
+records, `visible_lt σ 2 1` holds, the higher ts comes first by
 the sibling rule. -/
 example :
     let σ_a : concrete_st := do_ init_st (1, 0, app_op_t.Add_after 0 65)

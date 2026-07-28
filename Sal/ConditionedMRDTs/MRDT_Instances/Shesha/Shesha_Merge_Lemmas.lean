@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha
 
-/-! # Shesha — merge lemmas: M0, M1, M2
+/-! # Shesha, merge lemmas: M0, M1, M2
 
 Pen-and-paper source: `whiteboard/sibling-linked-proof.md` §4 (Lemmas M0, M1,
 M2); model hypotheses from `whiteboard/sibling-linked-rga-notes.md` §3 (the
@@ -9,26 +9,26 @@ out of scope for this file.
 
 Contents:
 
-- **§0 Bridges** — `contains` ↔ `∈ read` (the Bool/Prop seam).
-- **§1 Model** — `WF` (distinct, nonzero ids) and `ModelOK` (WF × 3 +
+- **§0 Bridges**, `contains` ↔ `∈ read` (the Bool/Prop seam).
+- **§1 Model**, `WF` (distinct, nonzero ids) and `ModelOK` (WF × 3 +
   pattern-8 exclusion `ids A ∩ ids B ⊆ ids L`).
-- **§2 Row machinery** — count-based: a row never exceeds the read
+- **§2 Row machinery**, count-based: a row never exceeds the read
   (`row_count_le`), two distinct rows never overlap (`row_count₂`), hence on
   WF states rows are `Nodup`, mutually disjoint, and contained in the read.
   This substrate serves M0, M1 and M2 alike.
-- **§3 Run machinery** — every run placed by `branchCmds` is a maximal non-L
+- **§3 Run machinery**, every run placed by `branchCmds` is a maximal non-L
   segment of one row of its branch (`IsRunOf`, via `runsGo_shape`); on a WF
   branch a run is determined by its head id (`IsRunOf.head_det`).
-- **§4 Lemma M1** (`merge_comm`) — state equality, kernel-clean. The only
+- **§4 Lemma M1** (`merge_comm`), state equality, kernel-clean. The only
   branch-asymmetric step of the construction is the newest-head-first
   same-slot sort; run heads are pairwise distinct (within a branch by WF,
   across branches by pattern-8), so the sort output is order-independent.
-- **§5 Lemma M0** — the content bound (`merge_reads_bound`) and the nonzero
+- **§5 Lemma M0**, the content bound (`merge_reads_bound`) and the nonzero
   half of `merge_WF` proved here; the `Nodup` half (`merge_read_nodup`,
   `merge_WF`) and the survivor-set identity (`merge_ids`) are discharged in
   `Shesha_M0.lean` on top of the parent-chain layer (`Shesha_Forest.lean`)
   and the skeleton characterization (`Shesha_Skel.lean`).
-- **§6 Lemma M2** (`merge_extends_L`) — the proved plumbing
+- **§6 Lemma M2** (`merge_extends_L`), the proved plumbing
   (`precedes_filter_iff`, `rowAssemble_filter_L`) lives here; the core
   identity `merge_L_filter` (skeleton DFS order = L document order) and
   `merge_extends_L` itself are discharged in `Shesha_M2.lean`.
@@ -75,7 +75,7 @@ theorem contains_eq_false {s : St} {u : Nat} :
 abbrev ids : St → List Nat := read
 
 /-- Well-formedness of the rose forest: every id occurs at most once (each
-node has one parent and one row slot), and no node uses `0` — the code
+node has one parent and one row slot), and no node uses `0`, the code
 reserves `0` for the implicit root `⌂` (`insert`'s front case, `parOf`'s root
 answer, `wparGo`'s stop, the skeleton's root row). In the rose-forest
 encoding the remaining design invariants (par is a forest, rows are chains)
@@ -83,7 +83,7 @@ hold by construction. -/
 def WF (s : St) : Prop := (read s).Nodup ∧ 0 ∉ read s
 
 /-- The merge-model hypotheses (design record §3, membership table): the
-three inputs are well-formed, and — pattern-8 exclusion — an id live in both
+three inputs are well-formed, and (pattern-8 exclusion) an id live in both
 branches is common past, i.e. in the LCA (`ids A ∩ ids B ⊆ ids L`; supplied
 by the framework's LCA discipline plus global id uniqueness). -/
 structure ModelOK (L A B : St) : Prop where
@@ -223,7 +223,7 @@ theorem row_disjoint {s : St} (hwf : WF s) {p q c : Nat} (hpq : p ≠ q)
 computed by `runsGo`. The lemmas here recover, from a run's mere membership
 in a placement command, its provenance as a *nonempty maximal non-L segment
 of one branch row* (`IsRunOf`), and derive that on a WF branch **a run is
-determined by its head id** (`IsRunOf.head_det`) — the fact that makes the
+determined by its head id** (`IsRunOf.head_det`), the fact that makes the
 newest-head-first same-slot sort order-independent (M1), and that run
 contents are branch ids outside L (M0/M2). -/
 
@@ -406,7 +406,7 @@ theorem endRuns_run {L X : St} {sk : Skel} {mk : Nat → Bool} {p : Nat}
 /-- **Cross-branch head injectivity.** Two same-slot runs (from either
 branch) with the same head are equal: within a branch by `head_det` (WF),
 across branches because the head would be live in both branches yet outside
-L — barred by the pattern-8 exclusion. -/
+L, barred by the pattern-8 exclusion. -/
 theorem runs_head_inj {L A B : St} (mok : ModelOK L A B) {r s : List Nat}
     (hr : IsRunOf L A r ∨ IsRunOf L B r)
     (hs : IsRunOf L A s ∨ IsRunOf L B s)
@@ -421,7 +421,7 @@ theorem runs_head_inj {L A B : St} (mok : ModelOK L A B) {r s : List Nat}
       (contains_eq_false.mp hs.head_notL)
   · exact hr.head_det mok.wfB hs hh
 
-/-! ## §4 Lemma M1 — merge symmetry (`merge_comm`), state equality
+/-! ## §4 Lemma M1: merge symmetry (`merge_comm`), state equality
 
 `sibling-linked-proof.md` §4, Lemma M1: "the construction is symmetric in
 A, B: every rule is branch-agnostic except the newest-first tiebreak, which
@@ -698,24 +698,24 @@ theorem merge_comm {L A B : St} (mok : ModelOK L A B) :
         (read L).length + (read A).length + (read B).length + 1 by omega]
   exact buildF_congr (outRows_alGet_comm mok) _ _ 0
 
-/-! ## §5 Lemma M0 — well-formedness and the survivor set
+/-! ## §5 Lemma M0: well-formedness and the survivor set
 
-Proved here: the *content* analysis — everything any merged row (and hence
+Proved here: the *content* analysis, everything any merged row (and hence
 the output read) contains is (i) a skeleton entry (an L-id in the working
 set `W`), (ii) a run element (a branch id outside L), or (iii) a wholesale
 `bbrows` element (an id in some born node's branch row); consequently the
 output mints no ids (`merge_reads_bound`), uses `0` for no node
-(`zero_not_mem_merge`), and — under the branch-structure hypothesis
-`LRowsOK` — stays inside `W` (`merge_mem_wp`). Owed (documented `sorry`s):
-the placed-exactly-once/reachability halves — output `Nodup`
+(`zero_not_mem_merge`), and, under the branch-structure hypothesis
+`LRowsOK`, stays inside `W` (`merge_mem_wp`). Owed (documented `sorry`s):
+the placed-exactly-once/reachability halves, output `Nodup`
 (`merge_read_nodup`) and the exact survivor-set identity (`merge_ids`). -/
 
 /-- Branch-structure hypothesis: in branch `X`, an L-node only ever sits in
-the root row or in an L-node's row — never under a branch-born parent. This
+the root row or in an L-node's row, never under a branch-born parent. This
 holds on genuine branches evolved from `L` (inserts never reparent an
 existing node; `delete d` reparents `d`'s children onto `d`'s *own* parent,
 so an L-node's parent chain stays inside L ∪ {⌂}), but it is **not** a
-consequence of `ModelOK`'s membership constraints alone — an adversarial
+consequence of `ModelOK`'s membership constraints alone, an adversarial
 `A` with an L-node filed under a born node breaks both the survivor-set
 identity and output Nodup (the node would be placed by the skeleton *and*
 travel wholesale with the born row). Phase 2b should discharge it from
@@ -981,19 +981,19 @@ theorem merge_mem_wp {L A B : St} (mok : ModelOK L A B)
 parent-chain layer (`Shesha_Forest.lean`) and the skeleton
 characterization (`Shesha_Skel.lean`). -/
 
-/-! ## §6 Lemma M2 — L-extension (`merge_extends_L`)
+/-! ## §6 Lemma M2: L-extension (`merge_extends_L`)
 
 Proved here, kernel-clean: the *filter transport* (`precedes` is preserved
 by filtering, both ways) and the *run transparency* half of M2
 (`rowAssemble_filter_L`: runs insert only non-L ids between skeleton
 entries, so filtering an assembled row to L-ids returns exactly its skeleton
-row — the marker splice at assembly IS the delete splice, cf.
+row, the marker splice at assembly IS the delete splice, cf.
 `delete_preserves_survivor_order`). Owed (documented `sorry`):
 `merge_L_filter`, the skeleton/DFS order identity. `merge_extends_L` is
 derived from it by the proved transport. -/
 
 /-- `u` appears strictly before `v` in `l` (as the two-element sublist
-`[u, v] <+ l`). On duplicate-free lists — all WF reads — this is exactly
+`[u, v] <+ l`). On duplicate-free lists, all WF reads, this is exactly
 the display order of the pair. -/
 def precedes (l : List Nat) (u v : Nat) : Prop := [u, v] <+ l
 

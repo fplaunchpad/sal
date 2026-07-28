@@ -1,11 +1,11 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Presplice
 
-/-! # Shesha — the row-store residue `shesha_rows_residue` is FALSE
+/-! # Shesha: the row-store residue `shesha_rows_residue` is FALSE
 
 `shesha_rows_residue` (`Shesha_Presplice.lean`, the single owed `sorry` on the
 `shesha_ra_linearizable3` capstone path) is **refuted** here by an explicit
 honest configuration whose three canonical, `SCoh`-aligned slot witnesses make
-the ternary merge display a state that **no pre-splice forest collapses to** —
+the ternary merge display a state that **no pre-splice forest collapses to**,
 and, worse, that is **not the fold of any `loOn`-respecting linearization** of
 the union at all.
 
@@ -19,7 +19,7 @@ the union at all.
 
 `ev₁ = {e1,e2,e4,e5}` (branch A), `ev₂ = {e1,e3}` (branch B),
 `ev₁ ∩ ev₂ = {e1}`. Because the only common insert is `e1`, `SCoh` is
-**vacuous** — the coherence layer that addresses the `W`-join refutations
+**vacuous**, the coherence layer that addresses the `W`-join refutations
 (`Shesha_Join_Refuted.lean`, `Shesha_Presplice_Refuted.lean`) does not
 exclude this instance. The three canonical folds are forced:
 
@@ -33,16 +33,16 @@ and the merge (machine-checked below) is `merge s₀ s₁ s₂ = [3, 4, 2]`.
 
 Node `1` is a **marker** (dead in A, live in B). Its live children are `3`
 (from B, spliced at `1`'s skeleton slot) and `2` (from A, where `1` was
-deleted so `2` rode A's re-homed root run — *after* the concurrent sibling
+deleted so `2` rode A's re-homed root run, *after* the concurrent sibling
 `4`). The merge therefore **splits** `1`'s children around `4`: `[3, 4, 2]`.
 
 A pre-splice store `preRows` must, by `hK1`, put **both** union inserts
-anchored at `1` — namely `{2,3}` — in `alGet preRows 1`, and both union
-inserts anchored at `0` — namely `{1,4}` — in `alGet preRows 0`. Since `1` is
+anchored at `1`, namely `{2,3}`, in `alGet preRows 1`, and both union
+inserts anchored at `0`, namely `{1,4}`, in `alGet preRows 0`. Since `1` is
 a union-delete target (`DelIn (ev₁∪ev₂) 1`), `hK6` at the root splices `1`'s
 whole (contiguous) expansion into `alGet preRows 0`. With `alGet preRows 0` a
 permutation of `[1,4]`, that expansion is either `⟨1's block⟩ ++ [4]` (ends in
-`4`) or `[4] ++ ⟨1's block⟩` (starts with `4`) — never `[3,4,2]` (which starts
+`4`) or `[4] ++ ⟨1's block⟩` (starts with `4`), never `[3,4,2]` (which starts
 `3`, ends `2`, with `4` *between* `1`'s two children). So `hK6` at the root is
 unsatisfiable: **no `preRows` exists.**
 
@@ -55,13 +55,13 @@ different slot than the marker's live-branch child (`3`). The output `[3,4,2]`
 is not the fold of any causal linearization of `{ins1,ins2,ins3,ins4,del1}`
 (deleting `1` splices its children contiguously; no root sibling can land
 between them), so the anomaly also refutes `IsRALinearizable3` for this merge
-version — exactly the RGA criss-cross situation (`AgentNotes.md`, "K2 REFUTED").
+version, exactly the RGA criss-cross situation (`AgentNotes.md`, "K2 REFUTED").
 `SCoh` does not help: it aligns concurrent *same-anchor* inserts, but here the
 split is between a node's own children across the two branches.
 
 Axiom note: the merge and the folds run through `List.mergeSort`, so the
 computational leaves use `native_decide` (axiom `Lean.ofReduceBool`); this
-file is **off** the capstone path — `shesha_ra_linearizable3` still carries
+file is **off** the capstone path, `shesha_ra_linearizable3` still carries
 only its `sorryAx`. -/
 
 namespace Sal.ConditionedMRDTs

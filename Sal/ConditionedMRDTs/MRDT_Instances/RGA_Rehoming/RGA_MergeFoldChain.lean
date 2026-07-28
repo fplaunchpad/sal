@@ -11,17 +11,17 @@ event-list induction over the branch fold.
 
 `RGA_CanonConvergence.canon_fold` supplies exactly the per-id anchor
 characterization that induction was after: a disciplined fold of an applied
-event set `F` is observationally the *canonical state* of `F` — its domain is
+event set `F` is observationally the *canonical state* of `F`, its domain is
 the survivor set, and every survivor's stored anchor is `canonAnc F` of its
 **recorded** ancestor chain (`resolve` of that chain against the survivor set).
 
 This file discharges `FoldBirthChain` from `CanonMatch` (the projection of
 `canon_fold`).  The fold half is immediate: `anc p k = canonAnc F rc`
 (recorded chain `rc`), and on the survivor domain `resolve p = canonAnc F`.
-The genuinely two-sided content — that `k`'s *branch-final* birth-anchor
+The genuinely two-sided content, that `k`'s *branch-final* birth-anchor
 `birthAnc l a b k` (which is `anc a k` / `anc b k`, NOT the recorded head)
 together with its LCA chain resolves to the same survivor as the recorded
-chain — is isolated as the pure event-set/LCA-forest predicate
+chain, is isolated as the pure event-set/LCA-forest predicate
 `CanonBirthBridge`.  That predicate mentions no fold state at all; it is the
 cross-branch identity discharged by the branch canonical characterizations,
 strictly below `FoldBirthChain`.
@@ -43,7 +43,7 @@ open RGAMergeLinearization (applySeqR)
 /-! ## §1  The reduced residual: a pure event-set / LCA-forest bridge
 
 `CanonBirthBridge l F bw rc` says the merge's birth-anchor `bw` and its LCA
-ancestor chain resolve — *against the applied set `F`* — to the same survivor as
+ancestor chain resolve, *against the applied set `F`*, to the same survivor as
 the recorded chain `rc`.  It is stated entirely with `canonAnc` (a pure function
 of the event set `F`) and `IsAncPath l` (the LCA forest); NO fold state occurs.
 This is the honest cross-forest content: `bw = birthAnc l a b k = anc a k` is
@@ -84,10 +84,10 @@ theorem foldChain_of_canon (l a b p : concrete_st α) (F : List (op_t α))
 
 `eq_merge_two_sided_of_foldChain` carried a free `hFC : FoldBirthChain …`.
 Here `hFC` is built for every branch-new survivor from the canonical state of
-the branch fold (`hcm : CanonMatch F (applySeqR l π₀)` — `canon_fold` applied to
+the branch fold (`hcm : CanonMatch F (applySeqR l π₀)`, `canon_fold` applied to
 the branch fold) plus the reduced bridge `hbridge` (`CanonBirthBridge`, the pure
 event-set/LCA identity).  The recorded insert event and `survP F k` are read off
-`CanonMatch`'s domain clause, so the residual is exactly the cross-branch bridge
-— NO free `FoldBirthChain`, NO `hBN`. -/
+`CanonMatch`'s domain clause, so the residual is exactly the cross-branch bridge:
+NO free `FoldBirthChain`, NO `hBN`. -/
 
 end RGAMergeFoldChain

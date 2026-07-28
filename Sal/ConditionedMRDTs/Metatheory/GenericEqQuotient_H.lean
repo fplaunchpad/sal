@@ -11,10 +11,10 @@ datatype-side witness by an abstract per-datatype **delivery discipline**
 `H : List (Op D.AppOp) → Prop` (for the RGA: `CanonFoldOK [] init_st`, the
 rehome-tolerant discipline, which merge unions satisfy via `canonFoldOK_concat`):
 
-* `IsCanonicalStateEqH` — `IsCanonicalStateEq` + the `H` clause (mirror of `IsCanonicalStateEqNF`
+* `IsCanonicalStateEqH`: `IsCanonicalStateEq` + the `H` clause (mirror of `IsCanonicalStateEqNF`
   with `noopFeasible D · D.init ↦ H ·`).
-* `EqJoinLemma3C_H` — the datatype's `≈`-Join Lemma over `H`-disciplined witnesses.
-* `isCanonicalStateEqH_congr` / `isCanonicalStateEqH_extend` — the two transport lemmas the
+* `EqJoinLemma3C_H`: the datatype's `≈`-Join Lemma over `H`-disciplined witnesses.
+* `isCanonicalStateEqH_congr` / `isCanonicalStateEqH_extend`: the two transport lemmas the
   reachability induction needs; the extension takes the `H`-extension fact as an explicit
   hypothesis (`hHext`, for the RGA: `canonFoldOK_append` from born accuracy).
 -/
@@ -49,8 +49,8 @@ theorem isCanonicalStateEq_of_H (H : List (Op D.AppOp) → Prop)
 
 /-- **The datatype's `≈`-Join Lemma over `H`-disciplined delivery.**  `EqJoinLemma3C_NF` with
 `IsCanonicalStateEqNF` replaced by `IsCanonicalStateEqH`, and an abstract JOIN CONTEXT `HonJ`
-(honest facts about the ambient visibility/event universe — e.g. same-replica `vis`-totality,
-nonzero ids, the generation discipline — that a reachable configuration supplies and the RDT's
+(honest facts about the ambient visibility/event universe, e.g. same-replica `vis`-totality,
+nonzero ids, the generation discipline, that a reachable configuration supplies and the RDT's
 join discharge may consume). -/
 def EqJoinLemma3C_H (D : ConditionedMRDTSig) (E : EqEquiv D)
     (W : Op D.AppOp → D.State → Prop) (H : List (Op D.AppOp) → Prop)
@@ -91,7 +91,7 @@ theorem isCanonicalStateEqH_congr (H : List (Op D.AppOp) → Prop)
     exact h4 ⟨e₃, he₃, (h_vis a ha_E e₃ he₃).mpr hv, hnc⟩
 
 /-- **The `H`-disciplined apply extension.**  As `isCanonicalStateEqNF_extend`, with the
-discipline extension supplied by `hHext` (for the RGA: `canonFoldOK_append` — the appended op is
+discipline extension supplied by `hHext` (for the RGA: `canonFoldOK_append`, the appended op is
 `applicable` at the witness fold, hence `accurate` there, hence `CanonStepOK`). -/
 theorem isCanonicalStateEqH_extend (H : List (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)

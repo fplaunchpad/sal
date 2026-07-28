@@ -2,16 +2,16 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.SeqSpec_Flat
 
 /-!
-# Sequential-spec soundness — tier 3: the embedded-chain RGA
+# Sequential-spec soundness, tier 3: the embedded-chain RGA
 
 The embed RGA, single-replica, against the naive sequential text buffer:
 insert splices immediately after its anchor, delete removes. The theorem
-is the strongest form the campaign admits — the canonical sorted state
-*is* the spec buffer, record for record — and its heart is the
+is the strongest form the campaign admits, the canonical sorted state
+*is* the spec buffer, record for record, and its heart is the
 **adjacency lemma** (`chainBefore_snoc_iff`): a fresh insert's chain
 `ca ++ [δ]` sits directly after its anchor's chain `ca` in the display
 order, because δ (the fresh timestamp gap) exceeds every delta any
-existing chain hangs off `ca` — a fact that costs nothing beyond
+existing chain hangs off `ca`, a fact that costs nothing beyond
 sum-telescoping: an extension's first delta is bounded by its own id
 minus the anchor's, and every existing id is below the fresh stamp.
 -/
@@ -33,7 +33,7 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 def eProj (r : ERec α) : ℕ × α := (r.1, r.2.1)
 
 /-- Splice `p` immediately after the entry with id `a`. (No-op when `a`
-is absent — unreachable under `eSeqOK`, where anchors are live.) -/
+is absent, unreachable under `eSeqOK`, where anchors are live.) -/
 def eInsAfter (a : ℕ) (p : ℕ × α) : List (ℕ × α) → List (ℕ × α)
   | [] => []
   | q :: qs => if q.1 = a then q :: p :: qs else q :: eInsAfter a p qs
@@ -223,7 +223,7 @@ theorem e_fold_fst_inj {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
 
 /-! ## §E  The adjacency core -/
 
-/-- Inversion of `chainBefore` (local copy — the canonical one lives in
+/-- Inversion of `chainBefore` (local copy, the canonical one lives in
 the read-equivalence file, which this file cannot import without pulling
 in the tombstoned RGA model). -/
 theorem chainBefore_inv' {u v : List ℕ} (h : chainBefore u v) :
@@ -256,7 +256,7 @@ theorem chainBefore_snoc_iff {ca cr : List ℕ} {δ : ℕ}
           exact chainBefore.ancestor _ _ (by simp)
     · -- first difference: inside ca, or exactly at the snoc
       rcases List.eq_nil_or_concat c2 with rfl | ⟨c2', lst, rfl⟩
-      · -- diff at the snoc position: q = ca, e = δ — refuted by hmax
+      · -- diff at the snoc position: q = ca, e = δ, refuted by hmax
         have h2 : q ++ [e] = ca ++ [δ] := by simpa using hv.symm
         obtain ⟨rfl, he⟩ := List.append_inj' h2 rfl
         simp at he
@@ -291,7 +291,7 @@ theorem eInsert_all_lt {nr : ERec α} : ∀ {s : EState α},
 
 /-- **Placement.** On a sorted state containing the anchor, if the
 newcomer's key sits exactly between the anchor's and everything after it
-(the `hiff` hypothesis — discharged by the adjacency lemma), then the
+(the `hiff` hypothesis, discharged by the adjacency lemma), then the
 sorted insert IS the splice-after-anchor, under projection. -/
 theorem eInsert_map_insAfter {a : ℕ} {nr : ERec α} :
     ∀ {s : EState α} {ar : ERec α}, ESorted s → ar ∈ s → ar.1 = a →
@@ -308,7 +308,7 @@ theorem eInsert_map_insAfter {a : ℕ} {nr : ERec α} :
   | cons x xs ih =>
       intro ar hsort har hara hinj hkeyne hiff
       by_cases hx : keyLt (key x.2.2) (key nr.2.2) = true
-      · -- the newcomer would beat the head — impossible with the anchor
+      · -- the newcomer would beat the head, impossible with the anchor
         -- present: the head dominates the anchor, hence the newcomer
         exfalso
         have hnx : ¬ (keyLt (key nr.2.2) (key x.2.2) = true) := by

@@ -22,7 +22,7 @@ Fst`). The extra component is a Boolean **flag written by every
 update**: `add` sets it `true`, `rem` sets it `false`; merge is `∨`;
 `init` is `false`. `(Bool, ∨, false)` is a semilattice with unit, so
 the full merge is ACI-1. Crucially the flag after any nonempty
-history is just *the kind of the last op* — it has no memory.
+history is just *the kind of the last op*. It has no memory.
 
 ## Why every `CoreVCs` field survives
 
@@ -49,7 +49,7 @@ situations, where the flag is again invisible:
 
 `peel_local`'s two sides end **differently**: the left is a *merge*
 (flag = join of flags), the right ends in `update e`. Take the
-canonical two-replica scenario — replica 0 does `a = add` then
+canonical two-replica scenario, replica 0 does `a = add` then
 `e = rem` (`vis a e`); replica 1 merged replica 0's state in between,
 so its set is `{a}`. With `ev₁ = {a, e}`, `ev₂ = {a}`, `e` is
 `loOn(∪)`-maximal (its only potential rc-edge target `a` is
@@ -59,7 +59,7 @@ so its set is `{a}`. With `ev₁ = {a, e}`, `ev₂ = {a}`, `e` is
     update (merge σ(ev₁∖e) σ(ev₂)) e has flag  awFlag rem   = false.
 
 `peel_local` fails; so does the Join Lemma (`merge σ(ev₁) σ(ev₂)` is
-not the canonical state of the union — the only `loOn`-respecting
+not the canonical state of the union, the only `loOn`-respecting
 enumeration `[a, e]` folds to flag `false`).
 
 ## The boundary, relocated
@@ -119,7 +119,7 @@ this (the most recent) op. -/
 def awfUpdate (σ : AWFState) (e : Op AWOp) : AWFState :=
   (awUpdate σ.1 e, awFlag e)
 
-/-- Merge: base union-merge, `∨` on the flag — a bounded
+/-- Merge: base union-merge, `∨` on the flag, a bounded
 join-semilattice (ACI with unit `((∅,∅), false)`). -/
 def awfMerge (σ τ : AWFState) : AWFState :=
   (awMerge σ.1 τ.1, σ.2 || τ.2)
@@ -183,7 +183,7 @@ theorem AWSetF_comm_rem_rem {e₁ e₂ : Op AWSetF.AppOp}
   · show awFlag e₂ = awFlag e₁
     rw [awFlag_rem h₁, awFlag_rem h₂]
 
-/-- add/rem never commute — visible on the flag alone. -/
+/-- add/rem never commute, visible on the flag alone. -/
 theorem AWSetF_not_comm_add_rem {e₁ e₂ : Op AWSetF.AppOp}
     (h₁ : e₁.2.2 = AWOp.add) (h₂ : e₂.2.2 = AWOp.rem) :
     ¬ AWSetF.commutes e₁ e₂ := by
@@ -286,7 +286,7 @@ theorem AWSetF_lem_0op :
   · exact AWSet_lem_0op a.1 b.1 ol
   · exact Bool.or_self _
 
-/-- `merge_peel_comm`: an add commutes only with adds — its flag
+/-- `merge_peel_comm`: an add commutes only with adds, its flag
 absorbs the join; a rem commutes only with rems, whose fold from
 `init` has flag `false`. -/
 theorem AWSetF_merge_peel_comm :
@@ -558,7 +558,7 @@ private theorem hF_can_t₁ :
 
 /-! ### 7. The refutation -/
 
-/-- **`peel_local` fails for `AWSetF`** — hence `JoinPeelVCs` fails.
+/-- **`peel_local` fails for `AWSetF`**: hence `JoinPeelVCs` fails.
 The left side is a merge (flag `false ∨ true = true`); the right side
 ends in `update eF` (flag `false`). -/
 theorem AWSetF_not_joinPeelVCs : ¬ JoinPeelVCs AWSetF := by
@@ -572,7 +572,7 @@ theorem AWSetF_not_joinPeelVCs : ¬ JoinPeelVCs AWSetF := by
 
 /-- **The Join Lemma itself fails for `AWSetF`** on the same instance:
 `merge σ(ev₁) σ(ev₂)` (flag `true`) is not the canonical state of the
-union — the only `loOn`-respecting enumeration is `[aF, eF]`, whose
+union, the only `loOn`-respecting enumeration is `[aF, eF]`, whose
 fold has flag `false`. So the failure is not an artifact of the
 `JoinPeelVCs` packaging. -/
 theorem AWSetF_not_joinLemma : ¬ JoinLemma AWSetF := by

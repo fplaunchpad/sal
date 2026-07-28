@@ -85,7 +85,7 @@ theorem orCompactC_idem (hcut : CutSpec S K nt) (s : ORSet.State) :
     cases s y <;> cases s (nt y) <;> rfl
   · rw [orCompactC_off _ (bfalse hK), orCompactC_off _ (bfalse hK)]
 
-/-- **VC-S2, state-locally**: the callback preserves the read — a dropped tag
+/-- **VC-S2, state-locally**: the callback preserves the read: a dropped tag
 always has its live kept twin witnessing the element. -/
 theorem orRead_compactC (hcut : CutSpec S K nt) (s : ORSet.State) :
     orRead (orCompactC K nt s) = orRead s := by
@@ -130,7 +130,7 @@ section UpdateLemmas
 variable {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool} {nt : ℕ × ℕ → ℕ × ℕ}
 
 /-- **VC-S3, rem case**: removal (whole-element filter) commutes with the
-callback — twins die together under a filter. -/
+callback: twins die together under a filter. -/
 theorem orCompactC_rem (hcut : CutSpec S K nt) (s : ORSet.State)
     (t r e : ℕ) :
     ORSet.update (orCompactC K nt s) (t, r, ORSetOp.rem e)
@@ -259,7 +259,7 @@ theorem orLive_mono (hGood : GoodConfig3 C) {u w : Version}
 
 /-- **The settled discriminator** (the note §2 argument, localized): a
 same-element rem *outside* a settled event set that covers the newer twin
-covers the older one too — the discriminating remove cannot exist. -/
+covers the older one too: the discriminating remove cannot exist. -/
 theorem orSettled_cover {E S : Set (Op ORSetOp)}
     (hset : SettledAtOn C E S)
     {y n : ℕ × ℕ} {rdy rdn : ℕ}
@@ -328,7 +328,7 @@ theorem orAliveS (hGood : GoodConfig3 C) {v : Version} {s : ORSet.State}
 
 /-- **The discriminator chain** (note §2, mechanized): the kept twin `n` is
 live at a *settled* version `u` but dead at `w` (which knows `n`'s add). Its
-killer must have seen the older twin `y` as well — so `y` is dead at `w` too,
+killer must have seen the older twin `y` as well, so `y` is dead at `w` too,
 and `y`'s add is in `E(w)`. This is the single lemma behind every mixed-merge
 exclusion. -/
 theorem orDiscriminator (hGood : GoodConfig3 C)
@@ -360,7 +360,7 @@ theorem orDiscriminator (hGood : GoodConfig3 C)
     have := hvisn
     rw [helem] at this
     exact this
-  -- so the older twin's add — and its death — land in `E(w)`
+  -- so the older twin's add (and its death) land in `E(w)`
   have hyw : (y.1, rdy, ORSetOp.add y.2) ∈ Ew :=
     hGood.ver_causal w sw Ew hw _ _ hvisy (helem ▸ hrem)
   exact ⟨orCover_dead hGood hw hyw (helem ▸ hrem) hvisy, hyw⟩
@@ -693,7 +693,7 @@ theorem orMerge_compact_form2 (hGood : GoodConfig3 C) (hcut : CutSpec S K nt)
     (by rw [hET, Set.inter_comm]) hd₂ hsh₁ hshT hmono₁
 
 /-- **VC-S4 for the OR-set** (erratum §9.2 form): merge congruence under the
-per-version shape and flag-inheritance facts of the reachable pair — NOT a
+per-version shape and flag-inheritance facts of the reachable pair, NOT a
 free congruence. The disjunctive conclusion feeds the shape invariant at the
 merged version. -/
 theorem orMerge_compact (hGood : GoodConfig3 C) (hcut : CutSpec S K nt)
@@ -1249,7 +1249,7 @@ theorem orAux_apply {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool}
     exact allHeard_apply (aux.heard hflC) h_head h_ver h_vnew
       rel.heads_alloc hverC hheadC
 
-/-- Aux maintenance: Merge — the VC-S4 payload plus the frame transfers. -/
+/-- Aux maintenance: Merge, the VC-S4 payload plus the frame transfers. -/
 theorem orAux_merge {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool}
     {nt : ℕ × ℕ → ℕ × ℕ} (hcut : CutSpec S K nt)
     {C Ĉ C' Ĉ' : Configuration ORSet} {r₁ r₂ : Replica}
@@ -1663,7 +1663,7 @@ theorem ORSet_stability_reads {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool}
 
 /-- **The OR-set stability capstone, RA-linearizability inherited**: every
 version of the compacted run reads as the fold of a linearization of its own
-event set — from `ORSet_ra_linearizable3` on the (genuinely `Step3`-reachable)
+event set, from `ORSet_ra_linearizable3` on the (genuinely `Step3`-reachable)
 full projection. -/
 theorem ORSet_stability_ra {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool}
     {nt : ℕ × ℕ → ℕ × ℕ} (hcut : CutSpec S K nt)
@@ -1682,7 +1682,7 @@ theorem ORSet_stability_ra {S : Set (Op ORSetOp)} {K : ℕ × ℕ → Bool}
 #print axioms ORSet_stability_reads
 #print axioms ORSet_stability_ra
 
-/-! ## §3 SPOT — hand-derived, matching `whiteboard/litmus/stability_vc_check.py`
+/-! ## §3 SPOT, hand-derived, matching `whiteboard/litmus/stability_vc_check.py`
 
 Tags here are `(stamp, elem)` (the harness uses `(elem, stamp)`); elements
 `a, b, c ↦ 10, 11, 12`. Every block is PASS+FAIL shaped; expected values are
@@ -1765,7 +1765,7 @@ theorem countermodel_naive_dead :
     mNaive (1, 10) = false ∧ mNaive (2, 10) = false := by decide
 
 /-- **FAIL pin (the countermodel fires)**: reads DIVERGE under the naive
-gate — control reads `{a}`, the compacted run reads `∅` (harness verdict
+gate: control reads `{a}`, the compacted run reads `∅` (harness verdict
 `['a']` vs `[]`). -/
 theorem countermodel_diverges : orRead mControl 10 ∧ ¬ orRead mNaive 10 := by
   constructor
@@ -1830,7 +1830,7 @@ theorem static_drop_unsound :
 
 R0's compacted head (`A`-position) merges against the full stored LCA payload
 and the full sibling; hand-derived: control `{t1,t2,t3,t4}`, treatment
-`{t2,t3,t4}` — exactly the compacted control. -/
+`{t2,t3,t4}`, exactly the compacted control. -/
 
 def lS4 : ORSet.State := st [(1, 10), (2, 10)]
 def aS4full : ORSet.State := st [(1, 10), (2, 10), (3, 11)]
@@ -1856,7 +1856,7 @@ theorem s4_entry : aS4comp = orCompactC Kc ntc aS4full := by
         · exact h2 h)]
 
 /-- **PASS pin (VC-S4, mixed merge)**: the compacted-side merge IS the
-callback image of the control merge — pointwise at every tag. -/
+callback image of the control merge, pointwise at every tag. -/
 theorem s4_vc : mS4c = orCompactC Kc ntc mS4 := by
   funext y
   by_cases hy : y = (1, 10)

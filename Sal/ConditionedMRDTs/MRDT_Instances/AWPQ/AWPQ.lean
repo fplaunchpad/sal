@@ -949,7 +949,7 @@ theorem AWPQ_cdVC3 : CDVC3 AWPQ := by
 
 /-! ### §7. The feasible delta laws -/
 
-/-- The redistribution law is a Boolean tautology per component —
+/-- The redistribution law is a Boolean tautology per component,
 unconditional, all five states arbitrary. -/
 theorem awpqMergeL_redistribute (B t₀ t₁ t₂ u : AWPQ.State) :
     awpqMergeL (awpqMergeL B t₀ u) (awpqMergeL B t₁ u) (awpqMergeL B t₂ u)
@@ -1084,7 +1084,7 @@ theorem awpq_ra_linearizable3
     AWPQ_feasibleDeltaVCs3 AWPQ_cdVC3 C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

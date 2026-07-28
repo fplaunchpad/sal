@@ -12,8 +12,8 @@
 // Criss-cross: it genuinely arises under honest head-sync (two disjoint
 // replica pairs merge the same diverged heads x,y into rival merge
 // commits; any later sync across them has MCAs {x,y}). The runtime GATES
-// such merges (CrissCrossError, task #90), so the PBT skips them, like
-// pbt.py's "skipped illegal merges" -- but BOTH twins must return the same
+// such merges (CrissCrossError), so the PBT skips them, but BOTH twins must
+// return the same
 // verdict: the criss-cross decision is computed from the (possibly pruned)
 // DAG, so twin agreement on it is part of gc-safety and is asserted.
 // A consequence of the gate: full convergence is not always reachable, so

@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_Signature
 
 /-!
-# Forwarding stub — content moved
+# Forwarding stub: content moved
 
 The CRDT signature core (`Op`, `Timestamp`, `Replica`, `CRDTSig`, `RcRes`,
 `applySeq`, …) now lives in the metatheory conditioned tree so it can be

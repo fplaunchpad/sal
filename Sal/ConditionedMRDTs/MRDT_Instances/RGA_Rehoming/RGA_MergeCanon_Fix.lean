@@ -7,13 +7,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon
 birthAnc`, which is FALSE in general (criss-cross rehoming: node 7's birth anchor is the LCA node
 2, deleted in the other branch, hence dead in the merge). Inspection of
 `merge_anc_clause` shows the premise fires ONLY in the `¬ contains σ₀' bw` branch (the climb
-fixpoint) — and THERE it is derivable: a birth anchor read off a branch-final state is live at that
+fixpoint), and THERE it is derivable: a birth anchor read off a branch-final state is live at that
 branch (`wf`), so a non-LCA birth anchor is a branch-born survivor (`da ∖ dl ⊆ I`), and an LCA-read
 birth anchor under `¬ contains σ₀'` is the root (`Hstay`).
 
-* `merge_anc_clause'` — the anchor clause with the CONDITIONAL premise.
-* `bwsurv_of_wf` — the derivation of that premise from the branch `wf` facts.
-* `canonMatch_merge_of_inputs'` — the merge glue whose bridge bundle needs ONLY
+* `merge_anc_clause'`, the anchor clause with the CONDITIONAL premise.
+* `bwsurv_of_wf`, the derivation of that premise from the branch `wf` facts.
+* `canonMatch_merge_of_inputs'`, the merge glue whose bridge bundle needs ONLY
   `CanonBirthBridge` per survivor; the 0-or-survivor conjunct is derived, not required. -/
 
 set_option maxHeartbeats 1000000

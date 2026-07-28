@@ -19,12 +19,12 @@ proofs nowhere depend on the payload type, only on three structural facts:
 
 The pieces:
 
-* `OSOp β` / `OSElem β` / `OSState β` — ops, instances, states;
-* `osUpdate key` / `osMergeL` / `osRc key` — the OR-set dynamics: `add b`
+* `OSOp β` / `OSElem β` / `OSState β`, ops, instances, states;
+* `osUpdate key` / `osMergeL` / `osRc key`, the OR-set dynamics: `add b`
   inserts `(e.ts, e.rep, b)`; `rem k` filters the live `k`-instances
   (production OR-set semantics: the effect is state-dependent); the
   three-way merge is `(l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)`;
-* `OSCore β key Q V qy` — the `ConditionedMRDTSig`, with the query
+* `OSCore β key Q V qy`, the `ConditionedMRDTSig`, with the query
   (`Q`/`V`/`qy`) **also a parameter**: the convergence discharge never
   touches the query, so quantifying over it lets any concrete datatype BE an
   instantiation, definitionally;
@@ -56,7 +56,7 @@ inductive OSOp (β : Type) : Type where
   | rem : ℕ → OSOp β
 deriving DecidableEq
 
-/-- A live instance: `(ts, rep, payload)` — the adding event's timestamp and
+/-- A live instance: `(ts, rep, payload)`, the adding event's timestamp and
 replica, and the payload. An instance names its adding event. -/
 abbrev OSElem (β : Type) : Type := ℕ × ℕ × β
 
@@ -125,7 +125,7 @@ theorem OSCore_mergeL_eq (l a b : OSState β) :
 
 theorem OSCore_init_eq : (OSCore β key Q V qy).init = (∅ : OSState β) := rfl
 
-/-! Membership characterizations — everything downstream is propositional
+/-! Membership characterizations: everything downstream is propositional
 logic over these. -/
 
 theorem mem_osUpdate_add {s : OSState β} {q : OSElem β} {ts r : ℕ} {b : β} :
@@ -715,14 +715,14 @@ theorem OSCore_rem_max_trichotomy
     exact OSCore_live_no_later_rem hA hqA haU' hrU' hvar
   · by_cases hvea : C.vis (ts, rid, OSOp.rem (key q.2.2))
         (q.1, q.2.1, OSOp.add q.2.2)
-    · -- vis-after the maximal rem: a vis-edge out of e — contradiction
+    · -- vis-after the maximal rem: a vis-edge out of e, contradiction
       exfalso
       have hnc_ea : ¬ (OSCore β key Q V qy).toCRDTSig.commutes
           (ts, rid, OSOp.rem (key q.2.2))
           (q.1, q.2.1, OSOp.add q.2.2) :=
         fun h => hnc_ae (OSCore_commutes_symm h)
       exact h_max _ haU'.1 hane (Or.inl ⟨hvea, hnc_ea⟩)
-    · -- concurrent: the rc-edge is unabsorbed — contradiction
+    · -- concurrent: the rc-edge is unabsorbed, contradiction
       exfalso
       refine h_max _ haU'.1 hane (Or.inr ⟨hvea, hva, ?_, ?_⟩)
       · show (if key q.2.2 = key q.2.2
@@ -787,7 +787,7 @@ theorem OSCore_cdVC3 : CDVC3 (OSCore β key Q V qy) := by
 /-! ## §8. The feasible delta laws, the bundles, and the capstones -/
 
 /-- The redistribution law is a propositional tautology for the OR-set-shaped
-merge — **unconditional**, all five states arbitrary. -/
+merge, **unconditional**, all five states arbitrary. -/
 theorem osMergeL_redistribute (B t₀ t₁ t₂ u : OSState β) :
     osMergeL (osMergeL B t₀ u) (osMergeL B t₁ u) (osMergeL B t₂ u)
       = osMergeL B (osMergeL t₀ t₁ t₂) u := by
@@ -887,7 +887,7 @@ theorem OSCore_updateVCs : UpdateVCs (OSCore β key Q V qy).toCRDTSig :=
 theorem OSCore_coreVCs3CD : CoreVCs3CD (OSCore β key Q V qy) :=
   ⟨OSCore_updateVCs, OSCore_mergeL_comm⟩
 
-/-- The ternary Join Lemma for the OR-set core — the OR-set's route. -/
+/-- The ternary Join Lemma for the OR-set core, the OR-set's route. -/
 theorem OSCore_joinLemma3 : JoinLemma3 (OSCore β key Q V qy) :=
   join_lemma3_of_cd_feasible OSCore_coreVCs3CD OSCore_feasibleDeltaVCs3
     OSCore_cdVC3
@@ -904,7 +904,7 @@ theorem oscore_ra_linearizable3
 
 end
 
-/-! ### The conditioned capstone — identity instantiation of the generic
+/-! ### The conditioned capstone, identity instantiation of the generic
 framework -/
 
 section

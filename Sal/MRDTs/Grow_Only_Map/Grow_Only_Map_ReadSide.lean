@@ -8,7 +8,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # Grow_Only_Map (MRDT) — read-side projection
+/-! # Grow_Only_Map (MRDT): read-side projection
 
 The 24 VCs prove the per-key set-of-values map converges under
 per-key three-way union. The read is `lookup k v`: is `v` in the

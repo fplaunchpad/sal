@@ -1,24 +1,24 @@
 import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 /-!
-# `RgaInv` is preserved on any FRESH op — accuracy is NOT needed
+# `RgaInv` is preserved on any FRESH op: accuracy is NOT needed
 
 `Inv_doIns`/`Inv_doDel` in `RGA_Reachability_Invariant.lean` are *stated* with
 `accurate`, but for **invariant preservation** the accuracy hypothesis is only
 ever consumed to learn that the resolved anchor/target is `0`-or-live.  That fact
-is **unconditional** — `resolve` returns the first live entry or `0` by
+is **unconditional**, `resolve` returns the first live entry or `0` by
 definition (`resolve_zero_or_live`).  So `RgaInv` preservation needs only
 *freshness*, never accuracy.
 
-* `inv_doIns_fresh` — `Inv_doIns` with `accurate` DROPPED; `hvlive` supplied by
+* `inv_doIns_fresh`, `Inv_doIns` with `accurate` DROPPED; `hvlive` supplied by
   `resolve_zero_or_live`.  Needs only `fresh_ts` (in fact only `t ≠ 0`).
-* `inv_doDel_free` — `Inv_doDel` with `accurate` DROPPED.  Del needs **one genuine
+* `inv_doDel_free`, `Inv_doDel` with `accurate` DROPPED.  Del needs **one genuine
   path fact** that freshness does not supply: `resolve s pre ≠ x` (the reparent
   target differs from the node being removed): `resolve s pre = x` really does
   break `wf` (a child of `x` is rehomed onto the now-deleted `x`), and `fresh_ts`
   for `Del` is `True`, so it cannot rule it out.  This is the minimal condition,
   strictly weaker than `accurate` (detailed below).
-* `WfOp` / `rgaInv_doOp_fresh` — the combined "well-formed op" precondition the RGA
+* `WfOp` / `rgaInv_doOp_fresh`, the combined "well-formed op" precondition the RGA
   supplies to the framework: `RgaInv s → WfOp o s → RgaInv (do_ s o)`.
 -/
 
@@ -41,7 +41,7 @@ theorem inv_doIns_fresh (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre
     simp only [do_]
   rw [hdo]
   set v := resolve s (a :: pre) with hv
-  -- the stored anchor is `0`-or-live in `s` — UNCONDITIONALLY (no accuracy)
+  -- the stored anchor is `0`-or-live in `s`, UNCONDITIONALLY (no accuracy)
   have hvlive : v = 0 ∨ contains s v = true := by
     rw [hv]; exact resolve_zero_or_live s (a :: pre)
   refine ⟨?_, ?_⟩
@@ -122,14 +122,14 @@ theorem inv_doDel_free (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
 /-- The **well-formed op** precondition the RGA supplies to the framework for
 invariant preservation.  For `Ins` it is exactly `fresh_ts`
 (`t ≠ 0 ∧ contains s t = false`; only `t ≠ 0` is actually consumed).  For `Del`
-it is the single path fact `resolve s pre ≠ x` — freshness (`= True` for `Del`)
+it is the single path fact `resolve s pre ≠ x`, freshness (`= True` for `Del`)
 is NOT enough (detailed below). -/
 def WfOp (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
   | (t, _, .Ins _ _ _) => t ≠ 0 ∧ contains s t = false
   | (_, _, .Del pre x) => resolve s pre ≠ x
 
-/-- **Invariant preserved on any well-formed op — accuracy irrelevant.**
+/-- **Invariant preserved on any well-formed op, accuracy irrelevant.**
 `RgaInv s → WfOp o s → RgaInv (do_ s o)`.  The `Ins` case is pure freshness; the
 `Del` case is the minimal path fact `resolve s pre ≠ x`. -/
 theorem rgaInv_doOp_fresh (s : concrete_st α) (o : op_t α)
@@ -158,10 +158,10 @@ and `fresh_ts (_, _, .Del _ _) s = True` cannot supply it.  The failure is real:
 if `resolve s pre = x` (the claimed prefix's first live node is the very node being
 deleted, e.g. `Del [x] x` on a state where `x` is live) then every child `k` of `x`
 (`anc s k = x`) is rehomed onto `x` (`sel_doDel`), after which `x` is physically
-removed — leaving `k` live with `anc k = x` while `contains x = false` and `x ≠ 0`,
+removed, leaving `k` live with `anc k = x` while `contains x = false` and `x ≠ 0`,
 i.e. `wf` broken.  `accurate` rules this out because `IsAncPath s x pre` forces
 `resolve s pre = anc s x ≠ x` (`isAncPath_resolve` + `isAncPath_self`); but the
-*whole* of accuracy is not needed — `resolve s pre ≠ x` alone suffices and is
+*whole* of accuracy is not needed, `resolve s pre ≠ x` alone suffices and is
 strictly weaker.
 
 So the WfOp shape the RGA needs is NOT "id ≠ 0" uniformly: it is

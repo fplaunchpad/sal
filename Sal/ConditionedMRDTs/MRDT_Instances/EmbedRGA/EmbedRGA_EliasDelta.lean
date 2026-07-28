@@ -6,7 +6,7 @@ import Sal.MRDTs.RGA_Embed.Embed_Code_EliasDelta
 
 Because `embed_ra_linearizable3` is parametric in the code `Γ`, upgrading
 the per-level coordinate cost from `2 log₂ δ + 1` to `log₂ δ + O(log log δ)`
-is pure plug-in — this file's theorem has zero new proof content. Together
+is pure plug-in, this file's theorem has zero new proof content. Together
 with `unaryCode` and `binaryCode`, this gives the datatype three verified
 encodings on one proof.
 -/

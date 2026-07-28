@@ -3,23 +3,23 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_HcausHdec_Discharge
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_HHext_Discharge
 
 /-!
-# FINAL ASSEMBLY — RGA RA-linearizability up to ≈, on the honest-execution residual
+# FINAL ASSEMBLY: RGA RA-linearizability up to ≈, on the honest-execution residual
 
 *0 `sorry`.*
 
 Every proof-theoretic leaf of the raw-≈ capstone is discharged and instantiated here:
 
-* `hEnum`  := `rga_hEnum_discharged`  — the delta enum + K1 discipline continuation;
-* `hCanon` := `hCanon_of_leaves3 rgaHonJ rga_hMergeInputs_discharged` — both canonical facts,
+* `hEnum`  := `rga_hEnum_discharged`, the delta enum + K1 discipline continuation;
+* `hCanon` := `hCanon_of_leaves3 rgaHonJ rga_hMergeInputs_discharged`, both canonical facts,
   from the fully-discharged merge bundle `{Hdec, hcaus, hbridge}`;
-* `hHext`  := `rga_hHext_discharged`  — the witness discipline extends at applicable applies.
+* `hHext`  := `rga_hHext_discharged`, the witness discipline extends at applicable applies.
 
 **The remaining residual is exactly the honest-execution content**, quantified once:
 
-* `hHon` — at every reachable configuration, the join context `rgaHonJ` holds of the core
+* `hHon`, at every reachable configuration, the join context `rgaHonJ` holds of the core
   (generation discipline from born accuracy, nonzero ids, Lamport clocks, no root deletes;
   the configuration witness is the core itself);
-* `hBA` — born-applicable delivery (each applied op is `qapplicable` at its head class, and
+* `hBA`, born-applicable delivery (each applied op is `qapplicable` at its head class, and
   `applicable ⟹ WfOpA` for it).
 
 Both are statements about the EXECUTION MODEL (what an honest RGA implementation delivers),

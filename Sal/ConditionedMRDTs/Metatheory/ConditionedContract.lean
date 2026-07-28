@@ -212,7 +212,7 @@ theorem ConditionedContract.adequate (K : ConditionedContract)
 
 /-- **Weak-closure smart constructor**: from the update layer + feasible delta
 laws + the causal-delta bound, via `join_lemma3_of_cd_feasible`. This is the
-`𝒞 = weakClosure` dispatch arm — the set/register/list family. -/
+`𝒞 = weakClosure` dispatch arm, the set/register/list family. -/
 def ConditionedContract.ofVCs (D : ConditionedMRDTSig)
     (hVC : CoreVCs3CD D) (hFΔ : FeasibleDeltaVCs3 D) (hCD : CDVC3 D)
     (hInit : D.Inv D.init) : ConditionedContract where
@@ -223,7 +223,7 @@ def ConditionedContract.ofVCs (D : ConditionedMRDTSig)
   inv_init := hInit
 
 /-- **Full-closure smart constructor**: from a direct full-closure Join Lemma.
-This is the `𝒞 = fullClosure` dispatch arm — the Enable-wins flag corner. -/
+This is the `𝒞 = fullClosure` dispatch arm, the Enable-wins flag corner. -/
 def ConditionedContract.ofJoinF (D : ConditionedMRDTSig)
     (hJoinF : JoinLemma3F D) (hInit : D.Inv D.init) : ConditionedContract where
   D := D

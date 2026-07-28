@@ -18,7 +18,7 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # Add-Win Priority Queue (MRDT) — read-side projection
+/-! # Add-Win Priority Queue (MRDT): read-side projection
 
 MRDT counterpart to `Sal/CRDTs/Add_Win_Priority_Queue_ReadSide.lean`.
 The 24 RA-linearizability VCs in `Add_Win_Priority_Queue_MRDT.lean`
@@ -29,13 +29,13 @@ the paper claims.
 This file lifts `lookup` and the LWW innate property into Lean and
 proves three intent theorems:
 
-1. **`lookup_convergent`** — convergence at the read.
-2. **`add_wins_over_concurrent_rmv`** — headline: an Add on one branch
+1. **`lookup_convergent`**: convergence at the read.
+2. **`add_wins_over_concurrent_rmv`**, headline: an Add on one branch
    that is *not present* in the LCA survives a concurrent Rmv on the
    other branch. The state-based stand-in for "concurrent" is "the
-   Add record sits in `a \ l`" — the merge term that bypasses the
+   Add record sits in `a \ l`", the merge term that bypasses the
    Rmv branch. (See `Add_Win_Priority_Queue_MRDT.lean:36–39`.)
-3. **`innate_record_unique`** — uniqueness of the LWW innate record.
+3. **`innate_record_unique`**: uniqueness of the LWW innate record.
 
 `acquired`, `priority`, `get_max`, and `is_empty` are out of scope.
 **Faithfulness caveat:** the paper's acquired-value resolution is
@@ -47,7 +47,7 @@ omits the per-record `count` field needed to express MCW. See
 
 State shape on this side: `Prod.fst : set (add_ts, elem, value)` and
 `Prod.snd : set (inc_ts, elem, amount)`. There is no tombstone
-component (`R`) — the LCA carries that information. -/
+component (`R`), the LCA carries that information. -/
 
 /-- **Lookup.** Element `e` is live iff there is at least one add
 record `(ts, e, v)` for it in `A`. No separate tombstone check on

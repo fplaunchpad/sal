@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Assembly
 
 /-!
-# hFiltEq DISCHARGED — record coherence from the generation discipline
+# hFiltEq DISCHARGED: record coherence from the generation discipline
 
 *0 `sorry`.*
 
@@ -11,16 +11,16 @@ first-`F`-survivor (`hin` of `canonBirthBridge_via_branchCanon`).
 
 **This is a THEOREM of the existing stack, with no new engine invariant:**
 the coherence statement is `F`-static (it never mentions a fold state), so it need only be
-ESTABLISHED once — and the right place is `t`'s DEPENDENCY fold `s_d`, where the generation
+ESTABLISHED once, and the right place is `t`'s DEPENDENCY fold `s_d`, where the generation
 discipline (`GenDisc2C`, discharged from born accuracy) makes `t`'s ENTIRE recorded chain live:
 
 1. accuracy at `s_d` ⟹ `IsAncPath s_d a p` ⟹ the suffix after `bw` is a genuine `s_d`-chain of
    `bw` (`isAncPath_suffix`);
 2. `bw` is an `s_d`-survivor, so `CanonInv` at the dep fold gives its `LiveChain`:
-   `liveSub s_d (ab :: pb)` is ALSO `bw`'s `s_d`-chain — by `isAncPath_unique`,
+   `liveSub s_d (ab :: pb)` is ALSO `bw`'s `s_d`-chain, by `isAncPath_unique`,
    `rcSuf = liveSub s_d (ab :: pb)`;
 3. entries dropped by the `s_d`-filter are dep-deleted ⟹ union-deleted ⟹ `¬ survP F`
-   (`canonAnc_liveSub_of_deadF`) — so `canonAnc F rcSuf = canonAnc F (ab :: pb)`;
+   (`canonAnc_liveSub_of_deadF`), so `canonAnc F rcSuf = canonAnc F (ab :: pb)`;
 4. the same drop-argument at the LCA fold turns `bw`'s record into its σ₀' chain
    (`cw := liveSub σ₀' (ab :: pb)`, from `bw`'s LCA `LiveChain`), closing
    `canonAnc F cw = canonAnc F rcSuf`.
@@ -109,7 +109,7 @@ theorem depList_trans_mem (Cfg : Sal.Emulation.Configuration (RGACondSig α).toC
   exact mem_depList.mpr ⟨hxU, hxo, hdep⟩
 
 /-- **Record coherence.**  For a delivered insert `t` with `bw ≠ 0` on its recorded chain, the
-first-`F`-survivor of the recorded suffix after `bw` equals that of `bw`'s own recorded chain —
+first-`F`-survivor of the recorded suffix after `bw` equals that of `bw`'s own recorded chain,
 established at `t`'s dependency fold, where the generation discipline makes the whole chain live. -/
 theorem canonAnc_record_coherence (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α))
@@ -209,7 +209,7 @@ theorem canonAnc_record_coherence (Cfg : Sal.Emulation.Configuration (RGACondSig
     rw [hEq]
     exact (canonAnc_liveSub_of_deadF F sD (ab :: pb) hdead).symm
 
-/-! ## §3  The `hin` producer — the bridge's last input, discharged -/
+/-! ## §3  The `hin` producer: the bridge's last input, discharged -/
 
 /-- **`hin` of `canonBirthBridge_via_branchCanon`, discharged.**  For a union survivor `t` with an
 LCA-live birth anchor `bw` on its recorded chain: `bw`'s LCA chain is the σ₀'-live filter of `bw`'s

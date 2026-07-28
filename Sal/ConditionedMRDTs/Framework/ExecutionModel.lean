@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.Framework.MRDTSig
 -- `Set` lemma API (`Set.empty_inter`, …); `MRDTSig`'s transitive imports carry only the
--- `Set` notation, not the basic lemmas. This is a foundational Mathlib file — it does NOT
+-- `Set` notation, not the basic lemmas. This is a foundational Mathlib file. It does NOT
 -- pull in `Sal.Emulation.Merge_Linearization`.
 import Mathlib.Data.Set.Basic
 
@@ -10,7 +10,7 @@ import Mathlib.Data.Set.Basic
 The execution model for a `ConditionedMRDTSig`, built on the `MRDTSig` foundation
 (`Sal.ConditionedMRDTs.MRDTSig`):
 
-* the ternary **`Configuration`** — the *replica-keyed core* (`N`/`L`/`vis` + the six
+* the ternary **`Configuration`**: the *replica-keyed core* (`N`/`L`/`vis` + the six
   invariants, retyped from `Sal.Emulation.CRDT_TS` over `ConditionedMRDTSig`), plus the
   *additive* **ranked version store** `ver`/`head`/`parents` with the DAG-rank field
   `parents_lt` and the four store-coherence invariants
@@ -47,8 +47,8 @@ open Sal.Emulation
 abbrev Version : Type := Nat
 
 /-- Reachability in the version DAG: the reflexive–transitive closure of the *parent* edge
-`a ∈ parents b` (so `Reaches parents anc v` means `anc` is an ancestor of `v`, and — under
-`parents_lt` — `anc ≤ v`, see `reaches_le`). -/
+`a ∈ parents b` (so `Reaches parents anc v` means `anc` is an ancestor of `v`, and, under
+`parents_lt`, `anc ≤ v`, see `reaches_le`). -/
 def Reaches (parents : Version → List Version) : Version → Version → Prop :=
   Relation.ReflTransGen (fun a b => a ∈ parents b)
 
@@ -170,7 +170,7 @@ structure Configuration (D : ConditionedMRDTSig) where
   head_coherent : ∀ r v, head r = some v →
     (ver v).map Prod.fst = N r ∧ (ver v).map Prod.snd = L r
   /-- Every registered state satisfies the state-shape `Inv` (so `commutesOn` can fire at any
-  registered version — the conditioning discharge in §3 reads this). -/
+  registered version, the conditioning discharge in §3 reads this). -/
   ver_inv : ∀ v s e, ver v = some (s, e) → D.Inv s
   /-- **Lemma LCA / N10** (`lin.tex:160`): the LCA's event set is the intersection of the two
   merged event sets. Established for `initConfig`; its `Step.merge` maintenance is not treated

@@ -4,7 +4,7 @@ set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # MIN_Register (CRDT) — read-side projection
+/-! # MIN_Register (CRDT): read-side projection
 
 The 24 VCs prove the natural-number state converges under pointwise
 min. The read is the state itself; `Write v` lowers (or keeps) the

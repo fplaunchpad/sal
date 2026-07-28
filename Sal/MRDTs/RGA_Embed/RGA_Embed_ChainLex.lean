@@ -1,25 +1,25 @@
 import Sal.MRDTs.RGA_Embed.RGA_Embed_ReadSide
 
 /-!
-# Embedded-chain RGA — the chain-lex theorem and the document characterization
+# Embedded-chain RGA: the chain-lex theorem and the document characterization
 
 The intent layer (design doc §2, Corollary 2): **display order ≡ lexicographic
 order on birth chains**. This is where the code's two properties (monotone,
-prefix-free) are finally consumed — the stability layer needed neither.
+prefix-free) are finally consumed, the stability layer needed neither.
 
 Contents:
 * `keyLt` order algebra (irreflexive, asymmetric, transitive, total) and the
   induced `keyLe` facts the sort needs;
 * `document` characterization: it is a permutation of the live filter, sorted
-  by descending key, and — on states with injective coordinates — pairwise
+  by descending key, and, on states with injective coordinates, pairwise
   `before`;
 * birth chains: `coordOf` (concatenation of codewords), **unique
-  decodability** (`coordOf_inj` — prefix-free concatenations decode
+  decodability** (`coordOf_inj`, prefix-free concatenations decode
   uniquely, so distinct chains have distinct coordinates);
 * `chainBefore` (the display order on chains: ancestors first, then larger
   delta at the first divergence) and the **chain-lex theorem**
   (`display_iff_chainBefore`): the key comparison of coordinates computes
-  exactly `chainBefore` — the RGA order of the birth tree, restricted to
+  exactly `chainBefore`, the RGA order of the birth tree, restricted to
   survivors, realized by one flat comparison of immutable bit strings.
 -/
 
@@ -139,7 +139,7 @@ theorem document_pairwise_le (s : concrete_st α) (ids : List ℕ) :
   · intro a b
     exact keyLe_total _ _
 
-/-- Coordinate injectivity on the live domain — the wf invariant delivered by
+/-- Coordinate injectivity on the live domain, the wf invariant delivered by
 unique decodability (`coordOf_inj`) on chain-generated states. -/
 @[simp] def distinctCoords (s : concrete_st α) : Prop :=
   ∀ t1 t2, contains s t1 = true → contains s t2 = true →
@@ -157,7 +157,7 @@ theorem key_inj {c1 c2 : coord} (h : key c1 = key c2) : c1 = c2 := by
 
 omit [DecidableEq α] in
 /-- **The document characterization**: on a state with injective coordinates,
-the document is pairwise strictly `before` — every displayed pair is a
+the document is pairwise strictly `before`, every displayed pair is a
 co-displayed pair in the design sense, ordered by the immutable keys. -/
 theorem document_pairwise_before (s : concrete_st α) (ids : List ℕ)
     (hinj : distinctCoords s) (hnd : ids.Nodup) :
@@ -204,7 +204,7 @@ theorem coordOf_append (Γ : OrderedPrefixCode) (ch1 ch2 : List ℕ) :
   | nil => simp [coordOf]
   | cons d ds ih => simp [coordOf, ih]
 
-/-- **Unique decodability**: prefix-free concatenations decode uniquely —
+/-- **Unique decodability**: prefix-free concatenations decode uniquely,
 distinct birth chains have distinct coordinates, so coordinates are honest
 names and `distinctCoords` holds on chain-generated states. -/
 theorem coordOf_inj (Γ : OrderedPrefixCode) :
@@ -252,7 +252,7 @@ theorem coordOf_inj (Γ : OrderedPrefixCode) :
 /-! ## The first-difference witness
 
 Monotone + prefix-free forces every comparison of distinct codewords to be
-decided at a genuine first differing bit — the `nil` escape of `List.Lex`
+decided at a genuine first differing bit, the `nil` escape of `List.Lex`
 never fires. This is the bit-level content of "the ranges fully capture it":
 the verdict is IN the strings, at a bounded position. -/
 
@@ -361,7 +361,7 @@ theorem chainBefore_display (Γ : OrderedPrefixCode) {ch1 ch2 : List ℕ}
 
 /-- **The chain-lex theorem** (design doc, Corollary 2): for distinct positive
 chains, the display comparison of the coordinates is *exactly* the chain
-order. Display order ≡ lexicographic order on birth chains — the RGA order of
+order. Display order ≡ lexicographic order on birth chains, the RGA order of
 the birth tree, computed by one flat comparison of immutable bit strings. -/
 theorem display_iff_chainBefore (Γ : OrderedPrefixCode) {ch1 ch2 : List ℕ}
     (h1 : PosChain ch1) (h2 : PosChain ch2) (hne : ch1 ≠ ch2) :
@@ -525,7 +525,7 @@ The g-column guarantee, in its sharpest form: **everything displayed between
 two members of a subtree is in the subtree**. A subtree is a coordinate
 prefix (the anchor's coordinate); concurrent runs live in disjoint subtrees,
 so they cannot interleave. The proof is pure lex-order convexity of
-prefix-sets — no property of the code is needed. -/
+prefix-sets, no property of the code is needed. -/
 
 theorem keyLt_prefix_convex : ∀ {q k1 k2 k3 : List ℕ},
     keyLt k1 k2 = true → keyLt k2 k3 = true →
@@ -609,7 +609,7 @@ omit [DecidableEq α] in
 /-- **Non-interleaving (subtree convexity)**: anything displayed between two
 members of a subtree is in the subtree. Instantiated at an anchor's
 coordinate, this says a concurrently-typed run under one anchor is displayed
-contiguously — the litmus g-column, from lex convexity alone. -/
+contiguously, the litmus g-column, from lex convexity alone. -/
 theorem subtree_convex (s : concrete_st α) {c : coord} {t1 t2 t3 : ℕ}
     (h12 : before s t1 t2) (h23 : before s t2 t3)
     (hp1 : c <+: pos s t1) (hp3 : c <+: pos s t3) : c <+: pos s t2 := by

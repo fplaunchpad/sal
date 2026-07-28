@@ -9,7 +9,7 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# MAX-Map — state-based CRDT
+# MAX-Map: state-based CRDT
 
 Per-key monotonic MAX register. Value at each key is the max of all
 writes ever seen; merge is per-key max.
@@ -83,7 +83,7 @@ set_option maxHeartbeats 0
 
 /-- Intermediate lemma: for MAX-Map, `merge` distributes over `do_`
 unconditionally on the state. All three failing `ind_*` VCs derive
-from this by instantiating at specific states — the inductive
+from this by instantiating at specific states, the inductive
 hypothesis in those VCs is redundant because this holds at any state.
 -/
 lemma merge_do_max (a b : concrete_st) (o1 o2 : op_t) :

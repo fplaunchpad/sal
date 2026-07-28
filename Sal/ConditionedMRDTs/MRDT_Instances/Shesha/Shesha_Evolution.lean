@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_M2
 
-/-! # Shesha — honest branch evolution
+/-! # Shesha: honest branch evolution
 
 The delivery contract and the invariants it buys. A branch evolves from
 the LCA by honest steps: inserts carry globally fresh nonzero ids (Lamport
@@ -8,7 +8,7 @@ freshness: never an id of the current state nor of the LCA) and live
 anchors; deletes target live nodes. Under `HReach`:
 
 - `WF` is preserved (`hreach_WF`);
-- L-nodes never end up under born parents (`hreach_LRowsOK`) — the
+- L-nodes never end up under born parents (`hreach_LRowsOK`), the
   branch-structure hypothesis of the M0/M2 lemmas, discharged;
 - with cross-branch Lamport uniqueness (`ids A ∩ ids B ⊆ ids L`, the one
   irreducibly global contract), the full `ModelOK`, so every merge lemma
@@ -434,7 +434,7 @@ theorem hreach_LRowsOK {L X : St} (hwfL : WF L) (h : HReach L X) :
 /-! ## The honest-merge capstones -/
 
 /-- Both branches evolved honestly from a WF LCA, with cross-branch
-Lamport uniqueness (an id live in both branches is common past) — the one
+Lamport uniqueness (an id live in both branches is common past), the one
 irreducibly global contract. -/
 structure HonestMerge (L A B : St) : Prop where
   wfL : WF L

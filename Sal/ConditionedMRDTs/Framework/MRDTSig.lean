@@ -5,16 +5,16 @@ import Sal.CRDTs.Metatheory.RA_Linearizability
 
 The Thin-Ternary-Layer over the binary `Sal.Emulation.CRDTSig`:
 
-* `MRDTSig extends CRDTSig` — adds the ternary merge `mergeL l a b`
+* `MRDTSig extends CRDTSig`: adds the ternary merge `mergeL l a b`
   (paper `merge(σ_⊤, σ₁, σ₂)`) and pins the inherited binary `merge` to be exactly
   its `l := init` slice via `merge_init_slice`. Because `MRDTSig` *extends* `CRDTSig`,
   `D.toCRDTSig` is a *literal* `CRDTSig` and the entire binary machinery
   (`Configuration`, `lo`, `SatisfiesVCs`, the proved bridge cases) applies verbatim to
   the `l := init` slice.
-* `ConditionedMRDTSig extends MRDTSig` — adds the state-shape `Inv` and the
+* `ConditionedMRDTSig extends MRDTSig`: adds the state-shape `Inv` and the
   generation-time `applicable` guard (the conditioning split).
-* `commutesOn` — commutation required only on `Inv`/`applicable` reachable states.
-* the ternary `lo` — the linearization order with `commutes → commutesOn` at the two
+* `commutesOn`: commutation required only on `Inv`/`applicable` reachable states.
+* the ternary `lo`: the linearization order with `commutes → commutesOn` at the two
   ⇄-sites, otherwise identical in shape to `Sal.Emulation.lo`.
 
 `commutesOn` and `lo` collapse to their binary counterparts (`CRDTSig.commutes` /
@@ -28,7 +28,7 @@ namespace Sal.ConditionedMRDTs
 
 open Sal.Emulation
 
-/-! ## §1.1 — The ternary signature -/
+/-! ## §1.1: The ternary signature -/
 
 /-- **Ternary MRDT signature.** Inherits `init`/`AppOp`/`update`/`query`/`merge`/`rc`
 UNCHANGED from `CRDTSig`; adds the ternary `mergeL l a b` (paper `merge(σ_⊤,σ₁,σ₂)`)
@@ -46,9 +46,9 @@ structure MRDTSig extends CRDTSig where
 
 /-- **Conditioned ternary signature.** Adds the conditioning split:
 
-* `Inv` — a state-SHAPE reachability over-approximation (e.g. RGA's `RgaInv`), inductive
+* `Inv`: a state-SHAPE reachability over-approximation (e.g. RGA's `RgaInv`), inductive
   under `update`;
-* `applicable` — a GENERATION-TIME guard on an event at a state; it MAY read the op
+* `applicable`: a GENERATION-TIME guard on an event at a state; it MAY read the op
   timestamp, and is *not* a shape predicate (e.g. RGA's `accurate ∧ fresh_ts`).
 
 Flat RDTs take both trivially true, collapsing everything to the binary framework

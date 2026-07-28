@@ -47,7 +47,7 @@ def fmδ : FMEntry → ℕ
 
 @[simp] def PosFMChain (ch : FMChain) : Prop := ∀ e ∈ ch, 1 ≤ fmδ e
 
-/-- Wellformed right-origin tags: the end tag `[0]`, or a real key —
+/-- Wellformed right-origin tags: the end tag `[0]`, or a real key,
 nonzero non-marker head, marker-free bounded body, marker terminator. -/
 def TagOK (t : List ℕ) : Prop :=
   t = [0] ∨ ∃ h c, t = (h :: c) ++ [3] ∧ h ≠ 0 ∧ h ≠ 3 ∧ h ≤ 5 ∧
@@ -267,7 +267,7 @@ theorem fmCoordOf_symbols (Γ : OrderedPrefixCode) {ch : FMChain}
       · exact ih (fun x hx => ht x (List.mem_cons_of_mem _ hx)) s h
 
 /-- **Tag closure**: the key of a wellformed nonempty coordinate is itself
-a wellformed tag — what lets minted keys feed back in as right-origin
+a wellformed tag, what lets minted keys feed back in as right-origin
 tags. -/
 theorem tagOK_key (Γ : OrderedPrefixCode) {ch : FMChain}
     (hpos : PosFMChain ch) (ht : TagsOK ch) (hne : ch ≠ []) :
@@ -788,7 +788,7 @@ theorem compl_map_symL (w : List Bool) :
     (compl w).map symL = w.map symLc := by
   simp [compl, symLc, List.map_map, Function.comp]
 
-/-- Same-length prefix-or-equal lists sharing a common extension agree —
+/-- Same-length prefix-or-equal lists sharing a common extension agree,
 packaged as: two lists that are prefixes of one common list are
 comparable. -/
 theorem fw_group_inj {a b : ℕ} (ha : a ≤ 5) (hb : b ≤ 5)
@@ -961,7 +961,7 @@ example : keyLt (sKey (fmCoordOf unaryCode [.R [0] 2]))
 /-- Two R-siblings with distinct real tags order by REVERSE right origin:
 the sibling whose right origin displays later (the node `[.R [0] 5]`,
 which sits after `[.R [0] 4]` and so has the smaller key) displays FIRST,
-even though it has the larger delta — right origin overrides recency and
+even though it has the larger delta, right origin overrides recency and
 ID order alike. -/
 example : keyLt (sKey (fmCoordOf unaryCode [.R (sKey (fmCoordOf unaryCode
     [.R [0] 4])) 1]))
@@ -1020,8 +1020,8 @@ theorem fm_ext_before_is_L {p ext : FMChain}
 
 /-- **Divergence inversion for same-parent R-siblings**: a node one R
 entry over `p` displays before a member of a same-parent R-child's
-subtree only through the entry order at the divergence — smaller tag
-lexicographically, or equal tags and smaller delta — unless the two R
+subtree only through the entry order at the divergence, smaller tag
+lexicographically, or equal tags and smaller delta, unless the two R
 entries coincide (the member sits in the node's own subtree). -/
 theorem fm_R_sibling_inv {p : FMChain} {t t' : List ℕ} {d d' : ℕ}
     {u : FMChain}

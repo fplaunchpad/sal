@@ -25,17 +25,17 @@ domination clause), which can mint new LCA triples whose event sets falsify the
 configuration's own `lca_events` invariant. The reclaimable payload is the states and
 event sets; the skeleton is ids only.
 
-**The three lemmas** (§3–§5): (1) *monotonicity* — along any `Step3` run every current
+**The three lemmas** (§3–§5): (1) *monotonicity*: along any `Step3` run every current
 head either event-set-dominates a prune-time head (`HeadDom`) or is a virgin lineage
 whose only prune-time ancestor is the root (`Virgin`; the disjunct is forced by
-`createReplica`); (2) *intersection containment* (`lca_not_dropped`) — any allocated LCA
+`createReplica`); (2) *intersection containment* (`lca_not_dropped`): any allocated LCA
 of two future heads lies in `Keep'` (both-`HeadDom`: `E(vT) = E(v₁) ∩ E(v₂) ⊇
 E(Hᵢ) ∩ E(Hⱼ)` via the `lca_events` field; a `Virgin` side: the LCA is the pinned root);
-(3) *prune commutation* (`step_dropVer`) — every step of the unpruned run is matched,
+(3) *prune commutation* (`step_dropVer`): every step of the unpruned run is matched,
 same label, by the dropped images; replica reads are *definitionally* unchanged
 (`dropVer` does not touch `N`).
 
-**Headline** (§6): `gc_safety` — pruning to `Keep'` preserves every `Step3` run (same
+**Headline** (§6): `gc_safety`: pruning to `Keep'` preserves every `Step3` run (same
 label trace) and every head read, from the single hypothesis `StoreInv C₀` (supplied by
 plain reachability via `storeInv_reachable`).
 
@@ -81,7 +81,7 @@ def IsHead (C : Configuration D) (v : Version) : Prop := ∃ r, C.head r = some 
 
 /-- **The keep set**: allocated versions whose event set contains the pairwise
 intersection of two (allocated) head event sets; `h₁ = h₂` is allowed, so everything
-event-set-above any single head is kept — in particular the heads themselves
+event-set-above any single head is kept, in particular the heads themselves
 (`head_mem_keepSet`). -/
 def keepSet (C : Configuration D) : Set Version :=
   {v | ∃ h₁ h₂ s₁ e₁ s₂ e₂ s e,
@@ -529,21 +529,21 @@ theorem gc_safety (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.pare
 /-! ## §6V  GC under virtual LCAs: the MCA-closure keep set
 
 Under the widened step relation (`Step3V`, `LCA_Lemma.lean` §9) a merge may read the
-states of **maximal common ancestors** — versions strictly below the pairwise head
-meets — and of the MCAs of MCAs, recursively. The keep set is reseeded by the
+states of **maximal common ancestors**, versions strictly below the pairwise head
+meets, and of the MCAs of MCAs, recursively. The keep set is reseeded by the
 **pairwise-MCA closure** of the prune-time heads (`mcasClosure`); the
 argument needs two invariant strengthenings of `GCInv` (packaged in `GCInvV`):
 
-* `headGate` — a current head that was allocated at prune time is a prune-time head
+* `headGate`: a current head that was allocated at prune time is a prune-time head
   (or the pinned root): heads only ever move to freshly allocated versions or to `0`;
-* `gateway` — **the gateway invariant**: every ancestry
+* `gateway`, **the gateway invariant**: every ancestry
   path from a prune-time-allocated version to a post-prune version passes through a
   prune-time head (or collapses to the root).
 
 `mcaClosure_not_dropped` then transfers closure membership at ANY future configuration
 down to the prune-time closure (maximality transfers along the gateway), and the prune
 commutation (`step_dropVerV`) matches virtual merges verbatim because pruning keeps the
-DAG skeleton, so the recursion reads only closure members — all kept. -/
+DAG skeleton, so the recursion reads only closure members, all kept. -/
 
 /-- The pairwise-MCA closure of the current (allocated) heads: the least version-set
 containing the heads and closed under taking MCAs of member pairs. -/
@@ -733,7 +733,7 @@ private theorem gateway_side {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
   · exact hInv.gateway vp hvp hvp₀ w hw₀ hwvp
 
 /-- Gateway at the freshly allocated node: a path into it factors through a declared
-parent — a current head — where `gateway_side` routes it; both legs transport along
+parent, a current head, where `gateway_side` routes it; both legs transport along
 the conservative DAG extension. -/
 private theorem gateway_new_node {C₀ C C' : Configuration D} (hInv : GCInvV C₀ C)
     {vm : Version} (h_vm : C.ver vm = none) {ps : List Version}
@@ -920,7 +920,7 @@ prune-time-allocated member of the *current* heads' MCA closure lies in the
 *prune-time* closure, or is the root. Induction over the closure derivation: heads
 transfer by `headGate`; an MCA of closure members routes each side through a
 prune-time closure member (`gateway` / the side's own transfer), and **maximality
-transfers downward** — a dominating common ancestor of the gateway pair would
+transfers downward**, a dominating common ancestor of the gateway pair would
 dominate the original pair too. -/
 theorem mcaClosure_not_dropped {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
     {x : Version} (hx : InMcasClosure C x) (hx₀ : (C₀.ver x).isSome) :
@@ -1000,7 +1000,7 @@ theorem lca_not_droppedV {C₀ C : Configuration D} (hInv : GCInvV C₀ C)
       (isMCA_singleton_of_isLCA C.parents_lt h_lca))
 
 /-! ### §6V.2  The recursion reads only closure members: pruning commutes with the
-virtual state (pure congruence — `parents`, hence every MCA query and the measure,
+virtual state (pure congruence, `parents`, hence every MCA query and the measure,
 is shared by the pruned store). -/
 
 private theorem vfoldAux_agree {C : Configuration D}
@@ -1285,7 +1285,7 @@ noncomputable def pruneKeepV (C₀ : Configuration D)
 /-- **Commit GC safety on the widened LTS**: pruning the store to the
 MCA-closure keep set
 `keepSetV = {v : ∃ w ∈ mcasClosure(heads), E(w) ⊆ E(v)} ∪ {0}` preserves every
-`Step3V` run — gated merges AND virtual (recursive) merges, same label trace — and
+`Step3V` run, gated merges AND virtual (recursive) merges, same label trace, and
 every head read, from the single hypothesis `StoreInv C₀`. -/
 theorem gc_safetyV (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.parents)
     {ℓs : List (Label3 D)} {C : Configuration D} (hRun : StepsV D C₀ ℓs C) :
@@ -1316,8 +1316,8 @@ A applies `e3` (version 4); B applies `e4` (version 5). Heads: A at 4, B at 5.
 
 Hand-derived (never `#eval`'d): `E(4) ∩ E(5) = {e1,e2}`, so `Keep = {2,3,4,5}`,
 `Keep' = {0,2,3,4,5}`, and **version 1 is dropped** (its `{e1}` contains no pairwise
-head intersection) — pruning is strict. The head merge's LCA is 2 (kept, still
-registered after pruning); the interior pair `(1,5)` has LCA 1 — dropped, which is the
+head intersection). Pruning is strict. The head merge's LCA is 2 (kept, still
+registered after pruning); the interior pair `(1,5)` has LCA 1, dropped, which is the
 necessity countermodel for head-sync. -/
 
 namespace GCSpot
@@ -1864,7 +1864,7 @@ theorem two_not_dropped : (2 : Version) ∉ droppedSet Cex :=
 noncomputable def CexPruned : Configuration GSetCond := pruneKeep Cex storeInvEx
 
 open Classical in
-/-- **SPOT FAIL-companion**: pruning is not a no-op — the dropped entry is genuinely
+/-- **SPOT FAIL-companion**: pruning is not a no-op: the dropped entry is genuinely
 absent (while `Cex.ver 1 = some (S1, F1)`, see `spot_prune_strict`). -/
 theorem spot_pruned_absent : CexPruned.ver 1 = none := by
   show (if (1 : Version) ∈ droppedSet Cex then none else Cex.ver 1) = none
@@ -1933,8 +1933,8 @@ theorem cm_one_not_head : ¬ IsHead Cex 1 := fun hh => by
 /-- **NECESSITY of head-sync.** In `Cex`, version 1 is (i) the `IsLCA` of the pair
 `(1, 5)` whose first component is an *interior* (non-head) version, and (ii) dropped by
 the keep set, so (iii) the pruned store no longer registers it. A widened Merge rule
-that accepted an interior argument — a rewound replica, a checkpoint restore, a replica
-missing from the head map — would demand exactly the version pruning removed
+that accepted an interior argument, a rewound replica, a checkpoint restore, a replica
+missing from the head map, would demand exactly the version pruning removed
 (`h_verT` fails). The head-sync discipline (the framework's Merge reads its arguments
 off the head map) is therefore a load-bearing hypothesis of `gc_safety`, not
 pessimism. -/

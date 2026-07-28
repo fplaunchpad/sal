@@ -7,7 +7,7 @@ A minimal TS for a state-based CRDT $\mathcal{D} =
 \langle\Sigma, \sigma_0, \mathsf{do}, \mathsf{merge}, \mathsf{query},
 \mathsf{rc}\rangle$. Configurations track, for each active replica, its
 current state and the set of events it has seen. There is no version
-graph and no LCA — 2-way merge acts pointwise.
+graph and no LCA, 2-way merge acts pointwise.
 
 Transition rules (one per constructor of `Step`):
 
@@ -31,9 +31,9 @@ open LabeledTS
 visibility relation over events. Two invariants are enforced at the
 type level (making ill-formed configurations unrepresentable):
 
-* `dom_eq` — the domain of `N` (active replicas) equals the domain of
+* `dom_eq`: the domain of `N` (active replicas) equals the domain of
   `L` (replicas with known event sets).
-* `vis_events` — every edge `(a, b) ∈ vis` has both endpoints in
+* `vis_events`: every edge `(a, b) ∈ vis` has both endpoints in
   *some* replica's event set. This is the "vis only relates observed
   events" invariant consumed by the bridge theorem's Apply case. -/
 structure Configuration (D : CRDTSig) where

@@ -9,7 +9,7 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Increment-Only Counter (G-Counter) — state-based CRDT
+# Increment-Only Counter (G-Counter): state-based CRDT
 
 The canonical counter CRDT. Each replica owns its own slot; `Incr` at
 replica `rid` bumps `state[rid]` by 1; the counter's value is the sum

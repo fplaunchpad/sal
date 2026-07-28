@@ -27,7 +27,7 @@ open Sal.ConditionedMRDTs.RGAInstance (RGACondSig' rgaEqEquiv' rgaCongVC' WfOpA 
   rgaInvInvVCA)
 open Sal.ConditionedMRDTs.RGAEqQuotient (wf_eq_invariant contains_zero_eq_iff id_mono_eq_invariant)
 
-/-- **`qInv` is `≈`-invariant** — the `hInvCong` the datatype apply extension needs.
+/-- **`qInv` is `≈`-invariant**, the `hInvCong` the datatype apply extension needs.
 Each conjunct (`wf`, root-freeness, `id_mono`) descends through `eq`. -/
 theorem rga_invCong {s s' : concrete_st α} (h : (rgaEqEquiv' α).eqv s s')
     (hI : (RGACondSig' α).Inv s) : (RGACondSig' α).Inv s' := by

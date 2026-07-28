@@ -2,16 +2,16 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_LoOnEq_Causal
 import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 
 /-!
-# δ-B — a `loOnEq`-respecting enumeration of the delta exists
+# δ-B: a `loOnEq`-respecting enumeration of the delta exists
 
 *0 `sorry`.*
 
 hEnum, step B (the order-existence half).  The generic `exists_respecting`
 (`ConditionedExecutionModel`) turns an acyclicity witness (a minimal element in every nonempty
 sub-list) into a respecting permutation.  For the RGA, `loOnEq ⊆ vis` (`loOnEq_imp_vis`) and `vis` is a
-finite strict order (transitive + irreflexive — the honest-execution hypotheses), so a `vis`-minimal
+finite strict order (transitive + irreflexive, the honest-execution hypotheses), so a `vis`-minimal
 element is `loOnEq`-minimal: the acyclicity is discharged with NO extra hypotheses.  This yields
-`listPermOf π E ∧ respects π (loOnEq … E)` for any finitely-enumerated event set — the `loOnEq`-order
+`listPermOf π E ∧ respects π (loOnEq … E)` for any finitely-enumerated event set, the `loOnEq`-order
 half of hEnum's δ-enum, leaving only `noopFeasible` (step C).
 -/
 

@@ -1,9 +1,9 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Skel
 
-/-! # Shesha — M0: the placed-exactly-once accounting
+/-! # Shesha, M0: the placed-exactly-once accounting
 
 Closes the survivor-set identity (`merge_ids`) and the `Nodup` half of
-`merge_WF` (`merge_read_nodup`) — the two obligations
+`merge_WF` (`merge_read_nodup`), the two obligations
 `Shesha_Merge_Lemmas.lean` documents as owed to the parent-chain layer.
 
 Structure:
@@ -807,7 +807,7 @@ theorem base_count1 {L A B : St} (mok : ModelOK L A B) (k u : Nat) :
       · rw [outRows_alGet_none hk hbA hbB]
         exact Nat.zero_le _
 
-/-- A command's run element lives in a host row of its own branch — packaged
+/-- A command's run element lives in a host row of its own branch, packaged
 for the uniqueness argument. -/
 theorem mergeCmds_elem_row {L A B : St} (mok : ModelOK L A B) {c : Cmd}
     (hc : c ∈ mergeCmds L A B) {u : Nat} (hu : u ∈ cmdRun c)
@@ -842,14 +842,14 @@ theorem base_unique {L A B : St} (mok : ModelOK L A B)
   rcases base_addr mok hA hB h₂ with
     ⟨hL₂, hw₂, hk₂⟩ | ⟨hnL₂, -, c₂, hc₂, hu₂, ht₂⟩ |
     ⟨hnL₂, hb₂, hr₂⟩ | ⟨hnL₂, hb₂, hr₂⟩
-  -- (1,1): both skeleton entries — hosted at the same wpar
+  -- (1,1): both skeleton entries, hosted at the same wpar
   · rw [← hk₁, ← hk₂]
   -- (1,2..4): u ∈ L vs u ∉ L
   · exact absurd hL₁ (contains_eq_false.mp hnL₂)
   · exact absurd hL₁ (contains_eq_false.mp hnL₂)
   · exact absurd hL₁ (contains_eq_false.mp hnL₂)
   · exact absurd hL₂ (contains_eq_false.mp hnL₁)
-  -- (2,2): two command occurrences — same command, else the global count
+  -- (2,2): two command occurrences, same command, else the global count
   -- bound is violated
   · rcases Classical.em (c₁ = c₂) with he | hne
     · rw [← ht₁, ← ht₂, he]
@@ -898,7 +898,7 @@ theorem base_unique {L A B : St} (mok : ModelOK L A B)
       · exact absurd h0 hk0₁
       · exact absurd (contains_iff.mp hL) hkL₁
     · exact (h8 hnL₁ (mem_row_read hr₁) hmemB).elim
-  -- (3,3): two A-rows — disjointness
+  -- (3,3): two A-rows, disjointness
   · by_cases hpe : k₁ = k₂
     · exact hpe
     · exact (row_disjoint mok.wfA hpe hr₁ hr₂).elim
@@ -920,7 +920,7 @@ theorem base_unique {L A B : St} (mok : ModelOK L A B)
       · exact absurd (contains_iff.mp hL) hkL₁
   -- (4,3): live in both branches
   · exact (h8 hnL₁ (mem_row_read hr₂) (mem_row_read hr₁)).elim
-  -- (4,4): two B-rows — disjointness
+  -- (4,4): two B-rows, disjointness
   · by_cases hpe : k₁ = k₂
     · exact hpe
     · exact (row_disjoint mok.wfB hpe hr₁ hr₂).elim
@@ -1343,7 +1343,7 @@ theorem contributor_unique {L A B : St} (mok : ModelOK L A B)
     · exact (key v₁ v₂ hv₁ hv₂ hvu₁ hm₂ hr₂).elim
   · rcases hc₂ with hvu₂ | ⟨hm₂, hr₂⟩
     · exact (key v₂ v₁ hv₂ hv₁ hvu₂ hm₁ hr₁).elim
-    · -- both markers: same base, same wpar target — same chain index
+    · -- both markers: same base, same wpar target, same chain index
       obtain ⟨b₁, j₁, hb₁, he₁, hint₁⟩ := spliceReach_chain mok hA hB hr₁
       obtain ⟨b₂, j₂, hb₂, he₂, hint₂⟩ := spliceReach_chain mok hA hB hr₂
       have hbb : b₁ = b₂ := base_unique mok hA hB hb₁ hb₂
@@ -1659,7 +1659,7 @@ theorem wparIter_succ_inner (L A B : St) :
         wpar L (wp L A B) (wparIter L A B j (wpar L (wp L A B) x))
       rw [wparIter_succ_inner L A B j x]
 
-/-- Iterated hosts of a live L-node: the root, or a live L-node — strictly
+/-- Iterated hosts of a live L-node: the root, or a live L-node, strictly
 shallower after at least one step. -/
 theorem wparIter_spec {L A B : St} (mok : ModelOK L A B) :
     ∀ (n x : Nat), x ∈ read L →
@@ -1799,7 +1799,7 @@ theorem lvl_edge {L A B : St} (mok : ModelOK L A B)
 
 /-! ### The `Nodup` half of Lemma M0 -/
 
-/-- **`merge_read_nodup`**: the merge places every id at most once — the
+/-- **`merge_read_nodup`**: the merge places every id at most once, the
 `Nodup` half of `merge_WF`
 (`whiteboard/sibling-linked-proof.md` §4, Lemma M0). -/
 theorem merge_read_nodup {L A B : St} (mok : ModelOK L A B)
@@ -1853,7 +1853,7 @@ theorem merge_mem_not_marker {L A B : St} (mok : ModelOK L A B)
   omega
 
 /-- **The ⊆ half of the survivor-set identity** (`merge_ids`), closed: the
-merge displays only `liveM` ids — the working set `W` sharpened by
+merge displays only `liveM` ids, the working set `W` sharpened by
 marker-freeness. -/
 theorem merge_mem_liveM {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) {u : Nat}
@@ -2553,7 +2553,7 @@ theorem emitted_of_liveM {L A B : St} (mok : ModelOK L A B)
         exact buildF_step_mem _ _ _ hqE N 0 hqem
 
 /-- **Lemma M0, survivor-set identity, fully closed** (design record §3):
-the merge's ids are exactly `liveM` — patterns 2 (in both branches), 6
+the merge's ids are exactly `liveM`, patterns 2 (in both branches), 6
 (A-born), 7 (B-born). ⊆ by `merge_mem_liveM`; ⊇ by placement
 (`liveM_placed`), the positive marker climb (`climb_emit`), and the
 `lvl`-graded emission chain (`emitted_of_liveM`). -/

@@ -31,8 +31,8 @@ and three operations: `Add elem value`, `Inc elem amount`, `Rmv elem`.
 **Faithful translation of op-based prepare/effect.** The paper separates
 `prepare` (at the originating replica, reads local A) from `effect`
 (applied at every replica, a pure function of the effect payload). To
-encode that in SAL's state-based `⟨Σ, σ₀, do, merge, rc⟩` model — which
-has no separate prepare — we push prepare-time data INTO the op payload:
+encode that in SAL's state-based `⟨Σ, σ₀, do, merge, rc⟩` model, which
+has no separate prepare, we push prepare-time data INTO the op payload:
 `Rmv` carries the tombstone snapshot `D ⊆ (ℕ × ℕ)` as a constructor
 parameter. `do_` for Rmv then only unions `D` into `R`, a pure
 pointwise-∨ that does not read the current A. This is what preserves
@@ -59,7 +59,7 @@ the per-record accumulation behaviour vs the paper, but preserves:
   - `acquired(e)` := Σ over inc records of `amount` (tied by elem)
   - `priority(e)` := innate(e) + acquired(e)
 
-`rc o1 o2 := Either` — all operations commute under `distinct_ops`
+`rc o1 o2 := Either`, all operations commute under `distinct_ops`
 (globally-unique ts makes add-record and inc-record keys unique;
 Rmv's effect is a pointwise ∨ over R, which is idempotent-commutative).
 -/
@@ -89,9 +89,9 @@ def eq (a b : concrete_st) :=
   (forall x : ℕ × ℕ, (Prod.snd (Prod.snd a)) x = (Prod.snd (Prod.snd b)) x)
 
 /-- Three ops:
-  * `Add e v`    — stake a new add record at the op's `ts`.
-  * `Inc e a`    — record a priority increment of `a` for element `e`.
-  * `Rmv e D`    — tombstone the snapshot `D` of observed add records
+  * `Add e v`: stake a new add record at the op's `ts`.
+  * `Inc e a`: record a priority increment of `a` for element `e`.
+  * `Rmv e D`: tombstone the snapshot `D` of observed add records
                    for `e`. The tombstone payload `D` is carried in the
                    op, which is what makes `rc := Either` everywhere. -/
 inductive app_op_t : Type where

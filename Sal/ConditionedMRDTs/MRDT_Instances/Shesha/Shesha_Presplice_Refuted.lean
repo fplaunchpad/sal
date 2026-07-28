@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Join_Refuted
 
-/-! # Shesha — the `W`-join hook is ALSO false: slot orders misalign
+/-! # Shesha, the `W`-join hook is ALSO false: slot orders misalign
 
 `shesha_join_at_eff` (every `SheshaHonest`
 configuration admits `JoinLemma3AtW` at the **effective** witness class) is
@@ -9,7 +9,7 @@ configuration admits `JoinLemma3AtW` at the **effective** witness class) is
 The root cause, one level above `Shesha_Join_Refuted.lean`'s: effectiveness
 realigned the three slots' **live sets**, but not their **orders**. Two
 *concurrent same-anchor inserts* are `loOn`-unordered, so the LCA slot and a
-branch slot may enumerate them in opposite orders — the folds then display
+branch slot may enumerate them in opposite orders, the folds then display
 the common pair in opposite orders, breaking **branch agreement** (Lemma B of
 `whiteboard/sibling-linked-proof.md` §3), which the merge's run placement
 silently relies on. Here: three inserts at the root,
@@ -19,7 +19,7 @@ silently relies on. Here: three inserts at the root,
 
 with `ev₁ = {f₁,f₂,f₃}`, `ev₂ = {f₁,f₂}`. The witness `[f₂,f₁]` folds to the
 display `1 2` (canonical for the LCA and `ev₂` slots), while `[f₁,f₂,f₃]`
-folds to `3 2 1` (canonical for `ev₁`). All three witnesses are effective —
+folds to `3 2 1` (canonical for `ev₁`). All three witnesses are effective,
 root-anchored inserts always apply. The merge trusts the LCA's order `1 2`
 for the skeleton and places the head run `[3]` before its branch successor
 `2`: output display `1 3 2`. But **every** `loOn`-respecting enumeration of
@@ -329,7 +329,7 @@ theorem cy_merge_eq : SheshaD.mergeL st0 st1 st0
   native_decide
 
 /-- Any `loOn`-respecting enumeration of the union folds to a state whose
-head is `node 3` — `f3` sees both same-anchor inserts, so it is enumerated
+head is `node 3`, `f3` sees both same-anchor inserts, so it is enumerated
 last and its (root) insert is the final head-insertion. -/
 theorem fold_head_three {ρ : List (Op SAppOp)}
     (hperm : listPermOf ρ (EV1 ∪ EV2))
@@ -371,7 +371,7 @@ theorem fold_head_three {ρ : List (Op SAppOp)}
       Shesha.insert, if_pos rfl]
 
 /-- **The `W`-join hook is FALSE**: an honest configuration exists at
-which `JoinLemma3AtW` at the effective class fails — the misaligned (but
+which `JoinLemma3AtW` at the effective class fails, the misaligned (but
 individually canonical and effective) triple `st0, st1, st0` makes the merge
 display `1 3 2`, which no `loOn`-respecting enumeration of the union folds
 to. This is the exact statement of `shesha_join_at_eff`. -/
@@ -392,7 +392,7 @@ open Classical in
 /-- **`shesha_presplice` as stated is FALSE** (its exact ∀-closure): at the
 same instance, the demanded pre-splice forest `T` would have to *be* the
 merge output (the union has no deletes, so the collapse is the identity),
-whose root row `[1, 3, 2]` places `1` left of `3` — against
+whose root row `[1, 3, 2]` places `1` left of `3`, against
 `vis (ins 1) (ins 3)` and the anti-`vis` row-order clause. -/
 theorem shesha_presplice_refuted :
     ¬ (∀ (C' : Configuration SheshaD), SheshaHonest C' →

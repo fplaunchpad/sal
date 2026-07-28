@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 /-!
-# G-Set — the LCA-blind demo kernel (unconditional delta route)
+# G-Set: the LCA-blind demo kernel (unconditional delta route)
 
 Split out of the original monolithic `MRDT_Instances.lean`; declarations
 verbatim, names unchanged.

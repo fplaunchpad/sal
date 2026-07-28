@@ -11,7 +11,7 @@ configurations) satisfies
 
 * `LatticeVCsPlus` (`AWSet_latticeVCsPlus`): unions are ACI and both
   update shapes inflate (an add inserts; a rem moves `added` into
-  `dead`) — definitional for a real state-based CRDT;
+  `dead`), definitional for a real state-based CRDT;
 * `CDVC` (`AWSet_cdVC`): for `e = add`, the bound is *context-free*
   set algebra (an add's delta is its own timestamp, already generated
   by `update B e`). For `e = rem` it is exactly the trichotomy,

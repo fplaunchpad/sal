@@ -18,11 +18,11 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # LWW-Element-Set (CRDT) — read-side projection
+/-! # LWW-Element-Set (CRDT): read-side projection
 
 The 24 RA-linearizability VCs in `LWW_Element_Set_CRDT.lean` prove
 that the per-element `(addTs, remTs)` map pair converges under
-per-key max merge — both maps are grow-only ℕ-valued lattices. They
+per-key max merge, both maps are grow-only ℕ-valued lattices. They
 say nothing about the headline LWW-Element-Set claim: that an
 element is live iff its latest `Add` strictly post-dates its latest
 `Remove` (with ties favouring `Remove`, the conservative
@@ -31,16 +31,16 @@ docstring).
 
 This file lifts the headline:
 
-1. `lookup s id` — element `id` is live iff its add-ts strictly
+1. `lookup s id`: element `id` is live iff its add-ts strictly
    exceeds its remove-ts.
 2. **Convergence at the read.**
-3. **Two intent theorems** (independent — they constrain `do_`'s effect on
+3. **Two intent theorems** (independent, they constrain `do_`'s effect on
    liveness, so they would catch a wrong update):
-   - `lookup_after_add_with_fresh_ts` — `Add` at a ts strictly larger
+   - `lookup_after_add_with_fresh_ts`: `Add` at a ts strictly larger
      than the current rem-ts makes `id` live.
-   - `remove_at_higher_ts_extinguishes` — a `Remove` at ts > current
+   - `remove_at_higher_ts_extinguishes`: a `Remove` at ts > current
      add-ts strips the element from the live set.
-4. `lookup_def` — the definitional unfolding of `lookup` (liveness is the
+4. `lookup_def`: the definitional unfolding of `lookup` (liveness is the
    add-ts/rem-ts comparison). This is NOT an independent guarantee: it
    restates how `lookup` is defined and holds for whatever that definition
    is, so it catches no bug. The genuine "latest write wins" behavioural
@@ -68,7 +68,7 @@ theorem lookup_convergent (s₁ s₂ : concrete_st) (id : ℕ) :
 
 /-- **Lookup after Add with a fresh, larger ts.** Applying `Add id`
 at ts strictly greater than the element's current latest remove-ts
-makes the element live — the new add-ts becomes the per-element
+makes the element live, the new add-ts becomes the per-element
 maximum, and it strictly exceeds the unchanged remove-ts. -/
 theorem lookup_after_add_with_fresh_ts
     (s : concrete_st) (id ts rid : ℕ)
@@ -93,7 +93,7 @@ theorem remove_at_higher_ts_extinguishes
   exact h_ts_ge_add
 
 /-- **`lookup` unfolded (definitional).** Liveness is the add-ts/rem-ts
-comparison — because that is how `lookup` is *defined* (`by rfl`). Useful as
+comparison, because that is how `lookup` is *defined* (`by rfl`). Useful as
 a rewrite lemma; it is NOT an independent intent theorem and does not certify
 any behaviour: it would hold for any definition of `lookup`. The behavioural
 "latest write wins" property is carried by convergence and the two

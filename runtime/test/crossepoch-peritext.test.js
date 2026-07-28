@@ -1,12 +1,11 @@
-// CROSS-EPOCH MERGE for PERITEXT (regression). The #112 epoch join lifts a
-// state DOWN to a common frame through the epoch's INVERSE translate map, which
-// is built by buildInverseTranslate over the COORDINATE-bearing sub-state. For
-// embedRGA that is the whole state; for PERITEXT it is the text SHADOW. The
-// datatype exposes it via `coordState`, and the replica routes the inverse
-// builder through it -- WITHOUT this, buildInverseTranslate threw on peritext's
-// nested { text, marks } object, translateInv was null, and every peritext
-// cross-epoch merge DEFERRED (silent divergence between peers). The #112 tests
-// only exercised embedRGA, so this gap slipped through; this pins it.
+// CROSS-EPOCH MERGE for PERITEXT. The epoch join lifts a state DOWN to a
+// common frame through the epoch's INVERSE translate map, which is built by
+// buildInverseTranslate over the COORDINATE-bearing sub-state. For embedRGA
+// that is the whole state; for PERITEXT it is the text SHADOW. The datatype
+// exposes it via `coordState`, and the replica routes the inverse builder
+// through it. Without this routing, buildInverseTranslate throws on peritext's
+// nested { text, marks } object, translateInv is null, and every peritext
+// cross-epoch merge defers (silent divergence between peers). This pins it.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +33,6 @@ test('a peritext straggler merges a compaction ACROSS an epoch and converges', (
   assert.equal(a.epoch, 1); assert.equal(b.epoch, 0);
 
   // B authors a LOCAL edit on its epoch-0 head, then merges A's epoch-1 head.
-  // Pre-fix this THREW ('inverse epoch map unavailable') and was deferred.
   b.commit({ type: 'ins', id: mint(60), el: 'Z', anchorId: mint(50) });
   b.ingest(a.delta(b.ancestryGids()));
   b.mergeWithGid(a.headGid); // must NOT throw

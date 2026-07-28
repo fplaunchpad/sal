@@ -1,4 +1,4 @@
-// SAVE-SIZE PROBE (task #104 surfaced): compactiblePeritext.saveBytes is the
+// SAVE-SIZE PROBE: compactiblePeritext.saveBytes is the
 // run-table serialization of the text shadow plus compact JSON of the
 // deleted set and mark records: the durable cost, vs the in-memory
 // coordinate JSON that snapshotBytes reports. PASS+FAIL shaped: the probe
@@ -37,8 +37,8 @@ test('saveBytes is the run-table cost: far below the NAIVE coordinate JSON, grow
   assert.ok(save > 0, 'nonzero');
   assert.ok(save < naive / 10,
     `run-table save (${save}B) is an order below the coordinate JSON (${naive}B)`);
-  // and the v2 snapshot (what snapshotBytes now measures) is in the same
-  // small regime as the save, no longer the naive JSON
+  // and the v2 snapshot (what snapshotBytes measures) is in the same
+  // small regime as the save, not the naive JSON
   assert.ok(r.snapshotBytes() < naive / 5,
     `v2 snapshot (${r.snapshotBytes()}B) also far below naive (${naive}B)`);
 

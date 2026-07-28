@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 
 /-!
-# Merge-vs-remap congruence — the VC-S4 discharge for the embed remap species
+# Merge-vs-remap congruence: the VC-S4 discharge for the embed remap species
 
 `EmbedRGA_Stability_Bridge.lean` bridges the re-coding cluster to the
 `StabilityVC` interface at a `SettledAt` cut, but leaves **VC-S4 (the merge
@@ -25,14 +25,14 @@ whose records are all at hand. Applying it with all three arguments remapped
 discharges VC-S4 for the coordinate-iso relation `eRemapRel`
 (`eRemapRel_merge`): a merge of three re-mapped versions is the re-map of the
 merge. MIXED merges (one argument already remapped, others translated on
-ingest) are the same statement — the congruence is argument-uniform.
+ingest) are the same statement, the congruence is argument-uniform.
 
 Kernel-clean `{propext, Classical.choice, Quot.sound}`. What this does *not*
 build is a full `StabilityVC` bundle: that interface's `R` must also be
 *reflexive* (`vc_refl`, to seed the pre-compaction run) and carry the other VCs;
 the remap relation alone is not reflexive, so the bundle wiring is the
 stability-instance construction of the deferred protocol half. The **merge
-congruence itself** — the piece the bridge flagged as owed — is here.
+congruence itself**, the piece the bridge flagged as owed, is here.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -121,7 +121,7 @@ theorem eMerge2_remap {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ) :
 
 /-! ## §3 The merge congruence and the VC-S4 discharge -/
 
-/-- **`merge_remap_congr` — the merge clause, on the data plane.** The lazy
+/-- **`merge_remap_congr`, the merge clause, on the data plane.** The lazy
 translation commutes with the ternary merge on inputs whose records are all at
 hand: merging three re-mapped states is the re-map of the merge. The LCA
 argument `l` enters only through `eIds l` (id-based filter), so no domain
@@ -151,7 +151,7 @@ def eRemapRel {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ) (s ŝ : EState �
 
 /-- **The VC-S4 discharge (`vc_merge`) for the embed remap species.** Given the
 three merge premises related by `eRemapRel` (full left, compacted right), the
-merged pair is again `eRemapRel`-related — exactly the conclusion
+merged pair is again `eRemapRel`-related, exactly the conclusion
 `R (D.mergeL sT s₁ s₂) (D.mergeL ŝT ŝ₁ ŝ₂)` that `StabilityVC.vc_merge`
 demands, here for `D = E Γ α`, `D.mergeL = eMergeL`, `R = eRemapRel F`. The
 domain half is preserved because merge records come only from `s₁`/`s₂`; the
@@ -173,7 +173,7 @@ theorem eRemapRel_merge {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
     exact merge_remap_congr F sT s₁ s₂ h1d h2d
 
 /-- The at-`(E Γ α)` restatement, pinning that this is literally
-`(E Γ α).mergeL` congruence — the datatype's ternary merge used by the ternary
+`(E Γ α).mergeL` congruence, the datatype's ternary merge used by the ternary
 simulation's `Step3.merge` branch. -/
 theorem embed_merge_remap_congr {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
     (l a b : EState α)

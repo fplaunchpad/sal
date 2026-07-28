@@ -1,14 +1,14 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Stability_Bridge
 
 /-!
-# AnchorsFactorBeyond discharged — the stable-prefix geometry of honest mints
+# AnchorsFactorBeyond discharged: the stable-prefix geometry of honest mints
 
 `EmbedRGA_Stability_Bridge.lean` left one named residue: `AnchorsFactorBeyond`,
 the claim that every op minted with a settled cut in its causal past carries an
 anchor prefix that factors at the stable-prefix map. This file discharges it.
 
 **The geometry.** Under the §8 generation discipline (`GenHonest eApplicable` +
-`CausalPastEnumerable` — the same hypotheses `eHonest_of_genHonest` already
+`CausalPastEnumerable`, the same hypotheses `eHonest_of_genHonest` already
 consumes), every insert's carried prefix is the *stored coordinate of an actual
 anchor record* in the fold of its causal past. That pins the factorization at a
 codeword boundary: there is a global chain assignment (`EAnchored`) under which
@@ -29,15 +29,15 @@ residue (`eRecode_settled_bridge_honest`).
   source is the generation discipline, which this file takes as hypotheses.
 * The `d = 0` corner: under the discipline no insert event can carry id `0`
   (`eApplicable` would demand `anchor < 0`), so the second `eApplicable`
-  disjunct never fires at anchor `0` and root mints factor at `coordOf [] = []`
-  — the `MintAt` guard needs no special case.
+  disjunct never fires at anchor `0` and root mints factor at `coordOf [] = []`.
+  The `MintAt` guard needs no special case.
 * Per the runtime twin's erratum (id-addressed cuts break after epoch one:
   renumbered coordinates no longer telescope to event ids), the cut-side data
   in the concrete compaction construction are addressed by
   *coordinates/chains*, never by ids resolved through prefix sums; the
   id-arithmetic in this file (`sum` fields, `causal_mono` freshness) is used
   only *inside* the honest epoch-zero configuration. **Scope: the
-  single-epoch statement** — one compaction applied at a settled cut of an
+  single-epoch statement**, one compaction applied at a settled cut of an
   honest configuration; re-basing honesty for later epochs remains open,
   addressed by the protocol construction in `EmbedRGA_Recoding.lean` §6.
 -/
@@ -70,7 +70,7 @@ theorem eIsIns_of_ins {o : Op (EOp α)} {e : α} {π : List Bool} {d : ℕ}
 
 The carried prefix is the stored coordinate of a real, `vis`-prior anchor
 record; the anchor id is smaller (Lamport); and the anchor is **live in the
-whole causal past** — no delete of it is visible to the mint. The liveness
+whole causal past**, no delete of it is visible to the mint. The liveness
 clause is where the ∀-enumeration form of `GenHonest` earns its keep: were a
 delete visible, the enumeration ending with that delete would refute the
 `eApplicable` membership check. -/
@@ -173,7 +173,7 @@ theorem eGen_ins_anchor {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 /-! ## §3 The anchored chain certificate
 
 `EHonest.chain_gen` upgraded: one global chain assignment under which the
-carried prefix of every insert is its anchor's chain coordinate — the
+carried prefix of every insert is its anchor's chain coordinate, the
 stable/unstable split of a coordinate is a chain split, at a codeword
 boundary. -/
 
@@ -316,7 +316,7 @@ def ChainMintBeyond (Γ : OrderedPrefixCode) (C : Configuration (E Γ α))
       chainOf o.1 = chA ++ [δ]
 
 /-- **`AnchorsFactorBeyond` holds** for every bundle whose `MintAt` contains
-the canonical chain-aligned mints — the bridge's named residue is a theorem
+the canonical chain-aligned mints, the bridge's named residue is a theorem
 of the anchored geometry, not an extra hypothesis. -/
 theorem anchorsFactorBeyond_of_anchored {Γ : OrderedPrefixCode}
     {C : Configuration (E Γ α)} {chainOf : ℕ → List ℕ}
@@ -341,7 +341,7 @@ theorem anchorsFactorBeyond_of_anchored {Γ : OrderedPrefixCode}
 /-- **The bridge, residue-free.** `eRecode_settled_bridge` restated for
 disciplined (honest) configurations: the `AnchorsFactorBeyond` hypothesis is
 *gone*, replaced by the construction-checkable containment of the canonical
-chain-aligned mints in the bundle's `MintAt` — no `vis`-condition survives in
+chain-aligned mints in the bundle's `MintAt`, no `vis`-condition survives in
 the interface. At a settled cut whose state the map covers, every
 continuation of events existing beyond the cut folds and reads identically
 under the lazy translation. -/

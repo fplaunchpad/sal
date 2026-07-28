@@ -31,7 +31,7 @@ open Classical
 A state-based CRDT for a counter whose value is constrained never to
 drop below zero (or, symmetrically, above a maximum). The counter is
 distributed across a set of replicas; each replica has a local
-"quota" — its share of the counter's current value — and may freely
+"quota" (its share of the counter's current value) and may freely
 `Inc` (increment) or `Dec` (decrement) within its quota. To avoid
 exhaustion, replicas can **transfer** quota between themselves without
 waiting for any coordination.
@@ -54,9 +54,9 @@ State: `concrete_st = map ℕ Int × map ℕ Int × map (ℕ × ℕ) Int`.
 
 Three components, each grow-only per-key:
 
-* `incs : map ℕ Int` — per-replica increment counts, keyed by replica id.
-* `decs : map ℕ Int` — per-replica decrement counts, keyed by replica id.
-* `transfers : map (ℕ × ℕ) Int` — cumulative quota transferred between
+* `incs : map ℕ Int`, per-replica increment counts, keyed by replica id.
+* `decs : map ℕ Int`, per-replica decrement counts, keyed by replica id.
+* `transfers : map (ℕ × ℕ) Int`, cumulative quota transferred between
   pairs of replicas, keyed by `(sender_rid, receiver_rid)`.
 
 Each replica only ever writes to its own `incs[rid]` / `decs[rid]`
@@ -68,7 +68,7 @@ its own rid. That per-replica locality is what makes `do_` commute.
               − Σ_{(rid,r) ∈ dom} transfers[(rid,r)]`
 
 i.e. the counter's net value plus net transfers into `rid`. The
-"bounded" semantics is a **client-side predicate** — a replica
+"bounded" semantics is a **client-side predicate**, a replica
 refuses to emit `Dec` or `Transfer` if its `quota < amount`. The
 client check is **not** encoded in `do_` (which must be total for the
 SAL framework); it is a separate safety property not verified by the

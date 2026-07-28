@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Intent
 
 /-!
-# Sequential-spec soundness — the sided embedded-chain RGA
+# Sequential-spec soundness: the sided embedded-chain RGA
 
 Tier 3 (`EmbedRGA_SeqSpec.lean`) at the sided instance: the naive
 TWO-SIDED text buffer. Entries are `(id, element)` pairs plus a root
@@ -21,7 +21,7 @@ the newest L-child hugs the node from above). The rooted fold `sRFold`
 (the canonical state seeded with the sentinel record) makes both lemmas
 apply uniformly, root anchor included: the sentinel's chain is `[]`.
 
-Capstone: `sided_seq_sound` — under the datatype's own sequential
+Capstone: `sided_seq_sound`, under the datatype's own sequential
 discipline `sSeqOK` (monotone insert stamps + `sApplicable` at each
 fold), the rooted canonical state IS the two-sided buffer program, record
 for record; `sided_seq_read` drops the sentinel on both sides.
@@ -89,7 +89,7 @@ theorem sRFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op SOp))
 /-! ## §C  Sequential honesty -/
 
 /-- Sequential honesty: stamps exceed all previous insert stamps
-(Lamport), and every op is applicable at the current (unrooted) fold —
+(Lamport), and every op is applicable at the current (unrooted) fold,
 the instance's own §8 issuer guard, specialized to a linear history. -/
 def sSeqOK (Γ : OrderedPrefixCode) (ρ : List (Op SOp)) : Prop :=
   ∀ (σ : List (Op SOp)) (o : Op SOp) (τ : List (Op SOp)),
@@ -247,7 +247,7 @@ theorem s_fold_id_pos {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
   rw [e1]
   exact h3
 
-/-- **The rooted fold is the unrooted fold plus the sentinel** — the
+/-- **The rooted fold is the unrooted fold plus the sentinel**, the
 membership bridge. -/
 theorem sr_fold_iff {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
     (hOK : sSeqOK Γ ρ) :
@@ -401,7 +401,7 @@ theorem sr_fold_fst_inj {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
 
 /-- **R-adjacency**: appending a fresh R entry whose delta beats every
 existing R-continuation of the anchor changes no display verdict against
-the anchor — the newcomer sits immediately after it. -/
+the anchor, the newcomer sits immediately after it. -/
 theorem schainBefore_snocR_iff {ca cr : SChain} {δ : ℕ}
     (hne : cr ≠ ca)
     (hmax : ∀ d rest, cr = ca ++ (Side.R, d) :: rest → d < δ) :
@@ -460,7 +460,7 @@ theorem schainBefore_snocR_iff {ca cr : SChain} {δ : ℕ}
 
 /-- **L-adjacency**: appending a fresh L entry whose delta beats every
 existing L-continuation of the anchor changes no display verdict against
-the anchor — the newcomer sits immediately before it (the L band is
+the anchor, the newcomer sits immediately before it (the L band is
 mirrored: the newest L-child hugs the node). -/
 theorem schainBefore_snocL_iff {ca cr : SChain} {δ : ℕ}
     (hne : cr ≠ ca)
@@ -937,7 +937,7 @@ open SidedSPOT (cOf ch1 ch10 ch30 opsL19)
 
 /-- PASS: the two-sided buffer program replays the L19 trace to exactly
 the datatype's own display (sentinel first; elements = ids). The L19
-trace is a MERGED two-replica history, not a sequential one — the buffer
+trace is a MERGED two-replica history, not a sequential one, the buffer
 program still reproduces the fold on it. -/
 theorem l19_spec_replay :
     sSpecFold opsL19 = [(0, 0), (50, 50), (30, 30), (10, 10), (61, 61),

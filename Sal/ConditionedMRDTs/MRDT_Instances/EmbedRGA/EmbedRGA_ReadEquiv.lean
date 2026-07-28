@@ -7,17 +7,17 @@ import Sal.MRDTs.RGA_Embed.RGA_Embed_ReadEquiv
 This file supplies everything but the order core, which is
 `Sal/MRDTs/RGA_Embed/RGA_Embed_ReadEquiv.lean`. One event set, two folds:
 
-* the **embed fold** `eFold Γ ρ` — live records sorted by coordinate; its
+* the **embed fold** `eFold Γ ρ`, live records sorted by coordinate; its
   id sequence *is* the read;
-* the **RGA† fold** `rgaFold ρ` — the published tombstoned RGA
+* the **RGA† fold** `rgaFold ρ`, the published tombstoned RGA
   (`Sal/MRDTs/RGA_with_tombstones`) folded over the same enumeration with
-  the ghost prefix `π` dropped (`toRgaOp` — the wire format of
+  the ghost prefix `π` dropped (`toRgaOp`, the wire format of
   `sal-mrdts.tex` §3); its read is relational: the `visible` ids in
   `visible_lt` order.
 
 The capstone (`rga_read_eq_embed_read`): **any** `visible_lt`-sorted
 enumeration of the RGA† fold's visible ids equals the embed fold's id
-sequence. The published RGA's read — whatever executable form it takes —
+sequence. The published RGA's read, whatever executable form it takes,
 is the embed read; the embedded-chain RGA is the tombstoned RGA with the
 tombstone set compressed into the coordinates. The Python lockstep
 (120/120) is this theorem's tested form.
@@ -40,7 +40,7 @@ open Sal.EmbedRGA (OrderedPrefixCode keyLt key PosChain coordOf coordOf_inj
 /-! ## §1  The wire translation and the RGA† fold -/
 
 /-- Translate an embed op to the published RGA's op type. The ghost prefix
-`π` is DROPPED — this is `sal-mrdts.tex`'s claim that `π` may be omitted
+`π` is DROPPED, this is `sal-mrdts.tex`'s claim that `π` may be omitted
 from the wire, made syntactic. -/
 def toRgaOp : Op EOp → _root_.op_t
   | (t, r, .ins e _ a) => (t, r, _root_.app_op_t.Add_after a e)
@@ -156,7 +156,7 @@ theorem after_of_rgaFold {ρ : List (Op EOp)} {c p : ℕ} :
   · rintro ⟨r, π, e, hm⟩
     exact ⟨e, (rgaFold_fst_mem ρ c p e).mpr ⟨r, π, hm⟩⟩
 
-/-- Visibility in the RGA† fold = inserted somewhere, never deleted — the
+/-- Visibility in the RGA† fold = inserted somewhere, never deleted, the
 same order-free description `e_fold_id_mem` gives for the embed fold. -/
 theorem visible_rgaFold {ρ : List (Op EOp)} {t : ℕ} :
     _root_.visible (rgaFold ρ) t ↔
@@ -362,7 +362,7 @@ theorem embed_read_pairwise {Γ : OrderedPrefixCode} {C : Configuration (E Γ)}
 
 /-! ## §5  The capstone: any RGA† read equals the embed read
 
-The published RGA's read is relational — "the `visible` ids, enumerated
+The published RGA's read is relational, "the `visible` ids, enumerated
 in `visible_lt` order." Any list meeting that specification is unique
 (sortedness by an asymmetric relation pins the enumeration), and the
 embed fold's id sequence meets it. -/
@@ -415,8 +415,8 @@ theorem sorted_unique {R : ℕ → ℕ → Prop}
 
 /-- **The compaction theorem**: any `visible_lt`-sorted
 enumeration of the RGA† fold's visible ids IS the embed fold's id
-sequence. The published tombstoned RGA's read — whatever executable form
-realizes its relational specification — equals the embedded-chain RGA's
+sequence. The published tombstoned RGA's read, whatever executable form
+realizes its relational specification, equals the embedded-chain RGA's
 read on every honest event set: the embedded-chain RGA is the published
 RGA with the tombstone set compressed into the coordinates. -/
 theorem rga_read_eq_embed_read {Γ : OrderedPrefixCode}

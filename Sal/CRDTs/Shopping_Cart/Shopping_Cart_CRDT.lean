@@ -36,7 +36,7 @@ product p" converges once all replicas see all updates.
 ## Provenance
 
 This implementation is **original**: a direct generalisation of
-`PN_Counter_CRDT.lean` (whose state is `map ℕ Int × map ℕ Int` — per-
+`PN_Counter_CRDT.lean` (whose state is `map ℕ Int × map ℕ Int`, per-
 replica increments and decrements of a single scalar counter) to the
 multi-product setting, by widening the key from `ℕ` (replica id) to
 `ℕ × ℕ` (replica id paired with product id).
@@ -54,7 +54,7 @@ are usually described informally.
 
 State: `concrete_st = map (ℕ × ℕ) Int × map (ℕ × ℕ) Int`, where a key
 `(rid, pid)` is `(replica id, product id)`. The first map stores
-**per-replica add counts** — `adds[(rid, pid)]` = how many times
+**per-replica add counts**: `adds[(rid, pid)]` = how many times
 replica `rid` has added product `pid`. The second map stores
 **per-replica remove counts** symmetrically. Both start empty.
 
@@ -64,7 +64,7 @@ Operations (`app_op_t`):
 
 Each replica only ever writes to slots whose first component equals its
 own `rid`. So two operations with distinct replica ids ALWAYS touch
-disjoint keys in whichever map they modify — that is the invariant
+disjoint keys in whichever map they modify, that is the invariant
 that makes `do_` commutative under `distinct_ops ∧ get_rid distinct`.
 
 Merge takes the componentwise per-key max of both maps. Since each
@@ -79,7 +79,7 @@ The total quantity of product `pid` is a **client-side projection**:
 ```
   quantity(pid) = Σ over all rid of (adds[(rid, pid)] - removes[(rid, pid)])
 ```
-The projection is not part of the CRDT definition or the 24 VCs — the
+The projection is not part of the CRDT definition or the 24 VCs, the
 CRDT just has to converge on the underlying `(adds, removes)` state.
 
 ## Deliberate omissions
@@ -98,7 +98,7 @@ CRDT just has to converge on the underlying `(adds, removes)` state.
 ## Relationship to the paper's 13 benchmarks
 
 The paper (Table 2) reports PN-Counter CRDT as 16 DG + 2 LB + 6 ITP.
-Shopping_Cart has the same verification profile structurally — 18/24
+Shopping_Cart has the same verification profile structurally, 18/24
 VCs close via `sal` (including a PN-style direct proof on
 `rc_non_comm`), and the same 6 `ind_*` / `lem_0op` VCs that need
 Harmonic-style intermediate lemmas in PN-Counter are sorried here.
@@ -112,7 +112,7 @@ the file-level docstring for the design rationale. -/
 
 /-- Total lookup: value at key `k`, or `0` if `k` is not in the
 domain. Used in `eq`, `do_`, and `merge` so that comparisons and
-updates over "missing" keys behave as if they held `0` — matches the
+updates over "missing" keys behave as if they held `0`, matches the
 PN-counter convention that an uninitialised replica slot contributes
 nothing to the total. -/
 @[simp]
@@ -146,7 +146,7 @@ inductive app_op_t : Type where
 unique under the paper's `distinct_ops` assumption. -/
 abbrev op_t := ℕ × ℕ × app_op_t
 
-/-- Two ops are "distinct" iff their timestamps differ — the paper's
+/-- Two ops are "distinct" iff their timestamps differ, the paper's
 global-uniqueness assumption on op ids. -/
 @[simp]
 def distinct_ops (op1 op2 : op_t) := Prod.fst op1 != Prod.fst op2
@@ -164,7 +164,7 @@ match o with
 * `Add pid` at replica `rid`: read the current add-count at
   `(rid, pid)` (zero if absent), add 1, store it back. The remove
   map is untouched.
-* `Remove pid` at replica `rid`: symmetric — increment the remove
+* `Remove pid` at replica `rid`: symmetric, increment the remove
   count at `(rid, pid)`, leave the add map untouched.
 
 Both cases are pure increments at exactly one `(rid, pid)` slot. This
@@ -178,7 +178,7 @@ match o with
 | (_, (rid, app_op_t.Remove pid)) => (Prod.fst s, upd (Prod.snd s) (rid, pid) (mysel (Prod.snd s) (rid, pid) + 1))
 
 /-- Conflict resolution result, per the paper's framework. For this
-CRDT all op pairs reduce to `Either` — see `rc` below. -/
+CRDT all op pairs reduce to `Either`, see `rc` below. -/
 inductive rc_res : Type where
 | Fst_then_snd
 | Snd_then_fst
@@ -210,7 +210,7 @@ covered, then take the max at each key. For each `(rid, pid)`:
     is monotonically increasing under `do_`, the larger is newer).
 
 `max` is commutative, associative, and idempotent on `Int`, so merge
-inherits all three properties — which is exactly what the lattice
+inherits all three properties, which is exactly what the lattice
 proof of convergence needs. -/
 @[simp]
 def merge (a b: concrete_st) : concrete_st :=

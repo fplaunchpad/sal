@@ -31,7 +31,7 @@ hypothesis). Deletion physically removes the id; there is no tombstone component
 The element type is an arbitrary `α` (defaulting to `ℕ`, the character codepoint):
 the RGA's identity is the map **key** (a timestamp `ℕ`) and all ordering is by
 id/anchor (`ℕ`); the element rides in the `.1` of the value pair `(α × ℕ)` purely
-as cargo — it is copied and equality-tested, never inspected. A richer payload
+as cargo, it is copied and equality-tested, never inspected. A richer payload
 (e.g. `char ⊕ boundary` for a fused Peritext) is a mere instantiation. The only
 typeclasses used are `[DecidableEq α]` (for `deriving DecidableEq (app_op_t α)`)
 and, for `init_st`, a dead `[Inhabited α]` default (the element at the empty
@@ -272,7 +272,7 @@ theorem prefix_converges :
 /-- Drop the prefix and the same accurate `Del`/`Ins` pair diverges. In
 `Del; Ins` the anchor `5` is already physically gone and, with no path to climb,
 the insert falls to the root `0` instead of `7`. Because deletion is
-tombstone-free, `anc s 5` survives nowhere but the carried prefix — so no
+tombstone-free, `anc s 5` survives nowhere but the carried prefix, so no
 path-free `Ins` can satisfy `rc_non_comm'`. -/
 theorem prefixfree_diverges :
     dump (do_ (do_ sP insPF) delP) [5,7,10]
@@ -489,11 +489,11 @@ theorem del_path_free (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
 The mirror of `prefixfree_diverges`. A `Del` need not carry a prefix at all: it
 reads its reparent target straight from the live state as `anc s x`.
 
-* `del_prefix_dispensable` — a *general* equivalence (corollary of
+* `del_prefix_dispensable`: a *general* equivalence (corollary of
   `del_path_free`): on every accurate state the path-carrying `Del` and the
   path-free `doDelPF` are the same function, so the prefix carries no information
   not already in the state.
-* `deldel_pathfree_converges` — a concrete witness that `doDelPF` still converges
+* `deldel_pathfree_converges`: a concrete witness that `doDelPF` still converges
   in exactly the situation that sinks a path-free `Ins`: the chain `7 ← 5 ← 3 ← 9`
   with both interior nodes deleted and physically removed. Eager child-reparenting
   keeps the forest connected, so `9` climbs to the live `7` either way. -/

@@ -5,25 +5,25 @@ import Sal.ConditionedMRDTs.Metatheory.Stability_VC
 # The eRecode ⇄ SettledAt bridge
 
 The re-coding cluster (`eRecode_applySeq` and friends) is *cut-parametric*: it
-takes the cut as data — a state whose coordinates the stable-prefix map
+takes the cut as data, a state whose coordinates the stable-prefix map
 covers, and a continuation whose mints factor at the map (`MintAt`). This file
 discharges the standing cut hypothesis **by `SettledAt`**, to the extent
 provable today:
 
-* `settledAt_dichotomy` — **the epoch boundary is causally sharp**: at a
+* `settledAt_dichotomy`, **the epoch boundary is causally sharp**: at a
   settled event set, every existing event outside it has the *whole* cut in
   its causal past. This is the class-(a)/(b) collapse for the remap species:
   there are no in-flight ops straddling a settled cut; everything beyond it
   was minted in the new epoch. (Proved from `SettledAtOn` alone.)
-* `AnchorsFactorBeyond` — the *named residue*: ops minted with the cut in
+* `AnchorsFactorBeyond`, the *named residue*: ops minted with the cut in
   their causal past carry anchor prefixes that factor at the stable-prefix
   map. This is the re-based-honesty obligation recorded as open in
   `EmbedRGA_Recoding.lean` §6 ("the protocol half choosing a common cut …
-  it takes all-heads visibility") — deriving it needs the epoch-geometry of
+  it takes all-heads visibility"), deriving it needs the epoch-geometry of
   honestly minted coordinates, out of scope here.
-* `eRecode_settled_bridge` — **the bridge**: at a `SettledAt` cut whose state
+* `eRecode_settled_bridge`, **the bridge**: at a `SettledAt` cut whose state
   the map covers, given `AnchorsFactorBeyond`, every continuation of events
-  existing beyond the cut reads identically under the re-map — the remap
+  existing beyond the cut reads identically under the re-map, the remap
   species meets the stability interface's observation clause (VC-S2) with the
   gate supplied by the `SettledAt` contract (`whiteboard/stability-vc-note.md`)
   instead of by bare data. `vc_step`'s analogue is `eUpdate_remap`, already in
@@ -35,7 +35,7 @@ hypothesis reduced (via the dichotomy) to `AnchorsFactorBeyond`. The **merge
 clause (VC-S4) is discharged on the data plane** in
 `EmbedRGA_MergeCongr.lean` (`merge_remap_congr` / `eRemapRel_merge`): the lazy
 translation commutes with the embed RGA's ternary merge on the coordinates at
-hand, so a merge of three re-mapped versions is the re-map of the merge —
+hand, so a merge of three re-mapped versions is the re-map of the merge,
 exactly `vc_merge`'s conclusion for the coordinate-iso relation. What remains
 deferred to the protocol half is the discharge of `AnchorsFactorBeyond` itself
 and the wiring into a full (reflexive-seedable) `StabilityVC` bundle.
@@ -81,7 +81,7 @@ def AnchorsFactorBeyond (Γ : OrderedPrefixCode) (F : StablePrefixMap Γ)
 /-- **The bridge**: the re-coding theorem's standing cut hypothesis,
 discharged by `SettledAt`. At a settled cut version `v` whose state the map
 covers, any continuation of events existing *beyond* `E(v)` folds and reads
-identically under the lazy translation — the mint obligation is discharged by
+identically under the lazy translation, the mint obligation is discharged by
 the dichotomy plus the named residue. -/
 theorem eRecode_settled_bridge {Γ : OrderedPrefixCode}
     (F : StablePrefixMap Γ)
@@ -108,7 +108,7 @@ theorem eRecode_settled_bridge {Γ : OrderedPrefixCode}
     eRecode_reads_identical F s τ hrest hτ⟩
 
 /-- The version-level packaging: the gate is the same `SettledAt` the OR-set
-instance consumes — one frontier, three consumers
+instance consumes, one frontier, three consumers
 (`whiteboard/stability-vc-note.md` §2). -/
 theorem eRecode_settled_bridge' {Γ : OrderedPrefixCode}
     (F : StablePrefixMap Γ)

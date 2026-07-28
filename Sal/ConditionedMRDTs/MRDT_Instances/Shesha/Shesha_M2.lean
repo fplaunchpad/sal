@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_M0
 
-/-! # Shesha — M2: the L-extension order theorem
+/-! # Shesha, M2: the L-extension order theorem
 
 Closes `merge_L_filter` (the skeleton-DFS-order = L-document-order core) and
 hosts `merge_extends_L`, both stated as owed in
@@ -10,7 +10,7 @@ Route: the L-filter of the merge's read computes, level by level, the DFS
 of the *collapsed* skeleton (runs stripped by `rowAssemble_filter_L`,
 markers spliced by `expandRow` = `collapseRow`); the collapsed skeleton is
 the structural shallow-survivor forest of `L` (the `wpar` ↔ tree-structure
-bridge); and that DFS is exactly `(read L).filter` survivors — the same
+bridge); and that DFS is exactly `(read L).filter` survivors, the same
 splice as `delete`, performed at merge time.
 
 - §1 subtrees (`subF`), the row characterization, subtree uniqueness;
@@ -930,7 +930,7 @@ theorem collapseRow_mem_L {L A B : St} :
         exact hcs u hv
 
 /-- **Claim C**: the L-filter of a skeleton key's expansion is its
-collapsed skeleton row — the marker splice IS the collapse. -/
+collapsed skeleton row, the marker splice IS the collapse. -/
 theorem expandRow_filter_L {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) :
     ∀ (f s : Nat), alHas (skelOf L A B).rows s = true →
@@ -1051,7 +1051,7 @@ theorem filter_congr'' {p q : Nat → Bool} :
         filter_congr'' fun x hx => h x (List.mem_cons_of_mem _ hx)]
 
 /-- **The M2 core identity, closed**: the merge read filtered to L-ids
-equals the L read filtered to merge survivors — L-survivors appear in
+equals the L read filtered to merge survivors, L-survivors appear in
 L-document order. The marker splice at assembly is the delete splice
 (`sibling-linked-proof.md` §4, Lemma M2). -/
 theorem merge_L_filter {L A B : St} (mok : ModelOK L A B)

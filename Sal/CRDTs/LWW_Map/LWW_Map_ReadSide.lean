@@ -14,7 +14,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # LWW_Map (CRDT) — read-side projection
+/-! # LWW_Map (CRDT): read-side projection
 
 The 24 VCs prove the per-key `(ts, value)` map converges under
 per-key lex-max. The headline read is `lookup k`: the value at key

@@ -11,10 +11,10 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # Grow_Only_Multiset (CRDT) — read-side projection
+/-! # Grow_Only_Multiset (CRDT): read-side projection
 
 The 24 VCs prove the per-`(rid, eid)` count map converges under
-per-slot max. The headline read is the **per-replica add count** —
+per-slot max. The headline read is the **per-replica add count**,
 how many times replica `rid` has added element `eid`. The
 multiset's true multiplicity for `eid` is `Σ_rid count_at(rid, eid)`,
 which is left as a derived client-side computation. -/

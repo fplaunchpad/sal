@@ -13,11 +13,11 @@ protocol half) is the already-tracked residue of the re-coding cluster
 taken on here.
 
 * **O1** (`KeepSpec` / `keepSPM`): the retention-roots relabeling is a
-  `StablePrefixMap` whose `Rest` is the KEPT coordinate set — live ∪
+  `StablePrefixMap` whose `Rest` is the KEPT coordinate set, live ∪
   mark-boundary anchors ∪ declared in-flight anchors.  H2 on kept pairs is the
   `ord` field (`keepSPM_A1` is the note's A1); H1 is derived
   (`keepSPM_injOn_kept`); H3 (`ext`) covers both fresh beyond-cut mints and
-  declared stragglers — a straggler's mint lands in a FROZEN sibling group
+  declared stragglers, a straggler's mint lands in a FROZEN sibling group
   (deltas kept verbatim), which is exactly the text layer's skipped-groups
   side condition (`skipAt`, `EmbedRGA_CompactEliasDelta.lean`).  FAIL
   companion `freeze_guard_violation`: renumbering a group that receives an
@@ -25,7 +25,7 @@ taken on here.
   and the frozen 5 jumps the ex-9).
 
 * **O2** (`find?_filter_keep`, `scanRight_filter`, `scanLeft_filter`): a pure
-  list fact, no datatype content — removing non-surviving, non-anchor elements
+  list fact, no datatype content, removing non-surviving, non-anchor elements
   from a sequence does not change the first survivor on either side of a
   retained element.  Formalized over `List.filter`, both scan directions.
 
@@ -34,7 +34,7 @@ taken on here.
   it, and the id order; the resolver never reads a coordinate.  O1 transports
   the order facts (T1 `eRecode_applySeq` re-sorts the compacted records into
   the SAME sequence), the embed cluster transports the live sequence, ids are
-  untouched — so the compacted subject's render EQUALS the uncompacted twin's
+  untouched, so the compacted subject's render EQUALS the uncompacted twin's
   for every beyond-cut continuation whose mints satisfy H3 and whose
   stragglers are declared.  Multi-epoch: `marksGC_render_congr_twoEpoch`
   composes keep-set maps through the existing `StablePrefixMap.comp` /
@@ -46,7 +46,7 @@ insert-only at the shadow (a text delete appends to `deleted` and never
 touches a record), though the fold lemmas below are stated for arbitrary op
 lists.  One model note, pinned in the D6 SPOT: for an anchor with NO record
 this file's resolver scans from `idxOf = length` (finding the last/first
-survivor), where the Python harness degrades to a collapse sentinel — a
+survivor), where the Python harness degrades to a collapse sentinel, a
 different degenerate value, but D6 still FLIPS the read either way, which is
 the only load-bearing fact (the refusal's justification).  The positive
 obligations never touch that branch: retained anchors always have records.
@@ -179,11 +179,11 @@ theorem drop_append_cons_succ {β : Type} (l t : List β) (a : β) :
   have hlen : (l ++ [a]).length = l.length + 1 := by simp
   rw [h, ← hlen, List.drop_left]
 
-/-! ## §1  O1 — the keep-set stable-prefix map
+/-! ## §1  O1: the keep-set stable-prefix map
 
 The retention-roots keep-set has three legs: the live records, the boundary
-anchors of present (and declared in-flight) mark records — dead anchors
-included, that is the whole point — and the anchors of declared in-flight text
+anchors of present (and declared in-flight) mark records, dead anchors
+included, that is the whole point, and the anchors of declared in-flight text
 ops.  `keepSPM` packages a relabeling whose `Rest` IS that keep-set as a
 `StablePrefixMap` (not a parallel notion): H2 on kept pairs is the `ord`
 obligation, H3 is `ext` (fresh mints, plus declared stragglers whose frozen
@@ -205,7 +205,7 @@ and the extension law on declared mints (H3) IS a `StablePrefixMap` whose
 domain is the kept coordinate set.  The in-flight freeze guard lives inside
 `hext`: a declared straggler's `(π, d)` is a `Mint`, so `f (π ++ enc d) =
 f π ++ enc d` forces the straggler's sibling group to keep its deltas
-verbatim — the text layer's skipped-groups side condition. -/
+verbatim, the text layer's skipped-groups side condition. -/
 def keepSPM (Γ : OrderedPrefixCode) (K : KeepSpec)
     (f : List Bool → List Bool) (Mint : List Bool → ℕ → Prop)
     (hext : ∀ {π : List Bool} {d : ℕ}, Mint π d →
@@ -235,7 +235,7 @@ variable {Γ : OrderedPrefixCode} {K : KeepSpec}
 theorem keepSPM_dom_live {c : List Bool} (h : K.live c) :
     (keepSPM Γ K f Mint hext hord).Dom c := Or.inl (Or.inl h)
 
-/-- A retained mark-boundary anchor — dead or alive — is in the map's domain:
+/-- A retained mark-boundary anchor, dead or alive, is in the map's domain:
 its order against every other kept record is H2-protected. -/
 theorem keepSPM_dom_markAnchor {c : List Bool} (h : K.markAnchor c) :
     (keepSPM Γ K f Mint hext hord).Dom c := Or.inl (Or.inr (Or.inl h))
@@ -246,7 +246,7 @@ theorem keepSPM_dom_inflight {c : List Bool} (h : K.inflight c) :
 
 include hext hord in
 /-- **A1** (note §8): the relabeling preserves the display comparator on the
-whole kept set, retained-dead included — H2 restricted to record-bearing
+whole kept set, retained-dead included, H2 restricted to record-bearing
 nodes. -/
 theorem keepSPM_A1 {c c' : List Bool} (h : K.kept c) (h' : K.kept c') :
     keyLt (key (f c)) (key (f c')) = keyLt (key c) (key c') :=
@@ -261,7 +261,7 @@ theorem keepSPM_injOn_kept {c c' : List Bool} (h : K.kept c) (h' : K.kept c')
 
 end KeepSPM
 
-/-! ## §2  O2 — scan factorization (the A2 lemma), pure lists
+/-! ## §2  O2: scan factorization (the A2 lemma), pure lists
 
 The resolver's dead-anchor rehoming is a nearest-survivor scan from the
 anchor's birth position.  Dropping settled-dead non-anchor records is a
@@ -398,7 +398,7 @@ theorem markCoversPos_congr {d d' : DocD} (m : MarkD) (k : ℕ)
   rw [startIncl_congr m hb hdel, endExcl_congr m hb hdel]
 
 /-- **Render congruence**: two documents with the same birth id sequence, the
-same deleted list, and the same codepoints on live ids render identically —
+same deleted list, and the same codepoints on live ids render identically,
 coordinates are invisible to the mark read. -/
 theorem renderMarksDoc_congr {d d' : DocD} (marks : List MarkD) (mt : MType)
     (hb : d.birthIds = d'.birthIds) (hdel : d.deleted = d'.deleted)
@@ -486,7 +486,7 @@ theorem cp_dropDoc (d : DocD) (kp : ℕ → Bool) {c : ℕ} (hc : kp c = true) :
       rw [hrc]
       exact hc)]
 
-/-- The right scan from a kept (or absent) anchor is drop-invisible — O2
+/-- The right scan from a kept (or absent) anchor is drop-invisible, O2
 lifted to the document's birth order. -/
 theorem scanRight_dropDoc (d : DocD) (kp : ℕ → Bool) (a : ℕ)
     (hnd : d.birthIds.Nodup) (hkpa : kp a = true)
@@ -626,7 +626,7 @@ theorem cp_remap (f : List Bool → List Bool) (s : EState ℕ) (del : List ℕ)
   | some r => rfl
 
 /-- **The re-map is invisible to the mark render**: same ids, same elements,
-same list order, same deleted list — only coordinates change, and the
+same list order, same deleted list, only coordinates change, and the
 resolver never reads one. -/
 theorem renderMarksDoc_remap (f : List Bool → List Bool) (s : EState ℕ)
     (del : List ℕ) (marks : List MarkD) (mt : MType) :
@@ -707,7 +707,7 @@ theorem renderMarksDoc_deleted_congr (d : DocD) (del' : List ℕ)
 
 The subject folds the (translated) continuation over the KEPT records; the
 twin folds it over everything.  Since an op carries its own anchor prefix,
-the only interaction is the sorted-insert position — and on a sorted state,
+the only interaction is the sorted-insert position, and on a sorted state,
 inserting into a filtered list is the filter of the insert.  `ContOK` is the
 continuation discipline (fresh Lamport ids, distinct mint keys) that any
 honest beyond-cut continuation satisfies. -/
@@ -857,7 +857,7 @@ theorem eIds_eInsert_nodup {r : ERec α} : ∀ {s : EState α},
         · exact hnd'.1 h
         · exact hfresh (h ▸ List.mem_cons_self)
 
-/-- Id-nodup through one update — no side condition at all. -/
+/-- Id-nodup through one update, no side condition at all. -/
 theorem eIds_eUpdate_nodup {Γ : OrderedPrefixCode} {s : EState α} {o : Op (EOp α)}
     (h : (eIds s).Nodup) : (eIds (eUpdate Γ s o)).Nodup := by
   obtain ⟨t, rr, op⟩ := o
@@ -1023,14 +1023,14 @@ theorem eRemapSt_filter (f : List Bool → List Bool) (kp : ℕ → Bool) :
           List.filter_cons_of_neg h]
         exact eRemapSt_filter f kp xs
 
-/-! ## §5  O3 — the render-congruence capstone
+/-! ## §5  O3: the render-congruence capstone
 
 Hypothesis roles:
-* `F` with `hdom`/`hmint`: the O1 keep-set stable-prefix map — its domain the
+* `F` with `hdom`/`hmint`: the O1 keep-set stable-prefix map, its domain the
   kept records, its `MintAt` the beyond-cut mints AND declared stragglers
   (whose frozen groups are what makes `ext` dischargeable);
 * `kp` with `hdead`: only settled-dead ids are dropped;
-* `hanchor`: every present mark's boundaries are kept — the retention roots;
+* `hanchor`: every present mark's boundaries are kept, the retention roots;
 * `hok`: Lamport discipline of the continuation (fresh ids, fresh mint keys);
 * the conclusion: the compacted subject renders EQUAL to the never-compacted
   twin, for the whole continuation, every mark, every type. -/
@@ -1088,12 +1088,12 @@ theorem marksGC_render_congr {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
   exact hgoal
 
 /-- **O3, two epochs.**  Compact at a settled cut (`kp₁`, `F₁`), continue
-(`τ₁`, settling), compact again (`kp₂`, `F₂` — on the already re-coded
+(`τ₁`, settling), compact again (`kp₂`, `F₂`, on the already re-coded
 records), continue (`τ₂`, lagging, translated through the composite): the
 final render equals the never-compacted twin's.  The composite is the
 `StablePrefixMap.comp` of `EmbedRGA_MultiEpoch.lean`, carried at its own
 SURVIVING domain (`Rest'`, `MintAt'`): a retention root freed between the
-epochs — e.g. by an A3 pair-drop — is exactly the rank-reclaim shape
+epochs, e.g. by an A3 pair-drop, is exactly the rank-reclaim shape
 `naive_composition_collides` pins, and restricting the composite's domain to
 the survivors is the fix that file already provides.  n-epoch towers follow
 by the same route through `chainSPM`/`CompatOn` (`CompatChain` when nothing
@@ -1160,7 +1160,7 @@ theorem marksGC_render_congr_twoEpoch {Γ : OrderedPrefixCode}
     (applySeq_ids_nodup τ₁ s hnd)
     hok₂ hkp₂ hdomG hmintG hdead hanchor
 
-/-! ## §6  SPOTs — hand-derived, PASS + FAIL shaped
+/-! ## §6  SPOTs: hand-derived, PASS + FAIL shaped
 
 Geometry D1 of the note (§5.1), unary code, hand-worked in the docstrings;
 expected values from the note's tables, never `#eval`'d from the model. -/
@@ -1193,7 +1193,7 @@ def mintK : List Bool → ℕ → Prop := fun π d =>
   (π = unaryCode.enc 2 ∧ d = 2) ∨ (π = [] ∧ d = 10)
 
 /-- **O1 inhabited**: the retention-roots relabeling of the D1(b) cut is a
-`StablePrefixMap` via the `keepSPM` constructor — H3 covers the frozen
+`StablePrefixMap` via the `keepSPM` constructor, H3 covers the frozen
 straggler mint and the fresh root mint, H2 discharges on all kept/mint
 pairs by computation. -/
 def keepFmk : StablePrefixMap unaryCode :=
@@ -1209,7 +1209,7 @@ def keepFmk : StablePrefixMap unaryCode :=
         ⟨π', d', (⟨rfl, rfl⟩ | ⟨rfl, rfl⟩), rfl⟩ <;> decide)
 
 /-- **A1, concretely**: the retained DEAD anchor `d` keeps its display order
-against the live `R` under the relabeling — and the map is not the identity
+against the live `R` under the relabeling, and the map is not the identity
 (the compaction is real). -/
 theorem keepFmk_A1_dead_live :
     keyLt (key (gcMk (unaryCode.enc 2 ++ unaryCode.enc 1))) (key (gcMk (unaryCode.enc 7)))
@@ -1218,7 +1218,7 @@ theorem keepFmk_A1_dead_live :
 
 /-- **FAIL (the freeze guard is load-bearing).**  Renumbering a sibling
 group that receives a declared in-flight delta flips an order: kept deltas
-2 < 9 renumber to 1, 2 while the in-flight 5 arrives verbatim — the
+2 < 9 renumber to 1, 2 while the in-flight 5 arrives verbatim, the
 straggler jumps the ex-9 (note §3's freeze example; `keepSPM`'s `hord`
 cannot be discharged for this map on a domain containing the mint). -/
 def badRenumber (c : List Bool) : List Bool :=
@@ -1241,28 +1241,28 @@ theorem o2_scan_pass :
     scanRight [4, 5, 9, 7] [9, 5] (idxOf [4, 5, 9, 7] 5) = some 7 := by decide
 
 /-- FAIL: dropping a SURVIVOR (violating O2's hypothesis) changes the scan
-(`none` vs `some 7`) — the non-surviving side condition is load-bearing. -/
+(`none` vs `some 7`), the non-surviving side condition is load-bearing. -/
 theorem o2_scan_fail_survivor :
     scanRight ([4, 5, 9, 7].filter (fun c => c != 7)) [9, 5]
         (idxOf ([4, 5, 9, 7].filter (fun c => c != 7)) 5) = none ∧
     (none : Option ℕ) ≠ some 7 := by decide
 
 /-- FAIL: dropping the retained element ITSELF (the anchor) breaks the scan
-(`none` vs `some 7`) — the keep-the-anchor side condition is load-bearing;
+(`none` vs `some 7`), the keep-the-anchor side condition is load-bearing;
 this is D6's flip at list level. -/
 theorem o2_scan_fail_anchor :
     scanRight ([4, 5, 9, 7].filter (fun c => c != 5)) [9, 5]
         (idxOf ([4, 5, 9, 7].filter (fun c => c != 5)) 5) = none ∧
     (none : Option ℕ) ≠ some 7 := by decide
 
-/-! ### O3 on D1(b): end-inner, straggler variant — through the capstone
+/-! ### O3 on D1(b): end-inner, straggler variant: through the capstone
 
 Twin (hand, note §5.1 worked sample): final birth order `n̂ R M L n d` with
 ids `[10, 7, 6, 2, 4, 3]` (root deltas 10 > 7 > 6 > 2 newest first, then
 `L`'s children 4-then-3), live `[10, 7, 2, 4]`, cps `[105, 82, 76, 110]`.
 The mark (mid 5, start `L` before, end `d` after): the dead end anchor `d`
 scans left past nothing to the straggler `n` (id 4, live), the span is
-`{L, n}` — the straggler sits INSIDE the span because its id 4 is below the
+`{L, n}`, the straggler sits INSIDE the span because its id 4 is below the
 mark's mid 5 (no growth-skip).  Render: `[(105, F), (82, F), (76, T),
 (110, T)]`.  Subject: `M` dropped, `d` retained dead, coordinates re-coded
 by `keepFmk`, straggler + fresh mint folded through the translated ops. -/
@@ -1294,7 +1294,7 @@ def dSubjD1 : DocD :=
       (τD1.map (eRemapOp keepFmk.f)),
     deleted := delD1 }
 
-/-- PASS: both renders equal the hand value — the straggler is bold (id 4 <
+/-- PASS: both renders equal the hand value, the straggler is bold (id 4 <
 mid 5, inside the span), the fresh root mint is plain. -/
 theorem d1b_renders :
     renderMarksDoc dTwinD1 [mD1b] MType.bold
@@ -1303,7 +1303,7 @@ theorem d1b_renders :
       = [(105, false), (82, false), (76, true), (110, true)] := by native_decide
 
 /-- PASS (structure): the subject's birth order is the twin's filtered to
-the kept ids — interior dead `M` dropped, dead ANCHOR `d` retained — while
+the kept ids (interior dead `M` dropped, dead ANCHOR `d` retained) while
 the coordinates genuinely moved (the compaction is not the identity). -/
 theorem d1b_structure :
     dSubjD1.birthIds = dTwinD1.birthIds.filter kpD1 ∧
@@ -1311,7 +1311,7 @@ theorem d1b_structure :
     dSubjD1.shadow ≠ dTwinD1.shadow.filter (fun r => kpD1 r.1) := by native_decide
 
 /-- **PASS, fired through the capstone**: `marksGC_render_congr` discharges
-on the concrete instance — every hypothesis (sortedness, Lamport freshness,
+on the concrete instance, every hypothesis (sortedness, Lamport freshness,
 keep-set domain, mints-at-hand, dead-only drop, anchors kept) is checked,
 nothing is recomputed. -/
 theorem d1b_via_theorem :
@@ -1382,7 +1382,7 @@ theorem d1b_via_theorem :
 `A` = 1 (root), `B` = 4 (child of `A`, delta 3, dead, NOT an anchor), `C` = 9
 (child of `B`, delta 5, live), mark `[A..C]` mid 10, cut, beyond-cut `n` = 20
 under `A` (delta 19, newer than the mark).  Twin (hand): birth `A n B C`,
-live `A n C`, span `[A..C]` covers all three — the fresh insert WITHIN the
+live `A n C`, span `[A..C]` covers all three, the fresh insert WITHIN the
 span is formatted.  Subject: `B` dropped (its chain level survives inside
 `C`'s re-coded coordinate `enc 1 ++ enc 1 ++ enc 1`), renders identical. -/
 
@@ -1427,19 +1427,19 @@ theorem d2_renders :
     (4 ∉ dSubjD2.birthIds) ∧ (4 ∈ dTwinD2.birthIds) := by native_decide
 
 /-- PASS (compression): the subject's coordinates are strictly lighter than
-the twin's on the kept records — the drop is not a no-op re-coding. -/
+the twin's on the kept records, the drop is not a no-op re-coding. -/
 theorem d2_compresses :
     ((dSubjD2.shadow.map (fun r => r.2.2.length)).sum
       < (dTwinD2.shadow.map (fun r => r.2.2.length)).sum) := by native_decide
 
-/-! ### D3: two boundaries in one dead run — the order is observable
+/-! ### D3: two boundaries in one dead run: the order is observable
 
 `A`=1, `x`=2 (child of `A`), `y`=3 (child of `x`), `B`=4 (child of `y`);
 bold m1 `[A..x]` mid 10, italic m2 `[A..y]` mid 11; delete `x, y` (one dead
 run); straggler `g`=5 (child of `x`) delivered late.  Twin (hand): birth
 `A x g y B`, live `A g B`; m1's dead end `x` rehomes left to `A` (covered
 `{A}`), m2's dead end `y` rehomes left to `g` (covered `{A, g}`): `g`
-carries italic and not bold — the two boundaries' relative order INSIDE the
+carries italic and not bold, the two boundaries' relative order INSIDE the
 dead run decides `g`'s formatting.  H-A retains both records, order intact
 (the keep-set keeps every boundary anchor; A1 transports the order). -/
 
@@ -1452,7 +1452,7 @@ def m1D3 : MarkD := { mid := 10, mtype := MType.bold, start_id := 1, end_id := 2
 def m2D3 : MarkD := { mid := 11, mtype := MType.italic, start_id := 1, end_id := 3 }
 
 /-- H-B's cut-time rewrite of m2's dead end to the run's left survivor `A`
-(side kept) — the labelled control. -/
+(side kept), the labelled control. -/
 def m2D3_HB : MarkD := { mid := 11, mtype := MType.italic, start_id := 1, end_id := 1 }
 
 theorem d3_twin :
@@ -1462,7 +1462,7 @@ theorem d3_twin :
       = [(65, true), (103, true), (66, false)] := by native_decide
 
 /-- **FAIL (H-B, the labelled control)**: rewriting m2's dead end to `A` at
-the cut erases the boundary order inside the dead run — `g` LOSES italic.
+the cut erases the boundary order inside the dead run, `g` LOSES italic.
 The retention-roots keep-set exists precisely to keep this read. -/
 theorem d3_HB_erases_order :
     renderMarksDoc dTwinD3 [m1D3, m2D3_HB] MType.italic
@@ -1477,10 +1477,10 @@ D1 geometry, no continuation: `R`=1, `L`=2 (root, newer, reads first),
 Twin (hand): the dead end rehomes left from `d` to `L`: covered `{L}`.
 NONE-compaction drops `d`'s record.  In THIS file's resolver the recordless
 anchor resolves at `idxOf = length`, so the end scan walks from the list end
-and lands on `R`: covered `{L, R}` — a DIFFERENT degenerate value than the
+and lands on `R`: covered `{L, R}`, a DIFFERENT degenerate value than the
 Python harness's collapse sentinel (covered `{}`), but a FLIP either way,
 which is the load-bearing fact.  Companion: with LIVE anchors the same
-compaction reads twin-identical — the refusal is precisely about dead mark
+compaction reads twin-identical, the refusal is precisely about dead mark
 anchors. -/
 
 def dTwinD6 : DocD :=

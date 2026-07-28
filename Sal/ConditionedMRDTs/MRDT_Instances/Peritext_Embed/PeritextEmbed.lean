@@ -3,13 +3,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Rehoming.Peritext
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Rehoming.Peritext_Read
 
 /-!
-# Peritext on the embedded-chain kernel — the re-based fused instance
+# Peritext on the embedded-chain kernel: the re-based fused instance
 
 Rich text as ONE embedded-chain RGA over `PeritextElt = char ⊕ boundary`:
 the fused design of `Peritext_Rehoming/`, re-based from the rehoming kernel
 onto the embed kernel. The payload types (`PeritextElt`, `Mark`) and the
 entire pure render layer (`renderSpans`, `formatOf`, the positional intent
-theorems) are REUSED from the rehoming instance's read file — they are
+theorems) are REUSED from the rehoming instance's read file, they are
 statements about element lists, blind to which RGA produced the list.
 
 Three differences from the rehoming instance, and why this instance exists:
@@ -23,13 +23,13 @@ Three differences from the rehoming instance, and why this instance exists:
   (`fused_delete_reformats_survivor`: deleting a plain character
   re-formats an untouched survivor). Here coordinates are immutable birth
   constants and delete is `List.filter`, so deletion never reorders
-  survivors — and the general theorem `renderIds_del` holds: **deleting a
+  survivors, and the general theorem `renderIds_del` holds: **deleting a
   character leaves every other character's formatting untouched** (its
   render is the pre-delete render minus exactly the deleted entries). The
   SPOT block replays the rehoming witness trace and watches it come out
   clean (PASS + FAIL shaped).
 * **Convergence transfers directly**: the capstone is
-  `embed_ra_linearizable3` at `α := PeritextElt`, a pure instantiation —
+  `embed_ra_linearizable3` at `α := PeritextElt`, a pure instantiation,
   the payload is opaque to the embed kernel, so specialising from `ℕ` to
   `char ⊕ boundary` costs no new convergence proof, and the honesty
   contract is the embed's single `EHonest` (delete names an observed
@@ -39,7 +39,7 @@ Three differences from the rehoming instance, and why this instance exists:
 The positional intent theorems (`render_id_active_iff_between`,
 `render_span_before/inside/after`, no-backward-leak) are element-list-level
 statements in `Peritext_Rehoming/Peritext_Read.lean` §§6–9 and apply to
-this instance's `docElts` verbatim — nothing to re-prove.
+this instance's `docElts` verbatim, nothing to re-prove.
 -/
 
 namespace Sal.ConditionedMRDTs.PeritextEmbed
@@ -52,14 +52,14 @@ open Sal.ConditionedMRDTs.Peritext.Read (OpenSet Rendered renderSpans
 
 set_option linter.unusedSimpArgs false
 
-/-! ## §1  The instance and its capstone — pure instantiation -/
+/-! ## §1  The instance and its capstone: pure instantiation -/
 
 /-- The embed state at the rich-text payload: the canonical sorted record
 list, which IS the document in reading order. -/
 abbrev ESt : Type := EState PeritextElt
 
 /-- **The embed-based fused Peritext is RA-linearizable, per version, at
-every honestly reachable configuration** — `embed_ra_linearizable3` at
+every honestly reachable configuration**, `embed_ra_linearizable3` at
 `α := PeritextElt`, verbatim; parametric in the coordinate code `Γ`. -/
 theorem peritextEmbed_ra_linearizable3 {Γ : OrderedPrefixCode}
     {C : Configuration (E Γ PeritextElt)} (hReach : EReach Γ C) :
@@ -68,7 +68,7 @@ theorem peritextEmbed_ra_linearizable3 {Γ : OrderedPrefixCode}
 
 #print axioms peritextEmbed_ra_linearizable3
 
-/-! ## §2  The read — `map`, not traversal -/
+/-! ## §2  The read: `map`, not traversal -/
 
 /-- The reading-order element sequence: the state's own order. -/
 def docElts (s : ESt) : List PeritextElt := s.map (fun r => r.2.1)
@@ -80,7 +80,7 @@ def renderRichText (s : ESt) : List (ℕ × (Mark → Bool)) :=
   (renderSpans (docElts s)).map (fun r => (r.1, formatOf r.2))
 
 /-- The id-tagged render: each character record's id, codepoint, and
-formatting — the theorem-bearing form (ids let the delete theorem say
+formatting, the theorem-bearing form (ids let the delete theorem say
 "minus exactly the deleted entries"). -/
 def renderIdsAux : List (ERec PeritextElt) → OpenSet → List (ℕ × ℕ × (Mark → Bool))
   | [], _ => []
@@ -172,7 +172,7 @@ theorem renderIdsAux_filter (x : ℕ) :
 
 /-- **Deleting a character never re-formats another character**: if id `x`
 is a character (no boundary record carries it), the post-delete render is
-the pre-delete render with exactly `x`'s entries removed — every surviving
+the pre-delete render with exactly `x`'s entries removed, every surviving
 character keeps its codepoint AND its formatting predicate, bitwise. -/
 theorem renderIds_del (Γ : OrderedPrefixCode) (s : ESt) (ts r x : ℕ)
     (hchar : ∀ rec ∈ s, rec.1 = x → ∃ c, rec.2.1 = PeritextElt.char c) :
@@ -190,7 +190,7 @@ theorem renderRichText_del (Γ : OrderedPrefixCode) (s : ESt) (ts r x : ℕ)
 
 #print axioms renderIds_del
 
-/-! ## §4  SPOT — the rehoming witness trace, replayed on this kernel
+/-! ## §4  SPOT: the rehoming witness trace, replayed on this kernel
 
 PASS and FAIL shaped (convention): the pre-delete render matches the
 rehoming instance's (both kernels agree while nothing is deleted); the
@@ -214,7 +214,7 @@ def opsE : List (Op (EOp PeritextElt)) :=
 def sResidual : ESt := eFold unaryCode opsE
 
 /-- Before the delete: reading order `[⟨bold⟩, X, ⟨/bold⟩, P, C]`, so `X`
-is bold and `P`, `C` are plain — the SAME render the rehoming instance
+is bold and `P`, `C` are plain, the SAME render the rehoming instance
 computes on this trace (`docResidual_render`). -/
 theorem residual_render :
     (renderRichText sResidual).map (fun r => (r.1, r.2 Mark.bold))
@@ -222,7 +222,7 @@ theorem residual_render :
 
 /-- **Delete locality, concretely**: delete the plain `P`. `C`'s coordinate still
 begins with `P`'s chain (dead ancestors survive as coordinate bits), so `C`
-stays exactly where it was — outside the span — and stays plain. The
+stays exactly where it was, outside the span, and stays plain. The
 rehoming kernel re-formats it on this very trace
 (`fused_delete_moves_char_into_span`). -/
 theorem residual_delete_clean :
@@ -240,7 +240,7 @@ theorem residual_delete_is_filter :
             (fun e => decide (e.1 ≠ 3)) := by native_decide
 
 /-- Should-FAIL pin: the output is NOT the rehoming kernel's anomalous
-`[(88, true), (67, true)]` — the two kernels diverge at exactly this
+`[(88, true), (67, true)]`, the two kernels diverge at exactly this
 delete, and the divergence is the anomaly itself, not a rendering
 artifact. -/
 theorem residual_not_rehoming_anomaly :

@@ -1,6 +1,6 @@
-// THE FIRST-CLASS DISTRIBUTED REPLICA (src/replica.js, task #108): one store
+// THE FIRST-CLASS DISTRIBUTED REPLICA (src/replica.js): one store
 // with BOTH wire sync and certified compaction, exercised DIRECTLY (the p2p
-// demo's Node is now a thin re-export of this). Datatype-PARAMETRIC: every test
+// demo's Node is a thin re-export of this). Datatype-PARAMETRIC: every test
 // that can run over orset as well as embedRGA does, proving the object is not
 // embed-specific.
 //
@@ -8,8 +8,8 @@
 //   (b) SHA content addressing: round-trip, dedup, gate  -- embed AND orset
 //   (c) certified state GC: refuse-then-fire, reads kept -- embed (orset refuses)
 //   (d) commit GC: prune below the horizon, reads kept   -- embed AND orset
-//   (e) cross-epoch merge: the certificate-determined join (#112 phase 3;
-//       was the deferred half -- a throw -- now a translation, reads == twin)
+//   (e) cross-epoch merge: the certificate-determined join (a coordinate
+//       translation, reads == twin)
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -149,7 +149,7 @@ test('commit GC prunes below the pairwise-meet horizon, reads preserved (embed +
 });
 
 // -------------------------------- (e) cross-epoch merge = the certificate join
-test('cross-epoch merge TRANSLATES (reads == twin); the throw is gone (#112 phase 3)', () => {
+test('cross-epoch merge TRANSLATES (reads == twin), does not throw', () => {
   const a = new DistributedReplica(compactibleEmbedRGA, 'A'), b = new DistributedReplica(compactibleEmbedRGA, 'B');
   const ta = new DistributedReplica(compactibleEmbedRGA, 'A'), tb = new DistributedReplica(compactibleEmbedRGA, 'B'); // never-compacted twin
   a.register('B'); b.register('A');
@@ -161,10 +161,10 @@ test('cross-epoch merge TRANSLATES (reads == twin); the throw is gone (#112 phas
   assert.equal(a.compactStable().compacted, true);
   assert.equal(a.epoch, 1); assert.equal(b.epoch, 0);
   // B authors a straggler, ingests A's epoch-1 head, then MERGES ACROSS the epoch:
-  // once a throw, now the certificate-determined join (coordinate translation).
+  // the certificate-determined join (coordinate translation).
   b.commit({ type: 'ins', id: 150, el: 'd', anchorId: null }); tb.commit({ type: 'ins', id: 150, el: 'd', anchorId: null });
   b.ingest(a.delta(b.ancestryGids()));
-  assert.doesNotThrow(() => b.mergeWithGid(a.headGid), 'the cross-epoch throw is replaced by translation');
+  assert.doesNotThrow(() => b.mergeWithGid(a.headGid), 'cross-epoch merge translates coordinates');
   syncReplicas(ta, tb);
   assert.equal(b.read().join(''), tb.read().join(''), 'the merged read equals the never-compacted twin');
   assert.equal(b.read().join(''), 'dcba', 'hand-derived: [150,120,80,50] = d,c,b,a');

@@ -9,7 +9,7 @@ set_option synthInstance.maxSize 128
 open Classical
 open Peritext_MRDT_DSL
 
-/-! # Peritext (MRDT) — SPOTs (paper §A.2 examples)
+/-! # Peritext (MRDT): SPOTs (paper §A.2 examples)
 
 MRDT-side mirror of `Sal/CRDTs/Peritext/Peritext_SPOT.lean`. Same
 paper §A.2 examples, paper-exact text, MRDT substrate. -/
@@ -27,7 +27,7 @@ theorem chain_vlt (s : concrete_st) (i j : Nat) (h_lt : i < j)
     (chain_reach s i j (Nat.le_of_lt h_lt) h_after)
     (fun h => by injection h with h1 _; omega)
 
-/-! ## Example 1 — Concurrent formatting and insertion (§3.1) -/
+/-! ## Example 1: Concurrent formatting and insertion (§3.1) -/
 
 @[simp] def ex1_pre : Scenario :=
   the_fox_jumped.bold 0
@@ -65,7 +65,7 @@ example : in_span_visible ex1_post.state ex1_mark (16, 1) := by
   simp only [show ex1_mark.endSide = true from rfl, if_true]
   exact Or.inr h_vlt_b_d
 
-/-! ## Example 2 — Overlapping same-type formatting (§3.2) -/
+/-! ## Example 2: Overlapping same-type formatting (§3.2) -/
 
 @[simp] def ex2_state : Scenario :=
   the_fox_jumped
@@ -104,7 +104,7 @@ example : ex2_state.boldAt 5 = true := by
     · subst h_eq; decide
     · exact absurd h_eq h_ne
 
-/-! ## Example 3 — Different mark types coexist (§3.2) -/
+/-! ## Example 3: Different mark types coexist (§3.2) -/
 
 @[simp] def ex3_state : Scenario :=
   the_fox_jumped
@@ -162,7 +162,7 @@ example : ex3_state.boldAt 5 = true ∧ ex3_state.formattedAt 5 1 = true := by
     · subst h_eq; cases h_mt
     · exact absurd h_eq h_ne
 
-/-! ## Example 5 — Conflicting bold and non-bold (§3.2.1) -/
+/-! ## Example 5: Conflicting bold and non-bold (§3.2.1) -/
 
 @[simp] def ex5_state : Scenario :=
   the_fox_jumped
@@ -213,7 +213,7 @@ example : ex5_state.boldAt 8 = true := by
   · subst h_eq; decide
   · exact absurd h_eq h_ne_M3
 
-/-! ## Example 7 — Bold-boundary insertion expands (§3.3) -/
+/-! ## Example 7: Bold-boundary insertion expands (§3.3) -/
 
 @[simp] def ex7_pre : Scenario :=
   the_fox_jumped.bold 0 ['f', 'o', 'x', ' ', 'j', 'u', 'm', 'p', 'e', 'd']
@@ -240,7 +240,7 @@ example : in_span_visible ex7_post.state ex7_mark (16, 0) := by
     chain_vlt _ 9 14 (by decide) (fun k _ _ => by interval_cases k <;> simp [after_of])
   exact Or.inl (Or.inr (visible_lt.trans h_sib h_vlt_j_d))
 
-/-! ## Example 8 — Link-boundary insertion does not expand (§3.3) -/
+/-! ## Example 8: Link-boundary insertion does not expand (§3.3) -/
 
 @[simp] def ex8_state : Scenario := the_fox_jumped
 

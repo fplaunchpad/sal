@@ -4,12 +4,12 @@ open Classical
 
 set_option maxHeartbeats 1000000
 
-/-! # Tombstone-free RGA — read-side projection and intent-preservation theorems
+/-! # Tombstone-free RGA: read-side projection and intent-preservation theorems
 
 The conditioned commutation/merge results in `RGA_Tombstone_Free_MRDT.lean`
 prove convergence of the *state*. They say nothing about the sequence a user
-actually reads. This file defines the canonical RGA read — the depth-first
-forest traversal from the root sentinel `0`, siblings ordered newest-first —
+actually reads. This file defines the canonical RGA read, the depth-first
+forest traversal from the root sentinel `0`, siblings ordered newest-first,
 and proves the intent-preservation theorems behind
 `doc/why-the-path-matters.pdf`.
 
@@ -31,28 +31,28 @@ so.
 
 ## What is proved (general theorems, kernel-checked)
 
-1. `document_sound` — **soundness**: the read shows only live identities (no
+1. `document_sound`, **soundness**: the read shows only live identities (no
    ghosts). No hypotheses.
-2. `mem_document_of_live` / `mem_document_iff` — **completeness / membership**:
+2. `mem_document_of_live` / `mem_document_iff`, **completeness / membership**:
    on `wf`+`mono` states with a covering candidate list, the read shows
    *exactly* the live set. Soundness + completeness are the tombstone-free
    membership headline: no tombstone read, no live element hidden.
-3. `document_convergent` / `readText_convergent` — **convergence at the read**:
+3. `document_convergent` / `readText_convergent`, **convergence at the read**:
    states converged up to the framework's `eq` produce the same visible
    sequence (the read-side analogue of the merge-convergence VCs).
-4. `del_not_in_document` — **delete erases its target** from the read (fully
+4. `del_not_in_document`: **delete erases its target** from the read (fully
    general, from soundness).
-5. `del_document_mem` — **delete's read membership**: the survivor set of the
+5. `del_document_mem`, **delete's read membership**: the survivor set of the
    read after `Del x` is exactly the old read minus `x`.
 
 All the above are kernel-checked (axioms ⊆ [propext, Classical.choice,
 Quot.sound]; several need only [propext]).
 
-The **order**-level facts — that a leaf delete preserves survivor order, that
+The **order**-level facts, that a leaf delete preserves survivor order, that
 the fully general order-preservation claim is *false* (rehoming re-sorts a
-deleted node's children among its siblings by timestamp — a genuine read-side
+deleted node's children among its siblings by timestamp, a genuine read-side
 cost of tombstone-freedom the tombstoned RGA avoids by keeping a position
-holder), and that a fresh insert lands immediately after its anchor — are
+holder), and that a fresh insert lands immediately after its anchor, are
 established as concrete executions in the companion
 `RGA_Tombstone_Free_SPOT.lean`.
 -/
@@ -79,7 +79,7 @@ def docAux (s : concrete_st) (ids : List ℕ) : ℕ → ℕ → List ℕ
 /-- Fuel adequate for any `mono` state whose ids are drawn from `ids`. -/
 def fuelOf (ids : List ℕ) : ℕ := ids.foldr max 0 + 1
 
-/-- **The read**: the visible sequence of identities — depth-first from the
+/-- **The read**: the visible sequence of identities, depth-first from the
 root sentinel `0`, siblings in `ids` order (descending = newest first). -/
 def document (s : concrete_st) (ids : List ℕ) : List ℕ :=
   docAux s ids (fuelOf ids) 0
@@ -175,7 +175,7 @@ theorem document_sound (s : concrete_st) (ids : List ℕ) (c : ℕ)
     (h : c ∈ document s ids) : contains s c = true ∧ c ∈ ids :=
   docAux_mem_sound s ids _ 0 c h
 
-/-- **Delete erases its target from the read** — the tombstone-free
+/-- **Delete erases its target from the read**: the tombstone-free
 headline. Immediate from soundness: after `Del x` the identity `x` is not
 live, so no traversal can show it. Fully general (any state, any path, any
 candidate list). -/
@@ -324,7 +324,7 @@ theorem readText_convergent {s₁ s₂ : concrete_st} (h : eq s₁ s₂)
 /-! ## Completeness of the read: every live identity is shown
 
 Soundness (`document_sound`) says the read shows nothing dead. Completeness
-is the converse — the read misses nothing live. Together they are the
+is the converse, the read misses nothing live. Together they are the
 tombstone-free membership headline: the read is *exactly* the live set. It
 needs `wf` (every live node's parent is live or the root), `mono` (anchors
 strictly older, the design note's caveat), and a candidate list `ids` that
@@ -374,7 +374,7 @@ theorem docAux_nest (s : concrete_st) (ids : List ℕ) (hmono : mono s)
 
 /-- **Completeness of the read**: on a `wf`, `mono` state with a covering
 candidate list, every live identity appears in the read. With
-`document_sound`, the read is exactly the live set — no tombstones, and no
+`document_sound`, the read is exactly the live set, no tombstones, and no
 live element hidden. -/
 theorem mem_document_of_live (s : concrete_st) (ids : List ℕ)
     (hmono : mono s) (hwf : wf s)

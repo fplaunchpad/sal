@@ -16,7 +16,7 @@ statement that re-invokes at every epoch.
 compaction is a `StablePrefixMap`; the semantic residue of *n* compactions is
 their composition, and the composition of two `StablePrefixMap`s is again one.
 H2 (`ord`) composes because order-isomorphisms compose; H3 (`ext`/`MintAt`)
-composes at the boundary — an epoch-1 mint `(π, d)`, once epoch-1-remapped,
+composes at the boundary, an epoch-1 mint `(π, d)`, once epoch-1-remapped,
 is an epoch-2 mint `(F₁.f π, d)` (the delta codeword is never touched by any
 map); H1 (injectivity) is derived per the bundle.
 
@@ -24,23 +24,23 @@ map); H1 (injectivity) is derived per the bundle.
 *on the full first-epoch domain* is unsound whenever epoch 2 reclaims the rank
 of a record that died between the two epochs: the dead coordinate and the
 reclaimed live coordinate collide under `F₂.f ∘ F₁.f`, so `ord`/`injOn` fail.
-`comp` therefore carries the composite's *own* at-hand domain `(Rest', MintAt')`
-— the coordinates surviving to epoch 2, coordinate-addressed, never id-addressed
+`comp` therefore carries the composite's *own* at-hand domain `(Rest', MintAt')`,
+the coordinates surviving to epoch 2, coordinate-addressed, never id-addressed
 (the runtime twin's erratum: after epoch one, renumbered coordinates no longer
 telescope to event ids; §7 SPOT `id_addressing_breaks` pins this as a kernel
 fact). `CompatOn` states the four boundary conditions, and everything downstream
 (`ord`, `ext`, `injOn`) transports.
 
 Contents:
-* §1 `CompatOn` / `comp` — the domain-restricted binary composition closure;
-  `Compat` / `comp_simple` — the full-domain special case (no reclaim).
+* §1 `CompatOn` / `comp`, the domain-restricted binary composition closure;
+  `Compat` / `comp_simple`, the full-domain special case (no reclaim).
 * §2 remap plumbing (`eRemapSt_comp`, `eRemapOp_comp`, `applySeq` domain
   preservation).
-* §3 `twoEpoch_reads` — compact, continue (settling), compact again, continue
+* §3 `twoEpoch_reads`, compact, continue (settling), compact again, continue
   (lagging): reads pinned, re-invoking T1 at each epoch.
-* §4 `chainComp` / `multiEpoch_settled_reads` — the n-epoch headline over a
+* §4 `chainComp` / `multiEpoch_settled_reads`, the n-epoch headline over a
   list of maps.
-* §5 `rED_le_self` — the future-mint-freshness-post-epoch lemma (renumbering
+* §5 `rED_le_self`, the future-mint-freshness-post-epoch lemma (renumbering
   never grows a delta, so freshness/domination survives every epoch).
 * §7 SPOTs (PASS: a directed two-epoch scenario, reads pinned throughout;
   FAIL: id-addressing breaks after epoch one, and the dead-rank collision).
@@ -60,7 +60,7 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-- **The boundary conditions for composing two stable-prefix maps.** `F` is
 the earlier epoch's map, `G` the later; `(Rest', MintAt')` is the *composite*'s
-own at-hand domain — the coordinates surviving to `G`'s epoch. The four clauses
+own at-hand domain, the coordinates surviving to `G`'s epoch. The four clauses
 say those coordinates are at hand for `F` (so `F`'s `ord`/`ext` apply) and, once
 `F`-remapped, at hand for `G` (so `G`'s apply). Restricting to the surviving
 domain is exactly what avoids the dead-rank collision (file header). -/
@@ -118,8 +118,8 @@ def StablePrefixMap.comp {Γ : OrderedPrefixCode} (F G : StablePrefixMap Γ)
     (F.comp G Rest' MintAt' h).f = G.f ∘ F.f := rfl
 
 /-- **The full-domain special case** (no reclaim): when the composite may keep
-`F`'s entire domain — every `F`-at-hand coordinate is still `G`-at-hand after
-remapping, and every `F`-mint is still a `G`-mint — the boundary conditions
+`F`'s entire domain, every `F`-at-hand coordinate is still `G`-at-hand after
+remapping, and every `F`-mint is still a `G`-mint, the boundary conditions
 collapse to two clauses on `F.Dom`/`F.MintAt`. Sound exactly when epoch 2
 reclaims nothing that epoch 1 saw (e.g. back-to-back compactions with no
 between-epoch deaths). -/
@@ -199,7 +199,7 @@ theorem applySeq_dom_pres {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ) :
 This is the staged form that re-invokes T1 at *each* epoch. The between-epoch
 continuation `τ₁` settles into the state (its mints land at hand); the epoch-2
 compaction then covers that settled state (`hs2`, the settledness of the second
-cut — representation-independent, `SettledAtOn` is stated on event sets); the
+cut, representation-independent, `SettledAtOn` is stated on event sets); the
 lagging continuation `τ₂` is still in epoch-0 code and is translated through
 *both* maps (`eRemapOp` of the composite). Reads are pinned to the uncompacted
 run at the end. -/
@@ -235,7 +235,7 @@ theorem twoEpoch_reads {Γ : OrderedPrefixCode} (F₁ F₂ : StablePrefixMap Γ)
 A `CompatChain` is the full-domain chain (no between-epoch reclaim, e.g. a tower
 of back-to-back compactions at successively finer settled cuts). `compFun` is
 the accumulated coordinate translation, `chainSPM` bundles it as a single
-`StablePrefixMap` proved by induction over the list — *this is where the
+`StablePrefixMap` proved by induction over the list, *this is where the
 composition re-invokes at every epoch*. The headline then folds and reads
 identically for the whole tower in one shot, because the composite is a genuine
 stable-prefix map and every single-epoch theorem (T1/T2) applies to it verbatim. -/
@@ -309,7 +309,7 @@ def chainSPM {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
 
 /-- **The n-epoch fold congruence.** Folding the (composite-)translated
 continuation over the (composite-)re-mapped cut state is the composite re-map
-of the untranslated fold — for a tower of arbitrarily many compactions. -/
+of the untranslated fold, for a tower of arbitrarily many compactions. -/
 theorem multiEpoch_applySeq {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
     (Fs : List (StablePrefixMap Γ)) (h : CompatChain (F :: Fs))
     (s : EState α) (τ : List (Op (EOp α)))
@@ -322,8 +322,8 @@ theorem multiEpoch_applySeq {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
   eRecode_applySeq (chainSPM F Fs h) τ s hrest hτ
 
 /-- **THE n-EPOCH HEADLINE.** After arbitrarily many settled-cut compactions
-(composed into the single `chainSPM`), any beyond-all-cuts continuation — its
-lagging ops translated through every epoch's map — reads exactly as the
+(composed into the single `chainSPM`), any beyond-all-cuts continuation, its
+lagging ops translated through every epoch's map, reads exactly as the
 uncompacted run. Compression stays invisible across the whole tower of epochs.
 Kernel-clean; a direct re-invocation of T2 on the composite (which the n-fold
 closure proves is a genuine stable-prefix map). -/
@@ -347,7 +347,7 @@ domination is invariant under composition: a delta fresh against epoch-`k`'s
 ordinals was fresh against epoch-`(k-1)`'s, all the way down to the original
 timestamp differences. Ordinals are bounded by their delta (a rank counts at
 most `d` distinct positives `≤ d`), hence by the record count, hence by the
-maximum stamp — so a Lamport-fresh future mint dominates every stored ordinal
+maximum stamp, so a Lamport-fresh future mint dominates every stored ordinal
 regardless of the epoch's coordinate meaning. -/
 
 /-- **Renumbering never grows a delta.** `rED` maps a kept sibling delta to its
@@ -363,7 +363,7 @@ theorem rED_le_self {keep inflight : List (List ℕ)}
 
 /-- **The future-mint-freshness-post-epoch lemma.** A delta `d` that dominates
 every kept sibling's *original* delta still dominates every kept sibling's
-*renumbered ordinal* — so the kids-or-fresh domination that the next epoch's
+*renumbered ordinal*, so the kids-or-fresh domination that the next epoch's
 `rED_iso` consumes is preserved, on epoch-`k` coordinates, without inspecting
 whether the stored deltas mean timestamp differences or ranks. -/
 theorem rED_fresh_dominates {keep inflight : List (List ℕ)}
@@ -382,7 +382,7 @@ theorem rED_fresh_dominates {keep inflight : List (List ℕ)}
 #print axioms rED_le_self
 #print axioms rED_fresh_dominates
 
-/-! ## §7  SPOT — a directed two-epoch scenario (PASS + FAIL shaped)
+/-! ## §7  SPOT: a directed two-epoch scenario (PASS + FAIL shaped)
 
 Unary code, hand-computed. **Epoch 0**: one live record, id 2 delta 2, payload
 20, coordinate `enc 2`. **Epoch 1** (`gc1`): renumber the root group `{2} ↦ {1}`
@@ -394,11 +394,11 @@ Unary code, hand-computed. **Epoch 0**: one live record, id 2 delta 2, payload
 Hand-derived display order both sides: `w, z, (orig)` = `[80, 50, 20]` (root
 deltas 8 > 5 > 2/1, newest first). Reads pinned identical throughout the tower.
 
-FAIL companions: (a) `naive_composition_collides` — a *reclaiming* second map
+FAIL companions: (a) `naive_composition_collides`, a *reclaiming* second map
 makes `gc2 ∘ gc1` non-injective on the full first-epoch domain (a dead
 coordinate and a live one collide on the reclaimed rank), so the composite is
-NOT a stable-prefix map on the full domain — this is why `comp` carries the
-surviving domain `(Rest', MintAt')`; (b) `id_addressing_breaks` — pinning the
+NOT a stable-prefix map on the full domain, this is why `comp` carries the
+surviving domain `(Rest', MintAt')`; (b) `id_addressing_breaks`, pinning the
 runtime twin's erratum: after epoch one a renumbered coordinate no longer
 telescopes to its event id, so an id-addressed second cut resolves to nothing
 while a coordinate-addressed one resolves correctly. -/
@@ -458,7 +458,7 @@ def gc2c (c : List Bool) : List Bool :=
   if c = unaryCode.enc 2 then unaryCode.enc 1 else c
 
 /-- **FAIL**: naive composition on the FULL first-epoch domain is
-unsound under reclaim — the dead coordinate `enc 3` and the live `enc 7` collide
+unsound under reclaim, the dead coordinate `enc 3` and the live `enc 7` collide
 on the reclaimed rank `enc 1` under `gc2 ∘ gc1`, so the composite is not
 injective (H1 fails) and cannot be a stable-prefix map on the full domain. This
 is exactly why `comp` carries the surviving domain. -/
@@ -533,7 +533,7 @@ theorem s1ctrl_eq :
       = [(5, 50, unaryCode.enc 5), (2, 20, unaryCode.enc 2)] := by native_decide
 
 /-- **PASS (via the theorem)**: `twoEpoch_reads` fired on the concrete instance
-reproduces the two-epoch reads-identical pin — not recomputed, discharged
+reproduces the two-epoch reads-identical pin, not recomputed, discharged
 through the theorem's four hypotheses. -/
 theorem two_epoch_via_theorem :
     (E unaryCode).query twoRun () = (E unaryCode).query ctrl () := by

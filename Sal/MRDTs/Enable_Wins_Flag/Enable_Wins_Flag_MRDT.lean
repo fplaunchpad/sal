@@ -21,7 +21,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 
 /-!
-# Enable-Wins Flag (Correct) — state-based MRDT
+# Enable-Wins Flag (Correct): state-based MRDT
 
 A per-replica enable-wins flag using a map from replica IDs to (counter, flag) pairs.
 Each replica tracks an enable counter and the current flag state.

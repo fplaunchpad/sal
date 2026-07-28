@@ -6,14 +6,14 @@ set_option linter.mathlibStandardSet false
 
 open Classical
 
-/-! # OR-Set (CRDT) — SPOTs
+/-! # OR-Set (CRDT): SPOTs
 
 Small Proof-Oriented Tests: concrete `do`/`merge` scenarios with
 expected `lookup` outcomes, machine-checked. Two roles:
 
-* **regression tests** — small instances of the operational semantics
+* **regression tests**: small instances of the operational semantics
   proved by reduction (cheap path, this file);
-* **verified API documentation** — the same scenarios that the paper's
+* **verified API documentation**: the same scenarios that the paper's
   §3.3.5 Spec 14/15 narrates, here pinned by proof.
 
 Each SPOT is named after the headline read-side claim it exercises.
@@ -21,7 +21,7 @@ Reference: Shapiro et al. INRIA RR-7506 §3.3.5. -/
 
 namespace OR_Set_CRDT_SPOT
 
-/-- **SPOT 1 — Add makes element live.**
+/-- **SPOT 1: Add makes element live.**
 
 A single `Add 5` from the initial state makes `5` live by the
 `(5, 1) ∈ adds, (5, 1) ∉ tombstones` witness. -/
@@ -30,7 +30,7 @@ example :
     lookup σ 5 := by
   refine ⟨1, ?_, ?_⟩ <;> decide
 
-/-- **SPOT 2 — concurrent Add wins over Rem (headline).**
+/-- **SPOT 2: concurrent Add wins over Rem (headline).**
 
 Replica 0 issues `Add 5` at ts = 1; replica 1 concurrently issues
 `Rem 5` at ts = 2. The Rem's local `adds` is empty (it never
@@ -43,7 +43,7 @@ example :
     lookup σ 5 := by
   refine ⟨1, ?_, ?_⟩ <;> decide
 
-/-- **SPOT 3 — sequential Add then Rem extinguishes.**
+/-- **SPOT 3: sequential Add then Rem extinguishes.**
 
 A single replica issues `Add 5` at ts = 1, then `Rem 5` at ts = 2.
 The `Rem` snapshots the just-added `(5, 1)` into tombstones, so
@@ -54,7 +54,7 @@ example :
         5 :=
   add_then_remove_extinguishes init_st 5 1 2 0 0
 
-/-- **SPOT 4 — Add-wins survives even after concurrent Rem and merge.**
+/-- **SPOT 4: Add-wins survives even after concurrent Rem and merge.**
 
 Same shape as SPOT 2, but with three concurrent ops: replica 0 adds
 `5` at ts = 1, replicas 1 and 2 each issue `Rem 5` independently.

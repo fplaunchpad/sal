@@ -13,16 +13,16 @@ deleted node (the LCA-first shape `ρ₀ ++ π₀` pre-applies the kill; no orde
 can undo it).
 
 This file's residual replaces that clause with the natural induction invariant: **the merged state
-is reachable by an honest (born-applicable) from-`init` delivery of the union** —
+is reachable by an honest (born-applicable) from-`init` delivery of the union**,
 
-* `RgaEqJoinResidualLit2` — from the three born-applicable deliveries, produce `ρᵤ` enumerating
+* `RgaEqJoinResidualLit2`, from the three born-applicable deliveries, produce `ρᵤ` enumerating
   `ev₁ ∪ ev₂`, `loOnEq`-respecting, `noopFeasible` from `(init_st (α := α))` (from-init there IS enough freedom:
   rehome-affected inserts can be delivered before their concurrent anchor-kills), whose fold equals
   the merge of the three literal folds.
-* `rga_eqJoin_of_residualLit_NF2` — discharges `EqJoinLemma3C_NF` verbatim, with `ρᵤ` itself as the
+* `rga_eqJoin_of_residualLit_NF2`, discharges `EqJoinLemma3C_NF` verbatim, with `ρᵤ` itself as the
   union's `IsCanonicalStateEqNF` witness, in place of the `ρ₀ ++ π₀` construction that would need
   `noopFeasible π₀`.
-* `canonFoldOK_concat` — the general two-list composition of the per-event discipline
+* `canonFoldOK_concat`, the general two-list composition of the per-event discipline
   (`CanonFoldOK F s π₁` then `CanonFoldOK` continued from the prefix fold), the engine-side glue this
   residual uses to run `canon_fold` mid-stream from the LCA.
 -/
@@ -88,7 +88,7 @@ def RgaEqJoinResidualLit2 (W : op_t α → concrete_st α → Prop) : Prop :=
         (applySeqR (init_st (α := α)) ρᵤ)
 
 /-- **`EqJoinLemma3C_NF` from the literal-fold residual.**  Mirror of
-`rga_eqJoin_of_residualLit_NF`, with `ρᵤ` itself as the union's `IsCanonicalStateEqNF` witness —
+`rga_eqJoin_of_residualLit_NF`, with `ρᵤ` itself as the union's `IsCanonicalStateEqNF` witness,
 no `ρ₀ ++ π₀` assembly, no `noopFeasible_append`, no feasibility at the LCA-first fold. -/
 theorem rga_eqJoin_of_residualLit_NF2
     (W : op_t α → concrete_st α → Prop) (hRes : RgaEqJoinResidualLit2 W) :

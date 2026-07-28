@@ -13,46 +13,46 @@ import Sal.ConditionedMRDTs.Framework.ConditionedExecutionModel
 *0 `sorry`.*
 
 `RGA_CanonConvergence.RGA_update_convergence_canon` proves update convergence
-conditional on `CanonFoldOK [] (init_st (α := α)) π` — the per-event discipline at each
+conditional on `CanonFoldOK [] (init_st (α := α)) π`, the per-event discipline at each
 event's OWN application point along the enumeration.  This file derives that
 discipline from an honest per-event GENERATION hypothesis (`GenDisc2C`, §1:
 `accurate` at the event's dependency prefix, the transitive-closure form of
 `RGA_GenDischarge2`'s `GenDisc2`) plus the execution-model allocation facts
 (`ConditionedConfiguration.distinctTs`, nonzero ids), for any `loOnA`-respecting
 enumeration of the delivered set.  Headline: `RGA_update_convergence_final`
-(§6) — two `loOnA`-respecting enumerations of `E` fold from `(init_st (α := α))` to
+(§6), two `loOnA`-respecting enumerations of `E` fold from `(init_st (α := α))` to
 observationally equal states, with NO `CanonFoldOK` residual, NO swap oracle,
 NO per-prefix `Faithful`, NO `DepComp`, NO `EligibleThread`, and (notably) NO
 `ReachInv`: the canonical-state engine self-supplies the reachable-state facts.
 
-## `GenDisc2C` vs `GenDisc2` — the one honest delta
+## `GenDisc2C` vs `GenDisc2`: the one honest delta
 
 `RGA_GenDischarge2.GenDisc2` pins `accurate o` at enumerations of exactly `o`'s
 DIRECT `loOnA`-predecessors (`IsDepPre`).  That set is not backward-closed
 (`loOnA` is not transitive), so its fold is not in general a state any replica
-ever holds — and it is too weak to seat the cross-chain coherence this
+ever holds, and it is too weak to seat the cross-chain coherence this
 derivation needs.  `GenDisc2C` (§1) replaces "direct predecessor" with the
 `E`-internal TRANSITIVE closure `DepC` (`IsDepPreC`): the dependency prefix is
-the closure of `o`'s `loOnA`-past, which IS backward-closed — i.e. itself a
+the closure of `o`'s `loOnA`-past, which IS backward-closed, i.e. itself a
 genuine execution prefix.  For the RGA every `loOnA`-edge is a `vis`-edge
 (`rc = Either` empties the rc-arm), so `DepC ⊆ vis` and the closure prefix is a
 sub-past of `o`'s causal past: a concurrent `Del` of `o`'s target is still
 excluded, and the satisfiability story of `GenDisc2` carries over verbatim.
 This is still strictly a GENERATION discipline: per event, at that event's own
-dependency prefix — never at reordered application prefixes.
+dependency prefix, never at reordered application prefixes.
 
 ## Shape of the derivation
 
 Strong induction on enumeration length (§5).  For the last event `o` of a good
 enumeration `F ++ [o]`, `CanonStepOK F (fold F) o` (§4) is assembled from:
-* freshness/no-reuse/absent-from-chains — `distinctTs` + the fold-domain lemma
+* freshness/no-reuse/absent-from-chains, `distinctTs` + the fold-domain lemma
   (`insertedIn_of_contains_fold`, §2: only an `Ins t` ever adds `t`) + each
   event's `accurate` at its dependency prefix (chain entries are 0-or-inserted
   there, §2);
-* `ChainOK`/`DelOK` — the transport §3: `o`'s accurate chain at its dependency
+* `ChainOK`/`DelOK`, the transport §3: `o`'s accurate chain at its dependency
   fold `s_d`, the induction hypothesis's `CanonInv` at BOTH `s_d` and the
   application fold `s_F` (the dependency prefix is a strictly shorter good
-  enumeration — this is where the transitive closure is load-bearing), and
+  enumeration, this is where the transitive closure is load-bearing), and
   `IsAncPath`-uniqueness pin each surviving entry's stored anchor at `s_F` to
   the next `F`-surviving entry of `o`'s recorded chain.  This is exactly the
   regime where `accurate o` FAILS at `s_F` (a concurrent `Del` of `o`'s anchor
@@ -89,21 +89,21 @@ def DepC (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α)) : op_t α → op_t α → Prop :=
   Relation.TransGen (DepE Cfg E)
 
-/-- **`IsDepPreC Cfg E o d`** — `d` is a `loOnA`-respecting `Nodup` enumeration
+/-- **`IsDepPreC Cfg E o d`**, `d` is a `loOnA`-respecting `Nodup` enumeration
 of exactly `o`'s strict TRANSITIVE dependencies in `E`.  The transitive-closure
 form of `RGA_GenDischarge2.IsDepPre`: membership is pinned both ways, so the prefix set
 is unique; unlike the direct-predecessor set it is backward-closed under
-`loOnA` — the dependency prefix is itself a genuine execution prefix. -/
+`loOnA`, the dependency prefix is itself a genuine execution prefix. -/
 def IsDepPreC (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α)) (o : op_t α) (d : List (op_t α)) : Prop :=
   (∀ x ∈ d, x ∈ E) ∧ d.Nodup ∧ respects d (loOnA (RGACondSig α) Cfg E) ∧
   (∀ z ∈ E, z ≠ o → DepC Cfg E z o → z ∈ d) ∧
   (∀ x ∈ d, x ≠ o ∧ DepC Cfg E x o)
 
-/-- **`GenDisc2C` — the per-event generation discipline.**  Each delivered
+/-- **`GenDisc2C`, the per-event generation discipline.**  Each delivered
 event's recorded path is its target's TRUE live ancestor chain at the fold of
 the event's (transitively closed) dependency prefix.  A per-event, single-
-prefix assertion about each event's generation — never about reordered
+prefix assertion about each event's generation, never about reordered
 application prefixes.  Satisfiable exactly as `GenDisc2` (see the header): the
 ops that could falsify `accurate o` at the prefix are concurrent with `o`,
 hence not `DepC`-below it, hence excluded. -/
@@ -115,7 +115,7 @@ def GenDisc2C (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
 /-- A good enumeration (of a backward-closed portion of the delivery): members
 delivered, no duplicates, `loOnA`-respecting, and closed under `E`-internal
 `loOnA`-predecessors.  Every full `loOnA`-respecting enumeration of `E` is
-good (closure is vacuous), and — the engine of §5 — so is every prefix and
+good (closure is vacuous), and (the engine of §5) so is every prefix and
 every dependency sub-prefix of a good enumeration. -/
 def GoodEnum (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α)) (σ : List (op_t α)) : Prop :=
@@ -334,7 +334,7 @@ theorem isDepPreC_depList (Cfg : Sal.Emulation.Configuration (RGACondSig α).toC
           fun x hx => (mem_depList.mp hx).2⟩
 
 /-- For the LAST event of a good enumeration, its dependency sub-prefix of the
-strict prefix is itself GOOD — the backward closure that fails for the
+strict prefix is itself GOOD, the backward closure that fails for the
 direct-predecessor set (`IsDepPre`) holds for the transitive one. -/
 theorem goodEnum_depList_last (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α)) (F : List (op_t α)) (o : op_t α)
@@ -428,7 +428,7 @@ theorem resolve_restrict (F d : List (op_t α))
           resolve_live_head sF c _ hcF]
 
 /-- **Anchor transport (the workhorse).**  A node `z` live at both folds, whose
-`sD`-ancestor chain is `W`, has `sF`-anchor `resolve sF W` — i.e. the first
+`sD`-ancestor chain is `W`, has `sF`-anchor `resolve sF W`, i.e. the first
 `F`-survivor of the remainder of the chain.  Proof: `z` is a `d`-surviving
 insert; `CanonInv d` gives its `LiveChain` at `sD`, whose path component equals
 `W` by uniqueness of stored-anchor chains; `CanonInv F` pins `anc sF z` to
@@ -464,7 +464,7 @@ theorem anc_transport (F d : List (op_t α))
       huniq]
 
 /-- **`ChainOK` transport**: any chain that is genuine at the dependency fold
-satisfies `ChainOK` at the application fold — its `sF`-live sublist is a
+satisfies `ChainOK` at the application fold, its `sF`-live sublist is a
 genuine `sF`-ancestor path.  Induction along the chain; `anc_transport` pins
 each surviving entry's stored anchor to the next `sF`-survivor.  This covers
 exactly the concurrent-anchor-delete case where `accurate`-at-`sF` fails. -/
@@ -598,7 +598,7 @@ theorem depPack_last (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSi
       · rintro rfl; exact honF hxF
       · exact Relation.TransGen.trans hxdep (mem_depList.mp hm).2.2
 
-/-- **`canonStepOK_of_gen`** — the application discipline at the event's OWN
+/-- **`canonStepOK_of_gen`**, the application discipline at the event's OWN
 application point, from the generation discipline.  The heart of the file. -/
 theorem canonStepOK_of_gen (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α))
@@ -632,7 +632,7 @@ theorem canonStepOK_of_gen (Cfg : Sal.Emulation.Configuration (RGACondSig α).to
         exact absurd (insertedIn_of_contains_fold F t hb)
           (hfresh F (fun _ hx => hx))
     · -- t was never deleted in F: a Del of t is accurate at ITS dependency
-      -- prefix, so t is inserted there — impossible for a fresh id
+      -- prefix, so t is inserted there, impossible for a fresh id
       rintro ⟨t', r', p', hm⟩
       have haccδ := hGen _ (hgF.1 _ hm) _ (isDepPreC_depList_mem Cfg E F _ hgF hm)
       simp only [accurate, opLeaf, opPath] at haccδ
@@ -679,7 +679,7 @@ theorem canonStepOK_of_gen (Cfg : Sal.Emulation.Configuration (RGACondSig α).to
 
 /-! ## §6  The induction and the headline -/
 
-/-- **`canonFoldOK_of_gen`** — every good enumeration is `CanonFoldOK`-
+/-- **`canonFoldOK_of_gen`**, every good enumeration is `CanonFoldOK`-
 disciplined.  Strong induction on length: both the strict prefix and the last
 event's dependency sub-prefix are strictly shorter good enumerations (the
 latter is where `IsDepPreC`'s backward closure is load-bearing). -/
@@ -730,17 +730,17 @@ theorem canonFoldOK_of_genDisc
     ⟨fun x hx => (hπp.2 x).mp hx, hπp.1, hπr,
      fun _x _hx z hz _ _ => (hπp.2 z).mpr hz⟩
 
-/-- **HEADLINE — RGA update convergence from the generation discipline.**
+/-- **HEADLINE, RGA update convergence from the generation discipline.**
 Two `loOnA`-respecting enumerations of the same backward-closed delivered set
 `E` fold from `(init_st (α := α))` to observationally equal states.
 
-Premises, in full: the execution model (`C`, with `hE : C.BackClosed E` —
-supplying only global id-uniqueness `distinct_ts` — and nonzero ids `hids0`),
+Premises, in full: the execution model (`C`, with `hE : C.BackClosed E`,
+supplying only global id-uniqueness `distinct_ts`, and nonzero ids `hids0`),
 the enumeration hypotheses (`listPermOf`/`respects`), and the per-event
 generation discipline `GenDisc2C` (each event `accurate` at its own dependency
 prefix).  NOTHING else: no `CanonFoldOK` residual (it is DERIVED, §5–§6), no
 `EligibleThread`, no per-prefix `Faithful`, no `DepComp`, no swap oracle, and
-no `ReachInv` — the canonical-state engine of `RGA_CanonConvergence` supplies
+no `ReachInv`, the canonical-state engine of `RGA_CanonConvergence` supplies
 the reachable-state facts itself. -/
 theorem RGA_update_convergence_final
     (C : ConditionedConfiguration (RGACondSig α))

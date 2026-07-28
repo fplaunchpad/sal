@@ -24,7 +24,7 @@ by emitting a warning and leaving a goal closed with a `sorry`
 placeholder; the guard rejects any such assignment and forces the
 tactic to try the next stage. Stage 2 (blaster) is NOT guarded,
 because Blaster intentionally closes goals via `MVarId.admit`
-(sorryAx) when Z3 reports "valid" — this is the mechanism that
+(sorryAx) when Z3 reports "valid": this is the mechanism that
 enlarges the TCB to include Z3 (as described in the paper). Users
 who want a strict no-sorry policy should invoke stage 1 or stage 3
 directly instead of `sal`.

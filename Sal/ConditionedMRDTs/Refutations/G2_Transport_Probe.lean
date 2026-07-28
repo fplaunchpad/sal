@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CondSig
 import Sal.ConditionedMRDTs.Framework.LoOnC
 
 /-!
-# Gate G2 (OQ4): permutation-transport of the RGA invariant — the probe
+# Gate G2 (OQ4): permutation-transport of the RGA invariant, the probe
 
 The feasible update layer wants the
 convergence induction (`convergence_on_u`, `Sigma_LoOn3.lean:372`) to run with
@@ -20,16 +20,16 @@ front of π₂ = σ ++ e :: τ (`applySeq_bubble_to_front_loOn_u`,
 `Sigma_LoOn3.lean:320`). Commutation is invoked at exactly two families of sites,
 both inside `applySeq_swap_loOn_incomparable_u` (`Sigma_LoOn3.lean:279`):
 
-* **⚑1 (`Sigma_LoOn3.lean:296`)** — the `D.commutes a b` branch
+* **⚑1 (`Sigma_LoOn3.lean:296`)**: the `D.commutes a b` branch
   (`applySeq_swap_commute`, `Merge_Linearization.lean:394`): the adjacent pair
   `(y, e)` is swapped at the state `applySeq D D.init (peeled π₁-prefix ++
   bubbled σ-prefix)`.  These are **hybrid** states: prefix-folds of mid-bubble
   permutations that are themselves NOT `loOn`-respecting enumerations.
-* **⚑2 (`Sigma_LoOn3.lean:60,313-317`)** — the `cond_comm_lift` VC, invoked at
+* **⚑2 (`Sigma_LoOn3.lean:60,313-317`)**: the `cond_comm_lift` VC, invoked at
   the same hybrid states with an arbitrary interleaved residual `π`.
 
 So the conditioned induction needs, at every hybrid prefix-fold state `σ*`:
-**(A)** `Inv σ*`, and **(B)** `applicable e σ*` for both swapped events —
+**(A)** `Inv σ*`, and **(B)** `applicable e σ*` for both swapped events,
 because `commutesOn` (`MRDTSig.lean:73`) only yields the swap under
 `Inv σ* → applicable e₁ σ* → applicable e₂ σ*`.
 
@@ -40,12 +40,12 @@ because `commutesOn` (`MRDTSig.lean:73`) only yields the swap under
   state-dependent hypotheses `accurate`/`fresh_ts`, which would entangle (A)
   with (B).  But the *load-bearing* content is order-stable and op-only:
   `Ins` needs only `t ≠ 0`, `Del` needs only `x ∉ pre` (packaged as `opOK`;
-  derivable at generation time — `opOK_of_generation`).  With `opOK`, `RgaInv`
+  derivable at generation time, `opOK_of_generation`).  With `opOK`, `RgaInv`
   transports along **every** permutation and every mid-bubble hybrid
   (`Inv_transport_generic`/`obligation_A_RGA`), covering all ⚑ states.
-* **(B) = FALSE — trichotomy branch (ii).**  Counterexample `insOpE`/`delOpE`
+* **(B) = FALSE, trichotomy branch (ii).**  Counterexample `insOpE`/`delOpE`
   below: a genuine single-replica execution (insert node 1, then delete node 1)
-  whose conditioned `lo` has NO edge between the two events — `fresh_ts insOpE`
+  whose conditioned `lo` has NO edge between the two events: `fresh_ts insOpE`
   demands node 1 absent, `accurate delOpE` demands node 1 present, so the two
   events are never jointly applicable and `commutesOn` holds **vacuously** in
   both directions, while `rc = Either` kills the rc-flavored edge.  Hence both
@@ -54,16 +54,16 @@ because `commutesOn` (`MRDTSig.lean:73`) only yields the swap under
   (`G2_conditioned_convergence_refuted`), not merely unprovable.
 * **Route (iii) (strengthened `Inv`) is DEAD**: the failing enumeration's every
   state satisfies `RgaInv` (`bad_enumeration_stays_in_Inv`), and conditioning is
-  *antitone* — strengthening `Inv`/`applicable` shrinks `commutesOn`'s domain,
+  *antitone*: strengthening `Inv`/`applicable` shrinks `commutesOn`'s domain,
   makes `commutesOn` easier, hence **removes** `lo`-edges and admits MORE
   enumerations.  No state-shape envelope can restore the lost edge.
 * **Contrast**: the unconditioned binary `loOn` keeps the edge
   (`binary_loOn_keeps_edge`) and correctly excludes the bad order
-  (`binary_respects_excludes_bad_order`) — the failure is introduced exactly by
+  (`binary_respects_excludes_bad_order`), the failure is introduced exactly by
   the `commutes ↦ commutesOn` substitution.
 
 Consequence for the feasible update layer: the conditioned `lo` must be
-**applicability-aware** — a vis-edge `e₁ → e₂` must survive not only when
+**applicability-aware**: a vis-edge `e₁ → e₂` must survive not only when
 `¬ commutesOn e₁ e₂` but also when `e₂`'s applicability *depends on* `e₁`
 (generation dependency; for the RGA this is op-syntactic: `e₂` references
 `e₁`'s timestamp as Del-target / Ins-anchor / path member).
@@ -76,7 +76,7 @@ namespace Sal.ConditionedMRDTs.G2Probe
 open Sal.Emulation
 open Sal.ConditionedMRDTs.RGASig
 
-/-! ## §1–§3 — in `RGA_CondSig.lean`
+/-! ## §1–§3: in `RGA_CondSig.lean`
 
 The generic Inv-transport (§1), the op-only `opOK` layer (§2), and the
 packaged signature `RGAM`/`RGACondSig` (§3) are defined in `RGA_CondSig.lean`
@@ -91,8 +91,8 @@ A genuine single-replica execution: `insOpE` inserts node `1` at the root,
 (`insOpE_applicable_at_init`, `delOpE_applicable_after_ins`), and
 `vis insOpE delOpE` (program order).  Yet:
 
-* they are **never jointly applicable** — `fresh_ts insOpE s` forces
-  `contains s 1 = false`, `accurate delOpE s` forces `contains s 1 = true` —
+* they are **never jointly applicable**: `fresh_ts insOpE s` forces
+  `contains s 1 = false`, `accurate delOpE s` forces `contains s 1 = true`,
   so `commutesOn` holds VACUOUSLY in both directions;
 * `rc = Either` kills the rc-flavored edge;
 * hence the conditioned `lo` (both `Sal.ConditionedMRDTs.lo` and the set-relative
@@ -166,7 +166,7 @@ theorem delOpE_applicable_after_ins :
 /-! ### Vacuous conditioning: the pair is never jointly applicable -/
 
 /-- The heart of the failure: `fresh_ts insOpE` demands node `1` ABSENT while
-`accurate delOpE` demands node `1` PRESENT — no state satisfies both, so the
+`accurate delOpE` demands node `1` PRESENT: no state satisfies both, so the
 conditioned commutation quantifier is empty. -/
 theorem never_jointly_applicable (s : concrete_st)
     (hIns : accurate insOpE s ∧ fresh_ts insOpE s)
@@ -181,12 +181,12 @@ theorem never_jointly_applicable (s : concrete_st)
   · rw [hfr'.2] at h1
     exact Bool.noConfusion h1
 
-/-- `commutesOn insOpE delOpE` holds — VACUOUSLY. -/
+/-- `commutesOn insOpE delOpE` holds, VACUOUSLY. -/
 theorem G2_commutesOn_ins_del : RGACondSig.commutesOn insOpE delOpE := by
   intro s _hInv hIns hDel
   exact (never_jointly_applicable s hIns hDel).elim
 
-/-- `commutesOn delOpE insOpE` holds — VACUOUSLY. -/
+/-- `commutesOn delOpE insOpE` holds, VACUOUSLY. -/
 theorem G2_commutesOn_del_ins : RGACondSig.commutesOn delOpE insOpE := by
   intro s _hInv hDel hIns
   exact (never_jointly_applicable s hIns hDel).elim
@@ -230,7 +230,7 @@ theorem no_metatheory_lo_edge (C : Sal.Emulation.Configuration RGACondSig.toCRDT
 The reachable shape a single replica produces via
 `createReplica 0; apply insOpE; apply delOpE` (see `CRDT_TS.lean` `Step.apply`:
 the second apply adds exactly the edge `insOpE → delOpE`).  Step-reachability
-is noted, not mechanized — the convergence machinery consumes only the
+is noted, not mechanized: the convergence machinery consumes only the
 structural fields below, so the refutation targets it verbatim. -/
 
 def evCex : Set (Op app_op_t) := {insOpE, delOpE}
@@ -359,15 +359,15 @@ theorem respects_del_ins (C : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
 /-! ### The kill theorem -/
 
 /-- **Gate G2, verdict (B) = FALSE.**  The conditioned analogue of
-`convergence_on_u` (`Sigma_LoOn3.lean:372`) — `commutes ↦ commutesOn` inside the
+`convergence_on_u` (`Sigma_LoOn3.lean:372`), `commutes ↦ commutesOn` inside the
 linearization order, all other hypotheses kept (vis-transitivity,
-vis-irreflexivity, events-in-configuration) — is REFUTED by the tombstone-free
+vis-irreflexivity, events-in-configuration), is REFUTED by the tombstone-free
 RGA: the 2-event set `{insOpE, delOpE}` of a genuine single-replica execution
 admits two loOnC-respecting enumerations with different folds.
 
 The failure is at the FIRST fold step of the bad enumeration (`delOpE` applied
 at `init`, where it is not applicable), i.e. obligation (B) fails already at
-ordinary prefix states — before any mid-bubble hybrid subtleties arise. -/
+ordinary prefix states, before any mid-bubble hybrid subtleties arise. -/
 theorem G2_conditioned_convergence_refuted :
     ¬ (∀ (C : Sal.Emulation.Configuration RGACondSig.toCRDTSig)
          (ev : Set (Op RGACondSig.AppOp))
@@ -395,7 +395,7 @@ theorem insdel_not_commutes_unconditioned :
     ¬ RGACondSig.toCRDTSig.commutes insOpE delOpE :=
   fun h => folds_differ (h init_st)
 
-/-- The UNCONDITIONED binary `loOn` keeps the vis-edge `insOpE → delOpE` —
+/-- The UNCONDITIONED binary `loOn` keeps the vis-edge `insOpE → delOpE`:
 conditioning (`commutes ↦ commutesOn`) is exactly what deletes it. -/
 theorem binary_loOn_keeps_edge (ev : Set (Op app_op_t)) :
     loOn Ccex ev insOpE delOpE :=
@@ -409,7 +409,7 @@ theorem binary_respects_excludes_bad_order :
   have h1 := (List.pairwise_cons.mp h).1 insOpE List.mem_cons_self
   exact h1 (binary_loOn_keeps_edge evCex)
 
-/-- **Route (iii) — a strengthened state invariant — cannot repair (B)**: every
+/-- **Route (iii), a strengthened state invariant, cannot repair (B)**: every
 state visited by the failing enumeration `[delOpE, insOpE]` satisfies `RgaInv`
 (obligation (A) holds along it!).  The defect is in `applicable`, which the
 `lo`-edge predicate consults only under a quantifier that conditioning makes
@@ -443,8 +443,8 @@ The published `Inv_doIns`/`Inv_doDel` hypotheses (`accurate`/`fresh_ts`) are
 stronger than needed; had they been load-bearing, (A) would have entangled with
 (B) and failed with it.
 
-**(B) applicability-transport: FALSE — trichotomy branch (ii).**
-`G2_conditioned_convergence_refuted`.  Root cause: *vacuous conditioning* —
+**(B) applicability-transport: FALSE, trichotomy branch (ii).**
+`G2_conditioned_convergence_refuted`.  Root cause: *vacuous conditioning*,
 creation dependencies (an op referencing a node another op creates) make the
 two events never jointly applicable, so `commutesOn` is vacuously true and the
 conditioned `lo` drops precisely the vis-edges that creation order needs.
@@ -454,7 +454,7 @@ concurrent Ins/Del scenarios converge.  The failure is confined to vis-ordered
 create-then-use pairs.
 
 **Monotonicity (kills route (iii)):** `commutesOn` is antitone in the strength
-of `(Inv, applicable)` — a stronger condition means a smaller quantification
+of `(Inv, applicable)`: a stronger condition means a smaller quantification
 domain, hence MORE vacuous commutation, hence FEWER `lo`-edges, hence MORE
 admissible enumerations.  Conditioning that rescues the commutation VCs
 monotonically destroys the linearization order.  `bad_enumeration_stays_in_Inv`
@@ -462,12 +462,12 @@ shows the failing enumeration is `Inv`-internal, so no swap-closed state
 envelope exists that excludes it.
 
 **What the feasible update layer actually needs:**
-an applicability-aware `lo` — keep the vis-edge `e₁ → e₂` when
+an applicability-aware `lo`: keep the vis-edge `e₁ → e₂` when
 `¬ commutesOn e₁ e₂` OR when `e₂`'s applicability depends on `e₁`
 (for the RGA an op-syntactic, decidable dependency: `e₂` mentions `e₁`'s
 timestamp as Del-target, Ins-anchor, or path member), plus the (A) transport
 above as a separate generic obligation.  Alternatively, restrict the
-enumeration class to applicability-admissible ones — but then the bubble-sort's
+enumeration class to applicability-admissible ones, but then the bubble-sort's
 hybrid states must be proved admissible, a new and harder obligation, since
 swaps visit states no execution visits.
 -/

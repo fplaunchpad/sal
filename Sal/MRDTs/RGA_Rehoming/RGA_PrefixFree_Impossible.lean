@@ -14,9 +14,9 @@ State is the tombstone-free `map ℕ (ℕ × ℕ)` (`id ↦ (element, immediate-
 immediate anchor, a delete only its target. We abstract their *local* semantics
 over two functions:
 
-* `f : concrete_st → ℕ → ℕ` — the anchor an insert stores, computed from the
+* `f : concrete_st → ℕ → ℕ`, the anchor an insert stores, computed from the
   current state `s` and the immediate anchor `a`:  `doIns f s t e a = upd s t (e, f s a)`.
-* `g : concrete_st → ℕ → ℕ` — the reparent target a delete uses for `x`'s
+* `g : concrete_st → ℕ → ℕ`, the reparent target a delete uses for `x`'s
   children, computed from the current state and the target `x`:
   `doDel g s x = del (reparent-children-of-x-to-(g s x)) x`.
 
@@ -29,13 +29,13 @@ the immediate argument, with no carried ancestor path.
 For the result to be about a genuine RGA (not a degenerate "everything anchors at
 root" CRDT) we ask only:
 
-* `f_faithful`  — a *live* anchor is stored verbatim: `contains s a → f s a = a`.
+* `f_faithful`, a *live* anchor is stored verbatim: `contains s a → f s a = a`.
   (The new node sits immediately after its anchor; this is what makes the
   sequence read correctly.)
-* `g_faithful`  — deleting `x` reparents its children to `x`'s *live* parent:
+* `g_faithful`, deleting `x` reparents its children to `x`'s *live* parent:
   `contains s x → contains s (anc s x) → g s x = anc s x`.
   (Preserves the children's relative order under the surviving parent.)
-* `f_respects`  — the insert is genuinely tombstone-free: it cannot read deleted
+* `f_respects`, the insert is genuinely tombstone-free: it cannot read deleted
   records.  Formally it respects the framework's domain-relative state equality
   `eq` (it is a congruence for `eq`).  This is the precise content of
   "tombstone-free": `del` only shrinks the domain, so a well-defined operation
@@ -52,13 +52,13 @@ conditions, the universal `do_`-commutation of an insert against a delete
 We exhibit two states `s1, s2` that differ only in the parent pointer of a single
 leaf `x = 2` (`anc s1 2 = 1`, `anc s2 2 = 4`, both parents live). Because `x` is a
 leaf, `do_(Del x)` simply removes it and reparents nothing, so the two post-delete
-states are `eq` — the erased parent leaves *no trace* (tombstone-free).
+states are `eq`, the erased parent leaves *no trace* (tombstone-free).
 
 * In the **Del; Ins** order the insert observes the (`eq`-identical) post-delete
   state, so by `f_respects` it stores the **same** anchor `v := f (doDel g s1 2) 2`
   in both scenarios.
 * In the **Ins; Del** order the insert observes `x` live, anchors at it, and the
-  subsequent `Del x` reparents the new node to `x`'s genuine parent — `1` for
+  subsequent `Del x` reparents the new node to `x`'s genuine parent, `1` for
   `s1`, `4` for `s2` (by `f_faithful` + `g_faithful`).
 
 `do_`-commutation would force `v = 1` (from `s1`) and `v = 4` (from `s2`); since
@@ -252,11 +252,11 @@ free, prefix-free `f, g`, insert and delete fail to commute on at least one of t
 two concrete reachable witnesses. This single fact closes **both** of Sal's
 routes for the conflicting insert/delete pair:
 
-* `rc = Either`: `rc_non_comm'` demands unconditional `do_`-commutation — refuted
+* `rc = Either`: `rc_non_comm'` demands unconditional `do_`-commutation, refuted
   directly (`prefixfree_tombstonefree_noncomm`).
 * `rc` orders the pair: `cond_comm_base` requires the swap `o1;o2 ≡ o2;o1` under a
   trailing ordered `o3`; since the diverging node is created by the swapped pair
-  and is untouched by `o3`, that obligation reduces to this very divergence — as
+  and is untouched by `o3`, that obligation reduces to this very divergence, as
   the concrete `RGA_Splice_Counterexample.cond_comm_base_violated` witnesses for
   the natural `f, g`. -/
 theorem prefixfree_doDivergence

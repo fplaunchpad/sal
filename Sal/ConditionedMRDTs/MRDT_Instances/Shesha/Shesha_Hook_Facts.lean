@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Sig
 
-/-! # Shesha — event-level facts feeding the join hook
+/-! # Shesha: event-level facts feeding the join hook
 
 The bridge between the framework hypotheses of the join hook
 (`shesha_join_at_effC`)
@@ -11,7 +11,7 @@ effective-fold theory (`Shesha_EffFold.lean`):
   positional (`Before`) reformulations of `respects`/`EffFrom`.
 * §2 causal pasts are **finite and enumerable** (Lamport timestamps:
   `causal_mono` bounds a past by its event's time, `timestamps_distinct`
-  injects it into `Fin t`) — so `GenHonest` is never vacuous.
+  injects it into `Fin t`), so `GenHonest` is never vacuous.
 * §3 the honesty exclusions: no id-0 inserts, every delete's target was
   visibly inserted, no delete of an insert's anchor `vis`-before it.
 * §4 the non-commutation certificates (`¬ commutes`) for the three
@@ -116,7 +116,7 @@ theorem effFrom_prefix :
 
 Lamport timestamps make every causal past finite: `causal_mono` bounds
 the predecessors' times by the event's own, and `timestamps_distinct`
-makes time injective — the past injects into `Fin t`. So `GenHonest` is
+makes time injective, the past injects into `Fin t`. So `GenHonest` is
 never vacuous, and the honesty exclusions of §3 always fire. -/
 
 open Classical in
@@ -183,7 +183,7 @@ theorem sep_enumerable {P : Op SAppOp → Prop} {n : Nat}
     ⟨fun h => (pickList_mem h).1,
      fun h => pickList_complete huniq h (hbound x h)⟩⟩
 
-/-- **Causal pasts are enumerable** — `GenHonest` always bites. -/
+/-- **Causal pasts are enumerable**, `GenHonest` always bites. -/
 theorem past_enumerable (C : Configuration SheshaD) (e : Op SAppOp) :
     ∃ π : List (Op SAppOp), listPermOf π {e' ∈ C.events | C.vis e' e} := by
   obtain ⟨π, hnd, hmem⟩ := sep_enumerable
@@ -418,7 +418,7 @@ theorem ncomm_ins_anchor_child {p : Nat} {r' ri : Replica} {a' x : Nat}
     injection h5 with h7 h8
     cases h8
 
-/-! ## §5 the witness normal form — positional and transport helpers -/
+/-! ## §5 the witness normal form: positional and transport helpers -/
 
 theorem before_split_prefix {γ : Type} :
     ∀ {ρ α β : List γ} {a b : γ}, ρ.Nodup → Before ρ a b →
@@ -646,7 +646,7 @@ variable {C : Configuration SheshaD}
 variable {ev : Set (Op SAppOp)} {ρ : List (Op SAppOp)}
 
 /-- **(†)**: in an honest, `loOn`-respecting, effective witness, a delete
-positioned before an insert touches neither its id nor its anchor — the
+positioned before an insert touches neither its id nor its anchor, the
 hypothesis under which deletes postpone (`steps_postpone_deletes`). -/
 theorem witness_delBeforeOK
     (hH : SheshaHonest C)
@@ -856,7 +856,7 @@ def DelIn (ev : Set (Op SAppOp)) (u : Nat) : Prop :=
 open Classical in
 /-- **The witness normal form**: the fold of any honest, `loOn`-respecting,
 effective enumeration of `ev` is the delete-collapse (`dropF`) of the
-**anchored forest** of `ev`'s inserts — a WF forest whose rows are exactly
+**anchored forest** of `ev`'s inserts, a WF forest whose rows are exactly
 the same-anchor inserts, ordered against visibility (newer left). Every
 slot of the join hook is analysed through this. -/
 theorem witness_nf {C : Configuration SheshaD}

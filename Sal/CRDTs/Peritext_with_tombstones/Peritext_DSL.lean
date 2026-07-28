@@ -171,10 +171,10 @@ mark it sits on:
   (the mark covers `startId`); anchor `after startId` ⇒ open-left
   (the mark excludes `startId`).
 * On the **right** boundary: anchor `before endId` ⇒ contract-right
-  (the mark excludes `endId` and stays put under concurrent inserts —
+  (the mark excludes `endId` and stays put under concurrent inserts,
   link / comment behaviour); anchor `after endId` ⇒ expand-right
   (the mark covers `endId` *and* grows to include concurrent post-
-  `endId` inserts — bold / italic behaviour).
+  `endId` inserts, bold / italic behaviour).
 
 The underlying `MarkOp` tuple stores these as booleans (`Anchor.toBool`:
 `before ↦ false`, `after ↦ true`) for compatibility with existing
@@ -209,7 +209,7 @@ expand-right. -/
 @[simp] noncomputable def bold (opId startId endId : OpId) : MarkOp :=
   mk opId startId endId .before .after 0 true
 
-/-- A non-bold mark — paper's RemoveMark of bold, same boundary
+/-- A non-bold mark, paper's RemoveMark of bold, same boundary
 shape as `bold`. -/
 @[simp] noncomputable def unbold (opId startId endId : OpId) : MarkOp :=
   mk opId startId endId .before .after 0 false
@@ -220,7 +220,7 @@ shape as `bold`. -/
 
 /-- A link mark (markType 1), closed-left, **contract-right**. The
 end boundary sits `before` `endId`, so concurrent inserts at the
-end are excluded — matching the paper's link / comment behaviour. -/
+end are excluded, matching the paper's link / comment behaviour. -/
 @[simp] noncomputable def link (opId startId endId : OpId) : MarkOp :=
   mk opId startId endId .before .before 1 true
 

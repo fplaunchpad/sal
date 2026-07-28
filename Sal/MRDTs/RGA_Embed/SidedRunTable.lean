@@ -18,8 +18,8 @@ side channel collapses from one bit per level to one bit per entry).
 The state is the list of live **sided** birth chains (`List SChain`, an
 `SChain` = `List (Side × ℕ)`). The kept tree is the live chains plus their
 dead ancestors (nonempty prefixes). An edge into `c` is **fusible** when `c`
-is the unique kept child of its parent, its last entry is `(R, 1)` — side `R`
-AND delta `1` — and it has its parent's liveness; a **run** is a maximal
+is the unique kept child of its parent, its last entry is `(R, 1)`, side `R`
+AND delta `1`, and it has its parent's liveness; a **run** is a maximal
 fusible chain, hence uniformly `R`. No stability or honest-delivery
 hypothesis appears: every theorem is a state-level fact about a representation
 change (the measured no-stability-gate finding, sided family).
@@ -28,8 +28,8 @@ This file carries the FULL sided mirror of the one-sided run-table
 development: the sided tail-attachment lemma (`stail_attachment`) and
 run structure (§5); the canonical sided head order (§6, `shLt` over the
 flattened word stream); the representation iso BOTH directions over
-labels + SIDES + liveness — deliberately NOT timestamps, for the same
-post-epoch reason as one-sided — with canonicity and image side (§7,
+labels + SIDES + liveness, deliberately NOT timestamps, for the same
+post-epoch reason as one-sided, with canonicity and image side (§7,
 `sStateOf_sTableOf` / `sTableOf_sStateOf` / `scanonical_sTableOf`); the full
 two-case entry-chain comparator `scmpTable` licensed by `stail_attachment`,
 refining the §4 band-order seed, equal to the sided key order for EVERY
@@ -37,7 +37,7 @@ ordered prefix code (§8, `scmpTable_eq_keyLt`); the in-order structural walk
 (§9, `swalk_display`); merge congruence and the O(1) sided insert-extend
 typing equation (§10); the walk round trip and the table-DIRECT walk
 `stableWalk` with its faithfulness theorem (§11, `stableWalk_sTableOf`);
-and the all-R projection bridge — on an all-R live set the sided table and
+and the all-R projection bridge, on an all-R live set the sided table and
 walk are the one-sided ones in lockstep (§12, `sTableOf_liftR` /
 `swalk_liftR`, consuming the kernel's `schainBefore_liftR`). PASS+FAIL
 SPOTs pin the L-entry case, the band order, the L-band mint display, the
@@ -109,8 +109,8 @@ theorem skept_of_live {L : List SChain} {c : SChain}
 /-! ## §1  Sided fusible edges: uniform R runs
 
 The note §2 fusibility, sided: the edge into `c` is fusible when (1) `c` is
-the unique kept child of `c.dropLast`, (2) `delta(c) = 1` AND (3) `side(c) = R`
-— jointly `c`'s last entry is `(R, 1)` — and (4) `live(c) = live(c.dropLast)`.
+the unique kept child of `c.dropLast`, (2) `delta(c) = 1` AND (3) `side(c) = R`,
+jointly `c`'s last entry is `(R, 1)`, and (4) `live(c) = live(c.dropLast)`.
 Condition 3 is the one made live by the sided model: runs are uniformly `R`. -/
 
 /-- Fusibility of the edge into the sided chain `c` (last entry `(R,1)`). -/
@@ -144,7 +144,7 @@ theorem sfusible_last {L : List SChain} {c : SChain}
 theorem sfusible_ne_nil {L : List SChain} {c : SChain}
     (h : sfusible L c = true) : c ≠ [] := skept_ne_nil (sfusible_kept h)
 
-/-- A fusible edge's chain ends in `(R, 1)` — hence its run is uniformly `R`. -/
+/-- A fusible edge's chain ends in `(R, 1)`, hence its run is uniformly `R`. -/
 theorem sfusible_concat {L : List SChain} {c : SChain}
     (h : sfusible L c = true) : c = c.dropLast ++ [(Side.R, 1)] := by
   rcases List.eq_nil_or_concat c with rfl | ⟨p, b, rfl⟩
@@ -217,7 +217,7 @@ theorem sheadOf_eq_self_of_isHead {L : List SChain} {h : SChain}
 
 /-- **Sided T-tail** (the load-bearing lemma, sided version): in the canonical
 sided table, every entry attaches at its parent entry's last member. Kernel
-form: a head's parent node has no fusible `(R,1)`-successor — a fusible
+form: a head's parent node has no fusible `(R,1)`-successor, a fusible
 successor would be its unique kept child while the head is another kept child.
 Proof is the one-sided argument with the label `(R,1)`. No honesty, no
 stability. -/
@@ -241,7 +241,7 @@ theorem stail_attachment {L : List SChain} {h : SChain}
 The sided entry mirrors the one-sided `RTEntry` with one added `side` bit
 (note §6: "the entry header carries one side bit, and L entries are the only
 L data in the table"). Runs are uniformly `R` (`sfusible_side_R`), so member
-sides cost nothing; every `L` node is forced to be a head — its own explicit
+sides cost nothing; every `L` node is forced to be a head, its own explicit
 entry (`Lentry_isHead`). -/
 
 /-- A sided table entry: the one-sided header plus a `side` field. -/
@@ -256,7 +256,7 @@ deriving DecidableEq
 abbrev STable := List SRTEntry
 
 /-- **Uniform-R runs**: a fusible edge's chain ends `(R,1)`, so within a run
-every member is `R` — the side channel collapses to one bit per entry. -/
+every member is `R`, the side channel collapses to one bit per entry. -/
 theorem sfusible_side_R {L : List SChain} {c : SChain}
     (h : sfusible L c = true) : (c.getLastD (Side.R, 0)).1 = Side.R := by
   rw [sfusible_last h]
@@ -272,8 +272,8 @@ theorem Lentry_not_fusible {L : List SChain} {c : SChain}
       rw [sfusible_last hf] at hL
       exact absurd hL (by decide)
 
-/-- **L entries stored explicitly**: every kept `L` node is a head — its own
-entry — the sided run table's defining structural fact (note §6). -/
+/-- **L entries stored explicitly**: every kept `L` node is a head, its own
+entry, the sided run table's defining structural fact (note §6). -/
 theorem Lentry_isHead {L : List SChain} {c : SChain}
     (hc : c ∈ skeptL L) (hL : (c.getLastD (Side.R, 0)).1 = Side.L) :
     sisHead L c = true :=
@@ -283,7 +283,7 @@ theorem Lentry_isHead {L : List SChain} {c : SChain}
 
 The sided comparator's two-case structure is licensed by `stail_attachment`
 exactly as in the one-sided `cmpTable`; its **semantic core** is the sided
-key order, which is `schainBefore` — including the band case `(L,·)` before
+key order, which is `schainBefore`, including the band case `(L,·)` before
 `(R,·)`. This re-exposes the kernel's marker theorem at the run-table layer;
 the full entry-chain comparator `scmpTable` (§8) refines it, with
 `scmpTable_eq_keyLt` the equality against the sided key order for every
@@ -292,7 +292,7 @@ ordered prefix code. -/
 open Sal.EmbedRGA (OrderedPrefixCode)
 
 /-- **Sided key order = in-order display rule**: for distinct positive sided
-chains the sided coordinate key comparison equals `schainBefore` — the sided
+chains the sided coordinate key comparison equals `schainBefore`, the sided
 two-band order (L band ascending, node, R band descending). -/
 theorem sided_keyLt_iff_schainBefore (Γ : OrderedPrefixCode) {c1 c2 : SChain}
     (h1 : PosSChain c1) (h2 : PosSChain c2) (hne : c1 ≠ c2) :
@@ -700,11 +700,11 @@ theorem shLt_sorted_ext : ∀ {l l' : List SChain},
           · exact h
       rw [shLt_sorted_ext hxs hys htails]
 
-/-! ## §7  Sided T-repr — the indexed run table and the representation iso
+/-! ## §7  Sided T-repr: the indexed run table and the representation iso
 
 The sided entry stores the accounting header `(parent ref, liveness, SIDE,
 head delta, length)` and NOT the chain. **Statement hygiene** as one-sided:
-the iso is over **labels + sides + liveness**, NOT timestamps — post-epoch
+the iso is over **labels + sides + liveness**, NOT timestamps, post-epoch
 labels are rank ordinals, so a timestamp-carrying iso would be false. The
 side field is one bit per ENTRY (runs are uniformly `R`,
 `sfusible_side_R`). -/
@@ -947,7 +947,7 @@ theorem sStateOf_sTableOf_eq (L : List SChain) :
   simp [sentryOfHead, Function.comp]
 
 /-- **Sided T-repr, losslessness (`sStateOf ∘ sTableOf = id`)**: the exact
-live sided-chain set is recovered from headers alone — labels, sides and
+live sided-chain set is recovered from headers alone, labels, sides and
 liveness; no timestamps. -/
 theorem sStateOf_sTableOf (L : List SChain) (hnil : [] ∉ L) :
     (sStateOf (sTableOf L)).Nodup
@@ -1013,7 +1013,7 @@ theorem sStateOf_sTableOf (L : List SChain) (hnil : [] ∉ L) :
 /-! ### Sided canonicity: the other direction of the iso -/
 
 /-- Canonical sided tables: maximal fusible chains (`no_fuse`, now carrying
-the SIDE condition — only an `R`, delta-1, same-liveness lone attachment
+the SIDE condition, only an `R`, delta-1, same-liveness lone attachment
 would have been coalesced), tail attachment, kept leaves live, backward
 parent refs, canonical `shLt` order. -/
 structure SCanonical (T : STable) : Prop where
@@ -1166,7 +1166,7 @@ theorem sdropLast_append_replicate_pos {h : SChain} {r : ℕ} (hr : 1 ≤ r) :
   rw [sdropLast_append_replicate_succ]
   simp
 
-/-- **Sided member-chain uniqueness** — the engine of canonicity, killed in
+/-- **Sided member-chain uniqueness**: the engine of canonicity, killed in
 the overlap case by tail attachment exactly as one-sided. -/
 theorem smemChain_inj {T : STable} (hC : SCanonical T) :
     ∀ n (c : SChain), c.length ≤ n →
@@ -1669,8 +1669,8 @@ theorem SRTEntry.ext' {e1 e2 : SRTEntry} (h1 : e1.par = e2.par)
   cases e1; cases e2; simp_all
 
 /-- **Sided T-repr, canonicity direction (`sTableOf ∘ sStateOf = id`)**: a
-canonical sided table is recovered field for field — parent ref, liveness,
-SIDE, delta, length — from the state it denotes. With `sStateOf_sTableOf`
+canonical sided table is recovered field for field, parent ref, liveness,
+SIDE, delta, length, from the state it denotes. With `sStateOf_sTableOf`
 and `scanonical_sTableOf` this closes the sided representation iso, over
 labels + sides + liveness. -/
 theorem sTableOf_sStateOf {T : STable} (hC : SCanonical T) :
@@ -1744,7 +1744,7 @@ theorem sTableOf_sStateOf {T : STable} (hC : SCanonical T) :
     rw [hlast]
   · exact slenOf_sStateOf hC hi
 
-/-! ## §7½  Sided T-repr, image side — `sTableOf` always lands in
+/-! ## §7½  Sided T-repr, image side: `sTableOf` always lands in
 `SCanonical` -/
 
 theorem sfusible_eq_true_iff {L : List SChain} {c : SChain} :
@@ -1788,7 +1788,7 @@ theorem stake_succ_of_prefix {m c : SChain} (h : m <+: c) (hne : m ≠ c) :
   rw [← (List.prefix_iff_eq_take.mp h), ← h1] at *
   exact List.take_prefix _ _
 
-/-- Any kept child of a run's tail is a head — `(R,1)` by `stail_attachment`
+/-- Any kept child of a run's tail is a head, `(R,1)` by `stail_attachment`
 (the tail's run stops there), anything else by its label. -/
 theorem stail_child_isHead {L : List SChain} {g : SChain}
     (hg : sisHead L g = true) {e : SEntry}
@@ -2030,18 +2030,18 @@ theorem scanonical_sTableOf (L : List SChain) : SCanonical (sTableOf L) := by
     simp only [sentryOfHead]
     rw [if_pos (by rw [hqd]; exact htk), hqd, hth, hidxh]
 
-/-! ## §8  Sided T-cmp — the two-case contracted comparator
+/-! ## §8  Sided T-cmp: the two-case contracted comparator
 
 The one-sided `cmpTable` walks two entry chains to the first difference:
-same entry — offset order; prefix — ancestor first; divergence — larger
+same entry: offset order; prefix: ancestor first; divergence: larger
 label first. The sided refinement keeps the two-case structure (licensed by
 `stail_attachment`: every entry attaches at its parent's tail) but the
 PREFIX case now consults the ancestor's offset against its run length: a
 descendant exits its ancestor's entry at the TAIL, so if the ancestor sits
 strictly before its tail it displays first regardless of the exit side,
-while AT the tail the exit side decides — `R`-exits display after the
+while AT the tail the exit side decides, `R`-exits display after the
 ancestor, `L`-exits before (the in-order rule). The divergence verdict is
-`sEntryBefore` on the two branch entries — the band order of §4, refined
+`sEntryBefore` on the two branch entries, the band order of §4, refined
 from the seed `sided_keyLt_iff_schainBefore`. -/
 
 theorem sprefixesOf_concat (p : SChain) (b : SEntry) :
@@ -2220,7 +2220,7 @@ def scmpEC : List SChain → ℕ → ℕ → List SChain → ℕ → ℕ → Boo
       else sEntryBeforeB (gx.getLastD (Side.R, 0)) (gy.getLastD (Side.R, 0))
 
 /-- The sided table comparator: entry chains, own-entry offsets and own-run
-lengths — header data only. -/
+lengths, header data only. -/
 def scmpTable (L : List SChain) (x y : SChain) : Bool :=
   scmpEC (sentryChainOf L x) (x.length - (sheadOf L x).length)
     (slenOf L (sheadOf L x))
@@ -2446,7 +2446,7 @@ theorem scmpTable_extR {L : List SChain} {x : SChain} {d : ℕ}
           simp only [scmpEC, hd2, Bool.and_false]
 
 /-- **Sided case A soundness, `extL`**: `L`-extensions display before the
-ancestor — and force the ancestor to sit at its run's tail. -/
+ancestor, and force the ancestor to sit at its run's tail. -/
 theorem scmpTable_extL {L : List SChain} {y : SChain} {d : ℕ}
     {rest : SChain} (hy : y ∈ skeptL L)
     (hx : y ++ (Side.L, d) :: rest ∈ skeptL L) :
@@ -2604,7 +2604,7 @@ theorem scmpTable_iff_schainBefore {L : List SChain} {x y : SChain}
   · exact fun hb => (scmpTable_of_schainBefore hx hy hb).1
 
 /-- **Sided T-cmp**: the comparator over the contracted sided run tree
-equals the fold's key order on the sided coordinates — for EVERY ordered
+equals the fold's key order on the sided coordinates, for EVERY ordered
 prefix code. Refines the §4 band-order seed to full entry chains. -/
 theorem scmpTable_eq_keyLt (Γ : OrderedPrefixCode) {L : List SChain}
     (hpos : ∀ l ∈ L, PosSChain l) {x y : SChain}
@@ -2627,11 +2627,11 @@ theorem scmpTable_eq_keyLt (Γ : OrderedPrefixCode) {L : List SChain}
           (Ne.symm hne)).mpr hb
         rw [keyLt_asymm this]
 
-/-! ## §9  Sided T-walk — the structural walk is the in-order display
+/-! ## §9  Sided T-walk: the structural walk is the in-order display
 
 The sided walk of a run: interior members in offset order, then the
-L-subtrees at the tail (older label first — ascending), then the TAIL
-member, then the R-subtrees at the tail (newer label first — descending).
+L-subtrees at the tail (older label first, ascending), then the TAIL
+member, then the R-subtrees at the tail (newer label first, descending).
 This is the in-order rule at run granularity: L-attachments display before
 the node they hang from, and all attachments hang at the tail
 (`stail_attachment`). -/
@@ -2735,7 +2735,7 @@ theorem sorted_sRchilds (L : List SChain) (m : SChain) :
     exact hab)
 
 /-- The sided walk below one entry: interior members, L-subtrees, the tail,
-R-subtrees — the in-order rule. -/
+R-subtrees, the in-order rule. -/
 def swalkE (L : List SChain) : ℕ → SChain → List SChain
   | 0, _ => []
   | fuel + 1, h =>
@@ -2746,7 +2746,7 @@ def swalkE (L : List SChain) : ℕ → SChain → List SChain
           ++ (sRchilds L (stailOf L h)).flatMap (swalkE L fuel)))
 
 /-- The sided walk of the whole table: L-rooted subtrees (ascending), then
-R-rooted subtrees (descending) — nothing at the virtual root itself. -/
+R-rooted subtrees (descending), nothing at the virtual root itself. -/
 def swalk (L : List SChain) : List SChain :=
   (sLchilds L []).flatMap (swalkE L (smaxLen L + 1))
     ++ (sRchilds L []).flatMap (swalkE L (smaxLen L + 1))
@@ -3366,7 +3366,7 @@ theorem mem_swalk {L : List SChain} (hnil : [] ∉ L) {c : SChain} :
           mem_sRchilds.mpr ⟨hq0h, rfl, hes⟩, hcomp⟩
 
 /-- **Sided T-walk, packaged**: duplicate-free, exactly the live chains,
-pairwise in the in-order display — hence THE display sequence. -/
+pairwise in the in-order display, hence THE display sequence. -/
 theorem swalk_display (L : List SChain) (hnil : [] ∉ L) :
     (swalk L).Nodup ∧ (∀ c, c ∈ swalk L ↔ c ∈ L)
       ∧ (swalk L).Pairwise schainBefore :=
@@ -3389,7 +3389,7 @@ theorem swalk_pairwise_keyLt (Γ : OrderedPrefixCode) {L : List SChain}
       (fun h => hnil (h ▸ ((mem_swalk hnil).mp h2))))
   exact Sal.EmbedRGA.schainBefore_display Γ hp1 hp2 hb
 
-/-! ## §10  Sided T-mut — merge congruence and the O(1) typing rule -/
+/-! ## §10  Sided T-mut: merge congruence and the O(1) typing rule -/
 
 theorem skeptL_congr {L L' : List SChain} (hmem : ∀ c, c ∈ L ↔ c ∈ L') :
     ∀ x, x ∈ skeptL L ↔ x ∈ skeptL L' := by
@@ -3758,7 +3758,7 @@ theorem sextend_lenOf {h : SChain} (hh : sisHead L h = true) :
 
 include ha hnil hchildless in
 /-- **Sided T-mut (typing / insert extends a run)**: appending an `(R,1)`
-child to a childless live node bumps ONE `len` field — O(1) sided table
+child to a childless live node bumps ONE `len` field, O(1) sided table
 work per keystroke. -/
 theorem sTableOf_insert_extend :
     sTableOf (L ++ [a ++ [(Side.R, 1)]])
@@ -3822,9 +3822,9 @@ end SInsertExtend
 
 `schainBefore` is a strict linear order, so `Nodup` pairwise-sorted lists
 are unique enumerations of their member sets; the sided walk survives the
-representation round trip, and the table-DIRECT walk (`stableWalk`) — entry
+representation round trip, and the table-DIRECT walk (`stableWalk`), entry
 headers, parent refs and `shsAt` address arithmetic only, `sStateOf` never
-materialized — reproduces it. -/
+materialized, reproduces it. -/
 
 theorem schainBefore_cons_head {x y : SEntry} {xs ys : SChain}
     (hxy : x ≠ y) (h : schainBefore (x :: xs) (y :: ys)) :
@@ -4261,7 +4261,7 @@ theorem shsAt_getLastD {T : STable} (hC : SCanonical T) {j : ℕ}
   | some p =>
       rw [shsAt_some hj hp (hC.par_back j hj p hp), List.getLastD_concat]
 
-/-- `L`-side attachments map to the `L` child heads at the parent's tail —
+/-- `L`-side attachments map to the `L` child heads at the parent's tail,
 order included. -/
 theorem sattachedAtL_map_shsAt {T : STable} (hC : SCanonical T) {i : ℕ}
     (hi : i < T.length) :
@@ -4691,7 +4691,7 @@ theorem stableWalk_eq_swalk {T : STable} (hC : SCanonical T) :
     exact hfuel j (mem_srootsAtR.mp hj).1
   rw [hL, hR]
 
-/-- **Sided T-walk, literal — the faithfulness theorem**: build the sided
+/-- **Sided T-walk, literal: the faithfulness theorem**: build the sided
 run table, read it back with the table-direct walk: the in-order display of
 the live sided-chain set, verbatim. -/
 theorem stableWalk_sTableOf {L : List SChain} (hnil : [] ∉ L) :
@@ -4699,7 +4699,7 @@ theorem stableWalk_sTableOf {L : List SChain} (hnil : [] ∉ L) :
   (stableWalk_eq_swalk (scanonical_sTableOf L)).trans
     (swalk_sStateOf_sTableOf hnil)
 
-/-! ## §12  The all-R projection bridge — lockstep with the one-sided table
+/-! ## §12  The all-R projection bridge: lockstep with the one-sided table
 
 On an all-R live set the sided development PROJECTS to the one-sided one:
 the sided table is the one-sided table with `side := R` stamped on every
@@ -4937,7 +4937,7 @@ def liftEntry (e : Sal.EmbedRGA.RunTable.RTEntry) : SRTEntry :=
   ⟨e.par, e.live, Side.R, e.delta, e.len⟩
 
 /-- **The all-R projection bridge (table half)**: on an all-R live set the
-sided table IS the one-sided table with the `R` side bit stamped on — the
+sided table IS the one-sided table with the `R` side bit stamped on, the
 two developments run in lockstep on the current datatype. -/
 theorem sTableOf_liftR (L : List (List ℕ)) :
     sTableOf (L.map liftR)
@@ -5033,7 +5033,7 @@ theorem swalk_liftR (L : List (List ℕ)) (hpos : ∀ l ∈ L, PosChain l)
 #print axioms sTableOf_liftR
 #print axioms swalk_liftR
 
-/-! ## §6  SPOTs — concrete sided executions, PASS + FAIL, hand-derived -/
+/-! ## §6  SPOTs: concrete sided executions, PASS + FAIL, hand-derived -/
 
 namespace SidedRunTableSPOT
 
@@ -5045,12 +5045,12 @@ def SR : List SChain := [[(Side.R, 1)], [(Side.R, 1), (Side.R, 1)]]
 /-- Root `(R,1)` with, concurrently, an `L` child. -/
 def SL : List SChain := [[(Side.R, 1)], [(Side.R, 1), (Side.L, 1)]]
 
-/-- PASS: an `R` delta-1 child fuses — the uniform-R run. -/
+/-- PASS: an `R` delta-1 child fuses, the uniform-R run. -/
 theorem spot_R_fuses : sfusible SR [(Side.R, 1), (Side.R, 1)] = true := by
   native_decide
 
 /-- PASS + FAIL (L stored explicitly): the `L` child does NOT fuse (contrast
-the `R` child, `spot_R_fuses`) — it is a head, its own entry. -/
+the `R` child, `spot_R_fuses`), it is a head, its own entry. -/
 theorem spot_L_explicit :
     sfusible SL [(Side.R, 1), (Side.L, 1)] = false
     ∧ sisHead SL [(Side.R, 1), (Side.L, 1)] = true := by native_decide
@@ -5075,7 +5075,7 @@ theorem spot_band_keyLt :
 #print axioms spot_band_keyLt
 
 /-! ### Directed sided SPOTs: the L-band mint, the band direction, the
-table-direct walk, and the all-R lockstep — PASS + FAIL, hand-derived -/
+table-direct walk, and the all-R lockstep, PASS + FAIL, hand-derived -/
 
 /-- A node with one `L` child and one `R` child: the L-band mint case. -/
 def S1 : List SChain :=
@@ -5090,7 +5090,7 @@ theorem spot_sided_table :
       ⟨some (0, 0), true, Side.R, 2, 1⟩,
       ⟨some (0, 0), true, Side.L, 1, 1⟩] := by native_decide
 
-/-- PASS (the L-band mint): in-order display — the L band, then the node,
+/-- PASS (the L-band mint): in-order display, the L band, then the node,
 then the R band. Hand-derived: the walk of the root run emits L-subtrees,
 the tail, R-subtrees. -/
 theorem spot_sided_walk :
@@ -5107,7 +5107,7 @@ def S2 : List SChain :=
   [[(Side.R, 1)], [(Side.R, 1), (Side.L, 1)], [(Side.R, 1), (Side.L, 2)]]
 
 /-- PASS + FAIL (the band direction): among `L` siblings the OLDER label
-displays first — the tempting degenerate order (L band sorted like the R
+displays first, the tempting degenerate order (L band sorted like the R
 band, newest first) flips the display. Hand-derived: `sEntryBefore
 (L,1) (L,2)` iff `1 < 2`. -/
 theorem spot_sided_L_direction :
@@ -5124,7 +5124,7 @@ def L7s : List (List ℕ) :=
 /-- PASS (all-R lockstep, table half): on the lifted D1 state the sided
 table is the one-sided D1 table (`⟨none,true,1,3⟩, ⟨some (0,2),true,1,3⟩,
 ⟨some (0,2),true,4,1⟩`, hand-derived in the instance SPOT) with `side := R`
-stamped on every entry — the concrete pin of `sTableOf_liftR`. -/
+stamped on every entry, the concrete pin of `sTableOf_liftR`. -/
 theorem spot_allR_lockstep_table :
     sTableOf (L7s.map liftR)
       = [⟨none, true, Side.R, 1, 3⟩, ⟨some (0, 2), true, Side.R, 1, 3⟩,
@@ -5134,7 +5134,7 @@ theorem spot_allR_lockstep_table :
   native_decide
 
 /-- PASS (all-R lockstep, walk half): the sided in-order walk of the lifted
-D1 state is the one-sided walk (`abcXdef`), lifted — the concrete pin of
+D1 state is the one-sided walk (`abcXdef`), lifted, the concrete pin of
 `swalk_liftR`. -/
 theorem spot_allR_lockstep_walk :
     swalk (L7s.map liftR) = (Sal.EmbedRGA.RunTable.walk L7s).map liftR := by

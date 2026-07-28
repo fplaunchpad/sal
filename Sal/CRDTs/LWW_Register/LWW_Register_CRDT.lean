@@ -11,7 +11,7 @@ open Classical
 # LWW-Register CRDT
 
 State is a pair `(timestamp, value)` of natural numbers. Both `do_`
-and `merge` are defined as the same lexicographic max on pairs —
+and `merge` are defined as the same lexicographic max on pairs,
 higher timestamp wins, ties broken by larger value. This makes the
 operation a lattice join, so `do_` is commutative/associative/
 idempotent on its own, `merge` is commutative/associative/idempotent,
@@ -60,7 +60,7 @@ def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=
   else if a.2 ≥ b.2 then a
   else b
 
-/-- Effect: `do_ s (Write v)` = `lex_max s (ts, v)` — the incoming
+/-- Effect: `do_ s (Write v)` = `lex_max s (ts, v)`, the incoming
 write wins iff it has the newer ts (or same ts with larger value). -/
 @[simp]
 def do_ (s : concrete_st) (o : op_t) : concrete_st :=

@@ -5,7 +5,7 @@
 // read == folded read but as ONE commit; the wire round-trip passes the
 // content-address gate with an identical SHA head; convergence with mixed
 // batch/single commits; peritext (ins + marks) batches; and the certified GC cut
-// still collects a batch commit's ids (the frontier / compact-peritext fix).
+// still collects a batch commit's ids.
 //
 // Each PASS carries a FAIL companion (empty/degenerate read, batch silently
 // becoming N commits, marks lost, the cut dropping array-payload ids).

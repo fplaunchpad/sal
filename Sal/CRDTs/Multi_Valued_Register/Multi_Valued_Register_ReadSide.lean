@@ -18,11 +18,11 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # Multi-Valued Register (CRDT, classical) — read-side projection
+/-! # Multi-Valued Register (CRDT, classical): read-side projection
 
 The 24 RA-linearizability VCs in `Multi_Valued_Register_CRDT.lean`
 prove that the state `(writes, removed)` converges under pointwise
-union — both components are grow-only sets joined by ∪. They say
+union, both components are grow-only sets joined by ∪. They say
 nothing about the headline classical-MVR claims:
 
 1. **Concurrent writes both survive.** Two replicas issuing
@@ -144,9 +144,9 @@ new `Write v₂` whose snapshot `O₂` covers every prior visible
 witness for `v₁`, the value `v₁` is no longer visible.
 
 Premises:
-* `h_v2_ne_v1` — the new write does not coincidentally rewrite `v₁`.
+* `h_v2_ne_v1`: the new write does not coincidentally rewrite `v₁`.
   Without this, `(ts₂, v₁)` would itself be a fresh visible witness.
-* `h_covered` — every currently-visible witness `(ts, v₁)` in `s`
+* `h_covered`: every currently-visible witness `(ts, v₁)` in `s`
   has `ts ∈ O₂`. In a well-formed sequential execution this holds
   because the prepare-time snapshot includes every visible record;
   for a singleton write of `v₁` (the typical Spec 14 scenario)

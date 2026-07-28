@@ -59,7 +59,7 @@ test('lca: unique MCA on a diamond is returned', () => {
   assert.equal(lca(d, f.id, a.id), f.id);
 });
 
-test('lca: criss-cross yields ALL maximal common ancestors and lca throws the #90 gate', () => {
+test('lca: criss-cross yields ALL maximal common ancestors and lca throws the criss-cross gate', () => {
   // root -> x, y ; two rival merges m1, m2 both with parents {x, y};
   // heads c1 (on m1) and c2 (on m2). CA(c1,c2) = {root, x, y}; maximal = {x, y}.
   const d = new Dag();
@@ -72,7 +72,6 @@ test('lca: criss-cross yields ALL maximal common ancestors and lca throws the #9
   const c2 = d.add({ parents: [m2.id], op: op(3), state: 6 });
   assert.deepEqual(new Set(mcas(d, c1.id, c2.id)), new Set([x.id, y.id]));
   assert.throws(() => lca(d, c1.id, c2.id), CrissCrossError);
-  assert.throws(() => lca(d, c1.id, c2.id), /#90/); // message points at the task
   assert.throws(() => lca(d, c1.id, c2.id), /virtual LCA/i);
 });
 

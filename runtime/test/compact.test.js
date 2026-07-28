@@ -1,4 +1,4 @@
-// compactEliasDelta v1 tests (task #97, practical tail).
+// compactEliasDelta v1 tests.
 //
 // EXPECTED VALUES ARE HAND-DERIVED from the flipped Elias-delta code, never
 // evaluated from the implementation under test. Reference codewords:

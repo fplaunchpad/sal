@@ -7,20 +7,20 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_MergeCanon
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Corrected_Residual
 
 /-!
-# SKELETON 3 — the RAW-≈ capstone for the tombstone-free RGA
+# SKELETON 3: the RAW-≈ capstone for the tombstone-free RGA
 
 The end-to-end chain, stated at the target `IsRALinearizable3Eq` (raw datatype folds,
 up to `≈`; the guarded `IsRALinearizable3` is unsatisfiable) over the witness
 discipline `H := CanonFoldOK [] (init_st (α := α))` (`noopFeasible` witnesses are
 unsatisfiable at merge unions).
 
-* `rgaJoinH_of_canon` — the RGA's H-join (`EqJoinLemma3C_H`) from the two canonical leaves:
-  `hEnum` (K1 — a delta enum with the engine-native discipline continued from the LCA fold) and
+* `rgaJoinH_of_canon`, the RGA's H-join (`EqJoinLemma3C_H`) from the two canonical leaves:
+  `hEnum` (K1, a delta enum with the engine-native discipline continued from the LCA fold) and
   `hCanon` (merge and δ-fold are both the canonical state of `ρ₀ ++ π₀`).  **The union witness is
   `ρ₀ ++ π₀` itself**: its discipline is `canonFoldOK_concat` (no from-init feasibility of any
   reordering is needed), its `respects` is the LCA-first assembly (cross edges die on the
   branch closures), its fold is the merge by canonical uniqueness (`eq_of_canonMatch2`).
-* `rga_RA_linearizable_skeleton3` — **THE CAPSTONE**: reachable `C` + honest premises
+* `rga_RA_linearizable_skeleton3`, **THE CAPSTONE**: reachable `C` + honest premises
   (`hBA` born-applicability, `hHext` the discipline extension at applies) + the two canonical
   leaves ⟹ `IsRALinearizable3Eq C`.  Kernel-clean, 0 `sorry`.
 -/
@@ -44,7 +44,7 @@ open Sal.ConditionedMRDTs.RGAConditionedConvergence (eq_trans)
 open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonMatch CanonFoldOK eq_of_canonMatch2)
 
-/-- **Payload honesty** — SET-level, hence perm-invariant: every delete's target and every
+/-- **Payload honesty**, SET-level, hence perm-invariant: every delete's target and every
 insert's recorded-chain entry is the root or inserted in the list.  `CanonFoldOK` alone cannot
 supply this (`DelOK`/`ChainOK` constrain only LIVE data, so dead-target deletes and junk chain
 entries are fold-admissible), yet extending the discipline at a fresh apply needs it: the new
@@ -213,15 +213,15 @@ theorem rgaJoinH_of_canon
     exact hMF
 
 /-- **THE CAPSTONE (raw-≈).**  The tombstone-free RGA is per-version RA-linearizable in the
-paper's sense — every version of every reachable configuration is `qmk` of a representative that
-is the RAW `do_`-fold of a `lo`-respecting linearization of its events, up to observational `≈` —
+paper's sense, every version of every reachable configuration is `qmk` of a representative that
+is the RAW `do_`-fold of a `lo`-respecting linearization of its events, up to observational `≈`,
 gated on the explicit residual:
 
-* `hEnum` — K1 (the delta discipline; its core is DISCHARGED: `K1_canonFoldOK` from `GenDisc2C` =
+* `hEnum`, K1 (the delta discipline; its core is DISCHARGED: `K1_canonFoldOK` from `GenDisc2C` =
   `genDisc2C_of_born` from born accuracy);
-* `hCanon` — the two canonical facts (fold half generic `canon_fold`; merge half the RGA residual);
-* `hHext` — the discipline extends at born-applicable applies (`canonFoldOK_append` + honest ids);
-* `hBA` — born-applicable delivery (the honest-execution premise).
+* `hCanon`, the two canonical facts (fold half generic `canon_fold`; merge half the RGA residual);
+* `hHext`, the discipline extends at born-applicable applies (`canonFoldOK_append` + honest ids);
+* `hBA`, born-applicable delivery (the honest-execution premise).
 
 0 `sorry`; axioms ⊆ {propext, Classical.choice, Quot.sound}. -/
 theorem rga_RA_linearizable_skeleton3

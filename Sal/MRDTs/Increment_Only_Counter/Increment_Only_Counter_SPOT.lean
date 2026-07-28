@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # Increment_Only_Counter (MRDT) — SPOTs -/
+/-! # Increment_Only_Counter (MRDT): SPOTs -/
 
 namespace Increment_Only_Counter_MRDT_SPOT
 

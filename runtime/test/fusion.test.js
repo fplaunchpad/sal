@@ -1,6 +1,4 @@
-// SPINE FUSION tests (task #97 iteration two; design:
-// whiteboard/embed-recoding-note.md Addendum 2, implementation step 2b of
-// src/compact.js, opt-in via opts.fuseSpines).
+// SPINE FUSION tests (opt-in via opts.fuseSpines in src/compact.js).
 //
 // EXPECTED VALUES ARE HAND-DERIVED from the flipped Elias-delta code,
 // never evaluated from the implementation under test. Reference codewords

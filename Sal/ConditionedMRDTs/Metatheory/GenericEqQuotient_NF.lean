@@ -12,8 +12,8 @@ discipline is per-witness: the canonical-state enumeration is
 `≈`-canonical state and the datatype's `≈`-Join VC carrying that clause, without
 the `GenDisc` premises.
 
-* `IsCanonicalStateEqNF` — `IsCanonicalStateEq` with a `noopFeasible` witness.
-* `EqJoinLemma3C_NF` — `EqJoinLemma3C` over `IsCanonicalStateEqNF`, no `GenDisc`.
+* `IsCanonicalStateEqNF`: `IsCanonicalStateEq` with a `noopFeasible` witness.
+* `EqJoinLemma3C_NF`: `EqJoinLemma3C` over `IsCanonicalStateEqNF`, no `GenDisc`.
 
 The RGA discharges `EqJoinLemma3C_NF` via `canon_fold` (`RGA_NoopFeasible_CanonFold`
 + the merge bridge); the reachability layer (`GoodConfig3NF`) supplies the
@@ -30,7 +30,7 @@ open Sal.ConditionedMRDTs (noopFeasible)
 variable {D : ConditionedMRDTSig}
 
 /-- **Canonical state up to `≈`, born-applicable.**  `IsCanonicalStateEq` with the
-witnessing enumeration additionally `noopFeasible` from `D.init` — each op
+witnessing enumeration additionally `noopFeasible` from `D.init`, each op
 `applicable`-or-no-op at its own prefix fold.  This is the clause that restricts
 canonical states to honest (born-applicable) linearizations, excluding the
 `loOnEq`-respecting-but-infeasible interleavings that forced `GenDisc2CEq`. -/
@@ -79,7 +79,7 @@ def EqJoinLemma3C_NF (D : ConditionedMRDTSig) (E : EqEquiv D)
 /-! ## §1  Guard transparency for born-applicable chains
 
 At `W := applicable`-or-stronger the guarded fold SKIPS non-`W` ops, so guard
-transparency (`applySeqW = applySeq`) does NOT hold for arbitrary `WfChain`s — a
+transparency (`applySeqW = applySeq`) does NOT hold for arbitrary `WfChain`s, a
 `WfOpGen`-but-inaccurate op breaks it.  It holds for **born-applicable**
 (`noopFeasible`) chains for a different reason: at each step the op is either
 `W` (so `doW = update`) OR a LITERAL no-op (`update s o = s`, so `doW = s =
@@ -136,7 +136,7 @@ theorem guardNoop_of_noopFeasible {W : Op D.AppOp → D.State → Prop}
 `GoodConfig3NF` carries the DATATYPE-side `IsCanonicalStateEqNF` (a `noopFeasible`
 witness folding by RAW `applySeq`).  This lemma projects it to the execution
 model's `IsCanonicalState` at the class `qmk E σ`, discharging the base
-`GoodConfig3.canonical` field.  No `WfOpReachable` — guard transparency comes from
+`GoodConfig3.canonical` field.  No `WfOpReachable`: guard transparency comes from
 the witness's own `noopFeasible` (via §1), so it survives the guard switch to
 `applicable` where `WfOpReachable` fails.  The reverse direction (exec ⟹ NF) is
 NOT proved (and not needed): the `noopFeasible` clause is supplied at construction

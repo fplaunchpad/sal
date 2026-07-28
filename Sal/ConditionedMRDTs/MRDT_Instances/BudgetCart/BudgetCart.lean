@@ -6,12 +6,12 @@ import Sal.ConditionedMRDTs.MRDT_Instances.ORSetCore.ORSetCore
 import Sal.ConditionedMRDTs.Metatheory.GenericSafety
 
 /-!
-# BudgetCart — a shopping cart with per-replica budgets
+# BudgetCart, a shopping cart with per-replica budgets
 
 A conditioned MRDT built **by instantiation of the payload-parametric OR-set
 core** (`MRDT_Instances/ORSetCore/ORSetCore.lean`, composition level L0): an
-OR-set of live purchase *instances* `(ts, rep, (item, price))` — the adding
-event's timestamp and replica, and the `(item, price)` payload — with a
+OR-set of live purchase *instances* `(ts, rep, (item, price))` (the adding
+event's timestamp and replica, and the `(item, price)` payload) with a
 static per-replica budget function `alloc : ℕ → ℕ`. The per-replica spend is
 **derived** from the state (`bcartSpend`), not carried as a ledger: removing
 an instance automatically refunds its adder.
@@ -26,14 +26,14 @@ an instance automatically refunds its adder.
 Three layers:
 
 * **§1 Convergence, by instantiation.** `BudgetCart alloc` IS
-  `OSCore (ℕ × ℕ) Prod.fst ℕ ℕ …` — payload `(item, price)`, key = item, the
+  `OSCore (ℕ × ℕ) Prod.fst ℕ ℕ …`, payload `(item, price)`, key = item, the
   remaining-budget query. `add`/`rem` of the same item genuinely do not
   commute, so the discharge is the OR-set's route (`CoreVCs3CD` +
   `FeasibleDeltaVCs3` + `CDVC3` ⇒ `JoinLemma3`), proved ONCE, parametrically,
-  in `ORSetCore.lean` — every convergence theorem below is a one-line
+  in `ORSetCore.lean`: every convergence theorem below is a one-line
   instantiation. End-to-end: `bcart_ra_linearizable3`; catalogue capstone
   `BCart_ra_linearizable3_eq` (identity instantiation of the generic
-  framework — the sig-level `Inv`/`applicable` are `⊤` per repo convention;
+  framework: the sig-level `Inv`/`applicable` are `⊤` per repo convention;
   the budget contract lives beside the signature, as with the bounded
   counter).
 * **§9 The client contract.** `bcartSpend` (the derived per-replica spend),
@@ -61,7 +61,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## §1. The datatype — an `OSCore` instantiation
+/-! ## §1. The datatype, an `OSCore` instantiation
 
 The op/state types are DEFINITIONALLY the parametric OR-set core's at payload
 `(item, price)`: `BCartElem = ℕ × ℕ × (ℕ × ℕ) = ℕ × ℕ × ℕ × ℕ` (`×` is
@@ -72,7 +72,7 @@ right-associative), so instances read exactly as
 removes every live instance of `item`. Definitionally `OSOp (ℕ × ℕ)`. -/
 abbrev BCartOp : Type := OSOp (ℕ × ℕ)
 
-/-- A live purchase instance: `(ts, rep, item, price)` — the adding event's
+/-- A live purchase instance: `(ts, rep, item, price)`, the adding event's
 timestamp and replica, the item, the price. Definitionally
 `OSElem (ℕ × ℕ)`. -/
 abbrev BCartElem : Type := OSElem (ℕ × ℕ)
@@ -97,13 +97,13 @@ abbrev bcartRc : Op BCartOp → Op BCartOp → RcRes :=
   osRc Prod.fst
 
 /-- The derived per-replica spend: the sum of `price` over live instances
-staked by replica `r`. No ledger — removing an instance refunds its adder. -/
+staked by replica `r`. No ledger: removing an instance refunds its adder. -/
 def bcartSpend (r : ℕ) (s : BCartState) : ℕ :=
   (s.filter (fun q => q.2.1 = r)).sum (fun q => q.2.2.2)
 
 /-- **The BudgetCart MRDT**, parameterized by the static per-replica budget
-`alloc` — the OR-set core at payload `(item, price)` and key = item. The
-sig-level `Inv`/`applicable` are `⊤` (repo convention — the budget contract
+`alloc`, the OR-set core at payload `(item, price)` and key = item. The
+sig-level `Inv`/`applicable` are `⊤` (repo convention: the budget contract
 lives beside the signature, §9–§10); `alloc` is read by the query, which
 reports the remaining budget of a replica. -/
 def BudgetCart (alloc : ℕ → ℕ) : ConditionedMRDTSig :=
@@ -120,7 +120,7 @@ theorem BCart_mergeL_eq (l a b : BCartState) :
 
 theorem BCart_init_eq : (BudgetCart alloc).init = (∅ : BCartState) := rfl
 
-/-! ## §2–§8. Convergence — inherited from the OR-set core
+/-! ## §2–§8. Convergence, inherited from the OR-set core
 
 Every theorem of the OR-set-route discharge (`ORSetCore.lean` §2–§8)
 instantiates at `β := ℕ × ℕ`, `key := Prod.fst`: the VC bundles, the Join
@@ -137,18 +137,18 @@ theorem BCart_coreVCs3CD : CoreVCs3CD (BudgetCart alloc) :=
 theorem BCart_feasibleDeltaVCs3 : FeasibleDeltaVCs3 (BudgetCart alloc) :=
   OSCore_feasibleDeltaVCs3
 
-/-- **`CDVC3` for the BudgetCart** — the OR-set core's maximal-event
+/-- **`CDVC3` for the BudgetCart**, the OR-set core's maximal-event
 analysis, instantiated. -/
 theorem BCart_cdVC3 : CDVC3 (BudgetCart alloc) :=
   OSCore_cdVC3
 
-/-- The ternary Join Lemma for the BudgetCart — the OR-set's route. -/
+/-- The ternary Join Lemma for the BudgetCart, the OR-set's route. -/
 theorem BCart_joinLemma3 : JoinLemma3 (BudgetCart alloc) :=
   OSCore_joinLemma3
 
 open LabeledTS in
 /-- **End-to-end RA-linearizability for the BudgetCart** (convergence half),
-for every `alloc` — by instantiation of the parametric OR-set core. -/
+for every `alloc`, by instantiation of the parametric OR-set core. -/
 theorem bcart_ra_linearizable3
     (C : Configuration (BudgetCart alloc))
     (hReach : (labeledTS3 (BudgetCart alloc)).ReachableFrom
@@ -158,7 +158,7 @@ theorem bcart_ra_linearizable3
 
 end
 
-/-! ### The conditioned capstone — identity instantiation of the generic
+/-! ### The conditioned capstone, identity instantiation of the generic
 framework -/
 
 section
@@ -167,7 +167,7 @@ open Sal.ConditionedMRDTs.GoodConfig3H
 open Sal.ConditionedMRDTs.FlatGeneric
 
 /-- **BudgetCart over the generic framework** (the catalogue capstone),
-universally in `alloc` — by instantiation of the parametric OR-set core. -/
+universally in `alloc`, by instantiation of the parametric OR-set core. -/
 theorem BCart_ra_linearizable3_eq (alloc : ℕ → ℕ)
     (C : Configuration (QSig (eqOfEq (BudgetCart alloc))
       (WTop (BudgetCart alloc)) (invPresTop fun _ => trivial)
@@ -192,7 +192,7 @@ def BCartInv (alloc : ℕ → ℕ) (s : BCartState) : Prop :=
   ∀ r, bcartSpend r s ≤ alloc r
 
 /-- The client check: an `add` needs slack in the issuing replica's OWN
-budget — checkable against the issuing replica's state; a `rem` needs a live
+budget, checkable against the issuing replica's state; a `rem` needs a live
 instance of the item. -/
 def bcartApplicable (alloc : ℕ → ℕ) (o : Op BCartOp) (s : BCartState) : Prop :=
   match o.2.2 with
@@ -209,7 +209,7 @@ theorem bcartSpend_le_of_subset {s t : BCartState} (h : s ⊆ t) (r : ℕ) :
     bcartSpend r s ≤ bcartSpend r t :=
   Finset.sum_le_sum_of_subset (Finset.filter_subset_filter _ h)
 
-/-- A rem never raises anyone's spend — removing an instance refunds its
+/-- A rem never raises anyone's spend: removing an instance refunds its
 adder. -/
 theorem bcartSpend_update_rem_le (s : BCartState) (ts rr item r : ℕ) :
     bcartSpend r (bcartUpdate s (ts, rr, OSOp.rem item)) ≤ bcartSpend r s :=
@@ -256,7 +256,7 @@ theorem bcartSpend_update_add_le (s : BCartState) (ts rr item price r : ℕ) :
   · rw [bcartSpend_update_add_other hr]
     omega
 
-/-- An applicable step preserves the budget invariant at the SAME state — the
+/-- An applicable step preserves the budget invariant at the SAME state: the
 contract is locally maintainable at the issuing replica. -/
 theorem bcartApplicable_inv_pres {s : BCartState} {o : Op BCartOp}
     (hInv : BCartInv alloc s) (happ : bcartApplicable alloc o s) :
@@ -282,7 +282,7 @@ The BudgetCart's safety argument is monotone rather than equality-based:
 between the causal-past fold `σP` and the prefix fold `σS`, the extras are
 concurrent events, and concurrent events can only LOWER the issuer's spend
 (others' adds carry their own replica; rems only remove). That argument is
-sound for **canonical** (rc-respecting) folds — but `SafetyStepOn`'s
+sound for **canonical** (rc-respecting) folds, but `SafetyStepOn`'s
 `CausalFold` hypotheses pin only `vis`-respect, and for an rc-nontrivial
 datatype the fold of a set containing concurrent same-item `add`/`rem` pairs
 is enumeration-dependent. The full `SafetyStepOn (BudgetCart alloc)
@@ -293,7 +293,7 @@ is enumeration-dependent. The full `SafetyStepOn (BudgetCart alloc)
 prefix hypotheses, the issuer's spend at the prefix fold is bounded by its
 spend at the causal-past fold.
 
-This is NOT provable from the stated hypotheses — it is refuted by a
+This is NOT provable from the stated hypotheses: it is refuted by a
 two-event configuration. Take `alloc r = 10`,
 `past(e) = {a, k}` with `a = (1, r, add x 10)`, `k = (2, r', rem x)`
 concurrent to each other, both vis-before `e = (3, r, add x' 10)`, and
@@ -301,7 +301,7 @@ concurrent to each other, both vis-before `e = (3, r, add x' 10)`, and
 (spend `0`); the vis-respecting enumeration `[k, a]` folds to
 `{(1, r, x, 10)}` (spend `10`). With `σP` the first fold and `σS` the
 second, every `SafetyStepOn` hypothesis holds, `bcartApplicable` accepts `e`
-at `σP`, `BCartInv` holds at `σS` — and `update σS e` has spend `20 > 10`.
+at `σP`, `BCartInv` holds at `σS`, and `update σS e` has spend `20 > 10`.
 The transfer (hence the ungated `SafetyStepOn`) fails precisely because
 `CausalFold` does not orient the concurrent `rem`-before-`add` (add-wins)
 pair; folds along `loOn`-respecting (rc-oriented) enumerations DO satisfy it,
@@ -327,7 +327,7 @@ def BCartSpendMono (alloc : ℕ → ℕ) : Prop :=
 `BCartSpendMono`): a `rem` only lowers spends; for an `add` by `r`, the
 issuer's slack check at the causal-past fold transfers to the prefix fold by
 the hypothesized monotonicity, and the add bound closes. The ungated
-`bcart_safetyStep` does not exist — it is false (see `BCartSpendMono`). -/
+`bcart_safetyStep` does not exist: it is false (see `BCartSpendMono`). -/
 theorem bcart_safetyStep_of_spend_mono (hMono : BCartSpendMono alloc) :
     SafetyStepOn (BudgetCart alloc) (BCartInv alloc) (bcartApplicable alloc) := by
   intro C E S e σS σP hEev hEcl heE hSsub heS hScl hfut hpast hσS hσP hInv happ

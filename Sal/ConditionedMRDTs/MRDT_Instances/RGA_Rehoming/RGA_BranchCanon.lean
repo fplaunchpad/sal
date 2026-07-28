@@ -1,24 +1,24 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_CanonBirthBridge
 
 /-!
-# `RGA_BranchCanon` — discharging `CanonBirthBridge`'s merge-side residuals from
+# `RGA_BranchCanon`: discharging `CanonBirthBridge`'s merge-side residuals from
 the branch/full-fold canonical characterization
 
 `RGA_CanonBirthBridge.canonBirthBridge_holds` closes the last merge-side bridge
 `CanonBirthBridge l F bw rc` (`bw = birthAnc l a b k`, `rc = a_k :: p_k`) from
-three residual hypotheses — `hsplit`+`hpreDead` (the `F`-climb of the recorded
+three residual hypotheses, `hsplit`+`hpreDead` (the `F`-climb of the recorded
 chain reaches `bw`'s recorded slot), `hout` (an off-forest `bw` survives `F`),
 and the biting `hin` (`bw`'s `l`-chain and its recorded rootward tail reach the
 same `F`-survivor).
 
 This file supplies those residuals from the *canonical state* of the folds:
 
-* §1 — `survP` set-monotonicity (the `Fa ⊆ F` bridge): a branch-dead recorded
+* §1, `survP` set-monotonicity (the `Fa ⊆ F` bridge): a branch-dead recorded
   ancestor is a non-survivor of the two-sided set.  This drives `hpreDead`.
-* §2 — `branchCanon_hout`: the off-forest birth-anchor of a survivor survives
-  `F`, *straight from the full-fold `CanonMatch F` + `hD` + `betaf_start`* — no
+* §2, `branchCanon_hout`: the off-forest birth-anchor of a survivor survives
+  `F`, *straight from the full-fold `CanonMatch F` + `hD` + `betaf_start`*, no
   branch fold needed.  Clean.
-* §3 — the composed bridge `canonBirthBridge_via_branchCanon`, feeding
+* §3, the composed bridge `canonBirthBridge_via_branchCanon`, feeding
   `canonBirthBridge_holds` with `hout` discharged and `hsplit`/`hpreDead`/`hin`
   reduced to their branch-canonical inputs.
 
@@ -39,7 +39,7 @@ open RGACanonConvergence
 open RGAMergeFoldChain (CanonBirthBridge)
 open RGACanonBirthBridge (canonBirthBridge_holds canonAnc_pos canonAnc_neg)
 
-/-! ## §1  `survP` set-monotonicity — the `Fa ⊆ F` bridge -/
+/-! ## §1  `survP` set-monotonicity: the `Fa ⊆ F` bridge -/
 
 /-- `deletedIn` is monotone in the applied set (membership inclusion). -/
 theorem deletedIn_mono (F₁ F₂ : List (op_t α)) (hsub : ∀ o, o ∈ F₁ → o ∈ F₂) (c : ℕ)
@@ -49,7 +49,7 @@ theorem deletedIn_mono (F₁ F₂ : List (op_t α)) (hsub : ∀ o, o ∈ F₁ �
 
 /-- A recorded ancestor **deleted in the branch set** `Fa` cannot survive the
 two-sided set `F ⊇ Fa`: the branch's own `Del` event is also in `F`.  This is the
-OR-set reconciliation `hpreDead` runs on — a branch-dead nearer recorded entry is
+OR-set reconciliation `hpreDead` runs on, a branch-dead nearer recorded entry is
 a non-`F`-survivor. -/
 theorem notSurv_of_branchDeleted (Fa F : List (op_t α)) (hsub : ∀ o, o ∈ Fa → o ∈ F)
     (c : ℕ) (h : deletedIn Fa c) : ¬ survP F c :=
@@ -62,18 +62,18 @@ theorem hpreDead_of_branchDeleted (Fa F : List (op_t α)) (hsub : ∀ o, o ∈ F
     ∀ c ∈ rcPre, ¬ survP F c :=
   fun c hc => notSurv_of_branchDeleted Fa F hsub c (hdel c hc)
 
-/-! ## §2  `hout` — the off-forest birth-anchor survives `F` (clean, full-fold)
+/-! ## §2  `hout`: the off-forest birth-anchor survives `F` (clean, full-fold)
 
 `bw = birthAnc l a b k` is `k`'s branch-final anchor.  When `bw` is *off the LCA
 forest* (`contains l bw = false`) and nonzero, `betaf_start` forces `bw` to be a
 survivor (a branch-new anchor lies in a branch's `difference` set), and the
 full-fold `CanonMatch F fold` + `hD` (survivor set = fold live set) turn that into
-`survP F bw`.  This uses only the two-sided fold's canonical state — NOT the
-branch fold — so no single-vs-two-sided reconciliation is involved. -/
+`survP F bw`.  This uses only the two-sided fold's canonical state, NOT the
+branch fold, so no single-vs-two-sided reconciliation is involved. -/
 
 /-- The off-forest branch-final anchor of a survivor survives the two-sided set
-`F`.  (`hbwne` is genuinely needed: `birthAnc l a b k = 0` — `k` anchored at the
-root in its branch — is off-forest but not a survivor; that degenerate case is
+`F`.  (`hbwne` is genuinely needed: `birthAnc l a b k = 0`, `k` anchored at the
+root in its branch, is off-forest but not a survivor; that degenerate case is
 handled by `canonAnc F rc = 0` directly, not by `hout`.) -/
 theorem branchCanon_hout
     (l a b : concrete_st α) (F : List (op_t α)) (fold : concrete_st α) (k : ℕ)
@@ -92,16 +92,16 @@ theorem branchCanon_hout
     exact (hcm.1 (birthAnc l a b k)).mp hcf
   · rw [hlbw] at h; exact Bool.noConfusion h
 
-/-! ## §3  The composed bridge — `hout` discharged, residual reduced to
+/-! ## §3  The composed bridge: `hout` discharged, residual reduced to
 `hsplit`/`hpreDead`/`hin`
 
 `canonBirthBridge_via_branchCanon` feeds `canonBirthBridge_holds` with `hout`
 built by §2.  The caller supplies only:
-* `hsplit` — `bw` sits on the recorded chain (from the branch `LiveChain`: `bw`
+* `hsplit`, `bw` sits on the recorded chain (from the branch `LiveChain`: `bw`
   is the head of `k`'s live-filtered recorded chain in its branch fold);
-* `hpreDead` — the nearer recorded entries are non-`F`-survivors (§1's
+* `hpreDead`, the nearer recorded entries are non-`F`-survivors (§1's
   `hpreDead_of_branchDeleted`, from branch-deletion + `Fa ⊆ F`);
-* `hin` — the in-forest recorded-tail↔`l`-chain reconciliation (the located
+* `hin`, the in-forest recorded-tail↔`l`-chain reconciliation (the located
   two-sided residual; see §4). -/
 
 /-- **`CanonBirthBridge` from the branch-canonical residuals, `hout` discharged.**
@@ -133,7 +133,7 @@ theorem canonBirthBridge_via_branchCanon
 
 `canonAnc F L` is the head of `L`'s `F`-survivor subsequence (or `0`): it skips
 non-survivors and stops at the first survivor.  So it depends on `L` *only through
-that subsequence* — inserting or deleting non-survivors is invisible.  This lets us
+that subsequence*, inserting or deleting non-survivors is invisible.  This lets us
 pin `hin` (`canonAnc F cw = canonAnc F rcSuf`) to a single crisp fact: `bw`'s
 `F`-surviving recorded ancestors equal its `F`-surviving `l`-ancestors, in order. -/
 
@@ -191,18 +191,18 @@ Quot.sound]`).  The three `CanonBirthBridge` residuals split as follows.
   `deletedIn Fa c` for the prefix entries is a real branch-fold fact (they sit
   below `bw`, the head of `k`'s live-filtered recorded chain in its branch fold).
 
-* **`hsplit` — branch `LiveChain` fact.**  `bw = birthAnc l a b k = anc(branch) k`
+* **`hsplit`, branch `LiveChain` fact.**  `bw = birthAnc l a b k = anc(branch) k`
   is the head of `k`'s live-filtered recorded chain in its branch fold
   (`subchain_resolve` / `CanonInv`'s `LiveChain`), hence sits on `rc`.  A real
   execution fact; taken as input to the composed bridge.
 
-* **`hin` — the irreducible two-sided residual (§3.5).**  Pinned to a single crisp
-  fact: `rcSuf.filter (survB F) = cw.filter (survB F)` — `bw`'s `F`-surviving
+* **`hin`, the irreducible two-sided residual (§3.5).**  Pinned to a single crisp
+  fact: `rcSuf.filter (survB F) = cw.filter (survB F)`, `bw`'s `F`-surviving
   recorded ancestors equal its `F`-surviving `l`-ancestors, in order.  All climb
   algebra around it is discharged (`canonAnc_filter_surv` + `hin_of_survFilterEq`).
 
 **The exact mismatch (single-sided vs two-sided).**  `canon_fold` on the *branch*
-`a = applySeqR l Ea` gives `CanonMatch Fa a`, i.e. `anc a k = canonAnc Fa (rc)` —
+`a = applySeqR l Ea` gives `CanonMatch Fa a`, i.e. `anc a k = canonAnc Fa (rc)`,
 `k`'s branch-final anchor is `canonAnc` over the **branch** survivor set `Fa`.  But
 `CanonBirthBridge` is stated over `canonAnc F` with `F` the **two-sided** applied
 set (`Fa ∪ Fb`).  The reconciliation `canonAnc Fa → canonAnc F` is not a corollary

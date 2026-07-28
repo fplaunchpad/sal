@@ -2,7 +2,7 @@ import Mathlib.Data.Nat.Size
 import Sal.MRDTs.RGA_Embed.Embed_Code
 
 /-!
-# The binary delta code — the entropy-optimal `embed-code` mint
+# The binary delta code: the entropy-optimal `embed-code` mint
 
 The second inhabitant of `OrderedPrefixCode` (design doc §5,
 `whiteboard/litmus/embed_tree.py` `EmbedTreeCode.C`):
@@ -12,7 +12,7 @@ C(δ) = 1^(L−1) ++ 0 ++ (δ with its leading bit removed),   L = bitlength δ
 ```
 
 `|C(δ)| = 2L − 1 = Θ(log δ)`: sequential typing costs ~4 bits per level and a
-race with timestamp gap `g` costs `2·log₂ g + O(1)` — the entropy of the
+race with timestamp gap `g` costs `2·log₂ g + O(1)`, the entropy of the
 birth chain, versus the unary code's `Θ(δ)`. Because every datatype theorem
 is parametric in the code, nothing downstream changes: this file only
 proves the two structure fields (monotone, prefix-free) for `binEnc`.

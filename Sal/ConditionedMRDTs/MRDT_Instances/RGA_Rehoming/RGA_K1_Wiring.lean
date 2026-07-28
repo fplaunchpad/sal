@@ -2,20 +2,20 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_K1_DeltaDiscipline
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_DeltaEnum
 
 /-!
-# K1 wiring — discharging `canonFoldOK_delta`'s closure hypotheses
+# K1 wiring: discharging `canonFoldOK_delta`'s closure hypotheses
 
 The three inputs `canonFoldOK_delta` still carries, discharged from Skeleton 3's
 premise vocabulary (closures of `ev₁`/`ev₂`, perms, `respects`):
 
-* `lcaClosed_deps` — the LCA set is dependency-closed: `DepC ⊆ vis` and `ev₁ ∩ ev₂` is
+* `lcaClosed_deps`, the LCA set is dependency-closed: `DepC ⊆ vis` and `ev₁ ∩ ev₂` is
   `vis`-backward-closed (intersection of two closed sets).
-* `deltaDeps_discharge` (via `delta_chain_forward`) — the per-position delta closure `hδdeps`:
+* `deltaDeps_discharge` (via `delta_chain_forward`), the per-position delta closure `hδdeps`:
   a dependency of a delta op is either an LCA op (∈ ρ₀) or an EARLIER delta op (∈ pre).  The
   mechanism: a `DepE`-edge never crosses from the delta INTO the LCA (`vis`-closure would pull the
   source into both branches), so a dependency chain ending at a delta op stays wholly inside the
-  delta, where `respects π₀ (loOnA …)` forces every edge forward — by `List.pairwise_append` /
+  delta, where `respects π₀ (loOnA …)` forces every edge forward, by `List.pairwise_append` /
   `pairwise_cons` cross-clauses, no index arithmetic.
-* `exists_loOnA_perm` — the freely-chosen ambient enumeration `U` exists: `loOnA ⊆ vis` and `vis`
+* `exists_loOnA_perm`, the freely-chosen ambient enumeration `U` exists: `loOnA ⊆ vis` and `vis`
   is a strict order, so the generic topological sort applies (mirror of `exists_loOnEq_enum`).
 -/
 
@@ -110,7 +110,7 @@ theorem delta_chain_forward (Cfg : Sal.Emulation.Configuration (RGACondSig α).t
 
 /-! ## §2  The two closure discharges -/
 
-/-- **The LCA set is dependency-closed** — `hρclosed` of `canonFoldOK_delta`. -/
+/-- **The LCA set is dependency-closed**, `hρclosed` of `canonFoldOK_delta`. -/
 theorem lcaClosed_deps (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (ev₁ ev₂ : Set (op_t α))
     (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
@@ -123,7 +123,7 @@ theorem lcaClosed_deps (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDT
   have hvis : Cfg.vis z w := depC_imp_vis Cfg (ev₁ ∪ ev₂) htr z w hdep
   exact (hρp.2 z).mpr ⟨hcl1 z w hvis hwL.1, hcl2 z w hvis hwL.2⟩
 
-/-- **The per-position delta closure** — `hδdeps` of `canonFoldOK_delta`: a dependency of a
+/-- **The per-position delta closure**, `hδdeps` of `canonFoldOK_delta`: a dependency of a
 delta op is an LCA op or an earlier delta op. -/
 theorem deltaDeps_discharge (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (ev₁ ev₂ : Set (op_t α))
@@ -164,19 +164,19 @@ theorem exists_loOnA_perm (Cfg : Sal.Emulation.Configuration (RGACondSig α).toC
 
 /-! ## §4  The K1 bundle -/
 
-/-- **K1, assembled.**  `CanonFoldOK ρ₀ (fold ρ₀) π₀` — Skeleton 3's delta-discipline
-leaf — from the honest residual only:
+/-- **K1, assembled.**  `CanonFoldOK ρ₀ (fold ρ₀) π₀`, Skeleton 3's delta-discipline
+leaf, from the honest residual only:
 
-* `hGen : GenDisc2C Cfg (ev₁ ∪ ev₂)` — each event accurate at its own dependency fold (the
+* `hGen : GenDisc2C Cfg (ev₁ ∪ ev₂)`, each event accurate at its own dependency fold (the
   born-applicable generation content);
-* `hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀` — the LCA's own discipline (the existing noopFeasible
+* `hρOK : CanonFoldOK [] (init_st (α := α)) ρ₀`, the LCA's own discipline (the existing noopFeasible
   engine route on the born-applicable `ρ₀`);
-* `hπr : respects π₀ (loOnA …)` — the delta enum is causally sorted (constructible: any
+* `hπr : respects π₀ (loOnA …)`, the delta enum is causally sorted (constructible: any
   `vis`-topological sort works, since `loOnA ⊆ vis`);
 * the execution-model facts (`hdts`/`hids0`/strict `vis`/branch closures).
 
-Everything else — the ambient enumeration, the dependency closures, the per-position delta
-closure — is derived. NO order hypothesis on `ρ₀`; NO feasibility at the LCA-first fold. -/
+Everything else, the ambient enumeration, the dependency closures, the per-position delta
+closure, is derived. NO order hypothesis on `ρ₀`; NO feasibility at the LCA-first fold. -/
 theorem K1_canonFoldOK (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (ev₁ ev₂ : Set (op_t α))
     (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)

@@ -4,7 +4,7 @@ set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # LWW_Register (CRDT) — read-side projection
+/-! # LWW_Register (CRDT): read-side projection
 
 The 24 VCs prove the `(ts, value)` pair converges under lexicographic
 max. The headline read is `the value field of the lex-max pair`.

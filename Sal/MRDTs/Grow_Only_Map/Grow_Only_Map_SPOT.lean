@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # Grow_Only_Map (MRDT) — SPOTs -/
+/-! # Grow_Only_Map (MRDT): SPOTs -/
 
 namespace Grow_Only_Map_SPOT
 

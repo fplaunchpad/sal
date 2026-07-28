@@ -130,8 +130,8 @@ test('code-invariance: 100 randomized head-sync runs read identically under both
 test('cost gap: growing cross-replica Lamport deltas, elias beats unary substantially', (t) => {
   // Two replicas prepend at the top (root anchor) in interleaved bursts
   // with periodic syncs: the delta of insert i is its full Lamport ts, so
-  // unary coordinates grow LINEARLY with global op count (KC's cost flag)
-  // while eliasDelta grows as log2 + O(log log).
+  // unary coordinates grow LINEARLY with global op count while eliasDelta
+  // grows as log2 + O(log log).
   const totals = CODES.map((code) => {
     const DT = makeEmbedRGA(code);
     const rt = new Runtime(DT);

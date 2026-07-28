@@ -9,26 +9,26 @@ import Sal.ConditionedMRDTs.Refutations.G2_Transport_Probe
 The headline assembly for the tombstone-free RGA: two `loOnA`-respecting,
 `noopFeasible` enumerations of a backward-closed reachable event set fold from
 `init_st` to observationally-`eq` states.  Everything here works up to the RGA's
-observational `eq` (NOT Lean `Eq`) — the eq-vs-Eq wall (`RGA_BubbleWiring.lean`
+observational `eq` (NOT Lean `Eq`), the eq-vs-Eq wall (`RGA_BubbleWiring.lean`
 §2, `eq_strictly_weaker_than_Eq`) forbids the Lean-`Eq` σ-layer from hosting the
 RGA directly, so we rebuild the fold-swap / bubble machinery over `eq`.
 
 Built BOTTOM-UP, each layer 0-sorry:
 
-* **§0 plumbing** — a concrete `applySeqR := foldl do_`, and `eq` as an
+* **§0 plumbing**, a concrete `applySeqR := foldl do_`, and `eq` as an
   equivalence (`eq_refl`, `eq_trans`; `eq_symm` is imported).
-* **§1 eq-congruence of the fold** (`applySeqR_eq_congr`) — from `do_eq_congr`.
-* **§2 generation base case** (`chainFaithful_of_accurate`) — an accurate op is
+* **§1 eq-congruence of the fold** (`applySeqR_eq_congr`), from `do_eq_congr`.
+* **§2 generation base case** (`chainFaithful_of_accurate`), an accurate op is
   `ChainFaithful` on its recorded list (the "routine" lift documented in
   `RGA_BubbleWiring` §3.4), using `id_mono` for chain-acyclicity.
-* **§3 threading** — `NoFreshClash` for concurrent pairs from monotone
+* **§3 threading**, `NoFreshClash` for concurrent pairs from monotone
   allocation; `Faithful` along a single fold via base case +
   `chainFaithful_doIns`/`chainFaithful_doDel` + `climbFaithful_of_chain`.
-* **§4 swap-at-fold** — `general_swap` discharges an observational swap witness,
+* **§4 swap-at-fold**, `general_swap` discharges an observational swap witness,
   lifted to a fold swap (`applySeqR_swap_of_eqWitness`).
-* **§5 eq-bubble** — a generic `eq`-bubble (`bubble_eq`) parameterised by a
+* **§5 eq-bubble**, a generic `eq`-bubble (`bubble_eq`) parameterised by a
   per-step swap-witness supply, mirroring `applySeq_bubble_to_front_loOn_u`.
-* **§6 headline** — `RGA_conditioned_convergence` (see the layer's own doc for
+* **§6 headline**, `RGA_conditioned_convergence` (see the layer's own doc for
   the exact hypotheses it consumes and the located obstruction).
 -/
 
@@ -198,33 +198,33 @@ observationally-`eq` states, GIVEN a swap oracle supplying an `EqSwap` witness f
 every `lo`-incomparable pair at every prefix fold.  The proof is the peel-bubble-
 recurse of `convergence_on_u` (`Sigma_LoOn3.lean`), up to `eq`, with the bubble of
 §5; because the bubble consumes `EqSwap` directly, the overwriter/`h_ov`
-machinery is not needed — only the peeled head's `lo`-minimality (from `respects`)
+machinery is not needed, only the peeled head's `lo`-minimality (from `respects`)
 and the σ-elements' incomparability with it.  The oracle self-threads through the
 recursion (`applySeqR (do_ s e) pre = applySeqR s (e :: pre)`).
 
 **The oracle is the located obstruction.**  Discharging it means proving `EqSwap`
-for every `lo`-incomparable (concurrent) pair at every prefix fold — i.e. running
+for every `lo`-incomparable (concurrent) pair at every prefix fold, i.e. running
 `eqSwap_of_general` (§4) there.  Its premises `NoFreshClash` (concurrent, §3) and
 the reachable-state invariants (`RgaInv`/`id_mono`, imported) transport; but
 `general_swap` also needs ONE operand `accurate` and the other `Faithful` at the
 swap state, and at a HYBRID fold state (interleaving two enumerations' prefixes) a
 concurrent operand may be staled by concurrent deletes so that NEITHER is
-`accurate` — the same "swaps visit states no execution visits" wall recorded in
+`accurate`, the same "swaps visit states no execution visits" wall recorded in
 `ConditionedConvergence` §5 and `RGA_BubbleWiring` §3.3, here in the `eq`-route. -/
 
 /-- Generic `eq`-convergence engine: strong induction on `π₁.length`, peeling the
 head, bubbling it to the front of `π₂`, and recursing.  Order-agnostic in `lo`.
 
 **The oracle is RESTRICTED.**  Rather than quantifying `pre` over ALL
-lists — which is unsatisfiable, since several `EqSwap`-discharge conjuncts are
+lists, which is unsatisfiable, since several `EqSwap`-discharge conjuncts are
 provably false at junk prefixes (`contains (fold [Ins 0 …]) 0 = false`;
-`Faithful a` off `a`'s enablement) — the oracle is supplied only at the prefixes
+`Faithful a` off `a`'s enablement), the oracle is supplied only at the prefixes
 the bubble actually visits: `pre` is a `nodup`, `respects`-ordered sub-list of the
 pending set `evC`, disjoint from the swapped pair, at which BOTH `a` and `b` are
 ENABLED (their entire `evC`-`lo`-past already lies in `pre`).  These are exactly the
 `loOnA`-respecting delivery prefixes at which M1/M2 supply `Faithful`/`NoFreshClash`
 etc.  The restriction SELF-THREADS through the recursion (`evC → evC \ {e}`,
-`pre → e :: pre`) with no explicit accumulator — the enablement past shrinks with
+`pre → e :: pre`) with no explicit accumulator, the enablement past shrinks with
 `evC` and re-expands with the peeled head `e`. -/
 theorem eq_convergence (lo : op_t α → op_t α → Prop) :
     ∀ (n : Nat) (s : concrete_st α) (evC : Set (op_t α)) (π₁ π₂ : List (op_t α)),

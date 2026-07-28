@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # MAX_Register (CRDT) — SPOTs -/
+/-! # MAX_Register (CRDT): SPOTs -/
 
 namespace MAX_Register_SPOT
 

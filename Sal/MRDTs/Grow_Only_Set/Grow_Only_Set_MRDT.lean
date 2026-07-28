@@ -11,7 +11,7 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Grow-Only Set (G-Set) — state-based MRDT
+# Grow-Only Set (G-Set): state-based MRDT
 
 G-set where the only op is `Add` and state grows monotonically. Merge is
 the three-way union `l ∪ a ∪ b`, but for a G-set the LCA is actually
@@ -37,7 +37,7 @@ def init_st: concrete_st := empty
 @[simp]
 def eq (a: concrete_st) (b: concrete_st) := a = b
 
-/-- The payload is just the element to add — no separate constructor. -/
+/-- The payload is just the element to add, no separate constructor. -/
 abbrev app_op_t := ℕ
 
 abbrev op_t:= ℕ × ℕ × app_op_t

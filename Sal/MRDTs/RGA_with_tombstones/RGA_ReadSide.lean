@@ -18,7 +18,7 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # RGA MRDT — read-side projection and intent-preservation theorems
+/-! # RGA MRDT: read-side projection and intent-preservation theorems
 
 MRDT counterpart to `Sal/CRDTs/RGA_ReadSide.lean`. The 24 RA-linearizability
 VCs in `Replicated_Growable_Array_MRDT.lean` prove convergence of the
@@ -27,7 +27,7 @@ sequence the user reads is the canonical RGA traversal.
 
 This file fills that gap with a minimum-viable read-side layer:
 
-1. **Per-id read.** `readSeq_visible s id ele` is a relational read —
+1. **Per-id read.** `readSeq_visible s id ele` is a relational read,
    "in state `s`, the visible character at OpId `id` is `ele`". The
    relational form sidesteps the `Classical.choose` ambiguity that an
    `Option`-valued read would carry over a set-of-triples state.
@@ -43,7 +43,7 @@ tombstones. -/
 
 /-! ## Read-side primitives -/
 
-/-- Is the OpId `id` currently visible in state `s` — there exists an
+/-- Is the OpId `id` currently visible in state `s`, there exists an
 insert record with that `id` and it is not tombstoned? -/
 def visible (s : concrete_st) (id : ℕ) : Prop :=
   (∃ r e, mem (id, r, e) (Prod.fst s) = true) ∧ mem id (Prod.snd s) = false
@@ -159,7 +159,7 @@ theorem concurrent_insert_tiebreak_deterministic
 The **positive contrast** to the tombstone-free RGA. That variant reorders
 survivors on a *single* delete: splicing a deleted node physically out rehomes
 its children, which then re-sort among their new siblings by the newest-first
-tiebreak — a sequential-spec violation certified invisibly by our
+tiebreak, a sequential-spec violation certified invisibly by our
 RA-linearizability (`RGA_TF_SPOT.tombstone_free_violates_delete_order`,
 `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean`; open question `oq:linspec`).
 
@@ -167,8 +167,8 @@ The tombstoned RGA cannot exhibit this. Its visible order `visible_lt` is
 defined entirely through `after_of`, which reads only the insert records
 `Prod.fst s`. A `Remove` touches only the tombstone set `Prod.snd s`:
 `do_ s (_,_,.Remove x) = (Prod.fst s, add x (Prod.snd s))`
-(`RGA_MRDT.lean:101`). Hence `after_of` — and with it the entire order relation
-— is *invariant* under `Remove`: deletion flips a node's liveness (`visible`)
+(`RGA_MRDT.lean:101`). Hence `after_of`, and with it the entire order relation,
+is *invariant* under `Remove`: deletion flips a node's liveness (`visible`)
 but never moves any survivor. The dead node stays put as a position holder;
 nothing rehomes. `remove_preserves_visible_lt` is the machine-checked statement,
 a genuine `↔` (its non-vacuity is witnessed just below). -/
@@ -199,7 +199,7 @@ theorem remove_preserves_afters_reach (s : concrete_st) (t r x a b : ℕ) :
 /-- **Delete preserves the visible order (tombstoned RGA).** For every pair of
 identities `a`, `b`, applying a `Remove x` leaves the visible-order relation
 `visible_lt` on them exactly as it was. This is the tombstoned RGA's
-delete-order-preservation — the property the tombstone-free RGA *violates*
+delete-order-preservation, the property the tombstone-free RGA *violates*
 (`tombstone_free_violates_delete_order`). The proof replays each `visible_lt`
 constructor across the `after_of`/`afters_reach` invariance established above; no
 node is rehomed, because the tombstone lives outside the substrate `visible_lt`

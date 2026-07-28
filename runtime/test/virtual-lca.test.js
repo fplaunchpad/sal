@@ -1,11 +1,9 @@
-// VIRTUAL LCAs (#90): DistributedReplica resolves criss-cross merges by the
-// mechanized recursive rule (sal-mrdts.tex 14: Step3V / mca_events_cover /
-// virtualLCAState_canonical) instead of throwing. The directed store is the
-// paper's own criss-cross shape; expected reads are HAND-DERIVED from the
-// OR-set survival rule (live iff in all three, or born in exactly one
-// branch), and the FAIL companions pin the machine-refuted single-MCA
-// shortcuts (t1f_pick_*_resurrects_*): picking either single MCA as the
-// base resurrects a delete.
+// VIRTUAL LCAs: DistributedReplica resolves criss-cross merges by the
+// mechanized recursive rule instead of throwing. The directed store is a
+// criss-cross shape; expected reads are HAND-DERIVED from the OR-set survival
+// rule (live iff in all three, or born in exactly one branch), and the FAIL
+// companions pin the machine-refuted single-MCA shortcuts: picking either
+// single MCA as the base resurrects a delete.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,7 +38,7 @@ test('criss-cross merges through the virtual base; deletes both stick', () => {
   assert.equal(read(A), 'y', 'A head before the crossing merge');
   assert.equal(read(B), 'x', 'B head before the crossing merge');
 
-  // heads (a2, mB) have MCAs {a1, b1}: previously CrissCrossError, now the
+  // heads (a2, mB) have MCAs {a1, b1}: the
   // virtual fold: base = merge3(root, {x}, {y}) = {x,y}; final
   // merge3({x,y}, {y}, {x}) kills both (each deleted on one side).
   const g = A.mergeWithGid(B.headGid);
@@ -89,8 +87,7 @@ test('randomized: mesh syncs never throw and converge (criss-crosses included)',
       }
     }
     // random pairwise sync: exchange, then BOTH merge the pre-exchange head
-    // pair (the rival-merge genesis that minted criss-crosses and 592 gated
-    // attempts in the earlier randomized probes)
+    // pair (the rival-merge genesis that mints criss-crosses)
     const i = Math.floor(rng() * 3); let j = Math.floor(rng() * 3);
     if (j === i) j = (j + 1) % 3;
     const gi = reps[i].headGid, gj = reps[j].headGid;

@@ -6,8 +6,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_ReadEquiv
 
 The corollary that closes tier 3: composing sequential soundness
 (`embed_seq_sound`) with the compaction machinery gives the published
-tombstoned RGA's read of a sequentially honest history — **any**
-`visible_lt`-sorted enumeration of its visible ids — as exactly the
+tombstoned RGA's read of a sequentially honest history, **any**
+`visible_lt`-sorted enumeration of its visible ids, as exactly the
 naive sequential buffer. The conclusion is code-free: the buffer never
 mentions coordinates.
 
@@ -17,7 +17,7 @@ core's `BirthEnv` directly (the sequential mirror of
 sequential chain lemma and pinned by unique decodability.
 
 Standalone build target (imports the tombstoned RGA model through the
-read-equivalence file — the top-level names of the published tombstoned RGA
+read-equivalence file, the top-level names of the published tombstoned RGA
 model collide with the rehoming RGA model the umbrella file
 `MRDT_Instances.lean` already reaches, so the umbrella cannot reach this
 file). Build:

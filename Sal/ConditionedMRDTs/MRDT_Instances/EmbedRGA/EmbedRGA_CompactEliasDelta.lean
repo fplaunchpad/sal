@@ -2,22 +2,22 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_AnchorsFactor
 import Sal.MRDTs.RGA_Embed.Embed_Code_EliasDelta
 
 /-!
-# `compactEliasDelta` — the concrete verified compaction
+# `compactEliasDelta`: the concrete verified compaction
 
 The compaction for the embed RGA, as a `StablePrefixMap` producer:
 
-* **(a) DROP dead ranges** — `ePruneKeep`: a stable chain is carried forward
+* **(a) DROP dead ranges**, `ePruneKeep`: a stable chain is carried forward
   iff it has a live descendant in the stable tree or a known in-flight
   coordinate passes through it; everything else is dropped, and its sibling
   rank is reclaimed.
-* **(b) RANK-RENUMBER** — `rED`: in each sibling group with **no known
+* **(b) RANK-RENUMBER**, `rED`: in each sibling group with **no known
   in-flight child delta** (`skipAt = false`), the surviving deltas are
   renumbered to `1..k` order-isomorphically (`rankIn`) and re-encoded with
   the same ordered prefix code; groups *with* in-flight children are skipped
   this epoch. Spine fusion for such groups is a separate construction
   (`EmbedRGA_Fusion.lean`).
 
-Soundness: H2 (`ord`) is `remapChain_keyLt` — per-group order-isomorphism
+Soundness: H2 (`ord`) is `remapChain_keyLt`, per-group order-isomorphism
 composed through the chain-lex theorem (`chainBefore_display`, where the
 code's monotonicity lives); the rank map is an order-isomorphism against
 surviving kids and is dominated by Lamport-fresh future deltas (`rED_iso`);
@@ -32,7 +32,7 @@ cut of a disciplined honest configuration: freshness comes from
 **Addressing (runtime-twin erratum honored):** the cut-side inputs `tree`,
 `live`, `inflight` are lists of *chains* (coordinate-addressed data), never
 event ids resolved through prefix sums; id arithmetic appears only inside
-the epoch-zero honest configuration. Scope: the **single-epoch** statement —
+the epoch-zero honest configuration. Scope: the **single-epoch** statement,
 one compaction at a settled cut of an honest configuration.
 -/
 
@@ -161,7 +161,7 @@ theorem remapFrom_id {keep : List (List ℕ)} {r : List ℕ → ℕ → ℕ}
       rw [hx, htail]
 
 /-! ## §3 H2, generically: an order-isomorphic per-group renumbering
-preserves the display comparator (through the chain-lex theorem — this is
+preserves the display comparator (through the chain-lex theorem, this is
 where the code's monotonicity is consumed) -/
 
 /-- `(p, d)` occurs in the domain: some at-hand chain passes through the
@@ -279,7 +279,7 @@ def fStab (Γ : OrderedPrefixCode) (r : List ℕ → ℕ → ℕ)
     ++ c.drop (coordOf Γ (stabChain Γ keep c)).length
 
 /-- **The master alignment lemma**: on any positive chain's coordinate the
-bit-string translation IS the chain re-map — the stable/unstable split lands
+bit-string translation IS the chain re-map, the stable/unstable split lands
 on a codeword boundary and the tail is off the kept tree, where `r` is the
 identity. No domain hypothesis: this holds for every positive chain. -/
 theorem fStab_coordOf (Γ : OrderedPrefixCode) {r : List ℕ → ℕ → ℕ}
@@ -459,7 +459,7 @@ theorem nodup_length_le_of_bounded :
         omega
 
 /-- Rank never exceeds the delta it renumbers (distinct positives below `d`
-number at most `d`) — the freshness-domination half of H2. -/
+number at most `d`), the freshness-domination half of H2. -/
 theorem rankIn_le_self {ds : List ℕ} (hpos : ∀ x ∈ ds, 1 ≤ x) (d : ℕ) :
     rankIn ds d ≤ d := by
   apply nodup_length_le_of_bounded d _ ((List.nodup_dedup ds).filter _)
@@ -548,7 +548,7 @@ theorem rED_pos {keep inflight : List (List ℕ)} :
 /-- **The stage-2 soundness theorem for the concrete renumbering** (per-group
 order-isomorphism + Lamport freshness): if every occurring delta at an
 unskipped group is a surviving kid or fresh (dominates every kid), `rED` is
-strictly monotone on occurring sibling pairs — H2's hypothesis. -/
+strictly monotone on occurring sibling pairs, H2's hypothesis. -/
 theorem rED_iso {keep inflight : List (List ℕ)} {𝒟 : List ℕ → Prop}
     (hKpos : ∀ k ∈ keep, PosChain k)
     (hocc : ∀ p d, Occ 𝒟 p d → skipAt inflight p = false →
@@ -597,7 +597,7 @@ def compactRanked (Γ : OrderedPrefixCode) (tree : List (List ℕ))
     (rED_off)
     (rED_iso (fun k hk => htpos k (ePruneKeep_subset k hk)) hocc)
 
-/-- **`compactEliasDelta`** — the concrete verified compaction: drop dead
+/-- **`compactEliasDelta`**, the concrete verified compaction: drop dead
 ranges, rank-renumber in-flight-free sibling groups, re-encode with the
 flipped Elias-δ code. -/
 abbrev compactEliasDelta (tree : List (List ℕ)) (live : List ℕ → Bool)
@@ -611,7 +611,7 @@ abbrev compactEliasDelta (tree : List (List ℕ)) (live : List ℕ → Bool)
   compactRanked eliasDeltaCode tree live inflight 𝒟 htpos hDpos hocc
 
 /-- The at-hand chains of a settled cut: chains of cut-live settled inserts,
-of known in-flight inserts, and of new-epoch (beyond-`Ev`) inserts — the
+of known in-flight inserts, and of new-epoch (beyond-`Ev`) inserts, the
 domain over which the compaction must preserve order. -/
 def EAtHand (Γ : OrderedPrefixCode) (C : Configuration (E Γ α))
     (S Ev : Set (Op (EOp α))) (inflight : List (List ℕ))
@@ -627,7 +627,7 @@ Data adequacy (`hTree`/`hTreeS`/`hLive`/`hInflight`) is the protocol half's
 obligation (recoding note §6), stated **coordinate-addressed** (chains
 matched through `coordOf`, never ids). Everything else is proved: the
 kids-or-fresh trichotomy classifies every occurrence by its realizer's
-epoch — settled (kept, via anchor-liveness), in-flight (skipped), or beyond
+epoch, settled (kept, via anchor-liveness), in-flight (skipped), or beyond
 (Lamport-fresh via `causal_mono` + `settledAt_dichotomy`). -/
 
 theorem compactRanked_settled_reads {Γ : OrderedPrefixCode}
@@ -860,9 +860,9 @@ theorem compactRanked_settled_reads {Γ : OrderedPrefixCode}
     eRecode_settled_bridge F hv hsettled hAF hrest τ hτ⟩
 
 /-- **The composed headline, at the Elias-δ code**: at a `SettledAtOn`
-cut of a disciplined honest configuration, the compaction — drop dead
+cut of a disciplined honest configuration, the compaction, drop dead
 ranges, rank-renumber in-flight-free sibling groups, re-encode with the
-flipped Elias-δ code — preserves the fold and every read of every beyond-cut
+flipped Elias-δ code, preserves the fold and every read of every beyond-cut
 continuation. Pure instantiation of `compactRanked_settled_reads`. -/
 theorem compactEliasDelta_settled_reads
     {C : Configuration (E eliasDeltaCode α)}
@@ -906,20 +906,20 @@ theorem compactEliasDelta_settled_reads
 #print axioms compactRanked_settled_reads
 #print axioms compactEliasDelta_settled_reads
 
-/-! ## §9 SPOT — the worked compaction, hand-derived (PASS + FAIL)
+/-! ## §9 SPOT: the worked compaction, hand-derived (PASS + FAIL)
 
 **PASS**: a delete-heavy epoch-0 history at the Elias-δ code (six inserts,
 four deletes). Root group `{1,2,3,4,9}`, survivor `4`; `9` dead but kept (its
 child `[9,5]` is live). `ePruneKeep` drops `[1],[2],[3]`; `rED` renumbers the
 root group `4↦1, 9↦2` and the `[9]` group `5↦1`. Beyond the cut: a child of
-the survivor (δ=6), a fresh root mint (δ=21 — Lamport-fresh, dominating both
+the survivor (δ=6), a fresh root mint (δ=21, Lamport-fresh, dominating both
 renumbered ordinals), and a delete. Reads pinned equal (`[108, 106, 107]`,
 hand-derived: root deltas 21 > 9/2 dominate, ancestor before descendant);
 coordinate weight pinned 40 → 24 bits (hand-summed: 13+18+9 vs 5+10+9).
 
 **FAIL companion**: same cut, but an epoch-0 in-flight root insert (chain
 `[6]`) is still undelivered. The *unguarded* dense renumbering (`rED` fed an
-empty in-flight list — the tempting degenerate) maps `9↦2` under the
+empty in-flight list, the tempting degenerate) maps `9↦2` under the
 in-flight `6`, and the read flips to `[110, 106, 104]`: the late op jumps the
 compacted survivor. The *guarded* construction (`skipAt` sees `[6]`) skips
 the root group (`4,9` frozen), still renumbers the in-flight-free `[9]` group
@@ -981,7 +981,7 @@ def finalR : EState ℕ :=
   applySeq (E eliasDeltaCode).toCRDTSig (eRemapSt gcf sCut)
     (postOps.map (eRemapOp gcf))
 
-/-- PASS: compaction is invisible — both reads are the hand-derived
+/-- PASS: compaction is invisible, both reads are the hand-derived
 `[108, 106, 107]` (21 first, then the `9`-subtree, ancestor before child). -/
 theorem reads_identical :
     SPOT.readE finalR = [108, 106, 107] ∧
@@ -994,7 +994,7 @@ theorem size_reduced :
   native_decide
 
 /-- Degenerate-behavior pin: the read equality is NOT the identity map
-echoing the state — the compacted state differs record-for-record. -/
+echoing the state, the compacted state differs record-for-record. -/
 theorem compaction_not_identity :
     eRemapSt gcf sCut ≠ sCut ∧ finalR ≠ finalO := by native_decide
 
@@ -1018,7 +1018,7 @@ theorem skip_guard :
 def gcfG : List Bool → List Bool :=
   fStab eliasDeltaCode (rED keepF inflight1) keepF
 
-/-- UNGUARDED dense renumbering — the tempting degenerate: renumber every
+/-- UNGUARDED dense renumbering, the tempting degenerate: renumber every
 kept group, ignoring the in-flight sibling. -/
 def gcfU : List Bool → List Bool := fStab eliasDeltaCode (rED keepF []) keepF
 
@@ -1032,7 +1032,7 @@ def finalU : EState ℕ :=
   applySeq (E eliasDeltaCode).toCRDTSig (eRemapSt gcfU sCut)
     [eRemapOp gcfU flightOp]
 
-/-- FAIL: unguarded dense renumbering FLIPS the pinned order — `9 ↦ 2` slides
+/-- FAIL: unguarded dense renumbering FLIPS the pinned order, `9 ↦ 2` slides
 the compacted survivor under the in-flight `6`, and the late op jumps from
 the middle to the front. -/
 theorem unguarded_flips_order :
@@ -1041,7 +1041,7 @@ theorem unguarded_flips_order :
     SPOT.readE finalU ≠ SPOT.readE finalOF := by native_decide
 
 /-- PASS: the guarded construction skips exactly that group and the read
-stays pinned — while the in-flight-free `[9]` group still compresses
+stays pinned, while the in-flight-free `[9]` group still compresses
 (23 → 19 bits: `106` sheds 4 bits of dead-delta codeword). -/
 theorem guarded_skips_group :
     SPOT.readE finalG = [106, 110, 104] ∧

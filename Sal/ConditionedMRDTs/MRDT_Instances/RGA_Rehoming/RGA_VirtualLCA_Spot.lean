@@ -30,19 +30,19 @@ the other branch.  Expected values below are derived by hand in the comments, ne
     6 = i30 on 4     {…, 30↦(300,10)}        E {i10,i20,i30}  par [4]    head B
 
 **The criss-cross.** `CA(5,6) = {1,2,0}`, `MCA(5,6) = {1,2}`: no `IsLCA` version
-exists — the gated Merge is blocked (pinned).  The recursion resolves the sub-pair
+exists, the gated Merge is blocked (pinned).  The recursion resolves the sub-pair
 `(1,2)` through its registered LCA `0` and folds:
-`vlca(5,6) = merge σ₀ σ(1) σ(2) = {10↦(100,0), 20↦(200,0)}` — exactly the meet's fold.
+`vlca(5,6) = merge σ₀ σ(1) σ(2) = {10↦(100,0), 20↦(200,0)}`, exactly the meet's fold.
 
 **T1 (PASS), hand-derived.**  `mergeL vlca σ(5) σ(6)`: survivor identities
-`I = (dl∩da∩db) ∪ (da∖dl) ∪ (db∖dl) = {20} ∪ ∅ ∪ {30} = {20,30}` — the delete of 10
+`I = (dl∩da∩db) ∪ (da∖dl) ∪ (db∖dl) = {20} ∪ ∅ ∪ {30} = {20,30}`, the delete of 10
 wins (10 sits in the virtual LCA's event view, so side 6's copy is not a fresh add),
 and the concurrent child 30 survives with its dead anchor 10 **climbed through the
 virtual LCA's chain 10 → 0**: the record REHOMES to the root.  Merged state
 `{20↦(200,0), 30↦(300,0)}`.
 
 **T1F (FAIL), hand-derived.**  The fixed single-MCA pick `2` (the branch that never
-saw `i10`) in the LCA slot: `dl = {20}`, so `db∖dl = {10,30}` — the deleted id 10
+saw `i10`) in the LCA slot: `dl = {20}`, so `db∖dl = {10,30}`, the deleted id 10
 **resurrects** (`{10,20,30}`), and 30 keeps its anchor 10.  The pick disagrees with
 the virtual resolution on the read of id 10.
 -/
@@ -175,7 +175,7 @@ theorem ca56 {x : Version}
   rcases reach5 hxu with rfl | rfl | rfl | rfl | rfl <;>
     rcases reach6 hx6 with h | h | h | h | h <;> simp_all
 
-/-- `MCA(5,6) = {1,2}` — the criss-cross's proper antichain. -/
+/-- `MCA(5,6) = {1,2}`, the criss-cross's proper antichain. -/
 theorem mca56R : mcaFinset parR {5} 6 = {1, 2} := by
   ext m
   rw [mem_mcaFinset parR parR_lt]
@@ -233,7 +233,7 @@ theorem mca12R : mcaFinset parR {1} 2 = {0} := by
 /-! ## §4 The gate pin: no registered LCA exists (¬-companion) -/
 
 /-- No version is an `IsLCA` of the head pair `(5,6)`: the gated `Step3.merge` cannot
-fire — the shape genuinely requires `Step3V.mergeVirtual`. -/
+fire, the shape genuinely requires `Step3V.mergeVirtual`. -/
 theorem rga_no_registered_lca : ¬ ∃ vT, IsLCA parR 5 6 vT := by
   rintro ⟨vT, hlca⟩
   have h1 : (1 : Version) = vT :=
@@ -276,7 +276,7 @@ theorem vlca12R : vlcaAux verR parR parR_lt {1} 2 = init_st (α := ℕ) := by
   rfl
 
 /-- The virtual LCA of the criss-cross pair: the antichain `{1,2}` folds in ascending
-rank through the inner LCA `0` — the merge of the two single-insert branches over
+rank through the inner LCA `0`, the merge of the two single-insert branches over
 `σ₀`. -/
 theorem vlca56R : vlcaAux verR parR parR_lt {5} 6
     = _root_.merge (init_st (α := ℕ)) sA sB := by
@@ -321,7 +321,7 @@ LCA slot. -/
 noncomputable def pickMerged : (RGACondSig ℕ).State :=
   (RGACondSig ℕ).mergeL (stateD verR 2) (stateD verR 5) (stateD verR 6)
 
-/-- **T1F**: pick-`2` reads the deleted id 10 as PRESENT — `10 ∉ dl`, so side 6's
+/-- **T1F**: pick-`2` reads the deleted id 10 as PRESENT, `10 ∉ dl`, so side 6's
 copy looks like a fresh add and RESURRECTS, `10 ↦ (100, 0)`; and the child 30 keeps
 its (now-live) anchor 10.  The virtual resolution does neither (`t1_del_wins`,
 `t1_child_rehomed`): the picks disagree on the read of id 10. -/

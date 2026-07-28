@@ -51,15 +51,15 @@ end Op
 /-- State-based CRDT signature.
 
 Glossary:
-* `State`  — Σ, the state space.
-* `init`   — σ₀, the initial state.
-* `AppOp`  — set of abstract update operations (Sal's `app_op_t`).
-* `Query`  — Q, set of query operations.
-* `Value`  — V, set of query return values.
-* `update` — `do : Σ × (T × R × O) → Σ`; Sal's `do_`.
-* `merge`  — `merge : Σ × Σ → Σ`; the lattice join on `Σ`.
-* `query`  — `query : Σ × Q → V`.
-* `rc`     — Sal's linearization-order specification.
+* `State`: Σ, the state space.
+* `init`: σ₀, the initial state.
+* `AppOp`: set of abstract update operations (Sal's `app_op_t`).
+* `Query`: Q, set of query operations.
+* `Value`: V, set of query return values.
+* `update`: `do : Σ × (T × R × O) → Σ`; Sal's `do_`.
+* `merge`: `merge : Σ × Σ → Σ`; the lattice join on `Σ`.
+* `query`: `query : Σ × Q → V`.
+* `rc`: Sal's linearization-order specification.
 
 `update` takes the full `Op AppOp` (timestamp + replica + app op)
 because some CRDTs (e.g. LWW registers) dispatch on the timestamp; most

@@ -25,15 +25,15 @@ set_option autoImplicit false
 open Classical
 
 /-!
-# Observed-Remove Set (OR-Set) — state-based CRDT
+# Observed-Remove Set (OR-Set): state-based CRDT
 
 Add-wins set. Concurrent `Add e` on one replica and `Rem e` on another
 should leave `e` present, because the removal only observed an
 earlier-generation add.
 
 State is two grow-only sets:
-  * `adds`       : `set (elem × ts)` — every `Add` stakes a unique tag.
-  * `tombstones` : `set (elem × ts)` — entries retracted by a `Rem`.
+  * `adds`       : `set (elem × ts)`, every `Add` stakes a unique tag.
+  * `tombstones` : `set (elem × ts)`, entries retracted by a `Rem`.
 
 Element `e` is live iff ∃ tag `(e, ts) ∈ adds` with `(e, ts) ∉ tombstones`.
 Merge is pointwise union of both components. A `Rem e` tombstones every
@@ -41,7 +41,7 @@ Merge is pointwise union of both components. A `Rem e` tombstones every
 not in the tombstones set and therefore survives (add-wins).
 
 `rc` is `Either` for most pairs, but `Add e ↔ Rem e` on the same
-element needs arbitration — the add must happen before the remove can
+element needs arbitration, the add must happen before the remove can
 retract it (`Rem-then-Add` at the state level corresponds to the
 conceptual "add wins"). The `OR_Set_MRDT` version drops the tombstone
 set entirely because the LCA supplies that information; see
@@ -78,8 +78,8 @@ match o with
 | (_, (rid, _)) => rid
 
 /-- Effect:
-  * `Add e` at `ts` — add `(e, ts)` to `adds`.
-  * `Rem e`         — tombstone every observed `(e, _)` in `adds` by
+  * `Add e` at `ts`: add `(e, ts)` to `adds`.
+  * `Rem e`: tombstone every observed `(e, _)` in `adds` by
                        unioning them into `tombstones`. Only retracts
                        locally-observed adds, which is the key to
                        add-wins under concurrency. -/

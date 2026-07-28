@@ -1,12 +1,12 @@
-# Sal/ConditionedMRDTs — RA-linearizability for MRDTs (ternary merge)
+# Sal/ConditionedMRDTs: RA-linearizability for MRDTs (ternary merge)
 
 A mechanized soundness metatheory for MRDTs (three-way `merge lca a b` over a
-version DAG — the setting of the Neem paper's Theorem 2, arXiv:2502.19967 /
+version DAG, the setting of the Neem paper's Theorem 2, arXiv:2502.19967 /
 OOPSLA 2025), built on the corrected binary theory of
 [`Sal/CRDTs/Metatheory/`](../CRDTs/Metatheory/). Everything below is
 0-sorry and kernel-checked (axioms: `propext`, `Classical.choice`,
-`Quot.sound`). The paper-style companion note —
-[`sal-mrdts.pdf`](sal-mrdts.pdf) — is the consolidated account (its
+`Quot.sound`). The paper-style companion note
+([`sal-mrdts.pdf`](sal-mrdts.pdf)) is the consolidated account (its
 Part I is the metatheory of this directory, from the definition of an
 MRDT through the eight VCs to the conditioned metatheorem and the
 factored discharge route; Part II is the embedded-chain RGA design
@@ -19,8 +19,8 @@ note; Part III is the sequential-specification campaign).
 | [`Framework/`](Framework/) | the definitions instances build against: the base LTS (`Base/`), the signature ladder up to `ConditionedMRDTSig`, the execution model, the σ/`loOn` layer, the VC statements, the orders (`loOnC`, `loOnA`) and the feasibility predicate (`noopFeasible`) |
 | [`Metatheory/`](Metatheory/) | the metatheorems: the LCA lemma, flat adequacy, the closure-indexed Join Lemma, the `≈`-quotient functor and the conditioned metatheorem, the flat collapse |
 | [`Refutations/`](Refutations/) | the machine-checked negative results that justify the framework's shape: the G2 applicability-transport refutation, the feasibility-gate verdict, the peel obstruction, the kill-tests, the defeater |
-| [`MRDT_Instances/`](MRDT_Instances/) | the conditioned instances, one directory per RDT — twelve production capstones through the ONE generic theorem |
-| [`Development/`](Development/) | the research record: findings journals, superseded routes, investigation probes. Nothing imports it. |
+| [`MRDT_Instances/`](MRDT_Instances/) | the conditioned instances, one directory per RDT, twelve production capstones through the ONE generic theorem |
+| [`Development/`](Development/) | the research record: findings journals, abandoned proof routes, investigation probes. Nothing imports it. |
 
 Layering: `Framework` imports nothing above it; `Metatheory` builds on
 `Framework` (plus one leaf refutation it reuses machinery from);
@@ -28,7 +28,7 @@ Layering: `Framework` imports nothing above it; `Metatheory` builds on
 signatures (counterexamples need concrete witnesses); nothing imports
 `Development`.
 
-**The signature — one framework.** An MRDT presents the *conditioned*
+**The signature: one framework.** An MRDT presents the *conditioned*
 signature (`ConditionedMRDTSig`, [`Framework/MRDTSig.lean`](Framework/MRDTSig.lean))
 
     ⟨ Σ, σ₀, do, mergeL, rc, Inv, applicable ⟩
@@ -39,11 +39,11 @@ a state space with initial state, the update `do`, the three-way merge
 `mergeL l a b` (LCA first), the conflict-resolution policy `rc` for
 concurrent non-commuting pairs, a state invariant `Inv` (a shape
 over-approximation of reachability), an applicability predicate
-`applicable` (when an op is sensible at a state — it may read the op's
+`applicable` (when an op is sensible at a state, it may read the op's
 timestamp), and `≈` (what clients can distinguish). Commutation is
 **conditioned** (`commutesOn`): two ops must commute only at `Inv`-states
-where both are applicable. **Flat datatypes** — counters, sets, registers,
-everything whose ops make sense on every state — take
+where both are applicable. **Flat datatypes** (counters, sets, registers,
+everything whose ops make sense on every state) take
 `Inv = applicable = ⊤` and `≈` := `=`; that specialization collapses to the
 unconditioned theory, and §§1–3 below are exactly it. §4 is the framework
 at full generality, exercised by the one production datatype that needs it.
@@ -57,18 +57,18 @@ its `(state, event set)` pair, and merge takes the two head states *plus
 the state at their lowest common ancestor* (LCA) in the version DAG.
 Events are timestamped ops `(t, r, o)`; visibility `vis` is the causal
 order delivery induces (Lamport-monotone timestamps and causally-closed
-logs are structural fields of `Configuration` — executions violating them
+logs are structural fields of `Configuration`: executions violating them
 are unrepresentable).
 
-**The property — one definition.** The **linearization order** `lo` on an
+**The property: one definition.** The **linearization order** `lo` on an
 event set `E` orders exactly the pairs a correct sequential replay must not
 invert: a `vis`-related non-`commutesOn` pair in `vis` order, and a
 concurrent non-`commutesOn` pair by `rc` (unless a still-later
 non-commuting event already overrides the later one). `lo` is partial and
 not transitive, so "π respects `lo`" is the pairwise no-inversion
 condition, not sortedness. **RA-linearizability, per version, up to `≈`**:
-in every reachable configuration, *every* stored version `(s, E)` — LCAs
-included, not just replica heads — satisfies
+in every reachable configuration, *every* stored version `(s, E)` (LCAs
+included, not just replica heads) satisfies
 
     ∃ π, π a lo-respecting permutation of E  ∧  fold do σ₀ π ≈ s .
 
@@ -81,51 +81,51 @@ the *raw* `do`-fold as witness. The **canonical state** `σ(E)` is that
 fold, well-defined (up to `≈`) because the theory forces all such folds of
 `E` to agree.
 
-## 1. The VC set (the flat discharge engine) — [`Framework/VC_Set.lean`](Framework/VC_Set.lean)
+## 1. The VC set (the flat discharge engine): [`Framework/VC_Set.lean`](Framework/VC_Set.lean)
 
 **Eight verification conditions** discharge a flat datatype
 (`Inv = applicable = ⊤`, `≈` = `=`, signature reduced to
-`⟨Σ, σ₀, do, mergeL, rc⟩`); what they buy — the closure-indexed Join
-Lemma — is exactly what the generic theorem of §4 consumes at the identity
+`⟨Σ, σ₀, do, mergeL, rc⟩`); what they buy (the closure-indexed Join
+Lemma) is exactly what the generic theorem of §4 consumes at the identity
 instantiation:
 
 Update layer (`UpdateVCs`, defined in
 [`Framework/Sigma_LoOn3.lean`](Framework/Sigma_LoOn3.lean)):
-1. `rc_non_comm_directional` — for *different-replica* events with distinct
+1. `rc_non_comm_directional`: for *different-replica* events with distinct
    timestamps, non-commutativity ⟺ `rc`-ordered in some direction (the
    `differentReplicas` guard is the paper's own F* interface form;
    same-replica pairs are ordered by `vis`-totality instead);
-2. `no_rc_chain` — no two consecutive `rc` edges;
-3. `cond_comm_lift` — the conditional-commutativity swap survives any
+2. `no_rc_chain`: no two consecutive `rc` edges;
+3. `cond_comm_lift`: the conditional-commutativity swap survives any
    intervening suffix ending in a non-commuting event.
 
 Merge layer:
-4. `mergeL_comm` — `mergeL l a b = mergeL l b a` (`CoreVCs3CD`);
-5. `feasible_init` — `mergeL σ₀ σ₀ σ(E) = σ(E)` on canonical states;
-6. `feasible_local_redistribute` — a downset-delta application commutes past
+4. `mergeL_comm`: `mergeL l a b = mergeL l b a` (`CoreVCs3CD`);
+5. `feasible_init`: `mergeL σ₀ σ₀ σ(E) = σ(E)` on canonical states;
+6. `feasible_local_redistribute`: a downset-delta application commutes past
    an enclosing merge, on canonical tuples at honest LCAs;
-7. `feasible_redistribute` — a delta applied to all three components
-   extracts once (the LCA slot cancels the duplicate — this is what
+7. `feasible_redistribute`: a delta applied to all three components
+   extracts once (the LCA slot cancels the duplicate: this is what
    idempotence did in the binary theory, done by LCA arithmetic);
-8. `CDVC3` — the causal-delta equation: for a `loOn(U)`-maximal event `e`,
+8. `CDVC3`: the causal-delta equation: for a `loOn(U)`-maximal event `e`,
    `mergeL σ(↓e∖e) σ(U∖e) (do σ(↓e∖e) e) = do σ(U∖e) e`.
 
-On-ramps and variants: `DeltaVCs3` (laws 6–7 unconditional — exactly the
+On-ramps and variants: `DeltaVCs3` (laws 6–7 unconditional, exactly the
 group ⊕ lattice classes: Counter, G-Set, every LCA-blind CRDT);
-`JoinLemma3F` (the **full-causal-closure** join notion — counter-comparison
+`JoinLemma3F` (the **full-causal-closure** join notion: counter-comparison
 merges like the Enable-wins flag provably need full closure, not just
 commutation closure; reunifying this with the feasible route is open).
 
-## 2. Adequacy (the flat engine's internal form) — [`Metatheory/Adequacy.lean`](Metatheory/Adequacy.lean)
+## 2. Adequacy (the flat engine's internal form): [`Metatheory/Adequacy.lean`](Metatheory/Adequacy.lean)
 
     ra_linearizable_of_core_feasible_cd3 :
       CoreVCs3CD D → FeasibleDeltaVCs3 D → CDVC3 D →
       ∀ C reachable from initConfig in the ternary system Step3,
         IsRALinearizable3 C
 
-— the definition above at `≈` := `=`, in its historical direct form (the
+This is the definition above at `≈` := `=`, in direct form (the
 headline per-instance results are the §3 theorems through the generic
-framework; this chain remains as the engine that validates the VC set and
+framework; this chain is the engine that validates the VC set and
 supplies each instance's Join Lemma). The proof carries `GoodConfig3`
 (every version canonical + store closure facts) through the LTS of
 [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean); the merge case is
@@ -139,21 +139,21 @@ route.
 `ra_linearizable3_of_honest_reach`): RA-linearizability at every
 configuration reachable under a per-configuration honesty contract `H`,
 given that `H`-configurations admit the Join (`JoinLemma3At`). This is the
-factored form of the conditioned route — the generic induction extracted
-once, with the per-datatype join discharge as the residue (three species so
-far: conditioned commutation / flat / direct witness); the queue's and the
+factored form of the conditioned route: the generic induction extracted
+once, with the per-datatype join discharge as the residue (three species:
+conditioned commutation / flat / direct witness); the queue's and the
 bounded counter's inductions are one-line corollaries.
 [`Metatheory/GenHonest.lean`](Metatheory/GenHonest.lean) extracts the
 **generic honesty shape** (`GenHonest D P`: `P` holds of every event at the
-fold of its causal past — the client-checkable form; `AppHonest` is its
+fold of its causal past, the client-checkable form; `AppHonest` is its
 `applicable` instance), with the counter's and the queue's contracts
 re-derived as instantiations (`BCHonest_iff_genHonest`,
 `qHonest_of_genHonest`).
 [`Metatheory/GenericSafety.lean`](Metatheory/GenericSafety.lean) and
 [`Metatheory/EscrowSafety.lean`](Metatheory/EscrowSafety.lean) carry the
 **generic safety metatheorems**: `version_inv_of_causal_canonical` (`Inv` at
-every version, by induction along *causal* canonical witnesses —
-`CausalCanonical` — parametric in the per-datatype `SafetyStep` obligation;
+every version, by induction along *causal* canonical witnesses
+(`CausalCanonical`) parametric in the per-datatype `SafetyStep` obligation;
 the naive all-canonical-witness route is refuted by the bounded counter
 itself) and `escrow_version_inv` (the measured/affine route, no causal
 witness needed). `bc_version_inv` is re-derived through **both**, retiring
@@ -161,24 +161,24 @@ the counter's bespoke counting apparatus; the analysis is the pen-and-paper
 memo `Development/GENERIC_SAFETY_PENPAPER.md`.
 [`Metatheory/Product.lean`](Metatheory/Product.lean) carries the
 **composition theorem** (raw kit): the binary heterogeneous product
-`D₁ ⊗ D₂` composes at the `JoinLemma3At` boundary — no cross-component
-`loOn` edges, concatenation witness — with `joinLemma3At_prod` and the
+`D₁ ⊗ D₂` composes at the `JoinLemma3At` boundary (no cross-component
+`loOn` edges, concatenation witness) with `joinLemma3At_prod` and the
 composite `prod_ra_linearizable3_of_honest_reach`; consumability demo
 `MRDT_Instances/ProductDemo/` (queue ⊗ counter, zero bespoke proof).
 Analysis: `Development/COMPOSITION_PENPAPER.md`.
 [`Metatheory/Product_Safety.lean`](Metatheory/Product_Safety.lean) is the
 **safety kit**: pinned-extension, `honestAppOn_prod`, `safetyStepOn_prod`,
 the one-sided `causalCanonical_prod_of_one_sided` (the two-sided form is
-refuted — memo §2.4.4), and the composite
+refuted), and the composite
 `prod_version_inv_on_of_one_sided`. [`Metatheory/ProductEq.lean`](Metatheory/ProductEq.lean) is the
 **≈-lift kit** (pragmatic cut `≈₂ = Eq`): every eq-quotient obligation
 componentwise, `eqJoinLemma3C_H_prod`, and the product ≈-capstone
-`prod_ra_linearizable_up_to_eq_H` — one quotiented component, one flat,
-exactly the Peritext = RGA ⊗ marks shape. The composition kit is complete;
-Peritext instantiation is the next step. The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
+`prod_ra_linearizable_up_to_eq_H`: one quotiented component, one flat,
+exactly the Peritext = RGA ⊗ marks shape. The composition kit is complete.
+The LCA lemma `L(v_⊤) = L(v₁) ∩ L(v₂)` and its maintainability are
 proved in [`Metatheory/LCA_Lemma.lean`](Metatheory/LCA_Lemma.lean).
 
-## 3. The discharged MRDTs — [`MRDT_Instances/`](MRDT_Instances/)
+## 3. The discharged MRDTs: [`MRDT_Instances/`](MRDT_Instances/)
 
 One directory per RDT; each directory's presented capstone concludes
 `IsRALinearizable3Eq` **through the one generic theorem** (§4), and the
@@ -200,29 +200,29 @@ imports all nineteen capstones:
 | **Multi-Valued Register** (production mirror) | `MVR_ra_linearizable3_eq` | identity; feasible (all-comm, `B = init`) |
 | **Add-Wins Priority Queue** (production mirror) | `AWPQ_ra_linearizable3_eq` | identity; feasible (OR-Set pattern on A) |
 | **Bounded counter** (escrow; mirror of `Sal/CRDTs/Bounded_Counter`) | `BC_ra_linearizable3_eq`; **safety**: `bc_version_inv`, `bc_value_nonneg` | identity for convergence; the conditioned contract (`BCInv`/`bcApplicable`/`BCHonest`) delivers the bound as a reachability theorem |
-| **FWW reservation register** | `FWW_ra_linearizable3_eq`; **characterization**: `fww_version_min` (the min-ts claim wins, at every version) | payload arbitration (min-semilattice) — the positive complement to `LWW_Merge_Needs_Timestamps`; the claim-when-unset discipline is deliberately consumed by no theorem (unstable under concurrent honest extension) |
-| **LWW register** | `LWW_ra_linearizable3_eq`; **characterization**: `lww_version_max` (the max-ts write wins, at every version) | payload arbitration (max-semilattice), the `last`-writer twin of FWW; **unconditional** (`applicable = ⊤` — writes always overwrite). Genuinely end-to-end mechanized: unlike the flat CRDT LWW (whose VCs→RA-lin bridge in `Sal/CRDTs/Metatheory/Merge_Linearization.lean` still carries `sorry`s), this rides the framework's kernel-clean bridge. |
-| **BudgetCart** | `BCart_ra_linearizable3_eq`; safety **gated**: `bcart_version_inv_gated` | or-set `rc` (add-wins) + derived per-replica spend; ungated `SafetyStepOn` is FALSE (vis-only causal folds are enumeration-dependent under concurrent add/rem) — the OQ8 forcer. Convergence is an **instantiation** of the payload-parametric [`ORSetCore/`](MRDT_Instances/ORSetCore/) library (composition level L0): `BudgetCart := OSCore (item × price) fst …`, its bespoke ~750-line discharge deleted |
+| **FWW reservation register** | `FWW_ra_linearizable3_eq`; **characterization**: `fww_version_min` (the min-ts claim wins, at every version) | payload arbitration (min-semilattice), the positive complement to `LWW_Merge_Needs_Timestamps`; the claim-when-unset discipline is deliberately consumed by no theorem (unstable under concurrent honest extension) |
+| **LWW register** | `LWW_ra_linearizable3_eq`; **characterization**: `lww_version_max` (the max-ts write wins, at every version) | payload arbitration (max-semilattice), the `last`-writer twin of FWW; **unconditional** (`applicable = ⊤`, writes always overwrite). Genuinely end-to-end mechanized: unlike the flat CRDT LWW (whose VCs→RA-lin bridge in `Sal/CRDTs/Metatheory/Merge_Linearization.lean` still carries `sorry`s), this rides the framework's kernel-clean bridge. |
+| **BudgetCart** | `BCart_ra_linearizable3_eq`; safety **gated**: `bcart_version_inv_gated` | or-set `rc` (add-wins) + derived per-replica spend; ungated `SafetyStepOn` is FALSE (vis-only causal folds are enumeration-dependent under concurrent add/rem), the OQ8 forcer. Convergence is an **instantiation** of the payload-parametric [`ORSetCore/`](MRDT_Instances/ORSetCore/) library (composition level L0): `BudgetCart := OSCore (item × price) fst …` (no bespoke discharge) |
 | **Mergeable queue** (Peepul, PLDI'22) | `queue_ra_linearizable3` under honest reachability; `qHonest_of_applicable` | **direct Join Lemma** (`q_join_at`): Peepul's merge is the linearization witness; no `rc` exists (enqueue clique) |
 | **RGA** (canonical, tombstone-free) | `rga_ra_linearizable3_eq` | full generality (§4) |
-| **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq`; intent: `render_id_active_iff_between` + `render_span_before` | **fused, the paper-faithful design**: one RGA at `α := char ⊕ boundary` (marks are id-paired boundary nodes), convergence a one-line instantiation of the RGACore capstone (773 lines total vs the composed design's ~1,500). Delivers the genuine positional intent the composed design retracts — a char is formatted iff it lies between the mark's boundaries in reading order (fold-activation ⟺ structural decomposition, non-circular), and backward leak is forbidden by construction. Residual: interior-deletion reading-order re-sort (`del_can_reorder_survivors`), a bounded change, not a leak — the atomicity horn of the trilemma. |
-| **Peritext, composed** (RGA ⊗ marks case study) | `peritextComposed_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` (well-definedness only) | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit — 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁). **Caveat**: convergence/safety are complete, but mark *positioning* is not paper-faithful — the frozen recorded paths climb tree ancestry, so deleting a mark's anchor leaks formatting backward (`MarkIntent.lean` states the honest containment bound, not a no-leak guarantee; OQ `oq:linspec`). |
+| **Peritext** (canonical, fused, tombstone-free) | `peritext_ra_linearizable_up_to_eq`; intent: `render_id_active_iff_between` + `render_span_before` | **fused, the paper-faithful design**: one RGA at `α := char ⊕ boundary` (marks are id-paired boundary nodes), convergence a one-line instantiation of the RGACore capstone (773 lines total vs the composed design's ~1,500). Delivers the genuine positional intent the composed design retracts: a char is formatted iff it lies between the mark's boundaries in reading order (fold-activation ⟺ structural decomposition, non-circular), and backward leak is forbidden by construction. Residual: interior-deletion reading-order re-sort (`del_can_reorder_survivors`), a bounded change, not a leak: the atomicity horn of the trilemma. |
+| **Peritext, composed** (RGA ⊗ marks case study) | `peritextComposed_ra_linearizable_up_to_eq`; read layer: `peritextRender_congr` (well-definedness only) | **composed**: RGA_TF ⊗ ORSetCore marks through the product kit, 1,064 lines total, supply rerun 790, MarkStore 81; ungated (the RGA's own honest-delivery premise through proj₁). **Caveat**: convergence/safety are complete, but mark *positioning* is not paper-faithful: the frozen recorded paths climb tree ancestry, so deleting a mark's anchor leaks formatting backward (`MarkIntent.lean` states the honest containment bound, not a no-leak guarantee; OQ `oq:linspec`). |
 
 **The production catalogue is complete: every MRDT shipped in Sal carries a
 kernel-checked end-to-end theorem through the one framework.** The bounded
 counter adds the first **safety** capstone: conditioning is used not to
 rescue convergence (its ops commute flatly) but to prove the invariant its
-name promises — `value ≥ 0` at every reachable version, from a
+name promises: `value ≥ 0` at every reachable version, from a
 client-checkable applicability contract. The mergeable queue is the
 first instance whose Join Lemma is proved **directly** rather than through
 the flat VC engine: concurrent enqueues are a non-commuting clique, so no
 `rc` assignment can satisfy `rc_non_comm_directional` + `no_rc_chain`, and
 the witness enumeration at every merge is Peepul's merge itself
 (LCA-survivors ++ branch-one delta ++ branch-two delta), available under the
-honest-delivery contract `QHonest` — which the dequeue `applicable`
+honest-delivery contract `QHonest`, which the dequeue `applicable`
 head-check discharges (`qHonest_of_applicable`). The
-historical flat corollaries (`*_ra_linearizable3` over the raw system, plus
-the `GSet/` and `Counter/` specimens) remain in the same per-RDT files as
+flat corollaries (`*_ra_linearizable3` over the raw system, plus
+the `GSet/` and `Counter/` specimens) live in the same per-RDT files as
 internal steps of the engine.
 
 The production mirrors are faithful to `Sal/MRDTs/{OR_Set,
@@ -231,9 +231,9 @@ Enable-wins discharge certifies the production per-replica `merge_flag` on
 exactly the corner (`inter_right_1op`) where its known-broken
 global-counter sibling fails.
 
-## 4. THE framework — [`MRDT_Instances/RGA_Rehoming/RA_Lin.lean`](MRDT_Instances/RGA_Rehoming/RA_Lin.lean)
+## 4. THE framework: [`MRDT_Instances/RGA_Rehoming/RA_Lin.lean`](MRDT_Instances/RGA_Rehoming/RA_Lin.lean)
 
-The soundness theorem is generic — stated over *any* `ConditionedMRDTSig`
+The soundness theorem is generic, stated over *any* `ConditionedMRDTSig`
 with an `EqEquiv`, on the same `Step3` LTS: the **`≈`-quotient functor**
 `D ↦ D≈` builds the datatype whose states are `≈`-classes of `Inv`-states,
 with update, merge and `applicable` descending by congruence
@@ -248,19 +248,19 @@ update/merge/query are `≈`-congruent on `Inv` (`CongVC`, `InvInvVC`), and
 the merge is, up to `≈`, the fold of a `lo`-respecting enumeration of the
 joined events (the `≈`-Join, `EqJoinLemma3C_H`). Instantiated flat
 (`Inv = applicable = ⊤`, `≈` = `=`) these collapse into the ordinary Join
-Lemma of §2 — mechanized as
+Lemma of §2, mechanized as
 [`Metatheory/FlatGeneric_Bridge.lean`](Metatheory/FlatGeneric_Bridge.lean),
 which is how the eleven flat instances of §3 ride the same theorem.
 
 **The exercising instance: the tombstone-free RGA**
-([`../MRDTs/RGA_Tombstone_Free/`](../MRDTs/RGA_Tombstone_Free)) — a
+([`../MRDTs/RGA_Tombstone_Free/`](../MRDTs/RGA_Tombstone_Free)) is a
 replicated list whose deletes *physically remove* nodes, no tombstone set;
 every op carries its target's recorded ancestor path, and merge re-anchors
 each surviving node by climbing that path to the nearest survivor. Here
 `Inv` is the forest well-formedness (with id-monotone anchors),
 `applicable` is **accurate** (the recorded path is the target's true live
 ancestor chain) **∧ fresh**, and `≈` is indistinguishability under the
-RGA's queries (same live nodes, payloads, traversal order — dead-node
+RGA's queries (same live nodes, payloads, traversal order, dead-node
 representation residue quotiented away). This datatype cannot take the
 flat route: commutation over all states is false, a prefix-free variant
 that drops the paths is provably impossible
@@ -273,17 +273,17 @@ end-to-end instance theorem:
       ∀ C reachable from initConfig (states quotiented by ≈),
         IsRALinearizable3Eq … C
 
-— the one definition above, at the general rendering, with the raw
+This is the one definition above, at the general rendering, with the raw
 `do`-fold as witness. The discharge replaces the swap-based repair of the
 flat theory (unsound here: the needed intermediate states are unreachable)
-with a **canonical-state engine** — the fold state is characterized as a
-pure function of the applied event *set* — and a witness discipline joined
+with a **canonical-state engine** (the fold state is characterized as a
+pure function of the applied event *set*) and a witness discipline joined
 at merges by plain concatenation, no reordering.
 
 The single assumption, `HonestDelivery`, is per-step *honest delivery*: at
 each apply, the delivered op (1) was generated **accurately against a
-causal fold of the events its replica had seen** — which is simply how a
-client computes an op from its replica's state — and (2) is applicable at
+causal fold of the events its replica had seen** (which is simply how a
+client computes an op from its replica's state) and (2) is applicable at
 the head version it is delivered to. Everything else is structural or
 derived: Lamport clocks and timestamp uniqueness are `Configuration`
 fields, and nonzero ids and nonzero delete targets follow from the

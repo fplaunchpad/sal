@@ -12,7 +12,7 @@ is **false**, even for a `D` that satisfies every property the
 
 ## The model
 
-`AWSet` — a two-op add-wins set skeleton over one implicit key:
+`AWSet`, a two-op add-wins set skeleton over one implicit key:
 
 * `State := (added, dead) : Set Timestamp × Set Timestamp`;
   the live set is `added \ dead`.
@@ -27,7 +27,7 @@ is **false**, even for a `D` that satisfies every property the
 
 * replica 0: `e = add` (t=0) then `e₃ = rem` (t=1), so `vis e e₃`;
 * replica 1: `y = rem` (t=2), concurrent with both; its event set is
-  `ev = {y, e}` — it merged replica 0's state *between* `e` and `e₃`.
+  `ev = {y, e}`, it merged replica 0's state *between* `e` and `e₃`.
 
 In the full configuration, `lo C` orders **neither** `y, e`: the
 rc-edge `y →lo e` is cancelled because `e` has the absorber `e₃ ∈
@@ -42,13 +42,13 @@ backward-closed sub-sets w.r.t. `lo C` is provable.
 
 The set-relative relation of `Merge_Linearization_Set.lean` repairs
 this: `loOn C ev` *keeps* the edge `y → e` (no absorber inside
-`ev`), so only the fold-correct `[y, e]` respects it —
+`ev`), so only the fold-correct `[y, e]` respects it,
 `loOn_keeps_the_edge` below.
 
 ## Bonus finding
 
-`SatisfiesVCs.shared_peel_1op` — the "missing VC" added to the
-bundle as a crutch for the shared-event peel — is **false for
+`SatisfiesVCs.shared_peel_1op`, the "missing VC" added to the
+bundle as a crutch for the shared-event peel, is **false for
 `AWSet`** (`AWSet_shared_peel_1op_false`): the current bundle
 excludes exactly the state-dependent RDTs (the paper's own OR-set
 among them) whose non-trivial `rc` the metatheorem is about.
@@ -73,7 +73,7 @@ def awUpdate (σ : AWState) (e : Op AWOp) : AWState :=
   | .add => (insert e.1 σ.1, σ.2)
   | .rem => (σ.1, σ.1 ∪ σ.2)
 
-/-- Pairwise union — a join-semilattice. -/
+/-- Pairwise union, a join-semilattice. -/
 def awMerge (σ τ : AWState) : AWState := (σ.1 ∪ τ.1, σ.2 ∪ τ.2)
 
 /-- `rc rem add = Fst_then_snd`: add wins over a concurrent remove. -/
@@ -376,7 +376,7 @@ theorem AWSet_cond_comm_lift :
 
 /-- `e = add` at replica 0, timestamp 0. -/
 def evAdd : Op AWSet.AppOp := (0, 0, AWOp.add)
-/-- `e₃ = rem` at replica 0, timestamp 1 — the absorber
+/-- `e₃ = rem` at replica 0, timestamp 1, the absorber
 (`vis evAdd evRem0`). -/
 def evRem0 : Op AWSet.AppOp := (1, 0, AWOp.rem)
 /-- `y = rem` at replica 1, timestamp 2, concurrent with both. -/
@@ -469,7 +469,7 @@ theorem counterEv_in_C : ∀ a ∈ counterEv, a ∈ counterConfig.events := by
   intro a ha
   exact ⟨1, {evRem1, evAdd}, by simp [counterConfig], ha⟩
 
-/-- `counterEv` is backward-closed under `vis` — unconditionally, not
+/-- `counterEv` is backward-closed under `vis`, unconditionally, not
 just under `vis ∧ ¬commutes`: the only `vis` edge targets `evRem0`,
 which is outside the set. -/
 theorem counterEv_closed :
@@ -610,7 +610,7 @@ theorem convergence_over_backward_closed_subsets_false :
 /-- **The repair, on the same instance**: the set-relative `loOn`
 keeps the edge `evRem1 → evAdd` (there is no absorber of `evAdd`
 *inside* `counterEv`), so the fold-wrong enumeration `[e, y]` does
-NOT respect `loOn C counterEv` — exactly the discrimination
+NOT respect `loOn C counterEv`, exactly the discrimination
 `convergence_on` needs. -/
 theorem loOn_keeps_the_edge :
     loOn counterConfig counterEv evRem1 evAdd ∧
@@ -635,7 +635,7 @@ state-dependent removes it fails: with `a = (∅,∅)`, `b = ({2},∅)`,
 timestamp 2, but the right-hand side's `rem` (applied after the
 merge) kills it. Since `AWSet` is the two-op skeleton of the paper's
 own OR-set, the current `SatisfiesVCs` bundle is unsatisfiable for
-precisely the RDTs with non-trivial `rc` — the bundle is *stronger*
+precisely the RDTs with non-trivial `rc`, the bundle is *stronger*
 than the paper's 24 VCs, and `distinct_last_case`'s reliance on
 `shared_peel_1op` needs to be re-examined. -/
 theorem AWSet_shared_peel_1op_false :
@@ -661,8 +661,8 @@ theorem AWSet_shared_peel_1op_false :
 
 `AWSet` cannot satisfy the full `SatisfiesVCs`
 (`AWSet_shared_peel_1op_false`), but it satisfies the `CoreVCs`
-fragment the Join-Lemma machinery consumes, and — the point of this
-section — the two contextual peel identities. The engine is a
+fragment the Join-Lemma machinery consumes, and (the point of this
+section) the two contextual peel identities. The engine is a
 **characterization of canonical states**:
 
     σ(ev) = (awAdds ev, awKilled C ev)
@@ -673,12 +673,12 @@ proof threads a sandwich invariant along any `loOn C ev`-respecting
 enumeration: adds absorbed within the processed prefix are already
 dead (the vis-edge to the absorber is mandatory), and everything
 dead is absorbed within `ev` (a rem cannot precede an unabsorbed
-concurrent add — the rc-edge `rem → add` would be mandatory).
+concurrent add, the rc-edge `rem → add` would be mandatory).
 
 The peel identities then reduce to set algebra plus the
 trichotomy (`awAdds_killed_of_rem_max`): under union-maximality of a
 rem `e` and backward closure, *every* add of `ev₁ ∪ ev₂` is absorbed
-on the side that owns it. This yields `AWSet_joinLemma` — the Join
+on the side that owns it. This yields `AWSet_joinLemma`, the Join
 Lemma, hence the full merge case, for a CRDT with non-trivial `rc`,
 on exactly the class of instances where the paper's own proof
 breaks. -/

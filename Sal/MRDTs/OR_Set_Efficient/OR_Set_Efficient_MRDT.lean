@@ -6,7 +6,7 @@ import Sal.Tactic.Sal
 import Sal.Interfaces.Map_Extended
 
 /-!
-# Observed-Remove Set (efficient) — state-based MRDT
+# Observed-Remove Set (efficient): state-based MRDT
 
 Compressed variant of `OR_Set_MRDT`. Tags are `(rid, ts, elem)` rather
 than `(ts, elem)`, and an `Add e` at `(rid, ts)` first removes any
@@ -40,7 +40,7 @@ def init_st : concrete_st:= empty
 def eq (a b: concrete_st) := a = b
 
 
-/-- `Add e` and `Rem e` — same surface interface as plain OR-Set. -/
+/-- `Add e` and `Rem e`, same surface interface as plain OR-Set. -/
 inductive app_op_t : Type where
 | Add : ℕ → app_op_t
 | Rem : ℕ → app_op_t
@@ -62,9 +62,9 @@ match o with
 | (_, (rid, _)) => rid
 
 /-- Effect:
-  * `Add e` at `(ts, rid)` — first filter any prior `(rid, _, e)` out,
+  * `Add e` at `(ts, rid)`: first filter any prior `(rid, _, e)` out,
     then insert `(rid, ts, e)`. Bounded per-replica growth.
-  * `Rem e`               — filter every triple with element `= e`. -/
+  * `Rem e`: filter every triple with element `= e`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with

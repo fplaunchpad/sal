@@ -7,7 +7,7 @@ import Sal.ConditionedMRDTs.Metatheory.EvidenceDischarge
 `EmbedRGA_MultiEpoch.lean` closes the *order-iso* half of multi-epoch
 composition: two `StablePrefixMap`s compose (`StablePrefixMap.comp`) at their
 surviving domain (`CompatOn`), and the n-fold `chainSPM`/`multiEpoch_settled_reads`
-give reads-preservation across a whole tower — **once** `CompatOn` (or the
+give reads-preservation across a whole tower, **once** `CompatOn` (or the
 full-domain `CompatChain`) is supplied. What remains open is discharging
 `CompatChain`/`CompatOn` for two consecutive `compactRanked` maps at **nested
 settled cuts, directly from honest reachability**. This file records how far
@@ -24,13 +24,13 @@ we get `SettledAt C v S ∧ SettledAt C v S'`, so both epochs' single-epoch
 theorems (`compactRanked_settled_reads`) are individually applicable. The
 order-iso freshness half also closes: `rED_hocc_fresh` (from
 `rED_fresh_dominates`) shows epoch-2's kids-or-fresh `hocc` survives the epoch-1
-renumbering — a delta fresh against epoch-1's *original* sibling deltas is fresh
+renumbering, a delta fresh against epoch-1's *original* sibling deltas is fresh
 against the *renumbered ordinals*, without inspecting their meaning.
 
 ## What blocks: the re-based-honesty chain-image obligation
 
 `CompatOn F₁ F₂ Rest' MintAt'` needs `restG` / `mintG`: every epoch-1 survivor,
-once `F₁`-remapped, is **`F₂`-at-hand** — i.e. is a coordinate of some chain in
+once `F₁`-remapped, is **`F₂`-at-hand**, i.e. is a coordinate of some chain in
 epoch-2's domain `𝒟₂ = EAtHand Γ C₂ …`. But `compactRanked`'s domain is
 quantified over an **honest** configuration `C₂` through
 `eAnchored_exists hGen hEnum` (it needs `GenHonest`/`CausalPastEnumerable` to
@@ -43,7 +43,7 @@ blocking obligation is:
 
 > **`(⋆)` re-based honesty**: exhibit an honest configuration `C₂` (honest
 > *modulo the order-embedding `F₁`* of coordinates) whose anchored chain
-> structure is `F₁.f ∘ chainOf₁` — so that `eAnchored_exists` re-derives at
+> structure is `F₁.f ∘ chainOf₁`, so that `eAnchored_exists` re-derives at
 > epoch 2 and `𝒟₂`'s coordinates are provably the `F₁`-images of the epoch-1
 > survivors.
 
@@ -69,7 +69,7 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-- **Both nested cuts settle from a single frontier certificate.** On an
 evidence-reachable embed configuration, `AllHeardSince C v S'` at the finer cut
-`S' ⊇ S` discharges `SettledAt` at both cuts simultaneously — the causal
+`S' ⊇ S` discharges `SettledAt` at both cuts simultaneously, the causal
 input the epoch-boundary `CompatChain` step consumes (`settledAt_compatStep` +
 `allHeardSince_antitone`, `EvidenceDischarge.lean`). This is what lets one
 "heard from everyone" observation cover epoch 1's cut `S` and epoch 2's cut
@@ -92,7 +92,7 @@ renumbering -/
 beyond-epoch-2 delta `d` that dominates every epoch-1 *original* kept sibling
 delta dominates every epoch-1 *renumbered ordinal* `rED keep inflight p e` too.
 This is precisely the `hocc` fresh branch that epoch 2's `compactRanked` (via
-`rED_iso`) needs on the already-renumbered coordinates — discharged from
+`rED_iso`) needs on the already-renumbered coordinates, discharged from
 `rED_fresh_dominates` with no generation-discipline wall. -/
 theorem rED_hocc_fresh {keep inflight : List (List ℕ)}
     (hKpos : ∀ k ∈ keep, PosChain k) {p : List ℕ} {d : ℕ}
@@ -105,7 +105,7 @@ theorem rED_hocc_fresh {keep inflight : List (List ℕ)}
 `CompatOn` reduces to four field obligations. `restF`/`mintF` (the composite's
 surviving coordinates are epoch-1-at-hand) are definitional in the survivor
 domain. `restG`/`mintG` (their `F₁`-images are epoch-2-at-hand) are the blocker
-`(⋆)` above. The following packages the composite once the four are supplied —
+`(⋆)` above. The following packages the composite once the four are supplied,
 making explicit that the *only* residue over the closed causal/order-iso parts
 is the chain-image correspondence `hRG`/`hMG`. -/
 

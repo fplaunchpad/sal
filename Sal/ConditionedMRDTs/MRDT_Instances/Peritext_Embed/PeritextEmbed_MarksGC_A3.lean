@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_MarksGC
 
 /-!
-# O4 — the A3 guarded pair-drop
+# O4: the A3 guarded pair-drop
 
 An `(add m, remove r)` pair with EQUAL boundary tuples (ids and sides) and
 `m.mid < r.mid` resolves to the same covered interval forever, and `r` beats
@@ -11,13 +11,13 @@ NOT enough; `a3_guarded_drop` proves render preservation under the full
 guard, and the two SPOT FAIL companions pin each clause's necessity:
 
 * **(alpha)** settledness / declared in-flights: a concurrent same-mtype mark
-  with mid below `r.mid` (delivered late) is resurrected by the drop —
+  with mid below `r.mid` (delivered late) is resurrected by the drop,
   `alpha_undeclared_flip`; the `hothers` clause (which ranges over declared
   in-flight marks too) refuses it.
 * **(beta)**: a character id strictly inside `(m.mid, r.mid)` is grabbed by
   the add's end-growth (`id > m.mid`) but NOT by the remove's (`id < r.mid`
   fails its newer-run test), so the pair is not render-neutral even though
-  its boundaries are identical — `beta_growth_window_flip`; the `hwindow`
+  its boundaries are identical, `beta_growth_window_flip`; the `hwindow`
   clause refuses it.  Checking the settled + declared ids at the cut
   suffices: beyond-cut mints are Lamport-fresh (above `r.mid`), so they
   satisfy `hwindow` automatically.
@@ -192,12 +192,12 @@ theorem markCoversPos_pair (d : DocD) (m r : MarkD)
   unfold markCoversPos
   rw [startIncl_pair d m r hsid hss hw, endExcl_pair d m r heid hes hw]
 
-/-! ## §3  O4 — the guarded drop preserves the render -/
+/-! ## §3  O4: the guarded drop preserves the render -/
 
 /-- The per-position core: under the guards, dropping the pair never changes
 a character's verdict.  Either some OTHER same-mtype mark covers the
-position — then it has mid above `r.mid` (guard iii + declared in-flights +
-freshness) and wins on both sides — or the pair's members are the only
+position, then it has mid above `r.mid` (guard iii + declared in-flights +
+freshness) and wins on both sides, or the pair's members are the only
 covering candidates, the winner is `r` (LWW inside the pair), and a winning
 `remove` renders exactly like no mark at all. -/
 theorem fmtAt_drop_pair (d : DocD) (marks : List MarkD) (m r : MarkD) (mt : MType)
@@ -405,7 +405,7 @@ bold `[A..B]` mid 3, remove bold `[A..B]` mid 4, same sides.  Window `(3,4)`
 empty, no other bold mark: the guard fires.  Twin (hand): birth `A x B`,
 live `A x`; both marks' dead end `B` rehomes left to `x`; both cover
 `{A, x}`; remove (mid 4) wins everywhere: ALL PLAIN.  Dropped: no marks:
-ALL PLAIN.  Identical — and `B`'s record stops being a retention root, so
+ALL PLAIN.  Identical, and `B`'s record stops being a retention root, so
 the next cut drops it (plain H-A would retain it forever). -/
 
 def dGamTwin : DocD :=
@@ -430,7 +430,7 @@ theorem gamma_renders :
   native_decide
 
 /-- **PASS, fired through the theorem**: `a3_guarded_drop` discharges on the
-concrete pair — settled removal, no other bold mark, empty growth window. -/
+concrete pair, settled removal, no other bold mark, empty growth window. -/
 theorem gamma_via_theorem :
     renderMarksDoc dGamTwin [] MType.bold
       = renderMarksDoc dGamTwin [addG, remG] MType.bold := by
@@ -488,20 +488,20 @@ theorem gamma2_via_theorem :
   exact h
 
 /-- PASS: the rival `big` (mid 20 > 4) formats `{A, x}` with or without the
-pair — dropping the pair never resurrects or suppresses it. -/
+pair, dropping the pair never resurrects or suppresses it. -/
 theorem gamma2_renders :
     renderMarksDoc dGamTwin [addG, remG, bigG] MType.bold
       = [(65, true), (120, true)] ∧
     renderMarksDoc dGamTwin [bigG] MType.bold = [(65, true), (120, true)] := by
   native_decide
 
-/-! ### (beta) FAIL — the growth window
+/-! ### (beta) FAIL: the growth window
 
 `A` = 1, `B` = 2 (child of `A`), `w` = 4 (child of `B`, LIVE, settled); add
-bold `[A..B]` mid 3, remove bold `[A..B]` mid 5 — identical boundaries, both
+bold `[A..B]` mid 3, remove bold `[A..B]` mid 5, identical boundaries, both
 anchors LIVE, removal settled.  Hand: the add's end-growth grabs `w`
 (`4 > 3`) but the remove's does NOT (`4 < 5` fails its newer-run test), so
-`w` is BOLD with the pair present and PLAIN after an unguarded drop — the
+`w` is BOLD with the pair present and PLAIN after an unguarded drop, the
 pair is NOT render-neutral even though its boundary tuples are equal.  The
 window guard `hwindow` refuses: `w`'s id 4 sits strictly inside `(3, 5)`. -/
 
@@ -525,17 +525,17 @@ theorem beta_growth_window_flip :
 
 /-- The window guard refuses beta: `w`'s id sits strictly inside
 `(m.mid, r.mid)`, so `a3_guarded_drop`'s `hwindow` hypothesis is FALSE on
-this document — the flip is the guard clause's necessity witness. -/
+this document, the flip is the guard clause's necessity witness. -/
 theorem beta_guard_refuses :
     ¬ (∀ c ∈ dBeta.birthIds, c ≤ addB.mid ∨ remB.mid < c) := by native_decide
 
-/-! ### (alpha) FAIL — settledness / declared in-flights
+/-! ### (alpha) FAIL: settledness / declared in-flights
 
 `A` = 1, `B` = 2; add bold mid 3, remove bold mid 6, and a concurrent
 same-mtype add mid 4 in flight at the drop, delivered after it.  Hand: with
 the pair present the remove (mid 6) beats both adds: ALL PLAIN; with the
 pair dropped the straggler add (mid 4) is unopposed: `{A, B}` BOLD.  FLIP.
-The `hothers` clause — which ranges over declared in-flight marks — sees
+The `hothers` clause, which ranges over declared in-flight marks, sees
 mid 4 below 6 and refuses. -/
 
 def dAlpha : DocD :=
@@ -549,7 +549,7 @@ def stragA : MarkD :=
   { mid := 4, mtype := MType.bold, op := MarkOp.add, start_id := 1, end_id := 2 }
 
 /-- **FAIL (alpha)**: dropping the pair while ignoring the declared
-in-flight add resurrects it — `{A, B}` flips to bold. -/
+in-flight add resurrects it, `{A, B}` flips to bold. -/
 theorem alpha_undeclared_flip :
     renderMarksDoc dAlpha [addA, remA, stragA] MType.bold
       = [(65, false), (66, false)] ∧

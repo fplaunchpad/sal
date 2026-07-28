@@ -1,12 +1,10 @@
-// PERITEXT datatype tests (task #55 -> #107): the verified DOCUMENT-ORDER mark
-// read model as a runtime datatype, and THE PARAMETRICITY PAYOFF -- rich text
-// carried by the general DistributedReplica with no Peritext-specific runtime
-// code.
+// PERITEXT datatype tests: the verified DOCUMENT-ORDER mark read model as a
+// runtime datatype, and THE PARAMETRICITY PAYOFF -- rich text carried by the
+// general DistributedReplica with no Peritext-specific runtime code.
 //
 // FIXTURE PROVENANCE. Every expected value below is EXTRACTED from the
 // validated reference model whiteboard/litmus/peritext_read_model.py (which
-// passes end to end and mirrors the Lean spec PeritextEmbed_MarkIntent.lean),
-// via the harness scratchpad/extract_fixtures.py, run as:
+// passes end to end), via the harness scratchpad/extract_fixtures.py, run as:
 //     cd whiteboard/litmus && \
 //       PYTHONPATH=whiteboard/litmus python3 .../extract_fixtures.py
 // The values are hand-transcribed from that JSON dump -- NOT read back from the
@@ -30,7 +28,7 @@ const order = (s) => peritext.read(s).map((e) => e.char);
 const flags = (s, mt) => peritext.flags(s, mt);
 const eq = (x) => JSON.stringify(x);
 
-// --------------------------------------------------------- Ex1-8 (the paper)
+// --------------------------------------------------------- Ex1-8
 test('Ex1 insert-within-span: b typed inside [a,c] is bold (reading order a,b,c)', () => {
   const s = build([ins(1, 'a', null), ins(2, 'c', 1),
     mark(3, 'bold', 1, 2), ins(4, 'b', 1)]);
@@ -55,7 +53,7 @@ test('Ex3 delete-whole-span-then-reinsert: fresh text is plain (span collapses)'
     mark(10, 'bold', 1, 3), del(1), del(2), del(3), ins(4, 'd', null)]);
   assert.equal(order(s).join(''), 'd', 'only the reinserted d is live');
   assert.deepEqual(flags(s, 'bold'), [['d', false]]);
-  // FAIL companion: the collapsed span does NOT leak bold onto fresh d (the retracted read did).
+  // FAIL companion: the collapsed span does NOT leak bold onto fresh d.
   assert.notDeepEqual(flags(s, 'bold'), [['d', true]]);
 });
 
@@ -100,7 +98,7 @@ test('doc_no_backward_leak: deleting a bold START anchor rehomes forward, W stay
     mark(100, 'bold', 2, 3), del(2)]);
   assert.equal(order(s).join(''), 'WBC', 'A deleted, survivors W,B,C');
   assert.deepEqual(flags(s, 'bold'), [['W', false], ['B', true], ['C', false]]);
-  // FAIL companion: the boundary does NOT migrate BACKWARD onto W (the retracted tree-ancestry leak).
+  // FAIL companion: the boundary does NOT migrate BACKWARD onto W (the tree-ancestry leak).
   assert.notDeepEqual(flags(s, 'bold'), [['W', true], ['B', true], ['C', false]]);
 });
 
@@ -150,7 +148,7 @@ test('convergence: the render is a pure function of the mark SET (permutation-in
 // Two replicas concurrently edit text AND marks, gossip via the delta
 // protocol, and converge -- with NO Peritext-specific runtime code (the same
 // object that carries embedRGA and orset). Plus a clone/catch-up over the wire
-// and a snapshot round-trip (the durable-persistence surface #107 sits on).
+// and a snapshot round-trip (the durable-persistence surface).
 // =========================================================================
 test('DistributedReplica carries Peritext: concurrent text+mark edits gossip and converge', () => {
   const a = new DistributedReplica(peritext, 'A');
@@ -192,7 +190,7 @@ test('DistributedReplica carries Peritext: concurrent text+mark edits gossip and
 
   // The PLAIN datatype (no compact/remapState hooks) still refuses state
   // compaction, the orset path. The marks-layer GC that FIRES instead --
-  // retention roots + the A3 guarded pair-drop (#110) -- is
+  // retention roots + the A3 guarded pair-drop -- is
   // `compactiblePeritext` in src/compact-peritext.js, test/peritext-gc.test.js.
   const r = a.compactStable();
   assert.equal(r.compacted, false, 'plain peritext (hookless) refuses epoch compaction');
@@ -211,7 +209,7 @@ test('DistributedReplica Peritext: SHA content-address round-trip and dedup', ()
 });
 
 // ------------------------------------------------ comments (unique-mtype encoding)
-// The paper's COMMENTS: overlapping annotations that must COEXIST, not
+// COMMENTS: overlapping annotations that must COEXIST, not
 // collapse. The read model resolves per (char, mtype) by LWW, so the encoding
 // is one mtype PER COMMENT (`comment:<id>`, note text in `value`); distinct
 // mtypes never compete. Expected values here are HAND-DERIVED from the same

@@ -13,7 +13,7 @@ the Prop-valued preservation lemmas align with the Bool-valued
 Sal-paper statements.
 
 Namespace notes:
-* `Grow_Only_Set_CRDT.lean` is un-namespaced — `concrete_st`, `init_st`,
+* `Grow_Only_Set_CRDT.lean` is un-namespaced, `concrete_st`, `init_st`,
   `do_`, `merge`, `rc`, and all 24 theorems live at the top level after
   import. We qualify with `_root_.` where disambiguation is needed.
 * The local `rc_res` and `Sal.Emulation.RcRes` are different types;
@@ -196,7 +196,7 @@ theorem D_satisfies_VCs : SatisfiesVCs D where
   merge_peel_comm := by
     -- For Grow-Only Set, the conclusion is set associativity:
     -- (a ∪ {e}) ∪ ⋃π = (a ∪ ⋃π) ∪ {e}.
-    -- The hypothesis `∀ x ∈ π, commutes e x` is irrelevant — G-Set
+    -- The hypothesis `∀ x ∈ π, commutes e x` is irrelevant, G-Set
     -- has all ops commuting, so the conclusion holds unconditionally.
     intro a e π _
     -- The key fact: for any set b, merge (do_ a e) b = do_ (merge a b) e.

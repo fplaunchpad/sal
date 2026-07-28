@@ -9,7 +9,7 @@ import Mathlib.Tactic.Linarith
 import Sal.Tactic.Sal
 
 /-!
-# Enable-Wins Flag — state-based MRDT (INTENTIONALLY BUGGY)
+# Enable-Wins Flag: state-based MRDT (INTENTIONALLY BUGGY)
 
 A boolean flag with concurrent-enable-beats-disable resolution. The
 state pairs the flag with an auxiliary counter tracking how many
@@ -21,7 +21,7 @@ or was already reflected in the LCA's flag.
 
 This MRDT is the Sal paper's canonical counterexample demo. The
 verification condition `inter_right_1op` **fails** for this
-implementation — Plausible rediscovers a minimal failing execution
+implementation, Plausible rediscovers a minimal failing execution
 automatically (see `Sal/Counterexample_Visualization/WriterMonad_Enable_Wins_Flag.lean`).
 
 The bug is in `merge_flag`: the four-case rule looks plausible (both
@@ -30,7 +30,7 @@ bumped since the LCA wins) but it doesn't correctly handle a specific
 four-state history scenario where the same flag value can be computed
 two different ways depending on which branch you start from. The
 closed-form MRDT laws (left identity, right identity, commutativity
-of merge) all still hold — the bug is a DAG-level property that
+of merge) all still hold, the bug is a DAG-level property that
 surfaces only when you compose a specific sequence of ops and merges.
 
 The file drives Plausible's counterexample
@@ -66,7 +66,7 @@ match o with
 
 /-- Effect:
   * `Enable`  → (counter + 1, true).
-  * `Disable` → (counter, false). (Counter is NOT bumped on Disable —
+  * `Disable` → (counter, false). (Counter is NOT bumped on Disable,
     that asymmetry is what the merge rule tries to exploit, and it's
     also where the inter_right_1op bug lurks.) -/
 @[simp]

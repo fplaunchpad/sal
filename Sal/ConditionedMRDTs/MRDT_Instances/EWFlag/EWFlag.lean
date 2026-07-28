@@ -40,7 +40,7 @@ def ewUpdate (s : ℕ → ℕ × Bool) (o : Op EWOp) : ℕ → ℕ × Bool :=
   | .disable => fun k => ((s k).1, false)
 
 /-- The Enable-wins flag MRDT (mirror of
-`Sal/MRDTs/Enable_Wins_Flag/Enable_Wins_Flag_MRDT.lean`, `mysel`-semantics —
+`Sal/MRDTs/Enable_Wins_Flag/Enable_Wins_Flag_MRDT.lean`, `mysel`-semantics,
 see the file header for the domain-tracking deviation). -/
 noncomputable def EWFlag : ConditionedMRDTSig where
   State := ℕ → ℕ × Bool
@@ -936,7 +936,7 @@ theorem EWFlag_ra_linearizable3
   ra_linearizable3_of_joinF EWFlag_joinLemma3F C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

@@ -10,7 +10,7 @@ open Classical
 /-!
 # Last-Writer-Wins Map CRDT
 
-State is a `map ℕ (ℕ × ℕ)` — key → (timestamp, value). Both `do_` and
+State is a `map ℕ (ℕ × ℕ)`, key → (timestamp, value). Both `do_` and
 `merge` are defined pointwise per key using the same lexicographic max
 on pairs (higher timestamp wins, ties broken by larger value). Writing
 the two in terms of the same `lex_max` function is what lets the
@@ -50,7 +50,7 @@ match o with
 | (_, (rid, _)) => rid
 
 /-- Lex-max on `(ts, value)`: higher ts wins; ties broken by larger
-value. Used by both `do_` and `merge` — the shared operator is what
+value. Used by both `do_` and `merge`, the shared operator is what
 makes `lem_0op` go through on arbitrary equal-ts state pairs. -/
 @[simp, grind]
 def lex_max (a b : ℕ × ℕ) : ℕ × ℕ :=

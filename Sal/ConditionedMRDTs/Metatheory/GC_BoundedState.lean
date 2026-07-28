@@ -437,12 +437,12 @@ theorem steps_clockFlat {C₀ : Configuration D} {C ℓs C'}
 /-- **Bounded-state commit GC.** Pruning to the clock store
 `clockPrune C₀` (the keep-set payloads, DAG skeleton dropped) over the keep set `Keep'`:
 
-1. **preserves every head run** — the entire `Step3` trace replays, label for label, on the
+1. **preserves every head run**: the entire `Step3` trace replays, label for label, on the
    bounded LTS `Step3C` (Merge resolves its LCA state by the clock meet, `clockLCA_complete`,
    not by the dropped skeleton);
-2. **preserves every head read** — the transported run's `N` agrees with `C`'s at every
+2. **preserves every head read**: the transported run's `N` agrees with `C`'s at every
    replica, at every point (definitional, `flatDropVer_N`);
-3. **bounds state at `O(|Keep'|)`** — the clock store's `ver` support is contained in
+3. **bounds state at `O(|Keep'|)`**: the clock store's `ver` support is contained in
    `Keep'` (`clockPrune_support`) and its skeleton is the constant empty function
    (`clockPrune_parents`), so it costs `O(number of live commits)`, not
    `O(number of commits ever)`.
@@ -450,8 +450,8 @@ theorem steps_clockFlat {C₀ : Configuration D} {C ℓs C'}
 The single hypothesis is `StoreInv C₀` (supplied by plain reachability,
 `storeInv_reachable`). The merge results replayed here are the *structural* LCA states
 (`step_clockFlat` witnesses each clock LCA by the true `vT`); that the bounded LTS is
-moreover deterministic on the merge state — no unrelated-lineage clock collision resurrects
-a dropped instance — is `clockLCA_recovers` under the `ClockCoherent` (`R_S`-compatible)
+moreover deterministic on the merge state, no unrelated-lineage clock collision resurrects
+a dropped instance, is `clockLCA_recovers` under the `ClockCoherent` (`R_S`-compatible)
 guard, with `spot_lineage_resurrection` the countermodel when the guard is dropped. -/
 theorem gc_safety_bounded (C₀ : Configuration D) (hStore : StoreInv C₀.ver C₀.parents)
     {ℓs : List (Label3 D)} {C : Configuration D} (hRun : Steps D C₀ ℓs C) :
@@ -485,7 +485,7 @@ at the clock meet `E(4) ∩ E(5) = {e1,e2} = E(2)`, and the bounded store still 
 **FAIL** (the lineage resurrection): a *compacted* store
 `Ccoll` where two versions share the event-set clock `{a1,…}` but carry different states
 (`{10}` on the kept lineage, `∅` on the compacted lineage). The clock lookup for the head
-pair `(3,4)` — whose meet clock is exactly that shared clock — returns *both* states, so
+pair `(3,4)`, whose meet clock is exactly that shared clock, returns *both* states, so
 clock identification alone resurrects the dropped `10` (or drops it) depending on the
 lineage it lands on. This is why the swap must restrict to `R_S`-compatible payloads:
 `ClockCoherent Ccoll` is provably false. -/

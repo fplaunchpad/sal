@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # Bounded_Counter (CRDT) — SPOTs -/
+/-! # Bounded_Counter (CRDT): SPOTs -/
 
 namespace Bounded_Counter_SPOT
 

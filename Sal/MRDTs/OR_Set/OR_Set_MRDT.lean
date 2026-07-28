@@ -8,9 +8,9 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Observed-Remove Set (OR-Set) — state-based MRDT
+# Observed-Remove Set (OR-Set): state-based MRDT
 
-Add-wins set with no tombstone component — the LCA handles retraction
+Add-wins set with no tombstone component, the LCA handles retraction
 directly. Each `Add e` at timestamp `ts` stakes the tag `(ts, e)`;
 `Rem e` filters every `(_, e)` tag out of the local state. Concurrent
 `Add e` on one branch and `Rem e` on the other results in `e` present
@@ -22,10 +22,10 @@ The three-way merge formula
     merge l a b = (l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)
 
 splits the result into:
-  * `l ∩ a ∩ b` — intact entries still present on both branches (these
+  * `l ∩ a ∩ b`: intact entries still present on both branches (these
     have survived whatever happened on both sides since `l`);
-  * `a ∖ l`     — entries added on branch `a` since the LCA;
-  * `b ∖ l`     — entries added on branch `b` since the LCA.
+  * `a ∖ l`: entries added on branch `a` since the LCA;
+  * `b ∖ l`: entries added on branch `b` since the LCA.
 
 An entry present in `l` but removed on `a` (i.e. in `l`, not in `a`)
 drops out of `l ∩ a ∩ b`; the corresponding add tag on `b` survives
@@ -84,8 +84,8 @@ def get_ele (o: op_t) : ℕ :=
   | app_op_t.Rem e => e
 
 /-- Effect:
-  * `Add e` at `ts` — add `(ts, e)` to the set.
-  * `Rem e`         — filter out every tag with element `= e`. -/
+  * `Add e` at `ts`: add `(ts, e)` to the set.
+  * `Rem e`: filter out every tag with element `= e`. -/
 @[simp]
 def do_ (s: concrete_st) (o: op_t) : concrete_st :=
 match o with

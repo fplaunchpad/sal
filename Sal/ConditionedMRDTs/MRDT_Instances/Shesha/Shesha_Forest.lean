@@ -1,18 +1,18 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Merge_Lemmas
 
-/-! # Shesha — forest layer: parent chains and depth
+/-! # Shesha, forest layer: parent chains and depth
 
 The parent-chain/depth machinery shared by the M0/M2 merge lemmas
-(`merge_ids`, `merge_read_nodup` — both closed in `Shesha_M0.lean` — and
+(`merge_ids`, `merge_read_nodup`, both closed in `Shesha_M0.lean`, and
 `merge_L_filter`, the M2 core still owed in `Shesha_Merge_Lemmas.lean`):
 
-- `depthF`/`depthOf` — structural depth of a node (first occurrence, like
+- `depthF`/`depthOf`, structural depth of a node (first occurrence, like
   `parF`).
 - Bridges: on a WF state a live node sits in exactly the row of its parent
   (`parOf_row_mem`, `row_mem_parOf`), and a child is one level deeper than
   its parent (`depth_row_succ`, `depth_row_root`).
 - `wpar` analysis (`wpar_spec`): the attach-deep host of a live L-node is
-  the root or a strictly shallower `W`-member — the measure that terminates
+  the root or a strictly shallower `W`-member, the measure that terminates
   marker chains.
 -/
 
@@ -438,7 +438,7 @@ theorem wparGo_spec {L : St} (hwf : WF L) (W : Nat → Bool) :
           · exact Or.inr ⟨h1, h2, by omega⟩
 
 /-- **Host spec.** On a WF LCA, the attach-deep host of a live node is the
-root or a *strictly shallower* live `W`-member — the measure that terminates
+root or a *strictly shallower* live `W`-member, the measure that terminates
 marker-splice chains (`wpar` never descends or stalls). -/
 theorem wpar_spec {L : St} (hwf : WF L) (W : Nat → Bool) {u : Nat}
     (hu : u ∈ read L) :

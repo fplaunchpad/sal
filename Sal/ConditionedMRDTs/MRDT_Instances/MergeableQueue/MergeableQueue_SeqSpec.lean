@@ -8,7 +8,7 @@ The Peepul queue, single-replica, against the naive functional FIFO: enq
 pushes the value at the back, deq pops the head. The RDT's deq removes by
 TAG; the two agree under the sequential honesty the datatype itself
 prescribes (`applicable`'s head-check: a deq names the current head), and
-the proof needs one invariant: **tags are nodup** — freshness
+the proof needs one invariant: **tags are nodup**. Freshness
 of enqueue stamps survives filtering, and is exactly what makes
 filter-by-tag pop precisely one element.
 -/

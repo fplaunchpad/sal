@@ -6,7 +6,7 @@ import Sal.CRDTs.Metatheory.JoinLemma_Of_CD
 
 `JoinLemma_Of_CD.lean` proved `CoreVCs + LatticeVCsPlus + CDVC ⇒
 JoinLemma`. This file proves the **converse**: given
-`CoreVCs + LatticeVCsPlus`, the Join Lemma implies (CD) — the
+`CoreVCs + LatticeVCsPlus`, the Join Lemma implies (CD), the
 principal-case instance `(U∖e, ↓e)` of the Join Lemma *is* (CD), up
 to the free half supplied by the lattice laws. Hence
 

@@ -31,7 +31,7 @@ Layers:
 
 * **§2 The reachability invariant** `MInv`: ids positive and unique,
   chains wellformed (positive deltas, wellformed tags, telescoping sum),
-  and the LINK clauses tying every insert record to its parent's chain —
+  and the LINK clauses tying every insert record to its parent's chain,
   including the two mint-time GEOMETRY facts that make condition (3)
   provable: an R mint's right origin is NOT an R-descendant of the left
   origin (the minter had seen no R-child), and an L mint's parent (= its
@@ -42,7 +42,7 @@ Layers:
   the Fugue file): `ForwardNIM`, `BackwardNIExcM`, `SameOriginLowFirstM`,
   `MaxNonInterleavingM`, `FugueMaxMaximallyNonInterleaving`.
 
-* **§4 The positive twin, PROVED**: `fuguemax_same_origin_low_first` —
+* **§4 The positive twin, PROVED**: `fuguemax_same_origin_low_first`,
   condition (3) holds at every replica of every reachable configuration.
   Same recorded origins force the same policy branch (the two geometry
   clauses collide otherwise), and same-branch siblings are kernel-ordered
@@ -53,7 +53,7 @@ Layers:
 
 * **§6 SPOTs** (PASS+FAIL, hand-derived): two front
   inserts `[1,2]`, the forward twin (lower-ID block first), L19 backward
-  (unchanged), the mixed case, and BOTH Figure-7 mint orders — the
+  (unchanged), the mixed case, and BOTH Figure-7 mint orders, the
   adverse one is the trace that kills every plain re-banding.
 
 All three Definition-4 conditions are theorems. Condition (1) is
@@ -536,7 +536,7 @@ theorem mAnchorAt_cases (Γ : OrderedPrefixCode) (K : KnowM) (i : ℕ) :
 /-! ## §2  The reachability invariant -/
 
 /-- The R-mint link clause: parent = left origin, chain extends the
-parent's by the tagged R entry, and the mint-time geometry fact — the
+parent's by the tagged R entry, and the mint-time geometry fact, the
 recorded right origin is NOT an R-descendant of the left origin (the
 minter had seen no R-child of the anchor). -/
 def LinkR (Γ : OrderedPrefixCode) (K : KnowM) (g : MRec) : Prop :=
@@ -547,7 +547,7 @@ def LinkR (Γ : OrderedPrefixCode) (K : KnowM) (g : MRec) : Prop :=
       ¬ ∃ t d rest, mChainOf K n = mChainOf K g.lo ++ FMEntry.R t d :: rest
 
 /-- The L-mint link clause: parent = right origin, chain extends the
-parent's by an L entry, and the mint-time geometry fact — the parent IS
+parent's by an L entry, and the mint-time geometry fact, the parent IS
 an R-descendant of the left origin (the successor of an anchor with an
 R-child lands in its R-subtree). -/
 def LinkL (Γ : OrderedPrefixCode) (K : KnowM) (g : MRec) : Prop :=
@@ -851,7 +851,7 @@ theorem succ_not_R_descendant {Γ : OrderedPrefixCode} {K : KnowM}
   exact Bool.noConfusion hnoR
 
 /-- **Geometry, L mint**: when the anchor HAS an R-child, its successor
-IS an R-descendant of it — the argmax lands in the R-subtree, by
+IS an R-descendant of it, the argmax lands in the R-subtree, by
 convexity. -/
 theorem succ_R_descendant {Γ : OrderedPrefixCode} {K : KnowM}
     (inv : KInv Γ K) {a n : ℕ}
@@ -1182,7 +1182,7 @@ theorem mGenInsAfter_someFalse {Γ : OrderedPrefixCode} {K : KnowM}
   rw [hs, hR]
 
 /-- The freshly generated insert satisfies everything the bundle demands
-of it, over the mint knowledge — including the two geometry facts. -/
+of it, over the mint knowledge, including the two geometry facts. -/
 theorem mGenInsAfter_props (Γ : OrderedPrefixCode) {K : KnowM}
     (inv : KInv Γ K) (rep : ℕ) {x a : ℕ} (hx : 0 < x)
     (hlam : ∀ m ∈ mMintedIds K, m < x)
@@ -1432,7 +1432,7 @@ def mLoDesc (K : KnowM) (c p : ℕ) : Prop := ∃ nn : ℕ, (mLoOf K)^[nn] c = p
 
 /-- Lemma 5's exception at the pair `(A, B)`.
 
-The witness `C` ranges over ALL minted elements, tombstones included —
+The witness `C` ranges over ALL minted elements, tombstones included,
 the paper's own quantification (its list state keeps tombstones; right
 origins are defined "including tombstones"). Quantifying only over LIVE
 witnesses is FALSE on this realization: run the paper's Figure-7
@@ -1655,7 +1655,7 @@ theorem fm_fold_subtree_convex (Γ : OrderedPrefixCode) {K : KnowM}
 #print axioms fm_fold_subtree_convex
 
 /-- A run whose elements chain (each mint extends the previous element's
-chain by one entry — what the FugueMax policy generates for forward and
+chain by one entry, what the FugueMax policy generates for forward and
 backward runs alike). -/
 def RunChainsM (chainOf : ℕ → FMChain) : List ℕ → Prop
   | [] => True
@@ -1758,7 +1758,7 @@ def gIns (K : KnowM) (rep x i : ℕ) : KnowM :=
 
 def kTie : KnowM := syncM (gIns [] 0 1 0) (gIns [] 1 2 0)
 
-/-- PASS: FugueMax ties ascending — the lower id displays first (the
+/-- PASS: FugueMax ties ascending, the lower id displays first (the
 Fugue kernel displayed `[2, 1]` here, its condition-(3) refutation). -/
 theorem tie_display : mView unaryCode kTie = [1, 2] := by native_decide
 
@@ -1772,7 +1772,7 @@ def kA19 : KnowM := gIns (gIns (gIns kL 0 10 0) 0 30 0) 0 50 0
 def kB19 : KnowM := gIns (gIns (gIns kL 1 21 0) 1 41 0) 1 61 0
 def k19 : KnowM := syncM kA19 kB19
 
-/-- PASS: both backward runs contiguous, in text order — identical to the
+/-- PASS: both backward runs contiguous, in text order, identical to the
 Fugue policy's display (the L band did not change). -/
 theorem l19_display :
     mView unaryCode k19 = [50, 30, 10, 61, 41, 21, 1] := by native_decide

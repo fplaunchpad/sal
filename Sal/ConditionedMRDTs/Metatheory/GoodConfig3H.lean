@@ -9,15 +9,15 @@ guarded final target `IsRALinearizable3` is unsatisfiable at `QSig …WfOpA…` 
 RGA (the criss-cross union admits no guarded replay), and the base `GoodConfig3.canonical` clause
 (guarded) is equally unmaintainable at merges.  This file:
 
-* `GoodConfig3S` — the STRUCTURAL fields of `GoodConfig3` (vis-strictness, event-universe bounds,
+* `GoodConfig3S`: the STRUCTURAL fields of `GoodConfig3` (vis-strictness, event-universe bounds,
   causal closure) as a standalone invariant, with its own step preservations (the structural
   bullets of `Adequacy.goodConfig3_*`, without the guarded canonical clause).
-* `IsCanonicalStateH` — per-version: the class is `qmk` of a representative carrying an
+* `IsCanonicalStateH`, per-version: the class is `qmk` of a representative carrying an
   `H`-disciplined RAW-fold witness (`IsCanonicalStateEqH`).
-* `IsRALinearizable3Eq` — **the raw-≈ capstone statement**: every version's class is `qmk` of a
+* `IsRALinearizable3Eq`, **the raw-≈ capstone statement**: every version's class is `qmk` of a
   representative that is the RAW datatype fold of a `lo`-respecting linearization of its events,
   up to `≈`.  This is the paper's Def. lin applied to the datatype; no guarded fold anywhere.
-* `RA_linearizable_up_to_eq_H` — the metatheorem: reachable + born-applicable (`hBA`) +
+* `RA_linearizable_up_to_eq_H`, the metatheorem: reachable + born-applicable (`hBA`) +
   `H`-extension at applies (`hHext`) + the `H`-join (`EqJoinLemma3C_H`, the RDT's merge residual)
   ⟹ `IsRALinearizable3Eq`.
 -/
@@ -34,7 +34,7 @@ variable {D : ConditionedMRDTSig}
 
 /-! ## §1  The structural invariant -/
 
-/-- The structural fields of `GoodConfig3` — everything except the (guarded) canonical clause. -/
+/-- The structural fields of `GoodConfig3`, everything except the (guarded) canonical clause. -/
 structure GoodConfig3S (C : Configuration D') : Prop where
   vis_trans : ∀ {a b c : Op D'.AppOp}, C.vis a b → C.vis b c → C.vis a c
   vis_irrefl : ∀ a : Op D'.AppOp, ¬ C.vis a a
@@ -289,7 +289,7 @@ def GoodConfig3H (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     C.ver v = some (s, Ev) →
     IsCanonicalStateH H E W hP hC hA (Sal.ConditionedMRDTs.Configuration.core C) Ev s
 
-/-- **The RAW-≈ capstone statement** — the paper's Def. lin applied to the datatype: every
+/-- **The RAW-≈ capstone statement**, the paper's Def. lin applied to the datatype: every
 version's class is `qmk` of a representative that is the RAW datatype fold of a `lo`-respecting
 linearization of its events, up to observational `≈`.  NO guarded fold anywhere. -/
 def IsRALinearizable3Eq (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -325,7 +325,7 @@ theorem isRALinearizable3Eq_of_goodH (E : EqEquiv D) (W : Op D.AppOp → D.State
 
 /-! ## §4  Step preservations -/
 
-/-- Init: version `0 = (init, ∅)`, witness `[]` — needs `H []`. -/
+/-- Init: version `0 = (init, ∅)`, witness `[]`, needs `H []`. -/
 theorem goodConfig3H_init (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (hHnil : H []) :
@@ -573,7 +573,7 @@ theorem goodConfig3H_of_reachF (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → 
     | query h_s h_val => exact ih
 
 /-- **The RAW-≈ metatheorem.**  A reachable `QSig`-configuration under the born-applicable
-discipline is per-version RA-linearizable in the paper's sense — raw datatype folds, up to `≈` —
+discipline is per-version RA-linearizable in the paper's sense, raw datatype folds, up to `≈`,
 gated on the datatype's H-join (`EqJoinLemma3C_H`) and the H-discipline conditions. -/
 theorem RA_linearizable_up_to_eq_H (HonJ : (Op D.AppOp → Op D.AppOp → Prop) → Set (Op D.AppOp) → Prop)
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)

@@ -23,7 +23,7 @@ For the guarded quotient `QSig E W …`, `update = qdo = doW` is
 * the guard fails ⟹ `qdo` is the identity (`doW = s`), a literal no-op.
 
 So born-applicability is INTRINSIC to a guarded quotient whose guard is at least
-`applicable` — no witness decoration, no `GenDisc2CEq`.  This is the generic
+`applicable`, no witness decoration, no `GenDisc2CEq`.  This is the generic
 engine behind `GoodConfig3NF`'s apply step: the newly-applied op is `appOrNoop`
 at the version state FOR FREE.
 
@@ -36,7 +36,7 @@ WEAKER than `applicable` (it never demands `accurate`).  `WfOpA` adds accuracy
 back:
 
 * `WfOpA ⟹ WfOpQ` keeps the full `InvPres` (`rgaInvPresA`);
-* `WfOpA ⟹ applicable` (`= accurate ∧ fresh_ts`) feeds `appOrNoop_qsig` — born
+* `WfOpA ⟹ applicable` (`= accurate ∧ fresh_ts`) feeds `appOrNoop_qsig`, born
   applicability.
 
 `WfOpA` is the honest guard: `applicable` for convergence + the `WfOpQ`
@@ -96,7 +96,7 @@ open Sal.ConditionedMRDTs.RGAInvUpdateQ (WfOpQ qInv_doOp rgaInvPresQ WfOpGenQ
 `accurate`.  Strengthens `WfOpQ` with the accuracy that born-applicability needs. -/
 def WfOpA (o : op_t α) (s : concrete_st α) : Prop := WfOpQ o s ∧ accurate o s
 
-/-- `WfOpA ⟹ WfOpQ` — the `InvPres`-carrying part. -/
+/-- `WfOpA ⟹ WfOpQ`, the `InvPres`-carrying part. -/
 theorem wfOpQ_of_wfOpA {o : op_t α} {s : concrete_st α} (h : WfOpA o s) : WfOpQ o s := h.1
 
 /-- **`WfOpA ⟹ applicable`.**  `applicable = accurate ∧ fresh_ts`; `WfOpA`
@@ -110,12 +110,12 @@ theorem applicable_of_wfOpA {o : op_t α} {s : concrete_st α} (h : WfOpA o s) :
   | Ins e pre a => exact hwfq.1
   | Del pre x => trivial
 
-/-- **`InvPres (RGACondSig' α) WfOpA`** — reuse `rgaInvPresQ`'s components: `inv_update`
+/-- **`InvPres (RGACondSig' α) WfOpA`**, reuse `rgaInvPresQ`'s components: `inv_update`
 is `qInv_doOp` fed `WfOpA.1 : WfOpQ`. -/
 def rgaInvPresA : InvPres (RGACondSig' α) WfOpA :=
   ⟨rga_inv_init', fun s o hI hw => qInv_doOp s o hI (wfOpQ_of_wfOpA hw), rga_inv_mergeL'⟩
 
-/-- **`applicable ⟹ WfOpA` on genuine ops** — the `hWA` the exec-side bridge
+/-- **`applicable ⟹ WfOpA` on genuine ops**, the `hWA` the exec-side bridge
 (`isCanonicalState_of_NF`) needs.  `WfOpA = WfOpQ ∧ accurate`; `accurate` is
 `applicable`'s first conjunct, and `WfOpQ` follows from the honest per-op
 `WfOpGenQ` (`wfOpQ_ins_of_genQ` at the `applicable`-supplied freshness;

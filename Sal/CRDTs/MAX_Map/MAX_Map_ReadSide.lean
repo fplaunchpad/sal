@@ -12,7 +12,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # MAX_Map (CRDT) — read-side projection
+/-! # MAX_Map (CRDT): read-side projection
 
 The 24 VCs prove the per-key map converges under per-key max. The
 read is `lookup k`, the value at key `k` (zero-default for unset

@@ -1,21 +1,18 @@
-// THE MARKS-LAYER STATE GC (task #110 phase 2): src/compact-peritext.js
-// wired from the VALIDATED design of whiteboard/marks-gc-note.md (retention
-// roots H-A + the A3 guarded pair-drop; Python harness
-// whiteboard/litmus/marks_gc_check.py). Peritext's compactStable moves from
-// REFUSE to fire-with-certificate.
+// THE MARKS-LAYER STATE GC: src/compact-peritext.js implements retention
+// roots (H-A) and the A3 guarded pair-drop. Peritext's compactStable refuses
+// without a certificate and fires with one.
 //
-// EXPECTED VALUES ARE HAND-DERIVED from the note's section-5 tables and the
-// read rules R1-R4 (re-derived in comments below), never evaluated from the
-// implementation under test; the PBT's specification is the never-compacted
-// twin, which is not the implementation under test. Reference codewords
-// (test/compact.test.js header, kernel-pinned in code.test.js):
+// EXPECTED VALUES ARE HAND-DERIVED from the read rules R1-R4 (re-derived in
+// comments below), never evaluated from the implementation under test; the
+// PBT's specification is the never-compacted twin, which is not the
+// implementation under test. Reference codewords (test/compact.test.js
+// header, kernel-pinned in code.test.js):
 //   enc(1)='0' enc(2)='1000' enc(3)='1001' enc(4)='10100' enc(5)='10101'
 //   enc(9)='11000001' enc(19)='110010011'
 //
 // PASS+FAIL convention: every reads-identical claim carries a companion
 // pinning the tempting degenerate behavior --
-//   (a) the NONE control (opts.noRetention) FLIPS a read (note D6: this is
-//       what justified the old refusal),
+//   (a) the NONE control (opts.noRetention) FLIPS a read,
 //   (b) the A3 alpha flip (an UNDECLARED straggler add inside the mid
 //       window makes the guarded-looking drop unsound; declaring it makes
 //       the guard refuse),
@@ -59,7 +56,7 @@ function mulberry32(seed) {
 }
 const pick = (rng, xs) => xs[Math.floor(rng() * xs.length)];
 
-// D1 geometry (note section 5.1): R=1 and L=2 minted at the root (L newer,
+// D1 geometry: R=1 and L=2 minted at the root (L newer,
 // reads first), d=3 child of L; reading order L d R; mark mid 5; d deleted.
 const d1Barrier = (m) => build([ins(1, 'R', null), ins(2, 'L', null),
   ins(3, 'd', 2), m, del(3)]);
@@ -69,7 +66,7 @@ const d1Cut = () => ({
 });
 
 // ------------------------------------------------- D6: the no-retention flip
-test('D6: retention keeps the read; the NONE control (old refusal) FLIPS it', () => {
+test('D6: retention keeps the read; the NONE control FLIPS it', () => {
   // Mark [start L before, end d after] mid 5; d dead.
   // Twin (hand, R2/R3): end anchor d is dead, endSide=after scans LEFT in
   // birth order L d R and finds L; covered {L}: L BOLD, R plain.
@@ -106,7 +103,7 @@ test('D6: retention keeps the read; the NONE control (old refusal) FLIPS it', ()
 test('D1(b)/(c): declared stragglers around a retained dead anchor read as the twin', () => {
   // (b) end-inner cell: mark [L before, d after] mid 5; straggler n=4
   // anchored at L (OLDER than the mark), declared at the cut, delivered
-  // after compaction. Twin (hand, note 5.1 table): birth L n d R (n delta 2
+  // after compaction. Twin (hand): birth L n d R (n delta 2
   // beats d delta 1 among L's children); end d dead scans left -> n live;
   // covered {L,n}: L,n bold, R plain.
   const bar1 = d1Barrier(mark(5, 'bold', 2, 3, 'before', 'after'));
@@ -169,8 +166,7 @@ test('D3: two retained dead anchors in one run keep their order; a gap straggler
   // birth A x g y B, live A g B.
   // Twin (hand): m1 end x dead scans left -> A: bold {A}. m2 end y dead
   // scans left -> g live: ital {A,g}. So g carries m2 and NOT m1: the
-  // boundary order INSIDE the dead run is observable (what early
-  // re-anchoring erased, note D3).
+  // boundary order INSIDE the dead run is observable.
   const barrier = build([ins(1, 'A', null), ins(2, 'x', 1), ins(3, 'y', 2),
     ins(4, 'B', 3), mark(10, 'bold', 1, 2, 'before', 'after'),
     mark(11, 'ital', 1, 3, 'before', 'after'), del(2), del(3)]);
@@ -326,7 +322,7 @@ test('compactiblePeritext certified GC: refuse-then-fire, reads identical, epoch
   // FIRE: c (settled-dead, unreferenced) drops; b (dead END anchor of mark
   // 10) is retained, re-coded, and stays listed in deleted.
   const r1 = a.compactStable();
-  assert.equal(r1.compacted, true, 'peritext compaction FIRES: the old refusal is gone');
+  assert.equal(r1.compacted, true, 'peritext compaction FIRES');
   assert.equal(r1.stats.recordsDropped, 1, 'c dropped');
   assert.equal(r1.stats.retainedForMarks, 1, 'b retained for mark 10');
   assert.equal(a.epoch, 1, 'a new epoch opened');
@@ -598,5 +594,5 @@ test('twin PBT FAIL companion: the NONE control (no retention) flips reads', (t)
     `${res.divTrials} trials flipped vs the twin`);
   assert.equal(res.trials, 60, 'text structure stays sound even without retention');
   assert.ok(res.divTrials > 0,
-    'no-retention compaction must flip reads (the old refusal was justified)');
+    'no-retention compaction must flip reads');
 });

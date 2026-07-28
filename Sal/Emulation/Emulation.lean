@@ -18,7 +18,7 @@ High-level construction:
   state.
 * **update** runs `D.prepare` against a reconstruction of the
   current effective state, appends the generated message to the set.
-* **merge** is set union — the lattice join for causal histories.
+* **merge** is set union, the lattice join for causal histories.
 * **query** delegates to `D.query` after reconstructing the effective
   state.
 

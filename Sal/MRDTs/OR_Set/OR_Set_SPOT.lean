@@ -6,11 +6,11 @@ set_option linter.mathlibStandardSet false
 
 open Classical
 
-/-! # OR-Set (MRDT) — SPOTs
+/-! # OR-Set (MRDT): SPOTs
 
 Small Proof-Oriented Tests: concrete `do`/`merge` scenarios with
 expected `lookup` outcomes, machine-checked. MRDT counterpart to
-`Sal/CRDTs/OR_Set/OR_Set_SPOT.lean` — same scenarios, three-way
+`Sal/CRDTs/OR_Set/OR_Set_SPOT.lean`, same scenarios, three-way
 merge against an LCA replaces the tombstone component.
 
 Reference: Shapiro et al. INRIA RR-7506 §3.3.5; the three-way set
@@ -19,7 +19,7 @@ merge `(l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)` realises Add-Wins via the
 
 namespace OR_Set_MRDT_SPOT
 
-/-- **SPOT 1 — Add makes element live.**
+/-- **SPOT 1: Add makes element live.**
 
 A single `Add 5` at ts = 1 from the empty initial state stakes the
 tag `(1, 5)`, making `5` live. -/
@@ -27,7 +27,7 @@ example :
     lookup (do_ init_st (1, 0, app_op_t.Add 5)) 5 :=
   lookup_after_add init_st 5 1 0
 
-/-- **SPOT 2 — concurrent Add wins over Rem (headline).**
+/-- **SPOT 2: concurrent Add wins over Rem (headline).**
 
 LCA `init_st` is empty. Branch `a` issues `Add 5` at ts = 1; branch
 `b` issues `Rem 5` at ts = 2. After the three-way merge, `(1, 5)`
@@ -41,7 +41,7 @@ example :
       5 :=
   add_wins_over_concurrent_remove init_st 5 1 2 0 1 (by decide)
 
-/-- **SPOT 3 — sequential Add then Rem extinguishes.**
+/-- **SPOT 3: sequential Add then Rem extinguishes.**
 
 `Add 5` then `Rem 5` on a single replica leaves `5` not-live: the
 `Rem` filter strips every `(_, 5)` tag, including the just-added
@@ -52,7 +52,7 @@ example :
         5 :=
   add_then_remove_extinguishes init_st 5 1 2 0 0
 
-/-- **SPOT 4 — Add-wins through a non-trivial LCA.**
+/-- **SPOT 4: Add-wins through a non-trivial LCA.**
 
 LCA `l = do_ init_st (1, 0, Add 7)` already has `(1, 7)` live.
 Branch `a` adds `5` at ts = 2; branch `b` removes `7` at ts = 3.

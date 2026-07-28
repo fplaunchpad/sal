@@ -8,7 +8,7 @@ import Mathlib.Data.Prod.Lex
 import Mathlib.Data.List.MinMax
 
 /-!
-# FWW reservation register — payload arbitration, and what honesty cannot buy
+# FWW reservation register, payload arbitration, and what honesty cannot buy
 
 A register that can be **claimed once**: a seat reservation, a username, a
 coupon code. Sequentially, the first `claim` sets it and later claims are
@@ -19,23 +19,23 @@ minimum. This is the **positive complement** to the metadata-free kill-test
 not in the state is impossible; arbitration whose key IS in the state is a
 semilattice triviality. Since timestamps respect causality
 (`vis a b → a.1 < b.1`), a causally later claim can never displace an
-installed one — the min-rule only ever arbitrates between *concurrent*
+installed one: the min-rule only ever arbitrates between *concurrent*
 claims, and it must (keeping the locally-first claim would make the outcome
 delivery-order-dependent).
 
-The state is `WithTop (ℕ ×ₗ ℕ ×ₗ ℕ)` — `⊤` for "unset", otherwise the
-winning claim `(ts, replica, value)` under the lexicographic order — so the
+The state is `WithTop (ℕ ×ₗ ℕ ×ₗ ℕ)`, `⊤` for "unset", otherwise the
+winning claim `(ts, replica, value)` under the lexicographic order, so the
 entire convergence discharge is Mathlib's `min` algebra, and the safety
 characterization (`fww_version_min`) is `List.minimum`: **at every version
 of every reachable configuration, the register holds exactly the min-ts
 claim of its event set** (`⊤` iff the set is empty). No honesty hypothesis:
 folds of a semilattice are enumeration-free.
 
-The generation discipline exists (`fwwApplicable`: claim only when unset —
+The generation discipline exists (`fwwApplicable`: claim only when unset,
 what a well-behaved client checks) but note what it does **not** buy: two
 honest concurrent claimants both see `⊤` and both claim; each locally wins
 until the merge disabuses one. "Unset" is not stable under concurrent
-honest extension — contrast the bounded counter's own-slot slack, which is.
+honest extension. Contrast the bounded counter's own-slot slack, which is.
 A reservation is confirmed only at causal stability; a merge-based register
 is never a mutex. (Formal contract shape: `GenHonest FWW fwwApplicable`;
 no theorem consumes it, and none should.)
@@ -74,7 +74,7 @@ def fwwUpdate (s : FWWState) (e : Op FWWOp) : FWWState :=
   min s ↑(fwwClaim e)
 
 /-- Peepul-style three-way merge, degenerate: the state only ever moves
-down the semilattice, so the LCA slot is redundant — `min` of the branches. -/
+down the semilattice, so the LCA slot is redundant: `min` of the branches. -/
 def fwwMergeL (_l a b : FWWState) : FWWState := min a b
 
 noncomputable def FWW : ConditionedMRDTSig where
@@ -199,7 +199,7 @@ theorem fww_fold_minimum (ρ : List (Op FWWOp)) :
 
 open LabeledTS in
 /-- `GoodConfig3` for the register: the generic honest-reachability induction
-under the trivial contract (the Join is unconditional — the CD route). -/
+under the trivial contract (the Join is unconditional, the CD route). -/
 theorem fww_goodConfig3
     (C : Configuration FWW)
     (hReach : (labeledTS3 FWW).ReachableFrom (initConfig FWW trivial) C) :
@@ -214,7 +214,7 @@ open LabeledTS in
 every version of every reachable configuration**: it is a lower bound on all
 claims, it is attained by one of them, and it is unset exactly on the empty
 set. Deterministic first-writer-wins, with "first" arbitrated in Lamport
-time among concurrent claimants. No honesty hypothesis — semilattice folds
+time among concurrent claimants. No honesty hypothesis: semilattice folds
 are enumeration-free. -/
 theorem fww_version_min
     (C : Configuration FWW)
@@ -265,7 +265,7 @@ in its causal past. Contract shape: `GenHonest FWW fwwApplicable`.
 
 Deliberately, **no theorem consumes this**: "unset" is not stable under
 concurrent honest extension (two honest claimants both see `⊤`), so honesty
-buys no exclusivity — the min-timestamp payload arbitrates, and
+buys no exclusivity: the min-timestamp payload arbitrates, and
 `fww_version_min` holds without any honesty hypothesis. The check's value is
 client-side (don't waste a claim that will lose to a causally earlier one);
 exclusivity exists only after causal stability. Conditioning delivers safety

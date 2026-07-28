@@ -99,7 +99,7 @@ def listPermOf {α : Type} (π : List α) (E : Set α) : Prop :=
 `a` in `π`. Matches the paper's "π extends R".
 
 Note: `R` need not be transitive (Sal's `lo` is not), so we cannot use
-`List.Sorted` — we state the constraint elementwise via `List.Pairwise`. -/
+`List.Sorted`, we state the constraint elementwise via `List.Pairwise`. -/
 def respects {α : Type} (π : List α) (R : α → α → Prop) : Prop :=
   π.Pairwise (fun a b => ¬ R b a)
 
@@ -442,7 +442,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
 
   /-- **`cond-comm` lift (paper lin.tex §3.2, property `cond-comm`).**
 
-  The Sal paper assumes `cond-comm` holds at the convergence level —
+  The Sal paper assumes `cond-comm` holds at the convergence level,
   `cond_comm_base` is the 3-event base case, and this field is the
   semantic extension to arbitrary intervening events. The paper's
   convergence proof (appendix §A.1) invokes `cond-comm` directly to
@@ -453,7 +453,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   pairs, making the `rc o₁ o₂ = Fst_then_snd` premise unsatisfiable).
   For CRDTs with non-trivial rc, this needs to be verified from
   `cond_comm_base` + other VCs via induction on the intervening
-  sequence — a theorem the Sal paper treats as implicit and does not
+  sequence, a theorem the Sal paper treats as implicit and does not
   explicitly prove.
 
   The standalone `conditionallyCommute` def above captures this
@@ -472,7 +472,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   unchanged.
 
   This property is a fundamental lattice axiom that is NOT derivable
-  from the other 24 VCs — the VCs only constrain `merge` when both
+  from the other 24 VCs, the VCs only constrain `merge` when both
   arguments have at least one `update` applied.  The Sal paper treats
   this as implicit (init is the lattice bottom by definition), but the
   mechanization needs it as an explicit axiom. -/
@@ -530,7 +530,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
         D.merge (D.update (D.update a ol) o₁) (D.update b ol)
           = D.update (D.merge (D.update a ol) (D.update b ol)) o₁
 
-/-! ### Bridge theorem — base case -/
+/-! ### Bridge theorem: base case -/
 
 /-- The initial configuration is RA-linearizable: only replica `0` is
 active, its state is `σ₀`, and its event set is empty, so `π = []`
@@ -547,7 +547,7 @@ theorem initConfig_RA_lin (D : CRDTSig) : IsRALinearizable (initConfig D) := by
     · simpa [applySeq] using hN
   · simp [initConfig, hr] at hN
 
-/-! ### Bridge theorem — trivial-step cases
+/-! ### Bridge theorem: trivial-step cases
 
 These are factored as lemmas that take the *ingredients* of a step
 (equations about `N`, `L`, `vis`) rather than a `Step` hypothesis.
@@ -583,7 +583,7 @@ theorem RA_lin_preserved_createReplica
     have hlo : lo C' = lo C := by unfold lo; rw [hvis]
     rw [hlo]; exact hresp
 
-/-! ### Bridge theorem — Apply case -/
+/-! ### Bridge theorem: Apply case -/
 
 /-- **Monotonicity of `lo` under Apply.** If the new visibility equals
 the old plus a set of edges `(x, e)` for `x ∈ ev`, then on any pair
@@ -710,7 +710,7 @@ theorem RA_lin_preserved_apply
     exact hab (lo_shrink_under_apply hvis
       (h_fresh_in_pi b hb) (h_fresh_in_pi a ha) hlo')
 
-/-! ### Bridge theorem — Merge case + final assembly
+/-! ### Bridge theorem: Merge case + final assembly
 
 The Merge case and the top-level `ra_linearizable_of_vcs` live in
 `Sal/CRDTs/Metatheory/Merge_Linearization.lean`, since they depend on

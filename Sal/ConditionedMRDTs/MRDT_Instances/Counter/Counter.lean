@@ -19,9 +19,9 @@ open Classical
 /-! ## Counter -/
 
 /-- The counter MRDT: `mergeL l a b = a + b - l`. The LCA argument prevents
-double-counting — the mathematically canonical example of an MRDT whose merge
+double-counting, the mathematically canonical example of an MRDT whose merge
 *needs* the LCA. Its binary slice `merge a b = mergeL 0 a b = a + b` is the
-paper's CRDT collapse — and it is exactly this slice that breaks `lem_0op`. -/
+paper's CRDT collapse, and it is exactly this slice that breaks `lem_0op`. -/
 def Counter : ConditionedMRDTSig where
   State := Int
   dec_state := inferInstance
@@ -75,7 +75,7 @@ theorem Counter_updateVCs : UpdateVCs Counter.toCRDTSig := by
     rw [Counter_rc_either] at h_rc
     exact RcRes.noConfusion h_rc
 
-/-- The ternary core bundle for the counter — note `lem_0op3` holds exactly
+/-- The ternary core bundle for the counter: note `lem_0op3` holds exactly
 because the LCA argument absorbs the double count:
 `(a+1) + (b+1) - (l+1) = (a + b - l) + 1`. -/
 theorem Counter_coreVCs3 : CoreVCs3 Counter := by
@@ -98,7 +98,7 @@ theorem Counter_coreVCs3 : CoreVCs3 Counter := by
     have go : ∀ x y z : Int, y + 1 + z - x = y + z - x + 1 := by omega
     exact go _ _ _
 
-/-- The Counter satisfies the delta contract — the **group instance**
+/-- The Counter satisfies the delta contract, the **group instance**
 (`mergeL l a b = a + (b − l)`; deltas are translation-invariant). Note it
 satisfies neither `merge_idem` nor any lattice law: the binary CD route is
 closed to it, the ternary one is not. -/
@@ -116,7 +116,7 @@ theorem Counter_deltaVCs3 : DeltaVCs3 Counter := by
         x' + c' - m' + y' - l' = x' + y' - l' + c' - m' := by omega
     exact go l m x c y
 
-/-- G-Set satisfies the delta contract — the **lattice instance** (LCA-blind
+/-- G-Set satisfies the delta contract, the **lattice instance** (LCA-blind
 `mergeL` over an ACI join; the laws collapse to ACI consequences). -/
 theorem GSet_deltaVCs3 : DeltaVCs3 GSetCond := by
   constructor

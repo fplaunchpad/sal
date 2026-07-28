@@ -1,7 +1,7 @@
-// The runtime sync/gossip layer: the delta/op WIRE protocol (src/sync.js,
-// task #104 item 3) and the EVIDENCE-CERTIFICATE producer (frontier ->
-// stableCut -> certified compaction, src/frontier.js + Replica.compactStable,
-// task #106). One subsystem: the evidence frontier is fed by wire arrivals.
+// The runtime sync/gossip layer: the delta/op WIRE protocol (src/sync.js) and
+// the EVIDENCE-CERTIFICATE producer (frontier -> stableCut -> certified
+// compaction, src/frontier.js + Replica.compactStable). One subsystem: the
+// evidence frontier is fed by wire arrivals.
 //
 // (3a) delta-sync convergence + bounded payload   -- the wire, N peers, gossip
 // (3b) evidence correctness (refuse-then-fire)     -- the discriminating remove
@@ -61,11 +61,10 @@ test('delta-sync convergence: N peers gossip over the wire, converge to equal re
   // function of that round's ops (constant across rounds), while a whole-state
   // resync grows with the document. In steady state (second half, big doc) the
   // delta is well below the whole-state baseline, and the last round tighter.
-  // (Thresholds carry the honest SHA-40 content-id cost #108 unified onto: a
-  // 40-hex commit id + its parent refs cost more per wire commit than the old
-  // FNV base36 / "replica#seq" ids, so the ratio is higher than under the model
-  // hash, but the two STRUCTURAL claims stand -- the delta beats whole-state
-  // resync, and per-round it stays bounded by the ops, not the document.)
+  // (Thresholds account for the SHA-40 content-id cost: a 40-hex commit id +
+  // its parent refs cost more per wire commit, inflating the ratio, but the
+  // two STRUCTURAL claims stand -- the delta beats whole-state resync, and
+  // per-round it stays bounded by the ops, not the document.)
   const half = ROUNDS >> 1;
   const sum = (a, lo) => a.slice(lo).reduce((x, y) => x + y, 0);
   const dHalf = sum(perRoundDelta, half), bHalf = sum(perRoundBase, half);
@@ -107,13 +106,12 @@ test('wire delta is the difference, not the whole state; snapshot only for bulk 
 });
 
 // ------------------------------------------------ (3b) evidence correctness
-// The discriminating-remove / SettledAt countermodel at runtime level
-// (stability-vc-note.md section 2). Replica A wants to compact; replica C
-// (lagging) holds an op CONCURRENT with the cut that A has not absorbed. The
-// certificate is ABSENT -> compactStable REFUSES. Once C is heard from, the
-// certificate appears -> it FIRES, reads preserved. The FAIL companion forces
-// the OLD asserted compaction at the same point and shows it DIVERGES, proving
-// the not-heard breaker is load-bearing (matches settledAt_of_allHeard).
+// The discriminating-remove / SettledAt countermodel at runtime level.
+// Replica A wants to compact; replica C (lagging) holds an op CONCURRENT with
+// the cut that A has not absorbed. The certificate is ABSENT -> compactStable
+// REFUSES. Once C is heard from, the certificate appears -> it FIRES, reads
+// preserved. The FAIL companion forces the asserted compaction at the same
+// point and shows it DIVERGES, proving the not-heard breaker is load-bearing.
 
 /** Build the forked scenario in a fresh runtime; returns {rt,A,B,C}. After
  *  this: A = {10:x, 30:w, 40:y} (30 authored by B and absorbed), C = {10,20:z}
@@ -175,7 +173,7 @@ test('evidence correctness: compactStable REFUSES without the certificate, FIRES
 test('FAIL companion: the ASSERTED (uncertified) compaction at the same point DIVERGES', () => {
   const bad = forkedScenario(compactibleEmbedRGA);
   const ctrl = forkedScenario(compactibleEmbedRGA);
-  // Force the OLD asserted path with an OVER-BROAD cut: claim 10,30,40 settled
+  // Force the asserted path with an OVER-BROAD cut: claim 10,30,40 settled
   // while C's concurrent 20 is still in flight (unheard). This is exactly what
   // compactStable REFUSES above. Dense renumber of {30,40} shrinks their
   // deltas (20,30 -> 1,2), so C's frozen delta-10 z later sorts ABOVE them.
@@ -194,8 +192,8 @@ test('FAIL companion: the ASSERTED (uncertified) compaction at the same point DI
 // Twin runs: identical random head-sync gossip on two runtimes; twin[1] also
 // runs the CERTIFIED state GC (compactStable) at random points, twin[0] never
 // compacts. Per step every replica reads identically on both twins -- the
-// runtime witness that a certificate-gated compaction preserves reads (VC-S2 /
-// stability_reads_equal). BOTH certificate branches must be exercised: the GC
+// runtime witness that a certificate-gated compaction preserves reads. BOTH
+// certificate branches must be exercised: the GC
 // FIRES (certificate present) and REFUSES (not heard from everyone / stale
 // epoch / empty cut). Ops are generated from the compacting twin's own read
 // (honest clients) after asserting it equals the control twin's read.

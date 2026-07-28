@@ -375,7 +375,7 @@ theorem mvr_ra_linearizable3
     MVR_feasibleDeltaVCs3 MVR_cdVC3 C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

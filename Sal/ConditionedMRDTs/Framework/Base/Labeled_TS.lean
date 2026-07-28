@@ -54,7 +54,7 @@ def Reachable (T : LabeledTS) (s s' : T.State) : Prop :=
 /-- Given an `LTS` with a distinguished initial state, the set of reachable
 states is the image of `init` under `Reachable`. Most configurations in the
 Sal paper's developments are implicitly required to be reachable from the
-initial configuration — see `def:well-formed` in §3.2 of the Liittschwager
+initial configuration, see `def:well-formed` in §3.2 of the Liittschwager
 paper and the Sal paper's notion of configurations "reachable in some
 execution". -/
 def ReachableFrom (T : LabeledTS) (init : T.State) (s : T.State) : Prop :=

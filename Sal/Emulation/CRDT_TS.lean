@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Framework.Base.CRDT_TS
 
 /-!
-# Forwarding stub — content moved
+# Forwarding stub: content moved
 
 The CRDT transition-system core (`Configuration`, `lo`, `loOn`, `updateRep`,
 `IsCanonicalState`, `SatisfiesVCs`, …) now lives in the metatheory development

@@ -1,22 +1,22 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Witness
 
-/-! # Shesha — the coherence relation and the plan-order bridge
+/-! # Shesha: the coherence relation and the plan-order bridge
 
 The Shesha instance of the coherent-witness route
 (`Metatheory/WitnessCoherence.lean`):
 
-* `SCoh` — **same-anchor insert coherence**: two same-anchor insert events
+* `SCoh`, **same-anchor insert coherence**: two same-anchor insert events
   common to two witnesses keep their relative (`Before`) order. This is
   exactly the branch-agreement datum whose absence refutes the plain
   `W`-join (`Shesha_Presplice_Refuted.lean`): the display order of
   concurrent same-anchor inserts is a `loOn`-free choice that survives in
   the state, so the three slots must inherit it coherently.
 * the three `K`-bookkeeping facts (`scoh_refl`, `scoh_ext`, `scoh_sub`);
-* `anchIds_planF_row` — **the plan-order bridge**: the `p`-anchored ids of
+* `anchIds_planF_row`, **the plan-order bridge**: the `p`-anchored ids of
   a WF forest's plan are `p`'s row reversed (the plan builds rows by
   head-insertion). Through `anchIds_sublist2_before` this converts row
   order of the pre-splice forest into `Before` order of the assembled
-  witness — how the join hook discharges its output-coherence obligation. -/
+  witness, how the join hook discharges its output-coherence obligation. -/
 
 namespace Sal.ConditionedMRDTs
 
@@ -31,7 +31,7 @@ theorem before_append_left {γ : Type} {l l' : List γ} {a b : γ}
     List.mem_append_left _ hb⟩
 
 /-- **Same-anchor insert coherence**: same-anchor insert events common to
-both lists keep their relative order (one direction suffices — see
+both lists keep their relative order (one direction suffices, see
 `before_asymm`). -/
 def SCoh (ρ σ : List (Op SAppOp)) : Prop :=
   ∀ (p tx ty : Nat) (rx ry : Replica),
@@ -218,7 +218,7 @@ theorem forest_ext {S₁ S₂ : St} (hwf₁ : WF S₁) (hwf₂ : WF S₂)
 
 /-- **The collapse-equation reduction**: to prove
 `dropF D T = M` for a WF pre-splice forest `T` and a WF target `M`, it
-suffices to match the rows — by `row_dropF`, fronts against `M`'s rows. -/
+suffices to match the rows, by `row_dropF`, fronts against `M`'s rows. -/
 theorem dropF_eq_of_rows {T M : St} (hwfT : WF T) (hwfM : WF M)
     (D : Nat → Bool)
     (hrows : ∀ p, row (dropF D T) p = row M p) : dropF D T = M :=

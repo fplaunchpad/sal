@@ -98,7 +98,7 @@ OR a Lean-`Eq` identity at that state.
 `commutes ↦ commutesOn`). -/
 
 /-- **Generic generation dependency.**  `appliesDependsOn D e₂ e₁` : "applying
-`e₁` can change whether `e₂` is applicable" — there is a state where `e₂`'s
+`e₁` can change whether `e₂` is applicable": there is a state where `e₂`'s
 applicability differs before vs. after `e₁`.
 
 This is the `ConditionedMRDTSig`-level generalization of the RGA-syntactic
@@ -175,7 +175,7 @@ theorem loOn_imp_loOnA (D : ConditionedMRDTSig) (C : Sal.Emulation.Configuration
     rintro ⟨e₃, he₃, hve, hnco⟩
     exact habs ⟨e₃, he₃, hve, fun hc => hnco (commutes_imp_commutesOn D hc)⟩
 
-/-- A `loOnA`-respecting permutation respects the unconditioned `loOn` — the
+/-- A `loOnA`-respecting permutation respects the unconditioned `loOn`, the
 contrapositive of `loOn_imp_loOnA`, lifted to `List.Pairwise`. -/
 theorem respects_loOn_of_loOnA (D : ConditionedMRDTSig) (C : Sal.Emulation.Configuration D.toCRDTSig)
     (ev : Set (Op D.AppOp))

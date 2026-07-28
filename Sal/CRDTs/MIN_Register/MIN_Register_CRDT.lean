@@ -20,7 +20,7 @@ close by sal's DG stage.
 /-- Σ = single ℕ. -/
 @[simp] abbrev concrete_st := ℕ
 
-/-- Initial state: 0. Note: with `min` on ℕ this is absorbing —
+/-- Initial state: 0. Note: with `min` on ℕ this is absorbing,
 the state stays 0 forever, which is the semantic-degeneracy flagged
 in the module docstring. -/
 @[simp]

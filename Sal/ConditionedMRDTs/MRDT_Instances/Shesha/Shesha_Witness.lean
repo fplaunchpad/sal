@@ -1,21 +1,21 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Hook_Facts
 
-/-! # Shesha — the witness assembly
+/-! # Shesha: the witness assembly
 
-Given a **pre-splice forest** for the union of two branches' events — a
+Given a **pre-splice forest** for the union of two branches' events, a
 WF anchored forest whose rows are exactly the union's inserts, ordered
-against visibility — this file assembles the canonical witness
+against visibility, this file assembles the canonical witness
 `ρ⋆ = (plan of the forest, as events) ++ (deletes, ascending timestamps)`
 and discharges all four `IsCanonicalStateW` obligations:
 
-* `listPermOf` — the plan realizes each insert of the union exactly once
+* `listPermOf`, the plan realizes each insert of the union exactly once
   (`row_mem_plan` / `planF_mem_row`), the delete block enumerates the
   union's deletes;
-* `respects loOn` — inserts by `plan_pw` with the event-level kernel
+* `respects loOn`, inserts by `plan_pw` with the event-level kernel
   (§2); insert–delete pairs by the honesty exclusions; delete–delete
   pairs by ascending timestamps + `causal_mono`;
-* `SheshaEff` — the plan is effective (`effS_planF`), deletes are free;
-* the fold — `fold_planF` builds the forest, `steps_dels` collapses it:
+* `SheshaEff`, the plan is effective (`effS_planF`), deletes are free;
+* the fold, `fold_planF` builds the forest, `steps_dels` collapses it:
   the fold is `dropF (deleted) T`.
 
 What remains for the join hook is **only** the existence of the
@@ -324,7 +324,7 @@ theorem plan_kernel {C : Configuration SheshaD} {E : Set (Op SAppOp)}
 
 open Classical in
 /-- **The witness assembly**, explicit-witness form: a pre-splice forest
-for `E` — WF, rows = `E`'s inserts, row order against visibility —
+for `E` (WF, rows = `E`'s inserts, row order against visibility)
 realizes the state `dropF (deleted E) T` as a `W`-canonical state of `E`
 via the witness `plan of the forest ++ deletes ascending`. -/
 theorem presplice_canonical_wit {C : Configuration SheshaD}
@@ -488,7 +488,7 @@ theorem presplice_canonical {C : Configuration SheshaD}
 
 /-! ## §7 slot alignment: towards the M0–M2 hypotheses at the join
 
-The live set of a normal-form slot is `inserted ∖ deleted` — pure event
+The live set of a normal-form slot is `inserted ∖ deleted`, pure event
 bookkeeping. With timestamp uniqueness this realigns the three slots:
 common liveness (`ModelOK.common`) and the anchor-chain closure that
 `LRowsOK` needs. -/
@@ -512,7 +512,7 @@ theorem read_nf {T : Shesha.St} {E : Set (Op SAppOp)}
     rfl
 
 /-- **Common liveness** (`ModelOK.common`-shape): an id live in both
-branches is live at the LCA — its unique insert is common past, and no
+branches is live at the LCA, its unique insert is common past, and no
 common delete targets it. -/
 theorem nf_common {C : Configuration SheshaD}
     {ev₁ ev₂ : Set (Op SAppOp)}
@@ -531,7 +531,7 @@ theorem nf_common {C : Configuration SheshaD}
   exact hd₁ ⟨t, r, hm.1⟩
 
 /-- **Anchor lift**: a common insert's (nonroot) anchor is itself a
-common insert — the anchor's insert is visible and non-commuting, so
+common insert, the anchor's insert is visible and non-commuting, so
 both closure hypotheses pull it in. -/
 theorem anchor_lift {C : Configuration SheshaD} (hH : SheshaHonest C)
     {ev₁ ev₂ : Set (Op SAppOp)}
@@ -581,7 +581,7 @@ theorem row_step {C : Configuration SheshaD} (hH : SheshaHonest C)
     exact hcm
 
 /-- **Chain lift**: climbing a dead-descent chain of a branch forest from
-a common insert reaches the root or a common insert — the intermediates
+a common insert reaches the root or a common insert, the intermediates
 are deleted (hence nonzero, hence anchored inserts) and the closure pulls
 each anchor into the common past. -/
 theorem chain_lift {C : Configuration SheshaD} (hH : SheshaHonest C)
@@ -608,7 +608,7 @@ theorem chain_lift {C : Configuration SheshaD} (hH : SheshaHonest C)
 
 open Classical in
 /-- **`ModelOK` at the join**: the three normal-form slots satisfy the
-M0–M2 model hypotheses — well-formed, with common liveness. -/
+M0–M2 model hypotheses, well-formed, with common liveness. -/
 theorem slots_modelOK {C : Configuration SheshaD}
     {ev₁ ev₂ : Set (Op SAppOp)}
     (hsub₁ : ∀ a ∈ ev₁, a ∈ C.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C.events)
@@ -628,7 +628,7 @@ theorem slots_modelOK {C : Configuration SheshaD}
 
 open Classical in
 /-- **`LRowsOK` at the join**: in a branch slot, an LCA-live node's row
-owner is the root or LCA-live — via the dead-descent chain and the
+owner is the root or LCA-live, via the dead-descent chain and the
 anchor-chain closure. -/
 theorem slots_LRowsOK {C : Configuration SheshaD} (hH : SheshaHonest C)
     {ev₁ ev₂ : Set (Op SAppOp)}

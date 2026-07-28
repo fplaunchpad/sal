@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # MAX_Map (CRDT) — SPOTs -/
+/-! # MAX_Map (CRDT): SPOTs -/
 
 namespace MAX_Map_SPOT
 

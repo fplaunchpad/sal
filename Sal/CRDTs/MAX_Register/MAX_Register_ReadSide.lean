@@ -4,7 +4,7 @@ set_option linter.mathlibStandardSet false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # MAX_Register (CRDT) — read-side projection
+/-! # MAX_Register (CRDT): read-side projection
 
 The 24 VCs prove the natural-number state converges under pointwise
 max. The read is the state itself; `Write v` raises (or keeps) the

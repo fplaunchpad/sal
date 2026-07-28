@@ -35,7 +35,7 @@ exists a linearization of updates causally visible to `r` at that
 point whose application to `D.init` yields a state whose `D.query`
 response is `v`.
 
-Formally this is a predicate on traces, not configurations — exactly
+Formally this is a predicate on traces, not configurations, exactly
 the form required for Liittschwager's trace-transfer theorem. -/
 def OpIsRALinearizable (D : OpCRDTSig)
     (_hb : D.Msg → D.Msg → Prop)

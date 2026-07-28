@@ -13,14 +13,14 @@ the epoch composition live in
 `Sal/ConditionedMRDTs/MRDT_Instances/EmbedRGA/EmbedRGA_RunTable.lean`.
 
 The state, at kernel level, is the **list of live birth chains** (`List ℕ`
-labels — the one-sided model, where the note's side condition 3 is vacuous).
+labels, the one-sided model, where the note's side condition 3 is vacuous).
 The **kept tree** is the live chains plus their dead ancestors = the nonempty
 prefixes of live chains (tombstone-freedom unchanged: everything else is
 gone). An edge into `c` is **fusible** when `c` is the unique kept child of
 its parent, its label is `1`, and it has its parent's liveness; a **run** is a
 maximal fusible chain. No stability or honest-delivery hypothesis appears
 anywhere in this file: every theorem is a state-level fact about a
-representation change — the formal content of the measured **no-stability-gate**
+representation change, the formal content of the measured **no-stability-gate**
 finding (the settled-cut hypothesis appears exactly once, in T-epoch, in the
 instance file).
 -/
@@ -89,8 +89,8 @@ theorem kept_of_live {L : List (List ℕ)} {c : List ℕ}
 /-! ## §1  Fusible edges, heads, and the run-ancestor walk
 
 The note §2: the edge from `p` to its child `c` is fusible when (1) `c` is the
-unique kept child of `p`, (2) `delta(c) = 1`, (3) `side(c) = R` — vacuous
-one-sided — and (4) `live(c) = live(p)`. Edges out of the root sentinel are
+unique kept child of `p`, (2) `delta(c) = 1`, (3) `side(c) = R`, vacuous
+one-sided, and (4) `live(c) = live(p)`. Edges out of the root sentinel are
 never fusible (the parent must itself be kept). -/
 
 /-- Fusibility of the edge into `c` (from `c.dropLast`). -/
@@ -142,7 +142,7 @@ theorem fusible_concat {L : List (List ℕ)} {c : List ℕ}
     simp only [fusible, Bool.and_eq_true, beq_iff_eq, List.getLastD_concat] at h
     rw [List.dropLast_concat, h.1.1.2]
 
-/-- A head: a kept node whose incoming edge is not fusible — the first member
+/-- A head: a kept node whose incoming edge is not fusible, the first member
 of its run. -/
 def isHead (L : List (List ℕ)) (c : List ℕ) : Bool :=
   decide (c ∈ keptL L) && !fusible L c
@@ -247,7 +247,7 @@ theorem headOf_within {L : List (List ℕ)} {c p h : List ℕ}
       subst this
       exact headOf_of_not_fusible (Bool.eq_false_iff.mpr hf)
 
-/-! ## §2  T-tail — the tail-attachment lemma
+/-! ## §2  T-tail: the tail-attachment lemma
 
 The note §3, the load-bearing discovery: **in the canonical table, every entry
 attaches at its parent entry's last member.** Kernel form: a head's parent
@@ -282,7 +282,7 @@ def runMembers (L : List (List ℕ)) (h : List ℕ) : List (List ℕ) :=
 /-- The run's length (the header's `length` field). -/
 def lenOf (L : List (List ℕ)) (h : List ℕ) : ℕ := (runMembers L h).length
 
-/-- The run's last member — where every attachment sits (T-tail). -/
+/-- The run's last member, where every attachment sits (T-tail). -/
 def tailOf (L : List (List ℕ)) (h : List ℕ) : List ℕ :=
   h ++ List.replicate (lenOf L h - 1) 1
 
@@ -454,7 +454,7 @@ theorem tail_succ_not_fusible {L : List (List ℕ)} {h : List ℕ}
       exact absurd (runMember_offset_lt hmem) (by omega)
 
 /-- **T-tail, consequence (a)**: a head's parent node is the *tail* of the
-parent run — the `parent offset` header field is derivable (parent length − 1),
+parent run, the `parent offset` header field is derivable (parent length − 1),
 exactly the note §3's accounting remark. -/
 theorem head_parent_is_tail {L : List (List ℕ)} {h : List ℕ}
     (hh : isHead L h = true) (hp : h.dropLast ∈ keptL L) :
@@ -499,13 +499,13 @@ theorem run_liveness_uniform {L : List (List ℕ)} {h c : List ℕ}
   rw [hform]
   exact run_liveness_uniform_aux _ (hform ▸ hc)
 
-/-! ## §4  T-repr — the indexed run table and the representation iso
+/-! ## §4  T-repr: the indexed run table and the representation iso
 
-The honest representation: an entry stores the note §2's accounting header —
-`(liveness, parent entry ref, offset in parent, head delta, length)` — and
+The honest representation: an entry stores the note §2's accounting header,
+`(liveness, parent entry ref, offset in parent, head delta, length)`, and
 NOT the chain. Chains are recovered by following parent refs. **Statement
 hygiene** (note §10): the iso is over **labels and liveness only** (the side
-channel is vacuous in the one-sided kernel), NOT timestamps — after one
+channel is vacuous in the one-sided kernel), NOT timestamps, after one
 re-coding epoch labels are rank ordinals that deliberately forget time, so
 an iso claiming timestamps would be false post-epoch. -/
 
@@ -522,8 +522,8 @@ deriving DecidableEq, Repr
 /-- The run table: entries in the canonical (short-lex of heads) order. -/
 abbrev Table := List RTEntry
 
-/-- Canonical enumeration order on heads: shorter first — so parent entries
-precede their children — and `keyLt`-lexicographic within a length. -/
+/-- Canonical enumeration order on heads: shorter first, so parent entries
+precede their children, and `keyLt`-lexicographic within a length. -/
 def hLt (u v : List ℕ) : Bool :=
   decide (u.length < v.length)
     || (decide (u.length = v.length) && keyLt u v)
@@ -645,7 +645,7 @@ def entryHead (heads : List (List ℕ)) (e : RTEntry) : List ℕ :=
 def headsOf (T : Table) : List (List ℕ) :=
   T.foldl (fun acc e => acc ++ [entryHead acc e]) []
 
-/-- The abstraction: the live chains stored in the table — each live entry
+/-- The abstraction: the live chains stored in the table, each live entry
 contributes its members, head chain extended by the offset in `1`s. -/
 def stateOf (T : Table) : List (List ℕ) :=
   ((headsOf T).zip T).flatMap (fun p =>
@@ -843,8 +843,8 @@ theorem nodup_flatMap_of_disjoint {α β : Type} {l : List α} {f : α → List 
           (hal.1 a' ha') b hb hba'
 
 /-- **T-repr, losslessness direction (`stateOf ∘ tableOf = id`)**: from the
-table alone — parent refs, offsets, deltas, lengths, liveness flags; no
-chains, no timestamps — the exact set of live label chains is recovered.
+table alone, parent refs, offsets, deltas, lengths, liveness flags; no
+chains, no timestamps, the exact set of live label chains is recovered.
 This is the note's zero-tolerance reconstruction gate as a theorem, and the
 content of the iso: **labels and liveness** (the side channel is vacuously
 `R` one-sided; timestamps are deliberately not claimed, since post-epoch
@@ -910,7 +910,7 @@ theorem stateOf_tableOf (L : List (List ℕ)) (hnil : [] ∉ L) :
 
 /-! ### Canonicity: the other direction of the iso
 
-`Canonical` is the note §10's characterization of the canonical table —
+`Canonical` is the note §10's characterization of the canonical table,
 maximal fusible chains (`no_fuse`: a lone delta-1 same-liveness attachment
 would have been coalesced; D4's forced inverse rule as a *hypothesis* the
 theorem cannot do without), tail attachment (`par_tail`, as a field
@@ -1065,7 +1065,7 @@ theorem dropLast_append_replicate_pos {h : List ℕ} {r : ℕ} (hr : 1 ≤ r) :
   rw [dropLast_append_replicate_succ]
   simp
 
-/-- **Member-chain uniqueness** — the engine of canonicity. A kept chain
+/-- **Member-chain uniqueness**: the engine of canonicity. A kept chain
 decodes to a unique `(entry, offset)` address. The killing blow in the
 overlap case is *tail attachment* (`par_tail`): a delta-1 child hangs at its
 parent's tail, so a member sitting past the tail would exceed the parent's
@@ -1581,7 +1581,7 @@ theorem hLt_sorted_ext : ∀ {l l' : List (List ℕ)},
       rw [hLt_sorted_ext hxs hys htails]
 
 /-- The canonical head enumeration of the recovered state IS the table's
-recovered head sequence — order included. -/
+recovered head sequence, order included. -/
 theorem headsList_stateOf {T : Table} (hC : Canonical T) :
     headsList (stateOf T) = headsOf T := by
   refine hLt_sorted_ext (sorted_headsList _) hC.sorted ?_
@@ -1602,8 +1602,8 @@ theorem RTEntry.ext' {e1 e2 : RTEntry} (h1 : e1.par = e2.par)
   cases e1; cases e2; simp_all
 
 /-- **T-repr, canonicity direction (`tableOf ∘ stateOf = id`)**: a canonical
-table — maximal fusible chains (`no_fuse`), tail attachment (`par_tail`),
-kept leaves live, canonical order — is recovered *exactly*, field for field,
+table, maximal fusible chains (`no_fuse`), tail attachment (`par_tail`),
+kept leaves live, canonical order, is recovered *exactly*, field for field,
 from the state it denotes. Together with `stateOf_tableOf` this is the
 representation iso of the note §10, over labels and liveness. Without
 `no_fuse` the theorem is false: a run split in two re-canonicalizes to ONE
@@ -1678,15 +1678,15 @@ theorem tableOf_stateOf {T : Table} (hC : Canonical T) :
   · -- len
     exact lenOf_stateOf hC hi
 
-/-! ## §5  T-cmp — the two-case contracted comparator
+/-! ## §5  T-cmp: the two-case contracted comparator
 
 The Python `make_cmp`, one-sided: walk the two entry chains to the first
 difference. Same entry: offset order. One chain a prefix of the other:
 ancestor entry first (sound because, by **T-tail**, the descendant exits the
-ancestor's run at its tail, above every member — case A). Two branch entries
+ancestor's run at its tail, above every member, case A). Two branch entries
 at one divergence node: larger label first (case B; the divergence node's
 children are distinct kept children, so *neither* branch edge is fusible and
-both branch heads sit in the chains — the two-case structure is total). The
+both branch heads sit in the chains, the two-case structure is total). The
 `(ts, agent)` tie oracle of the Python rides in the labels: at kernel level
 distinct siblings have distinct labels, exactly as the chain comparator
 `chainBefore` consumes them. -/
@@ -2037,7 +2037,7 @@ theorem cmpTable_iff_chainBefore {L : List (List ℕ)} {x y : List ℕ}
   · exact fun hb => (cmpTable_of_chainBefore hx hy hb).1
 
 /-- **T-cmp**: the comparator over the contracted run tree equals the fold's
-key order `keyLt` on the immutable coordinates — parametric in the ordered
+key order `keyLt` on the immutable coordinates, parametric in the ordered
 prefix code, with the label order standing where the Python's `(ts, agent)`
 tie oracle rides (neither representation encodes it; the labels carry it on
 both sides identically). -/
@@ -2061,12 +2061,12 @@ theorem cmpTable_eq_keyLt (Γ : OrderedPrefixCode) {L : List (List ℕ)}
           (Ne.symm hne)).mpr hb
         rw [Sal.EmbedRGA.keyLt_asymm this]
 
-/-! ## §6  T-walk — the structural walk is the display
+/-! ## §6  T-walk: the structural walk is the display
 
 One-sided walk (Python `table_walk`): an entry emits its live members in
 offset order, then its attachment subtrees at the tail, newest (largest
-label) first. The partition argument — everything below a run either sits in
-the run or exits at its *tail* — is T-tail again. -/
+label) first. The partition argument, everything below a run either sits in
+the run or exits at its *tail*, is T-tail again. -/
 
 theorem le_foldr_max : ∀ (l : List ℕ) (x : ℕ), x ∈ l → x ≤ l.foldr max 0
   | [], x, hx => absurd hx (List.not_mem_nil)
@@ -2520,7 +2520,7 @@ theorem mem_walk {L : List (List ℕ)} (hnil : [] ∉ L) {c : List ℕ} :
 
 /-- **T-walk, packaged** (walk = query): the structural walk of the run
 table is a duplicate-free enumeration of exactly the live chains, pairwise
-in display (`chainBefore`) order — which pins it to THE display sequence,
+in display (`chainBefore`) order, which pins it to THE display sequence,
 strict orders having unique sorted enumerations. No stability hypothesis. -/
 theorem walk_display (L : List (List ℕ)) (hnil : [] ∉ L) :
     (walk L).Nodup ∧ (∀ c, c ∈ walk L ↔ c ∈ L)
@@ -2528,7 +2528,7 @@ theorem walk_display (L : List (List ℕ)) (hnil : [] ∉ L) :
   ⟨walk_nodup L, fun _ => mem_walk hnil, walk_pairwise L⟩
 
 /-- **T-walk, key form**: the walk is descending in `keyLt` on the coded
-coordinates — the exact sort order of the fold's document — for any ordered
+coordinates, the exact sort order of the fold's document, for any ordered
 prefix code. -/
 theorem walk_pairwise_keyLt (Γ : OrderedPrefixCode) {L : List (List ℕ)}
     (hpos : ∀ l ∈ L, PosChain l) (hnil : [] ∉ L) :
@@ -2544,14 +2544,14 @@ theorem walk_pairwise_keyLt (Γ : OrderedPrefixCode) {L : List (List ℕ)}
       (fun h => hnil (h ▸ (mem_walk hnil |>.mp h2))))
   exact Sal.EmbedRGA.chainBefore_display Γ hp1 hp2 hb
 
-/-! ## §7  T-mut — simulation of the mutation rules
+/-! ## §7  T-mut: simulation of the mutation rules
 
 The table is a **function of the live-chain set** (`tableOf_congr`): that is
 the merge rule (a merge delivers the union of event sets, and the union's
-table is the rebuild — no order or arrival dependence), and it is what makes
+table is the rebuild, no order or arrival dependence), and it is what makes
 every other rule statable set-wise. The typing rule (`tableOf_insert_extend`)
 is proved generically: extending a childless live node by a delta-1 child
-bumps ONE `len` field — O(1) table work for a keystroke. The remaining rules
+bumps ONE `len` field, O(1) table work for a keystroke. The remaining rules
 (mid-run split, the delete liveness split, coalesce as the forced
 delete-inverse, vanished-anchor materialization) are pinned by the instance
 SPOTs (D1–D5 shapes), their generic perturbation lemmas live in §7¼, and
@@ -2643,8 +2643,8 @@ theorem headsList_congr {L L' : List (List ℕ)}
   rw [mem_headsList, mem_headsList, isHead_congr hmem]
 
 /-- **T-mut (merge): the table is a function of the live-chain set.** Two
-states with the same live chains — a merge's union of event sets however
-delivered, in whatever order — compile to the *identical* canonical table.
+states with the same live chains, a merge's union of event sets however
+delivered, in whatever order, compile to the *identical* canonical table.
 This is the incremental-equals-canonical PBT gate, generically. -/
 theorem tableOf_congr {L L' : List (List ℕ)}
     (hmem : ∀ c, c ∈ L ↔ c ∈ L') : tableOf L = tableOf L' := by
@@ -2924,7 +2924,7 @@ theorem extend_lenOf {h : List ℕ} (hh : isHead L h = true) :
 include ha hnil hchildless in
 /-- **T-mut (typing / insert extends a run)**: appending a delta-1 child to
 a childless live node re-canonicalizes to the SAME table with ONE `len`
-field bumped — the coalesce-after-attach path, O(1) table work per
+field bumped, the coalesce-after-attach path, O(1) table work per
 keystroke. The other insert shape (anchor interior or label ≠ 1, the mid-run
 split / new-entry rule) and the delete family are pinned concretely by the
 instance SPOTs and closed generically in §7⅜ (D1 `tableOf_insert_split`,
@@ -2986,7 +2986,7 @@ theorem tableOf_insert_extend :
 
 end InsertExtend
 
-/-! ## §7¼  T-mut — the four remaining mutation rules, as generic perturbations
+/-! ## §7¼  T-mut: the four remaining mutation rules, as generic perturbations
 
 `tableOf_insert_extend` (§7) is the happy insert path (childless live anchor,
 `delta = 1`: coalesce-after-attach, one `len` bump). The four rules that the
@@ -3012,7 +3012,7 @@ theorem mem_keptL_snoc {L : List (List ℕ)} {w x : List ℕ} :
     · exact ⟨hne, l, List.mem_append_left _ hl, hp⟩
     · exact ⟨hne, w, List.mem_append_right _ (by simp), hp⟩
 
-/-! ### D2 — delete of a node with kept children: the liveness split
+/-! ### D2: delete of a node with kept children: the liveness split
 
 Deleting `x` (which still has a kept descendant) leaves the kept tree
 untouched (`delete_keptL_eq`) but flips `x` dead, breaking fusibility on both
@@ -3056,7 +3056,7 @@ theorem delete_x_dead : x ∉ L' := fun hm => ((hmem' x).mp hm).2 rfl
 
 include hxne hmem' in
 /-- **D2, the run breaks *before* `x`**: with `x` dead and its (live) parent
-still live, `x`'s incoming edge is no longer fusible — `x` becomes a head. -/
+still live, `x`'s incoming edge is no longer fusible, `x` becomes a head. -/
 theorem delete_fusible_x_false (hpar : x.dropLast ∈ L) :
     fusible L' x = false := by
   cases hf : fusible L' x with
@@ -3074,7 +3074,7 @@ theorem delete_fusible_x_false (hpar : x.dropLast ∈ L) :
 
 include hmem' in
 /-- **D2, the run breaks *after* `x`**: `x`'s (live) run successor loses its
-fusible edge into the now-dead `x` — a second head. -/
+fusible edge into the now-dead `x`, a second head. -/
 theorem delete_fusible_succ_false {e : ℕ} (hsucc : x ++ [e] ∈ L) :
     fusible L' (x ++ [e]) = false := by
   cases hf : fusible L' (x ++ [e]) with
@@ -3090,7 +3090,7 @@ theorem delete_fusible_succ_false {e : ℕ} (hsucc : x ++ [e] ∈ L) :
 
 end DeleteLiveness
 
-/-! ### D1 — concurrent insert at an interior node: the mid-run split
+/-! ### D1: concurrent insert at an interior node: the mid-run split
 
 Anchoring a second child `a ++ [d]` (`d ≠ 1`) at a node `a` that already has a
 run successor `a ++ [1]` turns `a` into a branch point: **both** children
@@ -3123,7 +3123,7 @@ theorem split_new_isHead : isHead (L ++ [a ++ [d]]) (a ++ [d]) = true := by
 
 include hsucc hd in
 /-- **D1, the former run successor becomes a head**: `a` now has two kept
-children, so `a ++ [1]` is no longer `a`'s unique kept child — the run splits
+children, so `a ++ [1]` is no longer `a`'s unique kept child, the run splits
 here. -/
 theorem split_succ_isHead : isHead (L ++ [a ++ [d]]) (a ++ [1]) = true := by
   refine isHead_of_kept_not_fusible (split_succ_kept hsucc) ?_
@@ -3140,12 +3140,12 @@ theorem split_succ_isHead : isHead (L ++ [a ++ [d]]) (a ++ [1]) = true := by
 
 end MidRunSplit
 
-/-! ### D5 — delivery under a vanished anchor: materialization
+/-! ### D5: delivery under a vanished anchor: materialization
 
 An op delivered against an anchor `m` that vanished locally (deleted while
 childless, so `m ∉ keptL L`) carries `m`'s coordinate. Attaching the op's
 chain `m ++ [d]` re-materializes `m` as **dead** kept structure: `m` becomes
-kept again (`materialize_kept`) yet is not live (`materialize_dead`) — the
+kept again (`materialize_kept`) yet is not live (`materialize_dead`), the
 run-table cost of tombstone-freedom, paid with information the op carries
 (SPOT `spot_d5_materialize`). -/
 
@@ -3168,7 +3168,7 @@ theorem materialize_dead : m ∉ (L ++ [m ++ [d]]) := by
 
 end Materialize
 
-/-! ### D4 — deleting the interloper re-coalesces: the FORCED delete-inverse
+/-! ### D4: deleting the interloper re-coalesces: the FORCED delete-inverse
 
 The inverse of D1, and the finding the note flags a paper proof would hand-wave
 (§10): removing the childless interloper `a ++ [d]` makes `a ++ [1]` `a`'s
@@ -3226,7 +3226,7 @@ theorem coalesce_keptL (c : List ℕ) :
 
 include hane hd hleaf hsucc hlv honly hmem' in
 /-- **D4, the edge re-fuses**: after the delete, `a ++ [1]`'s incoming edge is
-fusible again — the coalesce. (In the pre-delete state it was split, D1.) -/
+fusible again, the coalesce. (In the pre-delete state it was split, D1.) -/
 theorem coalesce_restored : fusible L' (a ++ [1]) = true := by
   have hkiff := coalesce_keptL (L := L) (L' := L') hd hleaf hsucc hmem'
   have hane_d : a ≠ a ++ [d] := fun heq => by
@@ -3253,7 +3253,7 @@ theorem coalesce_restored : fusible L' (a ++ [1]) = true := by
 
 end Coalesce
 
-/-! ## §7⅜  T-mut, closed equations — the four rules as explicit table rewrites
+/-! ## §7⅜  T-mut, closed equations: the four rules as explicit table rewrites
 
 Each §7¼ rule is promoted here to a closed-form `tableOf` equation in the
 style of `tableOf_insert_extend`: the table after the mutation as an explicit
@@ -3261,7 +3261,7 @@ function of pre-mutation data (`headsList L`, `entryOfHead L`, `headOf L`,
 `lenOf L`). New heads enter by sorted insertion (`mergeSort hLe`), removed
 heads leave by `filter`, old entries keep their fields except the announced
 `par` rehoming and `len` split/merge, and parent references are re-indexed by
-`idxOf` into the new enumeration — itself closed, being the equation's own
+`idxOf` into the new enumeration, itself closed, being the equation's own
 head list. No stability or honesty hypothesis anywhere. -/
 
 /-- `mergeSort hLe` of a `Nodup` list is strictly `hLt`-sorted. -/
@@ -3313,15 +3313,15 @@ theorem lenOf_eq_of_iff {L' : List (List ℕ)} {h : List ℕ} {n : ℕ}
   have := hperm.length_eq
   rw [lenOf, this, List.length_map, List.length_range]
 
-/-! ### D5, closed — the directed vanished-anchor materialization
+/-! ### D5, closed: the directed vanished-anchor materialization
 
 The directed D5 shape (`spot_d5_materialize`): the anchor `m` vanished while
 its parent `m.dropLast` is a live, childless kept node. Delivering `m ++ [d]`
 re-materializes `m` as a DEAD singleton entry plus the live `m ++ [d]`
 singleton below it; every old entry keeps its fields, parent references
-re-indexed. (The general vanished-PATH shape — a whole dead spine
+re-indexed. (The general vanished-PATH shape, a whole dead spine
 re-materializing, splitting at non-`1` labels, plus a possible mid-run split
-at the re-attachment point — is a genuine cascade: it is exactly the
+at the re-attachment point, is a genuine cascade: it is exactly the
 composite of this rule applied once per vanished label with D1-shaped splits,
 and does not admit a single closed equation.) -/
 
@@ -3635,8 +3635,8 @@ theorem mat_headsList :
 include hnil hpar hchildless in
 /-- **D5, closed (directed materialization)**: delivering `m ++ [d]` under
 the vanished anchor `m` (live childless parent) re-canonicalizes to the old
-table with TWO singleton entries inserted at their sorted head positions —
-the DEAD materialized anchor `m` and the live record below it — and parent
+table with TWO singleton entries inserted at their sorted head positions,
+the DEAD materialized anchor `m` and the live record below it, and parent
 references re-indexed. A closed equation: every field on the right is
 pre-mutation data. -/
 theorem tableOf_materialize :
@@ -3759,7 +3759,7 @@ theorem replicate_pad_prefix_le {g : List ℕ} {i k : ℕ}
   simp only [List.length_append, List.length_replicate] at this
   omega
 
-/-! ### D1, closed — the mid-run split
+/-! ### D1, closed: the mid-run split
 
 The D1 shape (`spot_d1_split`): a fresh chain `a ++ [d]` lands at an anchor
 `a` whose run successor `a ++ [1]` is fused (`a` is interior or the pre-tail
@@ -4202,8 +4202,8 @@ include hfs hfresh in
 /-- **D1, closed (the mid-run split)**: delivering the fresh `a ++ [d]` at an
 anchor whose run successor is fused re-canonicalizes to the old table with
 the anchor's run CUT at the anchor (`len` becomes offset + 1), TWO new
-entries inserted at their sorted positions — the re-headed suffix `a ++ [1]`
-and the `a ++ [d]` singleton, both attached at the anchor — and every entry
+entries inserted at their sorted positions, the re-headed suffix `a ++ [1]`
+and the `a ++ [d]` singleton, both attached at the anchor, and every entry
 that attached at the old tail REHOMED to the suffix entry. All right-hand
 data is pre-mutation. -/
 theorem tableOf_insert_split :
@@ -4402,10 +4402,10 @@ theorem tableOf_insert_split :
 
 end MidRunSplitClosed
 
-/-! ### D2, closed — the interior delete liveness split
+/-! ### D2, closed: the interior delete liveness split
 
 The D2 shape (`spot_d2_liveness_split`): delete a run-interior record `x`
-(fused incoming edge, fused outgoing edge — so `x` is neither its run's head
+(fused incoming edge, fused outgoing edge, so `x` is neither its run's head
 nor its tail). The kept tree is unchanged; the run carrying `x` splits in
 three at the liveness break: the live prefix keeps the old head with `len`
 cut to `x`'s offset, `x` survives as a DEAD singleton entry, the live suffix
@@ -4901,9 +4901,9 @@ theorem dlc_headsList :
 include hxl hfx hfsucc hmem' in
 /-- **D2, closed (the interior delete liveness split)**: deleting the
 run-interior record `x` re-canonicalizes to the old table with the run
-carrying `x` CUT at the liveness break — the old head keeps the prefix
+carrying `x` CUT at the liveness break, the old head keeps the prefix
 (`len` becomes `x`'s offset), `x` becomes a DEAD singleton entry, the suffix
-re-heads at `x ++ [1]` — and every entry attached at the old tail REHOMED to
+re-heads at `x ++ [1]`, and every entry attached at the old tail REHOMED to
 the suffix entry. The kept tree is untouched; only liveness/len bookkeeping
 moves. All right-hand data is pre-mutation. -/
 theorem tableOf_delete_split :
@@ -5088,7 +5088,7 @@ theorem tableOf_delete_split :
 
 end DeleteLivenessClosed
 
-/-! ### D4, closed — the coalesce, as a full table rewrite
+/-! ### D4, closed: the coalesce, as a full table rewrite
 
 The D4 shape (`spot_d4_coalesce_necessity`): delete the childless interloper
 `a ++ [d]` whose presence had split the run at `a` (`a` is its run's tail;
@@ -5597,18 +5597,18 @@ theorem tableOf_coalesce :
 
 end CoalesceClosed
 
-/-! ## §7½  T-repr, image side — `tableOf` always lands in `Canonical`
+/-! ## §7½  T-repr, image side: `tableOf` always lands in `Canonical`
 
 `tableOf_stateOf` (§4) is the retraction on canonical inputs. Here is the
 image direction: **every** `tableOf L` is a canonical table. Together with
 `stateOf_tableOf` and `tableOf_stateOf` this closes the representation iso to
 a genuine bijection between live-chain sets (up to `keptL`) and canonical
-tables — the note §10's characterization "canonical = maximal fusible chains,
+tables, the note §10's characterization "canonical = maximal fusible chains,
 uniform liveness, tail attachment" is not just *recognized* by `Canonical`,
 it is exactly the image of `tableOf`. No stability hypothesis. -/
 
 /-- Indexing `tableOf` at `i`: the head sitting there is a head at index `i`,
-compiling to that entry — packaged without a dependent `getElem` in scope. -/
+compiling to that entry, packaged without a dependent `getElem` in scope. -/
 theorem tableOf_entry_head (L : List (List ℕ)) (i : ℕ)
     (hi : i < (tableOf L).length) :
     ∃ h, isHead L h = true ∧ (headsList L).idxOf h = i
@@ -5760,7 +5760,7 @@ theorem canonical_tableOf (L : List (List ℕ)) : Canonical (tableOf L) := by
     simp only [entryOfHead]
     rw [if_pos (by rw [hqd]; exact htk), hqd, hth, hidxh]
 
-/-! ## §7¾  T-walk, representation faithfulness — the walk survives the round trip
+/-! ## §7¾  T-walk, representation faithfulness: the walk survives the round trip
 
 `chainBefore` is a strict linear order (irreflexive, antisymmetric, total), so
 a `Nodup` list that is pairwise `chainBefore` is the *unique* sorted
@@ -5768,8 +5768,8 @@ enumeration of its element set (`chainBefore_sorted_ext`). Hence the walk is
 determined by the live-chain set alone: building the run table, recovering the
 state, and walking it reproduces the original walk verbatim
 (`walk_stateOf_tableOf`). This is the display-identity gate at the level of
-the representation round trip. The fully table-*direct* structural walk —
-emitting run by run without ever materializing `stateOf` — is `tableWalk`
+the representation round trip. The fully table-*direct* structural walk,
+emitting run by run without ever materializing `stateOf`, is `tableWalk`
 (§7⅞ below), with `tableWalk_tableOf` its generic faithfulness theorem; the
 D1 instance SPOT pins it concretely. -/
 
@@ -5900,7 +5900,7 @@ theorem chainBefore_sorted_ext : ∀ {l l' : List (List ℕ)},
       rw [chainBefore_sorted_ext hxs hys htails]
 
 /-- **T-walk, representation round trip**: building the run table from `L`,
-recovering the state, and walking it reproduces `walk L` exactly — the walk is
+recovering the state, and walking it reproduces `walk L` exactly, the walk is
 a function of the live-chain set, so it survives the representation round trip
 losslessly. No stability hypothesis. -/
 theorem walk_stateOf_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
@@ -5912,10 +5912,10 @@ theorem walk_stateOf_tableOf {L : List (List ℕ)} (hnil : [] ∉ L) :
   rw [mem_walk hnil', mem_walk hnil]
   exact hiff c
 
-/-! ## §7⅞  The literal T-walk — emit the display from the TABLE alone
+/-! ## §7⅞  The literal T-walk: emit the display from the TABLE alone
 
 `walk` (§6) consults the state; `tableWalk` below consults nothing but the
-table — entry headers, parent references, and the `hsAt` address arithmetic;
+table, entry headers, parent references, and the `hsAt` address arithmetic;
 `stateOf` is never materialized. This is the formal face of the O(display)
 reading claim: one pass over the entries in walk order emits the document.
 `tableWalk_tableOf` is the generic faithfulness theorem (the D1 SPOT
@@ -6080,7 +6080,7 @@ theorem rootsAt_pairwise_delta (T : Table) :
     simp only [Bool.or_eq_true, decide_eq_true_eq]
     omega
 
-/-- Attached entries map to the child heads at the parent's tail — order
+/-- Attached entries map to the child heads at the parent's tail, order
 included (both are strictly delta-descending). -/
 theorem attachedAt_map_hsAt {T : Table} (hC : Canonical T) {i : ℕ}
     (hi : i < T.length) :
@@ -6373,7 +6373,7 @@ theorem tableWalk_eq_walk {T : Table} (hC : Canonical T) :
     omega
   · omega
 
-/-- **T-walk, literal — the generic faithfulness theorem**: building the run
+/-- **T-walk, literal: the generic faithfulness theorem**: building the run
 table and reading it back with the table-direct walk reproduces the display
 of the live-chain set, verbatim. The O(display)-time reading claim's formal
 face; no stability hypothesis. -/

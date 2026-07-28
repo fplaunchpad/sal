@@ -12,7 +12,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # Increment_Only_Counter (CRDT) — read-side projection
+/-! # Increment_Only_Counter (CRDT): read-side projection
 
 The 24 VCs prove that the per-replica map converges under per-slot
 max. The headline read is **per-replica increment count**: at

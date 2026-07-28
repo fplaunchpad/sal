@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # LWW_Map (CRDT) — SPOTs -/
+/-! # LWW_Map (CRDT): SPOTs -/
 
 namespace LWW_Map_SPOT
 

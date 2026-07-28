@@ -2,15 +2,15 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 
 /-!
-# Sided RGA — per-policy intent theorems
+# Sided RGA: per-policy intent theorems
 
 The capstone (`sided_embed_ra_linearizable3`) is policy-free: sides are
 payload to convergence. This file is the other half of "one kernel, two
-policies" — what ordering intent each side-selection policy buys:
+policies", what ordering intent each side-selection policy buys:
 
 * **§1 The all-R fragment, at the instance** (`sFold_liftOp`,
   `sided_allR_read_eq`): under the always-R policy the sided instance IS
-  the one-sided embed instance, fold for fold — an UNCONDITIONAL
+  the one-sided embed instance, fold for fold, an UNCONDITIONAL
   simulation, no honesty hypotheses: the all-R sided coordinate is the
   one-sided coordinate under the symbol map, and the sort keys coincide
   definitionally (`sym = symR`), so every insert lands in the same slot.
@@ -23,7 +23,7 @@ policies" — what ordering intent each side-selection policy buys:
   chain-generated (the honesty layer's `chain_gen` shape), everything
   the display places strictly between two members of a subtree is
   itself in the subtree. A replica's run whose ops chain (each anchored
-  at the previous — what the Fugue policy produces for forward AND
+  at the previous, what the Fugue policy produces for forward AND
   backward typing) is a subtree, so no concurrent survivor can ever
   interleave into it. This is the datatype half of the L19 discharge as
   a theorem; the SPOT replays the L19 trace and watches the blocks stay
@@ -33,7 +33,7 @@ policies" — what ordering intent each side-selection policy buys:
 stays as-is rather than being re-derived from the sided kernel: its
 downstream ecosystem (SeqSpec, ReadEquiv/compaction, EliasDelta,
 Peritext_Embed) consumes it directly, and §1 makes the duplication
-harmless — the all-R fragment equality transports any one-sided theorem
+harmless, the all-R fragment equality transports any one-sided theorem
 to the sided instance when needed, at zero proof debt.
 
 **What remains of the Fugue half (deliberately out of scope here).**
@@ -43,8 +43,8 @@ backward runs ("right child of the left neighbor when it has no right
 children, else left child of the successor") needs a generation model
 the framework does not yet have: intent-level ops ("insert before
 position i"), the policy as a function of the replica-local tree, and a
-per-replica run notion. That layer — and the maximal-non-interleaving
-statement of Weidner & Kleppmann — is not covered by this file.
+per-replica run notion. That layer, and the maximal-non-interleaving
+statement of Weidner & Kleppmann, is not covered by this file.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -108,7 +108,7 @@ theorem filter_map_liftRec (s : EState ℕ) (x : ℕ) :
         simp [liftRec, List.filter_cons, h, ih]
 
 /-- **The all-R fragment, at the instance**: the sided fold of a lifted
-history IS the one-sided fold, record for record. Unconditional — no
+history IS the one-sided fold, record for record. Unconditional, no
 honesty, no sortedness hypotheses: a pure simulation. -/
 theorem sFold_liftOp (Γ : OrderedPrefixCode) : ∀ (ρ : List (Op (EOp ℕ))),
     sFold Γ (ρ.map liftOp) = (eFold Γ ρ).map liftRec := by
@@ -156,8 +156,8 @@ coordinate is a positive sided chain's coordinate with telescoping sum),
 a record `z` displaying strictly between two members `x, y` of the
 subtree rooted at `p` is itself in that subtree. `keyLt (sKey ·) (sKey ·)`
 is the display order of the canonical sorted state, so "between" is
-between in what the user reads. A replica's run whose ops chain — what
-the Fugue policy generates for forward and backward typing alike — is a
+between in what the user reads. A replica's run whose ops chain, what
+the Fugue policy generates for forward and backward typing alike, is a
 subtree, so nothing concurrent ever interleaves into it. -/
 theorem sided_fold_subtree_convex (Γ : OrderedPrefixCode)
     {ρ : List (Op SOp)} (chainOf : ℕ → SChain)
@@ -206,7 +206,7 @@ theorem sided_fold_subtree_convex (Γ : OrderedPrefixCode)
 
 #print axioms sided_fold_subtree_convex
 
-/-! ## §3  SPOT — L19, contiguous, PASS and FAIL shaped
+/-! ## §3  SPOT: L19, contiguous, PASS and FAIL shaped
 
 The L19 trace under the Fugue policy's anchor choices, replayed through
 the datatype's own fold: two concurrent backward runs become L-chains

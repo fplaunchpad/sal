@@ -219,7 +219,7 @@ theorem version_inv_of_causal_canonical
 /-! ## §3  The pointwise `CausalCanonical` discharge (all-comm + rc-Either)
 
 Any finite enumeration reorders into a vis-linearizing one (peel a
-vis-minimal element — exists since `vis` is transitive and irreflexive on a
+vis-minimal element, exists since `vis` is transitive and irreflexive on a
 finite list), and all-comm makes folds permutation-invariant; `rc ≡ Either`
 kills the `loOn` rc-arm, so the `loOn`-respect conjunct is free. -/
 

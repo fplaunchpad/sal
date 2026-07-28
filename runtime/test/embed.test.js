@@ -1,7 +1,7 @@
 // Embedded-chain RGA litmus fixtures.
 //
 // FIXTURE PROVENANCE: every expected read below was extracted by RUNNING
-// the Python model (2026-07-18), NOT derived from this port:
+// the Python model, NOT derived from this port:
 //
 //   cd whiteboard/litmus && python3 - <<'EOF'
 //   from embed_tree import EmbedTree, EmbedTreeCode

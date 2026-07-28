@@ -1,19 +1,19 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_EffFold
 
-/-! # Shesha — output rows and the forest builder
+/-! # Shesha: output rows and the forest builder
 
 The two missing *generic* engines feeding the pre-splice obligation
 (`shesha_presplice`, `Shesha_Cond.lean`):
 
 * §1–§2 **the output row characterization**: in a duplicate-free built
   forest (`buildF`) with a level grading, every emitted key's row is the
-  expansion of its stored row — instantiated to the ternary merge
+  expansion of its stored row, instantiated to the ternary merge
   (`merge_row`): `row (merge L A B) q = expandRow … (alGet (outRows …) q)`
   at every displayed `q` (and the root). This converts obligation (d)'s
   RHS rows into the `outRows`/`expandRow` language of M0–M2.
 * §4–§6 **the forest builder**: the pre-splice forest `T` is
   `buildF preRows … 0` over an id-graded row store (anchors precede
-  children — Lamport). Its reads/rows are the store (`build_row_raw`),
+  children, Lamport). Its reads/rows are the store (`build_row_raw`),
   it is WF (`build_WF_raw`), and its delete-collapse rows are marker
   expansions of the store (`build_front_raw` + `expand_stable`): the
   state-level obligation (d) reduces to per-key row equations between
@@ -117,7 +117,7 @@ theorem kidsF_of_unique {q : Nat} :
 The generic engine: with a level grading (expansion strictly raises the
 level; expanded levels bounded by `n`) and fuel covering the grading
 (`n ≤ lvl p + f` at each call), a duplicate-free build realizes every
-emitted key's row as its expanded stored row — the fuel can never
+emitted key's row as its expanded stored row, the fuel can never
 truncate a nonempty expansion. -/
 
 theorem buildF_row_char (rows : List (Nat × List Nat)) (mk : Nat → Bool)
@@ -212,7 +212,7 @@ theorem merge_eq_buildF (L A B : St) :
 
 /-- **The output rows, characterized**: at every displayed id (and the
 root), the merge's row is the marker-expansion of its assembled
-`outRows` entry — the missing RHS characterization of the pre-splice
+`outRows` entry, the missing RHS characterization of the pre-splice
 obligation (d). -/
 theorem merge_row {L A B : St} (mok : ModelOK L A B)
     (hA : LRowsOK L A) (hB : LRowsOK L B) {q : Nat}
@@ -243,7 +243,7 @@ theorem merge_row {L A B : St} (mok : ModelOK L A B)
 /-! ## §4 the raw-graded store: expansion stability and the front bridge
 
 For the pre-splice forest the store is consumed *raw* (`mfuel = 0`; no
-marker splice at build time), and the grading is over raw rows —
+marker splice at build time), and the grading is over raw rows,
 concretely, anchors precede children in Lamport order. -/
 
 theorem expandRow_zero {rows : List (Nat × List Nat)} {mk : Nat → Bool}
@@ -300,7 +300,7 @@ theorem frontF_map_node (D : Nat → Bool) (g : Nat → List Tree) :
         frontF_map_node D g l]
 
 /-- **The front bridge**: the `D`-front of a raw build is the `D`-marker
-expansion of its key's stored row — the collapse of the built forest is
+expansion of its key's stored row, the collapse of the built forest is
 computed by `expandRow` over the same store. -/
 theorem build_front_raw (rows : List (Nat × List Nat))
     (mk D : Nat → Bool) (lvl : Nat → Nat) (n : Nat)
@@ -450,7 +450,7 @@ theorem build_collapse_row_raw (rows : List (Nat × List Nat))
 
 For a store that agrees with a forest's own rows on a child-closed
 region (with matching dead-sets), the ghost expansion of a region row
-computes the forest's front — how a branch slot's (already collapsed)
+computes the forest's front, how a branch slot's (already collapsed)
 rows are re-read as expansions of the pre-splice store. Feeds the
 branch-born key class of the row residue. -/
 

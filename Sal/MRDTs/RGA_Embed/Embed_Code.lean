@@ -11,14 +11,14 @@ concatenation, along its birth chain, of codewords `enc δ` for the timestamp
 deltas `δ = t − t_anchor ≥ 1`. Everything the datatype needs from the code is
 two properties:
 
-* **monotone** — `d < e → enc d <lex enc e` (newest sits highest), and
-* **prefix-free** — distinct codewords are never prefixes of one another
+* **monotone**: `d < e → enc d <lex enc e` (newest sits highest), and
+* **prefix-free**: distinct codewords are never prefixes of one another
   (distinct mints get disjoint cells; concatenations are uniquely decodable).
 
 The datatype theorems are parametric in the code, so we package the two
 properties as `OrderedPrefixCode` and prove the datatype against the
 structure. This file provides the structure and its simplest inhabitant, the
-**unary code** `enc d = replicate d true ++ [false]` — the Lean twin of the
+**unary code** `enc d = replicate d true ++ [false]`, the Lean twin of the
 whiteboard's `embed-tree` mint `I(t) = (1 − 2⁻ᵗ, 1 − ¾·2⁻ᵗ)`. The
 entropy-optimal binary delta code (`embed-code`'s
 `C(δ) = 1^(L−1) 0 (δ minus its leading bit)`) is a second inhabitant to be
@@ -54,7 +54,7 @@ end OrderedPrefixCode
 
 /-! ## The unary instance
 
-`enc d = replicate d true ++ [false]`. One `true` per unit of delta — the
+`enc d = replicate d true ++ [false]`. One `true` per unit of delta, the
 bit-string twin of the unary-exponent mint. Wasteful (`Θ(d)` bits) but its
 properties are two short inductions, which makes it the right first
 inhabitant: it unblocks the entire datatype development while the binary

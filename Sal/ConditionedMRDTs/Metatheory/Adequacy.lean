@@ -7,17 +7,17 @@ import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 
 The generic theorems, quantifying over every configuration reachable in the
 ternary transition system `Step3` (from `initConfig`), concluding
-**per-version** RA-linearizability (`IsRALinearizable3` — the paper's Def-lin
+**per-version** RA-linearizability (`IsRALinearizable3`, the paper's Def-lin
 for every version in the store, LCAs included):
 
-* `GoodConfig3` — the reachability invariant (every version canonical, plus
+* `GoodConfig3`: the reachability invariant (every version canonical, plus
   the store closure facts) and its per-transition preservation;
-* `join_lemma3_of_cd` / `join_lemma3_of_cd_feasible` — the master inductions
+* `join_lemma3_of_cd` / `join_lemma3_of_cd_feasible`: the master inductions
   from the (feasible) delta contract + the CD equation to `JoinLemma3`;
 * `ra_linearizable3_of_join` / `ra_linearizable_of_core_delta_cd3` /
-  `ra_linearizable_of_core_feasible_cd3` — the end-to-end bridges;
-* `cdVC3_of_all_comm` — the commuting class gets `CDVC3` for free;
-* `goodConfig3_mergeF` / `ra_linearizable3_of_joinF` — the **full-closure**
+  `ra_linearizable_of_core_feasible_cd3`: the end-to-end bridges;
+* `cdVC3_of_all_comm`: the commuting class gets `CDVC3` for free;
+* `goodConfig3_mergeF` / `ra_linearizable3_of_joinF`: the **full-closure**
   bridge consumed by the Enable-wins route (`JoinLemma3F`).
 -/
 
@@ -43,7 +43,7 @@ def IsRALinearizable3 (C : Configuration D) : Prop :=
 /-- The reachability invariant: **every allocated version** holds the canonical
 state of its event set (LCAs are historical versions, so replica heads are not
 enough), plus `vis` transitivity/irreflexivity and the two facts historical
-versions need — their event sets stay inside the replica-observed universe
+versions need: their event sets stay inside the replica-observed universe
 (feeds Apply-freshness) and stay causally closed (feeds the Join Lemma's
 backward-closure premises). -/
 structure GoodConfig3 (C : Configuration D) : Prop where
@@ -276,7 +276,7 @@ theorem goodConfig3_apply {C C' : Configuration D}
       · exact h.ver_causal w s' E' hw a b hab hb
       · exact absurd hb (h_old_no_e w s' E' hw)
 
-/-- **Merge preserves the invariant** — `JoinLemma3` at work, with the LCA event
+/-- **Merge preserves the invariant**, `JoinLemma3` at work, with the LCA event
 set delivered by the `lca_events` field (its maintainability is
 `LCA_Lemma.lean`), and the LCA version's canonical state delivered by the
 every-version coverage of `GoodConfig3`. -/
@@ -422,11 +422,11 @@ private def JoinAt3 (C : Sal.Emulation.Configuration D.toCRDTSig) (n : ℕ) :
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
 /-- **Side decomposition (ternary)**: a backward-closed `E ∋ e` inside `U`
-satisfies `σ(E) = mergeL B σ(E∖e) (update B e)` — by the IH at `|E| < n` when
+satisfies `σ(E) = mergeL B σ(E∖e) (update B e)`, by the IH at `|E| < n` when
 `E ⊊ U` (a Join-Lemma instance whose sides are `E∖e` and `↓e`, sitting at
 their honest LCA set `(E∖e) ∩ ↓e = ↓e∖{e}` with state `B`), and by `CDVC3`
 when `E = U`. As in the binary proof, no peel of `e` from `E`'s own
-linearization is ever demanded — the buried-event difficulty (A3) dissolves. -/
+linearization is ever demanded, the buried-event difficulty (A3) dissolves. -/
 private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
     {C : Sal.Emulation.Configuration D.toCRDTSig}
     (h_tr : ∀ {a b c : Op D.AppOp},
@@ -536,7 +536,7 @@ theorem goodConfig3_merge (hJoin : JoinLemma3 D)
 /-- **The ternary Join Lemma from `CoreVCs3` + the delta contract + (CD3).**
 Compare `join_lemma3_of_peel` (which consumes the two full peel equations with
 their three-way LCA bookkeeping) and the binary `join_lemma_of_cd` (whose
-lattice laws the delta contract replaces — no idempotence, no inflation, no
+lattice laws the delta contract replaces: no idempotence, no inflation, no
 associativity, no order). -/
 theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
     (hCD : CDVC3 D) : JoinLemma3 D := by
@@ -615,7 +615,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           he_U h_max hA hB Set.subset_union_left h_in₁ h_cl₁ he₁ hc₁ ht₁
       by_cases he₂ : e ∈ ev₂
       · -- e shared: all three components decompose; `redistribute`
-        -- extracts the delta once (the LCA slot cancels the duplicate —
+        -- extracts the delta once (the LCA slot cancels the duplicate,
         -- no idempotence).
         obtain ⟨t₂, ht₂⟩ : ∃ t, IsCanonicalState C (ev₂ \ {e}) t := by
           obtain ⟨l₂', hp₂', -, -⟩ := id hc₂
@@ -756,7 +756,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
 /-! ### 3. The commuting class discharges (CD3) for free
 
 `↓e∖{e} = ∅`, so `B = init` and the bound is `merge_peel_comm3` at an empty
-LCA fold plus `mergeL_init` — no idempotence needed (the binary
+LCA fold plus `mergeL_init`, no idempotence needed (the binary
 `cdVC_of_all_comm` consumed `merge_idem`; the ternary one does not). -/
 
 theorem cdVC3_of_all_comm (hVC : CoreVCs3 D)
@@ -869,7 +869,7 @@ private def JoinAtF (C : Sal.Emulation.Configuration D.toCRDTSig) (n : ℕ) :
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
 /-- Side decomposition, slim-core version (verbatim from
-`JoinLemma_Of_CD3.side_decomposition3` — only the bundle changes; it consumed
+`JoinLemma_Of_CD3.side_decomposition3`: only the bundle changes; it consumed
 `update_core` alone). -/
 private theorem side_decompositionF (hVC : CoreVCs3CD D) (hCD : CDVC3 D)
     {C : Sal.Emulation.Configuration D.toCRDTSig}
@@ -1316,15 +1316,14 @@ theorem ra_linearizable3_of_joinF (hJoin : JoinLemma3F D)
 
 end Bridge
 
-/-! ## Virtual LCAs (task #90): fold canonicity and the widened adequacy
+/-! ## Virtual LCAs: fold canonicity and the widened adequacy
 
 The virtual construction re-supplies, from the ternary join lemma alone, the two facts
 the adequacy induction consumed about the LCA slot: its event set is the intersection
 (`mca_events_cover`, `LCA_Lemma.lean`) and its state is canonical for that set
-(`virtualLCAState_canonical`, the fold induction below — note §5, "Claim (virtual
-join)"). `goodConfig3_mergeVirtual_at` then mirrors `goodConfig3_merge_at`, and the
+(`virtualLCAState_canonical`, the fold induction below, the virtual-join claim). `goodConfig3_mergeVirtual_at` then mirrors `goodConfig3_merge_at`, and the
 reachability bridges re-thread over the widened LTS `labeledTS3V`. The per-datatype VC
-surface for `JoinLemma3` datatypes does not move — that is the headline. -/
+surface for `JoinLemma3` datatypes does not move. That is the headline. -/
 
 section VirtualLCA
 variable {D : ConditionedMRDTSig}
@@ -1391,7 +1390,7 @@ theorem mcaFinset_unionEvents {C : Configuration D}
 
 /-- The abstract per-configuration join hook the fold consumes: **full-closure**
 premises (what `GoodConfig3.ver_causal` supplies at every intermediate antichain
-union), canonical triple in, canonical union out. Both `JoinLemma3At` (weak closure —
+union), canonical triple in, canonical union out. Both `JoinLemma3At` (weak closure,
 implied by full) and `JoinLemma3F` instantiate it, so one fold induction serves both
 routes. -/
 private def VJoinHook (C : Configuration D) : Prop :=
@@ -1564,10 +1563,10 @@ private theorem vlcaAux_canonical_at {C : Configuration D}
         rw [hMset, hcov] at hfold
         exact hfold
 
-/-- **Task #90, the fold canonicity (note §5, "Claim (virtual join)")**: at any
+/-- **The fold canonicity (the virtual-join claim)**: at any
 configuration satisfying the reachability invariant and the ternary join lemma, the
 recursive antichain merge of a head pair is **canonical for the pair's event-set
-intersection** — exactly what the adequacy induction demanded of a registered LCA. -/
+intersection**, exactly what the adequacy induction demanded of a registered LCA. -/
 theorem virtualLCAState_canonical {C : Configuration D}
     (hSI : StoreInv C.ver C.parents) (hG : GoodConfig3 C)
     (hJoin : JoinLemma3At D (Configuration.core C))
@@ -1582,7 +1581,7 @@ theorem virtualLCAState_canonical {C : Configuration D}
   rw [unionEvents_singleton h_ver₁] at h
   exact h
 
-/-- **Virtual merge preserves the invariant** — `goodConfig3_merge_at` with the
+/-- **Virtual merge preserves the invariant**, `goodConfig3_merge_at` with the
 registered LCA slot replaced by the recursive antichain merge: `lca_events` is
 re-supplied by `mca_events_cover` and the slot's canonicity by
 `virtualLCAState_canonical`; the rest is verbatim. The extra `StoreInv` hypothesis is
@@ -1828,7 +1827,7 @@ theorem goodConfig3_reachableV (hJoin : JoinLemma3 D)
 open LabeledTS in
 /-- **The widened bridge** (re-thread of `ra_linearizable3_of_join`): per-version
 RA-linearizability at every configuration reachable in the LTS **with the
-criss-cross gate lifted**, from the same `JoinLemma3` — no new per-datatype VC. -/
+criss-cross gate lifted**, from the same `JoinLemma3`, no new per-datatype VC. -/
 theorem ra_linearizable3V_of_join (hJoin : JoinLemma3 D)
     {hInit : D.Inv D.init}
     (C : Configuration D)
@@ -1878,7 +1877,7 @@ theorem ra_linearizable3V_of_joinF (hJoin : JoinLemma3F D)
       exact goodConfig3_mergeVirtualF hJoin ih.1 h_head₁ h_ver₁ h_ver₂
         hL hvis hver ih.2
 
-/-! ### Axiom audit (task #90 adequacy layer) -/
+/-! ### Axiom audit (the virtual-LCA adequacy layer) -/
 
 #print axioms virtualLCAState_canonical
 #print axioms virtualLCAState_canonicalF

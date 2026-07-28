@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Instance
 
 /-!
-# `inv_update` over `qInv` — the strengthened `WfOpQ` closes `InvPres`
+# `inv_update` over `qInv`: the strengthened `WfOpQ` closes `InvPres`
 
 `RGA_Instance.lean` §5 pins the ONE failing `InvPres (RGACondSig' α) W` field:
 `inv_update` needs `id_mono (do_ s o)` from `qInv s ∧ W o s`, and `W = WfOp` is
@@ -10,17 +10,17 @@ too weak (`id_mono_doIns` was stated with `mono_alloc`, `id_mono_doDel` with
 the full `InvPres (RGACondSig' α) WfOpQ`:
 
 * **`WfOpQ`** = `WfOp` PLUS, for `Ins`, `resolve s (a :: pre) < t` (the inserted
-  id exceeds its RESOLVED anchor — not `mono_alloc`'s "exceeds EVERY live id"),
+  id exceeds its RESOLVED anchor, not `mono_alloc`'s "exceeds EVERY live id"),
   and for `Del`, `resolve s pre = 0 ∨ resolve s pre < x` (the rehome target is
   root or below the deleted node).
-* **`idMono_doIns_wfq` / `idMono_doDel_wfq`** — `id_mono` preservation from
+* **`idMono_doIns_wfq` / `idMono_doDel_wfq`**, `id_mono` preservation from
   exactly these weaker facts (`mono_alloc`/`accurate` were over-asks: their
   proofs only ever consume the resolved value).
-* **`qInv_doOp`** — `qInv s → WfOpQ o s → qInv (do_ s o)`; the wf∧root-free part
+* **`qInv_doOp`**, `qInv s → WfOpQ o s → qInv (do_ s o)`; the wf∧root-free part
   is `rgaInv_doOp_fresh` (via `WfOpQ ⊆ WfOp`), the `id_mono` part the two lemmas.
-* **`rgaInvPresQ : InvPres (RGACondSig' α) WfOpQ`** — the FULL framework bundle:
+* **`rgaInvPresQ : InvPres (RGACondSig' α) WfOpQ`**, the FULL framework bundle:
   `inv_init`/`inv_mergeL` from `RGA_Instance`, `inv_update := qInv_doOp`.
-* **Static dischargeability** — the strengthening is a PER-OP fact, stable under
+* **Static dischargeability**, the strengthening is a PER-OP fact, stable under
   reordering: `WfOpGenQ` (`Ins`: `t ≠ 0 ∧ ∀ c ∈ a::pre, c < t`; `Del`: `x ≠ 0 ∧
   ∀ c ∈ pre, c < x`) forces the `WfOpQ` extras at EVERY state (`resolve_mem`),
   holds at generation (`wfOpGenQ_ins`/`wfOpGenQ_del_live`: accurate paths are
@@ -50,7 +50,7 @@ theorem qInv_iff_Inv (s : concrete_st α) : qInv s ↔ (RGACondSig' α).Inv s :=
 
 /-- **The minimal strengthening of `WfOp` for `id_mono` preservation.**
 `Ins` additionally requires the fresh id to exceed its RESOLVED anchor
-(`resolve s (a :: pre) < t` — NOT `mono_alloc`'s "exceeds every live id");
+(`resolve s (a :: pre) < t`, NOT `mono_alloc`'s "exceeds every live id");
 `Del` requires the rehome target to be root-or-below the deleted node
 (`resolve s pre = 0 ∨ resolve s pre < x`). -/
 def WfOpQ (o : op_t α) (s : concrete_st α) : Prop :=
@@ -67,7 +67,7 @@ theorem wfOp_of_wfOpQ (o : op_t α) (s : concrete_st α) (h : WfOpQ o s) : WfOp 
 
 /-! ## §2. `id_mono` preservation under `do_` from `WfOpQ` alone -/
 
-/-- `Ins` preserves `id_mono` from `resolve s (a :: pre) < t` alone —
+/-- `Ins` preserves `id_mono` from `resolve s (a :: pre) < t` alone,
 `id_mono_doIns`'s `mono_alloc` was an over-ask: its proof consumes the
 allocation bound ONLY at the resolved anchor. -/
 theorem idMono_doIns_wfq (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
@@ -97,7 +97,7 @@ theorem idMono_doIns_wfq (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pr
     rw [hanc]
     exact hmono k hck
 
-/-- `Del` preserves `id_mono` from `resolve s pre = 0 ∨ resolve s pre < x` alone —
+/-- `Del` preserves `id_mono` from `resolve s pre = 0 ∨ resolve s pre < x` alone,
 `id_mono_doDel`'s `accurate` was an over-ask (it was consumed only to place the
 rehome target at `anc s x < x`); even `contains s 0 = false` is not needed. -/
 theorem idMono_doDel_wfq (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
@@ -133,7 +133,7 @@ theorem qInv_doOp (s : concrete_st α) (o : op_t α)
   | Ins e pre a => exact idMono_doIns_wfq s t r e a pre hmono hw.2
   | Del pre x => exact idMono_doDel_wfq s t r x pre hmono hw.2
 
-/-- **The FULL `InvPres (RGACondSig' α) WfOpQ`** — the bundle `RGA_Instance` §5 could
+/-- **The FULL `InvPres (RGACondSig' α) WfOpQ`**, the bundle `RGA_Instance` §5 could
 not assemble with `W = WfOp`: `inv_init`/`inv_mergeL` are `RGA_Instance`'s,
 `inv_update` is `qInv_doOp`. -/
 theorem rgaInvPresQ : InvPres (RGACondSig' α) WfOpQ :=
@@ -144,7 +144,7 @@ theorem rgaInvPresQ : InvPres (RGACondSig' α) WfOpQ :=
 
 /-! ## §4. `WfOpQ` is dischargeable: static per-op facts force it at EVERY state -/
 
-/-- **Per-op genuineness, Q-strengthened** — a property of the op ALONE (stable
+/-- **Per-op genuineness, Q-strengthened**, a property of the op ALONE (stable
 under any reordering): the recorded path (and anchor/leaf) ids sit strictly
 below the op's own id.  `Ins`: `t ≠ 0 ∧ ∀ c ∈ a :: pre, c < t`; `Del`:
 `x ≠ 0 ∧ ∀ c ∈ pre, c < x` (`x ∉ pre` is then free: `c < x` forbids `c = x`). -/
@@ -161,7 +161,7 @@ theorem wfOpQ_ins_of_genQ (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p
   · rw [h0]; exact Nat.pos_of_ne_zero ht0
   · exact hlt _ hmem
 
-/-- The `Del` `WfOpQ` holds at EVERY state — unconditionally from the static
+/-- The `Del` `WfOpQ` holds at EVERY state, unconditionally from the static
 fact: `resolve` lands in `{0} ∪ pre`, i.e. `0` (`≠ x` as `x ≠ 0`) or `< x`. -/
 theorem wfOpQ_del_of_genQ (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     (hg : WfOpGenQ ((t, r, .Del pre x) : op_t α)) :
@@ -180,7 +180,7 @@ theorem wfOpQ_del_of_genQ (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
 /-! ## §5. `WfOpGenQ` holds at generation -/
 
 /-- Under `id_mono`, ids strictly DESCEND along a genuine ancestor path: every
-element of `pre` is `< x`.  (The `anc = 0` branch is impossible mid-path — path
+element of `pre` is `< x`.  (The `anc = 0` branch is impossible mid-path, path
 entries are live, the root is not.) -/
 theorem isAncPath_mem_lt (s : concrete_st α) (h0 : contains s 0 = false)
     (hmono : id_mono s) :
@@ -207,7 +207,7 @@ theorem isAncPath_mem_lt (s : concrete_st α) (h0 : contains s 0 = false)
 
 /-- **`WfOpGenQ` for `Ins` at generation**: `fresh_ts` gives `t ≠ 0`; `accurate`
 makes the anchor and every path entry live (or the root-with-empty-path case),
-and `mono_alloc` — the generating site's monotone allocation — puts every live
+and `mono_alloc`, the generating site's monotone allocation, puts every live
 id below `t`.  A static consequence of generation-time applicability. -/
 theorem wfOpGenQ_ins (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
     (hfr : fresh_ts (t, r, .Ins e pre a) s)
@@ -239,7 +239,7 @@ theorem wfOpGenQ_del_live (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
     WfOpGenQ ((t, r, .Del pre x) : op_t α) :=
   ⟨contains_ne_zero s x h0 hlive, isAncPath_mem_lt s h0 hmono pre x hlive hpath⟩
 
-/-! ## §6. `WfOpReachable (RGACondSig' α) WfOpQ WfOpGenQ` — dischargeable at
+/-! ## §6. `WfOpReachable (RGACondSig' α) WfOpQ WfOpGenQ`: dischargeable at
 reordered folds.  Mirror of `RGA_WfOpReachable.wfChain_acc`: the only
 fold-positional conjunct is Ins freshness (from `Nodup` + distinct ts + the
 fold-domain lemma); every Q-extra is static (§4). -/
@@ -291,7 +291,7 @@ theorem wfChainQ_acc : ∀ (rest pre : List (op_t α)),
       show WfChain (RGACondSig' α) WfOpQ (do_ (applySeqR (init_st (α := α)) pre) o) rest'
       exact key
 
-/-- **`WfOpReachable` for `WfOpQ`, satisfied** — `WfOpQ` holds at every fold
+/-- **`WfOpReachable` for `WfOpQ`, satisfied**, `WfOpQ` holds at every fold
 prefix of any `Nodup`, distinct-ts, `WfOpGenQ` list.  So the strengthened guard
 is exactly as dischargeable as `WfOp` was. -/
 theorem rga_wfOpReachableQ : WfOpReachable (RGACondSig' α) WfOpQ WfOpGenQ :=

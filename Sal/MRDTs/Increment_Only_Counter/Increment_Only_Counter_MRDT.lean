@@ -9,7 +9,7 @@ import Sal.Tactic.Sal
 import Plausible
 
 /-!
-# Increment-Only Counter — state-based MRDT
+# Increment-Only Counter: state-based MRDT
 
 The canonical "Git for data types" example: the state is a single
 integer, each `Incr` bumps it by 1, and the three-way merge has the

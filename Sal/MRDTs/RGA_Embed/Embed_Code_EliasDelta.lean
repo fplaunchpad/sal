@@ -1,29 +1,29 @@
 import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
 /-!
-# The flipped Elias-δ code — the length field entropy-coded
+# The flipped Elias-δ code: the length field entropy-coded
 
 Third inhabitant of `OrderedPrefixCode` (design doc §2; order-coding note
 I5). The binary delta code `binEnc` announces its payload length in *unary*
 (`1^(L−1) 0`), paying the length bill at `L` bits. But only the value bill
-is forced at `log₂ δ` — the length can itself be entropy-coded. This file
+is forced at `log₂ δ`, the length can itself be entropy-coded. This file
 applies `binEnc` to the *length field*:
 
 ```
 dEnc δ = binEnc (size δ) ++ (δ with its leading bit removed)
 ```
 
-`|dEnc δ| = size δ + 2·size (size δ) − 2 = log₂ δ + O(log log δ)` — the
+`|dEnc δ| = size δ + 2·size (size δ) − 2 = log₂ δ + O(log log δ)`, the
 asymptotic halving of large races. (Iterating the construction on its own
 length field gives the Elias-ω ladder; one level is where the constants
-stop paying on real traces — see the I1 measurement in the order-coding
+stop paying on real traces, see the I1 measurement in the order-coding
 note: the tail is thin, so this instance's value is the *theorem*, not
 measured savings. `dEnc` wins only from `δ ≥ 32` and loses at
 `δ ∈ {2,3} ∪ [8,15]`; both facts kernel-checked below.)
 
 The proofs reuse the binary code's machinery wholesale: `binEnc`'s
 monotonicity and prefix-freeness *are* the header algebra here, glued by
-one new fact — a strict lexicographic comparison that is not a prefix
+one new fact, a strict lexicographic comparison that is not a prefix
 relationship survives arbitrary appends on both sides.
 -/
 
@@ -137,7 +137,7 @@ def eliasDeltaCode : OrderedPrefixCode where
 Values (`D(1)='0'`, `D(2)='1000'`, `D(3)='1001'`, `D(4)='10100'`,
 `D(8)='11000000'`) and the honest cost comparison against `binEnc`: the
 δ-flip loses at `δ ∈ {2,3} ∪ [8,15]`, ties at `{4..7} ∪ {16..31}`, and wins
-from `δ = 32` — matching the I1 measurement's verdict that on thin-tailed
+from `δ = 32`, matching the I1 measurement's verdict that on thin-tailed
 real traces the two are a wash. -/
 
 example : dEnc 1 = [false] := by decide

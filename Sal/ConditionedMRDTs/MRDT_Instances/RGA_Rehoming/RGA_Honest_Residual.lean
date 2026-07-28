@@ -2,7 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Final_Assembly
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Assembly
 
 /-!
-# The honest-execution residual DISCHARGED — hHon + hBA from per-step delivery honesty
+# The honest-execution residual DISCHARGED: hHon + hBA from per-step delivery honesty
 
 *0 `sorry`.*
 
@@ -12,7 +12,7 @@ reduces it to a SINGLE per-step assumption about what an honest system delivers
 (`HonestDelivery`), and proves the rest by reachability induction:
 
 * **Free from the structure**: the metatheory `Configuration` carries `causal_mono` (Lamport
-  clocks), `timestamps_distinct`, and `vis_src`/`vis_tgt`/`vis_causal` as structural fields —
+  clocks), `timestamps_distinct`, and `vis_src`/`vis_tgt`/`vis_causal` as structural fields,
   configurations with dishonest clocks are unrepresentable.  `rgaHonJ`'s visibility-restriction
   and Lamport clauses need no induction at all.
 * **Free from the delivered op's wellformedness** (`WfOpQ`, extracted from `hBA`'s own clause at
@@ -20,7 +20,7 @@ reduces it to a SINGLE per-step assumption about what an honest system delivers
   nonzero (`resolve ≠ x ∧ (resolve = 0 ∨ resolve < x)` is unsatisfiable in `ℕ` at `x = 0`).
   Delete TIMESTAMPS are nonzero by Lamport: an accurate non-root delete saw its target's insert
   (`t > x-insert's time ≥ 0` in `ℕ` forces `t ≥ 1`).
-* **The genuinely irreducible clause** — *born accuracy*: each delivered op was generated
+* **The genuinely irreducible clause**, *born accuracy*: each delivered op was generated
   accurately against a causal fold of the events it had seen (this is how an RGA client works:
   it reads its replica's state).  This is exactly the generation-discipline assumption forced by
   tombstone-freedom; `genDisc2C_of_born` converts it to `GenDisc2C` at every reachable core.
@@ -78,7 +78,7 @@ theorem wfOpQ_of_hBA {t : ℕ} {r : ℕ} {o : app_op_t α} {sh : QState (RGACond
 /-! ## §1  The re-typed core: the `rgaHonJ` witness configuration
 
 `Configuration.core` lands at the QUOTIENT signature; `rgaHonJ` wants a configuration over the
-raw `(RGACondSig α).toCRDTSig`.  Only `N`'s state type differs — and nothing downstream reads `N` —
+raw `(RGACondSig α).toCRDTSig`.  Only `N`'s state type differs, and nothing downstream reads `N`,
 so re-seat it and carry every invariant field verbatim. -/
 
 def coreR (C : Cfg3) : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig where
@@ -113,7 +113,7 @@ theorem goodConfig3S_of_reach {C : Cfg3} (hReach : Reach3 C) : GoodConfig3S C :=
 /-! ## §3  The honest-core invariant -/
 
 /-- The reachability invariant behind `rgaHonJ`: the event universe is finite (listable), ids
-are nonzero, deletes have nonzero targets, and every event was BORN ACCURATE — accurate at some
+are nonzero, deletes have nonzero targets, and every event was BORN ACCURATE, accurate at some
 causal-order fold of its strict `vis`-past. -/
 def HonCore (C : Cfg3) : Prop :=
   (∃ lE : List (op_t α), listPermOf lE C.events) ∧
@@ -124,9 +124,9 @@ def HonCore (C : Cfg3) : Prop :=
       respects π (fun a b : op_t α => C.vis a b) ∧
       accurate o (applySeqR (init_st (α := α)) π))
 
-/-- **The honest-delivery residual** — the ONLY assumption about the system, per apply step:
+/-- **The honest-delivery residual**, the ONLY assumption about the system, per apply step:
 the delivered op was generated accurately against a causal fold of the head version's events
-(born accuracy — the generation discipline forced by tombstone-freedom), and delivery is
+(born accuracy, the generation discipline forced by tombstone-freedom), and delivery is
 born-applicable (`hBA`'s own clauses, verbatim). -/
 def HonestDelivery : Prop :=
   ∀ {C₀ C₁ : Cfg3} {t : Sal.Emulation.Timestamp} {r : Sal.Emulation.Replica} {o : app_op_t α}
@@ -236,7 +236,7 @@ theorem honCore_merge {C C' : Cfg3} {r₁ r₂ : Replica} {v₁ v₂ : Version}
       exact ⟨r', ev₁ ∪ ev₂, by rw [hL, updateRep_self], Or.inl hse⟩
     · exact ⟨r', s', by rw [hL, updateRep_other _ _ hr]; exact hLs, hse⟩
 
-/-- **The apply step** — the only step that adds an event.  Freshness (`h_fresh_t`), the
+/-- **The apply step**, the only step that adds an event.  Freshness (`h_fresh_t`), the
 structural Lamport field of the POST-configuration, born accuracy, and `WfOpQ` of the new op
 maintain all four clauses. -/
 theorem honCore_apply {C C' : Cfg3} {t : Timestamp} {r : Replica} {o : app_op_t α}

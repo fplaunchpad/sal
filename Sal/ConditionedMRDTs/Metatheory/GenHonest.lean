@@ -9,13 +9,13 @@ causal past. `GenHonest D P` mechanizes that shape once, over the ternary
 configuration.
 
 This is the **client-checkable** form of the contract: `P e s` is a check the
-*issuer* of `e` runs against its own state — which, at issue time, is exactly
+*issuer* of `e` runs against its own state, which, at issue time, is exactly
 the fold of `e`'s causal past. The bounded counter's `BCHonest` (a `dec`
 needs slack: `BCHonest_iff_genHonest`) and the mergeable queue's
 `qHonest_of_applicable` hypothesis (a `deq t` names the observed head:
 `qHonest_of_genHonest`) are both instances with `P` the datatype's
 `applicable` guard (`AppHonest`). Instances bridge `GenHonest` to whatever
-witness-form their join actually consumes — the queue's `QHonest` (an
+witness-form their join actually consumes, the queue's `QHonest` (an
 existential enqueue witness per dequeue), the counter's `BCHonest` verbatim.
 The tombstone-free RGA's `HonestDelivery` (born accuracy + applicable
 delivery) is the same fold-of-causal-past shape, stated per step of the
@@ -27,7 +27,7 @@ of the causal past is only appropriate when `P` is fold-order-insensitive
 (all-comm datatypes like the bounded counter, or measure-valued guards).
 For order-sensitive datatypes the ∀-form can be unsatisfiable in honest
 executions (the queue's head check: two surviving enqueues in a past
-materialize different heads under different orders) — such instances want
+materialize different heads under different orders). Such instances want
 the existential causal-fold form, taken directly by their bridges
 (`qHonest_of_applicable`) and to be provided generically as `HonestApp`
 with the safety metatheorem.

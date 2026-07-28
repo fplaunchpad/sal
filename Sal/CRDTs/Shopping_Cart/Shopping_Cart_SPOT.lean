@@ -6,7 +6,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # Shopping_Cart (CRDT) — SPOTs -/
+/-! # Shopping_Cart (CRDT): SPOTs -/
 
 namespace Shopping_Cart_SPOT
 

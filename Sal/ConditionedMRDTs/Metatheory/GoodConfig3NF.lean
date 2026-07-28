@@ -18,10 +18,10 @@ The exec-side alternative (`noopFeasible` over the guarded `qdo`) is vacuous
 feed `EqJoinLemma3C_NF`; the datatype-side clause is the meaningful one and lets
 the merge feed the NF join directly (via `qmergeL_qmk`, no bridge).
 
-* apply — `isCanonicalStateNF_extend` (via `isCanonicalStateEqNF_extend`), with a
+* apply: `isCanonicalStateNF_extend` (via `isCanonicalStateEqNF_extend`), with a
   per-apply honest premise `qapplicable e s` (the client applies `e` where it is
   applicable) and `hgenW : applicable e ⟹ W e` (from `e`'s genuineness).
-* merge — `goodConfig3NF_merge_of_canonical` (store bookkeeping) + `h_mergedNF` from
+* merge: `goodConfig3NF_merge_of_canonical` (store bookkeeping) + `h_mergedNF` from
   the NF join (`EqJoinLemma3C_NF`, gated on the merge residual).
 -/
 
@@ -113,7 +113,7 @@ def GoodConfig3NF (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     C.ver v = some (s, Ev) →
     IsCanonicalStateNF E W hP hC hA (Sal.ConditionedMRDTs.Configuration.core C) Ev s
 
-/-- **`GoodConfig3NF ⟹ IsRALinearizable3`** — carries `GoodConfig3`, so immediate. -/
+/-- **`GoodConfig3NF ⟹ IsRALinearizable3`**, carries `GoodConfig3`, so immediate. -/
 theorem isRALinearizable3_of_goodNF (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
     (C : Sal.ConditionedMRDTs.Configuration (QSig E W hP hC hA))
@@ -271,7 +271,7 @@ theorem goodConfig3NF_merge_of_canonical (E : EqEquiv D) (W : Op D.AppOp → D.S
     exact h_sameNF E' s' (h.2 w s' E' hw)
 
 /-- **The NF join: merged born-applicable canonical state from `EqJoinLemma3C_NF`.**
-With the datatype-side design the join is DIRECT — no exec↔datatype bridge:
+With the datatype-side design the join is DIRECT, no exec↔datatype bridge:
 extract the three representatives, apply `EqJoinLemma3C_NF` to them, and repackage
 via `qmergeL_qmk`.  This supplies `h_mergedNF` to `goodConfig3NF_merge_of_canonical`.
 Gated only on `EqJoinLemma3C_NF` (the RGA's merge residual). -/
@@ -299,7 +299,7 @@ theorem mergedNF_of_join (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
       htr hir hdts hsub₁ hsub₂ hcl₁ hcl₂ hcsT hcs₁ hcs₂
 
 /-- **The full merge step.**  Mirrors `goodConfig3_merge_wfgen`, but derives the
-merged canonical from `mergedNF_of_join` (NF join, `EqJoinLemma3C_NF` direct) — no
+merged canonical from `mergedNF_of_join` (NF join, `EqJoinLemma3C_NF` direct), no
 `GenDisc`, no `GDSupply`, no `WfOpReachable`.  The LCA canonical is delivered by
 `lca_events` + `canonicalNF`; closures by `ver_causal`/`ver_events_sub`. -/
 theorem goodConfig3NF_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -348,7 +348,7 @@ theorem goodConfig3NF_merge (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop
 `goodConfig3NF_of_reachF` mirrors `goodConfig3_of_reachF_wfgen`, but over the
 datatype-side invariant.  It threads TWO honest-execution conditions:
 `hgenW` (per-event `applicable ⟹ W`, weakened along the trace like `hGenC`) and
-`hBA` — the BORN-APPLICABLE delivery discipline: on every reachable apply step the
+`hBA`, the BORN-APPLICABLE delivery discipline: on every reachable apply step the
 applied op is `qapplicable` at the head ("clients issue ops honest about the state
 they are applied to").  `hBA` is the honest-execution hypothesis the datatype-side
 (RAW-fold) canonical witness genuinely requires (the guarded fold hid it via
@@ -407,7 +407,7 @@ theorem goodConfig3NF_of_reachF (E : EqEquiv D) (W : Op D.AppOp → D.State → 
 
 /-- **The born-applicable `≈`-metatheorem.**  A reachable `QSig`-configuration under
 the born-applicable discipline (`hBA`) with genuine events (`hgenW`) is per-version
-RA-linearizable — GATED only on the datatype's merge VC `EqJoinLemma3C_NF` (no
+RA-linearizable, GATED only on the datatype's merge VC `EqJoinLemma3C_NF` (no
 `GenDisc`, no `GDSupply`, no `WfOpReachable`). -/
 theorem RA_linearizable_up_to_eq_NF (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)

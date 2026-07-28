@@ -140,7 +140,7 @@ def mSum (M : Measured D κ) (k : κ) (ρ : List (Op D.AppOp)) : ℕ :=
   (ρ.map (M.μ k)).sum
 
 /-- Folds compute measures: `obs k` after a fold is the start value plus the
-enumeration's measure — for *any* enumeration, no order or commutativity
+enumeration's measure, for *any* enumeration, no order or commutativity
 hypotheses. -/
 theorem Measured.obs_applySeq (M : Measured D κ) (k : κ) :
     ∀ (ρ : List (Op D.AppOp)) (s : D.State),

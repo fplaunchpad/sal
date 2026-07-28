@@ -5,29 +5,29 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 # RGA update convergence via the direct canonical-state characterization
 
 Two per-event-disciplined folds of the same event set converge because each
-fold state is observationally a pure function of the applied event SET —
+fold state is observationally a pure function of the applied event SET,
 domain = `survivors F`, per-survivor anchor =
 `canonAnc F` (the recorded chain resolved against the survivor set), payload =
 recorded element.  No swap oracle, no per-prefix `Faithful`, no `DepComp`: this
 file does not even import them.
 
-The inductive engine is `CanonInv F s` — the design's `CanonMatch` strengthened
+The inductive engine is `CanonInv F s`, the design's `CanonMatch` strengthened
 per survivor with the `LiveChain` carrier from `RGA_SubchainResolve` (the
 live-filtered recorded chain is the survivor's genuine current ancestor chain).
 The bare equation `anc s k = canonAnc F k` is not by itself inductive: the
 `Del`-step rehoming needs the cross-chain coherence that `LiveChain` carries,
 and its `resolve`-projection (`liveChain_resolve` + domain match) is exactly
-`canonAnc` — so `CanonMatch` is the corollary `canonMatch_of_canonInv`.
+`canonAnc`, so `CanonMatch` is the corollary `canonMatch_of_canonInv`.
 
 The per-event discipline (`CanonStepOK`, at each event's OWN application state)
 is the honest weakening of `accurate`+`fresh`: an `Ins` needs only that the
-live-filtered entries of its recorded chain hang together (`ChainOK` — true
+live-filtered entries of its recorded chain hang together (`ChainOK`, true
 even after a concurrent delete of its anchor, where full `accurate` fails), a
 `Del` only that its path resolves to its target's current stored anchor
 (`DelOK`).  `chainOK_of_accurate` / `delOK_of_accurate` show `accurate` implies
 them; `LiveChain` preservation is what transports them from generation-time
 accuracy.  Crucially the discipline is only ever assumed at each event's own
-application point — never at reordered prefixes.
+application point, never at reordered prefixes.
 -/
 
 set_option maxHeartbeats 1000000
@@ -55,7 +55,7 @@ A pure function of `F`'s membership. -/
 def survP (F : List (op_t α)) (k : ℕ) : Prop := insertedIn F k ∧ ¬ deletedIn F k
 
 /-- The canonical anchor: the first entry of a recorded ancestor chain that
-survives `F` (else the root `0`) — the applied-set analog of the merge's
+survives `F` (else the root `0`), the applied-set analog of the merge's
 LCA-climb, and the value `resolve` computes on any state whose domain is
 `survivors F`. -/
 noncomputable def canonAnc (F : List (op_t α)) : List ℕ → ℕ
@@ -63,7 +63,7 @@ noncomputable def canonAnc (F : List (op_t α)) : List ℕ → ℕ
   | c :: cs => if survP F c then c else canonAnc F cs
 
 /-- **The design's `CanonMatch F s`**: `s` is observationally the canonical
-state of the applied set `F` — domain = survivors, and each surviving insert
+state of the applied set `F`, domain = survivors, and each surviving insert
 holds its recorded element and its `canonAnc`. -/
 def CanonMatch (F : List (op_t α)) (s : concrete_st α) : Prop :=
   (∀ c, contains s c = true ↔ survP F c) ∧
@@ -72,7 +72,7 @@ def CanonMatch (F : List (op_t α)) (s : concrete_st α) : Prop :=
 
 /-- **The inductive engine**: `CanonMatch` strengthened with the state
 invariants (`0` unstored, `wf`) and, per surviving insert, the `LiveChain`
-carrier — the live entries of its recorded chain are its genuine current
+carrier, the live entries of its recorded chain are its genuine current
 ancestor chain.  `LiveChain`'s `resolve`-projection is `canonAnc`
 (`canonMatch_of_canonInv`), and it is what makes the `Del` step inductive. -/
 def CanonInv (F : List (op_t α)) (s : concrete_st α) : Prop :=
@@ -93,7 +93,7 @@ def ChainOK (s : concrete_st α) (L : List ℕ) : Prop :=
 
 /-- A `Del`'s path names its target's current stored anchor (or the root, in
 the degenerate root-delete).  Nothing is required of a delete whose target is
-already dead and non-root — it is a no-op on live data. -/
+already dead and non-root, it is a no-op on live data. -/
 def DelOK (s : concrete_st α) (p : List ℕ) (x : ℕ) : Prop :=
   (x = 0 → resolve s p = 0) ∧ (contains s x = true → resolve s p = anc s x)
 
@@ -297,7 +297,7 @@ theorem canonMatch_eq_respecting (F : List (op_t α)) (s s' : concrete_st α)
     · show (sel s' t).2 = canonAnc F (a :: p)
       rw [← hsel]; exact hanc'
 
-/-- **Two canonical states of the same event set are observationally equal** —
+/-- **Two canonical states of the same event set are observationally equal**,
 the per-id extensional glue (the update analog of `eq_merge2_of_branchInv2`'s
 per-id reduction): same domain (= survivors), same element and anchor
 (= recorded payload and `canonAnc`) on every survivor. -/
@@ -475,7 +475,7 @@ theorem canonInv_doIns (F : List (op_t α)) (s : concrete_st α) (t r : ℕ) (e 
 
 /-- **Step `Del` (the design's `canonMatch_doDel`).**  Deleting `x` removes it
 from the survivors and rehomes its children to `resolve s p = anc s x`; each
-survivor's live-filtered chain is spliced across `x` — exactly
+survivor's live-filtered chain is spliced across `x`, exactly
 `isAncPath_surgery` (the single-sided rehoming lemma reused from the
 subchain-resolution development).  Degenerate targets (root, already-dead) are
 no-ops on live data. -/
@@ -643,7 +643,7 @@ theorem canonMatch_doDel (F : List (op_t α)) (s : concrete_st α) (t r x : ℕ)
 /-! ## §9  The fold and the headline -/
 
 /-- **`canon_fold`:** a disciplined enumeration folds to the canonical state
-of its applied set — induction along the enumeration, steps by §6/§7.  The
+of its applied set, induction along the enumeration, steps by §6/§7.  The
 per-event discipline is consumed at each event's OWN application point only;
 no claim is ever made about a not-yet-applied event. -/
 theorem canon_fold : ∀ (π F : List (op_t α)) (s : concrete_st α),
@@ -666,7 +666,7 @@ theorem canon_fold : ∀ (π F : List (op_t α)) (s : concrete_st α),
     rw [applySeqR_cons, show F ++ o :: rest = (F ++ [o]) ++ rest by simp]
     exact ih (F ++ [o]) (do_ s o) h' hrest
 
-/-- **HEADLINE — RGA update convergence via the canonical state.**  Two
+/-- **HEADLINE, RGA update convergence via the canonical state.**  Two
 disciplined enumerations of the same event set fold from `(init_st (α := α))` to
 observationally equal states.
 
@@ -676,7 +676,7 @@ enumerations.  Nothing else: the reachable-state facts `ReachInv` supplied
 (`contains 0 = false`, `wf`) are threaded inside `CanonInv`, and the
 `loOnA`-respecting/backward-closure conditions of the execution model are what
 make `CanonFoldOK` satisfiable, not separate inputs.  NO swap oracle, NO
-per-prefix `Faithful`, NO `DepComp` — none are even imported. -/
+per-prefix `Faithful`, NO `DepComp`, none are even imported. -/
 theorem RGA_update_convergence_canon (π₁ π₂ : List (op_t α))
     (hmem : ∀ o, o ∈ π₁ ↔ o ∈ π₂)
     (h₁ : CanonFoldOK [] (init_st (α := α)) π₁) (h₂ : CanonFoldOK [] (init_st (α := α)) π₂) :
@@ -691,8 +691,8 @@ theorem RGA_update_convergence_canon (π₁ π₂ : List (op_t α))
 
 /-- `accurate` at application implies `ChainOK` there: an accurate chain is
 fully live, hence equal to its own live sublist and genuine from its head.
-(`ChainOK` moreover survives concurrent deletes of chain entries — including
-the anchor itself — where `accurate` fails.) -/
+(`ChainOK` moreover survives concurrent deletes of chain entries, including
+the anchor itself, where `accurate` fails.) -/
 theorem chainOK_of_accurate (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p : List ℕ)
     (h0 : contains s 0 = false)
     (hacc : accurate (t, r, .Ins e p a) s) : ChainOK s (a :: p) := by

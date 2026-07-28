@@ -13,7 +13,7 @@ set_option autoImplicit false
 open Classical
 open Peritext_DSL
 
-/-! # Peritext (CRDT) — SPOTs (paper §A.2 examples)
+/-! # Peritext (CRDT): SPOTs (paper §A.2 examples)
 
 Each SPOT mirrors a paper §A.2 example *exactly*: the same text
 ("The fox jumped"), the same actor names (Alice = rid 0, Bob = rid 1),
@@ -47,10 +47,10 @@ theorem chain_vlt (s : concrete_st) (i j : Nat) (h_lt : i < j)
     (chain_reach s i j (Nat.le_of_lt h_lt) h_after)
     (fun h => by injection h with h1 _; omega)
 
-/-! ## Example 1 — Concurrent formatting and insertion (§3.1)
+/-! ## Example 1: Concurrent formatting and insertion (§3.1)
 
 > Alice makes the entire text bold while Bob inserts the word
-> "brown" in the middle. Outcome: "**The brown fox jumped.**" —
+> "brown" in the middle. Outcome: "**The brown fox jumped.**",
 > the entire text, including "brown", is bold. -/
 
 @[simp] noncomputable def ex1_pre : Scenario :=
@@ -58,7 +58,7 @@ theorem chain_vlt (s : concrete_st) (i j : Nat) (h_lt : i < j)
     ['T', 'h', 'e', ' ', 'f', 'o', 'x', ' ', 'j', 'u', 'm', 'p', 'e', 'd']
 
 /-- Bob (rid = 1) inserts the first letter of "brown" between
-"The " and "fox" — afterId = the space at (4, 0). -/
+"The " and "fox", afterId = the space at (4, 0). -/
 @[simp] noncomputable def ex1_post : Scenario :=
   ex1_pre.insertCharAfter 1 (4, 0) 'b'
 
@@ -93,7 +93,7 @@ example : in_span_visible ex1_post.state ex1_mark (16, 1) := by
   simp only [show mark_endSide ex1_mark = true from rfl, if_true]
   exact Or.inr h_vlt_b_d
 
-/-! ## Example 2 — Overlapping same-type formatting (§3.2)
+/-! ## Example 2: Overlapping same-type formatting (§3.2)
 
 > Alice bolds the first two words ("The fox") while Bob bolds the
 > last two words ("fox jumped"). Outcome: the whole text is bold;
@@ -137,7 +137,7 @@ example : ex2_state.boldAt 5 = true := by
     · subst h_eq; decide
     · exact absurd h_eq h_ne
 
-/-! ## Example 3 — Different mark types coexist (§3.2)
+/-! ## Example 3: Different mark types coexist (§3.2)
 
 > Alice bolds "The fox" while Bob makes "fox jumped" italic.
 > Outcome: "The" bold, "fox" both bold and italic, "jumped" italic. -/
@@ -199,7 +199,7 @@ example : ex3_state.boldAt 5 = true ∧ ex3_state.formattedAt 5 1 = true := by
     · subst h_eq; cases h_mt
     · exact absurd h_eq h_ne
 
-/-! ## Example 5 — Conflicting bold and non-bold (§3.2.1)
+/-! ## Example 5: Conflicting bold and non-bold (§3.2.1)
 
 > Alice bolds the entire text "The fox jumped", then unbolds
 > "fox jumped"; Bob concurrently bolds "jumped". Outcome (paper:
@@ -211,7 +211,7 @@ example : ex3_state.boldAt 5 = true ∧ ex3_state.formattedAt 5 1 = true := by
     |>.unbold 0 ['f', 'o', 'x', ' ', 'j', 'u', 'm', 'p', 'e', 'd']
     |>.bold   1 ['j', 'u', 'm', 'p', 'e', 'd']
 
-/-- 'j' of "jumped" (position 8, OpId (9, 0)) is bold — Bob's
+/-- 'j' of "jumped" (position 8, OpId (9, 0)) is bold, Bob's
 mark M3 has the highest opId and is an Add, so it wins by LWW. -/
 example : ex5_state.boldAt 8 = true := by
   show formatted_visible ex5_state.state (9, 0) 0 = true
@@ -256,11 +256,11 @@ example : ex5_state.boldAt 8 = true := by
   · subst h_eq; decide   -- m' = M2, opid_max (17, 1) (16, 0) = (17, 1)
   · exact absurd h_eq h_ne_M3
 
-/-! ## Example 7 — Bold-boundary insertion expands (§3.3)
+/-! ## Example 7: Bold-boundary insertion expands (§3.3)
 
 > Pre: "The **fox jumped**." Alice inserts "quick " before the
 > bold span and " over the dog" after. Outcome:
-> "The quick **fox jumped over the dog**." — bold expands to
+> "The quick **fox jumped over the dog**.", bold expands to
 > include " over the dog".
 
 This SPOT exhibits the cross-sibling case: a concurrent insert
@@ -294,11 +294,11 @@ example : in_span_visible ex7_post.state ex7_mark (16, 0) := by
     chain_vlt _ 9 14 (by decide) (fun k _ _ => by interval_cases k <;> simp +decide)
   exact Or.inl (Or.inr (visible_lt.trans h_sib h_vlt_j_d))
 
-/-! ## Example 8 — Link-boundary insertion does not expand (§3.3)
+/-! ## Example 8: Link-boundary insertion does not expand (§3.3)
 
 > Same scenario as Ex 7 but with "fox jumped" as a link. Outcome:
 > "The quick fox jumped over the dog." with only "fox jumped" still
-> a link — the link does not expand to include " over the dog".
+> a link, the link does not expand to include " over the dog".
 
 This SPOT exhibits the visible-order property underpinning the
 exclusion: a new char inserted with `endId` as its parent comes

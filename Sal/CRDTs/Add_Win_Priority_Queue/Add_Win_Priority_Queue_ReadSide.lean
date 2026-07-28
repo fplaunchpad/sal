@@ -19,26 +19,26 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # Add-Win Priority Queue (CRDT) — read-side projection
+/-! # Add-Win Priority Queue (CRDT): read-side projection
 
 The 24 RA-linearizability VCs in `Add_Win_Priority_Queue_CRDT.lean`
 prove that the state `(A, I, R)` converges under merge. They say
 nothing about whether the *queries* the user runs against that state
 behave according to the paper:
 
-  - `lookup(e)` — is element `e` live (has at least one un-tombstoned
+  - `lookup(e)`: is element `e` live (has at least one un-tombstoned
     add record)?
-  - `innate(e)` — the LWW innate value (max over live add records'
+  - `innate(e)`: the LWW innate value (max over live add records'
     `add_ts`).
-  - `acquired(e)` — sum of increment amounts for `e`.
-  - `priority(e)` — `innate + acquired`.
+  - `acquired(e)`: sum of increment amounts for `e`.
+  - `priority(e)`: `innate + acquired`.
 
 This file lifts the first two (`lookup` and the LWW innate property)
 into Lean and proves three intent theorems mirroring the Peritext
 methodology. `acquired`, `priority`, `get_max`, and `is_empty` are out
 of scope.
 
-**Faithfulness caveat — read `docs/aw-crpq-vs-paper.md`.** The paper
+**Faithfulness caveat: read `docs/aw-crpq-vs-paper.md`.** The paper
 resolves the acquired value via **Most-Change-Win** (Alg 2 line 8 +
 §3.3.2): the inc-field of the live record with maximum
 change-magnitude `count`. The upstream `Add_Win_Priority_Queue_CRDT.lean`
@@ -46,7 +46,7 @@ docstring informally describes acquired as `Σ over I records`, which
 is neither the paper's MCW nor expressible in our split state shape
 (no per-record `count` field). The docs file enumerates this and
 the other state-shape divergences. The theorems here cover only the
-parts that are paper-faithful in our state model — `lookup`, LWW
+parts that are paper-faithful in our state model, `lookup`, LWW
 innate, and the Add-Wins headline.
 
 Reference: Zhang, Ouyang, Huang, Ma. "Conflict-free Replicated
@@ -122,8 +122,8 @@ theorem is_innate_record_convergent
 
 /-- **Add-wins over concurrent Rmv (headline).** Starting from any
 state, applying `Add e v` at `ts1` and then `Rmv e D` whose snapshot
-`D` does not include `(e, ts1)` — the state-based stand-in for "the
-Add was concurrent with the Rmv" — leaves the element live.
+`D` does not include `(e, ts1)`, the state-based stand-in for "the
+Add was concurrent with the Rmv", leaves the element live.
 
 The premise `D (e, ts1) = false` captures the paper's prepare-time
 snapshot: `D` is the set of records visible at the Rmv's originating
@@ -187,7 +187,7 @@ element `e` applies to every live add-record for `e`, so the paper's
 Most-Change-Win (Alg 2 line 8) collapses to summation over the
 matching inc records. Each query is defined propositionally via a
 list-witness so we do not need to expose Mathlib's `Finset` machinery
-in our state model — the codebase deliberately avoids it to keep
+in our state model, the codebase deliberately avoids it to keep
 `grind` and `aesop` effective on the convergence VCs. -/
 
 /-- **Empty.** No element is currently live. Paper §2.2 `is_empty()`. -/

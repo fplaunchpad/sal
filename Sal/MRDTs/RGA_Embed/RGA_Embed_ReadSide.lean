@@ -1,18 +1,18 @@
 import Sal.MRDTs.RGA_Embed.RGA_Embed_MRDT
 
 /-!
-# Embedded-chain RGA — read side: display order, stability theorems, SPOT
+# Embedded-chain RGA: read side: display order, stability theorems, SPOT
 
 The display order is a **sort of immutable keys** (design doc §1: read =
 descending coordinates, ancestors first). This file:
 
 * the terminator key (`key`) and the strict display relation (`before`);
-* the **stability theorems** — the pairwise-display-stability contract
+* the **stability theorems**: the pairwise-display-stability contract
   ("if a co-displayed pair is flipped, we have failed") as Lean theorems.
   None of them uses any property of the code: they are pure consequences of
   value immutability (`sel` never changes for a surviving id), which is the
   design's whole point. Delete-order preservation is the `Del` case of step
-  stability — the theorem the proved flat RGA *refutes* on the same scenario
+  stability, the theorem the proved flat RGA *refutes* on the same scenario
   (`tombstone_free_violates_delete_order`);
 * `document` (the executable read over an explicit id list, repo convention)
   and SPOT scenarios: the flat RGA's reorder witness with the opposite
@@ -32,7 +32,7 @@ variable {α : Type} [DecidableEq α]
 
 /-- Terminator key: bits map to `{1, 2}` (`false ↦ 1`, `true ↦ 2`) and a
 terminator `3` is appended. At the point where an ancestor's coordinate ends,
-it offers `3` — larger than any bit symbol — so in the *descending* read an
+it offers `3` (larger than any bit symbol) so in the *descending* read an
 ancestor sorts strictly before its own descendants, and siblings compare by
 their first differing bit. This is the arithmetization of "DFS, children by
 descending mint" as one flat comparison. -/
@@ -54,7 +54,7 @@ def before (s : concrete_st α) (t1 t2 : ℕ) : Prop :=
   contains s t1 = true ∧ contains s t2 = true ∧
   keyLt (key (pos s t2)) (key (pos s t1)) = true
 
-/-! ## Value stability — the engine of every display-stability theorem -/
+/-! ## Value stability: the engine of every display-stability theorem -/
 
 omit [DecidableEq α] in
 /-- A surviving id's value is untouched by any op with a fresh timestamp:
@@ -103,12 +103,12 @@ theorem sel_merge_stable_right (l a b : concrete_st α) (k : ℕ)
       exact hab k ha' hk
     · rw [if_neg ha']
 
-/-! ## The stability theorems (S2/S4 — the adopted contract) -/
+/-! ## The stability theorems (S2/S4, the adopted contract) -/
 
 omit [DecidableEq α] in
 /-- **Step display stability** (litmus S2). Any op with a fresh timestamp
 preserves the display order of every surviving pair. Instantiated at `Del`
-(whose `fresh_ts` is trivial) this is **delete-order preservation** — the
+(whose `fresh_ts` is trivial) this is **delete-order preservation**, the
 sequential-spec clause the proved flat RGA machine-refutably violates. -/
 theorem before_do_stable (Γ : OrderedPrefixCode) (s : concrete_st α)
     (o : op_t α) (t1 t2 : ℕ) (hf : fresh_ts o s)
@@ -124,7 +124,7 @@ theorem before_do_stable (Γ : OrderedPrefixCode) (s : concrete_st α)
 omit [DecidableEq α] in
 /-- **Pairwise display stability at merges** (litmus S4, branch `a`'s pairs).
 A pair co-displayed at a branch and surviving the merge is displayed in the
-same order by the merge — the contract "if a co-displayed pair is flipped,
+same order by the merge, the contract "if a co-displayed pair is flipped,
 we have failed", from nothing but value immutability. -/
 theorem before_merge_stable (l a b : concrete_st α) (t1 t2 : ℕ)
     (hla : coherent2 l a)
@@ -153,7 +153,7 @@ theorem before_merge_stable_right (l a b : concrete_st α) (t1 t2 : ℕ)
 
 /-! ## The executable read and SPOT scenarios
 
-`document s ids` — the display over an explicit id list (repo convention:
+`document s ids`, the display over an explicit id list (repo convention:
 the function-based map cannot enumerate its own domain). The concrete
 scenarios run the **unary** code; every verdict below is a
 `native_decide` computation on the real `do_`/`merge`. -/
@@ -170,12 +170,12 @@ def mkE (recs : List (ℕ × ℕ × coord)) : concrete_st ℕ :=
 /-- Shorthand: the unary codeword. -/
 def u (d : ℕ) : coord := unaryEnc d
 
-/-! ### The flat RGA's reorder witness — opposite verdict here
+/-! ### The flat RGA's reorder witness: opposite verdict here
 
 `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean` (`del_can_reorder_survivors`):
 state `[(5,100,root), (6,101,root), (8,102,under 5)]` reads `[6,5,8]`; the
 flat RGA's delete of `5` re-sorts the rehomed `8` by its own timestamp and
-reads `[8,6]` — the `[b,a,c] → [c,b]` anomaly. Here the coordinates are
+reads `[8,6]`, the `[b,a,c] → [c,b]` anomaly. Here the coordinates are
 absolute, deletion touches no value, and the order is preserved. -/
 
 def s_reorder : concrete_st ℕ := mkE [(5, 100, u 5), (6, 101, u 6), (8, 102, u 5 ++ u 3)]
@@ -212,7 +212,7 @@ theorem l1_delete_order :
 
 `6` and `10` race the front; `22, 16` typed under `6`; a third party mints
 `8` concurrently. Both death-before and death-after topologies read
-`[10, 8, 22, 16]` — the shape that kills every timestamp-oblivious variant,
+`[10, 8, 22, 16]`, the shape that kills every timestamp-oblivious variant,
 converging here because coordinates are birth constants. -/
 
 def m_lca : concrete_st ℕ := mkE []
@@ -226,7 +226,7 @@ theorem merge_document : document m_M1 [6, 10, 16, 22] = [10, 6, 22, 16] := by
   native_decide
 
 /-- Should-FAIL pin: the display is computed from the coordinates, not
-echoed from the candidate id list — the read differs from `ids` order. -/
+echoed from the candidate id list, the read differs from `ids` order. -/
 theorem merge_document_not_ids_order :
     document m_M1 [6, 10, 16, 22] ≠ [6, 10, 16, 22] := by
   native_decide

@@ -7,14 +7,14 @@ import Sal.Tactic.Sal
 
 
 /-!
-# Replicated Growable Array (RGA) — state-based MRDT
+# Replicated Growable Array (RGA): state-based MRDT
 
 Sequence CRDT for collaborative editing. Each insert stakes
 `(ts, (afterId, elem))`: globally-unique `ts` is the new node's id;
 `afterId` is the causal predecessor in the sequence DAG. Removes
 simply tombstone a node's `ts`. The canonical sequence the user reads
 is a deterministic traversal of the DAG (newer children before older
-at each anchor), skipping tombstones — that traversal is a read-side
+at each anchor), skipping tombstones, that traversal is a read-side
 projection, not part of the 24 VCs.
 
 State is two components:

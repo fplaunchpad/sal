@@ -4,11 +4,11 @@ import Sal.Interfaces.Set_Extended
 open Classical
 
 /-!
-# A prefix-free, tombstone-free RGA — complete implementation (runs; not VC-verifiable)
+# A prefix-free, tombstone-free RGA: complete implementation (runs; not VC-verifiable)
 
 This is the concrete data type behind the impossibility result in
-`RGA_PrefixFree_Impossible.lean`. It is a *complete* MRDT — state `σ₀`, `do_`,
-3-way `merge`, `rc` — that is genuinely **prefix-free** (operations carry only an
+`RGA_PrefixFree_Impossible.lean`. It is a *complete* MRDT, state `σ₀`, `do_`,
+3-way `merge`, `rc`, that is genuinely **prefix-free** (operations carry only an
 immediate anchor / target, no ancestor path) and **tombstone-free** (`Del`
 physically removes the id; no graveyard).
 
@@ -19,15 +19,15 @@ The point of having it as runnable code:
   after a node the other branch deleted, the LCA still has that node live with its
   parent, and `climb` recovers it. `merge_converges_concurrent` checks this: the
   inserted node is rehomed to the deleted node's parent, order-independently.
-  The merge is *identical* to the path-carrying flagship's — it never needed paths.
+  The merge is *identical* to the path-carrying flagship's, it never needed paths.
 
 * **(b) The single-replica `do_` VC fails.** There is no LCA at `do_`. Reordering
   the same insert/delete on one replica diverges (`single_replica_do_diverges`),
   and that is exactly a `cond_comm_base` violation (`cond_comm_base_fails`).
 
 So the information the VC needs (the deleted anchor's parent) lives in the LCA, but
-the single-replica `do_`-commutation VC never looks there. That gap — *merge can
-converge, the VC cannot see it* — is why a prefix-free tombstone-free RGA runs and
+the single-replica `do_`-commutation VC never looks there. That gap, *merge can
+converge, the VC cannot see it*, is why a prefix-free tombstone-free RGA runs and
 yet cannot be certified by Sal's current VCs. Cf. `RGA_PrefixFree_Impossible.lean`
 (the `rc = Either` horn) and `RGA_Splice_Counterexample.lean` (the `cond_comm_base`
 horn). This file supplies the missing `merge` and exhibits the convergence the
@@ -53,7 +53,7 @@ deriving DecidableEq
 abbrev op_t := ℕ × ℕ × app_op_t
 
 /-- Effect.
-* `Ins e a` at ts `t`: store `(e, a)` if `a` is live, else fall to root `0` — with
+* `Ins e a` at ts `t`: store `(e, a)` if `a` is live, else fall to root `0`, with
   no path there is nothing to climb (this is the prefix-free choice that the
   impossibility theorem shows cannot commute).
 * `Del x`: reparent `x`'s children to its stored parent `anc s x`, then remove `x`. -/
@@ -73,7 +73,7 @@ def climb_aux (ancL : ℕ → ℕ) (I : set ℕ) : ℕ → ℕ → ℕ
 @[simp] def climb (ancL : ℕ → ℕ) (I : set ℕ) (x : ℕ) : ℕ := climb_aux ancL I x x
 
 /-- Three-way merge: OR-set survival on identities, then `climb` each survivor's
-birth-anchor up the **LCA** `l`'s parent chain. Reads parents from `l` only —
+birth-anchor up the **LCA** `l`'s parent chain. Reads parents from `l` only,
 needs no operation paths, and recovers a concurrently-deleted node's parent. -/
 @[simp] def merge (l a b : concrete_st) : concrete_st :=
   let dl := domain l
@@ -94,7 +94,7 @@ inductive rc_res : Type where
 | Fst_then_snd | Snd_then_fst | Either
 deriving DecidableEq
 
-/-- Order the only non-commuting pair — insert-at-`x` vs delete-`x` — and leave
+/-- Order the only non-commuting pair (insert-at-`x` vs delete-`x`) and leave
 everything else `Either`. (Prefix-free forces an ordering here; with `rc = Either`
 the pair would have to commute, which `RGA_PrefixFree_Impossible.lean` refutes.) -/
 @[simp] def rc (o1 o2 : op_t) : rc_res :=
@@ -118,13 +118,13 @@ def dump (s : concrete_st) (ids : List ℕ) : List (ℕ × ℕ × ℕ) :=
 
 LCA `l`: node `5` lives under `7` under the root. Branch `a` inserts `10` after
 `5`; concurrently branch `b` deletes `5`. The merge recovers `5`'s parent `7` from
-the LCA and rehomes `10` to `7` — order-independently. The insert anchored at a
+the LCA and rehomes `10` to `7`, order-independently. The insert anchored at a
 node the other branch deleted, and convergence still happened: **no path needed.**
 
 Caveat: the `merge` (copied verbatim from the flagship) uses `climb` with fuel =
 node id, so this convergence relies on **id-monotone anchors** (`anc t < t`); it
 holds here because the ids are monotone and the chains short. Non-monotone ids can
-break `wf` under merge — see `RGA_Reachability_Invariant.lean` (`merge_breaks_wf`).
+break `wf` under merge, see `RGA_Reachability_Invariant.lean` (`merge_breaks_wf`).
 So `merge_converges_concurrent` is a verified fact about *this example*, not a
 general convergence theorem. -/
 

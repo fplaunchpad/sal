@@ -7,7 +7,7 @@ import Sal.ConditionedMRDTs.Metatheory.GenericSafety
 import Sal.ConditionedMRDTs.Metatheory.EscrowSafety
 
 /-!
-# Bounded Counter — convergence, the client contract, and the bound as a theorem
+# Bounded Counter: convergence, the client contract, and the bound as a theorem
 
 A genuinely conditioned MRDT instance. Mirror of `Sal/CRDTs/Bounded_Counter`
 (Sypytkowski's state-based bounded counter, per-replica escrow; transfers
@@ -24,12 +24,12 @@ Three layers:
 * **§3 The client contract.** The CRDT file enforces the bound "operationally
   by well-behaved clients". Here that is formal: `BCInv` (per-replica
   `0 ≤ decs r ≤ incs r`), `bcApplicable` (a `Dec` needs slack in the issuing
-  replica's own slots — positive and checkable against the issuing replica's
+  replica's own slots, positive and checkable against the issuing replica's
   state), the conditioned signature `BCCond` packaging them, and
   `bcApplicable_inv_pres`: an applicable step preserves the invariant.
 * **§4–§6 The bound as a reachability theorem.** `BCHonest C` says every `Dec`
-  in the configuration's history was applicable at the fold of its causal past
-  — "well-behaved clients", stated on the execution. The headline
+  in the configuration's history was applicable at the fold of its causal past,
+  "well-behaved clients", stated on the execution. The headline
   `bc_version_inv`: at every reachable configuration, **every version of every
   honest execution satisfies the invariant**; corollary `bc_value_nonneg`, the
   counter's value (over any finite set of replicas) is non-negative. It is a
@@ -85,7 +85,7 @@ noncomputable def BC : ConditionedMRDTSig where
   Inv := fun _ => True
   applicable := fun _ _ => True
 
-/-! Component-level reduction lemmas — everything downstream is `omega` on
+/-! Component-level reduction lemmas: everything downstream is `omega` on
 these. -/
 
 theorem bcBump_apply (f : ℕ → ℤ) (r k : ℕ) :
@@ -218,7 +218,7 @@ the sum of the per-replica slacks, hence non-negative (`bc_value_nonneg`). -/
 def BCInv (s : BCState) : Prop := ∀ r, 0 ≤ s.2 r ∧ s.2 r ≤ s.1 r
 
 /-- The client check of the CRDT file, made formal: a `Dec` needs slack in the
-issuing replica's OWN slots — positive, and checkable against the issuing
+issuing replica's OWN slots, positive, and checkable against the issuing
 replica's state. `Inc` is always legal. -/
 def bcApplicable (o : Op BCOp) (s : BCState) : Prop :=
   match o.2.2 with
@@ -231,7 +231,7 @@ noncomputable def BCCond : ConditionedMRDTSig where
   Inv := BCInv
   applicable := bcApplicable
 
-/-- An applicable step preserves the invariant — the contract is locally
+/-- An applicable step preserves the invariant: the contract is locally
 maintainable at the issuing replica. -/
 theorem bcApplicable_inv_pres {s : BCState} {o : Op BCOp}
     (hInv : BCInv s) (happ : bcApplicable o s) :
@@ -382,7 +382,7 @@ theorem bc_safetyStep : SafetyStepOn BC BCInv bcApplicable := by
 /-! ## §6  Honest histories and the bound -/
 
 /-- **The client contract, on the execution**: every decrement in the
-configuration's history was applicable at the fold of its causal past — the
+configuration's history was applicable at the fold of its causal past: the
 issuing replica checked its own slack against what it had seen. (This is the
 bounded counter's `HonestDelivery`; the CRDT file's "the bound is enforced
 operationally by well-behaved clients", stated formally.) -/
@@ -409,7 +409,7 @@ theorem BCHonest_iff_genHonest (C : Configuration BC) :
 open LabeledTS in
 /-- The reachability invariant for the bounded counter: the generic
 honest-reachability induction (`goodConfig3_of_honest_reach`) under the
-trivial contract — the counter's Join is unconditional (the CD route). -/
+trivial contract: the counter's Join is unconditional (the CD route). -/
 theorem bc_goodConfig3
     (C : Configuration BC)
     (hReach : (labeledTS3 BC).ReachableFrom (initConfig BC trivial) C) :
@@ -423,7 +423,7 @@ theorem bc_goodConfig3
 ∀-enumeration form covers in particular the causal enumeration of each causal
 past, which exists because every observed set is registered
 (`ObservedRegistered`) and versions carry causal witnesses
-(`CausalCanonical`) — the generic bridge `honestAppOn_of_genHonest`. -/
+(`CausalCanonical`), the generic bridge `honestAppOn_of_genHonest`. -/
 theorem bc_honestAppOn {C : Configuration BC}
     (hObs : ObservedRegistered C) (hCC : CausalCanonical C)
     (hHon : BCHonest C) : HonestAppOn BC bcApplicable C :=
@@ -451,7 +451,7 @@ theorem bc_version_inv
   exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hGood hCC
     (bc_honestAppOn hObs hCC hHon)
 
-/-- **Corollary: the counter's value is non-negative** — over any finite set of
+/-- **Corollary: the counter's value is non-negative**, over any finite set of
 replicas, at every version of every reachable honest configuration. -/
 theorem bc_value_nonneg
     (C : Configuration BC)
@@ -469,7 +469,7 @@ theorem bc_value_nonneg
     simp only [List.map_cons, List.sum_cons]
     omega
 
-/-! ## §7  The conditioned capstone — identity instantiation of the generic
+/-! ## §7  The conditioned capstone, identity instantiation of the generic
 framework (convergence half of the catalogue entry) -/
 
 section

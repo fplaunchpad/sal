@@ -53,19 +53,19 @@ detailed in appendix §A.2–A.4) partitions the event sets involved
 in a merge. Specialised to 2-way CRDT merge (LCA collapses to
 `init`), the partition is:
 
-* `L_top = ev₁ ∩ ev₂` — events seen at both replicas (shared
+* `L_top = ev₁ ∩ ev₂`: events seen at both replicas (shared
   history).
-* `L₁' = ev₁ \ ev₂` — events local to `r₁`.
-* `L₂' = ev₂ \ ev₁` — events local to `r₂`.
+* `L₁' = ev₁ \ ev₂`: events local to `r₁`.
+* `L₂' = ev₂ \ ev₁`: events local to `r₂`.
 
 Within the local events, a further partition reflects whether a
 local event is `lo`-before some shared event (needs to be
 linearised early) or not (can be appended at the end):
 
-* `L_a C ev_local` — local events **not** `lo`-before any shared
+* `L_a C ev_local`: local events **not** `lo`-before any shared
   event. These are the "easy" events that linearise at the end of
   the merge.
-* `L_b C ev_local` — local events `lo`-before some shared event or
+* `L_b C ev_local`: local events `lo`-before some shared event or
   transitively `lo`-before another local `L_b` event.
 
 These definitions set up the structure used by the
@@ -87,7 +87,7 @@ matching `appendix.tex:262`:
               (e →_lo e_⊤ ∨ ∃ e' ∈ L_1'. e →_lo e' →_lo e_⊤) }
 
 The depth-2 case is essential for Lemma 1's "no lo-edge from `L^a`
-to `L^b`" — see the audit block below. -/
+to `L^b`", see the audit block below. -/
 def L_b (C : Configuration D) (ev_top ev_local : Set (Op D.AppOp)) :
     Set (Op D.AppOp) :=
   fun e => e ∈ ev_local ∧
@@ -159,7 +159,7 @@ theorem union_eq_partition (ev₁ ev₂ : Set (Op D.AppOp)) :
   tauto
 
 /-! Subset facts. Each `L_*` partition piece is a subset of one of
-the underlying replica event sets `ev₁`, `ev₂`. Demand-driven —
+the underlying replica event sets `ev₁`, `ev₂`. Demand-driven,
 consumed by the distinct-last-event proof to invoke
 `exists_lo_maximal_in_subset` on the carving layers. -/
 
@@ -333,9 +333,9 @@ the presence of an overwriter.
 
 The proof is structured in four layers:
 
-1. `applySeq_swap_commute` — swap commuting adjacent ops. Direct
+1. `applySeq_swap_commute`: swap commuting adjacent ops. Direct
    from `D.commutes`. Closed.
-2. `applySeq_swap_lo_incomparable` — swap lo-incomparable adjacent
+2. `applySeq_swap_lo_incomparable`: swap lo-incomparable adjacent
    ops (both events in `C.events`). Case-splits on commute; closes
    three of four sub-cases:
    - `commutes a b`: direct from (1).
@@ -344,9 +344,9 @@ The proof is structured in four layers:
    - different replica, commutes: direct from (1).
    - different replica, `¬commutes`: needs overwriter + cond_comm.
      Left as `sorry`.
-3. `applySeq_bubble_lo_max` — bubble a lo-maximal event to the end
+3. `applySeq_bubble_lo_max`: bubble a lo-maximal event to the end
    of a list via repeated (2). Closed modulo (2).
-4. `convergence` — strong induction on `π₁.length`, picking last
+4. `convergence`: strong induction on `π₁.length`, picking last
    event of `π₁`, splitting `π₂`, bubbling, recursing. Closed
    modulo (2) and (3). -/
 
@@ -409,8 +409,8 @@ Case analysis:
   corresponding direction (disjunct 1 of `lo`), contradicting
   incomparability.
 - Different replica + commutes: direct via `applySeq_swap_commute`.
-- Different replica + `¬ commutes`: requires the `h_ov` hypothesis
-  — an explicit overwriter split of `sfx = α ++ e₃ :: β` with the
+- Different replica + `¬ commutes`: requires the `h_ov` hypothesis,
+  an explicit overwriter split of `sfx = α ++ e₃ :: β` with the
   rc preconditions. Closed via `applySeq_swap_via_cond_comm_lift`.
 
 The Sal paper (lin.tex §3.2) states convergence over `E_C` (the
@@ -799,16 +799,16 @@ theorem convergence
             have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
               (hmem₂ e₃).mpr h_e₃_in_ev
             have h_lo_ye₃ : lo C y e₃ := Or.inl ⟨h_vis_ye₃, h_nc_ye₃⟩
-            -- e₃ ≠ e (since lo(y, e₃) and ¬ lo(y, e) — distinct).
+            -- e₃ ≠ e (since lo(y, e₃) and ¬ lo(y, e), distinct).
             have h_e₃_ne_e : e₃ ≠ e := fun h_eq => by
               subst h_eq; exact h_not_lo_ye h_lo_ye₃
             -- e₃ ≠ y.
             have h_e₃_ne_y : e₃ ≠ y := fun h_eq => by
               subst h_eq
-              -- lo y y from h_lo_ye₃ — unusual but possible if vis y y.
+              -- lo y y from h_lo_ye₃, unusual but possible if vis y y.
               -- Actually vis y y means y is visible to itself; ¬commute y y
               -- says y doesn't commute with itself. update s y; update s y
-              -- = update s y by idempotence — wait, not necessarily.
+              -- = update s y by idempotence, wait, not necessarily.
               -- Anyway, we have vis y y from h_vis_ye₃. By vis_tgt we have
               -- y ∈ C.events. By timestamps_distinct y y (with y ≠ y),
               -- vacuously distinctOps. Hmm.
@@ -960,9 +960,9 @@ theorem bottomUp_0op (hVC : SatisfiesVCs D)
 For 2-way-merge CRDTs `l` collapses (no LCA argument). We split the
 disjunctive premise into two theorems:
 
-* `bottomUp_1op_top` — clause (`e_⊤ ≠ ε`): right side ends in a
+* `bottomUp_1op_top`, clause (`e_⊤ ≠ ε`): right side ends in a
   shared event `ol ≠ o₁`.
-* `bottomUp_1op_bot` — clause (`e_⊤ = ε ∧ l = b`): right side
+* `bottomUp_1op_bot`, clause (`e_⊤ = ε ∧ l = b`): right side
   degenerates to `D.init`.
 
 Their base cases (both `a = init`) are direct VC applications.
@@ -1020,7 +1020,7 @@ Specialised form useful for the inductive case of
 `merge_linearization_exists` when `π₁ = []`. Proved by induction on
 `π_b` (via `List.reverseRecOn`): base uses `bottomUp_2op_base`,
 step uses `ind_right_2op`. Requires `Fst_then_snd` (strict) for the
-`rc` precondition — `ind_right_2op` does not cover the `Either`
+`rc` precondition, `ind_right_2op` does not cover the `Either`
 case. -/
 theorem bottomUp_2op_init_left
     (hVC : SatisfiesVCs D) (o₁ o₂ : Op D.AppOp)
@@ -1051,7 +1051,7 @@ double induction: outer on `π_a` (via `ind_left_2op`), inner on
 `π_b` (via `bottomUp_2op_init_left`).
 
 Does **not** cover the `Either` `rc` case (`ind_right_2op` rejects
-it) — that case needs different VC machinery, likely the
+it), that case needs different VC machinery, likely the
 `inter_*_2op` family. -/
 theorem bottomUp_2op_reachable
     (hVC : SatisfiesVCs D) (o₁ o₂ : Op D.AppOp)
@@ -1079,7 +1079,7 @@ theorem bottomUp_2op_reachable
     · exact ih (fun f hf => h_dist_a_o₁ f (by simp [hf]))
                (fun f hf => h_dist_a_o₂ f (by simp [hf]))
 
-/-- **BottomUp-1-OP, clause (a), reachable form** — strict
+/-- **BottomUp-1-OP, clause (a), reachable form**: strict
 `Fst_then_snd` `rc` case. Direct corollary of
 `bottomUp_2op_reachable` (same theorem, renaming `ol → o₂`). -/
 theorem bottomUp_1op_top_reachable
@@ -1172,7 +1172,7 @@ This is implied by `Configuration.vis_causal` (which is unconditional
 on commute), so the top-level caller discharges it for free. It is
 *preserved* under shared-event peels of `lo`-respecting linearisations:
 if removing the lo-maximal `e` from `ev` broke closure, some `b` in
-the residue would have `vis e b ∧ ¬commute e b`, hence `lo C e b` —
+the residue would have `vis e b ∧ ¬commute e b`, hence `lo C e b`,
 contradicting `respects π (lo C)` with `e` at the tail and `b` in
 the prefix. -/
 
@@ -1184,7 +1184,7 @@ theorem lo_of_vis_noncomm {C : Configuration D} {a b : Op D.AppOp}
 /-! ### Lo-maximal element existence
 
 The appendix's distinct-last-event proof (§A.2) repeatedly picks
-"the lo-maximal element of `M_i^a`" — i.e., an element of `M_i^a`
+"the lo-maximal element of `M_i^a`", i.e., an element of `M_i^a`
 with no lo-successor in `M_i^a`. The standard route in Lean is:
 take the IH's lo-respecting linearisation, *filter* it to the
 target subset, and observe that the last element of the filtered
@@ -1798,7 +1798,7 @@ theorem no_lo_a_to_b
 
 **Proof structure.** `e ∈ L_top_a` provides a witness `e''` with
 `e'' ∈ L_b` (in either replica's local) and `lo C e'' e`. The vis
-disjunct of `lo e'' e` is **closed inline** below — it would force
+disjunct of `lo e'' e` is **closed inline** below, it would force
 `e'' ∈ L_top` via `h_top_vis_closed`, but `e'' ∈ L_local` (which is
 disjoint from `L_top`). Hence `lo e'' e` reduces to its rc disjunct.
 
@@ -1883,7 +1883,7 @@ theorem no_lo_top_a_to_top_b
       ⟨h_lo_e''_e_rc.2.2.1, h_rc_ee'⟩
 
 /-! Note: an earlier stub `no_lo_within_L_top_a` claimed
-`∀ e e' ∈ L_top_a, e ≠ e' → ¬ lo C e e'` — this is too strong and
+`∀ e e' ∈ L_top_a, e ≠ e' → ¬ lo C e e'`, this is too strong and
 **false in general** (lo-edges between distinct `L_top_a` elements
 are not precluded by the carving's definitions). Block 6's inner
 step uses `exists_lo_maximal_in_subset (L_top_a)` directly to
@@ -1894,7 +1894,7 @@ extract a lo-max element, which gives no-lo-successor *within*
 `appendix.tex` Case 1.1.2, lines 359–364).
 
 A *concurrent* event `e₁` (neither `vis`-before nor `vis`-after `e`)
-has **no** `lo`-edge to any `L_b` event `e` — i.e. any local event
+has **no** `lo`-edge to any `L_b` event `e`, i.e. any local event
 carrying a `lo`-path (of length 1 or 2) to a top event. This is the
 fact the paper needs in order to peel `e₁` at the tail of the merge
 linearization in the commuting sub-case `e₁ ⇄ e₂`; the paper's cited
@@ -1905,13 +1905,13 @@ when `e₁` and `e₂` commute. This lemma supplies the missing argument.
 It needs only:
 
 * concurrency `e₁ ∥ e` (`h_conc₁`/`h_conc₂`); at the call site this
-  comes from **backward** causal closure — `e₁ ∈ ev₁ \ ev₂` and
+  comes from **backward** causal closure, `e₁ ∈ ev₁ \ ev₂` and
   `e ∈ ev₂ \ ev₁` are local to different replicas, so any `vis` edge
   between them would drag one into the other's set; and
 * the `L_b` membership of `e` (its `lo`-path to the top).
 
 Argument: `lo e₁ e` between concurrent events can only be the `rc`
-disjunct — `rc(e₁,e) = Fst` **and** `e` has no overwriter. But
+disjunct, `rc(e₁,e) = Fst` **and** `e` has no overwriter. But
 `e ∈ L_b` gives a first hop `e →lo w`; that edge is either
 `vis` (then `w` overwrites `e`, contradicting the no-overwriter
 clause) or `rc` (then `rc(e₁,e) = Fst ∧ rc(e,w) = Fst` violates
@@ -1934,7 +1934,7 @@ theorem no_lo_of_concurrent_to_L_b
   intro h_lo
   obtain ⟨he_local, h_paths⟩ := h_e_b
   have he_in_union : e ∈ ev_top ∪ ev_local := Set.mem_union_right _ he_local
-  -- `lo e₁ e` must be the rc disjunct — vis is excluded by concurrency.
+  -- `lo e₁ e` must be the rc disjunct, vis is excluded by concurrency.
   rcases h_lo with ⟨h_vis, _⟩ | ⟨_, _, h_rc_e₁e, h_no_ow⟩
   · exact h_conc₁ h_vis
   have h_dist_e₁e : distinctOps e₁ e := h_distinct e₁ e h_e₁_in he_in_union h_ne
@@ -1968,7 +1968,7 @@ globally `lo`-maximal.** (Redesign item 1, verified.)
 Given the carving `ev_top ⊎ ev_local` and any `lo`-respecting
 permutation `π` of `ev_top ∪ ev_local`, the `lo`-maximal element of a
 non-empty `L_a` layer (local events with **no** `lo`-path to the top)
-is `lo`-maximal in the **entire** set `ev_top ∪ ev_local` — not merely
+is `lo`-maximal in the **entire** set `ev_top ∪ ev_local`, not merely
 within `L_a`. This is exactly the property the paper's peel needs and
 that the stuck "peel-last" proof lacked (it had only local
 maximality within one input list).
@@ -1987,7 +1987,7 @@ hypothesis (dischargeable from reachability at the call site) and it
 **does discharge here** via `no_lo_a_to_b`. The residual blocker for
 completing the induction is purely the *state-equation* half (peeling
 this globally-`lo`-max **local** event through `merge`, which needs
-convergence over the replica set `ev₁` — see the file header notes),
+convergence over the replica set `ev₁`, see the file header notes),
 not the lo-max selection. -/
 theorem lo_max_of_L_a_is_global
     (hVC : SatisfiesVCs D) {C : Configuration D}

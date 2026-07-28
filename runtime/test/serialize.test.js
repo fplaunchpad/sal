@@ -1,7 +1,7 @@
-// Run-table serializer tests (task #104, SERIALIZER item).
+// Run-table serializer tests.
 //
 // EXPECTED ACCOUNTING VALUES ARE HAND-DERIVED via whiteboard/litmus/
-// run_table_measure.py (task #73), never #eval'd from serialize.js: the
+// run_table_measure.py, never #eval'd from serialize.js: the
 // directed totals below were printed by run_table_measure.account(t, False)
 // on the same three trees, so a serialize.js bug shows as a mismatch against
 // the independent Python model. Reference flipped-Elias-delta lengths

@@ -26,7 +26,7 @@ open Classical
 /-! ## Read-side projection and rich-text merge-semantic characterizations
 
 This section goes beyond the 24 state-convergence VCs and captures the
-paper's *interesting* merge semantics — the claims that differentiate
+paper's *interesting* merge semantics, the claims that differentiate
 Peritext from "a plain RGA with a flat set of formatting ranges":
 
 1. **Expand/contract via anchor sides.** `startSide` / `endSide` decide
@@ -99,7 +99,7 @@ def after_of (s : concrete_st) (c target : OpId) : Bool :=
 /-- Priority comparison between two mark ops for the *same character
 and mark type*. Returns `true` iff `a` wins over `b`.
 
-Paper §4.4: LWW on opId — the highest-opId op wins, regardless of
+Paper §4.4: LWW on opId, the highest-opId op wins, regardless of
 its `isAdd` bit. -/
 @[simp]
 def mark_beats (a b : MarkOp) : Bool :=
@@ -115,7 +115,7 @@ paper-faithful visible-order theorems later in this file, not by
 
 - **Ex 7 (bold-expand, cross-sibling case):** `ex7_bold_older_sibling_in_span`
   covers the common scenario where a concurrent insert lands in an
-  older-sibling subtree of `endId` — the insert is before `endId` in
+  older-sibling subtree of `endId`, the insert is before `endId` in
   visible order and is correctly included in the span.
 - **Ex 8 (link-contract):** `ex8_link_descendant_not_in_span_visible_of_wf` (genuine; the `visible_lt_endId` positive is a definitional helper).
   demonstrates that afters-descendants of `endId` come *after* `endId`
@@ -155,14 +155,14 @@ characters: c₁ precedes c₂ in the visible sequence iff
 that together characterize DFS traversal with sibling tie-breaking
 by `opid_max`:
 
-1. **`parent_child`** — a character's parent (via `after_of`) is
+1. **`parent_child`**: a character's parent (via `after_of`) is
    visited before it.
-2. **`sibling`** — among direct siblings (same `after_of`-parent),
+2. **`sibling`**: among direct siblings (same `after_of`-parent),
    the one with the higher `opId` (by `opid_max`) is visited first.
-3. **`left_descendant_of_sibling`** — any descendant of the older
+3. **`left_descendant_of_sibling`**: any descendant of the older
    sibling is visited before the younger sibling (the older subtree
    is fully consumed before the younger).
-4. **`trans`** — transitive closure.
+4. **`trans`**: transitive closure.
 
 `visible_lt` is the foundation for `in_span_visible` below, which
 captures paper-faithful span membership. -/
@@ -203,7 +203,7 @@ def visible_le (s : concrete_st) (c₁ c₂ : OpId) : Prop :=
 /-! ### RGA well-formedness: `wf_afters`
 
 A state is *well-formed* on its afters map iff the induced visible-
-order relation `visible_lt` is irreflexive — equivalently, the
+order relation `visible_lt` is irreflexive, equivalently, the
 afters-parent chain has no cycles. Every state produced by a finite
 sequence of `do_` ops starting from `init_st` is well-formed: each
 `Insert`'s opId is fresh (by `distinct_ops`), so the afters-parent
@@ -325,7 +325,7 @@ theorem visible_lt_of_cross_sibling
       visible_lt_of_afters_reach s c₂ c₂_top h_reach_2 h_eq2
     exact visible_lt.trans step_a step_b
 
-/-! ### `in_span_visible` — paper-faithful span membership
+/-! ### `in_span_visible`: paper-faithful span membership
 
 The covering predicate that mirrors the paper's semantics. A character
 `c` is in the span of mark `m` iff its visible-order position is
@@ -333,15 +333,15 @@ bounded by the anchors:
 
 - **Left bound**: `c` is at or after `startId`, with `startSide`
   choosing whether `startId` itself counts.
-  `startSide = false` (before): `visible_le startId c` — startId is in.
-  `startSide = true`  (after):  `visible_lt startId c` — startId is out.
+  `startSide = false` (before): `visible_le startId c`, startId is in.
+  `startSide = true`  (after):  `visible_lt startId c`, startId is out.
 
 - **Right bound**: `c` is at or before `endId`, *or* in `endId`'s
   bold-expand region if `endSide = true`:
-  `endSide = false` (before, link/contract): `visible_lt c endId` —
+  `endSide = false` (before, link/contract): `visible_lt c endId`,
   endId and everything after are out.
   `endSide = true`  (after,  bold/expand):  `visible_le c endId ∨
-  bold_expand_reach s m c` — endId is in, plus post-endId inserts
+  bold_expand_reach s m c`, endId is in, plus post-endId inserts
   whose afters-chain back to endId consists entirely of
   post-mark-opId characters. See `bold_expand_reach` below.
 
@@ -349,7 +349,7 @@ bounded by the anchors:
 
 /-- The bold-expand region past `endId`. A character `c` reaches `endId`
 via afters along a chain where every step's character has opId strictly
-greater than the mark's own opId — i.e., every intermediate was inserted
+greater than the mark's own opId, i.e., every intermediate was inserted
 after the mark was created.
 
 This captures paper §3.3 bold-expand via opId comparison: sibling
@@ -362,7 +362,7 @@ inserted with `afters = k`. Each brown char has opId > mark.opId.
 The afters-chain `brown.last → brown[n-1] → ... → brown.first → k`
 goes through only post-mark nodes, so brown is in the expand
 region. The space `' '` has opId < mark.opId, so it blocks the
-chain — chars reachable only through the space (like `f`) are not
+chain, chars reachable only through the space (like `f`) are not
 in the expand region. -/
 inductive bold_expand_reach (s : concrete_st) (m : MarkOp) : OpId → Prop where
   /-- Base: endId reaches itself. -/
@@ -432,7 +432,7 @@ a younger sibling of `endId`'s subtree), then `c_new` is in the span.
 
 This is the "insertion within a span inherits the mark" claim. The
 right-side bound hypothesis is necessary because a pure afters-chain
-could over-approximate — if the caller proves the bound,
+could over-approximate, if the caller proves the bound,
 `in_span_visible` gives the paper-faithful "c_new is in the span"
 conclusion. -/
 theorem in_span_visible_propagate
@@ -499,10 +499,10 @@ under the "visible_lt endId c_new → ¬ visible_le c_new endId"
 irreflexivity assumption, which we don't have in full generality
 (it needs `distinct_ops`-style invariants). Ex 8 is therefore
 captured directly by the `if mark_endSide m then visible_le ...
-else visible_lt ...` shape of `in_span_visible` — a descendant of
+else visible_lt ...` shape of `in_span_visible`, a descendant of
 `endId` fails the `visible_le c_new endId` check. -/
 
-/-- **Paper Ex 7 (bold expand) — older sibling of `endId` is in span.**
+/-- **Paper Ex 7 (bold expand): older sibling of `endId` is in span.**
 
 For a bold-style mark (`startSide = false`, `endSide = false`), a
 new char inserted as a direct sibling of `endId` with a higher
@@ -534,7 +534,7 @@ theorem ex7_bold_older_sibling_in_span
     · exact absurd h (by rw [h_eSide]; decide)
     · exact visible_lt.sibling h_after_new h_after_end h_ne h_order
 
-/-- **Paper Ex 7 (bold-expand) — post-endId inserts in the bold-expand region.**
+/-- **Paper Ex 7 (bold-expand): post-endId inserts in the bold-expand region.**
 
 Under bold-expand semantics (`endSide = true`), a character `c` in
 `bold_expand_reach s m c` is in the span, provided the left bound
@@ -542,7 +542,7 @@ is also satisfied. This is the "new text inserted at or after the
 bold boundary is grabbed by the bold" case of paper §3.3.
 
 `bold_expand_reach` identifies the region past `endId` reachable via
-afters-chains through post-mark-opId characters only — pre-mark
+afters-chains through post-mark-opId characters only, pre-mark
 siblings block the region, matching the paper's behavior where
 older text at the boundary is not re-formatted. -/
 theorem bold_expand_in_span_visible
@@ -557,12 +557,12 @@ theorem bold_expand_in_span_visible
   rw [if_pos h_eSide]
   exact Or.inr h_reach
 
-/-! **Paper Ex 8 (link no-expand) — direct descendant of `endId` is not in span.**
+/-! **Paper Ex 8 (link no-expand): direct descendant of `endId` is not in span.**
 
 For a link-style mark (`endSide = true`), a new char inserted as
 a direct `afters`-descendant of `endId` has `visible_lt endId c_new`
 (by `parent_child`), so `visible_le c_new endId` requires
-`visible_lt c_new endId` — which together with the prior
+`visible_lt c_new endId`, which together with the prior
 `visible_lt endId c_new` would give a cycle. Without an
 irreflexivity invariant on `visible_lt` (equivalent to asserting
 `distinct_ops`-style well-formedness of the RGA state), we can't
@@ -576,7 +576,7 @@ A user who wants the "not in span" conclusion can combine this
 with a well-formedness premise. -/
 /-- Constructor-level helper: an afters-descendant of `endId` is `visible_lt`
 after it. This is a `visible_lt` constructor applied to its hypothesis
-(definitional — it restates how `visible_lt` is built, so it catches no bug);
+(definitional, it restates how `visible_lt` is built, so it catches no bug);
 it is NOT itself the Ex 8 guarantee. The genuine Ex 8 ("link-boundary
 insertion does not expand") is the *negative* theorem
 `ex8_link_descendant_not_in_span_visible_of_wf`, which uses `wf_afters`
@@ -594,7 +594,7 @@ Under link semantics (`endSide = false`), an afters-descendant
 `c_new` of `endId` with `c_new ≠ endId` is *not* in the span.
 
 Under bold-expand semantics (`endSide = true`) this is **no longer
-universally true** — post-endId descendants with opId > mark.opId
+universally true**, post-endId descendants with opId > mark.opId
 are now in span via `bold_expand_reach`. The theorem is therefore
 restricted to the link case here; the bold case is characterized
 positively by `bold_expand_in_span_visible` below.
@@ -629,7 +629,7 @@ theorem ex8_link_descendant_not_in_span_visible_of_wf
 Visible-order relations monotone under fresh-opId insertions. If
 `(ts, rid)` is fresh in state `s` (not already an afters-key), then
 every existing `visible_lt`/`afters_reach`/`in_span_visible`
-relation persists in `do_ s (Insert ch after)` — the new entry
+relation persists in `do_ s (Insert ch after)`, the new entry
 added to `afters` at the fresh key doesn't invalidate any existing
 lookup since all existing lookups are at keys ≠ `(ts, rid)`.
 
@@ -745,14 +745,14 @@ theorem bold_expand_reach_preserved_under_insert
       exact h_after
     exact bold_expand_reach.step h_after' ih h_opid
 
-/-- **Ex 1 — insert-within-span fully paper-faithful.**
+/-- **Ex 1: insert-within-span fully paper-faithful.**
 
 If `c_after` is in the span (paper-faithfully) in `s_pre`, and we
 insert a new char `(ts, rid)` with `afters = c_after` in a state
 where that opId is fresh, the new char is in the span in `s_post`.
 
 **Caveat.** The "right-side bound holds in s_post" hypothesis is
-still required — RGA geometry doesn't automatically guarantee the
+still required, RGA geometry doesn't automatically guarantee the
 new char lands before `endId` in visible order (the new char could
 be a younger sibling of `endId`'s ancestor, traversed past `endId`
 as a late-in-opId-order descendant of `c_after`). The common case
@@ -800,7 +800,7 @@ If `c_after` and `endId` live in the subtrees of different direct
 siblings `c_a_top` / `c_e_top` under a common afters-parent `p`,
 with `c_a_top` the older sibling (`opid_max c_a_top c_e_top = c_a_top`),
 then the right-side bound `visible_lt (do_ …) (ts, rid) endId`
-holds *automatically* — no caller-provided bound needed.
+holds *automatically*, no caller-provided bound needed.
 
 The insertion places the new char in `c_a_top`'s subtree (since
 `afters((ts, rid)) = c_after` and `afters_reach s c_after c_a_top`).
@@ -947,7 +947,7 @@ theorem no_add_cover_implies_unformatted_visible
 /-- **Paper Ex 5 positive: an Add with the highest opId wins.**
 
 "Concurrent Add wins over concurrent Remove" holds iff the Add's
-opId is higher than every other same-mt covering mark — including
+opId is higher than every other same-mt covering mark, including
 the Remove. The caller discharges that as part of the "beats every
 other covering mark" universal. -/
 theorem add_wins_over_concurrent_remove_visible
@@ -1161,7 +1161,7 @@ The expand/contract, overlap, and anchors-survive-tombstones
 theorems from the boundary-predicate track get clean `_visible`
 analogues. -/
 
-/-- **Paper Ex 2, visible version — overlapping same-type Adds.**
+/-- **Paper Ex 2, visible version: overlapping same-type Adds.**
 
 If no Remove of type `mt` visibly covers `c`, and some Add visibly
 covers `c` and beats every other covering Add by LWW, then `c` is
@@ -1194,7 +1194,7 @@ theorem partial_overlap_all_adds_formatted_visible
   | true  => exact h_beats_adds m' h_pres' h_cov' h_mt' h_isAdd h_ne
   | false => exact absurd (h_no_rem m' h_pres' h_cov' h_mt' h_isAdd) id
 
-/-- **Paper Ex 3, visible version — different-type Adds coexist.** -/
+/-- **Paper Ex 3, visible version: different-type Adds coexist.** -/
 theorem different_type_adds_coexist_visible
     (s : concrete_st) (c : OpId) (mB mI : MarkOp) :
     mark_isAdd mB = true →
@@ -1304,7 +1304,7 @@ theorem is_rga_traversal_convergent (s₁ s₂ : concrete_st) :
 
 /-- **List-form `readRichText_list` convergence.** If two pointwise-equal
 states produce traversals `l₁` and `l₂`, the list renderings may
-differ only by *identical* reorderings — but by traversal
+differ only by *identical* reorderings, but by traversal
 uniqueness (nodup + pairwise visible_lt), any traversal of a given
 state is unique as a list (given visible_lt is antisymmetric on
 distinct chars, which it is under `distinct_ops`). In particular,

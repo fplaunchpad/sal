@@ -12,7 +12,7 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # PN_Counter (CRDT) — read-side projection
+/-! # PN_Counter (CRDT): read-side projection
 
 The 24 RA-linearizability VCs in `PN_Counter_CRDT.lean` prove the
 state `(incs, decs)` converges under per-key max. The headline

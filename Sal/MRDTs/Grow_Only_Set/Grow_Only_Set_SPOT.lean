@@ -6,7 +6,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # Grow_Only_Set (MRDT) — SPOTs -/
+/-! # Grow_Only_Set (MRDT): SPOTs -/
 
 namespace Grow_Only_Set_MRDT_SPOT
 

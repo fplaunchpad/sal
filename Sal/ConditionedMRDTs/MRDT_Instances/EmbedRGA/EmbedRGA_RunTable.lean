@@ -2,20 +2,20 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_Recoding
 import Sal.MRDTs.RGA_Embed.RunTable
 
 /-!
-# The run table at the instance — display identity, T-epoch, SPOTs
+# The run table at the instance: display identity, T-epoch, SPOTs
 
 The kernel theory (`Sal/MRDTs/RGA_Embed/RunTable.lean`: T-tail, T-repr,
 T-cmp, T-walk, T-mut) is state-level and hypothesis-free. This file:
 
 * **display identity** (`runTable_display_identity`): the table walk over a
   version's birth chains reproduces the canonical document's coordinate
-  sequence exactly — `whiteboard/run-table-note.md` §8's walk-order gate as
+  sequence exactly, `whiteboard/run-table-note.md` §8's walk-order gate as
   a theorem;
 * **T-epoch** (`runTable_epoch`): composition with the re-coding cluster.
   This is the ONLY theorem in the whole run-table stack that carries a
   settled-cut hypothesis (the `StablePrefixMap` bundle + `Dom` coverage it
   inherits from the epoch map it composes with). Its absence everywhere
-  else — T-tail, T-repr, T-cmp, T-walk, T-mut are unconditioned — is the
+  else (T-tail, T-repr, T-cmp, T-walk, T-mut are unconditioned) is the
   formal content of the **no-stability-gate** property: the run table
   exists for every state, unsettled suffixes included;
 * **SPOTs** (PASS + FAIL, hand-derived, matching the Python's directed
@@ -91,7 +91,7 @@ theorem keyLt_sorted_ext : ∀ {l l' : List (List Bool)},
 
 /-- **T-walk at the instance (walk = query order)**: over any canonical
 document with a chain representation, the run-table walk's coordinate
-sequence IS the document's coordinate sequence — the display, verbatim, in
+sequence IS the document's coordinate sequence, the display, verbatim, in
 order. No honesty, reachability, or stability hypothesis: only sortedness
 (the canonical form) and the chain representation itself. -/
 theorem runTable_display_identity (Γ : OrderedPrefixCode) (s : EState α)
@@ -115,18 +115,18 @@ theorem runTable_display_identity (Γ : OrderedPrefixCode) (s : EState α)
     · rintro ⟨x, hx, rfl⟩
       exact ⟨x, (mem_walk hnil).mpr hx, rfl⟩
 
-/-! ## §3  T-epoch — composition with the re-coding cluster
+/-! ## §3  T-epoch: composition with the re-coding cluster
 
 The **only** settled-cut hypothesis in the run-table stack lives here: `F`
 is a stable-prefix map (H2 = `ord`, H3 = `ext`) and `hdom` says the state at
-rest is covered by the cut — exactly the contract `eRecode_*` inherits from
+rest is covered by the cut, exactly the contract `eRecode_*` inherits from
 the epoch protocol. Everything else in this development holds at every
 state, which is the formal content of the no-stability-gate property (run
 table ≈ 21–27 b/ch with NO settled cut, `whiteboard/run-table-note.md` §8). -/
 
 /-- **T-epoch**: after a re-coding epoch, rebuilding the run table over the
 re-mapped chains again reproduces the (re-mapped) document verbatim, and the
-read is the original read — display identity for the rebuilt table needs no
+read is the original read, display identity for the rebuilt table needs no
 new order argument beyond H2 (`eRecode_sorted`), and the read identity is
 T2 (`eRemapSt_query`). -/
 theorem runTable_epoch (Γ : OrderedPrefixCode) (F : StablePrefixMap Γ)
@@ -162,7 +162,7 @@ theorem runTable_epoch_version (Γ : OrderedPrefixCode)
 #print axioms runTable_epoch
 #print axioms runTable_epoch_version
 
-/-! ## §5  SPOTs — concrete executions, PASS + FAIL, hand-derived
+/-! ## §5  SPOTs: concrete executions, PASS + FAIL, hand-derived
 
 Chains at the kernel level (one label per keystroke, typing = delta-1
 chains); expected tables and walks derived by hand from
@@ -174,14 +174,14 @@ namespace RunTableSPOT
 /-- The default entry (out-of-range accessor). -/
 def entryAt (T : Table) (j : ℕ) : RTEntry := T.getD j ⟨none, false, 0, 0⟩
 
-/-- Attachments of entry `i`, newest label first — read from the table. -/
+/-- Attachments of entry `i`, newest label first, read from the table. -/
 def attachedAt (T : Table) (i : ℕ) : List ℕ :=
   ((List.range T.length).filter
     (fun j => (entryAt T j).par.map Prod.fst == some i)).mergeSort
     (fun j k => decide ((entryAt T k).delta ≤ (entryAt T j).delta))
 
 /-- The table-structural walk (Python `table_walk`, one-sided): live
-members in offset order, then attachment subtrees newest first — consulting
+members in offset order, then attachment subtrees newest first, consulting
 the TABLE alone. -/
 def walkT (T : Table) : ℕ → ℕ → List (List ℕ)
   | 0, _ => []
@@ -202,7 +202,7 @@ def tableWalk (T : Table) : List (List ℕ) :=
 def L6 : List (List ℕ) :=
   [[1], [1,1], [1,1,1], [1,1,1,1], [1,1,1,1,1], [1,1,1,1,1,1]]
 
-/-- PASS: the typing document compiles to ONE run — six records, one
+/-- PASS: the typing document compiles to ONE run, six records, one
 header, `(run-id, offset)` addresses. -/
 theorem spot_typing : tableOf L6 = [⟨none, true, 1, 6⟩] := by native_decide
 
@@ -213,7 +213,7 @@ theorem spot_typing_address :
       = (0, 3) := by native_decide
 
 /-- The same six records as six singleton entries (a member-by-member
-delivery without coalesce — the D3 shape). -/
+delivery without coalesce, the D3 shape). -/
 def naive6 : Table :=
   [⟨none, true, 1, 1⟩, ⟨some (0, 0), true, 1, 1⟩, ⟨some (1, 0), true, 1, 1⟩,
    ⟨some (2, 0), true, 1, 1⟩, ⟨some (3, 0), true, 1, 1⟩,
@@ -222,7 +222,7 @@ def naive6 : Table :=
 /-- PASS: the naive table denotes exactly the typing state. -/
 theorem spot_naive_denotes : stateOf naive6 = L6 := by native_decide
 
-/-- FAIL companion (D3): the naive table is NOT canonical — the rebuild
+/-- FAIL companion (D3): the naive table is NOT canonical, the rebuild
 re-coalesces the six singletons into the single run. -/
 theorem spot_naive_drifts :
     tableOf (stateOf naive6) = [⟨none, true, 1, 6⟩]
@@ -247,39 +247,39 @@ theorem spot_d1_tableWalk : tableWalk (tableOf L7) = walk L7 := by
 
 /-- PASS: the GENERIC table-direct walk (`RunTable.tableWalk`, the §7⅞
 theorem-bearing definition, proved faithful in `tableWalk_tableOf`) agrees
-on the D1 pin too — the SPOT and the generic theorem name the same reading
+on the D1 pin too, the SPOT and the generic theorem name the same reading
 procedure. -/
 theorem spot_d1_tableWalk_generic :
     Sal.EmbedRGA.RunTable.tableWalk (tableOf L7) = walk L7 := by
   native_decide
 
 /-- The no-split rival: `abcdef` kept as ONE run, `X` hung at interior
-offset 2 — violating tail attachment. -/
+offset 2, violating tail attachment. -/
 def rival : Table := [⟨none, true, 1, 6⟩, ⟨some (0, 2), true, 4, 1⟩]
 
 /-- PASS: the rival denotes the same seven records ... -/
 theorem spot_rival_same_state : (stateOf rival).Perm L7 := by native_decide
 
 /-- FAIL companion (the no-split rival pinned to the wrong display): its
-structural walk misplaces `X` to the end — the `abcdefX` shape. -/
+structural walk misplaces `X` to the end, the `abcdefX` shape. -/
 theorem spot_rival_wrong_display :
     tableWalk rival = [[1], [1,1], [1,1,1], [1,1,1,1], [1,1,1,1,1],
       [1,1,1,1,1,1], [1,1,1,4]]
     ∧ tableWalk rival ≠ walk L7 := by native_decide
 
-/-- FAIL companion: and it is not canonical — the rebuild is the split
+/-- FAIL companion: and it is not canonical, the rebuild is the split
 table. -/
 theorem spot_rival_not_canonical :
     tableOf (stateOf rival) ≠ rival
     ∧ tableOf (stateOf rival) = tableOf L7 := by native_decide
 
-/-- D2: delete the third keystroke — it has kept children, so it stays as
+/-- D2: delete the third keystroke, it has kept children, so it stays as
 dead STRUCTURE (the liveness split). -/
 def Ldel : List (List ℕ) :=
   [[1], [1,1], [1,1,1,1], [1,1,1,1,1], [1,1,1,1,1,1]]
 
-/-- PASS: three entries — live `[a,b]`, dead `[c]` carved out, live
-`[d,e,f]` — liveness uniform per entry. -/
+/-- PASS: three entries, live `[a,b]`, dead `[c]` carved out, live
+`[d,e,f]`, liveness uniform per entry. -/
 theorem spot_d2_liveness_split :
     tableOf Ldel = [⟨none, true, 1, 2⟩, ⟨some (0, 1), false, 1, 1⟩,
       ⟨some (1, 0), true, 1, 3⟩] := by native_decide
@@ -290,8 +290,8 @@ theorem spot_d2_walk :
     ∧ [1,1,1] ∉ walk Ldel := by native_decide
 
 /-- D4 (coalesce is the FORCED delete-inverse): the two halves of the
-typing run — what deleting a concurrent interloper leaves if the table does
-NOT coalesce — denote exactly the typing document, yet the canonical table
+typing run, what deleting a concurrent interloper leaves if the table does
+NOT coalesce, denote exactly the typing document, yet the canonical table
 re-fuses them: without the coalesce rule the incremental table has drifted
 from canonical. This is also the pin for the `no_fuse` hypothesis of
 `tableOf_stateOf`: `Tdrift` satisfies every other canonicity clause and
@@ -319,7 +319,7 @@ theorem spot_d5_walk :
     ∧ (tableOf Lmat).length = 3 := by native_decide
 
 /-- T-cmp concretely: at the D1 divergence the newer label displays first,
-in agreement with the coordinate keys under the unary code — both verdict
+in agreement with the coordinate keys under the unary code, both verdict
 directions pinned. -/
 theorem spot_cmp :
     cmpTable L7 [1,1,1,4] [1,1,1,1] = true

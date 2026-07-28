@@ -2,14 +2,14 @@ import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 import Sal.MRDTs.RGA_with_tombstones.RGA_ReadSide
 
 /-!
-# Read-equivalence with the published tombstoned RGA — the order core
+# Read-equivalence with the published tombstoned RGA: the order core
 
 The compaction theorem: the
 embedded-chain RGA's display order **is** the published RGA's visible
 order, on the shared birth tree of one honest event set.
 
 The published RGA (`Sal/MRDTs/RGA_with_tombstones`) reads through the
-relational order `visible_lt` — the RGA traversal of the insert-record
+relational order `visible_lt`, the RGA traversal of the insert-record
 forest (`parent_child` | newer `sibling` | `left_descendant_of_sibling` |
 `trans`). The embedded-chain RGA reads by sorting coordinates, which is
 chain-lex (`display_iff_chainBefore`). This file proves the two orders
@@ -22,7 +22,7 @@ folds of one event set is the remaining wiring (steps 1–3, 5).
 
 Both sides of the equivalence are consumed relationally, so the theorem
 is exactly the one the design doc owes: the RGA† visible order and the
-chain order are one relation on the birth tree — the tombstoned read and
+chain order are one relation on the birth tree, the tombstoned read and
 the coordinate read cannot disagree.
 -/
 
@@ -42,11 +42,11 @@ def TreeId (s : _root_.concrete_st) (c : ℕ) : Prop :=
 /-- The honesty interface of the read-equivalence, stated purely in terms
 of RGA†'s `after_of` edge relation and a delta-chain assignment:
 
-* `anchor_lt` — causality: an anchor's timestamp is strictly below its
+* `anchor_lt`, causality: an anchor's timestamp is strictly below its
   child's (also rules out records at the sentinel id `0`);
-* `anchor_real` — anchors are present: a non-sentinel anchor has its own
+* `anchor_real`, anchors are present: a non-sentinel anchor has its own
   insert record;
-* `chain_zero`/`chain_step` — `chainOf` is the delta-chain of the birth
+* `chain_zero`/`chain_step`: `chainOf` is the delta-chain of the birth
   tree: empty at the root, and a child's chain extends its anchor's by
   the timestamp gap.
 
@@ -117,7 +117,7 @@ theorem chain_ne_nil (B : BirthEnv s chainOf) {c : ℕ}
 `chainBefore` inherits transitivity from the coordinate order: encode with
 any `OrderedPrefixCode` (the unary code suffices), transport through
 `display_iff_chainBefore`, and use `keyLt_trans`. The code proves the
-order's transitivity — the representation paying rent upstairs. -/
+order's transitivity, the representation paying rent upstairs. -/
 
 theorem chainBefore_ne {c1 c2 : List ℕ} (h : chainBefore c1 c2) :
     c1 ≠ c2 := by
@@ -310,7 +310,7 @@ theorem visible_lt_iff_chainBefore (B : BirthEnv s chainOf) {a b : ℕ}
   ⟨fun h => (visible_lt_chainBefore B h).2.2, chainBefore_visible_lt B ha hb⟩
 
 /-- `visible_lt` is asymmetric on a birth environment (inherited from the
-coordinate order's asymmetry — another fact the published side never
+coordinate order's asymmetry, another fact the published side never
 proved about its own relational read). -/
 theorem visible_lt_asymm (B : BirthEnv s chainOf) {a b : ℕ}
     (h : _root_.visible_lt s a b) : ¬ _root_.visible_lt s b a := by
@@ -325,7 +325,7 @@ theorem visible_lt_asymm (B : BirthEnv s chainOf) {a b : ℕ}
   exact Bool.noConfusion k2
 
 /-- `visible_lt` is total on distinct real ids (inherited from
-`chainBefore_total` through the equivalence — the published RGA's
+`chainBefore_total` through the equivalence, the published RGA's
 relational order is a strict total order on the birth tree, a fact the
 published side never proved). -/
 theorem visible_lt_total (B : BirthEnv s chainOf) {a b : ℕ}

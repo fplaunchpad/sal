@@ -650,13 +650,13 @@ theorem ORSet_rem_max_trichotomy
     subst hrT'
     exact ORSet_live_no_later_rem h_inA hA hpA haU' rfl hrU' hvar
   · by_cases hvea : C.vis (ts, rid, ORSetOp.rem x) (p.1, rda, ORSetOp.add p.2)
-    · -- vis-after the maximal rem: a vis-edge out of e — contradiction
+    · -- vis-after the maximal rem: a vis-edge out of e, contradiction
       exfalso
       have hnc_ea : ¬ ORSet.toCRDTSig.commutes (ts, rid, ORSetOp.rem x)
           (p.1, rda, ORSetOp.add p.2) :=
         fun h => hnc_ae (ORSet_commutes_symm h)
       exact h_max _ haU'.1 hane (Or.inl ⟨hvea, hnc_ea⟩)
-    · -- concurrent: the rc-edge is unabsorbed — contradiction
+    · -- concurrent: the rc-edge is unabsorbed, contradiction
       exfalso
       refine h_max _ haU'.1 hane (Or.inr ⟨hvea, hva, ?_, ?_⟩)
       · show (if x = p.2 then RcRes.Fst_then_snd else RcRes.Either)
@@ -730,7 +730,7 @@ theorem ORSet_cdVC3 : CDVC3 ORSet := by
 
 /-! ## §7. The feasible delta laws -/
 
-/-- The redistribution law is a Boolean tautology for the OR-Set merge —
+/-- The redistribution law is a Boolean tautology for the OR-Set merge,
 **unconditional**, all five states arbitrary. -/
 theorem orMergeL_redistribute (B t₀ t₁ t₂ u : ORSet.State) :
     orMergeL (orMergeL B t₀ u) (orMergeL B t₁ u) (orMergeL B t₂ u)
@@ -903,7 +903,7 @@ theorem ORSet_ra_linearizable3
   ra_linearizable3_of_join ORSet_joinLemma3 C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

@@ -12,14 +12,14 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # Bounded_Counter (CRDT) — read-side projection
+/-! # Bounded_Counter (CRDT): read-side projection
 
 The 24 VCs prove the three components `(incs, decs, transfers)`
 converge under per-key max. The headline reads are:
 
-* `inc_count s rid`      — Inc operations issued by replica `rid`.
-* `dec_count s rid`      — Dec operations issued by replica `rid`.
-* `transfer_count s s r` — Transfer operations from `s` to `r`.
+* `inc_count s rid`: Inc operations issued by replica `rid`.
+* `dec_count s rid`: Dec operations issued by replica `rid`.
+* `transfer_count s s r`: Transfer operations from `s` to `r`.
 
 The full per-replica `quota(rid)` requires summing transfers in
 and out across all replicas; we leave that as a derived

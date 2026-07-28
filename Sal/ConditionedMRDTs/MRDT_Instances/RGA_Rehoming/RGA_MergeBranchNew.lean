@@ -25,7 +25,7 @@ factors `hBN` into
 
   * a *climb-algebra* bridge (`resolve_climb_start`), proved here, and
   * the *survivor↔fold-liveness* bridge (`hD`, already a premise), and
-  * a single residual *fold-chain* identity (`FoldBirthChain`) — the branch-new
+  * a single residual *fold-chain* identity (`FoldBirthChain`), the branch-new
     node's fold ancestor chain agrees with its birth-anchor's LCA chain.  This is
     the irreducible event-list content (§3, below).
 -/
@@ -42,7 +42,7 @@ open Sal.ConditionedMRDTs.RGAConditionedConvergence
 /-! ## §1  The climb/resolve reconciliation over the LCA forest
 
 `resolve_climb_lchain` (TwoSided) reconciles `resolve s pre` with the LCA-`climb`
-started at `anc l x` — i.e. one step ABOVE the node `x`.  For the branch-new anchor
+started at `anc l x`, i.e. one step ABOVE the node `x`.  For the branch-new anchor
 clause the `climb` starts AT the birth-anchor `w` itself, so we need the same
 reconciliation with `w` as the head of its own chain.  This is the bridge. -/
 
@@ -102,7 +102,7 @@ def FoldBirthChain (l a b p : concrete_st α) (k : ℕ) : Prop :=
 
 /-- **`hBN` from the fold-chain identity.**  Given `hD` (survivor set = fold live
 set) and, per branch-new survivor, the `FoldBirthChain` identity, the branch-new
-anchor clause `hBN` holds — all the `climb`/`resolve` reconciliation discharged by
+anchor clause `hBN` holds, all the `climb`/`resolve` reconciliation discharged by
 `resolve_climb_start` + `climb_fixpoint`, the off-forest start condition by
 `betaf_start`. -/
 theorem hBN_of_foldChain (l a b p : concrete_st α)
@@ -147,7 +147,7 @@ theorem hBN_of_foldChain (l a b p : concrete_st α)
 
 `eq_merge_two_sided_of_reachable` (MergeThreadDischarge) carried `hBN` as a free
 premise.  Here it is discharged from `hBN_of_foldChain`: the resulting theorem has
-NO free branch-new anchor premise — only the fold-chain identity `hFC`
+NO free branch-new anchor premise, only the fold-chain identity `hFC`
 (`FoldBirthChain`, the located residual) plus the standard reachable invariants
 `wf l/a/b`, `id_mono l`.  Everything else (`hB`, `hBE`, `hD`, the reachability
 oracle `hMSR`) is threaded unchanged. -/

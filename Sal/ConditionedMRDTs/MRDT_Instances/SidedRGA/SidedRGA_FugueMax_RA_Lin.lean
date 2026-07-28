@@ -6,8 +6,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_FugueMax
 `SidedRGA.lean`'s capstone `sided_embed_ra_linearizable3` covers plain sided
 coordinates (`sBlock`); the FugueMax realization (`SidedRGA_FugueMax.lean`)
 writes records over the VARIANT alphabet of
-`Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean` — R entries carry an immutable
-right-origin tag (`fwTag`) before the delta code — which is a different block
+`Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean`, R entries carry an immutable
+right-origin tag (`fwTag`) before the delta code, which is a different block
 format, so RA-linearizability for the FM datatype needs a separate proof,
 which this file gives.
 
@@ -17,7 +17,7 @@ whole §2/§2½ list algebra of `SidedRGA.lean` (`ssorted_ext`, `sInsert`,
 `sMerge2`, `sMergeL`) is REUSED; what changes is the op alphabet (`FOp`
 carries a coordinate prefix and one `FMEntry`) and the key-injectivity
 discharge, which runs through the variant's unique decodability
-`fmCoordOf_inj` — this is where the FM format differs materially: the
+`fmCoordOf_inj`, this is where the FM format differs materially: the
 variant needs `TagsOK` (wellformed right-origin tags) alongside chain
 positivity, so the honesty contract `FMHonest` carries both. Convergence is
 otherwise insensitive to what the coordinates contain, exactly as expected:
@@ -56,7 +56,7 @@ inductive FOp : Type where
   | del (x : ℕ)
 deriving DecidableEq
 
-/-- The coordinate an insert writes — a function of the op alone: the
+/-- The coordinate an insert writes, a function of the op alone: the
 carried prefix + the entry's variant block (`fmBlock` composes the
 reversed right-origin tag and the complemented delta code on R, the sided
 L band on L). -/
@@ -105,7 +105,7 @@ theorem FMSig_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op FOp) :
 /-! ## §3  Well-formed enumerations and fold-canonicity
 
 `f_fold_canon`: any two well-formed enumerations of one event set fold to
-the SAME state — the FM analogue of `s_fold_canon`, by `ssorted_ext` + the
+the SAME state, the FM analogue of `s_fold_canon`, by `ssorted_ext` + the
 fold membership characterization. The tag rides along inertly: it is
 consumed by `fCoord` at record-creation time and never consulted again,
 which is why every proof below is the sided proof with `fCoord`
@@ -167,7 +167,7 @@ theorem fDels_append (ρ σ : List (Op FOp)) :
 
 /-- Well-formed enumerations: insert ids are unique, nothing is deleted
 before its insert, and distinct inserts mint distinct keys (supplied on
-honest histories by FM chain-generation + variant unique decodability —
+honest histories by FM chain-generation + variant unique decodability,
 `fmCoordOf_inj`). -/
 structure FWf (Γ : OrderedPrefixCode) (ρ : List (Op FOp)) : Prop where
   ins_nodup : (fInsIds ρ).Nodup
@@ -274,7 +274,7 @@ theorem f_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op FOp)},
 
 /-- **The fold membership characterization**: under well-formedness a record
 is in the fold iff its insert is in the enumeration and its id is never
-deleted — an ORDER-FREE description. -/
+deleted, an ORDER-FREE description. -/
 theorem f_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op FOp)},
     FWf Γ ρ → ∀ (r : SRec),
     (r ∈ fFold Γ ρ ↔
@@ -346,7 +346,7 @@ theorem f_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op FOp)},
                 simpa using hnd.2⟩
 
 /-- **Fold-canonicity**, FM variant: well-formed enumerations of one event
-set fold to the SAME state. The state is a function of the event set — the
+set fold to the SAME state. The state is a function of the event set, the
 property the queue-route Join hook cannot live without, and the reason the
 right-origin tag can be policy-minted: the datatype's canonical state never
 depends on enumeration order, whatever tags the ops carry. -/
@@ -371,7 +371,7 @@ theorem f_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op FOp)}
 
 `FMHonestCore` is the FM analogue of the sided instance's honesty: every
 delete names an id its issuer had observed (a `vis`-prior insert), and
-inserts are chain-generated over the VARIANT alphabet — the mint is a
+inserts are chain-generated over the VARIANT alphabet, the mint is a
 positive, TAG-WELLFORMED FugueMax birth chain's coordinate whose deltas
 telescope to the id. `TagsOK` is the one clause the sided contract did not
 need: the variant's unique decodability (`fmCoordOf_inj`) consumes it,
@@ -431,7 +431,7 @@ theorem f_del_ins_mem {Γ : OrderedPrefixCode}
   exact ⟨a, hcl a d hvis hncomm hd, hains, hax, hvis⟩
 
 /-- **A `loOn`-respecting enumeration of a closed honest set is
-well-formed** — the bridge from the configuration layer to `FWf`, one
+well-formed**, the bridge from the configuration layer to `FWf`, one
 honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 variant unique decodability give `keys_inj`. -/
@@ -492,7 +492,7 @@ theorem f_wf_of_enum {Γ : OrderedPrefixCode}
 /-! ## §6a  The survival algebra
 
 The record-level membership of the ternary merge, characterized order-free
-against the union event set — the mathematical core of the Join. §6b turns
+against the union event set, the mathematical core of the Join. §6b turns
 it into `JoinLemma3At` by exhibiting the witness enumeration. All verbatim
 sided proofs: the merge never looks inside a coordinate. -/
 
@@ -533,7 +533,7 @@ theorem f_keys_inj_events {Γ : OrderedPrefixCode}
 /-- **The merge membership characterization.** At a join site (three
 canonical enumerations over an honest configuration), a record is in the
 ternary merge iff its insert is somewhere in the union and its id is deleted
-nowhere in the union — the union's order-free membership. OR-set survival,
+nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
 theorem f_mergeL_mem {Γ : OrderedPrefixCode}
@@ -665,7 +665,7 @@ theorem f_mergeL_mem {Γ : OrderedPrefixCode}
         exact ⟨hnot hp₀ hwf₀ (fun a ha => hin₁ a ha.1) (fun a ha => ha.1),
                hnot hp₁ hwf₁ hin₁ (fun a ha => ha)⟩
 
-/-! ## §6b  The Join — the merge is its own linearization witness
+/-! ## §6b  The Join: the merge is its own linearization witness
 
 Witness enumeration for the union: the LCA's enumeration, then branch one's
 delta (in branch order), then branch two's news. Its `respects` obligation
@@ -860,7 +860,7 @@ theorem fmHonest_core {Γ : OrderedPrefixCode} {C : Configuration (FMSig Γ)}
     exact ho
 
 /-- **Honest reachability**: LTS reachability where every step is taken from
-a configuration with an honest history — instantiating the generic
+a configuration with an honest history, instantiating the generic
 `HonestReach`, exactly as the sided instance and the mergeable queue do. -/
 def FMReach (Γ : OrderedPrefixCode) : Configuration (FMSig Γ) → Prop :=
   HonestReach (FMSig Γ) (FMHonest Γ) trivial
@@ -962,7 +962,7 @@ theorem kinv_chain_ne_nil {Γ : OrderedPrefixCode} {K : KnowM}
 
 /-- **Fold-canonicity for `mFold`**: two knowledges whose mapped
 enumerations are well-formed and enumerate the same events display the
-same state — the generation-layer face of `f_fold_canon`. -/
+same state, the generation-layer face of `f_fold_canon`. -/
 theorem m_fold_canon (Γ : OrderedPrefixCode) {K K' : KnowM}
     (hch : ∀ g ∈ K, mIsIns g = true → g.chain ≠ [])
     (hch' : ∀ g ∈ K', mIsIns g = true → g.chain ≠ [])
@@ -1001,7 +1001,7 @@ theorem tie_fold :
       = [(1, 11, [2, 2, 1, 2]), (2, 22, [2, 2, 1, 1, 2])] := by
   native_decide
 
-/-- PASS: same-tag siblings ascend by delta — the display twin of the
+/-- PASS: same-tag siblings ascend by delta, the display twin of the
 generation layer's `tie_display`. -/
 theorem tie_ids : sIds (fFold unaryCode ρTie) = [1, 2] := by native_decide
 
@@ -1012,7 +1012,7 @@ theorem tie_ids_not_desc : sIds (fFold unaryCode ρTie) ≠ [2, 1] := by
 /-- FAIL pin: the fold is not constantly empty. -/
 theorem tie_fold_ne_empty : fFold unaryCode ρTie ≠ [] := by native_decide
 
-/-- PASS: fold-canonicity made concrete — the reversed enumeration folds
+/-- PASS: fold-canonicity made concrete, the reversed enumeration folds
 to the SAME state (the enumeration order is erased). -/
 theorem tie_fold_order_erased :
     fFold unaryCode [opB, opA] = fFold unaryCode ρTie := by native_decide
@@ -1033,7 +1033,7 @@ theorem tag_decisive_ids :
     sIds (fFold unaryCode [opA2, opB2]) = [2, 1] := by native_decide
 
 /-- FAIL pin: the ascending-id (plain-Fugue tiebreak) order is NOT
-displayed — the pin that kills every re-banding without tags. -/
+displayed, the pin that kills every re-banding without tags. -/
 theorem tag_decisive_not_id_order :
     sIds (fFold unaryCode [opA2, opB2]) ≠ [1, 2] := by native_decide
 
@@ -1053,7 +1053,7 @@ theorem del_not_clobber : sIds (fFold unaryCode ρDel) ≠ [] := by
   native_decide
 
 /-- PASS: the ternary merge of the two singleton branches (empty LCA) is
-the canonical two-record state — hand-derived, same keys as `tie_fold`. -/
+the canonical two-record state, hand-derived, same keys as `tie_fold`. -/
 theorem merge_ids :
     sIds (sMergeL [] (fFold unaryCode [opA]) (fFold unaryCode [opB]))
       = [1, 2] := by native_decide

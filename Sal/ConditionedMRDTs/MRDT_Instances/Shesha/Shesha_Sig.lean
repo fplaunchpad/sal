@@ -7,13 +7,13 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Evolution
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Replay
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_EffFold
 
-/-! # Shesha — the conditioned signature, honesty contract, witness class
+/-! # Shesha: the conditioned signature, honesty contract, witness class
 
 The definitional layer of the Shesha instance (split out of
 `Shesha_Cond.lean` so the join-hook proof machinery can consume it):
 the `ConditionedMRDTSig` instance (`SheshaD`, timestamp-as-id), the
 honesty contract (`SheshaHonest` = `GenHonest` at the generation guard),
-the witness class (`SheshaEff` — effective enumerations) with its two
+the witness class (`SheshaEff`, effective enumerations) with its two
 bookkeeping facts, and the op-level bridge (`toSOp`/`applySeq_toSOp`).
 The capstone and its single owed hook live in `Shesha_Cond.lean`. -/
 
@@ -68,7 +68,7 @@ def SheshaHonest (C : Configuration SheshaD) : Prop :=
 /-! ## The witness class: effective enumerations
 
 An **effective** enumeration never no-ops an insert: at each insert's point
-in the fold, its anchor is live (or the root). Deletes are unconstrained —
+in the fold, its anchor is live (or the root). Deletes are unconstrained,
 a delete of an absent id is a harmless identity (two replicas may honestly
 issue concurrent deletes of the same node; any enumeration no-ops the
 second). Real executions produce exactly this class: ops apply once, at

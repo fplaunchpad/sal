@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Framework.MRDTSig
 
 /-!
-# `loOnC` — the set-relative conditioned linearization order
+# `loOnC`: the set-relative conditioned linearization order
 
 `Sal.ConditionedMRDTs.lo` (`MRDTSig.lean`) made set-relative: `Sal.Emulation.loOn`
 (`Merge_Linearization_Set.lean`) with `commutes ↦ commutesOn`.  This is the

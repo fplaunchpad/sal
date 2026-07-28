@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Cond
 
-/-! # Shesha — the join hook, as originally stated, is FALSE
+/-! # Shesha: the join hook, as originally stated, is FALSE
 
 `shesha_join_at` (*every* `SheshaHonest`
 configuration admits `JoinLemma3At`) is **refuted** here by an explicit
@@ -8,7 +8,7 @@ honest configuration and an explicit misaligned canonical triple.
 
 The root cause: with `rc := Either`, `loOn` constrains only non-commuting
 *vis*-pairs, so a concurrent pair `(ins x←a, del a)` is enumerable in either
-order — and the two orders fold to states with **different live sets** (the
+order, and the two orders fold to states with **different live sets** (the
 insert no-ops when the delete lands first). `IsCanonicalState` is
 existential, so the LCA slot and the branch slots of `JoinLemma3At` may be
 handed folds of *incompatible* enumeration choices. Here: three events
@@ -19,7 +19,7 @@ handed folds of *incompatible* enumeration choices. Here: three events
 `[]` is canonical for the LCA slot while the insert-first fold `[2]` is
 canonical for both branch slots. The merge then sees `2` live in both
 branches but absent from the LCA, classifies it as *born twice*, and emits
-it twice: `merge [] [2] [2] = [2,2]` — not the fold of any enumeration.
+it twice: `merge [] [2] [2] = [2,2]`, not the fold of any enumeration.
 
 The queue's direct-witness route never met this because the queue's
 canonical states are unique per event set; Shesha's are not. The hook in
@@ -217,7 +217,7 @@ theorem cx_honest : SheshaHonest Cx := by
 
 /-! ## The misaligned canonical triple -/
 
-/-- The insert-first fold `[2]` — canonical for the branch slots. -/
+/-- The insert-first fold `[2]`, canonical for the branch slots. -/
 def stA : Shesha.St := [Shesha.Tree.node 2 []]
 
 /-- With `rc := Either`, a `loOn`-edge is a `vis`-edge. -/

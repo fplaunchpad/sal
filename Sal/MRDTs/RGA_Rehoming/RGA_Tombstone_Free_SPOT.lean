@@ -2,7 +2,7 @@ import Sal.MRDTs.RGA_Rehoming.RGA_Tombstone_Free_ReadSide
 
 open RGA_TF_Read
 
-/-! # Tombstone-free RGA — SPOT (concrete-execution tests)
+/-! # Tombstone-free RGA: SPOT (concrete-execution tests)
 
 Small self-checking executions of the datatype and its read (`document` /
 `readText` of `RGA_Tombstone_Free_ReadSide.lean`), tracking the figures of
@@ -18,7 +18,7 @@ namespace RGA_TF_SPOT
 
 /-! ## Insert intent: a fresh insert lands immediately after its anchor
 
-State: id `5` under the root. Insert `10` (element `90`) after `5` — `5` is a
+State: id `5` under the root. Insert `10` (element `90`) after `5`, `5` is a
 root child so its ancestor path (root excluded) is `[]`. The read must place
 `10` right after `5`. -/
 
@@ -35,7 +35,7 @@ theorem ins_intent_readText :
 /-! ## Delete erases its target, preserving the order of survivors (leaf case)
 
 Chain `0 ← 1`, with `2` and `3` both children of `1` (siblings). Deleting the
-leaf `3` leaves `[1, 2]` — the old read with `3` filtered out, order intact.
+leaf `3` leaves `[1, 2]`, the old read with `3` filtered out, order intact.
 (Fig. "delete rehoming", the easy case: a leaf has no subtree to migrate.) -/
 
 def s_leaf : concrete_st := mk [(1, 65, 0), (2, 66, 1), (3, 67, 1)]
@@ -47,7 +47,7 @@ theorem leaf_del_preserves_order :
     document (do_ s_leaf (9, 1, .Del [1] 3)) [2, 1]
       = (document s_leaf [3, 2, 1]).filter (· ≠ 3) := by native_decide
 
-/-! ## Delete CAN reorder survivors — a SEQUENTIAL-spec violation
+/-! ## Delete CAN reorder survivors: a SEQUENTIAL-spec violation
 
 This is not merely a read-side cosmetic cost of tombstone-freedom: it is a
 violation of the datatype's **sequential** specification. A single `Del`,
@@ -57,13 +57,13 @@ that survive it.
 Root children `5` (elder) and `6` (younger); `5` has a child `8` (youngest).
 The read is `[6, 5, 8]` (siblings newest-first: `6` before `5`; `8` nested
 under `5`). Delete `5`: tombstone-free, so `5`'s child `8` **rehomes to the
-root** and re-sorts among the root's children by id — and `8`, being younger
+root** and re-sorts among the root's children by id, and `8`, being younger
 than `6`, jumps *ahead* of it. The new read is `[8, 6]`, whereas the old read
 with `5` removed is `[6, 8]`: the survivor order changed.
 
 **Why our RA-linearizability cannot detect this.** The certified reference
 sequence in the framework IS the datatype's own `do_` fold: convergence is
-proved by showing every merge equals that fold. So `merge = fold` — and here
+proved by showing every merge equals that fold. So `merge = fold`, and here
 the fold is *itself* the wrong sequence. Both sides of the convergence VC
 compute the same reordered read and agree; the certificate is satisfied while
 the single-replica semantics is broken. Catching this needs a spec independent
@@ -72,8 +72,8 @@ of the implementation's own fold (open question `oq:linspec`).
 A tombstoned RGA keeps `5` as a dead position-holder, so `8`'s subtree never
 migrates and the order is preserved; the physical splice cannot offer that.
 This is exactly the general order-preservation claim, shown **false** below
-(`tombstone_free_violates_delete_order`). The positive contrast — the
-tombstoned RGA *satisfies* the same property — is `remove_preserves_visible_lt`
+(`tombstone_free_violates_delete_order`). The positive contrast, the
+tombstoned RGA *satisfies* the same property, is `remove_preserves_visible_lt`
 in `Sal/MRDTs/RGA_with_tombstones/RGA_ReadSide.lean`. -/
 
 def s_reorder : concrete_st := mk [(5, 100, 0), (6, 101, 0), (8, 102, 5)]
@@ -114,7 +114,7 @@ execution rather than a hand-assembled state. Elements are `a = 101`,
 newest-first read puts `b` before `a`; `c` (id 3) lives under `a`. The document
 reads `[b, a, c] = [2, 1, 3]`. Deleting `a` *should* leave `[b, c]`; instead
 `c`, rehomed to the root when `a` is spliced out, now out-ranks `b` under the
-newest-first tiebreak (id 3 > id 2) and leapfrogs ahead — the read becomes
+newest-first tiebreak (id 3 > id 2) and leapfrogs ahead, the read becomes
 `[c, b] = [3, 2]`. -/
 
 def s_bac : concrete_st :=
@@ -124,7 +124,7 @@ def s_bac : concrete_st :=
 theorem doc_bac : document s_bac [3, 2, 1] = [2, 1, 3] := by native_decide
 
 /-- Should-FAIL pin: the read is the tree traversal, not the candidate
-list echoed back — `[3, 2, 1]` (ids sorted descending) is the WRONG
+list echoed back, `[3, 2, 1]` (ids sorted descending) is the WRONG
 answer, and the harness can tell. -/
 theorem doc_bac_not_ids_order :
     document s_bac [3, 2, 1] ≠ [3, 2, 1] := by native_decide
@@ -147,7 +147,7 @@ theorem del_a_breaks_survivor_order :
 candidate ids in **descending** order. We encode that convention as
 `List.Pairwise (· > ·) ids` (the codebase states such order constraints via
 `List.Pairwise`; `List.Sorted` is deprecated in this Mathlib). The property is
-additionally guarded by **completeness** — `ids` covers every live identity —
+additionally guarded by **completeness** (`ids` covers every live identity),
 so that both the pre- and post-delete reads are the *full* documents; a
 discrepancy is then a genuine reordering of survivors and never an artifact of a
 short or mis-ordered candidate list. The refutation supplies KC's `s_bac` with
@@ -155,7 +155,7 @@ the complete, descending list `[3, 2, 1]`. -/
 
 /-- Independent intent spec: a single `Del` only removes its target from the
 read, leaving every survivor's relative order intact. RA-linearizability does
-NOT entail this — the framework's certified reference sequence is the datatype's
+NOT entail this, the framework's certified reference sequence is the datatype's
 own `do_` fold, so `merge = fold` computes the reordered read on both sides and
 the convergence VC is satisfied while this property fails (`oq:linspec`).
 

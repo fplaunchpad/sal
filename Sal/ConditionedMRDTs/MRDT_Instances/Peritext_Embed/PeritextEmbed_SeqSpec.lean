@@ -2,12 +2,12 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_SeqSpec
 
 /-!
-# Sequential-spec soundness — tier 4: fused Peritext vs the naive editor
+# Sequential-spec soundness, tier 4: fused Peritext vs the naive editor
 
 The campaign's final tier, against the canonical embed-based fused Peritext:
 on every sequentially honest single-replica history, the
 datatype's rendered rich text IS the screen of a **naive marked-text
-editor** — the sequential program a programmer would write for this op
+editor**, the sequential program a programmer would write for this op
 alphabet with no replication in mind:
 
 * the editor's document is a plain buffer of `(id, element)` entries;
@@ -27,7 +27,7 @@ four-op witness (`fused_delete_reformats_survivor`): its delete departs
 from the naive buffer, and the render inherits the departure.
 
 SPOT shape (PASS and FAIL): the equality is watched concretely on the
-witness trace; the FAIL half shows the editor is not trivially agreeing —
+witness trace; the FAIL half shows the editor is not trivially agreeing,
 deleting a *boundary* genuinely re-formats text on both sides (which is
 why `renderIds_del`'s character hypothesis is load-bearing), while
 deleting a *character* re-formats on neither.
@@ -46,7 +46,7 @@ open Sal.ConditionedMRDTs.Peritext.Read (OpenSet renderSpans formatOf)
 abbrev EditorBuf : Type := List (ℕ × PeritextElt)
 
 /-- The editor program: the campaign's naive sequential buffer at the
-rich-text payload — splice after the anchor, filter delete. -/
+rich-text payload, splice after the anchor, filter delete. -/
 def editorFold (ρ : List (Op (EOp PeritextElt))) : EditorBuf := eSpecFold ρ
 
 /-- The editor's screen: one left-to-right walk with the open-mark set. -/
@@ -93,7 +93,7 @@ theorem editorRenderIdsAux_map_eProj (acc : OpenSet) :
 /-! ## §C  The tier-4 theorems -/
 
 /-- **Tier 4, id-tagged**: on every sequentially honest history, the fused
-Peritext's id-tagged render is the naive editor's id-tagged screen —
+Peritext's id-tagged render is the naive editor's id-tagged screen,
 identity for identity, codepoint for codepoint, formatting predicate for
 formatting predicate. -/
 theorem peritextEmbed_seq_sound_ids {Γ : OrderedPrefixCode}
@@ -117,7 +117,7 @@ theorem peritextEmbed_seq_sound {Γ : OrderedPrefixCode}
 #print axioms peritextEmbed_seq_sound
 #print axioms peritextEmbed_seq_sound_ids
 
-/-! ## §D  SPOT — the theorem watched, PASS and FAIL shaped -/
+/-! ## §D  SPOT: the theorem watched, PASS and FAIL shaped -/
 
 namespace SPOT
 
@@ -135,7 +135,7 @@ theorem editor_screen :
     (editorRender (editorFold opsE)).map (fun r => (r.1, r.2 Mark.bold))
       = [(88, true), (80, false), (67, false)] := by native_decide
 
-/-- Deleting a **boundary** re-formats text — on the editor exactly as on
+/-- Deleting a **boundary** re-formats text, on the editor exactly as on
 the datatype (both extend the bold span over `P` and `C` when `⟨/bold⟩`
 goes): the agreement is not vacuous, and `renderIds_del`'s character
 hypothesis is load-bearing. -/
@@ -146,7 +146,7 @@ theorem editor_boundary_delete :
 
 /-- FAIL pin: the `renderIds_del` equation is REFUTED when the deleted id
 is a boundary (a boundary emits no render entry, so "minus the deleted
-entries" removes nothing, yet the formats changed) — the theorem's
+entries" removes nothing, yet the formats changed), the theorem's
 character hypothesis is necessary, not decorative. -/
 theorem boundary_delete_breaks_filter_eq :
     (renderIds (eUpdate unaryCode sResidual (9, 0, .del 4))).map

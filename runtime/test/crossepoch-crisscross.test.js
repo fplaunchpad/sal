@@ -1,12 +1,12 @@
 // CRISS-CROSS x EPOCH (the doubly-hard corner). A merge whose MCA antichain is
-// a criss-cross (#90) AND spans epochs (#112 -- one member below a compaction,
-// one at/after it) used to throw CrissCrossError and DEFER, which -- on a
-// compacted doc under opportunistic merging -- left peers permanently diverged
-// and re-triggered the sync storm. Now the antichain is lifted DOWN to a common
-// frame (EPOCH0, via the epoch inverse maps that coordState made available for
-// peritext) and folded there, so it RESOLVES. This pins it: an opportunistic
-// (criss-cross-inducing) peritext mesh with concurrent compaction converges,
-// with ZERO unresolved deferrals.
+// a criss-cross AND spans epochs (one member below a compaction, one at/after
+// it) is lifted DOWN to a common frame (EPOCH0, via the epoch inverse maps that
+// coordState makes available for peritext) and folded there, so it RESOLVES.
+// Deferring here (throwing CrissCrossError), on a compacted doc under
+// opportunistic merging, would leave peers permanently diverged and re-trigger
+// the sync storm. This pins it: an opportunistic (criss-cross-inducing)
+// peritext mesh with concurrent compaction converges, with ZERO unresolved
+// deferrals.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

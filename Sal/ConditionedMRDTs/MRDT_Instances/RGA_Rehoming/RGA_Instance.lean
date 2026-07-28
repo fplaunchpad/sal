@@ -56,16 +56,16 @@ noncomputable def RGACondSig' (α : Type := ℕ) [DecidableEq α] [Inhabited α]
 
 @[simp] theorem RGACondSig'_init : (RGACondSig' α).init = (init_st (α := α)) := rfl
 
-/-! ## §2. `EqEquiv` — the observational `eq`. -/
+/-! ## §2. `EqEquiv`: the observational `eq`. -/
 
-/-- `EqEquiv (RGACondSig' α)` — the RGA's `eq` with its equivalence proof. -/
+/-- `EqEquiv (RGACondSig' α)`, the RGA's `eq` with its equivalence proof. -/
 def rgaEqEquiv' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : EqEquiv (RGACondSig' α) where
   eqv := eq
   equiv := RGAEqQuotient.eq_equiv
 
-/-! ## §3. `CongVC` — all three congruence fields. -/
+/-! ## §3. `CongVC`: all three congruence fields. -/
 
-/-- `CongVC (RGACondSig' α) (rgaEqEquiv' α)` — `update` (`do_eq_congr`), `mergeL`
+/-- `CongVC (RGACondSig' α) (rgaEqEquiv' α)`, `update` (`do_eq_congr`), `mergeL`
 (`merge_eq_congr_inv`, consuming `qInv`'s `id_mono`), `query` (`Unit`). -/
 def rgaCongVC' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : CongVC (RGACondSig' α) (rgaEqEquiv' α) where
   update_congr := by
@@ -77,7 +77,7 @@ def rgaCongVC' (α : Type := ℕ) [DecidableEq α] [Inhabited α] : CongVC (RGAC
   query_congr := by
     intro _ _ _ _ _ _; rfl
 
-/-! ## §4. `InvInvVC` — `WfOp` and `applicable` are `≈`-invariant. -/
+/-! ## §4. `InvInvVC`: `WfOp` and `applicable` are `≈`-invariant. -/
 
 /-- `InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOp`.  `wf_congr`: `WfOp`'s `Ins` conjunct
 is `fresh_ts` (contains-driven), its `Del` conjunct `resolve · pre ≠ x` is
@@ -98,16 +98,16 @@ def rgaInvInvVC' : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOp where
     intro o s s' _ _ h
     exact and_congr (RGAEqQuotient.accurate_eq_iff o h) (RGAEqQuotient.fresh_ts_eq_iff o h)
 
-/-! ## §5. `InvPres` — `inv_init` and `inv_mergeL` hold; `inv_update` is the gap.
+/-! ## §5. `InvPres`: `inv_init` and `inv_mergeL` hold; `inv_update` is the gap.
 
 `inv_init` and `inv_mergeL` are discharged below for `qInv`.  `inv_mergeL` needs
-`id_mono` (`Inv_merge` under `id_mono l`, `id_mono_merge` under all three) — the
+`id_mono` (`Inv_merge` under `id_mono l`, `id_mono_merge` under all three), the
 very reason `Inv` must be `qInv`, not `RgaInv`.
 
 `inv_update`, however, does NOT hold with `W = WfOp`.  It would require
 `id_mono (do_ s o)` from `qInv s ∧ WfOp o s`, but `id_mono_doIns` needs
 `mono_alloc` (the fresh id exceeds every live id) and `id_mono_doDel` needs
-`accurate` — and `WfOp` supplies NEITHER (`WfOp` on `Ins` is just `t ≠ 0 ∧
+`accurate`, and `WfOp` supplies NEITHER (`WfOp` on `Ins` is just `t ≠ 0 ∧
 contains s t = false`, on `Del` just `resolve s pre ≠ x`).  `mono_alloc` is not
 order-respecting-stable (a fold may apply a large-id `Ins` then a small-id one),
 so it is a merge-fold reachability oracle, not a `W`-level fact.  Hence a full
@@ -131,14 +131,14 @@ theorem rga_inv_mergeL' (l a b : concrete_st α)
     id_mono_merge l a b Rl Ra Rb hl.2.2 ha.2.2 hb.2.2
   exact ⟨hm.2, hm.1, hmono⟩
 
-/-! ## §6. `WfOpReachable` — transported from the `RGACondSig` proof.
+/-! ## §6. `WfOpReachable`: transported from the `RGACondSig` proof.
 
 `(RGACondSig' α).toMRDTSig = RGACondSig.toMRDTSig = RGAM`, so `init`/`update`/`AppOp`
 coincide and `WfOpReachable` (which reads only those, via `WfChain`) is the same
 proposition for both signatures. `rga_wfOpReachable` transports definitionally. -/
 
 /-- `WfChain` reads only `toMRDTSig` (`init`/`update`), so it agrees between
-`(RGACondSig' α)` and `RGACondSig` — but with an abstract list both are stuck, so this
+`(RGACondSig' α)` and `RGACondSig`, but with an abstract list both are stuck, so this
 one-line induction is needed to make the transport explicit. -/
 theorem wfChain_transport (s : concrete_st α) (ρ : List (op_t α)) :
     WfChain (RGACondSig' α) WfOp s ρ = WfChain (RGASig.RGACondSig α) WfOp s ρ := by

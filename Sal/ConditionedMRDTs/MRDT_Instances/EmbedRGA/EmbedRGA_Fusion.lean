@@ -6,7 +6,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA_MultiEpoch
 The compaction (`compactEliasDelta`, drop dead ranges + rank-renumber)
 recovers 1.1x–1.8x on real traces; the residual cost is **spine depth**: a
 typing run mints a delta-1 chain, and after edits the interior of that chain is
-dead-but-kept (kept only because a live descendant hangs off its tail — the
+dead-but-kept (kept only because a live descendant hangs off its tail, the
 `[9]` node of the CompactEliasDelta SPOT). Every dead level still costs a
 codeword. **Fusion** removes the dead levels themselves.
 
@@ -32,14 +32,14 @@ follows through `chainBefore_display` and totality, exactly as
 `remapChain_keyLt` does for the rank pass. The three classes are the three
 cases of the proof:
 
-* **class 1 — both through the spine** (`Q <+: a`, `Q <+: b`): the common block
+* **class 1, both through the spine** (`Q <+: a`, `Q <+: b`): the common block
   `Q` is replaced wholesale by `Q'` on both, so the divergence in the shared
   tail is untouched (`chainBefore_append_left_iff`);
-* **class 2 — block vs the head's siblings** (one through, one not): the verdict
+* **class 2, block vs the head's siblings** (one through, one not): the verdict
   is decided at the head level `Q'`, which fusion keeps verbatim (the block
   inherits `d₁`'s rank), so replacing the interior below `Q'` cannot move it
   (`chainBefore_prefix_indep`);
-* **class 3 — the sentinel corner is vacuous**: dead spine interior nodes carry
+* **class 3, the sentinel corner is vacuous**: dead spine interior nodes carry
   no records, so no coordinate ends inside `Q` (`hthru`: on the domain, passing
   `Q'` forces passing all of `Q`), and no anchor-vs-extension comparison is
   lost.
@@ -209,7 +209,7 @@ theorem fuseChain_chainBefore {Q Q' : List ℕ} {𝒟 : List ℕ → Prop}
   simp only [fuseChain]
   by_cases hQa : Q.isPrefixOf a
   · by_cases hQb : Q.isPrefixOf b
-    · -- class 1: both through — replace the common block wholesale
+    · -- class 1: both through, replace the common block wholesale
       rw [if_pos hQa, if_pos hQb]
       obtain ⟨ra, hra⟩ := List.isPrefixOf_iff_prefix.mp hQa
       obtain ⟨rb, hrb⟩ := List.isPrefixOf_iff_prefix.mp hQb
@@ -219,7 +219,7 @@ theorem fuseChain_chainBefore {Q Q' : List ℕ} {𝒟 : List ℕ → Prop}
       rw [← hra, ← hrb] at hab
       exact (chainBefore_append_left_iff Q' ra rb).mpr
         ((chainBefore_append_left_iff Q ra rb).mp hab)
-    · -- class 2: a through, b not — verdict decided at the head Q'
+    · -- class 2: a through, b not, verdict decided at the head Q'
       rw [if_pos hQa, if_neg hQb]
       obtain ⟨ra, hra⟩ := List.isPrefixOf_iff_prefix.mp hQa
       have hda : a.drop Q.length = ra := by rw [← hra, List.drop_left]
@@ -257,7 +257,7 @@ def fuseBits (Γ : OrderedPrefixCode) (Q Q' : List ℕ) (c : List Bool) : List B
   else c
 
 /-- **Master alignment**: on any positive chain's coordinate the bit-string
-fusion *is* the chain fusion — the spine boundary lands on a codeword boundary
+fusion *is* the chain fusion, the spine boundary lands on a codeword boundary
 (prefix-freedom, `coordOf_prefix_align`) and the tail is copied verbatim. No
 domain hypothesis. -/
 theorem fuseBits_coordOf (Γ : OrderedPrefixCode) {Q Q' : List ℕ}
@@ -297,7 +297,7 @@ theorem prefix_snoc_cases {Q chA : List ℕ} {δ : ℕ}
 
 /-- The fusion mint domain: one fresh positive delta on an at-hand anchor chain,
 the minted node distinct from the spine (a genuine beyond-cut node, never the
-dead spine tail — the class-3 vacuity, `errata 3`). -/
+dead spine tail, the class-3 vacuity, `errata 3`). -/
 def fuseMintAt (Γ : OrderedPrefixCode) (Q : List ℕ) (𝒟 : List ℕ → Prop)
     (π : List Bool) (δ : ℕ) : Prop :=
   1 ≤ δ ∧ ∃ chA, π = coordOf Γ chA ∧ PosChain chA ∧ 𝒟 (chA ++ [δ]) ∧ chA ++ [δ] ≠ Q
@@ -426,11 +426,11 @@ theorem compactThenFuse_reads {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
 #print axioms fuse_reads_identical
 #print axioms compactThenFuse_reads
 
-/-! ## §7 SPOT — a deep dead spine, hand-derived (PASS + FAIL shaped)
+/-! ## §7 SPOT: a deep dead spine, hand-derived (PASS + FAIL shaped)
 
 Unary code (`enc d = 1^d 0`), hand-computed. Cut state: a live root sibling
 `y` (id 20, payload 200, chain `[2]`) and a live record `x` (id 10, payload
-100) hanging off a **3-level dead spine** `[1,1,1]` — chain `[1,1,1,2]`, so `x`
+100) hanging off a **3-level dead spine** `[1,1,1]`, chain `[1,1,1,2]`, so `x`
 carries two dead interior codewords. `Q = [1,1,1]`, `Q' = [1]`. Fusion keeps
 the head `[1]` and drops the two dead interiors: `x`'s coordinate collapses
 `[1,1,1,2] ↦ [1,2]`. Beyond the cut: insert `z` (id 13, payload 300) under `x`
@@ -441,7 +441,7 @@ Hand-summed coordinate weight `25 → 17`.
 FAIL companion `badFuse`: reparents the dead spine to a *different* root delta
 (`[1,1,1] ↦ [3]`, so `x ↦ [3,2]`), jumping `x` over the sibling `y`. It is a
 prefix rewrite (H3-shaped) but **order-breaking** (H2 fails): the display
-comparator between `x` and `y` flips, and the read changes — pinning H2
+comparator between `x` and `y` flips, and the read changes, pinning H2
 (`fuseChain_chainBefore`) as the load-bearing hypothesis. -/
 
 namespace FusionSPOT
@@ -472,7 +472,7 @@ def finalO : EState ℕ := applySeq (E unaryCode).toCRDTSig sCut postOps
 def finalR : EState ℕ :=
   applySeq (E unaryCode).toCRDTSig (eRemapSt gfuse sCut) (postOps.map (eRemapOp gfuse))
 
-/-- **PASS**: fusion is invisible — both reads are the hand-derived
+/-- **PASS**: fusion is invisible, both reads are the hand-derived
 `[200, 100, 300]` (`y` newest root sibling, then `x`, then its child `z`).
 Not empty, not the raw id list. -/
 theorem reads_identical :
@@ -486,7 +486,7 @@ theorem size_reduced :
     SPOT.coordWeight finalR = 17 ∧ SPOT.coordWeight finalO = 25 := by native_decide
 
 /-- Degenerate-behavior pin: the read equality is NOT the identity map echoing
-the state — the fused state differs record for record. -/
+the state, the fused state differs record for record. -/
 theorem fusion_not_identity :
     eRemapSt gfuse sCut ≠ sCut ∧ finalR ≠ finalO := by native_decide
 

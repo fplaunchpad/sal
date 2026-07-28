@@ -64,7 +64,7 @@ Read-side queries (not part of the 24 VCs):
 /-- Σ = (A, I) where
   * A : set of `(add_ts, elem, innate_value)` add records,
   * I : set of `(inc_ts, elem, amount)` increment records.
-No tombstone component — the LCA carries that information. -/
+No tombstone component, the LCA carries that information. -/
 abbrev concrete_st := set (ℕ × ℕ × ℕ) × set (ℕ × ℕ × ℤ)
 
 /-- Initial state: empty A and I. -/
@@ -76,9 +76,9 @@ def init_st : concrete_st := (empty, empty)
 def eq (a b : concrete_st) := a = b
 
 /-- Ops:
-  * `Add e v`  — stake an add record `(ts, e, v)` in A.
-  * `Inc e a`  — stake an increment record `(ts, e, a)` in I.
-  * `Rmv e`    — local filter on A (drop every record with elem `e`).
+  * `Add e v`: stake an add record `(ts, e, v)` in A.
+  * `Inc e a`: stake an increment record `(ts, e, a)` in I.
+  * `Rmv e`: local filter on A (drop every record with elem `e`).
                  I is untouched. -/
 inductive app_op_t : Type where
 | Add : ℕ → ℕ → app_op_t    -- elem, innate value

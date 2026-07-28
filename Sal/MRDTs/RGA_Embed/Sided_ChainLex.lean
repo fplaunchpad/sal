@@ -10,7 +10,7 @@ Fugue policy, all-R fragment lockstep-exact with the one-sided embed).
 Chains become sequences of `(side, delta)` entries and the display rule
 generalizes from the prefix rule to the in-order rule: L-extensions,
 then the node, then R-extensions. The **marker formalization** makes
-this plain lexicographic comparison again — a node's sort key is its
+this plain lexicographic comparison again, a node's sort key is its
 coordinate followed by the terminator `3`, with symbol bands
 
     R-block symbols {1,2}  <  marker 3  <  L-block symbols {4,5}
@@ -23,7 +23,7 @@ order. The one-sided design is the L-uninhabited fragment: its existing
 
 This file is the sided analogue of the chain-lex core: the display
 relation `schainBefore` (in-order rule), its totality, and the **sided
-marker theorem** `sdisplay_iff_schainBefore` — display comparison of
+marker theorem** `sdisplay_iff_schainBefore`, display comparison of
 sided coordinates is exactly the in-order rule.
 -/
 
@@ -270,7 +270,7 @@ theorem schainBefore_display (Γ : OrderedPrefixCode) {c1 c2 : SChain}
               (sidedCoordOf Γ t1 ++ [3])) from by
             simp [sidedCoordOf, sBlock, compl, hb1]]
         exact keyLt_append_cons_lt _ (symR_lt_symL b2 (!b1)) _ _
-      · -- L vs L: mirrored — the complement flips the differing bit
+      · -- L vs L: mirrored, the complement flips the differing bit
         have hlt' : d1 < d2 := hlt
         obtain ⟨p, u1, u2, hE1, hE2⟩ := enc_first_diff Γ hd1 hd2 hlt'
         rw [show sidedCoordOf Γ ((Side.L, d2) :: t2) ++ [3] =
@@ -306,7 +306,7 @@ theorem schainBefore_ne {c1 c2 : SChain} (h : schainBefore c1 c2) :
 /-- **The sided marker theorem**: for distinct positive sided chains,
 the display comparison of the sided coordinates is exactly the in-order
 rule. Two-sidedness is plain lexicographic order over the marker
-alphabet — no bespoke three-way prefix clause. -/
+alphabet, no bespoke three-way prefix clause. -/
 theorem sdisplay_iff_schainBefore (Γ : OrderedPrefixCode)
     {c1 c2 : SChain} (h1 : PosSChain c1) (h2 : PosSChain c2)
     (hne : c1 ≠ c2) :
@@ -374,7 +374,7 @@ theorem map_prefix_reflect {f : Bool → ℕ} (hf : Function.Injective f) :
       exact List.cons_prefix_cons.mpr ⟨rfl, map_prefix_reflect hf ht⟩
 
 /-- **Unique decodability**: distinct positive sided chains mint distinct
-coordinates — the side is recoverable from the first symbol's band, the
+coordinates, the side is recoverable from the first symbol's band, the
 delta by prefix-freedom within the band. -/
 theorem sidedCoordOf_inj (Γ : OrderedPrefixCode) :
     ∀ {c1 c2 : SChain}, PosSChain c1 → PosSChain c2 →
@@ -448,7 +448,7 @@ theorem sidedCoordOf_inj (Γ : OrderedPrefixCode) :
 
 The erasure theorem, derived through the two marker theorems: lifting a
 one-sided chain to all-R sided form changes neither the coordinate's key
-nor the display verdict — the current datatype IS the L-uninhabited
+nor the display verdict, the current datatype IS the L-uninhabited
 fragment. This is the Lean form of the Python all-R lockstep. -/
 
 /-- Lift a one-sided (delta) chain to the all-R sided form. -/
@@ -496,7 +496,7 @@ theorem schainBefore_liftR {c1 c2 : List ℕ}
 /-! ## In-order-interval convexity: a subtree is a display interval
 
 The Fugue intent target: everything the display places between two
-members of a subtree is itself in the subtree — with the node included
+members of a subtree is itself in the subtree, with the node included
 (the empty extension), since the subtree's interval straddles it:
 L-descendants, the node, R-descendants. -/
 
@@ -569,7 +569,7 @@ theorem schainBefore_nil_left {c : SChain} (h : schainBefore [] c) :
 
 /-- **In-order-interval convexity**: whatever the display places between
 two members of `p`'s subtree is itself in `p`'s subtree. With the empty
-extension allowed, the node itself is a member — the subtree interval is
+extension allowed, the node itself is a member, the subtree interval is
 L-descendants, then the node, then R-descendants, with nothing foreign
 in between. -/
 theorem schain_subtree_convex :

@@ -1,6 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Presplice
 
-/-! # Shesha — the conditioned instance and the RA-linearizability capstone
+/-! # Shesha: the conditioned instance and the RA-linearizability capstone
 
 Shesha enters the one framework by the **mergeable-queue route**: the
 ternary merge is exhibited directly as the linearization witness. Two
@@ -8,50 +8,50 @@ successive hook interfaces proved too weak, each with a machine-checked
 counterexample at an honest configuration:
 
 * the plain `JoinLemma3At` (`Shesha_Join_Refuted.lean`): canonical states
-  are not unique per event set — a concurrent `(ins x←a, del a)` pair
+  are not unique per event set, a concurrent `(ins x←a, del a)` pair
   folds to different **live sets** under the two orders;
 * the effective-class `JoinLemma3AtW` (`Shesha_Presplice_Refuted.lean`):
-  effectiveness realigns the live sets but not the **orders** — the
+  effectiveness realigns the live sets but not the **orders**, the
   display order of concurrent same-anchor inserts is a `loOn`-free choice
   surviving in the state, and independently canonical slots may realize
   it incompatibly, breaking the branch agreement (Lemma B) the merge's
   run placement relies on.
 
-This route (`WitnessCoherence.lean`) threads the missing datum —
+This route (`WitnessCoherence.lean`) threads the missing datum,
 **same-anchor insert coherence** (`SCoh`), branch agreement at the witness
-level — along the store's version ancestry: the hook receives the
+level, along the store's version ancestry: the hook receives the
 three slots' witnesses aligned (`SCoh ρ₀ ρ₁`, `SCoh ρ₀ ρ₂`), and owes the
 merged witness aligned with both branches.
 
 The pre-splice obligation `shesha_presplice` is **proved down to the
 row level** (`Shesha_Presplice.lean`): the forest is built from a row
-store by the graded builder (`Shesha_Out.lean`), and every clause — WF,
+store by the graded builder (`Shesha_Out.lean`), and every clause, WF,
 rows, anti-`vis` order, the branch-order extensions, and the collapse
-equation — is discharged from the row-store package. The **single owed
+equation, is discharged from the row-store package. The **single owed
 residue** `shesha_rows_residue` (documented `sorry`) is the store itself.
 
 **Refuted** (`Shesha_Rows_Refuted.lean`, machine-checked):
 `shesha_rows_residue` is **FALSE**. At an honest, `SCoh`-aligned config
-(`SCoh` vacuous — only one common insert) the merge of the canonical folds
+(`SCoh` vacuous, only one common insert) the merge of the canonical folds
 of `LCA=[ins 1]`, `A=[ins 2←1, ins 4←⌂, del 1]`, `B=[ins 3←1]` is
 `[3,4,2]`, which splits marker `1`'s children `{2,3}` around the concurrent
-sibling `4` — no pre-splice forest collapses to it, and `[3,4,2]` is not the
+sibling `4`, no pre-splice forest collapses to it, and `[3,4,2]` is not the
 fold of any `loOn`-respecting linearization of the union. So the pre-splice
 route cannot close this capstone as stated, and `shesha_ra_linearizable3`
-below — proved *from* this `sorry` — rests on a known-false lemma; its
+below, proved *from* this `sorry`, rests on a known-false lemma; its
 statement is itself unsatisfiable at this reachable merge. The split is caused
-by Shesha's *local-order-preserving splice over a mutable forest* — **not** by
+by Shesha's *local-order-preserving splice over a mutable forest*, **not** by
 anchor-forgetting: `RGA_Tombstone_Free` also forgets the anchor on delete, but
 it re-homes and *re-sorts survivors by their global key*, so its read is always
 a fold (⇒ RA-linearizable) at the cost of reordering survivors
 (`tombstone_free_violates_delete_order`). Shesha instead keeps local sibling
 order (`delete_preserves_survivor_order`), so a single replica is delete-order-
-faithful but the merge of two mutable forests is not a global fold — the
+faithful but the merge of two mutable forests is not a global fold, the
 **sequence-CRDT trilemma** (local-order-preserving delete ⊻ merge RA-lin). The
 dissolution is not anchor-retention but **immutable stored positions** (KC+Kartik,
 `Development/RGA_OrderPreserving_Reference.lean`): freeze the ancestry
 path at insert, read = lex-sort by frozen position, delete = drop; positions
-never move, so both delete-order holds and the read is a fold — on this trace
+never move, so both delete-order holds and the read is a fold, on this trace
 `2`,`3` keep contiguous frozen paths so `4` cannot split them. A restatement to a
 weaker convergence / licensed-divergence spec (which Shesha *does* satisfy), or
 the immutable-position re-encoding, is the owed research decision. The theorem
@@ -66,7 +66,7 @@ open Classical in
 /-- **The plan-order transport**: row order of the pre-splice forest,
 realized as `Before` order of the assembled witness
 (`plan of the forest ++ deletes`). `hprec` places `ty` left of `tx` in
-`T`'s row — rows are newest-first, so the plan enumerates `tx` first. -/
+`T`'s row, rows are newest-first, so the plan enumerates `tx` first. -/
 theorem plan_before_of_row {C : Sal.Emulation.Configuration SheshaD.toCRDTSig}
     {E : Set (Op SAppOp)} {T : Shesha.St} {ρu : List (Op SAppOp)}
     (hsub : ∀ a ∈ E, a ∈ C.events)
@@ -123,15 +123,15 @@ the union whose
   ternary merge output**.
 
 **Proved** (`presplice_of_rows` ∘ `shesha_rows_residue`,
-`Shesha_Presplice.lean`): the forest level is fully machine-checked —
+`Shesha_Presplice.lean`): the forest level is fully machine-checked,
 `T` is the graded build of a pre-splice row store, its WF/rows/coverage
 come from the builder kit (`Shesha_Out.lean`), the anti-`vis` clause (c)
 is *derived* from the extension clauses (c′) through the
 honesty/non-commutation kernel, and the collapse equation (d) reduces
-per-row (`forest_ext`/`dropF_eq_of_rows`) to: live keys — the collapse
+per-row (`forest_ext`/`dropF_eq_of_rows`) to: live keys, the collapse
 row is the ghost expansion of the stored row
 (`build_collapse_row_raw`) and matches the merge row by the residue's
-`hK6`; absent keys — both sides die by the live-set identity
+`hK6`; absent keys, both sides die by the live-set identity
 (`slots_live_iff` + `merge_ids`). The single remaining `sorry` is the
 row store itself (`shesha_rows_residue`): the merge-correctness core in
 pure row combinatorics, with hypotheses `SCoh ρ₀ ρ₁`,
@@ -178,7 +178,7 @@ theorem shesha_presplice
 
 /-- **The aligned join hook**: under honest histories, Shesha's ternary
 merge of branch-agreement-aligned slots is the fold of an aligned
-`lo`-respecting **effective** enumeration of the union — the pre-splice
+`lo`-respecting **effective** enumeration of the union, the pre-splice
 forest (`shesha_presplice`), planned and then collapsed
 (`presplice_canonical_wit`), its coherence obligations discharged by the
 plan-order transport (`plan_before_of_row`). -/

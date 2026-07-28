@@ -183,7 +183,7 @@ theorem ORSetE_ncomm_add_rem (ts₁ r₁ ts₂ r₂ x : ℕ) :
   simp [ORSetE_update_eq, orEUpdate] at h0
 
 /-- Classification: an `Add x @ rid` fails to commute only with a `Rem x` or
-a same-replica `Add x` — exactly the killers of its tag. -/
+a same-replica `Add x`, exactly the killers of its tag. -/
 theorem ORSetE_ncomm_add_dest {ts r x : ℕ} {o : Op ORSetE.AppOp}
     (h : ¬ ORSetE.toCRDTSig.commutes (ts, r, ORSetOp.add x) o) :
     o.2.2 = ORSetOp.rem x ∨ (o.2.2 = ORSetOp.add x ∧ o.2.1 = r) := by
@@ -786,7 +786,7 @@ theorem ORSetE_rem_max_trichotomy
             (ORSetE_ncomm_add_dest hnce₃) he₃a hve₃
 
 /-- Maximal `Add` at replica `q.1`: every live evicted-family tag of `σ(U∖e)`
-is live in the punctured downset — by same-replica totality. -/
+is live in the punctured downset, by same-replica totality. -/
 theorem ORSetE_add_max_trichotomy
     {C : Sal.Emulation.Configuration ORSetE.toCRDTSig}
     {U : Set (Op ORSetE.AppOp)} {A B : ORSetE.State}
@@ -1094,7 +1094,7 @@ theorem ORSetE_ra_linearizable3
   ra_linearizable3_of_join ORSetE_joinLemma3 C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

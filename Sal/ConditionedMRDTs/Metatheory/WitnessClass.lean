@@ -5,23 +5,23 @@ import Sal.ConditionedMRDTs.Metatheory.GenHonest
 `IsCanonicalState` is existential in its enumeration, and for datatypes whose
 canonical states are **not unique** per event set (Shesha: a concurrent
 `(ins x←a, del a)` pair folds to different live sets under the two orders)
-the plain `JoinLemma3At` interface is too weak — the LCA slot and the branch
+the plain `JoinLemma3At` interface is too weak: the LCA slot and the branch
 slots may be handed folds of incompatible enumeration choices, and the merge
 of such a misaligned triple need not be canonical at all. This is not
 hypothetical: `Shesha_Join_Refuted.lean` machine-checks a counterexample at
 an honest configuration.
 
 Real executions only ever register folds of a restricted
-**witness class** `W` (for Shesha: *effective* enumerations — every insert
+**witness class** `W` (for Shesha: *effective* enumerations, every insert
 applies). This file parameterizes the direct-witness route by `W`:
 
-* `IsCanonicalStateW W` — canonicity with the witness drawn from `W`;
-* `JoinLemma3AtW` — the ternary join over `W`-witnesses (the per-datatype
+* `IsCanonicalStateW W`: canonicity with the witness drawn from `W`;
+* `JoinLemma3AtW`: the ternary join over `W`-witnesses (the per-datatype
   hook, now with `W`-aligned inputs *and* a `W`-obligation on the output);
-* `GoodConfigW P W` — the strengthened reachability invariant: the plain
+* `GoodConfigW P W`, the strengthened reachability invariant: the plain
   `GoodConfig3` **plus**, conditionally on `GenHonest D P`, a `W`-witness at
   every registered version;
-* `ra_linearizable3_of_genHonest_reachW` — the capstone: per-version
+* `ra_linearizable3_of_genHonest_reachW`, the capstone: per-version
   RA-linearizability at every `GenHonest`-honestly reachable configuration,
   from the `W`-join plus two `W`-bookkeeping facts (`W []`, and `W` extends
   by a fresh event whose guard `P` holds at the current fold).
@@ -139,8 +139,8 @@ def JoinLemma3AtW (D : ConditionedMRDTSig) (W : List (Op D.AppOp) → Prop)
     IsCanonicalStateW W C ev₁ s₁ → IsCanonicalStateW W C ev₂ s₂ →
     IsCanonicalStateW W C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
-/-- **The strengthened reachability invariant**: plain `GoodConfig3`, plus —
-conditionally on the honesty of the configuration — a `W`-witness at every
+/-- **The strengthened reachability invariant**: plain `GoodConfig3`, plus,
+conditionally on the honesty of the configuration, a `W`-witness at every
 registered version. The conditioning is what lets a (possibly dishonest)
 final step keep the plain half. -/
 structure GoodConfigW (P : Op D.AppOp → D.State → Prop)
@@ -184,7 +184,7 @@ theorem goodConfigW_createReplica {C C' : Configuration D} {r : Replica}
 /-- Apply preserves the invariant. The plain half is `goodConfig3_apply`
 verbatim; the `W`-half extends the parent's `W`-witness by the fresh event,
 whose guard `P` holds at the parent's fold **because the fresh event's causal
-past in `C'` is exactly the parent's event set** — this is where the
+past in `C'` is exactly the parent's event set**: this is where the
 conditional honesty hypothesis (`GenHonest D P C'`) is consumed. -/
 theorem goodConfigW_apply {C C' : Configuration D}
     {t : Timestamp} {r : Replica} {o : D.AppOp}
@@ -288,7 +288,7 @@ theorem goodConfigW_apply {C C' : Configuration D}
     rw [core_vis, core_vis]
     exact h_vis_old E' (h.good.ver_events_sub w s' E' hw) a ha b hb
 
-/-- Merge preserves the invariant — the `W`-join at work. The plain
+/-- Merge preserves the invariant, the `W`-join at work. The plain
 `canonical` field of `GoodConfig3 C'` is the *weakening* of the `W`-join's
 conclusion, so the (refuted) plain `JoinLemma3At` is never consumed. -/
 theorem goodConfigW_merge_at {C C' : Configuration D}

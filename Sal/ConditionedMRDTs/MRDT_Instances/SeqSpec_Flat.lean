@@ -112,7 +112,7 @@ theorem orSpecFold_snoc (ρ : List (Op ORSetOp)) (o : Op ORSetOp) :
 
 /-- **OR-Set, sequentially = a plain set.** The tag machinery is invisible
 to a single replica: the element view of the fold is exactly the naive
-add/remove set program. (No invariant needed — the view is a fold
+add/remove set program. (No invariant needed, the view is a fold
 homomorphism: `add` stakes a tag of `e`, `rem` filters every tag of
 `e`.) -/
 theorem orset_seq_sound (ρ : List (Op ORSet.AppOp)) (e : ℕ) :
@@ -558,7 +558,7 @@ theorem awpq_inc_log_sound (ρ : List (Op AWPQ.AppOp)) (t e : ℕ) (a : ℤ) :
 /-! ## LWW and FWW registers: last/first write, under monotone stamps
 
 The registers arbitrate by TIMESTAMP, not program order; the two coincide
-exactly when stamps increase along the history — the sequential Lamport
+exactly when stamps increase along the history, the sequential Lamport
 condition. Under it LWW reads the LAST write and FWW the FIRST:
 program-order register semantics recovered from payload arbitration. -/
 

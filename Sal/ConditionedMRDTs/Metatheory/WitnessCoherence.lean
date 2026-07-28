@@ -1,12 +1,12 @@
 import Sal.ConditionedMRDTs.Metatheory.WitnessClass
 import Sal.ConditionedMRDTs.Metatheory.LCA_Lemma
 
-/-! # Witness coherence — the ancestry-aligned direct-witness route
+/-! # Witness coherence: the ancestry-aligned direct-witness route
 
 `JoinLemma3AtW` hands the datatype hook three *independently* canonical
 slots. For datatypes with `loOn`-free choices that survive in the state
 (Shesha: the display order of concurrent same-anchor inserts), the three
-slots may realize **incompatible** choices — the LCA slot and a branch slot
+slots may realize **incompatible** choices: the LCA slot and a branch slot
 can display a common live pair in opposite orders, and the merge of such a
 misaligned triple need not be canonical at all. This is not hypothetical:
 `Shesha_Presplice_Refuted.lean` machine-checks a counterexample at an honest
@@ -14,24 +14,24 @@ configuration, one level above `Shesha_Join_Refuted.lean`'s.
 
 Real executions never produce the misalignment: a version's free choices are
 *inherited* from its ancestors (a branch state displays the LCA's common
-pairs in the LCA's order — branch agreement). This file threads that
+pairs in the LCA's order, branch agreement). This file threads that
 inheritance through the reachability induction as an abstract **coherence
 relation** `K` between the *witnesses* of DAG-related versions:
 
-* `IsCanonWitness` — the explicit-witness form of `IsCanonicalStateW`;
-* `JoinLemma3AtWC` — the join hook with named witnesses: the inputs come
-  `K`-aligned along the store's ancestry (`K ρ₀ ρ₁`, `K ρ₀ ρ₂` — the LCA is
+* `IsCanonWitness`: the explicit-witness form of `IsCanonicalStateW`;
+* `JoinLemma3AtWC`, the join hook with named witnesses: the inputs come
+  `K`-aligned along the store's ancestry (`K ρ₀ ρ₁`, `K ρ₀ ρ₂`, the LCA is
   a DAG ancestor of both branches), and the output owes alignment back
   (`K ρ₁ ρm`, `K ρ₂ ρm`);
-* `GoodConfigWC` — the strengthened invariant: `GoodConfig3`, the store
-  invariant (`StoreInv` — the DAG bookkeeping that makes ancestry usable),
+* `GoodConfigWC`, the strengthened invariant: `GoodConfig3`, the store
+  invariant (`StoreInv`, the DAG bookkeeping that makes ancestry usable),
   and, conditionally on honesty, a **global family** of witnesses, one per
   registered version, pairwise `K`-coherent along `Reaches`;
-* `ra_linearizable3_of_genHonest_reachWC` — the capstone, from the aligned
+* `ra_linearizable3_of_genHonest_reachWC`: the capstone, from the aligned
   join plus three `K`-bookkeeping facts:
-  - `hKrefl` — reflexivity;
-  - `hKext` — a fresh event appended on the right preserves coherence;
-  - `hKsub` — locality through a middleman: `K α β → K β γ → α ⊆ β → K α γ`
+  - `hKrefl`: reflexivity;
+  - `hKext`: a fresh event appended on the right preserves coherence;
+  - `hKsub`, locality through a middleman: `K α β → K β γ → α ⊆ β → K α γ`
     (how the merge output's coherence propagates to the branches' own
     ancestors, whose events sit inside the branch).
 
@@ -47,7 +47,7 @@ section CanonWitness
 
 variable {D' : CRDTSig}
 
-/-- `ρ` is a canonical `W`-witness realizing `s` as the fold of `ev` — the
+/-- `ρ` is a canonical `W`-witness realizing `s` as the fold of `ev`, the
 explicit-witness form of `IsCanonicalStateW`. -/
 def IsCanonWitness (W : List (Op D'.AppOp) → Prop)
     (C : Sal.Emulation.Configuration D') (ev : Set (Op D'.AppOp))
@@ -152,7 +152,7 @@ def JoinLemma3AtWC (D : ConditionedMRDTSig) (W : List (Op D.AppOp) → Prop)
       K ρ₁ ρm ∧ K ρ₂ ρm
 
 /-- **The coherent reachability invariant**: `GoodConfig3`, the store
-invariant, and — conditionally on honesty — one witness per registered
+invariant, and, conditionally on honesty, one witness per registered
 version, pairwise `K`-coherent along the version DAG's ancestry. -/
 structure GoodConfigWC (P : Op D.AppOp → D.State → Prop)
     (W : List (Op D.AppOp) → Prop)
@@ -387,7 +387,7 @@ theorem goodConfigWC_apply {C C' : Configuration D}
       rw [if_neg hune, if_neg hwn]
       exact hcoh u w huold hw hrw
 
-/-- Merge preserves the invariant — the aligned join at work: the invariant
+/-- Merge preserves the invariant, the aligned join at work: the invariant
 supplies the LCA-to-branch coherence (`Reaches` along the two `IsLCA` legs),
 the join returns the merged witness aligned with both branches, and `hKsub`
 propagates its coherence to every deeper ancestor (whose events sit inside

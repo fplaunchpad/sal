@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # PN_Counter (MRDT) — SPOTs -/
+/-! # PN_Counter (MRDT): SPOTs -/
 
 namespace PN_Counter_MRDT_SPOT
 

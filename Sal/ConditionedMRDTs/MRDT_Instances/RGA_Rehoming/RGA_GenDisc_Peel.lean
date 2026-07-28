@@ -1,29 +1,29 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_K1_Wiring
 
 /-!
-# GenDisc2C discharge, part 1 — the pointwise peel and its bricks
+# GenDisc2C discharge, part 1: the pointwise peel and its bricks
 
 *0 `sorry`.*
 
 The critical-path leaf after K1 is `GenDisc2C Cfg E`: each event accurate at the fold
 of its dependency prefix.  Born-applicability gives
 accuracy at the fold of the FULL causal past; a past-op `z` that is NOT a dependency satisfies
-`¬ appliesDependsOn o z` — *by definition* its application never flips `o`'s applicability at ANY
-state — so non-dependencies **peel pointwise off the end** of a deps-first past enumeration, with
+`¬ appliesDependsOn o z`, *by definition* its application never flips `o`'s applicability at ANY
+state, so non-dependencies **peel pointwise off the end** of a deps-first past enumeration, with
 no state reasoning whatsoever.  The reorder to deps-first is engine convergence on the strictly
 smaller past set (well-founded: `past z ⊊ past o`).
 
 This file proves the bounded bricks of that design:
 
-* `not_appliesDependsOn_iff` — the classical unfolding: `¬ appliesDependsOn o z` IS pointwise
+* `not_appliesDependsOn_iff`, the classical unfolding: `¬ appliesDependsOn o z` IS pointwise
   applicability-invariance.
-* `nondep_not_appliesDependsOn` — a past-op with no `loOnA`-edge into `o` is pointwise-invisible
+* `nondep_not_appliesDependsOn`, a past-op with no `loOnA`-edge into `o` is pointwise-invisible
   to `o`'s applicability (the semantic content of "not a dependency").
-* `applicable_peel_suffix` — the peel: appending any list of pointwise-invisible ops to a fold
+* `applicable_peel_suffix`, the peel: appending any list of pointwise-invisible ops to a fold
   leaves `o`'s applicability unchanged.
-* `loOnA_ev_free` — for the RGA, `loOnA` does not depend on the ambient event set (`rc = Either`
+* `loOnA_ev_free`, for the RGA, `loOnA` does not depend on the ambient event set (`rc = Either`
   kills the only set-dependent clause), so relativizing the discharge to `past o` is free.
-* `pastE_loOnA_closed` — the causal past (within `E`) is closed under `loOnA`-predecessors, so
+* `pastE_loOnA_closed`, the causal past (within `E`) is closed under `loOnA`-predecessors, so
   past enumerations are `GoodEnum`s at `E` verbatim.
 -/
 
@@ -57,7 +57,7 @@ theorem not_appliesDependsOn_iff (D : ConditionedMRDTSig) (o z : Op D.AppOp) :
     exact hne (h s)
 
 /-- **A non-dependency past-op is pointwise invisible to `o`'s applicability.**  If `z` is
-causally below `o` but carries no `loOnA` edge into `o`, then `¬ appliesDependsOn o z` — the
+causally below `o` but carries no `loOnA` edge into `o`, then `¬ appliesDependsOn o z`, the
 `vis ∧ appliesDependsOn` arm of `loOnA` is exactly what would catch it. -/
 theorem nondep_not_appliesDependsOn (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (ev : Set (op_t α)) (o z : op_t α)
@@ -69,7 +69,7 @@ theorem nondep_not_appliesDependsOn (Cfg : Sal.Emulation.Configuration (RGACondS
 /-! ## §2  The peel -/
 
 /-- **The pointwise peel.**  Appending ops that are pointwise invisible to `o`'s applicability
-leaves it unchanged — peeled one at a time from the right, each step an instance of the pointwise
+leaves it unchanged, peeled one at a time from the right, each step an instance of the pointwise
 fact at the current fold state; NO other property of the state is used. -/
 theorem applicable_peel_suffix (o : op_t α) (Z : List (op_t α))
     (hinv : ∀ z ∈ Z, ¬ appliesDependsOn (RGACondSig α) o z) :
@@ -118,7 +118,7 @@ def pastE (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
 
 /-- **The causal past is `loOnA`-predecessor-closed in `E`**: an `loOnA`-predecessor is a `vis`
 predecessor, and `vis` is transitive.  Hence any `loOnA`-respecting enumeration of `pastE` is a
-`GoodEnum` at `E` verbatim — the engine applies to past enumerations with no relativization. -/
+`GoodEnum` at `E` verbatim, the engine applies to past enumerations with no relativization. -/
 theorem pastE_loOnA_closed (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E : Set (op_t α)) (o : op_t α)
     (htr : ∀ {a b c : op_t α}, Cfg.vis a b → Cfg.vis b c → Cfg.vis a c)
@@ -145,7 +145,7 @@ theorem depC_mem_pastE (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDT
     (z : op_t α) (h : DepC Cfg E z o) : z ∈ pastE Cfg E o :=
   ⟨depC_src_mem Cfg E z o h, depC_imp_vis Cfg E htr z o h⟩
 
-/-! ## §5  Relativization — dependency structure restricts to a closed subset
+/-! ## §5  Relativization: dependency structure restricts to a closed subset
 
 The strong-induction step works at `E' := pastE Cfg E o` and calls the EXISTING engine
 (`canonFoldOK_of_gen`) there verbatim.  What makes this free: a `DepC`-chain into a member of a
@@ -184,7 +184,7 @@ theorem depC_mono_ev (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSi
     exact Relation.TransGen.tail ih ⟨hsub _ hbc.1, (loOnA_ev_free Cfg E' E _ _).mp hbc.2⟩
 
 /-- **`IsDepPreC` transports from a closed subset to the ambient set**: an `E'`-dependency prefix
-of `o ∈ E'` is an `E`-dependency prefix — completeness holds because an `E`-dependency chain into
+of `o ∈ E'` is an `E`-dependency prefix, completeness holds because an `E`-dependency chain into
 `o` stays inside `E'` (`depC_restrict`). -/
 theorem isDepPreC_of_restrict (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig)
     (E E' : Set (op_t α)) (hsub : ∀ x ∈ E', x ∈ E)

@@ -1,4 +1,4 @@
-# Sal/Emulation — op-based ⇒ state-based emulation in Lean
+# Sal/Emulation: op-based ⇒ state-based emulation in Lean
 
 Work-in-progress formalization. The goal is to mechanically prove a
 meta-theorem of the shape:
@@ -13,39 +13,39 @@ the Sal paper (lin.tex §3.1).
 
 ## Primary references
 
-- `_references/arXiv-2502.19967v1/` — Ramesh, Soundarapandian,
+- `_references/arXiv-2502.19967v1/`: Ramesh, Soundarapandian,
   Sivaramakrishnan, *Automatically Verifying Replication-aware
   Linearizability* (the Sal paper). Defines the labeled TS
   $\mathcal{S}_\mathcal{D}$, RA-linearizability (Def. lin), and the
   "24 VCs ⟹ RA-linearizable" theorem (bottom-up linearization).
-- `_references/arXiv-2504.05398v2/` — Liittschwager, Castello, Tsampas,
+- `_references/arXiv-2504.05398v2/`: Liittschwager, Castello, Tsampas,
   Kuper, *CRDT Emulation, Simulation, and Representation Independence*
   (ICFP '25). Defines op-based / state-based TS, weak simulation,
   and the emulation-preserves-trace-properties theorem.
 
 ## File layout (current and planned)
 
-- [`Labeled_TS.lean`](Labeled_TS.lean) — generic labeled transition
+- [`Labeled_TS.lean`](Labeled_TS.lean): generic labeled transition
   systems, executions, reachability.
-- [`CRDT_Signature.lean`](CRDT_Signature.lean) — the
+- [`CRDT_Signature.lean`](CRDT_Signature.lean): the
   $\langle\Sigma, \sigma_0, \mathsf{do}, \mathsf{merge}, \mathsf{query},
   \mathsf{rc}\rangle$ signature as a Lean structure (2-way merge).
-- [`CRDT_TS.lean`](CRDT_TS.lean) — the labeled TS for state-based
+- [`CRDT_TS.lean`](CRDT_TS.lean): the labeled TS for state-based
   CRDTs: configurations carry per-replica state and event set plus a
   visibility relation; four transition rules (CreateReplica, Apply,
   Merge, Query).
-- [`RA_Linearizability.lean`](RA_Linearizability.lean) — the
+- [`RA_Linearizability.lean`](RA_Linearizability.lean): the
   linearization relation $\mathsf{lo}_C$, `rc-non-comm`, `cond-comm`,
   the `IsRALinearizable` predicate (specialised from lin.tex Def. lin),
   and the stubbed bridge theorem.
 
 Later (not yet landed):
 
-- `Weak_Simulation.lean` — weak simulation à la Milner, weak trace
+- `Weak_Simulation.lean`: weak simulation à la Milner, weak trace
   inclusion.
-- `Op_Based_TS.lean` — Liittschwager's op-based TS.
-- `Emulation.lean` — the canonical op→state emulation $\mathcal{G}$.
-- `Transfer.lean` — the main transfer theorem:
+- `Op_Based_TS.lean`: Liittschwager's op-based TS.
+- `Emulation.lean`: the canonical op→state emulation $\mathcal{G}$.
+- `Transfer.lean`: the main transfer theorem:
   state-based RA-lin ⟹ op-based RA-lin.
 - Per-CRDT simulation proofs (one file per Sal CRDT).
 

@@ -13,30 +13,30 @@ implementation under test.
 (presence of `x` = first coordinate, `y` = second), `update` writes a coordinate,
 and the ternary merge is the classic LCA-*sensitive* observed-remove 3-way per
 coordinate: present iff present on both sides, or present on one side and **absent at
-the LCA** (a fresh add). The LCA slot is decisive — exactly what makes a wrong LCA
+the LCA** (a fresh add). The LCA slot is decisive, exactly what makes a wrong LCA
 pick observable (T1F). Not RA-lin-certified; the SPOT pins the *rule's* behavior.
 
 **The store** (raw `ver`/`parents`, GCSpot style; ranks are ids):
 
     0 (init, ∅)                        root
-    1 = A adds x      state (t,f)  E {ex}    parents [0]   — head u
-    2 = B adds y      state (f,t)  E {ey}    parents [0]   — head v
-    3 = merge(1,2)    state (t,t)  E {ex,ey} parents [1,2] — rival m1
-    4 = merge(1,2)    state (t,t)  E {ex,ey} parents [1,2] — rival m2
-    5 = del x on m1   state (f,t)  E {ex,ey,dx} parents [3] — head a
-    6 = del y on m2   state (t,f)  E {ex,ey,dy} parents [4] — head c
-    7 = merge(3,4)    state (t,t)  E {ex,ey} parents [3,4] — rival n1
-    8 = merge(3,4)    state (t,t)  E {ex,ey} parents [3,4] — rival n2
+    1 = A adds x      state (t,f)  E {ex}    parents [0], head u
+    2 = B adds y      state (f,t)  E {ey}    parents [0], head v
+    3 = merge(1,2)    state (t,t)  E {ex,ey} parents [1,2], rival m1
+    4 = merge(1,2)    state (t,t)  E {ex,ey} parents [1,2], rival m2
+    5 = del x on m1   state (f,t)  E {ex,ey,dx} parents [3], head a
+    6 = del y on m2   state (t,f)  E {ex,ey,dy} parents [4], head c
+    7 = merge(3,4)    state (t,t)  E {ex,ey} parents [3,4], rival n1
+    8 = merge(3,4)    state (t,t)  E {ex,ey} parents [3,4], rival n2
 
 **T1/T1F (pair 5,6).** `CA(5,6) = {1,2,0}`, `MCA = {1,2}`: no `IsLCA` version exists
 (the gated Merge is blocked; pinned). The recursion resolves `(1,2)` through their
-LCA `0`, giving virtual state `(t,t)` — both adds visible, exactly the meet's fold.
-Head merge: `mergeL (t,t) (f,t) (t,f) = (f,f)` — **both deletions survive**. FAIL
-companions: picking the single MCA `1` gives `mergeL (t,f) (f,t) (t,f) = (f,t)` —
+LCA `0`, giving virtual state `(t,t)`, both adds visible, exactly the meet's fold.
+Head merge: `mergeL (t,t) (f,t) (t,f) = (f,f)`, **both deletions survive**. FAIL
+companions: picking the single MCA `1` gives `mergeL (t,f) (f,t) (t,f) = (f,t)`:
 the deleted `y` **resurrects** (`y ∉ E(1)`, so `y` on side 6 reads as a fresh add);
 picking `2` dually resurrects `x`.
 
-**T3 (pair 7,8, nested).** `MCA(7,8) = {3,4}` — and resolving the sub-pair `(3,4)`
+**T3 (pair 7,8, nested).** `MCA(7,8) = {3,4}`, and resolving the sub-pair `(3,4)`
 again finds the proper antichain `{1,2}`: recursion depth 2, pinned structurally
 (`mca34`) plus the no-registered-LCA pin for the sub-pair (a depth-limited
 implementation would gate again: rivalry propagates upward).
@@ -219,7 +219,7 @@ theorem ca56 {x : Version}
   rcases reach5 hxu with rfl | rfl | rfl | rfl | rfl <;>
     rcases reach6 hx6 with h | h | h | h | h <;> simp_all
 
-/-- `MCA(5,6) = {1,2}` — the criss-cross's proper antichain. -/
+/-- `MCA(5,6) = {1,2}`: the criss-cross's proper antichain. -/
 theorem mca56 : mcaFinset parEx {5} 6 = {1, 2} := by
   ext m
   rw [mem_mcaFinset parEx parEx_lt]
@@ -259,7 +259,7 @@ theorem ca12 {x : Version}
   rcases reach1 hxu with rfl | rfl <;> rcases reach2 hx2 with h | h <;> simp_all
 
 /-- The nested sub-pair `(1,2)` is NOT criss-crossed: its MCA set is the singleton
-root — the recursion bottoms out at the existing LCA rule. -/
+root, the recursion bottoms out at the existing LCA rule. -/
 theorem mca12 : mcaFinset parEx {1} 2 = {0} := by
   ext m
   rw [mem_mcaFinset parEx parEx_lt]
@@ -284,7 +284,7 @@ theorem ca78 {x : Version}
   rcases reach7 hxu with rfl | rfl | rfl | rfl | rfl | rfl <;>
     rcases reach8 hx8 with h | h | h | h | h | h <;> simp_all
 
-/-- `MCA(7,8) = {3,4}` — the TOP antichain of the nested case. -/
+/-- `MCA(7,8) = {3,4}`: the TOP antichain of the nested case. -/
 theorem mca78 : mcaFinset parEx {7} 8 = {3, 4} := by
   ext m
   rw [mem_mcaFinset parEx parEx_lt]
@@ -330,7 +330,7 @@ theorem ca34 {x : Version}
   rcases reach3 hxu with rfl | rfl | rfl | rfl <;>
     rcases reach4 hx4 with h | h | h | h <;> simp_all
 
-/-- **The nested antichain**: `MCA(3,4) = {1,2}` — resolving the top pair's antichain
+/-- **The nested antichain**: `MCA(3,4) = {1,2}`, resolving the top pair's antichain
 members again finds a proper antichain: recursion depth 2, structurally pinned. -/
 theorem mca34 : mcaFinset parEx {3} 4 = {1, 2} := by
   ext m
@@ -365,7 +365,7 @@ theorem mca34 : mcaFinset parEx {3} 4 = {1, 2} := by
 
 /-! ## §5 The gated rule is blocked (the criss-cross is genuine) -/
 
-/-- No version is an `IsLCA` of the head pair `(5,6)`: `Step3.merge` cannot fire —
+/-- No version is an `IsLCA` of the head pair `(5,6)`: `Step3.merge` cannot fire:
 the shape genuinely requires the virtual rule. (An LCA would be THE unique MCA, but
 `1 ≠ 2` are both maximal.) -/
 theorem t1_no_registered_lca : ¬ ∃ vT, IsLCA parEx 5 6 vT := by
@@ -428,7 +428,7 @@ theorem vlca12 : vlcaAux verEx parEx parEx_lt {1} 2
   decide
 
 /-- The virtual LCA of the criss-cross pair: the antichain `{1,2}` folds in
-ascending rank order through the inner LCA `0` — hand-derived
+ascending rank order through the inner LCA `0`, hand-derived
 `mergeL (f,f) (t,f) (f,t) = (t,t)`: BOTH adds visible, exactly the meet's fold. -/
 theorem vlca56 : vlcaAux verEx parEx parEx_lt {5} 6
     = ((true, true) : Bool × Bool) := by
@@ -439,8 +439,8 @@ theorem vlca56 : vlcaAux verEx parEx parEx_lt {5} 6
     vfoldAux_nil, vlca12]
   decide
 
-/-- **T1 (PASS)**: the payload the widened rule registers at the fresh version —
-`mergeL (virtual LCA) σ(5) σ(6)` — preserves BOTH concurrent deletions: hand-derived
+/-- **T1 (PASS)**: the payload the widened rule registers at the fresh version,
+`mergeL (virtual LCA) σ(5) σ(6)`, preserves BOTH concurrent deletions: hand-derived
 `mergeL (t,t) (f,t) (t,f) = (f,f)`. -/
 theorem t1_virtual_merge :
     ORPair.mergeL (vlcaAux verEx parEx parEx_lt {5} 6)
@@ -457,7 +457,7 @@ theorem t1_virtual_reads :
 
 /-! ## §7 T1F (FAIL): every single-MCA pick resurrects a deleted element -/
 
-/-- **T1F**: the arbitrary-pick merge with MCA `u = 1` in the LCA slot — hand-derived
+/-- **T1F**: the arbitrary-pick merge with MCA `u = 1` in the LCA slot, hand-derived
 `mergeL (t,f) (f,t) (t,f) = (f,t)`. -/
 theorem t1f_pick_u :
     ORPair.mergeL (stateD verEx 1) (stateD verEx 5) (stateD verEx 6)
@@ -546,7 +546,7 @@ theorem t1_covering :
     · exact Or.inr rfl
     · rcases h6 with h | h | h <;> exact absurd h (by decide)
 
-/-! ## §10 Axiom audit (SPOTs may add `ofReduceBool`; none appears — all `decide`) -/
+/-! ## §10 Axiom audit (SPOTs may add `ofReduceBool`; none appears, all `decide`) -/
 
 #print axioms mca56
 #print axioms mca34

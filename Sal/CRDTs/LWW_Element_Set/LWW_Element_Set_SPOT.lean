@@ -6,7 +6,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # LWW_Element_Set (CRDT) — SPOTs -/
+/-! # LWW_Element_Set (CRDT): SPOTs -/
 
 namespace LWW_Element_Set_SPOT
 

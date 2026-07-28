@@ -2,22 +2,22 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_Skeleton3
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Peel
 
 /-!
-# hEnum DISCHARGED — the delta enum from the join context
+# hEnum DISCHARGED: the delta enum from the join context
 
 *0 `sorry`.*
 
 Skeleton 3's `hEnum` leaf, discharged at `HonJ := rgaHonJ`:
 
-* `rgaHonJ vis events` — the RGA's join context: SOME configuration presents `(vis, events)`
+* `rgaHonJ vis events`, the RGA's join context: SOME configuration presents `(vis, events)`
   (its `vis` is exactly `vis` restricted to `events`-pairs) and satisfies the generation
   discipline + nonzero ids.  **At a real reachable config the witness is `C.core` itself**
   (`vis_src`/`vis_tgt` give the restriction for free), so no synthetic configuration is ever
-  built — `hHon`'s eventual discharge is `genDisc2C_of_born` at the real core.
-* `rga_hEnum_discharged` — the delta enumeration: list the delta from the branch enums, sort it
+  built, `hHon`'s eventual discharge is `genDisc2C_of_born` at the real core.
+* `rga_hEnum_discharged`, the delta enumeration: list the delta from the branch enums, sort it
   by the configuration's `vis` (a strict order), and conclude:
-  - `respects (loOnEq …)` at the bare `vis` — every backward `loOnEq` edge is a backward
+  - `respects (loOnEq …)` at the bare `vis`, every backward `loOnEq` edge is a backward
     restricted-`vis` edge (`loOnEq_imp_vis` + membership);
-  - `CanonFoldOK ρ₀ (fold ρ₀) π₀` — **K1** (`K1_canonFoldOK`), with `GenDisc2C` restricted from
+  - `CanonFoldOK ρ₀ (fold ρ₀) π₀`, **K1** (`K1_canonFoldOK`), with `GenDisc2C` restricted from
     `events` to the union via `isDepPreC_of_restrict` (the union is closed under `loOnA`-preds).
 -/
 
@@ -41,8 +41,8 @@ open RGAMergeLinearization (applySeqR)
 open RGACanonConvergence (CanonFoldOK)
 open Sal.ConditionedMRDTs.RGACanonFoldOK
 
-/-- **The RGA's join context.**  Some configuration presents `(vis, events)` — its visibility is
-exactly `vis` restricted to `events`-pairs — and carries the generation discipline and nonzero
+/-- **The RGA's join context.**  Some configuration presents `(vis, events)`, its visibility is
+exactly `vis` restricted to `events`-pairs, and carries the generation discipline and nonzero
 ids.  A real reachable config supplies its own core as the witness. -/
 def rgaHonJ (vis : op_t α → op_t α → Prop) (events : Set (op_t α)) : Prop :=
   ∃ Cfg : Sal.Emulation.Configuration (RGACondSig α).toCRDTSig,

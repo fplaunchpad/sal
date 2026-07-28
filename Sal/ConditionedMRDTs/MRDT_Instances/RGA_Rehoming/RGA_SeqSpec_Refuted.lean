@@ -11,16 +11,16 @@ sequential program: tier 1 the eleven flat RDTs, tier 2 the mergeable queue =
 a plain FIFO, tier 3 the embedded-chain RGA = the naive insert-at-index text
 buffer, with the published tombstoned RGA inheriting the buffer spec as a
 corollary. This file is the same statement shape for the **rehoming**
-tombstone-free RGA — and its refutation.
+tombstone-free RGA, and its refutation.
 
 The witness is KC's `s_bac` trace (`RGA_Tombstone_Free_SPOT.lean`), restated
 in campaign form: build `[b, a, c]` on one replica, honestly (every op
-`accurate` + `fresh_ts` at the state it executes against — the datatype's own
+`accurate` + `fresh_ts` at the state it executes against, the datatype's own
 conditioning predicates), then delete `a`. The naive buffer keeps the
 survivors' order, `[b, c]`; the rehoming `do_` re-homes `c` to the root where
 the newest-first tiebreak leapfrogs it over `b`, reading `[c, b]`. So
-`RehomingSeqSound` — the exact analogue of the theorems the embed RGA and the
-tombstoned RGA *satisfy* — is FALSE, at the `do` level, with no merge
+`RehomingSeqSound`, the exact analogue of the theorems the embed RGA and the
+tombstoned RGA *satisfy*, is FALSE, at the `do` level, with no merge
 anywhere.
 
 The separation table this completes (do-faithful vs merge-faithful are
@@ -40,8 +40,8 @@ Peritext inherits this at the render (`fused_delete_reformats_survivor`,
 `Peritext/Peritext_Read.lean`).
 
 SPOT shape (per convention: PASS and FAIL cases both):
-`seq_agrees_before_delete` is the should-PASS half — on the delete-free
-prefix of the same trace the two sides agree — so the refutation isolates
+`seq_agrees_before_delete` is the should-PASS half, on the delete-free
+prefix of the same trace the two sides agree, so the refutation isolates
 the delete as the exact point of departure, and the harness is shown to
 have discriminating power.
 -/
@@ -73,7 +73,7 @@ def replay (ops : List op_t) : concrete_st := ops.foldl do_ (mk [])
 /-! ## Single-replica honesty (the datatype's own conditioning) -/
 
 /-- Every op is `accurate` (claimed path = true ancestor chain) and
-`fresh_ts` at the state it executes against — the same predicates the
+`fresh_ts` at the state it executes against, the same predicates the
 commutation layer conditions on, so the refutation below attacks no
 strawman: the trace is as honest as the datatype's own theorems demand. -/
 def StepsHonestFrom (s : concrete_st) : List op_t → Prop
@@ -84,7 +84,7 @@ def StepsHonest (ops : List op_t) : Prop := StepsHonestFrom (mk []) ops
 
 /-! ## The soundness statement (the shape tiers 1–3 prove) and its refutation -/
 
-/-- **Sequential-spec soundness for the rehoming RGA** — the statement the
+/-- **Sequential-spec soundness for the rehoming RGA**, the statement the
 embed RGA and the published tombstoned RGA satisfy: on every honest
 single-replica history, read with a complete descending candidate list, the
 document IS the naive buffer. FALSE for this datatype
@@ -111,7 +111,7 @@ theorem stepsHonest_opsW : StepsHonest opsW := by
   native_decide
 
 /-- **Should-PASS half**: on the delete-free prefix the rehoming RGA and the
-naive buffer agree — both read `[b, a, c] = [2, 1, 3]`. The departure below
+naive buffer agree, both read `[b, a, c] = [2, 1, 3]`. The departure below
 is therefore exactly the delete. -/
 theorem seq_agrees_before_delete :
     document (replay (opsW.take 3)) [3, 2, 1] = bufFold (opsW.take 3) := by
@@ -124,7 +124,7 @@ theorem bufFold_opsW : bufFold opsW = [2, 3] := by native_decide
 theorem replay_opsW_read : document (replay opsW) [3, 2] = [3, 2] := by
   native_decide
 
-/-- **Should-FAIL half — the refutation.** The rehoming RGA does not
+/-- **Should-FAIL half, the refutation.** The rehoming RGA does not
 implement the naive text buffer: the tier-shaped soundness statement is
 false, on an honest four-op single-replica trace, at the delete. -/
 theorem rehoming_seq_refuted : ¬ RehomingSeqSound := by

@@ -1,26 +1,26 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Coherence
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Out
 
-/-! # Shesha — the pre-splice assembly
+/-! # Shesha: the pre-splice assembly
 
 Reduces the pre-splice obligation (`shesha_presplice`,
 `Shesha_Cond.lean`) from the **forest** level to the **row** level: given
 a row store `preRows` for the union's inserts that is graded (anchors
 precede children in Lamport order), branch-order-extending, and whose
-marker expansion matches the merge's output rows (`hK6` — the remaining
+marker expansion matches the merge's output rows (`hK6`, the remaining
 merge-correctness core), the pre-splice forest is
 `buildF preRows … 0` and every clause of the obligation is discharged
 by the builder kit (`Shesha_Out.lean`) plus the witness normal forms:
 
-* (a) WF — `build_WF_raw` (unique addresses from timestamp uniqueness);
-* (b) rows = the union's inserts — `build_row_raw` + coverage along the
+* (a) WF, `build_WF_raw` (unique addresses from timestamp uniqueness);
+* (b) rows = the union's inserts, `build_row_raw` + coverage along the
   anchor chain (`build_cover_raw`, graded by the Lamport id itself);
-* (c) anti-`vis` row order — derived from (c′) and the honesty/
+* (c) anti-`vis` row order, derived from (c′) and the honesty/
   non-commutation kernel: a `vis` same-anchor pair is branch-internal
   (closure), hence ordered by that branch's witness;
-* (c′) branch-order extension — `hK4`/`hK5` verbatim through
+* (c′) branch-order extension, `hK4`/`hK5` verbatim through
   `build_row_raw`;
-* (d) collapse = merge — `dropF_eq_of_rows` with, per key: live keys by
+* (d) collapse = merge, `dropF_eq_of_rows` with, per key: live keys by
   `build_collapse_row_raw` + `hK6`, dead keys by matching absence
   (`slots_live_iff`: the merge's live set is exactly the union's
   inserted-not-deleted ids). -/
@@ -176,7 +176,7 @@ theorem slots_live_iff {C' : Configuration SheshaD} (hH : SheshaHonest C')
       intro hd
       rcases delIn_union_iff.mp hd with h | h
       · exact hd₁ h
-      · -- a branch-2 delete would make the insert common — LCA-live
+      · -- a branch-2 delete would make the insert common, LCA-live
         have hm₂ : (u, r, SAppOp.insA p) ∈ ev₂ :=
           ins_mem_of_del hH hsub₂ hclosed₂ (hsub₁ _ hm) h
         refine hnL ⟨⟨p, r, (Set.mem_inter_iff ..).mpr ⟨hm, hm₂⟩⟩, ?_⟩
@@ -211,10 +211,10 @@ theorem slots_live_iff {C' : Configuration SheshaD} (hH : SheshaHonest C')
         exact h1 ⟨q, r', ((Set.mem_inter_iff ..).mp hq).1⟩
 
 /-- **The marker bridge**: the merge's *structural* marker predicate
-(`markerp` — an LCA-live id killed in exactly one branch) implies the
+(`markerp`, an LCA-live id killed in exactly one branch) implies the
 *event-level* union delete. Consumed by the residue's `hK6`: `merge_row`
 expresses the merge output as `expandRow … (markerp …)`, and every id it
-splices out is `DelIn (ev₁ ∪ ev₂)` — so the merge's splices are a subset
+splices out is `DelIn (ev₁ ∪ ev₂)`, so the merge's splices are a subset
 of the pre-splice store's `DelIn`-union splices (the extra ones being the
 ghosts, whose live descendants the collapse re-homes). Stated over the
 collapsed-slot read characterizations (`read_nf` instances). -/
@@ -251,7 +251,7 @@ theorem markerp_imp_delUnion {ev₁ ev₂ : Set (Op SAppOp)}
 
 `build_pack` hides the builder: from a graded union row store it
 produces the forest `T` with its read set, its rows, and its collapse
-rows — everything the assembly consumes. -/
+rows, everything the assembly consumes. -/
 
 open Classical in
 theorem build_pack {C' : Configuration SheshaD} (hH : SheshaHonest C')
@@ -421,7 +421,7 @@ theorem presplice_of_rows
     exact hK5 p tx ty rx ry hbef
   refine ⟨T, hwfT, hrows, ?_, hext₁, hext₂, ?_⟩
   · -- (c): a `vis` same-anchor pair is branch-internal; the branch
-    -- witness orders it (respects `loOn`), so (c′) pins the row order —
+    -- witness orders it (respects `loOn`), so (c′) pins the row order,
     -- the other way.
     intro p x y rx ry hx hy hprec hvis
     have hxy : x ≠ y := by
@@ -551,11 +551,11 @@ theorem presplice_of_rows
 /-! ## §5 the branch-pure region
 
 Ids inserted in one branch and not common. Below a branch-born anchor
-*everything* is branch-pure (anchors of common inserts are common —
+*everything* is branch-pure (anchors of common inserts are common,
 closure), the union delete-set restricts to the branch delete-set
 (a cross delete would pull the insert across), and hence the subtree
 front bridge applies: the ghost expansion of a store agreeing with the
-branch forest on the region computes the branch slot's rows — the
+branch forest on the region computes the branch slot's rows, the
 branch-born key class of the residue's `hK6`. -/
 
 /-- Inserted in `ev₁`, not common. -/
@@ -637,7 +637,7 @@ theorem branchPure_chain {C' : Configuration SheshaD}
 /-- **The branch-born key equation** (`hK6`, branch-born class, branch-1
 form; the branch-2 form is the mirror instance): at a live branch-pure
 key, the ghost expansion of any store agreeing with the branch forest on
-the region *is* the branch slot's row — which is the merge's output row
+the region *is* the branch slot's row, which is the merge's output row
 at branch-born keys (`outRows_alGet_of_bornA` + marker-freeness of the
 region). -/
 theorem born_key_expand {C' : Configuration SheshaD}
@@ -675,7 +675,7 @@ theorem born_key_expand {C' : Configuration SheshaD}
 
 open Classical in
 /-- **⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked):
-this residue is **FALSE** — no `preRows` exists in general. The
+this residue is **FALSE**, no `preRows` exists in general. The
 minimal honest countermodel: LCA `[ins 1]`; branch A = `ins 2←1, ins 4←⌂,
 del 1` (fold `[4,2]`); branch B = `ins 3←1` (fold `[1,[3]]`). `ev₁∩ev₂ =
 {ins 1}` so `SCoh` is **vacuous** (the coherence repair does not exclude it),
@@ -684,11 +684,11 @@ live children `{2,3}` the merge splits around the concurrent sibling `4`: `2`
 (from A, where `1` was deleted) rides A's re-homed root run *after* `4`, while
 `3` (from B) sits at `1`'s skeleton slot. But `hK1` forces `alGet preRows 1 ⊇
 {2,3}` and `hK6` splices `1`'s whole contiguous block into `alGet preRows 0`
-(a permutation of `[1,4]`), so the expansion is `⟨block⟩++[4]` or `[4]++⟨block⟩`
-— never `[3,4,2]`. Worse, `[3,4,2]` is **not the fold of any `loOn`-respecting
+(a permutation of `[1,4]`), so the expansion is `⟨block⟩++[4]` or `[4]++⟨block⟩`,
+never `[3,4,2]`. Worse, `[3,4,2]` is **not the fold of any `loOn`-respecting
 linearization** of the union (deleting `1` splices its children contiguously;
 no sibling lands between them), so this same trace refutes `IsRALinearizable3`
-for the merge version — the pre-splice strategy cannot close the capstone as
+for the merge version, the pre-splice strategy cannot close the capstone as
 stated.
 
 **Root cause = Shesha's *local-order-preserving splice over a mutable forest*,
@@ -696,10 +696,10 @@ not anchor-forgetting.** Both Shesha and the RA-linearizable
 `RGA_Tombstone_Free` *forget* the anchor on delete; the difference is how the
 read order is derived. `RGA_Tombstone_Free` re-homes and **re-sorts survivors
 by their global key** on every delete, so its read is *always a fold* of the
-key-order (⇒ RA-linearizable) — at the cost of reordering survivors
+key-order (⇒ RA-linearizable), at the cost of reordering survivors
 (`tombstone_free_violates_delete_order`). Shesha's splice **preserves local
 sibling order** (`delete_preserves_survivor_order`), so the read of *one*
-replica is delete-order-faithful — but the merge of two such mutable forests is
+replica is delete-order-faithful, but the merge of two such mutable forests is
 not a global fold, which is exactly the `[3,4,2]` split. So this is the
 **sequence-CRDT trilemma** surfacing as: local-order-preserving delete ⊻ merge
 RA-linearizability.
@@ -712,18 +712,18 @@ Positions never move, so both delete-order holds *and* the read is a fold; on
 this countermodel `2`,`3` keep contiguous frozen paths `[k₁,k₂]`,`[k₁,k₃]` while
 `4` is `[k₄]`, so `4` cannot land between them and `[3,4,2]` never arises. The
 trilemma reasserts only at the *insert-after-already-deleted-anchor* corner (the
-frozen path needs the dead anchor's position — an append-only position map, i.e.
+frozen path needs the dead anchor's position, an append-only position map, i.e.
 a metadata tombstone, or default-to-root that loses order); the reference model
-dodges that corner. The theorem below keeps its `sorry` — known-false —
+dodges that corner. The theorem below keeps its `sorry`, known-false,
 pending either the immutable-position re-encoding or a capstone restatement to
 Shesha's actual guarantee (convergence + licensed divergence).
 
-**The original owed statement** — the merge-correctness core at the *row*
+**The original owed statement**, the merge-correctness core at the *row*
 level; everything forest-shaped is discharged (`presplice_of_rows`).
 Owed: a store `preRows` of pre-splice rows for the union's inserts with
 
 * `hK1`–`hK3` bookkeeping (exactly the union's inserts per original
-  anchor, duplicate-free, Lamport-graded — anchors precede children);
+  anchor, duplicate-free, Lamport-graded, anchors precede children);
 * `hK4`/`hK5` order: each row extends both branch witnesses' same-anchor
   `Before` orders, reversed (rows are newest-first);
 * `hK6` **the collapse equation**: the ghost expansion (`expandRow` at
@@ -735,7 +735,7 @@ Construction plan (per key class of `merge s₀ s₁ s₂`; the classes are
 
 * **branch-born keys** (`q` born in branch `i`): the row is forced,
   `preRow q := row Tᵢ q` (cross-branch inserts at `q` would make `q`
-  common — closure). `hK6`: the merge takes the branch row wholesale
+  common, closure). `hK6`: the merge takes the branch row wholesale
   (`outRows_alGet_of_bornA/B`, marker-free by `born_subtree_L_free`-style
   closure, so `expandRow_of_nonmarker` collapses the RHS), and the
   branch slot row is a front (`row_dropF`); the LHS ghost expansion
@@ -746,7 +746,7 @@ Construction plan (per key class of `merge s₀ s₁ s₂`; the classes are
   `s₀`'s row order (= `T₀` row front, branch-agreed via `SCoh`), runs
   carry branch segments (`runsGo` machinery), same-slot runs interleave
   newest-head-first (`sortRunsDesc`), and `expandRow` splices markers to
-  their subtree fronts — the ghosts of `preRow q` placed at their front
+  their subtree fronts, the ghosts of `preRow q` placed at their front
   positions. `preRow q` := the merge row's parse: live direct children
   and marker/ghost roots in output order, dead-in-both and LCA-ghost
   ids at their front slots (their expansions are the contiguous blocks
@@ -764,14 +764,14 @@ order (`merge_extends_L`) and run order (M3, owed here).
 
 **Frontier note.** The obligation is *order-dependent*:
 `hK6`'s two sides are ordered lists, so `preRows` must carry the merge's
-*exact* display order (`sortRunsDesc` tiebreak included) — a wrong-order
+*exact* display order (`sortRunsDesc` tiebreak included), a wrong-order
 witness would make `hK6` a *false* `sorry`. Hence `hK4`/`hK5` for the
 forced construction are entangled with the M3 run-order theorem, which is
 still owed (`merge_extends_L` only settles the skeleton/`L`-projection,
 not the branch-born run interleaving). There is thus no order-free prefix
 to split off. What *is* isolated: via `merge_row` the RHS is
 `expandRow (outRows …) (markerp …)`, and `markerp_imp_delUnion` (§2)
-shows every id the merge splices is `DelIn (ev₁ ∪ ev₂)` — so on the
+shows every id the merge splices is `DelIn (ev₁ ∪ ev₂)`, so on the
 merge-present ids the two marker predicates agree and the merge's splices
 are a sub-multiset of `preRows`' `DelIn`-union splices. The *entire*
 residual difficulty is therefore the **ghost re-homing**: the extra

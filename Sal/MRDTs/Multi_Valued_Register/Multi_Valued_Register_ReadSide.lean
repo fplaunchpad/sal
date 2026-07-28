@@ -18,7 +18,7 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # Multi-Valued Register (MRDT, classical) — read-side projection
+/-! # Multi-Valued Register (MRDT, classical): read-side projection
 
 MRDT counterpart to `Sal/CRDTs/Multi_Valued_Register/Multi_Valued_Register_ReadSide.lean`.
 Same two-component state `(writes, removed)` and same headline
@@ -96,8 +96,8 @@ new `Write v₂` whose snapshot `O₂` covers every prior visible
 witness for `v₁`, `v₁` is no longer visible.
 
 Premises:
-* `h_v2_ne_v1` — the new write does not coincidentally rewrite `v₁`.
-* `h_covered` — every currently-visible witness `(ts, v₁)` in `s`
+* `h_v2_ne_v1`: the new write does not coincidentally rewrite `v₁`.
+* `h_covered`: every currently-visible witness `(ts, v₁)` in `s`
   has `ts ∈ O₂`. In a well-formed sequential execution the
   prepare-time snapshot includes every visible record. -/
 theorem sequential_write_supersedes_value

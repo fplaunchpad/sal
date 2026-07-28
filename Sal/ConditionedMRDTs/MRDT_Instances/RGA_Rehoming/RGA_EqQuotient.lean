@@ -2,10 +2,10 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_ConditionedConvergen
 import Sal.ConditionedMRDTs.Framework.MRDTSig
 
 /-!
-# The observational-`≈` quotient σ-layer (M5) — scaffolding
+# The observational-`≈` quotient σ-layer (M5): scaffolding
 
-This file builds the *mechanism* by which the tombstone-free RGA — which converges
-only up to observational `eq` (`≈`), not Lean `=` — can be presented to the
+This file builds the *mechanism* by which the tombstone-free RGA, which converges
+only up to observational `eq` (`≈`), not Lean `=`, can be presented to the
 structural-`=` metatheorem template (`Adequacy.IsRALinearizable3`,
 `ConditionedContract.ra_linearizable3_of_joinC`).
 
@@ -18,8 +18,8 @@ downstairs, letting the RGA's `≈`-results become `QState` `=`-results for free
   lift `qdo` (via `do_eq_congr`, which is *unconditional*).
 * **§2** the per-argument merge `≈`-congruences. `merge_eq_congr_a` /
   `merge_eq_congr_b` (the two branch arguments) hold *unconditionally*.
-  The `l`-argument congruence — needed to compose the ternary congruence for
-  `Quotient.lift₃` — is **FALSE unconditionally**: `merge_eq_congr_l_fails` is a
+  The `l`-argument congruence, needed to compose the ternary congruence for
+  `Quotient.lift₃`, is **FALSE unconditionally**: `merge_eq_congr_l_fails` is a
   kernel-checked counterexample. See §2 for the precise gap.
 * **§3** the invariance lemmas (`wf`, `contains · 0 = false`, `id_mono`,
   `accurate`, `fresh_ts` are `≈`-invariant).
@@ -52,14 +52,14 @@ theorem eq_equiv : Equivalence (@eq α) :=
   ⟨eq_refl, fun {a b} h => eq_symm a b h, fun {a b c} h₁ h₂ => eq_trans a b c h₁ h₂⟩
 
 /-- The observational setoid on RGA states. `Setoid.r` is `eq`, so `=` on the
-quotient below IS `≈`.  (Dead scaffolding — pinned at `ℕ`.) -/
+quotient below IS `≈`.  (Dead scaffolding, pinned at `ℕ`.) -/
 instance rgaSetoid : Setoid (concrete_st ℕ) := ⟨eq, eq_equiv⟩
 
 /-- The quotient state type. `⟦s⟧ = ⟦s'⟧ ↔ s ≈ s'` by `Quotient.eq`. -/
 def QState : Type := Quotient rgaSetoid
 
 /-- Lift of `do_` to the quotient. Well-defined because `do_` is *unconditionally*
-`≈`-congruent (`do_eq_congr`) — no reachability hypotheses. -/
+`≈`-congruent (`do_eq_congr`), no reachability hypotheses. -/
 def qdo (o : op_t ℕ) (q : QState) : QState :=
   Quotient.liftOn q (fun s => (⟦do_ s o⟧ : QState))
     (fun s s' h => Quotient.sound (do_eq_congr s s' h o))
@@ -76,13 +76,13 @@ def qinit : QState := (⟦init_st⟧ : QState)
 `l ≈ l' → a ≈ a' → b ≈ b' → merge l a b ≈ merge l' a' b'`, which is the composite
 of the three per-argument congruences. Below:
 
-* `merge_eq_congr_a`, `merge_eq_congr_b` — the *branch* arguments. Both CLOSED and
+* `merge_eq_congr_a`, `merge_eq_congr_b`, the *branch* arguments. Both CLOSED and
   **unconditional**: `merge` reads branch `a`/`b` only through `contains`/`sel`
   (element and birth-anchor), which `≈` preserves. (`a` is even read only on its
   own domain; `b` also feeds the else-branch element/anchor, recovered from the
   survivor membership.)
 
-* the **`l`-argument congruence is FALSE unconditionally** — see
+* the **`l`-argument congruence is FALSE unconditionally**, see
   `merge_eq_congr_l_fails`. `merge` feeds `ancL := anc l` to `climb`, which walks
   the LCA parent chain starting from a survivor's birth-anchor; that anchor may
   lie *outside* `domain l`, where `≈` says nothing about `anc l`. So the `l`-step
@@ -170,7 +170,7 @@ Two `≈`-equal LCAs `l ≈ l'` (both with **empty** domain, differing only in
 off-domain `mappings`) drive `merge l a a` and `merge l' a a` to *different*
 observable anchors on a surviving branch-new node `5`. Node `5` (born in `a`,
 anchor `3`) is a survivor; `climb (anc l) I 3` starts at `3 ∉ domain l`, so it
-reads `anc l 3` — junk on which `≈` is silent. With `l` (anchor of `3` is `0`)
+reads `anc l 3`, junk on which `≈` is silent. With `l` (anchor of `3` is `0`)
 the climb halts at the root `0`; with `l'` (which secretly maps `3 ↦ 5`) it
 climbs to the survivor `5`. Hence `sel _ 5 = (7,0)` vs `(7,5)`.
 
@@ -201,8 +201,8 @@ theorem merge_eq_congr_l_fails :
 /-! ## §3. `≈`-invariance of the state-shape predicates
 
 `Inv := wf ∧ contains · 0 = false ∧ id_mono` and `applicable := accurate ∧
-fresh_ts` are all *observable* — they read `contains`/`sel` only where a node is
-present — so they descend to `QState`. Each is packaged as an `↔` (both
+fresh_ts` are all *observable*, they read `contains`/`sel` only where a node is
+present, so they descend to `QState`. Each is packaged as an `↔` (both
 directions, via `eq_symm`), the form `Quotient.lift` needs. -/
 
 /-- `wf` is `≈`-invariant (forward). -/
@@ -287,7 +287,7 @@ theorem contains_zero_eq_iff {s s' : concrete_st α} (h : eq s s') :
 /-! ## §4. The lifted `Inv`/`applicable`, the instance skeleton, and the target payoff
 
 The invariance lemmas of §3 let the RGA's state-shape invariant and applicability
-guard *descend to `QState`* — these two defs compile, proving the descent. The
+guard *descend to `QState`*, these two defs compile, proving the descent. The
 remaining `ConditionedMRDTSig` data field `mergeL` needs the `l`-congruence gap
 (`merge_eq_congr_l_fails`) resolved on the reachable-state subfamily, so the full
 instance and the payoff below are not yet established. -/
@@ -343,7 +343,7 @@ noncomputable def rgaQSig : ConditionedMRDTSig where
 `qmerge` requires the ternary `merge` `≈`-congruence, whose `l`-step is FALSE on
 the raw type (`merge_eq_congr_l_fails`). The fix is NOT a missing lemma about `≈`
 alone: it is to quotient the `wf ∧ id_mono ∧ (structural forest)` **subfamily** of
-reachable states — precisely the states the update+merge convergence result
+reachable states, precisely the states the update+merge convergence result
 (`RGA_UpdateConvergence*`, the simultaneous induction, `hBN`) is to certify.
 On that subfamily the climb only ever applies `anc l` to `{0}∪domain l` nodes
 (`RGA_Reachability_Invariant.climb_aux_walk` under `id_mono l`), so the `l`-step
@@ -368,10 +368,10 @@ theorem RGA_is_RA_linearizable
 ```
 
 Reading the conclusion back through the quotient (`⟦·⟧` injective on `≈`-classes)
-gives the concrete RGA state `≈ σ*(E)` — RA-linearizability up to observational
+gives the concrete RGA state `≈ σ*(E)`, RA-linearizability up to observational
 `≈` (Def 2.1). SEC follows. This assembly needs: (i) `qmerge` (this file's
 gap), (ii) `eq_merge_two_sided` with `hBN` discharged, (iii) the ≈-convergence
-simultaneous induction — all defined elsewhere.
+simultaneous induction, all defined elsewhere.
 -/
 
 end Sal.ConditionedMRDTs.RGAEqQuotient

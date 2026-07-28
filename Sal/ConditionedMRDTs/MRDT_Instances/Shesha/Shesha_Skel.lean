@@ -1,17 +1,17 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Forest
 
-/-! # Shesha — skeleton layer
+/-! # Shesha: skeleton layer
 
 Exact characterization of `skelOf`:
 
 - alist algebra: `alGet`/`alHas` through `alApp`/`alEnsure` (`alGet_alApp`,
   `alGet_alEnsure`, …), key preservation and key `Nodup`.
-- `skelOf_alGet` — skeleton row `p` is exactly the `W`-members of `L` hosted
+- `skelOf_alGet`, skeleton row `p` is exactly the `W`-members of `L` hosted
   at `p` (`wpar` = p), in L-document order.
-- `rowofGet_skelOf` — the recorded host of a placed node is its `wpar`.
-- `skelOf_keys_nodup` — no skeleton row key repeats (each row assembled
+- `rowofGet_skelOf`, the recorded host of a placed node is its `wpar`.
+- `skelOf_keys_nodup`, no skeleton row key repeats (each row assembled
   exactly once by `outRows`).
-- `bbrows_alGet` — a born node's wholesale row is its branch row.
+- `bbrows_alGet`, a born node's wholesale row is its branch row.
 -/
 
 namespace Shesha

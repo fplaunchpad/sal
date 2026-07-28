@@ -7,7 +7,7 @@ Let `pre` be the genuine ancestor chain of `x`, captured at a state `s0` where
 `x` and every entry of `pre` were live (`IsAncPath s0 x pre`). Then in any
 state `s` reachable from `s0` by post-capture steps that (i) never delete `x`,
 (ii) use accurate paths on deletes, and (iii) never insert an id occurring in
-`pre` (ids are never reused — in the model this follows from monotone
+`pre` (ids are never reused, in the model this follows from monotone
 allocation), we have `resolve s pre = anc s x`: the first entry of `pre` live
 in `s` is exactly `x`'s current stored anchor.
 
@@ -15,9 +15,9 @@ Mechanization strategy (the paper proof's cases (a)/(b)/(c) are absorbed into
 one inductive invariant): `LiveChain s x pre` states that the entries of `pre`
 that are live in `s` form the *genuine current* ancestor chain of `x`. It
 holds at capture (all entries live), is preserved by every post-capture step
-(`Ins` adds only fresh descendants — case (c); `Del` removes an entry
-permanently and splices the chain across it — case (b); no other node can
-enter the chain — case (a)), and it immediately yields the conclusion, since
+(`Ins` adds only fresh descendants, case (c); `Del` removes an entry
+permanently and splices the chain across it, case (b); no other node can
+enter the chain, case (a)), and it immediately yields the conclusion, since
 `resolve` skips dead entries and `IsAncPath`'s head is the stored anchor.
 -/
 
@@ -147,8 +147,8 @@ theorem liveChain_doIns (s : concrete_st α) (x : ℕ) (pre : List ℕ)
 /-! ## Preservation: `Del` (paper cases (a) and (b))
 
 Deleting `y ≠ x` with an accurate path removes `y` permanently (tombstone-free
-deletion never resurrects — case (b)) and rehomes `y`'s children to `anc s y`,
-so the live sublist of `pre` — the chain with `y` filtered out — is again the
+deletion never resurrects, case (b)) and rehomes `y`'s children to `anc s y`,
+so the live sublist of `pre`, the chain with `y` filtered out, is again the
 genuine chain of `x`; no node outside `pre` can enter it (case (a)). -/
 
 /-- `IsAncPath` sees its leaf only through `anc`. -/
@@ -321,8 +321,8 @@ theorem liveChain_step (s : concrete_st α) (x : ℕ) (pre : List ℕ) (o : op_t
 chain of `x` captured at `s0` (`IsAncPath s0 x pre`: entries nearest-first,
 consecutive entries genuine parent edges, every entry live at capture), with
 the root sentinel unstored and `x` live. Then in any state `s` reachable from
-`s0` by post-capture steps — accurate deletes that spare `x`, fresh inserts
-that do not reuse an id of `pre` — the first entry of `pre` live in `s` is
+`s0` by post-capture steps, accurate deletes that spare `x`, fresh inserts
+that do not reuse an id of `pre`, the first entry of `pre` live in `s` is
 exactly `x`'s current stored anchor:
 `resolve s pre = anc s x`. -/
 theorem subchain_resolve (x : ℕ) (pre : List ℕ) (s0 s : concrete_st α)

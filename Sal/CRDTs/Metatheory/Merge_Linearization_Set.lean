@@ -14,7 +14,7 @@ overwriter-closure hypothesis dropped.
 `rem →rc add`, all 24 VCs hold): replica B executes `rem_a` (event
 `y`), replica A executes `add_a` (event `e`), B merges A's state
 *before* A issues a later `rem_a` (event `e₃`, `vis e e₃`). Then B's
-event set is `{y, e}` — backward-closed — and in the final
+event set is `{y, e}` (backward-closed) and in the final
 configuration `C` (which contains `e₃`) the relation `lo C` orders
 *neither* `y, e` (the rc-edge `y →lo e` is cancelled by the absorber
 `e₃ ∈ C.events`). Both `[y, e]` and `[e, y]` respect `lo C`, but they
@@ -35,10 +35,10 @@ absorber inside `{y,e}`), so only `[y, e]` respects it and
 convergence over `{y, e}` w.r.t. `loOn` holds. In general:
 
 * `lo C ⊆ loOn C ev` pointwise, so a witness respecting `loOn` also
-  respects `lo C` — the strengthened invariant *implies* the paper's
+  respects `lo C`, the strengthened invariant *implies* the paper's
   Def-lin obligation.
 * `loOn C ev` depends only on `vis`/`rc`/`commutes` restricted to
-  `ev` — it never changes as the configuration grows, so it is a
+  `ev`, it never changes as the configuration grows, so it is a
   *stable* per-version invariant.
 * Convergence w.r.t. `loOn C ev` needs **no closure hypotheses at
   all**: whenever the bubble-sort argument must swap a non-commuting
@@ -51,7 +51,7 @@ Merge case works with `lo_i` whose absorber clause is
 the same in all versions"). The paper's claim that `lo_i ⟺ lo_m` is
 **false in the ⟹ direction** for shared events (a shared `e'` can
 gain an absorber from the other branch's local events); the ⟸
-direction — the one needed for sub-witness compatibility — is exactly
+direction, the one needed for sub-witness compatibility, is exactly
 `loOn`-monotonicity below.
 
 ## Contents
@@ -62,7 +62,7 @@ direction — the one needed for sub-witness compatibility — is exactly
    facts) and existence of `loOn`-maximal elements / respecting
    permutations of finite sets.
 3. Swap/bubble lemmas re-targeted at `loOn`.
-4. `convergence_on` — the *true* replacement for the false blocker:
+4. `convergence_on`, the *true* replacement for the false blocker:
    two `loOn C ev`-respecting permutations of `ev` fold to the same
    state, with no closure hypotheses.
 5. Re-permutation (`perm_ending_in_loOn_max`) and the normalization
@@ -80,7 +80,7 @@ variable {D : CRDTSig}
 /-! ### 0. The core VC bundle
 
 The σ/`loOn` machinery of this file consumes only a small fragment of
-`SatisfiesVCs` — notably NOT `shared_peel_1op`, which
+`SatisfiesVCs`, notably NOT `shared_peel_1op`, which
 `Convergence_CounterModel.lean` shows is *false* for state-dependent
 RDTs like `AWSet`. Parameterizing over the fragment lets such RDTs
 instantiate the Join-Lemma machinery. -/
@@ -196,7 +196,7 @@ theorem respects_loOn_mono {ev ev' : Set (Op D.AppOp)}
   h.imp (fun hn h' => hn (loOn_mono h_sub h'))
 
 /-- A permutation respecting `loOn C ev` respects the paper's
-configuration-global `lo C` — the strengthened invariant implies the
+configuration-global `lo C`, the strengthened invariant implies the
 original Def-lin obligation. -/
 theorem respects_lo_of_respects_loOn {ev : Set (Op D.AppOp)}
     {C : Configuration D} {π : List (Op D.AppOp)}
@@ -236,7 +236,7 @@ theorem distinctOps_of_events {C : Configuration D}
 `loOn C T`, restricted to distinct events of `T`, has no cycles:
 
 * an rc-flavored edge `x → y` cannot be followed by *any* edge
-  `y → z` with `z ∈ T` — a vis-flavored successor makes `z` an
+  `y → z` with `z ∈ T`, a vis-flavored successor makes `z` an
   absorber of `y` inside `T` (contradicting the rc-edge's no-absorber
   clause), and an rc-flavored successor violates `no_rc_chain`;
 * hence a cycle would be all-vis-flavored, contradicting
@@ -559,13 +559,13 @@ theorem applySeq_bubble_to_front_loOn
          = applySeq D s (e :: y :: σ' ++ tail)
     exact hswap
 
-/-! ### 4. Convergence w.r.t. `loOn` — no closure hypotheses
+/-! ### 4. Convergence w.r.t. `loOn`: no closure hypotheses
 
 The replacement for the false "convergence over backward-closed
 replica sets": any two `loOn C ev`-respecting permutations of `ev`
 fold to the same state. The overwriters demanded by the swap
-machinery are supplied by the *failed* `loOn`-edges themselves — a
-missing rc-edge means an absorber exists **inside `ev`** — so no
+machinery are supplied by the *failed* `loOn`-edges themselves, a
+missing rc-edge means an absorber exists **inside `ev`**, so no
 forward/overwriter closure is assumed.
 
 The internal induction peels the head of `π₁` (a `loOn`-minimal
@@ -840,7 +840,7 @@ theorem convergence_on
 
 /-- Re-permute `π` to end in a chosen `loOn`-maximal element `e`,
 preserving `loOn`-respect and the folded state (via
-`convergence_on` — no closure hypotheses needed). -/
+`convergence_on`, no closure hypotheses needed). -/
 theorem perm_ending_in_loOn_max
     (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)} {π : List (Op D.AppOp)} {e : Op D.AppOp}
@@ -886,9 +886,9 @@ theorem perm_ending_in_loOn_max
 
 /-- **Normalization after a tail peel.** Given a witness `ρ ++ [t]`
 of `ev` respecting `loOn C ev`, produce a front `ρ'` for `ev \ {t}`
-that respects the *shrunken-set* relation `loOn C (ev \ {t})` — the
+that respects the *shrunken-set* relation `loOn C (ev \ {t})`, the
 relation gains rc-edges whose only `ev`-absorber was `t` itself, so
-`ρ` need not respect it — while preserving the fold of the full
+`ρ` need not respect it, while preserving the fold of the full
 list. Fold preservation: both `ρ ++ [t]` and `ρ' ++ [t]` respect
 `loOn C ev` and enumerate `ev`, so `convergence_on` applies; the
 lost absorber `t` sits at the tail, absorbing exactly the swaps the
@@ -967,7 +967,7 @@ state: the fold of *any* `loOn C ev`-respecting enumeration. This
 reformulates the whole metatheorem: the strengthened RA-lin invariant
 is "every replica's state is the canonical state of its event set",
 the Apply case is `isCanonicalState_extend`, and the Merge case
-reduces to a single state-level statement — the **Join Lemma**:
+reduces to a single state-level statement, the **Join Lemma**:
 
     IsCanonicalState ev₁ s₁ → IsCanonicalState ev₂ s₂ →
     IsCanonicalState (ev₁ ∪ ev₂) (merge s₁ s₂)
@@ -1048,8 +1048,8 @@ theorem isCanonicalState_peel (hVC : CoreVCs D)
 
 /-- **Extend** (the Apply case at the σ-level): a fresh event `e`
 that observed everything in `ev` extends the canonical state by one
-update. `e` has no outgoing `loOn`-edges — it is `vis`-after all of
-`ev`, so neither disjunct can fire — and adding it only removes
+update. `e` has no outgoing `loOn`-edges, it is `vis`-after all of
+`ev`, so neither disjunct can fire, and adding it only removes
 rc-edges among the old events. -/
 theorem isCanonicalState_extend {C : Configuration D}
     {ev : Set (Op D.AppOp)} {s : D.State} {e : Op D.AppOp}
@@ -1146,8 +1146,8 @@ theorem merge_linearization_of_join {D : CRDTSig}
 /-! ### 7. The Join Lemma from the peel identities
 
 The Join Lemma's induction peels a `loOn(ev₁ ∪ ev₂)`-maximal event
-`e` from the union. Everything about that induction — maximal-event
-selection, closure preservation, the measure, re-attachment — is
+`e` from the union. Everything about that induction (maximal-event
+selection, closure preservation, the measure, re-attachment) is
 proved below. The two *state equations* it consumes are exactly the
 contextual identities isolated here as the `JoinPeelVCs` bundle:
 
@@ -1161,7 +1161,7 @@ They are stated over canonical states *with their full context*
 shows, no unconditional equation over raw states is both
 true and sufficient. `join_lemma_of_peel` then closes the Join Lemma
 completely. `joinPeelVCs_of_all_comm` discharges the bundle for the
-commuting class (every pair of events commutes — G-Set and friends),
+commuting class (every pair of events commutes, G-Set and friends),
 giving the unconditional `join_lemma_of_all_comm`. -/
 
 /-- Two enumerations of the same set have the same length. -/
@@ -1518,8 +1518,8 @@ theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
 /-! #### The commuting class
 
 For a `D` in which every pair of events commutes (G-Set and its
-relatives), `loOn` relates no two distinct events at all —
-`rc_non_comm_directional` kills the rc disjunct — so both peel
+relatives), `loOn` relates no two distinct events at all,
+`rc_non_comm_directional` kills the rc disjunct, so both peel
 identities discharge from `applySeq_comm_extract`, `merge_peel_comm`
 and `lem_0op`, and the Join Lemma holds unconditionally. -/
 

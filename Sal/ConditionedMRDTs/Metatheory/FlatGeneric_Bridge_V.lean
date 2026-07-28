@@ -9,7 +9,7 @@ system **with the criss-cross gate lifted** (`labeledTS3V`): every flat MRDT wit
 closure-indexed Join Lemma inherits `IsRALinearizable3Eq` over `Step3V`,
 unconditionally.  Nothing per-datatype moves: the flat join context (`flatHonJ`) is a
 STRUCTURAL field of every configuration (no reachability induction), the witness
-discipline is `⊤`, and `qapplicable` is the lift of `⊤` — so the honest premises of
+discipline is `⊤`, and `qapplicable` is the lift of `⊤`, so the honest premises of
 `RA_linearizable_up_to_eq_H_V` are exactly as trivial as the gated theorem's.
 -/
 
@@ -22,7 +22,7 @@ open Sal.ConditionedMRDTs (Configuration initConfig labeledTS3V JoinLemma3C full
 
 variable {D : ConditionedMRDTSig}
 
-/-- **The flat capstone over `Step3V`** — every flat MRDT with a closure-indexed Join
+/-- **The flat capstone over `Step3V`**: every flat MRDT with a closure-indexed Join
 Lemma is per-version RA-linearizable (at the identity `≈`) at every configuration
 reachable with virtual-LCA merges enabled; the honest-execution premises are trivial or
 structural, exactly as in the gated `flat_ra_linearizable3_eq`. -/

@@ -8,7 +8,7 @@ The re-base guards the quotient with `WfOpA = WfOpQ ∧ accurate`.  Three of the
 quotient VCs transfer immediately: `InvPres` is `rgaInvPresA`
 (`BornApplicable_Guard`); `CongVC` is guard-independent (`(rgaCongVC' α)`); the
 `WfOpReachable` guard-transparency shifts to `GuardNoopChain`
-(`applySeqW_eq_applySeq_of_guardNoop`).  The last is `InvInvVC` — `WfOpA` is
+(`applySeqW_eq_applySeq_of_guardNoop`).  The last is `InvInvVC`, `WfOpA` is
 `≈`-invariant because it is the conjunction of two `≈`-invariant predicates
 (`WfOpQ` via `rgaInvInvVCQ`, `accurate` via `accurate_eq_iff`).
 -/
@@ -21,7 +21,7 @@ open Sal.ConditionedMRDTs.GenericEqQuotient
 open Sal.ConditionedMRDTs.RGAInstanceFinal (rgaInvInvVCQ)
 
 /-- **`InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpA`.**  `wf_congr`: `WfOpA = WfOpQ ∧
-accurate` is `≈`-invariant as a conjunction — `WfOpQ`-congruence from
+accurate` is `≈`-invariant as a conjunction, `WfOpQ`-congruence from
 `rgaInvInvVCQ`, `accurate`-congruence from `accurate_eq_iff`.  `applicable_congr`
 is guard-independent (reused from `rgaInvInvVCQ`). -/
 def rgaInvInvVCA : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpA where

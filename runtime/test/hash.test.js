@@ -1,4 +1,4 @@
-// The core content hash (src/hash.js, task #108): the pure-JS SHA-256 is
+// The core content hash (src/hash.js): the pure-JS SHA-256 is
 // correct bit-for-bit vs node:crypto (so the runtime does not rest on a
 // hand-rolled hash being merely plausible), stableStringify is order-invariant,
 // and commitContentId mints the Merkle-DAG commit id every content-addressed

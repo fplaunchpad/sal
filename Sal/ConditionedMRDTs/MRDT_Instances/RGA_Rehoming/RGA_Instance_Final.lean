@@ -7,7 +7,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_BranchCanon
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_SubchainResolve
 
 /-!
-# The RGA capstone, over `WfOpQ` — assembly + the honestly-pinned Join residual
+# The RGA capstone, over `WfOpQ`: assembly + the honestly-pinned Join residual
 
 `RGA_Instance.lean`'s capstone carries two hypotheses beyond the strengthened guard:
 `hP : InvPres (RGACondSig' α) WfOp` (§5, not provable at `WfOp`) and `hJoinEq` (§7,
@@ -19,17 +19,17 @@ full `InvPres` (`rgaInvPresQ`, with `rga_wfOpReachableQ` at `WfOpGenQ`),
 `loOnEq (rgaEqEquiv' α) WfOpQ` (no order mismatch), and `RGA_HinFilterEq` closes the
 merge bridge's `hin`:
 
-* **§1** `rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ` — `WfOp`'s
+* **§1** `rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ`, `WfOp`'s
   `wf_congr` re-proved for the strengthened guard (its extra conjuncts are
   `resolve`-driven, hence `≈`-invariant via `resolve_dom_eq`).
 * **§2** raw folds of `Nodup`/distinct-ts/`WfOpGenQ` enumerations carry `qInv`
   (`qInv_fold`), seating merge congruence at fold states.
 * **§3** the **union adapter** `isCanonicalStateEq_union_of_fold`:
-  `IsCanonicalStateEq`'s ∃/order shape IS reachable from a merge-fold fact —
+  `IsCanonicalStateEq`'s ∃/order shape IS reachable from a merge-fold fact,
   prefix the LCA enumeration, use `loOnEqQ_reduce` (the RGA's `loOnEq` is
   index-free) and full closure (no `loOnEq`-edge points from the delta back
   into the LCA set).  The shape match is CLEAN; no order translation remains.
-* **§4** `rga_eqJoin_of_oracle` — the `≈`-Join with THREE premises beyond
+* **§4** `rga_eqJoin_of_oracle`, the `≈`-Join with THREE premises beyond
   `EqJoinLemma3C`'s signature: distinct timestamps on `ev₁ ∪ ev₂`, `WfOpGenQ`
   on `ev₁ ∪ ev₂`, and `MergeFoldOracle` (the merge-fold identity
   `eq_merge_two_sided_eq` would discharge given its `hD`/`hB`/`hBE`/`hcm`/
@@ -61,7 +61,7 @@ instantiated at ONE `W` throughout, and `InvPres` only exists at `WfOpQ`.  The
 descend through `≈` exactly like `WfOp`'s conjuncts: `contains` via `(h t).1`,
 `resolve` via `resolve_dom_eq`. -/
 
-/-- `InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ` — full, both fields. -/
+/-- `InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ`, full, both fields. -/
 theorem rgaInvInvVCQ : InvInvVC (RGACondSig' α) (rgaEqEquiv' α) WfOpQ where
   wf_congr := by
     intro o s s' _ _ h
@@ -112,7 +112,7 @@ fold is `≈ m`, the witness is literally `ρ₀ ++ π₀`:
 
 * `loOnEq (rgaEqEquiv' α) WfOpQ` is INDEX-FREE (`loOnEqQ_reduce`: `rc ≡ Either`
   empties the tiebreak arm), so `respects` transports across event-set indexes;
-* full closure of `ev₁`/`ev₂` kills every cross edge — a `loOnEq`-edge is a
+* full closure of `ev₁`/`ev₂` kills every cross edge, a `loOnEq`-edge is a
   vis-edge, and a vis-edge from the delta into the LCA set would pull the delta
   event into `ev₁ ∩ ev₂`.
 

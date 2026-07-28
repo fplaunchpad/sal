@@ -11,14 +11,14 @@ set_option relaxedAutoImplicit false
 set_option autoImplicit false
 open Classical
 
-/-! # Shopping_Cart (CRDT) — read-side projection
+/-! # Shopping_Cart (CRDT): read-side projection
 
 The 24 VCs prove the `(adds, removes)` map pair converges under
 per-key max. The headline reads are **per-replica per-product
 adds and removes**:
 
-* `add_count s rid pid`    — times replica `rid` has added `pid`.
-* `remove_count s rid pid` — times replica `rid` has removed `pid`.
+* `add_count s rid pid`: times replica `rid` has added `pid`.
+* `remove_count s rid pid`: times replica `rid` has removed `pid`.
 
 The total quantity for a product (sum across replicas) is the
 client-side projection

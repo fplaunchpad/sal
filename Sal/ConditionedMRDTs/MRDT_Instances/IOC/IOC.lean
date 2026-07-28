@@ -118,7 +118,7 @@ theorem ioc_ra_linearizable3
     (cdVC3_of_all_comm IOC_coreVCs3 IOC_all_comm) C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone, identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

@@ -8,7 +8,7 @@ direction: is `CDVC3` derivable from `CoreVCs3 + DeltaVCs3` (the unconditional
 core + delta laws), or is it an independent verification condition of the
 bundle?
 
-**Verdict: independent.** `CDVC3` is NOT derivable — there is a concrete
+**Verdict: independent.** `CDVC3` is NOT derivable: there is a concrete
 `ConditionedMRDTSig` satisfying every `CoreVCs3` and `DeltaVCs3` clause yet
 falsifying `CDVC3` on a specific reachable configuration. The VC bundle is
 therefore *minimal at `CDVC3`*: it cannot be reduced by dropping `CDVC3`
@@ -20,7 +20,7 @@ countermodel refutes).
 1. **Ternary exactness** (`cdVC3_of_joinLemma3`, `joinLemma3_iff_cdVC3`,
    `cdVC3_weakest`).  The lift of the binary result
    (`Sal/CRDTs/Metatheory/CD_Exact.lean`): under `CoreVCs3`, the Join Lemma
-   *implies* `CDVC3` — so given `DeltaVCs3` the two are equivalent, and no
+   *implies* `CDVC3`, so given `DeltaVCs3` the two are equivalent, and no
    strictly weaker bridge VC exists.  Notably the ternary backward direction
    needs **no idempotence** (the binary `cdVC_of_joinLemma` had to convert an
    `⊑`-inequality with `merge_idem`; ternary `CDVC3` is already an equation, so
@@ -38,7 +38,7 @@ countermodel refutes).
    `CoreVCs3` verbatim (the ternary `merge_peel_comm3` is the binary
    `merge_peel_comm` at the branch slot).  **But** `AWSetF`'s update is
    *deflationary* (a `rem` decreases the flag), and `DeltaVCs3` carries NO
-   inflation axiom — so at a `loOn`-maximal `rem` event `e` with
+   inflation axiom, so at a `loOn`-maximal `rem` event `e` with
    `A = σ(U∖e)`, `B = σ(↓e∖e)`:
 
       mergeL B A (update B e)   has flag  A.flag ∨ (update B e).flag = true ∨ false = true
@@ -79,7 +79,7 @@ noncomputable def AWSetF3 : ConditionedMRDTSig where
     AWSetF3.update s e = awfUpdate s e := rfl
 @[simp] theorem AWSetF3_init : AWSetF3.init = AWSetF.init := rfl
 
-/-! ## §2. `CoreVCs3 AWSetF3` — the binary core lemmas, verbatim
+/-! ## §2. `CoreVCs3 AWSetF3`: the binary core lemmas, verbatim
 
 Every field reduces to an `AWSetF` core lemma: the update-layer fields are the
 binary `CoreVCs` slimmed by `UpdateVCs.of_core`; `mergeL_comm/init` and
@@ -94,7 +94,7 @@ theorem AWSetF3_coreVCs3 : CoreVCs3 AWSetF3 where
   lem_0op3 := fun _l a b e => AWSetF_lem_0op a b e
   merge_peel_comm3 := fun a e _π₀ π₂ _h₀ h₂ => AWSetF_merge_peel_comm a e π₂ h₂
 
-/-! ## §3. `DeltaVCs3 AWSetF3` — from the ACI semilattice laws
+/-! ## §3. `DeltaVCs3 AWSetF3`: from the ACI semilattice laws
 
 `awfMerge` is associative, commutative, idempotent (`AWSetF_merge_*`). Both
 delta laws are pure semilattice rearrangements of the LCA-blind merge. -/
@@ -107,14 +107,14 @@ private theorem awfMerge_assoc (a b c : AWFState) :
 private theorem awfMerge_idem (a : AWFState) : awfMerge a a = a :=
   AWSetF_merge_idem a
 
-/-- `(x₁ ⊔ c) ⊔ (x₂ ⊔ c) = (x₁ ⊔ x₂) ⊔ c` — the redistribution identity
+/-- `(x₁ ⊔ c) ⊔ (x₂ ⊔ c) = (x₁ ⊔ x₂) ⊔ c`: the redistribution identity
 (idempotence collapses the duplicated LCA-slot `c`). -/
 private theorem awf_redistribute (x₁ x₂ c : AWFState) :
     awfMerge (awfMerge x₁ c) (awfMerge x₂ c) = awfMerge (awfMerge x₁ x₂) c := by
   rw [awfMerge_assoc, ← awfMerge_assoc c x₂ c, awfMerge_comm c x₂,
     awfMerge_assoc x₂ c c, awfMerge_idem, ← awfMerge_assoc]
 
-/-- `(x ⊔ c) ⊔ y = (x ⊔ y) ⊔ c` — right-commutativity. -/
+/-- `(x ⊔ c) ⊔ y = (x ⊔ y) ⊔ c`: right-commutativity. -/
 private theorem awf_local_redistribute (x c y : AWFState) :
     awfMerge (awfMerge x c) y = awfMerge (awfMerge x y) c := by
   rw [awfMerge_assoc, awfMerge_comm c y, ← awfMerge_assoc]

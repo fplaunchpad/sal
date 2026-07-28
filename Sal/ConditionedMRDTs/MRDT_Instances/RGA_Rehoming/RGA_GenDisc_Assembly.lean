@@ -1,30 +1,30 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_GenDisc_Peel
 
 /-!
-# GenDisc2C DISCHARGED — the strong induction from born accuracy
+# GenDisc2C DISCHARGED: the strong induction from born accuracy
 
 *0 `sorry`.*
 
 The centerpiece result, assembling the bricks of `RGA_GenDisc_Peel`:
 
-**`genDisc2C_of_born`** — the generation discipline `GenDisc2C Cfg E` (each event accurate at the
+**`genDisc2C_of_born`**, the generation discipline `GenDisc2C Cfg E` (each event accurate at the
 fold of any enumeration of its transitive dependencies) follows from **born accuracy**
 (`hborn`: each event accurate at the fold of SOME `loOnA`-respecting enumeration of its full
-causal past — the honest content of born-applicability) plus the execution-model facts
+causal past, the honest content of born-applicability) plus the execution-model facts
 (id-uniqueness, nonzero ids, strict `vis`).
 
 Strong induction on `|pastE o|` (well-founded: `pastE z ⊊ pastE o` for `z ∈ pastE o`, measured by
 filtering the finite listing of `E`).  The step, for `o` with dependency prefix `d`:
 
-1. IH + `isDepPreC_of_restrict` give `GenDisc2C Cfg (pastE o)` — the whole engine applies at the
+1. IH + `isDepPreC_of_restrict` give `GenDisc2C Cfg (pastE o)`, the whole engine applies at the
    restricted set with NO relativization cost (`loOnA` is ev-free; the past is `loOnA`-closed).
 2. `canonFoldOK_of_gen` at `pastE o` disciplines BOTH the born enumeration `π₀` and the deps-first
    enumeration `d ++ N` (`N` = the non-dependencies, freely sorted; a cross edge `N → d` would make
    its source a dependency).
 3. `RGA_update_convergence_canon`: the two folds are observationally equal.
 4. `accurate_eq_iff`/`fresh_ts_eq_iff` transport `o`'s applicability across.
-5. `applicable_peel_suffix` peels the pointwise-invisible `N` off the end: `o` is applicable —
-   in particular accurate — at `applySeqR (init_st (α := α)) d`.  ∎
+5. `applicable_peel_suffix` peels the pointwise-invisible `N` off the end: `o` is applicable,
+   in particular accurate, at `applySeqR (init_st (α := α)) d`.  ∎
 -/
 
 set_option maxHeartbeats 1000000

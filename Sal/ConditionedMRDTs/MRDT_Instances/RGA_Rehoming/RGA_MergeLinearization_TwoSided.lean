@@ -44,7 +44,7 @@ state*.  In the combined fold `Ea ++ Eb`:
 
   1. **Branch-new nodes.**  `BranchInv2`'s anchor clause quantifies over ALL
      survivors, including `a`-new (`da\dl`) and `b`-new (`db\dl`) nodes, whose
-     merge-climb starts at `anc a`/`anc b` — the single-sided invariant never
+     merge-climb starts at `anc a`/`anc b`, the single-sided invariant never
      tracks these.
 
   2. **Cross-branch stale-path `Del`.**  An `Eb`-`Del` of an `l`-node carries a
@@ -70,12 +70,12 @@ stuck goals are spelled out below):
   * **`b`-nested-delete shortened paths.**  When `Eb` deletes an `l`-node
     `x` AND (earlier) an `l`-ancestor of `x`, RGA `Del` rehoming shortens `x`'s
     carried path to a PROPER subchain of its `l`-ancestor chain (concrete witness:
-    `l = 0←1←2←3`, `Eb = [Del [1] 2, Del [1] 3]` — the second `Del` carries `[1]`,
+    `l = 0←1←2←3`, `Eb = [Del [1] 2, Del [1] 3]`, the second `Del` carries `[1]`,
     not `x=3`'s `l`-chain `[2,1]`).  Then `IsAncPath l x pre` is FALSE, so
     `resolve_climb_lchain` does not apply, even though `resolve s pre = anc s x`
     still HOLDS (both land on `1`).  Closing this needs a subchain generalization of
     `resolve_climb_lchain` (pre = the `s`-live subchain of `x`'s `l`-ancestors) plus
-    a fold-level invariant certifying the `Eb` paths ARE such subchains — i.e. the
+    a fold-level invariant certifying the `Eb` paths ARE such subchains, i.e. the
     imported `Faithful`/`ChainFaithful` layer, not single-sided `BranchInv` alone.
 
   * **Branch-new survivors and `domain = survivors`.**  `BranchInv2`'s anchor
@@ -106,9 +106,9 @@ def birthEl (l a b : concrete_st α) (t : ℕ) : α :=
 /-- **Two-sided branch invariant.**  The exact extensional content of the
 three-way merge, phrased as a predicate on the reference fold state `p`:
 
-* **dom** — `p`'s domain is the OR-set survivor set `survivors l a b`;
-* **el**  — each survivor keeps its `birthEl` (element from its owning branch);
-* **anc** — each survivor's anchor is the merge-`climb` of its `birthAnc` up the
+* **dom**, `p`'s domain is the OR-set survivor set `survivors l a b`;
+* **el**, each survivor keeps its `birthEl` (element from its owning branch);
+* **anc**, each survivor's anchor is the merge-`climb` of its `birthAnc` up the
   LCA forest to the nearest two-sided survivor.
 
 This is the two-sided generalization of `RGAMergeLinearization.BranchInv`: the
@@ -151,8 +151,8 @@ cross-branch (`Eb`-over-`a`) `Del` need not be accurate there.  These two lemmas
 replace `accurate` by the weaker, `BranchInv`-derived reparent equality. -/
 
 /-- **Resolve-vs-climb reconciliation.**  When `pre` is `x`'s FULL `l`-ancestor
-chain (`IsAncPath l x pre`), `resolve s pre` — the first `s`-live member of the
-chain — is exactly the LCA-forest `climb` from `anc l x` in `s`'s current domain.
+chain (`IsAncPath l x pre`), `resolve s pre`, the first `s`-live member of the
+chain, is exactly the LCA-forest `climb` from `anc l x` in `s`'s current domain.
 Both are the same rootward walk of the `l`-forest halting at the first `s`-live
 node; the id-monotone `l`-forest (`Hdec`/`Hstay`) supplies the climb's fuel.  This
 is the two-sided fact the single-sided bridge never needed (its target was the
@@ -208,7 +208,7 @@ theorem hres_of_lchain (l a : concrete_st α)
 /-- **Cross-branch `Del`-preservation.**  Single-sided `BranchInv l` is
 preserved under a `Del pre x` WITHOUT the `accurate a`-hypothesis: it is enough
 that, when `x` is live, the (possibly stale) path resolves to `x`'s CURRENT anchor
-(`hres`) — supplied by `hres_of_lchain` for an `l`-accurate path — and that `a` is
+(`hres`), supplied by `hres_of_lchain` for an `l`-accurate path, and that `a` is
 well-formed with `x ≠ 0`.  The live branch is the `branchInv_doDel` argument with
 `hres` in place of the accuracy-derived reparent equality; the dead branch is a
 forest no-op (no live node anchors at an absent `x`, by `wf a`). -/
@@ -318,7 +318,7 @@ the bridge from one reference interleave to any `lo`-respecting interleave. -/
 
 /-- **Interleave independence.**  Given the bridge for ONE reference
 interleave `π₀` (`href`), any other `lo`-respecting interleave `π` of the same
-event set `ev` also satisfies the bridge — by the imported convergence engine
+event set `ev` also satisfies the bridge, by the imported convergence engine
 (fold-order independence up to `eq`) plus `eq`-transitivity.  `hSwap` is the swap
 oracle the convergence headline in `RGA_ConditionedConvergence` already carries as
 a hypothesis; it transports unchanged. -/
@@ -341,9 +341,9 @@ theorem merge_fold_indep
 /-! ## §3  The assembled two-sided headline (conditioned)
 
 Composes §1 (extensionality) and §2 (interleave independence).  It is conditioned
-on exactly two hypotheses: `hThread` — the reference fold `applySeqR l π₀` satisfies
-`BranchInv2` (discussed above) —
-and `hSwap` — the convergence swap oracle (an imported hypothesis).  Everything ELSE
+on exactly two hypotheses: `hThread`, the reference fold `applySeqR l π₀` satisfies
+`BranchInv2` (discussed above),
+and `hSwap`, the convergence swap oracle (an imported hypothesis).  Everything ELSE
 in the two-sided bridge is discharged. -/
 theorem eq_merge_two_sided
     (l a b : concrete_st α) (lo : op_t α → op_t α → Prop) (ev : Set (op_t α)) (π₀ π : List (op_t α))

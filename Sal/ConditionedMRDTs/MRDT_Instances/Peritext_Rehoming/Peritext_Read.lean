@@ -6,7 +6,7 @@ open Classical
 set_option maxHeartbeats 1000000
 
 /-!
-# Peritext (FUSED) — the read model and the GENUINE positional intent theorem
+# Peritext (FUSED): the read model and the GENUINE positional intent theorem
 
 The capstone in `Peritext.lean` certifies state convergence up to `≈`.
 It says nothing about the sequence a user reads.  This file:
@@ -24,18 +24,18 @@ It says nothing about the sequence a user reads.  This file:
    its target (`del_not_in_document`, `del_document_mem`).  Read convergence lifts
    (`document_convergent`, `renderRichText_convergent`).
 
-3. **The genuine intent theorem — the whole point.**  `render_id_active_iff_between`
+3. **The genuine intent theorem, the whole point.**  `render_id_active_iff_between`
    (with the region lemmas `render_span_before / _inside / _after`) is an
    INDEPENDENT positional guarantee: a character carries mark-instance `id` **iff**
    it lies, *in reading order*, strictly between `id`'s start-boundary node and its
    end-boundary node.  The right-hand side is a decomposition of the reading-order
-   element list, computed differently from the open-set fold — so this is a
+   element list, computed differently from the open-set fold, so this is a
    correctness theorem (the fold computes betweenness), **not** a restatement of the
    read (contrast the `oq:linspec` self-referential-spec trap).
 
    In particular `mark_no_backward_leak`: a character positioned *before* a mark's
    start boundary is never formatted by that mark.  This is precisely the guarantee
-   the frozen-path product design **fails** — there, deleting a mark's anchor makes
+   the frozen-path product design **fails**, there, deleting a mark's anchor makes
    the boundary climb tree-ancestry and migrate backward, leaking formatting to
    earlier text (`Peritext_Composed/MarkIntent.lean`, the refuted `mark_*_no_leak`).  Here
    boundaries are live RGA nodes, so a character's formatting is decided by its
@@ -49,16 +49,16 @@ construction*.  The residual is **not** a formatting leak but the RGA's own
 read-*order* cost: `del_can_reorder_survivors`
 (`RGA_Tombstone_Free_SPOT.lean`) shows that deleting an *interior* node re-sorts its
 surviving children among its siblings by timestamp, which can change the reading
-order — and therefore which characters sit between two boundaries.  So under
+order, and therefore which characters sit between two boundaries.  So under
 interior deletion the *span can change membership*, but always by a bounded local
 re-sort of the physical sequence, never by a boundary jumping backward to unrelated
 earlier text.  The fused corner trades atomicity (the third horn of the trilemma)
 for live positioning; that residual is inherited from the RGA and is exactly
-`del_can_reorder_survivors`, demonstrated concretely below — the wins
+`del_can_reorder_survivors`, demonstrated concretely below, the wins
 (`fused_no_leak_spot`, `fused_delete_interior_no_leak` vs. the product's
 refuted no-leak claim) AND the loss (`fused_delete_reformats_survivor`: deleting a plain
 character moves an untouched survivor across a mark boundary, re-formatting
-it — the do-level sequential-spec failure, machine-checked).
+it, the do-level sequential-spec failure, machine-checked).
 -/
 
 namespace Sal.ConditionedMRDTs.Peritext.Read
@@ -85,7 +85,7 @@ def docAux (s : St) (ids : List ℕ) : ℕ → ℕ → List ℕ
 
 def fuelOf (ids : List ℕ) : ℕ := ids.foldr max 0 + 1
 
-/-- **The document read**: node ids in reading order — depth-first from the root
+/-- **The document read**: node ids in reading order, depth-first from the root
 sentinel `0`, siblings in `ids` order (descending = newest first). -/
 def document (s : St) (ids : List ℕ) : List ℕ :=
   docAux s ids (fuelOf ids) 0
@@ -141,7 +141,7 @@ theorem document_sound (s : St) (ids : List ℕ) (c : ℕ)
     (h : c ∈ document s ids) : contains s c = true ∧ c ∈ ids :=
   docAux_mem_sound s ids _ 0 c h
 
-/-- **Delete erases its target from the read** — immediate from soundness. -/
+/-- **Delete erases its target from the read**, immediate from soundness. -/
 theorem del_not_in_document (s : St) (t r x : ℕ) (pre ids : List ℕ) :
     x ∉ document (do_ s (t, r, app_op_t.Del pre x)) ids := by
   intro h
@@ -223,7 +223,7 @@ theorem mem_document_of_live (s : St) (ids : List ℕ)
         hpdoc hchild
 
 /-- **The read is exactly the live set** on `wf`+`mono` states with a covering
-candidate list — no tombstone read, no live element hidden. -/
+candidate list, no tombstone read, no live element hidden. -/
 theorem mem_document_iff (s : St) (ids : List ℕ)
     (hmono : mono s) (hwf : wf s)
     (hids : ∀ t, contains s t = true → t ∈ ids) (c : ℕ) :
@@ -286,7 +286,7 @@ theorem document_convergent {s₁ s₂ : St} (h : eq s₁ s₂)
 `(markId, Mark)` pairs.  A start boundary opens its pair, a close removes it by
 `markId`; characters emit their codepoint tagged with the current formatting;
 boundary nodes are invisible.  Everything below the RGA layer is a **pure** fold on
-`List PeritextElt` — this is what makes the positional theorem a genuine, independent
+`List PeritextElt`, this is what makes the positional theorem a genuine, independent
 statement rather than a restatement of the traversal. -/
 
 /-- Open marks carried by the fold: `(markId, Mark)` pairs, most-recent first. -/
@@ -379,7 +379,7 @@ theorem noId_filter (id : ℕ) (acc : OpenSet) :
 segment with no boundary for it -/
 
 /-- If `id` is absent from the open set and the segment opens/closes no boundary for
-`id`, then `id` stays absent — and no rendered character in the segment carries it. -/
+`id`, then `id` stays absent, and no rendered character in the segment carries it. -/
 theorem noId_render (id : ℕ) :
     ∀ (es : List PeritextElt) (acc : OpenSet),
       NoIdOpen id acc → NoBoundId id es →
@@ -423,7 +423,7 @@ theorem noId_render (id : ℕ) :
                by rw [openAfter_close]; exact iho⟩
 
 /-- If `id` is present in the open set and the segment opens/closes no boundary for
-`id`, then `id` stays present — and every rendered character in the segment carries
+`id`, then `id` stays present, and every rendered character in the segment carries
 it. -/
 theorem hasId_render (id : ℕ) :
     ∀ (es : List PeritextElt) (acc : OpenSet),
@@ -505,7 +505,7 @@ boundary (in reading order) carries no activation of that mark instance.  This i
 exactly the guarantee the frozen-path product design fails: there, deleting the
 mark's anchor migrates the boundary backward and leaks formatting to earlier text
 (`Peritext_Composed/MarkIntent.lean`).  Here the boundary is a live node, so a character's
-formatting is decided by its reading-order position — no migration. -/
+formatting is decided by its reading-order position, no migration. -/
 theorem render_span_before (before : List PeritextElt) (id : ℕ)
     (hb : NoBoundId id before) :
     ∀ r ∈ renderAux before ([] : OpenSet), ¬ IdActive id r :=
@@ -530,7 +530,7 @@ theorem render_span_after (before inside after : List PeritextElt) (id : ℕ) (m
 /-- **THE GENUINE POSITIONAL INTENT THEOREM.**  For a well-nested document
 (mark-instance `id`'s only boundaries are the named start/end nodes), a rendered
 character carries mark `id` **iff** it lies, in reading order, strictly between
-`id`'s start boundary and its end boundary — i.e. iff it belongs to the `inside`
+`id`'s start boundary and its end boundary, i.e. iff it belongs to the `inside`
 block.  The right-hand side is a decomposition of the reading-order element list,
 computed independently of the open-set fold, so this is a correctness theorem, not a
 restatement of the read. -/
@@ -582,7 +582,7 @@ theorem renderRichText_convergent {s₁ s₂ : St} (h : eq s₁ s₂) (ids : Lis
   unfold renderRichText
   rw [hdoc]
 
-/-! ## Axiom audit — the read model and the genuine intent theorems are kernel-clean -/
+/-! ## Axiom audit: the read model and the genuine intent theorems are kernel-clean -/
 
 section AxiomAudit
 #print axioms document_sound
@@ -634,7 +634,7 @@ theorem docBold_render :
 /-- **The fused design stays correct under deletion of the mark's start anchor.**
 Delete `A` (id 1), the character the start boundary is anchored to.  The boundary
 node `2` survives and rehomes to the root; the reading order becomes `[2,3,4,5]` and
-the render is B(bold) C(bold) — A is gone, and crucially **no earlier text became
+the render is B(bold) C(bold), A is gone, and crucially **no earlier text became
 bold**.  In the frozen-path product design deleting an anchor migrates the boundary
 backward along tree-ancestry and leaks bold to preceding text
 (`Peritext_Composed/MarkIntent.lean`, the retracted `mark_*_no_leak`); here it cannot. -/
@@ -643,14 +643,14 @@ theorem fused_no_leak_spot :
       = [(66, true), (67, true)] := by native_decide
 
 /-- **No backward leak, concretely.**  Delete the interior character `B` (id 3):
-`C` rehomes under the start boundary, and `A` — positioned before the start boundary
-— stays plain while `C` stays bold.  The mark's span shrank to exactly its surviving
+`C` rehomes under the start boundary, and `A`, positioned before the start boundary,
+stays plain while `C` stays bold.  The mark's span shrank to exactly its surviving
 member; nothing before the start boundary was formatted. -/
 theorem fused_delete_interior_no_leak :
     (renderRichText (do_ docBold (9, 1, .Del [2, 1] 3)) [5, 4, 2, 1]).map (fun r => (r.1, r.2 Mark.bold))
       = [(65, false), (67, true)] := by native_decide
 
-/-! ### The inherited residual, concretely — the loss, not just the wins
+/-! ### The inherited residual, concretely: the loss, not just the wins
 
 The two SPOTs above are the favorable cases.  The header's "honest scope"
 paragraph owes the unfavorable one a witness: the fused design inherits the
@@ -662,8 +662,8 @@ Single replica, `do_`-built (KC's `s_bac` shape lifted to `char ⊕ boundary`),
 invisible to the convergence capstone (`oq:linspec`). -/
 
 /-- KC's reordering witness at the rich-text payload, built through `do_`:
-`⟨bold⟩`(1) ← `X`(2), then two siblings under `X` — `P`(3, plain char) and
-`⟨/bold⟩`(4, newer, so it reads first) — and `C`(5) under `P`.  Reading order
+`⟨bold⟩`(1) ← `X`(2), then two siblings under `X`, `P`(3, plain char) and
+`⟨/bold⟩`(4, newer, so it reads first), and `C`(5) under `P`.  Reading order
 `[⟨bold⟩, X, ⟨/bold⟩, P, C]`: the bold span is exactly `{X}`. -/
 def docResidual : St :=
   do_ (do_ (do_ (do_ (do_ (init_st (α := PeritextElt))
@@ -689,7 +689,7 @@ theorem fused_delete_moves_char_into_span :
 
 /-- The refutation shape (mirroring `del_a_breaks_survivor_order`): the
 post-delete render is NOT the pre-delete render with the deleted character
-removed — formatting of an untouched survivor changed.  This is the sequential
+removed, formatting of an untouched survivor changed.  This is the sequential
 (single-replica) spec failure the fused Peritext inherits from the rehoming
 RGA's `do_`, at the layer users read. -/
 theorem fused_delete_reformats_survivor :

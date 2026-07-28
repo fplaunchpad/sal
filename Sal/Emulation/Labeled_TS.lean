@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Framework.Base.Labeled_TS
 
 /-!
-# Forwarding stub — content moved
+# Forwarding stub: content moved
 
 The Labeled-TS core now lives in the metatheory conditioned tree so it can be
 modified there without touching the emulation framework's layout:

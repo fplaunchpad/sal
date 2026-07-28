@@ -1,4 +1,4 @@
-# sal p2p-demo (task #95)
+# sal p2p-demo
 
 A peer-to-peer collaborative text editor built **on top of** the verified sal
 runtime (`../runtime`). It shows the runtime's kernel-clean pieces -- commit-DAG
@@ -8,7 +8,7 @@ network transport and converge, a replica's whole history is savable in a **git
 repository** (point at the repo, get the doc), and certified GC fires *while the
 session is live*.
 
-This package **imports** the runtime. As of task #108 the p2p replica itself is
+This package **imports** the runtime. The p2p replica itself is
 a first-class runtime object (`DistributedReplica` in `../runtime/src/replica.js`:
 one SHA-addressed store with both wire sync and the certified GCs); the demo's
 `Node` is a thin re-export of it, and the SHA content hash lives in the core
@@ -58,26 +58,26 @@ bridge honest, and what would shrink the distance.
                  └─────────────────────────┘  inspects the CRDT payload
 ```
 
-- **`src/node.js` -- the p2p replica, a thin adapter.** `Node` is now just
-  `DistributedReplica` (`../runtime/src/replica.js`) with the demo's historical
-  defaults (the embed RGA, name `n0`). The runtime's first-class object is the
-  fold that used to live here: ONE content-addressed store that has BOTH the
-  delta gossip (`ancestryGids`/`delta`/`ingest`/`mergeWithGid`) sync.js's `Peer`
-  had and the certified state GC (`compactStable`) runtime.js's `Replica` had,
+- **`src/node.js` -- the p2p replica, a thin adapter.** `Node` is
+  `DistributedReplica` (`../runtime/src/replica.js`) with the demo's
+  defaults (the embed RGA, name `n0`). The runtime's first-class object is
+  ONE content-addressed store that has BOTH the
+  delta gossip (`ancestryGids`/`delta`/`ingest`/`mergeWithGid`) and the
+  certified state GC (`compactStable`),
   plus the keep-set commit GC, datatype-parametric. `test/node.test.js` pins the
   demo surface (SHA re-export, wire convergence, compaction refuse/fire); the
   parametric core coverage (embed **and** orset) is in
   `../runtime/test/replica.test.js`.
 
-- **SHA content addressing (`src/hash.js` -> `../runtime/src/hash.js`).** #108
-  moved the content hash into the core and unified it. `DistributedReplica`
+- **SHA content addressing (`src/hash.js` -> `../runtime/src/hash.js`).** The
+  content hash lives in the core. `DistributedReplica`
   (hence `Node`) names every commit by the SHA-256 of its canonical content, a
   Merkle DAG (a commit's id folds in its parents'):
   `root = sha({root:true})`, `authored = sha({p,replica,seq,payload})`,
   `merge = sha({p: sorted parents})`, `compaction = sha({compact,p,fp})`. The
   same id names the same commit on **every** peer and **on disk**, so the wire
-  dedups and git persistence content-addresses with **one** hash -- the FNV/SHA
-  seam is gone (`sync.js`'s `Peer` uses the same core hash now). The demo's
+  dedups and git persistence content-addresses with **one** hash: `sync.js`'s
+  `Peer` uses the same core hash. The demo's
   `src/hash.js` is a thin re-export of the core; the pure-JS SHA-256 is checked
   bit-for-bit against `node:crypto` (NIST vectors + random) in the runtime.
 
@@ -110,7 +110,7 @@ bridge honest, and what would shrink the distance.
 
 - **`src/idbstore.js` -- the browser sibling of git persistence, WIRED IN.**
   `gitstore.js` shells out to `git` and cannot run in a browser tab, so the
-  shared record shape + rebuild now live in the browser-safe `src/records.js`
+  shared record shape + rebuild live in the browser-safe `src/records.js`
   (the durable format IS the wire format; gitstore re-exports for compat).
   `RefStore` persists those records into IndexedDB over a tiny async KV
   (`MemoryKV` for headless tests, `openIdbKV()` in the browser); same
@@ -122,7 +122,7 @@ bridge honest, and what would shrink the distance.
   keeps history + roster while starting a fresh authoring seq
   (`rebuildNode` opts). Browser-verified: edit, reload, doc restored from
   IndexedDB alone (the relay is stateless); edit again, reload, both edits
-  restored. See `whiteboard/collab-design-note.md` section 7.1.
+  restored.
 
 - **`src/transport.js` -- the wire.** `WsTransport` carries the gossip over a
   WebSocket (browser and Node both use the global `WebSocket`). `NetworkNode`
@@ -135,13 +135,13 @@ bridge honest, and what would shrink the distance.
   mode stays pure-pull so `converge` remains deterministic
   (`test/livepush.test.js` pins both).
 
-- **`src/hub.js` -- the SYNC HUB (design-note step 4): docs survive
+- **`src/hub.js` -- the SYNC HUB: docs survive
   disconnects.** One headless replica per room, living with the relay,
   speaking the SAME have/req/delta protocol as any peer and persisting
   through a RefStore (MemoryKV locally, Durable Object storage in the cloud;
   debounced, content-addressed). A peer pushes and leaves; a later peer
-  joins an empty room and catches up from the hub alone -- previously
-  impossible (the stateless-relay FAIL shape is pinned). INVISIBLE by
+  joins an empty room and catches up from the hub alone, which a stateless
+  relay cannot do (the stateless-relay FAIL shape is pinned). INVISIBLE by
   construction: never sends `join`, never authors, never broadcasts
   presence, so clients never roster it and it cannot block the certified
   GC or compete for auto-GC leadership. The datatype label rides the join
@@ -170,7 +170,7 @@ bridge honest, and what would shrink the distance.
   target text). Panels show live convergence, the roster, the commit DAG, the
   certified stable cut, and a GC button.
 
-- **`web/richtext.js` -- the RICH-TEXT editor (task #107).** A PROSEMIRROR view
+- **`web/richtext.js` -- the RICH-TEXT editor.** A PROSEMIRROR view
   over the verified Peritext datatype: one directly-edited surface (typing,
   Enter, paste; Bold/Italic/Underline, links, comments via toolbar or
   Cmd/Ctrl+B/I/U/K), no preview pane. ProseMirror owns the DOM (caret, IME,
@@ -214,7 +214,7 @@ bridge honest, and what would shrink the distance.
   and a corrupt frontier. The roster shows the display name and
   disambiguates duplicates with the session tag (`kc-laptop·b6e9`).
 
-- **`src/presence.js` -- PRESENCE (task #107).** Ephemeral, OFF-DAG peer
+- **`src/presence.js` -- PRESENCE.** Ephemeral, OFF-DAG peer
   awareness: live cursors/selections + identity, broadcast as plain `presence`
   room messages over the same transport, never committed, merged, or persisted.
   A pure registry (ttl prune, stable per-peer color) tested in
@@ -222,9 +222,9 @@ bridge honest, and what would shrink the distance.
   DECORATIONS (inline highlights for selections, caret widgets with name
   flags).
 
-- **Reconnect (zombie-tab fix).** Browsers close the sockets of tabs that sit
-  in the background; before, the page kept saying "connected" while every send
-  was silently dropped. `WsTransport` now detects the drop (`down`), rejoins
+- **Reconnect (zombie-tab handling).** Browsers close the sockets of tabs that
+  sit in the background, and the page can keep saying "connected" while every
+  send is silently dropped. `WsTransport` detects the drop (`down`), rejoins
   with backoff (`up`), and `NetworkNode` re-announces on `up`, which catches up
   BOTH directions (peers top me up; my advertised head triggers their
   pull-on-have). The relay pings clients and terminates the unresponsive
@@ -232,7 +232,7 @@ bridge honest, and what would shrink the distance.
   edits made on both sides DURING the outage.
 
 - **CERTIFIED GC IN THE RICH-TEXT EDITOR.** The editor runs on
-  `compactiblePeritext` (the marks-layer GC of #110, with a `symbolCount`
+  `compactiblePeritext` (the marks-layer GC, with a `symbolCount`
   probe over the embed shadow), shows a METADATA-COST panel (visible chars vs
   tombstones, mark records, coordinate symbols, encoded-state bytes, commits,
   wire-summary size, epoch, stable-cut status), and has a `run certified GC`
@@ -307,9 +307,9 @@ bridge honest, and what would shrink the distance.
 ## Certified GC across peers: the barrier
 
 The runtime's `compactStable` re-codes coordinates and opens an **epoch**.
-Cross-epoch merge is now the certificate-determined JOIN (#112 phase 3, the
+Cross-epoch merge is the certificate-determined JOIN (the
 mechanized epoch diamond): two heads at different cuts merge by lifting to a
-common frame, so a peer compacting alone no longer strands the others. `barrierCompact`
+common frame, so a peer compacting alone does not strand the others. `barrierCompact`
 keeps them together: after `converge`, every peer holds the same DAG but a
 *different* certified cut (each excludes itself from the frontier meet). One
 no-op **checkpoint** round fixes that -- once every peer has published a commit
@@ -321,8 +321,8 @@ certificate is the runtime's; the barrier is the demo linearizing epochs.
 
 ## Epoch-base pruning: history is not forever
 
-Compaction shrinks the STATE; the commit DAG (and every durable store over it,
-and a hub's wake-replay) still grew without bound. `pruneToEpochBase()` (see
+Compaction shrinks the STATE; without pruning the commit DAG (and every durable
+store over it, and a hub's wake-replay) grows without bound. `pruneToEpochBase()` (see
 `../runtime/README.md`) closes this: once a compaction SETTLES -- the stability
 cut is complete and every registered replica's evidence has advanced past the
 compaction's cut (`epochDag.subcut`) -- no registered peer can need the commits
@@ -331,9 +331,8 @@ base**. Its content id still verifies without the parent (the hash covers the
 wire parent gid string + the state fingerprint), so `delta` ships the base
 instead of genesis, `ingest` gates it, and a pristine replica adopts the head
 directly: a fresh peer bootstraps at O(document). The hub prunes on persist and
-mirrors its store; the editor prunes on its slow tick. Re-ported onto the #112
-cut-keyed epoch model; pinned in `../runtime/test/pruning.test.js` and the
-hub pruning test in `test/hub.test.js`.
+mirrors its store; the editor prunes on its slow tick. Pinned in
+`../runtime/test/pruning.test.js` and the hub pruning test in `test/hub.test.js`.
 
 ## Running each stage
 
@@ -405,19 +404,19 @@ the scripted scenario below.
   is the closed replica set the stability certificate quantifies over. Eviction,
   Byzantine members, and members who never settle (blocking GC forever) are not
   handled; a real system needs a membership protocol and a liveness policy.
-- **Cross-epoch merge is the certificate-determined JOIN (#112 phase 3).**
-  Two peers compacting different cuts and then merging across epochs no longer
-  throws: the mechanized epoch diamond (`runtime/src/epoch.js`,
+- **Cross-epoch merge is the certificate-determined JOIN.**
+  Two peers compacting different cuts and then merging across epochs do not
+  throw: the mechanized epoch diamond (`runtime/src/epoch.js`,
   `Sal/.../EmbedRGA_EpochDiamond.lean`) lifts both heads to a common frame and
   merges there. The editor still prefers to compact only when converged (a
-  policy, not a necessity now).
-- **Criss-cross merges are RESOLVED (virtual LCAs, #90 landed).**
-  `DistributedReplica` now computes the virtual base for a criss-crossed
+  policy, not a necessity).
+- **Criss-cross merges are RESOLVED (virtual LCAs).**
+  `DistributedReplica` computes the virtual base for a criss-crossed
   pair by the mechanized recursive rule (runtime README; pinned in
   `../runtime/test/virtual-lca.test.js`), so opportunistic browser merges
-  no longer defer on criss-crosses (the transport's defer path remains for
+  do not defer on criss-crosses (the transport's defer path remains for
   cross-epoch merges only). The deterministic linear fold (`converge`)
-  still stays inside the criss-cross-free regime by construction.
+  stays inside the criss-cross-free regime by construction.
 - **`embedRGA` is an unverified transliteration** of the verified embed kernel
   (see `../runtime/README.md`); the demo inherits that caveat.
 

@@ -18,7 +18,7 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # OR-Set Efficient (MRDT) — read-side projection
+/-! # OR-Set Efficient (MRDT): read-side projection
 
 MRDT readside for the compressed OR-Set variant whose tags are
 `(rid, ts, elem)` triples (one tag per `(rid, elem)` pair). The
@@ -50,7 +50,7 @@ theorem lookup_after_add
 on the other branch. Premise: the new tag is fresh in the LCA, and
 no `(rid, _, e)` tag from the same replica was previously present
 (otherwise the `Add`'s filter would have just renamed it, not
-created a new tag — but the headline still holds). -/
+created a new tag, but the headline still holds). -/
 theorem add_wins_over_concurrent_remove
     (l : concrete_st) (e ts ts_rem rid_add rid_rem : ℕ)
     (h_fresh : mem (rid_add, ts, e) l = false) :

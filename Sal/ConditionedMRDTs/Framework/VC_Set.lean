@@ -29,14 +29,14 @@ variable {D : ConditionedMRDTSig}
 /-- **The ternary core VC bundle**, exactly what the ternary Join induction consumes:
 
 * the three update-layer fields, unchanged (`update_core`);
-* `mergeL_comm` — commutativity in the two *branch* arguments;
-* `mergeL_init` — the unit law `mergeL σ₀ σ₀ s = s` (the paper's `MergeIdempotence`
+* `mergeL_comm`: commutativity in the two *branch* arguments;
+* `mergeL_init`: the unit law `mergeL σ₀ σ₀ s = s` (the paper's `MergeIdempotence`
   `mergeL l s s = s` is not consumed anywhere in the induction);
-* `lem_0op3` — the ternary 0-OP peel, **with the LCA argument carrying the event**:
+* `lem_0op3`: the ternary 0-OP peel, **with the LCA argument carrying the event**:
   a union-maximal shared event is an LCA event, so all three components peel it.
   This is where ternary-ness is load-bearing: the counter satisfies `lem_0op3`
   but violates the binary `lem_0op`;
-* `merge_peel_comm3` — the local peel against fold-shaped LCA and other-branch
+* `merge_peel_comm3`: the local peel against fold-shaped LCA and other-branch
   arguments, for events commuting with both. -/
 structure CoreVCs3 (D : ConditionedMRDTSig) : Prop where
   update_core : UpdateVCs D.toCRDTSig
@@ -149,15 +149,15 @@ theorem CoreVCs3.toCD (hVC : CoreVCs3 D) : CoreVCs3CD D :=
 /-- **The feasible delta contract**: the redistribution laws (plus the unit law) restricted
 to canonical tuples at honest LCAs of a configuration. Field by field:
 
-* `feasible_init` — `mergeL σ₀ σ₀ s = s` for `s` canonical (the raw law is
+* `feasible_init`: `mergeL σ₀ σ₀ s = s` for `s` canonical (the raw law is
   false for `EWFlag`: an infeasible state with a set flag but zero counter);
-* `feasible_local_redistribute` — the `local_redistribute` instance the
+* `feasible_local_redistribute`: the `local_redistribute` instance the
   induction consumes in the local-peel case: `s₀ = σ(E₁∩E₂)`, `B = σ(↓e∖e)`,
   `t₁ = σ(E₁∖e)`, `s₂ = σ(E₂)`, `e` union-maximal and local to side 1. Every
   `mergeL` node of both sides is at its honest LCA: LHS-inner `(E₁∖e) ⊔ ↓e`
   at `↓e∖{e}`, LHS-outer `E₁ ⊔ E₂` at `E₁∩E₂`, RHS-inner `(E₁∖e) ⊔ E₂` at
   `(E₁∖e)∩E₂ = E₁∩E₂`, RHS-outer `(U∖e) ⊔ ↓e` at `↓e∖{e}`;
-* `feasible_redistribute` — the shared-peel instance, all three components
+* `feasible_redistribute`: the shared-peel instance, all three components
   decomposed through the downset delta; honest LCAs throughout
   (`t₀ = σ((E₁∩E₂)∖e)` is the decomposed LCA component). -/
 structure FeasibleDeltaVCs3 (D : ConditionedMRDTSig) : Prop where

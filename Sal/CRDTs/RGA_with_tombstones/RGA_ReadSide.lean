@@ -20,7 +20,7 @@ set_option autoImplicit false
 
 open Classical
 
-/-! # RGA — read-side projection and intent-preservation theorems
+/-! # RGA: read-side projection and intent-preservation theorems
 
 The 24 RA-linearizability VCs in `RGA_CRDT.lean` prove convergence of the
 state under merge: `eq s₁ s₂ → eq (merge s₁ s₂) s₂` and friends, lifted
@@ -46,7 +46,7 @@ RGA-only version here is the canonical home for the predicate. -/
 
 /-! ## Read-side primitives -/
 
-/-- Is character `c` currently visible in state `s` — present in the
+/-- Is character `c` currently visible in state `s`, present in the
 chars map and not tombstoned? -/
 @[simp]
 def visible (s : concrete_st) (c : OpId) : Bool :=

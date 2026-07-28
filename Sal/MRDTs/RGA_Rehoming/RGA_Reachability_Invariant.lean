@@ -12,10 +12,10 @@ flagship tombstone-free RGA (`RGA_Tombstone_Free_MRDT.lean`):
 The flagship's commutation VC `rc_non_comm'` is conditioned on three premises
 (`commutes_with'`):
 
-* `contains s 0 = false` — the root sentinel is never a stored key;
-* `wf s`              — the *forest invariant*
+* `contains s 0 = false`: the root sentinel is never a stored key;
+* `wf s`: the *forest invariant*
   `∀ t, contains s t → (anc s t = 0 ∨ contains s (anc s t))`;
-* `accurate o s` / `fresh_ts o s` — the op's path is the true ancestor chain,
+* `accurate o s` / `fresh_ts o s`: the op's path is the true ancestor chain,
   and an `Ins` uses a fresh nonzero id.
 
 The candidate **state** invariant is `RgaInv s := (contains s 0 = false) ∧ wf s`
@@ -35,7 +35,7 @@ the execution model at the point an event is generated.
   confirms R2: carry the *forest invariant* and recover positions, rather than
   "every op's path stays accurate" (which deletes falsify).
 
-* `merge_breaks_wf` — **a machine-checked refutation**: `wf` is *not* preserved
+* `merge_breaks_wf`, **a machine-checked refutation**: `wf` is *not* preserved
   by `merge` from `Inv l/a/b` alone.  `climb`'s fuel (`= the node id`) is only
   sufficient when anchor ids strictly decrease along the LCA chain; without that
   the climb stops on a deleted, non-root node.  See the VERDICT.
@@ -129,7 +129,7 @@ target is `resolve s pre = anc s x` (`isAncPath_resolve`), which by `wf s` is
 `0`-or-live and by `isAncPath_self` is `≠ x` (since `x` is live and `0 ∉ dom`),
 so it *survives* the removal.  Every child of `x` is rehomed to that survivor and
 every other node keeps a still-live (or `0`) anchor: `wf` is preserved despite the
-physical deletion.  This is R2 — the forest invariant is maintained under
+physical deletion.  This is R2, the forest invariant is maintained under
 rehoming, NOT by keeping paths accurate. -/
 theorem Inv_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (h : RgaInv s)
     (hacc : accurate (t, r, .Del pre x) s) :
@@ -184,7 +184,7 @@ theorem Inv_doDel (s : concrete_st α) (t r x : ℕ) (pre : List ℕ) (h : RgaIn
 equal to the starting id `x`**.  That fuel is sufficient only when anchor ids
 strictly decrease along the chain (then the chain from `x` has length `≤ x`).
 `wf` does NOT entail decreasing ids (a node may anchor at a larger id), so the
-climb can run out of fuel on a deleted, non-root node — producing an anchor that
+climb can run out of fuel on a deleted, non-root node, producing an anchor that
 is neither `0` nor a survivor, i.e. violating `wf`.
 
 The witness below makes this concrete and machine-checked.  In `lCex` the chain
@@ -258,8 +258,8 @@ theorem anc_merge (l a b : concrete_st α) (t : ℕ) :
 strictly drops along `anc l`) and the forest invariant (`Hstay`: `anc l` stays in
 `{0} ∪ dom l`), a walk started at a node that is `0`, a survivor (`I`), or
 live-in-`l` (a) **lands in `{0} ∪ I`** and (b) **never climbs above its start**.
-The walk only ever applies `anc l` to live-in-`l` nodes — it halts first on `0`
-and on survivors — so `id_mono l` (which only constrains live-in-`l` nodes) is
+The walk only ever applies `anc l` to live-in-`l` nodes, it halts first on `0`
+and on survivors, so `id_mono l` (which only constrains live-in-`l` nodes) is
 exactly enough.  Since the id strictly decreases at each `anc l` step, the fuel
 `= start id` always suffices; this is the ingredient `merge_breaks_wf` shows `wf`
 lacks. -/
@@ -314,7 +314,7 @@ theorem climb_aux_walk (l : concrete_st α) (I : set ℕ)
         exact ⟨IHres.1, le_trans IHres.2 (le_of_lt hdec)⟩
 
 /-- **The start condition is free from `wf l/a/b`.**  Every survivor's
-birth-anchor is `0`, itself a survivor, or live-in-`l` — so no separate
+birth-anchor is `0`, itself a survivor, or live-in-`l`, so no separate
 cross-branch premise is needed.  Key fact: a node new in `a` (`da \ dl`) is
 *automatically* a survivor, so a chain of new `a`-nodes halts the climb at the
 first survivor rather than escaping `l`'s forest. -/
@@ -355,8 +355,8 @@ theorem betaf_start (l a b : concrete_st α)
 
 /-! ## `Inv_merge` under `id_mono l`
 
-The `contains 0 = false` conjunct holds from `Inv l/a/b`.  The `wf` conjunct —
-refuted from `Inv l/a/b` alone by `merge_breaks_wf` — goes through under the
+The `contains 0 = false` conjunct holds from `Inv l/a/b`.  The `wf` conjunct,
+refuted from `Inv l/a/b` alone by `merge_breaks_wf`, goes through under the
 single extra premise `id_mono l`: the id-monotone anchors on the LCA make
 `climb`'s fuel sufficient (`climb_aux_walk`), and the start condition for every
 survivor's birth-anchor is supplied for free by `wf l/a/b` (`betaf_start`).  No
@@ -396,7 +396,7 @@ live anchor breaks it); it needs the *allocation discipline* that a fresh `Ins`
 timestamp exceeds every live id.  We package that as `mono_alloc` and show
 `RgaInv ∧ id_mono` is jointly preserved by `init_st`/`do_`/`merge`. -/
 
-/-- Any `resolve` result is the root `0` or a live node — regardless of accuracy. -/
+/-- Any `resolve` result is the root `0` or a live node, regardless of accuracy. -/
 theorem resolve_zero_or_live (s : concrete_st α) (cands : List ℕ) :
     resolve s cands = 0 ∨ contains s (resolve s cands) = true := by
   induction cands with
@@ -527,9 +527,9 @@ theorem id_mono_merge (l a b : concrete_st α)
 #print axioms id_mono_doDel
 #print axioms id_mono_merge
 
-/-! ## VERDICT — the three ANALYSIS questions
+/-! ## VERDICT: the three ANALYSIS questions
 
-**(i) Does the keystone hold for this RGA — is `Inv` genuinely inductive under
+**(i) Does the keystone hold for this RGA: is `Inv` genuinely inductive under
 `do_`/`merge`?**
 
 Partly, and the partition is sharp:
@@ -542,13 +542,13 @@ Partly, and the partition is sharp:
   `Inv_merge` is closed, `sorry`-free, under the single extra premise
   `id_mono l`: `climb_aux_walk` proves that id-monotone anchors make `climb`'s
   fuel (`= the node id`) sufficient, and `betaf_start` shows the walk's start
-  condition for every survivor's birth-anchor is supplied *for free* by `wf l/a/b`
-  — no separate cross-branch anchor-compatibility premise is needed (a node new in
+  condition for every survivor's birth-anchor is supplied *for free* by `wf l/a/b`,
+  no separate cross-branch anchor-compatibility premise is needed (a node new in
   a branch is automatically a survivor, so the climb halts on it).  And `id_mono`
   is itself a reachable invariant of monotone allocation: `id_mono_init`,
   `id_mono_doIns` (under `mono_alloc`), `id_mono_doDel` (under `accurate`), and
   `id_mono_merge` are all closed.  So `RgaInv ∧ id_mono` is a reachable-state
-  invariant under `init_st`/`do_`/`merge`, and it discharges merge soundness — the
+  invariant under `init_st`/`do_`/`merge`, and it discharges merge soundness, the
   *merge* half requiring exactly the generation-time id-monotonicity.
 
 **(ii) Which conditioning is a state-invariant vs. an op-generation condition?**
@@ -557,7 +557,7 @@ Partly, and the partition is sharp:
   false` and `wf s`.  Both are inductive under `do_` (proved here).
 * *Op-generation conditions* (relate an op to the state it is applied to; need the
   execution model): `accurate o s` and `fresh_ts o s`.  These are NOT
-  state predicates and cannot be "preserved" — they are discharged at the moment
+  state predicates and cannot be "preserved", they are discharged at the moment
   an event is generated (the `apply` rule's premises), and appear here precisely
   as hypotheses of `Inv_doIns`/`Inv_doDel`.  This matches the blueprint's
   `applicable` (= `accurate ∧ fresh_ts`) vs. `Inv` (= the forest invariant) split.
@@ -574,9 +574,9 @@ falsified by deletes (the blueprint's §5.4 staleness risk), and is not needed.
 For the **`merge` layer: R2 holds once conditioned on monotone allocation.**  The
 blueprint (§5.4 R2) claims the forest invariant is "preserved under update and
 merge including Del-rehoming."  The *update* half is confirmed unconditionally;
-the *merge* half is **refuted from `wf` alone** by `merge_breaks_wf` — `climb`'s
+the *merge* half is **refuted from `wf` alone** by `merge_breaks_wf`, `climb`'s
 fixed fuel makes `wf`-preservation depend on monotone anchor ids, which `wf` does
-not supply and which `fresh_ts` does not even make a `do_`-invariant — but is
+not supply and which `fresh_ts` does not even make a `do_`-invariant, but is
 **recovered** under the generation-time discipline of monotone timestamp
 allocation (id-decreasing anchors), captured by `id_mono` + `mono_alloc`.  That
 obligation, the precise remaining obligation
@@ -584,7 +584,7 @@ for closing the RGA soundness composition, is **discharged**: `id_mono` is
 established as a genuine reachable-execution invariant (`id_mono_init`/
 `id_mono_doIns`/`id_mono_doDel`/`id_mono_merge`) and it closes `Inv_merge`.  The
 headline: **`RgaInv ∧ id_mono` is a reachable invariant under monotone
-allocation, and it discharges merge soundness for the tombstone-free RGA** — the
+allocation, and it discharges merge soundness for the tombstone-free RGA**, the
 answer to the conditioning question, with the merge half requiring precisely the
 generation-time id-monotonicity that `merge_breaks_wf` predicted.
 -/

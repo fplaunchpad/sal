@@ -1,4 +1,4 @@
-# benchmarks/ : embed RGA runtime vs production CRDT libraries (task #98)
+# benchmarks/ : embed RGA runtime vs production CRDT libraries
 
 Cross-system performance comparison of our shipped embed RGA runtime
 (`runtime/`, the unverified ESM transliteration of the Lean-verified embed
@@ -11,7 +11,7 @@ literature.
 
 | key | system | what is measured |
 | --- | --- | --- |
-| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container, task #111) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing; before #111 it copied the whole live-set Map per op), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
+| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
 | `yjs` | Yjs 13.6.31 | `Y.Text` |
 | `automerge` | @automerge/automerge 3.3.2 (wasm) | text field, one `Automerge.change` per char (the automerge-perf convention) |
 | `loro` | loro-crdt 1.13.7 (wasm) | `LoroText` |
@@ -71,10 +71,9 @@ matrix (embedded below).
    subtracted; sub-microsecond medians (Yjs, Loro, list-positions) carry
    that additive bias. For `sal` the op includes the adapter's
    position-to-id bookkeeping (an id-array splice) plus the datatype
-   `apply` (an O(log n) persistent-HAMT path copy since task #111; the
-   pre-#111 interface copied the whole live-set Map per op and dominated
-   every trace -- those numbers are kept below as the pre-HAMT interface
-   cost).
+   `apply` (an O(log n) persistent-HAMT path copy; a copied-Map container
+   would instead copy the whole live-set Map per op and dominate every
+   trace, the pre-HAMT interface cost reported below).
 2. **Save size**: bytes of each library's NATIVE serialization, measured
    (`Buffer.byteLength` on strings, `.length` on Uint8Array). What each
    save CONTAINS differs and is stated per row: Automerge `save` is the
@@ -114,8 +113,8 @@ Our shipped runtime stores ABSOLUTE chain coordinates: a record's
 coordinate is the full root-to-record delta chain under the flipped
 Elias-delta code, kept as a `'0'/'1'` JS string (1 byte per bit, and JS
 strings are 2-byte-capable; the in-heap cost is higher still). This is a
-KNOWN representation gap with a designed successor (the run table, task
-#73), now SHIPPED as a serializer (task #104, `runtime/src/serialize.js`).
+KNOWN representation gap with a designed successor (the run table),
+shipped as a serializer (`runtime/src/serialize.js`).
 The matrix therefore reports four clearly-labeled columns for us:
 
 1. **runtime-as-shipped (measured)**: `json-shipped` = the datatype's own
@@ -133,7 +132,7 @@ The matrix therefore reports four clearly-labeled columns for us:
    synced at the end. Compaction wall time and the order-preservation
    gate (re-read equals the expected text) are reported.
 3. **run-table serialized, SHIPPED (measured, shipped code)**:
-   `run-table-serialized` = the state re-encoded by the task #104
+   `run-table-serialized` = the state re-encoded by the run-table
    serializer (`runtime/src/serialize.js`), over the as-shipped state and
    over the settled-cut compacted state. It builds the canonical run table
    (maximal fusible chains, records addressed (run-id, offset)) and emits
@@ -145,7 +144,7 @@ The matrix therefore reports four clearly-labeled columns for us:
    at production save size (below Yjs update-v2, on par with Loro
    shallow-snapshot).
 4. **run-table PROJECTION (measured-in-model)**: the exact bit accounting
-   of `whiteboard/litmus/run_table_measure.py` (task #73) executed on the
+   of `whiteboard/litmus/run_table_measure.py` executed on the
    same trace via `tools/run_table_projection.py`;
    `projected bytes = ceil(order-metadata bits / 8) + UTF-8 text bytes`.
    The model charges per-record run-id + offset and per-entry headers; it
@@ -176,15 +175,15 @@ label saying so.
 
 ## The honest headline
 
-### The HAMT switch (task #111): the interface cost, removed
+### The persistent-HAMT state container
 
-The pre-#111 `apply` returned a fresh `Map` per op: an O(live-set) copy
-per keystroke, ~100% of the measured apply cost. Task #111 swapped the
-state container for a persistent HAMT (`runtime/src/pmap.js`, O(log n)
+The shipped `apply` uses a persistent HAMT (`runtime/src/pmap.js`, O(log n)
 path copy, structural sharing) with byte-identical observables (same
 reads, fingerprints, SHA content ids, serialized bytes; both suites and
-all gates unchanged). Old numbers are kept as the PRE-HAMT INTERFACE
-COST; the matrix below carries the HAMT numbers.
+all gates pass). A copied-`Map` container instead returns a fresh `Map`
+per op, an O(live-set) copy per keystroke that is ~100% of the measured
+apply cost; the matrix below reports both, as the PRE-HAMT INTERFACE
+COST against the HAMT numbers.
 
 | trace | apply median pre-HAMT | apply median HAMT | speedup | total pre-HAMT | total HAMT |
 | --- | --- | --- | --- | --- | --- |
@@ -195,7 +194,7 @@ COST; the matrix below carries the HAMT numbers.
 
 Concurrent sessions (same seed): local op mean 25.65 -> 2.44 us (freq),
 62.80 -> 16.41 us (bulk); sync median 73.46 -> 107.4 us (freq), 730.92 ->
-753.5 us (bulk) -- merge3 is now a structural-sharing delta merge from
+753.5 us (bulk) -- merge3 is a structural-sharing delta merge from
 one parent, but per-id lookups are O(log n) HAMT walks instead of O(1)
 Map hits, and the remaining sync time is dominated by DAG bookkeeping
 (LCA + frontier ancestry walks), not the datatype. Save bytes are
@@ -203,13 +202,13 @@ byte-identical in every variant, every workload.
 
 Where we lose, as shipped:
 
-* **Per-char apply (HISTORICAL, pre-HAMT).** Median 347-364 us on
-  ~21k-char docs, 1.66 ms at 57k chars, 3.16 ms at 105k chars: the
-  pre-#111 `apply` copied the live-set Map on every op, so cost grew
-  linearly with document size -- ~15-120x slower than Automerge and 3 to 4
+* **Per-char apply.** With the copied-Map container, `apply` copies the
+  live-set Map on every op, so cost grows linearly with document size
+  (median 347-364 us on ~21k-char docs, 1.66 ms at 57k chars, 3.16 ms at
+  105k chars; ~15-120x slower than Automerge and 3 to 4
   orders of magnitude slower than Yjs / Loro / list-positions; 713 s
-  whole-trace replay on automerge-paper. NOW CLOSED by the HAMT (table
-  above): 0.38-4.08 us medians, within ~6x of Yjs/Loro (0.5-1.7 us, with
+  whole-trace replay on automerge-paper). The persistent HAMT closes this
+  (table above): 0.38-4.08 us medians, within ~6x of Yjs/Loro (0.5-1.7 us, with
   ~30-60 ns of the gap being timer overhead) and faster than Automerge
   (24-27 us) on every trace; whole-trace replay 1.9 s on automerge-paper
   vs 0.2 s (Loro), 0.67 s (Yjs), 7.1 s (Automerge). The residue at 100k+
@@ -233,10 +232,10 @@ Where we are competitive or win, as shipped:
   median (freq preset), 754 us (bulk), Yjs-level (90 us / 1.13 ms) and
   17-24x faster than Automerge (1.8 / 18.3 ms) and Loro (6.3 / 17.1 ms)
   in these sessions. Only list-positions' raw op-log apply is comparable
-  (34 / 626 us). Caveat: small docs (1.8k / 3.6k chars); since #111 the
+  (34 / 626 us). Caveat: small docs (1.8k / 3.6k chars); the
   merge is a structural-sharing delta from one parent (it touches the ids
   the other side added or deleted, plus two O(n log n) membership scans),
-  so large-doc syncs no longer pay a full live-set rebuild; the scans
+  so large-doc syncs do not pay a full live-set rebuild; the scans
   still keep it short of O(delta).
 * **Storage on delete.** Our save never grows on delete, it shrinks by
   construction (delete = pure record removal): measured 20-46 KB shrink
@@ -245,10 +244,10 @@ Where we are competitive or win, as shipped:
 * **Resident memory.** Retained heap after full replay is 4-22 MB: the
   absolute coordinates share prefixes structurally (V8 cons strings along
   the anchor chain), so the in-heap state is compact and the bit cost
-  only materializes at serialization. The HAMT swap cut the allocation
-  churn ~3x (sampled peak heap 132 MB on the automerge-paper replay, was
-  433 MB pre-HAMT; GC-noise caveat applies) at the price of a few MB of
-  retained trie nodes (12 -> 22 MB on that trace).
+  only materializes at serialization. The persistent HAMT keeps allocation
+  churn ~3x lower than the copied-Map container (sampled peak heap 132 MB on
+  the automerge-paper replay vs 433 MB; GC-noise caveat applies) at the price
+  of a few MB of retained trie nodes (12 -> 22 MB on that trace).
 
 The Automerge-grows-on-delete cell (reproduced): across the five delete
 phases Automerge's save grew by +3383, +3327, +3383, +3370, +3430 bytes
@@ -258,10 +257,10 @@ not grow, but Yjs cannot shed tombstone structure (165.4 KB v1 / 45.9 KB
 v2 for the same 1200 live chars, vs our compacted binary-estimate 7.9 KB;
 Loro shallow-snapshot 3.9 KB is the smallest).
 
-Where we win, once the run table is shipped:
+Where we win with the run-table serializer:
 
-* **Save size, run-table serialized (SHIPPED, task #104).** The task #73
-  run table is now a real encoder/decoder (`runtime/src/serialize.js`).
+* **Save size, run-table serialized (SHIPPED).** The
+  run table is a real encoder/decoder (`runtime/src/serialize.js`).
   Over the settled-cut compacted state it lands at **1.1-1.3 bytes/char**
   (24,126 / 22,438 / 72,848 / 120,276 B on the four traces), and 1.2-1.6
   B/char over the raw as-shipped state. That is an order of magnitude below
@@ -273,13 +272,13 @@ Where we win, once the run table is shipped:
   PBT. This closes the absolute-chain save-size gap: the metadata is
   ~1 bit/char (few long fusible runs after fusion) plus 1 byte/char text.
 
-The projection realized. The run-table PROJECTION column (22.3-23.9
-bits/char of order metadata, 3.8-4.0 B/char with text) is now a shipped
+The run-table PROJECTION column (22.3-23.9
+bits/char of order metadata, 3.8-4.0 B/char with text) is a shipped
 measurement: `accountingBits(state)` reproduces `run_table_measure.py`'s
 totals bit-for-bit on every trace (raw and composed). The SHIPPED bytes sit
 BELOW the projection because the model charges recoverable positional
 fields (per-record run-id + offset, derivable parent-offset) that the real
-encoder drops -- exactly the section-9.1 saving. Neither number is wrong:
+encoder drops. Neither number is wrong:
 shipped_metadata_bits == projection_total - rec_id - rec_off - hdr_poff, an
 identity the tests assert.
 
@@ -309,13 +308,13 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 | --- | --- | --- | --- | --- | --- |
 | ours (embed RGA, as shipped) | json-shipped | 243276637 | 2320.2 | 285.8 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 30668998 | 292.5 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | run-table-serialized | 130300 | 1.2 | 1718.6 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | run-table-serialized | 130300 | 1.2 | 1718.6 ms | live state only; SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
 | ours (embed RGA, as shipped) | json-shipped+compacted | 135792070 | 1295.1 | 137.6 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 17233096 | 164.4 | -- | packed-bits estimate of the compacted state |
-| ours (embed RGA, as shipped) | run-table-serialized+compacted | 120276 | 1.1 | 1129.7 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
-| ours (run-table serialized, SHIPPED) | run-table-serialized | 130300 | 1.2 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 120276 | 1.1 | 1129.7 ms | SHIPPED run-table binary over the compacted state (lossless) |
+| ours (run-table serialized, SHIPPED) | run-table-serialized | 130300 | 1.2 | -- | live state only; SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 120276 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 4.0 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
-| ours (PROJECTION, run table) | run-table composed (model) | 418298 | 4.0 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 23.9 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
+| ours (PROJECTION, run table) | run-table composed (model) | 418298 | 4.0 | -- | measured-in-model (run-table accounting, gates_ok=true); order metadata 23.9 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
 | Yjs | update-v1 | 311038 | 3.0 | 5.2 ms | state incl. tombstone structure, deleted content dropped; cannot drop tombstone ids |
 | Yjs | update-v2 | 159929 | 1.5 | 2.7 ms | same content as v1, run-length compressed encoding |
 | Automerge | save-full-history | 129126 | 1.2 | 19.1 ms | FULL change history (compressed); no state-only save exists |
@@ -341,13 +340,13 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 | --- | --- | --- | --- | --- | --- |
 | ours (embed RGA, as shipped) | json-shipped | 52938278 | 2503.2 | 53.6 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 6672560 | 315.5 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | run-table-serialized | 32782 | 1.6 | 456.2 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | run-table-serialized | 32782 | 1.6 | 456.2 ms | live state only; SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
 | ours (embed RGA, as shipped) | json-shipped+compacted | 31415483 | 1485.5 | 27.7 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 3982162 | 188.3 | -- | packed-bits estimate of the compacted state |
-| ours (embed RGA, as shipped) | run-table-serialized+compacted | 22438 | 1.1 | 402.7 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
-| ours (run-table serialized, SHIPPED) | run-table-serialized | 32782 | 1.6 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 22438 | 1.1 | 402.7 ms | SHIPPED run-table binary over the compacted state (lossless) |
+| ours (run-table serialized, SHIPPED) | run-table-serialized | 32782 | 1.6 | -- | live state only; SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 22438 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 3.8 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
-| ours (PROJECTION, run table) | run-table composed (model) | 80993 | 3.8 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 22.6 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
+| ours (PROJECTION, run table) | run-table composed (model) | 80993 | 3.8 | -- | measured-in-model (run-table accounting, gates_ok=true); order metadata 22.6 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
 | Yjs | update-v1 | 93322 | 4.4 | 1.9 ms | state incl. tombstone structure, deleted content dropped; cannot drop tombstone ids |
 | Yjs | update-v2 | 42997 | 2.0 | 1.9 ms | same content as v1, run-length compressed encoding |
 | Automerge | save-full-history | 25724 | 1.2 | 4.8 ms | FULL change history (compressed); no state-only save exists |
@@ -373,13 +372,13 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 | --- | --- | --- | --- | --- | --- |
 | ours (embed RGA, as shipped) | json-shipped | 34971320 | 1637.1 | 39.1 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 4427040 | 207.2 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | run-table-serialized | 31457 | 1.5 | 275.3 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | run-table-serialized | 31457 | 1.5 | 275.3 ms | live state only; SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
 | ours (embed RGA, as shipped) | json-shipped+compacted | 18607535 | 871.1 | 19.7 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 2381219 | 111.5 | -- | packed-bits estimate of the compacted state |
-| ours (embed RGA, as shipped) | run-table-serialized+compacted | 24126 | 1.1 | 219.4 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
-| ours (run-table serialized, SHIPPED) | run-table-serialized | 31457 | 1.5 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 24126 | 1.1 | 219.4 ms | SHIPPED run-table binary over the compacted state (lossless) |
+| ours (run-table serialized, SHIPPED) | run-table-serialized | 31457 | 1.5 | -- | live state only; SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 24126 | 1.1 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.1 B/char (< the model's 3.8 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
-| ours (PROJECTION, run table) | run-table composed (model) | 80905 | 3.8 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 22.3 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
+| ours (PROJECTION, run table) | run-table composed (model) | 80905 | 3.8 | -- | measured-in-model (run-table accounting, gates_ok=true); order metadata 22.3 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
 | Yjs | update-v1 | 81480 | 3.8 | 1.8 ms | state incl. tombstone structure, deleted content dropped; cannot drop tombstone ids |
 | Yjs | update-v2 | 40889 | 1.9 | 1.6 ms | same content as v1, run-length compressed encoding |
 | Automerge | save-full-history | 27423 | 1.3 | 4.3 ms | FULL change history (compressed); no state-only save exists |
@@ -405,13 +404,13 @@ Every cell below was produced by a run in this repo (results/*.json); nothing fr
 | --- | --- | --- | --- | --- | --- |
 | ours (embed RGA, as shipped) | json-shipped | 169774875 | 2990.6 | 183.2 ms | live state only; coord bit-strings at 1 byte/bit (shipped) |
 | ours (embed RGA, as shipped) | binary-estimate (est.) | 21362422 | 376.3 | -- | live state only; packed coord bits + varint ids (computed estimate, no shipped encoder) |
-| ours (embed RGA, as shipped) | run-table-serialized | 88120 | 1.6 | 1059.6 ms | live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
+| ours (embed RGA, as shipped) | run-table-serialized | 88120 | 1.6 | 1059.6 ms | live state only; SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read |
 | ours (embed RGA, as shipped) | json-shipped+compacted | 52956992 | 932.9 | 55.0 ms | live state after settled-cut compaction (measured, shipped code) |
 | ours (embed RGA, as shipped) | binary-estimate+compacted (est.) | 6759513 | 119.1 | -- | packed-bits estimate of the compacted state |
-| ours (embed RGA, as shipped) | run-table-serialized+compacted | 72848 | 1.3 | 448.2 ms | task #104 SHIPPED run-table binary over the compacted state (lossless) |
-| ours (run-table serialized, SHIPPED) | run-table-serialized | 88120 | 1.6 | -- | live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
+| ours (embed RGA, as shipped) | run-table-serialized+compacted | 72848 | 1.3 | 448.2 ms | SHIPPED run-table binary over the compacted state (lossless) |
+| ours (run-table serialized, SHIPPED) | run-table-serialized | 88120 | 1.6 | -- | live state only; SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection |
 | ours (run-table serialized, SHIPPED) | run-table-serialized+compacted | 72848 | 1.3 | -- | SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at 1.3 B/char (< the model's 3.9 B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops) |
-| ours (PROJECTION, run table) | run-table composed (model) | 221141 | 3.9 | -- | measured-in-model (task #73 accounting, gates_ok=true); order metadata 23.2 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
+| ours (PROJECTION, run table) | run-table composed (model) | 221141 | 3.9 | -- | measured-in-model (run-table accounting, gates_ok=true); order metadata 23.2 bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer |
 | Yjs | update-v1 | 338289 | 6.0 | 4.8 ms | state incl. tombstone structure, deleted content dropped; cannot drop tombstone ids |
 | Yjs | update-v2 | 135225 | 2.4 | 2.8 ms | same content as v1, run-length compressed encoding |
 | Automerge | save-full-history | 205250 | 3.6 | 25.7 ms | FULL change history (compressed); no state-only save exists |
@@ -481,23 +480,23 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
 
 ## Owed / follow-ons
 
-* DONE (task #104): a shipped run-table serializer, column 3 above
-  (`runtime/src/serialize.js`, `tools/run_table_shipped.mjs`). Turned the
-  projection into measurement; lands at 1.1-1.3 B/char compacted, at
-  production save size. Remaining #104 items, explicitly OUT OF SCOPE this
-  round: (a) a BATCHED-APPLY path (the mutable/transient fast path below),
-  and (b) a WIRE FORMAT -- the serializer is a save/load (whole-state)
-  encoder; a delta/op wire format for sync is separate (the concurrent
-  payload column now reports the runtime's JSON wire-delta bytes via
+* The run-table serializer is shipped as column 3 above
+  (`runtime/src/serialize.js`, `tools/run_table_shipped.mjs`), turning the
+  projection into measurement and landing at 1.1-1.3 B/char compacted, at
+  production save size. Two related items remain out of scope here: (a) a
+  BATCHED-APPLY path (the mutable/transient fast path below),
+  and (b) a WIRE FORMAT: the serializer is a save/load (whole-state)
+  encoder, and a delta/op wire format for sync is separate (the concurrent
+  payload column reports the runtime's JSON wire-delta bytes via
   `sharedDelta`, unoptimized JSON rather than a designed binary format).
-* DONE (task #111): the mutable/batched apply follow-on. The O(live-set)
-  Map copy per op was inherited from the state container, not the order
-  machinery; the persistent HAMT (`runtime/src/pmap.js`) moved per-char
+* The mutable/batched apply follow-on is done. The O(live-set)
+  Map copy per op comes from the state container, not the order
+  machinery; the persistent HAMT (`runtime/src/pmap.js`) moves per-char
   apply into the microsecond class (0.4-4.1 us medians, table above)
-  without touching the semantics -- observables are byte-identical. Each
-  datatype also gained `applyBatch(state, ops)` (one transient pass,
+  without touching the semantics, and observables are byte-identical. Each
+  datatype also provides `applyBatch(state, ops)` (one transient pass,
   proven equal to folding `apply` in `runtime/test/applybatch.test.js`);
-  the DAG granularity is unchanged (one op per commit).
+  the DAG granularity is one op per commit.
 * Concurrent sessions at realistic document sizes (the merge numbers here
   are small-doc), and a binary wire format for our sync (the payload
   column is unoptimized JSON delta bytes).
@@ -512,14 +511,14 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   wires the SHIPPED run-table serializer (`saveRunTable`, column 3).
 * `lib/traces.mjs`, `lib/bench.mjs`: trace loading/flattening, timing and
   heap helpers.
-* `../runtime/src/pmap.js`: the persistent HAMT state container (task
-  #111) behind the `sal` apply/merge numbers; unit-tested by
+* `../runtime/src/pmap.js`: the persistent HAMT state container
+  behind the `sal` apply/merge numbers; unit-tested by
   `../runtime/test/pmap.test.js`.
-* `../runtime/src/serialize.js`: the SHIPPED run-table serializer
-  (task #104): `encode`/`decode`, `buildRunTable`, `accountingBits` (the
-  task #73 model, bit-for-bit), `tableWalk`. Tested by
+* `../runtime/src/serialize.js`: the SHIPPED run-table serializer:
+  `encode`/`decode`, `buildRunTable`, `accountingBits` (the
+  run-table accounting, bit-for-bit), `tableWalk`. Tested by
   `../runtime/test/serialize.test.js`.
-* `tools/run_table_projection.py`: runs the task #73 accounting on the
+* `tools/run_table_projection.py`: runs the run-table accounting on the
   same traces, writes `results/projection.json`.
 * `tools/run_table_shipped.mjs`: runs the SHIPPED serializer on the same
   traces' final states (fast mutable replay; byte-identical to seq.mjs),

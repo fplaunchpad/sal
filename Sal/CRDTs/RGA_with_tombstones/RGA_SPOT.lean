@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # RGA (CRDT) — SPOTs
+/-! # RGA (CRDT): SPOTs
 
 CRDT-side mirror of `Sal/MRDTs/RGA_Rehoming/RGA_SPOT.lean`.
 Same scenarios; the CRDT carries `(chars, afters, deleted)` map
@@ -17,7 +17,7 @@ keyed by `ℕ`), so the discharge of `after_of` facts unfolds to
 
 namespace RGA_CRDT_SPOT
 
-/-- **SPOT 1 — Insert tombstone visibility.**
+/-- **SPOT 1: Insert tombstone visibility.**
 
 A single Insert at `(1, 0)` after sentinel `(0, 0)` makes the new
 OpId visible. -/
@@ -26,7 +26,7 @@ example :
     visible σ (1, 0) = true := by
   simp [visible, do_, init_st, mysel_d]
 
-/-- **SPOT 2 — causal order across an Insert chain.**
+/-- **SPOT 2: causal order across an Insert chain.**
 
 `σ₀` = Insert 'A' at (1,0) after sentinel (0,0); `σ` = `σ₀` then
 Insert 'B' at (2,0) after (1,0). The afters_reach chain
@@ -45,7 +45,7 @@ example :
     afters_reach.step h_ba (afters_reach.step h_a0 (afters_reach.refl _))
   exact causal_order_visible_lt σ (2, 0) (0, 0) h_reach (by decide)
 
-/-- **SPOT 3 — Remove tombstones its target.**
+/-- **SPOT 3: Remove tombstones its target.**
 
 After Inserting 'A' at (1,0) and Removing it, (1,0) is no longer
 visible. Direct application of `remove_tombstones_target`. -/
@@ -56,11 +56,11 @@ example :
     visible σ (1, 0) = false :=
   remove_tombstones_target _ 2 0 (1, 0)
 
-/-- **SPOT 4 — concurrent Inserts at same anchor get deterministic order.**
+/-- **SPOT 4: concurrent Inserts at same anchor get deterministic order.**
 
 Two replicas concurrently insert 'A' at (1,0) and 'B' at (2,1)
 after the sentinel. After CRDT merge of both branches,
-`visible_lt σ (2,1) (1,0)` holds — `opid_max (2,1) (1,0) = (2,1)`
+`visible_lt σ (2,1) (1,0)` holds, `opid_max (2,1) (1,0) = (2,1)`
 by lex max on (ts, rid), so (2,1) comes first. -/
 example :
     let σ_a : concrete_st := do_ init_st (1, 0, app_op_t.Insert 65 (0, 0))

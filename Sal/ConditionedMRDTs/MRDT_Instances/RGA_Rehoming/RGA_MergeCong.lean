@@ -11,8 +11,8 @@ two `≈`-equal empty-domain LCAs drive the climb of a surviving *branch-new* no
 (whose branch anchor is dead, so `wf a` fails) to different anchors, because the
 climb reads `anc l` at an off-`domain l` node where `≈` is silent.
 
-This file proves the `l`-argument congruence **on the reachable subfamily** —
-where every input is a `wf` forest — and composes it with the two branch
+This file proves the `l`-argument congruence **on the reachable subfamily**,
+where every input is a `wf` forest, and composes it with the two branch
 congruences into the full ternary `≈`-congruence matching the framework's
 `GenericEqQuotient.CongVC.mergeL_congr` shape.
 
@@ -21,12 +21,12 @@ congruences into the full ternary `≈`-congruence matching the framework's
 `anc (merge l a b) k = climb (anc l) (survivors l a b) (birthAnc l a b k)`.  With
 `eq l l'`, the survivor set (`domain`-only) and the birth-anchor (read on live
 `l` where `≈` fixes it) coincide, so the two merges' anchors differ only through
-`anc l` vs `anc l'`.  These agree on every **live-in-`l`** node (`eq l l'`), and —
-this is where `wf l` is load-bearing — the climb, started at a birth-anchor that
+`anc l` vs `anc l'`.  These agree on every **live-in-`l`** node (`eq l l'`), and,
+this is where `wf l` is load-bearing, the climb, started at a birth-anchor that
 `betaf_start` places in `{0} ∪ survivors ∪ (live l)` (needs `wf a`, `wf b`), only
 ever walks `anc l` through live-in-`l` nodes (`wf l` keeps `anc l` inside the live
-forest).  So the two climbs march in lockstep and coincide.  `id_mono l` — the
-fuel-sufficiency discipline that `Inv_merge` needs — is **not** required here:
+forest).  So the two climbs march in lockstep and coincide.  `id_mono l`, the
+fuel-sufficiency discipline that `Inv_merge` needs, is **not** required here:
 matched fuel makes the two climbs halt together regardless of sufficiency.
 -/
 
@@ -146,7 +146,7 @@ Composes the `l`-step (§2, conditioned) with the two unconditional branch steps
 `GenericEqQuotient.CongVC.mergeL_congr`, with `Inv = wf ∧ contains·0 = false ∧
 id_mono` (the RGA's `qInv`).  Only the `wf` conjuncts of `l`, `a`, `b` are
 consumed; `l'`'s `Inv`, both `contains·0` and all three `id_mono`s are carried for
-signature shape but not used — the congruence lives on the forest structure,
+signature shape but not used, the congruence lives on the forest structure,
 transported from `l` to `l'` by `≈`. -/
 theorem merge_eq_congr_inv (l l' a a' b b' : concrete_st α)
     (Il : wf l ∧ contains l 0 = false ∧ id_mono l)

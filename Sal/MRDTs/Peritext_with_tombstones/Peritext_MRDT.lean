@@ -47,7 +47,7 @@ imports this file. Split for iteration speed.
 
 @[simp] abbrev OpId := ℕ × ℕ
 
-/-- Mark op payload — see `Peritext_CRDT` for field meaning. -/
+/-- Mark op payload, see `Peritext_CRDT` for field meaning. -/
 structure MarkOp where
   opId : OpId
   startId : OpId
@@ -69,9 +69,9 @@ deriving DecidableEq
 abbrev CharRec := OpId × OpId × ℕ
 
 /-- Σ = (chars, removed, marks). Three grow-only components:
-  * `chars`   : `set CharRec` — every `Insert` stakes a `(id, after, ch)`.
-  * `removed` : `set OpId`    — tombstones on char ids.
-  * `marks`   : `set AnchorAttachment` — one entry per (mark op, anchor
+  * `chars`   : `set CharRec`, every `Insert` stakes a `(id, after, ch)`.
+  * `removed` : `set OpId`, tombstones on char ids.
+  * `marks`   : `set AnchorAttachment`, one entry per (mark op, anchor
                 side); flat-set representation. -/
 @[simp] abbrev concrete_st :=
   set CharRec × set OpId × set AnchorAttachment
@@ -88,10 +88,10 @@ def eq (a b : concrete_st) :=
   equal (Prod.snd (Prod.snd a)) (Prod.snd (Prod.snd b))
 
 /-- Four ops:
-  * `Insert ch after`           — add char `ch` right after `after`.
-  * `Remove target`             — tombstone char `target`.
-  * `AddMark s sSd e eSd mt`    — mark range `(s, sSd)…(e, eSd)` as `mt`.
-  * `RemoveMark s sSd e eSd mt` — unmark the same range. -/
+  * `Insert ch after`: add char `ch` right after `after`.
+  * `Remove target`: tombstone char `target`.
+  * `AddMark s sSd e eSd mt`: mark range `(s, sSd)…(e, eSd)` as `mt`.
+  * `RemoveMark s sSd e eSd mt`: unmark the same range. -/
 inductive app_op_t : Type where
 | Insert (ch : ℕ) (after : OpId)
 | Remove (target : OpId)

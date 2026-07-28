@@ -4,20 +4,20 @@ import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
 /-!
-# The embedded-chain RGA as a conditioned MRDT instance — §1, the datatype
+# The embedded-chain RGA as a conditioned MRDT instance: §1, the datatype
 
 This instance is built as a **mergeable queue**, not via the RGA_TF 55-file
 chain. The queue's `JoinLemma3At` hook requires canonical states to be
 *unique per event set* (`Shesha_Join_Refuted` shows the hook is false
 without it; the queue was immune because its canonical states are unique).
-The embedded-chain RGA has exactly that property — coordinates are birth
+The embedded-chain RGA has exactly that property, coordinates are birth
 constants and the display is their sort, so the state is a function of the
-event set (`sal-mrdts.tex` Thm 4; `q_fold_canon`'s analogue) — which is why
+event set (`sal-mrdts.tex` Thm 4; `q_fold_canon`'s analogue), which is why
 this instance exists at all.
 
 The framework needs `DecidableEq State`, so the instance state is the
-**canonical sorted association list** — the document itself, records
-`(id, element, coordinate)` strictly descending by key — rather than the
+**canonical sorted association list**, the document itself, records
+`(id, element, coordinate)` strictly descending by key, rather than the
 function-based map of `Sal/MRDTs/RGA_Embed/RGA_Embed_MRDT.lean`. The two
 present the same datatype; the kernel theorems (commutation, stability,
 chain-lex) live on the map model, and the fold-canonicity theorem of this
@@ -53,7 +53,7 @@ deriving DecidableEq
 /-- A record: `(id, element, absolute coordinate)`. -/
 abbrev ERec (α : Type := ℕ) : Type := ℕ × α × List Bool
 
-/-- State: the document — records strictly descending by key. Canonical
+/-- State: the document, records strictly descending by key. Canonical
 single-list form (sortedness is the `Inv`-grade invariant, established by
 fold-canonicity in §3, not baked into the type). -/
 abbrev EState (α : Type := ℕ) : Type := List (ERec α)
@@ -62,7 +62,7 @@ variable {α : Type} [DecidableEq α] [Inhabited α]
 
 def eIds (s : EState α) : List ℕ := s.map Prod.fst
 
-/-- The coordinate an insert writes — a function of the op alone (the carried
+/-- The coordinate an insert writes, a function of the op alone (the carried
 prefix + the delta codeword; `sal-mrdts.tex` §3: the prefix is for the proof). -/
 def eCoord (Γ : OrderedPrefixCode) (o : Op (EOp α)) : List Bool :=
   match o.2.2 with
@@ -88,7 +88,7 @@ def eUpdate (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) : EState 
   | .del x => s.filter (fun r => decide (r.1 ≠ x))
 
 /-- Merge of two sorted lists, descending by key (ties cannot occur between
-distinct ids on chain-generated states — `coordOf_inj`). -/
+distinct ids on chain-generated states, `coordOf_inj`). -/
 def eMerge2 : EState α → EState α → EState α
   | [], ys => ys
   | xs, [] => xs
@@ -108,7 +108,7 @@ def eMergeL (l a b : EState α) : EState α :=
 
 /-- The embedded-chain RGA, parametric in the code (instantiate at
 `binaryCode` for the entropy-optimal artifact, `unaryCode` for hand
-computation). `Inv`/`applicable` are trivially true — as in the queue, the
+computation). `Inv`/`applicable` are trivially true, as in the queue, the
 honesty discipline lives in the configuration layer (§5/§8), not the
 signature. -/
 def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
@@ -171,7 +171,7 @@ characterization. -/
 
 open Sal.EmbedRGA (keyLt_trans keyLt_asymm keyLt_total keyLt_irrefl)
 
-/-- Strictly descending by key — the canonical form. -/
+/-- Strictly descending by key, the canonical form. -/
 def ESorted (s : EState α) : Prop :=
   s.Pairwise (fun r r' => keyLt (key r'.2.2) (key r.2.2) = true)
 
@@ -324,7 +324,7 @@ theorem eMerge2_sorted : ∀ {as bs : EState α}, ESorted as → ESorted bs →
           exact keyLt_trans (ha z hz'') hab
       · exact hb z hz'
 
-/-- The merge of canonical inputs is canonical (sorted), given no key ties —
+/-- The merge of canonical inputs is canonical (sorted), given no key ties,
 supplied on chain-generated states by unique decodability. -/
 theorem eMergeL_sorted {l a b : EState α}
     (ha : ESorted a) (hb : ESorted b)
@@ -343,7 +343,7 @@ theorem eMergeL_sorted {l a b : EState α}
 /-! ## §3  Well-formed enumerations and fold-canonicity
 
 `e_fold_canon`: any two well-formed enumerations of one event set fold to
-the **same** state — the mechanized "state is a function of the event set"
+the **same** state, the mechanized "state is a function of the event set"
 (`sal-mrdts.tex` Thm 4), by `esorted_ext` + a fold membership
 characterization. No explicit canonical-list formula is needed. -/
 
@@ -402,7 +402,7 @@ theorem eDels_append (ρ σ : List (Op (EOp α))) :
 
 /-- Well-formed enumerations: insert ids are unique, nothing is deleted
 before its insert, and distinct inserts mint distinct keys (supplied on
-honest histories by chain-generation + unique decodability — §5). -/
+honest histories by chain-generation + unique decodability, §5). -/
 structure EWf (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : Prop where
   ins_nodup : (eInsIds ρ).Nodup
   del_late : ∀ σ o τ, ρ = σ ++ o :: τ → eIsIns o = true → o.1 ∉ eDels σ
@@ -508,7 +508,7 @@ theorem e_fold_sorted (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
 
 /-- **The fold membership characterization**: under well-formedness a record
 is in the fold iff its insert is in the enumeration and its id is never
-deleted — an ORDER-FREE description. -/
+deleted, an ORDER-FREE description. -/
 theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
     EWf Γ ρ → ∀ (r : ERec α),
     (r ∈ eFold Γ ρ ↔
@@ -581,7 +581,7 @@ theorem e_fold_mem (Γ : OrderedPrefixCode) : ∀ {ρ : List (Op (EOp α))},
 
 /-- **Fold-canonicity** (`sal-mrdts.tex` Thm 4, mechanized): well-formed
 enumerations of one event set fold to the SAME state. The state is a
-function of the event set — the property `Shesha_Join_Refuted` shows the
+function of the event set, the property `Shesha_Join_Refuted` shows the
 join hook cannot live without, and the reason this instance exists. -/
 theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op (EOp α))}
     (hwf : EWf Γ ρ) (hwf' : EWf Γ ρ')
@@ -605,7 +605,7 @@ theorem e_fold_canon (Γ : OrderedPrefixCode) {ρ ρ' : List (Op (EOp α))}
 `EHonestCore` is the embed analogue of the queue's honesty: every delete
 names an id its issuer had observed (a `vis`-prior insert), and inserts are
 chain-generated (the mint is a positive birth chain's coordinate whose
-deltas telescope to the id — what an honest replica's `accurate` generation
+deltas telescope to the id, what an honest replica's `accurate` generation
 produces, §8). Its three consequences are exactly `EWf`'s three fields. -/
 
 open Sal.EmbedRGA (PosChain coordOf coordOf_inj coordOf_append key_inj)
@@ -661,7 +661,7 @@ theorem e_del_ins_mem {Γ : OrderedPrefixCode}
   exact ⟨a, hcl a d hvis hncomm hd, hains, hax, hvis⟩
 
 /-- **A `loOn`-respecting enumeration of a closed honest set is
-well-formed** — the bridge from the configuration layer to `EWf`, one
+well-formed**, the bridge from the configuration layer to `EWf`, one
 honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 unique decodability give `keys_inj`. -/
@@ -722,7 +722,7 @@ theorem e_wf_of_enum {Γ : OrderedPrefixCode}
 /-! ## §6a  The survival algebra
 
 The record-level membership of the ternary merge, characterized order-free
-against the union event set — the mathematical core of the Join. §6b turns
+against the union event set, the mathematical core of the Join. §6b turns
 it into `JoinLemma3At` by exhibiting the witness enumeration. -/
 
 theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op (EOp α))}
@@ -762,7 +762,7 @@ theorem e_keys_inj_events {Γ : OrderedPrefixCode}
 /-- **The merge membership characterization.** At a join site (three
 canonical enumerations over an honest configuration), a record is in the
 ternary merge iff its insert is somewhere in the union and its id is deleted
-nowhere in the union — the union's order-free membership. OR-set survival,
+nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
 theorem e_mergeL_mem {Γ : OrderedPrefixCode}
@@ -894,12 +894,12 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
         exact ⟨hnot hp₀ hwf₀ (fun a ha => hin₁ a ha.1) (fun a ha => ha.1),
                hnot hp₁ hwf₁ hin₁ (fun a ha => ha)⟩
 
-/-! ## §6b  The Join — the merge is its own linearization witness
+/-! ## §6b  The Join: the merge is its own linearization witness
 
 Witness enumeration for the union: the LCA's enumeration, then branch one's
 delta (in branch order), then branch two's news. Its `respects` obligation
-falls to CLOSURE — a `loOn`-later event sitting in an earlier block would
-have been pulled into the earlier event set — and `loOn` is event-set
+falls to CLOSURE, a `loOn`-later event sitting in an earlier block would
+have been pulled into the earlier event set, and `loOn` is event-set
 independent under `rc = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
@@ -1088,7 +1088,7 @@ theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     exact ho
 
 /-- **Honest reachability**: LTS reachability where every step is taken from
-a configuration with an honest history — instantiating the generic
+a configuration with an honest history, instantiating the generic
 `HonestReach`, exactly as the mergeable queue does. -/
 def EReach (Γ : OrderedPrefixCode) : Configuration (E Γ α) → Prop :=
   HonestReach (E Γ α) (EHonest Γ) trivial
@@ -1101,7 +1101,7 @@ theorem e_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 /-- **The embedded-chain RGA is RA-linearizable, per version, at every
 honestly reachable configuration**: every version the store registers is the
 fold of a linearization of its event set that respects delivery order.
-Parametric in the code — instantiate `Γ := binaryCode` for the
+Parametric in the code, instantiate `Γ := binaryCode` for the
 entropy-optimal artifact. -/
 theorem embed_ra_linearizable3 {Γ : OrderedPrefixCode}
     {C : Configuration (E Γ α)} (hReach : EReach Γ C) :
@@ -1115,7 +1115,7 @@ theorem embed_ra_linearizable3 {Γ : OrderedPrefixCode}
 What a well-behaved replica checks before issuing an op at the state it
 sees. Both `EHonest` components are consequences: the delete half exactly as
 the queue (fold provenance is unconditioned), the chain half by building the
-global chain assignment by strong induction on ids — anchors have smaller
+global chain assignment by strong induction on ids, anchors have smaller
 timestamps, and the anchor's record in ANY fold of the issuer's past is
 op-determined, so the carried prefix is forced to be the anchor's chain's
 coordinate. -/
@@ -1198,8 +1198,8 @@ theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
           omega
 
 /-- **The `applicable` discipline discharges honesty.** If every op was
-applicable at SOME fold of its issuer's causal past — the issuer's own
-materialized state is such a fold — then the history is honest: a delete's
+applicable at SOME fold of its issuer's causal past, the issuer's own
+materialized state is such a fold, then the history is honest: a delete's
 target can only have entered that fold through a `vis`-prior insert, and the
 carried prefixes are forced to be birth-chain coordinates. The embed
 analogue of the queue's §8 and of the RGA's applicable-delivery layer. -/
@@ -1246,7 +1246,7 @@ theorem eHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (E Γ �
 /-! ## §9  Intent theorems at the instance
 
 The instance state IS the document (a sorted list), so the display-stability
-contract becomes sublist preservation — three short lemmas. A delete never
+contract becomes sublist preservation, three short lemmas. A delete never
 reorders survivors (the clause the proved flat RGA violates); an insert
 never reorders the existing document; a merge displays each branch's
 survivors in that branch's own order. No co-displayed pair ever flips. -/
@@ -1308,7 +1308,7 @@ theorem eMerge2_sublist_right : ∀ (as bs : EState α), List.Sublist bs (eMerge
       exact List.Sublist.cons₂ b ih
 
 /-- **Merge stability (S4 at the instance)**: the merge displays branch
-`a`'s survivors — those shared with `b` or new since the LCA — as a sublist
+`a`'s survivors, those shared with `b` or new since the LCA, as a sublist
 of `a`'s own document: in `a`'s order, never reordered. Symmetrically for
 `b`'s news via `eMerge2_sublist_right`. -/
 theorem eMergeL_stable_left (l a b : EState α) :

@@ -2,32 +2,32 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.Supplies
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.Render
 
 /-!
-# Tombstone-free Peritext, BY COMPOSITION — `Peritext_Composed := RGA_TF ⊗ MarkStore`
+# Tombstone-free Peritext, BY COMPOSITION, `Peritext_Composed := RGA_TF ⊗ MarkStore`
 
 The payoff instantiation of the composition arc (memo
 `Development/COMPOSITION_PENPAPER.md` §4): rich text as the binary product of
 
-* **the genuine tombstone-free, path-carrying RGA** (`RGA/` —
+* **the genuine tombstone-free, path-carrying RGA** (`RGA/`,
   conditioned, quotiented by observational `≈`; its 40-file chain is REUSED
   as a certificate bundle, not re-proved), and
-* **a mark store** (`MarkStore.lean` — an `ORSetCore` payload instantiation:
+* **a mark store** (`MarkStore.lean`, an `ORSetCore` payload instantiation:
   mark records with recorded endpoint ids+paths, rem-by-markId, add-wins),
 
 through the product `≈`-lift kit at the pragmatic cut
 (`Metatheory/ProductEq.lean`, `≈₂ = Eq`). Distinguish this from the flat
 production mirror `MRDT_Instances/Peritext_WithTombstones/` (grow-only + tombstones,
 all-comm): here the character component genuinely deletes, so its commutation
-holds only conditioned on accurate states and only up to `≈` — the composite
+holds only conditioned on accurate states and only up to `≈`, the composite
 inherits the full conditioned treatment.
 
 **The capstone** (`peritextComposed_ra_linearizable_up_to_eq`): every version of
 every reachable configuration of the composite's quotient ternary LTS is
-RA-linearizable up to `≈₁ × Eq` — its class is `qmk` of a representative that
+RA-linearizable up to `≈₁ × Eq`, its class is `qmk` of a representative that
 is the RAW product fold of a `lo`-respecting linearization of its events,
 with the character component correct up to the RGA's observational
 equivalence and the mark component literally. The single behavioural premise
 is `PeritextHonestDelivery` (`Supplies.lean`): the RGA's honest-delivery
-residual read through `proj₁` — born accuracy + born-applicable delivery for
+residual read through `proj₁`, born accuracy + born-applicable delivery for
 CHARACTER ops only; mark ops are entirely unguarded. This is the honest
 composite analogue of `rga_ra_linearizable3_eq`, and NOT a
 gate: the RGA-only capstone carries the same per-step assumption.
@@ -72,7 +72,7 @@ open Sal.ConditionedMRDTs.RGAK1Delta (rgaHonJ rga_hEnum_discharged
 local notation "PQD" => Sal.ConditionedMRDTs.ProductEq.prodQSig
   rgaEqEquiv' WfOpA rgaInvPresA rgaCongVC' rgaInvInvVCA markInvT
 
-/-- **THE COMPOSITE CAPSTONE — tombstone-free Peritext is RA-linearizable up
+/-- **THE COMPOSITE CAPSTONE, tombstone-free Peritext is RA-linearizable up
 to `≈₁ × Eq`** at every reachable configuration of the product quotient
 ternary system, under `PeritextHonestDelivery` (honest delivery of character
 ops; mark ops unguarded). Characters up to the RGA's observational `≈`,

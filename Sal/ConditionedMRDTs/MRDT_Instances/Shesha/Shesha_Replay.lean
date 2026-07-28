@@ -1,28 +1,28 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Evolution
 
-/-! # Shesha — the replay layer
+/-! # Shesha: the replay layer
 
 Machinery for the effective-witness join hook (`shesha_join_at_effC`)
 (`Shesha_Cond.lean`): the merge output is the fold of an explicitly
-constructed enumeration — **all inserts** (in reverse-output order: anchors
+constructed enumeration, **all inserts** (in reverse-output order: anchors
 before children, same-anchor runs right-to-left so that heads land last),
 then **all deletes**. This file provides the layers that construction rests
 on:
 
-* §1 **Commutation** — the positive commutation lemmas the `respects`
+* §1 **Commutation**, the positive commutation lemmas the `respects`
   analysis needs: inserts at unrelated anchors commute
   (`insert_insert_comm`), and a delete commutes with an insert it does not
   touch (`delete_insert_comm`). Together with honesty (which excludes
   `vis`-edges from a delete into an insert of its own target or anchor)
   these make the inserts-then-deletes shape `loOn`-respecting.
 
-* §2 **Graft algebra** — `graft s p G` prepends a forest `G` at the head of
+* §2 **Graft algebra**, `graft s p G` prepends a forest `G` at the head of
   `p`'s row; `insert` is the singleton graft, and grafts at fresh keys
   commute past each other.
 
-* §3 **The insert-phase realization** — `plan` linearizes a target forest
+* §3 **The insert-phase realization**, `plan` linearizes a target forest
   into insert ops (rightmost sibling first, parent before children), and
-  `steps_planF`: folding the plan grafts the forest — from the empty
+  `steps_planF`: folding the plan grafts the forest, from the empty
   document, the plan *builds the forest exactly*. This realizes the
   pre-splice tree of the replay witness; the delete phase then splices it
   down to the merge output. -/

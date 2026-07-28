@@ -18,13 +18,13 @@ extensional obligation *(same domain) ∧ (per live id: same element ∧ same an
 and discharge the anchor obligation by the **anchor-coincidence** invariant
 
   * for a surviving *original* node `k` (`k ∈ dom l ∩ dom branch`),
-    `climb (anc l) (dom branch) (anc l k) = anc branch k`
-    — merge's LCA-climb lands where the fold's `resolve`-rehoming lands.
+    `climb (anc l) (dom branch) (anc l k) = anc branch k`:
+    merge's LCA-climb lands where the fold's `resolve`-rehoming lands.
 
 This file mechanizes the **single-sided** core (`b = l`):
 
   * §1 framework: `applySeqR`, `eq` reflexivity/transitivity.
-  * §2 the `climb` algebra (fuel-stability, live-unfold, removal lemmas) — the
+  * §2 the `climb` algebra (fuel-stability, live-unfold, removal lemmas), the
     technical crux that makes the climb value-recursive rather than fuel-indexed.
   * §3 `BranchInv l a` (the three l-relative invariants I2/I3/I4) + its base.
   * §4 reduction `BranchInv l a ∧ wf a → eq (merge l a l) a`.
@@ -33,7 +33,7 @@ This file mechanizes the **single-sided** core (`b = l`):
 
 Everything is over the RGA's observational `eq` (NOT Lean `Eq`); the generic
 `Merge_Linearization_Set` induction (Lean-`Eq`, 2 pre-existing sorries) is NOT
-inherited — the needed steps are rebuilt natively.
+inherited, the needed steps are rebuilt natively.
 -/
 
 set_option maxHeartbeats 1000000
@@ -107,7 +107,7 @@ theorem climb_aux_stable (l : concrete_st α)
               ih (anc l (zc+1)) hanc_lt hstart zc hzc]
 
 /-- **Live unfold.**  A live non-root node not in `I` climbs to the climb of its
-`anc l` parent — the value-recursive step (fuel matched by `climb_aux_stable`). -/
+`anc l` parent, the value-recursive step (fuel matched by `climb_aux_stable`). -/
 theorem climb_live_unfold (l : concrete_st α)
     (Hdec : ∀ y, contains l y = true → y ≠ 0 → anc l y < y)
     (Hstay : ∀ y, contains l y = true → (anc l y = 0 ∨ contains l (anc l y) = true))
@@ -254,11 +254,11 @@ theorem contains_eq_domain (a : concrete_st α) (k : ℕ) : contains a k = domai
 invariants) and `wf` are threaded separately (they are already known reachable
 invariants); `BranchInv` carries only what relates a branch `a` to its LCA `l`:
 
-* **I2** — surviving *original* nodes keep their element;
-* **I4** — the anchor-coincidence: merge's LCA-climb from an original node's
+* **I2**, surviving *original* nodes keep their element;
+* **I4**, the anchor-coincidence: merge's LCA-climb from an original node's
   `l`-parent lands on the node's *current* branch anchor (this is the mathematical
-  crux — merge's climb reproduces the fold's `resolve`-rehoming);
-* **I3** — an original node's branch anchor is again `0`-or-original (rehoming
+  crux, merge's climb reproduces the fold's `resolve`-rehoming);
+* **I3**, an original node's branch anchor is again `0`-or-original (rehoming
   never sends an `l`-node onto a branch-new node). -/
 def BranchInv (l a : concrete_st α) : Prop :=
   (∀ k, contains l k = true → contains a k = true → el a k = el l k)
@@ -270,7 +270,7 @@ def BranchInv (l a : concrete_st α) : Prop :=
 /-! ## §4  Reduction: `BranchInv l a ∧ wf a → eq (merge l a l) a`
 
 The per-id extensional route: `merge l a l` and `a` have the same domain
-(`survivors_single`), and on each live id their element (I2) and anchor coincide —
+(`survivors_single`), and on each live id their element (I2) and anchor coincide,
 the original-node anchor by I4, the branch-new-node anchor by `climb_fixpoint`
 (its birth-anchor is already `0`-or-survivor by `wf a`). -/
 theorem eq_merge_single (l a : concrete_st α) (hwfa : wf a) (hbi : BranchInv l a) :
@@ -376,7 +376,7 @@ theorem domain_doDel (a : concrete_st α) (t r x : ℕ) (pre : List ℕ) :
   simp only [contains, domain, mem] at h ⊢
   rw [h, bne_comm]
 
-/-- **Preservation under `Del`** — the crux, with the anchor-coincidence's inductive
+/-- **Preservation under `Del`**, the crux, with the anchor-coincidence's inductive
 step.  Deleting a live `x` (accurate) rehomes `x`'s children to `anc a x`.  On the
 merge side the stop-set loses `x`; the LCA-climb of an original node either is
 unchanged (`climb_remove_ne`, when its result is not `x`) or continues *through*

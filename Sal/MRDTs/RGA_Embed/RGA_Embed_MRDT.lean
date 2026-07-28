@@ -3,7 +3,7 @@ import Sal.Interfaces.Map_Extended
 import Sal.MRDTs.RGA_Embed.Embed_Code
 
 /-!
-# The embedded-chain RGA (`embed-code`) — MRDT kernel
+# The embedded-chain RGA (`embed-code`): MRDT kernel
 
 Design and pen-and-paper proofs: `Sal/ConditionedMRDTs/sal-mrdts.pdf`, Part II;
 Python-validated artifact: `whiteboard/litmus/embed_tree.py` (battery clean
@@ -11,24 +11,24 @@ except one-sided L19; DAG PBT 120/120 and 300/300; lockstep read-equal with
 the published tombstoned RGA 120/120).
 
 This is the **absolute-coordinate model**: the state stores each live id's
-full coordinate — the concatenation of prefix-free codewords along its birth
-chain — as an immutable value. Compare `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`
+full coordinate, the concatenation of prefix-free codewords along its birth
+chain, as an immutable value. Compare `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`
 (the proved flat RGA), whose state stores mutable anchors and whose proofs
 need resolve/rehome/climb algebra. Here:
 
-* `Del` carries **no path** and rehomes **nothing** — deletion is domain
+* `Del` carries **no path** and rehomes **nothing**, deletion is domain
   removal, because coordinates are absolute (the isometric fold of the
   design's parent-relative runtime is the identity on absolutes).
 * `merge` never climbs: survivorship is the OR-set formula and values are
   immutable, so the value function just reads any input that has the id.
-* `Ins` carries the anchor's coordinate as a **prefix `π` — for the proof,
+* `Ins` carries the anchor's coordinate as a **prefix `π`, for the proof,
   and the proof alone** (design doc §3): `do_` computes the newcomer's
   coordinate from `π` and the two timestamps, never reading the state, which
   makes every operation pair commute **to states equal under `eq`,
   unconditionally enough that `rc = Either` discharges without path algebra**.
   On honest states `π` is exactly the anchor's stored coordinate
   (`accurate`), and `ins_prefix_ghost` proves the runtime that reads the
-  state instead executes the same transition — the `ins_path_free` analogue,
+  state instead executes the same transition, the `ins_path_free` analogue,
   direction flipped.
 
 The read side (display = chain-lex; L1 delete-order as a SPOT theorem;
@@ -41,7 +41,7 @@ namespace Sal.EmbedRGA
 abbrev coord := List Bool
 
 /-- State: `id ↦ (element, absolute coordinate)`. Live nodes only; values are
-immutable once written (coordinates are birth constants — design doc Thm 2). -/
+immutable once written (coordinates are birth constants, design doc Thm 2). -/
 abbrev concrete_st (α : Type := ℕ) := map ℕ (α × coord)
 
 variable {α : Type} [DecidableEq α]
@@ -55,7 +55,7 @@ variable {α : Type} [DecidableEq α]
 /-- Operations.
 * `Ins e π a`: insert element `e` after anchor `a`, carrying `a`'s coordinate
   `π` (the proof-only prefix; `[]` for the root).
-* `Del x`: delete `x`. No path — nothing is rehomed. -/
+* `Del x`: delete `x`. No path, nothing is rehomed. -/
 inductive app_op_t (α : Type := ℕ) : Type where
   | Ins : α → coord → ℕ → app_op_t α
   | Del : ℕ → app_op_t α
@@ -80,7 +80,7 @@ the codeword of the timestamp delta. State-independent by construction. -/
   | (t, _, .Ins e π a) => upd s t (e, mint Γ π t a)
   | (_, _, .Del x)     => del s x
 
-/-- Conflict-resolution table: `Either` everywhere (design doc §3 — any
+/-- Conflict-resolution table: `Either` everywhere (design doc §3, any
 oriented ins/del entry awakens the machine-refuted `cond_comm_base`). -/
 inductive rc_res : Type where
   | Fst_then_snd : rc_res
@@ -101,7 +101,7 @@ theorem eq_symm (a b : concrete_st α) : eq a b → eq b a := by
 
 /-- Three-way merge: OR-set survival on identities; the value function reads
 any input holding the id (values are immutable, so the priority order is
-immaterial on coherent inputs — `merge_comm`). No climb: coordinates are
+immaterial on coherent inputs, `merge_comm`). No climb: coordinates are
 absolute. -/
 @[simp] def merge (l a b : concrete_st α) : concrete_st α :=
   let dl := domain l
@@ -116,7 +116,7 @@ absolute. -/
 
 /-- The op's claims are true in `s`: an `Ins`'s prefix is its anchor's stored
 coordinate (or the anchor is the root and the prefix empty), and the delta is
-positive (causality — the anchor was seen before the insert); a `Del`'s
+positive (causality, the anchor was seen before the insert); a `Del`'s
 target is live. -/
 @[simp] def accurate (o : op_t α) (s : concrete_st α) : Prop :=
   match o with
@@ -136,7 +136,7 @@ A runtime whose anchors are live (every honest generation site) may read the
 anchor's coordinate from the state and drop `π` from the wire: on accurate
 ops the two transition functions are literally the same. -/
 
-/-- The state-reading insert — what an implementation actually executes. -/
+/-- The state-reading insert, what an implementation actually executes. -/
 @[simp] def do_run (Γ : OrderedPrefixCode) (s : concrete_st α) (o : op_t α) :
     concrete_st α :=
   match o with
@@ -166,7 +166,7 @@ theorem ins_prefix_ghost (Γ : OrderedPrefixCode) (s : concrete_st α)
 /-! ## Commutation kernel
 
 Every pair commutes. `Ins` values are state-independent, so the proofs are
-pure map/set algebra — no resolve, no rehome, no path induction. The only
+pure map/set algebra, no resolve, no rehome, no path induction. The only
 hypothesis with content: a `Del`'s live target is never a fresh `Ins`'s
 timestamp (`accurate` + `fresh_ts`), which rules out the ins-then-delete-it
 shape that is causally impossible. -/
@@ -259,7 +259,7 @@ theorem rc_non_comm' (Γ : OrderedPrefixCode) (o1 o2 : op_t α) :
 
 /-! ## Merge algebra -/
 
-/-- Two states agree on every id they share — the immutability invariant on
+/-- Two states agree on every id they share, the immutability invariant on
 reachable configurations (coordinates are birth constants). -/
 @[simp] def coherent2 (a b : concrete_st α) : Prop :=
   ∀ t, contains a t → contains b t → sel a t = sel b t
@@ -275,7 +275,7 @@ theorem merge_idem (s : concrete_st α) : eq (merge s s s) s := by
     simp only [sel]
     grind
 
-/-- The value an op writes — a function of the op alone (never the state).
+/-- The value an op writes, a function of the op alone (never the state).
 `Del` writes nothing. -/
 @[simp] def opVal (Γ : OrderedPrefixCode) (o : op_t α) : Option (ℕ × (α × coord)) :=
   match o with
@@ -283,7 +283,7 @@ theorem merge_idem (s : concrete_st α) : eq (merge s s s) s := by
   | (_, _, .Del _)     => none
 
 /-- `o` is coherent with a bystander state `s'`: if `s'` already holds the id
-`o` writes, it holds the same value — true in any execution, since a shared id
+`o` writes, it holds the same value, true in any execution, since a shared id
 means `s'` applied the same `Ins` (ids are unique), whose value is a function
 of the op. -/
 @[simp] def opCoherent (Γ : OrderedPrefixCode) (o : op_t α) (s' : concrete_st α) : Prop :=

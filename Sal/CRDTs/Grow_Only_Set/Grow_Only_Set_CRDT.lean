@@ -11,7 +11,7 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Grow-Only Set (G-Set) — state-based CRDT
+# Grow-Only Set (G-Set): state-based CRDT
 
 The simplest set CRDT: `Add` is the only op, state grows monotonically,
 merge is set union. No tombstones because nothing is ever removed.

@@ -9,10 +9,10 @@ carries the **H-disciplined layer** (`GoodConfig3H`) through it, so the producti
 Eq-quotient capstones (the rehoming RGA's `rga_ra_linearizable3_eq`, the flats'
 identity-Eq capstones) can run at every `Step3V`-reachable configuration:
 
-* `vfold_canonicalH` / `vlcaAuxH_canonical_at` — **the H-layer fold induction**: along
+* `vfold_canonicalH` / `vlcaAuxH_canonical_at`: **the H-layer fold induction**: along
   the ascending-rank antichain fold, every scratch node's state is `H`-canonical
   (`IsCanonicalStateH`) **for its own union event set**.  Each step consumes the
-  datatype's `≈`-Join (`EqJoinLemma3C_H`) at the sub-pair `(E(acc), E(mᵢ))` — the hook is
+  datatype's `≈`-Join (`EqJoinLemma3C_H`) at the sub-pair `(E(acc), E(mᵢ))`, the hook is
   already stated for *arbitrary* closed subsets of the ambient universe under the ambient
   join context `HonJ`, so no per-datatype condition is re-presented at intermediate
   unions: predecessor-closure of a union is the union of the branch closures
@@ -21,11 +21,11 @@ identity-Eq capstones) can run at every `Step3V`-reachable configuration:
   K1/`GenDisc2C` (`rga_hEnum_discharged` + `isDepPreC_of_restrict`); **no `noopFeasible`
   clause appears anywhere at unions**: `noopFeasible` is refutable at antichain unions,
   and this construction respects that by never invoking it.
-* `virtualLCAState_canonicalH` — the head-pair corollary: the recursive antichain merge
+* `virtualLCAState_canonicalH`, the head-pair corollary: the recursive antichain merge
   is `H`-canonical for the pair's event-set intersection.
-* `goodConfig3H_mergeVirtual` — the mergeVirtual preservation step (mirror of
+* `goodConfig3H_mergeVirtual`: the mergeVirtual preservation step (mirror of
   `goodConfig3H_merge` with the registered LCA slot replaced by `virtualLCAState`).
-* `goodConfig3H_of_reachV` / `RA_linearizable_up_to_eq_H_V` — the reachability induction
+* `goodConfig3H_of_reachV` / `RA_linearizable_up_to_eq_H_V`: the reachability induction
   and the RAW-≈ metatheorem over `labeledTS3V` (the criss-cross gate lifted), from the
   SAME per-datatype hypotheses as the gated theorem (the honest premises now quantified
   over `Step3V`-reachable configurations).
@@ -55,7 +55,7 @@ variable (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
 
 /-! ## §1  The H-layer fold canonicity -/
 
-/-- The H-canonicity claim at a fixed joint-support measure — **per scratch node, for its
+/-- The H-canonicity claim at a fixed joint-support measure, **per scratch node, for its
 own union event set only** (statement hygiene: nothing about other fold orders). -/
 private def VCanonAtH (C : Configuration (QSig E W hP hC hA)) (n : ℕ) : Prop :=
   ∀ (S : Finset Version) (w : Version) (sw : QState D E) (Ew : Set (Op D.AppOp)),
@@ -69,7 +69,7 @@ private def VCanonAtH (C : Configuration (QSig E W hP hC hA)) (n : ℕ) : Prop :
 /-- **The H-layer fold induction, inner layer** (mirror of `Adequacy.vfold_canonical`):
 along the ascending-rank fold every scratch node's state is `H`-canonical for its union
 event set.  The sub-pair's inner LCA slot is `H`-canonical by the outer induction plus
-covering; the datatype's `≈`-Join (`mergedH_of_join`) joins — its closure premises at the
+covering; the datatype's `≈`-Join (`mergedH_of_join`) joins, its closure premises at the
 union are the union of the branch closures, its context (`HonJ`) is ambient. -/
 private theorem vfold_canonicalH {C : Configuration (QSig E W hP hC hA)}
     (hSI : StoreInv C.ver C.parents) (hS : GoodConfig3S C)
@@ -170,7 +170,7 @@ private theorem vfold_canonicalH {C : Configuration (QSig E W hP hC hA)}
 
 /-- The H-canonicity claim at every measure, by strong induction (mirror of
 `Adequacy.vlcaAux_canonical_at`).  The empty antichain returns `σ₀`, whose witness is
-`[]` — this is where `H []` (`hHnil`) enters; the singleton antichain is the registered
+`[]`: this is where `H []` (`hHnil`) enters; the singleton antichain is the registered
 slot's own H-witness. -/
 private theorem vlcaAuxH_canonical_at {C : Configuration (QSig E W hP hC hA)}
     (hSI : StoreInv C.ver C.parents) (hS : GoodConfig3S C)
@@ -251,7 +251,7 @@ private theorem vlcaAuxH_canonical_at {C : Configuration (QSig E W hP hC hA)}
 /-- **The head-pair corollary**: at any configuration carrying `StoreInv` + the
 H-invariant + the datatype's `≈`-Join and its ambient join context, the recursive
 antichain merge of a head pair is `H`-canonical for the pair's event-set
-intersection — exactly what the merge step demanded of a registered LCA. -/
+intersection, exactly what the merge step demanded of a registered LCA. -/
 theorem virtualLCAState_canonicalH {C : Configuration (QSig E W hP hC hA)}
     (hSI : StoreInv C.ver C.parents)
     (hJoinH : EqJoinLemma3C_H D E W H HonJ)
@@ -337,7 +337,7 @@ theorem goodConfig3H_mergeVirtual
 /-! ## §3  The widened reachability induction and the RAW-≈ metatheorem over `Step3V` -/
 
 open LabeledTS in
-/-- **`GoodConfig3H` at every `Step3V`-reachable configuration** — `StoreInv` is carried
+/-- **`GoodConfig3H` at every `Step3V`-reachable configuration**: `StoreInv` is carried
 alongside (the virtual case reads it); every gated case is the per-step lemma;
 the honest premises (`hHon`/`hHext`/`hBA`) are the gated theorem's, quantified over
 widened reachability. -/
@@ -404,8 +404,8 @@ theorem goodConfig3H_of_reachV
 open LabeledTS in
 /-- **The RAW-≈ metatheorem over the widened LTS** (`RA_linearizable_up_to_eq_H` with the
 criss-cross gate lifted): a `Step3V`-reachable `QSig`-configuration under the
-born-applicable discipline is per-version RA-linearizable in the paper's sense — raw
-datatype folds, up to `≈` — from the SAME per-datatype hypotheses (`EqJoinLemma3C_H`
+born-applicable discipline is per-version RA-linearizable in the paper's sense, raw
+datatype folds, up to `≈`, from the SAME per-datatype hypotheses (`EqJoinLemma3C_H`
 already quantifies over arbitrary closed event-set pairs, so the intermediate antichain
 unions are covered by the hook as-is). -/
 theorem RA_linearizable_up_to_eq_H_V

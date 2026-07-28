@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed
 
 /-!
-# Peritext — the DOCUMENT-ORDER mark read model, and the leak the tree-ancestry
+# Peritext: the DOCUMENT-ORDER mark read model, and the leak the tree-ancestry
 read hides
 
 Companion design + validation: `whiteboard/peritext-read-model-note.md` (§8 gives
@@ -16,7 +16,7 @@ ancestor sits EARLIER in reading order than its descendants, so a dead
 boundary anchor migrates BACKWARD in the document and formats text that was
 never in the span.
 
-This file builds the paper-faithful alternative — a DOCUMENT-ORDER read model —
+This file builds the paper-faithful alternative, a DOCUMENT-ORDER read model,
 directly on the embed-RGA reading order, validates it on the Litt et al.
 examples (§7), exhibits the retracted leak concretely against it as a labelled
 control (§8), and records the atomicity price the tombstone-free substrate
@@ -27,7 +27,7 @@ charges (§9, the trilemma horn made honest).
 Characters live in embed-RGA reading order (the state's own sorted order; the
 embed capstone gives the live read = birth order minus survivors).  A **mark**
 is a separate immutable record `(mid, mtype, value, op, start_id, end_id,
-startSide, endSide)` — it is NOT an in-sequence boundary node (contrast the
+startSide, endSide)`, it is NOT an in-sequence boundary node (contrast the
 FUSED design of `PeritextEmbed.lean`).  The document-order resolver rehomes a
 DEAD boundary anchor to the nearest SURVIVING neighbour in READING order on the
 gravity side (NOT by climbing tree ancestry), so a single-replica rehome can
@@ -97,7 +97,7 @@ namespace DocD
 /-- The birth order: every insert, in embed reading order. -/
 def birthIds (d : DocD) : List ℕ := d.shadow.map Prod.fst
 
-/-- Live? — a birth id that has not been deleted. -/
+/-- Live?, a birth id that has not been deleted. -/
 def isLive (d : DocD) (c : ℕ) : Bool := d.birthIds.contains c && !d.deleted.contains c
 
 /-- The live reading order: birth order minus deleted. -/
@@ -186,7 +186,7 @@ def markCoversPos (d : DocD) (m : MarkD) (k : ℕ) : Bool :=
     | none => false
     | some e => decide (f ≤ k ∧ k < e)
 
-/-- The covered live ids of a single mark — the interval slice. -/
+/-- The covered live ids of a single mark, the interval slice. -/
 def coveredDoc (d : DocD) (m : MarkD) : List ℕ :=
   match startIncl d m, endExcl d m with
   | some f, some e => (d.liveIds.drop f).take (e - f)
@@ -217,7 +217,7 @@ def treeCoversPos (d : DocD) (m : MarkD) (k : ℕ) : Bool :=
 /-! ## §5  The render (per-character last-writer-wins over covering marks) -/
 
 /-- The covering mark with the higher `mid` wins (strict, so ties keep the
-earlier — matching the Python `mid > cur`). -/
+earlier, matching the Python `mid > cur`). -/
 def winner : Option MarkD → MarkD → Option MarkD
   | none, m => some m
   | some a, m => if a.mid < m.mid then some m else some a
@@ -241,7 +241,7 @@ def renderFlagWith (d : DocD) (cover : MarkD → ℕ → Bool) (marks : List Mar
     List (ℕ × Bool) :=
   d.liveIds.mapIdx (fun k c => (d.cp c, fmtAt cover marks mt k))
 
-/-- The id-tagged flag render `(id, codepoint, isFormatted)` — the
+/-- The id-tagged flag render `(id, codepoint, isFormatted)`, the
 theorem-bearing form (ids let "minus the deleted entry" be exact). -/
 def renderFlagIdsWith (d : DocD) (cover : MarkD → ℕ → Bool) (marks : List MarkD) (mt : MType) :
     List (ℕ × ℕ × Bool) :=
@@ -269,7 +269,7 @@ def renderPairDoc (d : DocD) (marks : List MarkD) : List (ℕ × Bool × Bool) :
 
 `buildShadow` folds `(id, codepoint, anchor)` records through the embed
 `eUpdate`, computing each insert's coordinate prefix as its anchor's stored
-coordinate — so the reading order is exactly the embed-RGA reading order. -/
+coordinate, so the reading order is exactly the embed-RGA reading order. -/
 
 def buildShadow (Γ : OrderedPrefixCode) : List (ℕ × ℕ × ℕ) → EState ℕ
   | recs => recs.foldl (fun s t =>
@@ -278,7 +278,7 @@ def buildShadow (Γ : OrderedPrefixCode) : List (ℕ × ℕ × ℕ) → EState �
                else ((s.find? (fun r => r.1 == a)).map (fun r => r.2.2)).getD []
       eUpdate Γ s (t.1, 0, EOp.ins t.2.1 π a)) []
 
-/-! ## §7  The Litt et al. examples — concrete SPOTs (PASS shaped)
+/-! ## §7  The Litt et al. examples: concrete SPOTs (PASS shaped)
 
 Each expected value is hand-derived from the note §6/§8 and asserted by
 `native_decide` over a concrete config.  Codepoints are ASCII
@@ -313,7 +313,7 @@ theorem ex2_doc :
   native_decide
 
 /-- The degenerate reading (the overlap `b, c` carries only bold, not italic
-too) is refuted — different-type marks genuinely coexist. -/
+too) is refuted, different-type marks genuinely coexist. -/
 theorem ex2_doc_overlap_carries_both :
     renderPairDoc dEx2 [bdEx2, itEx2]
       ≠ [(97, true, false), (98, true, false), (99, true, false), (100, false, true)] := by
@@ -371,7 +371,7 @@ theorem ex7_doc_older_not_grabbed :
     renderMarksDoc dEx7 [mEx7old] MType.bold = [(97, true), (98, true), (120, false)] := by
   native_decide
 /-- The gravity is directed: the SAME insertion is grabbed by a mark older than
-it and not by one newer than it — the read is not constantly expanding. -/
+it and not by one newer than it, the read is not constantly expanding. -/
 theorem ex7_doc_gravity_discriminates :
     renderMarksDoc dEx7 [mEx7] MType.bold ≠ renderMarksDoc dEx7 [mEx7old] MType.bold := by
   native_decide
@@ -407,7 +407,7 @@ Chain `W, A, B, C` (reading order = id order), `bold[A, B]` with
 `startSide=before, endSide=after`, delete the start anchor `A`.  Document-order
 rehomes the start to the nearest surviving neighbour to the right (`B`), so
 `bold = {B}` and `W` stays plain.  Tree-ancestry climbs `A`'s path to its parent
-`W` (earlier in reading order), so `bold = {W, B}` — `W`, never in the span, is
+`W` (earlier in reading order), so `bold = {W, B}`, `W`, never in the span, is
 formatted.  This is the `mark_*_no_leak` error, concretely. -/
 
 namespace LEAK
@@ -421,7 +421,7 @@ def mLeak : MarkD :=
     start_path := [2, 1, 0], end_path := [3, 2, 1, 0] }
 
 /-- **`leak_doc_shrinks` (concrete).**  Document-order does not format `W`; the
-frozen-path read does — the two reads differ on `W`. -/
+frozen-path read does, the two reads differ on `W`. -/
 theorem leak_doc_shrinks_doc :
     renderMarksDoc dLeak [mLeak] MType.bold = [(87, false), (66, true), (67, false)] := by
   native_decide
@@ -451,7 +451,7 @@ theorem markCoversPos_before (d : DocD) (m : MarkD) (f k : ℕ)
 
 /-- **`doc_no_backward_leak` (general).**  Every character positioned strictly
 before a mark's rehomed start (live index `< f`) carries no activation of that
-mark, in reading order — the paper-faithful guarantee that replaces
+mark, in reading order, the paper-faithful guarantee that replaces
 `mark_*_no_leak`, refuted above.  Shaped like `render_span_before`
 (`Peritext_Rehoming/Peritext_Read.lean`), with the boundary a rehomed live
 position rather than a boundary node. -/
@@ -467,7 +467,7 @@ theorem doc_no_backward_leak (d : DocD) (m : MarkD) (mt : MType) (f k : ℕ)
 
 /-- **`tree_backward_leak_refutes_noleak` (general negative).**  There is a
 reachable state and a mark whose frozen-path (tree-ancestry) coverage formats a
-character the document-order read does not — a character positioned before the
+character the document-order read does not, a character positioned before the
 mark's surviving span.  So a `mark_*_no_leak` claim for the frozen-path read is
 refuted (the `leak_doc_shrinks` witness, lifted to the resolver level). -/
 theorem tree_backward_leak_refutes_noleak :
@@ -480,7 +480,7 @@ theorem tree_backward_leak_refutes_noleak :
 `bold[A, B]` with `endSide=after`; `C` (older than the mark) sits after `B` and
 blocks the growth run; `D` (newer, child of `C`) is plain.  Deleting the plain
 separating `C` makes `D` contiguous with `B`, and the `endSide=after` growth run
-reaches it, so `D` is re-formatted — the delete touched neither `D` nor any
+reaches it, so `D` is re-formatted, the delete touched neither `D` nor any
 boundary.  This is the document-order analogue of
 `fused_delete_reformats_survivor`, the tombstone-free substrate's declared
 trilemma horn (a membership re-span, NOT a backward leak). -/
@@ -512,14 +512,14 @@ theorem doc_delete_can_respan :
 
 end TRILEMMA
 
-/-! ## §11  Convergence — the read is a set-function of the marks
+/-! ## §11  Convergence: the read is a set-function of the marks
 
 `renderMarksDoc` uses the mark list only through the per-`(char, mtype)` LWW
 `bestCover`, which is invariant under permutation of the marks with distinct
 `mid`s (marks form a set; removeMark is LWW; character order converges by the
 embed capstone `embed_ra_linearizable3`).  Watched concretely: permuting the
 two overlapping marks of Ex 2 leaves the render unchanged (PASS), and it is not
-vacuous — a render that ignored one of the two marks would differ (FAIL pin). -/
+vacuous, a render that ignored one of the two marks would differ (FAIL pin). -/
 
 namespace CONVERGE
 
@@ -536,7 +536,7 @@ theorem renderMarksDoc_convergent_italic :
 theorem renderMarksDoc_convergent_pair :
     renderPairDoc dEx2 [bdEx2, itEx2] = renderPairDoc dEx2 [itEx2, bdEx2] := by native_decide
 
-/-- FAIL pin: convergence is not vacuous — dropping a mark changes the render, so
+/-- FAIL pin: convergence is not vacuous, dropping a mark changes the render, so
 the agreement above is genuine mark content, not an empty read. -/
 theorem convergent_not_vacuous :
     renderPairDoc dEx2 [bdEx2, itEx2] ≠ renderPairDoc dEx2 [bdEx2] := by native_decide

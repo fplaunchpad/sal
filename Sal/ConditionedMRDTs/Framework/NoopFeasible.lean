@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.Framework.MRDTSig
 
 /-!
-# `noopFeasible` — the relaxed feasibility predicate
+# `noopFeasible`: the relaxed feasibility predicate
 
 The feasibility notion of the conditioned metatheory: `loOnA + noopFeasible` is the
 condition under which conditioned convergence holds.

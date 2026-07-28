@@ -1,22 +1,22 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Composed.Peritext_Composed
 
 /-!
-# Peritext gap 1 — does the honesty contract compose across a read-coupled boundary?
+# Peritext gap 1: does the honesty contract compose across a read-coupled boundary?
 
 The composite `Peritext_Composed := RGA_TF ⊗ MarkStore` proves convergence and safety
 (`peritextComposed_ra_linearizable_up_to_eq`) under a premise
-(`PeritextHonestDelivery`) that constrains **character** operations only —
+(`PeritextHonestDelivery`) that constrains **character** operations only,
 mark operations are entirely unguarded. The RGA's discipline is *born
 accuracy*: a character op's recorded ancestor path is the true chain in the
-RGA state at issue. Marks carry the analogous data — each endpoint is a
-character id plus its recorded path — but the composite assumes nothing about
+RGA state at issue. Marks carry the analogous data, each endpoint is a
+character id plus its recorded path, but the composite assumes nothing about
 it. This file asks whether that discipline **composes**: can the honesty
 contract be strengthened with a mark-side accuracy clause, and does the
 strengthening go through the product machinery?
 
 ## The finding
 
-**Yes — honesty composes, but through the *free-standing premise*, not the
+**Yes, honesty composes, but through the *free-standing premise*, not the
 product signature; and for a component whose convergence is unconditional it
 is decorative for linearizability and load-bearing only for the read layer.**
 Three facts, each mechanized below:
@@ -24,7 +24,7 @@ Three facts, each mechanized below:
 1. **Structural: the signature cannot express it, the premise can.** The
    product signature's `applicable` is *componentwise*
    (`applicable⊗ (inr o) s = applicable₂ o s.2`), so a mark guard structurally
-   cannot read the character component — a cross-reading guard is not an
+   cannot read the character component, a cross-reading guard is not an
    instance of the clean product. But `PeritextHonestDelivery` is a bespoke
    `Prop` over the product LTS (`Supplies.lean`), exactly as the RGA's own
    born-accuracy is (it reads a causal fold of the `inl` fragment, not the
@@ -35,24 +35,24 @@ Three facts, each mechanized below:
 2. **Well-formed on the quotient.** `MarkAccurate` reads only `contains`/`anc`
    of the RGA component, which the RGA's observational `≈₁` fixes, so it
    respects `≈₁ × Eq` (`markAccurate_congr₁`). It is therefore a legitimate
-   predicate on the quotiented state the capstone speaks about — the
+   predicate on the quotiented state the capstone speaks about, the
    composition is structurally sound, not a quotient violation.
 
 3. **Decorative for linearizability, load-bearing for the read.** The
    strengthened contract still yields the capstone
-   (`peritextComposed_ra_linearizable_honest`) — because the linearizability proof
+   (`peritextComposed_ra_linearizable_honest`), because the linearizability proof
    consumes only the *character* clause: marks are an OR-set and converge and
    linearize regardless of path accuracy. So the mark clause is an *unused*
    hypothesis for linearizability, exactly as the FWW register's unset-check
    and BudgetCart's rem-observed check are decorative for their capstones.
    Where it becomes load-bearing is the read layer: `endpointAccurate_resolve`
    shows that at an accurate state resolution lands on the recorded character
-   itself — the seed of the render-intent theorems (gap 2), which is
+   itself, the seed of the render-intent theorems (gap 2), which is
    where mark-anchor honesty pays for itself.
 
 The general lesson, lifting the FWW/BudgetCart taxonomy to the compositional
 setting: **a component's honesty discipline is load-bearing exactly where the
-coupled read depends on it, not where convergence does** — and the read-coupled
+coupled read depends on it, not where convergence does**, and the read-coupled
 boundary carries honesty precisely because the honesty predicate is free of
 the signature's componentwise `applicable`.
 -/
@@ -104,7 +104,7 @@ def MarkAccurate (σ : concrete_st) (m : MarkPayload) : Prop :=
 /-! ## §2  Well-formedness: `MarkAccurate` respects the RGA's `≈` -/
 
 /-- `IsAncPath` reads only `contains`/`anc`, which the framework's `eq` fixes
-on live ids — so it transfers across `≈₁`-related RGA states. -/
+on live ids, so it transfers across `≈₁`-related RGA states. -/
 theorem isAncPath_congr {σ σ' : concrete_st} (h : eq σ σ') :
     ∀ (leaf : ℕ) (path : List ℕ), contains σ leaf = true →
       (IsAncPath σ leaf path ↔ IsAncPath σ' leaf path) := by
@@ -142,7 +142,7 @@ theorem endpointAccurate_congr₁ {σ σ' : concrete_st} (h : eq σ σ')
 
 /-- **`MarkAccurate` respects the RGA's observational `≈`**: it reads only the
 character component's `contains`/`anc`, which `≈₁` fixes. Hence it is a
-well-defined honesty predicate on the quotient the capstone speaks about —
+well-defined honesty predicate on the quotient the capstone speaks about,
 the read-coupled honesty clause does not violate the quotient. -/
 theorem markAccurate_congr₁ {σ σ' : concrete_st} (h : eq σ σ')
     (m : MarkPayload) : MarkAccurate σ m ↔ MarkAccurate σ' m :=
@@ -153,12 +153,12 @@ theorem markAccurate_congr₁ {σ σ' : concrete_st} (h : eq σ σ')
 /-- The honest-delivery contract **strengthened with mark-anchor accuracy**:
 `PeritextHonestDelivery` (character born accuracy + applicable delivery) *and*
 that every delivered mark record is `MarkAccurate` against a causal fold of
-the RGA fragment of the head version's events — the exact mirror of the
+the RGA fragment of the head version's events, the exact mirror of the
 character clause, here on the `inr` (mark-add) steps the base contract leaves
 free. The removal ops (`OSOp.rem`) carry no record, so they are unconstrained.
 
 Stated as a conjunction so that `→ PeritextHonestDelivery` is immediate: this
-is what makes the strengthening *compose* — the base capstone consumes the
+is what makes the strengthening *compose*, the base capstone consumes the
 first conjunct and is blind to the second. -/
 def PeritextHonestDeliveryPlus : Prop :=
   PeritextHonestDelivery ∧
@@ -180,8 +180,8 @@ theorem honestDeliveryPlus_imp (h : PeritextHonestDeliveryPlus) :
 /-- **The composition theorem for honesty.** The cross-component
 mark-anchor-accuracy strengthening is a *valid premise*: the composite capstone
 holds under it, unchanged. Its proof consumes only the character clause
-(`h.1`) — marks converge and linearize as an OR-set regardless of path
-accuracy — so the mark clause rides along, decorative for linearizability and
+(`h.1`), marks converge and linearize as an OR-set regardless of path
+accuracy, so the mark clause rides along, decorative for linearizability and
 reserved for the read-layer intent theorems (gap 2). This is honesty composing
 across the read-coupled (L2) boundary. -/
 theorem peritextComposed_ra_linearizable_honest
@@ -198,7 +198,7 @@ theorem peritextComposed_ra_linearizable_honest
 /-! ## §4  Where accuracy is load-bearing: the read-layer seed
 
 The mark clause buys nothing for linearizability; it buys the read layer. At
-an **accurate** state, an endpoint resolves to the recorded character itself —
+an **accurate** state, an endpoint resolves to the recorded character itself,
 `resolve` short-circuits on the live endpoint before ever consulting the
 recorded path. This is the base case the render-intent theorems (gap 2) will
 propagate through reachability: accuracy at issue pins resolution, and honest
@@ -212,7 +212,7 @@ theorem endpointAccurate_resolve {σ : concrete_st} {ep : ℕ × List ℕ}
   simp only [resolve, hlive, if_true]
 
 /-- Consequently, at a state where both endpoints of an anchor-accurate mark
-are live, the mark renders to its recorded endpoints exactly — no rehoming has
+are live, the mark renders to its recorded endpoints exactly, no rehoming has
 happened yet. (The non-degenerate branch of `MarkAccurate` gives liveness.) -/
 theorem markAccurate_resolveMark {σ : concrete_st} {m : MarkPayload}
     (hs : contains σ m.2.2.1.1 = true) (he : contains σ m.2.2.2.1 = true) :

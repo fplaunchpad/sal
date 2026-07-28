@@ -4,7 +4,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Common
 import Sal.ConditionedMRDTs.Metatheory.FlatGeneric_Bridge
 
 /-!
-# RGA (tombstone-based) — flat VC discharge and the conditioned capstone
+# RGA (tombstone-based): flat VC discharge and the conditioned capstone
 -/
 
 set_option maxHeartbeats 1000000
@@ -14,7 +14,7 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! ## RGA, tombstone-based (production mirror: `Sal/MRDTs/RGA`) —
+/-! ## RGA, tombstone-based (production mirror: `Sal/MRDTs/RGA`),
 Tier-1 in disguise: both components grow-only, `rc = Either`, all pairs
 commute, LCA-inclusive union merge. -/
 
@@ -124,7 +124,7 @@ theorem rga_ra_linearizable3
     (cdVC3_of_all_comm RGAM_coreVCs3 RGAM_all_comm) C hReach
 
 
-/-! ## The conditioned capstone — identity instantiation of the generic framework -/
+/-! ## The conditioned capstone: identity instantiation of the generic framework -/
 
 section
 open Sal.ConditionedMRDTs.GenericEqQuotient

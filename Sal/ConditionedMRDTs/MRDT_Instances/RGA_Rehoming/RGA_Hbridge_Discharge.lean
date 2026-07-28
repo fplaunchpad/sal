@@ -4,12 +4,12 @@ import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_BranchCanon
 import Sal.ConditionedMRDTs.MRDT_Instances.RGA_Rehoming.RGA_FiltEq
 
 /-!
-# hbridge DISCHARGED — per-survivor `CanonBirthBridge` from the join context
+# hbridge DISCHARGED: per-survivor `CanonBirthBridge` from the join context
 
 *0 `sorry`.*
 
 The per-survivor bridge of `hMergeInputs`, discharged at `HonJ := rgaHonJ` GIVEN the sibling
-`hcaus` bundle (the per-id causal set-algebra — a separate leaf; its merge-domain consequence
+`hcaus` bundle (the per-id causal set-algebra, a separate leaf; its merge-domain consequence
 `merge_domain_clause` is what identifies the merge survivor set with the union-fold domain).
 
 The assembly, per union-survivor `t` with recorded chain `a :: p`:
@@ -22,10 +22,10 @@ The assembly, per union-survivor `t` with recorded chain `a :: p`:
    `t`'s insert (`chain_entries_mem` at the ambient enumeration); a survivor's dependencies land
    in its home enum by causal closure (`hdepsh`), so a home-dead entry is home-DELETED, hence
    union-deleted, hence `¬ survP F`.
-3. **`liveSub σ_home (a :: p) = []`** — the birth anchor is `0`: the whole record is `F`-dead
+3. **`liveSub σ_home (a :: p) = []`**, the birth anchor is `0`: the whole record is `F`-dead
    (`liveSub_nil_all_dead` + step 2), so `canonAnc F (a :: p) = 0` (`canonAnc_dead_eq_zero`)
    and `CanonBirthBridge` holds directly (the live half is vacuous at the unstored root).
-4. **`liveSub σ_home (a :: p) = bw :: _`** — split the record at `bw` (`first_live_split`;
+4. **`liveSub σ_home (a :: p) = bw :: _`**, split the record at `bw` (`first_live_split`;
    the prefix is home-dead, hence `F`-dead by step 2) and close with
    `canonBirthBridge_via_branchCanon`, whose `hin` is the discharged record-coherence kernel
    `hin_of_genDisc` and whose `hD` is `merge_domain_clause` + the union-fold `CanonMatch`.
@@ -176,7 +176,7 @@ theorem home_dead_F_dead (Cfg : Sal.Emulation.Configuration (RGACondSig α).toCR
 
 /-! ## §3  The per-survivor bridge -/
 
-/-- **hbridge, discharged at `HonJ := rgaHonJ`** — GIVEN the sibling `hcaus` bundle (the per-id
+/-- **hbridge, discharged at `HonJ := rgaHonJ`**, GIVEN the sibling `hcaus` bundle (the per-id
 causal set-algebra, a separate `hMergeInputs` leaf): per union-survivor `CanonBirthBridge`. -/
 theorem rga_hbridge_discharged
     (vis : op_t α → op_t α → Prop) (events ev₁ ev₂ : Set (op_t α)) (ρ₀ ρ₁ ρ₂ π₀ : List (op_t α))

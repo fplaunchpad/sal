@@ -7,7 +7,7 @@ set_option maxHeartbeats 400000
 
 open Classical
 
-/-! # MIN_Register (CRDT) — SPOTs
+/-! # MIN_Register (CRDT): SPOTs
 
 Note: with `init_st = 0` on ℕ the state is absorbing at 0; SPOTs
 below start from a non-zero baseline to exercise the min behaviour. -/

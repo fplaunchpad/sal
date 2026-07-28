@@ -6,7 +6,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # Grow_Only_Set (CRDT) — read-side projection
+/-! # Grow_Only_Set (CRDT): read-side projection
 
 The 24 VCs prove the set converges under union. The headline read
 is `lookup e`: is element `e` in the set? `Add e` makes `e` live;

@@ -6,16 +6,16 @@ import Sal.MRDTs.RGA_Rehoming.RGA_Reachability_Invariant
 
 The signature the whole RGA chain instantiates: `RGAM` (the raw `MRDTSig`:
 `do_`, three-way `merge`, `rc = Either`) and `RGACondSig` (its conditioned
-extension: `Inv := RgaInv`, `applicable := accurate ∧ fresh_ts` — the Design-3
+extension: `Inv := RgaInv`, `applicable := accurate ∧ fresh_ts`, the Design-3
 split validated in `RGA_Reachability_Invariant.lean`), together with the
 order-stable op-wellformedness layer that discharges the Inv-transport
 obligation:
 
-* `opOK` — the op-only side conditions (`Ins`: `t ≠ 0`; `Del`: `x ∉ pre`),
+* `opOK`, the op-only side conditions (`Ins`: `t ≠ 0`; `Del`: `x ∉ pre`),
   derivable once at generation time (`opOK_of_generation`);
-* `RgaInv_do_opOK` — `RgaInv` is preserved by every `do_` step under `opOK`
+* `RgaInv_do_opOK`, `RgaInv` is preserved by every `do_` step under `opOK`
   alone (no path accuracy, no freshness);
-* `Inv_transport_generic`/`obligation_A_RGA` — hence `RgaInv` holds at every
+* `Inv_transport_generic`/`obligation_A_RGA`, hence `RgaInv` holds at every
   prefix-fold of every enumeration, including mid-bubble hybrids.
 
 `G2_Transport_Probe.lean` keeps the ⚑-site map and the obligation-(B)
@@ -33,7 +33,7 @@ open Sal.Emulation
 variable {α : Type} [DecidableEq α] [Inhabited α]
 
 /-! ## §1 Obligation (A), generic part: an invariant preserved by every
-`update` step transports to every prefix-fold of every enumeration — including
+`update` step transports to every prefix-fold of every enumeration, including
 the mid-bubble hybrids, because the statement quantifies over ALL lists. -/
 
 /-- Generic Inv-transport: if `SInv` is preserved by every single `update` step
@@ -68,7 +68,7 @@ theorem Inv_transport_prefix {D : CRDTSig}
 under **op-only** side conditions
 
 `Inv_doIns`/`Inv_doDel` (`RGA_Reachability_Invariant.lean:73,131`) take
-`accurate o s` / `fresh_ts o s` — state-dependent hypotheses that would entangle
+`accurate o s` / `fresh_ts o s`, state-dependent hypotheses that would entangle
 (A) with (B).  The re-proofs below isolate the load-bearing content:
 
 * `Ins`: only `t ≠ 0` is used (the stored anchor is `resolve s (a :: pre)`,
@@ -101,7 +101,7 @@ theorem resolve_mem (s : concrete_st α) :
       · left; exact h
       · right; exact List.mem_cons_of_mem _ h
 
-/-- `RgaInv` is preserved by an `Ins` given only `t ≠ 0` — NO path accuracy, NO
+/-- `RgaInv` is preserved by an `Ins` given only `t ≠ 0`, NO path accuracy, NO
 freshness.  (Mirror of `Inv_doIns` with `resolve_zero_or_live` replacing the
 accuracy-derived liveness of the stored anchor.) -/
 theorem RgaInv_doIns_opOK (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (pre : List ℕ)
@@ -141,7 +141,7 @@ theorem RgaInv_doIns_opOK (s : concrete_st α) (t r : ℕ) (e : α) (a : ℕ) (p
       · refine Or.inr ?_
         rw [lemma_InDomUpd1, hancl]; simp only [Bool.or_true]
 
-/-- `RgaInv` is preserved by a `Del` given only `x ∉ pre` — NO path accuracy.
+/-- `RgaInv` is preserved by a `Del` given only `x ∉ pre`, NO path accuracy.
 (Mirror of `Inv_doDel`: the reparent target `resolve s pre` is 0-or-live by
 `resolve_zero_or_live`, and `≠ x` because `resolve` lands in `{0} ∪ pre`.) -/
 theorem RgaInv_doDel_opOK (s : concrete_st α) (t r x : ℕ) (pre : List ℕ)
@@ -189,7 +189,7 @@ theorem RgaInv_do_opOK (s : concrete_st α) (o : Op (app_op_t α))
 /-! ### `opOK` is free at generation time
 
 Closing the loop for (A): every event of a genuine conditioned execution
-satisfies `opOK`, because applicability at the *generation* state implies it —
+satisfies `opOK`, because applicability at the *generation* state implies it,
 `fresh_ts` gives `t ≠ 0` directly, and an accurate path cannot contain its own
 leaf (the ancestor chain is a function into `{0} ∪ dom`, terminating at the
 absent root, so it is loop-free). -/
@@ -255,7 +255,7 @@ theorem isAncPath_not_mem (s : concrete_st α) (h0 : contains s 0 = false)
   rw [heq] at hlen
   exact Nat.lt_irrefl _ hlen
 
-/-- Applicability at the generation state yields the order-stable `opOK` —
+/-- Applicability at the generation state yields the order-stable `opOK`,
 so obligation (A) needs nothing from the reordered run. -/
 theorem opOK_of_generation (o : Op (app_op_t α)) (s : concrete_st α)
     (h0 : contains s 0 = false) (hacc : accurate o s) (hfr : fresh_ts o s) :
@@ -276,14 +276,14 @@ theorem opOK_of_generation (o : Op (app_op_t α)) (s : concrete_st α)
 
 /-! ## §3 Packaging: the tombstone-free RGA as a `ConditionedMRDTSig`
 
-`Inv := RgaInv`, `applicable := accurate ∧ fresh_ts` — exactly the Design-3
+`Inv := RgaInv`, `applicable := accurate ∧ fresh_ts`, exactly the Design-3
 split validated in `RGA_Reachability_Invariant.lean`.  `rc = Either`
 everywhere, so ALL `lo`-edges hinge on `¬ commutesOn`.
 
 NOTE (recorded hosting gap): the RGA's commutation lemmas
 (`rc_non_comm'`, `RGA_Tombstone_Free_MRDT.lean:928`) conclude the observational
 `eq`, not Lean `Eq`, so the *positive* `commutesOn` facts for non-vacuous pairs
-are not directly available at this signature — the counterexample below only
+are not directly available at this signature, the counterexample below only
 needs the VACUOUS pairs, which are independent of that gap. -/
 
 noncomputable def RGAM (α : Type := ℕ) [DecidableEq α] [Inhabited α] : MRDTSig where

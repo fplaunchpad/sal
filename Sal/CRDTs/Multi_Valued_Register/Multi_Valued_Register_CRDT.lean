@@ -9,7 +9,7 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Multi-Valued Register — state-based CRDT (classical, replace-on-write)
+# Multi-Valued Register: state-based CRDT (classical, replace-on-write)
 
 Op-based MVR (Shapiro et al. INRIA RR-7506 §3.2.2 Spec 14) ported to
 Sal's state-based `⟨Σ, σ₀, do, merge, rc⟩` framework. `put(v)` at
@@ -18,8 +18,8 @@ so concurrent writes both survive (each replica's local state has
 only its own new entry; merge unions them) but sequential writes
 overwrite.
 
-To preserve `rc := Either` everywhere — and therefore the
-add-additively-grow-only structure that makes the 24 VCs trivialise —
+To preserve `rc := Either` everywhere, and therefore the
+add-additively-grow-only structure that makes the 24 VCs trivialise,
 we adopt the same trick as AW-CRPQ's `Rmv` and OR-Set's `Rem`: the
 op carries the prepare-time snapshot of currently-visible
 timestamps, and `do_` unions that snapshot into a separate `removed`
@@ -29,8 +29,8 @@ projection (`Multi_Valued_Register_ReadSide.lean`):
     visible_value v ≔ ∃ ts, (ts, v) ∈ writes ∧ ts ∉ removed
 
 State:
-  * `writes`  : `set (ts × value)` — every put record (grow-only).
-  * `removed` : `set ts`            — timestamps superseded by some
+  * `writes`  : `set (ts × value)`, every put record (grow-only).
+  * `removed` : `set ts`, timestamps superseded by some
                                        later put's snapshot (grow-only).
 
 Both components are grow-only sets, joined by union, so all 24 VCs

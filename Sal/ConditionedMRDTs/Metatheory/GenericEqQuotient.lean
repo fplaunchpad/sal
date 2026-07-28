@@ -57,7 +57,7 @@ variable {D : ConditionedMRDTSig}
 
 /-! ## §1. The VC bundle -/
 
-/-- **`EqEquiv D`** — the observational relation `≈` the datatype supplies,
+/-- **`EqEquiv D`**: the observational relation `≈` the datatype supplies,
 with its equivalence proof (RGA: `eq` + `eq_equiv`; flat MRDTs: `Eq`). -/
 structure EqEquiv (D : ConditionedMRDTSig) where
   /-- The observational relation `≈` on states. -/
@@ -65,7 +65,7 @@ structure EqEquiv (D : ConditionedMRDTSig) where
   /-- `≈` is an equivalence. -/
   equiv : Equivalence eqv
 
-/-- **`InvPres D W`** — `Inv` holds at `init`, is preserved by the raw `update`
+/-- **`InvPres D W`**: `Inv` holds at `init`, is preserved by the raw `update`
 on `W`-well-formed ops (`W` = the datatype-declared operation-wellformedness
 predicate, `WfOp`), and is preserved by `mergeL`. This is the datatype's
 `inv_step`; `ConditionedMRDTSig` does not carry it as a field, so it is an
@@ -93,7 +93,7 @@ structure InvPres (D : ConditionedMRDTSig)
   inv_mergeL : ∀ l a b : D.State,
     D.Inv l → D.Inv a → D.Inv b → D.Inv (D.mergeL l a b)
 
-/-- **`CongVC D E`** — the congruence VC: `update`, `mergeL` and `query`
+/-- **`CongVC D E`**, the congruence VC: `update`, `mergeL` and `query`
 respect `≈` on `Inv`-states. The conditioning on `Inv` is forced: the
 full-type `mergeL` congruence is false for the RGA
 (`RGA_EqQuotient.merge_eq_congr_l_fails`); it holds only on the reachable
@@ -110,7 +110,7 @@ structure CongVC (D : ConditionedMRDTSig) (E : EqEquiv D) : Prop where
   query_congr : ∀ (q : D.Query) {s s' : D.State},
     D.Inv s → D.Inv s' → E.eqv s s' → D.query s q = D.query s' q
 
-/-- **`InvInvVC D E W`** — `≈`-invariance VCs, on `Inv`-states, for the two
+/-- **`InvInvVC D E W`**: `≈`-invariance VCs, on `Inv`-states, for the two
 state-dependent predicates that descend to the quotient: the guard predicate `W`
 (`WfOp`, needed to lift the guarded step `doW`), and `applicable` (carried through
 as `QSig.applicable`). RGA: `wf`/`fresh`-`eq_iff` for `W`,
@@ -145,7 +145,7 @@ def QState (D : ConditionedMRDTSig) (E : EqEquiv D) : Type :=
 def qmk (E : EqEquiv D) (s : D.State) (hs : D.Inv s) : QState D E :=
   Quotient.mk E.setoid ⟨s, hs⟩
 
-/-- `=` upstairs is `≈` downstairs — the whole point of the quotient. -/
+/-- `=` upstairs is `≈` downstairs, the whole point of the quotient. -/
 theorem qmk_eq_iff (E : EqEquiv D) {s s' : D.State}
     {hs : D.Inv s} {hs' : D.Inv s'} :
     qmk E s hs = qmk E s' hs' ↔ E.eqv s s' :=
@@ -210,7 +210,7 @@ noncomputable def applySeqW (D : ConditionedMRDTSig)
     (ρ : List (Op D.AppOp)) : D.State :=
   ρ.foldl (fun s o => doW D W o s) s
 
-/-- `WfChain D W s ρ` — `W` holds at every prefix-state of folding `ρ` from `s`.
+/-- `WfChain D W s ρ`: `W` holds at every prefix-state of folding `ρ` from `s`.
 The per-fold-state well-formedness the execution model guarantees along a
 reachable trace; `WfOpReachable` discharges it for the linearizations that
 appear. -/
@@ -245,7 +245,7 @@ theorem InvPres.inv_applySeq_of_wfChain {W : Op D.AppOp → D.State → Prop}
     obtain ⟨hw, hrest⟩ := hc
     exact ih (hP.inv_update s o hs hw) hrest
 
-/-- **`WfOpReachable D W WfOpGen`** — the datatype VC that seats each fold step,
+/-- **`WfOpReachable D W WfOpGen`**: the datatype VC that seats each fold step,
 carrying a per-event **generation-wellformedness** premise `WfOpGen`. Any `Nodup`
 enumeration with pairwise-distinct timestamps and all-`WfOpGen` events folds from
 `init` with `W` at every prefix. `WfOpGen` is the honest per-op side condition a
@@ -265,7 +265,7 @@ def WfOpReachable (D : ConditionedMRDTSig)
     WfChain D W D.init ρ
 
 /-- Distinct timestamps of any `listPermOf` of an event set whose members are all
-witnessed in `Cq` — read off `Configuration.timestamps_distinct`. Feeds
+witnessed in `Cq`, read off `Configuration.timestamps_distinct`. Feeds
 `WfOpReachable` at every use site. -/
 theorem distinct_ts_of_perm
     (Cq : Sal.Emulation.Configuration D.toCRDTSig)
@@ -290,7 +290,7 @@ section Functor
 variable (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
   (hP : InvPres D W) (hC : CongVC D E) (hA : InvInvVC D E W)
 
-/-- `update` lifted to the quotient — the `W`-guarded step (`doW`) lifted.
+/-- `update` lifted to the quotient, the `W`-guarded step (`doW`) lifted.
 Well-defined by `doW_congr` (whose `Inv` hypotheses are supplied by the subtype);
 it lands in the subtype by `InvPres.inv_doW`, which needs only the `W`-conditioned
 `inv_update` (the `¬W` branch is the identity, keeping `Inv` for free). The `¬W`
@@ -388,11 +388,11 @@ end Functor
 /-! ## §3. Downstairs readings of the quotient's `commutes`/`loOn`, and the
 configuration transport -/
 
-/-- **`≈`-commutation on `Inv`-states** — exactly what `(QSig …).commutes`
+/-- **`≈`-commutation on `Inv`-states**, exactly what `(QSig …).commutes`
 means downstairs. The steps are the `W`-guarded steps (`doW`), because the
 quotient's `update` is `qdo`: on `W`-well-formed ops `doW = update`, so this is
 real commutation there, and a `¬W` op commutes as a no-op (a state the execution
-model never reaches). Conditioned on `Inv` only — quotient states carry no `W`,
+model never reaches). Conditioned on `Inv` only, quotient states carry no `W`,
 so this (not `commutesOn`) is the commutation notion the `≈`-route's Join is
 proved against. -/
 def eqCommutesOn (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -474,7 +474,7 @@ def fullClosureRel (vis : Op D.AppOp → Op D.AppOp → Prop)
 folded from `D.init` by the RAW `applySeq` (`= π.foldl D.update`, matching the
 RGA's `applySeqR`), lands `≈`-equal to `s`. This is `IsCanonicalState` with `=`
 relaxed to `≈` and `loOn`'s `commutes` replaced by `≈`-commutation-on-`Inv`
-(`loOnEq`). The fold is RAW — the quotient's internal `doW`-guard is discharged
+(`loOnEq`). The fold is RAW: the quotient's internal `doW`-guard is discharged
 (guarded `= raw`) at the transfer via `WfOpReachable`, so the datatype states its
 `≈`-Join over its own raw update, not a guarded surrogate. -/
 def IsCanonicalStateEq (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -513,11 +513,11 @@ include hWFR
 
 /-- The bridge: `IsCanonicalState` of a `QSig`-configuration at a class
 `qmk E s hs` IS the datatype's `IsCanonicalStateEq` (over the RAW `applySeq`) at
-the representative — the quotient makes `=` into `≈` (`qmk_eq_iff`) and `loOn`
+the representative: the quotient makes `=` into `≈` (`qmk_eq_iff`) and `loOn`
 into `loOnEq` (`loOn_qsig_iff`), the fold commutes with `qmk` (`qapplySeq_init`),
 and the internal `doW`-guard is discharged (`applySeqW = applySeq`) via
 `WfOpReachable`. Its `WfOpGen` premise is fed by `hGenEv` (every event of `ev` is
-`WfOpGen`, an HONEST execution condition — see `RA_linearizable_up_to_eq`), and
+`WfOpGen`, an HONEST execution condition, see `RA_linearizable_up_to_eq`), and
 its distinct-timestamp premise by `ev`'s members (`hsub` +
 `Configuration.timestamps_distinct`). This is where guarded folds become raw. -/
 theorem isCanonicalState_qsig_iff
@@ -557,7 +557,7 @@ end Transfer2
 PLUS a per-event `WfOpGen` side-condition on the event set. `WfOpGen` cannot be
 dropped: `isCanonicalState_qsig_iff`'s guarded-to-raw bridge fails on a set
 containing a non-`WfOpGen` event (e.g. an RGA root delete, where the guarded fold
-skips but the raw fold does not — `rga_wfOpReachable_false`), so the quotient Join
+skips but the raw fold does not, `rga_wfOpReachable_false`), so the quotient Join
 is GENUINELY conditioned. This index is NOT implied by `fullClosure`, so it does
 NOT feed `ra_linearizable3_of_joinC` (which demands `fullClosure ⟹ 𝒞`); the
 metatheorem re-threads it through the reachability induction instead. -/
@@ -570,7 +570,7 @@ def wfGenFull (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
 /-- **The config-relative generation-discipline supply** (agreement-parameterized).
 The datatype's `GenDisc` holds for every backward-closed delivered set `ev ⊆
 Cfg.events`, evaluated at ANY `vis` that AGREES with `Cfg.vis` on `ev`. Mentions
-`Cfg` — config-relative, mirroring `hGenC`'s `∀ o ∈ Cfg.events, WfOpGen o`, and
+`Cfg`, config-relative, mirroring `hGenC`'s `∀ o ∈ Cfg.events, WfOpGen o`, and
 SATISFIABLE (the discipline is only asserted for genuine, delivered sets, not for
 arbitrary/fabricated ones). The agreement clause is what lets the reachability
 re-threading move the supply from a config to its predecessor: an `apply` step's
@@ -586,12 +586,12 @@ def GDSupply (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
     (∀ a b, a ∈ ev → b ∈ ev → (vis a b ↔ Cfg.vis a b)) →
     fullClosureRel vis ev → (∀ a ∈ ev, a ∈ Cfg.events) → GenDisc vis ev
 
-/-- **`joinC_quotient`** — the per-configuration transfer theorem. For a FIXED
+/-- **`joinC_quotient`**: the per-configuration transfer theorem. For a FIXED
 `QSig`-configuration `Cq`, the datatype's `≈`-Join (`EqJoinLemma3C`) yields the
 merged canonical state, given each side's `wfGenFull` closure PLUS the datatype
 genuineness `GenDisc` for the two sides AND their union, supplied explicitly. The
 union genuineness is NOT a `JoinLemma3C` side-hypothesis (which only carries the
-two sides), so it must be supplied per-config — which is why the caller
+two sides), so it must be supplied per-config, which is why the caller
 (`goodConfig3_merge_wfgen`) feeds all three from the reachable config's `GDSupply`,
 rather than from a config-generic premise (that would be unsatisfiable on
 fabricated configs). Pure quotient bookkeeping otherwise: induct the three
@@ -707,7 +707,7 @@ theorem vis_agree_of_step {D' : ConditionedMRDTSig}
 
 /-- **The merge step, factored on its merged canonical state.** `goodConfig3` is
 preserved by a ternary-merge transition once the merged version's state is shown
-canonical — the join-lemma application is the ONLY thing this factors out
+canonical: the join-lemma application is the ONLY thing this factors out
 (everything else is store bookkeeping, verbatim `Adequacy.goodConfig3_mergeF`).
 The conditioned metatheorem supplies `h_merged` from `joinC_quotient`. -/
 theorem goodConfig3_merge_of_canonical {D' : ConditionedMRDTSig}
@@ -783,7 +783,7 @@ per-config `joinC_quotient` (index `wfGenFull`) instead of an unconditional
 off `hGenC` via `ver_events_sub`, and the datatype genuineness for BOTH sides AND
 their union is read off the config-relative `hGDc` (`GDSupply` for the predecessor
 core), whose backward-closure / `⊆ events` obligations are exactly `ver_causal` /
-`ver_events_sub` (agreement is reflexive here — `Iff.rfl`). The merge data (`ev₁`,
+`ver_events_sub` (agreement is reflexive here, `Iff.rfl`). The merge data (`ev₁`,
 `sT`, …) are implicit, inferred from the step hypotheses. -/
 theorem goodConfig3_merge_wfgen
     (E : EqEquiv D) (W : Op D.AppOp → D.State → Prop)
@@ -888,7 +888,7 @@ theorem goodConfig3_of_reachF_wfgen
         (ih (fun o ho => hGenc o (hmono o ho)) hGDpred)
     | query h_s h_val => exact ih (fun o ho => hGenc o (hmono o ho)) hGDpred
 
-/-- **`RA_linearizable_up_to_eq`** — the generic conditioned metatheorem.
+/-- **`RA_linearizable_up_to_eq`**: the generic conditioned metatheorem.
 A `ConditionedMRDTSig` `D` supplying the `≈`-route VCs (`EqEquiv`, `InvPres`,
 `CongVC`, `InvInvVC`, `WfOpReachable D W WfOpGen`, carrying the per-event
 generation-wellformedness premise, and `EqJoinLemma3C`) makes its quotient
@@ -916,7 +916,7 @@ theorem RA_linearizable_up_to_eq
     (goodConfig3_of_reachF_wfgen E W hP hC hA WfOpGen hWFR GenDisc
       hJoinEq C hReach hGenC hGenDisc)
 
-/-- **Readback — the "up to `≈`" content, over the RAW fold.** For a reachable
+/-- **Readback: the "up to `≈`" content, over the RAW fold.** For a reachable
 `QSig`-configuration, a version whose registered state is the class of a concrete
 `D`-state `σ` admits an enumeration `π` of its event set that respects the
 `≈`-conditioned linearization order (`loEq`) and, folded from `D.init` by the RAW

@@ -1,23 +1,23 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Replay
 
-/-! # Shesha — effective-fold theory
+/-! # Shesha: effective-fold theory
 
 The structure theory of folds of **effective** enumerations, feeding the
 join hook `shesha_join_at_eff` (`Shesha_Cond.lean`):
 
-* §0 **read/steps bookkeeping** — live ids come only from inserts.
-* §1 **the `drop` splice** — simultaneous splice-out of a *set* of ids
+* §0 **read/steps bookkeeping**, live ids come only from inserts.
+* §1 **the `drop` splice**, simultaneous splice-out of a *set* of ids
   (`dropF`); `delete` is the singleton instance, the delete-*fold* is the
   set instance (`steps_dels`): the delete phase of any enumeration is
   **order-free and set-determined**.
-* §2 **delete postponement** — deletes bubble to the end of an enumeration
+* §2 **delete postponement**, deletes bubble to the end of an enumeration
   past inserts they don't touch (`steps_postpone_deletes`); with §1 this
   puts every effective fold in the normal form
   `dropF (deleted) (insert-phase forest)`.
-* §3 **insert-phase structure** — the fold of an effective, fresh
+* §3 **insert-phase structure**, the fold of an effective, fresh
   insert-only list is the *anchored forest*: ids = the inserted ids,
   each row = that anchor's inserts, newest first (head-insertion).
-* §4 **fronts** — the rows of a `dropF`-collapse: the row of a live node
+* §4 **fronts**, the rows of a `dropF`-collapse: the row of a live node
   `p` is the *front* of `p`'s pre-splice row (each dead child replaced by
   its recursively-collapsed row, in place). -/
 
@@ -541,7 +541,7 @@ theorem row_steps_ins :
 
 mutual
   /-- The **front** of a tree under the dead-set `D`: the tree's root if
-  alive, else the (recursively computed) front of its row — exactly what
+  alive, else the (recursively computed) front of its row, exactly what
   the root contributes to its parent's row after the collapse. -/
   def frontT (D : Nat → Bool) : Tree → List Nat
     | .node i cs => if D i then frontF D cs else [i]
@@ -947,7 +947,7 @@ theorem row_mem_plan {T : St} {z w : Nat} (h : z ∈ row T w) :
 For any pair relation `K` that holds of two inserts whenever (i) both
 land in rows of the ambient forest, (ii) their ids differ, (iii) the
 earlier op is not anchored at the later id, and (iv) same-anchor pairs
-are ordered right-to-left in their row — `K` holds pairwise along the
+are ordered right-to-left in their row, `K` holds pairwise along the
 plan. This is the structural half of the `respects` obligation; the
 event-level kernel (visibility, honesty, non-commutation) instantiates
 `K`. -/

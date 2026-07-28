@@ -5,27 +5,25 @@ import Sal.ConditionedMRDTs.Metatheory.ArbAdequacyReachEq
 /-!
 # The flat collapse of the generic conditioned framework
 
-*Additive; 0 `sorry`.*
-
 **One framework, mechanized as such.** A flat MRDT (`Inv = applicable = ⊤`) with a
 closure-indexed Join Lemma (`JoinLemma3C`, what every production discharge already supplies via
 `ConditionedContract`) instantiates the GENERIC conditioned metatheorem at the identity
-observational equivalence — `≈ := =`, guard `W := ⊤`, witness discipline `H := ⊤` — and
+observational equivalence (`≈ := =`, guard `W := ⊤`, witness discipline `H := ⊤`) and
 inherits `IsRALinearizable3Eq` over the quotient ternary system from the same
 `RA_linearizable_up_to_eq_H` that hosts the tombstone-free RGA.
 
 The bridge content:
 
-* the trivial bundles (`invPresTop`, `congVCEq`, `invInvVCTop`) — congruence under `=` is
+* the trivial bundles (`invPresTop`, `congVCEq`, `invInvVCTop`): congruence under `=` is
   rewriting, invariant preservation at `Inv = ⊤` is vacuous;
 * `eqCommutesOn ↔ commutes` at the identity equivalence with the trivial guard: `doW ⊤` is the
   raw update and the `Inv`-conditioning is total, so `≈`-commutation-on-`Inv` IS structural
-  commutation — hence `loOnEq` at `=` IS the flat set-relative order `loOn`;
+  commutation, hence `loOnEq` at `=` IS the flat set-relative order `loOn`;
 * a synthetic `Sal.Emulation.Configuration` presenting the `≈`-Join's ambient `(vis, events)`
   (visibility restricted to the union; same-replica `vis`-totality supplied by the join
   context `flatHonJ`, which a reachable core satisfies STRUCTURALLY);
-* `eqJoinH_of_joinC` — the `≈`-Join at `=` from the flat `JoinLemma3C` at full closure;
-* `flat_ra_linearizable3_eq` — the capstone: every honest-execution premise of
+* `eqJoinH_of_joinC`: the `≈`-Join at `=` from the flat `JoinLemma3C` at full closure;
+* `flat_ra_linearizable3_eq`, the capstone: every honest-execution premise of
   `RA_linearizable_up_to_eq_H` is trivial at the flat parameters (`H = ⊤`; `qapplicable` is the
   lift of `⊤`; `flatHonJ` is a structural field of every configuration), so the theorem is
   UNCONDITIONAL.
@@ -101,7 +99,7 @@ theorem eqCommutesOn_iff_commutes (hInvT : ∀ s : D.State, D.Inv s) (o₁ o₂ 
 
 /-! ## §2  The join context and the synthetic configuration -/
 
-/-- **The flat join context**: same-replica `vis`-totality on the ambient event universe — a
+/-- **The flat join context**: same-replica `vis`-totality on the ambient event universe, a
 STRUCTURAL field of every configuration (`vis_total_same_replica`), so `hHon` needs no
 reachability induction at all. -/
 def flatHonJ (D : ConditionedMRDTSig) :
@@ -291,7 +289,7 @@ theorem qapplicable_top (hAppT : ∀ (o : Op D.AppOp) (s : D.State), D.applicabl
   rw [← hrep]
   exact hAppT o σ
 
-/-- The flat join context holds at EVERY configuration — structurally
+/-- The flat join context holds at EVERY configuration, structurally
 (`vis_total_same_replica` is a field). -/
 theorem flatHonJ_of_config (hInvT : ∀ s : D.State, D.Inv s)
     (C₀ : Configuration (QSig (eqOfEq D) (WTop D) (invPresTop hInvT)
@@ -303,7 +301,7 @@ theorem flatHonJ_of_config (hInvT : ∀ s : D.State, D.Inv s)
   obtain ⟨rb, sb, hLb, hsb⟩ := hb
   exact C₀.vis_total_same_replica hLa hsa hLb hsb hne hrep
 
-/-- **THE FLAT CAPSTONE — every flat MRDT with a closure-indexed Join Lemma inherits
+/-- **THE FLAT CAPSTONE: every flat MRDT with a closure-indexed Join Lemma inherits
 `IsRALinearizable3Eq` from the generic conditioned metatheorem**, unconditionally: at the flat
 parameters every honest-execution premise is trivial or structural. -/
 theorem flat_ra_linearizable3_eq

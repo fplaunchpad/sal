@@ -5,7 +5,7 @@ import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 The Boolean `bor_*` tautology kernel used by the four LCA-inclusive grow-only
 unions (Grow-Only Set, Grow-Only Map, tombstone RGA, Peritext), together with
-the Phase-2 catalog-sweep overview it was introduced with.
+the production-catalog overview.
 -/
 
 namespace Sal.ConditionedMRDTs
@@ -13,14 +13,14 @@ namespace Sal.ConditionedMRDTs
 open Sal.Emulation
 open Classical
 
-/-! # Phase 2: the production catalog sweep (T11)
+/-! # The commuting-class production catalog
 
 Six further production MRDTs, all in the **commuting class**: `rc = Either`
 everywhere and all update pairs commute. Four are LCA-inclusive grow-only
-unions (`mergeL l a b = l ∪ a ∪ b`, componentwise) — Grow-Only Set, Grow-Only
-Map, RGA (tombstone), Peritext — for which every merge law is a Boolean
+unions (`mergeL l a b = l ∪ a ∪ b`, componentwise), Grow-Only Set, Grow-Only
+Map, RGA (tombstone), Peritext, for which every merge law is a Boolean
 tautology (the `bor_*` kernel below); two are the counter group form
-(`mergeL l a b = a + b − l`) — Increment-Only Counter, PN-Counter. All six
+(`mergeL l a b = a + b − l`), Increment-Only Counter, PN-Counter. All six
 land end-to-end via the arbitration capstone `ra_linearizable3_via_capstone`
 (feeding `feasibleDeltaVCs3_of_delta` and `cdVC3_of_all_comm` as the merge
 content).

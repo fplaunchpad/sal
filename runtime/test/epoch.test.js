@@ -1,10 +1,8 @@
-// THE EPOCH DIAMOND, wired into the runtime (task #112 phase 3). The validated
-// (whiteboard/epoch-protocol-note.md) and mechanized
-// (Sal/.../EmbedRGA_EpochDiamond.lean) result: replicas that compacted at
+// THE EPOCH DIAMOND, wired into the runtime. Replicas that compacted at
 // INCOMPARABLE certified cuts merge with no coordination, reads == the never-
 // compacted twin. The cross-epoch THROW is replaced by the certificate-determined
-// join. Every expected value below is HAND-DERIVED from the note's §4 tables
-// (never #eval'd from the code under test); each PASS carries a FAIL companion.
+// join. Every expected value below is HAND-DERIVED (never #eval'd from the code
+// under test); each PASS carries a FAIL companion.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,7 +30,7 @@ test('cut key is canonical (sorted, order-independent) and the DAG orders cuts',
   assert.equal(dag.compare(S, U), 'sub', '{1,2} ⊆ {1,2,3}');
   assert.equal(dag.compare(U, S), 'sup');
   assert.equal(dag.compare(U, V), 'divergent', '{1,2,3} vs {1,2,4} are incomparable');
-  // the JOIN W = U ∪ V (note §9.2), parents [U, V]
+  // the JOIN W = U ∪ V, parents [U, V]
   const W = dag.join(U, V);
   assert.deepEqual([...dag.get(W).settledIds].sort((a, b) => a - b), [1, 2, 3, 4]);
   assert.deepEqual(dag.get(W).parents, [U, V]);
@@ -127,7 +125,7 @@ test('c4 in the RUNTIME: the cross-epoch merge translates (reads == twin)', () =
   b.commit({ type: 'ins', id: 9, el: 'y', anchorId: 2 });   // straggler anchored at a survivor
   tb.commit({ type: 'ins', id: 9, el: 'y', anchorId: 2 });
   b.ingest(a.delta(b.ancestryGids()));
-  b.mergeWithGid(a.headGid);                                 // CROSS-EPOCH: was a THROW
+  b.mergeWithGid(a.headGid);                                 // CROSS-EPOCH merge
   syncReplicas(ta, tb);
   assert.equal(b.read().join(''), tb.read().join(''), 'cross-epoch merge reads == never-compacted twin');
   assert.ok(b.read().includes('y') && b.read().includes('x2'));

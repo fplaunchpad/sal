@@ -6,7 +6,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 400000
 open Classical
 
-/-! # Grow_Only_Set (MRDT) — read-side projection
+/-! # Grow_Only_Set (MRDT): read-side projection
 
 Same shape as the CRDT but on the three-way merge. The lookup is
 `mem e`; `Add e` makes `e` live; once live, always live. -/

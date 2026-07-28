@@ -1,7 +1,7 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
 
 /-!
-# The re-coding theorem — state-level GC for the embed RGA
+# The re-coding theorem: state-level GC for the embed RGA
 
 Coordinates are birth constants: a live record carries every dead ancestor's
 codeword forever, so coordinate weight grows with history, not with the live
@@ -17,10 +17,10 @@ fold's key comparator on the coordinates at hand), H3 = `ext` (the re-map
 commutes with beyond-cut extensions), and H1 (injectivity) is *derived*
 (`StablePrefixMap.injOn`). The cluster:
 
-* **T1** `eRecode_applySeq` / `eRecode_fold` — fold congruence, parametric
+* **T1** `eRecode_applySeq` / `eRecode_fold`, fold congruence, parametric
   in the cut state: folding translated ops over the translated state is the
   translation of the untranslated fold;
-* **T2** `eRecode_reads_identical` — the element sequence of the translated
+* **T2** `eRecode_reads_identical`, the element sequence of the translated
   fold is the untranslated one, verbatim: compression is invisible;
 * **T3** `eRecode_fold_canon` (canonicity transports), `eRecode_sorted` /
   `eRecode_version_sorted` (the re-coded version is still canonical, no
@@ -29,7 +29,7 @@ commutes with beyond-cut extensions), and H1 (injectivity) is *derived*
 * `eRecode_ext_global_collapse`: demanding H3 at *every* historical mint
   collapses the re-map to a constant-prefix prepend, so the whole-history
   congruence is trivial and the cut-parametric statement is the only
-  nontrivial formulation — re-coding is an epoch operation on states, not a
+  nontrivial formulation, re-coding is an epoch operation on states, not a
   history rewrite.
 
 Out of scope (`whiteboard/embed-recoding-note.md` §6): the protocol half
@@ -224,7 +224,7 @@ theorem eUpdate_remap {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
         exact eInsert_remap F.f _ s (fun x hx =>
           F.ord' (hs x hx) (Or.inr ⟨π, t - a, hmint, rfl⟩))
 
-/-! ## §4  T1 and T2 — fold congruence and reads identical -/
+/-! ## §4  T1 and T2: fold congruence and reads identical -/
 
 /-- **T1, the re-coding theorem (cut-parametric fold congruence).** From any
 cut state whose record coordinates are at hand, folding the translated
@@ -303,7 +303,7 @@ theorem eRecode_ext_global_collapse {Γ : OrderedPrefixCode}
         ih (fun x hx => hpos x (List.mem_append_left _ hx)),
         List.append_assoc]
 
-/-! ## §5  T3 — transport along the re-map -/
+/-! ## §5  T3: transport along the re-map -/
 
 /-- Canonicity transports: two enumerations of one event set have equal
 translated folds. -/
@@ -390,7 +390,7 @@ theorem eRecode_ra_transport {Γ : OrderedPrefixCode} (F : StablePrefixMap Γ)
 #print axioms eRecode_version_sorted
 #print axioms eRecode_ra_transport
 
-/-! ## §7  SPOT — the worked compaction, hand-derived (PASS + FAIL shaped)
+/-! ## §7  SPOT: the worked compaction, hand-derived (PASS + FAIL shaped)
 
 The `whiteboard/embed-recoding-note.md` worked example, unary code. History: `a`(t1)←root, `b`(t2)←a,
 `c`(t3)←b, then delete `a` and `b`. Cut state: one live record
@@ -401,7 +401,7 @@ both sides: `e, c, d` (payloads `[14, 12, 13]`); hand-summed coordinate
 weight 24 bits original vs 16 re-coded. FAIL companion: `badMap` sends the
 live coordinate to `enc 8` (injective, extension-commuting, NOT
 order-preserving: it jumps over `e`'s mint `enc 7`) and the read flips to
-`c, d, e` — order preservation (H2) is the load-bearing hypothesis. -/
+`c, d, e`, order preservation (H2) is the load-bearing hypothesis. -/
 
 namespace SPOT
 
@@ -451,7 +451,7 @@ not empty: the survivor is displayed). -/
 theorem cut_read_identical :
     readE (eRemapSt gc sCut) = [12] ∧ readE sCut = [12] := by native_decide
 
-/-- PASS: T1 concretely — the translated continuation fold IS the re-map of
+/-- PASS: T1 concretely, the translated continuation fold IS the re-map of
 the untranslated one, record for record. -/
 theorem t1_concrete : finalR = eRemapSt gc finalO := by native_decide
 
@@ -479,7 +479,7 @@ def finalB : EState ℕ :=
     (postOps.map (eRemapOp badMap))
 
 /-- FAIL companion: the non-order-preserving re-map flips the read to
-`c, d, e` — compression is NOT invisible without H2. -/
+`c, d, e`, compression is NOT invisible without H2. -/
 theorem bad_map_changes_read :
     readE finalB = [12, 13, 14] ∧ readE finalB ≠ readE finalO := by
   native_decide

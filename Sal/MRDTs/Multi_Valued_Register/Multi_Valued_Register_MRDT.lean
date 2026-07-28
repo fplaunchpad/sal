@@ -8,15 +8,15 @@ import Sal.Tactic.Sal
 open Classical
 
 /-!
-# Multi-Valued Register — state-based MRDT (classical, replace-on-write)
+# Multi-Valued Register: state-based MRDT (classical, replace-on-write)
 
 MRDT counterpart to `Sal/CRDTs/Multi_Valued_Register/Multi_Valued_Register_CRDT.lean`,
 matching the paper's classical MVR semantics (Shapiro et al. INRIA
 RR-7506 §3.2.2 Spec 14): concurrent writes both survive, sequential
 writes overwrite.
 
-We use the same two-component state as the CRDT — `(writes, removed)`
-with `Write v O` adding to both — and standard three-way set merge per
+We use the same two-component state as the CRDT, `(writes, removed)`
+with `Write v O` adding to both, and standard three-way set merge per
 component. Both components are grow-only, so the 24 VCs close via
 the same pattern as `Grow_Only_Set_MRDT × Grow_Only_Set_MRDT`.
 

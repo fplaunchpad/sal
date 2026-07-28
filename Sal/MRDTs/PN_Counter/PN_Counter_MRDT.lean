@@ -7,7 +7,7 @@ import Sal.Interfaces.Set_Extended
 import Sal.Tactic.Sal
 
 /-!
-# PN-Counter — state-based MRDT
+# PN-Counter: state-based MRDT
 
 PN variant of `Increment_Only_Counter_MRDT`. The state is a single
 integer; `Inc` adds 1, `Dec` subtracts 1; merge has the same closed
