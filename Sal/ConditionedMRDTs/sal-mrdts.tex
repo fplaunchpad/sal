@@ -1776,39 +1776,76 @@ out once.}
 \end{figure}
 
 \paragraph{Reconciling the defeater.} Example~\ref{ex:defeater}, where the
-bottom-up route was stuck, peels cleanly. Its final merge is
-$\mergeL(\sigma(v_s), \mathrm{head}_p, \mathrm{head}_q)$, with
-$v_s = \{A_p, A_q\}$, $E_1 = \{A_p, R_p, A_q\}$ ($\mathrm{head}_p$, live
-$A_q$), $E_2 = \{A_p, A_q, R_q\}$ ($\mathrm{head}_q$, live $A_p$), and
-$U = E_1 \cup E_2$. The absorber makes
-$\loE{U} = \{A_p \!\to\! R_p,\ A_q \!\to\! R_q\}$: each add is absorbed by
-its own following remove, so the add-wins cross-edges vanish, and the
-maximal events are $R_p, R_q$.
+bottom-up route was stuck, peels cleanly, and the peel exercises all three
+delta laws. Write a state as $(A, D)$ with live set $A \setminus D$
+(Example~\ref{ex:defeater}). The final merge is
+$\mergeL(\sigma(v_s), \mathrm{head}_p, \mathrm{head}_q)$ with LCA
+$\sigma(v_s) = (\{A_p, A_q\}, \emptyset)$ (live on both tags),
+$\mathrm{head}_p = \sigma(E_1) = (\{A_p, A_q\}, \{A_p\})$
+($E_1 = \{A_p, R_p, A_q\}$, live $A_q$), and
+$\mathrm{head}_q = \sigma(E_2) = (\{A_p, A_q\}, \{A_q\})$
+($E_2 = \{A_p, A_q, R_q\}$, live $A_p$); the merge unions the dead sets to
+$(\{A_p, A_q\}, \{A_p, A_q\})$, all dead, which is $\sigma(U)$ for
+$U = E_1 \cup E_2$. On $U$ the order is
+$\loE{U} = \{A_p \!\to\! R_p,\ A_q \!\to\! R_q\}$: the $\rcrel$-arm would order
+each remove before the concurrent add (add-wins), but each add is overwritten
+by its own later remove, so the absorber drops both cross-edges, and the
+maximal events are the removes $R_p, R_q$.
 \begin{itemize}[leftmargin=1.6em]
-\item \emph{Peel $R_q$ with VC~\ref{fvc:lredist}.} $R_q$ lies in $E_2$ only;
-  its past is $\dow{R_q} = \{A_q\}$. VC~\ref{fvc:lredist} slides its delta out,
-  leaving a merge over $U \setminus \{R_q\}$, and VC~\ref{fvc:cd} closes it to
-  $R_q(\sigma(U \setminus \{R_q\}))$. $R_q$ is applied to what it saw,
-  $\{A_q\}$, killing $A_q$ alone.
-\item \emph{Peel $A_q$ with VC~\ref{fvc:redist}.} In the merge over
-  $U \setminus \{R_q\} = \{A_p, R_p, A_q\}$ the maximal event is now $A_q$
-  (with $R_q$ gone, $A_q$ is no longer absorbed), and it sits in both branches
-  and the LCA; VC~\ref{fvc:redist} factors its delta out once
-  ($\dow{A_q} = \emptyset$, a fresh add), and VC~\ref{fvc:cd} closes to
-  $A_q(\sigma(\{A_p, R_p\}))$.
-\item \emph{Peel $R_p$, then $A_p$.} Two more one-sided peels finish it:
-  $\sigma(U) = R_q(A_q(R_p(A_p(\Sinit)))) = \fold(\Sinit,
-  [A_p, R_p, A_q, R_q])$, the all-dead state, which is $\sigma(U)$.
+\item \emph{Peel $R_q$ (Flat VC~\ref{fvc:lredist}, Figure~\ref{fig:redist}(a)).}
+  $R_q$ lies in $E_2$ only; its causal past is $\dow{R_q} = \{A_q\}$, so
+  $B = \sigma(\{A_q\}) = (\{A_q\}, \emptyset)$ and its delta
+  $R_q(B) = (\{A_q\}, \{A_q\})$. By merge symmetry the final merge is
+  $\mergeL(\sigma(E_1{\cap}E_2), \sigma(E_2), \sigma(E_1))$, and
+  VC~\ref{fvc:lredist} at $e = R_q$ slides $R_q$'s delta out of the
+  $\sigma(E_2)$ branch onto the enclosing LCA slot:
+  \[
+  \begin{aligned}
+    &\mergeL\bigl(\sigma(E_1{\cap}E_2),\ \sigma(E_2),\ \sigma(E_1)\bigr) \\
+    &\quad{}= \mergeL\bigl(B,\; \mergeL(\sigma(E_1{\cap}E_2),\, \sigma(E_2{\setminus}R_q),\, \sigma(E_1)),\; R_q(B)\bigr).
+  \end{aligned}
+  \]
+  The inner merge is over $U \setminus \{R_q\} = \{A_p, R_p, A_q\}$, and
+  VC~\ref{fvc:cd} collapses $\mergeL(B,\, \sigma(U{\setminus}R_q),\, R_q(B))$ to
+  $R_q(\sigma(U{\setminus}R_q))$. So $R_q$ is applied to
+  $\sigma(\{A_p, R_p, A_q\})$ (live $A_q$) over the past $\{A_q\}$ it saw: it
+  kills $A_q$, and the concurrent $A_p$ it never saw is untouched.
+\item \emph{Peel $A_q$ (Flat VC~\ref{fvc:redist}, Figure~\ref{fig:redist}(b)).}
+  In $\sigma(U{\setminus}R_q) = \sigma(\{A_p, R_p, A_q\})$ the maximal event is
+  now $A_q$: with $R_q$ dropped from the set, $A_q$ has no later remove to
+  absorb it (antitonicity of $\loE{}$, Definition~\ref{def:lo}). $A_q$ lies in
+  the LCA and both branches of this smaller merge, so its delta
+  ($\dow{A_q} = \emptyset$, hence $B' = \Sinit$ and
+  $A_q(B') = (\{A_q\}, \emptyset)$) sits in all three inputs, and
+  VC~\ref{fvc:redist} factors the three copies out once:
+  \[
+  \begin{aligned}
+    &\mergeL\bigl(\mergeL(B',t_0,A_q(B')),\ \mergeL(B',t_1,A_q(B')),\ \mergeL(B',t_2,A_q(B'))\bigr) \\
+    &\quad{}= \mergeL\bigl(B',\, \mergeL(t_0,t_1,t_2),\, A_q(B')\bigr),
+  \end{aligned}
+  \]
+  which VC~\ref{fvc:cd} closes to $A_q(\sigma(\{A_p, R_p\}))$.
+\item \emph{Peel $R_p$, then $A_p$.} $\sigma(\{A_p, R_p\})$ peels its maximal
+  $R_p$ by VC~\ref{fvc:lredist}/\ref{fvc:cd} to $R_p(\sigma(\{A_p\}))$ (over
+  $\dow{R_p} = \{A_p\}$), and $\sigma(\{A_p\}) = A_p(\Sinit)$ is the base.
+  Composing the four peels,
+  \[
+    \sigma(U) = R_q\bigl(A_q\bigl(R_p\bigl(A_p(\Sinit)\bigr)\bigr)\bigr)
+    = \fold\bigl(\Sinit,\ [A_p, R_p, A_q, R_q]\bigr),
+  \]
+  the all-dead state: $\Sinit \to A_p$ (live $A_p$) $\to R_p$ (all dead)
+  $\to A_q$ (live $A_q$) $\to R_q$ (all dead).
 \end{itemize}
 The order the peel produces is exactly the witness $[A_p, R_p, A_q, R_q]$ of
 Proposition~\ref{prop:defeater}, but reached without ever restricting it to a
 side. VC~\ref{fvc:cd} ties each remove to its own past ($R_q$ to $\{A_q\}$,
-$R_p$ to $\{A_p\}$), so a remove kills only what it saw and the concurrent
-add it never saw survives by add-wins. The bottom-up route failed because it
-read that witness backwards off $\mathrm{head}_q$, where the restriction
-folds to all-dead; the delta contract never restricts, it peels the union's
-maximal event through the merge, and $\cd$ supplies the causal-past semantics
-the flat list cannot.
+$R_p$ to $\{A_p\}$), so a remove kills only what it saw and the concurrent add
+it never saw survives by add-wins. The bottom-up route failed because it read
+that witness backwards off $\mathrm{head}_q$, where the restriction
+$[A_p, A_q, R_q]$ runs $R_q$ after $A_p$ and folds to all-dead, not
+$\mathrm{head}_q$'s live-$A_p$ state. The delta contract never restricts: it
+peels the union's maximal event through the merge, and $\cd$ supplies the
+causal-past semantics the flat list cannot.
 
 Flat VCs \ref{fvc:rcnc}--\ref{fvc:sym} are one-liners for every data
 type we have discharged; Flat VCs \ref{fvc:lredist}--\ref{fvc:redist}
