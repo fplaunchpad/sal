@@ -1229,7 +1229,7 @@ property the adequacy induction consumes at a named step:
 \end{definition}
 
 Three of the six were not in the design; the mechanization forced them. The
-paper-level recast (\S\ref{sec:open}) named acyclic, extends-vis, and
+definition audit (\S\ref{sec:audit}) named acyclic, extends-vis, and
 convergence. Re-threading the adequacy induction over an abstract $\arb$
 surfaced \emph{antitone} (the re-attach step
 \lean{isCanonicalStateArb\_snoc} needs a maximal event to stay maximal on
@@ -1385,6 +1385,100 @@ carries its ordinary flat discharge, \lean{lww\_ra\_linearizable3}, against
 that empty $\loE{}$ with $\max$-convergence pinning the fold; the two
 agree, and the timestamp arbitration is the honest account of the order the
 register actually realizes.)
+
+\section{Auditing the published definition: four strikes and the absorber}
+\label{sec:audit}
+
+Why is the linearization order really just an arbitration? The recast of
+\S\ref{sec:arb} is the endpoint of an audit of the published
+RA-linearizability definition (Definition~\ref{def:ralin}), which reads its
+order $\loE{E}$ (Definition~\ref{def:lo}) as an
+\emph{arbitration-acyclicity} requirement plus a fold quotient, four of its
+clauses exposed as devices for that content rather than parts of it. Three
+strikes are recorded elsewhere in this paper; the fourth, the absorber, is
+decided by machine.
+
+\begin{itemize}[leftmargin=1.4em]
+\item \emph{Strike 1: witness extension is not part of it.} The binary
+  specification asks a merged version's witness to \emph{extend} its sides'
+  witnesses; the defeater (Example~\ref{ex:defeater}) refutes that on a
+  fully LCA-legal configuration, so Definition~\ref{def:ralin} asks only
+  that each version admit \emph{some} witness, independently. The merge
+  layer is rebuilt on canonical states and a Join Lemma that never traffics
+  in witness lists.
+\item \emph{Strike 2: $\rcrel$-directionality and chain-freedom are
+  reachability-relative.} Adequacy needs only that $\loE{}$ order
+  non-commuting reachable pairs and stay acyclic on reachable sets, the
+  content the converse recovers (Theorem~\ref{thm:converse}). rc-non-comm
+  and no-rc-chain are sufficient devices for it; LWW (\S\ref{sec:arb})
+  chains its $\rcrel$ along a total order and is RA-linearizable anyway.
+\item \emph{Strike 3: the all-states quantification is a conditioning
+  completion.} The unconditional halves of the merge VCs are evaluated by
+  adequacy only on canonical states of reachable sets; each has an
+  RA-linearizable violator whose failure lives at an unreachable state. The
+  off-domain content is the conditioning completion, not the
+  specification.
+\item \emph{Strike 4: the absorber.} The absorber clause \emph{removes}
+  edges. Does dropping it change the verdict? Decided below.
+\end{itemize}
+
+\paragraph{The absorber dichotomy.} Write $\mathsf{plain}$ for $\loE{}$
+with the absorber dropped, keeping every $\rcrel$-resolved concurrent edge.
+Plain has a superset of $\loE{}$'s edges, so its respecting enumerations
+are a subset, so plain-RA-lin \emph{implies} absorber-RA-lin: the absorber
+order is the weaker property. A separator would be a datatype
+RA-linearizable under the absorber but not under plain, making the absorber
+load-bearing.
+
+The separator exists, and the mechanism is acyclicity, not a fold
+disagreement. It is the canonical add-wins OR-set. Two replicas each add
+then remove the same element $x$ and merge at the empty root: events
+$a = \add\,x$, $r_a = \rem\,x$ on one replica, $b, r_b$ on the other. In
+the merged event set $\{a, r_a, b, r_b\}$ the plain order is
+\[
+  a \to r_a \ (\text{vis}), \quad
+  r_a \to b \ (\rcrel,\ \text{add-wins}), \quad
+  b \to r_b \ (\text{vis}), \quad
+  r_b \to a \ (\rcrel),
+\]
+a cycle $a \to r_a \to b \to r_b \to a$ that no list extends: plain-RA-lin
+has \emph{no witness at all}. The absorber removes both $\rcrel$ edges
+(each add is absorbed by its own following remove), leaving the two vis
+chains; every interleaving folds to the empty live set, the operational
+merge state. The cycle alternates $\rcrel$ and vis edges, so its two
+$\rcrel$ edges are not consecutive and no-rc-chain (Flat
+VC~\ref{fvc:chain}) does not forbid it: the absorber is the clause that
+supplies acyclicity precisely when $\rcrel$ opposes visibility (add-wins
+orders a remove before a concurrent add, visibility orders an add before
+its own remove, and the two close a cycle). Overwrite datatypes never
+trigger it --- LWW's timestamp $\rcrel$ agrees with visibility, so no plain
+cycle and no separator.
+
+The separation is certified and uniform. The exhaustive two-state,
+two-op-kind synthesis space (1408 specs) yields, among datatypes the
+metatheory certifies, \textbf{nine configuration-level separators, all via
+the cyclic route, none via a fold-value disagreement}
+(\lean{absorber\_dichotomy\_check.py}, PASS+FAIL). Fold-value separator
+\emph{versions} do occur, but only inside datatypes already
+non-RA-linearizable under the absorber order (the visible-swap specs
+cond-comm exists to exclude), so they never lift to a certified
+configuration. Plain-RA-lin on the certified route is \emph{vacuous} (a
+cyclic relation has no linear extension), which is strictly stronger than
+an observable disagreement and not recoverable by coarsening $\eqobs$:
+coarsening the observation cannot rescue an order with no linear extension.
+
+\paragraph{The invariant content.} The four strikes converge on one
+reading, the one \S\ref{sec:arb} makes primary: RA-linearizability asserts
+that a version's state is, up to $\eqobs$, the fold of some enumeration
+extending an \emph{acyclic arbitration that orders every visible
+non-commuting pair by visibility}. The $\rcrel$ arm is one way to arbitrate
+concurrent pairs; no-rc-chain and the absorber keep that arbitration
+acyclic (the absorber the necessary half whenever $\rcrel$ opposes
+visibility); the all-states content is the conditioning completion; witness
+extension is not part of it at all. That is exactly the arbitration
+contract of Definition~\ref{def:arbfamily}, with $\loE{}$ its canonical
+instance --- the audit is why the recast re-presents the published
+definition rather than replacing it.
 
 \section{Deriving \texorpdfstring{$\loE{}$}{lo}: the eight verification
 conditions}
@@ -10814,6 +10908,17 @@ isolates: $\rcrel$ is the mechanism for conflicts whose outcome is
 recoverable from branch states; clique conflicts pay for their arbitration
 key in state, and chains would extend $\rcrel$ only within the
 recoverable class.
+
+\emph{Resolved in framing by the arbitration recast (\S\ref{sec:arb}).}
+Total-order policies are expressible in the framework after all, not by
+generalizing $\rcrel$ but by demoting it: the adequacy engine runs over an
+abstract arbitration, and LWW instantiates it by its timestamp total order
+directly (Theorem~\ref{thm:lww}), discharging the six clauses without an
+$\rcrel$ arm. So question~(i)'s chain-tolerant-$\rcrel$ experiment is
+superseded for adequacy --- the total order need never be squeezed into
+$\rcrel$ at all. Question~(ii) stands unchanged: the recast still does not
+buy a metadata-free LWW (\lean{lww\_merge\_needs\_timestamps}); the
+arbitration key remains forced into the state by $\mergeL$.
 \end{openq}
 
 \begin{openq}[Causal canonicity under general $\rcrel$]
