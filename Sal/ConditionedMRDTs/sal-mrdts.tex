@@ -673,21 +673,32 @@ set only adds absorbers, hence removes edges (\lean{loOn\_mono}).
 \hfill\lean{loOn}
 \end{definition}
 
-\begin{definition}[RA-linearizability]
+\begin{definition}[arbitration, and RA-linearizability against it]
 \label{def:ralin}
-A list $\pi = e^1 e^2 \cdots e^n$ \emph{witnesses} a version holding
-state $s$ and event set $E$ when (i)~$\pi$ enumerates $E$ without
-repetition; (ii)~$\pi$ \emph{extends} $\mathsf{lo}$: $i < j$ implies
-$\neg(e^j \mathrel{\mathsf{lo}} e^i)$; and (iii)~$\pi$ \emph{folds} to
-the state: $e^n(\cdots e^2(e^1(\Sinit))\cdots) = s$. A configuration is
-\emph{RA-linearizable} when \emph{every version in the store} --- not
-only the replica heads; LCAs are historical versions and the merge reads
-them --- admits a witness. In the general signature the fold clause
-(iii) is read up to the data type's observational equivalence,
-$e^n(\cdots e^1(\Sinit)\cdots) \eqobs s$ --- the same definition with
-its equality parameter generalized; flat data types instantiate
-${\eqobs} = {=}$ and this section's form is exactly that instance.
-\hfill\lean{IsRALinearizable3}, \lean{IsRALinearizable3Eq}
+An \emph{arbitration} $\arb$ assigns to each event set $E$ a strict order
+$\arb(E)$ on its operations that orders every visible non-commuting pair
+($e_1 \vis e_2 \wedge e_1 \ncomm e_2 \Rightarrow e_1 \mathrel{\arb(E)}
+e_2$). A list $\pi = e^1 e^2 \cdots e^n$ \emph{witnesses} a version holding
+state $s$ and event set $E$ \emph{against $\arb$} when (i)~$\pi$ enumerates
+$E$ without repetition; (ii)~$\pi$ \emph{extends} $\arb(E)$: $i < j$ implies
+$\neg(e^j \mathrel{\arb(E)} e^i)$; and (iii)~$\pi$ \emph{folds} to the
+state: $e^n(\cdots e^2(e^1(\Sinit))\cdots) = s$, read up to the data type's
+observational equivalence $\eqobs$ in the general signature (flat data
+types instantiate ${\eqobs} = {=}$). A configuration is \emph{RA-linearizable
+against $\arb$} when \emph{every version in the store} --- not only the
+replica heads; LCAs are historical versions and the merge reads them ---
+admits a witness.
+
+The \emph{canonical} arbitration is $\loE{}$ (Definition~\ref{def:lo}),
+built from the conflict resolver $\rcrel$. \emph{Unqualified,
+``RA-linearizable'' means against $\loE{}$}, and $\rcrel$ enters the
+definition through this one instance only: the property itself is not tied
+to $\rcrel$. \S\ref{sec:arb} gives the contract an arbitration must meet
+for a data type to be provably RA-linearizable against it, and exhibits the
+LWW register linearized against its timestamp order --- an arbitration
+$\rcrel$ cannot express.
+\hfill\lean{IsRALinearizable3Arb} (against a given $\arb$),
+\lean{IsRALinearizable3} / \lean{IsRALinearizable3Eq} (at $\arb = \loE{}$)
 \end{definition}
 
 Why a set-relative order? One definitional correction is forced at the
@@ -1186,23 +1197,24 @@ conditioned form outright (\lean{feasibleDeltaVCs3\_of\_delta}).
 \section{The arbitration contract}
 \label{sec:arb}
 
-The eight equations of \S\ref{sec:vcs} are not the framework's primitive
-contract. They are one \emph{recipe} for building the object the adequacy
-proof actually consumes: an \emph{arbitration}. This section states that
-object and its contract directly; \S\ref{sec:vcs} then derives the standard
-$\rcrel$-based order $\loE{}$ as one instance and shows the eight VCs are
-exactly what that instance owes.
+RA-linearizability is defined against an arbitration
+(Definition~\ref{def:ralin}), with $\loE{}$ --- the order built from
+$\rcrel$ --- the canonical one. What must an arbitration satisfy for a data
+type to be \emph{provably} RA-linearizable against it? That contract is
+this section. The eight equations of \S\ref{sec:vcs} are then one
+\emph{recipe} for meeting it, the recipe that builds $\loE{}$ from
+$\rcrel$; a data type with a different arbitration (LWW's timestamp order,
+below) meets the contract directly and skips them.
 
 \paragraph{What the proof consumes.} Trace $\rcrel$ through the adequacy
 argument (\S\ref{sec:adequacy}): it appears only through $\loE{E}$, and
-$\loE{E}$ appears only as a per-event-set relation that orders the events
-of a version. Nothing downstream inspects how the relation was built.
-Abstract it. An \emph{arbitration} is a configuration-indexed, set-relative
-relation $\arb\,C\,E$ that orders the operations of the event set $E$ at
-configuration $C$; the canonical state of $E$ is the fold along any
-$\arb\,C\,E$-respecting enumeration (\lean{IsCanonicalStateArb}), and
-RA-linearizability is per-version canonicity against $\arb$
-(\lean{IsRALinearizable3Arb}).
+$\loE{E}$ appears only as the arbitration, a per-event-set order. Nothing
+downstream inspects how that order was built. So the contract is a property
+of an abstract arbitration, written $\arb\,C\,E$ to make the configuration
+$C$ explicit for the adequacy induction: the canonical state of $E$ is the
+fold along any $\arb\,C\,E$-respecting enumeration
+(\lean{IsCanonicalStateArb}), RA-linearizability is per-version canonicity
+against it (\lean{IsRALinearizable3Arb}), and it has six clauses.
 
 \begin{definition}[arbitration family, flat]
 \label{def:arbfamily}
