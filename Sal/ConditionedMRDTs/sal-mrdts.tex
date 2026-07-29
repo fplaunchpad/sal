@@ -1727,101 +1727,179 @@ delta sits in all three inputs; the LCA slot cancels the triple-count and the
 three $e$-images merge to a single $e(B)$ factored out
 (Figure~\ref{fig:vc7}), the ternary stand-in for idempotence.
 
-\begin{figure}[t]
+\begin{figure}[tp]
 \centering
 \begin{tikzpicture}[>=Stealth,
-  ver/.style={draw, rounded corners, inner sep=2.5pt, font=\small},
-  lca/.style={draw, rounded corners, inner sep=2.5pt, font=\small, fill=blue!8},
-  del/.style={draw, rounded corners, inner sep=2.5pt, font=\small,
-    fill=magenta!8, text=magenta!85!black},
+  ver/.style={draw, rounded corners, inner sep=2.5pt, font=\small, align=center},
+  lca/.style={ver, fill=blue!8},
+  del/.style={ver, fill=magenta!8, text=magenta!85!black},
+  cz/.style={->, black!45},
+  app/.style={->, orange!85!black, thick},
   mrg/.style={->, teal!70!black, dashed},
-  lbl/.style={font=\scriptsize, text=black!55}]
-% ---- LHS: e's delta nested in the E1 branch ----
-\node[lca] (B)  at (-0.95,0)     {$B$};
-\node[ver] (t1) at (0,0)         {$t_1$};
-\node[del] (eB) at (0.95,0)      {$e(B)$};
-\node[ver] (e1) at (0,-1.25)     {$\sigma(E_1)$};
-\draw[mrg] (B) -- (e1); \draw[mrg] (t1) -- (e1); \draw[mrg] (eB) -- (e1);
-\node[lca] (s0) at (-2.05,-1.25) {$s_0$};
-\node[ver] (s2) at (2.05,-1.25)  {$s_2$};
-\node[ver] (mL) at (0,-2.6)      {$\sigma(E_1\cup E_2)$};
-\draw[mrg] (s0) -- (mL); \draw[mrg] (e1) -- (mL); \draw[mrg] (s2) -- (mL);
-\node[lbl, align=center] at (0,-3.3) {\textbf{LHS}\\ $e(B)$ nested in the $E_1$ branch};
-% ---- equals ----
-\node at (3.15,-1.25) {\large$=$};
-% ---- RHS: e's delta applied over B at the top ----
-\begin{scope}[xshift=6.3cm]
-\node[lca] (s0r) at (-0.95,0)    {$s_0$};
-\node[ver] (t1r) at (0,0)        {$t_1$};
-\node[ver] (s2r) at (0.95,0)     {$s_2$};
-\node[ver] (Ue)  at (0,-1.25)    {$\sigma(U{\setminus}e)$};
-\draw[mrg] (s0r) -- (Ue); \draw[mrg] (t1r) -- (Ue); \draw[mrg] (s2r) -- (Ue);
-\node[lca] (Br)  at (-2.05,-1.25){$B$};
-\node[del] (eBr) at (2.05,-1.25) {$e(B)$};
-\node[ver] (mR)  at (0,-2.6)     {$\sigma(E_1\cup E_2)$};
-\draw[mrg] (Br) -- (mR); \draw[mrg] (Ue) -- (mR); \draw[mrg] (eBr) -- (mR);
-\node[lbl, align=center] at (0,-3.3) {\textbf{RHS}\\ $e(B)$ applied over $B$ at the top};
+  elb/.style={font=\scriptsize, text=orange!85!black},
+  lcl/.style={font=\tiny, text=teal!70!black},
+  fml/.style={font=\scriptsize}]
+% ---------------- LHS: e(B) nested inside the E1 branch ----------------
+\begin{scope}
+\node[lca] (s0) at (-2.1,0)
+  {$s_0$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cap E_2)$}};
+\node[lca] (B)  at (0.7,0)
+  {$B$\\[-2pt]{\tiny\color{black!55}$\sigma(\dow{e}\setminus e)$}};
+\node[del] (eB) at (3.1,0) {$e(B)$};
+\draw[app] (B) -- node[elb, above]{$e$} (eB);
+\node[ver] (s2) at (-3.4,-1.5)
+  {$s_2$\\[-2pt]{\tiny\color{black!55}$\sigma(E_2)$}};
+\node[ver] (t1) at (-0.6,-1.5)
+  {$t_1$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\setminus e)$}};
+\draw[cz] (s0) -- (s2);
+\draw[cz] (s0) -- (t1);
+\draw[cz] (B)  -- (t1);
+\node[ver] (m) at (1.5,-2.9)
+  {$m$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1)$}};
+\draw[mrg] (B)  -- node[lcl, right, pos=0.45]{lca} (m);
+\draw[mrg] (t1) -- (m);
+\draw[mrg] (eB) -- (m);
+\node[ver] (r) at (-1.0,-4.3)
+  {$r$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cup E_2)$}};
+\draw[mrg] (s0) -- node[lcl, left, pos=0.55]{lca} (r);
+\draw[mrg] (m)  -- (r);
+\draw[mrg] (s2) -- (r);
+\node[fml] at (-0.2,-5.1)
+  {\textbf{LHS}:\ $r=\mergeL\bigl(s_0,\;\mergeL(B,t_1,e(B)),\;s_2\bigr)$};
+\end{scope}
+\node at (-0.2,-5.75) {$r \;=\; r'$};
+% ---------------- RHS: e(B) applied once over B at the top ----------------
+\begin{scope}[yshift=-6.6cm]
+\node[lca] (s0r) at (-2.1,0)
+  {$s_0$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cap E_2)$}};
+\node[lca] (Br)  at (0.7,0)
+  {$B$\\[-2pt]{\tiny\color{black!55}$\sigma(\dow{e}\setminus e)$}};
+\node[del] (eBr) at (3.1,0) {$e(B)$};
+\draw[app] (Br) -- node[elb, above]{$e$} (eBr);
+\node[ver] (s2r) at (-3.4,-1.5)
+  {$s_2$\\[-2pt]{\tiny\color{black!55}$\sigma(E_2)$}};
+\node[ver] (t1r) at (-0.6,-1.5)
+  {$t_1$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\setminus e)$}};
+\draw[cz] (s0r) -- (s2r);
+\draw[cz] (s0r) -- (t1r);
+\draw[cz] (Br)  -- (t1r);
+\node[ver] (mr) at (-1.9,-2.9)
+  {$m'$\\[-2pt]{\tiny\color{black!55}$\sigma((E_1\cup E_2)\setminus e)$}};
+\draw[mrg] (s0r) -- node[lcl, left, pos=0.45]{lca} (mr);
+\draw[mrg] (t1r) -- (mr);
+\draw[mrg] (s2r) -- (mr);
+\node[ver] (rr) at (0.9,-4.3)
+  {$r'$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cup E_2)$}};
+\draw[mrg] (Br) -- node[lcl, right, pos=0.4]{lca} (rr);
+\draw[mrg] (mr) -- (rr);
+\draw[mrg] (eBr) -- (rr);
+\node[fml] at (-0.2,-5.1)
+  {\textbf{RHS}:\ $r'=\mergeL\bigl(B,\;\mergeL(s_0,t_1,s_2),\;e(B)\bigr)$};
 \end{scope}
 \end{tikzpicture}
-\caption{Flat VC~\ref{fvc:lredist} (VC6) read as an equation between two merge
-arrangements (dashed arrows feed each ternary $\mergeL$; its shaded input is the
-LCA slot). The $\loE{}$-maximal event $e$ lies in one branch. \textbf{LHS}: $e$
-enters buried in the $E_1$ branch as its delta ${\color{magenta!85!black}e(B)}$
-over the past it saw, $B=\sigma(\dow{e}\setminus\{e\})$, with
-$t_1=\sigma(E_1\setminus\{e\})$ the rest of that branch and $s_2=\sigma(E_2)$ the
-far branch; the reconstructed branch $\sigma(E_1)$ then merges under the LCA
-$s_0=\sigma(E_1\cap E_2)$. \textbf{RHS}: the same delta is pulled out and applied
-once at the enclosing merge, whose LCA slot is now $B$ and whose middle input is
-the $e$-free merge $\sigma(U\setminus e)=\mergeL(s_0,t_1,s_2)$. The VC is exactly
-the claim that the two arrangements agree; both yield $\sigma(E_1\cup E_2)$.}
+\caption{Flat VC~\ref{fvc:lredist} (VC6) as two merge arrangements over the same
+causal history, related by $r=r'$. Solid gray arrows are causal descent (the
+target's event set extends the source's); the orange arrow applies the peeled
+$\loE{}$-maximal event $e$ to the state of its own past, $B$, yielding its delta
+$e(B)$; dashed arrows feed a ternary $\mergeL$, \emph{lca} marks the LCA slot,
+and shaded states are the ones serving as LCAs. Every state is annotated with
+the canonical state $\sigma(\cdot)$ it realizes. \textbf{Top (LHS)}: the delta
+enters nested inside the $E_1$ branch, rebuilding $m=\sigma(E_1)$ at LCA $B$;
+the branches then merge at LCA $s_0$. \textbf{Bottom (RHS)}: the $e$-free world
+merges first at LCA $s_0$ into $m'$, and the same delta applies once on top, at
+LCA $B$. The VC is the equation $r=r'$: both realize $\sigma(E_1\cup E_2)$.}
 \label{fig:vc6}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[tp]
 \centering
 \begin{tikzpicture}[>=Stealth,
-  ver/.style={draw, rounded corners, inner sep=2.5pt, font=\small},
-  lca/.style={draw, rounded corners, inner sep=2.5pt, font=\small, fill=blue!8},
-  del/.style={draw, rounded corners, inner sep=2.5pt, font=\small,
-    fill=magenta!8, text=magenta!85!black},
-  inr/.style={draw, rounded corners, inner sep=2.5pt, font=\scriptsize},
-  inl/.style={draw, rounded corners, inner sep=2.5pt, font=\scriptsize, fill=blue!8},
+  ver/.style={draw, rounded corners, inner sep=2.5pt, font=\small, align=center},
+  lca/.style={ver, fill=blue!8},
+  del/.style={ver, fill=magenta!8, text=magenta!85!black},
+  cz/.style={->, black!45},
+  app/.style={->, orange!85!black, thick},
   mrg/.style={->, teal!70!black, dashed},
-  lbl/.style={font=\scriptsize, text=black!55}]
-% ---- LHS: e's delta in all three inputs ----
-\node[inl] (r0) at (0,1.15)  {$\mergeL(B,t_0,{\color{magenta!85!black}e(B)})$};
-\node[inr] (r1) at (0,0)     {$\mergeL(B,t_1,{\color{magenta!85!black}e(B)})$};
-\node[inr] (r2) at (0,-1.15) {$\mergeL(B,t_2,{\color{magenta!85!black}e(B)})$};
-\node[ver] (M)  at (3.35,0)  {$\sigma(E_1\cup E_2)$};
-\draw[mrg] (r0) -- (M); \draw[mrg] (r1) -- (M); \draw[mrg] (r2) -- (M);
-\node[lbl, align=center] at (0.4,-2.05) {\textbf{LHS}: three copies of ${\color{magenta!85!black}e(B)}$};
-% ---- equals ----
-\node at (5.15,0) {\large$=$};
-% ---- RHS: factored to a single e(B) over B ----
-\begin{scope}[xshift=8.7cm, yshift=1.3cm]
-\node[lca] (t0) at (-0.95,0)     {$t_0$};
-\node[ver] (t1) at (0,0)         {$t_1$};
-\node[ver] (t2) at (0.95,0)      {$t_2$};
-\node[ver] (q)  at (0,-1.25)     {$\sigma(U{\setminus}e)$};
-\draw[mrg] (t0) -- (q); \draw[mrg] (t1) -- (q); \draw[mrg] (t2) -- (q);
-\node[lca] (Br)  at (-2.05,-1.25){$B$};
-\node[del] (eBr) at (2.05,-1.25) {$e(B)$};
-\node[ver] (M2)  at (0,-2.6)     {$\sigma(E_1\cup E_2)$};
-\draw[mrg] (Br) -- (M2); \draw[mrg] (q) -- (M2); \draw[mrg] (eBr) -- (M2);
-\node[lbl, align=center] at (0,-3.3) {\textbf{RHS}: one ${\color{magenta!85!black}e(B)}$ over $B$};
+  elb/.style={font=\scriptsize, text=orange!85!black},
+  lcl/.style={font=\tiny, text=teal!70!black},
+  fml/.style={font=\scriptsize}]
+% ---------------- LHS: e(B) enters all three inputs ----------------
+\begin{scope}
+\node[lca] (B)  at (-1.2,0)
+  {$B$\\[-2pt]{\tiny\color{black!55}$\sigma(\dow{e}\setminus e)$}};
+\node[del] (eB) at (1.6,0) {$e(B)$};
+\draw[app] (B) -- node[elb, above]{$e$} (eB);
+\node[ver] (t0) at (-3.3,-1.6)
+  {$t_0$\\[-2pt]{\tiny\color{black!55}$\sigma((E_1\cap E_2)\setminus e)$}};
+\node[ver] (t1) at (0,-1.6)
+  {$t_1$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\setminus e)$}};
+\node[ver] (t2) at (3.3,-1.6)
+  {$t_2$\\[-2pt]{\tiny\color{black!55}$\sigma(E_2\setminus e)$}};
+\draw[cz] (B) -- (t0);
+\draw[cz] (t0) -- (t1);
+\draw[cz] (t0) to[bend right=20] (t2);
+\node[lca] (m0) at (-3.3,-3.3)
+  {$m_0$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cap E_2)$}};
+\node[ver] (m1) at (0,-3.3)
+  {$m_1$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1)$}};
+\node[ver] (m2) at (3.3,-3.3)
+  {$m_2$\\[-2pt]{\tiny\color{black!55}$\sigma(E_2)$}};
+\draw[mrg] (t0) -- (m0);
+\draw[mrg] (t1) -- (m1);
+\draw[mrg] (t2) -- (m2);
+\draw[mrg] (B) to[bend right=18] node[lcl, left, pos=0.75]{lca} (m0);
+\draw[mrg] (B) to[bend right=14] node[lcl, left, pos=0.62]{lca} (m1);
+\draw[mrg] (B) to[bend left=10]  node[lcl, above, pos=0.30]{lca} (m2);
+\draw[mrg] (eB) to[bend right=14] (m0);
+\draw[mrg] (eB) to[bend left=22]  (m1);
+\draw[mrg] (eB) to[bend right=14] (m2);
+\node[ver] (r) at (0,-4.9)
+  {$r$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cup E_2)$}};
+\draw[mrg] (m0) -- node[lcl, below, pos=0.45]{lca} (r);
+\draw[mrg] (m1) -- (r);
+\draw[mrg] (m2) -- (r);
+\node[fml] at (0,-5.7)
+  {\textbf{LHS}:\ $r=\mergeL\bigl(\mergeL(B,t_0,e(B)),\,\mergeL(B,t_1,e(B)),\,\mergeL(B,t_2,e(B))\bigr)$};
+\end{scope}
+\node at (0,-6.35) {$r \;=\; r'$};
+% ---------------- RHS: one e(B), applied on top ----------------
+\begin{scope}[yshift=-7.2cm]
+\node[lca] (Br)  at (-1.2,0)
+  {$B$\\[-2pt]{\tiny\color{black!55}$\sigma(\dow{e}\setminus e)$}};
+\node[del] (eBr) at (1.6,0) {$e(B)$};
+\draw[app] (Br) -- node[elb, above]{$e$} (eBr);
+\node[lca] (t0r) at (-3.3,-1.6)
+  {$t_0$\\[-2pt]{\tiny\color{black!55}$\sigma((E_1\cap E_2)\setminus e)$}};
+\node[ver] (t1r) at (0,-1.6)
+  {$t_1$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\setminus e)$}};
+\node[ver] (t2r) at (3.3,-1.6)
+  {$t_2$\\[-2pt]{\tiny\color{black!55}$\sigma(E_2\setminus e)$}};
+\draw[cz] (Br) -- (t0r);
+\draw[cz] (t0r) -- (t1r);
+\draw[cz] (t0r) to[bend right=20] (t2r);
+\node[ver] (mr) at (0,-3.3)
+  {$m'$\\[-2pt]{\tiny\color{black!55}$\sigma((E_1\cup E_2)\setminus e)$}};
+\draw[mrg] (t0r) -- node[lcl, above, pos=0.6]{lca} (mr);
+\draw[mrg] (t1r) -- (mr);
+\draw[mrg] (t2r) -- (mr);
+\node[ver] (rr) at (1.6,-4.9)
+  {$r'$\\[-2pt]{\tiny\color{black!55}$\sigma(E_1\cup E_2)$}};
+\draw[mrg] (Br) to[bend left=28] node[lcl, left, pos=0.5]{lca} (rr);
+\draw[mrg] (mr) -- (rr);
+\draw[mrg] (eBr) -- (rr);
+\node[fml] at (0,-5.7)
+  {\textbf{RHS}:\ $r'=\mergeL\bigl(B,\;\mergeL(t_0,t_1,t_2),\;e(B)\bigr)$};
 \end{scope}
 \end{tikzpicture}
-\caption{Flat VC~\ref{fvc:redist} (VC7) read as an equation (dashed arrows feed
-each ternary $\mergeL$; its shaded input is the LCA slot). The $\loE{}$-maximal
-event $e$ lies in the LCA and both branches, so its delta
-${\color{magenta!85!black}e(B)}$ over the shared past
-$B=\sigma(\dow{e}\setminus\{e\})$ sits in all three inputs
-($\mergeL(B,t_i,{\color{magenta!85!black}e(B)})$, with $t_i$ the $e$-free rest).
-\textbf{LHS}: three copies of that delta, one per input. \textbf{RHS}: the triple
-count cancels and VC~\ref{fvc:redist} factors them to a single $e(B)$ over $B$,
-applied once at the enclosing merge over the $e$-free join
-$\sigma(U\setminus e)=\mergeL(t_0,t_1,t_2)$, the ternary stand-in for
-idempotence. Both arrangements yield $\sigma(E_1\cup E_2)$.}
+\caption{Flat VC~\ref{fvc:redist} (VC7), conventions as in
+Figure~\ref{fig:vc6}. Here the $\loE{}$-maximal event $e$ lies in the LCA and
+both branches. \textbf{Top (LHS)}: its delta $e(B)$ enters all three inputs of
+the Join-Lemma merge, each $m_i$ rebuilt at LCA $B$ from the $e$-free $t_i$;
+the three then merge at LCA $m_0$. \textbf{Bottom (RHS)}: the $e$-free world
+merges first at LCA $t_0$ into $m'$, and a single copy of the delta applies on
+top, at LCA $B$: the triple count cancels, the ternary stand-in for
+idempotence. The VC is the equation $r=r'$: both realize
+$\sigma(E_1\cup E_2)$.}
 \label{fig:vc7}
 \end{figure}
 
