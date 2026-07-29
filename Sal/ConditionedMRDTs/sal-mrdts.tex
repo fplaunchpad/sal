@@ -1720,12 +1720,12 @@ $B = \sigma(\dow{e} \setminus \{e\})$, merged back in over $B$
 it closes every peel, collapsing $\mergeL(B, \text{rest}, e(B))$ to
 $e(\text{rest})$. Flat VC~\ref{fvc:lredist} peels $e$ when it lies in one
 side: its delta, buried in that branch, slides out and up over the whole
-merge (Figure~\ref{fig:redist}(a)); because the delta is taken over the
+merge (Figure~\ref{fig:vc6}); because the delta is taken over the
 shared past $B$, the merge cannot alter it, so it commutes past. Flat
 VC~\ref{fvc:redist} peels $e$ when it lies in both sides and the LCA, so its
 delta sits in all three inputs; the LCA slot cancels the triple-count and the
 three $e$-images merge to a single $e(B)$ factored out
-(Figure~\ref{fig:redist}(b)), the ternary stand-in for idempotence.
+(Figure~\ref{fig:vc7}), the ternary stand-in for idempotence.
 
 \begin{figure}[t]
 \centering
@@ -1734,45 +1734,71 @@ three $e$-images merge to a single $e(B)$ factored out
   lca/.style={draw, rounded corners, inner sep=3pt, font=\small, fill=blue!8},
   op/.style={->, orange!85!black},
   mrg/.style={->, teal!70!black, dashed},
-  ev/.style={font=\scriptsize, text=magenta!85!black},
+  ann/.style={font=\scriptsize},
+  del/.style={font=\scriptsize, text=magenta!85!black},
   lbl/.style={font=\scriptsize, text=black!60}]
-% (a) Flat VC6: e in one branch
-\begin{scope}
-\node[lca] (l) at (0,0)        {$\sigma(E_1\cap E_2)$};
-\node[ver] (a) at (-1.85,-1.5) {$\sigma(E_1)$};
-\node[ver] (b) at (1.85,-1.5)  {$\sigma(E_2)$};
-\node[ver] (m) at (0,-3.0)     {$\sigma(E_1\cup E_2)$};
-\node[ev] at (-2.55,-2.05) {$\ni e$};
+\node[lca] (l) at (0,0)       {$s_0=\sigma(E_1\cap E_2)$};
+\node[ver] (a) at (-2.9,-1.7) {$\sigma(E_1)$};
+\node[ver] (b) at (2.9,-1.7)  {$s_2=\sigma(E_2)$};
+\node[ver] (m) at (0,-3.6)    {$\sigma(E_1\cup E_2)$};
 \draw[op] (l) -- (a); \draw[op] (l) -- (b);
 \draw[mrg] (a) -- (m); \draw[mrg] (b) -- (m);
-\draw[mrg] (l) to[bend right=58] (m);
-\node[lbl] at (0,-3.7) {\textbf{(a)} Flat VC~\ref{fvc:lredist}: $e$ in one branch};
-\end{scope}
-% (b) Flat VC7: e in the LCA and both branches
-\begin{scope}[xshift=6.5cm]
-\node[lca] (l2) at (0,0)        {$\sigma(E_1\cap E_2)$};
-\node[ver] (a2) at (-1.85,-1.5) {$\sigma(E_1)$};
-\node[ver] (b2) at (1.85,-1.5)  {$\sigma(E_2)$};
-\node[ver] (m2) at (0,-3.0)     {$\sigma(E_1\cup E_2)$};
-\node[ev] at (1.35,0.02)   {$\ni e$};
-\node[ev] at (-2.55,-2.05) {$\ni e$};
-\node[ev] at (2.55,-2.05)  {$\ni e$};
-\draw[op] (l2) -- (a2); \draw[op] (l2) -- (b2);
-\draw[mrg] (a2) -- (m2); \draw[mrg] (b2) -- (m2);
-\draw[mrg] (l2) to[bend right=58] (m2);
-\node[lbl] at (0,-3.7) {\textbf{(b)} Flat VC~\ref{fvc:redist}: $e$ in LCA and both branches};
-\end{scope}
+\draw[mrg] (l) to[bend right=52] (m);
+\node[del] at (-3.8,-1.2) {$\ni e$};
+\node[ann] at (-2.9,-2.5)
+  {$=\mergeL\!\bigl(B,\; t_1,\; {\color{magenta!85!black}e(B)}\bigr)$};
+\node[ann] at (0,-4.35)
+  {$=\mergeL\!\bigl(B,\; \mergeL(s_0,\,t_1,\,s_2),\; {\color{magenta!85!black}e(B)}\bigr)$};
 \end{tikzpicture}
-\caption{The peel of the $\loE{}$-maximal event $e$ from the Join Lemma's
-three-way merge: the LCA $\sigma(E_1\cap E_2)$ (shaded) and the branches
-$\sigma(E_1)$, $\sigma(E_2)$ merge to $\sigma(E_1\cup E_2)$ (solid arrows
-apply a branch's events, dashed arrows feed the merge). \textbf{(a)} Flat
-VC~\ref{fvc:lredist} peels $e$ (magenta) when it lies in one branch: its
-delta slides out over the merge, applied over its own past
-$B = \sigma(\dow{e}\setminus\{e\})$. \textbf{(b)} Flat VC~\ref{fvc:redist}
-peels $e$ when it lies in the LCA and both branches: its three copies factor
-out once.}
-\label{fig:redist}
+\caption{Flat VC~\ref{fvc:lredist} (VC6): the $\loE{}$-maximal event $e$ lies in
+one branch. The LCA $s_0=\sigma(E_1\cap E_2)$ (shaded) and the branches
+$\sigma(E_1)$ and $s_2=\sigma(E_2)$ merge (solid arrows apply a branch's events,
+dashed arrows feed the merge). $e$ enters through the $E_1$ branch as its delta
+${\color{magenta!85!black}e(B)}$ over the past it saw
+$B=\sigma(\dow{e}\setminus\{e\})$, with $t_1=\sigma(E_1\setminus\{e\})$ the rest
+of that branch. VC~\ref{fvc:lredist} slides that delta out of the branch and up
+to the enclosing merge (lower annotation): taken over $B$, the merge cannot
+alter it, so it applies once over the whole join.}
+\label{fig:vc6}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[>=Stealth,
+  ver/.style={draw, rounded corners, inner sep=3pt, font=\small},
+  lca/.style={draw, rounded corners, inner sep=3pt, font=\small, fill=blue!8},
+  op/.style={->, orange!85!black},
+  mrg/.style={->, teal!70!black, dashed},
+  ann/.style={font=\scriptsize},
+  del/.style={font=\scriptsize, text=magenta!85!black},
+  lbl/.style={font=\scriptsize, text=black!60}]
+\node[lca] (l) at (0,0)       {$\sigma(E_1\cap E_2)$};
+\node[ver] (a) at (-3.0,-1.8) {$\sigma(E_1)$};
+\node[ver] (b) at (3.0,-1.8)  {$\sigma(E_2)$};
+\node[ver] (m) at (0,-3.7)    {$\sigma(E_1\cup E_2)$};
+\draw[op] (l) -- (a); \draw[op] (l) -- (b);
+\draw[mrg] (a) -- (m); \draw[mrg] (b) -- (m);
+\draw[mrg] (l) to[bend right=52] (m);
+\node[del] at (2.05,0.1)   {$\ni e$};
+\node[del] at (-3.9,-1.3)  {$\ni e$};
+\node[del] at (3.9,-1.3)   {$\ni e$};
+\node[ann] at (0,0.72)
+  {$=\mergeL\!\bigl(B,\; t_0,\; {\color{magenta!85!black}e(B)}\bigr)$};
+\node[ann] at (-3.0,-2.6)
+  {$=\mergeL\!\bigl(B,\; t_1,\; {\color{magenta!85!black}e(B)}\bigr)$};
+\node[ann] at (3.0,-2.6)
+  {$=\mergeL\!\bigl(B,\; t_2,\; {\color{magenta!85!black}e(B)}\bigr)$};
+\node[ann] at (0,-4.45)
+  {$=\mergeL\!\bigl(B,\; \mergeL(t_0,\,t_1,\,t_2),\; {\color{magenta!85!black}e(B)}\bigr)$};
+\end{tikzpicture}
+\caption{Flat VC~\ref{fvc:redist} (VC7): the $\loE{}$-maximal event $e$ lies in
+the LCA and both branches, so its delta ${\color{magenta!85!black}e(B)}$ over the
+shared past $B=\sigma(\dow{e}\setminus\{e\})$ sits in all three inputs (each
+$\sigma(\cdot)=\mergeL(B,t_i,{\color{magenta!85!black}e(B)})$, with $t_i$ the
+$e$-free rest of that input). The triple count cancels: VC~\ref{fvc:redist}
+factors the three copies out to a single $e(B)$ over $B$ (lower annotation), the
+ternary stand-in for idempotence.}
+\label{fig:vc7}
 \end{figure}
 
 \paragraph{Reconciling the defeater.} Example~\ref{ex:defeater}, where the
@@ -1792,7 +1818,7 @@ each remove before the concurrent add (add-wins), but each add is overwritten
 by its own later remove, so the absorber drops both cross-edges, and the
 maximal events are the removes $R_p, R_q$.
 \begin{itemize}[leftmargin=1.6em]
-\item \emph{Peel $R_q$ (Flat VC~\ref{fvc:lredist}, Figure~\ref{fig:redist}(a)).}
+\item \emph{Peel $R_q$ (Flat VC~\ref{fvc:lredist}, Figure~\ref{fig:vc6}).}
   $R_q$ lies in $E_2$ only; its causal past is $\dow{R_q} = \{A_q\}$, so
   $B = \sigma(\{A_q\}) = (\{A_q\}, \emptyset)$ and its delta
   $R_q(B) = (\{A_q\}, \{A_q\})$. By merge symmetry the final merge is
@@ -1810,7 +1836,7 @@ maximal events are the removes $R_p, R_q$.
   $R_q(\sigma(U{\setminus}R_q))$. So $R_q$ is applied to
   $\sigma(\{A_p, R_p, A_q\})$ (live $A_q$) over the past $\{A_q\}$ it saw: it
   kills $A_q$, and the concurrent $A_p$ it never saw is untouched.
-\item \emph{Peel $A_q$ (Flat VC~\ref{fvc:redist}, Figure~\ref{fig:redist}(b)).}
+\item \emph{Peel $A_q$ (Flat VC~\ref{fvc:redist}, Figure~\ref{fig:vc7}).}
   In $\sigma(U{\setminus}R_q) = \sigma(\{A_p, R_p, A_q\})$ the maximal event is
   now $A_q$: with $R_q$ dropped from the set, $A_q$ has no later remove to
   absorb it (antitonicity of $\loE{}$, Definition~\ref{def:lo}). $A_q$ lies in
