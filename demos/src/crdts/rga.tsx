@@ -2,10 +2,10 @@ import { useState } from "react";
 import type { CRDTSpec, OpMeta } from "../harness/types";
 
 // Σ = (chars : Map OpId -> char, afters : Map OpId -> OpId, deleted : Set OpId).
-// Sentinel "0:0" is the document start — no real op owns it.
+// Sentinel "0:0" is the document start: no real op owns it.
 //
 // Abstract view: a left-to-right traversal of the afterId DAG. At each anchor
-// we visit children ordered by OpId descending (RGA convention — newer
+// we visit children ordered by OpId descending (RGA convention: newer
 // inserts take the slot nearer the anchor); tombstones are skipped.
 type OpId = string; // `${ts}:${rid}`
 const ROOT: OpId = "0:0";

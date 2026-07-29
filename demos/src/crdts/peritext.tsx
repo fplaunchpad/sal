@@ -392,7 +392,7 @@ function Form({
           onChange={(e) => setMarkStart(e.target.value)}
           style={{ maxWidth: "7rem" }}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {visible.map((n) => (
             <option key={n.id} value={n.id}>
               '{n.ch}'
@@ -405,7 +405,7 @@ function Form({
           onChange={(e) => setMarkEnd(e.target.value)}
           style={{ maxWidth: "7rem" }}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {visible.map((n) => (
             <option key={n.id} value={n.id}>
               '{n.ch}'

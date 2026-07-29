@@ -244,22 +244,22 @@
   </header>
 
   <div id="verifiedPanel" class="verified-panel" hidden>
-    <p>The document <strong>core is a mirror of machine-checked Lean proofs</strong> — and
+    <p>The document <strong>core is a mirror of machine-checked Lean proofs</strong>, and
       nothing more. What the document DOES is proven; the runtime adds no unproven behavior on the core side:</p>
     <ul>
       <li><strong>Rich-text semantics.</strong> How bold/italic/underline grow, how a link's
-        end stays put, how overlapping comments coexist, how concurrent formatting resolves —
+        end stays put, how overlapping comments coexist, how concurrent formatting resolves:
         the verified document-order Peritext read model.</li>
       <li><strong>Convergence.</strong> The sequence CRDT (embedded-chain RGA) and its three-way
         merge converge every replica to one document.</li>
       <li><strong>Certified GC.</strong> Compaction shrinks the document's metadata only at a
         settled cut and preserves every read (the stability VC).</li>
       <li><strong>Cross-epoch merge.</strong> Two peers that compacted differently still merge to
-        the same document — the mechanized epoch diamond (kernel-clean).</li>
+        the same document: the mechanized epoch diamond (kernel-clean).</li>
     </ul>
     <p>The JavaScript runtime is a <strong>tested mirror</strong> of these proofs (checked against
       them, not extracted from Lean). <span class="unverified">The editor, the networking (relay /
-      hub), the browser UI, and local storage are ordinary UNVERIFIED code — the untrusted shell
+      hub), the browser UI, and local storage are ordinary UNVERIFIED code: the untrusted shell
       around the verified core.</span></p>
   </div>
 

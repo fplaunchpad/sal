@@ -7,7 +7,7 @@ import type { MRDTSpec } from "../harness/mrdt_types";
 // i.e. intact-baseline ∪ additions-since-LCA-from-a ∪ additions-since-LCA-from-b.
 //
 // - Add(e) at ts adds (ts, e).
-// - Rem(e) removes every tag for e from the local state (no tombstone set —
+// - Rem(e) removes every tag for e from the local state (no tombstone set:
 //   the LCA diff in merge does the tombstoning).
 type Tag = string; // `${ts}:${elem}`
 export type Concrete = Set<Tag>;
@@ -27,7 +27,7 @@ export const spec: MRDTSpec<Concrete, Abstract, Op> = {
   name: "OR-Set",
   slug: "or-set",
   tagline:
-    "Observed-remove set with a three-way merge: keep elements intact at the LCA plus everything added in either branch since then. No tombstone set — the LCA diff does the work.",
+    "Observed-remove set with a three-way merge: keep elements intact at the LCA plus everything added in either branch since then. No tombstone set: the LCA diff does the work.",
   init: new Set(),
   apply(s, op, meta) {
     if (op.kind === "add") {

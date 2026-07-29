@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { CRDTSpec } from "../harness/types";
 
-// Σ = (value, timestamp, rid)  — last write wins under lex-max of (ts, rid).
+// Σ = (value, timestamp, rid): last write wins under lex-max of (ts, rid).
 // Lean keeps (ts, rid) as the register and treats the value as an alias for
 // the timestamp; here we carry an explicit `value` so the abstract view is
 // a user-provided write rather than a timestamp.

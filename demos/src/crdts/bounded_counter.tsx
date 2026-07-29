@@ -120,7 +120,7 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
           {[...a.quotas.entries()]
             .sort((x, y) => x[0] - y[0])
             .map(([rid, q]) => `R${rid}=${q}`)
-            .join(", ") || "—"}
+            .join(", ") || "-"}
         </div>
       </div>
     );

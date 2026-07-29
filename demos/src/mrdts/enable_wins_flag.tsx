@@ -32,7 +32,7 @@ export const spec: MRDTSpec<Concrete, Abstract, Op> = {
   name: "Enable-Wins Flag",
   slug: "enable-wins-flag",
   tagline:
-    "Boolean with a concurrent-enable-beats-disable resolution. ⚠ Known buggy — the inter_right_1op VC fails in the Sal paper; Plausible rediscovers the counterexample. Try Enable → diverge → Disable on one side, Enable on the other, Merge to see surprising flag flips.",
+    "Boolean with a concurrent-enable-beats-disable resolution. ⚠ Known buggy: the inter_right_1op VC fails in the Sal paper; Plausible rediscovers the counterexample. Try Enable → diverge → Disable on one side, Enable on the other, Merge to see surprising flag flips.",
   init: { counter: 0, flag: false },
   apply(s, op, _meta) {
     void _meta;

@@ -375,11 +375,11 @@ function CommitInspector<C, A, O>({
       }}
     >
       <div>
-        <code>{commit.id}</code> — {commit.kind}
+        <code>{commit.id}</code>: {commit.kind}
         {commit.kind === "op" && commit.op
-          ? ` — ${spec.formatOp(commit.op.op, commit.op.meta)}`
+          ? `, ${spec.formatOp(commit.op.op, commit.op.meta)}`
           : commit.kind === "merge"
-            ? ` — merge ← R${commit.mergeFrom}`
+            ? `, merge ← R${commit.mergeFrom}`
             : ""}
         {commit.parents.length > 0 && (
           <> · parents: {commit.parents.map((p) => <code key={p}>{p}</code>).reduce<React.ReactNode[]>((acc, x, i) => (i === 0 ? [x] : [...acc, ", ", x]), [])}</>

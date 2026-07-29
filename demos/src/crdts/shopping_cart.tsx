@@ -30,7 +30,7 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
   name: "Shopping Cart",
   slug: "shopping-cart",
   tagline:
-    "Per-replica add/remove counters per product id. The cart quantity for a product is the summed difference, capped at 0 — you can only un-add what you added.",
+    "Per-replica add/remove counters per product id. The cart quantity for a product is the summed difference, capped at 0: you can only un-add what you added.",
   init: { adds: new Map(), rems: new Map() },
   apply(s, op, meta) {
     // Lean spec is unconditional: Add/Remove each just bump their own map.
@@ -136,7 +136,7 @@ function Form({
 }) {
   const [pid, setPid] = useState(1);
   // Can remove only if my local replica has net qty > 0 for this product;
-  // but we don't know which replica owns this form from here — enable by
+  // but we don't know which replica owns this form from here: enable by
   // default and let the apply guard no-op if the precondition fails.
   void state;
   return (

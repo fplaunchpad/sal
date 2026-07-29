@@ -8,7 +8,7 @@ import type { OpMeta } from "../harness/types";
 //   anchors to. AddMark / RemoveMark each contribute two attachments.
 //
 // All three components are grow-only. Three-way merge is pointwise set
-// `(l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)` per component — the LCA is vestigial
+// `(l ∩ a ∩ b) ∪ (a \ l) ∪ (b \ l)` per component: the LCA is vestigial
 // (collapses to `l ∪ a ∪ b`), kept in this shape for parity with the
 // rest of the MRDT suite.
 //
@@ -393,7 +393,7 @@ function Form({
           onChange={(e) => setMarkStart(e.target.value)}
           style={{ maxWidth: "7rem" }}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {visible.map((n) => (
             <option key={n.id} value={n.id}>
               '{n.ch}'
@@ -406,7 +406,7 @@ function Form({
           onChange={(e) => setMarkEnd(e.target.value)}
           style={{ maxWidth: "7rem" }}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {visible.map((n) => (
             <option key={n.id} value={n.id}>
               '{n.ch}'

@@ -10,8 +10,8 @@ const arbOp: fc.Arbitrary<Op> = fc.oneof(
 
 describe("Enable-Wins Flag MRDT", () => {
   // The three base laws (left identity, right identity, commutativity) hold
-  // for Enable-Wins Flag even though the Sal paper's inter_right_1op VC fails
-  // — the bug only manifests in a specific four-state history scenario that
+  // for Enable-Wins Flag even though the Sal paper's inter_right_1op VC fails.
+  // The bug only manifests in a specific four-state history scenario that
   // requires the DAG to expose, not a closed-form property check. Plausible
   // rediscovers it from the Lean side; the playground lets you reproduce it
   // interactively.

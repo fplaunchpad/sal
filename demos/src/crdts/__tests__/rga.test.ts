@@ -4,7 +4,7 @@ import { checkLattice } from "../../harness/invariants";
 import { spec, type Op } from "../rga";
 
 // Random ops are tricky for RGA because most sampled `after` OpIds won't
-// refer to any inserted char — the invariants check still passes because
+// refer to any inserted char: the invariants check still passes because
 // those inserts just hang off a non-existent anchor and are invisible.
 // But we bias toward "(start)" inserts and a small pool of remove targets.
 const arbOp: fc.Arbitrary<Op> = fc.oneof(

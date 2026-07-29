@@ -11,7 +11,7 @@ import type { OpMeta } from "./types";
  * These are the standard MRDT properties. Note that `merge(l, a, a) ~ a`
  * (strict idempotence) is NOT an MRDT law: the closed-form counter MRDT
  * `merge(l,a,b) = a + b - l` fails it when a ≠ l (it would double-count the
- * delta). MRDTs only promise convergence given a coherent history DAG —
+ * delta). MRDTs only promise convergence given a coherent history DAG:
  * that's what the playground's commit DAG provides at runtime.
  */
 export function checkMRDTLaws<C, A, O>(

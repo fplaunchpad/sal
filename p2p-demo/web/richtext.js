@@ -105,7 +105,7 @@ function applyTheme(t) {
     // bare glyph; the tooltip names what the next click switches to
     const next = THEMES[(THEMES.indexOf(t) + 1) % 3];
     btn.textContent = `${THEME_ICON[t]} ${THEME_LABEL[t]}`;
-    btn.title = `Theme: ${THEME_LABEL[t]} (${t === 'system' ? 'follows your OS' : t}) — click for ${THEME_LABEL[next]}`;
+    btn.title = `Theme: ${THEME_LABEL[t]} (${t === 'system' ? 'follows your OS' : t}). Click for ${THEME_LABEL[next]}`;
   }
   const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   const meta = document.querySelector('meta[name="theme-color"]');

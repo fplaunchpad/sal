@@ -90,9 +90,9 @@ function Landing() {
         for state-based replicated data types. Every RDT in the framework
         is also instrumented with a{" "}
         <strong>read-side projection</strong> that lifts the user-facing
-        semantic claim — "is <code>e</code> in
+        semantic claim ("is <code>e</code> in
         the OR-Set?", "is this character bold in Peritext?", "does this
-        counter equal <code>incs − decs</code>?" — into a Lean theorem,
+        counter equal <code>incs − decs</code>?") into a Lean theorem,
         with concrete <em>SPOT</em> tests pinning the headline behaviour
         on small executions.
       </p>
@@ -102,13 +102,13 @@ function Landing() {
       </p>
       <ul style={{ marginTop: "0.25rem", marginBottom: "0.75rem" }}>
         <li>
-          <strong>CRDTs</strong> — two-way merge between replicas. Issue
-          ops at any replica, then pick a source and a target — the
+          <strong>CRDTs</strong>: two-way merge between replicas. Issue
+          ops at any replica, then pick a source and a target: the
           target absorbs the source. The lattice underneath converges
           regardless of the order you choose.
         </li>
         <li>
-          <strong>MRDTs</strong> — three-way merge over a git-style
+          <strong>MRDTs</strong>: three-way merge over a git-style
           commit DAG. Branches diverge, you merge them with the LCA
           computed from history. Toggle the "concrete state" view to see
           the lattice layer driving convergence.

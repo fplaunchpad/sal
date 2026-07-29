@@ -4,7 +4,7 @@ import type { OpMeta } from "./types";
 /**
  * A state-based MRDT. Merge takes three arguments: the LCA state `l` plus two
  * branch states `a` and `b`. Contrast with `CRDTSpec.merge(a, b)` which has no
- * LCA — MRDTs get causality from the history DAG.
+ * LCA: MRDTs get causality from the history DAG.
  */
 export interface MRDTSpec<Concrete, Abstract, Op> {
   name: string;

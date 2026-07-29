@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { MRDTSpec } from "../harness/mrdt_types";
 
 // Σ = set of naturals.  do adds; merge uses LCA to detect concurrent adds,
-// but for a G-set the LCA is redundant — we simply union everything.
+// but for a G-set the LCA is redundant: we simply union everything.
 // Kept here as a pedagogical first set example contrasting the Inc-counter.
 export type Concrete = Set<number>;
 export type Abstract = number[];

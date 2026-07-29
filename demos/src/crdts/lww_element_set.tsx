@@ -4,7 +4,7 @@ import type { CRDTSpec } from "../harness/types";
 // Σ = (addTs : Map id -> ts, remTs : Map id -> ts)
 // e ∈ set  iff  addTs[e] > remTs[e]  (add wins on ties? usually add wins;
 // Lean uses strict > on remove, i.e. add wins when ts_add >= ts_rem).
-// Here: e ∈ set iff addTs[e] > remTs[e] — ties go to remove (safe side).
+// Here: e ∈ set iff addTs[e] > remTs[e]: ties go to remove (safe side).
 export type Concrete = {
   addTs: Map<number, number>;
   remTs: Map<number, number>;
@@ -85,8 +85,8 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
             return (
               <tr key={e}>
                 <td>{e}</td>
-                <td>{add || "—"}</td>
-                <td>{rem || "—"}</td>
+                <td>{add || "-"}</td>
+                <td>{rem || "-"}</td>
                 <td>{add > rem ? "✓" : ""}</td>
               </tr>
             );

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { CRDTSpec } from "../harness/types";
 
 // Σ = ℕ  (init 0; writes do min; merge = min)
-// Degenerate on ℕ with init 0 — state stays 0 once initialised. The Lean
+// Degenerate on ℕ with init 0: state stays 0 once initialised. The Lean
 // file documents this explicitly; we mirror the spec and flag the quirk
 // in the tagline.
 export type Concrete = number;
@@ -13,7 +13,7 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
   name: "MIN-Register",
   slug: "min-register",
   tagline:
-    "State is one natural number. Write v sets state := min(state, v); merge = min. With init 0 and ℕ writes this is semantically degenerate (state stays 0) — a lattice-law pedagogy case, not a useful CRDT.",
+    "State is one natural number. Write v sets state := min(state, v); merge = min. With init 0 and ℕ writes this is semantically degenerate (state stays 0): a lattice-law pedagogy case, not a useful CRDT.",
   init: 0,
   apply(s, op, _meta) {
     void _meta;

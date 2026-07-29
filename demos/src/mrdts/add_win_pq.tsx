@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { MRDTSpec } from "../harness/mrdt_types";
 
 // Σ = (A : set (add_ts, elem, innate),  I : set (inc_ts, elem, amount)).
-// No tombstone set — LCA handles Add-Wins: merge = three-way set union
+// No tombstone set, LCA handles Add-Wins: merge = three-way set union
 // per component.  Rmv is a simple local filter on A.
 type ARec = { ts: number; elem: number; value: number };
 type IRec = { ts: number; elem: number; amount: number };
@@ -72,7 +72,7 @@ export const spec: MRDTSpec<Concrete, Abstract, Op> = {
         ]),
       };
     }
-    // Rmv: local filter on A only (I is untouched — matches the Lean spec).
+    // Rmv: local filter on A only (I is untouched, matches the Lean spec).
     return {
       A: s.A.filter((r) => r.elem !== op.elem),
       I: s.I,

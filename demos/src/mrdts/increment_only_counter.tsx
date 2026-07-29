@@ -12,7 +12,7 @@ export const spec: MRDTSpec<Concrete, Abstract, Op> = {
   name: "Increment-Only Counter",
   slug: "inc-counter",
   tagline:
-    "Σ = Int, incr adds 1 per op. Merge is the closed-form a + b − l — the LCA's value is subtracted out so concurrent increments aren't double-counted.",
+    "Σ = Int, incr adds 1 per op. Merge is the closed-form a + b − l: the LCA's value is subtracted out so concurrent increments aren't double-counted.",
   init: 0,
   apply(s, _op, _meta) {
     void _op;

@@ -5,7 +5,7 @@ import { spec, type Concrete, type Op } from "../add_win_pq";
 
 // rmv ops carry a prepare-time tombstone snapshot. Generate ops without
 // the snapshot (kind, elem, value, amount only), then materialise it
-// from the local replica state at apply time — exactly what the
+// from the local replica state at apply time: exactly what the
 // playground's opForm does interactively.
 type RawOp =
   | { kind: "add"; elem: number; value: number }

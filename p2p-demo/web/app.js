@@ -9,7 +9,7 @@ import { applyTextEdit } from '../src/editbind.js';
 import { compactibleEmbedRGA as DT } from '../../runtime/src/compact.js';
 
 const $ = (id) => document.getElementById(id);
-const short = (g) => (g ? g.slice(0, 8) : '—');
+const short = (g) => (g ? g.slice(0, 8) : '-');
 
 // ---- identity + room -------------------------------------------------------
 const params = new URLSearchParams(location.search);
@@ -86,7 +86,7 @@ function renderPanels() {
 
   // certified-GC panel
   const sc = node.stableCut();
-  $('cutInfo').textContent = sc.complete ? `${sc.meet.size} events` : `incomplete: missing ${sc.missing.join(',') || '—'}`;
+  $('cutInfo').textContent = sc.complete ? `${sc.meet.size} events` : `incomplete: missing ${sc.missing.join(',') || '-'}`;
   $('symInfo').textContent = String(node.symbolCount());
   $('epochInfo').textContent = String(node.epoch);
   $('gcBtn').disabled = !sc.complete || sc.meet.size === 0;
@@ -110,7 +110,7 @@ $('gcBtn').addEventListener('click', () => {
   else {
     st.className = 'status good';
     st.textContent = `compacted: ${before} → ${node.symbolCount()} symbols, reads preserved, now epoch ${node.epoch}. ` +
-      `(Other tabs stay at their epoch until they also GC — epochs are linearized; ` +
+      `(Other tabs stay at their epoch until they also GC, since epochs are linearized; ` +
       `see the coordinated barrier in \`npm run demo\`.)`;
   }
   renderFromState(); renderPanels(); net.announce();

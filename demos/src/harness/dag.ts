@@ -10,7 +10,7 @@ export interface Commit<Concrete, Op> {
   kind: CommitKind;
   parents: CommitId[];
   state: Concrete;
-  ts: number; // creation order — unique and monotonic
+  ts: number; // creation order: unique and monotonic
   authorRid: number; // which replica wrote this commit
   op?: { op: Op; meta: OpMeta }; // for kind === "op"
   mergeFrom?: number; // for kind === "merge": source replica id
@@ -23,7 +23,7 @@ export interface Commit<Concrete, Op> {
  *      set is the LCA.
  * For criss-cross merges there may be multiple LCAs; we return the first one
  * we find (git calls this "recursive merge base"). For MRDT semantics that's
- * sufficient — the harness always uses *some* LCA, and replicas converge
+ * sufficient: the harness always uses *some* LCA, and replicas converge
  * under any consistent choice because merge is commutative.
  */
 export function lca<C, O>(

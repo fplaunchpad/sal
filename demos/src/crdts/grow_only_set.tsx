@@ -10,7 +10,7 @@ export const spec: CRDTSpec<Concrete, Abstract, Op> = {
   name: "Grow-Only Set",
   slug: "g-set",
   tagline:
-    "The simplest set CRDT. Only op is Add; state only grows; merge = union. No removes — tombstones aren't needed because nothing is ever deleted.",
+    "The simplest set CRDT. Only op is Add; state only grows; merge = union. No removes: tombstones aren't needed because nothing is ever deleted.",
   init: new Set(),
   apply(s, op, _meta) {
     void _meta;
