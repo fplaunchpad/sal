@@ -33,14 +33,20 @@ machine.
 - `Conditioned_Emulation.lean`: embeds the emulator into
   `ConditionedMRDTSig`; `Inv` is `D ⊆ M` plus causal down-closure, and
   `applicable` is the generation-side causal/freshness obligation.
-- `Weak_Simulation.lean`: existing same-label weak-simulation infrastructure;
-  Priority 4 generalizes it to label morphisms.
+- `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
+  two-direction trace equivalence, and representation independence. The old
+  same-label API remains as a compatibility specialization.
+- `Instances/GSet_Emulation_Canary.lean`: two proved simulations between
+  distinct op/state label grammars for a grow-only set; message delivery and
+  singleton-state merge are silent, and client trace properties are proved
+  representation independent.
 - `Transfer.lean`: the typed certification boundary. A transfer input contains
   a causal schedule and `VerifiedMRDT` certificate. It deliberately contains
   no vacuous `True` theorem.
 
 ## Current status
 
-The Shapiro construction and its conditioned endpoint are kernel checked with
-no `sorry`. Remaining work is tracked as Priorities 4 and 5 in the repository
+The Shapiro construction, conditioned endpoint, label-morphic emulation
+metatheory, and first two-direction canary are kernel checked with no `sorry`.
+The end-to-end RA-linearizability connection is Priority 5 in the repository
 root `PRIORITIZED_REMAINING_WORK.md`.

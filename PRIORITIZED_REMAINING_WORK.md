@@ -53,13 +53,21 @@ enabled internal delivery, and causal-downset invariants. Its verification
 endpoint is `VerifiedMRDT (shapiroConditionedG ...)`; the old 24-VC/`True`
 transfer scaffold was removed.
 
-### 4. Formalize Liittschwager-style emulation
+### 4. Formalize Liittschwager-style emulation — completed 2026-08-01
 
 - Generalize weak simulation from label equality to label morphisms.
 - Prove the required weak simulations between the original and emulating
   transition systems.
 - Prove weak-trace and representation-independence results.
 - Use the grow-only set as the first concrete canary.
+
+Delivered by the label-morphic `WeakSimM`, `LabelMorphism`, `LabelIso`, and
+`EmulationEquivalence` interfaces in `Sal/Emulation/Weak_Simulation.lean`.
+Weak-step/execution lifting, trace transport, two-way trace equivalence, and
+representation independence are proved generically. The grow-only-set canary
+proves both simulations between distinct op/state label grammars, including
+silent message-delivery/singleton-merge steps. Priority 5 connects this
+behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 5. Finish the RA-linearizability transfer
 
@@ -109,7 +117,7 @@ transfer scaffold was removed.
 
 ## Completed foundation
 
-The next active item is Priority 4. The consolidation work underlying this backlog is recorded in
+The next active item is Priority 5. The consolidation work underlying this backlog is recorded in
 `Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
 particular, the repository now has production `VerifiedMRDT` certificates,
 EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous
