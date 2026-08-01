@@ -39,6 +39,8 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     C'.core.head r = some vNew →
     C'.inFlight = C.inFlight ∪
       {packet | packet.2 = vNew ∧ packet.1 ∈ recipients ∧ packet.1 ≠ r} →
+    I.verified.Honest
+      (Sal.ConditionedMRDTs.Configuration.core C'.core) →
     rel O' C'
   queryPreserved : ∀ {O O' C r q v}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.query r q v) O' → rel O' C
@@ -51,7 +53,10 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     ConditionedNetworkStep (shapiroConditionedG D I.schedule)
       (fun core => I.verified.Honest
         (Sal.ConditionedMRDTs.Configuration.core core))
-      C (.merge r r) C' → rel O' C'
+      C (.merge r r) C' →
+    I.verified.Honest
+      (Sal.ConditionedMRDTs.Configuration.core C'.core) →
+    rel O' C'
 
 namespace ShapiroNetworkCoupling
 
@@ -72,11 +77,11 @@ def forward (K : ShapiroNetworkCoupling I P) :
             (.update _ _) O' := ⟨hdiscipline,
           .opUpdate hs hm recipients O' htrace hreps hbuf⟩
         have henabled := K.updateEnabled hrel hsource
-        obtain ⟨t, vNew, C', htarget, hhead, hbuffer⟩ :=
-          P.update henabled recipients
-        refine ⟨C', ?_, K.updatePreserved hrel hsource htarget hhead hbuffer⟩
+        let R := P.update henabled recipients
+        refine ⟨R.next, ?_, K.updatePreserved hrel hsource R.step
+          R.head R.buffer R.honest⟩
         exact WeakSimM.weakStep_of_step
-          ⟨.apply t _ _, htarget, rfl⟩
+          ⟨.apply R.time _ _, R.step, rfl⟩
     | opQuery hs hv O' htrace hreps hbuf =>
         have hsource : (disciplinedOpLabeledTS D hb).step O
             (.query _ _ _) O' := ⟨hdiscipline,
@@ -91,10 +96,11 @@ def forward (K : ShapiroNetworkCoupling I P) :
             (.deliver _ _) O' := ⟨hdiscipline,
           .opDeliver hin henabled hs O' htrace hreps hbuf⟩
         obtain ⟨snapshot, hdeliver⟩ := K.deliveryEnabled hrel hsource
-        obtain ⟨C', htarget⟩ := P.deliver hdeliver
-        refine ⟨C', ?_, K.deliveryPreserved hrel hsource hdeliver htarget⟩
+        let R := P.deliver hdeliver
+        refine ⟨R.next, ?_, K.deliveryPreserved hrel hsource hdeliver
+          R.step R.honest⟩
         exact WeakSimM.weakStep_of_step
-          ⟨.merge _ _, htarget, rfl⟩
+          ⟨.merge _ _, R.step, rfl⟩
 
 theorem initialRelated (K : ShapiroNetworkCoupling I P) :
     K.forward.rel (opInitConfig D)

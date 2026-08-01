@@ -68,6 +68,36 @@ theorem extendMessageVersion_other [DecidableEq D.Msg]
     (v : Version) : extendMessageVersion μ fresh v other = μ other := by
   simp [extendMessageVersion, h]
 
+theorem incorporatedAt_append_update (Γ : List (OpEvent D))
+    (issuer replica : Replica) (op : D.AppOp) (message candidate : D.Msg) :
+    incorporatedAt
+        (Γ ++ [(issuer, OpInput.update op, OpOutput.send message)])
+        replica candidate ↔
+      incorporatedAt Γ replica candidate ∨
+        (replica = issuer ∧ candidate = message) := by
+  simp [incorporatedAt]
+  aesop
+
+theorem generated_append_update {Γ : List (OpEvent D)}
+    {issuer replica : Replica} {op op' : D.AppOp} {message candidate : D.Msg}
+    (h : (replica, OpInput.update op', OpOutput.send candidate) ∈
+      Γ ++ [(issuer, OpInput.update op, OpOutput.send message)]) :
+    (replica, OpInput.update op', OpOutput.send candidate) ∈ Γ ∨
+      (replica = issuer ∧ op' = op ∧ candidate = message) := by
+  simpa using h
+
+theorem fresh_message_unmapped
+    {I : OperationalTransferInput D hb} {O : OpConfiguration D}
+    {C : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    (W : ShapiroCouplingWitness I O C)
+    {m : D.Msg} (hfresh : ¬ incorporatedAnywhere O.trace m) :
+    W.messageVersion m = none := by
+  cases hm : W.messageVersion m with
+  | none => rfl
+  | some v =>
+      obtain ⟨r, op, hgen, hcarry⟩ := W.version_is_generated hm
+      exact absurd ⟨r, Or.inl ⟨op, hgen⟩⟩ hfresh
+
 namespace ShapiroCoupled
 
 /-- The empty op system and empty conditioned snapshot network are coupled. -/
