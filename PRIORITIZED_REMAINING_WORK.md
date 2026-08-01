@@ -99,7 +99,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   broadcasts buffer immutable conditioned version ids, and delivery merges
   exactly that historical version rather than the sender's newer head.
   `SnapshotMerge.storeInv` and `SnapshotMerge.goodConfig` prove that this new
-  delivery rule preserves the existing conditioned invariants.
+  delivery rule preserves the existing conditioned invariants. The full
+  network reachability induction is complete: `networkRALinearizable` proves
+  every reachable envelope state's conditioned core is RA-linearizable.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.
