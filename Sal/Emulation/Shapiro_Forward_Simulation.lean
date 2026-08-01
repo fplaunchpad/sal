@@ -19,7 +19,6 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     (P : ConditionedNetworkProgress I) where
   rel : OpConfiguration D →
     ConditionedNetworkConfig (shapiroConditionedG D I.schedule) → Prop
-  versionOf : D.Msg → Version
   initial : rel (opInitConfig D)
     (conditionedNetworkInit (shapiroConditionedG D I.schedule)
       I.verified.initInv)
@@ -40,9 +39,10 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     (disciplinedOpLabeledTS D hb).step O (.query r q v) O' → rel O' C
   deliveryEnabled : ∀ {O O' C r m}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.deliver r m) O' →
-    P.CanDeliver C r (versionOf m)
-  deliveryPreserved : ∀ {O O' C C' r m}, rel O C →
+    ∃ snapshot, P.CanDeliver C r snapshot
+  deliveryPreserved : ∀ {O O' C C' r m snapshot}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.deliver r m) O' →
+    P.CanDeliver C r snapshot →
     ConditionedNetworkStep (shapiroConditionedG D I.schedule)
       (fun core => I.verified.Honest
         (Sal.ConditionedMRDTs.Configuration.core core))
@@ -85,9 +85,9 @@ def forward (K : ShapiroNetworkCoupling I P) :
         have hsource : (disciplinedOpLabeledTS D hb).step O
             (.deliver _ _) O' := ⟨hdiscipline,
           .opDeliver hin henabled hs O' htrace hreps hbuf⟩
-        have hdeliver := K.deliveryEnabled hrel hsource
+        obtain ⟨snapshot, hdeliver⟩ := K.deliveryEnabled hrel hsource
         obtain ⟨C', htarget⟩ := P.deliver hdeliver
-        refine ⟨C', ?_, K.deliveryPreserved hrel hsource htarget⟩
+        refine ⟨C', ?_, K.deliveryPreserved hrel hsource hdeliver htarget⟩
         exact WeakSimM.weakStep_of_step
           ⟨.merge _ _, htarget, rfl⟩
 

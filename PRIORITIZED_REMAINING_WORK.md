@@ -107,6 +107,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   are the concrete coupling laws: message-to-version correspondence,
   replica/materialized-state agreement, update preservation, and historical
   delivery preservation.
+  `ShapiroCouplingWitness` now defines that concrete dynamic correspondence;
+  `ShapiroCoupled.initial` and `query_preserved` are proved. Update/broadcast
+  and delivery/snapshot-merge preservation remain.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

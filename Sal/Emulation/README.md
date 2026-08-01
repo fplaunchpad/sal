@@ -56,6 +56,9 @@ actual Shapiro emulator system; safety transfer needs only that direction.
 - `Shapiro_Forward_Simulation.lean`: the concrete coupling interface and the
   proved generic assembly `ShapiroNetworkCoupling.forward : WeakSimM`; only
   the message/version and state-preservation coupling leaves remain.
+- `Shapiro_Coupling_Invariant.lean`: dynamic message-to-version, replica,
+  delivered-set, and packet correspondence; initial coupling and query
+  preservation are proved without assuming messages embed into version ids.
 - `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
   two-direction trace equivalence, and representation independence. The old
   same-label API remains as a compatibility specialization.
