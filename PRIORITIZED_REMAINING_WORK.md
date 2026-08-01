@@ -37,7 +37,7 @@ The corrected set-relative theory no longer imports the global-`lo` attempt;
 the active Lean tree contains no `sorry` commands, and the binary corrected
 bridge plus the conditioned refactor ledger build successfully.
 
-### 3. Correct the operation-to-state emulator
+### 3. Correct the operation-to-state emulator — completed 2026-08-01
 
 - Replace the current `Set Msg` scaffold with Shapiro et al.'s
   `(s_m, M, D)` construction.
@@ -45,6 +45,13 @@ bridge plus the conditioned refactor ledger build successfully.
   and internal delivery steps.
 - Treat Shapiro et al. 2011 as the construction blueprint and Liittschwager et
   al. 2025 as the formal simulation and transfer target.
+
+Delivered in `Sal/Emulation/Emulation.lean` and
+`Sal/Emulation/Conditioned_Emulation.lean`. The emulator now uses the original
+materialized/known/delivered tuple, causal schedules, generation preparation,
+enabled internal delivery, and causal-downset invariants. Its verification
+endpoint is `VerifiedMRDT (shapiroConditionedG ...)`; the old 24-VC/`True`
+transfer scaffold was removed.
 
 ### 4. Formalize Liittschwager-style emulation
 
@@ -102,7 +109,7 @@ bridge plus the conditioned refactor ledger build successfully.
 
 ## Completed foundation
 
-The next active item is Priority 3. The consolidation work underlying this backlog is recorded in
+The next active item is Priority 4. The consolidation work underlying this backlog is recorded in
 `Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
 particular, the repository now has production `VerifiedMRDT` certificates,
 EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous
