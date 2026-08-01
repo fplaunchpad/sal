@@ -69,11 +69,20 @@ proves both simulations between distinct op/state label grammars, including
 silent message-delivery/singleton-merge steps. Priority 5 connects this
 behavioral layer to the conditioned RA-linearizability certificate.
 
-### 5. Finish the RA-linearizability transfer
+### 5. Finish the RA-linearizability transfer — in progress
 
-- Define op-based RA-linearizability as a genuine trace property.
-- Connect state-based RA-linearizability to observable traces.
-- Prove the end-to-end op-based transfer theorem.
+- [x] Define op-based RA-linearizability as a genuine universal weak-trace
+  property, parameterized by a concrete RA trace legality judgment.
+- [x] Define the explicit conditioned trace-realization obligation connecting
+  `VerifiedMRDT.ra_linearizable` to observable state-system traces.
+- [x] Prove one-way weak-simulation and two-way emulation transfer theorems.
+- [ ] Define the actual Shapiro state-system LTS and observable label map.
+- [ ] Prove the datatype-generic forward weak simulation from
+  `opLabeledTS D hb` to that state system (full label isomorphism is neither
+  necessary nor generally available for silent administrative labels).
+- [ ] Construct the trace realizer into conditioned ternary configurations and
+  discharge its honest-reachability and adequacy obligations.
+- [ ] Instantiate the complete theorem for the grow-only-set canary.
 
 ### 6. Complete the intent column for the production catalogue
 

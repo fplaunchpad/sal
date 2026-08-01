@@ -19,10 +19,11 @@ delivered-message set `D`. Merge learns `M ∪ M'` and causally drains
 `(M ∪ M') \ D`. It is intentionally not replaced with the message-set-only
 variant: the original directional drain is represented explicitly.
 
-Liittschwager et al. (arXiv:2504.05398) supplies the formal target: two weak
-simulations, weak-trace equivalence, and representation independence. Those
-proofs are the next project phase; they do not change the Shapiro state
-machine.
+Liittschwager et al. (arXiv:2504.05398) supplies the formal target: weak
+simulation, weak-trace transport, and representation independence. The
+generic results and a two-direction GSet canary are complete. The remaining
+datatype-generic proof is the forward simulation from `opLabeledTS` to the
+actual Shapiro emulator system; safety transfer needs only that direction.
 
 ## Files
 
@@ -40,13 +41,15 @@ machine.
   distinct op/state label grammars for a grow-only set; message delivery and
   singleton-state merge are silent, and client trace properties are proved
   representation independent.
-- `Transfer.lean`: the typed certification boundary. A transfer input contains
-  a causal schedule and `VerifiedMRDT` certificate. It deliberately contains
-  no vacuous `True` theorem.
+- `Transfer.lean`: genuine universal weak-trace RA property, the explicit
+  trace-realization bridge from `VerifiedMRDT.ra_linearizable`, and one-way
+  and two-way end-to-end transfer theorems. It contains no vacuous `True`
+  theorem.
 
 ## Current status
 
 The Shapiro construction, conditioned endpoint, label-morphic emulation
-metatheory, and first two-direction canary are kernel checked with no `sorry`.
-The end-to-end RA-linearizability connection is Priority 5 in the repository
-root `PRIORITIZED_REMAINING_WORK.md`.
+metatheory, first two-direction canary, and abstract RA trace-transfer theorem
+are kernel checked with no `sorry`. Priority 5 now consists of constructing
+the concrete Shapiro system simulation and conditioned trace realizer listed
+in the repository-root `PRIORITIZED_REMAINING_WORK.md`.
