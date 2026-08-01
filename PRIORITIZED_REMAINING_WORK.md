@@ -76,7 +76,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
 - [x] Define the explicit conditioned trace-realization obligation connecting
   `VerifiedMRDT.ra_linearizable` to observable state-system traces.
 - [x] Prove one-way weak-simulation and two-way emulation transfer theorems.
-- [ ] Define the actual Shapiro state-system LTS and observable label map.
+- [x] Define the actual certificate-scoped conditioned `Step3` system view and
+  observable label map: updates/queries are visible; timestamps, replica
+  creation, merge, and message delivery are handled through τ-observation.
 - [ ] Prove the datatype-generic forward weak simulation from
   `opLabeledTS D hb` to that state system (full label isomorphism is neither
   necessary nor generally available for silent administrative labels).
