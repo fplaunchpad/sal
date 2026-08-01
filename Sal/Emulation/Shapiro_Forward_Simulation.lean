@@ -29,12 +29,17 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
   updateEnabled : ∀ {O O' C r op}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.update r op) O' →
     P.CanUpdate C r op
-  updatePreserved : ∀ {O O' C C' r op t}, rel O C →
+  updatePreserved : ∀ {O O' C C' r op t vNew}
+    {recipients : Set Replica}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.update r op) O' →
     ConditionedNetworkStep (shapiroConditionedG D I.schedule)
       (fun core => I.verified.Honest
         (Sal.ConditionedMRDTs.Configuration.core core))
-      C (.apply t r op) C' → rel O' C'
+      C (.apply t r op) C' →
+    C'.core.head r = some vNew →
+    C'.inFlight = C.inFlight ∪
+      {packet | packet.2 = vNew ∧ packet.1 ∈ recipients ∧ packet.1 ≠ r} →
+    rel O' C'
   queryPreserved : ∀ {O O' C r q v}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.query r q v) O' → rel O' C
   deliveryEnabled : ∀ {O O' C r m}, rel O C →
@@ -69,7 +74,7 @@ def forward (K : ShapiroNetworkCoupling I P) :
         have henabled := K.updateEnabled hrel hsource
         obtain ⟨t, vNew, C', htarget, hhead, hbuffer⟩ :=
           P.update henabled recipients
-        refine ⟨C', ?_, K.updatePreserved hrel hsource htarget⟩
+        refine ⟨C', ?_, K.updatePreserved hrel hsource htarget hhead hbuffer⟩
         exact WeakSimM.weakStep_of_step
           ⟨.apply t _ _, htarget, rfl⟩
     | opQuery hs hv O' htrace hreps hbuf =>

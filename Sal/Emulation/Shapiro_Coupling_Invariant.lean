@@ -39,6 +39,9 @@ structure ShapiroCouplingWitness (I : OperationalTransferInput D hb)
   generated_has_version : ∀ {r op m},
     (r, OpInput.update op, OpOutput.send m) ∈ O.trace →
     ∃ v, messageVersion m = some v ∧ VersionCarries I C m v
+  version_is_generated : ∀ {m v}, messageVersion m = some v →
+    ∃ r op, (r, OpInput.update op, OpOutput.send m) ∈ O.trace ∧
+      VersionCarries I C m v
   op_packet : ∀ {r m}, (r, m) ∈ O.buffer →
     ∃ v, messageVersion m = some v ∧ (r, v) ∈ C.inFlight
   state_packet : ∀ {r v}, (r, v) ∈ C.inFlight →
@@ -48,6 +51,22 @@ def ShapiroCoupled (I : OperationalTransferInput D hb)
     (O : OpConfiguration D)
     (C : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)) : Prop :=
   Nonempty (ShapiroCouplingWitness I O C)
+
+/-- Extend the dynamic correspondence at one globally fresh message. -/
+def extendMessageVersion [DecidableEq D.Msg]
+    (μ : D.Msg → Option Version) (message : D.Msg) (version : Version) :
+    D.Msg → Option Version :=
+  fun m => if m = message then some version else μ m
+
+@[simp] theorem extendMessageVersion_same [DecidableEq D.Msg]
+    (μ : D.Msg → Option Version) (m : D.Msg) (v : Version) :
+    extendMessageVersion μ m v m = some v := by
+  simp [extendMessageVersion]
+
+theorem extendMessageVersion_other [DecidableEq D.Msg]
+    (μ : D.Msg → Option Version) {fresh other : D.Msg} (h : other ≠ fresh)
+    (v : Version) : extendMessageVersion μ fresh v other = μ other := by
+  simp [extendMessageVersion, h]
 
 namespace ShapiroCoupled
 
@@ -64,6 +83,7 @@ theorem initial (I : OperationalTransferInput D hb) :
     incorporated_iff := ?_
     fullyDrained := ?_
     generated_has_version := ?_
+    version_is_generated := ?_
     op_packet := ?_
     state_packet := ?_ }⟩
   · intro r s hs
@@ -102,6 +122,8 @@ theorem initial (I : OperationalTransferInput D hb) :
   · intro r op m hm
     simp [opInitConfig] at hm
   · intro r m hm
+    simp at hm
+  · intro r m hm
     exact absurd hm (by simp [opInitConfig])
   · intro r v hv
     exact absurd hv (by simp [conditionedNetworkInit])
@@ -128,6 +150,7 @@ theorem query_preserved (I : OperationalTransferInput D hb)
         incorporated_iff := ?_
         fullyDrained := W.fullyDrained
         generated_has_version := ?_
+        version_is_generated := ?_
         op_packet := ?_
         state_packet := ?_ }⟩
       · intro r' s hs'
@@ -147,6 +170,9 @@ theorem query_preserved (I : OperationalTransferInput D hb)
         rw [htrace] at hm
         simp at hm
         exact W.generated_has_version hm
+      · intro m ver hm
+        obtain ⟨r', op, hgen, hcarry⟩ := W.version_is_generated hm
+        exact ⟨r', op, by rw [htrace]; simp [hgen], hcarry⟩
       · intro r' m hm
         rw [hbuf] at hm
         exact W.op_packet hm
