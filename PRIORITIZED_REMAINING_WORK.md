@@ -88,6 +88,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   This now requires an explicit operational-progress layer: current
   `VerifiedMRDT` certificates prove RA correctness of honest reachable
   configurations but do not construct invariant-laden `Step3V` successors.
+  The separate `ConditionedOperationalProgress` interface and its observed
+  weak-step adapters are complete; the Shapiro coupling must discharge its
+  `CanApply`, `CanMerge`, and preservation obligations.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

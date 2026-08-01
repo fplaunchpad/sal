@@ -38,6 +38,11 @@ actual Shapiro emulator system; safety transfer needs only that direction.
   conditioned ternary `Step3` semantics, including the honesty-restricted
   target systems, widened virtual-LCA production target, and the
   op-to-conditioned label morphisms.
+- `Operational_Progress.lean`: optional constructive progress certificate,
+  separate from `VerifiedMRDT` safety, with datatype-specific apply/merge
+  enablement.
+- `Operational_Observed.lean`: turns certified apply, merge, and query
+  progress into weak steps of the conditioned client-observation LTS.
 - `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
   two-direction trace equivalence, and representation independence. The old
   same-label API remains as a compatibility specialization.
