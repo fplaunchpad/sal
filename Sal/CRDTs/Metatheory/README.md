@@ -50,9 +50,10 @@ Lean (build with `lake build Sal.CRDTs.Metatheory.<Module>`):
 - [`RA_Linearizability.lean`](RA_Linearizability.lean): `IsRALinearizable`
   (paper Def-lin), `lo`, the paper's 24-VC bundle `SatisfiesVCs` (plus 5
   implicit extras the mechanization makes explicit). 0 sorries.
-- [`Merge_Linearization.lean`](Merge_Linearization.lean): the paper's
-  original BottomUp-{0,1,2}-OP route, which is unsound as posed (A3). It
-  carries 2 sorries that are unprovable as posed.
+- [`../Development/Merge_Linearization_GlobalLo.lean.disabled`](../Development/Merge_Linearization_GlobalLo.lean.disabled): archived source of the paper's
+  original BottomUp-{0,1,2}-OP route, which is unsound as posed (A3). Its six
+  unprovable placeholders are retained only as historical evidence; the file
+  is not a Lean module or build target.
 - [`Merge_Linearization_Set.lean`](Merge_Linearization_Set.lean): the
   corrected core (see table). 0 sorries.
 - [`RA_Lin_Of_Join.lean`](RA_Lin_Of_Join.lean): end-to-end bridge (A9).

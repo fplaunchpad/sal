@@ -418,9 +418,9 @@ there; the obstruction is solely `ha`/`hb` at hybrid states, above. -/
 
 /-! ## §7  Axiom audit
 
-The imported `Merge_Linearization_Set` carries two `sorry`s in the
-merge-linearization induction; the audit below confirms none is transitively
-reached by these results (only `propext`/`Classical.choice`/`Quot.sound`). -/
+The imported `Merge_Linearization_Set` is independent of the archived
+global-`lo` merge induction. The audit below confirms that these results use
+only `propext`/`Classical.choice`/`Quot.sound`. -/
 
 #print axioms conditioned_convergence_on
 #print axioms loOn_imp_loOnA

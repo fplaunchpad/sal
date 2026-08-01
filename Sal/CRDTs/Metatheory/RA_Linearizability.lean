@@ -8,8 +8,9 @@ CRDT transition system in `CRDT_TS.lean`. For every active replica,
 its head state must be obtained by applying some permutation of its
 seen events, respecting the linearization relation `lo_C`.
 
-The bridge theorem "24 VCs ⟹ RA-linearizable" is stated at the bottom
-as `ra_linearizable_of_vcs`, stubbed with `sorry`.
+The paper's direct "24 VCs ⟹ RA-linearizable" bridge was retired with its
+unsound global-`lo` merge induction. Corrected bridges live in
+`RA_Lin_Of_Join.lean` and the conditioned ternary metatheory.
 -/
 
 namespace Sal.Emulation
@@ -712,10 +713,9 @@ theorem RA_lin_preserved_apply
 
 /-! ### Bridge theorem: Merge case + final assembly
 
-The Merge case and the top-level `ra_linearizable_of_vcs` live in
-`Sal/CRDTs/Metatheory/Merge_Linearization.lean`, since they depend on
-`merge_linearization_exists` and `RA_lin_preserved_merge_via_witness`
-defined there. Importing back into this file would create a cycle. -/
+The attempted Merge case and top-level `ra_linearizable_of_vcs` were retired
+with the unsound global-`lo` induction. The corrected end-to-end route is
+`RA_Lin_Of_Join.lean`, via set-relative canonical states and the Join lemma. -/
 
 end
 

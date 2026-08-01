@@ -6,7 +6,7 @@ import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Nodup
 
 /-!
-# Merge linearization (existential form)
+# Archived global-`lo` merge linearization (existential form)
 
 Given two RA-lin witnesses `π₁` (for replica `r₁` at state `s₁` and
 event set `ev₁`) and `π₂` (for `r₂` at `s₂`, `ev₂`), establish the

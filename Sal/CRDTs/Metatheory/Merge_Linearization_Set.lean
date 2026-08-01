@@ -1,4 +1,4 @@
-import Sal.CRDTs.Metatheory.Merge_Linearization
+import Sal.CRDTs.Metatheory.Linearization_Basics
 
 /-!
 # Set-relative linearization order (`loOn`) and its convergence theory
@@ -486,7 +486,7 @@ theorem applySeq_swap_loOn_incomparable
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
   by_cases h_comm : D.commutes a b
-  · exact applySeq_swap_commute h_comm pfx sfx s
+  · exact applySeq_swap_commute_basic h_comm pfx sfx s
   · obtain ⟨_, _, hL_a, h_a_in_s⟩ := h_a_in_C
     obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
     by_cases h_same : a.rep = b.rep
@@ -854,7 +854,7 @@ theorem perm_ending_in_loOn_max
       applySeq D s π = applySeq D s ((π.filter (· ≠ e)) ++ [e]) := by
   have h_e_in_π : e ∈ π := (h_perm.2 e).mpr h_e_in_ev
   have hfilt_perm : listPermOf (π.filter (· ≠ e)) (ev \ {e}) :=
-    filter_ne_listPermOf h_perm h_e_in_π
+    filter_ne_listPermOf_basic h_perm h_e_in_π
   have hfilt_resp : respects (π.filter (· ≠ e)) (loOn C ev) :=
     filter_ne_respects' h_resp
   have h_perm' : listPermOf ((π.filter (· ≠ e)) ++ [e]) ev := by
@@ -1408,9 +1408,9 @@ theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
         have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
         have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
         have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
-          filter_ne_listPermOf hp₁ h_e_l₁
+          filter_ne_listPermOf_basic hp₁ h_e_l₁
         have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
-          filter_ne_listPermOf hp₂ h_e_l₂
+          filter_ne_listPermOf_basic hp₂ h_e_l₂
         obtain ⟨t₁, hct₁⟩ :=
           isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₁'
             (fun a ha => h_in₁ a ha.1)
@@ -1445,7 +1445,7 @@ theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
       · -- Local to side 1.
         have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
         have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
-          filter_ne_listPermOf hp₁ h_e_l₁
+          filter_ne_listPermOf_basic hp₁ h_e_l₁
         obtain ⟨t₁, hct₁⟩ :=
           isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₁'
             (fun a ha => h_in₁ a ha.1)
@@ -1481,7 +1481,7 @@ theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
         · exact h
       have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
       have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
-        filter_ne_listPermOf hp₂ h_e_l₂
+        filter_ne_listPermOf_basic hp₂ h_e_l₂
       obtain ⟨t₂, hct₂⟩ :=
         isCanonicalState_exists hVC h_vis_trans h_vis_irrefl hp₂'
           (fun a ha => h_in₂ a ha.1)
@@ -1562,11 +1562,11 @@ theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     obtain ⟨l₂, _, _, hf₂⟩ := hc₂
     have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
     -- Extract e from side 1's enumeration.
-    have h_ex := applySeq_comm_extract (D := D) h_e_l₁ hp₁.1
+    have h_ex := applySeq_comm_extract_basic (D := D) h_e_l₁ hp₁.1
       (fun x _ _ => h_comm e x) D.init
     -- The filtered fold is canonical for ev₁ \ {e}, hence equals t₁.
     have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
-      filter_ne_listPermOf hp₁ h_e_l₁
+      filter_ne_listPermOf_basic hp₁ h_e_l₁
     have h_t₁ : applySeq D D.init (l₁.filter (· ≠ e)) = t₁ :=
       isCanonicalState_unique hVC (fun a ha => h_in₁ a ha.1)
         (isCanonicalState_of_all_comm hVC h_comm
@@ -1580,14 +1580,14 @@ theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     obtain ⟨l₂, hp₂, _, hf₂⟩ := hc₂
     have h_e_l₁ : e ∈ l₁ := (hp₁.2 e).mpr he₁
     have h_e_l₂ : e ∈ l₂ := (hp₂.2 e).mpr he₂
-    have h_ex₁ := applySeq_comm_extract (D := D) h_e_l₁ hp₁.1
+    have h_ex₁ := applySeq_comm_extract_basic (D := D) h_e_l₁ hp₁.1
       (fun x _ _ => h_comm e x) D.init
-    have h_ex₂ := applySeq_comm_extract (D := D) h_e_l₂ hp₂.1
+    have h_ex₂ := applySeq_comm_extract_basic (D := D) h_e_l₂ hp₂.1
       (fun x _ _ => h_comm e x) D.init
     have hp₁' : listPermOf (l₁.filter (· ≠ e)) (ev₁ \ {e}) :=
-      filter_ne_listPermOf hp₁ h_e_l₁
+      filter_ne_listPermOf_basic hp₁ h_e_l₁
     have hp₂' : listPermOf (l₂.filter (· ≠ e)) (ev₂ \ {e}) :=
-      filter_ne_listPermOf hp₂ h_e_l₂
+      filter_ne_listPermOf_basic hp₂ h_e_l₂
     have h_t₁ : applySeq D D.init (l₁.filter (· ≠ e)) = t₁ :=
       isCanonicalState_unique hVC (fun a ha => h_in₁ a ha.1)
         (isCanonicalState_of_all_comm hVC h_comm

@@ -11711,9 +11711,9 @@ The foundations live under \lean{Framework/}, the metatheorems under
 \lean{MRDT\_Instances/}; findings journals and superseded
 routes remain under \lean{Development/}, which nothing imports. Each cited theorem is kernel-checked
 with axioms in $\{\lean{propext},
-\lean{Classical.choice}, \lean{Quot.sound}\}$ (no \lean{sorryAx}). They
-import one linearization file carrying two unrelated \lean{sorry}s that the
-cited theorems do not transitively depend on; \lean{Development/}%
+\lean{Classical.choice}, \lean{Quot.sound}\}$ (no \lean{sorryAx}). The
+corrected import graph excludes the archived global-$\mathsf{lo}$
+linearization attempt; \lean{Development/}%
 \lean{CONDITIONED\_METATHEORY\_PLAN.md} is their roadmap.
 
 \fi\fi

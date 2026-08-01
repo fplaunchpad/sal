@@ -49,9 +49,9 @@ folds to the *wrong* state (`crack1_witness`): a valid merged witness that
 is not assembled from state-correct side witnesses.
 
 Everything here is kernel-checked with clean axioms
-(`propext, Classical.choice, Quot.sound`); the sorries in the
-transitively-imported `Merge_Linearization.lean` are *not* touched by any
-theorem in this file (verified via `#print axioms`).
+(`propext, Classical.choice, Quot.sound`). The corrected set-relative theory
+no longer transitively imports the archived global-`lo` development
+(verified via `#print axioms`).
 -/
 
 namespace Sal.Emulation

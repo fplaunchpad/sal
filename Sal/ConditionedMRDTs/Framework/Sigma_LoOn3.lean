@@ -292,7 +292,7 @@ theorem applySeq_swap_loOn_incomparable_u
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
   by_cases h_comm : D.commutes a b
-  · exact applySeq_swap_commute h_comm pfx sfx s
+  · exact applySeq_swap_commute_basic h_comm pfx sfx s
   · obtain ⟨_, _, hL_a, h_a_in_s⟩ := h_a_in_C
     obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
     by_cases h_same : a.rep = b.rep

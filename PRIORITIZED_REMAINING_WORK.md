@@ -24,11 +24,18 @@ the consolidated manuscript build with Tectonic. Remaining prose compression,
 claim synchronization, and expanded per-paper audit tables belong to Priority
 10, not to the structural split.
 
-### 2. Retire the legacy global-`lo` proof route completely
+### 2. Retire the legacy global-`lo` proof route completely — completed 2026-08-01
 
 - Decouple corrected metatheory from `Merge_Linearization.lean`.
 - Remove or archive its six remaining proof placeholders.
 - Ensure production builds contain no path through legacy `sorryAx` results.
+
+Delivered by the merge-independent
+`Sal/CRDTs/Metatheory/Linearization_Basics.lean` and the archived historical
+source `Sal/CRDTs/Development/Merge_Linearization_GlobalLo.lean.disabled`.
+The corrected set-relative theory no longer imports the global-`lo` attempt;
+the active Lean tree contains no `sorry` commands, and the binary corrected
+bridge plus the conditioned refactor ledger build successfully.
 
 ### 3. Correct the operation-to-state emulator
 
@@ -95,7 +102,7 @@ claim synchronization, and expanded per-paper audit tables belong to Priority
 
 ## Completed foundation
 
-The next active item is Priority 2. The consolidation work underlying this backlog is recorded in
+The next active item is Priority 3. The consolidation work underlying this backlog is recorded in
 `Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
 particular, the repository now has production `VerifiedMRDT` certificates,
 EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous

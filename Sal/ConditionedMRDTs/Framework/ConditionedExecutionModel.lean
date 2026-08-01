@@ -324,8 +324,9 @@ end ConditionedConfiguration
 /-! ## §7  Axiom audit
 
 All decls depend only on `propext`, `Classical.choice`, `Quot.sound`: no `sorryAx`, no
-`native_decide`.  In particular the `Merge_Linearization_Set` sorries reachable through the
-import chain are not transitively touched (nothing here uses `convergence_on_u`). -/
+`native_decide`. The corrected `Merge_Linearization_Set` import chain contains
+no `sorryAx`; the abandoned global-`lo` induction is archived outside the Lean
+module graph. -/
 
 #print axioms ConditionedConfiguration.mono_alloc
 #print axioms ConditionedConfiguration.vis_wf

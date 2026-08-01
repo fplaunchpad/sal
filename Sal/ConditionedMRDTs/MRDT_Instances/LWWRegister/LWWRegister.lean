@@ -24,8 +24,9 @@ instance exists as a *conditioned* datatype rather than a flat CRDT:
 * **Genuinely mechanized end-to-end.** The flat CRDT LWW
   (`Sal/CRDTs/LWW_*`) proves its 24 VCs kernel-cleanly, but the generic
   bridge from those VCs to RA-linearizability
-  (`Sal/CRDTs/Metatheory/Merge_Linearization.lean`) still carries `sorry`s,
-  so flat "LWW is RA-linearizable" rests on the paper meta-theorem. This
+  was the now-archived global-`lo` route and never obtained a kernel-clean
+  generic merge theorem, so flat "LWW is RA-linearizable" rests on the paper
+  meta-theorem. This
   conditioned instance instead rides the framework's *mechanized* bridge
   (`ra_linearizable_of_core_delta_cd3` / the `≈`-quotient capstone), so
   `lww_ra_linearizable3` and `LWW_ra_linearizable3_eq` are genuine
