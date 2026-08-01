@@ -19,13 +19,18 @@ def incorporatedAt {D : OpCRDTSig} (Γ : List (OpEvent D))
   (∃ op, (r, OpInput.update op, OpOutput.send m) ∈ Γ) ∨
   (r, OpInput.deliver m, OpOutput.none) ∈ Γ
 
+/-- Global message identity: a generated message denotes one broadcast event,
+not a replica-local occurrence. -/
+def incorporatedAnywhere {D : OpCRDTSig} (Γ : List (OpEvent D))
+    (m : D.Msg) : Prop := ∃ r, incorporatedAt Γ r m
+
 /-- Trace-side counterpart of `EmulatorState.PrepareEnabled`: the newly
-prepared message is fresh at this replica, all incorporated predecessors have
+prepared message is globally fresh, all incorporated predecessors have
 already been delivered there, and it does not precede an incorporated
 message. -/
 def generationEnabled {D : OpCRDTSig} (hb : D.Msg → D.Msg → Prop)
     (Γ : List (OpEvent D)) (r : Replica) (m : D.Msg) : Prop :=
-  ¬ incorporatedAt Γ r m ∧
+  ¬ incorporatedAnywhere Γ m ∧
   (∀ p, incorporatedAt Γ r p → hb p m →
     (r, OpInput.deliver p, OpOutput.none) ∈ Γ ∨
     (∃ op, (r, OpInput.update op, OpOutput.send p) ∈ Γ)) ∧
