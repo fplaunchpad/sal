@@ -66,6 +66,21 @@ def honestConditionedObservedTS {D : OpCRDTSig}
       observeConditionedLabel D raw = ℓ
   silent := ConditionedObsLabel.silent
 
+/-- Widened certificate-scoped target. This is the production transfer target:
+virtual LCAs make state delivery total even after criss-cross synchronization,
+while `VerifiedMRDT.ra_linearizableV` supplies the same RA guarantee. -/
+def honestConditionedObservedTSV {D : OpCRDTSig}
+    {hb : D.Msg → D.Msg → Prop} (I : ConditionedTransferInput D hb) :
+    LabeledTS where
+  State := Sal.ConditionedMRDTs.Configuration
+    (shapiroConditionedG D I.schedule)
+  Label := ConditionedObsLabel D
+  step := fun C ℓ C' =>
+    I.verified.Honest (Sal.ConditionedMRDTs.Configuration.core C) ∧
+    ∃ raw, Step3V (shapiroConditionedG D I.schedule) C raw C' ∧
+      observeConditionedLabel D raw = ℓ
+  silent := ConditionedObsLabel.silent
+
 /-- Operation labels map to the conditioned client alphabet. Causal message
 delivery is matched by zero or more internal conditioned steps. -/
 def opToConditionedLabels (D : OpCRDTSig)
@@ -94,6 +109,19 @@ def opToHonestConditionedLabels {D : OpCRDTSig}
     intro ℓ
     cases ℓ <;>
       simp [opLabeledTS, honestConditionedObservedTS, OpLabel.isSilent,
+        ConditionedObsLabel.silent]
+
+def opToHonestConditionedLabelsV {D : OpCRDTSig}
+    {hb : D.Msg → D.Msg → Prop} (I : ConditionedTransferInput D hb) :
+    LabelMorphism (opLabeledTS D hb) (honestConditionedObservedTSV I) where
+  map
+    | .update r op => .update r op
+    | .query r q v => .query r q v
+    | .deliver _ _ => .internal
+  silent_iff := by
+    intro ℓ
+    cases ℓ <;>
+      simp [opLabeledTS, honestConditionedObservedTSV, OpLabel.isSilent,
         ConditionedObsLabel.silent]
 
 end Sal.Emulation

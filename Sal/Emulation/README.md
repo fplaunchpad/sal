@@ -36,7 +36,8 @@ actual Shapiro emulator system; safety transfer needs only that direction.
   `applicable` is the generation-side causal/freshness obligation.
 - `Conditioned_Trace_TS.lean`: client-observation view of the authoritative
   conditioned ternary `Step3` semantics, including the honesty-restricted
-  target system and the op-to-conditioned label morphism.
+  target systems, widened virtual-LCA production target, and the
+  op-to-conditioned label morphisms.
 - `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
   two-direction trace equivalence, and representation independence. The old
   same-label API remains as a compatibility specialization.

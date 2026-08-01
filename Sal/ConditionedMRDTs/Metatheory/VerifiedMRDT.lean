@@ -150,6 +150,16 @@ theorem ra_linearizable {C : Configuration D}
       (V.join (Configuration.core C) hC))
     hReach
 
+/-- Packaged convergence for the widened execution model. Virtual-LCA merges
+consume the same per-configuration Join certificate as ordinary merges. -/
+theorem ra_linearizableV {C : Configuration D}
+    (hReach : HonestReachV D (fun C => V.Honest (Configuration.core C))
+      V.initInv C) : IsRALinearizable3 C :=
+  ra_linearizable3_of_honest_reachV
+    (fun C hC => (joinKitAt_plain_iff D (Configuration.core C)).1
+      (V.join (Configuration.core C) hC))
+    hReach
+
 /-- Packaged single-replica intent refinement for an arbitrary event list. -/
 theorem sequential (ops : List (Op D.AppOp)) (hHonest : V.seq.Honest ops) :
     V.seq.Rel (applySeq D.toCRDTSig D.init ops) (V.Spec.run ops) :=
@@ -213,6 +223,7 @@ end VerifiedRuntimeMRDT
 #print axioms SequentialRefinement.run
 #print axioms HistorySequentialRefinement.prod
 #print axioms VerifiedMRDT.ra_linearizable
+#print axioms VerifiedMRDT.ra_linearizableV
 #print axioms VerifiedRuntimeMRDT.compact_continuation
 
 end Sal.ConditionedMRDTs

@@ -79,9 +79,15 @@ behavioral layer to the conditioned RA-linearizability certificate.
 - [x] Define the actual certificate-scoped conditioned `Step3` system view and
   observable label map: updates/queries are visible; timestamps, replica
   creation, merge, and message delivery are handled through τ-observation.
+- [x] Lift packaged `VerifiedMRDT` correctness and trace transfer to the
+  widened `Step3V` semantics, so virtual LCAs cannot deadlock emulated state
+  delivery after criss-cross synchronization.
 - [ ] Prove the datatype-generic forward weak simulation from
   `opLabeledTS D hb` to that state system (full label isomorphism is neither
   necessary nor generally available for silent administrative labels).
+  This now requires an explicit operational-progress layer: current
+  `VerifiedMRDT` certificates prove RA correctness of honest reachable
+  configurations but do not construct invariant-laden `Step3V` successors.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

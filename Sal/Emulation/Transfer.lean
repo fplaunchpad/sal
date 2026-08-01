@@ -90,6 +90,52 @@ theorem state_ra_linearizable (B : ConditionedTraceBridge I T init S) :
 
 end ConditionedTraceBridge
 
+/-- Widened counterpart of `ConditionedTraceBridge`, for the production
+virtual-LCA execution model. -/
+structure ConditionedTraceBridgeV {D : OpCRDTSig} {hb : D.Msg → D.Msg → Prop}
+    (I : ConditionedTransferInput D hb) (T : LabeledTS) (init : T.State)
+    (S : RATraceSpec T.Label) where
+  realize : List T.Label → Sal.ConditionedMRDTs.Configuration
+    (shapiroConditionedG D I.schedule)
+  reachable : ∀ trace, trace ∈ T.weakTrace init →
+    HonestReachV (shapiroConditionedG D I.schedule)
+      (fun C => I.verified.Honest (Sal.ConditionedMRDTs.Configuration.core C))
+      I.verified.initInv (realize trace)
+  adequate : ∀ trace, trace ∈ T.weakTrace init →
+    IsRALinearizable3 (realize trace) → S.linearizable trace
+
+namespace ConditionedTraceBridgeV
+
+variable {D : OpCRDTSig} {hb : D.Msg → D.Msg → Prop}
+  {I : ConditionedTransferInput D hb} {T : LabeledTS} {init : T.State}
+  {S : RATraceSpec T.Label}
+
+theorem state_ra_linearizable (B : ConditionedTraceBridgeV I T init S) :
+    OpBasedRALinearizable T init S := by
+  intro trace htrace
+  exact B.adequate trace htrace
+    (I.verified.ra_linearizableV (B.reachable trace htrace))
+
+end ConditionedTraceBridgeV
+
+/-- Production transfer theorem over the virtual-LCA conditioned semantics. -/
+theorem op_ra_linearizable_of_conditioned_simulationV
+    {D : OpCRDTSig} {hb : D.Msg → D.Msg → Prop}
+    (I : ConditionedTransferInput D hb)
+    {OpTS StateTS : LabeledTS} {μ : LabelMorphism OpTS StateTS}
+    (R : WeakSimM OpTS StateTS μ)
+    {opInit : OpTS.State} {stateInit : StateTS.State}
+    (hrel : R.rel opInit stateInit)
+    (OpSpec : RATraceSpec OpTS.Label)
+    (StateSpec : RATraceSpec StateTS.Label)
+    (hreflect : ∀ trace,
+      StateSpec.linearizable (trace.map μ.map) → OpSpec.linearizable trace)
+    (B : ConditionedTraceBridgeV I StateTS stateInit StateSpec) :
+    OpBasedRALinearizable OpTS opInit OpSpec := by
+  intro trace htrace
+  exact hreflect trace
+    (B.state_ra_linearizable _ (R.trace_sound hrel htrace))
+
 /-- The one-way form needed for safety properties.  Full trace equivalence is
 not required: a forward weak simulation and reflection of the target legality
 judgment suffice.  This is the useful form for Shapiro emulation, whose two
