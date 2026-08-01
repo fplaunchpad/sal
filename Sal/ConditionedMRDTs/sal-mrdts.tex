@@ -103,9 +103,16 @@
   rngD/.style   ={|-|, line width=1.0pt, black!45, densely dashed},
 }
 
-\title{\bfseries Mergeable Replicated Data Types in Sal:\\
-\large Metatheory, the Embedded-Chain Family, and Sequential
-Specifications}
+\ifdefined\salPaperA
+  \title{\bfseries A Corrected and Conditioned Metatheory for\\
+  \large Mergeable Replicated Data Types}
+\else\ifdefined\salPaperB
+  \title{\bfseries Verified Sequence MRDTs:\\
+  \large Embedded Chains, Compaction, and Runtime}
+\else
+  \title{\bfseries Mergeable Replicated Data Types in Sal:\\
+  \large Metatheory, the Embedded-Chain Family, and Sequential Specifications}
+\fi\fi
 \author{Sal / FP Launchpad (KC + Claude)}
 \date{July 20, 2026}
 
@@ -115,6 +122,30 @@ Specifications}
 
 \begin{abstract}
 \noindent
+\ifdefined\salPaperA
+Mergeable replicated data types reconcile divergent states with a ternary
+merge relative to a common ancestor. We give a corrected, mechanized
+metatheory for this setting. A reachable LCA invariant repairs a gap in the
+published induction; a concrete legal execution refutes the unconditioned
+soundness argument; and canonical history states expose the contextual Join
+obligation actually needed by adequacy. We develop flat and conditioned
+contracts, honest-reachability and witness-indexed discharge routes,
+observational quotients, product composition, virtual-LCA semantics, commit
+garbage collection, and a stability interface for representation changes.
+The claimed results are kernel checked in Lean~4, with executable
+countermodels for invalid stronger statements.
+\else\ifdefined\salPaperB
+We develop and evaluate a verified family of sequence MRDTs based on immutable
+birth chains. The construction yields a tombstone-free replicated list,
+entropy-coded coordinates, sided variants encompassing Fugue and FugueMax,
+and a mechanized maximal-non-interleaving result. Its storage layer includes
+settled-cut recoding, concrete compaction, run tables, rich-text mark garbage
+collection, and continuation-aware multi-epoch correctness. Independent
+sequential specifications distinguish convergence from user-visible intent,
+while continuation arguments give representation lower bounds. A
+content-addressed peer-to-peer runtime and reproducible cross-system
+measurements connect the verified model to the shipped implementation.
+\else
 Mergeable replicated data types (MRDTs) resolve concurrent divergence by
 a \emph{three-way} merge $\mergeL(l,a,b)$: the two divergent states
 $a,b$ are reconciled relative to their lowest common ancestor $l$ in a
@@ -168,8 +199,10 @@ push-button. Everything stated as a theorem is mechanized in
 Lean~4 with zero \lean{sorry}s in the cited chains; the negative results
 are machine-checked countermodels, and every performance number is a
 labeled run of checked-in scripts.
+\fi\fi
 \end{abstract}
 
+\ifdefined\salSplitPaper\else
 \paragraph*{How this document is organized.} The four parts are
 followed by a single consolidated open-questions section and a single
 mechanization map. Part~I is the metatheory and can be read alone;
@@ -205,9 +238,50 @@ only as the campaign's named countermodel (Part~III), in one-line
 contrasts where the separation needs the losing side, and once as a
 generality stress test (\S\ref{sec:vlca}), where its role is again that
 of the hardest available instance rather than a design of interest.
+\fi
 
 \tableofcontents
 
+\ifdefined\salPaperA
+\section*{Scope and correctness interface}
+\addcontentsline{toc}{section}{Scope and correctness interface}
+% Compatibility anchors for prose that points into the companion paper or
+% the former consolidated open-question appendix. They resolve locally to the
+% boundary at which this paper hands those topics off.
+\phantomsection
+\label{sec:storage}
+This paper proves the history-to-canonical-state layer of the Sal correctness
+stack. Its primary interface is a contextual ternary Join lemma: if two
+canonical branch states and their canonical common-ancestor state are merged
+in a reachable configuration, the result is the canonical state of the union.
+The conditioned and honest-reachability variants permit applicability,
+witness, and safety hypotheses to depend on the actual configuration.
+Observational quotients and product kits lift that result without conflating
+raw representation equality with client-visible equality. Virtual LCAs,
+commit collection, and stability epochs extend the same interface to runtime
+representation changes. Datatype-specific sequence semantics are applications
+of this interface and lie outside this paper.
+\else\ifdefined\salPaperB
+\section*{Metatheory interface used by this paper}
+\addcontentsline{toc}{section}{Metatheory interface used by this paper}
+% The sequence paper cites these concepts by their stable labels. In this
+% standalone build the labels denote this explicit imported interface rather
+% than section numbers in the companion paper.
+\phantomsection
+\label{def:delta}\label{def:honestreach}\label{fvc:cd}\label{fvc:lredist}
+\label{sec:cvcs}\label{sec:gc}\label{sec:route}\label{sec:setting}
+\label{sec:stability}\label{thm:evidence}\label{thm:gcsafety}
+An MRDT state is indexed by a causal event history and merges two divergent
+states relative to a common-ancestor state. We use five results from the
+companion metatheory: canonical histories determine reference states;
+contextual ternary Join adequacy makes reachable merges agree with those
+states; honest reachability carries datatype-specific applicability facts;
+observational equality permits representation changes; and a stability epoch
+simulates settled-cut compaction together with all admitted continuations.
+This paper discharges those interfaces for embedded-chain sequences and then
+proves the independent intent and representation results that the generic
+convergence theorem does not imply.
+\else
 \section*{The correctness stack}
 \addcontentsline{toc}{section}{The correctness stack}
 The development is easiest to read as one refinement diagram rather than four
@@ -261,8 +335,10 @@ machine-checked inventory and build target live in
 \lean{JOIN\_INTERFACE\_INVENTORY.md},
 \lean{VERIFICATION\_COMPANION.md}, and
 \lean{Metatheory/RefactorLedger.lean}.
+\fi\fi
 
 %======================================================================
+\ifdefined\salPaperB\else
 \part{The metatheory}
 %======================================================================
 
@@ -4221,6 +4297,8 @@ hypothesis is discharged by the same gate
 consumes).
 
 %======================================================================
+\fi
+\ifdefined\salPaperA\else
 \part{The embedded-chain family}
 %======================================================================
 
@@ -10973,6 +11051,34 @@ triage flags --- for the whole commuting class, and for the repaired
 remove-wins design, empty.
 
 %======================================================================
+\fi
+\ifdefined\salPaperA
+\part{Audit and mechanization scope}
+\section{Mechanization scope}
+\label{sec:mech}\label{sec:open}
+\label{oq:causalcanon}\label{oq:compose}\label{oq:rcchain}
+The Lean development for this paper is rooted at
+\lean{Sal/ConditionedMRDTs/Framework/} and
+\lean{Sal/ConditionedMRDTs/Metatheory/}. It includes the executable
+countermodels in \lean{Refutations/}, the flat and conditioned instance
+discharges in \lean{MRDT\_Instances/}, and the product, quotient, virtual-LCA,
+GC, and stability modules described in the body. The cited proof chains use no
+\lean{sorryAx}; the repository's verification companion records theorem names,
+files, and axiom audits. Open work is tracked durably in the repository roadmap
+rather than mixed into the paper's claims.
+\else\ifdefined\salPaperB
+\part{Audit and mechanization scope}
+\section{Mechanization scope}
+\label{oq:epochdag}\label{oq:retention}\label{oq:runtable}
+\label{oq:seqwitness}\label{oq:starlemma}
+The model kernel lives under \lean{Sal/MRDTs/RGA\_Embed/}; conditioned
+instances, sequential specifications, recoding, compaction, and mark proofs
+live under \lean{Sal/ConditionedMRDTs/MRDT\_Instances/}. The executable system
+and reproducible measurements are in \lean{runtime/}, \lean{p2p-demo/}, and
+\lean{benchmarks/}. The cited Lean chains use no \lean{sorryAx}; negative
+claims are concrete checked witnesses. Open work is tracked in the repository
+roadmap rather than mixed into the paper's claims.
+\else
 \part{Open questions and the mechanization map}
 %======================================================================
 
@@ -11610,4 +11716,5 @@ import one linearization file carrying two unrelated \lean{sorry}s that the
 cited theorems do not transitively depend on; \lean{Development/}%
 \lean{CONDITIONED\_METATHEORY\_PLAN.md} is their roadmap.
 
+\fi\fi
 \end{document}

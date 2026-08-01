@@ -8,7 +8,7 @@ next.
 
 ## Priority order
 
-### 1. Split `sal-mrdts` into two standalone papers
+### 1. Split `sal-mrdts` into two standalone papers — completed 2026-08-01
 
 - Paper A: corrected and conditioned metatheory, Join doctrines, virtual LCAs,
   and composition.
@@ -16,6 +16,13 @@ next.
   evaluation.
 - Extract shared notation and bibliography support.
 - Make both papers build independently.
+
+Delivered by `Sal/ConditionedMRDTs/PAPER_SPLIT_PLAN.md` and the two entry
+points under `Sal/ConditionedMRDTs/papers/`. Shared notation remains
+single-source in the canonical manuscript preamble; both selected papers and
+the consolidated manuscript build with Tectonic. Remaining prose compression,
+claim synchronization, and expanded per-paper audit tables belong to Priority
+10, not to the structural split.
 
 ### 2. Retire the legacy global-`lo` proof route completely
 
@@ -88,7 +95,7 @@ next.
 
 ## Completed foundation
 
-The consolidation work underlying this backlog is recorded in
+The next active item is Priority 2. The consolidation work underlying this backlog is recorded in
 `Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
 particular, the repository now has production `VerifiedMRDT` certificates,
 EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous
