@@ -102,6 +102,11 @@ behavioral layer to the conditioned RA-linearizability certificate.
   delivery rule preserves the existing conditioned invariants. The full
   network reachability induction is complete: `networkRALinearizable` proves
   every reachable envelope state's conditioned core is RA-linearizable.
+  Network-level constructive progress and the generic coupling-to-`WeakSimM`
+  theorem are complete (`ShapiroNetworkCoupling.forward`). Remaining leaves
+  are the concrete coupling laws: message-to-version correspondence,
+  replica/materialized-state agreement, update preservation, and historical
+  delivery preservation.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

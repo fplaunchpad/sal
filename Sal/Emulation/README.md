@@ -51,6 +51,11 @@ actual Shapiro emulator system; safety transfer needs only that direction.
   proved to preserve `StoreInv` and `GoodConfig3` through the existing
   virtual-LCA Join theorem; `networkRALinearizable` packages the complete
   reachability induction for the envelope.
+- `Conditioned_Network_Progress.lean`: constructive apply-and-broadcast and
+  historical-delivery progress, exposed as weak client steps.
+- `Shapiro_Forward_Simulation.lean`: the concrete coupling interface and the
+  proved generic assembly `ShapiroNetworkCoupling.forward : WeakSimM`; only
+  the message/version and state-preservation coupling leaves remain.
 - `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
   two-direction trace equivalence, and representation independence. The old
   same-label API remains as a compatibility specialization.
