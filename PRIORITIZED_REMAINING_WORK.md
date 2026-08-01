@@ -95,6 +95,11 @@ behavioral layer to the conditioned RA-linearizability certificate.
   enforces the trace-side freshness/causal obligations corresponding to
   `EmulatorState.PrepareEnabled`; raw `opLabeledTS` remains available as the
   unconstrained network semantics.
+  The target now has a Liittschwager-style snapshot-network envelope:
+  broadcasts buffer immutable conditioned version ids, and delivery merges
+  exactly that historical version rather than the sender's newer head.
+  `SnapshotMerge.storeInv` and `SnapshotMerge.goodConfig` prove that this new
+  delivery rule preserves the existing conditioned invariants.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

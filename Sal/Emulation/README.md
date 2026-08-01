@@ -46,6 +46,10 @@ actual Shapiro emulator system; safety transfer needs only that direction.
   enablement.
 - `Operational_Observed.lean`: turns certified apply, merge, and query
   progress into weak steps of the conditioned client-observation LTS.
+- `Conditioned_Network_TS.lean`: Liittschwager-style state network envelope
+  buffering immutable conditioned versions; historical snapshot delivery is
+  proved to preserve `StoreInv` and `GoodConfig3` through the existing
+  virtual-LCA Join theorem.
 - `Weak_Simulation.lean`: label-morphic weak simulation, weak-trace transport,
   two-direction trace equivalence, and representation independence. The old
   same-label API remains as a compatibility specialization.
