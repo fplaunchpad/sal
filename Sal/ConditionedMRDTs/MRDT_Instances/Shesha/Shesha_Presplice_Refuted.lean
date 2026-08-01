@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Join_Refuted
+import Sal.ConditionedMRDTs.Metatheory.JoinKit
 
 /-! # Shesha, the `W`-join hook is ALSO false: slot orders misalign
 
@@ -97,8 +98,8 @@ private theorem ver0 {v : Version} {s : Shesha.St} {e : Set (Op SAppOp)}
 /-- The honest counterexample configuration: two replicas, `{f1,f2,f3}` and
 `{f2}`; a trivial one-version store. -/
 def Cy : Configuration SheshaD where
-  N := fun r => if r = 0 then some (sUpdate (sUpdate (sUpdate SheshaD.init f1) f2) f3)
-    else if r = 1 then some (sUpdate SheshaD.init f2) else none
+  N := fun r => if r = 0 then some (sheshaUpdate (sheshaUpdate (sheshaUpdate SheshaD.init f1) f2) f3)
+    else if r = 1 then some (sheshaUpdate SheshaD.init f2) else none
   L := Lfun
   vis := visy
   dom_eq := by
@@ -387,6 +388,18 @@ theorem shesha_join_at_eff_refuted :
   injection hfold with h1 h2
   injection h1 with h3 h4
   exact absurd h3 (by decide)
+
+/-- Negative canary migration: factoring the shared Join geometry does not
+erase the witness-misalignment counterexample. -/
+theorem shesha_join_kit_at_eff_refuted :
+    ¬ (∀ C', SheshaHonest C' →
+        JoinKitAt SheshaD (witnessDoctrine SheshaD SheshaEff)
+          (Configuration.core C')) := by
+  intro h
+  apply shesha_join_at_eff_refuted
+  intro C hC
+  exact (joinKitAt_witness_iff SheshaD SheshaEff (Configuration.core C)).1
+    (h C hC)
 
 open Classical in
 /-- **`shesha_presplice` as stated is FALSE** (its exact ∀-closure): at the

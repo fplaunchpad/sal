@@ -1,0 +1,96 @@
+# Prioritized Remaining Work
+
+This is the canonical, durable cross-project backlog for Sal. It merges the
+unfinished editorial deliverables, metatheory cleanup, emulation transfer,
+intent layer, sequence refinements, and runtime certification work. Completed
+subsystem roadmaps are historical evidence; this file determines what comes
+next.
+
+## Priority order
+
+### 1. Split `sal-mrdts` into two standalone papers
+
+- Paper A: corrected and conditioned metatheory, Join doctrines, virtual LCAs,
+  and composition.
+- Paper B: sequence designs, intent, compaction, runtime, lower bounds, and
+  evaluation.
+- Extract shared notation and bibliography support.
+- Make both papers build independently.
+
+### 2. Retire the legacy global-`lo` proof route completely
+
+- Decouple corrected metatheory from `Merge_Linearization.lean`.
+- Remove or archive its six remaining proof placeholders.
+- Ensure production builds contain no path through legacy `sorryAx` results.
+
+### 3. Correct the operation-to-state emulator
+
+- Replace the current `Set Msg` scaffold with Shapiro et al.'s
+  `(s_m, M, D)` construction.
+- Model preparation, known messages, delivered messages, enabled delivery,
+  and internal delivery steps.
+- Treat Shapiro et al. 2011 as the construction blueprint and Liittschwager et
+  al. 2025 as the formal simulation and transfer target.
+
+### 4. Formalize Liittschwager-style emulation
+
+- Generalize weak simulation from label equality to label morphisms.
+- Prove the required weak simulations between the original and emulating
+  transition systems.
+- Prove weak-trace and representation-independence results.
+- Use the grow-only set as the first concrete canary.
+
+### 5. Finish the RA-linearizability transfer
+
+- Define op-based RA-linearizability as a genuine trace property.
+- Connect state-based RA-linearizability to observable traces.
+- Prove the end-to-end op-based transfer theorem.
+
+### 6. Complete the intent column for the production catalogue
+
+- Start with tombstoned RGA: anchor closure, timestamp freshness, grave
+  closure, and the genuine-sequence theorem.
+- Continue with OR-set, queue, Peritext, registers, and the remaining
+  production datatypes.
+
+### 7. Finish Tree-RGA observational refinement
+
+- Generalize beyond root-only insertion.
+- Strengthen causal consistency over evolving prefixes.
+- Prove `visible_apply_merge` for multi-replica executions.
+
+### 8. Develop a declarative replacement for the absorber clause
+
+- Specify arbitration over surviving conflicts.
+- Prove equivalence with `loOn` for conditional-commutativity instances.
+- Investigate whether joint absorption requires a strictly more general
+  specification.
+
+### 9. Strengthen runtime certification
+
+- Determine whether EmbedRGA's continuation certificate can be lifted to a
+  complete DAG-level `StabilityVC`.
+- Formalize divergent-epoch joins and certificate transport.
+
+### 10. Final editorial and artifact pass
+
+- Synchronize both papers with the final Lean theorem names.
+- Give each paper an independent mechanization map.
+- Add CI gates for Lean builds, axiom audits, and Tectonic builds.
+
+## Dependency summary
+
+- Priority 1 can begin immediately and should not wait for the emulation
+  project.
+- Priorities 3--5 are one proof project and should be executed in order.
+- Priorities 6--9 can proceed independently once ownership is clear.
+- Priority 10 follows the substantive work relevant to each paper.
+
+## Completed foundation
+
+The consolidation work underlying this backlog is recorded in
+`Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
+particular, the repository now has production `VerifiedMRDT` certificates,
+EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous
+product, unified ledgers, representation lower bounds, and a retired Shesha
+positive capstone whose premise was formally refuted.

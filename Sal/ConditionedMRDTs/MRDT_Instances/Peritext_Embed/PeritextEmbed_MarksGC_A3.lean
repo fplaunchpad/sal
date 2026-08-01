@@ -1,4 +1,5 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_MarksGC
+import Sal.ConditionedMRDTs.Metatheory.ContinuationEquivalence
 
 /-!
 # O4: the A3 guarded pair-drop
@@ -564,6 +565,30 @@ theorem alpha_guard_refuses :
     ¬ (∀ o ∈ [addA, remA, stragA], o.mtype = addA.mtype → o.mid ≠ addA.mid →
         o.mid ≠ remA.mid → remA.mid < o.mid) := by native_decide
 
+/-! The alpha SPOT is also a representation-independent retention lower
+bound.  A compacted past that identifies the retained pair with the empty
+mark history cannot correctly process the legal late straggler. -/
+
+def extendMarks (past : List MarkD) (late : List MarkD) : List MarkD :=
+  past ++ late
+
+def observeAlpha (marks : List MarkD) : List (ℕ × Bool) :=
+  renderMarksDoc dAlpha marks MType.bold
+
+def alphaFoolingPair :
+    ContinuationFoolingPair (List MarkD) (List MarkD) (List (ℕ × Bool))
+      extendMarks observeAlpha where
+  left := [addA, remA]
+  right := []
+  continuation := [stragA]
+  distinguishes := by native_decide
+
+theorem alpha_pair_retention_lower_bound {Repr : Type}
+    (R : ContinuationRepresentation (List MarkD) (List MarkD)
+      (List (ℕ × Bool)) Repr extendMarks observeAlpha) :
+    R.encode alphaFoolingPair.left ≠ R.encode alphaFoolingPair.right :=
+  alphaFoolingPair.lowerBound R
+
 end SPOT_A3
 
 /-! ## §5  Axiom audit -/
@@ -578,6 +603,7 @@ end SPOT_A3
 #print axioms SPOT_A3.beta_growth_window_flip
 #print axioms SPOT_A3.beta_guard_refuses
 #print axioms SPOT_A3.alpha_undeclared_flip
+#print axioms SPOT_A3.alpha_pair_retention_lower_bound
 #print axioms SPOT_A3.alpha_guard_refuses
 
 end Sal.ConditionedMRDTs.PeritextEmbed.MarksGC

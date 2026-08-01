@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha
 import Sal.ConditionedMRDTs.MRDT_Instances.EmbedRGA.EmbedRGA
+import Sal.ConditionedMRDTs.Metatheory.ContinuationEquivalence
 
 /-!
 # Sibling edges without retention cannot implement the embed RGA
@@ -118,6 +119,38 @@ theorem embed_reads_differ :
     (eFold unaryCode ρ₁).map (fun r => r.2.1) ≠
     (eFold unaryCode ρ₂).map (fun r => r.2.1) := by
   native_decide
+
+/-! ## The continuation-equivalence form -/
+
+/-- The two causal pasts of the fooling pair. -/
+inductive Past where
+  | retained
+  | direct
+
+/-- The merge with the shared branch is the distinguishing continuation. -/
+def extendPast (p : Past) (_ : Unit) : Past := p
+
+/-- The oracle observation owed after that continuation. -/
+def oracleRead : Past → List ℕ
+  | .retained => (eFold unaryCode ρ₁).map (fun r => r.2.1)
+  | .direct => (eFold unaryCode ρ₂).map (fun r => r.2.1)
+
+/-- The concrete sibling-splice countermodel packaged as a generic
+continuation fooling pair. -/
+def siblingSpliceFoolingPair :
+    ContinuationFoolingPair Past Unit (List ℕ) extendPast oracleRead where
+  left := .retained
+  right := .direct
+  continuation := ()
+  distinguishes := embed_reads_differ
+
+/-- Any deterministic representation supporting the shared continuation and
+the embed observation must retain different encodings for the two pasts. -/
+theorem sibling_splice_retention_lower_bound {Repr : Type}
+    (R : ContinuationRepresentation Past Unit (List ℕ) Repr
+      extendPast oracleRead) :
+    R.encode .retained ≠ R.encode .direct :=
+  siblingSpliceFoolingPair.lowerBound R
 
 /-! ## The impossibility -/
 

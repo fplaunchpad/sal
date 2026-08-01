@@ -2,8 +2,8 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Evolution
 
 /-! # Shesha: the replay layer
 
-Machinery for the effective-witness join hook (`shesha_join_at_effC`)
-(`Shesha_Cond.lean`): the merge output is the fold of an explicitly
+Machinery developed for the now-refuted effective-witness join route: the
+candidate construction makes the merge output the fold of an explicitly
 constructed enumeration, **all inserts** (in reverse-output order: anchors
 before children, same-anchor runs right-to-left so that heads land last),
 then **all deletes**. This file provides the layers that construction rests

@@ -15,7 +15,8 @@ the `ConditionedMRDTSig` instance (`SheshaD`, timestamp-as-id), the
 honesty contract (`SheshaHonest` = `GenHonest` at the generation guard),
 the witness class (`SheshaEff`, effective enumerations) with its two
 bookkeeping facts, and the op-level bridge (`toSOp`/`applySeq_toSOp`).
-The capstone and its single owed hook live in `Shesha_Cond.lean`. -/
+The attempted conditioned capstone was refuted and is retired in
+`Shesha_Cond.lean`; the checked countermodels live in the `*_Refuted` files. -/
 
 namespace Sal.ConditionedMRDTs
 
@@ -29,7 +30,7 @@ inductive SAppOp where
 deriving DecidableEq
 
 /-- The framework update: timestamp-as-id. -/
-def sUpdate (s : Shesha.St) (o : Op SAppOp) : Shesha.St :=
+def sheshaUpdate (s : Shesha.St) (o : Op SAppOp) : Shesha.St :=
   match o.2.2 with
   | .insA a => Shesha.insert s o.1 a
   | .delA d => Shesha.delete s d
@@ -51,7 +52,7 @@ def SheshaD : ConditionedMRDTSig where
   dec_op := inferInstance
   Query := Unit
   Value := List Nat
-  update := sUpdate
+  update := sheshaUpdate
   merge := fun a b => Shesha.merge [] a b
   query := fun s _ => Shesha.read s
   rc := fun _ _ => RcRes.Either
@@ -83,7 +84,7 @@ def effStep (s : Shesha.St) (o : Op SAppOp) : Prop :=
 /-- Effectiveness of an enumeration, from a start state. -/
 def EffFrom : Shesha.St → List (Op SAppOp) → Prop
   | _, [] => True
-  | s, o :: ρ => effStep s o ∧ EffFrom (sUpdate s o) ρ
+  | s, o :: ρ => effStep s o ∧ EffFrom (sheshaUpdate s o) ρ
 
 /-- The Shesha witness class: effective from the empty document. -/
 def SheshaEff (ρ : List (Op SAppOp)) : Prop := EffFrom ([] : Shesha.St) ρ
@@ -92,11 +93,11 @@ theorem sheshaEff_init : SheshaEff [] := trivial
 
 theorem effFrom_append :
     ∀ (ρ : List (Op SAppOp)) (s : Shesha.St) (e : Op SAppOp),
-      EffFrom s ρ → effStep (ρ.foldl sUpdate s) e → EffFrom s (ρ ++ [e])
+      EffFrom s ρ → effStep (ρ.foldl sheshaUpdate s) e → EffFrom s (ρ ++ [e])
   | [], s, e, _, he => ⟨he, trivial⟩
   | o :: ρ, s, e, h, he => by
       refine ⟨h.1, ?_⟩
-      exact effFrom_append ρ (sUpdate s o) e h.2 he
+      exact effFrom_append ρ (sheshaUpdate s o) e h.2 he
 
 /-- The generation guard implies the effective step. -/
 theorem sGuard_effStep {e : Op SAppOp} {s : Shesha.St}
@@ -112,14 +113,14 @@ theorem sheshaEff_step (e : Op SAppOp) (ρ : List (Op SAppOp)) (s : Shesha.St)
     (hW : SheshaEff ρ) (hfold : applySeq SheshaD.toCRDTSig SheshaD.init ρ = s)
     (hP : sGuard e s) : SheshaEff (ρ ++ [e]) := by
   refine effFrom_append ρ ([] : Shesha.St) e hW ?_
-  have hs : ρ.foldl sUpdate ([] : Shesha.St) = s := hfold
+  have hs : ρ.foldl sheshaUpdate ([] : Shesha.St) = s := hfold
   rw [hs]
   exact sGuard_effStep hP
 
 /-! ## The op-level bridge
 
 The replay layers (`Shesha_Replay.lean`) are stated over `Shesha.Op`; the
-framework folds `Op SAppOp` events through `sUpdate`. The translation is a
+framework folds `Op SAppOp` events through `sheshaUpdate`. The translation is a
 `map`, and the folds agree pointwise. -/
 
 /-- Translate a framework event to the datatype op (timestamp-as-id). -/
@@ -129,7 +130,7 @@ def toSOp (o : Op SAppOp) : Shesha.Op :=
   | .delA d => .del d
 
 theorem sUpdate_toSOp (s : Shesha.St) (o : Op SAppOp) :
-    sUpdate s o = Shesha.applyOp s (toSOp o) := by
+    sheshaUpdate s o = Shesha.applyOp s (toSOp o) := by
   rcases o with ⟨t, r, op⟩
   cases op <;> rfl
 
@@ -141,7 +142,7 @@ theorem applySeq_toSOp :
   | o :: ρ, s => by
       rw [List.map_cons,
         show applySeq SheshaD.toCRDTSig s (o :: ρ)
-          = applySeq SheshaD.toCRDTSig (sUpdate s o) ρ from rfl,
+          = applySeq SheshaD.toCRDTSig (sheshaUpdate s o) ρ from rfl,
         show Shesha.steps s (toSOp o :: ρ.map toSOp)
           = Shesha.steps (Shesha.applyOp s (toSOp o)) (ρ.map toSOp) from rfl,
         sUpdate_toSOp, applySeq_toSOp ρ]

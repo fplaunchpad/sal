@@ -1258,7 +1258,7 @@ theorem sHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (S Γ))
     (hEnum : CausalPastEnumerable (S Γ) C)
     (hApp : GenHonest (S Γ) sApplicable C) : SHonest Γ C :=
   sHonest_of_applicable C
-    (fun e he => (hEnum e he).imp (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
+    (fun _ he => hApp.exists_causalFold hEnum he)
 
 #print axioms sHonest_of_applicable
 #print axioms sHonest_of_genHonest

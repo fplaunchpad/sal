@@ -849,8 +849,7 @@ theorem qHonest_of_genHonest (C : Configuration Q)
     (hEnum : CausalPastEnumerable Q C)
     (hApp : GenHonest Q qApplicable C) : QHonest C :=
   qHonest_of_applicable C
-    (fun e he _t _ht => (hEnum e he).imp
-      (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
+    (fun _ he _t _ht => hApp.exists_causalFold hEnum he)
 
 #print axioms qHonest_of_genHonest
 
@@ -885,4 +884,3 @@ theorem queue_ra_linearizable3_V {C : Configuration Q} (hReach : QReachV C) :
 #print axioms queue_ra_linearizable3_V
 
 end Sal.ConditionedMRDTs
-

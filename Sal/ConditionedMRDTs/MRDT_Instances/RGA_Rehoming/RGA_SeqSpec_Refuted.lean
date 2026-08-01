@@ -1,4 +1,5 @@
 import Sal.MRDTs.RGA_Rehoming.RGA_Tombstone_Free_ReadSide
+import Sal.ConditionedMRDTs.Metatheory.ContinuationEquivalence
 
 open RGA_TF_Read
 
@@ -141,9 +142,49 @@ theorem rehoming_seq_refuted : ¬ RehomingSeqSound := by
   have key := h opsW [3, 2] stepsHonest_opsW hdesc hcover
   exact absurd key (by native_decide)
 
+/-! ## Continuation-interface packaging
+
+This negative result compares two semantics, rather than two physical states
+of one implementation.  The tag below makes that distinction explicit: the
+same honest prefix is interpreted either by the rehoming datatype or by the
+naive sequential buffer, and the delete continuation separates them. -/
+
+inductive Semantics where
+  | rehoming
+  | buffer
+  deriving DecidableEq
+
+abbrev SemanticHistory := Semantics × List op_t
+
+def extendSemantic (h : SemanticHistory) (k : List op_t) : SemanticHistory :=
+  (h.1, h.2 ++ k)
+
+def observeSemantic : SemanticHistory → List ℕ
+  | (.rehoming, ops) => document (replay ops) [3, 2, 1]
+  | (.buffer, ops) => bufFold ops
+
+def deleteW : op_t := (9, 0, .Del [] 1)
+
+def rehomingSequentialFoolingPair :
+    Sal.ConditionedMRDTs.ContinuationFoolingPair SemanticHistory (List op_t)
+      (List ℕ) extendSemantic observeSemantic where
+  left := (.rehoming, opsW.take 3)
+  right := (.buffer, opsW.take 3)
+  continuation := [deleteW]
+  distinguishes := by native_decide
+
+theorem rehoming_sequential_representation_lower_bound
+    {Repr : Type}
+    (R : Sal.ConditionedMRDTs.ContinuationRepresentation SemanticHistory
+      (List op_t) (List ℕ) Repr extendSemantic observeSemantic) :
+    R.encode rehomingSequentialFoolingPair.left ≠
+      R.encode rehomingSequentialFoolingPair.right :=
+  rehomingSequentialFoolingPair.lowerBound R
+
 end RGA_TF_SeqSpec
 
 section AxiomAudit
 #print axioms RGA_TF_SeqSpec.rehoming_seq_refuted
 #print axioms RGA_TF_SeqSpec.seq_agrees_before_delete
+#print axioms RGA_TF_SeqSpec.rehoming_sequential_representation_lower_bound
 end AxiomAudit

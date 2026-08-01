@@ -1,5 +1,6 @@
 import Sal.ConditionedMRDTs.Metatheory.HonestReach
 import Sal.ConditionedMRDTs.Metatheory.GenHonest
+import Sal.ConditionedMRDTs.Metatheory.JoinKit
 import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
 import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
@@ -1060,6 +1061,13 @@ theorem e_join_at {Γ : OrderedPrefixCode}
     · exact hnd d (Or.inl h) hdel'
     · exact hnd d (Or.inr h) hdel'
 
+/-- Canary migration: the established embedded-chain Join theorem exported
+through the common doctrine interface. -/
+theorem e_join_kit_at {Γ : OrderedPrefixCode}
+    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    (hHon : EHonestCore Γ C) : JoinKitAt (E Γ α) (plainDoctrine (E Γ α)) C :=
+  (joinKitAt_plain_iff (E Γ α) C).2 (e_join_at hHon)
+
 /-! ## §7  Honest reachability and the capstone -/
 
 /-- Honest histories at the ternary configuration: every delete names an id
@@ -1095,7 +1103,9 @@ def EReach (Γ : OrderedPrefixCode) : Configuration (E Γ α) → Prop :=
 
 theorem e_goodConfig3 {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     (hReach : EReach Γ C) : GoodConfig3 C :=
-  goodConfig3_of_honest_reach (fun _ hHon => e_join_at (eHonest_core hHon))
+  goodConfig3_of_honest_reach (fun C hHon =>
+    (joinKitAt_plain_iff (E Γ α) (Configuration.core C)).1
+      (e_join_kit_at (eHonest_core hHon)))
     hReach
 
 /-- **The embedded-chain RGA is RA-linearizable, per version, at every
@@ -1238,7 +1248,7 @@ theorem eHonest_of_genHonest {Γ : OrderedPrefixCode} (C : Configuration (E Γ �
     (hEnum : CausalPastEnumerable (E Γ α) C)
     (hApp : GenHonest (E Γ α) eApplicable C) : EHonest Γ C :=
   eHonest_of_applicable C
-    (fun e he => (hEnum e he).imp (fun π hπ => ⟨hπ, hApp e he π hπ⟩))
+    (fun _ he => hApp.exists_causalFold hEnum he)
 
 #print axioms eHonest_of_applicable
 #print axioms eHonest_of_genHonest

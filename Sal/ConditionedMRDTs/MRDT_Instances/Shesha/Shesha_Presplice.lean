@@ -671,10 +671,9 @@ theorem born_key_expand {C' : Configuration SheshaD}
     (branchPure_row_closed hH hsub₁ hclosed₂ hrows₁)
     hqlive.1 hPq hD'q f hinv
 
-/-! ## §6 the row-store residue (the owed core) -/
+/-! ## §6 retired row-store residue
 
-open Classical in
-/-- **⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked):
+**⚠️ REFUTED AS STATED** (`Shesha_Rows_Refuted.lean`, machine-checked):
 this residue is **FALSE**, no `preRows` exists in general. The
 minimal honest countermodel: LCA `[ins 1]`; branch A = `ins 2←1, ins 4←⌂,
 del 1` (fold `[4,2]`); branch B = `ins 3←1` (fold `[1,[3]]`). `ev₁∩ev₂ =
@@ -714,9 +713,9 @@ this countermodel `2`,`3` keep contiguous frozen paths `[k₁,k₂]`,`[k₁,k₃
 trilemma reasserts only at the *insert-after-already-deleted-anchor* corner (the
 frozen path needs the dead anchor's position, an append-only position map, i.e.
 a metadata tombstone, or default-to-root that loses order); the reference model
-dodges that corner. The theorem below keeps its `sorry`, known-false,
-pending either the immutable-position re-encoding or a capstone restatement to
-Shesha's actual guarantee (convergence + licensed divergence).
+dodges that corner. The known-false theorem has been retired; a future positive
+result requires either the immutable-position re-encoding or a capstone
+restatement to Shesha's actual guarantee (convergence + licensed divergence).
 
 **The original owed statement**, the merge-correctness core at the *row*
 level; everything forest-shaped is discharged (`presplice_of_rows`).
@@ -778,38 +777,9 @@ residual difficulty is therefore the **ghost re-homing**: the extra
 `DelIn`-union splices (dead-in-both and born-and-died ids, absent from
 `outRows`) must promote their live descendants to exactly the slots the
 merge algorithm re-homed them to. That is M3 proper + the delete-splice
-correctness, ≈1.5k lines concentrated in the skeleton-key parse. -/
-theorem shesha_rows_residue
-    (C' : Configuration SheshaD) (hH : SheshaHonest C')
-    (htrans : ∀ {a b c : Op SAppOp}, C'.vis a b → C'.vis b c → C'.vis a c)
-    (hirr : ∀ a : Op SAppOp, ¬ C'.vis a a)
-    {ev₁ ev₂ : Set (Op SAppOp)} {s₀ s₁ s₂ : Shesha.St}
-    {ρ₀ ρ₁ ρ₂ : List (Op SAppOp)}
-    (hsub₁ : ∀ a ∈ ev₁, a ∈ C'.events) (hsub₂ : ∀ a ∈ ev₂, a ∈ C'.events)
-    (hclosed₁ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
-      b ∈ ev₁ → a ∈ ev₁)
-    (hclosed₂ : ∀ a b, C'.vis a b → ¬ SheshaD.toCRDTSig.commutes a b →
-      b ∈ ev₂ → a ∈ ev₂)
-    (hc₀ : IsCanonWitness SheshaEff (Configuration.core C')
-      (ev₁ ∩ ev₂) s₀ ρ₀)
-    (hc₁ : IsCanonWitness SheshaEff (Configuration.core C') ev₁ s₁ ρ₁)
-    (hc₂ : IsCanonWitness SheshaEff (Configuration.core C') ev₂ s₂ ρ₂)
-    (hK₀₁ : SCoh ρ₀ ρ₁) (hK₀₂ : SCoh ρ₀ ρ₂) :
-    ∃ (preRows : List (Nat × List Nat)) (n : Nat),
-      (∀ q x, x ∈ Shesha.alGet preRows q ↔ InsIn (ev₁ ∪ ev₂) x q)
-      ∧ (∀ q, (Shesha.alGet preRows q).Nodup)
-      ∧ (∀ q c, c ∈ Shesha.alGet preRows q → q < c ∧ c ≤ n)
-      ∧ (∀ p tx ty rx ry,
-          Before ρ₁ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
-          Shesha.precedes (Shesha.alGet preRows p) ty tx)
-      ∧ (∀ p tx ty rx ry,
-          Before ρ₂ (tx, rx, SAppOp.insA p) (ty, ry, SAppOp.insA p) →
-          Shesha.precedes (Shesha.alGet preRows p) ty tx)
-      ∧ (∀ q, q ∈ Shesha.read (SheshaD.mergeL s₀ s₁ s₂) ∨ q = 0 →
-          Shesha.expandRow preRows
-              (fun u => decide (DelIn (ev₁ ∪ ev₂) u)) n
-              (Shesha.alGet preRows q)
-            = Shesha.row (SheshaD.mergeL s₀ s₁ s₂) q) := by
-  sorry
+correctness, ≈1.5k lines concentrated in the skeleton-key parse.
 
+The false declaration formerly following this analysis has been retired.  The
+analysis remains as a design record; `presplice_of_rows` above is the strongest
+valid positive theorem in this module. -/
 end Sal.ConditionedMRDTs

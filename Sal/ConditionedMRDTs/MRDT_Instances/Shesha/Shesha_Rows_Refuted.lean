@@ -2,8 +2,7 @@ import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Presplice
 
 /-! # Shesha: the row-store residue `shesha_rows_residue` is FALSE
 
-`shesha_rows_residue` (`Shesha_Presplice.lean`, the single owed `sorry` on the
-`shesha_ra_linearizable3` capstone path) is **refuted** here by an explicit
+The former `shesha_rows_residue` declaration is **refuted** here by an explicit
 honest configuration whose three canonical, `SCoh`-aligned slot witnesses make
 the ternary merge display a state that **no pre-splice forest collapses to**,
 and, worse, that is **not the fold of any `loOn`-respecting linearization** of
@@ -61,8 +60,8 @@ split is between a node's own children across the two branches.
 
 Axiom note: the merge and the folds run through `List.mergeSort`, so the
 computational leaves use `native_decide` (axiom `Lean.ofReduceBool`); this
-file is **off** the capstone path, `shesha_ra_linearizable3` still carries
-only its `sorryAx`. -/
+file is now the authoritative result: the contradicted positive capstone and
+its `sorryAx` have been retired. -/
 
 namespace Sal.ConditionedMRDTs
 namespace SheshaRowsCX
@@ -227,9 +226,9 @@ private theorem ver0 {v : Version} {s : Shesha.St} {e : Set (Op SAppOp)}
 /-! ## §2 the honest configuration -/
 
 def Cz : Configuration SheshaD where
-  N := fun r => if r = 0 then some (sUpdate (sUpdate (sUpdate SheshaD.init e1) e2) e5)
-    else if r = 1 then some (sUpdate (sUpdate SheshaD.init e1) e3)
-    else if r = 2 then some (sUpdate (sUpdate SheshaD.init e1) e4) else none
+  N := fun r => if r = 0 then some (sheshaUpdate (sheshaUpdate (sheshaUpdate SheshaD.init e1) e2) e5)
+    else if r = 1 then some (sheshaUpdate (sheshaUpdate SheshaD.init e1) e3)
+    else if r = 2 then some (sheshaUpdate (sheshaUpdate SheshaD.init e1) e4) else none
   L := Lfun
   vis := visz
   dom_eq := by

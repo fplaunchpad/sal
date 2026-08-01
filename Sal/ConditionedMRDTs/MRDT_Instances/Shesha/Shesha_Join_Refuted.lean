@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Cond
+import Sal.ConditionedMRDTs.MRDT_Instances.Shesha.Shesha_Presplice
 
 /-! # Shesha: the join hook, as originally stated, is FALSE
 
@@ -91,8 +91,8 @@ private theorem ver0 {v : Version} {s : Shesha.St} {e : Set (Op SAppOp)}
 /-- The honest counterexample configuration: two replicas, `{e1,e2}` and
 `{e1,e3}`; a trivial one-version store. -/
 def Cx : Configuration SheshaD where
-  N := fun r => if r = 0 then some (sUpdate (sUpdate SheshaD.init e1) e2)
-    else if r = 1 then some (sUpdate (sUpdate SheshaD.init e1) e3) else none
+  N := fun r => if r = 0 then some (sheshaUpdate (sheshaUpdate SheshaD.init e1) e2)
+    else if r = 1 then some (sheshaUpdate (sheshaUpdate SheshaD.init e1) e3) else none
   L := Lfun
   vis := visx
   dom_eq := by

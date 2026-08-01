@@ -208,6 +208,60 @@ of the hardest available instance rather than a design of interest.
 
 \tableofcontents
 
+\section*{The correctness stack}
+\addcontentsline{toc}{section}{The correctness stack}
+The development is easiest to read as one refinement diagram rather than four
+independent pillars.  A causal history determines a canonical replicated
+state; the fold of that history refines an independent sequential
+specification; and a concrete, possibly compacted representation simulates the
+canonical state up to observations:
+\begin{center}
+\begin{tikzpicture}[baseline=(current bounding box.center), node distance=13mm and 19mm,
+  box/.style={draw, rounded corners=2pt, inner sep=4pt, align=center, fill=blue!4}]
+  \node[box] (hist) {causal history};
+  \node[box, right=of hist] (canon) {canonical\ MRDT state};
+  \node[box, right=of canon] (seq) {independent\ sequential value};
+  \node[box, below=of canon] (repr) {runtime / compacted\ representation};
+  \draw[->] (hist) -- node[above, font=\scriptsize]{Join adequacy} (canon);
+  \draw[->] (canon) -- node[above, font=\scriptsize]{sequential refinement} (seq);
+  \draw[->] (repr) -- node[right, font=\scriptsize]{observational simulation} (canon);
+\end{tikzpicture}
+\end{center}
+Part~I proves the top-left arrow: feasible causal unions are represented by
+ternary merge.  Part~III proves the top-right arrow and thereby separates
+convergence from datatype intent.  Parts~II and IV prove the vertical arrow:
+encoding, re-coding, garbage collection, and the shipped runtime preserve the
+canonical observations.  The five capstones of the full account are therefore
+(i) history-algebra adequacy, (ii) conditioned honest adequacy, (iii) the
+embedded-chain sequential refinement, (iv) compaction representation
+independence, and (v) their runtime composition.  Countermodels remain part of
+the main argument because they mark the exact hypotheses each arrow needs.
+The mechanization exposes this diagram directly:
+\lean{JoinKitAt} factors the common ternary-join geometry and
+\lean{AbstractJoinAt} makes its ambient visibility structure explicit,
+\lean{ObservationalJoinDoctrine} and
+\lean{CoherentWitnessJoinDoctrine} keep the two stronger, semantically
+different Join contracts separate,
+\lean{SequentialRefinement} supplies the intent arrow,
+\lean{StabilityEpochFamily} supplies finite world-indexed compaction, and
+\lean{VerifiedMRDT} packages the first two with product composition (the
+runtime extension adds the third).  Its production certificates
+\lean{embedVerified}, \lean{sidedVerified}, and \lean{queueVerified}
+make sequential honesty a predicate on complete histories: mint freshness and
+issuer applicability are prefix facts, not properties of an arbitrary visible
+state. Negative representation results use
+\lean{ContinuationEquivalent}: a distinguishing continuation forces any
+correct deterministic representation to retain distinct states, while a
+pairwise-distinguishable family forces an injective encoding.  For finite
+families this yields the quantitative bound
+$|\mathit{History}| \leq |\mathit{Repr}|$; an $n$-bit representation
+distinguishes at most $2^n$ continuation classes. These
+compatibility interfaces preserve the established theorem names; their
+machine-checked inventory and build target live in
+\lean{JOIN\_INTERFACE\_INVENTORY.md},
+\lean{VERIFICATION\_COMPANION.md}, and
+\lean{Metatheory/RefactorLedger.lean}.
+
 %======================================================================
 \part{The metatheory}
 %======================================================================
@@ -10248,14 +10302,14 @@ designs of its generation.
 \begin{proposition}[refutation 3: Shesha's merge admits no
 pre-splice row store]
 \label{prop:sheshamerge}
-The row-store residue \lean{shesha\_rows\_residue}
-(\code{Shesha/Shesha\_Presplice.lean}, the one open obligation of the
-design's RA-linearizability plan) asserts: for every honest Shesha
+The now-retired row-store residue formerly named
+\lean{shesha\_rows\_residue} asserted: for every honest Shesha
 configuration with transitive irreflexive visibility, downward-closed
 branch event sets, canonical witnesses, and \lean{SCoh}-aligned
 replays, some pre-splice row store (per-anchor rows, duplicate-free,
 id-bounded, reversing both branches' same-anchor insert orders)
-expands to every merged row. That statement is machine-checked
+expands to every merged row. The declaration and its downstream positive
+capstone have been removed because that statement is machine-checked
 \textbf{false}: its full quantifier prefix is negated wholesale by
 \lean{shesha\_rows\_residue\_refuted}
 (\code{Shesha/Shesha\_Rows\_Refuted.lean}, in-file audit printed), on
@@ -11395,6 +11449,18 @@ satisfies the sequential list specification in the strongest form
 record for record), and preserves delete order
 (\lean{eUpdate\_del\_sublist}). The successor question is Open
 Question~\ref{oq:seqwitness}.
+
+The consolidated Lean surface now records that separation directly.
+\lean{VerifiedMRDT} packages convergence and history-conditioned sequential
+intent; \lean{embedQueueVerified} is a concrete heterogeneous product of the
+EmbedRGA and FIFO certificates.  Runtime recoding is continuation-aware:
+\lean{embedVerifiedRuntime} transforms both the stored state and lagging
+operations under the stable-prefix-map domain contract, and
+\lean{embedVerifiedRuntime\_multiEpoch} discharges an arbitrary compatible
+epoch chain through its composite map.  This is deliberately not advertised
+as a full \lean{StabilityVC} family: the latter is the stronger DAG-simulation
+interface, whereas the EmbedRGA result proved here is the exact continuation
+theorem used by multi-epoch recoding.
 
 \section{Mechanization map}
 \label{sec:mech}

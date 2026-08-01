@@ -77,6 +77,20 @@ theorem GenHonest.mono {P P' : Op D.AppOp → D.State → Prop}
     (hGen : GenHonest D P C) : GenHonest D P' C :=
   fun e he π hπ => h e _ (hGen e he π hπ)
 
+/-- **Mint provenance, existential form.** Enumerability chooses a concrete
+fold of an event's causal past and `GenHonest` attaches the mint-time fact to
+that same fold.  Datatype bridges should consume this theorem instead of
+rebuilding the pairing locally. -/
+theorem GenHonest.exists_causalFold
+    {P : Op D.AppOp → D.State → Prop} {C : Configuration D}
+    (hGen : GenHonest D P C) (hEnum : CausalPastEnumerable D C)
+    {e : Op D.AppOp} (he : e ∈ C.events) :
+    ∃ π : List (Op D.AppOp),
+      listPermOf π {e' ∈ C.events | C.vis e' e} ∧
+      P e (applySeq D.toCRDTSig D.init π) := by
+  obtain ⟨π, hπ⟩ := hEnum e he
+  exact ⟨π, hπ, hGen e he π hπ⟩
+
 /-- **The conditioned metatheorem, generic-honesty form**: per-version
 RA-linearizability at every `GenHonest`-honestly reachable configuration,
 given the Join at every `GenHonest`-configuration. -/
@@ -88,5 +102,6 @@ theorem ra_linearizable3_of_genHonest_reach {hInit : D.Inv D.init}
   ra_linearizable3_of_honest_reach hJoinAt hReach
 
 #print axioms ra_linearizable3_of_genHonest_reach
+#print axioms GenHonest.exists_causalFold
 
 end Sal.ConditionedMRDTs
