@@ -1,4 +1,5 @@
 import Sal.Emulation.Conditioned_Emulation
+import Sal.Emulation.Disciplined_Op_TS
 import Sal.Emulation.Op_Based_TS
 import Sal.Emulation.Transfer
 import Sal.Emulation.Weak_Simulation
@@ -123,5 +124,20 @@ def opToHonestConditionedLabelsV {D : OpCRDTSig}
     cases ℓ <;>
       simp [opLabeledTS, honestConditionedObservedTSV, OpLabel.isSilent,
         ConditionedObsLabel.silent]
+
+/-- Production label map from well-formed op executions. -/
+def disciplinedOpToHonestConditionedLabelsV {D : OpCRDTSig}
+    {hb : D.Msg → D.Msg → Prop} (I : ConditionedTransferInput D hb) :
+    LabelMorphism (disciplinedOpLabeledTS D hb)
+      (honestConditionedObservedTSV I) where
+  map
+    | .update r op => .update r op
+    | .query r q v => .query r q v
+    | .deliver _ _ => .internal
+  silent_iff := by
+    intro ℓ
+    cases ℓ <;>
+      simp [disciplinedOpLabeledTS, honestConditionedObservedTSV,
+        OpLabel.isSilent, ConditionedObsLabel.silent]
 
 end Sal.Emulation

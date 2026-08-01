@@ -91,6 +91,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   The separate `ConditionedOperationalProgress` interface and its observed
   weak-step adapters are complete; the Shapiro coupling must discharge its
   `CanApply`, `CanMerge`, and preservation obligations.
+  The source is now the well-formed `disciplinedOpLabeledTS`: its update rule
+  enforces the trace-side freshness/causal obligations corresponding to
+  `EmulatorState.PrepareEnabled`; raw `opLabeledTS` remains available as the
+  unconstrained network semantics.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.

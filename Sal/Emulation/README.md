@@ -29,6 +29,9 @@ actual Shapiro emulator system; safety transfer needs only that direction.
 
 - `Op_Based_TS.lean`: op-based configurations, preparation/effect, broadcast,
   causally enabled delivery, and silent delivery transitions.
+- `Disciplined_Op_TS.lean`: well-formed source semantics restricting update
+  generation by the freshness and causal obligations required by Shapiro's
+  `PrepareEnabled`; query and causal-delivery rules are unchanged.
 - `Emulation.lean`: `EmulatorState`, causal schedules, preparation, internal
   delivery, draining, Shapiro merge, and representation-invariant proofs.
 - `Conditioned_Emulation.lean`: embeds the emulator into
