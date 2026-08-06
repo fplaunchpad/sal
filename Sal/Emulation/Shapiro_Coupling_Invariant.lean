@@ -98,6 +98,16 @@ theorem fresh_message_unmapped
       obtain ⟨r, op, hgen, hcarry⟩ := W.version_is_generated hm
       exact absurd ⟨r, Or.inl ⟨op, hgen⟩⟩ hfresh
 
+theorem fresh_version_unmapped
+    {I : OperationalTransferInput D hb} {O : OpConfiguration D}
+    {C : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    (W : ShapiroCouplingWitness I O C) {v : Version}
+    (hfresh : C.core.ver v = none) : ∀ m, W.messageVersion m ≠ some v := by
+  intro m hm
+  obtain ⟨r, op, hgen, x, E, hver, hmem⟩ := W.version_is_generated hm
+  rw [hfresh] at hver
+  simp at hver
+
 namespace ShapiroCoupled
 
 /-- The empty op system and empty conditioned snapshot network are coupled. -/
@@ -209,6 +219,79 @@ theorem query_preserved (I : OperationalTransferInput D hb)
       · intro r' ver hver
         obtain ⟨m, hm, hopbuf⟩ := W.state_packet hver
         exact ⟨m, hm, by rw [hbuf]; exact hopbuf⟩
+
+/-! ## Update preservation: local algebra
+
+These facts are the pointwise heart of the update case.  They deliberately
+avoid the large configuration record and expose exactly how immediate
+self-delivery changes Shapiro's three state components. -/
+
+@[simp] theorem prepare_materialized (x : EmulatorState D) (r : Replica)
+    (op : D.AppOp) :
+    (x.prepare r op).materialized =
+      D.effect (D.prepare r op x.materialized) x.materialized := rfl
+
+@[simp] theorem prepare_known (x : EmulatorState D) (r : Replica)
+    (op : D.AppOp) :
+    (x.prepare r op).known = insert (D.prepare r op x.materialized) x.known := rfl
+
+@[simp] theorem prepare_delivered (x : EmulatorState D) (r : Replica)
+    (op : D.AppOp) :
+    (x.prepare r op).delivered =
+      insert (D.prepare r op x.materialized) x.delivered := rfl
+
+theorem incorporated_prepare_iff
+    (W : ShapiroCouplingWitness I O C) {r : Replica} {x : EmulatorState D}
+    (hx : C.core.N r = some x) (op : D.AppOp) (candidate : D.Msg) :
+    incorporatedAt
+        (O.trace ++ [(r, OpInput.update op,
+          OpOutput.send (D.prepare r op x.materialized))]) r candidate ↔
+      candidate ∈ (x.prepare r op).delivered := by
+  rw [incorporatedAt_append_update]
+  rw [prepare_delivered, Finset.mem_insert]
+  rw [W.incorporated_iff hx]
+  aesop
+
+theorem prepare_fullyDrained
+    (W : ShapiroCouplingWitness I O C) {r : Replica} {x : EmulatorState D}
+    (hx : C.core.N r = some x) (op : D.AppOp) :
+    (x.prepare r op).known = (x.prepare r op).delivered := by
+  simp only [prepare_known, prepare_delivered]
+  rw [W.fullyDrained hx]
+
+/-- Normalized facts exposed by a conditioned network update. -/
+def NetworkUpdateShape (I : OperationalTransferInput D hb)
+    (C C' : ConditionedNetworkConfig (shapiroConditionedG D I.schedule))
+    (t : Timestamp) (r : Replica) (op : D.AppOp) : Prop :=
+  ∃ vOld vNew xOld eventsOld,
+    C.core.head r = some vOld ∧
+    C'.core.head r = some vNew ∧
+    C.core.ver vOld = some (xOld, eventsOld) ∧
+    C.core.ver vNew = none ∧
+    C'.core.N = updateRep C.core.N r
+      ((shapiroConditionedG D I.schedule).update xOld (t, r, op)) ∧
+    C'.core.ver = fun w => if w = vNew then
+      some ((shapiroConditionedG D I.schedule).update xOld (t, r, op),
+        eventsOld ∪ {(t, r, op)}) else C.core.ver w
+
+theorem networkUpdateShape
+    (I : OperationalTransferInput D hb)
+    {C C' : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    {t : Timestamp} {r : Replica} {op : D.AppOp}
+    (hstep : ConditionedNetworkStep (shapiroConditionedG D I.schedule)
+      (fun core => I.verified.Honest
+        (Sal.ConditionedMRDTs.Configuration.core core))
+      C (.apply t r op) C') :
+    NetworkUpdateShape I C C' t r op := by
+  cases hstep with
+  | update hHonest hcore hProduced recipients hbuffer =>
+      cases hcore with
+      | base hraw =>
+          cases hraw with
+          | apply hOld hverOld hFreshT hFreshStore hFresh hRank Cnext
+              hN hL hvis hver hhead hparents =>
+              exact ⟨_, _, _, _, hOld, by rw [hhead]; simp,
+                hverOld, hFresh, hN, hver⟩
 
 end ShapiroCoupled
 
