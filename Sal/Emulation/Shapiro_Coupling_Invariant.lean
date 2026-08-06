@@ -293,6 +293,88 @@ theorem networkUpdateShape
               exact ⟨_, _, _, _, hOld, by rw [hhead]; simp,
                 hverOld, hFresh, hN, hver⟩
 
+theorem update_replicas_forward
+    (I : OperationalTransferInput D hb)
+    {O O' : OpConfiguration D}
+    {C C' : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    {t : Timestamp} {r : Replica} {op : D.AppOp}
+    (W : ShapiroCouplingWitness I O C)
+    (hop : OpStep D hb O (.update r op) O')
+    (hshape : NetworkUpdateShape I C C' t r op) :
+    ∀ {replica state}, O'.replicas replica = some state →
+      ∃ x : EmulatorState D,
+        C'.core.N replica = some x ∧ x.materialized = state := by
+  rcases hshape with ⟨vOld, vNew, xOld, eventsOld, hHeadOld, hHeadNew,
+    hVersionOld, hFresh, hN, hVersions⟩
+  cases hop with
+  | opUpdate hs hm recipients O' htrace hreps hbuf =>
+      subst hm
+      have hCoreN : C.core.N r = some xOld := by
+        have hco := (C.core.head_coherent r vOld hHeadOld).1
+        rw [hVersionOld] at hco
+        simpa using hco.symm
+      obtain ⟨xRelated, hxRelated, hMaterialized⟩ :=
+        W.replicas_forward hs
+      have hxEq : xRelated = xOld := by
+        rw [hCoreN] at hxRelated
+        exact (Option.some.inj hxRelated).symm
+      subst xRelated
+      intro replica state hstate
+      by_cases hr : replica = r
+      · subst replica
+        rw [hreps] at hstate
+        simp at hstate
+        subst state
+        refine ⟨xOld.prepare r op, ?_, ?_⟩
+        · rw [hN]
+          simp [updateRep, shapiroConditionedG, shapiroG, Op.rep, Op.op]
+        · simp [hMaterialized]
+      · rw [hreps] at hstate
+        simp [hr] at hstate
+        obtain ⟨x, hx, hmat⟩ := W.replicas_forward hstate
+        exact ⟨x, by rw [hN]; simp [updateRep, hr, hx], hmat⟩
+
+theorem update_replicas_backward
+    (I : OperationalTransferInput D hb)
+    {O O' : OpConfiguration D}
+    {C C' : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    {t : Timestamp} {r : Replica} {op : D.AppOp}
+    (W : ShapiroCouplingWitness I O C)
+    (hop : OpStep D hb O (.update r op) O')
+    (hshape : NetworkUpdateShape I C C' t r op) :
+    ∀ {replica x}, C'.core.N replica = some x →
+      ∃ state, O'.replicas replica = some state ∧ x.materialized = state := by
+  rcases hshape with ⟨vOld, vNew, xOld, eventsOld, hHeadOld, hHeadNew,
+    hVersionOld, hFresh, hN, hVersions⟩
+  have hCoreN : C.core.N r = some xOld := by
+    have hco := (C.core.head_coherent r vOld hHeadOld).1
+    rw [hVersionOld] at hco
+    simpa using hco.symm
+  cases hop with
+  | opUpdate hs hm recipients O' htrace hreps hbuf =>
+      subst hm
+      obtain ⟨sourceState, hSourceState, hMaterialized⟩ :=
+        W.replicas_backward hCoreN
+      rw [hs] at hSourceState
+      have hStateEq := Option.some.inj hSourceState
+      subst sourceState
+      rw [hStateEq] at hs hreps hbuf htrace
+      intro replica x hx
+      by_cases hr : replica = r
+      · subst replica
+        rw [hN] at hx
+        simp [updateRep, shapiroConditionedG, shapiroG, Op.rep, Op.op] at hx
+        subst x
+        refine ⟨D.effect (D.prepare r op xOld.materialized)
+          xOld.materialized, ?_, ?_⟩
+        · rw [hreps]
+          simp
+        · rfl
+      · rw [hN] at hx
+        simp [updateRep, hr] at hx
+        obtain ⟨state, hstate, hmat⟩ := W.replicas_backward hx
+        exact ⟨state, by rw [hreps]; simp [hr, hstate], hmat⟩
+
 end ShapiroCoupled
 
 end Sal.Emulation
