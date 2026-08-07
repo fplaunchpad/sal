@@ -109,7 +109,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   delivery preservation.
   `ShapiroCouplingWitness` now defines that concrete dynamic correspondence;
   `ShapiroCoupled.initial` and `query_preserved` are proved. Update/broadcast
-  and delivery/snapshot-merge preservation remain.
+  and delivery/snapshot-merge preservation remain. For update, bidirectional
+  replica correspondence, incorporated/known/delivered correspondence,
+  fully-drained preservation, and the fresh version carrying the exact new
+  message are proved; only dynamic-map/packet assembly remains.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.
