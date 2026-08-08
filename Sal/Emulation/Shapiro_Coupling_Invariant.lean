@@ -475,6 +475,65 @@ theorem update_new_version_carries
             EmulatorState.prepare, EmulatorState.deliverOne]
       · simpa [message, hMaterialized] using htrace
 
+theorem update_packet_correspondence
+    (I : OperationalTransferInput D hb)
+    {O O' : OpConfiguration D}
+    {C C' : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)}
+    (W : ShapiroCouplingWitness I O C)
+    {issuer : Replica} {message : D.Msg} {vNew : Version}
+    {recipients : Set Replica}
+    (hMessageFresh : W.messageVersion message = none)
+    (hVersionFresh : ∀ m, W.messageVersion m ≠ some vNew)
+    (hOpBuffer : O'.buffer = O.buffer ∪ broadcast recipients issuer message)
+    (hStateBuffer : C'.inFlight = C.inFlight ∪
+      {packet | packet.2 = vNew ∧ packet.1 ∈ recipients ∧
+        packet.1 ≠ issuer}) :
+    (∀ {r m}, (r, m) ∈ O'.buffer →
+      ∃ v, extendMessageVersion W.messageVersion message vNew m = some v ∧
+        (r, v) ∈ C'.inFlight) ∧
+    (∀ {r v}, (r, v) ∈ C'.inFlight →
+      ∃ m, extendMessageVersion W.messageVersion message vNew m = some v ∧
+        (r, m) ∈ O'.buffer) := by
+  constructor
+  · intro r m hm
+    rw [hOpBuffer] at hm
+    rcases hm with hold | hnew
+    · obtain ⟨v, hmap, hpacket⟩ := W.op_packet hold
+      have hne : m ≠ message := by
+        intro h
+        subst m
+        rw [hMessageFresh] at hmap
+        simp at hmap
+      refine ⟨v, extendMessageVersion_other W.messageVersion hne vNew |>.trans hmap,
+        ?_⟩
+      rw [hStateBuffer]
+      exact Or.inl hpacket
+    · rcases hnew with ⟨rfl, hr, hri⟩
+      refine ⟨vNew, extendMessageVersion_same _ _ _, ?_⟩
+      rw [hStateBuffer]
+      exact Or.inr ⟨rfl, hr, hri⟩
+  · intro r v hv
+    rw [hStateBuffer] at hv
+    rcases hv with hold | hnew
+    · obtain ⟨m, hmap, hpacket⟩ := W.state_packet hold
+      have hmv : v ≠ vNew := by
+        intro h
+        subst v
+        exact hVersionFresh m hmap
+      have hmm : m ≠ message := by
+        intro h
+        subst m
+        rw [hMessageFresh] at hmap
+        simp at hmap
+      refine ⟨m, extendMessageVersion_other W.messageVersion hmm vNew |>.trans hmap,
+        ?_⟩
+      rw [hOpBuffer]
+      exact Or.inl hpacket
+    · rcases hnew with ⟨rfl, hr, hri⟩
+      refine ⟨message, extendMessageVersion_same _ _ _, ?_⟩
+      rw [hOpBuffer]
+      exact Or.inr ⟨rfl, hr, hri⟩
+
 end ShapiroCoupled
 
 end Sal.Emulation

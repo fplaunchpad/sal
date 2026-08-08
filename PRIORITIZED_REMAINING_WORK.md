@@ -112,7 +112,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   and delivery/snapshot-merge preservation remain. For update, bidirectional
   replica correspondence, incorporated/known/delivered correspondence,
   fully-drained preservation, and the fresh version carrying the exact new
-  message are proved; only dynamic-map/packet assembly remains.
+  message are proved. Bidirectional post-broadcast packet correspondence is
+  also proved; only the two generated-message map fields and final witness
+  assembly remain.
 - [ ] Construct the trace realizer into conditioned ternary configurations and
   discharge its honest-reachability and adequacy obligations.
 - [ ] Instantiate the complete theorem for the grow-only-set canary.
