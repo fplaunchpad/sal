@@ -5,6 +5,8 @@ import Std.Tactic.BVDecide
 import Sal.Interfaces.Set_Extended
 import Std
 
+import Sal.Counterexample_Visualization.Trace
+
 
 
 open Classical Std
@@ -14,15 +16,26 @@ structure set_with_universe (α: Type) [ToString α] [DecidableEq α] [Hashable 
 _set : set α
 _universe : HashSet α
 
-instance {α} [ToString α] [DecidableEq α] [Hashable α] : ToString (set_with_universe α) where
-  toString a := let s := a._set
-  let univ := a._universe
+/-- Display an abstract `set` (an `α → Bool` predicate, possibly infinite) concretely,
+by filtering a universe of candidate elements down to the members. Shared by the
+single-set and the product-of-sets displays. -/
+def showSet {α : Type} [ToString α] [DecidableEq α] [Hashable α]
+(univ : HashSet α) (s : set α) : String :=
   let members := univ.fold (fun acc elem => if mem elem s then (toString elem)::acc else acc) []
+  -- `HashSet.fold` runs in hash order, so sort the rendered members: a state's
+  -- display should not depend on which elements happen to share a bucket.
+  -- Shorter-first, then lexicographic, so numeric elements come out in numeric
+  -- order (`7,8,9,10`, not the plain-lexicographic `10,7,8,9`).
+  let members := (members.toArray.qsort
+    (fun x y => x.length < y.length || (x.length == y.length && x < y))).toList
   let rec str_process_fun (l : List String) :=  (match l with
   | [] => ""
   | [x] => x
   | x::xs => x ++ "," ++ (str_process_fun xs))
   s! "#[{str_process_fun members}]#"
+
+instance {α} [ToString α] [DecidableEq α] [Hashable α] : ToString (set_with_universe α) where
+  toString a := showSet a._universe a._set
 
 
 abbrev concrete_st_viz (α : Type) [ToString α] [DecidableEq α] [Hashable α] := set_with_universe α
@@ -30,6 +43,28 @@ abbrev concrete_st_viz (α : Type) [ToString α] [DecidableEq α] [Hashable α] 
 
 @[simp]
 def init_st_viz {α: Type} [ToString α] [DecidableEq α] [Hashable α] (init_st : set α): concrete_st_viz α := {_set := init_st, _universe:={}}
+
+
+/-! ## Product-of-two-sets states
+
+MRDTs whose Σ is a *pair* of sets rather than a single set (the add-wins set's
+`(adds, tombstones)`, the OR-set CRDT's `(adds, tombstones)`, the MVR's
+`(writes, removed)`) do not fit `set_with_universe`. They get the same
+universe-tracking treatment over a shared universe, and display as `⟨#[…]#, #[…]#⟩`.
+-/
+
+structure pair_set_with_universe (α : Type) [ToString α] [DecidableEq α] [Hashable α] where
+_fst : set α
+_snd : set α
+_universe : HashSet α
+
+instance {α} [ToString α] [DecidableEq α] [Hashable α] : ToString (pair_set_with_universe α) where
+  toString a := s!"⟨{showSet a._universe a._fst}, {showSet a._universe a._snd}⟩"
+
+@[simp]
+def init_pair_viz {α : Type} [ToString α] [DecidableEq α] [Hashable α]
+(init_st : set α × set α) : pair_set_with_universe α :=
+{_fst := init_st.1, _snd := init_st.2, _universe := {}}
 
 
 
@@ -92,172 +127,32 @@ let result : concrete_st_viz α := {_set:=set_result, _universe:= universe_resul
  val := ()} ~~> fun () => ok (result)
 
 
-open ProofWidgets Jsx in
-def renderNode  {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (state : concrete_st_viz α) : Html :=
-  <div style={json% {
-    border: "2px solid #3b82f6",
-    borderRadius: "8px",
-    padding: "12px 16px",
-    backgroundColor: "#eff6ff",
-    fontWeight: "bold",
-    fontFamily: "arial",
-    textAlign: "center",
-    minWidth: "100px",
-    margin: "0 auto",
-    color: "#000000",
-    fontSize: "20px"
-  }}>
-    {Html.text (toString state)}
-  </div>
+/-! ## Trace adapters for set-valued states
 
-open ProofWidgets Jsx in
-def renderEdge (label : String) : Html :=
-  <div style={json% {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    margin: "5px 0"
-  }}>
-    <div style={json% {
-      width: "2px",
-      height: "20px",
-      backgroundColor: "#6b7280"
-    }}/>
-    <div style={json% {
-      padding: "4px 12px",
-      backgroundColor: "#fef3c7",
-      border: "1px solid #f59e0b",
-      borderRadius: "4px",
-      fontSize: "20px",
-      fontWeight: "1000",
-      margin: "5px 0",
-      color: "#000000"
-    }}>
-      {Html.text label}
-    </div>
-    <div style={json% {
-      width: "2px",
-      height: "20px",
-      backgroundColor: "#6b7280"
-    }}/>
-  </div>
+`Sal/Counterexample_Visualization/Trace.lean` holds the state-agnostic trace and
+its renderer. A set state carries a display universe alongside the set itself, so
+the transition a client wants (`do_ : set α → op → set α`) is not the transition
+the trace needs (`concrete_st_viz α → op → concrete_st_viz α`) — these two adapt
+one to the other by threading the universe, then defer to `stepWith`/`mergeWith`.
 
+Argument order matches `do_viz`/`merge_viz`, so porting a client off the flat log
+is mechanical. -/
 
-def splitAtMerge {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (lst : List ((concrete_st_viz α) × String × concrete_st_viz α)) (mergeLabel : String) :
-    List ((concrete_st_viz α) × String × concrete_st_viz α) × List ((concrete_st_viz α) × String × concrete_st_viz α) :=
-  let rec go (acc : List ((concrete_st_viz α) × String × concrete_st_viz α)) (rest : List ((concrete_st_viz α) × String × concrete_st_viz α)) :
-      List ((concrete_st_viz α) × String × concrete_st_viz α) × List ((concrete_st_viz α) × String × concrete_st_viz α) :=
-    match rest with
-    | [] => (acc.reverse, [])
-    | h :: t =>
-      if h.2.1 == mergeLabel then
-        (acc.reverse, t)
-      else
-        go (h :: acc) t
-  go [] lst
+/-- `do_viz` for traces: extend a trace by one `do_` edge, growing the universe by
+the element the operation touches. -/
+def do_trace {β : Type} {α : Type} [ToString α] [DecidableEq α] [Hashable α]
+(do_ : set α → (ℕ × ℕ × β) → set α) (t : Trace (concrete_st_viz α)) (o : ℕ × ℕ × β)
+(univ_add : (ℕ × ℕ × β) → α) (op_string : (ℕ × ℕ × β) → String) : Trace (concrete_st_viz α) :=
+stepWith
+  (fun s o => {_set := do_ s._set o, _universe := s._universe.insert (univ_add o)})
+  op_string t o
 
-def splitAtMerge' {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (lst : List ((concrete_st_viz α) × String × concrete_st_viz α)) (mergeLabel : String) :
-    List ((concrete_st_viz α) × String × concrete_st_viz α) × List ((concrete_st_viz α) × String × concrete_st_viz α) :=
-  let rec go (acc : List ((concrete_st_viz α) × String × concrete_st_viz α)) (rest : List ((concrete_st_viz α) × String × concrete_st_viz α)) :
-      List ((concrete_st_viz α) × String × concrete_st_viz α) × List ((concrete_st_viz α) × String × concrete_st_viz α) :=
-    match rest with
-    | [] => (acc.reverse, [])
-    | h :: t =>
-      if h.2.1 == mergeLabel then
-        ((h::acc).reverse, t)
-      else
-        go (h :: acc) t
-  go [] lst
-
-open ProofWidgets Jsx in
-def renderBranchingTreeFromList {α : Type} [ToString α] [DecidableEq α] [Hashable α]  (lst : List ((concrete_st_viz α) × String × concrete_st_viz α)) : Html :=
-  let (rootPath, afterLMerge) := splitAtMerge lst "LMerge"
-  let (leftBranchFull, afterAMerge) := splitAtMerge afterLMerge "AMerge"
-  let (rightBranchFull, afterBMerge) := splitAtMerge afterAMerge "BMerge"
-  let (mergePath,_) := splitAtMerge' lst "LMerge"
-
-  let leftBranch := leftBranchFull.drop rootPath.length
-  let rightBranch := rightBranchFull.drop rootPath.length
-
-
-  let finalNode := match mergePath.getLast? with
-    | some (_, _, y) => y
-    | none => {_set := empty, _universe:={}}
-
-  let rootStart := match rootPath.head? with
-    | some (y, _, _) => y
-    | none => {_set := empty, _universe:={}};
-
-  <div style={json% {
-    padding: "20px",
-    backgroundColor: "#f9fafb",
-    borderRadius: "8px",
-    border: "2px solid #e5e7eb",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center"
-  }}>
-    {renderNode rootStart}
-    {rootPath.foldl (fun html (_, label, y) =>
-      Html.element "div" #[] #[html, renderEdge label, renderNode y]
-    ) (Html.element "div" #[] #[])}
-
-    <div style={json% {
-      display: "flex",
-      justifyContent: "center",
-      gap: "100px",
-      width: "100%",
-      marginTop: "20px",
-      marginBottom: "20px"
-    }}>
-      <div style={json% {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
-        <div style={json% {
-          fontSize: "20px",
-          fontWeight: "bold",
-          color: "#6b7280",
-          marginBottom: "10px"
-        }}>
-          {Html.text "Left Branch"}
-        </div>
-        {leftBranch.foldl (fun html (_, label, y) =>
-          Html.element "div" #[] #[html, renderEdge label, renderNode y]
-        ) (Html.element "div" #[] #[])}
-      </div>
-
-      <div style={json% {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
-        <div style={json% {
-          fontSize: "20px",
-          fontWeight: "bold",
-          color: "#6b7280",
-          marginBottom: "10px"
-        }}>
-          {Html.text "Right Branch"}
-        </div>
-        {rightBranch.foldl (fun html (_, label, y) =>
-          Html.element "div" #[] #[html, renderEdge label, renderNode y]
-        ) (Html.element "div" #[] #[])}
-      </div>
-    </div>
-
-    <div style={json% {
-      fontSize: "20px",
-      color: "#6b7280",
-      marginBottom: "10px"
-    }}>
-      {Html.text "↓ All paths converge ↓"}
-    </div>
-
-    {renderNode finalNode}
-
-    {afterBMerge.foldl (fun html (_, label, y) =>
-      Html.element "div" #[] #[html, renderEdge label, renderNode y]
-    ) (Html.element "div" #[] #[])}
-  </div>
+/-- `merge_viz` for traces: a three-way merge node, over the union of the three
+display universes. -/
+def merge_trace {α : Type} [ToString α] [DecidableEq α] [Hashable α]
+(merge : set α → set α → set α → set α)
+(l a b : Trace (concrete_st_viz α)) : Trace (concrete_st_viz α) :=
+mergeWith
+  (fun ls as bs => {_set := merge ls._set as._set bs._set,
+                    _universe := ls._universe.union (as._universe.union bs._universe)})
+  l a b

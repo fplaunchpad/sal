@@ -86,4 +86,51 @@ def merge_ans := merge_viz merge (ok (init_st_viz init_st))
 
 #eval merge_ans
 
-#html  renderBranchingTreeFromList merge_ans.log
+
+/-! ## The remove-wins race as a `Trace`, run twice
+
+The mirror image of the OR-set, and the representation is inverted with it: the
+state holds *removal markers* `(ts, elem)`, `Rem x` stakes a marker, and `Add x`
+retracts every marker for `x`. Element 3 is present exactly when **no** marker for
+it is in the set, so the displayed set reads as "what is gone", not "what is here".
+
+That inversion is what makes the race come out the other way. An `Add` can only
+retract the markers it has seen, so a marker staked concurrently survives the
+merge and keeps the element absent: remove wins. The diagrams below run it twice,
+the second round from the first's result.
+
+`init_st` holds a marker `(0, x)` for *every* `x`, so it is infinite — it prints
+as `#[]#` only because the display universe starts empty and grows as ops touch
+elements. Every node before the first op is under-reported for that reason. -/
+
+def tInit : Trace (concrete_st_viz (ℕ × ℕ)) := .leaf (init_st_viz init_st)
+
+/-- The LCA of the first race: `Add 3` retracts the initial `(0,3)` marker, so
+element 3 is present and no marker for it remains. -/
+def seeded : Trace (concrete_st_viz (ℕ × ℕ)) :=
+  do_trace do_ tInit (1,0,app_op_t.Add 3) univ_add op_string
+
+/-- **Round 1.** Left stakes a removal marker `(2,3)`; right adds 3, retracting
+only the markers it has seen — of which there are none for 3. The merge keeps
+`(2,3)`: `#[(2, 3)]#`, so element 3 is **absent**. Remove wins. -/
+def round1 : Trace (concrete_st_viz (ℕ × ℕ)) :=
+  merge_trace merge seeded
+    (do_trace do_ seeded.reroot (2,1,app_op_t.Rem 3) univ_add op_string)
+    (do_trace do_ seeded.reroot (3,2,app_op_t.Add 3) univ_add op_string)
+
+/-- **Round 2.** Again from round 1's result, sides swapped: left adds 3,
+retracting `(2,3)`; right stakes a fresh marker `(5,3)`. The merge keeps `(5,3)`:
+`#[(5, 3)]#`, element 3 absent again. The concurrent `Add` loses from either side. -/
+def round2 : Trace (concrete_st_viz (ℕ × ℕ)) :=
+  merge_trace merge round1
+    (do_trace do_ round1.reroot (4,1,app_op_t.Add 3) univ_add op_string)
+    (do_trace do_ round1.reroot (5,2,app_op_t.Rem 3) univ_add op_string)
+
+-- Expect `#[(2, 3)]#` then `#[(5, 3)]#` — a marker survives both rounds, under a
+-- fresh tag the second time. Contrast the OR-set file, where the same race shape
+-- leaves the element present.
+#eval round1.result
+#eval round2.result
+
+#html renderTrace round1
+#html renderTrace round2

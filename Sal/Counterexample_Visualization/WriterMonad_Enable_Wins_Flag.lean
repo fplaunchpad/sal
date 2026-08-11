@@ -8,6 +8,8 @@ import Mathlib.Tactic.Linarith
 
 import Plausible
 
+import Sal.Counterexample_Visualization.Trace
+
 
 
 
@@ -94,6 +96,62 @@ let result := ((Prod.fst aval + Prod.fst bval - Prod.fst lval , merge_flag lval 
 #eval merge (ok (init_st)) (do_ (ok (init_st)) (1,1,app_op_t.Enable)) (do_ (ok (init_st)) (1,1,app_op_t.Enable))
 
 
+/-! ## The same `do_` and `merge`, without the logging
+
+`Sal/Counterexample_Visualization/Trace.lean` builds diagrams from a *pure* state
+transition and a labelling function, so the writer-monad plumbing above is split
+back apart here: `do_pure` and `merge_pure` are the state halves of `do_` and
+`merge`, and `op_string` is the label half of `do_`. They are transcriptions, not
+a second implementation — compare them line by line with the two definitions
+above, and see the `#eval`s in each namespace below, which check that a trace and
+its `WithLog` counterpart land on the same state. -/
+
+@[simp]
+def do_pure (s : concrete_st) (o : op_t) : concrete_st :=
+match o with
+| (_, (_, .Enable)) => (Prod.fst s + 1, true)
+| (_, (_, .Disable)) => (Prod.fst s, false)
+
+def op_string (o : op_t) : String :=
+match o with
+| (ts, (rid, .Enable)) => s!"({ts},r{rid},enable)"
+| (ts, (rid, .Disable)) => s!"({ts},r{rid},disable)"
+
+@[simp]
+def merge_pure (l a b : concrete_st) : concrete_st :=
+  (Prod.fst a + Prod.fst b - Prod.fst l, merge_flag l a b)
+
+
+/-! ## The failing VC, `inter_right_1op`, as two traces
+
+    lhs = merge (do l ol) (do (do a ol) o1) (do (do (do b o) ob) ol)
+    rhs = do (merge (do l ol) (do a ol) (do (do (do b o) ob) ol)) o1
+
+The bug is that these two disagree. Each namespace below instantiates them at a
+counterexample and draws both, so the divergence can be read off the diagrams.
+
+`l`, `a` and `b` are three independent starting states, not one shared root, so
+each is a `ref` — it gets its own captioned node at the top of its own path.
+(The flat renderer assumed a shared prefix and dropped `l`'s length off each
+branch, which silently ate the first edge of the longer `b` path.) -/
+
+def vc_lhs (l a b : concrete_st) (ol o1 o ob : op_t) : Trace concrete_st :=
+  mergeWith merge_pure
+    (stepWith do_pure op_string (.ref "l" l) ol)
+    (stepWith do_pure op_string (stepWith do_pure op_string (.ref "a" a) ol) o1)
+    (stepWith do_pure op_string
+      (stepWith do_pure op_string (stepWith do_pure op_string (.ref "b" b) o) ob) ol)
+
+def vc_rhs (l a b : concrete_st) (ol o1 o ob : op_t) : Trace concrete_st :=
+  stepWith do_pure op_string
+    (mergeWith merge_pure
+      (stepWith do_pure op_string (.ref "l" l) ol)
+      (stepWith do_pure op_string (.ref "a" a) ol)
+      (stepWith do_pure op_string
+        (stepWith do_pure op_string (stepWith do_pure op_string (.ref "b" b) o) ob) ol))
+    o1
+
+
 namespace counter1
 /- Plausible Generation -/
 /- encode the counterexamples generated -/
@@ -112,6 +170,19 @@ def lhs := merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ (do_ b o) ob) ol)
 
 def rhs := do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ (do_ b o) ob) ol)) o1
 #eval rhs
+
+/- draw the same two sides -/
+
+def lhs_trace : Trace concrete_st := vc_lhs l.val a.val b.val ol o1 o ob
+def rhs_trace : Trace concrete_st := vc_rhs l.val a.val b.val ol o1 o ob
+
+-- Each must agree with the `.val` of the `WithLog` version directly above it, and
+-- the two must differ from each other — that difference is the bug.
+#eval lhs_trace.result
+#eval rhs_trace.result
+
+#html renderTrace lhs_trace
+#html renderTrace rhs_trace
 
 end counter1
 
@@ -135,169 +206,17 @@ def lhs := merge (do_ l ol) (do_ (do_ a ol) o1) (do_ (do_ (do_ b o) ob) ol)
 def rhs := do_ (merge (do_ l ol) (do_ a ol) (do_ (do_ (do_ b o) ob) ol)) o1
 #eval rhs
 
+/- draw the same two sides -/
 
-open ProofWidgets Jsx in
-def renderNode (state : concrete_st) : Html :=
-  <div style={json% {
-    border: "2px solid #3b82f6",
-    borderRadius: "8px",
-    padding: "12px 16px",
-    backgroundColor: "#eff6ff",
-    fontWeight: "bold",
-    fontFamily: "arial",
-    textAlign: "center",
-    minWidth: "100px",
-    margin: "0 auto",
-    color: "#000000",
-    fontSize: "20px"
-  }}>
-    {Html.text s!"({state.1}, {state.2})"}
-  </div>
+def lhs_trace : Trace concrete_st := vc_lhs l.val a.val b.val ol o1 o ob
+def rhs_trace : Trace concrete_st := vc_rhs l.val a.val b.val ol o1 o ob
 
-open ProofWidgets Jsx in
-def renderEdge (label : String) : Html :=
-  <div style={json% {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    margin: "5px 0"
-  }}>
-    <div style={json% {
-      width: "2px",
-      height: "20px",
-      backgroundColor: "#6b7280"
-    }}/>
-    <div style={json% {
-      padding: "4px 12px",
-      backgroundColor: "#fef3c7",
-      border: "1px solid #f59e0b",
-      borderRadius: "4px",
-      fontSize: "20px",
-      fontWeight: "1000",
-      margin: "5px 0",
-      color: "#000000"
-    }}>
-      {Html.text label}
-    </div>
-    <div style={json% {
-      width: "2px",
-      height: "20px",
-      backgroundColor: "#6b7280"
-    }}/>
-  </div>
+-- Each must agree with the `.val` of the `WithLog` version directly above it, and
+-- the two must differ from each other — that difference is the bug.
+#eval lhs_trace.result
+#eval rhs_trace.result
 
-
-def splitAtMerge (lst : List ((concrete_st) × String × concrete_st)) (mergeLabel : String) :
-    List ((concrete_st) × String × concrete_st) × List ((concrete_st) × String × concrete_st) :=
-  let rec go (acc : List ((concrete_st) × String × concrete_st)) (rest : List ((concrete_st) × String × concrete_st)) :
-      List ((concrete_st) × String × concrete_st) × List ((concrete_st) × String × concrete_st) :=
-    match rest with
-    | [] => (acc.reverse, [])
-    | h :: t =>
-      if h.2.1 == mergeLabel then
-        (acc.reverse, t)
-      else
-        go (h :: acc) t
-  go [] lst
-
-open ProofWidgets Jsx in
-def renderBranchingTreeFromList (lst : List ((concrete_st) × String × concrete_st)) : Html :=
-  let (rootPath, afterLMerge) := splitAtMerge lst "LMerge"
-  let (leftBranch, afterAMerge) := splitAtMerge afterLMerge "AMerge"
-  let (rightBranch, afterBMerge) := splitAtMerge afterAMerge "BMerge"
-
-  let finalNode := match rightBranch.getLast? with
-    | some ((_, _), _, n1, n2) => (n1, n2)
-    | none => match leftBranch.getLast? with
-      | some ((_, _), _, n1, n2) => (n1, n2)
-      | none => (0, false)
-
-  let rootStart := match rootPath.head? with
-    | some ((s1, s2), _, _, _) => (s1, s2)
-    | none => (0, false);
-
-  <div style={json% {
-    padding: "20px",
-    backgroundColor: "#f9fafb",
-    borderRadius: "8px",
-    border: "2px solid #e5e7eb",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center"
-  }}>
-    {renderNode rootStart}
-    {rootPath.foldl (fun html ((_, _), label, n1, n2) =>
-      Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
-    ) (Html.element "div" #[] #[])}
-
-    <div style={json% {
-      display: "flex",
-      justifyContent: "center",
-      gap: "100px",
-      width: "100%",
-      marginTop: "20px",
-      marginBottom: "20px"
-    }}>
-      <div style={json% {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
-        <div style={json% {
-          fontSize: "20px",
-          fontWeight: "bold",
-          color: "#6b7280",
-          marginBottom: "10px"
-        }}>
-          {Html.text "Left Branch"}
-        </div>
-        {match leftBranch.head? with
-          | some ((s1, s2), _, _, _) => renderNode (s1, s2)
-          | none => Html.element "div" #[] #[]}
-        {leftBranch.foldl (fun html ((_, _), label, n1, n2) =>
-          Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
-        ) (Html.element "div" #[] #[])}
-      </div>
-
-      <div style={json% {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center"
-      }}>
-        <div style={json% {
-          fontSize: "20px",
-          fontWeight: "bold",
-          color: "#6b7280",
-          marginBottom: "10px"
-        }}>
-          {Html.text "Right Branch"}
-        </div>
-        {match rightBranch.head? with
-          | some ((s1, s2), _, _, _) => renderNode (s1, s2)
-          | none => Html.element "div" #[] #[]}
-        {rightBranch.foldl (fun html ((_, _), label, n1, n2) =>
-          Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
-        ) (Html.element "div" #[] #[])}
-      </div>
-    </div>
-
-    <div style={json% {
-      fontSize: "20px",
-      fontWeight: "bold",
-      color: "#6b7280",
-      marginBottom: "10px"
-    }}>
-      {Html.text "↓ All paths converge ↓"}
-    </div>
-
-    {renderNode finalNode}
-
-    {afterBMerge.foldl (fun html ((_, _), label, n1, n2) =>
-      Html.element "div" #[] #[html, renderEdge label, renderNode (n1, n2)]
-    ) (Html.element "div" #[] #[])}
-  </div>
-
-#html renderBranchingTreeFromList lhs.log
-#html renderBranchingTreeFromList rhs.log
+#html renderTrace lhs_trace
+#html renderTrace rhs_trace
 
 end counter2
