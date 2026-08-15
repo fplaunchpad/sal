@@ -161,7 +161,7 @@ true, with their adequacy theorem and the discharged production
 catalogue; the conditioned generalization for state-dependent data
 types; and the factored discharge route (a generic honest-reachability
 metatheorem consuming per-configuration join lemmas) that the newest
-instances use, with the mergeable queue as its flagship. Part~II
+instances use, illustrated by the mergeable queue. Part~II
 presents the embedded-chain RGA, the repository's canonical sequence
 datatype: a tombstone-free replicated list whose sort keys are immutable
 birth chains carried as entropy-coded coordinates, with the encoding
@@ -194,8 +194,9 @@ against Yjs, Automerge, Loro, and list-positions on the standard
 editing-trace corpus, closes its one large loss (a three-to-four-orders
 apply-latency gap, an interface-inherited state copy removed by a
 persistent-map container swap with every observable byte unchanged), and
-reports the design's
-categorical storage win, the only save that shrinks on delete; and an SMT
+shows that compacted Sal state shrinks after deletion, unlike
+history-carrying saves, while other reclaiming state formats can shrink as
+well; and adds an SMT
 translation-validation layer that makes the flat verification conditions
 push-button. Everything stated as a theorem is mechanized in
 Lean~4 with zero \lean{sorry}s in the cited chains; the negative results
@@ -469,7 +470,7 @@ consumes a small, contextual VC surface. Its contributions:
   factored discharge route (\S\ref{sec:condmeta}--\S\ref{sec:route},
   Part~II). The sweep produces an empirical
   \emph{class map} of which data types need which strength of contract,
-  with two surprises: tombstones are a metatheoretic trivializer, and
+  with two findings: tombstones simplify the metatheory, and
   commutativity class and delta class are independent axes.
 \item \textbf{The metatheorem factors} (\S\ref{sec:route}): conditioning
   splits as a generic honest-reachability metatheorem times a
@@ -478,7 +479,7 @@ consumes a small, contextual VC surface. Its contributions:
   predicate holding of each event at the fold of its causal past). Three
   join species are observed in production (conditioned commutation, flat
   commutation, direct witness), and the mergeable queue, whose conflict
-  graph admits no $\rcrel$ assignment at all, is the flagship of the
+  graph admits no $\rcrel$ assignment at all, is the primary example in the
   direct-witness species: Peepul's merge is its own linearization
   certificate. The same route carries Part~II's embedded-chain RGA.
 \item \textbf{The model meets its runtime}
@@ -961,9 +962,9 @@ The generic half of the paper's contract is a \emph{bottom-up
 linearization} theorem: given linearization witnesses for the two sides
 of a merge, construct one for the merged version by repeatedly
 \emph{peeling} a final event through $\mergeL$ using the catalogue's
-interchange VCs. One might hope the version DAG's discipline --- every
+interchange VCs. The version DAG's discipline --- every
 merge sitting at an honest LCA --- keeps the peel supplied with peelable
-events. It does not: one staging replica suffices to realize the
+events only under an additional assumption. A staging replica suffices to realize the
 intersection of two histories as an honest version, and the merge
 induction is stuck.
 
@@ -2384,14 +2385,13 @@ their safety content as separate displayed theorems where noted.}
 \label{tab:catalog2}
 \end{table}
 
-Tables~\ref{tab:catalog} and~\ref{tab:catalog2} are the empirical heart of the metatheory: the VC
-set is not merely adequate in principle --- the data types people actually
-ship satisfy it. Three lessons from the sweep:
+Tables~\ref{tab:catalog} and~\ref{tab:catalog2} show that production
+datatypes satisfy the VC set. The verification yields three lessons.
 
-\paragraph{Tombstones are a metatheoretic trivializer.} The catalogue's
-celebrated hard cases --- the RGA sequence type and the Peritext
-rich-text type --- land in the \emph{easiest} tier. The reason is almost
-embarrassing: with tombstones, deletion \emph{adds} a record; every state
+\paragraph{Tombstones simplify the metatheory.} The catalogue's
+structurally complex cases --- the RGA sequence type and the Peritext
+rich-text type --- land in the \emph{easiest} tier. With tombstones,
+deletion \emph{adds} a record; every state
 component is grow-only; all operations commute; the merge is a blind
 join. All of the RGA's genuine difficulty lives in the \emph{read-side}
 traversal (turning the node soup into a sequence), which
@@ -2790,7 +2790,7 @@ metatheorem completes the factorization; it is the subject of a
 paragraph below, and the counter's counting argument indeed turned out
 to mark where the per-datatype content sits.
 
-\paragraph{The flagship direct-join instance: the mergeable queue ---
+\paragraph{Direct-join instance: the mergeable queue ---
 when no $\rcrel$ can exist.} The queue of the certified-MRDT line of work
 (Soundarapandian et al., PLDI'22, \emph{Certified Mergeable Replicated Data
 Types}) is the catalogue's first data type whose conflict graph is a
@@ -3140,7 +3140,7 @@ into the state by the \emph{merge}, not by replay order.
 
 Since timestamps respect causality, a causally later claim never displaces
 an installed one; the $\min$ rule arbitrates only among \emph{concurrent}
-claimants, and it must, on pain of divergence. The instructive part is the
+claimants; otherwise replicas can diverge. The relevant constraint is the
 generation discipline: $\app$ for a claim is ``the register is unset in my
 causal past'', and \emph{deliberately no theorem consumes it} --- two
 honest concurrent claimants both see unset, both claim, and each locally
@@ -3152,7 +3152,7 @@ A merge-based register is a reservation, confirmed only at causal
 stability; it is never a mutex.
 
 \paragraph{The join hook is also the composition boundary.} The factored
-interface earns one more dividend: data types compose \emph{at the
+interface also exposes the composition boundary: data types compose \emph{at the
 per-configuration join}, and only there. Finished capstones never
 compose, because reachability does not project (a second-component apply
 is a version-duplicating stutter for the first component's projection);
@@ -3471,7 +3471,7 @@ hypothesis reachability itself supplies
 \hfill\lean{ra\_linearizable3\_of\_honest\_reachV}
 \end{theorem}
 
-The headline is what did
+The per-datatype proof interface does
 \emph{not} change: \lean{Framework/VC\_Set.lean} is untouched. For any
 datatype that discharges its join at every configuration, the criss-cross
 gate lifts with \textbf{no new per-datatype verification condition};
@@ -3525,12 +3525,12 @@ the \code{T1F} fail companion of \code{virtual\_lca\_check.py}.
 \hfill\lean{t1f\_pick\_u\_resurrects\_y}
 \end{proposition}
 
-The recursion is not dispensable, nor is its depth boundable in
-practice: in a dense
+The recursion is necessary, and a fixed depth bound is unsound in
+practice. In a dense
 randomized probe (200 trials, 6 replicas, sync-heavy), criss-crosses
 arose in 176 of 200 trials with resolution nesting up to depth 7,
 because rivalry propagates upward (rival joins of rival joins); a
-depth-limited implementation would simply re-erect the gate.
+depth-limited implementation would reject valid merges beyond its bound.
 
 \paragraph{The quotient layers, and the rehoming stress test.} The
 claim above serves the raw layer. The framework's quotient layers
@@ -3564,7 +3564,7 @@ The refuted predicate marks a dead proof route, not a defect of the
 construction.
 
 \paragraph{The queue, as a corollary.} The mergeable queue of
-\S\ref{sec:route} is the instructive consumer: its join is already
+\S\ref{sec:route} illustrates reuse: its join is already
 per-configuration (\lean{q\_join\_at}), which is exactly the hook the
 virtual fold induction consumes, so lifting the criss-cross gate costs
 the queue nothing beyond restating reachability over the widened LTS.
@@ -3774,9 +3774,9 @@ $\mathsf{Reaches}(w, h)$ and $\mathsf{Reaches}(h, v)$.
 
 $\mathrm{Keep}_V$ contains the old keep set,
 and covers every recursion read: sub-pair MCAs are contained in
-real-pair MCAs, iterated. One might hope the one-layer seed (the
-pairwise MCAs of the current heads, without the fixpoint) suffices; it
-is one closure layer short, machine-witnessed: on a directed nested
+real-pair MCAs, iterated. The one-layer seed (the
+pairwise MCAs of the current heads, without the fixpoint) is
+one closure layer short. On a machine-checked directed nested
 criss-cross, a depth-2 resolution reads the MCAs of the MCAs, pruning
 by the one-layer rule kills them (the sync raises a pruned-store
 error), and pruning by the closure rule keeps them while still pruning
@@ -3801,9 +3801,9 @@ Definition~\ref{def:step3v}). Then, pruning to $\mathrm{Keep}_V(C_0)$,
   C \setminus \mathrm{Dropped}_V(C_0)
 \]
 as a $\mathsf{Step3V}$ run with the same label sequence, and every
-replica read at every point is unchanged. The headline shape of
-Theorem~\ref{thm:gcsafety} is kept verbatim; the gateway forced no
-statement change.
+replica read at every point is unchanged. The statement matches
+Theorem~\ref{thm:gcsafety}; the gateway changes the proof, not the
+theorem interface.
 \hfill\lean{gc\_safetyV}
 \end{theorem}
 
@@ -4014,8 +4014,8 @@ dead history that a re-coding epoch could shed (\S\ref{sec:storage}).
 The runtime therefore wants to call back \emph{into the datatype} so
 the concrete state can compact. The question is what the datatype must
 prove for such a \code{compact} to be sound, and what exactly the
-runtime must promise it. Both halves have sharp answers, and both were
-shaped by countermodels.
+runtime must promise it. Countermodels determine both sides of the
+interface.
 
 \paragraph{The naive gate is unsound: the discriminating remove.} The
 obvious runtime promise (``the cut $S$ is contained in every current
@@ -4625,7 +4625,7 @@ payload $\alpha$.
 \hfill\lean{do\_}, \lean{merge}, \lean{rc}, \lean{E}
 \end{definition}
 
-\paragraph{The metatheory, which is nearly definitional.} At this
+\paragraph{Metatheory.} At this
 layer the design's theorems all but evaporate; we record them because
 they are the specification the representation must meet
 (\S\ref{sec:encoding}).
@@ -4833,8 +4833,8 @@ codeword concatenation becomes interval nesting, and the interval is
 the $\alpha(u)$ of Theorem~\ref{thm:faithful}. Bit string and
 interval are two views of one object; we use whichever is clearer.
 
-\paragraph{What the coding is for.} Two jobs, only one of which is
-about correctness.
+\paragraph{Purpose of the coding.} The coding serves two roles; only one
+concerns correctness.
 \emph{Job 1: cost.} The datatype layer already forced sort keys to
 retain dead ancestors' timestamps (the conservation law,
 \S\ref{sec:design}); the only remaining question is how many bits
@@ -4846,7 +4846,7 @@ mint, codeword length linear in the value, kept as the experiment's
 cost-control arm; step 2 and the entropy-law table) makes the gap
 measurable: 61\,KB against the coded design's 0.5\,KB on the table's
 1000-element chain scenario. The coding is what makes
-the headline claim true: the dead survive as the entropy of the
+the storage bound true: the dead survive as the entropy of the
 anchor gaps they were born across, and not more.
 \emph{Job 2: faithfulness.} The chains must be stored so that plain
 lexicographic bit comparison reproduces chain-lex exactly, in every
@@ -5014,7 +5014,7 @@ of one datatype (\code{embed-tree} unary, \code{embed-code} the
 $\gamma$-flip, \code{eliasDeltaCode} the $\delta$-flip); the capstone
 theorem is inherited at each verbatim, with zero new proof content
 (\S\ref{sec:mechanization}): the code-parametricity claim,
-machine-validated. Two honest footnotes: per level the $\delta$-flip
+machine-validated. Two cost qualifications apply: per level the $\delta$-flip
 wins only from $\delta \ge 32$ and loses at $\delta \in \{2,3\} \cup
 [8,15]$ (kernel-checked length comparisons), and measured editing
 tails are thin, so on real traces the two flips are a wash; the
@@ -5043,7 +5043,7 @@ verbatim.
   $|\mathrm{enc}(d)| = L + 2\,\mathrm{len}(L) - 2$ at $1 \le d$
   (\lean{dEnc\_length}); \lean{dEnc\_mono},
   \lean{dEnc\_prefixFree}, the same hypothesis shapes. The per-level
-  crossover of the honest footnote is kernel spot-checked at
+  crossover described above is kernel spot-checked at
   $\delta \in \{2, 8, 16, 32, 1024\}$ in the same file.
 \end{itemize}
 The $\gamma$- and $\delta$-flips are cross-validated against the
@@ -6881,8 +6881,8 @@ the translation of the untranslated fold.
 
 \begin{proposition}[the global-collapse negative]
 \label{prop:globalcollapse}
-One might hope to state T1 over the whole history (map every op ever
-issued, re-fold from the initial state); that statement forces H3 at
+Stating T1 over the whole history (mapping every operation ever
+issued and re-folding from the initial state) forces H3 at
 every historical mint. If a coordinate map $f$ satisfies H3 at
 \emph{every} positive mint ($\forall \pi\, d$, $1 \le d$ implies
 $f(\pi \cdot \Gamma.\mathrm{enc}(d)) = f(\pi) \cdot
@@ -7009,7 +7009,7 @@ sibling group the surviving deltas are renumbered to $1..k$
 order-isomorphically and re-encoded with the same ordered prefix code).
 Its H2 discharge runs the per-group order isomorphism through the
 chain-lex theorem, with renumbered ranks dominated by Lamport-fresh
-future deltas; the headline discharges everything at a settled cut of
+future deltas; the theorem discharges every obligation at a settled cut of
 an honest configuration.
 
 \begin{theorem}[the concrete compaction preserves every read at a
@@ -7267,7 +7267,7 @@ map's domain.
 \hfill\lean{CompatOn}, \lean{StablePrefixMap.comp}, \lean{chainSPM}
 \end{definition}
 
-\begin{theorem}[the $n$-epoch headline]
+\begin{theorem}[$n$-epoch observational preservation]
 \label{thm:multiepoch}
 For a compatibility chain $\mathrm{CompatChain}\ (F :: F_s)$, cut
 state $s$ at hand for the \emph{first} map $F$, and continuation
@@ -7800,10 +7800,10 @@ clownschool & sided/F & 3421.3 & 2988.1 & 22.29 & 21.20 & 140.9$\times$ \\
 model above; the \code{\_flat} traces are the concurrent traces
 replayed single-author, their unsuffixed twins the concurrent
 originals. The verdict: \textbf{20.9 to 27.2 bits per character, 38 to
-141 times below the fused chains}, confirming the design prediction
+141 times below the fused chains}, consistent with the design prediction
 (per-record cost collapses from $\Theta(\mathrm{depth})$ to $O(1)$
-amortized plus a log-sized offset) with margin. Where the remaining
-bits sit, from the audited breakdown:
+amortized plus a log-sized offset). The audited breakdown locates the
+remaining bits:
 \begin{itemize}[leftmargin=2em]
 \item The per-record \emph{run id} now dominates (10 to 14 of the 21 to
   27 bits, the flat id width): the deep-chain cost did not shrink to
@@ -8227,9 +8227,9 @@ half and walk half. Every capstone named in this subsection and in
 
 Two external facts close the representation arc; both are measured, and
 both are laid out with their full methodology in the performance section
-(\S\ref{sec:perf}), so only the headline belongs here. First, the
-run-table projection of \S\ref{sec:runtable} is no longer merely
-measured-in-model: the runtime ships a lossless run-table serializer
+(\S\ref{sec:perf}), so this section summarizes the results. First, the
+run-table projection of \S\ref{sec:runtable} is validated beyond the
+accounting model: the runtime ships a lossless run-table serializer
 (\code{runtime/src/serialize.js}), whose \lean{accountingBits} routine
 reproduces the projection's bit totals \emph{bit-for-bit} on every trace,
 while the shipped bytes land \emph{below} the projection (the model
@@ -8239,10 +8239,10 @@ drops). Over a settled-cut compacted state the serializer reaches $1.1$
 to $1.3$ bytes per character on the josephg traces, at production save
 size and an order of magnitude below the packed absolute-chain estimate.
 Second, placed against production CRDT libraries this closes the save-size
-gap to rough parity with the smallest state-only production saves, and it
-confirms the design's one categorical storage win: tombstone-freedom
-means the save \emph{shrinks} on delete where the history-carrying systems
-grow. The full cross-system matrix --- per-character apply latency, merge
+gap to rough parity with the smallest state-only production saves.
+Tombstone-freedom lets the save \emph{shrink} on deletion, unlike the
+history-carrying systems in the experiment; other reclaiming state formats
+can also shrink. The full cross-system matrix --- per-character apply latency, merge
 and sync, load, all four save representations, sync payload, and the
 grows-on-delete reproduction --- is developed in \S\ref{sec:perf}.
 
@@ -8484,7 +8484,7 @@ the marks model trades that theorem for the paper's
 expand-at-the-end behaviour, and the price is stated as a theorem
 rather than hidden.
 
-\subsection{The GC problem, and why refusal was correct}
+\subsection{Why plain-text compaction is unsound for marks}
 \label{sec:marksrefusal}
 
 The state-GC pass of \S\ref{sec:compactED}, as shipped in the runtime
@@ -8935,7 +8935,7 @@ next cut drops the ex-anchor's record and still matches the twin that
 holds both marks), a surviving-rival-mark variant, and both flips
 ($\alpha$, $\beta$) each with a guard-refuses companion.
 
-\paragraph{One honest flag.} The Lean model and the Python harness
+\paragraph{Model--harness discrepancy.} The Lean model and the Python harness
 diverge on one degenerate branch: a boundary anchor with \emph{no
 record at all}. The Lean resolver's scan then starts past the end of
 the birth order (finding the last, respectively first, survivor); the
@@ -9524,7 +9524,7 @@ on every replica, converges perfectly, and passes every convergence
 theorem. This part records the campaign that closes the gap. For every
 production RDT in Sal there is now a kernel-checked theorem that the
 fold of any single-replica history equals the output of a
-straightforward sequential program, the one a programmer would write
+direct sequential program, the one a programmer would write
 with no replication in mind. The campaign's unifying observation is
 the \emph{witness discipline}: sequential interfaces address state
 positionally (\code{dequeue()} is nullary, \code{insert} names an
@@ -9677,8 +9677,7 @@ isolating the departing operation exactly.
 \section{The observation gap: positional interfaces, witnessed ops}
 \label{sec:witness}
 
-Writing out the specifications exposes one structural pattern, and it
-is the campaign's most instructive artifact. A sequential structure
+Writing out the specifications exposes one structural pattern. A sequential structure
 addresses its state \emph{positionally or implicitly}:
 \code{dequeue()} takes no argument because ``the head'' is
 unambiguous; \code{insert(i, e)} names an index; \code{write(v)}
@@ -10635,8 +10634,7 @@ to stand on.
 The anomaly-comparison matrix
 (\code{whiteboard/anomaly-matrix/}) ran six implementations and four
 production libraries through 25{,}917 merges per row, every cell
-backed by executed code. Its in-repo rows are kernel-checked, not
-merely machine-run; the table below is the matrix's
+backed by executed code. Its in-repo rows are also kernel-checked; the table below is the matrix's
 load-bearing core with each cell a Lean identifier. External libraries
 (Yjs, Automerge, Loro, list-positions) remain empirical by nature;
 their rows live in the matrix report unchanged.
@@ -10911,7 +10909,7 @@ fingerprint, and content id is bit-identical (the full suites, 103
 runtime plus 10 p2p tests including the marks-GC tests of
 \S\ref{sec:marksruntime}, agree; the serializer gates
 and the Python projection cross-check, bit-for-bit). The measurement
-confirms this with margin (median apply, by trace and final size):
+gives the following median apply times by trace and final size:
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -10948,7 +10946,7 @@ across the four traces; shared-path recovery takes 16 to 111~ms. On
 \code{automerge-paper}, direct shared collection takes 170~ms, compared with
 2612~ms for the absolute-coordinate compactor.
 
-\paragraph{Where we compete: merge and sync.} The unique-LCA three-way
+\paragraph{Merge and sync.} The unique-LCA three-way
 merge under the head-sync runtime is Yjs-level and 17 to 59$\times$ faster
 than the wasm libraries in these sessions:
 
@@ -10970,8 +10968,8 @@ list-positions & 34\,$\mu$s & 626\,$\mu$s & 6.4\,KB & 123.6\,KB \\
 
 \noindent (\code{freq} = 60 rounds of 25 ops/replica, final 1804 chars;
 \code{bulk} = 6 rounds of 500 ops/replica, final 3604 chars; commit GC
-runs outside the timed window at millisecond totals.) Two honest
-caveats. First, the HAMT swap shows up here as a mild regression at this
+runs outside the timed window at millisecond totals.) Two qualifications
+apply. First, the HAMT swap shows up here as a mild regression at this
 scale: the copied-Map \code{freq} sync median was 73\,$\mu$s, and per-id
 lookups are now $O(\log n)$ trie walks rather than $O(1)$ Map hits (the
 same swap cut the local op in this workload from 26 to 2.4\,$\mu$s, so
@@ -11086,7 +11084,7 @@ This is the storage-on-delete axis of the retention taxonomy
 history-carrying artifacts from reclaiming state artifacts; it does not support
 an ``only system that shrinks'' claim.
 
-\paragraph{Caveats, so the numbers cannot be over-read.} Timer overhead
+\paragraph{Measurement limitations.} Timer overhead
 is not subtracted and biases the sub-microsecond medians; Automerge is
 driven one change per character (the automerge-perf convention; batching
 would lower its per-op cost and history size); list-positions is a
@@ -11261,10 +11259,10 @@ inflation-separator, with a deflationary $\mathsf{rem}$) satisfying every
 \lean{CoreVCs3} and \lean{DeltaVCs3} clause yet falsifying \lean{CDVC3}, so
 $\mathsf{CoreVCs3} + \mathsf{DeltaVCs3} \not\Rightarrow \mathsf{CDVC3}$ (and,
 via \lean{joinLemma3\_iff\_cdVC3}, $\not\Rightarrow$ the Join Lemma). The
-reason ternary \emph{closes} where binary (b$''$) stays open is instructive:
+ternary result closes where binary (b$''$) stays open because
 \lean{CDVC3}'s $\sqsubseteq$-half demands update \emph{inflation}
 ($A \sqsubseteq \mathsf{update}\,A\,e$), which the binary \lean{LatticeVCsPlus}
-ships as a separate axiom but the ternary \lean{DeltaVCs3} honestly omits ---
+ships as a separate axiom but the ternary \lean{DeltaVCs3} omits ---
 so the inflation-free delta laws cannot back \lean{CDVC3}, and a deflationary
 update refutes it. The eight-VC bundle is therefore \textbf{minimal at
 \lean{CDVC3}}: the causal-delta rule is a genuine independent axiom, not a
