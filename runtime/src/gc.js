@@ -72,5 +72,9 @@ export function runGc(dag, headIds) {
   for (const id of dag.ids()) {
     if (!keep.has(id)) { dag.remove(id); dropped++; }
   }
+  // Do not retain the old skeleton as dangling ids.  Because `keep` is upward
+  // closed, no retained-to-retained path uses a dropped node; boundary parent
+  // edges can simply be cut (the seed becomes a parent-free epoch base).
+  dag.restrictParents(keep);
   return { kept: keep.size, dropped };
 }

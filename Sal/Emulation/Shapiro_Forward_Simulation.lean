@@ -19,6 +19,9 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     (P : ConditionedNetworkProgress I) where
   rel : OpConfiguration D →
     ConditionedNetworkConfig (shapiroConditionedG D I.schedule) → Prop
+  deliveryMatches : OpConfiguration D →
+    ConditionedNetworkConfig (shapiroConditionedG D I.schedule) →
+    D.Msg → Version → Prop
   initial : rel (opInitConfig D)
     (conditionedNetworkInit (shapiroConditionedG D I.schedule)
       I.verified.initInv)
@@ -37,6 +40,8 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
         (Sal.ConditionedMRDTs.Configuration.core core))
       C (.apply t r op) C' →
     C'.core.head r = some vNew →
+    O'.buffer = O.buffer ∪ broadcast recipients r
+      (D.prepare r op ((O.replicas r).getD D.init)) →
     C'.inFlight = C.inFlight ∪
       {packet | packet.2 = vNew ∧ packet.1 ∈ recipients ∧ packet.1 ≠ r} →
     I.verified.Honest
@@ -46,14 +51,14 @@ structure ShapiroNetworkCoupling (I : OperationalTransferInput D hb)
     (disciplinedOpLabeledTS D hb).step O (.query r q v) O' → rel O' C
   deliveryEnabled : ∀ {O O' C r m}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.deliver r m) O' →
-    ∃ snapshot, P.CanDeliver C r snapshot
+    ∃ snapshot, P.CanDeliver C r snapshot ∧ deliveryMatches O C m snapshot
   deliveryPreserved : ∀ {O O' C C' r m snapshot}, rel O C →
     (disciplinedOpLabeledTS D hb).step O (.deliver r m) O' →
     P.CanDeliver C r snapshot →
-    ConditionedNetworkStep (shapiroConditionedG D I.schedule)
-      (fun core => I.verified.Honest
-        (Sal.ConditionedMRDTs.Configuration.core core))
-      C (.merge r r) C' →
+    deliveryMatches O C m snapshot →
+    SnapshotMerge (shapiroConditionedG D I.schedule)
+      C.core r snapshot C'.core →
+    C'.inFlight = C.inFlight \ {(r, snapshot)} →
     I.verified.Honest
       (Sal.ConditionedMRDTs.Configuration.core C'.core) →
     rel O' C'
@@ -79,7 +84,7 @@ def forward (K : ShapiroNetworkCoupling I P) :
         have henabled := K.updateEnabled hrel hsource
         let R := P.update henabled recipients
         refine ⟨R.next, ?_, K.updatePreserved hrel hsource R.step
-          R.head R.buffer R.honest⟩
+          R.head (by simpa [hs, hm] using hbuf) R.buffer R.honest⟩
         exact WeakSimM.weakStep_of_step
           ⟨.apply R.time _ _, R.step, rfl⟩
     | opQuery hs hv O' htrace hreps hbuf =>
@@ -95,10 +100,10 @@ def forward (K : ShapiroNetworkCoupling I P) :
         have hsource : (disciplinedOpLabeledTS D hb).step O
             (.deliver _ _) O' := ⟨hdiscipline,
           .opDeliver hin henabled hs O' htrace hreps hbuf⟩
-        obtain ⟨snapshot, hdeliver⟩ := K.deliveryEnabled hrel hsource
+        obtain ⟨snapshot, hdeliver, hmatches⟩ := K.deliveryEnabled hrel hsource
         let R := P.deliver hdeliver
-        refine ⟨R.next, ?_, K.deliveryPreserved hrel hsource hdeliver
-          R.step R.honest⟩
+        refine ⟨R.next, ?_, K.deliveryPreserved hrel hsource hdeliver hmatches
+          R.snapshotStep R.buffer R.honest⟩
         exact WeakSimM.weakStep_of_step
           ⟨.merge _ _, R.step, rfl⟩
 

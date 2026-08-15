@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T05:59:00.115Z"
+  "date": "2026-08-15T08:37:55.642Z"
  },
  "ops": {
   "total": 26078,
@@ -15,14 +15,14 @@
  },
  "finalChars": 21362,
  "apply": {
-  "totalMs": 25.647292,
+  "totalMs": 27.212,
   "count": 26078,
   "warmupExcluded": 1000,
-  "meanUs": 0.8249228407369009,
+  "meanUs": 0.8712442778530983,
   "medianUs": 0.625,
-  "p95Us": 1.667,
-  "p99Us": 2.708,
-  "maxUs": 85.667
+  "p95Us": 1.75,
+  "p99Us": 2.667,
+  "maxUs": 100.041
  },
  "gates": {
   "textOk": true
@@ -31,14 +31,14 @@
   {
    "label": "snapshot",
    "bytes": 61707,
-   "timeMs": 6.169458,
+   "timeMs": 7.277,
    "note": "state + full history",
    "estimated": false
   },
   {
    "label": "shallow-snapshot",
    "bytes": 21646,
-   "timeMs": 2.710875,
+   "timeMs": 3.044541,
    "note": "state with history dropped at current frontiers",
    "estimated": false
   }
@@ -46,25 +46,25 @@
  "loads": [
   {
    "label": "snapshot",
-   "medianMs": 0.212584,
+   "medianMs": 0.206583,
    "runs": 5,
    "allMs": [
-    0.202584,
-    0.202708,
-    0.212584,
-    0.221292,
-    1.668542
+    0.197833,
+    0.19975,
+    0.206583,
+    0.216083,
+    1.640667
    ]
   }
  ],
  "compaction": null,
  "memory": {
-  "baselineHeap": 12767816,
-  "peakHeapSampled": 14376760,
-  "retainedHeapAfterGc": 211560,
+  "baselineHeap": 12790520,
+  "peakHeapSampled": 14370240,
+  "retainedHeapAfterGc": 210608,
   "externalDelta": 229657,
   "arrayBuffersDelta": 208880,
-  "rssEnd": 100433920,
+  "rssEnd": 100319232,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

@@ -17,20 +17,23 @@ or by network delivery. -/
 def incorporatedAt {D : OpCRDTSig} (Γ : List (OpEvent D))
     (r : Replica) (m : D.Msg) : Prop :=
   (∃ op, (r, OpInput.update op, OpOutput.send m) ∈ Γ) ∨
-  (r, OpInput.deliver m, OpOutput.none) ∈ Γ
+  (∃ out, (r, OpInput.deliver m, out) ∈ Γ)
 
 /-- Global message identity: a generated message denotes one broadcast event,
 not a replica-local occurrence. -/
 def incorporatedAnywhere {D : OpCRDTSig} (Γ : List (OpEvent D))
     (m : D.Msg) : Prop := ∃ r, incorporatedAt Γ r m
 
-/-- Trace-side counterpart of `EmulatorState.PrepareEnabled`: the newly
-prepared message is globally fresh, all incorporated predecessors have
-already been delivered there, and it does not precede an incorporated
-message. -/
+/-- Trace-side counterpart of `EmulatorState.PrepareEnabled`, strengthened
+with the causal-broadcast generation law.  A locally generated message is
+causally after every message already incorporated at its issuer.  This law is
+load-bearing for snapshot emulation: when a receiver is allowed to deliver
+the new message, causal delivery has already incorporated every older message
+contained in the issuer's immutable snapshot. -/
 def generationEnabled {D : OpCRDTSig} (hb : D.Msg → D.Msg → Prop)
     (Γ : List (OpEvent D)) (r : Replica) (m : D.Msg) : Prop :=
   ¬ incorporatedAnywhere Γ m ∧
+  (∀ p, incorporatedAt Γ r p → hb p m) ∧
   (∀ p, incorporatedAt Γ r p → hb p m →
     (r, OpInput.deliver p, OpOutput.none) ∈ Γ ∨
     (∃ op, (r, OpInput.update op, OpOutput.send p) ∈ Γ)) ∧

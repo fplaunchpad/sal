@@ -51,6 +51,23 @@ export class Dag {
   /** Remove a commit (gc only). */
   remove(id) { this.#commits.delete(id); }
 
+  /** Remove parent references that leave `keep`.  This is the graph half of
+   * commit GC: payload deletion alone leaves an unbounded list of dangling
+   * historical ids in surviving commits.  `keepSet` is upward closed from its
+   * MCA seeds, so every path between two kept commits already stays in `keep`;
+   * filtering boundary edges therefore preserves all retained-node ancestry
+   * and LCA answers while making retained seeds genuine parent-free bases. */
+  restrictParents(keep) {
+    for (const [id, c] of this.#commits) {
+      if (!keep.has(id)) continue;
+      const parents = c.parents.filter((p) => keep.has(p));
+      if (parents.length === c.parents.length) continue;
+      this.#commits.set(id, Object.freeze({
+        id: c.id, parents: Object.freeze(parents), op: c.op, state: c.state
+      }));
+    }
+  }
+
   /** Reflexive ancestor closure of id, as a Set of commit ids.
    *  Missing parents (pruned by gc) are skipped. */
   ancestorSet(id) {

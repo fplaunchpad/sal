@@ -1,0 +1,86 @@
+{
+ "workload": "seq",
+ "system": "sal-shared",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "clownschool_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-15T08:38:00.889Z"
+ },
+ "ops": {
+  "total": 24326,
+  "inserts": 22737
+ },
+ "finalChars": 21148,
+ "apply": {
+  "totalMs": 17.278625,
+  "count": 24326,
+  "warmupExcluded": 1000,
+  "meanUs": 0.6424936122781446,
+  "medianUs": 0.375,
+  "p95Us": 1.625,
+  "p99Us": 4.834,
+  "maxUs": 661.042
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "shared-runs-serialized",
+   "bytes": 62412,
+   "timeMs": 15.071416,
+   "note": "continuation-capable shared path graph with run-compressed provenance",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "shared-runs-serialized",
+   "medianMs": 15.523709,
+   "runs": 5,
+   "allMs": [
+    12.066,
+    15.066333,
+    15.523709,
+    17.829375,
+    19.978458
+   ]
+  }
+ ],
+ "compaction": {
+  "ms": 33.007625,
+  "stats": {
+   "nodesBefore": 21267,
+   "nodesAfter": 21186,
+   "groupsRenumbered": 20902,
+   "symbolsBefore": 21267,
+   "symbolsAfter": 21186,
+   "groupsSkippedInflight": 0,
+   "groupsSkippedUnstable": 0,
+   "spinesFused": 15,
+   "levelsRemoved": 81,
+   "spinesSkippedInflight": 0
+  },
+  "saves": [
+   {
+    "label": "shared-runs-serialized+compacted",
+    "bytes": 58550,
+    "timeMs": 20.097875,
+    "note": "native shared-path continuation snapshot after direct guarded GC"
+   }
+  ],
+  "textOk": true
+ },
+ "memory": {
+  "baselineHeap": 10732840,
+  "peakHeapSampled": 21870112,
+  "retainedHeapAfterGc": 5027352,
+  "externalDelta": 194648,
+  "arrayBuffersDelta": 194608,
+  "rssEnd": 104054784,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

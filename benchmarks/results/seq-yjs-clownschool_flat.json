@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T05:59:11.073Z"
+  "date": "2026-08-15T08:38:01.056Z"
  },
  "ops": {
   "total": 24326,
@@ -15,14 +15,14 @@
  },
  "finalChars": 21148,
  "apply": {
-  "totalMs": 49.432541,
+  "totalMs": 51.941292,
   "count": 24326,
   "warmupExcluded": 1000,
-  "meanUs": 1.8333559975992455,
-  "medianUs": 1.666,
-  "p95Us": 2.375,
-  "p99Us": 3.459,
-  "maxUs": 315.333
+  "meanUs": 1.9594332933207579,
+  "medianUs": 1.792,
+  "p95Us": 2.458,
+  "p99Us": 4.292,
+  "maxUs": 231.5
  },
  "gates": {
   "textOk": true
@@ -30,15 +30,15 @@
  "saves": [
   {
    "label": "update-v1",
-   "bytes": 93322,
-   "timeMs": 1.865917,
+   "bytes": 84775,
+   "timeMs": 1.873625,
    "note": "full update encoding v1 (state incl. tombstone structure, no deleted content)",
    "estimated": false
   },
   {
    "label": "update-v2",
-   "bytes": 42997,
-   "timeMs": 1.85275,
+   "bytes": 42996,
+   "timeMs": 1.8045,
    "note": "v2 encoding (run-length compressed)",
    "estimated": false
   }
@@ -46,25 +46,25 @@
  "loads": [
   {
    "label": "update-v1",
-   "medianMs": 2.799083,
+   "medianMs": 2.583334,
    "runs": 5,
    "allMs": [
-    2.170041,
-    2.48525,
-    2.799083,
-    3.249792,
-    4.56675
+    2.123584,
+    2.274042,
+    2.583334,
+    2.614,
+    4.263417
    ]
   }
  ],
  "compaction": null,
  "memory": {
-  "baselineHeap": 12332256,
-  "peakHeapSampled": 22644352,
-  "retainedHeapAfterGc": 1741736,
+  "baselineHeap": 12331368,
+  "peakHeapSampled": 20500704,
+  "retainedHeapAfterGc": 1613512,
   "externalDelta": 215385,
   "arrayBuffersDelta": 194608,
-  "rssEnd": 96911360,
+  "rssEnd": 97517568,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

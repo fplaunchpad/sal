@@ -22,6 +22,30 @@ note; Part III is the sequential-specification campaign).
 | [`MRDT_Instances/`](MRDT_Instances/) | the conditioned instances, one directory per RDT, twelve production capstones through the ONE generic theorem |
 | [`Development/`](Development/) | the research record: findings journals, abandoned proof routes, investigation probes. Nothing imports it. |
 
+Commit GC now has two additional checked layers in `Metatheory`.
+[`GC_CompressedDAG.lean`](Metatheory/GC_CompressedDAG.lean) specifies a
+root-free retained graph and proves exact retained reachability and LCA
+preservation, packaged with the existing trace/read theorem by
+`gc_safety_compressed`. [`Distributed_GC.lean`](Metatheory/Distributed_GC.lean)
+models separate local stores, asynchronous fetch/ingest by union, closed rosters, and
+frontier evidence derived from received authored ancestry rather than trusted
+as a wire assertion. It separates head synchronization from fetch and proves
+finite distributed executions refine a no-GC world while local collection
+stutters. Exact projection to one shared global store holds only at a
+coordinated cut where every local certificate chooses the same keep set;
+`coordinated_collect_projects_global` proves that boundary, and a checked
+counterexample refutes exact projection after only one replica collects.
+[`Distributed_GC_Refinement.lean`](Metatheory/Distributed_GC_Refinement.lean)
+connects that storage protocol to the full datatype-rich `Configuration`:
+physical availability gates actual `Step3` apply/merge/query transitions, and
+`distributedConfig_refines_Step3` erases silent fetch/GC steps to a genuine
+conditioned execution.
+The mint-certified layer reuses `GenerationContract` and
+`MintCertifiedReach3`; `UnifiedVerifiedMRDT.distributed` exports generic
+RA-linearizability, safety, and observable guarantees. Production
+instantiations live in
+[`DistributedUnifiedCertificates.lean`](MRDT_Instances/DistributedUnifiedCertificates.lean).
+
 Layering: `Framework` imports nothing above it; `Metatheory` builds on
 `Framework` (plus one leaf refutation it reuses machinery from);
 `MRDT_Instances` builds on both; `Refutations` may reference instance
@@ -149,6 +173,22 @@ fold of its causal past, the client-checkable form; `AppHonest` is its
 `applicable` instance), with the counter's and the queue's contracts
 re-derived as instantiations (`BCHonest_iff_genHonest`,
 `qHonest_of_genHonest`).
+[`Metatheory/GenerationContract.lean`](Metatheory/GenerationContract.lean)
+exposes the issuer policy as a public contract and keeps raw `Step3` as the
+untrusted environment semantics. `GuardedStep3` checks only applies, at the
+issuing head; `MintCertifiedReach3` carries the existential mint-time causal
+fold that later configurations do not retain. This existential form is needed
+by order-sensitive guards such as the queue head check. The bounded counter
+alone lifts it to the older all-enumerations form by a checked permutation-
+invariance proof over its count measures.
+[`Metatheory/UnifiedVerifiedMRDT.lean`](Metatheory/UnifiedVerifiedMRDT.lean)
+packages the established Join/sequential certificate with that generation
+contract and a history/global client-safety certificate separate from
+structural configuration well-formedness. Optional `LocalSafetyLaws` give a
+stronger constructor when raw update/merge induction is sound; the bounded
+counter instead uses `bc_version_inv`. Concrete guards for the bounded counter,
+queue, EmbedRGA, SidedRGA, and canonical Embed Peritext are catalogued in
+[`MRDT_Instances/ProductionGenerationContracts.lean`](MRDT_Instances/ProductionGenerationContracts.lean).
 [`Metatheory/GenericSafety.lean`](Metatheory/GenericSafety.lean) and
 [`Metatheory/EscrowSafety.lean`](Metatheory/EscrowSafety.lean) carry the
 **generic safety metatheorems**: `version_inv_of_causal_canonical` (`Inv` at

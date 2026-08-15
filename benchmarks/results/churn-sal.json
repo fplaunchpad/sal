@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-21T01:41:47.863Z"
+  "date": "2026-08-15T09:14:37.760Z"
  },
  "finalChars": 1200,
  "gates": {
@@ -25,167 +25,111 @@
    "liveChars": 0,
    "phaseMs": 0,
    "saves": {
-    "json-shipped": 2,
-    "binary-estimate": 1,
     "run-table-serialized": 2,
-    "json-shipped+compacted": 2,
-    "binary-estimate+compacted": 1
+    "run-table-serialized+compacted": 2
    }
   },
   {
    "phase": "cycle1-ins",
    "liveChars": 2000,
-   "phaseMs": 2.398916,
+   "phaseMs": 2.409208,
    "saves": {
-    "json-shipped": 150121,
-    "binary-estimate": 22278,
     "run-table-serialized": 8759,
-    "json-shipped+compacted": 64529,
-    "binary-estimate+compacted": 11576
+    "run-table-serialized+compacted": 5209
    }
   },
   {
    "phase": "cycle1-del",
    "liveChars": 200,
-   "phaseMs": 0.999708,
+   "phaseMs": 1.048041,
    "saves": {
-    "json-shipped": 14666,
-    "binary-estimate": 2191,
     "run-table-serialized": 1657,
-    "json-shipped+compacted": 5899,
-    "binary-estimate+compacted": 1090
+    "run-table-serialized+compacted": 855
    }
   },
   {
    "phase": "cycle2-ins",
    "liveChars": 2200,
-   "phaseMs": 1.151459,
+   "phaseMs": 1.602834,
    "saves": {
-    "json-shipped": 243415,
-    "binary-estimate": 34558,
     "run-table-serialized": 11218,
-    "json-shipped+compacted": 78443,
-    "binary-estimate+compacted": 13542
+    "run-table-serialized+compacted": 6029
    }
   },
   {
    "phase": "cycle2-del",
    "liveChars": 400,
-   "phaseMs": 0.684875,
+   "phaseMs": 0.629666,
    "saves": {
-    "json-shipped": 44903,
-    "binary-estimate": 6381,
     "run-table-serialized": 3988,
-    "json-shipped+compacted": 13461,
-    "binary-estimate+compacted": 2366
+    "run-table-serialized+compacted": 1729
    }
   },
   {
    "phase": "cycle3-ins",
    "liveChars": 2400,
-   "phaseMs": 1.158917,
+   "phaseMs": 1.4075,
    "saves": {
-    "json-shipped": 337328,
-    "binary-estimate": 47411,
     "run-table-serialized": 13632,
-    "json-shipped+compacted": 90608,
-    "binary-estimate+compacted": 15397
+    "run-table-serialized+compacted": 7094
    }
   },
   {
    "phase": "cycle3-del",
    "liveChars": 600,
-   "phaseMs": 0.715959,
+   "phaseMs": 1.183584,
    "saves": {
-    "json-shipped": 84829,
-    "binary-estimate": 11931,
     "run-table-serialized": 6292,
-    "json-shipped+compacted": 21556,
-    "binary-estimate+compacted": 3712
+    "run-table-serialized+compacted": 2714
    }
   },
   {
    "phase": "cycle4-ins",
    "liveChars": 2600,
-   "phaseMs": 0.981,
+   "phaseMs": 1.515875,
    "saves": {
-    "json-shipped": 431729,
-    "binary-estimate": 59876,
     "run-table-serialized": 16085,
-    "json-shipped+compacted": 103848,
-    "binary-estimate+compacted": 17124
+    "run-table-serialized+compacted": 8002
    }
   },
   {
    "phase": "cycle4-del",
    "liveChars": 800,
-   "phaseMs": 0.82575,
+   "phaseMs": 1.054167,
    "saves": {
-    "json-shipped": 132736,
-    "binary-estimate": 18436,
     "run-table-serialized": 8888,
-    "json-shipped+compacted": 30743,
-    "binary-estimate+compacted": 5130
+    "run-table-serialized+compacted": 3523
    }
   },
   {
    "phase": "cycle5-ins",
    "liveChars": 2800,
-   "phaseMs": 1.700375,
+   "phaseMs": 1.32875,
    "saves": {
-    "json-shipped": 525107,
-    "binary-estimate": 72322,
     "run-table-serialized": 19059,
-    "json-shipped+compacted": 115753,
-    "binary-estimate+compacted": 18884
+    "run-table-serialized+compacted": 8774
    }
   },
   {
    "phase": "cycle5-del",
    "liveChars": 1000,
-   "phaseMs": 0.865084,
+   "phaseMs": 0.80925,
    "saves": {
-    "json-shipped": 188008,
-    "binary-estimate": 25891,
     "run-table-serialized": 11111,
-    "json-shipped+compacted": 39481,
-    "binary-estimate+compacted": 6524
+    "run-table-serialized+compacted": 4355
    }
   },
   {
    "phase": "final-ins",
    "liveChars": 1200,
-   "phaseMs": 0.090375,
+   "phaseMs": 0.166083,
    "saves": {
-    "json-shipped": 229695,
-    "binary-estimate": 31596,
     "run-table-serialized": 12098,
-    "json-shipped+compacted": 47848,
-    "binary-estimate+compacted": 7882
+    "run-table-serialized+compacted": 4799
    }
   }
  ],
  "growthOnDelete": {
-  "json-shipped": {
-   "deltasBytes": [
-    -135455,
-    -198512,
-    -252499,
-    -298993,
-    -337099
-   ],
-   "growsOnDelete": "never"
-  },
-  "binary-estimate": {
-   "deltasBytes": [
-    -20087,
-    -28177,
-    -35480,
-    -41440,
-    -46431
-   ],
-   "growsOnDelete": "never"
-  },
   "run-table-serialized": {
    "deltasBytes": [
     -7102,
@@ -196,30 +140,20 @@
    ],
    "growsOnDelete": "never"
   },
-  "json-shipped+compacted": {
+  "run-table-serialized+compacted": {
    "deltasBytes": [
-    -58630,
-    -64982,
-    -69052,
-    -73105,
-    -76272
-   ],
-   "growsOnDelete": "never"
-  },
-  "binary-estimate+compacted": {
-   "deltasBytes": [
-    -10486,
-    -11176,
-    -11685,
-    -11994,
-    -12360
+    -4354,
+    -4300,
+    -4380,
+    -4479,
+    -4419
    ],
    "growsOnDelete": "never"
   }
  },
  "memory": {
-  "baselineHeap": 3986200,
-  "retainedHeapAfterGc": 930488,
+  "baselineHeap": 4044536,
+  "retainedHeapAfterGc": 826288,
   "externalDelta": 40
  }
 }

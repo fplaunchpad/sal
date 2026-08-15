@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T06:08:41.835Z"
+  "date": "2026-08-15T08:38:39.171Z"
  },
  "ops": {
   "total": 368209,
@@ -15,14 +15,14 @@
  },
  "finalChars": 56769,
  "apply": {
-  "totalMs": 480.898541,
+  "totalMs": 488.27475,
   "count": 368209,
   "warmupExcluded": 1000,
-  "meanUs": 1.2719410335803316,
+  "meanUs": 1.2913205286362806,
   "medianUs": 0.958,
-  "p95Us": 3.666,
-  "p99Us": 4.5,
-  "maxUs": 626.667
+  "p95Us": 3.792,
+  "p99Us": 4.584,
+  "maxUs": 708.5
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "json-text+order",
    "bytes": 572686,
-   "timeMs": 3.179041,
+   "timeMs": 3.100834,
    "note": "library-native JSON saved states (Order metadata + char runs)",
    "estimated": false
   }
@@ -39,25 +39,25 @@
  "loads": [
   {
    "label": "json-text+order",
-   "medianMs": 3.601042,
+   "medianMs": 3.77375,
    "runs": 5,
    "allMs": [
-    3.448,
-    3.54425,
-    3.601042,
-    4.113875,
-    5.503208
+    3.547958,
+    3.578208,
+    3.77375,
+    4.181084,
+    5.774709
    ]
   }
  ],
  "compaction": null,
  "memory": {
-  "baselineHeap": 54145312,
-  "peakHeapSampled": 89977904,
-  "retainedHeapAfterGc": 2491488,
+  "baselineHeap": 54160456,
+  "peakHeapSampled": 90515880,
+  "retainedHeapAfterGc": 2492896,
   "externalDelta": 2945712,
   "arrayBuffersDelta": 2945672,
-  "rssEnd": 230473728,
+  "rssEnd": 230260736,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

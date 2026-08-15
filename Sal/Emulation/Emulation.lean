@@ -174,6 +174,55 @@ theorem drain_delivered (sched : CausalSchedule D hb)
     (x : EmulatorState D) (allKnown : Finset D.Msg) :
     (x.drain sched allKnown).delivered = allKnown := rfl
 
+/-- When a fully drained receiver learns exactly one fresh message, snapshot
+drain is the same state change as one op-message delivery.  This is the local
+algebraic fact used by the network simulation. -/
+theorem drain_insert_eq_deliverOne (sched : CausalSchedule D hb)
+    (x : EmulatorState D) (m : D.Msg)
+    (hfull : x.known = x.delivered) (hfresh : m ∉ x.delivered) :
+    x.drain sched (insert m x.known) = x.deliverOne m := by
+  have hmKnown : m ∉ x.known := by simpa [hfull] using hfresh
+  have hfilter :
+      (sched.order (insert m x.known)).filter
+        (fun p => decide (p ∉ x.delivered)) = [m] := by
+    let pending := (sched.order (insert m x.known)).filter
+      (fun p => decide (p ∉ x.delivered))
+    have hmem : ∀ p, p ∈ pending ↔ p = m := by
+      intro p
+      simp only [pending, List.mem_filter, decide_eq_true_eq,
+        sched.complete, Finset.mem_insert]
+      constructor
+      · rintro ⟨rfl | hp, hnot⟩
+        · rfl
+        · have hnot' : p ∉ x.delivered := by simpa using hnot
+          exact absurd (hfull ▸ hp) hnot'
+      · rintro rfl
+        exact ⟨Or.inl rfl, by simpa using hfresh⟩
+    have hnonempty : pending ≠ [] := by
+      intro he
+      have := (hmem m).2 rfl
+      simp [he] at this
+    have hnodup : pending.Nodup := List.Nodup.filter _ (sched.nodup _)
+    cases hpending : pending with
+    | nil => exact absurd hpending hnonempty
+    | cons a tail =>
+        have ha : a = m := (hmem a).1 (by simp [hpending])
+        subst a
+        cases tail with
+        | nil => simpa [pending] using hpending
+        | cons b rest =>
+            have hb : b = m := (hmem b).1 (by simp [hpending])
+            subst b
+            rw [hpending] at hnodup
+            simp at hnodup
+  have hfilter' :
+      (sched.order (insert m x.delivered)).filter
+        (fun p => decide (p ∉ x.delivered)) = [m] := by
+    simpa [hfull] using hfilter
+  unfold drain deliverOne
+  rw [hfull, hfilter']
+  simp
+
 end EmulatorState
 
 section

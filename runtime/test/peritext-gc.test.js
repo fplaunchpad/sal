@@ -27,7 +27,8 @@ import assert from 'node:assert/strict';
 import { peritext } from '../src/datatypes/peritext.js';
 import { embedRGA } from '../src/datatypes/embedRGA.js';
 import {
-  compactPeritext, compactiblePeritext,
+  compactPeritext, compactiblePeritext, compactSharedPeritext,
+  compactibleSharedPeritext,
 } from '../src/compact-peritext.js';
 import { DistributedReplica, syncReplicas } from '../src/replica.js';
 
@@ -362,6 +363,52 @@ test('compactiblePeritext certified GC: refuse-then-fire, reads identical, epoch
     'a NEW mark on the retained dead anchor reads as the never-compacted twin');
 });
 
+test('empty document audit: state metadata returns to zero; quiescent epoch history remains gated', () => {
+  const a = new DistributedReplica(compactiblePeritext, 'A');
+  const b = new DistributedReplica(compactiblePeritext, 'B');
+  a.register('B'); b.register('A');
+
+  // Make one birth and its delete causally stable at A. B's final authored
+  // delete is state-idempotent but proves that B absorbed A's delete.
+  a.commit(ins(1, 'x', null));
+  syncReplicas(a, b);
+  a.commit(del(1));
+  syncReplicas(a, b);
+  b.commit(del(1));
+  syncReplicas(a, b);
+
+  assert.deepEqual(a.read(), [], 'the client document is empty before GC');
+  const compacted = a.compactStable();
+  assert.equal(compacted.compacted, true);
+  assert.equal(compacted.stats.recordsBefore, 1);
+  assert.equal(compacted.stats.recordsAfter, 0);
+  assert.equal(compacted.stats.markRecords, 0);
+  assert.equal(a.head.state.text.shadow.size, 0, 'no character records remain');
+  assert.equal(a.head.state.text.deleted.size, 0, 'no character tombstones remain');
+  assert.equal(a.head.state.marks.size, 0, 'no mark records remain');
+  assert.equal(a.symbolCount(), 0, 'no coordinate symbols remain');
+
+  const empty = new DistributedReplica(compactiblePeritext, 'E');
+  assert.equal(a.saveBytes(), empty.saveBytes(),
+    'durable datatype metadata has the same constant size as a fresh empty document');
+
+  // FAIL/liveness boundary: B has not yet advertised an authored commit in
+  // A's new epoch. Exact history forgetting must refuse rather than assume an
+  // acknowledgement from a quiescent peer.
+  assert.equal(a.acknowledgeFetch('B', 'forged-head', a.epochKey), false,
+    'a receipt not bound to a locally verified head is rejected');
+  const history = a.pruneToEpochBase();
+  assert.equal(history.pruned, 0);
+  assert.match(history.reason, /evidence from B has not reached the compaction cut/);
+
+  // PASS/liveness companion: an ordinary fetch/head-sync round advertises B's
+  // verified current head. No fake Peritext operation is needed.
+  syncReplicas(a, b);
+  const acknowledged = a.pruneToEpochBase();
+  assert.ok(acknowledged.pruned > 0, 'history reaches the epoch base after B acknowledges the cut');
+  assert.equal(a.dag.size, 1, 'the empty document retains one constant-size epoch base');
+});
+
 test('certified fire waits for the DELETE to settle, not just the insert', () => {
   const a = new DistributedReplica(compactiblePeritext, 'A');
   const b = new DistributedReplica(compactiblePeritext, 'B');
@@ -386,6 +433,42 @@ test('certified fire waits for the DELETE to settle, not just the insert', () =>
   assert.equal(r2.stats.recordsDropped, 1);
   assert.equal(a.head.state.text.shadow.has(2), false, 'freed once the delete is settled');
   assert.equal(eq(a.read()), before, 'reads identical');
+});
+
+test('shared Peritext direct GC preserves retention roots and frozen insert order', () => {
+  const p = compactibleSharedPeritext;
+  const ops = [ins(1, 'A', null), ins(3, 'x', 1), ins(10, 'C', 1),
+    mark(20, 'bold', 1, 3, 'before', 'after'), del(3)];
+  const barrier = ops.reduce((s, op) => p.apply(s, op), p.init());
+  const twin = p.apply(barrier, ins(6, 's', 1));
+  const cut = {
+    settledIds: new Set([1, 3, 10]), settledDelIds: new Set([3]),
+    settledMarkMids: new Set([20]), inflightIns: [{ id: 6, anchorId: 1 }],
+    inflightMarks: [],
+  };
+  const g = compactSharedPeritext(barrier, cut);
+  assert.equal(g.state.text.shadow.has(3), true, 'dead mark boundary is retained');
+  assert.ok(g.stats.groupsSkippedInflight >= 1, 'in-flight anchor freezes its sibling group');
+  const continued = p.apply(g.state, ins(6, 's', 1));
+  assert.deepEqual(p.read(continued), p.read(twin));
+});
+
+test('shared Peritext certified GC empties state and survives snapshot recovery', () => {
+  const a = new DistributedReplica(compactibleSharedPeritext, 'A');
+  const b = new DistributedReplica(compactibleSharedPeritext, 'B');
+  a.register('B'); b.register('A');
+  a.commit(ins(1, 'x', null)); syncReplicas(a, b);
+  a.commit(del(1)); syncReplicas(a, b);
+  b.commit(del(1)); syncReplicas(a, b);
+  const g = a.compactStable();
+  assert.equal(g.compacted, true);
+  assert.deepEqual(a.read(), []);
+  assert.equal(a.symbolCount(), 0);
+  const restored = compactibleSharedPeritext.decodeState(
+    compactibleSharedPeritext.encodeState(a.head.state));
+  assert.deepEqual(compactibleSharedPeritext.read(restored), []);
+  assert.equal(compactibleSharedPeritext.saveBytes(restored),
+    compactibleSharedPeritext.saveBytes(compactibleSharedPeritext.init()));
 });
 
 // =========================================================================

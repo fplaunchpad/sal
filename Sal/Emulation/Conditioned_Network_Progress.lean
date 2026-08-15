@@ -32,12 +32,15 @@ structure NetworkUpdateResult (I : OperationalTransferInput D hb)
 
 structure NetworkDeliveryResult (I : OperationalTransferInput D hb)
     (C : ConditionedNetworkConfig (shapiroConditionedG D I.schedule))
-    (target : Replica) where
+    (target : Replica) (snapshot : Version) where
   next : ConditionedNetworkConfig (shapiroConditionedG D I.schedule)
   step : ConditionedNetworkStep (shapiroConditionedG D I.schedule)
     (fun core => I.verified.Honest
       (Sal.ConditionedMRDTs.Configuration.core core))
     C (.merge target target) next
+  snapshotStep : SnapshotMerge (shapiroConditionedG D I.schedule)
+    C.core target snapshot next.core
+  buffer : next.inFlight = C.inFlight \ {(target, snapshot)}
   honest : I.verified.Honest
     (Sal.ConditionedMRDTs.Configuration.core next.core)
 
@@ -49,7 +52,7 @@ structure ConditionedNetworkProgress (I : OperationalTransferInput D hb) where
   update : ∀ {C r op}, CanUpdate C r op → ∀ recipients : Set Replica,
     NetworkUpdateResult I C r op recipients
   deliver : ∀ {C target snapshot}, CanDeliver C target snapshot →
-    NetworkDeliveryResult I C target
+    NetworkDeliveryResult I C target snapshot
 
 namespace ConditionedNetworkProgress
 

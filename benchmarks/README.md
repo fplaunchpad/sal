@@ -12,6 +12,7 @@ literature.
 | key | system | what is measured |
 | --- | --- | --- |
 | `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
+| `sal-shared` | ours: `runtime/src/datatypes/sharedEmbedRGA.js` + native `runtime/src/shared-compact.js` | the continuation-capable prefix-sharing representation; direct guarded state GC, run-compressed provenance snapshots, and the same client-visible sequence semantics |
 | `yjs` | Yjs 13.6.31 | `Y.Text` |
 | `automerge` | @automerge/automerge 3.3.2 (wasm) | text field, one `Automerge.change` per char (the automerge-perf convention) |
 | `loro` | loro-crdt 1.13.7 (wasm) | `LoroText` |
@@ -29,6 +30,38 @@ node run.mjs --quick # smallest trace + freq preset + churn only, ~1 min
 node run.mjs --only seq:sal        # substring filter on job ids
 node run.mjs --skip-projection    # skip the python run-table projection
 ```
+
+The npm interface is `npm run bench:quick`, `npm run bench:full`, and
+`npm run summarize`. The GC-ablation workers write schema-versioned records to
+`results/raw/`; `tools/normalize.mjs` validates their required fields and emits
+`results/summary.json` plus plot-ready `results/tables/results.csv` and the
+GC-specific `results/tables/plain-gc.csv`. The schema is
+`schema/result.schema.json`. Every sequential, concurrent, and churn worker
+embeds its detailed legacy result under `detail`, so normalization does not
+discard methodology-specific measurements.
+
+The plain-text Sal GC sweep runs both the absolute and shared representations
+through the production `DistributedReplica` and five
+configurations: `none`, `history`, `state`, `both`, and `both-delayed`. In the
+both-GC configurations, state compaction consumes the settled causal ancestry
+before commit history is pruned to the acknowledged epoch base. Reversing this
+order weakens the state-GC certificate and is not labeled as the production
+configuration.
+
+## Peritext suite
+
+`PERITEXT_WORKLOADS.md` is the semantic contract for rich-text measurements.
+The unified runner implements all seven workload families for both Peritext
+text representations and six Sal GC
+configurations and writes `results/tables/peritext.csv`. It gates the run with
+directed gravity and dead-anchor fixtures whose expected values come from the
+independently validated Python model, complete-render convergence, snapshot
+round-trip, pre-evidence refusal, post-acknowledgement pruning, and equal render
+digests across all ablations. `empty-rich` additionally checks that full state
+GC reaches the 9-byte fresh-empty representation, and `multi-epoch-rich`
+requires three actual settled-cut compactions. External rich-text adapters remain staged until
+their interval, removal, and gravity behavior passes the declared comparison
+boundary.
 
 Each job runs in a fresh `node --expose-gc` child process (heap and wasm
 isolation), sequentially, never in parallel. Raw per-job results are
@@ -107,7 +140,7 @@ matrix (embedded below).
    `arrayBuffers` deltas (recorded in the JSON), NOT in heapUsed; heap
    numbers are not comparable across the wasm boundary and are flagged.
 
-## Fair play: our three columns
+## Sal durable artifact
 
 Our shipped runtime stores ABSOLUTE chain coordinates: a record's
 coordinate is the full root-to-record delta chain under the flipped
@@ -115,7 +148,13 @@ Elias-delta code, kept as a `'0'/'1'` JS string (1 byte per bit, and JS
 strings are 2-byte-capable; the in-heap cost is higher still). This is a
 KNOWN representation gap with a designed successor (the run table),
 shipped as a serializer (`runtime/src/serialize.js`).
-The matrix therefore reports four clearly-labeled columns for us:
+The paper-facing matrix reports the shipped run-table binary as Sal's durable
+artifact. JSON and the former packed-bits arithmetic estimate are retained only
+as historical diagnostics and are not cross-system ranking columns. The
+run-table encoding is lossless for reads and composes with settled-cut
+compaction.
+
+Historical development notes for the superseded diagnostic columns follow:
 
 1. **runtime-as-shipped (measured)**: `json-shipped` = the datatype's own
    JSON serialization (coord bit-strings verbatim), plus

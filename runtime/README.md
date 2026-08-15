@@ -418,6 +418,35 @@ set to this head plus the frontier's per-replica evidence commits), all under
 SHA content addressing (`commitContentId`). `syncReplicas(a, b)` runs one
 bidirectional round.
 
+`DistributedReplica.gc()` is evidence-gated: if any other registered member
+has no frontier entry, it returns `{refused:true, missing:[...]}` and changes
+nothing. Absence of evidence is never treated as a smaller head set. On
+success, GC deletes payloads outside the keep set and removes every parent
+reference crossing its boundary; retained seeds become parent-free bases, so
+the old root and dangling historical skeleton are not retained. The Lean
+counterpart is `Metatheory/GC_CompressedDAG.lean` plus
+`Metatheory/Distributed_GC.lean`.
+
+Epoch-base history pruning also accepts a fetch-aligned acknowledgement from a
+quiescent peer. `syncReplicas(a, b)` records each peer's advertised current
+head and epoch after a successful bidirectional fetch/head-sync round. The
+receiver accepts the receipt only if its local content-addressed DAG contains
+that exact head and recomputes the same epoch key. The receipt does not create
+a datatype operation or enter the causal frontier. Before every registered
+peer acknowledges the cut, `pruneToEpochBase()` continues to refuse. The Lean
+counterpart is `Metatheory/Distributed_GC_Acknowledgements.lean`; it proves
+that arbitrary finite fetch/ack/GC executions refine the no-GC semantics after
+receipt steps are erased, and that complete receipts provide
+datatype-independent pruning evidence. Receipts are soft state and are not
+persisted; after restart, a replica safely waits for another fetch round.
+
+Run `npm run bench:empty-gc` to measure the empty-document steady state. The
+2026-08-15 reference run grew histories to 22, 202, and 2,002 commits. After
+state GC, a quiet-peer fetch acknowledgement, and history pruning, every case
+retained one epoch-base commit, 9 datatype bytes, zero coordinate symbols, and
+zero visible characters. Treat timings as machine-specific measurements; the
+constant retained counts are also asserted by the harness.
+
 DATATYPE-PARAMETRIC. Everything except state compaction is datatype-agnostic
 (`init`/`apply`/`merge3`/`read`). A datatype that also provides `{compact,
 remapState, encodeState, decodeState}` additionally gets `compactStable` (the
@@ -529,7 +558,9 @@ under-evidenced refusal, records round-trip) and the hub pruning test in
 The keep-set is computed against the CURRENT registered replica set. A
 replica registered after a GC, or an unregistered peer, may need pruned
 history; membership must be closed at GC time. Operationally the runtime
-refuses `rt.replica(...)` once the root commit has been pruned.
+refuses `rt.replica(...)` once the root commit has been pruned. The separate
+store additionally refuses `DistributedReplica.gc()` until every existing
+roster member has frontier evidence.
 
 ## Running the tests
 
@@ -578,7 +609,9 @@ retention roots + A3 guarded pair-drop, hand-derived directed cases D6/D1/D3/D7
 each PASS with its FAIL companion -- the no-retention read flip, the alpha
 undeclared-straggler flip, the beta growth-window flip, the unguarded-renumber
 order flip -- plus refuse-then-fire under the certificate, the settled-delete
-gate, and a 150-trial multi-epoch twin PBT with declared stragglers against a
+gate, an empty-document audit proving that durable datatype metadata returns
+to the fresh-empty representation while quiescent-peer epoch history safely
+remains gated, and a 150-trial multi-epoch twin PBT with declared stragglers against a
 never-compacted control, cost bound retained ≤ 2 per mark record asserted),
 `test/pmap.test.js` (the persistent HAMT: randomized Map
 equivalence over mixed set/delete batches for number and string keys,
@@ -650,3 +683,25 @@ fixtures):
 4. The merge live-set is written `(A ∩ B) ∪ (A ∖ L) ∪ (B ∖ L)` (the task's
    form) vs the model's `(L ∩ A ∩ B) ∪ (A ∖ L) ∪ (B ∖ L)`; these are equal
    since `(A ∩ B) ∖ L ⊆ A ∖ L`.
+
+## Experimental prefix-sharing representation
+
+`src/datatypes/sharedEmbedRGA.js` factors repeated coordinate prefixes into
+immutable shared nodes and keeps stable birth provenance separate from
+epoch-local order paths. `src/shared-compact.js` performs settled-cut rank
+renumbering and dead-spine fusion directly over that graph; the original
+absolute-coordinate compactor remains its differential oracle. Nonempty
+in-flight paths and frozen anchors are handled directly and conservatively:
+affected sibling groups are not renumbered and guarded spines are not fused.
+`compactibleSharedPeritext` runs the same graph beneath Peritext's retention
+roots and A3 mark-pair collection. This representation is a promotion canary,
+not yet the default datatype.
+
+Run `npm run bench:shared-gc` for the full concurrent, offline-evidence, and
+three-epoch convergence/snapshot canary. The tests in
+`test/shared-embed-rga.test.js` include future editing after recovery,
+independently decoded merge, certified GC, returning pre-compaction peers, and
+a 40-trial cross-epoch twin comparison with a never-compacted control.
+`test/peritext-gc.test.js` additionally checks dead mark-boundary retention,
+frozen in-flight insertion order, certified empty-document collection, and
+shared snapshot recovery.

@@ -65,9 +65,11 @@
 // retainedForMarks, markRecords, markPairsDropped }. Cost:
 // retainedForMarks <= 2 * markRecords, structural (a mark has two boundaries).
 
-import { peritext } from './datatypes/peritext.js';
+import { peritext, makePeritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
+import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns, pathDeltas } from './datatypes/sharedEmbedRGA.js';
+import { compactSharedDirect, remapSharedState, sharedToAbsolute } from './shared-compact.js';
 import { encode as encodeRunTable, decode as decodeRunTable, buildRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
 
@@ -161,7 +163,7 @@ export function a3Pairs(marks, shadow, inflightIns, inflightMarks,
   return pairs;
 }
 
-export function compactPeritext(state, cut, opts = {}) {
+function compactPeritextWith(state, cut, opts, textCompact, coordOfRecord, recordCost) {
   const settledIds = cut?.settledIds ?? new Set();
   const settledDelIds = cut?.settledDelIds ?? new Set();
   const settledMarkMids = cut?.settledMarkMids ?? new Set();
@@ -216,7 +218,7 @@ export function compactPeritext(state, cut, opts = {}) {
   let settledDead = 0, retainedForMarks = 0;
   eachEntry(shadow, (id, rec) => {
     recordsBefore++;
-    symbolsBeforeFull += rec.coord.length;
+    symbolsBeforeFull += recordCost(rec);
     if (deleted.has(id) && settledDelIds.has(id) && settledIds.has(id)) {
       settledDead++;
       if (!markAnchors.has(id) && !inflAnchor.has(id)) { recordsDropped++; return; }
@@ -235,11 +237,11 @@ export function compactPeritext(state, cut, opts = {}) {
       throw new Error(
         `declared in-flight insert ${id}: anchor ${anchorId} has no kept record`);
     }
-    frozenAnchorCoords.push(a.coord);
+    frozenAnchorCoords.push(coordOfRecord(a, anchorId, keepShadow));
   }
 
   // --- re-code the kept shadow via the shared text-layer machinery.
-  const inner = compactEliasDelta(keepShadow,
+  const inner = textCompact(keepShadow,
     { settledIds, inflight: [], frozenAnchorCoords }, opts);
 
   // --- rebuild the state: re-coded shadow; `deleted` restricted to kept
@@ -265,12 +267,34 @@ export function compactPeritext(state, cut, opts = {}) {
   return { state: out, translate: inner.translate, stats };
 }
 
+export function compactPeritext(state, cut, opts = {}) {
+  return compactPeritextWith(state, cut, opts, compactEliasDelta,
+    (r) => r.coord, (r) => r.coord.length);
+}
+
+/** Retention-root/A3 Peritext GC over the native prefix-sharing text graph. */
+export function compactSharedPeritext(state, cut, opts = {}) {
+  const coords = new Map();
+  return compactPeritextWith(state, cut, opts, compactSharedDirect,
+    (_r, id, shadow) => {
+      if (coords.size === 0) for (const [k, v] of sharedToAbsolute(shadow)) coords.set(k, v.coord);
+      return coords.get(id);
+    }, (r) => pathDeltas(r).length);
+}
+
 /** Record-wise coordinate translation (the epoch-lifting hook): shadow
  *  coordinates re-mapped, deleted set and marks carried unchanged (ids are
  *  never rewritten). */
 export function remapPeritextState(state, translate) {
   return {
     text: { shadow: remapState(state.text.shadow, translate), deleted: state.text.deleted },
+    marks: state.marks,
+  };
+}
+
+export function remapSharedPeritextState(state, translate) {
+  return {
+    text: { shadow: remapSharedState(state.text.shadow, translate), deleted: state.text.deleted },
     marks: state.marks,
   };
 }
@@ -343,6 +367,57 @@ export const compactiblePeritext = {
       [...state.text.deleted].sort((x, y) => x - y),
       [...state.marks.entries()].sort(([x], [y]) => x - y)
         .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId, m.startSide, m.endSide, m.ts, m.removed]),
+    ]);
+    return shadow + new TextEncoder().encode(aux).length;
+  },
+};
+
+const sharedPeritext = makePeritext(sharedEmbedRGA);
+
+/** Production Peritext representation with prefix sharing and both state-GC
+ * guards (retention roots/A3 plus direct frozen/in-flight text compaction). */
+export const compactibleSharedPeritext = {
+  ...sharedPeritext,
+  compact: compactSharedPeritext,
+  remapState: remapSharedPeritextState,
+  cutFromMeet: peritextCutFromMeet,
+  coordState: (s) => sharedToAbsolute(s.text.shadow),
+  encodeState(state) {
+    return {
+      v: 3,
+      shadow: [...encodeSharedRuns(state.text.shadow)],
+      deleted: [...state.text.deleted].sort((x, y) => x - y),
+      marks: [...state.marks.entries()].sort(([x], [y]) => x - y).map(([, m]) => m),
+    };
+  },
+  decodeState(enc) {
+    if (!enc || enc.v !== 3) throw new Error('shared Peritext snapshot: expected v3');
+    return {
+      text: {
+        shadow: decodeSharedRuns(Uint8Array.from(enc.shadow)),
+        deleted: PSet.from(enc.deleted),
+      },
+      marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze({ ...m })])),
+    };
+  },
+  fingerprint(state) {
+    return JSON.stringify({
+      shadow: [...state.text.shadow.entries()].sort(([x], [y]) => x - y)
+        .map(([id, r]) => [id, pathDeltas(r), r.el]),
+      deleted: [...state.text.deleted].sort((x, y) => x - y),
+      marks: [...state.marks.entries()].sort(([x], [y]) => x - y)
+        .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId,
+          m.startSide, m.endSide, m.ts, m.removed]),
+    });
+  },
+  symbolCount: (state) => sharedEmbedRGA.nodeCount(state.text.shadow),
+  saveBytes(state) {
+    const shadow = encodeSharedRuns(state.text.shadow).length;
+    const aux = JSON.stringify([
+      [...state.text.deleted].sort((x, y) => x - y),
+      [...state.marks.entries()].sort(([x], [y]) => x - y)
+        .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId,
+          m.startSide, m.endSide, m.ts, m.removed]),
     ]);
     return shadow + new TextEncoder().encode(aux).length;
   },

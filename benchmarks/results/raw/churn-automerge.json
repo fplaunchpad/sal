@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "delete-churn",
+  "system": "automerge",
+  "config": {
+    "cycles": 5,
+    "insPerCycle": 2000,
+    "delPerCycle": 1800,
+    "finalIns": 200,
+    "seed": 7
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T09:14:38.600Z"
+  },
+  "gates": {
+    "lenOk": true
+  },
+  "metrics": {
+    "operations": 19200,
+    "finalChars": 1200,
+    "finalPrimarySaveBytes": 60737,
+    "retainedHeapBytes": 800864
+  },
+  "detail": {
+    "workload": "churn",
+    "system": "automerge",
+    "systemVersion": "3.3.2",
+    "config": {
+      "cycles": 5,
+      "insPerCycle": 2000,
+      "delPerCycle": 1800,
+      "finalIns": 200,
+      "seed": 7
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T09:14:38.600Z"
+    },
+    "finalChars": 1200,
+    "gates": {
+      "lenOk": true
+    },
+    "phases": [
+      {
+        "phase": "start",
+        "liveChars": 0,
+        "phaseMs": 0,
+        "saves": {
+          "save-full-history": 124
+        }
+      },
+      {
+        "phase": "cycle1-ins",
+        "liveChars": 2000,
+        "phaseMs": 63.89175,
+        "saves": {
+          "save-full-history": 8004
+        }
+      },
+      {
+        "phase": "cycle1-del",
+        "liveChars": 200,
+        "phaseMs": 46.682958,
+        "saves": {
+          "save-full-history": 11387
+        }
+      },
+      {
+        "phase": "cycle2-ins",
+        "liveChars": 2200,
+        "phaseMs": 49.655375,
+        "saves": {
+          "save-full-history": 19766
+        }
+      },
+      {
+        "phase": "cycle2-del",
+        "liveChars": 400,
+        "phaseMs": 41.03625,
+        "saves": {
+          "save-full-history": 23093
+        }
+      },
+      {
+        "phase": "cycle3-ins",
+        "liveChars": 2400,
+        "phaseMs": 47.198292,
+        "saves": {
+          "save-full-history": 31699
+        }
+      },
+      {
+        "phase": "cycle3-del",
+        "liveChars": 600,
+        "phaseMs": 40.142417,
+        "saves": {
+          "save-full-history": 35082
+        }
+      },
+      {
+        "phase": "cycle4-ins",
+        "liveChars": 2600,
+        "phaseMs": 48.348333,
+        "saves": {
+          "save-full-history": 43918
+        }
+      },
+      {
+        "phase": "cycle4-del",
+        "liveChars": 800,
+        "phaseMs": 39.801084,
+        "saves": {
+          "save-full-history": 47283
+        }
+      },
+      {
+        "phase": "cycle5-ins",
+        "liveChars": 2800,
+        "phaseMs": 47.379417,
+        "saves": {
+          "save-full-history": 56289
+        }
+      },
+      {
+        "phase": "cycle5-del",
+        "liveChars": 1000,
+        "phaseMs": 39.57975,
+        "saves": {
+          "save-full-history": 59719
+        }
+      },
+      {
+        "phase": "final-ins",
+        "liveChars": 1200,
+        "phaseMs": 5.017458,
+        "saves": {
+          "save-full-history": 60737
+        }
+      }
+    ],
+    "growthOnDelete": {
+      "save-full-history": {
+        "deltasBytes": [
+          3383,
+          3327,
+          3383,
+          3365,
+          3430
+        ],
+        "growsOnDelete": "always"
+      }
+    },
+    "memory": {
+      "baselineHeap": 4615040,
+      "retainedHeapAfterGc": 800864,
+      "externalDelta": 182891
+    }
+  }
+}

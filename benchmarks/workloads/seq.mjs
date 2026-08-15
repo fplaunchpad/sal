@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path';
 import { loadTrace, flattenOps } from '../lib/traces.mjs';
 import { getAdapter, byteLength } from '../lib/adapters/index.mjs';
 import { gcNow, memSnap, timedLoop, opStats, timed, timedMedian, environment } from '../lib/bench.mjs';
+import { writeRawResult } from '../lib/result.mjs';
 
 const [system, traceName] = process.argv.slice(2);
 if (!system || !traceName) {
@@ -71,16 +72,10 @@ let compaction = null;
 if (adapter.compact) {
   const { ms, stats, compacted } = adapter.compact(d);
   const compSaves = [];
-  const { saveJson, binaryEstimate, saveRunTable } = await import('../lib/adapters/sal.mjs');
-  const [json, jsonMs] = timed(() => saveJson(compacted.state));
-  compSaves.push({ label: 'json-shipped+compacted', bytes: byteLength(json), timeMs: jsonMs });
-  compSaves.push({ label: 'binary-estimate+compacted',
-    bytes: binaryEstimate(compacted.state), timeMs: null, estimated: true });
-  const [rt, rtMs] = timed(() => saveRunTable(compacted.state));
-  compSaves.push({ label: 'run-table-serialized+compacted', bytes: byteLength(rt), timeMs: rtMs,
-    note: 'task #104 SHIPPED run-table binary over the compacted state (lossless)' });
-  const { embedRGA } = await import('../../runtime/src/datatypes/embedRGA.js');
-  const compTextOk = embedRGA.read(compacted.state).join('') === doc.endContent;
+  const [saved, rtMs] = timed(() => adapter.saveCompacted(compacted.state));
+  compSaves.push({ label: saved.label, bytes: byteLength(saved.data), timeMs: rtMs,
+    note: saved.note });
+  const compTextOk = adapter.compactedText(compacted.state) === doc.endContent;
   compaction = { ms, stats, saves: compSaves, textOk: compTextOk };
 }
 
@@ -105,6 +100,16 @@ const result = {
 
 const out = join(RESULTS, `seq-${system}-${traceName}.json`);
 writeFileSync(out, JSON.stringify(result, null, 1));
+writeRawResult(RESULTS, `seq-${system}-${traceName}.json`, {
+  suite: 'plain-text', workload: 'sequential-trace', system, trace: traceName,
+  config: { trace: traceName }, environment: result.env,
+  gates: { textOk, compactionTextOk: compaction?.textOk ?? true },
+  metrics: { operations: ops.length, finalChars: result.finalChars,
+    applyTotalMs: totalMs, applyMedianUs: result.apply.medianUs,
+    applyP95Us: result.apply.p95Us, primarySaveBytes: saves[0]?.bytes ?? null,
+    retainedHeapBytes: result.memory.retainedHeapAfterGc },
+  detail: result,
+});
 console.log(`${system} ${traceName}: ${ops.length} ops in ${totalMs.toFixed(0)} ms ` +
   `(median ${result.apply.medianUs.toFixed(2)} us, p95 ${result.apply.p95Us.toFixed(2)} us), ` +
   `textOk=${textOk}${compaction ? `, compactionOk=${compaction.textOk}` : ''}`);

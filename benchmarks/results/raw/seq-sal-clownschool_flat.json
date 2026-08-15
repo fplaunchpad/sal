@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "sequential-trace",
+  "system": "sal",
+  "trace": "clownschool_flat",
+  "config": {
+    "trace": "clownschool_flat"
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:38:00.605Z"
+  },
+  "gates": {
+    "textOk": true,
+    "compactionTextOk": true
+  },
+  "metrics": {
+    "operations": 24326,
+    "finalChars": 21148,
+    "applyTotalMs": 19.461375,
+    "applyMedianUs": 0.375,
+    "applyP95Us": 2.166,
+    "primarySaveBytes": 32782,
+    "retainedHeapBytes": 4460968
+  },
+  "detail": {
+    "workload": "seq",
+    "system": "sal",
+    "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+    "trace": "clownschool_flat",
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:38:00.605Z"
+    },
+    "ops": {
+      "total": 24326,
+      "inserts": 22737
+    },
+    "finalChars": 21148,
+    "apply": {
+      "totalMs": 19.461375,
+      "count": 24326,
+      "warmupExcluded": 1000,
+      "meanUs": 0.7340711652233559,
+      "medianUs": 0.375,
+      "p95Us": 2.166,
+      "p99Us": 6.542,
+      "maxUs": 696.333
+    },
+    "gates": {
+      "textOk": true
+    },
+    "saves": [
+      {
+        "label": "run-table-serialized",
+        "bytes": 32782,
+        "timeMs": 630.183333,
+        "note": "live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read",
+        "estimated": false
+      }
+    ],
+    "loads": [
+      {
+        "label": "run-table-serialized",
+        "medianMs": 272.338125,
+        "runs": 5,
+        "allMs": [
+          256.912375,
+          259.436708,
+          272.338125,
+          273.086083,
+          286.078
+        ]
+      }
+    ],
+    "compaction": {
+      "ms": 550.875417,
+      "stats": {
+        "symbolsBefore": 52630540,
+        "symbolsAfter": 31107745,
+        "groupsRenumbered": 20902,
+        "groupsSkippedInflight": 0,
+        "groupsSkippedUnstable": 0,
+        "spinesFused": 15,
+        "levelsRemoved": 81,
+        "spinesSkippedInflight": 0
+      },
+      "saves": [
+        {
+          "label": "run-table-serialized+compacted",
+          "bytes": 22438,
+          "timeMs": 575.228875,
+          "note": "run-table binary over compacted state"
+        }
+      ],
+      "textOk": true
+    },
+    "memory": {
+      "baselineHeap": 10732776,
+      "peakHeapSampled": 21414984,
+      "retainedHeapAfterGc": 4460968,
+      "externalDelta": 194648,
+      "arrayBuffersDelta": 194608,
+      "rssEnd": 110018560,
+      "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+    }
+  }
+}

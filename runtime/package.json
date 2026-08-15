@@ -4,7 +4,9 @@
   "description": "Git-like commit-DAG MRDT runtime with pluggable verified datatypes and commit GC (task #94, engineering half)",
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "bench:empty-gc": "node benchmarks/empty-peritext-gc.mjs",
+    "bench:shared-gc": "node benchmarks/shared-gc-canary.mjs full"
   },
   "license": "MIT"
 }

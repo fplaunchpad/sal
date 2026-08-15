@@ -4,6 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "description": "Task #98: cross-system performance comparison of the embed RGA runtime vs production CRDT libraries",
+  "scripts": {
+    "bench:quick": "node run.mjs --quick",
+    "bench:full": "node run.mjs --full",
+    "summarize": "node tools/normalize.mjs && node tools/summarize.mjs"
+  },
   "dependencies": {
     "@automerge/automerge": "^3.3.2",
     "list-positions": "^2.0.0",

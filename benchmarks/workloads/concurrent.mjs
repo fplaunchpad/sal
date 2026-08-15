@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path';
 import { mulberry32, randChar } from '../lib/traces.mjs';
 import { getAdapter, byteLength } from '../lib/adapters/index.mjs';
 import { gcNow, memSnap, timed, opStats, environment } from '../lib/bench.mjs';
+import { writeRawResult } from '../lib/result.mjs';
 
 const [system, preset = 'freq'] = process.argv.slice(2);
 if (!system) {
@@ -85,15 +86,8 @@ const saves = p.saveVariants().map((v) =>
 
 let compaction = null;
 if (p.compactFinal) {
-  const { ms, stats, state } = p.compactFinal();
-  const { saveJson, binaryEstimate } = await import('../lib/adapters/sal.mjs');
-  compaction = {
-    ms, stats,
-    saves: [
-      { label: 'json-shipped+compacted', bytes: byteLength(saveJson(state)) },
-      { label: 'binary-estimate+compacted', bytes: binaryEstimate(state), estimated: true },
-    ],
-  };
+  const { ms, stats, saves } = p.compactFinal();
+  compaction = { ms, stats, saves };
 }
 
 gcNow();
@@ -124,6 +118,17 @@ const result = {
 };
 
 writeFileSync(join(RESULTS, `concurrent-${system}-${preset}.json`), JSON.stringify(result, null, 1));
+writeRawResult(RESULTS, `concurrent-${system}-${preset}.json`, {
+  suite: 'plain-text', workload: 'concurrent', system, preset,
+  config: result.config, environment: result.env, gates: { converged },
+  metrics: { operations: localOps, finalChars: result.finalChars,
+    syncTotalMs: result.sync.totalMs, syncMedianUs: result.sync.medianUs,
+    syncP95Us: result.sync.p95Us,
+    syncPayloadBytes: result.syncPayloadBytes?.total ?? null,
+    localOpMeanUs: result.localOps.meanUs, primarySaveBytes: saves[0]?.bytes ?? null,
+    runtimeGcMs: result.runtimeGcMsTotal },
+  detail: result,
+});
 console.log(`${system} ${preset}: ${rounds} syncs, median ${(result.sync.medianUs / 1e3).toFixed(3)} ms, ` +
   `p95 ${(result.sync.p95Us / 1e3).toFixed(3)} ms, converged=${converged}, finalChars=${textA.length}`);
 if (!converged) process.exit(1);

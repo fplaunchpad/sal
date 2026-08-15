@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "listpositions",
+  "preset": "freq",
+  "config": {
+    "rounds": 60,
+    "burst": 25,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:39:21.090Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 3000,
+    "finalChars": 1804,
+    "syncTotalMs": 2.605414,
+    "syncMedianUs": 35.041,
+    "syncP95Us": 96.334,
+    "syncPayloadBytes": 395480,
+    "localOpMeanUs": 2.481487,
+    "primarySaveBytes": 196862,
+    "runtimeGcMs": null
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "listpositions",
+    "systemVersion": "2.0.0",
+    "preset": "freq",
+    "config": {
+      "rounds": 60,
+      "burst": 25,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:39:21.090Z"
+    },
+    "finalChars": 1804,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 60,
+      "warmupExcluded": 0,
+      "meanUs": 43.423566666666666,
+      "medianUs": 35.041,
+      "p95Us": 96.334,
+      "p99Us": 197.084,
+      "maxUs": 197.084,
+      "totalMs": 2.605414
+    },
+    "syncPayloadBytes": {
+      "total": 395480,
+      "perSyncMean": 6591.333333333333
+    },
+    "localOps": {
+      "count": 3000,
+      "totalMs": 7.444461,
+      "meanUs": 2.481487
+    },
+    "saves": [
+      {
+        "label": "json-text+order",
+        "bytes": 196862,
+        "estimated": false
+      }
+    ],
+    "compaction": null,
+    "runtimeGcMsTotal": null,
+    "memory": {
+      "baselineHeap": 4696032,
+      "peakHeapSampled": 9618856,
+      "retainedHeapAfterGc": 2074824,
+      "externalDelta": 40,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

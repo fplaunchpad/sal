@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "sequential-trace",
+  "system": "listpositions",
+  "trace": "friendsforever_flat",
+  "config": {
+    "trace": "friendsforever_flat"
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:37:55.785Z"
+  },
+  "gates": {
+    "textOk": true,
+    "compactionTextOk": true
+  },
+  "metrics": {
+    "operations": 26078,
+    "finalChars": 21362,
+    "applyTotalMs": 25.240083,
+    "applyMedianUs": 0.666,
+    "applyP95Us": 1.667,
+    "primarySaveBytes": 100337,
+    "retainedHeapBytes": 781864
+  },
+  "detail": {
+    "workload": "seq",
+    "system": "listpositions",
+    "systemVersion": "2.0.0",
+    "trace": "friendsforever_flat",
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:37:55.785Z"
+    },
+    "ops": {
+      "total": 26078,
+      "inserts": 23720
+    },
+    "finalChars": 21362,
+    "apply": {
+      "totalMs": 25.240083,
+      "count": 26078,
+      "warmupExcluded": 1000,
+      "meanUs": 0.8614667836350586,
+      "medianUs": 0.666,
+      "p95Us": 1.667,
+      "p99Us": 3.625,
+      "maxUs": 214.084
+    },
+    "gates": {
+      "textOk": true
+    },
+    "saves": [
+      {
+        "label": "json-text+order",
+        "bytes": 100337,
+        "timeMs": 0.734708,
+        "note": "library-native JSON saved states (Order metadata + char runs)",
+        "estimated": false
+      }
+    ],
+    "loads": [
+      {
+        "label": "json-text+order",
+        "medianMs": 0.807291,
+        "runs": 5,
+        "allMs": [
+          0.686667,
+          0.723375,
+          0.807291,
+          0.845166,
+          1.828792
+        ]
+      }
+    ],
+    "compaction": null,
+    "memory": {
+      "baselineHeap": 12114656,
+      "peakHeapSampled": 20941440,
+      "retainedHeapAfterGc": 781864,
+      "externalDelta": 208664,
+      "arrayBuffersDelta": 208624,
+      "rssEnd": 93093888,
+      "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+    }
+  }
+}

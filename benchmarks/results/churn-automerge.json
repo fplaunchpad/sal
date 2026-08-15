@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T06:20:59.126Z"
+  "date": "2026-08-15T09:14:38.600Z"
  },
  "finalChars": 1200,
  "gates": {
@@ -31,7 +31,7 @@
   {
    "phase": "cycle1-ins",
    "liveChars": 2000,
-   "phaseMs": 64.279208,
+   "phaseMs": 63.89175,
    "saves": {
     "save-full-history": 8004
    }
@@ -39,7 +39,7 @@
   {
    "phase": "cycle1-del",
    "liveChars": 200,
-   "phaseMs": 46.604042,
+   "phaseMs": 46.682958,
    "saves": {
     "save-full-history": 11387
    }
@@ -47,7 +47,7 @@
   {
    "phase": "cycle2-ins",
    "liveChars": 2200,
-   "phaseMs": 48.455666,
+   "phaseMs": 49.655375,
    "saves": {
     "save-full-history": 19766
    }
@@ -55,7 +55,7 @@
   {
    "phase": "cycle2-del",
    "liveChars": 400,
-   "phaseMs": 39.963166,
+   "phaseMs": 41.03625,
    "saves": {
     "save-full-history": 23093
    }
@@ -63,7 +63,7 @@
   {
    "phase": "cycle3-ins",
    "liveChars": 2400,
-   "phaseMs": 46.554875,
+   "phaseMs": 47.198292,
    "saves": {
     "save-full-history": 31699
    }
@@ -71,7 +71,7 @@
   {
    "phase": "cycle3-del",
    "liveChars": 600,
-   "phaseMs": 39.276916,
+   "phaseMs": 40.142417,
    "saves": {
     "save-full-history": 35082
    }
@@ -79,7 +79,7 @@
   {
    "phase": "cycle4-ins",
    "liveChars": 2600,
-   "phaseMs": 46.947667,
+   "phaseMs": 48.348333,
    "saves": {
     "save-full-history": 43918
    }
@@ -87,33 +87,33 @@
   {
    "phase": "cycle4-del",
    "liveChars": 800,
-   "phaseMs": 38.903083,
+   "phaseMs": 39.801084,
    "saves": {
-    "save-full-history": 47288
+    "save-full-history": 47283
    }
   },
   {
    "phase": "cycle5-ins",
    "liveChars": 2800,
-   "phaseMs": 46.739458,
+   "phaseMs": 47.379417,
    "saves": {
-    "save-full-history": 56294
+    "save-full-history": 56289
    }
   },
   {
    "phase": "cycle5-del",
    "liveChars": 1000,
-   "phaseMs": 38.762667,
+   "phaseMs": 39.57975,
    "saves": {
-    "save-full-history": 59724
+    "save-full-history": 59719
    }
   },
   {
    "phase": "final-ins",
    "liveChars": 1200,
-   "phaseMs": 4.88075,
+   "phaseMs": 5.017458,
    "saves": {
-    "save-full-history": 60742
+    "save-full-history": 60737
    }
   }
  ],
@@ -123,15 +123,15 @@
     3383,
     3327,
     3383,
-    3370,
+    3365,
     3430
    ],
    "growsOnDelete": "always"
   }
  },
  "memory": {
-  "baselineHeap": 4607504,
-  "retainedHeapAfterGc": 801768,
+  "baselineHeap": 4615040,
+  "retainedHeapAfterGc": 800864,
   "externalDelta": 182891
  }
 }

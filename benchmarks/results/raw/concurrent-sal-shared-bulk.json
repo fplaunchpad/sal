@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "sal-shared",
+  "preset": "bulk",
+  "config": {
+    "rounds": 6,
+    "burst": 500,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:39:21.565Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 6000,
+    "finalChars": 3604,
+    "syncTotalMs": 7.944795,
+    "syncMedianUs": 1350.709,
+    "syncP95Us": 1651.584,
+    "syncPayloadBytes": 729153,
+    "localOpMeanUs": 18.8092355,
+    "primarySaveBytes": 31796,
+    "runtimeGcMs": 2.915543
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "sal-shared",
+    "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+    "preset": "bulk",
+    "config": {
+      "rounds": 6,
+      "burst": 500,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:39:21.565Z"
+    },
+    "finalChars": 3604,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 6,
+      "warmupExcluded": 0,
+      "meanUs": 1324.1325,
+      "medianUs": 1350.709,
+      "p95Us": 1651.584,
+      "p99Us": 1651.584,
+      "maxUs": 1651.584,
+      "totalMs": 7.944795
+    },
+    "syncPayloadBytes": {
+      "total": 729153,
+      "perSyncMean": 121525.5
+    },
+    "localOps": {
+      "count": 6000,
+      "totalMs": 112.855413,
+      "meanUs": 18.8092355
+    },
+    "saves": [
+      {
+        "label": "shared-runs-serialized",
+        "bytes": 31796,
+        "estimated": false
+      }
+    ],
+    "compaction": {
+      "ms": 4.439333,
+      "stats": {
+        "nodesBefore": 4191,
+        "nodesAfter": 4162,
+        "groupsRenumbered": 2187,
+        "symbolsBefore": 4191,
+        "symbolsAfter": 4162,
+        "groupsSkippedInflight": 0,
+        "groupsSkippedUnstable": 0,
+        "spinesFused": 26,
+        "levelsRemoved": 29,
+        "spinesSkippedInflight": 0
+      },
+      "saves": [
+        {
+          "label": "shared-runs-serialized+compacted",
+          "bytes": 38591
+        }
+      ]
+    },
+    "runtimeGcMsTotal": 2.915543,
+    "memory": {
+      "baselineHeap": 4049768,
+      "peakHeapSampled": 19151840,
+      "retainedHeapAfterGc": 1891328,
+      "externalDelta": 40,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

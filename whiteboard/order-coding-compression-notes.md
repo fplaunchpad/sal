@@ -1,6 +1,6 @@
 # Compression headroom in the embedded-chain RGA: exploitable invariants, and what field this is
 
-*Companion note to `whiteboard/embed-code-design.tex` (the embedded-chain RGA,
+*Companion note to `Sal/ConditionedMRDTs/sal-mrdts.tex`, Part II (the embedded-chain RGA,
 working names `embed-tree`/`embed-code`). Status: assessment / research
 directions, 2026-07-15. Nothing here is implemented or validated unless
 explicitly marked as already proved in the design doc.*
@@ -224,3 +224,114 @@ with the design doc's "~4 bits per level sequential" and small against the
 underestimates on heavy tails; conditioning classes are coarse (finer
 classes would only strengthen the H2 refutation direction marginally
 before overfitting); dense-Lamport regime assumed throughout.
+
+## Lower bounds and optimality (2026-07-15)
+
+*Question: is there a theoretical minimum for the state size of a replicated
+list in this setting, and can optimality be proved? Answer: yes — there is a
+clean definition of the minimum, the design's Σ log δ is provably tight
+against it for timestamp-faithful semantics, the minimum is spec-relative,
+and both halves look mechanizable in the existing framework.*
+
+### The definition: state complexity as a Myhill–Nerode quantity
+
+A convergent replica state is a **message from the past to all possible
+futures**: canonicity says σ is a function of the event set, and the merge
+sees nothing of a branch but its state (plus the LCA). So the minimum state
+size over a class of event sets is a Nerode quantity: the log of the number
+of event sets that some *future* can tell apart, where a future is any
+honest continuation — including merging with a fork that has been open since
+arbitrarily long ago. This is the standard one-way communication / streaming
+lower-bound technique; it appears not to have been applied to replicated
+datatype state.
+
+Two features of this setup make the definition productive. First, the open
+forks are exactly what make dead elements chargeable: an element's timestamp
+must stay recoverable from the state precisely as long as some fork from its
+lifetime can still merge in. Second, **the campaign's countermodels are
+literally the fooling continuations of the lower bound** — the credential
+shape is not just a test that kills bad designs; it is the witness pair in
+the Nerode argument. The conservation law ("the sort key must retain dead
+ancestors' timestamps") is currently existential: every design that forgets
+them has *a* countermodel. The Nerode argument upgrades it to universal:
+*no* implementation with this read semantics can forget them, however clever
+its encoding.
+
+### Theorem A (provable now): the Σ log δ lower bound, timestamp-faithful spec
+
+Gadget: replica A inserts x at the front with timestamp t, inserts y after
+x, deletes x. Its state holds one live element with chain ⟨t, y⟩. A fork B
+from the initial version inserts z at the front with timestamp s and merges:
+the read is [z, y] iff s > t. Varying s binary-searches t. So for t ≠ t′ the
+two A-states must differ — the map t ↦ σ is injective — and a state ranging
+over 2^k values of t needs ≥ k bits. Tensor k independent gadgets (disjoint
+timestamp ranges; one probe per gadget; futures quantify over all probes):
+**state ≥ Σᵢ log(range of tᵢ)** for *any* implementation meeting the
+timestamp-faithful (RGA-lockstep) spec. The probe is honest (the root is
+always live), so the bound holds inside the same honesty discipline the
+upper bound assumes. The design stores 2 log δ + O(1) per contested level
+(log δ + O(log log δ) with flipped Elias-δ, now mechanized as an
+`OrderedPrefixCode` instance): matching bounds, optimality provable, with
+only lower-order slack.
+
+The residual slack is closed by classical converses, citable rather than
+re-provable: any self-delimiting code for unbounded integers must pay
+log δ + log log δ − O(1) infinitely often (Levenshtein 1968; Elias 1975,
+universal codeword sets), and order-preservation costs at most ~1 bit per
+symbol over Huffman (Gilbert–Moore 1959). So "entropy-optimal" becomes a
+theorem once the code is flipped δ/ω. Note the consistency with the measured
+H3 result above: the ≥1 bit/level prefix-free floor is the empirical face of
+the same converse, and runs (I2) escape it only by amortizing many levels
+into one codeword — which is why runs are the sole sub-floor mechanism.
+
+### The minimum is spec-relative: a hierarchy
+
+The binary-search probe works because RGA semantics makes the verdict *be*
+the timestamp comparison. The floor moves with the spec:
+
+- **Timestamp-faithful (RGA-lockstep):** Θ(Σ log δ) per contested level —
+  Theorem A, matched by the design. Tight.
+- **Weak list spec (any convergent total order):** the probe dissolves — z
+  needs a consistent position, not the s > t verdict — and the floor drops
+  to roughly log(#actual racers) + replica-id entropy per race, the target
+  of I1's anchor-local naming. Its converse is a different argument: two
+  racers minting with no communication must embed pre-agreed distinguishing
+  information — a pigeonhole over replica ids. Attiya et al. PODC'16 (Ω(D),
+  push-based message-passing model, no matching upper bound) sits at this
+  end; the MRDT-model, sharp-rate, matched version is open on both sides.
+- **Causal-stability window:** once no fork from an epoch remains open, its
+  Nerode classes collapse, and the floor for the stable region is
+  essentially zero order bits. This makes I4's two-tier encoding not an
+  optimization but the achievability half of the windowed bound.
+
+The parameterized statement: **minimum state = entropy of the read-relevant
+verdicts still contestable given the open-fork window, under the chosen
+spec** (worst-case form: log of Nerode class count; distributional form:
+Shannon entropy of the contestable verdicts — where the I1 measurement shows
+the anchor context barely reduces it, so the distributional floor is
+effectively H(δ) itself). This reframes the sequence-CRDT trilemma
+quantitatively: each point in spec space has a computable entropy floor, and
+the design question becomes a Pareto frontier — which ordering guarantees
+are worth their metadata rate.
+
+### Mechanization prospects, and the falsifiable first step
+
+The lower bound is elementary once formulated — finite adversary
+constructions, an injectivity lemma, a pigeonhole — which means it
+mechanizes. The statement quantifies over implementations, but the framework
+already has the MRDT signature as a structure, so "for every
+⟨Σ, σ₀, do, merge⟩ meeting the spec on these executions, the state map is
+injective on t, hence some serialized state has ≥ k bits" is statable today,
+and the probe executions are the same operational objects the countermodels
+already use. As far as known, no machine-checked space lower bound exists
+for any replicated datatype; pairing `embed_ra_linearizable3` (achievability,
+parametric in the code) with a mechanized converse would complete the
+"information theory of replicated lists" claim in a way neither the coding
+nor the systems community has.
+
+**First step:** state and mechanize the single-gadget injectivity lemma (one
+dead ancestor, one probe) against an abstract MRDT signature. If it goes
+through cleanly, the Σ-form and the spec hierarchy are engineering; if it
+does not, the obstruction localizes which part of the model definition (what
+counts as state, what the merge may see) was doing hidden work — worth
+knowing either way.

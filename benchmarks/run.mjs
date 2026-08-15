@@ -22,11 +22,16 @@ const skipProjection = args.includes('--skip-projection');
 const onlyIdx = args.indexOf('--only');
 const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
-const SYSTEMS = ['sal', 'yjs', 'automerge', 'loro', 'listpositions'];
+const SYSTEMS = ['sal', 'sal-shared', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SEQ_TRACES = quick
   ? ['friendsforever_flat']
   : ['friendsforever_flat', 'clownschool_flat', 'seph-blog1', 'automerge-paper'];
 const PRESETS = quick ? ['freq'] : ['freq', 'bulk'];
+const SAL_GC_MODES = ['none', 'history', 'state', 'both', 'both-delayed'];
+const PERITEXT_GC_MODES = ['none', 'history', 'text-state', 'full-state', 'both', 'both-delayed'];
+const PERITEXT_SCENARIOS = ['concurrent-rich', 'format-trace', 'mark-churn',
+  'marked-delete-churn', 'offline-rich', 'empty-rich', 'multi-epoch-rich'];
+const SAL_REPRESENTATIONS = ['absolute', 'shared'];
 
 const jobs = [];
 for (const t of SEQ_TRACES) {
@@ -39,6 +44,24 @@ for (const p of PRESETS) {
     jobs.push({ id: `concurrent:${s}:${p}`, cmd: 'node', argv: ['--expose-gc', join(HERE, 'workloads', 'concurrent.mjs'), s, p] });
   }
 }
+for (const p of PRESETS) {
+  for (const representation of SAL_REPRESENTATIONS) for (const mode of SAL_GC_MODES) {
+    jobs.push({ id: `plain-gc:${representation}:${mode}:${p}`, cmd: 'node',
+      argv: ['--expose-gc', join(HERE, 'workloads', 'plain-gc.mjs'), mode, p, representation] });
+  }
+}
+jobs.push({ id: 'peritext:semantic-spots', cmd: 'node',
+  argv: [join(HERE, 'tools', 'check-peritext-semantics.mjs')] });
+for (const p of PRESETS) {
+  for (const scenario of PERITEXT_SCENARIOS) {
+    for (const representation of SAL_REPRESENTATIONS) for (const mode of PERITEXT_GC_MODES) {
+      jobs.push({ id: `peritext:${representation}:${scenario}:${mode}:${p}`, cmd: 'node',
+        argv: ['--expose-gc', join(HERE, 'workloads', 'peritext-gc.mjs'), mode, p, scenario, representation] });
+    }
+  }
+}
+jobs.push({ id: 'peritext:ablation-gate', cmd: 'node',
+  argv: [join(HERE, 'tools', 'check-peritext-ablation.mjs')] });
 for (const s of SYSTEMS) {
   jobs.push({ id: `churn:${s}`, cmd: 'node', argv: ['--expose-gc', join(HERE, 'workloads', 'churn.mjs'), s] });
 }
@@ -50,11 +73,12 @@ if (!skipProjection) {
 // round-trip gates + projection cross-check. Runs after projection.
 jobs.push({ id: 'run-table-shipped', cmd: 'node',
   argv: [join(HERE, 'tools', 'run_table_shipped.mjs'), ...SEQ_TRACES] });
+jobs.push({ id: 'normalize', cmd: 'node', argv: [join(HERE, 'tools', 'normalize.mjs')] });
 jobs.push({ id: 'summarize', cmd: 'node', argv: [join(HERE, 'tools', 'summarize.mjs')] });
 
 const failures = [];
 for (const job of jobs) {
-  if (only && job.id !== 'summarize' && !job.id.includes(only)) continue;
+  if (only && !['normalize', 'summarize'].includes(job.id) && !job.id.includes(only)) continue;
   console.log(`\n=== ${job.id}`);
   const t0 = Date.now();
   const r = spawnSync(job.cmd, job.argv, { stdio: 'inherit', cwd: HERE });

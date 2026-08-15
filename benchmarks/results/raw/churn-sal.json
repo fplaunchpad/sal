@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "delete-churn",
+  "system": "sal",
+  "config": {
+    "cycles": 5,
+    "insPerCycle": 2000,
+    "delPerCycle": 1800,
+    "finalIns": 200,
+    "seed": 7
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T09:14:37.760Z"
+  },
+  "gates": {
+    "lenOk": true
+  },
+  "metrics": {
+    "operations": 19200,
+    "finalChars": 1200,
+    "finalPrimarySaveBytes": 12098,
+    "retainedHeapBytes": 826288
+  },
+  "detail": {
+    "workload": "churn",
+    "system": "sal",
+    "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+    "config": {
+      "cycles": 5,
+      "insPerCycle": 2000,
+      "delPerCycle": 1800,
+      "finalIns": 200,
+      "seed": 7
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T09:14:37.760Z"
+    },
+    "finalChars": 1200,
+    "gates": {
+      "lenOk": true
+    },
+    "phases": [
+      {
+        "phase": "start",
+        "liveChars": 0,
+        "phaseMs": 0,
+        "saves": {
+          "run-table-serialized": 2,
+          "run-table-serialized+compacted": 2
+        }
+      },
+      {
+        "phase": "cycle1-ins",
+        "liveChars": 2000,
+        "phaseMs": 2.409208,
+        "saves": {
+          "run-table-serialized": 8759,
+          "run-table-serialized+compacted": 5209
+        }
+      },
+      {
+        "phase": "cycle1-del",
+        "liveChars": 200,
+        "phaseMs": 1.048041,
+        "saves": {
+          "run-table-serialized": 1657,
+          "run-table-serialized+compacted": 855
+        }
+      },
+      {
+        "phase": "cycle2-ins",
+        "liveChars": 2200,
+        "phaseMs": 1.602834,
+        "saves": {
+          "run-table-serialized": 11218,
+          "run-table-serialized+compacted": 6029
+        }
+      },
+      {
+        "phase": "cycle2-del",
+        "liveChars": 400,
+        "phaseMs": 0.629666,
+        "saves": {
+          "run-table-serialized": 3988,
+          "run-table-serialized+compacted": 1729
+        }
+      },
+      {
+        "phase": "cycle3-ins",
+        "liveChars": 2400,
+        "phaseMs": 1.4075,
+        "saves": {
+          "run-table-serialized": 13632,
+          "run-table-serialized+compacted": 7094
+        }
+      },
+      {
+        "phase": "cycle3-del",
+        "liveChars": 600,
+        "phaseMs": 1.183584,
+        "saves": {
+          "run-table-serialized": 6292,
+          "run-table-serialized+compacted": 2714
+        }
+      },
+      {
+        "phase": "cycle4-ins",
+        "liveChars": 2600,
+        "phaseMs": 1.515875,
+        "saves": {
+          "run-table-serialized": 16085,
+          "run-table-serialized+compacted": 8002
+        }
+      },
+      {
+        "phase": "cycle4-del",
+        "liveChars": 800,
+        "phaseMs": 1.054167,
+        "saves": {
+          "run-table-serialized": 8888,
+          "run-table-serialized+compacted": 3523
+        }
+      },
+      {
+        "phase": "cycle5-ins",
+        "liveChars": 2800,
+        "phaseMs": 1.32875,
+        "saves": {
+          "run-table-serialized": 19059,
+          "run-table-serialized+compacted": 8774
+        }
+      },
+      {
+        "phase": "cycle5-del",
+        "liveChars": 1000,
+        "phaseMs": 0.80925,
+        "saves": {
+          "run-table-serialized": 11111,
+          "run-table-serialized+compacted": 4355
+        }
+      },
+      {
+        "phase": "final-ins",
+        "liveChars": 1200,
+        "phaseMs": 0.166083,
+        "saves": {
+          "run-table-serialized": 12098,
+          "run-table-serialized+compacted": 4799
+        }
+      }
+    ],
+    "growthOnDelete": {
+      "run-table-serialized": {
+        "deltasBytes": [
+          -7102,
+          -7230,
+          -7340,
+          -7197,
+          -7948
+        ],
+        "growsOnDelete": "never"
+      },
+      "run-table-serialized+compacted": {
+        "deltasBytes": [
+          -4354,
+          -4300,
+          -4380,
+          -4479,
+          -4419
+        ],
+        "growsOnDelete": "never"
+      }
+    },
+    "memory": {
+      "baselineHeap": 4044536,
+      "retainedHeapAfterGc": 826288,
+      "externalDelta": 40
+    }
+  }
+}

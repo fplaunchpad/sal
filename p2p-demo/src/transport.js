@@ -1,5 +1,5 @@
 // TRANSPORT (task #95, stage 2 client). A Transport carries the sync gossip
-// (have / req / delta / roster / join / leave) over a channel; WsTransport is
+// (have / req / delta / ack / roster / join / leave) over a channel; WsTransport is
 // the WebSocket-relay binding (browser + Node both use the global WebSocket).
 // The interface is deliberately small -- send / sendTo / on / ready / close --
 // so a WebRTC-datachannel mesh could implement the same shape and drop in
@@ -9,6 +9,7 @@
 //   have  advertise my ancestry gids + head            (push, on local change)
 //   req   "send me what I lack" (have-summary + head)   (pull, awaited)
 //   delta the missing commits + head                    (reply or push)
+//   ack   "I merged through this verified head/epoch"   (soft GC evidence)
 // A pull is an awaited request/reply (rid-correlated), giving the headless
 // integration test a DETERMINISTIC, criss-cross-free linear fold over the real
 // socket. Opportunistic push handlers keep a live editor converging best-effort
@@ -149,6 +150,12 @@ export class NetworkNode {
         if (this.#absorb(m) && !this.passive) this.announce();
       }
     });
+    // The relay authenticates `from` as the joined transport identity. The
+    // runtime also requires a locally held head with the same recomputed epoch.
+    t.on('ack', (m) => {
+      if (typeof n.acknowledgeFetch === 'function' && m.head && m.epoch !== undefined)
+        n.acknowledgeFetch(m.from, m.head, m.epoch);
+    });
   }
 
   /** Absorb a delta; return true iff it ADVANCED our head (real progress). */
@@ -167,6 +174,10 @@ export class NetworkNode {
       if (!(e instanceof CrissCrossError) && !/cross-epoch/.test(e.message)) throw e;
     }
     const changed = this.node.headGid !== before;
+    // Return a receipt even when the fetch added no commits. In manual mode it
+    // names the still-current head, so a staged epoch cannot unlock pruning.
+    if (m.from && m.head)
+      this.tp.sendTo(m.from, { t: 'ack', head: this.node.headGid, epoch: this.node.epochKey });
     if (changed) this.onChange(this.node);
     return changed;
   }

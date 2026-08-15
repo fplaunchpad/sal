@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "automerge",
+  "preset": "bulk",
+  "config": {
+    "rounds": 6,
+    "burst": 500,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:39:22.063Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 6000,
+    "finalChars": 3604,
+    "syncTotalMs": 108.594208,
+    "syncMedianUs": 18479.5,
+    "syncP95Us": 19310.708,
+    "syncPayloadBytes": null,
+    "localOpMeanUs": 31.194298833333335,
+    "primarySaveBytes": 24774,
+    "runtimeGcMs": null
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "automerge",
+    "systemVersion": "3.3.2",
+    "preset": "bulk",
+    "config": {
+      "rounds": 6,
+      "burst": 500,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:39:22.063Z"
+    },
+    "finalChars": 3604,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 6,
+      "warmupExcluded": 0,
+      "meanUs": 18099.034666666666,
+      "medianUs": 18479.5,
+      "p95Us": 19310.708,
+      "p99Us": 19310.708,
+      "maxUs": 19310.708,
+      "totalMs": 108.594208
+    },
+    "syncPayloadBytes": null,
+    "localOps": {
+      "count": 6000,
+      "totalMs": 187.165793,
+      "meanUs": 31.194298833333335
+    },
+    "saves": [
+      {
+        "label": "save-full-history",
+        "bytes": 24774,
+        "estimated": false
+      }
+    ],
+    "compaction": null,
+    "runtimeGcMsTotal": null,
+    "memory": {
+      "baselineHeap": 4618504,
+      "peakHeapSampled": 9128112,
+      "retainedHeapAfterGc": 1072776,
+      "externalDelta": 182891,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

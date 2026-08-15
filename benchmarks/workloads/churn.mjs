@@ -15,6 +15,7 @@ import { dirname, join } from 'node:path';
 import { mulberry32, randChar } from '../lib/traces.mjs';
 import { getAdapter, byteLength } from '../lib/adapters/index.mjs';
 import { gcNow, memSnap, timed, environment } from '../lib/bench.mjs';
+import { writeRawResult } from '../lib/result.mjs';
 
 const [system] = process.argv.slice(2);
 if (!system) {
@@ -29,7 +30,6 @@ mkdirSync(RESULTS, { recursive: true });
 
 const adapter = await getAdapter(system);
 const rng = mulberry32(SEED);
-const salMod = adapter.compact ? await import('../lib/adapters/sal.mjs') : null;
 
 gcNow();
 const baseline = memSnap();
@@ -45,8 +45,8 @@ const record = (phase, phaseMs) => {
   }
   if (adapter.compact) {
     const { compacted } = adapter.compact(d);
-    saves['json-shipped+compacted'] = byteLength(salMod.saveJson(compacted.state));
-    saves['binary-estimate+compacted'] = salMod.binaryEstimate(compacted.state);
+    const saved = adapter.saveCompacted(compacted.state);
+    saves[saved.label] = byteLength(saved.data);
   }
   phases.push({ phase, liveChars: live, phaseMs, saves });
 };
@@ -111,6 +111,14 @@ const result = {
 };
 
 writeFileSync(join(RESULTS, `churn-${system}.json`), JSON.stringify(result, null, 1));
+writeRawResult(RESULTS, `churn-${system}.json`, {
+  suite: 'plain-text', workload: 'delete-churn', system,
+  config: result.config, environment: result.env, gates: result.gates,
+  metrics: { operations: CYCLES * (INS + DEL) + FINAL_INS, finalChars: live,
+    finalPrimarySaveBytes: phases.at(-1).saves[Object.keys(phases.at(-1).saves)[0]],
+    retainedHeapBytes: result.memory.retainedHeapAfterGc },
+  detail: result,
+});
 const summary = Object.entries(growthOnDelete)
   .map(([l, g]) => `${l}: ${g.growsOnDelete}`).join('; ');
 console.log(`${system} churn: final ${live} chars, growth-on-delete { ${summary} }`);

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "sequential-trace",
+  "system": "automerge",
+  "trace": "seph-blog1",
+  "config": {
+    "trace": "seph-blog1"
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:38:37.965Z"
+  },
+  "gates": {
+    "textOk": true,
+    "compactionTextOk": true
+  },
+  "metrics": {
+    "operations": 368209,
+    "finalChars": 56769,
+    "applyTotalMs": 10285.77025,
+    "applyMedianUs": 27.708,
+    "applyP95Us": 32.875,
+    "primarySaveBytes": 205250,
+    "retainedHeapBytes": 897544
+  },
+  "detail": {
+    "workload": "seq",
+    "system": "automerge",
+    "systemVersion": "3.3.2",
+    "trace": "seph-blog1",
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-15T08:38:37.965Z"
+    },
+    "ops": {
+      "total": 368209,
+      "inserts": 212489
+    },
+    "finalChars": 56769,
+    "apply": {
+      "totalMs": 10285.77025,
+      "count": 368209,
+      "warmupExcluded": 1000,
+      "meanUs": 27.85077251919207,
+      "medianUs": 27.708,
+      "p95Us": 32.875,
+      "p99Us": 36.5,
+      "maxUs": 5124.25
+    },
+    "gates": {
+      "textOk": true
+    },
+    "saves": [
+      {
+        "label": "save-full-history",
+        "bytes": 205250,
+        "timeMs": 26.022709,
+        "note": "full compressed change history; no state-only mode exists",
+        "estimated": false
+      }
+    ],
+    "loads": [
+      {
+        "label": "save-full-history",
+        "medianMs": 452.570459,
+        "runs": 5,
+        "allMs": [
+          446.945292,
+          449.005583,
+          452.570459,
+          455.582375,
+          563.087667
+        ]
+      }
+    ],
+    "compaction": null,
+    "memory": {
+      "baselineHeap": 54076096,
+      "peakHeapSampled": 88565480,
+      "retainedHeapAfterGc": 897544,
+      "externalDelta": 3128563,
+      "arrayBuffersDelta": 2951816,
+      "rssEnd": 339951616,
+      "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+    }
+  }
+}

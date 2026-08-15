@@ -131,7 +131,8 @@ soundness argument; and canonical history states expose the contextual Join
 obligation actually needed by adequacy. We develop flat and conditioned
 contracts, honest-reachability and witness-indexed discharge routes,
 observational quotients, product composition, virtual-LCA semantics, commit
-garbage collection, and a stability interface for representation changes.
+garbage collection, a local asynchronous garbage collector that refines the
+no-GC protocol, and a stability interface for representation changes.
 The claimed results are kernel checked in Lean~4, with executable
 countermodels for invalid stronger statements.
 \else\ifdefined\salPaperB
@@ -143,8 +144,9 @@ settled-cut recoding, concrete compaction, run tables, rich-text mark garbage
 collection, and continuation-aware multi-epoch correctness. Independent
 sequential specifications distinguish convergence from user-visible intent,
 while continuation arguments give representation lower bounds. A
-content-addressed peer-to-peer runtime and reproducible cross-system
-measurements connect the verified model to the shipped implementation.
+content-addressed peer-to-peer runtime, a prefix-sharing implementation with
+direct guarded collection, and reproducible cross-system measurements connect
+the verified model to the shipped implementation.
 \else
 Mergeable replicated data types (MRDTs) resolve concurrent divergence by
 a \emph{three-way} merge $\mergeL(l,a,b)$: the two divergent states
@@ -278,6 +280,9 @@ contextual ternary Join adequacy makes reachable merges agree with those
 states; honest reachability carries datatype-specific applicability facts;
 observational equality permits representation changes; and a stability epoch
 simulates settled-cut compaction together with all admitted continuations.
+The companion paper also proves that asynchronous fetch, head-sync, local GC,
+and fetch acknowledgements refine the no-GC semantics; this paper uses that
+result when connecting the sequence implementation to the runtime.
 This paper discharges those interfaces for embedded-chain sequences and then
 proves the independent intent and representation results that the generic
 convergence theorem does not imply.
@@ -323,7 +328,32 @@ runtime extension adds the third).  Its production certificates
 \lean{embedVerified}, \lean{sidedVerified}, and \lean{queueVerified}
 make sequential honesty a predicate on complete histories: mint freshness and
 issuer applicability are prefix facts, not properties of an arbitrary visible
-state. Negative representation results use
+state.  The public conditioning layer makes this split operational:
+\lean{GenerationContract} exposes the local guard and its history bridge,
+\lean{GuardedStep3} checks applies at the issuing head, and
+\lean{MintCertifiedReach3} retains one causal-fold mint witness.  The witness
+is existential because an order-sensitive queue head check need not hold for
+every permutation of its causal past.  The bounded counter separately proves
+that its count-based guard is permutation invariant.  Finally,
+\lean{UnifiedVerifiedMRDT} packages generation, Join/sequential correctness,
+and a history/global client-safety invariant that is not baked circularly into
+structural configuration well-formedness. The stronger local merge-law
+constructor is optional: the bounded counter instead uses
+\lean{bc\_version\_inv}, since arbitrary ternary merge does not preserve
+\lean{BCInv}. Its complete package is \lean{boundedCounterUnified}.
+The same public interface now packages the audited flat OR-set variants,
+LWW/FWW registers, GOSet/GOMap, Counter/IOC/PN, and AWPQ.  These use an
+explicit true generation policy; notably the experimental
+\lean{fwwApplicable} is not promoted. EWFlag is packaged at its actual
+full-closure boundary by \lean{ewflagUnifiedF}, with no Gate-G1 converse.
+MVR exposes \lean{mvrApplicable} and \lean{MVRMintHistory}; tombstoned
+Peritext exposes \lean{ptApplicable} and \lean{PtHistoryOK}. Its folded state
+does not retain remove-operation timestamps, so its guard checks target
+liveness but cannot reject reuse of a timestamp used only by an earlier
+remove. The published tombstoned RGA is likewise positive:
+\lean{rgaApplicable} states anchor/freshness/grave discipline and
+\lean{rgaUnified} packages its independent sequence refinement.
+Negative representation results use
 \lean{ContinuationEquivalent}: a distinguishing continuation forces any
 correct deterministic representation to retain distinct states, while a
 pairwise-distinguishable family forces an injective encoding.  For finite
@@ -2291,15 +2321,15 @@ Incr.-only counter & unconditional & \lean{IOC\_ra\_linearizable3\_eq} \\
 \sigrow{$\#$events}
 PN-counter & unconditional & \lean{PN\_ra\_linearizable3\_eq} \\
 \sigrow{$\#\mathsf{inc}-\#\mathsf{dec}$}
-RGA (tombstone) & unconditional & \lean{rgaWithTombstones\_ra\_linearizable3\_eq} \\
-\sigrow{grow-only nodes + tombstones}
-Peritext & unconditional & \lean{peritextWithTombstones\_ra\_linearizable3\_eq} \\
-\sigrow{grow-only mark records}
+RGA (tombstone) & guarded & \lean{rgaUnified} \\
+\sigrow{\lean{rgaApplicable}: anchor closure, timestamp/id freshness, grave exclusion, and live removal; independent \lean{rgaSequentialSpec}}
+Peritext & guarded & \lean{ptUnified} \\
+\sigrow{\lean{ptApplicable}: known/live character targets, known mark boundaries, and recorded operation-id freshness; removal timestamps are not stored}
 OR-set & feasible & \lean{ORSet\_ra\_linearizable3\_eq} \\
 \sigrow{tag live iff added, no vis-later $\rem$}
 OR-set (efficient) & feasible & \lean{ORSetE\_ra\_linearizable3\_eq} \\
 \sigrow{\dots{} or same-replica $\add$ later (eviction)}
-Enable-wins flag & full-closure & \lean{EWFlag\_ra\_linearizable3\_eq} \\
+Enable-wins flag & full-closure & \lean{ewflagUnifiedF} \\
 \sigrow{per key: ctr $=\#$enables; flag iff unkilled enable}
 \bottomrule
 \end{tabular}
@@ -2324,12 +2354,12 @@ internal steps.}
 \toprule
 MRDT & contract tier & end-to-end theorem \\
 \midrule
-Multi-valued register & feasible & \lean{MVR\_ra\_linearizable3\_eq} \\
+Multi-valued register & guarded & \lean{mvrUnified} \\
 \sigrow{tagged writes $\times$ overwrite log; all-comm $\Rightarrow B{=}\Sinit$}
 Add-wins priority queue & feasible & \lean{AWPQ\_ra\_linearizable3\_eq} \\
 \sigrow{the OR-set pattern on A; grow-only I}
-Bounded counter (escrow) & all-comm & \lean{BC\_ra\_linearizable3\_eq} \\
-\sigrow{convergence flat; the \emph{bound} is a conditioned safety theorem (\lean{bc\_version\_inv})}
+Bounded counter (escrow) & all-comm & \lean{boundedCounter\_flagship} \\
+\sigrow{public guard \lean{bcApplicable}; convergence plus \lean{BCInv} at every version and \lean{bc\_value\_nonneg}; independent per-replica balance refinement \lean{boundedCounterSequentialRefinement}}
 FWW reservation register & all-comm & \lean{FWW\_ra\_linearizable3\_eq} \\
 \sigrow{payload arbitration (min-ts semilattice); winner characterized at every version (\lean{fww\_version\_min})}
 LWW register & all-comm & \lean{LWW\_ra\_linearizable3\_eq} \\
@@ -2337,11 +2367,11 @@ LWW register & all-comm & \lean{LWW\_ra\_linearizable3\_eq} \\
 BudgetCart & or-set $\rcrel$ & \lean{BCart\_ra\_linearizable3\_eq} \\
 \sigrow{budgeted cart, spend derived from live instances; safety \emph{gated} on causal canonicity (OQ~\ref{oq:causalcanon})}
 Mergeable queue (Peepul) & \emph{direct join} & \lean{queue\_ra\_linearizable3} \\
-\sigrow{no $\rcrel$ exists (enqueue clique); the merge itself is the linearization witness}
+\sigrow{public existential mint guard \lean{qApplicable}; no $\rcrel$ exists (enqueue clique); the merge itself is the linearization witness}
 RGA (embedded-chain) & \emph{direct join} & \lean{embed\_ra\_linearizable3} \\
-\sigrow{RA-lin at every honestly reachable configuration; canonical sorted state, fold-canonical (\lean{e\_fold\_canon}); code-parametric (Part~II)}
+\sigrow{public guard \lean{eApplicable}; RA-lin at every honestly reachable configuration; canonical sorted state, fold-canonical (\lean{e\_fold\_canon}); code-parametric (Part~II)}
 RGA (sided, two-sided) & \emph{direct join} & \lean{sided\_embed\_ra\_linearizable3} \\
-\sigrow{for every side assignment; the one-sided datatype is its all-R fragment (Part~II)}
+\sigrow{public guard \lean{sApplicable}; for every side assignment; the one-sided datatype is its all-R fragment (Part~II)}
 Peritext (embed kernel, fused) & \emph{instantiation} & \lean{peritextEmbed\_ra\_linearizable3} \\
 \sigrow{one RGA at $\alpha := \mathsf{char} \oplus \mathsf{boundary}$; deleting a character never re-formats another (\lean{renderIds\_del}; Parts~II--III)}
 \bottomrule
@@ -3849,6 +3879,73 @@ so the state costs $O(|\mathrm{Keep}'|)$, not $O(\text{commits
 ever})$.
 \hfill\lean{gc\_safety\_bounded}
 \end{theorem}
+
+\paragraph{Root-free retained-DAG compression.} The clock store above is
+not the only bounded representation.  The production commit GC now uses the
+more direct retained graph: its edge relation connects two retained versions
+exactly when the first reached the second before collection.  Thus the carrier
+contains no dropped identifier (in particular no distinguished root unless it
+is retained), while one summarized edge replaces an arbitrarily long dropped
+path.  \lean{compressedReaches\_iff} proves exact reachability between
+retained versions; \lean{compressed\_isLCARetained\_iff} proves exact
+common-ancestor/LCA answers in the retained induced order; and
+\lean{gc\_safety\_compressed} packages these graph facts with the
+label/read preservation of \lean{gc\_safety}.  The executable DAG filters
+boundary parent references after deleting payloads, which is the sparse
+upward-closed instance of this specification
+(\code{GC\_CompressedDAG.lean}).
+
+\paragraph{Distributed evidence protocol.} The single global configuration
+does not model an asynchronous implementation. The distributed semantics in
+\code{Distributed\_GC.lean} does: each replica has its own head, commit
+holding, closed roster, and monotone frontier-evidence map. A fetch unions a
+remote advertisement into the receiver's commits and evidence. Fetch does not
+move the local head; a separate head-sync step installs an advertised version
+that the receiver holds. Local collection refuses when any non-self roster
+member lacks evidence. Membership removal is restricted to a member with no
+authored commit or evidence, and a parent-free epoch base is ingested as a
+complete snapshot. Finally,
+\lean{evidence\_ancestor\_of\_later\_head} records the own-head discipline
+that keeps advertised evidence below every later author head.
+
+The refinement target is a world of independent no-GC stores, not one global
+store at every intermediate point. A local collection can make replica
+holdings unequal, so exact projection to one global carrier is false between
+asynchronous steps. At a coordinated cut, equal certified keep sets recover
+that projection (\lean{coordinated\_collect\_projects\_global}).
+
+\begin{theorem}[asynchronous distributed GC refines no-GC]
+\label{thm:distributedgc}
+For every finite execution of fetch, head-sync, and locally certified
+collection steps from a compact world $C_0$ related pointwise to a no-GC world
+$F_0$, there is a no-GC execution from $F_0$ with the same fetch and head-sync
+actions. Collection steps erase to stuttering steps, the final worlds remain
+pointwise related, and every replica reads the same head state in both worlds.
+\hfill\lean{distributed\_execution\_refines\_noGC},
+\lean{world\_read\_preserved}
+\end{theorem}
+
+The operational MRDT layer supplies the second refinement. Its
+\lean{DistributedConfig} pairs the semantic configuration with one physical
+store per replica. A visible semantic step is enabled only when the issuing
+store holds every version that the step reads. Fetch and GC are silent.
+Erasing these silent labels yields an ordinary conditioned execution
+(\lean{distributedConfig\_refines\_Step3}); a query is unavailable when its
+physical store lacks the semantic head
+(\lean{query\_unavailable\_without\_head}). The unified certificate lifts the
+result to generation honesty, RA-linearizability, the datatype safety
+invariant, and client observations
+(\lean{UnifiedVerifiedMRDT.distributed}).
+
+Fetch also carries the liveness acknowledgement used by history pruning. A
+receipt is accepted only for a peer's advertised current head that the observer
+holds. Recording it changes no semantic state (\lean{acknowledge\_erases});
+any interleaving of receipts and core protocol steps still refines no-GC
+(\lean{acknowledged\_execution\_refines\_noGC}). Thus a quiescent peer can
+acknowledge an epoch during an ordinary fetch without minting a fake RDT
+operation (\lean{pruneEvidence\_of\_receipts}). An empty receipt book cannot
+manufacture evidence
+(\lean{no\_pruneEvidence\_without\_authored\_or\_receipt}).
 
 The swap has exactly one hazard, and it is the lineage collision that
 \S\ref{sec:stability} isolates. Resolving the LCA by clock alone is sound
@@ -10720,24 +10817,35 @@ delete-must-settle refinement, the conservative deviations, and the
 measured suite and cost numbers of \S\ref{sec:marks}; the flip that
 justified the old refusal stays executable as a negative control.
 
-\paragraph{Honest limits.} The demo (\code{p2p-demo/}) shows
-several replicas editing one document over a real WebSocket transport,
-converging, saving to and cloning from git, and firing certified GC while
-the session is live. What it is not: the transport is a \emph{star
-relay}, not a network-layer mesh (the transport interface is shaped so a
-WebRTC data-channel mesh drops in unchanged); there is no authenticated
-identity (the SHA gate bounds tampering with a commit's content, not who
-may author); open membership is cooperative, over the closed replica set
-the stability certificate and the commit GC both quantify over; and
-compaction is \emph{linearized} by a coordinated checkpoint barrier,
-because concurrent divergent compaction across replicas --- two peers
-compacting incomparable cuts and then merging across epochs --- is the
-deferred protocol half, the multi-replica layer above the single-replica
-lemma $(\ast)$ of \S\ref{sec:compactED} (closed there:
-Definition~\ref{def:caf}, Theorem~\ref{thm:starclosed}; the residue is
-OQ~\ref{oq:starlemma}). A cross-epoch merge throws
-rather than guess. And the datatype is the unverified transliteration
-noted above.
+The production candidate replaces repeated absolute coordinates with immutable
+shared path nodes (\code{sharedEmbedRGA.js}). Its direct compactor consumes
+settled evidence, nonempty in-flight paths, and frozen mark anchors without
+materializing every absolute path. It skips guarded sibling renumbering and
+blocks fusion at guarded nodes. \code{compactibleSharedPeritext} uses the same
+kernel beneath Peritext's retention roots and guarded mark-pair deletion. The
+151-test runtime suite includes a never-compacted twin, returning
+pre-compaction peers, cross-epoch randomized histories, retained dead mark
+boundaries, certified empty-document collection, and snapshot recovery. These
+are executable validation results, not Lean extraction or a proof of the
+JavaScript implementation.
+
+\paragraph{Implementation boundary.} The demo (\code{p2p-demo/}) runs
+several replicas over a WebSocket relay, persists and clones the document
+through git, and performs certified GC during a live session. The relay is a
+transport topology, not shared semantic state: each \code{DistributedReplica}
+holds its own commit DAG, fetches an ancestry delta, and records the peer's
+advertised head as acknowledgement evidence. Cross-epoch merges translate
+returning states through the certified epoch maps; incomparable compacted cuts
+use the epoch-DAG transport rather than throwing. These paths have executable
+twin and randomized tests, but the JavaScript remains an unverified
+transliteration of the Lean model.
+
+The remaining limits are concrete. The WebSocket deployment is a star relay,
+not a network-layer mesh. The SHA gate authenticates commit content, not author
+identity. Membership is cooperative and closed for each collection
+certificate. The Lean distributed refinement models fetch, head-sync, local
+GC, and acknowledgements, but it does not verify the JavaScript transport,
+serialization code, or cryptographic implementation.
 
 \section{Performance}
 \label{sec:perf}
@@ -10811,7 +10919,8 @@ confirms this with margin (median apply, by trace and final size):
 apply, median & \code{ff\_flat} & \code{cs\_flat} & \code{seph} & \code{am-paper} \\
 (final chars) & (21k) & (21k) & (57k) & (105k) \\
 \midrule
-ours (shipped, persistent HAMT) & 0.50\,$\mu$s & 0.38\,$\mu$s & 3.96\,$\mu$s & 4.08\,$\mu$s \\
+ours (absolute coordinates) & 0.54\,$\mu$s & 0.38\,$\mu$s & 4.21\,$\mu$s & 4.92\,$\mu$s \\
+ours (shared paths) & 0.54\,$\mu$s & 0.38\,$\mu$s & 4.08\,$\mu$s & 4.75\,$\mu$s \\
 ours, copied-Map interface & 364\,$\mu$s & 347\,$\mu$s & 1.66\,ms & 3.16\,ms \\
 Yjs & 1.5\,$\mu$s & 1.7\,$\mu$s & 1.4\,$\mu$s & 1.4\,$\mu$s \\
 Automerge & 24\,$\mu$s & 26\,$\mu$s & 27\,$\mu$s & 27\,$\mu$s \\
@@ -10833,10 +10942,11 @@ the copies gone: peak heap on \code{automerge-paper} fell from 433 to
 132\,MB, with retained heap at 4 to 22\,MB (the trie retains
 structurally what the copies used to churn; absolute coordinates still
 share prefixes as cons strings, so the bit cost materializes only at
-serialization). Load sits at 38 to 289~ms (JSON parse plus the
-coordinate sort) against Loro's sub-millisecond snapshot load, though
-within range of Automerge's full-history load (on \code{automerge-paper},
-ours 289~ms versus Automerge's 319~ms).
+serialization). The representation change primarily affects recovery and
+collection, not apply. Absolute-coordinate recovery takes 152 to 1158~ms
+across the four traces; shared-path recovery takes 16 to 111~ms. On
+\code{automerge-paper}, direct shared collection takes 170~ms, compared with
+2612~ms for the absolute-coordinate compactor.
 
 \paragraph{Where we compete: merge and sync.} The unique-LCA three-way
 merge under the head-sync runtime is Yjs-level and 17 to 59$\times$ faster
@@ -10849,6 +10959,7 @@ than the wasm libraries in these sessions:
 system & freq & bulk & freq & bulk \\
 \midrule
 ours (embed RGA, shipped) & 107\,$\mu$s & 754\,$\mu$s & \multicolumn{2}{c}{in-process$^\dagger$} \\
+ours (shared paths) & 258\,$\mu$s & 1.35\,ms & 5.9\,KB & 118.7\,KB \\
 Yjs & 90\,$\mu$s & 1.13\,ms & 1.6\,KB & 15.1\,KB \\
 Automerge & 1.82\,ms & 18.3\,ms & \multicolumn{2}{c}{in-process} \\
 Loro & 6.29\,ms & 17.1\,ms & 0.4\,KB & 4.6\,KB \\
@@ -10876,12 +10987,13 @@ while a whole-state resync grows with the document, and the runtime's
 sync tests measure it at 0.28 to 0.60$\times$ the whole-state baseline in
 steady state.
 
-\paragraph{Save size, four representations.} Our shipped runtime stores
+\paragraph{Save size, two artifact classes.} Our original runtime stores
 absolute chain coordinates as bit-strings, so the naive save is far above
 production; the run table (\S\ref{sec:runtable}) is the designed
-successor, and the runtime ships it as a real serializer. The four
-representations, in bytes per live character (final state of each
-sequential trace):
+live-read-only successor. The shared-path runtime instead saves a
+continuation-capable graph with birth provenance. These artifacts retain
+different information and must not be ranked as interchangeable state saves.
+The measured sizes, in bytes per live character, are:
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -10892,6 +11004,8 @@ as-shipped JSON & 1637 & 2503 & 2991 & 2320 \\
 \quad + settled-cut compaction & 871 & 1486 & 933 & 1295 \\
 run-table serialized, SHIPPED & 1.5 & 1.6 & 1.6 & 1.2 \\
 \quad + compaction, SHIPPED & 1.1 & 1.1 & 1.3 & 1.1 \\
+shared-path continuation snapshot & 2.8 & 3.0 & 2.8 & 2.4 \\
+\quad + direct guarded GC & 2.8 & 2.8 & 3.2 & 2.7 \\
 run-table projection (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
 \bottomrule
 \end{tabular}
@@ -10937,8 +11051,9 @@ compressed history and on par with Loro's shallow-snapshot (0.6 to
 Loro snapshot) are never compared against state-only rows without the
 label saying so.
 
-\paragraph{The categorical win: storage on delete.} Ours is the only save
-that shrinks when the document does. The churn workload runs five cycles
+\paragraph{Delete-heavy storage.} The live-only Sal artifacts, Yjs updates,
+Loro's shallow snapshot, and list-positions all shrink across the measured
+delete phases; full-history Automerge and Loro snapshots grow. The churn workload runs five cycles
 of insert 2000 then delete 1800 characters, then a final 200-character
 insert, and asks per row whether the save \emph{grows across a delete
 phase} (bytes, ours in the packed binary estimate):
@@ -10967,9 +11082,9 @@ Automerge's save grows by roughly 3.4~KB across every delete phase
 Yjs never grows but cannot shed tombstone structure (165~KB v1 for those
 1200 characters against our compacted 7.9~KB and Loro's shallow 3.9~KB).
 This is the storage-on-delete axis of the retention taxonomy
-(\S\ref{sec:related}) measured live: tombstone-freedom is the design's
-semantics showing up as the only save that gets smaller when the document
-does.
+(\S\ref{sec:related}) measured directly. The result distinguishes
+history-carrying artifacts from reclaiming state artifacts; it does not support
+an ``only system that shrinks'' claim.
 
 \paragraph{Caveats, so the numbers cannot be over-read.} Timer overhead
 is not subtracted and biases the sub-microsecond medians; Automerge is
@@ -11626,6 +11741,10 @@ rehoming Eq capstone over \lean{Step3V} (stress test) & \lean{rga\_ra\_lineariza
 commit GC: keep set + safety (\S\ref{sec:gc}) & \lean{keepSet}, \lean{gc\_safety}, \lean{lca\_not\_dropped} & \lean{Metatheory/GC\_Safety.lean} \\
 GC under virtual merges & \lean{mcasClosure}, \lean{keepSetV}, \lean{gc\_safetyV} & \lean{Metatheory/GC\_Safety.lean} \\
 bounded-state GC: clock swap (\S\ref{sec:gc}) & \lean{clockPrune}, \lean{ClockCoherent}, \lean{clockLCA\_sound}, \lean{gc\_safety\_bounded} & \lean{Metatheory/GC\_BoundedState.lean} \\
+root-free retained DAG & \lean{compressedReaches\_iff}, \lean{compressed\_isLCARetained\_iff}, \lean{gc\_safety\_compressed} & \lean{Metatheory/GC\_CompressedDAG.lean} \\
+distributed GC refinement (Thm.~\ref{thm:distributedgc}) & \lean{distributed\_execution\_refines\_noGC}, \lean{world\_read\_preserved} & \lean{Metatheory/Distributed\_GC.lean} \\
+distributed opsem $\to$ conditioned semantics & \lean{distributedConfig\_refines\_Step3}, \lean{UnifiedVerifiedMRDT.distributed} & \lean{Metatheory/Distributed\_GC\_Refinement.lean} \\
+fetch-aligned acknowledgements & \lean{acknowledged\_execution\_refines\_noGC}, \lean{pruneEvidence\_of\_receipts} & \lean{Metatheory/Distributed\_GC\_Acknowledgements.lean} \\
 SettledAt discharged from the frontier (\S\ref{sec:stability}) & \lean{AllHeardSince}, \lean{settledAt\_of\_allHeard} & \lean{Metatheory/EvidenceDischarge.lean} \\
 SettledAt def + stability bundle + metatheorem & \lean{SettledAt}, \lean{StabilityVC}, \lean{stability\_simulation}, \lean{stability\_ra\_inherited} & \lean{Metatheory/Stability\_VC.lean} \\
 OR-set stability instance & \lean{orStabilityVC}, \lean{ORSet\_stability\_reads} & \lean{MRDT\_Instances/ORSet/ORSet\_Stability.lean} \\

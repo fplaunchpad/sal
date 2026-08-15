@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "suite": "peritext",
+  "workload": "concurrent-rich",
+  "system": "sal-peritext",
+  "mode": "text-state",
+  "preset": "bulk",
+  "config": {
+    "initial": 500,
+    "rounds": 6,
+    "burst": 300,
+    "seed": 1729,
+    "pairDrop": false,
+    "scenario": "concurrent-rich",
+    "representation": "absolute"
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-15T08:43:45.072Z"
+  },
+  "gates": {
+    "converged": true,
+    "gcRenderPreserved": true,
+    "snapshotOk": true,
+    "stateCompactionFiredOrExpectedNoop": true,
+    "delayedPruneRefused": true,
+    "emptyMetadataFloor": true,
+    "multiEpochCompaction": true
+  },
+  "metrics": {
+    "operations": 4101,
+    "elapsedMs": 18945.904415999998,
+    "syncMs": 91.34787700000001,
+    "syncBytes": 1161496,
+    "historyGcMs": 0,
+    "stateGcMs": 14.696833,
+    "intermediateEpochs": 0,
+    "intermediatePruned": 0,
+    "commitsBeforeFinalGc": 4108,
+    "commitsAfter": 4109,
+    "commitsWhileAwaitingAck": null,
+    "epochPruned": 0,
+    "epochPruneReason": null,
+    "durableStateBytes": 84713,
+    "visibleChars": 1051,
+    "shadowRecords": 1502,
+    "deletedIds": 451,
+    "markRecords": 1428,
+    "coordinateSymbols": 32607,
+    "renderDigest": "2d5e7f8a09377b47880dc5510be919cf38d7f40aeacd9ac8c52bae2babf6691d"
+  }
+}

@@ -9,9 +9,10 @@ import { execSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RESULTS = join(HERE, '..', 'results');
-const SYSTEMS = ['sal', 'yjs', 'automerge', 'loro', 'listpositions'];
+const SYSTEMS = ['sal', 'sal-shared', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SYSLABEL = {
   sal: 'ours (embed RGA, as shipped)', yjs: 'Yjs', automerge: 'Automerge',
+  'sal-shared': 'ours (shared EmbedRGA + direct state GC)',
   loro: 'Loro', listpositions: 'list-positions',
 };
 
@@ -20,14 +21,19 @@ const files = readdirSync(RESULTS).filter((f) => f.endsWith('.json'));
 const seq = files.filter((f) => f.startsWith('seq-')).map(read);
 const conc = files.filter((f) => f.startsWith('concurrent-')).map(read);
 const churn = files.filter((f) => f.startsWith('churn-')).map(read);
-const projection = existsSync(join(RESULTS, 'projection.json'))
-  ? read('projection.json') : null;
-const shipped = existsSync(join(RESULTS, 'run_table_shipped.json'))
-  ? read('run_table_shipped.json') : null; // task #104 SHIPPED run-table serializer
+const rawDir = join(RESULTS, 'raw');
+const gcAblations = existsSync(rawDir)
+  ? readdirSync(rawDir).filter((f) => f.startsWith('plain-gc-') && f.endsWith('.json'))
+      .map((f) => JSON.parse(readFileSync(join(rawDir, f), 'utf8')))
+  : [];
+const peritextAblations = existsSync(rawDir)
+  ? readdirSync(rawDir).filter((f) => f.startsWith('peritext-') && f.endsWith('.json'))
+      .map((f) => JSON.parse(readFileSync(join(rawDir, f), 'utf8')))
+      .filter((r) => r.config?.scenario)
+  : [];
 
 const kb = (b) => b >= 1048576 ? `${(b / 1048576).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`;
 const us = (v) => v >= 1000 ? `${(v / 1000).toFixed(2)} ms` : `${v.toFixed(2)} us`;
-const mb = (b) => `${(b / 1048576).toFixed(1)} MB`;
 const L = [];
 const row = (cells) => L.push(`| ${cells.join(' | ')} |`);
 const header = (cells) => { row(cells); row(cells.map(() => '---')); };
@@ -52,16 +58,17 @@ for (const t of traces) {
   L.push('');
   L.push(`## Sequential replay: ${t} (${meta.ops.total} per-char ops, final ${meta.finalChars} chars)`);
   L.push('');
-  header(['system', 'apply median', 'apply p95', 'total', 'load (median of 5)', 'peak heap*', 'retained heap', 'gates']);
+  header(['system', 'apply median', 'apply p95', 'total', 'recovery (median of 5)', 'artifact', 'gates']);
   for (const r of rs) {
     const load = r.loads[0] ? `${r.loads[0].medianMs.toFixed(1)} ms (${r.loads[0].label})` : 'n/a';
     row([SYSLABEL[r.system], us(r.apply.medianUs), us(r.apply.p95Us),
-      `${(r.apply.totalMs / 1000).toFixed(2)} s`, load,
-      mb(r.memory.peakHeapSampled), mb(r.memory.retainedHeapAfterGc),
+      `${(r.apply.totalMs / 1000).toFixed(2)} s`,
+      r.loads[0] ? `${r.loads[0].medianMs.toFixed(1)} ms` : 'n/a',
+      r.loads[0]?.label ?? 'n/a',
       r.gates.textOk ? 'text OK' : 'TEXT MISMATCH']);
   }
   L.push('');
-  L.push('*peak = JS heapUsed sampled every 500 ops, no forced GC (includes garbage); wasm state (Automerge, Loro) lives outside heapUsed.');
+  L.push('*Recovery artifacts are implementation-native and retain different information; compare only rows with compatible `contains` descriptions below. JS heap/RSS are intentionally excluded from cross-system ranking.');
 
   // save sizes
   L.push('');
@@ -69,10 +76,6 @@ for (const t of traces) {
   L.push('');
   header(['system', 'variant', 'bytes', 'bytes/char', 'save time', 'contains']);
   const NOTES = {
-    'json-shipped': 'live state only; coord bit-strings at 1 byte/bit (shipped)',
-    'binary-estimate': 'live state only; packed coord bits + varint ids (computed estimate, no shipped encoder)',
-    'json-shipped+compacted': 'live state after settled-cut compaction (measured, shipped code)',
-    'binary-estimate+compacted': 'packed-bits estimate of the compacted state',
     'update-v1': 'state incl. tombstone structure, deleted content dropped; cannot drop tombstone ids',
     'update-v2': 'same content as v1, run-length compressed encoding',
     'save-full-history': 'FULL change history (compressed); no state-only save exists',
@@ -87,22 +90,6 @@ for (const t of traces) {
         (v.bytes / meta.finalChars).toFixed(1),
         v.timeMs != null ? `${v.timeMs.toFixed(1)} ms` : '--',
         NOTES[v.label] ?? v.note ?? '']);
-    }
-    if (r.system === 'sal' && shipped?.traces?.[t]) {
-      const sh = shipped.traces[t];
-      row(['ours (run-table serialized, SHIPPED)', 'run-table-serialized', sh.shipped_bytes.raw,
-        (sh.shipped_bytes.raw / meta.finalChars).toFixed(1), '--',
-        `live state only; task #104 SHIPPED serializer over the as-shipped state; lossless (decode reads = read); real bytes, not the projection`]);
-      row(['ours (run-table serialized, SHIPPED)', 'run-table-serialized+compacted', sh.shipped_bytes.compacted,
-        (sh.shipped_bytes.compacted / meta.finalChars).toFixed(1), '--',
-        `SHIPPED serializer over the settled-cut compacted state; lossless; realizes the projection at ${(sh.shipped_bytes.compacted / meta.finalChars).toFixed(1)} B/char (< the model's ${(sh.projection_save_bytes.composed / meta.finalChars).toFixed(1)} B/char: the model charges the recoverable positional run-id/offset/parent-offset the encoder drops)`]);
-    }
-    if (r.system === 'sal' && projection?.traces?.[t]) {
-      const p = projection.traces[t];
-      row(['ours (PROJECTION, run table)', 'run-table composed (model)',
-        p.projected_save_bytes.run_table_composed,
-        (p.projected_save_bytes.run_table_composed / meta.finalChars).toFixed(1), '--',
-        `measured-in-model (task #73 accounting, gates_ok=${p.gates_ok}); order metadata ${p.bits_per_char.run_table_composed.toFixed(1)} bits/char + UTF-8 text; excludes (ts,agent) ids; NOT a shipped serializer`]);
     }
   }
 }
@@ -124,10 +111,9 @@ for (const preset of ['freq', 'bulk']) {
       `${r.saves[0].bytes} B (${r.saves[0].label})`,
       r.gates.converged ? 'yes' : 'NO']);
   }
-  const sal = rs.find((r) => r.system === 'sal');
-  if (sal?.compaction) {
+  for (const sal of rs.filter((r) => r.system === 'sal' || r.system === 'sal-shared')) if (sal.compaction) {
     L.push('');
-    L.push(`ours, post-session settled-cut compaction: ${sal.compaction.ms.toFixed(1)} ms, ` +
+    L.push(`${SYSLABEL[sal.system]}, post-session settled-cut compaction: ${sal.compaction.ms.toFixed(1)} ms, ` +
       sal.compaction.saves.map((v) => `${v.label} = ${v.bytes} B`).join(', ') +
       `; runtime commit-GC total ${sal.runtimeGcMsTotal?.toFixed(1)} ms (outside sync timing).`);
   }
@@ -150,6 +136,37 @@ if (churn.length > 0) {
       const cells = picks.map((ph) => r.phases.find((x) => x.phase === ph)?.saves[label] ?? '--');
       row([SYSLABEL[s], label, ...cells, r.growthOnDelete[label].growsOnDelete.toUpperCase()]);
     }
+  }
+}
+
+// ---------------- production DistributedReplica GC ablations
+if (gcAblations.length > 0) {
+  L.push('');
+  L.push('## Sal plain-text GC ablations (production DistributedReplica)');
+  L.push('');
+  L.push('State GC runs before epoch-base history pruning in the both-GC configurations.');
+  L.push('');
+  header(['representation', 'preset', 'mode', 'state bytes', 'commits before final GC', 'commits after',
+    'state GC', 'history GC', 'awaiting ack', 'gates']);
+  for (const r of gcAblations.sort((a, b) => `${a.preset}:${a.mode}`.localeCompare(`${b.preset}:${b.mode}`))) {
+    const m = r.metrics;
+    row([r.config?.representation ?? 'absolute', r.preset, r.mode, m.durableStateBytes, m.commitsBeforeFinalGc, m.commitsAfter,
+      `${m.stateGcMs.toFixed(2)} ms`, `${m.historyGcMs.toFixed(2)} ms`,
+      m.commitsWhileAwaitingAck ?? '--', Object.values(r.gates).every(Boolean) ? 'pass' : 'FAIL']);
+  }
+}
+
+if (peritextAblations.length > 0) {
+  L.push('');
+  L.push('## Sal Peritext GC ablations');
+  L.push('');
+  header(['representation', 'workload', 'preset', 'mode', 'state bytes', 'commits after', 'shadow', 'deleted',
+    'marks', 'symbols', 'state GC', 'gates']);
+  for (const r of peritextAblations.sort((a, b) => `${a.preset}:${a.mode}`.localeCompare(`${b.preset}:${b.mode}`))) {
+    const m = r.metrics;
+    row([r.config?.representation ?? 'absolute', r.workload, r.preset, r.mode, m.durableStateBytes, m.commitsAfter, m.shadowRecords,
+      m.deletedIds, m.markRecords, m.coordinateSymbols, `${m.stateGcMs.toFixed(2)} ms`,
+      Object.values(r.gates).every(Boolean) ? 'pass' : 'FAIL']);
   }
 }
 

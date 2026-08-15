@@ -51,10 +51,16 @@ export class DistributedReplica {
     this.gid = new Map();               // local id -> content id (sha)
     this.byGid = new Map();             // content id -> local id
     this.registered = new Set([name]);  // replica ids heard of / rostered
+    this.gcClosed = false;              // successful commit GC closes membership
     this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
     this.epochDag = new EpochDag();     // cut-indexed epoch DAG (src/epoch.js)
     this.epochOf = new Map();           // local commit id -> epoch cut key
     this.epochBase = new Map();         // local id -> pruned parent's gid (parent-free epoch bases)
+    // Authenticated transport receipts: peer -> epoch key of the peer's
+    // advertised current head. These are not datatype commits and do not enter
+    // the causal frontier. acknowledgeFetch() accepts a receipt only when this
+    // store holds that exact head and recomputes the claimed epoch from it.
+    this.fetchAcks = new Map();
     const root = this.dag.add({ parents: [], op: null, state: datatype.init() });
     this.epochOf.set(root.id, EPOCH0);
     this.#index(root);
@@ -266,6 +272,9 @@ export class DistributedReplica {
       }
       let op = null, state, epochKey;
       if (wc.kind === 'op') {
+        if (this.gcClosed && !this.registered.has(wc.op.replica)) {
+          throw new Error(`open-membership after commit GC: ${wc.op.replica} is not in the closed roster`);
+        }
         op = { replica: wc.op.replica, seq: wc.op.seq, payload: wc.payload };
         state = this.#applyOps(this.dag.get(localParents[0]).state, wc.payload);
         epochKey = this.epochOf.get(localParents[0]);
@@ -355,7 +364,12 @@ export class DistributedReplica {
    *  is otherwise only known once you ingest one of its ops; the transport calls
    *  this when a peer JOINS, so compactStable can REFUSE for a member never
    *  heard from (the open-membership / not-heard-from breaker). */
-  register(name) { this.registered.add(name); }
+  register(name) {
+    if (this.gcClosed && !this.registered.has(name)) {
+      throw new Error(`open-membership after commit GC: ${name} must bootstrap through a certified epoch base`);
+    }
+    this.registered.add(name);
+  }
 
   /** Drop `name` from the roster IFF it never AUTHORED a commit here. A
    *  joined-then-left lurker holds no ops the stability cut must wait for; a
@@ -377,7 +391,22 @@ export class DistributedReplica {
   forget(name) {
     if (name === this.name) return false;
     this.authors.delete(name);
+    this.fetchAcks.delete(name);
     return this.registered.delete(name);
+  }
+
+  /** Record that `peer` completed a fetch/head-sync round at `headGid`.
+   *  The transport authenticates the peer identity. The content-address and
+   *  epoch checks below bind the receipt to locally verified DAG material.
+   *  Receipts advance monotonically by the epoch cut order. */
+  acknowledgeFetch(peer, headGid, epochKey) {
+    if (!this.registered.has(peer)) return false;
+    const cid = this.byGid.get(headGid);
+    if (cid === undefined || this.epochOf.get(cid) !== epochKey) return false;
+    const old = this.fetchAcks.get(peer);
+    if (old !== undefined && !this.epochDag.subcut(old, epochKey)) return false;
+    this.fetchAcks.set(peer, epochKey);
+    return true;
   }
 
   // ---- VIRTUAL LCAs x EPOCH LIFT: the criss-cross-resolving base.
@@ -512,8 +541,20 @@ export class DistributedReplica {
    *  merges only, closed membership (src/gc.js). Also prunes the content-id and
    *  epoch indexes of dropped commits. Returns { kept, dropped }. */
   gc(headIds) {
+    // Distributed GC needs evidence from every other roster member.  The old
+    // default silently omitted missing frontier entries, which treated absence
+    // of evidence as permission to collect.  Match stableCut's refusal rule.
+    if (headIds === undefined) {
+      const missing = [...this.registered]
+        .filter((rep) => rep !== this.name && !this.frontier.has(rep));
+      if (missing.length > 0) {
+        return { kept: this.dag.size, dropped: 0, refused: true, missing,
+          reason: `frontier evidence absent: not heard from ${missing.join(', ')}` };
+      }
+    }
     const heads = headIds ?? [this.#headId, ...[...this.frontier.values()].map((e) => e.id)];
     const res = runGc(this.dag, heads);
+    if (res.dropped > 0) this.gcClosed = true;
     for (const cid of [...this.gid.keys()]) {
       if (!this.dag.has(cid)) {
         this.byGid.delete(this.gid.get(cid));
@@ -522,7 +563,7 @@ export class DistributedReplica {
         this.epochBase.delete(cid);
       }
     }
-    return res;
+    return { ...res, refused: false, missing: [] };
   }
 
   /** PRUNE HISTORY BELOW THE NEWEST SETTLED COMPACTION, turning it into a
@@ -557,7 +598,10 @@ export class DistributedReplica {
     for (const rep of this.registered) {
       if (rep === this.name) continue;
       const e = this.frontier.get(rep);
-      if (e && !this.epochDag.subcut(kKey, this.epochOf.get(e.id))) {
+      const authoredPastCut = e && this.epochDag.subcut(kKey, this.epochOf.get(e.id));
+      const fetchPastCut = this.fetchAcks.has(rep)
+        && this.epochDag.subcut(kKey, this.fetchAcks.get(rep));
+      if (!authoredPastCut && !fetchPastCut) {
         return { pruned: 0, reason: `evidence from ${rep} has not reached the compaction cut` };
       }
     }
@@ -615,4 +659,9 @@ export function syncReplicas(a, b) {
   const aHead = a.headGid, bHead = b.headGid;
   b.ingest(toB); a.ingest(toA);
   b.mergeWithGid(aHead); a.mergeWithGid(bHead);
+  // The successful bidirectional round returns each peer's current advertised
+  // head. Record a transport receipt even when the peer authored no new op.
+  // acknowledgeFetch validates the head and epoch against local DAG material.
+  a.acknowledgeFetch(b.name, b.headGid, b.epochKey);
+  b.acknowledgeFetch(a.name, a.headGid, a.epochKey);
 }

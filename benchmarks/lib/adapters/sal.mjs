@@ -24,9 +24,11 @@
 // discipline (runtime/src/runtime.js) with commit GC after each sync.
 
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
+import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns } from '../../../runtime/src/datatypes/sharedEmbedRGA.js';
 import { PMap } from '../../../runtime/src/pmap.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
-import { encode as rtEncode } from '../../../runtime/src/serialize.js';
+import { compactSharedDirect } from '../../../runtime/src/shared-compact.js';
+import { encode as rtEncode, decode as rtDecode } from '../../../runtime/src/serialize.js';
 import { Runtime } from '../../../runtime/src/runtime.js';
 import { sharedDelta, wireBytes } from '../../../runtime/src/sync.js';
 import { timed } from '../bench.mjs';
@@ -39,6 +41,10 @@ import { timed } from '../bench.mjs';
  *  reads identically (runtime/test/serialize.test.js). This is the shipped
  *  successor to the absolute-chain json-shipped/binary-estimate columns. */
 export function saveRunTable(state) { return rtEncode(state); }
+export function loadRunTable(bytes) {
+  const state = rtDecode(bytes);
+  return { state, view: dt.readIds(state) };
+}
 
 const dt = embedRGA;
 
@@ -86,38 +92,45 @@ export function binaryEstimate(state) {
   return bytes;
 }
 
-export function mkAdapter() {
+export function mkAdapter({ shared = false } = {}) {
+  const kernel = shared ? sharedEmbedRGA : embedRGA;
+  const save = shared ? encodeSharedRuns : saveRunTable;
+  const load = shared
+    ? (bytes) => { const state = decodeSharedRuns(bytes); return { state, view: kernel.readIds(state) }; }
+    : loadRunTable;
+  const compactState = shared ? compactSharedDirect : compactEliasDelta;
   return {
-    name: 'sal-embed-rga',
+    name: shared ? 'sal-shared-embed-rga' : 'sal-embed-rga',
     version: 'runtime/ @ repo HEAD (unversioned)',
-    create() { return { state: dt.init(), view: [], clock: 0 }; },
+    create() { return { state: kernel.init(), view: [], clock: 0 }; },
     ins(doc, pos, ch) {
       doc.clock += 1;
       const id = doc.clock;
       const anchorId = pos > 0 ? doc.view[pos - 1] : null;
-      doc.state = dt.apply(doc.state, { type: 'ins', id, el: ch, anchorId });
+      doc.state = kernel.apply(doc.state, { type: 'ins', id, el: ch, anchorId });
       doc.view.splice(pos, 0, id);
     },
     del(doc, pos) {
       doc.clock += 1; // dense logical time, as in the litmus model
       const id = doc.view[pos];
-      doc.state = dt.apply(doc.state, { type: 'del', id });
+      doc.state = kernel.apply(doc.state, { type: 'del', id });
       doc.view.splice(pos, 1);
     },
-    text(doc) { return dt.read(doc.state).join(''); },
+    text(doc) { return kernel.read(doc.state).join(''); },
     liveCount(doc) { return doc.state.size; },
 
     saveVariants(doc) {
       return [
-        { label: 'json-shipped', mk: () => saveJson(doc.state),
-          note: 'live state only; coord bit-strings at 1 byte/bit (shipped)' },
-        { label: 'binary-estimate', estimate: () => binaryEstimate(doc.state),
-          note: 'live state only; packed coord bits + varint ids (computed estimate, no shipped encoder)' },
-        { label: 'run-table-serialized', mk: () => saveRunTable(doc.state),
-          note: 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read' },
+        { label: shared ? 'shared-runs-serialized' : 'run-table-serialized', mk: () => save(doc.state),
+          note: shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read' },
       ];
     },
-    load(data) { return loadJson(data); },
+    load,
+    compactedText(state) { return kernel.read(state).join(''); },
+    saveCompacted(state) {
+      return { label: shared ? 'shared-runs-serialized+compacted' : 'run-table-serialized+compacted',
+        data: save(state), note: shared ? 'native shared-path continuation snapshot after direct guarded GC' : 'run-table binary over compacted state' };
+    },
 
     /** Settled-cut compaction (single-writer or fully-synced states only).
      *  settledIds = every Lamport tick minted so far; insert ids are a
@@ -126,7 +139,7 @@ export function mkAdapter() {
       const settledIds = new Set();
       for (let i = 1; i <= doc.clock; i++) settledIds.add(i);
       const [res, ms] = timed(() =>
-        compactEliasDelta(doc.state, { settledIds }, { fuseSpines: true }));
+        compactState(doc.state, { settledIds }, { fuseSpines: true }));
       return {
         ms, stats: res.stats,
         compacted: { state: res.state, view: doc.view, clock: doc.clock },
@@ -135,7 +148,7 @@ export function mkAdapter() {
 
     /** Two replicas under the shipped Runtime head-sync discipline. */
     pair() {
-      const runtime = new Runtime(dt);
+      const runtime = new Runtime(kernel);
       const rA = runtime.replica('A'), rB = runtime.replica('B');
       const p = {
         runtime, rA, rB,
@@ -178,26 +191,26 @@ export function mkAdapter() {
           p.gcMsTotal += gcMs;
           const lam = Math.max(p.lamA, p.lamB);
           p.lamA = lam; p.lamB = lam;
-          const ids = dt.readIds(rA.head.state);
+          const ids = kernel.readIds(rA.head.state);
           p.viewA = [...ids]; p.viewB = [...ids];
           return { ms, payloadBytes };
         },
-        textA: () => dt.read(rA.head.state).join(''),
-        textB: () => dt.read(rB.head.state).join(''),
+        textA: () => kernel.read(rA.head.state).join(''),
+        textB: () => kernel.read(rB.head.state).join(''),
         saveVariants() {
           const st = rA.head.state;
           return [
-            { label: 'json-shipped', mk: () => saveJson(st) },
-            { label: 'binary-estimate', estimate: () => binaryEstimate(st) },
-            { label: 'run-table-serialized', mk: () => saveRunTable(st),
-              note: 'task #104 SHIPPED run-table binary (lossless)' },
+            { label: shared ? 'shared-runs-serialized' : 'run-table-serialized', mk: () => save(st),
+              note: shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)' },
           ];
         },
         compactFinal() {
           const settledIds = new Set(p.minted);
           const [res, ms] = timed(() =>
-            compactEliasDelta(rA.head.state, { settledIds }, { fuseSpines: true }));
-          return { ms, stats: res.stats, state: res.state };
+            compactState(rA.head.state, { settledIds }, { fuseSpines: true }));
+          const saved = save(res.state);
+          return { ms, stats: res.stats, state: res.state,
+            saves: [{ label: shared ? 'shared-runs-serialized+compacted' : 'run-table-serialized+compacted', bytes: saved.length }] };
         },
       };
       return p;

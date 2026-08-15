@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-07-19T06:20:57.535Z"
+  "date": "2026-08-15T08:39:22.380Z"
  },
  "finalChars": 3604,
  "gates": {
@@ -22,35 +22,35 @@
  "sync": {
   "count": 6,
   "warmupExcluded": 0,
-  "meanUs": 668.8125,
-  "medianUs": 626.334,
-  "p95Us": 1013.2080000000001,
-  "p99Us": 1013.2080000000001,
-  "maxUs": 1013.2080000000001,
-  "totalMs": 4.012875
+  "meanUs": 744.1943333333334,
+  "medianUs": 783.375,
+  "p95Us": 1066.375,
+  "p99Us": 1066.375,
+  "maxUs": 1066.375,
+  "totalMs": 4.465166
  },
  "syncPayloadBytes": {
-  "total": 759158,
-  "perSyncMean": 126526.33333333333
+  "total": 759765,
+  "perSyncMean": 126627.5
  },
  "localOps": {
   "count": 6000,
-  "totalMs": 12.14625,
-  "meanUs": 2.024375
+  "totalMs": 12.520083999999999,
+  "meanUs": 2.0866806666666666
  },
  "saves": [
   {
    "label": "json-text+order",
-   "bytes": 353262,
+   "bytes": 354249,
    "estimated": false
   }
  ],
  "compaction": null,
  "runtimeGcMsTotal": null,
  "memory": {
-  "baselineHeap": 4682920,
-  "peakHeapSampled": 9602040,
-  "retainedHeapAfterGc": 3403328,
+  "baselineHeap": 4696416,
+  "peakHeapSampled": 9585592,
+  "retainedHeapAfterGc": 3413272,
   "externalDelta": 40,
   "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
  }
