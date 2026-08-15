@@ -711,6 +711,63 @@ theorem hasRChild_syncK (K K' : Know) (a : ℕ) :
     obtain ⟨g, hg, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp hK
     exact ⟨g, mem_syncK_iff.mpr (Or.inl hg), e, π, hop⟩
 
+/-- A well-formed retained successor witness: id plus the chain used to order
+it. `liveGapOf` always produces either both fields or neither. -/
+def liveGapSucc (g : LiveGap) : Option (ℕ × SChain) :=
+  match g.succ, g.succChain with
+  | some n, some c => some (n, c)
+  | _, _ => none
+
+def maxGapSucc : Option (ℕ × SChain) → Option (ℕ × SChain) →
+    Option (ℕ × SChain)
+  | none, q => q
+  | p, none => p
+  | some p, some q =>
+      if keyLt (sKey (sidedCoordOf Γ p.2))
+          (sKey (sidedCoordOf Γ q.2)) = true
+      then some q else some p
+
+def liveGapWithSucc (base : LiveGap) : Option (ℕ × SChain) → LiveGap
+  | none => { base with succ := none, succChain := none }
+  | some p => { base with succ := some p.1, succChain := some p.2 }
+
+theorem liveGapWithSucc_hasR (base : LiveGap) (p : Option (ℕ × SChain)) :
+    (liveGapWithSucc base p).hasR = base.hasR := by cases p <;> rfl
+
+/-- Runtime merge for one retained live gap. Anchor chains are globally
+immutable, so either branch may supply the base chain. -/
+def mergeLiveGap (l r : LiveGap) : LiveGap :=
+  liveGapWithSucc { l with hasR := l.hasR || r.hasR }
+    (maxGapSucc (liveGapSucc l) (liveGapSucc r))
+
+theorem liveGapSucc_of (K : Know) (a : ℕ) :
+    liveGapSucc (liveGapOf K a) =
+      (succOf Γ K a).map (fun n => (n, gChainOf K n)) := by
+  simp [liveGapSucc, liveGapOf]
+  cases succOf Γ K a <;> rfl
+
+theorem mergeLiveGap_hasR (K K' : Know) (a : ℕ) :
+    (mergeLiveGap (liveGapOf K a) (liveGapOf K' a)).hasR =
+      (liveGapOf (syncK K K') a).hasR := by
+  rw [mergeLiveGap, liveGapWithSucc_hasR]
+  exact (hasRChild_syncK K K' a).symm
+
+theorem maxGapSucc_none_left (p : Option (ℕ × SChain)) :
+    maxGapSucc none p = p := rfl
+
+theorem maxGapSucc_none_right (p : Option (ℕ × SChain)) :
+    maxGapSucc p none = p := by cases p <;> rfl
+
+theorem liveGapSucc_mergeLiveGap (l r : LiveGap) :
+    liveGapSucc (mergeLiveGap l r) =
+      maxGapSucc (liveGapSucc l) (liveGapSucc r) := by
+  unfold mergeLiveGap
+  cases h : maxGapSucc (liveGapSucc l) (liveGapSucc r) with
+  | none => simp [liveGapWithSucc, liveGapSucc, h]
+  | some p =>
+      obtain ⟨n, c⟩ := p
+      simp [liveGapWithSucc, liveGapSucc, h]
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -779,6 +836,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms succCand_append_gen_new
 #print axioms succOf_append_gen_new
 #print axioms hasRChild_syncK
+#print axioms mergeLiveGap_hasR
+#print axioms liveGapSucc_mergeLiveGap
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
