@@ -6,7 +6,7 @@
 const enc = new TextEncoder();
 const dec = new TextDecoder('utf-8', { fatal: true });
 const MAGIC = [0x53, 0x41, 0x4c, 0x01]; // "SAL", binary-wire version 1
-const HEX64 = /^[0-9a-f]{64}$/;
+const HASH_HEX = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const LOCAL_COMMIT = /^c([0-9]+)$/;
 
 class Writer {
@@ -43,7 +43,7 @@ function stringsIn(v, counts) {
 
 function dictionary(v) {
   const counts = new Map(); stringsIn(v, counts);
-  return [...counts].filter(([s, n]) => n > 1 && !HEX64.test(s) && !LOCAL_COMMIT.test(s))
+  return [...counts].filter(([s, n]) => n > 1 && !HASH_HEX.test(s) && !LOCAL_COMMIT.test(s))
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([s]) => s);
 }
 
@@ -58,7 +58,7 @@ function putValue(w, v, dict) {
   if (typeof v === 'string') {
     const di = dict.get(v);
     if (di !== undefined) { w.byte(5); w.uint(di); return; }
-    if (HEX64.test(v)) { w.byte(6); for (let i = 0; i < 64; i += 2) w.byte(parseInt(v.slice(i, i + 2), 16)); return; }
+    if (HASH_HEX.test(v)) { w.byte(6); w.byte(v.length / 2); for (let i = 0; i < v.length; i += 2) w.byte(parseInt(v.slice(i, i + 2), 16)); return; }
     const local = LOCAL_COMMIT.exec(v);
     if (local) { w.byte(10); w.uint(Number(local[1])); return; }
     w.byte(7); w.text(v); return;
@@ -80,7 +80,7 @@ function getValue(r, dict) {
     case 3: { const n = r.uint(); return n % 2 === 0 ? n / 2 : -(n + 1) / 2; }
     case 4: { const b = r.bytes(8); return new DataView(b.buffer, b.byteOffset, 8).getFloat64(0, true); }
     case 5: { const i = r.uint(); if (i >= dict.length) throw new Error('wire: bad dictionary reference'); return dict[i]; }
-    case 6: return [...r.bytes(32)].map((x) => x.toString(16).padStart(2, '0')).join('');
+    case 6: return [...r.bytes(r.byte())].map((x) => x.toString(16).padStart(2, '0')).join('');
     case 7: return r.text();
     case 8: { const n = r.uint(), a = []; for (let i = 0; i < n; i++) a.push(getValue(r, dict)); return a; }
     case 9: { const n = r.uint(), o = {}; for (let i = 0; i < n; i++) { const k = getValue(r, dict); if (typeof k !== 'string') throw new Error('wire: non-string object key'); o[k] = getValue(r, dict); } return o; }
@@ -89,17 +89,93 @@ function getValue(r, dict) {
   }
 }
 
+const isDelta = (v) => v && v.t === 'delta' && Array.isArray(v.c);
+
+function putPayload(w, p, dict) {
+  if (p && !Array.isArray(p) && p.type === 'ins' &&
+      Object.keys(p).every((k) => ['type', 'id', 'el', 'anchorId'].includes(k))) {
+    w.byte(1); putValue(w, p.id, dict); putValue(w, p.el, dict); putValue(w, p.anchorId, dict); return;
+  }
+  if (p && !Array.isArray(p) && p.type === 'del' &&
+      Object.keys(p).every((k) => ['type', 'id'].includes(k))) {
+    w.byte(2); putValue(w, p.id, dict); return;
+  }
+  w.byte(0); putValue(w, p, dict);
+}
+
+function getPayload(r, dict) {
+  const tag = r.byte();
+  if (tag === 1) return { type: 'ins', id: getValue(r, dict), el: getValue(r, dict), anchorId: getValue(r, dict) };
+  if (tag === 2) return { type: 'del', id: getValue(r, dict) };
+  if (tag === 0) return getValue(r, dict);
+  throw new Error('wire: unknown payload tag');
+}
+
+function putDelta(w, commits, dict) {
+  w.uint(commits.length);
+  let previous = null;
+  for (let ci = 0; ci < commits.length; ci++) {
+    const c = commits[ci], next = commits[ci + 1];
+    // A linear child's authenticated gid commits recursively to this gid, so
+    // intermediate ids need not travel. The run endpoint remains explicit and
+    // authenticates the entire reconstructed chain.
+    const authored = c.kind === 'op' || (c.kind === undefined && c.op !== null);
+    const omitGid = authored && next?.parents?.length === 1 && next.parents[0] === c.gid;
+    w.byte(omitGid ? 0 : 1); if (!omitGid) putValue(w, c.gid, dict);
+    w.uint(c.parents.length);
+    for (const p of c.parents) {
+      if (p === previous) w.byte(0);
+      else { w.byte(1); putValue(w, p, dict); }
+    }
+    if (c.kind === 'compact') {
+      w.byte(4); putValue(w, c.cut, dict); putValue(w, c.state, dict);
+    } else if (c.kind === 'merge') w.byte(3);
+    else if (c.kind === 'op') {
+      w.byte(2); putValue(w, c.op.replica, dict); w.uint(c.op.seq); putPayload(w, c.payload, dict);
+    } else if (c.op === null) w.byte(0);
+    else {
+      w.byte(1); putValue(w, c.op.replica, dict); w.uint(c.op.seq); putPayload(w, c.payload, dict);
+    }
+    previous = c.gid;
+  }
+}
+
+function getDelta(r, dict) {
+  const n = r.uint(), commits = [];
+  let previous = null;
+  for (let i = 0; i < n; i++) {
+    const gid = r.byte() === 0 ? null : getValue(r, dict), pn = r.uint(), parents = [];
+    // null is an authenticated-run back-reference: ingest substitutes the gid
+    // it recomputed for the preceding commit.
+    for (let j = 0; j < pn; j++) parents.push(r.byte() === 0 ? previous : getValue(r, dict));
+    const shape = r.byte();
+    let c;
+    if (shape === 0) c = { gid, parents, op: null, payload: null };
+    else if (shape === 1) c = { gid, parents, op: { replica: getValue(r, dict), seq: r.uint() }, payload: getPayload(r, dict) };
+    else if (shape === 2) c = { gid, kind: 'op', parents, op: { replica: getValue(r, dict), seq: r.uint() }, payload: getPayload(r, dict) };
+    else if (shape === 3) c = { gid, kind: 'merge', parents };
+    else if (shape === 4) c = { gid, kind: 'compact', parents, cut: getValue(r, dict), state: getValue(r, dict) };
+    else throw new Error('wire: unknown delta commit tag');
+    commits.push(c); previous = gid;
+  }
+  return { t: 'delta', c: commits };
+}
+
 export function encodeWire(value) {
   const entries = dictionary(value), ids = new Map(entries.map((s, i) => [s, i]));
-  const w = new Writer(); w.bytes(MAGIC); w.uint(entries.length); for (const s of entries) w.text(s);
-  putValue(w, value, ids); return w.finish();
+  const w = new Writer(); w.bytes(MAGIC); w.byte(isDelta(value) ? 1 : 0);
+  w.uint(entries.length); for (const s of entries) w.text(s);
+  if (isDelta(value)) putDelta(w, value.c, ids); else putValue(w, value, ids);
+  return w.finish();
 }
 
 export function decodeWire(bytes) {
   const r = new Reader(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
   for (const x of MAGIC) if (r.byte() !== x) throw new Error('wire: bad magic or version');
+  const mode = r.byte(); if (mode !== 0 && mode !== 1) throw new Error('wire: unknown message mode');
   const n = r.uint(), dict = []; for (let i = 0; i < n; i++) dict.push(r.text());
-  const value = getValue(r, dict); if (r.i !== r.b.length) throw new Error('wire: trailing bytes'); return value;
+  const value = mode === 1 ? getDelta(r, dict) : getValue(r, dict);
+  if (r.i !== r.b.length) throw new Error('wire: trailing bytes'); return value;
 }
 
 export const binaryWireBytes = (value) => encodeWire(value).length;

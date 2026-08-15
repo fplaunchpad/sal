@@ -121,9 +121,11 @@ export class Peer {
    *  recomputed global id must match the wire id (content-address gate). */
   ingest(wireCommits) {
     let added = 0;
+    let priorGid = null;
     for (const wc of wireCommits) {
-      if (this.byGid.has(wc.gid)) continue; // dedup: already held
-      const localParents = wc.parents.map((g) => this.byGid.get(g));
+      if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
+      const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      const localParents = parentGids.map((g) => this.byGid.get(g));
       if (localParents.some((p) => p === undefined)) {
         throw new Error(`ingest: unknown parent for ${wc.gid} (delta not ancestor-closed)`);
       }
@@ -141,7 +143,8 @@ export class Peer {
       }
       const c = this.dag.add({ parents: localParents, op, state });
       const g = this.#index(c);
-      if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      if (wc.gid !== null && g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      priorGid = g;
       added++;
     }
     if (added > 0) this.#refresh();
@@ -216,15 +219,30 @@ export function syncPeers(a, b) {
  *  separate stores, so wireBytes(...) measures the real per-sync payload the
  *  protocol would transmit. Uses the shared local ids as global ids (unique
  *  within one store). */
-export function sharedDelta(dag, fromHeadId, toHeadId) {
+export function sharedContentGids(dag, datatype, { hash = contentId } = {}) {
+  const gids = new Map();
+  const ids = dag.ids().sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+  for (const id of ids) {
+    const c = dag.get(id);
+    const parents = c.parents.map((p) => gids.get(p));
+    if (parents.some((p) => p === undefined)) throw new Error('sharedContentGids: pruned parent');
+    gids.set(id, commitContentId(c, parents, { fingerprint: datatype.fingerprint, hash }));
+  }
+  return gids;
+}
+
+export function sharedDelta(dag, fromHeadId, toHeadId, gids = null) {
   const have = dag.ancestorSet(toHeadId);
   const out = [];
-  for (const cid of dag.ancestorSet(fromHeadId)) {
+  const ancestry = [...dag.ancestorSet(fromHeadId)]
+    .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+  for (const cid of ancestry) {
     if (have.has(cid)) continue;
     const c = dag.get(cid);
     if (c.parents.length === 0) continue; // root shared
     out.push({
-      gid: cid, parents: c.parents,
+      gid: gids?.get(cid) ?? cid,
+      parents: c.parents.map((p) => gids?.get(p) ?? p),
       op: c.op ? { replica: c.op.replica, seq: c.op.seq } : null,
       payload: c.op ? c.op.payload : null,
     });

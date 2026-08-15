@@ -39,6 +39,7 @@ import { frontierOf, stableCut, insertIds } from './frontier.js';
 import { commitContentId, contentId } from './hash.js';
 import { compactibleEmbedRGA } from './compact.js';
 import { EpochDag, EPOCH0, cutKey, serializeCut, deserializeCut, doubleCertificate, buildInverseTranslate } from './epoch.js';
+import { encodeWire, decodeWire } from './wire.js';
 
 export class DistributedReplica {
   #headId;
@@ -260,9 +261,11 @@ export class DistributedReplica {
    *  recomputed gid must equal the wire gid (content-address gate). */
   ingest(wireCommits) {
     let added = 0;
+    let priorGid = null;
     for (const wc of wireCommits) {
-      if (this.byGid.has(wc.gid)) continue;
-      const localParents = wc.parents.map((g) => this.byGid.get(g));
+      if (wc.gid !== null && this.byGid.has(wc.gid)) { priorGid = wc.gid; continue; }
+      const parentGids = wc.parents.map((g) => g === null ? priorGid : g);
+      const localParents = parentGids.map((g) => this.byGid.get(g));
       // an epoch base (a pruned compaction) arrives with its parent ABSENT; its
       // content id verifies WITHOUT the parent, so it is the one allowed exception
       // to ancestor-closure.
@@ -289,14 +292,14 @@ export class DistributedReplica {
         state = this.datatype.decodeState(wc.state);
         const cut = deserializeCut(wc.cut ?? {});
         const cc = this.dag.add({ parents: [], op: null, state });
-        this.epochBase.set(cc.id, wc.parents[0]);
-        const g = commitContentId({ parents: [null], op: null, state }, [wc.parents[0]],
+        this.epochBase.set(cc.id, parentGids[0]);
+        const g = commitContentId({ parents: [null], op: null, state }, [parentGids[0]],
           { fingerprint: this.datatype.fingerprint, hash: this.hash });
-        if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+        if (wc.gid !== null && g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
         this.gid.set(cc.id, g); this.byGid.set(g, cc.id);
         this.epochDag.compaction(g, { settledIds: cut.settledIds ?? new Set(), cut, parentKey: EPOCH0 });
         this.epochOf.set(cc.id, g);
-        added++;
+        priorGid = g; added++;
         continue;
       } else if (wc.kind === 'compact') {
         // decode the inline state (the content-address witness), and RECOMPUTE
@@ -325,7 +328,8 @@ export class DistributedReplica {
       const c = this.dag.add({ parents: localParents, op, state });
       this.epochOf.set(c.id, epochKey);
       const g = this.#index(c);
-      if (g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      if (wc.gid !== null && g !== wc.gid) throw new Error(`content-address mismatch: recomputed ${g} != wire ${wc.gid}`);
+      priorGid = g;
       added++;
     }
     if (added > 0) this.#refresh();
@@ -657,7 +661,8 @@ export function syncReplicas(a, b) {
   const hasA = a.ancestryGids(), hasB = b.ancestryGids();
   const toB = a.delta(hasB), toA = b.delta(hasA);
   const aHead = a.headGid, bHead = b.headGid;
-  b.ingest(toB); a.ingest(toA);
+  b.ingest(decodeWire(encodeWire({ t: 'delta', c: toB })).c);
+  a.ingest(decodeWire(encodeWire({ t: 'delta', c: toA })).c);
   b.mergeWithGid(aHead); a.mergeWithGid(bHead);
   // The successful bidirectional round returns each peer's current advertised
   // head. Record a transport receipt even when the peer authored no new op.

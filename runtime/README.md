@@ -342,8 +342,10 @@ delta would be larger, e.g. a brand-new or very-far-behind peer).
   while a whole-state resync grows with the document, so in steady state the
   delta is well under half the whole-state baseline. `src/wire.js` supplies the
   deterministic binary framing: repeated strings are interned, safe integers
-  use varints, SHA-256 ids use 32 raw bytes, and local commit references use
-  numeric varints. The decoder is exercised before ingest; ingest still
+  use varints, content ids use raw bytes, and local commit references use
+  numeric varints. Linear authored runs omit intermediate ids and parent links;
+  their explicit endpoint hash recursively authenticates the reconstructed
+  chain. The decoder is exercised before ingest; ingest still
   recomputes state and the content id, so the codec does not enlarge the trust
   boundary. JSON sizing remains available only as a diagnostic control.
 - HEAD-SYNC PRESERVED. A peer only ever merges its current head with the

@@ -39,7 +39,17 @@ test('binary delta codec is deterministic, lossless, compact, and rejects damage
   const message = { t: 'delta', c: A.delta(new Set()) };
   const a = encodeWire(message), b = encodeWire(message);
   assert.deepEqual(a, b, 'canonical input has deterministic bytes');
-  assert.deepEqual(decodeWire(a), message, 'binary wire round-trips the complete commit schema');
+  const decoded = decodeWire(a);
+  assert.equal(decoded.c.length, message.c.length, 'binary wire preserves the complete commit run');
+  assert.equal(decoded.c.at(-1).gid, message.c.at(-1).gid, 'run endpoint authenticates the run');
+  assert.ok(decoded.c.slice(0, -1).some((c) => c.gid === null), 'linear intermediate ids are implicit');
+  const B = new Peer(embedRGA, 'B'); B.ingest(decoded.c);
+  assert.equal(B.byGid.has(message.c.at(-1).gid), true, 'ingest reconstructs and validates the endpoint');
+  const tampered = decodeWire(a);
+  tampered.c[0].payload.el = 'tampered';
+  const C = new Peer(embedRGA, 'C');
+  assert.throws(() => C.ingest(tampered.c), /content-address mismatch/,
+    'the explicit run endpoint authenticates every implicit intermediate commit');
   assert.equal(wireBytes(message), a.length);
   assert.ok(a.length < jsonWireBytes(message) * 0.55,
     `binary ${a.length} must materially beat JSON ${jsonWireBytes(message)}`);

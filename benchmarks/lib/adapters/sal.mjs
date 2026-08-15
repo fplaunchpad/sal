@@ -30,7 +30,7 @@ import { compactEliasDelta } from '../../../runtime/src/compact.js';
 import { compactSharedDirect } from '../../../runtime/src/shared-compact.js';
 import { encode as rtEncode, decode as rtDecode } from '../../../runtime/src/serialize.js';
 import { Runtime } from '../../../runtime/src/runtime.js';
-import { sharedDelta, wireBytes } from '../../../runtime/src/sync.js';
+import { sharedDelta, sharedContentGids, wireBytes } from '../../../runtime/src/sync.js';
 import { timed } from '../bench.mjs';
 
 /** Task #104 SHIPPED run-table serializer: encode(state) -> Uint8Array.
@@ -183,8 +183,12 @@ export function mkAdapter({ shared = false } = {}) {
          *  still diverge; comparable to Yjs/Automerge's update-bytes column. */
         sync() {
           const aH = rA.head.id, bH = rB.head.id;
-          const toB = sharedDelta(runtime.dag, aH, bH);
-          const toA = sharedDelta(runtime.dag, bH, aH);
+          // Measure the separate-store protocol's real SHA identities, not the
+          // shared harness's short local cN ids. Hash construction is outside
+          // the timed merge but inside the payload accounting path.
+          const gids = sharedContentGids(runtime.dag, kernel);
+          const toB = sharedDelta(runtime.dag, aH, bH, gids);
+          const toA = sharedDelta(runtime.dag, bH, aH, gids);
           const payloadBytes = wireBytes({ t: 'delta', c: toB }) + wireBytes({ t: 'delta', c: toA });
           const [, ms] = timed(() => rA.sync(rB));
           const [, gcMs] = timed(() => runtime.gc());
