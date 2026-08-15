@@ -669,6 +669,48 @@ theorem succOf_append_gen_new {K : Know} (inv : FugueFwd.FInv Γ K)
   succOf_append_gen_new_of_candidates K rep
     (succCand_append_gen_new inv rep hx hlam ha)
 
+/-! ## Merge congruence
+
+Policy knowledge merges by set union (`syncK`). We first expose its exact
+membership and monotone-bit equations; successor argmax composition follows.
+-/
+
+theorem mem_syncK_iff {K K' : Know} {g : GRec} :
+    g ∈ syncK K K' ↔ g ∈ K ∨ g ∈ K' := by
+  constructor
+  · intro h
+    unfold syncK at h
+    rcases List.mem_append.mp h with h | h
+    · exact Or.inl h
+    · exact Or.inr (List.mem_of_mem_filter h)
+  · intro h
+    unfold syncK
+    rcases h with h | h
+    · exact List.mem_append_left _ h
+    · by_cases hk : g ∈ K
+      · exact List.mem_append_left _ hk
+      · exact List.mem_append_right _ (List.mem_filter.mpr ⟨h, by simp [hk]⟩)
+
+theorem hasRChild_syncK (K K' : Know) (a : ℕ) :
+    hasRChild (syncK K K') a =
+      (hasRChild K a || hasRChild K' a) := by
+  cases hK : hasRChild K a <;> cases hK' : hasRChild K' a
+  · apply Bool.eq_false_iff.mpr
+    intro h
+    obtain ⟨g, hg, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp h
+    rcases mem_syncK_iff.mp hg with hg | hg
+    · exact Bool.noConfusion (hK ▸ FugueFwd.hasRChild_iff.mpr ⟨g, hg, e, π, hop⟩)
+    · exact Bool.noConfusion (hK' ▸ FugueFwd.hasRChild_iff.mpr ⟨g, hg, e, π, hop⟩)
+  · apply FugueFwd.hasRChild_iff.mpr
+    obtain ⟨g, hg, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp hK'
+    exact ⟨g, mem_syncK_iff.mpr (Or.inr hg), e, π, hop⟩
+  · apply FugueFwd.hasRChild_iff.mpr
+    obtain ⟨g, hg, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp hK
+    exact ⟨g, mem_syncK_iff.mpr (Or.inl hg), e, π, hop⟩
+  · apply FugueFwd.hasRChild_iff.mpr
+    obtain ⟨g, hg, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp hK
+    exact ⟨g, mem_syncK_iff.mpr (Or.inl hg), e, π, hop⟩
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -736,6 +778,7 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms genInsAfter_before_old_candidate
 #print axioms succCand_append_gen_new
 #print axioms succOf_append_gen_new
+#print axioms hasRChild_syncK
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC

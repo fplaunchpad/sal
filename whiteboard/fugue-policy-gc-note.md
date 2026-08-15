@@ -140,3 +140,9 @@ lemma. Consequently `succOf_append_gen_new` proves
 `succOf_append_gen_anchor`, exact fresh-chain lookup, and the monotone `hasR`
 equation, the insert transition's two changed gap records are discharged.
 Merge congruence is now the remaining formal obligation.
+
+Merge congruence is partially discharged. `mem_syncK_iff` proves that policy
+merge is exact record union, and `hasRChild_syncK` proves that the merged
+monotone bit is branchwise OR. The remaining merge theorem is successor
+argmax composition: select the display-earlier of the two branch successor
+witnesses (and its shared chain), with `none` as identity.
