@@ -353,6 +353,21 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 8. Build the unified paper benchmark harness
 
+- **Highest-priority runtime prerequisite: migrate the shipped sequence
+  kernel from one-sided EmbedRGA to sided EmbedRGA under the plain Fugue
+  generation policy.** Implement the L/R coordinate encoding and Fugue
+  side-selection rule in both the absolute and prefix-shared JavaScript
+  representations. Make Peritext use the same sided kernel. Preserve the
+  one-sided implementation as an explicit benchmark ablation and differential
+  oracle, not as the default. Before promotion, run the L1--L27 directed
+  controls (especially L19), runtime convergence and offline/multi-epoch GC
+  suites, Peritext render/marks-GC suites, snapshot recovery, and the full
+  benchmark matrix. Report coordinate bytes, retained bytes, apply/sync/save/
+  recovery time, and GC cost against the one-sided baseline to test the claim
+  that reusing the framing bit adds no material end-to-end overhead. Do not
+  port FugueMax into the production path in this task: its right-origin tag
+  costs $\Theta(|\text{successor key}|)$ per contested R entry and has no
+  JavaScript cost evidence yet.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,
