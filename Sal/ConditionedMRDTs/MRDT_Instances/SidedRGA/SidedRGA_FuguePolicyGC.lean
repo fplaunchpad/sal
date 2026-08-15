@@ -276,6 +276,38 @@ theorem succOf_start_schain_immediate {K : Know} (inv : FugueFwd.FInv Γ K)
   rw [hynKey] at hmax
   exact Bool.noConfusion hmax
 
+/-! ## Insert-transition equations independent of successor argmax
+
+Two fields can be discharged without the remaining post-insert argmax proof:
+the mint's chain is found exactly under its fresh id, and the intent anchor's
+monotone `hasR` bit is true after every Fugue insert (either it was already
+true and the mint is L, or the mint creates its first R child).
+-/
+
+theorem gChainOf_append_gen_new (K : Know) (rep : Emulation.Replica)
+    {x a : ℕ} (hfresh : ∀ g ∈ K, sIsIns g.op = true → g.op.1 ≠ x) :
+    gChainOf (K ++ [genInsAfter Γ K rep x a]) x =
+      (genInsAfter Γ K rep x a).chain := by
+  apply gChainOf_eq_of_rec
+  exact gRecOfId_append_fresh hfresh rfl rfl
+
+theorem hasRChild_append_gen_anchor (K : Know) (rep : Emulation.Replica)
+    (x a : ℕ) :
+    hasRChild (K ++ [genInsAfter Γ K rep x a]) a = true := by
+  rw [hasRChild_append]
+  cases hs : succOf Γ K a with
+  | none =>
+      have hc : fugueChoose Γ K a = (Side.R, a) :=
+        FugueFwd.fugueChoose_none hs
+      simp [hasRChild, gAnchorR, genInsAfter, hc]
+  | some n =>
+      cases hr : hasRChild K a with
+      | true => simp [hr]
+      | false =>
+          have hc : fugueChoose Γ K a = (Side.R, a) :=
+            FugueFwd.fugueChoose_someFalse hs hr
+          simp [hr, hasRChild, gAnchorR, genInsAfter, hc]
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -327,6 +359,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms liveGapOf_append_delete
 #print axioms succOf_schain_immediate
 #print axioms succOf_start_schain_immediate
+#print axioms gChainOf_append_gen_new
+#print axioms hasRChild_append_gen_anchor
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC

@@ -383,8 +383,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   agrees with the full policy on true-LCA fork/join tests. Before JavaScript
   migration, use the now-checked non-root and root
   `succOf`-argmax-to-immediate-`schainBefore` bridges to finish the post-insert
-  summary equations, then prove merge congruence. Do not treat the randomized
-  check as either proof.
+  successor equations. The fresh-chain lookup, post-insert anchor `hasR` bit,
+  and delete transition are already proved. Then prove merge congruence. Do
+  not treat the randomized check as either proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

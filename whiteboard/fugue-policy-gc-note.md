@@ -106,3 +106,11 @@ lemmas supply the ordering premise for the incremental equations
 `succ[a] := x` and `succ[x] := oldSucc[a]`. The next proof must derive those
 equations for the post-insert summary itself; randomized agreement is not a
 substitute for that transition theorem.
+
+The insert proof has also discharged its non-argmax fields:
+`gChainOf_append_gen_new` proves that the fresh id resolves to exactly the
+minted chain, and `hasRChild_append_gen_anchor` proves that the anchor's
+monotone policy bit is true after every Fugue insert. The remaining insert
+obligation is therefore precisely the pair of successor equations above.
+As a stronger refutation check, the executable model also passed 1,000 seeds
+of 30 true-LCA fork/join rounds.
