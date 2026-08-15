@@ -98,8 +98,11 @@ at mint time. It also proves exact delete-transition congruence:
 unchanged, so the implementation need only remove the deleted anchor's own
 map entry.
 
-Insert and merge congruence remain. The insert proof depends on the existing
-Fugue G1 obligation in `SidedRGA_Fugue.lean`: connect `succOf`'s finite
-key-argmax to the immediate `schainBefore` successor. That bridge is what
-justifies the incremental equations `succ[a] := x` and
-`succ[x] := oldSucc[a]`; randomized agreement is not a substitute for it.
+Insert and merge congruence remain. The former Fugue G1 dependency is now
+closed in this module: `succOf_schain_immediate` and its root companion prove
+that `succOf`'s finite key argmax is the immediate `schainBefore` successor in
+every state satisfying the strengthened reachable Fugue invariant. These
+lemmas supply the ordering premise for the incremental equations
+`succ[a] := x` and `succ[x] := oldSucc[a]`. The next proof must derive those
+equations for the post-insert summary itself; randomized agreement is not a
+substitute for that transition theorem.

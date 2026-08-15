@@ -381,9 +381,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   dead-leaf erasure, proves the exact finite observation consumed at each live
   gap, and proves delete-transition congruence. The executable compact model
   agrees with the full policy on true-LCA fork/join tests. Before JavaScript
-  migration, finish insert congruence by closing the documented
-  `succOf`-argmax-to-immediate-`schainBefore` bridge in `SidedRGA_Fugue.lean`,
-  then prove merge congruence. Do not treat the randomized check as that proof.
+  migration, use the now-checked non-root and root
+  `succOf`-argmax-to-immediate-`schainBefore` bridges to finish the post-insert
+  summary equations, then prove merge congruence. Do not treat the randomized
+  check as either proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

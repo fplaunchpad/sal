@@ -1,4 +1,4 @@
-import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
+import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue_ForwardNI
 
 /-!
 # Fugue mint-policy collection: live state is insufficient
@@ -16,7 +16,7 @@ policy tree makes it choose `(L, 2)` in the second.
 
 namespace Sal.ConditionedMRDTs.FuguePolicyGC
 
-open Sal.EmbedRGA (Side SChain unaryCode)
+open Sal.EmbedRGA (Side SChain unaryCode schainBefore keyLt_irrefl)
 open Sal.ConditionedMRDTs
 
 abbrev Γ := unaryCode
@@ -195,6 +195,87 @@ theorem liveGapOf_append_delete (K : Know) (t : Emulation.Timestamp)
     funext hc
   simp [liveGapOf, hc, hr, hn, hcfun]
 
+/-! ## The successor argmax is immediate in chain order
+
+The strengthened reachable-state invariant and argmax machinery are proved in
+`SidedRGA_Fugue_ForwardNI`.  The theorem below packages exactly the bridge the
+incremental collector needs for a non-root live anchor: `succOf` lies after the
+anchor, and no other minted chain lies strictly between them.
+-/
+
+theorem succOf_schain_immediate {K : Know} (inv : FugueFwd.FInv Γ K)
+    {a n : ℕ} (ha : a ∈ gMintedIds K) (hs : succOf Γ K a = some n) :
+    schainBefore (gChainOf K a) (gChainOf K n) ∧
+      ∀ y, y ∈ gMintedIds K →
+        schainBefore (gChainOf K a) (gChainOf K y) →
+        ¬schainBefore (gChainOf K y) (gChainOf K n) := by
+  have ha0 : a ≠ 0 := by
+    intro h
+    subst h
+    exact absurd (FugueFwd.minted_pos inv ha) (by decide)
+  have han := FugueFwd.succOf_after_anchor inv hs ha0
+  have hn : n ∈ gMintedIds K := succOf_mem hs
+  have hne : gChainOf K a ≠ gChainOf K n := by
+    intro h
+    unfold gKey at han
+    rw [h, keyLt_irrefl] at han
+    exact Bool.noConfusion han
+  refine ⟨FugueFwd.chainBefore_of_gKey_lt inv (Or.inr ha) (Or.inr hn)
+    hne han, ?_⟩
+  intro y hy hay hyn
+  obtain ⟨g, hfind, hgK, hgins, hgid⟩ := gRecOfId_of_minted hy
+  have hgy : gChainOf K y = g.chain := gChainOf_eq_of_rec hfind
+  have hkeys : (y, gKey Γ K y) ∈ gKeys Γ K := by
+    refine List.mem_map.mpr ⟨g, List.mem_filter.mpr ⟨hgK, hgins⟩, ?_⟩
+    apply Prod.ext
+    · exact hgid
+    · unfold gKey
+      rw [hgy]
+  have hayKey := FugueFwd.gKey_lt_of_chainBefore inv (Or.inr ha)
+    (Or.inr hy) hay
+  have hcand : (y, gKey Γ K y) ∈ succCand Γ K a := by
+    unfold succCand
+    rw [if_neg ha0]
+    exact List.mem_filter.mpr ⟨hkeys, by simpa using hayKey⟩
+  have hmax := FugueFwd.succOf_max inv hs hcand
+  have hynKey := FugueFwd.gKey_lt_of_chainBefore inv (Or.inr hy)
+    (Or.inr hn) hyn
+  rw [hynKey] at hmax
+  exact Bool.noConfusion hmax
+
+/-- Root/start companion to `succOf_schain_immediate`. Reachable minted
+chains are R-headed, so the empty root chain precedes the argmax result. -/
+theorem succOf_start_schain_immediate {K : Know} (inv : FugueFwd.FInv Γ K)
+    {n : ℕ} (hs : succOf Γ K 0 = some n) :
+    schainBefore (gChainOf K 0) (gChainOf K n) ∧
+      ∀ y, y ∈ gMintedIds K →
+        schainBefore (gChainOf K 0) (gChainOf K y) →
+        ¬schainBefore (gChainOf K y) (gChainOf K n) := by
+  have hn : n ∈ gMintedIds K := succOf_mem hs
+  obtain ⟨gn, hnfind, hnK, hnins, _⟩ := gRecOfId_of_minted hn
+  obtain ⟨d, rest, hhead⟩ := FugueFwd.chain_head_R inv gn.chain.length gn
+    hnK hnins (Nat.le_refl _)
+  have hroot : schainBefore (gChainOf K 0) (gChainOf K n) := by
+    rw [gChainOf_zero inv.pos, gChainOf_eq_of_rec hnfind, hhead]
+    exact schainBefore.extR [] d rest
+  refine ⟨hroot, ?_⟩
+  intro y hy _ hyn
+  obtain ⟨g, hfind, hgK, hgins, hgid⟩ := gRecOfId_of_minted hy
+  have hgy : gChainOf K y = g.chain := gChainOf_eq_of_rec hfind
+  have hkeys : (y, gKey Γ K y) ∈ gKeys Γ K := by
+    refine List.mem_map.mpr ⟨g, List.mem_filter.mpr ⟨hgK, hgins⟩, ?_⟩
+    apply Prod.ext
+    · exact hgid
+    · unfold gKey
+      rw [hgy]
+  have hcand : (y, gKey Γ K y) ∈ succCand Γ K 0 := by
+    simp [succCand, hkeys]
+  have hmax := FugueFwd.succOf_max inv hs hcand
+  have hynKey := FugueFwd.gKey_lt_of_chainBefore inv (Or.inr hy)
+    (Or.inr hn) hyn
+  rw [hynKey] at hmax
+  exact Bool.noConfusion hmax
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -244,6 +325,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms liveGapChoose_exact
 #print axioms liveGapParentChain_exact
 #print axioms liveGapOf_append_delete
+#print axioms succOf_schain_immediate
+#print axioms succOf_start_schain_immediate
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
