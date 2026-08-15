@@ -1,0 +1,161 @@
+import Sal.ConditionedMRDTs.MRDT_Instances.SidedRGA.SidedRGA_Fugue
+
+/-!
+# Fugue mint-policy collection: live state is insufficient
+
+The runtime migration needs a collectable issuer summary for Fugue's
+generation-time `fugueChoose`. This file pins the first design boundary:
+projecting knowledge to the live sided-RGA fold loses information needed by a
+later mint.
+
+The two worlds below have the same live state. One world has only the live
+anchor `1`. The other minted its right child `2` and then deleted it. Fugue
+chooses `(R, 1)` after the anchor in the first world, but the tombstone-visible
+policy tree makes it choose `(L, 2)` in the second.
+-/
+
+namespace Sal.ConditionedMRDTs.FuguePolicyGC
+
+open Sal.EmbedRGA (Side unaryCode)
+open Sal.ConditionedMRDTs
+
+abbrev Γ := unaryCode
+
+/-- World A: one live anchor. -/
+def onlyAnchor : Know := FugueSPOT.gIns [] 0 1 0
+
+/-- World B before deletion: the anchor and its right child. -/
+def withRightChild : Know := FugueSPOT.gIns onlyAnchor 0 2 1
+
+/-- World B after deleting the right child at visible index 1. -/
+def deadRightChild : Know :=
+  withRightChild ++ [genDelAt Γ withRightChild 0 3 1]
+
+/-- PASS: deletion makes the live sided-RGA states identical. -/
+theorem live_projection_equal :
+    gFold Γ onlyAnchor = gFold Γ deadRightChild := by native_decide
+
+/-- PASS: the simpler world chooses a new right child of the anchor. -/
+theorem choose_without_dead_child :
+    fugueChoose Γ onlyAnchor 1 = (Side.R, 1) := by native_decide
+
+/-- PASS: the dead right child remains the tombstone-visible successor, so
+the same user intent chooses a left child of that dead node. -/
+theorem choose_with_dead_child :
+    fugueChoose Γ deadRightChild 1 = (Side.L, 2) := by native_decide
+
+/-- FAIL companion for live-state sufficiency: equal live folds do not imply
+equal Fugue mint decisions. -/
+theorem live_projection_does_not_determine_choose :
+    gFold Γ onlyAnchor = gFold Γ deadRightChild ∧
+    fugueChoose Γ onlyAnchor 1 ≠ fugueChoose Γ deadRightChild 1 := by
+  exact ⟨live_projection_equal, by native_decide⟩
+
+/-! ## A sufficient but unbounded summary
+
+Delete records do not affect `fugueChoose`. Keeping every insert record is
+therefore sufficient, but it retains one policy record per inserted element.
+The counterexample above shows that filtering this summary to live inserts is
+not sufficient.
+-/
+
+/-- Drop delete events but retain every minted insert and its chain/origins. -/
+def fullMintSummary (K : Know) : Know := gMinted K
+
+theorem gMinted_idem (K : Know) :
+    gMinted (gMinted K) = gMinted K := by
+  simp only [gMinted, List.filter_filter]
+  apply List.filter_congr
+  intro g hg
+  simp
+
+theorem gRecOfId_fullMintSummary (K : Know) (x : ℕ) :
+    gRecOfId (fullMintSummary K) x = gRecOfId K x := by
+  simp [gRecOfId, fullMintSummary, gMinted_idem]
+
+theorem gChainOf_fullMintSummary (K : Know) (x : ℕ) :
+    gChainOf (fullMintSummary K) x = gChainOf K x := by
+  simp [gChainOf, gRecOfId_fullMintSummary]
+
+theorem gKeys_fullMintSummary (K : Know) :
+    gKeys Γ (fullMintSummary K) = gKeys Γ K := by
+  simp [gKeys, fullMintSummary, gMinted_idem]
+
+theorem hasRChild_fullMintSummary (K : Know) (a : ℕ) :
+    hasRChild (fullMintSummary K) a = hasRChild K a := by
+  induction K with
+  | nil => rfl
+  | cons g K ih =>
+      rcases g with ⟨⟨t, r, op⟩, lo, ro, chain⟩
+      cases op with
+      | ins x p sd side =>
+          change (gAnchorR a ⟨(t, r, SOp.ins x p sd side), lo, ro, chain⟩ ||
+              hasRChild (fullMintSummary K) a) =
+            (gAnchorR a ⟨(t, r, SOp.ins x p sd side), lo, ro, chain⟩ ||
+              hasRChild K a)
+          rw [ih]
+      | del x =>
+          change hasRChild (fullMintSummary K) a =
+            (false || hasRChild K a)
+          simpa using ih
+
+theorem succOf_fullMintSummary (K : Know) (a : ℕ) :
+    succOf Γ (fullMintSummary K) a = succOf Γ K a := by
+  simp [succOf, succCand, gKeys_fullMintSummary, gChainOf_fullMintSummary,
+    gKey]
+
+/-- Machine-checked upper bound: all minted inserts, without delete events,
+preserve every future Fugue choice. This summary is not bounded. -/
+theorem fullMintSummary_preserves_choose (K : Know) (a : ℕ) :
+    fugueChoose Γ (fullMintSummary K) a = fugueChoose Γ K a := by
+  simp [fugueChoose, succOf_fullMintSummary, hasRChild_fullMintSummary]
+
+/-! ## Stable deletion is still continuation-observable
+
+Assume every replica has observed `deadRightChild`; the deletion is therefore
+stable. Two replicas then concurrently insert ids `5` and `4` after anchor `1`.
+Without policy collection, both inserts are L children of dead `2`, and the
+mirrored L band displays the older id first. If collection replaces the common
+knowledge with `onlyAnchor`, both become R children of `1`, and the R band
+displays the newer id first. The merged reads differ.
+-/
+
+def fullA : Know :=
+  deadRightChild ++ [genInsAfter Γ deadRightChild 0 5 1]
+
+def fullB : Know :=
+  deadRightChild ++ [genInsAfter Γ deadRightChild 1 4 1]
+
+def fullMerged : Know := syncK fullA fullB
+
+def collectedA : Know :=
+  onlyAnchor ++ [genInsAfter Γ onlyAnchor 0 5 1]
+
+def collectedB : Know :=
+  onlyAnchor ++ [genInsAfter Γ onlyAnchor 1 4 1]
+
+def collectedMerged : Know := syncK collectedA collectedB
+
+/-- PASS: the uncollected policy tree orders the concurrent L siblings oldest
+first. -/
+theorem uncollected_continuation_view :
+    gView Γ fullMerged = [1, 4, 5] := by native_decide
+
+/-- FAIL companion: forgetting the stable dead child changes both operations
+to R children and reverses the concurrent pair. -/
+theorem collected_continuation_view :
+    gView Γ collectedMerged = [1, 5, 4] := by native_decide
+
+/-- Checked counterexample: stable dead-leaf erasure is not
+continuation-equivalent under the unchanged Fugue policy. -/
+theorem stable_dead_leaf_collection_changes_future_read :
+    gView Γ fullMerged ≠ gView Γ collectedMerged := by native_decide
+
+#print axioms live_projection_equal
+#print axioms choose_without_dead_child
+#print axioms choose_with_dead_child
+#print axioms live_projection_does_not_determine_choose
+#print axioms fullMintSummary_preserves_choose
+#print axioms stable_dead_leaf_collection_changes_future_read
+
+end Sal.ConditionedMRDTs.FuguePolicyGC
