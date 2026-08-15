@@ -102,7 +102,7 @@ first three (internals not per-node comparable from the API).
 
 | library (algorithm) | a tomb-free | c seq=naive | d pairwise | e strong | g fwd | h bwd | mixed fwd/bwd |
 |---|---|---|---|---|---|---|---|
-| Yjs (YATA) | ✗ S5: 22B + 1 deleted struct vs 2B fresh | ✓ witness+200 PBT | ✓ 30/30 | ✓ 30/30 | ✓ 0/30 | ✓ 0/230 | ✓ 0/50 |
+| Yjs (YATA) | ✗ S5: 22B + 1 deleted struct vs 2B fresh | ✓ witness+200 PBT | ✓ 30/30 | ✓ 30/30 | ✓ 0/30 | **✗ W-Yjs-3R: `"axb"`** | ✓ 0/50 |
 | Automerge (RGA-lineage) | ✗ S5: save *grows* on delete (188→202B; 41 changes) | ✓ witness+200 PBT | ✓ 30/30 | ✓ 30/30 | ✓ 0/30 | **✗ 30/30** `"[zFyExD]"` | ✗ 25/50 `"[zyDEFx]"` |
 | Loro (Fugue-lineage) | ✗ S5: 246B after delete-all vs 81B fresh | ✓ witness+200 PBT | ✓ 30/30 | ✓ 30/30 | ✓ 0/30 | ✓ 0/30 | ✓ 0/50 |
 | list-positions AbsList (Fugue ref) | state ✓ (2 chars saved) / positions ✗ (S6) | ✓ witness+200 PBT | ✓ 30/30 | ✓ 30/30 | ✓ 0/30 | ✓ 0/30 | ✓ 0/50 |
@@ -114,9 +114,11 @@ corpora are small (30 two-epoch trials with deletes + all scenario reads); treat
 smoke-level, not 12k-level. (iii) Automerge backward interleaving is **full char-level
 interleaving, deterministic across 30/30 trials** — the production reproduction of our
 TombRGA row's h cell. Mixed-direction splits B's run: `"[zyDEFx]"`. (iv) Yjs's
-literature-known backward "splitting" did **not** occur in 230 pure-backward trials
-(len 3 and 5) nor 50 mixed trials of this shape; recorded as ✓-in-these-scenarios, not
-as a general theorem. (v) list-positions in AbsList mode moves *all* metadata into
+literature-reported backward split requires a three-replica asymmetric causal shape:
+replica 1 observes `b` from replica 3 and inserts `a` before it while replica 2 inserts
+`x` concurrently; convergence yields `"axb"`. The earlier two-replica probes stayed
+clean (0/230 pure backward and 0/50 mixed) because they do not generate this shape.
+(v) list-positions in AbsList mode moves *all* metadata into
 positions: state after delete-all is empty (truly tombstone-free state), but S6 shows
 AbsPosition size grows under backward typing (182→252→392 JSON chars at n=10/20/40;
 forward flat at ~122) and survivors' positions embed deleted ancestors' waypoints —
@@ -226,8 +228,8 @@ Cross-check row — reproduces all known results:
 4. **The backward column (new, this task) splits the field:** among minimal rows only
    Shesha and Fugue keep backward runs contiguous; TombRGA/FlatTF/StoredPath/Logoot all
    interleave under interleaved Lamport ids. In production, Automerge interleaves fully
-   and deterministically (30/30, plus 25/50 mixed-direction); Yjs/Loro/list-positions
-   stayed clean in all scenarios tried.
+   and deterministically (30/30, plus 25/50 mixed-direction). Yjs fails on the directed
+   three-replica witness; Loro and list-positions stayed clean in all scenarios tried.
 5. **FlatTF's oracle divergences are violation-classified (9,886), uniquely in the
    matrix** — every other row's divergences are 100% licensed. The three-verdict
    classifier separates "picks a different never-displayed order" (Logoot, Fugue,
@@ -312,8 +314,6 @@ session-e ✓; FlatTF fails d sequentially, hence session-e trivially too.
   for the *algorithm as published* (Loro + list-positions already corroborate).
 - Production d/e corpora are 30-trial smoke tests; scaling them (and adding offline
   three-peer topologies to exercise stale-LCA analogues) is cheap follow-up.
-- Yjs backward "splitting" (Fugue paper's counterexample shape) was not reproduced;
-  finding the exact triggering scenario would settle Yjs's h-cell honestly.
 - The b-column for Yjs/Automerge/Loro is n/m (API-level); byte-level growth curves per
   node would need internal inspection like the Yjs struct walk used in S5.
 - Multi-epoch non-interleaving (runs continued across merges) is out of the standard

@@ -230,6 +230,28 @@ function s2s3_interleave(name, ad, backward, trials = 30) {
   return { inter, trials, outcomes, obs };
 }
 
+// Fugue, Appendix A.1.9 / Proposition 16: Yjs backward interleaving needs
+// three replicas and an asymmetric causal shape. Replica 1 first observes b
+// from replica 3 and then inserts a before it; replica 2 concurrently inserts
+// x into the empty document. After all updates arrive, x splits the run ab.
+function yjsThreeReplicaBackwardWitness() {
+  const docs = [new Y.Doc(), new Y.Doc(), new Y.Doc()];
+  docs.forEach((d, i) => { d.clientID = i + 1; });
+  const [d1, d2, d3] = docs;
+
+  d3.getText('t').insert(0, 'b');
+  Y.applyUpdateV2(d1, Y.encodeStateAsUpdateV2(d3));
+  d1.getText('t').insert(0, 'a');
+  d2.getText('t').insert(0, 'x');
+
+  const updates = docs.map(d => Y.encodeStateAsUpdateV2(d));
+  for (const d of docs) for (const u of updates) Y.applyUpdateV2(d, u);
+  const reads = docs.map(d => d.getText('t').toString());
+  if (!reads.every(r => r === 'axb'))
+    throw new Error(`expected converged axb, got ${reads.join(', ')}`);
+  console.log(`[yjs] S3 directed 3-replica: "ab" split as "axb" PASS`);
+}
+
 function s4_stability(name, ad, trials = 30) {
   // two-epoch scenario with deletes; record every read everywhere; check flips+cycles
   let flips = 0, cycles = 0; let firstFlip = null;
@@ -277,3 +299,5 @@ for (const [name, ad] of Object.entries(Adapters)) {
   try { s4_stability(name, ad); } catch (e) { console.log(`[${name}] S4 ERROR: ${e.message}`); }
   try { s5_graves(name, ad); } catch (e) { console.log(`[${name}] S5 ERROR: ${e.message}`); }
 }
+
+yjsThreeReplicaBackwardWitness();

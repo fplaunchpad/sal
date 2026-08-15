@@ -6061,7 +6061,7 @@ outputs of the sided model harness, \code{embed\_sided.py}.}
 \label{fig:sided-l19}
 \end{figure}
 
-\paragraph{How the encoding realizes it, for zero extra bits.} The
+\paragraph{How the encoding reuses the existing framing bit.} The
 one-sided block of \S\ref{sec:encoding} spends a constant leading
 \code{1} per level whose only job is keeping coordinates nonempty;
 repurpose it as the side bit. The L band needs an
@@ -6074,7 +6074,9 @@ and prefix relations), so the block becomes
   \,\|\, \bigl(C(\delta) \text{ if } R,\ \overline{C(\delta)}
   \text{ if } L\bigr),
 \]
-prefix-free per band, with no framing change and no new bits. On the
+prefix-free per band, with no framing change and no additional bit in
+each coordinate block. This is a coordinate-encoding result, not a claim
+of zero total implementation cost. On the
 example, with the binary delta code ($C(1) = \code{0}$, $C(9) =
 \code{1110001}$, $C(20) = \code{111100100}$, so $\overline{C(9)} =
 \code{0001110}$, $\overline{C(20)} = \code{000011011}$), the stored
@@ -6115,7 +6117,7 @@ the bits. Faithfulness of this parse (unique decodability plus order
 embedding of the sided alphabet) is machine-checked by the
 chain-model/code-model lockstep below.
 
-Two honest cost notes. Runs absorb the side bit like every other
+Two cost qualifications matter. Runs absorb the side bit like every other
 run-constant (paid once at the head). On \emph{this} trace the sided
 coordinates are longer than the one-sided fan's (the runs' deltas are
 $20$ because the two replicas' Lamport clocks interleave); the
@@ -10636,8 +10638,8 @@ The anomaly-comparison matrix
 production libraries through 25{,}917 merges per row, every cell
 backed by executed code. Its in-repo rows are also kernel-checked; the table below is the matrix's
 load-bearing core with each cell a Lean identifier. External libraries
-(Yjs, Automerge, Loro, list-positions) remain empirical by nature;
-their rows live in the matrix report unchanged.
+(Yjs, Automerge, Loro, list-positions) remain empirical by nature; the
+complete external rows remain in the matrix report.
 
 \begin{table}[h]
 \centering
@@ -10695,6 +10697,39 @@ RA-lin capstones are capitalized
 the Counter and the conditioned G-set conclude through the
 conditioned-discharge route (\code{counter\_ra\_linearizable3\_cd},
 \code{gset\_ra\_linearizable3\_cd}).
+
+\paragraph{Production-library anomaly probes.}
+Table~\ref{tab:prodanomaly} reports the separate executable probes against
+released libraries. These cells are measurements, not theorems. The generic
+forward and backward columns run 30 two-replica trials. Yjs needs the directed
+three-replica witness from Fugue Appendix~A.1.9: replica 1 observes \code{b}
+from replica 3 and inserts \code{a} before it while replica 2 concurrently
+inserts \code{x}; all replicas converge to \code{axb}, which splits the
+\code{ab} run. The earlier symmetric two-replica Yjs search remained clean in
+230 trials because it did not generate this causal shape. The full scenarios,
+versions, outputs, and retention measurements remain in
+\code{whiteboard/anomaly-matrix/anomaly\_matrix\_report.md}.
+
+\begin{table}[h]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+library & sequential oracle & forward split & backward split & delete-all retention \\
+\midrule
+Yjs 13.6 & 0/200 failures & 0/30 & \textbf{directed: \code{axb}} & 22~B vs 2~B fresh \\
+Automerge 3.2 & 0/200 failures & 0/30 & \textbf{30/30} & 202~B vs 121~B fresh \\
+Loro 1.13 & 0/200 failures & 0/30 & 0/30 & 246~B vs 81~B fresh \\
+list-positions 2.0 & 0/200 failures & 0/30 & 0/30 & state empty; ids retain paths \\
+\bottomrule
+\end{tabular}
+\caption{Production-library probes. A split count records trials in which a
+concurrent typing run was not contiguous. Yjs's backward cell is one directed
+three-replica witness, not a random-trial rate. Byte counts use each library's
+native representation and are not directly comparable across rows.}
+\label{tab:prodanomaly}
+\end{table}
 
 %======================================================================
 \part{The verified peer-to-peer runtime}
