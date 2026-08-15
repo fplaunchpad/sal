@@ -83,6 +83,16 @@ the referenced dead successors, is closed under insert and delete and preserves
 all future Fugue choices and reads. Its cardinality would be `O(live)` even
 though individual shared chains may still contain dead waypoints.
 
-Status: conjectured. The next oracle step is an executable incremental model
-with a known-broken live-only control, followed by a congruence theorem for its
-insert/delete transition.
+Status: **executable candidate checked; proof in progress**. The incremental
+model is `whiteboard/litmus/fugue_policy_gap_check.py`. Its directed control
+reproduces the stable-dead-leaf distinction: the retained-gap model agrees
+with the full tree on `[1,4,5]`, while the deliberately live-only model returns
+`[1,5,4]`. It also agrees with the full tree across 20 randomized runs of 60
+fork/join rounds, using the true common ancestor for every ternary merge.
+
+The Lean module now defines the exact per-anchor `LiveGap` observation and
+proves, without `sorry`, that it preserves both `fugueChoose` and the chosen
+parent chain. These theorems establish that the proposed fields are sufficient
+at mint time. They do not yet prove that the incremental insert/delete/merge
+algorithm maintains those fields; that transition-congruence theorem is the
+remaining formal obligation before runtime migration.

@@ -16,7 +16,7 @@ policy tree makes it choose `(L, 2)` in the second.
 
 namespace Sal.ConditionedMRDTs.FuguePolicyGC
 
-open Sal.EmbedRGA (Side unaryCode)
+open Sal.EmbedRGA (Side SChain unaryCode)
 open Sal.ConditionedMRDTs
 
 abbrev Γ := unaryCode
@@ -110,6 +110,54 @@ theorem fullMintSummary_preserves_choose (K : Know) (a : ℕ) :
     fugueChoose Γ (fullMintSummary K) a = fugueChoose Γ K a := by
   simp [fugueChoose, succOf_fullMintSummary, hasRChild_fullMintSummary]
 
+/-! ## The finite information consumed at one live gap
+
+The policy does not consume the whole tree when minting at a particular live
+anchor.  It consumes the anchor chain, one monotone bit, and at most one
+successor id and chain.  `LiveGap` makes that boundary explicit.  A runtime
+may keep one such record for start and for every live anchor, sharing the
+chains between records.
+-/
+
+structure LiveGap where
+  anchorChain : SChain
+  hasR : Bool
+  succ : Option ℕ
+  succChain : Option SChain
+
+def liveGapOf (K : Know) (a : ℕ) : LiveGap where
+  anchorChain := gChainOf K a
+  hasR := hasRChild K a
+  succ := succOf Γ K a
+  succChain := (succOf Γ K a).map (gChainOf K)
+
+def liveGapChoose (g : LiveGap) (a : ℕ) : Side × ℕ :=
+  match g.succ with
+  | some n => if g.hasR then (Side.L, n) else (Side.R, a)
+  | none => (Side.R, a)
+
+def liveGapParentChain (g : LiveGap) : SChain :=
+  match g.succ with
+  | some _ => if g.hasR then g.succChain.getD [] else g.anchorChain
+  | none => g.anchorChain
+
+/-- The per-gap summary makes exactly the same side/parent decision as the
+full tombstone-visible Fugue policy tree. -/
+theorem liveGapChoose_exact (K : Know) (a : ℕ) :
+    liveGapChoose (liveGapOf K a) a = fugueChoose Γ K a := by
+  rfl
+
+/-- It also retains exactly the parent chain needed to mint the coordinate.
+This is the complete generation-time observation used by `genInsAfter`. -/
+theorem liveGapParentChain_exact (K : Know) (a : ℕ) :
+    liveGapParentChain (liveGapOf K a) =
+      gChainOf K (fugueChoose Γ K a).2 := by
+  simp only [liveGapParentChain, liveGapOf, fugueChoose]
+  cases hsucc : succOf Γ K a with
+  | none => simp [hsucc]
+  | some n =>
+      cases hr : hasRChild K a <;> simp [hsucc, hr]
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -156,6 +204,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms choose_with_dead_child
 #print axioms live_projection_does_not_determine_choose
 #print axioms fullMintSummary_preserves_choose
+#print axioms liveGapChoose_exact
+#print axioms liveGapParentChain_exact
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
