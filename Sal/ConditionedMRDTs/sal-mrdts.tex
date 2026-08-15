@@ -5792,7 +5792,7 @@ $[b,a,c] \to [c,b]$ anomaly), i.e.\ its sort key is the birth chain
 \section{The sided generalization: two-sidedness as a parameter}
 \label{sec:sided}
 
-The one blemish in the battery is L19: two replicas that each type a
+The one-sided design fails L19: two replicas that each type a
 \emph{backward} run at the same place (repeatedly ``insert before the
 current head'') interleave, because every insert-before anchors at the
 same left neighbor and both runs land in one sibling group. The fan is
@@ -6123,7 +6123,7 @@ coordinates are longer than the one-sided fan's (the runs' deltas are
 $20$ because the two replicas' Lamport clocks interleave); the
 compression claim is about the common case, continuation-stamped
 backward typing ($\delta = 1$ per keystroke, an \code{0}$\|
-\overline{C(1)} = \code{01}$ block per level), where today's design
+\overline{C(1)} = \code{01}$ block per level), where the one-sided design
 pays a growing-$\delta$ fan. Two-sidedness buys the semantics always
 and the compression exactly when backward runs are locally stamped.
 
@@ -7153,7 +7153,7 @@ $\mathrm{vis}$-side condition survives in the interface.
 \hfill\lean{eRecode\_settled\_bridge\_honest}
 \end{theorem}
 
-\noindent Scope, honestly
+\noindent Scope
 delimited: the single-epoch statement, with cut-side data addressed by
 coordinates and chains, never by event ids resolved through prefix sums
 (the runtime twin's erratum: renumbered coordinates no longer telescope
@@ -7369,7 +7369,7 @@ D$), then the two-leg compactions and the one-shot compaction produce
 through $\mathrm{comp}$)
 \end{theorem}
 
-\noindent The one genuinely new obstruction is the carried domain. It
+\noindent The remaining obstruction is the carried domain. It
 must be the join cut's kept id-set transported to epoch-$0$ coordinates
 \emph{by record identity},
 $\mathrm{transportedDom}\ s\ \mathrm{kept}_W = \{\,c : \exists x \in s,\
@@ -7408,7 +7408,7 @@ $11029/0$ \code{ContOK} observation in the model harness. The model
 (\code{whiteboard/epoch\_diamond\_check.py}) validated the whole diamond
 at $s1$ across $2400$ trials before any of this was stated.
 
-\begin{remark}[what the runtime realizes, and an honest gap]
+\begin{remark}[runtime correspondence and remaining gap]
 \label{rem:glb}
 The shipped runtime (\code{runtime/src/epoch.js}) turns the
 per-replica epoch integer into a cut-indexed DAG and replaces the old
@@ -7597,7 +7597,8 @@ removes the dead-history share; what survives is a
 \paragraph{Measurement 3: the sided instantiation.} The same stack,
 band-aware (renumber within each parent-band group; fusion carries the
 head's band and codeword), replayed under the Fugue policy. Same
-accounting, plus one side bit per level, which is precisely the point:
+accounting, plus one side bit per level. The per-level representation
+therefore remains costly:
 
 \begin{center}\small
 \begin{tabular}{@{}lrrr@{}}
@@ -9064,7 +9065,7 @@ op payload & integer origin positions (compact, human-meaningful) &
 \end{tabular}
 \end{center}
 
-\noindent Four sentences of honest positioning. \emph{(i)} Eg-walker
+\noindent Comparison with nearby systems. \emph{(i)} Eg-walker
 achieves its clean document state by keeping the entire history and
 re-deriving order on demand; the embedded-chain RGA achieves it by
 making order derivation unnecessary: the sort keys are written at
@@ -9522,25 +9523,25 @@ Replication-aware linearizability certifies that every version of a
 replicated data type is the fold of some delivery-respecting
 linearization of its events. The reference point of that guarantee is
 the datatype's \emph{own} fold: a bug in \code{do} appears identically
-on every replica, converges perfectly, and passes every convergence
-theorem. This part records the campaign that closes the gap. For every
-production RDT in Sal there is now a kernel-checked theorem that the
+on every replica, converges, and passes every convergence theorem. This
+part closes that specification gap. For every production RDT in Sal, a
+kernel-checked theorem establishes that the
 fold of any single-replica history equals the output of a
 direct sequential program, the one a programmer would write
-with no replication in mind. The campaign's unifying observation is
-the \emph{witness discipline}: sequential interfaces address state
+with no replication in mind. The proofs share one witness discipline:
+sequential interfaces address state
 positionally (\code{dequeue()} is nullary, \code{insert} names an
 index), replicated operations cannot, and every replicated operation
 therefore carries the identity of what its issuer \emph{observed} the
 positional referent to be; the honesty side conditions of the theorems
-are exactly the faithfulness of those witnesses. The campaign's
-negative results carry as much information as its theorems: the
+state precisely when those witnesses are faithful. The negative results
+also define the boundary: the
 rehoming tombstone-free RGA is refuted at this specification on a
 four-op single-replica trace, its fused Peritext inherits the
 refutation at the render, and Shesha passes sequentially while failing
 at the merge, so do-faithfulness and merge-faithfulness are
 independent axes, and both separations are kernel-checked. A final
-section states what the campaign does \emph{not} give: per-replica
+section states what these results do \emph{not} give: per-replica
 soundness and convergence do not compose into ``the merged state is
 some user's sequential result,'' and the precise corner where
 composition fails is the dead-anchor corner the sequence-CRDT
@@ -10097,8 +10098,7 @@ collector, is \S\ref{sec:marks}.
 \section{The proofs: four tiers, three kinds of invariant}
 \label{sec:tiers}
 
-The campaign ran easiest to hardest, and the difficulty gradient
-turned out to be a gradient of invariant \emph{kinds}.
+The proofs require increasingly strong kinds of invariants across four tiers.
 
 \paragraph{Tier 1 (the thirteen flat datatypes, fourteen theorems),
 \code{SeqSpec\_Flat.lean}.}
@@ -10613,12 +10613,12 @@ sequence-CRDT trilemma names for insert-after-already-deleted-anchor.}
 \label{fig:deadanchor}
 \end{figure}
 
-Whether a matching order always exists is genuinely open; it is
+Whether a matching order always exists remains open; it is
 recorded as Open Question~\ref{oq:seqwitness} in the consolidated
 list.
 
-Independently of the question, the composition that \emph{is} sound
-and kernel-checked today: every version is the datatype's fold of a
+Independently of that question, the following composition is sound and
+kernel-checked: every version is the datatype's fold of a
 delivery-respecting enumeration (RA-linearizability); the fold is
 canonical per event set (Theorem~\ref{thm:efoldcanon}); each
 replica's own contribution obeyed the sequential spec while it was
@@ -10626,9 +10626,9 @@ being made (this campaign); and merge-level intent is delivered by
 separate, named theorems where it holds (delete-order preservation as
 sublist stability, subtree convexity as non-interleaving,
 read-equivalence to the published RGA as the compaction theorem). The
-campaign does not manufacture a merge-level user story; it pins the
-single-replica story so that merge-level claims have something sound
-to stand on.
+campaign does not establish a general merge-level sequential specification.
+It establishes the single-replica specification required by the separate
+merge-level intent theorems.
 
 \section{The verified matrix}
 \label{sec:matrix}
@@ -10698,9 +10698,65 @@ the Counter and the conditioned G-set conclude through the
 conditioned-discharge route (\code{counter\_ra\_linearizable3\_cd},
 \code{gset\_ra\_linearizable3\_cd}).
 
-\paragraph{Production-library anomaly probes.}
-Table~\ref{tab:prodanomaly} reports the separate executable probes against
-released libraries. These cells are measurements, not theorems. The generic
+\paragraph{Which designs exhibit which anomalies.}
+Table~\ref{tab:litmusmatrix} is the paper-facing index of the L1--L25
+battery. A filled cell means that the named history exposes a failure; an
+empty cell means that the design passed that directed history. This is an
+executable litmus matrix, not a claim that passing finitely many histories is
+a theorem. The surrounding sections cite the Lean theorem or checked
+counterexample when one exists. ``Embed-1'' is the current one-sided
+embedded-chain RGA; ``Embed-2'' is its sided form under the Fugue policy.
+The current Peritext order is inherited from Embed-1, so it inherits L19.
+
+\begin{table}[p]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{@{}llcccccc@{}}
+\toprule
+litmus & failure class & published RGA & rehoming & Shesha & Embed-1 & Embed-2 & Peritext \\
+\midrule
+L1 & delete reorder                 &  & $\times$ &  &  &  &  \\
+L2 & splice fooling pair            &  & $\times$ &  &  &  &  \\
+L3a/b & deep delete run             &  &  &  &  &  &  \\
+L4 & criss-cross split              &  &  & $\times$ &  &  &  \\
+L5 & insert concurrent with delete  &  &  &  &  &  &  \\
+L7 & forward run interleaving       &  &  &  &  &  &  \\
+L8 & dual dead markers              &  & $\times$ &  &  &  &  \\
+L9 & deleted-slot placement         &  & $\times$ & $\times$ &  &  &  \\
+L10 & deep attachment               &  &  &  &  &  &  \\
+L11 & head jump-back                &  &  &  &  &  &  \\
+L12 & leapfrog                      &  &  &  &  &  &  \\
+L13 & punctured interval            &  & $\times$ &  &  &  &  \\
+L14 & tombstoned-oracle fooling     &  & $\times$ & $\times$ &  &  &  \\
+L15 & strong-list fooling           &  & $\times$ & $\times$ &  &  &  \\
+L16 & concurrent double delete      &  &  &  &  &  &  \\
+L17 & sequential ceiling escape     &  &  &  &  &  &  \\
+L18 & merge-then-delete collapse    &  & $\times$ &  &  &  &  \\
+L19 & backward run interleaving     & $\times$ & $\times$ &  & $\times$ &  & $\times$ \\
+L20 & tie-verdict inheritance       &  &  &  &  &  &  \\
+L21 & stale coordinate frame        &  &  &  &  &  &  \\
+L22 & three-branch topology         &  &  & $\times$ &  &  &  \\
+L23 & rescaled-child topology       &  &  &  &  &  &  \\
+L24 & mixed coordinate frames       &  &  &  &  &  &  \\
+L25 & fold-verdict inheritance      &  & $\times$ &  &  &  &  \\
+\bottomrule
+\end{tabular}
+\caption{The sequence anomaly matrix. $\times$ means that the executable
+history exposes the named failure; an empty cell means that this directed
+history passes. L6 is unused; L3 has two directions. Peritext's cells concern
+its sequence-order layer, not mark rendering. L26 (foreign-op replay) and L27
+(GC-policy soundness) test lower layers through separate harnesses and therefore
+do not appear here.}
+\label{tab:litmusmatrix}
+\end{table}
+\clearpage
+
+\paragraph{Production-library coverage.}
+Table~\ref{tab:prodanomaly} reports the histories that the released-library
+adapters can express. These cells are measurements, not theorems. Their
+index-based APIs cannot express the anchored histories behind most L1--L25
+rows, so untested cells are omitted rather than reported as passes. The generic
 forward and backward columns run 30 two-replica trials. Yjs needs the directed
 three-replica witness from Fugue Appendix~A.1.9: replica 1 observes \code{b}
 from replica 3 and inserts \code{a} before it while replica 2 concurrently
@@ -10888,8 +10944,7 @@ serialization code, or cryptographic implementation.
 \section{Performance}
 \label{sec:perf}
 
-Where does the shipped artifact sit against production CRDT libraries?
-The benchmark (\code{benchmarks/}) runs the runtime against
+The benchmark (\code{benchmarks/}) compares the runtime with
 Yjs 13.6, Automerge 3.3 (wasm), Loro 1.13 (wasm), and list-positions 2.0
 on three workloads, and every cell is a run of the checked-in scripts on
 one machine (node v26.3.1, Apple M4 Pro, 24\,GB); nothing is quoted from
@@ -10898,13 +10953,13 @@ any number is reported. The corpus is the standard collaborative-editing
 replay set (the josephg traces: \code{automerge-paper} is Kleppmann's
 LaTeX-editing trace, \code{seph-blog1} is Gentle's blog draft, and
 \code{friendsforever}/\code{clownschool} are concurrent sessions, here
-also replayed single-author as the \code{\_flat} twins). One honesty note
-up front: we benchmark \emph{on} this corpus but not \emph{against}
+also replayed single-author as the \code{\_flat} twins). The evaluation
+uses this corpus but does not compare against
 Eg-walker's own implementation (\S\ref{sec:egwalker}), which is an event-
 graph replay engine rather than a state library; that comparison is a
-genuine gap.
+remaining gap.
 
-\paragraph{Per-metric methodology, stated natively.} \emph{Apply} is
+\paragraph{Measurement method.} \emph{Apply} is
 timed with a high-resolution clock around each single-character op,
 reported as median and p95 after a 1000-op warmup (JIT and wasm lazy
 init); timer overhead of 30 to 60~ns per op is \emph{not} subtracted and
@@ -11053,7 +11108,7 @@ run-table projection (model) & 3.8 & 3.8 & 3.9 & 4.0 \\
 as-shipped JSON's \textbf{35 / 53 / 170 / 243~MB}: four orders of
 magnitude, lossless (\code{decode(encode(s))} reads identically, gated on
 every trace and by a 120-trial merge/delete property test). Its
-save-time cost is the honest column: the run-table encode takes 0.2 to
+save-time cost appears in the encode column: the run-table encode takes 0.2 to
 1.7\,s across the traces where production saves are milliseconds,
 pre-existing and unchanged by the apply fast path. The
 serializer is anchored to the shipped state, not a different datatype:
