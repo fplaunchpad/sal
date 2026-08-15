@@ -16,7 +16,8 @@ policy tree makes it choose `(L, 2)` in the second.
 
 namespace Sal.ConditionedMRDTs.FuguePolicyGC
 
-open Sal.EmbedRGA (Side SChain unaryCode schainBefore keyLt_irrefl)
+open Sal.EmbedRGA (Side SChain unaryCode schainBefore keyLt keyLt_irrefl
+  sKey sidedCoordOf)
 open Sal.ConditionedMRDTs
 
 abbrev Γ := unaryCode
@@ -308,6 +309,103 @@ theorem hasRChild_append_gen_anchor (K : Know) (rep : Emulation.Replica)
             FugueFwd.fugueChoose_someFalse hs hr
           simp [hr, hasRChild, gAnchorR, genInsAfter, hc]
 
+/-! ### Generic argmax insertion
+
+This lemma removes list-fold mechanics from the geometric proof. If the new
+successor candidate is appended and beats the old argmax whenever one exists,
+the new `succOf` is exactly its id.
+-/
+
+theorem succOf_of_append_beating_candidate {K K' : Know} {a x : ℕ}
+    {kx : List ℕ}
+    (hcand : succCand Γ K' a = succCand Γ K a ++ [(x, kx)])
+    (hbeats : ∀ p, (succCand Γ K a).foldl maxKey none = some p →
+      keyLt p.2 kx = true) :
+    succOf Γ K' a = some x := by
+  unfold succOf
+  rw [hcand, List.foldl_append]
+  cases hold : (succCand Γ K a).foldl maxKey none with
+  | none => simp [maxKey]
+  | some p => simp [maxKey, hbeats p hold]
+
+theorem gKeys_append_gen (K : Know) (rep : Emulation.Replica) (x a : ℕ) :
+    gKeys Γ (K ++ [genInsAfter Γ K rep x a]) =
+      gKeys Γ K ++ [(x,
+        sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain))] := by
+  simp [gKeys, gMinted_append, gMinted, genInsAfter, sIsIns]
+
+theorem succCand_append_of_gKeys {K K' : Know} {a x : ℕ} {kx : List ℕ}
+    (hkeys : gKeys Γ K' = gKeys Γ K ++ [(x, kx)])
+    (hanchor : gKey Γ K' a = gKey Γ K a)
+    (hafter : a ≠ 0 → keyLt kx (gKey Γ K a) = true) :
+    succCand Γ K' a = succCand Γ K a ++ [(x, kx)] := by
+  unfold succCand
+  by_cases h0 : a = 0
+  · simp [h0, hkeys]
+  · rw [if_neg h0, if_neg h0, hkeys, List.filter_append, hanchor]
+    simp [hafter h0]
+
+theorem gKey_append_gen_old {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a y : ℕ} (hx : 0 < x)
+    (hy : y = 0 ∨ y ∈ gMintedIds K) :
+    gKey Γ (K ++ [genInsAfter Γ K rep x a]) y = gKey Γ K y := by
+  unfold gKey
+  rw [FugueFwd.gChainOf_append_stable hy inv.pos]
+  intro g hg
+  rw [List.mem_singleton] at hg
+  subst g
+  simpa using hx
+
+/-- The exact anchor-successor equation, reduced to its two geometric facts:
+the fresh chain is after the anchor and beats the previous candidate argmax.
+All knowledge-list and fold bookkeeping is discharged here. -/
+theorem succOf_append_gen_anchor_of_geometry {K : Know}
+    (inv : FugueFwd.FInv Γ K) (rep : Emulation.Replica) {x a : ℕ}
+    (hx : 0 < x) (ha : a = 0 ∨ a ∈ gMintedIds K)
+    (hafter : a ≠ 0 →
+      keyLt (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain))
+        (gKey Γ K a) = true)
+    (hbeats : ∀ p, (succCand Γ K a).foldl maxKey none = some p →
+      keyLt p.2
+        (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) = true) :
+    succOf Γ (K ++ [genInsAfter Γ K rep x a]) a = some x := by
+  apply succOf_of_append_beating_candidate
+  · apply succCand_append_of_gKeys (gKeys_append_gen K rep x a)
+      (gKey_append_gen_old inv rep hx ha)
+    exact hafter
+  · exact hbeats
+
+theorem succOf_append_gen_anchor_of_between {K : Know}
+    (inv : FugueFwd.FInv Γ K) (rep : Emulation.Replica) {x a : ℕ}
+    (hx : 0 < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K)
+    (hnewPos : Sal.EmbedRGA.PosSChain (genInsAfter Γ K rep x a).chain)
+    (hanchor : schainBefore (gChainOf K a)
+      (genInsAfter Γ K rep x a).chain)
+    (hold : ∀ n, succOf Γ K a = some n →
+      schainBefore (genInsAfter Γ K rep x a).chain (gChainOf K n)) :
+    succOf Γ (K ++ [genInsAfter Γ K rep x a]) a = some x := by
+  apply succOf_append_gen_anchor_of_geometry inv rep hx ha
+  · intro _
+    exact Sal.EmbedRGA.schainBefore_display Γ
+      (FugueFwd.gChainOf_posOf inv ha) hnewPos hanchor
+  · intro p hp
+    have hs : succOf Γ K a = some p.1 := by
+      unfold succOf
+      rw [hp]
+      rfl
+    have hpmem : p ∈ succCand Γ K a := by
+      rcases foldl_maxKey_mem _ none hp with h | h
+      · exact absurd h (by simp)
+      · exact h
+    have hpkey : p.2 = gKey Γ K p.1 :=
+      (FugueFwd.gKeys_shape inv (succCand_sub hpmem)).2
+    have hpminted : p.1 ∈ gMintedIds K := succOf_mem hs
+    rw [hpkey]
+    unfold gKey
+    exact Sal.EmbedRGA.schainBefore_display Γ hnewPos
+      (FugueFwd.gChainOf_posOf inv (Or.inr hpminted)) (hold p.1 hs)
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -361,6 +459,12 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms succOf_start_schain_immediate
 #print axioms gChainOf_append_gen_new
 #print axioms hasRChild_append_gen_anchor
+#print axioms succOf_of_append_beating_candidate
+#print axioms gKeys_append_gen
+#print axioms succCand_append_of_gKeys
+#print axioms gKey_append_gen_old
+#print axioms succOf_append_gen_anchor_of_geometry
+#print axioms succOf_append_gen_anchor_of_between
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
