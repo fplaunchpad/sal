@@ -169,3 +169,20 @@ gap evidence and incorrectly selects `2` after `1`
 (`absent_gap_total_merge_is_wrong`). The optional operator ignores the absent
 entry and matches the full merged successor
 (`absent_gap_optional_merge_is_exact`).
+
+A second checked SPOT refines the theorem further. If one branch concurrently
+introduces anchor `2` and the other introduces earlier root child `1`, optional
+merge need not reconstruct the exact successor `1` for `2`. However `2` has
+`hasR = false`, so Fugue ignores that successor; both summaries choose
+`(R, 2)` and use `2`'s chain. Thus exact `MergeSuccLaw` is false and stronger
+than required. The correct obligation is `RelevantMergeSuccLaw`: successor
+agreement only when merged `hasR` is true, plus unconditional `hasR` and
+anchor-chain agreement. The SPOTs are
+`absent_gap_optional_successor_can_differ` and
+`absent_gap_optional_choice_is_exact`.
+
+`mergeLiveGap_observation_exact` now packages the corrected reduction: given
+the relevant successor law and immutable anchor-chain agreement, compact merge
+preserves exactly the `(side,parent)` choice and parent chain consumed by the
+next mint. It does not claim raw gap equality. The remaining proof obligation
+is therefore only the reachable-state discharge of `RelevantMergeSuccLaw`.

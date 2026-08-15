@@ -387,8 +387,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   (`post.succ[a] = x`, `post.succ[x] = old.succ[a]`), fresh-chain lookup,
   post-insert anchor `hasR` bit, and delete transition are already proved.
   The compact `mergeLiveGap` operator and full-gap reduction are checked; the
-  sole open theorem is `MergeSuccLaw`, equating `syncK`'s successor with the
-  key-maximum of the branch witnesses that are actually retained. The formal
+  exact `MergeSuccLaw` is now refuted as unnecessarily strong: absent-branch
+  concurrency can change an unused successor while `hasR = false`. The sole
+  open theorem is `RelevantMergeSuccLaw`, requiring successor agreement only
+  when merged `hasR = true`. The formal
   interface now uses `Option LiveGap`: an absent branch anchor contributes
   `none`, and merged-dead anchors are pruned. Do not treat the randomized check
   as that proof.

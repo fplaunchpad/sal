@@ -793,6 +793,11 @@ def absentGapLeft : Know := FugueSPOT.gIns [] 0 1 0
 def absentGapRight : Know := FugueSPOT.gIns [] 1 2 0
 def absentGapMerged : Know := syncK absentGapLeft absentGapRight
 
+def absentGapLeftLater : Know := FugueSPOT.gIns [] 0 2 0
+def absentGapRightEarlier : Know := FugueSPOT.gIns [] 1 1 0
+def absentGapMergedCross : Know :=
+  syncK absentGapLeftLater absentGapRightEarlier
+
 theorem absent_gap_total_merge_is_wrong :
     liveGapSucc
         (mergeLiveGap (liveGapOf absentGapLeft 1)
@@ -803,6 +808,22 @@ theorem absent_gap_optional_merge_is_exact :
     (mergeRetainedGap absentGapLeft absentGapRight 1).bind
         (fun g => g.succ) =
       (retainedLiveGap absentGapMerged 1).bind (fun g => g.succ) := by
+  native_decide
+
+/-- Exact successor equality is intentionally too strong: the concurrent
+right root child lands after new anchor `2`, but the right branch cannot carry
+a gap for unknown `2`. This is harmless because `2` has no R child yet. -/
+theorem absent_gap_optional_successor_can_differ :
+    (mergeRetainedGap absentGapLeftLater absentGapRightEarlier 2).bind
+        (fun g => g.succ) ≠
+      (retainedLiveGap absentGapMergedCross 2).bind (fun g => g.succ) := by
+  native_decide
+
+theorem absent_gap_optional_choice_is_exact :
+    (mergeRetainedGap absentGapLeftLater absentGapRightEarlier 2).map
+        (fun g => liveGapChoose g 2) =
+      (retainedLiveGap absentGapMergedCross 2).map
+        (fun g => liveGapChoose g 2) := by
   native_decide
 
 theorem liveGapSucc_of (K : Know) (a : ℕ) :
@@ -839,6 +860,17 @@ def MergeSuccLaw (K K' : Know) (a : ℕ) : Prop :=
   liveGapSucc (liveGapOf (syncK K K') a) =
     maxGapSucc (liveGapSucc (liveGapOf K a))
       (liveGapSucc (liveGapOf K' a))
+
+/-- The successor law is required only when the merged anchor has previously
+minted an R child. Otherwise Fugue ignores the successor. -/
+def RelevantMergeSuccLaw (K K' : Know) (a : ℕ) : Prop :=
+  hasRChild (syncK K K') a = true → MergeSuccLaw K K' a
+
+/-- The public observation of a compact gap.  Fugue never inspects a raw
+successor while `hasR` is false; in that case both the mint decision and the
+parent chain are determined by the anchor alone. -/
+def gapObservation (g : LiveGap) (a : ℕ) : (Side × ℕ) × SChain :=
+  (liveGapChoose g a, liveGapParentChain g)
 
 theorem liveGapWithSucc_liveGapOf (K : Know) (a : ℕ) :
     liveGapWithSucc (liveGapOf K a) (liveGapSucc (liveGapOf K a)) =
@@ -879,6 +911,38 @@ theorem mergeLiveGap_exact_of_succLaw (K K' : Know) (a : ℕ)
         exact congrArg LiveGap.succ hself
       · change some c = (liveGapOf (syncK K K') a).succChain
         exact congrArg LiveGap.succChain hself
+
+/-- Exact equality of the *information consumed by the next mint* needs only
+the relevant successor law.  This is deliberately weaker than equality of
+the stored gaps: an anchor with no R child may have a different cached
+successor after a concurrent merge, but Fugue cannot observe it. -/
+theorem mergeLiveGap_observation_exact (K K' : Know) (a : ℕ)
+    (hanchor : gChainOf K a = gChainOf (syncK K K') a)
+    (hsucc : RelevantMergeSuccLaw K K' a) :
+    gapObservation (mergeLiveGap (liveGapOf K a) (liveGapOf K' a)) a =
+      gapObservation (liveGapOf (syncK K K') a) a := by
+  by_cases hR : hasRChild (syncK K K') a = true
+  · have hexact := mergeLiveGap_exact_of_succLaw K K' a hanchor (hsucc hR)
+    rw [hexact]
+  · have hRfalse : hasRChild (syncK K K') a = false :=
+      Bool.eq_false_of_not_eq_true hR
+    have hmR :
+        (mergeLiveGap (liveGapOf K a) (liveGapOf K' a)).hasR = false := by
+      rw [mergeLiveGap_hasR K K' a, show (liveGapOf (syncK K K') a).hasR =
+        hasRChild (syncK K K') a from rfl, hRfalse]
+    have hmAnchor :
+        (mergeLiveGap (liveGapOf K a) (liveGapOf K' a)).anchorChain =
+          (liveGapOf (syncK K K') a).anchorChain := by
+      unfold mergeLiveGap
+      cases maxGapSucc (liveGapSucc (liveGapOf K a))
+          (liveGapSucc (liveGapOf K' a)) <;>
+        simp [liveGapWithSucc, liveGapOf, hanchor]
+    unfold gapObservation liveGapChoose liveGapParentChain
+    simp only [hmR, show (liveGapOf (syncK K K') a).hasR = false by
+      exact hRfalse]
+    cases (mergeLiveGap (liveGapOf K a) (liveGapOf K' a)).succ <;>
+      cases (liveGapOf (syncK K K') a).succ <;>
+      simp [hmAnchor]
 
 /-! ## Stable deletion is still continuation-observable
 
@@ -954,6 +1018,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms retainedLiveGap_some
 #print axioms absent_gap_total_merge_is_wrong
 #print axioms absent_gap_optional_merge_is_exact
+#print axioms absent_gap_optional_successor_can_differ
+#print axioms absent_gap_optional_choice_is_exact
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
