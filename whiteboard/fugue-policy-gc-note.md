@@ -119,7 +119,9 @@ The anchor-successor proof is now free of list implementation details.
 `succOf_of_append_beating_candidate`, `gKeys_append_gen`,
 `succCand_append_of_gKeys`, and `gKey_append_gen_old` prove the finite-argmax
 update. `succOf_append_gen_anchor_of_between` reduces the exact equation
-`post.succ[a] = x` to the remaining Fugue geometry: the minted chain is after
-`a` and before `old.succ[a]` when that successor exists. The inherited equation
-`post.succ[x] = old.succ[a]` and merge congruence remain after that placement
-lemma.
+`post.succ[a] = x` to the Fugue geometry. That geometry is now discharged:
+`genInsAfter_between` proves that the minted chain is after `a` and before
+`old.succ[a]` in all three policy branches, using monotone-id arithmetic for
+the newest-R case. Consequently `succOf_append_gen_anchor` proves the exact
+first successor equation without additional premises. The inherited equation
+`post.succ[x] = old.succ[a]` and merge congruence remain.

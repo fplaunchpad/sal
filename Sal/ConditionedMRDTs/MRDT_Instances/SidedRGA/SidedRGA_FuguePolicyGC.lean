@@ -406,6 +406,96 @@ theorem succOf_append_gen_anchor_of_between {K : Know}
     exact Sal.EmbedRGA.schainBefore_display Γ hnewPos
       (FugueFwd.gChainOf_posOf inv (Or.inr hpminted)) (hold p.1 hs)
 
+/-- Fresh monotone ids make the generated final chain entry positive. -/
+theorem genInsAfter_pos {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a : ℕ} (hx : 0 < x)
+    (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) :
+    Sal.EmbedRGA.PosSChain (genInsAfter Γ K rep x a).chain := by
+  have hp : (fugueChoose Γ K a).2 = 0 ∨
+      (fugueChoose Γ K a).2 ∈ gMintedIds K := by
+    rcases fugueChoose_parent_or Γ K a with h | h
+    · rw [h]
+      exact ha
+    · exact Or.inr (succOf_mem h)
+  have hpx : (fugueChoose Γ K a).2 < x := by
+    rcases hp with h | h
+    · rw [h]
+      exact hx
+    · exact hlam _ h
+  rw [genInsAfter_chain]
+  intro e he
+  rcases List.mem_append.mp he with h | h
+  · exact FugueFwd.gChainOf_posOf inv hp e h
+  · rw [List.mem_singleton] at h
+    subst e
+    exact Nat.sub_pos_of_lt hpx
+
+/-- The generated Fugue chain lies strictly inside the anchor's current gap:
+after the anchor and before its old successor, when one exists. -/
+theorem genInsAfter_between {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a : ℕ} (hx : 0 < x)
+    (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) :
+    schainBefore (gChainOf K a) (genInsAfter Γ K rep x a).chain ∧
+      ∀ n, succOf Γ K a = some n →
+        schainBefore (genInsAfter Γ K rep x a).chain (gChainOf K n) := by
+  rcases hs : succOf Γ K a with _ | n
+  · have hc := FugueFwd.fugueChoose_none hs
+    constructor
+    · rw [genInsAfter_chain, hc]
+      exact schainBefore.extR _ _ []
+    · intro n hn
+      cases hn
+  · cases hr : hasRChild K a with
+    | true =>
+        have hc := FugueFwd.fugueChoose_someTrue hs hr
+        obtain ⟨d, ls, hnchain, _⟩ :=
+          FugueFwd.succ_R_desc_allL inv ha hr hs
+        constructor
+        · rw [genInsAfter_chain, hc, hnchain]
+          rw [List.append_assoc]
+          exact schainBefore.extR _ d (ls ++ [(Side.L, x - n)])
+        · intro n' hn'
+          injection hn' with h
+          subst n'
+          rw [genInsAfter_chain, hc]
+          exact schainBefore.extL _ _ []
+    | false =>
+        have hc := FugueFwd.fugueChoose_someFalse hs hr
+        have hbefore : schainBefore (gChainOf K a) (gChainOf K n) := by
+          rcases ha with h0 | ham
+          · subst a
+            exact (succOf_start_schain_immediate inv hs).1
+          · exact (succOf_schain_immediate inv ham hs).1
+        constructor
+        · rw [genInsAfter_chain, hc]
+          exact schainBefore.extR _ _ []
+        · intro n' hn'
+          injection hn' with h
+          subst n'
+          rw [genInsAfter_chain, hc]
+          apply schainBefore_snoc_newest hbefore
+          intro d rest hdecomp
+          have hnmem : n ∈ gMintedIds K := succOf_mem hs
+          have hsumN := FugueFwd.gChainOf_sum inv (Or.inr hnmem)
+          have hsumA := FugueFwd.gChainOf_sum inv ha
+          rw [hdecomp, List.map_append, List.sum_append] at hsumN
+          simp at hsumN
+          have hnx : n < x := hlam n hnmem
+          omega
+
+/-- **Exact anchor insert equation.** A fresh monotone Fugue mint becomes the
+tombstone-visible successor of its intent anchor. -/
+theorem succOf_append_gen_anchor {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a : ℕ} (hx : 0 < x)
+    (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) :
+    succOf Γ (K ++ [genInsAfter Γ K rep x a]) a = some x := by
+  obtain ⟨hanchor, hold⟩ := genInsAfter_between inv rep hx hlam ha
+  exact succOf_append_gen_anchor_of_between inv rep hx ha
+    (genInsAfter_pos inv rep hx hlam ha) hanchor hold
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -465,6 +555,9 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms gKey_append_gen_old
 #print axioms succOf_append_gen_anchor_of_geometry
 #print axioms succOf_append_gen_anchor_of_between
+#print axioms genInsAfter_pos
+#print axioms genInsAfter_between
+#print axioms succOf_append_gen_anchor
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
