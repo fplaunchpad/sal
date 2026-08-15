@@ -146,3 +146,10 @@ merge is exact record union, and `hasRChild_syncK` proves that the merged
 monotone bit is branchwise OR. The remaining merge theorem is successor
 argmax composition: select the display-earlier of the two branch successor
 witnesses (and its shared chain), with `none` as identity.
+
+The compact operator is now formalized as `mergeLiveGap`. Its successor id and
+chain remain paired by construction, and `liveGapSucc_mergeLiveGap` exposes
+the exact maximum it computes. `MergeSuccLaw` names the sole remaining
+semantic claim, and `mergeLiveGap_exact_of_succLaw` proves that this one law,
+together with immutable anchor-chain agreement, yields equality of the entire
+merged `LiveGap`. No other merge-field obligation remains.

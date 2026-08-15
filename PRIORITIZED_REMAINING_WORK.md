@@ -386,7 +386,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   merge congruence; both insert successor equations
   (`post.succ[a] = x`, `post.succ[x] = old.succ[a]`), fresh-chain lookup,
   post-insert anchor `hasR` bit, and delete transition are already proved.
-  Do not treat the randomized check as the merge proof.
+  The compact `mergeLiveGap` operator and full-gap reduction are checked; the
+  sole open theorem is `MergeSuccLaw`, equating `syncK`'s successor with the
+  key-maximum of the two branch witnesses. Do not treat the randomized check
+  as that proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

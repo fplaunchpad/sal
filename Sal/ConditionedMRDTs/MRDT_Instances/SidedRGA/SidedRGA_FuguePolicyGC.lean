@@ -126,6 +126,14 @@ structure LiveGap where
   succ : Option ℕ
   succChain : Option SChain
 
+@[ext] theorem LiveGap.ext {g h : LiveGap}
+    (hanchor : g.anchorChain = h.anchorChain)
+    (hR : g.hasR = h.hasR) (hsucc : g.succ = h.succ)
+    (hchain : g.succChain = h.succChain) : g = h := by
+  cases g
+  cases h
+  simp_all
+
 def liveGapOf (K : Know) (a : ℕ) : LiveGap where
   anchorChain := gChainOf K a
   hasR := hasRChild K a
@@ -768,6 +776,53 @@ theorem liveGapSucc_mergeLiveGap (l r : LiveGap) :
       obtain ⟨n, c⟩ := p
       simp [liveGapWithSucc, liveGapSucc, h]
 
+/-- The sole remaining semantic merge law: union's immediate successor is
+the display-earlier of the two branch immediate successors. -/
+def MergeSuccLaw (K K' : Know) (a : ℕ) : Prop :=
+  liveGapSucc (liveGapOf (syncK K K') a) =
+    maxGapSucc (liveGapSucc (liveGapOf K a))
+      (liveGapSucc (liveGapOf K' a))
+
+theorem liveGapWithSucc_liveGapOf (K : Know) (a : ℕ) :
+    liveGapWithSucc (liveGapOf K a) (liveGapSucc (liveGapOf K a)) =
+      liveGapOf K a := by
+  rw [liveGapSucc_of]
+  cases h : succOf Γ K a <;> simp [liveGapWithSucc, liveGapOf, h]
+
+/-- Full compact merge congruence follows from immutable anchor-chain
+agreement plus `MergeSuccLaw`; `hasR` agreement is already unconditional. -/
+theorem mergeLiveGap_exact_of_succLaw (K K' : Know) (a : ℕ)
+    (hanchor : gChainOf K a = gChainOf (syncK K K') a)
+    (hsucc : MergeSuccLaw K K' a) :
+    mergeLiveGap (liveGapOf K a) (liveGapOf K' a) =
+      liveGapOf (syncK K K') a := by
+  unfold mergeLiveGap
+  rw [← hsucc]
+  cases hp : liveGapSucc (liveGapOf (syncK K K') a) with
+  | none =>
+      have hself := liveGapWithSucc_liveGapOf (syncK K K') a
+      rw [hp] at hself
+      simp only [liveGapWithSucc] at hself ⊢
+      apply LiveGap.ext
+      · exact hanchor
+      · exact (hasRChild_syncK K K' a).symm
+      · change none = (liveGapOf (syncK K K') a).succ
+        exact congrArg LiveGap.succ hself
+      · change none = (liveGapOf (syncK K K') a).succChain
+        exact congrArg LiveGap.succChain hself
+  | some p =>
+      obtain ⟨n, c⟩ := p
+      have hself := liveGapWithSucc_liveGapOf (syncK K K') a
+      rw [hp] at hself
+      simp only [liveGapWithSucc] at hself ⊢
+      apply LiveGap.ext
+      · exact hanchor
+      · exact (hasRChild_syncK K K' a).symm
+      · change some n = (liveGapOf (syncK K K') a).succ
+        exact congrArg LiveGap.succ hself
+      · change some c = (liveGapOf (syncK K K') a).succChain
+        exact congrArg LiveGap.succChain hself
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -838,6 +893,7 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms hasRChild_syncK
 #print axioms mergeLiveGap_hasR
 #print axioms liveGapSucc_mergeLiveGap
+#print axioms mergeLiveGap_exact_of_succLaw
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
