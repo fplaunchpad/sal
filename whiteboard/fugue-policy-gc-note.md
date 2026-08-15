@@ -125,3 +125,10 @@ update. `succOf_append_gen_anchor_of_between` reduces the exact equation
 the newest-R case. Consequently `succOf_append_gen_anchor` proves the exact
 first successor equation without additional premises. The inherited equation
 `post.succ[x] = old.succ[a]` and merge congruence remain.
+
+For the inherited equation, `gKey_append_gen_new` proves exact fresh-key
+lookup and `succOf_append_gen_new_of_candidates` reduces the result
+definitionally to
+`post.succCand[x] = old.succCand[a]`. Thus the remaining insert proof is a
+single candidate-set order equivalence: every old element after `a` remains
+after the inserted `x`, and every element after `x` was already after `a`.

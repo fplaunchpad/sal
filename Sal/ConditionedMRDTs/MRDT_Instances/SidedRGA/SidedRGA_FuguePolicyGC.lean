@@ -496,6 +496,34 @@ theorem succOf_append_gen_anchor {K : Know} (inv : FugueFwd.FInv Γ K)
   exact succOf_append_gen_anchor_of_between inv rep hx ha
     (genInsAfter_pos inv rep hx hlam ha) hanchor hold
 
+/-! ## The fresh anchor inherits the old gap
+
+The second successor equation is definitionally reduced to candidate-set
+equality. The lemmas here discharge lookup and fold plumbing; the remaining
+order obligation is to show that the old elements after `a` are exactly the
+post-state elements after `x`.
+-/
+
+theorem gKey_append_gen_new (K : Know) (rep : Emulation.Replica)
+    {x a : ℕ} (hfresh : ∀ g ∈ K, sIsIns g.op = true → g.op.1 ≠ x) :
+    gKey Γ (K ++ [genInsAfter Γ K rep x a]) x =
+      sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain) := by
+  unfold gKey
+  rw [gChainOf_append_gen_new K rep hfresh]
+
+theorem succOf_congr_candidates {K K' : Know} {a a' : ℕ}
+    (h : succCand Γ K a = succCand Γ K' a') :
+    succOf Γ K a = succOf Γ K' a' := by
+  unfold succOf
+  rw [h]
+
+theorem succOf_append_gen_new_of_candidates (K : Know)
+    (rep : Emulation.Replica) {x a : ℕ}
+    (hcand : succCand Γ (K ++ [genInsAfter Γ K rep x a]) x =
+      succCand Γ K a) :
+    succOf Γ (K ++ [genInsAfter Γ K rep x a]) x = succOf Γ K a :=
+  succOf_congr_candidates hcand
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -558,6 +586,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms genInsAfter_pos
 #print axioms genInsAfter_between
 #print axioms succOf_append_gen_anchor
+#print axioms gKey_append_gen_new
+#print axioms succOf_append_gen_new_of_candidates
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
