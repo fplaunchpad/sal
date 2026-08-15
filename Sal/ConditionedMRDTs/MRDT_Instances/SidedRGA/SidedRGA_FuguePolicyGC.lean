@@ -524,6 +524,151 @@ theorem succOf_append_gen_new_of_candidates (K : Know)
     succOf Γ (K ++ [genInsAfter Γ K rep x a]) x = succOf Γ K a :=
   succOf_congr_candidates hcand
 
+theorem foldl_maxKey_from_some (l : List (ℕ × List ℕ))
+    (p : ℕ × List ℕ) : ∃ q, l.foldl maxKey (some p) = some q := by
+  induction l generalizing p with
+  | nil => exact ⟨p, rfl⟩
+  | cons b l ih =>
+      rw [List.foldl_cons]
+      cases h : keyLt p.2 b.2
+      · rw [maxKey, h]
+        exact ih p
+      · rw [maxKey, h]
+        exact ih b
+
+theorem foldl_maxKey_of_nonempty {l : List (ℕ × List ℕ)} (h : l ≠ []) :
+    ∃ p, l.foldl maxKey none = some p := by
+  cases l with
+  | nil => exact absurd rfl h
+  | cons b l =>
+      rw [List.foldl_cons]
+      simpa [maxKey] using foldl_maxKey_from_some l b
+
+/-- Every old candidate after `a` remains after the freshly inserted `x`.
+This is the forward half of candidate-set equality. -/
+theorem genInsAfter_before_old_candidate {K : Know}
+    (inv : FugueFwd.FInv Γ K) (rep : Emulation.Replica) {x a : ℕ}
+    (hx : 0 < x) (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) {p : ℕ × List ℕ}
+    (hp : p ∈ succCand Γ K a) :
+    keyLt p.2
+      (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) = true := by
+  rcases hs : succOf Γ K a with _ | n
+  · unfold succOf at hs
+    have hne : succCand Γ K a ≠ [] := by
+      intro hnil
+      rw [hnil] at hp
+      exact absurd hp (by simp)
+    obtain ⟨q, hq⟩ := foldl_maxKey_of_nonempty hne
+    rw [hq] at hs
+    exact absurd hs (by simp)
+  · have hnmem : n ∈ gMintedIds K := succOf_mem hs
+    have hnewn := (genInsAfter_between inv rep hx hlam ha).2 n hs
+    have hnewnKey : keyLt (gKey Γ K n)
+        (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) = true := by
+      unfold gKey
+      exact Sal.EmbedRGA.schainBefore_display Γ
+        (genInsAfter_pos inv rep hx hlam ha)
+        (FugueFwd.gChainOf_posOf inv (Or.inr hnmem)) hnewn
+    have hshape := FugueFwd.gKeys_shape inv (succCand_sub hp)
+    have hp' : (p.1, gKey Γ K p.1) ∈ succCand Γ K a := by
+      have heq : (p.1, gKey Γ K p.1) = p := by
+        apply Prod.ext
+        · rfl
+        · exact hshape.2.symm
+      rw [heq]
+      exact hp
+    have hmax := FugueFwd.succOf_max inv hs hp'
+    by_cases hid : p.1 = n
+    · rw [hshape.2, hid]
+      exact hnewnKey
+    · have hpne : gKey Γ K p.1 ≠ gKey Γ K n := by
+        intro heq
+        have hcoord : sidedCoordOf Γ (gChainOf K p.1) =
+            sidedCoordOf Γ (gChainOf K n) := by
+          unfold gKey sKey at heq
+          exact (List.append_inj' heq rfl).1
+        have hchain : gChainOf K p.1 = gChainOf K n :=
+          Sal.EmbedRGA.sidedCoordOf_inj Γ
+            (FugueFwd.gChainOf_posOf inv (Or.inr hshape.1))
+            (FugueFwd.gChainOf_posOf inv (Or.inr hnmem)) hcoord
+        have hs1 := FugueFwd.gChainOf_sum inv (Or.inr hshape.1)
+        have hs2 := FugueFwd.gChainOf_sum inv (Or.inr hnmem)
+        exact hid (hs1.symm.trans (hchain ▸ hs2))
+      rcases Sal.EmbedRGA.keyLt_total hpne with hpn | hnp
+      · rw [hshape.2]
+        exact Sal.EmbedRGA.keyLt_trans hpn hnewnKey
+      · rw [hnp] at hmax
+        exact Bool.noConfusion hmax
+
+/-- The post-state candidates after fresh `x` are exactly the pre-state
+candidates after its intent anchor `a`. -/
+theorem succCand_append_gen_new {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a : ℕ} (hx : 0 < x)
+    (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) :
+    succCand Γ (K ++ [genInsAfter Γ K rep x a]) x = succCand Γ K a := by
+  have hx0 : x ≠ 0 := Nat.ne_of_gt hx
+  have hfresh : ∀ g ∈ K, sIsIns g.op = true → g.op.1 ≠ x := by
+    intro g hg hins
+    have hm : g.op.1 ∈ gMintedIds K :=
+      List.mem_map.mpr ⟨g, List.mem_filter.mpr ⟨hg, hins⟩, rfl⟩
+    exact Nat.ne_of_lt (hlam _ hm)
+  have hkey := gKey_append_gen_new (K := K) (a := a) rep hfresh
+  unfold succCand
+  rw [if_neg hx0, gKeys_append_gen, hkey, List.filter_append]
+  have hdrop : List.filter (fun p : ℕ × List ℕ => keyLt p.2
+      (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)))
+      [(x, sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain))] = [] := by
+    simp [keyLt_irrefl]
+  rw [hdrop, List.append_nil]
+  by_cases h0 : a = 0
+  · rw [if_pos h0]
+    apply List.filter_eq_self.mpr
+    intro p hp
+    apply genInsAfter_before_old_candidate inv rep hx hlam ha
+    simpa [succCand, h0] using hp
+  · rw [if_neg h0]
+    apply List.filter_congr
+    intro p hp
+    have holdToNew : keyLt p.2 (gKey Γ K a) = true →
+        keyLt p.2
+          (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) = true := by
+      intro h
+      apply genInsAfter_before_old_candidate inv rep hx hlam ha
+      unfold succCand
+      rw [if_neg h0]
+      exact List.mem_filter.mpr ⟨hp, h⟩
+    have hanchorKey : keyLt
+        (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain))
+        (gKey Γ K a) = true := by
+      unfold gKey
+      exact Sal.EmbedRGA.schainBefore_display Γ
+        (FugueFwd.gChainOf_posOf inv ha)
+        (genInsAfter_pos inv rep hx hlam ha)
+        (genInsAfter_between inv rep hx hlam ha).1
+    have hnewToOld : keyLt p.2
+        (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) = true →
+        keyLt p.2 (gKey Γ K a) = true := by
+      intro h
+      exact Sal.EmbedRGA.keyLt_trans h hanchorKey
+    cases hn : keyLt p.2
+        (sKey (sidedCoordOf Γ (genInsAfter Γ K rep x a).chain)) <;>
+      cases ho : keyLt p.2 (gKey Γ K a)
+    · rfl
+    · exact absurd (holdToNew ho) (by simp [hn])
+    · exact absurd (hnewToOld hn) (by simp [ho])
+    · rfl
+
+/-- **Exact inherited-successor equation.** -/
+theorem succOf_append_gen_new {K : Know} (inv : FugueFwd.FInv Γ K)
+    (rep : Emulation.Replica) {x a : ℕ} (hx : 0 < x)
+    (hlam : ∀ m ∈ gMintedIds K, m < x)
+    (ha : a = 0 ∨ a ∈ gMintedIds K) :
+    succOf Γ (K ++ [genInsAfter Γ K rep x a]) x = succOf Γ K a :=
+  succOf_append_gen_new_of_candidates K rep
+    (succCand_append_gen_new inv rep hx hlam ha)
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -588,6 +733,9 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms succOf_append_gen_anchor
 #print axioms gKey_append_gen_new
 #print axioms succOf_append_gen_new_of_candidates
+#print axioms genInsAfter_before_old_candidate
+#print axioms succCand_append_gen_new
+#print axioms succOf_append_gen_new
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC

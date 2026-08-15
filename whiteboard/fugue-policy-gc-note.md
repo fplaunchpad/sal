@@ -132,3 +132,11 @@ definitionally to
 `post.succCand[x] = old.succCand[a]`. Thus the remaining insert proof is a
 single candidate-set order equivalence: every old element after `a` remains
 after the inserted `x`, and every element after `x` was already after `a`.
+
+Status update: that equivalence is now proved by
+`succCand_append_gen_new`, using the old argmax and the checked gap-placement
+lemma. Consequently `succOf_append_gen_new` proves
+`post.succ[x] = old.succ[a]`. Together with
+`succOf_append_gen_anchor`, exact fresh-chain lookup, and the monotone `hasR`
+equation, the insert transition's two changed gap records are discharged.
+Merge congruence is now the remaining formal obligation.
