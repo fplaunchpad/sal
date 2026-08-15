@@ -340,9 +340,12 @@ delta would be larger, e.g. a brand-new or very-far-behind peer).
   linear fold), pins per-round read equality, and measures the payload: the
   per-round delta is a function of that round's ops, CONSTANT across rounds,
   while a whole-state resync grows with the document, so in steady state the
-  delta is well under half the whole-state baseline. (The delta is JSON
-  op-encoding; a binary framing would shrink it further, the same
-  representation gap the save-size story documents.)
+  delta is well under half the whole-state baseline. `src/wire.js` supplies the
+  deterministic binary framing: repeated strings are interned, safe integers
+  use varints, SHA-256 ids use 32 raw bytes, and local commit references use
+  numeric varints. The decoder is exercised before ingest; ingest still
+  recomputes state and the content id, so the codec does not enlarge the trust
+  boundary. JSON sizing remains available only as a diagnostic control.
 - HEAD-SYNC PRESERVED. A peer only ever merges its current head with the
   current head another peer just advertised, never a stale interior commit --
   the hypothesis `gc_safety` consumes. Merges go through the same `lca()`

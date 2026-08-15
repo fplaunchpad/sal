@@ -13,7 +13,10 @@ import { Runtime } from '../src/runtime.js';
 import { CrissCrossError } from '../src/lca.js';
 import { compactibleEmbedRGA } from '../src/compact.js';
 import { embedRGA } from '../src/datatypes/embedRGA.js';
-import { Peer, syncPeers, deltaOrSnapshot } from '../src/sync.js';
+import {
+  Peer, syncPeers, deltaOrSnapshot, encodeWire, decodeWire,
+  wireBytes, jsonWireBytes,
+} from '../src/sync.js';
 
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -28,6 +31,23 @@ function mulberry32(seed) {
 const pick = (rng, xs) => xs[Math.floor(rng() * xs.length)];
 
 // -------------------------------------------------------------- (3a) the wire
+test('binary delta codec is deterministic, lossless, compact, and rejects damage', () => {
+  const A = new Peer(embedRGA, 'replica-with-a-long-name');
+  for (let id = 1; id <= 80; id++) A.commit({
+    type: 'ins', id, el: String.fromCharCode(96 + (id % 26 || 26)), anchorId: id === 1 ? null : id - 1,
+  });
+  const message = { t: 'delta', c: A.delta(new Set()) };
+  const a = encodeWire(message), b = encodeWire(message);
+  assert.deepEqual(a, b, 'canonical input has deterministic bytes');
+  assert.deepEqual(decodeWire(a), message, 'binary wire round-trips the complete commit schema');
+  assert.equal(wireBytes(message), a.length);
+  assert.ok(a.length < jsonWireBytes(message) * 0.55,
+    `binary ${a.length} must materially beat JSON ${jsonWireBytes(message)}`);
+  assert.throws(() => decodeWire(a.subarray(0, a.length - 1)), /truncated/);
+  const bad = a.slice(); bad[0] ^= 1;
+  assert.throws(() => decodeWire(bad), /bad magic/);
+});
+
 test('delta-sync convergence: N peers gossip over the wire, converge to equal reads', (t) => {
   const N = 4, ROUNDS = 50, BURST = 5;
   const rng = mulberry32(0xC0FFEE);

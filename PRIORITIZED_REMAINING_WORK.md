@@ -643,6 +643,18 @@ behavioral layer to the conditioned RA-linearizability certificate.
      provenance. Compare either against semantically equivalent artifacts or
      label the retained capabilities explicitly.
 
+  **Binary sync framing increment completed 2026-08-15.** `runtime/src/wire.js`
+  now provides a deterministic browser-safe codec with string interning,
+  varints, raw SHA-256 ids, and compact local commit references. `syncPeers`
+  crosses the encode/decode boundary before ingest, after which the existing
+  state recomputation and content-address check still run. The full 152-test
+  runtime suite passes. In the focused benchmark, payload falls from 5.9 to
+  2.5 KB/sync (`freq`) and from 118.7 to 46.3 KB/sync (`bulk`), versus Yjs at
+  1.6 and 15.1 KB. Item 3 is therefore only partially closed: the remaining
+  gap requires commit-run batching that makes linear parent links implicit and
+  validates intermediate content ids during reconstruction; binary framing
+  alone must not be presented as payload parity.
+
 ### 9. Finish Tree-RGA observational refinement
 
 - Generalize beyond root-only insertion.

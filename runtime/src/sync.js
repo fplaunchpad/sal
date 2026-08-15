@@ -36,10 +36,13 @@ import { lca, CrissCrossError } from './lca.js';
 import { frontierOf, stableCut } from './frontier.js';
 import { encode as encodeSnapshot } from './serialize.js';
 import { commitContentId, contentId } from './hash.js';
+import { encodeWire, decodeWire, binaryWireBytes } from './wire.js';
 
 const utf8 = new TextEncoder();
-/** Byte size of a JSON-serializable wire message (browser-safe; no Buffer). */
-export const wireBytes = (msg) => utf8.encode(JSON.stringify(msg)).length;
+/** Reference/debug JSON size and the production binary wire size. */
+export const jsonWireBytes = (msg) => utf8.encode(JSON.stringify(msg)).length;
+export const wireBytes = binaryWireBytes;
+export { encodeWire, decodeWire } from './wire.js';
 
 export class Peer {
   #headId;
@@ -190,8 +193,12 @@ export function syncPeers(a, b) {
   const toA = b.delta(hasA); // commits A lacks, from B
   const aHead = a.headGid, bHead = b.headGid;
   const baseline = a.snapshotBytes() + b.snapshotBytes();
-  b.ingest(toB);
-  a.ingest(toA);
+  // Exercise the actual transport boundary. Ingest still recomputes every
+  // state and content id; binary decoding does not enlarge the trust boundary.
+  const msgB = encodeWire({ t: 'delta', c: toB });
+  const msgA = encodeWire({ t: 'delta', c: toA });
+  b.ingest(decodeWire(msgB).c);
+  a.ingest(decodeWire(msgA).c);
   let merged = true;
   try {
     b.mergeWithGid(aHead);
@@ -199,7 +206,7 @@ export function syncPeers(a, b) {
   } catch (e) {
     if (e instanceof CrissCrossError) merged = false; else throw e;
   }
-  const bytes = wireBytes({ t: 'delta', c: toB }) + wireBytes({ t: 'delta', c: toA });
+  const bytes = msgB.length + msgA.length;
   return { bytes, baseline, toBCount: toB.length, toACount: toA.length, merged };
 }
 

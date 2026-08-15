@@ -10758,7 +10758,10 @@ the other lacks, and ships it as a \emph{delta}: per commit only the op
 payload, parent refs, and author, never a whole state. A whole-state
 snapshot (the run-table serializer below) is used only for a genuine bulk
 catch-up, chosen when the delta would be larger (a brand-new or
-very-far-behind peer). Crucially a peer only ever merges its current head
+very-far-behind peer). The deterministic binary codec interns repeated
+strings, encodes integers and local references as varints, and stores SHA-256
+ids as raw bytes. Decoding does not bypass validation: ingest still recomputes
+the state and content id. Crucially a peer only ever merges its current head
 with a head another peer just advertised, never a stale interior commit:
 this is exactly the head-sync hypothesis the GC-safety theorem
 (Theorem~\ref{thm:gcsafety}, \S\ref{sec:gc}) consumes, made structural
@@ -10956,12 +10959,12 @@ than the wasm libraries in these sessions:
  & \multicolumn{2}{c}{sync median} & \multicolumn{2}{c}{wire payload/sync} \\
 system & freq & bulk & freq & bulk \\
 \midrule
-ours (embed RGA, shipped) & 107\,$\mu$s & 754\,$\mu$s & \multicolumn{2}{c}{in-process$^\dagger$} \\
-ours (shared paths) & 258\,$\mu$s & 1.35\,ms & 5.9\,KB & 118.7\,KB \\
-Yjs & 90\,$\mu$s & 1.13\,ms & 1.6\,KB & 15.1\,KB \\
-Automerge & 1.82\,ms & 18.3\,ms & \multicolumn{2}{c}{in-process} \\
-Loro & 6.29\,ms & 17.1\,ms & 0.4\,KB & 4.6\,KB \\
-list-positions & 34\,$\mu$s & 626\,$\mu$s & 6.4\,KB & 123.6\,KB \\
+ours (embed RGA, shipped) & 108\,$\mu$s & 763\,$\mu$s & 2.5\,KB & 46.3\,KB \\
+ours (shared paths) & 236\,$\mu$s & 1.14\,ms & 2.5\,KB & 46.3\,KB \\
+Yjs & 96\,$\mu$s & 1.15\,ms & 1.6\,KB & 15.1\,KB \\
+Automerge & 1.85\,ms & 18.5\,ms & \multicolumn{2}{c}{in-process} \\
+Loro & 6.40\,ms & 17.6\,ms & 0.4\,KB & 4.6\,KB \\
+list-positions & 35\,$\mu$s & 783\,$\mu$s & 6.4\,KB & 123.7\,KB \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -10977,13 +10980,11 @@ the trade buys three orders on typing for a fraction of one on small-doc
 sync). Second, these are small documents, and while the delta merge no
 longer \emph{rebuilds} the live set in memory, it still scans
 $O(\text{live set})$ in time, so the numbers do not extrapolate to
-100k-character documents. $^\dagger$The
-shared-store benchmark merges in-process, so the payload column is not
-applicable; the separate-store wire protocol (\S\ref{sec:runtime}) ships
-a delta that is a function of that round's ops, constant across rounds
-while a whole-state resync grows with the document, and the runtime's
-sync tests measure it at 0.28 to 0.60$\times$ the whole-state baseline in
-steady state.
+100k-character documents. The benchmark computes the binary delta before its
+in-process merge. Binary framing cuts the former JSON payload by 2.4--2.6$\times$,
+but does not reach Yjs: the remaining 1.6--3.1$\times$ gap consists chiefly of
+per-operation commit and parent identity. Commit-run batching could make linear
+parents implicit, but is not implemented or included in these numbers.
 
 \paragraph{Save size, two artifact classes.} Our original runtime stores
 absolute chain coordinates as bit-strings, so the naive save is far above

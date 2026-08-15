@@ -525,9 +525,10 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   production save size. Two related items remain out of scope here: (a) a
   BATCHED-APPLY path (the mutable/transient fast path below),
   and (b) a WIRE FORMAT: the serializer is a save/load (whole-state)
-  encoder, and a delta/op wire format for sync is separate (the concurrent
-  payload column reports the runtime's JSON wire-delta bytes via
-  `sharedDelta`, unoptimized JSON rather than a designed binary format).
+  encoder, while sync uses the deterministic binary delta codec in
+  `runtime/src/wire.js`. The concurrent payload column applies that codec to
+  `sharedDelta`. Commit-run batching, which could elide intermediate ids and
+  parent references, remains future work.
 * The mutable/batched apply follow-on is done. The O(live-set)
   Map copy per op comes from the state container, not the order
   machinery; the persistent HAMT (`runtime/src/pmap.js`) moves per-char
@@ -537,8 +538,9 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   proven equal to folding `apply` in `runtime/test/applybatch.test.js`);
   the DAG granularity is one op per commit.
 * Concurrent sessions at realistic document sizes (the merge numbers here
-  are small-doc), and a binary wire format for our sync (the payload
-  column is unoptimized JSON delta bytes).
+  are small-doc), and commit-run batching for the binary sync format. Binary
+  framing is shipped; the remaining payload gap is per-operation commit and
+  parent identity rather than JSON syntax.
 
 ## Files
 
