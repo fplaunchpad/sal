@@ -158,6 +158,43 @@ theorem liveGapParentChain_exact (K : Know) (a : ℕ) :
   | some n =>
       cases hr : hasRChild K a <;> simp [hsucc, hr]
 
+/-! Delete transitions are already fully congruent. A delete changes the live
+fold but contributes no policy information, so every surviving gap fact is
+literally unchanged. -/
+
+def policyDelete (t : Emulation.Timestamp) (rep : Emulation.Replica)
+    (x : ℕ) : GRec where
+  op := (t, rep, SOp.del x)
+  lo := 0
+  ro := none
+  chain := []
+
+theorem fullMintSummary_append_delete (K : Know) (t : Emulation.Timestamp)
+    (rep : Emulation.Replica) (x : ℕ) :
+    fullMintSummary (K ++ [policyDelete t rep x]) = fullMintSummary K := by
+  simp [fullMintSummary, gMinted, policyDelete, sIsIns]
+
+/-- Exact delete-transition congruence for every anchor retained by the
+collector. Removing the deleted anchor's own map entry is therefore the only
+runtime action required. -/
+theorem liveGapOf_append_delete (K : Know) (t : Emulation.Timestamp)
+    (rep : Emulation.Replica) (x a : ℕ) :
+    liveGapOf (K ++ [policyDelete t rep x]) a = liveGapOf K a := by
+  have hs := fullMintSummary_append_delete K t rep x
+  have hc : ∀ y, gChainOf (K ++ [policyDelete t rep x]) y = gChainOf K y := by
+    intro y
+    rw [← gChainOf_fullMintSummary (K ++ [policyDelete t rep x]) y,
+      hs, gChainOf_fullMintSummary]
+  have hr : hasRChild (K ++ [policyDelete t rep x]) a = hasRChild K a := by
+    rw [← hasRChild_fullMintSummary (K ++ [policyDelete t rep x]) a,
+      hs, hasRChild_fullMintSummary]
+  have hn : succOf Γ (K ++ [policyDelete t rep x]) a = succOf Γ K a := by
+    rw [← succOf_fullMintSummary (K ++ [policyDelete t rep x]) a,
+      hs, succOf_fullMintSummary]
+  have hcfun : gChainOf (K ++ [policyDelete t rep x]) = gChainOf K :=
+    funext hc
+  simp [liveGapOf, hc, hr, hn, hcfun]
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -206,6 +243,7 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms fullMintSummary_preserves_choose
 #print axioms liveGapChoose_exact
 #print axioms liveGapParentChain_exact
+#print axioms liveGapOf_append_delete
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC

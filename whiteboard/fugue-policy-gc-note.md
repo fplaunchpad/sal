@@ -93,6 +93,13 @@ fork/join rounds, using the true common ancestor for every ternary merge.
 The Lean module now defines the exact per-anchor `LiveGap` observation and
 proves, without `sorry`, that it preserves both `fugueChoose` and the chosen
 parent chain. These theorems establish that the proposed fields are sufficient
-at mint time. They do not yet prove that the incremental insert/delete/merge
-algorithm maintains those fields; that transition-congruence theorem is the
-remaining formal obligation before runtime migration.
+at mint time. It also proves exact delete-transition congruence:
+`liveGapOf_append_delete` shows that a delete leaves every policy gap
+unchanged, so the implementation need only remove the deleted anchor's own
+map entry.
+
+Insert and merge congruence remain. The insert proof depends on the existing
+Fugue G1 obligation in `SidedRGA_Fugue.lean`: connect `succOf`'s finite
+key-argmax to the immediate `schainBefore` successor. That bridge is what
+justifies the incremental equations `succ[a] := x` and
+`succ[x] := oldSucc[a]`; randomized agreement is not a substitute for it.

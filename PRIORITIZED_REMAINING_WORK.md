@@ -377,6 +377,13 @@ behavioral layer to the conditioned RA-linearizability certificate.
   collecting this summary preserves every future mint decision before enabling
   commit-history GC. A visible-successor or always-left heuristic is not an
   implementation of the verified policy and must remain a negative control.
+  **Proof status:** `SidedRGA_FuguePolicyGC.lean` refutes live-only and stable
+  dead-leaf erasure, proves the exact finite observation consumed at each live
+  gap, and proves delete-transition congruence. The executable compact model
+  agrees with the full policy on true-LCA fork/join tests. Before JavaScript
+  migration, finish insert congruence by closing the documented
+  `succOf`-argmax-to-immediate-`schainBefore` bridge in `SidedRGA_Fugue.lean`,
+  then prove merge congruence. Do not treat the randomized check as that proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,
