@@ -368,6 +368,15 @@ behavioral layer to the conditioned RA-linearizability certificate.
   port FugueMax into the production path in this task: its right-origin tag
   costs $\Theta(|\text{successor key}|)$ per contested R entry and has no
   JavaScript cost evidence yet.
+  The migration must preserve the proved minting semantics: plain Fugue chooses
+  a side from the full policy tree, including deleted nodes. The current
+  JavaScript operation carries only `anchorId`, and the live-only EmbedRGA state
+  discards a deleted leaf, so delivery cannot reconstruct that choice. Extend
+  the issuer state with an explicit GC-able Fugue policy summary and put the
+  chosen `(side,parent)` in the immutable operation. Prove or validate that
+  collecting this summary preserves every future mint decision before enabling
+  commit-history GC. A visible-successor or always-left heuristic is not an
+  implementation of the verified policy and must remain a negative control.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,
