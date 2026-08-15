@@ -153,3 +153,12 @@ the exact maximum it computes. `MergeSuccLaw` names the sole remaining
 semantic claim, and `mergeLiveGap_exact_of_succLaw` proves that this one law,
 together with immutable anchor-chain agreement, yields equality of the entire
 merged `LiveGap`. No other merge-field obligation remains.
+
+The law audit found an important domain condition: `liveGapOf K a` is not a
+valid branch contribution when `a` is absent from that branch. Its default
+chain behaves like root and can corrupt selection. The executable model was
+already correct because it merged only map entries actually present.
+The Lean interface now matches it: `retainedLiveGap` returns an optional gap,
+`mergeOptionalLiveGap` uses absence as identity, and `mergeRetainedGap` prunes
+against the merged live set (while always retaining start). The remaining
+successor law must be stated over these optional retained contributions.

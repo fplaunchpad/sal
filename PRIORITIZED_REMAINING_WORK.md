@@ -388,7 +388,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   post-insert anchor `hasR` bit, and delete transition are already proved.
   The compact `mergeLiveGap` operator and full-gap reduction are checked; the
   sole open theorem is `MergeSuccLaw`, equating `syncK`'s successor with the
-  key-maximum of the two branch witnesses. Do not treat the randomized check
+  key-maximum of the branch witnesses that are actually retained. The formal
+  interface now uses `Option LiveGap`: an absent branch anchor contributes
+  `none`, and merged-dead anchors are pruned. Do not treat the randomized check
   as that proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with

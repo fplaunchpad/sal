@@ -748,6 +748,39 @@ def mergeLiveGap (l r : LiveGap) : LiveGap :=
   liveGapWithSucc { l with hasR := l.hasR || r.hasR }
     (maxGapSucc (liveGapSucc l) (liveGapSucc r))
 
+/-- A compact state has a gap for start and for live anchors only. Treating an
+absent anchor as `liveGapOf K a` would fabricate an empty/root-like chain, so
+distributed merge is explicitly optional. -/
+def retainedLiveGap (K : Know) (a : ℕ) : Option LiveGap :=
+  if a = 0 ∨ gLive Γ K a then some (liveGapOf K a) else none
+
+def mergeOptionalLiveGap : Option LiveGap → Option LiveGap → Option LiveGap
+  | none, r => r
+  | l, none => l
+  | some l, some r => some (mergeLiveGap l r)
+
+/-- Merge available branch evidence, then prune anchors that are not live in
+the merged datatype state. Start is always retained. -/
+def mergeRetainedGap (K K' : Know) (a : ℕ) : Option LiveGap :=
+  if a = 0 ∨ gLive Γ (syncK K K') a then
+    mergeOptionalLiveGap (retainedLiveGap K a) (retainedLiveGap K' a)
+  else none
+
+theorem mergeOptionalLiveGap_none_left (g : Option LiveGap) :
+    mergeOptionalLiveGap none g = g := rfl
+
+theorem mergeOptionalLiveGap_none_right (g : Option LiveGap) :
+    mergeOptionalLiveGap g none = g := by cases g <;> rfl
+
+theorem retainedLiveGap_some {K : Know} {a : ℕ}
+    (h : a = 0 ∨ gLive Γ K a) :
+    retainedLiveGap K a = some (liveGapOf K a) := by
+  simp [retainedLiveGap, h]
+
+theorem retainedLiveGap_none {K : Know} {a : ℕ}
+    (h : ¬(a = 0 ∨ gLive Γ K a)) : retainedLiveGap K a = none := by
+  simp [retainedLiveGap, h]
+
 theorem liveGapSucc_of (K : Know) (a : ℕ) :
     liveGapSucc (liveGapOf K a) =
       (succOf Γ K a).map (fun n => (n, gChainOf K n)) := by
@@ -894,6 +927,7 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms mergeLiveGap_hasR
 #print axioms liveGapSucc_mergeLiveGap
 #print axioms mergeLiveGap_exact_of_succLaw
+#print axioms retainedLiveGap_some
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC
