@@ -614,6 +614,35 @@ behavioral layer to the conditioned RA-linearizability certificate.
   session) but slow encoding/recovery caused by reconstructing absolute string
   coordinates. Items 2--6 above remain implementation work.
 
+  **Remaining EmbedRGA--Yjs engineering gaps (2026-08-15).** Preserve these as
+  explicit benchmark tasks rather than treating the current baseline as the
+  final comparison:
+
+  1. Replace the benchmark/runtime position-to-ID array, whose splice is
+     $O(\text{document length})$, with an indexed sequence structure. Report
+     adapter cost separately from datatype `apply`; the latter is already
+     approximately 0.49 microseconds on `automerge-paper`.
+  2. Implement a streaming bulk decoder for both run-table and shared-run
+     snapshots. Build HAMT nodes, shared paths, and traversal indexes in bulk
+     rather than by repeated persistent updates and global sorting. Re-run the
+     recovery comparison against Yjs after this change.
+  3. Complete the compact binary sync format from item 4 above and use it for
+     both absolute and shared EmbedRGA. The present 4--8x payload gap against
+     Yjs measures JSON framing and repeated identifiers, not an established
+     lower bound of the datatype.
+  4. Profile shared-path sync independently of encoding. Remove avoidable HAMT
+     lookups and repeated path/provenance traversal, then repeat the frequent
+     and bulk sync experiments. Keep content-addressed commit construction as
+     a separately reported runtime cost.
+  5. Optimize save construction after the streaming traversal is in place.
+     The durable run-table size already matches or beats Yjs update-v2, but its
+     save time does not; do not present size parity as implementation parity.
+  6. Preserve the artifact distinction in every table: the 1.1--1.6
+     byte/character run-table save is a live-read-oriented artifact, whereas
+     the 2.4--3.2 byte/character shared snapshot retains continuation
+     provenance. Compare either against semantically equivalent artifacts or
+     label the retained capabilities explicitly.
+
 ### 9. Finish Tree-RGA observational refinement
 
 - Generalize beyond root-only insertion.
