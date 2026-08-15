@@ -781,6 +781,30 @@ theorem retainedLiveGap_none {K : Know} {a : ℕ}
     (h : ¬(a = 0 ∨ gLive Γ K a)) : retainedLiveGap K a = none := by
   simp [retainedLiveGap, h]
 
+/-! ### Optional-gap merge SPOT
+
+Two replicas concurrently insert root children `1` and `2`. Anchor `1` is
+absent on the right. Treating `liveGapOf right 1` as evidence fabricates a
+root-chain comparison and selects `2` as a successor after `1`, although the
+merged order ends at `1`. Optional merge ignores that absent contribution.
+-/
+
+def absentGapLeft : Know := FugueSPOT.gIns [] 0 1 0
+def absentGapRight : Know := FugueSPOT.gIns [] 1 2 0
+def absentGapMerged : Know := syncK absentGapLeft absentGapRight
+
+theorem absent_gap_total_merge_is_wrong :
+    liveGapSucc
+        (mergeLiveGap (liveGapOf absentGapLeft 1)
+          (liveGapOf absentGapRight 1)) ≠
+      liveGapSucc (liveGapOf absentGapMerged 1) := by native_decide
+
+theorem absent_gap_optional_merge_is_exact :
+    (mergeRetainedGap absentGapLeft absentGapRight 1).bind
+        (fun g => g.succ) =
+      (retainedLiveGap absentGapMerged 1).bind (fun g => g.succ) := by
+  native_decide
+
 theorem liveGapSucc_of (K : Know) (a : ℕ) :
     liveGapSucc (liveGapOf K a) =
       (succOf Γ K a).map (fun n => (n, gChainOf K n)) := by
@@ -928,6 +952,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms liveGapSucc_mergeLiveGap
 #print axioms mergeLiveGap_exact_of_succLaw
 #print axioms retainedLiveGap_some
+#print axioms absent_gap_total_merge_is_wrong
+#print axioms absent_gap_optional_merge_is_exact
 #print axioms stable_dead_leaf_collection_changes_future_read
 
 end Sal.ConditionedMRDTs.FuguePolicyGC

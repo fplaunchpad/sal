@@ -162,3 +162,10 @@ The Lean interface now matches it: `retainedLiveGap` returns an optional gap,
 `mergeOptionalLiveGap` uses absence as identity, and `mergeRetainedGap` prunes
 against the merged live set (while always retaining start). The remaining
 successor law must be stated over these optional retained contributions.
+
+This boundary has a machine-checked SPOT. With concurrent root children `1`
+and `2`, anchor `1` is absent on the right. Total merge fabricates right-side
+gap evidence and incorrectly selects `2` after `1`
+(`absent_gap_total_merge_is_wrong`). The optional operator ignores the absent
+entry and matches the full merged successor
+(`absent_gap_optional_merge_is_exact`).
