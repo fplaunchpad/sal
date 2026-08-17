@@ -107,6 +107,13 @@ test('candidate snapshots round-trip and remain editable', () => {
   }
 });
 
+test('binary sided snapshot preserves variable-width UTF-8 elements', () => {
+  const dt = sharedSidedEmbedRGAExperimental;
+  const original = fold(dt, [ins(1, 'é'), ins(2, '🙂', 1), ins(3, 'x', 2)]).state;
+  const restored = dt.decodeSnapshot(dt.encodeSnapshot(original));
+  assert.deepEqual(dt.read(restored), ['é', '🙂', 'x']);
+});
+
 test('Peritext can use the experimental sided kernel without changing its API', () => {
   const dt = sharedSidedPeritextExperimental;
   const rt = new Runtime(dt), r = rt.replica('r');

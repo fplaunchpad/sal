@@ -94,6 +94,29 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
 
   const chainFor = (state, id) => id === null ? (shared ? null : []) : state.chains.get(id);
   const gapFor = (state, anchorId) => state.gaps.get(anchorId ?? ROOT);
+  const policyOrder = (nodes) => {
+    const children = new Map();
+    for (const n of nodes) {
+      const p = n.parent?.id ?? null;
+      let bands = children.get(p);
+      if (!bands) { bands = { L: [], R: [] }; children.set(p, bands); }
+      bands[n.side].push(n);
+    }
+    const order = (xs) => xs.sort((a, b) => {
+      const c = cmpKey(encodeBlock(a.side, a.delta, code), encodeBlock(b.side, b.delta, code));
+      return c === 0 ? a.id - b.id : -c;
+    });
+    for (const bands of children.values()) { order(bands.L); order(bands.R); }
+    const out = [], walk = (n) => {
+      const bands = children.get(n.id);
+      for (const x of bands?.L ?? []) walk(x);
+      out.push(n);
+      for (const x of bands?.R ?? []) walk(x);
+    };
+    for (const n of children.get(null)?.L ?? []) walk(n);
+    for (const n of children.get(null)?.R ?? []) walk(n);
+    return out;
+  };
 
   const prepare = (state, op) => {
     if (op.type !== 'ins' || (op.side && 'parentId' in op)) return op;
@@ -163,28 +186,9 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     },
     readEntries(state) {
       if (shared) {
-        const children = new Map();
-        eachEntry(state.chains, (_id, n) => {
-          const p = n.parent?.id ?? null;
-          let bands = children.get(p);
-          if (!bands) { bands = { L: [], R: [] }; children.set(p, bands); }
-          bands[n.side].push(n);
+        return policyOrder(state.chains.values()).flatMap((n) => {
+          const rec = state.live.get(n.id); return rec ? [[n.id, rec]] : [];
         });
-        const order = (xs) => xs.sort((a, b) => {
-          const ka = encodeBlock(a.side, a.delta, code);
-          const kb = encodeBlock(b.side, b.delta, code);
-          const c = cmpKey(ka, kb); return c === 0 ? a.id - b.id : -c;
-        });
-        for (const bands of children.values()) { order(bands.L); order(bands.R); }
-        const out = [], walk = (n) => {
-          const bands = children.get(n.id);
-          for (const x of bands?.L ?? []) walk(x);
-          const rec = state.live.get(n.id); if (rec) out.push([n.id, rec]);
-          for (const x of bands?.R ?? []) walk(x);
-        };
-        for (const n of children.get(null)?.L ?? []) walk(n);
-        for (const n of children.get(null)?.R ?? []) walk(n);
-        return out;
       }
       return [...state.live.entries()].map(([id, r]) =>
         [id, r, r.coord ?? encodeChain(r.chain, code, true)]).sort(([ia, a, ka], [ib, b, kb]) => {
@@ -298,51 +302,97 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
         for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
       }
-      const ns = [...nodes].sort(([x], [y]) => x - y), out = [1];
+      const ns = [...nodes].sort(([x], [y]) => x - y), out = [2];
       putVar(out, ns.length);
       let prev = 0;
+      for (const [id] of ns) { putVar(out, id - prev); prev = id; }
+      const tags = [];
+      for (let i = 0; i < ns.length; i += 4) {
+        let byte = 0;
+        for (let j = 0; j < 4 && i + j < ns.length; j++) {
+          const [id, n] = ns[i + j], parentId = n.parent?.id ?? 0;
+          const tag = (n.side === L ? 1 : 0) | (parentId !== id - 1 ? 2 : 0);
+          byte |= tag << (2 * j);
+        }
+        tags.push(byte);
+      }
+      out.push(...tags);
       for (const [id, n] of ns) {
-        putVar(out, id - prev); prev = id;
-        putVar(out, n.parent?.id ?? 0);
-        out.push(n.side === L ? 1 : 0); putVar(out, n.delta);
+        const parentId = n.parent?.id ?? 0;
+        if (parentId !== id - 1) putVar(out, id - parentId);
       }
-      const live = [...state.live.entries()];
-      putVar(out, live.length); prev = 0;
-      for (const [id, r] of live) {
-        putVar(out, id - prev); prev = id;
-        const bytes = utf8.encode(r.el); putVar(out, bytes.length); out.push(...bytes);
+      const live = ns.filter(([id]) => state.live.has(id));
+      const liveBits = [];
+      for (let i = 0; i < ns.length; i += 8) {
+        let byte = 0;
+        for (let j = 0; j < 8 && i + j < ns.length; j++)
+          if (state.live.has(ns[i + j][0])) byte |= 1 << j;
+        liveBits.push(byte);
       }
-      const gaps = [...state.gaps.entries()];
-      putVar(out, gaps.length);
-      for (const [id, g] of gaps) {
-        putVar(out, id === ROOT ? 0 : id);
-        out.push(g.hasR ? 1 : 0); putVar(out, g.succId ?? 0);
+      out.push(...liveBits);
+      const texts = live.map(([id]) => utf8.encode(state.live.get(id).el)), lenBits = [];
+      for (let i = 0; i < texts.length; i += 8) {
+        let byte = 0;
+        for (let j = 0; j < 8 && i + j < texts.length; j++)
+          if (texts[i + j].length !== 1) byte |= 1 << j;
+        lenBits.push(byte);
       }
+      out.push(...lenBits);
+      for (const bytes of texts) if (bytes.length !== 1) putVar(out, bytes.length);
+      for (const bytes of texts) out.push(...bytes);
+      // Successors are the immediate next retained policy node. Store only
+      // hasR; verify the derivation against the semantic summary before emit.
+      const ordered = policyOrder(ns.map(([, n]) => n));
+      const pos = new Map(ordered.map((n, i) => [n.id, i]));
+      const anchors = [ROOT, ...live.map(([id]) => id)], bits = [];
+      for (let i = 0; i < anchors.length; i += 8) {
+        let byte = 0;
+        for (let j = 0; j < 8 && i + j < anchors.length; j++) {
+          const id = anchors[i + j], g = state.gaps.get(id);
+          if (!g) throw new Error(`snapshot gap ${id} missing`);
+          const successor = id === ROOT ? (ordered[0]?.id ?? null)
+            : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
+          if (successor !== g.succId)
+            throw new Error(`derived successor mismatch at ${id}: ${successor} != ${g.succId}`);
+          if (g.hasR) byte |= 1 << j;
+        }
+        bits.push(byte);
+      }
+      putVar(out, bits.length); out.push(...bits);
       return Uint8Array.from(out);
     },
     decodeSnapshot(u8) {
       if (!shared) return this.decodeState(JSON.parse(unutf8.decode(u8)));
       const c = { i: 0 };
-      if (u8[c.i++] !== 1) throw new Error('unsupported sided snapshot version');
-      const nn = getVar(u8, c), all = new Map(); let prev = 0;
+      if (u8[c.i++] !== 2) throw new Error('unsupported sided snapshot version');
+      const nn = getVar(u8, c), all = new Map(), ids = []; let prev = 0;
+      for (let k = 0; k < nn; k++) { const id = prev + getVar(u8, c); ids.push(id); prev = id; }
+      const tags = u8.subarray(c.i, c.i + Math.ceil(nn / 4)); c.i += tags.length;
       for (let k = 0; k < nn; k++) {
-        const id = prev + getVar(u8, c); prev = id;
-        const parentId = getVar(u8, c), side = u8[c.i++] ? L : R, delta = getVar(u8, c);
+        const id = ids[k], tag = (tags[k >> 2] >> (2 * (k & 3))) & 3;
+        const parentId = tag & 2 ? id - getVar(u8, c) : id - 1;
+        const side = tag & 1 ? L : R, delta = id - parentId;
         const parent = parentId === 0 ? null : all.get(parentId);
         if (parentId !== 0 && !parent) throw new Error(`snapshot parent ${parentId} missing`);
         all.set(id, extendChain(parent, side, delta, id, true));
       }
-      const nl = getVar(u8, c), liveT = PMap.empty().begin(); prev = 0;
-      for (let k = 0; k < nl; k++) {
-        const id = prev + getVar(u8, c); prev = id;
-        const len = getVar(u8, c), el = unutf8.decode(u8.subarray(c.i, c.i + len)); c.i += len;
-        const chain = all.get(id); if (!chain) throw new Error(`live chain ${id} missing`);
-        liveT.set(id, Object.freeze({ chain, coord: null, el }));
+      const liveMapBits = u8.subarray(c.i, c.i + Math.ceil(nn / 8)); c.i += liveMapBits.length;
+      const liveIds = ids.filter((_id, i) => liveMapBits[i >> 3] & (1 << (i & 7)));
+      const lenBits = u8.subarray(c.i, c.i + Math.ceil(liveIds.length / 8)); c.i += lenBits.length;
+      const lens = liveIds.map((_id, i) => lenBits[i >> 3] & (1 << (i & 7)) ? getVar(u8, c) : 1);
+      const liveT = PMap.empty().begin();
+      for (let k = 0; k < liveIds.length; k++) {
+        const id = liveIds[k], len = lens[k], el = unutf8.decode(u8.subarray(c.i, c.i + len)); c.i += len;
+        liveT.set(id, Object.freeze({ chain: all.get(id), coord: null, el }));
       }
-      const ng = getVar(u8, c), gapsT = PMap.empty().begin();
-      for (let k = 0; k < ng; k++) {
-        const raw = getVar(u8, c), hasR = u8[c.i++] === 1, succ = getVar(u8, c);
-        gapsT.set(raw === 0 ? ROOT : raw, Object.freeze({ hasR, succId: succ === 0 ? null : succ }));
+      const bitLen = getVar(u8, c), bits = u8.subarray(c.i, c.i + bitLen); c.i += bitLen;
+      if (bitLen !== Math.ceil((liveIds.length + 1) / 8)) throw new Error('bad sided gap bitset');
+      const ordered = policyOrder(all.values()), pos = new Map(ordered.map((n, i) => [n.id, i]));
+      const anchors = [ROOT, ...liveIds], gapsT = PMap.empty().begin();
+      for (let i = 0; i < anchors.length; i++) {
+        const id = anchors[i], successor = id === ROOT ? (ordered[0]?.id ?? null)
+          : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
+        gapsT.set(id, Object.freeze({ hasR: !!(bits[i >> 3] & (1 << (i & 7))), succId: successor }));
       }
       if (c.i !== u8.length) throw new Error('trailing sided snapshot bytes');
       return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all));

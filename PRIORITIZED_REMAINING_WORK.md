@@ -425,11 +425,14 @@ behavioral layer to the conditioned RA-linearizability certificate.
   live records, live ancestry, and current gap successors. On the same trace
   it reduced 1.2 MB of provisional JSON to about 306 KB and restored median
   load to about 18 ms (current shared run codec: 59 KB and about 16 ms). The
-  remaining size gap is retained ancestry plus missing sided run/spine
-  compression, not textual encoding or repeated full chains. The next target
-  is the certified sided policy-summary/run compactor; simple dead-leaf
-  collection is insufficient because most dead nodes remain on paths to live
-  nodes. Then finish the
+  remaining structure was compressed without deleting evidence: successors
+  are reconstructed from the retained policy tree (and checked against the
+  semantic gaps during encoding), node parent exceptions and sides are
+  bit-packed, and live membership/text-length exceptions are sidecars over the
+  node table. The resulting snapshot is about 60.4 KB versus 59.1 KB for the
+  current shared run codec on this trace, closing the storage-size gap to about
+  2.3%. Save/load CPU is not yet closed (about 129/28 ms versus 16/16 ms), so
+  optimize codec construction before promotion. Then finish the
   L23--L27 gates and run repeated isolated benchmarks. Production state GC and
   default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
