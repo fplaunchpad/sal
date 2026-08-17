@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-17T10:15:16.250Z"
+    "date": "2026-08-17T11:01:27.128Z"
   },
   "gates": {
     "converged": true
@@ -22,13 +22,13 @@
   "metrics": {
     "operations": 6000,
     "finalChars": 3604,
-    "syncTotalMs": 20.964542,
-    "syncMedianUs": 4318.667,
-    "syncP95Us": 5190.583,
+    "syncTotalMs": 20.812249,
+    "syncMedianUs": 4028.6660000000006,
+    "syncP95Us": 5603.208,
     "syncPayloadBytes": 198675,
-    "localOpMeanUs": 19.062798666666666,
+    "localOpMeanUs": 18.136201166666666,
     "primarySaveBytes": 20247,
-    "runtimeGcMs": 2.744792
+    "runtimeGcMs": 2.704209
   },
   "detail": {
     "workload": "concurrent",
@@ -45,7 +45,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-17T10:15:16.250Z"
+      "date": "2026-08-17T11:01:27.128Z"
     },
     "finalChars": 3604,
     "gates": {
@@ -54,12 +54,12 @@
     "sync": {
       "count": 6,
       "warmupExcluded": 0,
-      "meanUs": 3494.0903333333335,
-      "medianUs": 4318.667,
-      "p95Us": 5190.583,
-      "p99Us": 5190.583,
-      "maxUs": 5190.583,
-      "totalMs": 20.964542
+      "meanUs": 3468.7081666666663,
+      "medianUs": 4028.6660000000006,
+      "p95Us": 5603.208,
+      "p99Us": 5603.208,
+      "maxUs": 5603.208,
+      "totalMs": 20.812249
     },
     "syncPayloadBytes": {
       "total": 198675,
@@ -67,8 +67,8 @@
     },
     "localOps": {
       "count": 6000,
-      "totalMs": 114.376792,
-      "meanUs": 19.062798666666666
+      "totalMs": 108.817207,
+      "meanUs": 18.136201166666666
     },
     "saves": [
       {
@@ -78,11 +78,11 @@
       }
     ],
     "compaction": null,
-    "runtimeGcMsTotal": 2.744792,
+    "runtimeGcMsTotal": 2.704209,
     "memory": {
-      "baselineHeap": 4179512,
-      "peakHeapSampled": 31080560,
-      "retainedHeapAfterGc": 2442840,
+      "baselineHeap": 4181352,
+      "peakHeapSampled": 30824584,
+      "retainedHeapAfterGc": 2441616,
       "externalDelta": 40,
       "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
     }

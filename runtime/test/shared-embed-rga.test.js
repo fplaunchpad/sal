@@ -5,7 +5,9 @@ import { sharedEmbedRGA, pathDeltas, encodeSharedState, decodeSharedState,
   encodeSharedRuns, decodeSharedRuns } from '../src/datatypes/sharedEmbedRGA.js';
 import { decodeChain } from '../src/compact.js';
 import { compactSharedEliasDelta, compactSharedDirect,
-  compactibleSharedEmbedRGA, sharedToAbsolute } from '../src/shared-compact.js';
+  compactibleSharedEmbedRGA, sharedToAbsolute,
+  buildSharedInverseTranslate } from '../src/shared-compact.js';
+import { buildInverseTranslate } from '../src/epoch.js';
 import { eliasDeltaCode } from '../src/datatypes/embedRGA.js';
 import { DistributedReplica, syncReplicas } from '../src/replica.js';
 
@@ -142,6 +144,27 @@ test('direct guarded compactor matches oracle for frozen anchor and in-flight pa
   assert.equal(sharedEmbedRGA.fingerprint(direct.state), sharedEmbedRGA.fingerprint(oracle.state));
   assert.deepEqual(sharedEmbedRGA.read(direct.state), sharedEmbedRGA.read(oracle.state));
   assert.ok(direct.stats.groupsSkippedInflight > 0);
+});
+
+test('native shared inverse translation matches the absolute oracle', () => {
+  let pre = sharedEmbedRGA.init();
+  for (const op of [
+    { type: 'ins', id: 2, anchorId: null, el: 'a' },
+    { type: 'ins', id: 8, anchorId: 2, el: 'b' },
+    { type: 'ins', id: 5, anchorId: 2, el: 'c' },
+    { type: 'ins', id: 11, anchorId: 8, el: 'd' },
+  ]) pre = sharedEmbedRGA.apply(pre, op);
+  pre = sharedEmbedRGA.apply(pre, { type: 'del', id: 5 });
+  const post = compactSharedDirect(pre,
+    { settledIds: new Set([2, 5, 8, 11]) }).state;
+  const preAbs = sharedToAbsolute(pre), postAbs = sharedToAbsolute(post);
+  const oracle = buildInverseTranslate(preAbs, postAbs);
+  const native = buildSharedInverseTranslate(pre, post);
+  for (const [, rec] of postAbs) {
+    assert.equal(native(rec.coord), oracle(rec.coord));
+    const extension = rec.coord + eliasDeltaCode.enc(3);
+    assert.equal(native(extension), oracle(extension));
+  }
 });
 
 test('DistributedReplica certified GC: shared representation matches no-GC twin', () => {

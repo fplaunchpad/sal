@@ -380,10 +380,12 @@ behavioral layer to the conditioned RA-linearizability certificate.
   delta-coded ids, parent distances, UTF-8 payloads, and tombstones; corruption,
   backward-decoding, and round-trip gates pass. At 21,200 Peritext operations,
   EmbedRGA with both GCs is 3.3 times smaller than RGA because it removes all
-  6,000 deleted spine identifiers. Its current shared-state compactor takes
-  8.36 seconds, however, and the original 57,500-operation configuration
-  exhausted a 4 GB heap. Optimizing this compactor before final paper-scale
-  repetitions is the next explicit benchmark-engineering task.
+  6,000 deleted spine identifiers. Native shared-prefix depth accounting,
+  inverse epoch translation, and lossless content fingerprinting reduce state
+  GC from 8.36 seconds to a 32.8 ms median (32.4--33.1 ms). A stronger
+  60,000-operation stress run now completes under the same 4 GB limit in 87.6
+  ms instead of exhausting the heap. The repeated aggregate and report have
+  been regenerated after this optimization.
 
 - **Highest-priority runtime prerequisite: implement sided EmbedRGA under the
   plain Fugue generation policy as an experimental kernel, then measure it

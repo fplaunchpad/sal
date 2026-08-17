@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T10:15:04.356Z"
+  "date": "2026-08-17T11:01:16.026Z"
  },
  "ops": {
   "total": 368209,
@@ -15,14 +15,14 @@
  },
  "finalChars": 56769,
  "apply": {
-  "totalMs": 1905.967959,
+  "totalMs": 1950.324041,
   "count": 368209,
   "warmupExcluded": 1000,
-  "meanUs": 5.145489424278817,
-  "medianUs": 4.291,
-  "p95Us": 11.417,
-  "p99Us": 15.625,
-  "maxUs": 991.083
+  "meanUs": 5.2671737511880155,
+  "medianUs": 4.458,
+  "p95Us": 12.75,
+  "p99Us": 18.292,
+  "maxUs": 1072.791
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 161046,
-   "timeMs": 47.031459,
+   "timeMs": 46.201125,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 52.9915,
+   "medianMs": 58.522167,
    "runs": 5,
    "allMs": [
-    45.297708,
-    49.583417,
-    52.9915,
-    57.756792,
-    79.722417
+    48.903583,
+    55.875375,
+    58.522167,
+    60.991958,
+    81.7875
    ]
   }
  ],
  "compaction": {
-  "ms": 101.930875,
+  "ms": 106.364708,
   "stats": {
    "nodesBefore": 84884,
    "nodesAfter": 58766,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 179052,
-    "timeMs": 54.792917,
+    "timeMs": 54.664708,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 53656784,
-  "peakHeapSampled": 114008200,
-  "retainedHeapAfterGc": 15653456,
+  "baselineHeap": 53636000,
+  "peakHeapSampled": 113924680,
+  "retainedHeapAfterGc": 15676272,
   "externalDelta": 2945712,
   "arrayBuffersDelta": 2945672,
-  "rssEnd": 256966656,
+  "rssEnd": 257884160,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

@@ -69,7 +69,7 @@ import { peritextEmbedRGA, makePeritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns, pathDeltas } from './datatypes/sharedEmbedRGA.js';
-import { compactSharedDirect, remapSharedState, sharedToAbsolute } from './shared-compact.js';
+import { buildSharedInverseTranslate, compactSharedDirect, remapSharedState, sharedToAbsolute } from './shared-compact.js';
 import { encode as encodeRunTable, decode as decodeRunTable, buildRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
 
@@ -275,11 +275,26 @@ export function compactPeritext(state, cut, opts = {}) {
 /** Retention-root/A3 Peritext GC over the native prefix-sharing text graph. */
 export function compactSharedPeritext(state, cut, opts = {}) {
   const coords = new Map();
+  // A shared path is a persistent parent chain. Computing pathDeltas(r).length
+  // independently for every live record is quadratic on an insertion spine.
+  // Cache depths by node identity so every shared node is visited once while
+  // retaining the same absolute-symbol accounting used by the generic stats.
+  const depths = new WeakMap();
+  const pathDepth = (rec) => {
+    let p = rec.path, known = 0;
+    const missing = [];
+    while (p && !depths.has(p)) { missing.push(p); p = p.parent; }
+    if (p) known = depths.get(p);
+    for (let i = missing.length - 1; i >= 0; i--) {
+      known++; depths.set(missing[i], known);
+    }
+    return rec.path ? depths.get(rec.path) : 0;
+  };
   return compactPeritextWith(state, cut, opts, compactSharedDirect,
     (_r, id, shadow) => {
       if (coords.size === 0) for (const [k, v] of sharedToAbsolute(shadow)) coords.set(k, v.coord);
       return coords.get(id);
-    }, (r) => pathDeltas(r).length);
+    }, pathDepth);
 }
 
 /** Record-wise coordinate translation (the epoch-lifting hook): shadow
@@ -380,6 +395,8 @@ export const compactibleSharedPeritext = {
   ...sharedPeritext,
   compact: compactSharedPeritext,
   remapState: remapSharedPeritextState,
+  inverseTranslate: (pre, post) => buildSharedInverseTranslate(
+    pre.text.shadow, post.text.shadow),
   cutFromMeet: peritextCutFromMeet,
   coordState: (s) => sharedToAbsolute(s.text.shadow),
   encodeState(state) {
@@ -402,8 +419,10 @@ export const compactibleSharedPeritext = {
   },
   fingerprint(state) {
     return JSON.stringify({
-      shadow: [...state.text.shadow.entries()].sort(([x], [y]) => x - y)
-        .map(([id, r]) => [id, pathDeltas(r), r.el]),
+      // encodeSharedRuns is lossless and canonical, but traverses each shared
+      // path node once. Expanding pathDeltas independently per record is
+      // quadratic on an ancestor spine and made content-addressing dominate GC.
+      shadow: b64encode(encodeSharedRuns(state.text.shadow)),
       deleted: [...state.text.deleted].sort((x, y) => x - y),
       marks: [...state.marks.entries()].sort(([x], [y]) => x - y)
         .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId,

@@ -20,6 +20,48 @@ function coordOf(path) {
   ds.reverse(); return ds.map(enc).join('');
 }
 
+/** Build the inverse epoch translation directly from shared prefix nodes.
+ *  The ordinary builder first expands every record to an absolute bit string,
+ *  which is quadratic on a spine. Direct compaction preserves one path level
+ *  per pre-compaction level (spine fusion is not used by compactStable), and
+ *  each path node retains its original id, so the correspondence can be built
+ *  once over the two prefix graphs. */
+export function buildSharedInverseTranslate(preState, postState) {
+  const preById = new Map(), seenPre = new Set();
+  for (const [, rec] of preState) {
+    let p = rec.path;
+    while (p && !seenPre.has(p)) {
+      seenPre.add(p); preById.set(p.id, p); p = p.parent;
+    }
+  }
+  const root = { children: new Map(), prePath: null };
+  const wraps = new Map();
+  const ensure = (path) => {
+    if (!path) return root;
+    let w = wraps.get(path);
+    if (w) return w;
+    const missing = [];
+    for (let p = path; p && !wraps.has(p); p = p.parent) missing.push(p);
+    let parent = missing.at(-1)?.parent ? wraps.get(missing.at(-1).parent) : root;
+    for (let i = missing.length - 1; i >= 0; i--) {
+      const p = missing[i];
+      w = { children: new Map(), prePath: preById.get(p.id) ?? null };
+      wraps.set(p, w); parent.children.set(p.delta, w); parent = w;
+    }
+    return wraps.get(path);
+  };
+  for (const [, rec] of postState) ensure(rec.path);
+  return (coord) => {
+    let n = root, i = 0;
+    while (i < coord.length) {
+      const [d, j] = decodeAt(coord, i), child = n.children.get(d);
+      if (!child) break;
+      n = child; i = j;
+    }
+    return coordOf(n.prePath) + coord.slice(i);
+  };
+}
+
 export function sharedToAbsolute(state) {
   const t = PMap.empty().begin();
   for (const [id, rec] of state) t.set(id,

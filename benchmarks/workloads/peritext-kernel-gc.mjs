@@ -14,8 +14,11 @@ const datatype = kernel === 'rga' ? compactiblePeritextRGA
   : kernel === 'embed-rga' ? compactibleSharedPeritext : null;
 if (!datatype) throw new Error(`unknown kernel ${kernel}`);
 if (!['none', 'history', 'state', 'both'].includes(mode)) throw new Error(`unknown mode ${mode}`);
-const cfg = preset === 'full' ? { initial: 8000, cycles: 4, del: 1500, add: 1800 }
-  : { initial: 3000, cycles: 3, del: 700, add: 800 };
+const cfg = preset === 'stress' ? { initial: 20000, cycles: 5, del: 3500, add: 4500 }
+  : preset === 'full' ? { initial: 8000, cycles: 4, del: 1500, add: 1800 }
+  : preset === 'quick' ? { initial: 3000, cycles: 3, del: 700, add: 800 }
+  : null;
+if (!cfg) throw new Error(`unknown preset ${preset}`);
 const stateGc = mode === 'state' || mode === 'both', historyGc = mode === 'history' || mode === 'both';
 const a = new DistributedReplica(datatype, 'A'), b = new DistributedReplica(datatype, 'B');
 a.register('B'); b.register('A');

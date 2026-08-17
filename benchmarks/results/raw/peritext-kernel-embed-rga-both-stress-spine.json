@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "suite": "peritext-kernel-gc",
+  "kernel": "embed-rga",
+  "mode": "both",
+  "preset": "stress",
+  "config": {
+    "initial": 20000,
+    "cycles": 5,
+    "del": 3500,
+    "add": 4500,
+    "topology": "spine"
+  },
+  "metrics": {
+    "operations": 60000,
+    "commitBatches": 240,
+    "visibleChars": 25000,
+    "applyMs": 66.980992,
+    "stateGcMs": 87.60091700000004,
+    "historyGcMs": 2.2122079999999187,
+    "durableStateBytes": 125078,
+    "commits": 1,
+    "shadowRecords": 42500,
+    "deletedIds": 0
+  },
+  "gates": {
+    "converged": true,
+    "snapshot": true
+  }
+}
