@@ -297,10 +297,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
      (`sApplicable`/`SHonest`), then canonical Embed-based Peritext. Reuse the
      existing proofs; the first objective is API integration, not reproving
      their algorithms.
-  7. Keep negative controls explicit: rehoming RGA must remain marked
-     sequential-semantics-refuted, BudgetCart remains gated until its witness
-     transfer is solved, and Shesha's refuted premise must not be promoted by
-     the new packaging.
+  7. Keep BudgetCart gated until its witness transfer is solved. Retire the
+     broken rehoming RGA and Shesha designs from production catalogues and
+     paper-facing names; keep only their minimized refutations as archived
+     negative evidence.
   8. Update the machine-readable catalogue to report conditioning from public
      theorem hypotheses. Add a repository check that flags a nontrivial
      `*Applicable → *Honest/*Reach → capstone` chain when the corresponding
@@ -321,7 +321,7 @@ behavioral layer to the conditioned RA-linearizability certificate.
   Tombstoned RGA is now positive: `rgaApplicable` checks anchor closure,
   timestamp/id freshness, grave exclusion, and live removes;
   `RGAHistoryOK`, `rgaSequentialSound`, and `rgaUnified` package its genuine
-  sequence model independently of the refuted rehoming/Shesha line.
+  sequence model independently of the retired experimental designs.
 
   MVR is now positive through `mvrApplicable`, `MVRMintHistory`,
   `mvrGeneration`, and `mvrUnified`. Tombstoned Peritext is positive through
@@ -330,13 +330,11 @@ behavioral layer to the conditioned RA-linearizability certificate.
   guard claims target liveness but not freshness against earlier removes.
   EWFlag is positive through the doctrine-faithful `ewflagUnifiedF`, which
   consumes `JoinLemma3F` directly rather than assuming the Gate-G1 converse.
-  The anchor/freshness/grave cluster in Shesha remains negative evidence
-  because its Join/presplice premises are checked refutations.
-
   **Priority 7 completed 2026-08-14.** Every named positive production
-  datatype is covered by a public checked package. Rehoming RGA remains
-  sequential-semantics-refuted, BudgetCart remains gated on witness transfer,
-  and Shesha remains premise-refuted; none is promoted by the ledger/checker.
+  datatype is covered by a public checked package. BudgetCart remains gated on
+  witness transfer. Rehoming RGA and Shesha are retired from the active design
+  space; their checked counterexamples remain under the refutation/audit
+  surface only.
 
 - **Completed:** make the bounded counter the first unified nontrivial conditioned-RDT
   flagship: one public theorem/certificate should connect its existing
@@ -469,10 +467,12 @@ behavioral layer to the conditioned RA-linearizability certificate.
   tests cover refusal without frontier evidence, state recovery, and a returning
   old-epoch replica that mints offline and converges after compaction. The full
   165-test runtime suite passes. The public `peritext` export now uses the
-  unified sided kernel; `legacyPeritext` retains the former one-sided behavior
-  for differential tests and the older coordinate-renumbering compactor.
-  Finish the L23--L27 gates and run repeated isolated benchmarks before removing
-  the release-candidate and legacy aliases.
+  unified sided kernel; `peritextEmbedRGA` names the one-sided EmbedRGA variant
+  used by differential tests and the coordinate-renumbering compactor. Use the
+  paper-facing names `PeritextRGA`, `PeritextEmbedRGA`, and
+  `PeritextSidedEmbedRGA`; never classify a correct variant by calling it
+  "legacy." Finish the L23--L27 gates and run repeated isolated benchmarks
+  before removing the release-candidate aliases.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

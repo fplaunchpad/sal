@@ -284,9 +284,11 @@ return {
 };
 }
 
-/** The former one-sided configuration, retained for differential tests and
- * compatibility measurements. New documents use the sided/Fugue policy. */
-export const legacyPeritext = makePeritext(embedRGA);
+/** Peritext over the one-sided tombstone-free EmbedRGA kernel. */
+export const peritextEmbedRGA = makePeritext(embedRGA);
 
-/** Production Peritext: the unified one-HAMT sided/Fugue text kernel. */
-export const peritext = makePeritext(sidedEmbedRGAReleaseCandidate);
+/** Peritext over the unified sided/Fugue EmbedRGA kernel. */
+export const peritextSidedEmbedRGA = makePeritext(sidedEmbedRGAReleaseCandidate);
+
+/** Production default. */
+export const peritext = peritextSidedEmbedRGA;
