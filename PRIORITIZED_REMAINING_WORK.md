@@ -373,8 +373,10 @@ behavioral layer to the conditioned RA-linearizability certificate.
   collection without rewriting anchors. The focused two-kernel GC harness and
   quick results are in `benchmarks/workloads/peritext-kernel-gc.mjs` and
   `benchmarks/results/peritext-kernel-gc-summary.md`. Remaining before checking
-  this task: add the plain-RGA adapter to the general sequence matrix, implement
-  its packed binary snapshot, and run repeated full-size trials.
+  this task: add the plain-RGA adapter to the general sequence matrix and run
+  repeated full-size trials. The packed RGA continuation snapshot now uses
+  delta-coded ids, parent distances, UTF-8 payloads, and tombstones; corruption,
+  backward-decoding, and round-trip gates pass.
 
 - **Highest-priority runtime prerequisite: implement sided EmbedRGA under the
   plain Fugue generation policy as an experimental kernel, then measure it

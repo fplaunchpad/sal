@@ -14,8 +14,8 @@
   "metrics": {
     "operations": 7501,
     "visibleChars": 3300,
-    "applyMs": 2084.269772,
-    "stateGcMs": 15.043999999999869,
+    "applyMs": 2061.102335,
+    "stateGcMs": 14.836874999999964,
     "historyGcMs": 0,
     "durableStateBytes": 25736,
     "commits": 7503,

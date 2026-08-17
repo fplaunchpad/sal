@@ -30,6 +30,10 @@ test('optimized RGA tree traversal equals the Lean timestamp-fold order', () => 
   assert.deepEqual(rga.readIds(s), [1, 4, 2, 5, 3]);
   const back = rga.decodeState(rga.encodeState(s));
   assert.equal(rga.fingerprint(back), rga.fingerprint(s));
+  const bytes = rga.encodeSnapshot(s);
+  assert.deepEqual(rga.read(rga.decodeSnapshot(bytes)), rga.read(s));
+  assert.throws(() => rga.decodeSnapshot(bytes.subarray(0, bytes.length - 1)), /truncated|varint/);
+  assert.throws(() => rga.decodeSnapshot(Uint8Array.from([...bytes, 0])), /trailing/);
 });
 
 test('RGA union merge converges and preserves tombstones', () => {

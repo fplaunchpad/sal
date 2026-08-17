@@ -14,10 +14,10 @@
   "metrics": {
     "operations": 7501,
     "visibleChars": 3300,
-    "applyMs": 2052.425737,
+    "applyMs": 2068.477774,
     "stateGcMs": 0,
     "historyGcMs": 0,
-    "durableStateBytes": 95865,
+    "durableStateBytes": 53770,
     "commits": 7502,
     "shadowRecords": 5400,
     "deletedIds": 2101

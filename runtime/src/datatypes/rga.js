@@ -7,6 +7,29 @@ import { PMap, PSet, eachEntry, isPMap, isPSet } from '../pmap.js';
 
 const ROOT = null;
 const record = (anchorId, el) => Object.freeze({ anchorId, el });
+const utf8 = new TextEncoder(), unutf8 = new TextDecoder('utf-8', { fatal: true });
+
+function putVar(out, n) {
+  if (!Number.isSafeInteger(n) || n < 0) throw new Error(`bad RGA varint ${n}`);
+  do { const b = n % 128; n = Math.floor(n / 128); out.push(b | (n ? 128 : 0)); } while (n);
+}
+function getVar(u8, c) {
+  let n = 0, mul = 1;
+  for (let k = 0; k < 8; k++) {
+    if (c.i >= u8.length) throw new Error('truncated RGA varint');
+    const b = u8[c.i++]; n += (b & 127) * mul;
+    if (!Number.isSafeInteger(n)) throw new Error('RGA varint overflow');
+    if (!(b & 128)) return n;
+    mul *= 128;
+  }
+  throw new Error('oversized RGA varint');
+}
+const b64encode = (u8) => {
+  let s = '';
+  for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000));
+  return btoa(s);
+};
+const b64decode = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
 const members = (s) => isPSet(s) ? s : PSet.from(s);
 const entries = (m) => isPMap(m) ? m : PMap.from(m);
@@ -120,18 +143,53 @@ export const rga = {
   readIds(s) { return this.readEntries(s).map(([id]) => id); },
   read(s) { return this.readEntries(s).map(([, r]) => r.el); },
   has(s, id) { return s.adds.has(id) && !s.grave.has(id); },
-  encodeState(s) {
-    return { v: 1, adds: [...s.adds.entries()].map(([id, r]) => [id, r.anchorId, r.el]),
-      grave: [...s.grave] };
+  encodeSnapshot(s) {
+    const out = [2], adds = [...s.adds.entries()]; putVar(out, adds.length);
+    let prev = 0;
+    for (const [id, r] of adds) {
+      putVar(out, id - prev); prev = id;
+      putVar(out, r.anchorId === ROOT ? 0 : id - r.anchorId);
+      const json = JSON.stringify(r.el);
+      if (json === undefined) throw new Error('RGA element is not JSON-serializable');
+      const bytes = utf8.encode(json); putVar(out, bytes.length); out.push(...bytes);
+    }
+    const grave = [...s.grave]; putVar(out, grave.length); prev = 0;
+    for (const id of grave) { putVar(out, id - prev); prev = id; }
+    return Uint8Array.from(out);
   },
-  decodeState(enc) {
-    if (!enc || enc.v !== 1) throw new Error('unsupported RGA snapshot version');
-    const adds = PMap.from(enc.adds.map(([id, anchorId, el]) => [id, record(anchorId, el)]));
-    const grave = PSet.from(enc.grave);
+  decodeSnapshot(u8) {
+    const c = { i: 0 };
+    if (u8[c.i++] !== 2) throw new Error('unsupported RGA binary snapshot version');
+    const n = getVar(u8, c), at = PMap.empty().begin(); let prev = 0;
+    for (let k = 0; k < n; k++) {
+      const id = prev + getVar(u8, c); prev = id;
+      const distance = getVar(u8, c), anchorId = distance === 0 ? ROOT : id - distance;
+      if (id < 1 || (anchorId !== ROOT && (anchorId < 1 || anchorId >= id)))
+        throw new Error(`invalid RGA anchor encoding at ${id}`);
+      const len = getVar(u8, c);
+      if (c.i + len > u8.length) throw new Error('truncated RGA element');
+      const el = JSON.parse(unutf8.decode(u8.subarray(c.i, c.i + len))); c.i += len;
+      at.set(id, record(anchorId, el));
+    }
+    const adds = at.freeze(), gn = getVar(u8, c), gt = PSet.empty().begin(); prev = 0;
+    for (let k = 0; k < gn; k++) { const id = prev + getVar(u8, c); prev = id; gt.add(id); }
+    if (c.i !== u8.length) throw new Error('trailing RGA snapshot bytes');
+    const grave = gt.freeze();
     // Validate the trusted snapshot boundary before accepting it.
     orderedIds(adds);
     for (const id of grave) if (!adds.has(id)) throw new Error(`RGA tombstone ${id} has no insertion`);
     return Object.freeze({ adds, grave, order: null });
+  },
+  encodeState(s) { return { v: 2, data: b64encode(this.encodeSnapshot(s)) }; },
+  decodeState(enc) {
+    if (enc?.v === 1) {
+      const adds = PMap.from(enc.adds.map(([id, anchorId, el]) => [id, record(anchorId, el)]));
+      const grave = PSet.from(enc.grave); orderedIds(adds);
+      for (const id of grave) if (!adds.has(id)) throw new Error(`RGA tombstone ${id} has no insertion`);
+      return Object.freeze({ adds, grave, order: null });
+    }
+    if (!enc || enc.v !== 2 || typeof enc.data !== 'string') throw new Error('unsupported RGA snapshot version');
+    return this.decodeSnapshot(b64decode(enc.data));
   },
   fingerprint(s) { return JSON.stringify(this.encodeState(s)); },
   symbolCount(s) { return s.adds.size + s.grave.size; },

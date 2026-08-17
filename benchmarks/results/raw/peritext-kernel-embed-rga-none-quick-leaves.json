@@ -14,7 +14,7 @@
   "metrics": {
     "operations": 7501,
     "visibleChars": 3300,
-    "applyMs": 2048.237804,
+    "applyMs": 2057.78406,
     "stateGcMs": 0,
     "historyGcMs": 0,
     "durableStateBytes": 54149,
