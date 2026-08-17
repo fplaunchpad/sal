@@ -138,22 +138,21 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
     });
     return Object.freeze({ live: lt.freeze(), gaps: gt.freeze(), chains: ct.freeze(), order: s.order });
   };
-  const fromSplit = (s) => {
-    const t = PMap.empty().begin();
-    eachEntry(s.chains, (id, ch) => {
-      const r = s.live.get(id); t.set(id, node(ch, r?.el, r ? s.gaps.get(id) : null));
-    });
-    return Object.freeze({ nodes: t.freeze(), rootGap: s.gaps.get('@root'), order: s.order });
-  };
-
   return {
     name: 'sided-fugue-unified-experimental', experimental: true, needsPrepare: true,
     init, prepare, apply, merge3, has: (s, id) => live(s.nodes.get(id)), readEntries,
     read: (s) => readEntries(s).map(([, r]) => r.el),
     readIds: (s) => readEntries(s).map(([id]) => id),
     applyBatch(s, ops) { for (const op of ops) s = apply(s, op); return s; },
-    encodeSnapshot: (s, opts) => split.encodeSnapshot(toSplit(s), opts),
-    decodeSnapshot: (bytes) => fromSplit(split.decodeSnapshot(bytes)),
+    encodeSnapshot: (s, opts = {}) => split.encodeSnapshot(null,
+      { ...opts, unifiedNodes: s.nodes, unifiedRootGap: s.rootGap }),
+    decodeSnapshot: (bytes) => split.decodeSnapshot(bytes, { build: ({ chains, live: ls, gaps, order }) => {
+      const t = PMap.empty().begin();
+      for (const [id, ch] of chains) {
+        const r = ls.get(id); t.set(id, node(ch, r?.el, r ? gaps.get(id) : null));
+      }
+      return Object.freeze({ nodes: t.freeze(), rootGap: gaps.get('@root'), order });
+    } }),
     fingerprint: (s) => split.fingerprint(toSplit(s)),
     liveCount: (s) => readEntries(s).length,
   };

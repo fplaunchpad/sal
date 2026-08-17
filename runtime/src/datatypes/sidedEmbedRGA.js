@@ -303,15 +303,26 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     },
     /** Compact lossless candidate snapshot. Shared mode stores every retained
      * policy node once as a parent link; it never repeats whole coordinates. */
-    encodeSnapshot(state, { validate = false } = {}) {
+    encodeSnapshot(state, { validate = false, unifiedNodes = null, unifiedRootGap = null } = {}) {
       if (!shared) return utf8.encode(JSON.stringify(this.encodeState(state)));
       const nodes = new Map(), roots = new Set(), liveById = new Map(), gapsById = new Map();
-      eachEntry(state.live, (id, rec) => { roots.add(id); liveById.set(id, rec); });
-      eachEntry(state.gaps, (id, g) => {
-        gapsById.set(id, g); if (g.succId !== null) roots.add(g.succId);
-      });
+      if (unifiedNodes) {
+        gapsById.set(ROOT, unifiedRootGap);
+        if (unifiedRootGap.succId !== null) roots.add(unifiedRootGap.succId);
+        eachEntry(unifiedNodes, (id, rec) => {
+          if (rec.el !== undefined) {
+            roots.add(id); liveById.set(id, rec); gapsById.set(id, rec.gap);
+            if (rec.gap.succId !== null) roots.add(rec.gap.succId);
+          }
+        });
+      } else {
+        eachEntry(state.live, (id, rec) => { roots.add(id); liveById.set(id, rec); });
+        eachEntry(state.gaps, (id, g) => {
+          gapsById.set(id, g); if (g.succId !== null) roots.add(g.succId);
+        });
+      }
       for (const id of roots) {
-        const leaf = state.chains.get(id);
+        const leaf = unifiedNodes ? unifiedNodes.get(id)?.chain : state.chains.get(id);
         if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
         for (let n = leaf; n; n = n.parent) {
           if (nodes.has(n.id)) break;
@@ -386,7 +397,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       putVar(out, bits.length); out.push(...bits);
       return Uint8Array.from(out);
     },
-    decodeSnapshot(u8) {
+    decodeSnapshot(u8, { build = null } = {}) {
       if (!shared) return this.decodeState(JSON.parse(unutf8.decode(u8)));
       const c = { i: 0 };
       if (u8[c.i++] !== 2) throw new Error('unsupported sided snapshot version');
@@ -405,22 +416,27 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       const liveIds = ids.filter((_id, i) => liveMapBits[i >> 3] & (1 << (i & 7)));
       const lenBits = u8.subarray(c.i, c.i + Math.ceil(liveIds.length / 8)); c.i += lenBits.length;
       const lens = liveIds.map((_id, i) => lenBits[i >> 3] & (1 << (i & 7)) ? getVar(u8, c) : 1);
-      const liveT = PMap.empty().begin();
+      const liveT = build ? null : PMap.empty().begin(), liveData = build ? new Map() : null;
       for (let k = 0; k < liveIds.length; k++) {
         const id = liveIds[k], len = lens[k], el = unutf8.decode(u8.subarray(c.i, c.i + len)); c.i += len;
-        liveT.set(id, Object.freeze({ chain: all.get(id), coord: null, el }));
+        const rec = Object.freeze({ chain: all.get(id), coord: null, el });
+        if (build) liveData.set(id, rec); else liveT.set(id, rec);
       }
       const bitLen = getVar(u8, c), bits = u8.subarray(c.i, c.i + bitLen); c.i += bitLen;
       if (bitLen !== Math.ceil((liveIds.length + 1) / 8)) throw new Error('bad sided gap bitset');
       const ordered = policyOrder(all.values()), pos = new Map(ordered.map((n, i) => [n.id, i]));
-      const anchors = [ROOT, ...liveIds], gapsT = PMap.empty().begin();
+      const anchors = [ROOT, ...liveIds], gapsT = build ? null : PMap.empty().begin();
+      const gapsData = build ? new Map() : null;
       for (let i = 0; i < anchors.length; i++) {
         const id = anchors[i], successor = id === ROOT ? (ordered[0]?.id ?? null)
           : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
-        gapsT.set(id, Object.freeze({ hasR: !!(bits[i >> 3] & (1 << (i & 7))), succId: successor }));
+        const g = Object.freeze({ hasR: !!(bits[i >> 3] & (1 << (i & 7))), succId: successor });
+        if (build) gapsData.set(id, g); else gapsT.set(id, g);
       }
       if (c.i !== u8.length) throw new Error('trailing sided snapshot bytes');
-      return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all), ordered.map((n) => n.id));
+      const order = ordered.map((n) => n.id);
+      if (build) return build({ chains: all, live: liveData, gaps: gapsData, order });
+      return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all), order);
     },
     fingerprint(state) {
       return JSON.stringify({
