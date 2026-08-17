@@ -101,6 +101,9 @@ test('candidate snapshots round-trip and remain editable', () => {
     const op = dt.prepare(restored, ins(4, 'd', 2));
     restored = dt.apply(restored, op);
     assert.deepEqual(dt.read(restored), ['a', 'c', 'b', 'd']);
+    const bytes = dt.encodeSnapshot(original);
+    restored = dt.decodeSnapshot(bytes);
+    assert.equal(dt.fingerprint(restored), dt.fingerprint(original));
   }
 });
 

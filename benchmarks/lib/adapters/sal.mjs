@@ -97,9 +97,9 @@ export function mkAdapter({ shared = false, sided = false } = {}) {
   const kernel = sided
     ? (shared ? sharedSidedEmbedRGAExperimental : sidedEmbedRGAExperimental)
     : (shared ? sharedEmbedRGA : embedRGA);
-  const candidateSave = (state) => new TextEncoder().encode(JSON.stringify(kernel.encodeState(state)));
+  const candidateSave = (state) => kernel.encodeSnapshot(state);
   const candidateLoad = (bytes) => {
-    const state = kernel.decodeState(JSON.parse(new TextDecoder().decode(bytes)));
+    const state = kernel.decodeSnapshot(bytes);
     return { state, view: kernel.readIds(state) };
   };
   const save = sided ? candidateSave : (shared ? encodeSharedRuns : saveRunTable);
@@ -130,8 +130,8 @@ export function mkAdapter({ shared = false, sided = false } = {}) {
 
     saveVariants(doc) {
       return [
-        { label: sided ? 'sided-policy-json-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
-          note: sided ? 'experimental lossless snapshot including live records and Fugue policy summary; JSON is a baseline codec, not a claimed compact format' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
+        { label: sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
+          note: sided ? 'experimental lossless binary parent-link snapshot including the Fugue policy summary' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
       ];
     },
     load,
@@ -213,8 +213,8 @@ export function mkAdapter({ shared = false, sided = false } = {}) {
         saveVariants() {
           const st = rA.head.state;
           return [
-            { label: sided ? 'sided-policy-json-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
-              note: sided ? 'experimental lossless policy-state JSON' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
+            { label: sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
+              note: sided ? 'experimental lossless binary policy-state snapshot' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
           ];
         },
         compactFinal: sided ? undefined : function compactFinal() {

@@ -404,7 +404,7 @@ behavioral layer to the conditioned RA-linearizability certificate.
   `none`, and merged-dead anchors are pruned. The randomized check remains a
   refutation oracle, not the proof.
   **Implementation status (2026-08-17):** the experimental absolute and
-  prefix-shared JavaScript kernels now freeze `(side,parent,chain)` evidence in
+  prefix-shared JavaScript kernels now freeze `(side,parent)` evidence in
   each insert, retain the GC-able live-gap/chain policy summary, and plug into
   both replica runtimes and an explicit experimental Peritext configuration.
   The production one-sided exports remain unchanged. Directed deleted-successor,
@@ -421,9 +421,15 @@ behavioral layer to the conditioned RA-linearizability certificate.
   0.50 ms median sync (current shared: about 0.23 ms). The operation freezes
   `(side,parent)`; the deleted parent's chain is retained in the causal parent
   state and must be protected by the policy-summary GC. Do not promote from
-  these canaries. The provisional uncollected JSON snapshot is still about
-  1.2 MB versus 59 KB for the current shared run codec, so the next target is
-  certified policy-summary collection plus its compact codec. Then finish the
+  these canaries. A lossless binary parent-link snapshot now serializes only
+  live records, live ancestry, and current gap successors. On the same trace
+  it reduced 1.2 MB of provisional JSON to about 306 KB and restored median
+  load to about 18 ms (current shared run codec: 59 KB and about 16 ms). The
+  remaining size gap is retained ancestry plus missing sided run/spine
+  compression, not textual encoding or repeated full chains. The next target
+  is the certified sided policy-summary/run compactor; simple dead-leaf
+  collection is insufficient because most dead nodes remain on paths to live
+  nodes. Then finish the
   L23--L27 gates and run repeated isolated benchmarks. Production state GC and
   default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the

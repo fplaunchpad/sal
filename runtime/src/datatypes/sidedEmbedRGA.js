@@ -14,6 +14,22 @@ import { eliasDeltaCode } from './embedRGA.js';
 const ROOT = '@root';
 const R = 'R', L = 'L';
 const rootGap = Object.freeze({ hasR: false, succId: null });
+const utf8 = new TextEncoder(), unutf8 = new TextDecoder();
+
+const putVar = (out, n) => {
+  if (!Number.isSafeInteger(n) || n < 0) throw new Error(`invalid varint ${n}`);
+  while (n >= 128) { out.push((n % 128) | 128); n = Math.floor(n / 128); }
+  out.push(n);
+};
+const getVar = (u8, c) => {
+  let n = 0, mul = 1;
+  for (;;) {
+    if (c.i >= u8.length || mul > 2 ** 49) throw new Error('damaged sided snapshot varint');
+    const b = u8[c.i++]; n += (b & 127) * mul;
+    if (!(b & 128)) return n;
+    mul *= 128;
+  }
+};
 
 const freezeChain = (xs) => Object.freeze(xs.map(([side, delta]) =>
   Object.freeze([side, delta])));
@@ -37,6 +53,12 @@ const encodeChain = (chain, code, shared) => {
     if (side === R) for (const b of bits) out += b === '1' ? '2' : '1';
     else for (const b of bits) out += b === '1' ? '4' : '5';
   }
+  return out;
+};
+const encodeBlock = (side, delta, code) => {
+  let out = '';
+  for (const b of code.enc(delta)) out += side === R
+    ? (b === '1' ? '2' : '1') : (b === '1' ? '4' : '5');
   return out;
 };
 
@@ -140,6 +162,30 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       return s;
     },
     readEntries(state) {
+      if (shared) {
+        const children = new Map();
+        eachEntry(state.chains, (_id, n) => {
+          const p = n.parent?.id ?? null;
+          let bands = children.get(p);
+          if (!bands) { bands = { L: [], R: [] }; children.set(p, bands); }
+          bands[n.side].push(n);
+        });
+        const order = (xs) => xs.sort((a, b) => {
+          const ka = encodeBlock(a.side, a.delta, code);
+          const kb = encodeBlock(b.side, b.delta, code);
+          const c = cmpKey(ka, kb); return c === 0 ? a.id - b.id : -c;
+        });
+        for (const bands of children.values()) { order(bands.L); order(bands.R); }
+        const out = [], walk = (n) => {
+          const bands = children.get(n.id);
+          for (const x of bands?.L ?? []) walk(x);
+          const rec = state.live.get(n.id); if (rec) out.push([n.id, rec]);
+          for (const x of bands?.R ?? []) walk(x);
+        };
+        for (const n of children.get(null)?.L ?? []) walk(n);
+        for (const n of children.get(null)?.R ?? []) walk(n);
+        return out;
+      }
       return [...state.live.entries()].map(([id, r]) =>
         [id, r, r.coord ?? encodeChain(r.chain, code, true)]).sort(([ia, a, ka], [ib, b, kb]) => {
         const c = cmpKey(ka, kb);
@@ -200,9 +246,13 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       let encodedChains;
       if (shared) {
         const nodes = new Map();
-        eachEntry(state.chains, (_id, leaf) => {
+        const roots = new Set(state.live.keys());
+        eachEntry(state.gaps, (_id, g) => { if (g.succId !== null) roots.add(g.succId); });
+        for (const id of roots) {
+          const leaf = state.chains.get(id);
+          if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
           for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
-        });
+        }
         encodedChains = [...nodes].sort(([x], [y]) => x - y)
           .map(([id, n]) => [id, n.parent?.id ?? null, n.side, n.delta]);
       } else {
@@ -235,6 +285,67 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       const gaps = PMap.from(enc.gaps.map(([id, hasR, succId]) =>
         [id, Object.freeze({ hasR, succId })]));
       return makeState(live, gaps, chains);
+    },
+    /** Compact lossless candidate snapshot. Shared mode stores every retained
+     * policy node once as a parent link; it never repeats whole coordinates. */
+    encodeSnapshot(state) {
+      if (!shared) return utf8.encode(JSON.stringify(this.encodeState(state)));
+      const nodes = new Map();
+      const roots = new Set(state.live.keys());
+      eachEntry(state.gaps, (_id, g) => { if (g.succId !== null) roots.add(g.succId); });
+      for (const id of roots) {
+        const leaf = state.chains.get(id);
+        if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
+        for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
+      }
+      const ns = [...nodes].sort(([x], [y]) => x - y), out = [1];
+      putVar(out, ns.length);
+      let prev = 0;
+      for (const [id, n] of ns) {
+        putVar(out, id - prev); prev = id;
+        putVar(out, n.parent?.id ?? 0);
+        out.push(n.side === L ? 1 : 0); putVar(out, n.delta);
+      }
+      const live = [...state.live.entries()];
+      putVar(out, live.length); prev = 0;
+      for (const [id, r] of live) {
+        putVar(out, id - prev); prev = id;
+        const bytes = utf8.encode(r.el); putVar(out, bytes.length); out.push(...bytes);
+      }
+      const gaps = [...state.gaps.entries()];
+      putVar(out, gaps.length);
+      for (const [id, g] of gaps) {
+        putVar(out, id === ROOT ? 0 : id);
+        out.push(g.hasR ? 1 : 0); putVar(out, g.succId ?? 0);
+      }
+      return Uint8Array.from(out);
+    },
+    decodeSnapshot(u8) {
+      if (!shared) return this.decodeState(JSON.parse(unutf8.decode(u8)));
+      const c = { i: 0 };
+      if (u8[c.i++] !== 1) throw new Error('unsupported sided snapshot version');
+      const nn = getVar(u8, c), all = new Map(); let prev = 0;
+      for (let k = 0; k < nn; k++) {
+        const id = prev + getVar(u8, c); prev = id;
+        const parentId = getVar(u8, c), side = u8[c.i++] ? L : R, delta = getVar(u8, c);
+        const parent = parentId === 0 ? null : all.get(parentId);
+        if (parentId !== 0 && !parent) throw new Error(`snapshot parent ${parentId} missing`);
+        all.set(id, extendChain(parent, side, delta, id, true));
+      }
+      const nl = getVar(u8, c), liveT = PMap.empty().begin(); prev = 0;
+      for (let k = 0; k < nl; k++) {
+        const id = prev + getVar(u8, c); prev = id;
+        const len = getVar(u8, c), el = unutf8.decode(u8.subarray(c.i, c.i + len)); c.i += len;
+        const chain = all.get(id); if (!chain) throw new Error(`live chain ${id} missing`);
+        liveT.set(id, Object.freeze({ chain, coord: null, el }));
+      }
+      const ng = getVar(u8, c), gapsT = PMap.empty().begin();
+      for (let k = 0; k < ng; k++) {
+        const raw = getVar(u8, c), hasR = u8[c.i++] === 1, succ = getVar(u8, c);
+        gapsT.set(raw === 0 ? ROOT : raw, Object.freeze({ hasR, succId: succ === 0 ? null : succ }));
+      }
+      if (c.i !== u8.length) throw new Error('trailing sided snapshot bytes');
+      return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all));
     },
     fingerprint(state) {
       return JSON.stringify({
