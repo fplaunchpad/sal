@@ -353,6 +353,21 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 8. Build the unified paper benchmark harness
 
+- [ ] **Implement the proved tombstone RGA in JavaScript as the paper's plain-RGA
+  baseline.** Mirror `RGA_WithTombstones/RGA_WithTombstones.lean` and its guarded
+  intent layer in `RGA_Intent.lean`: retain the grow-only insertion relation and
+  tombstone set, enforce `rgaApplicable` at minting, implement the deterministic
+  RGA sequence observation, merge by union, and provide lossless snapshot and
+  runtime adapters. Validate the JavaScript model against independently pinned
+  Lean SPOTs, including missing-anchor, remove-before-add, and reused-timestamp
+  failures, then add randomized lockstep tests against EmbedRGA under the
+  hypotheses of `rga_read_eq_embed_read`. Add `plain-rga` to the benchmark
+  harness so the paper reports the three proved designs separately: explicit-
+  tombstone RGA, tombstone-free EmbedRGA with the same visible semantics, and
+  sided EmbedRGA/FugueMax with the L19 non-interleaving guarantee. Report state,
+  history, snapshot, apply, merge, recovery, and GC costs without conflating the
+  plain RGA's tombstones with commit-history metadata.
+
 - **Highest-priority runtime prerequisite: implement sided EmbedRGA under the
   plain Fugue generation policy as an experimental kernel, then measure it
   before promotion.** Keep the shipped one-sided EmbedRGA as the default while
