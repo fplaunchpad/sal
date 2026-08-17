@@ -488,12 +488,22 @@ behavioral layer to the conditioned RA-linearizability certificate.
   tests cover refusal without frontier evidence, state recovery, and a returning
   old-epoch replica that mints offline and converges after compaction. The full
   165-test runtime suite passes. The public `peritext` export now uses the
-  unified sided kernel; `peritextEmbedRGA` names the one-sided EmbedRGA variant
+  LiveGap-sided kernel; `peritextEmbedRGA` names the one-sided EmbedRGA variant
   used by differential tests and the coordinate-renumbering compactor. Use the
   paper-facing names `PeritextRGA`, `PeritextEmbedRGA`, and
   `PeritextSidedEmbedRGA`; never classify a correct variant by calling it
   "legacy." Finish the L23--L27 gates and run repeated isolated benchmarks
   before removing the release-candidate aliases.
+  **LiveGap representation completed 2026-08-17.** The first one-HAMT policy
+  state retained identity-bearing records along every live ancestor spine.
+  `liveGapSidedEmbedRGA.js` now implements the proved generation-time
+  observation instead: one `LiveGap` for root and each retained anchor, plus
+  anonymous shared chain nodes. Directed L1--L27 fixtures (including L19),
+  1,200 randomized mint/read steps against the full-policy oracle, fork/join,
+  continuation, mark-boundary retention, and recovery pass. On the repeated
+  21,200-operation spine, both GCs remove all 6,000 deleted identity records;
+  state GC is 32.1 ms and the snapshot is 80,965 bytes. The stronger
+  60,000-operation scale check takes 88.7 ms and produces 223,195 bytes.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

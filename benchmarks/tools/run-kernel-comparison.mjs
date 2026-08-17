@@ -31,7 +31,7 @@ for (let rep = 1; rep <= reps; rep++) {
       syncMedianUs: x.sync.medianUs, syncP95Us: x.sync.p95Us,
       saveBytes: x.saves[0].bytes, converged: x.gates.converged });
   }
-  for (const kernel of ['rga', 'embed-rga']) for (const mode of ['none', 'both']) {
+  for (const kernel of ['rga', 'embed-rga', 'sided-embed-rga']) for (const mode of ['none', 'both']) {
     run([join(ROOT, 'workloads', 'peritext-kernel-gc.mjs'), kernel, mode, 'full', 'spine']);
     const x = JSON.parse(readFileSync(join(RESULTS, 'raw',
       `peritext-kernel-${kernel}-${mode}-full-spine.json`)));
@@ -52,7 +52,7 @@ const summary = [...groups.entries()].map(([key, xs]) => {
   const [suite, system, workload] = key.split('|'), out = { suite, system, workload, repetitions: xs.length };
   for (const field of ['applyMs', 'medianUs', 'p95Us', 'saveBytes', 'loadMs',
     'syncMedianUs', 'syncP95Us', 'durableStateBytes', 'stateGcMs', 'historyGcMs',
-    'shadowRecords', 'deletedIds', 'commits']) {
+    'shadowRecords', 'identityRecords', 'deletedIds', 'commits']) {
     const vs = values(xs, field); if (vs.length) out[field] = { median: median(vs), min: vs[0], max: vs.at(-1) };
   }
   return out;

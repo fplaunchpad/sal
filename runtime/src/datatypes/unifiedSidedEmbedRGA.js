@@ -151,8 +151,18 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
       if (live(n) && n.gap?.succId !== null) keep.add(n.gap.succId);
     });
     if (s.rootGap.succId !== null) keep.add(s.rootGap.succId);
-    for (const id of [...keep]) {
-      for (let ch = s.nodes.get(id)?.chain; ch; ch = ch.parent) keep.add(ch.id);
+    // Close the policy keep set under chain ancestry once per node. Walking a
+    // complete parent chain independently from every retained id is quadratic
+    // on a typing spine, even when the collector correctly drops nothing.
+    const ancestry = [...keep], expanded = new Set();
+    while (ancestry.length) {
+      const id = ancestry.pop();
+      if (expanded.has(id)) continue;
+      expanded.add(id);
+      const parent = s.nodes.get(id)?.chain.parent?.id;
+      if (parent !== null && parent !== undefined) {
+        keep.add(parent); ancestry.push(parent);
+      }
     }
     const t = PMap.empty().begin();
     eachEntry(s.nodes, (id, n) => { if (keep.has(id)) t.set(id, n); });

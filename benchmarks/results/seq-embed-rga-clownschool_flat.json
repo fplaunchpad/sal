@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T11:01:13.294Z"
+  "date": "2026-08-17T11:44:15.525Z"
  },
  "ops": {
   "total": 24326,
@@ -15,14 +15,14 @@
  },
  "finalChars": 21148,
  "apply": {
-  "totalMs": 16.094167,
+  "totalMs": 16.564125,
   "count": 24326,
   "warmupExcluded": 1000,
-  "meanUs": 0.5970515304810082,
+  "meanUs": 0.6084867958501243,
   "medianUs": 0.334,
   "p95Us": 1.833,
   "p99Us": 5.75,
-  "maxUs": 483.292
+  "maxUs": 556.833
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 62412,
-   "timeMs": 13.139583,
+   "timeMs": 13.209542,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 12.07675,
+   "medianMs": 11.766125,
    "runs": 5,
    "allMs": [
-    9.314125,
-    9.487166,
-    12.07675,
-    17.103292,
-    17.529334
+    9.652667,
+    10.830833,
+    11.766125,
+    16.453916,
+    17.276625
    ]
   }
  ],
  "compaction": {
-  "ms": 37.543,
+  "ms": 41.128,
   "stats": {
    "nodesBefore": 21267,
    "nodesAfter": 21186,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 58550,
-    "timeMs": 17.552291,
+    "timeMs": 20.388125,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 10857960,
-  "peakHeapSampled": 22059816,
-  "retainedHeapAfterGc": 5029288,
+  "baselineHeap": 10858352,
+  "peakHeapSampled": 22023656,
+  "retainedHeapAfterGc": 5029072,
   "externalDelta": 194648,
   "arrayBuffersDelta": 194608,
-  "rssEnd": 103694336,
+  "rssEnd": 103612416,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

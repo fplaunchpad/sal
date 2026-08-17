@@ -65,13 +65,14 @@
 // retainedForMarks, markRecords, markPairsDropped }. Cost:
 // retainedForMarks <= 2 * markRecords, structural (a mark has two boundaries).
 
-import { peritextEmbedRGA, makePeritext } from './datatypes/peritext.js';
+import { peritextEmbedRGA, peritextSidedEmbedRGA, makePeritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns, pathDeltas } from './datatypes/sharedEmbedRGA.js';
 import { buildSharedInverseTranslate, compactSharedDirect, remapSharedState, sharedToAbsolute } from './shared-compact.js';
 import { encode as encodeRunTable, decode as decodeRunTable, buildRunTable } from './serialize.js';
 import { PMap, PSet, isPMap, eachEntry } from './pmap.js';
+import { liveGapSidedEmbedRGA } from './datatypes/liveGapSidedEmbedRGA.js';
 
 // ---- the v2 SNAPSHOT ENCODING: run-table shadow + id sidecar ---------------
 // The datatype's plain encodeState (v1) writes every record's ABSOLUTE
@@ -297,6 +298,68 @@ export function compactSharedPeritext(state, cut, opts = {}) {
     }, pathDepth);
 }
 
+/** Retention-root/A3 Peritext GC over the unified sided/Fugue policy graph.
+ *  Unlike coordinate compaction, the sided kernel only removes irrelevant
+ *  nodes and leaves the retained coordinate frame unchanged. Deleted mark
+ *  boundaries are made ineligible for deletion before the kernel closes its
+ *  keep set under chain ancestry and live-gap evidence. */
+export function compactSidedPeritext(state, cut, opts = {}) {
+  const settledIds = cut?.settledIds ?? new Set();
+  const settledDelIds = cut?.settledDelIds ?? new Set();
+  const settledMarkMids = cut?.settledMarkMids ?? new Set();
+  const inflightIns = cut?.inflightIns ?? [];
+  const inflightMarks = cut?.inflightMarks ?? [];
+  const noRetention = opts.noRetention === true;
+  const pairDrop = opts.pairDrop !== false && !noRetention;
+  let marksOut = isPMap(state.marks) ? state.marks : PMap.from(state.marks);
+  let markPairsDropped = 0;
+  if (pairDrop) {
+    const pairs = a3Pairs([...marksOut.values()], state.text.shadow.records,
+      inflightIns, inflightMarks, settledMarkMids,
+      opts.unguardedPairDrop === true);
+    if (pairs.length) {
+      const t = marksOut.begin();
+      for (const [m, r] of pairs) if (t.has(m.mid) && t.has(r.mid)) {
+        t.delete(m.mid); t.delete(r.mid); markPairsDropped++;
+      }
+      marksOut = t.freeze();
+    }
+  }
+  const retained = new Set();
+  if (!noRetention) marksOut.forEach((m) => {
+    for (const id of anchorsOf(m)) retained.add(id);
+  });
+  for (const m of inflightMarks) for (const id of anchorsOf(m)) retained.add(id);
+  for (const x of inflightIns) if (Number.isInteger(x.anchorId)) retained.add(x.anchorId);
+
+  const drop = new Set();
+  eachEntry(state.text.shadow.records, (id) => {
+    if (state.text.deleted.has(id) && settledIds.has(id)
+        && settledDelIds.has(id) && !retained.has(id)) drop.add(id);
+  });
+  const compacted = liveGapSidedEmbedRGA.dropRecords(state.text.shadow, drop);
+  const beforeNodes = liveGapSidedEmbedRGA.nodeCount(state.text.shadow);
+  const afterNodes = liveGapSidedEmbedRGA.nodeCount(compacted);
+  const inner = { state: compacted, translate: new Map(), stats: {
+    symbolsBefore: beforeNodes, symbolsAfter: afterNodes,
+    policyNodesBefore: beforeNodes, policyNodesAfter: afterNodes,
+  } };
+  const deleted = PSet.empty().begin();
+  eachMember(state.text.deleted, (id) => {
+    if (inner.state.records.has(id)) deleted.add(id);
+  });
+  const out = { text: { shadow: inner.state, deleted: deleted.freeze() }, marks: marksOut };
+  return { state: out, translate: new Map(), stats: {
+    ...inner.stats,
+    recordsBefore: state.text.shadow.records.size,
+    recordsAfter: inner.state.records.size,
+    recordsDropped: state.text.shadow.records.size - inner.state.records.size,
+    retainedForMarks: [...retained].filter((id) => state.text.deleted.has(id)).length,
+    markRecords: marksOut.size,
+    markPairsDropped,
+  } };
+}
+
 /** Record-wise coordinate translation (the epoch-lifting hook): shadow
  *  coordinates re-mapped, deleted set and marks carried unchanged (ids are
  *  never rewritten). */
@@ -440,4 +503,19 @@ export const compactibleSharedPeritext = {
     ]);
     return shadow + new TextEncoder().encode(aux).length;
   },
+};
+
+/** Production sided Peritext with certified policy-state and marks retention
+ * GC. Policy collection is identity-framed: it drops irrelevant records but
+ * never recodes a retained chain. */
+export const compactibleSidedPeritext = {
+  ...peritextSidedEmbedRGA,
+  compact: compactSidedPeritext,
+  remapState: (state, _translate) => state,
+  inverseTranslate: (_pre, _post, _cut) => new Map(),
+  cutFromMeet: peritextCutFromMeet,
+  coordState: (state) => state.text.shadow,
+  symbolCount: (state) => liveGapSidedEmbedRGA.nodeCount(state.text.shadow),
+  saveBytes: (state) => new TextEncoder().encode(
+    JSON.stringify(peritextSidedEmbedRGA.encodeState(state))).length,
 };

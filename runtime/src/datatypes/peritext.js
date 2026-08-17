@@ -25,7 +25,7 @@
 
 import { embedRGA } from './embedRGA.js';
 import { rga } from './rga.js';
-import { sidedEmbedRGAReleaseCandidate } from './unifiedSidedEmbedRGA.js';
+import { liveGapSidedEmbedRGA } from './liveGapSidedEmbedRGA.js';
 import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
 
 // Members of a PSet (hash order) or a legacy plain Set (insertion order):
@@ -292,7 +292,7 @@ export const peritextEmbedRGA = makePeritext(embedRGA);
 export const peritextRGA = makePeritext(rga);
 
 /** Peritext over the unified sided/Fugue EmbedRGA kernel. */
-export const peritextSidedEmbedRGA = makePeritext(sidedEmbedRGAReleaseCandidate);
+export const peritextSidedEmbedRGA = makePeritext(liveGapSidedEmbedRGA);
 
 /** Production default. */
 export const peritext = peritextSidedEmbedRGA;

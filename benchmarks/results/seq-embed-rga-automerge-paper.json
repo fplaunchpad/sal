@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T11:01:19.054Z"
+  "date": "2026-08-17T11:44:21.314Z"
  },
  "ops": {
   "total": 259778,
@@ -15,14 +15,14 @@
  },
  "finalChars": 104852,
  "apply": {
-  "totalMs": 1874.49175,
+  "totalMs": 1905.38275,
   "count": 259778,
   "warmupExcluded": 1000,
-  "meanUs": 7.199214651168183,
-  "medianUs": 4.375,
-  "p95Us": 21.25,
-  "p99Us": 24.833,
-  "maxUs": 1547.083
+  "meanUs": 7.319269369884611,
+  "medianUs": 4.333,
+  "p95Us": 20.458,
+  "p99Us": 23.541,
+  "maxUs": 1770
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 249973,
-   "timeMs": 69.8635,
+   "timeMs": 79.06625,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 88.634125,
+   "medianMs": 101.8725,
    "runs": 5,
    "allMs": [
-    77.826625,
-    86.853417,
-    88.634125,
-    89.870625,
-    112.036875
+    92.597208,
+    98.739167,
+    101.8725,
+    104.189084,
+    125.015042
    ]
   }
  ],
  "compaction": {
-  "ms": 148.799167,
+  "ms": 162.492083,
   "stats": {
    "nodesBefore": 123537,
    "nodesAfter": 106400,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 283153,
-    "timeMs": 95.669958,
+    "timeMs": 85.384416,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 75399616,
-  "peakHeapSampled": 143318352,
-  "retainedHeapAfterGc": 26659312,
+  "baselineHeap": 75400080,
+  "peakHeapSampled": 143169480,
+  "retainedHeapAfterGc": 26651584,
   "externalDelta": 2078264,
   "arrayBuffersDelta": 2078224,
-  "rssEnd": 338460672,
+  "rssEnd": 342081536,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

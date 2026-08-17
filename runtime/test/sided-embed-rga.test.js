@@ -12,6 +12,7 @@ import {
   sharedSidedEmbedRGAExperimental,
 } from '../src/datatypes/sidedEmbedRGA.js';
 import { unifiedSidedEmbedRGAExperimental } from '../src/datatypes/unifiedSidedEmbedRGA.js';
+import { liveGapSidedEmbedRGA } from '../src/datatypes/liveGapSidedEmbedRGA.js';
 
 const ins = (id, el, anchorId = null) => ({ type: 'ins', id, el, anchorId });
 const del = (id) => ({ type: 'del', id });
@@ -78,7 +79,7 @@ test('JavaScript sided kernel is lockstep with the full-policy Fugue oracle', ()
     { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
   const cases = JSON.parse(raw);
   for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental,
-    unifiedSidedEmbedRGAExperimental]) {
+    unifiedSidedEmbedRGAExperimental, liveGapSidedEmbedRGA]) {
     for (const c of cases) {
       if (c.kind === 'seq') {
         const { state } = fold(dt, c.ops.map(fromIntent));
@@ -259,4 +260,49 @@ test('Peritext can use the experimental sided kernel without changing its API', 
       [['a', 1], ['b', 1]]);
     assert.equal(r.head.parents.length, 1);
   }
+});
+
+test('LiveGap kernel stays mint/read-lockstep with the full Fugue policy', () => {
+  const full = unifiedSidedEmbedRGAExperimental, compact = liveGapSidedEmbedRGA;
+  let a = full.init(), b = compact.init(), next = 1, seed = 0x51ded;
+  const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  for (let step = 0; step < 1200; step++) {
+    const ids = full.readIds(a);
+    let op;
+    if (!ids.length || rnd() < .72) {
+      const pos = Math.floor(rnd() * (ids.length + 1));
+      op = ins(next++, 'x', pos ? ids[pos - 1] : null);
+      const pa = full.prepare(a, op), pb = compact.prepare(b, op);
+      assert.deepEqual([pb.side, pb.parentId], [pa.side, pa.parentId]);
+      a = full.apply(a, pa); b = compact.apply(b, pb);
+    } else {
+      op = del(ids[Math.floor(rnd() * ids.length)]);
+      a = full.apply(a, op); b = compact.apply(b, op);
+    }
+    if (step % 50 === 0) assert.deepEqual(compact.read(b), full.read(a));
+  }
+  assert.deepEqual(compact.read(b), full.read(a));
+  const back = compact.decodeState(compact.encodeState(b));
+  assert.deepEqual(compact.read(back), compact.read(b));
+  const anchorId = compact.readIds(back).at(-1) ?? null;
+  const op = ins(next, 'z', anchorId);
+  assert.deepEqual(
+    (({ side, parentId }) => [side, parentId])(compact.prepare(back, op)),
+    (({ side, parentId }) => [side, parentId])(full.prepare(a, op)));
+});
+
+test('LiveGap fork/join matches the full Fugue policy and remains editable', () => {
+  const full = unifiedSidedEmbedRGAExperimental, compact = liveGapSidedEmbedRGA;
+  const build = (dt) => fold(dt, [ins(1, 'a'), ins(2, 'b', 1)]).state;
+  const lf = build(full), lc = build(compact);
+  const af = full.apply(lf, full.prepare(lf, ins(5, 'x', 1)));
+  const ac = compact.apply(lc, compact.prepare(lc, ins(5, 'x', 1)));
+  let bf = full.apply(lf, full.prepare(lf, ins(4, 'y', 1)));
+  let bc = compact.apply(lc, compact.prepare(lc, ins(4, 'y', 1)));
+  bf = full.apply(bf, del(2)); bc = compact.apply(bc, del(2));
+  const mf = full.merge3(lf, af, bf), mc = compact.merge3(lc, ac, bc);
+  assert.deepEqual(compact.read(mc), full.read(mf));
+  const op = ins(7, 'z', 1), pf = full.prepare(mf, op), pc = compact.prepare(mc, op);
+  assert.deepEqual([pc.side, pc.parentId], [pf.side, pf.parentId]);
+  assert.deepEqual(compact.read(compact.apply(mc, pc)), full.read(full.apply(mf, pf)));
 });

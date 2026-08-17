@@ -15,11 +15,12 @@
     "operations": 21200,
     "commitBatches": 89,
     "visibleChars": 9200,
-    "applyMs": 29.051207,
+    "applyMs": 28.97108,
     "stateGcMs": 0,
     "historyGcMs": 0,
     "durableStateBytes": 104954,
     "commits": 90,
+    "identityRecords": 15200,
     "shadowRecords": 15200,
     "deletedIds": 6001
   },

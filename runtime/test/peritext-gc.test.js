@@ -28,7 +28,7 @@ import { peritextEmbedRGA as peritext } from '../src/datatypes/peritext.js';
 import { embedRGA } from '../src/datatypes/embedRGA.js';
 import {
   compactPeritext, compactiblePeritext, compactSharedPeritext,
-  compactibleSharedPeritext,
+  compactibleSharedPeritext, compactSidedPeritext, compactibleSidedPeritext,
 } from '../src/compact-peritext.js';
 import { DistributedReplica, syncReplicas } from '../src/replica.js';
 
@@ -469,6 +469,40 @@ test('shared Peritext certified GC empties state and survives snapshot recovery'
   assert.deepEqual(compactibleSharedPeritext.read(restored), []);
   assert.equal(compactibleSharedPeritext.saveBytes(restored),
     compactibleSharedPeritext.saveBytes(compactibleSharedPeritext.init()));
+});
+
+test('sided Peritext policy GC retains dead mark boundaries', () => {
+  const p = compactibleSidedPeritext;
+  let s = p.init();
+  for (const op of [ins(1, 'A', null), ins(3, 'x', 1),
+    mark(20, 'bold', 1, 3), del(3)]) s = p.apply(s, op);
+  const before = p.read(s);
+  const g = compactSidedPeritext(s, {
+    settledIds: new Set([1, 3]), settledDelIds: new Set([3]),
+    settledMarkMids: new Set([20]), inflightIns: [], inflightMarks: [],
+  });
+  assert.equal(g.state.text.shadow.records.has(3), true,
+    'dead mark endpoint remains a policy/position node');
+  assert.deepEqual(p.read(g.state), before);
+});
+
+test('LiveGap Peritext removes the dead record but retains anonymous root policy geometry', () => {
+  const p = compactibleSidedPeritext;
+  const a = new DistributedReplica(p, 'A'), b = new DistributedReplica(p, 'B');
+  a.register('B'); b.register('A');
+  a.commit(ins(1, 'x', null)); syncReplicas(a, b);
+  a.commit(del(1)); syncReplicas(a, b);
+  b.commit(del(1)); syncReplicas(a, b);
+  const g = a.compactStable();
+  assert.equal(g.compacted, true);
+  assert.deepEqual(a.read(), []);
+  assert.equal(a.head.state.text.shadow.records.size, 0,
+    'the deleted identity-bearing record is gone');
+  assert.equal(a.symbolCount(), 1, 'the anonymous root successor chain survives');
+  const restored = p.decodeState(p.encodeState(a.head.state));
+  assert.deepEqual(p.read(restored), []);
+  const continued = p.apply(restored, ins(2, 'y', null));
+  assert.deepEqual(p.read(continued).map((x) => x.char), ['y']);
 });
 
 // =========================================================================
