@@ -157,20 +157,26 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         liveT.set(id, rec);
       }
       let chains = PMap.empty();
-      const absorbChains = (s) => eachEntry(s.chains, (id, ch) => {
-        const prior = chains.get(id);
-        if (prior !== undefined && !chainEq(prior, ch)) throw new Error(`chain divergence at id ${id}`);
-        if (prior === undefined) chains = chains.set(id, ch);
-      });
-      absorbChains(a); absorbChains(b);
+      const retainChain = (id) => {
+        if (id === null || chains.has(id)) return;
+        const ca = a.chains.get(id), cb = b.chains.get(id), cl = l.chains.get(id);
+        const ch = ca ?? cb ?? cl;
+        if (ch === undefined) throw new Error(`missing retained chain ${id}`);
+        if ((ca && ca !== ch && !chainEq(ch, ca)) ||
+            (cb && cb !== ch && !chainEq(ch, cb)) ||
+            (cl && cl !== ch && !chainEq(ch, cl)))
+          throw new Error(`chain divergence at id ${id}`);
+        chains = chains.set(id, ch);
+      };
+      for (const id of ids) retainChain(id);
       let gaps = PMap.empty();
       for (const anchorKey of [ROOT, ...ids]) {
         const ga = a.gaps.get(anchorKey), gb = b.gaps.get(anchorKey);
         if (!ga && !gb) throw new Error(`missing merged Fugue gap ${anchorKey}`);
         const candidates = [ga?.succId, gb?.succId].filter((x) => x !== null && x !== undefined);
+        for (const id of candidates) retainChain(id);
         let succId = null;
         for (const id of candidates) {
-          if (!chains.has(id)) throw new Error(`missing successor chain ${id}`);
           if (succId === null || cmpKey(encodeChain(chains.get(succId), code, shared),
               encodeChain(chains.get(id), code, shared)) < 0) succId = id;
         }
@@ -188,6 +194,26 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     },
     policyEntryCount(state) { return state.gaps.size; },
     retainedChainCount(state) { return state.chains.size; },
+    encodeState(state) {
+      return {
+        live: [...state.live.entries()].map(([id, r]) => [id, r.coord, r.el]),
+        gaps: [...state.gaps.entries()].map(([id, g]) => [id, g.hasR, g.succId]),
+        chains: [...state.chains.entries()].map(([id, ch]) => [id, chainArray(ch, shared)]),
+      };
+    },
+    decodeState(enc) {
+      let chains = PMap.empty();
+      for (const [id, arr] of enc.chains) {
+        let ch = shared ? null : [];
+        for (const [side, delta] of arr) ch = extendChain(ch, side, delta, id, shared);
+        chains = chains.set(id, ch);
+      }
+      const live = PMap.from(enc.live.map(([id, coord, el]) =>
+        [id, Object.freeze({ chain: chains.get(id), coord, el })]));
+      const gaps = PMap.from(enc.gaps.map(([id, hasR, succId]) =>
+        [id, Object.freeze({ hasR, succId })]));
+      return makeState(live, gaps, chains);
+    },
     fingerprint(state) {
       return JSON.stringify({
         live: [...state.live.entries()].sort(([x], [y]) => x - y)

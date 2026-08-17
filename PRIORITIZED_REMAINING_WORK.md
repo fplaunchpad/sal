@@ -409,10 +409,17 @@ behavioral layer to the conditioned RA-linearizability certificate.
   both replica runtimes and an explicit experimental Peritext configuration.
   The production one-sided exports remain unchanged. Directed deleted-successor,
   fork/join representation-equivalence, prepared-batch, and Peritext controls
-  pass, as does the complete 156-test runtime suite. The next gate is the
-  L1--L27 policy/anomaly battery and benchmark-harness integration; state GC,
-  snapshot codecs, and default promotion remain deliberately pending those
-  results.
+  pass. The executable JavaScript kernel is now lockstep with the full-policy
+  Fugue oracle on every consolidated sequential and two-branch merge fixture;
+  L19 is pinned to `[50,30,10,61,41,21,1]`. Lossless candidate snapshots and
+  the `sal-sided`/`sal-sided-shared` benchmark adapters have landed, and the
+  complete 158-test runtime suite passes. A first non-reportable `freq` canary
+  exposed a real performance problem: median sync was about 4--6 ms for the
+  sided candidates versus 0.1 ms for absolute one-sided and 0.23 ms for shared
+  one-sided on this machine. Do not promote from these canaries. Profile and
+  remove policy-summary/chain-comparison overhead, finish the L23--L27 and
+  state-GC gates, then run repeated isolated benchmarks. Production state GC
+  and default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

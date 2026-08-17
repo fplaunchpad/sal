@@ -25,6 +25,7 @@
 
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns } from '../../../runtime/src/datatypes/sharedEmbedRGA.js';
+import { sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental } from '../../../runtime/src/datatypes/sidedEmbedRGA.js';
 import { PMap } from '../../../runtime/src/pmap.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
 import { compactSharedDirect } from '../../../runtime/src/shared-compact.js';
@@ -92,15 +93,23 @@ export function binaryEstimate(state) {
   return bytes;
 }
 
-export function mkAdapter({ shared = false } = {}) {
-  const kernel = shared ? sharedEmbedRGA : embedRGA;
-  const save = shared ? encodeSharedRuns : saveRunTable;
-  const load = shared
+export function mkAdapter({ shared = false, sided = false } = {}) {
+  const kernel = sided
+    ? (shared ? sharedSidedEmbedRGAExperimental : sidedEmbedRGAExperimental)
+    : (shared ? sharedEmbedRGA : embedRGA);
+  const candidateSave = (state) => new TextEncoder().encode(JSON.stringify(kernel.encodeState(state)));
+  const candidateLoad = (bytes) => {
+    const state = kernel.decodeState(JSON.parse(new TextDecoder().decode(bytes)));
+    return { state, view: kernel.readIds(state) };
+  };
+  const save = sided ? candidateSave : (shared ? encodeSharedRuns : saveRunTable);
+  const load = sided ? candidateLoad : shared
     ? (bytes) => { const state = decodeSharedRuns(bytes); return { state, view: kernel.readIds(state) }; }
     : loadRunTable;
   const compactState = shared ? compactSharedDirect : compactEliasDelta;
   return {
-    name: shared ? 'sal-shared-embed-rga' : 'sal-embed-rga',
+    name: sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
+      : (shared ? 'sal-shared-embed-rga' : 'sal-embed-rga'),
     version: 'runtime/ @ repo HEAD (unversioned)',
     create() { return { state: kernel.init(), view: [], clock: 0 }; },
     ins(doc, pos, ch) {
@@ -117,12 +126,12 @@ export function mkAdapter({ shared = false } = {}) {
       doc.view.splice(pos, 1);
     },
     text(doc) { return kernel.read(doc.state).join(''); },
-    liveCount(doc) { return doc.state.size; },
+    liveCount(doc) { return sided ? doc.state.live.size : doc.state.size; },
 
     saveVariants(doc) {
       return [
-        { label: shared ? 'shared-runs-serialized' : 'run-table-serialized', mk: () => save(doc.state),
-          note: shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read' },
+        { label: sided ? 'sided-policy-json-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
+          note: sided ? 'experimental lossless snapshot including live records and Fugue policy summary; JSON is a baseline codec, not a claimed compact format' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
       ];
     },
     load,
@@ -135,7 +144,7 @@ export function mkAdapter({ shared = false } = {}) {
     /** Settled-cut compaction (single-writer or fully-synced states only).
      *  settledIds = every Lamport tick minted so far; insert ids are a
      *  subset, extra ids are never consulted. */
-    compact(doc) {
+    compact: sided ? undefined : function compact(doc) {
       const settledIds = new Set();
       for (let i = 1; i <= doc.clock; i++) settledIds.add(i);
       const [res, ms] = timed(() =>
@@ -204,11 +213,11 @@ export function mkAdapter({ shared = false } = {}) {
         saveVariants() {
           const st = rA.head.state;
           return [
-            { label: shared ? 'shared-runs-serialized' : 'run-table-serialized', mk: () => save(st),
-              note: shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)' },
+            { label: sided ? 'sided-policy-json-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
+              note: sided ? 'experimental lossless policy-state JSON' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
           ];
         },
-        compactFinal() {
+        compactFinal: sided ? undefined : function compactFinal() {
           const settledIds = new Set(p.minted);
           const [res, ms] = timed(() =>
             compactState(rA.head.state, { settledIds }, { fuseSpines: true }));

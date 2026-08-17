@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 
 import { Runtime } from '../src/runtime.js';
 import { DistributedReplica } from '../src/replica.js';
@@ -11,6 +12,8 @@ import {
 
 const ins = (id, el, anchorId = null) => ({ type: 'ins', id, el, anchorId });
 const del = (id) => ({ type: 'del', id });
+const fromIntent = ([tag, id, anchor]) => tag === 'ins'
+  ? ins(id, String(id), anchor === 0 ? null : anchor) : del(id);
 
 function fold(dt, ops) {
   let state = dt.init();
@@ -52,6 +55,34 @@ test('absolute and prefix-shared sided representations agree through fork/join',
   assert.deepEqual(run(sidedEmbedRGAExperimental), run(sharedSidedEmbedRGAExperimental));
 });
 
+test('JavaScript sided kernel is lockstep with the full-policy Fugue oracle', () => {
+  const raw = execFileSync('python3', ['../whiteboard/litmus/js_sided_oracle.py'],
+    { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
+  const cases = JSON.parse(raw);
+  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental]) {
+    for (const c of cases) {
+      if (c.kind === 'seq') {
+        const { state } = fold(dt, c.ops.map(fromIntent));
+        assert.deepEqual(dt.readIds(state), c.read, `${dt.name}: ${c.name}`);
+      } else {
+        const l = fold(dt, c.lca.map(fromIntent)).state;
+        const branch = (ops) => {
+          let state = l;
+          for (const rawOp of ops.map(fromIntent)) {
+            const op = dt.prepare(state, rawOp);
+            state = dt.apply(state, op);
+          }
+          return state;
+        };
+        const merged = dt.merge3(l, branch(c.a), branch(c.b));
+        assert.deepEqual(dt.readIds(merged), c.read, `${dt.name}: ${c.name}`);
+      }
+    }
+  }
+  const l19 = cases.find((c) => c.name.startsWith('L19'));
+  assert.deepEqual(l19.read, [50, 30, 10, 61, 41, 21, 1]);
+});
+
 test('runtime stores prepared sided evidence in single and batched commits', () => {
   const rt = new Runtime(sidedEmbedRGAExperimental), r = rt.replica('r');
   r.commit(ins(1, 'a'));
@@ -60,6 +91,17 @@ test('runtime stores prepared sided evidence in single and batched commits', () 
   d.commitBatch([ins(1, 'a'), ins(2, 'b', 1)]);
   assert.deepEqual(d.head.op.payload.map((op) => op.side), ['R', 'R']);
   assert.deepEqual(d.read(), ['a', 'b']);
+});
+
+test('candidate snapshots round-trip and remain editable', () => {
+  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental]) {
+    const original = fold(dt, [ins(1, 'a'), ins(2, 'b', 1), ins(3, 'c', 1)]).state;
+    let restored = dt.decodeState(JSON.parse(JSON.stringify(dt.encodeState(original))));
+    assert.equal(dt.fingerprint(restored), dt.fingerprint(original));
+    const op = dt.prepare(restored, ins(4, 'd', 2));
+    restored = dt.apply(restored, op);
+    assert.deepEqual(dt.read(restored), ['a', 'c', 'b', 'd']);
+  }
 });
 
 test('Peritext can use the experimental sided kernel without changing its API', () => {

@@ -9,10 +9,12 @@ import { execSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RESULTS = join(HERE, '..', 'results');
-const SYSTEMS = ['sal', 'sal-shared', 'yjs', 'automerge', 'loro', 'listpositions'];
+const SYSTEMS = ['sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SYSLABEL = {
   sal: 'ours (embed RGA, as shipped)', yjs: 'Yjs', automerge: 'Automerge',
   'sal-shared': 'ours (shared EmbedRGA + direct state GC)',
+  'sal-sided': 'ours (experimental sided/Fugue, absolute)',
+  'sal-sided-shared': 'ours (experimental sided/Fugue, prefix-shared)',
   loro: 'Loro', listpositions: 'list-positions',
 };
 
