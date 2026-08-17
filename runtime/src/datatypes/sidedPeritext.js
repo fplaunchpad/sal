@@ -1,5 +1,5 @@
-// Explicit experimental Peritext configurations. The production `peritext`
-// export remains on the one-sided EmbedRGA until the benchmark promotion gate.
+// Explicit comparison configurations. The production `peritext` export now
+// uses the same unified sided kernel as `sidedPeritextReleaseCandidate`.
 
 import { makePeritext } from './peritext.js';
 import {

@@ -24,7 +24,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { peritext } from '../src/datatypes/peritext.js';
+import { legacyPeritext as peritext } from '../src/datatypes/peritext.js';
 import { embedRGA } from '../src/datatypes/embedRGA.js';
 import {
   compactPeritext, compactiblePeritext, compactSharedPeritext,

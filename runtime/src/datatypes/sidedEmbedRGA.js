@@ -329,7 +329,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
           nodes.set(n.id, n);
         }
       }
-      const ns = [...nodes].sort(([x], [y]) => x - y), out = [2];
+      const ns = [...nodes].sort(([x], [y]) => x - y), out = [3];
       putVar(out, ns.length);
       let prev = 0;
       for (const [id] of ns) { putVar(out, id - prev); prev = id; }
@@ -370,37 +370,34 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       out.push(...lenBits);
       for (const bytes of texts) if (bytes.length !== 1) putVar(out, bytes.length);
       for (const bytes of texts) out.push(...bytes);
-      // Successors are the immediate next retained policy node. Store only
-      // hasR. Tests use `validate` to check this derivation against the full
-      // semantic summary; production encoding need not recompute it twice.
-      let ordered, pos;
-      if (validate) {
-        ordered = policyOrder(ns.map(([, n]) => n));
-        pos = new Map(ordered.map((n, i) => [n.id, i]));
-      }
+      // Most successors are the immediate next retained policy node. Preserve
+      // the exact semantic gap with a sparse exception bitset for the cases in
+      // which the observed successor differs from that derivation.
+      const ordered = policyOrder(ns.map(([, n]) => n));
+      const pos = new Map(ordered.map((n, i) => [n.id, i]));
       const anchors = [ROOT, ...live.map(([id]) => id)], bits = [];
+      const exceptions = [], exceptionBits = [];
       for (let i = 0; i < anchors.length; i += 8) {
-        let byte = 0;
+        let byte = 0, exByte = 0;
         for (let j = 0; j < 8 && i + j < anchors.length; j++) {
           const id = anchors[i + j], g = gapsById.get(id);
           if (!g) throw new Error(`snapshot gap ${id} missing`);
-          if (validate) {
-            const successor = id === ROOT ? (ordered[0]?.id ?? null)
-              : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
-            if (successor !== g.succId)
-              throw new Error(`derived successor mismatch at ${id}: ${successor} != ${g.succId}`);
-          }
+          const successor = id === ROOT ? (ordered[0]?.id ?? null)
+            : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
+          if (successor !== g.succId) { exByte |= 1 << j; exceptions.push(g.succId ?? 0); }
           if (g.hasR) byte |= 1 << j;
         }
-        bits.push(byte);
+        bits.push(byte); exceptionBits.push(exByte);
       }
       putVar(out, bits.length); out.push(...bits);
+      out.push(...exceptionBits);
+      for (const successor of exceptions) putVar(out, successor);
       return Uint8Array.from(out);
     },
     decodeSnapshot(u8, { build = null } = {}) {
       if (!shared) return this.decodeState(JSON.parse(unutf8.decode(u8)));
       const c = { i: 0 };
-      if (u8[c.i++] !== 2) throw new Error('unsupported sided snapshot version');
+      if (u8[c.i++] !== 3) throw new Error('unsupported sided snapshot version');
       const nn = getVar(u8, c), all = new Map(), ids = []; let prev = 0;
       for (let k = 0; k < nn; k++) { const id = prev + getVar(u8, c); ids.push(id); prev = id; }
       const tags = u8.subarray(c.i, c.i + Math.ceil(nn / 4)); c.i += tags.length;
@@ -424,12 +421,14 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       }
       const bitLen = getVar(u8, c), bits = u8.subarray(c.i, c.i + bitLen); c.i += bitLen;
       if (bitLen !== Math.ceil((liveIds.length + 1) / 8)) throw new Error('bad sided gap bitset');
+      const exceptionBits = u8.subarray(c.i, c.i + bitLen); c.i += bitLen;
       const ordered = policyOrder(all.values()), pos = new Map(ordered.map((n, i) => [n.id, i]));
       const anchors = [ROOT, ...liveIds], gapsT = build ? null : PMap.empty().begin();
       const gapsData = build ? new Map() : null;
       for (let i = 0; i < anchors.length; i++) {
-        const id = anchors[i], successor = id === ROOT ? (ordered[0]?.id ?? null)
+        const id = anchors[i], derived = id === ROOT ? (ordered[0]?.id ?? null)
           : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
+        const successor = exceptionBits[i >> 3] & (1 << (i & 7)) ? (getVar(u8, c) || null) : derived;
         const g = Object.freeze({ hasR: !!(bits[i >> 3] & (1 << (i & 7))), succId: successor });
         if (build) gapsData.set(id, g); else gapsT.set(id, g);
       }

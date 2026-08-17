@@ -425,13 +425,12 @@ behavioral layer to the conditioned RA-linearizability certificate.
   live records, live ancestry, and current gap successors. On the same trace
   it reduced 1.2 MB of provisional JSON to about 306 KB and restored median
   load to about 18 ms (current shared run codec: 59 KB and about 16 ms). The
-  remaining structure was compressed without deleting evidence: successors
-  are reconstructed from the retained policy tree (and checked against the
-  semantic gaps during encoding), node parent exceptions and sides are
+  remaining structure was compressed without deleting evidence: most
+  successors are reconstructed from the retained policy tree, while a sparse
+  exception bitset preserves exact observed successors, node parent exceptions and sides are
   bit-packed, and live membership/text-length exceptions are sidecars over the
-  node table. The resulting snapshot is about 60.4 KB versus 59.1 KB for the
-  current shared run codec on this trace, closing the storage-size gap to about
-  2.3%. Codec profiling removed repeated ancestry walks, HAMT lookups, ASCII
+  node table. The corrected unified snapshot is 63.1 KB versus 59.1 KB for the
+  current shared run codec on this trace. Codec profiling removed repeated ancestry walks, HAMT lookups, ASCII
   encoder calls, and a redundant production-time successor validation (the
   validation remains executable in tests); decoded snapshots cache their
   verified policy order. Save/load are now about 20.6/17.9 ms versus
@@ -447,13 +446,18 @@ behavioral layer to the conditioned RA-linearizability certificate.
   shared's 15.8/15.7 ms. Keep the split-map kernel as the differential oracle.
   The one-HAMT kernel is now exported explicitly as
   `sidedEmbedRGAReleaseCandidate`, with `sidedPeritextReleaseCandidate` using
-  it; neither replaces the production default. Forty deterministic randomized
+  it. Forty deterministic randomized
   80-step fork/join trials stay read-lockstep with the split oracle and include
-  snapshot recovery. Default promotion remains gated on certified sided state
-  GC, offline/cross-epoch recovery, and the remaining anomaly/Peritext matrix.
-  Then finish the
-  L23--L27 gates and run repeated isolated benchmarks. Production state GC and
-  default promotion remain deliberately pending those results.
+  snapshot recovery. Certified policy GC now requires settled insertion and
+  deletion evidence, preserves exact live gaps and their ancestor closure, and
+  declares its retained coordinate frame to be identity-translated. Directed
+  tests cover refusal without frontier evidence, state recovery, and a returning
+  old-epoch replica that mints offline and converges after compaction. The full
+  165-test runtime suite passes. The public `peritext` export now uses the
+  unified sided kernel; `legacyPeritext` retains the former one-sided behavior
+  for differential tests and the older coordinate-renumbering compactor.
+  Finish the L23--L27 gates and run repeated isolated benchmarks before removing
+  the release-candidate and legacy aliases.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

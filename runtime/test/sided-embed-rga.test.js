@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 
 import { Runtime } from '../src/runtime.js';
 import { DistributedReplica } from '../src/replica.js';
+import { syncReplicas } from '../src/replica.js';
+import { peritext } from '../src/datatypes/peritext.js';
 import { sharedSidedPeritextExperimental, sidedPeritextReleaseCandidate } from '../src/datatypes/sidedPeritext.js';
 import {
   sidedEmbedRGAExperimental,
@@ -182,8 +184,72 @@ test('unified release candidate survives randomized split-oracle fork/join and r
   }
 });
 
+test('unified policy GC drops a settled irrelevant branch leaf and preserves future mints', () => {
+  const dt = unifiedSidedEmbedRGAExperimental, rt = new Runtime(dt);
+  const a = rt.replica('a'), b = rt.replica('b');
+  a.commit(ins(1, 'a')); a.sync(b);
+  a.commit(ins(2, 'b', 1)); b.commit(ins(3, 'c', 1)); a.sync(b);
+  const ids = dt.readIds(a.head.state), victim = ids.find((id) => id !== 1 &&
+    a.head.state.rootGap.succId !== id && a.head.state.nodes.get(1).gap.succId !== id) ?? 2;
+  a.commit(del(victim)); b.sync(a);
+  const before = a.head.state;
+  const { state: compacted, stats } = dt.compact(before,
+    { settledIds: new Set([1, 2, 3]), settledDelIds: new Set([victim]) });
+  assert.ok(stats.recordsDropped >= 1);
+  assert.deepEqual(dt.readIds(compacted), dt.readIds(before));
+  const raw = ins(4, 'd', 1);
+  const x = dt.apply(before, dt.prepare(before, raw));
+  const y = dt.apply(compacted, dt.prepare(compacted, raw));
+  assert.deepEqual(dt.readIds(y), dt.readIds(x));
+});
+
+test('unified sided GC fires only with frontier evidence and round-trips its epoch state', () => {
+  const dt = unifiedSidedEmbedRGAExperimental;
+  const a = new DistributedReplica(dt, 'A'), b = new DistributedReplica(dt, 'B');
+  a.register('B'); b.register('A');
+  a.commit(ins(1, 'a')); syncReplicas(a, b);
+  a.commit(ins(2, 'b', 1)); b.commit(ins(3, 'c', 1)); syncReplicas(a, b);
+  const g = a.head.state.nodes.get(1).gap;
+  const victim = [2, 3].find((id) => id !== g.succId);
+  a.commit(del(victim));
+  assert.equal(a.compactStable().compacted, false, 'must refuse before B acknowledges the delete frontier');
+  syncReplicas(a, b);
+  b.commit(ins(4, 'd', 1)); syncReplicas(a, b);
+  const before = a.read(), result = a.compactStable();
+  assert.equal(result.compacted, true);
+  assert.ok(result.stats.recordsDropped > 0);
+  assert.deepEqual(a.read(), before);
+  const restored = dt.decodeState(dt.encodeState(a.head.state));
+  assert.deepEqual(dt.read(restored), before);
+});
+
+test('offline old-epoch sided replica returns after certified policy GC', () => {
+  const dt = unifiedSidedEmbedRGAExperimental;
+  const a = new DistributedReplica(dt, 'A'), b = new DistributedReplica(dt, 'B'),
+    c = new DistributedReplica(dt, 'C');
+  for (const x of [a, b, c]) for (const name of ['A', 'B', 'C']) x.register(name);
+  a.commit(ins(1, 'a')); syncReplicas(a, b); syncReplicas(a, c);
+  a.commit(ins(2, 'b', 1)); b.commit(ins(3, 'c', 1));
+  syncReplicas(a, b); syncReplicas(a, c); syncReplicas(b, c);
+  const victim = [2, 3].find((id) => id !== a.head.state.nodes.get(1).gap.succId);
+  a.commit(del(victim)); syncReplicas(a, b); syncReplicas(a, c);
+  b.commit(ins(4, 'd', 1)); c.commit(ins(5, 'e', 1));
+  syncReplicas(a, b); syncReplicas(a, c); // A now has post-delete evidence from B and C.
+  const compacted = a.compactStable();
+  assert.equal(compacted.compacted, true);
+  assert.ok(compacted.stats.recordsDropped > 0);
+  assert.equal(dt.fingerprint(dt.decodeState(dt.encodeState(a.head.state))),
+    dt.fingerprint(a.head.state), 'compaction wire state must be fingerprint-stable');
+  // C remains in the parent epoch and mints a future operation there.
+  const anchor = dt.readIds(c.head.state).at(-1) ?? 1;
+  c.commit(ins(6, 'f', anchor));
+  syncReplicas(a, c);
+  assert.deepEqual(a.read(), c.read());
+  assert.ok(a.read().includes('f'));
+});
+
 test('Peritext can use the experimental sided kernel without changing its API', () => {
-  for (const dt of [sharedSidedPeritextExperimental, sidedPeritextReleaseCandidate]) {
+  for (const dt of [sharedSidedPeritextExperimental, sidedPeritextReleaseCandidate, peritext]) {
     const rt = new Runtime(dt), r = rt.replica('r');
     r.commit(ins(1, 'a'));
     r.commit(ins(2, 'b', 1));

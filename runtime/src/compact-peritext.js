@@ -65,7 +65,7 @@
 // retainedForMarks, markRecords, markPairsDropped }. Cost:
 // retainedForMarks <= 2 * markRecords, structural (a mark has two boundaries).
 
-import { peritext, makePeritext } from './datatypes/peritext.js';
+import { legacyPeritext, makePeritext } from './datatypes/peritext.js';
 import { embedRGA } from './datatypes/embedRGA.js';
 import { compactEliasDelta, remapState } from './compact.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns, pathDeltas } from './datatypes/sharedEmbedRGA.js';
@@ -323,7 +323,7 @@ export function peritextCutFromMeet(meet) {
  *  encodeState/decodeState come from the datatype itself (they already carry
  *  compaction commits losslessly). */
 export const compactiblePeritext = {
-  ...peritext,
+  ...legacyPeritext,
   compact: compactPeritext,
   remapState: remapPeritextState,
   cutFromMeet: peritextCutFromMeet,
@@ -345,7 +345,7 @@ export const compactiblePeritext = {
     };
   },
   decodeState(enc) {
-    if (!enc || enc.v !== 2) return peritext.decodeState(enc); // legacy v1
+    if (!enc || enc.v !== 2) return legacyPeritext.decodeState(enc); // legacy v1
     return {
       text: {
         shadow: rekeyShadow(decodeRunTable(b64decode(enc.rt)), enc.ids),

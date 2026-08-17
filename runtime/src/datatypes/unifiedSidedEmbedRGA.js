@@ -138,6 +138,37 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
     });
     return Object.freeze({ live: lt.freeze(), gaps: gt.freeze(), chains: ct.freeze(), order: s.order });
   };
+  const compact = (s, cut = {}) => {
+    const settled = cut.settledIds ?? new Set(), settledDeletes = cut.settledDelIds ?? new Set();
+    const keep = new Set();
+    eachEntry(s.nodes, (id, n) => {
+      if (live(n) || !settled.has(id) || !settledDeletes.has(id)) keep.add(id);
+      if (live(n) && n.gap?.succId !== null) keep.add(n.gap.succId);
+    });
+    if (s.rootGap.succId !== null) keep.add(s.rootGap.succId);
+    for (const id of [...keep]) {
+      for (let ch = s.nodes.get(id)?.chain; ch; ch = ch.parent) keep.add(ch.id);
+    }
+    const t = PMap.empty().begin();
+    eachEntry(s.nodes, (id, n) => { if (keep.has(id)) t.set(id, n); });
+    const state = Object.freeze({ nodes: t.freeze(), rootGap: s.rootGap, order: null });
+    return { state, translate: new Map(), stats: {
+      symbolsBefore: s.nodes.size, symbolsAfter: state.nodes.size,
+      recordsDropped: s.nodes.size - state.nodes.size,
+      policyNodesBefore: s.nodes.size, policyNodesAfter: state.nodes.size,
+    } };
+  };
+  const cutFromMeet = (meet) => {
+    const settledIds = new Set(), settledDelIds = new Set();
+    for (const op of meet.values()) {
+      const ps = Array.isArray(op.payload) ? op.payload : op.payload ? [op.payload] : [];
+      for (const p of ps) {
+        if (p.type === 'ins') settledIds.add(p.id);
+        else if (p.type === 'del') settledDelIds.add(p.id);
+      }
+    }
+    return { settledIds, settledDelIds, inflight: [] };
+  };
   return {
     name: 'sided-fugue-unified-experimental', experimental: true, needsPrepare: true,
     init, prepare, apply, merge3, has: (s, id) => live(s.nodes.get(id)), readEntries,
@@ -147,6 +178,21 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
     encodeSnapshot: (s, opts = {}) => split.encodeSnapshot(null,
       { ...opts, unifiedNodes: s.nodes, unifiedRootGap: s.rootGap }),
     decodeSnapshot: (bytes) => split.decodeSnapshot(bytes, { build: ({ chains, live: ls, gaps, order }) => {
+      const t = PMap.empty().begin();
+      for (const [id, ch] of chains) {
+        const r = ls.get(id); t.set(id, node(ch, r?.el, r ? gaps.get(id) : null));
+      }
+      return Object.freeze({ nodes: t.freeze(), rootGap: gaps.get('@root'), order });
+    } }),
+    compact,
+    cutFromMeet,
+    // Policy GC removes records but never rewrites the retained chains. Both
+    // epoch directions therefore use the identity coordinate translation.
+    inverseTranslate: (_before, _after, _cut) => new Map(),
+    remapState: (s, _translate) => s,
+    encodeState: (s) => [...split.encodeSnapshot(null,
+      { unifiedNodes: s.nodes, unifiedRootGap: s.rootGap })],
+    decodeState: (enc) => split.decodeSnapshot(Uint8Array.from(enc), { build: ({ chains, live: ls, gaps, order }) => {
       const t = PMap.empty().begin();
       for (const [id, ch] of chains) {
         const r = ls.get(id); t.set(id, node(ch, r?.el, r ? gaps.get(id) : null));

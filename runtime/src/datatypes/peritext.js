@@ -24,6 +24,7 @@
 // (see the note at the bottom).
 
 import { embedRGA } from './embedRGA.js';
+import { sidedEmbedRGAReleaseCandidate } from './unifiedSidedEmbedRGA.js';
 import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
 
 // Members of a PSet (hash order) or a legacy plain Set (insertion order):
@@ -229,6 +230,12 @@ return {
   // round-trip; no compaction commits are emitted so decodeState is only a
   // snapshot path, but providing both keeps the datatype whole.
   encodeState(state) {
+    if (typeof state.text.shadow.entries !== 'function') {
+      return {
+        text: { kernel: textRGA.encodeState(state.text.shadow), deleted: [...state.text.deleted] },
+        marks: [...state.marks.entries()].map(([, m]) => m),
+      };
+    }
     return {
       text: {
         shadow: [...state.text.shadow.entries()].map(([id, r]) => [id, r.coord, r.el]),
@@ -238,6 +245,12 @@ return {
     };
   },
   decodeState(enc) {
+    if ('kernel' in enc.text) {
+      return {
+        text: { shadow: textRGA.decodeState(enc.text.kernel), deleted: PSet.from(enc.text.deleted) },
+        marks: PMap.from(enc.marks.map((m) => [m.mid, Object.freeze(m)])),
+      };
+    }
     return {
       text: {
         shadow: PMap.from(enc.text.shadow.map(([id, coord, el]) => [id, Object.freeze({ coord, el })])),
@@ -271,4 +284,9 @@ return {
 };
 }
 
-export const peritext = makePeritext(embedRGA);
+/** The former one-sided configuration, retained for differential tests and
+ * compatibility measurements. New documents use the sided/Fugue policy. */
+export const legacyPeritext = makePeritext(embedRGA);
+
+/** Production Peritext: the unified one-HAMT sided/Fugue text kernel. */
+export const peritext = makePeritext(sidedEmbedRGAReleaseCandidate);
