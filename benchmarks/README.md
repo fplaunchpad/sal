@@ -1,24 +1,25 @@
-# benchmarks/ : embed RGA runtime vs production CRDT libraries
+# benchmarks/: verified Sal sequence kernels vs production CRDT libraries
 
-Cross-system performance comparison of our shipped embed RGA runtime
-(`runtime/`, the unverified ESM transliteration of the Lean-verified embed
-kernel) against four production sequence-CRDT implementations, on the
-metrics CRDT papers use. Every cell in the matrix comes from a run of the
-scripts in this directory on this machine; no cell is quoted from
-literature.
+Cross-system comparison of the JavaScript implementations corresponding to
+the verified RGA, EmbedRGA, and SidedEmbedRGA designs against four production
+sequence-CRDT implementations. Every matrix cell comes from a run on this
+machine; no cell is quoted from literature. EmbedRGA and SidedEmbedRGA are both
+paper-facing choices: the former targets lower retained metadata, while the
+latter retains policy state for stronger non-interleaving semantics.
 
 ## Systems
 
 | key | system | what is measured |
 | --- | --- | --- |
-| `sal` | ours: `runtime/src/datatypes/embedRGA.js` (flipped Elias-delta code, the verified default) + `runtime/src/pmap.js` (persistent HAMT state container) + `runtime/src/compact.js` + `runtime/src/runtime.js` (head-sync Runtime for the concurrent workload) | the AS-SHIPPED persistent datatype: `apply` returns a fresh persistent-HAMT state (O(log n) path copy, structural sharing), records carry absolute chain coordinates as `'0'/'1'` bit-strings |
-| `sal-shared` | ours: `runtime/src/datatypes/sharedEmbedRGA.js` + native `runtime/src/shared-compact.js` | the continuation-capable prefix-sharing representation; direct guarded state GC, run-compressed provenance snapshots, and the same client-visible sequence semantics |
+| `rga` | Sal RGA | verified explicit-tombstone baseline |
+| `embed-rga` | Sal EmbedRGA | verified shared-coordinate design with lower retained metadata |
+| `sided-embed-rga` | Sal SidedEmbedRGA | verified sided policy with stronger non-interleaving behavior |
 | `yjs` | Yjs 13.6.31 | `Y.Text` |
 | `automerge` | @automerge/automerge 3.3.2 (wasm) | text field, one `Automerge.change` per char (the automerge-perf convention) |
 | `loro` | loro-crdt 1.13.7 (wasm) | `LoroText` |
 | `listpositions` | list-positions 2.0.0 | `Text` (chars at CRDT positions). NOT a full CRDT library: it ships positions and a local structure, op delivery is left to the app; its sync row uses an op-log integration (see below) |
 
-All five installed cleanly from npm; none dropped.
+All external systems installed cleanly from npm; none was dropped.
 
 ## Reproduction
 
