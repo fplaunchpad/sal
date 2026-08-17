@@ -1,0 +1,63 @@
+{
+ "workload": "seq",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "friendsforever_flat",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-17T10:14:52.077Z"
+ },
+ "ops": {
+  "total": 26078,
+  "inserts": 23720
+ },
+ "finalChars": 21362,
+ "apply": {
+  "totalMs": 30.674167,
+  "count": 26078,
+  "warmupExcluded": 1000,
+  "meanUs": 1.13012473083978,
+  "medianUs": 0.584,
+  "p95Us": 4,
+  "p99Us": 4.958,
+  "maxUs": 451.042
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "rga-binary",
+   "bytes": 145183,
+   "timeMs": 14.354291,
+   "note": "continuation-capable packed insertion tree and tombstone set",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "rga-binary",
+   "medianMs": 17.746667,
+   "runs": 5,
+   "allMs": [
+    15.751792,
+    17.107459,
+    17.746667,
+    19.328208,
+    19.382167
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 11589200,
+  "peakHeapSampled": 23052816,
+  "retainedHeapAfterGc": 4438592,
+  "externalDelta": 208664,
+  "arrayBuffersDelta": 208624,
+  "rssEnd": 104153088,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

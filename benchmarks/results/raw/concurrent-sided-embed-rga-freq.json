@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "suite": "plain-text",
+  "workload": "concurrent",
+  "system": "sided-embed-rga",
+  "preset": "freq",
+  "config": {
+    "rounds": 60,
+    "burst": 25,
+    "seed": 42,
+    "insRatio": 0.8
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-17T10:15:15.988Z"
+  },
+  "gates": {
+    "converged": true
+  },
+  "metrics": {
+    "operations": 3000,
+    "finalChars": 1804,
+    "syncTotalMs": 22.235955,
+    "syncMedianUs": 374.792,
+    "syncP95Us": 556,
+    "syncPayloadBytes": 116118,
+    "localOpMeanUs": 3.1123453333333333,
+    "primarySaveBytes": 9648,
+    "runtimeGcMs": 1.6840419999999996
+  },
+  "detail": {
+    "workload": "concurrent",
+    "system": "sided-embed-rga",
+    "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+    "preset": "freq",
+    "config": {
+      "rounds": 60,
+      "burst": 25,
+      "seed": 42,
+      "insRatio": 0.8
+    },
+    "env": {
+      "node": "v26.3.1",
+      "platform": "darwin arm64",
+      "exposeGc": true,
+      "date": "2026-08-17T10:15:15.988Z"
+    },
+    "finalChars": 1804,
+    "gates": {
+      "converged": true
+    },
+    "sync": {
+      "count": 60,
+      "warmupExcluded": 0,
+      "meanUs": 370.59925,
+      "medianUs": 374.792,
+      "p95Us": 556,
+      "p99Us": 715.75,
+      "maxUs": 715.75,
+      "totalMs": 22.235955
+    },
+    "syncPayloadBytes": {
+      "total": 116118,
+      "perSyncMean": 1935.3
+    },
+    "localOps": {
+      "count": 3000,
+      "totalMs": 9.337036,
+      "meanUs": 3.1123453333333333
+    },
+    "saves": [
+      {
+        "label": "sided-policy-binary-experimental",
+        "bytes": 9648,
+        "estimated": false
+      }
+    ],
+    "compaction": null,
+    "runtimeGcMsTotal": 1.6840419999999996,
+    "memory": {
+      "baselineHeap": 4179416,
+      "peakHeapSampled": 14470888,
+      "retainedHeapAfterGc": 1577912,
+      "externalDelta": 40,
+      "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+    }
+  }
+}

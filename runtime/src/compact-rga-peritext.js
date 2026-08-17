@@ -27,8 +27,10 @@ function compact(s, cut = {}) {
   // dead. Keeping its anchor chain also preserves the tree traversal order.
   eachEntry(s.marks, (_mid, m) => { keep.add(m.startId); keep.add(m.endId); });
   for (const id of [...keep]) {
-    for (let p = adds.get(id)?.anchorId; p !== null && p !== undefined; p = adds.get(p)?.anchorId)
+    for (let p = adds.get(id)?.anchorId; p !== null && p !== undefined; p = adds.get(p)?.anchorId) {
+      if (keep.has(p)) break;
       keep.add(p);
+    }
   }
   const at = PMap.empty().begin(), dt = PSet.empty().begin(), gt = s.text.shadow.grave.begin();
   eachEntry(adds, (id, r) => { if (keep.has(id)) at.set(id, r); });

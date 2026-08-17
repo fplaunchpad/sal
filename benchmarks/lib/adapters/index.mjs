@@ -1,10 +1,13 @@
 // Adapter registry: dynamic import so a worker only loads the system it
 // benchmarks (keeps heap/wasm isolation per child process).
 
-export const SYSTEMS = ['sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
+export const SYSTEMS = ['rga', 'embed-rga', 'sided-embed-rga', 'sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
 
 export async function getAdapter(name) {
   switch (name) {
+    case 'rga': return (await import('./sal.mjs')).mkAdapter({ plainRGA: true });
+    case 'embed-rga': return (await import('./sal.mjs')).mkAdapter({ shared: true });
+    case 'sided-embed-rga': return (await import('./sal.mjs')).mkAdapter({ sided: true, shared: true, unified: true });
     case 'sal': return (await import('./sal.mjs')).mkAdapter();
     case 'sal-shared': return (await import('./sal.mjs')).mkAdapter({ shared: true });
     case 'sal-sided': return (await import('./sal.mjs')).mkAdapter({ sided: true });

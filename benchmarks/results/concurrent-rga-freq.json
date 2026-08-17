@@ -1,0 +1,57 @@
+{
+ "workload": "concurrent",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "preset": "freq",
+ "config": {
+  "rounds": 60,
+  "burst": 25,
+  "seed": 42,
+  "insRatio": 0.8
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-17T10:15:15.218Z"
+ },
+ "finalChars": 1804,
+ "gates": {
+  "converged": true
+ },
+ "sync": {
+  "count": 60,
+  "warmupExcluded": 0,
+  "meanUs": 141.11593333333332,
+  "medianUs": 137.875,
+  "p95Us": 230.708,
+  "p99Us": 360.959,
+  "maxUs": 360.959,
+  "totalMs": 8.466956
+ },
+ "syncPayloadBytes": {
+  "total": 63726,
+  "perSyncMean": 1062.1
+ },
+ "localOps": {
+  "count": 3000,
+  "totalMs": 7.711828999999998,
+  "meanUs": 2.570609666666666
+ },
+ "saves": [
+  {
+   "label": "rga-binary",
+   "bytes": 16886,
+   "estimated": false
+  }
+ ],
+ "compaction": null,
+ "runtimeGcMsTotal": 1.7478809999999998,
+ "memory": {
+  "baselineHeap": 4179360,
+  "peakHeapSampled": 11944296,
+  "retainedHeapAfterGc": 1329376,
+  "externalDelta": 40,
+  "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+ }
+}

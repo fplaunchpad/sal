@@ -72,14 +72,13 @@ function orderedIds(adds) {
   // child immediately after its anchor. Therefore siblings display newest
   // first. Anchor closure makes the resulting relation a rooted tree.
   for (const xs of children.values()) xs.sort((a, b) => b - a);
-  const out = [], visiting = new Set();
-  const walk = (anchor) => {
-    for (const id of children.get(anchor) ?? []) {
-      if (visiting.has(id)) throw new Error(`RGA anchor cycle at ${id}`);
-      visiting.add(id); out.push(id); walk(id); visiting.delete(id);
-    }
-  };
-  walk(ROOT);
+  const out = [], roots = children.get(ROOT) ?? [], stack = [];
+  for (let i = roots.length - 1; i >= 0; i--) stack.push(roots[i]);
+  while (stack.length) {
+    const id = stack.pop(); out.push(id);
+    const xs = children.get(id) ?? [];
+    for (let i = xs.length - 1; i >= 0; i--) stack.push(xs[i]);
+  }
   if (out.length !== adds.size) throw new Error('RGA state contains an unreachable anchor');
   return out;
 }

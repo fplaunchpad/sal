@@ -24,6 +24,7 @@
 // discipline (runtime/src/runtime.js) with commit GC after each sync.
 
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
+import { rga } from '../../../runtime/src/datatypes/rga.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns } from '../../../runtime/src/datatypes/sharedEmbedRGA.js';
 import { sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental } from '../../../runtime/src/datatypes/sidedEmbedRGA.js';
 import { unifiedSidedEmbedRGAExperimental } from '../../../runtime/src/datatypes/unifiedSidedEmbedRGA.js';
@@ -94,8 +95,8 @@ export function binaryEstimate(state) {
   return bytes;
 }
 
-export function mkAdapter({ shared = false, sided = false, unified = false } = {}) {
-  const kernel = unified ? unifiedSidedEmbedRGAExperimental : sided
+export function mkAdapter({ shared = false, sided = false, unified = false, plainRGA = false } = {}) {
+  const kernel = plainRGA ? rga : unified ? unifiedSidedEmbedRGAExperimental : sided
     ? (shared ? sharedSidedEmbedRGAExperimental : sidedEmbedRGAExperimental)
     : (shared ? sharedEmbedRGA : embedRGA);
   const candidateSave = (state) => kernel.encodeSnapshot(state);
@@ -103,13 +104,13 @@ export function mkAdapter({ shared = false, sided = false, unified = false } = {
     const state = kernel.decodeSnapshot(bytes);
     return { state, view: kernel.readIds(state) };
   };
-  const save = sided ? candidateSave : (shared ? encodeSharedRuns : saveRunTable);
-  const load = sided ? candidateLoad : shared
+  const save = plainRGA || sided ? candidateSave : (shared ? encodeSharedRuns : saveRunTable);
+  const load = plainRGA || sided ? candidateLoad : shared
     ? (bytes) => { const state = decodeSharedRuns(bytes); return { state, view: kernel.readIds(state) }; }
     : loadRunTable;
   const compactState = shared ? compactSharedDirect : compactEliasDelta;
   return {
-    name: unified ? 'sal-sided-unified-experimental' : sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
+    name: plainRGA ? 'RGA' : unified ? 'SidedEmbedRGA' : sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
       : (shared ? 'sal-shared-embed-rga' : 'sal-embed-rga'),
     version: 'runtime/ @ repo HEAD (unversioned)',
     create() { return { state: kernel.init(), view: [], clock: 0 }; },
@@ -132,8 +133,8 @@ export function mkAdapter({ shared = false, sided = false, unified = false } = {
 
     saveVariants(doc) {
       return [
-        { label: sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
-          note: sided ? 'experimental lossless binary parent-link snapshot including the Fugue policy summary' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
+        { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
+          note: plainRGA ? 'continuation-capable packed insertion tree and tombstone set' : sided ? 'experimental lossless binary parent-link snapshot including the Fugue policy summary' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
       ];
     },
     load,
@@ -146,7 +147,7 @@ export function mkAdapter({ shared = false, sided = false, unified = false } = {
     /** Settled-cut compaction (single-writer or fully-synced states only).
      *  settledIds = every Lamport tick minted so far; insert ids are a
      *  subset, extra ids are never consulted. */
-    compact: sided ? undefined : function compact(doc) {
+    compact: plainRGA || sided ? undefined : function compact(doc) {
       const settledIds = new Set();
       for (let i = 1; i <= doc.clock; i++) settledIds.add(i);
       const [res, ms] = timed(() =>
@@ -215,11 +216,11 @@ export function mkAdapter({ shared = false, sided = false, unified = false } = {
         saveVariants() {
           const st = rA.head.state;
           return [
-            { label: sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
-              note: sided ? 'experimental lossless binary policy-state snapshot' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
+            { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
+              note: plainRGA ? 'packed insertion tree and tombstones' : sided ? 'experimental lossless binary policy-state snapshot' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
           ];
         },
-        compactFinal: sided ? undefined : function compactFinal() {
+        compactFinal: plainRGA || sided ? undefined : function compactFinal() {
           const settledIds = new Set(p.minted);
           const [res, ms] = timed(() =>
             compactState(rA.head.state, { settledIds }, { fuseSpines: true }));

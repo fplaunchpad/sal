@@ -351,7 +351,7 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 8. Build the unified paper benchmark harness
 
-- [ ] **Implement the proved tombstone RGA in JavaScript as the paper's plain-RGA
+- [x] **Implement the proved tombstone RGA in JavaScript as the paper's plain-RGA
   baseline.** Mirror `RGA_WithTombstones/RGA_WithTombstones.lean` and its guarded
   intent layer in `RGA_Intent.lean`: retain the grow-only insertion relation and
   tombstone set, enforce `rgaApplicable` at minting, implement the deterministic
@@ -372,11 +372,18 @@ behavioral layer to the conditioned RA-linearizability certificate.
   Peritext layer. `compactiblePeritextRGA` performs certified leaf/ancestor
   collection without rewriting anchors. The focused two-kernel GC harness and
   quick results are in `benchmarks/workloads/peritext-kernel-gc.mjs` and
-  `benchmarks/results/peritext-kernel-gc-summary.md`. Remaining before checking
-  this task: add the plain-RGA adapter to the general sequence matrix and run
-  repeated full-size trials. The packed RGA continuation snapshot now uses
+  `benchmarks/results/peritext-kernel-gc-summary.md`. The general harness now
+  exposes `rga`, `embed-rga`, and `sided-embed-rga`; three repeated isolated
+  runs cover all four real traces, frequent and bulk synchronization, and the
+  focused Peritext ancestor-spine comparison. Results and exact ranges are in
+  `benchmarks/results/kernel-comparison-repeated.{json,md}`. The packed RGA continuation snapshot uses
   delta-coded ids, parent distances, UTF-8 payloads, and tombstones; corruption,
-  backward-decoding, and round-trip gates pass.
+  backward-decoding, and round-trip gates pass. At 21,200 Peritext operations,
+  EmbedRGA with both GCs is 3.3 times smaller than RGA because it removes all
+  6,000 deleted spine identifiers. Its current shared-state compactor takes
+  8.36 seconds, however, and the original 57,500-operation configuration
+  exhausted a 4 GB heap. Optimizing this compactor before final paper-scale
+  repetitions is the next explicit benchmark-engineering task.
 
 - **Highest-priority runtime prerequisite: implement sided EmbedRGA under the
   plain Fugue generation policy as an experimental kernel, then measure it

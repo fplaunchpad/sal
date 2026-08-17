@@ -77,11 +77,17 @@ export function compactSharedDirect(state, cut, opts = {}) {
     if (!path) return root;
     let w = wraps.get(path);
     if (w) return w;
-    const parent = ensure(path.parent);
-    w = { path, parent, delta: path.delta, children: new Map(), record: null,
-      seedSettled: false, inflightChild: false, inflightHere: false,
-      evidence: false, stable: false, out: null, newCoord: '' };
-    wraps.set(path, w); parent.children.set(path.delta, w); return w;
+    const missing = [];
+    for (let p = path; p && !wraps.has(p); p = p.parent) missing.push(p);
+    let parent = missing.at(-1)?.parent ? wraps.get(missing.at(-1).parent) : root;
+    for (let i = missing.length - 1; i >= 0; i--) {
+      const p = missing[i];
+      w = { path: p, parent, delta: p.delta, children: new Map(), record: null,
+        seedSettled: false, inflightChild: false, inflightHere: false,
+        evidence: false, stable: false, out: null, newCoord: '' };
+      wraps.set(p, w); parent.children.set(p.delta, w); parent = w;
+    }
+    return wraps.get(path);
   };
   for (const [id, rec] of state) ensure(rec.path).record = { id, rec };
   const childOf = (parent, delta) => {

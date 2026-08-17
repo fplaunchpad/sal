@@ -86,12 +86,17 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
       return c === 0 ? a.id - b.id : -c;
     });
     for (const b of children.values()) { sort(b.L); sort(b.R); }
-    const out = [], walk = (n) => {
-      const b = children.get(n.id); for (const x of b?.L ?? []) walk(x);
-      out.push(n.id); for (const x of b?.R ?? []) walk(x);
-    };
-    for (const n of children.get(null)?.L ?? []) walk(n);
-    for (const n of children.get(null)?.R ?? []) walk(n);
+    const out = [], root = children.get(null), roots = [...(root?.L ?? []), ...(root?.R ?? [])];
+    const stack = [];
+    for (let i = roots.length - 1; i >= 0; i--) stack.push({ n: roots[i], emit: false });
+    while (stack.length) {
+      const f = stack.pop();
+      if (f.emit) { out.push(f.n.id); continue; }
+      const b = children.get(f.n.id), rs = b?.R ?? [], ls = b?.L ?? [];
+      for (let i = rs.length - 1; i >= 0; i--) stack.push({ n: rs[i], emit: false });
+      stack.push({ n: f.n, emit: true });
+      for (let i = ls.length - 1; i >= 0; i--) stack.push({ n: ls[i], emit: false });
+    }
     return out;
   };
 

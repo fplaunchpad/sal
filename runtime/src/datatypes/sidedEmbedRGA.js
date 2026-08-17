@@ -112,14 +112,17 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       return c === 0 ? a.id - b.id : -c;
     });
     for (const bands of children.values()) { order(bands.L); order(bands.R); }
-    const out = [], walk = (n) => {
-      const bands = children.get(n.id);
-      for (const x of bands?.L ?? []) walk(x);
-      out.push(n);
-      for (const x of bands?.R ?? []) walk(x);
-    };
-    for (const n of children.get(null)?.L ?? []) walk(n);
-    for (const n of children.get(null)?.R ?? []) walk(n);
+    const out = [], root = children.get(null), roots = [...(root?.L ?? []), ...(root?.R ?? [])];
+    const stack = [];
+    for (let i = roots.length - 1; i >= 0; i--) stack.push({ n: roots[i], emit: false });
+    while (stack.length) {
+      const f = stack.pop();
+      if (f.emit) { out.push(f.n); continue; }
+      const bands = children.get(f.n.id), rs = bands?.R ?? [], ls = bands?.L ?? [];
+      for (let i = rs.length - 1; i >= 0; i--) stack.push({ n: rs[i], emit: false });
+      stack.push({ n: f.n, emit: true });
+      for (let i = ls.length - 1; i >= 0; i--) stack.push({ n: ls[i], emit: false });
+    }
     return out;
   };
 
