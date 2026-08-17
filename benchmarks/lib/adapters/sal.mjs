@@ -133,8 +133,8 @@ export function mkAdapter({ shared = false, sided = false, unified = false, plai
 
     saveVariants(doc) {
       return [
-        { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
-          note: plainRGA ? 'continuation-capable packed insertion tree and tombstone set' : sided ? 'experimental lossless binary parent-link snapshot including the Fugue policy summary' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
+        { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(doc.state),
+          note: plainRGA ? 'continuation-capable packed insertion tree and tombstone set' : sided ? 'lossless binary parent-link snapshot including the Fugue policy summary' : (shared ? 'continuation-capable shared path graph with run-compressed provenance' : 'live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read') },
       ];
     },
     load,
@@ -216,8 +216,8 @@ export function mkAdapter({ shared = false, sided = false, unified = false, plai
         saveVariants() {
           const st = rA.head.state;
           return [
-            { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary-experimental' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
-              note: plainRGA ? 'packed insertion tree and tombstones' : sided ? 'experimental lossless binary policy-state snapshot' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
+            { label: plainRGA ? 'rga-binary' : sided ? 'sided-policy-binary' : (shared ? 'shared-runs-serialized' : 'run-table-serialized'), mk: () => save(st),
+              note: plainRGA ? 'packed insertion tree and tombstones' : sided ? 'lossless binary policy-state snapshot' : (shared ? 'native shared path graph (lossless)' : 'task #104 SHIPPED run-table binary (lossless)') },
           ];
         },
         compactFinal: plainRGA || sided ? undefined : function compactFinal() {

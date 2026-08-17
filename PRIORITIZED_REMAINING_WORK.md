@@ -370,9 +370,9 @@ behavioral layer to the conditioned RA-linearizability certificate.
   guarded minting, union merge, deterministic recovery, and Lean-derived
   PASS/FAIL controls. `peritextRGA`/`PeritextRGA` instantiate the generic
   Peritext layer. `compactiblePeritextRGA` performs certified leaf/ancestor
-  collection without rewriting anchors. The focused two-kernel GC harness and
-  quick results are in `benchmarks/workloads/peritext-kernel-gc.mjs` and
-  `benchmarks/results/peritext-kernel-gc-summary.md`. The general harness now
+  collection without rewriting anchors. The focused GC harness is
+  `benchmarks/workloads/peritext-kernel-gc.mjs`; its interpretation is now
+  consolidated into `benchmarks/results/peritext-paper-repeated.md`. The general harness now
   exposes `rga`, `embed-rga`, and `sided-embed-rga`; three repeated isolated
   runs cover all four real traces, frequent and bulk synchronization, and the
   focused Peritext ancestor-spine comparison. Results and exact ranges are in

@@ -9,13 +9,14 @@ import { execSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RESULTS = join(HERE, '..', 'results');
-const SYSTEMS = ['sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
+// Paper-facing systems only. Historical implementation variants remain in raw
+// artifacts; they must not be mistaken for additional current systems.
+const SYSTEMS = ['rga', 'embed-rga', 'sided-embed-rga', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SYSLABEL = {
-  sal: 'ours (embed RGA, as shipped)', yjs: 'Yjs', automerge: 'Automerge',
-  'sal-shared': 'ours (shared EmbedRGA + direct state GC)',
-  'sal-sided': 'ours (experimental sided/Fugue, absolute)',
-  'sal-sided-shared': 'ours (experimental sided/Fugue, prefix-shared)',
-  'sal-sided-unified': 'ours (experimental sided/Fugue, one HAMT)',
+  rga: 'Sal RGA (verified)',
+  'embed-rga': 'Sal EmbedRGA (verified)',
+  'sided-embed-rga': 'Sal SidedEmbedRGA (verified)',
+  yjs: 'Yjs', automerge: 'Automerge',
   loro: 'Loro', listpositions: 'list-positions',
 };
 
@@ -114,7 +115,7 @@ for (const preset of ['freq', 'bulk']) {
       `${r.saves[0].bytes} B (${r.saves[0].label})`,
       r.gates.converged ? 'yes' : 'NO']);
   }
-  for (const sal of rs.filter((r) => r.system === 'sal' || r.system === 'sal-shared')) if (sal.compaction) {
+  for (const sal of rs.filter((r) => ['rga', 'embed-rga', 'sided-embed-rga'].includes(r.system))) if (sal.compaction) {
     L.push('');
     L.push(`${SYSLABEL[sal.system]}, post-session settled-cut compaction: ${sal.compaction.ms.toFixed(1)} ms, ` +
       sal.compaction.saves.map((v) => `${v.label} = ${v.bytes} B`).join(', ') +

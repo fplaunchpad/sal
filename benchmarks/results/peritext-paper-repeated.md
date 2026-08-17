@@ -48,3 +48,18 @@ commit column above: it collects at three intermediate cuts, and the generic
 `commitsBeforeFinalGc` field describes only the final epoch rather than total
 history removed. Its scenario-specific gates and `intermediatePruned` metric are
 the appropriate evidence.
+
+## Isolated ancestor-spine result
+
+The repeated text-kernel canary isolates structural tombstones from marks. It
+performs 21,200 text operations in 90 batches. With both collectors, RGA retains
+150,561 bytes and all 6,000 deleted ancestor identities; EmbedRGA retains 46,072
+bytes and no deleted identities; SidedEmbedRGA retains 80,965 bytes and no
+deleted identities. All three histories reduce to one commit.
+
+The embedded kernels retain anonymous path geometry required by live
+coordinates while detaching it from deleted character identities. EmbedRGA
+therefore remains useful even with both GCs. SidedEmbedRGA additionally retains
+the mint-policy summaries required for its stronger non-interleaving guarantee.
+The measurements remain in `kernel-comparison-repeated.json`; this report is
+their canonical GC interpretation.

@@ -544,6 +544,17 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
 
 ## Files
 
+The canonical paper-facing reports are:
+
+- `results/summary.md`: verified Sal kernels versus external systems;
+- `results/kernel-comparison-repeated.md`: repeated RGA, EmbedRGA, and
+  SidedEmbedRGA comparison;
+- `results/peritext-paper-repeated.md`: repeated rich-text and two-GC
+  evaluation, including the isolated ancestor-spine experiment.
+
+Other JSON files are source measurements or aggregates, not competing prose
+reports.
+
 * `run.mjs`: one-command orchestrator.
 * `workloads/seq.mjs|concurrent.mjs|churn.mjs`: the three workloads, one
   child process per (system, workload, trace/preset).

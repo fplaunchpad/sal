@@ -1,0 +1,137 @@
+{
+ "workload": "churn",
+ "system": "rga",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "config": {
+  "cycles": 5,
+  "insPerCycle": 2000,
+  "delPerCycle": 1800,
+  "finalIns": 200,
+  "seed": 7
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-17T19:08:51.474Z"
+ },
+ "finalChars": 1200,
+ "gates": {
+  "lenOk": true
+ },
+ "phases": [
+  {
+   "phase": "start",
+   "liveChars": 0,
+   "phaseMs": 0,
+   "saves": {
+    "rga-binary": 3
+   }
+  },
+  {
+   "phase": "cycle1-ins",
+   "liveChars": 2000,
+   "phaseMs": 2.402625,
+   "saves": {
+    "rga-binary": 13506
+   }
+  },
+  {
+   "phase": "cycle1-del",
+   "liveChars": 200,
+   "phaseMs": 1.493791,
+   "saves": {
+    "rga-binary": 15307
+   }
+  },
+  {
+   "phase": "cycle2-ins",
+   "liveChars": 2200,
+   "phaseMs": 1.764125,
+   "saves": {
+    "rga-binary": 29060
+   }
+  },
+  {
+   "phase": "cycle2-del",
+   "liveChars": 400,
+   "phaseMs": 1.165958,
+   "saves": {
+    "rga-binary": 30861
+   }
+  },
+  {
+   "phase": "cycle3-ins",
+   "liveChars": 2400,
+   "phaseMs": 1.473541,
+   "saves": {
+    "rga-binary": 44664
+   }
+  },
+  {
+   "phase": "cycle3-del",
+   "liveChars": 600,
+   "phaseMs": 1.168583,
+   "saves": {
+    "rga-binary": 46465
+   }
+  },
+  {
+   "phase": "cycle4-ins",
+   "liveChars": 2600,
+   "phaseMs": 1.623459,
+   "saves": {
+    "rga-binary": 60287
+   }
+  },
+  {
+   "phase": "cycle4-del",
+   "liveChars": 800,
+   "phaseMs": 1.434583,
+   "saves": {
+    "rga-binary": 62088
+   }
+  },
+  {
+   "phase": "cycle5-ins",
+   "liveChars": 2800,
+   "phaseMs": 1.538833,
+   "saves": {
+    "rga-binary": 75920
+   }
+  },
+  {
+   "phase": "cycle5-del",
+   "liveChars": 1000,
+   "phaseMs": 1.217625,
+   "saves": {
+    "rga-binary": 77721
+   }
+  },
+  {
+   "phase": "final-ins",
+   "liveChars": 1200,
+   "phaseMs": 0.178083,
+   "saves": {
+    "rga-binary": 79103
+   }
+  }
+ ],
+ "growthOnDelete": {
+  "rga-binary": {
+   "deltasBytes": [
+    1801,
+    1801,
+    1801,
+    1801,
+    1801
+   ],
+   "growsOnDelete": "always"
+  }
+ },
+ "memory": {
+  "baselineHeap": 4176864,
+  "retainedHeapAfterGc": 2848208,
+  "externalDelta": 40
+ }
+}
