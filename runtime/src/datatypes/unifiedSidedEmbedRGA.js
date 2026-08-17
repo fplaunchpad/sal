@@ -159,3 +159,6 @@ export function makeUnifiedSidedEmbedRGA({ code = eliasDeltaCode } = {}) {
 }
 
 export const unifiedSidedEmbedRGAExperimental = makeUnifiedSidedEmbedRGA();
+/** Designated release candidate. This alias is intentionally not the default
+ * `embedRGA` export until certified state-GC/cross-epoch gates pass. */
+export const sidedEmbedRGAReleaseCandidate = unifiedSidedEmbedRGAExperimental;

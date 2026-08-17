@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 import { Runtime } from '../src/runtime.js';
 import { DistributedReplica } from '../src/replica.js';
-import { sharedSidedPeritextExperimental } from '../src/datatypes/sidedPeritext.js';
+import { sharedSidedPeritextExperimental, sidedPeritextReleaseCandidate } from '../src/datatypes/sidedPeritext.js';
 import {
   sidedEmbedRGAExperimental,
   sharedSidedEmbedRGAExperimental,
@@ -151,14 +151,46 @@ test('unified-map candidate stays lockstep with split-map sided oracle', () => {
   assert.deepEqual(unifiedSidedEmbedRGAExperimental.read(restored), ['é', '🙂', 'x']);
 });
 
+test('unified release candidate survives randomized split-oracle fork/join and recovery', () => {
+  let seed = 0x51ded;
+  const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
+  for (let trial = 0; trial < 40; trial++) {
+    const make = (dt) => { const rt = new Runtime(dt); return { dt, a: rt.replica('a'), b: rt.replica('b') }; };
+    let x = make(sharedSidedEmbedRGAExperimental), y = make(unifiedSidedEmbedRGAExperimental), next = 1;
+    for (let step = 0; step < 80; step++) {
+      const side = rnd() < 0.5 ? 'a' : 'b', sync = rnd() < 0.18;
+      if (sync) { x.a.sync(x.b); y.a.sync(y.b); }
+      else {
+        const ids = x.dt.readIds(x[side].head.state);
+        if (ids.length && rnd() < 0.28) {
+          const id = ids[Math.floor(rnd() * ids.length)]; x[side].commit(del(id)); y[side].commit(del(id));
+        } else {
+          const pos = Math.floor(rnd() * (ids.length + 1));
+          const op = ins(next++, String.fromCharCode(97 + (next % 26)), pos ? ids[pos - 1] : null);
+          x[side].commit(op); y[side].commit(op);
+        }
+      }
+      assert.deepEqual(y.dt.readIds(y.a.head.state), x.dt.readIds(x.a.head.state), `trial ${trial} step ${step} a`);
+      assert.deepEqual(y.dt.readIds(y.b.head.state), x.dt.readIds(x.b.head.state), `trial ${trial} step ${step} b`);
+      if (step === 40) {
+        const restored = y.dt.decodeSnapshot(y.dt.encodeSnapshot(y.a.head.state));
+        assert.deepEqual(y.dt.readIds(restored), y.dt.readIds(y.a.head.state));
+      }
+    }
+    x.a.sync(x.b); y.a.sync(y.b);
+    assert.deepEqual(y.dt.readIds(y.a.head.state), x.dt.readIds(x.a.head.state));
+  }
+});
+
 test('Peritext can use the experimental sided kernel without changing its API', () => {
-  const dt = sharedSidedPeritextExperimental;
-  const rt = new Runtime(dt), r = rt.replica('r');
-  r.commit(ins(1, 'a'));
-  r.commit(ins(2, 'b', 1));
-  r.commit({ type: 'addMark', mid: 3, mtype: 'bold', value: true,
-    startId: 1, endId: 2, startSide: 'before', endSide: 'after' });
-  assert.deepEqual(r.read().map(({ char, marks }) => [char, marks.length]),
-    [['a', 1], ['b', 1]]);
-  assert.equal(r.head.parents.length, 1);
+  for (const dt of [sharedSidedPeritextExperimental, sidedPeritextReleaseCandidate]) {
+    const rt = new Runtime(dt), r = rt.replica('r');
+    r.commit(ins(1, 'a'));
+    r.commit(ins(2, 'b', 1));
+    r.commit({ type: 'addMark', mid: 3, mtype: 'bold', value: true,
+      startId: 1, endId: 2, startSide: 'before', endSide: 'after' });
+    assert.deepEqual(r.read().map(({ char, marks }) => [char, marks.length]),
+      [['a', 1], ['b', 1]]);
+    assert.equal(r.head.parents.length, 1);
+  }
 });

@@ -445,6 +445,12 @@ behavioral layer to the conditioned RA-linearizability certificate.
   removes the split-state conversion: save/load are now about 21.4/18.0 ms,
   essentially matching the optimized split-sided codec and close to plain
   shared's 15.8/15.7 ms. Keep the split-map kernel as the differential oracle.
+  The one-HAMT kernel is now exported explicitly as
+  `sidedEmbedRGAReleaseCandidate`, with `sidedPeritextReleaseCandidate` using
+  it; neither replaces the production default. Forty deterministic randomized
+  80-step fork/join trials stay read-lockstep with the split oracle and include
+  snapshot recovery. Default promotion remains gated on certified sided state
+  GC, offline/cross-epoch recovery, and the remaining anomaly/Peritext matrix.
   Then finish the
   L23--L27 gates and run repeated isolated benchmarks. Production state GC and
   default promotion remain deliberately pending those results.

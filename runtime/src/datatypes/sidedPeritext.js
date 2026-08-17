@@ -6,6 +6,8 @@ import {
   sidedEmbedRGAExperimental,
   sharedSidedEmbedRGAExperimental,
 } from './sidedEmbedRGA.js';
+import { sidedEmbedRGAReleaseCandidate } from './unifiedSidedEmbedRGA.js';
 
 export const sidedPeritextExperimental = makePeritext(sidedEmbedRGAExperimental);
 export const sharedSidedPeritextExperimental = makePeritext(sharedSidedEmbedRGAExperimental);
+export const sidedPeritextReleaseCandidate = makePeritext(sidedEmbedRGAReleaseCandidate);
