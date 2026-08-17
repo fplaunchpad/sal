@@ -32,6 +32,8 @@ const PERITEXT_GC_MODES = ['none', 'history', 'text-state', 'full-state', 'both'
 const PERITEXT_SCENARIOS = ['concurrent-rich', 'format-trace', 'mark-churn',
   'marked-delete-churn', 'offline-rich', 'empty-rich', 'multi-epoch-rich'];
 const SAL_REPRESENTATIONS = ['absolute', 'shared'];
+const PERITEXT_KERNELS = ['rga', 'embed-rga'];
+const PERITEXT_KERNEL_GC_MODES = ['none', 'history', 'state', 'both'];
 
 const jobs = [];
 for (const t of SEQ_TRACES) {
@@ -62,6 +64,10 @@ for (const p of PRESETS) {
 }
 jobs.push({ id: 'peritext:ablation-gate', cmd: 'node',
   argv: [join(HERE, 'tools', 'check-peritext-ablation.mjs')] });
+for (const kernel of PERITEXT_KERNELS) for (const mode of PERITEXT_KERNEL_GC_MODES) for (const topology of ['spine', 'leaves']) {
+  jobs.push({ id: `peritext-kernel:${kernel}:${mode}:${quick ? 'quick' : 'full'}:${topology}`, cmd: 'node',
+    argv: ['--expose-gc', join(HERE, 'workloads', 'peritext-kernel-gc.mjs'), kernel, mode, quick ? 'quick' : 'full', topology] });
+}
 for (const s of SYSTEMS) {
   jobs.push({ id: `churn:${s}`, cmd: 'node', argv: ['--expose-gc', join(HERE, 'workloads', 'churn.mjs'), s] });
 }

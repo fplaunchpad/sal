@@ -24,6 +24,7 @@
 // (see the note at the bottom).
 
 import { embedRGA } from './embedRGA.js';
+import { rga } from './rga.js';
 import { sidedEmbedRGAReleaseCandidate } from './unifiedSidedEmbedRGA.js';
 import { PMap, PSet, isPMap, isPSet, eachEntry } from '../pmap.js';
 
@@ -287,8 +288,15 @@ return {
 /** Peritext over the one-sided tombstone-free EmbedRGA kernel. */
 export const peritextEmbedRGA = makePeritext(embedRGA);
 
+/** Peritext over the plain tombstone RGA baseline. */
+export const peritextRGA = makePeritext(rga);
+
 /** Peritext over the unified sided/Fugue EmbedRGA kernel. */
 export const peritextSidedEmbedRGA = makePeritext(sidedEmbedRGAReleaseCandidate);
 
 /** Production default. */
 export const peritext = peritextSidedEmbedRGA;
+
+export const PeritextRGA = peritextRGA;
+export const PeritextEmbedRGA = peritextEmbedRGA;
+export const PeritextSidedEmbedRGA = peritextSidedEmbedRGA;

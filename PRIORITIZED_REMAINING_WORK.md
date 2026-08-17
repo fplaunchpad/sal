@@ -365,6 +365,16 @@ behavioral layer to the conditioned RA-linearizability certificate.
   sided EmbedRGA/FugueMax with the L19 non-interleaving guarantee. Report state,
   history, snapshot, apply, merge, recovery, and GC costs without conflating the
   plain RGA's tombstones with commit-history metadata.
+  **Implementation increment (2026-08-17):** `runtime/src/datatypes/rga.js`
+  now provides the persistent-HAMT RGA, transient batches, linear tree reads,
+  guarded minting, union merge, deterministic recovery, and Lean-derived
+  PASS/FAIL controls. `peritextRGA`/`PeritextRGA` instantiate the generic
+  Peritext layer. `compactiblePeritextRGA` performs certified leaf/ancestor
+  collection without rewriting anchors. The focused two-kernel GC harness and
+  quick results are in `benchmarks/workloads/peritext-kernel-gc.mjs` and
+  `benchmarks/results/peritext-kernel-gc-summary.md`. Remaining before checking
+  this task: add the plain-RGA adapter to the general sequence matrix, implement
+  its packed binary snapshot, and run repeated full-size trials.
 
 - **Highest-priority runtime prerequisite: implement sided EmbedRGA under the
   plain Fugue generation policy as an experimental kernel, then measure it
