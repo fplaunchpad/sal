@@ -3,10 +3,10 @@
 // This module deliberately does not replace embedRGA. It provides absolute
 // and prefix-shared variants for differential testing and cost measurement.
 // Local `prepare` freezes the generation-time decision into each insert:
-//   { anchorId, side, parentId, chain }
-// The chain is required because Fugue may choose a deleted successor as the
-// parent; a receiver must not reconstruct that mint decision from its current
-// live state.
+//   { anchorId, side, parentId }
+// The parent may be a deleted successor. Its chain is retained in the causal
+// parent state (and protected by the policy-summary GC); shipping the whole
+// chain per operation would make deep editing histories quadratic.
 
 import { PMap, isPMap, eachEntry } from '../pmap.js';
 import { eliasDeltaCode } from './embedRGA.js';
@@ -74,7 +74,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
   const gapFor = (state, anchorId) => state.gaps.get(anchorId ?? ROOT);
 
   const prepare = (state, op) => {
-    if (op.type !== 'ins' || (op.side && op.chain && 'parentId' in op)) return op;
+    if (op.type !== 'ins' || (op.side && 'parentId' in op)) return op;
     if (!Number.isInteger(op.id) || op.id < 1) throw new Error('sided insert id must be positive integer');
     if (state.live.has(op.id) || state.chains.has(op.id)) throw new Error(`duplicate insert id ${op.id}`);
     if (op.anchorId !== null && op.anchorId !== undefined && !state.live.has(op.anchorId))
@@ -89,8 +89,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     const parentTs = parentId ?? 0, delta = op.id - parentTs;
     if (!Number.isInteger(delta) || delta < 1)
       throw new Error(`delta must be positive, got ${delta}`);
-    const chain = freezeChain([...chainArray(parentChain, shared), [side, delta]]);
-    return Object.freeze({ ...op, anchorId, side, parentId, chain });
+    return Object.freeze({ ...op, anchorId, side, parentId });
   };
 
   const apply = (state, raw) => {
@@ -107,12 +106,12 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       if ((op.parentId ?? null) !== expectedParent)
         throw new Error(`Fugue parent mismatch: expected ${expectedParent}, got ${op.parentId}`);
       const delta = op.id - (op.parentId ?? 0);
-      const expected = freezeChain([...chainArray(parentChain, shared), [op.side, delta]]);
-      if (JSON.stringify(expected) !== JSON.stringify(op.chain)) throw new Error('Fugue chain mismatch');
       const storedChain = shared
         ? extendChain(parentChain, op.side, delta, op.id, true)
-        : freezeChain(op.chain);
-      const coord = encodeChain(storedChain, code, shared);
+        : freezeChain([...parentChain, [op.side, delta]]);
+      // Prefix-shared mode does not materialize the whole coordinate on every
+      // insert. It derives keys at observation/serialization boundaries.
+      const coord = shared ? null : encodeChain(storedChain, code, false);
       const rec = Object.freeze({ chain: storedChain, coord, el: op.el });
       return makeState(
         put(state.live, op.id, rec),
@@ -121,12 +120,11 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         put(state.chains, op.id, storedChain));
     }
     if (op.type === 'del') {
-      let live = drop(state.live, op.id), gaps = drop(state.gaps, op.id);
-      const keep = new Set([...(live.keys())]);
-      eachEntry(gaps, (_id, g) => { if (g.succId !== null) keep.add(g.succId); });
-      let chains = state.chains;
-      eachEntry(state.chains, (id) => { if (!keep.has(id)) chains = drop(chains, id); });
-      return makeState(live, gaps, chains);
+      // Generation policy is tombstone-aware. Deletion removes the visible
+      // record and its now-unusable anchor gap, but chain reclamation belongs
+      // to the certified policy-summary GC; scanning the whole document on
+      // every keystroke would make deletion linear.
+      return makeState(drop(state.live, op.id), drop(state.gaps, op.id), state.chains);
     }
     throw new Error(`unknown sidedEmbedRGA op type: ${op.type}`);
   };
@@ -142,36 +140,41 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       return s;
     },
     readEntries(state) {
-      return [...state.live.entries()].sort(([ia, a], [ib, b]) => {
-        const c = cmpKey(a.coord, b.coord);
+      return [...state.live.entries()].map(([id, r]) =>
+        [id, r, r.coord ?? encodeChain(r.chain, code, true)]).sort(([ia, a, ka], [ib, b, kb]) => {
+        const c = cmpKey(ka, kb);
         return c === 0 ? ia - ib : -c;
-      });
+      }).map(([id, r]) => [id, r]);
     },
     read(state) { return this.readEntries(state).map(([, r]) => r.el); },
     readIds(state) { return this.readEntries(state).map(([id]) => id); },
     merge3(l, a, b) {
-      const ids = liveIds3(l, a, b), liveT = PMap.empty().begin();
-      for (const id of ids) {
-        const ra = a.live.get(id), rb = b.live.get(id), rec = ra ?? rb;
-        if (ra && rb && ra.coord !== rb.coord) throw new Error(`coordinate divergence at id ${id}`);
-        liveT.set(id, rec);
-      }
-      let chains = PMap.empty();
+      // Delta merge from A, as in the production EmbedRGA: preserve A's HAMT
+      // and touch only B's deletions/fresh births. Policy maps use the same
+      // strategy; scanning for changed observations is allocation-free.
+      const live = a.live.begin();
+      eachEntry(l.live, (id) => { if (!b.live.has(id)) live.delete(id); });
+      eachEntry(b.live, (id, rb) => {
+        const ra = a.live.get(id);
+        if (ra && (shared ? (ra.chain !== rb.chain && !chainEq(ra.chain, rb.chain)) : ra.coord !== rb.coord))
+          throw new Error(`coordinate divergence at id ${id}`);
+        else if (!ra && !l.live.has(id)) live.set(id, rb);
+      });
+      const mergedLive = (id) => live.has(id);
+      const chains = a.chains.begin();
       const retainChain = (id) => {
         if (id === null || chains.has(id)) return;
-        const ca = a.chains.get(id), cb = b.chains.get(id), cl = l.chains.get(id);
-        const ch = ca ?? cb ?? cl;
+        const ch = b.chains.get(id) ?? l.chains.get(id);
         if (ch === undefined) throw new Error(`missing retained chain ${id}`);
-        if ((ca && ca !== ch && !chainEq(ch, ca)) ||
-            (cb && cb !== ch && !chainEq(ch, cb)) ||
-            (cl && cl !== ch && !chainEq(ch, cl)))
-          throw new Error(`chain divergence at id ${id}`);
-        chains = chains.set(id, ch);
+        chains.set(id, ch);
       };
-      for (const id of ids) retainChain(id);
-      let gaps = PMap.empty();
-      for (const anchorKey of [ROOT, ...ids]) {
-        const ga = a.gaps.get(anchorKey), gb = b.gaps.get(anchorKey);
+      eachEntry(b.live, (id) => { if (mergedLive(id)) retainChain(id); });
+      const gaps = a.gaps.begin();
+      eachEntry(l.live, (id) => { if (!mergedLive(id)) gaps.delete(id); });
+      eachEntry(b.gaps, (anchorKey, gb) => {
+        if (anchorKey !== ROOT && !mergedLive(anchorKey)) return;
+        const ga = a.gaps.get(anchorKey);
+        if (ga === gb) return;
         if (!ga && !gb) throw new Error(`missing merged Fugue gap ${anchorKey}`);
         const candidates = [ga?.succId, gb?.succId].filter((x) => x !== null && x !== undefined);
         for (const id of candidates) retainChain(id);
@@ -180,12 +183,11 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
           if (succId === null || cmpKey(encodeChain(chains.get(succId), code, shared),
               encodeChain(chains.get(id), code, shared)) < 0) succId = id;
         }
-        gaps = gaps.set(anchorKey, Object.freeze({ hasR: !!(ga?.hasR || gb?.hasR), succId }));
-      }
-      const keep = new Set(ids);
-      eachEntry(gaps, (_id, g) => { if (g.succId !== null) keep.add(g.succId); });
-      eachEntry(chains, (id) => { if (!keep.has(id)) chains = chains.delete(id); });
-      return makeState(liveT.freeze(), gaps, chains);
+        const hasR = !!(ga?.hasR || gb?.hasR);
+        if (!ga || ga.hasR !== hasR || ga.succId !== succId)
+          gaps.set(anchorKey, Object.freeze({ hasR, succId }));
+      });
+      return makeState(live.freeze(), gaps.freeze(), chains.freeze());
     },
     symbolCount(state) {
       let n = 0;
@@ -195,18 +197,38 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     policyEntryCount(state) { return state.gaps.size; },
     retainedChainCount(state) { return state.chains.size; },
     encodeState(state) {
+      let encodedChains;
+      if (shared) {
+        const nodes = new Map();
+        eachEntry(state.chains, (_id, leaf) => {
+          for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
+        });
+        encodedChains = [...nodes].sort(([x], [y]) => x - y)
+          .map(([id, n]) => [id, n.parent?.id ?? null, n.side, n.delta]);
+      } else {
+        encodedChains = [...state.chains.entries()].map(([id, ch]) => [id, chainArray(ch, false)]);
+      }
       return {
-        live: [...state.live.entries()].map(([id, r]) => [id, r.coord, r.el]),
+        live: [...state.live.entries()].map(([id, r]) =>
+          [id, shared ? null : r.coord, r.el]),
         gaps: [...state.gaps.entries()].map(([id, g]) => [id, g.hasR, g.succId]),
-        chains: [...state.chains.entries()].map(([id, ch]) => [id, chainArray(ch, shared)]),
+        chains: encodedChains,
       };
     },
     decodeState(enc) {
       let chains = PMap.empty();
-      for (const [id, arr] of enc.chains) {
-        let ch = shared ? null : [];
-        for (const [side, delta] of arr) ch = extendChain(ch, side, delta, id, shared);
-        chains = chains.set(id, ch);
+      for (const row of enc.chains) {
+        const id = row[0];
+        if (shared) {
+          const [, parentId, side, delta] = row;
+          const parent = parentId === null ? null : chains.get(parentId);
+          if (parentId !== null && parent === undefined) throw new Error(`snapshot parent ${parentId} missing`);
+          chains = chains.set(id, extendChain(parent, side, delta, id, true));
+        } else {
+          let ch = [];
+          for (const [side, delta] of row[1]) ch = extendChain(ch, side, delta, id, false);
+          chains = chains.set(id, ch);
+        }
       }
       const live = PMap.from(enc.live.map(([id, coord, el]) =>
         [id, Object.freeze({ chain: chains.get(id), coord, el })]));
@@ -217,7 +239,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     fingerprint(state) {
       return JSON.stringify({
         live: [...state.live.entries()].sort(([x], [y]) => x - y)
-          .map(([id, r]) => [id, r.coord, r.el]),
+          .map(([id, r]) => [id, r.coord ?? encodeChain(r.chain, code, true), r.el]),
         gaps: [...state.gaps.entries()].sort(([x], [y]) => String(x).localeCompare(String(y))),
       });
     },

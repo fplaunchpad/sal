@@ -33,7 +33,7 @@ test('sided mint decision is immutable and keeps a deleted successor chain', () 
     const op = dt.prepare(state, ins(3, 'c', 1));
     assert.equal(op.side, 'L');
     assert.equal(op.parentId, 2);
-    assert.deepEqual(op.chain, [['R', 1], ['R', 1], ['L', 1]]);
+    assert.equal('chain' in op, false);
     state = dt.apply(state, op);
     assert.deepEqual(dt.read(state), ['a', 'c']);
   }

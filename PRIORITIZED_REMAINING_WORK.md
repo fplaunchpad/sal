@@ -413,13 +413,19 @@ behavioral layer to the conditioned RA-linearizability certificate.
   Fugue oracle on every consolidated sequential and two-branch merge fixture;
   L19 is pinned to `[50,30,10,61,41,21,1]`. Lossless candidate snapshots and
   the `sal-sided`/`sal-sided-shared` benchmark adapters have landed, and the
-  complete 158-test runtime suite passes. A first non-reportable `freq` canary
-  exposed a real performance problem: median sync was about 4--6 ms for the
-  sided candidates versus 0.1 ms for absolute one-sided and 0.23 ms for shared
-  one-sided on this machine. Do not promote from these canaries. Profile and
-  remove policy-summary/chain-comparison overhead, finish the L23--L27 and
-  state-GC gates, then run repeated isolated benchmarks. Production state GC
-  and default promotion remain deliberately pending those results.
+  complete 158-test runtime suite passes. Profiling removed two accidental
+  quadratic costs: full chains are no longer copied/compared in every insert,
+  and merge now delta-updates the persistent policy maps. On one non-reportable
+  canary the shared candidate improved from 12.9 s to about 55--58 ms for a
+  26,078-op trace (current shared: about 22 ms), and from 4--6 ms to about
+  0.50 ms median sync (current shared: about 0.23 ms). The operation freezes
+  `(side,parent)`; the deleted parent's chain is retained in the causal parent
+  state and must be protected by the policy-summary GC. Do not promote from
+  these canaries. The provisional uncollected JSON snapshot is still about
+  1.2 MB versus 59 KB for the current shared run codec, so the next target is
+  certified policy-summary collection plus its compact codec. Then finish the
+  L23--L27 gates and run repeated isolated benchmarks. Production state GC and
+  default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,
