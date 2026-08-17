@@ -382,18 +382,22 @@ behavioral layer to the conditioned RA-linearizability certificate.
   gap, and proves delete-transition congruence. The executable compact model
   agrees with the full policy on true-LCA fork/join tests. Before JavaScript
   migration, use the now-checked non-root and root
-  `succOf`-argmax-to-immediate-`schainBefore` bridges to finish the post-insert
+  `succOf`-argmax-to-immediate-`schainBefore` bridges close the post-insert
   merge congruence; both insert successor equations
   (`post.succ[a] = x`, `post.succ[x] = old.succ[a]`), fresh-chain lookup,
   post-insert anchor `hasR` bit, and delete transition are already proved.
-  The compact `mergeLiveGap` operator and full-gap reduction are checked; the
+  The compact `mergeLiveGap` operator and observational optional-gap merge are
+  checked. `mergeRetainedGap_observation_exact` proves the generic theorem,
+  and `mergeRetainedGap_observation_reachable` discharges Fugue geometry and
+  chain provenance for reachable replica syncs (taking the ordinary `SWf`
+  certificates for the two branch enumerations and their union). The
   exact `MergeSuccLaw` is now refuted as unnecessarily strong: absent-branch
-  concurrency can change an unused successor while `hasR = false`. The sole
-  open theorem is `RelevantMergeSuccLaw`, requiring successor agreement only
-  when merged `hasR = true`. The formal
+  concurrency can change an unused successor while `hasR = false`. The proved
+  theorem instead compares only the mint observation and requires successor
+  agreement only when merged `hasR = true`. The formal
   interface now uses `Option LiveGap`: an absent branch anchor contributes
-  `none`, and merged-dead anchors are pruned. Do not treat the randomized check
-  as that proof.
+  `none`, and merged-dead anchors are pruned. The randomized check remains a
+  refutation oracle, not the proof.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,

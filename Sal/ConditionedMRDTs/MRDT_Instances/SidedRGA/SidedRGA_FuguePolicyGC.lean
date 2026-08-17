@@ -285,6 +285,87 @@ theorem succOf_start_schain_immediate {K : Know} (inv : FugueFwd.FInv Γ K)
   rw [hynKey] at hmax
   exact Bool.noConfusion hmax
 
+/-- Reachable Fugue keys identify their node ids.  This is the small
+uniqueness bridge used when two argmax proofs show that neither candidate can
+beat the other. -/
+theorem id_eq_of_gKey_eq {K : Know} (inv : FugueFwd.FInv Γ K)
+    {x y : ℕ} (hx : x = 0 ∨ x ∈ gMintedIds K)
+    (hy : y = 0 ∨ y ∈ gMintedIds K)
+    (hkey : gKey Γ K x = gKey Γ K y) : x = y := by
+  have hchain : gChainOf K x = gChainOf K y := by
+    apply Sal.EmbedRGA.sidedCoordOf_inj Γ (FugueFwd.gChainOf_posOf inv hx)
+      (FugueFwd.gChainOf_posOf inv hy)
+    unfold gKey sKey at hkey
+    exact (List.append_inj' hkey rfl).1
+  have hsx := FugueFwd.gChainOf_sum inv hx
+  have hsy := FugueFwd.gChainOf_sum inv hy
+  rw [hchain] at hsx
+  exact hsx.symm.trans hsy
+
+/-- Turn mintedness and the successor filter's ordering test into an explicit
+candidate witness.  Root accepts every minted node. -/
+theorem mem_succCand_of_minted {K : Know} (inv : FugueFwd.FInv Γ K)
+    {a y : ℕ} (hy : y ∈ gMintedIds K)
+    (hafter : a ≠ 0 → keyLt (gKey Γ K y) (gKey Γ K a) = true) :
+    (y, gKey Γ K y) ∈ succCand Γ K a := by
+  obtain ⟨g, hfind, hgK, hgins, hgid⟩ := gRecOfId_of_minted hy
+  have hchain : gChainOf K y = g.chain := gChainOf_eq_of_rec hfind
+  have hkeys : (y, gKey Γ K y) ∈ gKeys Γ K := by
+    refine List.mem_map.mpr ⟨g, List.mem_filter.mpr ⟨hgK, hgins⟩, ?_⟩
+    apply Prod.ext
+    · exact hgid
+    · unfold gKey
+      rw [hchain]
+  unfold succCand
+  by_cases h0 : a = 0
+  · rw [if_pos h0]
+    exact hkeys
+  · rw [if_neg h0]
+    exact List.mem_filter.mpr ⟨hkeys, by simpa using hafter h0⟩
+
+/-- If a branch contains a descendant and its chain agrees with a larger
+reachable state, ancestor closure recovers every non-root anchor on that
+chain in the branch. -/
+theorem minted_anchor_of_descendant {B U : Know}
+    (invB : FugueFwd.FInv Γ B) (invU : FugueFwd.FInv Γ U)
+    {a n : ℕ} (haU : a = 0 ∨ a ∈ gMintedIds U)
+    (hnB : n ∈ gMintedIds B)
+    (hnchain : gChainOf B n = gChainOf U n)
+    (hprefix : gChainOf U a <+: gChainOf U n) :
+    a = 0 ∨ a ∈ gMintedIds B := by
+  rcases haU with rfl | haU
+  · exact Or.inl rfl
+  · right
+    have hane : gChainOf U a ≠ [] := FugueFwd.gChainOf_ne_nil invU haU
+    obtain ⟨gn, hnfind, hnK, hnins, -⟩ := gRecOfId_of_minted hnB
+    have hnrec : gChainOf B n = gn.chain := gChainOf_eq_of_rec hnfind
+    have hpreB : gChainOf U a <+: gn.chain := by
+      rw [← hnrec, hnchain]
+      exact hprefix
+    have hlast :
+        gChainOf U a = (gChainOf U a).dropLast ++
+          [(gChainOf U a).getLast hane] :=
+      (List.dropLast_append_getLast hane).symm
+    have hsmall :
+        ((gChainOf U a).dropLast ++ [(gChainOf U a).getLast hane])
+          <+: gn.chain := by
+      rw [← hlast]
+      exact hpreB
+    obtain ⟨ga, hgaB, hgains, hgachain⟩ :=
+      FugueFwd.chain_prefix_minted invB gn.chain.length gn hnK hnins
+        (Nat.le_refl _) _ _ hsmall
+    have hgaMint : ga.op.1 ∈ gMintedIds B :=
+      List.mem_map.mpr ⟨ga, List.mem_filter.mpr ⟨hgaB, hgains⟩, rfl⟩
+    have hgaLookup : gChainOf B ga.op.1 = ga.chain :=
+      FugueFwd.gChainOf_of_mem invB hgaB hgains
+    have hchains : gChainOf B ga.op.1 = gChainOf U a := by
+      rw [hgaLookup, hgachain, ← hlast]
+    have hsB := FugueFwd.gChainOf_sum invB (Or.inr hgaMint)
+    have hsU := FugueFwd.gChainOf_sum invU (Or.inr haU)
+    rw [hchains] at hsB
+    have hid : ga.op.1 = a := hsB.symm.trans hsU
+    exact hid ▸ hgaMint
+
 /-! ## Insert-transition equations independent of successor argmax
 
 Two fields can be discharged without the remaining post-insert argmax proof:
@@ -551,6 +632,82 @@ theorem foldl_maxKey_of_nonempty {l : List (ℕ × List ℕ)} (h : l ≠ []) :
   | cons b l =>
       rw [List.foldl_cons]
       simpa [maxKey] using foldl_maxKey_from_some l b
+
+theorem exists_succOf_of_candidate {K : Know} {a y : ℕ}
+    (hy : (y, gKey Γ K y) ∈ succCand Γ K a) :
+    ∃ n, succOf Γ K a = some n := by
+  have hne : succCand Γ K a ≠ [] := by
+    intro hnil
+    rw [hnil] at hy
+    exact absurd hy (by simp)
+  obtain ⟨p, hp⟩ := foldl_maxKey_of_nonempty hne
+  unfold succOf
+  rw [hp]
+  exact ⟨p.1, rfl⟩
+
+theorem exists_succOf_of_hasR {K : Know} (inv : FugueFwd.FInv Γ K)
+    {a : ℕ} (ha : a = 0 ∨ a ∈ gMintedIds K)
+    (hR : hasRChild K a = true) : ∃ n, succOf Γ K a = some n := by
+  obtain ⟨g, hgK, e, π, hop⟩ := FugueFwd.hasRChild_iff.mp hR
+  have hins : sIsIns g.op = true := by unfold sIsIns; rw [hop]
+  have hgid : g.op.1 ∈ gMintedIds K :=
+    List.mem_map.mpr ⟨g, List.mem_filter.mpr ⟨hgK, hins⟩, rfl⟩
+  obtain ⟨-, -, -, hchain⟩ := inv.linkR g hgK e π a hop
+  have hlookup : gChainOf K g.op.1 = g.chain :=
+    FugueFwd.gChainOf_of_mem inv hgK hins
+  apply exists_succOf_of_candidate
+  apply mem_succCand_of_minted inv hgid
+  intro _
+  apply FugueFwd.gKey_lt_of_chainBefore inv ha (Or.inr hgid)
+  rw [hlookup, hchain]
+  exact Sal.EmbedRGA.schainBefore.extR _ _ _
+
+/-- Argmax is preserved by a chain- and membership-preserving embedding of a
+branch into its union, provided the union's winner is present in the branch.
+This is the algebraic core of the reachable merge proof. -/
+theorem succOf_eq_of_source_branch {B U : Know}
+    (invB : FugueFwd.FInv Γ B) (invU : FugueFwd.FInv Γ U)
+    {a n : ℕ} (haB : a = 0 ∨ a ∈ gMintedIds B)
+    (haU : a = 0 ∨ a ∈ gMintedIds U)
+    (hembed : ∀ {x}, x ∈ gMintedIds B → x ∈ gMintedIds U)
+    (hchain : ∀ {x}, x = 0 ∨ x ∈ gMintedIds B →
+      gChainOf B x = gChainOf U x)
+    (hsU : succOf Γ U a = some n) (hnB : n ∈ gMintedIds B) :
+    succOf Γ B a = some n := by
+  have hnU : n ∈ gMintedIds U := hembed hnB
+  have hnAfterU : a ≠ 0 → keyLt (gKey Γ U n) (gKey Γ U a) = true :=
+    fun ha0 => FugueFwd.succOf_after_anchor invU hsU ha0
+  have hnCandB : (n, gKey Γ B n) ∈ succCand Γ B a := by
+    apply mem_succCand_of_minted invB hnB
+    intro ha0
+    unfold gKey
+    rw [hchain (Or.inr hnB), hchain haB]
+    exact hnAfterU ha0
+  obtain ⟨m, hsB⟩ := exists_succOf_of_candidate hnCandB
+  have hmB : m ∈ gMintedIds B := succOf_mem hsB
+  have hmU : m ∈ gMintedIds U := hembed hmB
+  have hmCandU : (m, gKey Γ U m) ∈ succCand Γ U a := by
+    apply mem_succCand_of_minted invU hmU
+    intro ha0
+    have hmAfterB := FugueFwd.succOf_after_anchor invB hsB ha0
+    unfold gKey at hmAfterB ⊢
+    rw [← hchain (Or.inr hmB), ← hchain haB]
+    exact hmAfterB
+  have hmnB := FugueFwd.succOf_max invB hsB hnCandB
+  have hnmU := FugueFwd.succOf_max invU hsU hmCandU
+  have hmnU : keyLt (gKey Γ U m) (gKey Γ U n) = false := by
+    unfold gKey at hmnB ⊢
+    rw [← hchain (Or.inr hmB), ← hchain (Or.inr hnB)]
+    exact hmnB
+  have hkey : gKey Γ U m = gKey Γ U n := by
+    by_contra hne
+    rcases Sal.EmbedRGA.keyLt_total hne with h | h
+    · rw [h] at hmnU
+      exact Bool.noConfusion hmnU
+    · rw [h] at hnmU
+      exact Bool.noConfusion hnmU
+  have hid : m = n := id_eq_of_gKey_eq invU (Or.inr hmU) (Or.inr hnU) hkey
+  simpa [hid] using hsB
 
 /-- Every old candidate after `a` remains after the freshly inserted `x`.
 This is the forward half of candidate-set equality. -/
@@ -854,6 +1011,220 @@ theorem liveGapSucc_mergeLiveGap (l r : LiveGap) :
       obtain ⟨n, c⟩ := p
       simp [liveGapWithSucc, liveGapSucc, h]
 
+/-- When the union has an R child, its exact gap absorbs any coherently
+embedded branch gap. The branch successor is a union candidate, so the
+union's argmax cannot be displaced by compact merge. -/
+theorem mergeLiveGap_union_absorbs_right {B U : Know}
+    (invB : FugueFwd.FInv Γ B) (invU : FugueFwd.FInv Γ U)
+    {a : ℕ} (haB : a = 0 ∨ a ∈ gMintedIds B)
+    (hembed : ∀ {x}, x ∈ gMintedIds B → x ∈ gMintedIds U)
+    (hchain : ∀ {x}, x = 0 ∨ x ∈ gMintedIds B →
+      gChainOf B x = gChainOf U x)
+    (hR : hasRChild U a = true) :
+    mergeLiveGap (liveGapOf U a) (liveGapOf B a) = liveGapOf U a := by
+  have haU : a = 0 ∨ a ∈ gMintedIds U := by
+    rcases haB with rfl | ha
+    · exact Or.inl rfl
+    · exact Or.inr (hembed ha)
+  obtain ⟨gR, hgRU, e, π, hopR⟩ := FugueFwd.hasRChild_iff.mp hR
+  have hgRins : sIsIns gR.op = true := by
+    unfold sIsIns
+    rw [hopR]
+  have hgRid : gR.op.1 ∈ gMintedIds U :=
+    List.mem_map.mpr ⟨gR, List.mem_filter.mpr ⟨hgRU, hgRins⟩, rfl⟩
+  obtain ⟨-, -, -, hRchain⟩ := invU.linkR gR hgRU e π a hopR
+  have hgRlookup : gChainOf U gR.op.1 = gR.chain :=
+    FugueFwd.gChainOf_of_mem invU hgRU hgRins
+  have hafterR : a ≠ 0 →
+      keyLt (gKey Γ U gR.op.1) (gKey Γ U a) = true := by
+    intro _
+    apply FugueFwd.gKey_lt_of_chainBefore invU haU (Or.inr hgRid)
+    rw [hgRlookup, hRchain]
+    exact Sal.EmbedRGA.schainBefore.extR _ _ _
+  have hcandR := mem_succCand_of_minted invU hgRid hafterR
+  obtain ⟨n, hsU⟩ := exists_succOf_of_candidate hcandR
+  have hnU : n ∈ gMintedIds U := succOf_mem hsU
+  have hsuccU : liveGapSucc (liveGapOf U a) =
+      some (n, gChainOf U n) := by
+    rw [liveGapSucc_of, hsU]
+    rfl
+  have hmax : maxGapSucc (liveGapSucc (liveGapOf U a))
+      (liveGapSucc (liveGapOf B a)) = liveGapSucc (liveGapOf U a) := by
+    rw [hsuccU, liveGapSucc_of]
+    cases hsB : succOf Γ B a with
+    | none => rfl
+    | some m =>
+        have hmB : m ∈ gMintedIds B := succOf_mem hsB
+        have hmU : m ∈ gMintedIds U := hembed hmB
+        have hmCandU : (m, gKey Γ U m) ∈ succCand Γ U a := by
+          apply mem_succCand_of_minted invU hmU
+          intro ha0
+          have hmAfter := FugueFwd.succOf_after_anchor invB hsB ha0
+          unfold gKey at hmAfter ⊢
+          rw [← hchain (Or.inr hmB), ← hchain haB]
+          exact hmAfter
+        have hnb := FugueFwd.succOf_max invU hsU hmCandU
+        simp only [Option.map_some]
+        unfold maxGapSucc
+        have hkey : keyLt (sKey (sidedCoordOf Γ (gChainOf U n)))
+            (sKey (sidedCoordOf Γ (gChainOf B m))) = false := by
+          unfold gKey at hnb
+          rw [hchain (Or.inr hmB)]
+          exact hnb
+        simp [maxGapSucc, hkey]
+  unfold mergeLiveGap
+  rw [hmax, hsuccU]
+  simp only [liveGapWithSucc]
+  apply LiveGap.ext
+  · rfl
+  · simp [liveGapOf, hR]
+  · simp [liveGapOf, hsU]
+  · simp [liveGapOf, hsU]
+
+theorem mergeLiveGap_union_absorbs_left {B U : Know}
+    (invB : FugueFwd.FInv Γ B) (invU : FugueFwd.FInv Γ U)
+    {a : ℕ} (haB : a = 0 ∨ a ∈ gMintedIds B)
+    (hembed : ∀ {x}, x ∈ gMintedIds B → x ∈ gMintedIds U)
+    (hchain : ∀ {x}, x = 0 ∨ x ∈ gMintedIds B →
+      gChainOf B x = gChainOf U x)
+    (hR : hasRChild U a = true) :
+    mergeLiveGap (liveGapOf B a) (liveGapOf U a) = liveGapOf U a := by
+  have haU : a = 0 ∨ a ∈ gMintedIds U := by
+    rcases haB with rfl | ha
+    · exact Or.inl rfl
+    · exact Or.inr (hembed ha)
+  obtain ⟨gR, hgRU, e, π, hopR⟩ := FugueFwd.hasRChild_iff.mp hR
+  have hgRins : sIsIns gR.op = true := by unfold sIsIns; rw [hopR]
+  have hgRid : gR.op.1 ∈ gMintedIds U :=
+    List.mem_map.mpr ⟨gR, List.mem_filter.mpr ⟨hgRU, hgRins⟩, rfl⟩
+  obtain ⟨-, -, -, hRchain⟩ := invU.linkR gR hgRU e π a hopR
+  have hgRlookup : gChainOf U gR.op.1 = gR.chain :=
+    FugueFwd.gChainOf_of_mem invU hgRU hgRins
+  have hcandR : (gR.op.1, gKey Γ U gR.op.1) ∈ succCand Γ U a := by
+    apply mem_succCand_of_minted invU hgRid
+    intro _
+    apply FugueFwd.gKey_lt_of_chainBefore invU haU (Or.inr hgRid)
+    rw [hgRlookup, hRchain]
+    exact Sal.EmbedRGA.schainBefore.extR _ _ _
+  obtain ⟨n, hsU⟩ := exists_succOf_of_candidate hcandR
+  have hnU : n ∈ gMintedIds U := succOf_mem hsU
+  have hsuccU : liveGapSucc (liveGapOf U a) =
+      some (n, gChainOf U n) := by rw [liveGapSucc_of, hsU]; rfl
+  have hmax : maxGapSucc (liveGapSucc (liveGapOf B a))
+      (liveGapSucc (liveGapOf U a)) = liveGapSucc (liveGapOf U a) := by
+    rw [hsuccU, liveGapSucc_of]
+    cases hsB : succOf Γ B a with
+    | none => rfl
+    | some m =>
+        have hmB : m ∈ gMintedIds B := succOf_mem hsB
+        have hmU : m ∈ gMintedIds U := hembed hmB
+        have hmCandU : (m, gKey Γ U m) ∈ succCand Γ U a := by
+          apply mem_succCand_of_minted invU hmU
+          intro ha0
+          have hmAfter := FugueFwd.succOf_after_anchor invB hsB ha0
+          unfold gKey at hmAfter ⊢
+          rw [← hchain (Or.inr hmB), ← hchain haB]
+          exact hmAfter
+        have hnm := FugueFwd.succOf_max invU hsU hmCandU
+        simp only [Option.map_some]
+        by_cases hkeyeq : gKey Γ U m = gKey Γ U n
+        · have hid := id_eq_of_gKey_eq invU (Or.inr hmU) (Or.inr hnU) hkeyeq
+          subst m
+          simp [maxGapSucc, hchain (Or.inr hmB)]
+        · have hlt : keyLt (gKey Γ U m) (gKey Γ U n) = true := by
+            rcases Sal.EmbedRGA.keyLt_total hkeyeq with h | h
+            · exact h
+            · rw [h] at hnm
+              exact Bool.noConfusion hnm
+          have hlt' : keyLt
+              (sKey (sidedCoordOf Γ (gChainOf B m)))
+              (sKey (sidedCoordOf Γ (gChainOf U n))) = true := by
+            unfold gKey at hlt
+            rw [hchain (Or.inr hmB)]
+            exact hlt
+          simp [maxGapSucc, hlt']
+  unfold mergeLiveGap
+  rw [hmax, hsuccU]
+  simp only [liveGapWithSucc]
+  apply LiveGap.ext
+  · simpa [liveGapOf] using hchain haB
+  · simp [liveGapOf, hR]
+  · simp [liveGapOf, hsU]
+  · simp [liveGapOf, hsU]
+
+/-- A branch that contains the union successor has the exact union gap when
+the union has an R child. -/
+theorem source_liveGap_eq_union {B U : Know}
+    (invB : FugueFwd.FInv Γ B) (invU : FugueFwd.FInv Γ U)
+    {a n : ℕ} (haB : a = 0 ∨ a ∈ gMintedIds B)
+    (haU : a = 0 ∨ a ∈ gMintedIds U)
+    (hembed : ∀ {x}, x ∈ gMintedIds B → x ∈ gMintedIds U)
+    (hchain : ∀ {x}, x = 0 ∨ x ∈ gMintedIds B →
+      gChainOf B x = gChainOf U x)
+    (hR : hasRChild U a = true) (hsU : succOf Γ U a = some n)
+    (hnB : n ∈ gMintedIds B) : liveGapOf B a = liveGapOf U a := by
+  have hsB := succOf_eq_of_source_branch invB invU haB haU hembed hchain hsU hnB
+  have hnU : n ∈ gMintedIds U := hembed hnB
+  obtain ⟨d, rest, hdescU⟩ := FugueFwd.succ_R_descendant invU haU hR hsU
+  have hdescB : ∃ d rest, gChainOf B n =
+      gChainOf B a ++ (Side.R, d) :: rest := by
+    refine ⟨d, rest, ?_⟩
+    rw [hchain (Or.inr hnB), hchain haB]
+    exact hdescU
+  have hRB : hasRChild B a = true :=
+    FugueFwd.hasR_of_R_descendant invB haB hnB hdescB
+  apply LiveGap.ext
+  · exact hchain haB
+  · simp [liveGapOf, hRB, hR]
+  · simp [liveGapOf, hsB, hsU]
+  · simp [liveGapOf, hsB, hsU, hchain (Or.inr hnB)]
+
+/-- A live anchor in the record union is live in a branch that supplied its
+insert. This is the only survival fact needed by optional-gap merge. -/
+theorem gLive_syncK_source {K K' : Know} {a : ℕ}
+    (hwfK : SWf Γ (gOps K)) (hwfK' : SWf Γ (gOps K'))
+    (hwfU : SWf Γ (gOps (syncK K K')))
+    (ha : gLive Γ (syncK K K') a) : gLive Γ K a ∨ gLive Γ K' a := by
+  have haU := (s_fold_id_mem Γ hwfU a).mp ha
+  obtain ⟨⟨o, hoU, hins, hoid⟩, hndU⟩ := haU
+  obtain ⟨g, hgU, hgo⟩ := List.mem_map.mp hoU
+  have hndBranch : ∀ {J : Know}, (∀ z ∈ J, z ∈ syncK K K') →
+      a ∉ sDels (gOps J) := by
+    intro J hsub hdel
+    apply hndU
+    obtain ⟨d, hdops, hda⟩ := mem_sDels.mp hdel
+    obtain ⟨gd, hgdJ, hgdop⟩ := List.mem_map.mp hdops
+    apply mem_sDels.mpr
+    refine ⟨d, List.mem_map.mpr ⟨gd, hsub gd hgdJ, hgdop⟩, hda⟩
+  rcases mem_syncK hgU with hgK | hgK'
+  · left
+    apply (s_fold_id_mem Γ hwfK a).mpr
+    refine ⟨⟨o, List.mem_map.mpr ⟨g, hgK, hgo⟩, hins, hoid⟩,
+      hndBranch ?_⟩
+    intro z hz
+    exact mem_syncK_iff.mpr (Or.inl hz)
+  · right
+    apply (s_fold_id_mem Γ hwfK' a).mpr
+    refine ⟨⟨o, List.mem_map.mpr ⟨g, hgK', hgo⟩, hins, hoid⟩,
+      hndBranch ?_⟩
+    intro z hz
+    exact mem_syncK_iff.mpr (Or.inr hz)
+
+theorem gLive_branch_of_minted_of_sync_live {B K K' : Know} {a : ℕ}
+    (hwfB : SWf Γ (gOps B)) (hwfU : SWf Γ (gOps (syncK K K')))
+    (hsub : ∀ g ∈ B, g ∈ syncK K K') (haB : a ∈ gMintedIds B)
+    (haU : gLive Γ (syncK K K') a) : gLive Γ B a := by
+  have hsurvive := (s_fold_id_mem Γ hwfU a).mp haU
+  obtain ⟨ga, -, hgaB, hgains, hgaid⟩ := gRecOfId_of_minted haB
+  apply (s_fold_id_mem Γ hwfB a).mpr
+  refine ⟨⟨ga.op, List.mem_map.mpr ⟨ga, hgaB, rfl⟩, hgains, hgaid⟩, ?_⟩
+  intro hdelB
+  apply hsurvive.2
+  obtain ⟨d, hdB, hda⟩ := mem_sDels.mp hdelB
+  obtain ⟨gd, hgdB, hgdop⟩ := List.mem_map.mp hdB
+  exact mem_sDels.mpr ⟨d,
+    List.mem_map.mpr ⟨gd, hsub gd hgdB, hgdop⟩, hda⟩
+
 /-- The sole remaining semantic merge law: union's immediate successor is
 the display-earlier of the two branch immediate successors. -/
 def MergeSuccLaw (K K' : Know) (a : ℕ) : Prop :=
@@ -871,6 +1242,27 @@ successor while `hasR` is false; in that case both the mint decision and the
 parent chain are determined by the anchor alone. -/
 def gapObservation (g : LiveGap) (a : ℕ) : (Side × ℕ) × SChain :=
   (liveGapChoose g a, liveGapParentChain g)
+
+theorem gapObservation_of_hasR_false (g : LiveGap) (a : ℕ)
+    (hR : g.hasR = false) :
+    gapObservation g a = ((Side.R, a), g.anchorChain) := by
+  unfold gapObservation liveGapChoose liveGapParentChain
+  cases g.succ <;> simp [hR]
+
+theorem gapObservation_mergeLiveGap_noR (l r : LiveGap) (a : ℕ)
+    (hl : l.hasR = false) (hr : r.hasR = false) :
+    gapObservation (mergeLiveGap l r) a =
+      ((Side.R, a), l.anchorChain) := by
+  have hmr : (mergeLiveGap l r).hasR = false := by
+    simp [mergeLiveGap, liveGapWithSucc_hasR, hl, hr]
+  have hanchor : (mergeLiveGap l r).anchorChain = l.anchorChain := by
+    unfold mergeLiveGap
+    cases maxGapSucc (liveGapSucc l) (liveGapSucc r) <;> rfl
+  calc
+    gapObservation (mergeLiveGap l r) a =
+        ((Side.R, a), (mergeLiveGap l r).anchorChain) :=
+      gapObservation_of_hasR_false _ _ hmr
+    _ = ((Side.R, a), l.anchorChain) := congrArg (fun c => ((Side.R, a), c)) hanchor
 
 theorem liveGapWithSucc_liveGapOf (K : Know) (a : ℕ) :
     liveGapWithSucc (liveGapOf K a) (liveGapSucc (liveGapOf K a)) =
@@ -944,6 +1336,243 @@ theorem mergeLiveGap_observation_exact (K K' : Know) (a : ℕ)
       cases (liveGapOf (syncK K K') a).succ <;>
       simp [hmAnchor]
 
+/-- The compact optional-gap merge preserves exactly the observation consumed
+by the next mint.  The hypotheses are the standard reachable-sync facts:
+well-formed folds, per-state Fugue invariants, and immutable-chain embeddings
+of both branches into their record union. -/
+theorem mergeRetainedGap_observation_exact {K K' : Know}
+    (invK : FugueFwd.FInv Γ K) (invK' : FugueFwd.FInv Γ K')
+    (invU : FugueFwd.FInv Γ (syncK K K'))
+    (hwfK : SWf Γ (gOps K)) (hwfK' : SWf Γ (gOps K'))
+    (hwfU : SWf Γ (gOps (syncK K K')))
+    (hembedK : ∀ {x}, x ∈ gMintedIds K →
+      x ∈ gMintedIds (syncK K K'))
+    (hembedK' : ∀ {x}, x ∈ gMintedIds K' →
+      x ∈ gMintedIds (syncK K K'))
+    (hchainK : ∀ {x}, x = 0 ∨ x ∈ gMintedIds K →
+      gChainOf K x = gChainOf (syncK K K') x)
+    (hchainK' : ∀ {x}, x = 0 ∨ x ∈ gMintedIds K' →
+      gChainOf K' x = gChainOf (syncK K K') x)
+    (a : ℕ) :
+    (mergeRetainedGap K K' a).map (fun g => gapObservation g a) =
+      (retainedLiveGap (syncK K K') a).map
+        (fun g => gapObservation g a) := by
+  let U := syncK K K'
+  by_cases hkeepU : a = 0 ∨ gLive Γ U a
+  · dsimp [U] at *
+    have haU : a = 0 ∨ a ∈ gMintedIds U := by
+      rcases hkeepU with h0 | hlive
+      · exact Or.inl h0
+      · exact Or.inr (gView_sub_minted Γ U a hlive)
+    have hliveSource : a = 0 ∨ gLive Γ K a ∨ gLive Γ K' a := by
+      rcases hkeepU with h0 | hlive
+      · exact Or.inl h0
+      · exact Or.inr (gLive_syncK_source hwfK hwfK' hwfU hlive)
+    by_cases hR : hasRChild U a = true
+    · obtain ⟨n, hsU⟩ := exists_succOf_of_hasR invU haU hR
+      have hnU : n ∈ gMintedIds U := succOf_mem hsU
+      obtain ⟨gn, -, hgnU, hgnins, hgnid⟩ := gRecOfId_of_minted hnU
+      rcases mem_syncK hgnU with hgnK | hgnK'
+      · have hnK : n ∈ gMintedIds K :=
+          List.mem_map.mpr ⟨gn, List.mem_filter.mpr ⟨hgnK, hgnins⟩, hgnid⟩
+        obtain ⟨d, rest, hdescU⟩ :=
+          FugueFwd.succ_R_descendant invU haU hR hsU
+        have hprefixU : gChainOf U a <+: gChainOf U n := by
+          rw [hdescU]
+          exact ⟨(Side.R, d) :: rest, rfl⟩
+        have haK := minted_anchor_of_descendant invK invU haU hnK
+          (hchainK (Or.inr hnK)) hprefixU
+        have hliveK : a = 0 ∨ gLive Γ K a := by
+          rcases haK with h0 | haKm
+          · exact Or.inl h0
+          · have ha0 : a ≠ 0 := by
+              intro h0
+              subst a
+              exact absurd (FugueFwd.minted_pos invK haKm) (by decide)
+            exact Or.inr (gLive_branch_of_minted_of_sync_live hwfK hwfU
+              (fun g hg => mem_syncK_iff.mpr (Or.inl hg)) haKm
+              (hkeepU.resolve_left ha0))
+        have hsource := source_liveGap_eq_union invK invU haK haU
+          hembedK hchainK hR hsU hnK
+        by_cases hliveK' : a = 0 ∨ gLive Γ K' a
+        · have haK' : a = 0 ∨ a ∈ gMintedIds K' := by
+            rcases hliveK' with h0 | h
+            · exact Or.inl h0
+            · exact Or.inr (gView_sub_minted Γ K' a h)
+          have habsorb := mergeLiveGap_union_absorbs_right invK' invU haK'
+            hembedK' hchainK' hR
+          simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hliveK, if_pos hliveK', mergeOptionalLiveGap, Option.map_some]
+          rw [hsource, habsorb]
+        · simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hliveK, if_neg hliveK', mergeOptionalLiveGap, Option.map_some]
+          rw [hsource]
+      · have hnK' : n ∈ gMintedIds K' :=
+          List.mem_map.mpr ⟨gn, List.mem_filter.mpr ⟨hgnK', hgnins⟩, hgnid⟩
+        obtain ⟨d, rest, hdescU⟩ :=
+          FugueFwd.succ_R_descendant invU haU hR hsU
+        have hprefixU : gChainOf U a <+: gChainOf U n := by
+          rw [hdescU]
+          exact ⟨(Side.R, d) :: rest, rfl⟩
+        have haK' := minted_anchor_of_descendant invK' invU haU hnK'
+          (hchainK' (Or.inr hnK')) hprefixU
+        have hliveK' : a = 0 ∨ gLive Γ K' a := by
+          rcases haK' with h0 | haKm
+          · exact Or.inl h0
+          · have ha0 : a ≠ 0 := by
+              intro h0
+              subst a
+              exact absurd (FugueFwd.minted_pos invK' haKm) (by decide)
+            exact Or.inr (gLive_branch_of_minted_of_sync_live hwfK' hwfU
+              (fun g hg => mem_syncK_iff.mpr (Or.inr hg)) haKm
+              (hkeepU.resolve_left ha0))
+        have hsource := source_liveGap_eq_union invK' invU haK' haU
+          hembedK' hchainK' hR hsU hnK'
+        by_cases hliveK : a = 0 ∨ gLive Γ K a
+        · have haK : a = 0 ∨ a ∈ gMintedIds K := by
+            rcases hliveK with h0 | h
+            · exact Or.inl h0
+            · exact Or.inr (gView_sub_minted Γ K a h)
+          have habsorb := mergeLiveGap_union_absorbs_left invK invU haK
+            hembedK hchainK hR
+          simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hliveK, if_pos hliveK', mergeOptionalLiveGap, Option.map_some]
+          rw [hsource, habsorb]
+        · simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_neg hliveK, if_pos hliveK', mergeOptionalLiveGap, Option.map_some]
+          rw [hsource]
+    · have hRfalse : hasRChild U a = false := Bool.eq_false_of_not_eq_true hR
+      have hRK : hasRChild K a = false := by
+        have hor : (hasRChild K a || hasRChild K' a) = false := by
+          rw [← hasRChild_syncK K K' a]
+          exact hRfalse
+        exact (Bool.or_eq_false_iff.mp hor).1
+      have hRK' : hasRChild K' a = false := by
+        have hor : (hasRChild K a || hasRChild K' a) = false := by
+          rw [← hasRChild_syncK K K' a]
+          exact hRfalse
+        exact (Bool.or_eq_false_iff.mp hor).2
+      rcases hliveSource with h0 | hliveK | hliveK'
+      · subst a
+        have hk0 : (0 : ℕ) = 0 ∨ gLive Γ K 0 := Or.inl rfl
+        have hk0' : (0 : ℕ) = 0 ∨ gLive Γ K' 0 := Or.inl rfl
+        have hu0 : (0 : ℕ) = 0 ∨ gLive Γ (syncK K K') 0 := Or.inl rfl
+        unfold mergeRetainedGap
+        simp only [true_or, if_true, Option.map_some]
+        unfold retainedLiveGap
+        rw [if_pos hk0, if_pos hk0']
+        simp only [mergeOptionalLiveGap, Option.map_some]
+        simp only [true_or, if_true, Option.map_some]
+        rw [gapObservation_mergeLiveGap_noR _ _ _
+            (show (liveGapOf K 0).hasR = false from hRK)
+            (show (liveGapOf K' 0).hasR = false from hRK'),
+          gapObservation_of_hasR_false _ _
+            (show (liveGapOf (syncK K K') 0).hasR = false from hRfalse)]
+        exact congrArg (fun c => some ((Side.R, 0), c))
+          (hchainK (Or.inl rfl))
+      · have hkeepK : a = 0 ∨ gLive Γ K a := Or.inr hliveK
+        have haK : a = 0 ∨ a ∈ gMintedIds K :=
+          Or.inr (gView_sub_minted Γ K a hliveK)
+        by_cases hkeepK' : a = 0 ∨ gLive Γ K' a
+        · simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hkeepK, if_pos hkeepK', mergeOptionalLiveGap, Option.map_some]
+          rw [gapObservation_mergeLiveGap_noR _ _ _ hRK hRK',
+            gapObservation_of_hasR_false _ _ hRfalse]
+          simpa [liveGapOf] using congrArg some
+            (congrArg (fun c => ((Side.R, a), c)) (hchainK haK))
+        · simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hkeepK, if_neg hkeepK', mergeOptionalLiveGap, Option.map_some]
+          rw [gapObservation_of_hasR_false _ _ hRK,
+            gapObservation_of_hasR_false _ _ hRfalse]
+          simpa [liveGapOf] using congrArg some
+            (congrArg (fun c => ((Side.R, a), c)) (hchainK haK))
+      · have hkeepK' : a = 0 ∨ gLive Γ K' a := Or.inr hliveK'
+        have haK' : a = 0 ∨ a ∈ gMintedIds K' :=
+          Or.inr (gView_sub_minted Γ K' a hliveK')
+        by_cases hkeepK : a = 0 ∨ gLive Γ K a
+        · have haK : a = 0 ∨ a ∈ gMintedIds K := by
+            rcases hkeepK with h0 | h
+            · exact Or.inl h0
+            · exact Or.inr (gView_sub_minted Γ K a h)
+          simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_pos hkeepK, if_pos hkeepK', mergeOptionalLiveGap, Option.map_some]
+          rw [gapObservation_mergeLiveGap_noR _ _ _ hRK hRK',
+            gapObservation_of_hasR_false _ _ hRfalse]
+          simpa [liveGapOf] using congrArg some
+            (congrArg (fun c => ((Side.R, a), c)) (hchainK haK))
+        · simp only [mergeRetainedGap, if_pos hkeepU, retainedLiveGap,
+            if_neg hkeepK, if_pos hkeepK', mergeOptionalLiveGap, Option.map_some]
+          rw [gapObservation_of_hasR_false _ _ hRK',
+            gapObservation_of_hasR_false _ _ hRfalse]
+          simpa [liveGapOf] using congrArg some
+            (congrArg (fun c => ((Side.R, a), c)) (hchainK' haK'))
+  · dsimp [U] at *
+    simp [mergeRetainedGap, retainedLiveGap, hkeepU]
+
+/-- Reachable-replica form. `SWf` is the ordinary semantic certificate for
+the three concrete event enumerations; `FugueReach` discharges every Fugue
+geometry, provenance, uniqueness, and chain-embedding obligation. -/
+theorem mergeRetainedGap_observation_reachable {G : ℕ → Know}
+    (hreach : FugueReach Γ G) (r r' : ℕ)
+    (hwfR : SWf Γ (gOps (G r))) (hwfR' : SWf Γ (gOps (G r')))
+    (hwfU : SWf Γ (gOps (syncK (G r) (G r')))) (a : ℕ) :
+    (mergeRetainedGap (G r) (G r') a).map (fun g => gapObservation g a) =
+      (retainedLiveGap (syncK (G r) (G r')) a).map
+        (fun g => gapObservation g a) := by
+  have ginv := fugueReach_inv Γ hreach
+  have links := FugueFwd.fugueReach_links Γ hreach
+  have invR : FugueFwd.FInv Γ (G r) :=
+    FugueFwd.fInv_mk ginv r (links r)
+  have invR' : FugueFwd.FInv Γ (G r') :=
+    FugueFwd.fInv_mk ginv r' (links r')
+  have linkU := FugueFwd.linkInv_sync ginv r r' (links r) (links r')
+  have invU : FugueFwd.FInv Γ (syncK (G r) (G r')) := by
+    refine ⟨?_, ?_, ?_, (fun g hg => (linkU g hg).1),
+      (fun g hg => (linkU g hg).2.1)⟩
+    · intro g hg
+      rcases mem_syncK hg with h | h
+      · exact ginv.pos r g h
+      · exact ginv.pos r' g h
+    · intro g hg g' hg' hi hi' hid
+      rcases mem_syncK hg with h | h <;> rcases mem_syncK hg' with h' | h'
+      · exact ginv.uniq r r g h g' h' hi hi' hid
+      · exact ginv.uniq r r' g h g' h' hi hi' hid
+      · exact ginv.uniq r' r g h g' h' hi hi' hid
+      · exact ginv.uniq r' r' g h g' h' hi hi' hid
+    · intro g hg hi
+      rcases mem_syncK hg with h | h
+      · exact ⟨(ginv.wf r g h hi).1, (ginv.wf r g h hi).2.1⟩
+      · exact ⟨(ginv.wf r' g h hi).1, (ginv.wf r' g h hi).2.1⟩
+  have embedR : ∀ {x}, x ∈ gMintedIds (G r) →
+      x ∈ gMintedIds (syncK (G r) (G r')) := by
+    intro x hx
+    rw [show syncK (G r) (G r') =
+      G r ++ (G r').filter (fun g => decide (g ∉ G r)) from rfl,
+      gMintedIds_append]
+    exact List.mem_append_left _ hx
+  have embedR' : ∀ {x}, x ∈ gMintedIds (G r') →
+      x ∈ gMintedIds (syncK (G r) (G r')) :=
+    fun {_} hx => FugueFwd.minted_syncK_right hx
+  have chainR : ∀ {x}, x = 0 ∨ x ∈ gMintedIds (G r) →
+      gChainOf (G r) x = gChainOf (syncK (G r) (G r')) x := by
+    intro x hx
+    exact (FugueFwd.gChainOf_append_stable hx (ginv.pos r)
+      (fun g hg => ginv.pos r' g (List.mem_of_mem_filter hg))).symm
+  have chainR' : ∀ {x}, x = 0 ∨ x ∈ gMintedIds (G r') →
+      gChainOf (G r') x = gChainOf (syncK (G r) (G r')) x := by
+    intro x hx
+    rcases hx with rfl | hx
+    · rw [gChainOf_zero invR'.pos, gChainOf_zero invU.pos]
+    · exact FugueFwd.gChainOf_agree
+        (by
+          intro g hg g' hg' hi hi' hid
+          rcases mem_syncK hg' with h' | h'
+          · exact ginv.uniq r' r g hg g' h' hi hi' hid
+          · exact ginv.uniq r' r' g hg g' h' hi hi' hid)
+        hx (FugueFwd.minted_syncK_right hx)
+  exact mergeRetainedGap_observation_exact invR invR' invU
+    hwfR hwfR' hwfU embedR embedR' chainR chainR' a
+
 /-! ## Stable deletion is still continuation-observable
 
 Assume every replica has observed `deadRightChild`; the deletion is therefore
@@ -1015,6 +1644,8 @@ theorem stable_dead_leaf_collection_changes_future_read :
 #print axioms mergeLiveGap_hasR
 #print axioms liveGapSucc_mergeLiveGap
 #print axioms mergeLiveGap_exact_of_succLaw
+#print axioms mergeRetainedGap_observation_exact
+#print axioms mergeRetainedGap_observation_reachable
 #print axioms retainedLiveGap_some
 #print axioms absent_gap_total_merge_is_wrong
 #print axioms absent_gap_optional_merge_is_exact

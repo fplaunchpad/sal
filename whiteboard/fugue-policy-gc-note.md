@@ -186,3 +186,29 @@ the relevant successor law and immutable anchor-chain agreement, compact merge
 preserves exactly the `(side,parent)` choice and parent chain consumed by the
 next mint. It does not claim raw gap equality. The remaining proof obligation
 is therefore only the reachable-state discharge of `RelevantMergeSuccLaw`.
+
+The reachable proof now has its two cross-state bridges. First,
+`minted_anchor_of_descendant` uses chain-prefix closure to show that a branch
+which supplies a descendant also contains its non-root anchor. Second,
+`succOf_eq_of_source_branch` proves the mutual-argmax step: when the union
+winner occurs in a coherently embedded branch, that branch has the same
+successor. The final statement must apply these bridges through
+`retainedLiveGap`; it must not revive the refuted total-gap contribution for
+an anchor-absent branch.
+
+The optional lift has both argmax absorption directions
+(`mergeLiveGap_union_absorbs_left/right`), exact source-branch recovery
+(`source_liveGap_eq_union`), and the survival bridges
+`gLive_syncK_source` and `gLive_branch_of_minted_of_sync_live`. These lemmas
+use `SWf` to characterize survival as an existing insert with no delete and
+prevent an anchor-absent branch from entering the compact maximum.
+
+Status: **machine-checked**. `mergeRetainedGap_observation_exact` proves that
+optional compact merge preserves the complete observation consumed by the
+next mint. `mergeRetainedGap_observation_reachable` instantiates the theorem
+for two replicas of one `FugueReach` configuration, discharging Fugue
+geometry, global record uniqueness, ancestor provenance, and immutable chain
+embeddings. It takes the standard `SWf` certificates for the two concrete
+branch enumerations and their union because survival is an order-free fold
+fact at that semantic layer. The theorem does not claim the refuted raw-gap
+or unconditional successor equality.
