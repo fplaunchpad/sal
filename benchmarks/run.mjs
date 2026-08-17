@@ -22,7 +22,7 @@ const skipProjection = args.includes('--skip-projection');
 const onlyIdx = args.indexOf('--only');
 const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
-const SYSTEMS = ['sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'yjs', 'automerge', 'loro', 'listpositions'];
+const SYSTEMS = ['sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SEQ_TRACES = quick
   ? ['friendsforever_flat']
   : ['friendsforever_flat', 'clownschool_flat', 'seph-blog1', 'automerge-paper'];

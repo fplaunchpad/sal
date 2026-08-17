@@ -9,6 +9,7 @@ import {
   sidedEmbedRGAExperimental,
   sharedSidedEmbedRGAExperimental,
 } from '../src/datatypes/sidedEmbedRGA.js';
+import { unifiedSidedEmbedRGAExperimental } from '../src/datatypes/unifiedSidedEmbedRGA.js';
 
 const ins = (id, el, anchorId = null) => ({ type: 'ins', id, el, anchorId });
 const del = (id) => ({ type: 'del', id });
@@ -27,7 +28,8 @@ function fold(dt, ops) {
 }
 
 test('sided mint decision is immutable and keeps a deleted successor chain', () => {
-  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental]) {
+  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental,
+    unifiedSidedEmbedRGAExperimental]) {
     let { state } = fold(dt, [ins(1, 'a'), ins(2, 'b', 1)]);
     state = dt.apply(state, del(2));
     const op = dt.prepare(state, ins(3, 'c', 1));
@@ -73,7 +75,8 @@ test('JavaScript sided kernel is lockstep with the full-policy Fugue oracle', ()
   const raw = execFileSync('python3', ['../whiteboard/litmus/js_sided_oracle.py'],
     { cwd: new URL('..', import.meta.url), encoding: 'utf8' });
   const cases = JSON.parse(raw);
-  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental]) {
+  for (const dt of [sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental,
+    unifiedSidedEmbedRGAExperimental]) {
     for (const c of cases) {
       if (c.kind === 'seq') {
         const { state } = fold(dt, c.ops.map(fromIntent));
@@ -126,6 +129,26 @@ test('binary sided snapshot preserves variable-width UTF-8 elements', () => {
   const original = fold(dt, [ins(1, 'é'), ins(2, '🙂', 1), ins(3, 'x', 2)]).state;
   const restored = dt.decodeSnapshot(dt.encodeSnapshot(original));
   assert.deepEqual(dt.read(restored), ['é', '🙂', 'x']);
+});
+
+test('unified-map candidate stays lockstep with split-map sided oracle', () => {
+  const run = (dt) => {
+    const rt = new Runtime(dt), a = rt.replica('a'), b = rt.replica('b');
+    a.commit(ins(1, 'a')); a.sync(b);
+    a.commit(ins(4, 'x', 1)); a.commit(ins(6, 'z', 4)); a.commit(del(4));
+    b.commit(ins(2, 'y', 1)); b.commit(ins(3, 'q', 2));
+    a.sync(b); a.commit(ins(8, 'w', 3)); b.commit(ins(9, 'v', 6)); a.sync(b);
+    return dt.readIds(a.head.state);
+  };
+  assert.deepEqual(run(unifiedSidedEmbedRGAExperimental), run(sharedSidedEmbedRGAExperimental));
+  let s = unifiedSidedEmbedRGAExperimental.init();
+  for (const raw of [ins(1, 'é'), ins(2, '🙂', 1), ins(3, 'x', 2)]) {
+    const op = unifiedSidedEmbedRGAExperimental.prepare(s, raw);
+    s = unifiedSidedEmbedRGAExperimental.apply(s, op);
+  }
+  const restored = unifiedSidedEmbedRGAExperimental.decodeSnapshot(
+    unifiedSidedEmbedRGAExperimental.encodeSnapshot(s));
+  assert.deepEqual(unifiedSidedEmbedRGAExperimental.read(restored), ['é', '🙂', 'x']);
 });
 
 test('Peritext can use the experimental sided kernel without changing its API', () => {

@@ -436,7 +436,14 @@ behavioral layer to the conditioned RA-linearizability certificate.
   validation remains executable in tests); decoded snapshots cache their
   verified policy order. Save/load are now about 20.6/17.9 ms versus
   15.8/15.7 ms for the current shared codec: roughly 30%/14% overhead, down
-  from 8x/1.8x. Then finish the
+  from 8x/1.8x. A separate one-HAMT candidate now co-locates live content,
+  chain provenance, and gap state. In a first canary it reduces the sided
+  trace from about 56 ms to 34 ms, median sync from about 0.49 ms to 0.34 ms,
+  and retained heap from about 12.4 MB to 7.5 MB; plain shared remains about
+  22 ms, 0.23 ms, and 5.1 MB. Its snapshot bytes are identical (60.4 KB), but
+  save/load currently pay a conversion tax (about 31/29 ms) because the codec
+  still adapts through split-map state. Implement the codec natively and keep
+  the split-map kernel as the differential oracle. Then finish the
   L23--L27 gates and run repeated isolated benchmarks. Production state GC and
   default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the

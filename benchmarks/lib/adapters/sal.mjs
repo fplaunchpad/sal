@@ -26,6 +26,7 @@
 import { embedRGA } from '../../../runtime/src/datatypes/embedRGA.js';
 import { sharedEmbedRGA, encodeSharedRuns, decodeSharedRuns } from '../../../runtime/src/datatypes/sharedEmbedRGA.js';
 import { sidedEmbedRGAExperimental, sharedSidedEmbedRGAExperimental } from '../../../runtime/src/datatypes/sidedEmbedRGA.js';
+import { unifiedSidedEmbedRGAExperimental } from '../../../runtime/src/datatypes/unifiedSidedEmbedRGA.js';
 import { PMap } from '../../../runtime/src/pmap.js';
 import { compactEliasDelta } from '../../../runtime/src/compact.js';
 import { compactSharedDirect } from '../../../runtime/src/shared-compact.js';
@@ -93,8 +94,8 @@ export function binaryEstimate(state) {
   return bytes;
 }
 
-export function mkAdapter({ shared = false, sided = false } = {}) {
-  const kernel = sided
+export function mkAdapter({ shared = false, sided = false, unified = false } = {}) {
+  const kernel = unified ? unifiedSidedEmbedRGAExperimental : sided
     ? (shared ? sharedSidedEmbedRGAExperimental : sidedEmbedRGAExperimental)
     : (shared ? sharedEmbedRGA : embedRGA);
   const candidateSave = (state) => kernel.encodeSnapshot(state);
@@ -108,7 +109,7 @@ export function mkAdapter({ shared = false, sided = false } = {}) {
     : loadRunTable;
   const compactState = shared ? compactSharedDirect : compactEliasDelta;
   return {
-    name: sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
+    name: unified ? 'sal-sided-unified-experimental' : sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
       : (shared ? 'sal-shared-embed-rga' : 'sal-embed-rga'),
     version: 'runtime/ @ repo HEAD (unversioned)',
     create() { return { state: kernel.init(), view: [], clock: 0 }; },
@@ -126,7 +127,8 @@ export function mkAdapter({ shared = false, sided = false } = {}) {
       doc.view.splice(pos, 1);
     },
     text(doc) { return kernel.read(doc.state).join(''); },
-    liveCount(doc) { return sided ? doc.state.live.size : doc.state.size; },
+    liveCount(doc) { return typeof kernel.liveCount === 'function' ? kernel.liveCount(doc.state)
+      : sided ? doc.state.live.size : doc.state.size; },
 
     saveVariants(doc) {
       return [
