@@ -65,7 +65,8 @@ const before = JSON.stringify(a.read()); syncReplicas(a, b);
 if (before !== JSON.stringify(b.read())) throw new Error('replicas did not converge');
 const enc = datatype.encodeState(a.head.state), back = datatype.decodeState(enc);
 if (JSON.stringify(datatype.read(back)) !== before) throw new Error('snapshot mismatch');
-const result = { schemaVersion: 1, suite: 'peritext-kernel-gc', kernel, mode, preset,
+const result = { schemaVersion: 1, suite: 'peritext-kernel-gc',
+  system: `peritext-${kernel}`, workload: `text-kernel-${topology}`, kernel, mode, preset,
   config: { ...cfg, topology },
   metrics: { operations: cfg.initial + cfg.cycles * (cfg.del + cfg.add),
     commitBatches: a.seq + b.seq, visibleChars: a.read().length,

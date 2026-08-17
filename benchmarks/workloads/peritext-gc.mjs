@@ -5,12 +5,13 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DistributedReplica, syncReplicas } from '../../runtime/src/replica.js';
-import { compactiblePeritext, compactibleSharedPeritext } from '../../runtime/src/compact-peritext.js';
+import { compactibleSharedPeritext, compactibleSidedPeritext } from '../../runtime/src/compact-peritext.js';
+import { compactiblePeritextRGA } from '../../runtime/src/compact-rga-peritext.js';
 import { mulberry32, randChar, loadTrace, flattenOps } from '../lib/traces.mjs';
 import { environment, timed } from '../lib/bench.mjs';
 import { writeRawResult } from '../lib/result.mjs';
 
-const [mode = 'both', preset = 'freq', scenario = 'concurrent-rich', representation = 'absolute'] = process.argv.slice(2);
+const [mode = 'both', preset = 'freq', scenario = 'concurrent-rich', representation = 'sided-embed-rga'] = process.argv.slice(2);
 const MODES = new Set(['none', 'history', 'text-state', 'full-state', 'both', 'both-delayed']);
 if (!MODES.has(mode)) throw new Error(`unknown Peritext GC mode: ${mode}`);
 const cfg = preset === 'bulk'
@@ -20,8 +21,10 @@ const seed = 1729, rng = mulberry32(seed);
 const stateGc = ['text-state', 'full-state', 'both', 'both-delayed'].includes(mode);
 const pairDrop = mode !== 'text-state';
 const historyGc = ['history', 'both', 'both-delayed'].includes(mode);
-const datatype = representation === 'shared' ? compactibleSharedPeritext : compactiblePeritext;
-if (!['absolute', 'shared'].includes(representation)) throw new Error(`unknown representation: ${representation}`);
+const datatype = representation === 'rga' ? compactiblePeritextRGA
+  : representation === 'embed-rga' ? compactibleSharedPeritext
+  : representation === 'sided-embed-rga' ? compactibleSidedPeritext : null;
+if (!datatype) throw new Error(`unknown Peritext kernel: ${representation}`);
 const a = new DistributedReplica(datatype, 'A');
 const b = new DistributedReplica(datatype, 'B');
 a.register('B'); b.register('A');
@@ -170,6 +173,11 @@ function runScenario() {
     for (let cycle = 0; cycle < 3; cycle++) {
       for (let i = 0; i < cfg.burst; i++) oneOp(a, 'A');
       for (let i = 0; i < cfg.burst; i++) oneOp(b, 'B');
+      // Guarantee one settled collectible record per requested epoch. Random
+      // rich edits need not contain a deletion outside all mark boundaries.
+      const disposable = alloc();
+      a.commit({ type: 'ins', id: disposable, el: 'x', anchorId: null });
+      a.commit({ type: 'del', id: disposable });
       sync();
       // Compact the first two settled cuts here. The common finalization below
       // compacts the third, so this workload crosses three real GC epochs.
@@ -220,16 +228,19 @@ const roundTrip = datatype.decodeState(datatype.encodeState(a.head.state));
 const snapshotOk = JSON.stringify(datatype.read(roundTrip)) === renderAfter;
 const digest = createHash('sha256').update(renderAfter).digest('hex');
 const st = a.head.state;
+const identityRecords = representation === 'rga' ? st.text.shadow.adds.size
+  : representation === 'embed-rga' ? st.text.shadow.size
+  : st.text.shadow.records.size;
 const emptyFloorExpected = scenario === 'empty-rich' && pairDrop && stateGc;
 const record = {
-  suite: 'peritext', workload: scenario, system: representation === 'shared' ? 'sal-peritext-shared' : 'sal-peritext', mode, preset,
-  config: { ...cfg, seed, pairDrop, scenario, representation }, environment: environment(),
+  suite: 'peritext', workload: scenario, system: `peritext-${representation}`, mode, preset,
+  config: { ...cfg, seed, pairDrop, scenario, representation, matrixVersion: 3 }, environment: environment(),
   gates: { converged, gcRenderPreserved: renderBefore === renderAfter, snapshotOk,
     stateCompactionFiredOrExpectedNoop: !stateGc || compact?.compacted === true
       || (['mark-churn', 'empty-rich'].includes(scenario) && mode === 'text-state'),
     delayedPruneRefused: mode !== 'both-delayed' || preAck?.pruned === 0,
     emptyMetadataFloor: !emptyFloorExpected || (a.read().length === 0
-      && st.text.shadow.size === 0 && st.text.deleted.size === 0 && st.marks.size === 0),
+      && identityRecords === 0 && st.text.deleted.size === 0 && st.marks.size === 0),
     multiEpochCompaction: scenario !== 'multi-epoch-rich' || !stateGc
       || intermediateEpochs + (compact?.compacted ? 1 : 0) === 3 },
   metrics: { operations: a.seq + b.seq,
@@ -239,11 +250,10 @@ const record = {
     commitsWhileAwaitingAck: awaitingAck, epochPruned: pruned?.pruned ?? 0,
     epochPruneReason: pruned?.reason ?? null,
     durableStateBytes: a.saveBytes(), visibleChars: a.read().length,
-    shadowRecords: st.text.shadow.size, deletedIds: st.text.deleted.size,
+    shadowRecords: identityRecords, identityRecords, deletedIds: st.text.deleted.size,
     markRecords: st.marks.size, coordinateSymbols: a.symbolCount(), renderDigest: digest },
 };
 const RESULTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'results');
-const suffix = representation === 'shared' ? '-shared' : '';
-writeRawResult(RESULTS, `peritext-${scenario}-${mode}-${preset}${suffix}.json`, record);
+writeRawResult(RESULTS, `peritext-${scenario}-${mode}-${preset}-${representation}.json`, record);
 console.log(`peritext ${representation} ${scenario} ${mode}/${preset}: state=${record.metrics.durableStateBytes} B, commits ${commitsBeforeFinalGc} -> ${a.dag.size}, marks=${st.marks.size}`);
 if (!Object.values(record.gates).every(Boolean)) process.exit(1);

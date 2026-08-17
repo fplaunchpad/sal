@@ -7,6 +7,8 @@
   "scripts": {
     "bench:quick": "node run.mjs --quick",
     "bench:full": "node run.mjs --full",
+    "bench:peritext-paper": "node tools/run-peritext-paper.mjs 3",
+    "bench:peritext-paper:smoke": "node tools/run-peritext-paper.mjs 1 --smoke",
     "summarize": "node tools/normalize.mjs && node tools/summarize.mjs"
   },
   "dependencies": {

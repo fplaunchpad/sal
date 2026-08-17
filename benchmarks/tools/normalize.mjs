@@ -11,7 +11,10 @@ const rows = readdirSync(RAW).filter((f) => f.endsWith('.json'))
   .map((f) => JSON.parse(readFileSync(join(RAW, f), 'utf8')))
   // Ignore pre-matrix Peritext artifacts whose filenames/configuration did
   // not identify a workload family.
-  .filter((r) => r.suite !== 'peritext' || r.config?.scenario);
+  .filter((r) => r.suite !== 'peritext' || r.config?.matrixVersion === 3)
+  // Ignore pre-schema focused-kernel artifacts. Current kernel results name
+  // both the implementation and topology through system/workload.
+  .filter((r) => r.suite !== 'peritext-kernel-gc' || (r.system && r.workload));
 for (const r of rows) {
   if (r.schemaVersion !== 1 || !r.suite || !r.workload || !r.system || !r.metrics || !r.gates)
     throw new Error(`invalid raw result schema: ${JSON.stringify(r).slice(0, 120)}`);

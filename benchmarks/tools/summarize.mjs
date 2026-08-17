@@ -32,7 +32,7 @@ const gcAblations = existsSync(rawDir)
 const peritextAblations = existsSync(rawDir)
   ? readdirSync(rawDir).filter((f) => f.startsWith('peritext-') && f.endsWith('.json'))
       .map((f) => JSON.parse(readFileSync(join(rawDir, f), 'utf8')))
-      .filter((r) => r.config?.scenario)
+      .filter((r) => r.config?.matrixVersion === 3)
   : [];
 
 const kb = (b) => b >= 1048576 ? `${(b / 1048576).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`;

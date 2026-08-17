@@ -32,7 +32,7 @@ const PERITEXT_GC_MODES = ['none', 'history', 'text-state', 'full-state', 'both'
 const PERITEXT_SCENARIOS = ['concurrent-rich', 'format-trace', 'mark-churn',
   'marked-delete-churn', 'offline-rich', 'empty-rich', 'multi-epoch-rich'];
 const SAL_REPRESENTATIONS = ['absolute', 'shared'];
-const PERITEXT_KERNELS = ['rga', 'embed-rga'];
+const PERITEXT_KERNELS = ['rga', 'embed-rga', 'sided-embed-rga'];
 const PERITEXT_KERNEL_GC_MODES = ['none', 'history', 'state', 'both'];
 
 const jobs = [];
@@ -56,9 +56,9 @@ jobs.push({ id: 'peritext:semantic-spots', cmd: 'node',
   argv: [join(HERE, 'tools', 'check-peritext-semantics.mjs')] });
 for (const p of PRESETS) {
   for (const scenario of PERITEXT_SCENARIOS) {
-    for (const representation of SAL_REPRESENTATIONS) for (const mode of PERITEXT_GC_MODES) {
-      jobs.push({ id: `peritext:${representation}:${scenario}:${mode}:${p}`, cmd: 'node',
-        argv: ['--expose-gc', join(HERE, 'workloads', 'peritext-gc.mjs'), mode, p, scenario, representation] });
+    for (const kernel of PERITEXT_KERNELS) for (const mode of PERITEXT_GC_MODES) {
+      jobs.push({ id: `peritext:${kernel}:${scenario}:${mode}:${p}`, cmd: 'node',
+        argv: ['--expose-gc', join(HERE, 'workloads', 'peritext-gc.mjs'), mode, p, scenario, kernel] });
     }
   }
 }

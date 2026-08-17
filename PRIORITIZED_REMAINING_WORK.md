@@ -753,6 +753,16 @@ behavioral layer to the conditioned RA-linearizability certificate.
   and `summary.md` were regenerated from the full run. Multi-process repeated
   trials remain the next statistical step; this run is the complete baseline.
 
+  **Three-kernel rich-text matrix completed 2026-08-17.** The version-3
+  Peritext harness replaces the obsolete absolute/shared labels with the
+  production-facing `RGA`, `EmbedRGA`, and `SidedEmbedRGA` kernels and sweeps
+  history-only, state-only, combined, and delayed-evidence GC. All 126 quick
+  cells pass render, convergence, snapshot, refusal, and empty-floor gates.
+  RGA now applies the same guarded A3 mark-pair collection as the embedded
+  kernels. The paper-facing full-scale run should use informative mode samples,
+  rather than repeat modes with identical post-evidence states, followed by
+  independent repetitions.
+
   **Evaluation cleanup increment completed 2026-08-15.** Sal now saves and
   recovers from the real run-table binary in the sequential harness, uses it as
   the concurrent primary-save artifact, and measures the same encoding after
