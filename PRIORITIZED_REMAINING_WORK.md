@@ -431,8 +431,12 @@ behavioral layer to the conditioned RA-linearizability certificate.
   bit-packed, and live membership/text-length exceptions are sidecars over the
   node table. The resulting snapshot is about 60.4 KB versus 59.1 KB for the
   current shared run codec on this trace, closing the storage-size gap to about
-  2.3%. Save/load CPU is not yet closed (about 129/28 ms versus 16/16 ms), so
-  optimize codec construction before promotion. Then finish the
+  2.3%. Codec profiling removed repeated ancestry walks, HAMT lookups, ASCII
+  encoder calls, and a redundant production-time successor validation (the
+  validation remains executable in tests); decoded snapshots cache their
+  verified policy order. Save/load are now about 20.6/17.9 ms versus
+  15.8/15.7 ms for the current shared codec: roughly 30%/14% overhead, down
+  from 8x/1.8x. Then finish the
   L23--L27 gates and run repeated isolated benchmarks. Production state GC and
   default promotion remain deliberately pending those results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the

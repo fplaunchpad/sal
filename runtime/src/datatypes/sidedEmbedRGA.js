@@ -75,8 +75,8 @@ const drop = (m, k) => {
 };
 
 function makeState(live = PMap.empty(), gaps = PMap.empty().set(ROOT, rootGap),
-    chains = PMap.empty()) {
-  return Object.freeze({ live, gaps, chains });
+    chains = PMap.empty(), order = null) {
+  return Object.freeze({ live, gaps, chains, order });
 }
 
 function liveIds3(l, a, b) {
@@ -186,6 +186,9 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     },
     readEntries(state) {
       if (shared) {
+        if (state.order) return state.order.flatMap((id) => {
+          const rec = state.live.get(id); return rec ? [[id, rec]] : [];
+        });
         return policyOrder(state.chains.values()).flatMap((n) => {
           const rec = state.live.get(n.id); return rec ? [[n.id, rec]] : [];
         });
@@ -255,7 +258,10 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         for (const id of roots) {
           const leaf = state.chains.get(id);
           if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
-          for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
+          for (let n = leaf; n; n = n.parent) {
+            if (nodes.has(n.id)) break;
+            nodes.set(n.id, n);
+          }
         }
         encodedChains = [...nodes].sort(([x], [y]) => x - y)
           .map(([id, n]) => [id, n.parent?.id ?? null, n.side, n.delta]);
@@ -292,15 +298,20 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
     },
     /** Compact lossless candidate snapshot. Shared mode stores every retained
      * policy node once as a parent link; it never repeats whole coordinates. */
-    encodeSnapshot(state) {
+    encodeSnapshot(state, { validate = false } = {}) {
       if (!shared) return utf8.encode(JSON.stringify(this.encodeState(state)));
-      const nodes = new Map();
-      const roots = new Set(state.live.keys());
-      eachEntry(state.gaps, (_id, g) => { if (g.succId !== null) roots.add(g.succId); });
+      const nodes = new Map(), roots = new Set(), liveById = new Map(), gapsById = new Map();
+      eachEntry(state.live, (id, rec) => { roots.add(id); liveById.set(id, rec); });
+      eachEntry(state.gaps, (id, g) => {
+        gapsById.set(id, g); if (g.succId !== null) roots.add(g.succId);
+      });
       for (const id of roots) {
         const leaf = state.chains.get(id);
         if (!leaf) throw new Error(`retained snapshot chain ${id} missing`);
-        for (let n = leaf; n; n = n.parent) if (!nodes.has(n.id)) nodes.set(n.id, n);
+        for (let n = leaf; n; n = n.parent) {
+          if (nodes.has(n.id)) break;
+          nodes.set(n.id, n);
+        }
       }
       const ns = [...nodes].sort(([x], [y]) => x - y), out = [2];
       putVar(out, ns.length);
@@ -321,16 +332,19 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         const parentId = n.parent?.id ?? 0;
         if (parentId !== id - 1) putVar(out, id - parentId);
       }
-      const live = ns.filter(([id]) => state.live.has(id));
+      const live = ns.filter(([id]) => liveById.has(id));
       const liveBits = [];
       for (let i = 0; i < ns.length; i += 8) {
         let byte = 0;
         for (let j = 0; j < 8 && i + j < ns.length; j++)
-          if (state.live.has(ns[i + j][0])) byte |= 1 << j;
+          if (liveById.has(ns[i + j][0])) byte |= 1 << j;
         liveBits.push(byte);
       }
       out.push(...liveBits);
-      const texts = live.map(([id]) => utf8.encode(state.live.get(id).el)), lenBits = [];
+      const texts = live.map(([id]) => {
+        const el = liveById.get(id).el, c = el.length === 1 ? el.charCodeAt(0) : 128;
+        return c < 128 ? Uint8Array.of(c) : utf8.encode(el);
+      }), lenBits = [];
       for (let i = 0; i < texts.length; i += 8) {
         let byte = 0;
         for (let j = 0; j < 8 && i + j < texts.length; j++)
@@ -341,19 +355,25 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
       for (const bytes of texts) if (bytes.length !== 1) putVar(out, bytes.length);
       for (const bytes of texts) out.push(...bytes);
       // Successors are the immediate next retained policy node. Store only
-      // hasR; verify the derivation against the semantic summary before emit.
-      const ordered = policyOrder(ns.map(([, n]) => n));
-      const pos = new Map(ordered.map((n, i) => [n.id, i]));
+      // hasR. Tests use `validate` to check this derivation against the full
+      // semantic summary; production encoding need not recompute it twice.
+      let ordered, pos;
+      if (validate) {
+        ordered = policyOrder(ns.map(([, n]) => n));
+        pos = new Map(ordered.map((n, i) => [n.id, i]));
+      }
       const anchors = [ROOT, ...live.map(([id]) => id)], bits = [];
       for (let i = 0; i < anchors.length; i += 8) {
         let byte = 0;
         for (let j = 0; j < 8 && i + j < anchors.length; j++) {
-          const id = anchors[i + j], g = state.gaps.get(id);
+          const id = anchors[i + j], g = gapsById.get(id);
           if (!g) throw new Error(`snapshot gap ${id} missing`);
-          const successor = id === ROOT ? (ordered[0]?.id ?? null)
-            : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
-          if (successor !== g.succId)
-            throw new Error(`derived successor mismatch at ${id}: ${successor} != ${g.succId}`);
+          if (validate) {
+            const successor = id === ROOT ? (ordered[0]?.id ?? null)
+              : (ordered[(pos.get(id) ?? -1) + 1]?.id ?? null);
+            if (successor !== g.succId)
+              throw new Error(`derived successor mismatch at ${id}: ${successor} != ${g.succId}`);
+          }
           if (g.hasR) byte |= 1 << j;
         }
         bits.push(byte);
@@ -395,7 +415,7 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
         gapsT.set(id, Object.freeze({ hasR: !!(bits[i >> 3] & (1 << (i & 7))), succId: successor }));
       }
       if (c.i !== u8.length) throw new Error('trailing sided snapshot bytes');
-      return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all));
+      return makeState(liveT.freeze(), gapsT.freeze(), PMap.from(all), ordered.map((n) => n.id));
     },
     fingerprint(state) {
       return JSON.stringify({
