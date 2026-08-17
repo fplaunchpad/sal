@@ -43,10 +43,12 @@ function buildCtx(state, textRGA) {
   const live = birth.filter((c) => !deleted.has(c));       // survivors, in order
   const pos = new Map(live.map((c, i) => [c, i]));          // live id -> live idx
   const bpos = new Map(birth.map((c, i) => [c, i]));        // birth id -> birth idx
-  return { birth, live, cp, deleted, pos, bpos, shadow: state.text.shadow };
+  const hasBirth = (id) => typeof textRGA.has === 'function'
+    ? textRGA.has(state.text.shadow, id) : state.text.shadow.has(id);
+  return { birth, live, cp, deleted, pos, bpos, shadow: state.text.shadow, hasBirth };
 }
 
-const isLive = (ctx, a) => ctx.shadow.has(a) && !ctx.deleted.has(a);
+const isLive = (ctx, a) => ctx.hasBirth(a) && !ctx.deleted.has(a);
 
 // Nearest live id strictly one `step` away from birth index `i` (or null).
 function scan(birth, deleted, i, step) {
@@ -140,6 +142,7 @@ const frozenMark = (op) => Object.freeze({
  * representation choice, rather than a second rich-text semantics. */
 export function makePeritext(textRGA = embedRGA) {
 return {
+  needsPrepare: !!textRGA.needsPrepare,
   /** state: { text: { shadow: PMap (via embedRGA), deleted: PSet }, marks:
    *  PMap } -- persistent containers: apply is O(log n), no live-set copy.
    *  Legacy Set/Map sub-states are accepted read-only and copied on write. */
@@ -147,10 +150,14 @@ return {
     return { text: { shadow: textRGA.init(), deleted: PSet.empty() }, marks: PMap.empty() };
   },
 
+  prepare(state, op) {
+    if (op.type !== 'ins' || typeof textRGA.prepare !== 'function') return op;
+    return textRGA.prepare(state.text.shadow, op);
+  },
+
   apply(state, op) {
     if (op.type === 'ins') {
-      const shadow = textRGA.apply(state.text.shadow,
-        { type: 'ins', id: op.id, el: op.el, anchorId: op.anchorId });
+      const shadow = textRGA.apply(state.text.shadow, op);
       return { text: { shadow, deleted: state.text.deleted }, marks: state.marks };
     }
     if (op.type === 'del') {
@@ -179,7 +186,7 @@ return {
       ? state.text.deleted : PSet.from(state.text.deleted)).begin();
     const marks = (isPMap(state.marks) ? state.marks : PMap.from(state.marks)).begin();
     for (const op of ops) {
-      if (op.type === 'ins') insOps.push({ type: 'ins', id: op.id, el: op.el, anchorId: op.anchorId });
+      if (op.type === 'ins') insOps.push(op);
       else if (op.type === 'del') deleted.add(op.id);
       else if (op.type === 'addMark' || op.type === 'removeMark') marks.set(op.mid, frozenMark(op));
       else throw new Error(`unknown peritext op type: ${op.type}`);
@@ -242,9 +249,12 @@ return {
 
   // Canonical serialization (twin-comparison / content-address helper).
   fingerprint(state) {
+    const shadow = typeof state.text.shadow.entries === 'function'
+      ? [...state.text.shadow.entries()].sort(([x], [y]) => (x < y ? -1 : 1))
+        .map(([id, r]) => [id, r.coord, r.el])
+      : textRGA.fingerprint(state.text.shadow);
     return JSON.stringify({
-      shadow: [...state.text.shadow.entries()].sort(([x], [y]) => (x < y ? -1 : 1))
-        .map(([id, r]) => [id, r.coord, r.el]),
+      shadow,
       deleted: [...state.text.deleted].sort((x, y) => x - y),
       marks: [...state.marks.entries()].sort(([x], [y]) => x - y)
         .map(([, m]) => [m.mid, m.mtype, m.value, m.startId, m.endId, m.startSide, m.endSide, m.ts, m.removed]),

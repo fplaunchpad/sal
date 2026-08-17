@@ -110,11 +110,13 @@ export class Replica {
   /** Apply an op payload on this replica's own current head. */
   commit(payload) {
     const dt = this.runtime.datatype;
-    const state = dt.apply(this.#head.state, payload);
+    const prepared = typeof dt.prepare === 'function'
+      ? dt.prepare(this.#head.state, payload) : payload;
+    const state = dt.apply(this.#head.state, prepared);
     const epoch = this.runtime.epochOf.get(this.#head.id);
     this.#head = this.runtime.dag.add({
       parents: [this.#head.id],
-      op: { replica: this.name, seq: this.seq++, payload },
+      op: { replica: this.name, seq: this.seq++, payload: prepared },
       state,
     });
     this.runtime.epochOf.set(this.#head.id, epoch);

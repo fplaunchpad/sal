@@ -92,9 +92,11 @@ export class DistributedReplica {
 
   /** Apply one op on this replica's own current head (the only local mutator). */
   commit(payload) {
-    const state = this.datatype.apply(this.head.state, payload);
+    const prepared = typeof this.datatype.prepare === 'function'
+      ? this.datatype.prepare(this.head.state, payload) : payload;
+    const state = this.datatype.apply(this.head.state, prepared);
     const c = this.dag.add({
-      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload }, state });
+      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: prepared }, state });
     this.epochOf.set(c.id, this.epochOf.get(this.#headId));
     this.#index(c);
     this.#headId = c.id;
@@ -109,9 +111,21 @@ export class DistributedReplica {
   commitBatch(ops) {
     if (ops.length === 0) return this.headGid;
     if (ops.length === 1) return this.commit(ops[0]);
-    const state = this.#applyOps(this.head.state, ops);
+    let state, prepared;
+    if (this.datatype.needsPrepare) {
+      state = this.head.state;
+      prepared = [];
+      for (const op of ops) {
+        const p = this.datatype.prepare(state, op);
+        prepared.push(p);
+        state = this.datatype.apply(state, p);
+      }
+    } else {
+      prepared = ops;
+      state = this.#applyOps(this.head.state, ops);
+    }
     const c = this.dag.add({
-      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: ops }, state });
+      parents: [this.#headId], op: { replica: this.name, seq: this.seq++, payload: prepared }, state });
     this.epochOf.set(c.id, this.epochOf.get(this.#headId));
     this.#index(c);
     this.#headId = c.id;

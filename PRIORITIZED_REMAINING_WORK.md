@@ -403,6 +403,16 @@ behavioral layer to the conditioned RA-linearizability certificate.
   interface now uses `Option LiveGap`: an absent branch anchor contributes
   `none`, and merged-dead anchors are pruned. The randomized check remains a
   refutation oracle, not the proof.
+  **Implementation status (2026-08-17):** the experimental absolute and
+  prefix-shared JavaScript kernels now freeze `(side,parent,chain)` evidence in
+  each insert, retain the GC-able live-gap/chain policy summary, and plug into
+  both replica runtimes and an explicit experimental Peritext configuration.
+  The production one-sided exports remain unchanged. Directed deleted-successor,
+  fork/join representation-equivalence, prepared-batch, and Peritext controls
+  pass, as does the complete 156-test runtime suite. The next gate is the
+  L1--L27 policy/anomaly battery and benchmark-harness integration; state GC,
+  snapshot codecs, and default promotion remain deliberately pending those
+  results.
 - Extend `benchmarks/run.mjs` into one reproducible entry point for the
   plain-text and Peritext suites. Run every job in an isolated process with
   fixed seeds. Support `--quick`, `--full`, and `--only`, record the machine,
