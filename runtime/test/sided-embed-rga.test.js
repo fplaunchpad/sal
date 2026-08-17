@@ -55,6 +55,20 @@ test('absolute and prefix-shared sided representations agree through fork/join',
   assert.deepEqual(run(sidedEmbedRGAExperimental), run(sharedSidedEmbedRGAExperimental));
 });
 
+test('merge traversal retains a live descendant of a branch-deleted parent', () => {
+  const dt = sharedSidedEmbedRGAExperimental;
+  const l = fold(dt, [ins(1, 'a')]).state;
+  let a = l;
+  for (const raw of [ins(2, 'b', 1), ins(3, 'c', 2), del(2)]) {
+    const op = raw.type === 'ins' ? dt.prepare(a, raw) : raw;
+    a = dt.apply(a, op);
+  }
+  const b = dt.apply(l, dt.prepare(l, ins(4, 'd', 1)));
+  const merged = dt.merge3(l, a, b);
+  assert.equal(merged.live.size, 3);
+  assert.deepEqual(new Set(dt.readIds(merged)), new Set([1, 3, 4]));
+});
+
 test('JavaScript sided kernel is lockstep with the full-policy Fugue oracle', () => {
   const raw = execFileSync('python3', ['../whiteboard/litmus/js_sided_oracle.py'],
     { cwd: new URL('..', import.meta.url), encoding: 'utf8' });

@@ -94,9 +94,14 @@ export function makeSidedEmbedRGA({ code = eliasDeltaCode, shared = false } = {}
 
   const chainFor = (state, id) => id === null ? (shared ? null : []) : state.chains.get(id);
   const gapFor = (state, anchorId) => state.gaps.get(anchorId ?? ROOT);
-  const policyOrder = (nodes) => {
+  const policyOrder = (leaves) => {
+    const closure = new Map();
+    for (const leaf of leaves) for (let n = leaf; n; n = n.parent) {
+      if (closure.has(n.id)) break;
+      closure.set(n.id, n);
+    }
     const children = new Map();
-    for (const n of nodes) {
+    for (const n of closure.values()) {
       const p = n.parent?.id ?? null;
       let bands = children.get(p);
       if (!bands) { bands = { L: [], R: [] }; children.set(p, bands); }
