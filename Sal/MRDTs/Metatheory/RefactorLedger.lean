@@ -1,6 +1,7 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.BoundedCounter
+import Sal.MRDTs.Instances.RGA
 import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.GC.Refinement
@@ -47,6 +48,11 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.BC
 #check Instances.BoundedCounter.BC_coreVCs3
 #check Instances.BoundedCounter.ra_linearizable
+#check Instances.RGA.applicable
+#check Instances.RGA.HistoryOK
+#check Instances.RGA.convergence
+#check Instances.RGA.sequentialSound
+#check Instances.RGA.verified
 #check Instances.EmbedRGA.generation
 #check Instances.EmbedRGA.convergence
 #check Instances.SidedEmbedRGA.generation

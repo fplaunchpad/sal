@@ -129,6 +129,11 @@ namespace SequentialSpec
 def run {Event : Type} (S : SequentialSpec Event) (ops : List Event) : S.State :=
   ops.foldl S.step S.init
 
+@[simp] theorem run_append_single {Event : Type} (S : SequentialSpec Event)
+    (ops : List Event) (e : Event) :
+    S.run (ops ++ [e]) = S.step (S.run ops) e := by
+  simp [run, List.foldl_append]
+
 end SequentialSpec
 
 /-- Sequential correctness may require a history discipline stronger than a
