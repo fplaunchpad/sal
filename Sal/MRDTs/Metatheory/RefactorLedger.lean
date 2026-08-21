@@ -11,8 +11,11 @@ namespace Sal.MRDTs
 #check Configuration
 #check initConfig
 #check Step
+#check VirtualLCAResolver
+#check StepV
 #check GenerationContract
 #check MintCertifiedReach
+#check MintCertifiedReachV
 #check SafetyCertificate
 #check SequentialRefinement
 #check ConvergenceCertificate
@@ -25,6 +28,7 @@ namespace Sal.MRDTs
 #check Instances.GSet.safety
 #check LegacyBridge.erase_step
 #check LegacyBridge.lift_step
+#check LegacyBridge.lift_stepV
 #check Instances.Migrated.boundedCounter
 #check Instances.Migrated.queue
 #check Instances.Migrated.embedRGA

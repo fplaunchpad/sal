@@ -230,4 +230,42 @@ def labeledTS (D : MRDTSig) : LabeledTS where
   step := Step D
   silent := fun _ => False
 
+/-! ## Virtual-LCA execution -/
+
+/-- Framework-supplied resolution of the synthetic base used when two heads
+have no single registered LCA.  The production resolver is the canonical
+recursive MCA fold; this interface keeps the raw execution and GC layers
+independent of its executable DAG representation. -/
+structure VirtualLCAResolver (D : MRDTSig) where
+  state : Configuration D → Version → Version → D.State
+
+/-- Raw execution widened by a virtual-LCA merge.  Ordinary execution embeds
+conservatively through `base`; a virtual merge allocates only its final node. -/
+inductive StepV (D : MRDTSig) (V : VirtualLCAResolver D) :
+    Configuration D → Label D → Configuration D → Prop where
+  | base {C C' : Configuration D} {l : Label D} :
+      Step D C l C' → StepV D V C l C'
+  | mergeVirtual {C : Configuration D} {r₁ r₂ : Replica}
+      {v₁ v₂ vm : Version} {s₁ s₂ : D.State}
+      {ev₁ ev₂ : Set (Op D.AppOp)}
+      (head₁ : C.head r₁ = some v₁) (head₂ : C.head r₂ = some v₂)
+      (version₁ : C.ver v₁ = some (s₁, ev₁))
+      (version₂ : C.ver v₂ = some (s₂, ev₂))
+      (freshVersion : C.ver vm = none) (rank₁ : v₁ < vm) (rank₂ : v₂ < vm)
+      (C' : Configuration D)
+      (N : C'.N = updateRep C.N r₁ (D.mergeL (V.state C v₁ v₂) s₁ s₂))
+      (L : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
+      (vis : C'.vis = C.vis)
+      (ver : C'.ver = fun w => if w = vm then
+        some (D.mergeL (V.state C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      (head : C'.head = fun r' => if r' = r₁ then some vm else C.head r')
+      (parents : C'.parents = fun w => if w = vm then [v₁, v₂] else C.parents w) :
+      StepV D V C (.merge r₁ r₂) C'
+
+def labeledTSV (D : MRDTSig) (V : VirtualLCAResolver D) : LabeledTS where
+  State := Configuration D
+  Label := Label D
+  step := StepV D V
+  silent := fun _ => False
+
 end Sal.MRDTs

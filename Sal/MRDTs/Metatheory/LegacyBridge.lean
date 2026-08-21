@@ -40,6 +40,10 @@ def liftLabel {D : OldSig} :
   | .merge r₁ r₂ => .merge r₁ r₂
   | .query r q v => .query r q v
 
+@[simp] theorem erase_liftLabel {D : OldSig} (l : Label (signature D)) :
+    eraseLabel (liftLabel l) = l := by
+  cases l <;> rfl
+
 /-- Forget only the proof that every registered state satisfies `D.Inv`. -/
 def eraseConfiguration {D : OldSig}
     (C : OldConfiguration D) : Configuration (signature D) where
@@ -235,15 +239,70 @@ theorem linearMintHistory_iff {D : OldSig}
   · intro h
     exact ⟨h.guarded, h.clocked⟩
 
+/-- The established recursive-MCA virtual base, exposed through the new
+proof-erasing configuration boundary. -/
+noncomputable def virtualLCA (D : OldSig) (invEverywhere : ∀ s, D.Inv s) :
+    VirtualLCAResolver (signature D) where
+  state := fun C v₁ v₂ =>
+    Sal.ConditionedMRDTs.virtualLCAState
+      (liftConfiguration D invEverywhere C) v₁ v₂
+
+theorem lift_stepV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    {C C' : Configuration (signature D)} {l : Label (signature D)}
+    (h : StepV (signature D) (virtualLCA D invEverywhere) C l C') :
+    Sal.ConditionedMRDTs.Step3V D
+      (liftConfiguration D invEverywhere C) (liftLabel l)
+      (liftConfiguration D invEverywhere C') := by
+  cases h with
+  | base h => exact .base (lift_step D invEverywhere h)
+  | mergeVirtual hh₁ hh₂ hv₁ hv₂ hvm hr₁ hr₂ C' hN hL hvis hver hhead hparents =>
+      exact .mergeVirtual hh₁ hh₂ hv₁ hv₂ hvm hr₁ hr₂ _
+        hN hL hvis hver hhead hparents
+
+theorem lift_guardedStepV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D)
+    {C C' : Configuration (signature D)} {l : Label (signature D)}
+    (h : GuardedStepV (signature D) (virtualLCA D invEverywhere)
+      (generation D invEverywhere G) C l C') :
+    Sal.ConditionedMRDTs.GuardedStep3V D G
+      (liftConfiguration D invEverywhere C) (liftLabel l)
+      (liftConfiguration D invEverywhere C') := by
+  cases h with
+  | base hguard => exact .base (lift_guardedStep D invEverywhere G hguard)
+  | virtual hraw hnot =>
+      exact .virtual (lift_stepV D invEverywhere hraw) (by
+        intro hold
+        apply hnot
+        simpa using erase_step hold)
+
+theorem lift_mintCertifiedV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D)
+    {C : Configuration (signature D)}
+    (h : MintCertifiedReachV (signature D) (virtualLCA D invEverywhere)
+      (generation D invEverywhere G) C) :
+    Sal.ConditionedMRDTs.MintCertifiedReach3V D G (invEverywhere D.init)
+      (liftConfiguration D invEverywhere C) := by
+  induction h with
+  | init => exact .init
+  | @step C C' l _ hpre hstep hpost ih =>
+      exact .step ih
+        ((mintHonest_iff D invEverywhere G.Guard C).mp hpre)
+        (lift_guardedStepV D invEverywhere G hstep)
+        ((mintHonest_iff D invEverywhere G.Guard C').mp hpost)
+
 def safety (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
     (G : Sal.ConditionedMRDTs.GenerationContract D)
     (S : Sal.ConditionedMRDTs.SafetyCertificate D G) :
-    SafetyCertificate (signature D) (generation D invEverywhere G) where
+    SafetyCertificate (signature D) (virtualLCA D invEverywhere)
+      (generation D invEverywhere G) where
   Safe := S.Safe
   Observable := S.Observable
   preservation := by
     intro C h
     exact S.preservation (lift_mintCertified D invEverywhere G h)
+  preservationV := by
+    intro C h
+    exact S.preservationV (lift_mintCertifiedV D invEverywhere G h)
   consequence := S.consequence
 
 /-- Temporary end-to-end package adapter for flat production signatures.
@@ -256,11 +315,17 @@ noncomputable def verified (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
         U.verified.seq.Honest ops) :
     VerifiedMRDT (signature D) where
   generation := generation D invEverywhere U.generation
+  virtualLCA := virtualLCA D invEverywhere
   convergence := {
     sound := by
       intro C h
       apply (raLinearizable_iff D invEverywhere C).mpr
-      exact U.ra_linearizable (lift_mintCertified D invEverywhere U.generation h) }
+      exact U.ra_linearizable (lift_mintCertified D invEverywhere U.generation h)
+    soundV := by
+      intro C h
+      apply (raLinearizable_iff D invEverywhere C).mpr
+      exact U.ra_linearizableV
+        (lift_mintCertifiedV D invEverywhere U.generation h) }
   Spec := sequentialSpec U.verified.Spec
   sequential := sequentialRefinement U.verified.seq
   sequential_of_mint := by

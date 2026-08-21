@@ -52,6 +52,26 @@ theorem GuardedStep.toRaw {D : MRDTSig} {G : GenerationContract D}
   | nonApply h _ => exact h
   | apply _ _ _ h => exact h
 
+/-- Guarded execution for the widened semantics.  Only apply steps consult
+the generation contract; ordinary and virtual merges share the non-apply
+case. -/
+inductive GuardedStepV (D : MRDTSig) (V : VirtualLCAResolver D)
+    (G : GenerationContract D) :
+    Configuration D → Label D → Configuration D → Prop where
+  | base {C C' : Configuration D} {l : Label D} :
+      GuardedStep D G C l C' → GuardedStepV D V G C l C'
+  | virtual {C C' : Configuration D} {l : Label D} :
+      StepV D V C l C' →
+      (∀ ordinary : Step D C l C', False) →
+      GuardedStepV D V G C l C'
+
+theorem GuardedStepV.toRaw {D : MRDTSig} {V : VirtualLCAResolver D}
+    {G : GenerationContract D} {C C' : Configuration D} {l : Label D}
+    (h : GuardedStepV D V G C l C') : StepV D V C l C' := by
+  cases h with
+  | base h => exact .base h.toRaw
+  | virtual h _ => exact h
+
 /-- Certified executions retain mint provenance explicitly because an
 ordinary configuration does not retain historical issuer heads. -/
 inductive MintCertifiedReach (D : MRDTSig) (G : GenerationContract D) :
@@ -64,16 +84,30 @@ inductive MintCertifiedReach (D : MRDTSig) (G : GenerationContract D) :
       MintHonest D G.Guard C' →
       MintCertifiedReach D G C'
 
+/-- Mint provenance for virtual-LCA executions. -/
+inductive MintCertifiedReachV (D : MRDTSig) (V : VirtualLCAResolver D)
+    (G : GenerationContract D) : Configuration D → Prop where
+  | init : MintCertifiedReachV D V G (initConfig D)
+  | step {C C' l} :
+      MintCertifiedReachV D V G C →
+      MintHonest D G.Guard C →
+      GuardedStepV D V G C l C' →
+      MintHonest D G.Guard C' →
+      MintCertifiedReachV D V G C'
+
 def VersionsSatisfy {D : MRDTSig}
     (P : D.State → Prop) (C : Configuration D) : Prop :=
   ∀ v s E, C.ver v = some (s, E) → P s
 
 /-- Client safety derived from generation-certified execution. -/
-structure SafetyCertificate (D : MRDTSig) (G : GenerationContract D) where
+structure SafetyCertificate (D : MRDTSig) (V : VirtualLCAResolver D)
+    (G : GenerationContract D) where
   Safe : D.State → Prop
   Observable : D.State → Prop
   preservation : ∀ {C},
     MintCertifiedReach D G C → VersionsSatisfy Safe C
+  preservationV : ∀ {C},
+    MintCertifiedReachV D V G C → VersionsSatisfy Safe C
   consequence : ∀ s, Safe s → Observable s
 
 /-- Independent sequential machine used to state local client intent. -/

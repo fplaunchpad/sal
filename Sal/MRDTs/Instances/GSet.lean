@@ -27,10 +27,14 @@ def generation : GenerationContract D where
   History := fun _ => True
   history_of_mint := fun _ _ => trivial
 
-def safety : SafetyCertificate D generation where
+def virtualLCA : VirtualLCAResolver D where
+  state := fun _ _ _ => (∅ : Set Nat)
+
+def safety : SafetyCertificate D virtualLCA generation where
   Safe := fun _ => True
   Observable := fun _ => True
   preservation := fun _ _ _ _ _ => trivial
+  preservationV := fun _ _ _ _ _ => trivial
   consequence := fun _ _ => trivial
 
 def spec : SequentialSpec (Op Nat) where
