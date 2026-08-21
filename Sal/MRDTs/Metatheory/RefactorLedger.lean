@@ -2,6 +2,7 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.MigratedCanaries
 import Sal.MRDTs.GC.Refinement
+import Sal.MRDTs.Instances.PeritextSidedStateGC
 import Sal.MRDTs.Metatheory.LegacyBridge
 
 /-! Build gate for the plain-signature reconstruction. -/
@@ -22,6 +23,8 @@ namespace Sal.MRDTs
 #check ConvergenceCertificate
 #check VerifiedMRDT
 #check StateGCCertificate
+#check StateGCProtocol
+#check StateGCProtocol.refines
 #check HeadOnlyMergeCapability
 #check GC.Certificate
 #check GC.execution_refines_noGC
@@ -39,6 +42,7 @@ namespace Sal.MRDTs
 #check Instances.Migrated.embedRGA
 #check Instances.Migrated.sidedEmbedRGA
 #check Instances.Migrated.peritextEmbedRGA
+#check Instances.PeritextSided.stateGC
 
 example (D : MRDTSig) : Configuration D := initConfig D
 

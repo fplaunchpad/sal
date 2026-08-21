@@ -259,6 +259,17 @@ theorem lift_stepV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
       exact .mergeVirtual hh₁ hh₂ hv₁ hv₂ hvm hr₁ hr₂ _
         hN hL hvis hver hhead hparents
 
+theorem erase_stepV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    {C C' : OldConfiguration D} {l : Sal.ConditionedMRDTs.Label3 D}
+    (h : Sal.ConditionedMRDTs.Step3V D C l C') :
+    StepV (signature D) (virtualLCA D invEverywhere)
+      (eraseConfiguration C) (eraseLabel l) (eraseConfiguration C') := by
+  cases h with
+  | base h => exact .base (erase_step h)
+  | mergeVirtual hh₁ hh₂ hv₁ hv₂ hvm hr₁ hr₂ C' hN hL hvis hver hhead hparents =>
+      exact .mergeVirtual hh₁ hh₂ hv₁ hv₂ hvm hr₁ hr₂ _
+        hN hL hvis (by simpa [virtualLCA]) hhead hparents
+
 theorem lift_guardedStepV (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
     (G : Sal.ConditionedMRDTs.GenerationContract D)
     {C C' : Configuration (signature D)} {l : Label (signature D)}
