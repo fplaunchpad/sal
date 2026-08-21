@@ -38,6 +38,13 @@ theorem parentStep_wf {parents : Version → List Version}
     exact h b a hab
   exact hsub.wf Nat.lt_wfRel.wf
 
+theorem reaches_le {parents : Version → List Version}
+    (h : ∀ v p, p ∈ parents v → p < v)
+    {a b : Version} (r : Reaches parents a b) : a ≤ b := by
+  induction r with
+  | refl => exact Nat.le_refl _
+  | tail _ edge ih => exact ih.trans (Nat.le_of_lt (h _ _ edge))
+
 /-- Operational state of the version-DAG semantics.  All fields describe the
 shape and coherence of the execution itself; client safety is external. -/
 structure Configuration (D : MRDTSig) where

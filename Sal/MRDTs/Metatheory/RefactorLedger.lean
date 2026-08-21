@@ -14,6 +14,7 @@ namespace Sal.MRDTs
 #check initConfig
 #check Step
 #check VirtualLCAResolver
+#check canonicalVirtualLCA
 #check StepV
 #check GenerationContract
 #check MintCertifiedReach

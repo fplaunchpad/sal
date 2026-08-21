@@ -1,4 +1,5 @@
 import Sal.MRDTs.Framework.Certificates
+import Sal.MRDTs.Metatheory.VirtualLCA
 import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 
 /-! Observable correctness target for ternary MRDT configurations. -/
