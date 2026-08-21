@@ -3,10 +3,9 @@ import Mathlib.Data.List.Lex
 import Mathlib.Order.Basic
 
 /-!
-# The coordinate code kernel for the embedded-chain RGA
+# The coordinate-code kernel for embedded RGA
 
-Design: `Sal/ConditionedMRDTs/sal-mrdts.pdf`, Part II (design and encoding
-sections). A node's coordinate is the
+The paper's design and encoding sections define a node's coordinate as the
 concatenation, along its birth chain, of codewords `enc δ` for the timestamp
 deltas `δ = t − t_anchor ≥ 1`. Everything the datatype needs from the code is
 two properties:

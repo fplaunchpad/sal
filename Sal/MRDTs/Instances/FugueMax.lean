@@ -1,5 +1,5 @@
 import Sal.MRDTs.Instances.Fugue
-import Sal.MRDTs.RGA_Embed.SidedMax_ChainLex
+import Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex
 
 /-!
 # The FugueMax policy on the embedded-chain family: the positive twin
@@ -14,7 +14,7 @@ the positive twin of that refutation.
 **The realization**: the R-sibling order depends on the right
 origin, which is not a function of `(side, delta)`, so no re-banding of
 the sided alphabet realizes FugueMax. The realization is the
-kernel VARIANT alphabet `Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean`:
+kernel variant `Sal.MRDTs.Instances.RGAKernel.FugueMaxChainLex`:
 R entries carry the mint-time KEY of the right origin (`[0]` for end),
 R-siblings compare tags first (smaller tag = display-later right origin =
 earlier sibling) then deltas ascending; the L band is unchanged.

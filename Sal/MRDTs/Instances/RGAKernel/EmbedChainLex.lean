@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Embed.RGA_Embed_ReadSide
+import Sal.MRDTs.Instances.RGAKernel.EmbedRead
 
 /-!
 # Embedded-chain RGA: the chain-lex theorem and the document characterization

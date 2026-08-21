@@ -1,5 +1,5 @@
 import Mathlib.Data.Nat.Size
-import Sal.MRDTs.RGA_Embed.Embed_Code
+import Sal.MRDTs.Instances.RGAKernel.Code
 
 /-!
 # The binary delta code: the entropy-optimal `embed-code` mint

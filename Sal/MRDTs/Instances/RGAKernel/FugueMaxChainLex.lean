@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Embed.Sided_ChainLex
+import Sal.MRDTs.Instances.RGAKernel.SidedChainLex
 
 /-!
 # The FugueMax chain-lex kernel: right-origin-tagged R entries

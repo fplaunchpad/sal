@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Embed.RGA_Embed_MRDT
+import Sal.MRDTs.Instances.RGAKernel.EmbedState
 
 /-!
 # Embedded-chain RGA: read side: display order, stability theorems, SPOT
@@ -170,13 +170,11 @@ def mkE (recs : List (ℕ × ℕ × coord)) : concrete_st ℕ :=
 /-- Shorthand: the unary codeword. -/
 def u (d : ℕ) : coord := unaryEnc d
 
-/-! ### The flat RGA's reorder witness: opposite verdict here
+/-! ### Deletion-order regression
 
-`Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_SPOT.lean` (`del_can_reorder_survivors`):
-state `[(5,100,root), (6,101,root), (8,102,under 5)]` reads `[6,5,8]`; the
-flat RGA's delete of `5` re-sorts the rehomed `8` by its own timestamp and
-reads `[8,6]`, the `[b,a,c] → [c,b]` anomaly. Here the coordinates are
-absolute, deletion touches no value, and the order is preserved. -/
+State `[(5,100,root), (6,101,root), (8,102,under 5)]` reads `[6,5,8]`.
+Absolute coordinates ensure that deleting `5` leaves the surviving order
+unchanged. -/
 
 def s_reorder : concrete_st ℕ := mkE [(5, 100, u 5), (6, 101, u 6), (8, 102, u 5 ++ u 3)]
 
@@ -187,7 +185,7 @@ theorem del_preserves_order :
     document (do_ unaryCode s_reorder (11, 1, .Del 5)) [5, 6, 8] = [6, 8] := by
   native_decide
 
-/-- Should-FAIL pin: the rehoming RGA's verdict on this witness, `[8, 6]`
+/-- Should-FAIL pin: deletion must not produce `[8, 6]`
 (survivors swapped), is exactly what this design does NOT compute. -/
 theorem del_preserves_order_not_rehoming :
     document (do_ unaryCode s_reorder (11, 1, .Del 5)) [5, 6, 8] ≠ [8, 6] := by

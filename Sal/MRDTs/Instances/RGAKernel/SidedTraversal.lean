@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Embed.Sided_ChainLex
+import Sal.MRDTs.Instances.RGAKernel.SidedChainLex
 
 /-!
 # The sided traversal theory, interval form

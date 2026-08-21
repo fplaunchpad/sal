@@ -1,4 +1,4 @@
-import Sal.MRDTs.RGA_Embed.RGA_Embed_ChainLex
+import Sal.MRDTs.Instances.RGAKernel.EmbedChainLex
 
 /-!
 # The sided chain-lex kernel: two-sidedness as a parameter

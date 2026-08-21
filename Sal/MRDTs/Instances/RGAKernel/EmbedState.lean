@@ -1,20 +1,17 @@
 import Mathlib.Data.List.Basic
 import Sal.Interfaces.Map_Extended
-import Sal.MRDTs.RGA_Embed.Embed_Code
+import Sal.MRDTs.Instances.RGAKernel.Code
 
 /-!
 # The embedded-chain RGA (`embed-code`): MRDT kernel
 
-Design and pen-and-paper proofs: `Sal/ConditionedMRDTs/sal-mrdts.pdf`, Part II;
-Python-validated artifact: `whiteboard/litmus/embed_tree.py` (battery clean
-except one-sided L19; DAG PBT 120/120 and 300/300; lockstep read-equal with
-the published tombstoned RGA 120/120).
+The paper develops this absolute-coordinate model before extending it with
+sides. The executable benchmark suite checks it against the tombstoned RGA
+baseline and the production implementation.
 
 This is the **absolute-coordinate model**: the state stores each live id's
 full coordinate, the concatenation of prefix-free codewords along its birth
-chain, as an immutable value. Compare `Sal/MRDTs/RGA_Rehoming/RGA_Tombstone_Free_MRDT.lean`
-(the proved flat RGA), whose state stores mutable anchors and whose proofs
-need resolve/rehome/climb algebra. Here:
+chain, as an immutable value. Here:
 
 * `Del` carries **no path** and rehomes **nothing**, deletion is domain
   removal, because coordinates are absolute (the isometric fold of the

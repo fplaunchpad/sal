@@ -1,6 +1,6 @@
 import Sal.MRDTs.Metatheory.Correctness
-import Sal.MRDTs.RGA_Embed.Sided_ChainLex
-import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
+import Sal.MRDTs.Instances.RGAKernel.SidedChainLex
+import Sal.MRDTs.Instances.RGAKernel.BinaryCode
 
 namespace Sal.MRDTs.Instances.SidedEmbedRGA
 

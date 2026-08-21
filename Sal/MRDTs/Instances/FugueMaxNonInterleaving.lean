@@ -1,5 +1,5 @@
 import Sal.MRDTs.Instances.FugueMax
-import Sal.MRDTs.RGA_Embed.Sided_Traversal
+import Sal.MRDTs.Instances.RGAKernel.SidedTraversal
 
 /-!
 # FugueMax forward non-interleaving: the condition-(1) discharge

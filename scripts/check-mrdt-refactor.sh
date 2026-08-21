@@ -14,3 +14,13 @@ if rg -n '\bsorry\b|sorryAx' \
   echo 'unproved production theorem remains' >&2
   exit 1
 fi
+
+if [ -e Sal/ConditionedMRDTs ] || [ -e Sal/MRDTs/RGA_Embed ]; then
+  echo 'historical MRDT source tree remains in the refactored checkout' >&2
+  exit 1
+fi
+
+if git ls-files | rg -q '^(Sal/ConditionedMRDTs|Sal/MRDTs/RGA_Embed)/'; then
+  echo 'historical MRDT source remains tracked' >&2
+  exit 1
+fi
