@@ -40,6 +40,15 @@ the compatibility contract.
 
 ## Other production instances
 
+- `Sal.MRDTs.Instances.TreeMove.verified`
+- `Sal.MRDTs.Instances.TreeMove.render_safe`
+- `Sal.MRDTs.Instances.TreeMove.sequentialSound`
+- `Sal.MRDTs.Instances.TreeMove.selfMove_rejected`
+- `Sal.MRDTs.Instances.TreeMove.GC.undoRedo_algorithm_refines`
+- `Sal.MRDTs.Instances.TreeMove.GC.collectPrefix_exact`
+- `Sal.MRDTs.Instances.TreeMove.GC.appendFresh_exact`
+- `Sal.MRDTs.Instances.TreeMove.GC.fullyStable_collectTrash_query`
+- `Sal.MRDTs.Instances.TreeMove.GC.refines`
 - `Sal.MRDTs.Instances.BoundedCounter.verified`
 - `Sal.MRDTs.Instances.MVR.verified`
 - `Sal.MRDTs.Instances.Queue.verified`

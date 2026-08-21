@@ -19,6 +19,8 @@ import Sal.MRDTs.Instances.PeritextMarkPairGC
 import Sal.MRDTs.Instances.SidedPeritextStateGC
 import Sal.MRDTs.Instances.SidedPeritextInteraction
 import Sal.MRDTs.Instances.SidedPeritextProtocol
+import Sal.MRDTs.Instances.TreeMove
+import Sal.MRDTs.Instances.TreeMoveGC
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
 
@@ -97,6 +99,19 @@ namespace Sal.MRDTs
 #check Instances.Queue.q_join_at
 #check Instances.Queue.queue_seq_sound
 #check Instances.Queue.verified
+#check Instances.TreeMove.applicable
+#check Instances.TreeMove.render_safe
+#check Instances.TreeMove.join
+#check Instances.TreeMove.sequentialSound
+#check Instances.TreeMove.selfMove_rejected
+#check Instances.TreeMove.verified
+#check Instances.TreeMove.GC.undoRedo_algorithm_refines
+#check Instances.TreeMove.GC.collectPrefix_exact
+#check Instances.TreeMove.GC.appendFresh_exact
+#check Instances.TreeMove.GC.fullyStable_collectTrash_query
+#check Instances.TreeMove.GC.protocol
+#check Instances.TreeMove.GC.combinedProtocol
+#check Instances.TreeMove.GC.refines
 #check Instances.EmbedRGA.generation
 #check Instances.EmbedRGA.convergence
 #check Instances.SidedEmbedRGA.generation

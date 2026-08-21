@@ -51,6 +51,25 @@ artifacts.
 
 ## 2. Follow-on formal work
 
+- [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
+  finite move-event state, union merge, timestamp replay, generation guard,
+  cycle safety, convergence, direct chronological tree refinement, and SPOTs.
+- [x] Prove that timestamp-ordered undo/insert/redo refines the canonical tree
+  renderer.
+- [x] Instantiate TreeMove stable-prefix log GC and quiescent trash-subtree GC,
+  package them as a `StateGCProtocol`, and compose that protocol with the
+  framework's asynchronous distributed commit-history collector.
+- [ ] Optimize TreeMove trash collection before the pending suffix becomes
+  empty. This is not required for correctness: the current collector waits
+  until the full local event log is stable before pruning the hidden subtree.
+- [ ] Build a verified structured-editor composition after the standalone
+  TreeMove runtime is implemented and measured: use TreeMove with
+  SidedEmbedRGA/FugueMax sibling positions to organize blocks, and a map from
+  block IDs to Peritext documents for rich-text contents. Prove the
+  cross-component generation policy, hierarchy and ordering safety,
+  move/edit/delete concurrency behavior, sequential refinement to a mutable
+  block editor, composition of commit and datatype-state GC, and constant
+  metadata after a fully stable empty-document collection.
 - [ ] Generalize the Tree-RGA observational refinement beyond root-only
   insertion and prove evolving-prefix/multi-replica visibility results.
 - [ ] Investigate a declarative arbitration replacement for the absorber
