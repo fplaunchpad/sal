@@ -2,6 +2,8 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Framework.Product
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.AddStore
+import Sal.MRDTs.Instances.FlatCounters
+import Sal.MRDTs.Instances.FlatGrowOnly
 import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.RGA
 import Sal.MRDTs.Instances.MVR
@@ -63,6 +65,11 @@ namespace Sal.MRDTs
 #check Instances.GSet.generation
 #check Instances.GSet.sequential
 #check Instances.GSet.safety
+#check Instances.FlatCounters.counterVerified
+#check Instances.FlatCounters.iocVerified
+#check Instances.FlatCounters.pnVerified
+#check Instances.FlatGrowOnly.gosetVerified
+#check Instances.FlatGrowOnly.gomapVerified
 #check Instances.BoundedCounter.BC
 #check Instances.BoundedCounter.BC_coreVCs3
 #check Instances.BoundedCounter.ra_linearizable
