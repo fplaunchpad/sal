@@ -23,7 +23,6 @@ certificates. The runtime implementation lives in [`runtime`](runtime).
 
 ```sh
 ./scripts/check-mrdt-refactor.sh
-cd runtime && npm test
 ```
 
 The historical conditioned framework and refuted MRDT experiments are retained
