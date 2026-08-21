@@ -1,4 +1,4 @@
-import Sal.MRDTs.Framework.Certificates
+import Sal.MRDTs.Metatheory.Correctness
 
 /-!
 # Optional datatype-state garbage collection

@@ -109,25 +109,4 @@ structure LinearMintHistory (D : MRDTSig)
   clocked : ∀ pre e post, ops = pre ++ e :: post →
     ∀ old ∈ pre, old.1 < e.1
 
-/-- Algebraic convergence is intentionally parameterized by the exact
-history predicate its proof consumes. -/
-structure ConvergenceCertificate (D : MRDTSig) where
-  History : Configuration D → Prop
-  Correct : Configuration D → Prop
-  sound : ∀ C, History C → Correct C
-
-/-- Complete implementer-supplied verification package.  The framework does
-not identify generation history, convergence history, and sequential honesty;
-the implementer supplies the necessary bridges explicitly. -/
-structure VerifiedMRDT (D : MRDTSig) where
-  generation : GenerationContract D
-  convergence : ConvergenceCertificate D
-  generation_entails_convergence : ∀ C,
-    generation.History C → convergence.History C
-  Spec : SequentialSpec (Op D.AppOp)
-  sequential : SequentialRefinement D Spec
-  sequential_of_mint : ∀ ops,
-    LinearMintHistory D generation.Guard ops → sequential.Honest ops
-  safety : SafetyCertificate D generation
-
 end Sal.MRDTs

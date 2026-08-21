@@ -1,5 +1,5 @@
 import Sal.MRDTs.Framework.StateGC
-import Sal.ConditionedMRDTs.Metatheory.LCA_Lemma
+import Sal.ConditionedMRDTs.Metatheory.Adequacy
 
 /-!
 # Temporary migration bridge
@@ -137,6 +137,15 @@ theorem lift_step (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
       exact .merge hh₁ hh₂ hv₁ hv₂ hlca' hvT hvm hr₁ hr₂ _
         hN hL hvis hver hhead hparents
   | query hs hv => exact .query hs hv
+
+/-- The observable RA-linearizability statement is unchanged by the
+proof-field migration. -/
+theorem raLinearizable_iff (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (C : Configuration (signature D)) :
+    IsRALinearizable (signature D) C ↔
+      Sal.ConditionedMRDTs.IsRALinearizable3
+        (liftConfiguration D invEverywhere C) := by
+  rfl
 
 end LegacyBridge
 

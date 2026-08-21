@@ -82,6 +82,24 @@ def verState (C : Configuration D) (v : Version) : Option D.State :=
 def verEvents (C : Configuration D) (v : Version) : Option (Set (Op D.AppOp)) :=
   (C.ver v).map Prod.snd
 
+/-- Replica-keyed projection consumed by the established binary
+linearizability definitions. -/
+def core (C : Configuration D) :
+    Sal.Emulation.Configuration D.toCRDTSig where
+  N := C.N
+  L := C.L
+  vis := C.vis
+  dom_eq := C.dom_eq
+  vis_src := C.vis_src
+  vis_tgt := C.vis_tgt
+  vis_causal := C.vis_causal
+  timestamps_distinct := C.timestamps_distinct
+  vis_total_same_replica := C.vis_total_same_replica
+
+@[simp] theorem core_events (C : Configuration D) : (core C).events = C.events := rfl
+
+@[simp] theorem core_vis (C : Configuration D) : (core C).vis = C.vis := rfl
+
 theorem parents_wf (C : Configuration D) :
     WellFounded (fun a b : Version => a ∈ C.parents b) :=
   parentStep_wf C.parents_lt
