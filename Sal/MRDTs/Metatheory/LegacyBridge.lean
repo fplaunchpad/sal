@@ -1,5 +1,6 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.ConditionedMRDTs.Metatheory.Adequacy
+import Sal.ConditionedMRDTs.Metatheory.UnifiedVerifiedMRDT
 
 /-!
 # Temporary migration bridge
@@ -24,6 +25,20 @@ def signature (D : OldSig) : MRDTSig where
   toCRDTSig := D.toCRDTSig
   mergeL := D.mergeL
   merge_init_slice := D.merge_init_slice
+
+def eraseLabel {D : OldSig} :
+    Sal.ConditionedMRDTs.Label3 D → Label (signature D)
+  | .createReplica r => .createReplica r
+  | .apply t r o => .apply t r o
+  | .merge r₁ r₂ => .merge r₁ r₂
+  | .query r q v => .query r q v
+
+def liftLabel {D : OldSig} :
+    Label (signature D) → Sal.ConditionedMRDTs.Label3 D
+  | .createReplica r => .createReplica r
+  | .apply t r o => .apply t r o
+  | .merge r₁ r₂ => .merge r₁ r₂
+  | .query r q v => .query r q v
 
 /-- Forget only the proof that every registered state satisfies `D.Inv`. -/
 def eraseConfiguration {D : OldSig}
@@ -89,11 +104,7 @@ theorem erase_step {D : OldSig} {C C' : OldConfiguration D}
     {l : Sal.ConditionedMRDTs.Label3 D}
     (h : Sal.ConditionedMRDTs.Step3 D C l C') :
     Step (signature D) (eraseConfiguration C)
-      (match l with
-        | .createReplica r => .createReplica r
-        | .apply t r o => .apply t r o
-        | .merge r₁ r₂ => .merge r₁ r₂
-        | .query r q v => .query r q v)
+      (eraseLabel l)
       (eraseConfiguration C') := by
   cases h with
   | createReplica fresh C' hN hL hvis hver hhead hparents =>
@@ -117,11 +128,7 @@ theorem lift_step (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
     (h : Step (signature D) C l C') :
     Sal.ConditionedMRDTs.Step3 D
       (liftConfiguration D invEverywhere C)
-      (match l with
-        | .createReplica r => .createReplica r
-        | .apply t r o => .apply t r o
-        | .merge r₁ r₂ => .merge r₁ r₂
-        | .query r q v => .query r q v)
+      (liftLabel l)
       (liftConfiguration D invEverywhere C') := by
   cases h with
   | createReplica fresh C' hN hL hvis hver hhead hparents =>
@@ -146,6 +153,121 @@ theorem raLinearizable_iff (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
       Sal.ConditionedMRDTs.IsRALinearizable3
         (liftConfiguration D invEverywhere C) := by
   rfl
+
+theorem mintHonest_iff (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (Guard : Op D.AppOp → D.State → Prop)
+    (C : Configuration (signature D)) :
+    MintHonest (signature D) Guard C ↔
+      Sal.ConditionedMRDTs.MintHonest D Guard
+        (Sal.ConditionedMRDTs.Configuration.core
+          (liftConfiguration D invEverywhere C)) := by
+  rfl
+
+/-- Temporary adapter for an existing production generation contract. -/
+noncomputable def generation (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D) :
+    GenerationContract (signature D) where
+  Guard := G.Guard
+  History := fun C => G.History (liftConfiguration D invEverywhere C)
+  history_of_mint := by
+    intro C h
+    apply G.history_of_mint
+    exact (mintHonest_iff D invEverywhere G.Guard C).mp h
+
+theorem lift_guardedStep (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D)
+    {C C' : Configuration (signature D)} {l : Label (signature D)}
+    (h : GuardedStep (signature D) (generation D invEverywhere G) C l C') :
+    Sal.ConditionedMRDTs.GuardedStep3 D G
+      (liftConfiguration D invEverywhere C) (liftLabel l)
+      (liftConfiguration D invEverywhere C') := by
+  cases h with
+  | nonApply raw hn =>
+      apply Sal.ConditionedMRDTs.GuardedStep3.nonApply
+      · exact lift_step D invEverywhere raw
+      · intro t r o heq
+        cases l with
+        | createReplica r' => cases heq
+        | apply t' r' o' => exact hn t' r' o' rfl
+        | merge r₁ r₂ => cases heq
+        | query r' q v => cases heq
+  | apply hh hv hg raw =>
+      exact Sal.ConditionedMRDTs.GuardedStep3.apply hh hv hg
+        (lift_step D invEverywhere raw)
+
+theorem lift_mintCertified (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D)
+    {C : Configuration (signature D)}
+    (h : MintCertifiedReach (signature D) (generation D invEverywhere G) C) :
+    Sal.ConditionedMRDTs.MintCertifiedReach3 D G (invEverywhere D.init)
+      (liftConfiguration D invEverywhere C) := by
+  induction h with
+  | init => exact .init
+  | @step C C' l _ hpre hstep hpost ih =>
+      exact .step ih
+        ((mintHonest_iff D invEverywhere G.Guard C).mp hpre)
+        (lift_guardedStep D invEverywhere G hstep)
+        ((mintHonest_iff D invEverywhere G.Guard C').mp hpost)
+
+def sequentialSpec {D : OldSig}
+    (S : Sal.ConditionedMRDTs.SequentialSpec (Op D.AppOp)) :
+    SequentialSpec (Op (signature D).AppOp) where
+  State := S.State
+  init := S.init
+  step := S.step
+
+def sequentialRefinement {D : OldSig}
+    {S : Sal.ConditionedMRDTs.SequentialSpec (Op D.AppOp)}
+    (R : Sal.ConditionedMRDTs.HistorySequentialRefinement D S) :
+    SequentialRefinement (signature D) (sequentialSpec S) where
+  Honest := R.Honest
+  Rel := R.Rel
+  init := R.init
+  sound := R.sound
+
+theorem linearMintHistory_iff {D : OldSig}
+    (Guard : Op D.AppOp → D.State → Prop) (ops : List (Op D.AppOp)) :
+    LinearMintHistory (signature D) Guard ops ↔
+      Sal.ConditionedMRDTs.LinearMintHistory D Guard ops := by
+  constructor
+  · intro h
+    exact ⟨h.guarded, h.clocked⟩
+  · intro h
+    exact ⟨h.guarded, h.clocked⟩
+
+def safety (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (G : Sal.ConditionedMRDTs.GenerationContract D)
+    (S : Sal.ConditionedMRDTs.SafetyCertificate D G) :
+    SafetyCertificate (signature D) (generation D invEverywhere G) where
+  Safe := S.Safe
+  Observable := S.Observable
+  preservation := by
+    intro C h
+    exact S.preservation (lift_mintCertified D invEverywhere G h)
+  consequence := S.consequence
+
+/-- Temporary end-to-end package adapter for flat production signatures.
+The only extra premise is the already-public bridge from clocked local minting
+to the sequential theorem's history discipline. -/
+noncomputable def verified (D : OldSig) (invEverywhere : ∀ s, D.Inv s)
+    (U : Sal.ConditionedMRDTs.UnifiedVerifiedMRDT D)
+    (sequential_of_mint : ∀ ops,
+      Sal.ConditionedMRDTs.LinearMintHistory D U.generation.Guard ops →
+        U.verified.seq.Honest ops) :
+    VerifiedMRDT (signature D) where
+  generation := generation D invEverywhere U.generation
+  convergence := {
+    sound := by
+      intro C h
+      apply (raLinearizable_iff D invEverywhere C).mpr
+      exact U.ra_linearizable (lift_mintCertified D invEverywhere U.generation h) }
+  Spec := sequentialSpec U.verified.Spec
+  sequential := sequentialRefinement U.verified.seq
+  sequential_of_mint := by
+    intro ops h
+    apply sequential_of_mint ops
+    exact (linearMintHistory_iff U.generation.Guard ops).mp h
+  safety := safety D invEverywhere U.generation U.safety
 
 end LegacyBridge
 

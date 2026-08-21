@@ -1,5 +1,6 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
+import Sal.MRDTs.Instances.MigratedCanaries
 import Sal.MRDTs.Metatheory.LegacyBridge
 
 /-! Build gate for the plain-signature reconstruction. -/
@@ -24,6 +25,11 @@ namespace Sal.MRDTs
 #check Instances.GSet.safety
 #check LegacyBridge.erase_step
 #check LegacyBridge.lift_step
+#check Instances.Migrated.boundedCounter
+#check Instances.Migrated.queue
+#check Instances.Migrated.embedRGA
+#check Instances.Migrated.sidedEmbedRGA
+#check Instances.Migrated.peritextEmbedRGA
 
 example (D : MRDTSig) : Configuration D := initConfig D
 
