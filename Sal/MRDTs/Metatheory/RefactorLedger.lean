@@ -8,6 +8,7 @@ import Sal.MRDTs.Instances.QueueCertificates
 import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.FugueMaxRALinearization
 import Sal.MRDTs.Instances.Peritext
+import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
 
@@ -94,6 +95,12 @@ namespace Sal.MRDTs
 #check Instances.ProductionRGA.sided
 #check Instances.Peritext.verified
 #check Instances.Peritext.render_sequentially_correct
+#check Instances.AddStore.verified
+#check Instances.SidedPeritext.coreGuard
+#check Instances.SidedPeritext.coreHonest_of_mint
+#check Instances.SidedPeritext.core_join_at
+#check Instances.SidedPeritext.verified
+#check Instances.SidedPeritext.sequentially_correct
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check VerifiedMRDT.sequentially_correct
