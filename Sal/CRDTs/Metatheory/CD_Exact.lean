@@ -59,7 +59,7 @@ characterizable walls:
   countermodel habitat.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -129,4 +129,4 @@ theorem cdVC_of_joinPeelVCs (hVC : CoreVCs D) (hL : LatticeVCsPlus D)
 
 end
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

@@ -34,7 +34,7 @@ two 30-line peel proofs), the CD discharge consumes the same
 trichotomy inclusion `h_key` below.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -146,4 +146,4 @@ theorem AWSet_ra_linearizable_via_cd
   ra_linearizable_of_core_lattice_cd AWSet_coreVCs
     AWSet_latticeVCsPlus AWSet_cdVC C hReach
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

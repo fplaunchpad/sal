@@ -6,7 +6,7 @@ each execution node. -/
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 theorem goodConfig_of_mintCertified {D : MRDTSig} {G : GenerationContract D}
     (join : ∀ C, G.History C → JoinLemma3At D C.core)

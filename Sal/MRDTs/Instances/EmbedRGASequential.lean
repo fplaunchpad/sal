@@ -18,7 +18,7 @@ minus the anchor's, and every existing id is below the fresh stamp.
 
 namespace Sal.MRDTs.Instances.EmbedRGA
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode PosChain coordOf coordOf_inj
   coordOf_append key_inj keyLt keyLe key keyLt_total keyLt_irrefl
   keyLt_asymm chainBefore chainBefore_total display_iff_chainBefore)

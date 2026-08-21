@@ -11,7 +11,7 @@ independent of datatype generation and safety certificates.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 variable {D : MRDTSig}
 

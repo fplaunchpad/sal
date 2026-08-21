@@ -5,7 +5,7 @@ import Mathlib.Data.Nat.Find
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 section
 variable {D : MRDTSig}

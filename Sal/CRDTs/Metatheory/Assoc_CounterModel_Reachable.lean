@@ -34,7 +34,7 @@ demarcation is update-inflationarity
 (`AWSetF_update_not_inflationary`).
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -449,4 +449,4 @@ theorem ra_linearizability_fails_for_lattice_CRDTs :
   ⟨AWSetF, flagC5, AWSetF_coreVCs, AWSetF_latticeVCs,
    flagC5_reachable, flagC5_not_ra_linearizable⟩
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

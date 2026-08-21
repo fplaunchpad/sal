@@ -1,4 +1,4 @@
-import Sal.Emulation.CRDT_TS
+import Sal.MRDTs.Framework.Base.CRDTExecution
 
 /-!
 # RA-linearizability for state-based CRDTs
@@ -13,7 +13,7 @@ unsound global-`lo` merge induction. Corrected bridges live in
 `RA_Lin_Of_Join.lean` and the conditioned ternary metatheory.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open CRDTSig
 
@@ -719,4 +719,4 @@ with the unsound global-`lo` induction. The corrected end-to-end route is
 
 end
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

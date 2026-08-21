@@ -18,7 +18,7 @@ case is `isCanonicalState_extend`; Def-lin follows via
 end to end.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -244,4 +244,4 @@ theorem ra_linearizable_of_core_join
 
 end
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

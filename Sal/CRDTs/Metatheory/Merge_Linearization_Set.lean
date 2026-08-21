@@ -70,7 +70,7 @@ direction, the one needed for sub-witness compatibility, is exactly
    peel, restoring the `loOn`-of-current-set invariant.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -1606,4 +1606,4 @@ theorem join_lemma_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
 
 end
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

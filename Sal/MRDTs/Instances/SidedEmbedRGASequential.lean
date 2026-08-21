@@ -29,7 +29,7 @@ for record; `sided_seq_read` drops the sentinel on both sides.
 
 namespace Sal.MRDTs.Instances.SidedEmbedRGA
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode keyLt sKey sBlock Side SChain
   PosSChain sidedCoordOf sidedCoordOf_append sidedCoordOf_inj unaryCode
   schainBefore schainBefore_inv sEntryBefore keyLt_total keyLt_irrefl

@@ -7,7 +7,7 @@ set_option maxHeartbeats 1000000
 
 namespace Sal.MRDTs.Instances.BoundedCounter
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 /-! ## §1  The mirror -/

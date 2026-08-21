@@ -5,7 +5,7 @@ import Sal.MRDTs.Metatheory.Correctness
 
 namespace Sal.MRDTs.GC
 
-open Classical Sal.Emulation Sal.MRDTs
+open Classical Sal.MRDTs.Foundation Sal.MRDTs
 
 variable {D : MRDTSig}
 

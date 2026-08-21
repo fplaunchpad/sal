@@ -13,7 +13,7 @@ semantics in the public framework.
 
 namespace Sal.MRDTs.GC
 
-open Classical Sal.Emulation Sal.MRDTs
+open Classical Sal.MRDTs.Foundation Sal.MRDTs
 
 variable (parents : Version → List Version)
 

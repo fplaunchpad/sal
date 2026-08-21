@@ -6,7 +6,7 @@ RGAs. -/
 
 namespace Sal.MRDTs.Instances.ProductionRGA
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode)
 
 variable {α : Type} [DecidableEq α] [Inhabited α]

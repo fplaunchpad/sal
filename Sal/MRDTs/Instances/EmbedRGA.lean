@@ -4,7 +4,7 @@ import Sal.MRDTs.RGA_Embed.Embed_Code_Binary
 
 namespace Sal.MRDTs.Instances.EmbedRGA
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Sal.EmbedRGA (OrderedPrefixCode keyLt keyLe key unaryCode binaryCode)
 
 set_option linter.unusedSectionVars false
@@ -594,7 +594,7 @@ theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r : ℕ) (el : α)
 
 /-- Honest histories. -/
 structure EHonestCore (Γ : OrderedPrefixCode)
-    (C : Sal.Emulation.Configuration (E Γ α).toCRDTSig) : Prop where
+    (C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig) : Prop where
   /-- Every delete's target was inserted `vis`-before it. -/
   del_has_ins : ∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true
@@ -610,7 +610,7 @@ structure EHonestCore (Γ : OrderedPrefixCode)
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
 theorem e_del_ins_mem {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
     (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
@@ -636,7 +636,7 @@ honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 unique decodability give `keys_inj`. -/
 theorem e_wf_of_enum {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))} {ρ : List (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
     (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
@@ -712,7 +712,7 @@ theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op (EOp α))}
 /-- Distinct honest inserts mint distinct keys (the standalone form of
 `e_wf_of_enum`'s third discharge, for use at the merge site). -/
 theorem e_keys_inj_events {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) :
     ∀ o₁ ∈ C.events, ∀ o₂ ∈ C.events, eIsIns o₁ = true → eIsIns o₂ = true →
       o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂) := by
@@ -736,7 +736,7 @@ nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
 theorem e_mergeL_mem {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op (EOp α))}
     {ρ₀ ρ₁ ρ₂ : List (Op (EOp α))}
     (hin₁ : ∀ a ∈ ev₁, a ∈ C.events) (hin₂ : ∀ a ∈ ev₂, a ∈ C.events)
@@ -874,7 +874,7 @@ independent under `rc = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
 theorem e_join_at {Γ : OrderedPrefixCode}
-    {C : Sal.Emulation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) : JoinLemma3At (E Γ α) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ _htr _hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical

@@ -54,7 +54,7 @@ excludes exactly the state-dependent RDTs (the paper's own OR-set
 among them) whose non-trivial `rc` the metatheorem is about.
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -1088,4 +1088,4 @@ on which the paper's own bottom-up proof breaks. -/
 theorem AWSet_joinLemma : JoinLemma AWSet :=
   join_lemma_of_peel AWSet_coreVCs AWSet_joinPeelVCs
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

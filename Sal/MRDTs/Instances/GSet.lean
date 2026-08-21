@@ -4,7 +4,7 @@ import Sal.MRDTs.Framework.StateGC
 
 namespace Sal.MRDTs.Instances.GSet
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 noncomputable def D : MRDTSig where

@@ -81,7 +81,7 @@ Docs:
 
 ## Notes
 
-- **The Lean namespace is `Sal.Emulation`**, because the shared
+- **The Lean namespace is `Sal.MRDTs.Foundation`**, because the shared
   execution-model layer (`CRDTSig`, `Configuration`, `Step`, labeled
   transition systems) lives in [`Sal/Emulation/`](../../Emulation/); this
   directory contains the metatheory proper.

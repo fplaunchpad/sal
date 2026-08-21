@@ -17,7 +17,7 @@ be demanded of real MRDTs.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 /-! ## §A. The update-layer VC fragment, and the σ-machinery re-hosted on it -/
@@ -82,7 +82,7 @@ theorem applySeq_swap_via_cond_comm_lift_u
 
 /-- Verbatim `Merge_Linearization_Set.lean:255` (`loOn_rc_no_succ`). -/
 theorem loOn_rc_no_succ_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     {T : Set (Op D.AppOp)}
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     {x y z : Op D.AppOp}
@@ -102,7 +102,7 @@ theorem loOn_rc_no_succ_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:276` (`transGen_loOnNe_structure`). -/
 theorem transGen_loOnNe_structure_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     {T : Set (Op D.AppOp)}
@@ -133,7 +133,7 @@ theorem transGen_loOnNe_structure_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:307` (`loOnNe_acyclic`). -/
 theorem loOnNe_acyclic_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -158,7 +158,7 @@ theorem loOnNe_acyclic_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:342` (`exists_loOn_maximal`). -/
 theorem exists_loOn_maximal_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -209,7 +209,7 @@ theorem exists_loOn_maximal_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:398` (`exists_loOn_respecting_perm`). -/
 theorem exists_loOn_respecting_perm_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -276,7 +276,7 @@ theorem exists_loOn_respecting_perm_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:472` (`applySeq_swap_loOn_incomparable`). -/
 theorem applySeq_swap_loOn_incomparable_u
-    (hU : UpdateVCs D) {C : Sal.Emulation.Configuration D}
+    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
     {ev : Set (Op D.AppOp)}
     {a b : Op D.AppOp} (h_ne : a ≠ b)
     (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
@@ -317,7 +317,7 @@ theorem applySeq_swap_loOn_incomparable_u
 
 /-- Verbatim `Merge_Linearization_Set.lean:513` (`applySeq_bubble_to_front_loOn`). -/
 theorem applySeq_bubble_to_front_loOn_u
-    (hU : UpdateVCs D) {C : Sal.Emulation.Configuration D}
+    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
     {ev : Set (Op D.AppOp)}
     (e : Op D.AppOp) (σ tail : List (Op D.AppOp))
     (h_e_in_C : e ∈ C.events)
@@ -369,7 +369,7 @@ theorem applySeq_bubble_to_front_loOn_u
 `loOn C ev`-respecting permutations of `ev` fold to the same state (no closure
 hypotheses). -/
 theorem convergence_on_u
-    (hU : UpdateVCs D) {C : Sal.Emulation.Configuration D}
+    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
     (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
@@ -623,7 +623,7 @@ theorem convergence_on_u
 
 /-- Verbatim `Merge_Linearization_Set.lean:992` (`isCanonicalState_unique`). -/
 theorem isCanonicalState_unique_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
+    {C : Sal.MRDTs.Foundation.Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h : IsCanonicalState C ev s) (h' : IsCanonicalState C ev s') :
     s = s' := by
@@ -634,7 +634,7 @@ theorem isCanonicalState_unique_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:1003` (`isCanonicalState_exists`). -/
 theorem isCanonicalState_exists_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -648,7 +648,7 @@ theorem isCanonicalState_exists_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:1532` (`loOn_empty_of_all_comm`). -/
 theorem loOn_empty_of_all_comm_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D} {ev : Set (Op D.AppOp)}
+    {C : Sal.MRDTs.Foundation.Configuration D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
@@ -666,7 +666,7 @@ theorem loOn_empty_of_all_comm_u (hU : UpdateVCs D)
 
 /-- Verbatim `Merge_Linearization_Set.lean:1544` (`isCanonicalState_of_all_comm`). -/
 theorem isCanonicalState_of_all_comm_u (hU : UpdateVCs D)
-    {C : Sal.Emulation.Configuration D}
+    {C : Sal.MRDTs.Foundation.Configuration D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events)
@@ -729,8 +729,8 @@ variable {D : MRDTSig}
 /-- **Timestamp uniqueness, contrapositive form**: two events of a binary
 configuration's universe with equal timestamps are equal (structural, from
 `timestamps_distinct`; instances consume it through the core projection). -/
-theorem _root_.Sal.Emulation.Configuration.ts_unique {D' : CRDTSig}
-    (C : Sal.Emulation.Configuration D') {a b : Op D'.AppOp}
+theorem _root_.Sal.MRDTs.Foundation.Configuration.ts_unique {D' : CRDTSig}
+    (C : Sal.MRDTs.Foundation.Configuration D') {a b : Op D'.AppOp}
     (ha : a ∈ C.events) (hb : b ∈ C.events) (h : a.1 = b.1) : a = b := by
   by_contra hne
   obtain ⟨r, s, hL, hs⟩ := ha

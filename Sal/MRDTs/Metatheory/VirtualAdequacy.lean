@@ -3,7 +3,7 @@ import Sal.MRDTs.Metatheory.VirtualLCA
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 

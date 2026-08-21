@@ -62,7 +62,7 @@ The per-CRDT discharge of `CDVC` for `AWSet` is in
 `update_inflation`).
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -682,4 +682,4 @@ theorem ra_linearizable_of_core_lattice_cd
 
 end
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

@@ -9,7 +9,7 @@ their inhabitants; none of them changes the raw operational semantics.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 /-- Every event passed its issuer guard at a causal enumeration of its

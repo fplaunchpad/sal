@@ -10,7 +10,7 @@ to the raw transition system.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 /-- A mergeable replicated datatype with an explicit LCA input to merge. -/
 structure MRDTSig extends CRDTSig where

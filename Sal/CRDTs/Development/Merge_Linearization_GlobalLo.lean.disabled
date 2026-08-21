@@ -33,7 +33,7 @@ the 24 VCs (`base_*`, `ind_*`, `inter_*`, `lem_0op`).
 The `restrictTo` helper is used inside the induction's
 inductive-case argument. -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -4537,4 +4537,4 @@ theorem ra_linearizable_of_vcs
         h_ev₁ h_ev₂ hN hL hvis ih
     | query _ _ => exact ih
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

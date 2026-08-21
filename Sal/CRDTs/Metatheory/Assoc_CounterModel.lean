@@ -79,7 +79,7 @@ drop inflationarity and it is false, *even with the full semilattice
 laws*. (The non-associative separator shows the same for associativity.)
 -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -656,4 +656,4 @@ theorem coreVCs_lattice_insufficient :
   ⟨AWSetF, AWSetF_coreVCs, AWSetF_latticeVCs,
    AWSetF_not_joinPeelVCs, AWSetF_not_joinLemma⟩
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

@@ -5,7 +5,7 @@ import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 /-- Every registered version is the datatype fold of a linearization of its
 event set respecting the generic MRDT arbitration order. -/
@@ -14,7 +14,7 @@ def IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
       listPermOf π E ∧
-      respects π (Sal.Emulation.lo C.core) ∧
+      respects π (Sal.MRDTs.Foundation.lo C.core) ∧
       applySeq D.toCRDTSig D.init π = s
 
 theorem isRALinearizable_iff_join (D : MRDTSig) (C : Configuration D) :

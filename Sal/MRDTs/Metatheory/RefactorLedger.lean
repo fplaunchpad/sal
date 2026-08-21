@@ -2,6 +2,7 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.ProductionRGA
+import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.GC.Refinement
 
 /-! Build gate for the plain-signature reconstruction. -/
@@ -52,6 +53,8 @@ namespace Sal.MRDTs
 #check Instances.SidedEmbedRGA.convergence
 #check Instances.ProductionRGA.embed
 #check Instances.ProductionRGA.sided
+#check Instances.Peritext.verified
+#check Instances.Peritext.render_sequentially_correct
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check VerifiedMRDT.sequentially_correct

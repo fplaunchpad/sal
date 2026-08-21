@@ -8,7 +8,7 @@ import Mathlib.Tactic
 
 /-! Merge-independent list/fold tools for the corrected set-relative theory. -/
 
-namespace Sal.Emulation
+namespace Sal.MRDTs.Foundation
 
 open Classical
 
@@ -79,4 +79,4 @@ theorem filter_ne_listPermOf
 end
 
 
-end Sal.Emulation
+end Sal.MRDTs.Foundation

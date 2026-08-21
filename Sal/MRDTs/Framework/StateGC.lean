@@ -10,7 +10,7 @@ representation can discard internal metadata.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 /-- General operational certificate for datatype-state GC.  It is deliberately
 separate from commit-history GC. `Physical` may contain knowledge, epoch maps,

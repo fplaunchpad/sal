@@ -23,7 +23,7 @@ for every version in the store, LCAs included):
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 section
@@ -37,7 +37,7 @@ def IsRALinearizableJoin (C : Configuration D) : Prop :=
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
       listPermOf π E ∧
-      respects π (Sal.Emulation.lo (Configuration.core C)) ∧
+      respects π (Sal.MRDTs.Foundation.lo (Configuration.core C)) ∧
       applySeq D.toCRDTSig D.init π = s
 
 /-- The reachability invariant: **every allocated version** holds the canonical
@@ -408,7 +408,7 @@ private theorem exists_listPermOf_subset3 {α : Type} {l : List α}
 
 /-- The ternary Join Lemma at a fixed configuration, for instances whose
 union has an enumeration of length `n`. -/
-private def JoinAt3 (C : Sal.Emulation.Configuration D.toCRDTSig) (n : ℕ) :
+private def JoinAt3 (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) (n : ℕ) :
     Prop :=
   ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State)
     (lU : List (Op D.AppOp)),
@@ -427,7 +427,7 @@ their honest LCA set `(E∖e) ∩ ↓e = ↓e∖{e}` with state `B`), and by `CD
 when `E = U`. As in the binary proof, no peel of `e` from `E`'s own
 linearization is ever demanded, the buried-event difficulty (A3) dissolves. -/
 private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
-    {C : Sal.Emulation.Configuration D.toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig}
     (h_tr : ∀ {a b c : Op D.AppOp},
       C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -854,7 +854,7 @@ private theorem exists_listPermOf_subsetF {α : Type} {l : List α}
     exact ⟨(h.2 a).mpr (hsub ha), decide_eq_true ha⟩
 
 /-- The Join Lemma at a fixed configuration and union-enumeration length. -/
-private def JoinAtF (C : Sal.Emulation.Configuration D.toCRDTSig) (n : ℕ) :
+private def JoinAtF (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) (n : ℕ) :
     Prop :=
   ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State)
     (lU : List (Op D.AppOp)),
@@ -870,7 +870,7 @@ private def JoinAtF (C : Sal.Emulation.Configuration D.toCRDTSig) (n : ℕ) :
 `JoinLemma_Of_CD3.side_decomposition3`: only the bundle changes; it consumed
 `update_core` alone). -/
 private theorem side_decompositionF (hVC : CoreVCs3CD D) (hCD : CDVC3 D)
-    {C : Sal.Emulation.Configuration D.toCRDTSig}
+    {C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig}
     (h_tr : ∀ {a b c : Op D.AppOp},
       C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a)

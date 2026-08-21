@@ -20,7 +20,7 @@ Adequacy of the set is `Adequacy.lean`; the discharges are `MRDT_Instances.lean`
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 open Classical
 
 section
@@ -60,7 +60,7 @@ structure CoreVCs3 (D : MRDTSig) : Prop where
 LCA version holds, by the LCA lemma, `LCA_Lemma.lean`), the ternary merge produces the
 canonical state of the union. -/
 def JoinLemma3 (D : MRDTSig) : Prop :=
-  ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
+  ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -76,7 +76,7 @@ def JoinLemma3 (D : MRDTSig) : Prop :=
 hypotheses (an honest-history contract, say) supply this directly to
 `goodConfig3_merge_at`; `JoinLemma3` is the `∀ C` closure. -/
 def JoinLemma3At (D : MRDTSig)
-    (C : Sal.Emulation.Configuration D.toCRDTSig) : Prop :=
+    (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) : Prop :=
   ∀ (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -88,7 +88,7 @@ def JoinLemma3At (D : MRDTSig)
     IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
 
 theorem JoinLemma3.at {D : MRDTSig} (h : JoinLemma3 D)
-    (C : Sal.Emulation.Configuration D.toCRDTSig) : JoinLemma3At D C :=
+    (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) : JoinLemma3At D C :=
   fun ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2 => h C ev₁ ev₂ s₀ s₁ s₂ htr hir h1 h2 hc1 hc2
 
 /-- **The delta contract**, the ternary replacement for the binary lattice
@@ -120,7 +120,7 @@ degenerate order leaves no antisymmetry to combine two halves. The merge on the 
 at its honest LCA: the true LCA set of `U∖e` and `↓e` is `(U∖e) ∩ ↓e = ↓e∖{e}`, whose
 canonical state is `B`. -/
 def CDVC3 (D : MRDTSig) : Prop :=
-  ∀ (C : Sal.Emulation.Configuration D.toCRDTSig) (U : Set (Op D.AppOp))
+  ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) (U : Set (Op D.AppOp))
     (A B : D.State) (e : Op D.AppOp),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -162,13 +162,13 @@ to canonical tuples at honest LCAs of a configuration. Field by field:
   (`t₀ = σ((E₁∩E₂)∖e)` is the decomposed LCA component). -/
 structure FeasibleDeltaVCs3 (D : MRDTSig) : Prop where
   feasible_init :
-    ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
+    ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
       (ev : Set (Op D.AppOp)) (s : D.State),
       (∀ a ∈ ev, a ∈ C.events) →
       IsCanonicalState C ev s →
       D.mergeL D.init D.init s = s
   feasible_local_redistribute :
-    ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
+    ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
       (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ B t₁ s₂ : D.State) (e : Op D.AppOp),
       (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
       (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -184,7 +184,7 @@ structure FeasibleDeltaVCs3 (D : MRDTSig) : Prop where
       D.mergeL s₀ (D.mergeL B t₁ (D.update B e)) s₂
         = D.mergeL B (D.mergeL s₀ t₁ s₂) (D.update B e)
   feasible_redistribute :
-    ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
+    ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
       (ev₁ ev₂ : Set (Op D.AppOp)) (t₀ t₁ t₂ B : D.State) (e : Op D.AppOp),
       (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
       (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -205,7 +205,7 @@ structure FeasibleDeltaVCs3 (D : MRDTSig) : Prop where
 `GoodConfig3.ver_causal` supplies. Counter-comparison merges need it: the weak
 (`¬commutes`) closure is defeated by commuting same-replica enables. -/
 def JoinLemma3F (D : MRDTSig) : Prop :=
-  ∀ (C : Sal.Emulation.Configuration D.toCRDTSig)
+  ∀ (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
     (ev₁ ev₂ : Set (Op D.AppOp)) (s₀ s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -229,7 +229,7 @@ is independent of the event set: the rc arm's `Fst_then_snd` hypothesis is
 refuted outright. -/
 theorem loOn_iff_of_rc_either {D' : CRDTSig}
     (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
-    (C : Sal.Emulation.Configuration D') (ev : Set (Op D'.AppOp))
+    (C : Sal.MRDTs.Foundation.Configuration D') (ev : Set (Op D'.AppOp))
     (e₁ e₂ : Op D'.AppOp) :
     loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ D'.commutes e₁ e₂ := by
   unfold loOn
@@ -244,7 +244,7 @@ theorem loOn_iff_of_rc_either {D' : CRDTSig}
 `ev`. -/
 theorem respects_transfer_of_rc_either {D' : CRDTSig}
     (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
-    {C : Sal.Emulation.Configuration D'} {ev ev' : Set (Op D'.AppOp)}
+    {C : Sal.MRDTs.Foundation.Configuration D'} {ev ev' : Set (Op D'.AppOp)}
     {ρ : List (Op D'.AppOp)}
     (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') := by
   unfold respects at h ⊢

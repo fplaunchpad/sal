@@ -10,7 +10,7 @@ it carries no proof that stored states satisfy a client invariant.
 
 namespace Sal.MRDTs
 
-open Sal.Emulation
+open Sal.MRDTs.Foundation
 
 abbrev Version : Type := Nat
 
@@ -92,7 +92,7 @@ def verEvents (C : Configuration D) (v : Version) : Option (Set (Op D.AppOp)) :=
 /-- Replica-keyed projection consumed by the established binary
 linearizability definitions. -/
 def core (C : Configuration D) :
-    Sal.Emulation.Configuration D.toCRDTSig where
+    Sal.MRDTs.Foundation.Configuration D.toCRDTSig where
   N := C.N
   L := C.L
   vis := C.vis
