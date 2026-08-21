@@ -9,6 +9,7 @@ import { DistributedReplica, syncReplicas } from '../../runtime/src/replica.js';
 import { compactibleSharedPeritext } from '../../runtime/src/compact-peritext.js';
 import { compactibleSidedPeritext } from '../../runtime/src/compact-peritext.js';
 import { compactiblePeritextRGA } from '../../runtime/src/compact-rga-peritext.js';
+import { environment } from '../lib/bench.mjs';
 
 const [kernel = 'rga', mode = 'both', preset = 'quick', topology = 'spine'] = process.argv.slice(2);
 const datatype = kernel === 'rga' ? compactiblePeritextRGA
@@ -68,6 +69,7 @@ if (JSON.stringify(datatype.read(back)) !== before) throw new Error('snapshot mi
 const result = { schemaVersion: 1, suite: 'peritext-kernel-gc',
   system: `peritext-${kernel}`, workload: `text-kernel-${topology}`, kernel, mode, preset,
   config: { ...cfg, topology },
+  environment: environment(),
   metrics: { operations: cfg.initial + cfg.cycles * (cfg.del + cfg.add),
     commitBatches: a.seq + b.seq, visibleChars: a.read().length,
     applyMs: Number(applyNs) / 1e6, stateGcMs, historyGcMs,

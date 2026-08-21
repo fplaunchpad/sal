@@ -29,5 +29,9 @@
   "gates": {
     "converged": true,
     "snapshot": true
+  },
+  "environment": {
+    "legacyResult": true,
+    "note": "environment was not recorded by the original workload harness"
   }
 }

@@ -18,6 +18,7 @@ import Sal.MRDTs.Instances.PeritextRenderGC
 import Sal.MRDTs.Instances.PeritextMarkPairGC
 import Sal.MRDTs.Instances.SidedPeritextStateGC
 import Sal.MRDTs.Instances.SidedPeritextInteraction
+import Sal.MRDTs.Instances.SidedPeritextProtocol
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
 
@@ -52,6 +53,11 @@ namespace Sal.MRDTs
 #check applySeq_prod
 #check StateGCProtocol.refines
 #check HeadOnlyMergeCapability
+#check Instances.SidedPeritext.StateGC.Protocol.protocol
+#check Instances.SidedPeritext.StateGC.Protocol.refines
+#check Instances.SidedPeritext.StateGC.Protocol.Represents.collectText
+#check Instances.SidedPeritext.StateGC.Protocol.Represents.trimDeleted
+#check Instances.SidedPeritext.StateGC.Protocol.Represents.dropMarkPair
 #check GC.Certificate
 #check GC.Certificate.ofMCAClosed
 #check GC.root_absent_when_dropped

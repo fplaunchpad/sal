@@ -22,7 +22,7 @@ artifacts.
   historical RGA experiment tree and standalone CRDT case-study artifacts.
 - [x] Add a release gate covering the production Lean ledger, forbidden
   historical imports/files, `sorry`/`sorryAx`, and the complete runtime suite.
-- [ ] Package Sided Peritext state GC as a concrete `StateGCProtocol`, not only
+- [x] Package Sided Peritext state GC as a concrete `StateGCProtocol`, not only
   component lemmas. Its validity relation must cover text retention and
   LiveGap evidence, trimmed deletion evidence, guarded mark-pair removal,
   Lamport-fresh continuations, cross-epoch translation, ordinary merge, and
@@ -30,7 +30,7 @@ artifacts.
 - [x] Audit the remaining tracked source/docs against the paper scope. Remove
   historical whiteboards and stale root notes after migrating any genuine open
   task here.
-- [ ] Run a clean-from-source Lean build, the runtime suite, repository checks,
+- [x] Run a clean-from-source Lean build, the runtime suite, repository checks,
   and benchmark schema validation. Publish a stable theorem manifest.
 - [ ] Fast-forward `main` to the verified refactor branch and push it.
 

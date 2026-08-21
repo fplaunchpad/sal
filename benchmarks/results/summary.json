@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-20T11:27:56.721Z",
+  "generatedAt": "2026-08-21T09:28:29.559Z",
   "results": [
     {
       "schemaVersion": 1,
@@ -1952,7 +1952,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:30.959Z"
+        "date": "2026-08-20T11:35:59.948Z"
       },
       "gates": {
         "converged": true
@@ -1960,13 +1960,13 @@
       "metrics": {
         "operations": 6000,
         "finalChars": 3604,
-        "syncTotalMs": 8.936749,
-        "syncMedianUs": 1248.292,
-        "syncP95Us": 2327.083,
+        "syncTotalMs": 8.882665,
+        "syncMedianUs": 1186.708,
+        "syncP95Us": 2355.583,
         "syncPayloadBytes": 98041,
-        "localOpMeanUs": 18.534625,
+        "localOpMeanUs": 17.843458333333334,
         "primarySaveBytes": 31796,
-        "runtimeGcMs": 2.7197080000000002
+        "runtimeGcMs": 2.589206
       },
       "detail": {
         "workload": "concurrent",
@@ -1983,7 +1983,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:30.959Z"
+          "date": "2026-08-20T11:35:59.948Z"
         },
         "finalChars": 3604,
         "gates": {
@@ -1992,12 +1992,12 @@
         "sync": {
           "count": 6,
           "warmupExcluded": 0,
-          "meanUs": 1489.4581666666668,
-          "medianUs": 1248.292,
-          "p95Us": 2327.083,
-          "p99Us": 2327.083,
-          "maxUs": 2327.083,
-          "totalMs": 8.936749
+          "meanUs": 1480.4441666666667,
+          "medianUs": 1186.708,
+          "p95Us": 2355.583,
+          "p99Us": 2355.583,
+          "maxUs": 2355.583,
+          "totalMs": 8.882665
         },
         "syncPayloadBytes": {
           "total": 98041,
@@ -2005,8 +2005,8 @@
         },
         "localOps": {
           "count": 6000,
-          "totalMs": 111.20775,
-          "meanUs": 18.534625
+          "totalMs": 107.06075,
+          "meanUs": 17.843458333333334
         },
         "saves": [
           {
@@ -2016,7 +2016,7 @@
           }
         ],
         "compaction": {
-          "ms": 4.410542,
+          "ms": 4.469917,
           "stats": {
             "nodesBefore": 4191,
             "nodesAfter": 4162,
@@ -2036,11 +2036,11 @@
             }
           ]
         },
-        "runtimeGcMsTotal": 2.7197080000000002,
+        "runtimeGcMsTotal": 2.589206,
         "memory": {
-          "baselineHeap": 4181832,
-          "peakHeapSampled": 18784008,
-          "retainedHeapAfterGc": 2024400,
+          "baselineHeap": 4181944,
+          "peakHeapSampled": 18784792,
+          "retainedHeapAfterGc": 2024408,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -2062,7 +2062,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:28.854Z"
+        "date": "2026-08-20T11:35:59.713Z"
       },
       "gates": {
         "converged": true
@@ -2070,13 +2070,13 @@
       "metrics": {
         "operations": 3000,
         "finalChars": 1804,
-        "syncTotalMs": 15.207623,
-        "syncMedianUs": 260.167,
-        "syncP95Us": 410.917,
+        "syncTotalMs": 14.714831,
+        "syncMedianUs": 245.208,
+        "syncP95Us": 384.958,
         "syncPayloadBytes": 63726,
-        "localOpMeanUs": 2.4944739999999994,
+        "localOpMeanUs": 2.5451096666666655,
         "primarySaveBytes": 15511,
-        "runtimeGcMs": 1.574747
+        "runtimeGcMs": 1.5589130000000002
       },
       "detail": {
         "workload": "concurrent",
@@ -2093,7 +2093,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:28.854Z"
+          "date": "2026-08-20T11:35:59.713Z"
         },
         "finalChars": 1804,
         "gates": {
@@ -2102,12 +2102,12 @@
         "sync": {
           "count": 60,
           "warmupExcluded": 0,
-          "meanUs": 253.46038333333334,
-          "medianUs": 260.167,
-          "p95Us": 410.917,
-          "p99Us": 423.166,
-          "maxUs": 423.166,
-          "totalMs": 15.207623
+          "meanUs": 245.2471833333333,
+          "medianUs": 245.208,
+          "p95Us": 384.958,
+          "p99Us": 413.458,
+          "maxUs": 413.458,
+          "totalMs": 14.714831
         },
         "syncPayloadBytes": {
           "total": 63726,
@@ -2115,8 +2115,8 @@
         },
         "localOps": {
           "count": 3000,
-          "totalMs": 7.483421999999997,
-          "meanUs": 2.4944739999999994
+          "totalMs": 7.635328999999997,
+          "meanUs": 2.5451096666666655
         },
         "saves": [
           {
@@ -2126,7 +2126,7 @@
           }
         ],
         "compaction": {
-          "ms": 2.298042,
+          "ms": 2.190291,
           "stats": {
             "nodesBefore": 2074,
             "nodesAfter": 2055,
@@ -2146,11 +2146,11 @@
             }
           ]
         },
-        "runtimeGcMsTotal": 1.574747,
+        "runtimeGcMsTotal": 1.5589130000000002,
         "memory": {
-          "baselineHeap": 4181904,
-          "peakHeapSampled": 13286304,
-          "retainedHeapAfterGc": 1341152,
+          "baselineHeap": 4181992,
+          "peakHeapSampled": 13285960,
+          "retainedHeapAfterGc": 1341072,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -2542,7 +2542,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:30.713Z"
+        "date": "2026-08-20T11:35:59.581Z"
       },
       "gates": {
         "converged": true
@@ -2550,13 +2550,13 @@
       "metrics": {
         "operations": 6000,
         "finalChars": 3604,
-        "syncTotalMs": 5.334792,
-        "syncMedianUs": 940.833,
-        "syncP95Us": 1080,
+        "syncTotalMs": 5.340291,
+        "syncMedianUs": 913.916,
+        "syncP95Us": 1188.625,
         "syncPayloadBytes": 98041,
-        "localOpMeanUs": 18.583937,
+        "localOpMeanUs": 17.925021333333333,
         "primarySaveBytes": 34165,
-        "runtimeGcMs": 2.7098739999999997
+        "runtimeGcMs": 3.5947500000000003
       },
       "detail": {
         "workload": "concurrent",
@@ -2573,7 +2573,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:30.713Z"
+          "date": "2026-08-20T11:35:59.581Z"
         },
         "finalChars": 3604,
         "gates": {
@@ -2582,12 +2582,12 @@
         "sync": {
           "count": 6,
           "warmupExcluded": 0,
-          "meanUs": 889.132,
-          "medianUs": 940.833,
-          "p95Us": 1080,
-          "p99Us": 1080,
-          "maxUs": 1080,
-          "totalMs": 5.334792
+          "meanUs": 890.0485,
+          "medianUs": 913.916,
+          "p95Us": 1188.625,
+          "p99Us": 1188.625,
+          "maxUs": 1188.625,
+          "totalMs": 5.340291
         },
         "syncPayloadBytes": {
           "total": 98041,
@@ -2595,8 +2595,8 @@
         },
         "localOps": {
           "count": 6000,
-          "totalMs": 111.50362200000001,
-          "meanUs": 18.583937
+          "totalMs": 107.550128,
+          "meanUs": 17.925021333333333
         },
         "saves": [
           {
@@ -2606,11 +2606,11 @@
           }
         ],
         "compaction": null,
-        "runtimeGcMsTotal": 2.7098739999999997,
+        "runtimeGcMsTotal": 3.5947500000000003,
         "memory": {
-          "baselineHeap": 4181840,
-          "peakHeapSampled": 24671088,
-          "retainedHeapAfterGc": 2021808,
+          "baselineHeap": 4181856,
+          "peakHeapSampled": 26102752,
+          "retainedHeapAfterGc": 2022080,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -2632,7 +2632,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:28.719Z"
+        "date": "2026-08-20T11:35:59.359Z"
       },
       "gates": {
         "converged": true
@@ -2640,13 +2640,13 @@
       "metrics": {
         "operations": 3000,
         "finalChars": 1804,
-        "syncTotalMs": 9.226795,
-        "syncMedianUs": 147.209,
-        "syncP95Us": 240.792,
+        "syncTotalMs": 8.605498,
+        "syncMedianUs": 138.792,
+        "syncP95Us": 221.041,
         "syncPayloadBytes": 63726,
-        "localOpMeanUs": 2.724014,
+        "localOpMeanUs": 2.6879723333333336,
         "primarySaveBytes": 16886,
-        "runtimeGcMs": 1.6265430000000005
+        "runtimeGcMs": 1.5900409999999994
       },
       "detail": {
         "workload": "concurrent",
@@ -2663,7 +2663,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:28.719Z"
+          "date": "2026-08-20T11:35:59.359Z"
         },
         "finalChars": 1804,
         "gates": {
@@ -2672,12 +2672,12 @@
         "sync": {
           "count": 60,
           "warmupExcluded": 0,
-          "meanUs": 153.77991666666665,
-          "medianUs": 147.209,
-          "p95Us": 240.792,
-          "p99Us": 373.167,
-          "maxUs": 373.167,
-          "totalMs": 9.226795
+          "meanUs": 143.42496666666668,
+          "medianUs": 138.792,
+          "p95Us": 221.041,
+          "p99Us": 338.166,
+          "maxUs": 338.166,
+          "totalMs": 8.605498
         },
         "syncPayloadBytes": {
           "total": 63726,
@@ -2685,8 +2685,8 @@
         },
         "localOps": {
           "count": 3000,
-          "totalMs": 8.172042,
-          "meanUs": 2.724014
+          "totalMs": 8.063917,
+          "meanUs": 2.6879723333333336
         },
         "saves": [
           {
@@ -2696,11 +2696,11 @@
           }
         ],
         "compaction": null,
-        "runtimeGcMsTotal": 1.6265430000000005,
+        "runtimeGcMsTotal": 1.5900409999999994,
         "memory": {
-          "baselineHeap": 4181960,
-          "peakHeapSampled": 11808472,
-          "retainedHeapAfterGc": 1329352,
+          "baselineHeap": 4181856,
+          "peakHeapSampled": 11945880,
+          "retainedHeapAfterGc": 1329344,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -3518,7 +3518,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:31.223Z"
+        "date": "2026-08-20T11:36:00.343Z"
       },
       "gates": {
         "converged": true
@@ -3526,13 +3526,13 @@
       "metrics": {
         "operations": 6000,
         "finalChars": 3604,
-        "syncTotalMs": 22.06325,
-        "syncMedianUs": 4628.292,
-        "syncP95Us": 5664.791,
+        "syncTotalMs": 20.914375,
+        "syncMedianUs": 4217.291,
+        "syncP95Us": 5134.458,
         "syncPayloadBytes": 198675,
-        "localOpMeanUs": 19.4487915,
+        "localOpMeanUs": 18.631278000000002,
         "primarySaveBytes": 20247,
-        "runtimeGcMs": 3.0372069999999995
+        "runtimeGcMs": 2.8401660000000004
       },
       "detail": {
         "workload": "concurrent",
@@ -3549,7 +3549,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:31.223Z"
+          "date": "2026-08-20T11:36:00.343Z"
         },
         "finalChars": 3604,
         "gates": {
@@ -3558,12 +3558,12 @@
         "sync": {
           "count": 6,
           "warmupExcluded": 0,
-          "meanUs": 3677.2083333333335,
-          "medianUs": 4628.292,
-          "p95Us": 5664.791,
-          "p99Us": 5664.791,
-          "maxUs": 5664.791,
-          "totalMs": 22.06325
+          "meanUs": 3485.7291666666665,
+          "medianUs": 4217.291,
+          "p95Us": 5134.458,
+          "p99Us": 5134.458,
+          "maxUs": 5134.458,
+          "totalMs": 20.914375
         },
         "syncPayloadBytes": {
           "total": 198675,
@@ -3571,8 +3571,8 @@
         },
         "localOps": {
           "count": 6000,
-          "totalMs": 116.69274899999999,
-          "meanUs": 19.4487915
+          "totalMs": 111.78766800000001,
+          "meanUs": 18.631278000000002
         },
         "saves": [
           {
@@ -3582,11 +3582,11 @@
           }
         ],
         "compaction": null,
-        "runtimeGcMsTotal": 3.0372069999999995,
+        "runtimeGcMsTotal": 2.8401660000000004,
         "memory": {
-          "baselineHeap": 4181728,
-          "peakHeapSampled": 31258304,
-          "retainedHeapAfterGc": 2441896,
+          "baselineHeap": 4181792,
+          "peakHeapSampled": 30936664,
+          "retainedHeapAfterGc": 2441576,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -3608,7 +3608,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:53:28.999Z"
+        "date": "2026-08-20T11:36:00.089Z"
       },
       "gates": {
         "converged": true
@@ -3616,13 +3616,13 @@
       "metrics": {
         "operations": 3000,
         "finalChars": 1804,
-        "syncTotalMs": 21.913793,
-        "syncMedianUs": 383.792,
-        "syncP95Us": 491.875,
+        "syncTotalMs": 21.832622,
+        "syncMedianUs": 372.458,
+        "syncP95Us": 567.416,
         "syncPayloadBytes": 116118,
-        "localOpMeanUs": 2.9013063333333347,
+        "localOpMeanUs": 2.918528999999999,
         "primarySaveBytes": 9648,
-        "runtimeGcMs": 1.691955
+        "runtimeGcMs": 1.4887930000000005
       },
       "detail": {
         "workload": "concurrent",
@@ -3639,7 +3639,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:53:28.999Z"
+          "date": "2026-08-20T11:36:00.089Z"
         },
         "finalChars": 1804,
         "gates": {
@@ -3648,12 +3648,12 @@
         "sync": {
           "count": 60,
           "warmupExcluded": 0,
-          "meanUs": 365.22988333333336,
-          "medianUs": 383.792,
-          "p95Us": 491.875,
-          "p99Us": 605.208,
-          "maxUs": 605.208,
-          "totalMs": 21.913793
+          "meanUs": 363.8770333333333,
+          "medianUs": 372.458,
+          "p95Us": 567.416,
+          "p99Us": 732.125,
+          "maxUs": 732.125,
+          "totalMs": 21.832622
         },
         "syncPayloadBytes": {
           "total": 116118,
@@ -3661,8 +3661,8 @@
         },
         "localOps": {
           "count": 3000,
-          "totalMs": 8.703919000000004,
-          "meanUs": 2.9013063333333347
+          "totalMs": 8.755586999999998,
+          "meanUs": 2.918528999999999
         },
         "saves": [
           {
@@ -3672,11 +3672,11 @@
           }
         ],
         "compaction": null,
-        "runtimeGcMsTotal": 1.691955,
+        "runtimeGcMsTotal": 1.4887930000000005,
         "memory": {
-          "baselineHeap": 4181872,
-          "peakHeapSampled": 14546472,
-          "retainedHeapAfterGc": 1577992,
+          "baselineHeap": 4181912,
+          "peakHeapSampled": 14377024,
+          "retainedHeapAfterGc": 1578176,
           "externalDelta": 40,
           "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
         }
@@ -9951,6 +9951,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -9972,9 +9976,9 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 30.13383,
-        "stateGcMs": 34.691749999999985,
-        "historyGcMs": 1.1547499999999786,
+        "applyMs": 30.03596,
+        "stateGcMs": 34.515625,
+        "historyGcMs": 1.1538749999999993,
         "durableStateBytes": 46072,
         "commits": 1,
         "identityRecords": 9200,
@@ -9984,6 +9988,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10017,6 +10025,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10050,6 +10062,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10083,6 +10099,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10116,6 +10136,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10149,6 +10173,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10182,6 +10210,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10215,6 +10247,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10248,6 +10284,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10269,7 +10309,7 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 29.992081,
+        "applyMs": 29.573296,
         "stateGcMs": 0,
         "historyGcMs": 0,
         "durableStateBytes": 104954,
@@ -10281,6 +10321,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10314,6 +10358,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10347,6 +10395,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10380,6 +10432,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10413,6 +10469,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10446,6 +10506,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10479,6 +10543,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10512,6 +10580,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10533,9 +10605,9 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 31.54779,
-        "stateGcMs": 21.07691600000001,
-        "historyGcMs": 1.1322080000000199,
+        "applyMs": 32.547752,
+        "stateGcMs": 20.596666999999997,
+        "historyGcMs": 1.1013750000000186,
         "durableStateBytes": 150561,
         "commits": 1,
         "identityRecords": 15200,
@@ -10545,6 +10617,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10578,6 +10654,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10611,6 +10691,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10644,6 +10728,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10677,6 +10765,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10710,6 +10802,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10743,6 +10839,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10776,6 +10876,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10797,7 +10901,7 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 32.25508,
+        "applyMs": 32.071998,
         "stateGcMs": 0,
         "historyGcMs": 0,
         "durableStateBytes": 150563,
@@ -10809,6 +10913,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10842,6 +10950,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10875,6 +10987,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10908,6 +11024,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10941,6 +11061,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -10974,6 +11098,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11007,6 +11135,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11040,6 +11172,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11061,9 +11197,9 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 39.296413,
-        "stateGcMs": 34.44454099999999,
-        "historyGcMs": 1.1913339999999835,
+        "applyMs": 38.055793,
+        "stateGcMs": 33.06841600000001,
+        "historyGcMs": 1.1717499999999745,
         "durableStateBytes": 80965,
         "commits": 1,
         "identityRecords": 9200,
@@ -11073,6 +11209,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11106,6 +11246,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11139,6 +11283,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11172,6 +11320,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11205,6 +11357,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11238,6 +11394,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11271,6 +11431,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11304,6 +11468,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11337,6 +11505,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11358,7 +11530,7 @@
         "operations": 21200,
         "commitBatches": 89,
         "visibleChars": 9200,
-        "applyMs": 39.269663,
+        "applyMs": 38.466291,
         "stateGcMs": 0,
         "historyGcMs": 0,
         "durableStateBytes": 135360,
@@ -11370,6 +11542,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11403,6 +11579,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11436,6 +11616,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11469,6 +11653,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11502,6 +11690,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11535,6 +11727,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -11568,6 +11764,10 @@
       "gates": {
         "converged": true,
         "snapshot": true
+      },
+      "environment": {
+        "legacyResult": true,
+        "note": "environment was not recorded by the original workload harness"
       }
     },
     {
@@ -20835,7 +21035,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:52:42.512Z"
+        "date": "2026-08-20T11:35:51.871Z"
       },
       "gates": {
         "textOk": true,
@@ -20844,11 +21044,11 @@
       "metrics": {
         "operations": 259778,
         "finalChars": 104852,
-        "applyTotalMs": 2092.433292,
-        "applyMedianUs": 4.5,
-        "applyP95Us": 23.708,
+        "applyTotalMs": 2225.636417,
+        "applyMedianUs": 5.291,
+        "applyP95Us": 25.167,
         "primarySaveBytes": 249973,
-        "retainedHeapBytes": 26652848
+        "retainedHeapBytes": 26652048
       },
       "detail": {
         "workload": "seq",
@@ -20859,7 +21059,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:52:42.512Z"
+          "date": "2026-08-20T11:35:51.871Z"
         },
         "ops": {
           "total": 259778,
@@ -20867,14 +21067,14 @@
         },
         "finalChars": 104852,
         "apply": {
-          "totalMs": 2092.433292,
+          "totalMs": 2225.636417,
           "count": 259778,
           "warmupExcluded": 1000,
-          "meanUs": 8.034896536799883,
-          "medianUs": 4.5,
-          "p95Us": 23.708,
-          "p99Us": 28.625,
-          "maxUs": 2206.292
+          "meanUs": 8.553103231341149,
+          "medianUs": 5.291,
+          "p95Us": 25.167,
+          "p99Us": 30.125,
+          "maxUs": 1868.666
         },
         "gates": {
           "textOk": true
@@ -20883,7 +21083,7 @@
           {
             "label": "shared-runs-serialized",
             "bytes": 249973,
-            "timeMs": 84.66275,
+            "timeMs": 80.861625,
             "note": "continuation-capable shared path graph with run-compressed provenance",
             "estimated": false
           }
@@ -20891,19 +21091,19 @@
         "loads": [
           {
             "label": "shared-runs-serialized",
-            "medianMs": 104.639875,
+            "medianMs": 101.354166,
             "runs": 5,
             "allMs": [
-              97.487792,
-              102.500916,
-              104.639875,
-              109.646541,
-              129.139125
+              95.555125,
+              100.006542,
+              101.354166,
+              106.781125,
+              126.041042
             ]
           }
         ],
         "compaction": {
-          "ms": 169.859917,
+          "ms": 166.438542,
           "stats": {
             "nodesBefore": 123537,
             "nodesAfter": 106400,
@@ -20920,19 +21120,19 @@
             {
               "label": "shared-runs-serialized+compacted",
               "bytes": 283153,
-              "timeMs": 102.888416,
+              "timeMs": 87.329083,
               "note": "native shared-path continuation snapshot after direct guarded GC"
             }
           ],
           "textOk": true
         },
         "memory": {
-          "baselineHeap": 75399992,
-          "peakHeapSampled": 142707184,
-          "retainedHeapAfterGc": 26652848,
+          "baselineHeap": 75400944,
+          "peakHeapSampled": 142877720,
+          "retainedHeapAfterGc": 26652048,
           "externalDelta": 2078264,
           "arrayBuffersDelta": 2078224,
-          "rssEnd": 332742656,
+          "rssEnd": 339279872,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -20950,7 +21150,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:37.248Z"
+        "date": "2026-08-20T11:35:45.880Z"
       },
       "gates": {
         "textOk": true,
@@ -20959,11 +21159,11 @@
       "metrics": {
         "operations": 24326,
         "finalChars": 21148,
-        "applyTotalMs": 17.210708,
-        "applyMedianUs": 0.375,
-        "applyP95Us": 2.042,
+        "applyTotalMs": 16.617792,
+        "applyMedianUs": 0.334,
+        "applyP95Us": 1.875,
         "primarySaveBytes": 62412,
-        "retainedHeapBytes": 5029288
+        "retainedHeapBytes": 5026752
       },
       "detail": {
         "workload": "seq",
@@ -20974,7 +21174,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:37.248Z"
+          "date": "2026-08-20T11:35:45.880Z"
         },
         "ops": {
           "total": 24326,
@@ -20982,14 +21182,14 @@
         },
         "finalChars": 21148,
         "apply": {
-          "totalMs": 17.210708,
+          "totalMs": 16.617792,
           "count": 24326,
           "warmupExcluded": 1000,
-          "meanUs": 0.6416166938180571,
-          "medianUs": 0.375,
-          "p95Us": 2.042,
-          "p99Us": 6.417,
-          "maxUs": 361.458
+          "meanUs": 0.6181103060962017,
+          "medianUs": 0.334,
+          "p95Us": 1.875,
+          "p99Us": 5.792,
+          "maxUs": 415.459
         },
         "gates": {
           "textOk": true
@@ -20998,7 +21198,7 @@
           {
             "label": "shared-runs-serialized",
             "bytes": 62412,
-            "timeMs": 14.314,
+            "timeMs": 13.698541,
             "note": "continuation-capable shared path graph with run-compressed provenance",
             "estimated": false
           }
@@ -21006,19 +21206,19 @@
         "loads": [
           {
             "label": "shared-runs-serialized",
-            "medianMs": 13.477458,
+            "medianMs": 13.292166,
             "runs": 5,
             "allMs": [
-              9.929042,
-              10.399291,
-              13.477458,
-              18.034875,
-              18.303833
+              9.6835,
+              9.781333,
+              13.292166,
+              17.986917,
+              18.596083
             ]
           }
         ],
         "compaction": {
-          "ms": 33.461834,
+          "ms": 32.512292,
           "stats": {
             "nodesBefore": 21267,
             "nodesAfter": 21186,
@@ -21035,19 +21235,19 @@
             {
               "label": "shared-runs-serialized+compacted",
               "bytes": 58550,
-              "timeMs": 20.998125,
+              "timeMs": 19.744541,
               "note": "native shared-path continuation snapshot after direct guarded GC"
             }
           ],
           "textOk": true
         },
         "memory": {
-          "baselineHeap": 10858288,
-          "peakHeapSampled": 22006416,
-          "retainedHeapAfterGc": 5029288,
+          "baselineHeap": 10858328,
+          "peakHeapSampled": 21970224,
+          "retainedHeapAfterGc": 5026752,
           "externalDelta": 194648,
           "arrayBuffersDelta": 194608,
-          "rssEnd": 103989248,
+          "rssEnd": 103940096,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -21065,7 +21265,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:31.522Z"
+        "date": "2026-08-20T11:35:45.607Z"
       },
       "gates": {
         "textOk": true,
@@ -21074,11 +21274,11 @@
       "metrics": {
         "operations": 26078,
         "finalChars": 21362,
-        "applyTotalMs": 22.240125,
-        "applyMedianUs": 0.542,
-        "applyP95Us": 1.792,
+        "applyTotalMs": 21.31925,
+        "applyMedianUs": 0.5,
+        "applyP95Us": 1.666,
         "primarySaveBytes": 59064,
-        "retainedHeapBytes": 5087384
+        "retainedHeapBytes": 5090640
       },
       "detail": {
         "workload": "seq",
@@ -21089,7 +21289,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:31.522Z"
+          "date": "2026-08-20T11:35:45.607Z"
         },
         "ops": {
           "total": 26078,
@@ -21097,14 +21297,14 @@
         },
         "finalChars": 21362,
         "apply": {
-          "totalMs": 22.240125,
+          "totalMs": 21.31925,
           "count": 26078,
           "warmupExcluded": 1000,
-          "meanUs": 0.7927842730680278,
-          "medianUs": 0.542,
-          "p95Us": 1.792,
-          "p99Us": 2.875,
-          "maxUs": 439.166
+          "meanUs": 0.7566375309035808,
+          "medianUs": 0.5,
+          "p95Us": 1.666,
+          "p99Us": 2.542,
+          "maxUs": 657.167
         },
         "gates": {
           "textOk": true
@@ -21113,7 +21313,7 @@
           {
             "label": "shared-runs-serialized",
             "bytes": 59064,
-            "timeMs": 14.443041,
+            "timeMs": 14.349667,
             "note": "continuation-capable shared path graph with run-compressed provenance",
             "estimated": false
           }
@@ -21121,19 +21321,19 @@
         "loads": [
           {
             "label": "shared-runs-serialized",
-            "medianMs": 14.158084,
+            "medianMs": 14.302625,
             "runs": 5,
             "allMs": [
-              10.361833,
-              10.621042,
-              14.158084,
-              18.58375,
-              20.166375
+              9.618583,
+              13.573958,
+              14.302625,
+              15.341375,
+              17.044834
             ]
           }
         ],
         "compaction": {
-          "ms": 36.177083,
+          "ms": 33.616333,
           "stats": {
             "nodesBefore": 21806,
             "nodesAfter": 21436,
@@ -21150,19 +21350,19 @@
             {
               "label": "shared-runs-serialized+compacted",
               "bytes": 60847,
-              "timeMs": 19.780042,
+              "timeMs": 18.475459,
               "note": "native shared-path continuation snapshot after direct guarded GC"
             }
           ],
           "textOk": true
         },
         "memory": {
-          "baselineHeap": 11591192,
-          "peakHeapSampled": 28468472,
-          "retainedHeapAfterGc": 5087384,
+          "baselineHeap": 11591232,
+          "peakHeapSampled": 28439720,
+          "retainedHeapAfterGc": 5090640,
           "externalDelta": 208664,
           "arrayBuffersDelta": 208624,
-          "rssEnd": 108920832,
+          "rssEnd": 108609536,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -21180,7 +21380,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:51.768Z"
+        "date": "2026-08-20T11:35:48.378Z"
       },
       "gates": {
         "textOk": true,
@@ -21189,11 +21389,11 @@
       "metrics": {
         "operations": 368209,
         "finalChars": 56769,
-        "applyTotalMs": 2237.754292,
-        "applyMedianUs": 4.5,
-        "applyP95Us": 14.5,
+        "applyTotalMs": 1775.092625,
+        "applyMedianUs": 4,
+        "applyP95Us": 12,
         "primarySaveBytes": 161046,
-        "retainedHeapBytes": 15653560
+        "retainedHeapBytes": 15676280
       },
       "detail": {
         "workload": "seq",
@@ -21204,7 +21404,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:51.768Z"
+          "date": "2026-08-20T11:35:48.378Z"
         },
         "ops": {
           "total": 368209,
@@ -21212,14 +21412,14 @@
         },
         "finalChars": 56769,
         "apply": {
-          "totalMs": 2237.754292,
+          "totalMs": 1775.092625,
           "count": 368209,
           "warmupExcluded": 1000,
-          "meanUs": 6.0521871386594555,
-          "medianUs": 4.5,
-          "p95Us": 14.5,
-          "p99Us": 20.458,
-          "maxUs": 960.208
+          "meanUs": 4.789293908918355,
+          "medianUs": 4,
+          "p95Us": 12,
+          "p99Us": 14.667,
+          "maxUs": 905.292
         },
         "gates": {
           "textOk": true
@@ -21228,7 +21428,7 @@
           {
             "label": "shared-runs-serialized",
             "bytes": 161046,
-            "timeMs": 49.173458,
+            "timeMs": 46.982417,
             "note": "continuation-capable shared path graph with run-compressed provenance",
             "estimated": false
           }
@@ -21236,19 +21436,19 @@
         "loads": [
           {
             "label": "shared-runs-serialized",
-            "medianMs": 53.351542,
+            "medianMs": 51.183709,
             "runs": 5,
             "allMs": [
-              50.535125,
-              50.662042,
-              53.351542,
-              57.138791,
-              70.146542
+              46.959625,
+              48.649792,
+              51.183709,
+              55.114333,
+              67.000708
             ]
           }
         ],
         "compaction": {
-          "ms": 97.465416,
+          "ms": 95.490208,
           "stats": {
             "nodesBefore": 84884,
             "nodesAfter": 58766,
@@ -21265,19 +21465,19 @@
             {
               "label": "shared-runs-serialized+compacted",
               "bytes": 179052,
-              "timeMs": 60.818709,
+              "timeMs": 57.506292,
               "note": "native shared-path continuation snapshot after direct guarded GC"
             }
           ],
           "textOk": true
         },
         "memory": {
-          "baselineHeap": 53659216,
-          "peakHeapSampled": 114475912,
-          "retainedHeapAfterGc": 15653560,
+          "baselineHeap": 53636464,
+          "peakHeapSampled": 114684000,
+          "retainedHeapAfterGc": 15676280,
           "externalDelta": 2945712,
           "arrayBuffersDelta": 2945672,
-          "rssEnd": 281133056,
+          "rssEnd": 280854528,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -22059,7 +22259,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:52:39.095Z"
+        "date": "2026-08-20T11:35:45.326Z"
       },
       "gates": {
         "textOk": true,
@@ -22068,11 +22268,11 @@
       "metrics": {
         "operations": 259778,
         "finalChars": 104852,
-        "applyTotalMs": 2316.263792,
+        "applyTotalMs": 2217.896917,
         "applyMedianUs": 4.666,
-        "applyP95Us": 28,
+        "applyP95Us": 24.625,
         "primarySaveBytes": 1182880,
-        "retainedHeapBytes": 41751136
+        "retainedHeapBytes": 41751976
       },
       "detail": {
         "workload": "seq",
@@ -22083,7 +22283,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:52:39.095Z"
+          "date": "2026-08-20T11:35:45.326Z"
         },
         "ops": {
           "total": 259778,
@@ -22091,14 +22291,14 @@
         },
         "finalChars": 104852,
         "apply": {
-          "totalMs": 2316.263792,
+          "totalMs": 2217.896917,
           "count": 259778,
           "warmupExcluded": 1000,
-          "meanUs": 8.898609433568542,
+          "meanUs": 8.526471921878985,
           "medianUs": 4.666,
-          "p95Us": 28,
-          "p99Us": 32.5,
-          "maxUs": 1949.875
+          "p95Us": 24.625,
+          "p99Us": 28.542,
+          "maxUs": 1937
         },
         "gates": {
           "textOk": true
@@ -22107,7 +22307,7 @@
           {
             "label": "rga-binary",
             "bytes": 1182880,
-            "timeMs": 128.778166,
+            "timeMs": 124.921833,
             "note": "continuation-capable packed insertion tree and tombstone set",
             "estimated": false
           }
@@ -22115,25 +22315,25 @@
         "loads": [
           {
             "label": "rga-binary",
-            "medianMs": 272.036375,
+            "medianMs": 267.088042,
             "runs": 5,
             "allMs": [
-              260.347334,
-              267.314708,
-              272.036375,
-              282.161583,
-              318.41175
+              257.049125,
+              260.593792,
+              267.088042,
+              273.386083,
+              304.048084
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 75399976,
-          "peakHeapSampled": 155371376,
-          "retainedHeapAfterGc": 41751136,
+          "baselineHeap": 75399664,
+          "peakHeapSampled": 155481400,
+          "retainedHeapAfterGc": 41751976,
           "externalDelta": 2078264,
           "arrayBuffersDelta": 2078224,
-          "rssEnd": 359858176,
+          "rssEnd": 365903872,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -22151,7 +22351,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:36.986Z"
+        "date": "2026-08-20T11:35:36.747Z"
       },
       "gates": {
         "textOk": true,
@@ -22160,11 +22360,11 @@
       "metrics": {
         "operations": 24326,
         "finalChars": 21148,
-        "applyTotalMs": 18.393791,
-        "applyMedianUs": 0.417,
-        "applyP95Us": 1.625,
+        "applyTotalMs": 19.353625,
+        "applyMedianUs": 0.416,
+        "applyP95Us": 1.958,
         "primarySaveBytes": 138358,
-        "retainedHeapBytes": 4152080
+        "retainedHeapBytes": 4151736
       },
       "detail": {
         "workload": "seq",
@@ -22175,7 +22375,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:36.986Z"
+          "date": "2026-08-20T11:35:36.747Z"
         },
         "ops": {
           "total": 24326,
@@ -22183,14 +22383,14 @@
         },
         "finalChars": 21148,
         "apply": {
-          "totalMs": 18.393791,
+          "totalMs": 19.353625,
           "count": 24326,
           "warmupExcluded": 1000,
-          "meanUs": 0.6886861442167539,
-          "medianUs": 0.417,
-          "p95Us": 1.625,
-          "p99Us": 4.833,
-          "maxUs": 428.708
+          "meanUs": 0.7300460001714825,
+          "medianUs": 0.416,
+          "p95Us": 1.958,
+          "p99Us": 5.834,
+          "maxUs": 461.625
         },
         "gates": {
           "textOk": true
@@ -22199,7 +22399,7 @@
           {
             "label": "rga-binary",
             "bytes": 138358,
-            "timeMs": 13.725958,
+            "timeMs": 13.4215,
             "note": "continuation-capable packed insertion tree and tombstone set",
             "estimated": false
           }
@@ -22207,25 +22407,25 @@
         "loads": [
           {
             "label": "rga-binary",
-            "medianMs": 18.423791,
+            "medianMs": 17.427125,
             "runs": 5,
             "allMs": [
-              16.146791,
-              16.74775,
-              18.423791,
-              19.005875,
-              21.383917
+              15.399375,
+              16.334209,
+              17.427125,
+              18.20025,
+              21.622333
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 10858704,
-          "peakHeapSampled": 20761408,
-          "retainedHeapAfterGc": 4152080,
+          "baselineHeap": 10858312,
+          "peakHeapSampled": 20738104,
+          "retainedHeapAfterGc": 4151736,
           "externalDelta": 194648,
           "arrayBuffersDelta": 194608,
-          "rssEnd": 101728256,
+          "rssEnd": 100909056,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -22243,7 +22443,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:31.245Z"
+        "date": "2026-08-20T11:35:36.529Z"
       },
       "gates": {
         "textOk": true,
@@ -22252,11 +22452,11 @@
       "metrics": {
         "operations": 26078,
         "finalChars": 21362,
-        "applyTotalMs": 34.521417,
-        "applyMedianUs": 0.625,
-        "applyP95Us": 5.542,
+        "applyTotalMs": 29.809,
+        "applyMedianUs": 0.583,
+        "applyP95Us": 4.084,
         "primarySaveBytes": 145183,
-        "retainedHeapBytes": 4438592
+        "retainedHeapBytes": 4439992
       },
       "detail": {
         "workload": "seq",
@@ -22267,7 +22467,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:31.245Z"
+          "date": "2026-08-20T11:35:36.529Z"
         },
         "ops": {
           "total": 26078,
@@ -22275,14 +22475,14 @@
         },
         "finalChars": 21362,
         "apply": {
-          "totalMs": 34.521417,
+          "totalMs": 29.809,
           "count": 26078,
           "warmupExcluded": 1000,
-          "meanUs": 1.2792827577956776,
-          "medianUs": 0.625,
-          "p95Us": 5.542,
-          "p99Us": 7,
-          "maxUs": 446.916
+          "meanUs": 1.0928962437195948,
+          "medianUs": 0.583,
+          "p95Us": 4.084,
+          "p99Us": 5.083,
+          "maxUs": 392.459
         },
         "gates": {
           "textOk": true
@@ -22291,7 +22491,7 @@
           {
             "label": "rga-binary",
             "bytes": 145183,
-            "timeMs": 14.999666,
+            "timeMs": 14.231667,
             "note": "continuation-capable packed insertion tree and tombstone set",
             "estimated": false
           }
@@ -22299,25 +22499,25 @@
         "loads": [
           {
             "label": "rga-binary",
-            "medianMs": 18.34225,
+            "medianMs": 17.399875,
             "runs": 5,
             "allMs": [
-              17.796375,
-              18.256333,
-              18.34225,
-              19.913333,
-              24.703875
+              15.931791,
+              17.161666,
+              17.399875,
+              18.711,
+              21.147458
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 11591176,
-          "peakHeapSampled": 22983560,
-          "retainedHeapAfterGc": 4438592,
+          "baselineHeap": 11591216,
+          "peakHeapSampled": 22908360,
+          "retainedHeapAfterGc": 4439992,
           "externalDelta": 208664,
           "arrayBuffersDelta": 208624,
-          "rssEnd": 104890368,
+          "rssEnd": 104595456,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -22335,7 +22535,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:48.738Z"
+        "date": "2026-08-20T11:35:41.177Z"
       },
       "gates": {
         "textOk": true,
@@ -22344,9 +22544,9 @@
       "metrics": {
         "operations": 368209,
         "finalChars": 56769,
-        "applyTotalMs": 2147.929167,
-        "applyMedianUs": 4.333,
-        "applyP95Us": 14.042,
+        "applyTotalMs": 2007.438,
+        "applyMedianUs": 4.125,
+        "applyP95Us": 12.959,
         "primarySaveBytes": 1440927,
         "retainedHeapBytes": 55126176
       },
@@ -22359,7 +22559,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:48.738Z"
+          "date": "2026-08-20T11:35:41.177Z"
         },
         "ops": {
           "total": 368209,
@@ -22367,14 +22567,14 @@
         },
         "finalChars": 56769,
         "apply": {
-          "totalMs": 2147.929167,
+          "totalMs": 2007.438,
           "count": 368209,
           "warmupExcluded": 1000,
-          "meanUs": 5.8048408100019335,
-          "medianUs": 4.333,
-          "p95Us": 14.042,
-          "p99Us": 18.917,
-          "maxUs": 2274
+          "meanUs": 5.424909637291026,
+          "medianUs": 4.125,
+          "p95Us": 12.959,
+          "p99Us": 15.125,
+          "maxUs": 2223.333
         },
         "gates": {
           "textOk": true
@@ -22383,7 +22583,7 @@
           {
             "label": "rga-binary",
             "bytes": 1440927,
-            "timeMs": 171.017541,
+            "timeMs": 165.374791,
             "note": "continuation-capable packed insertion tree and tombstone set",
             "estimated": false
           }
@@ -22391,25 +22591,25 @@
         "loads": [
           {
             "label": "rga-binary",
-            "medianMs": 359.888666,
+            "medianMs": 353.164917,
             "runs": 5,
             "allMs": [
-              354.86875,
-              355.851875,
-              359.888666,
-              375.908584,
-              436.964375
+              342.520042,
+              344.933333,
+              353.164917,
+              365.548875,
+              402.771833
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 53636480,
-          "peakHeapSampled": 161095784,
+          "baselineHeap": 53636448,
+          "peakHeapSampled": 160295976,
           "retainedHeapAfterGc": 55126176,
           "externalDelta": 2945712,
           "arrayBuffersDelta": 2945672,
-          "rssEnd": 357695488,
+          "rssEnd": 357433344,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -23799,7 +23999,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:52:46.166Z"
+        "date": "2026-08-20T11:35:59.216Z"
       },
       "gates": {
         "textOk": true,
@@ -23808,11 +24008,11 @@
       "metrics": {
         "operations": 259778,
         "finalChars": 104852,
-        "applyTotalMs": 2252.706208,
-        "applyMedianUs": 5.5,
-        "applyP95Us": 21.791,
+        "applyTotalMs": 2211.012541,
+        "applyMedianUs": 5.167,
+        "applyP95Us": 22.333,
         "primarySaveBytes": 323888,
-        "retainedHeapBytes": 49708032
+        "retainedHeapBytes": 49708128
       },
       "detail": {
         "workload": "seq",
@@ -23823,7 +24023,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:52:46.166Z"
+          "date": "2026-08-20T11:35:59.216Z"
         },
         "ops": {
           "total": 259778,
@@ -23831,14 +24031,14 @@
         },
         "finalChars": 104852,
         "apply": {
-          "totalMs": 2252.706208,
+          "totalMs": 2211.012541,
           "count": 259778,
           "warmupExcluded": 1000,
-          "meanUs": 8.652361166714327,
-          "medianUs": 5.5,
-          "p95Us": 21.791,
-          "p99Us": 24.917,
-          "maxUs": 1591.833
+          "meanUs": 8.495785263816863,
+          "medianUs": 5.167,
+          "p95Us": 22.333,
+          "p99Us": 25.708,
+          "maxUs": 1723.541
         },
         "gates": {
           "textOk": true
@@ -23847,7 +24047,7 @@
           {
             "label": "sided-policy-binary",
             "bytes": 323888,
-            "timeMs": 171.867,
+            "timeMs": 165.722083,
             "note": "lossless binary parent-link snapshot including the Fugue policy summary",
             "estimated": false
           }
@@ -23855,25 +24055,25 @@
         "loads": [
           {
             "label": "sided-policy-binary",
-            "medianMs": 144.597667,
+            "medianMs": 139.475583,
             "runs": 5,
             "allMs": [
-              122.20775,
-              127.340333,
-              144.597667,
-              147.274292,
-              183.456333
+              117.920083,
+              123.233209,
+              139.475583,
+              141.96575,
+              169.422333
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 75399312,
-          "peakHeapSampled": 173248392,
-          "retainedHeapAfterGc": 49708032,
+          "baselineHeap": 75400112,
+          "peakHeapSampled": 173235808,
+          "retainedHeapAfterGc": 49708128,
           "externalDelta": 2078264,
           "arrayBuffersDelta": 2078224,
-          "rssEnd": 391741440,
+          "rssEnd": 386138112,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -23891,7 +24091,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:37.513Z"
+        "date": "2026-08-20T11:35:52.428Z"
       },
       "gates": {
         "textOk": true,
@@ -23900,11 +24100,11 @@
       "metrics": {
         "operations": 24326,
         "finalChars": 21148,
-        "applyTotalMs": 27.490583,
-        "applyMedianUs": 0.709,
+        "applyTotalMs": 26.728417,
+        "applyMedianUs": 0.708,
         "applyP95Us": 2.042,
         "primarySaveBytes": 62912,
-        "retainedHeapBytes": 7254536
+        "retainedHeapBytes": 7256064
       },
       "detail": {
         "workload": "seq",
@@ -23915,7 +24115,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:37.513Z"
+          "date": "2026-08-20T11:35:52.428Z"
         },
         "ops": {
           "total": 24326,
@@ -23923,14 +24123,14 @@
         },
         "finalChars": 21148,
         "apply": {
-          "totalMs": 27.490583,
+          "totalMs": 26.728417,
           "count": 24326,
           "warmupExcluded": 1000,
-          "meanUs": 1.0232320586470034,
-          "medianUs": 0.709,
+          "meanUs": 1.0157967075366543,
+          "medianUs": 0.708,
           "p95Us": 2.042,
-          "p99Us": 5.291,
-          "maxUs": 432.417
+          "p99Us": 5.292,
+          "maxUs": 439.75
         },
         "gates": {
           "textOk": true
@@ -23939,7 +24139,7 @@
           {
             "label": "sided-policy-binary",
             "bytes": 62912,
-            "timeMs": 30.632417,
+            "timeMs": 30.881042,
             "note": "lossless binary parent-link snapshot including the Fugue policy summary",
             "estimated": false
           }
@@ -23947,25 +24147,25 @@
         "loads": [
           {
             "label": "sided-policy-binary",
-            "medianMs": 17.262792,
+            "medianMs": 17.015041,
             "runs": 5,
             "allMs": [
-              16.472375,
-              16.717667,
-              17.262792,
-              19.885084,
-              23.046667
+              15.89325,
+              16.224708,
+              17.015041,
+              19.654833,
+              22.609916
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 10858448,
-          "peakHeapSampled": 30506224,
-          "retainedHeapAfterGc": 7254536,
+          "baselineHeap": 10858320,
+          "peakHeapSampled": 30533632,
+          "retainedHeapAfterGc": 7256064,
           "externalDelta": 194648,
           "arrayBuffersDelta": 194608,
-          "rssEnd": 116981760,
+          "rssEnd": 117047296,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -23983,7 +24183,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:31.805Z"
+        "date": "2026-08-20T11:35:52.166Z"
       },
       "gates": {
         "textOk": true,
@@ -23992,11 +24192,11 @@
       "metrics": {
         "operations": 26078,
         "finalChars": 21362,
-        "applyTotalMs": 37.433,
+        "applyTotalMs": 34.989,
         "applyMedianUs": 0.917,
-        "applyP95Us": 2.833,
+        "applyP95Us": 2.583,
         "primarySaveBytes": 63113,
-        "retainedHeapBytes": 7480616
+        "retainedHeapBytes": 7480672
       },
       "detail": {
         "workload": "seq",
@@ -24007,7 +24207,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:31.805Z"
+          "date": "2026-08-20T11:35:52.166Z"
         },
         "ops": {
           "total": 26078,
@@ -24015,14 +24215,14 @@
         },
         "finalChars": 21362,
         "apply": {
-          "totalMs": 37.433,
+          "totalMs": 34.989,
           "count": 26078,
           "warmupExcluded": 1000,
-          "meanUs": 1.3631311109338862,
+          "meanUs": 1.2668058856368132,
           "medianUs": 0.917,
-          "p95Us": 2.833,
-          "p99Us": 5.667,
-          "maxUs": 614.625
+          "p95Us": 2.583,
+          "p99Us": 5.166,
+          "maxUs": 589.75
         },
         "gates": {
           "textOk": true
@@ -24031,7 +24231,7 @@
           {
             "label": "sided-policy-binary",
             "bytes": 63113,
-            "timeMs": 32.471708,
+            "timeMs": 31.174167,
             "note": "lossless binary parent-link snapshot including the Fugue policy summary",
             "estimated": false
           }
@@ -24039,25 +24239,25 @@
         "loads": [
           {
             "label": "sided-policy-binary",
-            "medianMs": 17.741459,
+            "medianMs": 17.239375,
             "runs": 5,
             "allMs": [
-              16.95875,
-              17.142042,
-              17.741459,
-              20.375417,
-              23.547625
+              16.879833,
+              16.996167,
+              17.239375,
+              19.929042,
+              22.933708
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 11591120,
-          "peakHeapSampled": 31973400,
-          "retainedHeapAfterGc": 7480616,
+          "baselineHeap": 11591592,
+          "peakHeapSampled": 31992992,
+          "retainedHeapAfterGc": 7480672,
           "externalDelta": 208664,
           "arrayBuffersDelta": 208624,
-          "rssEnd": 120143872,
+          "rssEnd": 120012800,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }
@@ -24075,7 +24275,7 @@
         "node": "v26.3.1",
         "platform": "darwin arm64",
         "exposeGc": true,
-        "date": "2026-08-20T10:51:55.337Z"
+        "date": "2026-08-20T11:35:55.643Z"
       },
       "gates": {
         "textOk": true,
@@ -24084,9 +24284,9 @@
       "metrics": {
         "operations": 368209,
         "finalChars": 56769,
-        "applyTotalMs": 2530.268,
-        "applyMedianUs": 5.292,
-        "applyP95Us": 16,
+        "applyTotalMs": 2231.011583,
+        "applyMedianUs": 4.917,
+        "applyP95Us": 14.625,
         "primarySaveBytes": 210153,
         "retainedHeapBytes": 50811568
       },
@@ -24099,7 +24299,7 @@
           "node": "v26.3.1",
           "platform": "darwin arm64",
           "exposeGc": true,
-          "date": "2026-08-20T10:51:55.337Z"
+          "date": "2026-08-20T11:35:55.643Z"
         },
         "ops": {
           "total": 368209,
@@ -24107,14 +24307,14 @@
         },
         "finalChars": 56769,
         "apply": {
-          "totalMs": 2530.268,
+          "totalMs": 2231.011583,
           "count": 368209,
           "warmupExcluded": 1000,
-          "meanUs": 6.842863641686342,
-          "medianUs": 5.292,
-          "p95Us": 16,
-          "p99Us": 20.375,
-          "maxUs": 1570.709
+          "meanUs": 6.024449455214878,
+          "medianUs": 4.917,
+          "p95Us": 14.625,
+          "p99Us": 18.375,
+          "maxUs": 1436.917
         },
         "gates": {
           "textOk": true
@@ -24123,7 +24323,7 @@
           {
             "label": "sided-policy-binary",
             "bytes": 210153,
-            "timeMs": 114.916709,
+            "timeMs": 109.760708,
             "note": "lossless binary parent-link snapshot including the Fugue policy summary",
             "estimated": false
           }
@@ -24131,25 +24331,25 @@
         "loads": [
           {
             "label": "sided-policy-binary",
-            "medianMs": 92.678916,
+            "medianMs": 88.532083,
             "runs": 5,
             "allMs": [
-              78.917208,
-              81.539459,
-              92.678916,
-              103.36525,
-              107.222459
+              75.934583,
+              77.757167,
+              88.532083,
+              104.171666,
+              104.251375
             ]
           }
         ],
         "compaction": null,
         "memory": {
-          "baselineHeap": 53659136,
-          "peakHeapSampled": 159726808,
+          "baselineHeap": 53659248,
+          "peakHeapSampled": 159723936,
           "retainedHeapAfterGc": 50811568,
           "externalDelta": 2945712,
           "arrayBuffersDelta": 2945672,
-          "rssEnd": 361873408,
+          "rssEnd": 363102208,
           "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
         }
       }

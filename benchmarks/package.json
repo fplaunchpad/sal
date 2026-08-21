@@ -9,7 +9,8 @@
     "bench:full": "node run.mjs --full",
     "bench:peritext-paper": "node tools/run-peritext-paper.mjs 3",
     "bench:peritext-paper:smoke": "node tools/run-peritext-paper.mjs 1 --smoke",
-    "summarize": "node tools/normalize.mjs && node tools/summarize.mjs"
+    "summarize": "node tools/normalize.mjs && node tools/summarize.mjs",
+    "validate": "node tools/validate-results.mjs"
   },
   "dependencies": {
     "@automerge/automerge": "^3.3.2",
