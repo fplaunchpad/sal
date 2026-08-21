@@ -4,13 +4,9 @@ import Sal.MRDTs.Instances.PeritextRender
 /-!
 # Marks-layer GC for Peritext over the embed compaction stack
 
-Design + Python validation: `whiteboard/marks-gc-note.md` (H-A, retention
-roots, 2000/2000 trials) and `whiteboard/litmus/marks_gc_check.py`.  This file
-mechanizes the surviving attack's obligations O1–O3 (§8 of the note); O4 (the
-A3 guarded pair-drop) is `PeritextEmbed_MarksGC_A3.lean`.  O5 (the settled-cut
-protocol half) is the already-tracked residue of the re-coding cluster
-(`EmbedRGA_Recoding.lean` §6, `EmbedRGA_CompatChain.lean` `(⋆)`) and is NOT
-taken on here.
+This file mechanizes the text/mark retention obligations O1–O3. The guarded
+add/remove pair collector is proved in `PeritextMarkPairGC.lean`; frontier and
+cross-epoch obligations are packaged separately by the state-GC protocol.
 
 * **O1** (`KeepSpec` / `keepSPM`): the retention-roots relabeling is a
   `StablePrefixMap` whose `Rest` is the KEPT coordinate set, live ∪

@@ -12,7 +12,7 @@
 // not block typing, unlike synchronous localStorage), large-quota, stores
 // structured records keyed by gid, and runs in a Web Worker. It is LOCAL-ONLY
 // (the relay/hub still moves bytes) and evictable unless
-// navigator.storage.persist() is called. See whiteboard/collab-design-note.md
+// navigator.storage.persist() is called by the application shell.
 // section 7.1.
 //
 // TESTABILITY: the store logic is written over a tiny async KV so it is unit

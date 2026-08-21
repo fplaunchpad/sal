@@ -36,9 +36,8 @@ The runtime's theorems are about the CRDT semantics (convergence up to `≈`, th
 GC preserving reads under a certified cut). This demo does not re-prove them; it
 exercises the JS runtime that mirrors them and asserts the observable
 consequences (equal reads, reads unchanged by GC, git round-trip).
-`../whiteboard/verification-distance.md` is the layer-by-layer accounting of
-how far the deployed editor sits from the proofs, what keeps each testing
-bridge honest, and what would shrink the distance.
+The root README records how the deployed editor relates to the Lean proofs and
+which testing bridges remain trusted.
 
 ## Architecture
 

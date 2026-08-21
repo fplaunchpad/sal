@@ -18,7 +18,7 @@ The datatype theorems are parametric in the code, so we package the two
 properties as `OrderedPrefixCode` and prove the datatype against the
 structure. This file provides the structure and its simplest inhabitant, the
 **unary code** `enc d = replicate d true ++ [false]`, the Lean twin of the
-whiteboard's `embed-tree` mint `I(t) = (1 − 2⁻ᵗ, 1 − ¾·2⁻ᵗ)`. The
+EmbedRGA mint `I(t) = (1 − 2⁻ᵗ, 1 − ¾·2⁻ᵗ)`. The
 entropy-optimal binary delta code (`embed-code`'s
 `C(δ) = 1^(L−1) 0 (δ minus its leading bit)`) is a second inhabitant to be
 added later; nothing downstream changes when it lands.

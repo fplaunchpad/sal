@@ -4,10 +4,6 @@ import Sal.MRDTs.Instances.EmbedRGA
 # Peritext: the DOCUMENT-ORDER mark read model, and the leak the tree-ancestry
 read hides
 
-Companion design + validation: `whiteboard/peritext-read-model-note.md` (§8 gives
-the exact theorem statements) and the executable reference
-`whiteboard/litmus/peritext_read_model.py` (passes end to end).
-
 A `mark_*_no_leak` theorem asserting formatting never leaks under deletion is
 false for the `Peritext_Composed/` frozen-path read (`Peritext_Composed/MarkIntent.lean`
 states the honest containment bound `mark_*_within_recorded_ancestry` in its

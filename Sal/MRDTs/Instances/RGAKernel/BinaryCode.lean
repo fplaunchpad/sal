@@ -5,7 +5,7 @@ import Sal.MRDTs.Instances.RGAKernel.Code
 # The binary delta code: the entropy-optimal `embed-code` mint
 
 The second inhabitant of `OrderedPrefixCode` (design doc §5,
-`whiteboard/litmus/embed_tree.py` `EmbedTreeCode.C`):
+the executable EmbedRGA encoding):
 
 ```
 C(δ) = 1^(L−1) ++ 0 ++ (δ with its leading bit removed),   L = bitlength δ

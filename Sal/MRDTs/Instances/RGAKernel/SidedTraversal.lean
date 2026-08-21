@@ -17,13 +17,9 @@ chains (`schainBefore_trans`). Together with the kernel's
 contiguous display interval, split by the node into an L-headed left part
 and an R-headed right part.
 
-A recursive traversal EMISSION function was designed and deliberately not
-built here: every Lean consumer (the non-interleaving discharges in
-`MRDT_Instances/SidedRGA/SidedRGA_NonInterleaving.lean`) needs only the
-interval form, and the executable statement traversal(state) = display is
-machine-checked in `whiteboard/litmus/traversal_check.py` (12 directed
-cases, 1800 randomized states, both kernels, all clean). Design:
-`whiteboard/fugue-maximal-noninterleaving.md` section 9.
+A recursive traversal emission function is unnecessary here: every Lean
+consumer needs only this interval form, while the runtime conformance corpus
+checks the executable traversal against the reviewed Fugue cases.
 -/
 
 namespace Sal.EmbedRGA

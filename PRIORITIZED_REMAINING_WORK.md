@@ -27,7 +27,7 @@ artifacts.
   LiveGap evidence, trimmed deletion evidence, guarded mark-pair removal,
   Lamport-fresh continuations, cross-epoch translation, ordinary merge, and
   virtual-LCA/head-only merge.
-- [ ] Audit the remaining tracked source/docs against the paper scope. Remove
+- [x] Audit the remaining tracked source/docs against the paper scope. Remove
   historical whiteboards and stale root notes after migrating any genuine open
   task here.
 - [ ] Run a clean-from-source Lean build, the runtime suite, repository checks,
@@ -60,6 +60,7 @@ artifacts.
 
 ## 3. Repository automation
 
-- [ ] Add hosted CI for the release gate and benchmark schema checks.
+- [x] Add hosted CI for the release gate. Add benchmark schema checks to that
+  workflow when the repeated-result publication format is frozen.
 - [ ] Export stable theorem/runtime/benchmark manifests for the paper repository
   without duplicating development tasks there.

@@ -35,7 +35,6 @@ Notes:
   asynchronously without any browser online.
 - `html_handling = "none"` keeps asset URLs verbatim (the import map depends
   on exact paths).
-- What of this is actually verified: see
-  `../../whiteboard/verification-distance.md` (the deployed editor is a
-  tested mirror of the Lean proofs; the relay is deliberately outside the
+- The root README records what is verified (the deployed editor is a tested
+  mirror of the Lean proofs; the relay is deliberately outside the
   TCB, but commits are unauthenticated).

@@ -6,9 +6,7 @@ import Sal.MRDTs.Instances.RGAKernel.SidedChainLex
 Weidner-Kleppmann Definition 6 (arXiv:2305.00583v3): FugueMax is Fugue
 with the tree traversal visiting right-side siblings in the REVERSE order
 of their right origins, ties by ascending ID; left-side siblings stay in
-ascending ID order. The Python validation is
-`whiteboard/litmus/fuguemax_check.py`; the design section is appended to
-`whiteboard/fugue-maximal-noninterleaving.md`.
+ascending ID order.
 
 The realization decision (machine-witnessed in Python by the `mirror`
 control): the R-sibling order depends on the right origin, which is not a
@@ -981,8 +979,7 @@ example : keyLt (sKey (fmCoordOf unaryCode [.R [0] 1, .L 20]))
 
 The two marker-theorem consumers the backward discharge needs: the
 before-side twin of `fm_ext_after_is_R`, and the divergence inversion for
-same-parent R-siblings. Design: `whiteboard/fugue-maximal-noninterleaving.md`
-§9.7.8 item 2. -/
+same-parent R-siblings. -/
 
 /-- Order congruence under a common prefix (the append form of
 `fmChainBefore_cons`). -/

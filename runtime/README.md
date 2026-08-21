@@ -71,9 +71,8 @@ a.gc();                                 // keep-set commit GC over its own DAG
 - `src/frontier.js` -- THE ONE FRONTIER. `frontierOf(dag, head)`
   gives, per replica, its latest absorbed commit (its *evidence commit*);
   `stableCut(dag, head, registered, self)` intersects those event sets into
-  the largest cut this head can CERTIFY. This is exactly `AllHeardSince` /
-  `settledAt_of_allHeard` of
-  `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean` (see below).
+  the largest cut this head can certify. Its direct no-GC refinement is proved
+  in `Sal/MRDTs/GC/Refinement.lean`.
 - `src/sync.js` -- the delta/op WIRE protocol: content-
   addressed `Peer`s over SEPARATE stores exchange head frontiers and ship the
   ancestor-set difference as a delta, converging by merge (see below).
@@ -145,23 +144,20 @@ datatype is the only new piece (the parametricity payoff, proven directly in
   to the nearest survivor on its gravity side, GROWTH IS END-SIDE ONLY (an
   `endSide=after` end grows right over the newer-than-mark run; a `before` start
   is stable).
-- MATCHES THE VERIFIED MODEL exactly:
-  `whiteboard/litmus/peritext_read_model.py` (the executable
-  `DocumentOrderResolver`) and
-  `Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Embed/PeritextEmbed_MarkIntent.lean`
+- MATCHES THE VERIFIED MODEL in
+  `Sal/MRDTs/Instances/PeritextRender.lean`
   (`doc_no_backward_leak`, `doc_delete_can_respan`, the Ex1–8 renderings).
   `test/peritext.test.js` pins the Ex1–8 paper examples, the directed
   no-backward-leak (delete a bold start anchor; the boundary rehomes forward,
   earlier text stays plain, never a backward tree-ancestry leak),
   the gravity contrast (bold grows at its end, a link does not), the honest
   atomicity re-span (`doc_delete_can_respan`), and mark-permutation convergence,
-  each PASS with a `≠` FAIL companion. Expected values are EXTRACTED by
-  running the Python reference (invocation cited in the test header), never read
-  back from the JS implementation.
+  each PASS with a `≠` FAIL companion. Expected values are reviewed fixtures,
+  never read back from the JS implementation.
 - STATE COMPACTION FIRES for `compactiblePeritext`: the marks-layer GC of
-  `src/compact-peritext.js` (design and machine verdicts in
-  `whiteboard/marks-gc-note.md`, reference
-  semantics `whiteboard/litmus/marks_gc_check.py`). The keep-set is live ids ∪
+  `src/compact-peritext.js`, whose obligations are mechanized in
+  `Sal/MRDTs/Instances/PeritextRenderGC.lean` and
+  `Sal/MRDTs/Instances/PeritextMarkPairGC.lean`. The keep-set is live ids ∪
   mark boundary anchor ids ∪ declared in-flight anchors: retained dead anchors
   survive as re-coded dead records (still listed in `deleted`), so rehoming
   never loses a birth position; every other settled-dead record drops exactly
@@ -198,7 +194,7 @@ ship:
 
 - `eliasDeltaCode` (the DEFAULT, used by the exported `embedRGA`): the
   flipped Elias-delta code transliterated from the verified Lean instance
-  `eliasDeltaCode` in `Sal/MRDTs/RGA_Embed/Embed_Code_EliasDelta.lean`
+  by `Sal/MRDTs/Instances/RGAKernel/BinaryCode.lean`
   (`dEnc d = binEnc (size d) ++ (d minus its leading bit)`, header `binEnc`
   from `Embed_Code_Binary.lean`); codeword cost `log2 d + O(log log d)`.
   The kernel-checked example values from that file are pinned in
@@ -233,8 +229,7 @@ flip an order; the negative-control test demonstrates the flip via the
 returned `translate` is the lazy stable-prefix map
 `rho-hat(c) = rho(stab c) ++ rest c`.
 
-SPINE FUSION (opt-in via `opts.fuseSpines`, design note
-`whiteboard/embed-recoding-note.md`). A fusible spine is a
+SPINE FUSION (opt-in via `opts.fuseSpines`). A fusible spine is a
 maximal chain of dead below-cut nodes, each with exactly one child branch
 counting every known coordinate INCLUDING declared in-flight prefixes,
 and no in-flight op anchored at any spine node; it collapses to ONE level
@@ -253,7 +248,7 @@ per-step reads vs an uncompacted control; a run reports ~129 spines
 fused, ~182 levels removed, 0 guard skips under settled cuts).
 
 Measured on the josephg editing traces
-(`whiteboard/litmus/embed_compact_measure.py`, which mirrors the fusion
+(`benchmarks/models/embed_compact_measure.py`, which mirrors the fusion
 map and re-checks history-independence three ways plus display order on
 the fused coordinates), bits per live char, before / renumber-only /
 renumber+fusion: automerge-paper 2304 / 2076 / 1279 (1.8x), seph-blog1
@@ -274,8 +269,7 @@ lower-epoch side and the LCA payload into the newer epoch record by
 record, so replicas that never compact keep merging and their records are
 translated on ingest. SETTLED-CUT CONTRACT: sound only when the cut is
 settled at the compacting replica (all concurrency delivered:
-heard-from-everyone-since-the-cut, `whiteboard/stability-vc-note.md`
-section 2); the caller asserts it, and evidence certificates are a
+heard-from-everyone-since-the-cut); the caller asserts it, and evidence certificates are a
 follow-on. This shared-store `Runtime` still linearizes epochs; the
 first-class `DistributedReplica` (below) instead merges divergent epochs
 via the certificate-determined join (THE EPOCH DIAMOND).
@@ -284,7 +278,7 @@ via the certificate-determined join (THE EPOCH DIAMOND).
 
 `src/serialize.js` is the SHIPPED lossless serializer. `encode(state) -> Uint8Array`,
 `decode(bytes) -> state`. It builds the canonical RUN TABLE of the state
-(the run-table projection of `whiteboard/run-table-note.md`): decode every
+(the run-table projection measured by `benchmarks/models/run_table_measure.py`): decode every
 live record's coordinate into a shared kept tree, cut it
 into maximal FUSIBLE chains (a node's unique kept child at delta 1 and equal
 liveness, side vacuously R), and address each record as `(run-id, offset)`.
@@ -362,7 +356,8 @@ Yjs/Automerge's update-bytes column).
 
 `replica.compactStable(opts)` uses a CHECKED certificate built from the frontier
 (`src/frontier.js`) in place of `replica.compact`'s ASSERTED settledness. The
-exact correspondence to `Sal/ConditionedMRDTs/Metatheory/EvidenceDischarge.lean`:
+correspondence to `Sal/MRDTs/GC/Protocol.lean` and
+`Sal/MRDTs/GC/Refinement.lean`:
 
 | runtime                                   | formal target                       |
 | ----------------------------------------- | ----------------------------------- |
@@ -472,8 +467,7 @@ identity in `DistributedReplica` is the SETTLED CUT plus its certificate, held i
 a CUT-INDEXED DAG (`src/epoch.js`) whose nodes are cuts and whose edges are
 compaction refinements and JOINS (`W = U ∪ V`), NOT a per-replica integer. A
 cross-epoch merge does not THROW: it is the certificate-determined join,
-validated (`whiteboard/epoch-protocol-note.md`) and mechanized
-(`Sal/.../EmbedRGA_EpochDiamond.lean`, `diamond_confluence` at s1). Two heads at
+validated by the runtime tests and mechanized in the MRDT state-GC modules. Two heads at
 INCOMPARABLE cuts merge by lifting both DOWN to their common base frame through
 the per-epoch INVERSE maps (`buildInverseTranslate`) and `merge3`-ing there; the
 merged read equals the never-compacted twin, with no coordination (both replicas
@@ -651,11 +645,10 @@ skin, not runtime machinery:
 
 ## Datatype ports are UNVERIFIED transliterations
 
-`embedRGA` ports the embedded-chain RGA from the Python model
-`whiteboard/litmus/embed_tree.py` (`EmbedTree`/`EmbedTreeCode`); `orset`
+`embedRGA` implements the embedded-chain RGA proved in
+`Sal/MRDTs/Instances/ProductionRGA.lean`; `orset`
 is a standard observed-remove set. Neither JS file is verified; they are
-pinned to the verified semantics by fixtures extracted by RUNNING the
-Python model (invocations recorded in `test/embed.test.js`): L1
+pinned to the verified semantics by reviewed fixtures: L1
 delete-reorder and the two sibling-splice fooling-pair worlds, which pin
 exactly the dead-ancestor coordinate-prefix behavior. A 300-scenario
 randomized differential run against the Python model was also performed

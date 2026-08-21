@@ -3,10 +3,6 @@ import Sal.MRDTs.Instances.RGAKernel.EmbedChainLex
 /-!
 # The sided chain-lex kernel: two-sidedness as a parameter
 
-Design: `whiteboard/sided-embed-design-note.md`; Python validation:
-`whiteboard/litmus/embed_sided.py` (battery clean, L19 flips under the
-Fugue policy, all-R fragment lockstep-exact with the one-sided embed).
-
 Chains become sequences of `(side, delta)` entries and the display rule
 generalizes from the prefix rule to the in-order rule: L-extensions,
 then the node, then R-extensions. The **marker formalization** makes

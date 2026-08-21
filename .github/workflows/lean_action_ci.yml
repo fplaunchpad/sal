@@ -1,4 +1,4 @@
-name: Lean Action CI
+name: Sal release gate
 
 on:
   push:
@@ -16,5 +16,8 @@ jobs:
           use-mathlib-cache: true
           build: false
           test: false
-      - name: Check all case-study files
-        run: ./run_files.sh Sal
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the plain MRDT framework and runtime
+        run: ./scripts/check-mrdt-refactor.sh

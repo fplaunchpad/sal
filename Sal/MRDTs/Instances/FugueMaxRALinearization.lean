@@ -5,8 +5,8 @@ import Sal.MRDTs.Instances.FugueMaxBackward
 
 `SidedRGA.lean`'s capstone `sided_embed_ra_linearizable3` covers plain sided
 coordinates (`sBlock`); the FugueMax realization (`SidedRGA_FugueMax.lean`)
-writes records over the VARIANT alphabet of
-`Sal/MRDTs/RGA_Embed/SidedMax_ChainLex.lean`, R entries carry an immutable
+writes records over the variant alphabet of
+`RGAKernel/FugueMaxChainLex.lean`; R entries carry an immutable
 right-origin tag (`fwTag`) before the delta code, which is a different block
 format, so RA-linearizability for the FM datatype needs a separate proof,
 which this file gives.

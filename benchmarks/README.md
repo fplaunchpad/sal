@@ -196,8 +196,8 @@ Historical development notes for the superseded diagnostic columns follow:
    BELOW this projection because the model deliberately charges the
    recoverable positional fields (per-record run-id and offset, and the
    parent-offset the tail-attachment lemma makes derivable) that a real
-   encoder stores positionally and drops (whiteboard/run-table-note.md
-   section 9.1). Reconciliation, not a bug in either: the shipped metadata
+   encoder stores positionally and drops. Reconciliation, not a bug in either:
+   the shipped metadata
    bit count == model total minus (rec_id + rec_off + hdr_poff), an
    identity asserted in the tests.
 
