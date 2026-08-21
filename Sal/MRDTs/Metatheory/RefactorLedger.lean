@@ -15,6 +15,10 @@ namespace Sal.MRDTs
 #check Step
 #check VirtualLCAResolver
 #check canonicalVirtualLCA
+#check StoreInv
+#check lca_events_of_storeInv
+#check storeInv_reachable
+#check storeInv_reachableV
 #check StepV
 #check GenerationContract
 #check MintCertifiedReach

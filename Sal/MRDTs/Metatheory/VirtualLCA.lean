@@ -1,4 +1,4 @@
-import Sal.MRDTs.Framework.Execution
+import Sal.MRDTs.Metatheory.StoreInvariant
 import Mathlib.Data.Nat.Find
 import Mathlib.Data.Finset.Sort
 import Mathlib.Data.Finset.Lattice.Fold
@@ -14,34 +14,6 @@ namespace Sal.MRDTs
 open Sal.Emulation
 
 variable {D : MRDTSig}
-
-theorem commonAnc_reaches_mca {parents : Version → List Version}
-    (hlt : ∀ v p, p ∈ parents v → p < v)
-    {S : Set Version} {w : Version} {x : Version}
-    (hx : x ∈ CommonAnc parents S w) :
-    ∃ m, IsMCA parents S w m ∧ Reaches parents x m := by
-  haveI hdec : DecidablePred
-      (fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y) :=
-    fun _ => Classical.dec _
-  have hxw : x ≤ w := reaches_le hlt hx.2
-  have hPz : Nat.findGreatest
-        (fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y) w
-          ∈ CommonAnc parents S w ∧
-      Reaches parents x (Nat.findGreatest
-        (fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y) w) :=
-    Nat.findGreatest_spec
-      (P := fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y)
-      (m := x) hxw ⟨hx, Relation.ReflTransGen.refl⟩
-  refine ⟨_, ⟨hPz.1, ?_⟩, hPz.2⟩
-  intro y hy hzy
-  have hPy : y ∈ CommonAnc parents S w ∧ Reaches parents x y :=
-    ⟨hy, hPz.2.trans hzy⟩
-  have hyw : y ≤ w := reaches_le hlt hy.2
-  have hyz : y ≤ Nat.findGreatest
-      (fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y) w := by
-    by_contra hlt'
-    exact Nat.findGreatest_is_greatest (Nat.not_le.mp hlt') hyw hPy
-  exact Nat.le_antisymm hyz (reaches_le hlt hzy)
 
 section VirtualState
 
