@@ -3576,12 +3576,21 @@ across instances at the join boundary.
 \section{Commit GC: the keep set and the GC-safety theorem}
 \label{sec:gc}
 
-The version store only ever grows, and merges arbitrarily far in the
-future reach back into it for their LCA state, so a runtime cannot
-reclaim ``everything below the heads.'' The GC question is which store
-entries may be dropped without changing any future behavior; the answer
-is a keep set computable from the current heads, and a forward
-simulation showing pruning outside it is invisible.
+The runtime collects two different kinds of metadata.  \emph{Commit-history
+GC} removes versions used to find merge bases.  \emph{State GC} removes
+redundant metadata inside a retained datatype state, such as dead text anchors
+and closed mark pairs.  Neither collector subsumes the other: state GC leaves
+the version graph intact, while commit-history GC treats each retained state
+as an opaque payload.  Section~\ref{sec:stability} specifies state GC.  This
+section first proves commit-history GC safe, then combines both collectors in
+one distributed operational semantics.
+
+The version store grows with every operation.  A future merge may still need
+an old version as its merge base, so collecting every version below the current
+heads is unsound.  We instead compute a keep set from the current heads and
+prove that pruning outside it preserves every future execution.  We use a
+global prune theorem as the proof interface, then refine an asynchronous
+protocol in which each replica fetches and collects independently.
 
 \paragraph{The keep set.} Fix a configuration $C_0$ (the prune point).
 A version is a \emph{head} (\lean{IsHead}) when some replica's head map
@@ -3604,21 +3613,12 @@ and $\mathrm{Dropped}(C_0) = \{\, v \text{ allocated} : v \notin
 \hfill\lean{keepSet}, \lean{keepSet'}, \lean{droppedSet}
 \end{definition}
 
-This is the \emph{upward event-set closure of the pairwise head intersections},
-with the root $0$ pinned separately (the model fixes
-$\mathrm{ver}\,0 = (\Sinit, \varnothing)$ forever, and fresh replicas
-are created there). Taking $h_1 = h_2$ shows every head is kept, and
-with it everything event-set-above any single head. Pruning drops the
-store \emph{payload} only: entries outside the keep set become
-unallocated, while the replica cores and the DAG skeleton
-($\mathrm{parents}$, a map of ids, not states) are untouched. Retaining
-the skeleton is forced, not a convenience: restricting the parent
-relation to kept versions changes the LCA predicate itself, since
-removing common ancestors makes the domination clause easier to
-satisfy, so new LCA triples can appear whose event sets violate
-Lemma~\ref{lem:lca}, and the pruned structure would fail its own
-invariant. The reclaimable memory is the states and event sets, which
-is where the memory is; the skeleton stays.
+This is the \emph{upward event-set closure of the pairwise head
+intersections}.  Taking $h_1=h_2$ keeps every head.  The auxiliary
+$\mathrm{Keep}'$ relation pins the model's distinguished initial version so
+that the original transition system can still create a replica.  This pin is
+not part of the production representation.  The root-free compressed store
+below retains only live versions and summarizes reachability between them.
 
 \paragraph{The theorem.} Safety is a forward simulation, built from
 three lemmas, the first two packaged as a run invariant:
@@ -3807,14 +3807,12 @@ theorem interface.
 \hfill\lean{gc\_safetyV}
 \end{theorem}
 
-\paragraph{Bounded state: dropping the skeleton by a clock swap.} The
-theorem above reclaims the payload but keeps the parent map, so the
-pruned store still costs $O(\text{commits ever minted})$: it retains
-history's shape, not its states. The skeleton was forced only for the
-parent-relation representation, where restricting $\mathrm{parents}$
-mints new LCA triples that falsify $\mathrm{lca\_events}$
-(the argument of the keep-set paragraph). A change of representation
-removes it. The commit graph is a delta-compression of event sets, so a
+\paragraph{A bounded proof representation.} The first simulation theorem
+keeps the original transition system unchanged and therefore leaves its parent
+map in place.  This is an intermediate proof representation, not the storage
+format used by the runtime.  A clock-based model shows that the history shape
+can be removed completely.  The commit graph is a delta-compression of event
+sets, so a
 version's ancestry role is already carried by its event set used as a
 \emph{clock}: ancestry is $\subseteq$, and the LCA of a head pair is the
 kept version at the \emph{clock meet} $E(v_1) \cap E(v_2)$, which is
@@ -3880,13 +3878,13 @@ ever})$.
 \hfill\lean{gc\_safety\_bounded}
 \end{theorem}
 
-\paragraph{Root-free retained-DAG compression.} The clock store above is
-not the only bounded representation.  The production commit GC now uses the
-more direct retained graph: its edge relation connects two retained versions
-exactly when the first reached the second before collection.  Thus the carrier
-contains no dropped identifier (in particular no distinguished root unless it
-is retained), while one summarized edge replaces an arbitrarily long dropped
-path.  \lean{compressedReaches\_iff} proves exact reachability between
+\paragraph{The production representation is root-free.} The runtime uses a
+retained graph rather than the clock model.  Its edge relation connects two
+retained versions exactly when the first reached the second before collection.
+The carrier contains no dropped identifier.  It does not retain the root merely
+because it was the root; it retains it only if the current keep set needs it.
+One summarized edge replaces an arbitrarily long path through collected
+versions.  \lean{compressedReaches\_iff} proves exact reachability between
 retained versions; \lean{compressed\_isLCARetained\_iff} proves exact
 common-ancestor/LCA answers in the retained induced order; and
 \lean{gc\_safety\_compressed} packages these graph facts with the
@@ -3947,7 +3945,78 @@ operation (\lean{pruneEvidence\_of\_receipts}). An empty receipt book cannot
 manufacture evidence
 (\lean{no\_pruneEvidence\_without\_authored\_or\_receipt}).
 
-The swap has exactly one hazard, and it is the lineage collision that
+\paragraph{One operational semantics for both collectors.}
+The preceding protocol collects commit history, but a Peritext replica also
+compacts the state stored at a retained version.  The combined semantics
+therefore separates the uncollected semantic state from each replica's
+physical materialization.  A configuration is
+\[
+  \widehat C = (C, M),
+\]
+where $C$ is a distributed semantic configuration and $M(r,v)$ is replica
+$r$'s materialized copy of version $v$.  A relation
+$\mathrm{StateRelAt}(K,k,s,\widehat s)$ connects the full state $s$ to a
+materialized state $\widehat s$ at knowledge $K$ and retention predicate $k$.
+It records enough epoch information to distinguish an old identifier collected
+at the stable cut from a fresh identifier minted after that cut.  The
+implementation can represent this information with a Lamport-clock horizon;
+it need not retain a set of reclaimed identifiers.
+
+The labelled transition relation $\mathsf{CombinedStep}$ has four rules:
+\[
+\begin{array}{ll}
+\textsc{Fetch} & \text{union a remote advertisement into one local holding;}\\
+\textsc{CommitGC} & \text{prune one replica's certified commit history;}\\
+\textsc{StateGC} & \text{compact one certified local materialization;}\\
+\textsc{Visible} & \text{perform an apply, merge, or query step and update its
+materializations.}
+\end{array}
+\]
+Fetch and both GC rules carry the silent label $\tau$.  A visible rule carries
+the exact label of its underlying $\mathsf{Step3}$ transition.  Fetch does not
+move the receiving head.  Commit GC does not change semantic state.  State GC
+changes only the physical materialization.  A visible step can read only
+versions held by the issuing replica.
+
+A physical merge needs one additional certificate.  Its materialized LCA and
+branches may have different collection histories, so equality with one common
+compact state is too strong.  A \lean{MergeCoverageCertificate} instead checks
+that every identifier required by the full merge result remains available in
+at least one physical source.  \lean{PhysicalMergeEvidence.of\_sources}
+constructs this certificate from the source simulations, and
+\lean{StateRelAt.merge} establishes the result simulation.  New versions use
+\lean{MaterializationDelta.singleInstall}; existing holdings remain unchanged.
+
+Define $\mathsf{erase}$ by deleting every $\tau$ label.  The combined semantics
+has a direct finite-trace refinement.
+
+\begin{theorem}[both GCs refine the uncollected semantics]
+\label{thm:combinedgc}
+If
+\[
+  \widehat C_0 \xRightarrow{\widehat\ell_1\cdots\widehat\ell_n}
+  \widehat C_n
+\]
+is a finite $\mathsf{CombinedStep}$ execution, then
+\[
+  C_0 \xrightarrow{\mathsf{erase}(\widehat\ell_1\cdots
+  \widehat\ell_n)} C_n
+\]
+is an execution of the original uncollected $\mathsf{Step3}$ semantics.
+Well-formedness is invariant.  At the endpoint, every query available from a
+held physical version renders exactly the corresponding full semantic state.
+Thus arbitrary interleavings of fetch, local commit-history GC, local Peritext
+state GC, apply, merge, and query preserve client observations.
+\hfill\lean{combinedSteps\_refines\_Step3},
+\lean{combinedTrace\_query\_eq}
+\end{theorem}
+
+The state relation and collector in this theorem are Peritext-specific.  The
+distributed commit-history semantics and its refinement are datatype-generic.
+Another datatype can reuse this structure after supplying its own
+materialization relation, local collection theorem, and merge-coverage rule.
+
+The clock swap has exactly one hazard, and it is the lineage collision that
 \S\ref{sec:stability} isolates. Resolving the LCA by clock alone is sound
 while the payload is a function of the event set, and unsound once
 datatype compaction breaks that: a same-clock version from an unrelated
@@ -11835,6 +11904,7 @@ GC under virtual merges & \lean{mcasClosure}, \lean{keepSetV}, \lean{gc\_safetyV
 bounded-state GC: clock swap (\S\ref{sec:gc}) & \lean{clockPrune}, \lean{ClockCoherent}, \lean{clockLCA\_sound}, \lean{gc\_safety\_bounded} & \lean{Metatheory/GC\_BoundedState.lean} \\
 root-free retained DAG & \lean{compressedReaches\_iff}, \lean{compressed\_isLCARetained\_iff}, \lean{gc\_safety\_compressed} & \lean{Metatheory/GC\_CompressedDAG.lean} \\
 distributed GC refinement (Thm.~\ref{thm:distributedgc}) & \lean{distributed\_execution\_refines\_noGC}, \lean{world\_read\_preserved} & \lean{Metatheory/Distributed\_GC.lean} \\
+combined commit/state GC (Thm.~\ref{thm:combinedgc}) & \lean{CombinedStep}, \lean{combinedSteps\_refines\_Step3}, \lean{combinedTrace\_query\_eq} & \lean{MRDT\_Instances/Peritext\_Sided/PeritextSided\_Interaction.lean} \\
 distributed opsem $\to$ conditioned semantics & \lean{distributedConfig\_refines\_Step3}, \lean{UnifiedVerifiedMRDT.distributed} & \lean{Metatheory/Distributed\_GC\_Refinement.lean} \\
 fetch-aligned acknowledgements & \lean{acknowledged\_execution\_refines\_noGC}, \lean{pruneEvidence\_of\_receipts} & \lean{Metatheory/Distributed\_GC\_Acknowledgements.lean} \\
 SettledAt discharged from the frontier (\S\ref{sec:stability}) & \lean{AllHeardSince}, \lean{settledAt\_of\_allHeard} & \lean{Metatheory/EvidenceDischarge.lean} \\
