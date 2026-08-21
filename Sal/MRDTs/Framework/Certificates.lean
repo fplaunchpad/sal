@@ -95,6 +95,43 @@ inductive MintCertifiedReachV (D : MRDTSig) (V : VirtualLCAResolver D)
       MintHonest D G.Guard C' →
       MintCertifiedReachV D V G C'
 
+theorem MintCertifiedReach.mintHonest {D : MRDTSig}
+    {G : GenerationContract D} {C : Configuration D}
+    (h : MintCertifiedReach D G C) : MintHonest D G.Guard C := by
+  cases h with
+  | init =>
+      intro e he
+      change ∃ r s, (if r = 0 then some (∅ : Set (Op D.AppOp)) else none) =
+        some s ∧ s e at he
+      obtain ⟨r, s, hrs, hse⟩ := he
+      by_cases hr : r = 0
+      · subst r
+        simp only [if_pos] at hrs
+        injection hrs with hs
+        subst s
+        exact False.elim hse
+      · simp [hr] at hrs
+  | step _ _ _ after => exact after
+
+theorem MintCertifiedReachV.mintHonest {D : MRDTSig}
+    {V : VirtualLCAResolver D} {G : GenerationContract D}
+    {C : Configuration D} (h : MintCertifiedReachV D V G C) :
+    MintHonest D G.Guard C := by
+  cases h with
+  | init =>
+      intro e he
+      change ∃ r s, (if r = 0 then some (∅ : Set (Op D.AppOp)) else none) =
+        some s ∧ s e at he
+      obtain ⟨r, s, hrs, hse⟩ := he
+      by_cases hr : r = 0
+      · subst r
+        simp only [if_pos] at hrs
+        injection hrs with hs
+        subst s
+        exact False.elim hse
+      · simp [hr] at hrs
+  | step _ _ _ after => exact after
+
 def VersionsSatisfy {D : MRDTSig}
     (P : D.State → Prop) (C : Configuration D) : Prop :=
   ∀ v s E, C.ver v = some (s, E) → P s

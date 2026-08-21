@@ -1,4 +1,5 @@
-import Sal.MRDTs.Metatheory.Adequacy
+import Sal.MRDTs.Metatheory.Safety
+import Sal.MRDTs.Metatheory.Correctness
 
 /-! Native bounded-counter convergence over the plain MRDT semantics. -/
 
@@ -168,5 +169,227 @@ theorem ra_linearizable (C : Configuration BC)
     (join_lemma3_of_cd' BC_coreVCs3 BC_deltaVCs3
       (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)) C hReach
 
-end Sal.MRDTs.Instances.BoundedCounter
+/-! ## Explicit generation, safety, and sequential certificates -/
 
+def BCInv (s : BCState) : Prop := ∀ r, 0 ≤ s.2 r ∧ s.2 r ≤ s.1 r
+
+def bcApplicable (o : Op BCOp) (s : BCState) : Prop :=
+  match o.2.2 with
+  | .inc => True
+  | .dec => s.2 o.2.1 + 1 ≤ s.1 o.2.1
+
+theorem bcApplicable_inv_pres {s : BCState} {o : Op BCOp}
+    (hInv : BCInv s) (happ : bcApplicable o s) : BCInv (bcUpdate s o) := by
+  obtain ⟨ts, r, op⟩ := o
+  intro k
+  have h1 := hInv k
+  cases op with
+  | inc =>
+    rw [bcUpdate_inc_fst, bcUpdate_inc_snd]
+    split_ifs <;> omega
+  | dec =>
+    have h2 : s.2 r + 1 ≤ s.1 r := happ
+    rw [bcUpdate_dec_fst, bcUpdate_dec_snd]
+    by_cases hk : k = r
+    · subst hk; rw [if_pos rfl]; omega
+    · rw [if_neg hk]; omega
+
+def bcIsIncAt (r : ℕ) (e : Op BCOp) : Bool :=
+  match e.2.2 with | .inc => decide (e.2.1 = r) | .dec => false
+
+def bcIsDecAt (r : ℕ) (e : Op BCOp) : Bool :=
+  match e.2.2 with | .inc => false | .dec => decide (e.2.1 = r)
+
+theorem bc_fold_incs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
+    (applySeq BC.toCRDTSig s π).1 r = s.1 r + (π.countP (bcIsIncAt r) : ℤ) := by
+  induction π generalizing s with
+  | nil => simp [applySeq]
+  | cons o π ih =>
+    obtain ⟨ts, ro, op⟩ := o
+    rw [show applySeq BC.toCRDTSig s ((ts, ro, op) :: π) =
+        applySeq BC.toCRDTSig (bcUpdate s (ts, ro, op)) π from rfl,
+      ih, List.countP_cons]
+    cases op with
+    | inc =>
+      rw [bcUpdate_inc_fst]
+      by_cases h : ro = r
+      · subst h
+        simp [bcIsIncAt]
+        push_cast
+        omega
+      · have h' : ¬ r = ro := fun hh => h hh.symm
+        simp [bcIsIncAt, h, h']
+    | dec => rw [bcUpdate_dec_fst]; simp [bcIsIncAt]
+
+theorem bc_fold_decs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
+    (applySeq BC.toCRDTSig s π).2 r = s.2 r + (π.countP (bcIsDecAt r) : ℤ) := by
+  induction π generalizing s with
+  | nil => simp [applySeq]
+  | cons o π ih =>
+    obtain ⟨ts, ro, op⟩ := o
+    rw [show applySeq BC.toCRDTSig s ((ts, ro, op) :: π) =
+        applySeq BC.toCRDTSig (bcUpdate s (ts, ro, op)) π from rfl,
+      ih, List.countP_cons]
+    cases op with
+    | dec =>
+      rw [bcUpdate_dec_snd]
+      by_cases h : ro = r
+      · subst h
+        simp [bcIsDecAt]
+        push_cast
+        omega
+      · have h' : ¬ r = ro := fun hh => h hh.symm
+        simp [bcIsDecAt, h, h']
+    | inc => rw [bcUpdate_inc_snd]; simp [bcIsDecAt]
+
+theorem bc_inv_init : BCInv BC.init := fun _ => ⟨le_refl 0, le_refl 0⟩
+
+private theorem bcIsIncAt_rep {r : ℕ} {x : Op BCOp}
+    (h : bcIsIncAt r x = true) : x.2.1 = r := by
+  obtain ⟨ts, ro, op⟩ := x
+  cases op with
+  | inc => simpa [bcIsIncAt] using h
+  | dec => simp [bcIsIncAt] at h
+
+private theorem bcIsDecAt_rep {r : ℕ} {x : Op BCOp}
+    (h : bcIsDecAt r x = true) : x.2.1 = r := by
+  obtain ⟨ts, ro, op⟩ := x
+  cases op with
+  | inc => simp [bcIsDecAt] at h
+  | dec => simpa [bcIsDecAt] using h
+
+theorem bc_safetyStep : SafetyStepOn BC BCInv bcApplicable := by
+  intro C E S e σS σP hEev hEcl heE hSsub heS hScl hfut hpast hσS hσP hInv happ
+  obtain ⟨ts, r, op⟩ := e
+  cases op with
+  | inc =>
+    rw [BC_update_eq]
+    exact bcApplicable_inv_pres hInv (by trivial)
+  | dec =>
+    obtain ⟨ρS, hpS, _hrS, hfS⟩ := hσS
+    obtain ⟨ρP, hpP, _hrP, hfP⟩ := hσP
+    have hinc : ρS.countP (bcIsIncAt r) = ρP.countP (bcIsIncAt r) :=
+      countP_prefix_eq_causal_past hEev hSsub heE heS hfut hpast hpS hpP
+        (bcIsIncAt r) (fun _ hx => bcIsIncAt_rep hx)
+    have hdec : ρS.countP (bcIsDecAt r) = ρP.countP (bcIsDecAt r) :=
+      countP_prefix_eq_causal_past hEev hSsub heE heS hfut hpast hpS hpP
+        (bcIsDecAt r) (fun _ hx => bcIsDecAt_rep hx)
+    have hS1 : σS.1 r = (ρS.countP (bcIsIncAt r) : ℤ) := by
+      rw [← hfS, bc_fold_incs, BC_init_fst]; omega
+    have hS2 : σS.2 r = (ρS.countP (bcIsDecAt r) : ℤ) := by
+      rw [← hfS, bc_fold_decs, BC_init_snd]; omega
+    have hP1 : σP.1 r = (ρP.countP (bcIsIncAt r) : ℤ) := by
+      rw [← hfP, bc_fold_incs, BC_init_fst]; omega
+    have hP2 : σP.2 r = (ρP.countP (bcIsDecAt r) : ℤ) := by
+      rw [← hfP, bc_fold_decs, BC_init_snd]; omega
+    rw [BC_update_eq]
+    apply bcApplicable_inv_pres hInv
+    show σS.2 r + 1 ≤ σS.1 r
+    change σP.2 r + 1 ≤ σP.1 r at happ
+    omega
+
+private theorem bcJoin : JoinLemma3 BC :=
+  join_lemma3_of_cd' BC_coreVCs3 BC_deltaVCs3
+    (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)
+
+def generation : GenerationContract BC where
+  Guard := bcApplicable
+  History := fun _ => True
+  history_of_mint := fun _ _ => True.intro
+
+def convergence : ConvergenceCertificate BC generation where
+  sound := fun h => ra_of_mintCertified (fun _ _ => bcJoin _) h
+  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => bcJoin _) h
+
+private theorem honestApp_of_mint {C : Configuration BC}
+    (h : MintHonest BC bcApplicable C) : HonestAppOn BC bcApplicable C := by
+  intro e he
+  obtain ⟨π, hp, hr, hg⟩ := h e he
+  exact ⟨applySeq BC.toCRDTSig BC.init π, ⟨π, hp, hr, rfl⟩, hg⟩
+
+theorem versions_safe {C : Configuration BC}
+    (h : MintCertifiedReach BC generation C) : VersionsSatisfy BCInv C := by
+  have hG := goodConfig_of_mintCertified (fun _ _ => bcJoin _) h
+  have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
+  exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
+    (honestApp_of_mint h.mintHonest)
+
+theorem versions_safeV {C : Configuration BC}
+    (h : MintCertifiedReachV BC (canonicalVirtualLCA BC) generation C) :
+    VersionsSatisfy BCInv C := by
+  have hG := goodConfig_of_mintCertifiedV (fun _ _ => bcJoin _) h
+  have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
+  exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
+    (honestApp_of_mint h.mintHonest)
+
+def safety : SafetyCertificate BC (canonicalVirtualLCA BC) generation where
+  Safe := BCInv
+  Observable := BCInv
+  preservation := versions_safe
+  preservationV := versions_safeV
+  consequence := fun _ h => h
+
+def sequentialSpec : SequentialSpec (Op BCOp) where
+  State := ℕ → ℤ
+  init := fun _ => 0
+  step q e := fun r => match e.2.2 with
+    | .inc => q r + if r = e.2.1 then 1 else 0
+    | .dec => q r - if r = e.2.1 then 1 else 0
+
+def SequentialHonest (ops : List (Op BCOp)) : Prop :=
+  ∀ pre suf, ops = pre ++ suf → BCInv (applySeq BC.toCRDTSig BC.init pre)
+
+theorem sequential_run (ops : List (Op BCOp)) : ∀ r,
+    sequentialSpec.run ops r =
+      (applySeq BC.toCRDTSig BC.init ops).1 r -
+      (applySeq BC.toCRDTSig BC.init ops).2 r := by
+  induction ops using List.reverseRecOn with
+  | nil => intro r; rfl
+  | append_singleton ops e ih =>
+    intro r
+    obtain ⟨ts, ro, op⟩ := e
+    rw [SequentialSpec.run_append_single, applySeq_append_single]
+    cases op with
+    | inc =>
+      change sequentialSpec.run ops r + (if r = ro then 1 else 0) = _
+      rw [ih r]
+      simp only [BC_update_eq, bcUpdate_inc_fst, bcUpdate_inc_snd]
+      split_ifs <;> omega
+    | dec =>
+      change sequentialSpec.run ops r - (if r = ro then 1 else 0) = _
+      rw [ih r]
+      simp only [BC_update_eq, bcUpdate_dec_fst, bcUpdate_dec_snd]
+      split_ifs <;> omega
+
+theorem sequentialHonest_of_linear {ops : List (Op BCOp)}
+    (h : LinearMintHistory BC bcApplicable ops) : SequentialHonest ops := by
+  intro pre
+  induction pre using List.reverseRecOn with
+  | nil => intro suf heq; exact bc_inv_init
+  | append_singleton pre e ih =>
+      intro suf heq
+      have heq' : ops = pre ++ e :: suf := by simpa [List.append_assoc] using heq
+      have hInv := ih (e :: suf) heq'
+      rw [applySeq_append_single]
+      rw [BC_update_eq]
+      exact bcApplicable_inv_pres hInv (h.guarded pre e suf heq')
+
+def sequential : SequentialRefinement BC sequentialSpec where
+  Honest := SequentialHonest
+  Rel := fun s q => BCInv s ∧ ∀ r, q r = s.1 r - s.2 r
+  init := ⟨bc_inv_init, fun _ => rfl⟩
+  sound := fun ops h => ⟨h ops [] (by simp), sequential_run ops⟩
+
+noncomputable def verified : VerifiedMRDT BC where
+  generation := generation
+  convergence := convergence
+  Spec := sequentialSpec
+  sequential := sequential
+  sequential_of_mint := fun _ h => sequentialHonest_of_linear h
+  safety := safety
+
+#print axioms versions_safe
+#print axioms versions_safeV
+#print axioms verified
+
+end Sal.MRDTs.Instances.BoundedCounter

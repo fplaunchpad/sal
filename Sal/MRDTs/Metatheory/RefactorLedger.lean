@@ -50,6 +50,12 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.BC
 #check Instances.BoundedCounter.BC_coreVCs3
 #check Instances.BoundedCounter.ra_linearizable
+#check Instances.BoundedCounter.bcApplicable
+#check Instances.BoundedCounter.bc_safetyStep
+#check Instances.BoundedCounter.versions_safe
+#check Instances.BoundedCounter.versions_safeV
+#check Instances.BoundedCounter.sequential
+#check Instances.BoundedCounter.verified
 #check Instances.RGA.applicable
 #check Instances.RGA.HistoryOK
 #check Instances.RGA.convergence
