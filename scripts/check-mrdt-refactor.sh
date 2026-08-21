@@ -2,6 +2,7 @@
 set -eu
 
 lake build Sal.MRDTs.Metatheory.RefactorLedger
+npm test --prefix runtime
 
 if rg -n 'Sal\.ConditionedMRDTs|LegacyBridge' \
     Sal/MRDTs/Framework Sal/MRDTs/Metatheory Sal/MRDTs/Instances Sal/MRDTs/GC; then
