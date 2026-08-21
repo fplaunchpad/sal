@@ -35,11 +35,15 @@ structure CompactState where
   sided : CompactSidedState
   deleted : Finset Nat
   marks : List MarkEvent
+  /-- Lamport frontier below which absent identifiers are certified old.
+  Fresh mints must be strictly above this cutoff. -/
+  stableCut : Nat
 
 def snapshot (gaps : Finset GapEntry) (s : (Core Γ).State) : CompactState where
   sided := ⟨s.1, gaps⟩
   deleted := s.2.1
   marks := s.2.2.toList
+  stableCut := 0
 
 def compactDocument (s : CompactState) : DocD where
   shadow := s.sided.text.map fun r => (r.1, r.2.1, ([] : List Bool))
@@ -113,11 +117,36 @@ theorem compactInsertOp_exact {K : Know} {gaps : Finset GapEntry}
 structure TextPlan where
   keep : Nat → Bool
   gaps : Finset GapEntry
+  stableCut : Nat
+  drop_below : ∀ x, keep x = false → x ≤ stableCut
 
 def collectText (p : TextPlan) (s : CompactState) : CompactState :=
-  { s with sided :=
-      { text := s.sided.text.filter fun r => p.keep r.1
-        gaps := p.gaps } }
+  { sided :=
+      { text := s.sided.text.filter (fun r => p.keep r.1)
+        gaps := p.gaps }
+    deleted := s.deleted
+    marks := s.marks
+    stableCut := max s.stableCut p.stableCut }
+
+theorem stableCut_mono_collectText (p : TextPlan) (s : CompactState) :
+    s.stableCut ≤ (collectText p s).stableCut := by
+  simp [collectText]
+
+theorem dropped_below_stableCut (p : TextPlan) (s : CompactState)
+    {r : SRec} (_hr : r ∈ s.sided.text) (hdrop : p.keep r.1 = false) :
+    r.1 ≤ (collectText p s).stableCut := by
+  exact le_trans (p.drop_below r.1 hdrop) (Nat.le_max_right _ _)
+
+theorem TextPlan.keeps_fresh (p : TextPlan) {x : Nat}
+    (hfresh : p.stableCut < x) : p.keep x = true := by
+  cases h : p.keep x with
+  | false => exact False.elim (Nat.not_le_of_lt hfresh (p.drop_below x h))
+  | true => rfl
+
+/-- A Lamport-fresh identifier cannot belong to the collected stable cut. -/
+theorem fresh_above_stableCut {s : CompactState} {x : Nat}
+    (hfresh : s.stableCut < x) : ¬x ≤ s.stableCut :=
+  Nat.not_le_of_lt hfresh
 
 theorem compactDocument_collectText (p : TextPlan) (s : CompactState) :
     compactDocument (collectText p s) =
@@ -344,6 +373,9 @@ theorem dropMarkPair_query_preserved (s : CompactState)
 #print axioms gapEntryOf_exact
 #print axioms compactInsertOp_exact
 #print axioms collectText_query_preserved
+#print axioms dropped_below_stableCut
+#print axioms TextPlan.keeps_fresh
+#print axioms fresh_above_stableCut
 #print axioms applySeq_s_filter
 #print axioms collectedText_continuation_query
 #print axioms trimDeleted_query_preserved
