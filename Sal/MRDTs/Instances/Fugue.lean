@@ -61,7 +61,7 @@ Layers in this file:
   hand-derived expected displays and interleaved-order (or
   FugueMax-order) pins.
 
-**Honest gap analysis** (no `sorry` anywhere; gaps are absences, not
+**Honest gap analysis** (no proof placeholders; gaps are absences, not
 holes): (G1) backward-run chaining needs "the successor of the fixed
 anchor is the previously minted run element" (newest-mint adjacency); the
 kernel lemma is here, the `succOf`-to-`schainBefore` bridge is not, so

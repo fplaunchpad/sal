@@ -8,6 +8,7 @@ import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.FugueMaxRALinearization
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.GC.Refinement
+import Sal.MRDTs.GC.StateComposition
 
 /-! Build gate for the plain-signature reconstruction. -/
 
@@ -44,6 +45,9 @@ namespace Sal.MRDTs
 #check GC.execution_refines_noGC
 #check GC.runtime_refines_core
 #check GC.runtime_refines_coreV
+#check GC.combinedProtocol
+#check GC.CombinedSteps.refinesV
+#check GC.CombinedSteps.refinesRaw
 
 #check Instances.GSet.generation
 #check Instances.GSet.sequential
