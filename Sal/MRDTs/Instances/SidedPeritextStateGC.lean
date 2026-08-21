@@ -249,6 +249,26 @@ def TextContOK (Γ : OrderedPrefixCode) (s : SState)
       ∀ r ∈ (show SState from applySeq (S Γ).toCRDTSig s pre),
         Sal.EmbedRGA.sKey r.2.2 ≠ Sal.EmbedRGA.sKey (sCoord Γ o))
 
+/-- Runtime-facing continuation evidence. The epoch clock supplies retention
+of every future insertion; the remaining clauses are the ordinary freshness
+and immutable-key obligations. -/
+def TextEpochContOK (Γ : OrderedPrefixCode) (s : SState)
+    (p : TextPlan) (τ : List (Op SOp)) : Prop :=
+  ∀ (pre : List (Op SOp)) (o : Op SOp) (post : List (Op SOp)),
+    τ = pre ++ o :: post →
+    ∀ e π a sd, o.2.2 = SOp.ins e π a sd →
+      o.1 ∉ sIds (applySeq (S Γ).toCRDTSig s pre) ∧
+      p.stableCut < o.1 ∧
+      ∀ r ∈ (show SState from applySeq (S Γ).toCRDTSig s pre),
+        Sal.EmbedRGA.sKey r.2.2 ≠ Sal.EmbedRGA.sKey (sCoord Γ o)
+
+theorem textContOK_of_epoch {Γ : OrderedPrefixCode} {s : SState}
+    {p : TextPlan} {τ : List (Op SOp)}
+    (h : TextEpochContOK Γ s p τ) : TextContOK Γ s p.keep τ := by
+  intro pre o post heq e π a sd hins
+  obtain ⟨hfresh, habove, hkey⟩ := h pre o post heq e π a sd hins
+  exact ⟨hfresh, p.keeps_fresh habove, hkey⟩
+
 theorem applySeq_s_filter {Γ : OrderedPrefixCode} (kp : Nat → Bool) :
     ∀ (τ : List (Op SOp)) (s : SState), SSorted s → TextContOK Γ s kp τ →
       applySeq (S Γ).toCRDTSig (s.filter fun r => kp r.1) τ =
@@ -377,6 +397,7 @@ theorem dropMarkPair_query_preserved (s : CompactState)
 #print axioms TextPlan.keeps_fresh
 #print axioms fresh_above_stableCut
 #print axioms applySeq_s_filter
+#print axioms textContOK_of_epoch
 #print axioms collectedText_continuation_query
 #print axioms trimDeleted_query_preserved
 #print axioms dropMarkPair_query_preserved

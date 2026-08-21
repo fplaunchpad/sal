@@ -137,13 +137,13 @@ namespace Sal.MRDTs
 #check Instances.SidedPeritext.StateGC.TextPlan.keeps_fresh
 #check Instances.SidedPeritext.StateGC.fresh_above_stableCut
 #check Instances.SidedPeritext.StateGC.applySeq_s_filter
+#check Instances.SidedPeritext.StateGC.textContOK_of_epoch
 #check Instances.SidedPeritext.StateGC.collectedText_continuation_query
 #check Instances.SidedPeritext.StateGC.trimDeleted_query_preserved
 #check Instances.SidedPeritext.StateGC.dropMarkPair_query_preserved
 #check Instances.SidedPeritext.StateGC.Interaction.sMergeL_filter
-#check Instances.SidedPeritext.StateGC.Interaction.fresh_survives_commonEpoch
-#check Instances.SidedPeritext.StateGC.Interaction.alignStableCut_exact
-#check Instances.SidedPeritext.StateGC.Interaction.merge_text_after_cut_alignment
+#check Instances.SidedPeritext.StateGC.Interaction.EpochProjection.keeps_fresh
+#check Instances.SidedPeritext.StateGC.Interaction.merge_text_after_epoch_translation
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check VerifiedMRDT.sequentially_correct

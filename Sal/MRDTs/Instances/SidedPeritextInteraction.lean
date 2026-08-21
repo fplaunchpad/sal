@@ -2,10 +2,11 @@ import Sal.MRDTs.Instances.SidedPeritextStateGC
 
 /-! # Cross-epoch Sided Peritext state-GC interaction
 
-Independently collected replicas align their certified Lamport cutoffs before
-merge. This module proves that cutoff alignment and the resulting exact text
-merge. The LCA remains semantic ghost state; the physical result is computed
-from compact heads.
+Each collection epoch has a retained-node predicate and a Lamport cutoff.
+The predicate preserves live paths, mark boundaries, and declared in-flight
+nodes; the cutoff proves that every omitted identifier is old. Independently
+collected replicas translate their predicates to one common projection before
+merge. The LCA remains semantic ghost state.
 -/
 
 namespace Sal.MRDTs.Instances.SidedPeritext.StateGC.Interaction
@@ -15,48 +16,6 @@ open Sal.MRDTs.Instances.SidedEmbedRGA
 open Sal.MRDTs.Instances.SidedPeritext.StateGC
 
 noncomputable section
-
-def keepAbove (stableCut : Nat) (x : Nat) : Bool :=
-  decide (stableCut < x)
-
-def commonStableCut (cl ca cb : CompactState) : Nat :=
-  max cl.stableCut (max ca.stableCut cb.stableCut)
-
-def alignStableCut (target : Nat) (s : CompactState) : CompactState :=
-  { sided :=
-      { text := s.sided.text.filter (fun r => keepAbove target r.1)
-        gaps := s.sided.gaps }
-    deleted := s.deleted
-    marks := s.marks
-    stableCut := target }
-
-/-- Physical epoch alignment uses only the finite reclaimed-ID certificates;
-it does not need the discarded semantic states. -/
-theorem alignStableCut_text (target : Nat) (s : CompactState) :
-    (alignStableCut target s).sided.text =
-      s.sided.text.filter (fun r => keepAbove target r.1) := rfl
-
-theorem fresh_survives_commonEpoch {cl ca cb : CompactState} {x : Nat}
-    (hfresh : commonStableCut cl ca cb < x) :
-    keepAbove (commonStableCut cl ca cb) x = true := by
-  simp [keepAbove, hfresh]
-
-structure CutProjection (full : SState) (compact : CompactState) : Prop where
-  exact : compact.sided.text =
-    full.filter (fun r => keepAbove compact.stableCut r.1)
-
-theorem alignStableCut_exact {full : SState} {compact : CompactState}
-    (hproj : CutProjection full compact) {target : Nat}
-    (hle : compact.stableCut ≤ target) :
-    (alignStableCut target compact).sided.text =
-      full.filter (fun r => keepAbove target r.1) := by
-  rw [alignStableCut_text, hproj.exact, List.filter_filter]
-  apply List.filter_congr
-  intro r _
-  by_cases ht : target < r.1
-  · have hc : compact.stableCut < r.1 := lt_of_le_of_lt hle ht
-    simp [keepAbove, ht, hc]
-  · simp [keepAbove, ht]
 
 /-- A common retention predicate commutes with ternary SidedRGA merge. -/
 theorem sMergeL_filter (keep : Nat → Bool) (l a b : SState)
@@ -78,30 +37,118 @@ theorem sMergeL_filter (keep : Nat → Bool) (l a b : SState)
       sIds, List.mem_map]
     aesop
 
-theorem merge_text_after_cut_alignment
+structure EpochProjection (keep : Nat → Bool)
+    (full : SState) (compact : CompactState) : Prop where
+  exact : compact.sided.text = full.filter (fun r => keep r.1)
+  omitted_old : ∀ x, keep x = false → x ≤ compact.stableCut
+
+theorem EpochProjection.keeps_fresh {keep : Nat → Bool}
+    {full : SState} {compact : CompactState}
+    (h : EpochProjection keep full compact) {x : Nat}
+    (hfresh : compact.stableCut < x) : keep x = true := by
+  cases hk : keep x with
+  | false => exact False.elim (Nat.not_le_of_lt hfresh (h.omitted_old x hk))
+  | true => rfl
+
+/-- An epoch constrains an identifier only when it occurs in that semantic
+state. Therefore an older concurrent branch cannot veto a fresh identifier
+minted only on another branch. -/
+def epochFactor (s : SState) (keep : Nat → Bool) (x : Nat) : Bool :=
+  decide (x ∉ sIds s) || keep x
+
+def commonEpochKeep (l a b : SState)
+    (kl ka kb : Nat → Bool) (x : Nat) : Bool :=
+  epochFactor l kl x && epochFactor a ka x && epochFactor b kb x
+
+def translateText (compact : CompactState) (s₁ s₂ : SState)
+    (k₁ k₂ : Nat → Bool) : CompactState :=
+  { compact with sided :=
+    { compact.sided with text := compact.sided.text.filter (fun q =>
+      epochFactor s₁ k₁ q.1 && epochFactor s₂ k₂ q.1) } }
+
+theorem translateText_exact {full own₁ own₂ : SState}
+    {compact : CompactState} {keep k₁ k₂ : Nat → Bool}
+    (hexact : compact.sided.text = full.filter (fun q => keep q.1)) :
+    (translateText compact own₁ own₂ k₁ k₂).sided.text =
+      full.filter (fun q => keep q.1 && epochFactor own₁ k₁ q.1 &&
+        epochFactor own₂ k₂ q.1) := by
+  unfold translateText
+  simp only
+  rw [hexact, List.filter_filter]
+  apply List.filter_congr
+  intro q _
+  cases keep q.1 <;> cases epochFactor own₁ k₁ q.1 <;>
+    cases epochFactor own₂ k₂ q.1 <;> decide
+
+structure CommonProjectionFrame (l a b : SState)
+    (cl ca cb : CompactState) where
+  keep : Nat → Bool
+  lproj : cl.sided.text = l.filter (fun r => keep r.1)
+  aproj : ca.sided.text = a.filter (fun r => keep r.1)
+  bproj : cb.sided.text = b.filter (fun r => keep r.1)
+
+theorem CommonProjectionFrame.merge_text_exact
     {l a b : SState} {cl ca cb : CompactState}
-    (hl : CutProjection l cl) (ha : CutProjection a ca)
-    (hb : CutProjection b cb)
+    (F : CommonProjectionFrame l a b cl ca cb)
+    (ha : SSorted a) (hb : SSorted b)
+    (hdisj : ∀ x ∈ a, ∀ y ∈ b,
+      Sal.EmbedRGA.sKey x.2.2 = Sal.EmbedRGA.sKey y.2.2 → x = y) :
+    sMergeL cl.sided.text ca.sided.text cb.sided.text =
+      (sMergeL l a b).filter (fun r => F.keep r.1) := by
+  rw [F.lproj, F.aproj, F.bproj]
+  exact sMergeL_filter F.keep l a b ha hb hdisj
+
+def commonProjectionFrame_of_epochs
+    {kl ka kb : Nat → Bool} {l a b : SState}
+    {cl ca cb : CompactState}
+    (hl : EpochProjection kl l cl)
+    (ha : EpochProjection ka a ca)
+    (hb : EpochProjection kb b cb) :
+    CommonProjectionFrame l a b
+      (translateText cl a b ka kb)
+      (translateText ca l b kl kb)
+      (translateText cb l a kl ka) := by
+  let common := commonEpochKeep l a b kl ka kb
+  refine ⟨common, ?_, ?_, ?_⟩
+  · rw [translateText_exact hl.exact]
+    apply List.filter_congr
+    intro q hq
+    have hid : q.1 ∈ sIds l := List.mem_map.mpr ⟨q, hq, rfl⟩
+    simp [common, commonEpochKeep, epochFactor, hid]
+  · rw [translateText_exact ha.exact]
+    apply List.filter_congr
+    intro q hq
+    have hid : q.1 ∈ sIds a := List.mem_map.mpr ⟨q, hq, rfl⟩
+    simp [common, commonEpochKeep, epochFactor, hid, Bool.and_assoc,
+      Bool.and_left_comm, Bool.and_comm]
+  · rw [translateText_exact hb.exact]
+    apply List.filter_congr
+    intro q hq
+    have hid : q.1 ∈ sIds b := List.mem_map.mpr ⟨q, hq, rfl⟩
+    simp [common, commonEpochKeep, epochFactor, hid, Bool.and_assoc,
+      Bool.and_left_comm, Bool.and_comm]
+
+/-- Cross-epoch compact text merge computes the common projection of the
+uncollected semantic merge. -/
+theorem merge_text_after_epoch_translation
+    {kl ka kb : Nat → Bool} {l a b : SState}
+    {cl ca cb : CompactState}
+    (hl : EpochProjection kl l cl) (ha : EpochProjection ka a ca)
+    (hb : EpochProjection kb b cb)
     (hasort : SSorted a) (hbsort : SSorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b,
       Sal.EmbedRGA.sKey x.2.2 = Sal.EmbedRGA.sKey y.2.2 → x = y) :
-    let cut := commonStableCut cl ca cb
-    sMergeL (alignStableCut cut cl).sided.text
-      (alignStableCut cut ca).sided.text
-      (alignStableCut cut cb).sided.text =
-    (sMergeL l a b).filter (fun r => keepAbove cut r.1) := by
-  dsimp only
-  unfold commonStableCut
-  rw [alignStableCut_exact hl (Nat.le_max_left _ _)]
-  rw [alignStableCut_exact ha (le_trans (Nat.le_max_left _ _)
-    (Nat.le_max_right _ _))]
-  rw [alignStableCut_exact hb (le_trans (Nat.le_max_right _ _)
-    (Nat.le_max_right _ _))]
-  exact sMergeL_filter _ l a b hasort hbsort hdisj
+    sMergeL (translateText cl a b ka kb).sided.text
+      (translateText ca l b kl kb).sided.text
+      (translateText cb l a kl ka).sided.text =
+    (sMergeL l a b).filter
+      (commonEpochKeep l a b kl ka kb ∘ Prod.fst) := by
+  exact (commonProjectionFrame_of_epochs hl ha hb).merge_text_exact
+    hasort hbsort hdisj
 
 #print axioms sMergeL_filter
-#print axioms alignStableCut_exact
-#print axioms merge_text_after_cut_alignment
+#print axioms EpochProjection.keeps_fresh
+#print axioms merge_text_after_epoch_translation
 
 end
 
