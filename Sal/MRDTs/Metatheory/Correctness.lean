@@ -1,5 +1,6 @@
 import Sal.MRDTs.Framework.Certificates
 import Sal.MRDTs.Metatheory.VirtualLCA
+import Sal.MRDTs.Metatheory.Adequacy
 import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 
 /-! Observable correctness target for ternary MRDT configurations. -/
@@ -17,6 +18,9 @@ def IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
       listPermOf π E ∧
       respects π (Sal.Emulation.lo C.core) ∧
       applySeq D.toCRDTSig D.init π = s
+
+theorem isRALinearizable_iff_join (D : MRDTSig) (C : Configuration D) :
+    IsRALinearizable D C ↔ IsRALinearizableJoin C := Iff.rfl
 
 /-- End-to-end convergence for executions certified by the public generation
 contract.  Datatype-specific Join proofs may consume `G.History` internally;
