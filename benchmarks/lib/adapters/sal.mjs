@@ -17,7 +17,7 @@
 // its anchor's children, i.e. lands immediately after its anchor. The
 // harness gate re-derives the text from datatype.read at the end and
 // compares. Ids are dense Lamport ticks (deletes tick too), matching the
-// litmus model (whiteboard/litmus/entropy_measure.py) so that the
+// accounting model (`benchmarks/models/entropy_measure.py`) so that the
 // run-table projection is computed over the SAME id/delta stream.
 //
 // For the concurrent pair we use the shipped Runtime/Replica head-sync

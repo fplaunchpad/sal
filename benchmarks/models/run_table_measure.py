@@ -4,8 +4,7 @@ run_table_measure.py -- Task #73: the LOSSLESS RUN-TABLE REPRESENTATION of
 the embed RGA's live chains, measured on the real editing traces next to the
 chain representation and its compaction stack (embed_compact_measure.py,
 embed_sided_compact_measure.py; design + measured context in
-whiteboard/embed-recoding-note.md, the note for THIS design in
-whiteboard/run-table-note.md).
+the archived embed-recoding and run-table design notes).
 
 THE REPRESENTATION. Work over the kept tree (live records plus their dead
 ancestors; everything else is gone, tombstone-free). Call the edge from a

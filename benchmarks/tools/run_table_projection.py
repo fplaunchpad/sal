@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run-table PROJECTION for the save-size matrix (task #98, fair-play
 column iii). Imports the exact bit accounting of
-whiteboard/litmus/run_table_measure.py (task #73) and runs its measure()
+benchmarks/models/run_table_measure.py and runs its measure()
 on the requested sequential traces; dumps machine-readable totals to
 benchmarks/results/projection.json.
 
@@ -24,8 +24,9 @@ import random
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-LITMUS = os.path.abspath(os.path.join(HERE, "..", "..", "whiteboard", "litmus"))
-sys.path.insert(0, LITMUS)
+MODELS = os.path.abspath(os.path.join(HERE, "..", "models"))
+TRACES_DIR = os.path.abspath(os.path.join(HERE, "..", "traces"))
+sys.path.insert(0, MODELS)
 
 import run_table_measure as RTM  # noqa: E402
 import gzip  # noqa: E402
@@ -41,7 +42,7 @@ out = {"model": "run_table_measure.py (task #73), family 1-sided",
 
 rng = random.Random(2026)
 for name in TRACES:
-    path = os.path.join(LITMUS, "traces", f"{name}.json.gz")
+    path = os.path.join(TRACES_DIR, f"{name}.json.gz")
     with gzip.open(path, "rt", encoding="utf-8") as f:
         text_bytes = len(RTM.json.load(f)["endContent"].encode("utf-8"))
     res = RTM.measure(path, rng)

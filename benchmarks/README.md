@@ -72,10 +72,10 @@ matrix (embedded below).
 ## Workloads
 
 * **(a) Sequential trace replay, per-char apply.** The real editing traces
-  of the josephg corpus as checked into `whiteboard/litmus/traces/`
+  of the josephg corpus in `benchmarks/traces/`
   (`friendsforever_flat`, `clownschool_flat`, `seph-blog1`,
   `automerge-paper`), flattened to single-character events exactly as
-  `whiteboard/litmus/entropy_measure.py` applies them (for each patch
+  `benchmarks/models/entropy_measure.py` applies them (for each patch
   `[pos, ndel, content]`: `ndel` single-char deletes at `pos`, then the
   content chars one at a time). Gate: the final text must equal the
   trace's `endContent`. All trace characters are BMP code points, so
@@ -184,7 +184,7 @@ Historical development notes for the superseded diagnostic columns follow:
    at production save size (below Yjs update-v2, on par with Loro
    shallow-snapshot).
 4. **run-table PROJECTION (measured-in-model)**: the exact bit accounting
-   of `whiteboard/litmus/run_table_measure.py` executed on the
+   of `benchmarks/models/run_table_measure.py` executed on the
    same trace via `tools/run_table_projection.py`;
    `projected bytes = ceil(order-metadata bits / 8) + UTF-8 text bytes`.
    The model charges per-record run-id + offset and per-entry headers; it

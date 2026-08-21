@@ -1,6 +1,6 @@
 // Trace loading for the josephg editing-trace corpus as checked into
-// whiteboard/litmus/traces/ (*.json.gz). Format (see
-// whiteboard/litmus/entropy_measure.py): doc.txns = [{patches: [[pos,
+// benchmarks/traces/ (*.json.gz). Format (see
+// benchmarks/models/entropy_measure.py): doc.txns = [{patches: [[pos,
 // ndel, content], ...], parents?, agent?, numChildren?}], doc.endContent,
 // doc.kind ('concurrent' for the DAG-shaped ones; absent = sequential).
 //
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-export const TRACES_DIR = join(HERE, '..', '..', 'whiteboard', 'litmus', 'traces');
+export const TRACES_DIR = join(HERE, '..', 'traces');
 
 export function loadTrace(name) {
   const path = join(TRACES_DIR, `${name}.json.gz`);

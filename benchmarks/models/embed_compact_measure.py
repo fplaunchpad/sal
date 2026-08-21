@@ -2,9 +2,8 @@
 """
 embed_compact_measure.py -- Task #97 (practical tail): REAL-TRACE
 measurement of compactEliasDelta, the state-level GC of the embed RGA
-(runtime/src/compact.js is the executable spec; the recoding theory is
-whiteboard/embed-recoding-note.md, the settled-cut contract
-whiteboard/stability-vc-note.md section 2). Iteration two adds SPINE
+(runtime/src/compact.js is the executable spec; the archived recoding and
+settled-cut notes record the design). Iteration two adds SPINE
 FUSION (embed-recoding-note.md Addendum 2, compact.js step 2b): a
 maximal chain of dead single-child below-cut nodes collapses to one
 level at the spine head's group codeword. All cuts here are fully
