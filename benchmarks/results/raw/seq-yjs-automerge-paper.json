@@ -10,8 +10,11 @@
   "environment": {
     "node": "v26.3.1",
     "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
     "exposeGc": true,
-    "date": "2026-08-20T10:53:18.899Z"
+    "date": "2026-08-21T13:52:32.962Z"
   },
   "gates": {
     "textOk": true,
@@ -20,11 +23,13 @@
   "metrics": {
     "operations": 259778,
     "finalChars": 104852,
-    "applyTotalMs": 668.160042,
-    "applyMedianUs": 1.375,
-    "applyP95Us": 10.834,
+    "applyTotalMs": 679.973167,
+    "applyMedianUs": 1.416,
+    "applyP95Us": 10.959,
     "primarySaveBytes": 311038,
-    "retainedHeapBytes": 3650736
+    "retainedHeapBytes": 3976744,
+    "positionIndexMs": null,
+    "datatypeApplyMs": null
   },
   "detail": {
     "workload": "seq",
@@ -34,8 +39,11 @@
     "env": {
       "node": "v26.3.1",
       "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
       "exposeGc": true,
-      "date": "2026-08-20T10:53:18.899Z"
+      "date": "2026-08-21T13:52:32.962Z"
     },
     "ops": {
       "total": 259778,
@@ -43,14 +51,14 @@
     },
     "finalChars": 104852,
     "apply": {
-      "totalMs": 668.160042,
+      "totalMs": 679.973167,
       "count": 259778,
       "warmupExcluded": 1000,
-      "meanUs": 2.5271156783034106,
-      "medianUs": 1.375,
-      "p95Us": 10.834,
-      "p99Us": 13.375,
-      "maxUs": 378.834
+      "meanUs": 2.5740855327732652,
+      "medianUs": 1.416,
+      "p95Us": 10.959,
+      "p99Us": 13.583,
+      "maxUs": 480.584
     },
     "gates": {
       "textOk": true
@@ -59,14 +67,14 @@
       {
         "label": "update-v1",
         "bytes": 311038,
-        "timeMs": 5.477458,
+        "timeMs": 5.356375,
         "note": "full update encoding v1 (state incl. tombstone structure, no deleted content)",
         "estimated": false
       },
       {
         "label": "update-v2",
         "bytes": 159929,
-        "timeMs": 2.677084,
+        "timeMs": 2.800583,
         "note": "v2 encoding (run-length compressed)",
         "estimated": false
       }
@@ -74,25 +82,26 @@
     "loads": [
       {
         "label": "update-v1",
-        "medianMs": 5.577958,
+        "medianMs": 6.417416,
         "runs": 5,
         "allMs": [
-          5.279792,
-          5.427208,
-          5.577958,
-          6.281917,
-          8.939542
+          5.350666,
+          6.0185,
+          6.417416,
+          6.637375,
+          9.384209
         ]
       }
     ],
     "compaction": null,
+    "adapterCost": null,
     "memory": {
-      "baselineHeap": 76875072,
-      "peakHeapSampled": 118355448,
-      "retainedHeapAfterGc": 3650736,
+      "baselineHeap": 76877864,
+      "peakHeapSampled": 118963776,
+      "retainedHeapAfterGc": 3976744,
       "externalDelta": 2099001,
       "arrayBuffersDelta": 2078224,
-      "rssEnd": 278036480,
+      "rssEnd": 278855680,
       "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
     }
   }

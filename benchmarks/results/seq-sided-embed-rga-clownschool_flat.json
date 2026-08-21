@@ -6,8 +6,11 @@
  "env": {
   "node": "v26.3.1",
   "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
   "exposeGc": true,
-  "date": "2026-08-20T11:35:52.428Z"
+  "date": "2026-08-21T13:52:04.521Z"
  },
  "ops": {
   "total": 24326,
@@ -15,14 +18,14 @@
  },
  "finalChars": 21148,
  "apply": {
-  "totalMs": 26.728417,
+  "totalMs": 36.836917,
   "count": 24326,
   "warmupExcluded": 1000,
-  "meanUs": 1.0157967075366543,
-  "medianUs": 0.708,
-  "p95Us": 2.042,
-  "p99Us": 5.292,
-  "maxUs": 439.75
+  "meanUs": 1.4051544628311756,
+  "medianUs": 1.166,
+  "p95Us": 1.917,
+  "p99Us": 4.292,
+  "maxUs": 455.084
  },
  "gates": {
   "textOk": true
@@ -31,7 +34,7 @@
   {
    "label": "sided-policy-binary",
    "bytes": 62912,
-   "timeMs": 30.881042,
+   "timeMs": 29.968709,
    "note": "lossless binary parent-link snapshot including the Fugue policy summary",
    "estimated": false
   }
@@ -39,25 +42,33 @@
  "loads": [
   {
    "label": "sided-policy-binary",
-   "medianMs": 17.015041,
+   "medianMs": 20.563958,
    "runs": 5,
    "allMs": [
-    15.89325,
-    16.224708,
-    17.015041,
-    19.654833,
-    22.609916
+    17.301167,
+    18.195792,
+    20.563958,
+    24.231833,
+    25.488833
    ]
   }
  ],
  "compaction": null,
+ "adapterCost": {
+  "indexTotalMs": 10.984734,
+  "datatypeTotalMs": 20.378741,
+  "rebuildTotalMs": 0,
+  "indexCalls": 48652,
+  "datatypeCalls": 24326,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
  "memory": {
-  "baselineHeap": 10858320,
-  "peakHeapSampled": 30533632,
-  "retainedHeapAfterGc": 7256064,
+  "baselineHeap": 10878528,
+  "peakHeapSampled": 33182376,
+  "retainedHeapAfterGc": 8855392,
   "externalDelta": 194648,
   "arrayBuffersDelta": 194608,
-  "rssEnd": 117047296,
+  "rssEnd": 115736576,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

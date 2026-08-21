@@ -40,6 +40,7 @@ const { totalMs, samplesNs, peakHeap } = timedLoop(ops, (op) => {
 
 const finalText = adapter.text(d);
 const textOk = finalText === doc.endContent;
+const adapterCost = adapter.costBreakdown?.(d) ?? null;
 
 // Document-resident memory: measured HERE, before any save/load/compaction
 // allocates large transient artifacts.
@@ -86,7 +87,7 @@ const result = {
   finalChars: doc.endContent.length,
   apply: { totalMs, ...opStats(samplesNs) },
   gates: { textOk },
-  saves, loads, compaction,
+  saves, loads, compaction, adapterCost,
   memory: {
     baselineHeap: baseline.heapUsed,
     peakHeapSampled: peakHeap,
@@ -107,7 +108,9 @@ writeRawResult(RESULTS, `seq-${system}-${traceName}.json`, {
   metrics: { operations: ops.length, finalChars: result.finalChars,
     applyTotalMs: totalMs, applyMedianUs: result.apply.medianUs,
     applyP95Us: result.apply.p95Us, primarySaveBytes: saves[0]?.bytes ?? null,
-    retainedHeapBytes: result.memory.retainedHeapAfterGc },
+    retainedHeapBytes: result.memory.retainedHeapAfterGc,
+    positionIndexMs: adapterCost?.indexTotalMs ?? null,
+    datatypeApplyMs: adapterCost?.datatypeTotalMs ?? null },
   detail: result,
 });
 console.log(`${system} ${traceName}: ${ops.length} ops in ${totalMs.toFixed(0)} ms ` +

@@ -35,6 +35,24 @@ import { encode as rtEncode, decode as rtDecode } from '../../../runtime/src/ser
 import { Runtime } from '../../../runtime/src/runtime.js';
 import { sharedDelta, sharedContentGids, wireBytes } from '../../../runtime/src/sync.js';
 import { timed } from '../bench.mjs';
+import { IndexedSequence } from '../indexed-sequence.mjs';
+
+const costState = () => ({ indexNs: 0n, datatypeNs: 0n, indexCalls: 0, datatypeCalls: 0, rebuildNs: 0n });
+const charge = (cost, field, calls, fn) => {
+  const start = process.hrtime.bigint();
+  const result = fn();
+  cost[field] += process.hrtime.bigint() - start;
+  cost[calls] += 1;
+  return result;
+};
+const costReport = (cost) => ({
+  indexTotalMs: Number(cost.indexNs) / 1e6,
+  datatypeTotalMs: Number(cost.datatypeNs) / 1e6,
+  rebuildTotalMs: Number(cost.rebuildNs) / 1e6,
+  indexCalls: cost.indexCalls,
+  datatypeCalls: cost.datatypeCalls,
+  timerCaveat: 'nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric',
+});
 
 /** Task #104 SHIPPED run-table serializer: encode(state) -> Uint8Array.
  *  Realizes the task #73 run-table PROJECTION as actual bytes: entry headers
@@ -113,23 +131,26 @@ export function mkAdapter({ shared = false, sided = false, unified = false, plai
     name: plainRGA ? 'RGA' : unified ? 'SidedEmbedRGA' : sided ? `sal-sided-${shared ? 'shared' : 'absolute'}-experimental`
       : (shared ? 'sal-shared-embed-rga' : 'sal-embed-rga'),
     version: 'runtime/ @ repo HEAD (unversioned)',
-    create() { return { state: kernel.init(), view: [], clock: 0 }; },
+    create() { return { state: kernel.init(), view: new IndexedSequence(), clock: 0, adapterCost: costState() }; },
     ins(doc, pos, ch) {
       doc.clock += 1;
       const id = doc.clock;
-      const anchorId = pos > 0 ? doc.view[pos - 1] : null;
-      doc.state = kernel.apply(doc.state, { type: 'ins', id, el: ch, anchorId });
-      doc.view.splice(pos, 0, id);
+      const anchorId = charge(doc.adapterCost, 'indexNs', 'indexCalls', () => pos > 0 ? doc.view.get(pos - 1) : null);
+      doc.state = charge(doc.adapterCost, 'datatypeNs', 'datatypeCalls', () =>
+        kernel.apply(doc.state, { type: 'ins', id, el: ch, anchorId }));
+      charge(doc.adapterCost, 'indexNs', 'indexCalls', () => doc.view.insert(pos, id));
     },
     del(doc, pos) {
       doc.clock += 1; // dense logical time, as in the litmus model
-      const id = doc.view[pos];
-      doc.state = kernel.apply(doc.state, { type: 'del', id });
-      doc.view.splice(pos, 1);
+      const id = charge(doc.adapterCost, 'indexNs', 'indexCalls', () => doc.view.get(pos));
+      doc.state = charge(doc.adapterCost, 'datatypeNs', 'datatypeCalls', () =>
+        kernel.apply(doc.state, { type: 'del', id }));
+      charge(doc.adapterCost, 'indexNs', 'indexCalls', () => doc.view.delete(pos));
     },
     text(doc) { return kernel.read(doc.state).join(''); },
     liveCount(doc) { return typeof kernel.liveCount === 'function' ? kernel.liveCount(doc.state)
       : sided ? doc.state.live.size : doc.state.size; },
+    costBreakdown(doc) { return costReport(doc.adapterCost); },
 
     saveVariants(doc) {
       return [
@@ -164,21 +185,23 @@ export function mkAdapter({ shared = false, sided = false, unified = false, plai
       const rA = runtime.replica('A'), rB = runtime.replica('B');
       const p = {
         runtime, rA, rB,
-        viewA: [], viewB: [], lamA: 0, lamB: 0, minted: [],
+        viewA: new IndexedSequence(), viewB: new IndexedSequence(), lamA: 0, lamB: 0, minted: [],
+        adapterCost: costState(),
         gcMsTotal: 0,
         _ins(r, viewKey, lamKey, bit, pos, ch) {
           p[lamKey] += 1;
           const id = p[lamKey] * 2 + bit;
           p.minted.push(id);
           const view = p[viewKey];
-          const anchorId = pos > 0 ? view[pos - 1] : null;
-          r.commit({ type: 'ins', id, el: ch, anchorId });
-          view.splice(pos, 0, id);
+          const anchorId = charge(p.adapterCost, 'indexNs', 'indexCalls', () => pos > 0 ? view.get(pos - 1) : null);
+          charge(p.adapterCost, 'datatypeNs', 'datatypeCalls', () => r.commit({ type: 'ins', id, el: ch, anchorId }));
+          charge(p.adapterCost, 'indexNs', 'indexCalls', () => view.insert(pos, id));
         },
         _del(r, viewKey, pos) {
           const view = p[viewKey];
-          r.commit({ type: 'del', id: view[pos] });
-          view.splice(pos, 1);
+          const id = charge(p.adapterCost, 'indexNs', 'indexCalls', () => view.get(pos));
+          charge(p.adapterCost, 'datatypeNs', 'datatypeCalls', () => r.commit({ type: 'del', id }));
+          charge(p.adapterCost, 'indexNs', 'indexCalls', () => view.delete(pos));
         },
         insA: (pos, ch) => p._ins(rA, 'viewA', 'lamA', 0, pos, ch),
         delA: (pos) => p._del(rA, 'viewA', pos),
@@ -208,11 +231,14 @@ export function mkAdapter({ shared = false, sided = false, unified = false, plai
           const lam = Math.max(p.lamA, p.lamB);
           p.lamA = lam; p.lamB = lam;
           const ids = kernel.readIds(rA.head.state);
-          p.viewA = [...ids]; p.viewB = [...ids];
+          const rebuildStart = process.hrtime.bigint();
+          p.viewA = IndexedSequence.from(ids); p.viewB = IndexedSequence.from(ids);
+          p.adapterCost.rebuildNs += process.hrtime.bigint() - rebuildStart;
           return { ms, payloadBytes };
         },
         textA: () => kernel.read(rA.head.state).join(''),
         textB: () => kernel.read(rB.head.state).join(''),
+        costBreakdown: () => costReport(p.adapterCost),
         saveVariants() {
           const st = rA.head.state;
           return [

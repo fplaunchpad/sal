@@ -78,6 +78,7 @@ for (let r = 0; r < rounds; r++) {
 
 const textA = p.textA(), textB = p.textB();
 const converged = textA === textB;
+const adapterCost = p.costBreakdown?.() ?? null;
 
 const saves = p.saveVariants().map((v) =>
   v.estimate
@@ -106,7 +107,7 @@ const result = {
     ? { total: payloads.reduce((a, b) => a + b, 0), perSyncMean: payloads.reduce((a, b) => a + b, 0) / payloads.length }
     : null,
   localOps: { count: localOps, totalMs: localOpsTotalMs, meanUs: (localOpsTotalMs * 1e3) / localOps },
-  saves, compaction,
+  saves, compaction, adapterCost,
   runtimeGcMsTotal: p.gcMsTotal ?? null,
   memory: {
     baselineHeap: baseline.heapUsed,
@@ -126,7 +127,10 @@ writeRawResult(RESULTS, `concurrent-${system}-${preset}.json`, {
     syncP95Us: result.sync.p95Us,
     syncPayloadBytes: result.syncPayloadBytes?.total ?? null,
     localOpMeanUs: result.localOps.meanUs, primarySaveBytes: saves[0]?.bytes ?? null,
-    runtimeGcMs: result.runtimeGcMsTotal },
+    runtimeGcMs: result.runtimeGcMsTotal,
+    positionIndexMs: adapterCost?.indexTotalMs ?? null,
+    positionIndexRebuildMs: adapterCost?.rebuildTotalMs ?? null,
+    datatypeApplyMs: adapterCost?.datatypeTotalMs ?? null },
   detail: result,
 });
 console.log(`${system} ${preset}: ${rounds} syncs, median ${(result.sync.medianUs / 1e3).toFixed(3)} ms, ` +

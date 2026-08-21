@@ -16,6 +16,8 @@
 //   for wasm-backed libraries (automerge, loro) most state lives outside
 //   the JS heap.
 
+import { cpus, totalmem } from 'node:os';
+
 export const WARMUP = 1000;
 export const SAMPLE_EVERY = 500;
 
@@ -93,6 +95,9 @@ export function environment() {
   return {
     node: process.version,
     platform: `${process.platform} ${process.arch}`,
+    cpu: cpus()[0]?.model ?? 'unknown',
+    logicalCpus: cpus().length,
+    memoryBytes: totalmem(),
     exposeGc: typeof globalThis.gc === 'function',
     date: new Date().toISOString(),
   };

@@ -19,7 +19,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-20T11:26:12.592Z"
+    "date": "2026-08-21T13:46:47.077Z"
   },
   "gates": {
     "converged": true,
@@ -32,8 +32,8 @@
   },
   "metrics": {
     "operations": 2307,
-    "elapsedMs": 2785.5833749999997,
-    "syncMs": 38.994833,
+    "elapsedMs": 2812.349708,
+    "syncMs": 41.710584000000004,
     "syncBytes": 516593,
     "historyGcMs": 0,
     "stateGcMs": 0,

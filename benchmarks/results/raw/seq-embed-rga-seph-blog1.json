@@ -10,8 +10,11 @@
   "environment": {
     "node": "v26.3.1",
     "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
     "exposeGc": true,
-    "date": "2026-08-20T11:35:48.378Z"
+    "date": "2026-08-21T13:52:10.012Z"
   },
   "gates": {
     "textOk": true,
@@ -20,11 +23,13 @@
   "metrics": {
     "operations": 368209,
     "finalChars": 56769,
-    "applyTotalMs": 1775.092625,
-    "applyMedianUs": 4,
-    "applyP95Us": 12,
+    "applyTotalMs": 369.811916,
+    "applyMedianUs": 0.875,
+    "applyP95Us": 1.25,
     "primarySaveBytes": 161046,
-    "retainedHeapBytes": 15676280
+    "retainedHeapBytes": 19670888,
+    "positionIndexMs": 186.166526,
+    "datatypeApplyMs": 125.922576
   },
   "detail": {
     "workload": "seq",
@@ -34,8 +39,11 @@
     "env": {
       "node": "v26.3.1",
       "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
       "exposeGc": true,
-      "date": "2026-08-20T11:35:48.378Z"
+      "date": "2026-08-21T13:52:10.012Z"
     },
     "ops": {
       "total": 368209,
@@ -43,14 +51,14 @@
     },
     "finalChars": 56769,
     "apply": {
-      "totalMs": 1775.092625,
+      "totalMs": 369.811916,
       "count": 368209,
       "warmupExcluded": 1000,
-      "meanUs": 4.789293908918355,
-      "medianUs": 4,
-      "p95Us": 12,
-      "p99Us": 14.667,
-      "maxUs": 905.292
+      "meanUs": 0.9673600320253588,
+      "medianUs": 0.875,
+      "p95Us": 1.25,
+      "p99Us": 1.958,
+      "maxUs": 806.584
     },
     "gates": {
       "textOk": true
@@ -59,7 +67,7 @@
       {
         "label": "shared-runs-serialized",
         "bytes": 161046,
-        "timeMs": 46.982417,
+        "timeMs": 53.9055,
         "note": "continuation-capable shared path graph with run-compressed provenance",
         "estimated": false
       }
@@ -67,19 +75,19 @@
     "loads": [
       {
         "label": "shared-runs-serialized",
-        "medianMs": 51.183709,
+        "medianMs": 52.673375,
         "runs": 5,
         "allMs": [
-          46.959625,
-          48.649792,
-          51.183709,
-          55.114333,
-          67.000708
+          48.06175,
+          52.293792,
+          52.673375,
+          56.240625,
+          66.7895
         ]
       }
     ],
     "compaction": {
-      "ms": 95.490208,
+      "ms": 95.18225,
       "stats": {
         "nodesBefore": 84884,
         "nodesAfter": 58766,
@@ -96,19 +104,27 @@
         {
           "label": "shared-runs-serialized+compacted",
           "bytes": 179052,
-          "timeMs": 57.506292,
+          "timeMs": 54.141875,
           "note": "native shared-path continuation snapshot after direct guarded GC"
         }
       ],
       "textOk": true
     },
+    "adapterCost": {
+      "indexTotalMs": 186.166526,
+      "datatypeTotalMs": 125.922576,
+      "rebuildTotalMs": 0,
+      "indexCalls": 736418,
+      "datatypeCalls": 368209,
+      "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+    },
     "memory": {
-      "baselineHeap": 53636464,
-      "peakHeapSampled": 114684000,
-      "retainedHeapAfterGc": 15676280,
+      "baselineHeap": 53679488,
+      "peakHeapSampled": 144126256,
+      "retainedHeapAfterGc": 19670888,
       "externalDelta": 2945712,
       "arrayBuffersDelta": 2945672,
-      "rssEnd": 280854528,
+      "rssEnd": 310296576,
       "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
     }
   }

@@ -95,6 +95,7 @@ for (const label of Object.keys(phases[0].saves)) {
 
 gcNow();
 const end = memSnap();
+const adapterCost = adapter.costBreakdown?.(d) ?? null;
 
 const result = {
   workload: 'churn', system, systemVersion: adapter.version,
@@ -102,7 +103,7 @@ const result = {
   env: environment(),
   finalChars: live,
   gates: { lenOk: adapter.text(d).length === live },
-  phases, growthOnDelete,
+  phases, growthOnDelete, adapterCost,
   memory: {
     baselineHeap: baseline.heapUsed,
     retainedHeapAfterGc: end.heapUsed - baseline.heapUsed,
@@ -116,7 +117,9 @@ writeRawResult(RESULTS, `churn-${system}.json`, {
   config: result.config, environment: result.env, gates: result.gates,
   metrics: { operations: CYCLES * (INS + DEL) + FINAL_INS, finalChars: live,
     finalPrimarySaveBytes: phases.at(-1).saves[Object.keys(phases.at(-1).saves)[0]],
-    retainedHeapBytes: result.memory.retainedHeapAfterGc },
+    retainedHeapBytes: result.memory.retainedHeapAfterGc,
+    positionIndexMs: adapterCost?.indexTotalMs ?? null,
+    datatypeApplyMs: adapterCost?.datatypeTotalMs ?? null },
   detail: result,
 });
 const summary = Object.entries(growthOnDelete)

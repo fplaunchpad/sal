@@ -39,15 +39,17 @@ artifacts.
 - [ ] Add same-replica crash recovery. Persist replica identity, Lamport mint
   state, causal frontier, roster evidence, epoch translations, datatype state,
   and pending synchronization state; test recovery across a GC epoch.
-- [ ] Replace benchmark position-to-ID array splices with an indexed sequence
-  adapter and report adapter cost separately from datatype operations.
+- [x] Replace benchmark position-to-ID array splices with a deterministic
+  indexed-sequence adapter and report index, datatype, and rebuild costs
+  separately while retaining overall wall time as the primary metric.
 - [ ] Add streaming bulk decoders/builders for run-table and shared snapshots.
 - [ ] Profile and optimize shared-path sync, save construction, and repeated
   HAMT/path traversal.
 - [ ] Keep EmbedRGA and SidedEmbedRGA as separate state-of-the-art baselines;
   report their storage/intent tradeoff rather than selecting one silently.
-- [ ] Complete statistically repeated benchmark runs and publish machine-readable
-  raw results plus the primary tabular summaries consumed by `Sal_paper`.
+- [x] Complete statistically repeated benchmark runs and publish machine-readable
+  raw results plus primary tabular summaries: the Sal-versus-external matrix,
+  the three verified sequence kernels, and the focused Peritext/two-GC design.
 
 ## 2. Follow-on formal work
 
@@ -62,6 +64,11 @@ artifacts.
 - [ ] Optimize TreeMove trash collection before the pending suffix becomes
   empty. This is not required for correctness: the current collector waits
   until the full local event log is stable before pruning the hidden subtree.
+- [ ] Implement and benchmark a standalone JavaScript TreeMove runtime that
+  mirrors the verified Lean model. Include canonical replay and incremental
+  undo/redo, distributed commit-history GC, stable-prefix log GC, quiescent
+  trash-subtree GC, crash recovery, differential tests against the Lean-facing
+  semantic fixtures, and empty-tree metadata measurements.
 - [ ] Build a verified structured-editor composition after the standalone
   TreeMove runtime is implemented and measured: use TreeMove with
   SidedEmbedRGA/FugueMax sibling positions to organize blocks, and a map from

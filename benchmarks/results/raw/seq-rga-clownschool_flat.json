@@ -10,8 +10,11 @@
   "environment": {
     "node": "v26.3.1",
     "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
     "exposeGc": true,
-    "date": "2026-08-20T11:35:36.747Z"
+    "date": "2026-08-21T13:52:03.957Z"
   },
   "gates": {
     "textOk": true,
@@ -20,11 +23,13 @@
   "metrics": {
     "operations": 24326,
     "finalChars": 21148,
-    "applyTotalMs": 19.353625,
-    "applyMedianUs": 0.416,
-    "applyP95Us": 1.958,
+    "applyTotalMs": 27.687917,
+    "applyMedianUs": 0.875,
+    "applyP95Us": 1.458,
     "primarySaveBytes": 138358,
-    "retainedHeapBytes": 4151736
+    "retainedHeapBytes": 5755184,
+    "positionIndexMs": 12.126441,
+    "datatypeApplyMs": 11.027453
   },
   "detail": {
     "workload": "seq",
@@ -34,8 +39,11 @@
     "env": {
       "node": "v26.3.1",
       "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
       "exposeGc": true,
-      "date": "2026-08-20T11:35:36.747Z"
+      "date": "2026-08-21T13:52:03.957Z"
     },
     "ops": {
       "total": 24326,
@@ -43,14 +51,14 @@
     },
     "finalChars": 21148,
     "apply": {
-      "totalMs": 19.353625,
+      "totalMs": 27.687917,
       "count": 24326,
       "warmupExcluded": 1000,
-      "meanUs": 0.7300460001714825,
-      "medianUs": 0.416,
-      "p95Us": 1.958,
-      "p99Us": 5.834,
-      "maxUs": 461.625
+      "meanUs": 1.042113264168739,
+      "medianUs": 0.875,
+      "p95Us": 1.458,
+      "p99Us": 2.5,
+      "maxUs": 362.958
     },
     "gates": {
       "textOk": true
@@ -59,7 +67,7 @@
       {
         "label": "rga-binary",
         "bytes": 138358,
-        "timeMs": 13.4215,
+        "timeMs": 13.292166,
         "note": "continuation-capable packed insertion tree and tombstone set",
         "estimated": false
       }
@@ -67,25 +75,33 @@
     "loads": [
       {
         "label": "rga-binary",
-        "medianMs": 17.427125,
+        "medianMs": 17.893417,
         "runs": 5,
         "allMs": [
-          15.399375,
-          16.334209,
-          17.427125,
-          18.20025,
-          21.622333
+          15.241334,
+          17.68925,
+          17.893417,
+          19.124125,
+          20.849708
         ]
       }
     ],
     "compaction": null,
+    "adapterCost": {
+      "indexTotalMs": 12.126441,
+      "datatypeTotalMs": 11.027453,
+      "rebuildTotalMs": 0,
+      "indexCalls": 48652,
+      "datatypeCalls": 24326,
+      "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+    },
     "memory": {
-      "baselineHeap": 10858312,
-      "peakHeapSampled": 20738104,
-      "retainedHeapAfterGc": 4151736,
+      "baselineHeap": 10878616,
+      "peakHeapSampled": 30645688,
+      "retainedHeapAfterGc": 5755184,
       "externalDelta": 194648,
       "arrayBuffersDelta": 194608,
-      "rssEnd": 100909056,
+      "rssEnd": 111820800,
       "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
     }
   }

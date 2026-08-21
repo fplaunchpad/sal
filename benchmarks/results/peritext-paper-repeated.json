@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-17T12:58:03.911Z",
+  "generatedAt": "2026-08-21T13:47:03.368Z",
   "preset": "bulk",
   "repetitions": 3,
   "design": {
@@ -42,8 +42,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13536.847416999999,
-      "syncMs": 85.51862500000001,
+      "elapsedMs": 11956.919459,
+      "syncMs": 77.842626,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -78,10 +78,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 13898.094958000001,
-      "syncMs": 54.728417,
+      "elapsedMs": 11808.665958,
+      "syncMs": 55.073747999999995,
       "syncBytes": 942659,
-      "historyGcMs": 48.024457999999996,
+      "historyGcMs": 44.491958,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -114,11 +114,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13415.353500000001,
-      "syncMs": 102.610335,
+      "elapsedMs": 12044.670625,
+      "syncMs": 100.04595900000001,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 22.935292,
+      "stateGcMs": 21.4395,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -150,11 +150,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 14591.268875000002,
-      "syncMs": 104.15791599999999,
+      "elapsedMs": 13051.050207999999,
+      "syncMs": 99.5635,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 23.132959,
+      "stateGcMs": 21.603166,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -186,8 +186,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13576.812208000001,
-      "syncMs": 84.18674999999999,
+      "elapsedMs": 13233.193874999999,
+      "syncMs": 82.265918,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -222,10 +222,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 13033.545957999999,
-      "syncMs": 60.463041,
+      "elapsedMs": 12659.590667,
+      "syncMs": 59.586709,
       "syncBytes": 942659,
-      "historyGcMs": 47.405668999999996,
+      "historyGcMs": 45.854167000000004,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -258,11 +258,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13639.93775,
-      "syncMs": 108.06612499999999,
+      "elapsedMs": 13208.221625,
+      "syncMs": 106.870665,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 26.991667,
+      "stateGcMs": 25.628959,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -294,11 +294,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 14295.45,
-      "syncMs": 112.135126,
+      "elapsedMs": 13355.906083,
+      "syncMs": 107.842039,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 27.858625,
+      "stateGcMs": 25.190334,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -330,8 +330,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 14354.851625,
-      "syncMs": 93.025291,
+      "elapsedMs": 14084.9925,
+      "syncMs": 98.056167,
       "syncBytes": 991581,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -366,10 +366,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 14640.002499999999,
-      "syncMs": 68.433626,
+      "elapsedMs": 12660.122,
+      "syncMs": 74.51129099999999,
       "syncBytes": 991581,
-      "historyGcMs": 48.835336,
+      "historyGcMs": 45.325043,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -402,11 +402,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 14450.725,
-      "syncMs": 121.68304,
+      "elapsedMs": 13992.920082999999,
+      "syncMs": 127.145124,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 27.589667,
+      "stateGcMs": 25.209875,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -438,11 +438,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 14534.366708,
-      "syncMs": 126.33229,
+      "elapsedMs": 13183.526375000001,
+      "syncMs": 126.89562600000002,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 27.626917,
+      "stateGcMs": 25.18525,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -474,8 +474,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 38572.71725,
-      "syncMs": 234.108041,
+      "elapsedMs": 34187.914957999994,
+      "syncMs": 194.324417,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -510,10 +510,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 38353.04825,
-      "syncMs": 225.46999899999997,
+      "elapsedMs": 33850.521583,
+      "syncMs": 198.693792,
       "syncBytes": 5615642,
-      "historyGcMs": 40.940416,
+      "historyGcMs": 36.219916,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -546,11 +546,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 39059.780667,
-      "syncMs": 311.244376,
+      "elapsedMs": 34446.177958,
+      "syncMs": 274.871209,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 57.804416,
+      "stateGcMs": 51.370791,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -582,11 +582,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 39154.529792,
-      "syncMs": 302.65379199999995,
+      "elapsedMs": 34516.990999999995,
+      "syncMs": 277.667291,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 62.952666,
+      "stateGcMs": 64.993083,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -618,8 +618,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 39383.764666,
-      "syncMs": 223.989292,
+      "elapsedMs": 34181.0755,
+      "syncMs": 194.032083,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -654,10 +654,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 38567.790792,
-      "syncMs": 221.458666,
+      "elapsedMs": 34631.564458999994,
+      "syncMs": 196.395917,
       "syncBytes": 5615642,
-      "historyGcMs": 41.096625,
+      "historyGcMs": 35.602875,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -690,11 +690,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 39058.346791,
-      "syncMs": 356.675668,
+      "elapsedMs": 34724.04575,
+      "syncMs": 319.223834,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 100.006834,
+      "stateGcMs": 89.648667,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -726,11 +726,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 38515.935,
-      "syncMs": 359.572292,
+      "elapsedMs": 34846.447167,
+      "syncMs": 321.12225,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 120.902667,
+      "stateGcMs": 90.437292,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -762,8 +762,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 41297.982625000004,
-      "syncMs": 289.789626,
+      "elapsedMs": 34350.967583000005,
+      "syncMs": 230.590208,
       "syncBytes": 6282667,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -798,10 +798,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 38710.35875,
-      "syncMs": 248.33174900000003,
+      "elapsedMs": 34445.940875,
+      "syncMs": 228.778542,
       "syncBytes": 6282667,
-      "historyGcMs": 39.369375,
+      "historyGcMs": 35.972542,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -834,11 +834,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 38667.514749999995,
-      "syncMs": 412.29970699999996,
+      "elapsedMs": 35657.025583,
+      "syncMs": 376.160293,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 115.237667,
+      "stateGcMs": 85.431,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -870,11 +870,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 41676.915959,
-      "syncMs": 442.50425,
+      "elapsedMs": 35894.722833,
+      "syncMs": 394.959542,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 106.664292,
+      "stateGcMs": 87.18475,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -906,8 +906,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 44216.68675,
-      "syncMs": 243.98633100000004,
+      "elapsedMs": 40984.985792,
+      "syncMs": 255.373754,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -942,11 +942,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 44222.501791,
-      "syncMs": 315.23399900000004,
+      "elapsedMs": 40974.282791,
+      "syncMs": 334.401708,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 86.509292,
+      "stateGcMs": 80.19725,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -978,11 +978,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 44110.408459,
-      "syncMs": 312.85312799999997,
+      "elapsedMs": 41154.58433400001,
+      "syncMs": 349.95112200000005,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 85.927625,
+      "stateGcMs": 83.119458,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -1014,8 +1014,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 43889.949875,
-      "syncMs": 324.119792,
+      "elapsedMs": 41280.291417,
+      "syncMs": 328.644918,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1050,11 +1050,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 43990.065582999996,
-      "syncMs": 396.33678999999995,
+      "elapsedMs": 41371.6845,
+      "syncMs": 402.80291700000004,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 87.645541,
+      "stateGcMs": 86.863333,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -1086,11 +1086,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 44467.289124999996,
-      "syncMs": 394.582538,
+      "elapsedMs": 41574.742541,
+      "syncMs": 411.66595700000005,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 86.551041,
+      "stateGcMs": 84.963834,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -1122,8 +1122,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 41387.915958,
-      "syncMs": 235.414376,
+      "elapsedMs": 41640.289292,
+      "syncMs": 269.09237399999995,
       "syncBytes": 1272373,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1158,11 +1158,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 41517.267875000005,
-      "syncMs": 329.774998,
+      "elapsedMs": 41812.324917,
+      "syncMs": 335.26604,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 91.535459,
+      "stateGcMs": 84.219541,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -1194,11 +1194,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 44447.508583,
-      "syncMs": 311.707209,
+      "elapsedMs": 41917.733458,
+      "syncMs": 341.55249899999995,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 88.316458,
+      "stateGcMs": 90.023958,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -1230,8 +1230,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 329.091417,
-      "syncMs": 17.923874,
+      "elapsedMs": 314.568625,
+      "syncMs": 17.733458,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1266,11 +1266,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 323.413459,
-      "syncMs": 20.774916999999995,
+      "elapsedMs": 310.343375,
+      "syncMs": 21.548084,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.269708,
+      "stateGcMs": 3.044708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1302,11 +1302,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 321.249583,
-      "syncMs": 20.764625,
+      "elapsedMs": 308.75825000000003,
+      "syncMs": 19.782167,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.081625,
+      "stateGcMs": 3.174792,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1338,8 +1338,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 331.925916,
-      "syncMs": 18.316418,
+      "elapsedMs": 313.652083,
+      "syncMs": 17.872541,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1374,11 +1374,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 323.83720900000003,
-      "syncMs": 23.065417,
+      "elapsedMs": 309.533208,
+      "syncMs": 20.699877,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 3.680708,
+      "stateGcMs": 3.490667,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1410,11 +1410,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 324.713,
-      "syncMs": 21.197540999999998,
+      "elapsedMs": 313.885583,
+      "syncMs": 20.6105,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 3.666667,
+      "stateGcMs": 3.564708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1446,8 +1446,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 333.978417,
-      "syncMs": 22.299584,
+      "elapsedMs": 321.328333,
+      "syncMs": 19.917749999999998,
       "syncBytes": 265094,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1482,11 +1482,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 330.417,
-      "syncMs": 23.449082,
+      "elapsedMs": 317.20825,
+      "syncMs": 23.891708999999995,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.798125,
+      "stateGcMs": 3.395417,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1518,11 +1518,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 332.555042,
-      "syncMs": 23.608124,
+      "elapsedMs": 317.26416600000005,
+      "syncMs": 22.733166,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.563084,
+      "stateGcMs": 3.437959,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -1554,8 +1554,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4471.211083,
-      "syncMs": 30.651249999999997,
+      "elapsedMs": 4096.733417,
+      "syncMs": 30.765624999999996,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1590,11 +1590,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4227.583333,
-      "syncMs": 42.301543,
+      "elapsedMs": 4072.1091659999997,
+      "syncMs": 41.66021,
       "syncBytes": 680285,
       "historyGcMs": 0,
-      "stateGcMs": 9.1035,
+      "stateGcMs": 8.920417,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -1626,8 +1626,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4239.750167,
-      "syncMs": 30.052667,
+      "elapsedMs": 4070.217792,
+      "syncMs": 29.802709000000004,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1662,11 +1662,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4548.504083,
-      "syncMs": 47.718418,
+      "elapsedMs": 4294.644459,
+      "syncMs": 45.741457,
       "syncBytes": 697693,
       "historyGcMs": 0,
-      "stateGcMs": 12.440709,
+      "stateGcMs": 11.911167,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -1698,8 +1698,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4560.913042,
-      "syncMs": 32.796,
+      "elapsedMs": 4417.065625,
+      "syncMs": 30.907874999999997,
       "syncBytes": 599415,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1734,11 +1734,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4657.136041,
-      "syncMs": 48.206625,
+      "elapsedMs": 4598.142291,
+      "syncMs": 45.114625000000004,
       "syncBytes": 718692,
       "historyGcMs": 0,
-      "stateGcMs": 11.252041,
+      "stateGcMs": 11.204625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -1770,8 +1770,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 2883.520959,
-      "syncMs": 38.781166,
+      "elapsedMs": 2764.767792,
+      "syncMs": 38.42104200000001,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1806,11 +1806,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3272.63975,
-      "syncMs": 50.787915999999996,
+      "elapsedMs": 3197.3664169999997,
+      "syncMs": 53.346540999999995,
       "syncBytes": 725166,
       "historyGcMs": 0,
-      "stateGcMs": 10.683374999999998,
+      "stateGcMs": 8.660499,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -1842,8 +1842,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 3033.044666,
-      "syncMs": 43.891582,
+      "elapsedMs": 2804.983625,
+      "syncMs": 45.501706999999996,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1878,11 +1878,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3303.268083,
-      "syncMs": 63.880999,
+      "elapsedMs": 3201.1426250000004,
+      "syncMs": 64.08271,
       "syncBytes": 763885,
       "historyGcMs": 0,
-      "stateGcMs": 16.776124,
+      "stateGcMs": 14.300333000000002,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -1914,8 +1914,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 3142.698583,
-      "syncMs": 58.59779199999999,
+      "elapsedMs": 3054.106333,
+      "syncMs": 61.95550000000001,
       "syncBytes": 550351,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -1950,11 +1950,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3504.201709,
-      "syncMs": 79.502083,
+      "elapsedMs": 3378.255334,
+      "syncMs": 81.877791,
       "syncBytes": 763505,
       "historyGcMs": 0,
-      "stateGcMs": 16.070542,
+      "stateGcMs": 15.346958999999998,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -1986,8 +1986,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13540.39825,
-      "syncMs": 81.377249,
+      "elapsedMs": 12840.021125000001,
+      "syncMs": 82.906543,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2022,10 +2022,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 13814.625792,
-      "syncMs": 53.151542,
+      "elapsedMs": 13429.065542,
+      "syncMs": 58.940334,
       "syncBytes": 942659,
-      "historyGcMs": 48.25758599999999,
+      "historyGcMs": 48.181124999999994,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2058,11 +2058,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 14370.973167,
-      "syncMs": 100.735209,
+      "elapsedMs": 12828.105083,
+      "syncMs": 104.67245799999999,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 23.558791,
+      "stateGcMs": 21.651,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2094,11 +2094,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 13558.8245,
-      "syncMs": 102.362459,
+      "elapsedMs": 12887.351583000001,
+      "syncMs": 104.76675,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 21.823625,
+      "stateGcMs": 22.589708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2130,8 +2130,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 14397.5875,
-      "syncMs": 82.6995,
+      "elapsedMs": 13167.894375,
+      "syncMs": 87.594415,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2166,10 +2166,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 12562.063584000001,
-      "syncMs": 55.534168,
+      "elapsedMs": 13350.144125,
+      "syncMs": 64.63687599999999,
       "syncBytes": 942659,
-      "historyGcMs": 46.784333000000004,
+      "historyGcMs": 46.437960999999994,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2202,11 +2202,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13261.809333000001,
-      "syncMs": 111.12183200000001,
+      "elapsedMs": 13065.845666000001,
+      "syncMs": 114.254584,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 27.210375,
+      "stateGcMs": 26.375958,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2238,11 +2238,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 13068.615625,
-      "syncMs": 108.81133400000002,
+      "elapsedMs": 12918.068083,
+      "syncMs": 117.207292,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 26.32825,
+      "stateGcMs": 25.963875,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2274,8 +2274,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13833.017042,
-      "syncMs": 89.481291,
+      "elapsedMs": 13701.85075,
+      "syncMs": 104.12825000000001,
       "syncBytes": 991581,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2310,10 +2310,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 14308.889792,
-      "syncMs": 68.26799999999999,
+      "elapsedMs": 13089.202541,
+      "syncMs": 78.328832,
       "syncBytes": 991581,
-      "historyGcMs": 47.306084999999996,
+      "historyGcMs": 47.615750999999996,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2346,11 +2346,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13933.239167,
-      "syncMs": 117.43121,
+      "elapsedMs": 13712.751375,
+      "syncMs": 130.210001,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 26.321541,
+      "stateGcMs": 25.943708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2382,11 +2382,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 14836.567874999999,
-      "syncMs": 121.539959,
+      "elapsedMs": 14434.122166000001,
+      "syncMs": 130.383083,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 26.919416,
+      "stateGcMs": 26.403333,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -2418,8 +2418,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 35656.092333,
-      "syncMs": 218.31316700000002,
+      "elapsedMs": 35341.193125,
+      "syncMs": 203.832166,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2454,10 +2454,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 35819.829999999994,
-      "syncMs": 220.896832,
+      "elapsedMs": 35168.070416999995,
+      "syncMs": 212.683625,
       "syncBytes": 5615642,
-      "historyGcMs": 34.94925,
+      "historyGcMs": 51.58175,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2490,11 +2490,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35904.815208,
-      "syncMs": 279.7725,
+      "elapsedMs": 35231.08562500001,
+      "syncMs": 279.472083,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 53.237041,
+      "stateGcMs": 53.286625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2526,11 +2526,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 35976.144291000004,
-      "syncMs": 295.73087599999997,
+      "elapsedMs": 35062.581709,
+      "syncMs": 297.935332,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 53.839167,
+      "stateGcMs": 51.493416,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2562,8 +2562,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 35836.857542,
-      "syncMs": 222.823917,
+      "elapsedMs": 35269.57941699999,
+      "syncMs": 215.126458,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2598,10 +2598,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 35829.882125,
-      "syncMs": 201.35316600000002,
+      "elapsedMs": 35058.400167,
+      "syncMs": 215.958708,
       "syncBytes": 5615642,
-      "historyGcMs": 35.423042,
+      "historyGcMs": 36.499542,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2634,11 +2634,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35908.557333,
-      "syncMs": 334.76766799999996,
+      "elapsedMs": 35514.726667,
+      "syncMs": 334.958584,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 91.487375,
+      "stateGcMs": 93.597625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2670,11 +2670,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 36184.944959,
-      "syncMs": 330.31170799999995,
+      "elapsedMs": 35369.005708,
+      "syncMs": 325.00550000000004,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 89.198208,
+      "stateGcMs": 89.50075,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2706,8 +2706,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 35516.953666999994,
-      "syncMs": 241.204209,
+      "elapsedMs": 36409.853041,
+      "syncMs": 240.730749,
       "syncBytes": 6282667,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2742,10 +2742,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 35799.863124999996,
-      "syncMs": 235.235582,
+      "elapsedMs": 35027.531875,
+      "syncMs": 236.297501,
       "syncBytes": 6282667,
-      "historyGcMs": 36.135208,
+      "historyGcMs": 36.963083,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -2778,11 +2778,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35956.291042000004,
-      "syncMs": 388.354667,
+      "elapsedMs": 36234.259874999996,
+      "syncMs": 387.312626,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 82.402458,
+      "stateGcMs": 86.366708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2814,11 +2814,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 35733.179459,
-      "syncMs": 378.61141699999996,
+      "elapsedMs": 36099.182833,
+      "syncMs": 400.061792,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 98.846708,
+      "stateGcMs": 85.262792,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -2850,8 +2850,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 42012.577708000004,
-      "syncMs": 235.86675100000002,
+      "elapsedMs": 41272.617917,
+      "syncMs": 266.890712,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2886,11 +2886,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 42086.14975,
-      "syncMs": 311.502168,
+      "elapsedMs": 41491.898875,
+      "syncMs": 340.04932999999994,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 82.570959,
+      "stateGcMs": 82.748708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -2922,11 +2922,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 41801.121,
-      "syncMs": 316.536997,
+      "elapsedMs": 41917.910917,
+      "syncMs": 325.634458,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 84.880417,
+      "stateGcMs": 84.082416,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -2958,8 +2958,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 41965.979584,
-      "syncMs": 297.17770600000006,
+      "elapsedMs": 41837.750708,
+      "syncMs": 334.46495799999997,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -2994,11 +2994,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 42133.951292,
-      "syncMs": 378.97662799999995,
+      "elapsedMs": 41999.894667,
+      "syncMs": 401.50074799999993,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 84.585459,
+      "stateGcMs": 84.429333,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -3030,11 +3030,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 42213.012416,
-      "syncMs": 375.51158399999997,
+      "elapsedMs": 41937.986,
+      "syncMs": 412.19029,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 84.879083,
+      "stateGcMs": 87.41575,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -3066,8 +3066,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 42182.477958,
-      "syncMs": 227.54808499999996,
+      "elapsedMs": 39175.031,
+      "syncMs": 256.95708499999995,
       "syncBytes": 1272373,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3102,11 +3102,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 39387.69225,
-      "syncMs": 299.595915,
+      "elapsedMs": 42095.423417,
+      "syncMs": 341.30054,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 87.014667,
+      "stateGcMs": 87.080917,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -3138,11 +3138,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 42400.369834,
-      "syncMs": 303.059249,
+      "elapsedMs": 42036.457167,
+      "syncMs": 341.70479600000004,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 88.52525,
+      "stateGcMs": 87.180042,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -3174,8 +3174,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 316.678542,
-      "syncMs": 17.615416,
+      "elapsedMs": 315.663875,
+      "syncMs": 17.6705,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3210,11 +3210,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 314.111834,
-      "syncMs": 20.760790000000004,
+      "elapsedMs": 310.771833,
+      "syncMs": 20.578459000000002,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.074625,
+      "stateGcMs": 3.083333,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3246,11 +3246,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 316.305083,
-      "syncMs": 21.612125,
+      "elapsedMs": 315.6865,
+      "syncMs": 20.784417,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.100875,
+      "stateGcMs": 3.105875,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3282,8 +3282,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 316.396042,
-      "syncMs": 17.514999,
+      "elapsedMs": 318.233166,
+      "syncMs": 18.237541999999998,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3318,11 +3318,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 317.30429200000003,
-      "syncMs": 20.567919,
+      "elapsedMs": 313.377917,
+      "syncMs": 20.824333000000003,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 3.539208,
+      "stateGcMs": 3.656834,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3354,11 +3354,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 316.000542,
-      "syncMs": 21.215083999999997,
+      "elapsedMs": 313.315542,
+      "syncMs": 20.247125000000004,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 4.031291,
+      "stateGcMs": 3.538,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3390,8 +3390,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 325.91895800000003,
-      "syncMs": 19.702334,
+      "elapsedMs": 323.90675,
+      "syncMs": 19.595958,
       "syncBytes": 265094,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3426,11 +3426,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 319.20662500000003,
-      "syncMs": 23.518292000000002,
+      "elapsedMs": 321.273875,
+      "syncMs": 22.617417,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.382875,
+      "stateGcMs": 3.400542,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3462,11 +3462,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 321.709541,
-      "syncMs": 22.727083000000004,
+      "elapsedMs": 319.510791,
+      "syncMs": 22.780083,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.481583,
+      "stateGcMs": 3.768833,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -3498,8 +3498,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4104.572332999999,
-      "syncMs": 30.702292,
+      "elapsedMs": 4049.205833,
+      "syncMs": 30.016709,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3534,11 +3534,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4116.0655,
-      "syncMs": 41.305293,
+      "elapsedMs": 4253.616167,
+      "syncMs": 40.355999000000004,
       "syncBytes": 680285,
       "historyGcMs": 0,
-      "stateGcMs": 8.972291,
+      "stateGcMs": 8.99875,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -3570,8 +3570,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4185.48975,
-      "syncMs": 29.567541,
+      "elapsedMs": 4147.001083,
+      "syncMs": 30.937041,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3606,11 +3606,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4200.389,
-      "syncMs": 43.819209,
+      "elapsedMs": 4184.824042,
+      "syncMs": 45.302959,
       "syncBytes": 697693,
       "historyGcMs": 0,
-      "stateGcMs": 12.279291,
+      "stateGcMs": 12.114625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -3642,8 +3642,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4426.66125,
-      "syncMs": 32.259625,
+      "elapsedMs": 4618.811292,
+      "syncMs": 32.467208,
       "syncBytes": 599415,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3678,11 +3678,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4439.061875,
-      "syncMs": 45.44525,
+      "elapsedMs": 4434.300417,
+      "syncMs": 45.720709,
       "syncBytes": 718692,
       "historyGcMs": 0,
-      "stateGcMs": 11.399375,
+      "stateGcMs": 11.281666,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -3714,8 +3714,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 2833.7821249999997,
-      "syncMs": 35.855959,
+      "elapsedMs": 2905.66725,
+      "syncMs": 39.58029,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3750,11 +3750,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3230.6146249999997,
-      "syncMs": 49.03512500000001,
+      "elapsedMs": 3139.751625,
+      "syncMs": 51.744293000000006,
       "syncBytes": 725166,
       "historyGcMs": 0,
-      "stateGcMs": 8.819875,
+      "stateGcMs": 9.257959,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -3786,8 +3786,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 2890.309917,
-      "syncMs": 43.335915,
+      "elapsedMs": 2899.914541,
+      "syncMs": 45.603586,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3822,11 +3822,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3312.315,
-      "syncMs": 65.381958,
+      "elapsedMs": 3378.7821249999997,
+      "syncMs": 65.472459,
       "syncBytes": 763885,
       "historyGcMs": 0,
-      "stateGcMs": 15.127208,
+      "stateGcMs": 14.85475,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -3858,8 +3858,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 3036.2115830000002,
-      "syncMs": 56.896917,
+      "elapsedMs": 3054.825958,
+      "syncMs": 62.035083,
       "syncBytes": 550351,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3894,11 +3894,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3465.9342079999997,
-      "syncMs": 79.041,
+      "elapsedMs": 3432.067459,
+      "syncMs": 81.52224900000002,
       "syncBytes": 763505,
       "historyGcMs": 0,
-      "stateGcMs": 14.050916,
+      "stateGcMs": 13.624374,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -3930,8 +3930,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 12958.669249999999,
-      "syncMs": 76.35550099999999,
+      "elapsedMs": 13731.552334,
+      "syncMs": 83.326417,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -3966,10 +3966,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 12473.838125,
-      "syncMs": 51.711040000000004,
+      "elapsedMs": 12442.762458000001,
+      "syncMs": 59.603042,
       "syncBytes": 942659,
-      "historyGcMs": 46.636832,
+      "historyGcMs": 48.442124,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4002,11 +4002,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13034.626416000001,
-      "syncMs": 98.887501,
+      "elapsedMs": 12902.475916,
+      "syncMs": 107.78841699999998,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 22.062042,
+      "stateGcMs": 22.032208,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4038,11 +4038,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 12855.148166,
-      "syncMs": 97.5615,
+      "elapsedMs": 13003.719292,
+      "syncMs": 107.177709,
       "syncBytes": 1167030,
       "historyGcMs": 0,
-      "stateGcMs": 21.998583,
+      "stateGcMs": 21.778333,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4074,8 +4074,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13140.694375,
-      "syncMs": 79.997669,
+      "elapsedMs": 13083.505041999999,
+      "syncMs": 88.70883300000001,
       "syncBytes": 942659,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4110,10 +4110,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 12531.893166,
-      "syncMs": 54.668457,
+      "elapsedMs": 13460.812,
+      "syncMs": 65.514999,
       "syncBytes": 942659,
-      "historyGcMs": 48.20012499999999,
+      "historyGcMs": 47.702918,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4146,11 +4146,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13056.1555,
-      "syncMs": 109.43995799999999,
+      "elapsedMs": 13881.466375,
+      "syncMs": 115.48170799999998,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 26.76325,
+      "stateGcMs": 26.279833,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4182,11 +4182,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 12967.268792,
-      "syncMs": 104.640542,
+      "elapsedMs": 13041.711625,
+      "syncMs": 119.282167,
       "syncBytes": 1193433,
       "historyGcMs": 0,
-      "stateGcMs": 25.718875,
+      "stateGcMs": 26.345833,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4218,8 +4218,8 @@
       "scenario": "concurrent-rich",
       "mode": "none",
       "operations": 4101,
-      "elapsedMs": 13568.279417,
-      "syncMs": 88.87004100000001,
+      "elapsedMs": 13981.565959000001,
+      "syncMs": 103.790498,
       "syncBytes": 991581,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4254,10 +4254,10 @@
       "scenario": "concurrent-rich",
       "mode": "history",
       "operations": 4101,
-      "elapsedMs": 13338.842,
-      "syncMs": 67.387416,
+      "elapsedMs": 13251.391167,
+      "syncMs": 78.50975,
       "syncBytes": 991581,
-      "historyGcMs": 46.63333499999999,
+      "historyGcMs": 46.615666,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4290,11 +4290,11 @@
       "scenario": "concurrent-rich",
       "mode": "full-state",
       "operations": 4101,
-      "elapsedMs": 13975.207542,
-      "syncMs": 121.541292,
+      "elapsedMs": 13760.977834,
+      "syncMs": 130.768667,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 27.161041,
+      "stateGcMs": 25.780542,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4326,11 +4326,11 @@
       "scenario": "concurrent-rich",
       "mode": "both",
       "operations": 4101,
-      "elapsedMs": 13774.310333,
-      "syncMs": 117.103751,
+      "elapsedMs": 14696.699999999999,
+      "syncMs": 130.590959,
       "syncBytes": 1223214,
       "historyGcMs": 0,
-      "stateGcMs": 27.053959,
+      "stateGcMs": 27.032666,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4108,
@@ -4362,8 +4362,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 35167.792167,
-      "syncMs": 203.94741699999997,
+      "elapsedMs": 34799.568542,
+      "syncMs": 215.84099999999998,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4398,10 +4398,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 35182.3495,
-      "syncMs": 204.951501,
+      "elapsedMs": 35303.82125,
+      "syncMs": 214.743876,
       "syncBytes": 5615642,
-      "historyGcMs": 36.7445,
+      "historyGcMs": 36.309042,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4434,11 +4434,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35756.073125,
-      "syncMs": 300.988834,
+      "elapsedMs": 35433.016833,
+      "syncMs": 286.462958,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 54.918583,
+      "stateGcMs": 51.375084,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4470,11 +4470,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 35394.025541,
-      "syncMs": 296.332501,
+      "elapsedMs": 35148.611625,
+      "syncMs": 280.806959,
       "syncBytes": 5969243,
       "historyGcMs": 0,
-      "stateGcMs": 52.416292,
+      "stateGcMs": 53.528417,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4506,8 +4506,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 35041.517292,
-      "syncMs": 201.442584,
+      "elapsedMs": 35533.052958,
+      "syncMs": 203.751166,
       "syncBytes": 5615642,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4542,10 +4542,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 35408.608125000006,
-      "syncMs": 202.02133299999997,
+      "elapsedMs": 35377.26475,
+      "syncMs": 202.292709,
       "syncBytes": 5615642,
-      "historyGcMs": 34.837792,
+      "historyGcMs": 37.514292,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4578,11 +4578,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35665.746875000004,
-      "syncMs": 341.631417,
+      "elapsedMs": 35851.001208,
+      "syncMs": 328.042959,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 91.80575,
+      "stateGcMs": 93.845542,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4614,11 +4614,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 35656.344082999996,
-      "syncMs": 332.888,
+      "elapsedMs": 35584.939167000004,
+      "syncMs": 327.877459,
       "syncBytes": 5957797,
       "historyGcMs": 0,
-      "stateGcMs": 91.161292,
+      "stateGcMs": 93.901083,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4650,8 +4650,8 @@
       "scenario": "format-trace",
       "mode": "none",
       "operations": 26752,
-      "elapsedMs": 34991.792667,
-      "syncMs": 236.04545800000002,
+      "elapsedMs": 35378.401042000005,
+      "syncMs": 234.96708499999997,
       "syncBytes": 6282667,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4686,10 +4686,10 @@
       "scenario": "format-trace",
       "mode": "history",
       "operations": 26752,
-      "elapsedMs": 36407.195542,
-      "syncMs": 241.159166,
+      "elapsedMs": 36475.870583,
+      "syncMs": 262.976335,
       "syncBytes": 6282667,
-      "historyGcMs": 37.260834,
+      "historyGcMs": 38.46975,
       "stateGcMs": 0,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
@@ -4722,11 +4722,11 @@
       "scenario": "format-trace",
       "mode": "full-state",
       "operations": 26752,
-      "elapsedMs": 35555.120792,
-      "syncMs": 370.387374,
+      "elapsedMs": 35757.884458,
+      "syncMs": 389.011125,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 84.218959,
+      "stateGcMs": 82.991958,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4758,11 +4758,11 @@
       "scenario": "format-trace",
       "mode": "both",
       "operations": 26752,
-      "elapsedMs": 36629.220041,
-      "syncMs": 399.448792,
+      "elapsedMs": 36354.578541,
+      "syncMs": 401.78774999999996,
       "syncBytes": 6634551,
       "historyGcMs": 0,
-      "stateGcMs": 89.426,
+      "stateGcMs": 87.874917,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 26753,
@@ -4794,8 +4794,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 41526.424709,
-      "syncMs": 245.03500000000005,
+      "elapsedMs": 41723.264125,
+      "syncMs": 272.414706,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4830,11 +4830,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 41780.08375,
-      "syncMs": 314.11187099999995,
+      "elapsedMs": 41751.720917000006,
+      "syncMs": 346.25446,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 84.067042,
+      "stateGcMs": 82.821083,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -4866,11 +4866,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 41683.757625,
-      "syncMs": 305.94329200000004,
+      "elapsedMs": 41835.682209,
+      "syncMs": 337.460625,
       "syncBytes": 1285176,
       "historyGcMs": 0,
-      "stateGcMs": 83.108375,
+      "stateGcMs": 82.267208,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -4902,8 +4902,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 41999.536166,
-      "syncMs": 300.0847900000001,
+      "elapsedMs": 41846.480084,
+      "syncMs": 351.4373310000001,
       "syncBytes": 1259480,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -4938,11 +4938,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 41791.45925,
-      "syncMs": 369.33487699999995,
+      "elapsedMs": 41642.359541000005,
+      "syncMs": 416.0479970000001,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 83.046375,
+      "stateGcMs": 83.227666,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -4974,11 +4974,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 41889.670458,
-      "syncMs": 389.067629,
+      "elapsedMs": 41848.511999999995,
+      "syncMs": 405.7789179999999,
       "syncBytes": 1283869,
       "historyGcMs": 0,
-      "stateGcMs": 83.90575,
+      "stateGcMs": 83.577625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -5010,8 +5010,8 @@
       "scenario": "mark-churn",
       "mode": "none",
       "operations": 4501,
-      "elapsedMs": 41897.074375000004,
-      "syncMs": 226.43370500000006,
+      "elapsedMs": 42278.906292,
+      "syncMs": 264.43079,
       "syncBytes": 1272373,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5046,11 +5046,11 @@
       "scenario": "mark-churn",
       "mode": "full-state",
       "operations": 4501,
-      "elapsedMs": 42159.006542,
-      "syncMs": 292.74166800000006,
+      "elapsedMs": 42038.53575,
+      "syncMs": 345.1988789999999,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 85.523,
+      "stateGcMs": 86.229833,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -5082,11 +5082,11 @@
       "scenario": "mark-churn",
       "mode": "both",
       "operations": 4501,
-      "elapsedMs": 38895.376292,
-      "syncMs": 303.632617,
+      "elapsedMs": 39452.289291999994,
+      "syncMs": 332.86570499999993,
       "syncBytes": 1297764,
       "historyGcMs": 0,
-      "stateGcMs": 87.156208,
+      "stateGcMs": 86.221958,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 4543,
@@ -5118,8 +5118,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 340.3055,
-      "syncMs": 20.018957,
+      "elapsedMs": 317.57899999999995,
+      "syncMs": 17.998666,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5154,11 +5154,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 332.22291700000005,
-      "syncMs": 23.527167000000002,
+      "elapsedMs": 313.12075000000004,
+      "syncMs": 20.736165999999997,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.136792,
+      "stateGcMs": 3.1465,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5190,11 +5190,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 315.555958,
-      "syncMs": 20.815291000000002,
+      "elapsedMs": 315.625875,
+      "syncMs": 20.320418,
       "syncBytes": 257084,
       "historyGcMs": 0,
-      "stateGcMs": 3.047541,
+      "stateGcMs": 3.308958,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5226,8 +5226,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 317.199334,
-      "syncMs": 17.838083,
+      "elapsedMs": 319.30508299999997,
+      "syncMs": 17.440333999999996,
       "syncBytes": 252201,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5262,11 +5262,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 317.574,
-      "syncMs": 22.002916,
+      "elapsedMs": 315.284166,
+      "syncMs": 21.030500999999997,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 3.6935,
+      "stateGcMs": 3.57175,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5298,11 +5298,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 322.937,
-      "syncMs": 21.304292000000004,
+      "elapsedMs": 316.306833,
+      "syncMs": 22.148082000000002,
       "syncBytes": 257065,
       "historyGcMs": 0,
-      "stateGcMs": 3.544667,
+      "stateGcMs": 3.57925,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5334,8 +5334,8 @@
       "scenario": "empty-rich",
       "mode": "none",
       "operations": 1202,
-      "elapsedMs": 323.933792,
-      "syncMs": 20.003083000000004,
+      "elapsedMs": 323.676084,
+      "syncMs": 20.293875,
       "syncBytes": 265094,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5370,11 +5370,11 @@
       "scenario": "empty-rich",
       "mode": "full-state",
       "operations": 1202,
-      "elapsedMs": 318.335167,
-      "syncMs": 22.418749,
+      "elapsedMs": 319.12433400000003,
+      "syncMs": 22.597668,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.427833,
+      "stateGcMs": 3.398125,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5406,11 +5406,11 @@
       "scenario": "empty-rich",
       "mode": "both",
       "operations": 1202,
-      "elapsedMs": 321.369625,
-      "syncMs": 22.649874,
+      "elapsedMs": 318.769541,
+      "syncMs": 23.215373,
       "syncBytes": 269973,
       "historyGcMs": 0,
-      "stateGcMs": 3.458292,
+      "stateGcMs": 3.459167,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 1203,
@@ -5442,8 +5442,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4046.09925,
-      "syncMs": 30.132042,
+      "elapsedMs": 4067.9127089999997,
+      "syncMs": 31.206292,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5478,11 +5478,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4094.9523330000006,
-      "syncMs": 40.634459,
+      "elapsedMs": 4253.844292000001,
+      "syncMs": 41.893667,
       "syncBytes": 680285,
       "historyGcMs": 0,
-      "stateGcMs": 8.892333,
+      "stateGcMs": 8.646625,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -5514,8 +5514,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4298.400916,
-      "syncMs": 30.022709000000003,
+      "elapsedMs": 4102.045417,
+      "syncMs": 30.461125000000003,
       "syncBytes": 563512,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5550,11 +5550,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4229.880166,
-      "syncMs": 44.09975,
+      "elapsedMs": 4360.810042,
+      "syncMs": 45.218792,
       "syncBytes": 697693,
       "historyGcMs": 0,
-      "stateGcMs": 11.737084,
+      "stateGcMs": 12.084708,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -5586,8 +5586,8 @@
       "scenario": "offline-rich",
       "mode": "none",
       "operations": 2501,
-      "elapsedMs": 4503.794833,
-      "syncMs": 31.314334,
+      "elapsedMs": 4515.396958,
+      "syncMs": 32.05925,
       "syncBytes": 599415,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5622,11 +5622,11 @@
       "scenario": "offline-rich",
       "mode": "both-delayed",
       "operations": 2501,
-      "elapsedMs": 4488.632750000001,
-      "syncMs": 45.90375,
+      "elapsedMs": 4436.634833,
+      "syncMs": 46.055583999999996,
       "syncBytes": 718692,
       "historyGcMs": 0,
-      "stateGcMs": 11.274667,
+      "stateGcMs": 11.151709,
       "intermediateEpochs": 0,
       "intermediatePruned": 0,
       "commitsBeforeFinalGc": 2502,
@@ -5658,8 +5658,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 2801.46325,
-      "syncMs": 37.837001,
+      "elapsedMs": 2812.349708,
+      "syncMs": 41.710584000000004,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5694,11 +5694,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3118.0375,
-      "syncMs": 50.44291799999999,
+      "elapsedMs": 3231.840208,
+      "syncMs": 57.408877,
       "syncBytes": 725166,
       "historyGcMs": 0,
-      "stateGcMs": 10.064084000000001,
+      "stateGcMs": 9.809542,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -5730,8 +5730,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 2831.762875,
-      "syncMs": 42.829165,
+      "elapsedMs": 2843.827875,
+      "syncMs": 45.984166,
       "syncBytes": 516593,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5766,11 +5766,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3258.0802500000004,
-      "syncMs": 62.201167,
+      "elapsedMs": 3212.0207920000003,
+      "syncMs": 65.439582,
       "syncBytes": 763885,
       "historyGcMs": 0,
-      "stateGcMs": 16.791208,
+      "stateGcMs": 15.039626000000002,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -5802,8 +5802,8 @@
       "scenario": "multi-epoch-rich",
       "mode": "none",
       "operations": 2307,
-      "elapsedMs": 3084.1130839999996,
-      "syncMs": 56.889707,
+      "elapsedMs": 3188.8336249999998,
+      "syncMs": 62.298415,
       "syncBytes": 550351,
       "historyGcMs": 0,
       "stateGcMs": 0,
@@ -5838,11 +5838,11 @@
       "scenario": "multi-epoch-rich",
       "mode": "both",
       "operations": 2309,
-      "elapsedMs": 3365.5642089999997,
-      "syncMs": 78.36820800000001,
+      "elapsedMs": 3442.679542,
+      "syncMs": 81.428999,
       "syncBytes": 763505,
       "historyGcMs": 0,
-      "stateGcMs": 14.332168,
+      "stateGcMs": 13.785167999999999,
       "intermediateEpochs": 2,
       "intermediatePruned": 2210,
       "commitsBeforeFinalGc": 1210,
@@ -5876,14 +5876,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13536.847416999999,
-        "min": 12958.669249999999,
-        "max": 13540.39825
+        "median": 12840.021125000001,
+        "min": 11956.919459,
+        "max": 13731.552334
       },
       "syncMs": {
-        "median": 81.377249,
-        "min": 76.35550099999999,
-        "max": 85.51862500000001
+        "median": 82.906543,
+        "min": 77.842626,
+        "max": 83.326417
       },
       "syncBytes": {
         "median": 942659,
@@ -5942,14 +5942,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13814.625792,
-        "min": 12473.838125,
-        "max": 13898.094958000001
+        "median": 12442.762458000001,
+        "min": 11808.665958,
+        "max": 13429.065542
       },
       "syncMs": {
-        "median": 53.151542,
-        "min": 51.711040000000004,
-        "max": 54.728417
+        "median": 58.940334,
+        "min": 55.073747999999995,
+        "max": 59.603042
       },
       "syncBytes": {
         "median": 942659,
@@ -5957,9 +5957,9 @@
         "max": 942659
       },
       "historyGcMs": {
-        "median": 48.024457999999996,
-        "min": 46.636832,
-        "max": 48.25758599999999
+        "median": 48.181124999999994,
+        "min": 44.491958,
+        "max": 48.442124
       },
       "stateGcMs": {
         "median": 0,
@@ -6008,14 +6008,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13415.353500000001,
-        "min": 13034.626416000001,
-        "max": 14370.973167
+        "median": 12828.105083,
+        "min": 12044.670625,
+        "max": 12902.475916
       },
       "syncMs": {
-        "median": 100.735209,
-        "min": 98.887501,
-        "max": 102.610335
+        "median": 104.67245799999999,
+        "min": 100.04595900000001,
+        "max": 107.78841699999998
       },
       "syncBytes": {
         "median": 1167030,
@@ -6028,9 +6028,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 22.935292,
-        "min": 22.062042,
-        "max": 23.558791
+        "median": 21.651,
+        "min": 21.4395,
+        "max": 22.032208
       },
       "durableStateBytes": {
         "median": 205426,
@@ -6074,14 +6074,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13558.8245,
-        "min": 12855.148166,
-        "max": 14591.268875000002
+        "median": 13003.719292,
+        "min": 12887.351583000001,
+        "max": 13051.050207999999
       },
       "syncMs": {
-        "median": 102.362459,
-        "min": 97.5615,
-        "max": 104.15791599999999
+        "median": 104.76675,
+        "min": 99.5635,
+        "max": 107.177709
       },
       "syncBytes": {
         "median": 1167030,
@@ -6094,9 +6094,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 21.998583,
-        "min": 21.823625,
-        "max": 23.132959
+        "median": 21.778333,
+        "min": 21.603166,
+        "max": 22.589708
       },
       "durableStateBytes": {
         "median": 205426,
@@ -6140,14 +6140,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13576.812208000001,
-        "min": 13140.694375,
-        "max": 14397.5875
+        "median": 13167.894375,
+        "min": 13083.505041999999,
+        "max": 13233.193874999999
       },
       "syncMs": {
-        "median": 82.6995,
-        "min": 79.997669,
-        "max": 84.18674999999999
+        "median": 87.594415,
+        "min": 82.265918,
+        "max": 88.70883300000001
       },
       "syncBytes": {
         "median": 942659,
@@ -6206,14 +6206,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 12562.063584000001,
-        "min": 12531.893166,
-        "max": 13033.545957999999
+        "median": 13350.144125,
+        "min": 12659.590667,
+        "max": 13460.812
       },
       "syncMs": {
-        "median": 55.534168,
-        "min": 54.668457,
-        "max": 60.463041
+        "median": 64.63687599999999,
+        "min": 59.586709,
+        "max": 65.514999
       },
       "syncBytes": {
         "median": 942659,
@@ -6221,9 +6221,9 @@
         "max": 942659
       },
       "historyGcMs": {
-        "median": 47.405668999999996,
-        "min": 46.784333000000004,
-        "max": 48.20012499999999
+        "median": 46.437960999999994,
+        "min": 45.854167000000004,
+        "max": 47.702918
       },
       "stateGcMs": {
         "median": 0,
@@ -6272,14 +6272,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13261.809333000001,
-        "min": 13056.1555,
-        "max": 13639.93775
+        "median": 13208.221625,
+        "min": 13065.845666000001,
+        "max": 13881.466375
       },
       "syncMs": {
-        "median": 109.43995799999999,
-        "min": 108.06612499999999,
-        "max": 111.12183200000001
+        "median": 114.254584,
+        "min": 106.870665,
+        "max": 115.48170799999998
       },
       "syncBytes": {
         "median": 1193433,
@@ -6292,9 +6292,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 26.991667,
-        "min": 26.76325,
-        "max": 27.210375
+        "median": 26.279833,
+        "min": 25.628959,
+        "max": 26.375958
       },
       "durableStateBytes": {
         "median": 95438,
@@ -6338,14 +6338,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13068.615625,
-        "min": 12967.268792,
-        "max": 14295.45
+        "median": 13041.711625,
+        "min": 12918.068083,
+        "max": 13355.906083
       },
       "syncMs": {
-        "median": 108.81133400000002,
-        "min": 104.640542,
-        "max": 112.135126
+        "median": 117.207292,
+        "min": 107.842039,
+        "max": 119.282167
       },
       "syncBytes": {
         "median": 1193433,
@@ -6358,9 +6358,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 26.32825,
-        "min": 25.718875,
-        "max": 27.858625
+        "median": 25.963875,
+        "min": 25.190334,
+        "max": 26.345833
       },
       "durableStateBytes": {
         "median": 95438,
@@ -6404,14 +6404,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13833.017042,
-        "min": 13568.279417,
-        "max": 14354.851625
+        "median": 13981.565959000001,
+        "min": 13701.85075,
+        "max": 14084.9925
       },
       "syncMs": {
-        "median": 89.481291,
-        "min": 88.87004100000001,
-        "max": 93.025291
+        "median": 103.790498,
+        "min": 98.056167,
+        "max": 104.12825000000001
       },
       "syncBytes": {
         "median": 991581,
@@ -6470,14 +6470,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 14308.889792,
-        "min": 13338.842,
-        "max": 14640.002499999999
+        "median": 13089.202541,
+        "min": 12660.122,
+        "max": 13251.391167
       },
       "syncMs": {
-        "median": 68.26799999999999,
-        "min": 67.387416,
-        "max": 68.433626
+        "median": 78.328832,
+        "min": 74.51129099999999,
+        "max": 78.50975
       },
       "syncBytes": {
         "median": 991581,
@@ -6485,9 +6485,9 @@
         "max": 991581
       },
       "historyGcMs": {
-        "median": 47.306084999999996,
-        "min": 46.63333499999999,
-        "max": 48.835336
+        "median": 46.615666,
+        "min": 45.325043,
+        "max": 47.615750999999996
       },
       "stateGcMs": {
         "median": 0,
@@ -6536,14 +6536,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 13975.207542,
-        "min": 13933.239167,
-        "max": 14450.725
+        "median": 13760.977834,
+        "min": 13712.751375,
+        "max": 13992.920082999999
       },
       "syncMs": {
-        "median": 121.541292,
-        "min": 117.43121,
-        "max": 121.68304
+        "median": 130.210001,
+        "min": 127.145124,
+        "max": 130.768667
       },
       "syncBytes": {
         "median": 1223214,
@@ -6556,9 +6556,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 27.161041,
-        "min": 26.321541,
-        "max": 27.589667
+        "median": 25.780542,
+        "min": 25.209875,
+        "max": 25.943708
       },
       "durableStateBytes": {
         "median": 212685,
@@ -6602,14 +6602,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 14534.366708,
-        "min": 13774.310333,
-        "max": 14836.567874999999
+        "median": 14434.122166000001,
+        "min": 13183.526375000001,
+        "max": 14696.699999999999
       },
       "syncMs": {
-        "median": 121.539959,
-        "min": 117.103751,
-        "max": 126.33229
+        "median": 130.383083,
+        "min": 126.89562600000002,
+        "max": 130.590959
       },
       "syncBytes": {
         "median": 1223214,
@@ -6622,9 +6622,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 27.053959,
-        "min": 26.919416,
-        "max": 27.626917
+        "median": 26.403333,
+        "min": 25.18525,
+        "max": 27.032666
       },
       "durableStateBytes": {
         "median": 212685,
@@ -6668,14 +6668,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35656.092333,
-        "min": 35167.792167,
-        "max": 38572.71725
+        "median": 34799.568542,
+        "min": 34187.914957999994,
+        "max": 35341.193125
       },
       "syncMs": {
-        "median": 218.31316700000002,
-        "min": 203.94741699999997,
-        "max": 234.108041
+        "median": 203.832166,
+        "min": 194.324417,
+        "max": 215.84099999999998
       },
       "syncBytes": {
         "median": 5615642,
@@ -6734,14 +6734,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35819.829999999994,
-        "min": 35182.3495,
-        "max": 38353.04825
+        "median": 35168.070416999995,
+        "min": 33850.521583,
+        "max": 35303.82125
       },
       "syncMs": {
-        "median": 220.896832,
-        "min": 204.951501,
-        "max": 225.46999899999997
+        "median": 212.683625,
+        "min": 198.693792,
+        "max": 214.743876
       },
       "syncBytes": {
         "median": 5615642,
@@ -6749,9 +6749,9 @@
         "max": 5615642
       },
       "historyGcMs": {
-        "median": 36.7445,
-        "min": 34.94925,
-        "max": 40.940416
+        "median": 36.309042,
+        "min": 36.219916,
+        "max": 51.58175
       },
       "stateGcMs": {
         "median": 0,
@@ -6800,14 +6800,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35904.815208,
-        "min": 35756.073125,
-        "max": 39059.780667
+        "median": 35231.08562500001,
+        "min": 34446.177958,
+        "max": 35433.016833
       },
       "syncMs": {
-        "median": 300.988834,
-        "min": 279.7725,
-        "max": 311.244376
+        "median": 279.472083,
+        "min": 274.871209,
+        "max": 286.462958
       },
       "syncBytes": {
         "median": 5969243,
@@ -6820,9 +6820,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 54.918583,
-        "min": 53.237041,
-        "max": 57.804416
+        "median": 51.375084,
+        "min": 51.370791,
+        "max": 53.286625
       },
       "durableStateBytes": {
         "median": 204936,
@@ -6866,14 +6866,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35976.144291000004,
-        "min": 35394.025541,
-        "max": 39154.529792
+        "median": 35062.581709,
+        "min": 34516.990999999995,
+        "max": 35148.611625
       },
       "syncMs": {
-        "median": 296.332501,
-        "min": 295.73087599999997,
-        "max": 302.65379199999995
+        "median": 280.806959,
+        "min": 277.667291,
+        "max": 297.935332
       },
       "syncBytes": {
         "median": 5969243,
@@ -6886,9 +6886,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 53.839167,
-        "min": 52.416292,
-        "max": 62.952666
+        "median": 53.528417,
+        "min": 51.493416,
+        "max": 64.993083
       },
       "durableStateBytes": {
         "median": 204936,
@@ -6932,14 +6932,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35836.857542,
-        "min": 35041.517292,
-        "max": 39383.764666
+        "median": 35269.57941699999,
+        "min": 34181.0755,
+        "max": 35533.052958
       },
       "syncMs": {
-        "median": 222.823917,
-        "min": 201.442584,
-        "max": 223.989292
+        "median": 203.751166,
+        "min": 194.032083,
+        "max": 215.126458
       },
       "syncBytes": {
         "median": 5615642,
@@ -6998,14 +6998,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35829.882125,
-        "min": 35408.608125000006,
-        "max": 38567.790792
+        "median": 35058.400167,
+        "min": 34631.564458999994,
+        "max": 35377.26475
       },
       "syncMs": {
-        "median": 202.02133299999997,
-        "min": 201.35316600000002,
-        "max": 221.458666
+        "median": 202.292709,
+        "min": 196.395917,
+        "max": 215.958708
       },
       "syncBytes": {
         "median": 5615642,
@@ -7013,9 +7013,9 @@
         "max": 5615642
       },
       "historyGcMs": {
-        "median": 35.423042,
-        "min": 34.837792,
-        "max": 41.096625
+        "median": 36.499542,
+        "min": 35.602875,
+        "max": 37.514292
       },
       "stateGcMs": {
         "median": 0,
@@ -7064,14 +7064,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35908.557333,
-        "min": 35665.746875000004,
-        "max": 39058.346791
+        "median": 35514.726667,
+        "min": 34724.04575,
+        "max": 35851.001208
       },
       "syncMs": {
-        "median": 341.631417,
-        "min": 334.76766799999996,
-        "max": 356.675668
+        "median": 328.042959,
+        "min": 319.223834,
+        "max": 334.958584
       },
       "syncBytes": {
         "median": 5957797,
@@ -7084,9 +7084,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 91.80575,
-        "min": 91.487375,
-        "max": 100.006834
+        "median": 93.597625,
+        "min": 89.648667,
+        "max": 93.845542
       },
       "durableStateBytes": {
         "median": 72182,
@@ -7130,14 +7130,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 36184.944959,
-        "min": 35656.344082999996,
-        "max": 38515.935
+        "median": 35369.005708,
+        "min": 34846.447167,
+        "max": 35584.939167000004
       },
       "syncMs": {
-        "median": 332.888,
-        "min": 330.31170799999995,
-        "max": 359.572292
+        "median": 325.00550000000004,
+        "min": 321.12225,
+        "max": 327.877459
       },
       "syncBytes": {
         "median": 5957797,
@@ -7150,9 +7150,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 91.161292,
-        "min": 89.198208,
-        "max": 120.902667
+        "median": 90.437292,
+        "min": 89.50075,
+        "max": 93.901083
       },
       "durableStateBytes": {
         "median": 72182,
@@ -7196,14 +7196,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35516.953666999994,
-        "min": 34991.792667,
-        "max": 41297.982625000004
+        "median": 35378.401042000005,
+        "min": 34350.967583000005,
+        "max": 36409.853041
       },
       "syncMs": {
-        "median": 241.204209,
-        "min": 236.04545800000002,
-        "max": 289.789626
+        "median": 234.96708499999997,
+        "min": 230.590208,
+        "max": 240.730749
       },
       "syncBytes": {
         "median": 6282667,
@@ -7262,14 +7262,14 @@
       "mode": "history",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 36407.195542,
-        "min": 35799.863124999996,
-        "max": 38710.35875
+        "median": 35027.531875,
+        "min": 34445.940875,
+        "max": 36475.870583
       },
       "syncMs": {
-        "median": 241.159166,
-        "min": 235.235582,
-        "max": 248.33174900000003
+        "median": 236.297501,
+        "min": 228.778542,
+        "max": 262.976335
       },
       "syncBytes": {
         "median": 6282667,
@@ -7277,9 +7277,9 @@
         "max": 6282667
       },
       "historyGcMs": {
-        "median": 37.260834,
-        "min": 36.135208,
-        "max": 39.369375
+        "median": 36.963083,
+        "min": 35.972542,
+        "max": 38.46975
       },
       "stateGcMs": {
         "median": 0,
@@ -7328,14 +7328,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 35956.291042000004,
-        "min": 35555.120792,
-        "max": 38667.514749999995
+        "median": 35757.884458,
+        "min": 35657.025583,
+        "max": 36234.259874999996
       },
       "syncMs": {
-        "median": 388.354667,
-        "min": 370.387374,
-        "max": 412.29970699999996
+        "median": 387.312626,
+        "min": 376.160293,
+        "max": 389.011125
       },
       "syncBytes": {
         "median": 6634551,
@@ -7348,9 +7348,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 84.218959,
-        "min": 82.402458,
-        "max": 115.237667
+        "median": 85.431,
+        "min": 82.991958,
+        "max": 86.366708
       },
       "durableStateBytes": {
         "median": 203219,
@@ -7394,14 +7394,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 36629.220041,
-        "min": 35733.179459,
-        "max": 41676.915959
+        "median": 36099.182833,
+        "min": 35894.722833,
+        "max": 36354.578541
       },
       "syncMs": {
-        "median": 399.448792,
-        "min": 378.61141699999996,
-        "max": 442.50425
+        "median": 400.061792,
+        "min": 394.959542,
+        "max": 401.78774999999996
       },
       "syncBytes": {
         "median": 6634551,
@@ -7414,9 +7414,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 98.846708,
-        "min": 89.426,
-        "max": 106.664292
+        "median": 87.18475,
+        "min": 85.262792,
+        "max": 87.874917
       },
       "durableStateBytes": {
         "median": 203219,
@@ -7460,14 +7460,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 42012.577708000004,
-        "min": 41526.424709,
-        "max": 44216.68675
+        "median": 41272.617917,
+        "min": 40984.985792,
+        "max": 41723.264125
       },
       "syncMs": {
-        "median": 243.98633100000004,
-        "min": 235.86675100000002,
-        "max": 245.03500000000005
+        "median": 266.890712,
+        "min": 255.373754,
+        "max": 272.414706
       },
       "syncBytes": {
         "median": 1259480,
@@ -7526,14 +7526,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 42086.14975,
-        "min": 41780.08375,
-        "max": 44222.501791
+        "median": 41491.898875,
+        "min": 40974.282791,
+        "max": 41751.720917000006
       },
       "syncMs": {
-        "median": 314.11187099999995,
-        "min": 311.502168,
-        "max": 315.23399900000004
+        "median": 340.04932999999994,
+        "min": 334.401708,
+        "max": 346.25446
       },
       "syncBytes": {
         "median": 1285176,
@@ -7546,9 +7546,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 84.067042,
-        "min": 82.570959,
-        "max": 86.509292
+        "median": 82.748708,
+        "min": 80.19725,
+        "max": 82.821083
       },
       "durableStateBytes": {
         "median": 4069,
@@ -7592,14 +7592,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 41801.121,
-        "min": 41683.757625,
-        "max": 44110.408459
+        "median": 41835.682209,
+        "min": 41154.58433400001,
+        "max": 41917.910917
       },
       "syncMs": {
-        "median": 312.85312799999997,
-        "min": 305.94329200000004,
-        "max": 316.536997
+        "median": 337.460625,
+        "min": 325.634458,
+        "max": 349.95112200000005
       },
       "syncBytes": {
         "median": 1285176,
@@ -7612,9 +7612,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 84.880417,
-        "min": 83.108375,
-        "max": 85.927625
+        "median": 83.119458,
+        "min": 82.267208,
+        "max": 84.082416
       },
       "durableStateBytes": {
         "median": 4069,
@@ -7658,14 +7658,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 41999.536166,
-        "min": 41965.979584,
-        "max": 43889.949875
+        "median": 41837.750708,
+        "min": 41280.291417,
+        "max": 41846.480084
       },
       "syncMs": {
-        "median": 300.0847900000001,
-        "min": 297.17770600000006,
-        "max": 324.119792
+        "median": 334.46495799999997,
+        "min": 328.644918,
+        "max": 351.4373310000001
       },
       "syncBytes": {
         "median": 1259480,
@@ -7724,14 +7724,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 42133.951292,
-        "min": 41791.45925,
-        "max": 43990.065582999996
+        "median": 41642.359541000005,
+        "min": 41371.6845,
+        "max": 41999.894667
       },
       "syncMs": {
-        "median": 378.97662799999995,
-        "min": 369.33487699999995,
-        "max": 396.33678999999995
+        "median": 402.80291700000004,
+        "min": 401.50074799999993,
+        "max": 416.0479970000001
       },
       "syncBytes": {
         "median": 1283869,
@@ -7744,9 +7744,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 84.585459,
-        "min": 83.046375,
-        "max": 87.645541
+        "median": 84.429333,
+        "min": 83.227666,
+        "max": 86.863333
       },
       "durableStateBytes": {
         "median": 1014,
@@ -7790,14 +7790,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 42213.012416,
-        "min": 41889.670458,
-        "max": 44467.289124999996
+        "median": 41848.511999999995,
+        "min": 41574.742541,
+        "max": 41937.986
       },
       "syncMs": {
-        "median": 389.067629,
-        "min": 375.51158399999997,
-        "max": 394.582538
+        "median": 411.66595700000005,
+        "min": 405.7789179999999,
+        "max": 412.19029
       },
       "syncBytes": {
         "median": 1283869,
@@ -7810,9 +7810,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 84.879083,
-        "min": 83.90575,
-        "max": 86.551041
+        "median": 84.963834,
+        "min": 83.577625,
+        "max": 87.41575
       },
       "durableStateBytes": {
         "median": 1014,
@@ -7856,14 +7856,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 41897.074375000004,
-        "min": 41387.915958,
-        "max": 42182.477958
+        "median": 41640.289292,
+        "min": 39175.031,
+        "max": 42278.906292
       },
       "syncMs": {
-        "median": 227.54808499999996,
-        "min": 226.43370500000006,
-        "max": 235.414376
+        "median": 264.43079,
+        "min": 256.95708499999995,
+        "max": 269.09237399999995
       },
       "syncBytes": {
         "median": 1272373,
@@ -7922,14 +7922,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 41517.267875000005,
-        "min": 39387.69225,
-        "max": 42159.006542
+        "median": 42038.53575,
+        "min": 41812.324917,
+        "max": 42095.423417
       },
       "syncMs": {
-        "median": 299.595915,
-        "min": 292.74166800000006,
-        "max": 329.774998
+        "median": 341.30054,
+        "min": 335.26604,
+        "max": 345.1988789999999
       },
       "syncBytes": {
         "median": 1297764,
@@ -7942,9 +7942,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 87.014667,
-        "min": 85.523,
-        "max": 91.535459
+        "median": 86.229833,
+        "min": 84.219541,
+        "max": 87.080917
       },
       "durableStateBytes": {
         "median": 3764,
@@ -7988,14 +7988,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 42400.369834,
-        "min": 38895.376292,
-        "max": 44447.508583
+        "median": 41917.733458,
+        "min": 39452.289291999994,
+        "max": 42036.457167
       },
       "syncMs": {
-        "median": 303.632617,
-        "min": 303.059249,
-        "max": 311.707209
+        "median": 341.55249899999995,
+        "min": 332.86570499999993,
+        "max": 341.70479600000004
       },
       "syncBytes": {
         "median": 1297764,
@@ -8008,9 +8008,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 88.316458,
-        "min": 87.156208,
-        "max": 88.52525
+        "median": 87.180042,
+        "min": 86.221958,
+        "max": 90.023958
       },
       "durableStateBytes": {
         "median": 3764,
@@ -8054,14 +8054,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 329.091417,
-        "min": 316.678542,
-        "max": 340.3055
+        "median": 315.663875,
+        "min": 314.568625,
+        "max": 317.57899999999995
       },
       "syncMs": {
-        "median": 17.923874,
-        "min": 17.615416,
-        "max": 20.018957
+        "median": 17.733458,
+        "min": 17.6705,
+        "max": 17.998666
       },
       "syncBytes": {
         "median": 252201,
@@ -8120,14 +8120,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 323.413459,
-        "min": 314.111834,
-        "max": 332.22291700000005
+        "median": 310.771833,
+        "min": 310.343375,
+        "max": 313.12075000000004
       },
       "syncMs": {
-        "median": 20.774916999999995,
-        "min": 20.760790000000004,
-        "max": 23.527167000000002
+        "median": 20.736165999999997,
+        "min": 20.578459000000002,
+        "max": 21.548084
       },
       "syncBytes": {
         "median": 257084,
@@ -8140,9 +8140,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.136792,
-        "min": 3.074625,
-        "max": 3.269708
+        "median": 3.083333,
+        "min": 3.044708,
+        "max": 3.1465
       },
       "durableStateBytes": {
         "median": 65,
@@ -8186,14 +8186,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 316.305083,
-        "min": 315.555958,
-        "max": 321.249583
+        "median": 315.625875,
+        "min": 308.75825000000003,
+        "max": 315.6865
       },
       "syncMs": {
-        "median": 20.815291000000002,
-        "min": 20.764625,
-        "max": 21.612125
+        "median": 20.320418,
+        "min": 19.782167,
+        "max": 20.784417
       },
       "syncBytes": {
         "median": 257084,
@@ -8206,9 +8206,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.081625,
-        "min": 3.047541,
-        "max": 3.100875
+        "median": 3.174792,
+        "min": 3.105875,
+        "max": 3.308958
       },
       "durableStateBytes": {
         "median": 65,
@@ -8252,14 +8252,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 317.199334,
-        "min": 316.396042,
-        "max": 331.925916
+        "median": 318.233166,
+        "min": 313.652083,
+        "max": 319.30508299999997
       },
       "syncMs": {
-        "median": 17.838083,
-        "min": 17.514999,
-        "max": 18.316418
+        "median": 17.872541,
+        "min": 17.440333999999996,
+        "max": 18.237541999999998
       },
       "syncBytes": {
         "median": 252201,
@@ -8318,14 +8318,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 317.574,
-        "min": 317.30429200000003,
-        "max": 323.83720900000003
+        "median": 313.377917,
+        "min": 309.533208,
+        "max": 315.284166
       },
       "syncMs": {
-        "median": 22.002916,
-        "min": 20.567919,
-        "max": 23.065417
+        "median": 20.824333000000003,
+        "min": 20.699877,
+        "max": 21.030500999999997
       },
       "syncBytes": {
         "median": 257065,
@@ -8338,9 +8338,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.680708,
-        "min": 3.539208,
-        "max": 3.6935
+        "median": 3.57175,
+        "min": 3.490667,
+        "max": 3.656834
       },
       "durableStateBytes": {
         "median": 9,
@@ -8384,14 +8384,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 322.937,
-        "min": 316.000542,
-        "max": 324.713
+        "median": 313.885583,
+        "min": 313.315542,
+        "max": 316.306833
       },
       "syncMs": {
-        "median": 21.215083999999997,
-        "min": 21.197540999999998,
-        "max": 21.304292000000004
+        "median": 20.6105,
+        "min": 20.247125000000004,
+        "max": 22.148082000000002
       },
       "syncBytes": {
         "median": 257065,
@@ -8404,9 +8404,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.666667,
-        "min": 3.544667,
-        "max": 4.031291
+        "median": 3.564708,
+        "min": 3.538,
+        "max": 3.57925
       },
       "durableStateBytes": {
         "median": 9,
@@ -8450,14 +8450,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 325.91895800000003,
-        "min": 323.933792,
-        "max": 333.978417
+        "median": 323.676084,
+        "min": 321.328333,
+        "max": 323.90675
       },
       "syncMs": {
-        "median": 20.003083000000004,
-        "min": 19.702334,
-        "max": 22.299584
+        "median": 19.917749999999998,
+        "min": 19.595958,
+        "max": 20.293875
       },
       "syncBytes": {
         "median": 265094,
@@ -8516,14 +8516,14 @@
       "mode": "full-state",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 319.20662500000003,
-        "min": 318.335167,
-        "max": 330.417
+        "median": 319.12433400000003,
+        "min": 317.20825,
+        "max": 321.273875
       },
       "syncMs": {
-        "median": 23.449082,
-        "min": 22.418749,
-        "max": 23.518292000000002
+        "median": 22.617417,
+        "min": 22.597668,
+        "max": 23.891708999999995
       },
       "syncBytes": {
         "median": 269973,
@@ -8536,9 +8536,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.427833,
-        "min": 3.382875,
-        "max": 3.798125
+        "median": 3.398125,
+        "min": 3.395417,
+        "max": 3.400542
       },
       "durableStateBytes": {
         "median": 61,
@@ -8582,14 +8582,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 321.709541,
-        "min": 321.369625,
-        "max": 332.555042
+        "median": 318.769541,
+        "min": 317.26416600000005,
+        "max": 319.510791
       },
       "syncMs": {
-        "median": 22.727083000000004,
-        "min": 22.649874,
-        "max": 23.608124
+        "median": 22.780083,
+        "min": 22.733166,
+        "max": 23.215373
       },
       "syncBytes": {
         "median": 269973,
@@ -8602,9 +8602,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 3.481583,
-        "min": 3.458292,
-        "max": 3.563084
+        "median": 3.459167,
+        "min": 3.437959,
+        "max": 3.768833
       },
       "durableStateBytes": {
         "median": 61,
@@ -8648,14 +8648,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4104.572332999999,
-        "min": 4046.09925,
-        "max": 4471.211083
+        "median": 4067.9127089999997,
+        "min": 4049.205833,
+        "max": 4096.733417
       },
       "syncMs": {
-        "median": 30.651249999999997,
-        "min": 30.132042,
-        "max": 30.702292
+        "median": 30.765624999999996,
+        "min": 30.016709,
+        "max": 31.206292
       },
       "syncBytes": {
         "median": 563512,
@@ -8714,14 +8714,14 @@
       "mode": "both-delayed",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4116.0655,
-        "min": 4094.9523330000006,
-        "max": 4227.583333
+        "median": 4253.616167,
+        "min": 4072.1091659999997,
+        "max": 4253.844292000001
       },
       "syncMs": {
-        "median": 41.305293,
-        "min": 40.634459,
-        "max": 42.301543
+        "median": 41.66021,
+        "min": 40.355999000000004,
+        "max": 41.893667
       },
       "syncBytes": {
         "median": 680285,
@@ -8734,9 +8734,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 8.972291,
-        "min": 8.892333,
-        "max": 9.1035
+        "median": 8.920417,
+        "min": 8.646625,
+        "max": 8.99875
       },
       "durableStateBytes": {
         "median": 105530,
@@ -8780,14 +8780,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4239.750167,
-        "min": 4185.48975,
-        "max": 4298.400916
+        "median": 4102.045417,
+        "min": 4070.217792,
+        "max": 4147.001083
       },
       "syncMs": {
-        "median": 30.022709000000003,
-        "min": 29.567541,
-        "max": 30.052667
+        "median": 30.461125000000003,
+        "min": 29.802709000000004,
+        "max": 30.937041
       },
       "syncBytes": {
         "median": 563512,
@@ -8846,14 +8846,14 @@
       "mode": "both-delayed",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4229.880166,
-        "min": 4200.389,
-        "max": 4548.504083
+        "median": 4294.644459,
+        "min": 4184.824042,
+        "max": 4360.810042
       },
       "syncMs": {
-        "median": 44.09975,
-        "min": 43.819209,
-        "max": 47.718418
+        "median": 45.302959,
+        "min": 45.218792,
+        "max": 45.741457
       },
       "syncBytes": {
         "median": 697693,
@@ -8866,9 +8866,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 12.279291,
-        "min": 11.737084,
-        "max": 12.440709
+        "median": 12.084708,
+        "min": 11.911167,
+        "max": 12.114625
       },
       "durableStateBytes": {
         "median": 50019,
@@ -8912,14 +8912,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4503.794833,
-        "min": 4426.66125,
-        "max": 4560.913042
+        "median": 4515.396958,
+        "min": 4417.065625,
+        "max": 4618.811292
       },
       "syncMs": {
-        "median": 32.259625,
-        "min": 31.314334,
-        "max": 32.796
+        "median": 32.05925,
+        "min": 30.907874999999997,
+        "max": 32.467208
       },
       "syncBytes": {
         "median": 599415,
@@ -8978,14 +8978,14 @@
       "mode": "both-delayed",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 4488.632750000001,
-        "min": 4439.061875,
-        "max": 4657.136041
+        "median": 4436.634833,
+        "min": 4434.300417,
+        "max": 4598.142291
       },
       "syncMs": {
-        "median": 45.90375,
-        "min": 45.44525,
-        "max": 48.206625
+        "median": 45.720709,
+        "min": 45.114625000000004,
+        "max": 46.055583999999996
       },
       "syncBytes": {
         "median": 718692,
@@ -8998,9 +8998,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 11.274667,
-        "min": 11.252041,
-        "max": 11.399375
+        "median": 11.204625,
+        "min": 11.151709,
+        "max": 11.281666
       },
       "durableStateBytes": {
         "median": 108034,
@@ -9044,14 +9044,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 2833.7821249999997,
-        "min": 2801.46325,
-        "max": 2883.520959
+        "median": 2812.349708,
+        "min": 2764.767792,
+        "max": 2905.66725
       },
       "syncMs": {
-        "median": 37.837001,
-        "min": 35.855959,
-        "max": 38.781166
+        "median": 39.58029,
+        "min": 38.42104200000001,
+        "max": 41.710584000000004
       },
       "syncBytes": {
         "median": 516593,
@@ -9110,14 +9110,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 3230.6146249999997,
-        "min": 3118.0375,
-        "max": 3272.63975
+        "median": 3197.3664169999997,
+        "min": 3139.751625,
+        "max": 3231.840208
       },
       "syncMs": {
-        "median": 50.44291799999999,
-        "min": 49.03512500000001,
-        "max": 50.787915999999996
+        "median": 53.346540999999995,
+        "min": 51.744293000000006,
+        "max": 57.408877
       },
       "syncBytes": {
         "median": 725166,
@@ -9130,9 +9130,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 10.064084000000001,
-        "min": 8.819875,
-        "max": 10.683374999999998
+        "median": 9.257959,
+        "min": 8.660499,
+        "max": 9.809542
       },
       "durableStateBytes": {
         "median": 94631,
@@ -9176,14 +9176,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 2890.309917,
-        "min": 2831.762875,
-        "max": 3033.044666
+        "median": 2843.827875,
+        "min": 2804.983625,
+        "max": 2899.914541
       },
       "syncMs": {
-        "median": 43.335915,
-        "min": 42.829165,
-        "max": 43.891582
+        "median": 45.603586,
+        "min": 45.501706999999996,
+        "max": 45.984166
       },
       "syncBytes": {
         "median": 516593,
@@ -9242,14 +9242,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 3303.268083,
-        "min": 3258.0802500000004,
-        "max": 3312.315
+        "median": 3212.0207920000003,
+        "min": 3201.1426250000004,
+        "max": 3378.7821249999997
       },
       "syncMs": {
-        "median": 63.880999,
-        "min": 62.201167,
-        "max": 65.381958
+        "median": 65.439582,
+        "min": 64.08271,
+        "max": 65.472459
       },
       "syncBytes": {
         "median": 763885,
@@ -9262,9 +9262,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 16.776124,
-        "min": 15.127208,
-        "max": 16.791208
+        "median": 14.85475,
+        "min": 14.300333000000002,
+        "max": 15.039626000000002
       },
       "durableStateBytes": {
         "median": 45742,
@@ -9308,14 +9308,14 @@
       "mode": "none",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 3084.1130839999996,
-        "min": 3036.2115830000002,
-        "max": 3142.698583
+        "median": 3054.825958,
+        "min": 3054.106333,
+        "max": 3188.8336249999998
       },
       "syncMs": {
-        "median": 56.896917,
-        "min": 56.889707,
-        "max": 58.59779199999999
+        "median": 62.035083,
+        "min": 61.95550000000001,
+        "max": 62.298415
       },
       "syncBytes": {
         "median": 550351,
@@ -9374,14 +9374,14 @@
       "mode": "both",
       "repetitions": 3,
       "elapsedMs": {
-        "median": 3465.9342079999997,
-        "min": 3365.5642089999997,
-        "max": 3504.201709
+        "median": 3432.067459,
+        "min": 3378.255334,
+        "max": 3442.679542
       },
       "syncMs": {
-        "median": 79.041,
-        "min": 78.36820800000001,
-        "max": 79.502083
+        "median": 81.52224900000002,
+        "min": 81.428999,
+        "max": 81.877791
       },
       "syncBytes": {
         "median": 763505,
@@ -9394,9 +9394,9 @@
         "max": 0
       },
       "stateGcMs": {
-        "median": 14.332168,
-        "min": 14.050916,
-        "max": 16.070542
+        "median": 13.785167999999999,
+        "min": 13.624374,
+        "max": 15.346958999999998
       },
       "durableStateBytes": {
         "median": 97454,

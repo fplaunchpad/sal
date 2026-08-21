@@ -104,8 +104,9 @@ matrix (embedded below).
    overhead is roughly 30-60 ns per op on this machine and is NOT
    subtracted; sub-microsecond medians (Yjs, Loro, list-positions) carry
    that additive bias. For `sal` the op includes the adapter's
-   position-to-id bookkeeping (an id-array splice) plus the datatype
-   `apply` (an O(log n) persistent-HAMT path copy; a copied-Map container
+   position-to-id bookkeeping (expected O(log n) rank operations in an
+   indexed sequence) plus the datatype `apply` (an O(log n)
+   persistent-HAMT path copy; a copied-Map container
    would instead copy the whole live-set Map per op and dominate every
    trace, the pre-HAMT interface cost reported below).
 2. **Save size**: bytes of each library's NATIVE serialization, measured
@@ -252,8 +253,9 @@ Where we lose, as shipped:
   ~30-60 ns of the gap being timer overhead) and faster than Automerge
   (24-27 us) on every trace; whole-trace replay 1.9 s on automerge-paper
   vs 0.2 s (Loro), 0.67 s (Yjs), 7.1 s (Automerge). The residue at 100k+
-  chars (4 us median vs 0.5 us on small docs) is the O(log n) trie depth
-  plus the adapter's O(n) id-array splice, not a live-set copy.
+  chars (4 us median vs 0.5 us on small docs) was measured with the old
+  O(n) id-array adapter. Current runs use an indexed sequence; regenerate
+  the repeated results before drawing a new scaling conclusion.
 * **Save size, absolute-chain representation.** 1637-2991 bytes/char as
   JSON (243 MB for the 105k-char doc) vs 0.6-10 bytes/char for every
   production save. Packing the same bits (binary-estimate) still leaves
@@ -509,10 +511,14 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
   the documented op-log integration and its payload is unoptimized JSON.
 * Loro sync timing includes commit + delta export + import in both
   directions through the wasm boundary.
-* For `sal`, each timed op includes the adapter's position-to-id
-  bookkeeping (id-array splice) on top of the datatype `apply`; deletes
-  tick the Lamport clock (dense logical time, matching the litmus model
-  and hence the projection's id stream).
+* For `sal`, each timed op includes position-to-id bookkeeping through an
+  indexed sequence (expected O(log n) lookup/insert/delete) on top of the
+  datatype `apply`; deletes tick the Lamport clock (dense logical time,
+  matching the litmus model and hence the projection's id stream). Overall
+  wall time remains the primary comparable metric. Sal result files also
+  expose nested `adapterCost` measurements for the index and datatype; these
+  diagnostic timers add overhead and must not be summed as an independent
+  wall-clock measurement. Concurrent view rebuild cost is reported apart.
 * Cross-system merged ORDER may differ on concurrent insertions; only
   intra-system convergence is gated.
 * Heap columns are not comparable across the wasm boundary (Automerge,
@@ -548,6 +554,9 @@ Save bytes after selected phases; growth-on-delete = does the save GROW across a
 The canonical paper-facing reports are:
 
 - `results/summary.md`: verified Sal kernels versus external systems;
+- `results/primary-comparison-repeated.{json,md}`: repeated fresh-process
+  Sal-versus-external comparison, with machine-readable observations and
+  median/min/max tables;
 - `results/kernel-comparison-repeated.md`: repeated RGA, EmbedRGA, and
   SidedEmbedRGA comparison;
 - `results/peritext-paper-repeated.md`: repeated rich-text and two-GC

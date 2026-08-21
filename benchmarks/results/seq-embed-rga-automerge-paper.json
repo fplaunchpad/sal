@@ -6,8 +6,11 @@
  "env": {
   "node": "v26.3.1",
   "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
   "exposeGc": true,
-  "date": "2026-08-20T11:35:51.871Z"
+  "date": "2026-08-21T13:52:30.223Z"
  },
  "ops": {
   "total": 259778,
@@ -15,14 +18,14 @@
  },
  "finalChars": 104852,
  "apply": {
-  "totalMs": 2225.636417,
+  "totalMs": 296.860834,
   "count": 259778,
   "warmupExcluded": 1000,
-  "meanUs": 8.553103231341149,
-  "medianUs": 5.291,
-  "p95Us": 25.167,
-  "p99Us": 30.125,
-  "maxUs": 1868.666
+  "meanUs": 1.0997034253298192,
+  "medianUs": 0.959,
+  "p95Us": 1.375,
+  "p99Us": 1.958,
+  "maxUs": 1520.958
  },
  "gates": {
   "textOk": true
@@ -31,7 +34,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 249973,
-   "timeMs": 80.861625,
+   "timeMs": 76.645458,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +42,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 101.354166,
+   "medianMs": 93.4615,
    "runs": 5,
    "allMs": [
-    95.555125,
-    100.006542,
-    101.354166,
-    106.781125,
-    126.041042
+    90.63625,
+    91.324625,
+    93.4615,
+    94.899333,
+    117.5045
    ]
   }
  ],
  "compaction": {
-  "ms": 166.438542,
+  "ms": 157.060542,
   "stats": {
    "nodesBefore": 123537,
    "nodesAfter": 106400,
@@ -68,19 +71,27 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 283153,
-    "timeMs": 87.329083,
+    "timeMs": 101.141125,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
+ "adapterCost": {
+  "indexTotalMs": 145.335215,
+  "datatypeTotalMs": 108.529485,
+  "rebuildTotalMs": 0,
+  "indexCalls": 519556,
+  "datatypeCalls": 259778,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
  "memory": {
-  "baselineHeap": 75400944,
-  "peakHeapSampled": 142877720,
-  "retainedHeapAfterGc": 26652048,
+  "baselineHeap": 75420432,
+  "peakHeapSampled": 167586000,
+  "retainedHeapAfterGc": 34224176,
   "externalDelta": 2078264,
   "arrayBuffersDelta": 2078224,
-  "rssEnd": 339279872,
+  "rssEnd": 362987520,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

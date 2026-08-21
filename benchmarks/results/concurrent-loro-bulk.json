@@ -12,8 +12,11 @@
  "env": {
   "node": "v26.3.1",
   "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
   "exposeGc": true,
-  "date": "2026-08-20T10:53:32.735Z"
+  "date": "2026-08-21T13:52:45.702Z"
  },
  "finalChars": 3604,
  "gates": {
@@ -22,12 +25,12 @@
  "sync": {
   "count": 6,
   "warmupExcluded": 0,
-  "meanUs": 16507.743,
-  "medianUs": 16915.958,
-  "p95Us": 22171.167,
-  "p99Us": 22171.167,
-  "maxUs": 22171.167,
-  "totalMs": 99.046458
+  "meanUs": 16492.451666666668,
+  "medianUs": 16997.959,
+  "p95Us": 21936.792,
+  "p99Us": 21936.792,
+  "maxUs": 21936.792,
+  "totalMs": 98.95471
  },
  "syncPayloadBytes": {
   "total": 28515,
@@ -35,8 +38,8 @@
  },
  "localOps": {
   "count": 6000,
-  "totalMs": 14.020710000000001,
-  "meanUs": 2.3367850000000003
+  "totalMs": 13.813456000000002,
+  "meanUs": 2.302242666666667
  },
  "saves": [
   {
@@ -51,11 +54,12 @@
   }
  ],
  "compaction": null,
+ "adapterCost": null,
  "runtimeGcMsTotal": null,
  "memory": {
-  "baselineHeap": 5366232,
-  "peakHeapSampled": 6156464,
-  "retainedHeapAfterGc": 412648,
+  "baselineHeap": 5373752,
+  "peakHeapSampled": 6184344,
+  "retainedHeapAfterGc": 411528,
   "externalDelta": 21033,
   "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
  }

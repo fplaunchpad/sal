@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-20T11:27:15.688Z"
+  "date": "2026-08-21T12:55:19.992Z"
  },
  "finalChars": 1200,
  "gates": {
@@ -32,7 +32,7 @@
   {
    "phase": "cycle1-ins",
    "liveChars": 2000,
-   "phaseMs": 2.349416,
+   "phaseMs": 5.573208,
    "saves": {
     "run-table-serialized": 8759,
     "run-table-serialized+compacted": 5209
@@ -41,7 +41,7 @@
   {
    "phase": "cycle1-del",
    "liveChars": 200,
-   "phaseMs": 1.333958,
+   "phaseMs": 2.574167,
    "saves": {
     "run-table-serialized": 1657,
     "run-table-serialized+compacted": 855
@@ -50,7 +50,7 @@
   {
    "phase": "cycle2-ins",
    "liveChars": 2200,
-   "phaseMs": 1.43525,
+   "phaseMs": 2.927459,
    "saves": {
     "run-table-serialized": 11218,
     "run-table-serialized+compacted": 6029
@@ -59,7 +59,7 @@
   {
    "phase": "cycle2-del",
    "liveChars": 400,
-   "phaseMs": 0.914,
+   "phaseMs": 1.610333,
    "saves": {
     "run-table-serialized": 3988,
     "run-table-serialized+compacted": 1729
@@ -68,7 +68,7 @@
   {
    "phase": "cycle3-ins",
    "liveChars": 2400,
-   "phaseMs": 1.619291,
+   "phaseMs": 2.148709,
    "saves": {
     "run-table-serialized": 13632,
     "run-table-serialized+compacted": 7094
@@ -77,7 +77,7 @@
   {
    "phase": "cycle3-del",
    "liveChars": 600,
-   "phaseMs": 0.751458,
+   "phaseMs": 1.507125,
    "saves": {
     "run-table-serialized": 6292,
     "run-table-serialized+compacted": 2714
@@ -86,7 +86,7 @@
   {
    "phase": "cycle4-ins",
    "liveChars": 2600,
-   "phaseMs": 1.34375,
+   "phaseMs": 2.319875,
    "saves": {
     "run-table-serialized": 16085,
     "run-table-serialized+compacted": 8002
@@ -95,7 +95,7 @@
   {
    "phase": "cycle4-del",
    "liveChars": 800,
-   "phaseMs": 0.710167,
+   "phaseMs": 1.270792,
    "saves": {
     "run-table-serialized": 8888,
     "run-table-serialized+compacted": 3523
@@ -104,7 +104,7 @@
   {
    "phase": "cycle5-ins",
    "liveChars": 2800,
-   "phaseMs": 1.118583,
+   "phaseMs": 2.031084,
    "saves": {
     "run-table-serialized": 19059,
     "run-table-serialized+compacted": 8774
@@ -113,7 +113,7 @@
   {
    "phase": "cycle5-del",
    "liveChars": 1000,
-   "phaseMs": 0.816167,
+   "phaseMs": 1.511167,
    "saves": {
     "run-table-serialized": 11111,
     "run-table-serialized+compacted": 4355
@@ -122,7 +122,7 @@
   {
    "phase": "final-ins",
    "liveChars": 1200,
-   "phaseMs": 0.122875,
+   "phaseMs": 0.18625,
    "saves": {
     "run-table-serialized": 12098,
     "run-table-serialized+compacted": 4799
@@ -151,9 +151,17 @@
    "growsOnDelete": "never"
   }
  },
+ "adapterCost": {
+  "indexTotalMs": 13.084997,
+  "datatypeTotalMs": 7.604431,
+  "rebuildTotalMs": 0,
+  "indexCalls": 38400,
+  "datatypeCalls": 19200,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
  "memory": {
-  "baselineHeap": 4176624,
-  "retainedHeapAfterGc": 837224,
+  "baselineHeap": 4191552,
+  "retainedHeapAfterGc": 976456,
   "externalDelta": 40
  }
 }

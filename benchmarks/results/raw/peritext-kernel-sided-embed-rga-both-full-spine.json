@@ -13,13 +13,19 @@
     "add": 1800,
     "topology": "spine"
   },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-21T12:56:29.388Z"
+  },
   "metrics": {
     "operations": 21200,
     "commitBatches": 89,
     "visibleChars": 9200,
-    "applyMs": 38.055793,
-    "stateGcMs": 33.06841600000001,
-    "historyGcMs": 1.1717499999999745,
+    "applyMs": 37.089877,
+    "stateGcMs": 31.947167000000007,
+    "historyGcMs": 1.0995829999999955,
     "durableStateBytes": 80965,
     "commits": 1,
     "identityRecords": 9200,
@@ -29,9 +35,5 @@
   "gates": {
     "converged": true,
     "snapshot": true
-  },
-  "environment": {
-    "legacyResult": true,
-    "note": "environment was not recorded by the original workload harness"
   }
 }

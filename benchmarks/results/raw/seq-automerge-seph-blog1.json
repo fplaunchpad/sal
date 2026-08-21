@@ -10,8 +10,11 @@
   "environment": {
     "node": "v26.3.1",
     "platform": "darwin arm64",
+    "cpu": "Apple M4 Pro",
+    "logicalCpus": 12,
+    "memoryBytes": 25769803776,
     "exposeGc": true,
-    "date": "2026-08-20T10:52:33.595Z"
+    "date": "2026-08-21T13:52:25.209Z"
   },
   "gates": {
     "textOk": true,
@@ -20,11 +23,13 @@
   "metrics": {
     "operations": 368209,
     "finalChars": 56769,
-    "applyTotalMs": 10173.524125,
-    "applyMedianUs": 27.375,
-    "applyP95Us": 32.667,
-    "primarySaveBytes": 205249,
-    "retainedHeapBytes": 897608
+    "applyTotalMs": 10119.750708,
+    "applyMedianUs": 27.25,
+    "applyP95Us": 32.5,
+    "primarySaveBytes": 205250,
+    "retainedHeapBytes": 897184,
+    "positionIndexMs": null,
+    "datatypeApplyMs": null
   },
   "detail": {
     "workload": "seq",
@@ -34,8 +39,11 @@
     "env": {
       "node": "v26.3.1",
       "platform": "darwin arm64",
+      "cpu": "Apple M4 Pro",
+      "logicalCpus": 12,
+      "memoryBytes": 25769803776,
       "exposeGc": true,
-      "date": "2026-08-20T10:52:33.595Z"
+      "date": "2026-08-21T13:52:25.209Z"
     },
     "ops": {
       "total": 368209,
@@ -43,14 +51,14 @@
     },
     "finalChars": 56769,
     "apply": {
-      "totalMs": 10173.524125,
+      "totalMs": 10119.750708,
       "count": 368209,
       "warmupExcluded": 1000,
-      "meanUs": 27.55360453039005,
-      "medianUs": 27.375,
-      "p95Us": 32.667,
-      "p99Us": 36.333,
-      "maxUs": 5091.958
+      "meanUs": 27.403081591137475,
+      "medianUs": 27.25,
+      "p95Us": 32.5,
+      "p99Us": 36,
+      "maxUs": 5020.375
     },
     "gates": {
       "textOk": true
@@ -58,8 +66,8 @@
     "saves": [
       {
         "label": "save-full-history",
-        "bytes": 205249,
-        "timeMs": 25.705875,
+        "bytes": 205250,
+        "timeMs": 26.395584,
         "note": "full compressed change history; no state-only mode exists",
         "estimated": false
       }
@@ -67,25 +75,26 @@
     "loads": [
       {
         "label": "save-full-history",
-        "medianMs": 446.269875,
+        "medianMs": 441.507375,
         "runs": 5,
         "allMs": [
-          440.351917,
-          441.246792,
-          446.269875,
-          446.932541,
-          538.355541
+          438.877583,
+          440.552458,
+          441.507375,
+          442.243458,
+          552.63025
         ]
       }
     ],
     "compaction": null,
+    "adapterCost": null,
     "memory": {
-      "baselineHeap": 54078216,
-      "peakHeapSampled": 88642048,
-      "retainedHeapAfterGc": 897608,
+      "baselineHeap": 54081760,
+      "peakHeapSampled": 88646976,
+      "retainedHeapAfterGc": 897184,
       "externalDelta": 3128563,
       "arrayBuffersDelta": 2951816,
-      "rssEnd": 338624512,
+      "rssEnd": 340131840,
       "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
     }
   }

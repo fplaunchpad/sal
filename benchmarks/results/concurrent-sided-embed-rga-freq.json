@@ -12,8 +12,11 @@
  "env": {
   "node": "v26.3.1",
   "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
   "exposeGc": true,
-  "date": "2026-08-20T11:36:00.089Z"
+  "date": "2026-08-21T13:52:43.255Z"
  },
  "finalChars": 1804,
  "gates": {
@@ -22,12 +25,12 @@
  "sync": {
   "count": 60,
   "warmupExcluded": 0,
-  "meanUs": 363.8770333333333,
-  "medianUs": 372.458,
-  "p95Us": 567.416,
-  "p99Us": 732.125,
-  "maxUs": 732.125,
-  "totalMs": 21.832622
+  "meanUs": 355.0194833333333,
+  "medianUs": 384.333,
+  "p95Us": 487.417,
+  "p99Us": 571.125,
+  "maxUs": 571.125,
+  "totalMs": 21.301169
  },
  "syncPayloadBytes": {
   "total": 116118,
@@ -35,8 +38,8 @@
  },
  "localOps": {
   "count": 3000,
-  "totalMs": 8.755586999999998,
-  "meanUs": 2.918528999999999
+  "totalMs": 11.919917000000005,
+  "meanUs": 3.9733056666666684
  },
  "saves": [
   {
@@ -46,11 +49,19 @@
   }
  ],
  "compaction": null,
- "runtimeGcMsTotal": 1.4887930000000005,
+ "adapterCost": {
+  "indexTotalMs": 2.256405,
+  "datatypeTotalMs": 8.593147,
+  "rebuildTotalMs": 12.265333,
+  "indexCalls": 6000,
+  "datatypeCalls": 3000,
+  "timerCaveat": "nested hrtime measurements add timer overhead; overall apply wall time remains the primary metric"
+ },
+ "runtimeGcMsTotal": 1.5587509999999998,
  "memory": {
-  "baselineHeap": 4181912,
-  "peakHeapSampled": 14377024,
-  "retainedHeapAfterGc": 1578176,
+  "baselineHeap": 4202424,
+  "peakHeapSampled": 14627336,
+  "retainedHeapAfterGc": 1941896,
   "externalDelta": 40,
   "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
  }

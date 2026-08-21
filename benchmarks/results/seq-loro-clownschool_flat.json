@@ -6,8 +6,11 @@
  "env": {
   "node": "v26.3.1",
   "platform": "darwin arm64",
+  "cpu": "Apple M4 Pro",
+  "logicalCpus": 12,
+  "memoryBytes": 25769803776,
   "exposeGc": true,
-  "date": "2026-08-20T10:51:43.973Z"
+  "date": "2026-08-21T13:52:05.784Z"
  },
  "ops": {
   "total": 24326,
@@ -15,14 +18,14 @@
  },
  "finalChars": 21148,
  "apply": {
-  "totalMs": 26.573958,
+  "totalMs": 26.224791,
   "count": 24326,
   "warmupExcluded": 1000,
-  "meanUs": 0.9117996656091915,
+  "meanUs": 0.9007699562719712,
   "medianUs": 0.75,
   "p95Us": 1.792,
-  "p99Us": 2.75,
-  "maxUs": 98
+  "p99Us": 2.709,
+  "maxUs": 96.875
  },
  "gates": {
   "textOk": true
@@ -31,14 +34,14 @@
   {
    "label": "snapshot",
    "bytes": 65553,
-   "timeMs": 7.529958,
+   "timeMs": 7.556583,
    "note": "state + full history",
    "estimated": false
   },
   {
    "label": "shallow-snapshot",
    "bytes": 22732,
-   "timeMs": 3.069834,
+   "timeMs": 3.030625,
    "note": "state with history dropped at current frontiers",
    "estimated": false
   }
@@ -46,25 +49,26 @@
  "loads": [
   {
    "label": "snapshot",
-   "medianMs": 0.303709,
+   "medianMs": 0.299875,
    "runs": 5,
    "allMs": [
-    0.288042,
-    0.290875,
-    0.303709,
-    0.314333,
-    1.760584
+    0.286167,
+    0.287125,
+    0.299875,
+    0.31675,
+    1.743042
    ]
   }
  ],
  "compaction": null,
+ "adapterCost": null,
  "memory": {
-  "baselineHeap": 12059216,
-  "peakHeapSampled": 13567856,
+  "baselineHeap": 12067984,
+  "peakHeapSampled": 13584232,
   "retainedHeapAfterGc": 210840,
   "externalDelta": 215641,
   "arrayBuffersDelta": 194864,
-  "rssEnd": 98533376,
+  "rssEnd": 99516416,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }
