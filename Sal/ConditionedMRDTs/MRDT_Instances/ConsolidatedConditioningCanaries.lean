@@ -1,4 +1,5 @@
-import Sal.ConditionedMRDTs.Metatheory.ConditioningIntentAudit
+import Sal.ConditionedMRDTs.MRDT_Instances.VerifiedCertificates
+import Sal.ConditionedMRDTs.Metatheory.GenerationContract
 import Sal.ConditionedMRDTs.MRDT_Instances.ProductionGenerationContracts
 import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Embed.PeritextEmbed_SeqSpec
 
@@ -25,6 +26,26 @@ namespace Sal.ConditionedMRDTs
 
 open Sal.Emulation
 open Sal.EmbedRGA (OrderedPrefixCode)
+
+theorem eSeqOK_of_linearMintHistory {α : Type} [DecidableEq α] [Inhabited α]
+    {Γ : OrderedPrefixCode} {ops : List (Op (EOp α))}
+    (h : LinearMintHistory (E Γ α) eApplicable ops) : eSeqOK Γ ops := by
+  intro pre e post heq
+  refine ⟨?_, h.guarded pre e post heq⟩
+  intro x hx
+  obtain ⟨old, hold, _hins, htime⟩ := mem_eInsIds.mp hx
+  rw [← htime]
+  exact h.clocked pre e post heq old hold
+
+theorem sSeqOK_of_linearMintHistory
+    {Γ : OrderedPrefixCode} {ops : List (Op SOp)}
+    (h : LinearMintHistory (S Γ) sApplicable ops) : sSeqOK Γ ops := by
+  intro pre e post heq
+  refine ⟨?_, h.guarded pre e post heq⟩
+  intro x hx
+  obtain ⟨old, hold, _hins, htime⟩ := mem_sInsIds.mp hx
+  rw [← htime]
+  exact h.clocked pre e post heq old hold
 
 /-- The paper-facing algebra and intent certificate. Its fields state Join
 correctness and sequential refinement directly; no state invariant or

@@ -1,5 +1,5 @@
 import Sal.MRDTs.Metatheory.LegacyBridge
-import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Sided.PeritextSided_Interaction
+import Sal.ConditionedMRDTs.MRDT_Instances.Peritext_Sided.PeritextSided_Final
 
 /-!
 # Sided Peritext state-GC capability
@@ -66,6 +66,25 @@ noncomputable def stateGC (Γ : OrderedPrefixCode) :
           (invEverywhere Γ)
           hold.core_step
 
+/-- Full algebraic, generation, sequential, and safety package for the same
+runtime-shaped Peritext core. -/
+noncomputable def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (D Γ) :=
+  LegacyBridge.verified (Sal.ConditionedMRDTs.PeritextSided.Core Γ)
+    (invEverywhere Γ)
+    (Sal.ConditionedMRDTs.PeritextSided.preGCUnified Γ)
+    (fun _ h => h)
+
+/-- Paper-facing composition point: the verified datatype and its optional
+physical state-GC protocol share exactly the same virtual-LCA resolver. -/
+structure Production (Γ : OrderedPrefixCode) where
+  datatype : VerifiedMRDT (D Γ)
+  runtime : StateGCProtocol (D Γ) datatype.virtualLCA
+
+noncomputable def production (Γ : OrderedPrefixCode) : Production Γ where
+  datatype := verified Γ
+  runtime := stateGC Γ
+
 #print axioms stateGC
+#print axioms production
 
 end Sal.MRDTs.Instances.PeritextSided

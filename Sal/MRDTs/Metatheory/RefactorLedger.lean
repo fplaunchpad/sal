@@ -43,6 +43,8 @@ namespace Sal.MRDTs
 #check Instances.Migrated.sidedEmbedRGA
 #check Instances.Migrated.peritextEmbedRGA
 #check Instances.PeritextSided.stateGC
+#check Instances.PeritextSided.verified
+#check Instances.PeritextSided.production
 
 example (D : MRDTSig) : Configuration D := initConfig D
 
