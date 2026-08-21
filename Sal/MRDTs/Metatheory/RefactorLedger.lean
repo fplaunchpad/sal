@@ -1,4 +1,5 @@
 import Sal.MRDTs.Framework.StateGC
+import Sal.MRDTs.Framework.Product
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.RGA
@@ -37,6 +38,8 @@ namespace Sal.MRDTs
 #check VerifiedMRDT
 #check StateGCCertificate
 #check StateGCProtocol
+#check prodSig
+#check applySeq_prod
 #check StateGCProtocol.refines
 #check HeadOnlyMergeCapability
 #check GC.Certificate
