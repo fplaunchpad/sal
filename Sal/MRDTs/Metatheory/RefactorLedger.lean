@@ -19,6 +19,9 @@ namespace Sal.MRDTs
 #check lca_events_of_storeInv
 #check storeInv_reachable
 #check storeInv_reachableV
+#check mca_events_cover
+#check ra_linearizable3_of_join
+#check ra_linearizable3V_of_join
 #check StepV
 #check GenerationContract
 #check MintCertifiedReach

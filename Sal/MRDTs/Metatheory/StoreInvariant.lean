@@ -402,6 +402,43 @@ theorem commonAnc_reaches_mca {parents : Version → List Version}
     exact Nat.findGreatest_is_greatest (Nat.not_le.mp hn) hyw hpy
   exact Nat.le_antisymm hymax (reaches_le hlt hzy)
 
+theorem reaches_alloc
+    {ver : Version → Option (D.State × Set (Op D.AppOp))}
+    {parents : Version → List Version}
+    (hInv : StoreInv ver parents) {a b : Version}
+    (hr : Reaches parents a b) (hb : (ver b).isSome) : (ver a).isSome := by
+  induction hr with
+  | refl => exact hb
+  | tail _ hstep ih => exact ih (hInv.parents_alloc _ _ hstep)
+
+theorem mca_events_cover
+    {ver : Version → Option (D.State × Set (Op D.AppOp))}
+    {parents : Version → List Version}
+    (hInv : StoreInv ver parents)
+    (hlt : ∀ v p, p ∈ parents v → p < v)
+    {S : Set Version} {w : Version}
+    (hS : ∀ u ∈ S, (ver u).isSome)
+    {sw : D.State} {Ew : Set (Op D.AppOp)} (hw : ver w = some (sw, Ew))
+    (e : Op D.AppOp) :
+    (∃ m, IsMCA parents S w m ∧ ∃ sm Em, ver m = some (sm, Em) ∧ e ∈ Em)
+      ↔ (∃ u ∈ S, ∃ su Eu, ver u = some (su, Eu) ∧ e ∈ Eu) ∧ e ∈ Ew := by
+  constructor
+  · rintro ⟨m, ⟨⟨⟨u, huS, hmu⟩, hmw⟩, _⟩, sm, Em, hm, heEm⟩
+    obtain ⟨⟨su, Eu⟩, hu⟩ := Option.isSome_iff_exists.mp (hS u huS)
+    exact ⟨⟨u, huS, su, Eu, hu,
+      storeInv_events_mono_reaches hInv hmu hm hu heEm⟩,
+      storeInv_events_mono_reaches hInv hmw hm hw heEm⟩
+  · rintro ⟨⟨u, huS, su, Eu, hu, heEu⟩, heEw⟩
+    obtain ⟨v₀, s₀, E₀, hv₀, he₀, hall⟩ := hInv.origin hu e heEu
+    have hv₀CA : v₀ ∈ CommonAnc parents S w :=
+      ⟨⟨u, huS, hall hu heEu⟩, hall hw heEw⟩
+    obtain ⟨m, hmMCA, hv₀m⟩ := commonAnc_reaches_mca hlt hv₀CA
+    have hm_alloc : (ver m).isSome :=
+      reaches_alloc hInv hmMCA.1.2 (by rw [hw]; rfl)
+    obtain ⟨⟨sm, Em⟩, hm⟩ := Option.isSome_iff_exists.mp hm_alloc
+    exact ⟨m, hmMCA, sm, Em, hm,
+      storeInv_events_mono_reaches hInv hv₀m hv₀ hm he₀⟩
+
 theorem storeInv_init :
     StoreInv (initConfig D).ver (initConfig D).parents := by
   refine ⟨?_, ?_, ?_⟩
