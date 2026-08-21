@@ -523,6 +523,80 @@ theorem renderMarksDoc_dropDoc (d : DocD) (kp : ℕ → Bool)
   rw [hfmt]
 
 
+/-- Restricting deletion evidence to ids that retain birth records is
+render-invisible: the resolver consults deletion only for birth ids. -/
+theorem renderMarksDoc_deleted_congr (d : DocD) (del' : List Nat)
+    (marks : List MarkD) (mt : MType)
+    (h : ∀ c ∈ d.birthIds, del'.contains c = d.deleted.contains c) :
+    renderMarksDoc { d with deleted := del' } marks mt =
+      renderMarksDoc d marks mt := by
+  have hb : (DocD.mk d.shadow del').birthIds = d.birthIds := rfl
+  have hlive : (DocD.mk d.shadow del').liveIds = d.liveIds := by
+    show d.birthIds.filter (fun c => !del'.contains c) =
+      d.birthIds.filter (fun c => !d.deleted.contains c)
+    exact List.filter_congr (fun c hc => by rw [h c hc])
+  have hisLive : ∀ c, (DocD.mk d.shadow del').isLive c = d.isLive c := by
+    intro c
+    show (d.birthIds.contains c && !del'.contains c) =
+      (d.birthIds.contains c && !d.deleted.contains c)
+    by_cases hmem : c ∈ d.birthIds
+    · rw [h c hmem]
+    · have hf : d.birthIds.contains c = false := by
+        simp [List.contains_eq_mem, hmem]
+      rw [hf, Bool.false_and, Bool.false_and]
+  have hscanR : ∀ i, scanRight d.birthIds del' i =
+      scanRight d.birthIds d.deleted i := by
+    intro i
+    exact find?_congr_mem _ _ _ (fun x hx => by
+      rw [h x (List.mem_of_mem_drop hx)])
+  have hscanL : ∀ i, scanLeft d.birthIds del' i =
+      scanLeft d.birthIds d.deleted i := by
+    intro i
+    refine find?_congr_mem _ _ _ (fun x hx => ?_)
+    have hx' : x ∈ d.birthIds :=
+      (List.take_sublist _ _).subset (List.mem_reverse.mp hx)
+    rw [h x hx']
+  have hsi : ∀ m : MarkD, startIncl (DocD.mk d.shadow del') m =
+      startIncl d m := by
+    intro m
+    rw [startIncl_factor, startIncl_factor, hlive]
+    have hr : startResolved (DocD.mk d.shadow del') m = startResolved d m := by
+      unfold startResolved
+      rw [hisLive m.start_id]
+      cases m.startSide with
+      | before => exact congrArg _ (hscanR _)
+      | after => exact congrArg _ (hscanL _)
+    rw [hr]
+  have hei : ∀ m : MarkD, endExcl (DocD.mk d.shadow del') m =
+      endExcl d m := by
+    intro m
+    rw [endExcl_factor, endExcl_factor, hlive]
+    have hr : endResolved (DocD.mk d.shadow del') m = endResolved d m := by
+      unfold endResolved
+      rw [hisLive m.end_id]
+      cases m.endSide with
+      | after => exact congrArg _ (hscanL _)
+      | before => exact congrArg _ (hscanR _)
+    rw [hr]
+  unfold renderMarksDoc renderFlagWith
+  rw [show ({ d with deleted := del' } : DocD) =
+    DocD.mk d.shadow del' from rfl, hlive]
+  refine mapIdx_congr_mem _ _ _ (fun k c _ => ?_)
+  have hcp : (DocD.mk d.shadow del').cp c = d.cp c := rfl
+  rw [hcp]
+  have hcov : ∀ (o : MarkD), markCoversPos (DocD.mk d.shadow del') o k =
+      markCoversPos d o k := by
+    intro o
+    unfold markCoversPos
+    rw [hsi o, hei o]
+  have hfmt : fmtAt (markCoversPos (DocD.mk d.shadow del')) marks mt k =
+      fmtAt (markCoversPos d) marks mt k := by
+    unfold fmtAt bestCover
+    rw [List.filter_congr (fun o _ => by rw [hcov o])]
+  rw [hfmt]
+
+
 #print axioms renderMarksDoc_dropDoc
+#print axioms renderMarksDoc_deleted_congr
 
 end Sal.MRDTs.Instances.PeritextRender.GC

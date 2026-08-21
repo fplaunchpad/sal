@@ -2,6 +2,7 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.Instances.FuguePolicyGC
 import Sal.MRDTs.Instances.PeritextRenderGC
+import Sal.MRDTs.Instances.PeritextMarkPairGC
 
 /-! # Sided Peritext datatype-state collection
 
@@ -33,19 +34,19 @@ structure CompactSidedState where
 structure CompactState where
   sided : CompactSidedState
   deleted : Finset Nat
-  marks : Finset MarkEvent
+  marks : List MarkEvent
 
 def snapshot (gaps : Finset GapEntry) (s : (Core Γ).State) : CompactState where
   sided := ⟨s.1, gaps⟩
   deleted := s.2.1
-  marks := s.2.2
+  marks := s.2.2.toList
 
 def compactDocument (s : CompactState) : DocD where
   shadow := s.sided.text.map fun r => (r.1, r.2.1, ([] : List Bool))
   deleted := s.deleted.toList
 
 def query (s : CompactState) (kind : MType) : List (Nat × Bool) :=
-  renderMarksDoc (compactDocument s) s.marks.toList kind
+  renderMarksDoc (compactDocument s) s.marks kind
 
 def gapEntryOf (K : Know) (a : Nat) : Option GapEntry :=
   (retainedLiveGap K a).map fun g => ⟨a, gapObservation g a⟩
@@ -135,14 +136,14 @@ theorem collectText_query_preserved (p : TextPlan) (s : CompactState)
     (hnd : (compactDocument s).birthIds.Nodup)
     (hdead : ∀ c ∈ (compactDocument s).birthIds,
       p.keep c = false → (compactDocument s).deleted.contains c = true)
-    (hanchor : ∀ m ∈ s.marks.toList,
+    (hanchor : ∀ m ∈ s.marks,
       p.keep m.start_id = true ∧ p.keep m.end_id = true) :
     ∀ kind, query (collectText p s) kind = query s kind := by
   intro kind
   unfold query
   rw [compactDocument_collectText]
   exact PeritextRender.GC.renderMarksDoc_dropDoc
-    (compactDocument s) p.keep s.marks.toList kind hnd hdead hanchor
+    (compactDocument s) p.keep s.marks kind hnd hdead hanchor
 
 /-! ## Continuation after collection -/
 
@@ -256,7 +257,7 @@ theorem collectedText_continuation_query {Γ : OrderedPrefixCode}
     (hdead : ∀ r ∈ (show SState from
         applySeq (S Γ).toCRDTSig s.sided.text τ),
       kp r.1 = false → r.1 ∈ s.deleted)
-    (hanchor : ∀ m ∈ s.marks.toList,
+    (hanchor : ∀ m ∈ s.marks,
       kp m.start_id = true ∧ kp m.end_id = true) :
     query (s.withText (applySeq (S Γ).toCRDTSig
       (s.sided.text.filter fun r => kp r.1) τ)) kind =
@@ -288,11 +289,65 @@ theorem collectedText_continuation_query {Γ : OrderedPrefixCode}
     simpa using hd
   · exact hanchor
 
+/-! ## Deletion and mark-event collection -/
+
+/-- Deletion evidence for ids whose birth records have already been removed
+is unobservable and can be discarded. -/
+def trimDeleted (s : CompactState) : CompactState :=
+  { s with deleted := s.deleted.filter fun x => x ∈ s.sided.text.map Prod.fst }
+
+theorem trimDeleted_query_preserved (s : CompactState) (kind : MType) :
+    query (trimDeleted s) kind = query s kind := by
+  unfold query trimDeleted compactDocument
+  simp only
+  change renderMarksDoc
+      { (compactDocument s) with deleted :=
+          (s.deleted.filter fun x => x ∈ s.sided.text.map Prod.fst).toList }
+      s.marks kind =
+    renderMarksDoc (compactDocument s) s.marks kind
+  apply PeritextRender.GC.renderMarksDoc_deleted_congr
+  intro c hc
+  have hcS : c ∈ sIds s.sided.text := by
+    simpa [compactDocument, DocD.birthIds, sIds, List.map_map] using hc
+  have hmem : c ∈ s.sided.text.map Prod.fst := by
+    simpa [sIds] using hcS
+  rw [List.contains_eq_mem, List.contains_eq_mem]
+  simp only [Finset.mem_toList, Finset.mem_filter]
+  simp [compactDocument, hmem]
+
+def dropMarkPair (s : CompactState) (m r : MarkEvent) : CompactState :=
+  { s with marks := s.marks.filter fun o =>
+      !(o.mid == m.mid || o.mid == r.mid) }
+
+/-- A frontier-guarded add/remove mark-pair collection step. The alpha and
+beta premises are necessary: the native SPOTs exhibit observable failures if
+either delayed marks or the Lamport growth window is ignored. -/
+theorem dropMarkPair_query_preserved (s : CompactState)
+    (m r : MarkEvent) (kind : MType)
+    (hm : m ∈ s.marks) (hr : r ∈ s.marks)
+    (hopm : m.op = MarkOp.add) (hopr : r.op = MarkOp.remove)
+    (hty : r.mtype = m.mtype) (hlt : m.mid < r.mid)
+    (hsid : r.start_id = m.start_id) (heid : r.end_id = m.end_id)
+    (hss : r.startSide = m.startSide) (hes : r.endSide = m.endSide)
+    (hnodup : (s.marks.map MarkD.mid).Nodup)
+    (hothers : ∀ o ∈ s.marks, o.mtype = m.mtype →
+      o.mid ≠ m.mid → o.mid ≠ r.mid → r.mid < o.mid)
+    (hwindow : ∀ c ∈ (compactDocument s).birthIds,
+      c ≤ m.mid ∨ r.mid < c) :
+    query (dropMarkPair s m r) kind = query s kind := by
+  unfold query dropMarkPair
+  simp only [compactDocument]
+  exact PeritextRender.GC.a3_guarded_drop
+    (compactDocument s) s.marks m r kind hm hr hopm hopr hty hlt
+    hsid heid hss hes hnodup hothers hwindow
+
 #print axioms gapEntryOf_exact
 #print axioms compactInsertOp_exact
 #print axioms collectText_query_preserved
 #print axioms applySeq_s_filter
 #print axioms collectedText_continuation_query
+#print axioms trimDeleted_query_preserved
+#print axioms dropMarkPair_query_preserved
 
 end
 

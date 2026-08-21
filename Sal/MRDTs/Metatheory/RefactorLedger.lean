@@ -13,6 +13,7 @@ import Sal.MRDTs.Instances.FuguePolicyGC
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.Instances.PeritextRenderGC
+import Sal.MRDTs.Instances.PeritextMarkPairGC
 import Sal.MRDTs.Instances.SidedPeritextStateGC
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
@@ -118,11 +119,15 @@ namespace Sal.MRDTs
 #check Instances.SidedPeritext.richVerified
 #check Instances.SidedPeritext.rich_sequentially_correct
 #check Instances.PeritextRender.GC.renderMarksDoc_dropDoc
+#check Instances.PeritextRender.GC.renderMarksDoc_deleted_congr
+#check Instances.PeritextRender.GC.a3_guarded_drop
 #check Instances.SidedPeritext.StateGC.gapEntryOf_exact
 #check Instances.SidedPeritext.StateGC.compactInsertOp_exact
 #check Instances.SidedPeritext.StateGC.collectText_query_preserved
 #check Instances.SidedPeritext.StateGC.applySeq_s_filter
 #check Instances.SidedPeritext.StateGC.collectedText_continuation_query
+#check Instances.SidedPeritext.StateGC.trimDeleted_query_preserved
+#check Instances.SidedPeritext.StateGC.dropMarkPair_query_preserved
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check VerifiedMRDT.sequentially_correct
