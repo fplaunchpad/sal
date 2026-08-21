@@ -1,9 +1,7 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
-import Sal.MRDTs.Instances.MigratedCanaries
+import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.GC.Refinement
-import Sal.MRDTs.Instances.PeritextSidedStateGC
-import Sal.MRDTs.Metatheory.LegacyBridge
 
 /-! Build gate for the plain-signature reconstruction. -/
 
@@ -44,17 +42,9 @@ namespace Sal.MRDTs
 #check Instances.GSet.generation
 #check Instances.GSet.sequential
 #check Instances.GSet.safety
-#check LegacyBridge.erase_step
-#check LegacyBridge.lift_step
-#check LegacyBridge.lift_stepV
-#check Instances.Migrated.boundedCounter
-#check Instances.Migrated.queue
-#check Instances.Migrated.embedRGA
-#check Instances.Migrated.sidedEmbedRGA
-#check Instances.Migrated.peritextEmbedRGA
-#check Instances.PeritextSided.stateGC
-#check Instances.PeritextSided.verified
-#check Instances.PeritextSided.production
+#check Instances.BoundedCounter.BC
+#check Instances.BoundedCounter.BC_coreVCs3
+#check Instances.BoundedCounter.ra_linearizable
 
 example (D : MRDTSig) : Configuration D := initConfig D
 

@@ -24,24 +24,22 @@ theorem isRALinearizable_iff_join (D : MRDTSig) (C : Configuration D) :
 /-- End-to-end convergence for executions certified by the public generation
 contract.  Datatype-specific Join proofs may consume `G.History` internally;
 `MintCertifiedReach` ensures the bridge is available throughout the trace. -/
-structure ConvergenceCertificate (D : MRDTSig) (V : VirtualLCAResolver D)
-    (G : GenerationContract D) where
+structure ConvergenceCertificate (D : MRDTSig) (G : GenerationContract D) where
   sound : ∀ {C}, MintCertifiedReach D G C → IsRALinearizable D C
   soundV : ∀ {C},
-    MintCertifiedReachV D V G C → IsRALinearizable D C
+    MintCertifiedReachV D (canonicalVirtualLCA D) G C → IsRALinearizable D C
 
 /-- Complete implementer-supplied verification package.  The framework does
 not identify generation history, convergence history, and sequential honesty;
 the implementer supplies the necessary bridges explicitly. -/
 structure VerifiedMRDT (D : MRDTSig) where
   generation : GenerationContract D
-  virtualLCA : VirtualLCAResolver D
-  convergence : ConvergenceCertificate D virtualLCA generation
+  convergence : ConvergenceCertificate D generation
   Spec : SequentialSpec (Op D.AppOp)
   sequential : SequentialRefinement D Spec
   sequential_of_mint : ∀ ops,
     LinearMintHistory D generation.Guard ops → sequential.Honest ops
-  safety : SafetyCertificate D virtualLCA generation
+  safety : SafetyCertificate D (canonicalVirtualLCA D) generation
 
 namespace VerifiedMRDT
 
@@ -53,7 +51,7 @@ theorem converges {C : Configuration D}
   V.convergence.sound h
 
 theorem convergesV {C : Configuration D}
-    (h : MintCertifiedReachV D V.virtualLCA V.generation C) :
+    (h : MintCertifiedReachV D (canonicalVirtualLCA D) V.generation C) :
     IsRALinearizable D C :=
   V.convergence.soundV h
 

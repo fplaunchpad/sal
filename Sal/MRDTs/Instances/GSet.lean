@@ -27,10 +27,7 @@ def generation : GenerationContract D where
   History := fun _ => True
   history_of_mint := fun _ _ => trivial
 
-def virtualLCA : VirtualLCAResolver D where
-  state := fun _ _ _ => (∅ : Set Nat)
-
-def safety : SafetyCertificate D virtualLCA generation where
+def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
   Safe := fun _ => True
   Observable := fun _ => True
   preservation := fun _ _ _ _ _ => trivial
