@@ -1,4 +1,4 @@
-import Sal.MRDTs.Framework.Execution
+import Sal.MRDTs.GC.CompressedDAG
 
 /-!
 # Distributed commit-history garbage collection
@@ -75,10 +75,29 @@ structure Certificate (L : Local) where
   reaches_exact : ∀ {a b}, a ∈ keep → b ∈ keep →
     (compressedReaches a b ↔ Reaches parents a b)
   lca_preserved : ∀ {v₁ v₂ vT}, v₁ ∈ keep → v₂ ∈ keep → vT ∈ keep →
-    ((compressedReaches vT v₁ ∧ compressedReaches vT v₂ ∧
-      ∀ w, w ∈ keep → compressedReaches w v₁ →
-        compressedReaches w v₂ → compressedReaches w vT) ↔
-      IsLCA parents v₁ v₂ vT)
+    (IsLCARel compressedReaches v₁ v₂ vT ↔ IsLCA parents v₁ v₂ vT)
+
+/-- The canonical root-free certificate constructor. Closure under maximal
+common ancestors is sufficient; paths and the old root need not be retained. -/
+noncomputable def Certificate.ofMCAClosed (L : Local)
+    (keep : Set Version)
+    (complete : EvidenceComplete parents L)
+    (head_kept : L.head ∈ keep)
+    (evidence_kept : ∀ r ∈ L.roster, r = L.self ∨
+      ∃ v, v ∈ DerivedEvidence parents L r ∧ v ∈ keep)
+    (support : keep ⊆ L.commits)
+    (parents_lt : ∀ v p, p ∈ parents v → p < v)
+    (mca_closed : ∀ a ∈ keep, ∀ b ∈ keep, ∀ m,
+      IsMCA parents {a} b m → m ∈ keep) : Certificate parents L where
+  keep := keep
+  complete := complete
+  head_kept := head_kept
+  evidence_kept := evidence_kept
+  support := support
+  compressedReaches := CompressedReaches parents keep
+  reaches_exact := fun ha hb => compressedReaches_iff parents keep ha hb
+  lca_preserved := fun h₁ h₂ hT =>
+    compressed_isLCA_iff_of_mcaClosed parents keep parents_lt h₁ h₂ hT mca_closed
 
 def collect (L : Local) (cert : Certificate parents L) : Local where
   self := L.self

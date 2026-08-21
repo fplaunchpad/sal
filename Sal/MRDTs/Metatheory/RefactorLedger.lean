@@ -32,6 +32,8 @@ namespace Sal.MRDTs
 #check StateGCProtocol.refines
 #check HeadOnlyMergeCapability
 #check GC.Certificate
+#check GC.Certificate.ofMCAClosed
+#check GC.root_absent_when_dropped
 #check GC.execution_refines_noGC
 #check GC.runtime_refines_core
 #check GC.runtime_refines_coreV
