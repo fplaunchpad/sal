@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "suite": "peritext-kernel-gc",
+  "system": "peritext-rga",
+  "workload": "text-kernel-spine",
   "kernel": "rga",
   "mode": "history",
   "preset": "quick",
@@ -12,13 +14,15 @@
     "topology": "spine"
   },
   "metrics": {
-    "operations": 7501,
+    "operations": 7500,
+    "commitBatches": 34,
     "visibleChars": 3300,
-    "applyMs": 2110.19349,
+    "applyMs": 15.003037,
     "stateGcMs": 0,
-    "historyGcMs": 21.719082999999955,
+    "historyGcMs": 0.4795840000000027,
     "durableStateBytes": 52663,
     "commits": 2,
+    "identityRecords": 5400,
     "shadowRecords": 5400,
     "deletedIds": 2101
   },

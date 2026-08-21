@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-15T08:38:24.081Z"
+  "date": "2026-08-20T10:52:16.780Z"
  },
  "ops": {
   "total": 368209,
@@ -15,14 +15,14 @@
  },
  "finalChars": 56769,
  "apply": {
-  "totalMs": 1929.010875,
+  "totalMs": 2001.669833,
   "count": 368209,
   "warmupExcluded": 1000,
-  "meanUs": 5.2050445441152045,
-  "medianUs": 4.083,
-  "p95Us": 11.916,
-  "p99Us": 15.125,
-  "maxUs": 1348.208
+  "meanUs": 5.3964282002892086,
+  "medianUs": 3.959,
+  "p95Us": 13.792,
+  "p99Us": 15.333,
+  "maxUs": 1055.333
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 161046,
-   "timeMs": 52.330667,
+   "timeMs": 50.510334,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 56.459375,
+   "medianMs": 53.816167,
    "runs": 5,
    "allMs": [
-    52.410959,
-    55.10425,
-    56.459375,
-    60.176708,
-    81.140209
+    48.603417,
+    53.36075,
+    53.816167,
+    56.319625,
+    69.662416
    ]
   }
  ],
  "compaction": {
-  "ms": 107.048375,
+  "ms": 98.602125,
   "stats": {
    "nodesBefore": 84884,
    "nodesAfter": 58766,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 179052,
-    "timeMs": 56.273791,
+    "timeMs": 60.319292,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 53533792,
-  "peakHeapSampled": 114466328,
-  "retainedHeapAfterGc": 15652776,
+  "baselineHeap": 53659144,
+  "peakHeapSampled": 114540672,
+  "retainedHeapAfterGc": 15653560,
   "externalDelta": 2945712,
   "arrayBuffersDelta": 2945672,
-  "rssEnd": 281264128,
+  "rssEnd": 280674304,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

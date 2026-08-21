@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-15T08:39:21.675Z"
+    "date": "2026-08-20T10:53:32.134Z"
   },
   "gates": {
     "converged": true
@@ -22,12 +22,12 @@
   "metrics": {
     "operations": 6000,
     "finalChars": 3604,
-    "syncTotalMs": 7.4185,
-    "syncMedianUs": 1154.291,
-    "syncP95Us": 2888.583,
-    "syncPayloadBytes": 92528,
-    "localOpMeanUs": 3.329,
-    "primarySaveBytes": 80605,
+    "syncTotalMs": 7.537207,
+    "syncMedianUs": 921.625,
+    "syncP95Us": 3507.833,
+    "syncPayloadBytes": 92720,
+    "localOpMeanUs": 3.2303466666666663,
+    "primarySaveBytes": 80667,
     "runtimeGcMs": null
   },
   "detail": {
@@ -45,7 +45,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-15T08:39:21.675Z"
+      "date": "2026-08-20T10:53:32.134Z"
     },
     "finalChars": 3604,
     "gates": {
@@ -54,40 +54,40 @@
     "sync": {
       "count": 6,
       "warmupExcluded": 0,
-      "meanUs": 1236.4166666666667,
-      "medianUs": 1154.291,
-      "p95Us": 2888.583,
-      "p99Us": 2888.583,
-      "maxUs": 2888.583,
-      "totalMs": 7.4185
+      "meanUs": 1256.2011666666667,
+      "medianUs": 921.625,
+      "p95Us": 3507.833,
+      "p99Us": 3507.833,
+      "maxUs": 3507.833,
+      "totalMs": 7.537207
     },
     "syncPayloadBytes": {
-      "total": 92528,
-      "perSyncMean": 15421.333333333334
+      "total": 92720,
+      "perSyncMean": 15453.333333333334
     },
     "localOps": {
       "count": 6000,
-      "totalMs": 19.974,
-      "meanUs": 3.329
+      "totalMs": 19.38208,
+      "meanUs": 3.2303466666666663
     },
     "saves": [
       {
         "label": "update-v1",
-        "bytes": 80605,
+        "bytes": 80667,
         "estimated": false
       },
       {
         "label": "update-v2",
-        "bytes": 44639,
+        "bytes": 45114,
         "estimated": false
       }
     ],
     "compaction": null,
     "runtimeGcMsTotal": null,
     "memory": {
-      "baselineHeap": 5645976,
-      "peakHeapSampled": 14362824,
-      "retainedHeapAfterGc": 2702536,
+      "baselineHeap": 5648048,
+      "peakHeapSampled": 15187920,
+      "retainedHeapAfterGc": 2702824,
       "externalDelta": 20777,
       "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
     }

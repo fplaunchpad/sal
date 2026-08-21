@@ -28,6 +28,13 @@ rg -q "def boundedCounterUnified" "$contract_file"
 # Canonical Peritext must remain an explicit Embed-contract instantiation.
 rg -q "def peritextEmbedGeneration" "$contract_file"
 
+flagship_file="Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Embed/PeritextFlagship.lean"
+rg -q "structure PeritextFlagshipCertificate" "$flagship_file"
+rg -q "def peritextFlagship" "$flagship_file"
+for field in distributed distributedV sequential commitHistoryGC distributedCommitGC stateGC; do
+  rg -q "${field} :" "$flagship_file"
+done
+
 # Negative designs must not silently acquire a production unified package.
 if rg -q "(rehoming|budgetCart|shesha)Unified" "$contract_file"; then
   echo "refuted or gated design promoted to a production unified certificate" >&2
@@ -64,3 +71,17 @@ rg -q "def rgaApplicable" "$rga_file"
 rg -q "def rgaHistorySequentialRefinement" "$rga_file"
 rg -q "def rgaGeneration" "$rga_file"
 rg -q "def rgaUnified" "$rga_file"
+
+sided_final="Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Sided/PeritextSided_Final.lean"
+sided_interaction="Sal/ConditionedMRDTs/MRDT_Instances/Peritext_Sided/PeritextSided_Interaction.lean"
+for field in interactionWF interactionRefines interactionQueries; do
+  rg -q "${field} :" "$sided_final"
+done
+for theorem in of_sources toCoverage compactApplyInstall \
+  combinedSteps_refines_Step3 combinedTrace_query_eq; do
+  rg -q "$theorem" "$sided_interaction"
+done
+
+# Keep prose/package composition claims aligned with the actual Step3 versus
+# Step3V theorem signatures.
+sh scripts/check-gc-coverage-claims.sh

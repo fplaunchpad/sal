@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-15T08:39:22.287Z"
+  "date": "2026-08-20T10:53:32.735Z"
  },
  "finalChars": 3604,
  "gates": {
@@ -22,12 +22,12 @@
  "sync": {
   "count": 6,
   "warmupExcluded": 0,
-  "meanUs": 16838.4305,
-  "medianUs": 17561.167,
-  "p95Us": 22506.666,
-  "p99Us": 22506.666,
-  "maxUs": 22506.666,
-  "totalMs": 101.030583
+  "meanUs": 16507.743,
+  "medianUs": 16915.958,
+  "p95Us": 22171.167,
+  "p99Us": 22171.167,
+  "maxUs": 22171.167,
+  "totalMs": 99.046458
  },
  "syncPayloadBytes": {
   "total": 28515,
@@ -35,8 +35,8 @@
  },
  "localOps": {
   "count": 6000,
-  "totalMs": 14.018126000000002,
-  "meanUs": 2.336354333333334
+  "totalMs": 14.020710000000001,
+  "meanUs": 2.3367850000000003
  },
  "saves": [
   {
@@ -53,8 +53,8 @@
  "compaction": null,
  "runtimeGcMsTotal": null,
  "memory": {
-  "baselineHeap": 5364472,
-  "peakHeapSampled": 6154784,
+  "baselineHeap": 5366232,
+  "peakHeapSampled": 6156464,
   "retainedHeapAfterGc": 412648,
   "externalDelta": 21033,
   "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"

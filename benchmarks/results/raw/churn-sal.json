@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-15T09:14:37.760Z"
+    "date": "2026-08-20T11:27:15.688Z"
   },
   "gates": {
     "lenOk": true
@@ -23,7 +23,7 @@
     "operations": 19200,
     "finalChars": 1200,
     "finalPrimarySaveBytes": 12098,
-    "retainedHeapBytes": 826288
+    "retainedHeapBytes": 837224
   },
   "detail": {
     "workload": "churn",
@@ -40,7 +40,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-15T09:14:37.760Z"
+      "date": "2026-08-20T11:27:15.688Z"
     },
     "finalChars": 1200,
     "gates": {
@@ -59,7 +59,7 @@
       {
         "phase": "cycle1-ins",
         "liveChars": 2000,
-        "phaseMs": 2.409208,
+        "phaseMs": 2.349416,
         "saves": {
           "run-table-serialized": 8759,
           "run-table-serialized+compacted": 5209
@@ -68,7 +68,7 @@
       {
         "phase": "cycle1-del",
         "liveChars": 200,
-        "phaseMs": 1.048041,
+        "phaseMs": 1.333958,
         "saves": {
           "run-table-serialized": 1657,
           "run-table-serialized+compacted": 855
@@ -77,7 +77,7 @@
       {
         "phase": "cycle2-ins",
         "liveChars": 2200,
-        "phaseMs": 1.602834,
+        "phaseMs": 1.43525,
         "saves": {
           "run-table-serialized": 11218,
           "run-table-serialized+compacted": 6029
@@ -86,7 +86,7 @@
       {
         "phase": "cycle2-del",
         "liveChars": 400,
-        "phaseMs": 0.629666,
+        "phaseMs": 0.914,
         "saves": {
           "run-table-serialized": 3988,
           "run-table-serialized+compacted": 1729
@@ -95,7 +95,7 @@
       {
         "phase": "cycle3-ins",
         "liveChars": 2400,
-        "phaseMs": 1.4075,
+        "phaseMs": 1.619291,
         "saves": {
           "run-table-serialized": 13632,
           "run-table-serialized+compacted": 7094
@@ -104,7 +104,7 @@
       {
         "phase": "cycle3-del",
         "liveChars": 600,
-        "phaseMs": 1.183584,
+        "phaseMs": 0.751458,
         "saves": {
           "run-table-serialized": 6292,
           "run-table-serialized+compacted": 2714
@@ -113,7 +113,7 @@
       {
         "phase": "cycle4-ins",
         "liveChars": 2600,
-        "phaseMs": 1.515875,
+        "phaseMs": 1.34375,
         "saves": {
           "run-table-serialized": 16085,
           "run-table-serialized+compacted": 8002
@@ -122,7 +122,7 @@
       {
         "phase": "cycle4-del",
         "liveChars": 800,
-        "phaseMs": 1.054167,
+        "phaseMs": 0.710167,
         "saves": {
           "run-table-serialized": 8888,
           "run-table-serialized+compacted": 3523
@@ -131,7 +131,7 @@
       {
         "phase": "cycle5-ins",
         "liveChars": 2800,
-        "phaseMs": 1.32875,
+        "phaseMs": 1.118583,
         "saves": {
           "run-table-serialized": 19059,
           "run-table-serialized+compacted": 8774
@@ -140,7 +140,7 @@
       {
         "phase": "cycle5-del",
         "liveChars": 1000,
-        "phaseMs": 0.80925,
+        "phaseMs": 0.816167,
         "saves": {
           "run-table-serialized": 11111,
           "run-table-serialized+compacted": 4355
@@ -149,7 +149,7 @@
       {
         "phase": "final-ins",
         "liveChars": 1200,
-        "phaseMs": 0.166083,
+        "phaseMs": 0.122875,
         "saves": {
           "run-table-serialized": 12098,
           "run-table-serialized+compacted": 4799
@@ -179,8 +179,8 @@
       }
     },
     "memory": {
-      "baselineHeap": 4044536,
-      "retainedHeapAfterGc": 826288,
+      "baselineHeap": 4176624,
+      "retainedHeapAfterGc": 837224,
       "externalDelta": 40
     }
   }

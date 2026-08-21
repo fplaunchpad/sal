@@ -24,7 +24,7 @@ test('opportunistic peritext mesh + compaction converges, no unresolved deferral
   const N = 4;
   const reps = Array.from({ length: N }, (_, i) => new DistributedReplica(compactiblePeritext, 'p' + i));
   for (const r of reps) for (const s of reps) if (r !== s) r.register(s.name);
-  let id = 0, deferred = 0;
+  let id = 0, deferred = 0, commitGCs = 0, commitsDropped = 0;
   // seed shared history + tombstones so compaction has work
   const seed = [];
   for (let i = 0; i < 10; i++) { id++; seed.push({ type: 'ins', id: mint(id), el: 'abcdefghij'[i], anchorId: i === 0 ? null : mint(id - 1) }); }
@@ -43,12 +43,18 @@ test('opportunistic peritext mesh + compaction converges, no unresolved deferral
     }
     if (rng() < 0.2) { try { pick(reps).compactStable(); } catch {} } // ungated -> incomparable epochs
     for (let s = 0; s < 6; s++) { const a = pick(reps), b = pick(reps); if (a !== b) sync(a, b); }
+    if (rng() < 0.25) {
+      const g = pick(reps).gc();
+      if (!g.refused) { commitGCs++; commitsDropped += g.dropped; }
+    }
   }
   // final: fully connect everyone (opportunistic), several passes
   for (let pass = 0; pass < 6; pass++) for (const a of reps) for (const b of reps) if (a !== b) sync(a, b);
 
   const reads = reps.map(txt);
   assert.equal(deferred, 0, `every merge RESOLVED (no criss-cross/cross-epoch deferrals), got ${deferred}`);
+  assert.ok(commitGCs > 0, 'random run must exercise certified commit GC');
+  assert.ok(commitsDropped > 0, 'commit GC must genuinely prune the virtual-LCA run');
   for (let i = 1; i < N; i++) assert.equal(reads[i], reads[0], `p${i} converged`);
   assert.ok(reps.map((r) => r.headGid).every((h) => h === reps[0].headGid), 'identical head SHA');
 });

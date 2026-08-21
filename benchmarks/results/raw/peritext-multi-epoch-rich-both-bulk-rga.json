@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "suite": "peritext",
+  "workload": "multi-epoch-rich",
+  "system": "peritext-rga",
+  "mode": "both",
+  "preset": "bulk",
+  "config": {
+    "initial": 500,
+    "rounds": 6,
+    "burst": 300,
+    "seed": 1729,
+    "pairDrop": true,
+    "scenario": "multi-epoch-rich",
+    "representation": "rga",
+    "matrixVersion": 3
+  },
+  "environment": {
+    "node": "v26.3.1",
+    "platform": "darwin arm64",
+    "exposeGc": true,
+    "date": "2026-08-20T11:26:25.565Z"
+  },
+  "gates": {
+    "converged": true,
+    "gcRenderPreserved": true,
+    "snapshotOk": true,
+    "stateCompactionFiredOrExpectedNoop": true,
+    "delayedPruneRefused": true,
+    "emptyMetadataFloor": true,
+    "multiEpochCompaction": true
+  },
+  "metrics": {
+    "operations": 2309,
+    "elapsedMs": 3158.910667,
+    "syncMs": 52.666709000000004,
+    "syncBytes": 725166,
+    "historyGcMs": 0,
+    "stateGcMs": 9.834999999999999,
+    "intermediateEpochs": 2,
+    "intermediatePruned": 2210,
+    "commitsBeforeFinalGc": 1210,
+    "commitsAfter": 1211,
+    "commitsWhileAwaitingAck": null,
+    "epochPruned": 0,
+    "epochPruneReason": "evidence from B has not reached the compaction cut",
+    "durableStateBytes": 94631,
+    "visibleChars": 931,
+    "shadowRecords": 1243,
+    "identityRecords": 1243,
+    "deletedIds": 312,
+    "markRecords": 627,
+    "coordinateSymbols": 2182,
+    "renderDigest": "e8fee8f06c9506cb80bece8c842213ee92c42d2fa6afd1585ab36840350694de"
+  }
+}

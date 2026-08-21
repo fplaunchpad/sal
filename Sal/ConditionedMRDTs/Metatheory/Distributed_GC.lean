@@ -81,13 +81,14 @@ def EvidenceComplete (L : DistributedLocal) : Prop :=
 closure facts consumed by future head-sync LCA queries. -/
 structure LocalGCCertificate (L : DistributedLocal) where
   keep : Set Version
+  parents_lt : ∀ v p, p ∈ parents v → p < v
   complete : EvidenceComplete parents L
   head_kept : L.head ∈ keep
   evidence_kept : ∀ r ∈ L.roster, r = L.self ∨
     ∃ v, v ∈ DerivedEvidence parents L r ∧ v ∈ keep
   support : keep ⊆ L.commits
-  common_closed : ∀ v₁ ∈ keep, ∀ v₂ ∈ keep, ∀ w,
-    Reaches parents w v₁ → Reaches parents w v₂ → w ∈ keep
+  mca_closed : ∀ v₁ ∈ keep, ∀ v₂ ∈ keep, ∀ m,
+    IsMCA parents {v₁} v₂ m → m ∈ keep
 
 /-- Successful local GC.  Notice that the old root is absent whenever it is
 not in the certificate's keep set. -/
@@ -201,8 +202,8 @@ theorem collect_lca_preserved (L : DistributedLocal)
     (h₁ : v₁ ∈ cert.keep) (h₂ : v₂ ∈ cert.keep) (hT : vT ∈ cert.keep) :
     IsLCARel (CompressedReaches parents cert.keep) v₁ v₂ vT ↔
       IsLCA parents v₁ v₂ vT :=
-  compressed_isLCA_iff parents cert.keep h₁ h₂ hT
-    (cert.common_closed v₁ h₁ v₂ h₂)
+  compressed_isLCA_iff_of_mcaClosed parents cert.keep cert.parents_lt
+    h₁ h₂ hT cert.mca_closed
 
 /-- Membership reconfiguration is safe only for a non-author with no evidence;
 an author/offline member remains in the roster until an explicit epoch-base
@@ -516,6 +517,7 @@ def fullNode (r : Replica) : DistributedLocal where
 
 def keepHead : LocalGCCertificate (fun _ => []) (fullNode 0) where
   keep := {5}
+  parents_lt := by simp
   complete := by
     intro r hr
     exact Or.inl (by simpa [fullNode] using hr)
@@ -524,12 +526,18 @@ def keepHead : LocalGCCertificate (fun _ => []) (fullNode 0) where
     intro r hr
     exact Or.inl (by simpa [fullNode] using hr)
   support := by simp [fullNode]
-  common_closed := by
-    intro v₁ h₁ v₂ h₂ w hw₁ _
+  mca_closed := by
+    intro v₁ h₁ v₂ h₂ w hw
     have hv₁ : v₁ = 5 := by simpa using h₁
     subst v₁
-    have hw : w = 5 := reaches_nil_eq hw₁
-    simpa [hw]
+    have hv₂ : v₂ = 5 := by simpa using h₂
+    subst v₂
+    have hw5 : w = 5 := reaches_nil_eq hw.1.2
+    simpa [hw5]
+
+/-- PASS: the weakened MCA-closure certificate is realizably root-free. -/
+example : (0 : Version) ∉ (collect (fun _ => []) (fullNode 0) keepHead).commits := by
+  simp [collect, keepHead]
 
 def uniformWorld : DistributedWorld := fun r => fullNode r
 

@@ -204,7 +204,13 @@ return {
   // unique, so a mark present under one mid is the same mark everywhere and
   // is never overwritten. Hash-order scans: content-canonical outputs.
   merge3(l, a, b) {
-    const shadow = textRGA.merge3(l.text.shadow, a.text.shadow, b.text.shadow);
+    // Peritext's shadow records births; logical deletion lives exclusively in
+    // text.deleted.  Therefore a missing shadow record can mean physical GC,
+    // never a user deletion.  Merge births as an add-only union by using the
+    // empty shadow as the ternary base.  Passing l.text.shadow here would make
+    // the underlying removal-capable RGA interpret a collected record as a
+    // delete and could discard a concurrent mark endpoint.
+    const shadow = textRGA.merge3(textRGA.init(), a.text.shadow, b.text.shadow);
     const ad = a.text.deleted;
     const deleted = (isPSet(ad) ? ad : PSet.from(ad)).begin();
     eachMember(l.text.deleted, (x) => deleted.add(x));
@@ -213,6 +219,33 @@ return {
     eachEntry(l.marks, (mid, m) => { if (!marks.has(mid)) marks.set(mid, m); });
     eachEntry(b.marks, (mid, m) => { if (!marks.has(mid)) marks.set(mid, m); });
     return { text: { shadow, deleted: deleted.freeze() }, marks: marks.freeze() };
+  },
+
+  /** Runtime witness for the physical premises of the Lean
+   * `PhysicalMergeEvidence` certificate.  Inputs have already been translated
+   * to one epoch by DistributedReplica.  This check is intentionally about
+   * continuation state, not rendered output: every mark endpoint must still
+   * have a birth record, and every retained record must carry the unioned
+   * delete bit. */
+  auditMergeCoverage(l, a, b, merged) {
+    const ctx = buildCtx(merged, textRGA);
+    const expectedDeleted = new Set();
+    for (const s of [l, a, b]) eachMember(s.text.deleted, (id) => expectedDeleted.add(id));
+    const missingMarkEndpoints = [];
+    eachEntry(merged.marks, (mid, m) => {
+      for (const id of [m.startId, m.endId]) {
+        if (Number.isInteger(id) && !ctx.hasBirth(id)) missingMarkEndpoints.push([mid, id]);
+      }
+    });
+    const deleteMismatches = [];
+    for (const id of ctx.birth) {
+      if (merged.text.deleted.has(id) !== expectedDeleted.has(id)) deleteMismatches.push(id);
+    }
+    return Object.freeze({
+      ok: missingMarkEndpoints.length === 0 && deleteMismatches.length === 0,
+      missingMarkEndpoints: Object.freeze(missingMarkEndpoints),
+      deleteMismatches: Object.freeze(deleteMismatches),
+    });
   },
 
   // The DOCUMENT-ORDER rich-text read: [{ id, char, marks:[{mtype,value}] }].

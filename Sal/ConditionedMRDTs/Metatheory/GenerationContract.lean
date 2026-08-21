@@ -42,6 +42,27 @@ structure GenerationContract (D : ConditionedMRDTSig) where
   History : Configuration D → Prop
   history_of_mint : ∀ C, MintHonest D Guard (Configuration.core C) → History C
 
+/-- The mint discipline of one sequential client. The issuer checks the
+datatype guard against its current fold and advances its local Lamport clock
+beyond every operation already present in that client history. This is a local
+intent judgment, not a claim that one list represents a concurrent execution.
+-/
+structure LinearMintHistory (D : ConditionedMRDTSig)
+    (Guard : Op D.AppOp → D.State → Prop) (ops : List (Op D.AppOp)) : Prop where
+  guarded : ∀ pre e post, ops = pre ++ e :: post →
+    Guard e (applySeq D.toCRDTSig D.init pre)
+  clocked : ∀ pre e post, ops = pre ++ e :: post →
+    ∀ old ∈ pre, old.1 < e.1
+
+/-- The issuer's Lamport clock has observed every event in its materialized
+head before minting `t`. This is stronger than `Step3`'s store-wide
+non-collision and matches a runtime that calls `observe` on fetched payloads
+before `next`. -/
+def CausalClockedAt (D : ConditionedMRDTSig) (C : Configuration D)
+    (r : Replica) (t : Timestamp) : Prop :=
+  ∃ v s E, C.head r = some v ∧ C.ver v = some (s, E) ∧
+    ∀ e ∈ E, e.1 < t
+
 /-- A raw step together with precisely the additional premise owed by an
 `apply`: the guard is checked at the issuing replica's materialized head. -/
 inductive GuardedStep3 (D : ConditionedMRDTSig) (G : GenerationContract D) :
@@ -75,6 +96,26 @@ theorem GuardedStep3.toRaw {D : ConditionedMRDTSig}
   cases h with
   | nonApply h _ => exact h
   | apply _ _ _ h => exact h
+
+/-- Generation plus causal Lamport evidence for one operational step.
+Non-apply steps do not mint and therefore owe no clock premise. -/
+structure ClockedGuardedStep3 (D : ConditionedMRDTSig)
+    (G : GenerationContract D) (C : Configuration D)
+    (l : Label3 D) (C' : Configuration D) : Prop where
+  guarded : GuardedStep3 D G C l C'
+  clocked : ∀ t r o, l = .apply t r o → CausalClockedAt D C r t
+
+theorem ClockedGuardedStep3.toRaw {D : ConditionedMRDTSig}
+    {G : GenerationContract D} {C C' : Configuration D} {l : Label3 D}
+    (h : ClockedGuardedStep3 D G C l C') : Step3 D C l C' :=
+  h.guarded.toRaw
+
+theorem ClockedGuardedStep3.apply_clock {D : ConditionedMRDTSig}
+    {G : GenerationContract D} {C C' : Configuration D}
+    {t : Timestamp} {r : Replica} {o : D.AppOp}
+    (h : ClockedGuardedStep3 D G C (.apply t r o) C') :
+    CausalClockedAt D C r t :=
+  h.clocked t r o rfl
 
 theorem GuardedStep3V.toRaw {D : ConditionedMRDTSig}
     {G : GenerationContract D} {C C' : Configuration D} {l : Label3 D}

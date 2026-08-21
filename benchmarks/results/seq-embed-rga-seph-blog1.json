@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T11:44:18.135Z"
+  "date": "2026-08-20T11:35:48.378Z"
  },
  "ops": {
   "total": 368209,
@@ -15,14 +15,14 @@
  },
  "finalChars": 56769,
  "apply": {
-  "totalMs": 1887.851958,
+  "totalMs": 1775.092625,
   "count": 368209,
   "warmupExcluded": 1000,
-  "meanUs": 5.093779520654451,
-  "medianUs": 4.083,
-  "p95Us": 12.625,
-  "p99Us": 15.875,
-  "maxUs": 1098.25
+  "meanUs": 4.789293908918355,
+  "medianUs": 4,
+  "p95Us": 12,
+  "p99Us": 14.667,
+  "maxUs": 905.292
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 161046,
-   "timeMs": 46.138334,
+   "timeMs": 46.982417,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 47.585541,
+   "medianMs": 51.183709,
    "runs": 5,
    "allMs": [
-    42.8485,
-    44.074541,
-    47.585541,
-    57.32625,
-    67.883292
+    46.959625,
+    48.649792,
+    51.183709,
+    55.114333,
+    67.000708
    ]
   }
  ],
  "compaction": {
-  "ms": 94.778083,
+  "ms": 95.490208,
   "stats": {
    "nodesBefore": 84884,
    "nodesAfter": 58766,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 179052,
-    "timeMs": 58.437833,
+    "timeMs": 57.506292,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 53659280,
-  "peakHeapSampled": 113802408,
-  "retainedHeapAfterGc": 15653456,
+  "baselineHeap": 53636464,
+  "peakHeapSampled": 114684000,
+  "retainedHeapAfterGc": 15676280,
   "externalDelta": 2945712,
   "arrayBuffersDelta": 2945672,
-  "rssEnd": 257916928,
+  "rssEnd": 280854528,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

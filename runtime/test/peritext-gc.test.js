@@ -45,6 +45,14 @@ const eq = (x) => JSON.stringify(x);
 const birthIds = (s) => embedRGA.readEntries(s.text.shadow).map(([id]) => id);
 const liveIds = (s) => birthIds(s).filter((x) => !s.text.deleted.has(x));
 
+test('merge coverage audit rejects a mark whose endpoint has no physical record', () => {
+  const base = peritext.init();
+  const malformed = peritext.apply(base, mark(7, 'bold', 1, 2));
+  const evidence = peritext.auditMergeCoverage(base, malformed, base, malformed);
+  assert.equal(evidence.ok, false);
+  assert.deepEqual(evidence.missingMarkEndpoints, [[7, 1], [7, 2]]);
+});
+
 function mulberry32(seed) {
   let a = seed >>> 0;
   return () => {

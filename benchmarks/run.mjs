@@ -22,7 +22,12 @@ const skipProjection = args.includes('--skip-projection');
 const onlyIdx = args.indexOf('--only');
 const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
-const SYSTEMS = ['rga', 'embed-rga', 'sided-embed-rga', 'sal', 'sal-shared', 'sal-sided', 'sal-sided-shared', 'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
+// Paper matrix: keep the proved kernel baselines and the two shipped Sal
+// representations. `sal-sided` and `sal-sided-shared` are superseded
+// engineering prototypes; the absolute prototype is quadratic enough to make
+// a full real trace effectively non-terminating and is not a paper system.
+const SYSTEMS = ['rga', 'embed-rga', 'sided-embed-rga', 'sal', 'sal-shared',
+  'sal-sided-unified', 'yjs', 'automerge', 'loro', 'listpositions'];
 const SEQ_TRACES = quick
   ? ['friendsforever_flat']
   : ['friendsforever_flat', 'clownschool_flat', 'seph-blog1', 'automerge-paper'];

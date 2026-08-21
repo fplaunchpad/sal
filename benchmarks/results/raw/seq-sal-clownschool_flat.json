@@ -11,7 +11,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-15T08:38:00.605Z"
+    "date": "2026-08-20T10:51:42.145Z"
   },
   "gates": {
     "textOk": true,
@@ -20,11 +20,11 @@
   "metrics": {
     "operations": 24326,
     "finalChars": 21148,
-    "applyTotalMs": 19.461375,
+    "applyTotalMs": 18.512,
     "applyMedianUs": 0.375,
-    "applyP95Us": 2.166,
+    "applyP95Us": 2.083,
     "primarySaveBytes": 32782,
-    "retainedHeapBytes": 4460968
+    "retainedHeapBytes": 4462832
   },
   "detail": {
     "workload": "seq",
@@ -35,7 +35,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-15T08:38:00.605Z"
+      "date": "2026-08-20T10:51:42.145Z"
     },
     "ops": {
       "total": 24326,
@@ -43,14 +43,14 @@
     },
     "finalChars": 21148,
     "apply": {
-      "totalMs": 19.461375,
+      "totalMs": 18.512,
       "count": 24326,
       "warmupExcluded": 1000,
-      "meanUs": 0.7340711652233559,
+      "meanUs": 0.6937400754522851,
       "medianUs": 0.375,
-      "p95Us": 2.166,
-      "p99Us": 6.542,
-      "maxUs": 696.333
+      "p95Us": 2.083,
+      "p99Us": 6.417,
+      "maxUs": 456.625
     },
     "gates": {
       "textOk": true
@@ -59,7 +59,7 @@
       {
         "label": "run-table-serialized",
         "bytes": 32782,
-        "timeMs": 630.183333,
+        "timeMs": 589.839083,
         "note": "live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read",
         "estimated": false
       }
@@ -67,19 +67,19 @@
     "loads": [
       {
         "label": "run-table-serialized",
-        "medianMs": 272.338125,
+        "medianMs": 255.393167,
         "runs": 5,
         "allMs": [
-          256.912375,
-          259.436708,
-          272.338125,
-          273.086083,
-          286.078
+          254.122333,
+          254.583292,
+          255.393167,
+          260.272125,
+          268.381208
         ]
       }
     ],
     "compaction": {
-      "ms": 550.875417,
+      "ms": 480.544459,
       "stats": {
         "symbolsBefore": 52630540,
         "symbolsAfter": 31107745,
@@ -94,16 +94,16 @@
         {
           "label": "run-table-serialized+compacted",
           "bytes": 22438,
-          "timeMs": 575.228875,
+          "timeMs": 420.983167,
           "note": "run-table binary over compacted state"
         }
       ],
       "textOk": true
     },
     "memory": {
-      "baselineHeap": 10732776,
-      "peakHeapSampled": 21414984,
-      "retainedHeapAfterGc": 4460968,
+      "baselineHeap": 10858296,
+      "peakHeapSampled": 21433224,
+      "retainedHeapAfterGc": 4462832,
       "externalDelta": 194648,
       "arrayBuffersDelta": 194608,
       "rssEnd": 110018560,

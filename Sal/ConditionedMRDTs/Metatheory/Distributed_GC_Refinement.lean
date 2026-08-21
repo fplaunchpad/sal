@@ -151,6 +151,110 @@ theorem distributedConfig_refines_Step3
       | visible _ _ hCore _ _ =>
           simpa [eraseDistributedLabels] using Steps.cons hCore ih
 
+/-! ## Widened virtual-LCA storage semantics -/
+
+/-- Physical availability for `Step3V`. A virtual merge may recursively read
+the MCA closure, so the acting store must hold that closure in addition to the
+ordinary heads. The global closure is conservative: it can retain more than a
+particular head pair needs, but it cannot omit a recursive virtual-LCA read. -/
+def StepAvailableV (S : DistributedConfig D) : Label3 D → Prop
+  | .merge r₁ r₂ =>
+      (∀ v₁ v₂, S.core.head r₁ = some v₁ → S.core.head r₂ = some v₂ →
+        v₁ ∈ (S.stores r₁).commits ∧ v₂ ∈ (S.stores r₁).commits) ∧
+      ∀ m, InMcasClosure S.core m → m ∈ (S.stores r₁).commits
+  | ℓ => StepAvailable S ℓ
+
+/-- A peer can repair virtual-merge availability when it still holds every
+member of the semantic MCA closure. This is an explicit protocol premise, not
+an inference from independent local GC certificates. -/
+def MCARepairSource (S : DistributedConfig D) (src : Replica) : Prop :=
+  ∀ m, InMcasClosure S.core m → m ∈ (S.stores src).commits
+
+/-- Fetching from an MCA-repair source transfers the complete closure to the
+receiver because receive is set union. -/
+theorem fetch_from_mcaSource_keeps_closure
+    (S : DistributedConfig D) {src dst : Replica}
+    (hsrc : MCARepairSource S src) :
+    ∀ m, InMcasClosure S.core m →
+      m ∈ (receive (S.stores dst) (advertise (S.stores src))).commits := by
+  intro m hm
+  exact Or.inr (hsrc m hm)
+
+/-- After the repair fetch, any merge whose two semantic heads are registered
+is physically available at the receiver. -/
+theorem stepAvailableV_merge_after_repair
+    (S : DistributedConfig D) {src actor other : Replica}
+    (hWF : S.WellFormed)
+    (hsrc : MCARepairSource S src) :
+    StepAvailableV
+      ⟨S.core, Function.update S.stores actor
+        (receive (S.stores actor) (advertise (S.stores src)))⟩
+      (.merge actor other) := by
+  constructor
+  · intro v₁ v₂ h₁ h₂
+    have ha₁ : (S.core.ver v₁).isSome := hWF.1 actor v₁ (hWF.2 actor v₁ h₁).2
+    have ha₂ : (S.core.ver v₂).isSome := hWF.1 other v₂ (hWF.2 other v₂ h₂).2
+    have hc₁ : InMcasClosure S.core v₁ := .head ⟨actor, h₁⟩ ha₁
+    have hc₂ : InMcasClosure S.core v₂ := .head ⟨other, h₂⟩ ha₂
+    simp only [Function.update_self]
+    exact ⟨fetch_from_mcaSource_keeps_closure S hsrc v₁ hc₁,
+      fetch_from_mcaSource_keeps_closure S hsrc v₂ hc₂⟩
+  · intro m hm
+    simp only [Function.update_self]
+    exact fetch_from_mcaSource_keeps_closure S hsrc m hm
+
+/-- Distributed physical-store semantics over the widened `Step3V` relation.
+Fetch and local collection remain silent. -/
+inductive DistributedConfigStepV (D : ConditionedMRDTSig) :
+    DistributedConfig D → Option (Label3 D) → DistributedConfig D → Prop where
+  | fetch (S : DistributedConfig D) (src dst : Replica)
+      (hWF : S.WellFormed)
+      (hWF' : (DistributedConfig.mk S.core
+        (Function.update S.stores dst
+          (receive (S.stores dst) (advertise (S.stores src))))).WellFormed) :
+      DistributedConfigStepV D S none
+        ⟨S.core, Function.update S.stores dst
+          (receive (S.stores dst) (advertise (S.stores src)))⟩
+  | gc (S : DistributedConfig D) (r : Replica)
+      (cert : LocalGCCertificate S.core.parents (S.stores r))
+      (hWF : S.WellFormed)
+      (hWF' : (DistributedConfig.mk S.core
+        (Function.update S.stores r
+          (collect S.core.parents (S.stores r) cert))).WellFormed) :
+      DistributedConfigStepV D S none
+        ⟨S.core, Function.update S.stores r
+          (collect S.core.parents (S.stores r) cert)⟩
+  | visible {S S' : DistributedConfig D} {ℓ : Label3 D}
+      (hWF : S.WellFormed) (hAvail : StepAvailableV S ℓ)
+      (hCore : Step3V D S.core ℓ S'.core)
+      (hStores : VisibleStoreEvolution S S' ℓ) (hWF' : S'.WellFormed) :
+      DistributedConfigStepV D S (some ℓ) S'
+
+inductive DistributedConfigStepsV (D : ConditionedMRDTSig) :
+    DistributedConfig D → List (Option (Label3 D)) → DistributedConfig D → Prop where
+  | nil (S : DistributedConfig D) : DistributedConfigStepsV D S [] S
+  | cons {S S' S'' : DistributedConfig D} {ℓ : Option (Label3 D)}
+      {ℓs : List (Option (Label3 D))} :
+      DistributedConfigStepV D S ℓ S' →
+      DistributedConfigStepsV D S' ℓs S'' →
+      DistributedConfigStepsV D S (ℓ :: ℓs) S''
+
+/-- Every finite distributed execution with virtual merges erases to the exact
+widened semantic execution. This theorem does not assert progress: the
+`StepAvailableV` premise keeps physical MCA-closure availability explicit. -/
+theorem distributedConfig_refines_Step3V
+    {S₀ S₁ : DistributedConfig D} {ℓs : List (Option (Label3 D))}
+    (hRun : DistributedConfigStepsV D S₀ ℓs S₁) :
+    StepsV D S₀.core (eraseDistributedLabels ℓs) S₁.core := by
+  induction hRun with
+  | nil => exact StepsV.nil _
+  | cons hStep _ ih =>
+      cases hStep with
+      | fetch => simpa [eraseDistributedLabels] using ih
+      | gc => simpa [eraseDistributedLabels] using ih
+      | visible _ _ hCore _ _ =>
+          simpa [eraseDistributedLabels] using StepsV.cons hCore ih
+
 /-- Queries are never available merely because the semantic head exists: the
 physical replica must hold that head. This is the load-bearing negative gate. -/
 theorem query_unavailable_without_head (S : DistributedConfig D)
@@ -286,6 +390,7 @@ theorem UnifiedVerifiedMRDT.distributedSequential
 end Sal.ConditionedMRDTs
 
 #print axioms Sal.ConditionedMRDTs.distributedConfig_refines_Step3
+#print axioms Sal.ConditionedMRDTs.distributedConfig_refines_Step3V
 #print axioms Sal.ConditionedMRDTs.query_unavailable_without_head
 #print axioms Sal.ConditionedMRDTs.mintCertifiedReach_of_distributed
 #print axioms Sal.ConditionedMRDTs.UnifiedVerifiedMRDT.distributed

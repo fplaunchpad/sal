@@ -60,7 +60,8 @@ export function nodeRecords(node, { datatypeLabel = datatypeLabelOf(node) } = {}
   const records = [];
   for (const c of node.dag.values()) records.push(commitRecord(node, c.id));
   const heads = { head: node.headGid, replica: node.name, seq: node.seq,
-    epoch: node.epoch, roster: [...node.registered], datatype: datatypeLabel };
+    epoch: node.epoch, roster: [...node.registered], datatype: datatypeLabel,
+    mint: node.exportMintState() };
   return { records, heads };
 }
 
@@ -107,7 +108,8 @@ export function wireFromRecords(records) {
  *  the name matches the persisted author (else it starts fresh). */
 export function rebuildNode(records, heads, datatype = compactibleEmbedRGA, opts = {}) {
   const asName = opts.name ?? heads.replica;
-  const node = new Node(datatype, asName);
+  const mint = asName === heads.replica ? heads.mint : opts.mint;
+  const node = new Node(datatype, asName, { mint });
   for (const name of heads.roster ?? []) node.register(name);
   node.ingest(wireFromRecords(records));
   node.mergeWithGid(heads.head); // fast-forward to the persisted head

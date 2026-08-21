@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-17T19:08:51.467Z"
+    "date": "2026-08-20T11:27:15.427Z"
   },
   "gates": {
     "lenOk": true
@@ -23,7 +23,7 @@
     "operations": 19200,
     "finalChars": 1200,
     "finalPrimarySaveBytes": 19339,
-    "retainedHeapBytes": 792520
+    "retainedHeapBytes": 792288
   },
   "detail": {
     "workload": "churn",
@@ -40,7 +40,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-17T19:08:51.467Z"
+      "date": "2026-08-20T11:27:15.427Z"
     },
     "finalChars": 1200,
     "gates": {
@@ -59,7 +59,7 @@
       {
         "phase": "cycle1-ins",
         "liveChars": 2000,
-        "phaseMs": 2.295917,
+        "phaseMs": 2.219417,
         "saves": {
           "shared-runs-serialized": 15366,
           "shared-runs-serialized+compacted": 19271
@@ -68,7 +68,7 @@
       {
         "phase": "cycle1-del",
         "liveChars": 200,
-        "phaseMs": 1.264375,
+        "phaseMs": 1.056292,
         "saves": {
           "shared-runs-serialized": 3011,
           "shared-runs-serialized+compacted": 2951
@@ -77,7 +77,7 @@
       {
         "phase": "cycle2-ins",
         "liveChars": 2200,
-        "phaseMs": 1.792541,
+        "phaseMs": 1.604083,
         "saves": {
           "shared-runs-serialized": 18775,
           "shared-runs-serialized+compacted": 22355
@@ -86,7 +86,7 @@
       {
         "phase": "cycle2-del",
         "liveChars": 400,
-        "phaseMs": 0.924,
+        "phaseMs": 0.735416,
         "saves": {
           "shared-runs-serialized": 6711,
           "shared-runs-serialized+compacted": 5878
@@ -95,7 +95,7 @@
       {
         "phase": "cycle3-ins",
         "liveChars": 2400,
-        "phaseMs": 1.34075,
+        "phaseMs": 1.294083,
         "saves": {
           "shared-runs-serialized": 22515,
           "shared-runs-serialized+compacted": 25180
@@ -104,7 +104,7 @@
       {
         "phase": "cycle3-del",
         "liveChars": 600,
-        "phaseMs": 0.934417,
+        "phaseMs": 0.764417,
         "saves": {
           "shared-runs-serialized": 10489,
           "shared-runs-serialized+compacted": 8873
@@ -113,7 +113,7 @@
       {
         "phase": "cycle4-ins",
         "liveChars": 2600,
-        "phaseMs": 1.280667,
+        "phaseMs": 1.185958,
         "saves": {
           "shared-runs-serialized": 26315,
           "shared-runs-serialized+compacted": 28165
@@ -122,7 +122,7 @@
       {
         "phase": "cycle4-del",
         "liveChars": 800,
-        "phaseMs": 0.964583,
+        "phaseMs": 0.687834,
         "saves": {
           "shared-runs-serialized": 14268,
           "shared-runs-serialized+compacted": 11615
@@ -131,7 +131,7 @@
       {
         "phase": "cycle5-ins",
         "liveChars": 2800,
-        "phaseMs": 1.580625,
+        "phaseMs": 1.352375,
         "saves": {
           "shared-runs-serialized": 30091,
           "shared-runs-serialized+compacted": 30714
@@ -140,7 +140,7 @@
       {
         "phase": "cycle5-del",
         "liveChars": 1000,
-        "phaseMs": 0.785167,
+        "phaseMs": 0.7435,
         "saves": {
           "shared-runs-serialized": 17757,
           "shared-runs-serialized+compacted": 14463
@@ -149,7 +149,7 @@
       {
         "phase": "final-ins",
         "liveChars": 1200,
-        "phaseMs": 0.125042,
+        "phaseMs": 0.097458,
         "saves": {
           "shared-runs-serialized": 19339,
           "shared-runs-serialized+compacted": 16238
@@ -179,8 +179,8 @@
       }
     },
     "memory": {
-      "baselineHeap": 4176760,
-      "retainedHeapAfterGc": 792520,
+      "baselineHeap": 4176472,
+      "retainedHeapAfterGc": 792288,
       "externalDelta": 40
     }
   }

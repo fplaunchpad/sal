@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T11:44:21.314Z"
+  "date": "2026-08-20T11:35:51.871Z"
  },
  "ops": {
   "total": 259778,
@@ -15,14 +15,14 @@
  },
  "finalChars": 104852,
  "apply": {
-  "totalMs": 1905.38275,
+  "totalMs": 2225.636417,
   "count": 259778,
   "warmupExcluded": 1000,
-  "meanUs": 7.319269369884611,
-  "medianUs": 4.333,
-  "p95Us": 20.458,
-  "p99Us": 23.541,
-  "maxUs": 1770
+  "meanUs": 8.553103231341149,
+  "medianUs": 5.291,
+  "p95Us": 25.167,
+  "p99Us": 30.125,
+  "maxUs": 1868.666
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "shared-runs-serialized",
    "bytes": 249973,
-   "timeMs": 79.06625,
+   "timeMs": 80.861625,
    "note": "continuation-capable shared path graph with run-compressed provenance",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "shared-runs-serialized",
-   "medianMs": 101.8725,
+   "medianMs": 101.354166,
    "runs": 5,
    "allMs": [
-    92.597208,
-    98.739167,
-    101.8725,
-    104.189084,
-    125.015042
+    95.555125,
+    100.006542,
+    101.354166,
+    106.781125,
+    126.041042
    ]
   }
  ],
  "compaction": {
-  "ms": 162.492083,
+  "ms": 166.438542,
   "stats": {
    "nodesBefore": 123537,
    "nodesAfter": 106400,
@@ -68,19 +68,19 @@
    {
     "label": "shared-runs-serialized+compacted",
     "bytes": 283153,
-    "timeMs": 85.384416,
+    "timeMs": 87.329083,
     "note": "native shared-path continuation snapshot after direct guarded GC"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 75400080,
-  "peakHeapSampled": 143169480,
-  "retainedHeapAfterGc": 26651584,
+  "baselineHeap": 75400944,
+  "peakHeapSampled": 142877720,
+  "retainedHeapAfterGc": 26652048,
   "externalDelta": 2078264,
   "arrayBuffersDelta": 2078224,
-  "rssEnd": 342081536,
+  "rssEnd": 339279872,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

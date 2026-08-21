@@ -10,6 +10,98 @@ are historical evidence; this file determines what development comes next.
 
 ## Priority order
 
+### 0. Audit end-to-end theorem coverage before further paper claims — immediate
+
+The current evidence has been composed too often at the prose level rather
+than at the theorem-signature level. In particular, the following results are
+separately complete:
+
+- virtual-LCA commit-GC safety over `Step3V`;
+- distributed commit-GC refinement;
+- combined distributed fetch, commit GC, Peritext state GC, and visible-step
+  refinement over ordinary `Step3`.
+
+They do **not** yet imply a theorem for arbitrary interleavings of distributed
+fetch, virtual-LCA merge, commit-history GC, and Peritext state GC. The public
+`combinedSteps_refines_Step3` conclusion is `Step3`, not `Step3V`.
+
+Immediate review checklist:
+
+- [x] Build a checked coverage matrix whose axes are ordinary/virtual LCA,
+  global/distributed execution, commit/state/both GC, generic/Peritext scope,
+  one-step/finite-trace/query result, and Lean/JavaScript realization.
+- [x] Resolve every positive matrix cell to an exact declaration and record
+  its complete conclusion and load-bearing hypotheses. Do not infer a product
+  cell from separate component theorems.
+- [x] Audit `ProductionCertificate`, `PeritextFlagshipCertificate`, the
+  production ledger, `README.md`, `PRODUCTION_CERTIFICATES.md`, and the
+  consolidated/split drafts against that matrix.
+- [x] Downgrade or remove every unsupported use of “complete,” “end-to-end,”
+  “arbitrary interleavings,” or “ordinary and virtual” found by the audit.
+- [x] Add a repository checker that resolves the declarations required by
+  each claimed cell and distinguishes `Step3` conclusions from `Step3V`.
+- [x] After the audit, plan and prove the known open flagship cell:
+  distributed `Step3V` + virtual merge + commit-history GC + Peritext state GC
+  + finite-trace erasure/query preservation.
+- [ ] Only then restore the corresponding end-to-end paper and certificate
+  claims and test the matching JavaScript boundary.
+
+This review is the immediate next task. Do not start another paper-facing
+feature until it has produced the coverage matrix and corrected claim ledger.
+
+**First virtual-closure increment (machine-checked 2026-08-21).** The audit
+refuted the old `LocalGCCertificate.common_closed` boundary: retaining every
+common ancestor forces retention of the root. The certificate now requires
+only recursive singleton-MCA closure. The new
+`compressed_isLCA_iff_of_mcaClosed` proves exact LCA lookup under that weaker
+root-free condition, and a concrete certificate collects the root. The
+ordinary catalogue theorem `gc_safety_compressed` is now documented honestly
+as a conjunction over independent carriers, not a linked execution theorem.
+
+`DistributedConfigStepV` and `CombinedStepV` now admit virtual merges with
+explicit MCA-closure availability. `distributedConfig_refines_Step3V` and
+`combinedStepsV_refines_Step3V` prove finite-trace erasure; the latter composes
+fetch, both collectors, ordinary or virtual visible steps, and
+`combinedTraceV_query_eq`. Fetch-side progress is now explicit:
+`stepAvailableV_merge_after_repair` proves that one fetch from an MCA-repair
+source enables the merge, while `fetchResult_virtualMerge_ready` also proves
+that every required compact Peritext input arrives.
+
+The proposed recursive compact virtual-LCA builder is unnecessary for
+Peritext. `HeadOnlyMergeCertificate.related` proves the compact merge result
+directly from the two branch heads while the virtual LCA remains ghost state;
+`MaterializationDelta.headOnlyMergeInstall` installs that result. These
+constructors are exported by `ProductionCertificate.virtualRepairReady` and
+`headOnlyVirtualMerge`, closing the Lean certificate-driven composition cell.
+The JavaScript virtual-merge path remains open.
+
+The progress audit also refutes plain fetch union as a closure-preserving
+protocol. Two independently MCA-closed singleton stores can union their heads
+without either cross-head MCA. The virtual protocol must fetch/reconstruct the missing
+cross-store MCA closure before head sync. The checked repair theorem is
+conditional on locating a peer that has the closure; discovery/reconstruction
+across several peers is a runtime liveness task, not an unproved safety step.
+
+**Executable closure increment (2026-08-21).** The shipped
+`DistributedReplica` already implements recursive virtual LCAs and
+cross-epoch lifting. `runtime/test/combined-virtual-gc.test.js` now proves by a
+directed twin execution that Peritext state GC, root-free commit GC, and a
+genuine criss-cross merge match a never-collected control. An attempted
+arbitrary pairwise recovery test exposed the transport gate:
+root-free Lean semantics can read a retained MCA directly, but JavaScript
+delta replay still needs its discarded parent chain; do not restore
+root/skeleton retention.
+
+**Certified boundary transfer completed (2026-08-21).** The runtime now ships
+the original version id, remaining compressed parents, epoch, closed roster,
+encoded materialization, fingerprint, and integrity checksum. Under the
+trusted-peer threat model this is a checked simulation boundary, not Byzantine
+authentication. Corrupted fingerprints/certificates are rejected, bootstrap
+and continuation pass, and only datatypes with an explicit proved
+`headOnlyMerge` capability can merge disconnected compressed stores. Peritext
+has that capability via `HeadOnlyMergeCertificate.related`. The randomized
+cross-epoch criss-cross test now runs both collectors with zero deferrals.
+
 ### 1. Split `sal-mrdts` into two standalone papers — completed 2026-08-01
 
 - Paper A: corrected and conditioned metatheory, Join doctrines, virtual LCAs,
@@ -348,6 +440,397 @@ behavioral layer to the conditioned RA-linearizability certificate.
 - **Completed:** OR-set variants, queue, both positive Peritext kernels,
   registers, counters, maps/sets, AWPQ, EWFlag, MVR, and the remaining named
   production datatypes are represented in the checked catalogue.
+
+### 7A. Consolidate conditioning around the successful proof boundary — paper gate
+
+This is the gating development step for the paper's framework presentation and
+flagship theorem. It does not block independent GC or benchmark engineering.
+Preserve the paper's causal narrative: mechanizing Neem's bottom-up
+linearization exposes the broken argument; the corrected join-based
+metatheory is the foundation; realistic sequence datatypes then expose the
+separate mint-provenance obligation.
+
+- Inventory every public theorem's actual dependence on signature-level
+  `Inv`/`applicable`, `GenerationContract.Guard/History`, and
+  `SafetyCertificate`. Distinguish convergence/RA, client safety, and
+  sequential intent. Do not classify a condition as load-bearing merely
+  because a legacy signature field is nontrivial.
+- Define, alongside the existing API, the smallest candidate architecture:
+  flat MRDT algebra; a first-class generation policy carrying issuer guard,
+  causal mint evidence, and its history bridge; a separate client-safety
+  policy; and a sequential mint policy that includes the local Lamport-clock
+  premise identified by `ConditioningIntentAudit`. Retain raw execution as the
+  untrusted environment semantics.
+- Repackage EmbedRGA, SidedEmbedRGA, canonical Peritext, queue, and bounded
+  counter as canaries. Recover the existing corrected Join/RA, virtual-LCA,
+  product, safety, and sequential theorems without weakening their statements
+  or inventing one global sequential list for a concurrent execution.
+- State the flat-RGA comparison explicitly: flat algebra proves convergence;
+  its sequential theorem exposes the generation premise; the generation and
+  clock policies discharge that premise for a sequential client. Preserve
+  checked negative controls for guard-only timestamps and malformed
+  anchor/path generation.
+- Prove compatibility or theorem-equivalence adapters between the candidate
+  package and `UnifiedVerifiedMRDT`. Do not delete or rewrite the existing
+  framework until the canaries and production ledger pass through the new
+  interface.
+- Decide from the completed dependency audit whether signature-level `Inv` and
+  `applicable` remain core, become an optional state-conditioned algebra
+  extension, or are retired from the paper-facing interface. Record that the
+  rehoming RGA and Shesha supplied genuine algebraic conditioning examples but
+  are refuted designs; do not use either as positive evidence.
+- Export one public Peritext result that composes the corrected Neem
+  metatheory, generation-conditioned distributed correctness, the sound local
+  sequential-intent theorem, and both GC refinements with every remaining
+  assumption visible. Update the stable theorem manifest and claim checker.
+
+Completion gate: the production ledger builds without `sorryAx`; the public
+claims distinguish distributed RA correctness from local sequential
+refinement; and the paper no longer relies on a successful production datatype
+whose unconditional algebraic VC is false unless the audit actually finds
+one.
+
+**Dependency-ledger and canary increment completed 2026-08-19.**
+`Development/CONDITIONING_DEPENDENCY_LEDGER.md` records the proof-body audit for
+EmbedRGA, SidedEmbedRGA, canonical Peritext, queue, and bounded counter. The
+result confirms that generation history is load-bearing for the first four
+Join proofs, while bounded-counter conditioning is load-bearing for safety;
+none uses signature-level `Inv`/`applicable` to rescue a false production Join
+VC. `LinearMintHistory` is now a framework-level local guard-and-clock
+judgment. `GenerationVerifiedMRDT` stages the candidate consolidated package
+with a lossless adapter to `UnifiedVerifiedMRDT`, ordinary and virtual-LCA RA,
+safety, and a separate local sequential conclusion. All five canaries inhabit
+it. Checked bridges derive `eSeqOK`, `sSeqOK`, queue `qOK`, bounded-counter
+`BCSequentialHonest`, and the rendered Peritext theorem. The production ledger
+passes 3,456 jobs with standard axioms only. The runtime now has a separate
+trusted generation path backed by an explicit replica slot and persistent
+Lamport counter. It stamps every operation (including deletes), observes
+accepted remote and raw local timestamps, survives state-GC epochs and
+commit-history pruning, and refuses trusted generation when no collision-free
+slot assignment is supplied. Raw `commit` remains the untrusted semantics.
+Runtime tests include distinct-slot, causal-fetch, missing-slot, operation-
+coverage, recovery, post-GC/pruning, and new-replica controls. Remaining gate:
+define how a deployment allocates unique persistent slots, then decide whether
+signature-level conditioning is an optional extension or compatibility-only
+surface before changing the old API.
+
+**Certificate-boundary decision completed 2026-08-19.**
+`AlgebraVerifiedMRDT` is the paper-facing algebra and sequential-intent layer;
+it has no `Inv` or `applicable` field. `OperationalConditioning` isolates the
+initial invariant witness required by the legacy proof-carrying
+`Configuration`. Generation and safety remain separate first-class policies.
+The checked split/rebuild round trip is lossless, while the boundary control
+requires operational evidence explicitly instead of manufacturing it. Thus
+signature-level conditioning is a compatibility extension, not the primary
+paper interface. `PeritextFlagshipCertificate` now supplies the single public
+composition: ordinary and virtual-LCA distributed RA, version safety, local
+rendered sequential intent from clocked minting, root-free compressed
+commit-history GC, asynchronous distributed commit-GC refinement to no-GC
+behavior, and Peritext state-GC render preservation. The production ledger
+checks `peritextFlagship`. Remaining 7A work is the stable external claim-
+manifest update; deployment-level unique-slot allocation remains an
+implementation refinement obligation.
+
+### 7B. Prove the shipped SidedEmbedRGA Peritext architecture — paper gate
+
+The JavaScript production default is `PeritextSidedEmbedRGA`: sided/Fugue text
+plus a separate mark store. The current `peritextFlagship` instead certifies
+one-sided generic EmbedRGA with fused boundary payloads. Do not present these
+as the same datatype. The evidence audit is
+`Development/SIDED_PERITEXT_FLAGSHIP_AUDIT.md`.
+
+- Define the exact Lean operation/state correspondence for sided text plus the
+  runtime mark store.
+- Compose sided Join correctness with a genuine mark-store certificate and a
+  nontrivial generation policy.
+- Prove rendered refinement to an independent sequential rich-text machine.
+  A `True` relation or reuse of convergence as intent evidence is not enough.
+- Extend sided policy GC with mark retention roots, guarded mark-pair removal,
+  delayed operations, and never-collected-twin render preservation.
+- Add PASS/FAIL controls for overlapping marks, boundary deletion, concurrent
+  add/remove, sided interleaving, post-GC continuation, and delayed delivery.
+- Replace the paper flagship only after the complete production ledger and
+  JavaScript differential oracle pass.
+
+Completion gate: one public Sided Peritext certificate supplies ordinary and
+virtual distributed correctness, local rendered sequential intent, compressed
+and distributed commit GC, and mark-aware sided state GC. Its trusted
+definitions agree with the shipped runtime on the stated differential scope.
+
+**First increment completed 2026-08-19.**
+`PeritextSided.Core` now models the runtime-shaped reachable representation:
+insert-only sided text, a grow-only delete set, and a grow-only unique-`mid`
+mark store. `core_join_at` machine-checks the three-component Join layer.
+`coreGeneration` adds cross-component live-target, endpoint, timestamp, and
+freshness checks and proves that product mint evidence supplies sided history
+honesty. PASS/FAIL mark controls are checked.
+
+**Second increment completed 2026-08-20.**
+`PeritextSided_SeqSpec.lean` proves that a linearly minted product history
+projects to the sided kernel's `LinearMintHistory`, including both the
+state-sensitive guard and Lamport-clock premise. Consequently the text
+projection is exactly the independent two-sided buffer program.
+
+**Third increment completed 2026-08-20.**
+The same module now defines an independent rich-text machine containing only
+the ordinary two-sided buffer, deleted-character set, and immutable mark-event
+set. `richSequentialSound` proves that every linearly minted runtime-core fold
+represents that machine exactly; embedded coordinates and OR-set instances do
+not occur in the specification relation. Because rendering is a pure function
+of these three observations, local rendered intent follows by congruence. The
+next gate is the concurrent/distributed flagship plus mark-aware state GC and
+the JavaScript differential correspondence.
+
+**Fourth increment completed 2026-08-20.**
+`PeritextSided_Flagship.lean` packages the runtime-shaped core as a
+`VerifiedMRDT` and `UnifiedVerifiedMRDT`. `distributedPreGC` now supplies the
+generic distributed operational theorem, while `localRichIntent` exposes the
+independent editor refinement. The name `preGCUnified` and its visibly trivial
+safety field prevent this intermediate certificate from being presented as
+the final production result. The remaining theorem gate is mark-aware
+per-state GC; the remaining implementation gate is JavaScript differential
+correspondence.
+
+**State-GC design gate completed 2026-08-20.**
+`PeritextSided_StateGC.lean` reuses the checked Fugue continuation
+counterexample to refute naive independent collection of only text, deletions,
+and marks. Stable deletion can still affect the next mint and final read.
+The compact SidedEmbedRGA state therefore contains retained text plus derived
+`LiveGap` observations. Peritext remains the three-component product
+`CompactSidedEmbedRGA × DeletedIDs × MarkStore`; the gap summary is private
+text metadata, not a fourth logical Peritext datatype. `gapEntryOf_exact`
+proves that each entry stores exactly the side/parent and parent-chain
+information consumed by Fugue minting.
+
+**State-GC proof package completed 2026-08-20.** Compact minting and its
+issuer guard now consult the retained gap summary; `compactInsertOp_exact`
+proves equality with uncollected Fugue minting and `compactGapMerge_exact`
+reuses the checked union-observation theorem. The three logical layers have
+separate render-preservation results: dead text-shadow collection with mark
+boundary roots, deletion-evidence trimming, and guarded add/remove mark-pair
+collection. `applySeq_s_filter` and
+`collectedText_continuation_render` cover later text delivery, while
+`FrontierAtomicCertificate.delayedReferencesKept` makes the corresponding
+delete/mark reference boundary explicit. `AllHeardSince` is not assumed to
+mean stability: `FrontierAtomicCertificate.settled` derives `SettledAt` via
+the generic evidence-discharge theorem. `frontier_collectStableBase_safe` is
+the one-epoch capstone and `collectStableBase_twoEpoch` composes epochs. The
+production ledger checks the complete chain.
+
+**Runtime differential completed 2026-08-20.** The shipped
+`compactibleSidedPeritext` uses the matching `LiveGap` text kernel, retains
+mark and declared in-flight anchors, runs guarded A3 pair collection, and
+derives its cut from the distributed meet. The runtime suite checks the
+empty-document anonymous-root summary, snapshot continuation, boundary
+retention, certified refuse/fire behavior, multi-epoch delayed delivery, and
+never-collected-twin equivalence; the full 179-test suite passes. The final
+`PeritextSided_Final.lean` now exposes `productionCertificate`, the public
+composition of distributed/unified correctness, independent rich-text intent,
+and frontier-backed state GC. `preGCUnified` remains only the clearly named
+algebraic subcertificate used inside that final package.
+
+**Distributed/state-GC interaction reopened 2026-08-20 — highest paper
+priority.** The package above composes separate results; it is not yet a trace
+simulation for arbitrary distributed interleavings of local state GC. The
+new `PeritextSided_Interaction.lean` begins the required heterogeneous proof.
+`StateRel` relates the ghost uncollected `Core` state to the compact runtime
+carrier and retains exact Fugue knowledge, gap observations, live nodes,
+delete agreement, mark provenance, and rendering. `StateRel.collect` proves
+that a frontier-certified atomic collection preserves this relation, and
+`CombinedConfig.WellFormed` now requires every physically held commit to have
+a related local materialization. This exposed and fixes a real certificate
+gap: the earlier `AtomicBaseCertificate` carried `∃ K, GapMapOK K gaps`, which
+could name a history unrelated to the semantic source. The interaction
+certificate pins `GapMapOK` to the source version's exact `K`.
+
+Finishing checklist (ordered):
+
+- [x] Prove asynchronous fetch transfers a sender materialization while
+  preserving an already-held destination epoch.
+- [x] Prove commit-history GC preserves all remaining state materializations.
+- [x] Strengthen the epoch invariant with future-id retention derived from the
+  frontier certificate; `StateRelAt` alone cannot derive the
+  `keep freshId = true` premise consumed by `textProjection_apply`.
+- [x] Prove all mixed text/delete/mark applies preserve the strengthened epoch
+  invariant.
+- [x] Construct common projection frames from retained epoch lineage, then
+  discharge ternary text/delete/mark merge preservation.
+- [x] Define the combined visible/silent operational semantics and prove its
+  one-step erasure theorem.
+- [x] Induct over arbitrary finite traces and lift query equivalence into the
+  public production certificate and ledger.
+
+The ordinary-`Step3` interaction theorem is now in the production ledger, but
+it does not cover virtual-LCA `Step3V` executions. Do not describe
+`productionCertificate` as fully end-to-end across virtual merges until
+Priority 0 closes that composition.
+
+**Interaction increment 2 (2026-08-20).** `StateRel` now carries an exact
+filter projection, and collection composes the old projection with the new
+retention plan. `textProjection_apply` proves fresh retained text application
+commutes with that projection. `sMergeL_filter` proves same-epoch ternary text
+merge commutes with collection; `CommonProjectionFrame.merge_text_exact`
+makes the different-epoch obligation explicit by requiring translation of
+the LCA and both heads to one projection. Grow-only delete and mark ternary
+merges reduce to union, and payload projection distributes over that union.
+Each `Materialized` version now records its projection. `StateGCAction` is the
+first concrete combined transition: it updates one physical materialization,
+preserves `CombinedConfig.WellFormed`, and stutters in the ghost no-GC
+distributed semantics. `fetchResult_wellFormed` and
+`commitGCResult_wellFormed` now close the two commit-store interactions.
+
+**Frontier repair (machine-checked 2026-08-20).** A materialized epoch now
+retains `FrontierProjection keep`: every rejected id is at or below the epoch's
+Lamport frontier. Repeated GC composes when the new frontier advances and its
+plan rejects only pre-frontier ids. `keep_future` proves every timestamp above
+the frontier is retained, and `text_apply_after_frontier` discharges the
+formerly missing text-apply premise. This is proof metadata around the scalar
+frontier already present in the runtime protocol; it does not retain a set of
+reclaimed ids.
+
+The formal oracle also pinned the remaining boundary with a FAIL control:
+timestamp inequality/freshness alone does not imply frontier order (for
+example, 50 is fresh relative to 100 but is not above it). The JavaScript
+`LamportMint.observe`/`next` protocol does supply the stronger rule by observing
+fetched payload timestamps before minting. `Step3` currently states store-wide
+non-collision only. The combined visible semantics must therefore retain and
+check `MintAfterFrontier` (or strengthen the generic mint contract with causal
+Lamport monotonicity) before the finite-trace theorem can use
+`text_apply_after_frontier`. Do not replace this missing implication with a
+post-state relation assumption.
+
+**Causal-clock increment (machine-checked 2026-08-20).**
+`GenerationContract.lean` now defines `CausalClockedAt` and
+`ClockedGuardedStep3`: an apply records that every event in the issuer's
+materialized head has a smaller timestamp. `CutFrontier` identifies the scalar
+maximum of the settled epoch cut, and
+`mintAfterFrontier_of_causalClock` derives the required strict inequality when
+that cut is included in the current head. `ApplyEpochFrame` retains precisely
+this epoch-to-descendant-head inclusion, and `ApplyEpochFrame.mintAfter`
+connects a clocked Peritext step to compact text application. The remaining
+work after mixed-apply closure is to construct the corresponding cross-epoch
+merge frame and trace induction.
+
+**Mixed-apply closure (machine-checked 2026-08-20).** `StateRel` now also
+retains the guard-derived facts that every semantic deletion names a known
+append-only text id and every compact deletion names a retained text id.
+`delete_add` and `mark_add` preserve the complete rich-text relation.
+`text_insert` extends the exact Fugue knowledge, requires a gap map derived
+from that extended knowledge, derives retention of the minted id from the
+Lamport frontier, and preserves rendering with deletions and marks.
+`CompactApplyCertificate` exposes only operation-time obligations for the
+three admitted runtime operations; `StateRelAt.compact_apply` proves that the
+concrete compact interpreter simulates their semantic product update. The
+common-projection construction is now also checked: `epochFactor` ensures an
+epoch constrains only ids present in its semantic text, so an older concurrent
+branch cannot veto a future id it never saw. `commonProjectionFrame_of_epochs`
+translates all three materializations to this common predicate, and
+`merge_text_after_epoch_translation` proves exact text-merge projection. The
+next, the interaction closure discharges deletion/mark merge, reconstructs the
+full post-merge `StateRelAt`, and proves visible/silent trace erasure.
+
+**Interaction closure (machine-checked 2026-08-20).** `StateRelAt.merge`
+reconstructs the complete text/delete/mark relation after a cross-epoch
+ternary merge. `MergeCoverageCertificate` is the explicit operational bridge
+from frontier/delayed-reference evidence: it requires live-id retention,
+deletion-status coverage for retained text, and retained endpoints for the
+merged mark set. It does not carry post-state rendering or a post-state
+`StateRelAt`; the theorem derives both. This boundary is necessary because a
+concurrent mark can make an old endpoint relevant at merge time, including its
+deletion status.
+
+`CombinedStep` now includes asynchronous fetch, commit-history GC, local state
+GC, and visible distributed steps. `MaterializationDelta` requires existing
+commit/version preservation and relation evidence only for newly installed
+commits; `introduced_isSome` is the negative control that rules out a missing
+physical materialization. `CombinedStep.wellFormed` proves one-step invariant
+preservation. `combinedSteps_refines_Step3` erases both GC layers and fetch from
+arbitrary finite interleavings, and `combinedTrace_query_eq` lifts rich-text
+query equivalence to the final held versions. The production ledger checks the
+merge, one-step, finite-trace, and query capstones.
+
+**Physical merge boundary closed (machine-checked and executable
+2026-08-20).** `PhysicalMergeEvidence` states the runtime-inspectable form of
+merge coverage: live records and mark endpoints are physically present, and
+delete bits agree on retained records. `PhysicalMergeEvidence.toCoverage`
+derives the abstract `MergeCoverageCertificate` from the epoch translation's
+exact-filter theorem; the production ledger checks the derivation and its
+axiom audit. `PhysicalMergeEvidence.of_sources` derives live-record presence
+from the two pre-merge relations plus the runtime's add-only birth-shadow
+union, leaving only deletion propagation and endpoint availability as
+frontier-sensitive evidence. The runtime now audits those physical premises after every
+same-epoch or cross-epoch Peritext merge and fails closed.
+
+The new concurrent-mark/collected-endpoint test exposed a real implementation
+bug: Peritext's logically insert-only birth shadow reused the underlying RGA's
+removal-aware ternary merge, so physical GC absence could be mistaken for a
+user deletion. Peritext now merges birth shadows add-only (logical deletion
+remains solely in `text.deleted`). The adversarial cross-epoch test restores a
+collected dead endpoint from the old-epoch branch, preserves its concurrent
+mark, and equals a never-compacted control. A negative test confirms that the
+runtime audit rejects a mark with a missing physical endpoint. The complete
+runtime suite passes 181/181, and the production Lean ledger passes 3469 jobs.
+
+**Public promotion and visible-install closure (2026-08-20).** Visible apply
+no longer needs a hand-written post-state relation: `SingleInstallFrame`
+restricts a visible store evolution to exactly one fresh version, and
+`MaterializationDelta.compactApplyInstall` constructs its physical delta from
+the pre-state relation plus `CompactApplyCertificate`. Cross-epoch merge uses
+the same `MaterializationDelta.singleInstall` builder with the checked
+`StateRelAt.merge` result; its live-record premise is derived by
+`PhysicalMergeEvidence.of_sources`. `PeritextSided.productionCertificate` now
+exports `interactionWF`, `interactionRefines`, and `interactionQueries`, so the
+finite-trace and retained-version query theorems are public rather than only
+ledger-internal. The repository checker requires these declarations.
+
+### 7C. Replace the historical framework trees with one production `Sal/MRDTs` — paper gate
+
+The dependency audit has established the target boundary: raw MRDT semantics
+is unconditioned; datatype implementers supply generation, convergence,
+sequential-refinement, and safety certificates, plus an optional state-GC
+capability; the framework supplies distributed commit-history GC once. Make
+the repository structure match that result instead of retaining successive
+framework generations on `main`.
+
+- Preserve the complete current tree on an archival branch or tag before
+  deleting historical material. Perform the reconstruction on a dedicated
+  refactoring branch; update `main` only after every release gate below passes.
+- Rebuild `Sal/MRDTs` as the sole production tree around plain `MRDTSig`.
+  Remove signature-level `Inv` and `applicable` from raw configurations,
+  `Step3`/`Step3V`, reachability, and initialization.
+- Retarget `GenerationContract`, mint-certified execution,
+  `SafetyCertificate`, convergence certificates, and sequential refinement to
+  the plain signature. Keep explicit bridges where generation history,
+  convergence honesty, and sequential history are intentionally different.
+- Define a generic optional state-GC interface over a compact representation
+  relation, including collection, query preservation, future apply/merge
+  simulation, epochs, and virtual-LCA continuation where applicable. Make the
+  existing Sided Peritext state-GC and head-only merge results instantiate it.
+- Keep distributed commit-history GC datatype-generic and prove its ordinary
+  and virtual-LCA composition with an implementer-supplied state-GC
+  certificate directly against the no-GC semantics. Do not restore global/STW
+  GC as a public architectural layer.
+- Migrate only supported, paper-relevant implementations and reusable lemmas:
+  bounded counter, queue, MVR, tombstone RGA, EmbedRGA, SidedEmbedRGA/FugueMax,
+  the production Peritext variants, and the remaining ledger-backed positive
+  datatypes. Classify old `Sal/MRDTs/RGA_Embed` lemmas before deleting that
+  tree because current production proofs still import several of them.
+- Do not migrate refuted Rehoming RGA or Shesha positives, known-broken
+  fixtures, abandoned bottom-up proof routes, exploratory probes, superseded
+  global-GC architecture, or generated research artifacts. Preserve them only
+  through Git history/the archival branch.
+- Delete the old `Sal/MRDTs` and `Sal/ConditionedMRDTs` trees after migration;
+  remove compatibility adapters and reject archived-path imports in the
+  repository checker. The final `main` must contain one authoritative
+  `Sal/MRDTs`, not parallel legacy and next-generation trees.
+- Synchronize root documentation, build scripts, theorem manifests, runtime
+  links, and the paper repository only after the new Lean endpoints stabilize.
+
+Completion gate: the production certificate ledger and axiom audit pass from
+the new tree; ordinary and virtual-LCA distributed/history-GC plus Sided
+Peritext state-GC composition remain checked; required JavaScript tests and
+benchmark schemas pass; paper-facing manifests resolve no archived paths; and
+`main` contains only the current supported framework and evaluation artifacts.
 
 ### 8. Build the unified paper benchmark harness
 
@@ -821,6 +1304,42 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 9. Finish Tree-RGA observational refinement
 
+- **Paper-critical conditioning audit for RGA and Peritext.** Prove, through
+  the public capstones rather than disconnected premises, the complete chain
+
+  `local mint guard -> guarded distributed execution -> RGAHistoryOK/PtHistoryOK
+  -> history-conditioned sequential refinement`.
+
+  Check that applicability is evaluated at the issuer's materialized head,
+  distributed execution supplies the mint provenance consumed by the
+  generation contract, and the final RGA and Peritext refinement theorems use
+  the history property derived by that chain rather than accepting an
+  unrelated honesty premise. Audit the JavaScript minting API against the same
+  guards, or state the implementation-refinement boundary explicitly. Until
+  this closes, the paper may say that conditioning packages the missing
+  provenance obligation, but must not claim that its end-to-end RGA/Peritext
+  result derives sequential intent from local generation rules.
+
+  **Audit finding (2026-08-19).** The desired implication is false for the
+  current interface. `Step3.apply` requires a globally fresh timestamp, while
+  `eSeqOK`/`sSeqOK` require each local timestamp to exceed every earlier
+  insertion timestamp. `eApplicable`/`sApplicable` inspect only datatype
+  state and do not enforce that Lamport maximum. The checked counterexample
+  `applicable_mints_do_not_imply_eSeqOK` uses two sequential, guard-passing
+  root inserts at timestamps 10 then 5. `LinearMintHistory` records the missing
+  local-clock discipline; `eSeqOK_of_linearMintHistory` and
+  `sSeqOK_of_linearMintHistory` prove that guard plus clock implies the exact
+  sequential premises, and the two `*SequentialSound_of_linearMintHistory`
+  theorems reach the naive sequence implementations. The JavaScript datatype
+  kernels still accept caller-supplied identifiers through raw `commit`, but
+  the production runtime now also exposes explicit-slot `generate`,
+  `commitGenerated`, and batch variants with a persisted Lamport allocator.
+  Remaining closure work is deployment-level collision-free slot allocation;
+  name hashing or the browser demo's random salt is not accepted as a proof.
+  Expose the local sequential bridge through the public certificate. Do not
+  seek one `eSeqOK` list for a concurrent distributed execution: concurrent
+  double-delete histories need not admit such a list.
+
 - Generalize beyond root-only insertion.
 - Strengthen causal consistency over evolving prefixes.
 - Prove `visible_apply_merge` for multi-replica executions.
@@ -834,6 +1353,14 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ### 11. Strengthen runtime certification
 
+- Implement and test same-replica crash recovery. Persist the logical replica
+  identity, mint counters, causal frontier, roster/evidence state, GC epoch and
+  translation metadata, datatype state, and any pending synchronization state
+  required by the protocol. After discarding the process, restore the same
+  replica, mint collision-free operations, synchronize with a peer that knew
+  the pre-crash replica, cross a GC epoch, and prove convergence. Keep the
+  current load-and-render benchmark labelled as document-state recovery until
+  this gate passes.
 - Determine whether EmbedRGA's continuation certificate can be lifted to a
   complete DAG-level `StabilityVC`.
 - Formalize divergent-epoch joins and certificate transport.
@@ -855,7 +1382,7 @@ behavioral layer to the conditioned RA-linearizability certificate.
 
 ## Completed foundation
 
-The next active item is Priority 8. The consolidation work underlying this backlog is recorded in
+The next active item is Priority 7A. The consolidation work underlying this backlog is recorded in
 `Sal/ConditionedMRDTs/REFACTOR_ROADMAP.md`. Its checklist is complete. In
 particular, the repository now has production `VerifiedMRDT` certificates,
 EmbedRGA continuation-aware runtime recoding, a concrete heterogeneous

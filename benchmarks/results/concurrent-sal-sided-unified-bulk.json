@@ -1,0 +1,57 @@
+{
+ "workload": "concurrent",
+ "system": "sal-sided-unified",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "preset": "bulk",
+ "config": {
+  "rounds": 6,
+  "burst": 500,
+  "seed": 42,
+  "insRatio": 0.8
+ },
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-20T10:53:32.030Z"
+ },
+ "finalChars": 3604,
+ "gates": {
+  "converged": true
+ },
+ "sync": {
+  "count": 6,
+  "warmupExcluded": 0,
+  "meanUs": 3698.9375,
+  "medianUs": 4428.333,
+  "p95Us": 5693.166,
+  "p99Us": 5693.166,
+  "maxUs": 5693.166,
+  "totalMs": 22.193625
+ },
+ "syncPayloadBytes": {
+  "total": 198675,
+  "perSyncMean": 33112.5
+ },
+ "localOps": {
+  "count": 6000,
+  "totalMs": 116.18391900000003,
+  "meanUs": 19.363986500000006
+ },
+ "saves": [
+  {
+   "label": "sided-policy-binary",
+   "bytes": 20247,
+   "estimated": false
+  }
+ ],
+ "compaction": null,
+ "runtimeGcMsTotal": 2.904667,
+ "memory": {
+  "baselineHeap": 4182096,
+  "peakHeapSampled": 30960624,
+  "retainedHeapAfterGc": 2443880,
+  "externalDelta": 40,
+  "caveat": "peak sampled once per round without forced GC; wasm memory in external, not heapUsed"
+ }
+}

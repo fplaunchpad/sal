@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-08-17T11:44:30.926Z",
-  "repetitions": 3,
+  "generatedAt": "2026-08-20T11:36:02.008Z",
+  "repetitions": 5,
   "rows": [
     {
       "rep": 1,
       "suite": "sequence",
       "system": "rga",
       "workload": "friendsforever_flat",
-      "applyMs": 32.009833,
+      "applyMs": 32.315708,
       "medianUs": 0.583,
       "p95Us": 5.208,
       "saveBytes": 145183,
-      "loadMs": 16.663,
+      "loadMs": 16.9605,
       "textOk": true
     },
     {
@@ -19,11 +19,11 @@
       "suite": "sequence",
       "system": "rga",
       "workload": "clownschool_flat",
-      "applyMs": 19.593667,
-      "medianUs": 0.416,
+      "applyMs": 19.32475,
+      "medianUs": 0.375,
       "p95Us": 1.917,
       "saveBytes": 138358,
-      "loadMs": 16.994917,
+      "loadMs": 16.580666,
       "textOk": true
     },
     {
@@ -31,11 +31,11 @@
       "suite": "sequence",
       "system": "rga",
       "workload": "seph-blog1",
-      "applyMs": 1871.553459,
-      "medianUs": 3.833,
-      "p95Us": 12.916,
+      "applyMs": 1907.91825,
+      "medianUs": 3.834,
+      "p95Us": 12.541,
       "saveBytes": 1440927,
-      "loadMs": 345.420208,
+      "loadMs": 347.760333,
       "textOk": true
     },
     {
@@ -43,11 +43,11 @@
       "suite": "sequence",
       "system": "rga",
       "workload": "automerge-paper",
-      "applyMs": 2018.835167,
-      "medianUs": 4.875,
-      "p95Us": 21.916,
+      "applyMs": 2076.938625,
+      "medianUs": 4.625,
+      "p95Us": 21.459,
       "saveBytes": 1182880,
-      "loadMs": 265.251875,
+      "loadMs": 263.072667,
       "textOk": true
     },
     {
@@ -55,671 +55,671 @@
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "friendsforever_flat",
-      "applyMs": 20.527958,
-      "medianUs": 0.5,
-      "p95Us": 1.625,
-      "saveBytes": 59064,
-      "loadMs": 14.187917,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "clownschool_flat",
-      "applyMs": 16.259875,
-      "medianUs": 0.334,
-      "p95Us": 1.833,
-      "saveBytes": 62412,
-      "loadMs": 12.498792,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "seph-blog1",
-      "applyMs": 1903.627042,
-      "medianUs": 4.125,
-      "p95Us": 12.292,
-      "saveBytes": 161046,
-      "loadMs": 48.515667,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "automerge-paper",
-      "applyMs": 1851.741417,
-      "medianUs": 4.458,
-      "p95Us": 19.709,
-      "saveBytes": 249973,
-      "loadMs": 102.375458,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 34.461333,
-      "medianUs": 0.875,
-      "p95Us": 2.583,
-      "saveBytes": 63113,
-      "loadMs": 16.081291,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "clownschool_flat",
-      "applyMs": 25.635,
-      "medianUs": 0.667,
-      "p95Us": 1.834,
-      "saveBytes": 62912,
-      "loadMs": 15.877083,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "seph-blog1",
-      "applyMs": 1878.061042,
-      "medianUs": 4.333,
-      "p95Us": 11.041,
-      "saveBytes": 210153,
-      "loadMs": 86.309208,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "automerge-paper",
-      "applyMs": 2092.589208,
-      "medianUs": 5.375,
-      "p95Us": 20.292,
-      "saveBytes": 323888,
-      "loadMs": 137.75825,
-      "textOk": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "rga",
-      "workload": "freq",
-      "syncMedianUs": 137.875,
-      "syncP95Us": 237.375,
-      "saveBytes": 16886,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "rga",
-      "workload": "bulk",
-      "syncMedianUs": 915.333,
-      "syncP95Us": 1079,
-      "saveBytes": 34165,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "embed-rga",
-      "workload": "freq",
-      "syncMedianUs": 236.708,
-      "syncP95Us": 370.292,
-      "saveBytes": 15511,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "embed-rga",
-      "workload": "bulk",
-      "syncMedianUs": 1058.75,
-      "syncP95Us": 2344.375,
-      "saveBytes": 31796,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "sided-embed-rga",
-      "workload": "freq",
-      "syncMedianUs": 365.875,
-      "syncP95Us": 458.083,
-      "saveBytes": 9648,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "concurrent",
-      "system": "sided-embed-rga",
-      "workload": "bulk",
-      "syncMedianUs": 4147.042,
-      "syncP95Us": 5763.292,
-      "saveBytes": 20247,
-      "converged": true
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 30.476956,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 150563,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 27.854626,
-      "stateGcMs": 19.470957999999996,
-      "historyGcMs": 1.0661660000000097,
-      "durableStateBytes": 150561,
-      "commits": 1,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6000,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "embed-rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 28.900752,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 104954,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "embed-rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 29.150373,
-      "stateGcMs": 32.518542,
-      "historyGcMs": 1.1877079999999864,
-      "durableStateBytes": 46072,
-      "commits": 1,
-      "identityRecords": 9200,
-      "shadowRecords": 15200,
-      "deletedIds": 0,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "sided-embed-rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 37.585713,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 135360,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 1,
-      "suite": "peritext-kernel",
-      "system": "sided-embed-rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 37.193336,
-      "stateGcMs": 31.99525,
-      "historyGcMs": 1.1404170000000136,
-      "durableStateBytes": 80965,
-      "commits": 1,
-      "identityRecords": 9200,
-      "shadowRecords": 15200,
-      "deletedIds": 0,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 31.765083,
-      "medianUs": 0.542,
-      "p95Us": 5.042,
-      "saveBytes": 145183,
-      "loadMs": 16.44875,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "clownschool_flat",
-      "applyMs": 19.202042,
-      "medianUs": 0.416,
-      "p95Us": 1.917,
-      "saveBytes": 138358,
-      "loadMs": 17.097709,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "seph-blog1",
-      "applyMs": 1824.506958,
-      "medianUs": 3.792,
-      "p95Us": 11.042,
-      "saveBytes": 1440927,
-      "loadMs": 344.95675,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "automerge-paper",
-      "applyMs": 1975.697208,
-      "medianUs": 4.5,
-      "p95Us": 20.459,
-      "saveBytes": 1182880,
-      "loadMs": 263.71075,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 20.576167,
-      "medianUs": 0.5,
-      "p95Us": 1.625,
-      "saveBytes": 59064,
-      "loadMs": 14.574458,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "clownschool_flat",
-      "applyMs": 16.437083,
-      "medianUs": 0.333,
-      "p95Us": 1.834,
-      "saveBytes": 62412,
-      "loadMs": 11.915417,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "seph-blog1",
-      "applyMs": 1781.568084,
-      "medianUs": 3.791,
-      "p95Us": 12.333,
-      "saveBytes": 161046,
-      "loadMs": 52.2865,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "automerge-paper",
-      "applyMs": 1832.71325,
-      "medianUs": 4.041,
-      "p95Us": 21.542,
-      "saveBytes": 249973,
-      "loadMs": 87.728833,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 34.002167,
-      "medianUs": 0.875,
-      "p95Us": 2.5,
-      "saveBytes": 63113,
-      "loadMs": 17.453209,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "clownschool_flat",
-      "applyMs": 27.438458,
-      "medianUs": 0.667,
-      "p95Us": 2.334,
-      "saveBytes": 62912,
-      "loadMs": 15.801917,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "seph-blog1",
-      "applyMs": 2065.563583,
-      "medianUs": 4.459,
-      "p95Us": 13.667,
-      "saveBytes": 210153,
-      "loadMs": 86.235125,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "sequence",
-      "system": "sided-embed-rga",
-      "workload": "automerge-paper",
-      "applyMs": 2181.024167,
-      "medianUs": 5.292,
-      "p95Us": 21.833,
-      "saveBytes": 323888,
-      "loadMs": 134.499458,
-      "textOk": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "rga",
-      "workload": "freq",
-      "syncMedianUs": 130.708,
-      "syncP95Us": 226.916,
-      "saveBytes": 16886,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "rga",
-      "workload": "bulk",
-      "syncMedianUs": 922.791,
-      "syncP95Us": 1023.25,
-      "saveBytes": 34165,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "embed-rga",
-      "workload": "freq",
-      "syncMedianUs": 234.333,
-      "syncP95Us": 371.542,
-      "saveBytes": 15511,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "embed-rga",
-      "workload": "bulk",
-      "syncMedianUs": 1131.375,
-      "syncP95Us": 1894.375,
-      "saveBytes": 31796,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "sided-embed-rga",
-      "workload": "freq",
-      "syncMedianUs": 345.291,
-      "syncP95Us": 446.916,
-      "saveBytes": 9648,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "concurrent",
-      "system": "sided-embed-rga",
-      "workload": "bulk",
-      "syncMedianUs": 4057.0000000000005,
-      "syncP95Us": 5108,
-      "saveBytes": 20247,
-      "converged": true
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 31.684878,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 150563,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 28.121833,
-      "stateGcMs": 18.630333000000007,
-      "historyGcMs": 1.0851660000000152,
-      "durableStateBytes": 150561,
-      "commits": 1,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6000,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "embed-rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 29.236296,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 104954,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "embed-rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 29.242666,
-      "stateGcMs": 32.726207999999986,
-      "historyGcMs": 1.1545839999999998,
-      "durableStateBytes": 46072,
-      "commits": 1,
-      "identityRecords": 9200,
-      "shadowRecords": 15200,
-      "deletedIds": 0,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "sided-embed-rga",
-      "workload": "spine-none",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 37.202003,
-      "stateGcMs": 0,
-      "historyGcMs": 0,
-      "durableStateBytes": 135360,
-      "commits": 90,
-      "identityRecords": 15200,
-      "shadowRecords": 15200,
-      "deletedIds": 6001,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 2,
-      "suite": "peritext-kernel",
-      "system": "sided-embed-rga",
-      "workload": "spine-both",
-      "operations": 21200,
-      "commitBatches": 89,
-      "visibleChars": 9200,
-      "applyMs": 38.33825,
-      "stateGcMs": 32.661541,
-      "historyGcMs": 1.193125000000009,
-      "durableStateBytes": 80965,
-      "commits": 1,
-      "identityRecords": 9200,
-      "shadowRecords": 15200,
-      "deletedIds": 0,
-      "gates": {
-        "converged": true,
-        "snapshot": true
-      }
-    },
-    {
-      "rep": 3,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 31.881542,
-      "medianUs": 0.583,
-      "p95Us": 5,
-      "saveBytes": 145183,
-      "loadMs": 16.946458,
-      "textOk": true
-    },
-    {
-      "rep": 3,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "clownschool_flat",
-      "applyMs": 17.703458,
-      "medianUs": 0.416,
-      "p95Us": 1.5,
-      "saveBytes": 138358,
-      "loadMs": 17.407166,
-      "textOk": true
-    },
-    {
-      "rep": 3,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "seph-blog1",
-      "applyMs": 1940.005583,
-      "medianUs": 4.292,
-      "p95Us": 12.833,
-      "saveBytes": 1440927,
-      "loadMs": 345.275875,
-      "textOk": true
-    },
-    {
-      "rep": 3,
-      "suite": "sequence",
-      "system": "rga",
-      "workload": "automerge-paper",
-      "applyMs": 1951.592583,
-      "medianUs": 4.292,
-      "p95Us": 20.5,
-      "saveBytes": 1182880,
-      "loadMs": 264.470792,
-      "textOk": true
-    },
-    {
-      "rep": 3,
-      "suite": "sequence",
-      "system": "embed-rga",
-      "workload": "friendsforever_flat",
-      "applyMs": 20.737834,
-      "medianUs": 0.5,
+      "applyMs": 20.886875,
+      "medianUs": 0.541,
       "p95Us": 1.584,
       "saveBytes": 59064,
-      "loadMs": 14.15225,
+      "loadMs": 11.013166,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 16.54075,
+      "medianUs": 0.334,
+      "p95Us": 1.834,
+      "saveBytes": 62412,
+      "loadMs": 12.622583,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 1906.044709,
+      "medianUs": 4.375,
+      "p95Us": 12.917,
+      "saveBytes": 161046,
+      "loadMs": 51.282833,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 1978.921625,
+      "medianUs": 4.292,
+      "p95Us": 22.166,
+      "saveBytes": 249973,
+      "loadMs": 97.249125,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 34.47225,
+      "medianUs": 0.875,
+      "p95Us": 2.542,
+      "saveBytes": 63113,
+      "loadMs": 16.232125,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 26.7955,
+      "medianUs": 0.667,
+      "p95Us": 1.834,
+      "saveBytes": 62912,
+      "loadMs": 16.115916,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 2185.2675,
+      "medianUs": 4.709,
+      "p95Us": 13.625,
+      "saveBytes": 210153,
+      "loadMs": 84.423834,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2136.865917,
+      "medianUs": 5.042,
+      "p95Us": 21.208,
+      "saveBytes": 323888,
+      "loadMs": 134.34225,
+      "textOk": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "freq",
+      "syncMedianUs": 138.5,
+      "syncP95Us": 237.042,
+      "saveBytes": 16886,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "bulk",
+      "syncMedianUs": 918.625,
+      "syncP95Us": 1224.25,
+      "saveBytes": 34165,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 222.084,
+      "syncP95Us": 408.333,
+      "saveBytes": 15511,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 1140.292,
+      "syncP95Us": 2474.5,
+      "saveBytes": 31796,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 363.666,
+      "syncP95Us": 491.5,
+      "saveBytes": 9648,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 4197.333,
+      "syncP95Us": 5313.583,
+      "saveBytes": 20247,
+      "converged": true
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 31.404217,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 150563,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 30.766288,
+      "stateGcMs": 19.939166999999998,
+      "historyGcMs": 1.0969169999999906,
+      "durableStateBytes": 150561,
+      "commits": 1,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6000,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 28.828786,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 104954,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 27.472001,
+      "stateGcMs": 33.14066599999998,
+      "historyGcMs": 1.1714999999999804,
+      "durableStateBytes": 46072,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 37.660414,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 135360,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 1,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 37.936831,
+      "stateGcMs": 32.837208000000004,
+      "historyGcMs": 1.1947079999999914,
+      "durableStateBytes": 80965,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 32.286917,
+      "medianUs": 0.583,
+      "p95Us": 5.125,
+      "saveBytes": 145183,
+      "loadMs": 17.0585,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "clownschool_flat",
+      "applyMs": 17.819458,
+      "medianUs": 0.416,
+      "p95Us": 1.542,
+      "saveBytes": 138358,
+      "loadMs": 17.190667,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "seph-blog1",
+      "applyMs": 1942.734583,
+      "medianUs": 4.042,
+      "p95Us": 12.042,
+      "saveBytes": 1440927,
+      "loadMs": 353.79375,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "automerge-paper",
+      "applyMs": 2096.44525,
+      "medianUs": 4.542,
+      "p95Us": 21.917,
+      "saveBytes": 1182880,
+      "loadMs": 266.395834,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 20.712209,
+      "medianUs": 0.5,
+      "p95Us": 1.542,
+      "saveBytes": 59064,
+      "loadMs": 13.414541,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 16.290833,
+      "medianUs": 0.334,
+      "p95Us": 1.834,
+      "saveBytes": 62412,
+      "loadMs": 12.93075,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 1815.756916,
+      "medianUs": 4.125,
+      "p95Us": 10.959,
+      "saveBytes": 161046,
+      "loadMs": 52.801708,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 1858.328208,
+      "medianUs": 4.125,
+      "p95Us": 20.875,
+      "saveBytes": 249973,
+      "loadMs": 86.212166,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 34.750625,
+      "medianUs": 0.875,
+      "p95Us": 2.542,
+      "saveBytes": 63113,
+      "loadMs": 18.151583,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 25.85925,
+      "medianUs": 0.667,
+      "p95Us": 1.875,
+      "saveBytes": 62912,
+      "loadMs": 16.633875,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 2109.217917,
+      "medianUs": 4.5,
+      "p95Us": 13.708,
+      "saveBytes": 210153,
+      "loadMs": 86.429,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2167.926209,
+      "medianUs": 5.042,
+      "p95Us": 22.666,
+      "saveBytes": 323888,
+      "loadMs": 133.495458,
+      "textOk": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "freq",
+      "syncMedianUs": 135.458,
+      "syncP95Us": 225.417,
+      "saveBytes": 16886,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "bulk",
+      "syncMedianUs": 946.334,
+      "syncP95Us": 1207.834,
+      "saveBytes": 34165,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 238.5,
+      "syncP95Us": 384.375,
+      "saveBytes": 15511,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 1145.959,
+      "syncP95Us": 2329.042,
+      "saveBytes": 31796,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 345.125,
+      "syncP95Us": 478.167,
+      "saveBytes": 9648,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 4376.292,
+      "syncP95Us": 5470.625,
+      "saveBytes": 20247,
+      "converged": true
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 31.573247,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 150563,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 30.217916,
+      "stateGcMs": 20.99000000000001,
+      "historyGcMs": 1.0777499999999804,
+      "durableStateBytes": 150561,
+      "commits": 1,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6000,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 28.906498,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 104954,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 29.928165,
+      "stateGcMs": 34.71125000000001,
+      "historyGcMs": 1.392583000000002,
+      "durableStateBytes": 46072,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 38.384247,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 135360,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 2,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 38.296287,
+      "stateGcMs": 33.941125,
+      "historyGcMs": 1.1994579999999928,
+      "durableStateBytes": 80965,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 3,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 32.509834,
+      "medianUs": 0.583,
+      "p95Us": 5.209,
+      "saveBytes": 145183,
+      "loadMs": 17.320667,
+      "textOk": true
+    },
+    {
+      "rep": 3,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "clownschool_flat",
+      "applyMs": 17.760333,
+      "medianUs": 0.416,
+      "p95Us": 1.584,
+      "saveBytes": 138358,
+      "loadMs": 17.405166,
+      "textOk": true
+    },
+    {
+      "rep": 3,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "seph-blog1",
+      "applyMs": 1990.212833,
+      "medianUs": 4.209,
+      "p95Us": 13.292,
+      "saveBytes": 1440927,
+      "loadMs": 350.159875,
+      "textOk": true
+    },
+    {
+      "rep": 3,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "automerge-paper",
+      "applyMs": 2092.880292,
+      "medianUs": 4.583,
+      "p95Us": 21.792,
+      "saveBytes": 1182880,
+      "loadMs": 266.917916,
+      "textOk": true
+    },
+    {
+      "rep": 3,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 21.49075,
+      "medianUs": 0.542,
+      "p95Us": 1.708,
+      "saveBytes": 59064,
+      "loadMs": 14.654709,
       "textOk": true
     },
     {
@@ -727,11 +727,11 @@
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "clownschool_flat",
-      "applyMs": 16.564125,
+      "applyMs": 16.098958,
       "medianUs": 0.334,
-      "p95Us": 1.833,
+      "p95Us": 1.542,
       "saveBytes": 62412,
-      "loadMs": 11.766125,
+      "loadMs": 12.592792,
       "textOk": true
     },
     {
@@ -739,11 +739,11 @@
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "seph-blog1",
-      "applyMs": 1887.851958,
-      "medianUs": 4.083,
-      "p95Us": 12.625,
+      "applyMs": 1885.621458,
+      "medianUs": 3.916,
+      "p95Us": 12.125,
       "saveBytes": 161046,
-      "loadMs": 47.585541,
+      "loadMs": 50.509875,
       "textOk": true
     },
     {
@@ -751,11 +751,11 @@
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "automerge-paper",
-      "applyMs": 1905.38275,
-      "medianUs": 4.333,
-      "p95Us": 20.458,
+      "applyMs": 1951.6015,
+      "medianUs": 4.167,
+      "p95Us": 20.875,
       "saveBytes": 249973,
-      "loadMs": 101.8725,
+      "loadMs": 89.206125,
       "textOk": true
     },
     {
@@ -763,11 +763,11 @@
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "friendsforever_flat",
-      "applyMs": 42.887541,
-      "medianUs": 0.875,
-      "p95Us": 5.5,
+      "applyMs": 34.128708,
+      "medianUs": 0.916,
+      "p95Us": 2.583,
       "saveBytes": 63113,
-      "loadMs": 18.222083,
+      "loadMs": 17.676291,
       "textOk": true
     },
     {
@@ -775,11 +775,11 @@
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "clownschool_flat",
-      "applyMs": 26.029875,
+      "applyMs": 27.4945,
       "medianUs": 0.667,
-      "p95Us": 1.833,
+      "p95Us": 2.375,
       "saveBytes": 62912,
-      "loadMs": 15.940291,
+      "loadMs": 16.602708,
       "textOk": true
     },
     {
@@ -787,11 +787,11 @@
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "seph-blog1",
-      "applyMs": 1906.351708,
-      "medianUs": 4.333,
-      "p95Us": 11.25,
+      "applyMs": 2072.861083,
+      "medianUs": 4.667,
+      "p95Us": 13.875,
       "saveBytes": 210153,
-      "loadMs": 88.591583,
+      "loadMs": 89.042166,
       "textOk": true
     },
     {
@@ -799,11 +799,11 @@
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "automerge-paper",
-      "applyMs": 2097.860541,
-      "medianUs": 5.084,
-      "p95Us": 20.667,
+      "applyMs": 2267.614209,
+      "medianUs": 5.5,
+      "p95Us": 24.959,
       "saveBytes": 323888,
-      "loadMs": 136.06575,
+      "loadMs": 138.513917,
       "textOk": true
     },
     {
@@ -811,8 +811,8 @@
       "suite": "concurrent",
       "system": "rga",
       "workload": "freq",
-      "syncMedianUs": 130.87499999999997,
-      "syncP95Us": 217.458,
+      "syncMedianUs": 132.708,
+      "syncP95Us": 213.75,
       "saveBytes": 16886,
       "converged": true
     },
@@ -821,8 +821,8 @@
       "suite": "concurrent",
       "system": "rga",
       "workload": "bulk",
-      "syncMedianUs": 901.709,
-      "syncP95Us": 2575.875,
+      "syncMedianUs": 894.375,
+      "syncP95Us": 1126.667,
       "saveBytes": 34165,
       "converged": true
     },
@@ -831,8 +831,8 @@
       "suite": "concurrent",
       "system": "embed-rga",
       "workload": "freq",
-      "syncMedianUs": 239.75,
-      "syncP95Us": 386.666,
+      "syncMedianUs": 251.79200000000003,
+      "syncP95Us": 391.75,
       "saveBytes": 15511,
       "converged": true
     },
@@ -841,8 +841,8 @@
       "suite": "concurrent",
       "system": "embed-rga",
       "workload": "bulk",
-      "syncMedianUs": 1205.5,
-      "syncP95Us": 2383.292,
+      "syncMedianUs": 1260.625,
+      "syncP95Us": 2340.375,
       "saveBytes": 31796,
       "converged": true
     },
@@ -851,8 +851,8 @@
       "suite": "concurrent",
       "system": "sided-embed-rga",
       "workload": "freq",
-      "syncMedianUs": 377.583,
-      "syncP95Us": 558.291,
+      "syncMedianUs": 368.75,
+      "syncP95Us": 583.625,
       "saveBytes": 9648,
       "converged": true
     },
@@ -861,8 +861,8 @@
       "suite": "concurrent",
       "system": "sided-embed-rga",
       "workload": "bulk",
-      "syncMedianUs": 4044.167,
-      "syncP95Us": 5604.041,
+      "syncMedianUs": 3698.667,
+      "syncP95Us": 4792.333,
       "saveBytes": 20247,
       "converged": true
     },
@@ -874,7 +874,7 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 30.357675,
+      "applyMs": 31.450792,
       "stateGcMs": 0,
       "historyGcMs": 0,
       "durableStateBytes": 150563,
@@ -895,9 +895,9 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 32.5165,
-      "stateGcMs": 19.63816699999998,
-      "historyGcMs": 1.1089589999999987,
+      "applyMs": 28.988958,
+      "stateGcMs": 20.560000000000002,
+      "historyGcMs": 1.0812080000000037,
       "durableStateBytes": 150561,
       "commits": 1,
       "identityRecords": 15200,
@@ -916,7 +916,7 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 28.97108,
+      "applyMs": 28.692757,
       "stateGcMs": 0,
       "historyGcMs": 0,
       "durableStateBytes": 104954,
@@ -937,9 +937,9 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 29.306248,
-      "stateGcMs": 33.172417000000024,
-      "historyGcMs": 1.1645829999999933,
+      "applyMs": 29.135666,
+      "stateGcMs": 33.78966700000001,
+      "historyGcMs": 1.1438750000000084,
       "durableStateBytes": 46072,
       "commits": 1,
       "identityRecords": 9200,
@@ -958,7 +958,7 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 37.503253,
+      "applyMs": 38.208333,
       "stateGcMs": 0,
       "historyGcMs": 0,
       "durableStateBytes": 135360,
@@ -979,9 +979,669 @@
       "operations": 21200,
       "commitBatches": 89,
       "visibleChars": 9200,
-      "applyMs": 38.906534,
-      "stateGcMs": 32.125208000000015,
-      "historyGcMs": 1.105875000000026,
+      "applyMs": 38.934332,
+      "stateGcMs": 33.076041000000004,
+      "historyGcMs": 1.3503749999999854,
+      "durableStateBytes": 80965,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 32.852917,
+      "medianUs": 0.583,
+      "p95Us": 5.291,
+      "saveBytes": 145183,
+      "loadMs": 17.646458,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "clownschool_flat",
+      "applyMs": 19.448583,
+      "medianUs": 0.416,
+      "p95Us": 2,
+      "saveBytes": 138358,
+      "loadMs": 17.574708,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "seph-blog1",
+      "applyMs": 1953.873875,
+      "medianUs": 4.084,
+      "p95Us": 11.75,
+      "saveBytes": 1440927,
+      "loadMs": 352.270625,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "automerge-paper",
+      "applyMs": 2129.841,
+      "medianUs": 4.584,
+      "p95Us": 21.667,
+      "saveBytes": 1182880,
+      "loadMs": 266.504,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 21.058375,
+      "medianUs": 0.541,
+      "p95Us": 1.708,
+      "saveBytes": 59064,
+      "loadMs": 13.188584,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 15.924833,
+      "medianUs": 0.334,
+      "p95Us": 1.458,
+      "saveBytes": 62412,
+      "loadMs": 13.156958,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 1899.38725,
+      "medianUs": 4,
+      "p95Us": 12.959,
+      "saveBytes": 161046,
+      "loadMs": 50.7,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2094.445708,
+      "medianUs": 4.625,
+      "p95Us": 22.708,
+      "saveBytes": 249973,
+      "loadMs": 101.175459,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 35.413167,
+      "medianUs": 0.917,
+      "p95Us": 2.833,
+      "saveBytes": 63113,
+      "loadMs": 17.081875,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 26.643125,
+      "medianUs": 0.667,
+      "p95Us": 2.042,
+      "saveBytes": 62912,
+      "loadMs": 16.551084,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 2058.768542,
+      "medianUs": 4.625,
+      "p95Us": 12.75,
+      "saveBytes": 210153,
+      "loadMs": 82.501958,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2224.98575,
+      "medianUs": 5.334,
+      "p95Us": 22.125,
+      "saveBytes": 323888,
+      "loadMs": 136.763167,
+      "textOk": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "freq",
+      "syncMedianUs": 138.166,
+      "syncP95Us": 257.209,
+      "saveBytes": 16886,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "bulk",
+      "syncMedianUs": 881.667,
+      "syncP95Us": 1084.125,
+      "saveBytes": 34165,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 241.625,
+      "syncP95Us": 392.083,
+      "saveBytes": 15511,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 1177.292,
+      "syncP95Us": 2353.542,
+      "saveBytes": 31796,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 389.583,
+      "syncP95Us": 488.667,
+      "saveBytes": 9648,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 4100.459,
+      "syncP95Us": 5326.292,
+      "saveBytes": 20247,
+      "converged": true
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 31.414832,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 150563,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 31.480748,
+      "stateGcMs": 20.40020800000002,
+      "historyGcMs": 1.1144160000000056,
+      "durableStateBytes": 150561,
+      "commits": 1,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6000,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 29.394287,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 104954,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 29.315544,
+      "stateGcMs": 33.185292000000004,
+      "historyGcMs": 1.1814579999999921,
+      "durableStateBytes": 46072,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 38.543126,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 135360,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 4,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 39.160379,
+      "stateGcMs": 33.28645900000001,
+      "historyGcMs": 1.174000000000035,
+      "durableStateBytes": 80965,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 29.809,
+      "medianUs": 0.583,
+      "p95Us": 4.084,
+      "saveBytes": 145183,
+      "loadMs": 17.399875,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "clownschool_flat",
+      "applyMs": 19.353625,
+      "medianUs": 0.416,
+      "p95Us": 1.958,
+      "saveBytes": 138358,
+      "loadMs": 17.427125,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "seph-blog1",
+      "applyMs": 2007.438,
+      "medianUs": 4.125,
+      "p95Us": 12.959,
+      "saveBytes": 1440927,
+      "loadMs": 353.164917,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "rga",
+      "workload": "automerge-paper",
+      "applyMs": 2217.896917,
+      "medianUs": 4.666,
+      "p95Us": 24.625,
+      "saveBytes": 1182880,
+      "loadMs": 267.088042,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 21.31925,
+      "medianUs": 0.5,
+      "p95Us": 1.666,
+      "saveBytes": 59064,
+      "loadMs": 14.302625,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 16.617792,
+      "medianUs": 0.334,
+      "p95Us": 1.875,
+      "saveBytes": 62412,
+      "loadMs": 13.292166,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 1775.092625,
+      "medianUs": 4,
+      "p95Us": 12,
+      "saveBytes": 161046,
+      "loadMs": 51.183709,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2225.636417,
+      "medianUs": 5.291,
+      "p95Us": 25.167,
+      "saveBytes": 249973,
+      "loadMs": 101.354166,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "friendsforever_flat",
+      "applyMs": 34.989,
+      "medianUs": 0.917,
+      "p95Us": 2.583,
+      "saveBytes": 63113,
+      "loadMs": 17.239375,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "clownschool_flat",
+      "applyMs": 26.728417,
+      "medianUs": 0.708,
+      "p95Us": 2.042,
+      "saveBytes": 62912,
+      "loadMs": 17.015041,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "seph-blog1",
+      "applyMs": 2231.011583,
+      "medianUs": 4.917,
+      "p95Us": 14.625,
+      "saveBytes": 210153,
+      "loadMs": 88.532083,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "sequence",
+      "system": "sided-embed-rga",
+      "workload": "automerge-paper",
+      "applyMs": 2211.012541,
+      "medianUs": 5.167,
+      "p95Us": 22.333,
+      "saveBytes": 323888,
+      "loadMs": 139.475583,
+      "textOk": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "freq",
+      "syncMedianUs": 138.792,
+      "syncP95Us": 221.041,
+      "saveBytes": 16886,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "rga",
+      "workload": "bulk",
+      "syncMedianUs": 913.916,
+      "syncP95Us": 1188.625,
+      "saveBytes": 34165,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 245.208,
+      "syncP95Us": 384.958,
+      "saveBytes": 15511,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 1186.708,
+      "syncP95Us": 2355.583,
+      "saveBytes": 31796,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "freq",
+      "syncMedianUs": 372.458,
+      "syncP95Us": 567.416,
+      "saveBytes": 9648,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "concurrent",
+      "system": "sided-embed-rga",
+      "workload": "bulk",
+      "syncMedianUs": 4217.291,
+      "syncP95Us": 5134.458,
+      "saveBytes": 20247,
+      "converged": true
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 32.071998,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 150563,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 32.547752,
+      "stateGcMs": 20.596666999999997,
+      "historyGcMs": 1.1013750000000186,
+      "durableStateBytes": 150561,
+      "commits": 1,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6000,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 29.573296,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 104954,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 30.03596,
+      "stateGcMs": 34.515625,
+      "historyGcMs": 1.1538749999999993,
+      "durableStateBytes": 46072,
+      "commits": 1,
+      "identityRecords": 9200,
+      "shadowRecords": 15200,
+      "deletedIds": 0,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-none",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 38.466291,
+      "stateGcMs": 0,
+      "historyGcMs": 0,
+      "durableStateBytes": 135360,
+      "commits": 90,
+      "identityRecords": 15200,
+      "shadowRecords": 15200,
+      "deletedIds": 6001,
+      "gates": {
+        "converged": true,
+        "snapshot": true
+      }
+    },
+    {
+      "rep": 5,
+      "suite": "peritext-kernel",
+      "system": "sided-embed-rga",
+      "workload": "spine-both",
+      "operations": 21200,
+      "commitBatches": 89,
+      "visibleChars": 9200,
+      "applyMs": 38.055793,
+      "stateGcMs": 33.06841600000001,
+      "historyGcMs": 1.1717499999999745,
       "durableStateBytes": 80965,
       "commits": 1,
       "identityRecords": 9200,
@@ -998,21 +1658,21 @@
       "suite": "sequence",
       "system": "rga",
       "workload": "friendsforever_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 31.881542,
-        "min": 31.765083,
-        "max": 32.009833
+        "median": 32.315708,
+        "min": 29.809,
+        "max": 32.852917
       },
       "medianUs": {
         "median": 0.583,
-        "min": 0.542,
+        "min": 0.583,
         "max": 0.583
       },
       "p95Us": {
-        "median": 5.042,
-        "min": 5,
-        "max": 5.208
+        "median": 5.208,
+        "min": 4.084,
+        "max": 5.291
       },
       "saveBytes": {
         "median": 145183,
@@ -1020,30 +1680,30 @@
         "max": 145183
       },
       "loadMs": {
-        "median": 16.663,
-        "min": 16.44875,
-        "max": 16.946458
+        "median": 17.320667,
+        "min": 16.9605,
+        "max": 17.646458
       }
     },
     {
       "suite": "sequence",
       "system": "rga",
       "workload": "clownschool_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 19.202042,
-        "min": 17.703458,
-        "max": 19.593667
+        "median": 19.32475,
+        "min": 17.760333,
+        "max": 19.448583
       },
       "medianUs": {
         "median": 0.416,
-        "min": 0.416,
+        "min": 0.375,
         "max": 0.416
       },
       "p95Us": {
         "median": 1.917,
-        "min": 1.5,
-        "max": 1.917
+        "min": 1.542,
+        "max": 2
       },
       "saveBytes": {
         "median": 138358,
@@ -1051,30 +1711,30 @@
         "max": 138358
       },
       "loadMs": {
-        "median": 17.097709,
-        "min": 16.994917,
-        "max": 17.407166
+        "median": 17.405166,
+        "min": 16.580666,
+        "max": 17.574708
       }
     },
     {
       "suite": "sequence",
       "system": "rga",
       "workload": "seph-blog1",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 1871.553459,
-        "min": 1824.506958,
-        "max": 1940.005583
+        "median": 1953.873875,
+        "min": 1907.91825,
+        "max": 2007.438
       },
       "medianUs": {
-        "median": 3.833,
-        "min": 3.792,
-        "max": 4.292
+        "median": 4.084,
+        "min": 3.834,
+        "max": 4.209
       },
       "p95Us": {
-        "median": 12.833,
-        "min": 11.042,
-        "max": 12.916
+        "median": 12.541,
+        "min": 11.75,
+        "max": 13.292
       },
       "saveBytes": {
         "median": 1440927,
@@ -1082,30 +1742,30 @@
         "max": 1440927
       },
       "loadMs": {
-        "median": 345.275875,
-        "min": 344.95675,
-        "max": 345.420208
+        "median": 352.270625,
+        "min": 347.760333,
+        "max": 353.79375
       }
     },
     {
       "suite": "sequence",
       "system": "rga",
       "workload": "automerge-paper",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 1975.697208,
-        "min": 1951.592583,
-        "max": 2018.835167
+        "median": 2096.44525,
+        "min": 2076.938625,
+        "max": 2217.896917
       },
       "medianUs": {
-        "median": 4.5,
-        "min": 4.292,
-        "max": 4.875
+        "median": 4.584,
+        "min": 4.542,
+        "max": 4.666
       },
       "p95Us": {
-        "median": 20.5,
-        "min": 20.459,
-        "max": 21.916
+        "median": 21.792,
+        "min": 21.459,
+        "max": 24.625
       },
       "saveBytes": {
         "median": 1182880,
@@ -1113,30 +1773,30 @@
         "max": 1182880
       },
       "loadMs": {
-        "median": 264.470792,
-        "min": 263.71075,
-        "max": 265.251875
+        "median": 266.504,
+        "min": 263.072667,
+        "max": 267.088042
       }
     },
     {
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "friendsforever_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 20.576167,
-        "min": 20.527958,
-        "max": 20.737834
+        "median": 21.058375,
+        "min": 20.712209,
+        "max": 21.49075
       },
       "medianUs": {
-        "median": 0.5,
+        "median": 0.541,
         "min": 0.5,
-        "max": 0.5
+        "max": 0.542
       },
       "p95Us": {
-        "median": 1.625,
-        "min": 1.584,
-        "max": 1.625
+        "median": 1.666,
+        "min": 1.542,
+        "max": 1.708
       },
       "saveBytes": {
         "median": 59064,
@@ -1144,30 +1804,30 @@
         "max": 59064
       },
       "loadMs": {
-        "median": 14.187917,
-        "min": 14.15225,
-        "max": 14.574458
+        "median": 13.414541,
+        "min": 11.013166,
+        "max": 14.654709
       }
     },
     {
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "clownschool_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 16.437083,
-        "min": 16.259875,
-        "max": 16.564125
+        "median": 16.290833,
+        "min": 15.924833,
+        "max": 16.617792
       },
       "medianUs": {
         "median": 0.334,
-        "min": 0.333,
+        "min": 0.334,
         "max": 0.334
       },
       "p95Us": {
-        "median": 1.833,
-        "min": 1.833,
-        "max": 1.834
+        "median": 1.834,
+        "min": 1.458,
+        "max": 1.875
       },
       "saveBytes": {
         "median": 62412,
@@ -1175,30 +1835,30 @@
         "max": 62412
       },
       "loadMs": {
-        "median": 11.915417,
-        "min": 11.766125,
-        "max": 12.498792
+        "median": 12.93075,
+        "min": 12.592792,
+        "max": 13.292166
       }
     },
     {
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "seph-blog1",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 1887.851958,
-        "min": 1781.568084,
-        "max": 1903.627042
+        "median": 1885.621458,
+        "min": 1775.092625,
+        "max": 1906.044709
       },
       "medianUs": {
-        "median": 4.083,
-        "min": 3.791,
-        "max": 4.125
+        "median": 4,
+        "min": 3.916,
+        "max": 4.375
       },
       "p95Us": {
-        "median": 12.333,
-        "min": 12.292,
-        "max": 12.625
+        "median": 12.125,
+        "min": 10.959,
+        "max": 12.959
       },
       "saveBytes": {
         "median": 161046,
@@ -1206,30 +1866,30 @@
         "max": 161046
       },
       "loadMs": {
-        "median": 48.515667,
-        "min": 47.585541,
-        "max": 52.2865
+        "median": 51.183709,
+        "min": 50.509875,
+        "max": 52.801708
       }
     },
     {
       "suite": "sequence",
       "system": "embed-rga",
       "workload": "automerge-paper",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 1851.741417,
-        "min": 1832.71325,
-        "max": 1905.38275
+        "median": 1978.921625,
+        "min": 1858.328208,
+        "max": 2225.636417
       },
       "medianUs": {
-        "median": 4.333,
-        "min": 4.041,
-        "max": 4.458
+        "median": 4.292,
+        "min": 4.125,
+        "max": 5.291
       },
       "p95Us": {
-        "median": 20.458,
-        "min": 19.709,
-        "max": 21.542
+        "median": 22.166,
+        "min": 20.875,
+        "max": 25.167
       },
       "saveBytes": {
         "median": 249973,
@@ -1237,30 +1897,30 @@
         "max": 249973
       },
       "loadMs": {
-        "median": 101.8725,
-        "min": 87.728833,
-        "max": 102.375458
+        "median": 97.249125,
+        "min": 86.212166,
+        "max": 101.354166
       }
     },
     {
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "friendsforever_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 34.461333,
-        "min": 34.002167,
-        "max": 42.887541
+        "median": 34.750625,
+        "min": 34.128708,
+        "max": 35.413167
       },
       "medianUs": {
-        "median": 0.875,
+        "median": 0.916,
         "min": 0.875,
-        "max": 0.875
+        "max": 0.917
       },
       "p95Us": {
         "median": 2.583,
-        "min": 2.5,
-        "max": 5.5
+        "min": 2.542,
+        "max": 2.833
       },
       "saveBytes": {
         "median": 63113,
@@ -1268,30 +1928,30 @@
         "max": 63113
       },
       "loadMs": {
-        "median": 17.453209,
-        "min": 16.081291,
-        "max": 18.222083
+        "median": 17.239375,
+        "min": 16.232125,
+        "max": 18.151583
       }
     },
     {
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "clownschool_flat",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 26.029875,
-        "min": 25.635,
-        "max": 27.438458
+        "median": 26.728417,
+        "min": 25.85925,
+        "max": 27.4945
       },
       "medianUs": {
         "median": 0.667,
         "min": 0.667,
-        "max": 0.667
+        "max": 0.708
       },
       "p95Us": {
-        "median": 1.834,
-        "min": 1.833,
-        "max": 2.334
+        "median": 2.042,
+        "min": 1.834,
+        "max": 2.375
       },
       "saveBytes": {
         "median": 62912,
@@ -1299,30 +1959,30 @@
         "max": 62912
       },
       "loadMs": {
-        "median": 15.877083,
-        "min": 15.801917,
-        "max": 15.940291
+        "median": 16.602708,
+        "min": 16.115916,
+        "max": 17.015041
       }
     },
     {
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "seph-blog1",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 1906.351708,
-        "min": 1878.061042,
-        "max": 2065.563583
+        "median": 2109.217917,
+        "min": 2058.768542,
+        "max": 2231.011583
       },
       "medianUs": {
-        "median": 4.333,
-        "min": 4.333,
-        "max": 4.459
+        "median": 4.667,
+        "min": 4.5,
+        "max": 4.917
       },
       "p95Us": {
-        "median": 11.25,
-        "min": 11.041,
-        "max": 13.667
+        "median": 13.708,
+        "min": 12.75,
+        "max": 14.625
       },
       "saveBytes": {
         "median": 210153,
@@ -1330,30 +1990,30 @@
         "max": 210153
       },
       "loadMs": {
-        "median": 86.309208,
-        "min": 86.235125,
-        "max": 88.591583
+        "median": 86.429,
+        "min": 82.501958,
+        "max": 89.042166
       }
     },
     {
       "suite": "sequence",
       "system": "sided-embed-rga",
       "workload": "automerge-paper",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 2097.860541,
-        "min": 2092.589208,
-        "max": 2181.024167
+        "median": 2211.012541,
+        "min": 2136.865917,
+        "max": 2267.614209
       },
       "medianUs": {
-        "median": 5.292,
-        "min": 5.084,
-        "max": 5.375
+        "median": 5.167,
+        "min": 5.042,
+        "max": 5.5
       },
       "p95Us": {
-        "median": 20.667,
-        "min": 20.292,
-        "max": 21.833
+        "median": 22.333,
+        "min": 21.208,
+        "max": 24.959
       },
       "saveBytes": {
         "median": 323888,
@@ -1361,146 +2021,146 @@
         "max": 323888
       },
       "loadMs": {
-        "median": 136.06575,
-        "min": 134.499458,
-        "max": 137.75825
+        "median": 136.763167,
+        "min": 133.495458,
+        "max": 139.475583
       }
     },
     {
       "suite": "concurrent",
       "system": "rga",
       "workload": "freq",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 16886,
         "min": 16886,
         "max": 16886
       },
       "syncMedianUs": {
-        "median": 130.87499999999997,
-        "min": 130.708,
-        "max": 137.875
+        "median": 138.166,
+        "min": 132.708,
+        "max": 138.792
       },
       "syncP95Us": {
-        "median": 226.916,
-        "min": 217.458,
-        "max": 237.375
+        "median": 225.417,
+        "min": 213.75,
+        "max": 257.209
       }
     },
     {
       "suite": "concurrent",
       "system": "rga",
       "workload": "bulk",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 34165,
         "min": 34165,
         "max": 34165
       },
       "syncMedianUs": {
-        "median": 915.333,
-        "min": 901.709,
-        "max": 922.791
+        "median": 913.916,
+        "min": 881.667,
+        "max": 946.334
       },
       "syncP95Us": {
-        "median": 1079,
-        "min": 1023.25,
-        "max": 2575.875
+        "median": 1188.625,
+        "min": 1084.125,
+        "max": 1224.25
       }
     },
     {
       "suite": "concurrent",
       "system": "embed-rga",
       "workload": "freq",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 15511,
         "min": 15511,
         "max": 15511
       },
       "syncMedianUs": {
-        "median": 236.708,
-        "min": 234.333,
-        "max": 239.75
+        "median": 241.625,
+        "min": 222.084,
+        "max": 251.79200000000003
       },
       "syncP95Us": {
-        "median": 371.542,
-        "min": 370.292,
-        "max": 386.666
+        "median": 391.75,
+        "min": 384.375,
+        "max": 408.333
       }
     },
     {
       "suite": "concurrent",
       "system": "embed-rga",
       "workload": "bulk",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 31796,
         "min": 31796,
         "max": 31796
       },
       "syncMedianUs": {
-        "median": 1131.375,
-        "min": 1058.75,
-        "max": 1205.5
+        "median": 1177.292,
+        "min": 1140.292,
+        "max": 1260.625
       },
       "syncP95Us": {
-        "median": 2344.375,
-        "min": 1894.375,
-        "max": 2383.292
+        "median": 2353.542,
+        "min": 2329.042,
+        "max": 2474.5
       }
     },
     {
       "suite": "concurrent",
       "system": "sided-embed-rga",
       "workload": "freq",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 9648,
         "min": 9648,
         "max": 9648
       },
       "syncMedianUs": {
-        "median": 365.875,
-        "min": 345.291,
-        "max": 377.583
+        "median": 368.75,
+        "min": 345.125,
+        "max": 389.583
       },
       "syncP95Us": {
-        "median": 458.083,
-        "min": 446.916,
-        "max": 558.291
+        "median": 491.5,
+        "min": 478.167,
+        "max": 583.625
       }
     },
     {
       "suite": "concurrent",
       "system": "sided-embed-rga",
       "workload": "bulk",
-      "repetitions": 3,
+      "repetitions": 5,
       "saveBytes": {
         "median": 20247,
         "min": 20247,
         "max": 20247
       },
       "syncMedianUs": {
-        "median": 4057.0000000000005,
-        "min": 4044.167,
-        "max": 4147.042
+        "median": 4197.333,
+        "min": 3698.667,
+        "max": 4376.292
       },
       "syncP95Us": {
-        "median": 5604.041,
-        "min": 5108,
-        "max": 5763.292
+        "median": 5313.583,
+        "min": 4792.333,
+        "max": 5470.625
       }
     },
     {
       "suite": "peritext-kernel",
       "system": "rga",
       "workload": "spine-none",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 30.476956,
-        "min": 30.357675,
-        "max": 31.684878
+        "median": 31.450792,
+        "min": 31.404217,
+        "max": 32.071998
       },
       "durableStateBytes": {
         "median": 150563,
@@ -1542,11 +2202,11 @@
       "suite": "peritext-kernel",
       "system": "rga",
       "workload": "spine-both",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 28.121833,
-        "min": 27.854626,
-        "max": 32.5165
+        "median": 30.766288,
+        "min": 28.988958,
+        "max": 32.547752
       },
       "durableStateBytes": {
         "median": 150561,
@@ -1554,14 +2214,14 @@
         "max": 150561
       },
       "stateGcMs": {
-        "median": 19.470957999999996,
-        "min": 18.630333000000007,
-        "max": 19.63816699999998
+        "median": 20.560000000000002,
+        "min": 19.939166999999998,
+        "max": 20.99000000000001
       },
       "historyGcMs": {
-        "median": 1.0851660000000152,
-        "min": 1.0661660000000097,
-        "max": 1.1089589999999987
+        "median": 1.0969169999999906,
+        "min": 1.0777499999999804,
+        "max": 1.1144160000000056
       },
       "shadowRecords": {
         "median": 15200,
@@ -1588,11 +2248,11 @@
       "suite": "peritext-kernel",
       "system": "embed-rga",
       "workload": "spine-none",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 28.97108,
-        "min": 28.900752,
-        "max": 29.236296
+        "median": 28.906498,
+        "min": 28.692757,
+        "max": 29.573296
       },
       "durableStateBytes": {
         "median": 104954,
@@ -1634,11 +2294,11 @@
       "suite": "peritext-kernel",
       "system": "embed-rga",
       "workload": "spine-both",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 29.242666,
-        "min": 29.150373,
-        "max": 29.306248
+        "median": 29.315544,
+        "min": 27.472001,
+        "max": 30.03596
       },
       "durableStateBytes": {
         "median": 46072,
@@ -1646,14 +2306,14 @@
         "max": 46072
       },
       "stateGcMs": {
-        "median": 32.726207999999986,
-        "min": 32.518542,
-        "max": 33.172417000000024
+        "median": 33.78966700000001,
+        "min": 33.14066599999998,
+        "max": 34.71125000000001
       },
       "historyGcMs": {
-        "median": 1.1645829999999933,
-        "min": 1.1545839999999998,
-        "max": 1.1877079999999864
+        "median": 1.1714999999999804,
+        "min": 1.1438750000000084,
+        "max": 1.392583000000002
       },
       "shadowRecords": {
         "median": 15200,
@@ -1680,11 +2340,11 @@
       "suite": "peritext-kernel",
       "system": "sided-embed-rga",
       "workload": "spine-none",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 37.503253,
-        "min": 37.202003,
-        "max": 37.585713
+        "median": 38.384247,
+        "min": 37.660414,
+        "max": 38.543126
       },
       "durableStateBytes": {
         "median": 135360,
@@ -1726,11 +2386,11 @@
       "suite": "peritext-kernel",
       "system": "sided-embed-rga",
       "workload": "spine-both",
-      "repetitions": 3,
+      "repetitions": 5,
       "applyMs": {
-        "median": 38.33825,
-        "min": 37.193336,
-        "max": 38.906534
+        "median": 38.296287,
+        "min": 37.936831,
+        "max": 39.160379
       },
       "durableStateBytes": {
         "median": 80965,
@@ -1738,14 +2398,14 @@
         "max": 80965
       },
       "stateGcMs": {
-        "median": 32.125208000000015,
-        "min": 31.99525,
-        "max": 32.661541
+        "median": 33.076041000000004,
+        "min": 32.837208000000004,
+        "max": 33.941125
       },
       "historyGcMs": {
-        "median": 1.1404170000000136,
-        "min": 1.105875000000026,
-        "max": 1.193125000000009
+        "median": 1.1947079999999914,
+        "min": 1.1717499999999745,
+        "max": 1.3503749999999854
       },
       "shadowRecords": {
         "median": 15200,

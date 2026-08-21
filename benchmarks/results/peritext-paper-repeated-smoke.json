@@ -1,0 +1,628 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-17T12:05:59.405Z",
+  "preset": "freq",
+  "repetitions": 1,
+  "design": {
+    "empty-rich": [
+      "none",
+      "both"
+    ]
+  },
+  "rows": [
+    {
+      "repetition": 1,
+      "kernel": "rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "operations": 602,
+      "elapsedMs": 120.30916599999999,
+      "syncMs": 14.224334,
+      "syncBytes": 135001,
+      "historyGcMs": 0,
+      "stateGcMs": 0,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 603,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 0,
+      "epochPruneReason": null,
+      "durableStateBytes": 28825,
+      "visibleChars": 0,
+      "shadowRecords": 200,
+      "identityRecords": 200,
+      "deletedIds": 201,
+      "markRecords": 200,
+      "coordinateSymbols": 601,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    },
+    {
+      "repetition": 1,
+      "kernel": "rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "operations": 602,
+      "elapsedMs": 120.899166,
+      "syncMs": 16.055333,
+      "syncBytes": 137484,
+      "historyGcMs": 0,
+      "stateGcMs": 2.4715,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 1,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 603,
+      "epochPruneReason": null,
+      "durableStateBytes": 65,
+      "visibleChars": 0,
+      "shadowRecords": 0,
+      "identityRecords": 0,
+      "deletedIds": 0,
+      "markRecords": 0,
+      "coordinateSymbols": 0,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    },
+    {
+      "repetition": 1,
+      "kernel": "embed-rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "operations": 602,
+      "elapsedMs": 121.28845799999999,
+      "syncMs": 13.87625,
+      "syncBytes": 135001,
+      "historyGcMs": 0,
+      "stateGcMs": 0,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 603,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 0,
+      "epochPruneReason": null,
+      "durableStateBytes": 12170,
+      "visibleChars": 0,
+      "shadowRecords": 200,
+      "identityRecords": 200,
+      "deletedIds": 201,
+      "markRecords": 200,
+      "coordinateSymbols": 200,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    },
+    {
+      "repetition": 1,
+      "kernel": "embed-rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "operations": 602,
+      "elapsedMs": 122.50008300000002,
+      "syncMs": 15.820083,
+      "syncBytes": 137465,
+      "historyGcMs": 0,
+      "stateGcMs": 2.762708,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 1,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 603,
+      "epochPruneReason": null,
+      "durableStateBytes": 9,
+      "visibleChars": 0,
+      "shadowRecords": 0,
+      "identityRecords": 0,
+      "deletedIds": 0,
+      "markRecords": 0,
+      "coordinateSymbols": 0,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    },
+    {
+      "repetition": 1,
+      "kernel": "sided-embed-rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "operations": 602,
+      "elapsedMs": 125.19787500000001,
+      "syncMs": 14.458916999999998,
+      "syncBytes": 140094,
+      "historyGcMs": 0,
+      "stateGcMs": 0,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 603,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 0,
+      "epochPruneReason": null,
+      "durableStateBytes": 28703,
+      "visibleChars": 0,
+      "shadowRecords": 200,
+      "identityRecords": 200,
+      "deletedIds": 201,
+      "markRecords": 200,
+      "coordinateSymbols": 200,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    },
+    {
+      "repetition": 1,
+      "kernel": "sided-embed-rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "operations": 602,
+      "elapsedMs": 126.78408400000001,
+      "syncMs": 16.933626,
+      "syncBytes": 142573,
+      "historyGcMs": 0,
+      "stateGcMs": 2.69825,
+      "intermediateEpochs": 0,
+      "intermediatePruned": 0,
+      "commitsBeforeFinalGc": 603,
+      "commitsAfter": 1,
+      "commitsWhileAwaitingAck": null,
+      "epochPruned": 603,
+      "epochPruneReason": null,
+      "durableStateBytes": 61,
+      "visibleChars": 0,
+      "shadowRecords": 0,
+      "identityRecords": 0,
+      "deletedIds": 0,
+      "markRecords": 0,
+      "coordinateSymbols": 1,
+      "renderDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gates": {
+        "converged": true,
+        "gcRenderPreserved": true,
+        "snapshotOk": true,
+        "stateCompactionFiredOrExpectedNoop": true,
+        "delayedPruneRefused": true,
+        "emptyMetadataFloor": true,
+        "multiEpochCompaction": true
+      }
+    }
+  ],
+  "summary": [
+    {
+      "kernel": "rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 120.30916599999999,
+        "min": 120.30916599999999,
+        "max": 120.30916599999999
+      },
+      "syncMs": {
+        "median": 14.224334,
+        "min": 14.224334,
+        "max": 14.224334
+      },
+      "syncBytes": {
+        "median": 135001,
+        "min": 135001,
+        "max": 135001
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "durableStateBytes": {
+        "median": 28825,
+        "min": 28825,
+        "max": 28825
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "identityRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "deletedIds": {
+        "median": 201,
+        "min": 201,
+        "max": 201
+      },
+      "markRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "coordinateSymbols": {
+        "median": 601,
+        "min": 601,
+        "max": 601
+      }
+    },
+    {
+      "kernel": "rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 120.899166,
+        "min": 120.899166,
+        "max": 120.899166
+      },
+      "syncMs": {
+        "median": 16.055333,
+        "min": 16.055333,
+        "max": 16.055333
+      },
+      "syncBytes": {
+        "median": 137484,
+        "min": 137484,
+        "max": 137484
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 2.4715,
+        "min": 2.4715,
+        "max": 2.4715
+      },
+      "durableStateBytes": {
+        "median": 65,
+        "min": 65,
+        "max": 65
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "identityRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "deletedIds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "markRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "coordinateSymbols": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    {
+      "kernel": "embed-rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 121.28845799999999,
+        "min": 121.28845799999999,
+        "max": 121.28845799999999
+      },
+      "syncMs": {
+        "median": 13.87625,
+        "min": 13.87625,
+        "max": 13.87625
+      },
+      "syncBytes": {
+        "median": 135001,
+        "min": 135001,
+        "max": 135001
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "durableStateBytes": {
+        "median": 12170,
+        "min": 12170,
+        "max": 12170
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "identityRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "deletedIds": {
+        "median": 201,
+        "min": 201,
+        "max": 201
+      },
+      "markRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "coordinateSymbols": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      }
+    },
+    {
+      "kernel": "embed-rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 122.50008300000002,
+        "min": 122.50008300000002,
+        "max": 122.50008300000002
+      },
+      "syncMs": {
+        "median": 15.820083,
+        "min": 15.820083,
+        "max": 15.820083
+      },
+      "syncBytes": {
+        "median": 137465,
+        "min": 137465,
+        "max": 137465
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 2.762708,
+        "min": 2.762708,
+        "max": 2.762708
+      },
+      "durableStateBytes": {
+        "median": 9,
+        "min": 9,
+        "max": 9
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "identityRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "deletedIds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "markRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "coordinateSymbols": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    {
+      "kernel": "sided-embed-rga",
+      "scenario": "empty-rich",
+      "mode": "none",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 125.19787500000001,
+        "min": 125.19787500000001,
+        "max": 125.19787500000001
+      },
+      "syncMs": {
+        "median": 14.458916999999998,
+        "min": 14.458916999999998,
+        "max": 14.458916999999998
+      },
+      "syncBytes": {
+        "median": 140094,
+        "min": 140094,
+        "max": 140094
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "durableStateBytes": {
+        "median": 28703,
+        "min": 28703,
+        "max": 28703
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "identityRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "deletedIds": {
+        "median": 201,
+        "min": 201,
+        "max": 201
+      },
+      "markRecords": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      },
+      "coordinateSymbols": {
+        "median": 200,
+        "min": 200,
+        "max": 200
+      }
+    },
+    {
+      "kernel": "sided-embed-rga",
+      "scenario": "empty-rich",
+      "mode": "both",
+      "repetitions": 1,
+      "elapsedMs": {
+        "median": 126.78408400000001,
+        "min": 126.78408400000001,
+        "max": 126.78408400000001
+      },
+      "syncMs": {
+        "median": 16.933626,
+        "min": 16.933626,
+        "max": 16.933626
+      },
+      "syncBytes": {
+        "median": 142573,
+        "min": 142573,
+        "max": 142573
+      },
+      "historyGcMs": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "stateGcMs": {
+        "median": 2.69825,
+        "min": 2.69825,
+        "max": 2.69825
+      },
+      "durableStateBytes": {
+        "median": 61,
+        "min": 61,
+        "max": 61
+      },
+      "commitsBeforeFinalGc": {
+        "median": 603,
+        "min": 603,
+        "max": 603
+      },
+      "commitsAfter": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      },
+      "identityRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "deletedIds": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "markRecords": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "coordinateSymbols": {
+        "median": 1,
+        "min": 1,
+        "max": 1
+      }
+    }
+  ]
+}

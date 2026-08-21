@@ -13,7 +13,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-17T19:08:51.474Z"
+  "date": "2026-08-20T11:27:15.306Z"
  },
  "finalChars": 1200,
  "gates": {
@@ -31,7 +31,7 @@
   {
    "phase": "cycle1-ins",
    "liveChars": 2000,
-   "phaseMs": 2.402625,
+   "phaseMs": 2.250583,
    "saves": {
     "rga-binary": 13506
    }
@@ -39,7 +39,7 @@
   {
    "phase": "cycle1-del",
    "liveChars": 200,
-   "phaseMs": 1.493791,
+   "phaseMs": 1.976708,
    "saves": {
     "rga-binary": 15307
    }
@@ -47,7 +47,7 @@
   {
    "phase": "cycle2-ins",
    "liveChars": 2200,
-   "phaseMs": 1.764125,
+   "phaseMs": 1.639,
    "saves": {
     "rga-binary": 29060
    }
@@ -55,7 +55,7 @@
   {
    "phase": "cycle2-del",
    "liveChars": 400,
-   "phaseMs": 1.165958,
+   "phaseMs": 1.053375,
    "saves": {
     "rga-binary": 30861
    }
@@ -63,7 +63,7 @@
   {
    "phase": "cycle3-ins",
    "liveChars": 2400,
-   "phaseMs": 1.473541,
+   "phaseMs": 1.351,
    "saves": {
     "rga-binary": 44664
    }
@@ -71,7 +71,7 @@
   {
    "phase": "cycle3-del",
    "liveChars": 600,
-   "phaseMs": 1.168583,
+   "phaseMs": 1.018,
    "saves": {
     "rga-binary": 46465
    }
@@ -79,7 +79,7 @@
   {
    "phase": "cycle4-ins",
    "liveChars": 2600,
-   "phaseMs": 1.623459,
+   "phaseMs": 1.410167,
    "saves": {
     "rga-binary": 60287
    }
@@ -87,7 +87,7 @@
   {
    "phase": "cycle4-del",
    "liveChars": 800,
-   "phaseMs": 1.434583,
+   "phaseMs": 1.1025,
    "saves": {
     "rga-binary": 62088
    }
@@ -95,7 +95,7 @@
   {
    "phase": "cycle5-ins",
    "liveChars": 2800,
-   "phaseMs": 1.538833,
+   "phaseMs": 1.166,
    "saves": {
     "rga-binary": 75920
    }
@@ -103,7 +103,7 @@
   {
    "phase": "cycle5-del",
    "liveChars": 1000,
-   "phaseMs": 1.217625,
+   "phaseMs": 1.094208,
    "saves": {
     "rga-binary": 77721
    }
@@ -111,7 +111,7 @@
   {
    "phase": "final-ins",
    "liveChars": 1200,
-   "phaseMs": 0.178083,
+   "phaseMs": 0.1805,
    "saves": {
     "rga-binary": 79103
    }
@@ -130,8 +130,8 @@
   }
  },
  "memory": {
-  "baselineHeap": 4176864,
-  "retainedHeapAfterGc": 2848208,
+  "baselineHeap": 4176528,
+  "retainedHeapAfterGc": 2848184,
   "externalDelta": 40
  }
 }

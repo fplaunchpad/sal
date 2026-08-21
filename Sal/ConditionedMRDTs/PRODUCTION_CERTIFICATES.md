@@ -81,6 +81,36 @@ counter-specific view of the independent per-replica balance machine
 preserved by an arbitrary ternary merge of three invariant states; it is
 preserved for causally related versions by `bc_version_inv`.
 
+## Peritext flagship
+
+`MRDT_Instances/Peritext_Embed/PeritextFlagship.lean` provides the stable
+one-sided `PeritextEmbedRGA` endpoint `peritextFlagship`. Its
+`PeritextFlagshipCertificate` keeps six claims explicit:
+
+- ordinary and virtual-LCA semantic RA-linearizability (the virtual theorem is
+  not a distributed physical-store protocol theorem);
+- safety at every registered version;
+- rendered sequential intent for a clocked local mint history;
+- root-free compressed commit-history GC;
+- asynchronous distributed commit-GC refinement to no-GC behavior; and
+- Peritext state-GC render preservation under retention-root and continuation
+  hypotheses.
+
+The certificate does not turn a concurrent history into one sequential list.
+It also does not conflate commit-history collection with datatype-state
+compaction. The shipped `PeritextSidedEmbedRGA` has a separate public endpoint
+in `Peritext_Sided/PeritextSided_Final.lean`. Its `productionCertificate`
+includes independent rich-text intent, frontier-certified local collection,
+finite-trace erasure for interleaved fetch/commit-GC/state-GC/visible steps,
+and retained-version query equivalence. `PhysicalMergeEvidence.of_sources`
+and `.toCoverage` connect add-only birth merge plus frontier evidence to the
+abstract cross-epoch merge theorem. This certifies the modeled semantics; the
+JavaScript implementation remains handwritten. The package exposes both the
+ordinary `Step3` interaction theorem and a widened `Step3V` safety theorem.
+The latter requires each admitted virtual step to carry physical MCA
+availability and a checked materialization delta; deriving that delta
+constructively remains open. See `GC_COVERAGE_AUDIT.md`.
+
 Run `sh scripts/check-conditioning-contracts.sh` to ensure every known
 nontrivial guard/bridge chain remains represented in the public catalogue and
 that gated/refuted designs are not promoted there.

@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "suite": "peritext-kernel-gc",
+  "system": "peritext-embed-rga",
+  "workload": "text-kernel-leaves",
   "kernel": "embed-rga",
   "mode": "both",
   "preset": "quick",
@@ -12,13 +14,15 @@
     "topology": "leaves"
   },
   "metrics": {
-    "operations": 7501,
+    "operations": 7500,
+    "commitBatches": 34,
     "visibleChars": 3300,
-    "applyMs": 2098.570345,
-    "stateGcMs": 15.075665999999728,
-    "historyGcMs": 9.000750000000153,
-    "durableStateBytes": 25736,
+    "applyMs": 12.37075,
+    "stateGcMs": 13.299041000000003,
+    "historyGcMs": 0.6533749999999969,
+    "durableStateBytes": 104392,
     "commits": 1,
+    "identityRecords": 3300,
     "shadowRecords": 3300,
     "deletedIds": 0
   },

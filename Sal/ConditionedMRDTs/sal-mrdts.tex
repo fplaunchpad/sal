@@ -4006,7 +4006,7 @@ is an execution of the original uncollected $\mathsf{Step3}$ semantics.
 Well-formedness is invariant.  At the endpoint, every query available from a
 held physical version renders exactly the corresponding full semantic state.
 Thus arbitrary interleavings of fetch, local commit-history GC, local Peritext
-state GC, apply, merge, and query preserve client observations.
+state GC, apply, unique-LCA merge, and query preserve client observations.
 \hfill\lean{combinedSteps\_refines\_Step3},
 \lean{combinedTrace\_query\_eq}
 \end{theorem}
@@ -4015,6 +4015,25 @@ The state relation and collector in this theorem are Peritext-specific.  The
 distributed commit-history semantics and its refinement are datatype-generic.
 Another datatype can reuse this structure after supplying its own
 materialization relation, local collection theorem, and merge-coverage rule.
+The widened relations $\mathsf{DistributedConfigStepV}$ and
+$\mathsf{CombinedStepV}$ replace the visible premise by $\mathsf{Step3V}$ and
+require the acting store to hold the MCA closure.  Their finite-trace and query
+theorems have the same form
+(\lean{distributedConfig\_refines\_Step3V},
+\lean{combinedStepsV\_refines\_Step3V},
+\lean{combinedTraceV\_query\_eq}).  Fetch-side progress is explicit.  A fetch
+from an MCA-repair source makes the virtual merge available and transfers a
+related compact state for every recursive MCA
+(\lean{fetchResult\_virtualMerge\_ready}).  Peritext does not materialize the
+virtual LCA.  Instead, its physical merge computes from the two branch heads;
+\lean{HeadOnlyMergeCertificate.related} proves the resulting continuation
+relation, and \lean{MaterializationDelta.headOnlyMergeInstall} installs it.
+The runtime realizes repair with certified materialized-boundary records.  A
+record carries the compressed parents, epoch, closed roster, state fingerprint,
+and integrity checksum; this is validation under a trusted-peer model, not a
+Byzantine authentication claim.  If independent collection leaves no shared
+physical ancestor, Peritext uses the proved head-only rule.  Generic datatypes
+without such a rule still require an MCA-repair source.
 
 The clock swap has exactly one hazard, and it is the lineage collision that
 \S\ref{sec:stability} isolates. Resolving the LCA by clock alone is sound

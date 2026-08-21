@@ -189,6 +189,22 @@ stronger constructor when raw update/merge induction is sound; the bounded
 counter instead uses `bc_version_inv`. Concrete guards for the bounded counter,
 queue, EmbedRGA, SidedRGA, and canonical Embed Peritext are catalogued in
 [`MRDT_Instances/ProductionGenerationContracts.lean`](MRDT_Instances/ProductionGenerationContracts.lean).
+The stable one-sided `PeritextEmbedRGA` endpoint is
+[`MRDT_Instances/Peritext_Embed/PeritextFlagship.lean`](MRDT_Instances/Peritext_Embed/PeritextFlagship.lean):
+`peritextFlagship` packages distributed correctness, clocked local intent,
+compressed and distributed commit-history GC, and state-GC render preservation
+without merging their assumptions.
+The shipped JavaScript default is `PeritextSidedEmbedRGA`. Its public Lean
+endpoint is `PeritextSided.productionCertificate`; the interaction fields
+expose finite-trace erasure for interleaved fetch, commit GC, local state GC,
+and visible operations, plus query equivalence for every retained physical
+version under ordinary unique-LCA `Step3`. The widened `CombinedStepV` layer
+also proves finite-trace erasure and query safety for admitted `Step3V` traces;
+constructing the virtual merge's physical materialization delta from retained
+MCAs remains open. `PeritextSided_Interaction.lean` derives abstract merge coverage from
+physical record/delete/endpoint evidence. The JavaScript remains handwritten
+and is checked by executable merge audits and differential tests, not extraction.
+The exact proved/open matrix is `GC_COVERAGE_AUDIT.md`.
 [`Metatheory/GenericSafety.lean`](Metatheory/GenericSafety.lean) and
 [`Metatheory/EscrowSafety.lean`](Metatheory/EscrowSafety.lean) carry the
 **generic safety metatheorems**: `version_inv_of_causal_canonical` (`Inv` at

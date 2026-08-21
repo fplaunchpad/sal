@@ -129,6 +129,9 @@ function putDelta(w, commits, dict) {
     }
     if (c.kind === 'compact') {
       w.byte(4); putValue(w, c.cut, dict); putValue(w, c.state, dict);
+    } else if (c.kind === 'base') {
+      w.byte(5); putValue(w, c.epoch, dict); putValue(w, c.fp, dict);
+      putValue(w, c.roster, dict); putValue(w, c.proof, dict); putValue(w, c.state, dict);
     } else if (c.kind === 'merge') w.byte(3);
     else if (c.kind === 'op') {
       w.byte(2); putValue(w, c.op.replica, dict); w.uint(c.op.seq); putPayload(w, c.payload, dict);
@@ -155,6 +158,9 @@ function getDelta(r, dict) {
     else if (shape === 2) c = { gid, kind: 'op', parents, op: { replica: getValue(r, dict), seq: r.uint() }, payload: getPayload(r, dict) };
     else if (shape === 3) c = { gid, kind: 'merge', parents };
     else if (shape === 4) c = { gid, kind: 'compact', parents, cut: getValue(r, dict), state: getValue(r, dict) };
+    else if (shape === 5) c = { gid, kind: 'base', parents,
+      epoch: getValue(r, dict), fp: getValue(r, dict), roster: getValue(r, dict),
+      proof: getValue(r, dict), state: getValue(r, dict) };
     else throw new Error('wire: unknown delta commit tag');
     commits.push(c); previous = gid;
   }

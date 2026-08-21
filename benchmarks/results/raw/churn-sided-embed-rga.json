@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-17T19:09:16.412Z"
+    "date": "2026-08-20T11:27:15.542Z"
   },
   "gates": {
     "lenOk": true
@@ -23,7 +23,7 @@
     "operations": 19200,
     "finalChars": 1200,
     "finalPrimarySaveBytes": 16122,
-    "retainedHeapBytes": 2621648
+    "retainedHeapBytes": 2621632
   },
   "detail": {
     "workload": "churn",
@@ -40,7 +40,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-17T19:09:16.412Z"
+      "date": "2026-08-20T11:27:15.542Z"
     },
     "finalChars": 1200,
     "gates": {
@@ -58,7 +58,7 @@
       {
         "phase": "cycle1-ins",
         "liveChars": 2000,
-        "phaseMs": 3.91325,
+        "phaseMs": 3.836292,
         "saves": {
           "sided-policy-binary": 8756
         }
@@ -66,7 +66,7 @@
       {
         "phase": "cycle1-del",
         "liveChars": 200,
-        "phaseMs": 1.160584,
+        "phaseMs": 1.187625,
         "saves": {
           "sided-policy-binary": 2561
         }
@@ -74,7 +74,7 @@
       {
         "phase": "cycle2-ins",
         "liveChars": 2200,
-        "phaseMs": 2.250041,
+        "phaseMs": 2.456292,
         "saves": {
           "sided-policy-binary": 11603
         }
@@ -82,7 +82,7 @@
       {
         "phase": "cycle2-del",
         "liveChars": 400,
-        "phaseMs": 0.942375,
+        "phaseMs": 0.979833,
         "saves": {
           "sided-policy-binary": 5649
         }
@@ -90,7 +90,7 @@
       {
         "phase": "cycle3-ins",
         "liveChars": 2400,
-        "phaseMs": 2.514,
+        "phaseMs": 2.521792,
         "saves": {
           "sided-policy-binary": 14765
         }
@@ -98,7 +98,7 @@
       {
         "phase": "cycle3-del",
         "liveChars": 600,
-        "phaseMs": 0.73025,
+        "phaseMs": 0.992167,
         "saves": {
           "sided-policy-binary": 8854
         }
@@ -106,7 +106,7 @@
       {
         "phase": "cycle4-ins",
         "liveChars": 2600,
-        "phaseMs": 2.204041,
+        "phaseMs": 2.300417,
         "saves": {
           "sided-policy-binary": 18002
         }
@@ -114,7 +114,7 @@
       {
         "phase": "cycle4-del",
         "liveChars": 800,
-        "phaseMs": 0.766375,
+        "phaseMs": 1.023959,
         "saves": {
           "sided-policy-binary": 12138
         }
@@ -122,7 +122,7 @@
       {
         "phase": "cycle5-ins",
         "liveChars": 2800,
-        "phaseMs": 2.190333,
+        "phaseMs": 2.249125,
         "saves": {
           "sided-policy-binary": 21340
         }
@@ -130,7 +130,7 @@
       {
         "phase": "cycle5-del",
         "liveChars": 1000,
-        "phaseMs": 1.327625,
+        "phaseMs": 1.420625,
         "saves": {
           "sided-policy-binary": 15206
         }
@@ -138,7 +138,7 @@
       {
         "phase": "final-ins",
         "liveChars": 1200,
-        "phaseMs": 0.206042,
+        "phaseMs": 0.206708,
         "saves": {
           "sided-policy-binary": 16122
         }
@@ -157,8 +157,8 @@
       }
     },
     "memory": {
-      "baselineHeap": 4176872,
-      "retainedHeapAfterGc": 2621648,
+      "baselineHeap": 4176608,
+      "retainedHeapAfterGc": 2621632,
       "externalDelta": 40
     }
   }

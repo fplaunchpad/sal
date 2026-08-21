@@ -11,7 +11,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-17T19:09:49.008Z"
+    "date": "2026-08-20T11:35:52.428Z"
   },
   "gates": {
     "textOk": true,
@@ -20,9 +20,9 @@
   "metrics": {
     "operations": 24326,
     "finalChars": 21148,
-    "applyTotalMs": 25.495708,
-    "applyMedianUs": 0.667,
-    "applyP95Us": 1.834,
+    "applyTotalMs": 26.728417,
+    "applyMedianUs": 0.708,
+    "applyP95Us": 2.042,
     "primarySaveBytes": 62912,
     "retainedHeapBytes": 7256064
   },
@@ -35,7 +35,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-17T19:09:49.008Z"
+      "date": "2026-08-20T11:35:52.428Z"
     },
     "ops": {
       "total": 24326,
@@ -43,14 +43,14 @@
     },
     "finalChars": 21148,
     "apply": {
-      "totalMs": 25.495708,
+      "totalMs": 26.728417,
       "count": 24326,
       "warmupExcluded": 1000,
-      "meanUs": 0.96952593672297,
-      "medianUs": 0.667,
-      "p95Us": 1.834,
-      "p99Us": 4.75,
-      "maxUs": 447.416
+      "meanUs": 1.0157967075366543,
+      "medianUs": 0.708,
+      "p95Us": 2.042,
+      "p99Us": 5.292,
+      "maxUs": 439.75
     },
     "gates": {
       "textOk": true
@@ -59,7 +59,7 @@
       {
         "label": "sided-policy-binary",
         "bytes": 62912,
-        "timeMs": 28.704459,
+        "timeMs": 30.881042,
         "note": "lossless binary parent-link snapshot including the Fugue policy summary",
         "estimated": false
       }
@@ -67,25 +67,25 @@
     "loads": [
       {
         "label": "sided-policy-binary",
-        "medianMs": 16.317291,
+        "medianMs": 17.015041,
         "runs": 5,
         "allMs": [
-          15.17475,
-          15.518417,
-          16.317291,
-          18.863417,
-          21.846917
+          15.89325,
+          16.224708,
+          17.015041,
+          19.654833,
+          22.609916
         ]
       }
     ],
     "compaction": null,
     "memory": {
-      "baselineHeap": 10858520,
-      "peakHeapSampled": 30543384,
+      "baselineHeap": 10858320,
+      "peakHeapSampled": 30533632,
       "retainedHeapAfterGc": 7256064,
       "externalDelta": 194648,
       "arrayBuffersDelta": 194608,
-      "rssEnd": 117129216,
+      "rssEnd": 117047296,
       "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
     }
   }

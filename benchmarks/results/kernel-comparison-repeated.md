@@ -9,7 +9,10 @@ current implementations rather than a representation lower bound.
 
 Values are medians across three runs.
 
-| Trace | Operations | Kernel | Apply (ms) | Snapshot (bytes) | Load (ms) |
+Recovery loads the kernel's continuation snapshot into a fresh state and
+materializes the visible sequence. The table reports the median load time.
+
+| Trace | Operations | Kernel | Apply (ms) | Snapshot (bytes) | Recovery (ms) |
 |---|---:|---|---:|---:|---:|
 | friendsforever | 35,200 | RGA | 32.0 | 145,183 | 17.4 |
 |  |  | EmbedRGA | 20.5 | 59,064 | 13.4 |

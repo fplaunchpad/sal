@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-15T08:38:21.326Z"
+  "date": "2026-08-20T10:52:14.002Z"
  },
  "ops": {
   "total": 368209,
@@ -15,14 +15,14 @@
  },
  "finalChars": 56769,
  "apply": {
-  "totalMs": 1937.925708,
+  "totalMs": 1927.305,
   "count": 368209,
   "warmupExcluded": 1000,
-  "meanUs": 5.232684405883298,
-  "medianUs": 4.208,
-  "p95Us": 12.958,
-  "p99Us": 15.125,
-  "maxUs": 1533.458
+  "meanUs": 5.203948380894803,
+  "medianUs": 4.25,
+  "p95Us": 13.791,
+  "p99Us": 20.458,
+  "maxUs": 1262.833
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "run-table-serialized",
    "bytes": 88120,
-   "timeMs": 1530.802458,
+   "timeMs": 1471.932333,
    "note": "live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "run-table-serialized",
-   "medianMs": 871.666042,
+   "medianMs": 862.952333,
    "runs": 5,
    "allMs": [
-    871.200542,
-    871.478458,
-    871.666042,
-    887.898375,
-    975.170208
+    857.525042,
+    861.153833,
+    862.952333,
+    872.706834,
+    932.2675
    ]
   }
  ],
  "compaction": {
-  "ms": 1236.291,
+  "ms": 1229.94,
   "stats": {
    "symbolsBefore": 168884309,
    "symbolsAfter": 52066426,
@@ -66,19 +66,19 @@
    {
     "label": "run-table-serialized+compacted",
     "bytes": 72848,
-    "timeMs": 681.356458,
+    "timeMs": 715.418125,
     "note": "run-table binary over compacted state"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 53533728,
-  "peakHeapSampled": 104643272,
-  "retainedHeapAfterGc": 13299904,
+  "baselineHeap": 53659080,
+  "peakHeapSampled": 104715864,
+  "retainedHeapAfterGc": 13300688,
   "externalDelta": 2945712,
   "arrayBuffersDelta": 2945672,
-  "rssEnd": 251265024,
+  "rssEnd": 250003456,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

@@ -1,0 +1,63 @@
+{
+ "workload": "seq",
+ "system": "sal-sided-unified",
+ "systemVersion": "runtime/ @ repo HEAD (unversioned)",
+ "trace": "automerge-paper",
+ "env": {
+  "node": "v26.3.1",
+  "platform": "darwin arm64",
+  "exposeGc": true,
+  "date": "2026-08-20T10:53:17.975Z"
+ },
+ "ops": {
+  "total": 259778,
+  "inserts": 182315
+ },
+ "finalChars": 104852,
+ "apply": {
+  "totalMs": 2430.081041,
+  "count": 259778,
+  "warmupExcluded": 1000,
+  "meanUs": 9.338490841570767,
+  "medianUs": 5.417,
+  "p95Us": 25.5,
+  "p99Us": 31.542,
+  "maxUs": 1874.833
+ },
+ "gates": {
+  "textOk": true
+ },
+ "saves": [
+  {
+   "label": "sided-policy-binary",
+   "bytes": 323888,
+   "timeMs": 166.1125,
+   "note": "lossless binary parent-link snapshot including the Fugue policy summary",
+   "estimated": false
+  }
+ ],
+ "loads": [
+  {
+   "label": "sided-policy-binary",
+   "medianMs": 134.613792,
+   "runs": 5,
+   "allMs": [
+    125.234375,
+    129.235833,
+    134.613792,
+    145.16925,
+    156.487542
+   ]
+  }
+ ],
+ "compaction": null,
+ "memory": {
+  "baselineHeap": 75399456,
+  "peakHeapSampled": 173206640,
+  "retainedHeapAfterGc": 49710432,
+  "externalDelta": 2078264,
+  "arrayBuffersDelta": 2078224,
+  "rssEnd": 391757824,
+  "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
+ }
+}

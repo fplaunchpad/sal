@@ -16,7 +16,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-15T08:41:47.153Z"
+    "date": "2026-08-20T10:55:53.531Z"
   },
   "gates": {
     "converged": true,
@@ -25,8 +25,8 @@
   },
   "metrics": {
     "operations": 6000,
-    "elapsedMs": 22580.321291999997,
-    "syncMs": 77.60454100000001,
+    "elapsedMs": 21831.889375000002,
+    "syncMs": 87.907249,
     "historyGcMs": 0,
     "historyDropped": 0,
     "commitsBeforeFinalGc": 6007,
@@ -34,7 +34,7 @@
     "durableStateBytes": 165207,
     "visibleChars": 3604,
     "coordinateSymbols": 115196,
-    "stateGcMs": 20.099292,
+    "stateGcMs": 20.212042,
     "epochPruned": 6007,
     "commitsWhileAwaitingAck": 6008
   }

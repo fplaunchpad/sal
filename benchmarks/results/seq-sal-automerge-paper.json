@@ -7,7 +7,7 @@
   "node": "v26.3.1",
   "platform": "darwin arm64",
   "exposeGc": true,
-  "date": "2026-08-15T08:39:05.124Z"
+  "date": "2026-08-20T10:53:10.786Z"
  },
  "ops": {
   "total": 259778,
@@ -15,14 +15,14 @@
  },
  "finalChars": 104852,
  "apply": {
-  "totalMs": 2279.85475,
+  "totalMs": 2015.173333,
   "count": 259778,
   "warmupExcluded": 1000,
-  "meanUs": 8.761998465866496,
-  "medianUs": 4.917,
-  "p95Us": 25.667,
-  "p99Us": 31.375,
-  "maxUs": 2072.542
+  "meanUs": 7.736054641430107,
+  "medianUs": 4.459,
+  "p95Us": 21.458,
+  "p99Us": 24.625,
+  "maxUs": 1734.417
  },
  "gates": {
   "textOk": true
@@ -31,7 +31,7 @@
   {
    "label": "run-table-serialized",
    "bytes": 130300,
-   "timeMs": 3576.088125,
+   "timeMs": 3319.40625,
    "note": "live state only; task #104 SHIPPED run-table binary (entry headers + positional records + packed text); lossless, decodes to the same read",
    "estimated": false
   }
@@ -39,19 +39,19 @@
  "loads": [
   {
    "label": "run-table-serialized",
-   "medianMs": 1158.051,
+   "medianMs": 1166.348375,
    "runs": 5,
    "allMs": [
-    1139.597792,
-    1154.555083,
-    1158.051,
-    1205.108458,
-    1223.4525
+    1128.732291,
+    1129.062209,
+    1166.348375,
+    1169.55925,
+    1170.11075
    ]
   }
  ],
  "compaction": {
-  "ms": 2612.190209,
+  "ms": 2278.355125,
   "stats": {
    "symbolsBefore": 241629632,
    "symbolsAfter": 134145065,
@@ -66,19 +66,19 @@
    {
     "label": "run-table-serialized+compacted",
     "bytes": 120276,
-    "timeMs": 1979.907792,
+    "timeMs": 1824.367125,
     "note": "run-table binary over compacted state"
    }
   ],
   "textOk": true
  },
  "memory": {
-  "baselineHeap": 75274576,
-  "peakHeapSampled": 139077368,
-  "retainedHeapAfterGc": 22981336,
+  "baselineHeap": 75399928,
+  "peakHeapSampled": 139238944,
+  "retainedHeapAfterGc": 22982240,
   "externalDelta": 2078264,
   "arrayBuffersDelta": 2078224,
-  "rssEnd": 307085312,
+  "rssEnd": 307429376,
   "caveat": "peak sampled every 500 ops without forced GC (includes garbage); wasm memory shows in external/arrayBuffers, not heapUsed"
  }
 }

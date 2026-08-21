@@ -14,7 +14,7 @@
     "node": "v26.3.1",
     "platform": "darwin arm64",
     "exposeGc": true,
-    "date": "2026-08-15T09:14:38.600Z"
+    "date": "2026-08-20T11:27:16.622Z"
   },
   "gates": {
     "lenOk": true
@@ -23,7 +23,7 @@
     "operations": 19200,
     "finalChars": 1200,
     "finalPrimarySaveBytes": 60737,
-    "retainedHeapBytes": 800864
+    "retainedHeapBytes": 800832
   },
   "detail": {
     "workload": "churn",
@@ -40,7 +40,7 @@
       "node": "v26.3.1",
       "platform": "darwin arm64",
       "exposeGc": true,
-      "date": "2026-08-15T09:14:38.600Z"
+      "date": "2026-08-20T11:27:16.622Z"
     },
     "finalChars": 1200,
     "gates": {
@@ -58,7 +58,7 @@
       {
         "phase": "cycle1-ins",
         "liveChars": 2000,
-        "phaseMs": 63.89175,
+        "phaseMs": 63.744792,
         "saves": {
           "save-full-history": 8004
         }
@@ -66,7 +66,7 @@
       {
         "phase": "cycle1-del",
         "liveChars": 200,
-        "phaseMs": 46.682958,
+        "phaseMs": 46.903541,
         "saves": {
           "save-full-history": 11387
         }
@@ -74,7 +74,7 @@
       {
         "phase": "cycle2-ins",
         "liveChars": 2200,
-        "phaseMs": 49.655375,
+        "phaseMs": 49.031166,
         "saves": {
           "save-full-history": 19766
         }
@@ -82,7 +82,7 @@
       {
         "phase": "cycle2-del",
         "liveChars": 400,
-        "phaseMs": 41.03625,
+        "phaseMs": 40.271625,
         "saves": {
           "save-full-history": 23093
         }
@@ -90,7 +90,7 @@
       {
         "phase": "cycle3-ins",
         "liveChars": 2400,
-        "phaseMs": 47.198292,
+        "phaseMs": 46.70675,
         "saves": {
           "save-full-history": 31699
         }
@@ -98,7 +98,7 @@
       {
         "phase": "cycle3-del",
         "liveChars": 600,
-        "phaseMs": 40.142417,
+        "phaseMs": 39.992959,
         "saves": {
           "save-full-history": 35082
         }
@@ -106,7 +106,7 @@
       {
         "phase": "cycle4-ins",
         "liveChars": 2600,
-        "phaseMs": 48.348333,
+        "phaseMs": 47.565208,
         "saves": {
           "save-full-history": 43918
         }
@@ -114,7 +114,7 @@
       {
         "phase": "cycle4-del",
         "liveChars": 800,
-        "phaseMs": 39.801084,
+        "phaseMs": 39.07725,
         "saves": {
           "save-full-history": 47283
         }
@@ -122,7 +122,7 @@
       {
         "phase": "cycle5-ins",
         "liveChars": 2800,
-        "phaseMs": 47.379417,
+        "phaseMs": 47.262458,
         "saves": {
           "save-full-history": 56289
         }
@@ -130,7 +130,7 @@
       {
         "phase": "cycle5-del",
         "liveChars": 1000,
-        "phaseMs": 39.57975,
+        "phaseMs": 39.221541,
         "saves": {
           "save-full-history": 59719
         }
@@ -138,7 +138,7 @@
       {
         "phase": "final-ins",
         "liveChars": 1200,
-        "phaseMs": 5.017458,
+        "phaseMs": 4.797333,
         "saves": {
           "save-full-history": 60737
         }
@@ -157,8 +157,8 @@
       }
     },
     "memory": {
-      "baselineHeap": 4615040,
-      "retainedHeapAfterGc": 800864,
+      "baselineHeap": 4617160,
+      "retainedHeapAfterGc": 800832,
       "externalDelta": 182891
     }
   }

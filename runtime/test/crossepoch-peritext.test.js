@@ -58,3 +58,35 @@ test('the peritext datatype exposes coordState (the text shadow)', () => {
   const cs = compactiblePeritext.coordState(a.head.state);
   assert.equal(cs, a.head.state.text.shadow, 'coordState is the text shadow (the coord-bearing sub-state)');
 });
+
+test('a concurrent mark restores its collected endpoint across epochs', () => {
+  const a = new DistributedReplica(compactiblePeritext, 'A');
+  const b = new DistributedReplica(compactiblePeritext, 'B');
+  a.register('B'); b.register('A');
+  a.commit({ type: 'ins', id: mint(1), el: 'x', anchorId: null });
+  a.commit({ type: 'ins', id: mint(2), el: 'y', anchorId: mint(1) });
+  syncReplicas(a, b);
+  a.commit({ type: 'del', id: mint(2) });
+  syncReplicas(a, b);
+  // B's authored acknowledgement makes the delete stable, but B remains on
+  // the old epoch when A subsequently compacts the unmarked dead endpoint.
+  b.commit({ type: 'del', id: mint(2) });
+  syncReplicas(a, b);
+  assert.equal(a.compactStable().compacted, true);
+  assert.equal(a.head.state.text.shadow.has(mint(2)), false, 'A collected endpoint y');
+
+  b.commit({ type: 'addMark', mid: mint(9), mtype: 'bold', value: true,
+    startId: mint(1), endId: mint(2), startSide: 'before', endSide: 'after' });
+  syncReplicas(a, b); // invokes the physical merge-coverage audit
+  assert.equal(a.head.state.text.shadow.has(mint(2)), true,
+    'the old-epoch branch restores the endpoint required for continuation');
+  assert.deepEqual(a.read(), b.read());
+
+  const control = new DistributedReplica(compactiblePeritext, 'C');
+  control.commit({ type: 'ins', id: mint(1), el: 'x', anchorId: null });
+  control.commit({ type: 'ins', id: mint(2), el: 'y', anchorId: mint(1) });
+  control.commit({ type: 'del', id: mint(2) });
+  control.commit({ type: 'addMark', mid: mint(9), mtype: 'bold', value: true,
+    startId: mint(1), endId: mint(2), startSide: 'before', endSide: 'after' });
+  assert.deepEqual(a.read(), control.read(), 'compacted run equals never-compacted control');
+});

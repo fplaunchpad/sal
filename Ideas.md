@@ -210,6 +210,54 @@ invariant to prove (or refute) under `StoreInv`. For the OR-set, a pointwise Boo
 Open Question 6 of the MRDT note. A natural first experiment: mechanize the criss-cross
 counterexample, state the covering invariant, and test it against `Step3` reachability.
 
+## 6. Conditioning is conserved: intent capstones for the flat catalogue (tombstoned RGA first)
+
+*(2026-07-12.)* The tombstoned RGA discharges **flat** (`Inv = applicable = ⊤`,
+unconditional-delta route) — sound for RA-linearizability, but under-specified for
+*intent*: the headline theorem holds on executions containing an `Add_after a` whose
+anchor `a` was never inserted. The record is stored, satisfies `visible`, and has no
+`after_of` edge — the "list" is a partial order with a floating orphan, and RA-lin
+doesn't care (the fold matches the state, orphan included). `do_` never inspects the
+anchor (`RGA_MRDT.lean:98`); resolution is lazy, at read time, and heals on merge — by
+design. But nothing *states* that reachable versions are orphan-free.
+
+**The missing layer** (bounded-counter pattern: conditioning for safety, not
+convergence): `Inv` = anchor-closure (every `after_id` is 0 or has a record) ∧
+id-monotone anchors (`after_id < ts`, making `after_of` well-founded — the same clause
+the tombstone-free RGA's `Inv` already carries) ∧ grave-closure (tombstones reference
+records). `applicable` = anchor/target *visible* at the issuing state, ts fresh — the
+client-checkable `GenHonest`/`AppHonest` shape. Payoff theorem, via
+`version_inv_of_causal_canonical`: **at every reachable version, `visible_lt` is a
+well-founded strict total order on visibles — the read is a genuine sequence.** The
+datatype's name-promise as a reachability theorem, which RA-lin alone cannot state.
+Nuance the framework already expresses: `applicable` holds at *generation* (anchor
+visible to the issuer); at delivery only anchor-*presence* survives (concurrent
+tombstoning) — and presence is all `Inv` needs.
+
+**Why it's cheap, and why that's informative:** all three `Inv` clauses are monotone
+and the merge is union, so `SafetyStep` at merges is set algebra — contrast the bounded
+counter's non-monotone bound and escrow argument. Two datapoints suggest a
+classification of safety obligations (monotone vs measured) and make the tombstoned RGA
+the cheapest test that the `GenHonest`/`GenericSafety` abstractions generalize.
+
+**What this says (the thesis):** conditioning has two independent jobs — rescuing
+*convergence* and proving *intent* — and every sequence datatype pays it somewhere.
+**Tombstone-freedom forces conditioning for convergence; tombstones only defer it to
+intent.** Conditioning is conserved; a design only chooses where it bites. This is the
+proof-theoretic shadow of the whiteboard trilemma
+(`whiteboard/anomaly-matrix/anomaly_matrix_report.md`): where a design keeps its memory
+of the dead determines where its proofs need hypotheses. The anomaly matrix measures
+the trade behaviorally; the catalogue exhibits it proof-theoretically — two projections
+of one fact. (Lemma V / Theorem O, `whiteboard/sibling-linked-proof.md` §5½, already
+sit on this bridge: an intent-layer version invariant proved from the conditioned
+hypothesis (M2).)
+
+**Generalization:** an *intent column* for the whole catalogue — per MRDT, the
+name-promise theorem as a version invariant (counter: bound ✓ done; tombstoned RGA:
+total-sequence read, next and cheapest; queue, OR-set, Peritext render: to be named).
+"Production catalogue complete" currently means RA-lin only; this is the second story
+the same machinery can carry.
+
 ---
 
 ## How to use this file

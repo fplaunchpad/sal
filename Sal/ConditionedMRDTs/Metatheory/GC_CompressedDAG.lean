@@ -122,6 +122,45 @@ theorem compressed_isLCA_iff {v₁ v₂ vT : Version}
     have hwK := hCommon w ow1 ow2
     exact compressedReaches_complete parents Keep hwK hT (hmax w ow1 ow2)
 
+/-- Exact LCA preservation needs only closure under maximal common ancestors,
+not retention of every common ancestor. This is the root-free condition used
+by commit GC: a dropped path can be summarized, while every possible merge
+base remains in the carrier. -/
+theorem compressed_isLCA_iff_of_mcaClosed {v₁ v₂ vT : Version}
+    (hlt : ∀ v p, p ∈ parents v → p < v)
+    (h₁ : v₁ ∈ Keep) (h₂ : v₂ ∈ Keep) (hT : vT ∈ Keep)
+    (hMca : ∀ a ∈ Keep, ∀ b ∈ Keep, ∀ m,
+      IsMCA parents {a} b m → m ∈ Keep) :
+    IsLCARel (CompressedReaches parents Keep) v₁ v₂ vT ↔
+      IsLCA parents v₁ v₂ vT := by
+  constructor
+  · rintro ⟨hT1, hT2, hmax⟩
+    refine ⟨compressedReaches_sound parents Keep hT1,
+      compressedReaches_sound parents Keep hT2, ?_⟩
+    intro w hw1 hw2
+    obtain ⟨m, hm, hwm⟩ := commonAnc_reaches_mca hlt
+      (S := {v₁}) (w := v₂) (x := w) ⟨⟨v₁, rfl, hw1⟩, hw2⟩
+    have hmK : m ∈ Keep := hMca v₁ h₁ v₂ h₂ m hm
+    have hm1 : Reaches parents m v₁ := by
+      obtain ⟨⟨⟨u, hu, hmu⟩, _⟩, _⟩ := hm
+      rcases hu with rfl
+      exact hmu
+    have hm2 : Reaches parents m v₂ := hm.1.2
+    have hmT : Reaches parents m vT :=
+      compressedReaches_sound parents Keep
+        (hmax m
+          (compressedReaches_complete parents Keep hmK h₁ hm1)
+          (compressedReaches_complete parents Keep hmK h₂ hm2))
+    exact hwm.trans hmT
+  · rintro ⟨hT1, hT2, hmax⟩
+    refine ⟨compressedReaches_complete parents Keep hT h₁ hT1,
+      compressedReaches_complete parents Keep hT h₂ hT2, ?_⟩
+    intro w hw1 hw2
+    exact compressedReaches_complete parents Keep
+      (compressedReaches_left parents Keep h₁ hw1) hT
+      (hmax w (compressedReaches_sound parents Keep hw1)
+        (compressedReaches_sound parents Keep hw2))
+
 /-- The compressed skeleton has retained support only. -/
 theorem compressedEdge_support {a b : Version}
     (h : compressedEdge parents Keep a b) : a ∈ Keep ∧ b ∈ Keep := ⟨h.1, h.2.1⟩
@@ -153,9 +192,11 @@ theorem payloadTraceSafe (C₀ : Configuration D)
     (hStore : StoreInv C₀.ver C₀.parents) : PayloadTraceSafe C₀ hStore :=
   fun hRun => gc_safety C₀ hStore hRun
 
-/-- Lift of `gc_safety` to the compressed representation: the old theorem
-supplies label/read preservation, while the new representation theorem supplies
-root-free retained reachability and retained-order LCA preservation. -/
+/-- Catalogue conjunction: `gc_safety` supplies payload trace/read preservation
+for its pinned-root prune, while compression supplies exact induced-order facts
+for the independently supplied `Keep`. This theorem does not identify those two
+carriers. Use the distributed physical-store certificate for a linked root-free
+execution theorem. -/
 theorem gc_safety_compressed (C₀ : Configuration D)
     (hStore : StoreInv C₀.ver C₀.parents) (Keep : Set Version) :
     PayloadTraceSafe C₀ hStore ∧
@@ -226,4 +267,5 @@ end CompressedGCSpot
 end Sal.ConditionedMRDTs
 
 #print axioms Sal.ConditionedMRDTs.compressed_isLCA_iff
+#print axioms Sal.ConditionedMRDTs.compressed_isLCA_iff_of_mcaClosed
 #print axioms Sal.ConditionedMRDTs.gc_safety_compressed
