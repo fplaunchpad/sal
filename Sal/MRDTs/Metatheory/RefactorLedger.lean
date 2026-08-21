@@ -1,6 +1,7 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.MigratedCanaries
+import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.Metatheory.LegacyBridge
 
 /-! Build gate for the plain-signature reconstruction. -/
@@ -22,6 +23,10 @@ namespace Sal.MRDTs
 #check VerifiedMRDT
 #check StateGCCertificate
 #check HeadOnlyMergeCapability
+#check GC.Certificate
+#check GC.execution_refines_noGC
+#check GC.runtime_refines_core
+#check GC.runtime_refines_coreV
 
 #check Instances.GSet.generation
 #check Instances.GSet.sequential
