@@ -2,6 +2,8 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.BoundedCounter
 import Sal.MRDTs.Instances.RGA
+import Sal.MRDTs.Instances.MVR
+import Sal.MRDTs.Instances.QueueCertificates
 import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.GC.Refinement
@@ -53,6 +55,13 @@ namespace Sal.MRDTs
 #check Instances.RGA.convergence
 #check Instances.RGA.sequentialSound
 #check Instances.RGA.verified
+#check Instances.MVR.mvrApplicable
+#check Instances.MVR.mvr_seq_sound
+#check Instances.MVR.verified
+#check Instances.Queue.qApplicable
+#check Instances.Queue.q_join_at
+#check Instances.Queue.queue_seq_sound
+#check Instances.Queue.verified
 #check Instances.EmbedRGA.generation
 #check Instances.EmbedRGA.convergence
 #check Instances.SidedEmbedRGA.generation
