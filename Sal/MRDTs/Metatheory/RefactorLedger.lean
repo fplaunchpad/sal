@@ -5,6 +5,7 @@ import Sal.MRDTs.Instances.RGA
 import Sal.MRDTs.Instances.MVR
 import Sal.MRDTs.Instances.QueueCertificates
 import Sal.MRDTs.Instances.ProductionRGA
+import Sal.MRDTs.Instances.FugueMaxRALinearization
 import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.GC.Refinement
 
@@ -72,6 +73,16 @@ namespace Sal.MRDTs
 #check Instances.EmbedRGA.convergence
 #check Instances.SidedEmbedRGA.generation
 #check Instances.SidedEmbedRGA.convergence
+#check Instances.SidedEmbedRGA.sFold_liftOp
+#check Instances.SidedEmbedRGA.sided_fold_subtree_convex
+#check Instances.SidedEmbedRGA.fuguemax_same_origin_low_first
+#check Instances.SidedEmbedRGA.fuguemax_forward_ni
+#check Instances.SidedEmbedRGA.fuguemax_backward_ni
+#check Instances.SidedEmbedRGA.fuguemax_maximally_noninterleaving
+#check Instances.SidedEmbedRGA.fApplicable
+#check Instances.SidedEmbedRGA.fmGeneration
+#check Instances.SidedEmbedRGA.fmConvergence
+#check Instances.SidedEmbedRGA.fuguemax_ra_linearizable
 #check Instances.ProductionRGA.embed
 #check Instances.ProductionRGA.sided
 #check Instances.Peritext.verified
