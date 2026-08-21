@@ -125,9 +125,8 @@ def IsRALinearizableExec
 
 /-! ## The 24 VCs
 
-Transcribed from `Sal/CRDTs/Grow_Only_Set_CRDT.lean`, which is the
-canonical enumeration. Field names match the theorem names in that file
-so the correspondence is mechanical.
+Transcribed from the archived grow-only-set case study, which supplied the
+canonical enumeration. Field names preserve that mechanical correspondence.
 
 Helpers `distinctOps` (fresh timestamps) and `differentReplicas` inline
 the boolean predicates `distinct_ops` / `get_rid o1 != get_rid o2` used
@@ -145,7 +144,7 @@ def differentReplicas {D : CRDTSig} (o₁ o₂ : Op D.AppOp) : Prop :=
 
 /-- The 24 VCs of the Sal paper. Each field is the parametric,
 signature-level version of the corresponding per-CRDT theorem in
-`Sal/CRDTs/*.lean`. -/
+the archived standalone CRDT case studies. -/
 structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- rc-nonComm semantic characterization: at distinct timestamps and
   replicas, `rc = Either` iff the two events commute. -/

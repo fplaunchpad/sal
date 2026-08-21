@@ -1,5 +1,5 @@
 import Sal.MRDTs.Framework.SigmaLoOn
-import Sal.CRDTs.Metatheory.JoinLemma_Of_CD
+import Sal.MRDTs.Metatheory.Join.JoinLemma_Of_CD
 
 /-!
 # The VC set for RA-linearizable MRDTs
@@ -256,4 +256,3 @@ theorem respects_transfer_of_rc_either {D' : CRDTSig}
 end
 
 end Sal.MRDTs
-

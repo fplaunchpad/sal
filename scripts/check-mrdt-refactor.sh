@@ -27,8 +27,7 @@ if git ls-files | rg -q '^(Sal/ConditionedMRDTs|Sal/MRDTs/RGA_Embed)/'; then
   exit 1
 fi
 
-if git ls-files Sal/CRDTs | rg -v -q \
-    '^Sal/CRDTs/Metatheory/(Assoc_CounterModel|Convergence_CounterModel|JoinLemma_Of_CD|Linearization_Basics|Merge_Linearization_Set|RA_Lin_Of_Join|RA_Linearizability)\.lean$'; then
-  echo 'standalone historical CRDT artifact remains tracked' >&2
+if git ls-files Sal/CRDTs | rg -q .; then
+  echo 'unexpected top-level CRDT source remains tracked' >&2
   exit 1
 fi

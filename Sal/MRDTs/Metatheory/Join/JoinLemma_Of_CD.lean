@@ -1,5 +1,5 @@
-import Sal.CRDTs.Metatheory.Assoc_CounterModel
-import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
+import Sal.MRDTs.Metatheory.Join.Assoc_CounterModel
+import Sal.MRDTs.Metatheory.Join.RA_Lin_Of_Join
 
 /-!
 # The Join Lemma from lattice laws + update-inflationarity + the

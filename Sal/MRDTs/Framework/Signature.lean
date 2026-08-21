@@ -1,4 +1,4 @@
-import Sal.CRDTs.Metatheory.RA_Linearizability
+import Sal.MRDTs.Metatheory.Join.RA_Linearizability
 
 /-!
 # Mergeable replicated datatype signatures

@@ -1,4 +1,4 @@
-import Sal.CRDTs.Metatheory.RA_Linearizability
+import Sal.MRDTs.Metatheory.Join.RA_Linearizability
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 import Mathlib.Data.List.Induction

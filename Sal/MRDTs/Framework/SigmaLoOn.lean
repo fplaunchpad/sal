@@ -1,16 +1,16 @@
-import Sal.CRDTs.Metatheory.Merge_Linearization_Set
+import Sal.MRDTs.Metatheory.Join.Merge_Linearization_Set
 import Sal.MRDTs.Framework.Execution
 
 /-!
 # The σ/`loOn` layer for the ternary setting
 
 The set-relative linearization machinery of
-`Sal/CRDTs/Metatheory/Merge_Linearization_Set.lean`, re-hosted on the merge-free
+`Sal/MRDTs/Metatheory/Join/Merge_Linearization_Set.lean`, re-hosted on the merge-free
 **guarded** `UpdateVCs` fragment (three fields: guarded `rc_non_comm_directional`,
 where the `differentReplicas` guard is the paper's F* interface form, plus
 `no_rc_chain` and `cond_comm_lift`), together with the **core projection**: the
-ternary `Configuration`'s replica-keyed core *is* a binary
-`Emulation.Configuration`, so `loOn`/`IsCanonicalState`/`convergence_on` and
+ternary `Configuration`'s replica-keyed core *is* the binary foundation
+configuration, so `loOn`/`IsCanonicalState`/`convergence_on` and
 friends are reused, not re-proved. The merge-shaped fields of `CoreVCs3` cannot
 be demanded of real MRDTs.
 -/

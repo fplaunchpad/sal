@@ -1,4 +1,4 @@
-import Sal.CRDTs.Metatheory.Convergence_CounterModel
+import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
 
 /-!
 # Counter-model: `CoreVCs` + merge associativity + idempotence do NOT

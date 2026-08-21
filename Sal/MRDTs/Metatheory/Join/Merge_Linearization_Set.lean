@@ -1,12 +1,12 @@
-import Sal.CRDTs.Metatheory.Linearization_Basics
+import Sal.MRDTs.Metatheory.Join.Linearization_Basics
 
 /-!
 # Set-relative linearization order (`loOn`) and its convergence theory
 
 ## Why this file exists
 
-The merge-linearization induction in `Merge_Linearization.lean` is
-blocked (6 `sorry`s) on a convergence lemma valid over merely
+The original merge-linearization induction was blocked by six missing proofs
+that depended on a convergence lemma valid over merely
 backward-closed reachable replica sets: `convergence` with the
 overwriter-closure hypothesis dropped.
 

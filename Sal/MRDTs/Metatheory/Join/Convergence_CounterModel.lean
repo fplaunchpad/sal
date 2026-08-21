@@ -1,4 +1,4 @@
-import Sal.CRDTs.Metatheory.Merge_Linearization_Set
+import Sal.MRDTs.Metatheory.Join.Merge_Linearization_Set
 
 /-!
 # Counter-model: convergence over backward-closed replica sets is FALSE

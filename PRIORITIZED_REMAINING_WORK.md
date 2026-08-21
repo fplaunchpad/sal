@@ -32,7 +32,7 @@ artifacts.
   task here.
 - [x] Run a clean-from-source Lean build, the runtime suite, repository checks,
   and benchmark schema validation. Publish a stable theorem manifest.
-- [ ] Fast-forward `main` to the verified refactor branch and push it.
+- [x] Fast-forward `main` to the verified refactor branch and push it.
 
 ## 1. Runtime and evaluation engineering
 

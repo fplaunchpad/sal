@@ -1,6 +1,6 @@
 import Sal.MRDTs.Framework.VCSet
 import Sal.MRDTs.Metatheory.StoreInvariant
-import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
+import Sal.MRDTs.Metatheory.Join.RA_Lin_Of_Join
 
 /-!
 # ADEQUACY: the VC set suffices for RA-linearizability
