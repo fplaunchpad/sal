@@ -1,5 +1,4 @@
-import Sal.MRDTs.Framework.Certificates
-import Sal.MRDTs.Metatheory.VirtualAdequacy
+import Sal.MRDTs.Metatheory.CertifiedAdequacy
 import Sal.CRDTs.Metatheory.RA_Lin_Of_Join
 
 /-! Observable correctness target for ternary MRDT configurations. -/

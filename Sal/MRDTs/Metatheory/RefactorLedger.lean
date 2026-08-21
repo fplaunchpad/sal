@@ -1,6 +1,7 @@
 import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.GSet
 import Sal.MRDTs.Instances.BoundedCounter
+import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.GC.Refinement
 
 /-! Build gate for the plain-signature reconstruction. -/
@@ -45,6 +46,15 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.BC
 #check Instances.BoundedCounter.BC_coreVCs3
 #check Instances.BoundedCounter.ra_linearizable
+#check Instances.EmbedRGA.generation
+#check Instances.EmbedRGA.convergence
+#check Instances.SidedEmbedRGA.generation
+#check Instances.SidedEmbedRGA.convergence
+#check Instances.ProductionRGA.embed
+#check Instances.ProductionRGA.sided
+#check VerifiedMRDT.converges
+#check VerifiedMRDT.convergesV
+#check VerifiedMRDT.sequentially_correct
 
 example (D : MRDTSig) : Configuration D := initConfig D
 

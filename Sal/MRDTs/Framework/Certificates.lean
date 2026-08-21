@@ -110,6 +110,14 @@ structure SafetyCertificate (D : MRDTSig) (V : VirtualLCAResolver D)
     MintCertifiedReachV D V G C → VersionsSatisfy Safe C
   consequence : ∀ s, Safe s → Observable s
 
+def SafetyCertificate.trivial {D : MRDTSig} {V : VirtualLCAResolver D}
+    (G : GenerationContract D) : SafetyCertificate D V G where
+  Safe := fun _ => True
+  Observable := fun _ => True
+  preservation := fun _ _ _ _ _ => True.intro
+  preservationV := fun _ _ _ _ _ => True.intro
+  consequence := fun _ _ => True.intro
+
 /-- Independent sequential machine used to state local client intent. -/
 structure SequentialSpec (Event : Type) where
   State : Type
