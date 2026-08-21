@@ -15,6 +15,7 @@ import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.Instances.PeritextRenderGC
 import Sal.MRDTs.Instances.PeritextMarkPairGC
 import Sal.MRDTs.Instances.SidedPeritextStateGC
+import Sal.MRDTs.Instances.SidedPeritextInteraction
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
 
@@ -128,6 +129,9 @@ namespace Sal.MRDTs
 #check Instances.SidedPeritext.StateGC.collectedText_continuation_query
 #check Instances.SidedPeritext.StateGC.trimDeleted_query_preserved
 #check Instances.SidedPeritext.StateGC.dropMarkPair_query_preserved
+#check Instances.SidedPeritext.StateGC.Interaction.sMergeL_filter
+#check Instances.SidedPeritext.StateGC.Interaction.commonProjectionFrame_of_epochs
+#check Instances.SidedPeritext.StateGC.Interaction.merge_text_after_epoch_translation
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check VerifiedMRDT.sequentially_correct
