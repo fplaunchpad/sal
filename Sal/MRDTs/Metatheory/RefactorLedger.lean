@@ -62,6 +62,8 @@ namespace Sal.MRDTs
 #check Instances.SidedPeritext.StateGC.Protocol.Represents.dropMarkPair
 #check GC.Certificate
 #check GC.Certificate.ofMCAClosed
+#check GC.EvidenceSPOT.complete
+#check GC.EvidenceSPOT.missing_author
 #check GC.root_absent_when_dropped
 #check GC.execution_refines_noGC
 #check GC.runtime_refines_core

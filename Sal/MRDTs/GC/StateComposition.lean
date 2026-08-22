@@ -32,7 +32,8 @@ def Combined.Valid (S : StateGCProtocol D V) (P : Combined S) : Prop :=
 /-- A combined transition is either a datatype-state/runtime transition, with
 the matching commit-store evolution for visible labels, or a silent fetch or
 commit-history collection. -/
-inductive CombinedStep (S : StateGCProtocol D V) :
+inductive CombinedStep (S : StateGCProtocol D V) (author : Author)
+    (roster : Set Replica) :
     Combined S → Option (Label D) → Combined S → Prop where
   | state {P P' : Combined S} {l : Option (Label D)}
       (valid : P.Valid S)
@@ -40,26 +41,29 @@ inductive CombinedStep (S : StateGCProtocol D V) :
       (stores : match l with
         | none => P'.stores = P.stores
         | some label => StoreEvolution (P.runtime S) (P'.runtime S) label)
-      (valid' : P'.Valid S) : CombinedStep S P l P'
+      (valid' : P'.Valid S) : CombinedStep S author roster P l P'
   | history {P : Combined S} {stores' : World}
-      (step : RuntimeStep D (P.runtime S) none
+      (step : RuntimeStep D author roster (P.runtime S) none
         ⟨S.semantic P.state, stores'⟩) :
-      CombinedStep S P none ⟨P.state, stores'⟩
+      CombinedStep S author roster P none ⟨P.state, stores'⟩
 
-inductive CombinedSteps (S : StateGCProtocol D V) :
+inductive CombinedSteps (S : StateGCProtocol D V) (author : Author)
+    (roster : Set Replica) :
     Combined S → List (Option (Label D)) → Combined S → Prop where
-  | nil (P) : CombinedSteps S P [] P
-  | cons {P P' P'' l ls} : CombinedStep S P l P' →
-      CombinedSteps S P' ls P'' → CombinedSteps S P (l :: ls) P''
+  | nil (P) : CombinedSteps S author roster P [] P
+  | cons {P P' P'' l ls} : CombinedStep S author roster P l P' →
+      CombinedSteps S author roster P' ls P'' →
+      CombinedSteps S author roster P (l :: ls) P''
 
 /-- The combined protocol is itself a datatype-state protocol.  This is the
 virtual-LCA composition theorem: state collection, fetch, and commit GC all
 stutter; every visible step is supplied by the datatype protocol. -/
-def combinedProtocol (S : StateGCProtocol D V) : StateGCProtocol D V where
+def combinedProtocol (S : StateGCProtocol D V) (author : Author)
+    (roster : Set Replica) : StateGCProtocol D V where
   Physical := Combined S
   semantic P := S.semantic P.state
   Valid := Combined.Valid S
-  PhysicalStep := CombinedStep S
+  PhysicalStep := CombinedStep S author roster
   valid_preserved := by
     intro P P' l h one
     cases one with
@@ -82,23 +86,23 @@ def combinedProtocol (S : StateGCProtocol D V) : StateGCProtocol D V where
 namespace CombinedSteps
 
 def toProtocol {S : StateGCProtocol D V} {P P' : Combined S} {ls}
-    (run : CombinedSteps S P ls P') :
-    StateGCProtocol.Steps (combinedProtocol S) P ls P' := by
+    (run : CombinedSteps S author roster P ls P') :
+    StateGCProtocol.Steps (combinedProtocol S author roster) P ls P' := by
   induction run with
   | nil => exact .nil _
   | cons one _ ih => exact .cons one ih
 
 /-- Finite combined traces refine widened no-GC semantics directly. -/
 theorem refinesV {S : StateGCProtocol D V} {P P' : Combined S} {ls}
-    (valid : P.Valid S) (run : CombinedSteps S P ls P') :
+    (valid : P.Valid S) (run : CombinedSteps S author roster P ls P') :
     StateGCProtocol.SemanticSteps V (S.semantic P.state)
       (StateGCProtocol.eraseLabels ls) (S.semantic P'.state) :=
-  StateGCProtocol.refines (combinedProtocol S) valid run.toProtocol
+  StateGCProtocol.refines (combinedProtocol S author roster) valid run.toProtocol
 
 /-- Ordinary refinement is available when the datatype protocol proves its
 visible steps are raw steps, rather than genuine virtual-LCA steps. -/
 theorem refinesRaw {S : StateGCProtocol D V} {P P' : Combined S} {ls}
-    (valid : P.Valid S) (run : CombinedSteps S P ls P')
+    (valid : P.Valid S) (run : CombinedSteps S author roster P ls P')
     (raw : ∀ {A A' l}, S.Valid A → S.PhysicalStep A (some l) A' →
       Sal.MRDTs.Step D (S.semantic A) l (S.semantic A')) :
     CoreSteps D (S.semantic P.state)

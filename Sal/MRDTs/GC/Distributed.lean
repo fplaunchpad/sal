@@ -17,59 +17,47 @@ open Classical Sal.MRDTs.Foundation Sal.MRDTs
 
 variable (parents : Version → List Version)
 
+/-- Immutable metadata carried by a commit record. The protocol does not store
+or synchronize a second authorship index in its logical state. -/
+abbrev Author := Version → Option Replica
+
 structure Local where
-  self : Replica
   head : Version
   commits : Set Version
-  roster : Set Replica
-  authors : Set Replica
-  authored : Replica → Set Version
   head_present : head ∈ commits
-  self_registered : self ∈ roster
-  authored_present : ∀ r, authored r ⊆ commits
 
 structure Envelope where
   commits : Set Version
-  authors : Set Replica
-  authored : Replica → Set Version
-  authored_present : ∀ r, authored r ⊆ commits
 
 def advertise (L : Local) : Envelope :=
-  ⟨L.commits, L.authors, L.authored, L.authored_present⟩
+  ⟨L.commits⟩
 
 def receive (L : Local) (m : Envelope) : Local where
-  self := L.self
   head := L.head
   commits := L.commits ∪ m.commits
-  roster := L.roster
-  authors := L.authors ∪ m.authors
-  authored := fun r => L.authored r ∪ m.authored r
   head_present := Or.inl L.head_present
-  self_registered := L.self_registered
-  authored_present := by
-    intro r v hv
-    exact hv.elim (fun h => Or.inl (L.authored_present r h))
-      (fun h => Or.inr (m.authored_present r h))
 
 theorem receive_commits_mono (L : Local) (m : Envelope) :
     L.commits ⊆ (receive L m).commits := Set.subset_union_left
 
-def DerivedEvidence (L : Local) (r : Replica) : Set Version :=
-  {v | v ∈ L.authored r ∧ v ∈ L.commits ∧ Reaches parents v L.head}
+def DerivedEvidence (author : Author) (L : Local) (r : Replica) : Set Version :=
+  {v | v ∈ L.commits ∧ author v = some r ∧ Reaches parents v L.head}
 
-def EvidenceComplete (L : Local) : Prop :=
-  ∀ r ∈ L.roster, r = L.self ∨ ∃ v, v ∈ DerivedEvidence parents L r
+def EvidenceComplete (author : Author) (roster : Set Replica)
+    (self : Replica) (L : Local) : Prop :=
+  ∀ r ∈ roster, r = self ∨ ∃ v, v ∈ DerivedEvidence parents author L r
 
 /-- A successful local collection certificate. `lca_preserved` is the exact
 runtime obligation: every future retained-head LCA query has the same answer
 in the compressed carrier.  The canonical MCA-closed keep-set construction
 discharges it in the graph metatheory. -/
-structure Certificate (L : Local) where
+structure Certificate (author : Author) (roster : Set Replica)
+    {self : Replica} (L : Local) where
   keep : Set Version
-  complete : EvidenceComplete parents L
+  complete : EvidenceComplete parents author roster self L
   head_kept : L.head ∈ keep
-  evidence_kept : ∀ r ∈ L.roster, r = L.self ∨
-    ∃ v, v ∈ DerivedEvidence parents L r ∧ v ∈ keep
+  evidence_kept : ∀ r ∈ roster, r = self ∨
+    ∃ v, v ∈ DerivedEvidence parents author L r ∧ v ∈ keep
   support : keep ⊆ L.commits
   compressedReaches : Version → Version → Prop
   reaches_exact : ∀ {a b}, a ∈ keep → b ∈ keep →
@@ -79,16 +67,18 @@ structure Certificate (L : Local) where
 
 /-- The canonical root-free certificate constructor. Closure under maximal
 common ancestors is sufficient; paths and the old root need not be retained. -/
-noncomputable def Certificate.ofMCAClosed (L : Local)
+noncomputable def Certificate.ofMCAClosed (author : Author)
+    (roster : Set Replica) (self : Replica) (L : Local)
     (keep : Set Version)
-    (complete : EvidenceComplete parents L)
+    (complete : EvidenceComplete parents author roster self L)
     (head_kept : L.head ∈ keep)
-    (evidence_kept : ∀ r ∈ L.roster, r = L.self ∨
-      ∃ v, v ∈ DerivedEvidence parents L r ∧ v ∈ keep)
+    (evidence_kept : ∀ r ∈ roster, r = self ∨
+      ∃ v, v ∈ DerivedEvidence parents author L r ∧ v ∈ keep)
     (support : keep ⊆ L.commits)
     (parents_lt : ∀ v p, p ∈ parents v → p < v)
     (mca_closed : ∀ a ∈ keep, ∀ b ∈ keep, ∀ m,
-      IsMCA parents {a} b m → m ∈ keep) : Certificate parents L where
+      IsMCA parents {a} b m → m ∈ keep) :
+      Certificate parents author roster (self := self) L where
   keep := keep
   complete := complete
   head_kept := head_kept
@@ -99,90 +89,73 @@ noncomputable def Certificate.ofMCAClosed (L : Local)
   lca_preserved := fun h₁ h₂ hT =>
     compressed_isLCA_iff_of_mcaClosed parents keep parents_lt h₁ h₂ hT mca_closed
 
-def collect (L : Local) (cert : Certificate parents L) : Local where
-  self := L.self
+def collect (L : Local)
+    (cert : Certificate parents author roster (self := self) L) : Local where
   head := L.head
-  commits := cert.keep
-  roster := L.roster
-  authors := L.authors
-  authored := fun r => L.authored r ∩ cert.keep
-  head_present := cert.head_kept
-  self_registered := L.self_registered
-  authored_present := fun _ _ h => h.2
+  commits := Certificate.keep cert
+  head_present := Certificate.head_kept cert
 
-noncomputable def localGC (L : Local) : Option Local :=
-  if h : Nonempty (Certificate parents L) then some (collect parents L h.some) else none
+noncomputable def localGC (author : Author) (roster : Set Replica)
+    (self : Replica) (L : Local) : Option Local :=
+  if h : Nonempty (Certificate parents author roster (self := self) L) then
+    some (collect parents L h.some) else none
 
 theorem localGC_refuses_without_evidence (L : Local)
-    (h : ¬ EvidenceComplete parents L) : localGC parents L = none := by
+    (h : ¬ EvidenceComplete parents author roster self L) :
+    localGC parents author roster self L = none := by
   simp only [localGC]
   split
   · rename_i hex
-    exact absurd hex.some.complete h
+    exact absurd (Certificate.complete hex.some) h
   · rfl
 
 def StoreSim (full compact : Local) : Prop :=
-  full.self = compact.self ∧ full.head = compact.head ∧
-  compact.commits ⊆ full.commits ∧ compact.head ∈ compact.commits ∧
-  full.roster = compact.roster ∧ compact.authors ⊆ full.authors ∧
-  ∀ r, compact.authored r ⊆ full.authored r
+  full.head = compact.head ∧ compact.commits ⊆ full.commits ∧
+  compact.head ∈ compact.commits
 
-theorem collect_simulates (L : Local) (cert : Certificate parents L) :
+theorem collect_simulates (L : Local)
+    (cert : Certificate parents author roster (self := self) L) :
     StoreSim L (collect parents L cert) :=
-  ⟨rfl, rfl, cert.support, cert.head_kept, rfl, Set.Subset.rfl,
-    fun _ _ h => h.1⟩
+  ⟨rfl, Certificate.support cert, Certificate.head_kept cert⟩
 
 theorem receive_preserves_sim {F C : Local} (h : StoreSim F C) (m : Envelope) :
     StoreSim (receive F m) (receive C m) := by
-  refine ⟨h.1, h.2.1, ?_, Or.inl h.2.2.2.1, h.2.2.2.2.1, ?_, ?_⟩
+  refine ⟨h.1, ?_, Or.inl h.2.2⟩
   · intro v hv
-    exact hv.elim (fun x => Or.inl (h.2.2.1 x)) Or.inr
-  · intro v hv
-    exact hv.elim (fun x => Or.inl (h.2.2.2.2.2.1 x)) Or.inr
-  · intro r v hv
-    exact hv.elim (fun x => Or.inl (h.2.2.2.2.2.2 r x)) Or.inr
+    exact hv.elim (fun x => Or.inl (h.2.1 x)) Or.inr
 
 def installHead (L : Local) (v : Version) : Local where
-  self := L.self
   head := v
   commits := insert v L.commits
-  roster := L.roster
-  authors := L.authors
-  authored := L.authored
   head_present := by
     change v = v ∨ v ∈ L.commits
     exact Or.inl rfl
-  self_registered := L.self_registered
-  authored_present := by
-    intro r w h
-    change w = v ∨ w ∈ L.commits
-    exact Or.inr (L.authored_present r h)
 
 theorem installHead_preserves_sim {F C : Local} (h : StoreSim F C) (v : Version) :
     StoreSim (installHead F v) (installHead C v) := by
-  refine ⟨h.1, rfl, ?_, (by
+  refine ⟨rfl, ?_, (by
       change v = v ∨ v ∈ C.commits
-      exact Or.inl rfl), h.2.2.2.2.1,
-    h.2.2.2.2.2.1, h.2.2.2.2.2.2⟩
+      exact Or.inl rfl)⟩
   intro w hw
   rcases hw with rfl | hw
   · change w = w ∨ w ∈ F.commits
     exact Or.inl rfl
   · change w = v ∨ w ∈ F.commits
-    exact Or.inr (h.2.2.1 hw)
+    exact Or.inr (h.2.1 hw)
 
 abbrev World := Replica → Local
 
 /-- The asynchronous implementation: fetch, explicit head synchronization,
 and local collection. -/
-inductive Step : World → World → Prop where
+inductive Step (author : Author) (roster : Set Replica) : World → World → Prop where
   | fetch (W : World) (src dst : Replica) :
-      Step W (Function.update W dst (receive (W dst) (advertise (W src))))
+      Step author roster W (Function.update W dst (receive (W dst) (advertise (W src))))
   | headSync (W : World) (r : Replica) (v : Version)
       (present : v ∈ (W r).commits) :
-      Step W (Function.update W r (installHead (W r) v))
-  | gc (W : World) (r : Replica) (cert : Certificate parents (W r)) :
-      Step W (Function.update W r (collect parents (W r) cert))
+      Step author roster W (Function.update W r (installHead (W r) v))
+  | gc (W : World) (r : Replica)
+      (cert : Certificate parents author roster (self := r) (W r)) :
+      Step author roster W (Function.update W r (collect parents (W r) cert))
 
 /-- The specification protocol has the same network behavior but no
 collection transition. -/
@@ -210,16 +183,10 @@ theorem fetch_preserves {F C : World} (h : WorldSim F C) (src dst : Replica) :
     have hs := h src
     have hd := h dst
     -- Both sides receive corresponding (possibly compact) advertisements.
-    refine ⟨hd.1, hd.2.1, ?_, Or.inl hd.2.2.2.1, hd.2.2.2.2.1, ?_, ?_⟩
+    refine ⟨hd.1, ?_, Or.inl hd.2.2⟩
     · intro v hv
-      exact hv.elim (fun x => Or.inl (hd.2.2.1 x))
-        (fun x => Or.inr (hs.2.2.1 x))
-    · intro v hv
-      exact hv.elim (fun x => Or.inl (hd.2.2.2.2.2.1 x))
-        (fun x => Or.inr (hs.2.2.2.2.2.1 x))
-    · intro a v hv
-      exact hv.elim (fun x => Or.inl (hd.2.2.2.2.2.2 a x))
-        (fun x => Or.inr (hs.2.2.2.2.2.2 a x))
+      exact hv.elim (fun x => Or.inl (hd.2.1 x))
+        (fun x => Or.inr (hs.2.1 x))
   · simp [Function.update, hr]
     exact h r
 
@@ -234,35 +201,36 @@ theorem headSync_preserves {F C : World} (h : WorldSim F C)
   · simp [Function.update, hx, h x]
 
 theorem collect_preserves {F C : World} (h : WorldSim F C)
-    (r : Replica) (cert : Certificate parents (C r)) :
+    (r : Replica)
+    (cert : Certificate parents author roster (self := r) (C r)) :
     WorldSim F (Function.update C r (collect parents (C r) cert)) := by
   intro x
   by_cases hx : x = r
   · subst x
     simp only [Function.update_self]
-    exact ⟨(h r).1, (h r).2.1, fun _ hv => (h r).2.2.1 (cert.support hv),
-      cert.head_kept, (h r).2.2.2.2.1,
-      fun _ hv => (h r).2.2.2.2.2.1 hv,
-      fun a _ hv => (h r).2.2.2.2.2.2 a hv.1⟩
+    exact ⟨(h r).1,
+      fun _ hv => (h r).2.1 (Certificate.support cert hv),
+      Certificate.head_kept cert⟩
   · simp [Function.update, hx, h x]
 
 /-- One collecting step is matched by either the corresponding no-GC network
 step or stuttering. -/
 theorem refines_noGC {F C C' : World} (h : WorldSim F C)
-    (hs : Step parents C C') :
+    (hs : Step parents author roster C C') :
     ∃ F', NoGCMatch F F' ∧ WorldSim F' C' := by
   cases hs with
   | fetch src dst =>
       refine ⟨_, .visible (.fetch F src dst), fetch_preserves h src dst⟩
   | headSync r v present =>
-      have presentF : v ∈ (F r).commits := (h r).2.2.1 present
+      have presentF : v ∈ (F r).commits := (h r).2.1 present
       refine ⟨_, .visible (.headSync F r v presentF), headSync_preserves h r v⟩
   | gc r cert =>
       exact ⟨F, .silent F, collect_preserves parents h r cert⟩
 
-inductive Steps : World → World → Prop where
-  | refl (W) : Steps W W
-  | tail {A B C} : Steps A B → Step parents B C → Steps A C
+inductive Steps (author : Author) (roster : Set Replica) : World → World → Prop where
+  | refl (W) : Steps author roster W W
+  | tail {A B C} : Steps author roster A B →
+      Step parents author roster B C → Steps author roster A C
 
 inductive NoGCSteps : World → World → Prop where
   | refl (W) : NoGCSteps W W
@@ -271,7 +239,7 @@ inductive NoGCSteps : World → World → Prop where
 /-- Full trace refinement: local distributed GC is observationally a
 stuttering optimization of the asynchronous no-GC protocol. -/
 theorem execution_refines_noGC {F₀ C₀ C₁ : World}
-    (h₀ : WorldSim F₀ C₀) (hs : Steps parents C₀ C₁) :
+    (h₀ : WorldSim F₀ C₀) (hs : Steps parents author roster C₀ C₁) :
     ∃ F₁, NoGCSteps F₀ F₁ ∧ WorldSim F₁ C₁ := by
   induction hs with
   | refl => exact ⟨F₀, .refl _, h₀⟩
@@ -284,6 +252,59 @@ theorem execution_refines_noGC {F₀ C₀ C₁ : World}
 
 theorem read_preserved (stateAt : Version → α) {F C : World}
     (h : WorldSim F C) (r : Replica) :
-    stateAt (F r).head = stateAt (C r).head := by rw [(h r).2.1]
+    stateAt (F r).head = stateAt (C r).head := by rw [(h r).1]
+
+namespace EvidenceSPOT
+
+def spotParents : Version → List Version
+  | 1 => [0]
+  | 2 => [1]
+  | _ => []
+
+def spotAuthor : Author
+  | 1 => some 1
+  | 2 => none -- the merge/head commit is deliberately unauthored
+  | _ => some 0
+
+def completeLocal : Local where
+  head := 2
+  commits := fun v => v = 0 ∨ v = 1 ∨ v = 2
+  head_present := Or.inr (Or.inr rfl)
+
+def missingAuthorLocal : Local where
+  head := 2
+  commits := fun v => v = 0 ∨ v = 2
+  head_present := Or.inr rfl
+
+/-- PASS: a retained commit authored by replica 1 and reaching the head is
+enough; no stored per-author index is needed. -/
+theorem complete : EvidenceComplete spotParents spotAuthor
+    (fun r => r = 0 ∨ r = 1) 0 completeLocal := by
+  intro r hr
+  rcases hr with rfl | rfl
+  · exact Or.inl rfl
+  · refine Or.inr ⟨1, ?_⟩
+    refine ⟨Or.inr (Or.inl rfl), rfl, ?_⟩
+    exact Relation.ReflTransGen.tail Relation.ReflTransGen.refl
+      (by change 1 ∈ spotParents 2; simp [spotParents])
+
+/-- FAIL control: merely retaining the head does not fabricate evidence from
+replica 1 when no retained commit has that immutable author. -/
+theorem missing_author :
+    ¬ EvidenceComplete spotParents spotAuthor
+      (fun r => r = 0 ∨ r = 1) 0 missingAuthorLocal := by
+  intro h
+  have h1 := h 1 (Or.inr rfl)
+  rcases h1 with impossible | ⟨v, hv⟩
+  · exact Nat.noConfusion impossible
+  · rcases hv with ⟨hmem, hauthor, _⟩
+    change v = 0 ∨ v = 2 at hmem
+    rcases hmem with rfl | rfl <;> simp [spotAuthor] at hauthor
+
+end EvidenceSPOT
+
+#print axioms EvidenceSPOT.complete
+#print axioms EvidenceSPOT.missing_author
+#print axioms execution_refines_noGC
 
 end Sal.MRDTs.GC

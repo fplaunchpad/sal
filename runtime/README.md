@@ -531,11 +531,15 @@ claim; it throws `CrissCrossError` so consumers defer it. Pinned in
 `test/virtual-lca.test.js`. The in-process `runtime.js`/`sync.js` use
 `lca()` (the gate above).
 
-ROSTER HYGIENE + FORGET. `DistributedReplica` tracks `authors` (replicas that
-have authored a commit here) alongside `registered`; `unregister(name)` drops
-a name IFF it never authored (a lurker), keeping writers conservatively, and
-`forget(name)` drops it unconditionally (the operator-directed lever to
-release the GC horizon a departed author pins). Pinned in `test/forget.test.js`.
+ROSTER HYGIENE + FORGET. The paper semantics uses a fixed roster and gives each
+replica only `{head, commits}`. `DistributedReplica` additionally implements
+dynamic membership. Its `everAuthored` summary survives commit deletion so
+`unregister(name)` can drop a name IFF it never authored (a lurker), while
+keeping writers conservatively. `forget(name)` drops the summary and roster
+entry unconditionally; this operator-directed action releases the GC horizon
+that a departed author pins. Frontier evidence does not read this summary. It
+is derived from immutable `commit.op.replica` metadata. Pinned in
+`test/forget.test.js`.
 
 EPOCH-BASE HISTORY PRUNING (`pruneToEpochBase`). After a SETTLED compaction,
 history below it is dropped and the compaction becomes a parent-free EPOCH

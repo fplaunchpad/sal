@@ -53,9 +53,15 @@ export class DistributedReplica {
     this.mint = mint === null ? null : new LamportMint(mint);
     this.gid = new Map();               // local id -> content id (sha)
     this.byGid = new Map();             // content id -> local id
+    // Dynamic-membership extension. The paper semantics instead takes one
+    // fixed roster as a protocol parameter, so neither field below belongs to
+    // the minimal commit-GC store {head, commits}.
     this.registered = new Set([name]);  // replica ids heard of / rostered
     this.gcClosed = false;              // successful commit GC closes membership
-    this.authors = new Set([name]);     // replica ids that have AUTHORED a commit here
+    // Conservative summary that survives deletion of the commits from which it
+    // was learned. It is required only by unregister(); frontier evidence is
+    // always derived from immutable commit.op.replica metadata.
+    this.everAuthored = new Set();
     this.epochDag = new EpochDag();     // cut-indexed epoch DAG (src/epoch.js)
     this.epochOf = new Map();           // local commit id -> epoch cut key
     this.epochBase = new Map();         // local id -> pruned parent's gid (parent-free epoch bases)
@@ -395,7 +401,7 @@ export class DistributedReplica {
         state = this.#applyOps(this.dag.get(localParents[0]).state, wc.payload);
         epochKey = this.epochOf.get(localParents[0]);
         this.registered.add(wc.op.replica);
-        this.authors.add(wc.op.replica);
+        this.everAuthored.add(wc.op.replica);
       } else if (wc.kind === 'compact' && localParents[0] === undefined) {
         // EPOCH-BASE BOOTSTRAP: the parent was pruned below a settled cut. Verify
         // the gid over the wire parent STRING + fingerprint (parent-free but
@@ -499,11 +505,12 @@ export class DistributedReplica {
    *  WRITER stays registered conservatively (the GC-horizon-vs-offline edge).
    *  Returns true if dropped. */
   unregister(name) {
-    if (name === this.name || this.authors.has(name)) return false;
+    if (name === this.name || this.everAuthored.has(name)) return false;
     return this.registered.delete(name);
   }
 
-  /** FORGET `name` entirely: drop it from BOTH the roster and the authors set,
+  /** FORGET `name` entirely: drop it from BOTH the roster and the conservative
+   *  ever-authored summary,
    *  even if it authored. Unlike `unregister` (which conservatively keeps
    *  writers), this LIFTS the stability-cut horizon a departed author otherwise
    *  pins at its last-synced position -- the operator-directed answer to "an
@@ -513,7 +520,7 @@ export class DistributedReplica {
    *  true if the roster changed. */
   forget(name) {
     if (name === this.name) return false;
-    this.authors.delete(name);
+    this.everAuthored.delete(name);
     this.fetchAcks.delete(name);
     return this.registered.delete(name);
   }

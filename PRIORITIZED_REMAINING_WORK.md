@@ -33,6 +33,9 @@ artifacts.
 - [x] Run a clean-from-source Lean build, the runtime suite, repository checks,
   and benchmark schema validation. Publish a stable theorem manifest.
 - [x] Fast-forward `main` to the verified refactor branch and push it.
+- [x] Minimize the paper-facing distributed-GC state. Each replica now stores
+  only `{head, commits}`; the fixed roster and partial immutable commit-author
+  function are protocol parameters, and frontier evidence is derived.
 
 ## 1. Runtime and evaluation engineering
 

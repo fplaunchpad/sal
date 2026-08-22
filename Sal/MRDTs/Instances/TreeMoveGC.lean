@@ -194,15 +194,17 @@ The datatype proof consumes only the resulting exact split; commit-history
 collection and state collection then compose through `combinedProtocol`. -/
 
 def FrontierAuthorizes (parents : Version → List Version)
+    (author : Sal.MRDTs.GC.Author) (roster : Set Replica) (self : Replica)
     {full : Finset Event} (cut : StableCut full)
     (replicaState : Sal.MRDTs.GC.Local) : Prop :=
-  Sal.MRDTs.GC.EvidenceComplete parents replicaState ∧
+  Sal.MRDTs.GC.EvidenceComplete parents author roster self replicaState ∧
   ∀ e ∈ cut.stable, ∀ future ∈ cut.pending, eventLE e future
 
 theorem authorized_cut_query (parents : Version → List Version)
+    (author : Sal.MRDTs.GC.Author) (roster : Set Replica) (self : Replica)
     {full : Finset Event} (cut : StableCut full)
     {replicaState : Sal.MRDTs.GC.Local}
-    (_ : FrontierAuthorizes parents cut replicaState) :
+    (_ : FrontierAuthorizes parents author roster self cut replicaState) :
     query (collectPrefix cut) = D.query full () :=
   collectPrefix_query cut
 
@@ -270,8 +272,9 @@ theorem refines {V : VirtualLCAResolver D} {P P' : Physical} {labels}
 
 /-- The existing framework theorem now combines asynchronous commit-DAG GC,
 TreeMove log collection, trash collection, and visible execution. -/
-noncomputable def combinedProtocol (V : VirtualLCAResolver D) : StateGCProtocol D V :=
-  Sal.MRDTs.GC.combinedProtocol (protocol V)
+noncomputable def combinedProtocol (V : VirtualLCAResolver D)
+    (author : Sal.MRDTs.GC.Author) (roster : Set Replica) : StateGCProtocol D V :=
+  Sal.MRDTs.GC.combinedProtocol (protocol V) author roster
 
 #print axioms undoRedo_refines_canonical
 #print axioms collectPrefix_represents
