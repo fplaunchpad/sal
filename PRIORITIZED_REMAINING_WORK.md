@@ -38,6 +38,14 @@ anonymous long-form working papers under `docs/`.
 - [x] Restore the framework and collaborative-editing working papers under
   `docs/`, update their core framework and GC descriptions after the refactor,
   and add an independent two-PDF build check.
+- [x] Rewrite both working papers against the current `main` evidence rather
+  than preserving the historical monolith. Make paper-level states,
+  operational rules, execution diagrams, proof dependencies, and the two-GC
+  simulation first-class; gate cited declarations with `PaperLedger.lean` and
+  remove the retired shared source.
+- [ ] Add the submission-facing bibliography and related-work comparison after
+  the technical narrative stabilizes. Keep citations distinct from the
+  machine-checked claim ledger.
 
 ## 1. Runtime and evaluation engineering
 
@@ -93,5 +101,5 @@ anonymous long-form working papers under `docs/`.
 
 - [x] Add hosted CI for the release gate. Add benchmark schema checks to that
   workflow when the repeated-result publication format is frozen.
-- [ ] Export stable theorem/runtime/benchmark manifests for the paper repository
-  without duplicating development tasks there.
+- [ ] Export stable theorem/runtime/benchmark manifests for downstream paper
+  builds without duplicating development tasks.

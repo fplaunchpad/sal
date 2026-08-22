@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage[section]{placeins}
+\usetikzlibrary{arrows.meta,calc,fit,positioning,shapes.geometric}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,
+  citecolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\mergeL}{\mathsf{mergeL}}
+\newcommand{\applyop}{\mathsf{apply}}
+\newcommand{\init}{\sigma_0}
+\newcommand{\events}{\mathcal E}
+\newcommand{\state}{\Sigma}
+\newcommand{\vis}{\mathrel{\mathsf{vis}}}
+\newcommand{\lo}{\mathsf{lo}}
+\newcommand{\erase}{\mathsf{erase}}
+\newcommand{\cfg}{\mathcal C}
+\newcommand{\versions}{\mathcal V}
+\newcommand{\heads}{\mathcal H}
+\newcommand{\parents}{\mathcal P}
+\newcommand{\Rule}[3]{%
+  \frac{\begin{array}{c}#2\end{array}}{#3}\;\textsc{#1}}
+\newcommand{\smallcode}[1]{\texttt{\small #1}}
+
+\tikzset{
+  version/.style={circle,draw,minimum size=5.5mm,inner sep=0pt,font=\small},
+  ghost/.style={version,dashed},
+  replica/.style={rectangle,rounded corners,draw,inner sep=3pt,font=\small},
+  flow/.style={-{Latex[length=2mm]},semithick},
+  data/.style={rectangle,rounded corners,draw,align=center,inner sep=5pt},
+  theoremnode/.style={rectangle,rounded corners,draw=blue!55!black,
+    fill=blue!4,align=center,inner sep=5pt},
+  certnode/.style={rectangle,rounded corners,draw=orange!70!black,
+    fill=orange!5,align=center,inner sep=5pt}
+}
+
+\setlist{nosep}
+\sloppy

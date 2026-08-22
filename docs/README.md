@@ -1,7 +1,7 @@
 # Working papers
 
-This directory contains the two anonymous long-form working drafts that
-accompany the Lean and JavaScript development in this repository.
+This directory contains two anonymous, independently buildable working drafts
+that accompany the Lean and JavaScript development in this repository.
 
 - `framework-paper/main.pdf` covers the corrected MRDT metatheory, generation
   and safety certificates, virtual LCAs, distributed commit-history GC, and
@@ -10,13 +10,15 @@ accompany the Lean and JavaScript development in this repository.
   SidedEmbedRGA/FugueMax, Peritext, state compaction, the runtime, and the
   evaluation.
 
-Both wrappers select sections from `working-papers.tex`. Build them from the
-repository root with:
+Each paper has its own `main.tex`; they share only `paper-preamble.tex`. Build
+them from the repository root with:
 
 ```sh
 ./scripts/check-working-papers.sh
 ```
 
-The script builds each wrapper independently and rejects references to the
-retired `Sal/ConditionedMRDTs` tree. The current Lean theorem inventory is
-`Sal/MRDTs/Metatheory/RefactorLedger.lean`.
+The script builds the paper-specific Lean ledger, rejects retired framework
+names and non-anonymous metadata, and then builds both PDFs. The complete
+production theorem inventory is `Sal/MRDTs/Metatheory/RefactorLedger.lean`;
+the declarations cited by the papers are gated by
+`Sal/MRDTs/Metatheory/PaperLedger.lean`.
