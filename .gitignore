@@ -17,14 +17,6 @@
 __pycache__/
 *.pyc
 
-# Tectonic intermediates for the MRDT papers. The two standalone PDFs are
-# tracked; the consolidated manuscript is source infrastructure only.
-/Sal/ConditionedMRDTs/*.aux
-/Sal/ConditionedMRDTs/*.diagnose
-/Sal/ConditionedMRDTs/*.kaux
-/Sal/ConditionedMRDTs/*.log
-/Sal/ConditionedMRDTs/*.out
-/Sal/ConditionedMRDTs/*.toc
-/Sal/ConditionedMRDTs/sal-mrdts.pdf
-/Sal/ConditionedMRDTs/papers/*/*.diagnose
-/Sal/ConditionedMRDTs/papers/*/*.log
+# Tectonic diagnostics for the two tracked working-paper PDFs.
+/docs/framework-paper/main.diagnose
+/docs/collaborative-editing-paper/main.diagnose

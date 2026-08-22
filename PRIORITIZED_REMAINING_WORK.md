@@ -1,9 +1,8 @@
 # Prioritized remaining work
 
-This is the canonical development task list for Sal. The sibling `Sal_paper`
-repository owns manuscript prose, figures, bibliography, and paper builds.
-This repository owns Lean, JavaScript, executable validation, and benchmark
-artifacts.
+This is the canonical development task list for Sal. This repository owns
+Lean, JavaScript, executable validation, benchmark artifacts, and the two
+anonymous long-form working papers under `docs/`.
 
 ## 0. Finish the plain-MRDT cutover
 
@@ -36,6 +35,9 @@ artifacts.
 - [x] Minimize the paper-facing distributed-GC state. Each replica now stores
   only `{head, commits}`; the fixed roster and partial immutable commit-author
   function are protocol parameters, and frontier evidence is derived.
+- [x] Restore the framework and collaborative-editing working papers under
+  `docs/`, update their core framework and GC descriptions after the refactor,
+  and add an independent two-PDF build check.
 
 ## 1. Runtime and evaluation engineering
 
