@@ -191,6 +191,22 @@ anonymous long-form working papers under `docs/`.
     origin contained in its serialization prefix; the witness exactly
     materializes and observes the replicated state. Positive concurrent-origin
     and negative unavailable-origin controls prevent vacuous legalization;
+  - [ ] **High priority: audit and minimize the AegisSheet sequential
+    specification.** The current incremental machine removes event-log replay,
+    but its state still contains causal timestamps, observed-remove tokens,
+    concurrent versions, and purge markers. Do not call this a conventional
+    sequential spreadsheet without further evidence. Define the smallest
+    plausible client-level state over ordered rows and columns, visible cells,
+    anchored ranges, and explicit selective-undo information. For each current
+    metadata field, search for two reachable states with the same client view
+    and a legal continuation that distinguishes them. Preserve minimized
+    distinguishing continuations as negative SPOTs; add positive controls for
+    metadata that can be quotiented away. Either prove refinement to the
+    reduced client ADT and replace the public `SequentialSpec`, or prove which
+    hidden history is semantically necessary and state that boundary explicitly
+    in the theorem and paper. Validate the chosen abstract operations against
+    the published AegisSheet matrices rather than against the Lean
+    materialization function alone;
   - [x] Check the nontrivial merge, undo, and range scenarios with positive and
     negative SPOTs.
   - [x] Refute naive local purge as silent state GC with a kernel-checked late
