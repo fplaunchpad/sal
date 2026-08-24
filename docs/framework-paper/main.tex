@@ -457,22 +457,47 @@ The legality predicate sees only the abstract event history. It cannot inspect
 the implementation state. A total datatype sets it to true.
 \end{definition}
 
+\begin{definition}[semantic interaction]
+An \lean{InteractionSpec D} classifies each ordered event pair as
+\emph{independent} or as a \emph{conflict}. A conflict carries one concurrent
+verdict: first-before-second, second-before-first, or unconstrained. Reversing
+the event pair must flip the verdict. This policy refers to abstract events,
+not arbitrary representation states.
+\end{definition}
+
+For a version event set $E$, \lean{interactionLoOn} orders every visible
+conflict by visibility. It orders a concurrent conflict only when the policy
+selects first-before-second and the second event has no later conflicting
+absorber inside $E$. This absorber clause belongs to the public witness order;
+it does not expose the proof-local replay resolver.
+
+Two finite checks explain why this separation matters. LWW orders concurrent
+writes by increasing Lamport timestamp. Three writes therefore form a
+two-edge chain, which refutes the historical \texttt{no\_rc\_chain}
+requirement (\lean{InteractionSPOT.LWW.old\_no\_chain\_refuted}). For
+add-wins observed-remove semantics, concurrent remove and add conflict and the
+policy orders remove before add. If the remove observed the add, visibility
+instead orders add before remove. The same policy therefore explains both
+add-wins concurrency and ordinary observed removal.
+
 \begin{definition}[verified MRDT]
 An implementer supplies:
 \begin{itemize}
 \item an \lean{Issuance};
-\item an \lean{ArbitrationSpec} that states semantic operation dependence;
+\item an \lean{InteractionSpec} that states semantic operation conflicts and
+  any required concurrent direction;
 \item a \lean{ConvergenceCertificate} for virtual-LCA certified execution,
   from which the ordinary theorem is derived; and
 \item an independent \lean{SequentialSpec}, representation relation, and one
-  \lean{LegalizationCertificate}.
+  \lean{SequentialCorrectnessCertificate}.
 \end{itemize}
 \hfill\lean{VerifiedMRDT}
 \end{definition}
 
 For every stored version $(S,E)$, both capstones produce a list $\pi$ such that
 \[
-\mathsf{perm}(\pi,E)\land \mathsf{respects}(\pi,\lo)\land
+\mathsf{perm}(\pi,E)\land
+\mathsf{respects}(\pi,\mathsf{interactionLoOn})\land
 \mathsf{Legal}(\pi)\land \mathsf{Rel}(S,\mathsf{run}(\pi))
 \]
 and every implementation query equals the sequential query. The package
@@ -486,6 +511,12 @@ preservation follows from the ordinary-to-widened execution embedding. Safety
 remains separate because convergence does not imply a client invariant. For example,
 the bounded counter proves non-negative observable values through a global
 history invariant; arbitrary ternary tuples do not preserve that invariant.
+
+The executable \lean{CRDTSig} contains no resolver. The historical
+absorber-based convergence construction receives a proof-local
+\lean{ReplayPolicy}; the low-priority default is unconstrained, and a
+specialized proof may install another policy locally. Consequently, neither
+\lean{rc} nor \texttt{no\_rc\_chain} is an implementer-facing MRDT field.
 
 \section{Canonical virtual LCAs}
 

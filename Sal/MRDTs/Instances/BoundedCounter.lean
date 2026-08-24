@@ -42,7 +42,6 @@ noncomputable def BC : MRDTSig where
   update := bcUpdate
   merge := fun a b => bcMergeL (fun _ => 0, fun _ => 0) a b
   query := fun s r => s.1 r - s.2 r
-  rc := fun _ _ => RcRes.Either
   mergeL := bcMergeL
   merge_init_slice := fun _ _ => rfl
 
@@ -83,7 +82,7 @@ theorem BC_init_fst (k : ℕ) : BC.init.1 k = 0 := rfl
 theorem BC_init_snd (k : ℕ) : BC.init.2 k = 0 := rfl
 
 theorem BC_rc_either : ∀ o₁ o₂ : Op BC.AppOp,
-    BC.toCRDTSig.rc o₁ o₂ = RcRes.Either := fun _ _ => rfl
+    BC.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl
 
 /-- Two `BCState`s with equal slot values are equal. -/
 theorem bcState_ext {s t : BCState}
@@ -430,8 +429,8 @@ def sequential : SequentialRefinement BC sequentialSpec where
   init := ⟨bc_inv_init, fun _ => rfl⟩
   sound := fun ops h => ⟨h ops [] (by simp), sequential_run ops⟩
 
-noncomputable def legalization : LegalizationCertificate BC generation
-    (ArbitrationSpec.raw BC)
+noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC generation
+    (InteractionSpec.raw BC)
     clientSpec sequential.Rel where
   sound C exec replay := by
     intro v s E hver
@@ -455,18 +454,19 @@ noncomputable def legalization : LegalizationCertificate BC generation
       intro r
       change sequentialSpec.run π r = s.1 r - s.2 r
       rw [sequential_run, hπfold]
-    refine ⟨π, canonical_listPermOf hperm, respects_lo C π,
+    refine ⟨π, canonical_listPermOf hperm,
+      respects_interactionLoOn_raw_of_lo (respects_lo C π),
       ⟨⟨ops, rfl⟩, hcount⟩, hrel, ?_⟩
     intro r
     exact (hrel.2 r).symm
 
 noncomputable def verified : VerifiedMRDT BC where
   issuance := generation
-  arbitration := ArbitrationSpec.raw BC
+  interaction := InteractionSpec.raw BC
   convergence := convergence
   Spec := clientSpec
   Rel := sequential.Rel
-  legalization := legalization
+  sequentialCorrectness := sequentialCorrectness
 
 #print axioms versions_safe
 #print axioms versions_safeV

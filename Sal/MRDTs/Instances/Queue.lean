@@ -80,7 +80,6 @@ def Q : MRDTSig where
   update := qUpdate
   merge := fun a b => qMergeL [] a b
   query := fun s _ => s.head?
-  rc := fun _ _ => RcRes.Either
   mergeL := qMergeL
   merge_init_slice := fun _ _ => rfl
 
@@ -88,7 +87,7 @@ theorem Q_core_update (s : QState) (o : Op QOp) :
     Q.toCRDTSig.update s o = qUpdate s o := rfl
 
 theorem Q_rc_either (o₁ o₂ : Op QOp) :
-    Q.toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+    Q.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §2  Event helpers -/
 

@@ -90,7 +90,6 @@ def FMSig (Γ : OrderedPrefixCode) : MRDTSig where
   update := fUpdate Γ
   merge := fun a b => sMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  rc := fun _ _ => RcRes.Either
   mergeL := sMergeL
   merge_init_slice := fun _ _ => rfl
 
@@ -98,7 +97,7 @@ theorem FMSig_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op FOp) :
     (FMSig Γ).toCRDTSig.update s o = fUpdate Γ s o := rfl
 
 theorem FMSig_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op FOp) :
-    (FMSig Γ).toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+    (FMSig Γ).toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §3  Well-formed enumerations and fold-canonicity
 

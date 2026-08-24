@@ -7,12 +7,15 @@ the compatibility contract.
 ## Framework
 
 - `Sal.MRDTs.Issuance`
-- `Sal.MRDTs.ArbitrationSpec`
+- `Sal.MRDTs.InteractionSpec`
+- `Sal.MRDTs.interactionLoOn`
 - `Sal.MRDTs.SequentialSpec`
+- `Sal.MRDTs.SequentialCorrectnessCertificate`
 - `Sal.MRDTs.IsSpecRALinearizable`
 - `Sal.MRDTs.VerifiedMRDT`
 - `Sal.MRDTs.ConvergenceCertificate.sound`
 - `Sal.MRDTs.MintCertifiedReach.toV`
+- `Sal.MRDTs.Instances.InteractionSPOT.LWW.old_no_chain_refuted`
 
 ### Optional and migration certificates
 

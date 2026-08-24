@@ -16,6 +16,7 @@ def CausalFold {D' : CRDTSig} (C : Sal.MRDTs.Foundation.Configuration D')
 
 section
 variable {D : MRDTSig}
+variable [ReplayPolicy D.toCRDTSig]
 
 /-- The ∃-form honesty over an explicit guard `A`: every event satisfies `A`
 at some causal fold of its causal past. Existential because the issuer holds
@@ -253,7 +254,7 @@ canonical enumeration into a vis-linearization (same fold by all-comm); the
 dead by `Either`). No reachability induction. -/
 theorem causalCanonical_of_all_comm_rc_either
     (hcomm : ∀ a b : Op D.AppOp, D.toCRDTSig.commutes a b)
-    (hrc : ∀ a b : Op D.AppOp, D.toCRDTSig.rc a b = RcRes.Either)
+    (hrc : ∀ a b : Op D.AppOp, D.toCRDTSig.replayOrder a b = RcRes.Either)
     {C : Configuration D} (hG : GoodConfig3 C) :
     CausalCanonical C := by
   intro v s E hv

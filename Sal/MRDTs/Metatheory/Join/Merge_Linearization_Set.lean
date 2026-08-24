@@ -75,7 +75,8 @@ namespace Sal.MRDTs.Foundation
 open Classical
 
 section
-variable {D : CRDTSig}
+variable {D : CRDTSig} [ReplayPolicy D]
+variable [ReplayPolicy D]
 
 /-! ### 0. The core VC bundle
 
@@ -87,22 +88,22 @@ instantiate the Join-Lemma machinery. -/
 
 /-- The fields of `SatisfiesVCs` actually consumed by the set-relative
 linearization theory and the Join-Lemma induction. -/
-structure CoreVCs (D : CRDTSig) : Prop where
+structure CoreVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ →
       (¬ D.commutes o₁ o₂ ↔
-       (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨
-        D.rc o₂ o₁ = RcRes.Fst_then_snd))
+       (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
+        D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
   no_rc_chain :
     ∀ o₁ o₂ o₃ : Op D.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (D.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-         D.rc o₂ o₃ = RcRes.Fst_then_snd)
+      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)
   cond_comm_lift :
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      D.rc e e' = RcRes.Fst_then_snd →
+      D.replayOrder e e' = RcRes.Fst_then_snd →
       ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
@@ -119,7 +120,7 @@ structure CoreVCs (D : CRDTSig) : Prop where
         = D.update (D.merge a (applySeq D D.init π)) e
 
 /-- Every full bundle yields the core. -/
-theorem CoreVCs.of_full {D : CRDTSig} (hVC : CoreVCs D) :
+theorem CoreVCs.of_full {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D) :
     CoreVCs D :=
   ⟨hVC.rc_non_comm_directional, hVC.no_rc_chain, hVC.cond_comm_lift,
    hVC.merge_comm, hVC.merge_init, hVC.lem_0op, hVC.merge_peel_comm⟩
@@ -131,7 +132,7 @@ theorem applySeq_swap_via_cond_comm_lift_core
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
-    (h_rc_ab : D.rc a b = RcRes.Fst_then_snd)
+    (h_rc_ab : D.replayOrder a b = RcRes.Fst_then_snd)
     (h_nc_be : ¬ D.commutes b e₃)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
@@ -160,7 +161,7 @@ def loOn (C : Configuration D) (ev : Set (Op D.AppOp))
     (e₁ e₂ : Op D.AppOp) : Prop :=
   (C.vis e₁ e₂ ∧ ¬ D.commutes e₁ e₂)
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.rc e₁ e₂ = RcRes.Fst_then_snd
+      ∧ D.replayOrder e₁ e₂ = RcRes.Fst_then_snd
       ∧ ¬ ∃ e₃ ∈ ev, C.vis e₂ e₃ ∧ ¬ D.commutes e₂ e₃ )
 
 /-- The configuration-global `lo` is contained in every `loOn`:
@@ -259,7 +260,7 @@ theorem loOn_rc_no_succ (hVC : CoreVCs D) {C : Configuration D}
     (hxy_ne : x ≠ y) (hyz_ne : y ≠ z)
     (hx : x ∈ T) (hy : y ∈ T) (hz : z ∈ T)
     (h_rc_edge : ¬ C.vis x y ∧ ¬ C.vis y x
-      ∧ D.rc x y = RcRes.Fst_then_snd
+      ∧ D.replayOrder x y = RcRes.Fst_then_snd
       ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ ¬ D.commutes y e₃)
     (h_edge : loOn C T y z) : False := by
   obtain ⟨_, _, h_rc, h_no_abs⟩ := h_rc_edge
@@ -284,7 +285,7 @@ theorem transGen_loOnNe_structure (hVC : CoreVCs D)
     C.vis a b ∨
     (∃ x, x ≠ b ∧ x ∈ T ∧
       (¬ C.vis x b ∧ ¬ C.vis b x
-        ∧ D.rc x b = RcRes.Fst_then_snd
+        ∧ D.replayOrder x b = RcRes.Fst_then_snd
         ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ ¬ D.commutes b e₃)) := by
   induction h with
   | single h_edge =>
@@ -479,9 +480,9 @@ theorem applySeq_swap_loOn_incomparable
     (h_ov : ¬ D.commutes a b → a.rep ≠ b.rep →
       ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
                 distinctOps a e₃ ∧ distinctOps b e₃ ∧
-                ((D.rc a b = RcRes.Fst_then_snd ∧
+                ((D.replayOrder a b = RcRes.Fst_then_snd ∧
                   ¬ D.commutes b e₃) ∨
-                 (D.rc b a = RcRes.Fst_then_snd ∧
+                 (D.replayOrder b a = RcRes.Fst_then_snd ∧
                   ¬ D.commutes a e₃))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
@@ -523,9 +524,9 @@ theorem applySeq_bubble_to_front_loOn
       ¬ D.commutes y e → y.rep ≠ e.rep →
       ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
                   distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                  ((D.rc y e = RcRes.Fst_then_snd ∧
+                  ((D.replayOrder y e = RcRes.Fst_then_snd ∧
                     ¬ D.commutes e e₃) ∨
-                   (D.rc e y = RcRes.Fst_then_snd ∧
+                   (D.replayOrder e y = RcRes.Fst_then_snd ∧
                     ¬ D.commutes y e₃)))
     (s : D.State) :
     applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
@@ -665,9 +666,9 @@ theorem convergence_on
             ¬ D.commutes y e → y.rep ≠ e.rep →
             ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
                         distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                        ((D.rc y e = RcRes.Fst_then_snd ∧
+                        ((D.replayOrder y e = RcRes.Fst_then_snd ∧
                           ¬ D.commutes e e₃) ∨
-                         (D.rc e y = RcRes.Fst_then_snd ∧
+                         (D.replayOrder e y = RcRes.Fst_then_snd ∧
                           ¬ D.commutes y e₃)) := by
           intro α β y h_σ_eq h_nc h_diff_rep
           subst h_σ_eq
@@ -1098,7 +1099,7 @@ irreducibly contextual: no unconditional per-CRDT equation
 captures them. Discharging it (from cond-comm-style leaf VCs via a
 contextual induction, or from lattice VCs (merge associativity +
 update inflation/monotonicity)) is the open obligation. -/
-def JoinLemma (D : CRDTSig) : Prop :=
+def JoinLemma (D : CRDTSig) [ReplayPolicy D] : Prop :=
   ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
@@ -1115,7 +1116,7 @@ set, hence in particular the paper's `lo C`. It stands in for
 `merge_linearization_exists` without the (false) forward-closure
 hypotheses and without the unsound re-permutation, using
 `isCanonicalState_peel`-based reasoning inside `JoinLemma`. -/
-theorem merge_linearization_of_join {D : CRDTSig}
+theorem merge_linearization_of_join {D : CRDTSig} [ReplayPolicy D]
     (hJoin : JoinLemma D) {C : Configuration D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
@@ -1209,7 +1210,7 @@ theorem listPermOf_length_eq {α : Type} {l₁ l₂ : List α}
     omega
 
 /-- Enumerate a union: side 1's list followed by side 2's leftovers. -/
-theorem listPermOf_union {D : CRDTSig} {l₁ l₂ : List (Op D.AppOp)}
+theorem listPermOf_union {D : CRDTSig} [ReplayPolicy D] {l₁ l₂ : List (Op D.AppOp)}
     {ev₁ ev₂ : Set (Op D.AppOp)}
     (h₁ : listPermOf l₁ ev₁) (h₂ : listPermOf l₂ ev₂) :
     listPermOf (l₁ ++ l₂.filter (fun a => decide (a ∉ l₁)))
@@ -1256,7 +1257,7 @@ theorem listPermOf_diff_length {α : Type} [DecidableEq α]
   exact List.length_erase_of_mem he
 
 /-- The empty set's canonical state is `init`. -/
-theorem isCanonicalState_empty {D : CRDTSig} {C : Configuration D}
+theorem isCanonicalState_empty {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
     {ev : Set (Op D.AppOp)} {s : D.State}
     (h_empty : ev = ∅) (h : IsCanonicalState C ev s) : s = D.init := by
   obtain ⟨ρ, hp, _, hf⟩ := h
@@ -1268,7 +1269,7 @@ theorem isCanonicalState_empty {D : CRDTSig} {C : Configuration D}
 /-- Backward closure survives removing a union-maximal event: a
 `vis ∧ ¬commutes` edge out of `e` would be a `loOn`-edge in every
 relation, contradicting maximality. -/
-theorem closure_diff_of_max {D : CRDTSig} {C : Configuration D}
+theorem closure_diff_of_max {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
     {ev evU : Set (Op D.AppOp)} {e : Op D.AppOp}
     (h_sub : ev ⊆ evU)
     (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev)
@@ -1284,7 +1285,7 @@ theorem closure_diff_of_max {D : CRDTSig} {C : Configuration D}
 
 /-- Re-attach a union-maximal event to a canonical state of the
 set-minus-it. -/
-theorem isCanonicalState_snoc {D : CRDTSig} {C : Configuration D}
+theorem isCanonicalState_snoc {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
     {ev : Set (Op D.AppOp)} {t : D.State} {e : Op D.AppOp}
     (h_e_in : e ∈ ev)
     (h_max : ∀ x ∈ ev, x ≠ e → ¬ loOn C ev e x)
@@ -1321,7 +1322,7 @@ theorem isCanonicalState_snoc {D : CRDTSig} {C : Configuration D}
 Join Lemma's induction consumes, isolated as an explicit bundle.
 See the section header for why they are stated over canonical states
 with the union-maximality context. -/
-structure JoinPeelVCs (D : CRDTSig) : Prop where
+structure JoinPeelVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
   /-- Peel a union-maximal event local to side 1. -/
   peel_local :
     ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp))
@@ -1352,7 +1353,7 @@ structure JoinPeelVCs (D : CRDTSig) : Prop where
 induction: enumerate the union, select a `loOn(∪)`-maximal event,
 peel it with `JoinPeelVCs`, recurse on the strictly smaller sets,
 and re-attach with `isCanonicalState_snoc`. -/
-theorem join_lemma_of_peel {D : CRDTSig} (hVC : CoreVCs D)
+theorem join_lemma_of_peel {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
     (hPeel : JoinPeelVCs D) : JoinLemma D := by
   intro C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl h_in₁ h_in₂
     h_cl₁ h_cl₂ hc₁ hc₂
@@ -1525,7 +1526,7 @@ and `lem_0op`, and the Join Lemma holds unconditionally. -/
 
 /-- With all events commuting, `loOn` has no edges between distinct
 events of the configuration. -/
-theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
+theorem loOn_empty_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
     {C : Configuration D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
@@ -1537,7 +1538,7 @@ theorem loOn_empty_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
       (distinctOps_of_events hx hy hne)).mpr (Or.inl h_rc) (h_comm x y)
 
 /-- Any enumeration is canonical when all events commute. -/
-theorem isCanonicalState_of_all_comm {D : CRDTSig}
+theorem isCanonicalState_of_all_comm {D : CRDTSig} [ReplayPolicy D]
     (hVC : CoreVCs D) {C : Configuration D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
@@ -1552,7 +1553,7 @@ theorem isCanonicalState_of_all_comm {D : CRDTSig}
     (Ne.symm hne)
 
 /-- The peel bundle for the commuting class. -/
-theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
+theorem joinPeelVCs_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) :
     JoinPeelVCs D := by
   constructor
@@ -1600,7 +1601,7 @@ theorem joinPeelVCs_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
     exact hVC.lem_0op t₁ t₂ e
 
 /-- **The Join Lemma, unconditionally, for the commuting class.** -/
-theorem join_lemma_of_all_comm {D : CRDTSig} (hVC : CoreVCs D)
+theorem join_lemma_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : JoinLemma D :=
   join_lemma_of_peel hVC (joinPeelVCs_of_all_comm hVC h_comm)
 

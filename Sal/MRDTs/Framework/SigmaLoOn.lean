@@ -24,27 +24,28 @@ open Classical
 
 section UpdateLayer
 variable {D : CRDTSig}
+variable [ReplayPolicy D]
 
 /-- The three update-layer fields of the 2-way `CoreVCs`, the fragment the
 `loOn`/convergence/canonical-state machinery consumes. An MRDT's `CoreVCs3`
 supplies these unchanged; the binary *merge* fields of `CoreVCs` are not
 required (they are false for LCA-sensitive MRDTs such as the counter). -/
-structure UpdateVCs (D : CRDTSig) : Prop where
+structure UpdateVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
       (¬ D.commutes o₁ o₂ ↔
-       (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨
-        D.rc o₂ o₁ = RcRes.Fst_then_snd))
+       (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
+        D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
   no_rc_chain :
     ∀ o₁ o₂ o₃ : Op D.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (D.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-         D.rc o₂ o₃ = RcRes.Fst_then_snd)
+      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)
   cond_comm_lift :
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      D.rc e e' = RcRes.Fst_then_snd →
+      D.replayOrder e e' = RcRes.Fst_then_snd →
       ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
@@ -62,7 +63,7 @@ theorem applySeq_swap_via_cond_comm_lift_u
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
-    (h_rc_ab : D.rc a b = RcRes.Fst_then_snd)
+    (h_rc_ab : D.replayOrder a b = RcRes.Fst_then_snd)
     (h_nc_be : ¬ D.commutes b e₃)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
@@ -89,7 +90,7 @@ theorem loOn_rc_no_succ_u (hU : UpdateVCs D)
     (hxy_ne : x ≠ y) (hyz_ne : y ≠ z)
     (hx : x ∈ T) (hy : y ∈ T) (hz : z ∈ T)
     (h_rc_edge : ¬ C.vis x y ∧ ¬ C.vis y x
-      ∧ D.rc x y = RcRes.Fst_then_snd
+      ∧ D.replayOrder x y = RcRes.Fst_then_snd
       ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ ¬ D.commutes y e₃)
     (h_edge : loOn C T y z) : False := by
   obtain ⟨_, _, h_rc, h_no_abs⟩ := h_rc_edge
@@ -112,7 +113,7 @@ theorem transGen_loOnNe_structure_u (hU : UpdateVCs D)
     C.vis a b ∨
     (∃ x, x ≠ b ∧ x ∈ T ∧
       (¬ C.vis x b ∧ ¬ C.vis b x
-        ∧ D.rc x b = RcRes.Fst_then_snd
+        ∧ D.replayOrder x b = RcRes.Fst_then_snd
         ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ ¬ D.commutes b e₃)) := by
   induction h with
   | single h_edge =>
@@ -285,9 +286,9 @@ theorem applySeq_swap_loOn_incomparable_u
     (h_ov : ¬ D.commutes a b → a.rep ≠ b.rep →
       ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
                 distinctOps a e₃ ∧ distinctOps b e₃ ∧
-                ((D.rc a b = RcRes.Fst_then_snd ∧
+                ((D.replayOrder a b = RcRes.Fst_then_snd ∧
                   ¬ D.commutes b e₃) ∨
-                 (D.rc b a = RcRes.Fst_then_snd ∧
+                 (D.replayOrder b a = RcRes.Fst_then_snd ∧
                   ¬ D.commutes a e₃))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
@@ -329,9 +330,9 @@ theorem applySeq_bubble_to_front_loOn_u
       ¬ D.commutes y e → y.rep ≠ e.rep →
       ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
                   distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                  ((D.rc y e = RcRes.Fst_then_snd ∧
+                  ((D.replayOrder y e = RcRes.Fst_then_snd ∧
                     ¬ D.commutes e e₃) ∨
-                   (D.rc e y = RcRes.Fst_then_snd ∧
+                   (D.replayOrder e y = RcRes.Fst_then_snd ∧
                     ¬ D.commutes y e₃)))
     (s : D.State) :
     applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
@@ -454,9 +455,9 @@ theorem convergence_on_u
             ¬ D.commutes y e → y.rep ≠ e.rep →
             ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
                         distinctOps y e₃ ∧ distinctOps e e₃ ∧
-                        ((D.rc y e = RcRes.Fst_then_snd ∧
+                        ((D.replayOrder y e = RcRes.Fst_then_snd ∧
                           ¬ D.commutes e e₃) ∨
-                         (D.rc e y = RcRes.Fst_then_snd ∧
+                         (D.replayOrder e y = RcRes.Fst_then_snd ∧
                           ¬ D.commutes y e₃)) := by
           intro α β y h_σ_eq h_nc h_diff_rep
           subst h_σ_eq
@@ -725,6 +726,7 @@ end UpdateLayer
 
 section Core
 variable {D : MRDTSig}
+variable [ReplayPolicy D.toCRDTSig]
 
 /-- **Timestamp uniqueness, contrapositive form**: two events of a binary
 configuration's universe with equal timestamps are equal (structural, from

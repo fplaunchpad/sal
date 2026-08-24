@@ -148,37 +148,131 @@ def VersionsSatisfy {D : MRDTSig}
     (P : D.State → Prop) (C : Configuration D) : Prop :=
   ∀ v s E, C.ver v = some (s, E) → P s
 
-/-- The operation-dependence policy used by the public arbitration order.
-It is part of the consistency specification, not a predicate over concrete
-implementation states. The legalization theorem makes the policy meaningful
-by producing an exact witness that respects it and refines the sequential
-machine. -/
-structure ArbitrationSpec (D : MRDTSig) where
-  Commutes : Op D.AppOp → Op D.AppOp → Prop
+/-- The order, if any, required between two concurrent conflicting events. -/
+inductive ConcurrentOrder where
+  | fstThenSnd
+  | sndThenFst
+  | unconstrained
+  deriving DecidableEq, Repr
 
-/-- The client-facing arbitration order has the standard RA shape but uses
-the explicit public dependence policy rather than universal equality on every
-possible representation state. -/
-def arbitrationLo {D : MRDTSig} (A : ArbitrationSpec D)
+namespace ConcurrentOrder
+
+def flip : ConcurrentOrder → ConcurrentOrder
+  | .fstThenSnd => .sndThenFst
+  | .sndThenFst => .fstThenSnd
+  | .unconstrained => .unconstrained
+
+@[simp] theorem flip_flip (o : ConcurrentOrder) : o.flip.flip = o := by
+  cases o <;> rfl
+
+end ConcurrentOrder
+
+/-- One semantic verdict records both whether two abstract operations conflict
+and, when they are concurrent, whether the sequential explanation constrains
+their order. `conflict unconstrained` is distinct from `independent`: causal
+conflicts still follow visibility even when reachable concurrent instances do
+not require a fixed order. -/
+inductive Interaction where
+  | independent
+  | conflict (concurrentOrder : ConcurrentOrder)
+  deriving DecidableEq, Repr
+
+namespace Interaction
+
+def flip : Interaction → Interaction
+  | .independent => .independent
+  | .conflict order => .conflict order.flip
+
+def Conflicts : Interaction → Prop
+  | .independent => False
+  | .conflict _ => True
+
+def FstBeforeSnd : Interaction → Prop
+  | .conflict .fstThenSnd => True
+  | _ => False
+
+@[simp] theorem flip_flip (i : Interaction) : i.flip.flip = i := by
+  cases i with
+  | independent => rfl
+  | conflict order => simp [flip]
+
+end Interaction
+
+/-- The public semantic interaction policy. This is independent of equality on
+arbitrary concrete representation states. The swap law prevents the two
+orientations of the same event pair from assigning inconsistent verdicts. -/
+structure InteractionSpec (D : MRDTSig) where
+  interaction : Op D.AppOp → Op D.AppOp → Interaction
+  swap_coherent : ∀ e₁ e₂, interaction e₂ e₁ = (interaction e₁ e₂).flip
+
+/-- Set-relative client-facing ordering constraints. Causal conflicts follow
+visibility. Concurrent conflicts use the supplied direction and retain the
+set-relative absorber rule of the checked convergence construction. -/
+def interactionLoOn {D : MRDTSig} (A : InteractionSpec D)
     (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
-    (e₁ e₂ : Op D.AppOp) : Prop :=
-  (C.vis e₁ e₂ ∧ ¬ A.Commutes e₁ e₂)
+    (E : Set (Op D.AppOp)) (e₁ e₂ : Op D.AppOp) : Prop :=
+  (C.vis e₁ e₂ ∧ (A.interaction e₁ e₂).Conflicts)
   ∨ (¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.rc e₁ e₂ = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃, C.vis e₂ e₃ ∧ ¬ A.Commutes e₂ e₃)
+      ∧ (A.interaction e₁ e₂).FstBeforeSnd
+      ∧ ¬ ∃ e₃ ∈ E, C.vis e₂ e₃ ∧
+        (A.interaction e₂ e₃).Conflicts)
 
-namespace ArbitrationSpec
+namespace InteractionSpec
 
-/-- Flat/raw datatypes can expose the implementation's universal commutation
-relation directly. -/
-def raw (D : MRDTSig) : ArbitrationSpec D where
-  Commutes := D.toCRDTSig.commutes
+/-- Lift a symmetric independence predicate into a semantic interaction
+policy. Conflicting concurrent pairs remain unconstrained. -/
+noncomputable def ofIndependence {D : MRDTSig}
+    (Independent : Op D.AppOp → Op D.AppOp → Prop)
+    (symmetric : ∀ e₁ e₂, Independent e₁ e₂ ↔ Independent e₂ e₁) :
+    InteractionSpec D where
+  interaction := fun e₁ e₂ =>
+    if Independent e₁ e₂ then .independent
+    else .conflict .unconstrained
+  swap_coherent := by
+    intro e₁ e₂
+    have hs := symmetric e₁ e₂
+    by_cases h : Independent e₁ e₂
+    · have hr : Independent e₂ e₁ := hs.mp h
+      simp [h, hr, Interaction.flip]
+    · have hr : ¬ Independent e₂ e₁ := by
+        intro h'
+        exact h (hs.mpr h')
+      simp [h, hr, Interaction.flip, ConcurrentOrder.flip]
 
-@[simp] theorem arbitrationLo_raw (D : MRDTSig)
-    (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) :
-    arbitrationLo (raw D) C = Sal.MRDTs.Foundation.lo C := rfl
+@[simp] theorem ofIndependence_conflicts {D : MRDTSig}
+    (Independent : Op D.AppOp → Op D.AppOp → Prop)
+    (symmetric : ∀ e₁ e₂, Independent e₁ e₂ ↔ Independent e₂ e₁)
+    (e₁ e₂ : Op D.AppOp) :
+    ((ofIndependence Independent symmetric).interaction e₁ e₂).Conflicts ↔
+      ¬ Independent e₁ e₂ := by
+  by_cases h : Independent e₁ e₂ <;>
+    simp [ofIndependence, h, Interaction.Conflicts]
 
-end ArbitrationSpec
+@[simp] theorem ofIndependence_not_before {D : MRDTSig}
+    (Independent : Op D.AppOp → Op D.AppOp → Prop)
+    (symmetric : ∀ e₁ e₂, Independent e₁ e₂ ↔ Independent e₂ e₁)
+    (e₁ e₂ : Op D.AppOp) :
+    ¬ ((ofIndependence Independent symmetric).interaction e₁ e₂).FstBeforeSnd := by
+  by_cases h : Independent e₁ e₂ <;>
+    simp [ofIndependence, h, Interaction.FstBeforeSnd]
+
+/-- Flat datatypes may use concrete universal commutation as their public
+independence policy. Production datatypes with malformed representation states
+should provide a semantic policy instead. -/
+noncomputable def raw (D : MRDTSig) : InteractionSpec D :=
+  ofIndependence D.toCRDTSig.commutes (fun e₁ e₂ => by
+    constructor <;> intro h s <;> exact (h s).symm)
+
+@[simp] theorem interactionLoOn_raw (D : MRDTSig)
+    (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
+    (E : Set (Op D.AppOp)) (e₁ e₂ : Op D.AppOp) :
+    interactionLoOn (raw D) C E e₁ e₂ ↔
+      C.vis e₁ e₂ ∧ ¬ D.toCRDTSig.commutes e₁ e₂ := by
+  by_cases h : D.toCRDTSig.commutes e₁ e₂ <;>
+    simp [interactionLoOn, raw, ofIndependence, Interaction.Conflicts,
+      Interaction.FstBeforeSnd, h]
+
+end InteractionSpec
 
 /-- Client safety derived from generation-certified execution. -/
 structure SafetyCertificate (D : MRDTSig) (V : VirtualLCAResolver D)

@@ -439,9 +439,32 @@ def embedSemanticCommutes
   | .del target, .ins _ _ _ => b.1 ≠ target
   | .del _, .del _ => True
 
-def embedArbitration (Γ : OrderedPrefixCode) :
-    ArbitrationSpec (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
-  Commutes := embedSemanticCommutes
+theorem embedSemanticCommutes_symm
+    (a b : Op (Sal.MRDTs.Instances.EmbedRGA.EOp α)) :
+    embedSemanticCommutes a b ↔ embedSemanticCommutes b a := by
+  obtain ⟨ats₀, ar, aop⟩ := a
+  obtain ⟨bt, br, bop⟩ := b
+  cases aop <;> cases bop <;> simp [embedSemanticCommutes, ne_comm]
+
+noncomputable def embedInteraction (Γ : OrderedPrefixCode) :
+    InteractionSpec (Sal.MRDTs.Instances.EmbedRGA.E Γ α) :=
+  InteractionSpec.ofIndependence embedSemanticCommutes
+    embedSemanticCommutes_symm
+
+@[simp] theorem embedInteraction_conflicts (Γ : OrderedPrefixCode)
+    (a b : Op (Sal.MRDTs.Instances.EmbedRGA.EOp α)) :
+    ((embedInteraction Γ).interaction a b).Conflicts ↔
+      ¬ embedSemanticCommutes a b := by
+  exact InteractionSpec.ofIndependence_conflicts
+    (D := Sal.MRDTs.Instances.EmbedRGA.E Γ α)
+    embedSemanticCommutes embedSemanticCommutes_symm a b
+
+@[simp] theorem embedInteraction_not_before (Γ : OrderedPrefixCode)
+    (a b : Op (Sal.MRDTs.Instances.EmbedRGA.EOp α)) :
+    ¬ ((embedInteraction Γ).interaction a b).FstBeforeSnd := by
+  exact InteractionSpec.ofIndependence_not_before
+    (D := Sal.MRDTs.Instances.EmbedRGA.E Γ α)
+    embedSemanticCommutes embedSemanticCommutes_symm a b
 
 theorem embedCanonical_respects {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.EmbedRGA.E Γ α)}
@@ -453,7 +476,7 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (hperm : listPermOf ops E) :
     respects (EmbedWitness.canonical ops)
-      (arbitrationLo (embedArbitration Γ) C.core) := by
+      (interactionLoOn (embedInteraction Γ) C.core E) := by
   open Sal.MRDTs.Instances.EmbedRGA in
     have hgood : GoodConfig3 C := exec.goodConfig (fun _ hmint =>
       e_join_at (eHonest_core (eHonest_of_mint hmint)))
@@ -488,17 +511,26 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
               | ins bel bpref banchor =>
                   simp [EmbedWitness.LE, EmbedWitness.leBool] at hab
               | del target =>
-                  exact hconflict (by simp [embedArbitration,
-                    embedSemanticCommutes])
+                  simpa [embedInteraction, InteractionSpec.ofIndependence,
+                    embedSemanticCommutes, Interaction.Conflicts] using
+                    hconflict
           | ins ael apref aanchor =>
               cases bop with
               | ins bel bpref banchor =>
-                  exact hconflict (by simp [embedArbitration,
-                    embedSemanticCommutes])
+                  simpa [embedInteraction, InteractionSpec.ofIndependence,
+                    embedSemanticCommutes, Interaction.Conflicts] using
+                    hconflict
               | del target =>
                   have hat : ats = target := by
-                    simpa [embedArbitration, embedSemanticCommutes] using
-                      not_ne_iff.mp hconflict
+                    have hncBA : ¬ embedSemanticCommutes
+                        (bt, br, .del target)
+                        (ats, ar, .ins ael apref aanchor) := by
+                      exact (embedInteraction_conflicts Γ _ _).mp hconflict
+                    have hnc : ¬ embedSemanticCommutes
+                        (ats, ar, .ins ael apref aanchor)
+                        (bt, br, .del target) := fun hcomm =>
+                      hncBA ((embedSemanticCommutes_symm _ _).mp hcomm)
+                    simpa [embedSemanticCommutes] using not_ne_iff.mp hnc
                   obtain ⟨creator, hcreatorC, hcreatorVis, hcreatorTime,
                     _⟩ := hhon.del_has_ins (bt, br, .del target) hbC target rfl
                   have hcreatorEq :
@@ -508,13 +540,12 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
                   subst creator
                   exact hgood.vis_irrefl _
                     (hgood.vis_trans hcreatorVis hvba)
-        · rw [E_rc_either] at hrc
-          exact RcRes.noConfusion hrc.2.2.1
+        · exact (embedInteraction_not_before Γ _ _) hrc.2.2.1
 
-noncomputable def embedLegalization (Γ : OrderedPrefixCode) :
-    LegalizationCertificate (Sal.MRDTs.Instances.EmbedRGA.E Γ α)
+noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
+    SequentialCorrectnessCertificate (Sal.MRDTs.Instances.EmbedRGA.E Γ α)
       (Sal.MRDTs.Instances.EmbedRGA.generation Γ)
-      (embedArbitration Γ) (embedClientSpec Γ) embedRel where
+      (embedInteraction Γ) (embedClientSpec Γ) embedRel where
   sound C exec replay := by
     open Sal.MRDTs.Instances.EmbedRGA in
       intro v s E hver
@@ -567,11 +598,11 @@ noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Sal
 noncomputable def embed (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ
-  arbitration := embedArbitration Γ
+  interaction := embedInteraction Γ
   convergence := Sal.MRDTs.Instances.EmbedRGA.convergence Γ
   Spec := embedClientSpec Γ
   Rel := embedRel
-  legalization := embedLegalization Γ
+  sequentialCorrectness := embedSequentialCorrectness Γ
 
 namespace SidedWitness
 
@@ -942,9 +973,32 @@ def sidedSemanticCommutes
   | .del target, .ins _ _ _ _ => b.1 ≠ target
   | .del _, .del _ => True
 
-def sidedArbitration (Γ : OrderedPrefixCode) :
-    ArbitrationSpec (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
-  Commutes := sidedSemanticCommutes
+theorem sidedSemanticCommutes_symm
+    (a b : Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp) :
+    sidedSemanticCommutes a b ↔ sidedSemanticCommutes b a := by
+  obtain ⟨ats₀, ar, aop⟩ := a
+  obtain ⟨bt, br, bop⟩ := b
+  cases aop <;> cases bop <;> simp [sidedSemanticCommutes, ne_comm]
+
+noncomputable def sidedInteraction (Γ : OrderedPrefixCode) :
+    InteractionSpec (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) :=
+  InteractionSpec.ofIndependence sidedSemanticCommutes
+    sidedSemanticCommutes_symm
+
+@[simp] theorem sidedInteraction_conflicts (Γ : OrderedPrefixCode)
+    (a b : Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp) :
+    ((sidedInteraction Γ).interaction a b).Conflicts ↔
+      ¬ sidedSemanticCommutes a b := by
+  exact InteractionSpec.ofIndependence_conflicts
+    (D := Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
+    sidedSemanticCommutes sidedSemanticCommutes_symm a b
+
+@[simp] theorem sidedInteraction_not_before (Γ : OrderedPrefixCode)
+    (a b : Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp) :
+    ¬ ((sidedInteraction Γ).interaction a b).FstBeforeSnd := by
+  exact InteractionSpec.ofIndependence_not_before
+    (D := Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
+    sidedSemanticCommutes sidedSemanticCommutes_symm a b
 
 theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)}
@@ -956,7 +1010,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (arbitrationLo (sidedArbitration Γ) C.core) := by
+      (interactionLoOn (sidedInteraction Γ) C.core E) := by
   open Sal.MRDTs.Instances.SidedEmbedRGA in
     have hsub := hgood.ver_events_sub v s E hver
     have hcan := SidedWitness.canonical_listPermOf hperm
@@ -987,17 +1041,26 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
               | ins bel bpref banchor bside =>
                   simp [SidedWitness.LE, SidedWitness.leBool] at hab
               | del target =>
-                  exact hconflict (by simp [sidedArbitration,
-                    sidedSemanticCommutes])
+                  simpa [sidedInteraction, InteractionSpec.ofIndependence,
+                    sidedSemanticCommutes, Interaction.Conflicts] using
+                    hconflict
           | ins ael apref aanchor aside =>
               cases bop with
               | ins bel bpref banchor bside =>
-                  exact hconflict (by simp [sidedArbitration,
-                    sidedSemanticCommutes])
+                  simpa [sidedInteraction, InteractionSpec.ofIndependence,
+                    sidedSemanticCommutes, Interaction.Conflicts] using
+                    hconflict
               | del target =>
                   have hat : ats = target := by
-                    simpa [sidedArbitration, sidedSemanticCommutes] using
-                      not_ne_iff.mp hconflict
+                    have hncBA : ¬ sidedSemanticCommutes
+                        (bt, br, .del target)
+                        (ats, ar, .ins ael apref aanchor aside) := by
+                      exact (sidedInteraction_conflicts Γ _ _).mp hconflict
+                    have hnc : ¬ sidedSemanticCommutes
+                        (ats, ar, .ins ael apref aanchor aside)
+                        (bt, br, .del target) := fun hcomm =>
+                      hncBA ((sidedSemanticCommutes_symm _ _).mp hcomm)
+                    simpa [sidedSemanticCommutes] using not_ne_iff.mp hnc
                   obtain ⟨creator, hcreatorC, hcreatorVis, hcreatorTime,
                     _⟩ := hhon.del_has_ins (bt, br, .del target) hbC target rfl
                   have hcreatorEq : creator =
@@ -1007,8 +1070,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
                   subst creator
                   exact hgood.vis_irrefl _
                     (hgood.vis_trans hcreatorVis hvba)
-        · rw [S_rc_either] at hrc
-          exact RcRes.noConfusion hrc.2.2.1
+        · exact (sidedInteraction_not_before Γ _ _) hrc.2.2.1
 
 theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)}
@@ -1020,7 +1082,7 @@ theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (arbitrationLo (sidedArbitration Γ) C.core) := by
+      (interactionLoOn (sidedInteraction Γ) C.core E) := by
   apply sidedCanonical_respects_of
     (exec.goodConfig (fun _ hmint =>
       Sal.MRDTs.Instances.SidedEmbedRGA.s_join_at
@@ -1045,10 +1107,10 @@ theorem sided_respects_loOn_of_lo {Γ : OrderedPrefixCode}
     rw [loOn_iff_of_rc_either (S_rc_either Γ)] at hOn
     exact Or.inl hOn
 
-noncomputable def sidedLegalization (Γ : OrderedPrefixCode) :
-    LegalizationCertificate (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
+noncomputable def sidedSequentialCorrectness (Γ : OrderedPrefixCode) :
+    SequentialCorrectnessCertificate (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
       (Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ)
-      (sidedArbitration Γ) (sidedClientSpec Γ) sidedRel where
+      (sidedInteraction Γ) (sidedClientSpec Γ) sidedRel where
   sound C exec replay := by
     open Sal.MRDTs.Instances.SidedEmbedRGA in
       intro v s E hver
@@ -1103,11 +1165,11 @@ noncomputable def replaySided (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Sal
 noncomputable def sided (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
   issuance := Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ
-  arbitration := sidedArbitration Γ
+  interaction := sidedInteraction Γ
   convergence := Sal.MRDTs.Instances.SidedEmbedRGA.convergence Γ
   Spec := sidedClientSpec Γ
   Rel := sidedRel
-  legalization := sidedLegalization Γ
+  sequentialCorrectness := sidedSequentialCorrectness Γ
 
 #print axioms replayEmbed
 #print axioms embed

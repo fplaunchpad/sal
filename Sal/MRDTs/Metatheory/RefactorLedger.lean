@@ -25,6 +25,7 @@ import Sal.MRDTs.Instances.TreeMove
 import Sal.MRDTs.Instances.TreeMoveGC
 import Sal.MRDTs.Instances.AegisSheetGC
 import Sal.MRDTs.Instances.AegisSheetSequential
+import Sal.MRDTs.Instances.InteractionSPOT
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
 
@@ -54,12 +55,14 @@ namespace Sal.MRDTs
 #check SafetyCertificate.preservation
 #check SequentialRefinement
 #check SequentialSpec
-#check ArbitrationSpec
+#check InteractionSpec
+#check interactionLoOn
 #check ConvergenceCertificate
 #check ConvergenceCertificate.sound
 #check VerifiedMRDT
 #check ReplayVerifiedMRDT
 #check IsSpecRALinearizable
+#check Instances.InteractionSPOT.LWW.old_no_chain_refuted
 #check StateGCCertificate
 #check StateGCProtocol
 #check prodSig

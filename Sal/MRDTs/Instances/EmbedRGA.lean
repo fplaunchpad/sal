@@ -95,7 +95,6 @@ def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
   update := eUpdate Γ
   merge := fun a b => eMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  rc := fun _ _ => RcRes.Either
   mergeL := eMergeL
   merge_init_slice := fun _ _ => rfl
 
@@ -103,7 +102,7 @@ theorem E_core_update (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α))
     (E Γ α).toCRDTSig.update s o = eUpdate Γ s o := rfl
 
 theorem E_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op (EOp α)) :
-    (E Γ α).toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+    (E Γ α).toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §1½  First list algebra -/
 

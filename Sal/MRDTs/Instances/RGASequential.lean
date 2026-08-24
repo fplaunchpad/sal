@@ -655,8 +655,8 @@ theorem canonical_refines_list {ops : List (Op RGAOp)}
   rw [read_eq_sequence_of_stateRel (sequentialSound (canonical ops)),
     list_run_eq_sequence hperm hwf]
 
-noncomputable def listLegalization : LegalizationCertificate RGAM generation
-    (ArbitrationSpec.raw RGAM)
+noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate RGAM generation
+    (InteractionSpec.raw RGAM)
     listSpec listRel where
   sound C exec replay := by
     intro v s E hver
@@ -668,7 +668,8 @@ noncomputable def listLegalization : LegalizationCertificate RGAM generation
     have hrel : listRel s (listSpec.run (canonical ops)) := by
       rw [← hstate]
       exact href
-    refine ⟨canonical ops, canonical_listPermOf hperm, respects_lo C _,
+    refine ⟨canonical ops, canonical_listPermOf hperm,
+      respects_interactionLoOn_raw_of_lo (respects_lo C _),
       canonical_legal hperm hwf, hrel, ?_⟩
     intro query
     cases query
@@ -678,21 +679,21 @@ noncomputable def listLegalization : LegalizationCertificate RGAM generation
 ordinary-list witness and exact query agreement. -/
 noncomputable def verified : VerifiedMRDT RGAM where
   issuance := generation
-  arbitration := ArbitrationSpec.raw RGAM
+  interaction := InteractionSpec.raw RGAM
   convergence := convergence
   Spec := listSpec
   Rel := listRel
-  legalization := listLegalization
+  sequentialCorrectness := listSequentialCorrectness
 
 theorem rga_spec_linearizable {C : Configuration RGAM}
     (h : MintCertifiedReach RGAM generation C) :
-    IsSpecRALinearizable RGAM (ArbitrationSpec.raw RGAM)
+    IsSpecRALinearizable RGAM (InteractionSpec.raw RGAM)
       listSpec listRel C :=
   verified.converges h
 
 theorem rga_spec_linearizableV {C : Configuration RGAM}
     (h : MintCertifiedReachV RGAM (canonicalVirtualLCA RGAM) generation C) :
-    IsSpecRALinearizable RGAM (ArbitrationSpec.raw RGAM)
+    IsSpecRALinearizable RGAM (InteractionSpec.raw RGAM)
       listSpec listRel C :=
   verified.convergesV h
 

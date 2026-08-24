@@ -26,7 +26,6 @@ def D (delta : A → Int) : MRDTSig where
   update s e := s + delta e.2.2
   merge a b := a + b
   query s _ := s
-  rc _ _ := RcRes.Either
   mergeL l a b := a + b - l
   merge_init_slice _ _ := by omega
 
@@ -48,14 +47,14 @@ theorem updateVCs : UpdateVCs (D A delta).toCRDTSig := by
     · intro h
       exact absurd (all_comm delta a b) h
     · rintro (h | h) <;>
-        (rw [show (D A delta).rc _ _ = RcRes.Either from rfl] at h;
+        (rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h;
          exact RcRes.noConfusion h)
   · intro a b c _ _
     rintro ⟨h, _⟩
-    rw [show (D A delta).rc _ _ = RcRes.Either from rfl] at h
+    rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
   · intro s a b c π _ _ _ h _
-    rw [show (D A delta).rc _ _ = RcRes.Either from rfl] at h
+    rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
 
 theorem coreVCs3 : CoreVCs3 (D A delta) := by
@@ -122,11 +121,11 @@ def sequential : SequentialRefinement (D A delta)
 
 noncomputable def verified : VerifiedMRDT (D A delta) where
   issuance := generation delta
-  arbitration := ArbitrationSpec.raw (D A delta)
+  interaction := InteractionSpec.raw (D A delta)
   convergence := convergence delta
   Spec := spec (A := A) delta
   Rel := (· = ·)
-  legalization := LegalizationCertificate.ofTotal
+  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
     (fun _ => True.intro)
     (fun ops => (sequential delta).sound ops True.intro)
     (fun _ _ => rfl)

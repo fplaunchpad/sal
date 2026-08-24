@@ -19,6 +19,7 @@ open CRDTSig
 
 section
 variable (D : CRDTSig)
+variable [ReplayPolicy D]
 
 /-- Apply a sequence of events to a state, left-to-right.
 Paper notation: $\pi(\sigma)$. -/
@@ -57,7 +58,7 @@ def rcNonComm : Prop :=
   ∀ o₁ o₂ : D.AppOp,
     ¬ D.appOpsCommute o₁ o₂ ↔
       (∀ e₁ e₂ : Op D.AppOp, e₁.op = o₁ → e₂.op = o₂ →
-         D.rc e₁ e₂ = RcRes.Fst_then_snd ∨ D.rc e₂ e₁ = RcRes.Fst_then_snd)
+         D.replayOrder e₁ e₂ = RcRes.Fst_then_snd ∨ D.replayOrder e₂ e₁ = RcRes.Fst_then_snd)
 
 /-- `cond-comm(D)` (lin.tex §3.2). Whenever `rc` orders `o₁ → o₂` and
 `o₂` doesn't commute with some `o₃`, then `o₁, o₂` conditionally commute
@@ -66,7 +67,7 @@ Fig. conditional-commutativity. -/
 def condComm : Prop :=
   ∀ o₁ o₂ o₃ : D.AppOp,
     (∀ e₁ e₂ : Op D.AppOp, e₁.op = o₁ → e₂.op = o₂ →
-       D.rc e₁ e₂ = RcRes.Fst_then_snd) →
+       D.replayOrder e₁ e₂ = RcRes.Fst_then_snd) →
     ¬ D.appOpsCommute o₂ o₃ →
     appOpsCondCommute o₁ o₂ o₃
 
@@ -88,7 +89,7 @@ is already "overwritten" by a later non-commuting `e₃`. -/
 def lo (C : Configuration D) (e₁ e₂ : Op D.AppOp) : Prop :=
   (C.vis e₁ e₂ ∧ ¬ D.commutes e₁ e₂)
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.rc e₁ e₂ = RcRes.Fst_then_snd
+      ∧ D.replayOrder e₁ e₂ = RcRes.Fst_then_snd
       ∧ ¬ ∃ e₃, C.vis e₂ e₃ ∧ ¬ D.commutes e₂ e₃ )
 
 /-- `π` is a permutation-list of the set `E`: every event in `π` is in
@@ -145,13 +146,13 @@ def differentReplicas {D : CRDTSig} (o₁ o₂ : Op D.AppOp) : Prop :=
 /-- The 24 VCs of the Sal paper. Each field is the parametric,
 signature-level version of the corresponding per-CRDT theorem in
 the archived standalone CRDT case studies. -/
-structure SatisfiesVCs (D : CRDTSig) : Prop where
+structure SatisfiesVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
   /-- rc-nonComm semantic characterization: at distinct timestamps and
   replicas, `rc = Either` iff the two events commute. -/
   rc_non_comm :
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-      (D.rc o₁ o₂ = RcRes.Either ↔ D.commutes o₁ o₂)
+      (D.replayOrder o₁ o₂ = RcRes.Either ↔ D.commutes o₁ o₂)
 
   /-- rc-nonComm directional form (paper lin.tex:387). At distinct
   timestamps, non-commutativity is equivalent to being `rc`-ordered in
@@ -169,15 +170,15 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ →
       (¬ D.commutes o₁ o₂ ↔
-       (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Fst_then_snd))
+       (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
 
   /-- rc is not transitively ordering: no three events form an
   `rc = Fst_then_snd` chain. -/
   no_rc_chain :
     ∀ o₁ o₂ o₃ : Op D.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (D.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-         D.rc o₂ o₃ = RcRes.Fst_then_snd)
+      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)
 
   /-- Base case for conditional commutativity: if `rc o₁ o₂ =
   Fst_then_snd` and `o₂` doesn't commute with `o₃`, then `o₁` and `o₂`
@@ -185,8 +186,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   cond_comm_base :
     ∀ (s : D.State) (o₁ o₂ o₃ : Op D.AppOp),
       distinctOps o₁ o₂ → distinctOps o₂ o₃ → distinctOps o₁ o₃ →
-      D.rc o₁ o₂ = RcRes.Fst_then_snd →
-      D.rc o₂ o₃ ≠ RcRes.Either →
+      D.replayOrder o₁ o₂ = RcRes.Fst_then_snd →
+      D.replayOrder o₂ o₃ ≠ RcRes.Either →
       D.update (D.update (D.update s o₁) o₂) o₃
         = D.update (D.update (D.update s o₂) o₁) o₃
 
@@ -200,7 +201,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   `init`, pushing `o₁` through `merge` is sound. -/
   base_2op :
     ∀ o₁ o₂ : Op D.AppOp,
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ → distinctOps o₁ o₂ →
       D.merge (D.update D.init o₁) (D.update D.init o₂)
         = D.update (D.merge D.init (D.update D.init o₂)) o₁
@@ -209,7 +210,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   hypothesis from `l` to `do l ol`. -/
   ind_lca_2op :
     ∀ (l : D.State) (o₁ o₂ ol : Op D.AppOp),
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ →
       distinctOps o₁ o₂ → distinctOps o₁ ol → distinctOps o₂ ol →
       D.merge (D.update l o₁) (D.update l o₂)
@@ -220,9 +221,9 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Right-side base case for a single `ob` interposed. -/
   inter_right_base_2op :
     ∀ (a b : D.State) (o₁ o₂ ob ol : Op D.AppOp),
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ →
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
       distinctOps o₁ o₂ → distinctOps o₁ ob → distinctOps o₁ ol →
       distinctOps o₂ ob → distinctOps o₂ ol → distinctOps ob ol →
       D.merge (D.update a o₁) (D.update b o₂)
@@ -239,8 +240,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Left-side base case, symmetric to `inter_right_base_2op`. -/
   inter_left_base_2op :
     ∀ (a b : D.State) (o₁ o₂ ob ol : Op D.AppOp),
-      D.rc o₂ o₁ = RcRes.Fst_then_snd →
-      D.rc ob ol = RcRes.Fst_then_snd →
+      D.replayOrder o₂ o₁ = RcRes.Fst_then_snd →
+      D.replayOrder ob ol = RcRes.Fst_then_snd →
       differentReplicas o₂ o₁ → differentReplicas ob ol →
       distinctOps o₁ o₂ → distinctOps o₁ ob → distinctOps o₁ ol →
       distinctOps o₂ ob → distinctOps o₂ ol → distinctOps ob ol →
@@ -255,10 +256,10 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   one more op `o`. -/
   inter_right_2op :
     ∀ (a b : D.State) (o₁ o₂ ob ol o : Op D.AppOp),
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ →
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
-      (D.rc o ob ≠ RcRes.Either ∨ D.rc o ol = RcRes.Fst_then_snd) →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      (D.replayOrder o ob ≠ RcRes.Either ∨ D.replayOrder o ol = RcRes.Fst_then_snd) →
       distinctOps o₁ o₂ → distinctOps o₁ ob → distinctOps o₁ ol →
       distinctOps o₁ o →
       distinctOps o₂ ob → distinctOps o₂ ol → distinctOps o₂ o →
@@ -276,10 +277,10 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Inductive step for the left-side interposition. -/
   inter_left_2op :
     ∀ (a b : D.State) (o₁ o₂ ob ol o : Op D.AppOp),
-      D.rc o₂ o₁ = RcRes.Fst_then_snd →
-      D.rc ob ol = RcRes.Fst_then_snd →
+      D.replayOrder o₂ o₁ = RcRes.Fst_then_snd →
+      D.replayOrder ob ol = RcRes.Fst_then_snd →
       differentReplicas o₂ o₁ → differentReplicas ob ol →
-      (D.rc o ob ≠ RcRes.Either ∨ D.rc o ol = RcRes.Fst_then_snd) →
+      (D.replayOrder o ob ≠ RcRes.Either ∨ D.replayOrder o ol = RcRes.Fst_then_snd) →
       distinctOps o₁ o₂ → distinctOps o₁ ob → distinctOps o₁ ol →
       distinctOps o₁ o →
       distinctOps o₂ ob → distinctOps o₂ ol → distinctOps o₂ o →
@@ -297,10 +298,10 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- LCA-side 2-op inductive step. -/
   inter_lca_2op :
     ∀ (a b : D.State) (o₁ o₂ ol : Op D.AppOp),
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ →
       distinctOps o₁ o₂ → distinctOps o₁ ol → distinctOps o₂ ol →
-      (∃ o, D.rc o ol = RcRes.Fst_then_snd) →
+      (∃ o, D.replayOrder o ol = RcRes.Fst_then_snd) →
       D.merge (D.update (D.update a ol) o₁) (D.update b ol)
         = D.update (D.merge (D.update a ol) (D.update b ol)) o₁ →
       D.merge (D.update a o₁) (D.update b o₂)
@@ -311,7 +312,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- 2-op right-hand inductive step: extend by one more op `o₂'` on b. -/
   ind_right_2op :
     ∀ (a b : D.State) (o₁ o₂ o₂' : Op D.AppOp),
-      D.rc o₂ o₁ = RcRes.Fst_then_snd →
+      D.replayOrder o₂ o₁ = RcRes.Fst_then_snd →
       differentReplicas o₁ o₂ →
       distinctOps o₁ o₂ → distinctOps o₁ o₂' → distinctOps o₂ o₂' →
       D.merge (D.update a o₁) (D.update b o₂)
@@ -322,7 +323,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- 2-op left-hand inductive step: extend by one more op `o₁'` on a. -/
   ind_left_2op :
     ∀ (a b : D.State) (o₁ o₂ o₁' : Op D.AppOp),
-      (D.rc o₂ o₁ = RcRes.Fst_then_snd ∨ D.rc o₂ o₁ = RcRes.Either) →
+      (D.replayOrder o₂ o₁ = RcRes.Fst_then_snd ∨ D.replayOrder o₂ o₁ = RcRes.Either) →
       differentReplicas o₁ o₂ →
       distinctOps o₁ o₂ → distinctOps o₁ o₁' → distinctOps o₂ o₁' →
       D.merge (D.update a o₁) (D.update b o₂)
@@ -348,9 +349,9 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Right-side base case for the 1-op rule. -/
   inter_right_base_1op :
     ∀ (a b : D.State) (o₁ ob ol : Op D.AppOp),
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
       distinctOps o₁ ob → distinctOps o₁ ol → distinctOps ob ol →
-      (D.rc ob o₁ = RcRes.Fst_then_snd →
+      (D.replayOrder ob o₁ = RcRes.Fst_then_snd →
          D.merge (D.update a o₁) (D.update b ob)
            = D.update (D.merge a (D.update b ob)) o₁) →
       D.merge (D.update (D.update a ol) o₁) (D.update b ol)
@@ -361,7 +362,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Left-side base case for the 1-op rule. -/
   inter_left_base_1op :
     ∀ (a b : D.State) (o₁ ob ol : Op D.AppOp),
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
       distinctOps o₁ ob → distinctOps o₁ ol → distinctOps ob ol →
       D.merge (D.update (D.update a ol) o₁) (D.update b ol)
         = D.update (D.merge (D.update a ol) (D.update b ol)) o₁ →
@@ -372,8 +373,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Right-side inductive step for the 1-op rule. -/
   inter_right_1op :
     ∀ (a b : D.State) (o₁ ob ol o : Op D.AppOp),
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
-      (D.rc o ob ≠ RcRes.Either ∨ D.rc o ol = RcRes.Fst_then_snd) →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      (D.replayOrder o ob ≠ RcRes.Either ∨ D.replayOrder o ol = RcRes.Fst_then_snd) →
       distinctOps o₁ ob → distinctOps o₁ ol → distinctOps o₁ o →
       distinctOps ob ol → distinctOps ob o → distinctOps ol o →
       differentReplicas o ol →
@@ -387,8 +388,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   /-- Left-side inductive step for the 1-op rule. -/
   inter_left_1op :
     ∀ (a b : D.State) (o₁ ob ol o : Op D.AppOp),
-      D.rc ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
-      (D.rc o ob ≠ RcRes.Either ∨ D.rc o ol = RcRes.Fst_then_snd) →
+      D.replayOrder ob ol = RcRes.Fst_then_snd → differentReplicas ob ol →
+      (D.replayOrder o ob ≠ RcRes.Either ∨ D.replayOrder o ol = RcRes.Fst_then_snd) →
       distinctOps o₁ ob → distinctOps o₁ ol → distinctOps o₁ o →
       distinctOps ob ol → distinctOps ob o → distinctOps ol o →
       differentReplicas o ol →
@@ -404,8 +405,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   inter_lca_1op :
     ∀ (a b : D.State) (o₁ ol oi : Op D.AppOp),
       distinctOps o₁ ol → distinctOps o₁ oi → distinctOps ol oi →
-      (∃ o, D.rc o ol = RcRes.Fst_then_snd) →
-      (∃ o, D.rc o oi = RcRes.Fst_then_snd) →
+      (∃ o, D.replayOrder o ol = RcRes.Fst_then_snd) →
+      (∃ o, D.replayOrder o oi = RcRes.Fst_then_snd) →
       D.merge (D.update (D.update a oi) o₁) (D.update b oi)
         = D.update (D.merge (D.update a oi) (D.update b oi)) o₁ →
       D.merge (D.update (D.update a ol) o₁) (D.update b ol)
@@ -462,7 +463,7 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
   cond_comm_lift :
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      D.rc e e' = RcRes.Fst_then_snd →
+      D.replayOrder e e' = RcRes.Fst_then_snd →
       ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
@@ -535,7 +536,8 @@ structure SatisfiesVCs (D : CRDTSig) : Prop where
 /-- The initial configuration is RA-linearizable: only replica `0` is
 active, its state is `σ₀`, and its event set is empty, so `π = []`
 witnesses RA-lin. -/
-theorem initConfig_RA_lin (D : CRDTSig) : IsRALinearizable (initConfig D) := by
+theorem initConfig_RA_lin (D : CRDTSig) [ReplayPolicy D] :
+    IsRALinearizable (initConfig D) := by
   intro r s E hN hL
   by_cases hr : r = 0
   · subst hr
@@ -557,7 +559,7 @@ makes Lean happy about matching implicit arguments. -/
 /-- `CreateReplica` preserves RA-lin: the new replica has state `σ₀`
 and no events, so `π = []` works; other replicas are unchanged. -/
 theorem RA_lin_preserved_createReplica
-    {D : CRDTSig} {C C' : Configuration D} {r : Replica}
+    {D : CRDTSig} [ReplayPolicy D] {C C' : Configuration D} {r : Replica}
     (hN   : C'.N = updateRep C.N r D.init)
     (hL   : C'.L = updateRep C.L r ∅)
     (hvis : C'.vis = C.vis)
@@ -594,7 +596,7 @@ involving elements other than `e` can be affected by `lo` is via the
 "∃ e₃" witness in the second disjunct. More witnesses in C' can only
 *falsify* the `¬ ∃ e₃ …` conjunct, shrinking `lo`. -/
 theorem lo_shrink_under_apply
-    {D : CRDTSig} {C C' : Configuration D}
+    {D : CRDTSig} [ReplayPolicy D] {C C' : Configuration D}
     {e : Op D.AppOp} {ev : Set (Op D.AppOp)}
     (hvis : C'.vis = fun a b => C.vis a b ∨ (ev a ∧ b = e))
     {p q : Op D.AppOp} (_hp : p ≠ e) (hq : q ≠ e)
@@ -622,7 +624,7 @@ The degenerate `C.vis e a` case in the frontier argument is ruled out
 by the `Configuration.vis_src` invariant (the fresh event `e` is not
 in `C.events` by freshness, contradicting `vis_src`). -/
 theorem RA_lin_preserved_apply
-    {D : CRDTSig} {C C' : Configuration D}
+    {D : CRDTSig} [ReplayPolicy D] {C C' : Configuration D}
     {t : Timestamp} {r : Replica} {o : D.AppOp}
     {s : D.State} {ev : Set (Op D.AppOp)}
     (h_s : C.N r = some s)

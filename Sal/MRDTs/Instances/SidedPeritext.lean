@@ -51,7 +51,6 @@ def RichCore (Γ : OrderedPrefixCode) : MRDTSig where
   update := (Core Γ).update
   merge := (Core Γ).merge
   query := renderState
-  rc := (Core Γ).rc
   mergeL := (Core Γ).mergeL
   merge_init_slice := (Core Γ).merge_init_slice
 
@@ -270,45 +269,98 @@ def coreSemanticCommutes
         (a.1, a.2.1, x) (b.1, b.2.1, y)
   | _, _ => True
 
-def coreArbitration (Γ : OrderedPrefixCode) : ArbitrationSpec (Core Γ) where
-  Commutes := coreSemanticCommutes
+@[simp] theorem coreSemanticCommutes_inl_inr
+    (a : Op SOp) (b : Op (Nat ⊕ MarkEvent)) :
+    coreSemanticCommutes (inlOp (A₂ := Nat ⊕ MarkEvent) a)
+      (inrOp (A₁ := SOp) b) := by
+  rcases a with ⟨ta, ra, a⟩
+  rcases b with ⟨tb, rb, b⟩
+  simp [coreSemanticCommutes, inlOp, inrOp]
 
-theorem coreArbitration_inl_iff {Γ : OrderedPrefixCode}
+@[simp] theorem coreSemanticCommutes_inr_inl
+    (a : Op (Nat ⊕ MarkEvent)) (b : Op SOp) :
+    coreSemanticCommutes (inrOp (A₁ := SOp) a)
+      (inlOp (A₂ := Nat ⊕ MarkEvent) b) := by
+  rcases a with ⟨ta, ra, a⟩
+  rcases b with ⟨tb, rb, b⟩
+  simp [coreSemanticCommutes, inlOp, inrOp]
+
+@[simp] theorem coreSemanticCommutes_inr_inr
+    (a b : Op (Nat ⊕ MarkEvent)) :
+    coreSemanticCommutes (inrOp (A₁ := SOp) a)
+      (inrOp (A₁ := SOp) b) := by
+  rcases a with ⟨ta, ra, a⟩
+  rcases b with ⟨tb, rb, b⟩
+  simp [coreSemanticCommutes, inlOp, inrOp]
+
+theorem coreSemanticCommutes_symm
+    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) :
+    coreSemanticCommutes a b ↔ coreSemanticCommutes b a := by
+  obtain ⟨ats₀, ar, aop⟩ := a
+  obtain ⟨bt, br, bop⟩ := b
+  cases aop <;> cases bop <;>
+    simp [coreSemanticCommutes,
+      ProductionRGA.sidedSemanticCommutes_symm]
+
+noncomputable def coreInteraction (Γ : OrderedPrefixCode) :
+    InteractionSpec (Core Γ) :=
+  InteractionSpec.ofIndependence coreSemanticCommutes
+    coreSemanticCommutes_symm
+
+@[simp] theorem coreInteraction_conflicts (Γ : OrderedPrefixCode)
+    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) :
+    ((coreInteraction Γ).interaction a b).Conflicts ↔
+      ¬ coreSemanticCommutes a b := by
+  exact InteractionSpec.ofIndependence_conflicts
+    (D := Core Γ) coreSemanticCommutes coreSemanticCommutes_symm a b
+
+@[simp] theorem coreInteraction_not_before (Γ : OrderedPrefixCode)
+    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) :
+    ¬ ((coreInteraction Γ).interaction a b).FstBeforeSnd := by
+  exact InteractionSpec.ofIndependence_not_before
+    (D := Core Γ) coreSemanticCommutes coreSemanticCommutes_symm a b
+
+theorem coreInteraction_inl_iff {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (a b : Op SOp) :
-    arbitrationLo (coreArbitration Γ) C (inlOp a) (inlOp b) ↔
-      arbitrationLo (ProductionRGA.sidedArbitration Γ) (projCore₁ C) a b := by
+    interactionLoOn (coreInteraction Γ) C E (inlOp a) (inlOp b) ↔
+      interactionLoOn (ProductionRGA.sidedInteraction Γ) (projCore₁ C)
+        (evRes₁ E) a b := by
   constructor
   · rintro (⟨hvis, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
     · exact Or.inl ⟨hvis, hnc⟩
     · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, hvis₃, hnc₃⟩
-      exact habs ⟨inlOp e₃, hvis₃, hnc₃⟩
+      rintro ⟨e₃, he₃, hvis₃, hnc₃⟩
+      exact habs ⟨inlOp e₃, he₃, hvis₃, hnc₃⟩
   · rintro (⟨hvis, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
     · exact Or.inl ⟨hvis, hnc⟩
     · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, hvis₃, hnc₃⟩
+      rintro ⟨e₃, he₃, hvis₃, hnc₃⟩
       rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
-      · exact habs ⟨c, hvis₃, hnc₃⟩
-      · exact hnc₃ True.intro
+      · exact habs ⟨c, he₃, hvis₃, hnc₃⟩
+      · have hnc := (coreInteraction_conflicts Γ _ _).mp hnc₃
+        exact hnc (coreSemanticCommutes_inl_inr b c)
 
-theorem coreArbitration_inr_false {Γ : OrderedPrefixCode}
+theorem coreInteraction_inr_false {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (a b : Op (Nat ⊕ MarkEvent)) :
-    ¬ arbitrationLo (coreArbitration Γ) C (inrOp a) (inrOp b) := by
+    ¬ interactionLoOn (coreInteraction Γ) C E (inrOp a) (inrOp b) := by
   rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnc True.intro
-  · rcases a with ⟨ta, ra, a | a⟩ <;>
-      rcases b with ⟨tb, rb, b | b⟩ <;>
-      exact RcRes.noConfusion hrc
+  · exact ((coreInteraction_conflicts Γ _ _).mp hnc)
+      (coreSemanticCommutes_inr_inr a b)
+  · exact (coreInteraction_not_before Γ _ _) hrc
 
-theorem coreArbitration_cross_rl_false {Γ : OrderedPrefixCode}
+theorem coreInteraction_cross_rl_false {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (E : Set (Op (SOp ⊕ (Nat ⊕ MarkEvent))))
     (b : Op (Nat ⊕ MarkEvent)) (a : Op SOp) :
-    ¬ arbitrationLo (coreArbitration Γ) C (inrOp b) (inlOp a) := by
+    ¬ interactionLoOn (coreInteraction Γ) C E (inrOp b) (inlOp a) := by
   rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnc True.intro
-  · exact RcRes.noConfusion hrc
+  · exact ((coreInteraction_conflicts Γ _ _).mp hnc)
+      (coreSemanticCommutes_inr_inl b a)
+  · exact (coreInteraction_not_before Γ _ _) hrc
 
 /-- The independent editor state and its legal histories.  Store additions
 are total; the nontrivial legality is exactly the SidedEmbedRGA text
@@ -333,7 +385,8 @@ theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
     (hver : C.ver v = some (s, E))
     {ops : List (Op (Core Γ).AppOp)}
     (hperm : listPermOf ops E) :
-    respects (coreCanonical ops) (arbitrationLo (coreArbitration Γ) C.core) := by
+    respects (coreCanonical ops)
+      (interactionLoOn (coreInteraction Γ) C.core E) := by
   have hpver : (projConf₁ C).ver v = some (s.1, evRes₁ E) := by
     simp [projConf₁, hver]
   have htext := ProductionRGA.sidedCanonical_respects_of
@@ -346,20 +399,20 @@ theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
   refine ⟨?_, ?_, ?_⟩
   · rw [List.pairwise_map]
     exact htext.imp fun {a b} hab hba =>
-      hab ((coreArbitration_inl_iff b a).mp hba)
+      hab ((coreInteraction_inl_iff E b a).mp hba)
   · induction projList₂ ops with
     | nil => exact List.Pairwise.nil
     | cons a rest ih =>
         rw [List.pairwise_map, List.pairwise_cons]
         refine ⟨?_, ?_⟩
         · intro b hb
-          exact coreArbitration_inr_false b a
+          exact coreInteraction_inr_false E b a
         · simpa [List.pairwise_map] using ih
   · intro x hx y hy
     rw [List.mem_map] at hx hy
     obtain ⟨a, _, rfl⟩ := hx
     obtain ⟨b, _, rfl⟩ := hy
-    exact coreArbitration_cross_rl_false b a
+    exact coreInteraction_cross_rl_false E b a
 
 theorem coreCanonical_respects {Γ : OrderedPrefixCode}
     {C : Configuration (Core Γ)}
@@ -369,7 +422,8 @@ theorem coreCanonical_respects {Γ : OrderedPrefixCode}
     (hver : C.ver v = some (s, E))
     {ops : List (Op (Core Γ).AppOp)}
     (hperm : listPermOf ops E) :
-    respects (coreCanonical ops) (arbitrationLo (coreArbitration Γ) C.core) := by
+    respects (coreCanonical ops)
+      (interactionLoOn (coreInteraction Γ) C.core E) := by
   apply coreCanonical_respects_of
     (exec.goodConfig (fun _ hmint =>
       core_join_at (sHonest_core (coreHonest_of_mint _ hmint))))
@@ -380,7 +434,7 @@ theorem coreLegalizationSound (Γ : OrderedPrefixCode)
     (hgood : GoodConfig3 C)
     (hmint : MintHonest (Core Γ) (coreGuard Γ) C)
     (replay : IsRALinearizable (Core Γ) C) :
-    IsSpecRALinearizable (Core Γ) (coreArbitration Γ)
+    IsSpecRALinearizable (Core Γ) (coreInteraction Γ)
       (clientSpec Γ) coreRel C := by
     intro v s E hver
     obtain ⟨ops, hperm, hresp, hfold⟩ := replay v s E hver
@@ -467,9 +521,9 @@ theorem coreLegalizationSound (Γ : OrderedPrefixCode)
           storeQuery)
       rw [hrel.2]
 
-noncomputable def coreLegalization (Γ : OrderedPrefixCode) :
-    LegalizationCertificate (Core Γ) (generation Γ)
-      (coreArbitration Γ) (clientSpec Γ) coreRel where
+noncomputable def coreSequentialCorrectness (Γ : OrderedPrefixCode) :
+    SequentialCorrectnessCertificate (Core Γ) (generation Γ)
+      (coreInteraction Γ) (clientSpec Γ) coreRel where
   sound C exec replay :=
     coreLegalizationSound Γ
       (exec.goodConfig (fun _ hmint =>
@@ -478,11 +532,11 @@ noncomputable def coreLegalization (Γ : OrderedPrefixCode) :
 
 noncomputable def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (Core Γ) where
   issuance := generation Γ
-  arbitration := coreArbitration Γ
+  interaction := coreInteraction Γ
   convergence := convergence Γ
   Spec := clientSpec Γ
   Rel := coreRel
-  legalization := coreLegalization Γ
+  sequentialCorrectness := coreSequentialCorrectness Γ
 
 noncomputable def replayVerified (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Core Γ) where
   issuance := generation Γ
@@ -551,8 +605,10 @@ noncomputable def richClientSpec (Γ : OrderedPrefixCode) :
 def richRel (s : (RichCore Γ).State) (q : RichState) : Prop :=
   coreRel s q
 
-def richArbitration (Γ : OrderedPrefixCode) : ArbitrationSpec (RichCore Γ) where
-  Commutes := coreSemanticCommutes
+noncomputable def richInteraction (Γ : OrderedPrefixCode) :
+    InteractionSpec (RichCore Γ) :=
+  InteractionSpec.ofIndependence coreSemanticCommutes
+    coreSemanticCommutes_symm
 
 theorem documentOf_eq_richDocumentOf {Γ : OrderedPrefixCode}
     {s : (Core Γ).State} {q : RichState} (h : coreRel s q) :
@@ -632,7 +688,7 @@ theorem richLegalizationSound (Γ : OrderedPrefixCode)
     (hgood : GoodConfig3 C)
     (hmint : MintHonest (RichCore Γ) (coreGuard Γ) C)
     (replay : IsRALinearizable (RichCore Γ) C) :
-    IsSpecRALinearizable (RichCore Γ) (richArbitration Γ)
+    IsSpecRALinearizable (RichCore Γ) (richInteraction Γ)
       (richClientSpec Γ) richRel C := by
   have replayCore : IsRALinearizable (Core Γ) (asCoreConfig C) := by
     simpa [RichCore, asCoreConfig] using replay
@@ -644,7 +700,8 @@ theorem richLegalizationSound (Γ : OrderedPrefixCode)
   obtain ⟨ops, hperm, hresp, hlegal, hrel, _⟩ :=
     certifiedCore v s E hverCore
   refine ⟨ops, hperm, ?_, ?_, hrel, ?_⟩
-  · simpa [richArbitration, coreArbitration, arbitrationLo,
+  · simpa [richInteraction, coreInteraction, interactionLoOn,
+      InteractionSpec.ofIndependence,
       asCoreConfig, RichCore] using hresp
   · simpa [richClientSpec, clientSpec] using hlegal
   · intro kind
@@ -656,9 +713,9 @@ theorem richLegalizationSound (Γ : OrderedPrefixCode)
     rw [renderState, hdoc, hrel.2]
     simp [richClientSpec, clientSpec, SequentialSpec.run]
 
-noncomputable def richLegalization (Γ : OrderedPrefixCode) :
-    LegalizationCertificate (RichCore Γ) (richGeneration Γ)
-      (richArbitration Γ) (richClientSpec Γ) richRel where
+noncomputable def richSequentialCorrectness (Γ : OrderedPrefixCode) :
+    SequentialCorrectnessCertificate (RichCore Γ) (richGeneration Γ)
+      (richInteraction Γ) (richClientSpec Γ) richRel where
   sound C exec replay :=
     richLegalizationSound Γ
       (exec.goodConfig (fun C' hmint => rich_join_at (by
@@ -672,11 +729,11 @@ noncomputable def richLegalization (Γ : OrderedPrefixCode) :
 noncomputable def richVerified (Γ : OrderedPrefixCode) :
     VerifiedMRDT (RichCore Γ) where
   issuance := richGeneration Γ
-  arbitration := richArbitration Γ
+  interaction := richInteraction Γ
   convergence := richConvergence Γ
   Spec := richClientSpec Γ
   Rel := richRel
-  legalization := richLegalization Γ
+  sequentialCorrectness := richSequentialCorrectness Γ
 
 theorem linearMint_to_core {Γ : OrderedPrefixCode}
     {ops : List (Op (RichCore Γ).AppOp)}

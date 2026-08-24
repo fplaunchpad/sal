@@ -25,10 +25,22 @@ metatheory.  Keep `IsRALinearizable` as a compatibility alias while datatype
 certificates migrate to `IsSpecRALinearizable`. -/
 abbrev IsInternallyRALinearizable := IsRALinearizable
 
+/-- Every internal global replay order extends the raw semantic interaction
+constraints. The public relation is set-relative and drops the internal
+resolver's concurrent edges; causal concrete conflicts are retained. -/
+theorem respects_interactionLoOn_raw_of_lo {D : MRDTSig}
+    {C : Configuration D} {E : Set (Op D.AppOp)}
+    {π : List (Op D.AppOp)}
+    (h : respects π (Sal.MRDTs.Foundation.lo C.core)) :
+    respects π (interactionLoOn (InteractionSpec.raw D) C.core E) := by
+  unfold respects at h ⊢
+  exact h.imp fun {a b} hab hba => hab (Or.inl
+    ((InteractionSpec.interactionLoOn_raw D C.core E b a).mp hba))
+
 /-- Client-facing RA correctness.  The witness contains exactly the events
 of the version, respects the framework order, is accepted by the independent
 sequential specification, and agrees with its state and observations. -/
-def IsSpecRALinearizable (D : MRDTSig) (A : ArbitrationSpec D)
+def IsSpecRALinearizable (D : MRDTSig) (A : InteractionSpec D)
     (S : SequentialSpec D)
     (Rel : D.State → S.State → Prop)
     (C : Configuration D) : Prop :=
@@ -36,7 +48,7 @@ def IsSpecRALinearizable (D : MRDTSig) (A : ArbitrationSpec D)
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
       listPermOf π E ∧
-      respects π (arbitrationLo A C.core) ∧
+      respects π (interactionLoOn A C.core E) ∧
       S.Legal π ∧
       Rel s (S.run π) ∧
       ∀ query, D.query s query = S.query (S.run π) query
@@ -54,10 +66,11 @@ theorem IsRALinearizable.toSpec {D : MRDTSig} {C : Configuration D}
     (observes : ∀ ops query,
       D.query (applySeq D.toCRDTSig D.init ops) query =
         S.query (S.run ops) query) :
-    IsSpecRALinearizable D (ArbitrationSpec.raw D) S Rel C := by
+    IsSpecRALinearizable D (InteractionSpec.raw D) S Rel C := by
   intro v s E hver
   obtain ⟨π, hperm, hresp, hfold⟩ := h v s E hver
-  refine ⟨π, hperm, hresp, legal π, ?_, ?_⟩
+  have hsemantic := respects_interactionLoOn_raw_of_lo (E := E) hresp
+  refine ⟨π, hperm, hsemantic, legal π, ?_, ?_⟩
   · simpa [hfold] using refines π
   · intro query
     simpa [hfold] using observes π query
@@ -111,8 +124,8 @@ theorem CertifiedExecution.goodConfig {D : MRDTSig}
 /-- Datatype-specific bridge from internal replay to client-facing
 correctness. The framework applies this one theorem to both ordinary and virtual-LCA
 executions, so the verification package does not store duplicate proofs. -/
-structure LegalizationCertificate (D : MRDTSig)
-    (I : Issuance D) (A : ArbitrationSpec D)
+structure SequentialCorrectnessCertificate (D : MRDTSig)
+    (I : Issuance D) (A : InteractionSpec D)
     (S : SequentialSpec D)
     (Rel : D.State → S.State → Prop) where
   sound : ∀ C, CertifiedExecution D I C → IsRALinearizable D C →
@@ -120,7 +133,7 @@ structure LegalizationCertificate (D : MRDTSig)
 
 /-- Total datatypes discharge legalization directly: every list is legal and
 every raw fold refines the sequential state and its observations. -/
-def LegalizationCertificate.ofTotal {D : MRDTSig}
+def SequentialCorrectnessCertificate.ofTotal {D : MRDTSig}
     {I : Issuance D} {S : SequentialSpec D}
     {Rel : D.State → S.State → Prop}
     (legal : ∀ ops, S.Legal ops)
@@ -129,7 +142,7 @@ def LegalizationCertificate.ofTotal {D : MRDTSig}
     (observes : ∀ ops query,
       D.query (applySeq D.toCRDTSig D.init ops) query =
         S.query (S.run ops) query) :
-    LegalizationCertificate D I (ArbitrationSpec.raw D) S Rel where
+    SequentialCorrectnessCertificate D I (InteractionSpec.raw D) S Rel where
   sound _ _ replay := replay.toSpec legal refines observes
 
 /-- Internal compatibility package for raw-fold refinement. It remains while
@@ -149,11 +162,12 @@ leak implementation state into the sequential specification. Safety and state
 GC remain separate optional certificates. -/
 structure VerifiedMRDT (D : MRDTSig) where
   issuance : Issuance D
-  arbitration : ArbitrationSpec D
+  interaction : InteractionSpec D
   convergence : ConvergenceCertificate D issuance
   Spec : SequentialSpec D
   Rel : D.State → Spec.State → Prop
-  legalization : LegalizationCertificate D issuance arbitration Spec Rel
+  sequentialCorrectness :
+    SequentialCorrectnessCertificate D issuance interaction Spec Rel
 
 namespace ReplayVerifiedMRDT
 
@@ -182,15 +196,15 @@ variable {D : MRDTSig} (V : VerifiedMRDT D)
 
 theorem converges {C : Configuration D}
     (h : MintCertifiedReach D V.issuance C) :
-    IsSpecRALinearizable D V.arbitration V.Spec V.Rel C :=
-  V.legalization.sound C
+    IsSpecRALinearizable D V.interaction V.Spec V.Rel C :=
+  V.sequentialCorrectness.sound C
     (.ordinary h)
     (V.convergence.sound h)
 
 theorem convergesV {C : Configuration D}
     (h : MintCertifiedReachV D (canonicalVirtualLCA D) V.issuance C) :
-    IsSpecRALinearizable D V.arbitration V.Spec V.Rel C :=
-  V.legalization.sound C
+    IsSpecRALinearizable D V.interaction V.Spec V.Rel C :=
+  V.sequentialCorrectness.sound C
     (.virtual h)
     (V.convergence.soundV h)
 

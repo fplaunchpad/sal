@@ -137,11 +137,13 @@ noncomputable def AWSetF : CRDTSig where
   update := awfUpdate
   merge := awfMerge
   query := fun σ _ => σ.1.1 \ σ.1.2
-  rc := awRc
+
+local instance : ReplayPolicy AWSetF where
+  order := awRc
 
 @[simp] theorem AWSetF_update : AWSetF.update = awfUpdate := rfl
 @[simp] theorem AWSetF_merge : AWSetF.merge = awfMerge := rfl
-@[simp] theorem AWSetF_rc : AWSetF.rc = awRc := rfl
+@[simp] theorem AWSetF_rc : AWSetF.replayOrder = awRc := rfl
 @[simp] theorem AWSetF_init :
     AWSetF.init = ((((∅ : Set Timestamp), (∅ : Set Timestamp))), false) := rfl
 
@@ -203,8 +205,8 @@ theorem AWSetF_rc_non_comm_directional :
     ∀ o₁ o₂ : Op AWSetF.AppOp,
       distinctOps o₁ o₂ →
       (¬ AWSetF.commutes o₁ o₂ ↔
-       (AWSetF.rc o₁ o₂ = RcRes.Fst_then_snd ∨
-        AWSetF.rc o₂ o₁ = RcRes.Fst_then_snd)) := by
+       (AWSetF.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
+        AWSetF.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
   intro o₁ o₂ _
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
     simp only [AWSetF_rc, awRc_eq, h₁, h₂]
@@ -226,8 +228,8 @@ theorem AWSetF_rc_non_comm_directional :
 theorem AWSetF_no_rc_chain :
     ∀ o₁ o₂ o₃ : Op AWSetF.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (AWSetF.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-         AWSetF.rc o₂ o₃ = RcRes.Fst_then_snd) := by
+      ¬ (AWSetF.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         AWSetF.replayOrder o₂ o₃ = RcRes.Fst_then_snd) := by
   rintro o₁ o₂ o₃ _ _ ⟨h₁₂, h₂₃⟩
   rcases ha : o₁.2.2 <;> rcases hb : o₂.2.2 <;> rcases hc : o₃.2.2 <;>
     simp only [AWSetF_rc, awRc_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
@@ -241,7 +243,7 @@ theorem AWSetF_cond_comm_lift :
     ∀ (s : AWSetF.State) (e e' e'' : Op AWSetF.AppOp)
       (π : List (Op AWSetF.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      AWSetF.rc e e' = RcRes.Fst_then_snd →
+      AWSetF.replayOrder e e' = RcRes.Fst_then_snd →
       ¬ AWSetF.commutes e' e'' →
       AWSetF.update (applySeq AWSetF (AWSetF.update (AWSetF.update s e') e) π) e''
         = AWSetF.update (applySeq AWSetF (AWSetF.update (AWSetF.update s e) e') π) e'' := by
@@ -650,10 +652,9 @@ Associativity + idempotence do **not** close the gap between
 `CoreVCs` and `JoinPeelVCs`; the missing ingredient is
 update-inflationarity (`AWSetF_update_not_inflationary`). -/
 theorem coreVCs_lattice_insufficient :
-    ∃ D : CRDTSig,
-      CoreVCs D ∧ LatticeVCs D ∧
-      ¬ JoinPeelVCs D ∧ ¬ JoinLemma D :=
-  ⟨AWSetF, AWSetF_coreVCs, AWSetF_latticeVCs,
+    CoreVCs AWSetF ∧ LatticeVCs AWSetF ∧
+      ¬ JoinPeelVCs AWSetF ∧ ¬ JoinLemma AWSetF :=
+  ⟨AWSetF_coreVCs, AWSetF_latticeVCs,
    AWSetF_not_joinPeelVCs, AWSetF_not_joinLemma⟩
 
 end Sal.MRDTs.Foundation

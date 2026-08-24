@@ -1,11 +1,12 @@
 import Sal.MRDTs.Framework.Base.LabeledTS
 
 /-!
-# CRDT signature
+# Executable CRDT signature and internal replay policies
 
-The six-tuple $\langle\Sigma, \sigma_0, \mathsf{do}, \mathsf{merge},
-\mathsf{query}, \mathsf{rc}\rangle$ for a state-based CRDT. Matches the
-Sal paper's signature specialised to 2-way merge (no LCA argument).
+The executable state-based signature contains state transitions, merge, and
+queries. A separate `ReplayPolicy` carries the historical Sal/Neem resolver
+used by one internal convergence proof. Client-facing arbitration does not
+come from this policy.
 
 Names in the Lean structure are English (`State`, `init`, `update`, …)
 because `Σ` is taken by sigma types in Lean. Docstrings map back to
@@ -14,10 +15,9 @@ paper notation.
 
 namespace Sal.MRDTs.Foundation
 
-/-- `rc` verdict, matching the existing Sal CRDT files. `Fst_then_snd`
-means the first op must be linearized before the second; `Either` means
-the order is semantically irrelevant. `Snd_then_fst` is conventional
-symmetry. -/
+/-- Internal replay-order verdict retained by the absorber-based convergence
+construction. It is not part of an executable datatype or its public semantic
+interaction policy. -/
 inductive RcRes : Type where
   | Fst_then_snd
   | Snd_then_fst
@@ -59,8 +59,6 @@ Glossary:
 * `update`: `do : Σ × (T × R × O) → Σ`; Sal's `do_`.
 * `merge`: `merge : Σ × Σ → Σ`; the lattice join on `Σ`.
 * `query`: `query : Σ × Q → V`.
-* `rc`: Sal's linearization-order specification.
-
 `update` takes the full `Op AppOp` (timestamp + replica + app op)
 because some CRDTs (e.g. LWW registers) dispatch on the timestamp; most
 ignore it and only use the app-op component. -/
@@ -75,13 +73,35 @@ structure CRDTSig where
   update : State → Op AppOp → State
   merge : State → State → State
   query : State → Query → Value
-  rc : Op AppOp → Op AppOp → RcRes
+
+/-- A proof-local replay policy for the historical absorber construction.
+`MRDTSig` does not contain this object. A convergence certificate may choose
+this construction or prove its replay theorem by another route. -/
+class ReplayPolicy (D : CRDTSig) where
+  order : Op D.AppOp → Op D.AppOp → RcRes
+
+namespace ReplayPolicy
+
+def unconstrained (D : CRDTSig) : ReplayPolicy D where
+  order := fun _ _ => .Either
+
+/-- The generic replay proof needs no resolver for commuting datatypes.  This
+low-priority proof default keeps that implementation detail out of every
+datatype declaration; a convergence proof for a noncommuting datatype installs
+its own higher-priority policy. -/
+instance (priority := low) default (D : CRDTSig) : ReplayPolicy D :=
+  unconstrained D
+
+end ReplayPolicy
 
 namespace CRDTSig
 
 attribute [instance] dec_state dec_op
 
 variable (D : CRDTSig)
+
+def replayOrder [P : ReplayPolicy D] : Op D.AppOp → Op D.AppOp → RcRes :=
+  P.order
 
 /-- Two events commute in `D` if applying them in either order from any
 state yields the same state. Paper notation: $e_1 \rightleftarrows e_2$

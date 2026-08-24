@@ -227,7 +227,6 @@ noncomputable def D : MRDTSig where
   update s e := insert e s
   merge := (· ∪ ·)
   query s _ := visibleTree (render s)
-  rc _ _ := RcRes.Either
   mergeL _ a b := a ∪ b
   merge_init_slice _ _ := rfl
 
@@ -376,8 +375,8 @@ theorem respects_lo (C : Configuration D) (ops : List Event) :
   | cons e rest ih =>
       exact List.pairwise_cons.mpr ⟨fun b _ => lo_false C b e, ih⟩
 
-noncomputable def legalization : LegalizationCertificate D generation
-    (ArbitrationSpec.raw D)
+noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D generation
+    (InteractionSpec.raw D)
     sequentialSpec stateRel where
   sound C _ replay := by
     intro v s E hver
@@ -401,7 +400,9 @@ noncomputable def legalization : LegalizationCertificate D generation
         exact Finset.sort_toFinset s eventLE
       rw [← hπstate]
       exact hs
-    refine ⟨π, hpermπ, respects_lo C π, hlegal, href, ?_⟩
+    refine ⟨π, hpermπ,
+      respects_interactionLoOn_raw_of_lo (respects_lo C π),
+      hlegal, href, ?_⟩
     intro query
     cases query
     exact congrArg visibleTree href.2
@@ -418,11 +419,11 @@ def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
 
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
-  arbitration := ArbitrationSpec.raw D
+  interaction := InteractionSpec.raw D
   convergence := convergence
   Spec := sequentialSpec
   Rel := stateRel
-  legalization := legalization
+  sequentialCorrectness := sequentialCorrectness
 
 /-! Small proof-oriented tests for the public issuer guard. -/
 

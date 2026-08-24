@@ -63,12 +63,11 @@ noncomputable def MVR : MRDTSig where
   update := mvrUpdate
   merge := fun a b => mvrMergeL (fun _ => false, fun _ => false) a b
   query := fun s _ => s
-  rc := fun _ _ => RcRes.Either
   mergeL := mvrMergeL
   merge_init_slice := fun _ _ => rfl
 
 theorem MVR_rc_either (o₁ o₂ : Op MVROp) :
-    MVR.toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+    MVR.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ### Projection unfolds and the update layer -/
 

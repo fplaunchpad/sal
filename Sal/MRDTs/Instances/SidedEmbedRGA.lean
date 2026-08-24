@@ -87,7 +87,6 @@ def S (Γ : OrderedPrefixCode) : MRDTSig where
   update := sUpdate Γ
   merge := fun a b => sMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  rc := fun _ _ => RcRes.Either
   mergeL := sMergeL
   merge_init_slice := fun _ _ => rfl
 
@@ -95,7 +94,7 @@ theorem S_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op SOp) :
     (S Γ).toCRDTSig.update s o = sUpdate Γ s o := rfl
 
 theorem S_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op SOp) :
-    (S Γ).toCRDTSig.rc o₁ o₂ = RcRes.Either := rfl
+    (S Γ).toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §1½  First list algebra -/
 

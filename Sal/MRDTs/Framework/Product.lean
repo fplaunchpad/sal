@@ -237,11 +237,6 @@ def prodSig : MRDTSig where
     match q with
     | .inl q => .inl (D₁.query s.1 q)
     | .inr q => .inr (D₂.query s.2 q)
-  rc x y :=
-    match x.2.2, y.2.2 with
-    | .inl a, .inl b => D₁.rc (x.1, x.2.1, a) (y.1, y.2.1, b)
-    | .inr a, .inr b => D₂.rc (x.1, x.2.1, a) (y.1, y.2.1, b)
-    | .inl _, .inr _ | .inr _, .inl _ => RcRes.Either
   mergeL l a b := (D₁.mergeL l.1 a.1 b.1, D₂.mergeL l.2 a.2 b.2)
   merge_init_slice a b := by
     simp only

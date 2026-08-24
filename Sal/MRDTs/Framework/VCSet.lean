@@ -25,6 +25,7 @@ open Classical
 
 section
 variable {D : MRDTSig}
+variable [ReplayPolicy D.toCRDTSig]
 
 /-- **The ternary core VC bundle**, exactly what the ternary Join induction consumes:
 
@@ -228,7 +229,7 @@ merge juggles (the sides, their intersection, their union). -/
 is independent of the event set: the rc arm's `Fst_then_snd` hypothesis is
 refuted outright. -/
 theorem loOn_iff_of_rc_either {D' : CRDTSig}
-    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = RcRes.Either)
     (C : Sal.MRDTs.Foundation.Configuration D') (ev : Set (Op D'.AppOp))
     (e₁ e₂ : Op D'.AppOp) :
     loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ D'.commutes e₁ e₂ := by
@@ -243,7 +244,7 @@ theorem loOn_iff_of_rc_either {D' : CRDTSig}
 /-- With `rc` everywhere `Either`, `respects · (loOn C ev)` is independent of
 `ev`. -/
 theorem respects_transfer_of_rc_either {D' : CRDTSig}
-    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.rc o₁ o₂ = RcRes.Either)
+    (hrc : ∀ o₁ o₂ : Op D'.AppOp, D'.replayOrder o₁ o₂ = RcRes.Either)
     {C : Sal.MRDTs.Foundation.Configuration D'} {ev ev' : Set (Op D'.AppOp)}
     {ρ : List (Op D'.AppOp)}
     (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') := by

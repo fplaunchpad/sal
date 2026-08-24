@@ -25,7 +25,6 @@ def D : MRDTSig where
   update s e := insert e.2.2 s
   merge := (· ∪ ·)
   query s _ := s
-  rc _ _ := RcRes.Either
   mergeL _ a b := a ∪ b
   merge_init_slice _ _ := rfl
 
@@ -92,11 +91,11 @@ def sequential : SequentialRefinement (D α) spec.toSequentialMachine where
 
 noncomputable def verified : VerifiedMRDT (D α) where
   issuance := generation
-  arbitration := ArbitrationSpec.raw (D α)
+  interaction := InteractionSpec.raw (D α)
   convergence := convergence
   Spec := spec
   Rel := (· = ·)
-  legalization := LegalizationCertificate.ofTotal
+  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
     (fun _ => True.intro)
     (fun ops => sequential.sound ops True.intro)
     (fun _ _ => rfl)

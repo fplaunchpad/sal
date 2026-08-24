@@ -38,7 +38,6 @@ def Gate : MRDTSig where
   update := gateUpdate
   merge := (· || ·)
   query := fun s _ => s
-  rc := fun _ _ => RcRes.Either
   mergeL := fun _ a b => a || b
   merge_init_slice := fun _ _ => rfl
 

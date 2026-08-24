@@ -267,10 +267,12 @@ from certified minting to sequential honesty. The capstones are
 The sequential theorem matters independently of convergence. EmbedRGA and
 SidedEmbedRGA refine explicit list machines for a legal minted linear history.
 Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
-replicated version has an exact, arbitration-respecting, legal sequential
+replicated version has an exact, interaction-respecting, legal sequential
 witness with the intended list view. EmbedRGA and SidedEmbedRGA use explicit
-semantic dependence policies because universal commutation over malformed
-list states is not the client arbitration relation. The generation premise
+\lean{InteractionSpec} policies because universal commutation over malformed
+list states is not the client interaction relation. The executable
+\lean{CRDTSig} contains no replay resolver; the old resolver is confined to
+one proof-local convergence route. The generation premise
 preserves the actual editor protocol rather than silently totalizing invalid
 anchor use as a no-op.
 

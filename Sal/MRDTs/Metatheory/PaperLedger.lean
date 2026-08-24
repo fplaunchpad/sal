@@ -47,8 +47,10 @@ namespace Sal.MRDTs
 #check ReplayVerifiedMRDT
 #check ReplayVerifiedMRDT.sequentially_correct
 #check SequentialSpec
-#check ArbitrationSpec
+#check InteractionSpec
+#check interactionLoOn
 #check IsSpecRALinearizable
+#check Instances.InteractionSPOT.LWW.old_no_chain_refuted
 
 -- Distributed commit collection and composition with datatype state GC.
 #check GC.Local

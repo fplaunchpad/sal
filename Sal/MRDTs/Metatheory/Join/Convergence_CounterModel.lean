@@ -95,11 +95,13 @@ noncomputable def AWSet : CRDTSig where
   update := awUpdate
   merge := awMerge
   query := fun σ _ => σ.1 \ σ.2
-  rc := awRc
+
+local instance : ReplayPolicy AWSet where
+  order := awRc
 
 @[simp] theorem AWSet_update : AWSet.update = awUpdate := rfl
 @[simp] theorem AWSet_merge : AWSet.merge = awMerge := rfl
-@[simp] theorem AWSet_rc : AWSet.rc = awRc := rfl
+@[simp] theorem AWSet_rc : AWSet.replayOrder = awRc := rfl
 @[simp] theorem AWSet_init : AWSet.init = ((∅ : Set Timestamp), (∅ : Set Timestamp)) := rfl
 
 theorem awUpdate_add {e : Op AWOp} (h : e.2.2 = AWOp.add) (σ : AWState) :
@@ -159,7 +161,7 @@ theorem AWSet_not_comm_rem_add {e₁ e₂ : Op AWSet.AppOp}
 theorem AWSet_rc_non_comm :
     ∀ o₁ o₂ : Op AWSet.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-      (AWSet.rc o₁ o₂ = RcRes.Either ↔ AWSet.commutes o₁ o₂) := by
+      (AWSet.replayOrder o₁ o₂ = RcRes.Either ↔ AWSet.commutes o₁ o₂) := by
   intro o₁ o₂ _ _
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
     simp only [AWSet_rc, awRc_eq, h₁, h₂]
@@ -176,8 +178,8 @@ theorem AWSet_rc_non_comm_directional :
     ∀ o₁ o₂ : Op AWSet.AppOp,
       distinctOps o₁ o₂ →
       (¬ AWSet.commutes o₁ o₂ ↔
-       (AWSet.rc o₁ o₂ = RcRes.Fst_then_snd ∨
-        AWSet.rc o₂ o₁ = RcRes.Fst_then_snd)) := by
+       (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
+        AWSet.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
   intro o₁ o₂ _
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
     simp only [AWSet_rc, awRc_eq, h₁, h₂]
@@ -199,8 +201,8 @@ theorem AWSet_rc_non_comm_directional :
 theorem AWSet_no_rc_chain :
     ∀ o₁ o₂ o₃ : Op AWSet.AppOp,
       distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (AWSet.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-         AWSet.rc o₂ o₃ = RcRes.Fst_then_snd) := by
+      ¬ (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         AWSet.replayOrder o₂ o₃ = RcRes.Fst_then_snd) := by
   rintro o₁ o₂ o₃ _ _ ⟨h₁₂, h₂₃⟩
   rcases ha : o₁.2.2 <;> rcases hb : o₂.2.2 <;> rcases hc : o₃.2.2 <;>
     simp only [AWSet_rc, awRc_eq, ha, hb, hc] at h₁₂ h₂₃ <;>
@@ -248,8 +250,8 @@ the timestamp on which the two sides differ. -/
 theorem AWSet_cond_comm_base :
     ∀ (s : AWSet.State) (o₁ o₂ o₃ : Op AWSet.AppOp),
       distinctOps o₁ o₂ → distinctOps o₂ o₃ → distinctOps o₁ o₃ →
-      AWSet.rc o₁ o₂ = RcRes.Fst_then_snd →
-      AWSet.rc o₂ o₃ ≠ RcRes.Either →
+      AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd →
+      AWSet.replayOrder o₂ o₃ ≠ RcRes.Either →
       AWSet.update (AWSet.update (AWSet.update s o₁) o₂) o₃
         = AWSet.update (AWSet.update (AWSet.update s o₂) o₁) o₃ := by
   intro s o₁ o₂ o₃ _ _ _ h_rc h_ne
@@ -326,7 +328,7 @@ theorem AWSet_cond_comm_lift :
     ∀ (s : AWSet.State) (e e' e'' : Op AWSet.AppOp)
       (π : List (Op AWSet.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      AWSet.rc e e' = RcRes.Fst_then_snd →
+      AWSet.replayOrder e e' = RcRes.Fst_then_snd →
       ¬ AWSet.commutes e' e'' →
       AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e') e) π) e''
         = AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e) e') π) e'' := by
@@ -570,37 +572,37 @@ differ. Hence "convergence over backward-closed (replica) event sets
 w.r.t. `lo C`" is false, and no weakening of `convergence`'s
 overwriter-closure hypothesis to backward closure can be proved. -/
 theorem convergence_over_backward_closed_subsets_false :
-    ∃ (D : CRDTSig) (C : Configuration D) (ev : Set (Op D.AppOp))
-      (π₁ π₂ : List (Op D.AppOp)),
-      -- the convergence toolkit holds for D
-      (∀ o₁ o₂ : Op D.AppOp, distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-        (D.rc o₁ o₂ = RcRes.Either ↔ D.commutes o₁ o₂)) ∧
-      (∀ o₁ o₂ : Op D.AppOp, distinctOps o₁ o₂ →
-        (¬ D.commutes o₁ o₂ ↔
-         (D.rc o₁ o₂ = RcRes.Fst_then_snd ∨
-          D.rc o₂ o₁ = RcRes.Fst_then_snd))) ∧
-      (∀ o₁ o₂ o₃ : Op D.AppOp, distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-        ¬ (D.rc o₁ o₂ = RcRes.Fst_then_snd ∧
-           D.rc o₂ o₃ = RcRes.Fst_then_snd)) ∧
-      (∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
+    ∃ (C : Configuration AWSet) (ev : Set (Op AWSet.AppOp))
+      (π₁ π₂ : List (Op AWSet.AppOp)),
+      -- the convergence toolkit holds for AWSet
+      (∀ o₁ o₂ : Op AWSet.AppOp, distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
+        (AWSet.replayOrder o₁ o₂ = RcRes.Either ↔ AWSet.commutes o₁ o₂)) ∧
+      (∀ o₁ o₂ : Op AWSet.AppOp, distinctOps o₁ o₂ →
+        (¬ AWSet.commutes o₁ o₂ ↔
+         (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
+          AWSet.replayOrder o₂ o₁ = RcRes.Fst_then_snd))) ∧
+      (∀ o₁ o₂ o₃ : Op AWSet.AppOp, distinctOps o₁ o₂ → distinctOps o₂ o₃ →
+        ¬ (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+           AWSet.replayOrder o₂ o₃ = RcRes.Fst_then_snd)) ∧
+      (∀ (s : AWSet.State) (e e' e'' : Op AWSet.AppOp) (π : List (Op AWSet.AppOp)),
         distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-        D.rc e e' = RcRes.Fst_then_snd →
-        ¬ D.commutes e' e'' →
-        D.update (applySeq D (D.update (D.update s e') e) π) e''
-          = D.update (applySeq D (D.update (D.update s e) e') π) e'') ∧
-      (∀ a b : D.State, D.merge a b = D.merge b a) ∧
-      (∀ s : D.State, D.merge s s = s) ∧
-      (∀ s : D.State, D.merge D.init s = s) ∧
-      (∀ (a b : D.State) (ol : Op D.AppOp),
-        D.merge (D.update a ol) (D.update b ol)
-          = D.update (D.merge a b) ol) ∧
+        AWSet.replayOrder e e' = RcRes.Fst_then_snd →
+        ¬ AWSet.commutes e' e'' →
+        AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e') e) π) e''
+          = AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e) e') π) e'') ∧
+      (∀ a b : AWSet.State, AWSet.merge a b = AWSet.merge b a) ∧
+      (∀ s : AWSet.State, AWSet.merge s s = s) ∧
+      (∀ s : AWSet.State, AWSet.merge AWSet.init s = s) ∧
+      (∀ (a b : AWSet.State) (ol : Op AWSet.AppOp),
+        AWSet.merge (AWSet.update a ol) (AWSet.update b ol)
+          = AWSet.update (AWSet.merge a b) ol) ∧
       -- the counter-instance
       (∀ a ∈ ev, a ∈ C.events) ∧
       (∀ a b, C.vis a b → b ∈ ev → a ∈ ev) ∧
       listPermOf π₁ ev ∧ listPermOf π₂ ev ∧
       respects π₁ (lo C) ∧ respects π₂ (lo C) ∧
-      applySeq D D.init π₁ ≠ applySeq D D.init π₂ :=
-  ⟨AWSet, counterConfig, counterEv, [evRem1, evAdd], [evAdd, evRem1],
+      applySeq AWSet AWSet.init π₁ ≠ applySeq AWSet AWSet.init π₂ :=
+  ⟨counterConfig, counterEv, [evRem1, evAdd], [evAdd, evRem1],
     AWSet_rc_non_comm, AWSet_rc_non_comm_directional, AWSet_no_rc_chain,
     AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_idem,
     AWSet_merge_init, AWSet_lem_0op,
@@ -843,7 +845,7 @@ private theorem AWSet_char_aux {C : Configuration AWSet}
           have h_noedge := h_cross a ha
           have h1 : ¬ C.vis x a := fun hv =>
             h_noedge (Or.inl ⟨hv, h_nc⟩)
-          have h_rc : AWSet.rc x a = RcRes.Fst_then_snd := by
+          have h_rc : AWSet.replayOrder x a = RcRes.Fst_then_snd := by
             simp only [AWSet_rc, awRc_eq, hx_op, hadd]
           by_cases h2 : C.vis a x
           · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
@@ -991,7 +993,7 @@ theorem awAdds_killed_of_rem_max {C : Configuration AWSet}
     AWSet_not_comm_rem_add he_rem hadd
   have h_noedge := h_max a ha_U ha_ne
   have h1 : ¬ C.vis e a := fun hv => h_noedge (Or.inl ⟨hv, h_nc⟩)
-  have h_rc : AWSet.rc e a = RcRes.Fst_then_snd := by
+  have h_rc : AWSet.replayOrder e a = RcRes.Fst_then_snd := by
     simp only [AWSet_rc, awRc_eq, he_rem, hadd]
   by_cases h2 : C.vis a e
   · have ha₁ : a ∈ ev₁ :=

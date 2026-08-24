@@ -442,7 +442,6 @@ def D : MRDTSig where
   update s e := insert e s
   merge := (· ∪ ·)
   query s _ := view s
-  rc _ _ := RcRes.Either
   mergeL _ a b := a ∪ b
   merge_init_slice _ _ := rfl
 

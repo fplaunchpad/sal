@@ -85,7 +85,7 @@ anonymous long-form working papers under `docs/`.
   - [x] state the strengthened per-version theorem with exact event-set
     membership, respect for `lo`, sequential legality and refinement, and
     explicit query agreement;
-  - [x] factor one datatype-specific `LegalizationCertificate` so ordinary and
+  - [x] factor one datatype-specific `SequentialCorrectnessCertificate` so ordinary and
     virtual-LCA executions reuse the same semantic proof;
   - [x] migrate the total grow-only set/map canary and the tombstone RGA;
     RGA's specification state is `List Nat`, deletion is physical and
@@ -108,7 +108,7 @@ anonymous long-form working papers under `docs/`.
     `concurrentState_no_sequential_register`;
   - [x] finish EmbedRGA and SidedEmbedRGA legalization. Their canonical merged
     histories are prefix-legal, including duplicate deletion, and respect the
-    explicit semantic dependence policies supplied through `ArbitrationSpec`.
+    explicit semantic dependence policies supplied through `InteractionSpec`.
     The raw-state counterexample remains checked: universal
     `CRDTSig.commutes` over malformed list states is not a sound public
     dependence policy for these representations;
@@ -254,8 +254,41 @@ anonymous long-form working papers under `docs/`.
   metadata after a fully stable empty-document collection.
 - [ ] Generalize the Tree-RGA observational refinement beyond root-only
   insertion and prove evolving-prefix/multi-replica visibility results.
-- [ ] Investigate a declarative arbitration replacement for the absorber
-  clause and its relationship to `loOn`.
+- [x] **HIGH PRIORITY — consolidate arbitration and remove the
+  `no_rc_chain` artifact from the MRDT interface.** `InteractionSpec` now
+  supplies the public semantic conflict policy, while concrete-state
+  commutation and `UpdateVCs.no_rc_chain` remain confined to one internal
+  replay construction. `CRDTSig` no longer stores a resolver.
+  - [x] Build minimal machine-checked LWW-register and add-wins OR-set SPOTs against
+    independent sequential specifications. The LWW policy admits timestamp
+    chains and the checked three-write instance refutes `no_rc_chain`. The
+    OR-set SPOT distinguishes
+    commuting representation effectors from conflicting abstract
+    `add`/`remove` operations and recover add-wins by ordering a concurrent
+    remove before the add.
+  - [x] Validate and freeze a single implementer-facing interaction API,
+    provisionally `independent | conflict concurrentOrder`, with a swap
+    coherence law. Causal conflicts follow visibility; the supplied direction
+    is used only for concurrent conflicts.
+  - [x] Define the framework's set-relative ordering constraints from
+    visibility and that interaction policy. State precisely how the new order
+    relates to `loOn` and whether the absorber clause is derivable, retained as
+    one internal proof technique, or eliminated.
+  - [x] Do not add `no_rc_chain` or a blanket public acyclicity VC. Use the
+    exact legalization witness to certify that client-facing constraints are
+    satisfiable. Let each `ConvergenceCertificate` establish its internal
+    replay order by an appropriate proof: a well-founded rank, the existing
+    set-relative theorem, or a direct witness construction.
+  - [x] Remove `rc` from the executable `CRDTSig`. If the existing absorber
+    metatheory remains useful, parameterize it by an internal replay-order
+    policy instead of storing that policy in every datatype signature.
+  - [x] Migrate every production `VerifiedMRDT`, delete superseded compatibility
+    definitions and vacuous `rc := Either` proofs, and run the clean Lean,
+    theorem-ledger, repository, and runtime release gates.
+  - [x] Update both working papers and theorem manifests. Present the broken
+    Neem/global-arbitration route as motivation, distinguish representation
+    convergence from sequential arbitration, and use LWW and OR-set as the
+    small explanatory examples before the richer RGA/Peritext developments.
 - [ ] Extend reusable state-GC certificates to other production datatypes where
   the state contains reclaimable metadata.
 

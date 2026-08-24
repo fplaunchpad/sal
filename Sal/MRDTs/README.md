@@ -3,14 +3,22 @@
 This directory contains the current paper artifact. The raw datatype signature
 has no invariant or applicability fields. A datatype implementation supplies a
 single origin `Issuance` relation, an independent `SequentialSpec`, convergence,
-legalization, and representation through `VerifiedMRDT`. Safety is an optional
-separate certificate. Convergence certificates store only the widened theorem;
-the ordinary theorem is derived.
+an `InteractionSpec`, sequential correctness, and representation through
+`VerifiedMRDT`. `InteractionSpec` classifies pairs as independent or as
+conflicts with an optional concurrent direction. Causal conflicts follow
+visibility. Safety is an optional separate certificate. Convergence
+certificates store only the widened theorem; the ordinary theorem is derived.
 The raw-fold package is named `ReplayVerifiedMRDT`. It supports internal replay
 proofs and datatypes with a checked negative classification; it is not the
 public sequential-correctness result. The framework supplies the ordinary and
 canonical virtual-LCA operational semantics and distributed commit-history GC.
 Datatype-state GC is an optional representation certificate.
+
+The executable `CRDTSig` contains only state transitions, merge, and query.
+The old replay resolver is a proof-local `ReplayPolicy`, not a datatype field
+or client arbitration API. `Instances/InteractionSPOT.lean` checks the key
+controls: LWW admits a three-write timestamp chain, and concurrent add/remove
+uses remove-before-add to explain add-wins.
 
 ## Minimal distributed-GC state
 

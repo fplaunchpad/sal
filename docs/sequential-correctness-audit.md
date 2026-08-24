@@ -35,9 +35,9 @@ origin witness needed after the issuer advances.
 `Legal` cannot inspect `D.State`. This keeps implementation metadata out of
 the sequential contract. A total datatype sets `Legal` to `True`.
 
-`VerifiedMRDT` supplies issuance, a public `ArbitrationSpec`, widened
+`VerifiedMRDT` supplies issuance, a public `InteractionSpec`, widened
 convergence, the sequential specification, a representation relation, and one
-legalization proof. Ordinary
+`SequentialCorrectnessCertificate`. Ordinary
 certified execution embeds in widened execution, so the package stores no
 duplicate ordinary convergence theorem. `VerifiedMRDT.converges` and
 `convergesV` both produce
@@ -116,9 +116,17 @@ generation or sequential legality.
 This control falsified the strongest form of the original candidate API claim:
 local proof use of an invariant was not enough while the public correctness
 target hard-coded universal raw-state commutation. The repaired API supplies
-an explicit `ArbitrationSpec`. EmbedRGA and SidedEmbedRGA now prove that their
+an explicit `InteractionSpec`. EmbedRGA and SidedEmbedRGA now prove that their
 canonical legal witnesses respect those semantic dependence policies without
 putting implementation state inside `SequentialSpec.Legal`.
+
+The executable `CRDTSig` no longer contains `rc`. The absorber-based
+convergence route receives a proof-local `ReplayPolicy`; it is not the public
+interaction policy. `InteractionSPOT.LWW.old_no_chain_refuted` checks that a
+valid LWW timestamp order contains a length-two edge chain, so the historical
+`no_rc_chain` condition cannot be a framework requirement. The add-wins SPOT
+checks remove-before-add for concurrent conflict and add-before-remove when
+visibility records that the remove observed the add.
 
 The same legalization composes through Sided Peritext. Both its internal
 three-component core and its production `RichCore` query signature now have

@@ -26,7 +26,6 @@ noncomputable def D : MRDTSig where
   update s e x := s x || decide (x = e.2.2)
   merge a b x := a x || b x
   query s _ := s
-  rc _ _ := RcRes.Either
   mergeL l a b x := l x || (a x || b x)
   merge_init_slice _ _ := rfl
 
@@ -44,14 +43,14 @@ theorem updateVCs : UpdateVCs (D A).toCRDTSig := by
     constructor
     · intro h; exact absurd (all_comm a b) h
     · rintro (h | h) <;>
-        (rw [show (D A).rc _ _ = RcRes.Either from rfl] at h;
+        (rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h;
          exact RcRes.noConfusion h)
   · intro a b c _ _
     rintro ⟨h, _⟩
-    rw [show (D A).rc _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
   · intro s a b c π _ _ _ h _
-    rw [show (D A).rc _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
 
 theorem coreVCs3 : CoreVCs3 (D A) := by
@@ -108,11 +107,11 @@ ordinary and virtual-LCA result from the replay theorem without adding a
 datatype-specific legality argument. -/
 noncomputable def verified : VerifiedMRDT (D A) where
   issuance := generation
-  arbitration := ArbitrationSpec.raw (D A)
+  interaction := InteractionSpec.raw (D A)
   convergence := convergence
   Spec := spec
   Rel := (fun s q => s = q)
-  legalization := LegalizationCertificate.ofTotal
+  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
     (fun _ => True.intro)
     (fun ops => sequential.sound ops True.intro)
     (fun _ _ => rfl)
