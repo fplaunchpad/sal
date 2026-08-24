@@ -295,13 +295,10 @@ def applicable (e : Event) (s : Finset Event) : Prop :=
   (¬ knownNode s e.2.2.child ∨ visibleNode s e.2.2.child) ∧
   e.2.2.child ≠ root ∧ e.2.2.child ≠ trash
 
-def generation : GenerationContract D where
-  Guard := applicable
-  History := fun _ => True
-  history_of_mint := fun _ _ => True.intro
+def generation : Issuance D where
+  CanIssue := applicable
 
 def convergence : ConvergenceCertificate D generation where
-  sound := fun h => ra_of_mintCertified (fun _ _ => join _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
 
 structure SeqState where
@@ -310,7 +307,7 @@ structure SeqState where
 
 /-- The independent chronological machine applies each move once to its
 current tree.  It does not sort or replay its prior operations. -/
-noncomputable def spec : SequentialSpec Event where
+noncomputable def spec : SequentialMachine Event where
   State := SeqState
   init := ⟨∅, emptyTree⟩
   step s e := ⟨insert e s.events, doMove s.tree e.2.2⟩
@@ -320,7 +317,7 @@ theorem spec_run_events (ops : List Event) :
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
-      rw [SequentialSpec.run_append_single]
+      rw [SequentialMachine.run_append_single]
       simpa [spec] using congrArg (fun s => insert e s) ih
 
 theorem spec_run_tree (ops : List Event) :
@@ -328,7 +325,7 @@ theorem spec_run_tree (ops : List Event) :
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
-      rw [SequentialSpec.run_append_single]
+      rw [SequentialMachine.run_append_single]
       simpa [spec, replayList, List.foldl_append] using
         congrArg (fun t => doMove t e.2.2) ih
 
@@ -343,25 +340,75 @@ theorem applySeq_eq_toFinset (ops : List Event) :
 def stateRel (s : D.State) (q : SeqState) : Prop :=
   s = q.events ∧ render s = q.tree
 
-theorem sequentialSound (ops : List Event) (h : Chronological ops) :
+/-- Abstract legality requires exactly the deterministic event-key order and
+no duplicate events. This covers concurrent equal Lamport counters by the
+replica and payload tie-breakers already present in `eventKey`. -/
+def SequentialLegal (ops : List Event) : Prop :=
+  ops.Nodup ∧ ops.Pairwise eventLE
+
+noncomputable def sequentialSpec : SequentialSpec D where
+  toSequentialMachine := spec
+  Legal := SequentialLegal
+  query := fun q _ => visibleTree q.tree
+
+theorem sequentialSound (ops : List Event) (h : SequentialLegal ops) :
     stateRel (applySeq D.toCRDTSig D.init ops) (spec.run ops) := by
   rw [stateRel, applySeq_eq_toFinset, spec_run_events, spec_run_tree]
   refine ⟨rfl, ?_⟩
-  rw [render, orderedEvents_toFinset ops (chronological_nodup h)
-    (chronological_pairwise h)]
+  rw [render, orderedEvents_toFinset ops h.1 h.2]
 
 noncomputable def sequential : SequentialRefinement D spec where
-  Honest := Chronological
+  Honest := SequentialLegal
   Rel := stateRel
   init := by simp [stateRel, D, spec, render, orderedEvents, replayList, emptyTree]
   sound := sequentialSound
 
+theorem lo_false (C : Configuration D) (a b : Event) :
+    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+  rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
+  · exact hnoncomm (all_comm a b)
+  · exact RcRes.noConfusion hrc
+
+theorem respects_lo (C : Configuration D) (ops : List Event) :
+    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+  induction ops with
+  | nil => exact List.Pairwise.nil
+  | cons e rest ih =>
+      exact List.pairwise_cons.mpr ⟨fun b _ => lo_false C b e, ih⟩
+
+noncomputable def legalization : LegalizationCertificate D generation
+    (ArbitrationSpec.raw D)
+    sequentialSpec stateRel where
+  sound C _ replay := by
+    intro v s E hver
+    obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
+    have hstate : ops.toFinset = s := by
+      rw [← hfold, applySeq_eq_toFinset]
+    let π := orderedEvents s
+    have hpermπ : listPermOf π E := by
+      refine ⟨Finset.sort_nodup _ _, ?_⟩
+      intro e
+      simp only [π, orderedEvents, Finset.mem_sort]
+      rw [← hstate]
+      simpa using hperm.2 e
+    have hlegal : SequentialLegal π :=
+      ⟨Finset.sort_nodup _ _, Finset.pairwise_sort _ _⟩
+    have href : stateRel s (sequentialSpec.run π) := by
+      change stateRel s (spec.run π)
+      have hs := sequentialSound π hlegal
+      have hπstate : applySeq D.toCRDTSig D.init π = s := by
+        rw [applySeq_eq_toFinset]
+        exact Finset.sort_toFinset s eventLE
+      rw [← hπstate]
+      exact hs
+    refine ⟨π, hpermπ, respects_lo C π, hlegal, href, ?_⟩
+    intro query
+    cases query
+    exact congrArg visibleTree href.2
+
 def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
   Safe := fun s => TreeSafe (render s)
   Observable := fun s => TreeSafe (D.query s ())
-  preservation := by
-    intro C _ v s E _
-    exact render_safe s
   preservationV := by
     intro C _ v s E _
     exact render_safe s
@@ -370,12 +417,12 @@ def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
     exact visibleTree_safe h
 
 noncomputable def verified : VerifiedMRDT D where
-  generation := generation
+  issuance := generation
+  arbitration := ArbitrationSpec.raw D
   convergence := convergence
-  Spec := spec
-  sequential := sequential
-  sequential_of_mint := fun _ h => h.clocked
-  safety := safety
+  Spec := sequentialSpec
+  Rel := stateRel
+  legalization := legalization
 
 /-! Small proof-oriented tests for the public issuer guard. -/
 

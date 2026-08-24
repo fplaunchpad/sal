@@ -77,33 +77,45 @@ theorem join : JoinLemma3 (D A) :=
   join_lemma3_of_cd' coreVCs3 deltaVCs3
     (cdVC3_of_all_comm coreVCs3 all_comm)
 
-def generation : GenerationContract (D A) where
-  Guard := fun _ _ => True
-  History := fun _ => True
-  history_of_mint := fun _ _ => trivial
+def generation : Issuance (D A) where
+  CanIssue := fun _ _ => True
 
 def convergence : ConvergenceCertificate (D A) generation where
-  sound := fun h => ra_of_mintCertified (fun _ _ => join _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
 
-def spec : SequentialSpec (Op A) where
+def spec : SequentialSpec (D A) where
   State := A → Bool
   init := fun _ => false
   step s e x := s x || decide (x = e.2.2)
+  Legal := fun _ => True
+  query := fun s _ => s
 
-def sequential : SequentialRefinement (D A) spec where
+def sequential : SequentialRefinement (D A) spec.toSequentialMachine where
   Honest := fun _ => True
   Rel := (· = ·)
   init := rfl
   sound := fun _ _ => rfl
 
-noncomputable def verified : VerifiedMRDT (D A) where
-  generation := generation
+noncomputable def replayVerified : ReplayVerifiedMRDT (D A) where
+  issuance := generation
   convergence := convergence
-  Spec := spec
+  Machine := spec.toSequentialMachine
   sequential := sequential
   sequential_of_mint := fun _ _ => trivial
-  safety := SafetyCertificate.trivial generation
+
+/-- Positive migration canary: a total datatype obtains the strengthened
+ordinary and virtual-LCA result from the replay theorem without adding a
+datatype-specific legality argument. -/
+noncomputable def verified : VerifiedMRDT (D A) where
+  issuance := generation
+  arbitration := ArbitrationSpec.raw (D A)
+  convergence := convergence
+  Spec := spec
+  Rel := (fun s q => s = q)
+  legalization := LegalizationCertificate.ofTotal
+    (fun _ => True.intro)
+    (fun ops => sequential.sound ops True.intro)
+    (fun _ _ => rfl)
 
 noncomputable abbrev GOSet := D Nat
 noncomputable abbrev GOMap := D (Nat × Nat)

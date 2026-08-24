@@ -100,33 +100,36 @@ theorem join : JoinLemma3 (D A delta) :=
   join_lemma3_of_cd' (coreVCs3 delta) (deltaVCs3 delta)
     (cdVC3_of_all_comm (coreVCs3 delta) (all_comm delta))
 
-def generation : GenerationContract (D A delta) where
-  Guard := fun _ _ => True
-  History := fun _ => True
-  history_of_mint := fun _ _ => trivial
+def generation : Issuance (D A delta) where
+  CanIssue := fun _ _ => True
 
 def convergence : ConvergenceCertificate (D A delta) (generation delta) where
-  sound := fun h => ra_of_mintCertified (fun _ _ => join delta _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join delta _) h
 
-def spec : SequentialSpec (Op A) where
+def spec : SequentialSpec (D A delta) where
   State := Int
   init := 0
   step s e := s + delta e.2.2
+  Legal := fun _ => True
+  query := fun s _ => s
 
-def sequential : SequentialRefinement (D A delta) (spec (A := A) delta) where
+def sequential : SequentialRefinement (D A delta)
+    (spec (A := A) delta).toSequentialMachine where
   Honest := fun _ => True
   Rel := (· = ·)
   init := rfl
   sound := fun _ _ => rfl
 
 noncomputable def verified : VerifiedMRDT (D A delta) where
-  generation := generation delta
+  issuance := generation delta
+  arbitration := ArbitrationSpec.raw (D A delta)
   convergence := convergence delta
   Spec := spec (A := A) delta
-  sequential := sequential delta
-  sequential_of_mint := fun _ _ => trivial
-  safety := SafetyCertificate.trivial (generation delta)
+  Rel := (· = ·)
+  legalization := LegalizationCertificate.ofTotal
+    (fun _ => True.intro)
+    (fun ops => (sequential delta).sound ops True.intro)
+    (fun _ _ => rfl)
 
 abbrev Counter := D Unit (fun _ => 1)
 

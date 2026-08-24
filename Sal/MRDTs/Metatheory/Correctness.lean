@@ -8,7 +8,10 @@ namespace Sal.MRDTs
 open Sal.MRDTs.Foundation
 
 /-- Every registered version is the datatype fold of a linearization of its
-event set respecting the generic MRDT arbitration order. -/
+event set respecting the generic MRDT arbitration order.
+
+This is an internal replay/convergence property.  It does not say that the
+witness is prefix-legal for a client-facing sequential specification. -/
 def IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
   ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
     C.ver v = some (s, E) →
@@ -17,47 +20,179 @@ def IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
       respects π (Sal.MRDTs.Foundation.lo C.core) ∧
       applySeq D.toCRDTSig D.init π = s
 
+/-- Explicit name for the replay theorem supplied by the existing Join
+metatheory.  Keep `IsRALinearizable` as a compatibility alias while datatype
+certificates migrate to `IsSpecRALinearizable`. -/
+abbrev IsInternallyRALinearizable := IsRALinearizable
+
+/-- Client-facing RA correctness.  The witness contains exactly the events
+of the version, respects the framework order, is accepted by the independent
+sequential specification, and agrees with its state and observations. -/
+def IsSpecRALinearizable (D : MRDTSig) (A : ArbitrationSpec D)
+    (S : SequentialSpec D)
+    (Rel : D.State → S.State → Prop)
+    (C : Configuration D) : Prop :=
+  ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
+    C.ver v = some (s, E) →
+    ∃ π : List (Op D.AppOp),
+      listPermOf π E ∧
+      respects π (arbitrationLo A C.core) ∧
+      S.Legal π ∧
+      Rel s (S.run π) ∧
+      ∀ query, D.query s query = S.query (S.run π) query
+
+/-- Lift internal replay when every candidate history is legal and the
+sequential relation holds for every raw fold.  This discharges flat/total
+datatypes and is also a useful control: genuinely conditioned datatypes
+cannot use it unless they prove its two explicit premises. -/
+theorem IsRALinearizable.toSpec {D : MRDTSig} {C : Configuration D}
+    {S : SequentialSpec D} {Rel : D.State → S.State → Prop}
+    (h : IsRALinearizable D C)
+    (legal : ∀ ops, S.Legal ops)
+    (refines : ∀ ops,
+      Rel (applySeq D.toCRDTSig D.init ops) (S.run ops))
+    (observes : ∀ ops query,
+      D.query (applySeq D.toCRDTSig D.init ops) query =
+        S.query (S.run ops) query) :
+    IsSpecRALinearizable D (ArbitrationSpec.raw D) S Rel C := by
+  intro v s E hver
+  obtain ⟨π, hperm, hresp, hfold⟩ := h v s E hver
+  refine ⟨π, hperm, hresp, legal π, ?_, ?_⟩
+  · simpa [hfold] using refines π
+  · intro query
+    simpa [hfold] using observes π query
+
 theorem isRALinearizable_iff_join (D : MRDTSig) (C : Configuration D) :
     IsRALinearizable D C ↔ IsRALinearizableJoin C := Iff.rfl
 
-/-- End-to-end convergence for executions certified by the public generation
-contract.  Datatype-specific Join proofs may consume `G.History` internally;
-`MintCertifiedReach` ensures the bridge is available throughout the trace. -/
-structure ConvergenceCertificate (D : MRDTSig) (G : GenerationContract D) where
-  sound : ∀ {C}, MintCertifiedReach D G C → IsRALinearizable D C
+/-- Internal replay convergence for issuance-certified widened execution.
+Ordinary execution embeds in this semantics, so its theorem is derived.
+Datatype-specific Join proofs derive any history facts they need directly from
+`MintHonest`. -/
+structure ConvergenceCertificate (D : MRDTSig) (I : Issuance D) where
   soundV : ∀ {C},
-    MintCertifiedReachV D (canonicalVirtualLCA D) G C → IsRALinearizable D C
+    MintCertifiedReachV D (canonicalVirtualLCA D) I C → IsRALinearizable D C
 
-/-- Complete implementer-supplied verification package.  The framework does
-not identify generation history, convergence history, and sequential honesty;
-the implementer supplies the necessary bridges explicitly. -/
-structure VerifiedMRDT (D : MRDTSig) where
-  generation : GenerationContract D
-  convergence : ConvergenceCertificate D generation
-  Spec : SequentialSpec (Op D.AppOp)
-  sequential : SequentialRefinement D Spec
+namespace ConvergenceCertificate
+
+/-- Ordinary convergence is the base case of widened convergence. -/
+theorem sound {D : MRDTSig} {I : Issuance D}
+    (K : ConvergenceCertificate D I) {C : Configuration D}
+    (h : MintCertifiedReach D I C) : IsRALinearizable D C :=
+  K.soundV h.toV
+
+end ConvergenceCertificate
+
+/-- The two execution modes accepted by the public theorem.  Datatype
+legalization needs operational facts (most importantly, causal closure of
+each stored version) that do not follow from an arbitrary replay witness.
+Packaging the modes here lets one datatype theorem serve both semantics. -/
+inductive CertifiedExecution (D : MRDTSig) (I : Issuance D)
+    (C : Configuration D) : Prop where
+  | ordinary : MintCertifiedReach D I C → CertifiedExecution D I C
+  | virtual : MintCertifiedReachV D (canonicalVirtualLCA D) I C →
+      CertifiedExecution D I C
+
+theorem CertifiedExecution.mintHonest {D : MRDTSig} {I : Issuance D}
+    {C : Configuration D} (h : CertifiedExecution D I C) :
+    MintHonest D I.CanIssue C := by
+  cases h with
+  | ordinary reach => exact reach.mintHonest
+  | virtual reach => exact reach.mintHonest
+
+theorem CertifiedExecution.goodConfig {D : MRDTSig}
+    {I : Issuance D} {C : Configuration D}
+    (join : ∀ C, MintHonest D I.CanIssue C → JoinLemma3At D C.core)
+    (h : CertifiedExecution D I C) : GoodConfig3 C := by
+  cases h with
+  | ordinary reach => exact goodConfig_of_mintCertified join reach
+  | virtual reach => exact goodConfig_of_mintCertifiedV join reach
+
+/-- Datatype-specific bridge from internal replay to client-facing
+correctness. The framework applies this one theorem to both ordinary and virtual-LCA
+executions, so the verification package does not store duplicate proofs. -/
+structure LegalizationCertificate (D : MRDTSig)
+    (I : Issuance D) (A : ArbitrationSpec D)
+    (S : SequentialSpec D)
+    (Rel : D.State → S.State → Prop) where
+  sound : ∀ C, CertifiedExecution D I C → IsRALinearizable D C →
+    IsSpecRALinearizable D A S Rel C
+
+/-- Total datatypes discharge legalization directly: every list is legal and
+every raw fold refines the sequential state and its observations. -/
+def LegalizationCertificate.ofTotal {D : MRDTSig}
+    {I : Issuance D} {S : SequentialSpec D}
+    {Rel : D.State → S.State → Prop}
+    (legal : ∀ ops, S.Legal ops)
+    (refines : ∀ ops,
+      Rel (applySeq D.toCRDTSig D.init ops) (S.run ops))
+    (observes : ∀ ops query,
+      D.query (applySeq D.toCRDTSig D.init ops) query =
+        S.query (S.run ops) query) :
+    LegalizationCertificate D I (ArbitrationSpec.raw D) S Rel where
+  sound _ _ replay := replay.toSpec legal refines observes
+
+/-- Internal compatibility package for raw-fold refinement. It remains while
+older instances migrate, but it is not the public sequential-correctness API. -/
+structure ReplayVerifiedMRDT (D : MRDTSig) where
+  issuance : Issuance D
+  convergence : ConvergenceCertificate D issuance
+  Machine : SequentialMachine (Op D.AppOp)
+  sequential : SequentialRefinement D Machine
   sequential_of_mint : ∀ ops,
-    LinearMintHistory D generation.Guard ops → sequential.Honest ops
-  safety : SafetyCertificate D (canonicalVirtualLCA D) generation
+    LinearMintHistory D issuance.CanIssue ops → sequential.Honest ops
+
+/-- Complete public sequential-correctness package. Issuance constrains only origin
+operation creation; `Spec.Legal` independently defines acceptable sequential
+histories. Reachable-state arbitration is a separate certificate; it does not
+leak implementation state into the sequential specification. Safety and state
+GC remain separate optional certificates. -/
+structure VerifiedMRDT (D : MRDTSig) where
+  issuance : Issuance D
+  arbitration : ArbitrationSpec D
+  convergence : ConvergenceCertificate D issuance
+  Spec : SequentialSpec D
+  Rel : D.State → Spec.State → Prop
+  legalization : LegalizationCertificate D issuance arbitration Spec Rel
+
+namespace ReplayVerifiedMRDT
+
+variable {D : MRDTSig} (V : ReplayVerifiedMRDT D)
+
+theorem converges {C : Configuration D}
+    (h : MintCertifiedReach D V.issuance C) :
+    IsRALinearizable D C :=
+  V.convergence.sound h
+
+theorem convergesV {C : Configuration D}
+    (h : MintCertifiedReachV D (canonicalVirtualLCA D) V.issuance C) :
+    IsRALinearizable D C :=
+  V.convergence.soundV h
+
+theorem sequentially_correct (ops : List (Op D.AppOp))
+    (h : LinearMintHistory D V.issuance.CanIssue ops) :
+    V.sequential.Rel (applySeq D.toCRDTSig D.init ops) (V.Machine.run ops) :=
+  V.sequential.sound ops (V.sequential_of_mint ops h)
+
+end ReplayVerifiedMRDT
 
 namespace VerifiedMRDT
 
 variable {D : MRDTSig} (V : VerifiedMRDT D)
 
 theorem converges {C : Configuration D}
-    (h : MintCertifiedReach D V.generation C) :
-    IsRALinearizable D C :=
-  V.convergence.sound h
+    (h : MintCertifiedReach D V.issuance C) :
+    IsSpecRALinearizable D V.arbitration V.Spec V.Rel C :=
+  V.legalization.sound C
+    (.ordinary h)
+    (V.convergence.sound h)
 
 theorem convergesV {C : Configuration D}
-    (h : MintCertifiedReachV D (canonicalVirtualLCA D) V.generation C) :
-    IsRALinearizable D C :=
-  V.convergence.soundV h
-
-theorem sequentially_correct (ops : List (Op D.AppOp))
-    (h : LinearMintHistory D V.generation.Guard ops) :
-    V.sequential.Rel (applySeq D.toCRDTSig D.init ops) (V.Spec.run ops) :=
-  V.sequential.sound ops (V.sequential_of_mint ops h)
+    (h : MintCertifiedReachV D (canonicalVirtualLCA D) V.issuance C) :
+    IsSpecRALinearizable D V.arbitration V.Spec V.Rel C :=
+  V.legalization.sound C
+    (.virtual h)
+    (V.convergence.soundV h)
 
 end VerifiedMRDT
 

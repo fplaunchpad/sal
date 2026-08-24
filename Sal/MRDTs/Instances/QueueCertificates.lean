@@ -81,18 +81,15 @@ theorem qHonest_of_mint (C : Configuration Q)
   | deq t' => exact absurd hEnq (by simp [qIsEnq])
   | enq w => exact ⟨(ats, ar, QOp.enq w), haev.1, haev.2, htag, w, rfl⟩
 
-def generation : GenerationContract Q where
-  Guard := qApplicable
-  History := QHonest
-  history_of_mint := qHonest_of_mint
+def generation : Issuance Q where
+  CanIssue := qApplicable
 
 def convergence : ConvergenceCertificate Q generation where
-  sound := fun h =>
-    ra_of_mintCertified (fun _ hC => q_join_at (qHonest_core hC)) h
   soundV := fun h =>
-    ra_of_mintCertifiedV (fun _ hC => q_join_at (qHonest_core hC)) h
+    ra_of_mintCertifiedV
+      (fun _ hC => q_join_at (qHonest_core (qHonest_of_mint _ hC))) h
 
-def spec : SequentialSpec (Op QOp) where
+def spec : SequentialMachine (Op QOp) where
   State := List ℕ
   init := []
   step := qSpecStep
@@ -128,13 +125,12 @@ def sequential : SequentialRefinement Q spec where
     rw [spec_run]
     exact queue_seq_sound h
 
-noncomputable def verified : VerifiedMRDT Q where
-  generation := generation
+noncomputable def replayVerified : ReplayVerifiedMRDT Q where
+  issuance := generation
   convergence := convergence
-  Spec := spec
+  Machine := spec
   sequential := sequential
   sequential_of_mint := fun _ h => qOK_of_linear h
-  safety := SafetyCertificate.trivial generation
 
 example : qApplicable (0, 0, QOp.enq 7) [] := by simp [qApplicable, qTags]
 
@@ -142,6 +138,6 @@ example : ¬ qApplicable (1, 0, QOp.deq 7) [] := by simp [qApplicable]
 
 #print axioms q_join_at
 #print axioms queue_seq_sound
-#print axioms verified
+#print axioms replayVerified
 
 end Sal.MRDTs.Instances.Queue

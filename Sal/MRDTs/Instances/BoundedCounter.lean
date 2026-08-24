@@ -292,13 +292,10 @@ private theorem bcJoin : JoinLemma3 BC :=
   join_lemma3_of_cd' BC_coreVCs3 BC_deltaVCs3
     (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)
 
-def generation : GenerationContract BC where
-  Guard := bcApplicable
-  History := fun _ => True
-  history_of_mint := fun _ _ => True.intro
+def generation : Issuance BC where
+  CanIssue := bcApplicable
 
 def convergence : ConvergenceCertificate BC generation where
-  sound := fun h => ra_of_mintCertified (fun _ _ => bcJoin _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => bcJoin _) h
 
 private theorem honestApp_of_mint {C : Configuration BC}
@@ -325,11 +322,10 @@ theorem versions_safeV {C : Configuration BC}
 def safety : SafetyCertificate BC (canonicalVirtualLCA BC) generation where
   Safe := BCInv
   Observable := BCInv
-  preservation := versions_safe
   preservationV := versions_safeV
   consequence := fun _ h => h
 
-def sequentialSpec : SequentialSpec (Op BCOp) where
+def sequentialSpec : SequentialMachine (Op BCOp) where
   State := ℕ → ℤ
   init := fun _ => 0
   step q e := fun r => match e.2.2 with
@@ -338,6 +334,60 @@ def sequentialSpec : SequentialSpec (Op BCOp) where
 
 def SequentialHonest (ops : List (Op BCOp)) : Prop :=
   ∀ pre suf, ops = pre ++ suf → BCInv (applySeq BC.toCRDTSig BC.init pre)
+
+def bcIsInc (e : Op BCOp) : Bool :=
+  match e.2.2 with | .inc => true | .dec => false
+
+def canonical (ops : List (Op BCOp)) : List (Op BCOp) :=
+  ops.filter bcIsInc ++ ops.filter (!bcIsInc ·)
+
+/-- A legal abstract bounded-counter history admits the canonical
+increment-before-decrement form and never consumes more rights at any replica
+than the history creates there. -/
+def ClientLegal (ops : List (Op BCOp)) : Prop :=
+  (∃ source, ops = canonical source) ∧
+  ∀ r, (ops.countP (bcIsDecAt r) : ℤ) ≤
+    (ops.countP (bcIsIncAt r) : ℤ)
+
+def clientSpec : SequentialSpec BC where
+  toSequentialMachine := sequentialSpec
+  Legal := ClientLegal
+  query := fun q r => q r
+
+theorem canonical_perm : ∀ ops : List (Op BCOp), ops.Perm (canonical ops) := by
+  intro ops
+  unfold canonical
+  induction ops with
+  | nil => simp
+  | cons e rest ih =>
+      cases h : bcIsInc e
+      · simpa [h] using List.perm_cons_append_cons e ih
+      · simpa [h] using ih.cons e
+
+theorem canonical_listPermOf {ops : List (Op BCOp)}
+    {E : Set (Op BCOp)} (h : listPermOf ops E) :
+    listPermOf (canonical ops) E := by
+  have hp := canonical_perm ops
+  exact ⟨hp.nodup h.1, fun e => (hp.mem_iff (a := e)).symm.trans (h.2 e)⟩
+
+theorem canonical_fold (ops : List (Op BCOp)) :
+    applySeq BC.toCRDTSig BC.init (canonical ops) =
+      applySeq BC.toCRDTSig BC.init ops :=
+  applySeq_perm_of_all_comm BC_all_comm (canonical_perm ops).symm BC.init
+
+theorem lo_false (C : Configuration BC) (a b : Op BCOp) :
+    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+  rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
+  · exact hnoncomm (BC_all_comm a b)
+  · rw [BC_rc_either] at hrc
+    exact RcRes.noConfusion hrc
+
+theorem respects_lo (C : Configuration BC) (ops : List (Op BCOp)) :
+    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+  induction ops with
+  | nil => exact List.Pairwise.nil
+  | cons e rest ih =>
+      exact List.pairwise_cons.mpr ⟨fun b _ => lo_false C b e, ih⟩
 
 theorem sequential_run (ops : List (Op BCOp)) : ∀ r,
     sequentialSpec.run ops r =
@@ -348,7 +398,7 @@ theorem sequential_run (ops : List (Op BCOp)) : ∀ r,
   | append_singleton ops e ih =>
     intro r
     obtain ⟨ts, ro, op⟩ := e
-    rw [SequentialSpec.run_append_single, applySeq_append_single]
+    rw [SequentialMachine.run_append_single, applySeq_append_single]
     cases op with
     | inc =>
       change sequentialSpec.run ops r + (if r = ro then 1 else 0) = _
@@ -380,13 +430,43 @@ def sequential : SequentialRefinement BC sequentialSpec where
   init := ⟨bc_inv_init, fun _ => rfl⟩
   sound := fun ops h => ⟨h ops [] (by simp), sequential_run ops⟩
 
+noncomputable def legalization : LegalizationCertificate BC generation
+    (ArbitrationSpec.raw BC)
+    clientSpec sequential.Rel where
+  sound C exec replay := by
+    intro v s E hver
+    obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
+    let π := canonical ops
+    have hπfold : applySeq BC.toCRDTSig BC.init π = s := by
+      exact (canonical_fold ops).trans hfold
+    have hsafe : BCInv s := by
+      cases exec with
+      | ordinary reach => exact versions_safe reach v s E hver
+      | virtual reach => exact versions_safeV reach v s E hver
+    have hcount : ∀ r, (π.countP (bcIsDecAt r) : ℤ) ≤
+        (π.countP (bcIsIncAt r) : ℤ) := by
+      intro r
+      have hr := hsafe r
+      rw [← hπfold, bc_fold_incs, bc_fold_decs, BC_init_fst,
+        BC_init_snd] at hr
+      omega
+    have hrel : sequential.Rel s (clientSpec.run π) := by
+      refine ⟨hsafe, ?_⟩
+      intro r
+      change sequentialSpec.run π r = s.1 r - s.2 r
+      rw [sequential_run, hπfold]
+    refine ⟨π, canonical_listPermOf hperm, respects_lo C π,
+      ⟨⟨ops, rfl⟩, hcount⟩, hrel, ?_⟩
+    intro r
+    exact (hrel.2 r).symm
+
 noncomputable def verified : VerifiedMRDT BC where
-  generation := generation
+  issuance := generation
+  arbitration := ArbitrationSpec.raw BC
   convergence := convergence
-  Spec := sequentialSpec
-  sequential := sequential
-  sequential_of_mint := fun _ h => sequentialHonest_of_linear h
-  safety := safety
+  Spec := clientSpec
+  Rel := sequential.Rel
+  legalization := legalization
 
 #print axioms versions_safe
 #print axioms versions_safeV

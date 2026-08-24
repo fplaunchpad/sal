@@ -1176,19 +1176,20 @@ theorem eHonest_of_applicable {Γ : OrderedPrefixCode} (C : Configuration (E Γ 
       Classical.choose_spec (e_chain_exists C hApp o.1)
     exact ⟨hpos, hcoord o ho hi rfl, hsum⟩
 
-def generation (Γ : OrderedPrefixCode) : GenerationContract (E Γ α) where
-  Guard := eApplicable
-  History := EHonest Γ
-  history_of_mint := fun C h => eHonest_of_applicable C (fun e he => by
+def generation (Γ : OrderedPrefixCode) : Issuance (E Γ α) where
+  CanIssue := eApplicable
+
+theorem eHonest_of_mint {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
+    (h : MintHonest (E Γ α) eApplicable C) : EHonest Γ C :=
+  eHonest_of_applicable C (fun e he => by
     obtain ⟨π, hp, _hr, hg⟩ := h e he
     exact ⟨π, hp, hg⟩)
 
 theorem convergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (E Γ α) (generation (α := α) Γ) where
-  sound := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertified (fun C hH => e_join_at (eHonest_core hH)) h)
   soundV := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertifiedV (fun C hH => e_join_at (eHonest_core hH)) h)
+    (ra_of_mintCertifiedV
+      (fun C hH => e_join_at (eHonest_core (eHonest_of_mint hH))) h)
 
 
 end Sal.MRDTs.Instances.EmbedRGA

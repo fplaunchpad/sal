@@ -6,9 +6,15 @@ canonical virtual LCAs, and garbage collection.
 
 The current framework is under [`Sal/MRDTs`](Sal/MRDTs). Its raw `MRDTSig`
 contains only datatype operations. Client minting discipline is supplied by a
-`GenerationContract`; observable invariants by a `SafetyCertificate`; intended
-single-replica behavior by a `SequentialRefinement`. `VerifiedMRDT` combines
-those certificates with ordinary and virtual-LCA convergence.
+single `Issuance.CanIssue` relation. An independent `SequentialSpec` supplies
+the abstract state, legal histories, and queries. `ArbitrationSpec` states the
+public semantic dependence policy without quantifying over malformed concrete
+states. `VerifiedMRDT` combines these with widened convergence, representation,
+and legalization. Ordinary
+convergence is derived by embedding the ordinary trace in the widened
+semantics. Safety and datatype-state GC are separate optional certificates.
+Proof-local invariants and applicability predicates are not part of the public
+API.
 
 The framework supplies:
 

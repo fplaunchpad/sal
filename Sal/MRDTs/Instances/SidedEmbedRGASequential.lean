@@ -88,13 +88,16 @@ theorem sRFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op SOp))
 
 /-! ## §C  Sequential honesty -/
 
-/-- Sequential honesty: stamps exceed all previous insert stamps
-(Lamport), and every op is applicable at the current (unrooted) fold,
-the instance's own §8 issuer guard, specialized to a linear history. -/
+/-- Abstract legality for sided-RGA histories. Inserts use increasing fresh
+identifiers and a live carried anchor. Deletes only require prior allocation,
+so duplicate concurrent deletion remains a legal idempotent operation. -/
 def sSeqOK (Γ : OrderedPrefixCode) (ρ : List (Op SOp)) : Prop :=
   ∀ (σ : List (Op SOp)) (o : Op SOp) (τ : List (Op SOp)),
     ρ = σ ++ o :: τ →
-    (∀ x ∈ sInsIds σ, x < o.1) ∧ sApplicable o (sFold Γ σ)
+    match o.2.2 with
+    | .ins _ _ _ _ =>
+        (∀ x ∈ sInsIds σ, x < o.1) ∧ sApplicable o (sFold Γ σ)
+    | .del x => ∃ i ∈ σ, sIsIns i = true ∧ i.1 = x
 
 theorem sSeqOK_prefix {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
     {o : Op SOp} (h : sSeqOK Γ (ρ ++ [o])) : sSeqOK Γ ρ := by
@@ -164,9 +167,15 @@ theorem s_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
 /-! ## §D′  Well-formedness from sequential honesty -/
 
 theorem sInsIds_lt_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
-    {o : Op SOp} (hOK : sSeqOK Γ (ρ ++ [o])) :
+    {o : Op SOp} (hOK : sSeqOK Γ (ρ ++ [o]))
+    (hins : sIsIns o = true) :
     ∀ x ∈ sInsIds ρ, x < o.1 :=
-  (hOK ρ o [] (by simp)).1
+  by
+    obtain ⟨ts, replica, op⟩ := o
+    cases op with
+    | del x => simp [sIsIns] at hins
+    | ins el pref anchor side =>
+        exact (hOK ρ (ts, replica, .ins el pref anchor side) [] (by simp)).1
 
 theorem sWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
     (hOK : sSeqOK Γ ρ) : SWf Γ ρ := by
@@ -179,42 +188,49 @@ theorem sWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
           refine ⟨ih (sSeqOK_prefix hOK), ?_, ?_⟩
           · cases o' : o.2.2 <;> simp [sInsIds, sIsIns, o']
           · intro a ha b hb
-            have hlt := sInsIds_lt_of_seqOK hOK a ha
-            have hb1 : b = o.1 := by
-              simp only [sInsIds, List.mem_map, List.mem_filter] at hb
-              obtain ⟨o', ⟨ho', -⟩, rfl⟩ := hb
-              simp at ho'
-              rw [ho']
-            omega
+            cases hop : o.2.2 with
+            | del x => simp [sInsIds, sIsIns, hop] at hb
+            | ins el pref anchor side =>
+                have hlt := sInsIds_lt_of_seqOK hOK
+                  (by simp [sIsIns, hop]) a ha
+                have hb1 : b = o.1 := by
+                  simp only [sInsIds, List.mem_map, List.mem_filter] at hb
+                  obtain ⟨o', ⟨ho', -⟩, rfl⟩ := hb
+                  simp at ho'
+                  rw [ho']
+                omega
   case del_late =>
       intro σ o τ heq hins hdel
+      obtain ⟨ots, orp, oop⟩ := o
+      cases oop with
+      | del target => simp [sIsIns] at hins
+      | ins oel opref oanchor oside =>
       obtain ⟨d, hd, hddel⟩ := mem_sDels.mp hdel
       obtain ⟨σ₁, σ₂, rfl⟩ := List.append_of_mem hd
-      have happ := (hOK σ₁ d (σ₂ ++ o :: τ) (by rw [heq]; simp)).2
       obtain ⟨ts, rr, dop2⟩ := d
       cases dop2 with
       | ins el π a sd => simp at hddel
       | del x =>
-          simp only [sApplicable] at happ
           simp only at hddel
           injection hddel with hx
           subst hx
-          obtain ⟨rec, hrec, hrx⟩ := List.mem_map.mp happ
-          obtain ⟨iop, hiρ, hii, hie⟩ := s_fold_rec_sub Γ σ₁ rec hrec
-          have hix : iop.1 = o.1 → False := by
+          obtain ⟨iop, hiρ, hii, hiop⟩ := hOK σ₁
+            (ts, rr, .del x)
+            (σ₂ ++ (x, orp, .ins oel opref oanchor oside) :: τ)
+            (by rw [heq]; simp)
+          have hneq : iop.1 = x → False := by
             intro hcontra
-            have hmem : o.1 ∈ sInsIds (σ₁ ++ (ts, rr, SOp.del o.1) :: σ₂) := by
-              rw [show σ₁ ++ (ts, rr, SOp.del o.1) :: σ₂ =
-                  (σ₁ ++ [(ts, rr, SOp.del o.1)]) ++ σ₂ from by simp,
+            have hmem : x ∈ sInsIds (σ₁ ++ (ts, rr, SOp.del x) :: σ₂) := by
+              rw [show σ₁ ++ (ts, rr, SOp.del x) :: σ₂ =
+                  (σ₁ ++ [(ts, rr, SOp.del x)]) ++ σ₂ from by simp,
                 sInsIds_append, sInsIds_append]
               exact List.mem_append_left _ (List.mem_append_left _
                 (mem_sInsIds.mpr ⟨iop, hiρ, hii, hcontra⟩))
-            have := (hOK (σ₁ ++ (ts, rr, SOp.del o.1) :: σ₂) o τ
-              (by simp [heq])).1 o.1 hmem
+            have := (hOK (σ₁ ++ (ts, rr, SOp.del x) :: σ₂)
+              (x, orp, .ins oel opref oanchor oside) τ
+              (by simp [heq])).1 x hmem
             omega
-          apply hix
-          rw [hie] at hrx
-          exact hrx
+          exact hneq hiop
   case keys_inj =>
       intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
       obtain ⟨ch₁, hp₁, hs₁, -, hc₁⟩ := s_seq_chains hOK o₁ h₁ hi₁
@@ -287,13 +303,13 @@ theorem sr_fold_iff {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
           rw [if_neg hfreshR, if_neg hfreshU, mem_sInsert, mem_sInsert, IH r]
           tauto
       | del x =>
-          have happ := (hOK ρ (ts, rr, .del x) [] (by simp)).2
-          simp only [sApplicable] at happ
+          obtain ⟨iop, hiop, hins, htime⟩ :=
+            hOK ρ (ts, rr, .del x) [] (by simp)
           have hx0 : x ≠ 0 := by
             intro h0
-            obtain ⟨rec, hrec, hr1⟩ := List.mem_map.mp happ
-            have h1 := s_fold_id_pos hOK' hrec
-            rw [hr1, h0] at h1
+            obtain ⟨ch, hpos, hsum, h1, hcoord⟩ :=
+              s_seq_chains hOK' iop hiop hins
+            rw [htime, h0] at h1
             exact absurd h1 (by decide)
           show r ∈ sUpdate Γ (sRFold Γ ρ) (ts, rr, .del x) ↔
             r = rootRec ∨ r ∈ sUpdate Γ (sFold Γ ρ) (ts, rr, .del x)
@@ -329,13 +345,14 @@ theorem sr_fold_chain {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
 
 /-- Rooted ids sit below a fresh op's stamp. -/
 theorem sr_fold_id_lt {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
-    {o : Op SOp} (hOK : sSeqOK Γ (ρ ++ [o])) (hts1 : 1 ≤ o.1)
+    {o : Op SOp} (hOK : sSeqOK Γ (ρ ++ [o]))
+    (hins : sIsIns o = true) (hts1 : 1 ≤ o.1)
     {rec : SRec} (hrec : rec ∈ sRFold Γ ρ) : rec.1 < o.1 := by
   rcases (sr_fold_iff (sSeqOK_prefix hOK) rec).mp hrec with rfl | hrec'
   · show (0:ℕ) < o.1
     exact hts1
   · obtain ⟨iop, hiρ, hii, hie⟩ := s_fold_rec_sub Γ ρ rec hrec'
-    have h1 := sInsIds_lt_of_seqOK hOK iop.1
+    have h1 := sInsIds_lt_of_seqOK hOK hins iop.1
       (mem_sInsIds.mpr ⟨iop, hiρ, hii, rfl⟩)
     have e1 : rec.1 = iop.1 := by rw [hie]; rfl
     rw [e1]
@@ -358,7 +375,7 @@ theorem sr_fold_sorted {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
           obtain ⟨cho, hpo, hso, hts1, hco⟩ := s_seq_chains hOK
             (ts, rr, .ins el π a sd)
             (List.mem_append_right _ (by simp)) (by simp [sIsIns])
-          have hxlt : x.1 < ts := sr_fold_id_lt hOK
+          have hxlt : x.1 < ts := sr_fold_id_lt hOK (by simp [sIsIns])
             (show (1:ℕ) ≤ ts from hts1) hx
           rw [hcx, hco] at hkey
           have hch := sidedCoordOf_inj Γ hpx hpo (sKey_inj hkey)
@@ -733,7 +750,7 @@ theorem sided_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
               ∉ sIds (sRFold Γ ρ) := by
             intro hmem
             obtain ⟨rec, hrec, hr1⟩ := List.mem_map.mp hmem
-            have h1 : rec.1 < ts := sr_fold_id_lt hOK hts1 hrec
+            have h1 : rec.1 < ts := sr_fold_id_lt hOK (by simp [sIsIns]) hts1 hrec
             rw [hr1] at h1
             exact absurd h1 (Nat.lt_irrefl _)
           -- the anchor package: the sentinel serves the root anchor
@@ -779,7 +796,7 @@ theorem sided_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
                 : SRec).2.2 := by
             intro rec hrec hcontra
             obtain ⟨chr, hpr, hsr, hcr⟩ := sr_fold_chain hOK' hrec
-            have hrlt : rec.1 < ts := sr_fold_id_lt hOK hts1 hrec
+            have hrlt : rec.1 < ts := sr_fold_id_lt hOK (by simp [sIsIns]) hts1 hrec
             rw [hcr, show (((ts : ℕ), el, π ++ sBlock Γ (sd, ts - a))
                 : SRec).2.2 = sidedCoordOf Γ (cha ++ [(sd, ts - a)])
                 from hcoordnew] at hcontra
@@ -800,7 +817,7 @@ theorem sided_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
                   d < ts - a) := by
             intro rec hrec hreq
             obtain ⟨chr, hpr, hsr, hcr⟩ := sr_fold_chain hOK' hrec
-            have hrlt : rec.1 < ts := sr_fold_id_lt hOK hts1 hrec
+            have hrlt : rec.1 < ts := sr_fold_id_lt hOK (by simp [sIsIns]) hts1 hrec
             have hra : rec.1 ≠ a := by
               intro hcontra
               exact hreq (hinj rec hrec ar harm (by rw [hcontra, hara]))
@@ -928,4 +945,3 @@ theorem sided_seq_read {Γ : OrderedPrefixCode} {ρ : List (Op SOp)}
 
 
 end Sal.MRDTs.Instances.SidedEmbedRGA
-

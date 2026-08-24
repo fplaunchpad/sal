@@ -71,33 +71,35 @@ theorem join : JoinLemma3 (D α) :=
   join_lemma3_of_cd' coreVCs3 deltaVCs3
     (cdVC3_of_all_comm coreVCs3 all_comm)
 
-def generation : GenerationContract (D α) where
-  Guard := fun _ _ => True
-  History := fun _ => True
-  history_of_mint := fun _ _ => True.intro
+def generation : Issuance (D α) where
+  CanIssue := fun _ _ => True
 
 def convergence : ConvergenceCertificate (D α) generation where
-  sound := fun h => ra_of_mintCertified (fun _ _ => join _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
 
-def spec : SequentialSpec (Op α) where
+def spec : SequentialSpec (D α) where
   State := Finset α
   init := ∅
   step s e := insert e.2.2 s
+  Legal := fun _ => True
+  query := fun s _ => s
 
-def sequential : SequentialRefinement (D α) spec where
+def sequential : SequentialRefinement (D α) spec.toSequentialMachine where
   Honest := fun _ => True
   Rel := (· = ·)
   init := rfl
   sound := fun _ _ => rfl
 
 noncomputable def verified : VerifiedMRDT (D α) where
-  generation := generation
+  issuance := generation
+  arbitration := ArbitrationSpec.raw (D α)
   convergence := convergence
   Spec := spec
-  sequential := sequential
-  sequential_of_mint := fun _ _ => True.intro
-  safety := SafetyCertificate.trivial generation
+  Rel := (· = ·)
+  legalization := LegalizationCertificate.ofTotal
+    (fun _ => True.intro)
+    (fun ops => sequential.sound ops True.intro)
+    (fun _ _ => rfl)
 
 #print axioms join
 #print axioms verified

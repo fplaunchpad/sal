@@ -20,15 +20,24 @@ if ! lake build Sal.MRDTs.Metatheory.PaperLedger >"$paper_lean_log" 2>&1; then
   exit 1
 fi
 
-(
-  cd docs/framework-paper
-  tectonic main.tex
-)
+build_paper() {
+  paper_dir="$1"
+  paper_name="$2"
+  build_log="${TMPDIR:-/tmp}/sal-${paper_name}-tectonic.log"
+  if ! (cd "$paper_dir" && tectonic main.tex) >"$build_log" 2>&1; then
+    cat "$build_log"
+    exit 1
+  fi
+  # Some Tectonic runtime panics have incorrectly returned status 0. Treat
+  # panic/error diagnostics as a failed build so a stale PDF cannot pass.
+  if rg -n 'panicked at|thread .* panicked|^error:' "$build_log"; then
+    cat "$build_log"
+    exit 1
+  fi
+}
 
-(
-  cd docs/collaborative-editing-paper
-  tectonic main.tex
-)
+build_paper docs/framework-paper framework-paper
+build_paper docs/collaborative-editing-paper collaborative-editing-paper
 
 test -s docs/framework-paper/main.pdf
 test -s docs/collaborative-editing-paper/main.pdf

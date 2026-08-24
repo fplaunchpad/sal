@@ -458,16 +458,13 @@ theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
 private theorem mvrJoin : JoinLemma3 MVR :=
   join_lemma3_of_cd_feasible MVR_coreVCs3CD MVR_feasibleDeltaVCs3 MVR_cdVC3
 
-def generation : GenerationContract MVR where
-  Guard := mvrApplicable
-  History := fun C => MintHonest MVR mvrApplicable C
-  history_of_mint := fun _ h => h
+def generation : Issuance MVR where
+  CanIssue := mvrApplicable
 
 def convergence : ConvergenceCertificate MVR generation where
-  sound := fun h => ra_of_mintCertified (fun _ _ => mvrJoin _) h
   soundV := fun h => ra_of_mintCertifiedV (fun _ _ => mvrJoin _) h
 
-def spec : SequentialSpec (Op MVROp) where
+def spec : SequentialMachine (Op MVROp) where
   State := Option ℕ
   init := none
   step := fun _ o => match o.2.2 with | .write v _ => some v
@@ -489,16 +486,52 @@ def sequential : SequentialRefinement MVR spec where
     rw [spec_run]
     exact mvr_seq_sound hOK v
 
-noncomputable def verified : VerifiedMRDT MVR where
-  generation := generation
+noncomputable def replayVerified : ReplayVerifiedMRDT MVR where
+  issuance := generation
   convergence := convergence
-  Spec := spec
+  Machine := spec
   sequential := sequential
   sequential_of_mint := fun _ h => by
     simpa [sequential, mvrOK, generation, mvrApplicable] using h.guarded
-  safety := SafetyCertificate.trivial generation
+
+/-! ### Checked obstruction to a sequential-register legalization
+
+Two replicas may concurrently issue writes from the empty register.  Their
+merged MVR view contains both values.  No state of the ordinary sequential
+register above can have that observation, so the replay certificate cannot be
+promoted to `VerifiedMRDT` with this client specification. -/
+
+def concurrentWrite₁ : Op MVROp := (1, 0, .write 10 [])
+def concurrentWrite₂ : Op MVROp := (2, 1, .write 20 [])
+
+noncomputable def concurrentState : MVR.State :=
+  MVR.merge
+    (MVR.update MVR.init concurrentWrite₁)
+    (MVR.update MVR.init concurrentWrite₂)
+
+theorem concurrent_writes_applicable :
+    mvrApplicable concurrentWrite₁ MVR.init ∧
+    mvrApplicable concurrentWrite₂ MVR.init := by
+  simp [concurrentWrite₁, concurrentWrite₂, mvrApplicable, mvrVis, mvrTag,
+    MVR_init_eq]
+
+theorem concurrentState_views_both :
+    mvrView concurrentState 10 ∧ mvrView concurrentState 20 := by
+  constructor <;>
+    simp [concurrentState, concurrentWrite₁, concurrentWrite₂, mvrView,
+      MVR, mvrMergeL, mvrUpdate]
+
+theorem concurrentState_no_sequential_register :
+    ¬ ∃ q : spec.State, sequential.Rel concurrentState q := by
+  rintro ⟨q, hq⟩
+  obtain ⟨h10, h20⟩ := concurrentState_views_both
+  have q10 : q = some 10 := (hq 10).mp h10
+  have q20 : q = some 20 := (hq 20).mp h20
+  have : (some 10 : Option ℕ) = some 20 := q10.symm.trans q20
+  simp at this
 
 #print axioms mvr_seq_sound
-#print axioms verified
+#print axioms replayVerified
+#print axioms concurrentState_no_sequential_register
 
 end Sal.MRDTs.Instances.MVR

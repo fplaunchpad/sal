@@ -18,12 +18,14 @@
 \begin{abstract}
 Collaborative rich-text editors need three guarantees at once: replicas must
 converge, their states must implement an ordinary sequential editor, and their
-metadata must remain collectable. We give a Lean~4 verification of Peritext
+metadata must remain collectable. We develop a Lean~4 verification of Peritext
 over mergeable replicated data types (MRDTs). The proof includes three
 sequence kernels: a tombstone RGA baseline, an immutable-coordinate EmbedRGA,
 and a sided EmbedRGA with verified Fugue and FugueMax ordering policies. It
-connects issuer-side generation guards to replication-aware linearizability
-and to independent sequential editor machines. Two collectors address
+proves replication convergence, local minted-history refinement to independent
+sequential editor machines, and a full merged-history theorem for the
+tombstone baseline. The corresponding merged-history theorem for the embedded
+representations remains open. Two collectors address
 different sources of growth. An asynchronous distributed collector removes
 commit history; a Peritext-specific collector removes dead text records,
 deletion evidence, and closed mark pairs while preserving future edits. Their
@@ -42,21 +44,30 @@ The main result is an end-to-end semantic verification of a collaborative
 rich-text datatype. It is not one monolithic theorem. Figure~\ref{fig:result}
 shows the evidence chain.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=7mm and 10mm]
-  \node[certnode] (mint) {issuer generation\\anchor, freshness, side};
-  \node[theoremnode,right=of mint] (rga) {verified sequence\\RGA / Embed / Sided};
-  \node[theoremnode,right=of rga] (peri) {verified Peritext\\text $\times$ deletes $\times$ marks};
-  \node[theoremnode,below=of peri] (query) {sequential editor\\and rich-text query};
-  \node[certnode,below=of rga] (sgc) {datatype state GC\\query + continuation};
-  \node[certnode,below=of mint] (hgc) {distributed history GC\\head-read refinement};
+\begin{tikzpicture}[node distance=8mm]
+  \node[certnode,text width=.26\textwidth] (mint)
+    {issuer generation\\anchor, freshness, side};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of mint] (rga)
+    {sequence correctness\\RGA, Embed, Sided};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of rga] (peri)
+    {Peritext correctness\\text $\times$ deletes $\times$ marks};
   \draw[flow] (mint)--(rga); \draw[flow] (rga)--(peri);
-  \draw[flow] (peri)--(query); \draw[flow] (sgc)--(peri);
-  \draw[flow] (hgc)--(sgc);
+
+  \node[certnode,text width=.26\textwidth,below=11mm of mint] (hgc)
+    {distributed history GC\\removes commits};
+  \node[certnode,text width=.26\textwidth,right=10mm of hgc] (sgc)
+    {datatype state GC\\removes internal metadata};
+  \node[theoremnode,text width=.26\textwidth,right=10mm of sgc] (query)
+    {uncollected semantics\\sequential rich view};
+  \draw[flow] (hgc)--(sgc); \draw[flow] (sgc)--(query);
+  \draw[flow] (peri)--(query);
 \end{tikzpicture}
-\caption{The proof chain. Blue boxes are semantic correctness results;
-orange boxes are protocol or collection certificates.}
+\caption{Two evidence paths meet at the user-visible result. The upper path
+proves the datatype; the lower path erases both collectors to that verified
+semantics. Blue boxes are correctness results and orange boxes are supplied
+protocol certificates.}
 \label{fig:result}
 \end{figure}
 
@@ -65,9 +76,10 @@ The artifact establishes the following claims.
 \begin{enumerate}
 \item Every generation-certified ordinary or virtual-LCA execution of each
 sequence kernel is replication-aware linearizable.
-\item Each legal sequential history refines an independent list editor.
-Peritext additionally renders the MRDT state exactly like its sequential rich
-editor.
+\item Each legal sequential history refines an independent sequential
+specification. EmbedRGA and SidedEmbedRGA use list states; tombstone RGA uses
+a finite birth/grave reference with a list-valued sequence; Peritext uses a
+list-based rich editor and proves exact rendering.
 \item Fugue has the stated forward non-interleaving property but not maximal
 backward non-interleaving. The FugueMax variant satisfies both directions and
 is replication-aware linearizable.
@@ -120,8 +132,6 @@ The paper-level RGA state is a pair $S=(A,G)$:
 \]
 Both components grow monotonically.
 
-\begin{figure}[t]
-\small
 \[
 \begin{array}{rcl}
 \mathsf{do}((A,G),\ins(t,a,x)) &=& (A\cup\{(t,a,x)\},G),\\
@@ -136,11 +146,10 @@ anchor, and filter identifiers in $G$:
   \seq(A,G)=\mathsf{filter}_{x\notin G}
     (\mathsf{foldl}\;\mathsf{insertAfter}\;[]\;\mathsf{sort}(A)).
 \]
-\caption{The tombstone RGA semantics. This is the human-readable form of
-\lean{Instances.RGA.RGAM}, \lean{Instances.RGA.sequence}, and the independent
-\lean{Instances.RGA.spec}.}
-\label{fig:rga-semantics}
-\end{figure}
+These equations are the paper-level form of \lean{Instances.RGA.RGAM} and
+\lean{Instances.RGA.sequence}. The independent sequential machine
+\lean{Instances.RGA.spec} stores finite birth and grave sets, without a
+replicated version DAG; \lean{sequence} gives its intended list view.
 
 The state is simple enough to explain both collectors. Deleting the entire
 document leaves all birth records and graves in the datatype state. Separately,
@@ -149,41 +158,40 @@ cannot delete RGA tombstones because they live inside a retained state.
 Datatype-state GC cannot delete old versions because it sees only one
 materialization. Both are necessary.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[node distance=8mm and 15mm]
-  \node[data] (before) {replica before collection\\commit DAG: $v_0\ldots v_n$\\state: births + graves};
-  \node[data,right=of before] (hgc) {after history GC\\commit DAG: retained frontier\\state: births + graves};
-  \node[data,right=of hgc] (both) {after both collectors\\commit DAG: retained frontier\\state: live + certified summaries};
-  \draw[flow] (before)--node[above,font=\scriptsize]{generic distributed GC}(hgc);
-  \draw[flow] (hgc)--node[above,font=\scriptsize]{datatype state GC}(both);
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[data,text width=.27\textwidth] (before) at (0,0)
+    {before collection\\history: $v_0\ldots v_n$\\state: births $+$ graves};
+  \node[data,text width=.27\textwidth] (history) at (5.1,0)
+    {after history GC\\history: retained frontier\\state: births $+$ graves};
+  \node[data,text width=.27\textwidth] (both) at (10.2,0)
+    {after both collectors\\history: retained frontier\\state: live $+$ summaries};
+  \draw[flow] (before)--(history);
+  \draw[flow] (history)--(both);
 \end{tikzpicture}
-}
 \caption{The collectors remove different metadata. Neither subsumes the
-other.}
+other: the first changes the commit carrier; the second changes a retained
+version's materialization. The left arrow is commit-history GC; the right
+arrow is datatype-state GC.}
 \label{fig:two-kinds-gc}
 \end{figure}
 
 \section{Three verified sequence representations}
 
 The three representations implement the same insert-after/delete interface,
-but they retain different information and offer different ordering policies.
-Figure~\ref{fig:three-kernels} uses one deleted ancestor to show the distinction.
-
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}[node distance=7mm and 8mm]
-  \node[data,text width=0.27\textwidth] (rga) {\textbf{RGA}\\birth node $a$ remains\\children point to identity $a$\\grave says $a$ is hidden};
-  \node[data,text width=0.27\textwidth,right=of rga] (embed) {\textbf{EmbedRGA}\\live node carries immutable\\anonymous path coordinate\\deleted identity can disappear};
-  \node[data,text width=0.27\textwidth,right=of embed] (sided) {\textbf{SidedEmbedRGA}\\coordinate has L/R band\\plus compact mint-policy gap\\stronger run ordering};
-  \draw[flow] (rga)--node[above,font=\scriptsize]{embed ancestry}(embed);
-  \draw[flow] (embed)--node[above,font=\scriptsize]{add side policy}(sided);
-\end{tikzpicture}
-\caption{The three kernels. Embedding removes dependence on deleted
-identities; sided embedding adds policy information for non-interleaving.}
-\label{fig:three-kernels}
-\end{figure}
+but they retain different information and offer different ordering policies:
+\begin{center}
+\begin{tabular}{@{}p{.20\textwidth}p{.34\textwidth}p{.34\textwidth}@{}}
+\toprule
+Kernel & Position of a live descendant & What survives deletion of its anchor \\
+\midrule
+RGA & identity edge to anchor $a$ & birth of $a$ and a grave marker \\
+EmbedRGA & immutable anonymous path coordinate & path geometry; identity $a$ may disappear \\
+SidedEmbedRGA & path coordinate with an L/R band & path geometry and compact mint-policy summary \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \subsection{EmbedRGA}
 
@@ -252,14 +260,19 @@ For each kernel, the repository packages a generation contract, ordinary and
 virtual-LCA convergence, an independent sequential machine, and the bridge
 from certified minting to sequential honesty. The capstones are
 \lean{Instances.RGA.verified}, \lean{Instances.ProductionRGA.embed}, and
-\lean{Instances.ProductionRGA.sided}.
+\lean{Instances.ProductionRGA.sided}. Each is a public
+\lean{VerifiedMRDT} package. The repository retains the separately named
+\lean{replayEmbed} and \lean{replaySided} packages for raw-fold proofs.
 
-The sequential theorem matters independently of convergence. It proves that
-folding a legal one-replica history implements ordinary list insertion and
-deletion. RA-linearizability then proves that each replicated version equals a
-legal fold of its visible event set. The generation premise preserves the
-actual editor protocol rather than silently totalizing invalid anchor use as a
-no-op.
+The sequential theorem matters independently of convergence. EmbedRGA and
+SidedEmbedRGA refine explicit list machines for a legal minted linear history.
+Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
+replicated version has an exact, arbitration-respecting, legal sequential
+witness with the intended list view. EmbedRGA and SidedEmbedRGA use explicit
+semantic dependence policies because universal commutation over malformed
+list states is not the client arbitration relation. The generation premise
+preserves the actual editor protocol rather than silently totalizing invalid
+anchor use as a no-op.
 
 \section{Peritext over the sided sequence}
 
@@ -278,27 +291,43 @@ $D$, preserving the birth position needed to resolve mark boundaries. A mark
 records a globally fresh mark ID, type, value, start and end identifiers, and
 boundary sides.
 
-\begin{figure}[t]
+At the paper level, a rich operation is one of
+\[
+ o ::= \mathsf{textIns}(t,\pi,a,d,x)
+   \mid \mathsf{delete}(x)
+   \mid \mathsf{mark}(m,\mathit{kind},\mathit{value},
+                      a_s,d_s,a_e,d_e,\mathit{action}).
+\]
+The update routes the operation to exactly one product component:
+\begin{align*}
+ (T,D,M)\mathbin{+}\mathsf{textIns}(\cdots)&=(T+\mathsf{ins}(\cdots),D,M),\\
+ (T,D,M)\mathbin{+}\mathsf{delete}(x)&=(T,D\cup\{x\},M),\\
+ (T,D,M)\mathbin{+}\mathsf{mark}(m,\ldots)&=(T,D,M\cup\{\mathsf{mark}(m,\ldots)\}).
+\end{align*}
+Ternary merge is the product of the sided-text merge and two set unions.
+This product structure explains convergence, but not client legality: the
+cross-component issuance policy supplies that missing relation.
+
+\begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[node distance=7mm and 12mm]
-  \node[data] (ops) {client operations\\insert, delete, add/remove mark};
-  \node[data,right=of ops] (product) {$S_{text}\times D\times M$\\three-way product merge};
-  \node[data,right=of product] (doc) {document order\\live characters + boundary resolution};
-  \node[theoremnode,right=of doc] (view) {rich view\\character $\times$ active marks};
-  \draw[flow] (ops)--(product); \draw[flow] (product)--(doc); \draw[flow] (doc)--(view);
-  \node[certnode,below=8mm of product] (guard) {cross-component guard\\known live endpoints, fresh mark ID};
-  \draw[flow,dashed] (guard)--(product);
+\begin{tikzpicture}[node distance=8mm]
+  \node[certnode,text width=.40\textwidth] (guard)
+    {issuance policy\\legal sided insert; live delete target;\\live mark endpoints and fresh mark ID};
+  \node[data,text width=.40\textwidth,below=of guard] (product)
+    {replicated product $S_{text}\times D\times M$\\components merge independently};
+  \node[theoremnode,text width=.40\textwidth,below=of product] (view)
+    {rich query\\order live characters; resolve boundaries;\\compute active marks};
+  \draw[flow] (guard)--node[right=3mm,font=\scriptsize]{mint and deliver}(product);
+  \draw[flow] (product)--node[right=3mm,font=\scriptsize]{render}(view);
 \end{tikzpicture}
-}
 \caption{Peritext state and query pipeline. Text ordering, logical deletion,
-and mark evidence merge independently; the read combines them in document
-order.}
+and mark evidence merge independently. The rich query is the only place that
+combines all three components.}
 \label{fig:peritext-pipeline}
 \end{figure}
 
-The cross-component guard in Figure~\ref{fig:peritext-pipeline} requires an
-insert to satisfy the sided sequence guard, a deletion to name a known live
+The cross-component issuance policy in Figure~\ref{fig:peritext-pipeline}
+requires an insert to satisfy the sided sequence policy, a deletion to name a known live
 character, and a mark to name known live endpoints with a fresh mark ID. The
 theorem \lean{coreHonest\_of\_mint} derives the sequence history fact needed by
 the product Join proof.
@@ -316,8 +345,11 @@ independent rich editor machine on $\rho$.
 \end{theorem}
 
 The production signature narrows the query to rendered rich text without
-changing the operational carrier. \lean{richVerified} packages generation,
-ordinary and virtual convergence, the sequential relation, and query safety.
+changing the operational carrier. \lean{richVerified} transfers the
+merged-history legalization to this rendered query boundary. It proves query
+agreement for the document-order rich-text render, not only for the three raw
+components. \lean{richReplayVerified} remains as the explicitly internal
+raw-fold package.
 The JavaScript export \code{peritext} selects
 \code{peritextSidedEmbedRGA}; the RGA and one-sided EmbedRGA variants remain
 available as controlled baselines.
@@ -339,6 +371,20 @@ Lamport cutoff. The cutoff has one interpretation:
 It is not a second tombstone set. It compactly separates collected old
 identifiers from future fresh identifiers. A new Lamport identifier must be
 strictly greater than $c$, so it is necessarily retained by the epoch policy.
+
+The refinement relation connects this compact state to the uncollected rich
+state $F=(T_F,D_F,M_F)$. It existentially records a retention predicate $k$
+and Fugue knowledge $K_F$ and requires
+\begin{align*}
+ T_F&=\mathsf{gFold}(K_F),
+ &T&=\mathsf{filter}_k(T_F),\\
+ \mathsf{GapMapOK}(K_F,K),
+ &\neg k(x)&\Rightarrow x\le c,\\
+ \forall q.\ \mathsf{query}(C,q)&=\mathsf{render}(F,q).&&
+\end{align*}
+This is \lean{StateGC.Protocol.Represents}. Equality of current reads is only
+one field. The text projection and gap-map fields are what make subsequent
+insertion and merge provable.
 
 \subsection{Three atomic collectors}
 
@@ -402,6 +448,27 @@ text, gap summaries, cutoff, and all rich queries to the semantic state.
 Collection and epoch reframing are silent. Ordinary apply/merge and virtual
 merge are visible.
 
+The physical state contains one ghost semantic configuration for the proof
+and a partial materialization map:
+\[
+ P=\langle C_{sem},\mathsf{compact}:\mathit{Version}\rightharpoonup
+ \mathsf{CompactState}\rangle.
+\]
+Every mapped version must represent its semantic state, and every replica
+head must be mapped. The transition labels are optional semantic labels:
+\[
+\begin{array}{rcll}
+ P\xrightarrow{\tau}P' &:& \mathsf{collectText},\ \mathsf{trimDeleted},\
+   \mathsf{dropMarkPair},\ \mathsf{reframe},
+   &C'_{sem}=C_{sem},\\
+ P\xrightarrow{\ell}P' &:& \mathsf{ordinary},\ \mathsf{virtual},
+   &C_{sem}\xrightarrow{\ell}_{\mathsf{StepV}}C'_{sem}.
+\end{array}
+\]
+An apply label additionally requires its timestamp to lie above the compact
+head's stable cutoff. Fetch advances the Lamport clock before the runtime may
+mint that operation.
+
 \begin{theorem}[Peritext state-GC refinement]
 Erase collection and reframe labels from any finite valid physical execution.
 The remaining labels form an execution of the uncollected virtual-LCA
@@ -419,6 +486,26 @@ where $h_r$ is its head and $C_r$ its locally held immutable commits. A remote
 fetch unions advertised commits; a separate head-sync action selects a held
 version. Evidence is derived from authored commits already in $C_r$.
 
+The asynchronous transitions are:
+\begin{figure}[H]
+\footnotesize
+\[
+\Rule{Fetch}{M=C_s}{
+ W\longrightarrow W[d\mapsto\langle h_d,C_d\cup M\rangle]}
+\]
+\[
+\Rule{Head-Sync}{v\in C_r}{
+ W\longrightarrow W[r\mapsto\langle v,C_r\rangle]}
+\qquad
+\Rule{Collect}{\mathsf{Certificate}(\langle h_r,C_r\rangle,K)}{
+ W\longrightarrow W[r\mapsto\langle h_r,K\rangle]}.
+\]
+\caption{Distributed commit-history transitions. Fetch corresponds to
+receiving immutable commits from a remote; it does not move the local head.
+Collection changes one replica and requires complete frontier evidence.}
+\label{fig:peritext-history-rules}
+\end{figure}
+
 A local collection requires frontier evidence for every registered replica
 and a keep certificate that preserves head reachability and LCA answers. The
 compressed DAG connects retained versions according to original reachability;
@@ -427,19 +514,22 @@ it need not retain the old root or every path node.
 The collecting protocol refines the same asynchronous fetch/head-sync
 protocol with GC erased. State GC then composes directly with this refinement:
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[node distance=8mm and 14mm]
-  \node[data] (physical) {JS-shaped physical run\\state GC, fetch, history GC};
-  \node[theoremnode,right=of physical] (semantic) {uncollected Peritext\\virtual-LCA run};
-  \node[theoremnode,right=of semantic] (editor) {sequential rich editor\\and RA-linearizable reads};
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[certnode,text width=.25\textwidth] (physical) at (0,0)
+    {combined physical run\\both collectors};
+  \node[theoremnode,text width=.25\textwidth] (semantic) at (5.25,0)
+    {uncollected Peritext\\same visible labels};
+  \node[theoremnode,text width=.25\textwidth] (editor) at (10.5,0)
+    {RA-linearizable versions\\sequential rich view};
   \draw[flow] (physical)--(semantic);
   \draw[flow] (semantic)--(editor);
 \end{tikzpicture}
-}
 \caption{End-to-end semantic path for both collectors. The history collector
-is framework supplied; the state collector is Peritext supplied.}
+is framework supplied; the state collector is Peritext supplied. Both arrows
+denote proved semantic implications: \lean{CombinedSteps.refinesV} followed by
+the verified Peritext capstones. They do not denote implementation extraction.}
 \label{fig:end-to-end-gc}
 \end{figure}
 
@@ -453,7 +543,7 @@ Finite anomaly fixtures are useful regression tests, but they are not a
 substitute for quantified intent theorems. Table~\ref{tab:anomalies} separates
 the two kinds of evidence.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -465,7 +555,7 @@ the two kinds of evidence.
 \toprule
 Property or corpus & Scope & RGA & \shortstack{Embed\\RGA} & \shortstack{Sided/\\FugueMax} \\
 \midrule
-Sequential list semantics & all legal sequential histories, Lean
+Sequential reference semantics & all legal sequential histories, Lean
   & proved & proved & proved \\
 RA-linearizability & certified ordinary and virtual histories, Lean
   & proved & proved & proved \\
@@ -529,7 +619,7 @@ Table~\ref{tab:kernels} reports medians for four real sequential traces.
 and materializes the visible sequence. Snapshot bytes are not a lower bound:
 each kernel has its own current codec.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{@{}lrlrrr@{}}
@@ -567,7 +657,7 @@ Table~\ref{tab:peritext-gc} reports the combined-GC mode. Durable state is the
 continuation state needed for future editing, including the current
 materialization and GC summaries, not only visible characters.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{@{}llrrr@{}}
@@ -614,7 +704,7 @@ apples-to-apples lower bounds. We compare rich text only among the three Sal
 Peritext variants because the harness does not coerce external rich-text
 semantics into Peritext's mark model.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{@{}lrrr@{}}
@@ -641,9 +731,10 @@ absence of ordering anomalies, and the current paper does not infer such a
 result from performance tests.
 
 \section{Evidence boundary and limitations}
+\label{sec:limits}
 
 The current artifact proves the semantic kernels, virtual-LCA executions,
-generation contracts, sequential refinements, Peritext state GC, distributed
+issuance policies, sequential refinements, Peritext state GC, distributed
 commit GC, and their composition. It validates but does not verify the
 JavaScript transliteration. Same-replica crash recovery and durable replica
 identity are not yet a formal protocol. The reviewed JavaScript anomaly corpus
@@ -658,18 +749,10 @@ has a checked counterexample that changes a future read.
 
 \section{Reproduction}
 
-Build all current Lean evidence and runtime gates:
-\begin{verbatim}
-./scripts/check-mrdt-refactor.sh
-\end{verbatim}
-Build both working papers and their paper ledger:
-\begin{verbatim}
-./scripts/check-working-papers.sh
-\end{verbatim}
-Regenerate the repeated kernel and Peritext reports:
-\begin{verbatim}
-node benchmarks/tools/run-kernel-comparison.mjs 3
-node benchmarks/tools/run-peritext-paper.mjs --repeat 3
-\end{verbatim}
+From the repository root, run \code{./scripts/check-mrdt-refactor.sh} for the
+Lean and runtime gates and \code{./scripts/check-working-papers.sh} for both
+papers and their declaration ledger. Regenerate the measurements with
+\code{node benchmarks/tools/run-kernel-comparison.mjs 3} and
+\code{node benchmarks/tools/run-peritext-paper.mjs --repeat 3}.
 
 \end{document}

@@ -57,13 +57,17 @@ theorem eSpecFold_snoc (ρ : List (Op (EOp α))) (o : Op (EOp α)) :
 
 /-! ## §B  Sequential honesty -/
 
-/-- Sequential honesty for embed histories: stamps exceed all previous
-insert stamps (Lamport), and every op is applicable at the current fold
-(the §8 issuer-side guard, specialized to a linear history). -/
+/-- Abstract legality for embedded-RGA histories. Inserts use fresh increasing
+identifiers and name a live anchor with the carried coordinate. Deletes need
+only name an identifier allocated earlier; they remain legal after another
+concurrent delete has already removed the live record. -/
 def eSeqOK (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : Prop :=
   ∀ (σ : List (Op (EOp α))) (o : Op (EOp α)) (τ : List (Op (EOp α))),
     ρ = σ ++ o :: τ →
-    (∀ x ∈ eInsIds σ, x < o.1) ∧ eApplicable o (eFold Γ σ)
+    match o.2.2 with
+    | .ins _ _ _ =>
+        (∀ x ∈ eInsIds σ, x < o.1) ∧ eApplicable o (eFold Γ σ)
+    | .del x => ∃ i ∈ σ, eIsIns i = true ∧ i.1 = x
 
 theorem eSeqOK_prefix {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
     {o : Op (EOp α)} (h : eSeqOK Γ (ρ ++ [o])) : eSeqOK Γ ρ := by
@@ -128,9 +132,15 @@ theorem e_seq_chains {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
 /-! ## §C′  Well-formedness from sequential honesty -/
 
 theorem eInsIds_lt_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
-    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o])) :
+    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o]))
+    (hins : eIsIns o = true) :
     ∀ x ∈ eInsIds ρ, x < o.1 :=
-  (hOK ρ o [] (by simp)).1
+  by
+    obtain ⟨ts, replica, op⟩ := o
+    cases op with
+    | del x => simp [eIsIns] at hins
+    | ins el pref anchor =>
+        exact (hOK ρ (ts, replica, .ins el pref anchor) [] (by simp)).1
 
 /-- Sequential honesty gives well-formedness: fresh monotone stamps give
 `ins_nodup` and `del_late`; chains + unique decodability give
@@ -146,43 +156,48 @@ theorem eWf_of_seqOK {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
           refine ⟨ih (eSeqOK_prefix hOK), ?_, ?_⟩
           · cases o' : o.2.2 <;> simp [eInsIds, eIsIns, o']
           · intro a ha b hb
-            have hlt := eInsIds_lt_of_seqOK hOK a ha
-            have hb1 : b = o.1 := by
-              simp only [eInsIds, List.mem_map, List.mem_filter] at hb
-              obtain ⟨o', ⟨ho', -⟩, rfl⟩ := hb
-              simp at ho'
-              rw [ho']
-            omega
+            cases hop : o.2.2 with
+            | del x => simp [eInsIds, eIsIns, hop] at hb
+            | ins el pref anchor =>
+                have hlt := eInsIds_lt_of_seqOK hOK
+                  (by simp [eIsIns, hop]) a ha
+                have hb1 : b = o.1 := by
+                  simp only [eInsIds, List.mem_map, List.mem_filter] at hb
+                  obtain ⟨o', ⟨ho', -⟩, rfl⟩ := hb
+                  simp at ho'
+                  rw [ho']
+                omega
   case del_late =>
       intro σ o τ heq hins hdel
+      obtain ⟨ots, orp, oop⟩ := o
+      cases oop with
+      | del target => simp [eIsIns] at hins
+      | ins oel opref oanchor =>
       obtain ⟨d, hd, hddel⟩ := mem_eDels.mp hdel
       obtain ⟨σ₁, σ₂, rfl⟩ := List.append_of_mem hd
-      have happ := (hOK σ₁ d (σ₂ ++ o :: τ)
-        (by rw [heq]; simp)).2
       obtain ⟨ts, rr, dop2⟩ := d
       cases dop2 with
       | ins el π a => simp at hddel
       | del x =>
-          simp only [eApplicable] at happ
           simp only at hddel
           injection hddel with hx
           subst hx
-          obtain ⟨rec, hrec, hrx⟩ := List.mem_map.mp happ
-          obtain ⟨iop, hiρ, hii, hie⟩ := e_fold_rec_sub Γ σ₁ rec hrec
-          have hix : iop.1 = o.1 → False := by
+          obtain ⟨iop, hiρ, hii, hiop⟩ := hOK σ₁
+            (ts, rr, .del x) (σ₂ ++ (x, orp, .ins oel opref oanchor) :: τ)
+            (by rw [heq]; simp)
+          have hneq : iop.1 = x → False := by
             intro hcontra
-            have hmem : o.1 ∈ eInsIds (σ₁ ++ (ts, rr, EOp.del o.1) :: σ₂) := by
-              rw [show σ₁ ++ (ts, rr, EOp.del o.1) :: σ₂ =
-                  (σ₁ ++ [(ts, rr, EOp.del o.1)]) ++ σ₂ from by simp,
+            have hmem : x ∈ eInsIds (σ₁ ++ (ts, rr, EOp.del x) :: σ₂) := by
+              rw [show σ₁ ++ (ts, rr, EOp.del x) :: σ₂ =
+                  (σ₁ ++ [(ts, rr, EOp.del x)]) ++ σ₂ from by simp,
                 eInsIds_append, eInsIds_append]
               exact List.mem_append_left _ (List.mem_append_left _
                 (mem_eInsIds.mpr ⟨iop, hiρ, hii, hcontra⟩))
-            have := (hOK (σ₁ ++ (ts, rr, EOp.del o.1) :: σ₂) o τ
-              (by simp [heq])).1 o.1 hmem
+            have := (hOK (σ₁ ++ (ts, rr, EOp.del x) :: σ₂)
+              (x, orp, .ins oel opref oanchor) τ
+              (by simp [heq])).1 x hmem
             omega
-          apply hix
-          rw [hie] at hrx
-          exact hrx
+          exact hneq hiop
   case keys_inj =>
       intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
       obtain ⟨ch₁, hp₁, hs₁, -, hc₁⟩ := e_seq_chains hOK o₁ h₁ hi₁
@@ -409,10 +424,11 @@ theorem e_fold_chain {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
 
 /-- Live ids sit below a fresh op's stamp. -/
 theorem e_fold_id_lt {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
-    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o])) {rec : ERec α}
+    {o : Op (EOp α)} (hOK : eSeqOK Γ (ρ ++ [o]))
+    (hins : eIsIns o = true) {rec : ERec α}
     (hrec : rec ∈ eFold Γ ρ) : rec.1 < o.1 := by
   obtain ⟨iop, hiρ, hii, hie⟩ := e_fold_rec_sub Γ ρ rec hrec
-  have h1 := eInsIds_lt_of_seqOK hOK iop.1
+  have h1 := eInsIds_lt_of_seqOK hOK hins iop.1
     (mem_eInsIds.mpr ⟨iop, hiρ, hii, rfl⟩)
   have e1 : rec.1 = iop.1 := by rw [hie]; rfl
   omega
@@ -446,7 +462,7 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
           have hfresh : (ts, r, EOp.ins el π a).1 ∉ eIds (eFold Γ ρ) := by
             intro hmem
             obtain ⟨rec, hrec, hr1⟩ := List.mem_map.mp hmem
-            have h1 : rec.1 < ts := e_fold_id_lt hOK hrec
+            have h1 : rec.1 < ts := e_fold_id_lt hOK (by simp [eIsIns]) hrec
             have h2 : rec.1 = ts := hr1
             omega
           show (eUpdate Γ (eFold Γ ρ) (ts, r, EOp.ins el π a)).map eProj
@@ -461,7 +477,7 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
                 = true := by
               intro y hy
               obtain ⟨chy, hpy, hsy, hy1, hcy⟩ := e_fold_chain hOK' hy
-              have hylt : y.1 < ts := e_fold_id_lt hOK hy
+              have hylt : y.1 < ts := e_fold_id_lt hOK (by simp [eIsIns]) hy
               have hnew : ((((ts : ℕ), el,
                   ([] : List Bool) ++ Γ.enc (ts - 0)) : ERec α)).2.2
                   = coordOf Γ [ts] := by
@@ -515,7 +531,7 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
                 key (((ts : ℕ), el, π ++ Γ.enc (ts - a)) : ERec α).2.2 := by
               intro rec hrec hcontra
               obtain ⟨chr, hpr, hsr, -, hcr⟩ := e_fold_chain hOK' hrec
-              have hrlt : rec.1 < ts := e_fold_id_lt hOK hrec
+              have hrlt : rec.1 < ts := e_fold_id_lt hOK (by simp [eIsIns]) hrec
               rw [hcr, show (((ts : ℕ), el, π ++ Γ.enc (ts - a)) :
                   ERec α).2.2 = coordOf Γ (cha ++ [ts - a]) from hcoordnew]
                 at hcontra
@@ -546,7 +562,7 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
                     hcane).mpr
                     (chainBefore.ancestor cha [ts - a] (by simp))
               · obtain ⟨chr, hpr, hsr, hr1, hcr⟩ := e_fold_chain hOK' hrec
-                have hrlt : rec.1 < ts := e_fold_id_lt hOK hrec
+                have hrlt : rec.1 < ts := e_fold_id_lt hOK (by simp [eIsIns]) hrec
                 have hra : rec.1 ≠ a := fun hcontra =>
                   hreq (hinj rec hrec ((a : ℕ), el', π) hmem hcontra)
                 have hchne : chr ≠ cha := by
@@ -584,4 +600,3 @@ theorem embed_seq_sound {Γ : OrderedPrefixCode} {ρ : List (Op (EOp α))}
             simp [eProj, eSpecStep, ha0]
 
 end Sal.MRDTs.Instances.EmbedRGA
-

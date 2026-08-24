@@ -9,8 +9,8 @@ anonymous long-form working papers under `docs/`.
 - [x] Create `refactor/plain-mrdt-framework` and preserve the previous tree on
   `archive/conditioned-mrdts-2026-08-21`.
 - [x] Replace the conditioned signature with plain `MRDTSig`, implementer
-  `GenerationContract`, `SafetyCertificate`, `SequentialRefinement`, and
-  `VerifiedMRDT` interfaces.
+  `Issuance`, sequential-specification, and `VerifiedMRDT` interfaces. Keep
+  safety and datatype-state GC as separate optional certificates.
 - [x] Port ordinary and canonical virtual-LCA semantics and adequacy without
   `LegacyBridge`.
 - [x] Port the paper-facing RGA, EmbedRGA, SidedEmbedRGA/FugueMax, Peritext,
@@ -58,7 +58,7 @@ anonymous long-form working papers under `docs/`.
 - [ ] Add streaming bulk decoders/builders for run-table and shared snapshots.
 - [ ] Profile and optimize shared-path sync, save construction, and repeated
   HAMT/path traversal.
-- [ ] Keep EmbedRGA and SidedEmbedRGA as separate state-of-the-art baselines;
+- [x] Keep EmbedRGA and SidedEmbedRGA as separate state-of-the-art baselines;
   report their storage/intent tradeoff rather than selecting one silently.
 - [x] Complete statistically repeated benchmark runs and publish machine-readable
   raw results plus primary tabular summaries: the Sal-versus-external matrix,
@@ -66,6 +66,168 @@ anonymous long-form working papers under `docs/`.
 
 ## 2. Follow-on formal work
 
+- [x] **HIGHEST PRIORITY — finish the public sequential-correctness cutover.**
+  The replay-only `IsRALinearizable` result reconstructs implementation state;
+  the public `IsSpecRALinearizable` result must additionally select an exact,
+  `lo`-respecting history accepted by an independent sequential specification,
+  relate both states, and agree on every query.
+  - [x] replace the staging `Inv`/`Applicable`/`GuardBridge` API with the
+    minimal public boundary: `Issuance.CanIssue` constrains origin operation
+    creation, while `SequentialSpec.Legal` states acceptable abstract event
+    histories without inspecting implementation state;
+  - [x] remove arbitrary `GenerationContract.History`; convergence proofs now
+    derive datatype-local history invariants directly from `MintHonest`;
+  - [x] make `VerifiedMRDT` the strengthened public package and retain the old
+    raw-fold result explicitly as internal `ReplayVerifiedMRDT`;
+  - [x] remove duplicated ordinary proof fields: ordinary certified execution
+    embeds in virtual-LCA execution, so convergence and optional safety store
+    only their widened theorem and derive the ordinary theorem;
+  - [x] state the strengthened per-version theorem with exact event-set
+    membership, respect for `lo`, sequential legality and refinement, and
+    explicit query agreement;
+  - [x] factor one datatype-specific `LegalizationCertificate` so ordinary and
+    virtual-LCA executions reuse the same semantic proof;
+  - [x] migrate the total grow-only set/map canary and the tombstone RGA;
+    RGA's specification state is `List Nat`, deletion is physical and
+    idempotent, and `listSpec.Legal` records timestamp/ID honesty plus earlier
+    allocation of anchors and targets entirely over the abstract event list;
+  - [x] resolve the checked mergeable-queue obstruction: two replicas can
+    dequeue the same observed head, leaving the implementation's second
+    element while a plain FIFO replay performs two pops. Either add an
+    exactly-once dequeue protocol or mark the current queue as not FIFO
+    RA-linearizable. The current package is now explicitly named
+    `replayVerified`, and `duplicate_dequeue_not_fifo` is the checked negative;
+  - [x] migrate the total counters/stores, TreeMove, and BoundedCounter to
+    `VerifiedMRDT`. BoundedCounter uses a canonical increments-before-decrements
+    witness and a client legality predicate that records the per-replica
+    resource bound;
+  - [x] classify the current MVR against its ordinary single-value register
+    specification: two concurrent writes expose both values, so no state of
+    that sequential machine can refine the merge. Keep the raw package named
+    `replayVerified` and the obstruction in
+    `concurrentState_no_sequential_register`;
+  - [x] finish EmbedRGA and SidedEmbedRGA legalization. Their canonical merged
+    histories are prefix-legal, including duplicate deletion, and respect the
+    explicit semantic dependence policies supplied through `ArbitrationSpec`.
+    The raw-state counterexample remains checked: universal
+    `CRDTSig.commutes` over malformed list states is not a sound public
+    dependence policy for these representations;
+  - [x] migrate or classify every production datatype. EmbedRGA,
+    SidedEmbedRGA, Peritext, the three-component Sided Peritext core, and its
+    production rendered-query `RichCore` now have `VerifiedMRDT` packages.
+    Queue and MVR remain replay-only with checked semantic counterexamples.
+    AegisSheet remains replay-only with the checked merged-legality
+    obstruction `concurrent_origins_not_guarded_chronological`;
+  - [x] keep `SafetyCertificate.Safe` orthogonal to representation relations.
+    Datatypes may reuse a proof-local reachable-state lemma when useful, but
+    no coupling belongs in `VerifiedMRDT` and no production instance requires
+    another public bridge;
+  - [x] provide ordinary and virtual-LCA versions of the strengthened theorem;
+  - [x] add positive and negative controls showing that origin issuance alone
+    does not imply legality of an arbitrary merged witness.
+  This is a gating issue for the framework and paper claims. Internal-state
+  replay, convergence, or an add/tombstone representation theorem does not
+  discharge it.
+
+- [x] **High priority: replace the plain RGA event-store sequential certificate
+  with observational refinement to an ordinary sequence.** Use an abstract
+  `List` of uniquely identified elements (`List Nat` for the current Nat-only
+  model, or `List (Id × Value)` for the generic interface). Its only updates
+  are `insertAfter anchor freshId value` and `delete id`; deletion physically
+  removes the entry, the distinguished root is not stored, and `read` returns
+  the list of values. Keep timestamps, the insertion tree, and tombstones only
+  in the RGA implementation and its representation relation. Make the total
+  sequential step's invalid branches explicit, then use issuance and causal
+  closure to prove the relevant branches unreachable: inserted IDs are fresh,
+  insert anchors exist at their origin, and deletion targets were previously
+  allocated. Repeated and concurrent deletion is legal and idempotent. Prove that
+  every valid RGA execution has an RA-consistent sequential linearization whose
+  ordinary-list observation equals the RGA traversal, including a concurrent
+  insert whose anchor is deleted (linearize the insert before the concurrent
+  delete). Replace the current `RGASeqState { adds, grave }` certificate; merely
+  equating add/tombstone membership does not discharge this task.
+  Completed by `RGASequential.rga_spec_linearizable` and
+  `rga_spec_linearizableV`. The public client spec is `List Nat`; the selected
+  witness contains the exact version event set, orders timestamp-sorted
+  insertions before idempotent deletions, is prefix-legal, and has the same
+  query result as the implementation.
+
+- [ ] **High priority: verify AegisSheet against its published intent matrices.**
+  Use Tables 3 and 4 of the PaPoC 2026 paper as the external oracle for all
+  pairwise `EditCell`, row/column insert, remove, and move outcomes, both before
+  and after local undo. Preserve each matrix cell as a named semantic fixture.
+  Specify the range behavior shown in Figure 1 separately: anchored endpoints,
+  border and interior deletion, crossing moves, overlap, and recreation. Build
+  an independent sequential spreadsheet machine over stable row, column, cell,
+  and range identities; then supply generation, convergence, safety, and
+  sequential-refinement certificates for the compositional implementation.
+  Audit whether purging can be a silent state-GC operation under an explicit
+  stable-cut/authority precondition. The checked late-revival counterexample
+  shows that the published behavior instead needs a semantic purge marker or a
+  no-revival protocol: the Scala method exposes neither the paper's cutoff date
+  nor its privileged-client premise. Audit the implementation against the
+  paper before adopting it as the formal algorithm, including the custom
+  `ReplicatedUniqueList` filter and undo closures. Formula evaluation is outside
+  the published model; only stable formula-reference ranges are in scope. Use
+  the resulting datatype-local algebraic obligations as the next SMT leaf-VC
+  case study. Finally, implement a differential runtime and measure state GC
+  after certified-stable row/column deletion.
+  - [x] Encode all 16 merge and 16 selective-undo matrix entries as named
+    external fixtures.
+  - [x] Build the causally annotated stable-ID MRDT; prove ordinary and
+    virtual-LCA convergence, guarded issuance, safety, and replay refinement to
+    the independent incremental spreadsheet machine. Strict Lamport chronology
+    makes the finite event set's sequential enumeration unique; the current
+    `ReplayVerifiedMRDT` package uses that full machine state rather than the
+    former event-list echo. The checked
+    `concurrent_origins_not_guarded_chronological` example proves why it cannot
+    be promoted with the old whole-prefix guard: two independent operations are
+    valid at their empty origins, but whichever is second in a serialization
+    did not observe the first. Replace `GuardedChronological` at the public
+    boundary with legality over each event's encoded causal origin view, then
+    extend the incremental observation theorem to that merged-history
+    legality;
+  - [ ] Define AegisSheet merged-history legality over each event's encoded
+    causal origin view, extend the incremental materialization and observation
+    theorems to that legality, and package the result as `VerifiedMRDT`;
+  - [x] Check the nontrivial merge, undo, and range scenarios with positive and
+    negative SPOTs.
+  - [x] Refute naive local purge as silent state GC with a kernel-checked late
+    revival counterexample.
+  - [x] Add an incremental in-place spreadsheet machine with observed-remove
+    axis tokens, timestamped positions, active cell versions, and range
+    versions; validate it on the directed matrix scenarios.
+  - [x] Prove the general guarded-history refinement from the replicated model
+    to that in-place machine, replacing the packaged event-list reference.
+    The public relation now includes exact equality with a declarative cache
+    materialization. Its inductive proof preserves metadata validity,
+    timestamp uniqueness, and seen-frontier validity across every guarded
+    minted step, including semantic purge markers.
+  - [x] Prove guarded-history observational refinement:
+    `Sequential.view (Sequential.run ops) = view ops.toFinset`. Exact cache
+    materialization did not imply this equation by itself. The checked proof
+    establishes row/column token, latest-position, active-cell/purge, and
+    range-value correspondence, derives cell and purge provenance from every
+    guarded history, and includes observation equality in the public state
+    relation.
+  - [x] Model an explicit semantic purge marker with an authority/required-roster
+    guard and compact timestamp-to-coordinate entries; prove that collection
+    preserves causal timestamps and is idempotent, and check late restoration,
+    stale payload re-delivery, and fresh post-cutoff writes.
+  - [x] Prove the general guarded-update/compatible-merge representation
+    theorem and package the payload collector as a `StateGCCertificate`.
+    Query preservation covers axes, positions, cells, and ranges; generic
+    authored frontier evidence derives the purge marker's roster
+    acknowledgements.
+  - [x] Audit Bismuth commit `dd4c614` against the formal policy and paper.
+    The executable regressions refute equivalence: numeric-index move undo
+    violates Table 4 for move/insert and move/move; range undo restores the
+    wrong stable endpoints after insertion; crossed ranges can leave a live
+    range ID and make `listRanges()` throw. Merge-law and purge controls pass
+    on the recorded scope. See `docs/aegissheet-scala-audit.md`.
+  - [ ] Repair or replace the Scala runtime using stable-ID/anchor undo and
+    axis-specific post-move range validation. Re-run the permanent regressions,
+    then implement benchmarks only after the differential gate passes.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.

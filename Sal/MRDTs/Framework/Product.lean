@@ -158,6 +158,65 @@ theorem listPermOf_projList₂ {ρ : List (Op (A₁ ⊕ A₂))}
     rw [mem_projList₂]
     exact h.2 (inrOp b)
 
+/-- Component enumerations glue into an exact enumeration of the mixed event
+set.  Cross-component timestamps remain distinct because the target set is
+enumerated without duplication. -/
+theorem listPermOf_glue {ev : Set (Op (A₁ ⊕ A₂))}
+    {ρ₁ : List (Op A₁)} {ρ₂ : List (Op A₂)}
+    (h₁ : listPermOf ρ₁ (evRes₁ ev))
+    (h₂ : listPermOf ρ₂ (evRes₂ ev)) :
+    listPermOf (ρ₁.map inlOp ++ ρ₂.map inrOp) ev := by
+  constructor
+  · rw [List.nodup_append]
+    refine ⟨h₁.1.map inlOp_injective, h₂.1.map inrOp_injective, ?_⟩
+    intro x hx y hy
+    rw [List.mem_map] at hx hy
+    obtain ⟨a, _, rfl⟩ := hx
+    obtain ⟨b, _, rfl⟩ := hy
+    exact inlOp_ne_inrOp a b
+  · intro x
+    rw [List.mem_append, List.mem_map, List.mem_map]
+    constructor
+    · rintro (⟨a, ha, rfl⟩ | ⟨b, hb, rfl⟩)
+      · exact (h₁.2 a).mp ha
+      · exact (h₂.2 b).mp hb
+    · intro hx
+      rcases op_sum_cases x with ⟨a, rfl⟩ | ⟨b, rfl⟩
+      · exact Or.inl ⟨a, (h₁.2 a).mpr hx, rfl⟩
+      · exact Or.inr ⟨b, (h₂.2 b).mpr hx, rfl⟩
+
+/-- Filtering a mixed history preserves every ordering constraint between
+events of its left component. -/
+theorem respects_projList₁_of {R : Op (A₁ ⊕ A₂) → Op (A₁ ⊕ A₂) → Prop}
+    {R₁ : Op A₁ → Op A₁ → Prop} {ρ : List (Op (A₁ ⊕ A₂))}
+    (rel : ∀ a b, R₁ a b → R (inlOp a) (inlOp b))
+    (h : respects ρ R) : respects (projList₁ ρ) R₁ := by
+  unfold respects at h ⊢
+  unfold projList₁
+  rw [List.pairwise_filterMap]
+  refine h.imp ?_
+  intro x y hxy a hxa b hyb
+  rw [oplOp_eq_some] at hxa hyb
+  subst x
+  subst y
+  exact fun hba => hxy (rel b a hba)
+
+/-- Filtering a mixed history preserves every ordering constraint between
+events of its right component. -/
+theorem respects_projList₂_of {R : Op (A₁ ⊕ A₂) → Op (A₁ ⊕ A₂) → Prop}
+    {R₂ : Op A₂ → Op A₂ → Prop} {ρ : List (Op (A₁ ⊕ A₂))}
+    (rel : ∀ a b, R₂ a b → R (inrOp a) (inrOp b))
+    (h : respects ρ R) : respects (projList₂ ρ) R₂ := by
+  unfold respects at h ⊢
+  unfold projList₂
+  rw [List.pairwise_filterMap]
+  refine h.imp ?_
+  intro x y hxy a hxa b hyb
+  rw [oprOp_eq_some] at hxa hyb
+  subst x
+  subst y
+  exact fun hba => hxy (rel b a hba)
+
 variable (D₁ D₂ : MRDTSig)
 
 /-- Componentwise product. Generation and safety policies remain external. -/
@@ -383,6 +442,26 @@ theorem loOn_prod_inr_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
       rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
       · exact hnc₃ (commutes_prod_cross' b c)
       · exact habs ⟨c, h₃, hv₃, fun hc => hnc₃ (commutes_prod_inr_of hc)⟩
+
+/-- Global arbitration on a product restricts exactly to global arbitration
+on its left component. -/
+theorem lo_prod_inl_iff (a b : Op D₁.AppOp) :
+    Sal.MRDTs.Foundation.lo C (inlOp a) (inlOp b) ↔
+      Sal.MRDTs.Foundation.lo (projCore₁ C) a b := by
+  constructor
+  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
+    · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inl_of hc)⟩
+    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
+      rintro ⟨e₃, hv₃, hnc₃⟩
+      exact habs ⟨inlOp e₃, hv₃,
+        fun hc => hnc₃ ((commutes_prod_inl_iff b e₃).mp hc)⟩
+  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
+    · exact Or.inl ⟨hv, fun hc => hnc ((commutes_prod_inl_iff a b).mp hc)⟩
+    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
+      rintro ⟨e₃, hv₃, hnc₃⟩
+      rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
+      · exact habs ⟨c, hv₃, fun hc => hnc₃ (commutes_prod_inl_of hc)⟩
+      · exact hnc₃ (commutes_prod_cross b c)
 
 theorem respects_projList₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))}
@@ -629,6 +708,68 @@ theorem mem_projConf₂_events {CT : Configuration (prodSig D₁ D₂)}
     exact ⟨r, s, hLs, hs⟩
   · rintro ⟨r, s, hL, hs⟩
     exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
+
+/-- The operational invariant of a product configuration projects to its
+left component. -/
+theorem GoodConfig3.proj₁ {CT : Configuration (prodSig D₁ D₂)}
+    (h : GoodConfig3 CT) : GoodConfig3 (projConf₁ CT) where
+  canonical := by
+    intro v s E hv
+    change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hs : p.1.1 = s := congrArg Prod.fst hpeq
+    have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
+    subst s
+    subst E
+    exact isCanonicalState_proj₁ (h.canonical v p.1 p.2 hp)
+  vis_trans := fun hab hbc => h.vis_trans hab hbc
+  vis_irrefl := fun a => h.vis_irrefl (inlOp a)
+  ver_events_sub := by
+    intro v s E hv a ha
+    rw [mem_projConf₁_events]
+    change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
+    subst E
+    exact h.ver_events_sub v p.1 p.2 hp (inlOp a) ha
+  ver_causal := by
+    intro v s E hv a b hab hb
+    change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
+    subst E
+    exact h.ver_causal v p.1 p.2 hp (inlOp a) (inlOp b) hab hb
+
+/-- The operational invariant of a product configuration projects to its
+right component. -/
+theorem GoodConfig3.proj₂ {CT : Configuration (prodSig D₁ D₂)}
+    (h : GoodConfig3 CT) : GoodConfig3 (projConf₂ CT) where
+  canonical := by
+    intro v s E hv
+    change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hs : p.1.2 = s := congrArg Prod.fst hpeq
+    have hE : evRes₂ p.2 = E := congrArg Prod.snd hpeq
+    subst s
+    subst E
+    exact isCanonicalState_proj₂ (h.canonical v p.1 p.2 hp)
+  vis_trans := fun hab hbc => h.vis_trans hab hbc
+  vis_irrefl := fun a => h.vis_irrefl (inrOp a)
+  ver_events_sub := by
+    intro v s E hv a ha
+    rw [mem_projConf₂_events]
+    change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hE : evRes₂ p.2 = E := congrArg Prod.snd hpeq
+    subst E
+    exact h.ver_events_sub v p.1 p.2 hp (inrOp a) ha
+  ver_causal := by
+    intro v s E hv a b hab hb
+    change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
+    obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
+    have hE : evRes₂ p.2 = E := congrArg Prod.snd hpeq
+    subst E
+    exact h.ver_causal v p.1 p.2 hp (inrOp a) (inrOp b) hab hb
 
 #print axioms joinLemma3At_prod
 

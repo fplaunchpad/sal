@@ -103,10 +103,39 @@ theorem coreHonest_of_mint {Γ : OrderedPrefixCode}
     | del x =>
         exact False.elim (by simpa [coreGuard, inlOp] using hg)
 
-def generation (Γ : OrderedPrefixCode) : GenerationContract (Core Γ) where
-  Guard := coreGuard Γ
-  History := CoreHonest Γ
-  history_of_mint := coreHonest_of_mint
+/-- Issuance provenance for the mixed rich-text datatype projects to genuine
+SidedEmbedRGA issuance provenance.  This is stronger than the honesty-only
+projection above and lets the public legalization proof reuse the component
+certificate. -/
+theorem mintHonest_text {Γ : OrderedPrefixCode}
+    {C : Configuration (Core Γ)}
+    (h : MintHonest (Core Γ) (coreGuard Γ) C) :
+    MintHonest (S Γ) sApplicable (projConf₁ C) := by
+  intro e he
+  have heC : inlOp e ∈ C.events := mem_projConf₁_events.mp he
+  obtain ⟨π, hp, hr, hg⟩ := h (inlOp e) heC
+  refine ⟨projList₁ π, ?_, ?_, ?_⟩
+  · constructor
+    · exact nodup_projList₁ hp.1
+    · intro a
+      rw [mem_projList₁, hp.2]
+      constructor
+      · rintro ⟨ha, hvis⟩
+        exact ⟨mem_projConf₁_events.mpr ha, hvis⟩
+      · rintro ⟨ha, hvis⟩
+        exact ⟨mem_projConf₁_events.mp ha, hvis⟩
+  · exact respects_projList₁_of (fun _ _ hvis => hvis) hr
+  · rw [applySeq_prod] at hg
+    rcases e with ⟨t, r, op⟩
+    cases op with
+    | ins el pref anchor side =>
+        simpa [coreGuard, inlOp, Core, Stores, DeleteStore, MarkStore, sFold]
+          using hg
+    | del target =>
+        exact False.elim (by simpa [coreGuard, inlOp] using hg)
+
+def generation (Γ : OrderedPrefixCode) : Issuance (Core Γ) where
+  CanIssue := coreGuard Γ
 
 theorem core_join_at {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
@@ -119,18 +148,16 @@ theorem core_join_at {Γ : OrderedPrefixCode}
 
 def convergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (Core Γ) (generation Γ) where
-  sound := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertified
-      (fun C hH => core_join_at (sHonest_core hH)) h)
   soundV := fun h => (isRALinearizable_iff_join _ _).mpr
     (ra_of_mintCertifiedV
-      (fun C hH => core_join_at (sHonest_core hH)) h)
+      (fun C hH => core_join_at
+        (sHonest_core (coreHonest_of_mint C hH))) h)
 
 /-! ## Independent sequential editor machine -/
 
 abbrev RichState := List (Nat × Nat) × (Finset Nat × Finset MarkEvent)
 
-def richSpec : SequentialSpec (Op (SOp ⊕ (Nat ⊕ MarkEvent))) where
+def richSpec : SequentialMachine (Op (SOp ⊕ (Nat ⊕ MarkEvent))) where
   State := RichState
   init := ([(0, 0)], (∅, ∅))
   step q e :=
@@ -147,15 +174,15 @@ private theorem richRun_eq (ops : List (Op (SOp ⊕ (Nat ⊕ MarkEvent)))) :
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
-      rw [SequentialSpec.run_append_single, ih]
+      rw [SequentialMachine.run_append_single, ih]
       rcases e with ⟨t, r, e | e⟩
       · simp [richSpec, projList₁, projList₂, oplOp, oprOp,
-          SequentialSpec.run_append_single, ProductionRGA.sidedSpec]
+          SequentialMachine.run_append_single, ProductionRGA.sidedSpec]
       · rcases e with e | e
         · simp [richSpec, projList₁, projList₂, oplOp, oprOp,
-            SequentialSpec.run_append_single, FinsetStore.spec]
+            SequentialMachine.run_append_single, FinsetStore.spec]
         · simp [richSpec, projList₁, projList₂, oplOp, oprOp,
-            SequentialSpec.run_append_single, FinsetStore.spec]
+            SequentialMachine.run_append_single, FinsetStore.spec]
 
 private theorem split_projList₁ {A₁ A₂ : Type}
     {ops : List (Op (A₁ ⊕ A₂))} {pre : List (Op A₁)}
@@ -210,18 +237,260 @@ def sequential (Γ : OrderedPrefixCode) :
     intro ops htext
     rw [richRun_eq, applySeq_prod, applySeq_prod]
     constructor
-    · simpa [ProductionRGA.sidedSpec, SequentialSpec.run,
+    · simpa [ProductionRGA.sidedSpec, SequentialMachine.run,
         sSpecFold, sFold] using sided_seq_read (Γ := Γ) htext
     · rfl
 
+/-! ## Public merged-history specification -/
+
+/-- The mixed witness first legalizes the text projection, then replays the
+two grow-only evidence stores.  All three cross-component classes commute. -/
+def coreCanonical
+    (ops : List (Op (SOp ⊕ (Nat ⊕ MarkEvent)))) :
+    List (Op (SOp ⊕ (Nat ⊕ MarkEvent))) :=
+  (ProductionRGA.SidedWitness.canonical (projList₁ ops)).map inlOp ++
+    (projList₂ ops).map inrOp
+
+@[simp] theorem projList₁_coreCanonical
+    (ops : List (Op (SOp ⊕ (Nat ⊕ MarkEvent)))) :
+    projList₁ (coreCanonical ops) =
+      ProductionRGA.SidedWitness.canonical (projList₁ ops) := by
+  simp [coreCanonical]
+
+@[simp] theorem projList₂_coreCanonical
+    (ops : List (Op (SOp ⊕ (Nat ⊕ MarkEvent)))) :
+    projList₂ (coreCanonical ops) = projList₂ ops := by
+  simp [coreCanonical]
+
+def coreSemanticCommutes
+    (a b : Op (SOp ⊕ (Nat ⊕ MarkEvent))) : Prop :=
+  match a.2.2, b.2.2 with
+  | .inl x, .inl y =>
+      ProductionRGA.sidedSemanticCommutes
+        (a.1, a.2.1, x) (b.1, b.2.1, y)
+  | _, _ => True
+
+def coreArbitration (Γ : OrderedPrefixCode) : ArbitrationSpec (Core Γ) where
+  Commutes := coreSemanticCommutes
+
+theorem coreArbitration_inl_iff {Γ : OrderedPrefixCode}
+    {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (a b : Op SOp) :
+    arbitrationLo (coreArbitration Γ) C (inlOp a) (inlOp b) ↔
+      arbitrationLo (ProductionRGA.sidedArbitration Γ) (projCore₁ C) a b := by
+  constructor
+  · rintro (⟨hvis, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
+    · exact Or.inl ⟨hvis, hnc⟩
+    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
+      rintro ⟨e₃, hvis₃, hnc₃⟩
+      exact habs ⟨inlOp e₃, hvis₃, hnc₃⟩
+  · rintro (⟨hvis, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
+    · exact Or.inl ⟨hvis, hnc⟩
+    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
+      rintro ⟨e₃, hvis₃, hnc₃⟩
+      rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
+      · exact habs ⟨c, hvis₃, hnc₃⟩
+      · exact hnc₃ True.intro
+
+theorem coreArbitration_inr_false {Γ : OrderedPrefixCode}
+    {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (a b : Op (Nat ⊕ MarkEvent)) :
+    ¬ arbitrationLo (coreArbitration Γ) C (inrOp a) (inrOp b) := by
+  rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
+  · exact hnc True.intro
+  · rcases a with ⟨ta, ra, a | a⟩ <;>
+      rcases b with ⟨tb, rb, b | b⟩ <;>
+      exact RcRes.noConfusion hrc
+
+theorem coreArbitration_cross_rl_false {Γ : OrderedPrefixCode}
+    {C : Sal.MRDTs.Foundation.Configuration (Core Γ).toCRDTSig}
+    (b : Op (Nat ⊕ MarkEvent)) (a : Op SOp) :
+    ¬ arbitrationLo (coreArbitration Γ) C (inrOp b) (inlOp a) := by
+  rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
+  · exact hnc True.intro
+  · exact RcRes.noConfusion hrc
+
+/-- The independent editor state and its legal histories.  Store additions
+are total; the nontrivial legality is exactly the SidedEmbedRGA text
+projection. Cross-component issuance still enforces valid deletion and mark
+references at the replica API. -/
+noncomputable def clientSpec (Γ : OrderedPrefixCode) : SequentialSpec (Core Γ) where
+  toSequentialMachine := richSpec
+  Legal := fun ops => ProductionRGA.sidedLegal Γ (projList₁ ops)
+  query := fun q query => match query with
+    | .inl _ => .inl ((q.1.filter (fun p => decide (p.1 ≠ 0))).map Prod.snd)
+    | .inr storeQuery => .inr ((Stores).query q.2 storeQuery)
+
+def coreRel (s : (Core Γ).State) (q : RichState) : Prop :=
+  s.1.map sProj = q.1.filter (fun p => decide (p.1 ≠ 0)) ∧ s.2 = q.2
+
+theorem coreCanonical_respects_of {Γ : OrderedPrefixCode}
+    {C : Configuration (Core Γ)}
+    (hgood : GoodConfig3 C)
+    (hmintText : MintHonest (S Γ) sApplicable (projConf₁ C))
+    {v : Version} {s : (Core Γ).State}
+    {E : Set (Op (Core Γ).AppOp)}
+    (hver : C.ver v = some (s, E))
+    {ops : List (Op (Core Γ).AppOp)}
+    (hperm : listPermOf ops E) :
+    respects (coreCanonical ops) (arbitrationLo (coreArbitration Γ) C.core) := by
+  have hpver : (projConf₁ C).ver v = some (s.1, evRes₁ E) := by
+    simp [projConf₁, hver]
+  have htext := ProductionRGA.sidedCanonical_respects_of
+    hgood.proj₁
+    (sHonest_core (sHonest_of_mint hmintText))
+    hpver (listPermOf_projList₁ hperm)
+  unfold respects at htext ⊢
+  unfold coreCanonical
+  rw [List.pairwise_append]
+  refine ⟨?_, ?_, ?_⟩
+  · rw [List.pairwise_map]
+    exact htext.imp fun {a b} hab hba =>
+      hab ((coreArbitration_inl_iff b a).mp hba)
+  · induction projList₂ ops with
+    | nil => exact List.Pairwise.nil
+    | cons a rest ih =>
+        rw [List.pairwise_map, List.pairwise_cons]
+        refine ⟨?_, ?_⟩
+        · intro b hb
+          exact coreArbitration_inr_false b a
+        · simpa [List.pairwise_map] using ih
+  · intro x hx y hy
+    rw [List.mem_map] at hx hy
+    obtain ⟨a, _, rfl⟩ := hx
+    obtain ⟨b, _, rfl⟩ := hy
+    exact coreArbitration_cross_rl_false b a
+
+theorem coreCanonical_respects {Γ : OrderedPrefixCode}
+    {C : Configuration (Core Γ)}
+    (exec : CertifiedExecution (Core Γ) (generation Γ) C)
+    {v : Version} {s : (Core Γ).State}
+    {E : Set (Op (Core Γ).AppOp)}
+    (hver : C.ver v = some (s, E))
+    {ops : List (Op (Core Γ).AppOp)}
+    (hperm : listPermOf ops E) :
+    respects (coreCanonical ops) (arbitrationLo (coreArbitration Γ) C.core) := by
+  apply coreCanonical_respects_of
+    (exec.goodConfig (fun _ hmint =>
+      core_join_at (sHonest_core (coreHonest_of_mint _ hmint))))
+    (mintHonest_text exec.mintHonest) hver hperm
+
+theorem coreLegalizationSound (Γ : OrderedPrefixCode)
+    {C : Configuration (Core Γ)}
+    (hgood : GoodConfig3 C)
+    (hmint : MintHonest (Core Γ) (coreGuard Γ) C)
+    (replay : IsRALinearizable (Core Γ) C) :
+    IsSpecRALinearizable (Core Γ) (coreArbitration Γ)
+      (clientSpec Γ) coreRel C := by
+    intro v s E hver
+    obtain ⟨ops, hperm, hresp, hfold⟩ := replay v s E hver
+    have hpver : (projConf₁ C).ver v = some (s.1, evRes₁ E) := by
+      simp [projConf₁, hver]
+    have hmintText := mintHonest_text hmint
+    have hseq : sSeqOK Γ
+        (ProductionRGA.SidedWitness.canonical (projList₁ ops)) :=
+      ProductionRGA.sidedCanonical_seqOK_of hgood.proj₁ hmintText hpver
+        (listPermOf_projList₁ hperm)
+    have hlegal : (clientSpec Γ).Legal (coreCanonical ops) := by
+      change ProductionRGA.sidedLegal Γ (projList₁ (coreCanonical ops))
+      rw [projList₁_coreCanonical]
+      exact ProductionRGA.sidedLegal_of_seqOK hseq
+    have htextPerm := ProductionRGA.SidedWitness.canonical_listPermOf
+      (listPermOf_projList₁ hperm)
+    have hwholePerm : listPermOf (coreCanonical ops) E := by
+      apply listPermOf_glue htextPerm (listPermOf_projList₂ hperm)
+    have hrespTextGlobal : respects (projList₁ ops)
+        (Sal.MRDTs.Foundation.lo (projCore₁ C.core)) :=
+      respects_projList₁_of
+        (fun a b h => (lo_prod_inl_iff a b).mpr h) hresp
+    have hrespText : respects (projList₁ ops)
+        (loOn (projCore₁ C.core) (evRes₁ E)) :=
+      ProductionRGA.sided_respects_loOn_of_lo hrespTextGlobal
+    have hsub := hgood.proj₁.ver_events_sub v s.1 (evRes₁ E) hpver
+    have hclosed := hgood.proj₁.ver_causal v s.1 (evRes₁ E) hpver
+    have hhon : SHonestCore Γ (projConf₁ C).core :=
+      sHonest_core (sHonest_of_mint hmintText)
+    have hwfReplay : SWf Γ (projList₁ ops) :=
+      s_wf_of_enum hhon hsub
+        (fun a b hvis _ hb => hclosed a b hvis hb)
+        (listPermOf_projList₁ hperm) hrespText
+    have hwfCanonical : SWf Γ
+        (ProductionRGA.SidedWitness.canonical (projList₁ ops)) :=
+      sWf_of_seqOK hseq
+    have htextFold :
+        sFold Γ (ProductionRGA.SidedWitness.canonical (projList₁ ops)) =
+          sFold Γ (projList₁ ops) :=
+      s_fold_canon Γ hwfCanonical hwfReplay
+        (fun e => (htextPerm.2 e).trans
+          ((listPermOf_projList₁ hperm).2 e).symm)
+    have hfold' := hfold
+    rw [applySeq_prod] at hfold'
+    have hstateText :
+        sFold Γ (ProductionRGA.SidedWitness.canonical (projList₁ ops)) =
+          s.1 := by
+      rw [htextFold]
+      exact congrArg Prod.fst hfold'
+    have hstateStores :
+        applySeq Stores.toCRDTSig Stores.init (projList₂ ops) = s.2 :=
+      congrArg Prod.snd hfold'
+    have hstate : applySeq (Core Γ).toCRDTSig (Core Γ).init
+        (coreCanonical ops) = s := by
+      rw [applySeq_prod, projList₁_coreCanonical,
+        projList₂_coreCanonical]
+      apply Prod.ext
+      · simpa [Core, sFold] using hstateText
+      · simpa [Core, Stores] using hstateStores
+    have hcanonHonest : (sequential Γ).Honest (coreCanonical ops) := by
+      change sSeqOK Γ (projList₁ (coreCanonical ops))
+      rw [projList₁_coreCanonical]
+      exact hseq
+    have hrel0 := (sequential Γ).sound (coreCanonical ops) hcanonHonest
+    change coreRel
+      (applySeq (Core Γ).toCRDTSig (Core Γ).init (coreCanonical ops))
+      (richSpec.run (coreCanonical ops)) at hrel0
+    have hrel : coreRel s ((clientSpec Γ).run (coreCanonical ops)) := by
+      simpa [clientSpec, SequentialSpec.run] using hstate ▸ hrel0
+    refine ⟨coreCanonical ops, hwholePerm,
+      coreCanonical_respects_of hgood hmintText hver hperm,
+      hlegal, hrel, ?_⟩
+    intro query
+    rcases query with textQuery | storeQuery
+    · change Sum.inl (s.1.map (fun r => r.2.1)) =
+        Sum.inl
+          (((((clientSpec Γ).run (coreCanonical ops)).1).filter
+            (fun p => decide (p.1 ≠ 0))).map Prod.snd)
+      apply congrArg Sum.inl
+      simpa [sProj, List.map_map, Function.comp_def] using
+        congrArg (List.map Prod.snd) hrel.1
+    · change Sum.inr (Stores.query s.2 storeQuery) =
+        Sum.inr (Stores.query ((clientSpec Γ).run (coreCanonical ops)).2
+          storeQuery)
+      rw [hrel.2]
+
+noncomputable def coreLegalization (Γ : OrderedPrefixCode) :
+    LegalizationCertificate (Core Γ) (generation Γ)
+      (coreArbitration Γ) (clientSpec Γ) coreRel where
+  sound C exec replay :=
+    coreLegalizationSound Γ
+      (exec.goodConfig (fun _ hmint =>
+        core_join_at (sHonest_core (coreHonest_of_mint _ hmint))))
+      exec.mintHonest replay
+
 noncomputable def verified (Γ : OrderedPrefixCode) : VerifiedMRDT (Core Γ) where
-  generation := generation Γ
+  issuance := generation Γ
+  arbitration := coreArbitration Γ
   convergence := convergence Γ
-  Spec := richSpec
+  Spec := clientSpec Γ
+  Rel := coreRel
+  legalization := coreLegalization Γ
+
+noncomputable def replayVerified (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Core Γ) where
+  issuance := generation Γ
+  convergence := convergence Γ
+  Machine := richSpec
   sequential := sequential Γ
   sequential_of_mint := fun _ h =>
     ProductionRGA.sidedSequential_of_mint (linearMint_text h)
-  safety := SafetyCertificate.trivial (generation Γ)
 
 theorem sequentially_correct {Γ : OrderedPrefixCode}
     (ops : List (Op (Core Γ).AppOp))
@@ -229,7 +498,7 @@ theorem sequentially_correct {Γ : OrderedPrefixCode}
     (sequential Γ).Rel
       (applySeq (Core Γ).toCRDTSig (Core Γ).init ops)
       (richSpec.run ops) :=
-  (verified Γ).sequentially_correct ops h
+  (replayVerified Γ).sequentially_correct ops h
 
 /-! ## Production-facing rich signature
 
@@ -261,6 +530,40 @@ def asCoreConfig {Γ : OrderedPrefixCode}
 def RichCoreHonest (Γ : OrderedPrefixCode)
     (C : Configuration (RichCore Γ)) : Prop := CoreHonest Γ (asCoreConfig C)
 
+/-- The abstract rich document contains only the text sequence exposed by the
+sequential machine.  It does not depend on the implementation's path field. -/
+def richDocumentOf (q : RichState) : PeritextRender.DocD where
+  shadow :=
+    (q.1.filter (fun p => decide (p.1 ≠ 0))).map
+      (fun p => (p.1, p.2, ([] : List Bool)))
+  deleted := q.2.1.toList
+
+/-- Client specification for the production query boundary.  It shares the
+independent editor transition system with `clientSpec`, but observes rendered
+rich text rather than exposing the three component stores. -/
+noncomputable def richClientSpec (Γ : OrderedPrefixCode) :
+    SequentialSpec (RichCore Γ) where
+  toSequentialMachine := richSpec
+  Legal := fun ops => ProductionRGA.sidedLegal Γ (projList₁ ops)
+  query := fun q kind =>
+    PeritextRender.renderMarksDoc (richDocumentOf q) q.2.2.toList kind
+
+def richRel (s : (RichCore Γ).State) (q : RichState) : Prop :=
+  coreRel s q
+
+def richArbitration (Γ : OrderedPrefixCode) : ArbitrationSpec (RichCore Γ) where
+  Commutes := coreSemanticCommutes
+
+theorem documentOf_eq_richDocumentOf {Γ : OrderedPrefixCode}
+    {s : (Core Γ).State} {q : RichState} (h : coreRel s q) :
+    documentOf s = richDocumentOf q := by
+  apply congrArg₂ PeritextRender.DocD.mk
+  · rw [← h.1]
+    simp [documentOf, richDocumentOf, sProj, List.map_map,
+      Function.comp_def]
+  · exact congrArg (fun x : Finset Nat => x.toList)
+      (congrArg Prod.fst h.2)
+
 theorem mintHonest_to_core {Γ : OrderedPrefixCode}
     {C : Configuration (RichCore Γ)}
     (h : MintHonest (RichCore Γ) (coreGuard Γ) C) :
@@ -270,10 +573,21 @@ theorem mintHonest_to_core {Γ : OrderedPrefixCode}
   exact ⟨π, by simpa [asCoreConfig] using hp,
     by simpa [asCoreConfig] using hr, by simpa [RichCore] using hg⟩
 
-def richGeneration (Γ : OrderedPrefixCode) : GenerationContract (RichCore Γ) where
-  Guard := coreGuard Γ
-  History := RichCoreHonest Γ
-  history_of_mint := fun _ h => coreHonest_of_mint _ (mintHonest_to_core h)
+theorem goodConfig_to_core {Γ : OrderedPrefixCode}
+    {C : Configuration (RichCore Γ)} (h : GoodConfig3 C) :
+    GoodConfig3 (asCoreConfig C) := by
+  constructor
+  · intro v s E hver
+    exact h.canonical v s E (by simpa [asCoreConfig] using hver)
+  · exact h.vis_trans
+  · exact h.vis_irrefl
+  · intro v s E hver
+    exact h.ver_events_sub v s E (by simpa [asCoreConfig] using hver)
+  · intro v s E hver
+    exact h.ver_causal v s E (by simpa [asCoreConfig] using hver)
+
+def richGeneration (Γ : OrderedPrefixCode) : Issuance (RichCore Γ) where
+  CanIssue := coreGuard Γ
 
 def asCoreFoundation {Γ : OrderedPrefixCode}
     (C : Sal.MRDTs.Foundation.Configuration (RichCore Γ).toCRDTSig) :
@@ -297,16 +611,12 @@ theorem rich_join_at {Γ : OrderedPrefixCode}
 
 def richConvergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (RichCore Γ) (richGeneration Γ) where
-  sound := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertified
-      (fun C hH => rich_join_at (by
-        simpa [RichCoreHonest, asCoreConfig, asCoreFoundation]
-          using sHonest_core hH)) h)
   soundV := fun h => (isRALinearizable_iff_join _ _).mpr
     (ra_of_mintCertifiedV
       (fun C hH => rich_join_at (by
         simpa [RichCoreHonest, asCoreConfig, asCoreFoundation]
-          using sHonest_core hH)) h)
+          using sHonest_core
+            (coreHonest_of_mint (asCoreConfig C) (mintHonest_to_core hH)))) h)
 
 def richSequential (Γ : OrderedPrefixCode) :
     SequentialRefinement (RichCore Γ) richSpec where
@@ -317,6 +627,57 @@ def richSequential (Γ : OrderedPrefixCode) :
     intro ops h
     simpa [RichCore] using (sequential Γ).sound ops h
 
+theorem richLegalizationSound (Γ : OrderedPrefixCode)
+    {C : Configuration (RichCore Γ)}
+    (hgood : GoodConfig3 C)
+    (hmint : MintHonest (RichCore Γ) (coreGuard Γ) C)
+    (replay : IsRALinearizable (RichCore Γ) C) :
+    IsSpecRALinearizable (RichCore Γ) (richArbitration Γ)
+      (richClientSpec Γ) richRel C := by
+  have replayCore : IsRALinearizable (Core Γ) (asCoreConfig C) := by
+    simpa [RichCore, asCoreConfig] using replay
+  have certifiedCore := coreLegalizationSound Γ
+    (goodConfig_to_core hgood) (mintHonest_to_core hmint) replayCore
+  intro v s E hver
+  have hverCore : (asCoreConfig C).ver v = some (s, E) := by
+    simpa [asCoreConfig] using hver
+  obtain ⟨ops, hperm, hresp, hlegal, hrel, _⟩ :=
+    certifiedCore v s E hverCore
+  refine ⟨ops, hperm, ?_, ?_, hrel, ?_⟩
+  · simpa [richArbitration, coreArbitration, arbitrationLo,
+      asCoreConfig, RichCore] using hresp
+  · simpa [richClientSpec, clientSpec] using hlegal
+  · intro kind
+    change renderState s kind =
+      PeritextRender.renderMarksDoc
+        (richDocumentOf ((richClientSpec Γ).run ops))
+        ((richClientSpec Γ).run ops).2.2.toList kind
+    have hdoc := documentOf_eq_richDocumentOf hrel
+    rw [renderState, hdoc, hrel.2]
+    simp [richClientSpec, clientSpec, SequentialSpec.run]
+
+noncomputable def richLegalization (Γ : OrderedPrefixCode) :
+    LegalizationCertificate (RichCore Γ) (richGeneration Γ)
+      (richArbitration Γ) (richClientSpec Γ) richRel where
+  sound C exec replay :=
+    richLegalizationSound Γ
+      (exec.goodConfig (fun C' hmint => rich_join_at (by
+        simpa [RichCoreHonest, asCoreConfig, asCoreFoundation]
+          using sHonest_core
+            (coreHonest_of_mint (asCoreConfig C')
+              (mintHonest_to_core (by
+                simpa [richGeneration] using hmint))))))
+      exec.mintHonest replay
+
+noncomputable def richVerified (Γ : OrderedPrefixCode) :
+    VerifiedMRDT (RichCore Γ) where
+  issuance := richGeneration Γ
+  arbitration := richArbitration Γ
+  convergence := richConvergence Γ
+  Spec := richClientSpec Γ
+  Rel := richRel
+  legalization := richLegalization Γ
+
 theorem linearMint_to_core {Γ : OrderedPrefixCode}
     {ops : List (Op (RichCore Γ).AppOp)}
     (h : LinearMintHistory (RichCore Γ) (coreGuard Γ) ops) :
@@ -326,14 +687,13 @@ theorem linearMint_to_core {Γ : OrderedPrefixCode}
     simpa [RichCore] using h.guarded pre e post heq
   · exact h.clocked
 
-noncomputable def richVerified (Γ : OrderedPrefixCode) : VerifiedMRDT (RichCore Γ) where
-  generation := richGeneration Γ
+noncomputable def richReplayVerified (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (RichCore Γ) where
+  issuance := richGeneration Γ
   convergence := richConvergence Γ
-  Spec := richSpec
+  Machine := richSpec
   sequential := richSequential Γ
   sequential_of_mint := fun _ h =>
     ProductionRGA.sidedSequential_of_mint (linearMint_text (linearMint_to_core h))
-  safety := SafetyCertificate.trivial (richGeneration Γ)
 
 theorem rich_sequentially_correct {Γ : OrderedPrefixCode}
     (ops : List (Op (RichCore Γ).AppOp))
@@ -341,14 +701,15 @@ theorem rich_sequentially_correct {Γ : OrderedPrefixCode}
     (richSequential Γ).Rel
       (applySeq (RichCore Γ).toCRDTSig (RichCore Γ).init ops)
       (richSpec.run ops) :=
-  (richVerified Γ).sequentially_correct ops h
+  (richReplayVerified Γ).sequentially_correct ops h
 
 #print axioms coreHonest_of_mint
 #print axioms core_join_at
 #print axioms convergence
-#print axioms verified
+#print axioms replayVerified
 #print axioms sequentially_correct
 #print axioms richVerified
+#print axioms richReplayVerified
 #print axioms rich_sequentially_correct
 
 end

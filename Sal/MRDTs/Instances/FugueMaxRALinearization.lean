@@ -924,19 +924,21 @@ theorem fmHonest_of_applicable {Γ : OrderedPrefixCode}
     intro o ho hi
     exact Classical.choose_spec (f_chain_witness C hApp o.1) o ho hi rfl
 
-def fmGeneration (Γ : OrderedPrefixCode) : GenerationContract (FMSig Γ) where
-  Guard := fApplicable Γ
-  History := FMHonest Γ
-  history_of_mint := fun C h => fmHonest_of_applicable C (fun e he => by
+def fmGeneration (Γ : OrderedPrefixCode) : Issuance (FMSig Γ) where
+  CanIssue := fApplicable Γ
+
+theorem fmHonest_of_mint {Γ : OrderedPrefixCode}
+    {C : Configuration (FMSig Γ)}
+    (h : MintHonest (FMSig Γ) (fApplicable Γ) C) : FMHonest Γ C :=
+  fmHonest_of_applicable C (fun e he => by
     obtain ⟨π, hp, _hr, hg⟩ := h e he
     exact ⟨π, hp, hg⟩)
 
 def fmConvergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (FMSig Γ) (fmGeneration Γ) where
-  sound := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertified (fun _ hH => f_join_at (fmHonest_core hH)) h)
   soundV := fun h => (isRALinearizable_iff_join _ _).mpr
-    (ra_of_mintCertifiedV (fun _ hH => f_join_at (fmHonest_core hH)) h)
+    (ra_of_mintCertifiedV
+      (fun _ hH => f_join_at (fmHonest_core (fmHonest_of_mint hH))) h)
 
 theorem fuguemax_ra_linearizable {Γ : OrderedPrefixCode}
     {C : Configuration (FMSig Γ)}

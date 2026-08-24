@@ -16,6 +16,7 @@
 /texput.log
 __pycache__/
 *.pyc
+*.semanticdb
 
 # Tectonic diagnostics for the two tracked working-paper PDFs.
 /docs/framework-paper/main.diagnose
