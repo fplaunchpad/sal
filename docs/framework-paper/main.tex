@@ -806,14 +806,14 @@ MVR & \checkmark & \checkmark & refuted$^1$ & -- \\
 Mergeable queue & \checkmark & \checkmark & refuted$^2$ & -- \\
 Peritext/RichCore & \checkmark & \checkmark & \checkmark & concrete protocol \\
 TreeMove & \checkmark & \checkmark & \checkmark & concrete protocol \\
-AegisSheet & \checkmark & \checkmark & open$^3$ & certificate \\
+AegisSheet & \checkmark & \checkmark & \checkmark$^3$ & certificate \\
 \bottomrule
 \end{tabular}
 \caption{Current nontrivial certificate packages. $^1$Concurrent writes do
 not refine a single-value register. $^2$Duplicate concurrent dequeues do not
-refine FIFO. $^3$The old whole-prefix legality rejects valid concurrent
-origins. Trivial-generation grow-only and counter products are also in the
-ledger.}
+refine FIFO. $^3$The public theorem uses causal-origin legality because the
+old whole-prefix legality rejects valid concurrent origins. Trivial-generation
+grow-only and counter products are also in the ledger.}
 \label{tab:instances}
 \end{table}
 
@@ -823,6 +823,18 @@ the combined GC theorem. It is an import-and-name gate rather than an axiom
 eliminator. The cited instance files print standard Lean axioms only; the
 repository release script separately rejects \lean{sorry} and
 \lean{sorryAx} in the production tree.
+
+AegisSheet illustrates why origin issuance and merged-history legality are
+separate. Two concurrent operations can each be valid at an empty origin, but
+neither was issued after observing the other. Rechecking the second operation
+against the full serialization prefix therefore rejects every order. The
+public \lean{CausalOriginLegal} predicate instead requires an applicable causal
+origin contained in the prefix. The theorem
+\lean{canonical\_causalOriginLegal} constructs such a timestamp-ordered witness
+for every certified version. \lean{spec\_linearizable} and
+\lean{spec\_linearizableV} then prove that the independent incremental
+spreadsheet machine materializes the replicated state and returns the same
+queries under ordinary and virtual-LCA execution.
 
 \paragraph{External implementation correspondence.}
 We also audited the public Scala implementation of AegisSheet against the

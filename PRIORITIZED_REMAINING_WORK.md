@@ -116,8 +116,9 @@ anonymous long-form working papers under `docs/`.
     SidedEmbedRGA, Peritext, the three-component Sided Peritext core, and its
     production rendered-query `RichCore` now have `VerifiedMRDT` packages.
     Queue and MVR remain replay-only with checked semantic counterexamples.
-    AegisSheet remains replay-only with the checked merged-legality
-    obstruction `concurrent_origins_not_guarded_chronological`;
+    AegisSheet now has a full package using causal-origin legality; the old
+    whole-prefix predicate remains as the checked obstruction
+    `concurrent_origins_not_guarded_chronological`;
   - [x] keep `SafetyCertificate.Safe` orthogonal to representation relations.
     Datatypes may reuse a proof-local reachable-state lemma when useful, but
     no coupling belongs in `VerifiedMRDT` and no production instance requires
@@ -175,21 +176,21 @@ anonymous long-form working papers under `docs/`.
   - [x] Encode all 16 merge and 16 selective-undo matrix entries as named
     external fixtures.
   - [x] Build the causally annotated stable-ID MRDT; prove ordinary and
-    virtual-LCA convergence, guarded issuance, safety, and replay refinement to
-    the independent incremental spreadsheet machine. Strict Lamport chronology
-    makes the finite event set's sequential enumeration unique; the current
-    `ReplayVerifiedMRDT` package uses that full machine state rather than the
-    former event-list echo. The checked
+    virtual-LCA convergence, guarded issuance, safety, and refinement to the
+    independent incremental spreadsheet machine. Strict Lamport chronology
+    makes the finite event set's sequential enumeration unique. The checked
     `concurrent_origins_not_guarded_chronological` example proves why it cannot
     be promoted with the old whole-prefix guard: two independent operations are
     valid at their empty origins, but whichever is second in a serialization
-    did not observe the first. Replace `GuardedChronological` at the public
-    boundary with legality over each event's encoded causal origin view, then
-    extend the incremental observation theorem to that merged-history
-    legality;
-  - [ ] Define AegisSheet merged-history legality over each event's encoded
+    did not observe the first;
+  - [x] Define AegisSheet merged-history legality over each event's encoded
     causal origin view, extend the incremental materialization and observation
-    theorems to that legality, and package the result as `VerifiedMRDT`;
+    theorems to that legality, and package the result as `VerifiedMRDT`.
+    Every certified ordinary or virtual-LCA version has a deterministic
+    timestamp-canonical witness. Each operation carries an applicable causal
+    origin contained in its serialization prefix; the witness exactly
+    materializes and observes the replicated state. Positive concurrent-origin
+    and negative unavailable-origin controls prevent vacuous legalization;
   - [x] Check the nontrivial merge, undo, and range scenarios with positive and
     negative SPOTs.
   - [x] Refute naive local purge as silent state GC with a kernel-checked late

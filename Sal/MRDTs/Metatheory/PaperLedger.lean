@@ -77,7 +77,14 @@ namespace Sal.MRDTs
 #check GC.CombinedSteps.refinesRaw
 
 -- AegisSheet intent semantics, incremental sequential refinement, and GC.
+#check Instances.AegisSheet.verified
+#check Instances.AegisSheet.spec_linearizable
+#check Instances.AegisSheet.spec_linearizableV
 #check Instances.AegisSheet.replayVerified
+#check Instances.AegisSheet.Sequential.CausalOriginLegal
+#check Instances.AegisSheet.Sequential.canonical_causalOriginLegal
+#check Instances.AegisSheet.Sequential.concurrent_origins_causal_legal
+#check Instances.AegisSheet.Sequential.unavailable_origin_not_causal_legal
 #check Instances.AegisSheet.Sequential.chronological_eq_of_toFinset_eq
 #check Instances.AegisSheet.Sequential.inplaceStateRel
 #check Instances.AegisSheet.Sequential.concurrent_origins_not_guarded_chronological

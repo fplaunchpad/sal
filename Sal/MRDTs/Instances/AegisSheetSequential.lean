@@ -668,7 +668,8 @@ theorem rangeStored_insert_neutral {events : Finset Event} {e : Event}
 
 theorem applicable_seen {events : Finset Event} {e : Event}
     (guard : applicable e events) : e.seen = eventTimes events := by
-  unfold applicable applicableB at guard
+  rcases guard with ⟨guard, _⟩
+  unfold applicableB at guard
   simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
   exact guard.1.1.2
 
@@ -1105,17 +1106,15 @@ theorem cellStored_insert_purge {events : Finset Event} {e : Event}
       simpa only [Finset.mem_union, not_or] using
         And.intro (by simpa [sameTime, rowEq, columnEq] using notCovered) uncovered
 
-theorem materialize_insert {events : Finset Event} {e : Event}
+theorem materialize_insert_of_facts {events : Finset Event} {e : Event}
     (valid : AegisSheet.GC.StateValid events)
     (unique : AegisSheet.GC.TimestampUnique events)
     (seenValid : SeenValid events)
-    (guard : applicable e events)
+    (fresh : e.1 ∉ eventTimes events)
+    (newMetadata : metadataValidB events e = true)
     (clock : ∀ old ∈ events, old.1 < e.1) :
     step (materialize events) e = materialize (insert e events) := by
-  have fresh := AegisSheet.GC.applicable_fresh guard
   have notmem := event_not_mem_of_fresh fresh
-  have seen := applicable_seen guard
-  have newMetadata := AegisSheet.GC.applicable_metadataValid guard
   cases action : e.2.2.command.effect with
   | axis update =>
       have action' : e.action = .axis update := action
@@ -1205,6 +1204,17 @@ theorem materialize_insert {events : Finset Event} {e : Event}
           axisPositionVersions_insert, purgeMarkers_insert,
           Event.action, axisUpdate?, cellUpdate?, rangeUpdate?, purge?,
           rowTokens, columnTokens, rowPositions, columnPositions, ranges, cells]
+
+theorem materialize_insert {events : Finset Event} {e : Event}
+    (valid : AegisSheet.GC.StateValid events)
+    (unique : AegisSheet.GC.TimestampUnique events)
+    (seenValid : SeenValid events)
+    (guard : applicable e events)
+    (clock : ∀ old ∈ events, old.1 < e.1) :
+    step (materialize events) e = materialize (insert e events) :=
+  materialize_insert_of_facts valid unique seenValid
+    (AegisSheet.GC.applicable_fresh guard)
+    (AegisSheet.GC.applicable_metadataValid guard) clock
 
 theorem linearMintHistory_prefix {ops initial suffix : List Event}
     (history : LinearMintHistory D AegisSheet.applicable ops)
@@ -1980,7 +1990,8 @@ theorem cellAxesKnown_insert {events : Finset Event} {e : Event}
     CellAxesKnown (insert e events) := by
   intro event member update isCell
   rcases Finset.mem_insert.mp member with rfl | oldMember
-  · unfold applicable applicableB at guard
+  · rcases guard with ⟨guard, _⟩
+    unfold applicableB at guard
     simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
     have commandGuard := guard.2
     cases command : event.2.2.command with
@@ -2056,7 +2067,8 @@ theorem coveredWitnessed_insert {events : Finset Event} {e : Event}
     | none => simp [found] at newMember
     | some marker =>
         simp only [found] at newMember
-        unfold applicable applicableB at guard
+        rcases guard with ⟨guard, _⟩
+        unfold applicableB at guard
         simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
         have commandGuard := guard.2
         cases command : e.2.2.command with
@@ -2180,9 +2192,339 @@ def GuardedChronological (ops : List Event) : Prop :=
     ∀ pre e post, ops = pre ++ e :: post →
       applicable e pre.toFinset
 
+/-- Merged-history legality checks each event at its encoded causal origin,
+not against unrelated concurrent events that happen to precede it in the
+chosen serialization. `applicable` checks that the origin's event times are
+exactly `e.seen`; chronology makes every member of `origin` precede `e`. -/
+def CausalOriginLegal (ops : List Event) : Prop :=
+  Chronological ops ∧
+    ∀ pre e post, ops = pre ++ e :: post →
+      ∃ origin : Finset Event,
+        origin ⊆ pre.toFinset ∧ applicable e origin
+
+theorem causalOriginLegal_prefix {ops initial suffix : List Event}
+    (legal : CausalOriginLegal ops) (split : ops = initial ++ suffix) :
+    CausalOriginLegal initial := by
+  constructor
+  · intro pre e post initialSplit old oldMember
+    apply legal.1 pre e (post ++ suffix)
+    · calc
+        ops = initial ++ suffix := split
+        _ = (pre ++ e :: post) ++ suffix := by rw [initialSplit]
+        _ = pre ++ e :: (post ++ suffix) := by simp [List.append_assoc]
+    · exact oldMember
+  · intro pre e post initialSplit
+    apply legal.2 pre e (post ++ suffix)
+    calc
+      ops = initial ++ suffix := split
+      _ = (pre ++ e :: post) ++ suffix := by rw [initialSplit]
+      _ = pre ++ e :: (post ++ suffix) := by simp [List.append_assoc]
+
+theorem seenValid_insert_of_origin {events origin : Finset Event} {e : Event}
+    (valid : SeenValid events) (subset : origin ⊆ events)
+    (guard : applicable e origin) : SeenValid (insert e events) := by
+  intro candidate member
+  rcases Finset.mem_insert.mp member with rfl | old
+  · rw [applicable_seen guard]
+    exact eventTimes_mono (Finset.Subset.trans subset
+      (Finset.subset_insert candidate events))
+  · exact fun timestamp timestampMember =>
+      eventTimes_mono (Finset.subset_insert e events)
+        (valid candidate old timestampMember)
+
+theorem fresh_of_clock_and_coveredWitnessed {events : Finset Event}
+    {e : Event} (clock : ∀ old ∈ events, old.1 < e.1)
+    (witnessed : CoveredWitnessed events) : e.1 ∉ eventTimes events := by
+  rw [AegisSheet.GC.eventTimes_eq]
+  simp only [Finset.mem_union]
+  rintro (direct | covered)
+  · obtain ⟨old, oldMember, same⟩ := Finset.mem_image.mp direct
+    exact Nat.ne_of_lt (clock old oldMember) same
+  · unfold AegisSheet.GC.markerCoveredTimes at covered
+    obtain ⟨⟨timestamp, coordinate⟩, entryMember, same⟩ :=
+      Finset.mem_image.mp covered
+    simp only at same
+    obtain ⟨old, oldMember, update, _, oldTime, _⟩ :=
+      witnessed (timestamp, coordinate) entryMember
+    have lt := clock old oldMember
+    exact (Nat.ne_of_lt lt) (oldTime.trans same)
+
+theorem cellAxesKnown_insert_of_origin {events origin : Finset Event}
+    {e : Event} (old : CellAxesKnown events) (subset : origin ⊆ events)
+    (guard : applicable e origin) : CellAxesKnown (insert e events) := by
+  intro event member update isCell
+  rcases Finset.mem_insert.mp member with rfl | oldMember
+  · rcases guard with ⟨guard, _⟩
+    unfold applicableB at guard
+    simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
+    have commandGuard := guard.2
+    cases command : event.2.2.command with
+    | direct action =>
+        have actionEq : action = .cell update := by
+          simpa [Event.action, Command.effect, command] using
+            action_eq_cell_of_cellUpdate_some isCell
+        subst action
+        simp only [command, directApplicable] at commandGuard
+        simp only [Bool.and_eq_true] at commandGuard
+        have rowLive : axisLive origin .row update.row = true :=
+          commandGuard.1.1.1
+        have columnLive : axisLive origin .column update.column = true :=
+          commandGuard.1.1.2
+        unfold axisLive at rowLive columnLive
+        simp only [axisLive, Bool.and_eq_true] at rowLive columnLive
+        have rowKnown : axisKnown events .row update.row = true :=
+          AegisSheet.GC.fold_or_true_mono subset _ rowLive.1
+        have columnKnown : axisKnown events .column update.column = true :=
+          AegisSheet.GC.fold_or_true_mono subset _ columnLive.1
+        exact ⟨axisKnown_insert_of_old rowKnown,
+          axisKnown_insert_of_old columnKnown⟩
+    | undo target inverse =>
+        have inverseEq : inverse = .cell update := by
+          simpa [Event.action, Command.effect, command] using
+            action_eq_cell_of_cellUpdate_some isCell
+        subst inverse
+        simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
+        obtain ⟨prior, priorMember, priorUpdate, priorCell, sameRow, sameColumn⟩ :=
+          validUndo_cell_witness commandGuard.2
+        have priorKnown := old prior (subset priorMember) priorUpdate priorCell
+        exact ⟨axisKnown_insert_of_old (sameRow ▸ priorKnown.1),
+          axisKnown_insert_of_old (sameColumn ▸ priorKnown.2)⟩
+  · have oldKnown := old event oldMember update isCell
+    exact ⟨axisKnown_insert_of_old oldKnown.1,
+      axisKnown_insert_of_old oldKnown.2⟩
+
+theorem coveredWitnessed_insert_of_origin {events origin : Finset Event}
+    {e : Event} (old : CoveredWitnessed events) (subset : origin ⊆ events)
+    (guard : applicable e origin) : CoveredWitnessed (insert e events) := by
+  intro entry member
+  rw [AegisSheet.GC.markerCoveredEntries_insert] at member
+  rcases Finset.mem_union.mp member with newMember | oldMember
+  · cases found : purge? e with
+    | none => simp [found] at newMember
+    | some marker =>
+        simp only [found] at newMember
+        rcases guard with ⟨guard, _⟩
+        unfold applicableB at guard
+        simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
+        have commandGuard := guard.2
+        cases command : e.2.2.command with
+        | direct action =>
+            have actionEq : action = .purge marker := by
+              have effect : e.action = .purge marker :=
+                AegisSheet.GC.action_eq_purge_of_purge_some found
+              simpa [Event.action, Command.effect, command] using effect
+            subst action
+            simp only [command, directApplicable] at commandGuard
+            obtain ⟨event, eventMember, update, isCell, sameTime,
+              sameCoordinate⟩ :=
+              purgeApplicable_covered_witness commandGuard entry newMember
+            exact ⟨event, Finset.mem_insert_of_mem (subset eventMember), update,
+              isCell, sameTime, sameCoordinate⟩
+        | undo target inverse =>
+            have inverseEq : inverse = .purge marker := by
+              have effect : e.action = .purge marker :=
+                AegisSheet.GC.action_eq_purge_of_purge_some found
+              simpa [Event.action, Command.effect, command] using effect
+            subst inverse
+            simp only [command, Bool.and_eq_true, decide_eq_true_eq] at commandGuard
+            rw [validUndo_purge_false] at commandGuard
+            simp at commandGuard
+  · obtain ⟨event, eventMember, update, isCell, sameTime, sameCoordinate⟩ :=
+      old entry oldMember
+    exact ⟨event, Finset.mem_insert_of_mem eventMember, update,
+      isCell, sameTime, sameCoordinate⟩
+
+structure CausalHistoryFacts (ops : List Event) extends HistoryFacts ops where
+  cellAxesKnown : CellAxesKnown ops.toFinset
+  coveredWitnessed : CoveredWitnessed ops.toFinset
+
+theorem causalOriginHistory_facts {ops : List Event}
+    (legal : CausalOriginLegal ops) : CausalHistoryFacts ops := by
+  induction ops using List.reverseRecOn with
+  | nil =>
+      apply CausalHistoryFacts.mk
+      · refine ⟨?_, AegisSheet.GC.timestampUnique_empty, ?_, rfl⟩
+        · simp [AegisSheet.GC.StateValid]
+        · simp [SeenValid]
+      · simp [CellAxesKnown]
+      · simp [CoveredWitnessed, AegisSheet.GC.markerCoveredEntries]
+  | append_singleton initial e ih =>
+      have initialLegal := causalOriginLegal_prefix legal
+        (initial := initial) (suffix := [e]) rfl
+      have initialFacts := ih initialLegal
+      obtain ⟨origin, originSubset, guard⟩ :=
+        legal.2 initial e [] (by simp)
+      have clock : ∀ old ∈ initial.toFinset, old.1 < e.1 := by
+        intro old oldMember
+        exact legal.1 initial e [] (by simp) old (by simpa using oldMember)
+      have fresh := fresh_of_clock_and_coveredWitnessed clock
+        initialFacts.coveredWitnessed
+      have metadata : metadataValidB initial.toFinset e = true :=
+        AegisSheet.GC.metadataValid_mono originSubset
+          (AegisSheet.GC.applicable_metadataValid guard)
+      apply CausalHistoryFacts.mk
+      · refine ⟨?_, ?_, ?_, ?_⟩
+        · simpa using AegisSheet.GC.stateValid_insert
+            initialFacts.stateValid metadata
+        · simpa using AegisSheet.GC.timestampUnique_insert
+            initialFacts.timestampUnique fresh
+        · simpa using seenValid_insert_of_origin initialFacts.seenValid
+            originSubset guard
+        · change spec.run (initial ++ [e]) = materialize (initial ++ [e]).toFinset
+          rw [SequentialMachine.run_append_single]
+          change step (run initial) e = materialize (initial ++ [e]).toFinset
+          rw [initialFacts.materialized]
+          simpa using materialize_insert_of_facts initialFacts.stateValid
+            initialFacts.timestampUnique initialFacts.seenValid fresh metadata clock
+      · simpa using cellAxesKnown_insert_of_origin
+          initialFacts.cellAxesKnown originSubset guard
+      · simpa using coveredWitnessed_insert_of_origin
+          initialFacts.coveredWitnessed originSubset guard
+
+theorem causalOrigin_history_materializes {ops : List Event}
+    (legal : CausalOriginLegal ops) :
+    run ops = materialize ops.toFinset :=
+  (causalOriginHistory_facts legal).materialized
+
+theorem causalOrigin_history_observes {ops : List Event}
+    (legal : CausalOriginLegal ops) :
+    view (run ops) = AegisSheet.view ops.toFinset := by
+  have facts := causalOriginHistory_facts legal
+  rw [facts.materialized]
+  exact observationInvariant_of_facts facts.stateValid facts.cellAxesKnown
+    facts.coveredWitnessed
+
+def chronologicalLEB (a b : Event) : Bool := decide (a.1 ≤ b.1)
+
+/-- Deterministic timestamp enumeration used only to select the public
+sequential witness. Reachable version sets have unique event timestamps. -/
+def canonical (ops : List Event) : List Event :=
+  ops.mergeSort chronologicalLEB
+
+theorem canonical_perm (ops : List Event) : (canonical ops).Perm ops :=
+  List.mergeSort_perm ops chronologicalLEB
+
+theorem canonical_toFinset (ops : List Event) :
+    (canonical ops).toFinset = ops.toFinset := by
+  apply Finset.ext
+  intro event
+  simpa only [List.mem_toFinset] using (canonical_perm ops).mem_iff
+
+theorem canonical_pairwise_le (ops : List Event) :
+    (canonical ops).Pairwise (fun a b => a.1 ≤ b.1) := by
+  have sorted := List.pairwise_mergeSort
+    (le := chronologicalLEB)
+    (fun a b c hab hbc => by
+      simp only [chronologicalLEB, decide_eq_true_eq] at hab hbc ⊢
+      exact Nat.le_trans hab hbc)
+    (fun a b => by
+      simp only [chronologicalLEB, Bool.or_eq_true, decide_eq_true_eq]
+      exact Nat.le_total a.1 b.1)
+    ops
+  simpa only [canonical, chronologicalLEB, decide_eq_true_eq] using sorted
+
+theorem canonical_nodup {ops : List Event} (nodup : ops.Nodup) :
+    (canonical ops).Nodup :=
+  nodup.perm (canonical_perm ops).symm
+
+theorem canonical_chronological {ops : List Event}
+    (nodup : ops.Nodup)
+    (unique : AegisSheet.GC.TimestampUnique ops.toFinset) :
+    Chronological (canonical ops) := by
+  intro pre e post split old oldMember
+  have sorted := canonical_pairwise_le ops
+  rw [split] at sorted
+  have oldLE : old.1 ≤ e.1 :=
+    (List.pairwise_append.mp sorted).2.2 old oldMember e (by simp)
+  have canonicalNodup := canonical_nodup nodup
+  rw [split] at canonicalNodup
+  have oldNe : old ≠ e :=
+    (List.nodup_append.mp canonicalNodup).2.2 old oldMember e (by simp)
+  have timeNe : old.1 ≠ e.1 := by
+    intro same
+    apply oldNe
+    apply unique
+    · rw [← canonical_toFinset ops, split]
+      simp [oldMember]
+    · rw [← canonical_toFinset ops, split]
+      simp
+    · exact same
+  exact lt_of_le_of_ne oldLE timeNe
+
+theorem mem_prefix_of_chronological {ops pre post : List Event}
+    {e old : Event} (chronological : Chronological ops)
+    (split : ops = pre ++ e :: post) (member : old ∈ ops)
+    (before : old.1 < e.1) : old ∈ pre := by
+  rw [split] at member
+  simp only [List.mem_append, List.mem_cons] at member
+  rcases member with inPre | same | inPost
+  · exact inPre
+  · subst old
+    exact False.elim (Nat.lt_irrefl _ before)
+  · obtain ⟨beforeOld, afterOld, postSplit⟩ := List.mem_iff_append.mp inPost
+    have after : e.1 < old.1 := by
+      apply chronological (pre ++ e :: beforeOld) old afterOld
+      · calc
+          ops = pre ++ e :: post := split
+          _ = pre ++ e :: (beforeOld ++ old :: afterOld) := by rw [postSplit]
+          _ = (pre ++ e :: beforeOld) ++ old :: afterOld := by simp
+      · simp
+    exact False.elim (Nat.lt_asymm before after)
+
+theorem canonical_causalOriginLegal {C : Configuration D}
+    (exec : CertifiedExecution D AegisSheet.generation C)
+    {v : Version} {s : D.State} {E : Set Event} {ops : List Event}
+    (hver : C.ver v = some (s, E)) (perm : listPermOf ops E) :
+    CausalOriginLegal (canonical ops) := by
+  have good : GoodConfig3 C := exec.goodConfig (fun _ _ => AegisSheet.join _)
+  have subsetEvents := good.ver_events_sub v s E hver
+  have causalClosed := good.ver_causal v s E hver
+  have unique : AegisSheet.GC.TimestampUnique ops.toFinset := by
+    intro a ha b hb same
+    apply C.core.ts_unique
+    · apply subsetEvents a
+      apply (perm.2 a).mp
+      simpa using ha
+    · apply subsetEvents b
+      apply (perm.2 b).mp
+      simpa using hb
+    · exact same
+  have chronological := canonical_chronological perm.1 unique
+  refine ⟨chronological, ?_⟩
+  intro pre e post split
+  have eCanonical : e ∈ canonical ops := by rw [split]; simp
+  have eOps : e ∈ ops := (canonical_perm ops).mem_iff.mp eCanonical
+  have eE : e ∈ E := (perm.2 e).mp eOps
+  obtain ⟨originOps, originPerm, _, issued⟩ :=
+    exec.mintHonest e (subsetEvents e eE)
+  have originGuard : applicable e originOps.toFinset := by
+    simpa [AegisSheet.applySeq_eq_toFinset] using issued
+  refine ⟨originOps.toFinset, ?_, originGuard⟩
+  intro old oldMember
+  have oldOrigin : old ∈ originOps := by simpa using oldMember
+  have oldPred := (originPerm.2 old).mp oldOrigin
+  have oldE : old ∈ E := causalClosed old e oldPred.2 eE
+  have oldOps : old ∈ ops := (perm.2 old).mpr oldE
+  have oldCanonical : old ∈ canonical ops :=
+    (canonical_perm ops).mem_iff.mpr oldOps
+  have oldTime : old.1 < e.1 :=
+    originGuard.2.lt old.1 (eventTime_mem oldMember)
+  have oldInPrefix : old ∈ pre :=
+    mem_prefix_of_chronological (ops := canonical ops) chronological split
+      oldCanonical oldTime
+  simpa using oldInPrefix
+
 def materializedStateRel (events : D.State) (state : State) : Prop :=
   inplaceStateRel events state ∧ state = materialize events ∧
     view state = AegisSheet.view events
+
+/-- Client-facing sequential spreadsheet semantics. Legality records the
+causal origin against which each operation was issued; the origin need only
+be a subset of the merged serialization prefix. -/
+noncomputable def clientSpec : SequentialSpec D where
+  toSequentialMachine := spec
+  Legal := CausalOriginLegal
+  query := fun state _ => view state
 
 theorem inplaceStateRel_empty : inplaceStateRel D.init empty := by
   intro ops chronological eventsEmpty
@@ -2200,6 +2542,17 @@ theorem inplaceSequentialSound (ops : List Event) (h : Chronological ops) :
   intro other otherChronological sameEvents
   rw [AegisSheet.applySeq_eq_toFinset] at sameEvents
   rw [chronological_eq_of_toFinset_eq otherChronological h sameEvents]
+
+theorem causalOriginSequentialSound (ops : List Event)
+    (legal : CausalOriginLegal ops) :
+    materializedStateRel (applySeq D.toCRDTSig D.init ops)
+      (clientSpec.run ops) := by
+  change materializedStateRel (applySeq D.toCRDTSig D.init ops) (run ops)
+  refine ⟨inplaceSequentialSound ops legal.1, ?_, ?_⟩
+  · rw [AegisSheet.applySeq_eq_toFinset]
+    exact causalOrigin_history_materializes legal
+  · rw [AegisSheet.applySeq_eq_toFinset]
+    exact causalOrigin_history_observes legal
 
 theorem guardedChronological_to_linearMintHistory {ops : List Event}
     (honest : GuardedChronological ops) :
@@ -2238,6 +2591,52 @@ theorem inplace_sequentially_correct (ops : List Event)
     materializedStateRel (applySeq D.toCRDTSig D.init ops) (run ops) :=
   inplaceReplayVerified.sequentially_correct ops h
 
+theorem rawLo_false (C : Configuration D) (a b : Event) :
+    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+  rintro (⟨_, noncommuting⟩ | ⟨_, _, ordered, _⟩)
+  · exact noncommuting (AegisSheet.all_comm a b)
+  · exact RcRes.noConfusion ordered
+
+theorem respects_rawLo (C : Configuration D) (ops : List Event) :
+    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+  induction ops with
+  | nil => exact List.Pairwise.nil
+  | cons event rest ih =>
+      exact List.pairwise_cons.mpr
+        ⟨fun later _ => rawLo_false C later event, ih⟩
+
+/-- Reachable merged versions have a timestamp-canonical serialization in
+which every event retains an honest causal origin, the incremental machine
+materializes exactly the replicated state, and both sides answer the same
+queries. -/
+noncomputable def sequentialCorrectness :
+    SequentialCorrectnessCertificate D AegisSheet.generation
+      (InteractionSpec.raw D) clientSpec materializedStateRel where
+  sound C exec replay := by
+    intro v s E hver
+    obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
+    have legal := canonical_causalOriginLegal exec hver hperm
+    have canonicalPerm : listPermOf (canonical ops) E := by
+      refine ⟨canonical_nodup hperm.1, ?_⟩
+      intro event
+      exact (canonical_perm ops).mem_iff.trans (hperm.2 event)
+    have canonicalState :
+        applySeq D.toCRDTSig D.init (canonical ops) = s := by
+      rw [AegisSheet.applySeq_eq_toFinset, canonical_toFinset]
+      rw [← AegisSheet.applySeq_eq_toFinset]
+      exact hfold
+    have refined := causalOriginSequentialSound (canonical ops) legal
+    have refinedAtState : materializedStateRel s
+        (clientSpec.run (canonical ops)) := by
+      rw [← canonicalState]
+      exact refined
+    refine ⟨canonical ops, canonicalPerm,
+      respects_interactionLoOn_raw_of_lo (respects_rawLo C (canonical ops)),
+      legal, refinedAtState, ?_⟩
+    intro query
+    cases query
+    simpa [D, clientSpec] using refinedAtState.2.2.symm
+
 /-! PASS/FAIL controls for the ordering premise used by the refinement. -/
 
 /-- Two independent replicas may both insert into an empty sheet.  Each event
@@ -2250,12 +2649,13 @@ def independentColumn : Event :=
 
 theorem independent_events_individually_applicable :
     applicable independentRow ∅ ∧ applicable independentColumn ∅ := by
-  constructor <;> change applicableB _ ∅ = true <;> native_decide
+  native_decide
 
-/-- The current replay specification is intentionally not promoted to the
-public package: its `GuardedChronological` predicate rechecks an event against
-the whole serialization prefix.  That is too strong for a merge because the
-second independent event did not see the first. -/
+/-- The older replay specification cannot serve as the public package: its
+`GuardedChronological` predicate rechecks an event against the whole
+serialization prefix. That is too strong for a merge because the second
+independent event did not see the first. `CausalOriginLegal` repairs this
+boundary without weakening issuance. -/
 theorem concurrent_origins_not_guarded_chronological :
     Chronological [independentRow, independentColumn] ∧
       ¬ GuardedChronological [independentRow, independentColumn] := by
@@ -2264,11 +2664,49 @@ theorem concurrent_origins_not_guarded_chronological :
     native_decide
   · intro guarded
     have bad := guarded.2 [independentRow] independentColumn [] (by simp)
+    have bad := bad.1
     change applicableB independentColumn {independentRow} = true at bad
     have hfalse : applicableB independentColumn {independentRow} = false := by
       native_decide
     rw [hfalse] at bad
     exact Bool.noConfusion bad
+
+/-- PASS control: both concurrent insertions retain their truthful empty
+origin even though one must appear second in the chronological witness. -/
+theorem concurrent_origins_causal_legal :
+    CausalOriginLegal [independentRow, independentColumn] := by
+  constructor
+  · apply chronological_of_pairwise
+    native_decide
+  · intro pre e post split
+    have member : e ∈ [independentRow, independentColumn] := by
+      rw [split]
+      simp
+    simp at member
+    rcases member with rfl | rfl
+    · exact ⟨∅, by simp, independent_events_individually_applicable.1⟩
+    · exact ⟨∅, by simp, independent_events_individually_applicable.2⟩
+
+/-- An event cannot cite a causal timestamp for which its history contains no
+origin event or compact purge witness. -/
+def unavailableOriginColumn : Event :=
+  axisEvent 12 2 {999} .insert .column 202 none (some 10)
+
+/-- FAIL control: origin legality is not an always-accepting replacement for
+whole-prefix issuance. -/
+theorem unavailable_origin_not_causal_legal :
+    ¬ CausalOriginLegal [unavailableOriginColumn] := by
+  intro legal
+  obtain ⟨origin, subset, guard⟩ :=
+    legal.2 [] unavailableOriginColumn [] rfl
+  have empty : origin = ∅ := Finset.Subset.antisymm subset (by simp)
+  subst origin
+  have guard := guard.1
+  change applicableB unavailableOriginColumn ∅ = true at guard
+  have rejected : applicableB unavailableOriginColumn ∅ = false := by
+    native_decide
+  rw [rejected] at guard
+  exact Bool.noConfusion guard
 
 example : [baseRow, baseColumn, baseCell].Pairwise timestampLT := by
   native_decide
@@ -2291,9 +2729,14 @@ example : ¬ [baseColumn, baseRow].Pairwise timestampLT := by
 #print axioms linearMintHistory_provenance
 #print axioms guarded_history_observes
 #print axioms inplaceSequentialSound
+#print axioms canonical_causalOriginLegal
+#print axioms causalOriginSequentialSound
+#print axioms sequentialCorrectness
 #print axioms inplaceReplayVerified
 #print axioms inplace_sequentially_correct
 #print axioms concurrent_origins_not_guarded_chronological
+#print axioms concurrent_origins_causal_legal
+#print axioms unavailable_origin_not_causal_legal
 
 /-! Directed equivalence checks against the replicated semantic reference. -/
 
@@ -2344,6 +2787,30 @@ independent incremental spreadsheet machine, not an event-list echo. -/
 noncomputable def replayVerified : ReplayVerifiedMRDT D :=
   Sequential.inplaceReplayVerified
 
+/-- Complete public AegisSheet package. Unlike `replayVerified`, this package
+certifies a legal client history for every reachable ordinary or virtual-LCA
+version and relates that history to the independent incremental spreadsheet
+machine. -/
+noncomputable def verified : VerifiedMRDT D where
+  issuance := generation
+  interaction := InteractionSpec.raw D
+  convergence := convergence
+  Spec := Sequential.clientSpec
+  Rel := Sequential.materializedStateRel
+  sequentialCorrectness := Sequential.sequentialCorrectness
+
+theorem spec_linearizable {C : Configuration D}
+    (h : MintCertifiedReach D generation C) :
+    IsSpecRALinearizable D (InteractionSpec.raw D)
+      Sequential.clientSpec Sequential.materializedStateRel C :=
+  verified.converges h
+
+theorem spec_linearizableV {C : Configuration D}
+    (h : MintCertifiedReachV D (canonicalVirtualLCA D) generation C) :
+    IsSpecRALinearizable D (InteractionSpec.raw D)
+      Sequential.clientSpec Sequential.materializedStateRel C :=
+  verified.convergesV h
+
 theorem sequentially_correct (ops : List Event)
     (h : LinearMintHistory D applicable ops) :
     Sequential.materializedStateRel
@@ -2356,6 +2823,9 @@ theorem observationally_correct (ops : List Event)
   Sequential.guarded_history_observes h
 
 #print axioms replayVerified
+#print axioms verified
+#print axioms spec_linearizable
+#print axioms spec_linearizableV
 #print axioms sequentially_correct
 #print axioms observationally_correct
 

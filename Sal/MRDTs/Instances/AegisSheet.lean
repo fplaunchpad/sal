@@ -543,8 +543,41 @@ def applicableB (e : Event) (events : Finset Event) : Bool :=
   | .undo target inverse =>
       decide (target ∈ e.seen) && validUndo events e.2.1 target inverse
 
+/-- The issuer's Lamport timestamp is strictly above every direct or compact
+causal timestamp in its materialized origin state. Freshness alone is not
+enough to justify chronological merged-history witnesses. -/
+def clockedB (e : Event) (events : Finset Event) : Bool :=
+  Finset.fold (· && ·) true
+    (fun timestamp => decide (timestamp < e.1)) (eventTimes events)
+
+def ClockedAt (e : Event) (events : Finset Event) : Prop :=
+  clockedB e events = true
+
+theorem foldAnd_eq_true_iff {α : Type} [DecidableEq α]
+    (s : Finset α) (f : α → Bool) :
+    Finset.fold (· && ·) true f s = true ↔
+      ∀ x ∈ s, f x = true := by
+  induction s using Finset.induction_on with
+  | empty => simp
+  | @insert x s fresh ih =>
+      rw [Finset.fold_insert fresh]
+      simp [ih]
+
+theorem ClockedAt.lt {e : Event} {events : Finset Event}
+    (h : ClockedAt e events) :
+    ∀ timestamp ∈ eventTimes events, timestamp < e.1 := by
+  unfold ClockedAt clockedB at h
+  rw [foldAnd_eq_true_iff] at h
+  intro timestamp member
+  simpa using h timestamp member
+
 def applicable (e : Event) (events : Finset Event) : Prop :=
-  applicableB e events = true
+  applicableB e events = true ∧ ClockedAt e events
+
+instance (e : Event) (events : Finset Event) :
+    Decidable (applicable e events) := by
+  unfold applicable ClockedAt
+  infer_instance
 
 def generation : Issuance D where
   CanIssue := applicable

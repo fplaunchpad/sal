@@ -133,26 +133,28 @@ three-component core and its production `RichCore` query signature now have
 full `VerifiedMRDT` packages. The latter theorem covers the actual
 document-order rich-text render, not only raw component stores.
 
-AegisSheet exposes a different issue. Its old `GuardedChronological` predicate
+AegisSheet exposed a different issue. Its old `GuardedChronological` predicate
 rechecks an event against the entire serialization prefix. The checked
 `concurrent_origins_not_guarded_chronological` example contains two operations
 that are each applicable at an empty origin; any serialization makes one
-follow an operation it did not observe. The next specification must validate
-each event against its encoded causal origin view and prove the incremental
-observer correct for those merged histories.
+follow an operation it did not observe. The repair validates each event
+against its encoded causal origin view. `canonical_causalOriginLegal` derives
+those origins for every certified version, while
+`causalOriginSequentialSound` proves exact state and observation refinement.
+The ordinary and virtual-LCA capstones are `AegisSheet.spec_linearizable` and
+`AegisSheet.spec_linearizableV`.
 
 ## Evidence status
 
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
   BoundedCounter, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
-  Peritext signatures, and the grow-only canary.
+  Peritext signatures, AegisSheet, and the grow-only canary.
 - **Refuted:** origin issuance implies merged sequential legality; strict RGA
   issuance is a valid sequential legality predicate; current queue is FIFO;
   and the current MVR refines an ordinary single-value register after two
   concurrent writes.
-- **Staged on merged-history legality:** AegisSheet. Its incremental machine
-  and guarded linear-history theorem remain checked, but the exact issuer
-  guard is not a legal predicate for a merge of concurrent histories; this is
-  now a checked negative rather than an inferred gap.
+- **AegisSheet control retained:** the exact whole-prefix issuer guard is not a
+  legal predicate for a merge of concurrent histories. The checked negative
+  remains as the reason for causal-origin legality, not as an open proof gap.
 - **Unvalidated:** the relational `Issuance` definitions still require
   differential validation against each executable operation generator.

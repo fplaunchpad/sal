@@ -144,6 +144,9 @@ namespace Sal.MRDTs
 #check Instances.AegisSheet.table4MoveMoveUndoState
 #check Instances.AegisSheet.resolveRange
 #check Instances.AegisSheet.join
+#check Instances.AegisSheet.verified
+#check Instances.AegisSheet.spec_linearizable
+#check Instances.AegisSheet.spec_linearizableV
 #check Instances.AegisSheet.replayVerified
 #check Instances.AegisSheet.GC.naive_collection_changes_future_observation
 #check Instances.AegisSheet.GC.requires_semantic_marker
@@ -167,6 +170,9 @@ namespace Sal.MRDTs
 #check Instances.AegisSheet.Sequential.inplaceSequential
 #check Instances.AegisSheet.Sequential.inplaceReplayVerified
 #check Instances.AegisSheet.Sequential.concurrent_origins_not_guarded_chronological
+#check Instances.AegisSheet.Sequential.concurrent_origins_causal_legal
+#check Instances.AegisSheet.Sequential.unavailable_origin_not_causal_legal
+#check Instances.AegisSheet.Sequential.canonical_causalOriginLegal
 #check Instances.AegisSheet.sequentially_correct
 #check Instances.AegisSheet.observationally_correct
 #check Instances.EmbedRGA.generation

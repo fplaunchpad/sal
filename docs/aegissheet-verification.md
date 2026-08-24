@@ -10,10 +10,19 @@ conflicts, nonduplicating moves, anchored ranges, and tombstone collection.
 ## Candidate claim
 
 A grow-only set of causally annotated spreadsheet actions, queried by the
-AegisSheet conflict policies, converges under union merge. A guarded sequential
-trace refines an executable list-based spreadsheet reference. Every published
-matrix outcome is a checked fixture. Tombstone collection requires either a
-semantic cutoff marker or a protocol that rules out later revival.
+AegisSheet conflict policies, converges under union merge. Every certified
+version has a causal-origin-legal serialization that refines an independent
+incremental spreadsheet reference. Every published matrix outcome is a checked
+fixture. Tombstone collection requires either a semantic cutoff marker or a
+protocol that rules out later revival.
+
+The public merged-history theorem defines an event as origin-legal when
+some timestamp-earlier subset of the serialized prefix satisfies the
+executable `applicable` predicate. The predicate itself checks that this subset
+has exactly the causal timestamps encoded in `event.seen`. Lean proves that
+every certified ordinary or virtual-LCA version has a chronological
+origin-legal enumeration, and that the incremental machine materializes and
+observes that enumeration exactly.
 
 ## Falsifier
 
@@ -22,6 +31,10 @@ Any of the following results refutes the claim:
 - a published matrix fixture evaluates to a different result;
 - two merge orders produce different observations;
 - a guarded linear trace disagrees with the reference interpreter;
+- the two independently applicable empty-origin insertions fail the new
+  merged-history legality predicate;
+- an event whose encoded origin names an unavailable timestamp passes the new
+  legality predicate;
 - local tombstone collection followed by a permitted late merge changes a
   result without the claimed stable-cut premise.
 
@@ -53,14 +66,15 @@ endpoints, and a crossed range can make `listRanges()` throw.
 
 ## Current result
 
-The first formal increment is build-clean.
+The current formal result is build-clean.
 
 - `AegisSheet.lean` defines a union-merge MRDT over stable row, column, cell,
   and range identities. Its generation guard checks the exact issuer context,
   stable-ID applicability, before-images, overwritten cell versions, and local
-  selective-undo provenance.
+  selective-undo provenance. It also requires the issuer's Lamport timestamp
+  to exceed every direct or compact causal timestamp in that context.
 - The ordinary and virtual-LCA convergence certificates, safety certificate,
-  and incremental-machine sequential refinement are machine-checked. The complete
+  and incremental-machine sequential correctness theorem are machine-checked. The complete
   merge/undo tables are encoded as named policy entries.
   `AegisSheetSequential.lean` defines the production sequential reference
   machine that stores observed-remove tokens, position candidates, active cell
@@ -76,9 +90,18 @@ The first formal increment is build-clean.
   equals the declarative MRDT observer on every guarded history. Its component
   lemmas cover observed-remove axis tokens, latest positions, ordinary cell
   overwrites combined with purge masks, and range values. The proof derives
-  cell-axis and purge-entry provenance from the generation guard. The public
-  certificate relation includes both exact materialization and this observation
-  equality. The obsolete event-list certificate has been removed.
+  cell-axis and purge-entry provenance from the generation guard.
+  For merged histories, `CausalOriginLegal` validates each operation against
+  an honest causal-origin set contained in the serialization prefix instead of
+  pretending that concurrent predecessors were visible at issuance. The
+  timestamp-canonical witness theorem derives those origins from
+  `MintHonest` and causal closure. The generation guard explicitly requires
+  each Lamport timestamp to exceed every timestamp in its origin; freshness
+  alone cannot establish chronological order. The resulting `VerifiedMRDT`
+  proves exact event-set membership, interaction-order respect, sequential
+  legality, state refinement, and query equality for ordinary and virtual-LCA
+  executions. The internal replay compatibility package remains, but is not
+  the public result.
   Concrete SPOTs cover the nontrivial policies: update versus
   remove, persistent cell conflicts, selective undo, move versus remove/edit,
   two moves, two inserts, insert versus move/remove, and undo of insert, remove,
@@ -105,10 +128,13 @@ The first formal increment is build-clean.
 ## Remaining validation boundary
 
 The public packaged sequential certificate targets the independent in-place
-machine. Its guarded-history theorem proves both exact cache materialization
-and equality with the declarative MRDT query, not only uniqueness of
-chronological replay. This does not establish equivalence with Bismuth's Scala
-implementation, which uses different list and undo machinery.
+machine. Its causal-origin merged-history theorem proves both exact cache
+materialization and equality with the declarative MRDT query, not only
+uniqueness of chronological replay. The positive control accepts two honest
+concurrent empty-origin insertions; the negative control rejects an event that
+cites an unavailable origin timestamp. This does not establish equivalence
+with Bismuth's Scala implementation, which uses different list and undo
+machinery.
 
 The semantic collector's full `StateGCCertificate` is complete. Merge closure
 uses the execution invariant that a timestamp identifies the same event on

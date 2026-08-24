@@ -67,8 +67,14 @@ the compatibility contract.
 - `Sal.MRDTs.Instances.TreeMove.GC.appendFresh_exact`
 - `Sal.MRDTs.Instances.TreeMove.GC.fullyStable_collectTrash_query`
 - `Sal.MRDTs.Instances.TreeMove.GC.refines`
-- `Sal.MRDTs.Instances.AegisSheet.replayVerified` (internal replay package;
-  its old whole-prefix legality is refuted by
+- `Sal.MRDTs.Instances.AegisSheet.verified`
+- `Sal.MRDTs.Instances.AegisSheet.spec_linearizable`
+- `Sal.MRDTs.Instances.AegisSheet.spec_linearizableV`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.canonical_causalOriginLegal`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.concurrent_origins_causal_legal`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.unavailable_origin_not_causal_legal`
+- `Sal.MRDTs.Instances.AegisSheet.replayVerified` (internal compatibility
+  package; its old whole-prefix legality is refuted by
   `Sequential.concurrent_origins_not_guarded_chronological`)
 - `Sal.MRDTs.Instances.AegisSheet.sequentially_correct`
 - `Sal.MRDTs.Instances.AegisSheet.observationally_correct`
