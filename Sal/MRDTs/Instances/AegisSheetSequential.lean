@@ -2518,9 +2518,12 @@ def materializedStateRel (events : D.State) (state : State) : Prop :=
   inplaceStateRel events state ∧ state = materialize events ∧
     view state = AegisSheet.view events
 
-/-- Client-facing sequential spreadsheet semantics. Legality records the
-causal origin against which each operation was issued; the origin need only
-be a subset of the merged serialization prefix. -/
+/-- Causally aware incremental spreadsheet semantics. This is independent of
+event-log replay, but it deliberately retains observed-remove tokens and
+active write identities: `AegisSheetAbstraction.no_view_only_step` proves that
+the visible sheet alone is not transition closed. Legality records the causal
+origin against which each operation was issued; the origin need only be a
+subset of the merged serialization prefix. -/
 noncomputable def clientSpec : SequentialSpec D where
   toSequentialMachine := spec
   Legal := CausalOriginLegal

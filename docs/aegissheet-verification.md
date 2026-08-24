@@ -7,6 +7,31 @@ Tables 3 and 4 of *AegisSheet: A Compositional CRDT for Collaborative
 Spreadsheets*. Cover stable row and column identities, persistent cell
 conflicts, nonduplicating moves, anchored ranges, and tombstone collection.
 
+## Sequential abstraction enquiry
+
+- **Goal:** Determine whether AegisSheet refines a conventional sequential
+  spreadsheet state, rather than only an incremental interpreter of its
+  causally annotated events.
+- **Candidate claim:** The visible `View`, plus explicit client-level selective
+  undo information, determines every future legal observation. Causal tokens,
+  timestamped active versions, historical position candidates, and replicated
+  purge evidence can otherwise be quotiented away.
+- **Falsifier:** Find two reachable legal histories with the same candidate
+  abstract state and one admissible merged continuation whose observations
+  differ. Minimize each witness and retain it as a checked SPOT.
+- **Formal oracle:** Executable projections and continuation theorems in
+  `AegisSheetSequential.lean`, followed by a refinement theorem for the
+  strongest quotient that survives the SPOTs.
+- **Reality oracle:** Tables 3 and 4 and Figure 1 of the AegisSheet paper define
+  the client-visible outcomes. They do not by themselves validate hidden
+  timestamp or purge state. The Scala implementation remains a refuted
+  implementation oracle at commit `dd4c614`.
+
+The audit must preserve either outcome. If a smaller client ADT survives, make
+it the public `SequentialSpec`. If a same-view distinguishing continuation
+refutes that ADT, state the necessary hidden semantic history explicitly and
+do not describe the theorem as refinement to a conventional spreadsheet.
+
 ## Candidate claim
 
 A grow-only set of causally annotated spreadsheet actions, queried by the
@@ -125,10 +150,48 @@ The current formal result is build-clean.
   it applies the marker. It retains the timestamp-coordinate entries because
   a cell edit is also an observed-remove keep token for its row and column.
 
+## Sequential abstraction result
+
+The abstraction audit refutes the candidate conventional spreadsheet state.
+`AegisSheetAbstraction.lean` contains three reachable pairs with identical
+complete `View`s. Every operation is applicable at its encoded causal origin,
+and Lean checks that each combined history satisfies `CausalOriginLegal`.
+
+- A move to the row's current position changes no visible field but creates a
+  fresh observed-remove keep token. The same concurrent removal deletes the
+  row from the base state and preserves it in the moved state.
+- Replacing a cell write by a fresh write of the same value leaves the visible
+  cell unchanged. The same concurrent selective overwrite then produces
+  `{1}` from the base state and `{0, 1}` from the reversioned state.
+- Replacing a range version by a fresh version of the same anchored range also
+  leaves the view unchanged. A concurrent selective range edit distinguishes
+  the two states in the same way.
+
+The capstone `no_view_only_step` proves that no deterministic transition
+function over `View` can implement even the first pair and its common legal
+continuation. `row_tokens_distinguish_future`,
+`cell_versions_distinguish_future`, and
+`range_versions_distinguish_future` identify the lower bound: exact
+observed-remove tokens and exact active cell/range write identities are
+semantic history. Passing selective-undo IDs with an operation does not remove
+this need because the state must know which named versions remain active.
+
+The remaining fields have a different role. `knownRows` and `knownColumns`
+are finite-domain indexes for the function-valued Lean representation. A purge
+marker's acknowledgements and covered-entry map justify and execute
+collection, while its cutoff/coordinate mask has semantic effect. Obsolete
+position candidates are a plausible quotient on chronological histories
+because every later axis update has a greater Lamport timestamp, but this
+audit does not package that quotient as a replacement state machine. The
+checked result is a semantic lower bound, not a proof that the current record
+is globally minimal. The public `clientSpec` is therefore described precisely
+as a causally aware incremental spreadsheet machine, not as a conventional
+single-user spreadsheet.
+
 ## Remaining validation boundary
 
-The public packaged sequential certificate targets the independent in-place
-machine. Its causal-origin merged-history theorem proves both exact cache
+The public packaged sequential certificate targets the independent causally
+aware in-place machine. Its causal-origin merged-history theorem proves both exact cache
 materialization and equality with the declarative MRDT query, not only
 uniqueness of chronological replay. The positive control accepts two honest
 concurrent empty-origin insertions; the negative control rejects an event that

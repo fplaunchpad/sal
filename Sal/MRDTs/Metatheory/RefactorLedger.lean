@@ -25,6 +25,7 @@ import Sal.MRDTs.Instances.TreeMove
 import Sal.MRDTs.Instances.TreeMoveGC
 import Sal.MRDTs.Instances.AegisSheetGC
 import Sal.MRDTs.Instances.AegisSheetSequential
+import Sal.MRDTs.Instances.AegisSheetAbstraction
 import Sal.MRDTs.Instances.InteractionSPOT
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
@@ -173,6 +174,11 @@ namespace Sal.MRDTs
 #check Instances.AegisSheet.Sequential.concurrent_origins_causal_legal
 #check Instances.AegisSheet.Sequential.unavailable_origin_not_causal_legal
 #check Instances.AegisSheet.Sequential.canonical_causalOriginLegal
+#check Instances.AegisSheet.Sequential.Abstraction.token_views_equal
+#check Instances.AegisSheet.Sequential.Abstraction.row_tokens_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.cell_versions_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.range_versions_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.no_view_only_step
 #check Instances.AegisSheet.sequentially_correct
 #check Instances.AegisSheet.observationally_correct
 #check Instances.EmbedRGA.generation

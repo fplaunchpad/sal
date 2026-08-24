@@ -191,7 +191,7 @@ anonymous long-form working papers under `docs/`.
     origin contained in its serialization prefix; the witness exactly
     materializes and observes the replicated state. Positive concurrent-origin
     and negative unavailable-origin controls prevent vacuous legalization;
-  - [ ] **High priority: audit and minimize the AegisSheet sequential
+  - [x] **High priority: audit and minimize the AegisSheet sequential
     specification.** The current incremental machine removes event-log replay,
     but its state still contains causal timestamps, observed-remove tokens,
     concurrent versions, and purge markers. Do not call this a conventional
@@ -206,7 +206,19 @@ anonymous long-form working papers under `docs/`.
     hidden history is semantically necessary and state that boundary explicitly
     in the theorem and paper. Validate the chosen abstract operations against
     the published AegisSheet matrices rather than against the Lean
-    materialization function alone;
+    materialization function alone. The audit refutes a `View`-only state with
+    three reachable, causal-origin-legal same-view pairs. One common legal
+    continuation distinguishes observed-remove axis tokens; two more
+    distinguish active cell and range write identities. Thus these fields are
+    semantic history required by persistent conflict and selective overwrite,
+    not replay caches. Structural inspection classifies
+    `knownRows`/`knownColumns` as finite-domain indexes and purge
+    acknowledgements plus the covered-entry map as GC protocol evidence;
+    obsolete position candidates remain a possible representation quotient.
+    This audit establishes the semantic lower bound, not a globally minimal
+    encoding. The public theorem therefore remains refinement to a causally aware
+    incremental spreadsheet machine, not a conventional visible-sheet ADT.
+    `AegisSheetAbstraction.no_view_only_step` records the boundary;
   - [x] Check the nontrivial merge, undo, and range scenarios with positive and
     negative SPOTs.
   - [x] Refute naive local purge as silent state GC with a kernel-checked late

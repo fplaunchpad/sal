@@ -144,6 +144,16 @@ those origins for every certified version, while
 The ordinary and virtual-LCA capstones are `AegisSheet.spec_linearizable` and
 `AegisSheet.spec_linearizableV`.
 
+That repair does not make the reference machine a conventional visible-sheet
+ADT. `AegisSheetAbstraction.no_view_only_step` uses two reachable states with
+the same complete view and one common causal-origin-legal removal whose views
+diverge. Companion checked controls establish the same lower bound for active
+cell and range write identities. Observed-remove tokens and active version
+identities are therefore semantic history required by the published conflict
+and selective-undo behavior. The public theorem targets a causally aware
+incremental spreadsheet machine; it does not claim that visible rows, columns,
+cells, and ranges alone determine future behavior.
+
 ## Evidence status
 
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
@@ -156,5 +166,7 @@ The ordinary and virtual-LCA capstones are `AegisSheet.spec_linearizable` and
 - **AegisSheet control retained:** the exact whole-prefix issuer guard is not a
   legal predicate for a merge of concurrent histories. The checked negative
   remains as the reason for causal-origin legality, not as an open proof gap.
+  A separate checked abstraction negative proves that the complete visible
+  sheet is not a transition congruence.
 - **Unvalidated:** the relational `Issuance` definitions still require
   differential validation against each executable operation generator.

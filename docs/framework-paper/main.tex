@@ -812,7 +812,8 @@ AegisSheet & \checkmark & \checkmark & \checkmark$^3$ & certificate \\
 \caption{Current nontrivial certificate packages. $^1$Concurrent writes do
 not refine a single-value register. $^2$Duplicate concurrent dequeues do not
 refine FIFO. $^3$The public theorem uses causal-origin legality because the
-old whole-prefix legality rejects valid concurrent origins. Trivial-generation
+old whole-prefix legality rejects valid concurrent origins; its reference
+state is causally aware, not only the visible sheet. Trivial-generation
 grow-only and counter products are also in the ledger.}
 \label{tab:instances}
 \end{table}
@@ -835,6 +836,22 @@ for every certified version. \lean{spec\_linearizable} and
 \lean{spec\_linearizableV} then prove that the independent incremental
 spreadsheet machine materializes the replicated state and returns the same
 queries under ordinary and virtual-LCA execution.
+
+This incremental machine is not a conventional visible-sheet ADT. A checked
+abstraction audit constructs two reachable states with the same complete
+sheet view and applies the same honestly issued concurrent removal to both.
+The row disappears in one result and survives in the other because a
+same-position move created a hidden observed-remove keep token. Thus
+\lean{no\_view\_only\_step} rules out any deterministic transition function
+whose whole state is the visible view. Two companion witnesses perform the
+same test for a same-value cell overwrite and a same-range overwrite: the
+visible states agree before a concurrent selective overwrite, but their
+results differ because the active write identities differ. Consequently,
+observed-remove tokens and active cell/range version identities are semantic
+history required by the conflict and selective-undo policies, not event-log
+replay caches. The public theorem therefore claims refinement to a causally
+aware incremental spreadsheet machine, not to a visible-state single-user
+spreadsheet.
 
 \paragraph{External implementation correspondence.}
 We also audited the public Scala implementation of AegisSheet against the

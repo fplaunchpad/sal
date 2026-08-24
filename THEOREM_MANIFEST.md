@@ -73,6 +73,10 @@ the compatibility contract.
 - `Sal.MRDTs.Instances.AegisSheet.Sequential.canonical_causalOriginLegal`
 - `Sal.MRDTs.Instances.AegisSheet.Sequential.concurrent_origins_causal_legal`
 - `Sal.MRDTs.Instances.AegisSheet.Sequential.unavailable_origin_not_causal_legal`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.Abstraction.no_view_only_step`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.Abstraction.row_tokens_distinguish_future`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.Abstraction.cell_versions_distinguish_future`
+- `Sal.MRDTs.Instances.AegisSheet.Sequential.Abstraction.range_versions_distinguish_future`
 - `Sal.MRDTs.Instances.AegisSheet.replayVerified` (internal compatibility
   package; its old whole-prefix legality is refuted by
   `Sequential.concurrent_origins_not_guarded_chronological`)

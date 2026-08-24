@@ -93,6 +93,13 @@ namespace Sal.MRDTs
 #check Instances.AegisSheet.Sequential.guarded_history_observes
 #check Instances.AegisSheet.Sequential.materializedStateRel
 #check Instances.AegisSheet.Sequential.inplaceSequentialSound
+#check Instances.AegisSheet.Sequential.Abstraction.token_merged_history_legal
+#check Instances.AegisSheet.Sequential.Abstraction.cell_merged_history_legal
+#check Instances.AegisSheet.Sequential.Abstraction.range_merged_history_legal
+#check Instances.AegisSheet.Sequential.Abstraction.row_tokens_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.cell_versions_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.range_versions_distinguish_future
+#check Instances.AegisSheet.Sequential.Abstraction.no_view_only_step
 #check Instances.AegisSheet.sequentially_correct
 #check Instances.AegisSheet.observationally_correct
 #check Instances.AegisSheet.GC.certificate
