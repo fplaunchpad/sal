@@ -8,17 +8,25 @@ namespace Sal.MRDTs
 open Sal.MRDTs.Foundation
 
 /-- Every registered version is the datatype fold of a linearization of its
-event set respecting the generic MRDT arbitration order.
+event set respecting one proof-local replay policy.
 
 This is an internal replay/convergence property.  It does not say that the
 witness is prefix-legal for a client-facing sequential specification. -/
-def IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
+def IsRALinearizableWith (D : MRDTSig)
+    (P : ReplayPolicy D.toCRDTSig) (C : Configuration D) : Prop :=
   ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
       listPermOf π E ∧
-      respects π (Sal.MRDTs.Foundation.lo C.core) ∧
+      respects π (@Sal.MRDTs.Foundation.lo D.toCRDTSig P C.core) ∧
       applySeq D.toCRDTSig D.init π = s
+
+/-- Certified internal replay convergence uses the generic Join development's
+unconstrained policy. Datatype intent is stated independently by
+`InteractionSpec`; `IsRALinearizableWith` remains available as an internal
+research hook for alternative replay proofs. -/
+abbrev IsRALinearizable (D : MRDTSig) (C : Configuration D) : Prop :=
+  IsRALinearizableWith D (ReplayPolicy.default D.toCRDTSig) C
 
 /-- Explicit name for the replay theorem supplied by the existing Join
 metatheory.  Keep `IsRALinearizable` as a compatibility alias while datatype
@@ -75,8 +83,20 @@ theorem IsRALinearizable.toSpec {D : MRDTSig} {C : Configuration D}
   · intro query
     simpa [hfold] using observes π query
 
-theorem isRALinearizable_iff_join (D : MRDTSig) (C : Configuration D) :
-    IsRALinearizable D C ↔ IsRALinearizableJoin C := Iff.rfl
+/-- The generic Join development uses the unconstrained replay policy. An
+internal experiment may prove `IsRALinearizableWith` for another policy
+directly; this bridge deliberately makes no stronger claim. -/
+theorem isRALinearizableWith_iff_join (D : MRDTSig)
+    (C : Configuration D) :
+    IsRALinearizableWith D (ReplayPolicy.default D.toCRDTSig) C ↔
+      IsRALinearizableJoin C := Iff.rfl
+
+/-- Package the generic Join theorem behind the internal replay interface. The
+chosen default is an implementation detail and does not enter the public
+interaction order or sequential-correctness statement. -/
+theorem isRALinearizable_of_join {D : MRDTSig} {C : Configuration D}
+    (h : IsRALinearizableJoin C) : IsRALinearizable D C :=
+  (isRALinearizableWith_iff_join D C).mpr h
 
 /-- Internal replay convergence for issuance-certified widened execution.
 Ordinary execution embeds in this semantics, so its theorem is derived.
@@ -84,7 +104,8 @@ Datatype-specific Join proofs derive any history facts they need directly from
 `MintHonest`. -/
 structure ConvergenceCertificate (D : MRDTSig) (I : Issuance D) where
   soundV : ∀ {C},
-    MintCertifiedReachV D (canonicalVirtualLCA D) I C → IsRALinearizable D C
+    MintCertifiedReachV D (canonicalVirtualLCA D) I C →
+      IsRALinearizable D C
 
 namespace ConvergenceCertificate
 

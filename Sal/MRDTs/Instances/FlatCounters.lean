@@ -103,7 +103,8 @@ def generation : Issuance (D A delta) where
   CanIssue := fun _ _ => True
 
 def convergence : ConvergenceCertificate (D A delta) (generation delta) where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join delta _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => join delta _) h)
 
 def spec : SequentialSpec (D A delta) where
   State := Int

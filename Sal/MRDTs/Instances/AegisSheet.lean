@@ -550,7 +550,8 @@ def generation : Issuance D where
   CanIssue := applicable
 
 def convergence : ConvergenceCertificate D generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => join _) h)
 
 theorem applySeq_eq_toFinset (ops : List Event) :
     applySeq D.toCRDTSig D.init ops = ops.toFinset := by

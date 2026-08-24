@@ -59,6 +59,8 @@ namespace Sal.MRDTs
 #check interactionLoOn
 #check ConvergenceCertificate
 #check ConvergenceCertificate.sound
+#check IsRALinearizable
+#check IsRALinearizableWith
 #check VerifiedMRDT
 #check ReplayVerifiedMRDT
 #check IsSpecRALinearizable

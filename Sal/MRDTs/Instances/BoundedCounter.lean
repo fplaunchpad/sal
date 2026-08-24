@@ -295,7 +295,8 @@ def generation : Issuance BC where
   CanIssue := bcApplicable
 
 def convergence : ConvergenceCertificate BC generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => bcJoin _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => bcJoin _) h)
 
 private theorem honestApp_of_mint {C : Configuration BC}
     (h : MintHonest BC bcApplicable C) : HonestAppOn BC bcApplicable C := by

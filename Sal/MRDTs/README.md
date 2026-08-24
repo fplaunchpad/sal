@@ -15,8 +15,9 @@ canonical virtual-LCA operational semantics and distributed commit-history GC.
 Datatype-state GC is an optional representation certificate.
 
 The executable `CRDTSig` contains only state transitions, merge, and query.
-The old replay resolver is a proof-local `ReplayPolicy`, not a datatype field
-or client arbitration API. `Instances/InteractionSPOT.lean` checks the key
+The old replay resolver is an internal `ReplayPolicy`, not a datatype field or
+client arbitration API. The certified Join route uses its unconstrained
+default. `Instances/InteractionSPOT.lean` checks the key
 controls: LWW admits a three-write timestamp chain, and concurrent add/remove
 uses remove-before-add to explain add-wins.
 

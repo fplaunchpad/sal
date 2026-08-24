@@ -85,9 +85,9 @@ def generation : Issuance Q where
   CanIssue := qApplicable
 
 def convergence : ConvergenceCertificate Q generation where
-  soundV := fun h =>
-    ra_of_mintCertifiedV
-      (fun _ hC => q_join_at (qHonest_core (qHonest_of_mint _ hC))) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV
+      (fun _ hC => q_join_at (qHonest_core (qHonest_of_mint _ hC))) h)
 
 def spec : SequentialMachine (Op QOp) where
   State := List ℕ

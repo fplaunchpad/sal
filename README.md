@@ -23,8 +23,9 @@ The framework supplies:
 - the convergence metatheory;
 - distributed commit-history GC and its refinement theorem.
 
-`CRDTSig` contains no arbitration field. The historical resolver and its
-absorber proof remain an internal `ReplayPolicy` used by one convergence route.
+`CRDTSig` contains no arbitration field. The historical resolver remains an
+internal `ReplayPolicy`; the certified Join route uses its unconstrained
+default. It is not the datatype's public interaction policy.
 
 A datatype may separately supply state-GC representation and protocol
 certificates. The runtime implementation lives in [`runtime`](runtime).

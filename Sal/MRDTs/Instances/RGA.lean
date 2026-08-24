@@ -233,7 +233,8 @@ def generation : Issuance RGAM where
   CanIssue := applicable
 
 def convergence : ConvergenceCertificate RGAM generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => join _) h)
 
 def sequential : SequentialRefinement RGAM spec where
   Honest := HistoryOK

@@ -1204,7 +1204,7 @@ theorem sHonest_of_mint {Γ : OrderedPrefixCode} {C : Configuration (S Γ)}
 
 theorem convergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (S Γ) (generation Γ) where
-  soundV := fun h => (isRALinearizable_iff_join _ _).mpr
+  soundV := fun h => isRALinearizable_of_join
     (ra_of_mintCertifiedV
       (fun C hH => s_join_at (sHonest_core (sHonest_of_mint hH))) h)
 

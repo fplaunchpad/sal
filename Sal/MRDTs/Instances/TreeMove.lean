@@ -298,7 +298,8 @@ def generation : Issuance D where
   CanIssue := applicable
 
 def convergence : ConvergenceCertificate D generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => join _) h)
 
 structure SeqState where
   events : Finset Event

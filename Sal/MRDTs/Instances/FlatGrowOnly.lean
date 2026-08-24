@@ -80,7 +80,8 @@ def generation : Issuance (D A) where
   CanIssue := fun _ _ => True
 
 def convergence : ConvergenceCertificate (D A) generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => join _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => join _) h)
 
 def spec : SequentialSpec (D A) where
   State := A → Bool

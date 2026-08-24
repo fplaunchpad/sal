@@ -54,4 +54,5 @@ witness, so this definition does not impose `no_rc_chain` on datatypes.
 The existing absorber proof remains one internal convergence construction. It
 is parameterized by `ReplayPolicy`; `CRDTSig` and `MRDTSig` do not store that
 policy. The low-priority unconstrained policy removes vacuous per-datatype
-boilerplate, while a specialized convergence proof can install a local policy.
+boilerplate. `IsRALinearizableWith` remains an internal research hook for a
+specialized replay theorem; the generic certified Join route uses the default.

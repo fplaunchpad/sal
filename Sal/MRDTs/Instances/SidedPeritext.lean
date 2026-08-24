@@ -147,7 +147,7 @@ theorem core_join_at {Γ : OrderedPrefixCode}
 
 def convergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (Core Γ) (generation Γ) where
-  soundV := fun h => (isRALinearizable_iff_join _ _).mpr
+  soundV := fun h => isRALinearizable_of_join
     (ra_of_mintCertifiedV
       (fun C hH => core_join_at
         (sHonest_core (coreHonest_of_mint C hH))) h)
@@ -667,7 +667,7 @@ theorem rich_join_at {Γ : OrderedPrefixCode}
 
 def richConvergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (RichCore Γ) (richGeneration Γ) where
-  soundV := fun h => (isRALinearizable_iff_join _ _).mpr
+  soundV := fun h => isRALinearizable_of_join
     (ra_of_mintCertifiedV
       (fun C hH => rich_join_at (by
         simpa [RichCoreHonest, asCoreConfig, asCoreFoundation]

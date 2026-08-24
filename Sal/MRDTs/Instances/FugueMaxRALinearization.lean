@@ -935,7 +935,7 @@ theorem fmHonest_of_mint {Γ : OrderedPrefixCode}
 
 def fmConvergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (FMSig Γ) (fmGeneration Γ) where
-  soundV := fun h => (isRALinearizable_iff_join _ _).mpr
+  soundV := fun h => isRALinearizable_of_join
     (ra_of_mintCertifiedV
       (fun _ hH => f_join_at (fmHonest_core (fmHonest_of_mint hH))) h)
 

@@ -461,7 +461,8 @@ def generation : Issuance MVR where
   CanIssue := mvrApplicable
 
 def convergence : ConvergenceCertificate MVR generation where
-  soundV := fun h => ra_of_mintCertifiedV (fun _ _ => mvrJoin _) h
+  soundV := fun h => isRALinearizable_of_join
+    (ra_of_mintCertifiedV (fun _ _ => mvrJoin _) h)
 
 def spec : SequentialMachine (Op MVROp) where
   State := Option ℕ

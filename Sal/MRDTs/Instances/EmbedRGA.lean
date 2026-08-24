@@ -1186,7 +1186,7 @@ theorem eHonest_of_mint {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
 
 theorem convergence (Γ : OrderedPrefixCode) :
     ConvergenceCertificate (E Γ α) (generation (α := α) Γ) where
-  soundV := fun h => (isRALinearizable_iff_join _ _).mpr
+  soundV := fun h => isRALinearizable_of_join
     (ra_of_mintCertifiedV
       (fun C hH => e_join_at (eHonest_core (eHonest_of_mint hH))) h)
 
