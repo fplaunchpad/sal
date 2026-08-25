@@ -73,7 +73,7 @@ termination_by xs ys => xs.length + ys.length
 record is read off whichever input holds it), re-canonicalized by the sorted
 2-merge. Branch `a` contributes its survivors (shared with `b`, or new since
 `l`); branch `b` contributes its own news not already contributed. -/
-def eMergeL (l a b : EState α) : EState α :=
+def eMerge (l a b : EState α) : EState α :=
   eMerge2
     (a.filter (fun r => decide (r.1 ∈ eIds b ∨ r.1 ∉ eIds l)))
     (b.filter (fun r => decide (r.1 ∉ eIds l ∧ r.1 ∉ eIds a)))
@@ -93,10 +93,8 @@ def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
   Query := Unit
   Value := List α
   update := eUpdate Γ
-  merge := fun a b => eMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  mergeL := eMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := eMerge
 
 theorem E_core_update (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) :
     (E Γ α).toCRDTSig.update s o = eUpdate Γ s o := rfl
@@ -295,10 +293,10 @@ theorem eMerge2_sorted : ∀ {as bs : EState α}, ESorted as → ESorted bs →
 
 /-- The merge of canonical inputs is canonical (sorted), given no key ties,
 supplied on chain-generated states by unique decodability. -/
-theorem eMergeL_sorted {l a b : EState α}
+theorem eMerge_sorted {l a b : EState α}
     (ha : ESorted a) (hb : ESorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b, key x.2.2 = key y.2.2 → x = y) :
-    ESorted (eMergeL l a b) := by
+    ESorted (eMerge l a b) := by
   apply eMerge2_sorted (List.Pairwise.filter _ ha) (List.Pairwise.filter _ hb)
   intro x hx y hy hkey
   have hxa := List.mem_of_mem_filter hx
@@ -734,7 +732,7 @@ ternary merge iff its insert is somewhere in the union and its id is deleted
 nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
-theorem e_mergeL_mem {Γ : OrderedPrefixCode}
+theorem e_merge_mem {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
     (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op (EOp α))}
     {ρ₀ ρ₁ ρ₂ : List (Op (EOp α))}
@@ -744,7 +742,7 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
     (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
     (hp₂ : listPermOf ρ₂ ev₂)
     (hwf₀ : EWf Γ ρ₀) (hwf₁ : EWf Γ ρ₁) (hwf₂ : EWf Γ ρ₂) (r : ERec α) :
-    r ∈ eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂) ↔
+    r ∈ eMerge (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂) ↔
       (∃ o, (o ∈ ev₁ ∨ o ∈ ev₂) ∧ eIsIns o = true ∧ r = eRecOf Γ o) ∧
       (∀ d, (d ∈ ev₁ ∨ d ∈ ev₂) → d.2.2 ≠ EOp.del r.1) := by
   classical
@@ -760,7 +758,7 @@ theorem e_mergeL_mem {Γ : OrderedPrefixCode}
       exact ⟨d, (hp.2 d).mp hm, hdel⟩
     · rintro ⟨d, hm, hdel⟩
       exact ⟨d, (hp.2 d).mpr hm, hdel⟩
-  rw [show eMergeL s₀ s₁ s₂ = eMerge2
+  rw [show eMerge s₀ s₁ s₂ = eMerge2
     (s₁.filter (fun x => decide (x.1 ∈ eIds s₂ ∨ x.1 ∉ eIds s₀)))
     (s₂.filter (fun x => decide (x.1 ∉ eIds s₀ ∧ x.1 ∉ eIds s₁))) from rfl,
     mem_eMerge2]
@@ -979,9 +977,9 @@ theorem e_join_at {Γ : OrderedPrefixCode}
   have hwfU : EWf Γ ρᵤ := e_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
-  show eFold Γ ρᵤ = (E Γ α).mergeL s₀ s₁ s₂
+  show eFold Γ ρᵤ = (E Γ α).merge s₀ s₁ s₂
   rw [← hf₀, ← hf₁, ← hf₂]
-  show eFold Γ ρᵤ = eMergeL (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂)
+  show eFold Γ ρᵤ = eMerge (eFold Γ ρ₀) (eFold Γ ρ₁) (eFold Γ ρ₂)
   -- cross-key-injectivity feeding the merge's sortedness
   have hdisj : ∀ x ∈ eFold Γ ρ₁, ∀ y ∈ eFold Γ ρ₂,
       key x.2.2 = key y.2.2 → x = y := by
@@ -999,10 +997,10 @@ theorem e_join_at {Γ : OrderedPrefixCode}
     have : o₁ = o₂ := C.ts_unique he₁ he₂ hids
     rw [hrec₁, hrec₂, this]
   apply esorted_ext (e_fold_sorted Γ hwfU)
-    (eMergeL_sorted (e_fold_sorted Γ hwf₁) (e_fold_sorted Γ hwf₂) hdisj)
+    (eMerge_sorted (e_fold_sorted Γ hwf₁) (e_fold_sorted Γ hwf₂) hdisj)
   intro r
   rw [e_fold_mem Γ hwfU r,
-      e_mergeL_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
+      e_merge_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
   constructor
   · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
     have hor : o ∈ ev₁ ∨ o ∈ ev₂ := by

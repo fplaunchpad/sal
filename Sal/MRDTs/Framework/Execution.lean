@@ -218,11 +218,11 @@ inductive Step (D : MRDTSig) :
       (versionLCA : C.ver vT = some (sT, evT))
       (freshVersion : C.ver vm = none) (rank₁ : v₁ < vm) (rank₂ : v₂ < vm)
       (C' : Configuration D)
-      (N : C'.N = updateRep C.N r₁ (D.mergeL sT s₁ s₂))
+      (N : C'.N = updateRep C.N r₁ (D.merge sT s₁ s₂))
       (L : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
       (vis : C'.vis = C.vis)
       (ver : C'.ver = fun w => if w = vm
-        then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+        then some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
       (head : C'.head = fun r' => if r' = r₁ then some vm else C.head r')
       (parents : C'.parents = fun w => if w = vm then [v₁, v₂] else C.parents w) :
       Step D C (.merge r₁ r₂) C'
@@ -260,11 +260,11 @@ inductive StepV (D : MRDTSig) (V : VirtualLCAResolver D) :
       (version₂ : C.ver v₂ = some (s₂, ev₂))
       (freshVersion : C.ver vm = none) (rank₁ : v₁ < vm) (rank₂ : v₂ < vm)
       (C' : Configuration D)
-      (N : C'.N = updateRep C.N r₁ (D.mergeL (V.state C v₁ v₂) s₁ s₂))
+      (N : C'.N = updateRep C.N r₁ (D.merge (V.state C v₁ v₂) s₁ s₂))
       (L : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
       (vis : C'.vis = C.vis)
       (ver : C'.ver = fun w => if w = vm then
-        some (D.mergeL (V.state C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+        some (D.merge (V.state C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
       (head : C'.head = fun r' => if r' = r₁ then some vm else C.head r')
       (parents : C'.parents = fun w => if w = vm then [v₁, v₂] else C.parents w) :
       StepV D V C (.merge r₁ r₂) C'

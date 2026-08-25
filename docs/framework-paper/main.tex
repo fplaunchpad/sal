@@ -33,7 +33,7 @@ machine-checked evidence, not a substitute for those statements.
 
 An MRDT stores immutable versions in a Git-like directed acyclic graph. An
 update extends one replica head. A merge of branch states $a$ and $b$ reads the
-state $l$ at their common ancestor and computes $\mergeL(l,a,b)$. The client
+state $l$ at their common ancestor and computes $\merge(l,a,b)$. The client
 expects the state at every registered version to equal a legal sequential fold
 of exactly that version's events.
 
@@ -58,7 +58,7 @@ heads.
   \node[replica,above=4mm of v3] (r1) {$H(r_1)$};
   \node[replica,below=4mm of v4] (r2) {$H(r_2)$};
   \draw[flow,dashed] (r1)--(v3); \draw[flow,dashed] (r2)--(v4);
-  \node[align=center,right=7mm of v5] {$S_5=\mergeL(S_0,S_3,S_4)$\\
+  \node[align=center,right=7mm of v5] {$S_5=\merge(S_0,S_3,S_4)$\\
     $E_5=E_3\cup E_4$};
 \end{tikzpicture}
 \caption{A version-DAG execution. Solid arrows point from parents to
@@ -114,12 +114,12 @@ total functions
 \[
  \mathsf{do}:\state\to(\mathbb N\times\mathbb N\times O)\to\state,
  \quad \mathsf{query}:\state\to Q\to R,
- \quad \mathsf{merge}:\state^2\to\state,
- \quad \mergeL:\state^3\to\state.
+ \quad \merge:\state\to\state\to\state\to\state.
 \]
 An event $e=(t,r,o)$ contains a Lamport timestamp, replica identifier, and
-application operation. The sole compatibility law is
-$\mergeL(\init,a,b)=\mathsf{merge}(a,b)$.
+application operation. In $\merge(l,a,b)$, $l$ is the common-ancestor state
+and $a,b$ are the branch states. Thus an implementer supplies one merge
+function, not separate binary and ancestor-aware implementations.
 \hfill\lean{MRDTSig}
 \end{definition}
 
@@ -127,7 +127,10 @@ The raw signature contains no invariant, applicability predicate, issuance
 guard, conflict relation, arbitration policy, or convergence proof. Its
 functions are executable and total. Sections~\ref{sec:convergence} and
 \ref{sec:generation} add the proof and client layers without changing this
-transition system.
+transition system. Lean's older replay library accepts a binary CRDT
+signature, so the mechanization derives its internal merge as
+$\lambda a\ b.\,\merge(\init,a,b)$. This is a projection, not another field
+or proof obligation.
 
 \subsection{Configurations and transitions}
 
@@ -215,7 +218,7 @@ appear separately in Lean because an old version need not be an active head.
   v_m\notin\mathsf{dom}(V) \quad v_1,v_2<v_m
 }{
   C\xrightarrow{\mathsf{merge}(r_1,r_2)}
-  C[v_m\mapsto(\mergeL(S_T,S_1,S_2),E_1\cup E_2);
+  C[v_m\mapsto(\merge(S_T,S_1,S_2),E_1\cup E_2);
     r_1\mapsto v_m;P(v_m)\mapsto[v_1,v_2]]
 }
 \]
@@ -381,7 +384,7 @@ $\mathsf{JoinAt}(D,C)$ holds when, for all $E_1,E_2,s_0,s_1,s_2$,
 imply
 \[
  \mathsf{Canonical}\left(C,E_1\cup E_2,
-                    \mergeL(s_0,s_1,s_2)\right).
+                    \merge(s_0,s_1,s_2)\right).
  \tag*{(Join)}
 \]
 \hfill\lean{JoinLemma3At}
@@ -454,7 +457,7 @@ Equation~(U3) also assumes pairwise-distinct $e,e',e''$. These obligations
 belong to this reusable proof constructor, not to \lean{MRDTSig} or the public
 client interface. \lean{CoreVCs3CD} packages (U1)--(U3) and branch symmetry
 \[
-  \mergeL(l,a,b)=\mergeL(l,b,a).
+  \merge(l,a,b)=\merge(l,b,a).
   \tag*{(M1)}
 \]
 
@@ -475,7 +478,7 @@ $\forall x\in E_1\cup E_2.\ x\ne e\Rightarrow
 The feasible unit law is
 \[
  \mathsf{Supported}_C(E)\land\mathsf{Canonical}(C,E,s)
- \Rightarrow \mergeL(\init,\init,s)=s.
+ \Rightarrow \merge(\init,\init,s)=s.
  \tag*{(M2)}
 \]
 For the local redistribution law, assume
@@ -488,8 +491,8 @@ $\mathsf{Adm}(C,E_1,E_2,e)$, $e\in E_1$, $e\notin E_2$, and
 \end{align*}
 Then, writing $B{+}e=\mathsf{do}(B,e)$,
 \[
- \mergeL\bigl(s_0,\mergeL(B,t_1,B{+}e),s_2\bigr)
- =\mergeL\bigl(B,\mergeL(s_0,t_1,s_2),B{+}e\bigr).
+ \merge\bigl(s_0,\merge(B,t_1,B{+}e),s_2\bigr)
+ =\merge\bigl(B,\merge(s_0,t_1,s_2),B{+}e\bigr).
  \tag*{(M3)}
 \]
 For shared redistribution, assume
@@ -502,10 +505,10 @@ $\mathsf{Adm}(C,E_1,E_2,e)$, $e\in E_1\cap E_2$, and canonical states
 The required equation is
 \[
  \begin{aligned}
- &\mergeL\bigl(\mergeL(B,t_0,B{+}e),
-                \mergeL(B,t_1,B{+}e),
-                \mergeL(B,t_2,B{+}e)\bigr)\\
- &\qquad=\mergeL\bigl(B,\mergeL(t_0,t_1,t_2),B{+}e\bigr).
+ &\merge\bigl(\merge(B,t_0,B{+}e),
+                \merge(B,t_1,B{+}e),
+                \merge(B,t_2,B{+}e)\bigr)\\
+ &\qquad=\merge\bigl(B,\merge(t_0,t_1,t_2),B{+}e\bigr).
  \end{aligned}
  \tag*{(M4)}
 \]
@@ -521,7 +524,7 @@ $\lo_U$-maximal $e\in U$. If
 \]
 then
 \[
-  \mergeL(B,A,B{+}e)=A{+}e.
+  \merge(B,A,B{+}e)=A{+}e.
   \tag*{(M5)}
 \]
 
@@ -757,7 +760,7 @@ $V(v_i)=(s_i,E_i)$ and resolver $\widehat S(C,v_1,v_2)$, that rule is
 }{
  \begin{aligned}
  C&\xrightarrow{\mathsf{merge}(r_1,r_2)}C',\\[-1mm]
- V'(v_m)&=(\mergeL(\widehat S(C,v_1,v_2),s_1,s_2),E_1\cup E_2),\\[-1mm]
+ V'(v_m)&=(\merge(\widehat S(C,v_1,v_2),s_1,s_2),E_1\cup E_2),\\[-1mm]
  H'(r_1)&=v_m,\qquad P'(v_m)=[v_1,v_2]
  \end{aligned}
 }

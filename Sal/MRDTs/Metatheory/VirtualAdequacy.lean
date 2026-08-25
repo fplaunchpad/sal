@@ -92,7 +92,7 @@ private def VJoinHook (C : Configuration D) : Prop :=
     IsCanonicalState (Configuration.core C) (ev₁ ∩ ev₂) s₀ →
     IsCanonicalState (Configuration.core C) ev₁ s₁ →
     IsCanonicalState (Configuration.core C) ev₂ s₂ →
-    IsCanonicalState (Configuration.core C) (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
+    IsCanonicalState (Configuration.core C) (ev₁ ∪ ev₂) (D.merge s₀ s₁ s₂)
 
 private theorem vJoinHook_of_joinAt {C : Configuration D} (hG : GoodConfig3 C)
     (hJ : JoinLemma3At D (Configuration.core C)) : VJoinHook C :=
@@ -181,7 +181,7 @@ private theorem vfold_canonical {C : Configuration D}
       rw [unionEvents_union, unionEvents_singleton hm]
     rw [hset] at hjoin
     have hstep := ih (accS ∪ {m})
-      (D.mergeL (vlcaAux C.ver C.parents C.parents_lt accS m) acc sm)
+      (D.merge (vlcaAux C.ver C.parents C.parents_lt accS m) acc sm)
       (fun x hx => hsub hx) (fun x hx => hpend x (List.mem_cons_of_mem m hx)) hjoin
     have hsets : ((accS ∪ {m}) ∪ ms.toFinset : Finset Version)
         = accS ∪ (m :: ms).toFinset := by
@@ -288,13 +288,13 @@ theorem goodConfig3_mergeVirtual_at
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' := by
   have hco := C.head_coherent r₁ v₁ h_head₁
   have hLr₁ : C.L r₁ = some ev₁ := by
     rw [← hco.2, h_ver₁]; rfl
   have hver_new : C'.ver vm
-      = some (D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) := by
+      = some (D.merge (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) := by
     rw [hver]; simp
   have hver_old : ∀ w, w ≠ vm → C'.ver w = C.ver w := by
     intro w hw; rw [hver]; simp [hw]
@@ -376,7 +376,7 @@ theorem goodConfig3_mergeVirtual (hJoin : JoinLemma3 D)
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' :=
   goodConfig3_mergeVirtual_at (hJoin.at _) hSI h_head₁ h_ver₁ h_ver₂ hL hvis hver h
 
@@ -408,13 +408,13 @@ theorem goodConfig3_mergeVirtualF (hJoin : JoinLemma3F D)
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' := by
   have hco := C.head_coherent r₁ v₁ h_head₁
   have hLr₁ : C.L r₁ = some ev₁ := by
     rw [← hco.2, h_ver₁]; rfl
   have hver_new : C'.ver vm
-      = some (D.mergeL (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) := by
+      = some (D.merge (virtualLCAState C v₁ v₂) s₁ s₂, ev₁ ∪ ev₂) := by
     rw [hver]; simp
   have hver_old : ∀ w, w ≠ vm → C'.ver w = C.ver w := by
     intro w hw; rw [hver]; simp [hw]

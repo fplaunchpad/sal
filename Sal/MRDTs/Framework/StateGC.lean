@@ -97,7 +97,7 @@ structure StateGCCertificate (D : MRDTSig)
   merge_represents : ∀ {cl ca cb l a b},
     Represents cl l → Represents ca a → Represents cb b →
       Compatible a b →
-      Represents (merge cl ca cb) (D.mergeL l a b)
+      Represents (merge cl ca cb) (D.merge l a b)
   query_correct : ∀ {compact full}, Represents compact full →
     ∀ q, query compact q = D.query full q
 
@@ -110,6 +110,6 @@ structure HeadOnlyMergeCapability {D : MRDTSig} {I : Issuance D}
   mergeHeads : ∀ {ca cb a b l}, MergeEvidence ca cb l a b → S.CompactState
   correct : ∀ {ca cb a b l} (e : MergeEvidence ca cb l a b),
     S.Represents ca a → S.Represents cb b → S.Compatible a b →
-      S.Represents (mergeHeads e) (D.mergeL l a b)
+      S.Represents (mergeHeads e) (D.merge l a b)
 
 end Sal.MRDTs

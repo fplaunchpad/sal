@@ -232,15 +232,11 @@ def prodSig : MRDTSig where
     match e.2.2 with
     | .inl o => (D₁.update s.1 (e.1, e.2.1, o), s.2)
     | .inr o => (s.1, D₂.update s.2 (e.1, e.2.1, o))
-  merge a b := (D₁.merge a.1 b.1, D₂.merge a.2 b.2)
   query s q :=
     match q with
     | .inl q => .inl (D₁.query s.1 q)
     | .inr q => .inr (D₂.query s.2 q)
-  mergeL l a b := (D₁.mergeL l.1 a.1 b.1, D₂.mergeL l.2 a.2 b.2)
-  merge_init_slice a b := by
-    simp only
-    rw [D₁.merge_init_slice, D₂.merge_init_slice]
+  merge l a b := (D₁.merge l.1 a.1 b.1, D₂.merge l.2 a.2 b.2)
 
 variable {D₁ D₂}
 
@@ -254,9 +250,9 @@ variable {D₁ D₂}
     (prodSig D₁ D₂).update s (inrOp e) = (s.1, D₂.update s.2 e) := by
   rcases e with ⟨t, r, e⟩; rfl
 
-@[simp] theorem prodSig_mergeL (l a b : (prodSig D₁ D₂).State) :
-    (prodSig D₁ D₂).mergeL l a b =
-      (D₁.mergeL l.1 a.1 b.1, D₂.mergeL l.2 a.2 b.2) := rfl
+@[simp] theorem prodSig_merge (l a b : (prodSig D₁ D₂).State) :
+    (prodSig D₁ D₂).merge l a b =
+      (D₁.merge l.1 a.1 b.1, D₂.merge l.2 a.2 b.2) := rfl
 
 theorem commutes_prod_cross (a : Op D₁.AppOp) (b : Op D₂.AppOp) :
     (prodSig D₁ D₂).toCRDTSig.commutes (inlOp a) (inrOp b) := by

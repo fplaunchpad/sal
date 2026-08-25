@@ -49,10 +49,8 @@ def RichCore (Γ : OrderedPrefixCode) : MRDTSig where
   Query := PeritextRender.MType
   Value := List (Nat × Bool)
   update := (Core Γ).update
-  merge := (Core Γ).merge
   query := renderState
-  mergeL := (Core Γ).mergeL
-  merge_init_slice := (Core Γ).merge_init_slice
+  merge := (Core Γ).merge
 
 /-- Cross-component issuer guard. Native text deletion is disabled: logical
 deletion is an addition to `DeleteStore`, preserving the insertion shadow

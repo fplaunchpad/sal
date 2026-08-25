@@ -64,7 +64,7 @@ def qUpdate (s : QState) (o : Op QOp) : QState :=
 
 /-- Peepul's merge: LCA elements surviving in both branches (LCA order), then
 branch-one's news (branch order), then branch-two's. -/
-def qMergeL (l a b : QState) : QState :=
+def qMerge (l a b : QState) : QState :=
   l.filter (fun x => decide (x.1 ∈ qTags a ∧ x.1 ∈ qTags b))
     ++ a.filter (fun x => decide (x.1 ∉ qTags l))
     ++ b.filter (fun x => decide (x.1 ∉ qTags l))
@@ -78,10 +78,8 @@ def Q : MRDTSig where
   Query := Unit
   Value := Option (ℕ × ℕ)
   update := qUpdate
-  merge := fun a b => qMergeL [] a b
   query := fun s _ => s.head?
-  mergeL := qMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := qMerge
 
 theorem Q_core_update (s : QState) (o : Op QOp) :
     Q.toCRDTSig.update s o = qUpdate s o := rfl
@@ -292,8 +290,11 @@ theorem q_enq_deq_not_comm (ts r v ts' r' : ℕ) :
     ¬ Q.toCRDTSig.commutes (ts, r, QOp.enq v) (ts', r', QOp.deq ts) := by
   intro h
   have := h []
-  simp only [Q_core_update, qUpdate, qTags] at this
-  simp at this
+  change qUpdate (qUpdate [] (ts, r, QOp.enq v))
+      (ts', r', QOp.deq ts) =
+    qUpdate (qUpdate [] (ts', r', QOp.deq ts))
+      (ts, r, QOp.enq v) at this
+  simp [qUpdate, qTags] at this
 
 /-- For the queue, `loOn` collapses to its `vis` arm (`rc` is `Either`;
 the generic `loOn_iff_of_rc_either`). -/
@@ -594,8 +595,8 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
     have : a = e := q_ts_unique (hin₀ a ha) he hat
     rw [← this]; exact ha
   -- the list identity: Peepul's merge, segment by segment
-  have hmain : qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) = qMergeL s₀ s₁ s₂ := by
-    unfold qCanonList qMergeL
+  have hmain : qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) = qMerge s₀ s₁ s₂ := by
+    unfold qCanonList qMerge
     rw [List.filter_append, List.filter_append, List.map_append, List.map_append]
     congr 1
     · congr 1

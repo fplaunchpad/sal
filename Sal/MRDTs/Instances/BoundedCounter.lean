@@ -28,7 +28,7 @@ def bcUpdate (s : BCState) (o : Op BCOp) : BCState :=
   | .inc => (bcBump s.1 o.2.1, s.2)
   | .dec => (s.1, bcBump s.2 o.2.1)
 
-def bcMergeL (l a b : BCState) : BCState :=
+def bcMerge (l a b : BCState) : BCState :=
   (fun k => a.1 k + b.1 k - l.1 k, fun k => a.2 k + b.2 k - l.2 k)
 
 noncomputable def BC : MRDTSig where
@@ -40,10 +40,8 @@ noncomputable def BC : MRDTSig where
   Query := ℕ
   Value := ℤ
   update := bcUpdate
-  merge := fun a b => bcMergeL (fun _ => 0, fun _ => 0) a b
   query := fun s r => s.1 r - s.2 r
-  mergeL := bcMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := bcMerge
 
 /-! Component-level reduction lemmas: everything downstream is `omega` on
 these. -/
@@ -66,16 +64,16 @@ theorem bcUpdate_dec_snd (s : BCState) (ts r k : ℕ) :
     (bcUpdate s (ts, r, BCOp.dec)).2 k = s.2 k + (if k = r then 1 else 0) := by
   by_cases h : k = r <;> simp [bcUpdate, bcBump, h]
 
-theorem bcMergeL_fst (l a b : BCState) (k : ℕ) :
-    (bcMergeL l a b).1 k = a.1 k + b.1 k - l.1 k := rfl
+theorem bcMerge_fst (l a b : BCState) (k : ℕ) :
+    (bcMerge l a b).1 k = a.1 k + b.1 k - l.1 k := rfl
 
-theorem bcMergeL_snd (l a b : BCState) (k : ℕ) :
-    (bcMergeL l a b).2 k = a.2 k + b.2 k - l.2 k := rfl
+theorem bcMerge_snd (l a b : BCState) (k : ℕ) :
+    (bcMerge l a b).2 k = a.2 k + b.2 k - l.2 k := rfl
 
 theorem BC_update_eq (s : BCState) (o : Op BCOp) :
     BC.update s o = bcUpdate s o := rfl
 
-theorem BC_mergeL_eq (l a b : BCState) : BC.mergeL l a b = bcMergeL l a b := rfl
+theorem BC_merge_eq (l a b : BCState) : BC.merge l a b = bcMerge l a b := rfl
 
 theorem BC_init_fst (k : ℕ) : BC.init.1 k = 0 := rfl
 
@@ -124,28 +122,28 @@ theorem BC_coreVCs3 : CoreVCs3 BC := by
   refine ⟨BC_updateVCs, ?_, ?_, ?_, ?_⟩
   · intro l a b
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [BC_mergeL_eq, bcMergeL_fst, bcMergeL_snd] <;> omega
+      simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd] <;> omega
   · intro s
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [BC_mergeL_eq, bcMergeL_fst, bcMergeL_snd, BC_init_fst,
+      simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd, BC_init_fst,
         BC_init_snd] <;> omega
   · rintro l a b ⟨ts, r, op⟩
-    show bcMergeL (bcUpdate l (ts, r, op)) (bcUpdate a (ts, r, op))
-        (bcUpdate b (ts, r, op)) = bcUpdate (bcMergeL l a b) (ts, r, op)
+    show bcMerge (bcUpdate l (ts, r, op)) (bcUpdate a (ts, r, op))
+        (bcUpdate b (ts, r, op)) = bcUpdate (bcMerge l a b) (ts, r, op)
     cases op <;>
       refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [bcMergeL_fst, bcMergeL_snd,
+      simp only [bcMerge_fst, bcMerge_snd,
         bcUpdate_inc_fst, bcUpdate_inc_snd, bcUpdate_dec_fst,
         bcUpdate_dec_snd] <;>
       omega
   · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
     generalize applySeq BC.toCRDTSig BC.init π₀ = X
     generalize applySeq BC.toCRDTSig BC.init π₂ = Y
-    show bcMergeL X (bcUpdate a (ts, r, op)) Y
-        = bcUpdate (bcMergeL X a Y) (ts, r, op)
+    show bcMerge X (bcUpdate a (ts, r, op)) Y
+        = bcUpdate (bcMerge X a Y) (ts, r, op)
     cases op <;>
       refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [bcMergeL_fst, bcMergeL_snd,
+      simp only [bcMerge_fst, bcMerge_snd,
         bcUpdate_inc_fst, bcUpdate_inc_snd, bcUpdate_dec_fst,
         bcUpdate_dec_snd] <;>
       omega
@@ -154,10 +152,10 @@ theorem BC_deltaVCs3 : DeltaVCs3 BC := by
   constructor
   · intro m x₀ x₁ x₂ c
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [BC_mergeL_eq, bcMergeL_fst, bcMergeL_snd] <;> omega
+      simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd] <;> omega
   · intro l m x c y
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [BC_mergeL_eq, bcMergeL_fst, bcMergeL_snd] <;> omega
+      simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd] <;> omega
 
 
 open LabeledTS in
@@ -373,7 +371,8 @@ theorem canonical_listPermOf {ops : List (Op BCOp)}
 theorem canonical_fold (ops : List (Op BCOp)) :
     applySeq BC.toCRDTSig BC.init (canonical ops) =
       applySeq BC.toCRDTSig BC.init ops :=
-  applySeq_perm_of_all_comm BC_all_comm (canonical_perm ops).symm BC.init
+  applySeq_perm_of_all_comm (D' := BC.toCRDTSig) BC_all_comm
+    (canonical_perm ops).symm BC.init
 
 theorem lo_false (C : Configuration BC) (a b : Op BCOp) :
     ¬ Sal.MRDTs.Foundation.lo C.core a b := by
@@ -421,6 +420,7 @@ theorem sequentialHonest_of_linear {ops : List (Op BCOp)}
       have heq' : ops = pre ++ e :: suf := by simpa [List.append_assoc] using heq
       have hInv := ih (e :: suf) heq'
       rw [applySeq_append_single]
+      change BCInv (BC.update (applySeq BC.toCRDTSig BC.init pre) e)
       rw [BC_update_eq]
       exact bcApplicable_inv_pres hInv (h.guarded pre e suf heq')
 

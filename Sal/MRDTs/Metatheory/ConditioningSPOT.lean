@@ -36,10 +36,8 @@ def Gate : MRDTSig where
   Query := Unit
   Value := Bool
   update := gateUpdate
-  merge := (· || ·)
   query := fun s _ => s
-  mergeL := fun _ a b => a || b
-  merge_init_slice := fun _ _ => rfl
+  merge := fun _ a b => a || b
 
 def gateLegalFrom : Bool → List (Op GateOp) → Prop
   | _, [] => True

@@ -440,10 +440,8 @@ def D : MRDTSig where
   Query := Unit
   Value := View
   update s e := insert e s
-  merge := (· ∪ ·)
   query s _ := view s
-  mergeL _ a b := a ∪ b
-  merge_init_slice _ _ := rfl
+  merge _ a b := a ∪ b
 
 theorem all_comm (a b : Event) : D.toCRDTSig.commutes a b := by
   intro s

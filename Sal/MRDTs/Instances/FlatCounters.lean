@@ -24,10 +24,8 @@ def D (delta : A → Int) : MRDTSig where
   Query := Unit
   Value := Int
   update s e := s + delta e.2.2
-  merge a b := a + b
   query s _ := s
-  mergeL l a b := a + b - l
-  merge_init_slice _ _ := by omega
+  merge l a b := a + b - l
 
 variable {A} (delta : A → Int)
 
@@ -47,14 +45,14 @@ theorem updateVCs : UpdateVCs (D A delta).toCRDTSig := by
     · intro h
       exact absurd (all_comm delta a b) h
     · rintro (h | h) <;>
-        (rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h;
+        (rw [show (D A delta).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h;
          exact RcRes.noConfusion h)
   · intro a b c _ _
     rintro ⟨h, _⟩
-    rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A delta).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
   · intro s a b c π _ _ _ h _
-    rw [show (D A delta).replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A delta).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
 
 theorem coreVCs3 : CoreVCs3 (D A delta) := by

@@ -155,7 +155,8 @@ theorem canonical_listPermOf {ops : List (Op RGAOp)}
 theorem canonical_fold (ops : List (Op RGAOp)) :
     applySeq RGAM.toCRDTSig RGAM.init (canonical ops) =
       applySeq RGAM.toCRDTSig RGAM.init ops :=
-  applySeq_perm_of_all_comm RGAM_all_comm (canonical_perm ops).symm RGAM.init
+  applySeq_perm_of_all_comm (D' := RGAM.toCRDTSig) RGAM_all_comm
+    (canonical_perm ops).symm RGAM.init
 
 def insertBlock (ops : List (Op RGAOp)) : List (Op RGAOp) :=
   (ops.filter isInsert).mergeSort (fun a b => a.1 ≤ b.1)

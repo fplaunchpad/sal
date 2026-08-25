@@ -136,7 +136,7 @@ noncomputable def vfoldAux (hlt : ∀ v p, p ∈ parents v → p < v)
   | [] => acc
   | m :: ms =>
       vfoldAux hlt (accS ∪ {m})
-        (D.mergeL
+        (D.merge
           (match _h : (mcaFinset parents accS m).sort (· ≤ ·) with
             | [] => D.init
             | m₁ :: ms₁ => vfoldAux hlt {m₁} (stateD ver m₁) ms₁)
@@ -237,7 +237,7 @@ theorem vfoldAux_cons (hlt : ∀ v p, p ∈ parents v → p < v)
     (accS : Finset Version) (acc : D.State) (m : Version) (ms : List Version) :
     vfoldAux ver parents hlt accS acc (m :: ms)
       = vfoldAux ver parents hlt (accS ∪ {m})
-          (D.mergeL (vlcaAux ver parents hlt accS m) acc (stateD ver m)) ms := by
+          (D.merge (vlcaAux ver parents hlt accS m) acc (stateD ver m)) ms := by
   conv_lhs => rw [vfoldAux]
   unfold vlcaAux
   rfl

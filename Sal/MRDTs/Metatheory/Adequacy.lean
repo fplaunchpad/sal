@@ -292,14 +292,14 @@ theorem goodConfig3_merge_at
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' := by
   have hco := C.head_coherent r₁ v₁ h_head₁
   have hLr₁ : C.L r₁ = some ev₁ := by
     rw [← hco.2, h_ver₁]; rfl
   have hevT_eq : evT = ev₁ ∩ ev₂ :=
     C.lca_events h_lca h_ver₁ h_ver₂ h_verT
-  have hver_new : C'.ver vm = some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) := by
+  have hver_new : C'.ver vm = some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) := by
     rw [hver]; simp
   have hver_old : ∀ w, w ≠ vm → C'.ver w = C.ver w := by
     intro w hw; rw [hver]; simp [hw]
@@ -418,10 +418,10 @@ private def JoinAt3 (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) (n : �
     (∀ a b, C.vis a b → ¬ D.toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
     IsCanonicalState C (ev₁ ∩ ev₂) s₀ →
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
-    IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
+    IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₀ s₁ s₂)
 
 /-- **Side decomposition (ternary)**: a backward-closed `E ∋ e` inside `U`
-satisfies `σ(E) = mergeL B σ(E∖e) (update B e)`, by the IH at `|E| < n` when
+satisfies `σ(E) = merge B σ(E∖e) (update B e)`, by the IH at `|E| < n` when
 `E ⊊ U` (a Join-Lemma instance whose sides are `E∖e` and `↓e`, sitting at
 their honest LCA set `(E∖e) ∩ ↓e = ↓e∖{e}` with state `B`), and by `CDVC3`
 when `E = U`. As in the binary proof, no peel of `e` from `E`'s own
@@ -450,7 +450,7 @@ private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
     (h_eE : e ∈ E)
     (hs : IsCanonicalState C E s)
     (ht : IsCanonicalState C (E \ {e}) t) :
-    s = D.mergeL B t (D.update B e) := by
+    s = D.merge B t (D.update B e) := by
   classical
   have hU := hVC.update_core
   -- update B e is canonical for the downset (free peel, no VC).
@@ -459,7 +459,7 @@ private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
   by_cases hEU : E = U
   · -- E = U: exactly CDVC3.
     subst hEU
-    have h_eq : D.mergeL B A (D.update B e) = D.update A e :=
+    have h_eq : D.merge B A (D.update B e) = D.update A e :=
       hCD C E A B e h_tr h_ir h_inE h_clE h_eE h_max hA hB
     have htA : t = A :=
       isCanonicalState_unique_u hU (fun a ha => h_inE a ha.1) ht hA
@@ -501,7 +501,7 @@ private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
       rw [hsetI]
       exact hB
     have h_merge_can : IsCanonicalState C ((E \ {e}) ∪ downset C e)
-        (D.mergeL B t (D.update B e)) := by
+        (D.merge B t (D.update B e)) := by
       refine IH lE.length hlt _ _ B t (D.update B e) lE ?_ rfl
         (fun a ha => h_inE a ha.1)
         (fun a ha => h_inE a (h_dsubE ha))
@@ -510,7 +510,7 @@ private theorem side_decomposition3 (hVC : CoreVCs3 D) (hCD : CDVC3 D)
       rw [hsetE]
       exact hpE
     have h_merge_can' : IsCanonicalState C E
-        (D.mergeL B t (D.update B e)) := by
+        (D.merge B t (D.update B e)) := by
       rw [← hsetE]
       exact h_merge_can
     exact isCanonicalState_unique_u hU h_inE hs h_merge_can'
@@ -528,7 +528,7 @@ theorem goodConfig3_merge (hJoin : JoinLemma3 D)
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' :=
   goodConfig3_merge_at (hJoin.at _) h_head₁ h_ver₁ h_ver₂ h_lca h_verT
     hL hvis hver h
@@ -552,20 +552,20 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
   induction n using Nat.strong_induction_on with
   | _ n IH =>
     intro ev₁ ev₂ s₀ s₁ s₂ lU hpU hlen h_in₁ h_in₂ h_cl₁ h_cl₂ hc₀ hc₁ hc₂
-    -- Empty sides collapse via mergeL_init.
+    -- Empty sides collapse via merge_init.
     rcases Set.eq_empty_or_nonempty ev₁ with h_e₁ | h_ne₁
     · have hs₁ : s₁ = D.init := isCanonicalState_empty h_e₁ hc₁
       have h_int : ev₁ ∩ ev₂ = ∅ := by rw [h_e₁, Set.empty_inter]
       have hs₀ : s₀ = D.init := isCanonicalState_empty h_int hc₀
       subst h_e₁
-      rw [hs₀, hs₁, hVC.mergeL_init, Set.empty_union]
+      rw [hs₀, hs₁, hVC.merge_init, Set.empty_union]
       exact hc₂
     rcases Set.eq_empty_or_nonempty ev₂ with h_e₂ | h_ne₂
     · have hs₂ : s₂ = D.init := isCanonicalState_empty h_e₂ hc₂
       have h_int : ev₁ ∩ ev₂ = ∅ := by rw [h_e₂, Set.inter_empty]
       have hs₀ : s₀ = D.init := isCanonicalState_empty h_int hc₀
       subst h_e₂
-      rw [hs₀, hs₂, hVC.mergeL_comm, hVC.mergeL_init, Set.union_empty]
+      rw [hs₀, hs₂, hVC.merge_comm, hVC.merge_init, Set.union_empty]
       exact hc₁
     -- Select a loOn(∪)-maximal event; build A = σ(U∖e), B = σ(↓e∖e).
     have h_inU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
@@ -599,7 +599,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
       isCanonicalState_exists_u hU h_tr h_ir hpB
         (fun a ha => h_inU a (h_dsub ha.1))
     -- The CD equation and the target canonical state.
-    have h_cd : D.mergeL B A (D.update B e) = D.update A e :=
+    have h_cd : D.merge B A (D.update B e) = D.update A e :=
       hCD C (ev₁ ∪ ev₂) A B e h_tr h_ir h_inU h_clU he_U h_max hA hB
     have h_target : IsCanonicalState C (ev₁ ∪ ev₂) (D.update A e) :=
       isCanonicalState_snoc he_U h_max hA
@@ -609,7 +609,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
         have h_e_l₁ : e ∈ l₁' := (hp₁'.2 e).mpr he₁
         exact isCanonicalState_exists_u hU h_tr h_ir
           (filter_ne_listPermOf hp₁' h_e_l₁) (fun a ha => h_in₁ a ha.1)
-      have hs₁d : s₁ = D.mergeL B t₁ (D.update B e) :=
+      have hs₁d : s₁ = D.merge B t₁ (D.update B e) :=
         side_decomposition3 hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
           he_U h_max hA hB Set.subset_union_left h_in₁ h_cl₁ he₁ hc₁ ht₁
       by_cases he₂ : e ∈ ev₂
@@ -621,7 +621,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           have h_e_l₂ : e ∈ l₂' := (hp₂'.2 e).mpr he₂
           exact isCanonicalState_exists_u hU h_tr h_ir
             (filter_ne_listPermOf hp₂' h_e_l₂) (fun a ha => h_in₂ a ha.1)
-        have hs₂d : s₂ = D.mergeL B t₂ (D.update B e) :=
+        have hs₂d : s₂ = D.merge B t₂ (D.update B e) :=
           side_decomposition3 hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
             he_U h_max hA hB Set.subset_union_right h_in₂ h_cl₂ he₂
             hc₂ ht₂
@@ -641,12 +641,12 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
             ∃ t, IsCanonicalState C ((ev₁ ∩ ev₂) \ {e}) t :=
           isCanonicalState_exists_u hU h_tr h_ir hp₀'
             (fun a ha => h_in₁ a ha.1.1)
-        have hs₀d : s₀ = D.mergeL B t₀ (D.update B e) :=
+        have hs₀d : s₀ = D.merge B t₀ (D.update B e) :=
           side_decomposition3 hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
             he_U h_max hA hB
             (show ev₁ ∩ ev₂ ⊆ ev₁ ∪ ev₂ from fun x hx => Or.inl hx.1)
             h_in₀ h_cl₀ he₀ hc₀ ht₀
-        -- A = mergeL t₀ t₁ t₂ by the IH at n − 1.
+        -- A = merge t₀ t₁ t₂ by the IH at n − 1.
         have hct₀' : IsCanonicalState C ((ev₁ \ {e}) ∩ (ev₂ \ {e})) t₀ := by
           rw [diff_inter_diff]
           exact ht₀
@@ -655,7 +655,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
           tauto
         have h_mid_can : IsCanonicalState C ((ev₁ \ {e}) ∪ (ev₂ \ {e}))
-            (D.mergeL t₀ t₁ t₂) := by
+            (D.merge t₀ t₁ t₂) := by
           refine IH (n - 1) (by omega) _ _ t₀ t₁ t₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
@@ -665,10 +665,10 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           rw [hsetm]
           exact hpU'
         have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-            (D.mergeL t₀ t₁ t₂) := by
+            (D.merge t₀ t₁ t₂) := by
           rw [← hsetm]
           exact h_mid_can
-        have h_mid : D.mergeL t₀ t₁ t₂ = A :=
+        have h_mid : D.merge t₀ t₁ t₂ = A :=
           isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
             h_mid_can' hA
         rw [hs₀d, hs₁d, hs₂d, hΔ.redistribute, h_mid, h_cd]
@@ -689,7 +689,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
             · exact Or.inl ⟨h, hne⟩
             · exact Or.inr h
         have h_mid_can : IsCanonicalState C ((ev₁ \ {e}) ∪ ev₂)
-            (D.mergeL s₀ t₁ s₂) := by
+            (D.merge s₀ t₁ s₂) := by
           refine IH (n - 1) (by omega) _ _ s₀ t₁ s₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) h_in₂
@@ -698,15 +698,15 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           rw [hset₁]
           exact hpU'
         have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-            (D.mergeL s₀ t₁ s₂) := by
+            (D.merge s₀ t₁ s₂) := by
           rw [← hset₁]
           exact h_mid_can
-        have h_mid : D.mergeL s₀ t₁ s₂ = A :=
+        have h_mid : D.merge s₀ t₁ s₂ = A :=
           isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
             h_mid_can' hA
         rw [hs₁d, hΔ.local_redistribute, h_mid, h_cd]
         exact h_target
-    · -- e local to side 2: mirror via mergeL_comm.
+    · -- e local to side 2: mirror via merge_comm.
       have he₂ : e ∈ ev₂ := by
         rcases he_U with h | h
         · exact absurd h he₁
@@ -716,7 +716,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
         have h_e_l₂ : e ∈ l₂' := (hp₂'.2 e).mpr he₂
         exact isCanonicalState_exists_u hU h_tr h_ir
           (filter_ne_listPermOf hp₂' h_e_l₂) (fun a ha => h_in₂ a ha.1)
-      have hs₂d : s₂ = D.mergeL B t₂ (D.update B e) :=
+      have hs₂d : s₂ = D.merge B t₂ (D.update B e) :=
         side_decomposition3 hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
           he_U h_max hA hB Set.subset_union_right h_in₂ h_cl₂ he₂ hc₂ ht₂
       have hct₀' : IsCanonicalState C (ev₁ ∩ (ev₂ \ {e})) s₀ := by
@@ -733,7 +733,7 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
           · exact Or.inl h
           · exact Or.inr ⟨h, hne⟩
       have h_mid_can : IsCanonicalState C (ev₁ ∪ (ev₂ \ {e}))
-          (D.mergeL s₀ s₁ t₂) := by
+          (D.merge s₀ s₁ t₂) := by
         refine IH (n - 1) (by omega) _ _ s₀ s₁ t₂
           (lU.filter (· ≠ e)) ?_ hlen'
           h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
@@ -742,20 +742,20 @@ theorem join_lemma3_of_cd (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D)
         rw [hset₂]
         exact hpU'
       have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-          (D.mergeL s₀ s₁ t₂) := by
+          (D.merge s₀ s₁ t₂) := by
         rw [← hset₂]
         exact h_mid_can
-      have h_mid : D.mergeL s₀ s₁ t₂ = A :=
+      have h_mid : D.merge s₀ s₁ t₂ = A :=
         isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
           h_mid_can' hA
-      rw [hs₂d, hVC.mergeL_comm s₀ s₁, hΔ.local_redistribute,
-        hVC.mergeL_comm s₀ t₂ s₁, h_mid, h_cd]
+      rw [hs₂d, hVC.merge_comm s₀ s₁, hΔ.local_redistribute,
+        hVC.merge_comm s₀ t₂ s₁, h_mid, h_cd]
       exact h_target
 
 /-! ### 3. The commuting class discharges (CD3) for free
 
 `↓e∖{e} = ∅`, so `B = init` and the bound is `merge_peel_comm3` at an empty
-LCA fold plus `mergeL_init`, no idempotence needed (the binary
+LCA fold plus `merge_init`, no idempotence needed (the binary
 `cdVC_of_all_comm` consumed `merge_idem`; the ternary one does not). -/
 
 theorem cdVC3_of_all_comm (hVC : CoreVCs3 D)
@@ -781,8 +781,8 @@ theorem cdVC3_of_all_comm (hVC : CoreVCs3 D)
     (fun x hx => absurd hx List.not_mem_nil)
     (fun x _ => h_comm e x)
   rw [h0] at hpc
-  rw [hVC.mergeL_init] at hpc
-  rw [← hfA, hVC.mergeL_comm, hpc]
+  rw [hVC.merge_init] at hpc
+  rw [← hfA, hVC.merge_comm, hpc]
 
 /-! ### 4. End-to-end: the `GoodConfig3` induction against any `JoinLemma3` -/
 
@@ -811,11 +811,11 @@ theorem ra_linearizable3_of_join (hJoin : JoinLemma3 D)
     | query h_s h_val => exact ih
 
 /-- The unconditional contract implies the feasible one (context discarded);
-`mergeL_init` supplies the unit law. T8's route is thereby a corollary of the
+`merge_init` supplies the unit law. T8's route is thereby a corollary of the
 feasible route (`join_lemma3_of_cd'` below). -/
 theorem feasibleDeltaVCs3_of_delta (hVC : CoreVCs3 D) (hΔ : DeltaVCs3 D) :
     FeasibleDeltaVCs3 D :=
-  ⟨fun _ _ s _ _ => hVC.mergeL_init s,
+  ⟨fun _ _ s _ _ => hVC.merge_init s,
    fun _ _ _ s₀ B t₁ s₂ e _ _ _ _ _ _ _ _ _ _ _ _ _ =>
      hΔ.local_redistribute s₀ B t₁ (D.update B e) s₂,
    fun _ _ _ t₀ t₁ t₂ B e _ _ _ _ _ _ _ _ _ _ _ _ _ =>
@@ -864,7 +864,7 @@ private def JoinAtF (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig) (n : �
     (∀ a b, C.vis a b → ¬ D.toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
     IsCanonicalState C (ev₁ ∩ ev₂) s₀ →
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
-    IsCanonicalState C (ev₁ ∪ ev₂) (D.mergeL s₀ s₁ s₂)
+    IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₀ s₁ s₂)
 
 /-- Side decomposition, slim-core version (verbatim from
 `JoinLemma_Of_CD3.side_decomposition3`: only the bundle changes; it consumed
@@ -893,14 +893,14 @@ private theorem side_decompositionF (hVC : CoreVCs3CD D) (hCD : CDVC3 D)
     (h_eE : e ∈ E)
     (hs : IsCanonicalState C E s)
     (ht : IsCanonicalState C (E \ {e}) t) :
-    s = D.mergeL B t (D.update B e) := by
+    s = D.merge B t (D.update B e) := by
   classical
   have hU := hVC.update_core
   have hT : IsCanonicalState C (downset C e) (D.update B e) :=
     isCanonicalState_snoc self_mem_downset (downset_max h_tr h_ir) hB
   by_cases hEU : E = U
   · subst hEU
-    have h_eq : D.mergeL B A (D.update B e) = D.update A e :=
+    have h_eq : D.merge B A (D.update B e) = D.update A e :=
       hCD C E A B e h_tr h_ir h_inE h_clE h_eE h_max hA hB
     have htA : t = A :=
       isCanonicalState_unique_u hU (fun a ha => h_inE a ha.1) ht hA
@@ -940,7 +940,7 @@ private theorem side_decompositionF (hVC : CoreVCs3CD D) (hCD : CDVC3 D)
       rw [hsetI]
       exact hB
     have h_merge_can : IsCanonicalState C ((E \ {e}) ∪ downset C e)
-        (D.mergeL B t (D.update B e)) := by
+        (D.merge B t (D.update B e)) := by
       refine IH lE.length hlt _ _ B t (D.update B e) lE ?_ rfl
         (fun a ha => h_inE a ha.1)
         (fun a ha => h_inE a (h_dsubE ha))
@@ -949,7 +949,7 @@ private theorem side_decompositionF (hVC : CoreVCs3CD D) (hCD : CDVC3 D)
       rw [hsetE]
       exact hpE
     have h_merge_can' : IsCanonicalState C E
-        (D.mergeL B t (D.update B e)) := by
+        (D.merge B t (D.update B e)) := by
       rw [← hsetE]
       exact h_merge_can
     exact isCanonicalState_unique_u hU h_inE hs h_merge_can'
@@ -991,7 +991,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
       have hs₀ : s₀ = D.init := isCanonicalState_empty h_int hc₀
       have hinit := hFΔ.feasible_init C ev₁ s₁ h_in₁ hc₁
       subst h_e₂
-      rw [hs₀, hs₂, hVC.mergeL_comm, hinit, Set.union_empty]
+      rw [hs₀, hs₂, hVC.merge_comm, hinit, Set.union_empty]
       exact hc₁
     -- Select a loOn(∪)-maximal event; build A = σ(U∖e), B = σ(↓e∖e).
     have h_inU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
@@ -1024,7 +1024,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
     obtain ⟨B, hB⟩ : ∃ B, IsCanonicalState C (downset C e \ {e}) B :=
       isCanonicalState_exists_u hU h_tr h_ir hpB
         (fun a ha => h_inU a (h_dsub ha.1))
-    have h_cd : D.mergeL B A (D.update B e) = D.update A e :=
+    have h_cd : D.merge B A (D.update B e) = D.update A e :=
       hCD C (ev₁ ∪ ev₂) A B e h_tr h_ir h_inU h_clU he_U h_max hA hB
     have h_target : IsCanonicalState C (ev₁ ∪ ev₂) (D.update A e) :=
       isCanonicalState_snoc he_U h_max hA
@@ -1034,7 +1034,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
         have h_e_l₁ : e ∈ l₁' := (hp₁'.2 e).mpr he₁
         exact isCanonicalState_exists_u hU h_tr h_ir
           (filter_ne_listPermOf hp₁' h_e_l₁) (fun a ha => h_in₁ a ha.1)
-      have hs₁d : s₁ = D.mergeL B t₁ (D.update B e) :=
+      have hs₁d : s₁ = D.merge B t₁ (D.update B e) :=
         side_decompositionF hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
           he_U h_max hA hB Set.subset_union_left h_in₁ h_cl₁ he₁ hc₁ ht₁
       by_cases he₂ : e ∈ ev₂
@@ -1044,7 +1044,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           have h_e_l₂ : e ∈ l₂' := (hp₂'.2 e).mpr he₂
           exact isCanonicalState_exists_u hU h_tr h_ir
             (filter_ne_listPermOf hp₂' h_e_l₂) (fun a ha => h_in₂ a ha.1)
-        have hs₂d : s₂ = D.mergeL B t₂ (D.update B e) :=
+        have hs₂d : s₂ = D.merge B t₂ (D.update B e) :=
           side_decompositionF hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
             he_U h_max hA hB Set.subset_union_right h_in₂ h_cl₂ he₂
             hc₂ ht₂
@@ -1063,7 +1063,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
             ∃ t, IsCanonicalState C ((ev₁ ∩ ev₂) \ {e}) t :=
           isCanonicalState_exists_u hU h_tr h_ir hp₀'
             (fun a ha => h_in₁ a ha.1.1)
-        have hs₀d : s₀ = D.mergeL B t₀ (D.update B e) :=
+        have hs₀d : s₀ = D.merge B t₀ (D.update B e) :=
           side_decompositionF hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
             he_U h_max hA hB
             (show ev₁ ∩ ev₂ ⊆ ev₁ ∪ ev₂ from fun x hx => Or.inl hx.1)
@@ -1076,7 +1076,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           simp only [Set.mem_union, Set.mem_diff, Set.mem_singleton_iff]
           tauto
         have h_mid_can : IsCanonicalState C ((ev₁ \ {e}) ∪ (ev₂ \ {e}))
-            (D.mergeL t₀ t₁ t₂) := by
+            (D.merge t₀ t₁ t₂) := by
           refine IH (n - 1) (by omega) _ _ t₀ t₁ t₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
@@ -1086,10 +1086,10 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           rw [hsetm]
           exact hpU'
         have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-            (D.mergeL t₀ t₁ t₂) := by
+            (D.merge t₀ t₁ t₂) := by
           rw [← hsetm]
           exact h_mid_can
-        have h_mid : D.mergeL t₀ t₁ t₂ = A :=
+        have h_mid : D.merge t₀ t₁ t₂ = A :=
           isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
             h_mid_can' hA
         have h_redis := hFΔ.feasible_redistribute C ev₁ ev₂ t₀ t₁ t₂ B e
@@ -1112,7 +1112,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
             · exact Or.inl ⟨h, hne⟩
             · exact Or.inr h
         have h_mid_can : IsCanonicalState C ((ev₁ \ {e}) ∪ ev₂)
-            (D.mergeL s₀ t₁ s₂) := by
+            (D.merge s₀ t₁ s₂) := by
           refine IH (n - 1) (by omega) _ _ s₀ t₁ s₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) h_in₂
@@ -1121,10 +1121,10 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           rw [hset₁]
           exact hpU'
         have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-            (D.mergeL s₀ t₁ s₂) := by
+            (D.merge s₀ t₁ s₂) := by
           rw [← hset₁]
           exact h_mid_can
-        have h_mid : D.mergeL s₀ t₁ s₂ = A :=
+        have h_mid : D.merge s₀ t₁ s₂ = A :=
           isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
             h_mid_can' hA
         have h_lr := hFΔ.feasible_local_redistribute C ev₁ ev₂ s₀ B t₁ s₂ e
@@ -1132,7 +1132,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           hc₀ hB ht₁ hc₂
         rw [hs₁d, h_lr, h_mid, h_cd]
         exact h_target
-    · -- e local to side 2: mirror via mergeL_comm.
+    · -- e local to side 2: mirror via merge_comm.
       have he₂ : e ∈ ev₂ := by
         rcases he_U with h | h
         · exact absurd h he₁
@@ -1142,7 +1142,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
         have h_e_l₂ : e ∈ l₂' := (hp₂'.2 e).mpr he₂
         exact isCanonicalState_exists_u hU h_tr h_ir
           (filter_ne_listPermOf hp₂' h_e_l₂) (fun a ha => h_in₂ a ha.1)
-      have hs₂d : s₂ = D.mergeL B t₂ (D.update B e) :=
+      have hs₂d : s₂ = D.merge B t₂ (D.update B e) :=
         side_decompositionF hVC hCD h_tr h_ir IH hpU hlen h_inU h_clU
           he_U h_max hA hB Set.subset_union_right h_in₂ h_cl₂ he₂ hc₂ ht₂
       have hct₀' : IsCanonicalState C (ev₁ ∩ (ev₂ \ {e})) s₀ := by
@@ -1159,7 +1159,7 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
           · exact Or.inl h
           · exact Or.inr ⟨h, hne⟩
       have h_mid_can : IsCanonicalState C (ev₁ ∪ (ev₂ \ {e}))
-          (D.mergeL s₀ s₁ t₂) := by
+          (D.merge s₀ s₁ t₂) := by
         refine IH (n - 1) (by omega) _ _ s₀ s₁ t₂
           (lU.filter (· ≠ e)) ?_ hlen'
           h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
@@ -1168,10 +1168,10 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
         rw [hset₂]
         exact hpU'
       have h_mid_can' : IsCanonicalState C ((ev₁ ∪ ev₂) \ {e})
-          (D.mergeL s₀ s₁ t₂) := by
+          (D.merge s₀ s₁ t₂) := by
         rw [← hset₂]
         exact h_mid_can
-      have h_mid : D.mergeL s₀ s₁ t₂ = A :=
+      have h_mid : D.merge s₀ s₁ t₂ = A :=
         isCanonicalState_unique_u hU (fun a ha => h_inU a ha.1)
           h_mid_can' hA
       -- The mirrored feasible law instance (sides swapped).
@@ -1185,8 +1185,8 @@ theorem join_lemma3_of_cd_feasible (hVC : CoreVCs3CD D)
       have h_lr := hFΔ.feasible_local_redistribute C ev₂ ev₁ s₀ B t₂ s₁ e
         h_tr h_ir h_in₂ h_in₁ h_cl₂ h_cl₁ he₂ he₁ h_max'
         hc₀_swap hB ht₂ hc₁
-      rw [hs₂d, hVC.mergeL_comm s₀ s₁, h_lr,
-        hVC.mergeL_comm s₀ t₂ s₁, h_mid, h_cd]
+      rw [hs₂d, hVC.merge_comm s₀ s₁, h_lr,
+        hVC.merge_comm s₀ t₂ s₁, h_mid, h_cd]
       exact h_target
 
 /-- **T8 as a corollary**: the unconditional route factors through the
@@ -1213,14 +1213,14 @@ theorem goodConfig3_mergeF (hJoin : JoinLemma3F D)
     (hL : C'.L = updateRep C.L r₁ (ev₁ ∪ ev₂))
     (hvis : C'.vis = C.vis)
     (hver : C'.ver = fun w => if w = vm
-      then some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
+      then some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) else C.ver w)
     (h : GoodConfig3 C) : GoodConfig3 C' := by
   have hco := C.head_coherent r₁ v₁ h_head₁
   have hLr₁ : C.L r₁ = some ev₁ := by
     rw [← hco.2, h_ver₁]; rfl
   have hevT_eq : evT = ev₁ ∩ ev₂ :=
     C.lca_events h_lca h_ver₁ h_ver₂ h_verT
-  have hver_new : C'.ver vm = some (D.mergeL sT s₁ s₂, ev₁ ∪ ev₂) := by
+  have hver_new : C'.ver vm = some (D.merge sT s₁ s₂, ev₁ ∪ ev₂) := by
     rw [hver]; simp
   have hver_old : ∀ w, w ≠ vm → C'.ver w = C.ver w := by
     intro w hw; rw [hver]; simp [hw]

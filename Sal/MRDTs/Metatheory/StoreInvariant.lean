@@ -465,7 +465,7 @@ theorem storeInv_step {C C' : Configuration D} {l : Label D}
         (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])
   | @merge r₁ r₂ v₁ v₂ vT vm s₁ s₂ sT ev₁ ev₂ evT
       _ _ hv₁ hv₂ _ _ freshVersion _ _ _ _ _ _ hver _ hparents =>
-      exact storeInv_merge_extend (sm := D.mergeL sT s₁ s₂)
+      exact storeInv_merge_extend (sm := D.merge sT s₁ s₂)
         inv freshVersion hv₁ hv₂
         (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
         (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])
@@ -479,7 +479,7 @@ theorem storeInv_stepV {V : VirtualLCAResolver D}
   | base h => exact storeInv_step h inv
   | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂
       _ _ hv₁ hv₂ freshVersion _ _ _ _ _ _ hver _ hparents =>
-      exact storeInv_merge_extend (sm := D.mergeL (V.state C v₁ v₂) s₁ s₂)
+      exact storeInv_merge_extend (sm := D.merge (V.state C v₁ v₂) s₁ s₂)
         inv freshVersion hv₁ hv₂
         (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
         (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])

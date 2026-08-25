@@ -66,7 +66,7 @@ termination_by xs ys => xs.length + ys.length
 record is read off whichever input holds it), re-canonicalized by the sorted
 2-merge. Branch `a` contributes its survivors (shared with `b`, or new since
 `l`); branch `b` contributes its own news not already contributed. -/
-def sMergeL (l a b : SState) : SState :=
+def sMerge (l a b : SState) : SState :=
   sMerge2
     (a.filter (fun r => decide (r.1 ∈ sIds b ∨ r.1 ∉ sIds l)))
     (b.filter (fun r => decide (r.1 ∉ sIds l ∧ r.1 ∉ sIds a)))
@@ -85,10 +85,8 @@ def S (Γ : OrderedPrefixCode) : MRDTSig where
   Query := Unit
   Value := List ℕ
   update := sUpdate Γ
-  merge := fun a b => sMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  mergeL := sMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := sMerge
 
 theorem S_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op SOp) :
     (S Γ).toCRDTSig.update s o = sUpdate Γ s o := rfl
@@ -288,10 +286,10 @@ theorem sMerge2_sorted : ∀ {as bs : SState}, SSorted as → SSorted bs →
 /-- The merge of canonical inputs is canonical (sorted), given no key ties,
 supplied on chain-generated states by unique decodability
 (`sidedCoordOf_inj`). -/
-theorem sMergeL_sorted {l a b : SState}
+theorem sMerge_sorted {l a b : SState}
     (ha : SSorted a) (hb : SSorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b, sKey x.2.2 = sKey y.2.2 → x = y) :
-    SSorted (sMergeL l a b) := by
+    SSorted (sMerge l a b) := by
   apply sMerge2_sorted (List.Pairwise.filter _ ha) (List.Pairwise.filter _ hb)
   intro x hx y hy hkey
   have hxa := List.mem_of_mem_filter hx
@@ -740,7 +738,7 @@ ternary merge iff its insert is somewhere in the union and its id is deleted
 nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
-theorem s_mergeL_mem {Γ : OrderedPrefixCode}
+theorem s_merge_mem {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (S Γ).toCRDTSig}
     (hHon : SHonestCore Γ C) {ev₁ ev₂ : Set (Op SOp)}
     {ρ₀ ρ₁ ρ₂ : List (Op SOp)}
@@ -750,7 +748,7 @@ theorem s_mergeL_mem {Γ : OrderedPrefixCode}
     (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
     (hp₂ : listPermOf ρ₂ ev₂)
     (hwf₀ : SWf Γ ρ₀) (hwf₁ : SWf Γ ρ₁) (hwf₂ : SWf Γ ρ₂) (r : SRec) :
-    r ∈ sMergeL (sFold Γ ρ₀) (sFold Γ ρ₁) (sFold Γ ρ₂) ↔
+    r ∈ sMerge (sFold Γ ρ₀) (sFold Γ ρ₁) (sFold Γ ρ₂) ↔
       (∃ o, (o ∈ ev₁ ∨ o ∈ ev₂) ∧ sIsIns o = true ∧ r = sRecOf Γ o) ∧
       (∀ d, (d ∈ ev₁ ∨ d ∈ ev₂) → d.2.2 ≠ SOp.del r.1) := by
   classical
@@ -766,7 +764,7 @@ theorem s_mergeL_mem {Γ : OrderedPrefixCode}
       exact ⟨d, (hp.2 d).mp hm, hdel⟩
     · rintro ⟨d, hm, hdel⟩
       exact ⟨d, (hp.2 d).mpr hm, hdel⟩
-  rw [show sMergeL s₀ s₁ s₂ = sMerge2
+  rw [show sMerge s₀ s₁ s₂ = sMerge2
     (s₁.filter (fun x => decide (x.1 ∈ sIds s₂ ∨ x.1 ∉ sIds s₀)))
     (s₂.filter (fun x => decide (x.1 ∉ sIds s₀ ∧ x.1 ∉ sIds s₁))) from rfl,
     mem_sMerge2]
@@ -985,9 +983,9 @@ theorem s_join_at {Γ : OrderedPrefixCode}
   have hwfU : SWf Γ ρᵤ := s_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
-  show sFold Γ ρᵤ = (S Γ).mergeL s₀ s₁ s₂
+  show sFold Γ ρᵤ = (S Γ).merge s₀ s₁ s₂
   rw [← hf₀, ← hf₁, ← hf₂]
-  show sFold Γ ρᵤ = sMergeL (sFold Γ ρ₀) (sFold Γ ρ₁) (sFold Γ ρ₂)
+  show sFold Γ ρᵤ = sMerge (sFold Γ ρ₀) (sFold Γ ρ₁) (sFold Γ ρ₂)
   -- cross-key-injectivity feeding the merge's sortedness
   have hdisj : ∀ x ∈ sFold Γ ρ₁, ∀ y ∈ sFold Γ ρ₂,
       sKey x.2.2 = sKey y.2.2 → x = y := by
@@ -1005,10 +1003,10 @@ theorem s_join_at {Γ : OrderedPrefixCode}
     have : o₁ = o₂ := C.ts_unique he₁ he₂ hids
     rw [hrec₁, hrec₂, this]
   apply ssorted_ext (s_fold_sorted Γ hwfU)
-    (sMergeL_sorted (s_fold_sorted Γ hwf₁) (s_fold_sorted Γ hwf₂) hdisj)
+    (sMerge_sorted (s_fold_sorted Γ hwf₁) (s_fold_sorted Γ hwf₂) hdisj)
   intro r
   rw [s_fold_mem Γ hwfU r,
-      s_mergeL_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
+      s_merge_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
   constructor
   · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
     have hor : o ∈ ev₁ ∨ o ∈ ev₂ := by

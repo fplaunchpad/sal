@@ -14,7 +14,7 @@ which this file gives.
 The route is the sided instance's, verbatim in structure: the state is the
 same canonical sorted list (`SState`, strictly descending by `sKey`), so the
 whole §2/§2½ list algebra of `SidedRGA.lean` (`ssorted_ext`, `sInsert`,
-`sMerge2`, `sMergeL`) is REUSED; what changes is the op alphabet (`FOp`
+`sMerge2`, `sMerge`) is REUSED; what changes is the op alphabet (`FOp`
 carries a coordinate prefix and one `FMEntry`) and the key-injectivity
 discharge, which runs through the variant's unique decodability
 `fmCoordOf_inj`, this is where the FM format differs materially: the
@@ -88,10 +88,8 @@ def FMSig (Γ : OrderedPrefixCode) : MRDTSig where
   Query := Unit
   Value := List ℕ
   update := fUpdate Γ
-  merge := fun a b => sMergeL [] a b
   query := fun s _ => s.map (fun r => r.2.1)
-  mergeL := sMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := sMerge
 
 theorem FMSig_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op FOp) :
     (FMSig Γ).toCRDTSig.update s o = fUpdate Γ s o := rfl
@@ -533,7 +531,7 @@ ternary merge iff its insert is somewhere in the union and its id is deleted
 nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
 branch-1 survivor forces the insert into the LCA). -/
-theorem f_mergeL_mem {Γ : OrderedPrefixCode}
+theorem f_merge_mem {Γ : OrderedPrefixCode}
     {C : Sal.MRDTs.Foundation.Configuration (FMSig Γ).toCRDTSig}
     (hHon : FMHonestCore Γ C) {ev₁ ev₂ : Set (Op FOp)}
     {ρ₀ ρ₁ ρ₂ : List (Op FOp)}
@@ -543,7 +541,7 @@ theorem f_mergeL_mem {Γ : OrderedPrefixCode}
     (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
     (hp₂ : listPermOf ρ₂ ev₂)
     (hwf₀ : FWf Γ ρ₀) (hwf₁ : FWf Γ ρ₁) (hwf₂ : FWf Γ ρ₂) (r : SRec) :
-    r ∈ sMergeL (fFold Γ ρ₀) (fFold Γ ρ₁) (fFold Γ ρ₂) ↔
+    r ∈ sMerge (fFold Γ ρ₀) (fFold Γ ρ₁) (fFold Γ ρ₂) ↔
       (∃ o, (o ∈ ev₁ ∨ o ∈ ev₂) ∧ fIsIns o = true ∧ r = fRecOf Γ o) ∧
       (∀ d, (d ∈ ev₁ ∨ d ∈ ev₂) → d.2.2 ≠ FOp.del r.1) := by
   classical
@@ -559,7 +557,7 @@ theorem f_mergeL_mem {Γ : OrderedPrefixCode}
       exact ⟨d, (hp.2 d).mp hm, hdel⟩
     · rintro ⟨d, hm, hdel⟩
       exact ⟨d, (hp.2 d).mpr hm, hdel⟩
-  rw [show sMergeL s₀ s₁ s₂ = sMerge2
+  rw [show sMerge s₀ s₁ s₂ = sMerge2
     (s₁.filter (fun x => decide (x.1 ∈ sIds s₂ ∨ x.1 ∉ sIds s₀)))
     (s₂.filter (fun x => decide (x.1 ∉ sIds s₀ ∧ x.1 ∉ sIds s₁))) from rfl,
     mem_sMerge2]
@@ -777,9 +775,9 @@ theorem f_join_at {Γ : OrderedPrefixCode}
   have hwfU : FWf Γ ρᵤ := f_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
-  show fFold Γ ρᵤ = (FMSig Γ).mergeL s₀ s₁ s₂
+  show fFold Γ ρᵤ = (FMSig Γ).merge s₀ s₁ s₂
   rw [← hf₀, ← hf₁, ← hf₂]
-  show fFold Γ ρᵤ = sMergeL (fFold Γ ρ₀) (fFold Γ ρ₁) (fFold Γ ρ₂)
+  show fFold Γ ρᵤ = sMerge (fFold Γ ρ₀) (fFold Γ ρ₁) (fFold Γ ρ₂)
   -- cross-key-injectivity feeding the merge's sortedness
   have hdisj : ∀ x ∈ fFold Γ ρ₁, ∀ y ∈ fFold Γ ρ₂,
       sKey x.2.2 = sKey y.2.2 → x = y := by
@@ -797,10 +795,10 @@ theorem f_join_at {Γ : OrderedPrefixCode}
     have : o₁ = o₂ := C.ts_unique he₁ he₂ hids
     rw [hrec₁, hrec₂, this]
   apply ssorted_ext (f_fold_sorted Γ hwfU)
-    (sMergeL_sorted (f_fold_sorted Γ hwf₁) (f_fold_sorted Γ hwf₂) hdisj)
+    (sMerge_sorted (f_fold_sorted Γ hwf₁) (f_fold_sorted Γ hwf₂) hdisj)
   intro r
   rw [f_fold_mem Γ hwfU r,
-      f_mergeL_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
+      f_merge_mem hHon hin₁ hin₂ hcl₁ hcl₂ hp₀ hp₁ hp₂ hwf₀ hwf₁ hwf₂ r]
   constructor
   · rintro ⟨⟨o, hm, hi, hrec⟩, hnd⟩
     have hor : o ∈ ev₁ ∨ o ∈ ev₂ := by
@@ -1126,14 +1124,14 @@ theorem del_not_clobber : sIds (fFold unaryCode ρDel) ≠ [] := by
 /-- PASS: the ternary merge of the two singleton branches (empty LCA) is
 the canonical two-record state, hand-derived, same keys as `tie_fold`. -/
 theorem merge_ids :
-    sIds (sMergeL [] (fFold unaryCode [opA]) (fFold unaryCode [opB]))
+    sIds (sMerge [] (fFold unaryCode [opA]) (fFold unaryCode [opB]))
       = [1, 2] := by native_decide
 
 /-- FAIL pin: the merge is not a projection of either input. -/
 theorem merge_not_projection :
-    sMergeL [] (fFold unaryCode [opA]) (fFold unaryCode [opB])
+    sMerge [] (fFold unaryCode [opA]) (fFold unaryCode [opB])
         ≠ fFold unaryCode [opA] ∧
-    sMergeL [] (fFold unaryCode [opA]) (fFold unaryCode [opB])
+    sMerge [] (fFold unaryCode [opA]) (fFold unaryCode [opB])
         ≠ fFold unaryCode [opB] := by native_decide
 
 end FugueMaxRALinSPOT

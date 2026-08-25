@@ -24,10 +24,8 @@ noncomputable def D : MRDTSig where
   Query := Unit
   Value := A → Bool
   update s e x := s x || decide (x = e.2.2)
-  merge a b x := a x || b x
   query s _ := s
-  mergeL l a b x := l x || (a x || b x)
-  merge_init_slice _ _ := rfl
+  merge l a b x := l x || (a x || b x)
 
 variable {A}
 
@@ -43,14 +41,14 @@ theorem updateVCs : UpdateVCs (D A).toCRDTSig := by
     constructor
     · intro h; exact absurd (all_comm a b) h
     · rintro (h | h) <;>
-        (rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h;
+        (rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h;
          exact RcRes.noConfusion h)
   · intro a b c _ _
     rintro ⟨h, _⟩
-    rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
   · intro s a b c π _ _ _ h _
-    rw [show (D A).replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
 
 theorem coreVCs3 : CoreVCs3 (D A) := by

@@ -21,6 +21,9 @@ import Sal.MRDTs.GC.StateComposition
 namespace Sal.MRDTs
 
 #check MRDTSig
+#check MRDTSig.merge
+#check MRDTSig.toCRDTSig_merge
+#check MRDTSig.toCRDTSig_update
 #check Configuration
 #check initConfig
 #check Step
@@ -218,7 +221,7 @@ namespace Sal.MRDTs
 #check Instances.SidedPeritext.StateGC.collectedText_continuation_query
 #check Instances.SidedPeritext.StateGC.trimDeleted_query_preserved
 #check Instances.SidedPeritext.StateGC.dropMarkPair_query_preserved
-#check Instances.SidedPeritext.StateGC.Interaction.sMergeL_filter
+#check Instances.SidedPeritext.StateGC.Interaction.sMerge_filter
 #check Instances.SidedPeritext.StateGC.Interaction.EpochProjection.keeps_fresh
 #check Instances.SidedPeritext.StateGC.Interaction.merge_text_after_epoch_translation
 #check VerifiedMRDT.converges

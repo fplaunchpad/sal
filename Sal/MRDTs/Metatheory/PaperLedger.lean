@@ -16,6 +16,9 @@ namespace Sal.MRDTs
 #check Foundation.convergence_over_backward_closed_subsets_false
 #check Foundation.coreVCs_lattice_insufficient
 #check MRDTSig
+#check MRDTSig.merge
+#check MRDTSig.toCRDTSig_merge
+#check MRDTSig.toCRDTSig_update
 #check Configuration
 #check Step
 #check StepV

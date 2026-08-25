@@ -72,12 +72,9 @@ noncomputable def RGAM : MRDTSig where
   Query := Unit
   Value := List ℕ
   update := rgaUpdate
-  merge := fun a b =>
-    (fun p => false || (a.1 p || b.1 p), fun x => false || (a.2 x || b.2 x))
   query := fun s _ => read s
-  mergeL := fun l a b =>
+  merge := fun l a b =>
     (fun p => l.1 p || (a.1 p || b.1 p), fun x => l.2 x || (a.2 x || b.2 x))
-  merge_init_slice := fun _ _ => rfl
 
 theorem RGAM_rc_either : ∀ o₁ o₂ : Op RGAM.AppOp,
     RGAM.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl

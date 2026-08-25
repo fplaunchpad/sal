@@ -44,7 +44,7 @@ def mvrUpdate (s : ((ℕ × ℕ) → Bool) × (ℕ → Bool)) (o : Op MVROp) :
        fun n => s.2 n || decide (n ∈ O))
 
 /-- Three-way merge: the OR-shape per component. -/
-def mvrMergeL (l a b : ((ℕ × ℕ) → Bool) × (ℕ → Bool)) :
+def mvrMerge (l a b : ((ℕ × ℕ) → Bool) × (ℕ → Bool)) :
     ((ℕ × ℕ) → Bool) × (ℕ → Bool) :=
   (fun p => (l.1 p && (a.1 p && b.1 p))
       || ((a.1 p && !l.1 p) || (b.1 p && !l.1 p)),
@@ -61,10 +61,8 @@ noncomputable def MVR : MRDTSig where
   Query := Unit
   Value := ((ℕ × ℕ) → Bool) × (ℕ → Bool)
   update := mvrUpdate
-  merge := fun a b => mvrMergeL (fun _ => false, fun _ => false) a b
   query := fun s _ => s
-  mergeL := mvrMergeL
-  merge_init_slice := fun _ _ => rfl
+  merge := mvrMerge
 
 theorem MVR_rc_either (o₁ o₂ : Op MVROp) :
     MVR.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
@@ -74,8 +72,8 @@ theorem MVR_rc_either (o₁ o₂ : Op MVROp) :
 theorem MVR_update_eq (st : MVR.State) (o : Op MVR.AppOp) :
     MVR.update st o = mvrUpdate st o := rfl
 
-theorem MVR_mergeL_eq (l a b : MVR.State) :
-    MVR.mergeL l a b = mvrMergeL l a b := rfl
+theorem MVR_merge_eq (l a b : MVR.State) :
+    MVR.merge l a b = mvrMerge l a b := rfl
 
 theorem MVR_init_eq :
     MVR.init = ((fun _ => false, fun _ => false) : MVR.State) := rfl
@@ -113,15 +111,15 @@ theorem MVR_updateVCs : UpdateVCs MVR.toCRDTSig := by
     rw [MVR_rc_either] at h_rc
     exact RcRes.noConfusion h_rc
 
-theorem MVR_mergeL_comm (l a b : MVR.State) :
-    MVR.mergeL l a b = MVR.mergeL l b a := by
+theorem MVR_merge_comm (l a b : MVR.State) :
+    MVR.merge l a b = MVR.merge l b a := by
   refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
-    simp only [MVR_mergeL_eq, mvrMergeL]
+    simp only [MVR_merge_eq, mvrMerge]
   · cases l.1 p <;> cases a.1 p <;> cases b.1 p <;> rfl
   · cases l.2 n <;> cases a.2 n <;> cases b.2 n <;> rfl
 
 theorem MVR_coreVCs3CD : CoreVCs3CD MVR :=
-  ⟨MVR_updateVCs, MVR_mergeL_comm⟩
+  ⟨MVR_updateVCs, MVR_merge_comm⟩
 
 /-! ### σ-monotonicity (the one canonical fact) -/
 
@@ -304,7 +302,7 @@ theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
   · -- feasible_init: unconditional for the MVR
     intro C ev s _ _
     refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
-      simp only [MVR_mergeL_eq, mvrMergeL, MVR_init_eq]
+      simp only [MVR_merge_eq, mvrMerge, MVR_init_eq]
     · cases s.1 p <;> rfl
     · cases s.2 n <;> rfl
   · -- feasible_local_redistribute: B = init + σ-monotonicity s₀ ⊆ s₂
@@ -318,7 +316,7 @@ theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
     cases op with
     | write v O =>
       refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
-        simp only [MVR_mergeL_eq, MVR_update_eq, mvrMergeL, mvrUpdate,
+        simp only [MVR_merge_eq, MVR_update_eq, mvrMerge, mvrUpdate,
           MVR_init_eq]
       · cases hs₀ : s₀.1 p
         · cases t₁.1 p <;> cases decide (p = (ts, v)) <;> cases s₂.1 p <;> rfl
@@ -339,7 +337,7 @@ theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
     cases op with
     | write v O =>
       refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
-        simp only [MVR_mergeL_eq, MVR_update_eq, mvrMergeL, mvrUpdate,
+        simp only [MVR_merge_eq, MVR_update_eq, mvrMerge, mvrUpdate,
           MVR_init_eq]
       · cases t₀.1 p <;> cases t₁.1 p <;> cases t₂.1 p <;>
           cases decide (p = (ts, v)) <;> rfl
@@ -355,7 +353,7 @@ theorem MVR_cdVC3 : CDVC3 MVR := by
   cases op with
   | write v O =>
     refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
-      simp only [MVR_mergeL_eq, MVR_update_eq, mvrMergeL, mvrUpdate,
+      simp only [MVR_merge_eq, MVR_update_eq, mvrMerge, mvrUpdate,
         MVR_init_eq]
     · cases A.1 p <;> cases decide (p = (ts, v)) <;> rfl
     · cases A.2 n <;> cases decide (n ∈ O) <;> rfl
@@ -404,7 +402,8 @@ theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
       obtain ⟨ts, r, op⟩ := o
       cases op with
       | write w O =>
-          rw [applySeq_append_single, MVR_update_eq] at h ⊢
+          rw [applySeq_append_single, MRDTSig.toCRDTSig_update,
+            MVR_update_eq] at h ⊢
           simp only [mvrUpdate, Bool.or_eq_true, decide_eq_true_eq] at h
           simp only [mvrTag, mvrUpdate, Bool.or_eq_true, decide_eq_true_eq]
           rcases h with h' | h'
@@ -430,7 +429,8 @@ theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
           have hcond := hOK ρ (ts, r, .write w O) [] (by simp)
           have hfresh := hcond.1
           have hO := hcond.2 w O rfl
-          rw [applySeq_append_single, MVR_update_eq, mvrSpecFold_snoc]
+          rw [applySeq_append_single, MRDTSig.toCRDTSig_update,
+            MVR_update_eq, mvrSpecFold_snoc]
           simp only [mvrView, mvrUpdate, Bool.or_eq_true,
             decide_eq_true_eq, Bool.or_eq_false_iff,
             decide_eq_false_iff_not, Prod.mk.injEq]
@@ -505,7 +505,7 @@ def concurrentWrite₁ : Op MVROp := (1, 0, .write 10 [])
 def concurrentWrite₂ : Op MVROp := (2, 1, .write 20 [])
 
 noncomputable def concurrentState : MVR.State :=
-  MVR.merge
+  MVR.merge MVR.init
     (MVR.update MVR.init concurrentWrite₁)
     (MVR.update MVR.init concurrentWrite₂)
 
@@ -519,7 +519,7 @@ theorem concurrentState_views_both :
     mvrView concurrentState 10 ∧ mvrView concurrentState 20 := by
   constructor <;>
     simp [concurrentState, concurrentWrite₁, concurrentWrite₂, mvrView,
-      MVR, mvrMergeL, mvrUpdate]
+      MVR, mvrMerge, mvrUpdate]
 
 theorem concurrentState_no_sequential_register :
     ¬ ∃ q : spec.State, sequential.Rel concurrentState q := by

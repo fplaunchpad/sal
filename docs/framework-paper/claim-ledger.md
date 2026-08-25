@@ -6,7 +6,7 @@ definitions and theorems independently of Lean names.
 
 | Paper claim | Lean evidence | Status / boundary |
 | --- | --- | --- |
-| The raw signature has no issuance, invariant, applicability, interaction, or replay-policy field. | `Framework/Signature.lean`, `Framework/Base/CRDTSignature.lean` | Machine-checked interface. `ReplayPolicy` is proof-local. |
+| The raw signature has one ancestor-aware `merge` and no independent binary merge, issuance, invariant, applicability, interaction, or replay-policy field. | `Framework/Signature.lean`: `MRDTSig`, `MRDTSig.toCRDTSig_merge` | Machine-checked interface. The binary merge used by older replay infrastructure is the derived initial-state slice; `ReplayPolicy` is proof-local. |
 | Raw execution has create, apply, merge, and query; merge reads an actual LCA. | `Framework/Execution.lean`: `Configuration`, `Step` | Machine-checked. Paper omits only the derivable `N` and `L` caches. |
 | A configuration-global replay order is insufficient. | `Metatheory/Join/Convergence_CounterModel.lean`: `convergence_over_backward_closed_subsets_false` | Machine-checked countermodel. |
 | A bounded join-semilattice merge plus the core update laws does not imply Join. | `Metatheory/Join/VC_Independence.lean`: `coreVCs_lattice_insufficient` | Machine-checked countermodel. |

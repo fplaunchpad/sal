@@ -27,10 +27,8 @@ def D : MRDTSig where
   Query := Unit
   Value := Nat
   update _ e := e.2.2
-  merge := max
   query s _ := s
-  mergeL _ a b := max a b
-  merge_init_slice _ _ := rfl
+  merge _ a b := max a b
 
 /-- LWW orders concurrent writes by increasing Lamport timestamp. Equal
 timestamps are unreachable for distinct events and need no direction. -/
@@ -61,7 +59,8 @@ example :
 /-- Negative control for the retired interface premise. -/
 theorem old_no_chain_refuted :
     ¬ (∀ a b c : Op D.AppOp,
-      distinctOps a b → distinctOps b c →
+      distinctOps (D := D.toCRDTSig) a b →
+      distinctOps (D := D.toCRDTSig) b c →
       ¬ ((interaction.interaction a b).FstBeforeSnd ∧
          (interaction.interaction b c).FstBeforeSnd)) := by
   intro h
@@ -100,10 +99,8 @@ def D : MRDTSig where
   update s e := match e.2.2 with
     | .add => (insert e.time s.1, s.2)
     | .remove observed => (s.1, s.2 ∪ observed)
-  merge a b := (a.1 ∪ b.1, a.2 ∪ b.2)
   query s _ := decide (∃ tag ∈ s.1, tag ∉ s.2)
-  mergeL _ a b := (a.1 ∪ b.1, a.2 ∪ b.2)
-  merge_init_slice _ _ := rfl
+  merge _ a b := (a.1 ∪ b.1, a.2 ∪ b.2)
 
 /-- Add and remove conflict abstractly. Concurrent remove precedes add, which
 is precisely the sequential explanation of add-wins. Same-kind operations are

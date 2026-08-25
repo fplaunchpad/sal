@@ -18,22 +18,22 @@ open Sal.MRDTs.Instances.SidedPeritext.StateGC
 noncomputable section
 
 /-- A common retention predicate commutes with ternary SidedRGA merge. -/
-theorem sMergeL_filter (keep : Nat → Bool) (l a b : SState)
+theorem sMerge_filter (keep : Nat → Bool) (l a b : SState)
     (ha : SSorted a) (hb : SSorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b,
       Sal.EmbedRGA.sKey x.2.2 = Sal.EmbedRGA.sKey y.2.2 → x = y) :
-    sMergeL (l.filter fun r => keep r.1)
+    sMerge (l.filter fun r => keep r.1)
         (a.filter fun r => keep r.1) (b.filter fun r => keep r.1) =
-      (sMergeL l a b).filter fun r => keep r.1 := by
+      (sMerge l a b).filter fun r => keep r.1 := by
   apply ssorted_ext
-  · apply sMergeL_sorted (List.Pairwise.filter _ ha)
+  · apply sMerge_sorted (List.Pairwise.filter _ ha)
       (List.Pairwise.filter _ hb)
     intro x hx y hy hkey
     exact hdisj x (List.mem_of_mem_filter hx) y
       (List.mem_of_mem_filter hy) hkey
-  · exact List.Pairwise.filter _ (sMergeL_sorted ha hb hdisj)
+  · exact List.Pairwise.filter _ (sMerge_sorted ha hb hdisj)
   · intro x
-    simp only [sMergeL, mem_sMerge2, List.mem_filter, decide_eq_true_eq,
+    simp only [sMerge, mem_sMerge2, List.mem_filter, decide_eq_true_eq,
       sIds, List.mem_map]
     aesop
 
@@ -93,10 +93,10 @@ theorem CommonProjectionFrame.merge_text_exact
     (ha : SSorted a) (hb : SSorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b,
       Sal.EmbedRGA.sKey x.2.2 = Sal.EmbedRGA.sKey y.2.2 → x = y) :
-    sMergeL cl.sided.text ca.sided.text cb.sided.text =
-      (sMergeL l a b).filter (fun r => F.keep r.1) := by
+    sMerge cl.sided.text ca.sided.text cb.sided.text =
+      (sMerge l a b).filter (fun r => F.keep r.1) := by
   rw [F.lproj, F.aproj, F.bproj]
-  exact sMergeL_filter F.keep l a b ha hb hdisj
+  exact sMerge_filter F.keep l a b ha hb hdisj
 
 def commonProjectionFrame_of_epochs
     {kl ka kb : Nat → Bool} {l a b : SState}
@@ -138,15 +138,15 @@ theorem merge_text_after_epoch_translation
     (hasort : SSorted a) (hbsort : SSorted b)
     (hdisj : ∀ x ∈ a, ∀ y ∈ b,
       Sal.EmbedRGA.sKey x.2.2 = Sal.EmbedRGA.sKey y.2.2 → x = y) :
-    sMergeL (translateText cl a b ka kb).sided.text
+    sMerge (translateText cl a b ka kb).sided.text
       (translateText ca l b kl kb).sided.text
       (translateText cb l a kl ka).sided.text =
-    (sMergeL l a b).filter
+    (sMerge l a b).filter
       (commonEpochKeep l a b kl ka kb ∘ Prod.fst) := by
   exact (commonProjectionFrame_of_epochs hl ha hb).merge_text_exact
     hasort hbsort hdisj
 
-#print axioms sMergeL_filter
+#print axioms sMerge_filter
 #print axioms EpochProjection.keeps_fresh
 #print axioms merge_text_after_epoch_translation
 

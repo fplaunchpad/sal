@@ -23,10 +23,8 @@ def D : MRDTSig where
   Query := Unit
   Value := Finset α
   update s e := insert e.2.2 s
-  merge := (· ∪ ·)
   query s _ := s
-  mergeL _ a b := a ∪ b
-  merge_init_slice _ _ := rfl
+  merge _ a b := a ∪ b
 
 variable {α}
 

@@ -49,6 +49,10 @@ anonymous long-form working papers under `docs/`.
   canonical virtual-LCA rule, distributed history-GC protocol/refinement, and
   datatype-state-GC composition in typeset form. Keep the collaborative-
   editing paper as supporting material rather than a second submission.
+- [x] Minimize `MRDTSig` to one ancestor-aware ternary operation named
+  `merge`. Remove the independent binary field and compatibility obligation,
+  derive the initial-base binary projection only for reused replay code, and
+  synchronize Lean, both papers, and the release gate.
 - [ ] Add the submission-facing bibliography and related-work comparison after
   the technical narrative stabilizes. Keep citations distinct from the
   machine-checked claim ledger.

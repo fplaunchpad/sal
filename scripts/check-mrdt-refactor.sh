@@ -20,6 +20,12 @@ if rg -n 'Sal\.ConditionedMRDTs|LegacyBridge' \
   exit 1
 fi
 
+if rg -n '\bmergeL\b|merge_init_slice|sMergeL|eMergeL|qMergeL|bcMergeL|mvrMergeL|prodSig_mergeL' \
+    Sal/MRDTs docs README.md PRIORITIZED_REMAINING_WORK.md; then
+  echo 'obsolete duplicate MRDT merge interface remains' >&2
+  exit 1
+fi
+
 if rg -n '\bsorry\b|sorryAx' \
     Sal/MRDTs/Framework Sal/MRDTs/Metatheory Sal/MRDTs/Instances Sal/MRDTs/GC; then
   echo 'unproved production theorem remains' >&2

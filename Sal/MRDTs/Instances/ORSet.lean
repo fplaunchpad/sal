@@ -47,10 +47,8 @@ def D : MRDTSig where
   Query := α
   Value := Bool
   update := update α
-  merge := merge α
   query := contains α
-  mergeL := fun _ left right => merge α left right
-  merge_init_slice := fun _ _ => rfl
+  merge := fun _ left right => merge α left right
 
 variable {α}
 
