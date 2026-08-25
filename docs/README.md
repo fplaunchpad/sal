@@ -22,3 +22,7 @@ names and non-anonymous metadata, and then builds both PDFs. The complete
 production theorem inventory is `Sal/MRDTs/Metatheory/RefactorLedger.lean`;
 the declarations cited by the papers are gated by
 `Sal/MRDTs/Metatheory/PaperLedger.lean`.
+
+`production-packaging.md` records the formal-oracle enquiry behind the typed
+`PackagedMRDT` release boundary, the separate negative ledger, and the runtime
+evidence manifest.

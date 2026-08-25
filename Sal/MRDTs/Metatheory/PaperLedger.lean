@@ -1,6 +1,5 @@
 import Sal.MRDTs.Metatheory.RefactorLedger
-import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
-import Sal.MRDTs.Metatheory.Join.Assoc_CounterModel
+import Sal.MRDTs.Metatheory.NegativeLedger
 
 /-!
 # Working-paper evidence ledger
@@ -39,6 +38,8 @@ namespace Sal.MRDTs
 #check canonicalVirtualLCA
 #check virtualLCAState_canonical
 #check VerifiedMRDT
+#check PackagedMRDT
+#check Production.registry
 #check VerifiedMRDT.converges
 #check VerifiedMRDT.convergesV
 #check MintCertifiedReach.toV
@@ -50,7 +51,14 @@ namespace Sal.MRDTs
 #check InteractionSpec
 #check interactionLoOn
 #check IsSpecRALinearizable
+
+-- Countermodels and intentionally incomplete signatures are kept out of the
+-- typed production registry and checked by `NegativeLedger`.
+#check Foundation.convergence_over_backward_closed_subsets_false
+#check Foundation.coreVCs_lattice_insufficient
 #check Instances.InteractionSPOT.LWW.old_no_chain_refuted
+#check Instances.MVR.concurrentState_no_sequential_register
+#check Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo
 
 -- Distributed commit collection and composition with datatype state GC.
 #check GC.Local
@@ -121,12 +129,13 @@ namespace Sal.MRDTs
 #check Instances.ProductionRGA.replaySided
 #check Instances.ProductionRGA.embed
 #check Instances.ProductionRGA.sided
+#check Instances.ORSet.verified
+#check Instances.ORSet.concurrent_remove_add_wins
 #check Instances.SidedEmbedRGA.fugue_forward_ni
 #check Instances.SidedEmbedRGA.fugue_not_maximally_noninterleaving_backward
 #check Instances.SidedEmbedRGA.fuguemax_forward_ni
 #check Instances.SidedEmbedRGA.fuguemax_backward_ni
 #check Instances.SidedEmbedRGA.fuguemax_maximally_noninterleaving
-#check Instances.SidedEmbedRGA.fuguemax_ra_linearizable
 
 -- Peritext semantics, sequential meaning, and state collection.
 #check Instances.SidedPeritext.coreHonest_of_mint

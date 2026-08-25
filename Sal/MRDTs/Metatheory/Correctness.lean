@@ -190,6 +190,22 @@ structure VerifiedMRDT (D : MRDTSig) where
   sequentialCorrectness :
     SequentialCorrectnessCertificate D issuance interaction Spec Rel
 
+/-- The only admissible production-registry entry. Raw signatures,
+replay-only packages, SPOTs, and countermodels cannot inhabit this type unless
+they supply the complete public certificate for the exact signature. -/
+structure PackagedMRDT where
+  name : String
+  D : MRDTSig
+  certificate : VerifiedMRDT D
+
+namespace PackagedMRDT
+
+noncomputable def of (name : String) {D : MRDTSig}
+    (certificate : VerifiedMRDT D) : PackagedMRDT :=
+  ⟨name, D, certificate⟩
+
+end PackagedMRDT
+
 namespace ReplayVerifiedMRDT
 
 variable {D : MRDTSig} (V : ReplayVerifiedMRDT D)

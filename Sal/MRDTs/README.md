@@ -14,6 +14,12 @@ public sequential-correctness result. The framework supplies the ordinary and
 canonical virtual-LCA operational semantics and distributed commit-history GC.
 Datatype-state GC is an optional representation certificate.
 
+`PackagedMRDT` is the release boundary: it pairs one raw signature with a
+`VerifiedMRDT` for that exact signature. `Metatheory/ProductionLedger.lean`
+is the typed registry of released datatypes. Replay-only results,
+counterexamples, and internal policy signatures live in
+`Metatheory/NegativeLedger.lean`; they cannot be registered by name alone.
+
 The executable `CRDTSig` contains only state transitions, merge, and query.
 The old replay resolver is an internal `ReplayPolicy`, not a datatype field or
 client arbitration API. The certified Join route uses its unconstrained
@@ -65,11 +71,12 @@ and observed-remove axis tokens after cell payload collection. Its
 `StateGCCertificate` proves query preservation, collection idempotence, and
 closure under guarded updates and compatible branch merges. Generic authored
 frontier evidence derives the marker's configured-roster acknowledgements.
-This remains an internal `ReplayVerifiedMRDT`: two independent origins can
-each pass issuance while neither ordering passes the old whole-prefix guard.
-`concurrent_origins_not_guarded_chronological` checks that obstruction; a
-public spreadsheet specification must describe each event's encoded origin
-view instead of rechecking it against the merged serialization prefix.
+The old whole-prefix legality remains refuted: two independent origins can
+each pass issuance while neither ordering passes that guard.
+`concurrent_origins_not_guarded_chronological` checks the obstruction. The
+public `VerifiedMRDT` instead uses causal-origin legality, which validates each
+event against its encoded origin view rather than rechecking it against the
+merged serialization prefix.
 Equivalence with the Bismuth Scala
 implementation is refuted at commit `dd4c614`: the audit in
 `docs/aegissheet-scala-audit.md` records move-undo, range-undo, and crossed-range

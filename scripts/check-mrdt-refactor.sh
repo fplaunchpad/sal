@@ -1,9 +1,18 @@
 #!/usr/bin/env sh
 set -eu
 
-lake build Sal.MRDTs.Metatheory.RefactorLedger
+lake build \
+  Sal.MRDTs.Metatheory.ProductionLedger \
+  Sal.MRDTs.Metatheory.NegativeLedger \
+  Sal.MRDTs.Metatheory.RefactorLedger
 npm test --prefix runtime
 npm run validate --prefix benchmarks
+
+if rg -n 'replayVerified|FMSig|fmGeneration|Instances\.MVR|Instances\.Queue' \
+    Sal/MRDTs/Metatheory/ProductionLedger.lean; then
+  echo 'incomplete or negative evidence entered the production registry' >&2
+  exit 1
+fi
 
 if rg -n 'Sal\.ConditionedMRDTs|LegacyBridge' \
     Sal/MRDTs/Framework Sal/MRDTs/Metatheory Sal/MRDTs/Instances Sal/MRDTs/GC; then

@@ -105,6 +105,12 @@ A datatype is `{ init, apply(state, op), merge3(l, a, b), read(state) }`,
 all pure (`apply`/`merge3` return fresh states: commits keep old states;
 "fresh" is O(log n) structural sharing over `src/pmap.js`,
 and `merge3` on persistent states is a delta merge from one parent).
+
+`evidence-manifest.json` is the release inventory. Each production datatype
+names the exact Lean `VerifiedMRDT` package associated with its semantics and
+records that the JavaScript correspondence is differential-tested rather than
+extracted. Benchmark baselines and representation experiments are listed
+separately and are not silently presented as released verified datatypes.
 The bundled datatypes also expose an optional `fingerprint(state)` used by
 the twin tests, and `embedRGA` adds `readIds`/`readEntries`/`symbolCount`,
 `orset` adds `observe` (helpers for honest op construction and cost probes).

@@ -851,13 +851,22 @@ theorem fmHonest_core {Γ : OrderedPrefixCode} {C : Configuration (FMSig Γ)}
     obtain ⟨chainOf, hch⟩ := h.2
     exact ⟨chainOf, hch⟩
 
-/-! ## §7.1  Public generation and convergence certificates -/
+/-! ## §7.1  Internal generation and convergence certificates
 
-/-- The public FugueMax minting discipline.  An insert carries the positive,
+`FMSig` is the proof signature used to establish the FugueMax ordering-policy
+theorems. It is not a production-registry datatype: its operations expose
+proof-level coordinates rather than the client insert-after API, and it does
+not provide a `VerifiedMRDT` sequential certificate. The production sided
+sequence package is `ProductionRGA.sided`; the theorems below justify the
+FugueMax policy used by that design without pretending that `FMSig` is a
+second public datatype.
+-/
+
+/-- The internal FugueMax minting discipline. An insert carries the positive,
 tag-wellformed birth chain that justifies its coordinate and timestamp; a
 delete may name only an element present in the issuer's materialized state.
 Timestamp freshness is supplied separately by `LinearMintHistory`, as for the
-other production instances. -/
+the production sided sequence. -/
 def fApplicable (Γ : OrderedPrefixCode) (o : Op FOp) (s : SState) : Prop :=
   match o.2.2 with
   | .ins _ _ _ =>
@@ -953,8 +962,8 @@ theorem fuguemax_ra_linearizable {Γ : OrderedPrefixCode}
 `MRec`) IS this signature's fold of the mapped enumeration: an insert
 record denotes the `FOp.ins` carrying its chain's coordinate split as
 (prefix of all but the last entry, minted entry). So `f_fold_canon` covers
-the generation layer's states, and `MaxReach` configurations are runs of
-the verified datatype. -/
+the generation layer's states, and `MaxReach` configurations are runs of this
+internal policy model. -/
 
 /-- The op a generation record denotes. The `.ins` arm splits the chain as
 (everything but the last entry, the minted entry); the empty-chain arm is

@@ -21,11 +21,10 @@ converge, their states must implement an ordinary sequential editor, and their
 metadata must remain collectable. We develop a Lean~4 verification of Peritext
 over mergeable replicated data types (MRDTs). The proof includes three
 sequence kernels: a tombstone RGA baseline, an immutable-coordinate EmbedRGA,
-and a sided EmbedRGA with verified Fugue and FugueMax ordering policies. It
-proves replication convergence, local minted-history refinement to independent
-sequential editor machines, and a full merged-history theorem for the
-tombstone baseline. The corresponding merged-history theorem for the embedded
-representations remains open. Two collectors address
+and a sided EmbedRGA with machine-checked Fugue and FugueMax ordering-policy
+theorems. It proves replication convergence, local minted-history refinement
+to independent sequential editor machines, and full merged-history theorems
+for all three kernels. Two collectors address
 different sources of growth. An asynchronous distributed collector removes
 commit history; a Peritext-specific collector removes dead text records,
 deletion evidence, and closed mark pairs while preserving future edits. Their
@@ -88,7 +87,8 @@ trace refines the uncollected semantic system. This protocol composes with the
 generic asynchronous commit-history collector.
 \item The JavaScript runtime is a live, hand-written implementation validated
 by directed, randomized, snapshot, GC, and differential tests. It is not code
-extracted from Lean.
+extracted from Lean; an evidence manifest records the Lean package and
+correspondence status of each released datatype.
 \end{enumerate}
 
 We use three evidence words consistently. A Lean declaration is
@@ -251,8 +251,13 @@ The corresponding Lean results are:
 \lean{fuguemax\_maximally\_noninterleaving}.
 \end{gathered}
 \]
-The separate theorem \lean{fuguemax\_ra\_linearizable} proves that realizing
-the stronger policy does not sacrifice MRDT convergence.
+The separate theorem \lean{fuguemax\_ra\_linearizable} proves that the
+coordinate-level FugueMax policy model is RA-linearizable. That model's
+\lean{FMSig} is an internal proof signature, not another released datatype:
+it exposes proof-level coordinates and has no public \lean{VerifiedMRDT}
+sequential package. The released datatype is
+\lean{Instances.ProductionRGA.sided}; the FugueMax theorems justify its
+stronger ordering-policy design.
 
 \subsection{What is proved for all three}
 

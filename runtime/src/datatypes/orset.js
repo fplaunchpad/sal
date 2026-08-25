@@ -1,6 +1,7 @@
 // OR-set (observed-remove set): the second datatype, here to prove the
-// runtime is pluggable. UNVERIFIED transliteration of the standard MRDT
-// OR-set semantics:
+// runtime is pluggable. This is a manual counterpart of the Lean
+// `Instances.ORSet.verified` package, not extracted code. Directed and random
+// runtime tests validate the correspondence boundary. The semantics are:
 //   - add mints a fresh uniquely-tagged INSTANCE of the element;
 //   - remove kills exactly the instances it has OBSERVED;
 //   - merge is the same ternary live-set rule on instance tags:

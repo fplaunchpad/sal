@@ -158,7 +158,9 @@ cells, and ranges alone determine future behavior.
 
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
   BoundedCounter, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
-  Peritext signatures, AegisSheet, and the grow-only canary.
+  Peritext signatures, AegisSheet, the observed-remove set, and the grow-only
+  canary. Every released entry is a typed `PackagedMRDT` in
+  `Production.registry`.
 - **Refuted:** origin issuance implies merged sequential legality; strict RGA
   issuance is a valid sequential legality predicate; current queue is FIFO;
   and the current MVR refines an ordinary single-value register after two
@@ -170,3 +172,9 @@ cells, and ranges alone determine future behavior.
   sheet is not a transition congruence.
 - **Unvalidated:** the relational `Issuance` definitions still require
   differential validation against each executable operation generator.
+
+Replay-only and refuted results are imported by `NegativeLedger`, not the
+production registry. In particular, queue and MVR do not satisfy the public
+sequential interface, and FugueMax's coordinate-level `FMSig` remains an
+internal policy model. The released sided sequence is
+`ProductionRGA.sided`.

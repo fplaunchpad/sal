@@ -66,6 +66,32 @@ anonymous long-form working papers under `docs/`.
 
 ## 2. Follow-on formal work
 
+- [x] **HIGHEST PRIORITY — enforce the verified production boundary.** A raw
+  `MRDTSig` remains available for theorem development, SPOTs, and
+  countermodels, but no datatype may appear in the production registry unless
+  it supplies a `VerifiedMRDT` for that exact signature.
+  - [x] add a dependent `PackagedMRDT` type and a production ledger containing
+    only such packages;
+  - [x] move replay-only/refuted artifacts and interaction SPOTs to a separate
+    negative-evidence ledger. Keep the queue/FIFO and MVR/single-register
+    counterexamples visible without presenting either datatype as verified;
+  - [x] implement a complete add-wins OR-set package with an honest observed
+    remove issuance rule, convergence, an independent sequential machine,
+    query refinement, and positive/negative issuance SPOTs;
+  - [x] either give the FugueMax-specific `FMSig` a non-vacuous public
+    sequential certificate or classify it as an internal proof signature and
+    make the verified SidedEmbedRGA package the only production entry;
+  - [x] require every production JavaScript datatype to have a machine-checked
+    Lean package named in a runtime evidence manifest. Record correspondence
+    separately as extracted, manually implemented and differentially tested,
+    or unvalidated;
+  - [x] make the release gate reject raw, replay-only, SPOT, or countermodel
+    entries in the production ledger and reject runtime entries with missing
+    Lean evidence;
+  - [x] synchronize the theorem manifest, README, task status, both working
+    papers, and generated PDFs. Remove the stale claim that AegisSheet is
+    replay-only.
+
 - [x] **HIGHEST PRIORITY — finish the public sequential-correctness cutover.**
   The replay-only `IsRALinearizable` result reconstructs implementation state;
   the public `IsSpecRALinearizable` result must additionally select an exact,

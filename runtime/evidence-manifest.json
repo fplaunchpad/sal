@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "correspondence": "The JavaScript modules are manually implemented and differentially tested; none is extracted from Lean.",
+  "production": [
+    {
+      "id": "rga",
+      "source": "src/datatypes/rga.js",
+      "exports": ["rga", "RGA"],
+      "verifiedMRDT": "Sal.MRDTs.Instances.RGA.verified",
+      "correspondenceStatus": "differential-tested"
+    },
+    {
+      "id": "embed-rga",
+      "source": "src/datatypes/embedRGA.js",
+      "exports": ["embedRGA"],
+      "verifiedMRDT": "Sal.MRDTs.Instances.ProductionRGA.embed",
+      "correspondenceStatus": "differential-tested"
+    },
+    {
+      "id": "sided-embed-rga",
+      "source": "src/datatypes/liveGapSidedEmbedRGA.js",
+      "exports": ["liveGapSidedEmbedRGA"],
+      "verifiedMRDT": "Sal.MRDTs.Instances.ProductionRGA.sided",
+      "correspondenceStatus": "differential-tested"
+    },
+    {
+      "id": "or-set",
+      "source": "src/datatypes/orset.js",
+      "exports": ["orset"],
+      "verifiedMRDT": "Sal.MRDTs.Instances.ORSet.verified",
+      "correspondenceStatus": "differential-tested"
+    },
+    {
+      "id": "peritext",
+      "source": "src/datatypes/peritext.js",
+      "exports": ["peritext", "peritextSidedEmbedRGA", "PeritextSidedEmbedRGA"],
+      "verifiedMRDT": "Sal.MRDTs.Instances.SidedPeritext.richVerified",
+      "correspondenceStatus": "differential-tested"
+    }
+  ],
+  "comparisonOnly": [
+    {
+      "id": "shared-embed-rga",
+      "source": "src/datatypes/sharedEmbedRGA.js",
+      "reason": "Representation experiment compared differentially with EmbedRGA; not a distinct production semantic package."
+    },
+    {
+      "id": "sided-embed-rga-snapshots",
+      "source": "src/datatypes/sidedEmbedRGA.js",
+      "reason": "Absolute and split-map comparison oracles for the production live-gap representation."
+    },
+    {
+      "id": "unified-sided-embed-rga",
+      "source": "src/datatypes/unifiedSidedEmbedRGA.js",
+      "reason": "One-HAMT release-candidate experiment; it is not the production default."
+    },
+    {
+      "id": "peritext-rga",
+      "source": "src/datatypes/peritext.js",
+      "reason": "Benchmark baseline; the exact rich-text composition is not a production-registry entry."
+    },
+    {
+      "id": "peritext-embed-rga",
+      "source": "src/datatypes/peritext.js",
+      "reason": "Benchmark comparison; the production runtime uses the sided rich-text package."
+    },
+    {
+      "id": "sided-peritext-configurations",
+      "source": "src/datatypes/sidedPeritext.js",
+      "reason": "Explicit experimental and release-candidate comparison configurations."
+    }
+  ]
+}

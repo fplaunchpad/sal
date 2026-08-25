@@ -85,8 +85,10 @@ State GC & generic trace-erasure theorem & optional physical protocol \\
 This boundary matters. A theorem about a semantic MRDT does not by itself
 verify an editor widget, a wire decoder, or crash recovery. The JavaScript
 runtime is tested against the model-facing fixtures, but it is not extracted
-from Lean. We call Lean declarations \emph{machine-checked}, runtime test
-results \emph{validated}, and benchmark observations \emph{measured}.
+from Lean. Its evidence manifest names the exact Lean package associated with
+each released datatype and labels representation experiments separately. We
+call Lean declarations \emph{machine-checked}, runtime test results
+\emph{validated}, and benchmark observations \emph{measured}.
 
 \section{Raw MRDT semantics}
 
@@ -494,6 +496,14 @@ An implementer supplies:
 \hfill\lean{VerifiedMRDT}
 \end{definition}
 
+\begin{definition}[production package]
+A \lean{PackagedMRDT} is a dependent pair $(D,V)$ where $D$ is one raw
+\lean{MRDTSig} and $V$ has type \lean{VerifiedMRDT D}. The typed
+\lean{Production.registry} contains only these pairs. A raw signature,
+replay-only certificate, or theorem about a different signature cannot enter
+the registry.
+\end{definition}
+
 For every stored version $(S,E)$, both capstones produce a list $\pi$ such that
 \[
 \mathsf{perm}(\pi,E)\land
@@ -801,29 +811,34 @@ Datatype & Issuance & Convergence & Public spec & State GC \\
 Bounded counter & \checkmark & \checkmark & \checkmark & -- \\
 RGA with tombstones & \checkmark & \checkmark & \checkmark & -- \\
 EmbedRGA & \checkmark & \checkmark & \checkmark & policy lemmas \\
-SidedEmbedRGA/FugueMax & \checkmark & \checkmark & \checkmark & policy lemmas \\
-MVR & \checkmark & \checkmark & refuted$^1$ & -- \\
-Mergeable queue & \checkmark & \checkmark & refuted$^2$ & -- \\
+SidedEmbedRGA & \checkmark & \checkmark & \checkmark & policy lemmas \\
+Observed-remove set & \checkmark & \checkmark & \checkmark & -- \\
 Peritext/RichCore & \checkmark & \checkmark & \checkmark & concrete protocol \\
 TreeMove & \checkmark & \checkmark & \checkmark & concrete protocol \\
-AegisSheet & \checkmark & \checkmark & \checkmark$^3$ & certificate \\
+AegisSheet & \checkmark & \checkmark & \checkmark$^1$ & certificate \\
 \bottomrule
 \end{tabular}
-\caption{Current nontrivial certificate packages. $^1$Concurrent writes do
-not refine a single-value register. $^2$Duplicate concurrent dequeues do not
-refine FIFO. $^3$The public theorem uses causal-origin legality because the
+\caption{Current nontrivial production packages. $^1$The AegisSheet theorem
+uses causal-origin legality because the
 old whole-prefix legality rejects valid concurrent origins; its reference
 state is causally aware, not only the visible sheet. Trivial-generation
 grow-only and counter products are also in the ledger.}
 \label{tab:instances}
 \end{table}
 
-The production ledger also checks product construction, Fugue and FugueMax
-non-interleaving results, Peritext rendering, the distributed collector, and
-the combined GC theorem. It is an import-and-name gate rather than an axiom
-eliminator. The cited instance files print standard Lean axioms only; the
-repository release script separately rejects \lean{sorry} and
-\lean{sorryAx} in the production tree.
+The separate negative ledger checks the MVR single-register counterexample,
+the queue FIFO counterexample, and internal policy models. In particular,
+FugueMax's coordinate-level \lean{FMSig} has issuance, convergence, and
+RA-linearizability theorems, but it is not a public datatype package. Its role
+is to justify ordering-policy properties used by the released
+\lean{ProductionRGA.sided} package. This distinction prevents a partial proof
+from appearing in the production table.
+
+The production ledger also checks product construction, Peritext rendering,
+the distributed collector, and the combined GC theorem. The cited instance
+files print standard Lean axioms only; the repository release script rejects
+\lean{sorry} and \lean{sorryAx} in the production tree and validates the
+runtime evidence manifest.
 
 AegisSheet illustrates why origin issuance and merged-history legality are
 separate. Two concurrent operations can each be valid at an empty origin, but

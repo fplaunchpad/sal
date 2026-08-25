@@ -13,6 +13,8 @@ the compatibility contract.
 - `Sal.MRDTs.SequentialCorrectnessCertificate`
 - `Sal.MRDTs.IsSpecRALinearizable`
 - `Sal.MRDTs.VerifiedMRDT`
+- `Sal.MRDTs.PackagedMRDT`
+- `Sal.MRDTs.Production.registry`
 - `Sal.MRDTs.ConvergenceCertificate.sound`
 - `Sal.MRDTs.MintCertifiedReach.toV`
 - `Sal.MRDTs.Instances.InteractionSPOT.LWW.old_no_chain_refuted`
@@ -39,7 +41,6 @@ the compatibility contract.
 - `Sal.MRDTs.Instances.ProductionRGA.embed`
 - `Sal.MRDTs.Instances.ProductionRGA.sided`
 - `Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_maximally_noninterleaving`
-- `Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_ra_linearizable`
 - `Sal.MRDTs.Instances.Peritext.verified`
 - `Sal.MRDTs.Instances.Peritext.render_sequentially_correct`
 - `Sal.MRDTs.Instances.SidedPeritext.verified`
@@ -84,16 +85,30 @@ the compatibility contract.
 - `Sal.MRDTs.Instances.AegisSheet.observationally_correct`
 - `Sal.MRDTs.Instances.AegisSheet.GC.certificate`
 - `Sal.MRDTs.Instances.BoundedCounter.verified`
-- `Sal.MRDTs.Instances.MVR.replayVerified`
-- `Sal.MRDTs.Instances.MVR.concurrentState_no_sequential_register`
-- `Sal.MRDTs.Instances.Queue.replayVerified`
-- `Sal.MRDTs.Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo`
+- `Sal.MRDTs.Instances.ORSet.verified`
+- `Sal.MRDTs.Instances.ORSet.omitted_observed_tag_rejected`
+- `Sal.MRDTs.Instances.ORSet.fabricated_tag_rejected`
+- `Sal.MRDTs.Instances.ORSet.concurrent_remove_add_wins`
 - `Sal.MRDTs.Instances.FlatCounters.counterVerified`
 - `Sal.MRDTs.Instances.FlatCounters.iocVerified`
 - `Sal.MRDTs.Instances.FlatCounters.pnVerified`
 - `Sal.MRDTs.Instances.FlatGrowOnly.gosetVerified`
 - `Sal.MRDTs.Instances.FlatGrowOnly.gomapVerified`
 - `Sal.MRDTs.Instances.GSet.verified`
+
+## Negative and internal evidence
+
+These declarations are checked by `Sal.MRDTs.Metatheory.NegativeLedger` and
+cannot enter `Production.registry` without a complete `VerifiedMRDT` for the
+same signature.
+
+- `Sal.MRDTs.Instances.MVR.replayVerified`
+- `Sal.MRDTs.Instances.MVR.concurrentState_no_sequential_register`
+- `Sal.MRDTs.Instances.Queue.replayVerified`
+- `Sal.MRDTs.Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo`
+- `Sal.MRDTs.Instances.SidedEmbedRGA.fmGeneration`
+- `Sal.MRDTs.Instances.SidedEmbedRGA.fmConvergence`
+- `Sal.MRDTs.Instances.SidedEmbedRGA.fuguemax_ra_linearizable`
 
 Run `./scripts/check-mrdt-refactor.sh` to check the manifest’s imported ledger,
 forbidden-import and proof-hole scans, and all runtime conformance tests.
