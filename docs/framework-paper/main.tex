@@ -105,7 +105,7 @@ claim ledger records a source declaration for every load-bearing statement.
 
 \section{Raw MRDT semantics}
 
-\subsection{The signature stays plain}
+\subsection{The datatype signature}
 
 \begin{definition}[MRDT signature]
 An MRDT signature $D$ contains a state type $\state$, an initial state
@@ -118,19 +118,12 @@ total functions
 \]
 An event $e=(t,r,o)$ contains a Lamport timestamp, replica identifier, and
 application operation. In $\merge(l,a,b)$, $l$ is the common-ancestor state
-and $a,b$ are the branch states. Thus an implementer supplies one merge
-function, not separate binary and ancestor-aware implementations.
+and $a,b$ are the branch states. This function handles every merge.
 \hfill\lean{MRDTSig}
 \end{definition}
 
-The raw signature contains no invariant, applicability predicate, issuance
-guard, conflict relation, arbitration policy, or convergence proof. Its
-functions are executable and total. Sections~\ref{sec:convergence} and
-\ref{sec:generation} add the proof and client layers without changing this
-transition system. Lean's older replay library accepts a binary CRDT
-signature, so the mechanization derives its internal merge as
-$\lambda a\ b.\,\merge(\init,a,b)$. This is a projection, not another field
-or proof obligation.
+These functions define the datatype-level computation. The next section lifts
+them to executions over version DAGs.
 
 \subsection{Configurations and transitions}
 
