@@ -20,7 +20,7 @@ Collaborative rich-text editors need three guarantees at once: replicas must
 converge, their states must implement an ordinary sequential editor, and their
 metadata must remain collectable. We develop a Lean~4 verification of Peritext
 over mergeable replicated data types (MRDTs). The proof includes three
-sequence kernels: a tombstone RGA baseline, an immutable-coordinate EmbedRGA,
+sequence kernels: an RGA baseline, an immutable-coordinate EmbedRGA,
 and a sided EmbedRGA with machine-checked Fugue and FugueMax ordering-policy
 theorems. It proves replication convergence, local minted-history refinement
 to independent sequential editor machines, and full merged-history theorems
@@ -31,7 +31,7 @@ deletion evidence, and closed mark pairs while preserving future edits. Their
 composition refines the uncollected virtual-LCA semantics. A JavaScript
 implementation exercises the same designs. Repeated measurements show why
 both collectors and all three sequence baselines matter: on one long trace,
-EmbedRGA snapshots are 8.9 times smaller than tombstone RGA, while the sided
+EmbedRGA snapshots are 8.9 times smaller than RGA, while the sided
 variant pays additional metadata for a stronger non-interleaving policy.
 \end{abstract}
 
@@ -76,7 +76,7 @@ The artifact establishes the following claims.
 \item Every generation-certified ordinary or virtual-LCA execution of each
 sequence kernel is replication-aware linearizable.
 \item Each legal sequential history refines an independent sequential
-specification. EmbedRGA and SidedEmbedRGA use list states; tombstone RGA uses
+specification. EmbedRGA and SidedEmbedRGA use list states; RGA uses
 a finite birth/grave reference with a list-valued sequence; Peritext uses a
 list-based rich editor and proves exact rendering.
 \item Fugue has the stated forward non-interleaving property but not maximal
