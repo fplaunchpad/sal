@@ -17,11 +17,14 @@
   citecolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
 
 \newtheorem{theorem}{Theorem}[section]
-\newtheorem{definition}[theorem]{Definition}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
+\theoremstyle{plain}
 
 \newcommand{\lean}[1]{\texttt{#1}}
 \newcommand{\code}[1]{\texttt{#1}}

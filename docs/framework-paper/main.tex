@@ -11,23 +11,25 @@
 
 \begin{abstract}
 Mergeable replicated data types reconcile two branch states relative to a
-common ancestor. The original bottom-up linearization argument for this model
-does not hold: a global arbitration relation can change when an event outside
-the version being linearized absorbs an edge. We give a corrected Lean~4
-metatheory based on set-relative arbitration, a reachable store invariant, and
-a contextual ternary Join lemma. We keep the operational MRDT signature free
-of client invariants and applicability fields. Datatype implementers instead
-supply issuance, convergence, and an independent sequential specification.
-Optional safety certificates remain separate. The framework also supplies canonical virtual LCAs and an
-asynchronous distributed collector for commit history. Datatype-state garbage
-collection is optional and composes with the history collector by trace
-erasure. All theorem names in this paper are checked by the repository's
-\lean{RefactorLedger.lean} build target.
+common ancestor. The published bottom-up linearization strategy for this
+model is unsound: a global arbitration relation can lose an edge when an
+event outside the version being linearized absorbs it. We give a corrected
+Lean~4 metatheory based on set-relative replay, a store-wide reachable
+invariant, and a contextual ternary Join lemma. We then connect replay to an
+independent sequential specification through explicit issuance and
+interaction certificates. To make immutable version histories practical, we
+give an asynchronous distributed collector that preserves compressed
+reachability and lowest-common-ancestor answers without retaining the root or
+ancestor paths. A separate interface covers garbage collection inside a
+retained datatype state, and a trace-erasure theorem composes the two
+collectors. The paper states the operational semantics, verification
+conditions, and refinement theorems in full; the cited Lean declarations are
+machine-checked evidence, not a substitute for those statements.
 \end{abstract}
 
 \tableofcontents
 
-\section{Result and evidence boundary}
+\section{Problem, result, and evidence boundary}
 
 An MRDT stores immutable versions in a Git-like directed acyclic graph. An
 update extends one replica head. A merge of branch states $a$ and $b$ reads the
@@ -65,17 +67,22 @@ heads.}
 \label{fig:execution-shape}
 \end{figure}
 
-The current artifact separates four kinds of evidence.
+The result has three capstones. First, the corrected Join theorem establishes
+per-version convergence for ordinary and virtual-LCA execution. Second, a
+sequential certificate gives every retained version a legal abstract history
+with the same queries. Third, two independent collection protocols refine the
+uncollected semantics, both separately and in composition. Table~1 states who
+supplies each component.
 
 \begin{center}
 \begin{tabular}{@{}lll@{}}
 \toprule
 Layer & Framework supplies & Datatype supplies \\
 \midrule
-Raw execution & version DAG, apply, merge, query & state and operations \\
-Convergence & canonical adequacy, virtual LCA & contextual Join proof \\
-Client protocol & issuance-certified execution & origin issuance relation \\
-Client meaning & certificate interfaces & sequential and safety proofs \\
+Raw execution & version DAG, apply, merge, query & state, update, merge, query \\
+Convergence & canonical adequacy, virtual LCA & contextual Join certificate \\
+Client protocol & certified transition schema & origin issuance relation \\
+Client meaning & witness theorem schema & interaction and sequential proofs \\
 Commit GC & distributed protocol and refinement & none \\
 State GC & generic trace-erasure theorem & optional physical protocol \\
 \bottomrule
@@ -86,53 +93,75 @@ This boundary matters. A theorem about a semantic MRDT does not by itself
 verify an editor widget, a wire decoder, or crash recovery. The JavaScript
 runtime is tested against the model-facing fixtures, but it is not extracted
 from Lean. Its evidence manifest names the exact Lean package associated with
-each released datatype and labels representation experiments separately. We
-call Lean declarations \emph{machine-checked}, runtime test results
-\emph{validated}, and benchmark observations \emph{measured}.
+each released datatype and labels representation experiments separately.
+
+\paragraph{Evidence convention.}
+We call a proposition accepted by Lean \emph{machine-checked}, an executable
+runtime correspondence test \emph{validated}, and a benchmark observation
+\emph{measured}. The trusted model includes Lean's kernel, Mathlib definitions,
+and the paper-to-source transcription. It does not include the JavaScript
+runtime: that implementation is not extracted from Lean. The accompanying
+claim ledger records a source declaration for every load-bearing statement.
 
 \section{Raw MRDT semantics}
 
 \subsection{The signature stays plain}
 
 \begin{definition}[MRDT signature]
-An MRDT signature contains a state type $\state$, initial state $\init$,
-application operation, query interface, conflict-resolution relation, binary
-merge inherited from the CRDT core, and ternary merge
+An MRDT signature $D$ contains a state type $\state$, an initial state
+$\init$, application-operation type $O$, query type $Q$, result type $R$, and
+total functions
 \[
-  \mergeL : \state \to \state \to \state \to \state.
+ \mathsf{do}:\state\to(\mathbb N\times\mathbb N\times O)\to\state,
+ \quad \mathsf{query}:\state\to Q\to R,
+ \quad \mathsf{merge}:\state^2\to\state,
+ \quad \mergeL:\state^3\to\state.
 \]
-The compatibility law $\mergeL(\init,a,b)=\mathsf{merge}(a,b)$ relates the
-ternary and initial-slice binary operations.
+An event $e=(t,r,o)$ contains a Lamport timestamp, replica identifier, and
+application operation. The sole compatibility law is
+$\mergeL(\init,a,b)=\mathsf{merge}(a,b)$.
 \hfill\lean{MRDTSig}
 \end{definition}
 
-The signature has no fields named invariant or applicable. A client can invoke
-the raw update on every state. Generation restrictions enter only in the
-certified execution of Section~\ref{sec:generation}. This choice prevents the
-datatype carrier, client protocol, and safety theorem from becoming one
-circular definition.
+The raw signature contains no invariant, applicability predicate, issuance
+guard, conflict relation, arbitration policy, or convergence proof. Its
+functions are executable and total. Sections~\ref{sec:convergence} and
+\ref{sec:generation} add the proof and client layers without changing this
+transition system.
 
 \subsection{Configurations and transitions}
 
-A paper-level configuration is
+A paper-level configuration is the projection
 \[
   C=\langle V,H,P,\vis\rangle,
   \qquad V(v)=(S_v,E_v),
 \]
-where $V$ is the finite version store, $H$ maps replicas to heads, $P$ maps a
-version to its parents, and $\vis$ is event visibility. Replica state and
+where $V$ is a partial version store, $H$ maps replicas to heads, $P$ maps a
+version to its parents, and $\vis$ is event visibility. Every finite execution
+allocates only finitely many entries of $V$. Replica state and
 replica events are derived as $S_{H(r)}$ and $E_{H(r)}$. The Lean
 \lean{Configuration} also caches these two projections as \lean{N} and
 \lean{L}; \lean{head\_coherent} requires the caches to equal the derivation
 above. We omit the caches from the rules because they contain no independent
 semantic information.
 
-Version numbers increase along parent edges. The configuration requires
-immutable event timestamps, per-replica causal order, coherent heads, and the
-key LCA equation. If $v_T$ is an LCA of $v_1$ and $v_2$, then
+The remaining well-formedness fields are not omitted:
+\begin{enumerate}
+\item every visibility endpoint occurs in an active event set, visibility is
+causally closed at each active replica, and same-replica events are visible in
+one direction;
+\item distinct stored events have distinct timestamps, and
+$e_1\vis e_2$ implies $t(e_1)<t(e_2)$;
+\item parent versions have smaller version numbers, version~0 stores
+$(\init,\varnothing)$, and every active head names its cached state and events;
+\item if $v_T$ is an LCA of stored $v_1,v_2$, then
 \[
   \events(v_T)=\events(v_1)\cap\events(v_2).
 \]
+\end{enumerate}
+The last condition is semantic bookkeeping, not a property assumed of an
+arbitrary Git DAG. It is preserved by the transition rules and later derived
+from the store invariant used in the adequacy proof.
 
 An event is a triple $e=(t,r,o)$ of timestamp, issuer, and application
 operation. Applying a fresh event extends visibility from every event at the
@@ -146,7 +175,9 @@ Figure~\ref{fig:raw-semantics} gives all four constructors of \lean{Step}.
 The notation $C[v\mapsto(S,E);r\mapsto v;P(v)\mapsto\pi]$ updates the version
 store, replica head, and parent list while preserving all other entries.
 The raw \textsc{Apply} rule deliberately does not check whether the operation
-was issuable at that replica.
+was issuable at that replica. Write $\mathsf{freshTime}(C,t)$ when no event in
+an active replica set or any stored version has timestamp $t$; both clauses
+appear separately in Lean because an old version need not be an active head.
 
 \begin{figure}[H]
 \footnotesize
@@ -166,7 +197,7 @@ was issuable at that replica.
 \]
 \[
 \Rule{Apply}{
-  H(r)=v \quad V(v)=(S,E) \quad t\notin\mathsf{times}(C)
+  H(r)=v \quad V(v)=(S,E) \quad \mathsf{freshTime}(C,t)
   \\
   v'\notin\mathsf{dom}(V) \quad v<v' \quad e=(t,r,o)
 }{
@@ -194,17 +225,23 @@ shared initial version; \textsc{Query} is read-only.}
 \label{fig:raw-semantics}
 \end{figure}
 
-The rules expose the separation that the rest of the paper uses. Raw
-execution says which version is read and which immutable version is created.
-It does not say which operations a client may mint or which datatype
-invariant should hold.
+The initial configuration has one active replica, numbered~0, at version~0.
+\textsc{Create} activates another replica at the same initial version. Apply
+adds visibility edges from the issuer's entire current event set to the new
+event. Merge writes its result at $r_1$ and leaves $r_2$ unchanged. These
+choices remove three common ambiguities: replica creation is not a state
+copy, merge is not broadcast, and merge introduces no event or visibility
+edge.
 
 \section{Why the earlier induction fails}
 
-The conflict relation induces an arbitration order $\lo$. The first proof
-attempt used a relation computed from the entire configuration while
-linearizing a smaller version event set. That is unsound when a third event,
-outside the smaller set, absorbs an arbitration edge.
+The earlier proof equipped the update semantics with a proof-local replay
+policy and derived an arbitration order $\lo$. This policy is not part of the
+raw datatype and should not be confused with the client interaction policy in
+Section~\ref{sec:generation}. The failed induction computed $\lo$ from the
+entire configuration while linearizing a smaller version event set. A third
+event outside that set can then absorb an arbitration edge that the smaller
+history still needs.
 
 Write $e_1\parallel_C e_2$ when neither event sees the other, and write
 $e_1\mathrel{\mathsf{rc}}e_2$ when the historical proof's conflict resolver chooses
@@ -229,10 +266,14 @@ the configuration-global arbitration relation but fold to different states.
 \hfill\lean{convergence\_over\_backward\_closed\_subsets\_false}
 \end{proposition}
 
-The checked countermodel is in
-\code{Metatheory/Join/Convergence\_CounterModel.lean}. The repaired relation
-\lean{loOn C E} computes arbitration relative to $E$. In the countermodel it
-retains the edge that the outside absorber erased globally.
+The falsifier contains concurrent noncommuting $e_1,e_2$ and an event $e_3$
+with $e_2\vis e_3$. The global relation sees $e_3$ and removes the replay edge
+$e_1\to e_2$. A version containing only $E=\{e_1,e_2\}$ cannot use $e_3$ to
+justify that removal, so both list orders appear admissible although their
+folds differ. The checked countermodel is in
+\code{Metatheory/Join/Convergence\_CounterModel.lean}. The repaired
+\lean{loOn C E} retains the edge because its absorber quantifier ranges only
+over $E$.
 
 Associativity, commutativity, and idempotence of merge do not repair the proof.
 The second checked countermodel satisfies the core update laws and a bounded
@@ -271,6 +312,7 @@ Lean interfaces and invariants.}
 \end{figure}
 
 \section{Canonical adequacy}
+\label{sec:convergence}
 
 \subsection{Canonical states}
 
@@ -284,7 +326,7 @@ following state predicate:
  \exists\pi.\ \mathsf{perm}(\pi,E)\land
  \mathsf{respects}(\pi,\lo_E)\land
  \mathsf{fold}(\init,\pi)=s.
- \tag{Canonical}
+ \tag*{(Canonical)}
 \]
 This is \lean{IsCanonicalState}. The update-layer lemmas prove that any two
 such enumerations have the same fold under the supplied update conditions.
@@ -304,28 +346,52 @@ also satisfies the public target:
  \exists\pi.\ \mathsf{perm}(\pi,E)\land
  \mathsf{respects}(\pi,\lo_C)\land
  \mathsf{fold}(\init,\pi)=s.
- \tag{RA-Lin}
+ \tag*{(RA-Lin)}
 \]
 Thus the strengthened invariant is internal to the corrected proof; the
 observable theorem remains per-version RA-linearizability.
 
 \subsection{The ternary Join obligation}
 
+The hypotheses of Join are easy to understate, so we name them explicitly.
+Let $\mathsf{WF}(C)$ mean that $\vis$ is transitive and irreflexive. For an
+event set $E$, define
+\begin{align*}
+ \mathsf{Supported}_C(E)
+   &\equiv \forall e\in E.\ e\in C.\mathsf{events},\\
+ \mathsf{WeakClosed}_C(E)
+   &\equiv \forall a,b.\ a\vis b\land\neg(a\rightleftarrows b)
+          \land b\in E\Rightarrow a\in E.
+\end{align*}
+Weak closure retains visible predecessors only when their updates do not
+commute. Full causal closure drops the noncommutation premise.
+
 \begin{definition}[contextual ternary Join]
-For a configuration $C$, suppose $E_1$ and $E_2$ satisfy the required closure
-conditions. If $s_0$, $s_1$, and $s_2$ are canonical for
-$E_1\cap E_2$, $E_1$, and $E_2$, respectively, then
+$\mathsf{JoinAt}(D,C)$ holds when, for all $E_1,E_2,s_0,s_1,s_2$,
 \[
-  \mergeL(s_0,s_1,s_2)
+\begin{array}{l}
+ \mathsf{WF}(C),\quad
+ \mathsf{Supported}_C(E_1),\quad\mathsf{Supported}_C(E_2),\quad
+ \mathsf{WeakClosed}_C(E_1),\quad\mathsf{WeakClosed}_C(E_2),\\[1mm]
+ \mathsf{Canonical}(C,E_1\cap E_2,s_0),\quad
+ \mathsf{Canonical}(C,E_1,s_1),\quad
+ \mathsf{Canonical}(C,E_2,s_2)
+\end{array}
 \]
-must be canonical for $E_1\cup E_2$.
+imply
+\[
+ \mathsf{Canonical}\left(C,E_1\cup E_2,
+                    \mergeL(s_0,s_1,s_2)\right).
+ \tag*{(Join)}
+\]
 \hfill\lean{JoinLemma3At}
 \end{definition}
 
-\lean{JoinLemma3} quantifies this obligation over all configurations. Some
-datatypes prove the weaker per-configuration form from a history fact. The
-full-closure sibling \lean{JoinLemma3F} supports algorithms whose merge proof
-needs complete causal closure rather than only non-commuting predecessors.
+\lean{JoinLemma3} is $\forall C.\mathsf{JoinAt}(D,C)$. A datatype whose proof
+depends on honest issuance instead proves
+$\mathsf{MintHonest}(C)\Rightarrow\mathsf{JoinAt}(D,C)$. The alternative
+\lean{JoinLemma3F} changes both weak-closure premises to full causal closure;
+the framework's reachable invariant supplies that stronger fact.
 
 \begin{theorem}[ordinary adequacy]
 If a datatype satisfies \lean{JoinLemma3}, every configuration reachable from
@@ -334,12 +400,16 @@ version.
 \hfill\lean{ra\_linearizable3\_of\_join}
 \end{theorem}
 
-The proof carries \lean{StoreInv} with \lean{GoodConfig3}. The store invariant
-proves that parent reachability remains well founded and that the selected LCA
-contains exactly the event-set intersection
-(\lean{lca\_events\_of\_storeInv}). Apply extends a canonical fold by a fresh
-event. Merge invokes the Join obligation. Query and replica creation preserve
-the invariant directly.
+The proof carries two invariants. \lean{StoreInv} says that parents are
+allocated, event sets grow along parent edges, and every event has an allocated
+origin version that reaches every version containing it. The origin property
+proves the non-obvious half of
+$E_T=E_1\cap E_2$: a shared event's origin reaches both branches, hence reaches
+their LCA. \lean{GoodConfig3} says that every stored version is canonical,
+every stored event set is supported and causally closed, and visibility is
+transitive and irreflexive. Apply appends its fresh event to a canonical fold;
+merge invokes Join with the LCA equality; query and create preserve both
+invariants.
 
 The framework retains the eight-condition route as one constructor for Join:
 \lean{CoreVCs3CD}, \lean{FeasibleDeltaVCs3}, and \lean{CDVC3} imply
@@ -347,27 +417,89 @@ The framework retains the eight-condition route as one constructor for Join:
 \lean{VerifiedMRDT} package depends on the convergence result, not on one
 particular VC decomposition.
 
-\subsection{A checkable VC route to Join}
+\subsection{A checkable eight-obligation route to Join}
 
-The contextual Join lemma is the public convergence obligation. The framework
-also provides a reusable decomposition for datatypes whose ternary merge acts
-like applying deltas relative to an LCA. All equations below are quantified
-over canonical states for causally closed event sets; this restriction is
-load-bearing.
+Join is the semantic convergence obligation. The framework offers a sufficient
+decomposition for delta-shaped ternary merges; an implementer may instead
+prove Join directly. We state the decomposition fully because its contextual
+premises are exactly what an unconditional algebraic account loses.
 
-The first bundle contains the ordinary update laws and branch symmetry:
+First fix a proof-local replay policy
+$\mathsf{rc}(e_1,e_2)\in
+\{\mathsf{first},\mathsf{second},\mathsf{either}\}$. Write
+$e\mathrel{\#}e'$ for distinct timestamps and
+$\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. The three
+\lean{UpdateVCs} obligations are:
+\begin{align*}
+ e_1\#e_2\land\mathsf{rep}(e_1)\ne\mathsf{rep}(e_2)
+ &\Rightarrow
+ \bigl(\neg(e_1\rightleftarrows e_2)\iff
+   \mathsf{rc}(e_1,e_2)=\mathsf{first}\lor
+   \mathsf{rc}(e_2,e_1)=\mathsf{first}\bigr),
+ \tag*{(U1)}\\
+ e_1\#e_2\land e_2\#e_3
+ &\Rightarrow\neg\bigl(
+   \mathsf{rc}(e_1,e_2)=\mathsf{first}\land
+   \mathsf{rc}(e_2,e_3)=\mathsf{first}\bigr),
+ \tag*{(U2)}\\
+ \mathsf{rc}(e,e')=\mathsf{first}\land
+ \neg(e'\rightleftarrows e'')
+ &\Rightarrow
+ \mathsf{do}(\mathsf{fold}(\mathsf{do}(\mathsf{do}(s,e'),e),\pi),e'')
+ \nonumber\\[-1mm]
+ &=\mathsf{do}(\mathsf{fold}(\mathsf{do}(\mathsf{do}(s,e),e'),\pi),e'').
+ \tag*{(U3)}
+\end{align*}
+Equation~(U3) also assumes pairwise-distinct $e,e',e''$. These obligations
+belong to this reusable proof constructor, not to \lean{MRDTSig} or the public
+client interface. \lean{CoreVCs3CD} packages (U1)--(U3) and branch symmetry
 \[
   \mergeL(l,a,b)=\mergeL(l,b,a).
-  \tag{Core}
+  \tag*{(M1)}
 \]
-The feasible-delta bundle contains a unit law and two redistribution laws. A
-local event $e$ appears only on branch~1:
+
+To state the remaining four obligations, define
+\[
+ \downarrow_C e=\{x\mid x=e\lor
+   \mathsf{TransGen}(\lambda a\,b.\ a\vis b\land
+       \neg(a\rightleftarrows b))\ x\ e\}
+\]
+and let $\mathsf{Adm}(C,E_1,E_2,e)$ abbreviate:
+\begin{enumerate}
+\item $\mathsf{WF}(C)$, support and weak closure of $E_1,E_2$;
+\item $e\in E_1\cup E_2$; and
+\item union maximality,
+$\forall x\in E_1\cup E_2.\ x\ne e\Rightarrow
+\neg(e\mathrel{\lo_{E_1\cup E_2}}x)$.
+\end{enumerate}
+The feasible unit law is
+\[
+ \mathsf{Supported}_C(E)\land\mathsf{Canonical}(C,E,s)
+ \Rightarrow \mergeL(\init,\init,s)=s.
+ \tag*{(M2)}
+\]
+For the local redistribution law, assume
+$\mathsf{Adm}(C,E_1,E_2,e)$, $e\in E_1$, $e\notin E_2$, and
+\begin{align*}
+ \mathsf{Canonical}(C,E_1\cap E_2,s_0),\quad
+ &\mathsf{Canonical}(C,\downarrow_Ce\setminus\{e\},B),\\
+ \mathsf{Canonical}(C,E_1\setminus\{e\},t_1),\quad
+ &\mathsf{Canonical}(C,E_2,s_2).
+\end{align*}
+Then, writing $B{+}e=\mathsf{do}(B,e)$,
 \[
  \mergeL\bigl(s_0,\mergeL(B,t_1,B{+}e),s_2\bigr)
  =\mergeL\bigl(B,\mergeL(s_0,t_1,s_2),B{+}e\bigr).
- \tag{Local redistribution}
+ \tag*{(M3)}
 \]
-For a shared event, the same delta appears in the LCA and both branches:
+For shared redistribution, assume
+$\mathsf{Adm}(C,E_1,E_2,e)$, $e\in E_1\cap E_2$, and canonical states
+\[
+ t_0:\,(E_1\cap E_2)\setminus\{e\},\quad
+ B:\,\downarrow_Ce\setminus\{e\},\quad
+ t_1:\,E_1\setminus\{e\},\quad t_2:\,E_2\setminus\{e\}.
+\]
+The required equation is
 \[
  \begin{aligned}
  &\mergeL\bigl(\mergeL(B,t_0,B{+}e),
@@ -375,28 +507,43 @@ For a shared event, the same delta appears in the LCA and both branches:
                 \mergeL(B,t_2,B{+}e)\bigr)\\
  &\qquad=\mergeL\bigl(B,\mergeL(t_0,t_1,t_2),B{+}e\bigr).
  \end{aligned}
- \tag{Shared redistribution}
+ \tag*{(M4)}
 \]
-Here $B{+}e$ abbreviates $\mathsf{do}(B,e)$. The canonical-delta equation
-peels a union-maximal event after merging its honest causal base:
+Equations (M2)--(M4) form \lean{FeasibleDeltaVCs3}. ``Feasible'' is
+load-bearing: every state named above is a canonical state of the exact event
+set at that position in the proof.
+
+Finally, \lean{CDVC3} considers any supported, weakly closed $U$ and
+$\lo_U$-maximal $e\in U$. If
+\[
+ \mathsf{Canonical}(C,U\setminus\{e\},A),\qquad
+ \mathsf{Canonical}(C,\downarrow_Ce\setminus\{e\},B),
+\]
+then
 \[
   \mergeL(B,A,B{+}e)=A{+}e.
-  \tag{CD}
+  \tag*{(M5)}
 \]
-The premises identify $B$ with the canonical state of
-$\downarrow e\setminus\{e\}$ and $A$ with the canonical state of
-$U\setminus\{e\}$. They also require $e$ to be maximal under $\lo_U$.
 
 \begin{theorem}[VC adequacy]
-\lean{CoreVCs3CD}, \lean{FeasibleDeltaVCs3}, and \lean{CDVC3} imply
+Obligations (U1)--(U3) and (M1)--(M5), equivalently
+\lean{CoreVCs3CD}, \lean{FeasibleDeltaVCs3}, and \lean{CDVC3}, imply
 \lean{JoinLemma3}, which in turn implies per-version RA-linearizability of
 every reachable raw configuration.
 \hfill\lean{join\_lemma3\_of\_cd\_feasible},
 \lean{ra\_linearizable3\_of\_join}
 \end{theorem}
 
-This route is sufficient, not mandatory. A datatype may supply a direct Join
-proof, or use \lean{JoinLemma3F} when its proof needs full causal closure.
+\paragraph{Why these equations suffice.}
+Choose a $\lo_{E_1\cup E_2}$-maximal event. If it is local to one side, (M5)
+peels the inner causal delta, (M3) moves it through the outer merge, and the
+induction hypothesis joins the smaller event sets. If it is shared, (M5)
+peels it from the LCA and both branches, and (M4) moves the shared delta out
+once. (M2) closes the empty case; (M1) exchanges branches. The update laws
+justify swapping adjacent replay events and guarantee that the maximal-event
+decomposition is well founded. This is the checked proof structure of
+\lean{join\_lemma3\_of\_cd\_feasible}; the displayed obligations do not claim
+necessity.
 
 \section{Issuance, sequential meaning, and safety}
 \label{sec:generation}
@@ -419,11 +566,23 @@ An \lean{Issuance D} contains only
 
 \lean{IssuedStep} checks \lean{CanIssue} only for an apply transition and
 checks it at the issuer's current materialized head. Non-apply transitions
-retain their raw semantics. A final configuration does not store all former
-issuer heads, so \lean{MintCertifiedReach} explicitly carries a causal-fold
-issuance witness at each step. \lean{MintCertifiedReachV} is the virtual-LCA
-counterpart. A datatype derives any additional history invariant locally from
-that witness; the public interface does not store an arbitrary history field.
+retain their raw semantics. Define the visible past of event $e$ by
+$\mathsf{Past}_C(e)=\{x\in C.\mathsf{events}\mid x\vis e\}$. The persistent
+honesty assertion is
+\[
+ \mathsf{MintHonest}_I(C)\equiv
+ \forall e\in C.\mathsf{events}.\ \exists\pi.\
+ \mathsf{perm}(\pi,\mathsf{Past}_C(e))\land
+ \mathsf{respects}(\pi,\vis)\land
+ I.\mathsf{CanIssue}(e,\mathsf{fold}(\init,\pi)).
+ \tag*{(Mint)}
+\]
+A final configuration does not store all former issuer heads. Consequently,
+\lean{MintCertifiedReach} records that (Mint) held before and after every
+issued step rather than attempting to reconstruct a deleted origin state from
+the final heads. \lean{MintCertifiedReachV} is the virtual-LCA counterpart.
+A datatype derives any additional history invariant from this witness; the
+public interface does not accept an arbitrary invariant field.
 
 \begin{figure}[H]
 \small
@@ -482,16 +641,42 @@ policy orders remove before add. If the remove observed the add, visibility
 instead orders add before remove. The same policy therefore explains both
 add-wins concurrency and ordinary observed removal.
 
+\begin{definition}[client-facing RA-linearizability]
+Given interaction policy $A$, sequential specification $S$, and
+representation relation $\mathsf{Rel}\subseteq\state\times S.\mathsf{State}$,
+$\mathsf{SpecRALin}(D,A,S,\mathsf{Rel},C)$ holds when every
+$V(v)=(s,E)$ admits a list $\pi$ such that
+\[
+\begin{aligned}
+ &\mathsf{perm}(\pi,E),\qquad
+ \mathsf{respects}(\pi,\mathsf{interactionLoOn}(A,C,E)),\\
+ &S.\mathsf{Legal}(\pi),\qquad
+ \mathsf{Rel}(s,S.\mathsf{run}(\pi)),\\
+ &\forall q.\quad
+ D.\mathsf{query}(s,q)=S.\mathsf{query}(S.\mathsf{run}(\pi),q).
+\end{aligned}
+\tag*{(Spec-RA)}
+\]
+\hfill\lean{IsSpecRALinearizable}
+\end{definition}
+
+The first line constrains the explanation's events and ordering. The second
+rules out a witness that the sequential ADT itself considers illegal. The
+third rules out a representation relation that relates states but fails to
+preserve observations. Internal replay linearizability establishes none of
+these extra clauses automatically.
+
 \begin{definition}[verified MRDT]
 An implementer supplies:
 \begin{itemize}
-\item an \lean{Issuance};
-\item an \lean{InteractionSpec} that states semantic operation conflicts and
-  any required concurrent direction;
-\item a \lean{ConvergenceCertificate} for virtual-LCA certified execution,
-  from which the ordinary theorem is derived; and
-\item an independent \lean{SequentialSpec}, representation relation, and one
-  \lean{SequentialCorrectnessCertificate}.
+\item an issuance relation $I$;
+\item an interaction policy $A$;
+\item a convergence certificate proving internal replay linearizability for
+every $I$-certified virtual-LCA execution;
+\item an independent sequential specification $S$ and representation
+relation $\mathsf{Rel}$; and
+\item one sequential-correctness certificate proving (Spec-RA) from any
+ordinary or canonical-virtual certified execution and its replay theorem.
 \end{itemize}
 \hfill\lean{VerifiedMRDT}
 \end{definition}
@@ -504,23 +689,15 @@ replay-only certificate, or theorem about a different signature cannot enter
 the registry.
 \end{definition}
 
-For every stored version $(S,E)$, both capstones produce a list $\pi$ such that
-\[
-\mathsf{perm}(\pi,E)\land
-\mathsf{respects}(\pi,\mathsf{interactionLoOn})\land
-\mathsf{Legal}(\pi)\land \mathsf{Rel}(S,\mathsf{run}(\pi))
-\]
-and every implementation query equals the sequential query. The package
-exposes \lean{VerifiedMRDT.converges} and
-\lean{VerifiedMRDT.convergesV}. The replay-only package remains available as
-\lean{ReplayVerifiedMRDT} for internal replay proofs and checked negative
-classifications, but it is not the public sequential-correctness result. A
-datatype may separately supply a
-\lean{SafetyCertificate}. It stores widened preservation; ordinary
-preservation follows from the ordinary-to-widened execution embedding. Safety
-remains separate because convergence does not imply a client invariant. For example,
-the bounded counter proves non-negative observable values through a global
-history invariant; arbitrary ternary tuples do not preserve that invariant.
+The package exposes ordinary and virtual-LCA versions of (Spec-RA) as
+\lean{VerifiedMRDT.converges} and \lean{VerifiedMRDT.convergesV}. The
+replay-only \lean{ReplayVerifiedMRDT} remains an internal migration and
+negative-analysis device; it is not the public correctness result. A datatype
+may separately supply a \lean{SafetyCertificate}. Safety remains separate
+because convergence does not imply a client invariant. For example, the
+bounded counter proves non-negative observable values through a global
+history invariant; arbitrary ternary state tuples do not preserve that
+invariant.
 
 The executable \lean{CRDTSig} contains no resolver. The historical
 absorber-based convergence construction receives a proof-local
@@ -570,8 +747,24 @@ for the union of the maximal ancestors' event sets. The store theorem
 \lean{mca\_events\_cover} shows that this union covers every common ancestor.
 
 \lean{StepV} conservatively embeds every ordinary \lean{Step} and adds one
-virtual merge constructor. It allocates only the resulting version; the
-synthetic base is ghost semantic state.
+virtual merge constructor. For
+$V(v_i)=(s_i,E_i)$ and resolver $\widehat S(C,v_1,v_2)$, that rule is
+\[
+\Rule{Virtual-Merge}{
+ H(r_i)=v_i\ (i=1,2)\quad V(v_i)=(s_i,E_i)
+ \\
+ v_m\notin\mathsf{dom}(V)\quad v_1,v_2<v_m
+}{
+ \begin{aligned}
+ C&\xrightarrow{\mathsf{merge}(r_1,r_2)}C',\\[-1mm]
+ V'(v_m)&=(\mergeL(\widehat S(C,v_1,v_2),s_1,s_2),E_1\cup E_2),\\[-1mm]
+ H'(r_1)&=v_m,\qquad P'(v_m)=[v_1,v_2]
+ \end{aligned}
+}
+\]
+It allocates only the result version. The maximal-common-ancestor frontier and
+its recursively merged state are ghost semantic values, not virtual commits
+that a runtime must store or later garbage-collect.
 
 \begin{theorem}[virtual-LCA adequacy]
 The same \lean{JoinLemma3} that proves ordinary adequacy proves
@@ -580,12 +773,18 @@ canonical resolver.
 \hfill\lean{ra\_linearizable3V\_of\_join}
 \end{theorem}
 
-No new datatype merge law is introduced by virtual LCAs.
+The proof first establishes canonicality of $\widehat S$ for the union of the
+MCA event sets. It then applies the same Join premise used by ordinary merge.
+Therefore virtual LCAs introduce no new datatype merge law; they strengthen
+only the framework's construction of the base state.
 
 \section{Distributed commit-history garbage collection}
 
 Commit-history GC belongs to the runtime framework. It is not supplied once
 per datatype, and the public framework has no global stop-the-world collector.
+The specification baseline is the same asynchronous fetch protocol with the
+collection step erased. This gives a direct refinement statement and avoids a
+fictional globally synchronized intermediate machine.
 
 \subsection{Minimal local state}
 
@@ -596,9 +795,11 @@ For each replica, the logical collector stores only
   \qquad \mathsf{head}\in\mathsf{commits}.
 \]
 The parent relation, fixed roster, and immutable optional author of each
-operation commit are protocol parameters. Roots and merge commits are
-unauthored. An envelope contains only a commit set. Fetch is set union and does
-not change the receiving head; head synchronization is a separate transition.
+version are protocol parameters. Apply-created versions may record their
+origin replica; roots and merge versions are unauthored. Authorship is used to
+establish progress evidence, not authenticity against an adversary. An
+envelope contains only a commit set. Fetch is set union and does not change
+the receiving head; head synchronization is a separate transition.
 \hfill\lean{GC.Local}, \lean{GC.Envelope}
 
 A distributed world is only a replica-indexed family of these local records:
@@ -624,15 +825,18 @@ that an unauthored merge head cannot stand in for a missing author's evidence.
 
 \subsection{Collection certificate}
 
-A \lean{GC.Certificate} supplies a keep set containing the local head and the
-evidence witnesses. It proves support in the local holding and exact
-reachability and LCA answers between retained versions. The canonical
-constructor \lean{GC.Certificate.ofMCAClosed} uses a keep set closed under
-maximal common ancestors.
+A \lean{GC.Certificate} supplies a keep set and a compressed reachability
+relation $\preceq_K$. It contains the completeness proof, retains the local
+head and one derived witness for every remote roster member, proves support in
+the local holding, and preserves exact reachability and LCA answers between
+retained versions. The canonical constructor
+\lean{GC.Certificate.ofMCAClosed} takes $K$ closed under maximal common
+ancestors and instantiates $\preceq_K$ with reachability in the original graph
+restricted to retained endpoints.
 
 For local record $L$ and keep set $K$, the certificate obligations are:
 \begin{align*}
- &L.\mathsf{head}\in K,
+ &\mathsf{EvidenceComplete}(L),\qquad L.\mathsf{head}\in K,
  &&K\subseteq L.\mathsf{commits},\\
  &\forall r\in\mathsf{roster}.\ r=\mathsf{self}\ \lor\
    \exists v\in K.\ v\in\mathsf{evidence}(L,r),\\
@@ -645,9 +849,37 @@ For local record $L$ and keep set $K$, the certificate obligations are:
 
 The compressed graph connects two retained versions when the original graph
 reached between them. It need not retain intermediate paths or the old root.
+Figure~\ref{fig:compressed-dag} shows the distinction between retaining a path
+and retaining its reachability fact.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.25cm,y=.9cm]
+  \node[version,draw=gray] (r) at (0,0) {$0$};
+  \node[version,draw=gray] (a) at (1,0) {$a$};
+  \node[version,draw=gray] (b) at (2,0) {$b$};
+  \node[version,draw=blue!55!black,fill=blue!4] (c) at (3,0) {$c$};
+  \node[version,draw=gray] (d) at (4,0) {$d$};
+  \node[version,draw=blue!55!black,fill=blue!4] (h) at (5,0) {$h$};
+  \draw[flow,gray] (r)--(a); \draw[flow,gray] (a)--(b);
+  \draw[flow,gray] (b)--(c); \draw[flow,gray] (c)--(d);
+  \draw[flow,gray] (d)--(h);
+  \draw[-{Latex[length=2mm]},very thick,blue!60!black,dashed]
+    (c) to[bend left=28] node[above] {$c\preceq_K h$} (h);
+\end{tikzpicture}
+\caption{Compressed history retains endpoint answers, not the root or the
+intermediate path. Branching histories additionally retain the maximal common
+ancestors required by future LCA queries.}
+\label{fig:compressed-dag}
+\end{figure}
+
 \lean{GC.compressedReaches\_iff} proves reachability equivalence, and
 \lean{GC.root\_absent\_when\_dropped} proves that a root outside the keep set
-is absent from the retained carrier.
+is absent from the retained carrier. Keeping only the heads is insufficient:
+two retained heads may have a maximal common ancestor that collection would
+otherwise erase, changing the next merge base. Keeping the entire ancestor
+spine is sufficient but unnecessary; MCA closure is the smaller semantic
+condition.
 
 \subsection{Direct asynchronous refinement}
 
@@ -707,13 +939,34 @@ unchanged.
 \hfill\lean{GC.execution\_refines\_noGC}, \lean{GC.read\_preserved}
 \end{theorem}
 
-The runtime lifting adds a ghost MRDT configuration to state the semantic
-simulation. Visible apply and merge labels evolve that configuration. Fetch
-and GC remain silent. Erasing silent labels yields an ordinary or virtual-LCA
-core execution
-(\lean{GC.runtime\_refines\_core}, \lean{GC.runtime\_refines\_coreV}). The
-ghost configuration is not a second physical copy required of an
-implementation.
+This store theorem deliberately says only that an already-taken collecting
+trace has a no-GC match. To connect stores to the datatype semantics, define a
+proof-level runtime $R=\langle C,W\rangle$. Well-formedness says every locally
+held version is allocated in $C$, and every semantic head agrees with and is
+present in its local holding. A visible step additionally proves that its
+required versions are available: ordinary merge needs both heads and its LCA;
+a virtual merge needs the resolver's declared read set. Visible steps contain
+the actual \lean{Step} or \lean{StepV} derivation and install the new head in
+the local holding. Fetch and collection leave $C$ unchanged.
+
+\begin{theorem}[runtime history-GC refinement]
+If
+$R_0\xRightarrow{\lambda_1\ldots\lambda_n}_{\mathsf{runtime}}R_n$, then
+erasing silent fetch and collection labels yields
+\[
+ R_0.C\xRightarrow{\mathsf{filterMap}(\lambda_1\ldots\lambda_n)}_{\mathsf{Step}}
+ R_n.C.
+\]
+The analogous result holds for \lean{StepV} and an explicit virtual-resolver
+read set.
+\hfill\lean{GC.runtime\_refines\_core},
+\lean{GC.runtime\_refines\_coreV}
+\end{theorem}
+
+The core configuration is ghost simulation state, not a second physical copy
+required of an implementation. The theorem also makes the collector's trust
+boundary concrete: malformed network data and Byzantine authorship are out of
+scope; commits and authorship are immutable protocol facts.
 
 \section{Optional datatype-state garbage collection}
 
@@ -810,8 +1063,8 @@ Datatype & Issuance & Convergence & Public spec & State GC \\
 \midrule
 Bounded counter & \checkmark & \checkmark & \checkmark & -- \\
 RGA with tombstones & \checkmark & \checkmark & \checkmark & -- \\
-EmbedRGA & \checkmark & \checkmark & \checkmark & policy lemmas \\
-SidedEmbedRGA & \checkmark & \checkmark & \checkmark & policy lemmas \\
+EmbedRGA & \checkmark & \checkmark & \checkmark & -- \\
+SidedEmbedRGA & \checkmark & \checkmark & \checkmark & -- \\
 Observed-remove set & \checkmark & \checkmark & \checkmark & -- \\
 Peritext/RichCore & \checkmark & \checkmark & \checkmark & concrete protocol \\
 TreeMove & \checkmark & \checkmark & \checkmark & concrete protocol \\
@@ -826,67 +1079,34 @@ grow-only and counter products are also in the ledger.}
 \label{tab:instances}
 \end{table}
 
-The separate negative ledger checks the MVR single-register counterexample,
-the queue FIFO counterexample, and internal policy models. In particular,
-FugueMax's coordinate-level \lean{FMSig} has issuance, convergence, and
-RA-linearizability theorems, but it is not a public datatype package. Its role
-is to justify ordering-policy properties used by the released
-\lean{ProductionRGA.sided} package. This distinction prevents a partial proof
-from appearing in the production table.
+The breadth matters because the obligations are not tailored to text. The
+bounded counter uses nontrivial origin issuance; RGA and Peritext use honest
+fresh identifiers and anchors; the observed-remove set uses a directional
+public interaction policy; TreeMove and AegisSheet carry hidden identities
+needed by later conflict handling.
 
-The production ledger also checks product construction, Peritext rendering,
-the distributed collector, and the combined GC theorem. The cited instance
-files print standard Lean axioms only; the repository release script rejects
-\lean{sorry} and \lean{sorryAx} in the production tree and validates the
-runtime evidence manifest.
-
-AegisSheet illustrates why origin issuance and merged-history legality are
-separate. Two concurrent operations can each be valid at an empty origin, but
-neither was issued after observing the other. Rechecking the second operation
-against the full serialization prefix therefore rejects every order. The
-public \lean{CausalOriginLegal} predicate instead requires an applicable causal
-origin contained in the prefix. The theorem
-\lean{canonical\_causalOriginLegal} constructs such a timestamp-ordered witness
-for every certified version. \lean{spec\_linearizable} and
-\lean{spec\_linearizableV} then prove that the independent incremental
-spreadsheet machine materializes the replicated state and returns the same
-queries under ordinary and virtual-LCA execution.
-
-This incremental machine is not a conventional visible-sheet ADT. A checked
-abstraction audit constructs two reachable states with the same complete
-sheet view and applies the same honestly issued concurrent removal to both.
-The row disappears in one result and survives in the other because a
-same-position move created a hidden observed-remove keep token. Thus
-\lean{no\_view\_only\_step} rules out any deterministic transition function
-whose whole state is the visible view. Two companion witnesses perform the
-same test for a same-value cell overwrite and a same-range overwrite: the
-visible states agree before a concurrent selective overwrite, but their
-results differ because the active write identities differ. Consequently,
-observed-remove tokens and active cell/range version identities are semantic
-history required by the conflict and selective-undo policies, not event-log
-replay caches. The public theorem therefore claims refinement to a causally
-aware incremental spreadsheet machine, not to a visible-state single-user
-spreadsheet.
+AegisSheet supplies a useful negative abstraction result:
+\lean{no\_view\_only\_step} exhibits equal visible sheets whose responses to
+the same next operation differ. Its independent sequential machine must
+therefore retain causal identities rather than only visible cells. This is
+also why origin issuance and merged-history legality are separate: concurrent
+operations may each be legal at their own causal origin even when neither is
+legal after the other in a whole-prefix check.
 
 \paragraph{External implementation correspondence.}
-We also audited the public Scala implementation of AegisSheet against the
-semantics published in its paper. At Bismuth commit
-\code{dd4c614}, four focused regressions fail. Two directly contradict
-Table~4 of the AegisSheet paper: undoing a move does not preserve the stated
-position of a concurrent insertion, and undoing one of two concurrent moves
-does not ``revert both.'' A column move can also cross a range without
-removing its live range identifier, after which the public
-\code{listRanges()} operation throws. Finally, undoing a range removal after
-a concurrent insertion restores stale numeric coordinates rather than the
-original stable endpoints. The untouched upstream suites pass 69 tests, and
-our merge-law and purge controls pass; the evidence therefore localizes these
-failures to the Scala undo and range layers rather than refuting the
-underlying merge kernel. The report and permanent reproducers are in
-\code{docs/aegissheet-scala-audit.md} and
-\code{audits/aegissheet/AegisSheetRegressionSuite.scala}. Because the
-published paper links to a moving \code{main} branch rather than an immutable
-artifact revision, we must confirm the counterexamples and the relevant
-publication snapshot with the AegisSheet authors.
+We validated the public AegisSheet Scala implementation against its published
+intent matrices and found four focused undo/range regressions at the audited
+revision. These are implementation-correspondence observations, not Lean
+counterexamples to the merge kernel. The reproducible audit and its revision
+boundary are in \code{docs/aegissheet-scala-audit.md}.
+
+The separate negative ledger checks intentionally refuted or incomplete
+claims, including MVR/single-register and queue/FIFO counterexamples.
+FugueMax's coordinate lemmas justify the ordering policy used by the verified
+SidedEmbedRGA package but do not create a standalone production datatype. The
+release gate rejects \lean{sorry} and \lean{sorryAx}, requires every
+production entry to inhabit \lean{PackagedMRDT}, and checks the distributed
+and composed GC capstones.
 
 \section{Reproduction and residual boundary}
 

@@ -43,6 +43,12 @@ anonymous long-form working papers under `docs/`.
   operational rules, execution diagrams, proof dependencies, and the two-GC
   simulation first-class; gate cited declarations with `PaperLedger.lean` and
   remove the retired shared source.
+- [x] Adversarially rewrite the framework paper as the self-contained formal
+  submission narrative. State the raw and certified semantics, all
+  load-bearing Join/VC premises, the client-facing sequential theorem,
+  canonical virtual-LCA rule, distributed history-GC protocol/refinement, and
+  datatype-state-GC composition in typeset form. Keep the collaborative-
+  editing paper as supporting material rather than a second submission.
 - [ ] Add the submission-facing bibliography and related-work comparison after
   the technical narrative stabilizes. Keep citations distinct from the
   machine-checked claim ledger.
