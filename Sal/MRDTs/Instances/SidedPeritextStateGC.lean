@@ -245,8 +245,8 @@ def TextContOK (Γ : OrderedPrefixCode) (s : SState)
   ∀ (pre : List (Op SOp)) (o : Op SOp) (post : List (Op SOp)),
     τ = pre ++ o :: post →
     (∀ e π a sd, o.2.2 = SOp.ins e π a sd →
-      o.1 ∉ sIds (applySeq (S Γ).toCRDTSig s pre) ∧ kp o.1 = true ∧
-      ∀ r ∈ (show SState from applySeq (S Γ).toCRDTSig s pre),
+      o.1 ∉ sIds (applySeq (S Γ).toUpdateSig s pre) ∧ kp o.1 = true ∧
+      ∀ r ∈ (show SState from applySeq (S Γ).toUpdateSig s pre),
         Sal.EmbedRGA.sKey r.2.2 ≠ Sal.EmbedRGA.sKey (sCoord Γ o))
 
 /-- Runtime-facing continuation evidence. The epoch clock supplies retention
@@ -257,9 +257,9 @@ def TextEpochContOK (Γ : OrderedPrefixCode) (s : SState)
   ∀ (pre : List (Op SOp)) (o : Op SOp) (post : List (Op SOp)),
     τ = pre ++ o :: post →
     ∀ e π a sd, o.2.2 = SOp.ins e π a sd →
-      o.1 ∉ sIds (applySeq (S Γ).toCRDTSig s pre) ∧
+      o.1 ∉ sIds (applySeq (S Γ).toUpdateSig s pre) ∧
       p.stableCut < o.1 ∧
-      ∀ r ∈ (show SState from applySeq (S Γ).toCRDTSig s pre),
+      ∀ r ∈ (show SState from applySeq (S Γ).toUpdateSig s pre),
         Sal.EmbedRGA.sKey r.2.2 ≠ Sal.EmbedRGA.sKey (sCoord Γ o)
 
 theorem textContOK_of_epoch {Γ : OrderedPrefixCode} {s : SState}
@@ -271,16 +271,16 @@ theorem textContOK_of_epoch {Γ : OrderedPrefixCode} {s : SState}
 
 theorem applySeq_s_filter {Γ : OrderedPrefixCode} (kp : Nat → Bool) :
     ∀ (τ : List (Op SOp)) (s : SState), SSorted s → TextContOK Γ s kp τ →
-      applySeq (S Γ).toCRDTSig (s.filter fun r => kp r.1) τ =
-        (applySeq (S Γ).toCRDTSig s τ).filter fun r => kp r.1
+      applySeq (S Γ).toUpdateSig (s.filter fun r => kp r.1) τ =
+        (applySeq (S Γ).toUpdateSig s τ).filter fun r => kp r.1
   | [], s, _, _ => rfl
   | o :: τ, s, hsort, hok => by
       have hhead := hok [] o τ (by simp)
-      rw [show applySeq (S Γ).toCRDTSig (s.filter fun r => kp r.1) (o :: τ) =
-        applySeq (S Γ).toCRDTSig
+      rw [show applySeq (S Γ).toUpdateSig (s.filter fun r => kp r.1) (o :: τ) =
+        applySeq (S Γ).toUpdateSig
           (sUpdate Γ (s.filter fun r => kp r.1) o) τ from rfl]
-      rw [show applySeq (S Γ).toCRDTSig s (o :: τ) =
-        applySeq (S Γ).toCRDTSig (sUpdate Γ s o) τ from rfl]
+      rw [show applySeq (S Γ).toUpdateSig s (o :: τ) =
+        applySeq (S Γ).toUpdateSig (sUpdate Γ s o) τ from rfl]
       rw [sUpdate_filter kp s o hsort
         (fun e π a sd h => (hhead e π a sd h).1)
         (fun e π a sd h => (hhead e π a sd h).2.1)]
@@ -302,25 +302,25 @@ theorem collectedText_continuation_query {Γ : OrderedPrefixCode}
     (s : CompactState) (kp : Nat → Bool) (τ : List (Op SOp)) (kind : MType)
     (hsort : SSorted s.sided.text)
     (hok : TextContOK Γ s.sided.text kp τ)
-    (hnd : (sIds (applySeq (S Γ).toCRDTSig s.sided.text τ)).Nodup)
+    (hnd : (sIds (applySeq (S Γ).toUpdateSig s.sided.text τ)).Nodup)
     (hdead : ∀ r ∈ (show SState from
-        applySeq (S Γ).toCRDTSig s.sided.text τ),
+        applySeq (S Γ).toUpdateSig s.sided.text τ),
       kp r.1 = false → r.1 ∈ s.deleted)
     (hanchor : ∀ m ∈ s.marks,
       kp m.start_id = true ∧ kp m.end_id = true) :
-    query (s.withText (applySeq (S Γ).toCRDTSig
+    query (s.withText (applySeq (S Γ).toUpdateSig
       (s.sided.text.filter fun r => kp r.1) τ)) kind =
     query (s.withText
-      (applySeq (S Γ).toCRDTSig s.sided.text τ)) kind := by
+      (applySeq (S Γ).toUpdateSig s.sided.text τ)) kind := by
   rw [applySeq_s_filter kp τ s.sided.text hsort hok]
   unfold query CompactState.withText compactDocument
   simp only
   have hdoc :
-      ({ shadow := (applySeq (S Γ).toCRDTSig s.sided.text τ).filter
+      ({ shadow := (applySeq (S Γ).toUpdateSig s.sided.text τ).filter
             (fun r => kp r.1) |>.map (fun r => (r.1, r.2.1, ([] : List Bool)))
          deleted := s.deleted.toList } : DocD) =
         PeritextRender.GC.dropDoc
-          { shadow := (applySeq (S Γ).toCRDTSig s.sided.text τ).map
+          { shadow := (applySeq (S Γ).toUpdateSig s.sided.text τ).map
               (fun r => (r.1, r.2.1, ([] : List Bool)))
             deleted := s.deleted.toList } kp := by
     unfold PeritextRender.GC.dropDoc
@@ -331,7 +331,7 @@ theorem collectedText_continuation_query {Γ : OrderedPrefixCode}
   apply PeritextRender.GC.renderMarksDoc_dropDoc
   · simpa [DocD.birthIds, sIds] using hnd
   · intro c hc hdrop
-    have hcS : c ∈ sIds (applySeq (S Γ).toCRDTSig s.sided.text τ) := by
+    have hcS : c ∈ sIds (applySeq (S Γ).toUpdateSig s.sided.text τ) := by
       simpa [DocD.birthIds, sIds] using hc
     obtain ⟨r, hr, rfl⟩ := List.mem_map.mp hcS
     have hd := hdead r hr hdrop

@@ -63,7 +63,7 @@ def canonical (ops : List (Op RGAOp)) : List (Op RGAOp) :=
 /-- The grow-only implementation contains an insertion record exactly when
 the history contains the corresponding insertion event. -/
 theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor id : ℕ),
-    (applySeq RGAM.toCRDTSig RGAM.init ops).1 (ts, anchor, id) = true ↔
+    (applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor, id) = true ↔
       ∃ replica, (ts, replica, .addAfter anchor id) ∈ ops := by
   intro ops
   induction ops using List.reverseRecOn with
@@ -75,7 +75,7 @@ theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor id : ℕ),
           intro ts anchor id
           rw [applySeq_append_single]
           change
-            ((applySeq RGAM.toCRDTSig RGAM.init ops).1 (ts, anchor, id) ||
+            ((applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor, id) ||
               decide ((ts, anchor, id) = (ets, eanchor, eid))) = true ↔ _
           rw [Bool.or_eq_true, decide_eq_true_eq]
           rw [ih]
@@ -99,7 +99,7 @@ theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor id : ℕ),
 /-- The grow-only graveyard contains an identifier exactly when the history
 contains a deletion of that identifier. -/
 theorem grave_true_iff : ∀ (ops : List (Op RGAOp)) (id : ℕ),
-    (applySeq RGAM.toCRDTSig RGAM.init ops).2 id = true ↔
+    (applySeq RGAM.toUpdateSig RGAM.init ops).2 id = true ↔
       ∃ ts replica, (ts, replica, .remove id) ∈ ops := by
   intro ops
   induction ops using List.reverseRecOn with
@@ -115,7 +115,7 @@ theorem grave_true_iff : ∀ (ops : List (Op RGAOp)) (id : ℕ),
           intro id
           rw [applySeq_append_single]
           change
-            ((applySeq RGAM.toCRDTSig RGAM.init ops).2 id ||
+            ((applySeq RGAM.toUpdateSig RGAM.init ops).2 id ||
               decide (id = eid)) = true ↔ _
           rw [Bool.or_eq_true, decide_eq_true_eq]
           rw [ih]
@@ -153,9 +153,9 @@ theorem canonical_listPermOf {ops : List (Op RGAOp)}
   exact ⟨hp.nodup h.1, fun e => (hp.mem_iff (a := e)).symm.trans (h.2 e)⟩
 
 theorem canonical_fold (ops : List (Op RGAOp)) :
-    applySeq RGAM.toCRDTSig RGAM.init (canonical ops) =
-      applySeq RGAM.toCRDTSig RGAM.init ops :=
-  applySeq_perm_of_all_comm (D' := RGAM.toCRDTSig) RGAM_all_comm
+    applySeq RGAM.toUpdateSig RGAM.init (canonical ops) =
+      applySeq RGAM.toUpdateSig RGAM.init ops :=
+  applySeq_perm_of_all_comm (D' := RGAM.toUpdateSig) RGAM_all_comm
     (canonical_perm ops).symm RGAM.init
 
 def insertBlock (ops : List (Op RGAOp)) : List (Op RGAOp) :=
@@ -264,7 +264,7 @@ theorem anchor_mem_prefix {whole pre suffix : List (Op RGAOp)}
       exact (Nat.not_le_of_lt hlt hrel).elim
 
 theorem lo_false (C : Configuration RGAM) (a b : Op RGAOp) :
-    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+    ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
   rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
   · exact hnoncomm (RGAM_all_comm a b)
   · rw [RGAM_rc_either] at hrc
@@ -272,7 +272,7 @@ theorem lo_false (C : Configuration RGAM) (a b : Op RGAOp) :
 
 theorem respects_lo (C : Configuration RGAM) :
     ∀ ops : List (Op RGAOp),
-      respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+      respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
   intro ops
   induction ops with
   | nil => exact List.Pairwise.nil
@@ -300,14 +300,14 @@ theorem versionWellFormed_of_execution {C : Configuration RGAM}
     (exec : CertifiedExecution RGAM generation C)
     {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
     (hver : C.ver v = some (s, E)) : VersionWellFormed E := by
-  have hgood : GoodConfig3 C :=
-    exec.goodConfig (fun _ _ => join _)
-  have hsub := hgood.ver_events_sub v s E hver
-  have hclosed := hgood.ver_causal v s E hver
+  have hgood : CanonicalConfig C :=
+    exec.canonicalConfig (fun _ _ => join _)
+  have hsub := hgood.version_events_supported v s E hver
+  have hclosed := hgood.version_events_causal v s E hver
   have hmint : MintHonest RGAM applicable C := exec.mintHonest
   refine ⟨?_, ?_, ?_⟩
   · intro a b ha hb htime
-    exact C.core.ts_unique (hsub a ha) (hsub b hb) htime
+    exact C.replayContext.ts_unique (hsub a ha) (hsub b hb) htime
   · intro ts replica anchor id he
     obtain ⟨past, hpast, _, hguard⟩ := hmint _ (hsub _ he)
     rcases hguard with ⟨hid, hanchor, _, _, _⟩
@@ -368,11 +368,11 @@ theorem canonical_prefix_allocated {ops : List (Op RGAOp)}
       match e.2.2 with
       | .addAfter anchor _ =>
           anchor = 0 ∨ ∃ ts parent,
-            (applySeq RGAM.toCRDTSig RGAM.init pre).1
+            (applySeq RGAM.toUpdateSig RGAM.init pre).1
               (ts, parent, anchor) = true
       | .remove id =>
           ∃ ts anchor,
-            (applySeq RGAM.toCRDTSig RGAM.init pre).1
+            (applySeq RGAM.toUpdateSig RGAM.init pre).1
               (ts, anchor, id) = true := by
   intro pre e post hsplit
   have hcan := canonical_listPermOf hperm
@@ -427,27 +427,27 @@ def removedIds : List (Op RGAOp) → List ℕ
       obtain ⟨ts, replica, op⟩ := e
       cases op <;> simp [removedIds, ih]
 
-theorem spec_run_sets (ops : List (Op RGAOp)) :
-    (spec.run ops).adds = (insertEntries ops).toFinset ∧
-    (spec.run ops).grave = (removedIds ops).toFinset := by
+theorem birthGrave_run_sets (ops : List (Op RGAOp)) :
+    (birthGraveMachine.run ops).adds = (insertEntries ops).toFinset ∧
+    (birthGraveMachine.run ops).grave = (removedIds ops).toFinset := by
   induction ops using List.reverseRecOn with
-  | nil => simp [SequentialMachine.run, spec, insertEntries, removedIds]
+  | nil => simp [SequentialMachine.run, birthGraveMachine, insertEntries, removedIds]
   | append_singleton ops e ih =>
       rw [SequentialMachine.run_append_single]
       obtain ⟨ts, replica, op⟩ := e
       cases op with
       | addAfter anchor id =>
           constructor
-          · change insert (ts, anchor, id) (spec.run ops).adds = _
+          · change insert (ts, anchor, id) (birthGraveMachine.run ops).adds = _
             rw [ih.1]
             simp [insertEntries]
-          · change (spec.run ops).grave = _
+          · change (birthGraveMachine.run ops).grave = _
             simpa [removedIds] using ih.2
       | remove id =>
           constructor
-          · change (spec.run ops).adds = _
+          · change (birthGraveMachine.run ops).adds = _
             simpa [insertEntries] using ih.1
-          · change insert id (spec.run ops).grave = _
+          · change insert id (birthGraveMachine.run ops).grave = _
             rw [ih.2]
             simp [removedIds]
 
@@ -633,15 +633,16 @@ theorem list_run_eq_render {ops : List (Op RGAOp)}
 theorem sequence_run_canonical {ops : List (Op RGAOp)}
     {E : Set (Op RGAOp)} (hperm : listPermOf ops E)
     (hwf : VersionWellFormed E) :
-    sequence (spec.run (canonical ops)) = render (canonical ops) := by
-  have hsets := spec_run_sets (canonical ops)
+    sequence (birthGraveMachine.run (canonical ops)) = render (canonical ops) := by
+  have hsets := birthGrave_run_sets (canonical ops)
   unfold sequence render
   rw [hsets.1, hsets.2, canonical_entries_are_finset_order hperm hwf]
 
 theorem list_run_eq_sequence {ops : List (Op RGAOp)}
     {E : Set (Op RGAOp)} (hperm : listPermOf ops E)
     (hwf : VersionWellFormed E) :
-    listSpec.run (canonical ops) = sequence (spec.run (canonical ops)) := by
+    listSpec.run (canonical ops) =
+      sequence (birthGraveMachine.run (canonical ops)) := by
   rw [list_run_eq_render (canonical_ordered ops),
     sequence_run_canonical hperm hwf]
 
@@ -650,10 +651,10 @@ def listRel (s : RGAM.State) (xs : List ℕ) : Prop := read s = xs
 theorem canonical_refines_list {ops : List (Op RGAOp)}
     {E : Set (Op RGAOp)} (hperm : listPermOf ops E)
     (hwf : VersionWellFormed E) :
-    listRel (applySeq RGAM.toCRDTSig RGAM.init (canonical ops))
+    listRel (applySeq RGAM.toUpdateSig RGAM.init (canonical ops))
       (listSpec.run (canonical ops)) := by
   unfold listRel
-  rw [read_eq_sequence_of_stateRel (sequentialSound (canonical ops)),
+  rw [read_eq_sequence_of_birthGraveRel (birthGraveSound (canonical ops)),
     list_run_eq_sequence hperm hwf]
 
 noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate RGAM generation
@@ -663,7 +664,7 @@ noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate R
     intro v s E hver
     obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
     have hwf := versionWellFormed_of_execution exec hver
-    have hstate : applySeq RGAM.toCRDTSig RGAM.init (canonical ops) = s :=
+    have hstate : applySeq RGAM.toUpdateSig RGAM.init (canonical ops) = s :=
       (canonical_fold ops).trans hfold
     have href := canonical_refines_list hperm hwf
     have hrel : listRel s (listSpec.run (canonical ops)) := by
@@ -681,22 +682,22 @@ ordinary-list witness and exact query agreement. -/
 noncomputable def verified : VerifiedMRDT RGAM where
   issuance := generation
   interaction := InteractionSpec.raw RGAM
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Spec := listSpec
   Rel := listRel
   sequentialCorrectness := listSequentialCorrectness
 
 theorem rga_spec_linearizable {C : Configuration RGAM}
     (h : MintCertifiedReach RGAM generation C) :
-    IsSpecRALinearizable RGAM (InteractionSpec.raw RGAM)
+    IsSpecLinearizable RGAM (InteractionSpec.raw RGAM)
       listSpec listRel C :=
-  verified.converges h
+  verified.correct h
 
 theorem rga_spec_linearizableV {C : Configuration RGAM}
-    (h : MintCertifiedReachV RGAM (canonicalVirtualLCA RGAM) generation C) :
-    IsSpecRALinearizable RGAM (InteractionSpec.raw RGAM)
+    (h : MintCertifiedReachV RGAM (canonicalVirtualMergeBase RGAM) generation C) :
+    IsSpecLinearizable RGAM (InteractionSpec.raw RGAM)
       listSpec listRel C :=
-  verified.convergesV h
+  verified.correctV h
 
 #print axioms rga_spec_linearizable
 #print axioms rga_spec_linearizableV

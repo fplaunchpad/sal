@@ -8,8 +8,8 @@ Kamath, Nagar, Sivaramakrishnan; PLDI 2022), re-proved here. Enqueue mints a
 timestamped element; dequeue removes a **named** element, the head its issuer
 observed (the op carries the tag; the client API is unchanged, the replica
 captures its generation context, and this is what Peepul's `max(i,j)` merge
-was implicitly doing). The three-way merge is Peepul's: the LCA's survivors
-(elements still present in both branches) in LCA order, then each branch's
+was implicitly doing). The three-way merge is Peepul's: the GCA's survivors
+(elements still present in both branches) in GCA order, then each branch's
 new arrivals in branch order.
 
 Why this instance is structurally forced OUT of the flat engine: concurrent
@@ -17,9 +17,9 @@ enqueues genuinely do not commute (queue order is arrival order) and they
 conflict with their own class, a clique, so no `rc` assignment satisfies
 `rc_non_comm_directional` + `no_rc_chain`. The route here instead proves the
 ternary **Join Lemma directly** (`q_join_at`): Peepul's merge *is* the
-linearization witness (LCA-enumeration ++ branch-one news ++ branch-two news,
-no reordering), and the framework's `GoodConfig3` induction
-(`goodConfig3_merge_at`) does the rest.
+linearization witness (GCA-enumeration ++ branch-one news ++ branch-two news,
+no reordering), and the framework's `CanonicalConfig` induction
+(`canonicalConfig_merge_at`) does the rest.
 
 The Join holds under an honest-history contract (`QHonest`): every dequeue
 names an element its issuer had observed (a `vis`-prior enqueue with that
@@ -27,10 +27,10 @@ tag). This is the queue's `HonestDelivery`; without it a dequeue can precede
 its enqueue in some enumerations and fold contents become enumeration-
 dependent. Headline:
 
-    queue_ra_linearizable3 :
-      QHonest C → reachable C → IsRALinearizable3 C
+    queue_replay_witness :
+      QHonest C → reachable C → HasReplayWitness C
 
-Per-version RA-linearizability of the raw system, no quotient (the state is
+This is a per-version replay theorem for the raw system, with no quotient (the state is
 kept in canonical single-list form; Peepul's two-list balancing is an `≈`-away
 representation refinement, deferred).
 -/
@@ -62,7 +62,7 @@ def qUpdate (s : QState) (o : Op QOp) : QState :=
   | .enq v => if o.1 ∈ qTags s then s else s ++ [(o.1, v)]
   | .deq t => s.filter (fun x => decide (x.1 ≠ t))
 
-/-- Peepul's merge: LCA elements surviving in both branches (LCA order), then
+/-- Peepul's merge: GCA elements surviving in both branches (GCA order), then
 branch-one's news (branch order), then branch-two's. -/
 def qMerge (l a b : QState) : QState :=
   l.filter (fun x => decide (x.1 ∈ qTags a ∧ x.1 ∈ qTags b))
@@ -82,10 +82,10 @@ def Q : MRDTSig where
   merge := qMerge
 
 theorem Q_core_update (s : QState) (o : Op QOp) :
-    Q.toCRDTSig.update s o = qUpdate s o := rfl
+    Q.toUpdateSig.update s o = qUpdate s o := rfl
 
 theorem Q_rc_either (o₁ o₂ : Op QOp) :
-    Q.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+    Q.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §2  Event helpers -/
 
@@ -245,15 +245,15 @@ theorem qCanonList_snoc_deq (ρ : List (Op QOp)) (ts r t : ℕ) :
 empty queue is the canonical content: the enqueues, in enumeration order,
 minus the dequeued tags. -/
 theorem q_fold_canon : ∀ (ρ : List (Op QOp)), QWf ρ →
-    applySeq Q.toCRDTSig Q.init ρ = qCanonList ρ := by
+    applySeq Q.toUpdateSig Q.init ρ = qCanonList ρ := by
   intro ρ
   induction ρ using List.reverseRecOn with
   | nil => intro _; rfl
   | append_singleton ρ e ih =>
     intro h
     have hpre := h.prefix
-    have hstep : applySeq Q.toCRDTSig Q.init (ρ ++ [e])
-        = qUpdate (applySeq Q.toCRDTSig Q.init ρ) e := by
+    have hstep : applySeq Q.toUpdateSig Q.init (ρ ++ [e])
+        = qUpdate (applySeq Q.toUpdateSig Q.init ρ) e := by
       unfold applySeq
       rw [List.foldl_append]
       rfl
@@ -287,7 +287,7 @@ theorem q_fold_canon : ∀ (ρ : List (Op QOp)), QWf ρ →
 
 /-- Same-tag enqueue/dequeue do not commute (witness: the empty queue). -/
 theorem q_enq_deq_not_comm (ts r v ts' r' : ℕ) :
-    ¬ Q.toCRDTSig.commutes (ts, r, QOp.enq v) (ts', r', QOp.deq ts) := by
+    ¬ Q.toUpdateSig.commutes (ts, r, QOp.enq v) (ts', r', QOp.deq ts) := by
   intro h
   have := h []
   change qUpdate (qUpdate [] (ts, r, QOp.enq v))
@@ -298,9 +298,9 @@ theorem q_enq_deq_not_comm (ts r v ts' r' : ℕ) :
 
 /-- For the queue, `loOn` collapses to its `vis` arm (`rc` is `Either`;
 the generic `loOn_iff_of_rc_either`). -/
-theorem q_loOn_iff (C : Sal.MRDTs.Foundation.Configuration Q.toCRDTSig)
+theorem q_loOn_iff (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig)
     (ev : Set (Op QOp)) (e₁ e₂ : Op QOp) :
-    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ Q.toCRDTSig.commutes e₁ e₂ :=
+    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ Q.toUpdateSig.commutes e₁ e₂ :=
   loOn_iff_of_rc_either Q_rc_either C ev e₁ e₂
 
 
@@ -308,11 +308,11 @@ theorem q_loOn_iff (C : Sal.MRDTs.Foundation.Configuration Q.toCRDTSig)
 
 /-- Honest histories: every dequeue names a tag its issuer had observed, a
 `vis`-prior enqueue with that tag. The queue's `HonestDelivery`. -/
-def QHonestCore (C : Sal.MRDTs.Foundation.Configuration Q.toCRDTSig) : Prop :=
+def QHonestCore (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig) : Prop :=
   ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = t ∧ ∃ v, a.2.2 = QOp.enq v
 
-variable {C : Sal.MRDTs.Foundation.Configuration Q.toCRDTSig}
+variable {C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig}
 
 /-- Timestamp uniqueness across the event universe (the generic
 `Configuration.ts_unique`). -/
@@ -324,7 +324,7 @@ theorem q_ts_unique {a b : Op QOp}
 theorem q_pair_not_comm {a d : Op QOp}
     (hae : ∃ v, a.2.2 = QOp.enq v) (hdd : ∃ t, d.2.2 = QOp.deq t)
     (htag : a.1 = qTag d) :
-    ¬ Q.toCRDTSig.commutes a d := by
+    ¬ Q.toUpdateSig.commutes a d := by
   obtain ⟨a1, a2, aop⟩ := a
   obtain ⟨d1, d2, dop⟩ := d
   obtain ⟨v, hv⟩ := hae
@@ -340,7 +340,7 @@ event set, `vis`-before it. -/
 theorem q_deq_enq_mem (hHon : QHonestCore C)
     {ev : Set (Op QOp)}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ Q.toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
+    (hcl : ∀ a b, C.vis a b → ¬ Q.toUpdateSig.commutes a b → b ∈ ev → a ∈ ev) :
     ∀ d ∈ ev, qIsEnq d = false →
       ∃ a ∈ ev, qIsEnq a = true ∧ a.1 = qTag d ∧ C.vis a d := by
   intro d hd hdd
@@ -350,7 +350,7 @@ theorem q_deq_enq_mem (hHon : QHonestCore C)
   | deq t =>
     obtain ⟨a, haev, hvis, hat, v, haenq⟩ :=
       hHon (ts, r, QOp.deq t) (hin _ hd) t rfl
-    have hncomm : ¬ Q.toCRDTSig.commutes a (ts, r, QOp.deq t) :=
+    have hncomm : ¬ Q.toUpdateSig.commutes a (ts, r, QOp.deq t) :=
       q_pair_not_comm ⟨v, haenq⟩ ⟨t, rfl⟩ (by simpa [qTag] using hat)
     refine ⟨a, hcl a _ hvis hncomm hd, ?_, ?_, hvis⟩
     · obtain ⟨a1, a2, aop⟩ := a
@@ -363,7 +363,7 @@ theorem q_deq_enq_mem (hHon : QHonestCore C)
 theorem q_wf_of_enum (hHon : QHonestCore C)
     {ev : Set (Op QOp)} {ρ : List (Op QOp)}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ Q.toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
+    (hcl : ∀ a b, C.vis a b → ¬ Q.toUpdateSig.commutes a b → b ∈ ev → a ∈ ev)
     (hperm : listPermOf ρ ev)
     (hresp : respects ρ (loOn C ev)) : QWf ρ := by
   refine ⟨hperm.1, ?_, ?_⟩
@@ -432,13 +432,13 @@ theorem qTags_canon_perm {ρ : List (Op QOp)} {ev : Set (Op QOp)}
 the generic `respects_transfer_of_rc_either`). -/
 theorem q_respects_transfer {ev ev' : Set (Op QOp)} {ρ : List (Op QOp)}
     (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') :=
-  respects_transfer_of_rc_either (D' := Q.toCRDTSig) Q_rc_either h
+  respects_transfer_of_rc_either (D' := Q.toUpdateSig) Q_rc_either h
 
 open LabeledTS in
 /-- **The queue's ternary Join Lemma, at any honest configuration.** The
-witness enumeration is Peepul's merge itself: the LCA's enumeration, then
+witness enumeration is Peepul's merge itself: the GCA's enumeration, then
 branch one's delta in branch order, then branch two's. -/
-theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
+theorem q_join_at (hHon : QHonestCore C) : JoinAt Q C := by
   intro ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical
   obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
@@ -446,14 +446,14 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
   obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
   set ev₀ := ev₁ ∩ ev₂ with hev₀
   have hin₀ : ∀ a ∈ ev₀, a ∈ C.events := fun a ha => hin₁ a ha.1
-  have hcl₀ : ∀ a b, C.vis a b → ¬ Q.toCRDTSig.commutes a b →
+  have hcl₀ : ∀ a b, C.vis a b → ¬ Q.toUpdateSig.commutes a b →
       b ∈ ev₀ → a ∈ ev₀ :=
     fun a b hv hc hb => ⟨hcl₁ a b hv hc hb.1, hcl₂ a b hv hc hb.2⟩
   have hinU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
     rintro a (ha | ha)
     · exact hin₁ a ha
     · exact hin₂ a ha
-  have hclU : ∀ a b, C.vis a b → ¬ Q.toCRDTSig.commutes a b →
+  have hclU : ∀ a b, C.vis a b → ¬ Q.toUpdateSig.commutes a b →
       b ∈ ev₁ ∪ ev₂ → a ∈ ev₁ ∪ ev₂ := by
     rintro a b hv hc (hb | hb)
     · exact Or.inl (hcl₁ a b hv hc hb)
@@ -543,7 +543,7 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
         exact hΔ₂ev₁ y hy hyev
   -- the fold of the witness
   have hwfU : QWf (ρ₀ ++ Δ₁ ++ Δ₂) := q_wf_of_enum hHon hinU hclU hpermU hrespU
-  have hfoldU : applySeq Q.toCRDTSig Q.init (ρ₀ ++ Δ₁ ++ Δ₂)
+  have hfoldU : applySeq Q.toUpdateSig Q.init (ρ₀ ++ Δ₁ ++ Δ₂)
       = qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) := q_fold_canon _ hwfU
   -- set-level characterizations
   have htags₀ : ∀ t, t ∈ qTags s₀ ↔ qEnqIn ev₀ t ∧ ¬ qDeqIn ev₀ t := by
@@ -589,7 +589,7 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
       q_ts_unique (hin₁ a' ha'ev) (hin₂ e he) (by rw [ha't, hdt])
     rw [heq] at ha'ev
     exact h0 ⟨ha'ev, he⟩
-  -- an LCA enqueue-tag can only be enqueued by the LCA event (ts-uniqueness)
+  -- an GCA enqueue-tag can only be enqueued by the GCA event (ts-uniqueness)
   have hEnq₀ : ∀ e, e ∈ C.events → qEnqIn ev₀ e.1 → e ∈ ev₀ := by
     rintro e he ⟨a, ha, _, hat⟩
     have : a = e := q_ts_unique (hin₀ a ha) he hat
@@ -600,7 +600,7 @@ theorem q_join_at (hHon : QHonestCore C) : JoinLemma3At Q C := by
     rw [List.filter_append, List.filter_append, List.map_append, List.map_append]
     congr 1
     · congr 1
-      · -- LCA segment ↔ l-part
+      · -- GCA segment ↔ l-part
         rw [hs₀]
         unfold qCanonList
         rw [List.filter_map, List.filter_filter]

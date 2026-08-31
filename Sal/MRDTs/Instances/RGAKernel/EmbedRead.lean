@@ -78,7 +78,7 @@ theorem sel_do_stable (Γ : OrderedPrefixCode) (s : concrete_st α) (o : op_t α
 
 omit [DecidableEq α] in
 /-- A surviving id's value is untouched by a merge, seen from branch `a`
-(coherence with the LCA is the immutability invariant). -/
+(coherence with the GCA is the immutability invariant). -/
 theorem sel_merge_stable (l a b : concrete_st α) (k : ℕ)
     (hla : coherent2 l a) (hk : contains a k = true) :
     sel (merge l a b) k = sel a k := by
@@ -213,12 +213,12 @@ theorem l1_delete_order :
 `[10, 8, 22, 16]`, the shape that kills every timestamp-oblivious variant,
 converging here because coordinates are birth constants. -/
 
-def m_lca : concrete_st ℕ := mkE []
+def m_base : concrete_st ℕ := mkE []
 def m_A : concrete_st ℕ := mkE [(6, 100, u 6), (22, 102, u 6 ++ u 16), (16, 103, u 6 ++ u 10)]
 def m_B : concrete_st ℕ := mkE [(10, 101, u 10)]
 def m_RT : concrete_st ℕ := mkE [(8, 104, u 8)]
 
-def m_M1 : concrete_st ℕ := merge m_lca m_A m_B
+def m_M1 : concrete_st ℕ := merge m_base m_A m_B
 
 theorem merge_document : document m_M1 [6, 10, 16, 22] = [10, 6, 22, 16] := by
   native_decide
@@ -230,10 +230,10 @@ theorem merge_document_not_ids_order :
   native_decide
 
 /-- Topology X: meet `8` while `6` is alive, then delete `6`. -/
-def m_X : concrete_st ℕ := do_ unaryCode (merge m_lca m_M1 m_RT) (30, 1, .Del 6)
+def m_X : concrete_st ℕ := do_ unaryCode (merge m_base m_M1 m_RT) (30, 1, .Del 6)
 
 /-- Topology Y: delete `6` first, then meet `8`. -/
-def m_Y : concrete_st ℕ := merge m_lca (do_ unaryCode m_M1 (30, 1, .Del 6)) m_RT
+def m_Y : concrete_st ℕ := merge m_base (do_ unaryCode m_M1 (30, 1, .Del 6)) m_RT
 
 theorem credential_topologies_converge :
     document m_X [6, 8, 10, 16, 22] = [10, 8, 22, 16] ∧

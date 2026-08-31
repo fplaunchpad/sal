@@ -1,17 +1,17 @@
-import Sal.MRDTs.Metatheory.Join.Merge_Linearization_Set
+import Sal.MRDTs.Metatheory.Join.SetRelativeReplay
 import Sal.MRDTs.Framework.Execution
 
 /-!
 # The σ/`loOn` layer for the ternary setting
 
 The set-relative linearization machinery of
-`Sal/MRDTs/Metatheory/Join/Merge_Linearization_Set.lean`, re-hosted on the merge-free
-**guarded** `UpdateVCs` fragment (three fields: guarded `rc_non_comm_directional`,
+`Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean`, re-hosted on the merge-free
+**guarded** `ReplayLaws` fragment (three fields: guarded `rc_non_comm_directional`,
 where the `differentReplicas` guard is the paper's F* interface form, plus
-`no_rc_chain` and `cond_comm_lift`), together with the **core projection**: the
-ternary `Configuration`'s replica-keyed core *is* the binary foundation
+`no_rc_chain` and `cond_comm_lift`), together with the **replay projection**: the
+ternary `ReplayContext`'s replica-keyed core *is* the binary foundation
 configuration, so `loOn`/`IsCanonicalState`/`convergence_on` and
-friends are reused, not re-proved. The merge-shaped fields of `CoreVCs3` cannot
+friends are reused, not re-proved. The merge-shaped fields of `MergeLaws` cannot
 be demanded of real MRDTs.
 -/
 
@@ -23,14 +23,14 @@ open Classical
 /-! ## §A. The update-layer VC fragment, and the σ-machinery re-hosted on it -/
 
 section UpdateLayer
-variable {D : CRDTSig}
+variable {D : UpdateSig}
 variable [ReplayPolicy D]
 
-/-- The three update-layer fields of the 2-way `CoreVCs`, the fragment the
-`loOn`/convergence/canonical-state machinery consumes. An MRDT's `CoreVCs3`
-supplies these unchanged; the binary *merge* fields of `CoreVCs` are not
-required (they are false for LCA-sensitive MRDTs such as the counter). -/
-structure UpdateVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
+/-- The three update-layer fields of the 2-way `BinaryMergeLaws`, the fragment the
+`loOn`/convergence/canonical-state machinery consumes. An MRDT's `MergeLaws`
+supplies these unchanged; the binary *merge* fields of `BinaryMergeLaws` are not
+required (they are false for GCA-sensitive MRDTs such as the counter). -/
+structure ReplayLaws (D : UpdateSig) [ReplayPolicy D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
@@ -50,15 +50,16 @@ structure UpdateVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
 
-/-- The slim bundle from the full 2-way core. -/
-theorem UpdateVCs.of_core (hVC : CoreVCs D) : UpdateVCs D :=
+/-- Project the replay-order laws from the historical binary merge bundle. -/
+theorem ReplayLaws.ofBinaryMergeLaws [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) : ReplayLaws D :=
   ⟨fun o₁ o₂ hd _ => hVC.rc_non_comm_directional o₁ o₂ hd,
    hVC.no_rc_chain, hVC.cond_comm_lift⟩
 
-/-- Verbatim `Merge_Linearization_Set.lean:128` (`applySeq_swap_via_cond_comm_lift_core`)
-with `CoreVCs` slimmed to `UpdateVCs`. -/
-theorem applySeq_swap_via_cond_comm_lift_u
-    (hU : UpdateVCs D)
+/-- Verbatim `SetRelativeReplay.lean:128` (`applySeq_swap_via_cond_comm_lift_core`)
+with `BinaryMergeLaws` slimmed to `ReplayLaws`. -/
+theorem applySeq_swap_via_cond_comm_lift_of_replayLaws
+    (hU : ReplayLaws D)
     {a b e₃ : Op D.AppOp}
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
@@ -81,9 +82,9 @@ theorem applySeq_swap_via_cond_comm_lift_u
     (hU.cond_comm_lift (applySeq D s pfx) a b e₃ α
       h_dist_ab h_dist_ae h_dist_be h_rc_ab h_nc_be).symm
 
-/-- Verbatim `Merge_Linearization_Set.lean:255` (`loOn_rc_no_succ`). -/
-theorem loOn_rc_no_succ_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:255` (`loOn_rc_no_succ`). -/
+theorem loOn_rc_no_succ_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     {T : Set (Op D.AppOp)}
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     {x y z : Op D.AppOp}
@@ -101,9 +102,9 @@ theorem loOn_rc_no_succ_u (hU : UpdateVCs D)
       (distinctOps_of_events (h_in_C y hy) (h_in_C z hz) hyz_ne)
       ⟨h_rc, h_rc'⟩
 
-/-- Verbatim `Merge_Linearization_Set.lean:276` (`transGen_loOnNe_structure`). -/
-theorem transGen_loOnNe_structure_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:276` (`transGen_loOnNe_structure`). -/
+theorem transGen_loOnNe_structure_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     {T : Set (Op D.AppOp)}
@@ -129,12 +130,12 @@ theorem transGen_loOnNe_structure_u (hU : UpdateVCs D)
       · exact Or.inl (h_vis_trans h_vis_amid hv)
       · exact Or.inr ⟨mid, hne, hmidT, h_rc⟩
     · exact absurd h_lo
-        (fun h => loOn_rc_no_succ_u hU h_in_C hx_ne hne hxT hmidT hcT
+        (fun h => loOn_rc_no_succ_of_replayLaws hU h_in_C hx_ne hne hxT hmidT hcT
           h_rc_edge h)
 
-/-- Verbatim `Merge_Linearization_Set.lean:307` (`loOnNe_acyclic`). -/
-theorem loOnNe_acyclic_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:307` (`loOnNe_acyclic`). -/
+theorem loOnNe_acyclic_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -143,7 +144,7 @@ theorem loOnNe_acyclic_u (hU : UpdateVCs D)
     (a : Op D.AppOp) :
     ¬ Relation.TransGen (loOnNe C T) a a := by
   intro h_cycle
-  rcases transGen_loOnNe_structure_u hU h_vis_trans h_in_C h_cycle with
+  rcases transGen_loOnNe_structure_of_replayLaws hU h_vis_trans h_in_C h_cycle with
     h_vis | ⟨x, hx_ne, hxT, h_rc_edge⟩
   · exact h_vis_irrefl a h_vis
   · have h_head : ∀ {p q : Op D.AppOp},
@@ -154,12 +155,12 @@ theorem loOnNe_acyclic_u (hU : UpdateVCs D)
       | single h => exact ⟨_, h⟩
       | tail _ _ ih => exact ih
     obtain ⟨c, hac_ne, haT, hcT, h_lo⟩ := h_head h_cycle
-    exact loOn_rc_no_succ_u hU h_in_C hx_ne hac_ne hxT haT hcT
+    exact loOn_rc_no_succ_of_replayLaws hU h_in_C hx_ne hac_ne hxT haT hcT
       h_rc_edge h_lo
 
-/-- Verbatim `Merge_Linearization_Set.lean:342` (`exists_loOn_maximal`). -/
-theorem exists_loOn_maximal_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:342` (`exists_loOn_maximal`). -/
+theorem exists_loOn_maximal_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -202,15 +203,15 @@ theorem exists_loOn_maximal_u (hU : UpdateVCs D)
       · exfalso
         have h_x_reaches_cur : Relation.TransGen (loOnNe C T) x cur :=
           h_reach x hx_T hx_rem hx_ne
-        exact loOnNe_acyclic_u hU h_vis_trans h_vis_irrefl h_in_C x
+        exact loOnNe_acyclic_of_replayLaws hU h_vis_trans h_vis_irrefl h_in_C x
           (h_x_reaches_cur.tail h_edge_ne)
     · push_neg at h_max
       exact ⟨cur, h_cur, fun x hx hx_ne h_lo =>
         (h_max x hx hx_ne) h_lo⟩
 
-/-- Verbatim `Merge_Linearization_Set.lean:398` (`exists_loOn_respecting_perm`). -/
-theorem exists_loOn_respecting_perm_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:398` (`exists_loOn_respecting_perm`). -/
+theorem exists_loOn_respecting_perm_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -230,7 +231,7 @@ theorem exists_loOn_respecting_perm_u (hU : UpdateVCs D)
     rcases Set.eq_empty_or_nonempty T with rfl | h_ne
     · exact ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil⟩
     · obtain ⟨m, hm, h_max⟩ :=
-        exists_loOn_maximal_u hU h_vis_trans h_vis_irrefl h_perm
+        exists_loOn_maximal_of_replayLaws hU h_vis_trans h_vis_irrefl h_perm
           h_in_C h_ne
       have hm_in_l : m ∈ l := (h_perm.2 m).mpr hm
       have h_perm' : listPermOf (l.erase m) (T \ {m}) := by
@@ -275,9 +276,9 @@ theorem exists_loOn_respecting_perm_u (hU : UpdateVCs D)
         obtain ⟨hy_T, hy_ne⟩ := (hρ'_perm.2 y).mp hy
         exact h_max y hy_T hy_ne
 
-/-- Verbatim `Merge_Linearization_Set.lean:472` (`applySeq_swap_loOn_incomparable`). -/
-theorem applySeq_swap_loOn_incomparable_u
-    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:472` (`applySeq_swap_loOn_incomparable`). -/
+theorem applySeq_swap_loOn_incomparable_of_replayLaws
+    (hU : ReplayLaws D) {C : Sal.MRDTs.Foundation.ReplayContext D}
     {ev : Set (Op D.AppOp)}
     {a b : Op D.AppOp} (h_ne : a ≠ b)
     (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
@@ -310,15 +311,15 @@ theorem applySeq_swap_loOn_incomparable_u
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
       rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
-      · exact applySeq_swap_via_cond_comm_lift_u hU h_dist_ab h_dbe h_dae
+      · exact applySeq_swap_via_cond_comm_lift_of_replayLaws hU h_dist_ab h_dbe h_dae
           h_rc_ab h_nc_be pfx α β s
       · have h_dist_ba : distinctOps b a := Ne.symm h_dist_ab
-        exact (applySeq_swap_via_cond_comm_lift_u hU h_dist_ba h_dae h_dbe
+        exact (applySeq_swap_via_cond_comm_lift_of_replayLaws hU h_dist_ba h_dae h_dbe
           h_rc_ba h_nc_ae pfx α β s).symm
 
-/-- Verbatim `Merge_Linearization_Set.lean:513` (`applySeq_bubble_to_front_loOn`). -/
-theorem applySeq_bubble_to_front_loOn_u
-    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:513` (`applySeq_bubble_to_front_loOn`). -/
+theorem applySeq_bubble_to_front_loOn_of_replayLaws
+    (hU : ReplayLaws D) {C : Sal.MRDTs.Foundation.ReplayContext D}
     {ev : Set (Op D.AppOp)}
     (e : Op D.AppOp) (σ tail : List (Op D.AppOp))
     (h_e_in_C : e ∈ C.events)
@@ -353,7 +354,7 @@ theorem applySeq_bubble_to_front_loOn_u
          (D.update s y)
     have hswap : applySeq D s (y :: e :: σ' ++ tail)
                = applySeq D s (e :: y :: σ' ++ tail) := by
-      have := applySeq_swap_loOn_incomparable_u (D := D) (ev := ev)
+      have := applySeq_swap_loOn_incomparable_of_replayLaws (D := D) (ev := ev)
         hU h_y_ne h_y_in_C h_e_in_C
         (h_not_lo_bwd y h_y_in) (h_not_lo_fwd y h_y_in)
         [] (σ' ++ tail) s
@@ -366,11 +367,11 @@ theorem applySeq_bubble_to_front_loOn_u
          = applySeq D s (e :: y :: σ' ++ tail)
     exact hswap
 
-/-- Verbatim `Merge_Linearization_Set.lean:577` (`convergence_on`): two
+/-- Verbatim `SetRelativeReplay.lean:577` (`convergence_on`): two
 `loOn C ev`-respecting permutations of `ev` fold to the same state (no closure
 hypotheses). -/
-theorem convergence_on_u
-    (hU : UpdateVCs D) {C : Sal.MRDTs.Foundation.Configuration D}
+theorem convergence_on_of_replayLaws
+    (hU : ReplayLaws D) {C : Sal.MRDTs.Foundation.ReplayContext D}
     (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
@@ -566,7 +567,7 @@ theorem convergence_on_u
             obtain ⟨γ_a, γ_b, hγ_split⟩ := List.append_of_mem h_e₃_in_βτ
             exact ⟨e₃, γ_a, γ_b, hγ_split, h_dist_ye₃, h_dist_ee₃,
                     Or.inr ⟨h_rc_ey, h_nc_ye₃⟩⟩
-        exact applySeq_bubble_to_front_loOn_u (D := D) (ev := ev) hU e σ τ
+        exact applySeq_bubble_to_front_loOn_of_replayLaws (D := D) (ev := ev) hU e σ τ
           he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
       have h_len_new : π₁'.length < n := by
         simp only [List.length_cons] at h_len; omega
@@ -622,20 +623,20 @@ theorem convergence_on_u
       exact ih _ h_len_new (D.update s e) (evC \ {e}) π₁' (σ ++ τ) rfl
         h_evC'_in_C h_abs' hp₁' hpστ hr₁' hrστ
 
-/-- Verbatim `Merge_Linearization_Set.lean:992` (`isCanonicalState_unique`). -/
-theorem isCanonicalState_unique_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
+/-- Verbatim `SetRelativeReplay.lean:992` (`isCanonicalState_unique`). -/
+theorem isCanonicalState_unique_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D} {ev : Set (Op D.AppOp)} {s s' : D.State}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h : IsCanonicalState C ev s) (h' : IsCanonicalState C ev s') :
     s = s' := by
   obtain ⟨ρ, hp, hr, hs⟩ := h
   obtain ⟨ρ', hp', hr', hs'⟩ := h'
   rw [← hs, ← hs']
-  exact convergence_on_u hU D.init h_ev_in_C hp hp' hr hr'
+  exact convergence_on_of_replayLaws hU D.init h_ev_in_C hp hp' hr hr'
 
-/-- Verbatim `Merge_Linearization_Set.lean:1003` (`isCanonicalState_exists`). -/
-theorem isCanonicalState_exists_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:1003` (`isCanonicalState_exists`). -/
+theorem isCanonicalState_exists_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -644,12 +645,12 @@ theorem isCanonicalState_exists_u (hU : UpdateVCs D)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events) :
     ∃ s, IsCanonicalState C ev s := by
   obtain ⟨ρ, hp, hr⟩ :=
-    exists_loOn_respecting_perm_u hU h_vis_trans h_vis_irrefl h_l h_in_C
+    exists_loOn_respecting_perm_of_replayLaws hU h_vis_trans h_vis_irrefl h_l h_in_C
   exact ⟨applySeq D D.init ρ, ρ, hp, hr, rfl⟩
 
-/-- Verbatim `Merge_Linearization_Set.lean:1532` (`loOn_empty_of_all_comm`). -/
-theorem loOn_empty_of_all_comm_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D} {ev : Set (Op D.AppOp)}
+/-- Verbatim `SetRelativeReplay.lean:1532` (`loOn_empty_of_all_comm`). -/
+theorem loOn_empty_of_all_comm_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
@@ -665,9 +666,9 @@ theorem loOn_empty_of_all_comm_u (hU : UpdateVCs D)
     · exact (hU.rc_non_comm_directional x y
         (distinctOps_of_events hx hy hne) hrep).mpr (Or.inl h_rc) (h_comm x y)
 
-/-- Verbatim `Merge_Linearization_Set.lean:1544` (`isCanonicalState_of_all_comm`). -/
-theorem isCanonicalState_of_all_comm_u (hU : UpdateVCs D)
-    {C : Sal.MRDTs.Foundation.Configuration D}
+/-- Verbatim `SetRelativeReplay.lean:1544` (`isCanonicalState_of_all_comm`). -/
+theorem isCanonicalState_of_all_comm_of_replayLaws (hU : ReplayLaws D)
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events)
@@ -676,7 +677,7 @@ theorem isCanonicalState_of_all_comm_u (hU : UpdateVCs D)
   refine ⟨l, h_perm, ?_, rfl⟩
   refine List.Pairwise.imp_of_mem ?_ h_perm.1
   intro a b ha hb hne
-  exact loOn_empty_of_all_comm_u hU h_comm
+  exact loOn_empty_of_all_comm_of_replayLaws hU h_comm
     (h_in_C b ((h_perm.2 b).mp hb)) (h_in_C a ((h_perm.2 a).mp ha))
     (Ne.symm hne)
 
@@ -724,21 +725,21 @@ theorem diff_inter_diff {α : Type} {ev₁ ev₂ : Set α} {e : α} :
 
 end UpdateLayer
 
-section Core
+section Replay
 variable {D : MRDTSig}
-variable [ReplayPolicy D.toCRDTSig]
+variable [ReplayPolicy D.toUpdateSig]
 
-/-- **Timestamp uniqueness, contrapositive form**: two events of a binary
-configuration's universe with equal timestamps are equal (structural, from
-`timestamps_distinct`; instances consume it through the core projection). -/
-theorem _root_.Sal.MRDTs.Foundation.Configuration.ts_unique {D' : CRDTSig}
-    (C : Sal.MRDTs.Foundation.Configuration D') {a b : Op D'.AppOp}
+/-- **Timestamp uniqueness, contrapositive form**: two events of a replay
+context's universe with equal timestamps are equal (structural, from
+`timestamps_distinct`; instances consume it through the replay projection). -/
+theorem _root_.Sal.MRDTs.Foundation.ReplayContext.ts_unique {D' : UpdateSig}
+    (C : Sal.MRDTs.Foundation.ReplayContext D') {a b : Op D'.AppOp}
     (ha : a ∈ C.events) (hb : b ∈ C.events) (h : a.1 = b.1) : a = b := by
   by_contra hne
   obtain ⟨r, s, hL, hs⟩ := ha
   obtain ⟨r', s', hL', hs'⟩ := hb
   exact C.timestamps_distinct hL hs hL' hs' hne h
 
-end Core
+end Replay
 
 end Sal.MRDTs

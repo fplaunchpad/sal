@@ -1,7 +1,7 @@
 import Sal.MRDTs.Framework.Execution
 import Mathlib.Data.Nat.Find
 
-/-! # Version-store invariant and LCA event theorem -/
+/-! # Version-store invariant and GCA event theorem -/
 
 namespace Sal.MRDTs
 
@@ -12,7 +12,7 @@ variable {D : MRDTSig}
 
 /-! ## §1. The store invariant bundle -/
 
-/-- Invariants of the raw ranked store (`ver`, `parents`) sufficient for the LCA lemma.
+/-- Invariants of the raw ranked store (`ver`, `parents`) sufficient for the GCA lemma.
 Stated over raw functions (not `Configuration`) so that *maintenance* under a transition
 can be proved without constructing a full invariant-laden `Configuration`. -/
 structure StoreInv (ver : Version → Option (D.State × Set (Op D.AppOp)))
@@ -23,7 +23,7 @@ structure StoreInv (ver : Version → Option (D.State × Set (Op D.AppOp)))
   /-- Event sets grow along DAG edges (Apply adds one event, Merge unions). -/
   events_mono : ∀ v p, p ∈ parents v →
     ∀ {sp Ep sv Ev}, ver p = some (sp, Ep) → ver v = some (sv, Ev) → Ep ⊆ Ev
-  /-- **The generator-version invariant** (paper appendix Prop. `lca`): every event `e`
+  /-- **The generator-version invariant** (paper appendix Prop. `gca`): every event `e`
   of every allocated version has an allocated *origin* version `v₀` containing `e` such
   that every version containing `e` is reachable from `v₀`. -/
   origin : ∀ {v s E}, ver v = some (s, E) → ∀ e ∈ E,
@@ -50,24 +50,24 @@ theorem storeInv_events_mono_reaches
     obtain ⟨⟨sm, Em⟩, hm⟩ := Option.isSome_iff_exists.mp hmid
     exact (ih ha hm).trans (hInv.events_mono c mid hstep hm hc)
 
-/-! ## §2. The LCA lemma (paper Lemma LCA) -/
+/-! ## §2. The GCA lemma -/
 
-/-- **Lemma LCA** (`lin.tex:160`), from the store invariant alone: if `v_⊤` is an LCA of
+/-- **GCA event lemma**, from the store invariant alone: if `v_⊤` is a GCA of
 `v₁, v₂` and all three are allocated, `E(v_⊤) = E(v₁) ∩ E(v₂)`.
 
 ⊆ : monotonicity along the two `Reaches` legs. ⊇ : a shared event's origin reaches both
-sides, hence, by the LCA's domination clause, reaches `v_⊤`, and monotonicity lands the
+sides, hence, by the GCA's domination clause, reaches `v_⊤`, and monotonicity lands the
 event in `E(v_⊤)`. -/
-theorem lca_events_of_storeInv
+theorem gca_events_of_storeInv
     {ver : Version → Option (D.State × Set (Op D.AppOp))}
     {parents : Version → List Version}
     (hInv : StoreInv ver parents)
-    {v₁ v₂ vT : Version} (hLCA : IsLCA parents v₁ v₂ vT)
+    {v₁ v₂ vT : Version} (hGCA : IsGCA parents v₁ v₂ vT)
     {s₁ E₁ s₂ E₂ sT ET}
     (h₁ : ver v₁ = some (s₁, E₁)) (h₂ : ver v₂ = some (s₂, E₂))
     (hT : ver vT = some (sT, ET)) :
     ET = E₁ ∩ E₂ := by
-  obtain ⟨hr₁, hr₂, hdom⟩ := hLCA
+  obtain ⟨hr₁, hr₂, hdom⟩ := hGCA
   ext e
   constructor
   · intro he
@@ -79,12 +79,13 @@ theorem lca_events_of_storeInv
       hdom v₀ (hall h₁ he₁) (hall h₂ he₂)
     exact storeInv_events_mono_reaches hInv hr₀T hv₀ hT he₀
 
-/-- The LCA, when it exists, is unique (the paper's claim below Def. LCA): two LCAs
-dominate each other, and the rank order `parents_lt` is antisymmetric. -/
-theorem isLCA_unique {parents : Version → List Version}
+/-- A greatest common ancestor, when it exists, is unique: two such ancestors
+dominate each other, and the rank order `parents_lt` is antisymmetric. This does
+not rule out several incomparable maximal common ancestors. -/
+theorem isGCA_unique {parents : Version → List Version}
     (hlt : ∀ v p, p ∈ parents v → p < v)
     {v₁ v₂ u w : Version}
-    (hu : IsLCA parents v₁ v₂ u) (hw : IsLCA parents v₁ v₂ w) : u = w := by
+    (hu : IsGCA parents v₁ v₂ u) (hw : IsGCA parents v₁ v₂ w) : u = w := by
   obtain ⟨hu₁, hu₂, hu_dom⟩ := hu
   obtain ⟨hw₁, hw₂, hw_dom⟩ := hw
   exact Nat.le_antisymm
@@ -97,7 +98,7 @@ The two lemmas that make `origin` maintainable: extending the store with a fresh
 `vm` (unallocated, hence, by `parents_alloc`, with no out-edges in the old graph)
 (i) does not change reachability between old allocated versions, and (ii) reachability
 *into* `vm` factors through its declared parents. Stated pointwise (`hver_old`,
-`hpar_old`, …) to match `Step3`'s field equations without `if`-shuffling. -/
+`hpar_old`, …) to match `Step`'s field equations without `if`-shuffling. -/
 
 section Extension
 
@@ -171,6 +172,95 @@ variable {ver : Version → Option (D.State × Set (Op D.AppOp))}
   {parents : Version → List Version}
   {ver' : Version → Option (D.State × Set (Op D.AppOp))}
   {parents' : Version → List Version}
+
+/-- **Fork maintains `StoreInv`.** The fresh child copies its source version's
+state and event set and has that source as its sole parent. -/
+theorem storeInv_fork_extend
+    (hInv : StoreInv ver parents)
+    {vnew vp : Version} (hfresh : ver vnew = none)
+    {sp : D.State} {Ep : Set (Op D.AppOp)}
+    (hp : ver vp = some (sp, Ep))
+    (hver_new : ver' vnew = some (sp, Ep))
+    (hver_old : ∀ w, w ≠ vnew → ver' w = ver w)
+    (hpar_new : parents' vnew = [vp])
+    (hpar_old : ∀ w, w ≠ vnew → parents' w = parents w) :
+    StoreInv ver' parents' := by
+  have hvp_ne : vp ≠ vnew := by
+    intro h
+    rw [h, hfresh] at hp
+    simp at hp
+  refine ⟨?_, ?_, ?_⟩
+  · intro v p hpe
+    by_cases hv : v = vnew
+    · subst v
+      rw [hpar_new, List.mem_singleton] at hpe
+      rw [hpe, hver_old vp hvp_ne, hp]
+      rfl
+    · rw [hpar_old v hv] at hpe
+      have hpalloc := hInv.parents_alloc v p hpe
+      have hp_ne : p ≠ vnew := by
+        intro h
+        rw [h, hfresh] at hpalloc
+        simp at hpalloc
+      rw [hver_old p hp_ne]
+      exact hpalloc
+  · intro v p hpe sp' Ep' sv Ev hvp hvv
+    by_cases hv : v = vnew
+    · subst v
+      rw [hver_new, Option.some.injEq, Prod.mk.injEq] at hvv
+      rw [hpar_new, List.mem_singleton] at hpe
+      rw [hpe, hver_old vp hvp_ne, hp,
+        Option.some.injEq, Prod.mk.injEq] at hvp
+      rw [← hvp.2, ← hvv.2]
+    · rw [hpar_old v hv] at hpe
+      have hpalloc := hInv.parents_alloc v p hpe
+      have hp_ne : p ≠ vnew := by
+        intro h
+        rw [h, hfresh] at hpalloc
+        simp at hpalloc
+      rw [hver_old p hp_ne] at hvp
+      rw [hver_old v hv] at hvv
+      exact hInv.events_mono v p hpe hvp hvv
+  · intro v s E hv e he
+    have lift : ∀ (v₀ : Version),
+        (∀ {w sw Ew}, ver w = some (sw, Ew) → e ∈ Ew →
+          Reaches parents v₀ w) →
+        ∀ {w sw Ew}, ver' w = some (sw, Ew) → e ∈ Ew →
+          Reaches parents' v₀ w := by
+      intro v₀ hall w sw Ew hw hew
+      by_cases hwm : w = vnew
+      · subst w
+        rw [hver_new, Option.some.injEq, Prod.mk.injEq] at hw
+        rw [← hw.2] at hew
+        have hr' : Reaches parents' v₀ vp :=
+          reaches_new_of_old hInv.parents_alloc hfresh hpar_old
+            (hall hp hew) (by rw [hp]; rfl)
+        refine Relation.ReflTransGen.tail hr' ?_
+        show vp ∈ parents' vnew
+        rw [hpar_new]
+        simp
+      · rw [hver_old w hwm] at hw
+        exact reaches_new_of_old hInv.parents_alloc hfresh hpar_old
+          (hall hw hew) (by rw [hw]; rfl)
+    by_cases hvm : v = vnew
+    · subst v
+      rw [hver_new, Option.some.injEq, Prod.mk.injEq] at hv
+      rw [← hv.2] at he
+      obtain ⟨v₀, s₀, E₀, hv₀, he₀, hall⟩ := hInv.origin hp e he
+      have hv₀_ne : v₀ ≠ vnew := by
+        intro h
+        rw [h, hfresh] at hv₀
+        simp at hv₀
+      exact ⟨v₀, s₀, E₀, by rw [hver_old v₀ hv₀_ne]; exact hv₀,
+        he₀, lift v₀ hall⟩
+    · rw [hver_old v hvm] at hv
+      obtain ⟨v₀, s₀, E₀, hv₀, he₀, hall⟩ := hInv.origin hv e he
+      have hv₀_ne : v₀ ≠ vnew := by
+        intro h
+        rw [h, hfresh] at hv₀
+        simp at hv₀
+      exact ⟨v₀, s₀, E₀, by rw [hver_old v₀ hv₀_ne]; exact hv₀,
+        he₀, lift v₀ hall⟩
 
 /-- **Merge maintains `StoreInv`.** The fresh version `vm` carries `E₁ ∪ E₂` with
 parents `[v₁, v₂]`; every event of the union keeps its old origin, whose reachability
@@ -383,12 +473,12 @@ theorem storeInv_apply_extend
 
 end Maintenance
 
-theorem commonAnc_reaches_mca {parents : Version → List Version}
+theorem commonAncestorWithAny_reaches_maximal {parents : Version → List Version}
     (hlt : ∀ v p, p ∈ parents v → p < v)
     {S : Set Version} {w : Version} {x : Version}
-    (hx : x ∈ CommonAnc parents S w) :
-    ∃ m, IsMCA parents S w m ∧ Reaches parents x m := by
-  let P := fun y => y ∈ CommonAnc parents S w ∧ Reaches parents x y
+    (hx : x ∈ CommonAncestorsWithAny parents S w) :
+    ∃ m, IsMaximalCommonAncestorWithAny parents S w m ∧ Reaches parents x m := by
+  let P := fun y => y ∈ CommonAncestorsWithAny parents S w ∧ Reaches parents x y
   haveI : DecidablePred P := fun _ => Classical.dec _
   have hxw : x ≤ w := reaches_le hlt hx.2
   have hp : P (Nat.findGreatest P w) :=
@@ -402,6 +492,16 @@ theorem commonAnc_reaches_mca {parents : Version → List Version}
     exact Nat.findGreatest_is_greatest (Nat.not_le.mp hn) hyw hpy
   exact Nat.le_antisymm hymax (reaches_le hlt hzy)
 
+/-- Every pairwise common ancestor reaches some maximal common ancestor. -/
+theorem commonAncestor_reaches_maximal {parents : Version → List Version}
+    (hlt : ∀ v p, p ∈ parents v → p < v)
+    {a b x : Version} (hx : x ∈ CommonAncestors parents a b) :
+    ∃ m, IsMaximalCommonAncestor parents a b m ∧ Reaches parents x m := by
+  have hx' : x ∈ CommonAncestorsWithAny parents {a} b := by
+    simpa using hx
+  obtain ⟨m, hm, hxm⟩ := commonAncestorWithAny_reaches_maximal hlt hx'
+  exact ⟨m, (isMaximalCommonAncestorWithAny_singleton parents a b m).mp hm, hxm⟩
+
 theorem reaches_alloc
     {ver : Version → Option (D.State × Set (Op D.AppOp))}
     {parents : Version → List Version}
@@ -411,7 +511,7 @@ theorem reaches_alloc
   | refl => exact hb
   | tail _ hstep ih => exact ih (hInv.parents_alloc _ _ hstep)
 
-theorem mca_events_cover
+theorem maximalCommonAncestorsWithAny_events_cover
     {ver : Version → Option (D.State × Set (Op D.AppOp))}
     {parents : Version → List Version}
     (hInv : StoreInv ver parents)
@@ -420,7 +520,7 @@ theorem mca_events_cover
     (hS : ∀ u ∈ S, (ver u).isSome)
     {sw : D.State} {Ew : Set (Op D.AppOp)} (hw : ver w = some (sw, Ew))
     (e : Op D.AppOp) :
-    (∃ m, IsMCA parents S w m ∧ ∃ sm Em, ver m = some (sm, Em) ∧ e ∈ Em)
+    (∃ m, IsMaximalCommonAncestorWithAny parents S w m ∧ ∃ sm Em, ver m = some (sm, Em) ∧ e ∈ Em)
       ↔ (∃ u ∈ S, ∃ su Eu, ver u = some (su, Eu) ∧ e ∈ Eu) ∧ e ∈ Ew := by
   constructor
   · rintro ⟨m, ⟨⟨⟨u, huS, hmu⟩, hmw⟩, _⟩, sm, Em, hm, heEm⟩
@@ -430,13 +530,13 @@ theorem mca_events_cover
       storeInv_events_mono_reaches hInv hmw hm hw heEm⟩
   · rintro ⟨⟨u, huS, su, Eu, hu, heEu⟩, heEw⟩
     obtain ⟨v₀, s₀, E₀, hv₀, he₀, hall⟩ := hInv.origin hu e heEu
-    have hv₀CA : v₀ ∈ CommonAnc parents S w :=
+    have hv₀CA : v₀ ∈ CommonAncestorsWithAny parents S w :=
       ⟨⟨u, huS, hall hu heEu⟩, hall hw heEw⟩
-    obtain ⟨m, hmMCA, hv₀m⟩ := commonAnc_reaches_mca hlt hv₀CA
+    obtain ⟨m, hmMaximal, hv₀m⟩ := commonAncestorWithAny_reaches_maximal hlt hv₀CA
     have hm_alloc : (ver m).isSome :=
-      reaches_alloc hInv hmMCA.1.2 (by rw [hw]; rfl)
+      reaches_alloc hInv hmMaximal.1.2 (by rw [hw]; rfl)
     obtain ⟨⟨sm, Em⟩, hm⟩ := Option.isSome_iff_exists.mp hm_alloc
-    exact ⟨m, hmMCA, sm, Em, hm,
+    exact ⟨m, hmMaximal, sm, Em, hm,
       storeInv_events_mono_reaches hInv hv₀m hv₀ hm he₀⟩
 
 theorem storeInv_init :
@@ -453,32 +553,35 @@ theorem storeInv_init :
     · simp [initConfig, h] at hv
 
 theorem storeInv_step {C C' : Configuration D} {l : Label D}
-    (step : Step D C l C') (inv : StoreInv C.ver C.parents) :
+  (step : Step D C l C') (inv : StoreInv C.ver C.parents) :
     StoreInv C'.ver C'.parents := by
   cases step with
-  | createReplica _ _ _ _ _ hver _ hparents => rw [hver, hparents]; exact inv
-  | @apply t r o v s ev vnew _ _ _ freshStore freshVersion _ _ _ _ _ hver _ hparents =>
+  | @fork dst src v vnew s ev _ _ sourceVersion freshVersion _ _ _ hver _ hparents =>
+      exact storeInv_fork_extend inv freshVersion sourceVersion
+        (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
+        (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])
+  | @apply t r o v s ev vnew _ _ _ freshStore freshVersion _ _ _ hver _ hparents =>
       exact storeInv_apply_extend (e := (t, r, o))
         (snew := D.update s (t, r, o)) inv freshVersion ‹_›
         (fun w sw Ew hw hmem => freshStore w sw Ew hw _ hmem rfl)
         (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
         (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])
   | @merge r₁ r₂ v₁ v₂ vT vm s₁ s₂ sT ev₁ ev₂ evT
-      _ _ hv₁ hv₂ _ _ freshVersion _ _ _ _ _ _ hver _ hparents =>
+      _ _ hv₁ hv₂ _ _ freshVersion _ _ _ _ hver _ hparents =>
       exact storeInv_merge_extend (sm := D.merge sT s₁ s₂)
         inv freshVersion hv₁ hv₂
         (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
         (by rw [hparents]; simp) (fun w hw => by rw [hparents]; simp [hw])
   | query => exact inv
 
-theorem storeInv_stepV {V : VirtualLCAResolver D}
+theorem storeInv_stepV {V : VirtualMergeBaseResolver D}
     {C C' : Configuration D} {l : Label D}
     (step : StepV D V C l C') (inv : StoreInv C.ver C.parents) :
     StoreInv C'.ver C'.parents := by
   cases step with
   | base h => exact storeInv_step h inv
   | @mergeVirtual r₁ r₂ v₁ v₂ vm s₁ s₂ ev₁ ev₂
-      _ _ hv₁ hv₂ freshVersion _ _ _ _ _ _ hver _ hparents =>
+      _ _ hv₁ hv₂ freshVersion _ _ _ _ hver _ hparents =>
       exact storeInv_merge_extend (sm := D.merge (V.state C v₁ v₂) s₁ s₂)
         inv freshVersion hv₁ hv₂
         (by rw [hver]; simp) (fun w hw => by rw [hver]; simp [hw])
@@ -495,7 +598,7 @@ theorem storeInv_reachable {C : Configuration D}
       exact storeInv_step step ih
 
 open LabeledTS in
-theorem storeInv_reachableV {V : VirtualLCAResolver D} {C : Configuration D}
+theorem storeInv_reachableV {V : VirtualMergeBaseResolver D} {C : Configuration D}
     (reach : (labeledTSV D V).ReachableFrom (initConfig D) C) :
     StoreInv C.ver C.parents := by
   induction reach with

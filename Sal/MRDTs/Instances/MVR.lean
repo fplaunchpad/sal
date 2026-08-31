@@ -4,7 +4,7 @@ import Sal.MRDTs.Metatheory.Correctness
 # Multi-Valued Register: flat VC discharge and the conditioned capstone
 
 The production Multi-Valued Register as a `MRDTSig`, its
-RA-linearizability VC discharge, and the conditioned capstone over the generic
+replay-convergence VC discharge, and the conditioned capstone over the generic
 framework.
 -/
 
@@ -65,7 +65,7 @@ noncomputable def MVR : MRDTSig where
   merge := mvrMerge
 
 theorem MVR_rc_either (o₁ o₂ : Op MVROp) :
-    MVR.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+    MVR.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ### Projection unfolds and the update layer -/
 
@@ -78,7 +78,7 @@ theorem MVR_merge_eq (l a b : MVR.State) :
 theorem MVR_init_eq :
     MVR.init = ((fun _ => false, fun _ => false) : MVR.State) := rfl
 
-theorem MVR_all_comm (o₁ o₂ : Op MVROp) : MVR.toCRDTSig.commutes o₁ o₂ := by
+theorem MVR_all_comm (o₁ o₂ : Op MVROp) : MVR.toUpdateSig.commutes o₁ o₂ := by
   intro s
   rcases o₁ with ⟨ts₁, r₁, op₁⟩
   rcases o₂ with ⟨ts₂, r₂, op₂⟩
@@ -95,7 +95,7 @@ theorem MVR_all_comm (o₁ o₂ : Op MVROp) : MVR.toCRDTSig.commutes o₁ o₂ :
           cases hd₁ : decide (n ∈ O₁) <;>
           cases hd₂ : decide (n ∈ O₂) <;> rfl
 
-theorem MVR_updateVCs : UpdateVCs MVR.toCRDTSig := by
+theorem replayLaws : ReplayLaws MVR.toUpdateSig := by
   refine ⟨?_, ?_, ?_⟩
   · intro o₁ o₂ _ _
     constructor
@@ -118,14 +118,14 @@ theorem MVR_merge_comm (l a b : MVR.State) :
   · cases l.1 p <;> cases a.1 p <;> cases b.1 p <;> rfl
   · cases l.2 n <;> cases a.2 n <;> cases b.2 n <;> rfl
 
-theorem MVR_coreVCs3CD : CoreVCs3CD MVR :=
-  ⟨MVR_updateVCs, MVR_merge_comm⟩
+theorem MVR_joinCoreLaws : JoinCoreLaws MVR :=
+  ⟨replayLaws, MVR_merge_comm⟩
 
 /-! ### σ-monotonicity (the one canonical fact) -/
 
 /-- Component 1 bound: a tagged write in the fold has a `write` event. -/
 theorem MVR_fold_bound₁ {ρ : List (Op MVROp)} {p : ℕ × ℕ}
-    (h : (applySeq MVR.toCRDTSig MVR.init ρ).1 p = true) :
+    (h : (applySeq MVR.toUpdateSig MVR.init ρ).1 p = true) :
     ∃ o ∈ ρ, ∃ O, o.2.2 = MVROp.write p.2 O ∧ o.1 = p.1 := by
   induction ρ using List.reverseRecOn with
   | nil => exact absurd (show (false : Bool) = true from h) Bool.noConfusion
@@ -134,9 +134,9 @@ theorem MVR_fold_bound₁ {ρ : List (Op MVROp)} {p : ℕ × ℕ}
     rcases o with ⟨ts, rid, op⟩
     cases op with
     | write v O =>
-      have h' : ((applySeq MVR.toCRDTSig MVR.init ρ).1 p
+      have h' : ((applySeq MVR.toUpdateSig MVR.init ρ).1 p
           || decide (p = (ts, v))) = true := h
-      cases hfa : (applySeq MVR.toCRDTSig MVR.init ρ).1 p with
+      cases hfa : (applySeq MVR.toUpdateSig MVR.init ρ).1 p with
       | true =>
         obtain ⟨o', ho', O', h1, h2⟩ := ih hfa
         exact ⟨o', List.mem_append_left _ ho', O', h1, h2⟩
@@ -152,7 +152,7 @@ theorem MVR_fold_bound₁ {ρ : List (Op MVROp)} {p : ℕ × ℕ}
 
 /-- Component 2 bound: an accumulated overwrite has a contributing `write`. -/
 theorem MVR_fold_bound₂ {ρ : List (Op MVROp)} {n : ℕ}
-    (h : (applySeq MVR.toCRDTSig MVR.init ρ).2 n = true) :
+    (h : (applySeq MVR.toUpdateSig MVR.init ρ).2 n = true) :
     ∃ o ∈ ρ, ∃ v O, o.2.2 = MVROp.write v O ∧ n ∈ O := by
   induction ρ using List.reverseRecOn with
   | nil => exact absurd (show (false : Bool) = true from h) Bool.noConfusion
@@ -161,9 +161,9 @@ theorem MVR_fold_bound₂ {ρ : List (Op MVROp)} {n : ℕ}
     rcases o with ⟨ts, rid, op⟩
     cases op with
     | write v O =>
-      have h' : ((applySeq MVR.toCRDTSig MVR.init ρ).2 n
+      have h' : ((applySeq MVR.toUpdateSig MVR.init ρ).2 n
           || decide (n ∈ O)) = true := h
-      cases hfa : (applySeq MVR.toCRDTSig MVR.init ρ).2 n with
+      cases hfa : (applySeq MVR.toUpdateSig MVR.init ρ).2 n with
       | true =>
         obtain ⟨o', ho', v', O', h1, h2⟩ := ih hfa
         exact ⟨o', List.mem_append_left _ ho', v', O', h1, h2⟩
@@ -176,7 +176,7 @@ theorem MVR_fold_bound₂ {ρ : List (Op MVROp)} {n : ℕ}
 /-- Both components are grow-only: truth is preserved by any suffix. -/
 theorem MVR_fold_stays_true₁ {p : ℕ × ℕ} :
     ∀ (β : List (Op MVROp)) (s : MVR.State), s.1 p = true →
-      (applySeq MVR.toCRDTSig s β).1 p = true := by
+      (applySeq MVR.toUpdateSig s β).1 p = true := by
   intro β
   induction β with
   | nil => intro s hs; exact hs
@@ -192,7 +192,7 @@ theorem MVR_fold_stays_true₁ {p : ℕ × ℕ} :
 
 theorem MVR_fold_stays_true₂ {n : ℕ} :
     ∀ (β : List (Op MVROp)) (s : MVR.State), s.2 n = true →
-      (applySeq MVR.toCRDTSig s β).2 n = true := by
+      (applySeq MVR.toUpdateSig s β).2 n = true := by
   intro β
   induction β with
   | nil => intro s hs; exact hs
@@ -209,44 +209,44 @@ theorem MVR_fold_stays_true₂ {n : ℕ} :
 /-- A member `write` makes its tag live in the fold (component 1). -/
 theorem MVR_contrib₁ {ρ : List (Op MVROp)} {ts rid v : ℕ} {O : List ℕ}
     (h : (ts, rid, MVROp.write v O) ∈ ρ) :
-    (applySeq MVR.toCRDTSig MVR.init ρ).1 (ts, v) = true := by
+    (applySeq MVR.toUpdateSig MVR.init ρ).1 (ts, v) = true := by
   obtain ⟨α, β, hsplit⟩ := List.append_of_mem h
   subst hsplit
-  have hstep : applySeq MVR.toCRDTSig MVR.init
+  have hstep : applySeq MVR.toUpdateSig MVR.init
       (α ++ (ts, rid, MVROp.write v O) :: β)
-      = applySeq MVR.toCRDTSig
-          (MVR.update (applySeq MVR.toCRDTSig MVR.init α)
+      = applySeq MVR.toUpdateSig
+          (MVR.update (applySeq MVR.toUpdateSig MVR.init α)
             (ts, rid, MVROp.write v O)) β := by
     simp [applySeq, List.foldl_append]
   rw [hstep]
   refine MVR_fold_stays_true₁ β _ ?_
-  show ((applySeq MVR.toCRDTSig MVR.init α).1 (ts, v)
+  show ((applySeq MVR.toUpdateSig MVR.init α).1 (ts, v)
       || decide ((ts, v) = (ts, v))) = true
   rw [decide_eq_true rfl]
-  cases (applySeq MVR.toCRDTSig MVR.init α).1 (ts, v) <;> rfl
+  cases (applySeq MVR.toUpdateSig MVR.init α).1 (ts, v) <;> rfl
 
 /-- A member `write` accumulates its overwrites in the fold (component 2). -/
 theorem MVR_contrib₂ {ρ : List (Op MVROp)} {ts rid v : ℕ} {O : List ℕ} {n : ℕ}
     (h : (ts, rid, MVROp.write v O) ∈ ρ) (hn : n ∈ O) :
-    (applySeq MVR.toCRDTSig MVR.init ρ).2 n = true := by
+    (applySeq MVR.toUpdateSig MVR.init ρ).2 n = true := by
   obtain ⟨α, β, hsplit⟩ := List.append_of_mem h
   subst hsplit
-  have hstep : applySeq MVR.toCRDTSig MVR.init
+  have hstep : applySeq MVR.toUpdateSig MVR.init
       (α ++ (ts, rid, MVROp.write v O) :: β)
-      = applySeq MVR.toCRDTSig
-          (MVR.update (applySeq MVR.toCRDTSig MVR.init α)
+      = applySeq MVR.toUpdateSig
+          (MVR.update (applySeq MVR.toUpdateSig MVR.init α)
             (ts, rid, MVROp.write v O)) β := by
     simp [applySeq, List.foldl_append]
   rw [hstep]
   refine MVR_fold_stays_true₂ β _ ?_
-  show ((applySeq MVR.toCRDTSig MVR.init α).2 n || decide (n ∈ O)) = true
+  show ((applySeq MVR.toUpdateSig MVR.init α).2 n || decide (n ∈ O)) = true
   rw [decide_eq_true hn]
-  cases (applySeq MVR.toCRDTSig MVR.init α).2 n <;> rfl
+  cases (applySeq MVR.toUpdateSig MVR.init α).2 n <;> rfl
 
 /-- **σ-monotonicity**: canonical states of nested event sets are pointwise
 nested, in both components. -/
 theorem MVR_canonical_mono
-    {C : Sal.MRDTs.Foundation.Configuration MVR.toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext MVR.toUpdateSig}
     {F G : Set (Op MVROp)} {s t : MVR.State}
     (hFG : ∀ o ∈ F, o ∈ G)
     (hs : IsCanonicalState C F s) (ht : IsCanonicalState C G t) :
@@ -282,7 +282,7 @@ theorem MVR_canonical_mono
 
 /-! ### The punctured downset is empty (all-commutation) -/
 
-theorem MVR_downset_empty (C : Sal.MRDTs.Foundation.Configuration MVR.toCRDTSig)
+theorem MVR_downset_empty (C : Sal.MRDTs.Foundation.ReplayContext MVR.toUpdateSig)
     (e : Op MVROp) : downset C e \ {e} = ∅ := by
   ext x
   simp only [Set.mem_diff, Set.mem_singleton_iff,
@@ -297,15 +297,15 @@ theorem MVR_downset_empty (C : Sal.MRDTs.Foundation.Configuration MVR.toCRDTSig)
 
 /-! ### The feasible delta laws and CD -/
 
-theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
+theorem MVR_feasibleDeltaLaws : FeasibleDeltaLaws MVR := by
   refine ⟨?_, ?_, ?_⟩
-  · -- feasible_init: unconditional for the MVR
+  · -- init: unconditional for the MVR
     intro C ev s _ _
     refine Prod.ext (funext fun p => ?_) (funext fun n => ?_) <;>
       simp only [MVR_merge_eq, mvrMerge, MVR_init_eq]
     · cases s.1 p <;> rfl
     · cases s.2 n <;> rfl
-  · -- feasible_local_redistribute: B = init + σ-monotonicity s₀ ⊆ s₂
+  · -- local_redistribute: B = init + σ-monotonicity s₀ ⊆ s₂
     intro C ev₁ ev₂ s₀ B t₁ s₂ e _ _ _ _ _ _ _ _ _ hc₀ hcB _ hc₂
     have hBinit : B = MVR.init :=
       isCanonicalState_empty (MVR_downset_empty C e) hcB
@@ -328,7 +328,7 @@ theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
         · have hs₂ : s₂.2 n = true := hmono.2 n hs₀
           rw [hs₂]
           cases t₁.2 n <;> cases decide (n ∈ O) <;> rfl
-  · -- feasible_redistribute: B = init + a Boolean tautology
+  · -- redistribute: B = init + a Boolean tautology
     intro C ev₁ ev₂ t₀ t₁ t₂ B e _ _ _ _ _ _ _ _ _ _ hcB _ _
     have hBinit : B = MVR.init :=
       isCanonicalState_empty (MVR_downset_empty C e) hcB
@@ -344,7 +344,7 @@ theorem MVR_feasibleDeltaVCs3 : FeasibleDeltaVCs3 MVR := by
       · cases t₀.2 n <;> cases t₁.2 n <;> cases t₂.2 n <;>
           cases decide (n ∈ O) <;> rfl
 
-theorem MVR_cdVC3 : CDVC3 MVR := by
+theorem MVR_causalDeltaLaw : CausalDeltaLaw MVR := by
   intro C U A B e _ _ _ _ _ _ hA hB
   have hBinit : B = MVR.init :=
     isCanonicalState_empty (MVR_downset_empty C e) hB
@@ -373,7 +373,7 @@ def mvrApplicable (o : Op MVROp) (s : MVR.State) : Prop :=
 
 def mvrOK (ρ : List (Op MVROp)) : Prop :=
   ∀ (σ : List (Op MVROp)) (o : Op MVROp) (τ : List (Op MVROp)),
-    ρ = σ ++ o :: τ → mvrApplicable o (applySeq MVR.toCRDTSig MVR.init σ)
+    ρ = σ ++ o :: τ → mvrApplicable o (applySeq MVR.toUpdateSig MVR.init σ)
 
 theorem mvrOK_prefix {ρ : List (Op MVROp)} {o : Op MVROp}
     (h : mvrOK (ρ ++ [o])) : mvrOK ρ := by
@@ -390,11 +390,11 @@ theorem mvrSpecFold_snoc (ρ : List (Op MVROp)) (ts r w : ℕ) (O : List ℕ) :
   rfl
 
 theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
-    ∀ n, (applySeq MVR.toCRDTSig MVR.init ρ).2 n = true → mvrTag (applySeq MVR.toCRDTSig MVR.init ρ) n := by
+    ∀ n, (applySeq MVR.toUpdateSig MVR.init ρ).2 n = true → mvrTag (applySeq MVR.toUpdateSig MVR.init ρ) n := by
   induction ρ using List.reverseRecOn with
   | nil =>
       intro n h
-      have : (applySeq MVR.toCRDTSig MVR.init ([] : List (Op MVROp))).2 n = false := rfl
+      have : (applySeq MVR.toUpdateSig MVR.init ([] : List (Op MVROp))).2 n = false := rfl
       rw [this] at h
       exact Bool.noConfusion h
   | append_singleton ρ o ih =>
@@ -402,7 +402,7 @@ theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
       obtain ⟨ts, r, op⟩ := o
       cases op with
       | write w O =>
-          rw [applySeq_append_single, MRDTSig.toCRDTSig_update,
+          rw [applySeq_append_single, MRDTSig.toUpdateSig_update,
             MVR_update_eq] at h ⊢
           simp only [mvrUpdate, Bool.or_eq_true, decide_eq_true_eq] at h
           simp only [mvrTag, mvrUpdate, Bool.or_eq_true, decide_eq_true_eq]
@@ -414,7 +414,7 @@ theorem mvr_over_tags {ρ : List (Op MVROp)} (hOK : mvrOK ρ) :
             exact ⟨v', Or.inl hv'⟩
 
 theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
-    mvrView (applySeq MVR.toCRDTSig MVR.init ρ) v ↔ mvrSpecFold ρ = some v := by
+    mvrView (applySeq MVR.toUpdateSig MVR.init ρ) v ↔ mvrSpecFold ρ = some v := by
   induction ρ using List.reverseRecOn with
   | nil =>
       constructor
@@ -429,7 +429,7 @@ theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
           have hcond := hOK ρ (ts, r, .write w O) [] (by simp)
           have hfresh := hcond.1
           have hO := hcond.2 w O rfl
-          rw [applySeq_append_single, MRDTSig.toCRDTSig_update,
+          rw [applySeq_append_single, MRDTSig.toUpdateSig_update,
             MVR_update_eq, mvrSpecFold_snoc]
           simp only [mvrView, mvrUpdate, Bool.or_eq_true,
             decide_eq_true_eq, Bool.or_eq_false_iff,
@@ -442,27 +442,30 @@ theorem mvr_seq_sound {ρ : List (Op MVROp)} (hOK : mvrOK ρ) (v : ℕ) :
           · intro hspec
             have hvw : w = v := by simpa using hspec
             subst hvw
-            have hnotag : ¬ mvrTag (applySeq MVR.toCRDTSig MVR.init ρ) ts := by
+            have hnotag : ¬ mvrTag (applySeq MVR.toUpdateSig MVR.init ρ) ts := by
               rintro ⟨v', hv'⟩
               rw [hfresh v'] at hv'
               exact Bool.noConfusion hv'
-            have h1 : (applySeq MVR.toCRDTSig MVR.init ρ).2 ts = false := by
-              cases hh : (applySeq MVR.toCRDTSig MVR.init ρ).2 ts with
+            have h1 : (applySeq MVR.toUpdateSig MVR.init ρ).2 ts = false := by
+              cases hh : (applySeq MVR.toUpdateSig MVR.init ρ).2 ts with
               | false => rfl
               | true =>
                   exact absurd (mvr_over_tags (mvrOK_prefix hOK) ts hh) hnotag
             have h2 : ts ∉ O := fun hin => hnotag ((hO ts).mp hin).1
             exact ⟨ts, Or.inr ⟨rfl, rfl⟩, h1, h2⟩
 
-private theorem mvrJoin : JoinLemma3 MVR :=
-  join_lemma3_of_cd_feasible MVR_coreVCs3CD MVR_feasibleDeltaVCs3 MVR_cdVC3
+theorem MVR_canonicalJoinLaws : CanonicalJoinLaws MVR where
+  core := MVR_joinCoreLaws
+  delta := MVR_feasibleDeltaLaws
+  causal_delta := MVR_causalDeltaLaw
+
+private theorem mvrJoin : Join MVR := MVR_canonicalJoinLaws.join
 
 def generation : Issuance MVR where
   CanIssue := mvrApplicable
 
-def convergence : ConvergenceCertificate MVR generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV (fun _ _ => mvrJoin _) h)
+def replayAdequacy : ReplayAdequacyCertificate MVR generation :=
+  ReplayAdequacyCertificate.ofJoin generation mvrJoin
 
 def spec : SequentialMachine (Op MVROp) where
   State := Option ℕ
@@ -486,9 +489,9 @@ def sequential : SequentialRefinement MVR spec where
     rw [spec_run]
     exact mvr_seq_sound hOK v
 
-noncomputable def replayVerified : ReplayVerifiedMRDT MVR where
+noncomputable def replayAdequate : ReplayAdequateMRDT MVR where
   issuance := generation
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential
   sequential_of_mint := fun _ h => by
@@ -531,7 +534,7 @@ theorem concurrentState_no_sequential_register :
   simp at this
 
 #print axioms mvr_seq_sound
-#print axioms replayVerified
+#print axioms replayAdequate
 #print axioms concurrentState_no_sequential_register
 
 end Sal.MRDTs.Instances.MVR

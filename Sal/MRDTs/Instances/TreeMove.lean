@@ -228,13 +228,13 @@ noncomputable def D : MRDTSig where
   query s _ := visibleTree (render s)
   merge _ a b := a ∪ b
 
-theorem all_comm (a b : Event) : D.toCRDTSig.commutes a b := by
+theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
   intro s
   apply Finset.ext
   intro x
   simp [D, or_left_comm]
 
-theorem updateVCs : UpdateVCs D.toCRDTSig := by
+theorem replayLaws : ReplayLaws D.toUpdateSig := by
   refine ⟨?_, ?_, ?_⟩
   · intro a b _ _
     constructor
@@ -247,25 +247,26 @@ theorem updateVCs : UpdateVCs D.toCRDTSig := by
   · intro s a b c π _ _ _ h _
     exact RcRes.noConfusion h
 
-theorem coreVCs3 : CoreVCs3 D := by
-  refine ⟨updateVCs, ?_, ?_, ?_, ?_⟩
+theorem mergeLaws : MergeLaws D := by
+  refine ⟨replayLaws, ?_, ?_⟩
   · intro l a b; apply Finset.ext; intro x; simp [D, or_comm]
   · intro s; apply Finset.ext; intro x; simp [D]
-  · intro l a b e; apply Finset.ext; intro x
-    simp [D, or_assoc, or_left_comm, or_comm]
+
+theorem commutingPeelLaw : CommutingPeelLaw D := by
+  constructor
   · intro a e π₀ π₂ _ _; apply Finset.ext; intro x
     simp [D, or_assoc, or_left_comm, or_comm]
 
-theorem deltaVCs3 : DeltaVCs3 D := by
+theorem deltaLaws : DeltaLaws D := by
   constructor
   · intro m x₀ x₁ x₂ c; apply Finset.ext; intro x
     simp [D, or_assoc, or_left_comm, or_comm]
   · intro l m x c y; apply Finset.ext; intro z
     simp [D, or_assoc, or_left_comm, or_comm]
 
-theorem join : JoinLemma3 D :=
-  join_lemma3_of_cd' coreVCs3 deltaVCs3
-    (cdVC3_of_all_comm coreVCs3 all_comm)
+theorem join : Join D :=
+  JoinProof.ofArbitraryStateLaws mergeLaws deltaLaws
+    (causalDeltaLaw_of_all_comm mergeLaws commutingPeelLaw all_comm)
 
 def knownNode (s : Finset Event) (n : Node) : Prop :=
   n = root ∨ n = trash ∨ ∃ e ∈ s, e.2.2.child = n
@@ -295,31 +296,18 @@ def applicable (e : Event) (s : Finset Event) : Prop :=
 def generation : Issuance D where
   CanIssue := applicable
 
-def convergence : ConvergenceCertificate D generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV (fun _ _ => join _) h)
-
-structure SeqState where
-  events : Finset Event
-  tree : Tree
+def replayAdequacy : ReplayAdequacyCertificate D generation :=
+  ReplayAdequacyCertificate.ofJoin generation join
 
 /-- The independent chronological machine applies each move once to its
 current tree.  It does not sort or replay its prior operations. -/
 noncomputable def spec : SequentialMachine Event where
-  State := SeqState
-  init := ⟨∅, emptyTree⟩
-  step s e := ⟨insert e s.events, doMove s.tree e.2.2⟩
-
-theorem spec_run_events (ops : List Event) :
-    (spec.run ops).events = ops.toFinset := by
-  induction ops using List.reverseRecOn with
-  | nil => rfl
-  | append_singleton ops e ih =>
-      rw [SequentialMachine.run_append_single]
-      simpa [spec] using congrArg (fun s => insert e s) ih
+  State := Tree
+  init := emptyTree
+  step t e := doMove t e.2.2
 
 theorem spec_run_tree (ops : List Event) :
-    (spec.run ops).tree = replayList ops := by
+    spec.run ops = replayList ops := by
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
@@ -328,15 +316,15 @@ theorem spec_run_tree (ops : List Event) :
         congrArg (fun t => doMove t e.2.2) ih
 
 theorem applySeq_eq_toFinset (ops : List Event) :
-    applySeq D.toCRDTSig D.init ops = ops.toFinset := by
+    applySeq D.toUpdateSig D.init ops = ops.toFinset := by
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
       rw [applySeq_append_single]
       simpa [D] using congrArg (fun s : Finset Event => insert e s) ih
 
-def stateRel (s : D.State) (q : SeqState) : Prop :=
-  s = q.events ∧ render s = q.tree
+def stateRel (s : D.State) (q : Tree) : Prop :=
+  render s = q
 
 /-- Abstract legality requires exactly the deterministic event-key order and
 no duplicate events. This covers concurrent equal Lamport counters by the
@@ -347,28 +335,27 @@ def SequentialLegal (ops : List Event) : Prop :=
 noncomputable def sequentialSpec : SequentialSpec D where
   toSequentialMachine := spec
   Legal := SequentialLegal
-  query := fun q _ => visibleTree q.tree
+  query := fun q _ => visibleTree q
 
 theorem sequentialSound (ops : List Event) (h : SequentialLegal ops) :
-    stateRel (applySeq D.toCRDTSig D.init ops) (spec.run ops) := by
-  rw [stateRel, applySeq_eq_toFinset, spec_run_events, spec_run_tree]
-  refine ⟨rfl, ?_⟩
+    stateRel (applySeq D.toUpdateSig D.init ops) (spec.run ops) := by
+  rw [stateRel, applySeq_eq_toFinset, spec_run_tree]
   rw [render, orderedEvents_toFinset ops h.1 h.2]
 
 noncomputable def sequential : SequentialRefinement D spec where
   Honest := SequentialLegal
   Rel := stateRel
-  init := by simp [stateRel, D, spec, render, orderedEvents, replayList, emptyTree]
+  init := by simp [stateRel, D, spec, render, orderedEvents, replayList]
   sound := sequentialSound
 
 theorem lo_false (C : Configuration D) (a b : Event) :
-    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+    ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
   rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
   · exact hnoncomm (all_comm a b)
   · exact RcRes.noConfusion hrc
 
 theorem respects_lo (C : Configuration D) (ops : List Event) :
-    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+    respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
   induction ops with
   | nil => exact List.Pairwise.nil
   | cons e rest ih =>
@@ -394,7 +381,7 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D gen
     have href : stateRel s (sequentialSpec.run π) := by
       change stateRel s (spec.run π)
       have hs := sequentialSound π hlegal
-      have hπstate : applySeq D.toCRDTSig D.init π = s := by
+      have hπstate : applySeq D.toUpdateSig D.init π = s := by
         rw [applySeq_eq_toFinset]
         exact Finset.sort_toFinset s eventLE
       rw [← hπstate]
@@ -404,9 +391,9 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D gen
       hlegal, href, ?_⟩
     intro query
     cases query
-    exact congrArg visibleTree href.2
+    exact congrArg visibleTree href
 
-def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
+def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
   Safe := fun s => TreeSafe (render s)
   Observable := fun s => TreeSafe (D.query s ())
   preservationV := by
@@ -419,7 +406,7 @@ def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
   interaction := InteractionSpec.raw D
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Spec := sequentialSpec
   Rel := stateRel
   sequentialCorrectness := sequentialCorrectness

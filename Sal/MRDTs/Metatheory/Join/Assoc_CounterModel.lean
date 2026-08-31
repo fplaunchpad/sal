@@ -1,16 +1,16 @@
 import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
 
 /-!
-# Counter-model: `CoreVCs` + merge associativity + idempotence do NOT
-# imply `JoinPeelVCs`
+# Counter-model: `BinaryMergeLaws` + merge associativity + idempotence do NOT
+# imply `BinaryPeelLaws`
 
 The phantom-conflict merge `AWSetX`, whose merge is *not associative*,
-establishes `∃ D, CoreVCs D ∧ ¬ JoinPeelVCs D`. The natural conjecture
-is that adding associativity (+ idempotence) to `CoreVCs` would force
+establishes `∃ D, BinaryMergeLaws D ∧ ¬ BinaryPeelLaws D`. The natural conjecture
+is that adding associativity (+ idempotence) to `BinaryMergeLaws` would force
 the peel identities generically. This file refutes that conjecture:
 there is a `D` whose merge is a **bona fide bounded join-semilattice**
 (commutative, associative, idempotent, `init`-unital) satisfying every
-field of `CoreVCs`, for which `peel_local` (and the Join Lemma itself)
+field of `BinaryMergeLaws`, for which `peel_local` (and the Join Lemma itself)
 fails on a two-event, visibly-reachable configuration.
 
 ## The model: `AWSetF` = `AWSet` × a last-op flag
@@ -24,7 +24,7 @@ update**: `add` sets it `true`, `rem` sets it `false`; merge is `∨`;
 the full merge is ACI-1. Crucially the flag after any nonempty
 history is just *the kind of the last op*. It has no memory.
 
-## Why every `CoreVCs` field survives
+## Why every `BinaryMergeLaws` field survives
 
 The update-level fields (`rc_non_comm_directional`, `no_rc_chain`,
 `cond_comm_lift`) compare states produced by update sequences **ending
@@ -71,8 +71,8 @@ CRDT has inflationary updates, the other half of the
 convergent-replication contract, alongside the ACI merge. The
 sharpened question is therefore
 
-> **does `CoreVCs D` + merge ACI + update-inflationarity
-> (`∀ s e, merge s (update s e) = update s e`) imply `JoinPeelVCs D`?**
+> **does `BinaryMergeLaws D` + merge ACI + update-inflationarity
+> (`∀ s e, merge s (update s e) = update s e`) imply `BinaryPeelLaws D`?**
 
 This model shows the question is tight from below:
 drop inflationarity and it is false, *even with the full semilattice
@@ -86,14 +86,14 @@ open Classical
 /-! ### 0. The lattice VC bundle -/
 
 /-- The lattice laws conjectured to close the gap between
-`CoreVCs` and `JoinPeelVCs` (`merge_comm` and `merge_init` are already
-in `CoreVCs`; together these make `merge` a bounded join-semilattice).
+`BinaryMergeLaws` and `BinaryPeelLaws` (`merge_comm` and `merge_init` are already
+in `BinaryMergeLaws`; together these make `merge` a bounded join-semilattice).
 This file refutes the conjecture: `AWSetF` below satisfies
-`CoreVCs + LatticeVCs` and violates `JoinPeelVCs`. -/
-structure LatticeVCs (D : CRDTSig) : Prop where
+`BinaryMergeLaws + BinaryLatticeLaws` and violates `BinaryPeelLaws`. -/
+structure BinaryLatticeLaws (D : UpdateSig) [HistoricalBinaryMerge D] : Prop where
   merge_assoc :
-    ∀ a b c : D.State, D.merge (D.merge a b) c = D.merge a (D.merge b c)
-  merge_idem : ∀ s : D.State, D.merge s s = s
+    ∀ a b c : D.State, D.historicalMerge (D.historicalMerge a b) c = D.historicalMerge a (D.historicalMerge b c)
+  merge_idem : ∀ s : D.State, D.historicalMerge s s = s
 
 /-! ### 1. The model -/
 
@@ -126,23 +126,22 @@ def awfMerge (σ τ : AWFState) : AWFState :=
 
 /-- `AWSet` enriched with the last-op flag. Same ops, same `rc`, same
 base semantics; the merge is a genuine lattice join. -/
-noncomputable def AWSetF : CRDTSig where
+noncomputable def AWSetF : UpdateSig where
   State := AWFState
   dec_state := Classical.decEq _
   init := ((∅, ∅), false)
   AppOp := AWOp
   dec_op := inferInstance
-  Query := Unit
-  Value := Set Timestamp
   update := awfUpdate
-  merge := awfMerge
-  query := fun σ _ => σ.1.1 \ σ.1.2
+
+noncomputable instance AWSetFHistoricalBinaryMerge : HistoricalBinaryMerge AWSetF where
+  binaryMerge := awfMerge
 
 local instance : ReplayPolicy AWSetF where
   order := awRc
 
 @[simp] theorem AWSetF_update : AWSetF.update = awfUpdate := rfl
-@[simp] theorem AWSetF_merge : AWSetF.merge = awfMerge := rfl
+@[simp] theorem AWSetF_merge : AWSetF.historicalMerge = awfMerge := rfl
 @[simp] theorem AWSetF_rc : AWSetF.replayOrder = awRc := rfl
 @[simp] theorem AWSetF_init :
     AWSetF.init = ((((∅ : Set Timestamp), (∅ : Set Timestamp))), false) := rfl
@@ -199,7 +198,7 @@ theorem AWSetF_not_comm_rem_add {e₁ e₂ : Op AWSetF.AppOp}
     ¬ AWSetF.commutes e₁ e₂ :=
   fun h => AWSetF_not_comm_add_rem h₂ h₁ (fun s => (h s).symm)
 
-/-! ### 3. `CoreVCs` holds for `AWSetF` -/
+/-! ### 3. `BinaryMergeLaws` holds for `AWSetF` -/
 
 theorem AWSetF_rc_non_comm_directional :
     ∀ o₁ o₂ : Op AWSetF.AppOp,
@@ -266,14 +265,14 @@ theorem AWSetF_cond_comm_lift :
     · rfl
 
 theorem AWSetF_merge_comm :
-    ∀ a b : AWSetF.State, AWSetF.merge a b = AWSetF.merge b a := by
+    ∀ a b : AWSetF.State, AWSetF.historicalMerge a b = AWSetF.historicalMerge b a := by
   intro a b
   refine Prod.ext ?_ ?_
   · exact AWSet_merge_comm a.1 b.1
   · exact Bool.or_comm _ _
 
 theorem AWSetF_merge_init :
-    ∀ s : AWSetF.State, AWSetF.merge AWSetF.init s = s := by
+    ∀ s : AWSetF.State, AWSetF.historicalMerge AWSetF.init s = s := by
   intro s
   refine Prod.ext ?_ ?_
   · exact AWSet_merge_init s.1
@@ -281,8 +280,8 @@ theorem AWSetF_merge_init :
 
 theorem AWSetF_lem_0op :
     ∀ (a b : AWSetF.State) (ol : Op AWSetF.AppOp),
-      AWSetF.merge (AWSetF.update a ol) (AWSetF.update b ol)
-        = AWSetF.update (AWSetF.merge a b) ol := by
+      AWSetF.historicalMerge (AWSetF.update a ol) (AWSetF.update b ol)
+        = AWSetF.update (AWSetF.historicalMerge a b) ol := by
   intro a b ol
   refine Prod.ext ?_ ?_
   · exact AWSet_lem_0op a.1 b.1 ol
@@ -295,8 +294,8 @@ theorem AWSetF_merge_peel_comm :
     ∀ (a : AWSetF.State) (e : Op AWSetF.AppOp)
       (π : List (Op AWSetF.AppOp)),
       (∀ x ∈ π, AWSetF.commutes e x) →
-      AWSetF.merge (AWSetF.update a e) (applySeq AWSetF AWSetF.init π)
-        = AWSetF.update (AWSetF.merge a (applySeq AWSetF AWSetF.init π)) e := by
+      AWSetF.historicalMerge (AWSetF.update a e) (applySeq AWSetF AWSetF.init π)
+        = AWSetF.update (AWSetF.historicalMerge a (applySeq AWSetF AWSetF.init π)) e := by
   intro a e π h_comm
   rcases he : e.2.2
   · -- e = add: everything in π is an add.
@@ -333,7 +332,7 @@ theorem AWSetF_merge_peel_comm :
       rfl
 
 /-- **`AWSetF` satisfies the full core bundle.** -/
-theorem AWSetF_coreVCs : CoreVCs AWSetF :=
+theorem AWSetF_binaryMergeLaws : BinaryMergeLaws AWSetF :=
   ⟨AWSetF_rc_non_comm_directional, AWSetF_no_rc_chain,
    AWSetF_cond_comm_lift, AWSetF_merge_comm, AWSetF_merge_init,
    AWSetF_lem_0op, AWSetF_merge_peel_comm⟩
@@ -342,21 +341,21 @@ theorem AWSetF_coreVCs : CoreVCs AWSetF :=
 
 theorem AWSetF_merge_assoc :
     ∀ a b c : AWSetF.State,
-      AWSetF.merge (AWSetF.merge a b) c
-        = AWSetF.merge a (AWSetF.merge b c) := by
+      AWSetF.historicalMerge (AWSetF.historicalMerge a b) c
+        = AWSetF.historicalMerge a (AWSetF.historicalMerge b c) := by
   intro a b c
   refine Prod.ext ?_ ?_
   · exact Prod.ext (Set.union_assoc _ _ _) (Set.union_assoc _ _ _)
   · exact Bool.or_assoc _ _ _
 
-theorem AWSetF_merge_idem : ∀ s : AWSetF.State, AWSetF.merge s s = s := by
+theorem AWSetF_merge_idem : ∀ s : AWSetF.State, AWSetF.historicalMerge s s = s := by
   intro s
   refine Prod.ext ?_ ?_
   · exact Prod.ext (Set.union_self _) (Set.union_self _)
   · exact Bool.or_self _
 
 /-- **`AWSetF` satisfies the lattice bundle.** -/
-theorem AWSetF_latticeVCs : LatticeVCs AWSetF :=
+theorem AWSetF_binaryLatticeLaws : BinaryLatticeLaws AWSetF :=
   ⟨AWSetF_merge_assoc, AWSetF_merge_idem⟩
 
 /-! ### 5. The two events and the configuration
@@ -395,39 +394,12 @@ private theorem flag_L_cases (r₀ : Replica)
 
 /-- The refuting configuration. Replica 0 holds `{aF, eF}`; replica 1
 holds `{aF}`. The single `vis`-edge is `aF → eF`. -/
-noncomputable def flagConfig : Configuration AWSetF where
-  N := fun r =>
-    if r = 0 then some (applySeq AWSetF AWSetF.init [aF, eF])
-    else if r = 1 then some (applySeq AWSetF AWSetF.init [aF])
-    else none
+noncomputable def flagConfig : ReplayContext AWSetF where
   L := fun r =>
     if r = 0 then some {aF, eF}
     else if r = 1 then some {aF}
     else none
   vis := fun x y => x = aF ∧ y = eF
-  dom_eq := by
-    intro r
-    by_cases h0 : r = 0
-    · simp [h0]
-    · by_cases h1 : r = 1 <;> simp [h0, h1]
-  vis_src := by
-    rintro x y ⟨rfl, rfl⟩
-    exact ⟨0, {aF, eF}, by simp, Or.inl rfl⟩
-  vis_tgt := by
-    rintro x y ⟨rfl, rfl⟩
-    exact ⟨0, {aF, eF}, by simp, Or.inr rfl⟩
-  vis_causal := by
-    rintro x y r s ⟨rfl, rfl⟩ hL hs
-    by_cases h0 : r = 0
-    · rw [if_pos h0, Option.some.injEq] at hL
-      rw [← hL]
-      exact Or.inl rfl
-    · by_cases h1 : r = 1
-      · rw [if_neg h0, if_pos h1, Option.some.injEq] at hL
-        rw [← hL] at hs
-        exact absurd (show eF = aF from hs) (by simp [aF, eF])
-      · rw [if_neg h0, if_neg h1] at hL
-        exact absurd hL (by simp)
   timestamps_distinct := by
     intro x y r s r' s' hL hs hL' hs' hne
     rcases flag_L_cases r s hL x hs with rfl | rfl <;>
@@ -560,10 +532,10 @@ private theorem hF_can_t₁ :
 
 /-! ### 7. The refutation -/
 
-/-- **`peel_local` fails for `AWSetF`**: hence `JoinPeelVCs` fails.
+/-- **`peel_local` fails for `AWSetF`**: hence `BinaryPeelLaws` fails.
 The left side is a merge (flag `false ∨ true = true`); the right side
 ends in `update eF` (flag `false`). -/
-theorem AWSetF_not_joinPeelVCs : ¬ JoinPeelVCs AWSetF := by
+theorem AWSetF_not_binaryPeelLaws : ¬ BinaryPeelLaws AWSetF := by
   intro hPeel
   have h := hPeel.peel_local flagConfig evF₁ evF₂ sF₁ sF₂ sF₂ eF
     hF_in₁ hF_in₂ hF_cl₁ hF_cl₂ (Or.inr rfl)
@@ -576,8 +548,8 @@ theorem AWSetF_not_joinPeelVCs : ¬ JoinPeelVCs AWSetF := by
 `merge σ(ev₁) σ(ev₂)` (flag `true`) is not the canonical state of the
 union, the only `loOn`-respecting enumeration is `[aF, eF]`, whose
 fold has flag `false`. So the failure is not an artifact of the
-`JoinPeelVCs` packaging. -/
-theorem AWSetF_not_joinLemma : ¬ JoinLemma AWSetF := by
+`BinaryPeelLaws` packaging. -/
+theorem AWSetF_not_binaryJoin : ¬ BinaryJoin AWSetF := by
   intro hJoin
   have h := hJoin flagConfig evF₁ evF₂ sF₁ sF₂
     hF_vis_trans hF_vis_irrefl hF_in₁ hF_in₂ hF_cl₁ hF_cl₂
@@ -635,26 +607,26 @@ inflationary w.r.t. the merge order, `rem` strictly *decreases* the
 flag. Every genuine state-based CRDT satisfies
 `merge s (update s e) = update s e`; this is the axiom the lattice
 bundle is missing, and this model shows it is not derivable from
-`CoreVCs` + ACI. -/
+`BinaryMergeLaws` + ACI. -/
 theorem AWSetF_update_not_inflationary :
     ¬ ∀ (s : AWSetF.State) (e : Op AWSetF.AppOp),
-        AWSetF.merge s (AWSetF.update s e) = AWSetF.update s e := by
+        AWSetF.historicalMerge s (AWSetF.update s e) = AWSetF.update s e := by
   intro h
   have h0 := congrArg Prod.snd (h (AWSetF.update AWSetF.init aF) eF)
   exact Bool.noConfusion (show (true : Bool) = false from h0)
 
-/-- `CoreVCs` together with a bounded-join-semilattice merge do not
-imply `JoinPeelVCs`. There is a CRDT signature whose merge is a
+/-- `BinaryMergeLaws` together with a bounded-join-semilattice merge do not
+imply `BinaryPeelLaws`. There is a replay algebra whose merge is a
 bounded join-semilattice (commutative, associative, idempotent,
 `init`-unital) satisfying every field of
-`CoreVCs`, for which both the peel identities and the Join Lemma fail.
+`BinaryMergeLaws`, for which both the peel identities and the Join Lemma fail.
 Associativity + idempotence do **not** close the gap between
-`CoreVCs` and `JoinPeelVCs`; the missing ingredient is
+`BinaryMergeLaws` and `BinaryPeelLaws`; the missing ingredient is
 update-inflationarity (`AWSetF_update_not_inflationary`). -/
-theorem coreVCs_lattice_insufficient :
-    CoreVCs AWSetF ∧ LatticeVCs AWSetF ∧
-      ¬ JoinPeelVCs AWSetF ∧ ¬ JoinLemma AWSetF :=
-  ⟨AWSetF_coreVCs, AWSetF_latticeVCs,
-   AWSetF_not_joinPeelVCs, AWSetF_not_joinLemma⟩
+theorem binaryLaws_insufficient :
+    BinaryMergeLaws AWSetF ∧ BinaryLatticeLaws AWSetF ∧
+      ¬ BinaryPeelLaws AWSetF ∧ ¬ BinaryJoin AWSetF :=
+  ⟨AWSetF_binaryMergeLaws, AWSetF_binaryLatticeLaws,
+   AWSetF_not_binaryPeelLaws, AWSetF_not_binaryJoin⟩
 
 end Sal.MRDTs.Foundation

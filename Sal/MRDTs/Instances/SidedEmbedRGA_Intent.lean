@@ -4,7 +4,7 @@ import Sal.MRDTs.Instances.EmbedRGA
 /-!
 # Sided RGA: per-policy intent theorems
 
-The capstone (`sided_embed_ra_linearizable3`) is policy-free: sides are
+The capstone (`SidedEmbedRGA.replayAdequacy`) is policy-free: sides are
 payload to convergence. This file is the other half of "one kernel, two
 policies", what ordering intent each side-selection policy buys:
 

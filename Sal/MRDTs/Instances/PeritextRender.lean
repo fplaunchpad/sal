@@ -514,7 +514,7 @@ end TRILEMMA
 `renderMarksDoc` uses the mark list only through the per-`(char, mtype)` LWW
 `bestCover`, which is invariant under permutation of the marks with distinct
 `mid`s (marks form a set; removeMark is LWW; character order converges by the
-embed capstone `embed_ra_linearizable3`).  Watched concretely: permuting the
+embed certificate `EmbedRGA.replayAdequacy`). Watched concretely: permuting the
 two overlapping marks of Ex 2 leaves the render unchanged (PASS), and it is not
 vacuous, a render that ignored one of the two marks would differ (FAIL pin). -/
 

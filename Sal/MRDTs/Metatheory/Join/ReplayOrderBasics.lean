@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Join.RA_Linearizability
+import Sal.MRDTs.Metatheory.Join.HistoricalReplay
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 import Mathlib.Data.List.Induction
@@ -13,7 +13,7 @@ namespace Sal.MRDTs.Foundation
 open Classical
 
 section
-variable {D : CRDTSig}
+variable {D : UpdateSig}
 
 /-- Commutativity is symmetric because its defining state equation is. -/
 theorem commutes_symm {a b : Op D.AppOp} (h : D.commutes a b) :
@@ -37,7 +37,7 @@ theorem applySeq_comm_extract_basic
   induction π using List.reverseRecOn <;> simp_all +decide [applySeq]
   cases h_mem <;> simp_all +decide [List.nodup_append]
   · rename_i k hk
-    cases eq_or_ne k e <;> simp_all +decide [CRDTSig.commutes]
+    cases eq_or_ne k e <;> simp_all +decide [UpdateSig.commutes]
     grind
   · rw [List.filter_eq_self.mpr]
     aesop

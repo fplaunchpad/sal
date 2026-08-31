@@ -255,38 +255,38 @@ variable {D₁ D₂}
       (D₁.merge l.1 a.1 b.1, D₂.merge l.2 a.2 b.2) := rfl
 
 theorem commutes_prod_cross (a : Op D₁.AppOp) (b : Op D₂.AppOp) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inlOp a) (inrOp b) := by
+    (prodSig D₁ D₂).toUpdateSig.commutes (inlOp a) (inrOp b) := by
   intro s
   simp
 
 theorem commutes_prod_cross' (b : Op D₂.AppOp) (a : Op D₁.AppOp) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inrOp b) (inlOp a) := by
+    (prodSig D₁ D₂).toUpdateSig.commutes (inrOp b) (inlOp a) := by
   intro s
   simp
 
 theorem commutes_prod_inl_of {a b : Op D₁.AppOp}
-    (h : D₁.toCRDTSig.commutes a b) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inlOp a) (inlOp b) := by
+    (h : D₁.toUpdateSig.commutes a b) :
+    (prodSig D₁ D₂).toUpdateSig.commutes (inlOp a) (inlOp b) := by
   intro s
   exact Prod.ext (h s.1) rfl
 
 theorem commutes_prod_inr_of {a b : Op D₂.AppOp}
-    (h : D₂.toCRDTSig.commutes a b) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inrOp a) (inrOp b) := by
+    (h : D₂.toUpdateSig.commutes a b) :
+    (prodSig D₁ D₂).toUpdateSig.commutes (inrOp a) (inrOp b) := by
   intro s
   exact Prod.ext rfl (h s.2)
 
 theorem commutes_prod_inl_iff (a b : Op D₁.AppOp) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inlOp a) (inlOp b) ↔
-      D₁.toCRDTSig.commutes a b := by
+    (prodSig D₁ D₂).toUpdateSig.commutes (inlOp a) (inlOp b) ↔
+      D₁.toUpdateSig.commutes a b := by
   constructor
   · intro h s
     exact congrArg Prod.fst (h (s, D₂.init))
   · exact commutes_prod_inl_of
 
 theorem commutes_prod_inr_iff (a b : Op D₂.AppOp) :
-    (prodSig D₁ D₂).toCRDTSig.commutes (inrOp a) (inrOp b) ↔
-      D₂.toCRDTSig.commutes a b := by
+    (prodSig D₁ D₂).toUpdateSig.commutes (inrOp a) (inrOp b) ↔
+      D₂.toUpdateSig.commutes a b := by
   constructor
   · intro h s
     exact congrArg Prod.snd (h (D₁.init, s))
@@ -294,9 +294,9 @@ theorem commutes_prod_inr_iff (a b : Op D₂.AppOp) :
 
 theorem applySeq_prod (s : (prodSig D₁ D₂).State)
     (ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))) :
-    applySeq (prodSig D₁ D₂).toCRDTSig s ρ =
-      (applySeq D₁.toCRDTSig s.1 (projList₁ ρ),
-       applySeq D₂.toCRDTSig s.2 (projList₂ ρ)) := by
+    applySeq (prodSig D₁ D₂).toUpdateSig s ρ =
+      (applySeq D₁.toUpdateSig s.1 (projList₁ ρ),
+       applySeq D₂.toUpdateSig s.2 (projList₂ ρ)) := by
   induction ρ generalizing s with
   | nil => rfl
   | cons e ρ ih =>
@@ -306,24 +306,11 @@ theorem applySeq_prod (s : (prodSig D₁ D₂).State)
 
 /-! ## Projection of canonical configurations -/
 
-def projCore₁
-    (C : Sal.MRDTs.Foundation.Configuration (prodSig D₁ D₂).toCRDTSig) :
-    Sal.MRDTs.Foundation.Configuration D₁.toCRDTSig where
-  N r := (C.N r).map Prod.fst
+def projReplayContext₁
+    (C : Sal.MRDTs.Foundation.ReplayContext (prodSig D₁ D₂).toUpdateSig) :
+    Sal.MRDTs.Foundation.ReplayContext D₁.toUpdateSig where
   L r := (C.L r).map evRes₁
   vis a b := C.vis (inlOp a) (inlOp b)
-  dom_eq r := by
-    rw [Option.map_eq_none_iff, Option.map_eq_none_iff]
-    exact C.dom_eq r
-  vis_src h := by
-    obtain ⟨r, s, hL, hs⟩ := C.vis_src h
-    exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
-  vis_tgt h := by
-    obtain ⟨r, s, hL, hs⟩ := C.vis_tgt h
-    exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
-  vis_causal h hL hb := by
-    obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
-    exact C.vis_causal h hLs hb
   timestamps_distinct hL ha hL' hb hne := by
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
@@ -334,24 +321,11 @@ def projCore₁
     exact C.vis_total_same_replica hsa ha hsb hb
       (fun h => hne (inlOp_injective h)) hrep
 
-def projCore₂
-    (C : Sal.MRDTs.Foundation.Configuration (prodSig D₁ D₂).toCRDTSig) :
-    Sal.MRDTs.Foundation.Configuration D₂.toCRDTSig where
-  N r := (C.N r).map Prod.snd
+def projReplayContext₂
+    (C : Sal.MRDTs.Foundation.ReplayContext (prodSig D₁ D₂).toUpdateSig) :
+    Sal.MRDTs.Foundation.ReplayContext D₂.toUpdateSig where
   L r := (C.L r).map evRes₂
   vis a b := C.vis (inrOp a) (inrOp b)
-  dom_eq r := by
-    rw [Option.map_eq_none_iff, Option.map_eq_none_iff]
-    exact C.dom_eq r
-  vis_src h := by
-    obtain ⟨r, s, hL, hs⟩ := C.vis_src h
-    exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
-  vis_tgt h := by
-    obtain ⟨r, s, hL, hs⟩ := C.vis_tgt h
-    exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
-  vis_causal h hL hb := by
-    obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
-    exact C.vis_causal h hLs hb
   timestamps_distinct hL ha hL' hb hne := by
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
@@ -362,10 +336,10 @@ def projCore₂
     exact C.vis_total_same_replica hsa ha hsb hb
       (fun h => hne (inrOp_injective h)) hrep
 
-variable {C : Sal.MRDTs.Foundation.Configuration (prodSig D₁ D₂).toCRDTSig}
+variable {C : Sal.MRDTs.Foundation.ReplayContext (prodSig D₁ D₂).toUpdateSig}
 
-theorem mem_projCore₁_events {a : Op D₁.AppOp} :
-    a ∈ (projCore₁ C).events ↔ inlOp a ∈ C.events := by
+theorem mem_projReplayContext₁_events {a : Op D₁.AppOp} :
+    a ∈ (projReplayContext₁ C).events ↔ inlOp a ∈ C.events := by
   constructor
   · rintro ⟨r, s₁, hL, hs⟩
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
@@ -373,8 +347,8 @@ theorem mem_projCore₁_events {a : Op D₁.AppOp} :
   · rintro ⟨r, s, hL, hs⟩
     exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
 
-theorem mem_projCore₂_events {b : Op D₂.AppOp} :
-    b ∈ (projCore₂ C).events ↔ inrOp b ∈ C.events := by
+theorem mem_projReplayContext₂_events {b : Op D₂.AppOp} :
+    b ∈ (projReplayContext₂ C).events ↔ inrOp b ∈ C.events := by
   constructor
   · rintro ⟨r, s₂, hL, hs⟩
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
@@ -399,7 +373,7 @@ theorem loOn_prod_cross_rl {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 theorem loOn_prod_inl_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₁.AppOp) :
     loOn C ev (inlOp a) (inlOp b) ↔
-      loOn (projCore₁ C) (evRes₁ ev) a b := by
+      loOn (projReplayContext₁ C) (evRes₁ ev) a b := by
   constructor
   · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
     · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inl_of hc)⟩
@@ -418,7 +392,7 @@ theorem loOn_prod_inl_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 theorem loOn_prod_inr_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₂.AppOp) :
     loOn C ev (inrOp a) (inrOp b) ↔
-      loOn (projCore₂ C) (evRes₂ ev) a b := by
+      loOn (projReplayContext₂ C) (evRes₂ ev) a b := by
   constructor
   · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
     · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inr_of hc)⟩
@@ -438,7 +412,7 @@ theorem loOn_prod_inr_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 on its left component. -/
 theorem lo_prod_inl_iff (a b : Op D₁.AppOp) :
     Sal.MRDTs.Foundation.lo C (inlOp a) (inlOp b) ↔
-      Sal.MRDTs.Foundation.lo (projCore₁ C) a b := by
+      Sal.MRDTs.Foundation.lo (projReplayContext₁ C) a b := by
   constructor
   · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
     · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inl_of hc)⟩
@@ -457,7 +431,7 @@ theorem lo_prod_inl_iff (a b : Op D₁.AppOp) :
 theorem respects_projList₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (h : respects ρ (loOn C ev)) :
-    respects (projList₁ ρ) (loOn (projCore₁ C) (evRes₁ ev)) := by
+    respects (projList₁ ρ) (loOn (projReplayContext₁ C) (evRes₁ ev)) := by
   unfold respects at h ⊢
   unfold projList₁
   rw [List.pairwise_filterMap]
@@ -470,7 +444,7 @@ theorem respects_projList₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 theorem respects_projList₂ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (h : respects ρ (loOn C ev)) :
-    respects (projList₂ ρ) (loOn (projCore₂ C) (evRes₂ ev)) := by
+    respects (projList₂ ρ) (loOn (projReplayContext₂ C) (evRes₂ ev)) := by
   unfold respects at h ⊢
   unfold projList₂
   rw [List.pairwise_filterMap]
@@ -482,22 +456,22 @@ theorem respects_projList₂ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
 
 theorem isCanonicalState_proj₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {s : (prodSig D₁ D₂).State} (h : IsCanonicalState C ev s) :
-    IsCanonicalState (projCore₁ C) (evRes₁ ev) s.1 := by
+    IsCanonicalState (projReplayContext₁ C) (evRes₁ ev) s.1 := by
   obtain ⟨ρ, hp, hr, hf⟩ := h
   exact ⟨projList₁ ρ, listPermOf_projList₁ hp, respects_projList₁ hr,
     congrArg Prod.fst ((applySeq_prod (prodSig D₁ D₂).init ρ).symm.trans hf)⟩
 
 theorem isCanonicalState_proj₂ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {s : (prodSig D₁ D₂).State} (h : IsCanonicalState C ev s) :
-    IsCanonicalState (projCore₂ C) (evRes₂ ev) s.2 := by
+    IsCanonicalState (projReplayContext₂ C) (evRes₂ ev) s.2 := by
   obtain ⟨ρ, hp, hr, hf⟩ := h
   exact ⟨projList₂ ρ, listPermOf_projList₂ hp, respects_projList₂ hr,
     congrArg Prod.snd ((applySeq_prod (prodSig D₁ D₂).init ρ).symm.trans hf)⟩
 
 theorem canonical_glue {U : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {m₁ : D₁.State} {m₂ : D₂.State}
-    (h₁ : IsCanonicalState (projCore₁ C) (evRes₁ U) m₁)
-    (h₂ : IsCanonicalState (projCore₂ C) (evRes₂ U) m₂) :
+    (h₁ : IsCanonicalState (projReplayContext₁ C) (evRes₁ U) m₁)
+    (h₂ : IsCanonicalState (projReplayContext₂ C) (evRes₂ U) m₂) :
     IsCanonicalState C U ((m₁, m₂) : (prodSig D₁ D₂).State) := by
   obtain ⟨ρ₁, hp₁, hr₁, hf₁⟩ := h₁
   obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
@@ -534,21 +508,21 @@ theorem canonical_glue {U : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
   · rw [applySeq_prod, projList₁_append, projList₂_append,
       projList₁_map_inlOp, projList₁_map_inrOp,
       projList₂_map_inlOp, projList₂_map_inrOp, List.append_nil]
-    show (applySeq D₁.toCRDTSig D₁.init ρ₁,
-      applySeq D₂.toCRDTSig D₂.init ρ₂) = (m₁, m₂)
+    show (applySeq D₁.toUpdateSig D₁.init ρ₁,
+      applySeq D₂.toUpdateSig D₂.init ρ₂) = (m₁, m₂)
     rw [hf₁, hf₂]
 
 /-- Componentwise Join composes for the plain product signature. -/
-theorem joinLemma3At_prod
-    (h₁ : JoinLemma3At D₁ (projCore₁ C))
-    (h₂ : JoinLemma3At D₂ (projCore₂ C)) :
-    JoinLemma3At (prodSig D₁ D₂) C := by
+theorem joinAt_prod
+    (h₁ : JoinAt D₁ (projReplayContext₁ C))
+    (h₂ : JoinAt D₂ (projReplayContext₂ C)) :
+    JoinAt (prodSig D₁ D₂) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ h₀ hc₁ hc₂
   have hJ₁ := h₁ (evRes₁ ev₁) (evRes₁ ev₂) s₀.1 s₁.1 s₂.1
     (fun {a b c} hab hbc => htr hab hbc)
     (fun a hv => hir (inlOp a) hv)
-    (fun a ha => mem_projCore₁_events.mpr (hin₁ _ ha))
-    (fun a ha => mem_projCore₁_events.mpr (hin₂ _ ha))
+    (fun a ha => mem_projReplayContext₁_events.mpr (hin₁ _ ha))
+    (fun a ha => mem_projReplayContext₁_events.mpr (hin₂ _ ha))
     (fun a b hv hnc hb =>
       hcl₁ (inlOp a) (inlOp b) hv
         (fun hc => hnc ((commutes_prod_inl_iff a b).mp hc)) hb)
@@ -561,8 +535,8 @@ theorem joinLemma3At_prod
   have hJ₂ := h₂ (evRes₂ ev₁) (evRes₂ ev₂) s₀.2 s₁.2 s₂.2
     (fun {a b c} hab hbc => htr hab hbc)
     (fun a hv => hir (inrOp a) hv)
-    (fun a ha => mem_projCore₂_events.mpr (hin₁ _ ha))
-    (fun a ha => mem_projCore₂_events.mpr (hin₂ _ ha))
+    (fun a ha => mem_projReplayContext₂_events.mpr (hin₁ _ ha))
+    (fun a ha => mem_projReplayContext₂_events.mpr (hin₂ _ ha))
     (fun a b hv hnc hb =>
       hcl₁ (inrOp a) (inrOp b) hv
         (fun hc => hnc ((commutes_prod_inr_iff a b).mp hc)) hb)
@@ -576,28 +550,52 @@ theorem joinLemma3At_prod
 
 /-! ## Projection of operational configurations -/
 
+theorem headEventsFrom_projVer₁ (C : Configuration (prodSig D₁ D₂)) (r : Replica) :
+    headEventsFrom
+        (fun v => (C.ver v).map fun p => (p.1.1, evRes₁ p.2)) C.head r =
+      (C.headEvents r).map evRes₁ := by
+  unfold Configuration.headEvents headEventsFrom
+  cases hhead : C.head r with
+  | none => simp [hhead]
+  | some v =>
+      cases hver : C.ver v with
+      | none => simp [hhead, hver]
+      | some p => simp [hhead, hver]
+
+theorem headEventsFrom_projVer₂ (C : Configuration (prodSig D₁ D₂)) (r : Replica) :
+    headEventsFrom
+        (fun v => (C.ver v).map fun p => (p.1.2, evRes₂ p.2)) C.head r =
+      (C.headEvents r).map evRes₂ := by
+  unfold Configuration.headEvents headEventsFrom
+  cases hhead : C.head r with
+  | none => simp [hhead]
+  | some v =>
+      cases hver : C.ver v with
+      | none => simp [hhead, hver]
+      | some p => simp [hhead, hver]
+
 def projConf₁ (C : Configuration (prodSig D₁ D₂)) : Configuration D₁ where
-  N r := (C.N r).map Prod.fst
-  L r := (C.L r).map evRes₁
   vis a b := C.vis (inlOp a) (inlOp b)
-  dom_eq r := by
-    rw [Option.map_eq_none_iff, Option.map_eq_none_iff]
-    exact C.dom_eq r
   vis_src h := by
     obtain ⟨r, s, hL, hs⟩ := C.vis_src h
+    simp_rw [headEventsFrom_projVer₁]
     exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
   vis_tgt h := by
     obtain ⟨r, s, hL, hs⟩ := C.vis_tgt h
+    simp_rw [headEventsFrom_projVer₁]
     exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
   vis_causal h hL hb := by
+    rw [headEventsFrom_projVer₁] at hL
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
     exact C.vis_causal h hLs hb
   timestamps_distinct hL ha hL' hb hne := by
+    rw [headEventsFrom_projVer₁] at hL hL'
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
     exact C.timestamps_distinct hsa ha hsb hb fun h => hne (inlOp_injective h)
   causal_mono h := C.causal_mono h
   vis_total_same_replica hL ha hL' hb hne hrep := by
+    rw [headEventsFrom_projVer₁] at hL hL'
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
     exact C.vis_total_same_replica hsa ha hsb hb
@@ -607,18 +605,13 @@ def projConf₁ (C : Configuration (prodSig D₁ D₂)) : Configuration D₁ whe
   parents := C.parents
   parents_lt := C.parents_lt
   ver_init := by rw [C.ver_init]; rfl
-  head_coherent r v hv := by
-    obtain ⟨h1, h2⟩ := C.head_coherent r v hv
-    constructor
-    · rw [← h1]
-      cases C.ver v <;> rfl
-    · rw [← h2]
-      cases C.ver v <;> rfl
-  lca_events hlca hv₁ hv₂ hvT := by
+  head_alloc r v hv := by
+    simpa using C.head_alloc r v hv
+  gca_events hgca hv₁ hv₂ hvT := by
     obtain ⟨p₁, hp₁, hpe₁⟩ := Option.map_eq_some_iff.mp hv₁
     obtain ⟨p₂, hp₂, hpe₂⟩ := Option.map_eq_some_iff.mp hv₂
     obtain ⟨pT, hpT, hpeT⟩ := Option.map_eq_some_iff.mp hvT
-    have h := C.lca_events hlca (by rw [hp₁]) (by rw [hp₂]) (by rw [hpT])
+    have h := C.gca_events hgca (by rw [hp₁]) (by rw [hp₂]) (by rw [hpT])
     have hT : evRes₁ pT.2 = _ := congrArg Prod.snd hpeT
     have h1 : evRes₁ p₁.2 = _ := congrArg Prod.snd hpe₁
     have h2 : evRes₁ p₂.2 = _ := congrArg Prod.snd hpe₂
@@ -627,27 +620,27 @@ def projConf₁ (C : Configuration (prodSig D₁ D₂)) : Configuration D₁ whe
     rfl
 
 def projConf₂ (C : Configuration (prodSig D₁ D₂)) : Configuration D₂ where
-  N r := (C.N r).map Prod.snd
-  L r := (C.L r).map evRes₂
   vis a b := C.vis (inrOp a) (inrOp b)
-  dom_eq r := by
-    rw [Option.map_eq_none_iff, Option.map_eq_none_iff]
-    exact C.dom_eq r
   vis_src h := by
     obtain ⟨r, s, hL, hs⟩ := C.vis_src h
+    simp_rw [headEventsFrom_projVer₂]
     exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
   vis_tgt h := by
     obtain ⟨r, s, hL, hs⟩ := C.vis_tgt h
+    simp_rw [headEventsFrom_projVer₂]
     exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
   vis_causal h hL hb := by
+    rw [headEventsFrom_projVer₂] at hL
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
     exact C.vis_causal h hLs hb
   timestamps_distinct hL ha hL' hb hne := by
+    rw [headEventsFrom_projVer₂] at hL hL'
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
     exact C.timestamps_distinct hsa ha hsb hb fun h => hne (inrOp_injective h)
   causal_mono h := C.causal_mono h
   vis_total_same_replica hL ha hL' hb hne hrep := by
+    rw [headEventsFrom_projVer₂] at hL hL'
     obtain ⟨sa, hsa, rfl⟩ := Option.map_eq_some_iff.mp hL
     obtain ⟨sb, hsb, rfl⟩ := Option.map_eq_some_iff.mp hL'
     exact C.vis_total_same_replica hsa ha hsb hb
@@ -657,18 +650,13 @@ def projConf₂ (C : Configuration (prodSig D₁ D₂)) : Configuration D₂ whe
   parents := C.parents
   parents_lt := C.parents_lt
   ver_init := by rw [C.ver_init]; rfl
-  head_coherent r v hv := by
-    obtain ⟨h1, h2⟩ := C.head_coherent r v hv
-    constructor
-    · rw [← h1]
-      cases C.ver v <;> rfl
-    · rw [← h2]
-      cases C.ver v <;> rfl
-  lca_events hlca hv₁ hv₂ hvT := by
+  head_alloc r v hv := by
+    simpa using C.head_alloc r v hv
+  gca_events hgca hv₁ hv₂ hvT := by
     obtain ⟨p₁, hp₁, hpe₁⟩ := Option.map_eq_some_iff.mp hv₁
     obtain ⟨p₂, hp₂, hpe₂⟩ := Option.map_eq_some_iff.mp hv₂
     obtain ⟨pT, hpT, hpeT⟩ := Option.map_eq_some_iff.mp hvT
-    have h := C.lca_events hlca (by rw [hp₁]) (by rw [hp₂]) (by rw [hpT])
+    have h := C.gca_events hgca (by rw [hp₁]) (by rw [hp₂]) (by rw [hpT])
     have hT : evRes₂ pT.2 = _ := congrArg Prod.snd hpeT
     have h1 : evRes₂ p₁.2 = _ := congrArg Prod.snd hpe₁
     have h2 : evRes₂ p₂.2 = _ := congrArg Prod.snd hpe₂
@@ -676,34 +664,58 @@ def projConf₂ (C : Configuration (prodSig D₁ D₂)) : Configuration D₂ whe
     rw [← hT, ← h1, ← h2, h]
     rfl
 
+@[simp] theorem projConf₁_headEvents (CT : Configuration (prodSig D₁ D₂)) (r : Replica) :
+    (projConf₁ CT).headEvents r = (CT.headEvents r).map evRes₁ :=
+  headEventsFrom_projVer₁ CT r
+
+@[simp] theorem projConf₂_headEvents (CT : Configuration (prodSig D₁ D₂)) (r : Replica) :
+    (projConf₂ CT).headEvents r = (CT.headEvents r).map evRes₂ :=
+  headEventsFrom_projVer₂ CT r
+
 @[simp] theorem projConf₁_core {CT : Configuration (prodSig D₁ D₂)} :
-    Configuration.core (projConf₁ CT) = projCore₁ (Configuration.core CT) := rfl
+    Configuration.replayContext (projConf₁ CT) =
+      projReplayContext₁ (Configuration.replayContext CT) := by
+  unfold Configuration.replayContext projReplayContext₁
+  congr 1
+  funext r
+  exact projConf₁_headEvents CT r
 
 @[simp] theorem projConf₂_core {CT : Configuration (prodSig D₁ D₂)} :
-    Configuration.core (projConf₂ CT) = projCore₂ (Configuration.core CT) := rfl
+    Configuration.replayContext (projConf₂ CT) =
+      projReplayContext₂ (Configuration.replayContext CT) := by
+  unfold Configuration.replayContext projReplayContext₂
+  congr 1
+  funext r
+  exact projConf₂_headEvents CT r
 
 theorem mem_projConf₁_events {CT : Configuration (prodSig D₁ D₂)}
     {a : Op D₁.AppOp} : a ∈ (projConf₁ CT).events ↔ inlOp a ∈ CT.events := by
   constructor
   · rintro ⟨r, s₁, hL, hs⟩
+    rw [projConf₁_headEvents] at hL
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
     exact ⟨r, s, hLs, hs⟩
   · rintro ⟨r, s, hL, hs⟩
-    exact ⟨r, evRes₁ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
+    refine ⟨r, evRes₁ s, ?_, hs⟩
+    rw [projConf₁_headEvents]
+    exact Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩
 
 theorem mem_projConf₂_events {CT : Configuration (prodSig D₁ D₂)}
     {b : Op D₂.AppOp} : b ∈ (projConf₂ CT).events ↔ inrOp b ∈ CT.events := by
   constructor
   · rintro ⟨r, s₂, hL, hs⟩
+    rw [projConf₂_headEvents] at hL
     obtain ⟨s, hLs, rfl⟩ := Option.map_eq_some_iff.mp hL
     exact ⟨r, s, hLs, hs⟩
   · rintro ⟨r, s, hL, hs⟩
-    exact ⟨r, evRes₂ s, Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩, hs⟩
+    refine ⟨r, evRes₂ s, ?_, hs⟩
+    rw [projConf₂_headEvents]
+    exact Option.map_eq_some_iff.mpr ⟨s, hL, rfl⟩
 
 /-- The operational invariant of a product configuration projects to its
 left component. -/
-theorem GoodConfig3.proj₁ {CT : Configuration (prodSig D₁ D₂)}
-    (h : GoodConfig3 CT) : GoodConfig3 (projConf₁ CT) where
+theorem CanonicalConfig.proj₁ {CT : Configuration (prodSig D₁ D₂)}
+    (h : CanonicalConfig CT) : CanonicalConfig (projConf₁ CT) where
   canonical := by
     intro v s E hv
     change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
@@ -715,26 +727,26 @@ theorem GoodConfig3.proj₁ {CT : Configuration (prodSig D₁ D₂)}
     exact isCanonicalState_proj₁ (h.canonical v p.1 p.2 hp)
   vis_trans := fun hab hbc => h.vis_trans hab hbc
   vis_irrefl := fun a => h.vis_irrefl (inlOp a)
-  ver_events_sub := by
+  version_events_supported := by
     intro v s E hv a ha
     rw [mem_projConf₁_events]
     change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact h.ver_events_sub v p.1 p.2 hp (inlOp a) ha
-  ver_causal := by
+    exact h.version_events_supported v p.1 p.2 hp (inlOp a) ha
+  version_events_causal := by
     intro v s E hv a b hab hb
     change (CT.ver v).map (fun p => (p.1.1, evRes₁ p.2)) = some (s, E) at hv
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₁ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact h.ver_causal v p.1 p.2 hp (inlOp a) (inlOp b) hab hb
+    exact h.version_events_causal v p.1 p.2 hp (inlOp a) (inlOp b) hab hb
 
 /-- The operational invariant of a product configuration projects to its
 right component. -/
-theorem GoodConfig3.proj₂ {CT : Configuration (prodSig D₁ D₂)}
-    (h : GoodConfig3 CT) : GoodConfig3 (projConf₂ CT) where
+theorem CanonicalConfig.proj₂ {CT : Configuration (prodSig D₁ D₂)}
+    (h : CanonicalConfig CT) : CanonicalConfig (projConf₂ CT) where
   canonical := by
     intro v s E hv
     change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
@@ -746,22 +758,22 @@ theorem GoodConfig3.proj₂ {CT : Configuration (prodSig D₁ D₂)}
     exact isCanonicalState_proj₂ (h.canonical v p.1 p.2 hp)
   vis_trans := fun hab hbc => h.vis_trans hab hbc
   vis_irrefl := fun a => h.vis_irrefl (inrOp a)
-  ver_events_sub := by
+  version_events_supported := by
     intro v s E hv a ha
     rw [mem_projConf₂_events]
     change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₂ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact h.ver_events_sub v p.1 p.2 hp (inrOp a) ha
-  ver_causal := by
+    exact h.version_events_supported v p.1 p.2 hp (inrOp a) ha
+  version_events_causal := by
     intro v s E hv a b hab hb
     change (CT.ver v).map (fun p => (p.1.2, evRes₂ p.2)) = some (s, E) at hv
     obtain ⟨p, hp, hpeq⟩ := Option.map_eq_some_iff.mp hv
     have hE : evRes₂ p.2 = E := congrArg Prod.snd hpeq
     subst E
-    exact h.ver_causal v p.1 p.2 hp (inrOp a) (inrOp b) hab hb
+    exact h.version_events_causal v p.1 p.2 hp (inrOp a) (inrOp b) hab hb
 
-#print axioms joinLemma3At_prod
+#print axioms joinAt_prod
 
 end Sal.MRDTs

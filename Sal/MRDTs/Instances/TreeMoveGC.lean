@@ -222,7 +222,7 @@ def replace (P : Physical) (v : Version) (c : Compact) :
     Version → Option Compact :=
   fun w => if w = v then some c else P.compact w
 
-inductive PhysicalStep (V : VirtualLCAResolver D) :
+inductive PhysicalStep (V : VirtualMergeBaseResolver D) :
     Physical → Option (Label D) → Physical → Prop where
   | collectLog {P P' : Physical} {v : Version} {full : Finset Event}
       (cut : StableCut full)
@@ -243,7 +243,7 @@ inductive PhysicalStep (V : VirtualLCAResolver D) :
       (step : StepV D V P.semantic label P'.semantic) :
       PhysicalStep V P (some label) P'
 
-def protocol (V : VirtualLCAResolver D) : StateGCProtocol D V where
+def protocol (V : VirtualMergeBaseResolver D) : StateGCProtocol D V where
   Physical := Physical
   semantic := Physical.semantic
   Valid := fun _ => True
@@ -260,11 +260,11 @@ def protocol (V : VirtualLCAResolver D) : StateGCProtocol D V where
     | ordinary h => exact .base h
     | virtual h => exact h
 
-theorem silent_semantic_eq {V : VirtualLCAResolver D} {P P' : Physical}
+theorem silent_semantic_eq {V : VirtualMergeBaseResolver D} {P P' : Physical}
     (h : PhysicalStep V P none P') : P'.semantic = P.semantic :=
   (protocol V).silent_stutters True.intro h
 
-theorem refines {V : VirtualLCAResolver D} {P P' : Physical} {labels}
+theorem refines {V : VirtualMergeBaseResolver D} {P P' : Physical} {labels}
     (run : StateGCProtocol.Steps (protocol V) P labels P') :
     StateGCProtocol.SemanticSteps V P.semantic
       (StateGCProtocol.eraseLabels labels) P'.semantic :=
@@ -272,7 +272,7 @@ theorem refines {V : VirtualLCAResolver D} {P P' : Physical} {labels}
 
 /-- The existing framework theorem now combines asynchronous commit-DAG GC,
 TreeMove log collection, trash collection, and visible execution. -/
-noncomputable def combinedProtocol (V : VirtualLCAResolver D)
+noncomputable def combinedProtocol (V : VirtualMergeBaseResolver D)
     (author : Sal.MRDTs.GC.Author) (roster : Set Replica) : StateGCProtocol D V :=
   Sal.MRDTs.GC.combinedProtocol (protocol V) author roster
 

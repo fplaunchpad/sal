@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Join.Linearization_Basics
+import Sal.MRDTs.Metatheory.Join.ReplayOrderBasics
 
 /-!
 # Set-relative linearization order (`loOn`) and its convergence theory
@@ -75,20 +75,21 @@ namespace Sal.MRDTs.Foundation
 open Classical
 
 section
-variable {D : CRDTSig} [ReplayPolicy D]
+variable {D : UpdateSig} [ReplayPolicy D]
 variable [ReplayPolicy D]
 
 /-! ### 0. The core VC bundle
 
 The σ/`loOn` machinery of this file consumes only a small fragment of
-`SatisfiesVCs`, notably NOT `shared_peel_1op`, which
+`HistoricalReplayVCs`, notably NOT `shared_peel_1op`, which
 `Convergence_CounterModel.lean` shows is *false* for state-dependent
 RDTs like `AWSet`. Parameterizing over the fragment lets such RDTs
 instantiate the Join-Lemma machinery. -/
 
-/-- The fields of `SatisfiesVCs` actually consumed by the set-relative
+/-- The fields of `HistoricalReplayVCs` actually consumed by the set-relative
 linearization theory and the Join-Lemma induction. -/
-structure CoreVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
+structure BinaryMergeLaws (D : UpdateSig) [ReplayPolicy D]
+    [HistoricalBinaryMerge D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
       distinctOps o₁ o₂ →
@@ -107,27 +108,22 @@ structure CoreVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
       ¬ D.commutes e' e'' →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
-  merge_comm : ∀ a b : D.State, D.merge a b = D.merge b a
-  merge_init : ∀ s : D.State, D.merge D.init s = s
+  merge_comm : ∀ a b : D.State, D.historicalMerge a b = D.historicalMerge b a
+  merge_init : ∀ s : D.State, D.historicalMerge D.init s = s
   lem_0op :
     ∀ (a b : D.State) (ol : Op D.AppOp),
-      D.merge (D.update a ol) (D.update b ol)
-        = D.update (D.merge a b) ol
+      D.historicalMerge (D.update a ol) (D.update b ol)
+        = D.update (D.historicalMerge a b) ol
   merge_peel_comm :
     ∀ (a : D.State) (e : Op D.AppOp) (π : List (Op D.AppOp)),
       (∀ x ∈ π, D.commutes e x) →
-      D.merge (D.update a e) (applySeq D D.init π)
-        = D.update (D.merge a (applySeq D D.init π)) e
-
-/-- Every full bundle yields the core. -/
-theorem CoreVCs.of_full {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D) :
-    CoreVCs D :=
-  ⟨hVC.rc_non_comm_directional, hVC.no_rc_chain, hVC.cond_comm_lift,
-   hVC.merge_comm, hVC.merge_init, hVC.lem_0op, hVC.merge_peel_comm⟩
+      D.historicalMerge (D.update a e) (applySeq D D.init π)
+        = D.update (D.historicalMerge a (applySeq D D.init π)) e
 
 /-- Core-bundle version of `applySeq_swap_via_cond_comm_lift`. -/
 theorem applySeq_swap_via_cond_comm_lift_core
-    (hVC : CoreVCs D)
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
     {a b e₃ : Op D.AppOp}
     (h_dist_ab : distinctOps a b)
     (h_dist_be : distinctOps b e₃)
@@ -157,7 +153,7 @@ overwriter/absorber existential ranges over the event set `ev` of the
 version being linearized instead of over the whole configuration.
 `lo C = loOn C C.events` (the absorber's membership in `C.events` is
 implied by `vis_tgt`). -/
-def loOn (C : Configuration D) (ev : Set (Op D.AppOp))
+def loOn (C : ReplayContext D) (ev : Set (Op D.AppOp))
     (e₁ e₂ : Op D.AppOp) : Prop :=
   (C.vis e₁ e₂ ∧ ¬ D.commutes e₁ e₂)
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
@@ -166,7 +162,7 @@ def loOn (C : Configuration D) (ev : Set (Op D.AppOp))
 
 /-- The configuration-global `lo` is contained in every `loOn`:
 a `lo C`-edge asserts *no absorber anywhere*, hence none in `ev`. -/
-theorem loOn_of_lo {C : Configuration D} {ev : Set (Op D.AppOp)}
+theorem loOn_of_lo {C : ReplayContext D} {ev : Set (Op D.AppOp)}
     {e₁ e₂ : Op D.AppOp} (h : lo C e₁ e₂) : loOn C ev e₁ e₂ := by
   rcases h with h | ⟨h₁, h₂, h₃, h₄⟩
   · exact Or.inl h
@@ -174,7 +170,7 @@ theorem loOn_of_lo {C : Configuration D} {ev : Set (Op D.AppOp)}
 
 /-- Antitonicity in the event set: growing the set adds absorbers and
 hence *removes* rc-edges. -/
-theorem loOn_mono {C : Configuration D} {ev ev' : Set (Op D.AppOp)}
+theorem loOn_mono {C : ReplayContext D} {ev ev' : Set (Op D.AppOp)}
     (h_sub : ev ⊆ ev') {e₁ e₂ : Op D.AppOp}
     (h : loOn C ev' e₁ e₂) : loOn C ev e₁ e₂ := by
   rcases h with h | ⟨h₁, h₂, h₃, h₄⟩
@@ -183,7 +179,7 @@ theorem loOn_mono {C : Configuration D} {ev ev' : Set (Op D.AppOp)}
       fun ⟨e₃, he₃, hv, hnc⟩ => h₄ ⟨e₃, h_sub he₃, hv, hnc⟩⟩
 
 /-- The vis-flavored edge lives in every `loOn`. -/
-theorem loOn_of_vis_noncomm {C : Configuration D}
+theorem loOn_of_vis_noncomm {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {a b : Op D.AppOp}
     (hv : C.vis a b) (hnc : ¬ D.commutes a b) : loOn C ev a b :=
   Or.inl ⟨hv, hnc⟩
@@ -191,7 +187,7 @@ theorem loOn_of_vis_noncomm {C : Configuration D}
 /-- A permutation respecting `loOn C ev` respects the coarser
 `loOn C ev'` for any larger `ev'`. -/
 theorem respects_loOn_mono {ev ev' : Set (Op D.AppOp)}
-    {C : Configuration D} {π : List (Op D.AppOp)}
+    {C : ReplayContext D} {π : List (Op D.AppOp)}
     (h_sub : ev ⊆ ev')
     (h : respects π (loOn C ev)) : respects π (loOn C ev') :=
   h.imp (fun hn h' => hn (loOn_mono h_sub h'))
@@ -200,7 +196,7 @@ theorem respects_loOn_mono {ev ev' : Set (Op D.AppOp)}
 configuration-global `lo C`, the strengthened invariant implies the
 original Def-lin obligation. -/
 theorem respects_lo_of_respects_loOn {ev : Set (Op D.AppOp)}
-    {C : Configuration D} {π : List (Op D.AppOp)}
+    {C : ReplayContext D} {π : List (Op D.AppOp)}
     (h : respects π (loOn C ev)) : respects π (lo C) :=
   h.imp (fun hn h' => hn (loOn_of_lo h'))
 
@@ -224,7 +220,7 @@ theorem filter_ne_respects' {α : Type} [DecidableEq α]
 /-- Two distinct events of the configuration have distinct
 timestamps (`distinctOps`). Convenience wrapper around
 `timestamps_distinct`. -/
-theorem distinctOps_of_events {C : Configuration D}
+theorem distinctOps_of_events {C : ReplayContext D}
     {a b : Op D.AppOp}
     (ha : a ∈ C.events) (hb : b ∈ C.events) (hne : a ≠ b) :
     distinctOps a b := by
@@ -248,12 +244,13 @@ theorem distinctOps_of_events {C : Configuration D}
 /-- The maximality step relation: a `loOn`-edge between *distinct*
 events, both in `T`. Self-edges are irrelevant for `respects`
 (pairwise over distinct positions of a nodup list). -/
-def loOnNe (C : Configuration D) (T : Set (Op D.AppOp))
+def loOnNe (C : ReplayContext D) (T : Set (Op D.AppOp))
     (a b : Op D.AppOp) : Prop :=
   a ≠ b ∧ a ∈ T ∧ b ∈ T ∧ loOn C T a b
 
 /-- **rc-flavored edges have no successors inside the set.** -/
-theorem loOn_rc_no_succ (hVC : CoreVCs D) {C : Configuration D}
+theorem loOn_rc_no_succ [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {T : Set (Op D.AppOp)}
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     {x y z : Op D.AppOp}
@@ -274,8 +271,9 @@ theorem loOn_rc_no_succ (hVC : CoreVCs D) {C : Configuration D}
 /-- **Path structure:** every `loOnNe`-path is either vis-connected,
 or its *last* edge is rc-flavored (an rc-flavored edge strictly
 inside a path is killed by `loOn_rc_no_succ`). -/
-theorem transGen_loOnNe_structure (hVC : CoreVCs D)
-    {C : Configuration D}
+theorem transGen_loOnNe_structure [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     {T : Set (Op D.AppOp)}
@@ -305,7 +303,8 @@ theorem transGen_loOnNe_structure (hVC : CoreVCs D)
           h_rc_edge h)
 
 /-- **`loOnNe` is acyclic** (no `TransGen`-cycle). -/
-theorem loOnNe_acyclic (hVC : CoreVCs D) {C : Configuration D}
+theorem loOnNe_acyclic [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -340,8 +339,9 @@ would close a `TransGen`-cycle, contradicting `loOnNe_acyclic`), so
 it terminates at a maximal element. The `visited` bookkeeping is the
 invariant `h_reach`: every event outside `rem ∪ {cur}` reaches `cur`
 by a `TransGen`-path. -/
-theorem exists_loOn_maximal (hVC : CoreVCs D)
-    {C : Configuration D}
+theorem exists_loOn_maximal [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -396,8 +396,9 @@ theorem exists_loOn_maximal (hVC : CoreVCs D)
 /-- **Every finite set has a `loOn`-respecting enumeration.**
 Peel a `loOn`-maximal element, enumerate the rest recursively, append
 the maximal element at the tail. -/
-theorem exists_loOn_respecting_perm (hVC : CoreVCs D)
-    {C : Configuration D}
+theorem exists_loOn_respecting_perm [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -471,7 +472,8 @@ used in the same-replica case changes from `lo C` to `loOn C ev`. -/
 
 /-- Swap adjacent `loOn`-incomparable events (Path 1 version). -/
 theorem applySeq_swap_loOn_incomparable
-    (hVC : CoreVCs D) {C : Configuration D}
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {ev : Set (Op D.AppOp)}
     {a b : Op D.AppOp} (h_ne : a ≠ b)
     (h_a_in_C : a ∈ C.events) (h_b_in_C : b ∈ C.events)
@@ -512,7 +514,8 @@ theorem applySeq_swap_loOn_incomparable
 
 /-- Bubble a `loOn`-minimal event to the front of a list (with tail). -/
 theorem applySeq_bubble_to_front_loOn
-    (hVC : CoreVCs D) {C : Configuration D}
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {ev : Set (Op D.AppOp)}
     (e : Op D.AppOp) (σ tail : List (Op D.AppOp))
     (h_e_in_C : e ∈ C.events)
@@ -576,7 +579,8 @@ relation pinned at `loOn C ev`. The invariant `h_abs` records that
 `evC = ev` and is preserved because a peeled head is `loOn`-minimal,
 so it absorbs nothing that remains. -/
 theorem convergence_on
-    (hVC : CoreVCs D) {C : Configuration D}
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     (s : D.State) {π₁ π₂ : List (Op D.AppOp)} {ev : Set (Op D.AppOp)}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h₁_perm : listPermOf π₁ ev) (h₂_perm : listPermOf π₂ ev)
@@ -843,7 +847,8 @@ theorem convergence_on
 preserving `loOn`-respect and the folded state (via
 `convergence_on`, no closure hypotheses needed). -/
 theorem perm_ending_in_loOn_max
-    (hVC : CoreVCs D) {C : Configuration D}
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {π : List (Op D.AppOp)} {e : Op D.AppOp}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h_perm : listPermOf π ev) (h_resp : respects π (loOn C ev))
@@ -895,7 +900,8 @@ list. Fold preservation: both `ρ ++ [t]` and `ρ' ++ [t]` respect
 lost absorber `t` sits at the tail, absorbing exactly the swaps the
 re-sort performs. -/
 theorem normalize_peel_tail
-    (hVC : CoreVCs D) {C : Configuration D}
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -965,7 +971,7 @@ theorem normalize_peel_tail
 
 `convergence_on` makes every finite event set `ev` denote a unique
 state: the fold of *any* `loOn C ev`-respecting enumeration. This
-reformulates the whole metatheorem: the strengthened RA-lin invariant
+reformulates the whole metatheorem: the strengthened canonical-state invariant
 is "every replica's state is the canonical state of its event set",
 the Apply case is `isCanonicalState_extend`, and the Merge case
 reduces to a single state-level statement, the **Join Lemma**:
@@ -982,15 +988,36 @@ expressible as an unconditional per-CRDT VC. -/
 
 /-- `s` is the canonical state of `ev`: the fold of some (hence, by
 `convergence_on`, of every) `loOn C ev`-respecting enumeration. -/
-def IsCanonicalState (C : Configuration D) (ev : Set (Op D.AppOp))
+def IsCanonicalState (C : ReplayContext D) (ev : Set (Op D.AppOp))
     (s : D.State) : Prop :=
   ∃ ρ : List (Op D.AppOp),
     listPermOf ρ ev ∧ respects ρ (loOn C ev) ∧
     applySeq D D.init ρ = s
 
+/-- `loOn` is local to its event set: replay contexts agreeing on visibility
+over `E × E` induce the same canonical states of `E`. -/
+theorem isCanonicalState_congr {C C' : ReplayContext D}
+    {E : Set (Op D.AppOp)} {s : D.State}
+    (h_vis : ∀ a ∈ E, ∀ b ∈ E, (C'.vis a b ↔ C.vis a b))
+    (h : IsCanonicalState C E s) : IsCanonicalState C' E s := by
+  obtain ⟨ρ, hp, hr, hf⟩ := h
+  refine ⟨ρ, hp, ?_, hf⟩
+  refine hr.imp_of_mem ?_
+  intro a b ha hb hn h_lo
+  have ha_E : a ∈ E := (hp.2 a).mp ha
+  have hb_E : b ∈ E := (hp.2 b).mp hb
+  apply hn
+  rcases h_lo with ⟨hv, hnc⟩ | ⟨h1, h2, h3, h4⟩
+  · exact Or.inl ⟨(h_vis b hb_E a ha_E).mp hv, hnc⟩
+  · refine Or.inr ⟨fun hv => h1 ((h_vis b hb_E a ha_E).mpr hv),
+      fun hv => h2 ((h_vis a ha_E b hb_E).mpr hv), h3, ?_⟩
+    rintro ⟨e₃, he₃, hv, hnc⟩
+    exact h4 ⟨e₃, he₃, (h_vis a ha_E e₃ he₃).mpr hv, hnc⟩
+
 /-- Canonical states are unique. -/
-theorem isCanonicalState_unique (hVC : CoreVCs D)
-    {C : Configuration D} {ev : Set (Op D.AppOp)} {s s' : D.State}
+theorem isCanonicalState_unique [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D} {ev : Set (Op D.AppOp)} {s s' : D.State}
     (h_ev_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h : IsCanonicalState C ev s) (h' : IsCanonicalState C ev s') :
     s = s' := by
@@ -1000,8 +1027,9 @@ theorem isCanonicalState_unique (hVC : CoreVCs D)
   exact convergence_on hVC D.init h_ev_in_C hp hp' hr hr'
 
 /-- Canonical states exist for every finite set. -/
-theorem isCanonicalState_exists (hVC : CoreVCs D)
-    {C : Configuration D}
+theorem isCanonicalState_exists [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -1015,7 +1043,7 @@ theorem isCanonicalState_exists (hVC : CoreVCs D)
 
 /-- A canonical state is a witness for the paper's Def-lin
 obligation: its enumeration respects `lo C`. -/
-theorem isCanonicalState_lo_witness {C : Configuration D}
+theorem isCanonicalState_lo_witness {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {s : D.State}
     (h : IsCanonicalState C ev s) :
     ∃ ρ, listPermOf ρ ev ∧ respects ρ (lo C) ∧
@@ -1028,8 +1056,9 @@ re-permutation): a `loOn C ev`-maximal event factors out of the
 canonical state exactly. Composes `perm_ending_in_loOn_max` (move
 `e` to the tail, state-preserving) with `normalize_peel_tail`
 (re-sort the front against the shrunken-set relation). -/
-theorem isCanonicalState_peel (hVC : CoreVCs D)
-    {C : Configuration D}
+theorem isCanonicalState_peel [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -1052,7 +1081,7 @@ that observed everything in `ev` extends the canonical state by one
 update. `e` has no outgoing `loOn`-edges, it is `vis`-after all of
 `ev`, so neither disjunct can fire, and adding it only removes
 rc-edges among the old events. -/
-theorem isCanonicalState_extend {C : Configuration D}
+theorem isCanonicalState_extend {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {s : D.State} {e : Op D.AppOp}
     (h_e_fresh : e ∉ ev)
     (h_e_sees : ∀ x ∈ ev, C.vis x e)
@@ -1089,7 +1118,7 @@ theorem isCanonicalState_extend {C : Configuration D}
   · rw [applySeq_append_single, hs]
 
 /-- **The Join Lemma.** The *entire* merge case of
-the RA-linearizability metatheorem reduces to this one state-level
+the replay-convergence metatheorem reduces to this one state-level
 statement (see `merge_linearization_of_join`). It is TRUE on every
 worked instance including the associative counter-model, and its
 peel step is valid under `loOn`-maximality + backward closure; but
@@ -1099,15 +1128,16 @@ irreducibly contextual: no unconditional per-CRDT equation
 captures them. Discharging it (from cond-comm-style leaf VCs via a
 contextual induction, or from lattice VCs (merge associativity +
 update inflation/monotonicity)) is the open obligation. -/
-def JoinLemma (D : CRDTSig) [ReplayPolicy D] : Prop :=
-  ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
+def BinaryJoin (D : UpdateSig) [ReplayPolicy D]
+    [HistoricalBinaryMerge D] : Prop :=
+  ∀ (C : ReplayContext D) (ev₁ ev₂ : Set (Op D.AppOp)) (s₁ s₂ : D.State),
     (∀ {a b c : Op D.AppOp}, C.vis a b → C.vis b c → C.vis a c) →
     (∀ a : Op D.AppOp, ¬ C.vis a a) →
     (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
     (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
     (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₂ → a ∈ ev₂) →
     IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
-    IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₁ s₂)
+    IsCanonicalState C (ev₁ ∪ ev₂) (D.historicalMerge s₁ s₂)
 
 /-- **Reduction: the Join Lemma closes the merge case.** Given the
 strengthened (set-relative) witnesses for the two replicas, the Join
@@ -1115,9 +1145,10 @@ Lemma delivers the merged witness, respecting `loOn` of the merged
 set, hence in particular the paper's `lo C`. It stands in for
 `merge_linearization_exists` without the (false) forward-closure
 hypotheses and without the unsound re-permutation, using
-`isCanonicalState_peel`-based reasoning inside `JoinLemma`. -/
-theorem merge_linearization_of_join {D : CRDTSig} [ReplayPolicy D]
-    (hJoin : JoinLemma D) {C : Configuration D}
+`isCanonicalState_peel`-based reasoning inside `BinaryJoin`. -/
+theorem merge_linearization_of_join {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D]
+    (hJoin : BinaryJoin D) {C : ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
        C.vis a b → C.vis b c → C.vis a c)
     (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
@@ -1137,7 +1168,7 @@ theorem merge_linearization_of_join {D : CRDTSig} [ReplayPolicy D]
     ∃ π, listPermOf π (ev₁ ∪ ev₂) ∧
          respects π (loOn C (ev₁ ∪ ev₂)) ∧
          respects π (lo C) ∧
-         applySeq D D.init π = D.merge s₁ s₂ := by
+         applySeq D D.init π = D.historicalMerge s₁ s₂ := by
   have h_join := hJoin C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl
     h_ev₁_in_C h_ev₂_in_C h_ev₁_closed h_ev₂_closed
     ⟨π₁, h₁_perm, h₁_resp, h₁_state⟩ ⟨π₂, h₂_perm, h₂_resp, h₂_state⟩
@@ -1150,7 +1181,7 @@ The Join Lemma's induction peels a `loOn(ev₁ ∪ ev₂)`-maximal event
 `e` from the union. Everything about that induction (maximal-event
 selection, closure preservation, the measure, re-attachment) is
 proved below. The two *state equations* it consumes are exactly the
-contextual identities isolated here as the `JoinPeelVCs` bundle:
+contextual identities isolated here as the `BinaryPeelLaws` bundle:
 
 * `peel_local`:  `merge s₁ s₂ = update (merge t₁ s₂) e` when `e` is
   union-maximal and local to side 1 (`t₁` canonical for `ev₁ ∖ {e}`);
@@ -1160,10 +1191,10 @@ contextual identities isolated here as the `JoinPeelVCs` bundle:
 They are stated over canonical states *with their full context*
 (union-maximality, backward closure) because, as the two-key OR-set
 shows, no unconditional equation over raw states is both
-true and sufficient. `join_lemma_of_peel` then closes the Join Lemma
-completely. `joinPeelVCs_of_all_comm` discharges the bundle for the
+true and sufficient. `binaryJoin_of_peel` then closes the Join Lemma
+completely. `binaryPeelLaws_of_all_comm` discharges the bundle for the
 commuting class (every pair of events commutes, G-Set and friends),
-giving the unconditional `join_lemma_of_all_comm`. -/
+giving the unconditional `binaryJoin_of_all_comm`. -/
 
 /-- Two enumerations of the same set have the same length. -/
 theorem listPermOf_length_eq {α : Type} {l₁ l₂ : List α}
@@ -1210,7 +1241,7 @@ theorem listPermOf_length_eq {α : Type} {l₁ l₂ : List α}
     omega
 
 /-- Enumerate a union: side 1's list followed by side 2's leftovers. -/
-theorem listPermOf_union {D : CRDTSig} [ReplayPolicy D] {l₁ l₂ : List (Op D.AppOp)}
+theorem listPermOf_union {D : UpdateSig} [ReplayPolicy D] {l₁ l₂ : List (Op D.AppOp)}
     {ev₁ ev₂ : Set (Op D.AppOp)}
     (h₁ : listPermOf l₁ ev₁) (h₂ : listPermOf l₂ ev₂) :
     listPermOf (l₁ ++ l₂.filter (fun a => decide (a ∉ l₁)))
@@ -1257,7 +1288,7 @@ theorem listPermOf_diff_length {α : Type} [DecidableEq α]
   exact List.length_erase_of_mem he
 
 /-- The empty set's canonical state is `init`. -/
-theorem isCanonicalState_empty {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
+theorem isCanonicalState_empty {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {s : D.State}
     (h_empty : ev = ∅) (h : IsCanonicalState C ev s) : s = D.init := by
   obtain ⟨ρ, hp, _, hf⟩ := h
@@ -1269,7 +1300,7 @@ theorem isCanonicalState_empty {D : CRDTSig} [ReplayPolicy D] {C : Configuration
 /-- Backward closure survives removing a union-maximal event: a
 `vis ∧ ¬commutes` edge out of `e` would be a `loOn`-edge in every
 relation, contradicting maximality. -/
-theorem closure_diff_of_max {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
+theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
     {ev evU : Set (Op D.AppOp)} {e : Op D.AppOp}
     (h_sub : ev ⊆ evU)
     (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev)
@@ -1285,7 +1316,7 @@ theorem closure_diff_of_max {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
 
 /-- Re-attach a union-maximal event to a canonical state of the
 set-minus-it. -/
-theorem isCanonicalState_snoc {D : CRDTSig} [ReplayPolicy D] {C : Configuration D}
+theorem isCanonicalState_snoc {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {t : D.State} {e : Op D.AppOp}
     (h_e_in : e ∈ ev)
     (h_max : ∀ x ∈ ev, x ≠ e → ¬ loOn C ev e x)
@@ -1322,10 +1353,11 @@ theorem isCanonicalState_snoc {D : CRDTSig} [ReplayPolicy D] {C : Configuration 
 Join Lemma's induction consumes, isolated as an explicit bundle.
 See the section header for why they are stated over canonical states
 with the union-maximality context. -/
-structure JoinPeelVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
+structure BinaryPeelLaws (D : UpdateSig) [ReplayPolicy D]
+    [HistoricalBinaryMerge D] : Prop where
   /-- Peel a union-maximal event local to side 1. -/
   peel_local :
-    ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp))
+    ∀ (C : ReplayContext D) (ev₁ ev₂ : Set (Op D.AppOp))
       (s₁ s₂ t₁ : D.State) (e : Op D.AppOp),
       (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
       (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
@@ -1334,10 +1366,10 @@ structure JoinPeelVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
       (∀ x ∈ ev₁ ∪ ev₂, x ≠ e → ¬ loOn C (ev₁ ∪ ev₂) e x) →
       IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
       IsCanonicalState C (ev₁ \ {e}) t₁ →
-      D.merge s₁ s₂ = D.update (D.merge t₁ s₂) e
+      D.historicalMerge s₁ s₂ = D.update (D.historicalMerge t₁ s₂) e
   /-- Peel a union-maximal shared event. -/
   peel_shared :
-    ∀ (C : Configuration D) (ev₁ ev₂ : Set (Op D.AppOp))
+    ∀ (C : ReplayContext D) (ev₁ ev₂ : Set (Op D.AppOp))
       (s₁ s₂ t₁ t₂ : D.State) (e : Op D.AppOp),
       (∀ a ∈ ev₁, a ∈ C.events) → (∀ a ∈ ev₂, a ∈ C.events) →
       (∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev₁ → a ∈ ev₁) →
@@ -1347,14 +1379,15 @@ structure JoinPeelVCs (D : CRDTSig) [ReplayPolicy D] : Prop where
       IsCanonicalState C ev₁ s₁ → IsCanonicalState C ev₂ s₂ →
       IsCanonicalState C (ev₁ \ {e}) t₁ →
       IsCanonicalState C (ev₂ \ {e}) t₂ →
-      D.merge s₁ s₂ = D.update (D.merge t₁ t₂) e
+      D.historicalMerge s₁ s₂ = D.update (D.historicalMerge t₁ t₂) e
 
 /-- **The Join Lemma holds given the peel identities.** The master
 induction: enumerate the union, select a `loOn(∪)`-maximal event,
-peel it with `JoinPeelVCs`, recurse on the strictly smaller sets,
+peel it with `BinaryPeelLaws`, recurse on the strictly smaller sets,
 and re-attach with `isCanonicalState_snoc`. -/
-theorem join_lemma_of_peel {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
-    (hPeel : JoinPeelVCs D) : JoinLemma D := by
+theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
+    (hPeel : BinaryPeelLaws D) : BinaryJoin D := by
   intro C ev₁ ev₂ s₁ s₂ h_vis_trans h_vis_irrefl h_in₁ h_in₂
     h_cl₁ h_cl₂ hc₁ hc₂
   classical
@@ -1371,7 +1404,7 @@ theorem join_lemma_of_peel {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
       applySeq D D.init l₁ = s₁ →
       listPermOf l₂ ev₂ → respects l₂ (loOn C ev₂) →
       applySeq D D.init l₂ = s₂ →
-      IsCanonicalState C (ev₁ ∪ ev₂) (D.merge s₁ s₂) by
+      IsCanonicalState C (ev₁ ∪ ev₂) (D.historicalMerge s₁ s₂) by
     exact gen _ ev₁ ev₂ s₁ s₂ l₁ l₂ rfl h_in₁ h_in₂ h_cl₁ h_cl₂
       hp₁ hr₁ hf₁ hp₂ hr₂ hf₂
   intro n
@@ -1526,8 +1559,9 @@ and `lem_0op`, and the Join Lemma holds unconditionally. -/
 
 /-- With all events commuting, `loOn` has no edges between distinct
 events of the configuration. -/
-theorem loOn_empty_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
-    {C : Configuration D} {ev : Set (Op D.AppOp)}
+theorem loOn_empty_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
+    {C : ReplayContext D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
@@ -1538,8 +1572,9 @@ theorem loOn_empty_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
       (distinctOps_of_events hx hy hne)).mpr (Or.inl h_rc) (h_comm x y)
 
 /-- Any enumeration is canonical when all events commute. -/
-theorem isCanonicalState_of_all_comm {D : CRDTSig} [ReplayPolicy D]
-    (hVC : CoreVCs D) {C : Configuration D}
+theorem isCanonicalState_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D]
+    (hVC : BinaryMergeLaws D) {C : ReplayContext D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events)
@@ -1553,9 +1588,10 @@ theorem isCanonicalState_of_all_comm {D : CRDTSig} [ReplayPolicy D]
     (Ne.symm hne)
 
 /-- The peel bundle for the commuting class. -/
-theorem joinPeelVCs_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
+theorem binaryPeelLaws_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) :
-    JoinPeelVCs D := by
+    BinaryPeelLaws D := by
   constructor
   · -- peel_local
     intro C ev₁ ev₂ s₁ s₂ t₁ e h_in₁ h_in₂ _ _ he₁ _ _ hc₁ hc₂ hct₁
@@ -1601,9 +1637,10 @@ theorem joinPeelVCs_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
     exact hVC.lem_0op t₁ t₂ e
 
 /-- **The Join Lemma, unconditionally, for the commuting class.** -/
-theorem join_lemma_of_all_comm {D : CRDTSig} [ReplayPolicy D] (hVC : CoreVCs D)
-    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : JoinLemma D :=
-  join_lemma_of_peel hVC (joinPeelVCs_of_all_comm hVC h_comm)
+theorem binaryJoin_of_all_comm {D : UpdateSig} [ReplayPolicy D]
+    [HistoricalBinaryMerge D] (hVC : BinaryMergeLaws D)
+    (h_comm : ∀ a b : Op D.AppOp, D.commutes a b) : BinaryJoin D :=
+  binaryJoin_of_peel hVC (binaryPeelLaws_of_all_comm hVC h_comm)
 
 end
 

@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Join.RA_Linearizability
+import Sal.MRDTs.Framework.Base.UpdateSignature
 
 /-!
 # Mergeable replicated datatype signatures
@@ -30,29 +30,30 @@ namespace MRDTSig
 
 attribute [instance] dec_state dec_op
 
-/-- Projection used by the update/replay metatheory inherited from the binary
-CRDT development. Binary merge is derived from the initial-base slice; it is
-not an independent MRDT field. -/
-abbrev toCRDTSig (D : MRDTSig) : CRDTSig where
+/-- Merge-free update projection used by finite folds and replay invariants. -/
+abbrev toUpdateSig (D : MRDTSig) : UpdateSig where
   State := D.State
   dec_state := D.dec_state
   init := D.init
   AppOp := D.AppOp
   dec_op := D.dec_op
-  Query := D.Query
-  Value := D.Value
   update := D.update
-  merge := D.merge D.init
-  query := D.query
 
-/-- Reused binary replay infrastructure sees exactly the initial-base slice of
-the sole MRDT merge operation. -/
-@[simp] theorem toCRDTSig_merge (D : MRDTSig) (a b : D.State) :
-    D.toCRDTSig.merge a b = D.merge D.init a b := rfl
+/-- Install the initial-base slice only when a retained historical binary
+theorem explicitly asks for a two-way merge capability. -/
+instance historicalBinaryMerge (D : MRDTSig) :
+    HistoricalBinaryMerge D.toUpdateSig where
+  binaryMerge := D.merge D.init
 
-@[simp] theorem toCRDTSig_update (D : MRDTSig) (s : D.State)
+/-- The optional historical binary capability uses exactly the initial-base
+slice of the sole MRDT merge operation. It is not a field of `toUpdateSig`. -/
+@[simp] theorem historicalBinaryMerge_eq_initialSlice
+    (D : MRDTSig) (a b : D.State) :
+    D.toUpdateSig.historicalMerge a b = D.merge D.init a b := rfl
+
+@[simp] theorem toUpdateSig_update (D : MRDTSig) (s : D.State)
     (e : Op D.AppOp) :
-    D.toCRDTSig.update s e = D.update s e := rfl
+    D.toUpdateSig.update s e = D.update s e := rfl
 
 end MRDTSig
 

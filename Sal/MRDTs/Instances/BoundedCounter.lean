@@ -1,7 +1,7 @@
 import Sal.MRDTs.Metatheory.Safety
 import Sal.MRDTs.Metatheory.Correctness
 
-/-! Native bounded-counter convergence over the plain MRDT semantics. -/
+/-! Native bounded-counter replayAdequacy over the plain MRDT semantics. -/
 
 
 set_option maxHeartbeats 1000000
@@ -80,7 +80,7 @@ theorem BC_init_fst (k : ℕ) : BC.init.1 k = 0 := rfl
 theorem BC_init_snd (k : ℕ) : BC.init.2 k = 0 := rfl
 
 theorem BC_rc_either : ∀ o₁ o₂ : Op BC.AppOp,
-    BC.toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl
+    BC.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := fun _ _ => rfl
 
 /-- Two `BCState`s with equal slot values are equal. -/
 theorem bcState_ext {s t : BCState}
@@ -92,7 +92,7 @@ theorem bcState_ext {s t : BCState}
 
 /-! ## §2  The flat discharge (the PN-Counter's route, pointwise) -/
 
-theorem BC_all_comm : ∀ a b : Op BC.AppOp, BC.toCRDTSig.commutes a b := by
+theorem BC_all_comm : ∀ a b : Op BC.AppOp, BC.toUpdateSig.commutes a b := by
   rintro ⟨tsa, ra, opa⟩ ⟨tsb, rb, opb⟩ s
   show bcUpdate (bcUpdate s (tsa, ra, opa)) (tsb, rb, opb)
       = bcUpdate (bcUpdate s (tsb, rb, opb)) (tsa, ra, opa)
@@ -102,7 +102,7 @@ theorem BC_all_comm : ∀ a b : Op BC.AppOp, BC.toCRDTSig.commutes a b := by
       bcUpdate_dec_snd] <;>
     split_ifs <;> omega
 
-theorem BC_updateVCs : UpdateVCs BC.toCRDTSig := by
+theorem replayLaws : ReplayLaws BC.toUpdateSig := by
   refine ⟨?_, ?_, ?_⟩
   · intro o₁ o₂ _ _
     constructor
@@ -118,8 +118,8 @@ theorem BC_updateVCs : UpdateVCs BC.toCRDTSig := by
     rw [BC_rc_either] at h_rc
     exact RcRes.noConfusion h_rc
 
-theorem BC_coreVCs3 : CoreVCs3 BC := by
-  refine ⟨BC_updateVCs, ?_, ?_, ?_, ?_⟩
+theorem BC_mergeLaws : MergeLaws BC := by
+  refine ⟨replayLaws, ?_, ?_⟩
   · intro l a b
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
       simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd] <;> omega
@@ -127,18 +127,12 @@ theorem BC_coreVCs3 : CoreVCs3 BC := by
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
       simp only [BC_merge_eq, bcMerge_fst, bcMerge_snd, BC_init_fst,
         BC_init_snd] <;> omega
-  · rintro l a b ⟨ts, r, op⟩
-    show bcMerge (bcUpdate l (ts, r, op)) (bcUpdate a (ts, r, op))
-        (bcUpdate b (ts, r, op)) = bcUpdate (bcMerge l a b) (ts, r, op)
-    cases op <;>
-      refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
-      simp only [bcMerge_fst, bcMerge_snd,
-        bcUpdate_inc_fst, bcUpdate_inc_snd, bcUpdate_dec_fst,
-        bcUpdate_dec_snd] <;>
-      omega
+
+theorem BC_commutingPeelLaw : CommutingPeelLaw BC := by
+  constructor
   · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
-    generalize applySeq BC.toCRDTSig BC.init π₀ = X
-    generalize applySeq BC.toCRDTSig BC.init π₂ = Y
+    generalize applySeq BC.toUpdateSig BC.init π₀ = X
+    generalize applySeq BC.toUpdateSig BC.init π₂ = Y
     show bcMerge X (bcUpdate a (ts, r, op)) Y
         = bcUpdate (bcMerge X a Y) (ts, r, op)
     cases op <;>
@@ -148,7 +142,7 @@ theorem BC_coreVCs3 : CoreVCs3 BC := by
         bcUpdate_dec_snd] <;>
       omega
 
-theorem BC_deltaVCs3 : DeltaVCs3 BC := by
+theorem BC_deltaLaws : DeltaLaws BC := by
   constructor
   · intro m x₀ x₁ x₂ c
     refine bcState_ext (fun k => ?_) (fun k => ?_) <;>
@@ -159,12 +153,13 @@ theorem BC_deltaVCs3 : DeltaVCs3 BC := by
 
 
 open LabeledTS in
-theorem ra_linearizable (C : Configuration BC)
+theorem replay_linearizable (C : Configuration BC)
     (hReach : (labeledTS BC).ReachableFrom (initConfig BC) C) :
-    IsRALinearizableJoin C :=
-  ra_linearizable3_of_join
-    (join_lemma3_of_cd' BC_coreVCs3 BC_deltaVCs3
-      (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)) C hReach
+    HasReplayWitness C :=
+  replayWitness_of_join
+    (JoinProof.ofArbitraryStateLaws BC_mergeLaws BC_deltaLaws
+      (causalDeltaLaw_of_all_comm BC_mergeLaws BC_commutingPeelLaw
+        BC_all_comm)) C hReach
 
 /-! ## Explicit generation, safety, and sequential certificates -/
 
@@ -198,13 +193,13 @@ def bcIsDecAt (r : ℕ) (e : Op BCOp) : Bool :=
   match e.2.2 with | .inc => false | .dec => decide (e.2.1 = r)
 
 theorem bc_fold_incs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
-    (applySeq BC.toCRDTSig s π).1 r = s.1 r + (π.countP (bcIsIncAt r) : ℤ) := by
+    (applySeq BC.toUpdateSig s π).1 r = s.1 r + (π.countP (bcIsIncAt r) : ℤ) := by
   induction π generalizing s with
   | nil => simp [applySeq]
   | cons o π ih =>
     obtain ⟨ts, ro, op⟩ := o
-    rw [show applySeq BC.toCRDTSig s ((ts, ro, op) :: π) =
-        applySeq BC.toCRDTSig (bcUpdate s (ts, ro, op)) π from rfl,
+    rw [show applySeq BC.toUpdateSig s ((ts, ro, op) :: π) =
+        applySeq BC.toUpdateSig (bcUpdate s (ts, ro, op)) π from rfl,
       ih, List.countP_cons]
     cases op with
     | inc =>
@@ -219,13 +214,13 @@ theorem bc_fold_incs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
     | dec => rw [bcUpdate_dec_fst]; simp [bcIsIncAt]
 
 theorem bc_fold_decs (π : List (Op BCOp)) (s : BCState) (r : ℕ) :
-    (applySeq BC.toCRDTSig s π).2 r = s.2 r + (π.countP (bcIsDecAt r) : ℤ) := by
+    (applySeq BC.toUpdateSig s π).2 r = s.2 r + (π.countP (bcIsDecAt r) : ℤ) := by
   induction π generalizing s with
   | nil => simp [applySeq]
   | cons o π ih =>
     obtain ⟨ts, ro, op⟩ := o
-    rw [show applySeq BC.toCRDTSig s ((ts, ro, op) :: π) =
-        applySeq BC.toCRDTSig (bcUpdate s (ts, ro, op)) π from rfl,
+    rw [show applySeq BC.toUpdateSig s ((ts, ro, op) :: π) =
+        applySeq BC.toUpdateSig (bcUpdate s (ts, ro, op)) π from rfl,
       ih, List.countP_cons]
     cases op with
     | dec =>
@@ -285,39 +280,38 @@ theorem bc_safetyStep : SafetyStepOn BC BCInv bcApplicable := by
     change σP.2 r + 1 ≤ σP.1 r at happ
     omega
 
-private theorem bcJoin : JoinLemma3 BC :=
-  join_lemma3_of_cd' BC_coreVCs3 BC_deltaVCs3
-    (cdVC3_of_all_comm BC_coreVCs3 BC_all_comm)
+private theorem bcJoin : Join BC :=
+  JoinProof.ofArbitraryStateLaws BC_mergeLaws BC_deltaLaws
+    (causalDeltaLaw_of_all_comm BC_mergeLaws BC_commutingPeelLaw BC_all_comm)
 
 def generation : Issuance BC where
   CanIssue := bcApplicable
 
-def convergence : ConvergenceCertificate BC generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV (fun _ _ => bcJoin _) h)
+def replayAdequacy : ReplayAdequacyCertificate BC generation :=
+  ReplayAdequacyCertificate.ofJoin generation bcJoin
 
 private theorem honestApp_of_mint {C : Configuration BC}
     (h : MintHonest BC bcApplicable C) : HonestAppOn BC bcApplicable C := by
   intro e he
   obtain ⟨π, hp, hr, hg⟩ := h e he
-  exact ⟨applySeq BC.toCRDTSig BC.init π, ⟨π, hp, hr, rfl⟩, hg⟩
+  exact ⟨applySeq BC.toUpdateSig BC.init π, ⟨π, hp, hr, rfl⟩, hg⟩
 
 theorem versions_safe {C : Configuration BC}
     (h : MintCertifiedReach BC generation C) : VersionsSatisfy BCInv C := by
-  have hG := goodConfig_of_mintCertified (fun _ _ => bcJoin _) h
+  have hG := canonicalConfig_of_mintCertified (fun _ _ => bcJoin _) h
   have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
   exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
     (honestApp_of_mint h.mintHonest)
 
 theorem versions_safeV {C : Configuration BC}
-    (h : MintCertifiedReachV BC (canonicalVirtualLCA BC) generation C) :
+    (h : MintCertifiedReachV BC (canonicalVirtualMergeBase BC) generation C) :
     VersionsSatisfy BCInv C := by
-  have hG := goodConfig_of_mintCertifiedV (fun _ _ => bcJoin _) h
+  have hG := canonicalConfig_of_mintCertifiedV (fun _ _ => bcJoin _) h
   have hCC := causalCanonical_of_all_comm_rc_either BC_all_comm BC_rc_either hG
   exact version_inv_on_of_causal_canonical bc_inv_init bc_safetyStep hG hCC
     (honestApp_of_mint h.mintHonest)
 
-def safety : SafetyCertificate BC (canonicalVirtualLCA BC) generation where
+def safety : SafetyCertificate BC (canonicalVirtualMergeBase BC) generation where
   Safe := BCInv
   Observable := BCInv
   preservationV := versions_safeV
@@ -331,7 +325,7 @@ def sequentialSpec : SequentialMachine (Op BCOp) where
     | .dec => q r - if r = e.2.1 then 1 else 0
 
 def SequentialHonest (ops : List (Op BCOp)) : Prop :=
-  ∀ pre suf, ops = pre ++ suf → BCInv (applySeq BC.toCRDTSig BC.init pre)
+  ∀ pre suf, ops = pre ++ suf → BCInv (applySeq BC.toUpdateSig BC.init pre)
 
 def bcIsInc (e : Op BCOp) : Bool :=
   match e.2.2 with | .inc => true | .dec => false
@@ -369,20 +363,20 @@ theorem canonical_listPermOf {ops : List (Op BCOp)}
   exact ⟨hp.nodup h.1, fun e => (hp.mem_iff (a := e)).symm.trans (h.2 e)⟩
 
 theorem canonical_fold (ops : List (Op BCOp)) :
-    applySeq BC.toCRDTSig BC.init (canonical ops) =
-      applySeq BC.toCRDTSig BC.init ops :=
-  applySeq_perm_of_all_comm (D' := BC.toCRDTSig) BC_all_comm
+    applySeq BC.toUpdateSig BC.init (canonical ops) =
+      applySeq BC.toUpdateSig BC.init ops :=
+  applySeq_perm_of_all_comm (D' := BC.toUpdateSig) BC_all_comm
     (canonical_perm ops).symm BC.init
 
 theorem lo_false (C : Configuration BC) (a b : Op BCOp) :
-    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+    ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
   rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
   · exact hnoncomm (BC_all_comm a b)
   · rw [BC_rc_either] at hrc
     exact RcRes.noConfusion hrc
 
 theorem respects_lo (C : Configuration BC) (ops : List (Op BCOp)) :
-    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+    respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
   induction ops with
   | nil => exact List.Pairwise.nil
   | cons e rest ih =>
@@ -390,8 +384,8 @@ theorem respects_lo (C : Configuration BC) (ops : List (Op BCOp)) :
 
 theorem sequential_run (ops : List (Op BCOp)) : ∀ r,
     sequentialSpec.run ops r =
-      (applySeq BC.toCRDTSig BC.init ops).1 r -
-      (applySeq BC.toCRDTSig BC.init ops).2 r := by
+      (applySeq BC.toUpdateSig BC.init ops).1 r -
+      (applySeq BC.toUpdateSig BC.init ops).2 r := by
   induction ops using List.reverseRecOn with
   | nil => intro r; rfl
   | append_singleton ops e ih =>
@@ -420,7 +414,7 @@ theorem sequentialHonest_of_linear {ops : List (Op BCOp)}
       have heq' : ops = pre ++ e :: suf := by simpa [List.append_assoc] using heq
       have hInv := ih (e :: suf) heq'
       rw [applySeq_append_single]
-      change BCInv (BC.update (applySeq BC.toCRDTSig BC.init pre) e)
+      change BCInv (BC.update (applySeq BC.toUpdateSig BC.init pre) e)
       rw [BC_update_eq]
       exact bcApplicable_inv_pres hInv (h.guarded pre e suf heq')
 
@@ -437,7 +431,7 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC ge
     intro v s E hver
     obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
     let π := canonical ops
-    have hπfold : applySeq BC.toCRDTSig BC.init π = s := by
+    have hπfold : applySeq BC.toUpdateSig BC.init π = s := by
       exact (canonical_fold ops).trans hfold
     have hsafe : BCInv s := by
       cases exec with
@@ -464,7 +458,7 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC ge
 noncomputable def verified : VerifiedMRDT BC where
   issuance := generation
   interaction := InteractionSpec.raw BC
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Spec := clientSpec
   Rel := sequential.Rel
   sequentialCorrectness := sequentialCorrectness

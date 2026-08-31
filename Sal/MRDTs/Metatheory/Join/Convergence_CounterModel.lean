@@ -1,4 +1,4 @@
-import Sal.MRDTs.Metatheory.Join.Merge_Linearization_Set
+import Sal.MRDTs.Metatheory.Join.SetRelativeReplay
 
 /-!
 # Counter-model: convergence over backward-closed replica sets is FALSE
@@ -40,14 +40,14 @@ So `[y, e]` and `[e, y]` both respect `lo C`, yet
 points out of `ev`). Hence no convergence statement over
 backward-closed sub-sets w.r.t. `lo C` is provable.
 
-The set-relative relation of `Merge_Linearization_Set.lean` repairs
+The set-relative relation of `SetRelativeReplay.lean` repairs
 this: `loOn C ev` *keeps* the edge `y → e` (no absorber inside
 `ev`), so only the fold-correct `[y, e]` respects it,
 `loOn_keeps_the_edge` below.
 
 ## Bonus finding
 
-`SatisfiesVCs.shared_peel_1op`, the "missing VC" added to the
+`HistoricalReplayVCs.shared_peel_1op`, the "missing VC" added to the
 bundle as a crutch for the shared-event peel, is **false for
 `AWSet`** (`AWSet_shared_peel_1op_false`): the current bundle
 excludes exactly the state-dependent RDTs (the paper's own OR-set
@@ -84,23 +84,22 @@ def awRc (e₁ e₂ : Op AWOp) : RcRes :=
   | _, _ => RcRes.Either
 
 /-- Add-wins set skeleton over one implicit key. See file header. -/
-noncomputable def AWSet : CRDTSig where
+noncomputable def AWSet : UpdateSig where
   State := AWState
   dec_state := Classical.decEq _
   init := (∅, ∅)
   AppOp := AWOp
   dec_op := inferInstance
-  Query := Unit
-  Value := Set Timestamp
   update := awUpdate
-  merge := awMerge
-  query := fun σ _ => σ.1 \ σ.2
+
+noncomputable instance AWSetHistoricalBinaryMerge : HistoricalBinaryMerge AWSet where
+  binaryMerge := awMerge
 
 local instance : ReplayPolicy AWSet where
   order := awRc
 
 @[simp] theorem AWSet_update : AWSet.update = awUpdate := rfl
-@[simp] theorem AWSet_merge : AWSet.merge = awMerge := rfl
+@[simp] theorem AWSet_merge : AWSet.historicalMerge = awMerge := rfl
 @[simp] theorem AWSet_rc : AWSet.replayOrder = awRc := rfl
 @[simp] theorem AWSet_init : AWSet.init = ((∅ : Set Timestamp), (∅ : Set Timestamp)) := rfl
 
@@ -211,26 +210,26 @@ theorem AWSet_no_rc_chain :
       | exact absurd h₂₃ (by decide)
 
 theorem AWSet_merge_comm :
-    ∀ a b : AWSet.State, AWSet.merge a b = AWSet.merge b a := by
+    ∀ a b : AWSet.State, AWSet.historicalMerge a b = AWSet.historicalMerge b a := by
   intro a b
   simp only [AWSet_merge, awMerge]
   exact Prod.ext (Set.union_comm _ _) (Set.union_comm _ _)
 
-theorem AWSet_merge_idem : ∀ s : AWSet.State, AWSet.merge s s = s := by
+theorem AWSet_merge_idem : ∀ s : AWSet.State, AWSet.historicalMerge s s = s := by
   intro s
   simp only [AWSet_merge, awMerge]
   exact Prod.ext (Set.union_self _) (Set.union_self _)
 
 theorem AWSet_merge_init :
-    ∀ s : AWSet.State, AWSet.merge AWSet.init s = s := by
+    ∀ s : AWSet.State, AWSet.historicalMerge AWSet.init s = s := by
   intro s
   simp only [AWSet_merge, AWSet_init, awMerge]
   exact Prod.ext (Set.empty_union _) (Set.empty_union _)
 
 theorem AWSet_lem_0op :
     ∀ (a b : AWSet.State) (ol : Op AWSet.AppOp),
-      AWSet.merge (AWSet.update a ol) (AWSet.update b ol)
-        = AWSet.update (AWSet.merge a b) ol := by
+      AWSet.historicalMerge (AWSet.update a ol) (AWSet.update b ol)
+        = AWSet.update (AWSet.historicalMerge a b) ol := by
   intro a b ol
   rcases h : ol.2.2
   · simp only [AWSet_update, AWSet_merge, awUpdate_add h, awMerge]
@@ -412,39 +411,12 @@ private theorem counter_L_cases (r₀ : Replica)
 replica 1 holds `{evRem1, evAdd}` (it merged replica 0's state
 between `evAdd` and `evRem0`). The single `vis`-edge is
 `evAdd → evRem0`. Visibly reachable in 5 transition-system steps. -/
-noncomputable def counterConfig : Configuration AWSet where
-  N := fun r =>
-    if r = 0 then some (applySeq AWSet AWSet.init [evAdd, evRem0])
-    else if r = 1 then some (applySeq AWSet AWSet.init [evRem1, evAdd])
-    else none
+noncomputable def counterConfig : ReplayContext AWSet where
   L := fun r =>
     if r = 0 then some {evAdd, evRem0}
     else if r = 1 then some {evRem1, evAdd}
     else none
   vis := fun a b => a = evAdd ∧ b = evRem0
-  dom_eq := by
-    intro r
-    by_cases h0 : r = 0
-    · simp [h0]
-    · by_cases h1 : r = 1 <;> simp [h0, h1]
-  vis_src := by
-    rintro a b ⟨rfl, rfl⟩
-    exact ⟨0, {evAdd, evRem0}, by simp, Or.inl rfl⟩
-  vis_tgt := by
-    rintro a b ⟨rfl, rfl⟩
-    exact ⟨0, {evAdd, evRem0}, by simp, Or.inr rfl⟩
-  vis_causal := by
-    rintro a b r s ⟨rfl, rfl⟩ hL hs
-    by_cases h0 : r = 0
-    · rw [if_pos h0, Option.some.injEq] at hL
-      rw [← hL]
-      exact Or.inl rfl
-    · by_cases h1 : r = 1
-      · rw [if_neg h0, if_pos h1, Option.some.injEq] at hL
-        rw [← hL] at hs
-        rcases hs with h | h <;> simp [evRem0, evRem1, evAdd] at h
-      · rw [if_neg h0, if_neg h1] at hL
-        exact absurd hL (by simp)
   timestamps_distinct := by
     intro a b r s r' s' hL hs hL' hs' hne
     rcases counter_L_cases r s hL a hs with rfl | rfl | rfl <;>
@@ -564,7 +536,7 @@ theorem perm_ey : listPermOf [evAdd, evRem1] counterEv := by
       · rw [h]; exact List.mem_cons_of_mem _ List.mem_cons_self
       · rw [h]; exact List.mem_cons_self
 
-/-- **The headline refutation.** There is a CRDT signature satisfying
+/-- **The headline refutation.** There is a replay algebra satisfying
 the entire toolkit the `convergence` proof machinery consumes,
 together with a configuration, a backward-closed sub-set `ev` of its
 events, and two `lo C`-respecting enumerations of `ev` whose folds
@@ -572,7 +544,7 @@ differ. Hence "convergence over backward-closed (replica) event sets
 w.r.t. `lo C`" is false, and no weakening of `convergence`'s
 overwriter-closure hypothesis to backward closure can be proved. -/
 theorem convergence_over_backward_closed_subsets_false :
-    ∃ (C : Configuration AWSet) (ev : Set (Op AWSet.AppOp))
+    ∃ (C : ReplayContext AWSet) (ev : Set (Op AWSet.AppOp))
       (π₁ π₂ : List (Op AWSet.AppOp)),
       -- the convergence toolkit holds for AWSet
       (∀ o₁ o₂ : Op AWSet.AppOp, distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
@@ -590,12 +562,12 @@ theorem convergence_over_backward_closed_subsets_false :
         ¬ AWSet.commutes e' e'' →
         AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e') e) π) e''
           = AWSet.update (applySeq AWSet (AWSet.update (AWSet.update s e) e') π) e'') ∧
-      (∀ a b : AWSet.State, AWSet.merge a b = AWSet.merge b a) ∧
-      (∀ s : AWSet.State, AWSet.merge s s = s) ∧
-      (∀ s : AWSet.State, AWSet.merge AWSet.init s = s) ∧
+      (∀ a b : AWSet.State, AWSet.historicalMerge a b = AWSet.historicalMerge b a) ∧
+      (∀ s : AWSet.State, AWSet.historicalMerge s s = s) ∧
+      (∀ s : AWSet.State, AWSet.historicalMerge AWSet.init s = s) ∧
       (∀ (a b : AWSet.State) (ol : Op AWSet.AppOp),
-        AWSet.merge (AWSet.update a ol) (AWSet.update b ol)
-          = AWSet.update (AWSet.merge a b) ol) ∧
+        AWSet.historicalMerge (AWSet.update a ol) (AWSet.update b ol)
+          = AWSet.update (AWSet.historicalMerge a b) ol) ∧
       -- the counter-instance
       (∀ a ∈ ev, a ∈ C.events) ∧
       (∀ a b, C.vis a b → b ∈ ev → a ∈ ev) ∧
@@ -631,21 +603,21 @@ theorem loOn_keeps_the_edge :
 
 /-! ### Bonus: the `shared_peel_1op` crutch VC is false for `AWSet`
 
-`SatisfiesVCs.shared_peel_1op` quantifies over **all** states. For
+`HistoricalReplayVCs.shared_peel_1op` quantifies over **all** states. For
 state-dependent removes it fails: with `a = (∅,∅)`, `b = ({2},∅)`,
 `ol = add₁`, `o₁ = rem₀`, the left `rem` cannot see `b`'s live
 timestamp 2, but the right-hand side's `rem` (applied after the
 merge) kills it. Since `AWSet` is the two-op skeleton of the paper's
-own OR-set, the current `SatisfiesVCs` bundle is unsatisfiable for
+own OR-set, the current `HistoricalReplayVCs` bundle is unsatisfiable for
 precisely the RDTs with non-trivial `rc`, the bundle is *stronger*
 than the paper's 24 VCs, and `distinct_last_case`'s reliance on
 `shared_peel_1op` needs to be re-examined. -/
 theorem AWSet_shared_peel_1op_false :
     ¬ (∀ (o₁ ol : Op AWSet.AppOp), distinctOps o₁ ol →
         ∀ (a b : AWSet.State),
-          AWSet.merge (AWSet.update (AWSet.update a ol) o₁)
+          AWSet.historicalMerge (AWSet.update (AWSet.update a ol) o₁)
               (AWSet.update b ol)
-            = AWSet.update (AWSet.merge (AWSet.update a ol)
+            = AWSet.update (AWSet.historicalMerge (AWSet.update a ol)
                 (AWSet.update b ol)) o₁) := by
   intro h
   have h_inst := h (0, 0, AWOp.rem) (1, 0, AWOp.add)
@@ -659,10 +631,10 @@ theorem AWSet_shared_peel_1op_false :
   have h2 := Set.ext_iff.mp h_dead 2
   simp at h2
 
-/-! ### Discharging `JoinPeelVCs` for `AWSet`
+/-! ### Discharging `BinaryPeelLaws` for `AWSet`
 
-`AWSet` cannot satisfy the full `SatisfiesVCs`
-(`AWSet_shared_peel_1op_false`), but it satisfies the `CoreVCs`
+`AWSet` cannot satisfy the full `HistoricalReplayVCs`
+(`AWSet_shared_peel_1op_false`), but it satisfies the `BinaryMergeLaws`
 fragment the Join-Lemma machinery consumes, and (the point of this
 section) the two contextual peel identities. The engine is a
 **characterization of canonical states**:
@@ -680,7 +652,7 @@ concurrent add, the rc-edge `rem → add` would be mandatory).
 The peel identities then reduce to set algebra plus the
 trichotomy (`awAdds_killed_of_rem_max`): under union-maximality of a
 rem `e` and backward closure, *every* add of `ev₁ ∪ ev₂` is absorbed
-on the side that owns it. This yields `AWSet_joinLemma`, the Join
+on the side that owns it. This yields `AWSet_binaryJoin`, the Join
 Lemma, hence the full merge case, for a CRDT with non-trivial `rc`,
 on exactly the class of instances where the paper's own proof
 breaks. -/
@@ -703,8 +675,8 @@ theorem AWSet_merge_peel_comm :
     ∀ (a : AWSet.State) (e : Op AWSet.AppOp)
       (π : List (Op AWSet.AppOp)),
       (∀ x ∈ π, AWSet.commutes e x) →
-      AWSet.merge (AWSet.update a e) (applySeq AWSet AWSet.init π)
-        = AWSet.update (AWSet.merge a (applySeq AWSet AWSet.init π)) e := by
+      AWSet.historicalMerge (AWSet.update a e) (applySeq AWSet AWSet.init π)
+        = AWSet.update (AWSet.historicalMerge a (applySeq AWSet AWSet.init π)) e := by
   intro a e π h_comm
   rcases he : e.2.2
   · simp only [AWSet_update, AWSet_merge, awUpdate_add he, awMerge]
@@ -727,7 +699,7 @@ theorem AWSet_merge_peel_comm :
     tauto
 
 /-- `AWSet` satisfies the core bundle (though not the full one). -/
-theorem AWSet_coreVCs : CoreVCs AWSet :=
+theorem AWSet_binaryMergeLaws : BinaryMergeLaws AWSet :=
   ⟨AWSet_rc_non_comm_directional, AWSet_no_rc_chain,
    AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_init,
    AWSet_lem_0op, AWSet_merge_peel_comm⟩
@@ -738,13 +710,13 @@ def awAdds (ev : Set (Op AWSet.AppOp)) : Set Timestamp :=
 
 /-- Timestamps of `ev`'s add events absorbed inside `ev` (some rem of
 `ev` observed them). -/
-def awKilled (C : Configuration AWSet) (ev : Set (Op AWSet.AppOp)) :
+def awKilled (C : ReplayContext AWSet) (ev : Set (Op AWSet.AppOp)) :
     Set Timestamp :=
   {t | ∃ a, a ∈ ev ∧ a.2.2 = AWOp.add ∧ a.1 = t ∧
        ∃ z, z ∈ ev ∧ C.vis a z ∧ z.2.2 = AWOp.rem}
 
 /-- The sandwich invariant along a `loOn C ev`-respecting list. -/
-private theorem AWSet_char_aux {C : Configuration AWSet}
+private theorem AWSet_char_aux {C : ReplayContext AWSet}
     {ev : Set (Op AWSet.AppOp)} :
     ∀ ρ : List (Op AWSet.AppOp),
       (∀ a ∈ ρ, a ∈ ev) →
@@ -863,7 +835,7 @@ private theorem AWSet_char_aux {C : Configuration AWSet}
           exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht', hz⟩
 
 /-- **Canonical states of `AWSet`, characterized.** -/
-theorem AWSet_canonical_eq {C : Configuration AWSet}
+theorem AWSet_canonical_eq {C : ReplayContext AWSet}
     {ev : Set (Op AWSet.AppOp)} {s : AWSet.State}
     (h : IsCanonicalState C ev s) :
     s = (awAdds ev, awKilled C ev) := by
@@ -924,20 +896,20 @@ theorem awAdds_insert_add {ev : Set (Op AWSet.AppOp)}
     · exact ⟨e, he_in, he, rfl⟩
     · exact ⟨a, ha, hadd, ht⟩
 
-theorem awKilled_mono {C : Configuration AWSet}
+theorem awKilled_mono {C : ReplayContext AWSet}
     {ev ev' : Set (Op AWSet.AppOp)} (h : ev ⊆ ev') :
     awKilled C ev ⊆ awKilled C ev' := by
   rintro t ⟨a, ha, hadd, ht, z, hz, hvis, hrem⟩
   exact ⟨a, h ha, hadd, ht, z, h hz, hvis, hrem⟩
 
-theorem awKilled_sub_adds {C : Configuration AWSet}
+theorem awKilled_sub_adds {C : ReplayContext AWSet}
     {ev : Set (Op AWSet.AppOp)} :
     awKilled C ev ⊆ awAdds ev := by
   rintro t ⟨a, ha, hadd, ht, _⟩
   exact ⟨a, ha, hadd, ht⟩
 
 /-- A union-maximal add has no absorber anywhere in the union. -/
-theorem no_absorber_of_max {C : Configuration AWSet}
+theorem no_absorber_of_max {C : ReplayContext AWSet}
     {evU ev : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
     (h_sub : ev ⊆ evU) (he_add : e.2.2 = AWOp.add)
     (h_max : ∀ x ∈ evU, x ≠ e → ¬ loOn C evU e x) :
@@ -951,7 +923,7 @@ theorem no_absorber_of_max {C : Configuration AWSet}
     (Or.inl ⟨hvis, AWSet_not_comm_add_rem he_add hrem⟩)
 
 /-- Removing an unabsorbed add leaves `awKilled` unchanged. -/
-theorem awKilled_diff_add {C : Configuration AWSet}
+theorem awKilled_diff_add {C : ReplayContext AWSet}
     {ev : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
     (he : e.2.2 = AWOp.add)
     (h_no_abs : ¬ ∃ z, z ∈ ev ∧ C.vis e z ∧ z.2.2 = AWOp.rem) :
@@ -970,7 +942,7 @@ theorem awKilled_diff_add {C : Configuration AWSet}
 /-- **The trichotomy**: with a union-maximal rem `e ∈ ev₁` and
 backward-closed sides, every add of the union is absorbed on a side
 that owns it. -/
-theorem awAdds_killed_of_rem_max {C : Configuration AWSet}
+theorem awAdds_killed_of_rem_max {C : ReplayContext AWSet}
     {ev₁ ev₂ : Set (Op AWSet.AppOp)} {e : Op AWSet.AppOp}
     (h_cl₁ : ∀ a b, C.vis a b → ¬ AWSet.commutes a b →
       b ∈ ev₁ → a ∈ ev₁)
@@ -1015,7 +987,7 @@ theorem awAdds_killed_of_rem_max {C : Configuration AWSet}
         z, hz₂, hz_vis, hz_rem⟩
 
 /-- **`AWSet` discharges the peel identities.** -/
-theorem AWSet_joinPeelVCs : JoinPeelVCs AWSet := by
+theorem AWSet_binaryPeelLaws : BinaryPeelLaws AWSet := by
   constructor
   · -- peel_local
     intro C ev₁ ev₂ s₁ s₂ t₁ e h_in₁ h_in₂ h_cl₁ h_cl₂ he₁ he₂
@@ -1087,7 +1059,7 @@ theorem AWSet_joinPeelVCs : JoinPeelVCs AWSet := by
 /-- **The Join Lemma holds for `AWSet`**, a CRDT with non-trivial
 `rc`, state-dependent updates, and instances (the defeater shape)
 on which the paper's own bottom-up proof breaks. -/
-theorem AWSet_joinLemma : JoinLemma AWSet :=
-  join_lemma_of_peel AWSet_coreVCs AWSet_joinPeelVCs
+theorem AWSet_binaryJoin : BinaryJoin AWSet :=
+  binaryJoin_of_peel AWSet_binaryMergeLaws AWSet_binaryPeelLaws
 
 end Sal.MRDTs.Foundation

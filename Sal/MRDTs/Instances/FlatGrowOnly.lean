@@ -30,56 +30,56 @@ noncomputable def D : MRDTSig where
 variable {A}
 
 theorem all_comm (a b : Op (D A).AppOp) :
-    (D A).toCRDTSig.commutes a b := by
+    (D A).toUpdateSig.commutes a b := by
   intro s
   funext x
   exact bor_rc (s x) (decide (x = a.2.2)) (decide (x = b.2.2))
 
-theorem updateVCs : UpdateVCs (D A).toCRDTSig := by
+theorem replayLaws : ReplayLaws (D A).toUpdateSig := by
   refine ⟨?_, ?_, ?_⟩
   · intro a b _ _
     constructor
     · intro h; exact absurd (all_comm a b) h
     · rintro (h | h) <;>
-        (rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h;
+        (rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h;
          exact RcRes.noConfusion h)
   · intro a b c _ _
     rintro ⟨h, _⟩
-    rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
   · intro s a b c π _ _ _ h _
-    rw [show (D A).toCRDTSig.replayOrder _ _ = RcRes.Either from rfl] at h
+    rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
     exact RcRes.noConfusion h
 
-theorem coreVCs3 : CoreVCs3 (D A) := by
-  refine ⟨updateVCs, ?_, ?_, ?_, ?_⟩
+theorem mergeLaws : MergeLaws (D A) := by
+  refine ⟨replayLaws, ?_, ?_⟩
   · intro l a b; funext x; exact bor_comm (l x) (a x) (b x)
   · intro s; funext x; exact bor_init (s x)
-  · intro l a b e; funext x
-    exact bor_0op (l x) (a x) (b x) (decide (x = e.2.2))
+
+theorem commutingPeelLaw : CommutingPeelLaw (D A) := by
+  constructor
   · intro a e π₀ π₂ _ _; funext x
     exact bor_peel
-      (applySeq (D A).toCRDTSig (D A).init π₀ x) (a x)
-      (applySeq (D A).toCRDTSig (D A).init π₂ x)
+      (applySeq (D A).toUpdateSig (D A).init π₀ x) (a x)
+      (applySeq (D A).toUpdateSig (D A).init π₂ x)
       (decide (x = e.2.2))
 
-theorem deltaVCs3 : DeltaVCs3 (D A) := by
+theorem deltaLaws : DeltaLaws (D A) := by
   constructor
   · intro m x₀ x₁ x₂ c; funext x
     exact bor_redis (m x) (x₀ x) (x₁ x) (x₂ x) (c x)
   · intro l m x c y; funext p
     exact bor_lredis (l p) (m p) (x p) (c p) (y p)
 
-theorem join : JoinLemma3 (D A) :=
-  join_lemma3_of_cd' coreVCs3 deltaVCs3
-    (cdVC3_of_all_comm coreVCs3 all_comm)
+theorem join : Join (D A) :=
+  JoinProof.ofArbitraryStateLaws mergeLaws deltaLaws
+    (causalDeltaLaw_of_all_comm mergeLaws commutingPeelLaw all_comm)
 
 def generation : Issuance (D A) where
   CanIssue := fun _ _ => True
 
-def convergence : ConvergenceCertificate (D A) generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV (fun _ _ => join _) h)
+def replayAdequacy : ReplayAdequacyCertificate (D A) generation :=
+  ReplayAdequacyCertificate.ofJoin generation join
 
 def spec : SequentialSpec (D A) where
   State := A → Bool
@@ -94,20 +94,20 @@ def sequential : SequentialRefinement (D A) spec.toSequentialMachine where
   init := rfl
   sound := fun _ _ => rfl
 
-noncomputable def replayVerified : ReplayVerifiedMRDT (D A) where
+noncomputable def replayAdequate : ReplayAdequateMRDT (D A) where
   issuance := generation
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Machine := spec.toSequentialMachine
   sequential := sequential
   sequential_of_mint := fun _ _ => trivial
 
 /-- Positive migration canary: a total datatype obtains the strengthened
-ordinary and virtual-LCA result from the replay theorem without adding a
+ordinary and virtual-merge-base result from the replay theorem without adding a
 datatype-specific legality argument. -/
 noncomputable def verified : VerifiedMRDT (D A) where
   issuance := generation
   interaction := InteractionSpec.raw (D A)
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Spec := spec
   Rel := (fun s q => s = q)
   sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal

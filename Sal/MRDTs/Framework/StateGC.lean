@@ -16,7 +16,7 @@ open Sal.MRDTs.Foundation
 separate from commit-history GC. `Physical` may contain knowledge, epoch maps,
 frontiers, and per-version materializations. Silent steps are local state-GC;
 visible steps refine the datatype's widened semantic execution. -/
-structure StateGCProtocol (D : MRDTSig) (V : VirtualLCAResolver D) where
+structure StateGCProtocol (D : MRDTSig) (V : VirtualMergeBaseResolver D) where
   Physical : Type
   semantic : Physical → Configuration D
   Valid : Physical → Prop
@@ -29,14 +29,14 @@ structure StateGCProtocol (D : MRDTSig) (V : VirtualLCAResolver D) where
 
 namespace StateGCProtocol
 
-inductive Steps {D : MRDTSig} {V : VirtualLCAResolver D}
+inductive Steps {D : MRDTSig} {V : VirtualMergeBaseResolver D}
     (S : StateGCProtocol D V) :
     S.Physical → List (Option (Label D)) → S.Physical → Prop where
   | nil (P) : Steps S P [] P
   | cons {P P' P'' l ls} : S.PhysicalStep P l P' →
       Steps S P' ls P'' → Steps S P (l :: ls) P''
 
-inductive SemanticSteps {D : MRDTSig} (V : VirtualLCAResolver D) :
+inductive SemanticSteps {D : MRDTSig} (V : VirtualMergeBaseResolver D) :
     Configuration D → List (Label D) → Configuration D → Prop where
   | nil (C) : SemanticSteps V C [] C
   | cons {C C' C'' l ls} : StepV D V C l C' →
@@ -47,7 +47,7 @@ def eraseLabels {D : MRDTSig} :
 
 /-- Any valid physical trace erases to widened semantic execution. State-GC
 steps stutter, while subsequent update/merge/query steps remain covered. -/
-theorem refines {D : MRDTSig} {V : VirtualLCAResolver D}
+theorem refines {D : MRDTSig} {V : VirtualMergeBaseResolver D}
     (S : StateGCProtocol D V) {P P' : S.Physical} {ls}
     (valid : S.Valid P) (run : Steps S P ls P') :
     SemanticSteps V (S.semantic P) (eraseLabels ls) (S.semantic P') := by
@@ -102,7 +102,7 @@ structure StateGCCertificate (D : MRDTSig)
     ∀ q, query compact q = D.query full q
 
 /-- Some implementations can compute a merge result from the two branch
-heads while the semantic virtual LCA remains ghost state. -/
+heads while the semantic virtual merge base remains ghost state. -/
 structure HeadOnlyMergeCapability {D : MRDTSig} {I : Issuance D}
     (S : StateGCCertificate D I) where
   MergeEvidence : S.CompactState → S.CompactState →

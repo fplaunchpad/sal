@@ -443,13 +443,13 @@ def D : MRDTSig where
   query s _ := view s
   merge _ a b := a ∪ b
 
-theorem all_comm (a b : Event) : D.toCRDTSig.commutes a b := by
+theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
   intro s
   apply Finset.ext
   intro x
   simp [D, or_left_comm]
 
-theorem updateVCs : UpdateVCs D.toCRDTSig := by
+theorem replayLaws : ReplayLaws D.toUpdateSig := by
   refine ⟨?_, ?_, ?_⟩
   · intro a b _ _
     constructor
@@ -462,25 +462,26 @@ theorem updateVCs : UpdateVCs D.toCRDTSig := by
   · intro s a b c π _ _ _ h _
     exact RcRes.noConfusion h
 
-theorem coreVCs3 : CoreVCs3 D := by
-  refine ⟨updateVCs, ?_, ?_, ?_, ?_⟩
+theorem mergeLaws : MergeLaws D := by
+  refine ⟨replayLaws, ?_, ?_⟩
   · intro l a b; apply Finset.ext; intro x; simp [D, or_comm]
   · intro s; apply Finset.ext; intro x; simp [D]
-  · intro l a b e; apply Finset.ext; intro x
-    simp [D, or_assoc, or_left_comm, or_comm]
+
+theorem commutingPeelLaw : CommutingPeelLaw D := by
+  constructor
   · intro a e π₀ π₂ _ _; apply Finset.ext; intro x
     simp [D, or_assoc, or_left_comm, or_comm]
 
-theorem deltaVCs3 : DeltaVCs3 D := by
+theorem deltaLaws : DeltaLaws D := by
   constructor
   · intro m x₀ x₁ x₂ c; apply Finset.ext; intro x
     simp [D, or_assoc, or_left_comm, or_comm]
   · intro l m x c y; apply Finset.ext; intro z
     simp [D, or_assoc, or_left_comm, or_comm]
 
-theorem join : JoinLemma3 D :=
-  join_lemma3_of_cd' coreVCs3 deltaVCs3
-    (cdVC3_of_all_comm coreVCs3 all_comm)
+theorem join : Join D :=
+  JoinProof.ofArbitraryStateLaws mergeLaws deltaLaws
+    (causalDeltaLaw_of_all_comm mergeLaws commutingPeelLaw all_comm)
 
 def currentAxisPositions (events : Finset Event) (axis : Axis)
     (id : StableId) : Finset Position :=
@@ -580,12 +581,11 @@ instance (e : Event) (events : Finset Event) :
 def generation : Issuance D where
   CanIssue := applicable
 
-def convergence : ConvergenceCertificate D generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV (fun _ _ => join _) h)
+def replayAdequacy : ReplayAdequacyCertificate D generation :=
+  ReplayAdequacyCertificate.ofJoin generation join
 
 theorem applySeq_eq_toFinset (ops : List Event) :
-    applySeq D.toCRDTSig D.init ops = ops.toFinset := by
+    applySeq D.toUpdateSig D.init ops = ops.toFinset := by
   induction ops using List.reverseRecOn with
   | nil => rfl
   | append_singleton ops e ih =>
@@ -604,7 +604,7 @@ theorem every_state_safe (events : Finset Event) : safeState events := by
     simpa [Bool.and_eq_true] using yes
   · simp at h
 
-def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
+def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
   Safe := safeState
   Observable := safeState
   preservationV := by

@@ -19,17 +19,19 @@ def Runtime.WellFormed (S : Runtime D) : Prop :=
     (S.stores r).head = v ∧ v ∈ (S.stores r).commits)
 
 def Available (S : Runtime D) : Label D → Prop
-  | .createReplica r => 0 ∈ (S.stores r).commits
+  | .fork _ src => ∀ v, S.core.head src = some v →
+      v ∈ (S.stores src).commits
   | .apply _ r _ => ∀ v, S.core.head r = some v → v ∈ (S.stores r).commits
   | .merge r₁ r₂ =>
       ∀ v₁ v₂, S.core.head r₁ = some v₁ → S.core.head r₂ = some v₂ →
         v₁ ∈ (S.stores r₁).commits ∧ v₂ ∈ (S.stores r₁).commits ∧
-        ∃ vT, IsLCA S.core.parents v₁ v₂ vT ∧ vT ∈ (S.stores r₁).commits
+        ∃ vT, IsGCA S.core.parents v₁ v₂ vT ∧ vT ∈ (S.stores r₁).commits
   | .query r _ _ => ∀ v, S.core.head r = some v → v ∈ (S.stores r).commits
 
 def StoreEvolution (S S' : Runtime D) : Label D → Prop
-  | .createReplica r => S'.core.head r = some 0 ∧
-      S'.stores = Function.update S.stores r (installHead (S.stores r) 0)
+  | .fork dst src => ∃ v, S'.core.head dst = some v ∧
+      S'.stores = Function.update S.stores dst
+        (installHead (receive (S.stores dst) (advertise (S.stores src))) v)
   | .apply _ r _ => ∃ v, S'.core.head r = some v ∧
       S'.stores = Function.update S.stores r
         (installHead (S.stores r) v)
@@ -91,7 +93,7 @@ theorem runtime_refines_core {S₀ S₁ : Runtime D} {ls}
       | visible _ _ core _ _ => simpa [eraseLabels] using CoreSteps.cons core ih
 
 /-- Widened runtime. Availability is parameterized by the exact set of commit
-versions read by the framework's virtual-LCA resolver. -/
+versions read by the framework's virtual-merge-base resolver. -/
 def AvailableV (reads : Configuration D → Version → Version → Set Version)
     (S : Runtime D) : Label D → Prop
   | .merge r₁ r₂ => ∀ v₁ v₂, S.core.head r₁ = some v₁ →
@@ -100,7 +102,7 @@ def AvailableV (reads : Configuration D → Version → Version → Set Version)
       reads S.core v₁ v₂ ⊆ (S.stores r₁).commits
   | l => Available S l
 
-inductive RuntimeStepV (D : MRDTSig) (V : VirtualLCAResolver D)
+inductive RuntimeStepV (D : MRDTSig) (V : VirtualMergeBaseResolver D)
     (author : Author) (roster : Set Replica)
     (reads : Configuration D → Version → Version → Set Version) :
     Runtime D → Option (Label D) → Runtime D → Prop where
@@ -110,7 +112,7 @@ inductive RuntimeStepV (D : MRDTSig) (V : VirtualLCAResolver D)
       StepV D V S.core l S'.core → StoreEvolution S S' l →
       S'.WellFormed → RuntimeStepV D V author roster reads S (some l) S'
 
-inductive RuntimeStepsV (D : MRDTSig) (V : VirtualLCAResolver D)
+inductive RuntimeStepsV (D : MRDTSig) (V : VirtualMergeBaseResolver D)
     (author : Author) (roster : Set Replica)
     (reads : Configuration D → Version → Version → Set Version) :
     Runtime D → List (Option (Label D)) → Runtime D → Prop where
@@ -119,13 +121,13 @@ inductive RuntimeStepsV (D : MRDTSig) (V : VirtualLCAResolver D)
       RuntimeStepsV D V author roster reads S' ls S'' →
       RuntimeStepsV D V author roster reads S (l :: ls) S''
 
-inductive CoreStepsV (D : MRDTSig) (V : VirtualLCAResolver D) :
+inductive CoreStepsV (D : MRDTSig) (V : VirtualMergeBaseResolver D) :
     Configuration D → List (Label D) → Configuration D → Prop where
   | nil (C) : CoreStepsV D V C [] C
   | cons {C C' C'' l ls} : StepV D V C l C' →
       CoreStepsV D V C' ls C'' → CoreStepsV D V C (l :: ls) C''
 
-theorem runtime_refines_coreV {V : VirtualLCAResolver D} {reads}
+theorem runtime_refines_coreV {V : VirtualMergeBaseResolver D} {reads}
     {S₀ S₁ : Runtime D} {ls}
     (run : RuntimeStepsV D V author roster reads S₀ ls S₁) :
     CoreStepsV D V S₀.core (eraseLabels ls) S₁.core := by

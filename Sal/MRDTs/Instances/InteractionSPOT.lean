@@ -59,8 +59,8 @@ example :
 /-- Negative control for the retired interface premise. -/
 theorem old_no_chain_refuted :
     ¬ (∀ a b c : Op D.AppOp,
-      distinctOps (D := D.toCRDTSig) a b →
-      distinctOps (D := D.toCRDTSig) b c →
+      distinctOps (D := D.toUpdateSig) a b →
+      distinctOps (D := D.toUpdateSig) b c →
       ¬ ((interaction.interaction a b).FstBeforeSnd ∧
          (interaction.interaction b c).FstBeforeSnd)) := by
   intro h
@@ -123,7 +123,7 @@ def observedRemove : Op AOp := (3, 1, .remove {2})
 
 /-- Representation-level observed-remove effectors commute: the remove carries
 its origin view as a payload and only grows the removed-tag set. -/
-example : D.toCRDTSig.commutes add remove := by
+example : D.toUpdateSig.commutes add remove := by
   intro s
   rfl
 
@@ -147,7 +147,7 @@ example : ¬ (interaction.interaction add remove).FstBeforeSnd := by
 
 /-- A causally observed add still precedes its conflicting remove through the
 visibility arm of `interactionLoOn`, so ordinary remove semantics is retained. -/
-example (C : Sal.MRDTs.Foundation.Configuration D.toCRDTSig)
+example (C : Sal.MRDTs.Foundation.ReplayContext D.toUpdateSig)
     (hvis : C.vis add observedRemove) :
     interactionLoOn interaction C {add, observedRemove} add observedRemove := by
   exact Or.inl ⟨hvis, by

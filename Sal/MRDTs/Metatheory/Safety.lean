@@ -9,14 +9,14 @@ open Classical
 that linearizes `vis` (no later element is `vis`-before an earlier one).
 Prefixes of such an enumeration are exactly the vis-backward-closed subsets
 of `E`. -/
-def CausalFold {D' : CRDTSig} (C : Sal.MRDTs.Foundation.Configuration D')
+def CausalFold {D' : UpdateSig} (C : Sal.MRDTs.Foundation.ReplayContext D')
     (E : Set (Op D'.AppOp)) (σ : D'.State) : Prop :=
   ∃ ρ : List (Op D'.AppOp),
     listPermOf ρ E ∧ respects ρ C.vis ∧ applySeq D' D'.init ρ = σ
 
 section
 variable {D : MRDTSig}
-variable [ReplayPolicy D.toCRDTSig]
+variable [ReplayPolicy D.toUpdateSig]
 
 /-- The ∃-form honesty over an explicit guard `A`: every event satisfies `A`
 at some causal fold of its causal past. Existential because the issuer holds
@@ -27,18 +27,18 @@ enumerability side condition. -/
 def HonestAppOn (D : MRDTSig)
     (A : Op D.AppOp → D.State → Prop) (C : Configuration D) : Prop :=
   ∀ e ∈ C.events, ∃ σ : D.State,
-    CausalFold (Configuration.core C) {e' ∈ C.events | C.vis e' e} σ ∧ A e σ
+    CausalFold (Configuration.replayContext C) {e' ∈ C.events | C.vis e' e} σ ∧ A e σ
 
 /-- **Causal canonical witness**: every version state is the
 fold of an enumeration of its event set that linearizes `vis` and respects
-`loOn`, strictly refining `GoodConfig3.canonical`. -/
+`loOn`, strictly refining `CanonicalConfig.canonical`. -/
 def CausalCanonical (C : Configuration D) : Prop :=
   ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
     C.ver v = some (s, E) →
     ∃ ρ : List (Op D.AppOp),
       listPermOf ρ E ∧ respects ρ C.vis ∧
-      respects ρ (loOn (Configuration.core C) E) ∧
-      applySeq D.toCRDTSig D.init ρ = s
+      respects ρ (loOn (Configuration.replayContext C) E) ∧
+      applySeq D.toUpdateSig D.init ρ = s
 
 /-- **The per-datatype safety obligation**, over an explicit
 conditioning pair `(I, A)`: over vis-closed, future-free causal prefixes `S`
@@ -55,8 +55,8 @@ def SafetyStepOn (D : MRDTSig) (I : D.State → Prop)
     (∀ a b, C.vis a b → b ∈ S → a ∈ S) →
     (∀ x ∈ S, ¬ C.vis e x) →
     (∀ x, C.vis x e → x ∈ S) →
-    CausalFold (Configuration.core C) S σS →
-    CausalFold (Configuration.core C) {e' ∈ C.events | C.vis e' e} σP →
+    CausalFold (Configuration.replayContext C) S σS →
+    CausalFold (Configuration.replayContext C) {e' ∈ C.events | C.vis e' e} σP →
     I σS → A e σP → I (D.update σS e)
 
 /-! ## §2  The metatheorem: induction along the causal witness
@@ -64,7 +64,7 @@ def SafetyStepOn (D : MRDTSig) (I : D.State → Prop)
 Snoc-forward along the causal witness ρ of a version `(s, E)`, maintaining
 `I` at every prefix fold. The bookkeeping: a
 prefix set of a `respects · vis` enumeration of the (fully causally closed,
-`GoodConfig3.ver_causal`) set `E` is vis-backward-closed, future-free, and
+`CanonicalConfig.version_events_causal`) set `E` is vis-backward-closed, future-free, and
 contains the whole causal past of the next element, all read off the
 `Pairwise` structure of `π ++ e :: τ`. -/
 
@@ -73,17 +73,17 @@ theorem version_inv_on_of_causal_canonical
     {I : D.State → Prop} {A : Op D.AppOp → D.State → Prop}
     (hInit : I D.init) (hStep : SafetyStepOn D I A)
     {C : Configuration D}
-    (hG : GoodConfig3 C) (hCC : CausalCanonical C)
+    (hG : CanonicalConfig C) (hCC : CausalCanonical C)
     (hHon : HonestAppOn D A C) :
     ∀ (v : Version) (s : D.State) (E : Set (Op D.AppOp)),
       C.ver v = some (s, E) → I s := by
   intro v s E hv
   obtain ⟨ρ, hperm, hvisR, _hloR, hfold⟩ := hCC v s E hv
-  have hE_ev : ∀ a ∈ E, a ∈ C.events := hG.ver_events_sub v s E hv
-  have hE_cl : ∀ a b, C.vis a b → b ∈ E → a ∈ E := hG.ver_causal v s E hv
+  have hE_ev : ∀ a ∈ E, a ∈ C.events := hG.version_events_supported v s E hv
+  have hE_cl : ∀ a b, C.vis a b → b ∈ E → a ∈ E := hG.version_events_causal v s E hv
   suffices h : ∀ (τ π : List (Op D.AppOp)), ρ = π ++ τ →
-      I (applySeq D.toCRDTSig D.init π) →
-      I (applySeq D.toCRDTSig D.init ρ) by
+      I (applySeq D.toUpdateSig D.init π) →
+      I (applySeq D.toUpdateSig D.init ρ) by
     rw [← hfold]
     exact h ρ [] rfl hInit
   intro τ
@@ -134,14 +134,14 @@ theorem version_inv_on_of_causal_canonical
         · exact hfut b hb hvis
         · exact hcross b hb a (List.mem_cons_of_mem _ ha) hvis
     -- the prefix fold IS a causal fold of its own set
-    have hσS : CausalFold (Configuration.core C) {x : Op D.AppOp | x ∈ π}
-        (applySeq D.toCRDTSig D.init π) :=
+    have hσS : CausalFold (Configuration.replayContext C) {x : Op D.AppOp | x ∈ π}
+        (applySeq D.toUpdateSig D.init π) :=
       ⟨π, ⟨(List.nodup_append.mp hnd).1, fun _ => Iff.rfl⟩, hpwπ, rfl⟩
     -- honesty supplies the causal-past fold
     obtain ⟨σP, hσP, happ⟩ := hHon e (hE_ev e he_E)
     -- the step, then recurse on the extended prefix
     have hstep := hStep C E {x : Op D.AppOp | x ∈ π} e
-      (applySeq D.toCRDTSig D.init π) σP
+      (applySeq D.toUpdateSig D.init π) σP
       hE_ev hE_cl he_E hS_sub he_not_π hS_cl hfut hpast hσS hσP hI happ
     refine ih (π ++ [e]) (by rw [hsplit, List.append_cons]) ?_
     rw [applySeq_append_single]
@@ -233,7 +233,7 @@ theorem exists_respecting_perm {α : Type} {R : α → α → Prop}
 /-- Folds are permutation-invariant when every pair of ops commutes
 (adjacent-swap induction over the `Perm` derivation; `commutes` is exactly
 the needed swap equation). -/
-theorem applySeq_perm_of_all_comm {D' : CRDTSig}
+theorem applySeq_perm_of_all_comm {D' : UpdateSig}
     (hcomm : ∀ a b : Op D'.AppOp, D'.commutes a b)
     {l₁ l₂ : List (Op D'.AppOp)} (h : l₁.Perm l₂) :
     ∀ s : D'.State, applySeq D' s l₁ = applySeq D' s l₂ := by
@@ -248,14 +248,14 @@ theorem applySeq_perm_of_all_comm {D' : CRDTSig}
   | trans _ _ ih₁ ih₂ => intro s; exact (ih₁ s).trans (ih₂ s)
 
 /-- **The pointwise `CausalCanonical` discharge** (first species): all-comm +
-`rc ≡ Either` upgrade `GoodConfig3.canonical` to a causal witness. Reorder the
+`rc ≡ Either` upgrade `CanonicalConfig.canonical` to a causal witness. Reorder the
 canonical enumeration into a vis-linearization (same fold by all-comm); the
 `loOn`-respect conjunct is vacuous (`loOn = ∅`: vis-arm dead by all-comm, rc-arm
 dead by `Either`). No reachability induction. -/
 theorem causalCanonical_of_all_comm_rc_either
-    (hcomm : ∀ a b : Op D.AppOp, D.toCRDTSig.commutes a b)
-    (hrc : ∀ a b : Op D.AppOp, D.toCRDTSig.replayOrder a b = RcRes.Either)
-    {C : Configuration D} (hG : GoodConfig3 C) :
+    (hcomm : ∀ a b : Op D.AppOp, D.toUpdateSig.commutes a b)
+    (hrc : ∀ a b : Op D.AppOp, D.toUpdateSig.replayOrder a b = RcRes.Either)
+    {C : Configuration D} (hG : CanonicalConfig C) :
     CausalCanonical C := by
   intro v s E hv
   obtain ⟨ρ, hperm, _hresp, hfold⟩ := hG.canonical v s E hv

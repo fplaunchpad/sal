@@ -29,9 +29,9 @@ inductive Element where
 
 abbrev D (Γ : OrderedPrefixCode) := E Γ Element
 
-/-- The complete algebraic, generation, virtual-LCA, and sequential package
+/-- The complete algebraic, generation, virtual-merge-base, and sequential package
 for the embedded Peritext representation. -/
-noncomputable def replayVerified (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (D Γ) :=
+noncomputable def replayAdequate (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (D Γ) :=
   ProductionRGA.replayEmbed Γ
 
 /-- Public merged-history certificate inherited from the payload-parametric
@@ -62,13 +62,13 @@ buffer obtained by splicing after anchors and deleting by identifier. -/
 theorem render_sequentially_correct (Γ : OrderedPrefixCode)
     (ops : List (Op (EOp Element)))
     (h : LinearMintHistory (D Γ) eApplicable ops) :
-    render (document (applySeq (D Γ).toCRDTSig (D Γ).init ops)) =
-      render (editorDocument ((replayVerified Γ).Machine.run ops)) := by
-  have hs := (replayVerified Γ).sequentially_correct ops h
+    render (document (applySeq (D Γ).toUpdateSig (D Γ).init ops)) =
+      render (editorDocument ((replayAdequate Γ).Machine.run ops)) := by
+  have hs := (replayAdequate Γ).sequentially_correct ops h
   simpa [document, editorDocument, eProj, List.map_map] using
     congrArg (fun state => render (state.map Prod.snd)) hs
 
-#print axioms replayVerified
+#print axioms replayAdequate
 #print axioms verified
 #print axioms render_sequentially_correct
 

@@ -10,7 +10,7 @@ datatype.
 Two consumers can each be authorized at an origin state where a resource is
 enabled.  A merged event set contains both consumers, but no permutation of
 the enable and two consume events is prefix-legal.  Therefore mint honesty
-and internal replay cannot imply client-facing RA correctness by themselves.
+and internal replay cannot imply client-facing sequential correctness by themselves.
 -/
 
 namespace Sal.MRDTs.Metatheory.ConditioningSPOT
@@ -83,7 +83,7 @@ theorem no_legal_merged_order :
   simp [mergedOrders, gateSpec, gateLegalFrom, enable, consumeA, consumeB]
 
 /-- The raw total transition system still replays the merged list. -/
-example : applySeq Gate.toCRDTSig Gate.init [enable, consumeA, consumeB] = false := by
+example : applySeq Gate.toUpdateSig Gate.init [enable, consumeA, consumeB] = false := by
   decide
 
 /-- Rejecting every nonempty history is not an acceptable positive control:

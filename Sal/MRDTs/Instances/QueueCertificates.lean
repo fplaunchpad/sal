@@ -12,7 +12,7 @@ def QHonest (C : Configuration Q) : Prop :=
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = t ∧ ∃ v, a.2.2 = QOp.enq v
 
 theorem qHonest_core {C : Configuration Q} (h : QHonest C) :
-    QHonestCore C.core := by
+    QHonestCore C.replayContext := by
   exact h
 
 /-- Enqueue stamps are fresh; dequeue records the head observed by its issuer. -/
@@ -22,7 +22,7 @@ def qApplicable (o : Op QOp) (s : QState) : Prop :=
   | .deq t => ∃ v rest, s = (t, v) :: rest
 
 theorem qTags_fold_sub : ∀ (π : List (Op QOp)) (t : ℕ),
-    t ∈ qTags (applySeq Q.toCRDTSig Q.init π) →
+    t ∈ qTags (applySeq Q.toUpdateSig Q.init π) →
     ∃ a ∈ π, qIsEnq a = true ∧ a.1 = t := by
   intro π
   induction π using List.reverseRecOn with
@@ -34,7 +34,7 @@ theorem qTags_fold_sub : ∀ (π : List (Op QOp)) (t : ℕ),
     intro t ht
     rw [applySeq_append_single] at ht
     rw [Q_core_update] at ht
-    set s : QState := applySeq Q.toCRDTSig Q.init π
+    set s : QState := applySeq Q.toUpdateSig Q.init π
     obtain ⟨ts, r, op⟩ := e
     cases op with
     | enq v =>
@@ -71,7 +71,7 @@ theorem qHonest_of_mint (C : Configuration Q)
   simp only at ht
   subst ht
   obtain ⟨v, rest, hs⟩ := hg
-  have htag : t ∈ qTags (applySeq Q.toCRDTSig Q.init π) := by
+  have htag : t ∈ qTags (applySeq Q.toUpdateSig Q.init π) := by
     rw [hs]
     simp [qTags]
   obtain ⟨a, ha, hEnq, htag⟩ := qTags_fold_sub π t htag
@@ -84,10 +84,10 @@ theorem qHonest_of_mint (C : Configuration Q)
 def generation : Issuance Q where
   CanIssue := qApplicable
 
-def convergence : ConvergenceCertificate Q generation where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV
-      (fun _ hC => q_join_at (qHonest_core (qHonest_of_mint _ hC))) h)
+def replayAdequacy : ReplayAdequacyCertificate Q generation :=
+  ReplayAdequacyCertificate.ofJoinOn
+    (fun _ hGood => q_join_at hGood)
+    (fun C hMint => qHonest_core (qHonest_of_mint C hMint))
 
 def spec : SequentialMachine (Op QOp) where
   State := List ℕ
@@ -125,9 +125,9 @@ def sequential : SequentialRefinement Q spec where
     rw [spec_run]
     exact queue_seq_sound h
 
-noncomputable def replayVerified : ReplayVerifiedMRDT Q where
+noncomputable def replayAdequate : ReplayAdequateMRDT Q where
   issuance := generation
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential
   sequential_of_mint := fun _ h => qOK_of_linear h
@@ -138,6 +138,6 @@ example : ¬ qApplicable (1, 0, QOp.deq 7) [] := by simp [qApplicable]
 
 #print axioms q_join_at
 #print axioms queue_seq_sound
-#print axioms replayVerified
+#print axioms replayAdequate
 
 end Sal.MRDTs.Instances.Queue

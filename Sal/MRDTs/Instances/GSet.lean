@@ -15,13 +15,13 @@ open Sal.MRDTs.Foundation
 noncomputable abbrev D : MRDTSig := AddStore.D Nat
 
 abbrev generation : Issuance D := AddStore.generation
-abbrev convergence : ConvergenceCertificate D generation :=
-  AddStore.convergence
+abbrev replayAdequacy : ReplayAdequacyCertificate D generation :=
+  AddStore.replayAdequacy
 abbrev spec : SequentialSpec D := AddStore.spec
 abbrev sequential : SequentialRefinement D spec.toSequentialMachine :=
   AddStore.sequential
 
-def safety : SafetyCertificate D (canonicalVirtualLCA D) generation where
+def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
   Safe := fun _ => True
   Observable := fun _ => True
   preservationV := fun _ _ _ _ _ => trivial

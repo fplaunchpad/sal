@@ -15,7 +15,7 @@ namespace Sal.MRDTs.GC
 
 open Sal.MRDTs Sal.MRDTs.Foundation
 
-variable {D : MRDTSig} {V : VirtualLCAResolver D}
+variable {D : MRDTSig} {V : VirtualMergeBaseResolver D}
 
 /-- Physical state of the combined runtime.  Epochs and datatype evidence are
 owned by `state`; the generic commit protocol owns only `stores`. -/
@@ -56,7 +56,7 @@ inductive CombinedSteps (S : StateGCProtocol D V) (author : Author)
       CombinedSteps S author roster P (l :: ls) P''
 
 /-- The combined protocol is itself a datatype-state protocol.  This is the
-virtual-LCA composition theorem: state collection, fetch, and commit GC all
+virtual-merge-base composition theorem: state collection, fetch, and commit GC all
 stutter; every visible step is supplied by the datatype protocol. -/
 def combinedProtocol (S : StateGCProtocol D V) (author : Author)
     (roster : Set Replica) : StateGCProtocol D V where
@@ -100,7 +100,7 @@ theorem refinesV {S : StateGCProtocol D V} {P P' : Combined S} {ls}
   StateGCProtocol.refines (combinedProtocol S author roster) valid run.toProtocol
 
 /-- Ordinary refinement is available when the datatype protocol proves its
-visible steps are raw steps, rather than genuine virtual-LCA steps. -/
+visible steps are raw steps, rather than genuine virtual-merge-base steps. -/
 theorem refinesRaw {S : StateGCProtocol D V} {P P' : Combined S} {ls}
     (valid : P.Valid S) (run : CombinedSteps S author roster P ls P')
     (raw : ∀ {A A' l}, S.Valid A → S.PhysicalStep A (some l) A' →

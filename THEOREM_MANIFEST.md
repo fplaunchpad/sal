@@ -24,7 +24,7 @@ the compatibility contract.
 - `Sal.MRDTs.SafetyCertificate`
 - `Sal.MRDTs.SafetyCertificate.preservation`
 - `Sal.MRDTs.SequentialRefinement`
-- `Sal.MRDTs.ReplayVerifiedMRDT`
+- `Sal.MRDTs.ReplayAdequateMRDT`
 - `Sal.MRDTs.StateGCProtocol.refines`
 - `Sal.MRDTs.GC.execution_refines_noGC`
 - `Sal.MRDTs.GC.runtime_refines_core`

@@ -97,10 +97,10 @@ def E (Γ : OrderedPrefixCode) (α : Type := ℕ)
   merge := eMerge
 
 theorem E_core_update (Γ : OrderedPrefixCode) (s : EState α) (o : Op (EOp α)) :
-    (E Γ α).toCRDTSig.update s o = eUpdate Γ s o := rfl
+    (E Γ α).toUpdateSig.update s o = eUpdate Γ s o := rfl
 
 theorem E_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op (EOp α)) :
-    (E Γ α).toCRDTSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+    (E Γ α).toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
 
 /-! ## §1½  First list algebra -/
 
@@ -315,7 +315,7 @@ the **same** state, the mechanized "state is a function of the event set"
 characterization. No explicit canonical-list formula is needed. -/
 
 def eFold (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) : EState α :=
-  applySeq (E Γ α).toCRDTSig (E Γ α).init ρ
+  applySeq (E Γ α).toUpdateSig (E Γ α).init ρ
 
 theorem eFold_snoc (Γ : OrderedPrefixCode) (ρ : List (Op (EOp α))) (e : Op (EOp α)) :
     eFold Γ (ρ ++ [e]) = eUpdate Γ (eFold Γ ρ) e := by
@@ -581,7 +581,7 @@ open Sal.EmbedRGA (PosChain coordOf coordOf_inj coordOf_append key_inj)
 Witnessed at the empty state. -/
 theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r : ℕ) (el : α)
     (π : List Bool) (a : ℕ) (ts' r' : ℕ) :
-    ¬ (E Γ α).toCRDTSig.commutes (ts, r, EOp.ins el π a) (ts', r', EOp.del ts) := by
+    ¬ (E Γ α).toUpdateSig.commutes (ts, r, EOp.ins el π a) (ts', r', EOp.del ts) := by
   intro h
   have h0 := h []
   rw [E_core_update, E_core_update, E_core_update, E_core_update] at h0
@@ -591,7 +591,7 @@ theorem e_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r : ℕ) (el : α)
 
 /-- Honest histories. -/
 structure EHonestCore (Γ : OrderedPrefixCode)
-    (C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig) : Prop where
+    (C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig) : Prop where
   /-- Every delete's target was inserted `vis`-before it. -/
   del_has_ins : ∀ e ∈ C.events, ∀ x : ℕ, e.2.2 = EOp.del x →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = x ∧ eIsIns a = true
@@ -607,15 +607,15 @@ structure EHonestCore (Γ : OrderedPrefixCode)
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
 theorem e_del_ins_mem {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev) :
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b → b ∈ ev → a ∈ ev) :
     ∀ d ∈ ev, ∀ x : ℕ, d.2.2 = EOp.del x →
       ∃ a ∈ ev, eIsIns a = true ∧ a.1 = x ∧ C.vis a d := by
   intro d hd x hdel
   obtain ⟨a, haev, hvis, hax, hains⟩ := hHon.del_has_ins d (hin d hd) x hdel
-  have hncomm : ¬ (E Γ α).toCRDTSig.commutes a d := by
+  have hncomm : ¬ (E Γ α).toUpdateSig.commutes a d := by
     obtain ⟨a1, a2, aop⟩ := a
     obtain ⟨d1, d2, dop⟩ := d
     simp only at hdel hax
@@ -633,10 +633,10 @@ honesty ingredient per field: timestamp uniqueness gives `ins_nodup`,
 delete-after-insert visibility gives `del_late`, chain generation +
 unique decodability give `keys_inj`. -/
 theorem e_wf_of_enum {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) {ev : Set (Op (EOp α))} {ρ : List (Op (EOp α))}
     (hin : ∀ a ∈ ev, a ∈ C.events)
-    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev → a ∈ ev)
+    (hcl : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b → b ∈ ev → a ∈ ev)
     (hperm : listPermOf ρ ev)
     (hresp : respects ρ (loOn C ev)) : EWf Γ ρ where
   ins_nodup := by
@@ -690,7 +690,7 @@ theorem e_wf_of_enum {Γ : OrderedPrefixCode}
 
 The record-level membership of the ternary merge, characterized order-free
 against the union event set, the mathematical core of the Join. §6b turns
-it into `JoinLemma3At` by exhibiting the witness enumeration. -/
+it into `JoinAt` by exhibiting the witness enumeration. -/
 
 theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op (EOp α))}
     (hwf : EWf Γ ρ) (t : ℕ) :
@@ -709,7 +709,7 @@ theorem e_fold_id_mem (Γ : OrderedPrefixCode) {ρ : List (Op (EOp α))}
 /-- Distinct honest inserts mint distinct keys (the standalone form of
 `e_wf_of_enum`'s third discharge, for use at the merge site). -/
 theorem e_keys_inj_events {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) :
     ∀ o₁ ∈ C.events, ∀ o₂ ∈ C.events, eIsIns o₁ = true → eIsIns o₂ = true →
       o₁.1 ≠ o₂.1 → key (eCoord Γ o₁) ≠ key (eCoord Γ o₂) := by
@@ -731,14 +731,14 @@ canonical enumerations over an honest configuration), a record is in the
 ternary merge iff its insert is somewhere in the union and its id is deleted
 nowhere in the union, the union's order-free membership. OR-set survival,
 with honesty closing the one subtle corner (a branch-2 delete of a
-branch-1 survivor forces the insert into the LCA). -/
+branch-1 survivor forces the insert into the GCA). -/
 theorem e_merge_mem {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
     (hHon : EHonestCore Γ C) {ev₁ ev₂ : Set (Op (EOp α))}
     {ρ₀ ρ₁ ρ₂ : List (Op (EOp α))}
     (hin₁ : ∀ a ∈ ev₁, a ∈ C.events) (hin₂ : ∀ a ∈ ev₂, a ∈ C.events)
-    (hcl₁ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev₁ → a ∈ ev₁)
-    (hcl₂ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b → b ∈ ev₂ → a ∈ ev₂)
+    (hcl₁ : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b → b ∈ ev₁ → a ∈ ev₁)
+    (hcl₂ : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b → b ∈ ev₂ → a ∈ ev₂)
     (hp₀ : listPermOf ρ₀ (ev₁ ∩ ev₂)) (hp₁ : listPermOf ρ₁ ev₁)
     (hp₂ : listPermOf ρ₂ ev₂)
     (hwf₀ : EWf Γ ρ₀) (hwf₁ : EWf Γ ρ₁) (hwf₂ : EWf Γ ρ₂) (r : ERec α) :
@@ -775,7 +775,7 @@ theorem e_merge_mem {Γ : OrderedPrefixCode}
       · rcases hcond with hin2 | hout0
         · have := ((e_fold_id_mem Γ hwf₂ r.1).mp hin2).2
           exact this ((hdels hp₂).mpr ⟨d, hd, hdel⟩)
-        · -- honest corner: the deleter's insert lands in the LCA
+        · -- honest corner: the deleter's insert lands in the GCA
           obtain ⟨a, haev₂, hains, hax, -⟩ :=
             e_del_ins_mem hHon hin₂ hcl₂ d hd r.1 hdel
           have hao : a = o := by
@@ -797,7 +797,7 @@ theorem e_merge_mem {Γ : OrderedPrefixCode}
       obtain ⟨⟨o, hoρ, hi, hrec⟩, hnd₂⟩ := (e_fold_mem Γ hwf₂ r).mp hm
       refine ⟨⟨o, Or.inr ((hp₂.2 o).mp hoρ), hi, hrec⟩, ?_⟩
       rintro d (hd | hd) hdel
-      · -- a branch-1 delete would force the insert into the LCA,
+      · -- a branch-1 delete would force the insert into the GCA,
         -- contradicting r.1 ∉ ids s₀
         obtain ⟨a, haev₁, hains, hax, -⟩ :=
           e_del_ins_mem hHon hin₁ hcl₁ d hd r.1 hdel
@@ -863,7 +863,7 @@ theorem e_merge_mem {Γ : OrderedPrefixCode}
 
 /-! ## §6b  The Join: the merge is its own linearization witness
 
-Witness enumeration for the union: the LCA's enumeration, then branch one's
+Witness enumeration for the union: the GCA's enumeration, then branch one's
 delta (in branch order), then branch two's news. Its `respects` obligation
 falls to CLOSURE, a `loOn`-later event sitting in an earlier block would
 have been pulled into the earlier event set, and `loOn` is event-set
@@ -871,8 +871,8 @@ independent under `rc = Either`, so within-block orders transfer verbatim. -/
 
 open LabeledTS in
 theorem e_join_at {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration (E Γ α).toCRDTSig}
-    (hHon : EHonestCore Γ C) : JoinLemma3At (E Γ α) C := by
+    {C : Sal.MRDTs.Foundation.ReplayContext (E Γ α).toUpdateSig}
+    (hHon : EHonestCore Γ C) : JoinAt (E Γ α) C := by
   intro ev₁ ev₂ s₀ s₁ s₂ _htr _hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical
   obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
@@ -880,14 +880,14 @@ theorem e_join_at {Γ : OrderedPrefixCode}
   obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
   set ev₀ := ev₁ ∩ ev₂ with hev₀
   have hin₀ : ∀ a ∈ ev₀, a ∈ C.events := fun a ha => hin₁ a ha.1
-  have hcl₀ : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b →
+  have hcl₀ : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b →
       b ∈ ev₀ → a ∈ ev₀ :=
     fun a b hv hc hb => ⟨hcl₁ a b hv hc hb.1, hcl₂ a b hv hc hb.2⟩
   have hinU : ∀ a ∈ ev₁ ∪ ev₂, a ∈ C.events := by
     rintro a (ha | ha)
     · exact hin₁ a ha
     · exact hin₂ a ha
-  have hclU : ∀ a b, C.vis a b → ¬ (E Γ α).toCRDTSig.commutes a b →
+  have hclU : ∀ a b, C.vis a b → ¬ (E Γ α).toUpdateSig.commutes a b →
       b ∈ ev₁ ∪ ev₂ → a ∈ ev₁ ∪ ev₂ := by
     rintro a b hv hc (hb | hb)
     · exact Or.inl (hcl₁ a b hv hc hb)
@@ -965,7 +965,7 @@ theorem e_join_at {Γ : OrderedPrefixCode}
       rw [loOn_iff_of_rc_either (E_rc_either Γ)] at hl
       have hb1 : b ∈ ev₁ := hcl₁ b a hl.1 hl.2 ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
       exact (hmemδ₂.mp hb).2 hb1
-    · -- cross ρ₀ × deltas: a loOn-later delta event before an LCA event
+    · -- cross ρ₀ × deltas: a loOn-later delta event before an GCA event
       -- would be in ev₀
       intro a ha b hb hl
       rw [loOn_iff_of_rc_either (E_rc_either Γ)] at hl
@@ -1038,18 +1038,18 @@ def EHonest (Γ : OrderedPrefixCode) (C : Configuration (E Γ α)) : Prop :=
     (chainOf o.1).sum = o.1)
 
 theorem eHonest_core {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
-    (h : EHonest Γ C) : EHonestCore Γ (Configuration.core C) where
+    (h : EHonest Γ C) : EHonestCore Γ (Configuration.replayContext C) where
   del_has_ins := by
     intro e he x hx
-    rw [Configuration.core_events] at he
+    rw [Configuration.replayContext_events] at he
     obtain ⟨a, ha, hv, hax, hai⟩ := h.1 e he x hx
     refine ⟨a, ?_, hv, hax, hai⟩
-    rw [Configuration.core_events]
+    rw [Configuration.replayContext_events]
     exact ha
   chain_gen := by
     obtain ⟨chainOf, hch⟩ := h.2
     refine ⟨chainOf, fun o ho hi => hch o ?_ hi⟩
-    rw [Configuration.core_events] at ho
+    rw [Configuration.replayContext_events] at ho
     exact ho
 
 /-! ## §8  The generation discipline: `applicable` implies honesty
@@ -1103,7 +1103,7 @@ theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
               omega
             · intro o' ho' hoi' hot'
               have ho'eq : o' = (ts, r, EOp.ins el [] 0) :=
-                (Configuration.core C).ts_unique ho' ho hot'
+                (Configuration.replayContext C).ts_unique ho' ho hot'
               rw [ho'eq]
               simp [eCoord, coordOf]
           · obtain ⟨aop, haπ, hai, hae⟩ := e_fold_rec_sub Γ πe (a, el', π) hmem
@@ -1123,7 +1123,7 @@ theorem e_chain_exists {Γ : OrderedPrefixCode} (C : Configuration (E Γ α))
               omega
             · intro o' ho' hoi' hot'
               have ho'eq : o' = (ts, r, EOp.ins el π a) :=
-                (Configuration.core C).ts_unique ho' ho hot'
+                (Configuration.replayContext C).ts_unique ho' ho hot'
               rw [ho'eq]
               show π ++ Γ.enc (ts - a) = coordOf Γ (ch ++ [ts - a])
               rw [coordOf_append, hπval, hcoord aop haev.1 hai ha1]
@@ -1182,11 +1182,11 @@ theorem eHonest_of_mint {Γ : OrderedPrefixCode} {C : Configuration (E Γ α)}
     obtain ⟨π, hp, _hr, hg⟩ := h e he
     exact ⟨π, hp, hg⟩)
 
-theorem convergence (Γ : OrderedPrefixCode) :
-    ConvergenceCertificate (E Γ α) (generation (α := α) Γ) where
-  soundV := fun h => isRALinearizable_of_join
-    (ra_of_mintCertifiedV
-      (fun C hH => e_join_at (eHonest_core (eHonest_of_mint hH))) h)
+theorem replayAdequacy (Γ : OrderedPrefixCode) :
+    ReplayAdequacyCertificate (E Γ α) (generation (α := α) Γ) :=
+  ReplayAdequacyCertificate.ofJoinOn
+    (fun _ hGood => e_join_at hGood)
+    (fun _ hMint => eHonest_core (eHonest_of_mint hMint))
 
 
 end Sal.MRDTs.Instances.EmbedRGA

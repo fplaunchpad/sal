@@ -11,7 +11,7 @@ anonymous long-form working papers under `docs/`.
 - [x] Replace the conditioned signature with plain `MRDTSig`, implementer
   `Issuance`, sequential-specification, and `VerifiedMRDT` interfaces. Keep
   safety and datatype-state GC as separate optional certificates.
-- [x] Port ordinary and canonical virtual-LCA semantics and adequacy without
+- [x] Port ordinary and canonical virtual-merge-base semantics and adequacy without
   `LegacyBridge`.
 - [x] Port the paper-facing RGA, EmbedRGA, SidedEmbedRGA/FugueMax, Peritext,
   queue, MVR, bounded-counter, counter, and grow-only proof packages.
@@ -25,7 +25,7 @@ anonymous long-form working papers under `docs/`.
   component lemmas. Its validity relation must cover text retention and
   LiveGap evidence, trimmed deletion evidence, guarded mark-pair removal,
   Lamport-fresh continuations, cross-epoch translation, ordinary merge, and
-  virtual-LCA/head-only merge.
+  virtual-merge-base/head-only merge.
 - [x] Audit the remaining tracked source/docs against the paper scope. Remove
   historical whiteboards and stale root notes after migrating any genuine open
   task here.
@@ -46,13 +46,29 @@ anonymous long-form working papers under `docs/`.
 - [x] Adversarially rewrite the framework paper as the self-contained formal
   submission narrative. State the raw and certified semantics, all
   load-bearing Join/VC premises, the client-facing sequential theorem,
-  canonical virtual-LCA rule, distributed history-GC protocol/refinement, and
+  canonical virtual-merge-base rule, distributed history-GC protocol/refinement, and
   datatype-state-GC composition in typeset form. Keep the collaborative-
   editing paper as supporting material rather than a second submission.
 - [x] Minimize `MRDTSig` to one ancestor-aware ternary operation named
   `merge`. Remove the independent binary field and compatibility obligation,
-  derive the initial-base binary projection only for reused replay code, and
-  synchronize Lean, both papers, and the release gate.
+  keep the update/replay projection merge-free, isolate the initial-base
+  binary slice behind an explicitly historical capability, and synchronize
+  Lean, both papers, and the release gate.
+- [x] Create a separate bottom-up **Formal Semantics and Theorem Reference**
+  for the complete public framework theory, written in semantic dependency
+  order rather than Lean file order.
+  - [x] First milestone: typeset the primitive types, `UpdateSig`, `MRDTSig`,
+    events, configurations, and the explicitly typed fork, apply, merge, and
+    query rules as a self-contained operational-semantics chapter.
+  - [x] Continue with replay contexts, `loOn`, canonical states,
+    `CanonicalConfig`, Join and replay adequacy; then issuance, interaction
+    ordering, `IsSpecLinearizable`, virtual merge bases, and the two GC refinements.
+  - [x] Give every definition and principal theorem explicit types, its exact
+    Lean declaration name, and a source link. Omit proof-local plumbing from
+    the main line and isolate historical binary VCs and countermodels in an
+    appendix.
+  - [x] Add a Lean ledger and PDF build gate so the reference remains
+    synchronized with the mechanized development.
 - [ ] Add the submission-facing bibliography and related-work comparison after
   the technical narrative stabilizes. Keep citations distinct from the
   machine-checked claim ledger.
@@ -103,8 +119,8 @@ anonymous long-form working papers under `docs/`.
     replay-only.
 
 - [x] **HIGHEST PRIORITY — finish the public sequential-correctness cutover.**
-  The replay-only `IsRALinearizable` result reconstructs implementation state;
-  the public `IsSpecRALinearizable` result must additionally select an exact,
+  The replay-only `HasReplayWitness` result reconstructs implementation state;
+  the public `IsSpecLinearizable` result must additionally select an exact,
   `lo`-respecting history accepted by an independent sequential specification,
   relate both states, and agree on every query.
   - [x] replace the staging `Inv`/`Applicable`/`GuardBridge` API with the
@@ -114,15 +130,15 @@ anonymous long-form working papers under `docs/`.
   - [x] remove arbitrary `GenerationContract.History`; convergence proofs now
     derive datatype-local history invariants directly from `MintHonest`;
   - [x] make `VerifiedMRDT` the strengthened public package and retain the old
-    raw-fold result explicitly as internal `ReplayVerifiedMRDT`;
+    raw-fold result explicitly as internal `ReplayAdequateMRDT`;
   - [x] remove duplicated ordinary proof fields: ordinary certified execution
-    embeds in virtual-LCA execution, so convergence and optional safety store
+    embeds in virtual-merge-base execution, so convergence and optional safety store
     only their widened theorem and derive the ordinary theorem;
   - [x] state the strengthened per-version theorem with exact event-set
     membership, respect for `lo`, sequential legality and refinement, and
     explicit query agreement;
   - [x] factor one datatype-specific `SequentialCorrectnessCertificate` so ordinary and
-    virtual-LCA executions reuse the same semantic proof;
+    virtual-merge-base executions reuse the same semantic proof;
   - [x] migrate the total grow-only set/map canary and the tombstone RGA;
     RGA's specification state is `List Nat`, deletion is physical and
     idempotent, and `listSpec.Legal` records timestamp/ID honesty plus earlier
@@ -131,8 +147,8 @@ anonymous long-form working papers under `docs/`.
     dequeue the same observed head, leaving the implementation's second
     element while a plain FIFO replay performs two pops. Either add an
     exactly-once dequeue protocol or mark the current queue as not FIFO
-    RA-linearizable. The current package is now explicitly named
-    `replayVerified`, and `duplicate_dequeue_not_fifo` is the checked negative;
+    specification-linearizable. The current package is now explicitly named
+    `replayAdequate`, and `duplicate_dequeue_not_fifo` is the checked negative;
   - [x] migrate the total counters/stores, TreeMove, and BoundedCounter to
     `VerifiedMRDT`. BoundedCounter uses a canonical increments-before-decrements
     witness and a client legality predicate that records the per-replica
@@ -140,13 +156,13 @@ anonymous long-form working papers under `docs/`.
   - [x] classify the current MVR against its ordinary single-value register
     specification: two concurrent writes expose both values, so no state of
     that sequential machine can refine the merge. Keep the raw package named
-    `replayVerified` and the obstruction in
+    `replayAdequate` and the obstruction in
     `concurrentState_no_sequential_register`;
   - [x] finish EmbedRGA and SidedEmbedRGA legalization. Their canonical merged
     histories are prefix-legal, including duplicate deletion, and respect the
     explicit semantic dependence policies supplied through `InteractionSpec`.
     The raw-state counterexample remains checked: universal
-    `CRDTSig.commutes` over malformed list states is not a sound public
+    `UpdateSig.commutes` over malformed list states is not a sound public
     dependence policy for these representations;
   - [x] migrate or classify every production datatype. EmbedRGA,
     SidedEmbedRGA, Peritext, the three-component Sided Peritext core, and its
@@ -159,7 +175,7 @@ anonymous long-form working papers under `docs/`.
     Datatypes may reuse a proof-local reachable-state lemma when useful, but
     no coupling belongs in `VerifiedMRDT` and no production instance requires
     another public bridge;
-  - [x] provide ordinary and virtual-LCA versions of the strengthened theorem;
+  - [x] provide ordinary and virtual-merge-base versions of the strengthened theorem;
   - [x] add positive and negative controls showing that origin issuance alone
     does not imply legality of an arbitrary merged witness.
   This is a gating issue for the framework and paper claims. Internal-state
@@ -181,8 +197,9 @@ anonymous long-form working papers under `docs/`.
   every valid RGA execution has an RA-consistent sequential linearization whose
   ordinary-list observation equals the RGA traversal, including a concurrent
   insert whose anchor is deleted (linearize the insert before the concurrent
-  delete). Replace the current `RGASeqState { adds, grave }` certificate; merely
-  equating add/tombstone membership does not discharge this task.
+  delete). The retained `BirthGraveState { adds, grave }` machine is only an
+  internal proof intermediate; merely equating add/tombstone membership does
+  not discharge this task.
   Completed by `RGASequential.rga_spec_linearizable` and
   `rga_spec_linearizableV`. The public client spec is `List Nat`; the selected
   witness contains the exact version event set, orders timestamp-sorted
@@ -212,7 +229,7 @@ anonymous long-form working papers under `docs/`.
   - [x] Encode all 16 merge and 16 selective-undo matrix entries as named
     external fixtures.
   - [x] Build the causally annotated stable-ID MRDT; prove ordinary and
-    virtual-LCA convergence, guarded issuance, safety, and refinement to the
+    virtual-merge-base convergence, guarded issuance, safety, and refinement to the
     independent incremental spreadsheet machine. Strict Lamport chronology
     makes the finite event set's sequential enumeration unique. The checked
     `concurrent_origins_not_guarded_chronological` example proves why it cannot
@@ -222,7 +239,7 @@ anonymous long-form working papers under `docs/`.
   - [x] Define AegisSheet merged-history legality over each event's encoded
     causal origin view, extend the incremental materialization and observation
     theorems to that legality, and package the result as `VerifiedMRDT`.
-    Every certified ordinary or virtual-LCA version has a deterministic
+    Every certified ordinary or virtual-merge-base version has a deterministic
     timestamp-canonical witness. Each operation carries an applicable causal
     origin contained in its serialization prefix; the witness exactly
     materializes and observes the replicated state. Positive concurrent-origin
@@ -323,7 +340,7 @@ anonymous long-form working papers under `docs/`.
   `no_rc_chain` artifact from the MRDT interface.** `InteractionSpec` now
   supplies the public semantic conflict policy, while concrete-state
   commutation and `UpdateVCs.no_rc_chain` remain confined to one internal
-  replay construction. `CRDTSig` no longer stores a resolver.
+  replay construction. The proof-level `UpdateSig` stores no resolver.
   - [x] Build minimal machine-checked LWW-register and add-wins OR-set SPOTs against
     independent sequential specifications. The LWW policy admits timestamp
     chains and the checked three-write instance refutes `no_rc_chain`. The
@@ -341,12 +358,12 @@ anonymous long-form working papers under `docs/`.
     one internal proof technique, or eliminated.
   - [x] Do not add `no_rc_chain` or a blanket public acyclicity VC. Use the
     exact legalization witness to certify that client-facing constraints are
-    satisfiable. Let each `ConvergenceCertificate` establish its internal
+    satisfiable. Let each `ReplayAdequacyCertificate` establish its internal
     replay order by an appropriate proof: a well-founded rank, the existing
     set-relative theorem, or a direct witness construction.
-  - [x] Remove `rc` from the executable `CRDTSig`. If the existing absorber
-    metatheory remains useful, parameterize it by an internal replay-order
-    policy instead of storing that policy in every datatype signature.
+  - [x] Remove `rc` from the datatype interface. Parameterize the absorber
+    metatheory by an internal replay-order policy instead of storing that
+    policy in every datatype signature.
   - [x] Migrate every production `VerifiedMRDT`, delete superseded compatibility
     definitions and vacuous `rc := Either` proofs, and run the clean Lean,
     theorem-ledger, repository, and runtime release gates.

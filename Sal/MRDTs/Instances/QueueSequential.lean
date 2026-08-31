@@ -22,8 +22,8 @@ at each point of the history). -/
 def qOK (ρ : List (Op QOp)) : Prop :=
   ∀ (σ : List (Op QOp)) (o : Op QOp) (τ : List (Op QOp)),
     ρ = σ ++ o :: τ →
-    (∀ v, o.2.2 = QOp.enq v → o.1 ∉ qTags (applySeq Q.toCRDTSig Q.init σ)) ∧
-    (∀ t, o.2.2 = QOp.deq t → ∃ v rest, applySeq Q.toCRDTSig Q.init σ = (t, v) :: rest)
+    (∀ v, o.2.2 = QOp.enq v → o.1 ∉ qTags (applySeq Q.toUpdateSig Q.init σ)) ∧
+    (∀ t, o.2.2 = QOp.deq t → ∃ v rest, applySeq Q.toUpdateSig Q.init σ = (t, v) :: rest)
 
 theorem qOK_prefix {ρ : List (Op QOp)} {o : Op QOp}
     (h : qOK (ρ ++ [o])) : qOK ρ := by
@@ -48,7 +48,7 @@ theorem qSpecFold_snoc (ρ : List (Op QOp)) (o : Op QOp) :
 /-- **The invariant: tags are nodup.** Fresh enqueue stamps append
 disjointly; dequeue filters, and nodup survives sublists. -/
 theorem q_tags_nodup {ρ : List (Op QOp)} (hOK : qOK ρ) :
-    (qTags (applySeq Q.toCRDTSig Q.init ρ)).Nodup := by
+    (qTags (applySeq Q.toUpdateSig Q.init ρ)).Nodup := by
   induction ρ using List.reverseRecOn with
   | nil => exact List.nodup_nil
   | append_singleton ρ o ih =>
@@ -58,7 +58,7 @@ theorem q_tags_nodup {ρ : List (Op QOp)} (hOK : qOK ρ) :
       cases op with
       | enq v =>
           have hfresh := (hOK ρ (ts, r, .enq v) [] (by simp)).1 v rfl
-          have hnd' : (List.map Prod.fst (applySeq Q.toCRDTSig Q.init ρ)).Nodup := hnd
+          have hnd' : (List.map Prod.fst (applySeq Q.toUpdateSig Q.init ρ)).Nodup := hnd
           simp only [qUpdate]
           rw [if_neg hfresh]
           simp only [qTags, List.map_append, List.map_cons, List.map_nil]
@@ -76,7 +76,7 @@ theorem q_tags_nodup {ρ : List (Op QOp)} (hOK : qOK ρ) :
 datatype's own sequential discipline (fresh stamps; deq names the head),
 the value sequence of the fold is exactly the naive queue program. -/
 theorem queue_seq_sound {ρ : List (Op QOp)} (hOK : qOK ρ) :
-    (applySeq Q.toCRDTSig Q.init ρ).map Prod.snd = qSpecFold ρ := by
+    (applySeq Q.toUpdateSig Q.init ρ).map Prod.snd = qSpecFold ρ := by
   induction ρ using List.reverseRecOn with
   | nil => rfl
   | append_singleton ρ o ih =>

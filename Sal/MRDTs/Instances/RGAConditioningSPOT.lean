@@ -24,15 +24,31 @@ def strictLegal (ops : List (Op RGAOp)) : Prop :=
 def insertOne : Op RGAOp := (1, 0, .addAfter 0 1)
 def deleteA : Op RGAOp := (2, 1, .remove 1)
 def deleteB : Op RGAOp := (3, 2, .remove 1)
+def invalidDelete : Op RGAOp := (1, 0, .remove 42)
+
+/-- A total raw update can record a deletion with no prior insertion, but the
+public issuance policy rejects it. -/
+example : ¬ applicable invalidDelete RGAM.init := by
+  simp [applicable, invalidDelete, RGAM]
+
+/-- The same singleton history has no legal ordinary-list interpretation.
+This is the negative control showing why all-context Join alone does not imply
+the public RGA theorem. -/
+theorem invalid_delete_not_list_legal :
+    ¬ listSpec.Legal [invalidDelete] := by
+  change ¬ listLegal [invalidDelete]
+  intro h
+  have hremove := h.2 [] invalidDelete [] (by simp)
+  simpa [invalidDelete] using hremove
 
 /-- PASS: each concurrent delete is authorized at an origin containing the
 same live element. -/
 example : applicable deleteA
-    (applySeq RGAM.toCRDTSig RGAM.init [insertOne]) := by
+    (applySeq RGAM.toUpdateSig RGAM.init [insertOne]) := by
   simp [applicable, deleteA, insertOne, applySeq, RGAM, rgaUpdate]
 
 example : applicable deleteB
-    (applySeq RGAM.toCRDTSig RGAM.init [insertOne]) := by
+    (applySeq RGAM.toUpdateSig RGAM.init [insertOne]) := by
   simp [applicable, deleteB, insertOne, applySeq, RGAM, rgaUpdate]
 
 def duplicateDeleteOrders : List (List (Op RGAOp)) :=
@@ -87,7 +103,7 @@ after that anchor's delete. -/
 def insertChild : Op RGAOp := (4, 2, .addAfter 1 4)
 
 example : applicable insertChild
-    (applySeq RGAM.toCRDTSig RGAM.init [insertOne, deleteA]) := by
+    (applySeq RGAM.toUpdateSig RGAM.init [insertOne, deleteA]) := by
   simp [applicable, insertChild, deleteA, insertOne, applySeq, RGAM, rgaUpdate]
 
 end Sal.MRDTs.Instances.RGA.ConditioningSPOT

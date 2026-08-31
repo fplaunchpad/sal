@@ -1,4 +1,4 @@
-/-! Boolean tautologies shared by grow-only, LCA-inclusive instances. -/
+/-! Boolean tautologies shared by grow-only, GCA-inclusive instances. -/
 
 namespace Sal.MRDTs.Instances
 
@@ -9,10 +9,6 @@ theorem bor_comm (l a b : Bool) : (l || (a || b)) = (l || (b || a)) := by
   cases l <;> cases a <;> cases b <;> rfl
 
 theorem bor_init (s : Bool) : (false || (false || s)) = s := by cases s <;> rfl
-
-theorem bor_0op (l a b d : Bool) :
-    ((l || d) || ((a || d) || (b || d))) = ((l || (a || b)) || d) := by
-  cases l <;> cases a <;> cases b <;> cases d <;> rfl
 
 theorem bor_peel (f a g d : Bool) :
     (f || ((a || d) || g)) = ((f || (a || g)) || d) := by

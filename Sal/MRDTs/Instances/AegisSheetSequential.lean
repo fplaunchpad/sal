@@ -2476,12 +2476,12 @@ theorem canonical_causalOriginLegal {C : Configuration D}
     {v : Version} {s : D.State} {E : Set Event} {ops : List Event}
     (hver : C.ver v = some (s, E)) (perm : listPermOf ops E) :
     CausalOriginLegal (canonical ops) := by
-  have good : GoodConfig3 C := exec.goodConfig (fun _ _ => AegisSheet.join _)
-  have subsetEvents := good.ver_events_sub v s E hver
-  have causalClosed := good.ver_causal v s E hver
+  have good : CanonicalConfig C := exec.canonicalConfig (fun _ _ => AegisSheet.join _)
+  have subsetEvents := good.version_events_supported v s E hver
+  have causalClosed := good.version_events_causal v s E hver
   have unique : AegisSheet.GC.TimestampUnique ops.toFinset := by
     intro a ha b hb same
-    apply C.core.ts_unique
+    apply C.replayContext.ts_unique
     · apply subsetEvents a
       apply (perm.2 a).mp
       simpa using ha
@@ -2541,16 +2541,16 @@ theorem materializedStateRel_empty : materializedStateRel D.init empty := by
   refine ⟨inplaceStateRel_empty, rfl, rfl⟩
 
 theorem inplaceSequentialSound (ops : List Event) (h : Chronological ops) :
-    inplaceStateRel (applySeq D.toCRDTSig D.init ops) (run ops) := by
+    inplaceStateRel (applySeq D.toUpdateSig D.init ops) (run ops) := by
   intro other otherChronological sameEvents
   rw [AegisSheet.applySeq_eq_toFinset] at sameEvents
   rw [chronological_eq_of_toFinset_eq otherChronological h sameEvents]
 
 theorem causalOriginSequentialSound (ops : List Event)
     (legal : CausalOriginLegal ops) :
-    materializedStateRel (applySeq D.toCRDTSig D.init ops)
+    materializedStateRel (applySeq D.toUpdateSig D.init ops)
       (clientSpec.run ops) := by
-  change materializedStateRel (applySeq D.toCRDTSig D.init ops) (run ops)
+  change materializedStateRel (applySeq D.toUpdateSig D.init ops) (run ops)
   refine ⟨inplaceSequentialSound ops legal.1, ?_, ?_⟩
   · rw [AegisSheet.applySeq_eq_toFinset]
     exact causalOrigin_history_materializes legal
@@ -2567,7 +2567,7 @@ theorem guardedChronological_to_linearMintHistory {ops : List Event}
 
 theorem materializedSequentialSound (ops : List Event)
     (honest : GuardedChronological ops) :
-    materializedStateRel (applySeq D.toCRDTSig D.init ops) (run ops) := by
+    materializedStateRel (applySeq D.toUpdateSig D.init ops) (run ops) := by
   have history := guardedChronological_to_linearMintHistory honest
   refine ⟨inplaceSequentialSound ops honest.1, ?_, ?_⟩
   · rw [AegisSheet.applySeq_eq_toFinset]
@@ -2581,9 +2581,9 @@ noncomputable def inplaceSequential : SequentialRefinement D spec where
   init := materializedStateRel_empty
   sound := materializedSequentialSound
 
-noncomputable def inplaceReplayVerified : ReplayVerifiedMRDT D where
+noncomputable def inplaceReplayAdequate : ReplayAdequateMRDT D where
   issuance := AegisSheet.generation
-  convergence := AegisSheet.convergence
+  replayAdequacy := AegisSheet.replayAdequacy
   Machine := spec
   sequential := inplaceSequential
   sequential_of_mint := fun _ h => ⟨h.clocked, fun pre e post split => by
@@ -2591,17 +2591,17 @@ noncomputable def inplaceReplayVerified : ReplayVerifiedMRDT D where
 
 theorem inplace_sequentially_correct (ops : List Event)
     (h : LinearMintHistory D AegisSheet.applicable ops) :
-    materializedStateRel (applySeq D.toCRDTSig D.init ops) (run ops) :=
-  inplaceReplayVerified.sequentially_correct ops h
+    materializedStateRel (applySeq D.toUpdateSig D.init ops) (run ops) :=
+  inplaceReplayAdequate.sequentially_correct ops h
 
 theorem rawLo_false (C : Configuration D) (a b : Event) :
-    ¬ Sal.MRDTs.Foundation.lo C.core a b := by
+    ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
   rintro (⟨_, noncommuting⟩ | ⟨_, _, ordered, _⟩)
   · exact noncommuting (AegisSheet.all_comm a b)
   · exact RcRes.noConfusion ordered
 
 theorem respects_rawLo (C : Configuration D) (ops : List Event) :
-    respects ops (Sal.MRDTs.Foundation.lo C.core) := by
+    respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
   induction ops with
   | nil => exact List.Pairwise.nil
   | cons event rest ih =>
@@ -2624,7 +2624,7 @@ noncomputable def sequentialCorrectness :
       intro event
       exact (canonical_perm ops).mem_iff.trans (hperm.2 event)
     have canonicalState :
-        applySeq D.toCRDTSig D.init (canonical ops) = s := by
+        applySeq D.toUpdateSig D.init (canonical ops) = s := by
       rw [AegisSheet.applySeq_eq_toFinset, canonical_toFinset]
       rw [← AegisSheet.applySeq_eq_toFinset]
       exact hfold
@@ -2735,7 +2735,7 @@ example : ¬ [baseColumn, baseRow].Pairwise timestampLT := by
 #print axioms canonical_causalOriginLegal
 #print axioms causalOriginSequentialSound
 #print axioms sequentialCorrectness
-#print axioms inplaceReplayVerified
+#print axioms inplaceReplayAdequate
 #print axioms inplace_sequentially_correct
 #print axioms concurrent_origins_not_guarded_chronological
 #print axioms concurrent_origins_causal_legal
@@ -2787,37 +2787,37 @@ open Sal.MRDTs.Foundation
 
 /-- Production verification package. Its sequential specification is the
 independent incremental spreadsheet machine, not an event-list echo. -/
-noncomputable def replayVerified : ReplayVerifiedMRDT D :=
-  Sequential.inplaceReplayVerified
+noncomputable def replayAdequate : ReplayAdequateMRDT D :=
+  Sequential.inplaceReplayAdequate
 
-/-- Complete public AegisSheet package. Unlike `replayVerified`, this package
-certifies a legal client history for every reachable ordinary or virtual-LCA
+/-- Complete public AegisSheet package. Unlike `replayAdequate`, this package
+certifies a legal client history for every reachable ordinary or virtual-merge-base
 version and relates that history to the independent incremental spreadsheet
 machine. -/
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
   interaction := InteractionSpec.raw D
-  convergence := convergence
+  replayAdequacy := replayAdequacy
   Spec := Sequential.clientSpec
   Rel := Sequential.materializedStateRel
   sequentialCorrectness := Sequential.sequentialCorrectness
 
 theorem spec_linearizable {C : Configuration D}
     (h : MintCertifiedReach D generation C) :
-    IsSpecRALinearizable D (InteractionSpec.raw D)
+    IsSpecLinearizable D (InteractionSpec.raw D)
       Sequential.clientSpec Sequential.materializedStateRel C :=
-  verified.converges h
+  verified.correct h
 
 theorem spec_linearizableV {C : Configuration D}
-    (h : MintCertifiedReachV D (canonicalVirtualLCA D) generation C) :
-    IsSpecRALinearizable D (InteractionSpec.raw D)
+    (h : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
+    IsSpecLinearizable D (InteractionSpec.raw D)
       Sequential.clientSpec Sequential.materializedStateRel C :=
-  verified.convergesV h
+  verified.correctV h
 
 theorem sequentially_correct (ops : List Event)
     (h : LinearMintHistory D applicable ops) :
     Sequential.materializedStateRel
-      (applySeq D.toCRDTSig D.init ops) (Sequential.run ops) :=
+      (applySeq D.toUpdateSig D.init ops) (Sequential.run ops) :=
   Sequential.inplace_sequentially_correct ops h
 
 theorem observationally_correct (ops : List Event)
@@ -2825,7 +2825,7 @@ theorem observationally_correct (ops : List Event)
     Sequential.view (Sequential.run ops) = view ops.toFinset :=
   Sequential.guarded_history_observes h
 
-#print axioms replayVerified
+#print axioms replayAdequate
 #print axioms verified
 #print axioms spec_linearizable
 #print axioms spec_linearizableV

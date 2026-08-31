@@ -8,10 +8,10 @@ an `InteractionSpec`, sequential correctness, and representation through
 conflicts with an optional concurrent direction. Causal conflicts follow
 visibility. Safety is an optional separate certificate. Convergence
 certificates store only the widened theorem; the ordinary theorem is derived.
-The raw-fold package is named `ReplayVerifiedMRDT`. It supports internal replay
+The raw-fold package is named `ReplayAdequateMRDT`. It supports internal replay
 proofs and datatypes with a checked negative classification; it is not the
 public sequential-correctness result. The framework supplies the ordinary and
-canonical virtual-LCA operational semantics and distributed commit-history GC.
+canonical virtual-merge-base operational semantics and distributed commit-history GC.
 Datatype-state GC is an optional representation certificate.
 
 `PackagedMRDT` is the release boundary: it pairs one raw signature with a
@@ -20,10 +20,13 @@ is the typed registry of released datatypes. Replay-only results,
 counterexamples, and internal policy signatures live in
 `Metatheory/NegativeLedger.lean`; they cannot be registered by name alone.
 
-The executable `CRDTSig` contains only state transitions, merge, and query.
-The old replay resolver is an internal `ReplayPolicy`, not a datatype field or
-client arbitration API. The certified Join route uses its unconstrained
-default. `Instances/InteractionSPOT.lean` checks the key
+The proof-level `UpdateSig` is a merge-free projection of `MRDTSig`; it is not
+an executable datatype interface or transition system. Historical binary
+proofs request their merge operation separately through
+`HistoricalBinaryMerge`. The old replay resolver is an
+internal `ReplayPolicy`, not a datatype field or client arbitration API. The
+certified Join route uses its unconstrained default.
+`Instances/InteractionSPOT.lean` checks the key
 controls: LWW admits a three-write timestamp chain, and concurrent add/remove
 uses remove-before-add to explain add-wins.
 
@@ -82,7 +85,7 @@ implementation is refuted at commit `dd4c614`: the audit in
 `docs/aegissheet-scala-audit.md` records move-undo, range-undo, and crossed-range
 counterexamples.
 
-The neutral transition-system and CRDT definitions used by the metatheory live
+The neutral transition-system and replay definitions used by the metatheory live
 in `Framework/Base`; they are not the Shapiro op-based-to-state-based emulation
 development.
 

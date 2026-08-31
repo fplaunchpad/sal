@@ -17,7 +17,7 @@ import Sal.MRDTs.Instances.ORSet
 
 Every entry contains a raw signature and a `VerifiedMRDT` for that exact
 signature. A raw `MRDTSig`, an issuance/convergence pair, or a
-`ReplayVerifiedMRDT` cannot enter this list.
+`ReplayAdequateMRDT` cannot enter this list.
 -/
 
 namespace Sal.MRDTs.Production

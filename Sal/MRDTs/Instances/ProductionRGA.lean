@@ -79,12 +79,12 @@ theorem wf_of_insert_only {Γ : OrderedPrefixCode}
     {C : Configuration (E Γ α)} {ops : List (Op (EOp α))}
     (hnd : ops.Nodup)
     (hsub : ∀ e ∈ ops, e ∈ C.events)
-    (hhon : EHonestCore Γ C.core)
+    (hhon : EHonestCore Γ C.replayContext)
     (hins : ∀ e ∈ ops, eIsIns e = true) : EWf Γ ops where
   ins_nodup := by
     apply List.Nodup.map_on ?_ (hnd.filter _)
     intro a ha b hb htime
-    exact C.core.ts_unique (hsub a (List.mem_of_mem_filter ha))
+    exact C.replayContext.ts_unique (hsub a (List.mem_of_mem_filter ha))
       (hsub b (List.mem_of_mem_filter hb)) htime
   del_late := by
     intro pre e post split he hdel
@@ -227,8 +227,8 @@ def embedRel (s : Sal.MRDTs.Instances.EmbedRGA.EState α)
   s.map Sal.MRDTs.Instances.EmbedRGA.eProj = q
 
 theorem embed_respects_loOn_of_lo {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration
-      (Sal.MRDTs.Instances.EmbedRGA.E Γ α).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext
+      (Sal.MRDTs.Instances.EmbedRGA.E Γ α).toUpdateSig}
     {E : Set (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (h : respects ops (Sal.MRDTs.Foundation.lo C)) :
@@ -286,12 +286,12 @@ theorem embedCanonical_seqOK {Γ : OrderedPrefixCode}
     Sal.MRDTs.Instances.EmbedRGA.eSeqOK Γ
       (EmbedWitness.canonical ops) := by
   open Sal.MRDTs.Instances.EmbedRGA in
-    have hgood : GoodConfig3 C := exec.goodConfig (fun _ hmint =>
+    have hgood : CanonicalConfig C := exec.canonicalConfig (fun _ hmint =>
       e_join_at (eHonest_core (eHonest_of_mint hmint)))
-    have hsub := hgood.ver_events_sub v s E hver
-    have hclosed := hgood.ver_causal v s E hver
+    have hsub := hgood.version_events_supported v s E hver
+    have hclosed := hgood.version_events_causal v s E hver
     have hmint := exec.mintHonest
-    have hhon : EHonestCore Γ C.core :=
+    have hhon : EHonestCore Γ C.replayContext :=
       eHonest_core (eHonest_of_mint hmint)
     have hcan := EmbedWitness.canonical_listPermOf hperm
     have hord := EmbedWitness.canonical_ordered ops
@@ -326,7 +326,7 @@ theorem embedCanonical_seqOK {Γ : OrderedPrefixCode}
           have hne : old.1 ≠ ts := by
             intro heq
             have hop : old = (ts, replica, .ins el pref anchor) :=
-              C.core.ts_unique (hsub old holdE) hcurrentC heq
+              C.replayContext.ts_unique (hsub old holdE) hcurrentC heq
             subst old
             have hnd := hcan.1
             rw [split, List.nodup_append] at hnd
@@ -408,10 +408,10 @@ def rawCommuteCounterDelete :
   (2, 0, .del 99)
 
 /-- An insert and a deletion of an unrelated identifier fail the raw
-`CRDTSig.commutes` test only because that test ranges over malformed,
+`UpdateSig.commutes` test only because that test ranges over malformed,
 unsorted representation states. -/
 theorem unrelated_insert_delete_not_raw_comm :
-    ¬ (Sal.MRDTs.Instances.EmbedRGA.E Sal.EmbedRGA.unaryCode ℕ).toCRDTSig.commutes
+    ¬ (Sal.MRDTs.Instances.EmbedRGA.E Sal.EmbedRGA.unaryCode ℕ).toUpdateSig.commutes
       rawCommuteCounterInsert rawCommuteCounterDelete := by
   intro h
   have bad := h rawCommuteCounterState
@@ -476,12 +476,12 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op (Sal.MRDTs.Instances.EmbedRGA.EOp α))}
     (hperm : listPermOf ops E) :
     respects (EmbedWitness.canonical ops)
-      (interactionLoOn (embedInteraction Γ) C.core E) := by
+      (interactionLoOn (embedInteraction Γ) C.replayContext E) := by
   open Sal.MRDTs.Instances.EmbedRGA in
-    have hgood : GoodConfig3 C := exec.goodConfig (fun _ hmint =>
+    have hgood : CanonicalConfig C := exec.canonicalConfig (fun _ hmint =>
       e_join_at (eHonest_core (eHonest_of_mint hmint)))
-    have hsub := hgood.ver_events_sub v s E hver
-    have hhon : EHonestCore Γ C.core :=
+    have hsub := hgood.version_events_supported v s E hver
+    have hhon : EHonestCore Γ C.replayContext :=
       eHonest_core (eHonest_of_mint exec.mintHonest)
     have hcan := EmbedWitness.canonical_listPermOf hperm
     have hordered := EmbedWitness.canonical_ordered ops
@@ -535,7 +535,7 @@ theorem embedCanonical_respects {Γ : OrderedPrefixCode}
                     _⟩ := hhon.del_has_ins (bt, br, .del target) hbC target rfl
                   have hcreatorEq :
                       creator = (ats, ar, .ins ael apref aanchor) :=
-                    C.core.ts_unique hcreatorC haC
+                    C.replayContext.ts_unique hcreatorC haC
                       (hcreatorTime.trans hat.symm)
                   subst creator
                   exact hgood.vis_irrefl _
@@ -553,11 +553,11 @@ noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
       have hseq := embedCanonical_seqOK exec hver hperm
       have hlegal := embedLegal_of_seqOK hseq
       have hcan := EmbedWitness.canonical_listPermOf hperm
-      have hgood : GoodConfig3 C := exec.goodConfig (fun _ hmint =>
+      have hgood : CanonicalConfig C := exec.canonicalConfig (fun _ hmint =>
         e_join_at (eHonest_core (eHonest_of_mint hmint)))
-      have hsub := hgood.ver_events_sub v s E hver
-      have hclosed := hgood.ver_causal v s E hver
-      have hhon : EHonestCore Γ C.core :=
+      have hsub := hgood.version_events_supported v s E hver
+      have hclosed := hgood.version_events_causal v s E hver
+      have hhon : EHonestCore Γ C.replayContext :=
         eHonest_core (eHonest_of_mint exec.mintHonest)
       have hwfReplay : EWf Γ ops :=
         e_wf_of_enum hhon hsub
@@ -588,9 +588,9 @@ noncomputable def embedSequentialCorrectness (Γ : OrderedPrefixCode) :
       simpa [eProj, List.map_map, Function.comp_def] using
         congrArg (List.map Prod.snd) hrel
 
-noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
+noncomputable def replayEmbed (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ
-  convergence := Sal.MRDTs.Instances.EmbedRGA.convergence Γ
+  replayAdequacy := Sal.MRDTs.Instances.EmbedRGA.replayAdequacy Γ
   Machine := embedSpec
   sequential := embedSequential Γ
   sequential_of_mint := fun _ h => embedSequential_of_mint h
@@ -599,7 +599,7 @@ noncomputable def embed (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.EmbedRGA.E Γ α) where
   issuance := Sal.MRDTs.Instances.EmbedRGA.generation Γ
   interaction := embedInteraction Γ
-  convergence := Sal.MRDTs.Instances.EmbedRGA.convergence Γ
+  replayAdequacy := Sal.MRDTs.Instances.EmbedRGA.replayAdequacy Γ
   Spec := embedClientSpec Γ
   Rel := embedRel
   sequentialCorrectness := embedSequentialCorrectness Γ
@@ -656,12 +656,12 @@ theorem dels_nil_of_insert_only {ops : List (Op SOp)}
 theorem wf_of_insert_only {Γ : OrderedPrefixCode}
     {C : Configuration (S Γ)} {ops : List (Op SOp)}
     (hnd : ops.Nodup) (hsub : ∀ e ∈ ops, e ∈ C.events)
-    (hhon : SHonestCore Γ C.core)
+    (hhon : SHonestCore Γ C.replayContext)
     (hins : ∀ e ∈ ops, sIsIns e = true) : SWf Γ ops where
   ins_nodup := by
     apply List.Nodup.map_on ?_ (hnd.filter _)
     intro a ha b hb htime
-    exact C.core.ts_unique (hsub a (List.mem_of_mem_filter ha))
+    exact C.replayContext.ts_unique (hsub a (List.mem_of_mem_filter ha))
       (hsub b (List.mem_of_mem_filter hb)) htime
   del_late := by
     intro pre e post split he hdel
@@ -783,7 +783,7 @@ theorem sidedSequential_of_mint {Γ : OrderedPrefixCode}
 
 theorem sidedCanonical_seqOK_of {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)}
-    (hgood : GoodConfig3 C)
+    (hgood : CanonicalConfig C)
     (hmint : MintHonest (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)
       Sal.MRDTs.Instances.SidedEmbedRGA.sApplicable C)
     {v : Version} {s : (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ).State}
@@ -794,9 +794,9 @@ theorem sidedCanonical_seqOK_of {Γ : OrderedPrefixCode}
     Sal.MRDTs.Instances.SidedEmbedRGA.sSeqOK Γ
       (SidedWitness.canonical ops) := by
   open Sal.MRDTs.Instances.SidedEmbedRGA in
-    have hsub := hgood.ver_events_sub v s E hver
-    have hclosed := hgood.ver_causal v s E hver
-    have hhon : SHonestCore Γ C.core :=
+    have hsub := hgood.version_events_supported v s E hver
+    have hclosed := hgood.version_events_causal v s E hver
+    have hhon : SHonestCore Γ C.replayContext :=
       sHonest_core (sHonest_of_mint hmint)
     have hcan := SidedWitness.canonical_listPermOf hperm
     have hord := SidedWitness.canonical_ordered ops
@@ -830,7 +830,7 @@ theorem sidedCanonical_seqOK_of {Γ : OrderedPrefixCode}
           have hne : old.1 ≠ ts := by
             intro heq
             have hop : old = (ts, replica, .ins el pref anchor side) :=
-              C.core.ts_unique (hsub old holdE) hcurrentC heq
+              C.replayContext.ts_unique (hsub old holdE) hcurrentC heq
             subst old
             have hnd := hcan.1
             rw [split, List.nodup_append] at hnd
@@ -909,7 +909,7 @@ theorem sidedCanonical_seqOK {Γ : OrderedPrefixCode}
     Sal.MRDTs.Instances.SidedEmbedRGA.sSeqOK Γ
       (SidedWitness.canonical ops) := by
   apply sidedCanonical_seqOK_of
-    (exec.goodConfig (fun _ hmint =>
+    (exec.canonicalConfig (fun _ hmint =>
       Sal.MRDTs.Instances.SidedEmbedRGA.s_join_at
         (Sal.MRDTs.Instances.SidedEmbedRGA.sHonest_core
           (Sal.MRDTs.Instances.SidedEmbedRGA.sHonest_of_mint hmint))))
@@ -1002,17 +1002,17 @@ noncomputable def sidedInteraction (Γ : OrderedPrefixCode) :
 
 theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
     {C : Configuration (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ)}
-    (hgood : GoodConfig3 C)
-    (hhon : Sal.MRDTs.Instances.SidedEmbedRGA.SHonestCore Γ C.core)
+    (hgood : CanonicalConfig C)
+    (hhon : Sal.MRDTs.Instances.SidedEmbedRGA.SHonestCore Γ C.replayContext)
     {v : Version} {s : (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ).State}
     {E : Set (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hver : C.ver v = some (s, E))
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (interactionLoOn (sidedInteraction Γ) C.core E) := by
+      (interactionLoOn (sidedInteraction Γ) C.replayContext E) := by
   open Sal.MRDTs.Instances.SidedEmbedRGA in
-    have hsub := hgood.ver_events_sub v s E hver
+    have hsub := hgood.version_events_supported v s E hver
     have hcan := SidedWitness.canonical_listPermOf hperm
     have hordered := SidedWitness.canonical_ordered ops
     have hall : ∀ e ∈ SidedWitness.canonical ops, e ∈ C.events := by
@@ -1065,7 +1065,7 @@ theorem sidedCanonical_respects_of {Γ : OrderedPrefixCode}
                     _⟩ := hhon.del_has_ins (bt, br, .del target) hbC target rfl
                   have hcreatorEq : creator =
                       (ats, ar, .ins ael apref aanchor aside) :=
-                    C.core.ts_unique hcreatorC haC
+                    C.replayContext.ts_unique hcreatorC haC
                       (hcreatorTime.trans hat.symm)
                   subst creator
                   exact hgood.vis_irrefl _
@@ -1082,9 +1082,9 @@ theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (hperm : listPermOf ops E) :
     respects (SidedWitness.canonical ops)
-      (interactionLoOn (sidedInteraction Γ) C.core E) := by
+      (interactionLoOn (sidedInteraction Γ) C.replayContext E) := by
   apply sidedCanonical_respects_of
-    (exec.goodConfig (fun _ hmint =>
+    (exec.canonicalConfig (fun _ hmint =>
       Sal.MRDTs.Instances.SidedEmbedRGA.s_join_at
         (Sal.MRDTs.Instances.SidedEmbedRGA.sHonest_core
           (Sal.MRDTs.Instances.SidedEmbedRGA.sHonest_of_mint hmint))))
@@ -1093,8 +1093,8 @@ theorem sidedCanonical_respects {Γ : OrderedPrefixCode}
     hver hperm
 
 theorem sided_respects_loOn_of_lo {Γ : OrderedPrefixCode}
-    {C : Sal.MRDTs.Foundation.Configuration
-      (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ).toCRDTSig}
+    {C : Sal.MRDTs.Foundation.ReplayContext
+      (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ).toUpdateSig}
     {E : Set (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     {ops : List (Op Sal.MRDTs.Instances.SidedEmbedRGA.SOp)}
     (h : respects ops (Sal.MRDTs.Foundation.lo C)) :
@@ -1118,11 +1118,11 @@ noncomputable def sidedSequentialCorrectness (Γ : OrderedPrefixCode) :
       have hseq := sidedCanonical_seqOK exec hver hperm
       have hlegal := sidedLegal_of_seqOK hseq
       have hcan := SidedWitness.canonical_listPermOf hperm
-      have hgood : GoodConfig3 C := exec.goodConfig (fun _ hmint =>
+      have hgood : CanonicalConfig C := exec.canonicalConfig (fun _ hmint =>
         s_join_at (sHonest_core (sHonest_of_mint hmint)))
-      have hsub := hgood.ver_events_sub v s E hver
-      have hclosed := hgood.ver_causal v s E hver
-      have hhon : SHonestCore Γ C.core :=
+      have hsub := hgood.version_events_supported v s E hver
+      have hclosed := hgood.version_events_causal v s E hver
+      have hhon : SHonestCore Γ C.replayContext :=
         sHonest_core (sHonest_of_mint exec.mintHonest)
       have hwfReplay : SWf Γ ops :=
         s_wf_of_enum hhon hsub
@@ -1155,9 +1155,9 @@ noncomputable def sidedSequentialCorrectness (Γ : OrderedPrefixCode) :
       simpa [sProj, List.map_map, Function.comp_def] using
         congrArg (List.map Prod.snd) hrel
 
-noncomputable def replaySided (Γ : OrderedPrefixCode) : ReplayVerifiedMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
+noncomputable def replaySided (Γ : OrderedPrefixCode) : ReplayAdequateMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
   issuance := Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ
-  convergence := Sal.MRDTs.Instances.SidedEmbedRGA.convergence Γ
+  replayAdequacy := Sal.MRDTs.Instances.SidedEmbedRGA.replayAdequacy Γ
   Machine := sidedSpec
   sequential := sidedSequential Γ
   sequential_of_mint := fun _ h => sidedSequential_of_mint h
@@ -1166,7 +1166,7 @@ noncomputable def sided (Γ : OrderedPrefixCode) :
     VerifiedMRDT (Sal.MRDTs.Instances.SidedEmbedRGA.S Γ) where
   issuance := Sal.MRDTs.Instances.SidedEmbedRGA.generation Γ
   interaction := sidedInteraction Γ
-  convergence := Sal.MRDTs.Instances.SidedEmbedRGA.convergence Γ
+  replayAdequacy := Sal.MRDTs.Instances.SidedEmbedRGA.replayAdequacy Γ
   Spec := sidedClientSpec Γ
   Rel := sidedRel
   sequentialCorrectness := sidedSequentialCorrectness Γ

@@ -6,7 +6,7 @@ Each collection epoch has a retained-node predicate and a Lamport cutoff.
 The predicate preserves live paths, mark boundaries, and declared in-flight
 nodes; the cutoff proves that every omitted identifier is old. Independently
 collected replicas translate their predicates to one common projection before
-merge. The LCA remains semantic ghost state.
+merge. The GCA remains semantic ghost state.
 -/
 
 namespace Sal.MRDTs.Instances.SidedPeritext.StateGC.Interaction

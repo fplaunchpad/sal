@@ -8,9 +8,9 @@ configuration remains ghost state. Every materialization records the exact
 retained text projection, its Fugue policy summary, LiveGap correctness, the
 Lamport cutoff for omitted identifiers, and equality of every rich-text query.
 
-Collection and epoch translation are silent. Ordinary and virtual-LCA steps
+Collection and epoch translation are silent. Ordinary and virtual-merge-base steps
 are visible. In particular, a virtual merge requires compact branch heads but
-does not require a compact materialization of its semantic virtual LCA.
+does not require a compact materialization of its semantic virtual merge base.
 -/
 
 namespace Sal.MRDTs.Instances.SidedPeritext.StateGC.Protocol
@@ -130,7 +130,7 @@ constructors expose exactly which collector ran. `reframe` is the atomic
 cross-epoch translation justified by `merge_text_after_epoch_translation` and
 the corresponding deletion/mark evidence stored in the target's `sound`
 certificate. -/
-inductive PhysicalStep (V : VirtualLCAResolver (D Γ)) :
+inductive PhysicalStep (V : VirtualMergeBaseResolver (D Γ)) :
     Physical Γ → Option (Label (D Γ)) → Physical Γ → Prop where
   | collectText {P P' : Physical Γ} {v : Version} {old : CompactState}
       (plan : TextPlan)
@@ -163,7 +163,7 @@ inductive PhysicalStep (V : VirtualLCAResolver (D Γ)) :
 
 /-- Concrete Peritext datatype-state protocol. Validity is structural: invalid
 materializations cannot inhabit `Physical`, so preservation is immediate. -/
-def protocol (V : VirtualLCAResolver (D Γ)) : StateGCProtocol (D Γ) V where
+def protocol (V : VirtualMergeBaseResolver (D Γ)) : StateGCProtocol (D Γ) V where
   Physical := Physical Γ
   semantic := Physical.semantic
   Valid := fun _ => True
@@ -184,13 +184,13 @@ def protocol (V : VirtualLCAResolver (D Γ)) : StateGCProtocol (D Γ) V where
 
 /-- A silent physical trace, including independent cross-epoch reframing,
 cannot change the semantic configuration. -/
-theorem silent_semantic_eq {V : VirtualLCAResolver (D Γ)}
+theorem silent_semantic_eq {V : VirtualMergeBaseResolver (D Γ)}
     {P P' : Physical Γ}
     (h : PhysicalStep Γ V P none P') : P'.semantic = P.semantic := by
   exact (protocol Γ V).silent_stutters True.intro h
 
 /-- The generic direct-refinement theorem specialized to Sided Peritext. -/
-theorem refines {V : VirtualLCAResolver (D Γ)} {P P' : Physical Γ} {labels}
+theorem refines {V : VirtualMergeBaseResolver (D Γ)} {P P' : Physical Γ} {labels}
     (run : StateGCProtocol.Steps (protocol Γ V) P labels P') :
     StateGCProtocol.SemanticSteps V P.semantic
       (StateGCProtocol.eraseLabels labels) P'.semantic :=

@@ -47,9 +47,9 @@ def EvidenceComplete (author : Author) (roster : Set Replica)
     (self : Replica) (L : Local) : Prop :=
   ∀ r ∈ roster, r = self ∨ ∃ v, v ∈ DerivedEvidence parents author L r
 
-/-- A successful local collection certificate. `lca_preserved` is the exact
-runtime obligation: every future retained-head LCA query has the same answer
-in the compressed carrier.  The canonical MCA-closed keep-set construction
+/-- A successful local collection certificate. `gca_preserved` is the exact
+runtime obligation: every future retained-head GCA query has the same answer
+in the compressed carrier. The canonical maximal-common-ancestor-closed keep set
 discharges it in the graph metatheory. -/
 structure Certificate (author : Author) (roster : Set Replica)
     {self : Replica} (L : Local) where
@@ -62,12 +62,12 @@ structure Certificate (author : Author) (roster : Set Replica)
   compressedReaches : Version → Version → Prop
   reaches_exact : ∀ {a b}, a ∈ keep → b ∈ keep →
     (compressedReaches a b ↔ Reaches parents a b)
-  lca_preserved : ∀ {v₁ v₂ vT}, v₁ ∈ keep → v₂ ∈ keep → vT ∈ keep →
-    (IsLCARel compressedReaches v₁ v₂ vT ↔ IsLCA parents v₁ v₂ vT)
+  gca_preserved : ∀ {v₁ v₂ vT}, v₁ ∈ keep → v₂ ∈ keep → vT ∈ keep →
+    (IsGCARel compressedReaches v₁ v₂ vT ↔ IsGCA parents v₁ v₂ vT)
 
 /-- The canonical root-free certificate constructor. Closure under maximal
 common ancestors is sufficient; paths and the old root need not be retained. -/
-noncomputable def Certificate.ofMCAClosed (author : Author)
+noncomputable def Certificate.ofMaximalCommonAncestorClosed (author : Author)
     (roster : Set Replica) (self : Replica) (L : Local)
     (keep : Set Version)
     (complete : EvidenceComplete parents author roster self L)
@@ -76,8 +76,8 @@ noncomputable def Certificate.ofMCAClosed (author : Author)
       ∃ v, v ∈ DerivedEvidence parents author L r ∧ v ∈ keep)
     (support : keep ⊆ L.commits)
     (parents_lt : ∀ v p, p ∈ parents v → p < v)
-    (mca_closed : ∀ a ∈ keep, ∀ b ∈ keep, ∀ m,
-      IsMCA parents {a} b m → m ∈ keep) :
+    (maximal_common_ancestor_closed : ∀ a ∈ keep, ∀ b ∈ keep, ∀ m,
+      IsMaximalCommonAncestor parents a b m → m ∈ keep) :
       Certificate parents author roster (self := self) L where
   keep := keep
   complete := complete
@@ -86,8 +86,9 @@ noncomputable def Certificate.ofMCAClosed (author : Author)
   support := support
   compressedReaches := CompressedReaches parents keep
   reaches_exact := fun ha hb => compressedReaches_iff parents keep ha hb
-  lca_preserved := fun h₁ h₂ hT =>
-    compressed_isLCA_iff_of_mcaClosed parents keep parents_lt h₁ h₂ hT mca_closed
+  gca_preserved := fun h₁ h₂ hT =>
+    compressed_isGCA_iff_of_maximalCommonAncestorClosed parents keep parents_lt
+      h₁ h₂ hT maximal_common_ancestor_closed
 
 def collect (L : Local)
     (cert : Certificate parents author roster (self := self) L) : Local where
