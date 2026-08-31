@@ -262,7 +262,7 @@ which testing bridges remain trusted.
   horizon at its last-synced position: nothing typed since can be reclaimed.
   The roster line marks each peer live (green) or DARK (grey, absent from
   presence), and a dark peer carries a `✕ forget`. Forgetting calls
-  `replica.forget` (drops it from BOTH the roster and the authors set, unlike
+  `replica.forget` (drops it from BOTH the roster and the ever-authored summary, unlike
   the conservative `unregister`), which releases the horizon so the cut rises
   and GC advances. SOUNDNESS is the operator's to grant: a forgotten peer that
   returns must re-sync fresh (forfeiting un-shared offline edits), not merge a
@@ -270,7 +270,7 @@ which testing bridges remain trusted.
   lifts a departed author": the cut is capped while the dark author is
   rostered, then GC fires after the forget, reads preserved).
   PERSISTENT (this device): runtime `forget` is transient -- roster/join/ingest
-  re-register a peer, and a reload rebuilds the roster from the stored authors,
+  re-register a peer, and a reload rebuilds the roster from stored author metadata,
   so a forgotten peer keeps coming back. The editor keeps a per-doc `forgotten`
   set in `localStorage` and RE-APPLIES it on every render (`enforceForgotten`),
   so a peer you forget stays gone on this device until you un-forget it. It
@@ -409,7 +409,7 @@ the scripted scenario below.
   `Sal/.../EmbedRGA_EpochDiamond.lean`) lifts both heads to a common frame and
   merges there. The editor still prefers to compact only when converged (a
   policy, not a necessity).
-- **Criss-cross merges are RESOLVED (virtual LCAs).**
+- **Criss-cross merges are RESOLVED (virtual merge bases).**
   `DistributedReplica` computes the virtual base for a criss-crossed
   pair by the mechanized recursive rule (runtime README; pinned in
   `../runtime/test/virtual-lca.test.js`), so opportunistic browser merges

@@ -95,7 +95,7 @@ test('a WRITER that leaves stays registered (its ops still gate the cut)', async
 
     carol.node.commit({ type: 'ins', id: 1, el: 'x', anchorId: null });
     await alice.pull('carol'); // alice HAS carol's authored commit
-    assert.ok(alice.node.authors.has('carol'), 'carol is a known author');
+    assert.ok(alice.node.everAuthored.has('carol'), 'carol is a known author');
 
     carol.tp.close(); // the writer departs
     await sleep(200); // the leave arrives...

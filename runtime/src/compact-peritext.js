@@ -402,7 +402,7 @@ export function peritextCutFromMeet(meet) {
  *  compaction commits losslessly). */
 export const compactiblePeritext = {
   ...peritextEmbedRGA,
-  // Machine-checked by HeadOnlyMergeCertificate.related: the virtual LCA is
+  // Machine-checked by HeadOnlyMergeCertificate.related: the virtual merge base is
   // ghost evidence; the physical Peritext merge consumes branch heads only.
   headOnlyMerge: true,
   compact: compactPeritext,

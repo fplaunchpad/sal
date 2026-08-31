@@ -1,5 +1,5 @@
 // End-to-end executable cell: distributed fetch + commit GC + Peritext state
-// GC + a genuine virtual-LCA merge, checked against a never-collected twin.
+// GC + a genuine virtual-merge-base merge, checked against a never-collected twin.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

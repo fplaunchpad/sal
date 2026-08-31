@@ -375,9 +375,9 @@ correspondence to `Sal/MRDTs/GC/Protocol.lean` and
 The certificate is CHECKED: if any registered replica has not been heard from
 since the cut (its evidence commit is absent from this head's ancestry),
 compaction is REFUSED (a no-op returning `{ compacted: false, missing }`). That
-is the runtime witness of `settledAt_of_allHeard`'s not-heard breaker (the
-`createReplica` case, EvidenceDischarge section 3): absence of evidence is
-refusal, never assumption. `test/sync.test.js` pins this directed at
+is the runtime witness of `settledAt_of_allHeard`'s not-heard breaker: absence
+of evidence from a registered replica is refusal, never assumption.
+`test/sync.test.js` pins this directed at
 runtime level with the discriminating-remove countermodel
 (`stability-vc-note.md` section 2): a concurrent op held by a lagging replica
 makes `compactStable` refuse, then fire once that replica is heard from, reads
@@ -517,7 +517,7 @@ aggressively on one, reads and states asserted identical throughout.
 
 Criss-cross merges genuinely arise under honest head-sync (two disjoint
 replica pairs merge the same diverged heads `x`,`y` into rival merge
-commits; any later sync across them finds MCAs `{x, y}`). Virtual LCAs
+commits; any later sync across them finds MCAs `{x, y}`). Virtual merge bases
 (recursive merging of the MCAs, git style) are not in the in-process
 verified model, so `lca()` throws `CrissCrossError`: an explicit gate,
 never a silent pick. Consequence: a criss-crossed replica pair using `lca()`
@@ -532,7 +532,7 @@ RESOLVES criss-crosses rather than gating them: its merge base is the
 resolved sub-bases), which feeds the epoch join exactly as a single LCA
 would (`#baseFor` also returns the base's epoch key). A criss-cross whose
 antichain also SPANS epochs (incomparable cuts AND a criss-cross) is the
-doubly-hard case the virtual-LCA and epoch-diamond constructions do not
+doubly-hard case the virtual-merge-base and epoch-diamond constructions do not
 claim; it throws `CrissCrossError` so consumers defer it. Pinned in
 `test/virtual-lca.test.js`. The in-process `runtime.js`/`sync.js` use
 `lca()` (the gate above).

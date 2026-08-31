@@ -14,7 +14,7 @@
 // integration test a DETERMINISTIC, criss-cross-free linear fold over the real
 // socket. Opportunistic push handlers keep a live editor converging best-effort
 // (a genuine concurrent-merge criss-cross is caught and left for the next fold;
-// virtual-LCA resolution is task #90, out of scope).
+// virtual-merge-base resolution is task #90, out of scope).
 
 import { CrissCrossError } from '../../runtime/src/lca.js';
 

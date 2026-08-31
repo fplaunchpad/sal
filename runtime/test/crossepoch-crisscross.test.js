@@ -54,7 +54,7 @@ test('opportunistic peritext mesh + compaction converges, no unresolved deferral
   const reads = reps.map(txt);
   assert.equal(deferred, 0, `every merge RESOLVED (no criss-cross/cross-epoch deferrals), got ${deferred}`);
   assert.ok(commitGCs > 0, 'random run must exercise certified commit GC');
-  assert.ok(commitsDropped > 0, 'commit GC must genuinely prune the virtual-LCA run');
+  assert.ok(commitsDropped > 0, 'commit GC must genuinely prune the virtual-merge-base run');
   for (let i = 1; i < N; i++) assert.equal(reads[i], reads[0], `p${i} converged`);
   assert.ok(reps.map((r) => r.headGid).every((h) => h === reps[0].headGid), 'identical head SHA');
 });

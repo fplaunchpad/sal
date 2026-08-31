@@ -135,7 +135,7 @@ $('verifiedBadge')?.addEventListener('click', () => {
 
 // PERSISTENT LOCAL FORGET (per doc, this browser). Runtime `forget` is
 // transient: roster/join/ingest re-register a peer, and a reload rebuilds the
-// roster from the stored authors, so a forgotten peer keeps coming back. This
+// roster from stored author metadata, so a forgotten peer keeps coming back. This
 // set is persisted and RE-APPLIED on every render (`enforceForgotten`), so a
 // peer you forget stays forgotten on THIS device until you un-forget it. Local
 // only (other peers are unaffected); the runtime `forget` is the mechanism.

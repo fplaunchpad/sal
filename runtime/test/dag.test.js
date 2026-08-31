@@ -72,7 +72,7 @@ test('lca: criss-cross yields ALL maximal common ancestors and lca throws the cr
   const c2 = d.add({ parents: [m2.id], op: op(3), state: 6 });
   assert.deepEqual(new Set(mcas(d, c1.id, c2.id)), new Set([x.id, y.id]));
   assert.throws(() => lca(d, c1.id, c2.id), CrissCrossError);
-  assert.throws(() => lca(d, c1.id, c2.id), /virtual LCA/i);
+  assert.throws(() => lca(d, c1.id, c2.id), /virtual merge base/i);
 });
 
 test('lca: no common ancestor throws a plain Error, not a silent pick', () => {
