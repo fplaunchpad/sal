@@ -18,9 +18,10 @@ law relating two independently supplied implementations.
   from `MRDTSig`, and call the sole ternary operation `merge` throughout the
   live MRDT development.
 - **Candidate claim:** The production MRDT semantics, convergence proof,
-  sequential theorem, virtual-LCA construction, and GC developments depend
-  only on ternary merge. Reused binary-CRDT infrastructure can consume a
-  derived projection whose binary merge is `D.merge D.init`.
+  sequential theorem, virtual-merge-base construction, and GC developments depend
+  only on ternary merge. Generic replay lemmas consume the merge-free
+  `UpdateSig` projection. Retained binary lemmas request a separate
+  `HistoricalBinaryMerge` capability, whose MRDT instance is `D.merge D.init`.
 - **Falsifier:** A live MRDT theorem or instance that requires an independently
   supplied binary merge whose behavior cannot be defined as the initial slice
   of ternary merge.
@@ -35,7 +36,7 @@ law relating two independently supplied implementations.
 
 The successful `RefactorLedger` build establishes that binary merge is
 redundant in the current Lean
-dependency graph. It does not claim that every historical state-based CRDT
-formalization should remove binary merge. `CRDTSig` remains available for the
-older binary metatheory and countermodels; only the `MRDTSig` implementer
-interface is minimized.
+dependency graph. `UpdateSig` remains as a merge-free proof-level algebra for
+generic replay lemmas; it is derived from `MRDTSig` in the live MRDT development
+and defines no second implementer interface or execution semantics. The binary
+countermodels and lemmas carry `HistoricalBinaryMerge` explicitly.

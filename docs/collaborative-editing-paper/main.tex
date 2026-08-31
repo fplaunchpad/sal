@@ -28,7 +28,7 @@ for all three kernels. Two collectors address
 different sources of growth. An asynchronous distributed collector removes
 commit history; a Peritext-specific collector removes dead text records,
 deletion evidence, and closed mark pairs while preserving future edits. Their
-composition refines the uncollected virtual-LCA semantics. A JavaScript
+composition refines the uncollected virtual-merge-base semantics. A JavaScript
 implementation exercises the same designs. Repeated measurements show why
 both collectors and all three sequence baselines matter: on one long trace,
 EmbedRGA snapshots are 8.9 times smaller than RGA, while the sided
@@ -73,12 +73,12 @@ protocol certificates.}
 The artifact establishes the following claims.
 
 \begin{enumerate}
-\item Every generation-certified ordinary or virtual-LCA execution of each
+\item Every generation-certified ordinary or virtual-merge-base execution of each
 sequence kernel is replication-aware linearizable.
-\item Each legal sequential history refines an independent sequential
-specification. EmbedRGA and SidedEmbedRGA use list states; RGA uses
-a finite birth/grave reference with a list-valued sequence; Peritext uses a
-list-based rich editor and proves exact rendering.
+\item Every replicated version in those executions admits a legal witness in
+an independent sequential specification. All three sequence kernels use an
+ordinary list as their public sequential state; Peritext uses a list-based
+rich editor and proves exact rendering.
 \item Fugue has the stated forward non-interleaving property but not maximal
 backward non-interleaving. The FugueMax variant satisfies both directions and
 is replication-aware linearizable.
@@ -118,8 +118,11 @@ that boundary:
   x\in\mathsf{live}(S).
 \end{array}
 \]
-The checked bridge turns these issuer-head checks into the history premise
-used by convergence and sequential refinement.
+The checked bridge turns these issuer-head checks into the history facts used
+by the public ordinary-list proof. RGA's all-context Join theorem does not use
+this premise. EmbedRGA and SidedEmbedRGA additionally use their corresponding
+issuance facts to establish the replay-context condition of their Join
+theorems.
 
 \subsection{The tombstone baseline}
 
@@ -147,9 +150,12 @@ anchor, and filter identifiers in $G$:
     (\mathsf{foldl}\;\mathsf{insertAfter}\;[]\;\mathsf{sort}(A)).
 \]
 These equations are the paper-level form of \lean{Instances.RGA.RGAM} and
-\lean{Instances.RGA.sequence}. The independent sequential machine
-\lean{Instances.RGA.spec} stores finite birth and grave sets, without a
-replicated version DAG; \lean{sequence} gives its intended list view.
+\lean{Instances.RGA.sequence}. The auxiliary machine
+\lean{Instances.RGA.birthGraveMachine} stores finite birth and grave sets and
+bridges the functional implementation state to a finite proof model. It is not
+the client specification. The public \lean{Instances.RGA.listSpec} has an
+ordinary-list state, an abstract legality predicate, and the list-valued query
+used by \lean{Instances.RGA.verified}.
 
 The state is simple enough to explain both collectors. Deleting the entire
 document leaves all birth records and graves in the datatype state. Separately,
@@ -261,9 +267,32 @@ stronger ordering-policy design.
 
 \subsection{What is proved for all three}
 
+Table~\ref{tab:sequence-certificates} separates merge preservation from the
+operation-issuance premise of the public theorem. ``Join for all contexts''
+means \lean{Join}; ``Join under $G$'' means \lean{JoinOn} with replay-context
+predicate $G$.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+RDT & Merge theorem & Issuance policy & Role of issuance \\
+\midrule
+RGA & Join for all contexts & \lean{applicable} & list legality \\
+EmbedRGA & Join under \lean{EHonestCore} & \lean{eApplicable} & Join condition and list legality \\
+SidedEmbedRGA & Join under \lean{SHonestCore} & \lean{sApplicable} & Join condition and list legality \\
+\bottomrule
+\end{tabular}
+\caption{Merge scope and issuance are independent proof axes. RGA issuance
+is load-bearing for its intended list specification even though its merge
+theorem holds at every replay context.}
+\label{tab:sequence-certificates}
+\end{table}
+
 For each kernel, the repository packages a generation contract, ordinary and
-virtual-LCA convergence, an independent sequential machine, and the bridge
-from certified minting to sequential honesty. The capstones are
+virtual-merge-base convergence, an independent list specification, and the
+bridge from certified minting to a legal list witness. The capstones are
 \lean{Instances.RGA.verified}, \lean{Instances.ProductionRGA.embed}, and
 \lean{Instances.ProductionRGA.sided}. Each is a public
 \lean{VerifiedMRDT} package. The repository retains the separately named
@@ -275,9 +304,9 @@ Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
 replicated version has an exact, interaction-respecting, legal sequential
 witness with the intended list view. EmbedRGA and SidedEmbedRGA use explicit
 \lean{InteractionSpec} policies because universal commutation over malformed
-list states is not the client interaction relation. The executable
-\lean{CRDTSig} contains no replay resolver; the old resolver is confined to
-one proof-local convergence route. The generation premise
+list states is not the client interaction relation. The proof-level
+\lean{UpdateSig} is derived from the MRDT signature and contains no replay
+resolver; the old resolver is confined to one proof-local convergence route. The generation premise
 preserves the actual editor protocol rather than silently totalizing invalid
 anchor use as a no-op.
 
@@ -478,7 +507,7 @@ mint that operation.
 
 \begin{theorem}[Peritext state-GC refinement]
 Erase collection and reframe labels from any finite valid physical execution.
-The remaining labels form an execution of the uncollected virtual-LCA
+The remaining labels form an execution of the uncollected virtual-merge-base
 semantics, with the same rich queries at materialized heads.
 \hfill\lean{StateGC.Protocol.refines}
 \end{theorem}
@@ -740,7 +769,7 @@ result from performance tests.
 \section{Evidence boundary and limitations}
 \label{sec:limits}
 
-The current artifact proves the semantic kernels, virtual-LCA executions,
+The current artifact proves the semantic kernels, virtual-merge-base executions,
 issuance policies, sequential refinements, Peritext state GC, distributed
 commit GC, and their composition. It validates but does not verify the
 JavaScript transliteration. Same-replica crash recovery and durable replica

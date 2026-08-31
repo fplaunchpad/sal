@@ -2,10 +2,10 @@
 
 ## Claim
 
-A single semantic interaction policy replaces
-`ArbitrationSpec.Commutes` and `CRDTSig.rc`. The framework uses visibility
-for causally related conflicts and the policy's direction for concurrent
-conflicts. It does not need `no_rc_chain` as a public datatype requirement.
+A single semantic interaction policy replaces `ArbitrationSpec.Commutes` and
+the old datatype-level replay resolver. The framework uses visibility for
+causally related conflicts and the policy's direction for concurrent conflicts.
+It does not need `no_rc_chain` as a public datatype requirement.
 
 Status: machine-checked and migrated
 
@@ -16,7 +16,7 @@ theorem ledger.
 Falsifier: either small datatype cannot express its sequential semantics with
 the proposed interaction policy, or an existing production instance cannot
 recover its checked convergence and sequential-correctness theorem after
-`CRDTSig.rc` is removed.
+the datatype-level replay resolver is removed.
 
 Positive controls:
 
@@ -52,7 +52,7 @@ clause. Each `SequentialCorrectnessCertificate` must provide an actual legal
 witness, so this definition does not impose `no_rc_chain` on datatypes.
 
 The existing absorber proof remains one internal convergence construction. It
-is parameterized by `ReplayPolicy`; `CRDTSig` and `MRDTSig` do not store that
-policy. The low-priority unconstrained policy removes vacuous per-datatype
-boilerplate. `IsRALinearizableWith` remains an internal research hook for a
+is parameterized by `ReplayPolicy`; neither `UpdateSig` nor `MRDTSig` stores
+that policy. The low-priority unconstrained policy removes vacuous per-datatype
+boilerplate. `IsReplayLinearizableWith` remains an internal research hook for a
 specialized replay theorem; the generic certified Join route uses the default.

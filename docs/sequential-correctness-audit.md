@@ -14,7 +14,7 @@ and proof-local invariants.
 - **Falsifier:** a production representation needs reachable-state
   commutation to state the arbitration order, even though issuance and
   sequential legality remain independent of implementation state.
-- **Formal oracle:** `IsSpecRALinearizable`, both RGA capstones, the total
+- **Formal oracle:** `IsSpecLinearizable`, both RGA capstones, the total
   grow-only canaries, and the issuance/legality SPOTs.
 - **Reality oracle:** The RGA specification remains an ordinary list with
   physical deletion, and directed duplicate-delete and deleted-anchor
@@ -39,15 +39,15 @@ the sequential contract. A total datatype sets `Legal` to `True`.
 convergence, the sequential specification, a representation relation, and one
 `SequentialCorrectnessCertificate`. Ordinary
 certified execution embeds in widened execution, so the package stores no
-duplicate ordinary convergence theorem. `VerifiedMRDT.converges` and
+duplicate ordinary convergence theorem. `VerifiedMRDT.correct` and
 `convergesV` both produce
-`IsSpecRALinearizable`.
+`IsSpecLinearizable`.
 
 `SafetyCertificate` and `StateGCCertificate` are orthogonal optional packages.
 Safety likewise stores only widened preservation and derives ordinary
 preservation through the execution embedding.
 
-`ReplayVerifiedMRDT` retains the older raw-fold theorem under an explicitly
+`ReplayAdequateMRDT` retains the older raw-fold theorem under an explicitly
 internal name while production datatypes migrate. It does not establish the
 public sequential result.
 
@@ -104,7 +104,7 @@ the public `VerifiedMRDT` package.
 
 The EmbedRGA audit found a separate arbitration control.
 `unrelated_insert_delete_not_raw_comm` exhibits an insert and a deletion of an
-unrelated identifier that fail universal `CRDTSig.commutes` only on an
+unrelated identifier that fail universal `UpdateSig.commutes` only on an
 unsorted representation state. Such states are unreachable by the EmbedRGA
 fold. Consequently, a legal all-insertions-before-deletions merged witness can
 still fail the current raw-`lo` obligation because `lo` observes conflicts on
@@ -120,7 +120,7 @@ an explicit `InteractionSpec`. EmbedRGA and SidedEmbedRGA now prove that their
 canonical legal witnesses respect those semantic dependence policies without
 putting implementation state inside `SequentialSpec.Legal`.
 
-The executable `CRDTSig` no longer contains `rc`. The absorber-based
+The proof-level replay algebra contains no resolver. The absorber-based
 convergence route receives a proof-local `ReplayPolicy`; it is not the public
 interaction policy. `InteractionSPOT.LWW.old_no_chain_refuted` checks that a
 valid LWW timestamp order contains a length-two edge chain, so the historical
@@ -141,7 +141,7 @@ follow an operation it did not observe. The repair validates each event
 against its encoded causal origin view. `canonical_causalOriginLegal` derives
 those origins for every certified version, while
 `causalOriginSequentialSound` proves exact state and observation refinement.
-The ordinary and virtual-LCA capstones are `AegisSheet.spec_linearizable` and
+The ordinary and virtual-merge-base capstones are `AegisSheet.spec_linearizable` and
 `AegisSheet.spec_linearizableV`.
 
 That repair does not make the reference machine a conventional visible-sheet
@@ -153,6 +153,79 @@ identities are therefore semantic history required by the published conflict
 and selective-undo behavior. The public theorem targets a causally aware
 incremental spreadsheet machine; it does not claim that visible rows, columns,
 cells, and ranges alone determine future behavior.
+
+## Production sequential-specification audit
+
+The source-of-truth order for this audit is the typed
+`Production.registry`, the `VerifiedMRDT.Spec` and `Rel` definitions named by
+each entry, their machine-checked correctness certificates, and finally the
+explanatory documents. A sequential state is not rejected merely because it
+uses the same mathematical carrier as the implementation. That is appropriate
+when the carrier is already the client abstraction, such as an integer counter
+or a grow-only set. A specification is an implementation mirror when it keeps
+representation-only data that neither determines an abstract transition nor
+an abstract observation, or when it interprets a representation payload as
+the client operation without a proved abstraction bridge.
+
+| RDT | Sequential state and operation meaning | Audit result |
+| --- | --- | --- |
+| grow-only-set | Mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
+| add-store | Mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
+| finite-add-store | Finite mathematical set; add inserts an element. | Correct abstract carrier. `CanIssue := True`. |
+| counter | Integer; every operation adds one. | Correct abstract carrier. `CanIssue := True`. |
+| increment-only-counter | Integer; increment adds one. | Correct abstract carrier. `CanIssue := True`. |
+| pn-counter | Integer; increment/decrement add `+1`/`-1`. | Correct abstract carrier. `CanIssue := True`. |
+| flat-grow-only-set | Characteristic function of a mathematical set. | Correct abstract carrier. `CanIssue := True`. |
+| flat-grow-only-map | Characteristic function of immutable key/value entries. | Correct abstract carrier. `CanIssue := True`. |
+| bounded-counter | Per-replica abstract balances; increment and decrement change the named balance. | Independent of the concrete pair of grow-only component maps. Issuance is load-bearing for rights-respecting legality and safety. |
+| rga | Ordinary list of stable identifiers; insert splices after an anchor and delete physically filters an identifier. | Correct abstraction; no tombstones or insertion-edge store. Issuance is load-bearing for list legality. |
+| embed-rga | Ordinary list of identifier/payload pairs. | Correct abstraction; no coordinate records. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
+| sided-embed-rga | Ordinary list of identifier/value pairs. | Correct abstraction; no coordinate or side records in the public state. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
+| peritext-embed-rga | The payload-parametric EmbedRGA list instantiated with characters and mark boundaries. | Correct inherited editor-buffer abstraction. |
+| sided-peritext-core | Ordinary sided text list plus mathematical deletion and mark sets. | Correct for the core query, which intentionally exposes the component stores. The text projection is abstracted from coordinate records. |
+| sided-peritext-rich-core | The same editor transition state, observed only through rendered rich text. | Correct independent renderer boundary; implementation paths are absent from the sequential state. |
+| tree-move | Ordinary parent tree; a move applies once and is rejected exactly when it would create a cycle. | Fixed: the former dead `Finset Event` field was a proof-only mirror and has been removed. `applicable` restricts the issuer API but is not needed by this totalized sequential-refinement proof. |
+| aegis-sheet | Incremental causally aware spreadsheet state with observed-remove tokens and active write identities. | Intentionally history-aware, not an event-log mirror. `no_view_only_step` and its companion controls prove that the visible sheet alone cannot determine future behavior. Issuance is load-bearing for causal-origin legality. |
+| or-set | Ordinary finite set; add inserts the named element and remove erases it, ignoring the observed-tag payload. | Fixed: the former tagged sequential replay clone was not the intended set ADT. `canIssue` is load-bearing for tagged-to-ordinary refinement. |
+
+Two defects were therefore confirmed and repaired. OR-Set now proves
+linearizability to an ordinary add-wins set. The negative control
+`omitted_tag_breaks_ordinary_refinement` shows that deleting `canIssue` admits
+an omitted-tag history on which the concrete and abstract results disagree.
+TreeMove now relates its replicated event set directly to an ordinary tree;
+the removed sequential event-set component affected neither transitions nor
+queries. No other production entry retains a representation-only component
+without either an abstract use or a checked necessity argument.
+
+### OR-Set claim record
+
+- **Claim:** every issuance-certified version is linearizable to the ordinary
+  add-wins finite-set machine.
+- **Status:** machine-checked.
+- **Formal oracle:** `ORSet.verified`, `setSequentialCorrectness`, and
+  `versionWellFormed_of_execution`.
+- **Falsifier and negative control:** admit `removeConcurrent` after `addA`;
+  `omitted_tag_breaks_ordinary_refinement` checks the resulting concrete and
+  abstract disagreement.
+- **Positive controls:** `observed_remove_ordinary_spec_absent` and
+  `concurrent_remove_ordinary_spec_add_wins`.
+- **Trusted definition:** `ORSet.spec` is the intended ordinary set ADT.
+- **Residual:** correspondence between relational `canIssue` and a runtime
+  command generator remains a validation obligation.
+
+### TreeMove claim record
+
+- **Claim:** the replicated event set refines a chronological sequential
+  machine whose state is only the ordinary parent tree.
+- **Status:** machine-checked.
+- **Formal oracle:** `TreeMove.sequentialSound`, `stateRel`, and `verified`.
+- **Falsifier:** a future abstract transition or query requires the removed
+  event-set copy. The current machine and complete correctness proof do not.
+- **Positive and negative controls:** ordinary moves use `doMove`; the checked
+  `selfMove_rejected` control exercises cycle rejection.
+- **Trusted definition:** `doMove` is the totalized sequential tree operation.
+- **Residual:** `applicable` is an issuer-API restriction, not a load-bearing
+  premise of the current sequential-refinement theorem.
 
 ## Evidence status
 

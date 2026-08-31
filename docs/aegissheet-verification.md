@@ -45,7 +45,7 @@ The public merged-history theorem defines an event as origin-legal when
 some timestamp-earlier subset of the serialized prefix satisfies the
 executable `applicable` predicate. The predicate itself checks that this subset
 has exactly the causal timestamps encoded in `event.seen`. Lean proves that
-every certified ordinary or virtual-LCA version has a chronological
+every certified ordinary or virtual-merge-base version has a chronological
 origin-legal enumeration, and that the incremental machine materializes and
 observes that enumeration exactly.
 
@@ -98,7 +98,7 @@ The current formal result is build-clean.
   stable-ID applicability, before-images, overwritten cell versions, and local
   selective-undo provenance. It also requires the issuer's Lamport timestamp
   to exceed every direct or compact causal timestamp in that context.
-- The ordinary and virtual-LCA convergence certificates, safety certificate,
+- The ordinary and virtual-merge-base convergence certificates, safety certificate,
   and incremental-machine sequential correctness theorem are machine-checked. The complete
   merge/undo tables are encoded as named policy entries.
   `AegisSheetSequential.lean` defines the production sequential reference
@@ -124,7 +124,7 @@ The current formal result is build-clean.
   each Lamport timestamp to exceed every timestamp in its origin; freshness
   alone cannot establish chronological order. The resulting `VerifiedMRDT`
   proves exact event-set membership, interaction-order respect, sequential
-  legality, state refinement, and query equality for ordinary and virtual-LCA
+  legality, state refinement, and query equality for ordinary and virtual-merge-base
   executions. The internal replay compatibility package remains, but is not
   the public result.
   Concrete SPOTs cover the nontrivial policies: update versus

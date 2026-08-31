@@ -12,7 +12,7 @@ Status: machine-checked and release-gated
 Formal oracle: `Sal.MRDTs.Metatheory.ProductionLedger` must build a registry
 whose element type contains both the signature and its certificate. The
 release gate must reject a production entry that supplies only `MRDTSig`,
-`ReplayVerifiedMRDT`, issuance, or convergence.
+`ReplayAdequateMRDT`, issuance, or convergence.
 
 Falsifier: register the OR-set interaction SPOT, queue, MVR, or FugueMax
 `FMSig` without constructing a `VerifiedMRDT` for that exact signature.
@@ -42,8 +42,9 @@ still have only tested, not proved, correspondence to it.
 
 Result: `PackagedMRDT` is the only production entry type, and
 `Production.registry` contains 18 signature/certificate pairs. The OR-set now
-has observed-remove issuance, convergence, a separate sequential tagged-set
-machine, query refinement, and directed issuance/add-wins controls. Queue,
+has observed-remove issuance, convergence, an ordinary finite-set sequential
+machine, issuance-dependent refinement, and directed issuance/add-wins
+controls. Queue,
 MVR, and the coordinate-level FugueMax `FMSig` are checked by
 `NegativeLedger`. The runtime manifest distinguishes five released datatypes
 from comparison-only representations, and the release script builds both
