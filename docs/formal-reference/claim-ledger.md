@@ -1,0 +1,36 @@
+# Formal reference evidence ledger
+
+This ledger records the evidence boundary for the principal displays and
+claims in `main.tex`. The build gate checks declaration existence and
+elaboration through
+`Sal/MRDTs/Metatheory/FormalReferenceLedger.lean`.
+
+| Reference claim | Status | Authoritative evidence |
+|---|---|---|
+| Events use natural-number replica IDs and timestamps; apply enforces global timestamp freshness and configurations enforce causal monotonicity. | Mechanized | `Framework/Base/UpdateSignature.lean`: `Replica`, `Timestamp`, `Op`; `Framework/Execution.lean`: `Configuration.causal_mono` and `Step.apply`. |
+| The public datatype/certificate hierarchy is `D : MRDTSig` followed by `VerifiedMRDT D`; both use the datatype's ternary merge and neither exposes a binary merge. | Mechanized definition | `Framework/Signature.lean`: `MRDTSig`; `Metatheory/Correctness.lean`: `VerifiedMRDT`. |
+| Paper notation `do` denotes Lean's `MRDTSig.update` field; the source avoids `do` because Lean reserves it as syntax. | Exact notation correspondence | `Framework/Signature.lean`: `MRDTSig.update`; `Framework/Base/UpdateSignature.lean`: `UpdateSig.update`. |
+| Fork creates a fresh child version copied from an existing source head. | Mechanized | `Framework/Execution.lean`: `Step.fork`, `Step.fork_copies_source`, `Step.fork_head_ne_root`. |
+| The paper configuration is `\<S,H,P,vis\>`, with `S` and `H` written as partial maps and `H` ranging over `dom(S)`; head state and head events are partial compositions through `H` and `S`. | Exact notation correspondence | `Framework/Execution.lean`: `Configuration.ver`, `head`, `parents`, `vis`, `headState`, `headEvents`, and `head_alloc`. Lean totalizes the partial maps with `Option`; the observations are functions, not stored cache fields. |
+| Replay ordering uses only the replica-indexed head-event map, visibility, globally distinct observed timestamps, and visibility comparability of distinct same-replica events. | Mechanized definition and exact projection | `Framework/Base/ReplayContext.lean`: `ReplayContext`, `ReplayContext.events`; `Framework/Execution.lean`: `Configuration.replayContext`. |
+| The ordinary merge predicate is a greatest common ancestor, unique when present. A DAG can instead have multiple incomparable maximal common ancestors and no such greatest ancestor. | Mechanized definition and theorem | `Framework/Execution.lean`: `IsGCA` and `IsMaximalCommonAncestor`; `Metatheory/StoreInvariant.lean`: `isGCA_unique`. |
+| Ordinary merge uses a registered GCA and ternary merge; virtual merge uses the canonical resolver without allocating a base version. | Mechanized | `Framework/Execution.lean`: `Step.merge`, `StepV.mergeVirtual`; `Metatheory/VirtualMergeBase.lean`: `canonicalVirtualMergeBase`. |
+| A stored real GCA has exactly the intersection of branch event sets. | Mechanized | `Metatheory/StoreInvariant.lean`: `StoreInv`, `gca_events_of_storeInv`. |
+| Replay arbitration is relative to the event set being replayed. | Mechanized definition | `Metatheory/Join/SetRelativeReplay.lean`: `Foundation.loOn`. |
+| Under the replay laws, respecting enumerations of the same finite event set fold to the same state. | Mechanized | `Framework/ReplayLaws.lean` and `Metatheory/Join/SetRelativeReplay.lean`: `Foundation.convergence_on`. |
+| `CanonicalConfig` is the inductive invariant over every allocated version; `HasReplayWitness` is its internal projection. | Mechanized | `Metatheory/Adequacy.lean`: `CanonicalConfig`, `HasReplayWitness`, `hasReplayWitness_of_canonical`. |
+| `JoinAt` is the single contextual merge-preservation obligation; `Join` requires it at every replay context and `JoinOn` restricts it by an explicit context predicate. | Mechanized definition | `Framework/MergeLaws.lean`: `JoinAt`, `Join`, and `JoinOn`. |
+| `CanonicalJoinLaws` is the single reusable canonical-state contract for all-context Join; the arbitrary-state constructor first adapts universal equations to that contract. | Mechanized | `Framework/MergeLaws.lean`: `CanonicalJoinLaws`; `Metatheory/Adequacy.lean`: `CanonicalJoinLaws.join`, `CanonicalJoinLaws.ofArbitrary`, and `JoinProof.ofArbitraryStateLaws`. |
+| Internal replay is not the public theorem; public correctness additionally requires sequential legality, a state relation, and equality of every query. | Mechanized definition and theorems | `Metatheory/Correctness.lean`: `IsSpecLinearizable`, `VerifiedMRDT.correct`, `VerifiedMRDT.correctV`. |
+| OR-Set uses all-context Join, but honest observed-remove issuance is load-bearing for refinement from tagged storage to an ordinary finite-set specification. | Mechanized positive theorem and negative control | `Instances/ORSet.lean`: `spec`, `setSequentialCorrectness`, `omitted_tag_breaks_ordinary_refinement`. |
+| TreeMove's sequential state is the ordinary parent tree; the replicated event set is not copied into the specification. | Mechanized | `Instances/TreeMove.lean`: `spec`, `stateRel`, `sequentialSound`. |
+| The recursive maximal-common-ancestor fold is canonical for the intersection event set and preserves widened adequacy. | Mechanized | `Metatheory/VirtualAdequacy.lean`: `virtualMergeBaseState_canonical`, `canonicalConfig_reachableV`, `replayWitnessV_of_join`. |
+| Root-free compression closed under pairwise maximal common ancestors preserves reachability and GCA answers between retained versions. | Mechanized | `GC/CompressedDAG.lean` and `GC/Distributed.lean`: `Certificate.ofMaximalCommonAncestorClosed`. |
+| Distributed commit collection refines the asynchronous no-GC protocol by stuttering. | Mechanized | `GC/Distributed.lean`: `execution_refines_noGC`; `GC/Refinement.lean`: `runtime_refines_core` and `runtime_refines_coreV`. |
+| Datatype-state collection refines widened semantics and composes with commit-history collection. | Mechanized | `Framework/StateGC.lean`: `StateGCProtocol.refines`; `GC/StateComposition.lean`: `CombinedSteps.refinesV` and `refinesRaw`. |
+| The historical global-absorber convergence statement and binary-lattice-to-Join implication have checked counterexamples. | Mechanized negative evidence | `Foundation.convergence_over_backward_closed_subsets_false` and `Foundation.binaryLaws_insufficient`, gated through `NegativeLedger.lean`. |
+| `UpdateSig` and `MRDTSig.toUpdateSig` are merge-free internal views used for event application, finite replay, and commutation; they are not a second datatype interface. | Mechanized definition | `Framework/Base/UpdateSignature.lean`: `UpdateSig`; `Framework/Signature.lean`: `MRDTSig.toUpdateSig`. |
+| Historical binary proofs request `HistoricalBinaryMerge` explicitly and call it through `UpdateSig.historicalMerge`. The MRDT compatibility instance supplies the initial-state slice of ternary merge; binary merge is absent from the live MRDT and verified-MRDT interfaces. | Mechanized definition and source-boundary statement | `Framework/Base/UpdateSignature.lean`: `HistoricalBinaryMerge`, `UpdateSig.historicalMerge`; `Framework/Signature.lean`: `MRDTSig.historicalBinaryMerge`; absence from `MRDTSig` and `VerifiedMRDT`. |
+
+The document deliberately makes no implementation-extraction claim. Runtime
+correspondence remains a separate validation boundary.
