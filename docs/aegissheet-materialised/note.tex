@@ -1,0 +1,453 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,microtype,array,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{example}[definition]{Example}
+\newtheorem{counterexample}[definition]{Counterexample}
+\newtheorem{finding}[definition]{Finding}
+\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\Ev}{\mathsf{Ev}}
+\newcommand{\seen}{\mathsf{seen}}
+\newcommand{\merge}{\mathsf{merge}}
+\newcommand{\live}{\mathsf{live}}
+\newcommand{\tok}{\mathsf{tok}}
+\newcommand{\pos}{\mathsf{pos}}
+\newcommand{\cells}{\mathsf{cells}}
+\newcommand{\ranges}{\mathsf{ranges}}
+\newcommand{\mvr}{\mathsf{mvr}}
+\newcommand{\Row}{\mathsf{row}}
+\newcommand{\Col}{\mathsf{col}}
+\sloppy
+\title{A Materialised Three-Way Merge for AegisSheet\\
+  \large Exploratory research note}
+\author{FP Launchpad}
+\date{2 September 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The verified AegisSheet model stores the whole event history and merges by
+union; each event carries the timestamp set of its causal past, so state is
+quadratic in history length. This note asks whether the ancestor argument of
+a three-way merge can replace that metadata. We define a materialised state
+with a componentwise three-way merge and test it differentially against the
+existing model on random version DAGs. No counterexample appears in 3000
+executions when a removal names the tokens it kills; clearing tokens instead
+converges but breaks commutation. Three hand-derived witnesses, checked by
+the executable reference, show that the last position of a removed row or
+column cannot be dropped while a concurrent revival is possible, so the
+retention residue is one register per axis identifier until removal is
+causally stable. The measured state is linear rather than quadratic in
+history. Nothing here is machine-checked; the mechanization target is a
+product Join proof.
+\end{abstract}
+
+\section{Goal, hypotheses, and status}
+
+\paragraph{Goal.} Re-encode AegisSheet as a genuine three-way MRDT with a
+materialised state so that the lowest-common-ancestor argument of $\merge$
+replaces the per-event causal set, the append-only event log, and, where
+possible, the roster-acknowledged purge protocol, while preserving every
+observation of the current model.
+
+\paragraph{Hypotheses and falsifiers.}
+\begin{description}
+\item[H1] Cells and axes forget. A state of live keep tokens, latest-position
+registers, active cell versions, and active range versions, merged
+componentwise by the rule $\mvr(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)
+\cup(b\setminus l)$ for sets and last-writer-wins for registers, yields the
+same observation as the union model at every reachable version.
+Falsifier: a version DAG on which the observations differ, two merge
+topologies over one event set that disagree, or a merge that differs from
+replaying the union.
+\item[H2] The latest position of a removed axis identifier can be dropped
+once no live range names it. Falsifier: two histories with identical live
+sheets whose continuations require different positions for the identifier.
+\item[H3] Purge dissolves into ordinary version deletion once state is
+materialised. Falsifier: a late concurrent write that revives content the
+paper requires to stay purged.
+\end{description}
+
+\paragraph{Status.} Table~\ref{tab:status} uses the evidence vocabulary
+conjectured, refuted, machine-checked, validated, measured, specified, and
+staged. Nothing in this note is machine-checked. The Python reference is
+validated against the Lean model only on the twenty SPOT fixtures listed in
+Section~\ref{sec:controls}.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}p{0.30\textwidth}p{0.16\textwidth}p{0.46\textwidth}@{}}
+\toprule
+Claim & Status & Evidence \\
+\midrule
+H1, named removal & validated; conjectured in general & no counterexample in 3000 executions, 117{,}290 versions, 21{,}375 registered-ancestor and 851 virtual-base merges, three seeds; Lean proof owed \\
+H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 103 of 3000 executions have a merge that differs from timestamp-order replay \\
+H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 16 to 55 failing executions per 1000 in the harness \\
+H3 & staged & purge is not modelled by the harness \\
+State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
+Undo revives a later removal & finding, reproduced & Section~\ref{sec:undo}; a property of the current model \\
+\bottomrule
+\end{tabular}
+\caption{Status of each claim.}
+\label{tab:status}
+\end{table}
+
+\paragraph{Trusted boundary.} The reference semantics is the executable
+Lean model in \lean{Sal/MRDTs/Instances/AegisSheet.lean}, which the
+repository validates against Tables~3 and~4 of the AegisSheet paper. The
+Python transcription of that model is trusted only to the extent of the
+fixture check. The candidate design is specified here and implemented in
+Python; it has no Lean declaration.
+
+\section{The reference model}
+\label{sec:reference}
+
+The displays below transcribe the Lean definitions named in each definition's title.
+Purge markers are omitted throughout (labelled compression); the harness does
+not generate them.
+
+\begin{definition}[events and state; \lean{SheetOp}, \lean{D}]
+An event is $e=(t,r,\langle\seen,\mathit{cmd}\rangle)$ with Lamport
+timestamp $t$, replica $r$, a finite set $\seen$ of timestamps, and a command
+that is either a direct action or $\mathsf{undo}(t',\mathit{inv})$ carrying
+an inverse action. The effect $\mathsf{action}(e)$ is the direct action or
+$\mathit{inv}$. Actions are
+\[
+\begin{aligned}
+&\mathsf{axis}(\mathit{kind},\alpha,\mathit{id},\mathit{before},\mathit{after})
+ &&\alpha\in\{\Row,\Col\},\ \mathit{kind}\in\{\mathsf{insert},\mathsf{move},\mathsf{remove},\mathsf{restore}\},\\
+&\mathsf{cell}(\rho,\gamma,\mathit{before},\mathit{after},\mathit{overwrites})
+ &&\mathit{before},\mathit{after}\text{ finite value sets},\ \mathit{overwrites}\text{ timestamps},\\
+&\mathsf{range}(\mathit{id},\mathit{before},\mathit{after},\mathit{overwrites})
+ &&\mathit{before},\mathit{after}\in\mathsf{Option}(\mathit{RangeSpec}).
+\end{aligned}
+\]
+The MRDT state is a finite set $E$ of events; $\mathsf{do}(E,e)=E\cup\{e\}$;
+$\merge(\_,a,b)=a\cup b$. The ancestor argument is unused.
+\end{definition}
+
+\begin{definition}[axis liveness; \lean{keepsAxis}, \lean{removesAxis}, \lean{axisLive}]
+An event $e$ \emph{keeps} $(\alpha,\mathit{id})$ when it is an axis update of
+that identifier with $\mathit{after}\neq\bot$, or a cell update whose
+$\alpha$-coordinate is $\mathit{id}$. It \emph{removes} $(\alpha,\mathit{id})$
+when it is an axis update of that identifier with $\mathit{after}=\bot$.
+\[
+\begin{aligned}
+\mathsf{keepTimes}_E(\alpha,\mathit{id})&=\{t(e)\mid e\in E,\ e\text{ keeps }(\alpha,\mathit{id})\},\\
+\mathsf{removed}_E(\alpha,\mathit{id},\tau)&\Longleftrightarrow
+ \exists e\in E.\ e\text{ removes }(\alpha,\mathit{id})\land\tau\in\seen(e),\\
+\live_E(\alpha,\mathit{id})&\Longleftrightarrow
+ \mathsf{known}_E(\alpha,\mathit{id})\land
+ \exists\tau\in\mathsf{keepTimes}_E(\alpha,\mathit{id}).\ \neg\mathsf{removed}_E(\alpha,\mathit{id},\tau),
+\end{aligned}
+\]
+where $\mathsf{known}_E$ holds when some axis update of the identifier is in
+$E$. A removal defeats exactly the keep tokens it observed; a keep it did not
+observe survives it.
+\end{definition}
+
+\begin{definition}[positions, cells, ranges; \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}]
+A candidate for $(\alpha,\mathit{id})$ is an axis update with
+$\mathit{after}\neq\bot$; $\mathsf{positions}_E(\alpha,\mathit{id})$ is the
+set of $\mathit{after}$ values of candidates with no later candidate, a
+singleton or empty. A cell version $e$ at $(\rho,\gamma)$ is overwritten when
+some cell update in $E$ lists $t(e)$ in its $\mathit{overwrites}$;
+$\cells_E(\rho,\gamma)$ is the union of $\mathit{after}$ over non-overwritten
+versions when both axes are live, and $\emptyset$ otherwise. Range versions
+are analogous, and $\ranges_E(\mathit{id})$ collects their non-$\bot$
+$\mathit{after}$ specifications.
+\end{definition}
+
+\begin{definition}[range resolution; \lean{resolveRange}]
+For a specification $(\rho_1,\rho_2,\gamma_1,\gamma_2)$, a live endpoint
+resolves to itself. A dead first endpoint resolves to the live identifier at
+the least live position greater than the endpoint's last position; a dead
+last endpoint to the live identifier at the greatest live position less than
+it. Resolution fails when an endpoint has no position or the resolved
+rectangle is inverted.
+\end{definition}
+
+\begin{definition}[issuance; \lean{applicableB}, \lean{validUndo}, \lean{inverseFor}]
+An event is issuable at $E$ when $t(e)\notin\mathsf{times}(E)$,
+$\seen(e)=\mathsf{times}(E)$, $t(e)$ exceeds every timestamp in $E$, and its
+before-image and $\mathit{overwrites}$ list equal the current values at $E$
+(compressed: the per-kind clauses of \lean{directApplicable}). An undo is
+issuable when its target is in $\seen(e)$, was issued by the same replica,
+and the carried inverse equals $\mathsf{inverseFor}$ of the target, which
+swaps before and after and sets $\mathit{overwrites}=\{t(\text{target})\}$
+for cells and ranges. No clause requires the axes of an undone cell write
+to be live.
+\end{definition}
+
+The clause $\seen(e)=\mathsf{times}(E)$ is the cost this note attacks: every
+event stores the timestamp set of its entire causal past.
+
+\section{The candidate design}
+\label{sec:design}
+
+\begin{definition}[materialised state]
+\[
+\begin{array}{ll}
+\mathsf{known}:\{\Row,\Col\}\to\mathcal P(\mathit{Id}) & \text{grow-only identifier sets},\\
+\tok:(\{\Row,\Col\}\times\mathit{Id})\to\mathcal P(\mathit{Ts}) & \text{live keep tokens},\\
+\pos:(\{\Row,\Col\}\times\mathit{Id})\rightharpoonup\mathit{Ts}\times\mathit{Position} & \text{latest position register},\\
+\cells:(\mathit{Id}\times\mathit{Id})\to\mathcal P(\mathit{Ts}\times\mathcal P(\mathit{Value})) & \text{active cell versions},\\
+\ranges:\mathit{Id}\to\mathcal P(\mathit{Ts}\times\mathsf{Option}(\mathit{RangeSpec})) & \text{active range versions}.
+\end{array}
+\]
+A removal carries $\mathit{kills}$, the live tokens of its identifier at
+issuance (the \emph{named} variant); the \emph{clearing} variant carries
+nothing and empties the token set.
+\end{definition}
+
+\begin{definition}[update]
+\[
+\begin{aligned}
+\mathsf{axis}(\_,\alpha,\mathit{id},\_,p\neq\bot)&:\ \tok(\alpha,\mathit{id})\mathrel{+}=\{t\},\quad
+ \pos(\alpha,\mathit{id}):=\max_{\mathrm{ts}}(\pos(\alpha,\mathit{id}),(t,p)),\quad \mathsf{known}\mathrel{+}=\mathit{id};\\
+\mathsf{axis}(\_,\alpha,\mathit{id},\_,\bot)&:\ \tok(\alpha,\mathit{id})\mathrel{-}=\mathit{kills}
+ \quad(\text{clearing: }\tok(\alpha,\mathit{id}):=\emptyset);\\
+\mathsf{cell}(\rho,\gamma,\_,v,\mathit{ov})&:\ \tok(\Row,\rho)\mathrel{+}=\{t\},\ \tok(\Col,\gamma)\mathrel{+}=\{t\},\\
+ &\quad\cells(\rho,\gamma):=\{x\in\cells(\rho,\gamma)\mid \mathrm{ts}(x)\notin\mathit{ov}\}\cup\{(t,v)\};\\
+\mathsf{range}(\mathit{id},\_,s,\mathit{ov})&:\ \ranges(\mathit{id}):=\{x\in\ranges(\mathit{id})\mid\mathrm{ts}(x)\notin\mathit{ov}\}\\
+ &\qquad\cup\{(t,s)\}.
+\end{aligned}
+\]
+\end{definition}
+
+\begin{definition}[merge]
+For $\mvr(l,a,b)=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l)$,
+\[
+\begin{aligned}
+\merge(l,a,b).\mathsf{known}&=l.\mathsf{known}\cup a.\mathsf{known}\cup b.\mathsf{known},\\
+\merge(l,a,b).\tok(k)&=\mvr(l.\tok(k),a.\tok(k),b.\tok(k)),\\
+\merge(l,a,b).\pos(k)&=\max_{\mathrm{ts}}\{x.\pos(k)\mid x\in\{l,a,b\},\ k\in\mathrm{dom}(x.\pos)\},\\
+\merge(l,a,b).\cells(k)&=\mvr(\ldots),\qquad
+\merge(l,a,b).\ranges(k)=\mvr(\ldots).
+\end{aligned}
+\]
+The observation is computed as in Section~\ref{sec:reference} with
+$\live(\alpha,\mathit{id})\Leftrightarrow\mathit{id}\in\mathsf{known}(\alpha)
+\land\tok(\alpha,\mathit{id})\neq\emptyset$ and the register in place of the
+latest candidate.
+\end{definition}
+
+The design has no cross-component rule. The reference's update-wins policy
+(a concurrent write or move defeats a removal) is already token-based: the
+write's token is not in the ancestor, so $\mvr$ keeps it. Every component is
+an observed-remove set or a last-writer-wins register.
+
+\section{H1: differential campaign}
+\label{sec:h1}
+
+\begin{conjecture}[H1]
+For every legal execution of the version-DAG semantics with the
+canonical virtual merge base, the materialised design with named removal has
+the same observation as the union model at every version.
+\end{conjecture}
+
+\paragraph{Method.} The harness (\lean{model.py}) runs the Python
+reference and each materialised variant in lockstep on random version DAGs.
+Operations are generated from the reference state so that before-images,
+overwrite lists, and killed-token lists are those the issuance predicate
+demands; identifiers and timestamps are fresh by construction. Two to four
+replicas perform one to three operations each per round for three to eight
+rounds; a merge between two heads occurs with probability $0.7$ per round;
+forced convergence rounds then merge all heads along different topologies.
+When a recorded version's event set equals the heads' intersection it is the
+ancestor; otherwise the ancestor is the fold of the intersection in
+timestamp order, which is the canonical virtual merge base. At every version
+the harness compares observations, compares observations of versions
+reached by different topologies over the same event set, and compares the
+merge result with the timestamp-order replay of the union.
+
+\paragraph{Result.} Table~\ref{tab:campaign} reports three seeds of 1000
+executions. The named-removal design has no failing execution. The clearing
+variant matches the reference and converges but fails the replay comparison:
+a removal that clears all tokens and a concurrent keep do not commute, so
+replay order matters and a Lean proof would need the arbitration arm of the
+replay policy. The named variant makes every pair of operations commute,
+which is the route every existing production instance uses.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+Design & seed 1 & seed 2 & seed 3 & first failure class \\
+\midrule
+keep registers, named removal & 0 & 0 & 0 & \\
+keep registers, clearing removal & 27 & 31 & 45 & merge $\neq$ replay \\
+drop unreferenced dead registers, named & 28 & 23 & 16 & position of revived axis \\
+drop all dead registers, named & 10 & 10 & 7 & range resolution \\
+ancestor ignored (control) & 186 & 173 & 146 & cells, ranges \\
+eager range re-anchoring (control) & 634 & 642 & 683 & ranges \\
+\bottomrule
+\end{tabular}
+\caption{Failing executions out of 1000 per seed. Each seed produced about
+39{,}000 versions, 31{,}500 operations, 7{,}100 merges at a registered
+ancestor, and 280 merges at a virtual base.}
+\label{tab:campaign}
+\end{table}
+
+\section{H2: the last position of a dead axis is load-bearing}
+\label{sec:h2}
+
+Each witness is hand-derived from the definitions of
+Section~\ref{sec:reference} and checked by evaluating the Python reference;
+the checks are the functions \lean{h2\_witnesses} and \lean{h2\_pair3}.
+Identifiers: rows $r_0,r_1,r_2$ at positions $10,20,30$, column $c_0$.
+
+\begin{counterexample}[range resolution]
+Let $L$ insert $r_0,r_1,r_2,c_0$ and a range $(r_0,r_2,c_0,c_0)$. History
+$W_1$ removes $r_0$. History $W_2$ moves $r_0$ to position $25$ and then
+removes it. Both leave live rows $\{r_1,r_2\}$ at unchanged positions and
+the same range specification. The reference resolves the range to
+$(r_1,r_2,c_0,c_0)$ after $W_1$ and to $(r_2,r_2,c_0,c_0)$ after $W_2$. A
+state that forgets $r_0$'s last position cannot give both answers.
+\end{counterexample}
+
+\begin{counterexample}[eager re-anchoring]
+From the same $L$, branch $A$ removes $r_0$ and branch $B$ concurrently
+inserts $r_3$ at position $15$. The reference resolves the merged range to
+$(r_3,r_2,c_0,c_0)$. Rewriting the range to $r_0$'s successor at removal
+time gives $(r_1,r_2,c_0,c_0)$. Lazy resolution over the dead position is
+part of the specification, not an implementation choice.
+\end{counterexample}
+
+\begin{counterexample}[update-wins revival]
+Let $L$ insert $r_0$ at $10$ and $c_0$, and write cell $(r_0,c_0)$. Branch
+$A_1$ moves $r_0$ to $52$ and then removes it; branch $A_2$ only removes it.
+Both branch states have identical live sheets: $r_0$ is dead. Branch $B$
+concurrently writes $(r_0,c_0)$. In both merges the write's token revives
+$r_0$; the reference places it at $52$ after $A_1$ and at $10$ after $A_2$.
+The merge receives identical $L$ and $S_B$, so if $S_{A_1}=S_{A_2}$ it
+cannot answer both. The information lives only on the removing branch.
+\end{counterexample}
+
+The third counterexample does not involve ranges or undo, and it survives
+restricting undo to live axes (55 failing executions of 1000 at seed~7). The
+retention residue is therefore: one position register per axis identifier
+that has ever been known, retained until the removal is causally stable,
+that is, until no replica can still issue an operation concurrent with it.
+Under update-wins this is unavoidable; under a remove-wins policy the
+register could be dropped at removal.
+
+\section{Finding: undo revives a causally later removal}
+\label{sec:undo}
+
+\begin{finding}
+In the current model, with row $r_0$ and column $c_0$ and a write at $t=3$,
+removing $r_0$ at $t=4$ and then undoing the $t=3$ write at $t=5$ is a legal
+history on one replica: the undo's target is observed and was issued by the
+same replica, and no issuance clause requires the axes to be live. The undo
+is a cell event and therefore a keep token for $r_0$ with a timestamp the
+removal did not observe. The row becomes live again at position $10$ with an
+empty cell. Reproduced by \lean{undo\_revival\_witness}.
+\end{finding}
+
+Table~4 of the paper covers undo against a \emph{concurrent} removal; it
+does not say what undoing an edit should do to a row removed causally later.
+The behaviour is a consequence of representing undo as a cell event. If it is
+unintended, the fix is an issuance clause (undo of a cell write requires live
+axes) or a non-keeping inverse; either changes the public sequential
+specification and should be decided before the Lean port.
+
+\section{H3: purge}
+
+The harness does not generate purge markers, so H3 is staged. Two
+observations shape the next experiment. First, in the materialised design a
+purge is an ordinary deletion of cell versions at dead coordinates, and the
+$\mvr$ rule already keeps a concurrent write's version because it is absent
+from the ancestor, which is the paper's stated intent that a late change
+restores the axis but not the purged contents. Second, the roster
+acknowledgement of the current protocol is the causal-stability condition
+that Section~\ref{sec:h2} identifies as the moment the dead register can be
+dropped. The conjecture for the next step is that the acknowledgement
+protocol is needed for the $O(1)$ register, not for the cell payloads.
+
+\section{Measured: state size}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+Rounds & Operations & Reference (timestamps stored) & Materialised, named, keep \\
+\midrule
+4 & 23 & 131 & 21 \\
+8 & 46 & 594 & 42 \\
+16 & 94 & 3{,}048 & 90 \\
+32 & 184 & 13{,}866 & 169 \\
+\bottomrule
+\end{tabular}
+\caption{Mean over 20 executions with 3 replicas, seed 1, at the final
+version of replica 0. The reference count is one per event plus its
+$\seen$ set and overwrite list; the materialised count is tokens, registers,
+and versions.}
+\label{tab:growth}
+\end{table}
+
+Doubling the history quadruples the reference and doubles the materialised
+state. The gap at 184 operations is a factor of 82. These are counts of
+stored timestamps in the Python models, not bytes of any runtime.
+
+\section{Controls}
+\label{sec:controls}
+
+\paragraph{Positive control.} The Python reference reproduces twenty
+hand-derived expectations copied from the Lean SPOTs: update defeats
+concurrent removal, later removal wins, concurrent writes keep both values,
+selective undo keeps the remote value, move defeats removal, later move wins,
+insert survives adjacent removal, undo of remove restores the position, undo
+of insert removes only the inserted identifier, the two Table~4 move-undo
+cases, and seven Figure~1 range cases (\lean{check\_fixtures}).
+
+\paragraph{Negative controls.} Two deliberately wrong designs fail on every
+seed (Table~\ref{tab:campaign}): ignoring the ancestor, which reintroduces
+removed versions, and eager range re-anchoring. A harness that could not
+distinguish these would carry no evidence.
+
+\section{Mechanization correspondence}
+
+\begin{center}\small
+\begin{tabular}{@{}p{0.34\textwidth}p{0.30\textwidth}p{0.28\textwidth}@{}}
+\toprule
+Display & Lean declaration & Status \\
+\midrule
+Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
+Materialised state, update, merge & none & specified; Python implementation \\
+Conjecture H1 & none & validated on the campaign scope \\
+Counterexamples 5.1 to 5.3, Finding 6.1 & none & hand-derived, checked by the Python reference; to be pinned as Lean SPOTs \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Lean plan.} The materialised design is a product of
+observed-remove sets and last-writer-wins registers. With named removal
+every operation pair commutes, so the \lean{Join} proof can follow the
+universal-equation route, or the product theorem \lean{joinAt\_prod} with a
+per-component \lean{CanonicalJoinLaws} in the style of the multi-value
+register. The sequential certificate needs a new representation relation;
+\lean{no\_view\_only\_step} fixes that it must retain tokens, cell version
+identities, and range version identities, which the materialised state does.
+
+\section{Open obligations}
+
+\begin{enumerate}
+\item Decide the undo-revival question of Section~\ref{sec:undo} before
+porting; it changes the sequential specification.
+\item Model purge in the harness and test H3: purge as version deletion,
+concurrent writes surviving, and the register-dropping rule at causal
+stability.
+\item Pin Counterexamples 5.1 to 5.3 and Finding 6.1 as Lean SPOTs against
+the existing model, with PASS and FAIL companions.
+\item Port the named-removal design to Lean as a second package beside the
+current one; prove \lean{Join} and the sequential certificate; keep the
+union model until the runtime measurement is in.
+\item Extend the harness to merges between non-head versions and to undo of
+undo; report the generator's coverage.
+\end{enumerate}
+
+\end{document}
