@@ -242,7 +242,7 @@ A diamond is a triple of histories $(h_L,h_A,h_B)$ with
 \]
 Its \emph{observed reads} are $\mathsf{read}$ of every state along the three
 folds, including $L$, $S_A$, $S_B$, and of $M$. A diamond is one merge step
-of the version-DAG semantics with $L$ the lowest common ancestor.
+of the version-DAG semantics with $L$ the greatest common ancestor.
 \end{definition}
 
 \begin{definition}[sequential specification]
@@ -257,16 +257,19 @@ delete-order preservation.
 \end{definition}
 
 \begin{definition}[strong list specification]
-A diamond satisfies the strong list specification when there is a strict
-total order $<$ on every identifier inserted in it such that every observed
-read is sorted by $<$. Equivalently, an order in which two elements have
-been displayed anywhere is never reversed anywhere, even transitively
-through elements that have since been deleted.
+A diamond satisfies the strong list specification when every observed read
+contains exactly the identifiers inserted in that observation's causal past
+and not deleted there, and there is a strict total order $<$ on every
+identifier inserted in the diamond such that every observed read is sorted
+by $<$. Thus an order in which two elements have been displayed anywhere is
+never reversed anywhere, even transitively through elements that have since
+been deleted.
 \end{definition}
 
-The strong list specification mentions no implementation, no anchor, and
-no timestamp. It is the weakest statement of ``what any user has seen stays
-in order''. The RGA order $\seq(A,G)$ of Section~\ref{sec:baseline} is a
+This is the membership-and-global-order fragment of Attiya et
+al.'s specification; sequential soundness below supplies the insertion-position
+condition for the local histories. It mentions no implementation, anchor, or
+timestamp. The RGA order $\seq(A,G)$ of Section~\ref{sec:baseline} is a
 particular stronger intent: it fixes the merged order completely from births
 and graves.
 
@@ -328,13 +331,13 @@ do not commute.
 
 \begin{proof}
 Let $\sigma_1$ contain live records $(1,\cdot,0)$, $(4,\cdot,0)$, and
-$(2,\cdot,1)$, and let $\sigma_2$ be the same with $(2,\cdot,4)$ instead.
-Element $2$ is a leaf in both. Deleting $2$ re-anchors nothing, so
-$\mathsf{do}(\sigma_1,\del(2))=\mathsf{do}(\sigma_2,\del(2))=\rho$, the
-forest with records $1$ and $4$ only. Applying $\ins(7,2,y)$ to $\rho$
-stores anchor $v=f(\rho,2)$, the same value in both cases because $\rho$ is
-the same state. In the other order, $\ins(7,2,y)$ finds $2$ live and stores
-$(7,y,2)$; the subsequent $\del(2)$ re-anchors $7$ to $2$'s anchor, which is
+$(5,\cdot,1)$, and let $\sigma_2$ be the same with $(5,\cdot,4)$ instead.
+Element $5$ is a leaf in both. Deleting $5$ re-anchors nothing, so
+$\mathsf{do}(\sigma_1,\del(5))=\mathsf{do}(\sigma_2,\del(5))=\rho$, the
+forest with records $1$ and $4$ only. Applying $\ins(7,5,y)$ to $\rho$
+stores anchor $v=f(\rho,5)$, the same value in both cases because $\rho$ is
+the same state. In the other order, $\ins(7,5,y)$ finds $5$ live and stores
+$(7,y,5)$; the subsequent $\del(5)$ re-anchors $7$ to $5$'s anchor, which is
 $1$ from $\sigma_1$ and $4$ from $\sigma_2$. Commutation on $\sigma_1$
 forces $v=1$ and commutation on $\sigma_2$ forces $v=4$.
 \end{proof}
@@ -349,7 +352,7 @@ which is what EmbedRGA's coordinates do.
 
 The single-replica failure above could be blamed on the newest-first tie
 rule. The next result blames nothing but forgetting. It exhibits two
-diamonds whose lowest common ancestor and second branch are identical and
+diamonds whose greatest common ancestor and second branch are identical and
 whose first branches reach the same state, yet whose intended merged reads
 differ. Every merge function then fails on one of them.
 
@@ -398,6 +401,10 @@ specification refutes this objection: it is implementation independent and
 still separates two diamonds with coinciding forgetful states. The witness
 needs five elements because the constraint must pass transitively through
 elements that have been deleted.
+
+The sequential-soundness premise in the next two theorems is load-bearing:
+it fixes the observed orders before the merge. The global-order condition by
+itself would not determine those local reads.
 
 \begin{theorem}[fooling pair for the strong list specification]
 \label{thm:fooling-strong}
@@ -483,11 +490,12 @@ ancestor-spine workload in Section~\ref{sec:eval} is this bound made
 concrete. Peritext pays a third way for its marks, retaining deleted
 identifiers whose positions mark boundaries still need. What the bound
 excludes is a design whose state after $n$ deletions is the live document
-plus a bounded number of bits. Attiya et al.~\cite{attiya2016list}
-introduced the strong list specification and proved a metadata lower bound
-for its implementations in a message-passing model; the diamond argument is
-the analogue for ternary merge and already binds with three replicas and one
-merge.
+plus a bounded number of bits. Attiya et al.~\cite{attiya2016list} introduced
+the full strong and weak list specifications and proved an $\Omega(D)$
+metadata lower bound for push-based protocols with at least three replicas,
+including executions with causal atomic broadcast. Their protocol model and
+bound are not the theorem above; the diamond argument isolates a weaker
+logarithmic consequence for ternary merge using three replicas and one merge.
 
 \subsection{Convergence does not force retention}
 \label{sec:convergence-not-enough}
