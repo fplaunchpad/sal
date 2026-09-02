@@ -15,6 +15,10 @@ the compatibility contract.
 - `Sal.MRDTs.VerifiedMRDT`
 - `Sal.MRDTs.PackagedMRDT`
 - `Sal.MRDTs.Production.registry`
+- `Sal.MRDTs.StateGCCertificate.exactState`
+- `Sal.MRDTs.StateGCCoverage`
+- `Sal.MRDTs.PackagedStateGC`
+- `Sal.MRDTs.Production.StateGC.registry`
 - `Sal.MRDTs.ConvergenceCertificate.sound`
 - `Sal.MRDTs.MintCertifiedReach.toV`
 - `Sal.MRDTs.Instances.InteractionSPOT.LWW.old_no_chain_refuted`

@@ -16,6 +16,7 @@ import Sal.MRDTs.Instances.AegisSheetGC
 import Sal.MRDTs.Instances.AegisSheetAbstraction
 import Sal.MRDTs.GC.Refinement
 import Sal.MRDTs.GC.StateComposition
+import Sal.MRDTs.Metatheory.StateGCCoverage
 
 /-! Build gate for the plain-signature reconstruction. -/
 
@@ -71,6 +72,10 @@ namespace Sal.MRDTs
 #check ReplayAdequateMRDT
 #check IsSpecLinearizable
 #check StateGCCertificate
+#check StateGCCertificate.exactState
+#check StateGCCoverage
+#check PackagedStateGC
+#check Production.StateGC.registry
 #check StateGCProtocol
 #check prodSig
 #check applySeq_prod

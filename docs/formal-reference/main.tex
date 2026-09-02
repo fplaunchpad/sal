@@ -76,9 +76,10 @@ isolated in an appendix.
 
 \section{Purpose and evidence boundary}
 
-This is a reference, not a second narrative paper. It is meant to let a reader
-reconstruct the formal interface and theorem dependency graph without first
-learning the layout of the Lean repository. It answers four questions:
+This document is written for readers who want to understand the formal theory
+before navigating its Lean implementation.  It reconstructs the interface and
+theorem dependency graph and then instantiates them for every released RDT. It
+answers four questions:
 \begin{enumerate}
 \item What are the exact states and transitions of the MRDT machine?
 \item What invariant makes every stored version replayable, and what
@@ -87,6 +88,45 @@ learning the layout of the Lean repository. It answers four questions:
 \item Which history- and state-collection steps refine the same uncollected
   semantics?
 \end{enumerate}
+
+The top-level result is client-facing: every released datatype packages an
+issuance discipline, a merge-adequacy proof, an independent sequential
+specification, and a refinement proof. Consequently, every version produced
+by an issuance-certified ordinary or virtual-merge-base execution admits a
+legal sequential history with the same events and the same query results.
+Sections~2--8 define the layers needed by this statement. Section~9 shows how
+each released instance supplies them. Sections~10--11 add optional history-
+and datatype-state collection refinements.
+
+\paragraph{Reader's map.}
+\renewcommand{\arraystretch}{1.08}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.20\textwidth}
+  >{\raggedright\arraybackslash}p{0.58\textwidth}
+  >{\raggedright\arraybackslash}p{0.12\textwidth}@{}}
+\toprule
+Layer & Contract and consequence & Location\\
+\midrule
+\endhead
+Operational machine & Events and the datatype signature determine fork,
+apply, query, and ternary merge in a version DAG. & Sections~2--3\\
+Replay model & A replay context orders a finite event set and gives it a
+unique canonical state. & Sections~4--5\\
+Merge preservation & An all-context or restricted merge theorem preserves
+that canonical state at a merge step. & Section~6\\
+Client correctness & Issuance, public interaction order, an independent
+sequential machine, and a representation relation turn internal replay into
+observable sequential correctness. & Section~7\\
+Virtual bases & A recursive fold over maximal common ancestors constructs the
+canonical intersection state when no stored GCA exists. & Section~8\\
+Released instances & Each package records its representation, issuance
+policy, merge theorem, sequential specification, relation, and proof route. &
+Section~9\\
+Collection & Commit-history and datatype-state collection refine the same
+uncollected semantics and compose by trace erasure; the datatype profiles
+state what each released representation can presently reclaim. & Sections~10--11\\
+\bottomrule
+\end{longtable}
+\renewcommand{\arraystretch}{1}
 
 The mathematical displays are transcriptions or notation-level expansions of
 the cited declarations. The trusted computing base for machine-checked
@@ -157,15 +197,36 @@ with decidable equality on $\State$ and $O$, and
 \]
 The intended reading of $\merge(l,a,b)$ is a three-way merge with ancestor
 state $l$ and branch states $a,b$.
+The ancestor is semantically necessary for datatypes whose state combines by
+addition rather than idempotent union: the flat counter, for example, uses
+$\merge(l,a,b)=a+b-l$ so that effects already present in both branches are
+counted once.  Ternary merge covers both these group-like states and ordinary
+grow-only unions with one interface.
 The paper's $\doop$ is the Lean field \lean{MRDTSig.update}; Lean reserves
 \lean{do} for its term syntax.
 \anchor{Sal/MRDTs/Framework/Signature.lean}{MRDTSig}
 \end{definition}
 
 This signature is the executable datatype interface. Verification attaches
-certificates to the same $D$ after the replay, merge, generation, and client
-specifications have been defined. It does not introduce a second datatype
-signature or a two-way merge.
+replay, merge, generation, and client certificates to this same $D$.
+
+\paragraph{Running example: tombstone RGA.}
+The production RGA stores grow-only insertion and deletion facts:
+\[
+\begin{aligned}
+ \State_{\mathrm{RGA}}
+   &=(\N^3\to\mathsf{Bool})\times(\N\to\mathsf{Bool}),\\
+ O_{\mathrm{RGA}}&=\mathsf{addAfter}(\mathit{anchor},\mathit{id})
+                 \mid\mathsf{remove}(\mathit{id}).
+\end{aligned}
+\]
+An insertion event sets the bit indexed by its timestamp, anchor, and element
+identifier; a removal sets the tombstone bit for its identifier. Merge is
+pointwise Boolean union of the GCA and two branch states. The query sorts the
+finite insertion support, inserts each identifier after its anchor, and
+filters tombstoned identifiers. Thus the implementation state is unordered
+grow-only evidence, while the client observes an ordinary list.
+\anchor{Sal/MRDTs/Instances/RGA.lean}{RGA.RGAM, RGA.rgaUpdate, RGA.read}
 
 \subsection{Finite replay}
 
@@ -173,8 +234,8 @@ Finite replay uses only the merge-free projection
 \[
  D_U=(\State,\init,O,\doop).
 \]
-Lean calls this derived structure \lean{UpdateSig}. It is an internal view of
-$D$, not a second datatype interface.
+Lean calls this derived structure \lean{UpdateSig}; it retains precisely the
+fields used when an event history is folded.
 
 For $\pi=[e_1,\ldots,e_n]$,
 \[
@@ -213,12 +274,17 @@ A proof-local replay policy has type
 The default policy returns $\mathsf{Either}$. This policy is used only by the
 internal replay proof in Section~4. Client-visible interaction ordering is
 defined independently in Section~\ref{sec:client}.
-In Lean, finite replay, commutation, and this proof policy are factored through
-an internal projection of $D$; the historical reason for that projection is
-recorded in the final appendix.
+Every datatype in the production registry uses this default policy at its raw
+MRDT layer. Hence released datatypes have no policy-selected raw replay edges;
+Section~4 shows that the remaining directional law forces distinct
+cross-replica raw events to commute. The non-default policy in the OR-Set
+development belongs to its abstract sequential set machine, where it selects
+add-wins order. Finite replay, commutation, and the proof policy are factored
+through the merge-free projection of $D$.
 \anchor{Sal/MRDTs/Framework/Base/UpdateSignature.lean}
   {Foundation.UpdateSig.commutes, Foundation.RcRes,
    Foundation.ReplayPolicy}
+\anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}{Production.registry}
 
 \section{Version-DAG operational semantics}
 \label{sec:execution}
@@ -240,9 +306,9 @@ The ordinary merge rule uses a greatest-common-ancestor predicate:
 \end{aligned}
 \]
 Every common ancestor reaches a GCA. Ranked reachability is antisymmetric, so
-a GCA is unique when it exists. This does not say that a DAG always has a
-unique lowest merge base: a criss-cross DAG may have several incomparable
-maximal common ancestors and no GCA.
+a GCA is unique when it exists. A criss-cross DAG may instead have several
+incomparable maximal common ancestors and no GCA; Section~8 constructs its
+virtual merge base.
 \anchor{Sal/MRDTs/Framework/Execution.lean}{Reaches, IsGCA}
 \anchor{Sal/MRDTs/Metatheory/StoreInvariant.lean}{isGCA\_unique}
 
@@ -370,8 +436,8 @@ resulting configuration satisfies the configuration conditions above.
  \end{aligned}\right]}
 \]
 \end{semanticrule}
-Fork creates a fresh child of an existing source head. It neither resets to
-the root nor creates a disconnected history.
+Fork creates a fresh child of an existing source head, preserving that source
+as the child's parent.
 \anchor{Sal/MRDTs/Framework/Execution.lean}{Step.fork}
 \anchor{Sal/MRDTs/Framework/Execution.lean}
   {Step.fork\_copies\_source, Step.fork\_head\_ne\_root}
@@ -574,8 +640,30 @@ therefore remove such edges:
 \]
 The historical global order is $\lo_R=\loOn_{R,R.\mathsf{events}}$; every
 $\lo_R$ edge is an edge of $\loOn_{R,E}$.
+The set parameter is therefore essential in the general theory: whether an
+arbitration edge is needed depends on whether its absorber belongs to the
+particular version being replayed, not merely on the global event universe.
 \anchor{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}
   {Foundation.loOn, Foundation.loOn\_mono, Foundation.loOn\_of\_lo}
+
+For the default $\mathsf{Either}$ policy used by production MRDT signatures,
+the arbitration disjunct is false and the definition simplifies to
+\[
+ a\;\loOn_{R,E}\;b
+ \Longleftrightarrow
+ a\vis b\land\neg(a\leftrightarrow b).
+\]
+The general absorber machinery remains part of the reusable replay theorem,
+but it is dormant for the current production registry.
+
+\paragraph{RGA instance.}
+RGA insertion and tombstone updates commute at the raw storage layer: two
+insertions set Boolean insertion facts, two removals set tombstone facts, and
+an insertion and removal touch different components. With the default policy,
+$\loOn_{R,E}$ is therefore empty for RGA. Its ordinary-list ordering is chosen
+later by the sequential witness; it is not encoded in raw-state replay.
+\anchor{Sal/MRDTs/Instances/RGA.lean}
+  {RGA.RGAM\_all\_comm, RGA.RGAM\_rc\_either}
 
 \subsection{Replay laws and convergence}
 
@@ -788,7 +876,8 @@ set-relative order implies respecting the global order:
 \[
  \mathsf{CanonicalConfig}(C)\Longrightarrow\mathsf{HasReplayWitness}(C).
 \]
-This is internal replay adequacy, not client-facing correctness.
+This establishes internal replay adequacy. Section~7 relates the replay
+witness to an independent client specification.
 \anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
   {HasReplayWitness, hasReplayWitness\_of\_canonical}
 
@@ -807,6 +896,11 @@ For replay context $R$, abbreviate
  \forall a,b.\;a\vis b\land\neg(a\leftrightarrow b)\land b\in E\to a\in E.
 \end{aligned}
 \]
+Weak closure retains exactly the visible predecessors whose effects cannot be
+swapped past the event being replayed. Requiring full causal closure would
+also retain commuting predecessors, although their relative presence cannot
+change the fold. This is why the merge theorem closes histories under
+noncommuting visibility rather than under all of visibility.
 
 \begin{definition}[Join at a context]
 \lean{JoinAt D R} is
@@ -827,8 +921,8 @@ For replay context $R$, abbreviate
 \end{definition}
 
 Join is the load-bearing merge theorem: canonical intersection and branch
-states map to the canonical union state. It mentions neither reachability nor
-a particular version graph.
+states map to the canonical union state. Its context-local statement is reused
+by both ordinary and virtual-base executions.
 
 \begin{definition}[Restricted merge scope]
 For a predicate
@@ -1131,10 +1225,10 @@ as alternative factorizations of the same union history.
   \draw[mergeedge] (rac) -- (rago);
   \draw[mergeedge] (raxt) -- (ragt);
   \draw[mergeedge] (rac) -- (ragt);
-  \draw[baseedge] (ram.west) -- (-0.15,7.4) |- (ragz.north);
+  \draw[baseedge] (ram.west) -- (-0.15,7.4) |- (ragz.west);
   \draw[baseedge] (ram.south) --
     node[pos=.78,edgelabel,left] {base} (rago.north);
-  \draw[baseedge] (ram.east) -- (7.0,7.4) |- (ragt.north);
+  \draw[baseedge] (ram.east) -- (7.0,7.4) |- (ragt.east);
   \draw[mergeedge] (ragz) -- (raI);
   \draw[mergeedge] (rago) -- (raEo);
   \draw[mergeedge] (ragt) -- (raEt);
@@ -1266,9 +1360,26 @@ $\doop(m,e)$ for it.
 \]
 \anchor{Sal/MRDTs/Framework/MergeLaws.lean}{DeltaLaws}
 
-The auxiliary \lean{CommutingPeelLaw} is not part of the canonical Join
-contract. Together with \lean{MergeLaws} and universal update commutativity,
-it supplies \lean{CausalDeltaLaw} for the all-commuting instance class.
+The auxiliary \lean{CommutingPeelLaw} states that an update can be pulled
+through a merge when it commutes with every event replayed in the other two
+components:
+\[
+\begin{aligned}
+ &\mathsf{CommutingPeelLaw}(D)\Longleftrightarrow\\
+ &\quad\forall a,e,\pi_0,\pi_2.\quad
+ \left(\forall x\in\pi_0.\;e\leftrightarrow x\right)
+ \land\left(\forall x\in\pi_2.\;e\leftrightarrow x\right)\\
+ &\quad\Longrightarrow
+ \merge\bigl(\applySeq(D,\init,\pi_0),\doop(a,e),
+                   \applySeq(D,\init,\pi_2)\bigr)\\
+ &\qquad\quad=
+ \doop\Bigl(\merge\bigl(\applySeq(D,\init,\pi_0),a,
+                         \applySeq(D,\init,\pi_2)\bigr),e\Bigr).
+\end{aligned}
+\]
+This auxiliary adapter sits outside the canonical Join contract. Together
+with \lean{MergeLaws} and universal update commutativity, it supplies
+\lean{CausalDeltaLaw} for the all-commuting instance class.
 \[
 \begin{aligned}
  \mathsf{MergeLaws}(D)&+\mathsf{CommutingPeelLaw}(D)
@@ -1299,81 +1410,27 @@ The bridge uses \lean{MergeLaws} for the common core and canonical unit law,
 substitutes $\doop(m,e)$ for the arbitrary delta-state argument in each
 \lean{DeltaLaws} equation, and discards the canonical-tuple premises.
 
-Consequently, \lean{JoinProof.ofArbitraryStateLaws} is only the composition of
-\lean{CanonicalJoinLaws.ofArbitrary} and \lean{CanonicalJoinLaws.join}. It does
-not define a second Join property or a second foundational induction.
+The adapter \lean{JoinProof.ofArbitraryStateLaws} first constructs the
+canonical law bundle and invokes its Join theorem.  Both proof routes therefore
+conclude the same \lean{Join} property.
 \anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
   {JoinProof.ofArbitraryStateLaws}
 
-\subsubsection{Instance use}
-
-The semantic audit lists each RDT family first and keeps merge scope separate
-from operation issuance.
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.19\textwidth}
-  >{\raggedright\arraybackslash}p{0.22\textwidth}
-  >{\raggedright\arraybackslash}p{0.19\textwidth}
-  >{\raggedright\arraybackslash}p{0.32\textwidth}@{}}
-\toprule
-RDT & Merge theorem & Issuance policy & Role of issuance\\
-\midrule
-\endfirsthead
-\toprule
-RDT & Merge theorem & Issuance policy & Role of issuance\\
-\midrule
-\endhead
-Grow-only stores and flat counters & Join for all contexts & \lean{True} &
-No issuance restriction is needed.\\
-OR-Set & Join for all contexts & \lean{canIssue} &
-Establishes refinement from tagged storage to the ordinary add-wins set, not Join.\\
-Bounded counter & Join for all contexts & \lean{bcApplicable} &
-Establishes rights-respecting sequential legality and safety, not Join.\\
-TreeMove & Join for all contexts & \lean{applicable} &
-Restricts issuer inputs to visible nodes and reserved-node rules; the total
-chronological sequential proof does not require it.\\
-AegisSheet & Join for all contexts & \lean{applicable} &
-Establishes causal-origin legality and safety, not Join.\\
-RGA & Join for all contexts & \lean{applicable} &
-Establishes ordinary-list legality, not Join.\\
-Multi-value register & Join for all contexts & \lean{mvrApplicable} &
-Establishes the raw-fold sequential premise, not Join.\\
-Queue & Join under \lean{QHonestCore} & \lean{qApplicable} &
-Establishes the Join condition and sequential legality.\\
-EmbedRGA & Join under \lean{EHonestCore} & \lean{eApplicable} &
-Establishes the Join condition and ordinary-list legality.\\
-SidedEmbedRGA & Join under \lean{SHonestCore} & \lean{sApplicable} &
-Establishes the Join condition and ordinary-list legality.\\
-FugueMax proof signature & Join under \lean{FMHonestCore} & \lean{fApplicable} &
-Establishes the Join condition; this is an internal proof signature.\\
-SidedPeritext & Join under projected \lean{SHonestCore} & \lean{coreGuard} &
-Establishes the sequence Join condition and rich-editor legality.\\
-ProductionRGA and Peritext & Inherited Join under the embedded condition &
-Inherited generation policy & Reuses the underlying sequence certificate.\\
-\bottomrule
-\end{longtable}
-
-Proof engineering is a separate classification.
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.34\textwidth}
-  >{\raggedright\arraybackslash}p{0.58\textwidth}@{}}
-\toprule
-RDT & Proof route\\
-\midrule
-\endfirsthead
-\toprule
-RDT & Proof route\\
-\midrule
-\endhead
-Grow-only stores, flat counters, OR-Set, bounded counter, TreeMove,
-AegisSheet, RGA & Universal equations adapted to
-\lean{CanonicalJoinLaws}.\\
-Multi-value register & Native \lean{CanonicalJoinLaws}.\\
-Queue, EmbedRGA, SidedEmbedRGA, FugueMax & Direct datatype-specific
-\lean{JoinAt} theorems under explicit replay-context predicates.\\
-SidedPeritext & Componentwise composition with \lean{joinAt\_prod}.\\
-ProductionRGA and Peritext & Inherited contextual merge certificate.\\
-\bottomrule
-\end{longtable}
-Section~\ref{sec:client} defines how certified execution establishes the
-predicate of a restricted Join theorem.
+\paragraph{RGA instance.}
+RGA takes the universal shortcut. Its pointwise Boolean merge proves
+\lean{MergeLaws} and \lean{DeltaLaws}; raw updates commute, so
+\lean{CommutingPeelLaw} supplies \lean{CausalDeltaLaw}. The resulting chain is
+\[
+ \mathsf{MergeLaws}+\mathsf{DeltaLaws}
+ +\mathsf{CommutingPeelLaw}+\mathsf{allComm}
+ \Longrightarrow\mathsf{CanonicalJoinLaws}
+ \Longrightarrow\mathsf{Join}(\mathsf{RGAM}).
+\]
+The issuer predicate \lean{RGA.applicable} is used later to construct a legal
+ordinary-list history; the RGA merge theorem itself holds for every replay
+context.
+\anchor{Sal/MRDTs/Instances/RGA.lean}
+  {RGA.RGAM\_mergeLaws, RGA.RGAM\_deltaLaws, RGA.join}
 
 \subsection{Ordinary adequacy}
 
@@ -1710,7 +1767,10 @@ restricted form is
 \anchor{Sal/MRDTs/Metatheory/CertifiedAdequacy.lean}
   {replayWitness\_of\_mintCertifiedV}
 
-\section{Verification certificates and packaging}
+\section{Verification certificates and instances}
+\label{sec:instances}
+
+\subsection{How an instance closes the theorem stack}
 
 A replay-adequacy certificate has field
 \[
@@ -1740,6 +1800,18 @@ context condition.
   {ReplayAdequacyCertificate.ofJoin}
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {ReplayAdequacyCertificate.ofJoinOn}
+
+The first constructor applies to an all-context merge theorem and accepts any
+issuance policy. The second applies to a restricted theorem: the local
+issuance predicate must establish the global replay-context condition $G$.
+This gives the instance-level dependency
+\[
+ \mathsf{CanIssue}\Longrightarrow\mathsf{MintHonest}
+ \Longrightarrow G(R_C)\Longrightarrow\mathsf{JoinAt}(D,R_C)
+ \Longrightarrow\mathsf{HasReplayWitness}(C).
+\]
+The sequential certificate then chooses a legal ordering of that same event
+set and relates its abstract state and observations to the stored state.
 
 Let $\mathsf{CertifiedExecution}(D,I,C)$ mean either an ordinary
 $\mathsf{MintCertifiedReach}(D,I,C)$ derivation or a widened
@@ -1783,6 +1855,308 @@ Its public conclusions are
 \]
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {VerifiedMRDT.correct, VerifiedMRDT.correctV}
+
+\subsection{Released-instance summary}
+
+The typed production registry contains 18 \lean{PackagedMRDT} values. The
+table groups packages that instantiate the same parametric proof. ``Join''
+means $\mathsf{Join}(D)$ from Section~6.1; ``JoinOn $G$'' means
+$\mathsf{JoinOn}(D,G)$. These are theorem scopes, while the final column names
+the public sequential specification.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}
+  >{\raggedright\arraybackslash}p{0.20\textwidth}
+  >{\raggedright\arraybackslash}p{0.20\textwidth}
+  >{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
+\toprule
+RDT / released package & Merge theorem & Issuance policy & Sequential specification\\
+\midrule
+\endhead
+grow-only-set, add-store, finite-add-store & Join & $\mathsf{True}$ &
+Grow-only set/store, total legality\\
+counter, increment-only-counter, pn-counter & Join & $\mathsf{True}$ &
+Integer accumulator, total legality\\
+flat-grow-only-set, flat-grow-only-map & Join & $\mathsf{True}$ &
+Pointwise Boolean store, total legality\\
+bounded-counter & Join & \lean{bcApplicable} &
+Rights-respecting integer counter\\
+rga & Join & \lean{RGA.applicable} &
+Legal ordinary-list machine\\
+or-set & Join & \lean{ORSet.canIssue} &
+Ordinary add-wins finite set\\
+tree-move & Join & \lean{applicable} &
+Chronological mutable tree\\
+aegis-sheet & Join & \lean{applicable} &
+Causal-origin spreadsheet machine\\
+embed-rga, peritext-embed-rga & JoinOn \lean{EHonestCore} &
+\lean{eApplicable} & Legal embedded-list machine\\
+sided-embed-rga & JoinOn \lean{SHonestCore} &
+\lean{sApplicable} & Legal sided-list machine\\
+sided-peritext-core, sided-peritext-rich-core &
+JoinOn projected \lean{SHonestCore} & \lean{coreGuard} &
+Legal rich-editor machine\\
+\bottomrule
+\end{longtable}
+\anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}
+  {Production.registry, Production.names}
+
+\subsection{Formal instance profiles}
+
+Each profile below records the information needed to interpret the package:
+the representation, issuance predicate, merge scope, public sequential state
+and legality predicate, representation relation, and proof route. Helper
+lemmas remain in the cited instance modules.
+
+\paragraph{Grow-only stores and flat counters.}
+For AddStore and FinsetStore,
+\[
+ \State=\Pow(\alpha)\ \text{or}\ \mathsf{Finset}(\alpha),\qquad
+ \doop(s,e)=s\cup\{e.\mathsf{op}\},\qquad
+ \merge(l,a,b)=a\cup b.
+\]
+For the counter family parameterized by $\delta:O\to\mathbb Z$,
+\[
+ \State=\mathbb Z,\qquad
+ \doop(s,e)=s+\delta(e.\mathsf{op}),\qquad
+ \merge(l,a,b)=a+b-l.
+\]
+In both families, $I.\mathsf{CanIssue}=\mathsf{True}$,
+$\mathsf{Legal}(\pi)=\mathsf{True}$, the abstract machine repeats the displayed
+update, and $\mathsf{Rel}$ is equality. The pointwise-Boolean grow-only set
+and map use the same profile coordinatewise. All prove universal
+\lean{MergeLaws}, \lean{DeltaLaws}, and \lean{CommutingPeelLaw}, derive
+all-context Join, and package total sequential correctness.
+\anchor{Sal/MRDTs/Instances/AddStore.lean}
+  {AddStore.D, AddStore.generation, AddStore.spec, AddStore.verified}
+\anchor{Sal/MRDTs/Instances/FlatCounters.lean}
+  {FlatCounters.D, FlatCounters.generation, FlatCounters.spec,
+   FlatCounters.verified}
+
+\paragraph{Bounded counter.}
+The state records per-replica increment and decrement counts,
+$\State=(\N\to\mathbb Z)^2$, and
+\[
+\begin{aligned}
+ \mathsf{bcApplicable}(e,s)&\Longleftrightarrow
+ \begin{cases}
+  \mathsf{True},&e.\mathsf{op}=\mathsf{inc},\\
+  s_2(e.\mathsf{rep})+1\le s_1(e.\mathsf{rep}),
+       &e.\mathsf{op}=\mathsf{dec},
+ \end{cases}\\
+ \mathsf{ClientLegal}(\pi)&\Longleftrightarrow
+ (\exists\rho.\;\pi=\mathsf{canonical}(\rho))\land
+ \forall r.\;\#\mathsf{dec}_r(\pi)\le\#\mathsf{inc}_r(\pi).
+\end{aligned}
+\]
+The sequential state is $\N\to\mathbb Z$; its value at $r$ is increments
+minus decrements at $r$. The relation requires the representation invariant
+$0\le s_2(r)\le s_1(r)$ and equality with those differences. Join is
+all-context by the universal-law route; issuance establishes sequential
+legality and the separate safety certificate.
+\anchor{Sal/MRDTs/Instances/BoundedCounter.lean}
+  {BoundedCounter.bcApplicable, BoundedCounter.ClientLegal,
+   BoundedCounter.clientSpec, BoundedCounter.verified}
+
+\paragraph{Observed-remove set.}
+For element type $\alpha$,
+\[
+ \State=\mathsf{Finset}(\Time\times\alpha)\times\mathsf{Finset}(\Time),
+\]
+where the first component stores tagged additions and the second stores
+removed tags. Its issuer contract is
+\[
+ \mathsf{canIssue}(e,s)\Longleftrightarrow
+ \begin{cases}
+ e.\mathsf{time}\notin\mathsf{tags}(s_1),&e=\mathsf{add}(x),\\
+ T=\mathsf{liveTags}(s,x),&e=\mathsf{remove}(x,T).
+ \end{cases}
+\]
+The public sequential state is $\mathsf{Finset}(\alpha)$; add inserts the
+element, remove erases it, $\mathsf{Legal}(\pi)=\mathsf{True}$, and
+\[
+ \mathsf{stateRel}(s,A)\Longleftrightarrow
+ \forall x.\;\mathsf{contains}(s,x)=[x\in A].
+\]
+The MRDT effectors commute and prove all-context Join through the universal
+laws. Issuance is load-bearing for the tagged-storage refinement, even though
+the ordinary-set legality predicate is total: it proves that every remove
+payload contains exactly the tags observed at its causal origin. The public
+interaction order places a concurrent same-element remove before add, giving
+add-wins behavior.
+\anchor{Sal/MRDTs/Instances/ORSet.lean}
+  {ORSet.canIssue, ORSet.interaction, ORSet.spec, ORSet.stateRel,
+   ORSet.verified}
+
+\paragraph{Tombstone RGA.}
+The representation and merge were introduced in Section~2. Its issuer rule is
+\[
+\begin{aligned}
+ &\mathsf{applicable}((t,r,\mathsf{addAfter}(a,i)),s)\\
+ &\quad\Longleftrightarrow
+ i=t\land(a=0\lor\exists t',p.\;t'<t\land s_1(t',p,a)=\mathsf{true})\\
+ &\hspace{3em}\land(\forall a',i'.\;s_1(t,a',i')=\mathsf{false})
+ \land(\forall t',a'.\;s_1(t',a',i)=\mathsf{false})
+ \land s_2(i)=\mathsf{false},\\
+ &\mathsf{applicable}((t,r,\mathsf{remove}(i)),s)
+ \Longleftrightarrow
+ (\exists t',a.\;s_1(t',a,i)=\mathsf{true})
+ \land s_2(i)=\mathsf{false}.
+\end{aligned}
+\]
+The public state is $\mathsf{List}(\N)$. Its legality predicate requires
+unique timestamps, requires every insertion identifier to equal its timestamp
+and name root or an earlier insertion as anchor, and requires every removal
+to name an earlier insertion. The relation is
+$\mathsf{read}(s)=xs$. RGA proves all-context Join through the universal laws;
+issuance establishes well-formedness of the ordinary-list witness.
+\anchor{Sal/MRDTs/Instances/RGA.lean}
+  {RGA.applicable, RGA.generation, RGA.join}
+\anchor{Sal/MRDTs/Instances/RGASequential.lean}
+  {RGA.listLegal, RGA.listSpec, RGA.listRel, RGA.verified}
+
+\paragraph{TreeMove.}
+The state is a finite set of timestamped moves. Rendering sorts the set and
+applies each move to an ordinary tree. Issuance requires
+\[
+\begin{aligned}
+ \mathsf{applicable}(e,s)\Longleftrightarrow{}&
+ \mathsf{freshKey}_s(e)\land\mathsf{visibleNode}_s(e.\mathsf{parent})\\
+ &\land(\neg\mathsf{knownNode}_s(e.\mathsf{child})
+       \lor\mathsf{visibleNode}_s(e.\mathsf{child}))\\
+ &\land e.\mathsf{child}\ne\mathsf{root}
+ \land e.\mathsf{child}\ne\mathsf{trash}.
+\end{aligned}
+\]
+The sequential state is a mutable tree, the step applies one move, and
+$\mathsf{Legal}(\pi)=\mathsf{Nodup}(\pi)\land
+\mathsf{Pairwise}(\mathsf{eventLE},\pi)$. The relation equates the rendered
+event set with the sequential tree. Join is all-context by the universal-law
+route; the package also contains a separate tree-safety certificate.
+\anchor{Sal/MRDTs/Instances/TreeMove.lean}
+  {TreeMove.applicable, TreeMove.SequentialLegal, TreeMove.sequentialSpec,
+   TreeMove.verified}
+
+\paragraph{AegisSheet.}
+The MRDT stores a finite set of spreadsheet-intent events and merges by union.
+At issuance,
+\[
+ \mathsf{applicable}(e,E)\Longleftrightarrow
+ \mathsf{applicableB}(e,E)=\mathsf{true}
+ \land\forall t\in\mathsf{eventTimes}(E).\;t<e.\mathsf{time}.
+\]
+The Boolean part checks freshness, exact causal-origin metadata, action
+metadata, direct-action preconditions, and undo provenance. The public
+sequential state is the independent incremental spreadsheet state, and
+\[
+\begin{aligned}
+ \mathsf{CausalOriginLegal}(\pi)\Longleftrightarrow{}&
+ \mathsf{Chronological}(\pi)\land\\
+ &\forall\pi_0,e,\pi_1.\;\pi=\pi_0{+\!+}e::\pi_1\to
+ \exists E_0\subseteq\mathsf{toFinset}(\pi_0).\;
+ \mathsf{applicable}(e,E_0).
+\end{aligned}
+\]
+The relation states that every chronological enumeration materializes the
+same incremental state, that this state equals the event-set materialization,
+and that both answer the same sheet query. Join is all-context by universal
+laws; issuance establishes causal-origin legality and the safety invariants.
+\anchor{Sal/MRDTs/Instances/AegisSheet.lean}
+  {AegisSheet.applicable, AegisSheet.generation, AegisSheet.join}
+\anchor{Sal/MRDTs/Instances/AegisSheetSequential.lean}
+  {AegisSheet.Sequential.CausalOriginLegal,
+   AegisSheet.Sequential.clientSpec, AegisSheet.verified}
+
+\paragraph{EmbedRGA and Peritext.}
+An EmbedRGA insertion carries a payload, a coordinate prefix $p$, and an
+anchor $a$; deletion names an identifier. Its issuer rule is
+\[
+ \mathsf{eApplicable}(e,s)\Longleftrightarrow
+ \begin{cases}
+ a<e.\mathsf{time}\land((a=0\land p=[])
+   \lor\exists x.\;(a,x,p)\in s),&e=\mathsf{ins}(x,p,a),\\
+ i\in\mathsf{ids}(s),&e=\mathsf{del}(i).
+ \end{cases}
+\]
+$\mathsf{EHonestCore}(R)$ requires each deletion target to have a visible
+insertion and requires all insertion coordinates to arise from one positive,
+timestamp-summing chain assignment. The direct theorem is
+$\mathsf{JoinOn}(E,\mathsf{EHonestCore})$, and mint honesty for
+\lean{eApplicable} establishes that condition. The public sequential state is
+$\mathsf{List}(\N\times\alpha)$; legality requires increasing fresh insertion
+identifiers, the carried coordinate of an earlier anchor, and an earlier
+allocation for every deletion. The relation maps live records to identifier--
+payload pairs. Peritext instantiates the payload with characters and mark
+boundaries and inherits this certificate; its additional rendering theorem
+maps the certified buffer to marked text.
+\anchor{Sal/MRDTs/Instances/EmbedRGA.lean}
+  {EmbedRGA.EHonestCore, EmbedRGA.eApplicable, EmbedRGA.e\_join\_at}
+\anchor{Sal/MRDTs/Instances/ProductionRGA.lean}
+  {ProductionRGA.embedLegal, ProductionRGA.embedClientSpec,
+   ProductionRGA.embed}
+\anchor{Sal/MRDTs/Instances/Peritext.lean}{Peritext.verified}
+
+\paragraph{SidedEmbedRGA and SidedPeritext.}
+SidedEmbedRGA adds a left/right choice to insertion. Its
+\lean{sApplicable}, \lean{SHonestCore}, list legality, and relation are the
+sided analogues of the preceding profile; the side is selected at issuance
+and does not strengthen the anchor guard. Its merge theorem is
+$\mathsf{JoinOn}(S,\mathsf{SHonestCore})$.
+
+SidedPeritext composes the sided sequence with grow-only deletion and mark
+stores. For an event $e$ and state $(s_T,s_D,s_M)$, its cross-component guard
+is
+\[
+\mathsf{coreGuard}(e,s_T,s_D,s_M)\Longleftrightarrow
+\begin{cases}
+ \mathsf{sApplicable}(e,s_T),&e=\mathsf{textIns},\\
+ \mathsf{False},&e=\mathsf{textDel},\\
+ i\in\mathsf{ids}(s_T)\land i\notin s_D,&e=\mathsf{deleteStoreAdd}(i),\\
+ \mathsf{validMark}(e,s_T,s_D,s_M),&e=\mathsf{markStoreAdd}.
+\end{cases}
+\]
+The merge theorem composes projected $\mathsf{SHonestCore}$ with the two
+all-context grow-only-store theorems. The sequential state contains the sided
+list and both stores; legality is exactly the projected sided-list legality,
+while the issuance guard validates cross-component delete and mark references.
+The rich package changes only the query boundary to rendered marks.
+\anchor{Sal/MRDTs/Instances/SidedEmbedRGA.lean}
+  {SidedEmbedRGA.SHonestCore, SidedEmbedRGA.sApplicable,
+   SidedEmbedRGA.s\_join\_at}
+\anchor{Sal/MRDTs/Instances/SidedPeritext.lean}
+  {SidedPeritext.coreGuard, SidedPeritext.core\_join\_at,
+   SidedPeritext.clientSpec, SidedPeritext.verified,
+   SidedPeritext.richVerified}
+
+\subsection{Proof routes and evidence status}
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.33\textwidth}
+  >{\raggedright\arraybackslash}p{0.59\textwidth}@{}}
+\toprule
+Released family & Merge-proof route\\
+\midrule
+\endhead
+Grow-only stores, flat counters, bounded counter, OR-Set, TreeMove,
+AegisSheet, RGA & Universal equations adapted to
+\lean{CanonicalJoinLaws}, then all-context \lean{Join}\\
+EmbedRGA and SidedEmbedRGA & Direct datatype-specific \lean{JoinAt} under
+\lean{EHonestCore} or \lean{SHonestCore}\\
+Peritext & Inherited payload-parametric EmbedRGA certificate\\
+SidedPeritext & Componentwise \lean{joinAt\_prod}: restricted sided sequence
+plus two all-context grow-only stores\\
+\bottomrule
+\end{longtable}
+
+The negative and partial-evidence ledger is separate from the production
+registry. The multi-value register has replay adequacy but a mechanized
+counterexample to the ordinary single-register specification. The queue has
+conditional replay adequacy but a duplicate-dequeue FIFO counterexample. The
+FugueMax signature proves internal ordering-policy facts but has no public
+\lean{VerifiedMRDT}. These artifacts remain useful formal evidence, but they
+are not released datatype packages.
+\anchor{Sal/MRDTs/Metatheory/NegativeLedger.lean}
+  {Instances.MVR.concurrentState\_no\_sequential\_register,
+   Instances.Queue.ConditioningSPOT.duplicate\_dequeue\_not\_fifo,
+   Instances.SidedEmbedRGA.fuguemax\_replay\_witness}
 
 \section{Distributed commit-history collection}
 \label{sec:history-gc}
@@ -1965,7 +2339,34 @@ availability by the exact versions read by the resolver.
 
 \subsection{Datatype-state GC}
 
-A datatype-state protocol supplies
+A local collector is first specified independently of a runtime transition
+system.  For an issuance policy $I$, a certificate supplies compact states
+$C$, collection evidence $W$, a relation $c\mathrel{\mathsf{Rep}}s$ to the
+full datatype state, an evidence predicate, and compact interpretations of
+initialization, update, ternary merge, and query.  Its central obligations are
+\[
+\begin{aligned}
+ c\mathrel{\mathsf{Rep}}s\land\mathsf{EvidenceValid}(w,c,s)
+ &\Longrightarrow \mathsf{collect}(w,c)\mathrel{\mathsf{Rep}}s,\\
+ c\mathrel{\mathsf{Rep}}s\land I.\mathsf{CanIssue}(e,s)
+ &\Longrightarrow \mathsf{update}_C(c,e)
+       \mathrel{\mathsf{Rep}}\doop(s,e),\\
+ c_l\mathrel{\mathsf{Rep}}l\land c_a\mathrel{\mathsf{Rep}}a
+ \land c_b\mathrel{\mathsf{Rep}}b\land\mathsf{Compatible}(a,b)
+ &\Longrightarrow \mathsf{merge}_C(c_l,c_a,c_b)
+       \mathrel{\mathsf{Rep}}\merge(l,a,b),\\
+ c\mathrel{\mathsf{Rep}}s
+ &\Longrightarrow \mathsf{query}_C(c,q)=\mathsf{query}(s,q).
+\end{aligned}
+\]
+Together with the corresponding initialization law, this is
+\lean{StateGCCertificate}.  The generic
+\lean{StateGCCertificate.exactState} chooses $C=\State$, equality as
+$\mathsf{Rep}$, and identity collection.  It is a preservation baseline, not
+a reclamation result.
+
+The more general \lean{StateGCProtocol} embeds collection into physical
+execution.  It supplies
 \[
 \begin{array}{rcl}
  \mathsf{Physical}&:&\mathsf{Type},\\
@@ -1981,7 +2382,137 @@ $\mathsf{semantic}(P')=\mathsf{semantic}(P)$, and visible refinement to
 reflexive-transitive closure of \lean{StepV D V}. Every finite valid physical
 trace therefore erases to such a widened semantic trace.
 \anchor{Sal/MRDTs/Framework/StateGC.lean}
-  {StateGCProtocol, StateGCProtocol.refines}
+  {StateGCCertificate, StateGCCertificate.exactState,
+   StateGCProtocol, StateGCProtocol.refines}
+
+\subsection{Per-datatype collection profiles}
+
+The typed \lean{Production.StateGC.registry} follows the same eighteen-entry
+order as the released-instance registry.  Its four constructors distinguish
+an exact-state baseline, a representation-changing local certificate, an
+operational protocol, and a staged collector.  Thus registry coverage means
+that the status of every released package is explicit; it does not mean that
+every package already reclaims state.
+
+\paragraph{Grow-only stores and flat grow-only stores.}
+Grow-only set, AddStore, FinsetStore, flat grow-only set, and flat grow-only
+map currently use the semantic set or pointwise map as the compact state:
+\[
+ C=\State,\qquad c\mathrel{\mathsf{Rep}}s\Longleftrightarrow c=s,
+ \qquad\mathsf{collect}((),c)=c.
+\]
+Their registry entries therefore carry the exact-state certificate.  Every
+stored member is part of the monotone semantic value under the current
+signature; a stronger result would have to prove a representation quotient
+or state formally that no internal metadata is reclaimable.
+
+\paragraph{Counters.}
+The integer counter, increment-only counter, PN-counter, and bounded counter
+also carry exact-state certificates.  Their states are already aggregates,
+not replay logs: one integer for the flat counters, or per-replica increment
+and decrement components for the bounded counter.  Removing a component would
+need an explicit replica-retirement or coordinate-normalization protocol;
+none is part of the released semantics.
+
+\paragraph{Tombstone RGA.}
+RGA is staged because its event representation retains both insertion records
+and deletion tombstones.  The intended collector needs stable-frontier
+evidence authorizing removal of a dead insertion while retaining enough
+anchor and order information for concurrent descendants and stale branches.
+Formally, it must instantiate $C$, $W$, and $\mathsf{Rep}$ above and prove
+update, ternary-merge, list-query, and continuation preservation.  Until those
+obligations are discharged, its registry entry contains only the exact-state
+baseline.
+
+\paragraph{EmbedRGA and Peritext.}
+EmbedRGA, its Peritext specialization, and their current live-sequence
+representations use exact-state certificates.  Deletion is represented by removal
+from the live sequence rather than a separate graveyard, but surviving
+coordinates and anchors may still constrain later insertions.  A smaller
+physical encoding therefore needs a continuation theorem for coordinate and
+anchor summaries, not merely equality of the current rendered list.
+
+\paragraph{SidedEmbedRGA and SidedPeritext core.}
+The sided sequence and the ordinary SidedPeritext core likewise use exact
+state.  In particular, the core query exposes its component stores, so a
+collector that deletes entries cannot preserve that query by equality.  A
+representation-changing theorem must either retain those stores, change the
+public query boundary, or relate them through an explicit abstraction.  The
+released rich-query package takes the latter route.
+
+\paragraph{Rich SidedPeritext.}
+The rich package has an operational collector.  A compact state contains the
+retained sided text, a Fugue gap summary, deletion and mark stores, and a
+stable Lamport cut.  Its representation evidence records a keep predicate,
+knowledge used to reconstruct the full semantic text, gap-map correctness,
+an old-identifier bound, and equality of every rich-text query.  The physical
+system can silently collect text, trim deletion metadata, drop a cancelling
+mark pair, or reframe identifiers; ordinary and virtual-base operations remain
+visible.  \lean{StateGCProtocol.refines} then covers arbitrary finite
+interleavings of those steps.
+\anchor{Sal/MRDTs/Instances/SidedPeritextStateGC.lean}
+  {SidedPeritext.StateGC.CompactState, SidedPeritext.StateGC.collectText,
+   SidedPeritext.StateGC.trimDeleted, SidedPeritext.StateGC.dropMarkPair}
+\anchor{Sal/MRDTs/Instances/SidedPeritextProtocol.lean}
+  {SidedPeritext.StateGC.Protocol.Represents,
+   SidedPeritext.StateGC.Protocol.protocol}
+
+\paragraph{TreeMove.}
+TreeMove has an operational collector with
+\[
+ C=\{\mathsf{base}:\mathsf{Tree},\;
+      \mathsf{pending}:\mathsf{List}(\mathsf{Event})\},\qquad
+ \mathsf{materialize}(c)=
+   \mathsf{replayFrom}(c.\mathsf{base},c.\mathsf{pending}).
+\]
+A \lean{StableCut} splits canonical replay into a stable prefix and pending
+suffix.  Collection folds the prefix into the base tree; after the pending
+suffix is empty, a second collector prunes the hidden trash subtree.  The
+representation relation equates the compact visible tree with the query of
+the full event set, and the packaged protocol proves silent collection plus
+visible ordinary and widened execution.
+\anchor{Sal/MRDTs/Instances/TreeMoveGC.lean}
+  {TreeMove.GC.StableCut, TreeMove.GC.Compact,
+   TreeMove.GC.collectPrefix, TreeMove.GC.collectTrash,
+   TreeMove.GC.protocol}
+
+\paragraph{AegisSheet.}
+The current AegisSheet MRDT stores an event set and merges it by union.  Its
+collector retains replicated purge markers but removes exactly the covered
+cell payloads:
+\[
+ \mathsf{semanticCollect}(E)
+ =\{e\in E\mid e\text{ is not a cell update covered by a retained marker}\}.
+\]
+The compact state is another finite event set, and
+\[
+ c\mathrel{\mathsf{Rep}}E\Longleftrightarrow
+ c=\mathsf{semanticCollect}(E)\land
+ \mathsf{StateValid}(E)\land\mathsf{TimestampUnique}(E).
+\]
+The certificate normalizes after collection, update, and union merge and
+proves equality of the whole sheet view.  This is genuine payload
+reclamation, but it is still a collector for the event-set encoding; it is
+not yet the proposed materialized three-way AegisSheet representation.
+\anchor{Sal/MRDTs/Instances/AegisSheetGC.lean}
+  {AegisSheet.GC.semanticCollect, AegisSheet.GC.Represents,
+   AegisSheet.GC.certificate}
+
+\paragraph{Observed-remove set.}
+OR-Set is staged.  Its full state retains tagged additions and removed-tag
+tombstones.  A collector must use stable-frontier or equivalent evidence to
+remove a dead tag while proving that a stale branch cannot resurrect it and
+that future remove payloads and add-wins queries remain correct.  The current
+registry entry deliberately supplies only the exact-state baseline.
+
+Only AegisSheet, TreeMove, and rich SidedPeritext currently package
+representation-changing proofs.  The roadmap treats every remaining
+exact-state profile as an open classification obligation: supply a real
+collector when metadata is reclaimable, or prove that the released
+representation contains no semantically redundant internal state.
+\anchor{Sal/MRDTs/Metatheory/StateGCCoverage.lean}
+  {StateGCCoverage, PackagedStateGC, Production.StateGC.registry,
+   Production.StateGC.names}
 
 \subsection{Composition}
 
@@ -2004,44 +2535,6 @@ If the datatype protocol also proves that every visible physical step is raw,
 the ordinary refinement follows.
 \anchor{Sal/MRDTs/GC/StateComposition.lean}
   {GC.combinedProtocol, GC.CombinedSteps.refinesV, GC.CombinedSteps.refinesRaw}
-
-\section{The public theorem stack}
-
-\renewcommand{\arraystretch}{1.08}
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}
-  >{\raggedright\arraybackslash}p{0.69\textwidth}@{}}
-\toprule
-Layer & Contract and consequence\\
-\midrule
-\endhead
-Operational semantics & \lean{MRDTSig}, \lean{Configuration}, and
-\lean{Step} define the raw version-DAG machine.\\
-Replay model & \lean{ReplayContext}, $\loOn$, and \lean{ReplayLaws} make a
-finite event set denote a unique canonical fold.\\
-Reachability invariant & \lean{CanonicalConfig} says every allocated version
-stores that fold and carries the visibility/support facts used by induction.\\
-Merge obligation & \lean{JoinAt} maps canonical intersection and branch
-states to the canonical union state. \lean{Join} and \lean{JoinOn}
-specify its scope; law bundles are proof routes for all-context \lean{Join}.\\
-Internal adequacy & Reachability plus Join gives \lean{CanonicalConfig}, then
-\lean{HasReplayWitness}.\\
-Client discipline & \lean{Issuance}, \lean{InteractionSpec}, and
-\lean{SequentialSpec} independently state creation, public ordering, legality,
-state relation, and observations.\\
-Public correctness & \lean{VerifiedMRDT.correct} and \lean{correctV} establish
-\lean{IsSpecLinearizable}, not merely replay adequacy;
-\lean{PackagedMRDT} adds the datatype name and signature.\\
-Virtual bases & The recursive maximal-common-ancestor fold supplies a canonical intersection state
-when no GCA is available.\\
-Collection & Commit-history and datatype-state GC independently refine
-ordinary or widened uncollected semantics and compose by trace erasure.\\
-\bottomrule
-\end{longtable}
-\renewcommand{\arraystretch}{1}
-
-\lean{CanonicalConfig} is the inductive workhorse.
-\lean{HasReplayWitness} is its internal projection, not a separate public
-target; \lean{IsSpecLinearizable} is the client-facing theorem.
 
 \appendix
 
@@ -2102,8 +2595,12 @@ Compressed DAG & \lean{GC.CompressedReaches} &
 \src{Sal/MRDTs/GC/CompressedDAG.lean}{CompressedDAG.lean}\\
 Runtime refinement & \lean{GC.runtime\_refines\_coreV} &
 \src{Sal/MRDTs/GC/Refinement.lean}{Refinement.lean}\\
-Datatype-state GC & \lean{StateGCProtocol} &
+Local state-GC certificate & \lean{StateGCCertificate} &
 \src{Sal/MRDTs/Framework/StateGC.lean}{StateGC.lean}\\
+Datatype-state GC protocol & \lean{StateGCProtocol} &
+\src{Sal/MRDTs/Framework/StateGC.lean}{StateGC.lean}\\
+Per-datatype GC coverage & \lean{Production.StateGC.registry} &
+\src{Sal/MRDTs/Metatheory/StateGCCoverage.lean}{StateGCCoverage.lean}\\
 GC composition & \lean{GC.CombinedSteps.refinesV} &
 \src{Sal/MRDTs/GC/StateComposition.lean}{StateComposition.lean}\\
 \bottomrule
@@ -2115,8 +2612,8 @@ GC composition & \lean{GC.CombinedSteps.refinesV} &
 The merge-free projection $D_U$ from Section~2 is implemented by
 \lean{UpdateSig}. The projection
 \lean{MRDTSig.toUpdateSig} forgets queries and ternary merge, retaining only
-the data needed for event application, finite replay, and commutation. It is an
-internal algebraic view of an MRDT, not a second datatype interface.
+the data needed for event application, finite replay, and commutation. It is
+the internal algebraic view consumed by replay proofs.
 
 Some historical proof modules still study a binary operation. They request it
 through a separate optional capability:

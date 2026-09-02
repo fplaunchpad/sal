@@ -76,10 +76,23 @@ test -s docs/collaborative-editing-paper/main.pdf
 test -s docs/formal-reference/main.pdf
 
 if ! pdftotext -layout docs/formal-reference/main.pdf - | \
-    rg -q 'RDT[[:space:]]+Merge theorem[[:space:]]+Issuance policy'; then
+    rg -q 'RDT / released package[[:space:]]+Merge theorem[[:space:]]+Issuance policy'; then
   echo 'formal-reference PDF does not contain the current RDT-first table' >&2
   exit 1
 fi
+
+formal_reference_text="${TMPDIR:-/tmp}/sal-formal-reference.txt"
+pdftotext -layout docs/formal-reference/main.pdf "$formal_reference_text"
+for required_gc_text in \
+    'Per-datatype collection profiles' \
+    'Tombstone RGA.' \
+    'Rich SidedPeritext.' \
+    'Observed-remove set.'; do
+  if ! rg -q -F "$required_gc_text" "$formal_reference_text"; then
+    echo "formal-reference PDF is missing GC profile: $required_gc_text" >&2
+    exit 1
+  fi
+done
 
 for pdf in docs/framework-paper/main.pdf docs/collaborative-editing-paper/main.pdf docs/formal-reference/main.pdf; do
   if pdftotext "$pdf" - | rg -ni 'KC Sivaramakrishnan|kc@kcsrk|PACMPL|Sal_paper|fplaunchpad'; then

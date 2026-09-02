@@ -55,8 +55,8 @@ check_symbol 'CausalDeltaLaw' '\mathsf{CausalDeltaLaw}(D)\Longleftrightarrow'
 check_symbol 'CanonicalJoinLaws' '\mathsf{CanonicalJoinLaws}(D)=\langle'
 check_symbol '\lean{MergeLaws}' 'The universal merge bundle \lean{MergeLaws} contains'
 check_symbol '\lean{DeltaLaws}' 'The bundle \lean{DeltaLaws} contains'
-check_symbol 'CommutingPeelLaw' 'The auxiliary \lean{CommutingPeelLaw} is not part'
-check_symbol 'JoinProof.ofArbitraryStateLaws' 'Consequently, \lean{JoinProof.ofArbitraryStateLaws} is only'
+check_symbol 'CommutingPeelLaw' 'The auxiliary \lean{CommutingPeelLaw} states'
+check_symbol 'JoinProof.ofArbitraryStateLaws' 'The adapter \lean{JoinProof.ofArbitraryStateLaws} first constructs'
 check_symbol 'InteractionSpec' '\lean{InteractionSpec D} supplies'
 check_symbol 'IsSpecLinearizable' '\lean{IsSpecLinearizable D A Spec Rel C} is'
 check_symbol 'MintCertifiedReachV' '\lean{MintCertifiedReachV D V I C} is'
@@ -64,6 +64,8 @@ check_symbol 'IssuanceEstablishes' '\mathsf{IssuanceEstablishes}(D,I,G)\Longleft
 check_symbol 'canonicalVirtualMergeBase' '$\mathsf{canonicalVirtualMergeBase}(D)$.'
 check_symbol 'CertifiedExecution' 'Let $\mathsf{CertifiedExecution}(D,I,C)$ mean'
 check_symbol 'VerifiedMRDT' '\mathsf{VerifiedMRDT}(D)='
+check_symbol 'StateGCCertificate' '\lean{StateGCCertificate}.  The generic'
+check_symbol 'StateGCProtocol' 'The more general \lean{StateGCProtocol}'
 check_symbol 'EvidenceComplete' '\mathsf{EvidenceComplete}(P,A,R,r_s,L)\Longleftrightarrow'
 check_symbol 'IsGCARel' '\mathsf{IsGCARel}(R_V,v_1,v_2,v_T)\Longleftrightarrow'
 check_symbol 'CompressedReaches' '\mathsf{CompressedReaches}_{P,K}'
@@ -72,7 +74,7 @@ check_symbol 'CoreSteps' 'let $\mathsf{CoreSteps}$ be'
 check_symbol 'SemanticSteps' 'Write $\mathsf{SemanticSteps}_V$ for'
 check_symbol 'CombinedSteps' '$\mathsf{CombinedSteps}$ for the list-labelled closure'
 
-if rg -n 'StateGCCertificate|HeadOnlyMergeCapability' "$doc"; then
-  echo 'formal-reference order check: unused datatype-state interface returned to the main narrative' >&2
+if rg -n 'HeadOnlyMergeCapability' "$doc"; then
+  echo 'formal-reference order check: unused head-only state-GC interface returned to the main narrative' >&2
   exit 1
 fi

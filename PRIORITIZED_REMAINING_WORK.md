@@ -10,7 +10,8 @@ anonymous long-form working papers under `docs/`.
   `archive/conditioned-mrdts-2026-08-21`.
 - [x] Replace the conditioned signature with plain `MRDTSig`, implementer
   `Issuance`, sequential-specification, and `VerifiedMRDT` interfaces. Keep
-  safety and datatype-state GC as separate optional certificates.
+  safety separate from the client-correctness package. Track datatype-state GC
+  for every production entry in a separate typed coverage registry.
 - [x] Port ordinary and canonical virtual-merge-base semantics and adequacy without
   `LegacyBridge`.
 - [x] Port the paper-facing RGA, EmbedRGA, SidedEmbedRGA/FugueMax, Peritext,
@@ -310,6 +311,23 @@ anonymous long-form working papers under `docs/`.
   - [ ] Repair or replace the Scala runtime using stable-ID/anchor undo and
     axis-specific post-move range validation. Re-run the permanent regressions,
     then implement benchmarks only after the differential gate passes.
+- [ ] **Explore a materialized three-way AegisSheet MRDT.** Treat this as a new
+  datatype design, not as an optimization silently substituted for the
+  released event-set/union model. Define a materialized state containing the
+  semantically necessary observed-remove tokens, active timestamped cell and
+  range versions, position candidates, and any retained anchor summary. Give a
+  ternary merge whose ancestor argument supplies the causal information that
+  the current events' `seen` sets reconstruct. State the candidate
+  correspondence explicitly, for example
+  `materialize (E₁ ∪ E₂) = mergeM (materialize (E₁ ∩ E₂))
+  (materialize E₁) (materialize E₂)`, with a separate cross-component revival
+  clause for update-wins row and column removal. Use randomized version-DAG
+  property tests and minimized SPOTs against all published merge/undo matrix
+  fixtures before attempting proofs. Then prove the appropriate `JoinAt`
+  theorem, causal-origin sequential refinement, and a datatype-state GC
+  protocol, and measure the metadata reduction against the event-set model.
+  Preserve the known range-anchor and no-view-only-state counterexamples as
+  design constraints.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.
@@ -371,8 +389,44 @@ anonymous long-form working papers under `docs/`.
     Neem/global-arbitration route as motivation, distinguish representation
     convergence from sequential arbitration, and use LWW and OR-set as the
     small explanatory examples before the richer RGA/Peritext developments.
-- [ ] Extend reusable state-GC certificates to other production datatypes where
-  the state contains reclaimable metadata.
+- [x] Add `Production.StateGC.registry` in production order and make it
+  distinguish exact-state baselines, collecting certificates, operational
+  protocols, and staged collectors. Document the compact representation,
+  evidence, preservation result, and residual obligation for every released
+  datatype in the formal reference.
+- [ ] **Finish datatype-state collection coverage for every released
+  datatype.** For each exact-state entry, either implement a genuinely smaller
+  representation and its continuation-safe collector or prove that the
+  released representation contains no reclaimable semantic metadata under its
+  current operation and query interface. Do not count
+  `StateGCCertificate.exactState` as reclamation.
+  - [ ] Grow-only stores and flat grow-only stores: formalize the irreducibility
+    claim for semantic members, or introduce a representation quotient with
+    update, merge, query, and continuation preservation.
+  - [ ] Flat counters and bounded counter: prove that the aggregate state is
+    already minimal for the current interface, or specify replica retirement
+    and coordinate normalization evidence and implement the corresponding
+    operational collector.
+  - [ ] Tombstone RGA: replace deleted insertion records and tombstones with a
+    frontier-authorized anchor/order summary and prove update, merge, list-read,
+    and continuation refinement.
+  - [ ] OR-Set: reclaim dead add records and observed-tag tombstones with
+    frontier or equivalent merge evidence, including stale-branch and
+    no-resurrection controls.
+  - [ ] EmbedRGA and Peritext EmbedRGA: determine which coordinate and anchor
+    information remains continuation-relevant after deletion, then implement a
+    stable-frontier summary and prove restricted-Join-compatible updates,
+    merges, list/rich-text queries, and future insertions.
+  - [ ] SidedEmbedRGA: extend that result to side-sensitive Fugue ordering and
+    retain exactly the LiveGap/Fugue policy evidence needed by later inserts.
+  - [ ] SidedPeritext core: either define an abstract query boundary under which
+    text, deletion, and mark collection is observational, or prove that the raw
+    component-store query prevents representation-changing GC. Relate the
+    result explicitly to the existing rich-query protocol.
+  - [ ] Rich SidedPeritext, TreeMove, and AegisSheet: promote the existing
+    representation-changing certificates/protocols through the production
+    runtime packaging, add stale-branch and crash-recovery scenarios where
+    applicable, and publish before/after retained-state measurements.
 
 ## 3. Repository automation
 

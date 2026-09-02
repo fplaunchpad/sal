@@ -101,6 +101,48 @@ structure StateGCCertificate (D : MRDTSig)
   query_correct : ∀ {compact full}, Represents compact full →
     ∀ q, query compact q = D.query full q
 
+namespace StateGCCertificate
+
+/-- Exact-state baseline for a datatype that has no separate compact
+representation.  This certificate proves preservation but performs no
+reclamation; coverage tables must not classify it as a collecting
+implementation. -/
+def exactState (D : MRDTSig) (I : Issuance D) : StateGCCertificate D I where
+  CompactState := D.State
+  Evidence := Unit
+  Represents := fun compact full => compact = full
+  EvidenceValid := fun _ _ _ => True
+  Compatible := fun _ _ => True
+  init := D.init
+  collect := fun _ compact => compact
+  update := D.update
+  merge := D.merge
+  query := D.query
+  init_represents := rfl
+  collect_represents := by
+    intro _ compact full represented _
+    exact represented
+  update_represents := by
+    intro compact full op represented _
+    subst compact
+    rfl
+  merge_represents := by
+    intro cl ca cb l a b representedL representedA representedB _
+    subst cl
+    subst ca
+    subst cb
+    rfl
+  query_correct := by
+    intro compact full represented query
+    subst compact
+    rfl
+
+@[simp] theorem exactState_collect (D : MRDTSig) (I : Issuance D)
+    (state : D.State) :
+    (exactState D I).collect () state = state := rfl
+
+end StateGCCertificate
+
 /-- Some implementations can compute a merge result from the two branch
 heads while the semantic virtual merge base remains ghost state. -/
 structure HeadOnlyMergeCapability {D : MRDTSig} {I : Issuance D}
