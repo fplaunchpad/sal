@@ -28,7 +28,10 @@ for all three kernels. Two collectors address
 different sources of growth. An asynchronous distributed collector removes
 commit history; a Peritext-specific collector removes dead text records,
 deletion evidence, and closed mark pairs while preserving future edits. Their
-composition refines the uncollected virtual-merge-base semantics. A JavaScript
+composition refines the uncollected virtual-merge-base semantics. Elementary
+arguments show that the retained metadata is necessary: a design that forgets
+deleted elements reorders survivors, admits no correct merge, and violates the
+strong list specification. A JavaScript
 implementation exercises the same designs. Repeated measurements show why
 both collectors and all three sequence baselines matter: on one long trace,
 EmbedRGA snapshots are 8.9 times smaller than RGA, while the sided
@@ -89,6 +92,12 @@ generic asynchronous commit-history collector.
 by directed, randomized, snapshot, GC, and differential tests. It is not code
 extracted from Lean; an evidence manifest records the Lean package and
 correspondence status of each released datatype.
+\item The memory that all three kernels keep about deleted elements is
+necessary. Self-contained arguments over finite executions show that a design
+whose state forgets a deleted element reorders survivors on one replica,
+admits no merge implementing the RGA order, violates the strong list
+specification, and must retain a logarithmic number of bits per lone
+survivor.
 \end{enumerate}
 
 We use three evidence words consistently. A Lean declaration is
@@ -96,6 +105,7 @@ We use three evidence words consistently. A Lean declaration is
 number is \emph{measured}.
 
 \section{Why plain RGA is the motivating example}
+\label{sec:motivation}
 
 An insert operation names an anchor and a globally fresh identifier:
 \[
@@ -125,8 +135,9 @@ issuance facts to establish the replay-context condition of their Join
 theorems.
 
 \subsection{The tombstone baseline}
+\label{sec:baseline}
 
-The paper-level RGA state is a pair $S=(A,G)$:
+The paper-level state of RGA~\cite{roh2011rga} is a pair $S=(A,G)$:
 \[
  A\subseteq \mathbb N^3,\quad (t,a,x)\in A
  \text{ records the birth of $x$ after $a$};
@@ -182,6 +193,318 @@ version's materialization. The left arrow is commit-history GC; the right
 arrow is datatype-state GC.}
 \label{fig:two-kinds-gc}
 \end{figure}
+
+\section{Why sequence state must remember deleted elements}
+\label{sec:retention}
+
+The baseline of Section~\ref{sec:baseline} keeps a grave for every deleted
+identifier. EmbedRGA and SidedEmbedRGA keep no graves, but the coordinate of a
+live character begins with the codes of its dead ancestors, and the Peritext
+product keeps a deleted-identifier set. Section~\ref{sec:eval} measures what
+this memory costs. This section shows that some such memory is forced. A
+sequence design whose state forgets a deleted element reorders survivors on a
+single replica, admits no correct merge, and violates the strong list
+specification of Attiya et al.~\cite{attiya2016list}. A lone survivor must
+carry a logarithmic number of bits about the elements deleted around it.
+
+The arguments are elementary. Each is a finite execution that the reader can
+replay by hand from the definitions below, and none depends on the Lean
+development or on any representation beyond the properties stated. The
+section closes by explaining why convergence proofs cannot detect these
+failures.
+
+\subsection{Designs, diamonds, and specifications}
+
+\begin{definition}[sequence design]
+A sequence design is a tuple
+$D=(\Sigma,\init,\mathsf{do},\mathsf{read},\merge)$ with
+\[
+ \mathsf{do}:\Sigma\times\mathit{Op}\to\Sigma,\qquad
+ \mathsf{read}:\Sigma\to\mathit{Id}^{*},\qquad
+ \merge:\Sigma\times\Sigma\times\Sigma\to\Sigma,
+\]
+where an operation is $\ins(t,a,x)$ or $\del(x)$ as in
+Section~\ref{sec:motivation}. A history $h$ is a list of operations and
+$\mathsf{fold}(\sigma,h)$ applies it left to right. A history is
+\emph{legal} from $\sigma$ when each insert uses a fresh identifier and an
+anchor that is $0$ or live in the state it is applied to, and each delete
+names a live identifier. Legality is the issuer discipline of
+Section~\ref{sec:motivation}; every history below is legal.
+\end{definition}
+
+\begin{definition}[diamond]
+A diamond is a triple of histories $(h_L,h_A,h_B)$ with
+\[
+ L=\mathsf{fold}(\init,h_L),\qquad
+ S_A=\mathsf{fold}(L,h_A),\qquad
+ S_B=\mathsf{fold}(L,h_B),\qquad
+ M=\merge(L,S_A,S_B).
+\]
+Its \emph{observed reads} are $\mathsf{read}$ of every state along the three
+folds, including $L$, $S_A$, $S_B$, and of $M$. A diamond is one merge step
+of the version-DAG semantics with $L$ the lowest common ancestor.
+\end{definition}
+
+\begin{definition}[sequential specification]
+The naive list semantics $\mathsf{naive}(h)$ inserts $x$ immediately after
+$a$ (at the front when $a=0$) and removes the deleted element. A design is
+\emph{sequentially sound} when $\mathsf{read}(\mathsf{fold}(\init,h))
+=\mathsf{naive}(h)$ for every legal history. It is
+\emph{delete-order preserving} when, for every reachable $\sigma$ and live
+$x$, $\mathsf{read}(\mathsf{do}(\sigma,\del(x)))$ is
+$\mathsf{read}(\sigma)$ with $x$ removed. Sequential soundness implies
+delete-order preservation.
+\end{definition}
+
+\begin{definition}[strong list specification]
+A diamond satisfies the strong list specification when there is a strict
+total order $<$ on every identifier inserted in it such that every observed
+read is sorted by $<$. Equivalently, an order in which two elements have
+been displayed anywhere is never reversed anywhere, even transitively
+through elements that have since been deleted.
+\end{definition}
+
+The strong list specification mentions no implementation, no anchor, and
+no timestamp. It is the weakest statement of ``what any user has seen stays
+in order''. The RGA order $\seq(A,G)$ of Section~\ref{sec:baseline} is a
+particular stronger intent: it fixes the merged order completely from births
+and graves.
+
+\subsection{A forgetful delete reorders survivors on one replica}
+
+Consider the most direct tombstone-free variant of RGA, the \emph{splice}
+design. Its state is a forest of live records $(t,x,a)$ whose anchor $a$ is
+$0$ or a live identifier. Insert adds a record. Delete removes the target's
+record and re-anchors the target's children to the target's own anchor. The
+read is the RGA traversal of the live forest: children of each node in
+decreasing identifier order, depth first. No deleted identifier survives in
+the state.
+
+\begin{proposition}[delete-order violation]
+\label{prop:reorder}
+The splice design is not delete-order preserving, and hence not
+sequentially sound.
+\end{proposition}
+
+\begin{proof}
+Take $h=[\ins(1,0,a),\ \ins(2,0,b),\ \ins(3,1,c)]$. The naive semantics
+gives $[a]$, then $[b,a]$, then $[b,a,c]$. The splice forest has root
+children $2$ and $1$ and child $3$ under $1$; its read is $[b,a,c]$ as well.
+Now apply $\del(1)$. The naive result is $[b,c]$. The splice removes record
+$1$ and re-anchors $3$ to the root, so the root children are $3$ and $2$,
+read in decreasing identifier order as $[c,b]$. The surviving pair $b,c$ has
+been reversed by a delete that named neither of them.
+\end{proof}
+
+\begin{proposition}[the baseline preserves survivor order]
+\label{prop:baseline-order}
+The RGA baseline of Section~\ref{sec:baseline} is delete-order preserving.
+\end{proposition}
+
+\begin{proof}
+$\del(x)$ changes only $G$. By definition
+$\seq(A,G\cup\{x\})=\mathsf{filter}_{y\notin G\cup\{x\}}(\ldots)$ is
+$\seq(A,G)$ with $x$ removed, because the splice fold that precedes the
+filter reads $A$ alone.
+\end{proof}
+
+The grave is exactly the memory that Proposition~\ref{prop:reorder} lacks:
+the dead anchor $1$ keeps holding $c$'s place. One might hope to recover
+this without graves by a smarter re-anchoring rule. The next proposition
+shows that no local rule makes insert and delete commute, which is the
+property the baseline's convergence proof rests on (all its operation pairs
+commute; see Section~\ref{sec:proved-all}).
+
+\begin{proposition}[no local re-anchoring rule commutes]
+\label{prop:no-commute}
+Let $D$ be any design over live forests in which
+$\ins(t,a,x)$ stores the record $(t,x,f(\sigma,a))$ with $f(\sigma,a)=a$
+whenever $a$ is live, and $\del(x)$ removes $x$ and re-anchors its children
+to $g(\sigma,x)$ with $g(\sigma,x)$ equal to $x$'s anchor whenever $x$ and
+that anchor are live, where $f$ and $g$ read only live records. Then there
+is a reachable state on which an insert after $x$ and the deletion of $x$
+do not commute.
+\end{proposition}
+
+\begin{proof}
+Let $\sigma_1$ contain live records $(1,\cdot,0)$, $(4,\cdot,0)$, and
+$(2,\cdot,1)$, and let $\sigma_2$ be the same with $(2,\cdot,4)$ instead.
+Element $2$ is a leaf in both. Deleting $2$ re-anchors nothing, so
+$\mathsf{do}(\sigma_1,\del(2))=\mathsf{do}(\sigma_2,\del(2))=\rho$, the
+forest with records $1$ and $4$ only. Applying $\ins(7,2,y)$ to $\rho$
+stores anchor $v=f(\rho,2)$, the same value in both cases because $\rho$ is
+the same state. In the other order, $\ins(7,2,y)$ finds $2$ live and stores
+$(7,y,2)$; the subsequent $\del(2)$ re-anchors $7$ to $2$'s anchor, which is
+$1$ from $\sigma_1$ and $4$ from $\sigma_2$. Commutation on $\sigma_1$
+forces $v=1$ and commutation on $\sigma_2$ forces $v=4$.
+\end{proof}
+
+The proof uses three facts only: erasing a leaf leaves no trace, so the two
+post-delete states coincide; a prefix-free insert must recompute its anchor
+from that erased state; and commutation is demanded on all states. Carrying
+the anchor's ancestor path inside the operation removes the second fact,
+which is what EmbedRGA's coordinates do.
+
+\subsection{No merge on forgetful states implements the RGA order}
+
+The single-replica failure above could be blamed on the newest-first tie
+rule. The next result blames nothing but forgetting. It exhibits two
+diamonds whose lowest common ancestor and second branch are identical and
+whose first branches reach the same state, yet whose intended merged reads
+differ. Every merge function then fails on one of them.
+
+\begin{theorem}[fooling pair for the RGA order]
+\label{thm:fooling-rga}
+Let $h_L=[\ins(1,0,a)]$ and $h_B=[\ins(2,0,c)]$, and let
+\[
+ h^1_A=[\ins(5,1,b),\ \del(1)],\qquad
+ h^2_A=[\del(1),\ \ins(5,0,b)].
+\]
+Both diamonds are legal. Their RGA orders are $[c,b]$ and $[b,c]$
+respectively. Hence any design $D$ with
+$\mathsf{fold}(L,h^1_A)=\mathsf{fold}(L,h^2_A)$ produces a merged read that
+differs from the RGA order on at least one of the two diamonds. The splice
+design is such a $D$.
+\end{theorem}
+
+\begin{proof}
+Legality: $a$ is live when $b$ is anchored at it, $5$ and $2$ are fresh, and
+every delete names a live element. For the RGA orders, apply
+$\seq(A,G)$ of Section~\ref{sec:baseline} to the union of births and graves.
+In the first diamond $A=\{(1,0,a),(2,0,c),(5,1,b)\}$ and $G=\{1\}$. Sorting
+births by timestamp and splicing gives $[a]$, then $[c,a]$, then $[c,a,b]$;
+filtering $G$ gives $[c,b]$. In the second diamond
+$A=\{(1,0,a),(2,0,c),(5,0,b)\}$ and $G=\{1\}$: $[a]$, then $[c,a]$, then
+$[b,c,a]$; filtering gives $[b,c]$. In both diamonds $L$ and $S_B$ are
+literally the same states, so if $S_A$ also coincides then
+$\merge(L,S_A,S_B)$ is one state with one read, which cannot equal both
+$[c,b]$ and $[b,c]$. For the splice design, $h^1_A$ stores $(5,b,1)$ and
+then re-anchors it to $0$ on deleting $1$, while $h^2_A$ stores $(5,b,0)$
+directly; both yield the single record $(5,b,0)$.
+\end{proof}
+
+The information the splice destroys is precise: whether $b$ occupies the
+slot of the dead $a$ or a slot of its own. The baseline keeps it as the
+birth record $(5,1,b)$ together with grave $1$. EmbedRGA keeps it because
+$b$'s coordinate in the first diamond begins with $a$'s code and in the
+second is a root code. In both cases the two branch states differ, and the
+theorem does not apply.
+
+\subsection{The strong list specification forces the same memory}
+
+Theorem~\ref{thm:fooling-rga} is relative to RGA's intended order. One could
+object that a different intent would rescue forgetting. The strong list
+specification refutes this objection: it is implementation independent and
+still separates two diamonds with coinciding forgetful states. The witness
+needs five elements because the constraint must pass transitively through
+elements that have been deleted.
+
+\begin{theorem}[fooling pair for the strong list specification]
+\label{thm:fooling-strong}
+Let $h_L=[\ins(1,0,m),\ \ins(2,0,g)]$, so $L$ reads $[g,m]$, and let
+$h_B=[\ins(9,2,y)]$, so $S_B$ reads $[g,y,m]$. Let
+\[
+ h^1_A=[\ins(5,0,x),\ \del(2),\ \del(1)],\qquad
+ h^2_A=[\ins(5,1,x),\ \del(1),\ \del(2)].
+\]
+Both diamonds are legal, and in both the final read of the first branch is
+$[x]$. For a sequentially sound design, the strong list specification
+requires the merged read $[x,y]$ in the first diamond and $[y,x]$ in the
+second. Hence any sequentially sound design with
+$\mathsf{fold}(L,h^1_A)=\mathsf{fold}(L,h^2_A)$ violates the strong list
+specification on one of them.
+\end{theorem}
+
+\begin{proof}
+Sequential soundness fixes the observed reads of the three folds to their
+naive values. The first branch reads $[x,g,m]$, $[x,m]$, $[x]$ in the first diamond and
+$[g,m,x]$, $[g,x]$, $[x]$ in the second. In the first diamond $x<g$ was
+displayed on the first branch and $g<y$ on the second, so any total order
+consistent with all reads has $x<y$; the merged read, a sequence over
+$\{x,y\}$, must be $[x,y]$. In the second diamond $y<m$ was displayed on the
+second branch and $m<x$ on the first, so $y<x$ and the merged read must be
+$[y,x]$. The two diamonds share $L$ and $S_B$; if they also share $S_A$, the
+merge has one output. Note that $x$ and $y$ are never displayed together
+before the merge: the obligation is carried entirely by the deleted $g$ and
+$m$.
+\end{proof}
+
+The theorem says what a correct state must contain after
+$h^1_A$ and $h^2_A$: two different values, although both documents consist
+of the single character $x$. A design whose state for a one-character
+document is a function of that character alone cannot satisfy the strong
+list specification, whatever its merge.
+
+\subsection{How much must be remembered}
+
+The five-element witness generalizes to a lower bound on the information a
+survivor must retain about the elements deleted around it.
+
+\begin{theorem}[retention lower bound]
+\label{thm:lower}
+Let $D$ be sequentially sound and satisfy the strong list specification on
+every legal diamond. For every $n\ge 1$ there is a legal history $h_L$ inserting $n$ elements and
+legal continuations $h^0_A,\ldots,h^n_A$, each inserting one element $x$ and
+then deleting all $n$ elements of $h_L$, such that the states
+$\mathsf{fold}(L,h^k_A)$ take at least $\lceil (n+1)/2\rceil$ distinct
+values. Every one of these states reads $[x]$. Consequently a state whose
+document is the single character $x$ must carry at least
+$\log_2\lceil (n+1)/2\rceil$ bits beyond $x$'s identifier and payload once
+$n$ elements have been deleted.
+\end{theorem}
+
+\begin{proof}
+Let $h_L$ insert $e_1,\ldots,e_n$ each immediately after the previous one,
+so $L$ reads $[e_1,\ldots,e_n]$. Write $e_0=0$ and let
+$h^k_A=[\ins(x,e_k,\cdot),\ \del(e_1),\ldots,\del(e_n)]$, whose first read
+is $[e_1,\ldots,e_k,x,e_{k+1},\ldots,e_n]$ and whose last is $[x]$. Fix
+$k<k'$ with $k'-k\ge 2$ and choose $g$ with $k<g<k'$. Let
+$h_B=[\ins(y,e_g,\cdot)]$, so $S_B$ reads
+$[e_1,\ldots,e_g,y,e_{g+1},\ldots,e_n]$. In the diamond with $h^k_A$, the
+first branch displayed $x$ before $e_{k+1}$, and $e_{k+1}$ is displayed at
+or before $e_g$, which the second branch displayed before $y$; so $x<y$ and
+the merged read must be $[x,y]$. In the diamond with $h^{k'}_A$, the second
+branch displayed $y$ before $e_{g+1}$, and the first branch displayed
+$e_{g+1}$ at or before $e_{k'}$, which precedes $x$; so $y<x$ and the merged
+read must be $[y,x]$. The two diamonds share $L$ and $S_B$, so
+$\mathsf{fold}(L,h^k_A)\neq\mathsf{fold}(L,h^{k'}_A)$, otherwise the single
+merge output would violate one of them. The indices $0,2,4,\ldots$ are
+pairwise at distance at least $2$, giving $\lceil (n+1)/2\rceil$ pairwise
+distinct states. The bit bound follows because these states share identifier
+and payload of $x$ and differ only in retained information.
+\end{proof}
+
+The bound concerns information, not representation, and the three kernels
+pay it in three currencies. The baseline pays with graves: $n$ identifiers,
+shared by every survivor. EmbedRGA pays inside the survivor: $x$'s coordinate
+under $h^k_A$ is the code of $e_k$'s path followed by $\Gamma(t_x-e_k)$,
+different for different $k$, and as long as the ancestor spine. The
+ancestor-spine workload in Section~\ref{sec:eval} is this bound made
+concrete. Peritext pays a third way for its marks, retaining deleted
+identifiers whose positions mark boundaries still need. What the bound
+excludes is a design whose state after $n$ deletions is the live document
+plus a bounded number of bits. Attiya et al.~\cite{attiya2016list}
+introduced the strong list specification and proved a metadata lower bound
+for its implementations in a message-passing model; the diamond argument is
+the analogue for ternary merge and already binds with three replicas and one
+merge.
+
+\subsection{Convergence does not force retention}
+\label{sec:convergence-not-enough}
+
+Nothing in Proposition~\ref{prop:reorder} involves a merge. The reorder
+happens on one replica, inside $\mathsf{do}$, so a design that reorders the
+same way on every replica converges while violating its sequential
+specification. Replication-aware linearizability certifies convergence to
+the datatype's own fold; when the fold itself reorders survivors, every
+replica agrees on the wrong answer and the convergence theorem is satisfied.
+This is why Table~\ref{tab:anomalies} lists sequential reference semantics
+separately from replication-aware linearizability, and why
+Section~\ref{sec:proved-all} treats the sequential theorem as independent
+evidence. The memory retained by the three kernels is justified by
+Propositions~\ref{prop:reorder} and~\ref{prop:no-commute} and
+Theorems~\ref{thm:fooling-rga}, \ref{thm:fooling-strong},
+and~\ref{thm:lower}, not by convergence.
 
 \section{Three verified sequence representations}
 
@@ -266,6 +589,7 @@ sequential package. The released datatype is
 stronger ordering-policy design.
 
 \subsection{What is proved for all three}
+\label{sec:proved-all}
 
 Table~\ref{tab:sequence-certificates} separates merge preservation from the
 operation-issuance premise of the public theorem. ``Join for all contexts''
@@ -603,6 +927,9 @@ L1, L3a/b, L4, L5, L7--L13, L16, L17, L19 & 15 reviewed directed JS fixtures
   & baseline outputs & baseline outputs & all pass expected reads \\
 L2, L6, L14, L15, L18, L20--L25 & no current reviewed runtime fixture
   & untested & untested & untested \\
+Retention of deleted-element order & forced by
+  Theorems~\ref{thm:fooling-strong} and~\ref{thm:lower}, pen and paper
+  & graves $G$ & dead codes & dead codes \\
 \bottomrule
 \end{tabular}
 \caption{Current anomaly evidence. ``Untested'' is not reported as a pass.
@@ -642,6 +969,7 @@ step toward an extracted reference executable; no Lean-to-C-to-Wasm path is
 claimed here.
 
 \section{Evaluation}
+\label{sec:eval}
 
 All reported cells are generated from checked-in drivers on Apple M4 Pro,
 24~GB RAM, macOS arm64, and Node.js 26.3.1. Repeated reports use three isolated
@@ -772,7 +1100,9 @@ result from performance tests.
 The current artifact proves the semantic kernels, virtual-merge-base executions,
 issuance policies, sequential refinements, Peritext state GC, distributed
 commit GC, and their composition. It validates but does not verify the
-JavaScript transliteration. Same-replica crash recovery and durable replica
+JavaScript transliteration. The retention arguments of
+Section~\ref{sec:retention} are pen-and-paper proofs over finite executions
+and are not part of the Lean ledger. Same-replica crash recovery and durable replica
 identity are not yet a formal protocol. The reviewed JavaScript anomaly corpus
 contains 15 directed cases, not all labels L1--L25. External rich-text
 semantics are deliberately not compared.
@@ -790,5 +1120,24 @@ Lean and runtime gates and \code{./scripts/check-working-papers.sh} for both
 papers and their declaration ledger. Regenerate the measurements with
 \code{node benchmarks/tools/run-kernel-comparison.mjs 3} and
 \code{node benchmarks/tools/run-peritext-paper.mjs --repeat 3}.
+
+\begin{thebibliography}{9}
+
+\bibitem{attiya2016list}
+Hagit Attiya, Sebastian Burckhardt, Alexey Gotsman, Adam Morrison, Hongseok
+Yang, and Marek Zawirski.
+\newblock Specification and complexity of collaborative text editing.
+\newblock In \emph{Proceedings of the 2016 ACM Symposium on Principles of
+Distributed Computing (PODC)}, 2016.
+
+\bibitem{roh2011rga}
+Hyun-Gul Roh, Myeongjae Jeon, Jin-Soo Kim, and Joonwon Lee.
+\newblock Replicated abstract data types: Building blocks for collaborative
+applications.
+\newblock \emph{Journal of Parallel and Distributed Computing},
+71(3):354--368, 2011.
+\newblock \url{https://doi.org/10.1016/j.jpdc.2010.12.006}.
+
+\end{thebibliography}
 
 \end{document}
