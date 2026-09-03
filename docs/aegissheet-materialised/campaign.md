@@ -15,7 +15,7 @@ version.
 
 Status: validated on honest executions within the campaign scope below;
 conjectured in general. Every generated event, after erasing `kills`, passes
-a transcription of `applicableB` and `clockedB` (95,064 events over the
+a transcription of `applicableB` and `clockedB` (96,069 events over the
 three seeds, 0 failures); the transcription is validated on five issuance
 fixtures from `AegisSheet.lean`.
 
@@ -32,6 +32,9 @@ reproduced by the Python transcription of the reference.
 Negative controls: `binary` (merge ignores the ancestor) and `eager` (ranges
 re-anchored at removal time) fail on every seed; see the table.
 
+Generator rule: decision D1, an inverse cell write is issued only while its
+axes are live (default); `--legacy-undo` restores the old rule.
+
 PBT gate: generator builds reachable states by folding honest operations from
 the empty sheet; before-images, overwrite lists, and killed-token lists are
 read from the issuing state; fresh identifiers and Lamport timestamps by
@@ -42,20 +45,23 @@ events. Purge operations are not generated.
 
 | seed | executions | versions | ops | registered-ancestor merges | virtual-base merges |
 |---|---|---|---|---|---|
-| 1 | 1000 | 38,685 | 31,388 | 7,019 | 278 |
-| 2 | 1000 | 39,055 | 31,671 | 7,119 | 265 |
-| 3 | 1000 | 39,550 | 32,005 | 7,237 | 308 |
+| 1 | 1000 | 38,552 | 31,199 | 7,097 | 256 |
+| 2 | 1000 | 39,879 | 32,342 | 7,252 | 285 |
+| 3 | 1000 | 40,043 | 32,528 | 7,222 | 293 |
 
 Failing executions per design (first failure class in brackets):
 
 | design | seed 1 | seed 2 | seed 3 |
 |---|---|---|---|
 | keep, named removal | 0 | 0 | 0 |
-| keep, clear removal | 27 [FOLD] | 31 [FOLD] | 45 [FOLD] |
-| ranges GC, named | 28 [DIFF pos] | 23 [DIFF pos] | 16 [DIFF pos] |
-| all-dead GC, named | 10 [DIFF resolved] | 10 [DIFF resolved] | 7 [DIFF resolved] |
-| keep, clear, binary merge | 186 [DIFF cells] | 173 [DIFF ranges] | 146 [DIFF ranges] |
-| ranges GC, clear, eager ranges | 634 [DIFF ranges] | 642 [DIFF ranges] | 683 [DIFF ranges] |
+| keep, clear removal | 35 [FOLD] | 31 [FOLD] | 55 [FOLD] |
+| ranges GC, named | 16 [DIFF pos] | 11 [DIFF pos] | 11 [DIFF pos] |
+| all-dead GC, named | 9 [DIFF resolved] | 6 [DIFF resolved] | 9 [DIFF resolved] |
+| keep, clear, binary merge | 179 [DIFF cells] | 156 [DIFF rows] | 141 [DIFF ranges] |
+| ranges GC, clear, eager ranges | 646 [DIFF ranges] | 675 [DIFF ranges] | 684 [DIFF ranges] |
+
+Under the legacy undo rule (revival allowed) the earlier run gave
+0/0/0, 27/31/45, 28/23/16, 10/10/7, 186/173/146, 634/642/683.
 
 FOLD means the merge converged and matched the reference, but differed from
 the timestamp-order replay of the union event set. Clearing all live tokens
@@ -130,9 +136,9 @@ with 3 replicas, seed 1, 3 operations per replica per round.
 | rounds | ops | reference (union) | materialised (keep, named) |
 |---|---|---|---|
 | 4 | 23 | 131 | 21 |
-| 8 | 46 | 594 | 42 |
-| 16 | 94 | 3,048 | 90 |
-| 32 | 184 | 13,866 | 169 |
+| 8 | 46 | 593 | 44 |
+| 16 | 92 | 2,902 | 84 |
+| 32 | 185 | 13,835 | 180 |
 
 The reference stores each event's whole causal timestamp set, so its size is
 quadratic in history length; the materialised state is linear.

@@ -617,7 +617,11 @@ class Clock:
         return self.t
 
 
-UNDO_REQUIRES_LIVE_AXES = False
+# Decision D1 (2026-09-02): an inverse cell write is issuable only while its
+# row and column are live. The legacy model allowed undo to revive a removed
+# axis; `undo_revival_witness` documents that behaviour. Pass --legacy-undo
+# to generate under the legacy rule.
+UNDO_REQUIRES_LIVE_AXES = True
 
 
 def gen_op(rng, events, rep, clock, ids, own_log):
@@ -1053,14 +1057,14 @@ if __name__ == "__main__":
     h2_witnesses()
     h2_pair3()
     undo_revival_witness()
-    if "--restricted-undo" in sys.argv:
-        UNDO_REQUIRES_LIVE_AXES = True
+    if "--legacy-undo" in sys.argv:
+        UNDO_REQUIRES_LIVE_AXES = False
         campaign([Mat("keep", removal="named"), Mat("ranges", removal="named"),
                   Mat("all", removal="named")], executions, seed,
-                 "campaign with undo restricted to live axes")
+                 "campaign under the legacy undo rule (revival allowed)")
         sys.exit(0)
     designs = [Mat("keep"), Mat("keep", removal="named"), Mat("ranges", removal="named"),
                Mat("all", removal="named"), Mat("keep", binary=True), Mat("ranges", eager=True)]
     for sd in range(seed, seed + 3):
-        campaign(designs, executions, sd, "differential DAG campaign")
+        campaign(designs, executions, sd, "differential DAG campaign (D1: no-revival undo)")
     growth([Mat("keep", removal="named"), Mat("ranges", removal="named")], seed)

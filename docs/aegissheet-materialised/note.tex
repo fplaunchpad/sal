@@ -86,12 +86,12 @@ fixtures listed in Section~\ref{sec:controls}.
 \toprule
 Claim & Status & Evidence \\
 \midrule
-H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions, 117{,}290 versions, 21{,}375 registered-ancestor and 851 virtual-base merges, three seeds; every generated event passes a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
-H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 103 of 3000 executions have a merge that differs from timestamp-order replay \\
-H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 16 to 55 failing executions per 1000 in the harness \\
+H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions under the D1 issuance rule, 118{,}474 versions, 21{,}571 registered-ancestor and 834 virtual-base merges, three seeds; all 96{,}069 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
+H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 121 of 3000 executions have a merge that differs from timestamp-order replay \\
+H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 11 to 55 failing executions per 1000 in the harness \\
 H3 & staged & purge is not modelled by the harness \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
-Undo revives a later removal & finding, reproduced & Section~\ref{sec:undo}; a property of the current model \\
+Undo revives a later removal & finding, reproduced; excluded by decision D1 & Section~\ref{sec:undo}; legacy behaviour of the current model \\
 \bottomrule
 \end{tabular}
 \caption{Status of each claim.}
@@ -267,9 +267,11 @@ the harness compares observations, compares observations of versions
 reached by different topologies over the same event set, and compares the
 merge result with the timestamp-order replay of the union. Every generated
 event, after erasing $\mathit{kills}$, is checked against a transcription of
-\lean{applicableB} and \lean{clockedB}; all 95{,}064 events of the three
+\lean{applicableB} and \lean{clockedB}; all 96{,}069 events of the three
 seeds pass, so the executions are honest in the Lean sense and not only in
-the generator's.
+the generator's. The generator applies decision D1
+(Section~\ref{sec:undo}): an inverse cell write is issued only while its
+axes are live.
 
 \paragraph{Result.} Table~\ref{tab:campaign} reports three seeds of 1000
 executions. The named-removal design has no failing execution. The clearing
@@ -290,16 +292,18 @@ unavailable; Section~\ref{sec:mech} gives the conditioned route instead.
 Design & seed 1 & seed 2 & seed 3 & first failure class \\
 \midrule
 keep registers, named removal & 0 & 0 & 0 & \\
-keep registers, clearing removal & 27 & 31 & 45 & merge $\neq$ replay \\
-drop unreferenced dead registers, named & 28 & 23 & 16 & position of revived axis \\
-drop all dead registers, named & 10 & 10 & 7 & range resolution \\
-ancestor ignored (control) & 186 & 173 & 146 & cells, ranges \\
-eager range re-anchoring (control) & 634 & 642 & 683 & ranges \\
+keep registers, clearing removal & 35 & 31 & 55 & merge $\neq$ replay \\
+drop unreferenced dead registers, named & 16 & 11 & 11 & position of revived axis \\
+drop all dead registers, named & 9 & 6 & 9 & range resolution \\
+ancestor ignored (control) & 179 & 156 & 141 & cells, ranges, rows \\
+eager range re-anchoring (control) & 646 & 675 & 684 & ranges \\
 \bottomrule
 \end{tabular}
-\caption{Failing executions out of 1000 per seed. Each seed produced about
-39{,}000 versions, 31{,}500 operations, 7{,}100 merges at a registered
-ancestor, and 280 merges at a virtual base.}
+\caption{Failing executions out of 1000 per seed under the D1 issuance
+rule. Each seed produced about 39{,}500 versions, 32{,}000 operations,
+7{,}200 merges at a registered ancestor, and 280 merges at a virtual base.
+Under the legacy undo rule the counts are within a few executions of these
+and the named design is likewise clean.}
 \label{tab:campaign}
 \end{table}
 
@@ -339,7 +343,8 @@ cannot answer both. The information lives only on the removing branch.
 \end{counterexample}
 
 The third counterexample does not involve ranges or undo, and it survives
-restricting undo to live axes (55 failing executions of 1000 at seed~7). The
+the D1 issuance rule (11 to 16 failing executions of 1000 per seed for the
+register-dropping variant). The
 retention residue is therefore: one position register per axis identifier
 that has ever been known, retained until the removal is causally stable,
 that is, until no replica can still issue an operation concurrent with it.
@@ -348,7 +353,8 @@ register could be dropped at removal. Causal stability suffices only if undo
 cannot revive a removed axis: under the current model
 (Section~\ref{sec:undo}) an undo issued \emph{after} observing the removal
 still revives it, and the register must then be kept as long as any replica
-can undo a write into the row.
+can undo a write into the row. Decision D1 adopts the no-revival rule, so
+causal stability is the retirement condition the purge experiment must test.
 
 \section{Finding: undo revives a causally later removal}
 \label{sec:undo}
@@ -368,7 +374,13 @@ does not say what undoing an edit should do to a row removed causally later.
 The behaviour is a consequence of representing undo as a cell event. If it is
 unintended, the fix is an issuance clause (undo of a cell write requires live
 axes) or a non-keeping inverse; either changes the public sequential
-specification and should be decided before the Lean port.
+specification.
+
+\paragraph{Decision D1.} No revival, as an issuance rule: an inverse cell
+write is legal only while its row and column are live. The legacy revival
+behaviour stays documented by this finding and its SPOT; the equivalence
+theorem of Section~\ref{sec:mech} is stated only for honest executions under
+the new rule.
 
 \section{H3: purge}
 
@@ -392,9 +404,9 @@ protocol is needed for the $O(1)$ register, not for the cell payloads.
 Rounds & Operations & Reference (timestamps stored) & Materialised, named, keep \\
 \midrule
 4 & 23 & 131 & 21 \\
-8 & 46 & 594 & 42 \\
-16 & 94 & 3{,}048 & 90 \\
-32 & 184 & 13{,}866 & 169 \\
+8 & 46 & 593 & 44 \\
+16 & 92 & 2{,}902 & 84 \\
+32 & 185 & 13{,}835 & 180 \\
 \bottomrule
 \end{tabular}
 \caption{Mean over 20 executions with 3 replicas, seed 1, at the final
@@ -407,7 +419,7 @@ and versions.}
 Across the measured range, doubling the history roughly quadruples the
 reference count and doubles the materialised count. This is a
 timestamp-count measurement consistent with quadratic versus linear scaling,
-not an asymptotic result. The gap at 184 operations is a factor of 82. The
+not an asymptotic result. The gap at 185 operations is a factor of 77. The
 counts are taken in the Python models, not bytes of any runtime.
 
 \section{Controls}
@@ -468,10 +480,8 @@ materialised state does.
 \section{Open obligations}
 
 \begin{enumerate}
-\item Decide the undo-revival question of Section~\ref{sec:undo} before
-modelling purge and before porting; it determines whether causal stability
-authorises dropping the dead register, and it changes the sequential
-specification.
+\item Decision D1 (no revival) is taken; carry it into the Lean issuance
+predicate of the new package and keep the legacy SPOT.
 \item Model purge in the harness under the chosen policy and test H3: purge
 as version deletion, concurrent writes surviving, and the register-dropping
 rule, with the undo-after-stability case as a control.

@@ -69,20 +69,21 @@ None of the candidate claims is machine-checked; the reference definitions
 and baseline theorems cited above are. Negative controls (ancestor-ignoring
 merge, eager range re-anchoring) fail on every seed.
 
-## 4. Decision needed before S1 and before any Lean work
+## 4. Decision D1 (taken 2026-09-02): no revival
 
-D1. Should undoing a cell write revive a row or column removed after the
-write? Current model: yes. Recommendation: no, via an issuance clause
-requiring live axes for the inverse of a cell write.
+Undoing a cell write must not revive a row or column removed after the
+write. Treated as an issuance rule: an inverse cell write is legal only
+while its row and column are live. Consequences:
 
-Why it gates S1: roster acknowledgement (causal stability of the removal)
-rules out unseen concurrent operations, not a future undo issued after
-observing the removal. If D1 is "no revival", stability plausibly authorises
-dropping the dead register. If D1 is "keep current behaviour", the register
-must be kept as long as any replica can still undo a write into the row,
-which is unbounded without a stronger retirement rule. Either answer changes
-the public sequential specification of the port; neither changes the current
-package.
+- Causal stability of a removal (every replica has observed it) can
+  eventually justify discarding the dead position register; S1 tests this.
+- The current-model revival SPOT (`undo_revival_witness`, and its Lean
+  counterpart in S2) is preserved as documentation of the legacy semantics.
+- The S3b equivalence is stated only for honest executions under the new
+  rule, not for legacy traces that exercise revival.
+- The harness applies the rule by default; `--legacy-undo` restores the old
+  generator. Under D1 the named design has no failing execution on three
+  seeds (96,069 honest events); see `campaign.md`.
 
 ## 5. Steps, in order
 
@@ -102,9 +103,9 @@ Python reference and validated on the purge fixtures in `AegisSheetGC.lean`
 before use.
 
 Controls: positive, the reference's purge fixtures; negative, drop the
-register before stability and observe a class (c) failure; under D1 = keep
-current behaviour, also exhibit the undo-after-stability revival as a
-class (c) failure.
+register before stability and observe a class (c) failure; legacy control,
+run with `--legacy-undo` and exhibit the undo-after-stability revival as a
+class (c) failure that the D1 rule removes.
 
 Done when: 1000 executions per seed on three seeds with purge generated,
 zero failures for the chosen retirement rule, documented failures for the
@@ -164,6 +165,9 @@ State and prove:
   and event sets, preserved by `do` and by `merge` at a canonical ancestor;
 - `view(E) = observe(σ)` whenever `Represents(σ, E)`.
 
+Scope: honest executions under the D1 issuance rule only. Legacy traces
+that exercise revival are outside the theorem.
+
 Done when: the theorem is stated over `MintCertifiedReachV` for the new
 package and both directions of the fixture suite pass against it.
 
@@ -195,8 +199,8 @@ Framework paper instance table; the two encodings and the measured gap;
 
 ## 7. Risks
 
-- D1 answered "yes" makes the register unbounded in the absence of a
-  retirement rule stronger than causal stability.
+- The retirement rule under D1 is causal stability; S1 must show it is
+  sufficient, not only necessary.
 - The `known` grow-only sets are one identifier per axis ever created; not
   collected.
 - Named removal adds `|liveAxisTokens|` to each removal event; bounded by
@@ -229,3 +233,13 @@ Findings from the reviewing agent, with the response.
    growth as a count measurement. Accepted and corrected in the note.
 
 The reviewer reproduced both campaign commands and the growth table.
+
+## 9. Validation round 2
+
+D1 decided as no revival by the reviewer and the author, with the two
+caveats now in Section 4. The branch was rebased onto `main` at `50e48e2`.
+The generator default switched to the D1 rule and the three-seed campaign
+was rerun: named-keep 0/0/0 failing executions, clearing 35/31/55 (replay
+mismatch), ranges-GC 16/11/11, all-dead-GC 9/6/9, ancestor-ignored
+179/156/141, eager 646/675/684; 96,069 generated events all pass the
+transcribed `applicableB`.
