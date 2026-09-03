@@ -154,7 +154,7 @@ implemented runtime is extracted from Lean.
   \draw[flow] (client)--(correct);
   \draw[flow] (exec)--(vbase);
   \draw[flow] (join)--(vbase);
-  \draw[flow] (vbase)--(replay);
+  \draw[flow] (vbase.south) -- ++(0,-5mm) -| (replay.south);
   \draw[flow] (exec)--(gc);
 \end{tikzpicture}
 \caption{Semantic dependency order. Arrows point from prerequisite to
