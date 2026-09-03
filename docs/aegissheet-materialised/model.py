@@ -315,6 +315,71 @@ class Obs:
     resolved: frozenset
 
 
+# ---------------------------------------- issuance (transcribed applicableB)
+
+
+def erase(e: Event) -> Event:
+    """Drop the named-removal payload; the result is an event of the Lean model."""
+    a = e.action
+    if isinstance(a, Axis) and a.kills:
+        a = Axis(a.kind, a.axis, a.id, a.before, a.after)
+    return Event(e.t, e.rep, e.seen, a, e.undo_target)
+
+
+def option_finset(x):
+    return frozenset() if x is None else frozenset({x})
+
+
+def current_axis_positions(events, axis, id_):
+    return axis_positions(events, axis, id_) if axis_live(events, axis, id_) else set()
+
+
+def metadata_valid(events, e):
+    a = e.action
+    if isinstance(a, Cell):
+        return all(ov < e.t and any(isinstance(p.action, Cell) and p.t == ov
+                                    and p.action.row == a.row and p.action.col == a.col
+                                    for p in events) for ov in a.overwrites)
+    if isinstance(a, Range):
+        return all(ov < e.t and any(isinstance(p.action, Range) and p.t == ov
+                                    and p.action.id == a.id for p in events)
+                   for ov in a.overwrites)
+    return True
+
+
+def direct_applicable(events, action):
+    a = action
+    if isinstance(a, Axis):
+        if a.kind == "insert":
+            return (not axis_known(events, a.axis, a.id)) and a.before is None and a.after is not None
+        if a.kind in ("move", "remove"):
+            ok = current_axis_positions(events, a.axis, a.id) == option_finset(a.before)
+            return ok and a.before is not None and ((a.after is not None) if a.kind == "move" else (a.after is None))
+        return False   # restore only via undo
+    if isinstance(a, Cell):
+        return (axis_live(events, ROW, a.row) and axis_live(events, COL, a.col)
+                and cell_values(events, a.row, a.col) == a.before
+                and frozenset(active_cell_times(events, a.row, a.col)) == a.overwrites)
+    return (range_values(events, a.id) == option_finset(a.before)
+            and frozenset(active_range_times(events, a.id)) == a.overwrites)
+
+
+def valid_undo(events, issuer, target, inverse):
+    return any(p.t == target and p.rep == issuer and inverse_for(p) == inverse for p in events)
+
+
+def applicable_b(e: Event, events) -> bool:
+    """Transcription of `applicableB` and `clockedB` for an erased event."""
+    times = event_times(events)
+    if e.t in times or e.seen != frozenset(times) or not metadata_valid(events, e):
+        return False
+    if not all(t < e.t for t in times):
+        return False
+    if e.undo_target is None:
+        return direct_applicable(events, e.action)
+    return e.undo_target in e.seen and valid_undo(events, e.rep, e.undo_target, e.action)
+
+
 # ------------------------------------------------ materialised (three-way)
 
 
@@ -687,6 +752,9 @@ def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, r
                 if e is None:
                     stats["skipped_ops"] += 1
                     continue
+                if not applicable_b(erase(e), ref_s):
+                    bad.append(f"ISSUANCE@op:r{r}: generated event fails transcribed applicableB: {e}")
+                stats["validated_ops"] += 1
                 ref_s = Ref.apply(ref_s, e)
                 mats = [d.apply(m, e) for d, m in zip(designs, mats)]
                 own_logs[r].append(e)
@@ -756,7 +824,7 @@ def diff(a: Obs, b: Obs):
 def campaign(designs, executions, seed, label):
     rng = Random(seed)
     stats = {"versions": 0, "ops": 0, "skipped_ops": 0, "merges": 0, "virtual_merges": 0,
-             "ref_size": 0}
+             "ref_size": 0, "validated_ops": 0}
     failures = []
     for k in range(executions):
         n_rep = rng.choice([2, 3, 3, 4])
@@ -767,6 +835,9 @@ def campaign(designs, executions, seed, label):
     print(f"   versions {stats['versions']}, ops {stats['ops']} (skipped {stats['skipped_ops']}), "
           f"merges {stats['merges']} with a registered ancestor, "
           f"{stats['virtual_merges']} with a virtual base")
+    iss = sum(1 for _, b in failures if b.startswith("ISSUANCE"))
+    print(f"   issuance: {stats['validated_ops']} generated events checked against transcribed "
+          f"applicableB after erasing kills; {iss} executions with a failure")
     for d in designs:
         n = sum(1 for _, b in failures if f"[{d.name}]" in b)
         print(f"   {d.name}: {n} failing executions"
@@ -788,7 +859,7 @@ def growth(designs, seed, rounds_list=(4, 8, 16, 32), executions=20):
             tot[d.name] = 0
         for _ in range(executions):
             stats = {"versions": 0, "ops": 0, "skipped_ops": 0, "merges": 0,
-                     "virtual_merges": 0, "ref_size": 0}
+                     "virtual_merges": 0, "ref_size": 0, "validated_ops": 0}
             heads = run_execution(designs, rng, 3, rounds, 3, 0.7, stats, return_heads=True)
             ref_s, mats = heads[0]
             tot["ref"] += Ref.size(ref_s)
@@ -881,7 +952,15 @@ def check_fixtures():
     rm_range = ra(7, 0, {1, 2, 3, 4, 5, 6}, 30, spec, None, {6})
     re_range = ra(8, 0, {1, 2, 3, 4, 5, 6, 7}, 30, None, spec, {7})
     assert range_values(ranged | {rm_range, re_range}, 30) == {spec}
-    print("fixtures: 20 Lean SPOT expectations reproduced by the Python reference")
+    # issuance fixtures (Lean: applicableB examples)
+    assert applicable_b(rem, base) and applicable_b(edit, base)
+    dishonest = ce(5, 2, {}, r0, c0, {0}, {1}, {3})
+    assert not applicable_b(dishonest, base)
+    assert applicable_b(undo_a, conflict)
+    remote_undo = un(6, 2, {1, 2, 3, 4, 5}, edit_a)
+    assert not applicable_b(remote_undo, conflict)
+    assert applicable_b(undo_ins, base | {ins_row})
+    print("fixtures: 20 Lean SPOT expectations and 5 issuance fixtures reproduced by the Python reference")
 
 
 # ------------------------------------------------- H2 directed witnesses

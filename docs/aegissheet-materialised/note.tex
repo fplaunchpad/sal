@@ -41,8 +41,10 @@ the executable reference, show that the last position of a removed row or
 column cannot be dropped while a concurrent revival is possible, so the
 retention residue is one register per axis identifier until removal is
 causally stable. The measured state is linear rather than quadratic in
-history. Nothing here is machine-checked; the mechanization target is a
-product Join proof.
+history. None of the new claims is machine-checked; the mechanization
+target is a conditioned Join for the token and version components composed
+with the register, plus an observational-equivalence theorem against the
+union model.
 \end{abstract}
 
 \section{Goal, hypotheses, and status}
@@ -73,9 +75,10 @@ paper requires to stay purged.
 
 \paragraph{Status.} Table~\ref{tab:status} uses the evidence vocabulary
 conjectured, refuted, machine-checked, validated, measured, specified, and
-staged. Nothing in this note is machine-checked. The Python reference is
-validated against the Lean model only on the twenty SPOT fixtures listed in
-Section~\ref{sec:controls}.
+staged. None of the candidate claims in this note is machine-checked; the
+reference definitions and the baseline theorems cited from the repository
+are. The Python reference is validated against the Lean model only on the
+fixtures listed in Section~\ref{sec:controls}.
 
 \begin{table}[h]
 \centering\small
@@ -83,7 +86,7 @@ Section~\ref{sec:controls}.
 \toprule
 Claim & Status & Evidence \\
 \midrule
-H1, named removal & validated; conjectured in general & no counterexample in 3000 executions, 117{,}290 versions, 21{,}375 registered-ancestor and 851 virtual-base merges, three seeds; Lean proof owed \\
+H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions, 117{,}290 versions, 21{,}375 registered-ancestor and 851 virtual-base merges, three seeds; every generated event passes a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
 H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 103 of 3000 executions have a merge that differs from timestamp-order replay \\
 H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 16 to 55 failing executions per 1000 in the harness \\
 H3 & staged & purge is not modelled by the harness \\
@@ -262,15 +265,23 @@ ancestor; otherwise the ancestor is the fold of the intersection in
 timestamp order, which is the canonical virtual merge base. At every version
 the harness compares observations, compares observations of versions
 reached by different topologies over the same event set, and compares the
-merge result with the timestamp-order replay of the union.
+merge result with the timestamp-order replay of the union. Every generated
+event, after erasing $\mathit{kills}$, is checked against a transcription of
+\lean{applicableB} and \lean{clockedB}; all 95{,}064 events of the three
+seeds pass, so the executions are honest in the Lean sense and not only in
+the generator's.
 
 \paragraph{Result.} Table~\ref{tab:campaign} reports three seeds of 1000
 executions. The named-removal design has no failing execution. The clearing
 variant matches the reference and converges but fails the replay comparison:
 a removal that clears all tokens and a concurrent keep do not commute, so
 replay order matters and a Lean proof would need the arbitration arm of the
-replay policy. The named variant makes every pair of operations commute,
-which is the route every existing production instance uses.
+replay policy. The named variant makes every \emph{concurrent} pair commute.
+Causally ordered pairs still do not: a keep followed by the removal that
+names its token leaves the token absent, the reverse order leaves it
+present, and the same holds for an overwrite and the version it names. So
+universal commutation fails and the all-commuting proof route is
+unavailable; Section~\ref{sec:mech} gives the conditioned route instead.
 
 \begin{table}[h]
 \centering\small
@@ -333,7 +344,11 @@ retention residue is therefore: one position register per axis identifier
 that has ever been known, retained until the removal is causally stable,
 that is, until no replica can still issue an operation concurrent with it.
 Under update-wins this is unavoidable; under a remove-wins policy the
-register could be dropped at removal.
+register could be dropped at removal. Causal stability suffices only if undo
+cannot revive a removed axis: under the current model
+(Section~\ref{sec:undo}) an undo issued \emph{after} observing the removal
+still revives it, and the register must then be kept as long as any replica
+can undo a write into the row.
 
 \section{Finding: undo revives a causally later removal}
 \label{sec:undo}
@@ -389,15 +404,18 @@ and versions.}
 \label{tab:growth}
 \end{table}
 
-Doubling the history quadruples the reference and doubles the materialised
-state. The gap at 184 operations is a factor of 82. These are counts of
-stored timestamps in the Python models, not bytes of any runtime.
+Across the measured range, doubling the history roughly quadruples the
+reference count and doubles the materialised count. This is a
+timestamp-count measurement consistent with quadratic versus linear scaling,
+not an asymptotic result. The gap at 184 operations is a factor of 82. The
+counts are taken in the Python models, not bytes of any runtime.
 
 \section{Controls}
 \label{sec:controls}
 
 \paragraph{Positive control.} The Python reference reproduces twenty
-hand-derived expectations copied from the Lean SPOTs: update defeats
+hand-derived expectations copied from the Lean SPOTs, and five issuance
+fixtures (honest and dishonest edits, own and remote undo, undo of insert): update defeats
 concurrent removal, later removal wins, concurrent writes keep both values,
 selective undo keeps the remote value, move defeats removal, later move wins,
 insert survives adjacent removal, undo of remove restores the position, undo
@@ -410,6 +428,7 @@ removed versions, and eager range re-anchoring. A harness that could not
 distinguish these would carry no evidence.
 
 \section{Mechanization correspondence}
+\label{sec:mech}
 
 \begin{center}\small
 \begin{tabular}{@{}p{0.34\textwidth}p{0.30\textwidth}p{0.28\textwidth}@{}}
@@ -425,26 +444,42 @@ Counterexamples 5.1 to 5.3, Finding 6.1 & none & hand-derived, checked by the Py
 \end{center}
 
 \paragraph{Lean plan.} The materialised design is a product of
-observed-remove sets and last-writer-wins registers. With named removal
-every operation pair commutes, so the \lean{Join} proof can follow the
-universal-equation route, or the product theorem \lean{joinAt\_prod} with a
-per-component \lean{CanonicalJoinLaws} in the style of the multi-value
-register. The sequential certificate needs a new representation relation;
-\lean{no\_view\_only\_step} fixes that it must retain tokens, cell version
-identities, and range version identities, which the materialised state does.
+observed-remove sets and one last-writer-wins register. Because causally
+ordered pairs do not commute, the all-commuting route is closed. The token
+and version components need \lean{JoinAt} under an honesty predicate on the
+replay context (every removal's $\mathit{kills}$ and every overwrite's
+$\mathit{overwrites}$ lie in the issuer's causal past), discharged from
+issuance with \lean{IssuanceEstablishes} as \lean{Queue} and \lean{EmbedRGA}
+do, and composed with \lean{joinAt\_prod}; the register alone is
+all-commuting. A \lean{VerifiedMRDT} for the new package proves correctness
+against its own sequential specification only. H1 itself needs a separate
+theorem: an erasure dropping $\mathit{kills}$ that maps honest executions of
+the new package to honest executions of the union model, a representation
+relation between materialised states and event sets preserved by
+$\mathsf{do}$ and $\merge$, and equality of observations under it. The
+sequential certificate needs a new representation relation;
+\lean{no\_view\_only\_step} shows the visible sheet is insufficient, and
+\lean{row\_tokens\_distinguish\_future},
+\lean{cell\_versions\_distinguish\_future}, and
+\lean{range\_versions\_distinguish\_future} fix that tokens, cell version
+identities, and range version identities must be retained, which the
+materialised state does.
 
 \section{Open obligations}
 
 \begin{enumerate}
 \item Decide the undo-revival question of Section~\ref{sec:undo} before
-porting; it changes the sequential specification.
-\item Model purge in the harness and test H3: purge as version deletion,
-concurrent writes surviving, and the register-dropping rule at causal
-stability.
+modelling purge and before porting; it determines whether causal stability
+authorises dropping the dead register, and it changes the sequential
+specification.
+\item Model purge in the harness under the chosen policy and test H3: purge
+as version deletion, concurrent writes surviving, and the register-dropping
+rule, with the undo-after-stability case as a control.
 \item Pin Counterexamples 5.1 to 5.3 and Finding 6.1 as Lean SPOTs against
 the existing model, with PASS and FAIL companions.
 \item Port the named-removal design to Lean as a second package beside the
-current one; prove \lean{Join} and the sequential certificate; keep the
+current one; prove \lean{JoinOn} under the honesty predicate, the sequential
+certificate, and the cross-model observational-equivalence theorem; keep the
 union model until the runtime measurement is in.
 \item Extend the harness to merges between non-head versions and to undo of
 undo; report the generator's coverage.

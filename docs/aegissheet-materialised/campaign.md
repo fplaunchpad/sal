@@ -13,7 +13,11 @@ versions, active range versions) with the componentwise three-way merge
 produces the same observation as the union-merge model on every reachable
 version.
 
-Status: validated on the campaign scope below; conjectured in general.
+Status: validated on honest executions within the campaign scope below;
+conjectured in general. Every generated event, after erasing `kills`, passes
+a transcription of `applicableB` and `clockedB` (95,064 events over the
+three seeds, 0 failures); the transcription is validated on five issuance
+fixtures from `AegisSheet.lean`.
 
 Formal oracle: none yet. The Lean target is a `Join` proof for the product
 of the components.
@@ -56,7 +60,10 @@ Failing executions per design (first failure class in brackets):
 FOLD means the merge converged and matched the reference, but differed from
 the timestamp-order replay of the union event set. Clearing all live tokens
 on removal makes a removal and a concurrent keep non-commuting; naming the
-killed tokens restores commutation.
+killed tokens makes concurrent pairs commute. Causally ordered pairs still
+do not commute (a keep then the removal naming its token, or an overwrite
+and the version it names), so the design is not all-commuting and needs the
+conditioned Join route.
 
 Trusted definitions: the Python reference transcribes `view`,
 `directApplicable`, `validUndo`, `inverseFor`, and `resolveRange`. Its
@@ -94,9 +101,11 @@ Harness confirmation: the `ranges` GC variant fails 16 to 55 executions per
 55 of 1000). The `all` variant fails range resolution.
 
 Consequence: one position register per known axis identifier must be
-retained while a concurrent revival is still possible, that is, until the
-removal is causally stable. This is the same stability condition the
-current purge protocol establishes with roster acknowledgements.
+retained while a revival is still possible. Under a no-revival undo policy
+that is until the removal is causally stable, the condition the current
+purge protocol establishes with roster acknowledgements; under the current
+model an undo issued after observing the removal can still revive the row,
+so stability does not suffice.
 
 ## Finding: undo revives a causally later removal
 
