@@ -1,6 +1,9 @@
-// Certified per-state GC for PeritextRGA. It removes a settled dead insertion
-// only when its delete is also settled and no live character or mark endpoint
-// needs that insertion as an anchor ancestor. Coordinates are unchanged.
+// NEGATIVE-CONTROL collector for PeritextRGA. It preserves the present render,
+// but it is not continuation-safe under the current RGA issuance policy:
+// insertAfter may name a deleted element, so removing a settled dead leaf can
+// make a later honest insertion fail. The production default does not use this
+// module. `RGA.GC.certificate` instead retains one compact parent fact for every
+// inserted id; genuine id reclamation needs an explicit retirement policy.
 
 import { peritextRGA } from './datatypes/peritext.js';
 import { PMap, PSet, eachEntry } from './pmap.js';

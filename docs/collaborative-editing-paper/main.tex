@@ -1036,36 +1036,41 @@ materialization and GC summaries, not only visible characters.
 \toprule
 Workload & Kernel & Time (s) & Durable state & Commits before $\to$ after \\
 \midrule
-concurrent rich & RGA & 13.56 & 205,426 B & 4,108 $\to$ 1 \\
- & Embed & 13.07 & 95,438 B & 4,108 $\to$ 1 \\
- & Sided & 14.53 & 212,685 B & 4,108 $\to$ 1 \\
-format trace & RGA & 35.98 & 204,936 B & 26,753 $\to$ 1 \\
- & Embed & 36.18 & 72,182 B & 26,753 $\to$ 1 \\
+concurrent rich & Embed & 13.07 & 95,438 B & 4,108 $\to$ 1 \\
+& Sided & 14.53 & 212,685 B & 4,108 $\to$ 1 \\
+format trace & Embed & 36.18 & 72,182 B & 26,753 $\to$ 1 \\
  & Sided & 36.63 & 203,219 B & 26,753 $\to$ 1 \\
-mark churn & RGA & 41.80 & 4,069 B & 4,543 $\to$ 1 \\
- & Embed & 42.21 & 1,014 B & 4,543 $\to$ 1 \\
+mark churn & Embed & 42.21 & 1,014 B & 4,543 $\to$ 1 \\
  & Sided & 42.40 & 3,764 B & 4,543 $\to$ 1 \\
-empty document & RGA & 0.32 & 65 B & 1,203 $\to$ 1 \\
- & Embed & 0.32 & 9 B & 1,203 $\to$ 1 \\
+empty document & Embed & 0.32 & 9 B & 1,203 $\to$ 1 \\
  & Sided & 0.32 & 61 B & 1,203 $\to$ 1 \\
 \bottomrule
 \end{tabular}
-\caption{Repeated Peritext evaluation with both state and commit-history GC.}
+\caption{Repeated Peritext evaluation with both continuation-safe state and
+commit-history GC.}
 \label{tab:peritext-gc}
 \end{table}
 
+The RGA rows previously shown here used current-read-only dead-leaf pruning.
+The negative control in \code{runtime/test/rga.test.js} shows that a later
+honest insertion after such a deleted anchor is then rejected.  Those rows are
+therefore not measurements of durable continuation state and are omitted.
+The new Lean RGA packing certificate retains every identifier; it has not yet
+been implemented or measured in the JavaScript runtime.
+
 The empty-document row is a sanity check, not an asymptotic theorem. On this
-settled workload, all character identities and marks disappear and history
-shrinks to one commit. The remaining 9--65 bytes are codec and continuation
-headers.
+settled workload, both tombstone-free kernels remove all character identities
+and marks and history shrinks to one commit. The remaining 9--61 bytes are
+codec and continuation headers.
 
 An isolated ancestor-spine workload explains why EmbedRGA remains useful even
 after both collectors. It performs 21,200 text operations and deletes 6,000
-ancestor identities. RGA retains 150,561 bytes and all 6,000 identities;
-EmbedRGA retains 46,072 bytes and no deleted identity; SidedEmbedRGA retains
-80,965 bytes and no deleted identity. All histories shrink to one commit.
-Anonymous path geometry can therefore be substantially smaller than an
-identity-bearing ancestor spine.
+ancestor identities. In the historical negative-control run, RGA retains
+150,561 bytes and all 6,000 identities; EmbedRGA retains 46,072 bytes and no
+deleted identity; SidedEmbedRGA retains 80,965 bytes and no deleted identity.
+All histories shrink to one commit. Anonymous path geometry can therefore be
+substantially smaller than an identity-bearing ancestor spine; the RGA number
+is descriptive, not evidence for its unsafe state hook.
 
 \subsection{External plain-text systems}
 

@@ -10,7 +10,10 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..'), RAW = join(ROOT, 'results', 'raw');
 const repetitions = Number(process.argv[2] ?? 3);
 const smoke = process.argv.includes('--smoke');
-const kernels = ['rga', 'embed-rga', 'sided-embed-rga'];
+// The old RGA state hook performs current-read-only dead-leaf pruning and is
+// retained as a negative control. It is not continuation-safe, so paper-facing
+// combined-GC measurements include only the two continuation-safe collectors.
+const kernels = ['embed-rga', 'sided-embed-rga'];
 const design = smoke ? { 'empty-rich': ['none', 'both'] } : {
   // Separates history GC, per-state GC, and their composition.
   'concurrent-rich': ['none', 'history', 'full-state', 'both'],

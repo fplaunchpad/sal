@@ -77,13 +77,17 @@ test('PeritextRGA matches both tombstone-free Peritext variants sequentially', (
   assert.deepEqual(peritextRGA.read(snap), reads[0]);
 });
 
-test('PeritextRGA state GC drops settled dead leaves but retains live ancestry', () => {
+test('negative control: dropping a settled dead RGA leaf breaks continuation', () => {
   const dt = compactiblePeritextRGA;
   let leaves = dt.init();
   for (const op of [ins(1, 'a'), ins(2, 'b'), del(1)]) leaves = dt.apply(leaves, op);
   const c1 = dt.compact(leaves, { settledIds: new Set([1, 2]), settledDelIds: new Set([1]) });
   assert.equal(c1.stats.recordsDropped, 1);
   assert.deepEqual(dt.read(c1.state).map((e) => e.char), ['b']);
+  assert.equal(rgaApplicable(leaves.text.shadow, ins(3, 'c', 1)), true,
+    'a deleted birth remains a legal future anchor in the full state');
+  assert.throws(() => dt.apply(c1.state, ins(3, 'c', 1)), /anchor 1 not known/,
+    'present-read equality is not continuation preservation');
 
   let spine = dt.init();
   for (const op of [ins(1, 'a'), ins(2, 'b', 1), del(1)]) spine = dt.apply(spine, op);
