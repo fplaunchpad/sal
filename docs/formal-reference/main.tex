@@ -2464,14 +2464,36 @@ Changing the tuple representation would be an encoding refinement rather than
 collection under the current interface.
 
 \paragraph{Tombstone RGA.}
-RGA is staged because its event representation retains both insertion records
-and deletion tombstones.  The intended collector needs stable-frontier
-evidence authorizing removal of a dead insertion while retaining enough
-anchor and order information for concurrent descendants and stale branches.
-Formally, it must instantiate $C$, $W$, and $\mathsf{Rep}$ above and prove
-update, ternary-merge, list-query, and continuation preservation.  Until those
-obligations are discharged, its registry entry contains only the exact-state
-baseline.
+RGA has a checked representation compactor, but not deleted-identifier
+reclamation.  Its reachable finite state consists of birth triples
+$(t,p,i)$ and a graveyard $G$.  Honest issuance establishes $t=i$ and every
+grave has a birth.  The packed state therefore stores
+\[
+ C=\{\mathsf{parents}:\mathsf{Finset}(i,p),\quad
+     \mathsf{live}:\mathsf{Finset}(i)\},
+ \qquad \mathsf{live}=\mathsf{birthIds}\setminus G.
+\]
+Materialization restores $(i,p,i)$ and
+$G=\mathsf{parentIds}\setminus\mathsf{live}$.  The theorem
+\lean{unpack\_pack} proves that this round trip is exact on well-formed
+states.  The packaged certificate proves preservation by collection, guarded
+update, ternary merge, and the ordered list query.  With the explicit cost
+model of three words per birth plus one per grave versus two words per parent
+plus one per live identifier, packing never grows state and is strictly
+smaller whenever the graveyard is nonempty.
+
+This result deliberately retains one parent fact for every deleted
+identifier.  Under the current issuance policy, a later insertion may name a
+deleted identifier as its anchor.  The checked negative SPOT first erases a
+dead leaf without changing the current live-ID projection, then proves that a
+future operation accepted by the full state is rejected by the erased state.
+Thus a stability frontier alone does not authorize physical identifier
+reclamation.  That stronger collector requires an explicit anchor-retirement
+or translation policy, which would be a change to the operation boundary and
+must not be smuggled into the existing sequential specification.
+\anchor{Sal/MRDTs/Instances/RGAGC.lean}
+  {RGA.GC.pack, RGA.GC.unpack, RGA.GC.packedWords\_pack\_lt\_of\_grave,
+   RGA.GC.certificate, RGA.GC.erase\_dead\_anchor\_breaks\_future\_issuance}
 
 \paragraph{EmbedRGA and Peritext.}
 EmbedRGA, its Peritext specialization, and their current live-sequence
@@ -2554,8 +2576,10 @@ remove a dead tag while proving that a stale branch cannot resurrect it and
 that future remove payloads and add-wins queries remain correct.  The current
 registry entry deliberately supplies only the exact-state baseline.
 
-Only AegisSheet, TreeMove, and rich SidedPeritext currently package
-representation-changing proofs.  The roadmap treats every remaining
+Tombstone RGA, AegisSheet, TreeMove, and rich SidedPeritext currently package
+representation-changing proofs.  RGA's entry is a lossless representation
+quotient, whereas the latter three reclaim datatype payload, hidden tree
+state, or rich-text metadata.  The roadmap treats every remaining
 exact-state profile as an open classification obligation: supply a real
 collector when metadata is reclaimable, or prove that the released
 representation contains no semantically redundant internal state.

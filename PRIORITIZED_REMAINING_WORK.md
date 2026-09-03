@@ -411,9 +411,16 @@ anonymous long-form working papers under `docs/`.
     already minimal for the current interface, or specify replica retirement
     and coordinate normalization evidence and implement the corresponding
     operational collector.
-  - [ ] Tombstone RGA: replace deleted insertion records and tombstones with a
-    frontier-authorized anchor/order summary and prove update, merge, list-read,
-    and continuation refinement.
+  - [x] Tombstone RGA, current-policy quotient: package a compact interpreter
+    storing `(id,parent)` facts and the live-ID set, prove update, ternary merge,
+    list-read, and continuation refinement, and prove that its word-count model
+    is strictly smaller when graves exist. The paired SPOT shows why stable dead
+    identifiers still cannot be erased: current issuance permits a future
+    insertion after any deleted anchor.
+  - [ ] Tombstone RGA, physical ID reclamation: introduce and justify an
+    explicit anchor-retirement/translation policy, then prove that its frontier
+    evidence excludes stale and future references before deleting the retained
+    `(id,parent)` fact. Do not silently strengthen the current sequential spec.
   - [ ] OR-Set: reclaim dead add records and observed-tag tombstones with
     frontier or equivalent merge evidence, including stale-branch and
     no-resurrection controls.

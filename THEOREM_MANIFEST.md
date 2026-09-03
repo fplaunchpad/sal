@@ -40,6 +40,9 @@ the compatibility contract.
 - `Sal.MRDTs.Instances.RGA.verified`
 - `Sal.MRDTs.Instances.RGA.rga_spec_linearizable`
 - `Sal.MRDTs.Instances.RGA.rga_spec_linearizableV`
+- `Sal.MRDTs.Instances.RGA.GC.certificate`
+- `Sal.MRDTs.Instances.RGA.GC.packedWords_pack_lt_of_grave`
+- `Sal.MRDTs.Instances.RGA.GC.erase_dead_anchor_breaks_future_issuance`
 - `Sal.MRDTs.Instances.EmbedRGA.convergence`
 - `Sal.MRDTs.Instances.SidedEmbedRGA.convergence`
 - `Sal.MRDTs.Instances.ProductionRGA.embed`

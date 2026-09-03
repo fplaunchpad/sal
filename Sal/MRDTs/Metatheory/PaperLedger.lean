@@ -148,6 +148,9 @@ namespace Sal.MRDTs
 #check Instances.RGA.listRel
 #check Instances.RGA.rga_spec_linearizable
 #check Instances.RGA.rga_spec_linearizableV
+#check Instances.RGA.GC.certificate
+#check Instances.RGA.GC.packedWords_pack_lt_of_grave
+#check Instances.RGA.GC.erase_dead_anchor_breaks_future_issuance
 #check Instances.ProductionRGA.replayEmbed
 #check Instances.ProductionRGA.replaySided
 #check Instances.ProductionRGA.embed

@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.ProductionLedger
+import Sal.MRDTs.Instances.RGAGC
 import Sal.MRDTs.Instances.TreeMoveGC
 import Sal.MRDTs.Instances.SidedPeritextProtocol
 
@@ -82,7 +83,8 @@ namespace Production.StateGC
 open Sal.EmbedRGA
 
 /-- Datatype-state GC coverage in exactly the order of `Production.registry`.
-The two staged entries are tombstone RGA and OR-Set. -/
+OR-Set remains staged.  Tombstone RGA has a representation compactor, while
+its stronger deleted-identifier reclamation problem remains open. -/
 noncomputable def registry : List PackagedStateGC :=
   [ PackagedStateGC.ofExactState "grow-only-set" Instances.GSet.verified
   , PackagedStateGC.ofExactState "add-store"
@@ -103,7 +105,8 @@ noncomputable def registry : List PackagedStateGC :=
       Instances.BoundedCounter.verified
   , PackagedStateGC.ofExactState "lww-register"
       Instances.LWWRegister.verified
-  , PackagedStateGC.ofStaged "rga" Instances.RGA.verified
+  , PackagedStateGC.ofCollector "rga" Instances.RGA.verified
+      Instances.RGA.GC.certificate
   , PackagedStateGC.ofExactState "embed-rga"
       (Instances.ProductionRGA.embed (α := Nat) unaryCode)
   , PackagedStateGC.ofExactState "sided-embed-rga"

@@ -36,7 +36,11 @@ orders writes by timestamp, and a sorted overwrite history supplies the
 ordinary sequential-register explanation.
 
 A datatype may separately supply state-GC representation and protocol
-certificates. The runtime implementation lives in [`runtime`](runtime).
+certificates. Tombstone RGA now has a checked `(id,parent)`/live-set packing
+certificate; it retains deleted identifiers because the current issuance rule
+still allows them as future anchors. Rich SidedPeritext, TreeMove, and
+AegisSheet supply the other representation-changing collectors or protocols.
+The runtime implementation lives in [`runtime`](runtime).
 
 ## Verification
 

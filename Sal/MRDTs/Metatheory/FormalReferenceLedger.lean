@@ -230,6 +230,11 @@ namespace Sal.MRDTs
 #check Instances.TreeMove.GC.collectPrefix
 #check Instances.TreeMove.GC.collectTrash
 #check Instances.TreeMove.GC.protocol
+#check Instances.RGA.GC.pack
+#check Instances.RGA.GC.unpack
+#check Instances.RGA.GC.packedWords_pack_lt_of_grave
+#check Instances.RGA.GC.certificate
+#check Instances.RGA.GC.erase_dead_anchor_breaks_future_issuance
 #check Instances.AegisSheet.GC.semanticCollect
 #check Instances.AegisSheet.GC.certificate
 #check Instances.SidedPeritext.StateGC.Protocol.protocol

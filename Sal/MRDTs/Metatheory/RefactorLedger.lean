@@ -5,6 +5,7 @@ import Sal.MRDTs.Instances.FugueMaxReplay
 import Sal.MRDTs.Instances.FugueForward
 import Sal.MRDTs.Instances.FuguePolicyGC
 import Sal.MRDTs.Instances.RGAConditioningSPOT
+import Sal.MRDTs.Instances.RGAGC
 import Sal.MRDTs.Instances.PeritextRenderGC
 import Sal.MRDTs.Instances.PeritextMarkPairGC
 import Sal.MRDTs.Instances.SidedPeritextStateGC
@@ -131,6 +132,10 @@ namespace Sal.MRDTs
 #check Instances.RGA.rga_spec_linearizable
 #check Instances.RGA.rga_spec_linearizableV
 #check Instances.RGA.ConditioningSPOT.invalid_delete_not_list_legal
+#check Instances.RGA.GC.certificate
+#check Instances.RGA.GC.packedWords_pack_lt_of_grave
+#check Instances.RGA.GC.future_after_dead_anchor_applicable
+#check Instances.RGA.GC.erase_dead_anchor_breaks_future_issuance
 #check Instances.ORSet.issuance
 #check Instances.ORSet.spec
 #check Instances.ORSet.verified
