@@ -132,6 +132,13 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.ClientLegal
 #check Instances.BoundedCounter.clientSpec
 #check Instances.BoundedCounter.verified
+#check Instances.LWWRegister.D
+#check Instances.LWWRegister.interaction
+#check Instances.LWWRegister.spec
+#check Instances.LWWRegister.stateRel
+#check Instances.LWWRegister.replay_lo_false
+#check Instances.LWWRegister.canonical_respects
+#check Instances.LWWRegister.verified
 #check Instances.ORSet.canIssue
 #check Instances.ORSet.interaction
 #check Instances.ORSet.spec

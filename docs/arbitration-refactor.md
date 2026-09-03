@@ -31,10 +31,11 @@ Negative controls:
 - reversing the concurrent OR-set edge produces remove-wins and must not match
   the add-wins sequential observation.
 
-PBT gate: staged. First keep the interaction model finite and executable and
-pin the directed controls with `native_decide`. Add randomized reachable-trace
-testing only if the SPOTs expose a non-local interaction or acyclicity claim
-that is not discharged structurally.
+PBT gate: not required for theorem closure. Directed PASS/FAIL controls pin the
+finite behavior, while `canonical_respects` and `verified` discharge the
+general interaction and correctness claims. Randomized reachable-trace testing
+would validate an executable runtime correspondence, which is not implemented
+for this Lean-only instance.
 
 Trusted definitions: the chosen LWW timestamp policy, observed-remove payload,
 and independent sequential specifications. Lean checks consequences of these
@@ -56,3 +57,11 @@ is parameterized by `ReplayPolicy`; neither `UpdateSig` nor `MRDTSig` stores
 that policy. The low-priority unconstrained policy removes vacuous per-datatype
 boilerplate. `IsReplayLinearizableWith` remains an internal research hook for a
 specialized replay theorem; the generic certified Join route uses the default.
+
+The production `Instances/LWWRegister.lean` package now closes the full
+positive example. Its `max` update and merge prove all-context Join with the
+default proof-local policy. `replay_lo_false` checks that this raw replay order
+is empty; `canonical_respects` constructs the timestamp-sorted public witness;
+and `verified` packages convergence and refinement to the total overwrite
+register. The chronological/reversed-delivery PASS controls and the
+lower-timestamp-winner FAIL control pin the intended observation.

@@ -29,6 +29,12 @@ operation separately through `HistoricalBinaryMerge`. The historical resolver re
 `ReplayPolicy`; the certified Join route uses its unconstrained default. It is
 not the datatype's public interaction policy.
 
+The verified LWW register makes this separation concrete. Its timestamped
+state uses `max` for update and merge, so raw updates commute and the
+proof-local replay order is empty. Its public `InteractionSpec` nevertheless
+orders writes by timestamp, and a sorted overwrite history supplies the
+ordinary sequential-register explanation.
+
 A datatype may separately supply state-GC representation and protocol
 certificates. The runtime implementation lives in [`runtime`](runtime).
 

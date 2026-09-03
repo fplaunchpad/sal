@@ -128,6 +128,12 @@ valid LWW timestamp order contains a length-two edge chain, so the historical
 checks remove-before-add for concurrent conflict and add-before-remove when
 visibility records that the remove observed the add.
 
+The production LWW package closes the corresponding end-to-end case. Its raw
+timestamped `max` updates commute, making the default proof-local replay order
+empty. Its public interaction policy orders writes by their timestamped keys,
+and `canonical_respects` constructs a sorted witness that refines the stored
+maximum to the total overwrite-register specification.
+
 The same legalization composes through Sided Peritext. Both its internal
 three-component core and its production `RichCore` query signature now have
 full `VerifiedMRDT` packages. The latter theorem covers the actual
@@ -178,6 +184,7 @@ the client operation without a proved abstraction bridge.
 | flat-grow-only-set | Characteristic function of a mathematical set. | Correct abstract carrier. `CanIssue := True`. |
 | flat-grow-only-map | Characteristic function of immutable key/value entries. | Correct abstract carrier. `CanIssue := True`. |
 | bounded-counter | Per-replica abstract balances; increment and decrement change the named balance. | Independent of the concrete pair of grow-only component maps. Issuance is load-bearing for rights-respecting legality and safety. |
+| lww-register | Optional value; every sequential write overwrites the register. | Correct total register abstraction. The representation retains the winning timestamped tuple; `stateRel` projects only its value, and the public witness sorts by the timestamped key. |
 | rga | Ordinary list of stable identifiers; insert splices after an anchor and delete physically filters an identifier. | Correct abstraction; no tombstones or insertion-edge store. Issuance is load-bearing for list legality. |
 | embed-rga | Ordinary list of identifier/payload pairs. | Correct abstraction; no coordinate records. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
 | sided-embed-rga | Ordinary list of identifier/value pairs. | Correct abstraction; no coordinate or side records in the public state. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
@@ -230,7 +237,7 @@ without either an abstract use or a checked necessity argument.
 ## Evidence status
 
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
-  BoundedCounter, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
+  BoundedCounter, LWW register, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
   Peritext signatures, AegisSheet, the observed-remove set, and the grow-only
   canary. Every released entry is a typed `PackagedMRDT` in
   `Production.registry`.

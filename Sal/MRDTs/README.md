@@ -29,6 +29,10 @@ certified Join route uses its unconstrained default.
 `Instances/InteractionSPOT.lean` checks the key
 controls: LWW admits a three-write timestamp chain, and concurrent add/remove
 uses remove-before-add to explain add-wins.
+`Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
+updates commute and make the proof-local replay order empty, while the public
+interaction order has a timestamp-sorted witness refining to a total
+overwrite register.
 
 ## Minimal distributed-GC state
 

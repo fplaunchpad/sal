@@ -67,6 +67,15 @@ namespace Sal.MRDTs
 #check interactionLoOn
 #check IsSpecLinearizable
 
+-- LWW separates commuting representation updates from timestamp-ordered
+-- client explanations.
+#check Instances.LWWRegister.verified
+#check Instances.LWWRegister.replay_lo_false
+#check Instances.LWWRegister.canonical_respects
+#check Instances.LWWRegister.timestamp_chain
+#check Instances.LWWRegister.chronological_winner
+#check Instances.LWWRegister.lower_timestamp_does_not_win
+
 -- Countermodels and intentionally incomplete signatures are kept out of the
 -- typed production registry and checked by `NegativeLedger`.
 #check Foundation.convergence_over_backward_closed_subsets_false

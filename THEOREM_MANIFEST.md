@@ -63,6 +63,12 @@ the compatibility contract.
 
 ## Other production instances
 
+- `Sal.MRDTs.Instances.LWWRegister.verified`
+- `Sal.MRDTs.Instances.LWWRegister.replay_lo_false`
+- `Sal.MRDTs.Instances.LWWRegister.canonical_respects`
+- `Sal.MRDTs.Instances.LWWRegister.timestamp_chain`
+- `Sal.MRDTs.Instances.LWWRegister.chronological_winner`
+- `Sal.MRDTs.Instances.LWWRegister.lower_timestamp_does_not_win`
 - `Sal.MRDTs.Instances.TreeMove.verified`
 - `Sal.MRDTs.Instances.TreeMove.render_safe`
 - `Sal.MRDTs.Instances.TreeMove.sequentialSound`

@@ -769,6 +769,16 @@ observed-remove set orders a concurrent remove before an add, while visibility
 orders an observed add before its later remove. One interaction policy
 therefore explains both add-wins concurrency and ordinary observed removal.
 
+The LWW register exposes the separation directly. Its concrete state stores
+the greatest timestamped write, and both update and merge compute a maximum.
+Concrete updates therefore commute, so the default proof-local replay relation
+has no edges. The public interaction policy still orders unequal writes by
+their timestamped keys. Sorting any internal replay witness by that key cannot
+change the concrete fold, and causal timestamp monotonicity ensures that the
+sorted list respects visible conflicts. The resulting list is an acyclic
+timestamp order whose ordinary overwrite-register execution returns the value
+stored by the MRDT.
+
 \begin{definition}[specification linearizability]
 Given interaction policy $A$, sequential specification $\mathit{Spec}$, and
 representation relation
@@ -1215,6 +1225,7 @@ runtime is extracted from that package.
 Datatype & Issuance & Convergence & Public spec & State GC \\
 \midrule
 Bounded counter & \checkmark & \checkmark & \checkmark & -- \\
+LWW register & \checkmark & \checkmark & \checkmark & -- \\
 RGA & \checkmark & \checkmark & \checkmark & -- \\
 EmbedRGA & \checkmark & \checkmark & \checkmark & -- \\
 SidedEmbedRGA & \checkmark & \checkmark & \checkmark & -- \\
@@ -1243,6 +1254,13 @@ add inserts the named element and remove erases it, while observed-tag payloads
 remain implementation metadata. Honest issuance is load-bearing in the proof
 that the tagged representation refines this machine. The bounded counter uses
 issuance to enforce available rights.
+
+The LWW package uses unconditional issuance. Its state is either unset or a
+timestamp--replica--value tuple; update and ternary merge take the tuple
+maximum. Its independent sequential specification is a total overwrite
+register over optional values. The checked witness construction sorts every
+version's writes by the tuple order, proves that this list respects the public
+interaction relation, and uses commutativity to preserve the stored maximum.
 
 TreeMove represents a replicated tree whose nodes have stable identities and
 whose conflict resolution prevents concurrent moves from creating cycles; it

@@ -366,6 +366,10 @@ anonymous long-form working papers under `docs/`.
     commuting representation effectors from conflicting abstract
     `add`/`remove` operations and recover add-wins by ordering a concurrent
     remove before the add.
+  - [x] Port the full timestamped LWW register to the current interface. Its
+    `max` update and merge use the default proof-local replay policy, while a
+    timestamp-sorted witness proves the independent total overwrite-register
+    specification and packages a production `VerifiedMRDT`.
   - [x] Validate and freeze a single implementer-facing interaction API,
     provisionally `independent | conflict concurrentOrder`, with a swap
     coherence law. Causal conflicts follow visibility; the supplied direction

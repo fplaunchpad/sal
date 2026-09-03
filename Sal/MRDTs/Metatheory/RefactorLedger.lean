@@ -116,6 +116,13 @@ namespace Sal.MRDTs
 #check Instances.BoundedCounter.versions_safeV
 #check Instances.BoundedCounter.sequential
 #check Instances.BoundedCounter.verified
+#check Instances.LWWRegister.interaction
+#check Instances.LWWRegister.replay_lo_false
+#check Instances.LWWRegister.canonical_respects
+#check Instances.LWWRegister.verified
+#check Instances.LWWRegister.timestamp_chain
+#check Instances.LWWRegister.chronological_winner
+#check Instances.LWWRegister.lower_timestamp_does_not_win
 #check Instances.RGA.applicable
 #check Instances.RGA.replayAdequacy
 #check Instances.RGA.birthGraveSound

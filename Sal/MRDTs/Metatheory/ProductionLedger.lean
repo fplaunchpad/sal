@@ -4,6 +4,7 @@ import Sal.MRDTs.Instances.FinsetStore
 import Sal.MRDTs.Instances.FlatCounters
 import Sal.MRDTs.Instances.FlatGrowOnly
 import Sal.MRDTs.Instances.BoundedCounter
+import Sal.MRDTs.Instances.LWWRegister
 import Sal.MRDTs.Instances.RGASequential
 import Sal.MRDTs.Instances.ProductionRGA
 import Sal.MRDTs.Instances.Peritext
@@ -38,6 +39,7 @@ noncomputable def registry : List PackagedMRDT :=
   , PackagedMRDT.of "flat-grow-only-map"
       Instances.FlatGrowOnly.gomapVerified
   , PackagedMRDT.of "bounded-counter" Instances.BoundedCounter.verified
+  , PackagedMRDT.of "lww-register" Instances.LWWRegister.verified
   , PackagedMRDT.of "rga" Instances.RGA.verified
   , PackagedMRDT.of "embed-rga"
       (Instances.ProductionRGA.embed (α := Nat) unaryCode)
@@ -57,9 +59,10 @@ noncomputable def registry : List PackagedMRDT :=
 
 noncomputable def names : List String := registry.map PackagedMRDT.name
 
-example : registry.length = 18 := by rfl
+example : registry.length = 19 := by rfl
 
 #check registry
+#check Instances.LWWRegister.verified
 #check Instances.ORSet.verified
 #check Instances.AegisSheet.verified
 

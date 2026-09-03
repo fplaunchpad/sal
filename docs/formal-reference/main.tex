@@ -1566,6 +1566,22 @@ It is structurally similar to $\loOn$ but independent of the proof-local
 policy and concrete universal commutation.
 \anchor{Sal/MRDTs/Framework/Certificates.lean}{interactionLoOn}
 
+LWW separates these two orders. Its concrete state is the greatest
+timestamp--replica--value tuple seen so far; update and merge use $\max$.
+Consequently, raw updates commute and the default proof-local $\loOn$ is
+empty. Its public interaction policy instead orders unequal tuples by their
+keys. The function \lean{canonical} sorts any internal replay witness by this
+order. The theorem \lean{canonical\_respects} proves that the sorted list
+respects \lean{interactionLoOn}: key order handles concurrent writes, while
+configuration-level causal timestamp monotonicity handles visible writes.
+Commutativity preserves the concrete fold during sorting, and the total
+overwrite-register specification returns the value of the same maximal tuple.
+Thus the public order has a constructive finite witness; it does not rely on
+the proof-local replay policy for acyclicity.
+\anchor{Sal/MRDTs/Instances/LWWRegister.lean}
+  {LWWRegister.replay\_lo\_false, LWWRegister.canonical\_respects,
+   LWWRegister.verified}
+
 \subsection{Sequential specification and public theorem}
 
 A sequential specification contains
@@ -1858,7 +1874,7 @@ Its public conclusions are
 
 \subsection{Released-instance summary}
 
-The typed production registry contains 18 \lean{PackagedMRDT} values. The
+The typed production registry contains 19 \lean{PackagedMRDT} values. The
 table groups packages that instantiate the same parametric proof. ``Join''
 means $\mathsf{Join}(D)$ from Section~6.1; ``JoinOn $G$'' means
 $\mathsf{JoinOn}(D,G)$. These are theorem scopes, while the final column names
@@ -1880,6 +1896,8 @@ flat-grow-only-set, flat-grow-only-map & Join & $\mathsf{True}$ &
 Pointwise Boolean store, total legality\\
 bounded-counter & Join & \lean{bcApplicable} &
 Rights-respecting integer counter\\
+lww-register & Join & $\mathsf{True}$ &
+Total overwrite register in timestamp order\\
 rga & Join & \lean{RGA.applicable} &
 Legal ordinary-list machine\\
 or-set & Join & \lean{ORSet.canIssue} &
@@ -1931,6 +1949,30 @@ all-context Join, and package total sequential correctness.
 \anchor{Sal/MRDTs/Instances/FlatCounters.lean}
   {FlatCounters.D, FlatCounters.generation, FlatCounters.spec,
    FlatCounters.verified}
+
+\paragraph{LWW register.}
+The state is either unset or a lexicographically ordered write,
+\[
+ \State=\bot+\mathsf{Lex}(\mathsf{Timestamp},\mathsf{Replica},\N),
+ \qquad
+ \doop(s,e)=\max(s,\mathsf{packedWrite}(e)),
+ \qquad
+ \merge(l,a,b)=\max(a,b).
+\]
+Issuance and sequential legality are total. The sequential state is an
+optional natural number, and each step overwrites it with the event's value.
+The representation relation projects the value from the maximal tuple. The
+public interaction policy orders unequal writes by their packed keys, but the
+proof-local replay policy remains the default $\mathsf{Either}$: $\max$
+updates commute, the universal laws prove all-context Join, and sorting the
+replay witness preserves its fold. The positive controls show a three-write
+timestamp chain and last-writer result under both chronological and reversed
+delivery; the negative control rejects a lower-timestamp winner.
+\anchor{Sal/MRDTs/Instances/LWWRegister.lean}
+  {LWWRegister.D, LWWRegister.interaction, LWWRegister.spec,
+   LWWRegister.stateRel, LWWRegister.timestamp\_chain,
+   LWWRegister.chronological\_winner,
+   LWWRegister.lower\_timestamp\_does\_not\_win}
 
 \paragraph{Bounded counter.}
 The state records per-replica increment and decrement counts,
@@ -2135,7 +2177,7 @@ The rich package changes only the query boundary to rendered marks.
 Released family & Merge-proof route\\
 \midrule
 \endhead
-Grow-only stores, flat counters, bounded counter, OR-Set, TreeMove,
+Grow-only stores, flat counters, bounded counter, LWW register, OR-Set, TreeMove,
 AegisSheet, RGA & Universal equations adapted to
 \lean{CanonicalJoinLaws}, then all-context \lean{Join}\\
 EmbedRGA and SidedEmbedRGA & Direct datatype-specific \lean{JoinAt} under
@@ -2387,7 +2429,7 @@ trace therefore erases to such a widened semantic trace.
 
 \subsection{Per-datatype collection profiles}
 
-The typed \lean{Production.StateGC.registry} follows the same eighteen-entry
+The typed \lean{Production.StateGC.registry} follows the same nineteen-entry
 order as the released-instance registry.  Its four constructors distinguish
 an exact-state baseline, a representation-changing local certificate, an
 operational protocol, and a staged collector.  Thus registry coverage means
@@ -2413,6 +2455,13 @@ not replay logs: one integer for the flat counters, or per-replica increment
 and decrement components for the bounded counter.  Removing a component would
 need an explicit replica-retirement or coordinate-normalization protocol;
 none is part of the released semantics.
+
+\paragraph{LWW register.}
+The exact-state baseline stores only the current winning tuple. Older writes
+are already absent from the semantic state, so this representation contains
+no retained replay log or tombstone metadata for a local collector to remove.
+Changing the tuple representation would be an encoding refinement rather than
+collection under the current interface.
 
 \paragraph{Tombstone RGA.}
 RGA is staged because its event representation retains both insertion records
@@ -2579,6 +2628,9 @@ Canonical reachability & \lean{CanonicalConfig},
 Issuance/spec interfaces & \lean{Issuance}, \lean{InteractionSpec},
 \lean{SequentialSpec} &
 \src{Sal/MRDTs/Framework/Certificates.lean}{Certificates.lean}\\
+LWW replay/public-order separation & \lean{LWWRegister.replay\_lo\_false},
+\lean{LWWRegister.canonical\_respects}, \lean{LWWRegister.verified} &
+\src{Sal/MRDTs/Instances/LWWRegister.lean}{LWWRegister.lean}\\
 Certified adequacy & \lean{replayWitness\_of\_mintCertified} &
 \src{Sal/MRDTs/Metatheory/CertifiedAdequacy.lean}{CertifiedAdequacy.lean}\\
 Client theorem & \lean{IsSpecLinearizable}, \lean{VerifiedMRDT} &

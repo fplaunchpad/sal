@@ -17,8 +17,8 @@ release gate must reject a production entry that supplies only `MRDTSig`,
 Falsifier: register the OR-set interaction SPOT, queue, MVR, or FugueMax
 `FMSig` without constructing a `VerifiedMRDT` for that exact signature.
 
-Positive control: every current public package, plus the completed OR-set,
-constructs a production-registry entry.
+Positive control: every current public package, including the completed LWW
+register and OR-set, constructs a production-registry entry.
 
 Negative control: queue and MVR remain in a separate negative ledger with
 their checked sequential counterexamples and cannot inhabit the production
@@ -41,7 +41,9 @@ Residual: extraction is not implemented. A runtime may name a Lean package and
 still have only tested, not proved, correspondence to it.
 
 Result: `PackagedMRDT` is the only production entry type, and
-`Production.registry` contains 18 signature/certificate pairs. The OR-set now
+`Production.registry` contains 19 signature/certificate pairs. The LWW
+register separates its empty proof-local replay order from a timestamp-directed
+public interaction order and refines to a total overwrite register. The OR-set
 has observed-remove issuance, convergence, an ordinary finite-set sequential
 machine, issuance-dependent refinement, and directed issuance/add-wins
 controls. Queue,
