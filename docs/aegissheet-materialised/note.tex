@@ -41,10 +41,13 @@ the executable reference, show that the last position of a removed row or
 column cannot be dropped while a concurrent revival is possible, so the
 retention residue is one register per axis identifier until removal is
 causally stable. The measured state is linear rather than quadratic in
-history. None of the new claims is machine-checked; the mechanization
-target is a conditioned Join for the token and version components composed
-with the register, plus an observational-equivalence theorem against the
-union model.
+history. Purge needs a mask of cutoff and coordinates per marker, because the
+current model deliberately masks writes concurrent with the marker and below
+its cutoff, but it needs no acknowledgement protocol: dead identifiers can be
+retired immediately once the register is kept. None of the new claims is
+machine-checked; the mechanization target is a conditioned Join for the token
+and version components composed with the register and the mask, plus an
+observational-equivalence theorem against the union model.
 \end{abstract}
 
 \section{Goal, hypotheses, and status}
@@ -86,10 +89,12 @@ fixtures listed in Section~\ref{sec:controls}.
 \toprule
 Claim & Status & Evidence \\
 \midrule
-H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions under the D1 issuance rule, 118{,}474 versions, 21{,}571 registered-ancestor and 834 virtual-base merges, three seeds; all 96{,}069 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
-H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 121 of 3000 executions have a merge that differs from timestamp-order replay \\
-H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 11 to 55 failing executions per 1000 in the harness \\
-H3 & staged & purge is not modelled by the harness \\
+H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions with Lamport clocks, laggard replicas, and purge markers: 110{,}560 versions, 19{,}240 registered-ancestor and 461 virtual-base merges, three seeds; all 90{,}859 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
+H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 675 of 3000 executions have a merge that differs from timestamp-order replay \\
+H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 35 to 41 failing executions per 1000 for the register-dropping variant \\
+H3, strict & refuted & purge as plain deletion diverges in 6, 3, 3 executions per 1000, always on a write concurrent with a marker and below its cutoff \\
+H3, with mask & validated & a mask of cutoff and coordinates per marker reproduces the reference; 0 failing executions \\
+Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
 Undo revives a later removal & finding, reproduced; excluded by decision D1 & Section~\ref{sec:undo}; legacy behaviour of the current model \\
 \bottomrule
@@ -108,9 +113,9 @@ Python; it has no Lean declaration.
 \section{The reference model}
 \label{sec:reference}
 
-The displays below transcribe the Lean definitions named in each definition's title.
-Purge markers are omitted throughout (labelled compression); the harness does
-not generate them.
+The displays below transcribe the Lean definitions named in each definition's
+title. The purge marker's fields and its masking clause are stated in
+Section~\ref{sec:h3} rather than displayed here (labelled compression).
 
 \begin{definition}[events and state; \lean{SheetOp}, \lean{D}]
 An event is $e=(t,r,\langle\seen,\mathit{cmd}\rangle)$ with Lamport
@@ -256,10 +261,15 @@ the same observation as the union model at every version.
 reference and each materialised variant in lockstep on random version DAGs.
 Operations are generated from the reference state so that before-images,
 overwrite lists, and killed-token lists are those the issuance predicate
-demands; identifiers and timestamps are fresh by construction. Two to four
-replicas perform one to three operations each per round for three to eight
-rounds; a merge between two heads occurs with probability $0.7$ per round;
-forced convergence rounds then merge all heads along different topologies.
+demands; identifiers are fresh by construction and timestamps come from
+per-replica Lamport clocks, so a stale replica can issue events below another
+replica's cutoff. Replica $0$ issues purge markers under the Lean rule
+\lean{purgeApplicable}, with roster acknowledgements from frontier evidence.
+Two to four replicas perform one to three operations each per round for three
+to eight rounds; a merge between two heads occurs with probability $0.7$ per
+round; with probability $0.5$ one laggard replica never merges until the
+forced convergence rounds, which then merge all heads along different
+topologies.
 When a recorded version's event set equals the heads' intersection it is the
 ancestor; otherwise the ancestor is the fold of the intersection in
 timestamp order, which is the canonical virtual merge base. At every version
@@ -267,14 +277,15 @@ the harness compares observations, compares observations of versions
 reached by different topologies over the same event set, and compares the
 merge result with the timestamp-order replay of the union. Every generated
 event, after erasing $\mathit{kills}$, is checked against a transcription of
-\lean{applicableB} and \lean{clockedB}; all 96{,}069 events of the three
+\lean{applicableB} and \lean{clockedB}; all 90{,}859 events of the three
 seeds pass, so the executions are honest in the Lean sense and not only in
 the generator's. The generator applies decision D1
 (Section~\ref{sec:undo}): an inverse cell write is issued only while its
 axes are live.
 
 \paragraph{Result.} Table~\ref{tab:campaign} reports three seeds of 1000
-executions. The named-removal design has no failing execution. The clearing
+executions; an execution counts against every design that fails in it. The
+named-removal design with purge masks has no failing execution. The clearing
 variant matches the reference and converges but fails the replay comparison:
 a removal that clears all tokens and a concurrent keep do not commute, so
 replay order matters and a Lean proof would need the arbitration arm of the
@@ -291,19 +302,22 @@ unavailable; Section~\ref{sec:mech} gives the conditioned route instead.
 \toprule
 Design & seed 1 & seed 2 & seed 3 & first failure class \\
 \midrule
-keep registers, named removal & 0 & 0 & 0 & \\
-keep registers, clearing removal & 35 & 31 & 55 & merge $\neq$ replay \\
-drop unreferenced dead registers, named & 16 & 11 & 11 & position of revived axis \\
-drop all dead registers, named & 9 & 6 & 9 & range resolution \\
-ancestor ignored (control) & 179 & 156 & 141 & cells, ranges, rows \\
-eager range re-anchoring (control) & 646 & 675 & 684 & ranges \\
+named removal, masks, registers kept & 0 & 0 & 0 & \\
+same, retire dead tokens and \lean{known}: descendant evidence & 0 & 0 & 0 & \\
+same, retire: frontier evidence & 0 & 0 & 0 & \\
+same, retire: immediately when dead & 0 & 0 & 0 & \\
+named removal, purge without mask & 6 & 3 & 3 & masked concurrent write shown \\
+named removal, drop unreferenced dead registers & 38 & 41 & 35 & position of revived axis \\
+clearing removal & 227 & 224 & 224 & merge $\neq$ replay \\
+ancestor ignored (control) & 520 & 511 & 512 & rows, cells, ranges \\
+eager range re-anchoring (control) & 747 & 720 & 746 & ranges \\
 \bottomrule
 \end{tabular}
 \caption{Failing executions out of 1000 per seed under the D1 issuance
-rule. Each seed produced about 39{,}500 versions, 32{,}000 operations,
-7{,}200 merges at a registered ancestor, and 280 merges at a virtual base.
-Under the legacy undo rule the counts are within a few executions of these
-and the named design is likewise clean.}
+rule with Lamport clocks, laggard replicas, and purge markers. Each seed
+produced about 36{,}800 versions, 30{,}300 operations, 6{,}400 merges at a
+registered ancestor, 150 merges at a virtual base, 28 to 41 purge markers,
+and 6 to 12 cell writes concurrent with a marker and below its cutoff.}
 \label{tab:campaign}
 \end{table}
 
@@ -343,7 +357,7 @@ cannot answer both. The information lives only on the removing branch.
 \end{counterexample}
 
 The third counterexample does not involve ranges or undo, and it survives
-the D1 issuance rule (11 to 16 failing executions of 1000 per seed for the
+the D1 issuance rule (35 to 41 failing executions of 1000 per seed for the
 register-dropping variant). The
 retention residue is therefore: one position register per axis identifier
 that has ever been known, retained until the removal is causally stable,
@@ -353,8 +367,11 @@ register could be dropped at removal. Causal stability suffices only if undo
 cannot revive a removed axis: under the current model
 (Section~\ref{sec:undo}) an undo issued \emph{after} observing the removal
 still revives it, and the register must then be kept as long as any replica
-can undo a write into the row. Decision D1 adopts the no-revival rule, so
-causal stability is the retirement condition the purge experiment must test.
+can undo a write into the row. Decision D1 adopts the no-revival rule. The
+purge experiment of Section~\ref{sec:h3} then found that the register should
+simply be kept for every identifier ever known, one $O(1)$ entry each, while
+the identifier's tokens and \lean{known} entry can be dropped as soon as it
+is dead.
 
 \section{Finding: undo revives a causally later removal}
 \label{sec:undo}
@@ -382,18 +399,64 @@ behaviour stays documented by this finding and its SPOT; the equivalence
 theorem of Section~\ref{sec:mech} is stated only for honest executions under
 the new rule.
 
-\section{H3: purge}
+\section{H3: purge and retirement}
+\label{sec:h3}
 
-The harness does not generate purge markers, so H3 is staged. Two
-observations shape the next experiment. First, in the materialised design a
-purge is an ordinary deletion of cell versions at dead coordinates, and the
-$\mvr$ rule already keeps a concurrent write's version because it is absent
-from the ancestor, which is the paper's stated intent that a late change
-restores the axis but not the purged contents. Second, the roster
-acknowledgement of the current protocol is the causal-stability condition
-that Section~\ref{sec:h2} identifies as the moment the dead register can be
-dropped. The conjecture for the next step is that the acknowledgement
-protocol is needed for the $O(1)$ register, not for the cell payloads.
+The harness generates purge markers under the current model's issuance rule
+and transcribes the marker semantics of \lean{AegisSheetGC.lean}: a marker
+carries a cutoff, a set of dead coordinates, the covered cell versions, and
+roster acknowledgements; it masks every cell version at those coordinates
+with timestamp at or below the cutoff, including versions that arrive later
+from a stale branch. The Python reference reproduces the five marker fixtures
+of that file (the marker is issuable after the removal, a restored row shows
+no purged content, a post-cutoff write is issuable and visible).
+
+\paragraph{Strict deletion is refuted.} A materialised purge that deletes
+the covered versions and stores nothing diverges from the reference in $6$,
+$3$, and $3$ executions per 1000. Every case has the same shape: a replica
+that has not observed the marker writes into a purged coordinate with a
+Lamport timestamp at or below the cutoff; the reference masks the write
+permanently, the strict design keeps its version, and the write's keep token
+revives the axis so the difference is visible. This is the current model's
+chosen semantics for a late concurrent edit, and the $\mvr$ rule alone
+cannot express it because the write is absent from the ancestor.
+
+\paragraph{A mask suffices.} Keeping, per marker, the pair (cutoff,
+coordinates) and filtering versions through the accumulated masks at apply
+and at merge reproduces the reference with no failing execution. The mask is
+the irreducible purge residue. The marker's covered entries are unnecessary
+because tokens live in their own component, and its acknowledgements are
+unnecessary for the merge.
+
+\paragraph{Retirement needs no acknowledgements.} Three retirement rules
+for a dead identifier were tested: immediately when dead; when every roster
+member has authored any event (frontier evidence, the rule
+\lean{frontierAcknowledgements} encodes); and when every roster member has
+authored the removal or an event whose causal past contains it (descendant
+evidence). All three drop the identifier's token set and \lean{known} entry
+and keep its position register, and all three have no failing execution. The
+reason is structural: a stale branch on which the identifier is still live
+carries its own \lean{known} entry and tokens, and the merge unions
+\lean{known} and applies $\mvr$ to tokens, so a late concurrent keep revives
+the identifier correctly whatever the other branch forgot. Dropping the
+register instead fails (Table~\ref{tab:campaign}), and dropping it only when
+no live range names it fails too, because an undone range edit can name the
+identifier again and the decision would then depend on the order in which
+references appeared rather than on the event set.
+
+\paragraph{D1 is load-bearing for retirement.} Under the legacy undo rule
+(\lean{--legacy-undo}, seed 7) immediate retirement fails $53$ of 1000 and
+descendant retirement $2$ of 1000: an undone cell write revives an identifier
+whose \lean{known} entry is gone, so the reference shows it live and the
+materialised state does not. The no-retirement baseline stays clean under
+both rules.
+
+\paragraph{Consequence.} The roster acknowledgement protocol of the current
+model plays no role in the materialised design's convergence, masking, or
+retirement. It remains an issuance policy on when a purge may be requested.
+One decision is open, D2: whether a write concurrent with a purge and below
+its cutoff should be masked, as the current model does, or kept, as the
+maskless design does; the harness follows the current model.
 
 \section{Measured: state size}
 
@@ -403,31 +466,32 @@ protocol is needed for the $O(1)$ register, not for the cell payloads.
 \toprule
 Rounds & Operations & Reference (timestamps stored) & Materialised, named, keep \\
 \midrule
-4 & 23 & 131 & 21 \\
-8 & 46 & 593 & 44 \\
-16 & 92 & 2{,}902 & 84 \\
-32 & 185 & 13{,}835 & 180 \\
+4 & 23 & 122 & 30 \\
+8 & 44 & 469 & 53 \\
+16 & 88 & 2{,}154 & 101 \\
+32 & 176 & 10{,}076 & 192 \\
 \bottomrule
 \end{tabular}
 \caption{Mean over 20 executions with 3 replicas, seed 1, at the final
 version of replica 0. The reference count is one per event plus its
-$\seen$ set and overwrite list; the materialised count is tokens, registers,
-and versions.}
+$\seen$ set, overwrite list, and marker payload; the materialised count is
+tokens, registers, versions, mask entries, and known identifiers.}
 \label{tab:growth}
 \end{table}
 
 Across the measured range, doubling the history roughly quadruples the
 reference count and doubles the materialised count. This is a
 timestamp-count measurement consistent with quadratic versus linear scaling,
-not an asymptotic result. The gap at 185 operations is a factor of 77. The
+not an asymptotic result. The gap at 176 operations is a factor of 53. The
 counts are taken in the Python models, not bytes of any runtime.
 
 \section{Controls}
 \label{sec:controls}
 
 \paragraph{Positive control.} The Python reference reproduces twenty
-hand-derived expectations copied from the Lean SPOTs, and five issuance
-fixtures (honest and dishonest edits, own and remote undo, undo of insert): update defeats
+hand-derived expectations copied from the Lean SPOTs, five issuance
+fixtures (honest and dishonest edits, own and remote undo, undo of insert),
+and five purge fixtures from \lean{AegisSheetGC.lean}: update defeats
 concurrent removal, later removal wins, concurrent writes keep both values,
 selective undo keeps the remote value, move defeats removal, later move wins,
 insert survives adjacent removal, undo of remove restores the position, undo
@@ -448,7 +512,7 @@ distinguish these would carry no evidence.
 Display & Lean declaration & Status \\
 \midrule
 Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
-Materialised state, update, merge & none & specified; Python implementation \\
+Materialised state, update, merge, purge mask, retirement & none & specified; Python implementation \\
 Conjecture H1 & none & validated on the campaign scope \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & none & hand-derived, checked by the Python reference; to be pinned as Lean SPOTs \\
 \bottomrule
@@ -482,9 +546,9 @@ materialised state does.
 \begin{enumerate}
 \item Decision D1 (no revival) is taken; carry it into the Lean issuance
 predicate of the new package and keep the legacy SPOT.
-\item Model purge in the harness under the chosen policy and test H3: purge
-as version deletion, concurrent writes surviving, and the register-dropping
-rule, with the undo-after-stability case as a control.
+\item Decide D2 (Section~\ref{sec:h3}): mask or keep a write concurrent
+with a purge and below its cutoff. The Lean port carries the mask either way
+if the current model's semantics is kept.
 \item Pin Counterexamples 5.1 to 5.3 and Finding 6.1 as Lean SPOTs against
 the existing model, with PASS and FAIL companions.
 \item Port the named-removal design to Lean as a second package beside the

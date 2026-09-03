@@ -3,142 +3,161 @@
 Differential property-based testing of the candidate materialised three-way
 AegisSheet against the current union-merge model. Harness: `model.py` in this
 directory. Reproduce with `python3 model.py 1000 1` (three seeds, then the
-growth table) and `python3 model.py 1000 7 --restricted-undo`.
+growth table) and `python3 model.py 1000 7 --legacy-undo` (legacy control).
+`--global-clock` replaces per-replica Lamport clocks by one global counter.
 
-## Claim H1
+## Harness
 
-A materialised state (keep tokens, latest-position registers, active cell
-versions, active range versions) with the componentwise three-way merge
-`(l ∩ a ∩ b) ∪ (a ∖ l) ∪ (b ∖ l)` for sets and last-writer-wins for registers
-produces the same observation as the union-merge model on every reachable
-version.
+Generator. Reachable states are built by folding honest operations from the
+empty sheet. Before-images, overwrite lists, and killed-token lists are read
+from the issuing state; identifiers are fresh by construction; timestamps
+come from per-replica Lamport clocks (`(counter + 1) * 8 + replica`), so a
+stale replica can issue events with timestamps below another replica's
+cutoff. Operation kinds: axis insert, move, remove; cell write; range add,
+edit, remove; undo of one's own direct event (decision D1: an inverse cell
+write is issued only while its axes are live); purge marker by replica 0
+under the Lean rule `purgeApplicable` (roster acknowledgements from frontier
+evidence, all coordinates dead, covered entries at or below the cutoff, cutoff
+= largest observed timestamp). Every generated event, after erasing `kills`,
+is checked against a transcription of `applicableB` and `clockedB`.
 
-Status: validated on honest executions within the campaign scope below;
-conjectured in general. Every generated event, after erasing `kills`, passes
-a transcription of `applicableB` and `clockedB` (96,069 events over the
-three seeds, 0 failures); the transcription is validated on five issuance
-fixtures from `AegisSheet.lean`.
+Topology. 2 to 4 replicas, 3 to 8 rounds, 1 to 3 operations per replica per
+round, a merge between two heads with probability 0.7 per round, and with
+probability 0.5 one laggard replica that never merges until the forced
+convergence phase, which then merges all heads along different topologies.
+When a recorded version's event set equals the heads' intersection it is the
+ancestor; otherwise the ancestor is the timestamp-order fold of the
+intersection.
 
-Formal oracle: none yet. The Lean target is a `Join` proof for the product
-of the components.
+Checks at every version: observation equality with the reference (DIFF);
+equal observations for versions reached by different topologies over one
+event set (CONV); equal canonical states for the plain designs (CANON); merge
+equal to the timestamp-order replay of the union (FOLD); transcribed
+issuance of every generated event (ISSUANCE). A failing execution is counted
+for every design that fails in it.
 
-Falsifier: a version whose observation differs between the two designs, two
-merge topologies over the same event set with different observations, or a
-merge whose result differs from timestamp-order replay of the union.
+Reference validation: the Python transcription reproduces 20 SPOT fixtures
+from `AegisSheet.lean`, 5 issuance fixtures, and 5 purge fixtures from
+`AegisSheetGC.lean` (`check_fixtures`).
 
-Positive control: the 20 Lean SPOT fixtures from `Instances/AegisSheet.lean`
-reproduced by the Python transcription of the reference.
+## Campaign (D1 rule, Lamport clocks, purge generated)
 
-Negative controls: `binary` (merge ignores the ancestor) and `eager` (ranges
-re-anchored at removal time) fail on every seed; see the table.
+| seed | versions | ops | registered-ancestor merges | virtual-base merges | purges | writes masked by a concurrent marker |
+|---|---|---|---|---|---|---|
+| 1 | 36,747 | 30,154 | 6,442 | 151 | 41 | 7 |
+| 2 | 36,890 | 30,272 | 6,457 | 161 | 28 | 6 |
+| 3 | 36,923 | 30,433 | 6,341 | 149 | 40 | 12 |
 
-Generator rule: decision D1, an inverse cell write is issued only while its
-axes are live (default); `--legacy-undo` restores the old rule.
+All 90,859 generated events pass the transcribed `applicableB`.
 
-PBT gate: generator builds reachable states by folding honest operations from
-the empty sheet; before-images, overwrite lists, and killed-token lists are
-read from the issuing state; fresh identifiers and Lamport timestamps by
-construction; 2 to 4 replicas, 3 to 8 rounds, 1 to 3 operations per replica
-per round, merge probability 0.7 per round, forced convergence along
-different topologies at the end. Undo targets are the replica's own direct
-events. Purge operations are not generated.
+Failing executions out of 1000 per seed:
 
-| seed | executions | versions | ops | registered-ancestor merges | virtual-base merges |
-|---|---|---|---|---|---|
-| 1 | 1000 | 38,552 | 31,199 | 7,097 | 256 |
-| 2 | 1000 | 39,879 | 32,342 | 7,252 | 285 |
-| 3 | 1000 | 40,043 | 32,528 | 7,222 | 293 |
+| design | seed 1 | seed 2 | seed 3 | first failure class |
+|---|---|---|---|---|
+| named removal, masks, registers kept, no retirement | 0 | 0 | 0 | |
+| same, retire dead tokens and `known` with descendant evidence | 0 | 0 | 0 | |
+| same, retire with frontier evidence | 0 | 0 | 0 | |
+| same, retire immediately when dead | 0 | 0 | 0 | |
+| named removal, purge without masks | 6 | 3 | 3 | DIFF cells: masked concurrent write shown |
+| named removal, drop unreferenced dead registers | 38 | 41 | 35 | DIFF pos: revived axis at stale position |
+| clearing removal | 227 | 224 | 224 | FOLD: merge differs from replay |
+| ancestor ignored (control) | 520 | 511 | 512 | DIFF rows, cells, ranges |
+| eager range re-anchoring (control) | 747 | 720 | 746 | DIFF ranges |
 
-Failing executions per design (first failure class in brackets):
+## Claims
 
-| design | seed 1 | seed 2 | seed 3 |
-|---|---|---|---|
-| keep, named removal | 0 | 0 | 0 |
-| keep, clear removal | 35 [FOLD] | 31 [FOLD] | 55 [FOLD] |
-| ranges GC, named | 16 [DIFF pos] | 11 [DIFF pos] | 11 [DIFF pos] |
-| all-dead GC, named | 9 [DIFF resolved] | 6 [DIFF resolved] | 9 [DIFF resolved] |
-| keep, clear, binary merge | 179 [DIFF cells] | 156 [DIFF rows] | 141 [DIFF ranges] |
-| ranges GC, clear, eager ranges | 646 [DIFF ranges] | 675 [DIFF ranges] | 684 [DIFF ranges] |
+### H1: the materialised design matches the union model
 
-Under the legacy undo rule (revival allowed) the earlier run gave
-0/0/0, 27/31/45, 28/23/16, 10/10/7, 186/173/146, 634/642/683.
+Status: validated on honest executions within the campaign scope;
+conjectured in general. Formal oracle: none yet (S3 and S3b of the plan).
 
-FOLD means the merge converged and matched the reference, but differed from
-the timestamp-order replay of the union event set. Clearing all live tokens
-on removal makes a removal and a concurrent keep non-commuting; naming the
-killed tokens makes concurrent pairs commute. Causally ordered pairs still
-do not commute (a keep then the removal naming its token, or an overwrite
-and the version it names), so the design is not all-commuting and needs the
-conditioned Join route.
+The named-removal design with purge masks and registers kept has no failing
+execution. Clearing removal converges and matches the reference but fails
+FOLD: a removal that clears all tokens and a concurrent keep do not commute.
+Naming the killed tokens makes concurrent pairs commute; causally ordered
+pairs still do not, so the design is not all-commuting.
 
-Trusted definitions: the Python reference transcribes `view`,
-`directApplicable`, `validUndo`, `inverseFor`, and `resolveRange`. Its
-agreement with the Lean model is validated only on the 20 fixtures.
+### H2: a dead axis's last position can be dropped
 
-Reality oracle: the Lean model, which is itself validated against Tables 3
-and 4 of the AegisSheet paper.
+Status: refuted (three hand-derived witnesses checked by the reference:
+range resolution, eager re-anchoring, update-wins revival; harness: 35 to 41
+failing executions per 1000 for the register-dropping variant). The register
+is kept for every identifier ever known; see retirement below.
 
-Residual: purge is not modelled; undo of undo is not generated; merges are
-only between replica heads.
+### H3: purge dissolves into ordinary version deletion
 
-## Claim H2
+Status: refuted in the strict form, validated with a mask.
 
-The latest position of a removed axis identifier can be dropped once the
-identifier is dead and no live range names it.
+Strict deletion (drop cell versions at dead coordinates, store nothing)
+diverges from the reference in 6, 3, and 3 executions per seed. Every case
+is a cell write concurrent with a purge marker whose timestamp is at or below
+the marker's cutoff: the reference masks it permanently (`cellOverwritten`'s
+purge clause), the strict design keeps it, and the write's token revives the
+axis so the difference is visible. Keeping a mask of (cutoff, coordinates)
+per marker and filtering versions through it at apply and merge reproduces
+the reference exactly. The mask is the irreducible purge residue; the
+marker's covered entries and acknowledgements are not needed in the
+materialised state.
 
-Status: refuted.
+Decision D2 (open): whether a write concurrent with a purge and below its
+cutoff should be masked (current model) or kept (update-wins, what the
+maskless design does). The harness implements the current model by default.
 
-Witnesses, hand-derived and checked by the executable reference:
+### Retirement of dead identifiers
 
-1. Range resolution reads the dead endpoint's last position. Rows at
-   positions 10, 20, 30, range (r0, r2). Removing r0 resolves the range to
-   (r1, r2); moving r0 to 25 and then removing it resolves to (r2, r2). The
-   live sheets coincide.
-2. Eager re-anchoring at removal time disagrees with lazy resolution when a
-   concurrent insert lands between the dead endpoint and its successor: the
-   reference resolves to the inserted row, eager re-anchoring to r1.
-3. Update-wins revival reads the dead row's last position. Branch A either
-   moves r0 to 52 and removes it, or only removes it; the two branch states
-   have identical live sheets. A concurrent write on branch B revives r0 in
-   both merges, at positions 52 and 10 respectively.
+Status: validated. Under D1, a dead identifier's token set and `known` entry
+can be dropped as soon as it is dead, with no acknowledgement evidence:
+immediate, frontier-evidence, and descendant-evidence retirement all have 0
+failing executions. The reason is structural: a stale branch on which the
+identifier is still live carries its own `known` entry and tokens, and the
+merge unions `known` and applies `mvr` to tokens, so a late concurrent keep
+revives the identifier correctly. The position register must be kept: it is
+read by range resolution and by update-wins revival, and dropping it when no
+live range names it fails (a range undo can re-reference the identifier, so
+the drop would depend on the order of references, and the harness reports
+canonical-state divergence).
 
-Harness confirmation: the `ranges` GC variant fails 16 to 55 executions per
-1000 on every seed, including with undo restricted to live axes (seed 7:
-55 of 1000). The `all` variant fails range resolution.
+Consequently the roster acknowledgement protocol of the current model is not
+needed by the materialised design for convergence, for masking, or for
+retirement. It remains an issuance policy on when a purge may be requested.
 
-Consequence: one position register per known axis identifier must be
-retained while a revival is still possible. Under a no-revival undo policy
-that is until the removal is causally stable, the condition the current
-purge protocol establishes with roster acknowledgements; under the current
-model an undo issued after observing the removal can still revive the row,
-so stability does not suffice.
+### Legacy control (`--legacy-undo`, seed 7)
 
-## Finding: undo revives a causally later removal
+With undo revival allowed (the current model's rule), retirement becomes
+unsound: immediate retirement fails 53 of 1000 (an undone cell write revives
+a retired identifier whose `known` entry is gone, so the reference shows it
+live and the materialised state does not), descendant retirement fails 2 of
+1000, and the register-dropping variant 69 of 1000. The no-retirement
+baseline stays at 0. D1 is load-bearing for retirement and not for the
+baseline.
 
-In the current model, undoing a cell write is itself a cell event and thus a
-keep token for its row and column. Removing a row at t=4 and then undoing an
-earlier write into it at t=5 (legal: own event, target observed) makes the
-row live again at its last position with an empty cell. Reproduced by
-`undo_revival_witness` in `model.py`. Whether this is intended is a
-specification question; Table 4 covers only concurrent removal.
+### Finding: undo revives a causally later removal (legacy model)
 
-## Claim H3
-
-Purge dissolves into ordinary version deletion once state is materialised.
-
-Status: staged. The harness does not generate purge markers.
+In the current model, undoing a cell write is a keep token for its row and
+column. Removing a row at t=4 and undoing an earlier write into it at t=5 is
+legal and revives the row at its last position with an empty cell
+(`undo_revival_witness`). Excluded by D1.
 
 ## Measured: state size growth
 
-Timestamps stored at the final version of replica 0, mean over 20 executions
-with 3 replicas, seed 1, 3 operations per replica per round.
+Stored items at the final version of replica 0, mean over 20 executions with
+3 replicas, seed 1, 3 operations per replica per round. Reference: one per
+event plus its `seen` set, overwrite list, and marker payload. Materialised:
+tokens, registers, cell and range versions, mask entries, known identifiers.
 
-| rounds | ops | reference (union) | materialised (keep, named) |
-|---|---|---|---|
-| 4 | 23 | 131 | 21 |
-| 8 | 46 | 593 | 44 |
-| 16 | 92 | 2,902 | 84 |
-| 32 | 185 | 13,835 | 180 |
+| rounds | ops | reference | materialised (named, no retirement) | materialised (descendant retirement) |
+|---|---|---|---|---|
+| 4 | 23 | 122 | 30 | 30 |
+| 8 | 44 | 469 | 53 | 53 |
+| 16 | 88 | 2,154 | 101 | 99 |
+| 32 | 176 | 10,076 | 192 | 187 |
 
-The reference stores each event's whole causal timestamp set, so its size is
-quadratic in history length; the materialised state is linear.
+A timestamp-count measurement consistent with quadratic versus linear
+scaling; not an asymptotic result.
+
+## Residual
+
+Undo of undo is not generated; merges are only between replica heads; range
+endpoints are chosen among live axes at issuance, so a range that names an
+already dead identifier at creation is not exercised; a single roster (all
+replicas of the execution) is used.

@@ -87,7 +87,7 @@ while its row and column are live. Consequences:
 
 ## 5. Steps, in order
 
-### S1. Model purge under the chosen D1 policy and close H3
+### S1. Model purge under the chosen D1 policy and close H3 (done; Section 10)
 
 Claim: with materialised state, purge is ordinary deletion of cell versions
 at dead coordinates; the roster acknowledgement is needed only to drop the
@@ -243,3 +243,32 @@ was rerun: named-keep 0/0/0 failing executions, clearing 35/31/55 (replay
 mismatch), ranges-GC 16/11/11, all-dead-GC 9/6/9, ancestor-ignored
 179/156/141, eager 646/675/684; 96,069 generated events all pass the
 transcribed `applicableB`.
+
+## 10. S1 results
+
+Harness extended with per-replica Lamport clocks, a laggard replica, purge
+markers issued under `purgeApplicable` with frontier acknowledgements, purge
+masks in the materialised state, three retirement rules, and per-design
+failure counting (the earlier reports counted only the first failure per
+execution; all numbers were rerun). Reference validated on the five purge
+fixtures of `AegisSheetGC.lean`. Numbers in `campaign.md`.
+
+- H1 holds: 0 of 3000 for the named design with masks, 90,859 honest events.
+- H3 strict is refuted: plain deletion diverges on writes concurrent with a
+  marker and below its cutoff (6, 3, 3 per 1000). With a (cutoff,
+  coordinates) mask per marker: 0 failures. The mask is the purge residue.
+- Retirement needs no evidence: dropping a dead identifier's tokens and
+  `known` immediately, with frontier evidence, or with descendant evidence
+  all give 0 failures; the merge re-learns `known` from stale branches. The
+  position register must be kept (35 to 41 failures per 1000 when dropped).
+- D1 is load-bearing for retirement: under `--legacy-undo` immediate
+  retirement fails 53 of 1000 and descendant 2 of 1000; the baseline is 0.
+- The roster acknowledgement protocol is therefore not needed by the
+  materialised design for convergence, masking, or retirement.
+
+New decision D2 (open): mask or keep a write concurrent with a purge and
+below its cutoff. The harness follows the current model (mask).
+
+S3 additions: the materialised state gains a grow-only mask set; `merge`
+unions masks and filters versions; the retirement rule "drop tokens and
+`known` when dead, keep the register" is part of the design.

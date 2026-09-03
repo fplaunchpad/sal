@@ -57,6 +57,19 @@ class Range:
 
 
 @dataclass(frozen=True)
+class Purge:
+    cutoff: int
+    coordinates: frozenset    # of (row, col)
+    covered: frozenset        # of (ts, (row, col))
+    acks: frozenset           # replicas
+
+
+ROSTER = frozenset({0, 1, 2})   # `requiredRoster`; the harness sets it per execution
+LAMPORT = True                  # per-replica Lamport clocks (False: one global counter)
+STRIDE = 8                      # timestamp = (counter + 1) * STRIDE + replica
+
+
+@dataclass(frozen=True)
 class Event:
     t: int
     rep: int
@@ -66,6 +79,8 @@ class Event:
 
 
 def invert(action):
+    if isinstance(action, Purge):
+        return action
     if isinstance(action, Axis):
         return Axis("restore", action.axis, action.id, action.after, action.before)
     if isinstance(action, Cell):
@@ -83,8 +98,21 @@ def inverse_for(target: Event):
 # ------------------------------------------------------ reference (union)
 
 
+def purge_of(e):
+    return e.action if isinstance(e.action, Purge) else None
+
+
+def covered_entries(events):
+    out = set()
+    for e in events:
+        m = purge_of(e)
+        if m is not None:
+            out |= m.covered
+    return out
+
+
 def event_times(events):
-    return {e.t for e in events}
+    return {e.t for e in events} | {ts for ts, _ in covered_entries(events)}
 
 
 def keeps_axis(axis, id_, e):
@@ -107,7 +135,9 @@ def axis_known(events, axis, id_):
 
 
 def axis_keep_times(events, axis, id_):
-    return {e.t for e in events if keeps_axis(axis, id_, e)}
+    direct = {e.t for e in events if keeps_axis(axis, id_, e)}
+    covered = {ts for ts, (r, c) in covered_entries(events) if (r if axis == ROW else c) == id_}
+    return direct | covered
 
 
 def axis_token_removed(events, axis, id_, token):
@@ -149,8 +179,14 @@ def cell_matches(row, col, e):
 
 
 def cell_overwritten(events, cand):
-    return any(isinstance(l.action, Cell) and cand.t in l.action.overwrites
-               for l in events)
+    coord = (cand.action.row, cand.action.col)
+    for l in events:
+        a = l.action
+        if isinstance(a, Cell) and cand.t in a.overwrites:
+            return True
+        if isinstance(a, Purge) and coord in a.coordinates and cand.t <= a.cutoff:
+            return True
+    return False
 
 
 def active_cell_events(events, row, col):
@@ -275,12 +311,15 @@ class Ref:
     @staticmethod
     def size(s):
         # timestamps stored: each event stores itself plus its `seen` frontier
-        # plus its `overwrites` list.
+        # plus its `overwrites` list; a marker stores its covered entries,
+        # coordinates, and acknowledgements.
         n = 0
         for e in s:
             n += 1 + len(e.seen)
             if isinstance(e.action, (Cell, Range)):
                 n += len(e.action.overwrites)
+            if isinstance(e.action, Purge):
+                n += len(e.action.covered) + len(e.action.coordinates) + len(e.action.acks)
         return n
 
 
@@ -334,8 +373,47 @@ def current_axis_positions(events, axis, id_):
     return axis_positions(events, axis, id_) if axis_live(events, axis, id_) else set()
 
 
+def purge_valid_b(m: Purge):
+    return all(coord in m.coordinates and ts <= m.cutoff for ts, coord in m.covered)
+
+
+def frontier_acks(events, issuer, roster):
+    """`frontierAcknowledgements`: roster members with an authored version
+    reachable to the issuer's head, which in event terms is any event of
+    theirs in the issuer's state."""
+    return frozenset(r for r in roster if r == issuer or any(e.rep == r for e in events))
+
+
+def descendant_acks(events, roster, removals):
+    """Retirement evidence, a function of the event set alone: a roster member
+    acknowledges the removals if it authored one of them or authored an event
+    whose causal past contains all of them."""
+    return frozenset(r for r in roster if any(
+        e.rep == r and (e in removals or all(x.t in e.seen for x in removals))
+        for e in events))
+
+
+def frontier_acks_events(events, roster):
+    """Frontier evidence as a function of the event set: any authored event."""
+    return frozenset(r for r in roster if any(e.rep == r for e in events))
+
+
+def purge_applicable(events, issuer, m: Purge):
+    if issuer != 0 or not ROSTER <= m.acks or not purge_valid_b(m):
+        return False
+    for ts, coord in m.covered:
+        if not any(isinstance(e.action, Cell) and e.t == ts
+                   and (e.action.row, e.action.col) == coord
+                   and coord in m.coordinates and e.t <= m.cutoff for e in events):
+            return False
+    return all(not axis_live(events, ROW, r) or not axis_live(events, COL, c)
+               for r, c in m.coordinates)
+
+
 def metadata_valid(events, e):
     a = e.action
+    if isinstance(a, Purge):
+        return purge_valid_b(a)
     if isinstance(a, Cell):
         return all(ov < e.t and any(isinstance(p.action, Cell) and p.t == ov
                                     and p.action.row == a.row and p.action.col == a.col
@@ -347,8 +425,10 @@ def metadata_valid(events, e):
     return True
 
 
-def direct_applicable(events, action):
+def direct_applicable(events, issuer, action):
     a = action
+    if isinstance(a, Purge):
+        return purge_applicable(events, issuer, a)
     if isinstance(a, Axis):
         if a.kind == "insert":
             return (not axis_known(events, a.axis, a.id)) and a.before is None and a.after is not None
@@ -365,7 +445,8 @@ def direct_applicable(events, action):
 
 
 def valid_undo(events, issuer, target, inverse):
-    return any(p.t == target and p.rep == issuer and inverse_for(p) == inverse for p in events)
+    return any(p.t == target and p.rep == issuer and not isinstance(p.action, Purge)
+               and inverse_for(p) == inverse for p in events)
 
 
 def applicable_b(e: Event, events) -> bool:
@@ -376,7 +457,7 @@ def applicable_b(e: Event, events) -> bool:
     if not all(t < e.t for t in times):
         return False
     if e.undo_target is None:
-        return direct_applicable(events, e.action)
+        return direct_applicable(events, e.rep, e.action)
     return e.undo_target in e.seen and valid_undo(events, e.rep, e.undo_target, e.action)
 
 
@@ -394,20 +475,26 @@ class MState:
     pos: dict = field(default_factory=dict)        # (axis,id) -> (ts, position)
     cells: dict = field(default_factory=dict)      # (row,col) -> set of (ts, frozenset)
     ranges: dict = field(default_factory=dict)     # id -> set of (ts, spec|None)
+    masks: set = field(default_factory=set)        # (cutoff, frozenset of coords)
 
     def copy(self):
         return MState({k: set(v) for k, v in self.known.items()},
                       {k: set(v) for k, v in self.tokens.items()},
                       dict(self.pos),
                       {k: set(v) for k, v in self.cells.items()},
-                      {k: set(v) for k, v in self.ranges.items()})
+                      {k: set(v) for k, v in self.ranges.items()},
+                      set(self.masks))
 
     def canon(self):
         return (frozenset((k, frozenset(v)) for k, v in self.known.items()),
                 frozenset((k, frozenset(v)) for k, v in self.tokens.items() if v),
                 frozenset(self.pos.items()),
                 frozenset((k, frozenset(v)) for k, v in self.cells.items() if v),
-                frozenset((k, frozenset(v)) for k, v in self.ranges.items() if v))
+                frozenset((k, frozenset(v)) for k, v in self.ranges.items() if v),
+                frozenset(self.masks))
+
+    def masked(self, ts, coord):
+        return any(coord in coords and ts <= cutoff for cutoff, coords in self.masks)
 
 
 class Mat:
@@ -417,13 +504,17 @@ class Mat:
     (expected to fail range resolution)."""
     name = "mat-3way"
 
-    def __init__(self, forget="keep", binary=False, eager=False, removal="clear"):
+    def __init__(self, forget="keep", binary=False, eager=False, removal="clear",
+                 masks=True, retire="never"):
         self.forget = forget
         self.binary = binary          # negative control: ignore the ancestor
         self.eager = eager            # negative control: re-anchor ranges at remove
         self.removal = removal        # 'clear' all live tokens, or 'named' tokens only
+        self.masks = masks            # keep purge masks (False: purge is plain deletion)
+        self.retire = retire          # dead-identifier retirement: never | frontier | descendant
         self.name = (f"mat-3way[{forget},{removal}{',binary' if binary else ''}"
-                     f"{',eager' if eager else ''}]")
+                     f"{',eager' if eager else ''}{'' if masks else ',nomask'}"
+                     f"{'' if retire == 'never' else ',retire=' + retire}]")
 
     def plain(self):
         return not self.binary and not self.eager
@@ -453,7 +544,16 @@ class Mat:
             s.tokens.setdefault((ROW, a.row), set()).add(e.t)
             s.tokens.setdefault((COL, a.col), set()).add(e.t)
             vs = s.cells.setdefault((a.row, a.col), set())
-            s.cells[(a.row, a.col)] = {v for v in vs if v[0] not in a.overwrites} | {(e.t, a.after)}
+            kept = {v for v in vs if v[0] not in a.overwrites}
+            if not s.masked(e.t, (a.row, a.col)):
+                kept.add((e.t, a.after))
+            s.cells[(a.row, a.col)] = kept
+        elif isinstance(a, Purge):
+            for coord in a.coordinates:
+                if coord in s.cells:
+                    s.cells[coord] = {v for v in s.cells[coord] if v[0] > a.cutoff}
+            if self.masks:
+                s.masks.add((a.cutoff, a.coordinates))
         else:
             vs = s.ranges.setdefault(a.id, set())
             s.ranges[a.id] = {v for v in vs if v[0] not in a.overwrites} | {(e.t, a.after)}
@@ -477,8 +577,46 @@ class Mat:
         for k in set(l.ranges) | set(a.ranges) | set(b.ranges):
             L, A, B = (x.ranges.get(k, set()) for x in (l, a, b))
             m.ranges[k] = (A | B) if self.binary else mvr(L, A, B)
+        m.masks = l.masks | a.masks | b.masks
+        if m.masks:
+            for k in m.cells:
+                m.cells[k] = {v for v in m.cells[k] if not m.masked(v[0], k)}
         self._gc(m)
         return m
+
+    # -- stability-based retirement -----------------------------------------
+    def retire_dead(self, s, events, roster, self_rep):
+        """Forget dead identifiers whose removals every roster member has
+        acknowledged. Evidence comes from the version DAG (here: the event
+        set), not from the materialised state. Registers named by a live
+        range are kept."""
+        if self.retire == "never":
+            return s
+        s = s.copy()
+        for ax in (ROW, COL):
+            for id_ in list(s.known[ax]):
+                key = (ax, id_)
+                if s.tokens.get(key):
+                    continue
+                removals = [e for e in events if removes_axis(ax, id_, e)]
+                if not removals:
+                    continue
+                if self.retire == "frontier":
+                    acks = frontier_acks_events(events, roster)
+                elif self.retire == "immediate":
+                    acks = roster
+                else:
+                    acks = descendant_acks(events, roster, removals)
+                if not roster <= acks:
+                    continue
+                # Retire the identifier: drop its token set and its `known`
+                # entry. The position register stays; it is the O(1) residue
+                # a later range reference (for example an undone range edit)
+                # may still read, and dropping it would depend on the order in
+                # which references appeared rather than on the event set.
+                s.tokens.pop(key, None)
+                s.known[ax].discard(id_)
+        return s
 
     # -- dead-register policy -------------------------------------------
     def _referenced(self, s):
@@ -602,19 +740,27 @@ class Mat:
     def size(self, s):
         return (sum(len(v) for v in s.tokens.values()) + len(s.pos)
                 + sum(len(v) for v in s.cells.values())
-                + sum(len(v) for v in s.ranges.values()))
+                + sum(len(v) for v in s.ranges.values())
+                + sum(1 + len(coords) for _, coords in s.masks)
+                + sum(len(v) for v in s.known.values()))
 
 
 # --------------------------------------------------- honest op generator
 
 
 class Clock:
+    """Per-replica Lamport clock (default): the new timestamp exceeds every
+    timestamp the issuer has observed and is unique across replicas because
+    the replica id is the low digit. With LAMPORT=False, one global counter."""
     def __init__(self):
         self.t = 0
 
-    def fresh(self):
-        self.t += 1
-        return self.t
+    def fresh(self, rep=0, observed=()):
+        if not LAMPORT:
+            self.t += 1
+            return self.t
+        c = max((t // STRIDE for t in observed), default=0)
+        return (c + 1) * STRIDE + rep
 
 
 # Decision D1 (2026-09-02): an inverse cell write is issuable only while its
@@ -639,8 +785,10 @@ def gen_op(rng, events, rep, clock, ids, own_log):
         choices += ["cell", "cell", "cell"]
     if own_log:
         choices += ["undo"]
+    if rep == 0 and (rows or cols):
+        choices += ["purge"]
     kind = rng.choice(choices)
-    t = clock.fresh()
+    t = clock.fresh(rep, seen)
 
     def mk(action, undo=None):
         return Event(t, rep, seen, action, undo)
@@ -683,9 +831,26 @@ def gen_op(rng, events, rep, clock, ids, own_log):
             fc, lc = sorted(rng.choice(pool_c) for _ in range(2))
             after = (fr, lr, fc, lc)
         return mk(Range(rid, before, after, frozenset(active_range_times(events, rid))))
+    if kind == "purge":
+        dead_coords = {(e.action.row, e.action.col) for e in events if isinstance(e.action, Cell)
+                       if not (axis_live(events, ROW, e.action.row)
+                               and axis_live(events, COL, e.action.col))}
+        if not dead_coords:
+            return None
+        already = covered_entries(events)
+        cutoff = max(seen)
+        covered = frozenset((e.t, (e.action.row, e.action.col)) for e in events
+                            if isinstance(e.action, Cell)
+                            and (e.action.row, e.action.col) in dead_coords and e.t <= cutoff)
+        if covered <= already:
+            return None
+        acks = frontier_acks(events, rep, ROSTER)
+        if not ROSTER <= acks:
+            return None
+        return mk(Purge(cutoff, frozenset(dead_coords), covered, acks))
     if kind == "undo":
         target = rng.choice(own_log)
-        if target.t not in seen or target.undo_target is not None:
+        if target.t not in seen or target.undo_target is not None or isinstance(target.action, Purge):
             return None
         inv = inverse_for(target)
         if UNDO_REQUIRES_LIVE_AXES and isinstance(inv, Cell) and not (
@@ -710,9 +875,14 @@ class Ids:
 # ------------------------------------------------------------ harness
 
 
-def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, return_heads=False):
+def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, return_heads=False,
+                  return_all=False):
     """One random DAG execution over the reference and the given materialised
     designs in lockstep. Returns a list of violation strings."""
+    global ROSTER
+    ROSTER = frozenset(range(n_replicas))
+    roster = ROSTER
+    laggard = n_replicas - 1 if (n_replicas > 2 and rng.random() < 0.5) else None
     bad = []
     clock, ids = Clock(), Ids()
     ref0 = Ref.init()
@@ -739,7 +909,13 @@ def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, r
                 if d.observe(ms) != d.observe(pm):
                     bad.append(f"CONV[{d.name}]@{tag}: same event set, different observation")
                 if d.forget == "keep" and d.plain() and ms.canon() != pm.canon():
-                    bad.append(f"CANON[{d.name}]@{tag}: same event set, different state")
+                    names = ["known", "tokens", "pos", "cells", "ranges", "masks"]
+                    diffs = [n for n, x, y in zip(names, ms.canon(), pm.canon()) if x != y]
+                    detail = ""
+                    for n in diffs[:1]:
+                        x, y = dict(zip(names, ms.canon()))[n], dict(zip(names, pm.canon()))[n]
+                        detail = f" {n}: now-only={sorted(map(repr, x - y))[:2]} prev-only={sorted(map(repr, y - x))[:2]}"
+                    bad.append(f"CANON[{d.name}]@{tag}: same event set, different state in {diffs};{detail}")
         else:
             by_events[key] = mats
         stats["versions"] += 1
@@ -760,15 +936,19 @@ def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, r
                     bad.append(f"ISSUANCE@op:r{r}: generated event fails transcribed applicableB: {e}")
                 stats["validated_ops"] += 1
                 ref_s = Ref.apply(ref_s, e)
-                mats = [d.apply(m, e) for d, m in zip(designs, mats)]
+                mats = [d.retire_dead(d.apply(m, e), ref_s, roster, r) for d, m in zip(designs, mats)]
                 own_logs[r].append(e)
                 stats["ops"] += 1
+                if isinstance(e.action, Purge):
+                    stats["purges"] += 1
                 check(f"op:r{r}", ref_s, mats)
             heads[r] = (ref_s, mats)
             versions.append(heads[r])
         if n_replicas > 1 and rng.random() < p_merge:
             i, j = rng.sample(range(n_replicas), 2)
-            merged = try_merge(heads, versions, i, j, designs, stats)
+            if laggard in (i, j):
+                continue
+            merged = try_merge(heads, versions, i, j, designs, stats, roster)
             if merged is not None:
                 heads[i] = merged
                 versions.append(merged)
@@ -778,11 +958,23 @@ def run_execution(designs, rng, n_replicas, n_rounds, max_ops, p_merge, stats, r
         for i in range(n_replicas):
             for j in range(n_replicas):
                 if i != j:
-                    merged = try_merge(heads, versions, i, j, designs, stats)
+                    merged = try_merge(heads, versions, i, j, designs, stats, roster)
                     if merged is not None:
                         heads[i] = merged
                         versions.append(merged)
                         check(f"final:r{i}<-r{j}", *merged)
+    # how often did a marker mask a write concurrent with it?
+    full = heads[0][0]
+    for e in full:
+        if isinstance(e.action, Cell):
+            for m in full:
+                if isinstance(m.action, Purge) and m.t not in e.seen and e.t not in m.seen \
+                        and (e.action.row, e.action.col) in m.action.coordinates \
+                        and e.t <= m.action.cutoff:
+                    stats["concurrent_masked_writes"] += 1
+                    break
+    if return_all:
+        return bad, heads
     if return_heads:
         return heads
     return bad
@@ -796,7 +988,7 @@ def fold(d, events):
     return s
 
 
-def try_merge(heads, versions, i, j, designs, stats):
+def try_merge(heads, versions, i, j, designs, stats, roster):
     (ri, mi), (rj, mj) = heads[i], heads[j]
     if ri == rj:
         return None
@@ -812,8 +1004,10 @@ def try_merge(heads, versions, i, j, designs, stats):
     else:
         stats["merges"] += 1
         bases = lca[1]
-    mats = [d.merge(l, a, b) for d, l, a, b in zip(designs, bases, mi, mj)]
-    return (Ref.merge(inter, ri, rj), mats)
+    union = Ref.merge(inter, ri, rj)
+    mats = [d.retire_dead(d.merge(l, a, b), union, roster, i)
+            for d, l, a, b in zip(designs, bases, mi, mj)]
+    return (union, mats)
 
 
 def diff(a: Obs, b: Obs):
@@ -828,24 +1022,27 @@ def diff(a: Obs, b: Obs):
 def campaign(designs, executions, seed, label):
     rng = Random(seed)
     stats = {"versions": 0, "ops": 0, "skipped_ops": 0, "merges": 0, "virtual_merges": 0,
-             "ref_size": 0, "validated_ops": 0}
+             "ref_size": 0, "validated_ops": 0, "purges": 0, "concurrent_masked_writes": 0}
     failures = []
     for k in range(executions):
         n_rep = rng.choice([2, 3, 3, 4])
         bad = run_execution(designs, rng, n_rep, rng.randint(3, 8), 3, 0.7, stats)
         if bad:
-            failures.append((k, bad[0]))
+            failures.append((k, bad))
     print(f"== {label}: {executions} executions, seed {seed}")
     print(f"   versions {stats['versions']}, ops {stats['ops']} (skipped {stats['skipped_ops']}), "
           f"merges {stats['merges']} with a registered ancestor, "
           f"{stats['virtual_merges']} with a virtual base")
-    iss = sum(1 for _, b in failures if b.startswith("ISSUANCE"))
+    print(f"   purges issued {stats['purges']}; cell writes masked by a concurrent marker "
+          f"{stats['concurrent_masked_writes']}; clock {'Lamport' if LAMPORT else 'global'}")
+    iss = sum(1 for _, bs in failures if any(b.startswith("ISSUANCE") for b in bs))
     print(f"   issuance: {stats['validated_ops']} generated events checked against transcribed "
           f"applicableB after erasing kills; {iss} executions with a failure")
     for d in designs:
-        n = sum(1 for _, b in failures if f"[{d.name}]" in b)
+        mine = [b for _, bs in failures for b in bs if f"[{d.name}]" in b]
+        n = sum(1 for _, bs in failures if any(f"[{d.name}]" in b for b in bs))
         print(f"   {d.name}: {n} failing executions"
-              + (f"; first: {next(b for _, b in failures if f'[{d.name}]' in b)[:200]}" if n else ""))
+              + (f"; first: {mine[0][:220]}" if n else ""))
     v = max(stats["versions"], 1)
     print(f"   mean stored timestamps per version: ref {stats['ref_size'] / v:.1f}"
           + "".join(f", {d.name} {stats[('size', d.name)] / v:.1f}" for d in designs))
@@ -863,7 +1060,8 @@ def growth(designs, seed, rounds_list=(4, 8, 16, 32), executions=20):
             tot[d.name] = 0
         for _ in range(executions):
             stats = {"versions": 0, "ops": 0, "skipped_ops": 0, "merges": 0,
-                     "virtual_merges": 0, "ref_size": 0, "validated_ops": 0}
+                     "virtual_merges": 0, "ref_size": 0, "validated_ops": 0,
+                     "purges": 0, "concurrent_masked_writes": 0}
             heads = run_execution(designs, rng, 3, rounds, 3, 0.7, stats, return_heads=True)
             ref_s, mats = heads[0]
             tot["ref"] += Ref.size(ref_s)
@@ -964,7 +1162,22 @@ def check_fixtures():
     remote_undo = un(6, 2, {1, 2, 3, 4, 5}, edit_a)
     assert not applicable_b(remote_undo, conflict)
     assert applicable_b(undo_ins, base | {ins_row})
-    print("fixtures: 20 Lean SPOT expectations and 5 issuance fixtures reproduced by the Python reference")
+    # purge fixtures (AegisSheetGC.lean, semantic cutoff marker)
+    deleted = base | {rem}
+    marker = Event(7, 0, frozenset({1, 2, 3, 4}),
+                   Purge(4, frozenset({(r0, c0)}), frozenset({(3, (r0, c0))}), frozenset({0, 1, 2})))
+    assert applicable_b(marker, deleted)
+    marked_full = deleted | {marker}
+    undo_rem2 = un(6, 1, {1, 2, 3, 4}, rem)
+    marked_restored = marked_full | {undo_rem2}
+    assert axis_live(marked_restored, ROW, r0) and cell_values(marked_restored, r0, c0) == frozenset()
+    fresh = ce(8, 2, {1, 2, 3, 4, 6, 7}, r0, c0, {}, {9}, {})
+    assert applicable_b(fresh, marked_restored)
+    assert cell_values(marked_restored | {fresh}, r0, c0) == {9}
+    # naive collection counterexample, restated on the full model: restoring shows the old cell
+    assert cell_values(deleted | {undo_rem2}, r0, c0) == {0}
+    print("fixtures: 20 Lean SPOT expectations, 5 issuance fixtures, and 5 purge fixtures "
+          "reproduced by the Python reference")
 
 
 # ------------------------------------------------- H2 directed witnesses
@@ -1059,12 +1272,22 @@ if __name__ == "__main__":
     undo_revival_witness()
     if "--legacy-undo" in sys.argv:
         UNDO_REQUIRES_LIVE_AXES = False
-        campaign([Mat("keep", removal="named"), Mat("ranges", removal="named"),
-                  Mat("all", removal="named")], executions, seed,
+        campaign([Mat("keep", removal="named"),
+                  Mat("keep", removal="named", retire="descendant"),
+                  Mat("keep", removal="named", retire="immediate"),
+                  Mat("ranges", removal="named")], executions, seed,
                  "campaign under the legacy undo rule (revival allowed)")
         sys.exit(0)
-    designs = [Mat("keep"), Mat("keep", removal="named"), Mat("ranges", removal="named"),
-               Mat("all", removal="named"), Mat("keep", binary=True), Mat("ranges", eager=True)]
+    if "--global-clock" in sys.argv:
+        LAMPORT = False
+    designs = [Mat("keep", removal="named"),
+               Mat("keep", removal="named", retire="descendant"),
+               Mat("keep", removal="named", retire="frontier"),
+               Mat("keep", removal="named", retire="immediate"),
+               Mat("keep", removal="named", masks=False),
+               Mat("ranges", removal="named"),
+               Mat("keep"),
+               Mat("keep", binary=True), Mat("ranges", eager=True)]
     for sd in range(seed, seed + 3):
         campaign(designs, executions, sd, "differential DAG campaign (D1: no-revival undo)")
-    growth([Mat("keep", removal="named"), Mat("ranges", removal="named")], seed)
+    growth([Mat("keep", removal="named"), Mat("keep", removal="named", retire="descendant")], seed)
