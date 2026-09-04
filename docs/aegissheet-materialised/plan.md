@@ -137,7 +137,7 @@ from the paper's policies:
 Done when: `lake build` passes, `#print axioms` shows only the compiler
 axioms `native_decide` adds, and the SPOTs are listed in the ledger.
 
-### S3. Lean port of the named-removal design (Join and replay adequacy proved; Sections 13 to 15)
+### S3. Lean port of the named-removal design (Join, replay adequacy, observation equivalence proved; Sections 13 to 16)
 
 A second package beside the current one, not a replacement.
 
@@ -437,3 +437,25 @@ witness. Registered in `NegativeLedger.lean`, which builds. The
 before-image clauses of the union model's guard are not yet part of
 `mApplicable`; they are needed by the sequential certificate, not by
 replay adequacy.
+
+## 16. S3b, first half: observation equivalence is machine-checked
+
+`Sal/MRDTs/Instances/AegisSheetMaterialisedEquivalence.lean` (no `sorry`,
+standard axioms) proves `observationEquivalence : ObservationEquivalence`,
+that is `mview (canon E) = view E` for every purge-free union-model history
+`E`. Per component: `mLive (canon E) = axisLive E` (known identifiers and
+live tokens), `mLiveIds (canon E) = liveAxisIds E`, `mPositions (canon E) =
+axisPositions E` (the register entries are exactly the candidates with no
+later candidate), `mCellValues (canon E) = cellValues E` (with
+`cellOverwrittenD2 = cellOverwritten` on purge-free histories), and
+`mRangeValues (canon E) = rangeValues E`. Each bridge turns a Boolean fold
+of the union model into an existential over entries of `canon`.
+
+With purges the reference is the D2 view; the union model's `view` masks by
+cutoff, so the statement is purge-free by design. Registered in
+`NegativeLedger.lean`, which builds.
+
+Remaining for S3b: `UpdatePreservesCanon` (honest update commutes with
+`canon`) and its merge counterpart on reference histories; together with
+observation equivalence they give the cross-model theorem for honest
+executions of the port.

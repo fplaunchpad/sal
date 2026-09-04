@@ -104,7 +104,7 @@ H3, strict, under D2 & validated & plain deletion matches the D2 reference; 0 fa
 Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
 Undo revives a later removal & finding, machine-checked; excluded by decision D1 & Section~\ref{sec:undo}; \lean{undo\_revives\_later\_removal} \\
-Lean port & Join and replay adequacy machine-checked; equivalence stated & \lean{JoinOn M Honest} and \lean{ReplayAdequacyCertificate M generation} are proved (no \lean{sorry}, standard axioms only); \lean{UpdatePreservesCanon} and \lean{ObservationEquivalence} remain statements; the sequential certificate and the \lean{VerifiedMRDT} package are owed \\
+Lean port & Join, replay adequacy, and observation equivalence machine-checked & \lean{JoinOn M Honest}, \lean{ReplayAdequacyCertificate M generation}, and \lean{ObservationEquivalence} are proved (no \lean{sorry}, standard axioms only); \lean{UpdatePreservesCanon} remains a statement; the sequential certificate and the \lean{VerifiedMRDT} package are owed \\
 Retention witnesses & machine-checked & five theorems in \lean{AegisSheetRetentionSPOT.lean} with PASS and FAIL companions; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}, \lean{Lean.ofReduceBool} \\
 \bottomrule
 \end{tabular}
@@ -545,7 +545,8 @@ Reference events, state, liveness, positions, cells, ranges, resolution, issuanc
 Materialised state, update, merge, observation, canonical state & \lean{Instances.AegisSheet.Materialised}: \lean{M}, \lean{mupdate}, \lean{mmerge}, \lean{mview}, \lean{canon}, \lean{toM} & machine-checked definitions; 45 fixtures of the union model replayed through three-way merges pass by \lean{native\_decide}, and \lean{canon} agrees with the fold on two of them \\
 Restricted Join of the port & \lean{AegisSheetMaterialisedJoin.lean}: \lean{m\_join\_at}, \lean{joinTarget} & machine-checked: \lean{JoinOn M Honest}; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
 Issuance and replay adequacy & \lean{AegisSheetMaterialisedCertificates.lean}: \lean{generation}, \lean{honest\_of\_mint}, \lean{issuanceEstablishes}, \lean{replayAdequacy} & machine-checked: \lean{ReplayAdequacyCertificate M generation} by \lean{ofJoinOn}; same axioms \\
-Conjecture H1's remaining statements & \lean{UpdatePreservesCanon}, \lean{ObservationEquivalence} & stated in Lean, unproved; validated on the campaign scope \\
+Observation equivalence & \lean{AegisSheetMaterialisedEquivalence.lean}: \lean{observationEquivalence} & machine-checked: \lean{mview (canon E) = view E} on purge-free histories; same axioms \\
+Update preservation & \lean{UpdatePreservesCanon} & stated in Lean, unproved; validated on the campaign scope \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
 \end{tabular}
@@ -580,11 +581,11 @@ materialised state does.
 predicate of the new package and keep the legacy SPOT.
 \item Decision D2 (keep) is taken; the Lean port's purge is plain deletion
 and its sequential specification masks exactly the covered versions.
-\item \lean{JoinTarget} and the replay-adequacy certificate are proved.
-Remaining: \lean{UpdatePreservesCanon} and \lean{ObservationEquivalence};
-then the sequential certificate through \lean{canon} and the
-\lean{VerifiedMRDT} package; keep the union model until the runtime
-measurement is in.
+\item \lean{JoinTarget}, the replay-adequacy certificate, and
+\lean{ObservationEquivalence} are proved. Remaining:
+\lean{UpdatePreservesCanon}; then the sequential certificate through
+\lean{canon} and the \lean{VerifiedMRDT} package; keep the union model until
+the runtime measurement is in.
 \item Extend the harness to merges between non-head versions and to undo of
 undo; report the generator's coverage.
 \end{enumerate}
