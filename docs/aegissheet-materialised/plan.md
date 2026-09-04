@@ -137,7 +137,7 @@ from the paper's policies:
 Done when: `lake build` passes, `#print axioms` shows only the compiler
 axioms `native_decide` adds, and the SPOTs are listed in the ledger.
 
-### S3. Lean port of the named-removal design
+### S3. Lean port of the named-removal design (started; Section 13)
 
 A second package beside the current one, not a replacement.
 
@@ -326,3 +326,42 @@ system whose merge base can be a strict ancestor of the intersection.
 Purge residue under D2: none. Retention residue overall: one position
 register per identifier ever known, plus the tokens and versions of live
 data.
+
+## 13. S3 progress
+
+`Sal/MRDTs/Instances/AegisSheetMaterialised.lean` compiles with no `sorry`
+and is listed in `NegativeLedger.lean` as an internal signature without a
+complete package. It contains:
+
+- the signature `M`: operations `MOp` (a `Command` plus the killed tokens of
+  a removal), state `MState` (known identifiers, tokens, position registers,
+  cell versions, range versions, all flat finite sets of tuples), `mupdate`,
+  `mmerge` (componentwise `mvr` plus last-writer-wins `posMerge`), and the
+  observation `mview` with range resolution;
+- the canonical state `canon : Finset Event → MState` of a union-model
+  history, using the union model's own `liveAxisTokens`,
+  `laterAxisCandidate`, `rangeOverwritten`, and a D2 `cellOverwrittenD2`;
+  and the erasure `toM` in the other direction (drop `seen`, attach
+  `killsOf`);
+- the honesty predicate `Honest` on replay contexts (killed tokens,
+  overwritten versions, and covered versions were issued `vis`-before the
+  operation naming them);
+- the theorem statements `ObservationEquivalence` (purge-free, against the
+  union model's `view`), `UpdatePreservesCanon`, and `JoinTarget :=
+  JoinOn M Honest`, as `Prop` definitions;
+- 45 fixtures: the union model's published-matrix and Figure 1 cases
+  replayed through `mmerge` at their common base, the retention witness,
+  the D2 purge case, and `canon refBase = base` plus `canon` of the
+  edit-versus-remove set equal to its three-way merge.
+
+Proof plan (the queue's route): (1) `canon (insert e E) = mupdate (canon E)
+(toM E e)` for honest `e`; (2) any `loOn`-respecting enumeration of a closed
+set under `Honest` folds to `canon`; (3) `mmerge (canon (E₁ ∩ E₂)) (canon E₁)
+(canon E₂) = canon (E₁ ∪ E₂)` under `Honest` and weak closure, by set
+algebra per component (the token case: a token killed on one side only is
+absent from the other side by closure); (4) `JoinAt` from (2) and (3) with
+the queue's witness enumeration `ρ₀ ++ Δ₁ ++ Δ₂`; (5) `Honest` from
+`MintHonest` of an issuance predicate that checks `kills = live tokens`,
+`overwrites = active versions`, and the D1 clause. The sequential
+certificate then reuses the incremental machine with a representation
+relation through `canon`, and S3b follows from (1) and (3).
