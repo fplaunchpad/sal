@@ -44,8 +44,9 @@ causally stable. The measured state is linear rather than quadratic in
 history. Purge needs a mask of cutoff and coordinates per marker, because the
 current model deliberately masks writes concurrent with the marker and below
 its cutoff, but it needs no acknowledgement protocol: dead identifiers can be
-retired immediately once the register is kept. None of the new claims is
-machine-checked; the mechanization target is a conditioned Join for the token
+retired immediately once the register is kept. The witnesses are machine-checked as
+proof-oriented tests against the current model; the design's claims are not
+machine-checked, and the mechanization target is a conditioned Join for the token
 and version components composed with the register and the mask, plus an
 observational-equivalence theorem against the union model.
 \end{abstract}
@@ -78,9 +79,11 @@ paper requires to stay purged.
 
 \paragraph{Status.} Table~\ref{tab:status} uses the evidence vocabulary
 conjectured, refuted, machine-checked, validated, measured, specified, and
-staged. None of the candidate claims in this note is machine-checked; the
-reference definitions and the baseline theorems cited from the repository
-are. The Python reference is validated against the Lean model only on the
+staged. The witnesses of Sections~\ref{sec:h2} and~\ref{sec:undo} are
+machine-checked as SPOTs against the current model
+(\lean{Instances/AegisSheetRetentionSPOT.lean}); the candidate design's claims
+are not machine-checked; the reference definitions and the baseline theorems
+cited from the repository are. The Python reference is validated against the Lean model only on the
 fixtures listed in Section~\ref{sec:controls}.
 
 \begin{table}[h]
@@ -96,7 +99,8 @@ H3, strict & refuted & purge as plain deletion diverges in 6, 3, 3 executions pe
 H3, with mask & validated & a mask of cutoff and coordinates per marker reproduces the reference; 0 failing executions \\
 Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
-Undo revives a later removal & finding, reproduced; excluded by decision D1 & Section~\ref{sec:undo}; legacy behaviour of the current model \\
+Undo revives a later removal & finding, machine-checked; excluded by decision D1 & Section~\ref{sec:undo}; \lean{undo\_revives\_later\_removal} \\
+Retention witnesses & machine-checked & five theorems in \lean{AegisSheetRetentionSPOT.lean} with PASS and FAIL companions; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}, \lean{Lean.ofReduceBool} \\
 \bottomrule
 \end{tabular}
 \caption{Status of each claim.}
@@ -325,8 +329,11 @@ and 6 to 12 cell writes concurrent with a marker and below its cutoff.}
 \label{sec:h2}
 
 Each witness is hand-derived from the definitions of
-Section~\ref{sec:reference} and checked by evaluating the Python reference;
-the checks are the functions \lean{h2\_witnesses} and \lean{h2\_pair3}.
+Section~\ref{sec:reference}, checked by evaluating the Python reference
+(\lean{h2\_witnesses}, \lean{h2\_pair3}), and machine-checked by
+\lean{native\_decide} against the Lean model in
+\lean{Instances/AegisSheetRetentionSPOT.lean}, each with the legality of
+every step and a FAIL companion pinning the tempting wrong answer.
 Identifiers: rows $r_0,r_1,r_2$ at positions $10,20,30$, column $c_0$.
 
 \begin{counterexample}[range resolution]
@@ -383,7 +390,8 @@ history on one replica: the undo's target is observed and was issued by the
 same replica, and no issuance clause requires the axes to be live. The undo
 is a cell event and therefore a keep token for $r_0$ with a timestamp the
 removal did not observe. The row becomes live again at position $10$ with an
-empty cell. Reproduced by \lean{undo\_revival\_witness}.
+empty cell. Reproduced by \lean{undo\_revival\_witness} and machine-checked
+as \lean{undo\_revives\_later\_removal}.
 \end{finding}
 
 Table~4 of the paper covers undo against a \emph{concurrent} removal; it
@@ -514,7 +522,7 @@ Display & Lean declaration & Status \\
 Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
 Materialised state, update, merge, purge mask, retirement & none & specified; Python implementation \\
 Conjecture H1 & none & validated on the campaign scope \\
-Counterexamples 5.1 to 5.3, Finding 6.1 & none & hand-derived, checked by the Python reference; to be pinned as Lean SPOTs \\
+Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -549,8 +557,6 @@ predicate of the new package and keep the legacy SPOT.
 \item Decide D2 (Section~\ref{sec:h3}): mask or keep a write concurrent
 with a purge and below its cutoff. The Lean port carries the mask either way
 if the current model's semantics is kept.
-\item Pin Counterexamples 5.1 to 5.3 and Finding 6.1 as Lean SPOTs against
-the existing model, with PASS and FAIL companions.
 \item Port the named-removal design to Lean as a second package beside the
 current one; prove \lean{JoinOn} under the honesty predicate, the sequential
 certificate, and the cross-model observational-equivalence theorem; keep the

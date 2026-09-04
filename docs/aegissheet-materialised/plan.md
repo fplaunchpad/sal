@@ -111,7 +111,7 @@ Done when: 1000 executions per seed on three seeds with purge generated,
 zero failures for the chosen retirement rule, documented failures for the
 controls.
 
-### S2. Pin the witnesses as Lean SPOTs against the current model
+### S2. Pin the witnesses as Lean SPOTs against the current model (done; Section 11)
 
 With `native_decide`, PASS and FAIL companions, expected values hand-derived
 from the paper's policies:
@@ -272,3 +272,25 @@ below its cutoff. The harness follows the current model (mask).
 S3 additions: the materialised state gains a grow-only mask set; `merge`
 unions masks and filters versions; the retirement rule "drop tokens and
 `known` when dead, keep the register" is part of the design.
+
+## 11. S2 results
+
+`Sal/MRDTs/Instances/AegisSheetRetentionSPOT.lean` pins the four witnesses
+against the current model with `native_decide`: legality of every step,
+equality of the live sheets, the PASS observation, and a FAIL companion
+(eager re-anchoring, remove-wins, the no-revival reading of undo). Theorems:
+`dead_position_load_bearing_for_ranges`, `eager_reanchoring_refuted`,
+`dead_position_load_bearing_for_revival`, `remove_wins_refuted`,
+`undo_revives_later_removal`. Axioms: `propext`, `Classical.choice`,
+`Quot.sound`, `Lean.ofReduceBool`. Listed in
+`Metatheory/NegativeLedger.lean`, which builds. Compiled with `lake lean` in
+an isolated build directory sharing only the Mathlib packages, because the
+main checkout has uncommitted edits to 28 Lean files (including
+`AegisSheet.lean` and a deleted `InteractionSPOT.lean`) whose oleans do not
+match the committed sources this branch builds on.
+
+Coordination note: the SPOT file uses the fixture helpers `axisEvent`,
+`cellEvent`, `rangeEvent`, `undoCellEvent`, `base`, `baseCell`, `r0`, `r1`,
+`r2`, `c0` from `AegisSheet.lean`, and the ledger edit sits next to the
+`InteractionSPOT` import. If the pending refactor renames or removes these,
+this commit needs a follow-up when it is merged.

@@ -82,7 +82,9 @@ pairs still do not, so the design is not all-commuting.
 Status: refuted (three hand-derived witnesses checked by the reference:
 range resolution, eager re-anchoring, update-wins revival; harness: 35 to 41
 failing executions per 1000 for the register-dropping variant). The register
-is kept for every identifier ever known; see retirement below.
+is kept for every identifier ever known; see retirement below. The three
+witnesses are machine-checked in
+`Sal/MRDTs/Instances/AegisSheetRetentionSPOT.lean`.
 
 ### H3: purge dissolves into ordinary version deletion
 
@@ -136,7 +138,8 @@ baseline.
 In the current model, undoing a cell write is a keep token for its row and
 column. Removing a row at t=4 and undoing an earlier write into it at t=5 is
 legal and revives the row at its last position with an empty cell
-(`undo_revival_witness`). Excluded by D1.
+(`undo_revival_witness`; machine-checked as `undo_revives_later_removal`).
+Excluded by D1.
 
 ## Measured: state size growth
 

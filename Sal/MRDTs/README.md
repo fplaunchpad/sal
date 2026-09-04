@@ -29,6 +29,11 @@ certified Join route uses its unconstrained default.
 `Instances/InteractionSPOT.lean` checks the key
 controls: LWW admits a three-write timestamp chain, and concurrent add/remove
 uses remove-before-add to explain add-wins.
+`Instances/AegisSheetRetentionSPOT.lean` pins what a spreadsheet
+representation must retain about removed rows and columns: range resolution
+and update-wins revival both read a removed identifier's last position, eager
+re-anchoring and remove-wins are refuted, and undoing an older cell write
+revives a causally later removal.
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
 updates commute and make the proof-local replay order empty, while the public
 interaction order has a timestamp-sorted witness refining to a total

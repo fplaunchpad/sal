@@ -1,6 +1,7 @@
 import Sal.MRDTs.Instances.MVR
 import Sal.MRDTs.Instances.QueueConditioningSPOT
 import Sal.MRDTs.Instances.InteractionSPOT
+import Sal.MRDTs.Instances.AegisSheetRetentionSPOT
 import Sal.MRDTs.Instances.FugueMaxReplay
 import Sal.MRDTs.Metatheory.ConditioningSPOT
 import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
@@ -24,6 +25,11 @@ namespace Sal.MRDTs.Negative
 #check Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo
 #check Instances.InteractionSPOT.LWW.old_no_chain_refuted
 #check Instances.InteractionSPOT.AddWins.interaction
+#check Instances.AegisSheet.RetentionSPOT.dead_position_load_bearing_for_ranges
+#check Instances.AegisSheet.RetentionSPOT.eager_reanchoring_refuted
+#check Instances.AegisSheet.RetentionSPOT.dead_position_load_bearing_for_revival
+#check Instances.AegisSheet.RetentionSPOT.remove_wins_refuted
+#check Instances.AegisSheet.RetentionSPOT.undo_revives_later_removal
 #check Instances.SidedEmbedRGA.fmGeneration
 #check Instances.SidedEmbedRGA.fmReplayAdequacy
 #check Instances.SidedEmbedRGA.fuguemax_replay_witness
