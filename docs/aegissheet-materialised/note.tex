@@ -104,7 +104,7 @@ H3, strict, under D2 & validated & plain deletion matches the D2 reference; 0 fa
 Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
 Undo revives a later removal & finding, machine-checked; excluded by decision D1 & Section~\ref{sec:undo}; \lean{undo\_revives\_later\_removal} \\
-Lean port & definitions machine-checked; theorems stated & \lean{AegisSheetMaterialised.lean}: signature, canonical state, honesty predicate, and theorem statements compile with no \lean{sorry}; proofs owed \\
+Lean port & Join machine-checked; equivalence stated & \lean{JoinOn M Honest} is proved (\lean{joinTarget}, no \lean{sorry}, standard axioms only); \lean{UpdatePreservesCanon} and \lean{ObservationEquivalence} remain statements; the sequential certificate and the \lean{VerifiedMRDT} package are owed \\
 Retention witnesses & machine-checked & five theorems in \lean{AegisSheetRetentionSPOT.lean} with PASS and FAIL companions; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}, \lean{Lean.ofReduceBool} \\
 \bottomrule
 \end{tabular}
@@ -543,7 +543,8 @@ Display & Lean declaration & Status \\
 \midrule
 Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
 Materialised state, update, merge, observation, canonical state & \lean{Instances.AegisSheet.Materialised}: \lean{M}, \lean{mupdate}, \lean{mmerge}, \lean{mview}, \lean{canon}, \lean{toM} & machine-checked definitions; 45 fixtures of the union model replayed through three-way merges pass by \lean{native\_decide}, and \lean{canon} agrees with the fold on two of them \\
-Conjecture H1 and the port's theorems & \lean{JoinTarget}, \lean{UpdatePreservesCanon}, \lean{ObservationEquivalence}, \lean{Honest} & stated in Lean as \lean{Prop}-valued definitions, unproved; validated on the campaign scope \\
+Restricted Join of the port & \lean{AegisSheetMaterialisedJoin.lean}: \lean{m\_join\_at}, \lean{joinTarget} & machine-checked: \lean{JoinOn M Honest}; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
+Conjecture H1's remaining statements & \lean{UpdatePreservesCanon}, \lean{ObservationEquivalence} & stated in Lean, unproved; validated on the campaign scope \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
 \end{tabular}
@@ -578,9 +579,9 @@ materialised state does.
 predicate of the new package and keep the legacy SPOT.
 \item Decision D2 (keep) is taken; the Lean port's purge is plain deletion
 and its sequential specification masks exactly the covered versions.
-\item Prove the stated theorems of \lean{AegisSheetMaterialised.lean}:
-\lean{UpdatePreservesCanon}, the merge counterpart, \lean{JoinTarget} by the
-queue's route (fold canonicity under \lean{Honest}, then set algebra), and
+\item \lean{JoinTarget} is proved. Remaining: discharge \lean{Honest} from
+\lean{MintHonest} of an issuance predicate (\lean{IssuanceEstablishes}) to
+obtain the replay-adequacy certificate; prove \lean{UpdatePreservesCanon} and
 \lean{ObservationEquivalence}; then the sequential certificate and the
 \lean{VerifiedMRDT} package; keep the union model until the runtime
 measurement is in.

@@ -76,8 +76,10 @@ frontier-evidence retirement 0/0/0.
 
 ### H1: the materialised design matches the union model
 
-Status: validated on honest executions within the campaign scope;
-conjectured in general. Formal oracle: none yet (S3 and S3b of the plan).
+Status: validated on honest executions within the campaign scope; the
+restricted Join `JoinOn M Honest` is machine-checked
+(`AegisSheetMaterialisedJoin.lean`, `joinTarget`); the cross-model
+equivalence (S3b) is still a statement.
 
 The named-removal design with purge masks and registers kept has no failing
 execution. Clearing removal converges and matches the reference but fails

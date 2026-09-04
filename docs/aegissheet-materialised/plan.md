@@ -137,7 +137,7 @@ from the paper's policies:
 Done when: `lake build` passes, `#print axioms` shows only the compiler
 axioms `native_decide` adds, and the SPOTs are listed in the ledger.
 
-### S3. Lean port of the named-removal design (started; Section 13)
+### S3. Lean port of the named-removal design (Join proved; Sections 13, 14)
 
 A second package beside the current one, not a replacement.
 
@@ -365,3 +365,45 @@ the queue's witness enumeration `ρ₀ ++ Δ₁ ++ Δ₂`; (5) `Honest` from
 `overwrites = active versions`, and the D1 clause. The sequential
 certificate then reuses the incremental machine with a representation
 relation through `canon`, and S3b follows from (1) and (3).
+
+## 14. S3: the restricted Join is machine-checked
+
+`Sal/MRDTs/Instances/AegisSheetMaterialisedJoin.lean` (1,024 lines, no
+`sorry`) proves `m_join_at : Honest C → JoinAt M C` and `joinTarget :
+JoinOn M Honest`, with axioms `propext`, `Classical.choice`, `Quot.sound`.
+Registered in `NegativeLedger.lean`, which builds.
+
+Structure, following the queue's route:
+
+- A generic *named-removal component* `NR α` (events add entries carrying
+  their own timestamp; events remove entries they name) with: the canonical
+  content of an enumeration (`canonL`), well-formedness (`Wf`: unique
+  timestamps, removals name earlier additions), the snoc and fold lemmas
+  (`canonL_snoc`, `fold_canon`), the set-level membership
+  (`inSet`), and the observed-remove merge identity `inSet_union_iff`
+  under an honesty predicate (`HonestFor`: the adder of a named entry is
+  `vis`-before the namer, adders are unique per entry, adder and namer do
+  not commute) and weak closure. `NR.mvr_canonL` is the finite form.
+- Three instantiations: tokens (`tokNR`), cell versions with D2 purge
+  (`cellNR`), range versions (`rangeNR`), each with a step lemma showing
+  `mupdate` projects to the component's step, and `HonestFor` derived from
+  the signature file's `Honest` plus `ReplayContext.ts_unique`.
+- The last-writer-wins register: `posL`, `posL_snoc` (a late smaller
+  candidate never displaces the register, a fresh larger one replaces it),
+  `pos_fold`, and `posL_union` (the union's maximum is the maximum of the
+  sides' maxima, via `exists_max_cand`).
+- The grow-only `known` component.
+- `m_join_at`: the witness enumeration `ρ₀ ++ Δ₁ ++ Δ₂` with the queue's
+  permutation and respects proofs, then `MState.ext'` componentwise.
+
+Two design facts were forced by the proof and are now part of the design:
+honesty is stated as "the adder of a named entry is `vis`-before the
+namer" (no existential), and well-formedness constrains only entries that
+some element actually added, since an overwrite names a timestamp, not a
+payload.
+
+Remaining for the package: `IssuanceEstablishes` from an issuance predicate
+checking `kills = live tokens`, `overwrites = active versions`, `covered`
+entries present, and the D1 clause; then
+`ReplayAdequacyCertificate.ofJoinOn`; the sequential certificate through
+`canon`; `UpdatePreservesCanon`; `ObservationEquivalence`; `VerifiedMRDT`.
