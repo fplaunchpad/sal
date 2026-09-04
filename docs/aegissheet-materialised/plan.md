@@ -85,6 +85,14 @@ while its row and column are live. Consequences:
   generator. Under D1 the named design has no failing execution on three
   seeds (96,069 honest events); see `campaign.md`.
 
+## 4b. Decision D2 (taken 2026-09-04): keep concurrent sub-cutoff writes
+
+A write concurrent with a purge marker and at or below its cutoff is kept;
+the marker masks exactly the versions it covered. Consequence (Section 12):
+the materialised purge is plain deletion with no stored purge state. The
+port's sequential specification uses the covered-set clause; the current
+model's cutoff clause stays available as `--legacy-purge` for controls.
+
 ## 5. Steps, in order
 
 ### S1. Model purge under the chosen D1 policy and close H3 (done; Section 10)
@@ -269,9 +277,9 @@ fixtures of `AegisSheetGC.lean`. Numbers in `campaign.md`.
 New decision D2 (open): mask or keep a write concurrent with a purge and
 below its cutoff. The harness follows the current model (mask).
 
-S3 additions: the materialised state gains a grow-only mask set; `merge`
-unions masks and filters versions; the retirement rule "drop tokens and
-`known` when dead, keep the register" is part of the design.
+S3 additions: under D2 no purge state is needed (Section 12 supersedes the
+mask); the retirement rule "drop tokens and `known` when dead, keep the
+register" is part of the design.
 
 ## 11. S2 results
 
@@ -294,3 +302,27 @@ Coordination note: the SPOT file uses the fixture helpers `axisEvent`,
 `r2`, `c0` from `AegisSheet.lean`, and the ledger edit sits next to the
 `InteractionSPOT` import. If the pending refactor renames or removes these,
 this commit needs a follow-up when it is merged.
+
+## 12. D2 results
+
+Reference switched to the covered-set purge clause (D2). Three seeds of 1000:
+
+- Plain deletion (no stored purge state): 0 failing executions, including
+  461 merges at a virtual base. Covered-set tombstones: 0. Retirement
+  (immediate, descendant) on top: 0.
+- Compact cutoff mask (current semantics) against the D2 reference: 6, 3, 3
+  failures, exactly the concurrent sub-cutoff writes D2 keeps.
+- `--legacy-purge` control (cutoff reference, seed 1): cutoff mask 0, plain
+  deletion 6, covered set 6.
+
+Why plain deletion suffices: the framework's merge base is canonical for the
+exact intersection of the branch histories (`gca_events_of_storeInv`,
+`virtualMergeBaseState_canonical`). A purged version that reached the other
+branch is therefore in the base and absent from the purging branch, and
+`mvr` removes it. The earlier worry about re-delivery through a criss-cross
+path avoiding the base does not apply in this framework; it would in a
+system whose merge base can be a strict ancestor of the intersection.
+
+Purge residue under D2: none. Retention residue overall: one position
+register per identifier ever known, plus the tokens and versions of live
+data.

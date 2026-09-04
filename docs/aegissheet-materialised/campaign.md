@@ -3,8 +3,10 @@
 Differential property-based testing of the candidate materialised three-way
 AegisSheet against the current union-merge model. Harness: `model.py` in this
 directory. Reproduce with `python3 model.py 1000 1` (three seeds, then the
-growth table) and `python3 model.py 1000 7 --legacy-undo` (legacy control).
-`--global-clock` replaces per-replica Lamport clocks by one global counter.
+growth table), `python3 model.py 1000 7 --legacy-undo` (legacy undo control),
+and `python3 model.py 1000 1 --legacy-purge` (current cutoff purge semantics
+as the reference). `--global-clock` replaces per-replica Lamport clocks by
+one global counter.
 
 ## Harness
 
@@ -40,7 +42,7 @@ Reference validation: the Python transcription reproduces 20 SPOT fixtures
 from `AegisSheet.lean`, 5 issuance fixtures, and 5 purge fixtures from
 `AegisSheetGC.lean` (`check_fixtures`).
 
-## Campaign (D1 rule, Lamport clocks, purge generated)
+## Campaign (D1 rule, D2 covered-set purge semantics, Lamport clocks, purge generated)
 
 | seed | versions | ops | registered-ancestor merges | virtual-base merges | purges | writes masked by a concurrent marker |
 |---|---|---|---|---|---|---|
@@ -54,15 +56,21 @@ Failing executions out of 1000 per seed:
 
 | design | seed 1 | seed 2 | seed 3 | first failure class |
 |---|---|---|---|---|
-| named removal, masks, registers kept, no retirement | 0 | 0 | 0 | |
-| same, retire dead tokens and `known` with descendant evidence | 0 | 0 | 0 | |
-| same, retire with frontier evidence | 0 | 0 | 0 | |
-| same, retire immediately when dead | 0 | 0 | 0 | |
-| named removal, purge without masks | 6 | 3 | 3 | DIFF cells: masked concurrent write shown |
+| named removal, covered-set purge tombstones, registers kept | 0 | 0 | 0 | |
+| same, retire dead tokens and `known` immediately | 0 | 0 | 0 | |
+| same, retire with descendant evidence | 0 | 0 | 0 | |
+| named removal, purge as plain deletion (no stored purge state) | 0 | 0 | 0 | |
+| named removal, compact cutoff mask (current model's semantics) | 6 | 3 | 3 | DIFF cells: concurrent write masked that D2 keeps |
 | named removal, drop unreferenced dead registers | 38 | 41 | 35 | DIFF pos: revived axis at stale position |
 | clearing removal | 227 | 224 | 224 | FOLD: merge differs from replay |
 | ancestor ignored (control) | 520 | 511 | 512 | DIFF rows, cells, ranges |
 | eager range re-anchoring (control) | 747 | 720 | 746 | DIFF ranges |
+
+Under `--legacy-purge` (the current model's cutoff clause as reference, seed
+1) the cutoff-mask design is clean and the plain-deletion and covered-set
+designs fail 6 of 1000 each, on the same concurrent writes. Earlier S1 runs
+against the cutoff reference: plain deletion 6/3/3, cutoff mask 0/0/0, and
+frontier-evidence retirement 0/0/0.
 
 ## Claims
 
@@ -88,22 +96,27 @@ witnesses are machine-checked in
 
 ### H3: purge dissolves into ordinary version deletion
 
-Status: refuted in the strict form, validated with a mask.
+Status: refuted under the current model's cutoff semantics; validated under
+decision D2.
 
-Strict deletion (drop cell versions at dead coordinates, store nothing)
-diverges from the reference in 6, 3, and 3 executions per seed. Every case
-is a cell write concurrent with a purge marker whose timestamp is at or below
-the marker's cutoff: the reference masks it permanently (`cellOverwritten`'s
-purge clause), the strict design keeps it, and the write's token revives the
-axis so the difference is visible. Keeping a mask of (cutoff, coordinates)
-per marker and filtering versions through it at apply and merge reproduces
-the reference exactly. The mask is the irreducible purge residue; the
-marker's covered entries and acknowledgements are not needed in the
-materialised state.
+Against the current model (a marker masks every version at its coordinates
+with timestamp at or below the cutoff), strict deletion diverges in 6, 3, and
+3 executions per seed, every case a cell write concurrent with the marker and
+below its cutoff: the reference masks it, the strict design keeps it, and the
+write's token revives the axis so the difference is visible. A mask of
+(cutoff, coordinates) per marker reproduces that reference exactly.
 
-Decision D2 (open): whether a write concurrent with a purge and below its
-cutoff should be masked (current model) or kept (update-wins, what the
-maskless design does). The harness implements the current model by default.
+Decision D2 (taken 2026-09-04): keep such writes; the marker masks exactly
+the versions it covered. Against that reference, plain deletion with no
+stored purge state has 0 failing executions in 3000, including 461 merges at
+a virtual base. The reason is the framework's merge base: it is canonical for
+the exact intersection of the two branch histories
+(`gca_events_of_storeInv`, `virtualMergeBaseState_canonical`), so a purged
+version that reached the other branch is in the base, absent from the purging
+branch, and excluded by `mvr`. Under D2 purge has no residue at all; the
+marker's covered entries and acknowledgements are unnecessary. The cutoff
+mask, run against the D2 reference, fails on exactly the concurrent writes D2
+keeps.
 
 ### Retirement of dead identifiers
 

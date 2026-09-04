@@ -65,6 +65,11 @@ class Purge:
 
 
 ROSTER = frozenset({0, 1, 2})   # `requiredRoster`; the harness sets it per execution
+# Decision D2 (2026-09-04): a purge marker masks exactly the versions it covered
+# ("covered"). The current Lean model masks every version at the marker's
+# coordinates with timestamp at or below the cutoff ("cutoff"), which also
+# masks writes concurrent with the marker. Pass --legacy-purge for "cutoff".
+PURGE_SEMANTICS = "covered"
 LAMPORT = True                  # per-replica Lamport clocks (False: one global counter)
 STRIDE = 8                      # timestamp = (counter + 1) * STRIDE + replica
 
@@ -184,8 +189,12 @@ def cell_overwritten(events, cand):
         a = l.action
         if isinstance(a, Cell) and cand.t in a.overwrites:
             return True
-        if isinstance(a, Purge) and coord in a.coordinates and cand.t <= a.cutoff:
-            return True
+        if isinstance(a, Purge):
+            if PURGE_SEMANTICS == "cutoff":
+                if coord in a.coordinates and cand.t <= a.cutoff:
+                    return True
+            elif (cand.t, coord) in a.covered:
+                return True
     return False
 
 
@@ -475,7 +484,7 @@ class MState:
     pos: dict = field(default_factory=dict)        # (axis,id) -> (ts, position)
     cells: dict = field(default_factory=dict)      # (row,col) -> set of (ts, frozenset)
     ranges: dict = field(default_factory=dict)     # id -> set of (ts, spec|None)
-    masks: set = field(default_factory=set)        # (cutoff, frozenset of coords)
+    masks: set = field(default_factory=set)        # ("cutoff", c, coords) or ("covered", entries)
 
     def copy(self):
         return MState({k: set(v) for k, v in self.known.items()},
@@ -494,7 +503,13 @@ class MState:
                 frozenset(self.masks))
 
     def masked(self, ts, coord):
-        return any(coord in coords and ts <= cutoff for cutoff, coords in self.masks)
+        for m in self.masks:
+            if m[0] == "cutoff":
+                if coord in m[2] and ts <= m[1]:
+                    return True
+            elif (ts, coord) in m[1]:
+                return True
+        return False
 
 
 class Mat:
@@ -505,15 +520,17 @@ class Mat:
     name = "mat-3way"
 
     def __init__(self, forget="keep", binary=False, eager=False, removal="clear",
-                 masks=True, retire="never"):
+                 masks="covered", retire="never"):
         self.forget = forget
         self.binary = binary          # negative control: ignore the ancestor
         self.eager = eager            # negative control: re-anchor ranges at remove
         self.removal = removal        # 'clear' all live tokens, or 'named' tokens only
-        self.masks = masks            # keep purge masks (False: purge is plain deletion)
-        self.retire = retire          # dead-identifier retirement: never | frontier | descendant
+        # purge representation: 'covered' (tombstone the purged versions, D2),
+        # 'cutoff' (compact cutoff mask, current model), 'none' (plain deletion)
+        self.masks = {True: "cutoff", False: "none"}.get(masks, masks)
+        self.retire = retire          # dead-identifier retirement: never | frontier | descendant | immediate
         self.name = (f"mat-3way[{forget},{removal}{',binary' if binary else ''}"
-                     f"{',eager' if eager else ''}{'' if masks else ',nomask'}"
+                     f"{',eager' if eager else ''},purge={self.masks}"
                      f"{'' if retire == 'never' else ',retire=' + retire}]")
 
     def plain(self):
@@ -549,11 +566,17 @@ class Mat:
                 kept.add((e.t, a.after))
             s.cells[(a.row, a.col)] = kept
         elif isinstance(a, Purge):
-            for coord in a.coordinates:
-                if coord in s.cells:
-                    s.cells[coord] = {v for v in s.cells[coord] if v[0] > a.cutoff}
-            if self.masks:
-                s.masks.add((a.cutoff, a.coordinates))
+            if self.masks == "cutoff":
+                for coord in a.coordinates:
+                    if coord in s.cells:
+                        s.cells[coord] = {v for v in s.cells[coord] if v[0] > a.cutoff}
+                s.masks.add(("cutoff", a.cutoff, a.coordinates))
+            else:
+                for coord in a.coordinates:
+                    if coord in s.cells:
+                        s.cells[coord] = {v for v in s.cells[coord] if (v[0], coord) not in a.covered}
+                if self.masks == "covered":
+                    s.masks.add(("covered", a.covered))
         else:
             vs = s.ranges.setdefault(a.id, set())
             s.ranges[a.id] = {v for v in vs if v[0] not in a.overwrites} | {(e.t, a.after)}
@@ -741,7 +764,7 @@ class Mat:
         return (sum(len(v) for v in s.tokens.values()) + len(s.pos)
                 + sum(len(v) for v in s.cells.values())
                 + sum(len(v) for v in s.ranges.values())
-                + sum(1 + len(coords) for _, coords in s.masks)
+                + sum(1 + len(m[2]) if m[0] == "cutoff" else len(m[1]) for m in s.masks)
                 + sum(len(v) for v in s.known.values()))
 
 
@@ -1272,22 +1295,26 @@ if __name__ == "__main__":
     undo_revival_witness()
     if "--legacy-undo" in sys.argv:
         UNDO_REQUIRES_LIVE_AXES = False
-        campaign([Mat("keep", removal="named"),
-                  Mat("keep", removal="named", retire="descendant"),
-                  Mat("keep", removal="named", retire="immediate"),
-                  Mat("ranges", removal="named")], executions, seed,
+        campaign([Mat("keep", removal="named", masks="covered"),
+                  Mat("keep", removal="named", masks="covered", retire="descendant"),
+                  Mat("keep", removal="named", masks="covered", retire="immediate"),
+                  Mat("ranges", removal="named", masks="covered")], executions, seed,
                  "campaign under the legacy undo rule (revival allowed)")
         sys.exit(0)
     if "--global-clock" in sys.argv:
         LAMPORT = False
-    designs = [Mat("keep", removal="named"),
-               Mat("keep", removal="named", retire="descendant"),
-               Mat("keep", removal="named", retire="frontier"),
-               Mat("keep", removal="named", retire="immediate"),
-               Mat("keep", removal="named", masks=False),
-               Mat("ranges", removal="named"),
-               Mat("keep"),
-               Mat("keep", binary=True), Mat("ranges", eager=True)]
+    if "--legacy-purge" in sys.argv:
+        PURGE_SEMANTICS = "cutoff"
+    designs = [Mat("keep", removal="named", masks="covered"),
+               Mat("keep", removal="named", masks="covered", retire="immediate"),
+               Mat("keep", removal="named", masks="covered", retire="descendant"),
+               Mat("keep", removal="named", masks="none"),
+               Mat("keep", removal="named", masks="cutoff"),
+               Mat("ranges", removal="named", masks="covered"),
+               Mat("keep", masks="covered"),
+               Mat("keep", masks="covered", binary=True), Mat("ranges", masks="covered", eager=True)]
     for sd in range(seed, seed + 3):
-        campaign(designs, executions, sd, "differential DAG campaign (D1: no-revival undo)")
-    growth([Mat("keep", removal="named"), Mat("keep", removal="named", retire="descendant")], seed)
+        campaign(designs, executions, sd,
+                 f"differential DAG campaign (D1 no-revival undo; purge semantics {PURGE_SEMANTICS})")
+    growth([Mat("keep", removal="named", masks="covered"),
+            Mat("keep", removal="named", masks="covered", retire="immediate")], seed)

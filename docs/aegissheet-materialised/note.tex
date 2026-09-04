@@ -41,10 +41,13 @@ the executable reference, show that the last position of a removed row or
 column cannot be dropped while a concurrent revival is possible, so the
 retention residue is one register per axis identifier until removal is
 causally stable. The measured state is linear rather than quadratic in
-history. Purge needs a mask of cutoff and coordinates per marker, because the
-current model deliberately masks writes concurrent with the marker and below
-its cutoff, but it needs no acknowledgement protocol: dead identifiers can be
-retired immediately once the register is kept. The witnesses are machine-checked as
+history. Under the current model's purge semantics a mask of cutoff and
+coordinates per marker is needed, because that model deliberately masks
+writes concurrent with the marker and below its cutoff; under decision D2,
+which keeps such writes, purge is plain deletion with no residue, because the
+framework's merge base is canonical for the exact intersection of the branch
+histories. No acknowledgement protocol is needed either way: dead identifiers
+can be retired immediately once the register is kept. The witnesses are machine-checked as
 proof-oriented tests against the current model; the design's claims are not
 machine-checked, and the mechanization target is a conditioned Join for the token
 and version components composed with the register and the mask, plus an
@@ -95,8 +98,9 @@ Claim & Status & Evidence \\
 H1, named removal & validated on honest executions; conjectured in general & no counterexample in 3000 executions with Lamport clocks, laggard replicas, and purge markers: 110{,}560 versions, 19{,}240 registered-ancestor and 461 virtual-base merges, three seeds; all 90{,}859 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$; Lean proof owed \\
 H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 675 of 3000 executions have a merge that differs from timestamp-order replay \\
 H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 35 to 41 failing executions per 1000 for the register-dropping variant \\
-H3, strict & refuted & purge as plain deletion diverges in 6, 3, 3 executions per 1000, always on a write concurrent with a marker and below its cutoff \\
-H3, with mask & validated & a mask of cutoff and coordinates per marker reproduces the reference; 0 failing executions \\
+H3, strict, current purge semantics & refuted & plain deletion diverges in 6, 3, 3 executions per 1000, always on a write concurrent with a marker and below its cutoff \\
+H3, with mask, current purge semantics & validated & a mask of cutoff and coordinates per marker reproduces the reference; 0 failing executions \\
+H3, strict, under D2 & validated & plain deletion matches the D2 reference; 0 failing executions in 3000, 461 of them at virtual bases \\
 Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
 State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
 Undo revives a later removal & finding, machine-checked; excluded by decision D1 & Section~\ref{sec:undo}; \lean{undo\_revives\_later\_removal} \\
@@ -419,7 +423,7 @@ from a stale branch. The Python reference reproduces the five marker fixtures
 of that file (the marker is issuable after the removal, a restored row shows
 no purged content, a post-cutoff write is issuable and visible).
 
-\paragraph{Strict deletion is refuted.} A materialised purge that deletes
+\paragraph{Strict deletion is refuted under the current semantics.} A materialised purge that deletes
 the covered versions and stores nothing diverges from the reference in $6$,
 $3$, and $3$ executions per 1000. Every case has the same shape: a replica
 that has not observed the marker writes into a purged coordinate with a
@@ -429,12 +433,26 @@ revives the axis so the difference is visible. This is the current model's
 chosen semantics for a late concurrent edit, and the $\mvr$ rule alone
 cannot express it because the write is absent from the ancestor.
 
-\paragraph{A mask suffices.} Keeping, per marker, the pair (cutoff,
-coordinates) and filtering versions through the accumulated masks at apply
-and at merge reproduces the reference with no failing execution. The mask is
-the irreducible purge residue. The marker's covered entries are unnecessary
-because tokens live in their own component, and its acknowledgements are
-unnecessary for the merge.
+\paragraph{A mask suffices for the current semantics.} Keeping, per marker,
+the pair (cutoff, coordinates) and filtering versions through the accumulated
+masks at apply and at merge reproduces the current model with no failing
+execution. The marker's covered entries are unnecessary because tokens live
+in their own component, and its acknowledgements are unnecessary for the
+merge.
+
+\paragraph{Under D2 nothing is retained.} Decision D2 keeps a write
+concurrent with a purge and below its cutoff; the marker then masks exactly
+the versions it covered. Against that reference, plain deletion with no
+stored mask has no failing execution in 3000, including 461 merges at a
+virtual base, and a covered-set tombstone design is likewise clean but
+unnecessary. The reason is a framework theorem rather than a property of the
+sheet: the merge base is canonical for the exact intersection of the two
+branch histories (\lean{gca\_events\_of\_storeInv},
+\lean{virtualMergeBaseState\_canonical}), so a purged version that reached
+the other branch is present in the base, absent from the purging branch, and
+removed by $\mvr$. The compact cutoff mask, run against the D2 reference,
+fails on exactly the concurrent writes D2 keeps ($6$, $3$, $3$ per 1000),
+which is the whole difference between the two semantics.
 
 \paragraph{Retirement needs no acknowledgements.} Three retirement rules
 for a dead identifier were tested: immediately when dead; when every roster
@@ -462,9 +480,12 @@ both rules.
 \paragraph{Consequence.} The roster acknowledgement protocol of the current
 model plays no role in the materialised design's convergence, masking, or
 retirement. It remains an issuance policy on when a purge may be requested.
-One decision is open, D2: whether a write concurrent with a purge and below
-its cutoff should be masked, as the current model does, or kept, as the
-maskless design does; the harness follows the current model.
+Decision D2 (taken): keep a write concurrent with a purge and below its
+cutoff. The materialised purge is then plain deletion, and the sequential
+specification of the port masks exactly the covered versions. The harness
+follows D2 by default; \lean{--legacy-purge} restores the current model's
+cutoff clause as a control, under which the cutoff-mask design is the one
+that is clean.
 
 \section{Measured: state size}
 
@@ -520,7 +541,7 @@ distinguish these would carry no evidence.
 Display & Lean declaration & Status \\
 \midrule
 Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
-Materialised state, update, merge, purge mask, retirement & none & specified; Python implementation \\
+Materialised state, update, merge, purge, retirement & none & specified; Python implementation \\
 Conjecture H1 & none & validated on the campaign scope \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
@@ -554,9 +575,8 @@ materialised state does.
 \begin{enumerate}
 \item Decision D1 (no revival) is taken; carry it into the Lean issuance
 predicate of the new package and keep the legacy SPOT.
-\item Decide D2 (Section~\ref{sec:h3}): mask or keep a write concurrent
-with a purge and below its cutoff. The Lean port carries the mask either way
-if the current model's semantics is kept.
+\item Decision D2 (keep) is taken; the Lean port's purge is plain deletion
+and its sequential specification masks exactly the covered versions.
 \item Port the named-removal design to Lean as a second package beside the
 current one; prove \lean{JoinOn} under the honesty predicate, the sequential
 certificate, and the cross-model observational-equivalence theorem; keep the
