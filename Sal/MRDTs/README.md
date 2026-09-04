@@ -34,6 +34,21 @@ representation must retain about removed rows and columns: range resolution
 and update-wins revival both read a removed identifier's last position, eager
 re-anchoring and remove-wins are refuted, and undoing an older cell write
 revives a causally later removal.
+`Instances/AegisSheetMaterialised.lean` and its companions (`Join`,
+`Certificates`, `Equivalence`, `Update`, `Bridge`) re-encode the spreadsheet
+as a materialised three-way MRDT: flat sets of keep tokens, cell versions, and
+range versions with named removal, a last-writer-wins position register, and
+plain deletion for purges. `canon` reads the materialised state off a
+union-model event set. Proved: the Join restricted to honest replay contexts,
+replay adequacy under issuance at the materialised state, observation
+equivalence with the union model's view on purge-free histories, preservation
+of `canon` by updates issued at any past of an honest history, and
+`cross_model`: every version of a certified execution of the union model is
+the materialised fold of an issue-ordered enumeration of its events, with equal
+observations when purge-free. `verified` packages the design with its own fold
+as sequential machine. The converse direction, from the port's own certified
+executions to the union model, is validated by differential testing
+(`docs/aegissheet-materialised/`) and not yet proved.
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
 updates commute and make the proof-local replay order empty, while the public
 interaction order has a timestamp-sorted witness refining to a total

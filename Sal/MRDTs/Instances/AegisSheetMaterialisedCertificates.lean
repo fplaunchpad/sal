@@ -231,4 +231,29 @@ def replayAdequacy : ReplayAdequacyCertificate M generation :=
 
 #print axioms replayAdequacy
 
+/-! ## The verification package -/
+
+/-- The datatype's own sequential machine: the fold of `mupdate`, every list
+legal, observation through `mview`. The certificate built on it records
+convergence of every version to this fold. What the fold means in union-model
+terms is `Issued.fold` with `observationEquivalence`
+(`AegisSheetMaterialisedUpdate.lean`, `AegisSheetMaterialisedBridge.lean`). -/
+def spec : SequentialSpec M where
+  State := MState
+  init := MState.empty
+  step := mupdate
+  Legal := fun _ => True
+  query := fun s _ => mview s
+
+noncomputable def verified : VerifiedMRDT M where
+  issuance := generation
+  interaction := InteractionSpec.raw M
+  replayAdequacy := replayAdequacy
+  Spec := spec
+  Rel := (· = ·)
+  sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
+    (fun _ => True.intro) (fun _ => rfl) (fun _ _ => rfl)
+
+#print axioms verified
+
 end Sal.MRDTs.Instances.AegisSheet.Materialised

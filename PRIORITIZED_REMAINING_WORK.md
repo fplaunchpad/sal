@@ -328,6 +328,16 @@ anonymous long-form working papers under `docs/`.
   protocol, and measure the metadata reduction against the event-set model.
   Preserve the known range-anchor and no-view-only-state counterexamples as
   design constraints.
+  Status (branch `research/aegis-materialised`, `docs/aegissheet-materialised/`):
+  design, differential property tests (0 discrepancies in 3000 concurrent
+  executions), and retention counterexamples as SPOTs are done; the restricted
+  `JoinOn`, replay adequacy, observation equivalence, update preservation at
+  issuing pasts, the bridge `cross_model` from certified union-model executions,
+  and `verified : VerifiedMRDT` are machine-checked. Remaining: the converse
+  direction (strengthen `mApplicable` with the union model's before-image
+  clauses and derive issue-ordered histories from `MintHonest M`), the
+  datatype-state GC protocol, and the metadata measurement against the
+  event-set model.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.

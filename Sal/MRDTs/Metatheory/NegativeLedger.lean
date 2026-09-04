@@ -7,6 +7,7 @@ import Sal.MRDTs.Instances.AegisSheetMaterialisedJoin
 import Sal.MRDTs.Instances.AegisSheetMaterialisedCertificates
 import Sal.MRDTs.Instances.AegisSheetMaterialisedEquivalence
 import Sal.MRDTs.Instances.AegisSheetMaterialisedUpdate
+import Sal.MRDTs.Instances.AegisSheetMaterialisedBridge
 import Sal.MRDTs.Instances.FugueMaxReplay
 import Sal.MRDTs.Metatheory.ConditioningSPOT
 import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
@@ -47,7 +48,12 @@ namespace Sal.MRDTs.Negative
 #check Instances.AegisSheet.Materialised.replayAdequacy
 #check Instances.AegisSheet.Materialised.observationEquivalence
 #check Instances.AegisSheet.Materialised.updatePreservesCanon
+#check Instances.AegisSheet.Materialised.update_preserves_canon_of_past
 #check Instances.AegisSheet.Materialised.Reach.materialised
+#check Instances.AegisSheet.Materialised.Issued.fold
+#check Instances.AegisSheet.Materialised.verified
+#check Instances.AegisSheet.Materialised.issued_of_version
+#check Instances.AegisSheet.Materialised.cross_model
 #check Instances.SidedEmbedRGA.fmGeneration
 #check Instances.SidedEmbedRGA.fmReplayAdequacy
 #check Instances.SidedEmbedRGA.fuguemax_replay_witness

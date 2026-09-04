@@ -506,14 +506,83 @@ histories: the materialised replica replaying the erased operations of any
 union-model execution in issue order observes exactly the union model's
 purge-free view. Registered in `NegativeLedger.lean`, which builds.
 
-Remaining for H1 on concurrent executions: the fold over honest
-enumerations. For an enumeration of `E` in which each event's summary is a
-subset of the events before it (not necessarily equal to the prefix), and
-each removal's `kills` are the live tokens of the issuer's summary, the
-materialised fold equals `canon E`. The restricted Join (Section 14) gives
-that every reachable materialised state is such a fold, so this theorem
-closes the loop between the port's reachable states and the union model's
-event sets. The generalisation from `applicable` (summary = prefix) to
-summary ⊆ prefix is the only new ingredient; the token case is where it
-bites, since a token live at the prefix but outside the issuer's summary is
-killed by neither model.
+Section 18 generalises this to issuing pasts that are proper subsets of
+the history, which is what concurrent executions need.
+
+## 18. S3b, concurrent case: issue-ordered histories and the bridge
+
+`update_preserves_canon_of_past` (in `AegisSheetMaterialisedUpdate.lean`,
+no `sorry`, standard axioms) generalises Section 17: for an honest history
+`E`, a past `P ⊆ E`, an event `e` applicable at `P` with a timestamp fresh
+in `E`, `mupdate (canon E) (toM P e) = canon (insert e E)`. Section 17's
+theorem is the special case `P = E`. Two components changed:
+
+- pos: the register argument is now a genuine last-writer argument. If a
+  later candidate for the identifier already exists in `E`, a latest one
+  sits in `canonPos E` (`exists_nolater`, `mem_canonPos_of`), so
+  `posInsert` leaves the register alone and `e`'s candidate is excluded on
+  the union side; otherwise every existing candidate is strictly earlier
+  (freshness), so `e` is installed and shadows them.
+- tokens: the removal's `kills` are the live tokens at `P`, while the union
+  model removes tokens in `e.seen = eventTimes P`. The bridge is
+  `live_past_iff`: a token live in `E` is live in `P` exactly when `P`
+  knows its timestamp. A token of the removed identifier that is live at
+  `E` but outside the issuer's past is killed by neither model, as
+  predicted at the end of Section 17.
+
+`Issued ρ` is the inductive predicate on lists of (event, past) pairs: each
+past lies among the earlier events, each timestamp is fresh among the
+earlier events' times, each event is applicable at its past. `Issued.fold`:
+the materialised fold of the erased operations of an issue-ordered history
+is the canonical state of its events. `Issued.honest`: its events form an
+honest history.
+
+`AegisSheetMaterialisedBridge.lean` connects this to the union model's
+framework executions. `issued_of_version`: for every version of a certified
+execution of the union model `D` (ordinary or virtual-merge-base), the
+version's event set is enumerated by an issue-ordered history: sort the
+events by timestamp (`causal_mono` makes timestamp order respect
+visibility) and pair each with its causal past (`pastOf`, from
+`MintHonest`); causal closure and support of version event sets come from
+`CanonicalConfig`, itself from the union model's all-context Join;
+freshness from `timestamps_distinct`, with covered purge timestamps traced
+back to cell events in the purge's past. `cross_model`: the materialised
+fold of the erased operations is `canon s` for the version's event set `s`,
+and on purge-free versions `M.query` of that fold equals `D.query s`.
+
+`verified : VerifiedMRDT M` (in `AegisSheetMaterialisedCertificates.lean`)
+completes the framework package with the datatype's own sequential machine
+(`spec`: fold of `mupdate`, every list legal, observation `mview`), by
+`SequentialCorrectnessCertificate.ofTotal`. It certifies convergence of
+every version to the fold and observation through `mview`; it carries no
+union-model content by itself. The union model's own package
+(`AegisSheetSequential.clientSpec`) uses a materialised sequential state
+with causal-origin legality; the materialised design promotes that
+sequential state to the replicated state.
+
+All registered in `NegativeLedger.lean`, which builds.
+
+What is proved and what is not, for H1:
+
+- Proved: union model to port. Every certified execution of the union
+  model, at every version, is matched by the materialised fold of an
+  issue-ordered enumeration, with equal observations on purge-free
+  versions (`cross_model`).
+- Not proved: port to union model. That every certified execution of the
+  port under `generation` (issuance `mApplicable` at the materialised
+  state) corresponds to a certified execution of the union model. The
+  restricted Join gives that every reachable materialised state is the fold
+  of a vis-respecting enumeration of the port's own events, but the port's
+  events carry no `seen`, and `mApplicable` lacks the union model's
+  before-image clauses (`currentAxisPositions = before`, `cellValues =
+  before`, `rangeValues = before`, the purge roster), so the reconstructed
+  union-model events need not pass `applicable`. The recipe: strengthen
+  `mApplicable` with those clauses (they are decidable on `MState` through
+  `mPositions`, `mCellValues`, `mRangeValues`), then show `MintHonest M`
+  yields an `Issued` history with `seen := eventTimes` of the past. This
+  is the remaining S3b obligation.
+
+The remaining plan items are the converse above, a datatype-state GC
+protocol for the port (Section 12 argues the purge marker needs no state
+under D2; the token and register retirement question of Section 10 is the
+GC content), and the runtime measurement.
