@@ -273,9 +273,20 @@ def ObservationEquivalence : Prop :=
   ∀ events : Finset Event, (∀ e ∈ events, purge? e = none) →
     mview (canon events) = view events
 
-/-- Representation is preserved by an honest update. -/
+/-- A union-model history is honest when every causal summary lies within its
+timestamps, timestamps identify events, every event's metadata is valid against
+it, and every purged entry names a cell event at the covered coordinate. Every
+history reached by applicable insertions from the empty history is honest. -/
+structure HonestHistory (E : Finset Event) : Prop where
+  seen_sub : ∀ r ∈ E, r.seen ⊆ eventTimes E
+  ts_unique : ∀ a ∈ E, ∀ b ∈ E, a.1 = b.1 → a = b
+  valid : ∀ r ∈ E, metadataValidB E r = true
+  covered_valid : ∀ r ∈ E, ∀ m : Purge, r.action = .purge m → ∀ entry ∈ m.covered,
+    ∃ c ∈ E, ∃ w : CellUpdate, c.action = .cell w ∧ c.1 = entry.1 ∧ (w.row, w.column) = entry.2
+
+/-- Representation is preserved by an applicable update of an honest history. -/
 def UpdatePreservesCanon : Prop :=
-  ∀ (events : Finset Event) (e : Event), applicable e events →
+  ∀ (events : Finset Event) (e : Event), HonestHistory events → applicable e events →
     mupdate (canon events) (toM events e) = canon (insert e events)
 
 /-- Honesty of a replay context for the materialised signature: every named

@@ -455,7 +455,65 @@ With purges the reference is the D2 view; the union model's `view` masks by
 cutoff, so the statement is purge-free by design. Registered in
 `NegativeLedger.lean`, which builds.
 
-Remaining for S3b: `UpdatePreservesCanon` (honest update commutes with
-`canon`) and its merge counterpart on reference histories; together with
-observation equivalence they give the cross-model theorem for honest
-executions of the port.
+Remaining for S3b after this section: `UpdatePreservesCanon` (Section 17)
+and the fold over concurrent honest enumerations.
+
+## 17. S3b, second half: update preservation is machine-checked
+
+`Sal/MRDTs/Instances/AegisSheetMaterialisedUpdate.lean` (no `sorry`,
+standard axioms) proves `updatePreservesCanon : UpdatePreservesCanon`: for
+every honest history `E` and event `e` applicable at `E`,
+`mupdate (canon E) (toM E e) = canon (insert e E)`.
+
+The statement needed a premise. As first written, over an arbitrary event
+set, it is false: such a set may carry overwrites at foreign coordinates
+(the union model's overwrite clause is coordinate-blind, the materialised
+filter is per coordinate) or causal summaries outside its own timestamps.
+`HonestHistory E` (now in `AegisSheetMaterialised.lean`) names four
+invariants: every summary lies within `eventTimes E`; timestamps identify
+events; every event's metadata is valid against `E`; every purged entry
+names a cell event at its coordinate. `HonestHistory.insert` shows an
+applicable insertion preserves them, and `HonestHistory.empty` holds, so
+every history reached by applicable insertions is honest (`Reach.honest`).
+
+Per component:
+
+- known: `canonKnown (insert e E)` adds the axis key of `e`, and the
+  materialised step adds the same.
+- pos: a candidate of `e` is later than every existing candidate by the
+  clock, so it is installed; an existing entry is shadowed by `e` exactly
+  when `e` is a later candidate for its identifier.
+- cells and ranges: for every overwritten timestamp `metadataValidB` gives an
+  earlier event at the same coordinate or range identity, and timestamp
+  uniqueness turns the coordinate-blind clause into the per-coordinate
+  filter. A fresh event is overwritten by nothing (`not_*_fresh`). A purge
+  removes exactly the covered versions on both sides.
+- tokens: `mem_liveAxisTokens_insert`: a token is live after the insertion
+  iff it was live before and `e` does not remove its identifier, or `e`
+  keeps the identifier at its own timestamp. The purge marker's contribution
+  to the union model's keep set is absorbed since every covered entry names
+  a cell event already in `E` (`covered_of_applicable`, from
+  `purgeApplicable`; an applicable purge is never an undo effect,
+  `applicable_purge`). The removal's `kills`, computed as the live tokens at
+  the issuing state, kill exactly the tokens the union model's `seen`-based
+  removal kills, because every keep time lies in `eventTimes E = e.seen`.
+
+Corollary `Reach.materialised`: for every history reached by applicable
+insertions there is a sequence of erased operations (the history's events
+at their issuing states, in issue order) whose materialised fold from the
+initial state is `canon E`. With Section 16 this is H1 for sequential honest
+histories: the materialised replica replaying the erased operations of any
+union-model execution in issue order observes exactly the union model's
+purge-free view. Registered in `NegativeLedger.lean`, which builds.
+
+Remaining for H1 on concurrent executions: the fold over honest
+enumerations. For an enumeration of `E` in which each event's summary is a
+subset of the events before it (not necessarily equal to the prefix), and
+each removal's `kills` are the live tokens of the issuer's summary, the
+materialised fold equals `canon E`. The restricted Join (Section 14) gives
+that every reachable materialised state is such a fold, so this theorem
+closes the loop between the port's reachable states and the union model's
+event sets. The generalisation from `applicable` (summary = prefix) to
+summary ⊆ prefix is the only new ingredient; the token case is where it
+bites, since a token live at the prefix but outside the issuer's summary is
+killed by neither model.
