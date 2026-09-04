@@ -137,7 +137,7 @@ from the paper's policies:
 Done when: `lake build` passes, `#print axioms` shows only the compiler
 axioms `native_decide` adds, and the SPOTs are listed in the ledger.
 
-### S3. Lean port of the named-removal design (Join proved; Sections 13, 14)
+### S3. Lean port of the named-removal design (Join and replay adequacy proved; Sections 13 to 15)
 
 A second package beside the current one, not a replacement.
 
@@ -407,3 +407,33 @@ checking `kills = live tokens`, `overwrites = active versions`, `covered`
 entries present, and the D1 clause; then
 `ReplayAdequacyCertificate.ofJoinOn`; the sequential certificate through
 `canon`; `UpdatePreservesCanon`; `ObservationEquivalence`; `VerifiedMRDT`.
+
+## 15. S3: issuance and replay adequacy are machine-checked
+
+`Sal/MRDTs/Instances/AegisSheetMaterialisedCertificates.lean` (no `sorry`,
+axioms `propext`, `Classical.choice`, `Quot.sound`):
+
+- `mApplicable`, the port's issuance predicate at the issuer's materialised
+  state: a removal requires the identifier live and names exactly its live
+  tokens; a keep-shaped axis update carries no kills, an insert requires an
+  unknown identifier, a move a live one; a cell effect (direct or inverse,
+  hence the D1 clause) requires both axes live and names exactly the active
+  versions of the cell; a range edit names exactly the active versions of
+  the range; a purge covers only versions present at its coordinates.
+  `generation : Issuance M`.
+- `NR.fold_adds`: fold provenance, every entry of a fold's component was
+  added by an element of the enumeration, with no well-formedness premise.
+- `honest_of_mint : MintHonest M mApplicable C → Honest C.replayContext`:
+  each named token, version, or covered entry is present in the issuer's
+  state, hence added by an event of the causal past, hence `vis`-before the
+  namer, with the adder's timestamp equal to the named one.
+- `issuanceEstablishes : IssuanceEstablishes M generation Honest` and
+  `replayAdequacy : ReplayAdequacyCertificate M generation` by
+  `ReplayAdequacyCertificate.ofJoinOn m_joinOn issuanceEstablishes`.
+
+This is the framework's internal replay adequacy for the port: every version
+of every issued ordinary or virtual-merge-base execution has a replay
+witness. Registered in `NegativeLedger.lean`, which builds. The
+before-image clauses of the union model's guard are not yet part of
+`mApplicable`; they are needed by the sequential certificate, not by
+replay adequacy.
