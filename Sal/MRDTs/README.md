@@ -48,7 +48,10 @@ the materialised fold of an issue-ordered enumeration of its events, with equal
 observations when purge-free; and `converse`: every version of a certified
 execution of the port without purges and with honest undo is the canonical
 state of an issue-ordered union-model history with the same observation.
-`verified` packages the design with its own fold as sequential machine. The
+`verified` packages the design with its own fold as sequential machine, and
+`retirement` is its `StateGCCertificate`: the `known` entries of identifiers
+without tokens are collected with no evidence and no cross-branch condition,
+leaving live data and one register entry per identifier ever positioned. The
 purge semantics (plain deletion of covered versions) is specified by `canon`
 and validated by differential testing (`docs/aegissheet-materialised/`).
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`

@@ -335,8 +335,10 @@ anonymous long-form working papers under `docs/`.
   issuing pasts, the bridge `cross_model` from certified union-model executions,
   `verified : VerifiedMRDT`, and the converse `converse` (port executions
   without purges, with honest undo, are issue-ordered union-model histories)
-  are machine-checked. Remaining: the datatype-state GC protocol and the
-  metadata measurement against the event-set model.
+  and the evidence-free `StateGCCertificate` `retirement` are
+  machine-checked; the metadata measurement is the Python one in
+  `docs/aegissheet-materialised/campaign.md` (the JavaScript runtime has no
+  spreadsheet). Adoption in place of the union model is a separate decision.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.

@@ -550,6 +550,7 @@ Update preservation & \lean{AegisSheetMaterialisedUpdate.lean}: \lean{update\_pr
 Bridge to union-model executions & \lean{AegisSheetMaterialisedBridge.lean}: \lean{issued\_of\_version}, \lean{cross\_model} & machine-checked: every version of a certified execution of $D$ is enumerated by an issue-ordered history (timestamp order, causal pasts); the materialised fold of its erased operations is the canonical state and, purge-free, observes $D$'s view; same axioms \\
 Verification package & \lean{AegisSheetMaterialisedCertificates.lean}: \lean{mEffect}, \lean{mBefore}, \lean{spec}, \lean{verified} & machine-checked: \lean{VerifiedMRDT M} with the datatype's own fold as sequential machine, by \lean{ofTotal}; convergence and observation through \lean{mview}; the union-model content is the two bridges \\
 Converse bridge & \lean{AegisSheetMaterialisedConverse.lean}: \lean{fold\_eq\_of\_enums}, \lean{applicable\_of\_mApplicable}, \lean{converse} & machine-checked: every version of a certified execution of $M$ without purges and with \lean{UndoHonest} is the canonical state of an issue-ordered union-model history with the same observation; same axioms \\
+Retirement & \lean{AegisSheetMaterialisedRetirement.lean}: \lean{retire}, \lean{retirement}, \lean{retire\_keeps\_live} & machine-checked: \lean{StateGCCertificate M generation} with no evidence and no cross-branch condition; the \lean{known} entries of identifiers without tokens are collected, observations, issued updates, and merges are preserved; same axioms \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
 \end{tabular}
@@ -635,8 +636,11 @@ and its sequential specification masks exactly the covered versions.
 \item \lean{JoinTarget}, the replay-adequacy certificate,
 \lean{ObservationEquivalence}, \lean{UpdatePreservesCanon} with issuing
 pasts, \lean{Issued.fold}, \lean{cross\_model}, and \lean{verified} are
-proved, and so is \lean{converse}. Remaining: a datatype-state GC protocol
-for the port; keep the union model until the runtime measurement is in.
+proved, and so are \lean{converse} and \lean{retirement}. The residue of the
+port is exact: live tokens and versions and one register entry per
+identifier ever positioned. Adoption in place of the union model is a
+product decision, to be preceded by a measurement in the target runtime,
+which has no spreadsheet today.
 \item Extend the harness to merges between non-head versions and to undo of
 undo; report the generator's coverage.
 \end{enumerate}

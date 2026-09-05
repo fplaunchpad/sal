@@ -649,6 +649,45 @@ purges the two observations differ on concurrent sub-cutoff writes; the
 port's purge semantics is specified by `canon` and validated by the
 campaign (Section 12), not by an equivalence with the union model.
 
-Remaining: a datatype-state GC protocol for the port (Section 12 argues the
-purge marker needs no state under D2; the token and register retirement
-question of Section 10 is the GC content), and the runtime measurement.
+Section 20 closes the GC item.
+
+## 20. Datatype-state GC for the port: retirement needs no evidence
+
+What the port could collect. Removals take their tokens with them (named
+removal), a purge is an ordinary operation deleting covered versions under
+D2 (Section 12), and the position register is load-bearing (H2, Section 7
+and `RetentionSPOT.dead_position_load_bearing_for_ranges`). The only
+metadata left is the `known` entry of an identifier without tokens, which
+Section 10 validated can be dropped immediately.
+
+`AegisSheetMaterialisedRetirement.lean` (no `sorry`, standard axioms)
+mechanises this as `retirement : StateGCCertificate M generation`, the
+framework's datatype-state GC interface, with `Evidence := Unit`,
+`EvidenceValid := True`, and `Compatible := True`: retirement needs no
+acknowledgement, frontier, or cross-branch condition. The collector
+`retire` filters `known` to identifiers with a token
+(`retire_keeps_live`: an identifier stays known iff it is live). The
+representation relation `Represents c f` says the compact and full states
+agree on tokens, register, cells, and ranges; the compact `known` is a
+subset of the full one missing only identifiers without tokens; and every
+token of the full state names a known identifier (`TokensKnown`, an
+invariant of states reached under `generation`, since a write requires both
+axes live and an insert adds token and `known` together). Under it every
+observation agrees (`Represents.view_eq`), issued updates preserve it
+(`update_represents`, using the D1 clause that a write's axes are live so no
+dropped identifier gains a token), and three-way merges preserve it
+(`merge_represents`: a token of the merged state comes from a branch, whose
+compact state therefore knows its identifier). The union model's collector
+(`AegisSheetGC.lean`) needs the roster acknowledgements and the compact
+marker; the port needs neither, as Section 10 predicted.
+
+The residue is therefore exact: live tokens, live cell and range versions,
+and one register entry per identifier ever positioned. Whether the register
+can be bounded differently is a design question outside this arc.
+
+On the runtime measurement: the JavaScript runtime has no AegisSheet, so the
+measurement in this arc is the Python one (campaign, "Measured: state size
+growth"): stored items 122 to 10,076 for the reference against 30 to 192 for
+the materialised design over 23 to 176 operations, consistent with quadratic
+against linear. A production measurement belongs with a decision to adopt
+the port, which is outside this research arc.
