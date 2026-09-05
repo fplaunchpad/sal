@@ -45,10 +45,12 @@ equivalence with the union model's view on purge-free histories, preservation
 of `canon` by updates issued at any past of an honest history, and
 `cross_model`: every version of a certified execution of the union model is
 the materialised fold of an issue-ordered enumeration of its events, with equal
-observations when purge-free. `verified` packages the design with its own fold
-as sequential machine. The converse direction, from the port's own certified
-executions to the union model, is validated by differential testing
-(`docs/aegissheet-materialised/`) and not yet proved.
+observations when purge-free; and `converse`: every version of a certified
+execution of the port without purges and with honest undo is the canonical
+state of an issue-ordered union-model history with the same observation.
+`verified` packages the design with its own fold as sequential machine. The
+purge semantics (plain deletion of covered versions) is specified by `canon`
+and validated by differential testing (`docs/aegissheet-materialised/`).
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
 updates commute and make the proof-local replay order empty, while the public
 interaction order has a timestamp-sorted witness refining to a total

@@ -582,7 +582,73 @@ What is proved and what is not, for H1:
   yields an `Issued` history with `seen := eventTimes` of the past. This
   is the remaining S3b obligation.
 
-The remaining plan items are the converse above, a datatype-state GC
-protocol for the port (Section 12 argues the purge marker needs no state
-under D2; the token and register retirement question of Section 10 is the
-GC content), and the runtime measurement.
+Section 19 proves the converse.
+
+## 19. S3b, converse: the port's executions are union-model histories
+
+`AegisSheetMaterialisedConverse.lean` (no `sorry`, standard axioms) proves
+`converse`: for every version of a certified execution of the port `M`
+under `generation`, ordinary or virtual-merge-base, with no purge event and
+with honest undo, there is an issue-ordered union-model history whose
+erasure enumerates the version's events, whose canonical state is the
+version's state, and whose union-model view is the materialised observation.
+With `cross_model` (Section 18) this closes H1 in both directions on
+purge-free executions.
+
+Two changes to the port's issuance were needed, in
+`AegisSheetMaterialisedCertificates.lean`. `mApplicable` is now
+`mEffect ∧ mBefore`: the effect clauses as before (with `kills = ∅` for
+every non-removal), and for a direct command the union model's before-image
+guards read through the materialised observers: an insert has no
+before-image and a position after; a move or removal has
+`mPositions = optionFinset before` with a position before; a write has
+`mCellValues = before`; a range edit has `mRangeValues = optionFinset before`;
+a direct restore is refused. An undo carries no before-image clause: the
+union model checks an undo against its event set (`validUndo`), which the
+materialised state cannot decide. `UndoHonest C` is the corresponding
+premise on the execution: every undo names an operation of the issuer's
+causal past, by the same issuer, whose computed inverse it carries. The
+port's existing effect clause for writes also applies to inverse writes, so
+the port can undo a cell version only while it is the sole active version at
+its coordinate; this is stricter than the union model and is recorded as
+such.
+
+The proof. The replay witness of a version is not causal (the port's proof
+order has visibility edges only between non-commuting pairs), so sort the
+events by timestamp. `fold_eq_of_enums`: at an honest replay context two
+`loOn`-respecting enumerations of one closed supported set fold to the same
+state, componentwise from the Join file's `fold_canon`, `pos_fold`, and
+`known_fold` together with their set-level membership lemmas; so the sorted
+fold is the version's state. Then align the sorted list, prefix by prefix,
+with an issue-ordered history (`Aligned`): each port event is lifted at the
+lift of its mint-time past (`liftAt`, `pastList` from `MintHonest`). At each
+step the lifted past is issue-ordered (`Issued.restrict`, restriction to a
+predicate closed under pasts), its erasure is a sorted enumeration of the
+mint-time past, so by fold independence the state `MintHonest` evaluated the
+guard at is the canonical state of the lifted past, and `applicable_of_mApplicable`
+transfers the guard: freshness and clock from the timestamps, the metadata
+from active versions being cell and range events of the past, the direct
+guard from `mBefore` through `mLive_canon`, `mPositions_canon`,
+`mCellValues_canon`, `mRangeValues_canon`, and two new observer lemmas
+`activeCellTimesOf_canon`, `activeRangeTimesOf_canon`, and undo validity
+from `UndoHonest`. The erased lifted event is the original port event
+because its `kills` are the live tokens of the past (`liveTokensOf_canon`).
+
+What is proved for H1 now:
+
+- union model to port (`cross_model`): every version of every certified
+  union-model execution is matched by the materialised fold of an
+  issue-ordered enumeration, with equal observations when purge-free;
+- port to union model (`converse`): every version of every certified
+  port execution without purges, with honest undo, is the canonical state
+  of an issue-ordered union-model history with equal observations.
+
+Purges are outside both statements by design: the union model's view masks
+by cutoff and the port deletes covered versions (decision D2), so with
+purges the two observations differ on concurrent sub-cutoff writes; the
+port's purge semantics is specified by `canon` and validated by the
+campaign (Section 12), not by an equivalence with the union model.
+
+Remaining: a datatype-state GC protocol for the port (Section 12 argues the
+purge marker needs no state under D2; the token and register retirement
+question of Section 10 is the GC content), and the runtime measurement.

@@ -333,11 +333,10 @@ anonymous long-form working papers under `docs/`.
   executions), and retention counterexamples as SPOTs are done; the restricted
   `JoinOn`, replay adequacy, observation equivalence, update preservation at
   issuing pasts, the bridge `cross_model` from certified union-model executions,
-  and `verified : VerifiedMRDT` are machine-checked. Remaining: the converse
-  direction (strengthen `mApplicable` with the union model's before-image
-  clauses and derive issue-ordered histories from `MintHonest M`), the
-  datatype-state GC protocol, and the metadata measurement against the
-  event-set model.
+  `verified : VerifiedMRDT`, and the converse `converse` (port executions
+  without purges, with honest undo, are issue-ordered union-model histories)
+  are machine-checked. Remaining: the datatype-state GC protocol and the
+  metadata measurement against the event-set model.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.

@@ -60,8 +60,12 @@ def activeCellTimesOf (s : MState) (row column : StableId) : Finset Timestamp :=
 def activeRangeTimesOf (s : MState) (id : RangeId) : Finset Timestamp :=
   (s.ranges.filter fun v => v.1 = id).image fun v => v.2.1
 
-/-- The issuer's guard, by the effect of the operation. -/
-def mApplicable (e : MEvent) (s : MState) : Prop :=
+/-- The effect clauses of the issuer's guard, by the effect of the operation:
+a removal names exactly the live tokens of its identifier; every other
+operation names no token; a write names the active versions of its cell and
+requires both axes live (D1); a range edit names the active versions of its
+range; a purge covers versions present at its coordinates. -/
+def mEffect (e : MEvent) (s : MState) : Prop :=
   match MEvent.action e with
   | .axis u =>
       match u.after with
@@ -73,10 +77,39 @@ def mApplicable (e : MEvent) (s : MState) : Prop :=
             (u.kind = .move → mLive s u.axis u.id = true)
   | .cell u =>
       mLive s .row u.row = true ∧ mLive s .column u.column = true ∧
-        u.overwrites = activeCellTimesOf s u.row u.column
-  | .range u => u.overwrites = activeRangeTimesOf s u.id
+        u.overwrites = activeCellTimesOf s u.row u.column ∧ e.2.2.kills = ∅
+  | .range u => u.overwrites = activeRangeTimesOf s u.id ∧ e.2.2.kills = ∅
   | .purge m =>
-      ∀ entry ∈ m.covered, ∃ v ∈ s.cells, (v.1, v.2.1) = entry.2 ∧ v.2.2.1 = entry.1
+      (∀ entry ∈ m.covered, ∃ v ∈ s.cells, (v.1, v.2.1) = entry.2 ∧ v.2.2.1 = entry.1) ∧
+        e.2.2.kills = ∅
+
+/-- The before-image clauses of a direct command, decided at the materialised
+state: the union model's guards `currentAxisPositions`, `cellValues`, and
+`rangeValues` read through the materialised observers. -/
+def mBefore (s : MState) : Action → Prop
+  | .axis u =>
+      match u.kind with
+      | .insert => u.before = none ∧ u.after.isSome = true
+      | .move =>
+          mPositions s u.axis u.id = optionFinset u.before ∧ u.before.isSome = true ∧
+            u.after.isSome = true
+      | .remove =>
+          mPositions s u.axis u.id = optionFinset u.before ∧ u.before.isSome = true ∧
+            u.after = none
+      | .restore => False
+  | .cell u => mCellValues s u.row u.column = u.before
+  | .range u => mRangeValues s u.id = optionFinset u.before
+  | .purge _ => True
+
+/-- The issuer's guard: the effect clauses, and for a direct command its
+before-image clauses. An undo carries no before-image clause here; its
+validity against the issuer's log is the separate premise `UndoHonest` of the
+converse theorem. -/
+def mApplicable (e : MEvent) (s : MState) : Prop :=
+  mEffect e s ∧
+    match e.2.2.command with
+    | .direct a => mBefore s a
+    | .undo _ _ => True
 
 def generation : Issuance M where
   CanIssue := mApplicable
@@ -96,8 +129,8 @@ theorem honest_of_mint (h : MintHonest M mApplicable C) :
     intro e he u hu hafter t ht
     rw [Configuration.replayContext_events] at he
     obtain ⟨π, hperm, _, hg⟩ := h e he
-    have hg' : mApplicable e (applySeq M.toUpdateSig M.init π) := hg
-    unfold mApplicable at hg'
+    have hg' : mEffect e (applySeq M.toUpdateSig M.init π) := hg.1
+    unfold mEffect at hg'
     simp only [hu, hafter] at hg'
     obtain ⟨_, hkills⟩ := hg'
     rw [hkills] at ht
@@ -141,10 +174,10 @@ theorem honest_of_mint (h : MintHonest M mApplicable C) :
     intro e he u hu t ht
     rw [Configuration.replayContext_events] at he
     obtain ⟨π, hperm, _, hg⟩ := h e he
-    have hg' : mApplicable e (applySeq M.toUpdateSig M.init π) := hg
-    unfold mApplicable at hg'
+    have hg' : mEffect e (applySeq M.toUpdateSig M.init π) := hg.1
+    unfold mEffect at hg'
     rw [hu] at hg'
-    obtain ⟨_, _, hov⟩ := hg'
+    obtain ⟨_, _, hov, _⟩ := hg'
     rw [hov] at ht
     simp only [activeCellTimesOf, Finset.mem_image, Finset.mem_filter] at ht
     obtain ⟨v, ⟨hvs, hv1, hv2⟩, hvt⟩ := ht
@@ -170,10 +203,10 @@ theorem honest_of_mint (h : MintHonest M mApplicable C) :
     intro e he u hu t ht
     rw [Configuration.replayContext_events] at he
     obtain ⟨π, hperm, _, hg⟩ := h e he
-    have hg' : mApplicable e (applySeq M.toUpdateSig M.init π) := hg
-    unfold mApplicable at hg'
+    have hg' : mEffect e (applySeq M.toUpdateSig M.init π) := hg.1
+    unfold mEffect at hg'
     rw [hu] at hg'
-    rw [hg'] at ht
+    rw [hg'.1] at ht
     simp only [activeRangeTimesOf, Finset.mem_image, Finset.mem_filter] at ht
     obtain ⟨v, ⟨hvs, hv1⟩, hvt⟩ := ht
     obtain ⟨k, hkπ, hvk⟩ :=
@@ -196,10 +229,10 @@ theorem honest_of_mint (h : MintHonest M mApplicable C) :
     intro e he m hm entry hentry
     rw [Configuration.replayContext_events] at he
     obtain ⟨π, hperm, _, hg⟩ := h e he
-    have hg' : mApplicable e (applySeq M.toUpdateSig M.init π) := hg
-    unfold mApplicable at hg'
+    have hg' : mEffect e (applySeq M.toUpdateSig M.init π) := hg.1
+    unfold mEffect at hg'
     rw [hm] at hg'
-    obtain ⟨v, hvs, hvc, hvt⟩ := hg' entry hentry
+    obtain ⟨v, hvs, hvc, hvt⟩ := hg'.1 entry hentry
     obtain ⟨k, hkπ, hvk⟩ :=
       cellNR.fold_adds MState.cells cells_init cells_step π v hvs
     have hkpast : k ∈ C.events ∧ C.vis k e := (hperm.2 k).mp hkπ
