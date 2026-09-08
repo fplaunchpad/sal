@@ -563,7 +563,14 @@ premises are exactly what an arbitrary-state algebraic account loses.
 
 Recall the proof-local replay policy $\mathsf{rc}$ fixed above. Write
 $e\mathrel{\#}e'$ for distinct timestamps and
-$\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. The three
+$\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. For any relation
+$R$, write $R^+(a,b)$ when a nonempty finite $R$-path leads from $a$ to $b$,
+and write
+\[
+ \mathsf{Acyclic}(R)\Longleftrightarrow
+ \forall a.\;\neg R^+(a,a).
+\]
+The three
 \lean{ReplayLaws} obligations are:
 \begin{align*}
  e_1\#e_2\land\mathsf{rep}(e_1)\ne\mathsf{rep}(e_2)
@@ -572,10 +579,11 @@ $\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. The three
    \mathsf{rc}(e_1,e_2)=\mathsf{first}\lor
    \mathsf{rc}(e_2,e_1)=\mathsf{first}\bigr),
  \tag*{(U1)}\\
- e_1\#e_2\land e_2\#e_3
- &\Rightarrow\neg\bigl(
-   \mathsf{rc}(e_1,e_2)=\mathsf{first}\land
-   \mathsf{rc}(e_2,e_3)=\mathsf{first}\bigr),
+ \mathsf{RcEdge}(e_1,e_2)
+ &\Longleftrightarrow e_1\#e_2\land
+   \mathsf{rc}(e_1,e_2)=\mathsf{first},
+ \nonumber\\[-1mm]
+ \mathsf{Acyclic}(\mathsf{RcEdge}),
  \tag*{(U2)}\\
  \mathsf{rc}(e,e')=\mathsf{first}\land
  \neg(e'\rightleftarrows e'')
@@ -585,7 +593,9 @@ $\mathsf{rep}(e)\ne\mathsf{rep}(e')$ for different issuers. The three
  &=\mathsf{do}(\mathsf{fold}(\mathsf{do}(\mathsf{do}(s,e),e'),\pi),e'').
  \tag*{(U3)}
 \end{align*}
-Equation~(U3) also assumes pairwise-distinct $e,e',e''$. These obligations
+(U2) permits arbitrarily long replay-order chains and excludes only cycles.
+Equation~(U3)
+also assumes pairwise-distinct $e,e',e''$. These obligations
 belong to this reusable proof constructor, not to \lean{MRDTSig} or the public
 client interface. \lean{JoinCoreLaws} packages (U1)--(U3) and branch symmetry
 \[
@@ -596,8 +606,8 @@ client interface. \lean{JoinCoreLaws} packages (U1)--(U3) and branch symmetry
 To state the remaining four obligations, define
 \[
  \downarrow_C e=\{x\mid x=e\lor
-   \mathsf{TransGen}(\lambda a\,b.\ a\vis b\land
-       \neg(a\rightleftarrows b))\ x\ e\}
+   \bigl(\lambda a\,b.\ a\vis b\land
+       \neg(a\rightleftarrows b)\bigr)^+(x,e)\}
 \]
 and let $\mathsf{Adm}(C,E_1,E_2,e)$ abbreviate:
 \begin{enumerate}
@@ -752,43 +762,46 @@ The legality predicate sees only the abstract event history. It cannot inspect
 the implementation state. A total datatype sets it to true.
 \end{definition}
 
-\begin{definition}[semantic interaction]
-An \lean{InteractionSpec D} classifies each ordered event pair as
-\emph{independent} or as a \emph{conflict}. A conflict carries one concurrent
-verdict: first-before-second, second-before-first, or unconstrained. Reversing
-the event pair must flip the verdict. This policy refers to abstract events,
-not arbitrary representation states.
+\begin{definition}[the sole $rc$ order]
+A verified datatype supplies one \lean{ReplayPolicy}, called $rc$. For a
+version event set $E$, \lean{loOn} retains a visibility edge exactly when
+$rc$ classifies that pair as conflicting. It adds an edge between concurrent
+events when $rc$ returns first-before-second, subject to the set-relative
+conflicting-absorber clause. Thus $\mathsf{Either}$ identifies a nonconflicting
+pair and contributes no edge; under the unconstrained all-$\mathsf{Either}$
+policy, \lean{loOn} is empty.
 \end{definition}
 
-For a version event set $E$, \lean{interactionLoOn} orders every visible
-conflict by visibility. It orders a concurrent conflict only when the policy
-selects first-before-second and the second event has no later conflicting
-absorber inside $E$. This public order is defined independently of the replay
-relation used in Section~\ref{sec:convergence}. For example, an add-wins
-observed-remove set orders a concurrent remove before an add, while visibility
-orders an observed add before its later remove. One interaction policy
-therefore explains both add-wins concurrency and ordinary observed removal.
+The sufficient algebraic replay route requires $rc$ to be acyclic: no
+nonempty \lean{Relation.TransGen} path returns to its starting event. Useful
+chains are allowed. Its coverage condition says that concretely noncommuting
+pairs must be ordered, not that ordered pairs must fail to commute. Its
+conditional-swap law uses the semantic $rc$ absorber. These are sufficient
+proof obligations, not the meaning of $rc$ or mandatory fields of the public
+certificate. All-commuting implementations support every acyclic $rc$ under
+these laws.
 
-The LWW register exposes the separation directly. Its concrete state stores
-the greatest timestamped write, and both update and merge compute a maximum.
-Concrete updates therefore commute, so the default proof-local replay relation
-has no edges. The public interaction policy still orders unequal writes by
-their timestamped keys. Sorting any internal replay witness by that key cannot
-change the concrete fold, and causal timestamp monotonicity ensures that the
-sorted list respects visible conflicts. The resulting list is an acyclic
-timestamp order whose ordinary overwrite-register execution returns the value
-stored by the MRDT.
+LWW separates concrete and abstract commutation. Its concrete state stores the greatest
+timestamped write, and both update and merge compute a maximum, so its updates
+commute. Ordinary overwrite steps do not commute, and its sole public $rc$
+orders unequal writes by their timestamped keys. Sorting a witness by that key preserves the concrete fold,
+respects both visibility and the concurrent $rc$ edges, and yields an ordinary
+overwrite-register execution with the stored value. Concretely,
+\lean{rc\_order\_acyclic} derives acyclicity from strict key increase, while
+\lean{timestamp\_chain} confirms that a two-edge chain is valid. The same
+timestamp policy is used by its concrete replay laws, Join theorem, and
+sequential certificate; there is no auxiliary empty policy for LWW.
 
 \begin{definition}[specification linearizability]
-Given interaction policy $A$, sequential specification $\mathit{Spec}$, and
+Given replay policy $P$, sequential specification $\mathit{Spec}$, and
 representation relation
 $\mathsf{Rel}\subseteq\state\times\mathit{Spec}.\mathsf{State}$,
-$\mathsf{SpecLin}(D,A,\mathit{Spec},\mathsf{Rel},C)$ holds when every
+$\mathsf{SpecLin}(D,P,\mathit{Spec},\mathsf{Rel},C)$ holds when every
 $S(v)=(s,E)$ admits a list $\pi$ such that
 \[
 \begin{aligned}
  &\mathsf{perm}(\pi,E),\qquad
- \mathsf{respects}(\pi,\mathsf{interactionLoOn}(A,C,E)),\\
+ \mathsf{respects}(\pi,\mathsf{loOn}(P,C,E)),\\
  &\mathit{Spec}.\mathsf{Legal}(\pi),\qquad
  \mathsf{Rel}(s,\mathit{Spec}.\mathsf{run}(\pi)),\\
  &\forall q.\quad
@@ -810,7 +823,7 @@ these extra clauses automatically.
 An implementer supplies:
 \begin{itemize}
 \item an issuance relation $I$;
-\item an interaction policy $A$;
+\item one replay policy $P$, exposed as $rc$;
 \item a convergence certificate proving internal replay linearizability for
 every $I$-certified virtual-merge-base execution;
 \item an independent sequential specification $\mathit{Spec}$ and representation
@@ -834,7 +847,7 @@ Layer & Framework supplies & Datatype supplies \\
 Raw execution & version DAG, apply, merge, query & state, update, merge, query \\
 Replay proof & canonical-state induction, virtual bases & merge-preservation proof \\
 Client protocol & certified transition schema & issuance predicate \\
-Client meaning & witness theorem schema & interaction and sequential proofs \\
+Client meaning & witness theorem schema & $rc$ and sequential proofs \\
 Commit GC & distributed protocol and refinement & --- \\
 State GC & trace-erasure theorem & physical collection protocol \\
 \bottomrule
@@ -1247,20 +1260,20 @@ tombstones~\cite{roh2011rga}. EmbedRGA assigns immutable coordinates at
 creation; SidedEmbedRGA adds a left/right band used by its ordering policy.
 Peritext builds rich text from an underlying character sequence and formatting
 spans whose endpoints refer to stable character boundaries~\cite{litt2022peritext}.
-These packages make freshness and anchor visibility explicit in their issuance
-predicates. The observed-remove set instead illustrates a directional
-interaction policy. Its public sequential state is an ordinary finite set:
-add inserts the named element and remove erases it, while observed-tag payloads
-remain implementation metadata. Honest issuance is load-bearing in the proof
-that the tagged representation refines this machine. The bounded counter uses
-issuance to enforce available rights.
+These packages make freshness and anchor liveness explicit in their issuance
+predicates. The observed-remove set has an ordinary finite-set specification:
+its $rc$ orders a same-element remove before an add and leaves same-kind and
+cross-element operations as $\mathsf{Either}$. The base tombstone RGA has an
+ordinary-list specification; it retains tombstones internally for concurrent
+integration but rejects minting after an observed anchor deletion. The bounded
+counter uses issuance to enforce available rights.
 
 The LWW package uses unconditional issuance. Its state is either unset or a
 timestamp--replica--value tuple; update and ternary merge take the tuple
 maximum. Its independent sequential specification is a total overwrite
 register over optional values. The checked witness construction sorts every
-version's writes by the tuple order, proves that this list respects the public
-interaction relation, and uses commutativity to preserve the stored maximum.
+version's writes by the tuple order, proves that this list respects
+$\mathsf{loOn}$, and uses commutativity to preserve the stored maximum.
 
 TreeMove represents a replicated tree whose nodes have stable identities and
 whose conflict resolution prevents concurrent moves from creating cycles; it
@@ -1289,9 +1302,21 @@ counterexamples to the merge kernel. The reproducible audit and its revision
 boundary are in \code{docs/aegissheet-scala-audit.md}.
 
 The separate negative ledger checks intentionally refuted or incomplete
-claims, including MVR/single-register and queue/FIFO counterexamples.
-FugueMax's coordinate lemmas justify the ordering policy used by the verified
-SidedEmbedRGA package but do not create a standalone production datatype. The
+claims, including the MVR/single-register counterexample. MVR now has a public
+finite-live-set implementation and specification, with a value-set query.
+Writes discard their observed predecessors; ancestor-relative merge retains
+concurrent values without a grow-only write or overwrite log. Its combined theorem
+proves that precisely the causally maximal writes survive, and linear mint
+histories expose the last written value. The historical Queue
+control compares particular folds with unconditional pops, not every permitted
+linearization. Queue now has a public certificate for head-only FIFO replay
+with concurrent duplicate targets, timestamp-ordered surviving contents, and
+ordinary FIFO behavior on linear mint histories.
+FugueMax has a separate public package for its exact positional issuer and
+enriched implementation. Its abstract state is a plain list; immutable birth
+metadata remains implementation-side. One certified-execution witness proves
+list correctness and maximal non-interleaving, including virtual merges,
+without a separate generation-model reachability premise. The
 release gate rejects \lean{sorry} and \lean{sorryAx}, requires every
 production entry to inhabit \lean{PackagedMRDT}, and checks the distributed
 and composed GC capstones.
@@ -1303,8 +1328,8 @@ synchronous coordination by constraining state joins or delivered operations
 \cite{shapiro2011crdt}. Replication-aware linearizability strengthens a bare
 convergence statement by asking for a sequential explanation of each replica
 state~\cite{wang2019ralin}. Our client theorem uses the same broad explanatory
-goal but separates the proof's replay order from the interaction order,
-legality, abstract state, and observations that define the public datatype.
+goal while making causality, the single $rc$ policy, legality, abstract state,
+and observations explicit in the public datatype theorem.
 
 MRDTs adapt replicated datatypes to branch-and-merge stores with ancestor-aware
 three-way merge~\cite{kaki2019mrdt}. Peepul verifies efficient MRDTs in F* using
@@ -1357,7 +1382,7 @@ ancestor and two branches.
 
 That replay theorem is deliberately not the final client claim. A verified
 package must also explain where operations could be created, which concurrent
-interactions matter, which sequential histories are legal, how representation
+directions $rc$ selects, which sequential histories are legal, how representation
 states correspond to abstract states, and why queries agree. The same
 separation clarifies reclamation: commit-history collection preserves the DAG
 answers required by asynchronous execution, while datatype-state collection

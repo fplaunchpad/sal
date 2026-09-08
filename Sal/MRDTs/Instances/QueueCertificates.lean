@@ -1,6 +1,7 @@
 import Sal.MRDTs.Instances.QueueSequential
 
-/-! Production certificates for the mergeable queue over the plain MRDT API. -/
+/-! Replay adequacy and linear-history refinement for the mergeable queue.
+These do not yet constitute its public concurrent FIFO certificate. -/
 
 namespace Sal.MRDTs.Instances.Queue
 
@@ -14,6 +15,10 @@ def QHonest (C : Configuration Q) : Prop :=
 theorem qHonest_core {C : Configuration Q} (h : QHonest C) :
     QHonestCore C.replayContext := by
   exact h
+
+theorem qGood_core {C : Configuration Q} (h : QHonest C) :
+    QGoodCore C.replayContext :=
+  ⟨qHonest_core h, C.causal_mono⟩
 
 /-- Enqueue stamps are fresh; dequeue records the head observed by its issuer. -/
 def qApplicable (o : Op QOp) (s : QState) : Prop :=
@@ -87,7 +92,12 @@ def generation : Issuance Q where
 def replayAdequacy : ReplayAdequacyCertificate Q generation :=
   ReplayAdequacyCertificate.ofJoinOn
     (fun _ hGood => q_join_at hGood)
-    (fun C hMint => qHonest_core (qHonest_of_mint C hMint))
+    (fun C hMint => qGood_core (qHonest_of_mint C hMint))
+
+theorem queue_replay_witness {C : Configuration Q}
+    (h : MintCertifiedReach Q generation C) :
+    @HasReplayWitness Q rc C :=
+  replayAdequacy.sound h
 
 def spec : SequentialMachine (Op QOp) where
   State := List ℕ
@@ -127,6 +137,7 @@ def sequential : SequentialRefinement Q spec where
 
 noncomputable def replayAdequate : ReplayAdequateMRDT Q where
   issuance := generation
+  rc := rc
   replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential
@@ -137,6 +148,7 @@ example : qApplicable (0, 0, QOp.enq 7) [] := by simp [qApplicable, qTags]
 example : ¬ qApplicable (1, 0, QOp.deq 7) [] := by simp [qApplicable]
 
 #print axioms q_join_at
+#print axioms queue_replay_witness
 #print axioms queue_seq_sound
 #print axioms replayAdequate
 

@@ -423,9 +423,19 @@ theorem HistoricalUnit_join : Join HistoricalUnit := by
       rw [List.pairwise_cons]
       refine ⟨?_, ih⟩
       intro y _ hlo
-      rcases hlo with ⟨_, hnc⟩ | ⟨_, _, hrc, _⟩
-      · exact hnc (fun _ => rfl)
-      · rw [HistoricalUnit_replayOrder] at hrc
+      rcases hlo with ⟨_, hconf⟩ | ⟨_, _, hrc, _⟩
+      · rcases hconf with hrc | hrc
+        · change HistoricalUnit.toUpdateSig.replayOrder y x =
+              RcRes.Fst_then_snd at hrc
+          rw [HistoricalUnit_replayOrder] at hrc
+          contradiction
+        · change HistoricalUnit.toUpdateSig.replayOrder x y =
+              RcRes.Fst_then_snd at hrc
+          rw [HistoricalUnit_replayOrder] at hrc
+          contradiction
+      · change HistoricalUnit.toUpdateSig.replayOrder y x =
+            RcRes.Fst_then_snd at hrc
+        rw [HistoricalUnit_replayOrder] at hrc
         contradiction
   · have unit_state : ∀ s : HistoricalUnit.State,
         s = HistoricalUnit.init := by
@@ -769,11 +779,13 @@ theorem HistoricalVCs24_not_imply_join :
     ¬ (∀ (D : MRDTSig) (P : ReplayPolicy D.toUpdateSig),
       @HistoricalVCs24 D P → Join D) := by
   intro implication
-  have hCurrent := implication HistoricalGap
-    instReplayPolicyToUpdateSigHistoricalGap HistoricalGap_historicalVCs24
+  have hCurrent : @Join HistoricalGap
+      instReplayPolicyToUpdateSigHistoricalGap :=
+    implication HistoricalGap
+      instReplayPolicyToUpdateSigHistoricalGap HistoricalGap_historicalVCs24
   change JoinWithPolicy HistoricalGap
-    (ReplayPolicy.default HistoricalGap.toUpdateSig) at hCurrent
+    instReplayPolicyToUpdateSigHistoricalGap at hCurrent
   exact HistoricalGap_not_joinWithPolicy
-    (ReplayPolicy.default HistoricalGap.toUpdateSig) hCurrent
+    instReplayPolicyToUpdateSigHistoricalGap hCurrent
 
 end Sal.MRDTs

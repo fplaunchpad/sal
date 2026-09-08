@@ -1,11 +1,15 @@
 import Sal.MRDTs.Metatheory.Correctness
 
 /-!
-# Multi-Valued Register: flat VC discharge and the conditioned capstone
+# Historical grow-only MVR: implementation and algebraic reference
 
-The production Multi-Valued Register as a `MRDTSig`, its
-replay-convergence VC discharge, and the conditioned capstone over the generic
-framework.
+Production uses `MVRLiveContract.verified`, whose concrete state contains only
+live tagged writes. This module retains the operation type, historical
+algebraic model, and negative single-register control used by the proof suite.
+The raw `MRDTSig` exposes its live value set. Its sole `rc` records observed
+supersession. `MVRContract` supplies the finite-live-set specification and
+complete public certificate; the single-register counterexample below rules
+out only the old concurrent target, not the ordinary sequential special case.
 -/
 
 set_option maxHeartbeats 1000000
@@ -35,7 +39,7 @@ inductive MVROp : Type where
   | write : ℕ → List ℕ → MVROp
 deriving DecidableEq
 
-/-- Production `do_`: record the tagged write, accumulate the overwritten log. -/
+/-- Record the tagged write and accumulate the overwritten log. -/
 def mvrUpdate (s : ((ℕ × ℕ) → Bool) × (ℕ → Bool)) (o : Op MVROp) :
     ((ℕ × ℕ) → Bool) × (ℕ → Bool) :=
   match o.2.2 with
@@ -59,13 +63,37 @@ noncomputable def MVR : MRDTSig where
   AppOp := MVROp
   dec_op := inferInstance
   Query := Unit
-  Value := ((ℕ × ℕ) → Bool) × (ℕ → Bool)
+  Value := Set ℕ
   update := mvrUpdate
-  query := fun s _ => s
+  query := fun s _ v => ∃ n, s.1 (n, v) = true ∧ s.2 n = false
   merge := mvrMerge
 
-theorem MVR_rc_either (o₁ o₂ : Op MVROp) :
-    MVR.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+def overwrites (o : Op MVROp) : List ℕ :=
+  match o.2.2 with | .write _ O => O
+
+/-- Observed supersession, not a timestamp winner among concurrent writes.
+The timestamp guard excludes malformed cyclic payloads outside executions. -/
+def rc : ReplayPolicy MVR.toUpdateSig where
+  order a b := if a.1 < b.1 ∧ a.1 ∈ overwrites b then .Fst_then_snd
+    else if b.1 < a.1 ∧ b.1 ∈ overwrites a then .Snd_then_fst else .Either
+
+attribute [local instance] rc
+
+theorem rc_before_iff (a b : Op MVROp) :
+    MVR.toUpdateSig.rc a b ↔ a.1 < b.1 ∧ a.1 ∈ overwrites b := by
+  change (if a.1 < b.1 ∧ a.1 ∈ overwrites b then RcRes.Fst_then_snd
+    else if b.1 < a.1 ∧ b.1 ∈ overwrites a then .Snd_then_fst else .Either) =
+      .Fst_then_snd ↔ _
+  split <;> simp_all
+  split <;> simp_all
+
+theorem rc_acyclic : RcAcyclic MVR.toUpdateSig := by
+  intro a h
+  have hlt : Relation.TransGen (fun a b : Op MVROp => a.1 < b.1) a a :=
+    h.lift id (fun a b h => ((rc_before_iff a b).mp h).1)
+  rw [Relation.transGen_eq_self (show Transitive
+    (fun a b : Op MVROp => a.1 < b.1) from fun _ _ _ => lt_trans)] at hlt
+  exact (Nat.lt_irrefl _) hlt
 
 /-! ### Projection unfolds and the update layer -/
 
@@ -96,20 +124,7 @@ theorem MVR_all_comm (o₁ o₂ : Op MVROp) : MVR.toUpdateSig.commutes o₁ o₂
           cases hd₂ : decide (n ∈ O₂) <;> rfl
 
 theorem replayLaws : ReplayLaws MVR.toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro o₁ o₂ _ _
-    constructor
-    · intro h
-      exact absurd (MVR_all_comm o₁ o₂) h
-    · rintro (h | h) <;>
-        (rw [MVR_rc_either] at h; exact RcRes.noConfusion h)
-  · intro o₁ o₂ o₃ _ _
-    rintro ⟨h, _⟩
-    rw [MVR_rc_either] at h
-    exact RcRes.noConfusion h
-  · intro s e e' e'' π _ _ _ h_rc _
-    rw [MVR_rc_either] at h_rc
-    exact RcRes.noConfusion h_rc
+  exact ReplayLaws.of_all_comm MVR_all_comm rc_acyclic
 
 theorem MVR_merge_comm (l a b : MVR.State) :
     MVR.merge l a b = MVR.merge l b a := by
@@ -459,7 +474,7 @@ theorem MVR_canonicalJoinLaws : CanonicalJoinLaws MVR where
   delta := MVR_feasibleDeltaLaws
   causal_delta := MVR_causalDeltaLaw
 
-private theorem mvrJoin : Join MVR := MVR_canonicalJoinLaws.join
+theorem mvrJoin : Join MVR := MVR_canonicalJoinLaws.join
 
 def generation : Issuance MVR where
   CanIssue := mvrApplicable
@@ -491,6 +506,7 @@ def sequential : SequentialRefinement MVR spec where
 
 noncomputable def replayAdequate : ReplayAdequateMRDT MVR where
   issuance := generation
+  rc := rc
   replayAdequacy := replayAdequacy
   Machine := spec
   sequential := sequential

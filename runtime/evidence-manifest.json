@@ -4,6 +4,7 @@
   "production": [
     {
       "id": "rga",
+      "publicContract": "rga",
       "source": "src/datatypes/rga.js",
       "exports": ["rga", "RGA"],
       "verifiedMRDT": "Sal.MRDTs.Instances.RGA.verified",
@@ -11,6 +12,7 @@
     },
     {
       "id": "embed-rga",
+      "publicContract": "embed-rga",
       "source": "src/datatypes/embedRGA.js",
       "exports": ["embedRGA"],
       "verifiedMRDT": "Sal.MRDTs.Instances.ProductionRGA.embed",
@@ -18,20 +20,15 @@
     },
     {
       "id": "sided-embed-rga",
+      "publicContract": "sided-embed-rga",
       "source": "src/datatypes/liveGapSidedEmbedRGA.js",
       "exports": ["liveGapSidedEmbedRGA"],
       "verifiedMRDT": "Sal.MRDTs.Instances.ProductionRGA.sided",
       "correspondenceStatus": "differential-tested"
     },
     {
-      "id": "or-set",
-      "source": "src/datatypes/orset.js",
-      "exports": ["orset"],
-      "verifiedMRDT": "Sal.MRDTs.Instances.ORSet.verified",
-      "correspondenceStatus": "differential-tested"
-    },
-    {
       "id": "peritext",
+      "publicContract": "sided-peritext-rich-core",
       "source": "src/datatypes/peritext.js",
       "exports": ["peritext", "peritextSidedEmbedRGA", "PeritextSidedEmbedRGA"],
       "verifiedMRDT": "Sal.MRDTs.Instances.SidedPeritext.richVerified",
@@ -39,6 +36,11 @@
     }
   ],
   "comparisonOnly": [
+    {
+      "id": "tagged-or-set",
+      "source": "src/datatypes/orset.js",
+      "reason": "Retired tombstone implementation retained only for historical tests and comparisons; the efficient Lean OR-set has no released JavaScript counterpart."
+    },
     {
       "id": "shared-embed-rga",
       "source": "src/datatypes/sharedEmbedRGA.js",

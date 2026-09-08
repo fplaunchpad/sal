@@ -671,7 +671,7 @@ theorem applicable_seen {events : Finset Event} {e : Event}
   rcases guard with ⟨guard, _⟩
   unfold applicableB at guard
   simp only [Bool.and_eq_true, decide_eq_true_eq] at guard
-  exact guard.1.1.2
+  exact guard.1.1
 
 theorem clockAfter_of_fresh_and_seen {events : Finset Event} {e : Event}
     (clock : ∀ old ∈ events, old.1 < e.1) :
@@ -2451,6 +2451,24 @@ theorem canonical_chronological {ops : List Event}
     · exact same
   exact lt_of_le_of_ne oldLE timeNe
 
+theorem chronological_respects_vis (C : Configuration D)
+    {events : List Event} (h : Chronological events) :
+    respects events C.vis := by
+  unfold respects
+  induction events with
+  | nil => exact List.Pairwise.nil
+  | cons first rest ih =>
+      rw [List.pairwise_cons]
+      constructor
+      · intro later hlater hvis
+        obtain ⟨pre, post, hrest⟩ := List.mem_iff_append.mp hlater
+        have hforward : first.1 < later.1 :=
+          h (first :: pre) later post (by simp [hrest]) first (by simp)
+        exact Nat.lt_asymm hforward (C.causal_mono hvis)
+      · apply ih
+        intro pre event post split old hold
+        exact h (first :: pre) event post (by simp [split]) old (by simp [hold])
+
 theorem mem_prefix_of_chronological {ops pre post : List Event}
     {e old : Event} (chronological : Chronological ops)
     (split : ops = pre ++ e :: post) (member : old ∈ ops)
@@ -2583,6 +2601,7 @@ noncomputable def inplaceSequential : SequentialRefinement D spec where
 
 noncomputable def inplaceReplayAdequate : ReplayAdequateMRDT D where
   issuance := AegisSheet.generation
+  rc := ReplayPolicy.unconstrained D.toUpdateSig
   replayAdequacy := AegisSheet.replayAdequacy
   Machine := spec
   sequential := inplaceSequential
@@ -2596,9 +2615,8 @@ theorem inplace_sequentially_correct (ops : List Event)
 
 theorem rawLo_false (C : Configuration D) (a b : Event) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  rintro (⟨_, noncommuting⟩ | ⟨_, _, ordered, _⟩)
-  · exact noncommuting (AegisSheet.all_comm a b)
-  · exact RcRes.noConfusion ordered
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem respects_rawLo (C : Configuration D) (ops : List Event) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -2614,7 +2632,7 @@ materializes exactly the replicated state, and both sides answer the same
 queries. -/
 noncomputable def sequentialCorrectness :
     SequentialCorrectnessCertificate D AegisSheet.generation
-      (InteractionSpec.raw D) clientSpec materializedStateRel where
+      (ReplayPolicy.unconstrained D.toUpdateSig) clientSpec materializedStateRel where
   sound C exec replay := by
     intro v s E hver
     obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
@@ -2633,8 +2651,15 @@ noncomputable def sequentialCorrectness :
         (clientSpec.run (canonical ops)) := by
       rw [← canonicalState]
       exact refined
-    refine ⟨canonical ops, canonicalPerm,
-      respects_interactionLoOn_raw_of_lo (respects_rawLo C (canonical ops)),
+    have hlo : respects (canonical ops)
+        (@loOn D.toUpdateSig (ReplayPolicy.unconstrained D.toUpdateSig)
+          C.replayContext E) := by
+      unfold respects
+      apply List.pairwise_of_forall
+      intro a b
+      simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+        ReplayPolicy.unconstrained]
+    refine ⟨canonical ops, canonicalPerm, hlo,
       legal, refinedAtState, ?_⟩
     intro query
     cases query
@@ -2796,7 +2821,7 @@ version and relates that history to the independent incremental spreadsheet
 machine. -/
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
-  interaction := InteractionSpec.raw D
+  rc := ReplayPolicy.unconstrained D.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := Sequential.clientSpec
   Rel := Sequential.materializedStateRel
@@ -2804,13 +2829,13 @@ noncomputable def verified : VerifiedMRDT D where
 
 theorem spec_linearizable {C : Configuration D}
     (h : MintCertifiedReach D generation C) :
-    IsSpecLinearizable D (InteractionSpec.raw D)
+    IsSpecLinearizable D (ReplayPolicy.unconstrained D.toUpdateSig)
       Sequential.clientSpec Sequential.materializedStateRel C :=
   verified.correct h
 
 theorem spec_linearizableV {C : Configuration D}
     (h : MintCertifiedReachV D (canonicalVirtualMergeBase D) generation C) :
-    IsSpecLinearizable D (InteractionSpec.raw D)
+    IsSpecLinearizable D (ReplayPolicy.unconstrained D.toUpdateSig)
       Sequential.clientSpec Sequential.materializedStateRel C :=
   verified.correctV h
 

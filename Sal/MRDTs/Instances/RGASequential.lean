@@ -13,10 +13,11 @@ Deletion physically removes the identifier and is idempotent.
 namespace Sal.MRDTs.Instances.RGA
 
 open Sal.MRDTs.Foundation
+open Classical
 
 def listStep (xs : List ℕ) (e : Op RGAOp) : List ℕ :=
   match e.2.2 with
-  | .addAfter anchor id => insertAfter anchor id xs
+  | .addAfter anchor => insertAfter anchor e.1 xs
   | .remove id => xs.filter (· ≠ id)
 
 /-- Legal RGA histories are stated only over abstract events.  Inserted IDs
@@ -27,13 +28,12 @@ def listLegal (ops : List (Op RGAOp)) : Prop :=
   (∀ a ∈ ops, ∀ b ∈ ops, a.1 = b.1 → a = b) ∧
   ∀ pre e post, ops = pre ++ e :: post →
     match e.2.2 with
-    | .addAfter anchor id =>
-        id = e.1 ∧ (anchor = 0 ∨
-          ∃ ts replica parent,
-            (ts, replica, .addAfter parent anchor) ∈ pre)
+    | .addAfter anchor =>
+        anchor = 0 ∨ ∃ replica parent,
+            (anchor, replica, .addAfter parent) ∈ pre
     | .remove id =>
-        ∃ ts replica anchor,
-          (ts, replica, .addAfter anchor id) ∈ pre
+        ∃ replica anchor,
+          (id, replica, .addAfter anchor) ∈ pre
 
 def listSpec : SequentialSpec RGAM where
   State := List ℕ
@@ -44,16 +44,16 @@ def listSpec : SequentialSpec RGAM where
 
 def isInsert (e : Op RGAOp) : Bool :=
   match e.2.2 with
-  | .addAfter _ _ => true
+  | .addAfter _ => true
   | .remove _ => false
 
 /-- Witness order: insertions precede deletions; insertions are ordered by
 Lamport timestamp; deletion order is immaterial. -/
 def witnessLEBool (a b : Op RGAOp) : Bool :=
   match a.2.2, b.2.2 with
-  | .addAfter _ _, .addAfter _ _ => decide (a.1 ≤ b.1)
-  | .addAfter _ _, .remove _ => true
-  | .remove _, .addAfter _ _ => false
+  | .addAfter _, .addAfter _ => decide (a.1 ≤ b.1)
+  | .addAfter _, .remove _ => true
+  | .remove _, .addAfter _ => false
   | .remove _, .remove _ => true
 
 /-- Candidate global witness selected only from the version's actual events. -/
@@ -62,27 +62,27 @@ def canonical (ops : List (Op RGAOp)) : List (Op RGAOp) :=
 
 /-- The grow-only implementation contains an insertion record exactly when
 the history contains the corresponding insertion event. -/
-theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor id : ℕ),
-    (applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor, id) = true ↔
-      ∃ replica, (ts, replica, .addAfter anchor id) ∈ ops := by
+theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor : ℕ),
+    (applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor) = true ↔
+      ∃ replica, (ts, replica, .addAfter anchor) ∈ ops := by
   intro ops
   induction ops using List.reverseRecOn with
   | nil => simp [applySeq, RGAM]
   | append_singleton ops e ih =>
       rcases e with ⟨ets, replica, op⟩
       cases op with
-      | addAfter eanchor eid =>
-          intro ts anchor id
+      | addAfter eanchor =>
+          intro ts anchor
           rw [applySeq_append_single]
           change
-            ((applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor, id) ||
-              decide ((ts, anchor, id) = (ets, eanchor, eid))) = true ↔ _
+            ((applySeq RGAM.toUpdateSig RGAM.init ops).1 (ts, anchor) ||
+              decide ((ts, anchor) = (ets, eanchor))) = true ↔ _
           rw [Bool.or_eq_true, decide_eq_true_eq]
           rw [ih]
           constructor
           · rintro (⟨r, hr⟩ | h)
             · exact ⟨r, List.mem_append_left _ hr⟩
-            · obtain ⟨rfl, rfl, rfl⟩ := h
+            · obtain ⟨rfl, rfl⟩ := h
               exact ⟨replica, by simp⟩
           · rintro ⟨r, hr⟩
             rw [List.mem_append] at hr
@@ -92,9 +92,9 @@ theorem add_true_iff : ∀ (ops : List (Op RGAOp)) (ts anchor id : ℕ),
               cases hr
               exact Or.inr rfl
       | remove eid =>
-          intro ts anchor id
+          intro ts anchor
           rw [applySeq_append_single]
-          simpa [rgaUpdate] using ih ts anchor id
+          simpa [rgaUpdate] using ih ts anchor
 
 /-- The grow-only graveyard contains an identifier exactly when the history
 contains a deletion of that identifier. -/
@@ -107,7 +107,7 @@ theorem grave_true_iff : ∀ (ops : List (Op RGAOp)) (id : ℕ),
   | append_singleton ops e ih =>
       rcases e with ⟨ets, replica, op⟩
       cases op with
-      | addAfter anchor eid =>
+      | addAfter anchor =>
           intro id
           rw [applySeq_append_single]
           simpa [rgaUpdate] using ih id
@@ -223,13 +223,81 @@ theorem canonical_ordered (ops : List (Op RGAOp)) :
       simp [witnessLEBool]
     exact Nat.le_total ta tb
 
+/-! ## Resolve-conflict relation
+
+The public relation describes conflicts of the ordinary-list specification,
+not commutation of the grow-only implementation fields.  Two insertions
+conflict when they are siblings or one names the identifier introduced by the
+other as its anchor.  An insertion conflicts with deletion of either its new
+identifier or its non-root anchor. -/
+
+def insertDeleteConflict (anchor id target : ℕ) : Prop :=
+  target = id ∨ (anchor ≠ 0 ∧ target = anchor)
+
+noncomputable def rcOrder (a b : Op RGAOp) : RcRes :=
+  match a.2.2, b.2.2 with
+  | .addAfter aAnchor, .addAfter bAnchor =>
+      if (aAnchor = bAnchor ∨ a.1 = bAnchor) ∧ a.1 < b.1 then .Fst_then_snd
+      else if (bAnchor = aAnchor ∨ b.1 = aAnchor) ∧ b.1 < a.1 then
+        .Snd_then_fst
+      else .Either
+  | .addAfter anchor, .remove target =>
+      if insertDeleteConflict anchor a.1 target then .Fst_then_snd else .Either
+  | .remove target, .addAfter anchor =>
+      if insertDeleteConflict anchor b.1 target then .Snd_then_fst else .Either
+  | .remove _, .remove _ => .Either
+
+/-- The sole public resolve-conflict relation for RGA. -/
+noncomputable def rc : ReplayPolicy RGAM.toUpdateSig where
+  order := rcOrder
+
+/-- The directed insertion edge mentions siblings and forward dependency only. -/
+theorem rc_insert_iff (i r a j s b : ℕ) :
+    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+      (a = b ∨ i = b) ∧ i < j := by
+  simp only [rc, rcOrder]
+  split
+  · simp_all
+  · split <;> simp_all
+
+/-- The former reverse-dependency disjunct contributes no forward edge when
+the first insertion's anchor is root or older than its identifier. -/
+theorem rc_insert_iff_original_of_anchor_valid (i r a j s b : ℕ)
+    (anchorValid : a = 0 ∨ a < i) :
+    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+      (a = b ∨ i = b ∨ j = a) ∧ i < j := by
+  rw [rc_insert_iff]
+  rcases anchorValid with h | h <;> omega
+
+@[simp] theorem rc_not_before (a b : Op RGAOp) :
+    WitnessLE a b → ¬ rc.order b a = RcRes.Fst_then_snd := by
+  obtain ⟨ats, ar, aop⟩ := a
+  obtain ⟨bts, br, bop⟩ := b
+  cases aop with
+  | addAfter aAnchor =>
+      cases bop with
+      | addAfter bAnchor =>
+          intro hle hbefore
+          simp only [WitnessLE, witnessLEBool, decide_eq_true_eq] at hle
+          exact (Nat.not_lt_of_ge hle) ((rc_insert_iff _ _ _ _ _ _).mp hbefore).2
+      | remove target =>
+          intro _ hbefore
+          by_cases hc : insertDeleteConflict aAnchor ats target <;>
+            simp [rc, rcOrder, hc] at hbefore
+  | remove target =>
+      cases bop with
+      | addAfter bAnchor =>
+          simp [WitnessLE, witnessLEBool]
+      | remove other =>
+          simp [WitnessLE, witnessLEBool, rc, rcOrder]
+
 theorem creator_mem_prefix {whole pre suffix : List (Op RGAOp)}
     {ts replica id creatorTs creatorReplica creatorAnchor : ℕ}
     (hordered : whole.Pairwise WitnessLE)
     (hsplit : whole = pre ++ (ts, replica, .remove id) :: suffix)
     (hcreator : (creatorTs, creatorReplica,
-      .addAfter creatorAnchor id) ∈ whole) :
-    (creatorTs, creatorReplica, .addAfter creatorAnchor id) ∈ pre := by
+      .addAfter creatorAnchor) ∈ whole) :
+    (creatorTs, creatorReplica, .addAfter creatorAnchor) ∈ pre := by
   subst whole
   rw [List.mem_append] at hcreator
   rcases hcreator with hpre | hrest
@@ -242,13 +310,13 @@ theorem creator_mem_prefix {whole pre suffix : List (Op RGAOp)}
       simp [WitnessLE, witnessLEBool] at hrel
 
 theorem anchor_mem_prefix {whole pre suffix : List (Op RGAOp)}
-    {ts replica anchor id anchorTs anchorReplica anchorParent : ℕ}
+    {ts replica anchor anchorTs anchorReplica anchorParent : ℕ}
     (hordered : whole.Pairwise WitnessLE)
-    (hsplit : whole = pre ++ (ts, replica, .addAfter anchor id) :: suffix)
+    (hsplit : whole = pre ++ (ts, replica, .addAfter anchor) :: suffix)
     (hanchor : (anchorTs, anchorReplica,
-      .addAfter anchorParent anchor) ∈ whole)
+      .addAfter anchorParent) ∈ whole)
     (hlt : anchorTs < ts) :
-    (anchorTs, anchorReplica, .addAfter anchorParent anchor) ∈ pre := by
+    (anchorTs, anchorReplica, .addAfter anchorParent) ∈ pre := by
   subst whole
   rw [List.mem_append] at hanchor
   rcases hanchor with hpre | hrest
@@ -265,10 +333,8 @@ theorem anchor_mem_prefix {whole pre suffix : List (Op RGAOp)}
 
 theorem lo_false (C : Configuration RGAM) (a b : Op RGAOp) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnoncomm (RGAM_all_comm a b)
-  · rw [RGAM_rc_either] at hrc
-    exact RcRes.noConfusion hrc
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem respects_lo (C : Configuration RGAM) :
     ∀ ops : List (Op RGAOp),
@@ -283,16 +349,15 @@ theorem respects_lo (C : Configuration RGAM) :
 interface between the operational semantics and the ordinary-list proof. -/
 structure VersionWellFormed (E : Set (Op RGAOp)) : Prop where
   time_unique : ∀ {a b}, a ∈ E → b ∈ E → a.1 = b.1 → a = b
-  add : ∀ {ts replica anchor id},
-    (ts, replica, .addAfter anchor id) ∈ E →
-      id = ts ∧ (anchor = 0 ∨
-        ∃ parentTs parentReplica parentAnchor,
-          (parentTs, parentReplica, .addAfter parentAnchor anchor) ∈ E ∧
-          parentTs < ts)
+  add : ∀ {ts replica anchor},
+    (ts, replica, .addAfter anchor) ∈ E →
+      anchor = 0 ∨ ∃ parentReplica parentAnchor,
+          (anchor, parentReplica, .addAfter parentAnchor) ∈ E ∧
+          anchor < ts
   remove : ∀ {ts replica id},
     (ts, replica, .remove id) ∈ E →
-      ∃ parentTs parentReplica parentAnchor,
-        (parentTs, parentReplica, .addAfter parentAnchor id) ∈ E
+      ∃ parentReplica parentAnchor,
+        (id, parentReplica, .addAfter parentAnchor) ∈ E
 
 /-- Generation honesty plus the framework's causal closure invariant imply
 the static facts used by the sequential proof. -/
@@ -308,25 +373,39 @@ theorem versionWellFormed_of_execution {C : Configuration RGAM}
   refine ⟨?_, ?_, ?_⟩
   · intro a b ha hb htime
     exact C.replayContext.ts_unique (hsub a ha) (hsub b hb) htime
-  · intro ts replica anchor id he
+  · intro ts replica anchor he
     obtain ⟨past, hpast, _, hguard⟩ := hmint _ (hsub _ he)
-    rcases hguard with ⟨hid, hanchor, _, _, _⟩
-    refine ⟨hid, ?_⟩
-    rcases hanchor with rfl | ⟨parentTs, parentAnchor, hlt, hpresent⟩
+    rcases hguard with ⟨hanchor, _, _⟩
+    rcases hanchor with rfl | ⟨_, hlt, parentAnchor, hpresent⟩
     · exact Or.inl rfl
     · rw [add_true_iff] at hpresent
       obtain ⟨parentReplica, hmem⟩ := hpresent
       have hpastSet := (hpast.2 _).mp hmem
-      exact Or.inr ⟨parentTs, parentReplica, parentAnchor,
+      exact Or.inr ⟨parentReplica, parentAnchor,
         hclosed _ _ hpastSet.2 he, hlt⟩
   · intro ts replica id he
     obtain ⟨past, hpast, _, hguard⟩ := hmint _ (hsub _ he)
-    obtain ⟨⟨parentTs, parentAnchor, hpresent⟩, _⟩ := hguard
+    obtain ⟨⟨parentAnchor, hpresent⟩, _⟩ := hguard
     rw [add_true_iff] at hpresent
     obtain ⟨parentReplica, hmem⟩ := hpresent
     have hpastSet := (hpast.2 _).mp hmem
-    exact ⟨parentTs, parentReplica, parentAnchor,
+    exact ⟨parentReplica, parentAnchor,
       hclosed _ _ hpastSet.2 he⟩
+
+/-- On certified version histories the simplified insertion edge agrees with
+the previous symmetric-conflict-then-timestamp definition. -/
+theorem rc_insert_iff_original_of_execution {C : Configuration RGAM}
+    (exec : CertifiedExecution RGAM generation C)
+    {v : Version} {state : RGAM.State} {E : Set (Op RGAOp)}
+    (hver : C.ver v = some (state, E))
+    {i r a j s b : ℕ} (inserted : (i, r, .addAfter a) ∈ E) :
+    rc.order (i, r, .addAfter a) (j, s, .addAfter b) = RcRes.Fst_then_snd ↔
+      (a = b ∨ i = b ∨ j = a) ∧ i < j := by
+  apply rc_insert_iff_original_of_anchor_valid
+  rcases (versionWellFormed_of_execution exec hver).add inserted with root | h
+  · exact Or.inl root
+  · obtain ⟨_, _, _, earlier⟩ := h
+    exact Or.inr earlier
 
 theorem canonical_legal {ops : List (Op RGAOp)}
     {E : Set (Op RGAOp)} (hperm : listPermOf ops E)
@@ -342,19 +421,17 @@ theorem canonical_legal {ops : List (Op RGAOp)}
     have heE : e ∈ E := (hcan.2 e).mp heList
     obtain ⟨ts, replica, op⟩ := e
     cases op with
-    | addAfter anchor id =>
-      obtain ⟨hid, hanchor⟩ := hwf.add heE
-      refine ⟨hid, ?_⟩
-      rcases hanchor with rfl | ⟨anchorTs, anchorReplica, anchorParent,
+    | addAfter anchor =>
+      rcases hwf.add heE with rfl | ⟨anchorReplica, anchorParent,
           hanchorE, hlt⟩
       · exact Or.inl rfl
-      · exact Or.inr ⟨anchorTs, anchorReplica, anchorParent,
+      · exact Or.inr ⟨anchorReplica, anchorParent,
           anchor_mem_prefix (canonical_ordered ops) hsplit
             ((hcan.2 _).mpr hanchorE) hlt⟩
     | remove id =>
-      obtain ⟨creatorTs, creatorReplica, creatorAnchor, hcreatorE⟩ :=
+      obtain ⟨creatorReplica, creatorAnchor, hcreatorE⟩ :=
         hwf.remove heE
-      exact ⟨creatorTs, creatorReplica, creatorAnchor,
+      exact ⟨creatorReplica, creatorAnchor,
         creator_mem_prefix (canonical_ordered ops) hsplit
           ((hcan.2 _).mpr hcreatorE)⟩
 
@@ -366,35 +443,34 @@ theorem canonical_prefix_allocated {ops : List (Op RGAOp)}
     ∀ (pre : List (Op RGAOp)) (e : Op RGAOp) (post : List (Op RGAOp)),
       canonical ops = pre ++ e :: post →
       match e.2.2 with
-      | .addAfter anchor _ =>
-          anchor = 0 ∨ ∃ ts parent,
+      | .addAfter anchor =>
+          anchor = 0 ∨ ∃ parent,
             (applySeq RGAM.toUpdateSig RGAM.init pre).1
-              (ts, parent, anchor) = true
+              (anchor, parent) = true
       | .remove id =>
-          ∃ ts anchor,
+          ∃ anchor,
             (applySeq RGAM.toUpdateSig RGAM.init pre).1
-              (ts, anchor, id) = true := by
+              (id, anchor) = true := by
   intro pre e post hsplit
   have hcan := canonical_listPermOf hperm
   have heList : e ∈ canonical ops := by rw [hsplit]; simp
   have heE : e ∈ E := (hcan.2 e).mp heList
   obtain ⟨ts, replica, op⟩ := e
   cases op with
-  | addAfter anchor id =>
-      obtain ⟨_, hanchor⟩ := hwf.add heE
-      rcases hanchor with rfl | ⟨anchorTs, anchorReplica, anchorParent,
+  | addAfter anchor =>
+      rcases hwf.add heE with rfl | ⟨anchorReplica, anchorParent,
           hanchorE, hlt⟩
       · exact Or.inl rfl
       · apply Or.inr
-        refine ⟨anchorTs, anchorParent, ?_⟩
+        refine ⟨anchorParent, ?_⟩
         rw [add_true_iff]
         refine ⟨anchorReplica, anchor_mem_prefix (canonical_ordered ops)
           hsplit ?_ hlt⟩
         exact (hcan.2 _).mpr hanchorE
   | remove id =>
-      obtain ⟨creatorTs, creatorReplica, creatorAnchor, hcreatorE⟩ :=
+      obtain ⟨creatorReplica, creatorAnchor, hcreatorE⟩ :=
         hwf.remove heE
-      refine ⟨creatorTs, creatorAnchor, ?_⟩
+      refine ⟨creatorAnchor, ?_⟩
       rw [add_true_iff]
       refine ⟨creatorReplica, creator_mem_prefix (canonical_ordered ops)
         hsplit ?_⟩
@@ -402,13 +478,13 @@ theorem canonical_prefix_allocated {ops : List (Op RGAOp)}
 
 def insertEntries : List (Op RGAOp) → List RGAEntry
   | [] => []
-  | (ts, _, .addAfter anchor id) :: rest =>
-      (ts, anchor, id) :: insertEntries rest
+  | (ts, _, .addAfter anchor) :: rest =>
+      (ts, anchor) :: insertEntries rest
   | (_, _, .remove _) :: rest => insertEntries rest
 
 def removedIds : List (Op RGAOp) → List ℕ
   | [] => []
-  | (_, _, .addAfter _ _) :: rest => removedIds rest
+  | (_, _, .addAfter _) :: rest => removedIds rest
   | (_, _, .remove id) :: rest => id :: removedIds rest
 
 @[simp] theorem insertEntries_append (xs ys : List (Op RGAOp)) :
@@ -436,9 +512,9 @@ theorem birthGrave_run_sets (ops : List (Op RGAOp)) :
       rw [SequentialMachine.run_append_single]
       obtain ⟨ts, replica, op⟩ := e
       cases op with
-      | addAfter anchor id =>
+      | addAfter anchor =>
           constructor
-          · change insert (ts, anchor, id) (birthGraveMachine.run ops).adds = _
+          · change insert (ts, anchor) (birthGraveMachine.run ops).adds = _
             rw [ih.1]
             simp [insertEntries]
           · change (birthGraveMachine.run ops).grave = _
@@ -451,21 +527,21 @@ theorem birthGrave_run_sets (ops : List (Op RGAOp)) :
             rw [ih.2]
             simp [removedIds]
 
-theorem mem_insertEntries : ∀ {ops : List (Op RGAOp)} {ts anchor id : ℕ},
-    (ts, anchor, id) ∈ insertEntries ops ↔
-      ∃ replica, (ts, replica, .addAfter anchor id) ∈ ops := by
+theorem mem_insertEntries : ∀ {ops : List (Op RGAOp)} {ts anchor : ℕ},
+    (ts, anchor) ∈ insertEntries ops ↔
+      ∃ replica, (ts, replica, .addAfter anchor) ∈ ops := by
   intro ops
   induction ops with
   | nil => simp [insertEntries]
   | cons e rest ih =>
       obtain ⟨ets, replica, op⟩ := e
       cases op with
-      | addAfter eanchor eid =>
-          intro ts anchor id
+      | addAfter eanchor =>
+          intro ts anchor
           simp only [insertEntries, List.mem_cons, ih]
           constructor
           · rintro (heq | ⟨r, hr⟩)
-            · obtain ⟨rfl, rfl, rfl⟩ := heq
+            · obtain ⟨rfl, rfl⟩ := heq
               exact ⟨replica, by simp⟩
             · exact ⟨r, by simp [hr]⟩
           · rintro ⟨r, hr⟩
@@ -474,8 +550,8 @@ theorem mem_insertEntries : ∀ {ops : List (Op RGAOp)} {ts anchor id : ℕ},
               exact Or.inl rfl
             · exact Or.inr ⟨r, hr⟩
       | remove eid =>
-          intro ts anchor id
-          simpa [insertEntries] using ih (ts := ts) (anchor := anchor) (id := id)
+          intro ts anchor
+          simpa [insertEntries] using ih (ts := ts) (anchor := anchor)
 
 theorem insertEntries_sorted {ops : List (Op RGAOp)}
     (h : ops.Pairwise WitnessLE) :
@@ -487,13 +563,13 @@ theorem insertEntries_sorted {ops : List (Op RGAOp)}
       obtain ⟨ts, replica, op⟩ := e
       cases op with
       | remove id => exact ih hp.2
-      | addAfter anchor id =>
+      | addAfter anchor =>
           apply List.pairwise_cons.mpr
           refine ⟨?_, ih hp.2⟩
           intro entry hentry
           obtain ⟨otherReplica, hother⟩ := mem_insertEntries.mp hentry
           have hrel := hp.1 (entry.1, otherReplica,
-            .addAfter entry.2.1 entry.2.2) hother
+            .addAfter entry.2) hother
           simpa [WitnessLE, witnessLEBool] using hrel
 
 theorem insertEntries_time_injective {ops : List (Op RGAOp)}
@@ -506,8 +582,8 @@ theorem insertEntries_time_injective {ops : List (Op RGAOp)}
   obtain ⟨rb, heb⟩ := mem_insertEntries.mp hb
   have hop := hwf.time_unique ((hperm.2 _).mp hea) ((hperm.2 _).mp heb) htime
   have := congrArg (fun e : Op RGAOp => match e.2.2 with
-    | .addAfter anchor id => (e.1, anchor, id)
-    | .remove id => (e.1, 0, id)) hop
+    | .addAfter anchor => (e.1, anchor)
+    | .remove id => (e.1, 0)) hop
   simpa using this
 
 theorem insertEntries_nodup {ops : List (Op RGAOp)}
@@ -524,7 +600,7 @@ theorem insertEntries_nodup {ops : List (Op RGAOp)}
         cases op with
         | remove id =>
             exact ih hndParts.2 (fun x hx => hmem x (List.mem_cons_of_mem _ hx))
-        | addAfter anchor id =>
+        | addAfter anchor =>
             apply List.nodup_cons.mpr
             refine ⟨?_, ih hndParts.2
               (fun x hx => hmem x (List.mem_cons_of_mem _ hx))⟩
@@ -577,7 +653,7 @@ theorem canonical_entries_are_finset_order
 
 def render (ops : List (Op RGAOp)) : List ℕ :=
   ((insertEntries ops).foldl
-    (fun xs entry => insertAfter entry.2.1 entry.2.2 xs) []).filter
+    (fun xs entry => insertAfter entry.2 entry.1 xs) []).filter
       (fun id => id ∉ (removedIds ops).toFinset)
 
 theorem removedIds_eq_nil_of_all_add {ops : List (Op RGAOp)}
@@ -588,23 +664,23 @@ theorem removedIds_eq_nil_of_all_add {ops : List (Op RGAOp)}
       have he := h e List.mem_cons_self
       obtain ⟨ts, replica, op⟩ := e
       cases op with
-      | addAfter anchor id =>
+      | addAfter anchor =>
           simp only [removedIds]
           exact ih (fun x hx => h x (List.mem_cons_of_mem _ hx))
       | remove id => simp [isInsert] at he
 
 theorem removedIds_eq_nil_of_before_add
-    {ops : List (Op RGAOp)} {ts replica anchor id : ℕ}
-    (h : (ops ++ [(ts, replica, RGAOp.addAfter anchor id)]).Pairwise WitnessLE) :
+    {ops : List (Op RGAOp)} {ts replica anchor : ℕ}
+    (h : (ops ++ [(ts, replica, RGAOp.addAfter anchor)]).Pairwise WitnessLE) :
     removedIds ops = [] := by
   have hcross := (List.pairwise_append.mp h).2.2
   apply removedIds_eq_nil_of_all_add
   intro e he
   have hrel := hcross e he
-    (ts, replica, RGAOp.addAfter anchor id) (by simp)
+    (ts, replica, RGAOp.addAfter anchor) (by simp)
   obtain ⟨ets, ereplica, op⟩ := e
   cases op with
-  | addAfter eanchor eid => rfl
+  | addAfter eanchor => rfl
   | remove eid => simp [WitnessLE, witnessLEBool] at hrel
 
 theorem list_run_eq_render {ops : List (Op RGAOp)}
@@ -616,9 +692,9 @@ theorem list_run_eq_render {ops : List (Op RGAOp)}
       rw [SequentialSpec.run_append_single, ih hpre]
       obtain ⟨ts, replica, op⟩ := e
       cases op with
-      | addAfter anchor id =>
+      | addAfter anchor =>
           have hdead := removedIds_eq_nil_of_before_add hordered
-          change insertAfter anchor id (render ops) = _
+          change insertAfter anchor ts (render ops) = _
           simp [render, insertEntries, removedIds, hdead]
       | remove id =>
           change (render ops).filter (· ≠ id) = _
@@ -657,8 +733,90 @@ theorem canonical_refines_list {ops : List (Op RGAOp)}
   rw [read_eq_sequence_of_birthGraveRel (birthGraveSound (canonical ops)),
     list_run_eq_sequence hperm hwf]
 
+theorem canonical_respects_rc {C : Configuration RGAM}
+    (exec : CertifiedExecution RGAM generation C)
+    {v : Version} {s : RGAM.State} {E : Set (Op RGAOp)}
+    (hver : C.ver v = some (s, E))
+    {ops : List (Op RGAOp)} (hperm : listPermOf ops E) :
+    respects (canonical ops) (@loOn RGAM.toUpdateSig rc C.replayContext E) := by
+  have hgood : CanonicalConfig C :=
+    exec.canonicalConfig (fun _ _ => join _)
+  have hsub := hgood.version_events_supported v s E hver
+  have hmint : MintHonest RGAM applicable C := exec.mintHonest
+  have hcan := canonical_listPermOf hperm
+  have hordered := canonical_ordered ops
+  have hall : ∀ e ∈ canonical ops, e ∈ C.events := by
+    intro e he
+    exact hsub e ((hcan.2 e).mp he)
+  unfold respects
+  generalize hwhole : canonical ops = whole at hall hordered
+  clear hwhole
+  induction whole with
+  | nil => exact List.Pairwise.nil
+  | cons a rest ih =>
+      rw [List.pairwise_cons] at hordered ⊢
+      refine ⟨?_, ih (fun e he => hall e (List.mem_cons_of_mem _ he))
+        hordered.2⟩
+      intro b hb hba
+      have hab := hordered.1 b hb
+      have haC := hall a List.mem_cons_self
+      have hbC := hall b (List.mem_cons_of_mem _ hb)
+      rcases hba with hvisConflict | hconcurrent
+      · rcases a with ⟨ats, ar, aop⟩
+        rcases b with ⟨bts, br, bop⟩
+        cases aop with
+        | addAfter anchor =>
+            cases bop with
+            | addAfter bAnchor =>
+                have hle : ats ≤ bts := by
+                  simpa [WitnessLE, witnessLEBool] using hab
+                exact (Nat.not_lt_of_ge hle) (C.causal_mono hvisConflict.1)
+            | remove target =>
+                have hconf : insertDeleteConflict anchor ats target := by
+                  rcases hvisConflict.2 with hback | hforward
+                  · change (if insertDeleteConflict anchor ats target then
+                        RcRes.Snd_then_fst else RcRes.Either) =
+                      RcRes.Fst_then_snd at hback
+                    split at hback <;> contradiction
+                  · simpa [rc, rcOrder] using hforward
+                obtain ⟨past, hpast, _, hguard⟩ :=
+                  hmint (ats, ar, .addAfter anchor) haC
+                have hbPast : (bts, br, .remove target) ∈ past :=
+                  (hpast.2 _).mpr ⟨hbC, hvisConflict.1⟩
+                have hgrave :
+                    (applySeq RGAM.toUpdateSig RGAM.init past).2 target = true :=
+                  (grave_true_iff past target).2 ⟨bts, br, hbPast⟩
+                rcases hconf with rfl | ⟨hroot, rfl⟩
+                · exact Bool.false_ne_true
+                    (hguard.2.2.symm.trans hgrave)
+                · rcases hguard.1 with rfl | hanchor
+                  · exact hroot rfl
+                  · exact Bool.false_ne_true (hanchor.1.symm.trans hgrave)
+        | remove target =>
+            cases bop with
+            | addAfter anchor =>
+                simp [WitnessLE, witnessLEBool] at hab
+            | remove other =>
+                simpa [rc, rcOrder] using hvisConflict.2
+      · exact (rc_not_before a b hab) hconcurrent.2.2.1
+
+noncomputable def listReplayAdequacy :
+    @ReplayAdequacyCertificate RGAM generation rc := by
+  letI : ReplayPolicy RGAM.toUpdateSig := rc
+  refine { soundV := ?_ }
+  intro C h v state E hver
+  let exec : CertifiedExecution RGAM generation C := .virtual h
+  have raw : @ReplayAdequacyCertificate RGAM generation
+      (ReplayPolicy.default RGAM.toUpdateSig) := replayAdequacy
+  obtain ⟨ops, hperm, _, hfold⟩ :=
+    (@ReplayAdequacyCertificate.soundV RGAM generation
+      (ReplayPolicy.default RGAM.toUpdateSig) raw C h) v state E hver
+  exact ⟨canonical ops, canonical_listPermOf hperm,
+    canonical_respects_rc exec hver hperm,
+    (canonical_fold ops).trans hfold⟩
+
 noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate RGAM generation
-    (InteractionSpec.raw RGAM)
+    rc
     listSpec listRel where
   sound C exec replay := by
     intro v s E hver
@@ -671,31 +829,31 @@ noncomputable def listSequentialCorrectness : SequentialCorrectnessCertificate R
       rw [← hstate]
       exact href
     refine ⟨canonical ops, canonical_listPermOf hperm,
-      respects_interactionLoOn_raw_of_lo (respects_lo C _),
+      canonical_respects_rc exec hver hperm,
       canonical_legal hperm hwf, hrel, ?_⟩
     intro query
     cases query
     exact hrel
 
-/-- Public tombstone-RGA package: internal convergence is joined to a legal
+/-- Public RGA package: internal convergence is joined to a legal
 ordinary-list witness and exact query agreement. -/
 noncomputable def verified : VerifiedMRDT RGAM where
   issuance := generation
-  interaction := InteractionSpec.raw RGAM
-  replayAdequacy := replayAdequacy
+  rc := rc
+  replayAdequacy := listReplayAdequacy
   Spec := listSpec
   Rel := listRel
   sequentialCorrectness := listSequentialCorrectness
 
 theorem rga_spec_linearizable {C : Configuration RGAM}
     (h : MintCertifiedReach RGAM generation C) :
-    IsSpecLinearizable RGAM (InteractionSpec.raw RGAM)
+    IsSpecLinearizable RGAM rc
       listSpec listRel C :=
   verified.correct h
 
 theorem rga_spec_linearizableV {C : Configuration RGAM}
     (h : MintCertifiedReachV RGAM (canonicalVirtualMergeBase RGAM) generation C) :
-    IsSpecLinearizable RGAM (InteractionSpec.raw RGAM)
+    IsSpecLinearizable RGAM rc
       listSpec listRel C :=
   verified.correctV h
 
@@ -704,11 +862,31 @@ theorem rga_spec_linearizableV {C : Configuration RGAM}
 
 namespace ListSpecSPOT
 
-def parent : Op RGAOp := (1, 0, .addAfter 0 1)
-def child : Op RGAOp := (4, 1, .addAfter 1 4)
+def parent : Op RGAOp := (1, 0, .addAfter 0)
+def child : Op RGAOp := (4, 1, .addAfter 1)
 def deleteParentA : Op RGAOp := (2, 1, .remove 1)
 def deleteParentB : Op RGAOp := (3, 2, .remove 1)
-def sibling : Op RGAOp := (5, 2, .addAfter 0 5)
+def sibling : Op RGAOp := (5, 2, .addAfter 0)
+
+/-- Concurrent child insertion and parent deletion conflict; the child is
+resolved before the deletion so it survives integration. -/
+example : rc.order child deleteParentA = RcRes.Fst_then_snd := by
+  simp [rc, rcOrder, insertDeleteConflict, child, deleteParentA]
+
+/-- Deletion of an unrelated identifier does not constrain the insertion. -/
+example : rc.order sibling deleteParentA = RcRes.Either := by
+  simp [rc, rcOrder, insertDeleteConflict, sibling, deleteParentA]
+
+/-- Sibling insertions conflict and are resolved by timestamp. -/
+example : rc.order parent sibling = RcRes.Fst_then_snd := by
+  simp [rc, rcOrder, parent, sibling]
+
+/-- Parent/child dependency is represented in both resolver argument orders. -/
+example : rc.order parent child = RcRes.Fst_then_snd := by
+  simp [rc, rcOrder, parent, child]
+
+example : rc.order child parent = RcRes.Snd_then_fst := by
+  simp [rc, rcOrder, parent, child]
 
 /-- PASS: deletion removes the entry rather than retaining a tombstone. -/
 example : listSpec.run [parent, deleteParentA] = [] := by rfl

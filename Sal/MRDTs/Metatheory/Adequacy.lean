@@ -29,6 +29,7 @@ open Classical
 
 section
 variable {D : MRDTSig}
+variable [P : ReplayPolicy D.toUpdateSig]
 
 /-- Every stored version has a replay witness for the proof-local order. This
 is derived from `CanonicalConfig`; it is not the client correctness target. -/
@@ -37,7 +38,7 @@ def HasReplayWitness (C : Configuration D) : Prop :=
     C.ver v = some (s, E) →
     ∃ π : List (Op D.AppOp),
       listPermOf π E ∧
-      respects π (Sal.MRDTs.Foundation.lo (Configuration.replayContext C)) ∧
+      respects π (loOn (Configuration.replayContext C) E) ∧
       applySeq D.toUpdateSig D.init π = s
 
 /-- The reachability invariant: **every allocated version** holds the canonical
@@ -60,7 +61,7 @@ structure CanonicalConfig (C : Configuration D) : Prop where
 (`isCanonicalState_lo_witness`, reused). -/
 theorem hasReplayWitness_of_canonical {C : Configuration D}
     (h : CanonicalConfig C) : HasReplayWitness C :=
-  fun v s E hv => isCanonicalState_lo_witness (h.canonical v s E hv)
+  fun v s E hv => h.canonical v s E hv
 
 /-- The invariant holds initially: the only allocated version is `0 = (σ₀, ∅)`. -/
 theorem canonicalConfig_init : CanonicalConfig (initConfig D) := by
@@ -399,6 +400,13 @@ theorem canonicalConfig_merge_at
 GCA fold plus `merge_init`, no idempotence needed (the binary
 `binaryCausalDeltaLaw_of_all_comm` consumed `merge_idem`; the ternary one does not). -/
 
+end
+
+section
+variable {D : MRDTSig}
+
+variable [ReplayPolicy D.toUpdateSig]
+
 theorem causalDeltaLaw_of_all_comm (hVC : MergeLaws D)
     (hPeel : CommutingPeelLaw D)
     (h_comm : ∀ a b : Op D.AppOp, D.toUpdateSig.commutes a b) : CausalDeltaLaw D := by
@@ -425,6 +433,12 @@ theorem causalDeltaLaw_of_all_comm (hVC : MergeLaws D)
   rw [h0] at hpc
   rw [hVC.merge_init] at hpc
   rw [← hfA, hVC.merge_comm, hpc]
+
+end
+
+section
+variable {D : MRDTSig}
+variable [P : ReplayPolicy D.toUpdateSig]
 
 /-- The original `Join`-driven form, as a thin wrapper over
 `canonicalConfig_merge_at`. -/
@@ -476,6 +490,13 @@ theorem replayWitness_of_join (hJoin : Join D)
       exact canonicalConfig_merge hJoin h_head₁ h_ver₁ h_ver₂ h_gca h_verT
         hL hvis hver ih
     | query h_s h_val => exact ih
+
+end
+
+section
+variable {D : MRDTSig}
+
+variable [ReplayPolicy D.toUpdateSig]
 
 /-- The arbitrary-state contract implies the feasible one (context discarded);
 `merge_init` supplies the unit law. The universal-law route is thereby an
@@ -610,7 +631,7 @@ private theorem side_decomposition (hVC : JoinCoreLaws D) (hCD : CausalDeltaLaw 
       refine IH lE.length hlt _ _ B t (D.update B e) lE ?_ rfl
         (fun a ha => h_inE a ha.1)
         (fun a ha => h_inE a (h_dsubE ha))
-        (closure_diff_of_max h_subE h_clE h_max)
+        (closure_diff_of_max hVC.replay.noncomm_covered h_subE h_clE h_max)
         downset_closed hB' ht hT
       rw [hsetE]
       exact hpE
@@ -746,8 +767,10 @@ theorem JoinProof.ofFeasibleStateLaws (hVC : JoinCoreLaws D)
           refine IH (n - 1) (by omega) _ _ t₀ t₁ t₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
-            (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
-            (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+            (closure_diff_of_max hVC.replay.noncomm_covered
+              Set.subset_union_left h_cl₁ h_max)
+            (closure_diff_of_max hVC.replay.noncomm_covered
+              Set.subset_union_right h_cl₂ h_max)
             hct₀' ht₁ ht₂
           rw [hsetm]
           exact hpU'
@@ -782,7 +805,8 @@ theorem JoinProof.ofFeasibleStateLaws (hVC : JoinCoreLaws D)
           refine IH (n - 1) (by omega) _ _ s₀ t₁ s₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) h_in₂
-            (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
+            (closure_diff_of_max hVC.replay.noncomm_covered
+              Set.subset_union_left h_cl₁ h_max)
             h_cl₂ hct₀' ht₁ hc₂
           rw [hset₁]
           exact hpU'
@@ -829,7 +853,8 @@ theorem JoinProof.ofFeasibleStateLaws (hVC : JoinCoreLaws D)
         refine IH (n - 1) (by omega) _ _ s₀ s₁ t₂
           (lU.filter (· ≠ e)) ?_ hlen'
           h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
-          (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+          (closure_diff_of_max hVC.replay.noncomm_covered
+            Set.subset_union_right h_cl₂ h_max)
           hct₀' hc₁ ht₂
         rw [hset₂]
         exact hpU'
@@ -888,6 +913,7 @@ end
 
 section Bridge
 variable {D : MRDTSig}
+variable [P : ReplayPolicy D.toUpdateSig]
 
 /-- Merge preservation from a full-closure join lemma (the `CanonicalConfig`
 merge case verbatim, passing `version_events_causal` un-weakened). -/

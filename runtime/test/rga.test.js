@@ -21,6 +21,8 @@ test('RGA mirrors the Lean add/remove SPOTs and rejects dishonest minting', () =
   assert.throws(() => rga.apply(rga.init(), del(7)), /before insertion/);
   assert.throws(() => rga.apply(rga.apply(rga.init(), ins(1, 'a')), ins(1, 'b')), /duplicate/);
   assert.throws(() => rga.apply(s, ins(1, 'again')), /duplicate|resurrection/);
+  assert.equal(rgaApplicable(s, ins(2, 'child', 1)), false);
+  assert.throws(() => rga.apply(s, ins(2, 'child', 1)), /not live/);
 });
 
 test('optimized RGA tree traversal equals the Lean timestamp-fold order', () => {
@@ -77,7 +79,17 @@ test('PeritextRGA matches both tombstone-free Peritext variants sequentially', (
   assert.deepEqual(peritextRGA.read(snap), reads[0]);
 });
 
-test('negative control: dropping a settled dead RGA leaf breaks continuation', () => {
+test('RGA integrates a child issued concurrently with deletion of its anchor', () => {
+  const base = rga.apply(rga.init(), ins(1, 'parent'));
+  const left = rga.apply(base, ins(2, 'child', 1));
+  const right = rga.apply(base, del(1));
+  assert.equal(rgaApplicable(base, ins(2, 'child', 1)), true);
+  assert.equal(rgaApplicable(right, ins(2, 'child', 1)), false);
+  assert.deepEqual(rga.read(rga.merge3(base, left, right)), ['child']);
+  assert.deepEqual(rga.read(rga.merge3(base, right, left)), ['child']);
+});
+
+test('PeritextRGA shadow allows retained anchors: erasure breaks that wrapper contract', () => {
   const dt = compactiblePeritextRGA;
   let leaves = dt.init();
   for (const op of [ins(1, 'a'), ins(2, 'b'), del(1)]) leaves = dt.apply(leaves, op);
@@ -85,9 +97,9 @@ test('negative control: dropping a settled dead RGA leaf breaks continuation', (
   assert.equal(c1.stats.recordsDropped, 1);
   assert.deepEqual(dt.read(c1.state).map((e) => e.char), ['b']);
   assert.equal(rgaApplicable(leaves.text.shadow, ins(3, 'c', 1)), true,
-    'a deleted birth remains a legal future anchor in the full state');
+    'PeritextRGA keeps deletions outside its RGA shadow, unlike plain RGA');
   assert.throws(() => dt.apply(c1.state, ins(3, 'c', 1)), /anchor 1 not known/,
-    'present-read equality is not continuation preservation');
+    'present-read equality does not preserve this wrapper continuation');
 
   let spine = dt.init();
   for (const op of [ins(1, 'a'), ins(2, 'b', 1), del(1)]) spine = dt.apply(spine, op);

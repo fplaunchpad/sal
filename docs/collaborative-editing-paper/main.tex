@@ -109,11 +109,14 @@ number is \emph{measured}.
 
 An insert operation names an anchor and a globally fresh identifier:
 \[
-  \ins(t,a,x) \qquad\text{``insert character $x$ after identifier $a$''}.
+  \ins(x,a) \qquad\text{``insert identifier $x$ after identifier $a$''}.
 \]
-A delete names the identifier to hide, $\del(x)$. Identifier $0$ is the
+Here $x$ is the insertion timestamp itself; the RGA model does not carry a
+second copy of that identifier. A delete names the identifier to hide,
+$\del(x)$. Identifier $0$ is the
 permanent logical start anchor. A legal issuer may insert after $a$ only when
-it has already observed $a$, and may delete only a known live identifier.
+it has already observed $a$ and $a$ is still live, and may delete only a known
+live identifier.
 
 These premises are not cosmetic. The raw MRDT update is total and can store an
 insert record with an absent anchor. The user-facing theorem concerns traces
@@ -121,9 +124,9 @@ minted by the editor protocol. The RGA generation contract records precisely
 that boundary:
 \[
 \begin{array}{ll}
-\mathsf{applicable}(\ins(t,a,x),S) &\Longrightarrow
-  (a=0\lor a\in\mathsf{born}(S))\land
-  t,x\text{ fresh},\\
+\mathsf{applicable}(\ins(x,a),S) &\Longrightarrow
+  (a=0\lor a\in\mathsf{live}(S))\land
+  x\text{ fresh},\\
 \mathsf{applicable}(\del(x),S) &\Longrightarrow
   x\in\mathsf{live}(S).
 \end{array}
@@ -134,12 +137,12 @@ this premise. EmbedRGA and SidedEmbedRGA additionally use their corresponding
 issuance facts to establish the replay-context condition of their Join
 theorems.
 
-\subsection{The tombstone baseline}
+\subsection{RGA}
 \label{sec:baseline}
 
 The paper-level state of RGA~\cite{roh2011rga} is a pair $S=(A,G)$:
 \[
- A\subseteq \mathbb N^3,\quad (t,a,x)\in A
+ A\subseteq \mathbb N^2,\quad (x,a)\in A
  \text{ records the birth of $x$ after $a$};
  \qquad G\subseteq\mathbb N
  \text{ records deleted identifiers}.
@@ -148,7 +151,7 @@ Both components grow monotonically.
 
 \[
 \begin{array}{rcl}
-\mathsf{do}((A,G),\ins(t,a,x)) &=& (A\cup\{(t,a,x)\},G),\\
+\mathsf{do}((A,G),\ins(x,a)) &=& (A\cup\{(x,a)\},G),\\
 \mathsf{do}((A,G),\del(x)) &=& (A,G\cup\{x\}),\\[2pt]
 \merge((A_0,G_0),(A_1,G_1),(A_2,G_2))
   &=& (A_0\cup A_1\cup A_2,\;G_0\cup G_1\cup G_2).
@@ -223,7 +226,7 @@ $D=(\Sigma,\init,\mathsf{do},\mathsf{read},\merge)$ with
  \mathsf{read}:\Sigma\to\mathit{Id}^{*},\qquad
  \merge:\Sigma\times\Sigma\times\Sigma\to\Sigma,
 \]
-where an operation is $\ins(t,a,x)$ or $\del(x)$ as in
+where an operation is $\ins(x,a)$ or $\del(x)$ as in
 Section~\ref{sec:motivation}. A history $h$ is a list of operations and
 $\mathsf{fold}(\sigma,h)$ applies it left to right. A history is
 \emph{legal} from $\sigma$ when each insert uses a fresh identifier and an
@@ -321,7 +324,7 @@ commute; see Section~\ref{sec:proved-all}).
 \begin{proposition}[no local re-anchoring rule commutes]
 \label{prop:no-commute}
 Let $D$ be any design over live forests in which
-$\ins(t,a,x)$ stores the record $(t,x,f(\sigma,a))$ with $f(\sigma,a)=a$
+$\ins(x,a)$ stores the record $(x,f(\sigma,a))$ with $f(\sigma,a)=a$
 whenever $a$ is live, and $\del(x)$ removes $x$ and re-anchors its children
 to $g(\sigma,x)$ with $g(\sigma,x)$ equal to $x$'s anchor whenever $x$ and
 that anchor are live, where $f$ and $g$ read only live records. Then there
@@ -588,13 +591,15 @@ The corresponding Lean results are:
 \lean{fuguemax\_maximally\_noninterleaving}.
 \end{gathered}
 \]
-The separate theorem \lean{fuguemax\_ra\_linearizable} proves that the
-coordinate-level FugueMax policy model is RA-linearizable. That model's
-\lean{FMSig} is an internal proof signature, not another released datatype:
-it exposes proof-level coordinates and has no public \lean{VerifiedMRDT}
-sequential package. The released datatype is
-\lean{Instances.ProductionRGA.sided}; the FugueMax theorems justify its
-stronger ordering-policy design.
+The coordinate-level \lean{FMSig} remains an internal replay model. The
+separate enriched \lean{FugueMax.datatype} stores the birth/origin metadata
+needed by the exact positional issuer and has its own public package,
+\lean{FugueMax.verified}. Its sequential state is a plain list. For ordinary
+and virtual certified executions, \lean{FugueMax.correct} gives one witness
+for list correctness and all three maximal-non-interleaving clauses. It does
+not assume a separate \lean{MaxReach} proof. This package is distinct from
+\lean{Instances.ProductionRGA.sided}; its datatype-state collection remains
+staged, and no independent FugueMax runtime is claimed.
 
 \subsection{What is proved for all three}
 \label{sec:proved-all}
@@ -633,12 +638,12 @@ bridge from certified minting to a legal list witness. The capstones are
 The sequential theorem matters independently of convergence. EmbedRGA and
 SidedEmbedRGA refine explicit list machines for a legal minted linear history.
 Each kernel also has the merged-history \lean{VerifiedMRDT} theorem: each
-replicated version has an exact, interaction-respecting, legal sequential
-witness with the intended list view. EmbedRGA and SidedEmbedRGA use explicit
-\lean{InteractionSpec} policies because universal commutation over malformed
-list states is not the client interaction relation. The proof-level
-\lean{UpdateSig} is derived from the MRDT signature and contains no replay
-resolver; the old resolver is confined to one proof-local convergence route. The generation premise
+replicated version has an exact, causally ordered, legal sequential witness
+with the intended list view. Each package supplies one \lean{ReplayPolicy}
+named \lean{rc}; \lean{loOn} combines it with visibility, retaining every
+causal edge whose operation pair conflicts according to $rc$. The proof-level
+\lean{UpdateSig} is derived from the MRDT
+signature. The generation premise
 preserves the actual editor protocol rather than silently totalizing invalid
 anchor use as a no-op.
 
@@ -1052,9 +1057,12 @@ commit-history GC.}
 \end{table}
 
 The RGA rows previously shown here used current-read-only dead-leaf pruning.
-The negative control in \code{runtime/test/rga.test.js} shows that a later
-honest insertion after such a deleted anchor is then rejected.  Those rows are
-therefore not measurements of durable continuation state and are omitted.
+The negative control in \code{runtime/test/rga.test.js} concerns the
+PeritextRGA wrapper: its shadow omits text deletions and thus admits retained
+anchors. Erasure rejects a continuation admitted by that wrapper. Plain RGA
+instead rejects insertion after an observed deleted anchor. These are
+different issuance contracts; the wrapper control is not an impossibility
+theorem for plain RGA reclamation. Those measurement rows remain omitted.
 The new Lean RGA packing certificate retains every identifier; it has not yet
 been implemented or measured in the JavaScript runtime.
 

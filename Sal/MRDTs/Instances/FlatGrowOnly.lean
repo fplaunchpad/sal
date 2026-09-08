@@ -36,20 +36,10 @@ theorem all_comm (a b : Op (D A).AppOp) :
   exact bor_rc (s x) (decide (x = a.2.2)) (decide (x = b.2.2))
 
 theorem replayLaws : ReplayLaws (D A).toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h; exact absurd (all_comm a b) h
-    · rintro (h | h) <;>
-        (rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h;
-         exact RcRes.noConfusion h)
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
-    exact RcRes.noConfusion h
-  · intro s a b c π _ _ _ h _
-    rw [show (D A).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws (D A) := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -96,6 +86,7 @@ def sequential : SequentialRefinement (D A) spec.toSequentialMachine where
 
 noncomputable def replayAdequate : ReplayAdequateMRDT (D A) where
   issuance := generation
+  rc := ReplayPolicy.unconstrained (D A).toUpdateSig
   replayAdequacy := replayAdequacy
   Machine := spec.toSequentialMachine
   sequential := sequential
@@ -106,11 +97,14 @@ ordinary and virtual-merge-base result from the replay theorem without adding a
 datatype-specific legality argument. -/
 noncomputable def verified : VerifiedMRDT (D A) where
   issuance := generation
-  interaction := InteractionSpec.raw (D A)
+  rc := ReplayPolicy.unconstrained (D A).toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := (fun s q => s = q)
   sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
+    (fun C _ => join C.replayContext)
+    all_comm
+    (fun _ _ => rfl)
     (fun _ => True.intro)
     (fun ops => sequential.sound ops True.intro)
     (fun _ _ => rfl)

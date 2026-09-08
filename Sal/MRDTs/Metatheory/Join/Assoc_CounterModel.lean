@@ -202,11 +202,10 @@ theorem AWSetF_not_comm_rem_add {e₁ e₂ : Op AWSetF.AppOp}
 
 theorem AWSetF_rc_non_comm_directional :
     ∀ o₁ o₂ : Op AWSetF.AppOp,
-      distinctOps o₁ o₂ →
       (¬ AWSetF.commutes o₁ o₂ ↔
        (AWSetF.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
         AWSetF.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
-  intro o₁ o₂ _
+  intro o₁ o₂
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
     simp only [AWSetF_rc, awRc_eq, h₁, h₂]
   · constructor
@@ -598,7 +597,9 @@ theorem AWSetF_not_binaryJoin : ¬ BinaryJoin AWSetF := by
   · rcases hcases y hy_mem with rfl | rfl
     · -- ρ = [eF, aF]: violates the mandatory loOn-edge aF → eF.
       have hedge : loOn flagConfig (evF₁ ∪ evF₂) aF eF :=
-        Or.inl ⟨⟨rfl, rfl⟩, AWSetF_not_comm_add_rem rfl rfl⟩
+        Or.inl ⟨⟨rfl, rfl⟩,
+          (AWSetF_rc_non_comm_directional aF eF).mp
+            (AWSetF_not_comm_add_rem rfl rfl)⟩
       exact (List.pairwise_cons.mp hr).1 aF List.mem_cons_self hedge
     · exact absurd rfl hxy
 

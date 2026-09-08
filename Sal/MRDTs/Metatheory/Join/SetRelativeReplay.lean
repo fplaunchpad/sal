@@ -1,4 +1,5 @@
 import Sal.MRDTs.Metatheory.Join.ReplayOrderBasics
+import Sal.MRDTs.Framework.Base.FiniteOrder
 
 /-!
 # Set-relative linearization order (`loOn`) and its convergence theory
@@ -92,7 +93,6 @@ structure BinaryMergeLaws (D : UpdateSig) [ReplayPolicy D]
     [HistoricalBinaryMerge D] : Prop where
   rc_non_comm_directional :
     ∀ o₁ o₂ : Op D.AppOp,
-      distinctOps o₁ o₂ →
       (¬ D.commutes o₁ o₂ ↔
        (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
         D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
@@ -155,10 +155,10 @@ version being linearized instead of over the whole configuration.
 implied by `vis_tgt`). -/
 def loOn (C : ReplayContext D) (ev : Set (Op D.AppOp))
     (e₁ e₂ : Op D.AppOp) : Prop :=
-  (C.vis e₁ e₂ ∧ ¬ D.commutes e₁ e₂)
+  (C.vis e₁ e₂ ∧ (D.rc e₁ e₂ ∨ D.rc e₂ e₁))
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.replayOrder e₁ e₂ = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃ ∈ ev, C.vis e₂ e₃ ∧ ¬ D.commutes e₂ e₃ )
+      ∧ D.rc e₁ e₂
+      ∧ ¬ ∃ e₃ ∈ ev, C.vis e₂ e₃ ∧ (D.rc e₂ e₃ ∨ D.rc e₃ e₂) )
 
 /-- The configuration-global `lo` is contained in every `loOn`:
 a `lo C`-edge asserts *no absorber anywhere*, hence none in `ev`. -/
@@ -177,12 +177,6 @@ theorem loOn_mono {C : ReplayContext D} {ev ev' : Set (Op D.AppOp)}
   · exact Or.inl h
   · exact Or.inr ⟨h₁, h₂, h₃,
       fun ⟨e₃, he₃, hv, hnc⟩ => h₄ ⟨e₃, h_sub he₃, hv, hnc⟩⟩
-
-/-- The vis-flavored edge lives in every `loOn`. -/
-theorem loOn_of_vis_noncomm {C : ReplayContext D}
-    {ev : Set (Op D.AppOp)} {a b : Op D.AppOp}
-    (hv : C.vis a b) (hnc : ¬ D.commutes a b) : loOn C ev a b :=
-  Or.inl ⟨hv, hnc⟩
 
 /-- A permutation respecting `loOn C ev` respects the coarser
 `loOn C ev'` for any larger `ev'`. -/
@@ -248,6 +242,171 @@ def loOnNe (C : ReplayContext D) (T : Set (Op D.AppOp))
     (a b : Op D.AppOp) : Prop :=
   a ≠ b ∧ a ∈ T ∧ b ∈ T ∧ loOn C T a b
 
+private def LoVisEdge (C : Sal.MRDTs.Foundation.ReplayContext D)
+    (T : Set (Op D.AppOp)) (a b : Op D.AppOp) : Prop :=
+  loOnNe C T a b ∧ C.vis a b
+
+private def LoRcEdge (C : Sal.MRDTs.Foundation.ReplayContext D)
+    (T : Set (Op D.AppOp)) (a b : Op D.AppOp) : Prop :=
+  loOnNe C T a b ∧ ¬ C.vis a b
+
+private theorem loOnNe_vis_or_rc
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
+    {T : Set (Op D.AppOp)} {a b : Op D.AppOp}
+    (h : loOnNe C T a b) : LoVisEdge C T a b ∨ LoRcEdge C T a b := by
+  rcases h.2.2.2 with hvis | hrc
+  · exact Or.inl ⟨h, hvis.1⟩
+  · exact Or.inr ⟨h, hrc.1⟩
+
+/-- The absorber clause prevents an active replay-policy edge from being
+followed by a visibility-conflict edge.  This fact does not require
+`no_rc_chain`. -/
+private theorem loRcEdge_not_followed_by_loVisEdge
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
+    {T : Set (Op D.AppOp)} {a b c : Op D.AppOp}
+    (hab : LoRcEdge C T a b) (hbc : LoVisEdge C T b c) : False := by
+  rcases hab with ⟨⟨_, _, _, hloab⟩, hnvisab⟩
+  rcases hloab with hvisab | hrcab
+  · exact hnvisab hvisab.1
+  · rcases hbc with ⟨⟨_, _, hcT, hlobc⟩, hvisbc⟩
+    rcases hlobc with hvisbc' | hrcbc
+    · exact hrcab.2.2.2 ⟨c, hcT, hvisbc, hvisbc'.2⟩
+    · exact hrcbc.1 hvisbc
+
+/-- Every `loOnNe` path consists of a visibility prefix followed by a
+possibly nonempty replay-policy suffix.  The old `no_rc_chain` argument made
+that suffix a single edge; the absorber clause alone suffices for this more
+general decomposition. -/
+private theorem transGen_loOnNe_vis_then_rc
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
+    {T : Set (Op D.AppOp)} {a b : Op D.AppOp}
+    (h : Relation.TransGen (loOnNe C T) a b) :
+    Relation.TransGen (LoVisEdge C T) a b ∨
+      ∃ x, Relation.ReflTransGen (LoVisEdge C T) a x ∧
+        Relation.TransGen (LoRcEdge C T) x b := by
+  induction h with
+  | single h =>
+      rcases loOnNe_vis_or_rc h with hvis | hrc
+      · exact Or.inl (.single hvis)
+      · exact Or.inr ⟨_, .refl, .single hrc⟩
+  | @tail mid c _ hmc ih =>
+      rcases loOnNe_vis_or_rc hmc with hmcvis | hmcrc
+      · rcases ih with hvis | ⟨x, hvis, hrc⟩
+        · exact Or.inl (hvis.tail hmcvis)
+        · rcases Relation.TransGen.tail'_iff.mp hrc with ⟨y, _, hymid⟩
+          exact False.elim (loRcEdge_not_followed_by_loVisEdge hymid hmcvis)
+      · rcases ih with hvis | ⟨x, hvis, hrc⟩
+        · exact Or.inr ⟨mid, hvis.to_reflTransGen, .single hmcrc⟩
+        · exact Or.inr ⟨x, hvis, hrc.tail hmcrc⟩
+
+/-- Acyclic replay-policy edges are enough to make the set-relative replay
+order acyclic.  Visibility cycles are excluded separately; the absorber
+clause rules out the only boundary that a mixed cycle would require. -/
+theorem loOnNe_acyclic_of_policy_paths
+    {C : Sal.MRDTs.Foundation.ReplayContext D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
+    {T : Set (Op D.AppOp)}
+    (hRc : ∀ a, ¬ Relation.TransGen
+      (fun x y => loOnNe C T x y ∧ ¬ C.vis x y) a a)
+    (a : Op D.AppOp) :
+    ¬ Relation.TransGen (loOnNe C T) a a := by
+  intro hcycle
+  rcases transGen_loOnNe_vis_then_rc hcycle with hvis | ⟨x, hvis, hrc⟩
+  · have hvis' : Relation.TransGen C.vis a a :=
+      hvis.lift id (fun _ _ h => h.2)
+    have htrans : Transitive C.vis := fun _ _ _ => h_vis_trans
+    rw [Relation.transGen_eq_self htrans] at hvis'
+    exact h_vis_irrefl a hvis'
+  · rcases Relation.reflTransGen_iff_eq_or_transGen.mp hvis with hxa | hvis'
+    · subst x
+      exact hRc a hrc
+    · rcases Relation.TransGen.head'_iff.mp hvis' with ⟨y, hay, _⟩
+      rcases Relation.TransGen.tail'_iff.mp hrc with ⟨z, _, hza⟩
+      exact loRcEdge_not_followed_by_loVisEdge hza hay
+
+/-- Finite enumeration depends only on acyclicity of the restricted order. -/
+theorem exists_loOn_respecting_perm_of_acyclic
+    {C : ReplayContext D} {E : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
+    (hperm : listPermOf l E)
+    (hacyclic : ∀ a, ¬ Relation.TransGen (loOnNe C E) a a) :
+    ∃ ρ, listPermOf ρ E ∧ respects ρ (loOn C E) := by
+  obtain ⟨ρ, hp, hresp⟩ := exists_respecting_perm
+    (R := Relation.TransGen (loOnNe C E))
+    (fun hab hbc => hab.trans hbc)
+    hacyclic l
+  have hpE : listPermOf ρ E :=
+    ⟨hp.nodup hperm.1, fun a => (hp.mem_iff (a := a)).symm.trans (hperm.2 a)⟩
+  refine ⟨ρ, hpE, ?_⟩
+  have hall : ∀ a ∈ ρ, a ∈ E := fun a ha => (hpE.2 a).mp ha
+  have hnodup := hpE.1
+  unfold respects at hresp ⊢
+  clear hp hperm hpE l
+  induction ρ with
+  | nil => exact List.Pairwise.nil
+  | cons a rest ih =>
+      rw [List.pairwise_cons] at hresp ⊢
+      rw [List.nodup_cons] at hnodup
+      refine ⟨?_, ih hresp.2
+        (fun x hx => hall x (List.mem_cons_of_mem _ hx)) hnodup.2⟩
+      intro b hb hba
+      apply hresp.1 b hb
+      apply Relation.TransGen.single
+      have hne : b ≠ a := by
+        intro heq
+        subst b
+        exact hnodup.1 hb
+      exact ⟨hne, hall b (List.mem_cons_of_mem _ hb),
+        hall a List.mem_cons_self, hba⟩
+
+/-- A finite nonempty event set has a maximal event whenever its order is acyclic. -/
+theorem exists_loOn_maximal_of_acyclic
+    {C : ReplayContext D} {T : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
+    (h_l : listPermOf l T)
+    (hacyclic : ∀ a, ¬ Relation.TransGen (loOnNe C T) a a)
+    (h_ne : T.Nonempty) :
+    ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x := by
+  suffices walk : ∀ n (rem : List (Op D.AppOp)), rem.length = n →
+      rem.Nodup →
+      ∀ cur ∈ T,
+      (∀ x ∈ T, x ∉ rem → x ≠ cur →
+        Relation.TransGen (loOnNe C T) x cur) →
+      ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x by
+    obtain ⟨t₀, ht₀⟩ := h_ne
+    exact walk l.length l rfl h_l.1 t₀ ht₀
+      (fun x hx hx_not_l _ => absurd ((h_l.2 x).mpr hx) hx_not_l)
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro rem h_len h_nodup cur h_cur h_reach
+    by_cases h_max : ∃ x ∈ T, x ≠ cur ∧ loOn C T cur x
+    · obtain ⟨x, hx_T, hx_ne, h_edge⟩ := h_max
+      have h_edge_ne : loOnNe C T cur x :=
+        ⟨fun h => hx_ne h.symm, h_cur, hx_T, h_edge⟩
+      by_cases hx_rem : x ∈ rem
+      · have h_len' : (rem.erase x).length < n := by
+          have h_pos : 0 < rem.length := List.length_pos_of_mem hx_rem
+          rw [List.length_erase_of_mem hx_rem]
+          omega
+        refine ih _ h_len' (rem.erase x) rfl (h_nodup.erase x)
+          x hx_T ?_
+        intro y hy_T hy_not hy_ne
+        by_cases hy_cur : y = cur
+        · subst hy_cur
+          exact Relation.TransGen.single h_edge_ne
+        · have hy_not_rem : y ∉ rem := fun h_in =>
+            hy_not (h_nodup.mem_erase_iff.mpr ⟨hy_ne, h_in⟩)
+          exact (h_reach y hy_T hy_not_rem hy_cur).tail h_edge_ne
+      · exfalso
+        have h_x_reaches_cur : Relation.TransGen (loOnNe C T) x cur :=
+          h_reach x hx_T hx_rem hx_ne
+        exact hacyclic x
+          (h_x_reaches_cur.tail h_edge_ne)
+    · push_neg at h_max
+      exact ⟨cur, h_cur, fun x hx hx_ne h_lo =>
+        (h_max x hx hx_ne) h_lo⟩
+
 /-- **rc-flavored edges have no successors inside the set.** -/
 theorem loOn_rc_no_succ [HistoricalBinaryMerge D]
     (hVC : BinaryMergeLaws D) {C : ReplayContext D}
@@ -258,11 +417,11 @@ theorem loOn_rc_no_succ [HistoricalBinaryMerge D]
     (hx : x ∈ T) (hy : y ∈ T) (hz : z ∈ T)
     (h_rc_edge : ¬ C.vis x y ∧ ¬ C.vis y x
       ∧ D.replayOrder x y = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ ¬ D.commutes y e₃)
+      ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ (D.rc y e₃ ∨ D.rc e₃ y))
     (h_edge : loOn C T y z) : False := by
   obtain ⟨_, _, h_rc, h_no_abs⟩ := h_rc_edge
-  rcases h_edge with ⟨hv, hnc⟩ | ⟨_, _, h_rc', _⟩
-  · exact h_no_abs ⟨z, hz, hv, hnc⟩
+  rcases h_edge with ⟨hv, hrc⟩ | ⟨_, _, h_rc', _⟩
+  · exact h_no_abs ⟨z, hz, hv, hrc⟩
   · exact hVC.no_rc_chain x y z
       (distinctOps_of_events (h_in_C x hx) (h_in_C y hy) hxy_ne)
       (distinctOps_of_events (h_in_C y hy) (h_in_C z hz) hyz_ne)
@@ -284,7 +443,7 @@ theorem transGen_loOnNe_structure [HistoricalBinaryMerge D]
     (∃ x, x ≠ b ∧ x ∈ T ∧
       (¬ C.vis x b ∧ ¬ C.vis b x
         ∧ D.replayOrder x b = RcRes.Fst_then_snd
-        ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ ¬ D.commutes b e₃)) := by
+        ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ (D.rc b e₃ ∨ D.rc e₃ b))) := by
   induction h with
   | single h_edge =>
     obtain ⟨hne, hxT, hyT, h_lo⟩ := h_edge
@@ -312,22 +471,20 @@ theorem loOnNe_acyclic [HistoricalBinaryMerge D]
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     (a : Op D.AppOp) :
     ¬ Relation.TransGen (loOnNe C T) a a := by
-  intro h_cycle
-  rcases transGen_loOnNe_structure hVC h_vis_trans h_in_C h_cycle with
-    h_vis | ⟨x, hx_ne, hxT, h_rc_edge⟩
-  · exact h_vis_irrefl a h_vis
-  · -- The cycle also gives `a` an outgoing edge; compose it with the
-    -- rc-flavored edge `x → a` to contradict `loOn_rc_no_succ`.
-    have h_head : ∀ {p q : Op D.AppOp},
-        Relation.TransGen (loOnNe C T) p q →
-        ∃ c, loOnNe C T p c := by
-      intro p q h
-      induction h with
-      | single h => exact ⟨_, h⟩
-      | tail _ _ ih => exact ih
-    obtain ⟨c, hac_ne, haT, hcT, h_lo⟩ := h_head h_cycle
-    exact loOn_rc_no_succ hVC h_in_C hx_ne hac_ne hxT haT hcT
-      h_rc_edge h_lo
+  apply loOnNe_acyclic_of_policy_paths h_vis_trans h_vis_irrefl ?_ a
+  intro x cycle
+  have edgeRc : ∀ {u v}, loOnNe C T u v ∧ ¬ C.vis u v →
+      distinctOps u v ∧ D.rc u v := by
+    intro u v edge
+    rcases edge with ⟨⟨hne, hu, hv, hvis | hrc⟩, hnvis⟩
+    · exact (hnvis hvis.1).elim
+    · exact ⟨distinctOps_of_events (h_in_C u hu) (h_in_C v hv) hne, hrc.2.2.1⟩
+  cases cycle with
+  | single edge => exact edge.1.1 rfl
+  | @tail mid _ path last =>
+      obtain ⟨prev, _, prior⟩ := Relation.TransGen.tail'_iff.mp path
+      exact hVC.no_rc_chain prev mid x (edgeRc prior).1 (edgeRc last).1
+        ⟨(edgeRc prior).2, (edgeRc last).2⟩
 
 /-- **A `loOn`-maximal element exists in every finite nonempty set**
 (finiteness via an enumerating list). Maximal = no `loOn C T`-edge to
@@ -350,48 +507,8 @@ theorem exists_loOn_maximal [HistoricalBinaryMerge D]
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     (h_ne : T.Nonempty) :
     ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x := by
-  suffices walk : ∀ n (rem : List (Op D.AppOp)), rem.length = n →
-      rem.Nodup →
-      ∀ cur ∈ T,
-      (∀ x ∈ T, x ∉ rem → x ≠ cur →
-        Relation.TransGen (loOnNe C T) x cur) →
-      ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x by
-    obtain ⟨t₀, ht₀⟩ := h_ne
-    exact walk l.length l rfl h_l.1 t₀ ht₀
-      (fun x hx hx_not_l _ => absurd ((h_l.2 x).mpr hx) hx_not_l)
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro rem h_len h_nodup cur h_cur h_reach
-    by_cases h_max : ∃ x ∈ T, x ≠ cur ∧ loOn C T cur x
-    · obtain ⟨x, hx_T, hx_ne, h_edge⟩ := h_max
-      have h_edge_ne : loOnNe C T cur x :=
-        ⟨fun h => hx_ne h.symm, h_cur, hx_T, h_edge⟩
-      by_cases hx_rem : x ∈ rem
-      · -- Step to `x`; recurse on the shrunk remainder.
-        have h_len' : (rem.erase x).length < n := by
-          have h_pos : 0 < rem.length := List.length_pos_of_mem hx_rem
-          rw [List.length_erase_of_mem hx_rem]
-          omega
-        refine ih _ h_len' (rem.erase x) rfl (h_nodup.erase x)
-          x hx_T ?_
-        intro y hy_T hy_not hy_ne
-        by_cases hy_cur : y = cur
-        · subst hy_cur
-          exact Relation.TransGen.single h_edge_ne
-        · have hy_not_rem : y ∉ rem := fun h_in =>
-            hy_not (h_nodup.mem_erase_iff.mpr ⟨hy_ne, h_in⟩)
-          exact (h_reach y hy_T hy_not_rem hy_cur).tail h_edge_ne
-      · -- `x` was already visited: the walk closes a cycle.
-        exfalso
-        have h_x_reaches_cur : Relation.TransGen (loOnNe C T) x cur :=
-          h_reach x hx_T hx_rem hx_ne
-        exact loOnNe_acyclic hVC h_vis_trans h_vis_irrefl h_in_C x
-          (h_x_reaches_cur.tail h_edge_ne)
-    · -- `cur` has no outgoing edge: it is maximal.
-      push_neg at h_max
-      exact ⟨cur, h_cur, fun x hx hx_ne h_lo =>
-        (h_max x hx hx_ne) h_lo⟩
+  exact exists_loOn_maximal_of_acyclic h_l
+    (loOnNe_acyclic hVC h_vis_trans h_vis_irrefl h_in_C) h_ne
 
 /-- **Every finite set has a `loOn`-respecting enumeration.**
 Peel a `loOn`-maximal element, enumerate the rest recursively, append
@@ -407,68 +524,8 @@ theorem exists_loOn_respecting_perm [HistoricalBinaryMerge D]
     (h_in_C : ∀ a ∈ T, a ∈ C.events) :
     ∃ ρ : List (Op D.AppOp),
       listPermOf ρ T ∧ respects ρ (loOn C T) := by
-  suffices gen : ∀ n (T : Set (Op D.AppOp)) (l : List (Op D.AppOp)),
-      l.length = n → listPermOf l T → (∀ a ∈ T, a ∈ C.events) →
-      ∃ ρ, listPermOf ρ T ∧ respects ρ (loOn C T) by
-    exact gen _ T l rfl h_l h_in_C
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro T l h_len h_perm h_in_C
-    rcases Set.eq_empty_or_nonempty T with rfl | h_ne
-    · exact ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil⟩
-    · obtain ⟨m, hm, h_max⟩ :=
-        exists_loOn_maximal hVC h_vis_trans h_vis_irrefl h_perm
-          h_in_C h_ne
-      have hm_in_l : m ∈ l := (h_perm.2 m).mpr hm
-      -- Enumerate `T \ {m}` by `l.erase m`.
-      have h_perm' : listPermOf (l.erase m) (T \ {m}) := by
-        refine ⟨h_perm.1.erase m, fun a => ?_⟩
-        rw [h_perm.1.mem_erase_iff]
-        constructor
-        · rintro ⟨hne, ha⟩
-          exact ⟨(h_perm.2 a).mp ha, hne⟩
-        · rintro ⟨ha, hne⟩
-          exact ⟨hne, (h_perm.2 a).mpr ha⟩
-      have h_len' : (l.erase m).length < n := by
-        have h_pos : 0 < l.length := List.length_pos_of_mem hm_in_l
-        rw [List.length_erase_of_mem hm_in_l]
-        omega
-      obtain ⟨ρ', hρ'_perm, hρ'_resp⟩ :=
-        ih _ h_len' (T \ {m}) (l.erase m) rfl h_perm'
-          (fun a ha => h_in_C a ha.1)
-      have hm_not_ρ' : m ∉ ρ' := fun h =>
-        ((hρ'_perm.2 m).mp h).2 rfl
-      refine ⟨ρ' ++ [m], ⟨?_, fun a => ?_⟩, ?_⟩
-      · rw [List.nodup_append]
-        refine ⟨hρ'_perm.1, List.nodup_singleton _, ?_⟩
-        intro x hx y hy
-        rw [List.mem_singleton] at hy; subst hy
-        intro heq; subst heq
-        exact hm_not_ρ' hx
-      · rw [List.mem_append, List.mem_singleton]
-        constructor
-        · rintro (h | rfl)
-          · exact ((hρ'_perm.2 a).mp h).1
-          · exact hm
-        · intro ha
-          by_cases hae : a = m
-          · exact Or.inr hae
-          · exact Or.inl ((hρ'_perm.2 a).mpr ⟨ha, hae⟩)
-      · unfold respects
-        rw [List.pairwise_append]
-        refine ⟨respects_loOn_mono (fun a ha => ha.1) hρ'_resp,
-          List.pairwise_singleton _ _, ?_⟩
-        intro y hy b hb
-        rw [List.mem_singleton] at hb; subst hb
-        obtain ⟨hy_T, hy_ne⟩ := (hρ'_perm.2 y).mp hy
-        exact h_max y hy_T hy_ne
-
-/-! ### 3. Swap and bubble machinery re-targeted at `loOn`
-
-Identical in structure to `applySeq_swap_lo_incomparable` /
-`applySeq_bubble_to_front`; only the relation whose first disjunct is
-used in the same-replica case changes from `lo C` to `loOn C ev`. -/
+  exact exists_loOn_respecting_perm_of_acyclic h_l
+    (loOnNe_acyclic hVC h_vis_trans h_vis_irrefl h_in_C)
 
 /-- Swap adjacent `loOn`-incomparable events (Path 1 version). -/
 theorem applySeq_swap_loOn_incomparable
@@ -492,15 +549,16 @@ theorem applySeq_swap_loOn_incomparable
   · exact applySeq_swap_commute_basic h_comm pfx sfx s
   · obtain ⟨_, _, hL_a, h_a_in_s⟩ := h_a_in_C
     obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
+    have h_dist_ab : distinctOps a b :=
+      C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
+    have h_rc_pair := (hVC.rc_non_comm_directional a b).mp h_comm
     by_cases h_same : a.rep = b.rep
     · exfalso
       have h_vis :=
         C.vis_total_same_replica hL_a h_a_in_s hL_b h_b_in_s h_ne h_same
       rcases h_vis with hvab | hvba
-      · exact h_not_lo_ab (Or.inl ⟨hvab, h_comm⟩)
-      · have h_comm_ba : ¬ D.commutes b a :=
-          fun h => h_comm (fun s => (h s).symm)
-        exact h_not_lo_ba (Or.inl ⟨hvba, h_comm_ba⟩)
+      · exact h_not_lo_ab (Or.inl ⟨hvab, h_rc_pair⟩)
+      · exact h_not_lo_ba (Or.inl ⟨hvba, h_rc_pair.symm⟩)
     · have h_dist_ab : distinctOps a b :=
         C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
@@ -591,7 +649,8 @@ theorem convergence_on
                    (π₁ π₂ : List (Op D.AppOp)),
       π₁.length = n →
       (∀ a ∈ evC, a ∈ C.events) →
-      (∀ x ∈ evC, ∀ z ∈ ev, C.vis x z → ¬ D.commutes x z → z ∈ evC) →
+      (∀ x ∈ evC, ∀ z ∈ ev, C.vis x z →
+        (D.rc x z ∨ D.rc z x) → z ∈ evC) →
       listPermOf π₁ evC → listPermOf π₂ evC →
       respects π₁ (loOn C ev) → respects π₂ (loOn C ev) →
       applySeq D s π₁ = applySeq D s π₂ by
@@ -686,36 +745,38 @@ theorem convergence_on
           have h_not_lo_ye : ¬ loOn C ev y e := h_not_lo_bwd y hy_in_σ
           have h_not_lo_ey : ¬ loOn C ev e y := h_not_lo_fwd y hy_in_σ
           have h_rc_disj :=
-            (hVC.rc_non_comm_directional y e h_dist_ye).mp h_nc
+            (hVC.rc_non_comm_directional y e).mp h_nc
           rcases h_rc_disj with h_rc_ye | h_rc_ey
           · -- Case rc(y, e) = Fst. The failed edge `loOn ev y e`
             -- yields an absorber of e inside ev.
             have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inl h_rc_ye⟩)
             have h_not_vis_ey : ¬ C.vis e y := by
               intro hv
-              have h_nc_ey : ¬ D.commutes e y :=
-                fun h => h_nc (fun s => (h s).symm)
-              exact h_not_lo_ey (Or.inl ⟨hv, h_nc_ey⟩)
+              exact h_not_lo_ey (Or.inl ⟨hv, Or.inr h_rc_ye⟩)
             have h_overwriter_e :
-                ∃ e₃ ∈ ev, C.vis e e₃ ∧ ¬ D.commutes e e₃ := by
+                ∃ e₃ ∈ ev, C.vis e e₃ ∧ (D.rc e e₃ ∨ D.rc e₃ e) := by
               by_contra h_no_ow
               exact h_not_lo_ye
                 (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_rc_ye, h_no_ow⟩)
-            obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_nc_ee₃⟩ := h_overwriter_e
+            obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_rc_ee₃⟩ := h_overwriter_e
+            have h_nc_ee₃ := (hVC.rc_non_comm_directional e e₃).mpr h_rc_ee₃
+            have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
             have h_e₃_in_evC : e₃ ∈ evC :=
-              h_abs e he_in_ev e₃ h_e₃_ev h_vis_ee₃ h_nc_ee₃
+              h_abs e he_in_ev e₃ h_e₃_ev h_vis_ee₃ h_rc_ee₃
             have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
               (hmem₂ e₃).mpr h_e₃_in_evC
-            have h_lo_ee₃ : loOn C ev e e₃ := Or.inl ⟨h_vis_ee₃, h_nc_ee₃⟩
+            have h_lo_ee₃ : loOn C ev e e₃ :=
+              Or.inl ⟨h_vis_ee₃, h_rc_ee₃⟩
             have h_e₃_in_τ : e₃ ∈ τ := by
               rcases List.mem_append.mp h_e₃_in_π₂ with h | h
               · exfalso
                 have hresp_pair := List.pairwise_append.mp h₂r
                 exact hresp_pair.2.2 e₃ h e List.mem_cons_self h_lo_ee₃
               · rcases List.mem_cons.mp h with h_eq | h_τ
-                · exact absurd h_eq.symm
-                    (fun h_eq2 => h_nc_ee₃ (fun s => by rw [h_eq2]))
+                · exact absurd h_eq.symm (fun h_eq2 => by
+                    subst h_eq2
+                    exact h_nc_ee₃ (fun _ => rfl))
                 · exact h_τ
             have h_e₃_ne_y : e₃ ≠ y := by
               intro h_eq
@@ -727,45 +788,46 @@ theorem convergence_on
               intro h_eq
               rw [h_eq] at h_e₃_in_τ
               exact he_notin_τ h_e₃_in_τ
-            obtain ⟨τ_a, τ_b, hτ_split⟩ := List.append_of_mem h_e₃_in_τ
-            have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
-            have h_dist_ye₃ : distinctOps y e₃ :=
-              distinctOps_of_events hy_in_C h_e₃_in_C
-                (fun h => h_e₃_ne_y h.symm)
             have h_dist_ee₃ : distinctOps e e₃ :=
               distinctOps_of_events he_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_e h.symm)
+            obtain ⟨τ_a, τ_b, hτ_split⟩ := List.append_of_mem h_e₃_in_τ
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              distinctOps_of_events hy_in_C h_e₃_in_C
+                (fun h => h_e₃_ne_y h.symm)
             refine ⟨e₃, β ++ τ_a, τ_b, ?_, h_dist_ye₃, h_dist_ee₃,
                     Or.inl ⟨h_rc_ye, h_nc_ee₃⟩⟩
             rw [hτ_split, List.append_assoc]
           · -- Case rc(e, y) = Fst. Absorber of y inside ev.
             have h_not_vis_ey : ¬ C.vis e y := fun hv =>
-              h_not_lo_ey (Or.inl ⟨hv, fun h => h_nc (fun s => (h s).symm)⟩)
+              h_not_lo_ey (Or.inl ⟨hv, Or.inl h_rc_ey⟩)
             have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inr h_rc_ey⟩)
             have h_overwriter_y :
-                ∃ e₃ ∈ ev, C.vis y e₃ ∧ ¬ D.commutes y e₃ := by
+                ∃ e₃ ∈ ev, C.vis y e₃ ∧ (D.rc y e₃ ∨ D.rc e₃ y) := by
               by_contra h_no_ow
               exact h_not_lo_ey
                 (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_rc_ey, h_no_ow⟩)
-            obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_nc_ye₃⟩ := h_overwriter_y
+            obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_rc_ye₃⟩ := h_overwriter_y
+            have h_nc_ye₃ := (hVC.rc_non_comm_directional y e₃).mpr h_rc_ye₃
+            have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
             have h_e₃_in_evC : e₃ ∈ evC :=
-              h_abs y hy_in_ev e₃ h_e₃_ev h_vis_ye₃ h_nc_ye₃
+              h_abs y hy_in_ev e₃ h_e₃_ev h_vis_ye₃ h_rc_ye₃
             have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
               (hmem₂ e₃).mpr h_e₃_in_evC
-            have h_lo_ye₃ : loOn C ev y e₃ := Or.inl ⟨h_vis_ye₃, h_nc_ye₃⟩
+            have h_lo_ye₃ : loOn C ev y e₃ :=
+              Or.inl ⟨h_vis_ye₃, h_rc_ye₃⟩
             have h_e₃_ne_e : e₃ ≠ e := fun h_eq => by
               subst h_eq; exact h_not_lo_ye h_lo_ye₃
-            have h_e₃_ne_y : e₃ ≠ y := fun h_eq => by
-              subst h_eq
-              exact h_nc_ye₃ (fun _ => rfl)
-            have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
-            have h_dist_ye₃ : distinctOps y e₃ :=
-              distinctOps_of_events hy_in_C h_e₃_in_C
-                (fun h => h_e₃_ne_y h.symm)
             have h_dist_ee₃ : distinctOps e e₃ :=
               distinctOps_of_events he_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_e h.symm)
+            have h_e₃_ne_y : e₃ ≠ y := fun h_eq => by
+              subst h_eq
+              exact h_nc_ye₃ (fun _ => rfl)
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              distinctOps_of_events hy_in_C h_e₃_in_C
+                (fun h => h_e₃_ne_y h.symm)
             have h_e₃_in_βτ : e₃ ∈ β ++ τ := by
               rcases List.mem_append.mp h_e₃_in_π₂ with h | h
               · rcases List.mem_append.mp h with h_α | h_yβ
@@ -792,13 +854,13 @@ theorem convergence_on
       have h_evC'_in_C : ∀ a ∈ evC \ {e}, a ∈ C.events :=
         fun a ha => h_evC_in_C a ha.1
       have h_abs' : ∀ x ∈ evC \ {e}, ∀ z ∈ ev,
-          C.vis x z → ¬ D.commutes x z → z ∈ evC \ {e} := by
-        intro x hx z hz hv hnc
-        refine ⟨h_abs x hx.1 z hz hv hnc, ?_⟩
+          C.vis x z → (D.rc x z ∨ D.rc z x) → z ∈ evC \ {e} := by
+        intro x hx z hz hv hrc
+        refine ⟨h_abs x hx.1 z hz hv hrc, ?_⟩
         intro hz_eq
         have hz_eq' : z = e := hz_eq
-        rw [hz_eq'] at hv hnc
-        have hlo_xe : loOn C ev x e := Or.inl ⟨hv, hnc⟩
+        rw [hz_eq'] at hv hrc
+        have hlo_xe : loOn C ev x e := Or.inl ⟨hv, hrc⟩
         exact h_e_lo_min x hx.1 hx.2 hlo_xe
       have hp₁' : listPermOf π₁' (evC \ {e}) := by
         refine ⟨hnd₁.2, fun a => ?_⟩
@@ -1300,7 +1362,9 @@ theorem isCanonicalState_empty {D : UpdateSig} [ReplayPolicy D] {C : ReplayConte
 /-- Backward closure survives removing a union-maximal event: a
 `vis ∧ ¬commutes` edge out of `e` would be a `loOn`-edge in every
 relation, contradicting maximality. -/
-theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext D}
+theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D]
+    (hrc : ∀ a b : Op D.AppOp,
+      ¬ D.commutes a b → (D.rc a b ∨ D.rc b a)) {C : ReplayContext D}
     {ev evU : Set (Op D.AppOp)} {e : Op D.AppOp}
     (h_sub : ev ⊆ evU)
     (h_closed : ∀ a b, C.vis a b → ¬ D.commutes a b → b ∈ ev → a ∈ ev)
@@ -1310,9 +1374,10 @@ theorem closure_diff_of_max {D : UpdateSig} [ReplayPolicy D] {C : ReplayContext 
   intro a b hv hnc ⟨hb, hb_ne⟩
   refine ⟨h_closed a b hv hnc hb, ?_⟩
   intro ha_eq
-  have ha_eq' : a = e := ha_eq
-  subst ha_eq'
-  exact h_max b (h_sub hb) hb_ne (Or.inl ⟨hv, hnc⟩)
+  have hrc' := hrc a b hnc
+  have hlo : loOn C evU a b := Or.inl ⟨hv, hrc'⟩
+  rw [ha_eq] at hlo
+  exact h_max b (h_sub hb) hb_ne hlo
 
 /-- Re-attach a union-maximal event to a canonical state of the
 set-minus-it. -/
@@ -1466,8 +1531,10 @@ theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
         have h_ih := ih (m₁.length + m₂.length) (by omega)
           (ev₁ \ {e}) (ev₂ \ {e}) t₁ t₂ m₁ m₂ rfl
           (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
-          (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
-          (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+          (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+            Set.subset_union_left h_cl₁ h_max)
+          (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+            Set.subset_union_right h_cl₂ h_max)
           hm₁ hrm₁ hfm₁ hm₂ hrm₂ hfm₂
         have h_set : (ev₁ \ {e}) ∪ (ev₂ \ {e}) = (ev₁ ∪ ev₂) \ {e} := by
           ext x
@@ -1493,7 +1560,8 @@ theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
         have h_ih := ih (m₁.length + l₂.length) (by omega)
           (ev₁ \ {e}) ev₂ t₁ s₂ m₁ l₂ rfl
           (fun a ha => h_in₁ a ha.1) h_in₂
-          (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
+          (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+            Set.subset_union_left h_cl₁ h_max)
           h_cl₂ hm₁ hrm₁ hfm₁ hp₂ hr₂ hf₂
         have h_set : (ev₁ \ {e}) ∪ ev₂ = (ev₁ ∪ ev₂) \ {e} := by
           ext x
@@ -1533,7 +1601,8 @@ theorem binaryJoin_of_peel {D : UpdateSig} [ReplayPolicy D]
       have h_ih := ih (l₁.length + m₂.length) (by omega)
         ev₁ (ev₂ \ {e}) s₁ t₂ l₁ m₂ rfl
         h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
-        (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+        (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+          Set.subset_union_right h_cl₂ h_max)
         hp₁ hr₁ hf₁ hm₂ hrm₂ hfm₂
       have h_set : ev₁ ∪ (ev₂ \ {e}) = (ev₁ ∪ ev₂) \ {e} := by
         ext x
@@ -1566,10 +1635,9 @@ theorem loOn_empty_of_all_comm {D : UpdateSig} [ReplayPolicy D]
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
     ¬ loOn C ev x y := by
-  rintro (⟨_, hnc⟩ | ⟨_, _, h_rc, _⟩)
-  · exact hnc (h_comm x y)
-  · exact (hVC.rc_non_comm_directional x y
-      (distinctOps_of_events hx hy hne)).mpr (Or.inl h_rc) (h_comm x y)
+  rintro (⟨_, hrc⟩ | ⟨_, _, h_rc, _⟩)
+  · exact (hVC.rc_non_comm_directional x y).mpr hrc (h_comm x y)
+  · exact (hVC.rc_non_comm_directional x y).mpr (Or.inl h_rc) (h_comm x y)
 
 /-- Any enumeration is canonical when all events commute. -/
 theorem isCanonicalState_of_all_comm {D : UpdateSig} [ReplayPolicy D]

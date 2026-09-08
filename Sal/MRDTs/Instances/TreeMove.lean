@@ -235,17 +235,10 @@ theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
   simp [D, or_left_comm]
 
 theorem replayLaws : ReplayLaws D.toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h
-      exact absurd (all_comm a b) h
-    · rintro (h | h) <;> exact RcRes.noConfusion h
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    exact RcRes.noConfusion h
-  · intro s a b c π _ _ _ h _
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws D := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -332,10 +325,30 @@ replica and payload tie-breakers already present in `eventKey`. -/
 def SequentialLegal (ops : List Event) : Prop :=
   ops.Nodup ∧ ops.Pairwise eventLE
 
+/-- Public histories preserve the issuer contract at a causal origin within
+the replay prefix, not necessarily at the entire merged prefix. -/
+def ClientLegal (ops : List Event) : Prop :=
+  SequentialLegal ops ∧
+  ∀ pre e post, ops = pre ++ e :: post →
+    ∃ origin : Finset Event, origin ⊆ pre.toFinset ∧ applicable e origin
+
 noncomputable def sequentialSpec : SequentialSpec D where
   toSequentialMachine := spec
-  Legal := SequentialLegal
+  Legal := ClientLegal
   query := fun q _ => visibleTree q
+
+theorem clientLegal_origin (ops : List Event) (h : sequentialSpec.Legal ops)
+    (pre : List Event) (e : Event) (post : List Event)
+    (split : ops = pre ++ e :: post) :
+    ∃ origin : Finset Event, origin ⊆ pre.toFinset ∧ applicable e origin :=
+  h.2 pre e post split
+
+theorem clientLegal_reserved (ops : List Event) (h : ClientLegal ops)
+    (e : Event) (member : e ∈ ops) :
+    e.2.2.child ≠ root ∧ e.2.2.child ≠ trash := by
+  obtain ⟨pre, post, split⟩ := List.mem_iff_append.mp member
+  obtain ⟨_, _, guard⟩ := h.2 pre e post split
+  exact guard.2.2.2
 
 theorem sequentialSound (ops : List Event) (h : SequentialLegal ops) :
     stateRel (applySeq D.toUpdateSig D.init ops) (spec.run ops) := by
@@ -350,9 +363,8 @@ noncomputable def sequential : SequentialRefinement D spec where
 
 theorem lo_false (C : Configuration D) (a b : Event) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnoncomm (all_comm a b)
-  · exact RcRes.noConfusion hrc
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem respects_lo (C : Configuration D) (ops : List Event) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -362,9 +374,10 @@ theorem respects_lo (C : Configuration D) (ops : List Event) :
       exact List.pairwise_cons.mpr ⟨fun b _ => lo_false C b e, ih⟩
 
 noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D generation
-    (InteractionSpec.raw D)
+    (ReplayPolicy.unconstrained D.toUpdateSig)
     sequentialSpec stateRel where
-  sound C _ replay := by
+  sound C exec replay := by
+    have hgood := exec.canonicalConfig (fun C _ => join C.replayContext)
     intro v s E hver
     obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
     have hstate : ops.toFinset = s := by
@@ -386,9 +399,46 @@ noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate D gen
         exact Finset.sort_toFinset s eventLE
       rw [← hπstate]
       exact hs
-    refine ⟨π, hpermπ,
-      respects_interactionLoOn_raw_of_lo (respects_lo C π),
-      hlegal, href, ?_⟩
+    have hvis : respects π C.vis := by
+      unfold respects
+      refine hlegal.2.imp ?_
+      intro a b hab hba
+      have hbaLE : eventLE b a := eventLE_of_timestamp_lt (C.causal_mono hba)
+      have heq : a = b := eventKey_injective (le_antisymm hab hbaLE)
+      subst b
+      exact Nat.lt_irrefl _ (C.causal_mono hba)
+    have hlo : respects π
+        (@loOn D.toUpdateSig (ReplayPolicy.unconstrained D.toUpdateSig)
+          C.replayContext E) := by
+      unfold respects
+      apply List.pairwise_of_forall
+      intro a b
+      simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+        ReplayPolicy.unconstrained]
+    have horigin : ∀ pre e post, π = pre ++ e :: post →
+        ∃ origin : Finset Event, origin ⊆ pre.toFinset ∧ applicable e origin := by
+      intro pre e post split
+      have heE : e ∈ E := hpermπ.2 e |>.mp (by simp [split])
+      have heC := hgood.version_events_supported v s E hver e heE
+      obtain ⟨past, hpast, _, hguard⟩ := exec.mintHonest e heC
+      refine ⟨past.toFinset, ?_, ?_⟩
+      · intro old hold
+        have hbefore := (hpast.2 old).mp (List.mem_toFinset.mp hold)
+        have holdE := hgood.version_events_causal v s E hver old e hbefore.2 heE
+        have member := (hpermπ.2 old).mpr holdE
+        rw [split] at member
+        rcases List.mem_append.mp member with inPre | inRest
+        · exact List.mem_toFinset.mpr inPre
+        · rcases List.mem_cons.mp inRest with same | inPost
+          · subst old
+            exact False.elim (Nat.lt_irrefl _ (C.causal_mono hbefore.2))
+          · have ordered := hvis
+            rw [split] at ordered
+            have noBack := (List.pairwise_cons.mp
+              (List.pairwise_append.mp ordered).2.1).1 old inPost
+            exact False.elim (noBack hbefore.2)
+      · simpa only [generation, applySeq_eq_toFinset] using hguard
+    refine ⟨π, hpermπ, hlo, ⟨hlegal, horigin⟩, href, ?_⟩
     intro query
     cases query
     exact congrArg visibleTree href
@@ -405,7 +455,7 @@ def safety : SafetyCertificate D (canonicalVirtualMergeBase D) generation where
 
 noncomputable def verified : VerifiedMRDT D where
   issuance := generation
-  interaction := InteractionSpec.raw D
+  rc := ReplayPolicy.unconstrained D.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := sequentialSpec
   Rel := stateRel
@@ -415,10 +465,29 @@ noncomputable def verified : VerifiedMRDT D where
 
 def firstMove : Event := (2, 0, ⟨0, 7, 2⟩)
 
-example : applicable firstMove (∅ : Finset Event) := by
+theorem firstMove_applicable : applicable firstMove (∅ : Finset Event) := by
   refine ⟨by simp, root_visible_empty, ?_, by decide, by decide⟩
   left
   simp [knownNode, firstMove, root, trash]
+
+theorem clientLegal_firstMove : ClientLegal [firstMove] := by
+  refine ⟨by simp [SequentialLegal], ?_⟩
+  intro pre e post split
+  have lengths := congrArg List.length split
+  simp only [List.length_cons, List.length_nil, List.length_append] at lengths
+  have empty : pre = [] := List.eq_nil_of_length_eq_zero (by omega)
+  subst pre
+  simp only [List.nil_append, List.cons.injEq] at split
+  rcases split with ⟨rfl, rfl⟩
+  exact ⟨∅, by simp, firstMove_applicable⟩
+
+/-- The old sorting-only legality accepted a reserved-node move. -/
+theorem sorting_accepts_reserved : SequentialLegal [(3, 1, ⟨0, 9, root⟩)] := by
+  simp [SequentialLegal]
+
+theorem clientLegal_rejects_reserved : ¬ ClientLegal [(3, 1, ⟨0, 9, root⟩)] := by
+  intro h
+  exact (clientLegal_reserved _ h (3, 1, ⟨0, 9, root⟩) (by simp)).1 rfl
 
 example : ¬ applicable (2, 0, ⟨0, 9, 3⟩) ({firstMove} : Finset Event) := by
   simp [applicable, firstMove]

@@ -39,21 +39,10 @@ theorem all_comm (a b : Op (D A delta).AppOp) :
   omega
 
 theorem replayLaws : ReplayLaws (D A delta).toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h
-      exact absurd (all_comm delta a b) h
-    · rintro (h | h) <;>
-        (rw [show (D A delta).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h;
-         exact RcRes.noConfusion h)
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    rw [show (D A delta).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
-    exact RcRes.noConfusion h
-  · intro s a b c π _ _ _ h _
-    rw [show (D A delta).toUpdateSig.replayOrder _ _ = RcRes.Either from rfl] at h
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm (all_comm delta)
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws (D A delta) := by
   refine ⟨replayLaws delta, ?_, ?_⟩
@@ -117,11 +106,14 @@ def sequential : SequentialRefinement (D A delta)
 
 noncomputable def verified : VerifiedMRDT (D A delta) where
   issuance := generation delta
-  interaction := InteractionSpec.raw (D A delta)
+  rc := ReplayPolicy.unconstrained (D A delta).toUpdateSig
   replayAdequacy := replayAdequacy delta
   Spec := spec (A := A) delta
   Rel := (· = ·)
   sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
+    (fun C _ => join delta C.replayContext)
+    (all_comm delta)
+    (fun _ _ => rfl)
     (fun _ => True.intro)
     (fun ops => (sequential delta).sound ops True.intro)
     (fun _ _ => rfl)

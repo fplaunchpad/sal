@@ -69,10 +69,10 @@ First disjunct: a visible non-commuting pair is ordered by `vis`.
 Second: concurrent non-commuting pairs are ordered by `rc`, unless `e₂`
 is already "overwritten" by a later non-commuting `e₃`. -/
 def lo (C : ReplayContext D) (e₁ e₂ : Op D.AppOp) : Prop :=
-  (C.vis e₁ e₂ ∧ ¬ D.commutes e₁ e₂)
+  (C.vis e₁ e₂ ∧ (D.rc e₁ e₂ ∨ D.rc e₂ e₁))
   ∨ ( ¬ C.vis e₁ e₂ ∧ ¬ C.vis e₂ e₁
-      ∧ D.replayOrder e₁ e₂ = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃, C.vis e₂ e₃ ∧ ¬ D.commutes e₂ e₃ )
+      ∧ D.rc e₁ e₂
+      ∧ ¬ ∃ e₃, C.vis e₂ e₃ ∧ (D.rc e₂ e₃ ∨ D.rc e₃ e₂) )
 
 /-! ## The 24 VCs
 

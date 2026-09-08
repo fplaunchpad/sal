@@ -1,5 +1,5 @@
 /-!
-# Update signatures and internal replay policies
+# Update signatures and resolve-conflict policies
 
 `UpdateSig` is the merge-free algebra used to fold event histories and state
 the generic replay invariants. It is derived from an `MRDTSig`; implementers do
@@ -9,16 +9,15 @@ The optional `HistoricalBinaryMerge` class exists only so the retained binary
 VC and countermodel modules continue to state their old two-way merge laws. It
 is not part of `UpdateSig`, `MRDTSig`, operational execution, or `VerifiedMRDT`.
 
-A separate `ReplayPolicy` carries the historical Sal/Neem resolver used by one
-internal convergence proof. Client-facing arbitration does not come from this
-policy.
+`ReplayPolicy` is the carrier of the Sal/Neem resolve-conflict relation. A
+`VerifiedMRDT` stores its sole public `rc` explicitly; proof-local convergence
+arguments may instantiate the same carrier independently.
 -/
 
 namespace Sal.MRDTs.Foundation
 
-/-- Internal replay-order verdict retained by the absorber-based convergence
-construction. It is not part of an MRDT or its public semantic interaction
-policy. -/
+/-- Resolve-conflict verdict used by the absorber-based replay construction
+and by the public `rc` stored in `VerifiedMRDT`. -/
 inductive RcRes : Type where
   | Fst_then_snd
   | Snd_then_fst
@@ -64,13 +63,22 @@ It is deliberately separate from `UpdateSig`. -/
 class HistoricalBinaryMerge (D : UpdateSig) where
   binaryMerge : D.State → D.State → D.State
 
-/-- A proof-local replay policy for the historical absorber construction.
-`MRDTSig` does not contain this object. A convergence certificate may choose
-this construction or prove its replay theorem by another route. -/
+/-- Carrier of the intended resolve-conflict relation for concurrent events.
+`VerifiedMRDT` stores the selected public policy explicitly. Its direction
+does not assert concrete noncommutativity: an implementation may realize the
+policy with commuting updates, as timestamp-max updates do for LWW.
+Algebraic replay laws are optional sufficient proof obligations, not fields
+of this carrier. -/
 class ReplayPolicy (D : UpdateSig) where
   order : Op D.AppOp → Op D.AppOp → RcRes
 
 namespace ReplayPolicy
+
+/-- The directed resolve-conflict relation induced by a three-valued policy.
+Paper notation: `a →rc b`. -/
+@[simp] def Before {D : UpdateSig} (P : ReplayPolicy D)
+    (a b : Op D.AppOp) : Prop :=
+  P.order a b = RcRes.Fst_then_snd
 
 def unconstrained (D : UpdateSig) : ReplayPolicy D where
   order := fun _ _ => .Either
@@ -97,8 +105,13 @@ def historicalMerge [HistoricalBinaryMerge D] : D.State → D.State → D.State 
 def replayOrder [P : ReplayPolicy D] : Op D.AppOp → Op D.AppOp → RcRes :=
   P.order
 
-/-- Two events commute if applying them in either order from any state yields
-the same state. -/
+/-- Directed resolve-conflict relation for the active replay policy. -/
+abbrev rc [P : ReplayPolicy D] (a b : Op D.AppOp) : Prop :=
+  P.Before a b
+
+/-- Concrete-update commutation: applying events in either order from any
+implementation state yields the same state. This proof property neither
+defines semantic conflict nor excludes a resolve-conflict edge. -/
 def commutes (o₁ o₂ : Op D.AppOp) : Prop :=
   ∀ s, D.update (D.update s o₁) o₂ = D.update (D.update s o₂) o₁
 

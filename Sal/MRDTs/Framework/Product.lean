@@ -359,74 +359,36 @@ theorem mem_projReplayContext₂_events {b : Op D₂.AppOp} :
 theorem loOn_prod_cross_lr {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a : Op D₁.AppOp) (b : Op D₂.AppOp) :
     ¬ loOn C ev (inlOp a) (inrOp b) := by
-  rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnc (commutes_prod_cross a b)
-  · exact RcRes.noConfusion hrc
+  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem loOn_prod_cross_rl {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (b : Op D₂.AppOp) (a : Op D₁.AppOp) :
     ¬ loOn C ev (inrOp b) (inlOp a) := by
-  rintro (⟨_, hnc⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnc (commutes_prod_cross' b a)
-  · exact RcRes.noConfusion hrc
+  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem loOn_prod_inl_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₁.AppOp) :
     loOn C ev (inlOp a) (inlOp b) ↔
       loOn (projReplayContext₁ C) (evRes₁ ev) a b := by
-  constructor
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inl_of hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, h₃, hv₃, hnc₃⟩
-      exact habs ⟨inlOp e₃, h₃, hv₃,
-        fun hc => hnc₃ ((commutes_prod_inl_iff b e₃).mp hc)⟩
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc ((commutes_prod_inl_iff a b).mp hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, h₃, hv₃, hnc₃⟩
-      rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
-      · exact habs ⟨c, h₃, hv₃, fun hc => hnc₃ (commutes_prod_inl_of hc)⟩
-      · exact hnc₃ (commutes_prod_cross b c)
+  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem loOn_prod_inr_iff {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     (a b : Op D₂.AppOp) :
     loOn C ev (inrOp a) (inrOp b) ↔
       loOn (projReplayContext₂ C) (evRes₂ ev) a b := by
-  constructor
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inr_of hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, h₃, hv₃, hnc₃⟩
-      exact habs ⟨inrOp e₃, h₃, hv₃,
-        fun hc => hnc₃ ((commutes_prod_inr_iff b e₃).mp hc)⟩
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc ((commutes_prod_inr_iff a b).mp hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, h₃, hv₃, hnc₃⟩
-      rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
-      · exact hnc₃ (commutes_prod_cross' b c)
-      · exact habs ⟨c, h₃, hv₃, fun hc => hnc₃ (commutes_prod_inr_of hc)⟩
+  simp [loOn, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 /-- Global arbitration on a product restricts exactly to global arbitration
 on its left component. -/
 theorem lo_prod_inl_iff (a b : Op D₁.AppOp) :
     Sal.MRDTs.Foundation.lo C (inlOp a) (inlOp b) ↔
       Sal.MRDTs.Foundation.lo (projReplayContext₁ C) a b := by
-  constructor
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc (commutes_prod_inl_of hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, hv₃, hnc₃⟩
-      exact habs ⟨inlOp e₃, hv₃,
-        fun hc => hnc₃ ((commutes_prod_inl_iff b e₃).mp hc)⟩
-  · rintro (⟨hv, hnc⟩ | ⟨hnv, hnv', hrc, habs⟩)
-    · exact Or.inl ⟨hv, fun hc => hnc ((commutes_prod_inl_iff a b).mp hc)⟩
-    · refine Or.inr ⟨hnv, hnv', hrc, ?_⟩
-      rintro ⟨e₃, hv₃, hnc₃⟩
-      rcases op_sum_cases e₃ with ⟨c, rfl⟩ | ⟨c, rfl⟩
-      · exact habs ⟨c, hv₃, fun hc => hnc₃ (commutes_prod_inl_of hc)⟩
-      · exact hnc₃ (commutes_prod_cross b c)
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem respects_projList₁ {ev : Set (Op (D₁.AppOp ⊕ D₂.AppOp))}
     {ρ : List (Op (D₁.AppOp ⊕ D₂.AppOp))}

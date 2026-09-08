@@ -1,9 +1,10 @@
 // NEGATIVE-CONTROL collector for PeritextRGA. It preserves the present render,
-// but it is not continuation-safe under the current RGA issuance policy:
-// insertAfter may name a deleted element, so removing a settled dead leaf can
+// but it is not continuation-safe under the PeritextRGA wrapper's policy:
+// the shadow omits text deletions and admits retained anchors, so dropping a dead leaf can
 // make a later honest insertion fail. The production default does not use this
 // module. `RGA.GC.certificate` instead retains one compact parent fact for every
-// inserted id; genuine id reclamation needs an explicit retirement policy.
+// inserted id. Plain RGA rejects locally inserting at an observed deleted
+// anchor; this wrapper counterexample is not an impossibility proof for RGA.
 
 import { peritextRGA } from './datatypes/peritext.js';
 import { PMap, PSet, eachEntry } from './pmap.js';

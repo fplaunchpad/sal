@@ -2,21 +2,17 @@ import Sal.MRDTs.Framework.StateGC
 import Sal.MRDTs.Instances.RGASequential
 
 /-!
-# Continuation-safe compaction for tombstone RGA
+# Continuation-safe representation conversion for RGA
 
-The public issuance policy permits a fresh insertion to name any previously
-inserted identifier as its anchor, even after that identifier was deleted.
-Consequently a collector cannot erase a dead identifier merely because its
-deletion is stable: the identifier and its parent remain continuation state.
+Both representations store `(identifier, anchor)` birth pairs. The alternate
+representation stores live identifiers instead of graves; it saves words when
+the live set is smaller than the graveyard. Conversion is lossless under the
+invariant that every grave has a birth, and preserves issued updates, ternary
+merges, and queries. It does not reclaim birth identifiers.
 
-This module packages a lossless representation quotient that does not change
-that policy.  Honest RGA insertions satisfy `timestamp = id`, so the
-compact state stores one `(id, parent)` pair rather than the redundant
-`(timestamp, parent, id)` triple.  It also stores the usually-small live set
-rather than the graveyard.  Collection is lossless and preserves subsequent
-updates and ternary merges.  It is representation compaction, not deleted-ID
-reclamation; the negative SPOT at the end states why that distinction is
-load-bearing.
+Issuance rejects insertion after an observed deleted anchor. The controls at
+the end check this before and after erasure; they do not prove a general
+impossibility of identifier reclamation.
 -/
 
 set_option maxHeartbeats 1000000
@@ -26,111 +22,66 @@ namespace Sal.MRDTs.Instances.RGA.GC
 open Sal.MRDTs.Foundation
 open Classical
 
-/-- Compact insertion metadata: the inserted identifier and its parent. -/
-abbrev ParentEntry := ℕ × ℕ
-
 structure PackedState where
-  parents : Finset ParentEntry
+  parents : Finset RGAEntry
   live : Finset ℕ
 deriving DecidableEq
 
-def parentEntry (e : RGAEntry) : ParentEntry := (e.2.2, e.2.1)
-
-def birthEntry (p : ParentEntry) : RGAEntry := (p.1, p.2, p.1)
-
 def birthIds (q : BirthGraveState) : Finset ℕ :=
-  q.adds.image (fun e => e.2.2)
+  q.adds.image (fun e => e.1)
 
 def parentIds (q : PackedState) : Finset ℕ :=
   q.parents.image Prod.fst
 
-/-- Reachable birth/grave states satisfy precisely the invariants used by the
-packing quotient: an insertion's timestamp is its identifier, and every grave
-has a corresponding birth. -/
+/-- Every grave has a corresponding birth. Timestamp and identifier are the
+same field by construction, so no equality invariant is needed. -/
 structure BirthGraveWellFormed (q : BirthGraveState) : Prop where
-  timestamp_eq_id : ∀ e ∈ q.adds, e.1 = e.2.2
   grave_has_birth : q.grave ⊆ birthIds q
 
 def pack (q : BirthGraveState) : PackedState where
-  parents := q.adds.image parentEntry
+  parents := q.adds
   live := birthIds q \ q.grave
 
 def unpack (q : PackedState) : BirthGraveState where
-  adds := q.parents.image birthEntry
+  adds := q.parents
   grave := parentIds q \ q.live
 
-/-- A simple machine-word model for the two finite encodings.  It counts the
-three natural-number fields of every raw birth and every grave identifier,
-versus two fields per packed parent edge and one per live identifier. -/
+/-- Both encodings use two words per birth, then one per grave or live ID. -/
 def rawWords (q : BirthGraveState) : ℕ :=
-  3 * q.adds.card + q.grave.card
+  2 * q.adds.card + q.grave.card
 
 def packedWords (q : PackedState) : ℕ :=
   2 * q.parents.card + q.live.card
 
-theorem packedWords_pack_le (q : BirthGraveState) :
+theorem packedWords_pack_le (q : BirthGraveState)
+    (smaller : (pack q).live.card ≤ q.grave.card) :
     packedWords (pack q) ≤ rawWords q := by
-  have parentsLe : (pack q).parents.card ≤ q.adds.card := by
-    exact Finset.card_image_le
-  have liveBirthLe : (pack q).live.card ≤ (birthIds q).card := by
-    exact Finset.card_le_card Finset.sdiff_subset
-  have birthLe : (birthIds q).card ≤ q.adds.card := by
-    exact Finset.card_image_le
-  simp only [packedWords, rawWords]
+  simp only [packedWords, rawWords, pack] at *
   omega
 
-theorem packedWords_pack_lt_of_grave (q : BirthGraveState)
-    (deleted : q.grave.Nonempty) :
+theorem packedWords_pack_lt_of_live_lt_grave (q : BirthGraveState)
+    (smaller : (pack q).live.card < q.grave.card) :
     packedWords (pack q) < rawWords q := by
-  have le := packedWords_pack_le q
-  have positive : 0 < q.grave.card := Finset.card_pos.mpr deleted
-  have parentsLe : (pack q).parents.card ≤ q.adds.card := Finset.card_image_le
-  have liveBirthLe : (pack q).live.card ≤ (birthIds q).card :=
-    Finset.card_le_card Finset.sdiff_subset
-  have birthLe : (birthIds q).card ≤ q.adds.card := Finset.card_image_le
-  simp only [packedWords, rawWords] at le ⊢
+  simp only [packedWords, rawWords, pack] at *
   omega
+
+/-- Conversion can grow an all-live state: there is no redundant timestamp
+left to pay for the new live-ID set. -/
+theorem all_live_conversion_grows :
+    let q : BirthGraveState := ⟨{(1, 0), (2, 0)}, ∅⟩
+    rawWords q < packedWords (pack q) := by decide
+
+/-- With both identifiers deleted, replacing graves by live IDs saves words. -/
+theorem all_deleted_conversion_shrinks :
+    let q : BirthGraveState := ⟨{(1, 0), (2, 0)}, {1, 2}⟩
+    packedWords (pack q) < rawWords q := by decide
 
 theorem parentIds_pack (q : BirthGraveState) :
-    parentIds (pack q) = birthIds q := by
-  ext id
-  constructor
-  · intro member
-    obtain ⟨p, pMember, pId⟩ := Finset.mem_image.mp member
-    obtain ⟨e, eMember, eParent⟩ := Finset.mem_image.mp pMember
-    apply Finset.mem_image.mpr
-    refine ⟨e, eMember, ?_⟩
-    simpa [parentEntry] using pId ▸ congrArg Prod.fst eParent
-  · intro member
-    obtain ⟨e, eMember, eId⟩ := Finset.mem_image.mp member
-    apply Finset.mem_image.mpr
-    refine ⟨parentEntry e, Finset.mem_image.mpr ⟨e, eMember, rfl⟩, ?_⟩
-    simpa [parentEntry] using eId
+    parentIds (pack q) = birthIds q := rfl
 
 theorem unpack_pack (q : BirthGraveState) (wf : BirthGraveWellFormed q) :
     unpack (pack q) = q := by
-  have addsEq : (unpack (pack q)).adds = q.adds := by
-    ext e
-    constructor
-    · intro member
-      simp only [unpack, Finset.mem_image] at member
-      obtain ⟨p, pMember, rfl⟩ := member
-      simp only [pack, Finset.mem_image] at pMember
-      obtain ⟨source, sourceMember, parentEq⟩ := pMember
-      have timeEq := wf.timestamp_eq_id source sourceMember
-      have sourceEq : birthEntry (parentEntry source) = source := by
-        rcases source with ⟨ts, anchor, id⟩
-        simp [birthEntry, parentEntry] at timeEq ⊢
-        exact timeEq.symm
-      rw [← parentEq, sourceEq]
-      exact sourceMember
-    · intro member
-      refine Finset.mem_image.mpr ⟨parentEntry e, ?_, ?_⟩
-      · exact Finset.mem_image.mpr ⟨e, member, rfl⟩
-      · have timeEq := wf.timestamp_eq_id e member
-        rcases e with ⟨ts, anchor, id⟩
-        simp [birthEntry, parentEntry] at timeEq ⊢
-        exact timeEq.symm
+  have addsEq : (unpack (pack q)).adds = q.adds := rfl
   have graveEq : (unpack (pack q)).grave = q.grave := by
     ext id
     change id ∈ parentIds (pack q) \ (birthIds q \ q.grave) ↔ id ∈ q.grave
@@ -148,17 +99,12 @@ theorem unpack_pack (q : BirthGraveState) (wf : BirthGraveWellFormed q) :
 theorem unpack_wellFormed (q : PackedState) :
     BirthGraveWellFormed (unpack q) := by
   constructor
-  · intro e member
-    simp only [unpack, Finset.mem_image] at member
-    obtain ⟨p, _, rfl⟩ := member
-    simp [birthEntry]
   · intro id grave
     simp only [unpack, Finset.mem_sdiff] at grave
     obtain ⟨idMember, _⟩ := grave
     simp only [parentIds, Finset.mem_image] at idMember
     obtain ⟨p, parentMember, rfl⟩ := idMember
-    exact Finset.mem_image.mpr ⟨birthEntry p,
-      Finset.mem_image.mpr ⟨p, parentMember, rfl⟩, by simp [birthEntry]⟩
+    exact Finset.mem_image.mpr ⟨p, parentMember, rfl⟩
 
 /-- The compact interpreter admits an uncollected finite state at startup and
 a packed state after collection or any subsequent operation. -/
@@ -189,11 +135,11 @@ theorem birthGraveRel_step {s : RGAM.State} {q : BirthGraveState}
     birthGraveRel (RGAM.update s e) (step q e) := by
   rcases e with ⟨ts, replica, op⟩
   cases op with
-  | addAfter anchor id =>
+  | addAfter anchor =>
       constructor
       · intro p
-        change (s.1 p || decide (p = (ts, anchor, id))) =
-          decide (p ∈ insert (ts, anchor, id) q.adds)
+        change (s.1 p || decide (p = (ts, anchor))) =
+          decide (p ∈ insert (ts, anchor) q.adds)
         rw [represented.1 p]
         simp [Bool.or_comm]
       · intro x
@@ -213,33 +159,26 @@ theorem wellFormed_step {s : RGAM.State} {q : BirthGraveState}
     BirthGraveWellFormed (step q e) := by
   rcases e with ⟨ts, replica, op⟩
   cases op with
-  | addAfter anchor id =>
-      rcases canIssue with ⟨idEq, _, _, _, _⟩
+  | addAfter anchor =>
       constructor
-      · intro p member
-        simp only [step, birthGraveMachine, Finset.mem_insert] at member
-        rcases member with rfl | old
-        · simpa using idEq.symm
-        · exact wf.timestamp_eq_id p old
       · intro x grave
         apply Finset.mem_image.mpr
         obtain ⟨birth, birthMember, birthId⟩ :=
           Finset.mem_image.mp (wf.grave_has_birth grave)
         exact ⟨birth, Finset.mem_insert_of_mem birthMember, birthId⟩
   | remove deletedId =>
-      obtain ⟨⟨birthTs, birthParent, present⟩, _⟩ := canIssue
+      obtain ⟨⟨birthParent, present⟩, _⟩ := canIssue
       constructor
-      · exact wf.timestamp_eq_id
       · intro x member
         simp only [step, birthGraveMachine, Finset.mem_insert] at member
         rcases member with newest | old
         · subst x
-          have birthMember : (birthTs, birthParent, deletedId) ∈ q.adds := by
-            have := represented.1 (birthTs, birthParent, deletedId)
+          have birthMember : (deletedId, birthParent) ∈ q.adds := by
+            have := represented.1 (deletedId, birthParent)
             rw [this] at present
             simpa using present
           exact Finset.mem_image.mpr
-            ⟨(birthTs, birthParent, deletedId), birthMember, rfl⟩
+            ⟨(deletedId, birthParent), birthMember, rfl⟩
         · exact wf.grave_has_birth old
 
 theorem birthGraveRel_merge {sl sa sb : RGAM.State}
@@ -264,12 +203,6 @@ theorem wellFormed_merge {l a b : BirthGraveState}
     (hb : BirthGraveWellFormed b) :
     BirthGraveWellFormed (merge l a b) := by
   constructor
-  · intro e member
-    simp only [merge, Finset.mem_union] at member
-    rcases member with (left | middle) | right
-    · exact hl.timestamp_eq_id e left
-    · exact ha.timestamp_eq_id e middle
-    · exact hb.timestamp_eq_id e right
   · intro id member
     simp only [merge, Finset.mem_union] at member
     rcases member with (left | middle) | right
@@ -299,7 +232,7 @@ def compactMerge (cl ca cb : CompactState) : CompactState :=
 noncomputable def compactQuery (compact : CompactState) (_ : Unit) : List ℕ :=
   sequence (materialize compact)
 
-/-- Representation-changing state-GC certificate for tombstone RGA.  The
+/-- Representation-changing state-GC certificate for RGA.  The
 evidence is trivial because this quotient uses only invariants already
 maintained by honest issuance; no stability frontier authorizes identifier
 erasure. -/
@@ -343,14 +276,14 @@ noncomputable def certificate : StateGCCertificate RGAM generation where
 /-! ## Negative oracle: dead anchors are continuation state -/
 
 def eraseId (id : ℕ) (q : BirthGraveState) : BirthGraveState where
-  adds := q.adds.filter (fun e => e.2.2 ≠ id)
+  adds := q.adds.filter (fun e => e.1 ≠ id)
   grave := q.grave.erase id
 
 def deadAnchorState : BirthGraveState where
-  adds := {(1, 0, 1), (2, 0, 2)}
+  adds := {(1, 0), (2, 0)}
   grave := {1}
 
-def futureAfterDeadAnchor : Op RGAOp := (3, 1, .addAfter 1 3)
+def futureAfterDeadAnchor : Op RGAOp := (3, 1, .addAfter 1)
 
 /-- The unordered live projection used by the negative oracle.  Equality here
 is intentionally weaker than the real ordered query, making the refutation
@@ -368,36 +301,30 @@ def finiteState (q : BirthGraveState) : RGAM.State :=
 theorem finiteState_rel (q : BirthGraveState) :
     birthGraveRel (finiteState q) q := ⟨fun _ => rfl, fun _ => rfl⟩
 
-/-- PASS: the future operation is honestly issuable while the dead anchor is
-retained. -/
-theorem future_after_dead_anchor_applicable :
-    applicable futureAfterDeadAnchor (finiteState deadAnchorState) := by
-  change 3 = 3 ∧
-    (1 = 0 ∨ ∃ ts parent, ts < 3 ∧
-      (finiteState deadAnchorState).1 (ts, parent, 1) = true) ∧
-    (∀ anchor id, (finiteState deadAnchorState).1 (3, anchor, id) = false) ∧
-    (∀ ts anchor, (finiteState deadAnchorState).1 (ts, anchor, 3) = false) ∧
-    (finiteState deadAnchorState).2 3 = false
-  refine ⟨rfl, Or.inr ⟨1, 0, by omega, ?_⟩, ?_, ?_, ?_⟩
-  · simp [finiteState, deadAnchorState]
-  · intro anchor id
-    simp [finiteState, deadAnchorState]
-  · intro ts anchor
-    simp [finiteState, deadAnchorState]
-  · simp [finiteState, deadAnchorState]
+/-- PASS: an issuer may not generate an insertion after an anchor whose
+deletion it has observed, even though the implementation retains that anchor
+to integrate operations generated concurrently with the deletion. -/
+theorem future_after_dead_anchor_not_applicable :
+    ¬ applicable futureAfterDeadAnchor (finiteState deadAnchorState) := by
+  intro issued
+  simp only [futureAfterDeadAnchor, applicable] at issued
+  rcases issued.1 with root | ⟨live, _⟩
+  · omega
+  · simp [finiteState, deadAnchorState] at live
 
-/-- FAIL companion: present-read equivalence does not preserve issuance.  The
-same future operation is rejected once the deleted anchor is erased. -/
-theorem erase_dead_anchor_breaks_future_issuance :
+/-- Negative control: erasing the retained anchor also rejects the operation,
+but for lack of allocation history rather than because it is tombstoned. -/
+theorem erase_dead_anchor_rejects_future_issuance :
     ¬ applicable futureAfterDeadAnchor
       (finiteState (eraseId 1 deadAnchorState)) := by
   intro issued
   simp only [futureAfterDeadAnchor, applicable] at issued
-  rcases issued.2.1 with root | ⟨ts, parent, earlier, present⟩
+  rcases issued.1 with root | ⟨_, earlier, parent, present⟩
   · omega
   · simp [finiteState, eraseId, deadAnchorState] at present
 
 #print axioms certificate
-#print axioms erase_dead_anchor_breaks_future_issuance
+#print axioms future_after_dead_anchor_not_applicable
+#print axioms erase_dead_anchor_rejects_future_issuance
 
 end Sal.MRDTs.Instances.RGA.GC

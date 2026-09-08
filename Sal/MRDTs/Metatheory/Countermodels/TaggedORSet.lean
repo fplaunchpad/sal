@@ -2,9 +2,12 @@ import Sal.MRDTs.Metatheory.Correctness
 import Sal.MRDTs.Metatheory.Safety
 
 /-!
-# Add-wins observed-remove set
+# Retired tagged OR-set: negative-control fixture
 
-This production instance stores two grow-only finite sets: tagged additions
+This historical fixture is not a production instance. It is retained to check
+issuance counterexamples and rejection of its certificate for the efficient
+OR-set. Production uses `EfficientORSetCertified`.
+The fixture stores two grow-only finite sets: tagged additions
 and removed tags. An add uses its globally fresh event timestamp as its tag. A
 remove carries exactly the currently live tags for one element at its issuer.
 The effectors commute because the observed set is frozen in the operation.
@@ -67,17 +70,10 @@ theorem all_comm (a b : Op (OROp α)) :
           simp [or_assoc, or_left_comm, or_comm]
 
 theorem replayLaws : ReplayLaws (D α).toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h
-      exact absurd (all_comm a b) h
-    · rintro (h | h) <;> exact RcRes.noConfusion h
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    exact RcRes.noConfusion h
-  · intro state a b c ops _ _ _ h _
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws (D α) := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -124,7 +120,7 @@ instance canIssueDecidable (event : Op (OROp α)) (state : State α) :
 def issuance : Issuance (D α) where
   CanIssue := canIssue
 
-def replayAdequacy : ReplayAdequacyCertificate (D α) issuance :=
+def rawReplayAdequacy : ReplayAdequacyCertificate (D α) issuance :=
   ReplayAdequacyCertificate.ofJoin issuance join
 
 /-! ## Ordinary-set sequential specification
@@ -149,43 +145,19 @@ def spec (α : Type) [DecidableEq α] : SequentialSpec (D α) where
 def stateRel (state : State α) (abstract : Finset α) : Prop :=
   ∀ element, contains α state element = decide (element ∈ abstract)
 
-/-! The public interaction policy is semantic rather than representation
-level.  Operations on different elements and same-kind operations are
-independent.  A same-element add/remove pair conflicts; a concurrent remove
-precedes the add, which gives the ordinary sequential explanation of add-wins.
--/
+/-! The sole resolve-conflict relation is semantic rather than
+representation-level. Operations on different elements and same-kind
+operations get `Either`; a same-element remove is ordered before an add,
+which gives the ordinary sequential explanation of add-wins. -/
 
-def interaction : InteractionSpec (D α) where
-  interaction := fun e₁ e₂ =>
-    match e₁.2.2, e₂.2.2 with
-    | .add x, .remove y _ =>
-        if x = y then .conflict .sndThenFst else .independent
-    | .remove x _, .add y =>
-        if x = y then .conflict .fstThenSnd else .independent
-    | _, _ => .independent
-  swap_coherent := by
-    intro e₁ e₂
-    rcases e₁ with ⟨t₁, r₁, o₁⟩
-    rcases e₂ with ⟨t₂, r₂, o₂⟩
-    cases o₁ with
-    | add x =>
-      cases o₂ with
-      | add y => rfl
-      | remove y observed =>
-        by_cases h : x = y
-        · subst y
-          simp [Interaction.flip, ConcurrentOrder.flip]
-        · have hr : y ≠ x := Ne.symm h
-          simp [h, hr, Interaction.flip]
-    | remove x observed =>
-      cases o₂ with
-      | add y =>
-        by_cases h : x = y
-        · subst y
-          simp [Interaction.flip, ConcurrentOrder.flip]
-        · have hr : y ≠ x := Ne.symm h
-          simp [h, hr, Interaction.flip]
-      | remove y observed' => rfl
+def abstractOrder (e₁ e₂ : Op (OROp α)) : RcRes :=
+  match e₁.2.2, e₂.2.2 with
+  | .add x, .remove y _ => if x = y then .Snd_then_fst else .Either
+  | .remove x _, .add y => if x = y then .Fst_then_snd else .Either
+  | _, _ => .Either
+
+def rc : ReplayPolicy (D α).toUpdateSig where
+  order := abstractOrder
 
 /-! `abstractD` is the merge-free algebra of the ordinary set machine.  It is
 used only to obtain the add-wins linearization order; it is not a second MRDT
@@ -198,12 +170,6 @@ def abstractD (α : Type) [DecidableEq α] : UpdateSig where
   AppOp := OROp α
   dec_op := inferInstance
   update := setStep
-
-def abstractOrder (e₁ e₂ : Op (OROp α)) : RcRes :=
-  match e₁.2.2, e₂.2.2 with
-  | .add x, .remove y _ => if x = y then .Snd_then_fst else .Either
-  | .remove x _, .add y => if x = y then .Fst_then_snd else .Either
-  | _, _ => .Either
 
 instance abstractReplayPolicy : ReplayPolicy (abstractD α) where
   order := abstractOrder
@@ -305,50 +271,62 @@ theorem abstract_not_comm_remove_add
   fun h => abstract_not_comm_add_remove b a x observed hb ha
     (fun state => (h state).symm)
 
-theorem abstractReplayLaws : ReplayLaws (abstractD α) := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro e₁ e₂ _ _
-    rcases h₁ : e₁.2.2 with ⟨x⟩ | ⟨x, observed₁⟩ <;>
-      rcases h₂ : e₂.2.2 with ⟨y⟩ | ⟨y, observed₂⟩
-    · simp only [abstractD_order, abstractOrder, h₁, h₂]
-      constructor
-      · intro h
-        exact absurd (abstract_comm_add_add e₁ e₂ x y h₁ h₂) h
-      · rintro (h | h) <;> exact RcRes.noConfusion h
-    · by_cases hxy : x = y
-      · subst y
-        simp only [abstractD_order, abstractOrder, h₁, h₂]
-        exact ⟨fun _ => Or.inr rfl,
-          fun _ => abstract_not_comm_add_remove e₁ e₂ x observed₂ h₁ h₂⟩
-      · have hyx : y ≠ x := Ne.symm hxy
-        simp only [abstractD_order, abstractOrder, h₁, h₂,
-          if_neg hxy, if_neg hyx]
-        constructor
-        · intro h
-          exact absurd
-            (abstract_comm_add_remove_of_ne e₁ e₂ x y observed₂ h₁ h₂ hxy) h
-        · rintro (h | h) <;> exact RcRes.noConfusion h
-    · by_cases hxy : x = y
-      · subst y
-        simp only [abstractD_order, abstractOrder, h₁, h₂]
-        exact ⟨fun _ => Or.inl rfl,
-          fun _ => abstract_not_comm_remove_add e₁ e₂ x observed₁ h₁ h₂⟩
-      · have hyx : y ≠ x := Ne.symm hxy
-        simp only [abstractD_order, abstractOrder, h₁, h₂,
-          if_neg hxy, if_neg hyx]
-        constructor
-        · intro h
-          have hc := abstract_comm_add_remove_of_ne
-            e₂ e₁ y x observed₁ h₂ h₁ hyx
-          exact absurd (fun state => (hc state).symm) h
-        · rintro (h | h) <;> exact RcRes.noConfusion h
-    · simp only [abstractD_order, abstractOrder, h₁, h₂]
+/-- This particular ordinary set algebra has exact conflict coverage.
+The equivalence is datatype-specific, not the meaning of public `rc`. -/
+theorem abstract_noncomm_iff_rc (e₁ e₂ : Op (OROp α)) :
+    ¬ (abstractD α).commutes e₁ e₂ ↔
+      ((abstractD α).rc e₁ e₂ ∨ (abstractD α).rc e₂ e₁) := by
+  rcases h₁ : e₁.2.2 with ⟨x⟩ | ⟨x, observed₁⟩ <;>
+    rcases h₂ : e₂.2.2 with ⟨y⟩ | ⟨y, observed₂⟩
+  · simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+      abstractOrder, h₁, h₂]
+    constructor
+    · intro h
+      exact absurd (abstract_comm_add_add e₁ e₂ x y h₁ h₂) h
+    · rintro (h | h) <;> exact RcRes.noConfusion h
+  · by_cases hxy : x = y
+    · subst y
+      simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+        abstractOrder, h₁, h₂]
+      exact ⟨fun _ => Or.inr rfl,
+        fun _ => abstract_not_comm_add_remove e₁ e₂ x observed₂ h₁ h₂⟩
+    · have hyx : y ≠ x := Ne.symm hxy
+      simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+        abstractOrder, h₁, h₂,
+        if_neg hxy, if_neg hyx]
       constructor
       · intro h
         exact absurd
-          (abstract_comm_remove_remove e₁ e₂ x y observed₁ observed₂ h₁ h₂) h
+          (abstract_comm_add_remove_of_ne e₁ e₂ x y observed₂ h₁ h₂ hxy) h
       · rintro (h | h) <;> exact RcRes.noConfusion h
-  · rintro e₁ e₂ e₃ _ _ ⟨h₁₂, h₂₃⟩
+  · by_cases hxy : x = y
+    · subst y
+      simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+        abstractOrder, h₁, h₂]
+      exact ⟨fun _ => Or.inl rfl,
+        fun _ => abstract_not_comm_remove_add e₁ e₂ x observed₁ h₁ h₂⟩
+    · have hyx : y ≠ x := Ne.symm hxy
+      simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+        abstractOrder, h₁, h₂,
+        if_neg hxy, if_neg hyx]
+      constructor
+      · intro h
+        have hc := abstract_comm_add_remove_of_ne
+          e₂ e₁ y x observed₁ h₂ h₁ hyx
+        exact absurd (fun state => (hc state).symm) h
+      · rintro (h | h) <;> exact RcRes.noConfusion h
+  · simp only [UpdateSig.rc, ReplayPolicy.Before, abstractReplayPolicy,
+      abstractOrder, h₁, h₂]
+    constructor
+    · intro h
+      exact absurd
+        (abstract_comm_remove_remove e₁ e₂ x y observed₁ observed₂ h₁ h₂) h
+    · rintro (h | h) <;> exact RcRes.noConfusion h
+
+theorem abstractReplayLaws : ReplayLaws (abstractD α) := by
+  refine ⟨fun a b => (abstract_noncomm_iff_rc a b).mp, ?_, ?_⟩
+  · apply rcAcyclic_of_noRcChain
+    rintro e₁ e₂ e₃ ⟨h₁₂, h₂₃⟩
     rcases h₁ : e₁.2.2 with ⟨x⟩ | ⟨x, observed₁⟩ <;>
       rcases h₂ : e₂.2.2 with ⟨y⟩ | ⟨y, observed₂⟩ <;>
       rcases h₃ : e₃.2.2 with ⟨z⟩ | ⟨z, observed₃⟩ <;>
@@ -356,10 +334,12 @@ theorem abstractReplayLaws : ReplayLaws (abstractD α) := by
     all_goals first
       | (split at h₁₂ <;> simp_all)
       | (split at h₂₃ <;> simp_all)
-  · intro state e e' e'' ops _ _ _ horder hnoncomm
+  · intro state e e' e'' ops _ _ _ horder habs
+    have hnoncomm := (abstract_noncomm_iff_rc e' e'').mpr habs
     rcases he : e.2.2 with ⟨x⟩ | ⟨x, observed⟩ <;>
       rcases he' : e'.2.2 with ⟨y⟩ | ⟨y, observed'⟩
-    all_goals simp only [abstractD_order, abstractOrder, he, he'] at horder
+    all_goals simp only [UpdateSig.rc, ReplayPolicy.Before,
+      abstractReplayPolicy, abstractOrder, he, he'] at horder
     all_goals try split at horder
     all_goals try exact RcRes.noConfusion horder
     rename_i hxy
@@ -380,59 +360,9 @@ theorem abstractReplayLaws : ReplayLaws (abstractD α) := by
           (abstract_comm_add_remove_of_ne e' e'' x z observed'' he' he''
             (Ne.symm hzx)) hnoncomm
 
-theorem interaction_conflicts_iff (a b : Op (OROp α)) :
-    (interaction.interaction a b).Conflicts ↔
-      ¬ (abstractD α).commutes a b := by
-  rcases ha : a.2.2 with ⟨x⟩ | ⟨x, observed₁⟩ <;>
-    rcases hb : b.2.2 with ⟨y⟩ | ⟨y, observed₂⟩
-  · simp only [interaction, ha, hb, Interaction.Conflicts]
-    constructor
-    · exact False.elim
-    · intro h
-      exact absurd (abstract_comm_add_add a b x y ha hb) h
-  · by_cases hxy : x = y
-    · subst y
-      simp only [interaction, ha, hb, Interaction.Conflicts]
-      exact ⟨fun _ => abstract_not_comm_add_remove a b x observed₂ ha hb,
-        fun _ => True.intro⟩
-    · simp only [interaction, ha, hb, if_neg hxy, Interaction.Conflicts]
-      constructor
-      · exact False.elim
-      · intro h
-        exact absurd
-          (abstract_comm_add_remove_of_ne a b x y observed₂ ha hb hxy) h
-  · by_cases hxy : x = y
-    · subst y
-      simp only [interaction, ha, hb, Interaction.Conflicts]
-      exact ⟨fun _ => abstract_not_comm_remove_add a b x observed₁ ha hb,
-        fun _ => True.intro⟩
-    · have hyx : y ≠ x := Ne.symm hxy
-      simp only [interaction, ha, hb, if_neg hxy, Interaction.Conflicts]
-      have hc := abstract_comm_add_remove_of_ne
-        b a y x observed₁ hb ha hyx
-      exact ⟨False.elim, fun h => absurd (fun state => (hc state).symm) h⟩
-  · simp only [interaction, ha, hb, Interaction.Conflicts]
-    constructor
-    · exact False.elim
-    · intro h
-      exact absurd
-        (abstract_comm_remove_remove a b x y observed₁ observed₂ ha hb) h
-
-theorem interaction_before_iff (a b : Op (OROp α)) :
-    (interaction.interaction a b).FstBeforeSnd ↔
-      (abstractD α).replayOrder a b = RcRes.Fst_then_snd := by
-  rcases ha : a.2.2 with ⟨x⟩ | ⟨x, observed₁⟩ <;>
-    rcases hb : b.2.2 with ⟨y⟩ | ⟨y, observed₂⟩
-  · simp [interaction, abstractD_order, abstractOrder, ha, hb,
-      Interaction.FstBeforeSnd]
-  · by_cases hxy : x = y <;>
-      simp [interaction, abstractD_order, abstractOrder, ha, hb,
-        Interaction.FstBeforeSnd, hxy]
-  · by_cases hxy : x = y <;>
-      simp [interaction, abstractD_order, abstractOrder, ha, hb,
-        Interaction.FstBeforeSnd, hxy]
-  · simp [interaction, abstractD_order, abstractOrder, ha, hb,
-      Interaction.FstBeforeSnd]
+theorem rc_before_iff (a b : Op (OROp α)) :
+    rc.Before a b ↔ (abstractD α).rc a b := by
+  rfl
 
 def abstractContext
     (C : ReplayContext (D α).toUpdateSig) : ReplayContext (abstractD α) where
@@ -444,16 +374,6 @@ def abstractContext
 @[simp] theorem abstractContext_events
     (C : ReplayContext (D α).toUpdateSig) :
     (abstractContext C).events = C.events := rfl
-
-theorem interactionLoOn_iff_abstractLoOn
-    (C : ReplayContext (D α).toUpdateSig)
-    (E : Set (Op (OROp α))) (a b : Op (OROp α)) :
-    interactionLoOn interaction C E a b ↔
-      loOn (abstractContext C) E a b := by
-  unfold interactionLoOn loOn
-  simp only [abstractContext]
-  simp_rw [interaction_conflicts_iff, interaction_before_iff]
-  exact Iff.rfl
 
 def Adds (event : Op (OROp α)) (element : α) : Prop :=
   event.2.2 = .add element
@@ -577,7 +497,7 @@ theorem set_mem_iff_surviving_add
     {C : ReplayContext (D α).toUpdateSig}
     {E : Set (Op (OROp α))} {ops : List (Op (OROp α))}
     (hperm : listPermOf ops E)
-    (hresp : respects ops (interactionLoOn interaction C E))
+    (hresp : respects ops (@loOn (D α).toUpdateSig rc C E))
     (element : α) :
     element ∈ setRun ops ↔
       ∃ add ∈ E, Adds add element ∧
@@ -593,14 +513,14 @@ theorem set_mem_iff_surviving_add
     rw [hsplit, List.mem_append] at hremoveList
     rcases hremoveList with hremovePre | hremoveTail
     · have hresp' : respects (pre ++ add :: post)
-          (interactionLoOn interaction C E) := hsplit ▸ hresp
+          (@loOn (D α).toUpdateSig rc C E) := hsplit ▸ hresp
       have hcross := (List.pairwise_append.mp hresp').2.2
       have hnot := hcross remove hremovePre add (by simp)
       apply hnot
       exact Or.inl ⟨hvis, by
         obtain ⟨observed, hremoveOp⟩ := hremove
         unfold Adds at hadd
-        simp [interaction, hadd, hremoveOp, Interaction.Conflicts]⟩
+        simpa [rc, abstractOrder, hadd, hremoveOp]⟩
     · simp only [List.mem_cons] at hremoveTail
       rcases hremoveTail with rfl | hremovePost
       · obtain ⟨observed, hremoveOp⟩ := hremove
@@ -616,7 +536,7 @@ theorem set_mem_iff_surviving_add
     have hremoveList : remove ∈ ops := by rw [hsplit]; simp [hremovePost]
     have hremoveE : remove ∈ E := (hperm.2 remove).mp hremoveList
     have hresp' : respects (pre ++ add :: post)
-        (interactionLoOn interaction C E) := hsplit ▸ hresp
+        (@loOn (D α).toUpdateSig rc C E) := hsplit ▸ hresp
     have htailPair := (List.pairwise_append.mp hresp').2.1
     have hnotEdge := (List.pairwise_cons.mp htailPair).1 remove hremovePost
     by_cases har : C.vis add remove
@@ -626,23 +546,23 @@ theorem set_mem_iff_surviving_add
       exact Or.inl ⟨hra, by
         obtain ⟨observed, hremoveOp⟩ := hremove
         unfold Adds at hadd
-        simp [interaction, hadd, hremoveOp, Interaction.Conflicts]⟩
+        simpa [rc, abstractOrder, hadd, hremoveOp]⟩
     apply hnotEdge
     refine Or.inr ⟨hra, har, ?_, ?_⟩
     · obtain ⟨observed, hremoveOp⟩ := hremove
       unfold Adds at hadd
-      simp [interaction, hadd, hremoveOp, Interaction.FstBeforeSnd]
+      simp [rc, abstractOrder, hadd, hremoveOp]
     · rintro ⟨absorber, habsE, habsVis, habsConflict⟩
       apply hsurvives
       refine ⟨absorber, habsE, habsVis, ?_⟩
       rcases habsOp : absorber.2.2 with ⟨added⟩ | ⟨removed, observed⟩
       · unfold Adds at hadd
-        simp [interaction, hadd, habsOp, Interaction.Conflicts] at habsConflict
+        simp [rc, abstractOrder, hadd, habsOp] at habsConflict
       · unfold Adds at hadd
         have heq : element = removed := by
           by_contra hne
-          simp [interaction, hadd, habsOp, hne,
-            Interaction.Conflicts] at habsConflict
+          simp [rc, abstractOrder, hadd, habsOp, hne,
+            Ne.symm hne] at habsConflict
         subst removed
         exact ⟨observed, habsOp⟩
 
@@ -915,8 +835,7 @@ theorem fold_stateRel
     {C : Configuration (D α)} {E : Set (Op (OROp α))}
     (wellFormed : VersionWellFormed C E)
     {ops : List (Op (OROp α))} (hperm : listPermOf ops E)
-    (hresp : respects ops
-      (interactionLoOn interaction C.replayContext E)) :
+    (hresp : respects ops (@loOn (D α).toUpdateSig rc C.replayContext E)) :
     stateRel (applySeq (D α).toUpdateSig (D α).init ops) (setRun ops) := by
   intro element
   apply Bool.eq_iff_iff.mpr
@@ -928,24 +847,24 @@ theorem fold_stateRel
 the ordinary finite-set machine.  `canIssue` enters exactly through
 `versionWellFormed_of_execution`; without it, the refinement is false. -/
 noncomputable def setSequentialCorrectness :
-    SequentialCorrectnessCertificate (D α) issuance interaction
+    SequentialCorrectnessCertificate (D α) issuance rc
       (spec α) stateRel where
   sound := by
     intro C exec replay v state E hver
-    have hgood : CanonicalConfig C :=
+    have hgood : @CanonicalConfig _
+        (ReplayPolicy.default (D α).toUpdateSig) C :=
       exec.canonicalConfig (fun C _ => (join (α := α)).at C.replayContext)
     have hsub := hgood.version_events_supported v state E hver
     obtain ⟨base, hbasePerm, _, hbaseFold⟩ := replay v state E hver
-    obtain ⟨ops, hperm, habstractResp⟩ :=
-      exists_loOn_respecting_perm_of_replayLaws
-        (D := abstractD α) (C := abstractContext C.replayContext)
-        (abstractReplayLaws (α := α)) hgood.vis_trans hgood.vis_irrefl
-        hbasePerm (fun event hevent => by simpa using hsub event hevent)
-    have hresp : respects ops
-        (interactionLoOn interaction C.replayContext E) := by
-      unfold respects at habstractResp ⊢
-      exact habstractResp.imp fun {a b} hab hba =>
-        hab ((interactionLoOn_iff_abstractLoOn C.replayContext E b a).mp hba)
+    have hrcAcyclic : @RcAcyclic (D α).toUpdateSig rc := by
+      intro event hcycle
+      exact (abstractReplayLaws (α := α)).rc_acyclic event
+        (hcycle.lift id (fun _ _ hedge => by
+          simpa [RcEdge, rc, abstractReplayPolicy] using hedge))
+    obtain ⟨ops, hperm, hresp⟩ :=
+      exists_loOn_respecting_perm_of_rcAcyclic (C := C.replayContext)
+        rc hrcAcyclic
+        hgood.vis_trans hgood.vis_irrefl hbasePerm hsub
     have hlistPerm : ops.Perm base := by
       rw [List.perm_ext_iff_of_nodup hperm.1 hbasePerm.1]
       intro event
@@ -962,9 +881,53 @@ noncomputable def setSequentialCorrectness :
     intro query
     simpa [D, spec, setRun] using hrel query
 
+noncomputable def replayAdequacy :
+    @ReplayAdequacyCertificate (D α) issuance rc := by
+  letI : ReplayPolicy (D α).toUpdateSig := rc
+  refine { soundV := ?_ }
+  intro C h
+  let exec : CertifiedExecution (D α) issuance C := .virtual h
+  have raw : @HasReplayWitness (D α)
+      (ReplayPolicy.default (D α).toUpdateSig) _ :=
+    @ReplayAdequacyCertificate.soundV (D α) issuance
+      (ReplayPolicy.default (D α).toUpdateSig) rawReplayAdequacy C h
+  have rawJoin : @Join (D α)
+      (ReplayPolicy.default (D α).toUpdateSig) := join
+  have hgood : @CanonicalConfig _
+      (ReplayPolicy.default (D α).toUpdateSig) _ :=
+    @CertifiedExecution.canonicalConfig (D α) issuance
+      (ReplayPolicy.default (D α).toUpdateSig) C
+      (fun C _ => @Join.at (D α)
+        (ReplayPolicy.default (D α).toUpdateSig) rawJoin C.replayContext) exec
+  intro v state E hver
+  have hsub := (@CanonicalConfig.version_events_supported _
+    (ReplayPolicy.default (D α).toUpdateSig) C hgood) v state E hver
+  obtain ⟨base, hbasePerm, _, hbaseFold⟩ := raw v state E hver
+  have hrcAcyclic : @RcAcyclic (D α).toUpdateSig rc := by
+    intro event hcycle
+    exact (abstractReplayLaws (α := α)).rc_acyclic event
+      (hcycle.lift id (fun _ _ hedge => by
+        simpa [RcEdge, rc, abstractReplayPolicy] using hedge))
+  obtain ⟨ops, hperm, hresp⟩ :=
+    exists_loOn_respecting_perm_of_rcAcyclic
+      (C := C.replayContext)
+      rc hrcAcyclic
+      (@CanonicalConfig.vis_trans _
+        (ReplayPolicy.default (D α).toUpdateSig) C hgood)
+      (@CanonicalConfig.vis_irrefl _
+        (ReplayPolicy.default (D α).toUpdateSig) C hgood)
+      hbasePerm hsub
+  have hlistPerm : ops.Perm base := by
+    rw [List.perm_ext_iff_of_nodup hperm.1 hbasePerm.1]
+    intro event
+    exact (hperm.2 event).trans (hbasePerm.2 event).symm
+  have hfold := (applySeq_perm_of_all_comm (D' := (D α).toUpdateSig)
+    all_comm hlistPerm (D α).init).trans hbaseFold
+  exact ⟨ops, hperm, hresp, hfold⟩
+
 noncomputable def verified : VerifiedMRDT (D α) where
   issuance := issuance
-  interaction := interaction
+  rc := rc
   replayAdequacy := replayAdequacy
   Spec := spec α
   Rel := stateRel
@@ -975,7 +938,21 @@ noncomputable def verified : VerifiedMRDT (D α) where
 def addA : Op (OROp Nat) := (1, 0, .add 7)
 def removeObserved : Op (OROp Nat) := (2, 0, .remove 7 {1})
 def removeConcurrent : Op (OROp Nat) := (3, 1, .remove 7 ∅)
+def removeOther : Op (OROp Nat) := (4, 1, .remove 8 ∅)
 def afterAdd : State Nat := update Nat (D Nat).init addA
+
+/-- Different-key add/remove operations commute in the ordinary set and are
+not classified as a conflict by `rc`. -/
+theorem cross_key_rc_either :
+    (rc (α := Nat)).order addA removeOther = RcRes.Either ∧
+      (rc (α := Nat)).order removeOther addA = RcRes.Either := by
+  simp [rc, abstractOrder, addA, removeOther]
+
+/-- A same-key concurrent remove is directed before the add. -/
+theorem same_key_rc_add_wins :
+    (rc (α := Nat)).order removeConcurrent addA = RcRes.Fst_then_snd ∧
+      (rc (α := Nat)).order addA removeConcurrent = RcRes.Snd_then_fst := by
+  simp [rc, abstractOrder, removeConcurrent, addA]
 
 theorem add_fresh_issuable : canIssue addA (D Nat).init := by native_decide
 
@@ -1017,6 +994,8 @@ theorem omitted_tag_breaks_ordinary_refinement :
 #print axioms observed_remove_issuable
 #print axioms omitted_observed_tag_rejected
 #print axioms concurrent_remove_add_wins
+#print axioms cross_key_rc_either
+#print axioms same_key_rc_add_wins
 #print axioms omitted_tag_breaks_ordinary_refinement
 
 end Sal.MRDTs.Instances.ORSet

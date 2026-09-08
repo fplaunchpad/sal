@@ -2,17 +2,13 @@ import Sal.MRDTs.Metatheory.Join.SetRelativeReplay
 import Sal.MRDTs.Framework.Execution
 
 /-!
-# The σ/`loOn` layer for the ternary setting
+# Sufficient algebraic laws for set-relative replay
 
-The set-relative linearization machinery of
-`Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean`, re-hosted on the merge-free
-**guarded** `ReplayLaws` fragment (three fields: guarded `rc_non_comm_directional`,
-where the `differentReplicas` guard is the paper's F* interface form, plus
-`no_rc_chain` and `cond_comm_lift`), together with the **replay projection**: the
-ternary `ReplayContext`'s replica-keyed core *is* the binary foundation
-configuration, so `loOn`/`IsCanonicalState`/`convergence_on` and
-friends are reused, not re-proved. The merge-shaped fields of `MergeLaws` cannot
-be demanded of real MRDTs.
+The selected `rc` specifies semantic resolution, not concrete noncommutation.
+This optional proof route covers noncommuting updates by `rc`, requires
+acyclicity, and justifies swaps in the presence of a semantic absorber.
+Additional edges between commuting updates are allowed. Public correctness
+is separately stated by `VerifiedMRDT` against a sequential specification.
 -/
 
 namespace Sal.MRDTs
@@ -26,35 +22,94 @@ section UpdateLayer
 variable {D : UpdateSig}
 variable [ReplayPolicy D]
 
-/-- The three update-layer fields of the 2-way `BinaryMergeLaws`, the fragment the
-`loOn`/convergence/canonical-state machinery consumes. An MRDT's `MergeLaws`
-supplies these unchanged; the binary *merge* fields of `BinaryMergeLaws` are not
-required (they are false for GCA-sensitive MRDTs such as the counter). -/
+/-- The directed part of the replay policy, restricted to event pairs with
+distinct timestamps.  This is the part of `replayOrder` that can contribute
+an `rc`-flavored edge to `loOnNe` in a replay context. -/
+def RcEdge (D : UpdateSig) [ReplayPolicy D]
+    (a b : Op D.AppOp) : Prop :=
+  distinctOps a b ∧ D.rc a b
+
+/-- The semantic resolve-conflict relation has no nonempty directed cycle. -/
+def RcAcyclic (D : UpdateSig) [ReplayPolicy D] : Prop :=
+  ∀ a, ¬ Relation.TransGen D.rc a a
+
+/-- Sufficient concrete-update laws for replay convergence under the selected
+semantic `rc`. Coverage is one-way: ordered updates may commute. The swap law
+uses precisely the semantic absorber tested by `loOn`. This bundle is a proof
+technique, not the definition of conflict or a field of `VerifiedMRDT`. -/
 structure ReplayLaws (D : UpdateSig) [ReplayPolicy D] : Prop where
-  rc_non_comm_directional :
+  noncomm_covered :
     ∀ o₁ o₂ : Op D.AppOp,
-      distinctOps o₁ o₂ → differentReplicas o₁ o₂ →
-      (¬ D.commutes o₁ o₂ ↔
-       (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
-        D.replayOrder o₂ o₁ = RcRes.Fst_then_snd))
-  no_rc_chain :
-    ∀ o₁ o₂ o₃ : Op D.AppOp,
-      distinctOps o₁ o₂ → distinctOps o₂ o₃ →
-      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
-         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)
+      ¬ D.commutes o₁ o₂ → (D.rc o₁ o₂ ∨ D.rc o₂ o₁)
+  rc_acyclic : RcAcyclic D
   cond_comm_lift :
     ∀ (s : D.State) (e e' e'' : Op D.AppOp) (π : List (Op D.AppOp)),
       distinctOps e e' → distinctOps e e'' → distinctOps e' e'' →
-      D.replayOrder e e' = RcRes.Fst_then_snd →
-      ¬ D.commutes e' e'' →
+      D.rc e e' →
+      (D.rc e' e'' ∨ D.rc e'' e') →
       D.update (applySeq D (D.update (D.update s e') e) π) e''
         = D.update (applySeq D (D.update (D.update s e) e') π) e''
 
-/-- Project the replay-order laws from the historical binary merge bundle. -/
+/-- Every acyclic semantic policy is compatible with all-commuting concrete
+updates. In particular, commutativity does not force `rc` to be empty. -/
+theorem ReplayLaws.of_all_comm
+    (hcomm : ∀ a b : Op D.AppOp, D.commutes a b)
+    (hRc : RcAcyclic D) : ReplayLaws D := by
+  refine ⟨fun a b h => (h (hcomm a b)).elim, hRc, ?_⟩
+  intro s e e' e'' π _ _ _ _ _
+  rw [hcomm e' e s]
+
+/-- Forbidding every length-two chain is a stronger sufficient condition for
+acyclicity. Unlike the historical timestamp-guarded law, this premise also
+excludes self edges and cycles between equal-timestamp inputs. -/
+theorem rcAcyclic_of_noRcChain
+    (h : ∀ o₁ o₂ o₃ : Op D.AppOp,
+      ¬ (D.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∧
+         D.replayOrder o₂ o₃ = RcRes.Fst_then_snd)) :
+    RcAcyclic D := by
+  intro a hcycle
+  cases hcycle with
+  | single haa =>
+      exact h a a a ⟨haa, haa⟩
+  | @tail b _ hab hba =>
+      rcases Relation.TransGen.tail'_iff.mp hab with ⟨x, _, hxb⟩
+      exact h x b a ⟨hxb, hba⟩
+
+/-- Camel-case accessor retained for theorem call sites. -/
+theorem ReplayLaws.rcAcyclic (hU : ReplayLaws D) : RcAcyclic D :=
+  hU.rc_acyclic
+
+/-- Semantic rc acyclicity supplies the policy-path premise of the shared
+order-only theorem. -/
+theorem loOnNe_acyclic_of_rcAcyclic
+    (hRc : RcAcyclic D)
+    {C : ReplayContext D}
+    (h_vis_trans : ∀ {a b c : Op D.AppOp},
+       C.vis a b → C.vis b c → C.vis a c)
+    (h_vis_irrefl : ∀ a : Op D.AppOp, ¬ C.vis a a)
+    {T : Set (Op D.AppOp)}
+    (_h_in_C : ∀ a ∈ T, a ∈ C.events)
+    (a : Op D.AppOp) :
+    ¬ Relation.TransGen (loOnNe C T) a a := by
+  apply loOnNe_acyclic_of_policy_paths h_vis_trans h_vis_irrefl ?_ a
+  intro x cycle
+  apply hRc x
+  exact cycle.lift id (by
+    intro u v edge
+    rcases edge with ⟨⟨_, _, _, hvis | hrc⟩, hnvis⟩
+    · exact (hnvis hvis.1).elim
+    · exact hrc.2.2.1)
+
+/-- Reuse historical swap equations with an explicit acyclicity proof. The
+historical timestamp-guarded no-chain law alone does not establish full `rc`
+acyclicity on arbitrary inputs. -/
 theorem ReplayLaws.ofBinaryMergeLaws [HistoricalBinaryMerge D]
-    (hVC : BinaryMergeLaws D) : ReplayLaws D :=
-  ⟨fun o₁ o₂ hd _ => hVC.rc_non_comm_directional o₁ o₂ hd,
-   hVC.no_rc_chain, hVC.cond_comm_lift⟩
+    (hVC : BinaryMergeLaws D) (hRc : RcAcyclic D) : ReplayLaws D := by
+  refine ⟨fun a b => (hVC.rc_non_comm_directional a b).mp,
+    hRc, ?_⟩
+  intro s e e' e'' π h₁ h₂ h₃ hrc habs
+  exact hVC.cond_comm_lift s e e' e'' π h₁ h₂ h₃ hrc
+    ((hVC.rc_non_comm_directional e' e'').mpr habs)
 
 /-- Verbatim `SetRelativeReplay.lean:128` (`applySeq_swap_via_cond_comm_lift_core`)
 with `BinaryMergeLaws` slimmed to `ReplayLaws`. -/
@@ -65,7 +120,7 @@ theorem applySeq_swap_via_cond_comm_lift_of_replayLaws
     (h_dist_be : distinctOps b e₃)
     (h_dist_ae : distinctOps a e₃)
     (h_rc_ab : D.replayOrder a b = RcRes.Fst_then_snd)
-    (h_nc_be : ¬ D.commutes b e₃)
+    (h_abs_be : D.rc b e₃ ∨ D.rc e₃ b)
     (pfx α β : List (Op D.AppOp)) (s : D.State) :
     applySeq D s (pfx ++ a :: b :: (α ++ e₃ :: β))
     = applySeq D s (pfx ++ b :: a :: (α ++ e₃ :: β)) := by
@@ -80,60 +135,9 @@ theorem applySeq_swap_via_cond_comm_lift_of_replayLaws
   rw [hexp1, hexp2]
   exact congrArg (fun t => applySeq D t β)
     (hU.cond_comm_lift (applySeq D s pfx) a b e₃ α
-      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_nc_be).symm
+      h_dist_ab h_dist_ae h_dist_be h_rc_ab h_abs_be).symm
 
-/-- Verbatim `SetRelativeReplay.lean:255` (`loOn_rc_no_succ`). -/
-theorem loOn_rc_no_succ_of_replayLaws (hU : ReplayLaws D)
-    {C : Sal.MRDTs.Foundation.ReplayContext D}
-    {T : Set (Op D.AppOp)}
-    (h_in_C : ∀ a ∈ T, a ∈ C.events)
-    {x y z : Op D.AppOp}
-    (hxy_ne : x ≠ y) (hyz_ne : y ≠ z)
-    (hx : x ∈ T) (hy : y ∈ T) (hz : z ∈ T)
-    (h_rc_edge : ¬ C.vis x y ∧ ¬ C.vis y x
-      ∧ D.replayOrder x y = RcRes.Fst_then_snd
-      ∧ ¬ ∃ e₃ ∈ T, C.vis y e₃ ∧ ¬ D.commutes y e₃)
-    (h_edge : loOn C T y z) : False := by
-  obtain ⟨_, _, h_rc, h_no_abs⟩ := h_rc_edge
-  rcases h_edge with ⟨hv, hnc⟩ | ⟨_, _, h_rc', _⟩
-  · exact h_no_abs ⟨z, hz, hv, hnc⟩
-  · exact hU.no_rc_chain x y z
-      (distinctOps_of_events (h_in_C x hx) (h_in_C y hy) hxy_ne)
-      (distinctOps_of_events (h_in_C y hy) (h_in_C z hz) hyz_ne)
-      ⟨h_rc, h_rc'⟩
-
-/-- Verbatim `SetRelativeReplay.lean:276` (`transGen_loOnNe_structure`). -/
-theorem transGen_loOnNe_structure_of_replayLaws (hU : ReplayLaws D)
-    {C : Sal.MRDTs.Foundation.ReplayContext D}
-    (h_vis_trans : ∀ {a b c : Op D.AppOp},
-       C.vis a b → C.vis b c → C.vis a c)
-    {T : Set (Op D.AppOp)}
-    (h_in_C : ∀ a ∈ T, a ∈ C.events)
-    {a b : Op D.AppOp}
-    (h : Relation.TransGen (loOnNe C T) a b) :
-    C.vis a b ∨
-    (∃ x, x ≠ b ∧ x ∈ T ∧
-      (¬ C.vis x b ∧ ¬ C.vis b x
-        ∧ D.replayOrder x b = RcRes.Fst_then_snd
-        ∧ ¬ ∃ e₃ ∈ T, C.vis b e₃ ∧ ¬ D.commutes b e₃)) := by
-  induction h with
-  | single h_edge =>
-    obtain ⟨hne, hxT, hyT, h_lo⟩ := h_edge
-    rcases h_lo with ⟨hv, _⟩ | h_rc
-    · exact Or.inl hv
-    · exact Or.inr ⟨a, hne, hxT, h_rc⟩
-  | tail _ h_edge ih =>
-    rename_i mid c h_path
-    obtain ⟨hne, hmidT, hcT, h_lo⟩ := h_edge
-    rcases ih with h_vis_amid | ⟨x, hx_ne, hxT, h_rc_edge⟩
-    · rcases h_lo with ⟨hv, _⟩ | h_rc
-      · exact Or.inl (h_vis_trans h_vis_amid hv)
-      · exact Or.inr ⟨mid, hne, hmidT, h_rc⟩
-    · exact absurd h_lo
-        (fun h => loOn_rc_no_succ_of_replayLaws hU h_in_C hx_ne hne hxT hmidT hcT
-          h_rc_edge h)
-
-/-- Verbatim `SetRelativeReplay.lean:307` (`loOnNe_acyclic`). -/
+/-- Compatibility wrapper for callers carrying the complete law bundle. -/
 theorem loOnNe_acyclic_of_replayLaws (hU : ReplayLaws D)
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -143,22 +147,9 @@ theorem loOnNe_acyclic_of_replayLaws (hU : ReplayLaws D)
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     (a : Op D.AppOp) :
     ¬ Relation.TransGen (loOnNe C T) a a := by
-  intro h_cycle
-  rcases transGen_loOnNe_structure_of_replayLaws hU h_vis_trans h_in_C h_cycle with
-    h_vis | ⟨x, hx_ne, hxT, h_rc_edge⟩
-  · exact h_vis_irrefl a h_vis
-  · have h_head : ∀ {p q : Op D.AppOp},
-        Relation.TransGen (loOnNe C T) p q →
-        ∃ c, loOnNe C T p c := by
-      intro p q h
-      induction h with
-      | single h => exact ⟨_, h⟩
-      | tail _ _ ih => exact ih
-    obtain ⟨c, hac_ne, haT, hcT, h_lo⟩ := h_head h_cycle
-    exact loOn_rc_no_succ_of_replayLaws hU h_in_C hx_ne hac_ne hxT haT hcT
-      h_rc_edge h_lo
+  exact loOnNe_acyclic_of_rcAcyclic hU.rcAcyclic h_vis_trans h_vis_irrefl h_in_C a
 
-/-- Verbatim `SetRelativeReplay.lean:342` (`exists_loOn_maximal`). -/
+/-- Compatibility wrapper for callers carrying replay laws. -/
 theorem exists_loOn_maximal_of_replayLaws (hU : ReplayLaws D)
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -169,47 +160,10 @@ theorem exists_loOn_maximal_of_replayLaws (hU : ReplayLaws D)
     (h_in_C : ∀ a ∈ T, a ∈ C.events)
     (h_ne : T.Nonempty) :
     ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x := by
-  suffices walk : ∀ n (rem : List (Op D.AppOp)), rem.length = n →
-      rem.Nodup →
-      ∀ cur ∈ T,
-      (∀ x ∈ T, x ∉ rem → x ≠ cur →
-        Relation.TransGen (loOnNe C T) x cur) →
-      ∃ e ∈ T, ∀ x ∈ T, x ≠ e → ¬ loOn C T e x by
-    obtain ⟨t₀, ht₀⟩ := h_ne
-    exact walk l.length l rfl h_l.1 t₀ ht₀
-      (fun x hx hx_not_l _ => absurd ((h_l.2 x).mpr hx) hx_not_l)
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro rem h_len h_nodup cur h_cur h_reach
-    by_cases h_max : ∃ x ∈ T, x ≠ cur ∧ loOn C T cur x
-    · obtain ⟨x, hx_T, hx_ne, h_edge⟩ := h_max
-      have h_edge_ne : loOnNe C T cur x :=
-        ⟨fun h => hx_ne h.symm, h_cur, hx_T, h_edge⟩
-      by_cases hx_rem : x ∈ rem
-      · have h_len' : (rem.erase x).length < n := by
-          have h_pos : 0 < rem.length := List.length_pos_of_mem hx_rem
-          rw [List.length_erase_of_mem hx_rem]
-          omega
-        refine ih _ h_len' (rem.erase x) rfl (h_nodup.erase x)
-          x hx_T ?_
-        intro y hy_T hy_not hy_ne
-        by_cases hy_cur : y = cur
-        · subst hy_cur
-          exact Relation.TransGen.single h_edge_ne
-        · have hy_not_rem : y ∉ rem := fun h_in =>
-            hy_not (h_nodup.mem_erase_iff.mpr ⟨hy_ne, h_in⟩)
-          exact (h_reach y hy_T hy_not_rem hy_cur).tail h_edge_ne
-      · exfalso
-        have h_x_reaches_cur : Relation.TransGen (loOnNe C T) x cur :=
-          h_reach x hx_T hx_rem hx_ne
-        exact loOnNe_acyclic_of_replayLaws hU h_vis_trans h_vis_irrefl h_in_C x
-          (h_x_reaches_cur.tail h_edge_ne)
-    · push_neg at h_max
-      exact ⟨cur, h_cur, fun x hx hx_ne h_lo =>
-        (h_max x hx hx_ne) h_lo⟩
+  exact exists_loOn_maximal_of_acyclic h_l
+    (loOnNe_acyclic_of_rcAcyclic hU.rcAcyclic h_vis_trans h_vis_irrefl h_in_C) h_ne
 
-/-- Verbatim `SetRelativeReplay.lean:398` (`exists_loOn_respecting_perm`). -/
+/-- Enumeration uses only the acyclicity component of replay laws. -/
 theorem exists_loOn_respecting_perm_of_replayLaws (hU : ReplayLaws D)
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     (h_vis_trans : ∀ {a b c : Op D.AppOp},
@@ -220,61 +174,8 @@ theorem exists_loOn_respecting_perm_of_replayLaws (hU : ReplayLaws D)
     (h_in_C : ∀ a ∈ T, a ∈ C.events) :
     ∃ ρ : List (Op D.AppOp),
       listPermOf ρ T ∧ respects ρ (loOn C T) := by
-  suffices gen : ∀ n (T : Set (Op D.AppOp)) (l : List (Op D.AppOp)),
-      l.length = n → listPermOf l T → (∀ a ∈ T, a ∈ C.events) →
-      ∃ ρ, listPermOf ρ T ∧ respects ρ (loOn C T) by
-    exact gen _ T l rfl h_l h_in_C
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro T l h_len h_perm h_in_C
-    rcases Set.eq_empty_or_nonempty T with rfl | h_ne
-    · exact ⟨[], ⟨List.nodup_nil, fun a => by simp⟩, List.Pairwise.nil⟩
-    · obtain ⟨m, hm, h_max⟩ :=
-        exists_loOn_maximal_of_replayLaws hU h_vis_trans h_vis_irrefl h_perm
-          h_in_C h_ne
-      have hm_in_l : m ∈ l := (h_perm.2 m).mpr hm
-      have h_perm' : listPermOf (l.erase m) (T \ {m}) := by
-        refine ⟨h_perm.1.erase m, fun a => ?_⟩
-        rw [h_perm.1.mem_erase_iff]
-        constructor
-        · rintro ⟨hne, ha⟩
-          exact ⟨(h_perm.2 a).mp ha, hne⟩
-        · rintro ⟨ha, hne⟩
-          exact ⟨hne, (h_perm.2 a).mpr ha⟩
-      have h_len' : (l.erase m).length < n := by
-        have h_pos : 0 < l.length := List.length_pos_of_mem hm_in_l
-        rw [List.length_erase_of_mem hm_in_l]
-        omega
-      obtain ⟨ρ', hρ'_perm, hρ'_resp⟩ :=
-        ih _ h_len' (T \ {m}) (l.erase m) rfl h_perm'
-          (fun a ha => h_in_C a ha.1)
-      have hm_not_ρ' : m ∉ ρ' := fun h =>
-        ((hρ'_perm.2 m).mp h).2 rfl
-      refine ⟨ρ' ++ [m], ⟨?_, fun a => ?_⟩, ?_⟩
-      · rw [List.nodup_append]
-        refine ⟨hρ'_perm.1, List.nodup_singleton _, ?_⟩
-        intro x hx y hy
-        rw [List.mem_singleton] at hy; subst hy
-        intro heq; subst heq
-        exact hm_not_ρ' hx
-      · rw [List.mem_append, List.mem_singleton]
-        constructor
-        · rintro (h | rfl)
-          · exact ((hρ'_perm.2 a).mp h).1
-          · exact hm
-        · intro ha
-          by_cases hae : a = m
-          · exact Or.inr hae
-          · exact Or.inl ((hρ'_perm.2 a).mpr ⟨ha, hae⟩)
-      · unfold respects
-        rw [List.pairwise_append]
-        refine ⟨respects_loOn_mono (fun a ha => ha.1) hρ'_resp,
-          List.pairwise_singleton _ _, ?_⟩
-        intro y hy b hb
-        rw [List.mem_singleton] at hb; subst hb
-        obtain ⟨hy_T, hy_ne⟩ := (hρ'_perm.2 y).mp hy
-        exact h_max y hy_T hy_ne
+  exact exists_loOn_respecting_perm_of_acyclic h_l
+    (loOnNe_acyclic_of_rcAcyclic hU.rcAcyclic h_vis_trans h_vis_irrefl h_in_C)
 
 /-- Verbatim `SetRelativeReplay.lean:472` (`applySeq_swap_loOn_incomparable`). -/
 theorem applySeq_swap_loOn_incomparable_of_replayLaws
@@ -288,26 +189,26 @@ theorem applySeq_swap_loOn_incomparable_of_replayLaws
       ∃ e₃ α β, sfx = α ++ e₃ :: β ∧
                 distinctOps a e₃ ∧ distinctOps b e₃ ∧
                 ((D.replayOrder a b = RcRes.Fst_then_snd ∧
-                  ¬ D.commutes b e₃) ∨
+                  (D.rc b e₃ ∨ D.rc e₃ b)) ∨
                  (D.replayOrder b a = RcRes.Fst_then_snd ∧
-                  ¬ D.commutes a e₃))) :
+                  (D.rc a e₃ ∨ D.rc e₃ a)))) :
     applySeq D s (pfx ++ a :: b :: sfx)
     = applySeq D s (pfx ++ b :: a :: sfx) := by
   by_cases h_comm : D.commutes a b
   · exact applySeq_swap_commute_basic h_comm pfx sfx s
   · obtain ⟨_, _, hL_a, h_a_in_s⟩ := h_a_in_C
     obtain ⟨_, _, hL_b, h_b_in_s⟩ := h_b_in_C
+    have h_dist_ab : distinctOps a b :=
+      C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
+    have h_rc_pair := hU.noncomm_covered a b h_comm
     by_cases h_same : a.rep = b.rep
     · exfalso
       have h_vis :=
         C.vis_total_same_replica hL_a h_a_in_s hL_b h_b_in_s h_ne h_same
       rcases h_vis with hvab | hvba
-      · exact h_not_lo_ab (Or.inl ⟨hvab, h_comm⟩)
-      · have h_comm_ba : ¬ D.commutes b a :=
-          fun h => h_comm (fun s => (h s).symm)
-        exact h_not_lo_ba (Or.inl ⟨hvba, h_comm_ba⟩)
-    · have h_dist_ab : distinctOps a b :=
-        C.timestamps_distinct hL_a h_a_in_s hL_b h_b_in_s h_ne
+      · exact h_not_lo_ab (Or.inl ⟨hvab, h_rc_pair⟩)
+      · exact h_not_lo_ba (Or.inl ⟨hvba, h_rc_pair.symm⟩)
+    ·
       obtain ⟨e₃, α, β, h_sfx, h_dae, h_dbe, h_case⟩ := h_ov h_comm h_same
       subst h_sfx
       rcases h_case with ⟨h_rc_ab, h_nc_be⟩ | ⟨h_rc_ba, h_nc_ae⟩
@@ -332,9 +233,9 @@ theorem applySeq_bubble_to_front_loOn_of_replayLaws
       ∃ e₃ α' β', β ++ tail = α' ++ e₃ :: β' ∧
                   distinctOps y e₃ ∧ distinctOps e e₃ ∧
                   ((D.replayOrder y e = RcRes.Fst_then_snd ∧
-                    ¬ D.commutes e e₃) ∨
+                    (D.rc e e₃ ∨ D.rc e₃ e)) ∨
                    (D.replayOrder e y = RcRes.Fst_then_snd ∧
-                    ¬ D.commutes y e₃)))
+                    (D.rc y e₃ ∨ D.rc e₃ y))))
     (s : D.State) :
     applySeq D s (σ ++ e :: tail) = applySeq D s (e :: σ ++ tail) := by
   induction σ generalizing s with
@@ -382,7 +283,7 @@ theorem convergence_on_of_replayLaws
                    (π₁ π₂ : List (Op D.AppOp)),
       π₁.length = n →
       (∀ a ∈ evC, a ∈ C.events) →
-      (∀ x ∈ evC, ∀ z ∈ ev, C.vis x z → ¬ D.commutes x z → z ∈ evC) →
+      (∀ x ∈ evC, ∀ z ∈ ev, C.vis x z → (D.rc x z ∨ D.rc z x) → z ∈ evC) →
       listPermOf π₁ evC → listPermOf π₂ evC →
       respects π₁ (loOn C ev) → respects π₂ (loOn C ev) →
       applySeq D s π₁ = applySeq D s π₂ by
@@ -457,9 +358,9 @@ theorem convergence_on_of_replayLaws
             ∃ e₃ α' β', β ++ τ = α' ++ e₃ :: β' ∧
                         distinctOps y e₃ ∧ distinctOps e e₃ ∧
                         ((D.replayOrder y e = RcRes.Fst_then_snd ∧
-                          ¬ D.commutes e e₃) ∨
+                          (D.rc e e₃ ∨ D.rc e₃ e)) ∨
                          (D.replayOrder e y = RcRes.Fst_then_snd ∧
-                          ¬ D.commutes y e₃)) := by
+                          (D.rc y e₃ ∨ D.rc e₃ y))) := by
           intro α β y h_σ_eq h_nc h_diff_rep
           subst h_σ_eq
           have hy_in_σ : y ∈ α ++ y :: β :=
@@ -472,34 +373,34 @@ theorem convergence_on_of_replayLaws
           have h_not_lo_ye : ¬ loOn C ev y e := h_not_lo_bwd y hy_in_σ
           have h_not_lo_ey : ¬ loOn C ev e y := h_not_lo_fwd y hy_in_σ
           have h_rc_disj :=
-            (hU.rc_non_comm_directional y e h_dist_ye h_diff_rep).mp h_nc
+            hU.noncomm_covered y e h_nc
           rcases h_rc_disj with h_rc_ye | h_rc_ey
           · have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inl h_rc_ye⟩)
             have h_not_vis_ey : ¬ C.vis e y := by
               intro hv
-              have h_nc_ey : ¬ D.commutes e y :=
-                fun h => h_nc (fun s => (h s).symm)
-              exact h_not_lo_ey (Or.inl ⟨hv, h_nc_ey⟩)
+              exact h_not_lo_ey (Or.inl ⟨hv, Or.inr h_rc_ye⟩)
             have h_overwriter_e :
-                ∃ e₃ ∈ ev, C.vis e e₃ ∧ ¬ D.commutes e e₃ := by
+                ∃ e₃ ∈ ev, C.vis e e₃ ∧ (D.rc e e₃ ∨ D.rc e₃ e) := by
               by_contra h_no_ow
               exact h_not_lo_ye
                 (Or.inr ⟨h_not_vis_ye, h_not_vis_ey, h_rc_ye, h_no_ow⟩)
-            obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_nc_ee₃⟩ := h_overwriter_e
+            obtain ⟨e₃, h_e₃_ev, h_vis_ee₃, h_rc_ee₃⟩ := h_overwriter_e
             have h_e₃_in_evC : e₃ ∈ evC :=
-              h_abs e he_in_ev e₃ h_e₃_ev h_vis_ee₃ h_nc_ee₃
+              h_abs e he_in_ev e₃ h_e₃_ev h_vis_ee₃ h_rc_ee₃
             have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
               (hmem₂ e₃).mpr h_e₃_in_evC
-            have h_lo_ee₃ : loOn C ev e e₃ := Or.inl ⟨h_vis_ee₃, h_nc_ee₃⟩
+            have h_lo_ee₃ : loOn C ev e e₃ :=
+              Or.inl ⟨h_vis_ee₃, h_rc_ee₃⟩
             have h_e₃_in_τ : e₃ ∈ τ := by
               rcases List.mem_append.mp h_e₃_in_π₂ with h | h
               · exfalso
                 have hresp_pair := List.pairwise_append.mp h₂r
                 exact hresp_pair.2.2 e₃ h e List.mem_cons_self h_lo_ee₃
               · rcases List.mem_cons.mp h with h_eq | h_τ
-                · exact absurd h_eq.symm
-                    (fun h_eq2 => h_nc_ee₃ (fun s => by rw [h_eq2]))
+                · subst e₃
+                  exact False.elim (hU.rc_acyclic e
+                    (.single (h_rc_ee₃.elim id id)))
                 · exact h_τ
             have h_e₃_ne_y : e₃ ≠ y := by
               intro h_eq
@@ -511,44 +412,49 @@ theorem convergence_on_of_replayLaws
               intro h_eq
               rw [h_eq] at h_e₃_in_τ
               exact he_notin_τ h_e₃_in_τ
-            obtain ⟨τ_a, τ_b, hτ_split⟩ := List.append_of_mem h_e₃_in_τ
             have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
-            have h_dist_ye₃ : distinctOps y e₃ :=
-              distinctOps_of_events hy_in_C h_e₃_in_C
-                (fun h => h_e₃_ne_y h.symm)
             have h_dist_ee₃ : distinctOps e e₃ :=
               distinctOps_of_events he_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_e h.symm)
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              distinctOps_of_events hy_in_C h_e₃_in_C
+                (fun h => h_e₃_ne_y h.symm)
+            obtain ⟨τ_a, τ_b, hτ_split⟩ := List.append_of_mem h_e₃_in_τ
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              distinctOps_of_events hy_in_C h_e₃_in_C
+                (fun h => h_e₃_ne_y h.symm)
             refine ⟨e₃, β ++ τ_a, τ_b, ?_, h_dist_ye₃, h_dist_ee₃,
-                    Or.inl ⟨h_rc_ye, h_nc_ee₃⟩⟩
+                    Or.inl ⟨h_rc_ye, h_rc_ee₃⟩⟩
             rw [hτ_split, List.append_assoc]
           · have h_not_vis_ey : ¬ C.vis e y := fun hv =>
-              h_not_lo_ey (Or.inl ⟨hv, fun h => h_nc (fun s => (h s).symm)⟩)
+              h_not_lo_ey
+                (Or.inl ⟨hv, Or.inl h_rc_ey⟩)
             have h_not_vis_ye : ¬ C.vis y e := fun hv =>
-              h_not_lo_ye (Or.inl ⟨hv, h_nc⟩)
+              h_not_lo_ye (Or.inl ⟨hv, Or.inr h_rc_ey⟩)
             have h_overwriter_y :
-                ∃ e₃ ∈ ev, C.vis y e₃ ∧ ¬ D.commutes y e₃ := by
+                ∃ e₃ ∈ ev, C.vis y e₃ ∧ (D.rc y e₃ ∨ D.rc e₃ y) := by
               by_contra h_no_ow
               exact h_not_lo_ey
                 (Or.inr ⟨h_not_vis_ey, h_not_vis_ye, h_rc_ey, h_no_ow⟩)
-            obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_nc_ye₃⟩ := h_overwriter_y
+            obtain ⟨e₃, h_e₃_ev, h_vis_ye₃, h_rc_ye₃⟩ := h_overwriter_y
             have h_e₃_in_evC : e₃ ∈ evC :=
-              h_abs y hy_in_ev e₃ h_e₃_ev h_vis_ye₃ h_nc_ye₃
+              h_abs y hy_in_ev e₃ h_e₃_ev h_vis_ye₃ h_rc_ye₃
             have h_e₃_in_π₂ : e₃ ∈ (α ++ y :: β) ++ e :: τ :=
               (hmem₂ e₃).mpr h_e₃_in_evC
-            have h_lo_ye₃ : loOn C ev y e₃ := Or.inl ⟨h_vis_ye₃, h_nc_ye₃⟩
+            have h_lo_ye₃ : loOn C ev y e₃ :=
+              Or.inl ⟨h_vis_ye₃, h_rc_ye₃⟩
             have h_e₃_ne_e : e₃ ≠ e := fun h_eq => by
               subst h_eq; exact h_not_lo_ye h_lo_ye₃
             have h_e₃_ne_y : e₃ ≠ y := fun h_eq => by
               subst h_eq
-              exact h_nc_ye₃ (fun _ => rfl)
+              exact hU.rc_acyclic _ (.single (h_rc_ye₃.elim id id))
             have h_e₃_in_C : e₃ ∈ C.events := h_ev_in_C e₃ h_e₃_ev
-            have h_dist_ye₃ : distinctOps y e₃ :=
-              distinctOps_of_events hy_in_C h_e₃_in_C
-                (fun h => h_e₃_ne_y h.symm)
             have h_dist_ee₃ : distinctOps e e₃ :=
               distinctOps_of_events he_in_C h_e₃_in_C
                 (fun h => h_e₃_ne_e h.symm)
+            have h_dist_ye₃ : distinctOps y e₃ :=
+              distinctOps_of_events hy_in_C h_e₃_in_C
+                (fun h => h_e₃_ne_y h.symm)
             have h_e₃_in_βτ : e₃ ∈ β ++ τ := by
               rcases List.mem_append.mp h_e₃_in_π₂ with h | h
               · rcases List.mem_append.mp h with h_α | h_yβ
@@ -566,7 +472,7 @@ theorem convergence_on_of_replayLaws
                 · exact List.mem_append.mpr (Or.inr h_τ)
             obtain ⟨γ_a, γ_b, hγ_split⟩ := List.append_of_mem h_e₃_in_βτ
             exact ⟨e₃, γ_a, γ_b, hγ_split, h_dist_ye₃, h_dist_ee₃,
-                    Or.inr ⟨h_rc_ey, h_nc_ye₃⟩⟩
+                    Or.inr ⟨h_rc_ey, h_rc_ye₃⟩⟩
         exact applySeq_bubble_to_front_loOn_of_replayLaws (D := D) (ev := ev) hU e σ τ
           he_in_C h_σ_in_C he_notin_σ h_not_lo_fwd h_not_lo_bwd h_ov s
       have h_len_new : π₁'.length < n := by
@@ -574,13 +480,13 @@ theorem convergence_on_of_replayLaws
       have h_evC'_in_C : ∀ a ∈ evC \ {e}, a ∈ C.events :=
         fun a ha => h_evC_in_C a ha.1
       have h_abs' : ∀ x ∈ evC \ {e}, ∀ z ∈ ev,
-          C.vis x z → ¬ D.commutes x z → z ∈ evC \ {e} := by
-        intro x hx z hz hv hnc
-        refine ⟨h_abs x hx.1 z hz hv hnc, ?_⟩
+          C.vis x z → (D.rc x z ∨ D.rc z x) → z ∈ evC \ {e} := by
+        intro x hx z hz hv hrc
+        refine ⟨h_abs x hx.1 z hz hv hrc, ?_⟩
         intro hz_eq
         have hz_eq' : z = e := hz_eq
-        rw [hz_eq'] at hv hnc
-        have hlo_xe : loOn C ev x e := Or.inl ⟨hv, hnc⟩
+        rw [hz_eq'] at hv hrc
+        have hlo_xe : loOn C ev x e := Or.inl ⟨hv, hrc⟩
         exact h_e_lo_min x hx.1 hx.2 hlo_xe
       have hp₁' : listPermOf π₁' (evC \ {e}) := by
         refine ⟨hnd₁.2, fun a => ?_⟩
@@ -649,35 +555,40 @@ theorem isCanonicalState_exists_of_replayLaws (hU : ReplayLaws D)
   exact ⟨applySeq D D.init ρ, ρ, hp, hr, rfl⟩
 
 /-- Verbatim `SetRelativeReplay.lean:1532` (`loOn_empty_of_all_comm`). -/
-theorem loOn_empty_of_all_comm_of_replayLaws (hU : ReplayLaws D)
+theorem loOn_empty_of_all_comm_of_replayLaws
     {C : Sal.MRDTs.Foundation.ReplayContext D} {ev : Set (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
+    (h_rc_either : ∀ a b : Op D.AppOp,
+      D.replayOrder a b = RcRes.Either)
     {x y : Op D.AppOp} (hx : x ∈ C.events) (hy : y ∈ C.events)
     (hne : x ≠ y) :
     ¬ loOn C ev x y := by
-  rintro (⟨_, hnc⟩ | ⟨h₁, h₂, h_rc, _⟩)
-  · exact hnc (h_comm x y)
-  · by_cases hrep : x.rep = y.rep
-    · obtain ⟨r, s, hL, hs⟩ := hx
-      obtain ⟨r', s', hL', hs'⟩ := hy
-      rcases C.vis_total_same_replica hL hs hL' hs' hne hrep with hv | hv
-      · exact h₁ hv
-      · exact h₂ hv
-    · exact (hU.rc_non_comm_directional x y
-        (distinctOps_of_events hx hy hne) hrep).mpr (Or.inl h_rc) (h_comm x y)
+  rintro (⟨_, hrc⟩ | ⟨h₁, h₂, h_rc, _⟩)
+  · rcases hrc with hrc | hrc
+    · change D.replayOrder x y = RcRes.Fst_then_snd at hrc
+      rw [h_rc_either] at hrc
+      exact RcRes.noConfusion hrc
+    · change D.replayOrder y x = RcRes.Fst_then_snd at hrc
+      rw [h_rc_either] at hrc
+      exact RcRes.noConfusion hrc
+  · change D.replayOrder x y = RcRes.Fst_then_snd at h_rc
+    rw [h_rc_either] at h_rc
+    exact RcRes.noConfusion h_rc
 
 /-- Verbatim `SetRelativeReplay.lean:1544` (`isCanonicalState_of_all_comm`). -/
-theorem isCanonicalState_of_all_comm_of_replayLaws (hU : ReplayLaws D)
+theorem isCanonicalState_of_all_comm_of_replayLaws
     {C : Sal.MRDTs.Foundation.ReplayContext D}
     {ev : Set (Op D.AppOp)} {l : List (Op D.AppOp)}
     (h_comm : ∀ a b : Op D.AppOp, D.commutes a b)
+    (h_rc_either : ∀ a b : Op D.AppOp,
+      D.replayOrder a b = RcRes.Either)
     (h_in_C : ∀ a ∈ ev, a ∈ C.events)
     (h_perm : listPermOf l ev) :
     IsCanonicalState C ev (applySeq D D.init l) := by
   refine ⟨l, h_perm, ?_, rfl⟩
   refine List.Pairwise.imp_of_mem ?_ h_perm.1
   intro a b ha hb hne
-  exact loOn_empty_of_all_comm_of_replayLaws hU h_comm
+  exact loOn_empty_of_all_comm_of_replayLaws h_comm h_rc_either
     (h_in_C b ((h_perm.2 b).mp hb)) (h_in_C a ((h_perm.2 a).mp ha))
     (Ne.symm hne)
 

@@ -11,7 +11,10 @@ import Sal.MRDTs.Instances.Peritext
 import Sal.MRDTs.Instances.SidedPeritext
 import Sal.MRDTs.Instances.TreeMove
 import Sal.MRDTs.Instances.AegisSheetSequential
-import Sal.MRDTs.Instances.ORSet
+import Sal.MRDTs.Instances.EfficientORSetCertified
+import Sal.MRDTs.Instances.QueueCorrectness
+import Sal.MRDTs.Instances.MVRLiveContract
+import Sal.MRDTs.Instances.FugueMaxContract
 
 /-!
 # Typed production MRDT registry
@@ -53,17 +56,20 @@ noncomputable def registry : List PackagedMRDT :=
       (Instances.SidedPeritext.richVerified unaryCode)
   , PackagedMRDT.of "tree-move" Instances.TreeMove.verified
   , PackagedMRDT.of "aegis-sheet" Instances.AegisSheet.verified
-  , PackagedMRDT.of "or-set"
-      (Instances.ORSet.verified (α := Nat))
+  , PackagedMRDT.of "efficient-or-set"
+      (Instances.EfficientORSet.verified (α := Nat))
+  , PackagedMRDT.of "queue" Instances.Queue.verified
+  , PackagedMRDT.of "mvr" Instances.MVRLive.verified
+  , PackagedMRDT.of "fugue-max" (Instances.SidedEmbedRGA.FugueMax.verified unaryCode)
   ]
 
 noncomputable def names : List String := registry.map PackagedMRDT.name
 
-example : registry.length = 19 := by rfl
+example : registry.length = 22 := by rfl
 
 #check registry
 #check Instances.LWWRegister.verified
-#check Instances.ORSet.verified
+#check Instances.EfficientORSet.verified
 #check Instances.AegisSheet.verified
 
 end Sal.MRDTs.Production

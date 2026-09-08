@@ -450,17 +450,10 @@ theorem all_comm (a b : Event) : D.toUpdateSig.commutes a b := by
   simp [D, or_left_comm]
 
 theorem replayLaws : ReplayLaws D.toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h
-      exact absurd (all_comm a b) h
-    · rintro (h | h) <;> exact RcRes.noConfusion h
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    exact RcRes.noConfusion h
-  · intro s a b c π _ _ _ h _
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws D := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -534,7 +527,6 @@ def validUndo (events : Finset Event) (issuer : Replica)
     | _ => decide (prior.1 = target ∧ prior.2.1 = issuer ∧ inverse = inverseFor prior)) events
 
 def applicableB (e : Event) (events : Finset Event) : Bool :=
-  !(decide (e.1 ∈ eventTimes events)) &&
   decide (e.seen = eventTimes events) &&
   metadataValidB events e &&
   match e.2.2.command with
@@ -570,8 +562,28 @@ theorem ClockedAt.lt {e : Event} {events : Finset Event}
   intro timestamp member
   simpa using h timestamp member
 
+/-- The strict clock already excludes reuse of any origin timestamp. -/
+theorem ClockedAt.fresh {e : Event} {events : Finset Event}
+    (h : ClockedAt e events) : e.1 ∉ eventTimes events := by
+  intro member
+  exact Nat.lt_irrefl _ (h.lt e.1 member)
+
 def applicable (e : Event) (events : Finset Event) : Prop :=
   applicableB e events = true ∧ ClockedAt e events
+
+/-- Removing the duplicate freshness conjunct preserves the full issuer
+predicate. The right side reinstates the former Boolean check (reassociated). -/
+theorem applicable_iff_explicit_freshness (e : Event) (events : Finset Event) :
+    applicable e events ↔
+      (!(decide (e.1 ∈ eventTimes events)) && applicableB e events) = true ∧
+        ClockedAt e events := by
+  constructor
+  · intro h
+    exact ⟨by simp [h.2.fresh, h.1], h.2⟩
+  · intro h
+    rcases h with ⟨hb, hc⟩
+    simp only [Bool.and_eq_true] at hb
+    exact ⟨hb.2, hc⟩
 
 instance (e : Event) (events : Finset Event) :
     Decidable (applicable e events) := by
@@ -749,6 +761,20 @@ example : axisLive editRemoveState .row r0 = true := by native_decide
 example : cellValues editRemoveState r0 c0 = {1} := by native_decide
 example : applicableB concurrentRemove base = true := by native_decide
 example : applicableB concurrentEdit base = true := by native_decide
+
+/-- Removing the redundant test leaves ordinary valid issuance accepted. -/
+theorem freshness_cleanup_accepts_valid : applicable concurrentEdit base := by
+  native_decide
+
+/-- The non-clock helper accepts this metadata, but the full issuer still
+rejects reusing the existing cell write's timestamp. -/
+def reusedTimeRemove : Event := axisEvent 3 2 {1, 2, 3} .remove .row r0 (some 10) none
+
+theorem freshness_cleanup_helper_accepts : applicableB reusedTimeRemove base = true := by
+  native_decide
+
+theorem freshness_cleanup_rejects_reuse : ¬ applicable reusedTimeRemove base := by
+  native_decide
 /-- FAIL control: delete-wins is not the published outcome. -/
 example : ¬ (axisLive editRemoveState .row r0 = false) := by native_decide
 

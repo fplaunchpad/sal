@@ -95,12 +95,14 @@ noncomputable def AWSet : UpdateSig where
 noncomputable instance AWSetHistoricalBinaryMerge : HistoricalBinaryMerge AWSet where
   binaryMerge := awMerge
 
-local instance : ReplayPolicy AWSet where
+local instance AWSetReplayPolicy : ReplayPolicy AWSet where
   order := awRc
 
 @[simp] theorem AWSet_update : AWSet.update = awUpdate := rfl
 @[simp] theorem AWSet_merge : AWSet.historicalMerge = awMerge := rfl
 @[simp] theorem AWSet_rc : AWSet.replayOrder = awRc := rfl
+@[simp] theorem AWSet_rc_apply (e₁ e₂ : Op AWOp) : AWSet.rc e₁ e₂ ↔
+    awRc e₁ e₂ = RcRes.Fst_then_snd := Iff.rfl
 @[simp] theorem AWSet_init : AWSet.init = ((∅ : Set Timestamp), (∅ : Set Timestamp)) := rfl
 
 theorem awUpdate_add {e : Op AWOp} (h : e.2.2 = AWOp.add) (σ : AWState) :
@@ -175,17 +177,17 @@ theorem AWSet_rc_non_comm :
 
 theorem AWSet_rc_non_comm_directional :
     ∀ o₁ o₂ : Op AWSet.AppOp,
-      distinctOps o₁ o₂ →
       (¬ AWSet.commutes o₁ o₂ ↔
        (AWSet.replayOrder o₁ o₂ = RcRes.Fst_then_snd ∨
         AWSet.replayOrder o₂ o₁ = RcRes.Fst_then_snd)) := by
-  intro o₁ o₂ _
+  intro o₁ o₂
   rcases h₁ : o₁.2.2 <;> rcases h₂ : o₂.2.2 <;>
     simp only [AWSet_rc, awRc_eq, h₁, h₂]
   · constructor
     · intro h; exact absurd (AWSet_comm_add_add h₁ h₂) h
     · rintro (h | h) <;>
         exact absurd h (by first | exact fun h' => nomatch h' | decide)
+
   · constructor
     · intro _; exact Or.inr (by trivial)
     · intro _; exact AWSet_not_comm_add_rem h₁ h₂
@@ -196,6 +198,11 @@ theorem AWSet_rc_non_comm_directional :
     · intro h; exact absurd (AWSet_comm_rem_rem h₁ h₂) h
     · rintro (h | h) <;>
         exact absurd h (by first | exact fun h' => nomatch h' | decide)
+
+private theorem awConflict_of_noncomm {a b : Op AWOp}
+    (hnc : ¬ AWSet.commutes a b) :
+    AWSet.rc a b ∨ AWSet.rc b a :=
+  (AWSet_rc_non_comm_directional a b).mp hnc
 
 theorem AWSet_no_rc_chain :
     ∀ o₁ o₂ o₃ : Op AWSet.AppOp,
@@ -455,13 +462,9 @@ theorem counterEv_closed :
 (`rc add rem = Snd_then_fst`, no vis). -/
 theorem respects_ye :
     respects [evRem1, evAdd] (lo counterConfig) := by
-  refine List.Pairwise.cons ?_ (List.pairwise_singleton _ _)
-  intro b hb
-  rw [List.mem_singleton] at hb; subst hb
-  rintro (⟨h, _⟩ | ⟨_, _, h_rc, _⟩)
-  · exact absurd h.2 (by simp [counterConfig, evAdd, evRem0, evRem1])
-  · rw [AWSet_rc] at h_rc
-    exact absurd h_rc (by simp [awRc_eq, evAdd, evRem1])
+  simp [respects, lo, counterConfig, evAdd, evRem0, evRem1,
+    AWSetReplayPolicy, UpdateSig.rc, ReplayPolicy.Before, awRc_eq,
+    AWSet_not_comm_add_rem]
 
 /-- **The absorber cancellation**: `[e, y]` also respects `lo C`.
 The rc-edge `evRem1 → evAdd` (`rc rem add = Fst`) is cancelled by the
@@ -469,13 +472,8 @@ configuration-global overwriter `evRem0` (`vis evAdd evRem0`,
 `¬commutes`). -/
 theorem respects_ey :
     respects [evAdd, evRem1] (lo counterConfig) := by
-  refine List.Pairwise.cons ?_ (List.pairwise_singleton _ _)
-  intro b hb
-  rw [List.mem_singleton] at hb; subst hb
-  rintro (⟨h, _⟩ | ⟨_, _, _, h_no_ow⟩)
-  · exact absurd h.1 (by simp [counterConfig, evAdd, evRem0, evRem1])
-  · exact h_no_ow ⟨evRem0, ⟨rfl, rfl⟩,
-      AWSet_not_comm_add_rem (by rfl) (by rfl)⟩
+  simp [respects, lo, counterConfig, evAdd, evRem0, evRem1,
+    AWSetReplayPolicy, UpdateSig.rc, ReplayPolicy.Before, awRc_eq]
 
 /-- The two folds differ: `[y, e]` leaves timestamp 0 alive,
 `[e, y]` kills it. -/
@@ -575,7 +573,8 @@ theorem convergence_over_backward_closed_subsets_false :
       respects π₁ (lo C) ∧ respects π₂ (lo C) ∧
       applySeq AWSet AWSet.init π₁ ≠ applySeq AWSet AWSet.init π₂ :=
   ⟨counterConfig, counterEv, [evRem1, evAdd], [evAdd, evRem1],
-    AWSet_rc_non_comm, AWSet_rc_non_comm_directional, AWSet_no_rc_chain,
+    AWSet_rc_non_comm, (fun a b _ => AWSet_rc_non_comm_directional a b),
+    AWSet_no_rc_chain,
     AWSet_cond_comm_lift, AWSet_merge_comm, AWSet_merge_idem,
     AWSet_merge_init, AWSet_lem_0op,
     counterEv_in_C, counterEv_closed, perm_ye, perm_ey,
@@ -593,7 +592,9 @@ theorem loOn_keeps_the_edge :
     refine Or.inr ⟨?_, ?_, ?_, ?_⟩
     · rintro ⟨h, _⟩; simp [evRem1, evAdd] at h
     · rintro ⟨_, h⟩; simp [evRem0, evRem1] at h
-    · rw [AWSet_rc]; rfl
+    · change AWSet.replayOrder evRem1 evAdd = RcRes.Fst_then_snd
+      rw [AWSet_rc]
+      rfl
     · rintro ⟨e₃, h_mem, h_vis, _⟩
       obtain ⟨_, rfl⟩ := h_vis
       rcases h_mem with h | h <;> simp [evRem0, evRem1, evAdd] at h
@@ -772,8 +773,14 @@ private theorem AWSet_char_aux {C : ReplayContext AWSet}
           · -- a = x with vis x z into the prefix: the mandatory edge
             -- x → z contradicts x being last.
             rw [List.mem_singleton] at ha'; subst ha'
+            have hne : a ≠ z := by
+              intro heq
+              subst z
+              rw [hadd] at hrem
+              exact AWOp.noConfusion hrem
             exact absurd (Or.inl ⟨hvis,
-              AWSet_not_comm_add_rem hadd hrem⟩) (h_cross z hz')
+              awConflict_of_noncomm (AWSet_not_comm_add_rem hadd hrem)⟩)
+              (h_cross z hz')
         · rw [List.mem_singleton] at hz'; subst hz'
           rw [hx_op] at hrem
           exact absurd hrem (fun h' => nomatch h')
@@ -815,18 +822,24 @@ private theorem AWSet_char_aux {C : ReplayContext AWSet}
           have h_nc : ¬ AWSet.commutes x a :=
             AWSet_not_comm_rem_add hx_op hadd
           have h_noedge := h_cross a ha
+          have hxa_ne : x ≠ a := by
+            intro heq
+            subst a
+            rw [hx_op] at hadd
+            exact AWOp.noConfusion hadd
           have h1 : ¬ C.vis x a := fun hv =>
-            h_noedge (Or.inl ⟨hv, h_nc⟩)
+            h_noedge (Or.inl ⟨hv, awConflict_of_noncomm h_nc⟩)
           have h_rc : AWSet.replayOrder x a = RcRes.Fst_then_snd := by
             simp only [AWSet_rc, awRc_eq, hx_op, hadd]
           by_cases h2 : C.vis a x
           · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
               x, hx_ev, h2, hx_op⟩
           · have h_abs : ∃ z ∈ ev,
-                C.vis a z ∧ ¬ AWSet.commutes a z := by
+                C.vis a z ∧ (AWSet.rc a z ∨ AWSet.rc z a) := by
               by_contra h_no
               exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
-            obtain ⟨z, hz_ev, hz_vis, hz_nc⟩ := h_abs
+            obtain ⟨z, hz_ev, hz_vis, hz_rc⟩ := h_abs
+            have hz_nc := (AWSet_rc_non_comm_directional a z).mpr hz_rc
             rcases hz_op : z.2.2
             · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc
             · exact ⟨a, List.mem_append.mpr (Or.inl ha), hadd, ht',
@@ -920,7 +933,8 @@ theorem no_absorber_of_max {C : ReplayContext AWSet}
     rw [he_add] at hrem
     exact absurd hrem (fun h' => nomatch h')
   exact h_max z (h_sub hz) hz_ne
-    (Or.inl ⟨hvis, AWSet_not_comm_add_rem he_add hrem⟩)
+    (Or.inl ⟨hvis,
+      awConflict_of_noncomm (AWSet_not_comm_add_rem he_add hrem)⟩)
 
 /-- Removing an unabsorbed add leaves `awKilled` unchanged. -/
 theorem awKilled_diff_add {C : ReplayContext AWSet}
@@ -964,7 +978,8 @@ theorem awAdds_killed_of_rem_max {C : ReplayContext AWSet}
   have h_nc : ¬ AWSet.commutes e a :=
     AWSet_not_comm_rem_add he_rem hadd
   have h_noedge := h_max a ha_U ha_ne
-  have h1 : ¬ C.vis e a := fun hv => h_noedge (Or.inl ⟨hv, h_nc⟩)
+  have h1 : ¬ C.vis e a := fun hv => h_noedge (Or.inl ⟨hv,
+    awConflict_of_noncomm h_nc⟩)
   have h_rc : AWSet.replayOrder e a = RcRes.Fst_then_snd := by
     simp only [AWSet_rc, awRc_eq, he_rem, hadd]
   by_cases h2 : C.vis a e
@@ -972,10 +987,11 @@ theorem awAdds_killed_of_rem_max {C : ReplayContext AWSet}
       h_cl₁ a e h2 (fun hc => h_nc (commutes_symm hc)) he₁
     exact Or.inl ⟨a, ha₁, hadd, ht', e, he₁, h2, he_rem⟩
   · have h_abs : ∃ z ∈ ev₁ ∪ ev₂,
-        C.vis a z ∧ ¬ AWSet.commutes a z := by
+        C.vis a z ∧ (AWSet.rc a z ∨ AWSet.rc z a) := by
       by_contra h_no
       exact h_noedge (Or.inr ⟨h1, h2, h_rc, h_no⟩)
-    obtain ⟨z, hz_U, hz_vis, hz_nc⟩ := h_abs
+    obtain ⟨z, hz_U, hz_vis, hz_rc⟩ := h_abs
+    have hz_nc := (AWSet_rc_non_comm_directional a z).mpr hz_rc
     have hz_rem : z.2.2 = AWOp.rem := by
       rcases hz_op : z.2.2
       · exact absurd (AWSet_comm_add_add hadd hz_op) hz_nc

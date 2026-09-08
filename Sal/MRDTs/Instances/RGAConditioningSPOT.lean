@@ -4,7 +4,7 @@ import Sal.MRDTs.Instances.RGASequential
 # RGA issuance and sequential-legality proof-oriented tests
 
 These tests determine which part of the existing RGA issuer guard can serve
-as sequential applicability.  They use the production tombstone RGA, not the
+as sequential applicability.  They use the production RGA, not the
 refuted rehoming design from the archived branch.
 -/
 
@@ -21,7 +21,7 @@ def strictLegalFrom : RGAM.State → List (Op RGAOp) → Prop
 def strictLegal (ops : List (Op RGAOp)) : Prop :=
   strictLegalFrom RGAM.init ops
 
-def insertOne : Op RGAOp := (1, 0, .addAfter 0 1)
+def insertOne : Op RGAOp := (1, 0, .addAfter 0)
 def deleteA : Op RGAOp := (2, 1, .remove 1)
 def deleteB : Op RGAOp := (3, 2, .remove 1)
 def invalidDelete : Op RGAOp := (1, 0, .remove 42)
@@ -83,26 +83,31 @@ example : listSpec.Legal
       simp [E, ops, insertOne, deleteA, deleteB] at ha hb
       rcases ha with rfl | rfl | rfl <;>
         rcases hb with rfl | rfl | rfl <;> simp_all
-    · intro ts replica anchor id he
+    · intro ts replica anchor he
       simp [E, ops, insertOne, deleteA, deleteB] at he
-      rcases he with ⟨rfl, rfl, rfl, rfl⟩
-      exact ⟨rfl, Or.inl rfl⟩
+      rcases he with ⟨rfl, rfl, rfl⟩
+      exact Or.inl rfl
     · intro ts replica id he
       simp [E, ops, insertOne, deleteA, deleteB] at he
       rcases he with (⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩) <;>
-        exact ⟨1, 0, 0, by
+        exact ⟨0, 0, by
           simp [E, ops, insertOne, deleteA, deleteB]⟩
   have hc : canonical ops = ops := by native_decide
   change listSpec.Legal ops
   rw [← hc]
   exact canonical_legal hp hwf
 
-/-- The tombstone RGA still remembers a deleted anchor.  Unlike the archived
-root-free rehoming RGA, its guard accepts a later replayed child insertion
-after that anchor's delete. -/
-def insertChild : Op RGAOp := (4, 2, .addAfter 1 4)
+/-- The RGA remembers a deleted anchor for concurrent integration,
+but the issuer guard rejects a new child insertion after observing deletion. -/
+def insertChild : Op RGAOp := (4, 2, .addAfter 1)
 
+/-- PASS: the same child is issuable while its anchor is live. -/
 example : applicable insertChild
+    (applySeq RGAM.toUpdateSig RGAM.init [insertOne]) := by
+  simp [applicable, insertChild, insertOne, applySeq, RGAM, rgaUpdate]
+
+/-- FAIL control: observing the anchor deletion disables local issuance. -/
+example : ¬ applicable insertChild
     (applySeq RGAM.toUpdateSig RGAM.init [insertOne, deleteA]) := by
   simp [applicable, insertChild, deleteA, insertOne, applySeq, RGAM, rgaUpdate]
 

@@ -4,7 +4,7 @@ import Sal.MRDTs.Instances.Common
 
 
 /-!
-# RGA (tombstone-based): flat VC discharge and the conditioned capstone
+# RGA: flat VC discharge and the conditioned capstone
 -/
 
 set_option maxHeartbeats 1000000
@@ -14,16 +14,17 @@ namespace Sal.MRDTs.Instances.RGA
 open Sal.MRDTs.Foundation
 open Classical
 
-/-! ## RGA, tombstone-based (production mirror: `Sal/MRDTs/RGA`),
-Tier-1 in disguise: both components grow-only, `rc = Either`, all pairs
-commute, GCA-inclusive union merge. -/
+/-! Both components are grow-only. The internal all-commuting proof uses the
+unconstrained replay policy; the public `rc` and list certificate are defined
+in `RGASequential.lean`. Merge includes ancestor and both branches. -/
 
 inductive RGAOp : Type where
-  | addAfter : ℕ → ℕ → RGAOp
+  | addAfter : ℕ → RGAOp
   | remove : ℕ → RGAOp
 deriving DecidableEq
 
-abbrev RGAEntry := ℕ × ℕ × ℕ
+/-- Birth metadata: identifier (the insertion timestamp), then anchor. -/
+abbrev RGAEntry := ℕ × ℕ
 abbrev RGAState := (RGAEntry → Bool) × (ℕ → Bool)
 
 structure BirthGraveState where
@@ -40,7 +41,7 @@ def insertAfter (anchor value : ℕ) : List ℕ → List ℕ
 
 noncomputable def sequence (q : BirthGraveState) : List ℕ :=
   let ordered := q.adds.toList.mergeSort (fun a b => a.1 ≤ b.1)
-  let inserted := ordered.foldl (fun xs e => insertAfter e.2.1 e.2.2 xs) []
+  let inserted := ordered.foldl (fun xs e => insertAfter e.2 e.1 xs) []
   inserted.filter (fun id => id ∉ q.grave)
 
 /-- Materialize a finite Boolean support when one exists.  Reachable RGA
@@ -60,7 +61,7 @@ noncomputable def read (s : RGAState) : List ℕ :=
 
 def rgaUpdate (s : RGAState) (o : Op RGAOp) : RGAState :=
   match o.2.2 with
-  | .addAfter af el => (fun p => s.1 p || decide (p = (o.1, af, el)), s.2)
+  | .addAfter af => (fun p => s.1 p || decide (p = (o.1, af)), s.2)
   | .remove id => (s.1, fun x => s.2 x || decide (x = id))
 
 noncomputable def RGAM : MRDTSig where
@@ -89,20 +90,10 @@ theorem RGAM_all_comm : ∀ a b : Op RGAM.AppOp,
   · exact Prod.ext rfl (funext fun x => bor_rc (s.2 x) _ _)
 
 theorem replayLaws : ReplayLaws RGAM.toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro o₁ o₂ _ _
-    constructor
-    · intro h
-      exact absurd (RGAM_all_comm o₁ o₂) h
-    · rintro (h | h) <;>
-        (rw [RGAM_rc_either] at h; exact RcRes.noConfusion h)
-  · intro o₁ o₂ o₃ _ _
-    rintro ⟨h, _⟩
-    rw [RGAM_rc_either] at h
-    exact RcRes.noConfusion h
-  · intro s e e' e'' π _ _ _ h_rc _
-    rw [RGAM_rc_either] at h_rc
-    exact RcRes.noConfusion h_rc
+  apply ReplayLaws.of_all_comm RGAM_all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem RGAM_mergeLaws : MergeLaws RGAM := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -117,7 +108,7 @@ theorem RGAM_commutingPeelLaw : CommutingPeelLaw RGAM := by
   constructor
   · rintro a ⟨ts, r, op⟩ π₀ π₂ _ _
     cases op with
-    | addAfter af el =>
+    | addAfter af =>
       exact Prod.ext (funext fun p =>
         bor_peel ((applySeq RGAM.toUpdateSig RGAM.init π₀).1 p) (a.1 p)
           ((applySeq RGAM.toUpdateSig RGAM.init π₂).1 p) _) rfl
@@ -149,7 +140,7 @@ def birthGraveMachine : SequentialMachine (Op RGAOp) where
   State := BirthGraveState
   init := ⟨∅, ∅⟩
   step q e := match e.2.2 with
-    | .addAfter anchor id => ⟨insert (e.1, anchor, id) q.adds, q.grave⟩
+    | .addAfter anchor => ⟨insert (e.1, anchor) q.adds, q.grave⟩
     | .remove id => ⟨q.adds, insert id q.grave⟩
 
 def birthGraveRel (s : RGAM.State) (q : BirthGraveState) : Prop :=
@@ -181,13 +172,13 @@ theorem read_eq_sequence_of_birthGraveRel {s : RGAM.State} {q : BirthGraveState}
 
 def applicable (e : Op RGAOp) (s : RGAM.State) : Prop :=
   match e.2.2 with
-  | .addAfter anchor id =>
-      id = e.1 ∧
-      (anchor = 0 ∨ ∃ ts parent, ts < e.1 ∧ s.1 (ts, parent, anchor) = true) ∧
-      (∀ anchor' id', s.1 (e.1, anchor', id') = false) ∧
-      (∀ ts anchor', s.1 (ts, anchor', id) = false) ∧ s.2 id = false
+  | .addAfter anchor =>
+      (anchor = 0 ∨
+        (s.2 anchor = false ∧
+          anchor < e.1 ∧ ∃ parent, s.1 (anchor, parent) = true)) ∧
+      (∀ anchor', s.1 (e.1, anchor') = false) ∧ s.2 e.1 = false
   | .remove id =>
-      (∃ ts anchor, s.1 (ts, anchor, id) = true) ∧ s.2 id = false
+      (∃ anchor, s.1 (id, anchor) = true) ∧ s.2 id = false
 
 theorem birthGraveSound (ops : List (Op RGAOp)) :
     birthGraveRel (applySeq RGAM.toUpdateSig RGAM.init ops)
@@ -200,12 +191,12 @@ theorem birthGraveSound (ops : List (Op RGAOp)) :
       rw [applySeq_append_single, SequentialMachine.run_append_single]
       rcases e with ⟨ts, replica, op⟩
       cases op with
-      | addAfter anchor id =>
+      | addAfter anchor =>
           constructor
           · intro p
             change ((applySeq RGAM.toUpdateSig RGAM.init ops).1 p ||
-                decide (p = (ts, anchor, id))) =
-              decide (p ∈ insert (ts, anchor, id) (birthGraveMachine.run ops).adds)
+                decide (p = (ts, anchor))) =
+              decide (p ∈ insert (ts, anchor) (birthGraveMachine.run ops).adds)
             rw [ih.1 p]
             simp [Bool.or_comm]
           · intro x

@@ -25,6 +25,7 @@
 \newcommand{\merge}{\mathsf{merge}}
 \newcommand{\query}{\mathsf{query}}
 \newcommand{\vis}{\mathrel{\mathsf{vis}}}
+\newcommand{\rc}{\mathrel{\xrightarrow{\mathsf{rc}}}}
 \newcommand{\loOn}{\mathsf{loOn}}
 \newcommand{\lo}{\mathsf{lo}}
 \newcommand{\Can}{\mathsf{Canonical}}
@@ -94,9 +95,10 @@ issuance discipline, a merge-adequacy proof, an independent sequential
 specification, and a refinement proof. Consequently, every version produced
 by an issuance-certified ordinary or virtual-merge-base execution admits a
 legal sequential history with the same events and the same query results.
-Sections~2--8 define the layers needed by this statement. Section~9 shows how
-each released instance supplies them. Sections~10--11 add optional history-
-and datatype-state collection refinements.
+Sections~2--8 define the layers needed by this statement.
+Sections~\ref{sec:history-gc}--\ref{sec:state-gc} add optional history-
+and datatype-state collection refinements. Section~\ref{sec:instances}
+then presents the complete datatype packages and their collection status.
 
 \paragraph{Reader's map.}
 \renewcommand{\arraystretch}{1.08}
@@ -109,28 +111,31 @@ Layer & Contract and consequence & Location\\
 \endhead
 Operational machine & Events and the datatype signature determine fork,
 apply, query, and ternary merge in a version DAG. & Sections~2--3\\
-Replay model & A replay context orders a finite event set and gives it a
-unique canonical state. & Sections~4--5\\
+Replay model & A finite event set admits a respecting replay under the
+sufficient replay laws, which also make its fold unique. & Sections~4--5\\
 Merge preservation & An all-context or restricted merge theorem preserves
-that canonical state at a merge step. & Section~6\\
-Client correctness & Issuance, public interaction order, an independent
+a canonical state at a merge step. Execution invariants provide another
+proof route. & Section~6\\
+Client correctness & Issuance, one visibility-plus-$rc$ order, an independent
 sequential machine, and a representation relation turn internal replay into
 observable sequential correctness. & Section~7\\
 Virtual bases & A recursive fold over maximal common ancestors constructs the
 canonical intersection state when no stored GCA exists. & Section~8\\
 Released instances & Each package records its representation, issuance
 policy, merge theorem, sequential specification, relation, and proof route. &
-Section~9\\
+Section~\ref{sec:instances}\\
 Collection & Commit-history and datatype-state collection refine the same
 uncollected semantics and compose by trace erasure; the datatype profiles
-state what each released representation can presently reclaim. & Sections~10--11\\
+state what each released representation can presently reclaim. &
+Sections~\ref{sec:history-gc}--\ref{sec:state-gc}\\
 \bottomrule
 \end{longtable}
 \renewcommand{\arraystretch}{1}
 
 The mathematical displays are transcriptions or notation-level expansions of
 the cited declarations. The trusted computing base for machine-checked
-statements is Lean's kernel plus Mathlib. The transcription, notation, prose,
+statements is Lean's kernel and the axioms reported by the ledger; Mathlib
+supplies checked library proofs. The transcription, notation, prose,
 and links remain review obligations. No claim is made that a separately
 implemented runtime is extracted from Lean.
 
@@ -150,7 +155,7 @@ implemented runtime is extracted from Lean.
   \draw[flow] (exec)--(canon);
   \draw[flow] (join)--(canon);
   \draw[flow] (canon)--(replay);
-  \draw[flow] (replay)--(client);
+  \draw[flow] (replay)--(correct);
   \draw[flow] (client)--(correct);
   \draw[flow] (exec)--(vbase);
   \draw[flow] (join)--(vbase);
@@ -207,21 +212,23 @@ The paper's $\doop$ is the Lean field \lean{MRDTSig.update}; Lean reserves
 \anchor{Sal/MRDTs/Framework/Signature.lean}{MRDTSig}
 \end{definition}
 
-This signature is the executable datatype interface. Verification attaches
+This signature is the semantic datatype interface; some models use
+noncomputable queries. Verification attaches
 replay, merge, generation, and client certificates to this same $D$.
 
-\paragraph{Running example: tombstone RGA.}
+\paragraph{Running example: RGA.}
 The production RGA stores grow-only insertion and deletion facts:
 \[
 \begin{aligned}
  \State_{\mathrm{RGA}}
-   &=(\N^3\to\mathsf{Bool})\times(\N\to\mathsf{Bool}),\\
- O_{\mathrm{RGA}}&=\mathsf{addAfter}(\mathit{anchor},\mathit{id})
+   &=(\N^2\to\mathsf{Bool})\times(\N\to\mathsf{Bool}),\\
+ O_{\mathrm{RGA}}&=\mathsf{addAfter}(\mathit{anchor})
                  \mid\mathsf{remove}(\mathit{id}).
 \end{aligned}
 \]
-An insertion event sets the bit indexed by its timestamp, anchor, and element
-identifier; a removal sets the tombstone bit for its identifier. Merge is
+An insertion's timestamp is its identifier. The event sets the birth bit
+indexed by that identifier and its anchor; a removal sets the tombstone bit
+for its identifier. Merge is
 pointwise Boolean union of the GCA and two branch states. The query sorts the
 finite insertion support, inserts each identifier after its anchor, and
 filters tombstoned identifiers. Thus the implementation state is unordered
@@ -258,7 +265,8 @@ earlier one:
 \anchor{Sal/MRDTs/Framework/Base/Replay.lean}
   {Foundation.applySeq, Foundation.listPermOf, Foundation.respects}
 
-Two events commute when they commute from every state:
+Concrete updates commute when applying them in either order gives the same
+implementation state, from every starting state:
 \[
  e_1\leftrightarrow e_2
  \Longleftrightarrow
@@ -266,24 +274,29 @@ Two events commute when they commute from every state:
  \doop(\doop(s,e_1),e_2)=\doop(\doop(s,e_2),e_1).
 \]
 
-A proof-local replay policy has type
-\[
- \mathsf{order}:\Event(O)\to\Event(O)\to
- \{\mathsf{FstThenSnd},\mathsf{SndThenFst},\mathsf{Either}\}.
-\]
-The default policy returns $\mathsf{Either}$. This policy is used only by the
-internal replay proof in Section~4. Client-visible interaction ordering is
-defined independently in Section~\ref{sec:client}.
-Every datatype in the production registry uses this default policy at its raw
-MRDT layer. Hence released datatypes have no policy-selected raw replay edges;
-Section~4 shows that the remaining directional law forces distinct
-cross-replica raw events to commute. The non-default policy in the OR-Set
-development belongs to its abstract sequential set machine, where it selects
-add-wins order. Finite replay, commutation, and the proof policy are factored
-through the merge-free projection of $D$.
+A replay policy $P$ determines a directed relation on events, written
+$e_1\rc e_2$: replay $e_1$ before $e_2$ to resolve their conflict.
+Lean represents the policy by a resolver with results
+\lean{Fst\_then\_snd}, \lean{Snd\_then\_fst}, and \lean{Either};
+the directed relation is precisely \lean{ReplayPolicy.Before}, which tests
+for \lean{Fst\_then\_snd}. The theory tests the reverse edge on the reversed
+pair. The carrier alone does not guarantee that a \lean{Snd\_then\_fst}
+verdict agrees with that reverse test.
+The relation specifies the intended resolution of concurrent events; it is
+not defined by concrete-update noncommutation. For example, LWW resolves
+concurrent writes by increasing timestamp, although its concrete updates
+retain the maximum timestamp and commute. The default policy returns
+$\mathsf{Either}$. Each public package selects one such policy. The sequential
+legality predicate may impose additional constraints on the witness list;
+these must also be stated in the datatype's contract.
+Section~\ref{sec:rc-order} derives its set-relative client relation once
+replay contexts have supplied visibility and the finite event set. Finite
+replay, commutation, and the policy are factored through the merge-free
+projection of $D$.
 \anchor{Sal/MRDTs/Framework/Base/UpdateSignature.lean}
   {Foundation.UpdateSig.commutes, Foundation.RcRes,
-   Foundation.ReplayPolicy}
+   Foundation.ReplayPolicy, Foundation.ReplayPolicy.Before,
+   Foundation.UpdateSig.rc}
 \anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}{Production.registry}
 
 \section{Version-DAG operational semantics}
@@ -618,17 +631,30 @@ MRDT configuration. The projection preserves the active event universe:
   {Foundation.ReplayContext}
 \anchor{Sal/MRDTs/Framework/Execution.lean}{Configuration.replayContext}
 
-\subsection{Set-relative replay order}
+\subsection{Resolve-conflict relation and set-relative linearization}
 
-For replay context $R$, version event set $E$, and events $e_1,e_2$, define
+Fix a replay policy $P$ and its directed relation $rc$ as defined in Section~2.
+The relation expresses the datatype's resolution policy independently
+of its implementation. For concurrent LWW writes with distinct timestamps,
+\[
+ a\rc b\Longleftrightarrow \mathsf{time}(a)<\mathsf{time}(b).
+\]
+The implementation retains the maximum timestamp regardless of delivery
+order; an ordinary overwrite replay places the smaller timestamp first.
+
+\label{sec:rc-order}
+
+The resolve-conflict relation now supplies the directed policy edge used by
+linearization. For replay context $R$, version event set $E$, and events
+$e_1,e_2$, define the set-relative linearization relation by
 \[
 \begin{aligned}
  e_1\;\loOn_{R,E}\;e_2\Longleftrightarrow
- &(e_1\vis e_2\land\neg(e_1\leftrightarrow e_2))\\
+ &(e_1\vis e_2\land(e_1\rc e_2\lor e_2\rc e_1))\\
  {}\lor{}&(\neg(e_1\vis e_2)\land\neg(e_2\vis e_1)
- \land\mathsf{order}(e_1,e_2)=\mathsf{FstThenSnd}\\
+ \land e_1\rc e_2\\
  &\quad\land\neg\exists e_3\in E.\;
- e_2\vis e_3\land\neg(e_2\leftrightarrow e_3)).
+ e_2\vis e_3\land(e_2\rc e_3\lor e_3\rc e_2)).
 \end{aligned}
 \]
 An event $e_3\in E$ satisfying the final existential condition is an
@@ -636,84 +662,81 @@ An event $e_3\in E$ satisfying the final existential condition is an
 arbitration edge needed to replay $E$. Growing the set may add absorbers and
 therefore remove such edges:
 \[
- E\subseteq E'\land\loOn_{R,E'}(a,b)\Longrightarrow\loOn_{R,E}(a,b).
+ E\subseteq E'\land a\;\loOn_{R,E'}\;b\Longrightarrow a\;\loOn_{R,E}\;b.
 \]
-The historical global order is $\lo_R=\loOn_{R,R.\mathsf{events}}$; every
-$\lo_R$ edge is an edge of $\loOn_{R,E}$.
+The historical global order searches for absorbers without the membership
+restriction. Every historical edge is an edge of $\loOn_{R,E}$. It agrees
+with $\loOn_{R,R.\mathsf{events}}$ when visibility targets belong to
+$R.\mathsf{events}$, as they do for a configuration's replay context.
 The set parameter is therefore essential in the general theory: whether an
 arbitration edge is needed depends on whether its absorber belongs to the
 particular version being replayed, not merely on the global event universe.
 \anchor{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}
   {Foundation.loOn, Foundation.loOn\_mono, Foundation.loOn\_of\_lo}
 
-For the default $\mathsf{Either}$ policy used by production MRDT signatures,
-the arbitration disjunct is false and the definition simplifies to
+For an all-$\mathsf{Either}$ policy, $rc$ has no edges and therefore
 \[
- a\;\loOn_{R,E}\;b
- \Longleftrightarrow
- a\vis b\land\neg(a\leftrightarrow b).
+ \neg(a\;\loOn_{R,E}\;b).
 \]
-The general absorber machinery remains part of the reusable replay theorem,
-but it is dormant for the current production registry.
+In particular, $\mathsf{Either}$ does not mean ``retain all visibility.''
+Visibility contributes to $\loOn$ only for a pair that $rc$ classifies as a
+conflict.
 
 \paragraph{RGA instance.}
-RGA insertion and tombstone updates commute at the raw storage layer: two
-insertions set Boolean insertion facts, two removals set tombstone facts, and
-an insertion and removal touch different components. With the default policy,
-$\loOn_{R,E}$ is therefore empty for RGA. Its ordinary-list ordering is chosen
-later by the sequential witness; it is not encoded in raw-state replay.
-\anchor{Sal/MRDTs/Instances/RGA.lean}
-  {RGA.RGAM\_all\_comm, RGA.RGAM\_rc\_either}
+RGA insertion and tombstone updates commute at the raw storage layer, but its
+ordinary-list specification still has conflicts. Its sole $rc$ relation
+orders the RGA conflicts described in Section~\ref{sec:instances}; $\loOn$ uses that relation
+directly.
+\anchor{Sal/MRDTs/Instances/RGASequential.lean}{RGA.rc}
 
-\subsection{Replay laws and convergence}
+\subsection{Sufficient replay laws and convergence}
+
+The following optional algebraic laws are one sufficient route to replay
+convergence under $P$. They are not the definition of $rc$ and are not
+required fields of the public datatype certificate. In this subsection and
+the replay theorems below, $D$ and $P$ are fixed together.
 
 Write
 \[
-\begin{aligned}
- \mathsf{distinct}(a,b)&\Longleftrightarrow
-   \mathsf{time}(a)\ne\mathsf{time}(b),\\
- \mathsf{differentReplicas}(a,b)&\Longleftrightarrow
-   \mathsf{rep}(a)\ne\mathsf{rep}(b).
-\end{aligned}
+ \mathsf{distinct}(a,b)\Longleftrightarrow
+ \mathsf{time}(a)\ne\mathsf{time}(b).
 \]
-Thus $\mathsf{distinct}$ is timestamp inequality, which implies event inequality
-for observed events because replay contexts have unique timestamps.
-The update-layer bundle has three conjuncts. Directional noncommutation is
+Replay contexts make this equivalent to event inequality on observed events.
+The update-layer bundle has three conjuncts. Coverage of concrete
+noncommuting pairs is
 \[
 \begin{aligned}
- \mathsf{RcNonCommDirectional}(D)\Longleftrightarrow
- \forall a,b.\;&\mathsf{distinct}(a,b)
- \land\mathsf{differentReplicas}(a,b)\\
- &\Longrightarrow\left(
- \neg(a\leftrightarrow b)\Longleftrightarrow
- \begin{aligned}[t]
-  (&\mathsf{order}(a,b)=\mathsf{FstThenSnd})\\[-0.2em]
-  {}\lor{}(&\mathsf{order}(b,a)=\mathsf{FstThenSnd})
- \end{aligned}\right).
+ \mathsf{NoncommCovered}(D,P)\Longleftrightarrow
+ \forall a,b.\;&
+ \neg(a\leftrightarrow b)\Longrightarrow
+ (a\rc b\lor b\rc a).
 \end{aligned}
 \]
-Thus every distinct cross-replica conflict is oriented in at least one
-direction, and only conflicts receive such an orientation. The chain
-restriction is
+This is a one-way proof obligation: a pair not ordered in either direction
+must commute concretely. An ordered pair may also commute. In particular,
+all-commuting updates satisfy coverage for every choice of $rc$.
+Write $Q^{+}(a,b)$ when there is a nonempty finite $Q$-path from $a$ to $b$,
+and define
 \[
-\begin{aligned}
- \mathsf{NoRcChain}(D)\Longleftrightarrow
- \forall a,b,c.\;&\mathsf{distinct}(a,b)\land\mathsf{distinct}(b,c)\\
- &\Longrightarrow\neg\bigl(
-   \mathsf{order}(a,b)=\mathsf{FstThenSnd}\land
-   \mathsf{order}(b,c)=\mathsf{FstThenSnd}\bigr).
-\end{aligned}
+ \mathsf{Acyclic}(Q)\Longleftrightarrow
+ \forall a.\;\neg Q^{+}(a,a).
 \]
-It rules out two consecutive first-then-second policy edges. Finally,
+Resolve-conflict acyclicity is
+\[
+ \mathsf{RcAcyclic}(D,P)\Longleftrightarrow
+ \mathsf{Acyclic}(\lambda a\,b.\;a\rc b).
+\]
+It permits policy chains of arbitrary finite length and rules out only directed
+cycles. Finally,
 conditional commutation lift is
 \[
 \begin{aligned}
- \mathsf{CondCommLift}(D)\Longleftrightarrow
+ \mathsf{CondCommLift}(D,P)\Longleftrightarrow
  \forall s,e,e',e'',\pi.\;&
  \mathsf{distinct}(e,e')\land\mathsf{distinct}(e,e'')
  \land\mathsf{distinct}(e',e'')\\
- &\land\mathsf{order}(e,e')=\mathsf{FstThenSnd}
- \land\neg(e'\leftrightarrow e'')\\
+ &\land e\rc e'
+ \land(e'\rc e''\lor e''\rc e')\\
  &\Longrightarrow
  \doop(\applySeq(D,\doop(\doop(s,e'),e),\pi),e'')\\
  &\qquad=
@@ -722,15 +745,21 @@ conditional commutation lift is
 \]
 Therefore
 \[
- \mathsf{ReplayLaws}(D)\Longleftrightarrow
- \mathsf{RcNonCommDirectional}(D)\land
- \mathsf{NoRcChain}(D)\land
- \mathsf{CondCommLift}(D).
+ \mathsf{ReplayLaws}(D,P)\Longleftrightarrow
+ \mathsf{NoncommCovered}(D,P)\land
+ \mathsf{RcAcyclic}(D,P)\land
+ \mathsf{CondCommLift}(D,P).
 \]
 These conjuncts correspond respectively to Lean's
-\lean{rc\_non\_comm\_directional}, \lean{no\_rc\_chain}, and
+\lean{noncomm\_covered}, \lean{rc\_acyclic}, and
 \lean{cond\_comm\_lift} fields.
-\anchor{Sal/MRDTs/Framework/ReplayLaws.lean}{ReplayLaws}
+The conditional swap uses the $rc$-related successor tested by the
+linearization relation above; that successor need not be concretely
+noncommuting. When all concrete updates commute, both swap orders already
+agree before the successor is applied. Thus every acyclic $rc$ satisfies
+these sufficient laws for an all-commuting implementation.
+\anchor{Sal/MRDTs/Framework/ReplayLaws.lean}
+  {RcAcyclic, ReplayLaws, ReplayLaws.of\_all\_comm}
 
 With these laws, transitive and irreflexive visibility, and finite support,
 $\loOn_{R,E}$ is acyclic on $E$, admits a respecting enumeration, and all
@@ -746,15 +775,12 @@ For events in $E$, write
  \Longleftrightarrow
  a\ne b\land a\in E\land b\in E\land a\;\loOn_{R,E}\;b.
 \]
-Write $\mathsf{TransGen}(Q)$ for the nonempty transitive closure of a
-relation $Q$.
-
 \begin{lemma}[Existence and uniqueness of set-relative replay]
 \label{lem:set-relative-replay}
 Suppose
 \[
 \begin{gathered}
- \mathsf{ReplayLaws}(D),\qquad
+ \mathsf{RcAcyclic}(D,P),\qquad
  \mathsf{Transitive}(R.\mathsf{vis}),\qquad
  \mathsf{Irreflexive}(R.\mathsf{vis}),\\
  E\subseteq R.\mathsf{events},\qquad
@@ -765,7 +791,8 @@ Then:
 \begin{enumerate}
 \item $\loOn^{\ne}_{R,E}$ is acyclic:
 \[
- \forall a.\;\neg\mathsf{TransGen}(\loOn^{\ne}_{R,E})(a,a).
+ \mathsf{Acyclic}
+   (\lambda a\,b.\;a\;\loOn^{\ne}_{R,E}\;b).
 \]
 \item $E$ has a respecting enumeration:
 \[
@@ -773,8 +800,8 @@ Then:
  \mathsf{listPermOf}(\rho,E)\land
  \mathsf{respects}(\rho,\loOn_{R,E}).
 \]
-\item all respecting enumerations of $E$ have the same fold, from every
-starting state:
+\item if $\mathsf{ReplayLaws}(D,P)$ also holds, all respecting enumerations
+of $E$ have the same fold, from every starting state:
 \[
 \begin{aligned}
  \forall s,\rho_1,\rho_2.\quad
@@ -789,43 +816,10 @@ starting state:
 \end{enumerate}
 \end{lemma}
 
-\begin{proof}[Proof sketch]
-For acyclicity, first observe that a policy edge cannot have a successor in
-$\loOn_{R,E}$. If the successor is a visibility edge, its endpoint is an
-absorber forbidden by the policy edge; if it is another policy edge,
-$\mathsf{NoRcChain}$ gives a contradiction. It follows inductively that every
-nonempty transitive $\loOn^{\ne}_{R,E}$ path is either a visibility path or
-ends with a policy edge that cannot be extended. A cycle of the first kind
-would give $a\vis a$ by transitivity, contradicting irreflexivity. A cycle of
-the second kind would extend its terminal policy edge by the first edge of the
-cycle, also a contradiction.
-
-For existence, use $\ell$ as a finite enumeration of $E$. A walk through this
-list must find a $\loOn_{R,E}$-maximal event; otherwise following outgoing
-edges would revisit an event and create a cycle. Remove that event, recursively
-enumerate the remaining set, and append the maximal event. Repeating this
-construction produces a permutation that respects $\loOn_{R,E}$.
-
-For uniqueness, induct on the length of one respecting enumeration. Let $e$ be
-its head and locate $e$ in the other enumeration, say
-$\rho_2=\sigma\mathbin{++}[e]\mathbin{++}\tau$. Minimality of $e$ in the first
-enumeration and respectfulness of the second make $e$ incomparable with every
-event crossed while moving it left through $\sigma$. A commuting event swaps
-with $e$ directly. For a noncommuting event $y$, same-replica visibility
-totality would make $y$ and $e$ comparable, so they must come from different
-replicas. $\mathsf{RcNonCommDirectional}$ then orients their conflict. Since
-that orientation nevertheless creates no $\loOn_{R,E}$ edge, the definition
-of $\loOn$ supplies a later absorber $e_3\in E$. Respectfulness places the
-absorber after the crossed pair, and $\mathsf{CondCommLift}$ shows that swapping
-$y$ and $e$ does not change the state after $e_3$ is applied. Bubble $e$ to
-the front, remove it from both enumerations, and apply the induction
-hypothesis. The strengthened induction retains absorbers of surviving events,
-which is why no backward-closure premise on $E$ is required.
-\end{proof}
 \anchor{Sal/MRDTs/Framework/ReplayLaws.lean}
-  {loOnNe\_acyclic\_of\_replayLaws,
-   exists\_loOn\_respecting\_perm\_of\_replayLaws,
-   convergence\_on\_of\_replayLaws}
+  {loOnNe\_acyclic\_of\_rcAcyclic, convergence\_on\_of\_replayLaws}
+\anchor{Sal/MRDTs/Metatheory/Correctness.lean}
+  {exists\_loOn\_respecting\_perm\_of\_rcAcyclic}
 
 \section{Canonical states and canonical configurations}
 \label{sec:canonical}
@@ -839,8 +833,10 @@ which is why no backward-closure premise on $E$ is required.
  &\land\applySeq(D,\init,\rho)=s.
 \end{aligned}
 \]
-By set-relative convergence, the witness denotes the unique fold of every
-respecting enumeration, under the replay laws.
+This is an existence predicate, not a uniqueness assertion. Under the replay
+laws, transitive and irreflexive visibility, and $E\subseteq R.\mathsf{events}$,
+set-relative convergence makes every respecting enumeration have the same
+fold.
 \anchor{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}
   {Foundation.IsCanonicalState}
 \end{definition}
@@ -867,12 +863,12 @@ bases. Its internal replay projection is
  \mathsf{HasReplayWitness}(C)\Longleftrightarrow
  \forall v,s,E.\;S(v)=(s,E)\to\exists\pi.\;&
  \mathsf{listPermOf}(\pi,E)\\
- &\land\mathsf{respects}(\pi,\lo_C)\\
+ &\land\mathsf{respects}(\pi,\loOn_{R_C,E})\\
  &\land\applySeq(D,\init,\pi)=s.
 \end{aligned}
 \]
-Canonicality implies this property because respecting the stronger
-set-relative order implies respecting the global order:
+Canonicality supplies this witness directly, with the same selected $rc$
+and the same set-relative order:
 \[
  \mathsf{CanonicalConfig}(C)\Longrightarrow\mathsf{HasReplayWitness}(C).
 \]
@@ -883,6 +879,10 @@ witness to an independent client specification.
 
 \section{Merge preservation}
 \label{sec:join}
+
+Fix $D$ and its replay policy $P$ throughout this section. The notation
+$\Can(R,E,s)$ uses that same policy. We write $P$ explicitly in the Join
+contracts; Lean supplies it as an implicit \lean{ReplayPolicy} argument.
 
 \subsection{The semantic contract}
 
@@ -896,11 +896,11 @@ For replay context $R$, abbreviate
  \forall a,b.\;a\vis b\land\neg(a\leftrightarrow b)\land b\in E\to a\in E.
 \end{aligned}
 \]
-Weak closure retains exactly the visible predecessors whose effects cannot be
-swapped past the event being replayed. Requiring full causal closure would
-also retain commuting predecessors, although their relative presence cannot
-change the fold. This is why the merge theorem closes histories under
-noncommuting visibility rather than under all of visibility.
+Weak closure requires retention of noncommuting visible predecessors, while
+allowing subsets that omit commuting predecessors. This enlarges the scope of
+the merge theorem beyond causally closed histories. Commutation permits
+swapping events, not erasing them: two increments commute, but both still
+contribute to the fold.
 
 \begin{definition}[Join at a context]
 \lean{JoinAt D R} is
@@ -920,29 +920,32 @@ noncommuting visibility rather than under all of visibility.
 \anchor{Sal/MRDTs/Framework/MergeLaws.lean}{JoinAt, Join}
 \end{definition}
 
-Join is the load-bearing merge theorem: canonical intersection and branch
-states map to the canonical union state. Its context-local statement is reused
+Join is a sufficient merge theorem: canonical intersection and branch
+states map to a canonical union state. Its context-local statement is reused
 by both ordinary and virtual-base executions.
 
 \begin{definition}[Restricted merge scope]
 For a predicate
 $G:\mathsf{ReplayContext}(D)\to\mathsf{Prop}$,
 \[
- \mathsf{JoinOn}(D,G)\Longleftrightarrow
- \forall R.\;G(R)\to\mathsf{JoinAt}(D,R).
+ \mathsf{JoinOn}(D,P,G)\Longleftrightarrow
+ \forall R.\;G(R)\to\mathsf{JoinAt}(D,P,R).
 \]
 Thus all-context \lean{Join} has no configuration precondition, whereas
 \lean{JoinOn} records one explicitly without saying how executions
 establish it. All-context Join supplies Join under every predicate, and
-$\mathsf{JoinOn}(D,\lambda\_.\mathsf{True})$ is equivalent to
-$\mathsf{Join}(D)$.
+$\mathsf{JoinOn}(D,P,\lambda\_.\mathsf{True})$ is equivalent to
+$\mathsf{Join}(D,P)$.
 \anchor{Sal/MRDTs/Framework/MergeLaws.lean}{JoinOn, Join.toJoinOn,
   joinOn\_true\_iff}
 \end{definition}
 
-These are the complete semantic interface for merge preservation. The
-remaining definitions in this section are reusable ways to prove all-context
-\lean{Join}; they do not introduce further notions of merge correctness.
+These contracts support the reusable merge-preservation proof. A datatype
+may instead prove replay adequacy by an execution invariant, relating branch
+states more tightly than arbitrary respecting replays do. The efficient
+OR-set uses this route. The remaining definitions in this section are
+sufficient ways to prove all-context \lean{Join}, not obligations imposed on
+every public package.
 
 \subsection{Proof routes for merge preservation}
 
@@ -961,7 +964,7 @@ For any nonempty finite family of event sets, write
    \land\bigwedge_{i=1}^{n}
      (\mathsf{Supported}_R(E_i)\land\mathsf{WeakClosed}_R(E_i)),\\
  \mathsf{Maximal}_{R,U}(e)&\equiv e\in U\land
-   \forall x\in U.\;x\ne e\Rightarrow\neg\loOn_{R,U}(e,x).
+   \forall x\in U.\;x\ne e\Rightarrow\neg(e\;\loOn_{R,U}\;x).
 \end{aligned}
 \]
 Define the one-step noncommuting-visibility relation by
@@ -981,7 +984,7 @@ The common core is
 \[
 \begin{aligned}
  \mathsf{JoinCoreLaws}(D)=\langle
- &\mathsf{replay}:\mathsf{ReplayLaws}(D),\\
+ &\mathsf{replay}:\mathsf{ReplayLaws}(D,P),\\
  &\mathsf{mergeComm}:\forall l,a,b.\;
    \merge(l,a,b)=\merge(l,b,a)\rangle.
 \end{aligned}
@@ -1034,7 +1037,9 @@ Figure~\ref{fig:local-redistribute} presents the two sides of
 \lean{localRedistribute} as alternative factorizations of the same union
 history.
 
-\begin{figure}[ht]
+
+
+\begin{figure}[htp]
 \centering
 \begin{tikzpicture}[
   state/.style={draw,rounded corners,align=center,inner xsep=4pt,
@@ -1137,6 +1142,7 @@ top to bottom.
 \lean{localRedistribute} identifies the two terminal states.}
 \label{fig:local-redistribute}
 \end{figure}
+\clearpage
 
 For an event shared by both branches,
 \[
@@ -1168,7 +1174,9 @@ no event history constructs.
 Figure~\ref{fig:redistribute} presents the two sides of \lean{redistribute}
 as alternative factorizations of the same union history.
 
-\begin{figure}[ht]
+
+
+\begin{figure}[htp]
 \centering
 \begin{tikzpicture}[
   state/.style={draw,rounded corners,align=center,inner xsep=4pt,
@@ -1292,6 +1300,7 @@ same $m$ and $\doop(m,e)$ states. Both panels flow from top to bottom, and
 \lean{redistribute} identifies their terminal states.}
 \label{fig:redistribute}
 \end{figure}
+\clearpage
 
 The last component peels the selected maximal event from the target union.
 \[
@@ -1321,7 +1330,7 @@ The single instance-facing bundle is
 \]
 Its primary theorem is
 \[
- \mathsf{CanonicalJoinLaws}(D)\Longrightarrow\mathsf{Join}(D).
+ \mathsf{CanonicalJoinLaws}(D)\Longrightarrow\mathsf{Join}(D,P).
 \]
 The proof inducts on the union history. The empty case uses the canonical unit
 law. A maximal event local to one branch uses \lean{localRedistribute}; a
@@ -1339,7 +1348,7 @@ used by the universal-to-canonical bridge:
 \[
 \begin{aligned}
  \mathsf{MergeLaws}(D)=\langle
- &\mathsf{replay}:\mathsf{ReplayLaws}(D),\\
+ &\mathsf{replay}:\mathsf{ReplayLaws}(D,P),\\
  &\mathsf{mergeComm}:\forall l,a,b.\;
    \merge(l,a,b)=\merge(l,b,a),\\
  &\mathsf{mergeInit}:\forall s.\;
@@ -1391,46 +1400,11 @@ with \lean{MergeLaws} and universal update commutativity, it supplies
 \anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
   {causalDeltaLaw\_of\_all\_comm}
 
-The universal equations construct the canonical contract:
-\[
-\begin{aligned}
- \mathsf{MergeLaws}(D)&\Longrightarrow\mathsf{JoinCoreLaws}(D),\\
- \mathsf{MergeLaws}(D)\land\mathsf{DeltaLaws}(D)
- &\Longrightarrow\mathsf{FeasibleDeltaLaws}(D),\\
- \mathsf{MergeLaws}(D)\land\mathsf{DeltaLaws}(D)
- \land\mathsf{CausalDeltaLaw}(D)
- &\Longrightarrow\mathsf{CanonicalJoinLaws}(D).
-\end{aligned}
-\]
-\anchor{Sal/MRDTs/Framework/MergeLaws.lean}{MergeLaws.toJoinCore}
-\anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
-  {feasibleDeltaLaws\_of\_delta, CanonicalJoinLaws.ofArbitrary}
-
-The bridge uses \lean{MergeLaws} for the common core and canonical unit law,
-substitutes $\doop(m,e)$ for the arbitrary delta-state argument in each
-\lean{DeltaLaws} equation, and discards the canonical-tuple premises.
-
-The adapter \lean{JoinProof.ofArbitraryStateLaws} first constructs the
-canonical law bundle and invokes its Join theorem.  Both proof routes therefore
-conclude the same \lean{Join} property.
-\anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
-  {JoinProof.ofArbitraryStateLaws}
-
-\paragraph{RGA instance.}
-RGA takes the universal shortcut. Its pointwise Boolean merge proves
-\lean{MergeLaws} and \lean{DeltaLaws}; raw updates commute, so
-\lean{CommutingPeelLaw} supplies \lean{CausalDeltaLaw}. The resulting chain is
-\[
- \mathsf{MergeLaws}+\mathsf{DeltaLaws}
- +\mathsf{CommutingPeelLaw}+\mathsf{allComm}
- \Longrightarrow\mathsf{CanonicalJoinLaws}
- \Longrightarrow\mathsf{Join}(\mathsf{RGAM}).
-\]
-The issuer predicate \lean{RGA.applicable} is used later to construct a legal
-ordinary-list history; the RGA merge theorem itself holds for every replay
-context.
-\anchor{Sal/MRDTs/Instances/RGA.lean}
-  {RGA.RGAM\_mergeLaws, RGA.RGAM\_deltaLaws, RGA.join}
+RGA satisfies these universal equations by pointwise Boolean identities.
+The adapter details are in Appendix~\ref{app:merge-adapters}; the resulting
+merge theorem holds for every replay context. Issuance is used separately
+to construct the legal ordinary-list witness.
+\anchor{Sal/MRDTs/Instances/RGA.lean}{RGA.join}
 
 \subsection{Ordinary adequacy}
 
@@ -1438,11 +1412,11 @@ The initial configuration is canonical. Fork copies a canonical version;
 apply extends one with a fresh maximal event; query stutters; and merge is the
 Join implication after the GCA theorem identifies the base set with
 $E_1\cap E_2$. Write
-$\mathsf{Reachable}_{\mathsf{Step}}(C_0,C)$ for the reflexive-transitive closure
+$\mathsf{Reachable}(\mathsf{Step},C_0,C)$ for the reflexive-transitive closure
 of the raw transition relation. Hence
 \[
- \mathsf{Join}(D)\to
- \mathsf{Reachable}_{\mathsf{Step}}(\mathsf{initConfig}(D),C)
+ \mathsf{Join}(D,P)\to
+ \mathsf{Reachable}(\mathsf{Step},\mathsf{initConfig}(D),C)
  \to\mathsf{HasReplayWitness}(C).
 \]
 The proof establishes \lean{CanonicalConfig C} first and projects replay only
@@ -1452,139 +1426,14 @@ at the end.
 \section{Issuance and client-facing correctness}
 \label{sec:client}
 
-\subsection{Issuance-certified execution}
+Fix a datatype $D$ with operations $O$, concrete state $\State$, query type
+$Q$, and result type $R$, and a replay policy $P$ supplying its resolve-conflict
+relation $rc$. We first define the sequential behavior against which $D$ is
+checked, then the executions to which the correctness claim applies.
 
-An issuance policy contains
-\[
- \mathsf{CanIssue}:\Event(O)\to\State\to\mathsf{Prop}.
-\]
-It constrains creation at the origin state and does not alter raw execution.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}{Issuance}
+\subsection{Sequential specification}
 
-For a generation guard
-$G:\Event(O)\to\State\to\mathsf{Prop}$, the provenance predicate is
-\[
-\begin{aligned}
- \mathsf{MintHonest}(D,G,C)\Longleftrightarrow
- \forall e\in C.\mathsf{events}.\;\exists\pi.\;&
- \mathsf{listPermOf}(\pi,\{e'\in C.\mathsf{events}\mid e'\vis e\})\\
- &\land\mathsf{respects}(\pi,\vis)\\
- &\land G(e,\applySeq(D,\init,\pi)).
-\end{aligned}
-\]
-\anchor{Sal/MRDTs/Framework/Certificates.lean}{MintHonest}
-
-\lean{IssuedStep D I} wraps a raw step. A non-apply label needs only its raw
-derivation. An apply $\mathsf{apply}(t,r,o)$ additionally requires
-\[
- H(r)=v\land S(v)=(s,E)\land I.\mathsf{CanIssue}((t,r,o),s).
-\]
-\lean{MintCertifiedReach D I C} is the inductive closure from the initial
-configuration in which every step is issued and mint honesty is retained
-before and after it.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}
-  {IssuedStep, MintCertifiedReach}
-
-Certified reachability forgets to raw reachability:
-\[
- \mathsf{MintCertifiedReach}(D,I,C)
- \Longrightarrow
- \mathsf{Reachable}_{\mathsf{Step}}(\mathsf{initConfig}(D),C).
-\]
-Thus an all-context \lean{Join} proof is independent of issuance: erase the issuance
-evidence and apply the ordinary adequacy theorem.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}
-  {MintCertifiedReach.toReachable}
-
-The second connection is explicit. For
-$G:\mathsf{ReplayContext}(D)\to\mathsf{Prop}$, define
-\[
- \mathsf{IssuanceEstablishes}(D,I,G)\Longleftrightarrow
- \forall C.\;\mathsf{MintHonest}(D,I.\mathsf{CanIssue},C)
- \to G(R_C).
-\]
-This predicate says only that issuance consistency establishes the
-configuration condition used by a restricted merge proof.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}{IssuanceEstablishes}
-
-The two axes compose as follows:
-\[
-\begin{aligned}
- &\mathsf{JoinOn}(D,G)
- \land\mathsf{IssuanceEstablishes}(D,I,G)\\
- &\qquad\to\mathsf{MintCertifiedReach}(D,I,C)
- \to\mathsf{HasReplayWitness}(C).
-\end{aligned}
-\]
-The merge theorem supplies $G(R_C)\to\mathsf{JoinAt}(D,R_C)$; mint honesty
-supplies $G(R_C)$. Neither definition contains the other.
-\anchor{Sal/MRDTs/Metatheory/CertifiedAdequacy.lean}
-  {replayWitness\_of\_mintCertified}
-
-\subsection{Public interaction order}
-
-An interaction verdict is independent or conflicting. A concurrent conflict
-may require first-then-second, second-then-first, or no fixed order.
-Formally,
-\[
-\begin{aligned}
- \mathsf{ConcurrentOrder}&=\{\mathsf{FstThenSnd},
-   \mathsf{SndThenFst},\mathsf{Unconstrained}\},\\
- \mathsf{Interaction}&=\mathsf{Independent}
-   \mid\mathsf{Conflict}(\mathsf{ConcurrentOrder}).
-\end{aligned}
-\]
-The predicates used below are
-\[
-\begin{aligned}
- i.\mathsf{Conflicts}&\Longleftrightarrow
-   \exists o.\;i=\mathsf{Conflict}(o),\\
- i.\mathsf{FstBeforeSnd}&\Longleftrightarrow
-   i=\mathsf{Conflict}(\mathsf{FstThenSnd}).
-\end{aligned}
-\]
-\lean{InteractionSpec D} supplies
-\[
- \mathsf{interaction}:\Event(O)\to\Event(O)\to\mathsf{Interaction}
-\]
-and proves that reversing arguments flips the verdict.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}
-  {ConcurrentOrder, Interaction, InteractionSpec}
-
-Its set-relative public order is
-\[
-\begin{aligned}
- e_1\;\mathsf{interactionLoOn}_{A,C,E}\;e_2\Longleftrightarrow{}
- &(e_1\vis e_2\land A(e_1,e_2).\mathsf{Conflicts})\\
- {}\lor{}&(\neg(e_1\vis e_2)\land\neg(e_2\vis e_1)
- \land A(e_1,e_2).\mathsf{FstBeforeSnd}\\
- &\quad\land\neg\exists e_3\in E.\;e_2\vis e_3
- \land A(e_2,e_3).\mathsf{Conflicts}).
-\end{aligned}
-\]
-It is structurally similar to $\loOn$ but independent of the proof-local
-policy and concrete universal commutation.
-\anchor{Sal/MRDTs/Framework/Certificates.lean}{interactionLoOn}
-
-LWW separates these two orders. Its concrete state is the greatest
-timestamp--replica--value tuple seen so far; update and merge use $\max$.
-Consequently, raw updates commute and the default proof-local $\loOn$ is
-empty. Its public interaction policy instead orders unequal tuples by their
-keys. The function \lean{canonical} sorts any internal replay witness by this
-order. The theorem \lean{canonical\_respects} proves that the sorted list
-respects \lean{interactionLoOn}: key order handles concurrent writes, while
-configuration-level causal timestamp monotonicity handles visible writes.
-Commutativity preserves the concrete fold during sorting, and the total
-overwrite-register specification returns the value of the same maximal tuple.
-Thus the public order has a constructive finite witness; it does not rely on
-the proof-local replay policy for acyclicity.
-\anchor{Sal/MRDTs/Instances/LWWRegister.lean}
-  {LWWRegister.replay\_lo\_false, LWWRegister.canonical\_respects,
-   LWWRegister.verified}
-
-\subsection{Sequential specification and public theorem}
-
-A sequential specification contains
+A sequential specification $\mathit{Spec}$ contains
 \[
 \begin{array}{rcl}
  \State_S&:&\mathsf{Type},\\
@@ -1594,31 +1443,140 @@ A sequential specification contains
  \query_S&:&\State_S\to Q\to R.
 \end{array}
 \]
-Its run is the left fold of $\mathsf{step}_S$ from $\sigma^S_0$. Legality speaks
-only about the abstract history; it cannot inspect implementation state.
+Its run is the left fold of $\mathsf{step}_S$ from $\sigma^S_0$.
+The predicate $\mathsf{Legal}_S$ constrains the event list; it receives
+neither the implementation state nor visibility. The witness must separately
+respect $\loOn$, defined in Section~\ref{sec:rc-order}. Legality may further
+constrain its order: TreeMove, for example, requires a key-sorted list.
 \anchor{Sal/MRDTs/Framework/Certificates.lean}
   {SequentialMachine, SequentialSpec, SequentialSpec.run}
 
+Choose a representation relation
+$\mathsf{Rel}:\State\to\State_S\to\mathsf{Prop}$.
+For a configuration $C$, write $S$ for its version store and $R_C$ for its
+replay context, as in the preceding sections.
+
 \begin{definition}[Client-facing linearizability]
-For $\mathsf{Rel}:\State\to\State_S\to\mathsf{Prop}$,
-\lean{IsSpecLinearizable D A Spec Rel C} is
+$\mathsf{IsSpecLinearizable}(D,P,\mathit{Spec},\mathsf{Rel},C)$ means
 \[
 \begin{aligned}
  \forall v,s,E.\;S(v)=(s,E)\to\exists\pi.\;&
  \mathsf{listPermOf}(\pi,E)\\
- &\land\mathsf{respects}(\pi,\mathsf{interactionLoOn}_{A,R_C,E})\\
+ &\land\mathsf{respects}
+   (\pi,\lambda e_1\,e_2.\;e_1\;\loOn_{R_C,E}\;e_2)\\
  &\land \mathit{Spec}.\mathsf{Legal}(\pi)\\
  &\land\mathsf{Rel}(s,\mathit{Spec}.\mathsf{run}(\pi))\\
  &\land\forall q.\;D.\query(s,q)=
    \mathit{Spec}.\query(\mathit{Spec}.\mathsf{run}(\pi),q).
 \end{aligned}
 \]
+Here $\loOn$ uses the fixed policy $P$.
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}{IsSpecLinearizable}
 \end{definition}
 
-This requires a spec-legal exact history, relates implementation and abstract
-states, and equates every query. It is strictly the client theorem, whereas
-\lean{HasReplayWitness} is an internal bridge.
+For each stored version, one and the same list must enumerate exactly its
+events, respect $\loOn$, satisfy the sequential legality condition, relate
+the two states, and give the same answer to every query. The specification
+and relation are part of the datatype's contract, not consequences of a
+replay proof.
+
+\subsection{Issuance and certified execution}
+
+An issuance policy $I$ contains
+\[
+ I.\mathsf{CanIssue}:\Event(O)\to\State\to\mathsf{Prop}.
+\]
+It states when an event may be created at an issuing replica's concrete
+state. For configurations $C,C'$ and a transition label $\ell$,
+$\mathsf{IssuedStep}(D,I,C,\ell,C')$ is defined by the following rules,
+where $H$ and $S$ are the head map and version store of $C$:
+\[
+\frac{
+  \mathsf{Step}(D,C,\ell,C')\qquad
+  \forall t,r,o.\;\ell\ne\mathsf{apply}(t,r,o)
+}{
+  \mathsf{IssuedStep}(D,I,C,\ell,C')
+}\;\textsc{Non-apply}
+\]
+\[
+\frac{
+  \begin{gathered}
+  H(r)=v\qquad S(v)=(s,E)\qquad
+  I.\mathsf{CanIssue}((t,r,o),s)\\
+  \mathsf{Step}(D,C,\mathsf{apply}(t,r,o),C')
+  \end{gathered}
+}{
+  \mathsf{IssuedStep}(D,I,C,\mathsf{apply}(t,r,o),C')
+}\;\textsc{Apply}
+\]
+Fork, merge, and query add no issuance check. Apply checks the actual
+issuing head state, in addition to the raw transition's premises.
+\anchor{Sal/MRDTs/Framework/Certificates.lean}{Issuance, IssuedStep}
+
+A separate condition, $\mathsf{MintHonest}$, requires each event to be
+issuable after some visibility-respecting enumeration of its causal past:
+\[
+\begin{aligned}
+ &\mathsf{MintHonest}(D,I.\mathsf{CanIssue},C)\Longleftrightarrow\\
+ &\quad\forall e\in C.\mathsf{events}.\;\exists\pi.\;
+ \mathsf{listPermOf}(\pi,\{e'\in C.\mathsf{events}\mid e'\vis e\})\\
+ &\qquad\land\mathsf{respects}(\pi,\vis)
+ \land I.\mathsf{CanIssue}(e,\applySeq(D,\init,\pi)).
+\end{aligned}
+\]
+This is an existential condition on the causal past, not a check at the
+stored issuing head. Its enumeration respects full visibility, whereas
+the client witness above respects $\loOn$.
+\anchor{Sal/MRDTs/Framework/Certificates.lean}{MintHonest}
+
+Certified reachability $\mathsf{MintCertifiedReach}(D,I,C)$ has an initial
+case $\mathsf{MintCertifiedReach}(D,I,\mathsf{initConfig}(D))$ and the step rule
+\[
+\frac{
+ \begin{gathered}
+ \mathsf{MintCertifiedReach}(D,I,C)\qquad
+ \mathsf{IssuedStep}(D,I,C,\ell,C')\\
+ \mathsf{MintHonest}(D,I.\mathsf{CanIssue},C)\qquad
+ \mathsf{MintHonest}(D,I.\mathsf{CanIssue},C')
+ \end{gathered}
+}{
+ \mathsf{MintCertifiedReach}(D,I,C')
+}.
+\]
+Thus the definition requires mint honesty before and after each step.
+It does not derive this condition merely from the local issuance checks.
+A claim covering all executions that obey those checks would additionally
+need to establish this provenance condition.
+\anchor{Sal/MRDTs/Framework/Certificates.lean}{MintCertifiedReach}
+
+Erasing these premises recovers raw reachability:
+\[
+ \mathsf{MintCertifiedReach}(D,I,C)
+ \Longrightarrow
+ \mathsf{Reachable}(\mathsf{Step},\mathsf{initConfig}(D),C).
+\]
+\anchor{Sal/MRDTs/Framework/Certificates.lean}
+  {MintCertifiedReach.toReachable}
+
+\subsection{Correctness obligation}
+
+For the chosen $D$, $P$, $I$, $\mathit{Spec}$, and $\mathsf{Rel}$, the
+ordinary-execution correctness obligation is
+\[
+ \forall C.\;
+ \mathsf{MintCertifiedReach}(D,I,C)
+ \Longrightarrow
+ \mathsf{IsSpecLinearizable}(D,P,\mathit{Spec},\mathsf{Rel},C).
+\]
+This implication must be proved for the chosen contract; it does not follow
+from the interface definitions alone. In particular,
+$\mathsf{HasReplayWitness}(C)$ only provides an ordering whose concrete fold
+is the stored state. It does not by itself establish sequential legality,
+the representation relation, or agreement with the abstract queries.
+
+The next section extends execution to synthetic merge bases.
+Section~\ref{sec:certificates} packages the proofs for both execution
+semantics and describes sufficient proof routes.
 
 \section{Canonical virtual merge bases}
 \label{sec:virtual}
@@ -1693,7 +1651,8 @@ for the finite enumeration implemented by
 
 Sort $\mathsf{BasesWithAny}(P,X,w)$ by increasing version rank. Let
 $\mathsf{stateD}(v)$ return the stored state, defaulting to $\init$ only to
-make the function total. The scratch fold is
+make the function total. Define the scratch fold $\mathsf{vfold}$ and its
+recursive base resolver $\mathsf{vbase}$ mutually:
 \[
 \begin{aligned}
  \mathsf{vfold}(A,a,[])&=a,\\
@@ -1741,7 +1700,7 @@ The fold theorem states
 \[
 \begin{aligned}
  &\mathsf{StoreInv}(S,P)\land\mathsf{CanonicalConfig}(C)
- \land\mathsf{JoinAt}(D,R_C)\\
+ \land\mathsf{JoinAt}(D,P,R_C)\\
  &\land S(v_1)=(s_1,E_1)\land S(v_2)=(s_2,E_2)\\
  &\Longrightarrow
  \Can(R_C,E_1\cap E_2,\mathsf{virtualMergeBaseState}(C,v_1,v_2)).
@@ -1753,13 +1712,13 @@ The fold theorem states
 Consequently,
 \[
 \begin{aligned}
- \mathsf{Join}(D)&\to
- \mathsf{Reachable}_{\mathsf{StepV}}
-   (\mathsf{initConfig}(D),C)
+ \mathsf{Join}(D,P)&\to
+ \mathsf{Reachable}(\mathsf{StepV},
+   \mathsf{initConfig}(D),C)
  \to\mathsf{CanonicalConfig}(C),\\
- \mathsf{Join}(D)&\to
- \mathsf{Reachable}_{\mathsf{StepV}}
-   (\mathsf{initConfig}(D),C)
+ \mathsf{Join}(D,P)&\to
+ \mathsf{Reachable}(\mathsf{StepV},
+   \mathsf{initConfig}(D),C)
  \to\mathsf{HasReplayWitness}(C).
 \end{aligned}
 \]
@@ -1767,28 +1726,16 @@ Consequently,
   {canonicalConfig\_reachableV, replayWitnessV\_of\_join}
 
 As in the ordinary semantics, certified widened reachability erases to raw
-widened reachability. Hence all-context Join needs no issuance premise. The
-restricted form is
-\[
-\begin{aligned}
- &\mathsf{JoinOn}(D,G)
- \land\mathsf{IssuanceEstablishes}(D,I,G)\\
- &\quad\to
- \mathsf{MintCertifiedReachV}(D,\mathsf{canonicalVirtualMergeBase}(D),I,C)
- \to\mathsf{HasReplayWitness}(C).
-\end{aligned}
-\]
+widened reachability. Hence the all-context Join theorem also supplies
+replay witnesses for certified widened executions.
 \anchor{Sal/MRDTs/Framework/Certificates.lean}
   {MintCertifiedReachV.toReachable}
-\anchor{Sal/MRDTs/Metatheory/CertifiedAdequacy.lean}
-  {replayWitness\_of\_mintCertifiedV}
 
-\section{Verification certificates and instances}
-\label{sec:instances}
+\subsection{Verification certificates}
+\label{sec:certificates}
 
-\subsection{How an instance closes the theorem stack}
-
-A replay-adequacy certificate has field
+A replay-adequacy certificate
+$\mathsf{ReplayAdequacyCertificate}(D,I,P)$ has field
 \[
  \mathsf{soundV}:\quad
  \mathsf{MintCertifiedReachV}(D,\mathsf{canonicalVirtualMergeBase}(D),I,C)
@@ -1799,14 +1746,25 @@ execution.
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {ReplayAdequacyCertificate, ReplayAdequacyCertificate.sound}
 
-The artifact provides one constructor for each merge-proof route:
+For a context predicate $G:\mathsf{ReplayContext}(D)\to\mathsf{Prop}$,
+define
+\[
+ \mathsf{IssuanceEstablishes}(D,I,G)\Longleftrightarrow
+ \forall C.\;\mathsf{MintHonest}(D,I.\mathsf{CanIssue},C)
+ \to G(R_C).
+\]
+This is a proof obligation from mint honesty to $G$, not a theorem deriving
+mint honesty from local issuance checks.
+\anchor{Sal/MRDTs/Framework/Certificates.lean}{IssuanceEstablishes}
+
+The artifact provides two sufficient constructors:
 \[
 \begin{aligned}
- \mathsf{Join}(D)
- &\Longrightarrow \mathsf{ReplayAdequacyCertificate}(D,I),\\
- \mathsf{JoinOn}(D,G)
+ \mathsf{Join}(D,P)
+ &\Longrightarrow \mathsf{ReplayAdequacyCertificate}(D,I,P),\\
+ \mathsf{JoinOn}(D,P,G)
  \land\mathsf{IssuanceEstablishes}(D,I,G)
- &\Longrightarrow \mathsf{ReplayAdequacyCertificate}(D,I).
+ &\Longrightarrow \mathsf{ReplayAdequacyCertificate}(D,I,P).
 \end{aligned}
 \]
 The first constructor erases certified widened reachability before applying
@@ -1817,17 +1775,26 @@ context condition.
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {ReplayAdequacyCertificate.ofJoinOn}
 
-The first constructor applies to an all-context merge theorem and accepts any
-issuance policy. The second applies to a restricted theorem: the local
-issuance predicate must establish the global replay-context condition $G$.
-This gives the instance-level dependency
+The first accepts any issuance policy. For the second, certified reachability
+supplies mint honesty at each configuration; the separate proof of
+$\mathsf{IssuanceEstablishes}$ supplies $G(R_C)$, and
+$\mathsf{JoinOn}(D,P,G)$ supplies the required local merge theorem.
+For ordinary executions, the premises compose as
 \[
- \mathsf{CanIssue}\Longrightarrow\mathsf{MintHonest}
- \Longrightarrow G(R_C)\Longrightarrow\mathsf{JoinAt}(D,R_C)
- \Longrightarrow\mathsf{HasReplayWitness}(C).
+\begin{aligned}
+ &\mathsf{JoinOn}(D,P,G)\land\mathsf{IssuanceEstablishes}(D,I,G)\\
+ &\land\mathsf{MintCertifiedReach}(D,I,C)\\
+ &\qquad\Longrightarrow\mathsf{HasReplayWitness}(C).
+\end{aligned}
 \]
-The sequential certificate then chooses a legal ordering of that same event
-set and relates its abstract state and observations to the stored state.
+The corresponding widened theorem replaces the third premise with
+$\mathsf{MintCertifiedReachV}
+(D,\mathsf{canonicalVirtualMergeBase}(D),I,C)$.
+\anchor{Sal/MRDTs/Metatheory/CertifiedAdequacy.lean}
+  {replayWitness\_of\_mintCertified, replayWitness\_of\_mintCertifiedV}
+
+These constructors do not exhaust the possible proofs: an instance may
+prove the replay-adequacy field directly by an execution invariant.
 
 Let $\mathsf{CertifiedExecution}(D,I,C)$ mean either an ordinary
 $\mathsf{MintCertifiedReach}(D,I,C)$ derivation or a widened
@@ -1837,7 +1804,7 @@ sequential-correctness certificate has type
 \[
  \forall C.\;\mathsf{CertifiedExecution}(D,I,C)
  \to\mathsf{HasReplayWitness}(C)
- \to\mathsf{IsSpecLinearizable}(D,A,\mathit{Spec},\mathsf{Rel},C).
+ \to\mathsf{IsSpecLinearizable}(D,P,\mathit{Spec},\mathsf{Rel},C).
 \]
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {CertifiedExecution, SequentialCorrectnessCertificate}
@@ -1846,12 +1813,12 @@ The complete package is
 \[
 \begin{aligned}
  \mathsf{VerifiedMRDT}(D)=(&I:\mathsf{Issuance}(D),\\
- &A:\mathsf{InteractionSpec}(D),\\
- &K:\mathsf{ReplayAdequacyCertificate}(D,I),\\
+ &rc:\mathsf{ReplayPolicy}(D),\\
+ &K:\mathsf{ReplayAdequacyCertificate}(D,I,rc),\\
  &\mathit{Spec}:\mathsf{SequentialSpec}(D),\\
  &\mathsf{Rel}:\State\to\State_S\to\mathsf{Prop},\\
  &K_S:\mathsf{SequentialCorrectnessCertificate}
-   (D,I,A,\mathit{Spec},\mathsf{Rel})).
+   (D,I,rc,\mathit{Spec},\mathsf{Rel})).
 \end{aligned}
 \]
 \lean{PackagedMRDT} additionally contains a name and the signature $D$.
@@ -1862,343 +1829,15 @@ Its public conclusions are
 \[
 \begin{aligned}
  \mathsf{MintCertifiedReach}(D,I,C)&\to
-   \mathsf{IsSpecLinearizable}(D,A,\mathit{Spec},\mathsf{Rel},C),\\
+   \mathsf{IsSpecLinearizable}(D,rc,\mathit{Spec},\mathsf{Rel},C),\\
  &\mathsf{MintCertifiedReachV}
    (D,\mathsf{canonicalVirtualMergeBase}(D),I,C)\\
  &\qquad\to
-   \mathsf{IsSpecLinearizable}(D,A,\mathit{Spec},\mathsf{Rel},C).
+   \mathsf{IsSpecLinearizable}(D,rc,\mathit{Spec},\mathsf{Rel},C).
 \end{aligned}
 \]
 \anchor{Sal/MRDTs/Metatheory/Correctness.lean}
   {VerifiedMRDT.correct, VerifiedMRDT.correctV}
-
-\subsection{Released-instance summary}
-
-The typed production registry contains 19 \lean{PackagedMRDT} values. The
-table groups packages that instantiate the same parametric proof. ``Join''
-means $\mathsf{Join}(D)$ from Section~6.1; ``JoinOn $G$'' means
-$\mathsf{JoinOn}(D,G)$. These are theorem scopes, while the final column names
-the public sequential specification.
-
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.25\textwidth}
-  >{\raggedright\arraybackslash}p{0.20\textwidth}
-  >{\raggedright\arraybackslash}p{0.20\textwidth}
-  >{\raggedright\arraybackslash}p{0.27\textwidth}@{}}
-\toprule
-RDT / released package & Merge theorem & Issuance policy & Sequential specification\\
-\midrule
-\endhead
-grow-only-set, add-store, finite-add-store & Join & $\mathsf{True}$ &
-Grow-only set/store, total legality\\
-counter, increment-only-counter, pn-counter & Join & $\mathsf{True}$ &
-Integer accumulator, total legality\\
-flat-grow-only-set, flat-grow-only-map & Join & $\mathsf{True}$ &
-Pointwise Boolean store, total legality\\
-bounded-counter & Join & \lean{bcApplicable} &
-Rights-respecting integer counter\\
-lww-register & Join & $\mathsf{True}$ &
-Total overwrite register in timestamp order\\
-rga & Join & \lean{RGA.applicable} &
-Legal ordinary-list machine\\
-or-set & Join & \lean{ORSet.canIssue} &
-Ordinary add-wins finite set\\
-tree-move & Join & \lean{applicable} &
-Chronological mutable tree\\
-aegis-sheet & Join & \lean{applicable} &
-Causal-origin spreadsheet machine\\
-embed-rga, peritext-embed-rga & JoinOn \lean{EHonestCore} &
-\lean{eApplicable} & Legal embedded-list machine\\
-sided-embed-rga & JoinOn \lean{SHonestCore} &
-\lean{sApplicable} & Legal sided-list machine\\
-sided-peritext-core, sided-peritext-rich-core &
-JoinOn projected \lean{SHonestCore} & \lean{coreGuard} &
-Legal rich-editor machine\\
-\bottomrule
-\end{longtable}
-\anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}
-  {Production.registry, Production.names}
-
-\subsection{Formal instance profiles}
-
-Each profile below records the information needed to interpret the package:
-the representation, issuance predicate, merge scope, public sequential state
-and legality predicate, representation relation, and proof route. Helper
-lemmas remain in the cited instance modules.
-
-\paragraph{Grow-only stores and flat counters.}
-For AddStore and FinsetStore,
-\[
- \State=\Pow(\alpha)\ \text{or}\ \mathsf{Finset}(\alpha),\qquad
- \doop(s,e)=s\cup\{e.\mathsf{op}\},\qquad
- \merge(l,a,b)=a\cup b.
-\]
-For the counter family parameterized by $\delta:O\to\mathbb Z$,
-\[
- \State=\mathbb Z,\qquad
- \doop(s,e)=s+\delta(e.\mathsf{op}),\qquad
- \merge(l,a,b)=a+b-l.
-\]
-In both families, $I.\mathsf{CanIssue}=\mathsf{True}$,
-$\mathsf{Legal}(\pi)=\mathsf{True}$, the abstract machine repeats the displayed
-update, and $\mathsf{Rel}$ is equality. The pointwise-Boolean grow-only set
-and map use the same profile coordinatewise. All prove universal
-\lean{MergeLaws}, \lean{DeltaLaws}, and \lean{CommutingPeelLaw}, derive
-all-context Join, and package total sequential correctness.
-\anchor{Sal/MRDTs/Instances/AddStore.lean}
-  {AddStore.D, AddStore.generation, AddStore.spec, AddStore.verified}
-\anchor{Sal/MRDTs/Instances/FlatCounters.lean}
-  {FlatCounters.D, FlatCounters.generation, FlatCounters.spec,
-   FlatCounters.verified}
-
-\paragraph{LWW register.}
-The state is either unset or a lexicographically ordered write,
-\[
- \State=\bot+\mathsf{Lex}(\mathsf{Timestamp},\mathsf{Replica},\N),
- \qquad
- \doop(s,e)=\max(s,\mathsf{packedWrite}(e)),
- \qquad
- \merge(l,a,b)=\max(a,b).
-\]
-Issuance and sequential legality are total. The sequential state is an
-optional natural number, and each step overwrites it with the event's value.
-The representation relation projects the value from the maximal tuple. The
-public interaction policy orders unequal writes by their packed keys, but the
-proof-local replay policy remains the default $\mathsf{Either}$: $\max$
-updates commute, the universal laws prove all-context Join, and sorting the
-replay witness preserves its fold. The positive controls show a three-write
-timestamp chain and last-writer result under both chronological and reversed
-delivery; the negative control rejects a lower-timestamp winner.
-\anchor{Sal/MRDTs/Instances/LWWRegister.lean}
-  {LWWRegister.D, LWWRegister.interaction, LWWRegister.spec,
-   LWWRegister.stateRel, LWWRegister.timestamp\_chain,
-   LWWRegister.chronological\_winner,
-   LWWRegister.lower\_timestamp\_does\_not\_win}
-
-\paragraph{Bounded counter.}
-The state records per-replica increment and decrement counts,
-$\State=(\N\to\mathbb Z)^2$, and
-\[
-\begin{aligned}
- \mathsf{bcApplicable}(e,s)&\Longleftrightarrow
- \begin{cases}
-  \mathsf{True},&e.\mathsf{op}=\mathsf{inc},\\
-  s_2(e.\mathsf{rep})+1\le s_1(e.\mathsf{rep}),
-       &e.\mathsf{op}=\mathsf{dec},
- \end{cases}\\
- \mathsf{ClientLegal}(\pi)&\Longleftrightarrow
- (\exists\rho.\;\pi=\mathsf{canonical}(\rho))\land
- \forall r.\;\#\mathsf{dec}_r(\pi)\le\#\mathsf{inc}_r(\pi).
-\end{aligned}
-\]
-The sequential state is $\N\to\mathbb Z$; its value at $r$ is increments
-minus decrements at $r$. The relation requires the representation invariant
-$0\le s_2(r)\le s_1(r)$ and equality with those differences. Join is
-all-context by the universal-law route; issuance establishes sequential
-legality and the separate safety certificate.
-\anchor{Sal/MRDTs/Instances/BoundedCounter.lean}
-  {BoundedCounter.bcApplicable, BoundedCounter.ClientLegal,
-   BoundedCounter.clientSpec, BoundedCounter.verified}
-
-\paragraph{Observed-remove set.}
-For element type $\alpha$,
-\[
- \State=\mathsf{Finset}(\Time\times\alpha)\times\mathsf{Finset}(\Time),
-\]
-where the first component stores tagged additions and the second stores
-removed tags. Its issuer contract is
-\[
- \mathsf{canIssue}(e,s)\Longleftrightarrow
- \begin{cases}
- e.\mathsf{time}\notin\mathsf{tags}(s_1),&e=\mathsf{add}(x),\\
- T=\mathsf{liveTags}(s,x),&e=\mathsf{remove}(x,T).
- \end{cases}
-\]
-The public sequential state is $\mathsf{Finset}(\alpha)$; add inserts the
-element, remove erases it, $\mathsf{Legal}(\pi)=\mathsf{True}$, and
-\[
- \mathsf{stateRel}(s,A)\Longleftrightarrow
- \forall x.\;\mathsf{contains}(s,x)=[x\in A].
-\]
-The MRDT effectors commute and prove all-context Join through the universal
-laws. Issuance is load-bearing for the tagged-storage refinement, even though
-the ordinary-set legality predicate is total: it proves that every remove
-payload contains exactly the tags observed at its causal origin. The public
-interaction order places a concurrent same-element remove before add, giving
-add-wins behavior.
-\anchor{Sal/MRDTs/Instances/ORSet.lean}
-  {ORSet.canIssue, ORSet.interaction, ORSet.spec, ORSet.stateRel,
-   ORSet.verified}
-
-\paragraph{Tombstone RGA.}
-The representation and merge were introduced in Section~2. Its issuer rule is
-\[
-\begin{aligned}
- &\mathsf{applicable}((t,r,\mathsf{addAfter}(a,i)),s)\\
- &\quad\Longleftrightarrow
- i=t\land(a=0\lor\exists t',p.\;t'<t\land s_1(t',p,a)=\mathsf{true})\\
- &\hspace{3em}\land(\forall a',i'.\;s_1(t,a',i')=\mathsf{false})
- \land(\forall t',a'.\;s_1(t',a',i)=\mathsf{false})
- \land s_2(i)=\mathsf{false},\\
- &\mathsf{applicable}((t,r,\mathsf{remove}(i)),s)
- \Longleftrightarrow
- (\exists t',a.\;s_1(t',a,i)=\mathsf{true})
- \land s_2(i)=\mathsf{false}.
-\end{aligned}
-\]
-The public state is $\mathsf{List}(\N)$. Its legality predicate requires
-unique timestamps, requires every insertion identifier to equal its timestamp
-and name root or an earlier insertion as anchor, and requires every removal
-to name an earlier insertion. The relation is
-$\mathsf{read}(s)=xs$. RGA proves all-context Join through the universal laws;
-issuance establishes well-formedness of the ordinary-list witness.
-\anchor{Sal/MRDTs/Instances/RGA.lean}
-  {RGA.applicable, RGA.generation, RGA.join}
-\anchor{Sal/MRDTs/Instances/RGASequential.lean}
-  {RGA.listLegal, RGA.listSpec, RGA.listRel, RGA.verified}
-
-\paragraph{TreeMove.}
-The state is a finite set of timestamped moves. Rendering sorts the set and
-applies each move to an ordinary tree. Issuance requires
-\[
-\begin{aligned}
- \mathsf{applicable}(e,s)\Longleftrightarrow{}&
- \mathsf{freshKey}_s(e)\land\mathsf{visibleNode}_s(e.\mathsf{parent})\\
- &\land(\neg\mathsf{knownNode}_s(e.\mathsf{child})
-       \lor\mathsf{visibleNode}_s(e.\mathsf{child}))\\
- &\land e.\mathsf{child}\ne\mathsf{root}
- \land e.\mathsf{child}\ne\mathsf{trash}.
-\end{aligned}
-\]
-The sequential state is a mutable tree, the step applies one move, and
-$\mathsf{Legal}(\pi)=\mathsf{Nodup}(\pi)\land
-\mathsf{Pairwise}(\mathsf{eventLE},\pi)$. The relation equates the rendered
-event set with the sequential tree. Join is all-context by the universal-law
-route; the package also contains a separate tree-safety certificate.
-\anchor{Sal/MRDTs/Instances/TreeMove.lean}
-  {TreeMove.applicable, TreeMove.SequentialLegal, TreeMove.sequentialSpec,
-   TreeMove.verified}
-
-\paragraph{AegisSheet.}
-The MRDT stores a finite set of spreadsheet-intent events and merges by union.
-At issuance,
-\[
- \mathsf{applicable}(e,E)\Longleftrightarrow
- \mathsf{applicableB}(e,E)=\mathsf{true}
- \land\forall t\in\mathsf{eventTimes}(E).\;t<e.\mathsf{time}.
-\]
-The Boolean part checks freshness, exact causal-origin metadata, action
-metadata, direct-action preconditions, and undo provenance. The public
-sequential state is the independent incremental spreadsheet state, and
-\[
-\begin{aligned}
- \mathsf{CausalOriginLegal}(\pi)\Longleftrightarrow{}&
- \mathsf{Chronological}(\pi)\land\\
- &\forall\pi_0,e,\pi_1.\;\pi=\pi_0{+\!+}e::\pi_1\to
- \exists E_0\subseteq\mathsf{toFinset}(\pi_0).\;
- \mathsf{applicable}(e,E_0).
-\end{aligned}
-\]
-The relation states that every chronological enumeration materializes the
-same incremental state, that this state equals the event-set materialization,
-and that both answer the same sheet query. Join is all-context by universal
-laws; issuance establishes causal-origin legality and the safety invariants.
-\anchor{Sal/MRDTs/Instances/AegisSheet.lean}
-  {AegisSheet.applicable, AegisSheet.generation, AegisSheet.join}
-\anchor{Sal/MRDTs/Instances/AegisSheetSequential.lean}
-  {AegisSheet.Sequential.CausalOriginLegal,
-   AegisSheet.Sequential.clientSpec, AegisSheet.verified}
-
-\paragraph{EmbedRGA and Peritext.}
-An EmbedRGA insertion carries a payload, a coordinate prefix $p$, and an
-anchor $a$; deletion names an identifier. Its issuer rule is
-\[
- \mathsf{eApplicable}(e,s)\Longleftrightarrow
- \begin{cases}
- a<e.\mathsf{time}\land((a=0\land p=[])
-   \lor\exists x.\;(a,x,p)\in s),&e=\mathsf{ins}(x,p,a),\\
- i\in\mathsf{ids}(s),&e=\mathsf{del}(i).
- \end{cases}
-\]
-$\mathsf{EHonestCore}(R)$ requires each deletion target to have a visible
-insertion and requires all insertion coordinates to arise from one positive,
-timestamp-summing chain assignment. The direct theorem is
-$\mathsf{JoinOn}(E,\mathsf{EHonestCore})$, and mint honesty for
-\lean{eApplicable} establishes that condition. The public sequential state is
-$\mathsf{List}(\N\times\alpha)$; legality requires increasing fresh insertion
-identifiers, the carried coordinate of an earlier anchor, and an earlier
-allocation for every deletion. The relation maps live records to identifier--
-payload pairs. Peritext instantiates the payload with characters and mark
-boundaries and inherits this certificate; its additional rendering theorem
-maps the certified buffer to marked text.
-\anchor{Sal/MRDTs/Instances/EmbedRGA.lean}
-  {EmbedRGA.EHonestCore, EmbedRGA.eApplicable, EmbedRGA.e\_join\_at}
-\anchor{Sal/MRDTs/Instances/ProductionRGA.lean}
-  {ProductionRGA.embedLegal, ProductionRGA.embedClientSpec,
-   ProductionRGA.embed}
-\anchor{Sal/MRDTs/Instances/Peritext.lean}{Peritext.verified}
-
-\paragraph{SidedEmbedRGA and SidedPeritext.}
-SidedEmbedRGA adds a left/right choice to insertion. Its
-\lean{sApplicable}, \lean{SHonestCore}, list legality, and relation are the
-sided analogues of the preceding profile; the side is selected at issuance
-and does not strengthen the anchor guard. Its merge theorem is
-$\mathsf{JoinOn}(S,\mathsf{SHonestCore})$.
-
-SidedPeritext composes the sided sequence with grow-only deletion and mark
-stores. For an event $e$ and state $(s_T,s_D,s_M)$, its cross-component guard
-is
-\[
-\mathsf{coreGuard}(e,s_T,s_D,s_M)\Longleftrightarrow
-\begin{cases}
- \mathsf{sApplicable}(e,s_T),&e=\mathsf{textIns},\\
- \mathsf{False},&e=\mathsf{textDel},\\
- i\in\mathsf{ids}(s_T)\land i\notin s_D,&e=\mathsf{deleteStoreAdd}(i),\\
- \mathsf{validMark}(e,s_T,s_D,s_M),&e=\mathsf{markStoreAdd}.
-\end{cases}
-\]
-The merge theorem composes projected $\mathsf{SHonestCore}$ with the two
-all-context grow-only-store theorems. The sequential state contains the sided
-list and both stores; legality is exactly the projected sided-list legality,
-while the issuance guard validates cross-component delete and mark references.
-The rich package changes only the query boundary to rendered marks.
-\anchor{Sal/MRDTs/Instances/SidedEmbedRGA.lean}
-  {SidedEmbedRGA.SHonestCore, SidedEmbedRGA.sApplicable,
-   SidedEmbedRGA.s\_join\_at}
-\anchor{Sal/MRDTs/Instances/SidedPeritext.lean}
-  {SidedPeritext.coreGuard, SidedPeritext.core\_join\_at,
-   SidedPeritext.clientSpec, SidedPeritext.verified,
-   SidedPeritext.richVerified}
-
-\subsection{Proof routes and evidence status}
-
-\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.33\textwidth}
-  >{\raggedright\arraybackslash}p{0.59\textwidth}@{}}
-\toprule
-Released family & Merge-proof route\\
-\midrule
-\endhead
-Grow-only stores, flat counters, bounded counter, LWW register, OR-Set, TreeMove,
-AegisSheet, RGA & Universal equations adapted to
-\lean{CanonicalJoinLaws}, then all-context \lean{Join}\\
-EmbedRGA and SidedEmbedRGA & Direct datatype-specific \lean{JoinAt} under
-\lean{EHonestCore} or \lean{SHonestCore}\\
-Peritext & Inherited payload-parametric EmbedRGA certificate\\
-SidedPeritext & Componentwise \lean{joinAt\_prod}: restricted sided sequence
-plus two all-context grow-only stores\\
-\bottomrule
-\end{longtable}
-
-The negative and partial-evidence ledger is separate from the production
-registry. The multi-value register has replay adequacy but a mechanized
-counterexample to the ordinary single-register specification. The queue has
-conditional replay adequacy but a duplicate-dequeue FIFO counterexample. The
-FugueMax signature proves internal ordering-policy facts but has no public
-\lean{VerifiedMRDT}. These artifacts remain useful formal evidence, but they
-are not released datatype packages.
-\anchor{Sal/MRDTs/Metatheory/NegativeLedger.lean}
-  {Instances.MVR.concurrentState\_no\_sequential\_register,
-   Instances.Queue.ConditioningSPOT.duplicate\_dequeue\_not\_fifo,
-   Instances.SidedEmbedRGA.fuguemax\_replay\_witness}
 
 \section{Distributed commit-history collection}
 \label{sec:history-gc}
@@ -2384,7 +2023,10 @@ availability by the exact versions read by the resolver.
 A local collector is first specified independently of a runtime transition
 system.  For an issuance policy $I$, a certificate supplies compact states
 $C$, collection evidence $W$, a relation $c\mathrel{\mathsf{Rep}}s$ to the
-full datatype state, an evidence predicate, and compact interpretations of
+full datatype state, an evidence predicate
+$\mathsf{EvidenceValid}:W\to C\to\State\to\mathsf{Prop}$,
+a branch-compatibility predicate
+$\mathsf{Compatible}:\State\to\State\to\mathsf{Prop}$, and compact interpretations of
 initialization, update, ternary merge, and query.  Its central obligations are
 \[
 \begin{aligned}
@@ -2427,166 +2069,6 @@ trace therefore erases to such a widened semantic trace.
   {StateGCCertificate, StateGCCertificate.exactState,
    StateGCProtocol, StateGCProtocol.refines}
 
-\subsection{Per-datatype collection profiles}
-
-The typed \lean{Production.StateGC.registry} follows the same nineteen-entry
-order as the released-instance registry.  Its four constructors distinguish
-an exact-state baseline, a representation-changing local certificate, an
-operational protocol, and a staged collector.  Thus registry coverage means
-that the status of every released package is explicit; it does not mean that
-every package already reclaims state.
-
-\paragraph{Grow-only stores and flat grow-only stores.}
-Grow-only set, AddStore, FinsetStore, flat grow-only set, and flat grow-only
-map currently use the semantic set or pointwise map as the compact state:
-\[
- C=\State,\qquad c\mathrel{\mathsf{Rep}}s\Longleftrightarrow c=s,
- \qquad\mathsf{collect}((),c)=c.
-\]
-Their registry entries therefore carry the exact-state certificate.  Every
-stored member is part of the monotone semantic value under the current
-signature; a stronger result would have to prove a representation quotient
-or state formally that no internal metadata is reclaimable.
-
-\paragraph{Counters.}
-The integer counter, increment-only counter, PN-counter, and bounded counter
-also carry exact-state certificates.  Their states are already aggregates,
-not replay logs: one integer for the flat counters, or per-replica increment
-and decrement components for the bounded counter.  Removing a component would
-need an explicit replica-retirement or coordinate-normalization protocol;
-none is part of the released semantics.
-
-\paragraph{LWW register.}
-The exact-state baseline stores only the current winning tuple. Older writes
-are already absent from the semantic state, so this representation contains
-no retained replay log or tombstone metadata for a local collector to remove.
-Changing the tuple representation would be an encoding refinement rather than
-collection under the current interface.
-
-\paragraph{Tombstone RGA.}
-RGA has a checked representation compactor, but not deleted-identifier
-reclamation.  Its reachable finite state consists of birth triples
-$(t,p,i)$ and a graveyard $G$.  Honest issuance establishes $t=i$ and every
-grave has a birth.  The packed state therefore stores
-\[
- C=\{\mathsf{parents}:\mathsf{Finset}(i,p),\quad
-     \mathsf{live}:\mathsf{Finset}(i)\},
- \qquad \mathsf{live}=\mathsf{birthIds}\setminus G.
-\]
-Materialization restores $(i,p,i)$ and
-$G=\mathsf{parentIds}\setminus\mathsf{live}$.  The theorem
-\lean{unpack\_pack} proves that this round trip is exact on well-formed
-states.  The packaged certificate proves preservation by collection, guarded
-update, ternary merge, and the ordered list query.  With the explicit cost
-model of three words per birth plus one per grave versus two words per parent
-plus one per live identifier, packing never grows state and is strictly
-smaller whenever the graveyard is nonempty.
-
-This result deliberately retains one parent fact for every deleted
-identifier.  Under the current issuance policy, a later insertion may name a
-deleted identifier as its anchor.  The checked negative SPOT first erases a
-dead leaf without changing the current live-ID projection, then proves that a
-future operation accepted by the full state is rejected by the erased state.
-Thus a stability frontier alone does not authorize physical identifier
-reclamation.  That stronger collector requires an explicit anchor-retirement
-or translation policy, which would be a change to the operation boundary and
-must not be smuggled into the existing sequential specification.
-\anchor{Sal/MRDTs/Instances/RGAGC.lean}
-  {RGA.GC.pack, RGA.GC.unpack, RGA.GC.packedWords\_pack\_lt\_of\_grave,
-   RGA.GC.certificate, RGA.GC.erase\_dead\_anchor\_breaks\_future\_issuance}
-
-\paragraph{EmbedRGA and Peritext.}
-EmbedRGA, its Peritext specialization, and their current live-sequence
-representations use exact-state certificates.  Deletion is represented by removal
-from the live sequence rather than a separate graveyard, but surviving
-coordinates and anchors may still constrain later insertions.  A smaller
-physical encoding therefore needs a continuation theorem for coordinate and
-anchor summaries, not merely equality of the current rendered list.
-
-\paragraph{SidedEmbedRGA and SidedPeritext core.}
-The sided sequence and the ordinary SidedPeritext core likewise use exact
-state.  In particular, the core query exposes its component stores, so a
-collector that deletes entries cannot preserve that query by equality.  A
-representation-changing theorem must either retain those stores, change the
-public query boundary, or relate them through an explicit abstraction.  The
-released rich-query package takes the latter route.
-
-\paragraph{Rich SidedPeritext.}
-The rich package has an operational collector.  A compact state contains the
-retained sided text, a Fugue gap summary, deletion and mark stores, and a
-stable Lamport cut.  Its representation evidence records a keep predicate,
-knowledge used to reconstruct the full semantic text, gap-map correctness,
-an old-identifier bound, and equality of every rich-text query.  The physical
-system can silently collect text, trim deletion metadata, drop a cancelling
-mark pair, or reframe identifiers; ordinary and virtual-base operations remain
-visible.  \lean{StateGCProtocol.refines} then covers arbitrary finite
-interleavings of those steps.
-\anchor{Sal/MRDTs/Instances/SidedPeritextStateGC.lean}
-  {SidedPeritext.StateGC.CompactState, SidedPeritext.StateGC.collectText,
-   SidedPeritext.StateGC.trimDeleted, SidedPeritext.StateGC.dropMarkPair}
-\anchor{Sal/MRDTs/Instances/SidedPeritextProtocol.lean}
-  {SidedPeritext.StateGC.Protocol.Represents,
-   SidedPeritext.StateGC.Protocol.protocol}
-
-\paragraph{TreeMove.}
-TreeMove has an operational collector with
-\[
- C=\{\mathsf{base}:\mathsf{Tree},\;
-      \mathsf{pending}:\mathsf{List}(\mathsf{Event})\},\qquad
- \mathsf{materialize}(c)=
-   \mathsf{replayFrom}(c.\mathsf{base},c.\mathsf{pending}).
-\]
-A \lean{StableCut} splits canonical replay into a stable prefix and pending
-suffix.  Collection folds the prefix into the base tree; after the pending
-suffix is empty, a second collector prunes the hidden trash subtree.  The
-representation relation equates the compact visible tree with the query of
-the full event set, and the packaged protocol proves silent collection plus
-visible ordinary and widened execution.
-\anchor{Sal/MRDTs/Instances/TreeMoveGC.lean}
-  {TreeMove.GC.StableCut, TreeMove.GC.Compact,
-   TreeMove.GC.collectPrefix, TreeMove.GC.collectTrash,
-   TreeMove.GC.protocol}
-
-\paragraph{AegisSheet.}
-The current AegisSheet MRDT stores an event set and merges it by union.  Its
-collector retains replicated purge markers but removes exactly the covered
-cell payloads:
-\[
- \mathsf{semanticCollect}(E)
- =\{e\in E\mid e\text{ is not a cell update covered by a retained marker}\}.
-\]
-The compact state is another finite event set, and
-\[
- c\mathrel{\mathsf{Rep}}E\Longleftrightarrow
- c=\mathsf{semanticCollect}(E)\land
- \mathsf{StateValid}(E)\land\mathsf{TimestampUnique}(E).
-\]
-The certificate normalizes after collection, update, and union merge and
-proves equality of the whole sheet view.  This is genuine payload
-reclamation, but it is still a collector for the event-set encoding; it is
-not yet the proposed materialized three-way AegisSheet representation.
-\anchor{Sal/MRDTs/Instances/AegisSheetGC.lean}
-  {AegisSheet.GC.semanticCollect, AegisSheet.GC.Represents,
-   AegisSheet.GC.certificate}
-
-\paragraph{Observed-remove set.}
-OR-Set is staged.  Its full state retains tagged additions and removed-tag
-tombstones.  A collector must use stable-frontier or equivalent evidence to
-remove a dead tag while proving that a stale branch cannot resurrect it and
-that future remove payloads and add-wins queries remain correct.  The current
-registry entry deliberately supplies only the exact-state baseline.
-
-Tombstone RGA, AegisSheet, TreeMove, and rich SidedPeritext currently package
-representation-changing proofs.  RGA's entry is a lossless representation
-quotient, whereas the latter three reclaim datatype payload, hidden tree
-state, or rich-text metadata.  The roadmap treats every remaining
-exact-state profile as an open classification obligation: supply a real
-collector when metadata is reclaimable, or prove that the released
-representation contains no semantically redundant internal state.
-\anchor{Sal/MRDTs/Metatheory/StateGCCoverage.lean}
-  {StateGCCoverage, PackagedStateGC, Production.StateGC.registry,
-   Production.StateGC.names}
-
 \subsection{Composition}
 
 The combined physical state pairs a datatype-state physical value with a
@@ -2608,6 +2090,1468 @@ If the datatype protocol also proves that every visible physical step is raw,
 the ordinary refinement follows.
 \anchor{Sal/MRDTs/GC/StateComposition.lean}
   {GC.combinedProtocol, GC.CombinedSteps.refinesV, GC.CombinedSteps.refinesRaw}
+
+\section{Verification certificates and instances}
+\label{sec:instances}
+
+\subsection{Formal instance profiles}
+\label{sec:instance-profiles}
+
+In every profile, $O$ is the datatype's operation type and
+$e=(t,r,o)\in\Time\times\Replica\times O$ is an event: $t$ is its timestamp,
+$r$ its issuing replica, and $o$ its operation payload. The operation forms
+below include metadata checked by issuance, not just the client's command.
+Each profile separates the datatype $D=(\State,\mathsf{init},O,Q,R,\doop,
+\merge,\mathsf{query})$, its resolve-conflict relation, issuance, and public
+sequential specification. Unless a profile states otherwise, $Q=\{\mathsf{rd}\}$
+is the singleton read query (Lean's unit type); $R$ is the stated query-result
+type. The sequential specification
+uses the same query interface and supplies its own state, initial state, step,
+legality predicate, and query; the representation relation connects it to $D$.
+Global timestamp freshness and causal timestamp monotonicity come from the
+execution rules. Issuance checks whether a command may be created in its
+local state; $rc$ specifies how conflicting events are ordered in replay.
+An identifier may occur in both rules without making either rule redundant.
+
+Each profile below records the information needed to interpret the package:
+the representation, issuance predicate, sole $rc$ relation, merge scope,
+public sequential state and legality predicate, representation relation, and
+proof route. The typed production registry contains 22 \lean{PackagedMRDT}
+values; the profiles name the released entries belonging to each family.
+Queue, MVR, and the enriched FugueMax implementation are included. Helper
+lemmas remain in the cited instance modules.
+Initial states, observations, and abstract steps are specified below as well:
+these are part of the client contract, not consequences of the merge laws.
+Shared constructions are stated once and specialized in the relevant profile.
+Throughout these profiles, $q$ denotes abstract state, $q_0$ its initial
+value, and $\mathsf{run}(u)$ the fold of the displayed abstract step from
+$q_0$ over a history prefix $u$. A prefix condition is required for every
+decomposition $\ell=u{+\!+}[e]{+\!+}v$. List filtering preserves order;
+set difference and list filtering do nothing to an absent item.
+The common certificate conclusion is the theorem stack in
+Section~\ref{sec:certificates};
+additional datatype-specific conclusions are stated separately. Proof-local
+chain assignments and induction invariants are not additional client state.
+\anchor{Sal/MRDTs/Metatheory/ProductionLedger.lean}
+  {Production.registry, Production.names}
+
+The typed \lean{Production.StateGC.registry} follows the same 22-entry
+order as the released-instance registry.  Its four constructors distinguish
+an exact-state baseline, a representation-changing local certificate, an
+operational protocol, and a staged collector.  Thus registry coverage means
+that the status of every released package is explicit; it does not mean that
+every package already reclaims state.
+For an exact-state baseline, the compact type is $C=\State$, the relation is
+$\mathsf{Rep}(c,s)\Longleftrightarrow c=s$, evidence is trivial, and
+$\mathsf{collect}((),c)=c$. It preserves all operations but reclaims nothing.
+
+RGA, AegisSheet, TreeMove, and rich SidedPeritext currently package
+representation-changing proofs.  RGA's entry is a lossless representation
+quotient, whereas the latter three reclaim datatype payload, hidden tree
+state, or rich-text metadata.  The roadmap treats every remaining
+exact-state profile as an open classification obligation: supply a real
+collector when metadata is reclaimable, or prove that the released
+representation contains no semantically redundant internal state.
+\anchor{Sal/MRDTs/Metatheory/StateGCCoverage.lean}
+  {StateGCCoverage, PackagedStateGC, Production.StateGC.registry,
+   Production.StateGC.names}
+
+\paragraph{Grow-only stores.}
+This profile covers the released grow-only-set, add-store,
+finite-add-store, flat-grow-only-set, and flat-grow-only-map entries.
+
+\emph{Datatype $D$.} For a store of $\alpha$ values, $O=\alpha$: the operation payload is the value
+to add, so an event is $(t,r,x)$ with $x\in\alpha$. The grow-only set
+specializes $\alpha$ to $\N$.
+For AddStore and FinsetStore,
+\[
+ \State=\Pow(\alpha)\ \text{or}\ \mathsf{Finset}(\alpha),\qquad
+ \doop(s,e)=s\cup\{e.\mathsf{op}\},\qquad
+ \merge(l,a,b)=a\cup b.
+\]
+Concrete state starts empty and its query is identity.
+The pointwise-Boolean grow-only set and map have operation type $O=A$;
+the payload is the key or key--value pair to add. They instead have state
+$A\to\mathsf{Bool}$, initially false, with
+\[
+ \doop(s,e)(x)=s(x)\lor(x=e.\mathsf{op}),\qquad
+ \merge(l,a,b)(x)=l(x)\lor a(x)\lor b(x).
+\]
+Here $A$ is the key type or key--value-pair type, respectively: the map stores
+pairs, not overwriting assignments. The ancestor is included in this raw
+Boolean merge, unlike the two-set union above. Its query is identity.
+
+\emph{Resolve-conflict relation $rc$.} For every store variant, $\forall a,b.\;\neg(a\rc b)$.
+
+\emph{Issuance.} For every variant, $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
+
+\emph{Sequential specification.} For each variant, the abstract machine has the
+same state, initial value, update, and query as $D$. Explicitly, for each
+of the representations just defined,
+\[
+\begin{gathered}
+ \Sigma_{\rm seq}=\State,\quad q_0=\mathsf{init},\quad
+ \mathsf{step}(q,e)=\doop(q,e),\\
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=q,\\
+ \mathsf{Legal}(\ell)\Longleftrightarrow\mathsf{True},\quad
+ \mathsf{Rel}(s,q)\Longleftrightarrow s=q.
+\end{gathered}
+\]
+Adding an already present value or pair leaves the state unchanged.
+\anchor{Sal/MRDTs/Instances/AddStore.lean}
+  {AddStore.D, AddStore.generation, AddStore.spec, AddStore.verified}
+\anchor{Sal/MRDTs/Instances/FlatGrowOnly.lean}
+  {FlatGrowOnly.D, FlatGrowOnly.spec, FlatGrowOnly.verified}
+\anchor{Sal/MRDTs/Instances/FinsetStore.lean}{FinsetStore.spec}
+
+\emph{Datatype-state collection.} Grow-only set, AddStore, FinsetStore, flat grow-only set, and flat grow-only
+map currently use the semantic set or pointwise map as the compact state:
+\[
+ C=\State,\qquad c\mathrel{\mathsf{Rep}}s\Longleftrightarrow c=s,
+ \qquad\mathsf{collect}((),c)=c.
+\]
+Their registry entries therefore carry the exact-state certificate.  Every
+stored member is part of the monotone semantic value under the current
+signature; a stronger result would have to prove a representation quotient
+or state formally that no internal metadata is reclaimable.
+
+\paragraph{Counters.}
+This profile covers the released counter, increment-only-counter, and
+pn-counter entries.
+
+\emph{Datatype $D$.} Counter has one operation, the unit value $()$, meaning
+increment; increment-only counter names that operation $\mathsf{incr}$.
+PN-counter has operations $\mathsf{inc}$ and $\mathsf{dec}$.
+For the family parameterized by $\delta:O\to\mathbb Z$,
+\[
+ \State=\mathbb Z,\qquad
+ \doop(s,e)=s+\delta(e.\mathsf{op}),\qquad
+ \merge(l,a,b)=a+b-l.
+\]
+Counter and increment-only counter have $\delta=1$; PN-counter has
+$\delta(\mathsf{inc})=1$ and $\delta(\mathsf{dec})=-1$.
+Concrete state starts at zero and its query is identity.
+
+\emph{Resolve-conflict relation $rc$.} $\forall a,b.\;\neg(a\rc b)$.
+
+\emph{Issuance.} $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
+
+\emph{Sequential specification.} With the operation-specific $\delta$ above,
+\[
+ \Sigma_{\rm seq}=\mathbb Z,\quad q_0=0,\quad
+ \mathsf{step}(q,(t,r,o))=q+\delta(o),\quad
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=q.
+\]
+Here $\mathsf{Legal}(\ell)\Longleftrightarrow\mathsf{True}$ and
+$\mathsf{Rel}(s,q)\Longleftrightarrow s=q$. PN-counter decrement is
+unrestricted, including at zero; its result may be negative.
+\anchor{Sal/MRDTs/Instances/FlatCounters.lean}
+  {FlatCounters.D, FlatCounters.generation, FlatCounters.spec,
+   FlatCounters.verified}
+
+\emph{Datatype-state collection.} The integer counter, increment-only counter, and PN-counter
+also carry exact-state certificates.  Their states are already aggregates,
+not replay logs: one integer for each counter.  Removing a component would
+need an explicit replica-retirement or coordinate-normalization protocol;
+none is part of the released semantics.
+
+\paragraph{LWW register.}
+
+\emph{Datatype $D$.} The operation is $\mathsf{write}(v)$ for $v\in\N$. For a write event
+\[
+ e=(t,r,\mathsf{write}(v)),\qquad k(e)=(t,r,v),
+\]
+order keys lexicographically by timestamp, then replica, then value.
+Distinct issued writes have distinct timestamps, so the remaining fields
+break ties only on arbitrary raw inputs.
+The state is either unset or a lexicographically ordered write,
+\[
+\begin{aligned}
+ \State&=\bot+\mathsf{Lex}(\mathsf{Timestamp},\mathsf{Replica},\N),\\
+ \doop(s,e)&=\max(s,k(e)),&
+ \merge(l,a,b)&=\max(a,b).
+\end{aligned}
+\]
+The initial state is $\bot$. The query returns none at $\bot$ and the
+value component otherwise.
+
+\emph{Resolve-conflict relation $rc$.}
+\[
+ e_1\rc e_2\Longleftrightarrow k(e_1)<k(e_2).
+\]
+
+\emph{Issuance.} $\forall e,s.\;I.\mathsf{CanIssue}(e,s)$.
+
+\emph{Sequential specification.}
+\[
+\begin{gathered}
+ \Sigma_{\rm seq}=\mathsf{Option}(\N),\qquad q_0=\mathsf{none},\\
+ \mathsf{step}(q,(t,r,\mathsf{write}(v)))=\mathsf{some}(v),\qquad
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=q,\\
+ \mathsf{Legal}(\ell)\Longleftrightarrow\mathsf{True},\qquad
+ \mathsf{Rel}(s,q)\Longleftrightarrow\mathsf{query}(s,\mathsf{rd})=q.
+\end{gathered}
+\]
+The abstract step always overwrites, even for a lower-timestamp event;
+the witness order, not the step, supplies last-writer-wins resolution.
+
+The sole $rc$ policy orders unequal writes by their keys. The $\max$
+updates commute, and the universal laws prove all-context Join under this
+same timestamp policy. The function
+\lean{canonical} sorts the replay witness by key;
+\lean{canonical\_respects} proves that the result respects $\loOn$.
+The theorem \lean{rc\_order\_acyclic} proves acyclicity by strict increase of
+the key. Chronological overwrite replay returns the stored maximal value,
+independently of concrete delivery order.
+\anchor{Sal/MRDTs/Instances/LWWRegister.lean}
+  {LWWRegister.D, LWWRegister.rc, LWWRegister.spec,
+   LWWRegister.stateRel, LWWRegister.replayLaws, LWWRegister.join,
+   LWWRegister.canonical\_respects,
+   LWWRegister.rc\_order\_acyclic, LWWRegister.chronological\_winner}
+
+\emph{Datatype-state collection.} The exact-state baseline stores only the current winning tuple. Older writes
+are already absent from the semantic state, so this representation contains
+no retained replay log or tombstone metadata for a local collector to remove.
+Changing the tuple representation would be an encoding refinement rather than
+collection under the current interface.
+
+\paragraph{Multi-value register.}
+
+\emph{Datatype $D$.} The operation is $\mathsf{write}(v,O)$, where $v\in\N$ is the new value and
+$O$ is a list of overwritten timestamps, used through its membership predicate.
+Thus an event is $(t,r,\mathsf{write}(v,O))$; here the local payload name $O$
+denotes the overwrite list, not the operation type.
+The state is a finite set $S$ of live tagged values,
+$\Sigma=\mathsf{Finset}(\mathsf{Timestamp}\times\N)$, initially empty.
+Its query returns $\{v\mid\exists i.\;(i,v)\in S\}$.
+Writing $\mathsf{writeValue}((t,r,\mathsf{write}(v,O)))=v$,
+\[
+\begin{aligned}
+ \doop(S,(t,r,\mathsf{write}(v,O)))&=\{(i,w)\in S\mid i\notin O\}\cup\{(t,v)\},\\
+ \merge(L,A,B)&=(L\cap A\cap B)
+     \cup(A\setminus L)\cup(B\setminus L).
+\end{aligned}
+\]
+The ancestor distinguishes overwritten values from concurrent additions.
+Neither historical writes nor overwritten-tag tombstones are retained in $S$.
+
+\emph{Resolve-conflict relation $rc$.}
+\[
+ a\rc(t,r,\mathsf{write}(v,O))
+   \Longleftrightarrow \mathsf{time}(a)\in O
+   \qquad\text{for an issued write}.
+\]
+The raw resolver additionally checks $\mathsf{time}(a)<t$ to exclude cyclic
+payloads on arbitrary inputs. For issued writes this inequality follows from
+issuance and is redundant, as proved by \lean{rc\_iff\_overwrite\_of\_execution}.
+Every edge between certified events follows visibility; concurrent writes
+do not choose a winner through $rc$.
+
+\emph{Issuance.} For $e=(t,r,\mathsf{write}(v,O))$, issuance requires
+\[
+\begin{aligned}
+ \mathsf{canIssue}(e,S)\Longleftrightarrow{}&
+   (\forall w.\;(t,w)\notin S)\\
+   &\land\forall i.\;\bigl(i\in O\Longleftrightarrow
+       \exists w.\;(i,w)\in S\bigr).
+\end{aligned}
+\]
+Consequently an issued local write leaves exactly $\{(t,v)\}$.
+Replay removes only the carried targets, preserving unrelated concurrent writes.
+
+\emph{Sequential specification.} The public sequential state is a finite set $q$ of live tagged values, initially
+empty, with
+\[
+ \mathsf{step}(q,(t,r,\mathsf{write}(v,O)))
+   =\{(i,w)\in q\mid i\notin O\}\cup\{(t,v)\}.
+\]
+Formally $\Sigma_{\rm seq}=\mathsf{Finset}(\N\times\N)$ and $q_0=\varnothing$.
+Writing $\mathsf{times}(u)$ for the list of timestamps in $u$,
+\[
+\begin{aligned}
+ \mathsf{Legal}(\ell)\Longleftrightarrow{}&
+ \mathsf{Nodup}(\mathsf{times}(\ell))\\
+ &\land\forall u,t,r,v,O,w.\;
+ \ell=u{+\!+}[(t,r,\mathsf{write}(v,O))]{+\!+}w
+ \Longrightarrow O\subseteq\mathsf{times}(u),\\
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})&=\{v\mid\exists i.\;(i,v)\in q\},\\
+ \mathsf{Rel}(S,q)&\Longleftrightarrow S=q.
+\end{aligned}
+\]
+Subset notation here tests membership, not list multiplicity.
+A target need not still be live at the replay prefix:
+concurrent writes may overwrite the same observed predecessor. Concrete and
+abstract states both contain only the surviving tagged values.
+
+A chronological permutation supplies a legal $\loOn$-respecting witness.
+For every stored version with event set $E$ in the same ordinary or virtual
+certified execution, \lean{mvr\_correct} additionally proves
+\[
+ (i,v)\in S\Longleftrightarrow
+ \exists a\in E.\;\mathsf{time}(a)=i\land\mathsf{writeValue}(a)=v
+   \land\forall b\in E.\;\neg(a\vis b).
+\]
+Thus precisely the causally maximal writes survive, including concurrent
+maximal writes. Equal values from distinct writes appear once in the value-set
+query. On linear mint histories, \lean{linear\_register} proves that this query
+is empty initially and otherwise contains exactly the last written value.
+The proof maintains the surviving-write characterization for stored versions
+and recursively constructed virtual merge bases. It does not rely on
+all-commuting concrete updates or arbitrary-state Join.
+\anchor{Sal/MRDTs/Instances/MVRLive.lean}
+  {MVRLive.D, MVRLive.canIssue, MVRLive.rc, MVRLive.spec,
+   MVRLive.issued\_write\_singleton}
+\anchor{Sal/MRDTs/Instances/MVRLiveCertified.lean}
+  {MVRLive.represented\_of\_mintCertifiedV}
+\anchor{Sal/MRDTs/Instances/MVRLiveContract.lean}
+  {MVRLive.verified, MVRLive.mvr\_correct,
+   MVRLive.linear\_register, MVRLive.rc\_iff\_overwrite\_of\_execution}
+
+\emph{Datatype-state collection.} The registered representation already retains
+only live tagged values and has an exact-state baseline. Writes remove observed
+values during normal execution; no separate write-log collector is required.
+Historical commit versions and event payloads remain subject to their separate
+storage and history-collection obligations.
+
+\paragraph{Bounded counter.}
+
+\emph{Datatype $D$.} The operations are $\mathsf{inc}$ and $\mathsf{dec}$, with no additional
+payload. An event $(t,r,o)$ changes the counts of its issuing replica $r$.
+The state is $s=(s_1,s_2)$, where $s_1(r)$ counts increments and $s_2(r)$
+counts decrements at replica $r$, so $\State=(\N\to\mathbb Z)^2$.
+Both concrete count functions start at zero. Writing $f[r\mapsto z]$ for
+functional replacement at $r$,
+\[
+\begin{aligned}
+ \doop((s_1,s_2),(t,r,\mathsf{inc}))&=(s_1[r\mapsto s_1(r)+1],s_2),\\
+ \doop((s_1,s_2),(t,r,\mathsf{dec}))&=(s_1,s_2[r\mapsto s_2(r)+1]),\\
+ \merge(l,a,b)&=(a_1+b_1-l_1,a_2+b_2-l_2),\\
+ \mathsf{query}((s_1,s_2),r)&=s_1(r)-s_2(r).
+\end{aligned}
+\]
+Arithmetic on functions is pointwise. Thus $Q=\Replica$, not a singleton read.
+
+\emph{Resolve-conflict relation $rc$.} $\forall a,b.\;\neg(a\rc b)$.
+
+\emph{Issuance.}
+\[
+ \mathsf{bcApplicable}(e,s)\Longleftrightarrow
+ \begin{cases}
+  \mathsf{True},&e.\mathsf{op}=\mathsf{inc},\\
+  s_2(e.\mathsf{rep})+1\le s_1(e.\mathsf{rep}),&e.\mathsf{op}=\mathsf{dec}.
+ \end{cases}
+\]
+
+\emph{Sequential specification.}
+\[
+ \mathsf{ClientLegal}(\pi)\Longleftrightarrow
+ \forall\pi_0,\pi_1,r.\;\pi=\pi_0{+\!+}\pi_1\Longrightarrow
+ \#\mathsf{dec}_r(\pi_0)\le\#\mathsf{inc}_r(\pi_0).
+\]
+The sequential state is $\Sigma_{\rm seq}=\N\to\mathbb Z$ with $q_0(r)=0$.
+Writing $q[r\mapsto z]$ for replacement of the coordinate at $r$,
+\[
+\begin{aligned}
+ \mathsf{step}(q,(t,r,\mathsf{inc}))&=q[r\mapsto q(r)+1],\\
+ \mathsf{step}(q,(t,r,\mathsf{dec}))&=q[r\mapsto q(r)-1],\\
+ \mathsf{query}_{\rm seq}(q,r)&=q(r),\\
+ \mathsf{Legal}(\pi)&\Longleftrightarrow\mathsf{ClientLegal}(\pi),\\
+ \mathsf{Rel}((s_1,s_2),q)&\Longleftrightarrow
+ \forall r.\;0\le s_2(r)\le s_1(r)\land q(r)=s_1(r)-s_2(r).
+\end{aligned}
+\]
+The step is total: decrement at zero produces $-1$, but such a prefix is illegal.
+Legality checks every prefix, not an increment-before-decrement normal form.
+Its value at $r$ is increments
+minus decrements at $r$. The relation requires the representation invariant
+$0\le s_2(r)\le s_1(r)$ and equality with those differences. Join is
+all-context by the universal-law route; issuance establishes sequential
+legality and the separate safety certificate.
+\anchor{Sal/MRDTs/Instances/BoundedCounter.lean}
+  {BoundedCounter.bcApplicable, BoundedCounter.ClientLegal,
+   BoundedCounter.clientSpec, BoundedCounter.verified}
+
+\emph{Datatype-state collection.} The exact-state baseline preserves both per-replica count functions. No representation-changing collector or replica-retirement protocol is provided.
+
+\paragraph{Efficient observed-remove set.}
+\emph{Datatype $D$.} The operations are $\mathsf{add}(x)$ and
+$\mathsf{remove}(x)$ for $x\in\alpha$. An event is $(t,r,o)$.
+Following Neem's efficient implementation, certified executions retain at
+most one record per replica and element. The raw state type is
+\[
+ \State=\mathsf{Finset}(\Replica\times\Time\times\alpha),\qquad
+ s_0=\varnothing.
+\]
+\[
+\begin{aligned}
+ \doop(s,(t,r,\mathsf{add}(x)))
+   &=\{(r,t,x)\}\cup\{(r',u,y)\in s\mid r'\ne r\lor y\ne x\},\\
+ \doop(s,(t,r,\mathsf{remove}(x)))
+   &=\{(r',u,y)\in s\mid y\ne x\},\\
+ \merge(l,a,b)&=(l\cap a\cap b)\cup(a\setminus l)\cup(b\setminus l).
+\end{aligned}
+\]
+The query type is $Q=\alpha$ and the Boolean query at $x$ tests whether
+$\exists r,t.\;(r,t,x)\in s$. There are no removed-tag tombstones.
+
+\emph{Resolve-conflict relation $rc$.}
+\[
+ (t,r,\mathsf{remove}(x))\rc(u,r',\mathsf{add}(y))
+ \Longleftrightarrow x=y,
+\]
+and $rc$ is false for all other operation pairs. This gives add-wins for
+concurrent add/remove pairs on the same element.
+
+\emph{Issuance.} $\mathsf{CanIssue}(e,s)=\mathsf{True}$.
+Fresh timestamps and sequential use of each replica are imposed by the
+execution semantics; no observed-tag payload is required.
+
+\emph{Sequential specification.} The state is the ordinary finite set $q$,
+with $q_0=\varnothing$ and $\Sigma_{\rm seq}=\mathsf{Finset}(\alpha)$:
+\[
+\begin{aligned}
+ \mathsf{step}(q,(t,r,\mathsf{add}(x)))&=q\cup\{x\},\\
+ \mathsf{step}(q,(t,r,\mathsf{remove}(x)))&=q\setminus\{x\},\\
+ \mathsf{Legal}(\ell)&\Longleftrightarrow\mathsf{True},\qquad
+ \mathsf{query}_{\rm seq}(q,x)=(x\in q).
+\end{aligned}
+\]
+Both repeated addition and removal are idempotent. The representation relation is
+\[
+ \mathsf{Rel}(s,q)\Longleftrightarrow
+ q=\{x\mid\exists r,t.\;(r,t,x)\in s\}.
+\]
+The public certificate covers ordinary and virtual-merge executions.
+Its execution invariant characterizes a stored record by its birth and the
+absence of a causally later removal or same-replica replacement. Three-way
+merge preserves this invariant; a sorted witness then reproduces the exact
+state while respecting $\mathsf{loOn}$. Same-replica additions need not
+commute as record updates, so the proof does not use the all-state replay-law
+route or add edges to the public $rc$.
+\anchor{Sal/MRDTs/Instances/EfficientORSet.lean}
+  {EfficientORSet.update, EfficientORSet.merge, EfficientORSet.rc,
+   EfficientORSet.issuance, EfficientORSet.spec, EfficientORSet.stateRel}
+\anchor{Sal/MRDTs/Instances/EfficientORSetCertified.lean}
+  {EfficientORSet.represented\_of\_mintCertifiedV, EfficientORSet.verified}
+
+\emph{Datatype-state collection.} The efficient OR-set stores only live records, with at most one
+timestamp per replica/element pair; its registry entry is an exact-state
+baseline, not a separate collector certificate.
+
+
+\paragraph{RGA.}
+
+\emph{Datatype $D$.} The operations are $\mathsf{addAfter}(a)$ and $\mathsf{remove}(i)$, where
+$a,i\in\N$ are the anchor and element identifiers; anchor zero denotes root.
+An insertion event is $(i,r,\mathsf{addAfter}(a))$: its timestamp is its new
+identifier $i$, not a separate payload field.
+The state is a pair $s=(s_1,s_2)$, where
+$s_1:\N\times\N\to\mathsf{Bool}$ records insertions:
+$s_1(i,a)=\mathsf{true}$ means identifier $i$ was inserted after anchor $a$.
+The second component $s_2:\N\to\mathsf{Bool}$ records deletions:
+$s_2(i)=\mathsf{true}$ means identifier $i$ has been removed.
+Both functions are initially everywhere false. Formally,
+\[
+\begin{aligned}
+ \doop(s,(i,r,\mathsf{addAfter}(a)))
+   &=(\lambda(j,b).\;s_1(j,b)\lor(j=i\land b=a),\ s_2),\\
+ \doop(s,(t,r,\mathsf{remove}(i)))
+   &=(s_1,\ \lambda j.\;s_2(j)\lor j=i),\\
+ \merge(l,a,b)_k(x)&=l_k(x)\lor a_k(x)\lor b_k(x),\qquad k=1,2.
+\end{aligned}
+\]
+The argument $x$ is an identifier--anchor pair for $k=1$ and an identifier
+for $k=2$. On finite supports, the concrete query sorts births by
+timestamp, folds root-prepend and after-anchor splices from the empty list, and then filters out
+graves; infinite Boolean supports are interpreted as empty supports by the
+total implementation.
+
+\emph{Resolve-conflict relation $rc$.} Write $\mathsf{ins}(i,a)$ for an insertion with
+identifier $i$ and anchor $a$, and $\mathsf{del}(x)$ for a
+deletion. The directed relation is
+\[
+\begin{aligned}
+ \mathsf{ins}(i,a)\rc\mathsf{ins}(j,b)
+ &\Longleftrightarrow
+   (a=b\lor i=b)\land i<j,\\
+ \mathsf{ins}(i,a)\rc\mathsf{del}(x)
+ &\Longleftrightarrow x=i\lor(a\ne0\land x=a).
+\end{aligned}
+\]
+Here $a=b$ identifies siblings, and $i=b$ means the second insertion uses the
+first as its anchor. It is false on the remaining directed forms. Thus $rc$ orders sibling and
+dependent insertions by timestamp and puts a child insertion before a
+conflicting deletion of its identifier or non-root anchor.
+
+\emph{Issuance.} For the local state $s=(s_1,s_2)$, with insertion facts
+$s_1$ and deletion flags $s_2$ as above,
+\[
+\begin{aligned}
+ &\mathsf{applicable}((i,r,\mathsf{addAfter}(a)),s)\\
+ &\quad\Longleftrightarrow
+ \bigl(a=0\lor(s_2(a)=\mathsf{false}\land a<i\land
+   \exists p.\;s_1(a,p)=\mathsf{true})\bigr)\\
+ &\hspace{3em}\land(\forall a'.\;s_1(i,a')=\mathsf{false})
+ \land s_2(i)=\mathsf{false},\\
+ &\mathsf{applicable}((t,r,\mathsf{remove}(i)),s)
+ \Longleftrightarrow
+ (\exists a.\;s_1(i,a)=\mathsf{true})
+ \land s_2(i)=\mathsf{false}.
+\end{aligned}
+\]
+
+\emph{Sequential specification.} The abstract state is a list $q\in\mathsf{List}(\N)$
+of visible identifiers, initially $q_0=[]$. Its step is
+\[
+\begin{aligned}
+ \mathsf{step}(q,(i,r,\mathsf{addAfter}(a)))
+ &=\begin{cases}
+ i::q, & a=0,\\
+ u\mathbin{+\!+}[a,i]\mathbin{+\!+}v,
+   & a\ne0,\ q=u\mathbin{+\!+}[a]\mathbin{+\!+}v,\ a\notin u,\\
+ q, & a\ne0,\ a\notin q,
+ \end{cases}\\
+ \mathsf{step}(q,(t,r,\mathsf{remove}(i)))
+ &=\mathsf{filter}(\lambda x.\;x\ne i,q).
+\end{aligned}
+\]
+Here $+\!+$ concatenates lists; the middle case inserts after the first
+occurrence of the anchor. Filtering preserves the order of all other
+identifiers. Deletion leaves no tombstone in the abstract state and is a
+no-op when $i$ is absent, so repeated deletion is idempotent.
+The query and representation relation are
+\[
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=q,
+ \qquad
+ \mathsf{Rel}(s,q)\Longleftrightarrow\mathsf{read}(s)=q.
+\]
+$\mathsf{Legal}(\ell)$ holds exactly when its timestamps are unique and, for
+every decomposition $\ell=u\mathbin{+\!+}[e]\mathbin{+\!+}v$,
+\[
+\begin{cases}
+ a=0\ \lor\ \exists r',p.\;(a,r',\mathsf{addAfter}(p))\in u,
+   & e=(i,r,\mathsf{addAfter}(a)),\\
+ \exists r',a.\;(i,r',\mathsf{addAfter}(a))\in u,
+   & e=(t,r,\mathsf{remove}(i)).
+\end{cases}
+\]
+Thus legality requires an earlier insertion of each non-root anchor or
+deletion target, not its continued presence in the abstract list. Repeated
+deletions remain legal; local issuance still requires the target to be live.
+The implementation retains birth and grave facts internally, including for
+integration of operations minted concurrently with deletion. Issuance rejects a new insertion after an
+observed anchor deletion.
+RGA proves
+all-context Join
+through the universal laws; issuance establishes well-formedness of the
+ordinary-list witness.
+\anchor{Sal/MRDTs/Instances/RGA.lean}
+  {RGA.applicable, RGA.generation, RGA.join}
+\anchor{Sal/MRDTs/Instances/RGASequential.lean}
+  {RGA.listStep, RGA.listLegal, RGA.listSpec, RGA.rc, RGA.listRel,
+   RGA.rc\_insert\_iff\_original\_of\_execution,
+   RGA.canonical\_respects\_rc, RGA.verified}
+
+\emph{Datatype-state collection.} RGA has a checked representation compactor, but not deleted-identifier
+reclamation. Its finite state consists of birth pairs $(i,p)$ and a graveyard
+$G$. Honest issuance establishes that every grave has a birth. The alternate
+representation stores the same birth pairs and the live identifiers:
+\[
+ C=\{\mathsf{parents}:\mathsf{Finset}(\N\times\N),\quad
+     \mathsf{live}:\mathsf{Finset}(\N)\},
+ \qquad \mathsf{live}=\mathsf{birthIds}\setminus G.
+\]
+Materialization retains the birth pairs and restores
+$G=\mathsf{parentIds}\setminus\mathsf{live}$.  The theorem
+\lean{unpack\_pack} proves that this round trip is exact on well-formed
+states.  The packaged certificate proves preservation by collection, guarded
+update, ternary merge, and the ordered list query.  With the explicit cost
+model of two words per birth plus one per grave or live identifier, this
+conversion is smaller when the live set is smaller than the graveyard.
+It is not an unconditional size reduction.
+
+This result deliberately retains one parent fact for every deleted
+identifier. Issuance rejects insertion after an observed deleted anchor.
+The checked controls establish rejection both before and after erasing that
+anchor; they do not establish an impossibility of reclamation. A collector
+that removes birth pairs would need a separate continuation proof covering
+operations issued concurrently with deletion.
+\anchor{Sal/MRDTs/Instances/RGAGC.lean}
+  {RGA.GC.pack, RGA.GC.unpack, RGA.GC.packedWords\_pack\_lt\_of\_live\_lt\_grave,
+   RGA.GC.certificate, RGA.GC.future\_after\_dead\_anchor\_not\_applicable,
+   RGA.GC.erase\_dead\_anchor\_rejects\_future\_issuance}
+
+\paragraph{TreeMove.}
+
+\emph{Datatype $D$.} The operation is a move record
+$(\mathit{parent},\mathit{metadata},\mathit{child})\in\N^3$.
+An event pairs this payload with its timestamp $t$ and issuing replica $r$.
+The state is a finite set of timestamped moves. Rendering sorts the set and
+applies each move to an ordinary tree. Initially the event set is empty;
+update inserts the event and merge unions the two branches. The sorting key is the lexicographic tuple
+$(t,r,\mathit{parent},\mathit{metadata},\mathit{child})$.
+A tree is a partial map from child to parent--metadata pairs, initially
+everywhere none. A step replaces the named child's binding if the resulting
+child-to-parent graph is acyclic, and otherwise leaves the tree unchanged.
+Root is zero and trash is one. The query hides trash and every node with a
+nonempty parent path to trash, returning the remaining partial map.
+Rendering folds these guarded steps in key order.
+
+\emph{Resolve-conflict relation $rc$.} The resolver is all-$\mathsf{Either}$, hence
+$\forall a,b.\;\neg(a\rc b)$.
+
+\emph{Issuance.}
+\[
+\begin{aligned}
+ \mathsf{applicable}(e,s)\Longleftrightarrow{}&
+ \mathsf{freshKey}_s(e)\land\mathsf{visibleNode}_s(e.\mathsf{parent})\\
+ &\land(\neg\mathsf{knownNode}_s(e.\mathsf{child})
+       \lor\mathsf{visibleNode}_s(e.\mathsf{child}))\\
+ &\land e.\mathsf{child}\ne\mathsf{root}
+ \land e.\mathsf{child}\ne\mathsf{trash}.
+\end{aligned}
+\]
+Here freshness excludes a stored event with the same timestamp--replica pair.
+A node is known if it is root, trash, or a stored move's child; it is visible
+if it is known and neither trash nor below trash in the rendered tree.
+
+\emph{Sequential specification.} The state is
+$q:\N\to\mathsf{Option}(\N\times\N)$, with $q_0(x)=\mathsf{none}$.
+Write $x\to_q y$ when $q(x)=\mathsf{some}(y,m)$ for some metadata $m$.
+For a move event $e=(t,r,(p,m,c))$, put
+$q'=q[c\mapsto\mathsf{some}(p,m)]$. Then
+\[
+\begin{aligned}
+ \mathsf{step}(q,e)&=\begin{cases}
+ q',&\mathsf{Acyclic}(\to_{q'}),\\ q,&\text{otherwise},
+ \end{cases}\\
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})(x)&=
+ \begin{cases}
+ \mathsf{none},&x=1\lor x\to_q^+1,\\ q(x),&\text{otherwise},
+ \end{cases}\\
+ \mathsf{Legal}(\pi)&\Longleftrightarrow
+ \mathsf{Nodup}(\pi)\land\mathsf{Pairwise}(\mathsf{eventLE},\pi)\\
+ &\quad\land\forall u,e,v.\;\pi=u{+\!+}[e]{+\!+}v\Longrightarrow\\
+ &\qquad\exists E_0\subseteq\mathsf{toFinset}(u).\;
+       \mathsf{applicable}(e,E_0),\\
+ \mathsf{Rel}(E,q)&\Longleftrightarrow
+ q=\mathsf{run}(\mathsf{sort}_{\mathsf{eventLE}}(E)).
+\end{aligned}
+\]
+Here $\mathsf{eventLE}(a,b)$ compares the full keys displayed above, and
+$\to_q^+$ is a nonempty parent path. A move can allocate an absent child;
+there is no separate delete operation. Moving a subtree to trash hides it
+without erasing its bindings. A cyclic move is a no-op, not an illegal
+history step. Each move must also have an issuable origin within the replay
+prefix: this retains destination visibility and reserved-node restrictions
+in the public contract. The origin need not be the entire prefix, which may
+include unrelated concurrent moves. Certified execution supplies the actual
+causal origin; sorting places all its events before the move.
+Join is all-context by the universal-law
+route; the package also contains a separate tree-safety certificate. \anchor{Sal/MRDTs/Instances/TreeMove.lean}
+  {TreeMove.applicable, TreeMove.ClientLegal, TreeMove.clientLegal\_origin,
+   TreeMove.sequentialSpec,
+   TreeMove.verified}
+
+\emph{Datatype-state collection.} TreeMove has an operational collector with
+\[
+ C=\{\mathsf{base}:\mathsf{Tree},\;
+      \mathsf{pending}:\mathsf{List}(\mathsf{Event})\},\qquad
+ \mathsf{materialize}(c)=
+   \mathsf{replayFrom}(c.\mathsf{base},c.\mathsf{pending}).
+\]
+A \lean{StableCut} splits canonical replay into a stable prefix and pending
+suffix: $\mathsf{orderedEvents}(E)=u{+\!+}v$. Collection returns
+$(\mathsf{replayFrom}(\mathsf{emptyTree},u),v)$ and preserves the exact
+materialized tree. The trash collector returns
+$(\mathsf{visibleTree}(c.\mathsf{base}),c.\mathsf{pending})$; its query
+preservation theorem requires $c.\mathsf{pending}=[]$. The
+representation relation equates the compact visible tree with the query of
+the full event set, and the packaged protocol proves silent collection plus
+visible ordinary and widened execution.
+\anchor{Sal/MRDTs/Instances/TreeMoveGC.lean}
+  {TreeMove.GC.StableCut, TreeMove.GC.Compact,
+   TreeMove.GC.collectPrefix, TreeMove.GC.collectTrash,
+   TreeMove.GC.collectTrash\_query\_of\_empty\_suffix,
+   TreeMove.GC.protocol}
+
+\paragraph{AegisSheet.}
+
+\emph{Datatype $D$.} An operation carries an observed timestamp set and a command, either
+$\mathsf{direct}(a)$ or $\mathsf{undo}(u,a)$, where $u$ names the event to undo
+and $a$ is the carried action. Actions are axis updates (axis, identifier,
+insert/move/remove/restore kind, optional before/after position), cell updates
+(row, column, before/after value sets, overwritten timestamps), range updates
+(identifier, optional before/after four-anchor range, overwritten timestamps),
+or purges (cutoff, coordinates, covered timestamp--coordinate pairs,
+acknowledging replicas).
+An event adds its timestamp and issuing replica to this payload.
+The MRDT stores a finite set of these events and merges by union.
+It starts empty and update inserts the event.
+The query is the sheet view defined with the sequential specification below.
+
+\emph{Resolve-conflict relation $rc$.} Its resolver is all-$\mathsf{Either}$, hence
+$\forall a,b.\;\neg(a\rc b)$.
+
+\emph{Issuance.}
+\[
+ \mathsf{applicable}(e,E)\Longleftrightarrow
+ \mathsf{applicableB}(e,E)=\mathsf{true}
+ \land\forall t\in\mathsf{eventTimes}(E).\;t<e.\mathsf{time}.
+\]
+The Boolean part checks exact causal-origin metadata, action
+metadata, direct-action preconditions, and undo provenance. The guard requires
+no separate freshness test: the strict clock condition implies that the new
+timestamp is absent from the origin's timestamp set. The guard requires
+the carried observed set to equal all origin timestamps, including timestamps
+recorded in purge coverage. Overwrite targets must be earlier events at the
+same cell or range. Axis insertion names a new identifier; move and removal
+match the current position, with respectively a present or absent after-position.
+Direct restore is disallowed. Cell updates require live row and column
+identifiers, the exact current value set, and exact active-version timestamps;
+range updates require the analogous exact range values and active timestamps.
+A purge requires issuer zero, acknowledgements from replicas zero, one, and
+two, covered writes at or below the cutoff at named coordinates, and a nonlive
+axis at every purged coordinate. Undo names an observed event by the same
+issuer, excludes purge, and carries exactly its inverse: swap before/after,
+use restore for an axis, and name the original timestamp as the overwritten
+version for a cell or range.
+
+\emph{Sequential specification.} Write the state as
+$q=(K_R,K_C,T_R,T_C,P_R,P_C,V,H,M)$, with components
+\[
+\begin{aligned}
+ K_X&\in\mathsf{Finset}(\N),\qquad
+ T_X:\N\to\mathsf{Finset}(\Time),\\
+ P_X&:\N\to\mathsf{Finset}(\Time\times\mathsf{Position}),\\
+ V&:\N^2\to\mathsf{Finset}(\Time\times\N),\\
+ H&:\N\to\mathsf{Finset}(\Time\times\mathsf{RangeSpec}),\qquad
+ M\in\mathsf{Finset}(\mathsf{Purge}).
+\end{aligned}
+\]
+Here $X\in\{R,C\}$ selects rows or columns: $K_X$ contains known identifiers,
+$T_X$ their keep tokens, and $P_X$ their position versions. $V$ holds cell
+versions, $H$ range versions, and $M$ purge markers. A position is a natural
+number; a range specification has four stable row/column anchors.
+Every set and every function value in $q_0$ is empty.
+
+For $e$ with timestamp $t$ and observed set $S$, the following assignments
+define $\mathsf{step}(q,e)$; unmentioned components are unchanged. They
+interpret the carried action for both direct and undo commands.
+\begin{itemize}
+\item Axis $X$, identifier $i$, after-position $b$:
+\[
+ K_X'=K_X\cup\{i\},\qquad
+ (T_X'(i),P_X'(i))=
+ \begin{cases}
+ (T_X(i)\cup\{t\},P_X(i)\cup\{(t,p)\}),&b=\mathsf{some}(p),\\
+ (T_X(i)\setminus S,P_X(i)),&b=\mathsf{none}.
+ \end{cases}
+\]
+\item Cell $(i,j)$, overwritten timestamps $O$, after-values $A$:
+\[
+\begin{gathered}
+ V'(i,j)=\{(u,v)\in V(i,j)\mid u\notin O\}\cup(\{t\}\times A),\\
+ K_R'=K_R\cup\{i\},\quad K_C'=K_C\cup\{j\},\quad
+ T_R'(i)=T_R(i)\cup\{t\},\quad T_C'(j)=T_C(j)\cup\{t\}.
+\end{gathered}
+\]
+\item Range $i$, overwritten timestamps $O$, optional after-specification $b$:
+\[
+ H'(i)=\{(u,h)\in H(i)\mid u\notin O\}\cup
+ \begin{cases}\{(t,h)\},&b=\mathsf{some}(h),\\
+ \varnothing,&b=\mathsf{none}.
+ \end{cases}
+\]
+\item Purge marker $m$:
+\[
+ M'=M\cup\{m\},\qquad
+ V'(i,j)=\{(u,v)\in V(i,j)\mid(u,(i,j))\notin m.\mathsf{covered}\}
+ \quad\text{for every }i,j.
+\]
+\end{itemize}
+Absent overwrite targets are harmless. Axis removal removes observed keep
+tokens, not positions or cell versions. Empty cell after-values still add
+axis keep tokens; range removal adds no new version. Undo uses these same
+steps on its carried inverse action, rather than rolling back the whole state.
+
+Define $\mathsf{versionPurged}(q,u,i,j)$ to mean
+$\exists m\in M.\;(i,j)\in m.\mathsf{coordinates}\land u\le m.\mathsf{cutoff}$.
+The query $\mathsf{query}_{\rm seq}(q,\mathsf{rd})$ is the view with
+\[
+\begin{aligned}
+ \mathsf{axes}_X(q)&=\{i\in K_X\mid T_X(i)\ne\varnothing\},\\
+ \mathsf{position}_X(q,i)&=\{p\mid\exists u.\;(u,p)\in P_X(i)\land
+       \forall(v,p')\in P_X(i).\;v\le u\},\\
+ \mathsf{cell}(q,i,j)&=\begin{cases}
+ \{v\mid\exists u.\;(u,v)\in V(i,j)\land\neg\mathsf{versionPurged}(q,u,i,j)\},
+   &T_R(i)\ne\varnothing\land T_C(j)\ne\varnothing,\\
+ \varnothing,&\text{otherwise},
+ \end{cases}\\
+ \mathsf{range}(q,i)&=\{h\mid\exists u.\;(u,h)\in H(i)\}.
+\end{aligned}
+\]
+An empty position set yields no position; tied maximal timestamps yield all
+positions at that timestamp. The cutoff mask is part of this contract, not
+merely a storage optimization.
+The public legality predicate is
+\[
+\begin{aligned}
+ \mathsf{CausalOriginLegal}(\pi)\Longleftrightarrow{}&
+ \mathsf{Chronological}(\pi)\land\\
+ &\forall\pi_0,e,\pi_1.\;\pi=\pi_0{+\!+}e::\pi_1\to
+ \exists E_0\subseteq\mathsf{toFinset}(\pi_0).\;
+ \mathsf{applicable}(e,E_0).
+\end{aligned}
+\]
+Here chronological means strictly increasing event timestamps. Event-set
+materialization collects the axis facts and timestamped values, subtracts
+observed axis-removal tokens and overwritten or covered versions, and retains
+purges. It is defined without choosing an enumeration.
+Writing $\mathsf{materialize}(E)$ for that event-set construction, the
+remaining components are
+\[
+\begin{aligned}
+ \mathsf{Legal}(\ell)&\Longleftrightarrow\mathsf{CausalOriginLegal}(\ell),\\
+ \mathsf{Rel}(E,q)&\Longleftrightarrow
+   (\forall\ell.\;\mathsf{Chronological}(\ell)\land\mathsf{toFinset}(\ell)=E
+       \Longrightarrow\mathsf{run}(\ell)=q)\\
+ &\quad\land q=\mathsf{materialize}(E)
+       \land\mathsf{query}_{\rm seq}(q,\mathsf{rd})=\mathsf{query}(E,\mathsf{rd}).
+\end{aligned}
+\]
+Join is all-context by universal
+laws; issuance establishes causal-origin legality and the safety invariants.
+\anchor{Sal/MRDTs/Instances/AegisSheet.lean}
+  {AegisSheet.applicable, AegisSheet.ClockedAt.fresh,
+   AegisSheet.applicable\_iff\_explicit\_freshness,
+   AegisSheet.generation, AegisSheet.join}
+\anchor{Sal/MRDTs/Instances/AegisSheetSequential.lean}
+  {AegisSheet.Sequential.CausalOriginLegal,
+   AegisSheet.Sequential.step, AegisSheet.Sequential.view,
+   AegisSheet.Sequential.materializedStateRel,
+   AegisSheet.Sequential.clientSpec, AegisSheet.verified}
+
+\emph{Datatype-state collection.} The current AegisSheet MRDT stores an event set and merges it by union.  Its
+collector retains replicated purge markers but removes exactly the covered
+cell payloads:
+\[
+ \mathsf{semanticCollect}(E)
+ =\{e\in E\mid e\text{ is not a cell update covered by a retained marker}\}.
+\]
+The compact state is another finite event set, and
+\[
+ c\mathrel{\mathsf{Rep}}E\Longleftrightarrow
+ c=\mathsf{semanticCollect}(E)\land
+ \mathsf{StateValid}(E)\land\mathsf{TimestampUnique}(E).
+\]
+The certificate normalizes after collection, update, and union merge and
+proves equality of the whole sheet view.  This is genuine payload
+reclamation, but it is still a collector for the event-set encoding; it is
+not yet the proposed materialized three-way AegisSheet representation.
+\anchor{Sal/MRDTs/Instances/AegisSheetGC.lean}
+  {AegisSheet.GC.semanticCollect, AegisSheet.GC.Represents,
+   AegisSheet.GC.certificate}
+
+\paragraph{EmbedRGA and Peritext.}
+
+\emph{Datatype $D$.} EmbedRGA has operations $\mathsf{ins}(x,p,a)$ and $\mathsf{del}(i)$, where
+$x\in\alpha$ is the inserted payload, $p$ a list of Boolean coordinate bits,
+and $a,i\in\N$ the anchor and deletion target. An insertion's identifier is
+its event timestamp. Fix an ordered prefix code $\Gamma$
+for positive natural numbers. Concrete state is a list of
+$(\mathit{id},\mathit{payload},\mathit{coordinate})$ records, initially empty.
+Insertion at timestamp $t$ constructs coordinate
+$p{+\!+}\Gamma.\mathsf{enc}(t-a)$ and inserts the record in descending
+lexicographic key order, unless its identifier is already present. The key
+maps coordinate bits false/true to 1/2 and appends the terminator 3.
+Deletion filters the named identifier; the query projects payloads.
+For ancestor $L$ and branches $A,B$, merge keeps from $A$ records whose
+identifiers are in $B$ or absent from $L$, and from $B$ records whose identifiers
+are absent from both $L$ and $A$. It merges these two filtered lists in key
+order (choosing the second list at a key tie).
+
+\emph{Resolve-conflict relation $rc$.}
+\[
+ \mathsf{ins}^{t}_{x,p,a}\rc\mathsf{del}_i
+ \Longleftrightarrow t=i,
+\]
+and is false on all other directed forms. In particular, immutable
+coordinates make insertion/insertion pairs commute without an $rc$ edge.
+
+\emph{Issuance.}
+\[
+ \mathsf{eApplicable}(e,s)\Longleftrightarrow
+ \begin{cases}
+ a<e.\mathsf{time}\land((a=0\land p=[])
+   \lor\exists x.\;(a,x,p)\in s),&e.\mathsf{op}=\mathsf{ins}(x,p,a),\\
+ i\in\mathsf{ids}(s),&e.\mathsf{op}=\mathsf{del}(i).
+ \end{cases}
+\]
+$\mathsf{EHonestCore}(R)$ requires each deletion target to have a visible
+insertion. It also requires one assignment $i\mapsto c_i$ of finite lists of
+positive natural numbers such that each insertion of identifier $i$ has
+coordinate $\mathsf{coordOf}(c_i)$ and $\sum c_i=i$. Here
+$\mathsf{coordOf}$ concatenates the prefix codes of the list entries.
+The direct theorem is
+$\mathsf{JoinOn}(E,\mathsf{EHonestCore})$, and mint honesty for
+\lean{eApplicable} establishes that condition.
+
+\emph{Sequential specification.} The state is
+$\Sigma_{\rm seq}=\mathsf{List}(\N\times\alpha)$, with $q_0=[]$.
+The abstract insertion ignores the carried coordinate $p$:
+\[
+\begin{aligned}
+ \mathsf{step}(q,(t,r,\mathsf{ins}(x,p,a)))
+ &=\begin{cases}
+ (t,x)::q,&a=0,\\
+ u{+\!+}[(a,y),(t,x)]{+\!+}v,
+   &a\ne0,\ q=u{+\!+}[(a,y)]{+\!+}v,\\
+ q,&a\ne0,\ a\notin\mathsf{ids}(q),
+ \end{cases}\\
+ \mathsf{step}(q,(t,r,\mathsf{del}(i)))
+ &=\mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne i,q),\\
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})&=\mathsf{map}(\mathsf{payload},q),\\
+ \mathsf{Rel}(s,q)&\Longleftrightarrow
+ \mathsf{map}(\mathsf{identifierPayload},s)=q.
+\end{aligned}
+\]
+The split uses the first occurrence of $a$; an absent anchor makes insertion
+a no-op, and an absent target makes deletion a no-op. For each prefix $u$,
+let $B(u)$ be its insertion events and $c(b)$ the coordinate computed from
+insertion $b$ by the concrete coordinate formula above. Then
+$\mathsf{Legal}(\ell)$ holds exactly when every prefix decomposition satisfies
+\[
+\begin{cases}
+ (\forall b\in B(u).\;\mathsf{time}(b)<t)\ \land\\
+ \quad\bigl((a=0\land p=[])\lor
+    \exists b\in B(u).\;\mathsf{time}(b)=a\land c(b)=p\bigr),
+   & e=(t,r,\mathsf{ins}(x,p,a)),\\
+ \exists b\in B(u).\;\mathsf{time}(b)=i,
+   & e=(t,r,\mathsf{del}(i)).
+\end{cases}
+\]
+This is earlier allocation, not continued liveness: repeated deletion remains
+legal. Immutable coordinates remain implementation and event metadata. Peritext
+instantiates the payload with characters and mark boundaries and inherits this
+certificate; its additional rendering theorem maps the certified buffer to
+marked text.
+The Peritext payload is either a character codepoint or
+$\mathsf{bound}(i,m,b)$, where $b$ selects start/end and $m$ is bold, italic,
+underline, strike, link(URL), comment(author,text), color(RGB), or heading(level).
+Its public query is the payload list, including boundaries. Rendering is a
+separate fold with an initially empty list of open $(i,m)$ marks: a start
+prepends its mark, an end removes all marks with that identifier, and a
+character emits its codepoint together with the current open marks.
+\anchor{Sal/MRDTs/Instances/EmbedRGA.lean}
+  {EmbedRGA.EHonestCore, EmbedRGA.eApplicable, EmbedRGA.e\_join\_at}
+\anchor{Sal/MRDTs/Instances/ProductionRGA.lean}
+  {ProductionRGA.embedLegal, ProductionRGA.embedClientSpec, ProductionRGA.embedRel,
+   ProductionRGA.embed}
+\anchor{Sal/MRDTs/Instances/Peritext.lean}{Peritext.verified}
+\anchor{Sal/MRDTs/Instances/EmbedRGASequential.lean}{EmbedRGA.eSpecStep}
+\anchor{Sal/MRDTs/Instances/Peritext.lean}{Peritext.render}
+
+\emph{Datatype-state collection.} EmbedRGA, its Peritext specialization, and their current live-sequence
+representations use exact-state certificates.  Deletion is represented by removal
+from the live sequence rather than a separate graveyard, but surviving
+coordinates and anchors may still constrain later insertions.  A smaller
+physical encoding therefore needs a continuation theorem for coordinate and
+anchor summaries, not merely equality of the current rendered list.
+
+\paragraph{SidedEmbedRGA and SidedPeritext.}
+
+\emph{Datatype $D$.} SidedEmbedRGA adds a left/right choice $d$ to insertion, with natural-number
+payloads: its operations are $\mathsf{ins}(x,p,a,d)$ and $\mathsf{del}(i)$,
+where $x,a,i\in\N$, $p$ is a natural-number coordinate list, and
+$d\in\{\mathsf{L},\mathsf{R}\}$. Concrete state, deletion, merge, and payload query follow the
+preceding profile, but coordinates are natural-number lists with key
+$c{+\!+}[3]$. An insertion's coordinate is $p$ followed by the code of $t-a$:
+for right insertion map false/true to 1/2; for left insertion complement the
+bits and map false/true to 4/5.
+
+\emph{Resolve-conflict relation $rc$.}
+\[
+ \mathsf{ins}^{t}_{x,p,a,d}\rc\mathsf{del}_i
+ \Longleftrightarrow t=i,
+\]
+with no other directed edges; the side $d$ is already part of the immutable
+coordinate.
+
+\emph{Issuance.} The issuer requires precisely the same
+$a<t$ and root-empty-prefix or live-anchor-coordinate condition as EmbedRGA;
+deletion requires a live identifier. The side does not strengthen this guard.
+
+\emph{Sequential specification.} The state is
+$\Sigma_{\rm seq}=\mathsf{List}(\N\times\N)$, with $q_0=[(0,0)]$.
+For the first occurrence $q=u{+\!+}[(a,y)]{+\!+}v$ of the parent,
+\[
+\begin{aligned}
+ \mathsf{step}(q,(t,r,\mathsf{ins}(x,p,a,\mathsf{L})))
+   &=u{+\!+}[(t,x),(a,y)]{+\!+}v,\\
+ \mathsf{step}(q,(t,r,\mathsf{ins}(x,p,a,\mathsf{R})))
+   &=u{+\!+}[(a,y),(t,x)]{+\!+}v,\\
+ \mathsf{step}(q,(t,r,\mathsf{del}(i)))
+   &=\mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne i,q).
+\end{aligned}
+\]
+Both insertion cases return $q$ when the parent is absent, including root
+if it is absent. Deletion of an absent target is a no-op. The query is
+\[
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=
+ \mathsf{map}(\mathsf{payload},
+   \mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne0,q)).
+\]
+Its relation is
+\[
+ \mathsf{Rel}(s,q)\Longleftrightarrow
+ \mathsf{map}(\mathsf{identifierPayload},s)
+   =\mathsf{filter}(\lambda p.\;p.\mathsf{id}\ne0,q).
+\]
+$\mathsf{Legal}$ is the prefix formula in the preceding profile, with
+$\mathsf{ins}(x,p,a,d)$ in place of $\mathsf{ins}(x,p,a)$ and $c(b)$
+computed using the sided coordinate formula. Thus side changes the splice
+and coordinate, not the allocation requirement.
+For the merge proof, $\mathsf{SHonestCore}(R)$ requires each deletion to have
+a visible insertion of its target and one assignment of finite sided chains
+$c_i=[(d_1,\delta_1),\ldots,(d_n,\delta_n)]$ to insertion identifiers.
+Each $\delta_k$ is positive, $\sum_k\delta_k=i$, and the insertion coordinate
+is the concatenation of their side-specific codes defined above.
+Its merge theorem is
+$\mathsf{JoinOn}(S,\mathsf{SHonestCore})$.
+\anchor{Sal/MRDTs/Instances/SidedEmbedRGA.lean}
+  {SidedEmbedRGA.SHonestCore, SidedEmbedRGA.sApplicable,
+   SidedEmbedRGA.s\_join\_at}
+\anchor{Sal/MRDTs/Instances/SidedEmbedRGASequential.lean}
+  {SidedEmbedRGA.sSpecStep}
+\anchor{Sal/MRDTs/Instances/ProductionRGA.lean}
+  {ProductionRGA.sidedLegal, ProductionRGA.sidedClientSpec, ProductionRGA.sidedRel}
+
+
+
+\emph{Datatype-state collection.} The sided sequence uses the exact-state baseline on its live coordinate list. No representation-changing collector is provided.
+
+\emph{SidedPeritext variants.}
+
+\emph{Datatype $D$.} SidedPeritext composes the sided sequence with grow-only deletion and mark
+stores. Its operations inject one sided text operation, one deletion-store
+identifier, or one mark record into the respective component; these are
+written $\mathsf{textIns}(x,p,a,d)$, $\mathsf{textDel}(i)$,
+$\mathsf{deleteStoreAdd}(i)$, and $\mathsf{markStoreAdd}(m)$ below.
+Both stores start empty, add their supplied items, and merge by union.
+The sequence component uses the sided datatype above. Core queries select
+text, deletion store, or mark store, so $Q$ is a three-way sum of singleton
+queries. The rich query instead takes a formatting kind (bold, italic,
+underline, strike, link, comment, color, or heading) and returns a list of
+codepoint--Boolean pairs, as defined below.
+
+\emph{Resolve-conflict relation $rc$.} Its $rc$ lifts the SidedEmbedRGA
+relation on two text events and returns $\mathsf{Either}$ for store/store and
+text/store pairs. Formally, if $\iota$ injects a text event into the product,
+\[
+ \iota(e_1)\rc\iota(e_2)\Longleftrightarrow e_1\rc e_2,
+ \qquad
+ \neg(s_1\rc s_2),\quad\neg(\iota(e)\rc s),\quad\neg(s\rc\iota(e))
+\]
+for store events $s,s_1,s_2$. The rich package changes only the query boundary
+to rendered marks, not the sequential machine or $rc$.
+
+\emph{Issuance.} For an event $e$ and state $(s_T,s_D,s_M)$, its cross-component guard
+is
+\[
+\mathsf{coreGuard}(e,s_T,s_D,s_M)\Longleftrightarrow
+\begin{cases}
+ \mathsf{sApplicable}(e,s_T),&e=\mathsf{textIns},\\
+ \mathsf{False},&e=\mathsf{textDel},\\
+ i\in\mathsf{ids}(s_T)\land i\notin s_D,&e=\mathsf{deleteStoreAdd}(i),\\
+ \mathsf{validMark}(e,s_T,s_D,s_M),&e=\mathsf{markStoreAdd}.
+\end{cases}
+\]
+Here a mark contains its identifier, formatting kind, add/remove flag, value,
+two anchor identifiers, and each boundary's before/after gravity.
+$\mathsf{validMark}$ means its identifier equals the event timestamp, both
+anchors occur in $s_T$ and neither is in $s_D$, and no stored mark has that
+identifier. Recorded ancestry fields are not used by the document-order query.
+The merge theorem composes projected $\mathsf{SHonestCore}$ with the two
+all-context grow-only-store theorems.
+
+\emph{Sequential specification.} Write $q=(q_T,q_D,q_M)$ for an ordinary
+identifier--value list, a finite deletion set, and a finite mark set,
+respectively; $q_0=([(0,0)],\varnothing,\varnothing)$.
+Coordinate records remain only in the replicated representation. With
+$\mathsf{step}_S$, $\mathsf{Legal}_S$, $\mathsf{query}_S$, and
+$\mathsf{Rel}_S$ as defined for SidedEmbedRGA,
+\[
+\begin{aligned}
+ \mathsf{step}(q,(t,r,\mathsf{text}(o)))
+   &=(\mathsf{step}_S(q_T,(t,r,o)),q_D,q_M),\\
+ \mathsf{step}(q,(t,r,\mathsf{deleteStoreAdd}(i)))
+   &=(q_T,q_D\cup\{i\},q_M),\\
+ \mathsf{step}(q,(t,r,\mathsf{markStoreAdd}(m)))
+   &=(q_T,q_D,q_M\cup\{m\}),\\
+ \mathsf{Legal}(\ell)&\Longleftrightarrow
+   \mathsf{Legal}_S(\mathsf{projectText}(\ell)),\\
+ \mathsf{Rel}((s_T,s_D,s_M),q)&\Longleftrightarrow
+   \mathsf{Rel}_S(s_T,q_T)\land s_D=q_D\land s_M=q_M.
+\end{aligned}
+\]
+Here $\mathsf{text}(o)$ denotes either text insertion or text deletion;
+$\mathsf{projectText}$ retains those events and unwraps their payloads.
+Store additions are idempotent. A raw text deletion has the sided step
+above, but issuance forbids it. The core query is
+\[
+ \mathsf{query}_{\rm seq}(q,k)=\begin{cases}
+ \mathsf{query}_S(q_T,\mathsf{rd}),&k=\mathsf{text},\\
+ q_D,&k=\mathsf{deletions},\\ q_M,&k=\mathsf{marks},
+ \end{cases}
+\]
+with results injected into the corresponding sum variant.
+In particular, logical deletion does not
+remove a record from this core text query. The rich query filters logically
+deleted characters and resolves formatting in document order; it is not the
+core component query.
+For a requested formatting kind, the rich query returns
+$(\mathit{codepoint},\mathit{formatted})$ for each live character. The flag is
+true exactly when the greatest-identifier covering mark of that kind is an
+add; absent marks and winning remove marks give false. Coverage is a half-open
+interval of live positions. A dead boundary resolves to the nearest surviving
+character on its gravity side: right for before, left for after. An after
+boundary lies after that character and the following run of identifiers newer
+than the mark. A before start lies immediately before its resolved character;
+a before end moves left over the preceding newer-than-mark run. If no
+survivor exists, an after start uses document start and a before end uses
+document end; a before start or after end instead collapses the interval.
+Formally, for the live list $L=\mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne0
+\land z.\mathsf{id}\notin q_D,q_T)$ and requested kind $k$, let $w_j$ be the
+greatest-identifier mark in $q_M$ of kind $k$ covering position $j$ by the
+boundary rules above (none if no such mark exists). Then
+\[
+ \mathsf{query}_{\rm seq}^{\rm rich}(q,k)
+ =[(\mathsf{cp}(L_j.\mathsf{id}),\ \exists m.\;w_j=\mathsf{some}(m)\land
+       m.\mathsf{operation}=\mathsf{add})\mid 0\le j<|L|].
+\]
+Here $\mathsf{cp}(i)$ is the payload at the first occurrence of $i$ in the
+root-free text list; certified lists have unique identifiers.
+The Boolean is false for no winner or a winning remove. Issuance makes mark
+identifiers unique; on arbitrary raw inputs, equal-identifier ties keep the
+first mark in the finite-set enumeration used by the renderer.
+This query exposes a Boolean formatting flag, not the stored mark value.
+\anchor{Sal/MRDTs/Instances/SidedPeritext.lean}
+  {SidedPeritext.coreGuard, SidedPeritext.core\_join\_at,
+   SidedPeritext.coreRc, SidedPeritext.clientSpec,
+   SidedPeritext.verified, SidedPeritext.richRc,
+   SidedPeritext.richVerified}
+\anchor{Sal/MRDTs/Instances/PeritextRender.lean}
+  {PeritextRender.startIncl, PeritextRender.endExcl,
+   PeritextRender.renderMarksDoc}
+
+\emph{Datatype-state collection.} The sided sequence and the ordinary SidedPeritext core likewise use exact
+state.  In particular, the core query exposes its component stores, so a
+collector that deletes entries cannot preserve that query by equality.  A
+representation-changing theorem must either retain those stores, change the
+public query boundary, or relate them through an explicit abstraction.  The
+released rich-query package takes the latter route.
+
+The rich package has an operational collector.  A compact state contains the
+retained sided text, a Fugue gap summary, deletion and mark stores, and a
+stable Lamport cut.  Its representation evidence records a keep predicate,
+knowledge used to reconstruct the full semantic text, gap-map correctness,
+an old-identifier bound, and equality of every rich-text query.  The physical
+system can silently collect text, trim deletion metadata, drop a cancelling
+mark pair, or reframe identifiers; ordinary and virtual-base operations remain
+visible.  \lean{StateGCProtocol.refines} then covers arbitrary finite
+interleavings of those steps.
+Text collection requires a correct gap map, unique birth identifiers,
+deletion of every dropped character, and retention of all mark endpoints;
+the plan bounds dropped identifiers by its stable cut. Trimming deletion
+metadata removes identifiers absent from the retained text. Dropping a mark
+pair requires an earlier add and later remove of the same kind, endpoints,
+and endpoint sides, unique mark identifiers, every other same-kind mark
+later than the remove, and no character birth in the interval between the
+pair's identifiers. These are conditions of the preservation results, not
+unconditional permissions to discard metadata.
+\anchor{Sal/MRDTs/Instances/SidedPeritextStateGC.lean}
+  {SidedPeritext.StateGC.CompactState, SidedPeritext.StateGC.collectText,
+   SidedPeritext.StateGC.trimDeleted, SidedPeritext.StateGC.dropMarkPair}
+\anchor{Sal/MRDTs/Instances/SidedPeritextProtocol.lean}
+  {SidedPeritext.StateGC.Protocol.\allowbreak Represents,
+   SidedPeritext.StateGC.Protocol.\allowbreak protocol}
+
+\paragraph{Queue.}
+
+\emph{Datatype $D$.} The operations are $\mathsf{enq}(v)$ and $\mathsf{deq}(i)$, where $v\in\N$
+is the value to enqueue and $i\in\N$ identifies the element to dequeue.
+Enqueue event $(t,r,\mathsf{enq}(v))$ assigns tag $t$ to its value.
+The representation is a list of tagged values, initially empty. Concrete
+enqueue appends $(t,v)$ unless $t$ is already present; concrete dequeue filters
+the named tag wherever it occurs. Its query returns the tagged head, or none when empty. Writing $\mathsf{tags}(X)$ for
+the identifiers in list $X$, the raw survivor list is
+\[
+ \mathsf{filter}_{i\in\mathsf{tags}(A)\cap\mathsf{tags}(B)}(L)
+ {+\!+}\mathsf{filter}_{i\notin\mathsf{tags}(L)}(A)
+ {+\!+}\mathsf{filter}_{i\notin\mathsf{tags}(L)}(B).
+\]
+Merge sorts this list by enqueue key, so concurrent enqueue order
+does not depend on branch argument position.
+
+\emph{Resolve-conflict relation $rc$.} For $q=(t,r,\mathsf{enq}(v))$, put $k(q)=(t,v)$.
+The value is a tie-breaker on raw inputs; distinct issued enqueues are ordered
+by timestamp. The directed policy is
+\[
+\begin{aligned}
+ q_1\rc q_2&\Longleftrightarrow k(q_1)<_{\rm lex}k(q_2)
+     &&\text{for two enqueues},\\
+ (t,r,\mathsf{enq}(v))\rc(u,r',\mathsf{deq}(i))
+   &\Longleftrightarrow t=i,
+\end{aligned}
+\]
+and it is false on all other directed forms.
+
+\emph{Issuance.} Dequeue issuance names the tag at
+the issuer's observed head:
+\[
+\begin{aligned}
+ \mathsf{qApplicable}((t,r,\mathsf{enq}(v)),s)
+   &\Longleftrightarrow t\notin\mathsf{tags}(s),\\
+ \mathsf{qApplicable}((t,r,\mathsf{deq}(i)),s)
+   &\Longleftrightarrow \exists v,s'.\;s=(i,v)::s'.
+\end{aligned}
+\]
+
+\emph{Sequential specification.} The state is
+$\Sigma_{\rm seq}=\mathsf{List}(\N\times\N)$, with $q_0=[]$. Enqueue
+appends at the tail; dequeue removes only the named head:
+\[
+\begin{aligned}
+ \mathsf{step}(s,(t,r,\mathsf{enq}(v)))&=s\mathbin{+\!+}[(t,v)],\\
+ \mathsf{step}((i,v)::s,(u,r,\mathsf{deq}(i)))&=s,\\
+ \mathsf{step}(s,(u,r,\mathsf{deq}(i)))&=s
+       &&\text{if the head does not have tag }i.
+\end{aligned}
+\]
+For a prefix $u$, let $B(u)$ be the set of timestamps of its enqueue events
+and $q_u=\mathsf{run}(u)$. Then $\mathsf{Legal}(\ell)$ holds exactly when
+every prefix decomposition satisfies
+\[
+\begin{cases}
+ t\notin B(u),&e=(t,r,\mathsf{enq}(v)),\\
+ i\in B(u)\land
+   \bigl((\exists v,w.\;q_u=(i,v)::w)\lor i\notin\mathsf{tags}(q_u)\bigr),
+   &e=(t,r,\mathsf{deq}(i)).
+\end{cases}
+\]
+In particular, removing a different live element is illegal, even though
+the total step leaves the queue unchanged. Previously enqueued identities
+are checked from the history, not retained as tombstones in abstract state.
+The remaining components are
+\[
+ \mathsf{Rel}(s,q)\Longleftrightarrow s=q,\qquad
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=
+ \begin{cases}\mathsf{none},&q=[],\\
+ \mathsf{some}(i,v),&q=(i,v)::w.
+ \end{cases}
+\]
+
+The public certificate constructs a legal, $\mathsf{loOn}$-respecting replay
+for every certified version. It groups each removed enqueue with its dequeues,
+then appends the surviving enqueues in their implementation-witness order.
+Head issuance proves that a survivor cannot causally precede an enqueue later
+removed as head, which justifies this rearrangement. The combined theorem
+\lean{queue\_correct} proves, for the same ordinary or virtual certified
+execution, public sequential correctness, timestamp-ordered surviving contents,
+and visibility-incomparability of dequeues naming the same target.
+For linear mint histories, \lean{client\_linear\_fifo} proves equality with the
+ordinary FIFO value sequence. Queue is a released production package.
+\anchor{Sal/MRDTs/Instances/Queue.lean}
+  {Queue.qRcOrder, Queue.rc, Queue.q\_join\_at}
+\anchor{Sal/MRDTs/Instances/QueueCertificates.lean}
+  {Queue.qApplicable, Queue.queue\_replay\_witness, Queue.replayAdequate}
+\anchor{Sal/MRDTs/Instances/QueueContract.lean}
+  {Queue.clientStep, Queue.clientLegalAux, Queue.clientSpec, Queue.client\_linear\_fifo}
+\anchor{Sal/MRDTs/Instances/QueueLegalization.lean}
+  {Queue.queue\_legal\_witness, Queue.verified}
+\anchor{Sal/MRDTs/Instances/QueueCorrectness.lean}
+  {Queue.queue\_correct}
+
+\emph{Datatype-state collection.} Queue carries an exact-state baseline on its list of surviving tagged values.
+This records coverage, not a representation-changing reclamation theorem.
+
+\paragraph{FugueMax.}
+
+\emph{Datatype $D$.} An operation payload contains a command $\mathsf{ins}(p,d)$ or
+$\mathsf{del}(i)$, a left-origin identifier, an optional right-origin
+identifier, and an immutable tagged chain. Here $p,i\in\N$ and
+$d\in\{\mathsf{L},\mathsf{R}\}$. The event envelope supplies timestamp and
+replica; the positional issuer below constructs the remaining fields.
+Insertion identifiers and values both equal the event timestamp.
+The implementation stores a live coordinate list and a finite set of immutable
+insertion records, including births of deleted elements. These records retain
+the origins and tagged chains needed by the positional issuer; deletion-event
+history is not stored. Merge combines the live lists by the three-way sequence
+merge and unions the birth sets. The initial state is $([],\varnothing)$.
+Insertion adds its immutable birth record and inserts the corresponding
+coordinate record into the live list; deletion filters its target and preserves
+birth records. The query projects live identifiers.
+
+\emph{Resolve-conflict relation $rc$.} The relation is false
+except for insertion before deletion of that identity:
+\[
+ \mathsf{ins}^{t}_{p,s}\rc\mathsf{del}_i
+ \Longleftrightarrow t=i.
+\]
+
+\emph{Issuance.} Issuance accepts exactly a prepared
+operation produced by the positional generator on the stored live list and
+birth metadata. It requires positive timestamps and, for insertion, a timestamp
+greater than every known birth. The existing total-index convention sends an
+out-of-range insertion to root and makes an out-of-range deletion a no-op
+targeting zero. Framework execution supplies global timestamp freshness.
+More explicitly, insertion at position $i>0$ chooses the preceding live
+identifier as left origin $a$; position zero chooses root. Let $n$ be the next
+birth after $a$ in immutable display order, including deleted births. If $n$
+exists and $a$ already has a right child, the prepared operation inserts as a
+left child of $n$; otherwise it inserts as a right child of $a$. Its right
+origin is $n$ when present and none otherwise. The immutable chain extends
+the chosen parent's chain by a left entry with timestamp difference $t-n$,
+or a right entry with difference $t-a$ tagged by $n$'s key (the tag is $[0]$
+when no successor exists). These are the payload fields checked by issuance,
+not arbitrary metadata supplied by the client. Deletion at position $i$
+names that live identifier and carries zero/none origins and an empty chain.
+
+\emph{Sequential specification.} The state is
+$\Sigma_{\rm seq}=\mathsf{List}(\N\times\N)$, with $q_0=[(0,0)]$.
+For the first occurrence $q=u{+\!+}[(p,y)]{+\!+}v$ of the parent,
+\[
+\begin{aligned}
+ \mathsf{step}(q,e)&=u{+\!+}[(t,t),(p,y)]{+\!+}v
+   && e.\mathsf{command}=\mathsf{ins}(p,\mathsf{L}),\\
+ \mathsf{step}(q,e)&=u{+\!+}[(p,y),(t,t)]{+\!+}v
+   && e.\mathsf{command}=\mathsf{ins}(p,\mathsf{R}),\\
+ \mathsf{step}(q,e)&=\begin{cases}
+ q,&i=0,\\ \mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne i,q),&i\ne0
+ \end{cases}
+   && e.\mathsf{command}=\mathsf{del}(i).
+\end{aligned}
+\]
+Here $t=\mathsf{time}(e)$; insertion returns $q$ when its parent is absent.
+Origins and chains do not enter this step. Let $B(u)$ be the identifiers
+allocated by insertions in prefix $u$. Then $\mathsf{Legal}(\ell)$ requires
+$\mathsf{Nodup}(\mathsf{times}(\ell))$, positive timestamps, and for every
+prefix decomposition,
+\[
+\begin{cases}
+ p=0\lor\bigl(p\in B(u)\land
+   \forall d\in u.\;d.\mathsf{command}\ne\mathsf{del}(p)\bigr),
+   &e.\mathsf{command}=\mathsf{ins}(p,d),\\
+ i=0\lor i\in B(u),&e.\mathsf{command}=\mathsf{del}(i).
+\end{cases}
+\]
+Thus a nonroot insertion parent must not yet have been deleted, but repeated
+deletion remains legal and idempotent. The representation relation is
+\[
+ \mathsf{listRel}(s,q)\Longleftrightarrow
+ \mathsf{map}(\mathsf{sProj},s.\mathsf{live})
+   =\mathsf{filter}(\lambda p.\,p.\mathsf{id}\ne0,q).
+\]
+Its query is
+\[
+ \mathsf{query}_{\rm seq}(q,\mathsf{rd})=
+ \mathsf{map}(\mathsf{id},\mathsf{filter}(\lambda z.\;z.\mathsf{id}\ne0,q)).
+\]
+Each insertion's value is its own timestamp.
+No birth metadata occurs in this abstract state. The proof constructs parents
+before children and farther siblings before nearer siblings, then applies
+deletions. This is a witness-construction order, not another public policy.
+\lean{FugueMax.correct} gives one witness satisfying this public contract and
+all three maximal-non-interleaving clauses for the same ordinary or virtual
+certified execution; it requires no separate \lean{MaxReach} premise.
+Explicitly, let $B$ contain all insertion identifiers, including deleted ones,
+$V\subseteq B$ the live identifiers, $\ell(x)$ and $r(x)$ the recorded left
+and optional right origins, and $x\prec y$ the immutable coordinate display
+order, also including deleted elements. Two live identifiers are consecutive
+when $x\prec y$ and no $z\in V$ lies strictly between them. The three clauses,
+for $x,y\in V$, are:
+\begin{enumerate}
+ \item If $\ell(y)=x$ and $y\prec d$ for every other $d\in B$ with
+ $\ell(d)=x$, then $x,y$ are consecutive.
+ \item If $r(x)=\mathsf{some}(y)$ and $d\prec x$ for every other $d\in B$
+ with $r(d)=\mathsf{some}(y)$, then $x,y$ are consecutive unless
+ \[
+  \ell(x)\ne\ell(y)\ \land\
+  \exists c\in B.\;\ell(x)\prec c\prec y
+    \land\neg\exists n\in\N.\;\ell^n(c)=\ell(x).
+ \]
+ \item If $\ell(x)=\ell(y)$, $r(x)=r(y)$, and $x<y$ as identifiers,
+ then $x\prec y$.
+\end{enumerate}
+Competitors and the exception witness range over all births, not merely live
+characters; only the adjacency conclusion ignores deleted characters.
+The registered package is \lean{FugueMax.verified}.
+No independent FugueMax runtime is claimed.
+\anchor{Sal/MRDTs/Instances/FugueMaxImplementation.lean}
+  {SidedEmbedRGA.FugueMax.datatype, SidedEmbedRGA.FugueMax.generation,
+   SidedEmbedRGA.FugueMax.rc}
+\anchor{Sal/MRDTs/Instances/FugueMaxReplayProof.lean}
+  {SidedEmbedRGA.FugueMax.join\_of\_mint}
+\anchor{Sal/MRDTs/Instances/FugueMaxContract.lean}
+  {SidedEmbedRGA.FugueMax.listLegal, SidedEmbedRGA.FugueMax.listSpec, SidedEmbedRGA.FugueMax.listRel,
+   SidedEmbedRGA.FugueMax.verified, SidedEmbedRGA.FugueMax.correct}
+\anchor{Sal/MRDTs/Instances/FugueMax.lean}
+  {SidedEmbedRGA.mGenInsAfter, SidedEmbedRGA.ForwardNIM,
+   SidedEmbedRGA.BackwardNIExcM, SidedEmbedRGA.SameOriginLowFirstM}
+
+\emph{Datatype-state collection.} Datatype-state collection is staged. The implementation retains immutable
+birth/origin records after deletion because later positional mints may depend
+on them. The public plain-list abstraction does not establish that this
+metadata can be discarded. No collector is included in the registered package.
+
+\subsection{Proof routes and evidence status}
+
+Grow-only stores and counters share a proof route: their commuting updates
+satisfy universal \lean{MergeLaws}, \lean{DeltaLaws}, and
+\lean{CommutingPeelLaw}, yielding all-context Join and total sequential
+correctness for their respective contracts.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.33\textwidth}
+  >{\raggedright\arraybackslash}p{0.59\textwidth}@{}}
+\toprule
+Released family & Merge-proof route\\
+\midrule
+\endhead
+Grow-only stores, flat counters, bounded counter, LWW register, TreeMove,
+AegisSheet, RGA & Universal equations adapted to
+\lean{CanonicalJoinLaws}, then all-context \lean{Join}\\
+Efficient OR-set & Direct execution invariant and exact-state replay, including
+recursive virtual merge bases; not arbitrary-state Join\\
+Queue & Context-local \lean{JoinAt} under issuance honesty, followed by legal
+FIFO replay and the concurrent-dequeue contract\\
+MVR & Surviving-write execution invariant, including recursive virtual merge
+bases, followed by the causally maximal writes contract under issuance\\
+EmbedRGA and SidedEmbedRGA & Direct datatype-specific \lean{JoinAt} under
+\lean{EHonestCore} or \lean{SHonestCore}\\
+FugueMax & Direct \lean{JoinAt} from exact framework issuance; the public
+witness also satisfies maximal non-interleaving\\
+Peritext & Inherited payload-parametric EmbedRGA certificate\\
+SidedPeritext & Componentwise \lean{joinAt\_prod}: restricted sided sequence
+plus two all-context grow-only stores\\
+\bottomrule
+\end{longtable}
+
+The negative and partial-evidence ledger is separate from the production
+registry. The multi-value register's counterexample rules out the ordinary
+single-register specification for concurrent executions; its appropriate
+multi-value public contract is now certified. The old coordinate-only FugueMax
+model remains a replay-only companion; the enriched implementation above has
+its own public certificate. Negative and replay-only declarations do not
+substitute for public datatype packages.
+\anchor{Sal/MRDTs/Metatheory/NegativeLedger.lean}
+  {Instances.MVR.concurrentState\_no\_sequential\_register}
+\anchor{Sal/MRDTs/Instances/QueueCertificates.lean}
+  {Queue.replayAdequate}
+\anchor{Sal/MRDTs/Instances/FugueMaxReplay.lean}
+  {SidedEmbedRGA.fuguemax\_replay\_witness}
+\anchor{Sal/MRDTs/Instances/FugueMaxBackward.lean}
+  {SidedEmbedRGA.fuguemax\_backward\_ni}
 
 \appendix
 
@@ -2635,7 +3579,9 @@ Operational semantics & \lean{Configuration}, \lean{Label}, \lean{Step},
 \lean{StepV} & \src{Sal/MRDTs/Framework/Execution.lean}{Execution.lean}\\
 Store/GCA events & \lean{StoreInv}, \lean{gca\_events\_of\_storeInv} &
 \src{Sal/MRDTs/Metatheory/StoreInvariant.lean}{StoreInvariant.lean}\\
-Set-relative replay & \lean{loOn}, \lean{IsCanonicalState} &
+Resolve-conflict policy & \lean{ReplayPolicy}, \lean{UpdateSig.rc} &
+\src{Sal/MRDTs/Framework/Base/UpdateSignature.lean}{UpdateSignature.lean}\\
+Set-relative linearization & \lean{loOn}, \lean{IsCanonicalState} &
 \src{Sal/MRDTs/Metatheory/Join/SetRelativeReplay.lean}{SetRelativeReplay.lean}\\
 Replay laws & \lean{ReplayLaws} &
 \src{Sal/MRDTs/Framework/ReplayLaws.lean}{ReplayLaws.lean}\\
@@ -2649,10 +3595,9 @@ Canonical-state Join laws & \lean{CanonicalJoinLaws},
 Canonical reachability & \lean{CanonicalConfig},
 \lean{replayWitness\_of\_join} &
 \src{Sal/MRDTs/Metatheory/Adequacy.lean}{Adequacy.lean}\\
-Issuance/spec interfaces & \lean{Issuance}, \lean{InteractionSpec},
-\lean{SequentialSpec} &
+Issuance/spec interfaces & \lean{Issuance}, \lean{SequentialSpec} &
 \src{Sal/MRDTs/Framework/Certificates.lean}{Certificates.lean}\\
-LWW replay/public-order separation & \lean{LWWRegister.replay\_lo\_false},
+LWW single-$rc$ ordering & \lean{LWWRegister.rc\_order\_acyclic},
 \lean{LWWRegister.canonical\_respects}, \lean{LWWRegister.verified} &
 \src{Sal/MRDTs/Instances/LWWRegister.lean}{LWWRegister.lean}\\
 Certified adequacy & \lean{replayWitness\_of\_mintCertified} &
@@ -2719,7 +3664,8 @@ correctness theorem. Two negative results are retained as audit controls:
 \item convergence over a merely backward-closed version set can fail when the
 absorber search ranges over a later whole configuration; and
 \item associativity, commutativity, and idempotence of binary merge do not by
-themselves imply the corrected contextual ternary Join property.
+themselves imply the historical \lean{BinaryJoin} property. This countermodel
+does not by itself state a negative theorem about ternary Join.
 \end{enumerate}
 They are machine-checked in negative-evidence modules and remain outside the
 production package.
@@ -2746,4 +3692,55 @@ constrained separately.
 elaboration of every principal declaration cited here.
 \end{itemize}
 
+\section{Merge-law adapters}
+\label{app:merge-adapters}
+
+This appendix expands the sufficient proof route from Section~\ref{sec:join}.
+It is independent of the client contract: a datatype may instead establish
+replay adequacy directly from an execution invariant.
+
+The universal equations construct the canonical contract:
+\[
+\begin{aligned}
+ \mathsf{MergeLaws}(D)&\Longrightarrow\mathsf{JoinCoreLaws}(D),\\
+ \mathsf{MergeLaws}(D)\land\mathsf{DeltaLaws}(D)
+ &\Longrightarrow\mathsf{FeasibleDeltaLaws}(D),\\
+ \mathsf{MergeLaws}(D)\land\mathsf{DeltaLaws}(D)
+ \land\mathsf{CausalDeltaLaw}(D)
+ &\Longrightarrow\mathsf{CanonicalJoinLaws}(D).
+\end{aligned}
+\]
+\anchor{Sal/MRDTs/Framework/MergeLaws.lean}{MergeLaws.toJoinCore}
+\anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
+  {feasibleDeltaLaws\_of\_delta, CanonicalJoinLaws.ofArbitrary}
+
+The bridge uses \lean{MergeLaws} for the common core and canonical unit law,
+substitutes $\doop(m,e)$ for the arbitrary delta-state argument in each
+\lean{DeltaLaws} equation, and discards the canonical-tuple premises.
+
+The adapter \lean{JoinProof.ofArbitraryStateLaws} first constructs the
+canonical law bundle and invokes its Join theorem.  Both proof routes therefore
+conclude the same \lean{Join} property.
+\anchor{Sal/MRDTs/Metatheory/Adequacy.lean}
+  {JoinProof.ofArbitraryStateLaws}
+
+\paragraph{RGA instance.}
+RGA takes the universal shortcut. Its pointwise Boolean merge proves
+\lean{MergeLaws} and \lean{DeltaLaws}; raw updates commute, so
+\lean{CommutingPeelLaw} supplies \lean{CausalDeltaLaw}. The resulting chain is
+\[
+ \mathsf{MergeLaws}+\mathsf{DeltaLaws}
+ +\mathsf{CommutingPeelLaw}+\mathsf{allComm}
+ \Longrightarrow\mathsf{CanonicalJoinLaws}
+ \Longrightarrow\mathsf{Join}(\mathsf{RGAM}).
+\]
+The issuer predicate \lean{RGA.applicable} is used later to construct a legal
+ordinary-list history; the RGA merge theorem itself holds for every replay
+context.
+\anchor{Sal/MRDTs/Instances/RGA.lean}
+  {RGA.RGAM\_mergeLaws, RGA.RGAM\_deltaLaws, RGA.join}
+
+
+
+\clearpage
 \end{document}

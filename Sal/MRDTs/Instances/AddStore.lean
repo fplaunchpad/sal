@@ -32,17 +32,10 @@ theorem all_comm (a b : Op (D α).AppOp) :
   simp [D, or_left_comm, or_comm]
 
 theorem replayLaws : ReplayLaws (D α).toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro a b _ _
-    constructor
-    · intro h
-      exact absurd (all_comm a b) h
-    · rintro (h | h) <;> exact RcRes.noConfusion h
-  · intro a b c _ _
-    rintro ⟨h, _⟩
-    exact RcRes.noConfusion h
-  · intro s a b c π _ _ _ h _
-    exact RcRes.noConfusion h
+  apply ReplayLaws.of_all_comm all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem mergeLaws : MergeLaws (D α) := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -98,11 +91,14 @@ def sequential : SequentialRefinement (D α) spec.toSequentialMachine where
 
 noncomputable def verified : VerifiedMRDT (D α) where
   issuance := generation
-  interaction := InteractionSpec.raw (D α)
+  rc := ReplayPolicy.unconstrained (D α).toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := spec
   Rel := (· = ·)
   sequentialCorrectness := SequentialCorrectnessCertificate.ofTotal
+    (fun C _ => join C.replayContext)
+    all_comm
+    (fun _ _ => rfl)
     (fun _ => True.intro)
     (fun ops => sequential.sound ops True.intro)
     (fun _ _ => rfl)

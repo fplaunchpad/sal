@@ -114,9 +114,10 @@ separately and are not silently presented as released verified datatypes.
 The bundled datatypes also expose an optional `fingerprint(state)` used by
 the twin tests, and `embedRGA` adds `readIds`/`readEntries`/`symbolCount`,
 `orset` adds `observe` (helpers for honest op construction and cost probes).
-THREE datatypes ship: `embedRGA` (a sequence), `orset` (a set), and
-`peritext` (rich text = the verified document-order mark model over
-`embedRGA`, see its own section below).
+The released runtime entries are `rga`, `embed-rga`, `sided-embed-rga`, and
+`peritext`, as listed in `evidence-manifest.json`. The tombstone `orset` module
+is retained only as a historical test/comparison fixture. The efficient Lean
+OR-set has no released JavaScript port.
 
 ## Peritext: verified document-order rich text over embedRGA
 
@@ -657,7 +658,8 @@ skin, not runtime machinery:
 
 `embedRGA` implements the embedded-chain RGA proved in
 `Sal/MRDTs/Instances/ProductionRGA.lean`; `orset`
-is a standard observed-remove set. Neither JS file is verified; they are
+is a retired observed-remove comparison fixture, not a released datatype.
+Neither JS file is verified; the sequence port is
 pinned to the verified semantics by reviewed fixtures: L1
 delete-reorder and the two sibling-splice fooling-pair worlds, which pin
 exactly the dead-ancestor coordinate-prefix behavior. A 300-scenario

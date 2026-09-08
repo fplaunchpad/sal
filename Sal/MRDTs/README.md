@@ -3,10 +3,10 @@
 This directory contains the current paper artifact. The raw datatype signature
 has no invariant or applicability fields. A datatype implementation supplies a
 single origin `Issuance` relation, an independent `SequentialSpec`, convergence,
-an `InteractionSpec`, sequential correctness, and representation through
-`VerifiedMRDT`. `InteractionSpec` classifies pairs as independent or as
-conflicts with an optional concurrent direction. Causal conflicts follow
-visibility. Safety is an optional separate certificate. Convergence
+a single `rc : ReplayPolicy`, sequential correctness, and representation through
+`VerifiedMRDT`. The derived linearization order `loOn` contains every visibility edge
+whose pair is conflicting according to `rc`, and adds a concurrent edge only
+when `rc` returns `Fst_then_snd`; `Either` adds none. Safety is an optional separate certificate. Convergence
 certificates store only the widened theorem; the ordinary theorem is derived.
 The raw-fold package is named `ReplayAdequateMRDT`. It supports internal replay
 proofs and datatypes with a checked negative classification; it is not the
@@ -23,16 +23,12 @@ counterexamples, and internal policy signatures live in
 The proof-level `UpdateSig` is a merge-free projection of `MRDTSig`; it is not
 an executable datatype interface or transition system. Historical binary
 proofs request their merge operation separately through
-`HistoricalBinaryMerge`. The old replay resolver is an
-internal `ReplayPolicy`, not a datatype field or client arbitration API. The
-certified Join route uses its unconstrained default.
-`Instances/InteractionSPOT.lean` checks the key
-controls: LWW admits a three-write timestamp chain, and concurrent add/remove
-uses remove-before-add to explain add-wins.
+`HistoricalBinaryMerge`.
+`Instances/RcSPOT.lean` checks the key control: LWW admits a three-write
+timestamp chain, while an unconstrained policy contributes no `loOn` edges.
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
-updates commute and make the proof-local replay order empty, while the public
-interaction order has a timestamp-sorted witness refining to a total
-overwrite register.
+updates commute, and its timestamp-directed `loOn` has a sorted witness
+refining to a total overwrite register.
 
 ## Minimal distributed-GC state
 

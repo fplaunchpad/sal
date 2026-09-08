@@ -103,20 +103,10 @@ theorem BC_all_comm : ∀ a b : Op BC.AppOp, BC.toUpdateSig.commutes a b := by
     split_ifs <;> omega
 
 theorem replayLaws : ReplayLaws BC.toUpdateSig := by
-  refine ⟨?_, ?_, ?_⟩
-  · intro o₁ o₂ _ _
-    constructor
-    · intro h
-      exact absurd (BC_all_comm o₁ o₂) h
-    · rintro (h | h) <;>
-        (rw [BC_rc_either] at h; exact RcRes.noConfusion h)
-  · intro o₁ o₂ o₃ _ _
-    rintro ⟨h, _⟩
-    rw [BC_rc_either] at h
-    exact RcRes.noConfusion h
-  · intro s e e' e'' π _ _ _ h_rc _
-    rw [BC_rc_either] at h_rc
-    exact RcRes.noConfusion h_rc
+  apply ReplayLaws.of_all_comm BC_all_comm
+  apply rcAcyclic_of_noRcChain
+  intro a b c h
+  exact RcRes.noConfusion h.1
 
 theorem BC_mergeLaws : MergeLaws BC := by
   refine ⟨replayLaws, ?_, ?_⟩
@@ -333,13 +323,10 @@ def bcIsInc (e : Op BCOp) : Bool :=
 def canonical (ops : List (Op BCOp)) : List (Op BCOp) :=
   ops.filter bcIsInc ++ ops.filter (!bcIsInc ·)
 
-/-- A legal abstract bounded-counter history admits the canonical
-increment-before-decrement form and never consumes more rights at any replica
-than the history creates there. -/
-def ClientLegal (ops : List (Op BCOp)) : Prop :=
-  (∃ source, ops = canonical source) ∧
-  ∀ r, (ops.countP (bcIsDecAt r) : ℤ) ≤
-    (ops.countP (bcIsIncAt r) : ℤ)
+/-- A legal abstract bounded-counter history preserves the rights invariant at
+every prefix.  Unlike the former increment-before-decrement normal form, this
+standard sequential condition is compatible with causal order. -/
+def ClientLegal (ops : List (Op BCOp)) : Prop := SequentialHonest ops
 
 def clientSpec : SequentialSpec BC where
   toSequentialMachine := sequentialSpec
@@ -370,10 +357,8 @@ theorem canonical_fold (ops : List (Op BCOp)) :
 
 theorem lo_false (C : Configuration BC) (a b : Op BCOp) :
     ¬ Sal.MRDTs.Foundation.lo C.replayContext a b := by
-  rintro (⟨_, hnoncomm⟩ | ⟨_, _, hrc, _⟩)
-  · exact hnoncomm (BC_all_comm a b)
-  · rw [BC_rc_either] at hrc
-    exact RcRes.noConfusion hrc
+  simp [Sal.MRDTs.Foundation.lo, UpdateSig.rc, ReplayPolicy.Before,
+    ReplayPolicy.default, ReplayPolicy.unconstrained]
 
 theorem respects_lo (C : Configuration BC) (ops : List (Op BCOp)) :
     respects ops (Sal.MRDTs.Foundation.lo C.replayContext) := by
@@ -425,39 +410,33 @@ def sequential : SequentialRefinement BC sequentialSpec where
   sound := fun ops h => ⟨h ops [] (by simp), sequential_run ops⟩
 
 noncomputable def sequentialCorrectness : SequentialCorrectnessCertificate BC generation
-    (InteractionSpec.raw BC)
+    (ReplayPolicy.unconstrained BC.toUpdateSig)
     clientSpec sequential.Rel where
-  sound C exec replay := by
+  sound C exec _ := by
     intro v s E hver
-    obtain ⟨ops, hperm, _, hfold⟩ := replay v s E hver
-    let π := canonical ops
-    have hπfold : applySeq BC.toUpdateSig BC.init π = s := by
-      exact (canonical_fold ops).trans hfold
+    have hG := exec.canonicalConfig (fun _ _ => bcJoin _)
+    have hCC := causalCanonical_of_all_comm_rc_either
+      BC_all_comm BC_rc_either hG
+    obtain ⟨π, hperm, hvis, hlo, hπfold⟩ := hCC v s E hver
+    have hlegal : ClientLegal π := by
+      exact prefix_inv_of_causal_witness bc_inv_init bc_safetyStep hG
+        (honestApp_of_mint exec.mintHonest) hver hperm hvis
     have hsafe : BCInv s := by
-      cases exec with
-      | ordinary reach => exact versions_safe reach v s E hver
-      | virtual reach => exact versions_safeV reach v s E hver
-    have hcount : ∀ r, (π.countP (bcIsDecAt r) : ℤ) ≤
-        (π.countP (bcIsIncAt r) : ℤ) := by
-      intro r
-      have hr := hsafe r
-      rw [← hπfold, bc_fold_incs, bc_fold_decs, BC_init_fst,
-        BC_init_snd] at hr
-      omega
+      rw [← hπfold]
+      exact hlegal π [] (by simp)
     have hrel : sequential.Rel s (clientSpec.run π) := by
       refine ⟨hsafe, ?_⟩
       intro r
       change sequentialSpec.run π r = s.1 r - s.2 r
       rw [sequential_run, hπfold]
-    refine ⟨π, canonical_listPermOf hperm,
-      respects_interactionLoOn_raw_of_lo (respects_lo C π),
-      ⟨⟨ops, rfl⟩, hcount⟩, hrel, ?_⟩
+    refine ⟨π, hperm, hlo,
+      hlegal, hrel, ?_⟩
     intro r
     exact (hrel.2 r).symm
 
 noncomputable def verified : VerifiedMRDT BC where
   issuance := generation
-  interaction := InteractionSpec.raw BC
+  rc := ReplayPolicy.unconstrained BC.toUpdateSig
   replayAdequacy := replayAdequacy
   Spec := clientSpec
   Rel := sequential.Rel

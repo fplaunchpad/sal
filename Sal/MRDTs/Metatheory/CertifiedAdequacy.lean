@@ -8,7 +8,9 @@ namespace Sal.MRDTs
 
 open Sal.MRDTs.Foundation
 
-theorem canonicalConfig_of_mintCertified {D : MRDTSig} {I : Issuance D}
+variable {D : MRDTSig} [P : ReplayPolicy D.toUpdateSig]
+
+theorem canonicalConfig_of_mintCertified {I : Issuance D}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)
     {C : Configuration D} (reach : MintCertifiedReach D I C) : CanonicalConfig C := by
   induction reach with
@@ -31,13 +33,13 @@ theorem canonicalConfig_of_mintCertified {D : MRDTSig} {I : Issuance D}
           exact canonicalConfig_merge_at hJoin hh₁ hv₁ hv₂ hgca hvT hL hvis hver ih
       | query hs hv => exact ih
 
-theorem replayWitness_of_mintCertified {D : MRDTSig} {I : Issuance D}
+theorem replayWitness_of_mintCertified {I : Issuance D}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)
     {C : Configuration D} (reach : MintCertifiedReach D I C) :
     HasReplayWitness C :=
   hasReplayWitness_of_canonical (canonicalConfig_of_mintCertified join reach)
 
-theorem canonicalConfig_of_mintCertifiedV {D : MRDTSig} {I : Issuance D}
+theorem canonicalConfig_of_mintCertifiedV {I : Issuance D}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)
     {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C) :
@@ -71,7 +73,7 @@ theorem canonicalConfig_of_mintCertifiedV {D : MRDTSig} {I : Issuance D}
             exact canonicalConfig_mergeVirtual_at hJoin ih.1 hh₁ hv₁ hv₂ hL hvis hver ih.2
   exact h.2
 
-theorem replayWitness_of_mintCertifiedV {D : MRDTSig} {I : Issuance D}
+theorem replayWitness_of_mintCertifiedV {I : Issuance D}
     (join : ∀ C, MintHonest D I.CanIssue C → JoinAt D C.replayContext)
     {C : Configuration D}
     (reach : MintCertifiedReachV D (canonicalVirtualMergeBase D) I C) :

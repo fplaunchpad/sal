@@ -6,20 +6,20 @@ import Sal.MRDTs.Metatheory.Correctness
 The queue of *Certified Mergeable Replicated Data Types* (Soundarapandian,
 Kamath, Nagar, Sivaramakrishnan; PLDI 2022), re-proved here. Enqueue mints a
 timestamped element; dequeue removes a **named** element, the head its issuer
-observed (the op carries the tag; the client API is unchanged, the replica
-captures its generation context, and this is what Peepul's `max(i,j)` merge
-was implicitly doing). The three-way merge is Peepul's: the GCA's survivors
-(elements still present in both branches) in GCA order, then each branch's
-new arrivals in branch order.
+observed (the op carries the tag; the client API is unchanged, and the replica
+captures its generation context). The three-way merge first computes Peepul's
+survivor set and then sorts the result by the enqueue key selected by `rc`.
+This normalization makes concurrent enqueue order independent of merge-operand
+position.
 
-Why this instance is structurally forced OUT of the flat engine: concurrent
-enqueues genuinely do not commute (queue order is arrival order) and they
-conflict with their own class, a clique, so no `rc` assignment satisfies
-`rc_non_comm_directional` + `no_rc_chain`. The route here instead proves the
-ternary **Join Lemma directly** (`q_join_at`): Peepul's merge *is* the
-linearization witness (GCA-enumeration ++ branch-one news ++ branch-two news,
-no reordering), and the framework's `CanonicalConfig` induction
-(`canonicalConfig_merge_at`) does the rest.
+Concurrent enqueues genuinely do not commute (queue order is arrival order)
+and they conflict with their own class, a clique. The former `no_rc_chain`
+contract therefore forced this instance out of the flat engine. The current
+`rc_acyclic` contract removes that particular obstruction: a total order may
+orient a clique acyclically. This file retains its independent route and proves
+the ternary **Join Lemma directly** (`q_join_at`): the canonical ordering of
+Peepul's survivor set is the linearization witness, and the framework's
+`CanonicalConfig` induction (`canonicalConfig_merge_at`) does the rest.
 
 The Join holds under an honest-history contract (`QHonest`): every dequeue
 names an element its issuer had observed (a `vis`-prior enqueue with that
@@ -62,12 +62,59 @@ def qUpdate (s : QState) (o : Op QOp) : QState :=
   | .enq v => if o.1 ∈ qTags s then s else s ++ [(o.1, v)]
   | .deq t => s.filter (fun x => decide (x.1 ≠ t))
 
-/-- Peepul's merge: GCA elements surviving in both branches (GCA order), then
-branch-one's news (branch order), then branch-two's. -/
-def qMerge (l a b : QState) : QState :=
+/-- Lexicographic queue-entry order. Reachable states have unique tags, so its
+first component is the enqueue timestamp and the value is only a total-order
+tie breaker for malformed equal-timestamp inputs. -/
+def qEntryLE (a b : ℕ × ℕ) : Prop :=
+  a.1 < b.1 ∨ (a.1 = b.1 ∧ a.2 ≤ b.2)
+
+def qEntryLEB (a b : ℕ × ℕ) : Bool :=
+  if a.1 < b.1 then true
+  else if a.1 = b.1 then decide (a.2 ≤ b.2)
+  else false
+
+theorem qEntryLEB_eq_true (a b : ℕ × ℕ) :
+    qEntryLEB a b = true ↔ qEntryLE a b := by
+  simp [qEntryLEB, qEntryLE]
+
+theorem qEntryLE_trans : Transitive qEntryLE := by
+  intro a b c hab hbc
+  unfold qEntryLE at *
+  omega
+
+theorem qEntryLE_total (a b : ℕ × ℕ) : qEntryLE a b ∨ qEntryLE b a := by
+  unfold qEntryLE
+  omega
+
+theorem qEntryLE_antisymm {a b : ℕ × ℕ} :
+    qEntryLE a b → qEntryLE b a → a = b := by
+  rintro hab hba
+  unfold qEntryLE at hab hba
+  apply Prod.ext <;> omega
+
+theorem qEntry_mergeSort_sorted (s : QState) :
+    (s.mergeSort qEntryLEB).Pairwise qEntryLE := by
+  simpa [qEntryLEB_eq_true] using List.pairwise_mergeSort
+    (le := qEntryLEB)
+    (fun a b c hab hbc => by
+      apply (qEntryLEB_eq_true _ _).2
+      exact qEntryLE_trans ((qEntryLEB_eq_true _ _).1 hab)
+        ((qEntryLEB_eq_true _ _).1 hbc))
+    (fun a b => by
+      rcases qEntryLE_total a b with h | h
+      · simp [h, qEntryLEB_eq_true]
+      · simp [h, qEntryLEB_eq_true]) s
+
+/-- Peepul's survivor calculation before canonical queue ordering. -/
+def qMergeRaw (l a b : QState) : QState :=
   l.filter (fun x => decide (x.1 ∈ qTags a ∧ x.1 ∈ qTags b))
     ++ a.filter (fun x => decide (x.1 ∉ qTags l))
     ++ b.filter (fun x => decide (x.1 ∉ qTags l))
+
+/-- Merge keeps the Peepul survivor set and resolves concurrent enqueue order
+canonically by enqueue key, independently of merge-operand position. -/
+def qMerge (l a b : QState) : QState :=
+  (qMergeRaw l a b).mergeSort qEntryLEB
 
 def Q : MRDTSig where
   State := QState
@@ -84,8 +131,43 @@ def Q : MRDTSig where
 theorem Q_core_update (s : QState) (o : Op QOp) :
     Q.toUpdateSig.update s o = qUpdate s o := rfl
 
-theorem Q_rc_either (o₁ o₂ : Op QOp) :
-    Q.toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+def qEnqLt (a b : Op QOp) : Prop :=
+  match a.2.2, b.2.2 with
+  | .enq av, .enq bv => a.1 < b.1 ∨ (a.1 = b.1 ∧ av < bv)
+  | _, _ => False
+
+def qEnqLTB (a b : Op QOp) : Bool :=
+  match a.2.2, b.2.2 with
+  | .enq av, .enq bv =>
+      if a.1 < b.1 then true
+      else if a.1 = b.1 then decide (av < bv)
+      else false
+  | _, _ => false
+
+theorem qEnqLTB_eq_true (a b : Op QOp) :
+    qEnqLTB a b = true ↔ qEnqLt a b := by
+  obtain ⟨ats, ar, ao⟩ := a
+  obtain ⟨bt, br, bo⟩ := b
+  cases ao <;> cases bo <;>
+    simp [qEnqLTB, qEnqLt]
+
+def qRcOrder (a b : Op QOp) : RcRes :=
+  match a.2.2, b.2.2 with
+  | .enq _, .enq _ =>
+      if qEnqLTB a b then .Fst_then_snd
+      else if qEnqLTB b a then .Snd_then_fst else .Either
+  | .enq _, .deq target =>
+      if a.1 = target then .Fst_then_snd else .Either
+  | .deq target, .enq _ =>
+      if b.1 = target then .Snd_then_fst else .Either
+  | .deq _, .deq _ => .Either
+
+/-- Queue resolve-conflict policy: enqueue/enqueue conflicts use enqueue-key
+order, and an enqueue precedes a dequeue of its tag. -/
+def rc : ReplayPolicy Q.toUpdateSig where
+  order := qRcOrder
+
+instance QReplayPolicy : ReplayPolicy Q.toUpdateSig := rc
 
 /-! ## §2  Event helpers -/
 
@@ -104,6 +186,42 @@ def qVal (e : Op QOp) : ℕ :=
   match e.2.2 with
   | .enq v => v
   | .deq _ => 0
+
+/-- Canonical replay order: enqueues precede dequeues; enqueues use the same
+key order as `rc`; dequeue order is immaterial. -/
+def qWitnessLEB (a b : Op QOp) : Bool :=
+  match a.2.2, b.2.2 with
+  | .enq av, .enq bv => qEntryLEB (a.1, av) (b.1, bv)
+  | .enq _, .deq _ => true
+  | .deq _, .enq _ => false
+  | .deq _, .deq _ => true
+
+def QWitnessLE (a b : Op QOp) : Prop := qWitnessLEB a b = true
+
+def qCanonical (ops : List (Op QOp)) : List (Op QOp) :=
+  ops.mergeSort qWitnessLEB
+
+theorem qCanonical_perm (ops : List (Op QOp)) :
+    ops.Perm (qCanonical ops) :=
+  (List.mergeSort_perm ops qWitnessLEB).symm
+
+theorem qCanonical_listPermOf {ops : List (Op QOp)}
+    {E : Set (Op QOp)} (h : listPermOf ops E) :
+    listPermOf (qCanonical ops) E := by
+  have hp := qCanonical_perm ops
+  exact ⟨hp.nodup h.1, fun e => (hp.mem_iff (a := e)).symm.trans (h.2 e)⟩
+
+theorem qCanonical_ordered (ops : List (Op QOp)) :
+    (qCanonical ops).Pairwise QWitnessLE := by
+  unfold qCanonical QWitnessLE
+  apply List.pairwise_mergeSort
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩ ⟨tc, rc', oc⟩ hab hbc
+    cases oa <;> cases ob <;> cases oc <;>
+      simp [qWitnessLEB, qEntryLEB_eq_true] at *
+    exact qEntryLE_trans hab hbc
+  · rintro ⟨ta, ra, oa⟩ ⟨tb, rb, ob⟩
+    cases oa <;> cases ob <;> simp [qWitnessLEB, qEntryLEB_eq_true]
+    exact qEntryLE_total _ _
 
 def qDeqTags (ρ : List (Op QOp)) : List ℕ :=
   ρ.filterMap (fun e => match e.2.2 with | .deq t => some t | .enq _ => none)
@@ -296,14 +414,6 @@ theorem q_enq_deq_not_comm (ts r v ts' r' : ℕ) :
       (ts, r, QOp.enq v) at this
   simp [qUpdate, qTags] at this
 
-/-- For the queue, `loOn` collapses to its `vis` arm (`rc` is `Either`;
-the generic `loOn_iff_of_rc_either`). -/
-theorem q_loOn_iff (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig)
-    (ev : Set (Op QOp)) (e₁ e₂ : Op QOp) :
-    loOn C ev e₁ e₂ ↔ C.vis e₁ e₂ ∧ ¬ Q.toUpdateSig.commutes e₁ e₂ :=
-  loOn_iff_of_rc_either Q_rc_either C ev e₁ e₂
-
-
 /-! ## §5  Honest histories, well-formedness of enumerations -/
 
 /-- Honest histories: every dequeue names a tag its issuer had observed, a
@@ -311,6 +421,11 @@ theorem q_loOn_iff (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig)
 def QHonestCore (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig) : Prop :=
   ∀ e ∈ C.events, ∀ t : ℕ, e.2.2 = QOp.deq t →
     ∃ a ∈ C.events, C.vis a e ∧ a.1 = t ∧ ∃ v, a.2.2 = QOp.enq v
+
+/-- Queue replay additionally uses Lamport monotonicity to reconcile visible
+enqueue/enqueue conflicts with the timestamp-directed `rc`. -/
+def QGoodCore (C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig) : Prop :=
+  QHonestCore C ∧ ∀ {a b}, C.vis a b → a.1 < b.1
 
 variable {C : Sal.MRDTs.Foundation.ReplayContext Q.toUpdateSig}
 
@@ -383,18 +498,20 @@ theorem q_wf_of_enum (hHon : QHonestCore C)
     rw [hsplit] at hpw
     have hcross := (List.pairwise_append.mp hpw).2.2 d hd a' (haa' ▸ ha)
     apply hcross
-    rw [q_loOn_iff]
-    have hae' : ∃ v, a'.2.2 = QOp.enq v := by
-      obtain ⟨a1, a2, aop⟩ := a'
-      cases aop with
-      | enq v => exact ⟨v, rfl⟩
-      | deq t' => exact absurd ha'enq (by simp [qIsEnq])
-    have hdd' : ∃ t', d.2.2 = QOp.deq t' := by
-      obtain ⟨d1, d2, dop⟩ := d
-      cases dop with
-      | enq v => exact absurd hdd (by simp [qIsEnq])
-      | deq t' => exact ⟨t', rfl⟩
-    exact ⟨hvis, q_pair_not_comm hae' hdd' ha't⟩
+    refine Or.inl ⟨hvis, Or.inl ?_⟩
+    obtain ⟨ats, ar, aop⟩ := a'
+    obtain ⟨dts, dr, dop⟩ := d
+    cases aop with
+    | deq t => simp [qIsEnq] at ha'enq
+    | enq v =>
+        cases dop with
+        | enq w => simp [qIsEnq] at hdd
+        | deq t =>
+            simp [qTag] at ha't
+            subst t
+            change qRcOrder (ats, ar, QOp.enq v) (dts, dr, QOp.deq ats) =
+              RcRes.Fst_then_snd
+            simp [qRcOrder]
 
 /-! ## §6  The Join: Peepul's merge is the linearization witness -/
 
@@ -428,19 +545,160 @@ theorem qTags_canon_perm {ρ : List (Op QOp)} {ev : Set (Op QOp)}
     exact ⟨⟨e, (hperm.2 e).mpr he, h1, h2⟩, fun hmem =>
       hnd ((qDeqTags_perm hperm).mp hmem)⟩
 
-/-- `respects` is `ev`-independent for the queue (`loOn`'s `rc` arm is dead;
-the generic `respects_transfer_of_rc_either`). -/
-theorem q_respects_transfer {ev ev' : Set (Op QOp)} {ρ : List (Op QOp)}
-    (h : respects ρ (loOn C ev)) : respects ρ (loOn C ev') :=
-  respects_transfer_of_rc_either (D' := Q.toUpdateSig) Q_rc_either h
+theorem qDeqTags_mem_of_perm {ρ σ : List (Op QOp)}
+    (h : ρ.Perm σ) (t : ℕ) : t ∈ qDeqTags ρ ↔ t ∈ qDeqTags σ := by
+  rw [mem_qDeqTags, mem_qDeqTags]
+  constructor <;> rintro ⟨d, hd, hdi, hdt⟩
+  · exact ⟨d, h.mem_iff.mp hd, hdi, hdt⟩
+  · exact ⟨d, h.mem_iff.mpr hd, hdi, hdt⟩
+
+theorem qCanonList_perm_of_perm {ρ σ : List (Op QOp)}
+    (h : ρ.Perm σ) : (qCanonList ρ).Perm (qCanonList σ) := by
+  unfold qCanonList
+  let pρ := fun e : Op QOp => qIsEnq e && !(decide (qTag e ∈ qDeqTags ρ))
+  let pσ := fun e : Op QOp => qIsEnq e && !(decide (qTag e ∈ qDeqTags σ))
+  have hp : ∀ e, pρ e = pσ e := by
+    intro e
+    simp only [pρ, pσ]
+    congr 2
+    exact decide_eq_decide.mpr (qDeqTags_mem_of_perm h (qTag e))
+  have hf : ρ.filter pρ = ρ.filter pσ := by
+    apply List.filter_congr
+    intro e _
+    exact hp e
+  rw [show (fun e => qIsEnq e && !(decide (qTag e ∈ qDeqTags ρ))) = pρ from rfl,
+      show (fun e => qIsEnq e && !(decide (qTag e ∈ qDeqTags σ))) = pσ from rfl,
+      hf]
+  exact (h.filter pσ).map _
+
+theorem qCanonList_nodup (h : QWf ρ) : (qCanonList ρ).Nodup := by
+  apply List.Nodup.of_map Prod.fst
+  unfold qCanonList
+  rw [List.map_map]
+  apply List.Nodup.map_on _ (h.nd.filter _)
+  intro a ha b hb hab
+  rw [List.mem_filter] at ha hb
+  have hai : qIsEnq a = true := by
+    cases hx : qIsEnq a <;> simp [hx] at ha ⊢
+  have hbi : qIsEnq b = true := by
+    cases hx : qIsEnq b <;> simp [hx] at hb ⊢
+  exact h.enq_uniq a ha.1 b hb.1 hai hbi (by simpa using hab)
+
+theorem qCanonList_sorted_of_ordered {ρ : List (Op QOp)}
+    (h : ρ.Pairwise QWitnessLE) : (qCanonList ρ).Pairwise qEntryLE := by
+  unfold qCanonList
+  let p := fun e : Op QOp => qIsEnq e && !(decide (qTag e ∈ qDeqTags ρ))
+  change ((ρ.filter p).map (fun e => (e.1, qVal e))).Pairwise qEntryLE
+  have hf : (ρ.filter p).Pairwise QWitnessLE :=
+    h.sublist (List.filter_sublist (p := p))
+  have hf' : (ρ.filter p).Pairwise
+      (fun a b => qEntryLE (a.1, qVal a) (b.1, qVal b)) := by
+    apply hf.imp_of_mem
+    intro a b ha hb hab
+    rw [List.mem_filter] at ha hb
+    obtain ⟨ats, ar, aop⟩ := a
+    obtain ⟨bts, br, bop⟩ := b
+    cases aop <;> cases bop <;>
+      simp [p, qIsEnq, QWitnessLE, qWitnessLEB, qVal,
+        qEntryLEB_eq_true] at *
+    assumption
+  exact hf'.map _ (fun _ _ hab => hab)
+
+theorem qCanonList_canonical {ρ : List (Op QOp)} :
+    qCanonList (qCanonical ρ) = (qCanonList ρ).mergeSort qEntryLEB := by
+  have hp : (qCanonList (qCanonical ρ)).Perm (qCanonList ρ) :=
+    qCanonList_perm_of_perm (qCanonical_perm ρ).symm
+  have hpc : (qCanonList (qCanonical ρ)).Perm
+      ((qCanonList ρ).mergeSort qEntryLEB) :=
+    hp.trans (List.mergeSort_perm _ _).symm
+  apply hpc.eq_of_pairwise (fun a b _ _ => qEntryLE_antisymm)
+  · exact qCanonList_sorted_of_ordered (qCanonical_ordered ρ)
+  · exact qEntry_mergeSort_sorted _
+
+theorem qCanonical_respects (hGood : QGoodCore C)
+    {ev : Set (Op QOp)} {ops : List (Op QOp)}
+    (hin : ∀ a ∈ ev, a ∈ C.events) (hperm : listPermOf ops ev) :
+    respects (qCanonical ops) (loOn C ev) := by
+  have hcan := qCanonical_listPermOf hperm
+  have hall : ∀ e ∈ qCanonical ops, e ∈ C.events := by
+    intro e he
+    exact hin e ((hcan.2 e).mp he)
+  have hordered := qCanonical_ordered ops
+  generalize hwhole : qCanonical ops = whole at hall hordered
+  clear hwhole
+  induction whole with
+  | nil => exact List.Pairwise.nil
+  | cons a rest ih =>
+      unfold respects
+      rw [List.pairwise_cons] at hordered ⊢
+      refine ⟨?_, ih (fun e he => hall e (List.mem_cons_of_mem _ he)) hordered.2⟩
+      intro b hb hba
+      have hab := hordered.1 b hb
+      have haC := hall a List.mem_cons_self
+      have hbC := hall b (List.mem_cons_of_mem _ hb)
+      obtain ⟨ats, ar, aop⟩ := a
+      obtain ⟨bts, br, bop⟩ := b
+      cases aop with
+      | enq av =>
+          cases bop with
+          | enq bv =>
+              have hle : qEntryLE (ats, av) (bts, bv) := by
+                simpa [QWitnessLE, qWitnessLEB, qEntryLEB_eq_true] using hab
+              rcases hba with hvis | hrc
+              · exact (Nat.not_lt_of_ge (by rcases hle with h | ⟨h, _⟩ <;> omega))
+                  (hGood.2 hvis.1)
+              · have hlt : qEnqLt (bts, br, .enq bv) (ats, ar, .enq av) := by
+                  have hbefore := hrc.2.2.1
+                  change qRcOrder (bts, br, .enq bv) (ats, ar, .enq av) =
+                    .Fst_then_snd at hbefore
+                  by_cases hltB : qEnqLTB (bts, br, .enq bv) (ats, ar, .enq av) = true
+                  · exact (qEnqLTB_eq_true _ _).mp hltB
+                  · simp [qRcOrder, hltB] at hbefore
+                    split at hbefore <;> contradiction
+                change bts < ats ∨ (bts = ats ∧ bv < av) at hlt
+                change ats < bts ∨ (ats = bts ∧ av ≤ bv) at hle
+                rcases hlt with hts | ⟨hts, hval⟩
+                · rcases hle with hts' | ⟨hts', _⟩
+                  · exact (Nat.lt_asymm hts hts').elim
+                  · exact (Nat.ne_of_lt hts) hts'.symm
+                · rcases hle with hts' | ⟨_, hval'⟩
+                  · exact (Nat.ne_of_lt hts') hts.symm
+                  · exact (Nat.not_lt_of_ge hval') hval
+          | deq target =>
+              rcases hba with hvis | hrc
+              · rcases hvis.2 with hback | hforward
+                · change (if ats = target then RcRes.Snd_then_fst else RcRes.Either) =
+                    RcRes.Fst_then_snd at hback
+                  split at hback <;> contradiction
+                · have hat : ats = target := by
+                    simpa [UpdateSig.rc, ReplayPolicy.Before, rc, QReplayPolicy,
+                      qRcOrder] using hforward
+                  obtain ⟨c, hc, hcb, hct, _⟩ :=
+                    hGood.1 (bts, br, .deq target) hbC target rfl
+                  have hca : c = (ats, ar, .enq av) :=
+                    C.ts_unique hc haC (hct.trans hat.symm)
+                  have habvis : C.vis (ats, ar, .enq av) (bts, br, .deq target) := by
+                    simpa [hca] using hcb
+                  exact (Nat.lt_asymm (hGood.2 habvis) (hGood.2 hvis.1))
+              · have hbefore := hrc.2.2.1
+                change (if ats = target then RcRes.Snd_then_fst else RcRes.Either) =
+                  RcRes.Fst_then_snd at hbefore
+                split at hbefore <;> contradiction
+      | deq atarget =>
+          cases bop with
+          | enq bv => simp [QWitnessLE, qWitnessLEB] at hab
+          | deq btarget =>
+              simp [loOn, UpdateSig.rc, ReplayPolicy.Before, rc, QReplayPolicy,
+                qRcOrder] at hba
 
 open LabeledTS in
-/-- **The queue's ternary Join Lemma, at any honest configuration.** The
-witness enumeration is Peepul's merge itself: the GCA's enumeration, then
-branch one's delta in branch order, then branch two's. -/
-theorem q_join_at (hHon : QHonestCore C) : JoinAt Q C := by
+/-- **The queue's ternary Join Lemma.** Peepul's survivor calculation is
+normalized by the queue `rc`; the witness is the corresponding canonical
+ordering of the union event set. -/
+theorem q_join_at (hGood : QGoodCore C) : JoinAt Q C := by
   intro ev₁ ev₂ s₀ s₁ s₂ htr hir hin₁ hin₂ hcl₁ hcl₂ h₀ h₁ h₂
   classical
+  have hHon := hGood.1
   obtain ⟨ρ₀, hp₀, hr₀, hf₀⟩ := h₀
   obtain ⟨ρ₁, hp₁, hr₁, hf₁⟩ := h₁
   obtain ⟨ρ₂, hp₂, hr₂, hf₂⟩ := h₂
@@ -516,35 +774,6 @@ theorem q_join_at (hHon : QHonestCore C) : JoinAt Q C := by
             · refine List.mem_append_right _ ?_
               rw [hΔ₂, List.mem_filter]
               exact ⟨(hp₂.2 x).mpr hx, by simpa using hx0⟩
-  -- respects over the union: within-block from the given enumerations
-  -- (`loOn` is `ev`-independent), cross-block back-edges killed by closure
-  have hrespU : respects (ρ₀ ++ Δ₁ ++ Δ₂) (loOn C (ev₁ ∪ ev₂)) := by
-    unfold respects
-    rw [List.pairwise_append]
-    refine ⟨?_, ?_, ?_⟩
-    · rw [List.pairwise_append]
-      refine ⟨q_respects_transfer hr₀, ?_, ?_⟩
-      · rw [hΔ₁]
-        exact q_respects_transfer
-          (List.Pairwise.sublist List.filter_sublist hr₁)
-      · intro x hx y hy hlo
-        rw [q_loOn_iff] at hlo
-        have hyev : y ∈ ev₂ := hcl₂ y x hlo.1 hlo.2 (hmem₀ x hx).2
-        exact (hmemΔ₁ y hy).2 ⟨(hmemΔ₁ y hy).1, hyev⟩
-    · rw [hΔ₂]
-      exact q_respects_transfer
-        (List.Pairwise.sublist List.filter_sublist hr₂)
-    · intro x hx y hy hlo
-      rw [q_loOn_iff] at hlo
-      rcases List.mem_append.mp hx with hx | hx
-      · have hyev : y ∈ ev₁ := hcl₁ y x hlo.1 hlo.2 (hmem₀ x hx).1
-        exact hΔ₂ev₁ y hy hyev
-      · have hyev : y ∈ ev₁ := hcl₁ y x hlo.1 hlo.2 (hmemΔ₁ x hx).1
-        exact hΔ₂ev₁ y hy hyev
-  -- the fold of the witness
-  have hwfU : QWf (ρ₀ ++ Δ₁ ++ Δ₂) := q_wf_of_enum hHon hinU hclU hpermU hrespU
-  have hfoldU : applySeq Q.toUpdateSig Q.init (ρ₀ ++ Δ₁ ++ Δ₂)
-      = qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) := q_fold_canon _ hwfU
   -- set-level characterizations
   have htags₀ : ∀ t, t ∈ qTags s₀ ↔ qEnqIn ev₀ t ∧ ¬ qDeqIn ev₀ t := by
     intro t; rw [hs₀]; exact qTags_canon_perm hp₀
@@ -595,8 +824,8 @@ theorem q_join_at (hHon : QHonestCore C) : JoinAt Q C := by
     have : a = e := q_ts_unique (hin₀ a ha) he hat
     rw [← this]; exact ha
   -- the list identity: Peepul's merge, segment by segment
-  have hmain : qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) = qMerge s₀ s₁ s₂ := by
-    unfold qCanonList qMerge
+  have hmain : qCanonList (ρ₀ ++ Δ₁ ++ Δ₂) = qMergeRaw s₀ s₁ s₂ := by
+    unfold qCanonList qMergeRaw
     rw [List.filter_append, List.filter_append, List.map_append, List.map_append]
     congr 1
     · congr 1
@@ -695,7 +924,22 @@ theorem q_join_at (hHon : QHonestCore C) : JoinAt Q C := by
           rcases (hdU ts').mp ((hdeqU ts').mp hd) with h | h
           · exact hK₂ _ heev rfl hnot0 h
           · exact hnd₂ h
-  exact ⟨ρ₀ ++ Δ₁ ++ Δ₂, hpermU, hrespU, by rw [hfoldU, hmain]; rfl⟩
+  let raw := ρ₀ ++ Δ₁ ++ Δ₂
+  let ρU := qCanonical raw
+  have hpCan : listPermOf ρU (ev₁ ∪ ev₂) :=
+    qCanonical_listPermOf hpermU
+  have hrCan : respects ρU (loOn C (ev₁ ∪ ev₂)) :=
+    qCanonical_respects hGood hinU hpermU
+  have hwfCan : QWf ρU := q_wf_of_enum hHon hinU hclU hpCan hrCan
+  have hfoldCan : applySeq Q.toUpdateSig Q.init ρU = qCanonList ρU :=
+    q_fold_canon _ hwfCan
+  refine ⟨ρU, hpCan, hrCan, ?_⟩
+  rw [hfoldCan]
+  change qCanonList (qCanonical raw) = qMerge s₀ s₁ s₂
+  rw [qCanonList_canonical]
+  change (qCanonList raw).mergeSort qEntryLEB =
+    (qMergeRaw s₀ s₁ s₂).mergeSort qEntryLEB
+  rw [hmain]
 
 
 end Sal.MRDTs.Instances.Queue

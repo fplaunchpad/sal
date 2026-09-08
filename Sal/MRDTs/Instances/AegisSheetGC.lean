@@ -858,11 +858,7 @@ theorem semanticCollect_union_normalized (a b : Finset Event) :
 
 theorem applicable_fresh {events : Finset Event} {e : Event}
     (guard : applicable e events) : e.1 ∉ eventTimes events := by
-  rcases guard with ⟨guard, _⟩
-  unfold applicableB at guard
-  simp only [Bool.and_eq_true] at guard
-  have first := guard.1.1.1
-  simpa using first
+  exact guard.2.fresh
 
 theorem applicable_metadataValid {events : Finset Event} {e : Event}
     (guard : applicable e events) : metadataValidB events e = true := by

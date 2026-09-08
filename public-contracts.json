@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "reviewStatus": "pending-semantic-audit",
+  "note": "These are independently selected contract declarations, not a claim of human approval. Lean checks the exact public certificate and its ordinary and virtual conclusions against them. Review the sequential specification together with issuance, rc and the observable API; do not weaken them merely to make this gate pass.",
+  "contracts": [
+    {
+      "id": "grow-only-set", "certificate": "Instances.GSet.verified",
+      "implementation": "Instances.GSet.D", "issuance": "Instances.GSet.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.GSet.D.toUpdateSig",
+      "spec": "Instances.GSet.spec", "relation": "Eq"
+    },
+    {
+      "id": "add-store", "certificate": "Instances.AddStore.verified (α := Nat)",
+      "implementation": "Instances.AddStore.D Nat", "issuance": "Instances.AddStore.generation",
+      "rc": "ReplayPolicy.unconstrained (Instances.AddStore.D Nat).toUpdateSig",
+      "spec": "Instances.AddStore.spec", "relation": "Eq"
+    },
+    {
+      "id": "finite-add-store", "certificate": "Instances.FinsetStore.verified (α := Nat)",
+      "implementation": "Instances.FinsetStore.D Nat", "issuance": "Instances.FinsetStore.generation",
+      "rc": "ReplayPolicy.unconstrained (Instances.FinsetStore.D Nat).toUpdateSig",
+      "spec": "Instances.FinsetStore.spec", "relation": "Eq"
+    },
+    {
+      "id": "counter", "certificate": "Instances.FlatCounters.counterVerified",
+      "implementation": "Instances.FlatCounters.Counter", "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "rc": "ReplayPolicy.unconstrained Instances.FlatCounters.Counter.toUpdateSig",
+      "spec": "Instances.FlatCounters.spec (fun _ => 1)", "relation": "Eq"
+    },
+    {
+      "id": "increment-only-counter", "certificate": "Instances.FlatCounters.iocVerified",
+      "implementation": "Instances.FlatCounters.IOC", "issuance": "Instances.FlatCounters.generation (fun _ => 1)",
+      "rc": "ReplayPolicy.unconstrained Instances.FlatCounters.IOC.toUpdateSig",
+      "spec": "Instances.FlatCounters.spec (fun _ => 1)", "relation": "Eq"
+    },
+    {
+      "id": "pn-counter", "certificate": "Instances.FlatCounters.pnVerified",
+      "implementation": "Instances.FlatCounters.PN", "issuance": "Instances.FlatCounters.generation Instances.FlatCounters.pnDelta",
+      "rc": "ReplayPolicy.unconstrained Instances.FlatCounters.PN.toUpdateSig",
+      "spec": "Instances.FlatCounters.spec Instances.FlatCounters.pnDelta", "relation": "Eq"
+    },
+    {
+      "id": "flat-grow-only-set", "certificate": "Instances.FlatGrowOnly.gosetVerified",
+      "implementation": "Instances.FlatGrowOnly.GOSet", "issuance": "Instances.FlatGrowOnly.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.FlatGrowOnly.GOSet.toUpdateSig",
+      "spec": "Instances.FlatGrowOnly.spec", "relation": "Eq"
+    },
+    {
+      "id": "flat-grow-only-map", "certificate": "Instances.FlatGrowOnly.gomapVerified",
+      "implementation": "Instances.FlatGrowOnly.GOMap", "issuance": "Instances.FlatGrowOnly.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.FlatGrowOnly.GOMap.toUpdateSig",
+      "spec": "Instances.FlatGrowOnly.spec", "relation": "Eq"
+    },
+    {
+      "id": "bounded-counter", "certificate": "Instances.BoundedCounter.verified",
+      "implementation": "Instances.BoundedCounter.BC", "issuance": "Instances.BoundedCounter.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.BoundedCounter.BC.toUpdateSig",
+      "spec": "Instances.BoundedCounter.clientSpec", "relation": "Instances.BoundedCounter.sequential.Rel"
+    },
+    {
+      "id": "lww-register", "certificate": "Instances.LWWRegister.verified",
+      "implementation": "Instances.LWWRegister.D", "issuance": "Instances.LWWRegister.issuance",
+      "rc": "Instances.LWWRegister.rc", "spec": "Instances.LWWRegister.spec", "relation": "Instances.LWWRegister.stateRel"
+    },
+    {
+      "id": "rga", "certificate": "Instances.RGA.verified",
+      "implementation": "Instances.RGA.RGAM", "issuance": "Instances.RGA.generation",
+      "rc": "Instances.RGA.rc", "spec": "Instances.RGA.listSpec", "relation": "Instances.RGA.listRel"
+    },
+    {
+      "id": "embed-rga", "certificate": "Instances.ProductionRGA.embed (α := Nat) unaryCode",
+      "implementation": "Instances.EmbedRGA.E unaryCode Nat", "issuance": "Instances.EmbedRGA.generation unaryCode",
+      "rc": "Instances.ProductionRGA.embedRc unaryCode", "spec": "Instances.ProductionRGA.embedClientSpec unaryCode", "relation": "Instances.ProductionRGA.embedRel"
+    },
+    {
+      "id": "sided-embed-rga", "certificate": "Instances.ProductionRGA.sided unaryCode",
+      "implementation": "Instances.SidedEmbedRGA.S unaryCode", "issuance": "Instances.SidedEmbedRGA.generation unaryCode",
+      "rc": "Instances.ProductionRGA.sidedRc unaryCode", "spec": "Instances.ProductionRGA.sidedClientSpec unaryCode", "relation": "Instances.ProductionRGA.sidedRel"
+    },
+    {
+      "id": "peritext-embed-rga", "certificate": "Instances.Peritext.verified unaryCode",
+      "implementation": "Instances.Peritext.D unaryCode", "issuance": "Instances.EmbedRGA.generation unaryCode",
+      "rc": "Instances.ProductionRGA.embedRc unaryCode", "spec": "Instances.ProductionRGA.embedClientSpec unaryCode", "relation": "Instances.ProductionRGA.embedRel"
+    },
+    {
+      "id": "sided-peritext-core", "certificate": "Instances.SidedPeritext.verified unaryCode",
+      "implementation": "Instances.SidedPeritext.Core unaryCode", "issuance": "Instances.SidedPeritext.generation unaryCode",
+      "rc": "Instances.SidedPeritext.coreRc unaryCode", "spec": "Instances.SidedPeritext.clientSpec unaryCode", "relation": "Instances.SidedPeritext.coreRel"
+    },
+    {
+      "id": "sided-peritext-rich-core", "certificate": "Instances.SidedPeritext.richVerified unaryCode",
+      "implementation": "Instances.SidedPeritext.RichCore unaryCode", "issuance": "Instances.SidedPeritext.richGeneration unaryCode",
+      "rc": "Instances.SidedPeritext.richRc unaryCode", "spec": "Instances.SidedPeritext.richClientSpec unaryCode", "relation": "Instances.SidedPeritext.richRel"
+    },
+    {
+      "id": "tree-move", "certificate": "Instances.TreeMove.verified",
+      "implementation": "Instances.TreeMove.D", "issuance": "Instances.TreeMove.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.TreeMove.D.toUpdateSig",
+      "spec": "Instances.TreeMove.sequentialSpec", "relation": "Instances.TreeMove.stateRel",
+      "obligations": [{
+        "name": "issuable-causal-origin-in-replay-prefix",
+        "statement": "∀ (ops : List Instances.TreeMove.Event), Instances.TreeMove.sequentialSpec.Legal ops → ∀ pre e post, ops = pre ++ e :: post → ∃ origin : Finset Instances.TreeMove.Event, origin ⊆ pre.toFinset ∧ Instances.TreeMove.applicable e origin",
+        "proof": "Instances.TreeMove.clientLegal_origin"
+      }]
+    },
+    {
+      "id": "aegis-sheet", "certificate": "Instances.AegisSheet.verified",
+      "implementation": "Instances.AegisSheet.D", "issuance": "Instances.AegisSheet.generation",
+      "rc": "ReplayPolicy.unconstrained Instances.AegisSheet.D.toUpdateSig",
+      "spec": "Instances.AegisSheet.Sequential.clientSpec", "relation": "Instances.AegisSheet.Sequential.materializedStateRel"
+    },
+    {
+      "id": "efficient-or-set", "certificate": "Instances.EfficientORSet.verified (α := Nat)",
+      "implementation": "Instances.EfficientORSet.D Nat", "issuance": "Instances.EfficientORSet.issuance",
+      "rc": "Instances.EfficientORSet.rc", "spec": "Instances.EfficientORSet.spec", "relation": "Instances.EfficientORSet.stateRel",
+      "obligations": [{
+        "name": "one-record-per-replica-element",
+        "statement": "∀ {C : Configuration (Instances.EfficientORSet.D Nat)}, MintCertifiedReachV (Instances.EfficientORSet.D Nat) (canonicalVirtualMergeBase (Instances.EfficientORSet.D Nat)) Instances.EfficientORSet.issuance C → ∀ v s E, C.ver v = some (s,E) → Instances.EfficientORSet.KeyUnique s",
+        "proof": "Instances.EfficientORSet.keyUnique_reachableV"
+      }]
+    },
+    {
+      "id": "queue", "certificate": "Instances.Queue.verified",
+      "implementation": "Instances.Queue.Q", "issuance": "Instances.Queue.generation",
+      "rc": "Instances.Queue.rc", "spec": "Instances.Queue.clientSpec", "relation": "Eq",
+      "obligations": [
+        {
+          "name": "concurrent-fifo-contract",
+          "proof": "@Instances.Queue.queue_correct",
+          "statement": "∀ (C : Configuration Instances.Queue.Q), CertifiedExecution Instances.Queue.Q Instances.Queue.generation C → IsSpecLinearizable Instances.Queue.Q Instances.Queue.rc Instances.Queue.clientSpec Eq C ∧ (∀ (v : Version) (s : Instances.Queue.QState) (E : Set (Op Instances.Queue.QOp)), C.ver v = some (s, E) → s.Pairwise Instances.Queue.qEntryLE ∧ ∀ target, target ∈ Instances.Queue.qTags s ↔ Instances.Queue.qEnqIn E target ∧ ¬ Instances.Queue.qDeqIn E target) ∧ (∀ a ∈ C.events, ∀ b ∈ C.events, ∀ target, a.2.2 = Instances.Queue.QOp.deq target → b.2.2 = Instances.Queue.QOp.deq target → ¬ C.vis a b ∧ ¬ C.vis b a)"
+        },
+        {
+          "name": "ordinary-fifo-special-case",
+          "proof": "@Instances.Queue.client_linear_fifo",
+          "statement": "∀ (ops : List (Op Instances.Queue.QOp)), LinearMintHistory Instances.Queue.Q Instances.Queue.generation.CanIssue ops → (Instances.Queue.clientSpec.run ops).map Prod.snd = Instances.Queue.qSpecFold ops"
+        }
+      ]
+    },
+    {
+      "id": "mvr", "certificate": "Instances.MVRLive.verified",
+      "implementation": "Instances.MVRLive.D", "issuance": "Instances.MVRLive.issuance",
+      "rc": "Instances.MVRLive.rc", "spec": "Instances.MVRLive.spec", "relation": "Eq",
+      "obligations": [
+        {
+          "name": "causally-maximal-writes",
+          "proof": "@Instances.MVRLive.mvr_correct",
+          "statement": "∀ (C : Configuration Instances.MVRLive.D), CertifiedExecution Instances.MVRLive.D Instances.MVRLive.issuance C → IsSpecLinearizable Instances.MVRLive.D Instances.MVRLive.rc Instances.MVRLive.spec Eq C ∧ (∀ (v : Version) (s : Finset (Nat × Nat)) (E : Set (Op Instances.MVR.MVROp)), C.ver v = some (s, E) → ∀ p : Nat × Nat, p ∈ s ↔ ∃ a ∈ E, a.1 = p.1 ∧ Instances.MVR.writeValue a = p.2 ∧ ∀ b ∈ E, ¬ C.vis a b)"
+        },
+        {
+          "name": "ordinary-register-special-case",
+          "proof": "@Instances.MVRLive.linear_register",
+          "statement": "∀ (ops : List (Op Instances.MVR.MVROp)), LinearMintHistory Instances.MVRLive.D Instances.MVRLive.issuance.CanIssue ops → Instances.MVRLive.D.query (applySeq Instances.MVRLive.D.toUpdateSig Instances.MVRLive.D.init ops) () = {v | Instances.MVR.mvrSpecFold ops = some v}"
+        }
+      ]
+    },
+    {
+      "id": "fugue-max", "certificate": "Instances.SidedEmbedRGA.FugueMax.verified unaryCode",
+      "implementation": "Instances.SidedEmbedRGA.FugueMax.datatype unaryCode",
+      "issuance": "Instances.SidedEmbedRGA.FugueMax.generation unaryCode",
+      "rc": "Instances.SidedEmbedRGA.FugueMax.rc unaryCode",
+      "spec": "Instances.SidedEmbedRGA.FugueMax.listSpec unaryCode",
+      "relation": "Instances.SidedEmbedRGA.FugueMax.listRel",
+      "obligations": [
+        {
+          "name": "same-witness-list-and-maximal-noninterleaving",
+          "proof": "@Instances.SidedEmbedRGA.FugueMax.correct unaryCode",
+          "statement": "∀ (C : Configuration implementation), CertifiedExecution implementation issuance C → ∀ (v : Version) (s : implementation.State) (E : Set (Op implementation.AppOp)), C.ver v = some (s, E) → ∃ ops : List (Op implementation.AppOp), listPermOf ops E ∧ respects ops (@loOn implementation.toUpdateSig rc C.replayContext E) ∧ spec.Legal ops ∧ rel s (spec.run ops) ∧ (∀ q, implementation.query s q = spec.query (spec.run ops) q) ∧ Instances.SidedEmbedRGA.MaxNonInterleavingM unaryCode (ops.map Instances.SidedEmbedRGA.FugueMax.recordOf)"
+        }
+      ]
+    }
+  ]
+}

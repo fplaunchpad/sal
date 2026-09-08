@@ -18,6 +18,7 @@ surface for `Join` datatypes does not move. That is the headline. -/
 
 section VirtualMergeBase
 variable {D : MRDTSig}
+variable [P : ReplayPolicy D.toUpdateSig]
 
 /-- The union of the registered event sets over a finite support. -/
 def unionEvents (C : Configuration D) (S : Finset Version) : Set (Op D.AppOp) :=
@@ -537,7 +538,7 @@ theorem replayWitnessV_of_delta
     (hVC : MergeLaws D) (hΔ : DeltaLaws D) (hCD : CausalDeltaLaw D)
     (C : Configuration D)
     (hReach : (labeledTSV D (canonicalVirtualMergeBase D)).ReachableFrom (initConfig D) C) :
-    HasReplayWitness C :=
+    @HasReplayWitness D P C :=
   replayWitnessV_of_join (JoinProof.ofArbitraryStateLaws hVC hΔ hCD) C hReach
 
 open LabeledTS in

@@ -94,8 +94,19 @@ def FMSig (Γ : OrderedPrefixCode) : MRDTSig where
 theorem FMSig_core_update (Γ : OrderedPrefixCode) (s : SState) (o : Op FOp) :
     (FMSig Γ).toUpdateSig.update s o = fUpdate Γ s o := rfl
 
-theorem FMSig_rc_either (Γ : OrderedPrefixCode) (o₁ o₂ : Op FOp) :
-    (FMSig Γ).toUpdateSig.replayOrder o₁ o₂ = RcRes.Either := rfl
+def fRcOrder (a b : Op FOp) : RcRes :=
+  match a.2.2, b.2.2 with
+  | .ins _ _ _, .del target =>
+      if a.1 = target then .Fst_then_snd else .Either
+  | .del target, .ins _ _ _ =>
+      if b.1 = target then .Snd_then_fst else .Either
+  | _, _ => .Either
+
+/-- FugueMax has the same resolve-conflict shape as SidedEmbedRGA: an
+insertion precedes deletion of the identifier allocated by that insertion. -/
+instance FMReplayPolicy (Γ : OrderedPrefixCode) :
+    ReplayPolicy (FMSig Γ).toUpdateSig where
+  order := fRcOrder
 
 /-! ## §3  Well-formed enumerations and fold-canonicity
 
@@ -387,6 +398,27 @@ theorem f_ins_del_not_comm (Γ : OrderedPrefixCode) (ts r el : ℕ)
     if_false, List.filter_nil] at h0
   simp at h0
 
+theorem f_not_comm_of_rc {Γ : OrderedPrefixCode} {a b : Op FOp}
+    (h : (FMSig Γ).toUpdateSig.rc a b ∨ (FMSig Γ).toUpdateSig.rc b a) :
+    ¬ (FMSig Γ).toUpdateSig.commutes a b := by
+  obtain ⟨ats, ar, aop⟩ := a
+  obtain ⟨bts, br, bop⟩ := b
+  cases aop <;> cases bop
+  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at h
+  · rename_i el π ent target
+    by_cases heq : ats = target
+    · subst target
+      exact f_ins_del_not_comm Γ ats ar el π ent bts br
+    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at h
+  · rename_i target el π ent
+    by_cases heq : bts = target
+    · subst target
+      intro hc
+      exact f_ins_del_not_comm Γ bts br el π ent ats ar
+        (fun s => (hc s).symm)
+    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at h
+  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at h
+
 /-- Honest histories. -/
 structure FMHonestCore (Γ : OrderedPrefixCode)
     (C : Sal.MRDTs.Foundation.ReplayContext (FMSig Γ).toUpdateSig) : Prop where
@@ -401,6 +433,28 @@ structure FMHonestCore (Γ : OrderedPrefixCode)
       PosFMChain (chainOf o.1) ∧ TagsOK (chainOf o.1) ∧
       fCoord Γ o = fmCoordOf Γ (chainOf o.1) ∧
       ((chainOf o.1).map fmδ).sum = o.1
+
+theorem f_vis_of_rc_of_honest {Γ : OrderedPrefixCode}
+    {C : Sal.MRDTs.Foundation.ReplayContext (FMSig Γ).toUpdateSig}
+    (hHon : FMHonestCore Γ C) {a b : Op FOp}
+    (ha : a ∈ C.events) (hb : b ∈ C.events)
+    (hrc : (FMSig Γ).toUpdateSig.rc b a) : C.vis b a := by
+  obtain ⟨bts, br, bop⟩ := b
+  obtain ⟨ats, ar, aop⟩ := a
+  cases bop <;> cases aop
+  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at hrc
+  · rename_i el π ent target
+    by_cases heq : bts = target
+    · obtain ⟨c, hc, hvis, hct, _⟩ :=
+        hHon.del_has_ins (ats, ar, .del target) ha target rfl
+      have hcb : c = (bts, br, .ins el π ent) :=
+        C.ts_unique hc hb (hct.trans heq.symm)
+      simpa [hcb] using hvis
+    · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at hrc
+  · rename_i target el π ent
+    by_cases heq : ats = target <;>
+      simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder, heq] at hrc
+  · simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder] at hrc
 
 /-- Honesty + backward closure: a delete's insert lies in the same closed
 event set, `vis`-before it. -/
@@ -460,8 +514,7 @@ theorem f_wf_of_enum {Γ : OrderedPrefixCode}
     have hcross := (List.pairwise_append.mp hresp).2.2 d hdσ a
       List.mem_cons_self
     apply hcross
-    rw [loOn_iff_of_rc_either (FMSig_rc_either Γ)]
-    refine ⟨hvis, ?_⟩
+    refine Or.inl ⟨hvis, Or.inl ?_⟩
     obtain ⟨a1, a2, aop⟩ := a
     obtain ⟨d1, d2, dop⟩ := d
     simp only at hddel
@@ -469,7 +522,7 @@ theorem f_wf_of_enum {Γ : OrderedPrefixCode}
     cases aop with
     | del y => simp [fIsIns] at hins
     | ins el π ent =>
-        exact f_ins_del_not_comm Γ a1 a2 el π ent d1 d2
+        simp [UpdateSig.rc, ReplayPolicy.Before, FMReplayPolicy, fRcOrder]
   keys_inj := by
     obtain ⟨chainOf, hch⟩ := hHon.chain_gen
     intro o₁ h₁ o₂ h₂ hi₁ hi₂ hne hkey
@@ -663,9 +716,9 @@ theorem f_merge_mem {Γ : OrderedPrefixCode}
 /-! ## §6b  The Join: the merge is its own linearization witness
 
 Witness enumeration for the union: the GCA's enumeration, then branch one's
-delta (in branch order), then branch two's news. Its `respects` obligation
-falls to CLOSURE, and `loOn` is event-set independent under `rc = Either`,
-so within-block orders transfer verbatim. Sided proof, `f`-substituted. -/
+delta (in branch order), then branch two's news. Within-block obligations use
+set monotonicity. For a cross-block edge, closure handles the visibility arm;
+honesty rules out a concurrent reverse insertion/deletion edge. -/
 
 open LabeledTS in
 theorem f_join_at {Γ : OrderedPrefixCode}
@@ -693,12 +746,10 @@ theorem f_join_at {Γ : OrderedPrefixCode}
   have hwf₀ := f_wf_of_enum hHon hin₀ hcl₀ hp₀ hr₀
   have hwf₁ := f_wf_of_enum hHon hin₁ hcl₁ hp₁ hr₁
   have hwf₂ := f_wf_of_enum hHon hin₂ hcl₂ hp₂ hr₂
-  -- loOn is event-set independent under rc = Either
-  have hloOn : ∀ (ev ev' : Set (Op FOp)) (x y : Op FOp),
-      loOn C ev x y → loOn C ev' x y := by
-    intro ev ev' x y h
-    rw [loOn_iff_of_rc_either (FMSig_rc_either Γ)] at h ⊢
-    exact h
+  have hloOn : ∀ (ev : Set (Op FOp)), ev ⊆ ev₁ ∪ ev₂ →
+      ∀ x y, loOn C (ev₁ ∪ ev₂) x y → loOn C ev x y := by
+    intro ev hsub x y h
+    exact loOn_mono hsub h
   -- the witness enumeration
   set δ₁ := ρ₁.filter (fun o => decide (o ∉ ev₀)) with hδ₁
   set δ₂ := ρ₂.filter (fun o => decide (o ∉ ev₁)) with hδ₂
@@ -752,26 +803,36 @@ theorem f_join_at {Γ : OrderedPrefixCode}
     rw [hρᵤ]
     unfold respects at hr₀ hr₁ hr₂ ⊢
     rw [List.pairwise_append]
-    refine ⟨hr₀.imp (fun h hl => h (hloOn _ _ _ _ hl)), ?_, ?_⟩
+    refine ⟨hr₀.imp (fun h hl => h (hloOn ev₀
+      (fun _ hx => Or.inl hx.1) _ _ hl)), ?_, ?_⟩
     · rw [List.pairwise_append]
       refine ⟨(hr₁.sublist List.filter_sublist).imp
-          (fun h hl => h (hloOn _ _ _ _ hl)),
+          (fun h hl => h (hloOn ev₁ Set.subset_union_left _ _ hl)),
         (hr₂.sublist List.filter_sublist).imp
-          (fun h hl => h (hloOn _ _ _ _ hl)), ?_⟩
+          (fun h hl => h (hloOn ev₂ Set.subset_union_right _ _ hl)), ?_⟩
       -- cross δ₁ × δ₂: a loOn-later δ₂ event before a δ₁ event would be in ev₁
       intro a ha b hb hl
-      rw [loOn_iff_of_rc_either (FMSig_rc_either Γ)] at hl
-      have hb1 : b ∈ ev₁ := hcl₁ b a hl.1 hl.2 ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
-      exact (hmemδ₂.mp hb).2 hb1
+      rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
+      · have hb1 : b ∈ ev₁ := hcl₁ b a hvis (f_not_comm_of_rc hrc)
+          ((hp₁.2 a).mp (hmemδ₁.mp ha).1)
+        exact (hmemδ₂.mp hb).2 hb1
+      · exact hnv (f_vis_of_rc_of_honest hHon
+          (hin₁ a ((hp₁.2 a).mp (hmemδ₁.mp ha).1))
+          (hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp hb).1)) hrc)
     · -- cross ρ₀ × deltas: a loOn-later delta event before an GCA event
       -- would be in ev₀
       intro a ha b hb hl
-      rw [loOn_iff_of_rc_either (FMSig_rc_either Γ)] at hl
       have ha0 : a ∈ ev₀ := (hp₀.2 a).mp ha
-      have hb0 : b ∈ ev₀ := hcl₀ b a hl.1 hl.2 ha0
-      rcases List.mem_append.mp hb with h | h
-      · exact (hmemδ₁.mp h).2 hb0
-      · exact (hmemδ₂.mp h).2 hb0.1
+      have hbC : b ∈ C.events := by
+        rcases List.mem_append.mp hb with h | h
+        · exact hin₁ b ((hp₁.2 b).mp (hmemδ₁.mp h).1)
+        · exact hin₂ b ((hp₂.2 b).mp (hmemδ₂.mp h).1)
+      rcases hl with ⟨hvis, hrc⟩ | ⟨hnv, _, hrc, _⟩
+      · have hb0 : b ∈ ev₀ := hcl₀ b a hvis (f_not_comm_of_rc hrc) ha0
+        rcases List.mem_append.mp hb with h | h
+        · exact (hmemδ₁.mp h).2 hb0
+        · exact (hmemδ₂.mp h).2 hb0.1
+      · exact hnv (f_vis_of_rc_of_honest hHon (hin₀ a ha0) hbC hrc)
   have hwfU : FWf Γ ρᵤ := f_wf_of_enum hHon hinU hclU hpU hrU
   -- the fold of the witness IS the merge, by canonical-form extensionality
   refine ⟨ρᵤ, hpU, hrU, ?_⟩
@@ -851,13 +912,14 @@ theorem fmHonest_core {Γ : OrderedPrefixCode} {C : Configuration (FMSig Γ)}
 
 /-! ## §7.1  Internal generation and replayAdequacy certificates
 
-`FMSig` is the proof signature used to establish the FugueMax ordering-policy
-theorems. It is not a production-registry datatype: its operations expose
-proof-level coordinates rather than the client insert-after API, and it does
-not provide a `VerifiedMRDT` sequential certificate. The production sided
-sequence package is `ProductionRGA.sided`; the theorems below justify the
-FugueMax policy used by that design without pretending that `FMSig` is a
-second public datatype.
+`FMSig` is the coordinate-level replay signature. The maximal-non-interleaving
+theorem instead assumes `MaxReach` under the exact `mGenInsAt` rule. The guard
+below checks coordinate well-formedness, not that rule. `FugueMaxContractSPOT`
+proves that equal live states can require different generated operations, and
+that this guard accepts an operation not generated at any position in one of
+those histories. The missing birth/origin issuer metadata must be connected
+before claiming a public certificate for the exact FugueMax generator.
+`ProductionRGA.sided` is a different signature and is not that certificate.
 -/
 
 /-- The internal FugueMax minting discipline. An insert carries the positive,

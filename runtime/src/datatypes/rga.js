@@ -1,5 +1,5 @@
-// Plain tombstone RGA. This mirrors the proved state in
-// RGA_WithTombstones.lean: a grow-only insertion relation plus a grow-only
+// RGA. This mirrors the identifier/anchor state in
+// Sal/MRDTs/Instances/RGA.lean: a grow-only insertion relation plus a grow-only
 // grave set. The optimized representation indexes insertions by their unique
 // timestamp/id and derives the Lean fold's order with one tree traversal.
 
@@ -41,6 +41,7 @@ function checkInsert(adds, grave, op) {
   const anchorId = op.anchorId ?? ROOT;
   if (anchorId !== ROOT) {
     if (!adds.has(anchorId)) throw new Error(`anchor ${anchorId} not known`);
+    if (grave.has(anchorId)) throw new Error(`anchor ${anchorId} is not live`);
     if (anchorId >= op.id) throw new Error(`anchor ${anchorId} must precede ${op.id}`);
   }
   return anchorId;
@@ -51,7 +52,7 @@ function checkDelete(adds, grave, op) {
   if (grave.has(op.id)) throw new Error(`remove ${op.id} is not live`);
 }
 
-/** The Lean rgaApplicable guard, specialized to id = insertion timestamp. */
+/** The Lean RGA.applicable guard; op.id is the insertion timestamp. */
 export function rgaApplicable(s, op) {
   try {
     if (op.type === 'ins') checkInsert(s.adds, s.grave, op);

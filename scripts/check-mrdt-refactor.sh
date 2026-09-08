@@ -2,18 +2,21 @@
 set -eu
 
 lake build \
-  Sal.MRDTs.Metatheory.ProductionLedger \
+  Sal.MRDTs.Metatheory.PublicCertificateGate \
   Sal.MRDTs.Metatheory.NegativeLedger \
   Sal.MRDTs.Metatheory.RefactorLedger
+
+node scripts/check-public-certificates.mjs
+node --test scripts/test-public-certificates.mjs
 
 # Guard the two representation-mirroring regressions found by the sequential
 # specification audit.  The theorem ledgers above check the positive bridges;
 # these source checks keep the retired proof-only state shapes from returning.
-rg -q -F 'State := Finset α' Sal/MRDTs/Instances/ORSet.lean
+rg -q -F 'State := Finset α' Sal/MRDTs/Metatheory/Countermodels/TaggedORSet.lean
 rg -q -F '| .remove element _ => state.erase element' \
-  Sal/MRDTs/Instances/ORSet.lean
+  Sal/MRDTs/Metatheory/Countermodels/TaggedORSet.lean
 if rg -n '\bSeqState\b|seqLiveTags|seqContains' \
-    Sal/MRDTs/Instances/ORSet.lean; then
+    Sal/MRDTs/Metatheory/Countermodels/TaggedORSet.lean; then
   echo 'OR-set tagged implementation state re-entered the sequential specification' >&2
   exit 1
 fi
@@ -27,12 +30,6 @@ fi
 
 npm test --prefix runtime
 npm run validate --prefix benchmarks
-
-if rg -n 'replayVerified|FMSig|fmGeneration|Instances\.MVR|Instances\.Queue' \
-    Sal/MRDTs/Metatheory/ProductionLedger.lean; then
-  echo 'incomplete or negative evidence entered the production registry' >&2
-  exit 1
-fi
 
 if rg -n 'Sal\.ConditionedMRDTs|LegacyBridge' \
     Sal/MRDTs/Framework Sal/MRDTs/Metatheory Sal/MRDTs/Instances Sal/MRDTs/GC; then

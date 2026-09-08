@@ -83,7 +83,7 @@ namespace Production.StateGC
 open Sal.EmbedRGA
 
 /-- Datatype-state GC coverage in exactly the order of `Production.registry`.
-OR-Set remains staged.  Tombstone RGA has a representation compactor, while
+MVR stores only live tagged values. RGA has a representation compactor, while
 its stronger deleted-identifier reclamation problem remains open. -/
 noncomputable def registry : List PackagedStateGC :=
   [ PackagedStateGC.ofExactState "grow-only-set" Instances.GSet.verified
@@ -122,14 +122,17 @@ noncomputable def registry : List PackagedStateGC :=
       Instances.TreeMove.GC.protocol
   , PackagedStateGC.ofCollector "aegis-sheet"
       Instances.AegisSheet.verified Instances.AegisSheet.GC.certificate
-  , PackagedStateGC.ofStaged "or-set"
-      (Instances.ORSet.verified (α := Nat))
+  , PackagedStateGC.ofExactState "efficient-or-set"
+      (Instances.EfficientORSet.verified (α := Nat))
+  , PackagedStateGC.ofExactState "queue" Instances.Queue.verified
+  , PackagedStateGC.ofExactState "mvr" Instances.MVRLive.verified
+  , PackagedStateGC.ofStaged "fugue-max" (Instances.SidedEmbedRGA.FugueMax.verified unaryCode)
   ]
 
 noncomputable def names : List String :=
   registry.map (fun entry => entry.package.name)
 
-example : registry.length = 19 := by rfl
+example : registry.length = 22 := by rfl
 example : names = Production.names := by rfl
 
 end Production.StateGC

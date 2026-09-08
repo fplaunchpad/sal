@@ -6,9 +6,9 @@ import Sal.MRDTs.Instances.QueueCertificates
 Two replicas can observe the same two-element queue and concurrently dequeue
 the same head tag.  Both issuer guards pass.  The merged implementation removes
 that named tag once, but a plain FIFO replay performs two pops.  This is a
-checked obstruction to upgrading the existing replay theorem to FIFO
-sequential correctness without an additional exactly-once dequeue protocol or a
-different sequential specification.
+comparison of these particular folds, not a proof that every permissible
+linearization fails. The contract repair permits concurrent duplicate targets;
+it does not require an exactly-once dequeue protocol.
 -/
 
 namespace Sal.MRDTs.Instances.Queue.ConditioningSPOT
@@ -48,8 +48,8 @@ example : spec.run [enqA, enqB, deqA, deqB] = [] := by
 example : spec.run [enqA, enqB, deqB, deqA] = [] := by
   rfl
 
-/-- FAIL controls: neither causally admissible dequeue ordering refines the
-plain FIFO observation. -/
+/-- FAIL controls: these two particular replay lists do not refine the plain
+FIFO fold. Other `loOn`-respecting lists are not ruled out by these examples. -/
 example :
     (applySeq Q.toUpdateSig Q.init [enqA, enqB, deqA, deqB]).map Prod.snd ≠
       spec.run [enqA, enqB, deqA, deqB] := by decide
@@ -58,7 +58,7 @@ example :
     (applySeq Q.toUpdateSig Q.init [enqA, enqB, deqB, deqA]).map Prod.snd ≠
       spec.run [enqA, enqB, deqB, deqA] := by decide
 
-/-- Named checked obstruction used by the public certificate ledger. -/
+/-- Named fold comparison retained by the negative-evidence ledger. -/
 theorem duplicate_dequeue_not_fifo :
     (applySeq Q.toUpdateSig Q.init [enqA, enqB, deqA, deqB]).map Prod.snd = [20] ∧
     spec.run [enqA, enqB, deqA, deqB] = [] := by

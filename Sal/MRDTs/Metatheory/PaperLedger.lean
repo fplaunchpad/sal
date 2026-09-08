@@ -63,24 +63,34 @@ namespace Sal.MRDTs
 #check ReplayAdequateMRDT
 #check ReplayAdequateMRDT.sequentially_correct
 #check SequentialSpec
-#check InteractionSpec
-#check interactionLoOn
+#check Foundation.ReplayPolicy
+#check Foundation.loOn
 #check IsSpecLinearizable
 
--- LWW separates commuting representation updates from timestamp-ordered
--- client explanations.
+-- LWW uses one timestamp-directed rc even though representation updates commute.
 #check Instances.LWWRegister.verified
-#check Instances.LWWRegister.replay_lo_false
+#check Instances.LWWRegister.replayLaws
+#check Instances.LWWRegister.ordered_updates_commute
+#check Instances.LWWRegister.concrete_noncomm_iff_rc_refuted
+#check Instances.LWWRegister.reversed_assignments_wrong_winner
 #check Instances.LWWRegister.canonical_respects
 #check Instances.LWWRegister.timestamp_chain
 #check Instances.LWWRegister.chronological_winner
 #check Instances.LWWRegister.lower_timestamp_does_not_win
 
+-- Queue's public contract includes concurrent duplicate targets and ordinary FIFO.
+#check Instances.Queue.verified
+#check Instances.Queue.queue_correct
+#check Instances.Queue.client_linear_fifo
+#check Instances.MVRLive.verified
+#check Instances.MVRLive.mvr_correct
+#check Instances.MVRLive.linear_register
+
 -- Countermodels and intentionally incomplete signatures are kept out of the
 -- typed production registry and checked by `NegativeLedger`.
 #check Foundation.convergence_over_backward_closed_subsets_false
 #check Foundation.binaryLaws_insufficient
-#check Instances.InteractionSPOT.LWW.old_no_chain_refuted
+#check Instances.RcSPOT.LWW.old_no_chain_refuted
 #check Instances.MVR.concurrentState_no_sequential_register
 #check Instances.Queue.ConditioningSPOT.duplicate_dequeue_not_fifo
 
@@ -141,7 +151,7 @@ namespace Sal.MRDTs
 #check Instances.RGA.BirthGraveState
 #check Instances.RGA.sequence
 #check Instances.RGA.birthGraveMachine
-#check Instances.RGA.birthGraveRel
+#check Instances.RGA.listRel
 #check Instances.RGA.birthGraveSound
 #check Instances.RGA.verified
 #check Instances.RGA.listSpec
@@ -149,8 +159,9 @@ namespace Sal.MRDTs
 #check Instances.RGA.rga_spec_linearizable
 #check Instances.RGA.rga_spec_linearizableV
 #check Instances.RGA.GC.certificate
-#check Instances.RGA.GC.packedWords_pack_lt_of_grave
-#check Instances.RGA.GC.erase_dead_anchor_breaks_future_issuance
+#check Instances.RGA.GC.packedWords_pack_lt_of_live_lt_grave
+#check Instances.RGA.GC.future_after_dead_anchor_not_applicable
+#check Instances.RGA.GC.erase_dead_anchor_rejects_future_issuance
 #check Instances.ProductionRGA.replayEmbed
 #check Instances.ProductionRGA.replaySided
 #check Instances.ProductionRGA.embed

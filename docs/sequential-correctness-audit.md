@@ -16,9 +16,9 @@ and proof-local invariants.
   sequential legality remain independent of implementation state.
 - **Formal oracle:** `IsSpecLinearizable`, both RGA capstones, the total
   grow-only canaries, and the issuance/legality SPOTs.
-- **Reality oracle:** The RGA specification remains an ordinary list with
-  physical deletion, and directed duplicate-delete and deleted-anchor
-  scenarios agree with that specification.
+- **Reality oracle:** the editor protocol does not mint an insertion after an
+  anchor whose deletion it has observed. Retained tombstones serve only to
+  integrate insertions minted concurrently with deletion.
 
 ## Public API
 
@@ -35,7 +35,7 @@ origin witness needed after the issuer advances.
 `Legal` cannot inspect `D.State`. This keeps implementation metadata out of
 the sequential contract. A total datatype sets `Legal` to `True`.
 
-`VerifiedMRDT` supplies issuance, a public `InteractionSpec`, widened
+`VerifiedMRDT` supplies issuance, one public `rc : ReplayPolicy`, widened
 convergence, the sequential specification, a representation relation, and one
 `SequentialCorrectnessCertificate`. Ordinary
 certified execution embeds in widened execution, so the package stores no
@@ -67,9 +67,9 @@ The redesign removes these fields:
 
 ## RGA result
 
-RGA's public sequential state is `List Nat`. Its step inserts after an anchor
-and physically removes a deleted identifier. `listSpec.Legal` states only
-facts about the abstract event list:
+RGA's public sequential state is the ordinary visible `List Nat`.
+`listSpec.Legal` uses `listLegal`, which states only facts about the abstract
+event list:
 
 - event timestamps are unique;
 - each inserted identifier equals its timestamp;
@@ -78,12 +78,17 @@ facts about the abstract event list:
 
 Deletion does not remove an identifier from the legality predicate's
 allocation history. Therefore concurrent duplicate deletes remain legal and
-idempotent. The implementation may retain tombstones, but the sequential
-state does not.
+idempotent.
 
 `rga_spec_linearizable` and `rga_spec_linearizableV` are machine-checked.
-They select the exact version event set, respect `lo`, satisfy
-`listSpec.Legal`, refine the ordinary list, and agree on query results.
+They select the exact version event set, respect `loOn`, satisfy
+`listSpec.Legal`, refine the ordinary list, and agree on its query. The
+implementation's birth/grave state is an internal representation only.
+
+The issuer guard now requires every non-root anchor to be both allocated and
+live. The RGA `rc` orders sibling and direct parent/child insertion conflicts
+by timestamp. It orders an insertion before a conflicting deletion of its new
+identifier or non-root anchor; all other pairs receive `Either`.
 
 ## Checked controls
 
@@ -96,43 +101,37 @@ The RGA SPOT shows that reusing the strict origin predicate as sequential
 legality rejects two concurrent deletes of the same live identifier. The
 public RGA specification accepts the idempotent merged history instead.
 
-The queue SPOT remains a negative result. Two replicas can dequeue the same
-observed head. The named-delete implementation retains the second element,
-while a plain FIFO replay performs two pops. The current queue must gain an
-exactly-once dequeue protocol, adopt another specification, or remain outside
-the public `VerifiedMRDT` package.
+The historical queue SPOT compares particular folds: two replicas dequeue
+the same observed head, retaining the second element, whereas two unconditional
+pops remove both. It does not refute every permitted linearization. The public
+`Queue.clientSpec` now permits repeated removal of an already absent target
+but rejects live non-head and never-enqueued targets. `Queue.verified` proves
+legalization for every certified execution; `queue_correct` connects this to
+timestamp-ordered surviving contents and proves repeated targets are concurrent.
+`client_linear_fifo` gives ordinary FIFO on linear histories. The regression
+harness tests the proved witness against actual fork/merge behavior and detects
+an extra-pop mutation. No exactly-once suppression protocol is introduced.
 
-The EmbedRGA audit found a separate arbitration control.
-`unrelated_insert_delete_not_raw_comm` exhibits an insert and a deletion of an
-unrelated identifier that fail universal `UpdateSig.commutes` only on an
-unsorted representation state. Such states are unreachable by the EmbedRGA
-fold. Consequently, a legal all-insertions-before-deletions merged witness can
-still fail the current raw-`lo` obligation because `lo` observes conflicts on
-malformed states. `embedCanonical_seqOK` proves that the same witness is
-prefix-legal for every reachable EmbedRGA version, including concurrent
-duplicate deletion. This isolates the remaining issue to arbitration, not
-generation or sequential legality.
+The deleted-anchor SPOT has a positive and negative control: insertion is
+issuable while the anchor is live and rejected after the issuer observes its
+deletion. The tombstone remains in the implementation so that an independently
+minted concurrent insertion can still be integrated.
 
-This control falsified the strongest form of the original candidate API claim:
-local proof use of an invariant was not enough while the public correctness
-target hard-coded universal raw-state commutation. The repaired API supplies
-an explicit `InteractionSpec`. EmbedRGA and SidedEmbedRGA now prove that their
-canonical legal witnesses respect those semantic dependence policies without
-putting implementation state inside `SequentialSpec.Legal`.
+The final single-order design derives conflict from `rc`. `loOn` retains a
+visibility edge only for a conflicting pair and uses the same policy for
+concurrent direction. EmbedRGA and SidedEmbedRGA carry immutable coordinates,
+so their replayed insertions do not need anchor state and commute with deletion
+of the anchor. Their public states remain ordinary lists.
 
-The proof-level replay algebra contains no resolver. The absorber-based
-convergence route receives a proof-local `ReplayPolicy`; it is not the public
-interaction policy. `InteractionSPOT.LWW.old_no_chain_refuted` checks that a
-valid LWW timestamp order contains a length-two edge chain, so the historical
-`no_rc_chain` condition cannot be a framework requirement. The add-wins SPOT
-checks remove-before-add for concurrent conflict and add-before-remove when
-visibility records that the remove observed the add.
+`RcSPOT.LWW.old_no_chain_refuted` checks that a valid LWW timestamp order
+contains a length-two edge chain, so the historical `no_rc_chain` condition
+cannot be a framework requirement. `ReplayLaws` instead asks for acyclicity of
+the transitive closure of active `rc` edges.
 
 The production LWW package closes the corresponding end-to-end case. Its raw
-timestamped `max` updates commute, making the default proof-local replay order
-empty. Its public interaction policy orders writes by their timestamped keys,
-and `canonical_respects` constructs a sorted witness that refines the stored
-maximum to the total overwrite-register specification.
+timestamped `max` updates commute, while its sole `rc` policy orders writes by
+their timestamped keys. `canonical_respects` constructs a sorted witness that
+refines the stored maximum to the total overwrite-register specification.
 
 The same legalization composes through Sided Peritext. Both its internal
 three-component core and its production `RichCore` query signature now have
@@ -185,7 +184,7 @@ the client operation without a proved abstraction bridge.
 | flat-grow-only-map | Characteristic function of immutable key/value entries. | Correct abstract carrier. `CanIssue := True`. |
 | bounded-counter | Per-replica abstract balances; increment and decrement change the named balance. | Independent of the concrete pair of grow-only component maps. Issuance is load-bearing for rights-respecting legality and safety. |
 | lww-register | Optional value; every sequential write overwrites the register. | Correct total register abstraction. The representation retains the winning timestamped tuple; `stateRel` projects only its value, and the public witness sorts by the timestamped key. |
-| rga | Ordinary list of stable identifiers; insert splices after an anchor and delete physically filters an identifier. | Correct abstraction; no tombstones or insertion-edge store. Issuance is load-bearing for list legality. |
+| rga | Ordinary list of stable identifiers; insert splices after an anchor and delete physically filters an identifier. | Correct abstraction; no tombstones or insertion-edge store. Issuance is load-bearing for list legality and rejects insertion after an observed anchor deletion. |
 | embed-rga | Ordinary list of identifier/payload pairs. | Correct abstraction; no coordinate records. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
 | sided-embed-rga | Ordinary list of identifier/value pairs. | Correct abstraction; no coordinate or side records in the public state. Issuance is load-bearing for anchor legality and the conditioned merge proof. |
 | peritext-embed-rga | The payload-parametric EmbedRGA list instantiated with characters and mark boundaries. | Correct inherited editor-buffer abstraction. |
@@ -204,12 +203,16 @@ the removed sequential event-set component affected neither transitions nor
 queries. No other production entry retains a representation-only component
 without either an abstract use or a checked necessity argument.
 
-### OR-Set claim record
+### Tagged OR-set claim record (retired regression fixture)
+
+This is historical audit evidence, not a current production datatype.
+The released set is the efficient OR-set; the tagged model lives in
+`Metatheory/Countermodels/TaggedORSet.lean` solely for regression controls.
 
 - **Claim:** every issuance-certified version is linearizable to the ordinary
   add-wins finite-set machine.
 - **Status:** machine-checked.
-- **Formal oracle:** `ORSet.verified`, `setSequentialCorrectness`, and
+- **Formal oracle:** `ORSet.verified`, `sequentialCorrectness`, and
   `versionWellFormed_of_execution`.
 - **Falsifier and negative control:** admit `removeConcurrent` after `addA`;
   `omitted_tag_breaks_ordinary_refinement` checks the resulting concrete and
@@ -231,18 +234,24 @@ without either an abstract use or a checked necessity argument.
 - **Positive and negative controls:** ordinary moves use `doMove`; the checked
   `selfMove_rejected` control exercises cycle rejection.
 - **Trusted definition:** `doMove` is the totalized sequential tree operation.
-- **Residual:** `applicable` is an issuer-API restriction, not a load-bearing
-  premise of the current sequential-refinement theorem.
+- **Public legality:** `ClientLegal` strengthens chronological sorting with
+  an issuable origin contained in each event's replay prefix.
+  `clientLegal_origin` is a required public-gate obligation; the correctness
+  proof obtains these origins from certified mint honesty. The older
+  algebraic `sequentialSound` theorem still needs only sorted replay.
+- **Contract controls:** `clientLegal_firstMove` accepts an ordinary move;
+  `sorting_accepts_reserved` and `clientLegal_rejects_reserved` distinguish
+  sorting alone from the strengthened contract on a reserved-node move.
 
 ## Evidence status
 
 - **Machine-checked positive migrations:** total stores/counters, TreeMove,
   BoundedCounter, LWW register, tombstone RGA, EmbedRGA, SidedEmbedRGA, Peritext, both Sided
   Peritext signatures, AegisSheet, the observed-remove set, and the grow-only
-  canary. Every released entry is a typed `PackagedMRDT` in
+  canary, Queue, and MVR. Every released entry is a typed `PackagedMRDT` in
   `Production.registry`.
 - **Refuted:** origin issuance implies merged sequential legality; strict RGA
-  issuance is a valid sequential legality predicate; current queue is FIFO;
+  issuance is a valid sequential legality predicate;
   and the current MVR refines an ordinary single-value register after two
   concurrent writes.
 - **AegisSheet control retained:** the exact whole-prefix issuer guard is not a
@@ -254,7 +263,19 @@ without either an abstract use or a checked necessity argument.
   differential validation against each executable operation generator.
 
 Replay-only and refuted results are imported by `NegativeLedger`, not the
-production registry. In particular, queue and MVR do not satisfy the public
-sequential interface, and FugueMax's coordinate-level `FMSig` remains an
-internal policy model. The released sided sequence is
-`ProductionRGA.sided`.
+production registry. Queue's completed public package is now registered;
+its older replay-only companion and selected-fold negative remain checked.
+MVR's public finite-live-set contract is now certified: the actual query exposes
+values, `mvr_correct` proves causal-maximality in the same execution as public
+linearizability, and `linear_register` recovers ordinary register behavior.
+Its old single-value counterexample remains a rejection of that target.
+The registered `MVRLive.verified` now uses a concrete finite live set too;
+ordinary and recursively constructed virtual states have a checked
+surviving-write invariant. The production gate rejects substituting the old
+grow-only certificate for this compact implementation.
+FugueMax's coordinate-level `FMSig` remains an internal policy model.
+The enriched `FugueMax.datatype` has its own public plain-list certificate,
+distinct from `ProductionRGA.sided`. `FugueMax.correct` combines legality,
+list refinement, observations, and maximal non-interleaving for one witness
+of the same certified execution. Its state collection remains staged; no
+independent FugueMax runtime is claimed.

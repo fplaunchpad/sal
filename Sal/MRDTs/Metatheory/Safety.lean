@@ -68,6 +68,89 @@ prefix set of a `respects · vis` enumeration of the (fully causally closed,
 contains the whole causal past of the next element, all read off the
 `Pairwise` structure of `π ++ e :: τ`. -/
 
+/-- Every prefix of a causal enumeration of a stored version satisfies the
+datatype invariant.  This is the prefix-strengthened form of the generic
+safety argument and is used directly by sequential specifications whose
+legality is prefix safety. -/
+theorem prefix_inv_of_causal_witness
+    {I : D.State → Prop} {A : Op D.AppOp → D.State → Prop}
+    (hInit : I D.init) (hStep : SafetyStepOn D I A)
+    {C : Configuration D} (hG : CanonicalConfig C)
+    (hHon : HonestAppOn D A C)
+    {v : Version} {s : D.State} {E : Set (Op D.AppOp)}
+    (hv : C.ver v = some (s, E))
+    {ρ : List (Op D.AppOp)} (hperm : listPermOf ρ E)
+    (hvisR : respects ρ C.vis) :
+    ∀ pre suf, ρ = pre ++ suf →
+      I (applySeq D.toUpdateSig D.init pre) := by
+  have hE_ev : ∀ a ∈ E, a ∈ C.events :=
+    hG.version_events_supported v s E hv
+  have hE_cl : ∀ a b, C.vis a b → b ∈ E → a ∈ E :=
+    hG.version_events_causal v s E hv
+  intro pre
+  induction pre using List.reverseRecOn with
+  | nil =>
+      intro _ _
+      exact hInit
+  | append_singleton pre e ih =>
+      intro suf hsplit
+      have hsplit' : ρ = pre ++ e :: suf := by
+        simpa [List.append_assoc] using hsplit
+      have hprev : I (applySeq D.toUpdateSig D.init pre) :=
+        ih (e :: suf) hsplit'
+      have hnd : (pre ++ e :: suf).Nodup := by
+        rw [← hsplit']
+        exact hperm.1
+      have hpw : (pre ++ e :: suf).Pairwise (fun a b => ¬ C.vis b a) := by
+        rw [← hsplit']
+        exact hvisR
+      obtain ⟨hpwPre, hpwE, hcross⟩ := List.pairwise_append.mp hpw
+      have hsuf_no_e : ∀ x ∈ suf, ¬ C.vis x e :=
+        (List.pairwise_cons.mp hpwE).1
+      have hmemρ : ∀ x, x ∈ pre ++ e :: suf ↔ x ∈ E := by
+        intro x
+        rw [← hsplit']
+        exact hperm.2 x
+      have heE : e ∈ E :=
+        (hmemρ e).mp (List.mem_append_right _ List.mem_cons_self)
+      have hSsub : {x : Op D.AppOp | x ∈ pre} ⊆ E := fun x hx =>
+        (hmemρ x).mp (List.mem_append_left _ hx)
+      have heS : e ∉ ({x : Op D.AppOp | x ∈ pre} : Set (Op D.AppOp)) := by
+        intro hmem
+        exact (List.nodup_append.mp hnd).2.2 e hmem e List.mem_cons_self rfl
+      have hfut : ∀ x ∈ ({x : Op D.AppOp | x ∈ pre} : Set (Op D.AppOp)),
+          ¬ C.vis e x :=
+        fun x hx => hcross x hx e List.mem_cons_self
+      have hpast : ∀ x, C.vis x e →
+          x ∈ ({x : Op D.AppOp | x ∈ pre} : Set (Op D.AppOp)) := by
+        intro x hvis
+        have hxE : x ∈ E := hE_cl x e hvis heE
+        rcases List.mem_append.mp ((hmemρ x).mpr hxE) with hx | hx
+        · exact hx
+        · rcases List.mem_cons.mp hx with rfl | hx
+          · exact absurd hvis (hG.vis_irrefl x)
+          · exact absurd hvis (hsuf_no_e x hx)
+      have hScl : ∀ a b, C.vis a b →
+          b ∈ ({x : Op D.AppOp | x ∈ pre} : Set (Op D.AppOp)) →
+          a ∈ ({x : Op D.AppOp | x ∈ pre} : Set (Op D.AppOp)) := by
+        intro a b hvis hb
+        have haE : a ∈ E := hE_cl a b hvis (hSsub hb)
+        rcases List.mem_append.mp ((hmemρ a).mpr haE) with ha | ha
+        · exact ha
+        · exfalso
+          rcases List.mem_cons.mp ha with rfl | ha
+          · exact hfut b hb hvis
+          · exact hcross b hb a (List.mem_cons_of_mem _ ha) hvis
+      have hσS : CausalFold (Configuration.replayContext C)
+          {x : Op D.AppOp | x ∈ pre}
+          (applySeq D.toUpdateSig D.init pre) :=
+        ⟨pre, ⟨(List.nodup_append.mp hnd).1, fun _ => Iff.rfl⟩, hpwPre, rfl⟩
+      obtain ⟨σP, hσP, happ⟩ := hHon e (hE_ev e heE)
+      rw [applySeq_append_single]
+      exact hStep C E {x : Op D.AppOp | x ∈ pre} e
+        (applySeq D.toUpdateSig D.init pre) σP
+        hE_ev hE_cl heE hSsub heS hScl hfut hpast hσS hσP hprev happ
+
 /-- **Generic safety, causal-witness form, explicit conditioning pair.** -/
 theorem version_inv_on_of_causal_canonical
     {I : D.State → Prop} {A : Op D.AppOp → D.State → Prop}
@@ -154,81 +237,7 @@ vis-minimal element, exists since `vis` is transitive and irreflexive on a
 finite list), and all-comm makes folds permutation-invariant; `rc ≡ Either`
 kills the `loOn` rc-arm, so the `loOn`-respect conjunct is free. -/
 
-/-- A nonempty list ordered by a transitive irreflexive relation has an
-`R`-minimal element (no element of the list is `R`-below it). -/
-private theorem exists_rel_min {α : Type} {R : α → α → Prop}
-    (htrans : ∀ {a b c}, R a b → R b c → R a c)
-    (hirrefl : ∀ a, ¬ R a a) :
-    ∀ (l : List α), l ≠ [] → ∃ m ∈ l, ∀ x ∈ l, ¬ R x m := by
-  intro l
-  induction l with
-  | nil => intro h; exact absurd rfl h
-  | cons a l ih =>
-    intro _
-    by_cases hl : l = []
-    · subst hl
-      refine ⟨a, List.mem_cons_self, ?_⟩
-      intro x hx
-      rcases List.mem_cons.mp hx with rfl | hx
-      · exact hirrefl _
-      · exact absurd hx List.not_mem_nil
-    · obtain ⟨m, hm, hmin⟩ := ih hl
-      by_cases ham : R a m
-      · refine ⟨a, List.mem_cons_self, ?_⟩
-        intro x hx hxa
-        rcases List.mem_cons.mp hx with rfl | hx
-        · exact hirrefl _ hxa
-        · exact hmin x hx (htrans hxa ham)
-      · refine ⟨m, List.mem_cons_of_mem _ hm, ?_⟩
-        intro x hx hxm
-        rcases List.mem_cons.mp hx with rfl | hx
-        · exact ham hxm
-        · exact hmin x hx hxm
 
-/-- Any finite list reorders into an `R`-respecting one (`R` transitive,
-irreflexive): peel a minimal element, recurse on the rest. -/
-private theorem exists_respecting_perm_aux {α : Type} {R : α → α → Prop}
-    (htrans : ∀ {a b c}, R a b → R b c → R a c)
-    (hirrefl : ∀ a, ¬ R a a) :
-    ∀ (n : ℕ) (l : List α), l.length ≤ n →
-      ∃ l', l.Perm l' ∧ respects l' R := by
-  classical
-  intro n
-  induction n with
-  | zero =>
-    intro l hl
-    have hnil : l = [] := List.eq_nil_of_length_eq_zero (Nat.le_zero.mp hl)
-    subst hnil
-    exact ⟨[], List.Perm.refl _, List.Pairwise.nil⟩
-  | succ n ihn =>
-    intro l hl
-    by_cases hnil : l = []
-    · subst hnil
-      exact ⟨[], List.Perm.refl _, List.Pairwise.nil⟩
-    · obtain ⟨m, hm_mem, hm_min⟩ :=
-        exists_rel_min (R := R) (fun hab hbc => htrans hab hbc) hirrefl l hnil
-      have hperm : l.Perm (m :: l.erase m) := List.perm_cons_erase hm_mem
-      have hlen : (l.erase m).length ≤ n := by
-        have herase := List.length_erase_of_mem hm_mem
-        have hpos : l.length ≠ 0 :=
-          fun h => hnil (List.eq_nil_of_length_eq_zero h)
-        omega
-      obtain ⟨l'', hp'', hr''⟩ := ihn (l.erase m) hlen
-      refine ⟨m :: l'', hperm.trans (hp''.cons m), ?_⟩
-      unfold respects
-      rw [List.pairwise_cons]
-      refine ⟨?_, hr''⟩
-      intro y hy
-      exact hm_min y (List.mem_of_mem_erase (hp''.mem_iff.mpr hy))
-
-/-- Reordering wrapper: every finite list has an `R`-respecting
-permutation. -/
-theorem exists_respecting_perm {α : Type} {R : α → α → Prop}
-    (htrans : ∀ {a b c}, R a b → R b c → R a c)
-    (hirrefl : ∀ a, ¬ R a a) (l : List α) :
-    ∃ l', l.Perm l' ∧ respects l' R :=
-  exists_respecting_perm_aux (R := R) (fun hab hbc => htrans hab hbc) hirrefl
-    l.length l (Nat.le_refl _)
 
 /-- Folds are permutation-invariant when every pair of ops commutes
 (adjacent-swap induction over the `Perm` derivation; `commutes` is exactly
@@ -266,8 +275,15 @@ theorem causalCanonical_of_all_comm_rc_either
   · -- `loOn` has no edges at all under all-comm + rc-Either
     exact hr.imp (fun _ hlo => by
       rcases hlo with ⟨_, hnc⟩ | ⟨_, _, hfs, _⟩
-      · exact hnc (hcomm _ _)
-      · rw [hrc] at hfs
+      · rcases hnc with hfs | hfs
+        · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+          rw [hrc] at hfs
+          exact RcRes.noConfusion hfs
+        · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+          rw [hrc] at hfs
+          exact RcRes.noConfusion hfs
+      · change D.toUpdateSig.replayOrder _ _ = RcRes.Fst_then_snd at hfs
+        rw [hrc] at hfs
         exact RcRes.noConfusion hfs)
   · exact (applySeq_perm_of_all_comm hcomm hp D.init).symm.trans hfold
 

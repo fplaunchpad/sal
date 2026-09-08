@@ -196,7 +196,7 @@ theorem downset_diff_closed {C : ReplayContext D} {e : Op D.AppOp}
 /-- **`e` is automatically `loOn(↓e)`-maximal**: no VC needed: an
 edge out of `e` into its own past closes a `vis`-cycle (first
 disjunct) or contradicts `vis x e` (rc disjunct). -/
-theorem downset_max {C : ReplayContext D} {e : Op D.AppOp}
+theorem downset_max [ReplayPolicy D] {C : ReplayContext D} {e : Op D.AppOp}
     (h_tr : ∀ {a b c : Op D.AppOp},
       C.vis a b → C.vis b c → C.vis a c)
     (h_ir : ∀ a : Op D.AppOp, ¬ C.vis a a) :
@@ -325,7 +325,8 @@ private theorem principal_case (hVC : BinaryMergeLaws D)
       (fun a ha => h_in a (h_dsub ha.1))
       (fun a ha => h_in a ha.1)
       (downset_diff_closed h_tr h_ir)
-      (closure_diff_of_max Set.Subset.rfl h_cl h_max)
+      (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+        Set.Subset.rfl h_cl h_max)
       hB hA
     rw [hset]
     exact hpU'
@@ -419,7 +420,7 @@ private theorem side_decomposition (hVC : BinaryMergeLaws D)
       refine IH lE.length hlt _ _ t (D.update B e) lE ?_ rfl
         (fun a ha => h_inE a ha.1)
         (fun a ha => h_inE a (h_dsubE ha))
-        (closure_diff_of_max h_subE h_clE h_max)
+        (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp) h_subE h_clE h_max)
         downset_closed ht hT
       rw [hsetE]
       exact hpE
@@ -524,8 +525,10 @@ theorem binaryJoin_of_causalDelta (hVC : BinaryMergeLaws D) (hL : BinaryLatticeL
           refine IH (n - 1) (by omega) _ _ t₁ t₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) (fun a ha => h_in₂ a ha.1)
-            (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
-            (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+            (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+              Set.subset_union_left h_cl₁ h_max)
+            (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+              Set.subset_union_right h_cl₂ h_max)
             ht₁ ht₂
           rw [hsetm]
           exact hpU'
@@ -554,7 +557,8 @@ theorem binaryJoin_of_causalDelta (hVC : BinaryMergeLaws D) (hL : BinaryLatticeL
           refine IH (n - 1) (by omega) _ _ t₁ s₂
             (lU.filter (· ≠ e)) ?_ hlen'
             (fun a ha => h_in₁ a ha.1) h_in₂
-            (closure_diff_of_max Set.subset_union_left h_cl₁ h_max)
+            (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+              Set.subset_union_left h_cl₁ h_max)
             h_cl₂ ht₁ hc₂
           rw [hset₁]
           exact hpU'
@@ -597,7 +601,8 @@ theorem binaryJoin_of_causalDelta (hVC : BinaryMergeLaws D) (hL : BinaryLatticeL
         refine IH (n - 1) (by omega) _ _ s₁ t₂
           (lU.filter (· ≠ e)) ?_ hlen'
           h_in₁ (fun a ha => h_in₂ a ha.1) h_cl₁
-          (closure_diff_of_max Set.subset_union_right h_cl₂ h_max)
+          (closure_diff_of_max (fun a b => (hVC.rc_non_comm_directional a b).mp)
+            Set.subset_union_right h_cl₂ h_max)
           hc₁ ht₂
         rw [hset₂]
         exact hpU'
