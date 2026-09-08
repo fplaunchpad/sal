@@ -35,7 +35,7 @@ and update-wins revival both read a removed identifier's last position, eager
 re-anchoring and remove-wins are refuted, and undoing an older cell write
 revives a causally later removal.
 `Instances/AegisSheetMaterialised.lean` and its companions (`Join`,
-`Certificates`, `Equivalence`, `Update`, `Bridge`) re-encode the spreadsheet
+`Certificates`, `Equivalence`, `Update`, `Bridge`, `Converse`, `Retirement`) re-encode the spreadsheet
 as a materialised three-way MRDT: flat sets of keep tokens, cell versions, and
 range versions with named removal, a last-writer-wins position register, and
 plain deletion for purges. `canon` reads the materialised state off a
@@ -52,8 +52,18 @@ state of an issue-ordered union-model history with the same observation.
 `retirement` is its `StateGCCertificate`: the `known` entries of identifiers
 without tokens are collected with no evidence and no cross-branch condition,
 leaving live data and one register entry per identifier ever positioned. The
+retained register also prevents reuse of retired identifiers;
+`Represents.applicable_iff` proves that compact and full states admit exactly
+the same operations. Purges require present covered versions, valid
+cutoff/coordinate metadata, and dead coordinates, but no acknowledgements or
+designated issuer. The bridges establish state/replay correspondence, not
+equivalence of admitted executions: selective undo remains stricter in the
+port, and undo authority is the external `UndoHonest` premise. The
 purge semantics (plain deletion of covered versions) is specified by `canon`
 and validated by differential testing (`docs/aegissheet-materialised/`).
+The earlier Python campaign is not validation of the final issuance guard.
+`scripts/check-aegis-materialised.sh` checks the theorem axiom boundary and
+the isolated `AegisSheetPortSPOT.lean` regression suite.
 `Instances/LWWRegister.lean` packages the full LWW result: timestamped `max`
 updates commute and make the proof-local replay order empty, while the public
 interaction order has a timestamp-sorted witness refining to a total

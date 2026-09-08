@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1.05in]{geometry}
-\usepackage{amsmath,amssymb,amsthm,booktabs,microtype,array,xcolor}
+\usepackage{amsmath,amssymb,amsthm,booktabs,microtype,array,xcolor,longtable}
 \usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}[definition]{Theorem}
@@ -8,7 +8,7 @@
 \newtheorem{example}[definition]{Example}
 \newtheorem{counterexample}[definition]{Counterexample}
 \newtheorem{finding}[definition]{Finding}
-\newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\lean}[1]{\texttt{\def\_{\textunderscore\allowbreak}#1}}
 \newcommand{\Ev}{\mathsf{Ev}}
 \newcommand{\seen}{\mathsf{seen}}
 \newcommand{\merge}{\mathsf{merge}}
@@ -39,19 +39,22 @@ executions when a removal names the tokens it kills; clearing tokens instead
 converges but breaks commutation. Three hand-derived witnesses, checked by
 the executable reference, show that the last position of a removed row or
 column cannot be dropped while a concurrent revival is possible, so the
-retention residue is one register per axis identifier until removal is
-causally stable. The measured state is linear rather than quadratic in
-history. Under the current model's purge semantics a mask of cutoff and
+retention residue includes one register per axis identifier ever positioned;
+no register collector is certified. Python stored-item measurements are
+consistent with linear rather than quadratic growth over the measured range.
+Under the current model's purge semantics a mask of cutoff and
 coordinates per marker is needed, because that model deliberately masks
 writes concurrent with the marker and below its cutoff; under decision D2,
 which keeps such writes, purge is plain deletion with no residue, because the
 framework's merge base is canonical for the exact intersection of the branch
 histories. No acknowledgement protocol is needed either way: dead identifiers
-can be retired immediately once the register is kept. The witnesses are machine-checked as
-proof-oriented tests against the current model; the design's claims are not
-machine-checked, and the mechanization target is a conditioned Join for the token
-and version components composed with the register and the mask, plus an
-observational-equivalence theorem against the union model.
+can be retired immediately once the register is kept. Lean proves conditioned
+Join, replay adequacy, and purge-free state/replay correspondence with the
+union model. This is not equivalence of admitted executions: inverse writes
+have stricter issuance, and the converse requires honest undo. The datatype's
+own-fold certificate and evidence-free retirement are machine-checked;
+retirement also preserves the complete issuance guard. The Python campaign
+provides separate validation evidence, not a proof about a deployed runtime.
 \end{abstract}
 
 \section{Goal, hypotheses, and status}
@@ -84,9 +87,10 @@ paper requires to stay purged.
 conjectured, refuted, machine-checked, validated, measured, specified, and
 staged. The witnesses of Sections~\ref{sec:h2} and~\ref{sec:undo} are
 machine-checked as SPOTs against the current model
-(\lean{Instances/AegisSheetRetentionSPOT.lean}); the candidate design's claims
-are not machine-checked; the reference definitions and the baseline theorems
-cited from the repository are. The Python reference is validated against the Lean model only on the
+(\lean{Instances/AegisSheetRetentionSPOT.lean}). The port's proved claims and
+their hypotheses are listed in Section~\ref{sec:mech}; state/replay
+correspondence does not identify the two issuance languages.
+The Python reference is validated against the Lean model only on the
 fixtures listed in Section~\ref{sec:controls}.
 
 \begin{table}[h]
@@ -95,17 +99,17 @@ fixtures listed in Section~\ref{sec:controls}.
 \toprule
 Claim & Status & Evidence \\
 \midrule
-H1, named removal & machine-checked in both directions on purge-free executions & \lean{cross\_model}: at every version of every certified execution of the union model, the materialised fold of the erased operations of an issue-ordered enumeration is the canonical state, and on purge-free versions observes the union model's view. \lean{converse}: at every version of every certified execution of the port without purges and with honest undo, the state is the canonical state of an issue-ordered union-model history with the same observation. With purges the port's semantics is D2, specified by \lean{canon}, validated: no counterexample in 3000 concurrent executions with Lamport clocks, laggard replicas, and purge markers: 110{,}560 versions, 19{,}240 registered-ancestor and 461 virtual-base merges, three seeds; all 90{,}859 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$ \\
+H1, named removal & machine-checked purge-free state/replay correspondence & \lean{cross\_model}: at every version of every certified execution of the union model, the materialised fold of the erased operations of an issue-ordered enumeration is the canonical state, and on purge-free versions observes the union model's view. \lean{converse}: at every version of every certified execution of the port without purges and with honest undo, the state is the canonical state of an issue-ordered union-model history with the same observation. With purges the port's semantics is D2, specified by \lean{canon}, validated: no counterexample in 3000 concurrent executions with Lamport clocks, laggard replicas, and purge markers: 110{,}560 versions, 19{,}240 registered-ancestor and 461 virtual-base merges, three seeds; all 90{,}859 generated events pass a transcribed \lean{applicableB} after erasing $\mathit{kills}$ \\
 H1, clearing removal & validated for observation; refuted for replay & converges and matches the reference; 675 of 3000 executions have a merge that differs from timestamp-order replay \\
 H2 & refuted & three hand-derived witnesses checked by the reference (Section~\ref{sec:h2}); 35 to 41 failing executions per 1000 for the register-dropping variant \\
 H3, strict, current purge semantics & refuted & plain deletion diverges in 6, 3, 3 executions per 1000, always on a write concurrent with a marker and below its cutoff \\
 H3, with mask, current purge semantics & validated & a mask of cutoff and coordinates per marker reproduces the reference; 0 failing executions \\
 H3, strict, under D2 & validated & plain deletion matches the D2 reference; 0 failing executions in 3000, 461 of them at virtual bases \\
-Retirement without acknowledgements & validated & dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
-State growth & measured & Table~\ref{tab:growth}: reference quadratic, materialised linear \\
+Retirement without acknowledgements & machine-checked; campaign validated & \lean{retirement} preserves representation; \lean{Represents.applicable\_iff} preserves issuance. In the earlier campaign, dropping a dead identifier's tokens and \lean{known} entry immediately, or with either evidence rule, has 0 failing executions; dropping the register fails \\
+State growth & measured & Table~\ref{tab:growth}: stored-item counts consistent with quadratic versus linear growth over the measured range \\
 Undo revives a later removal & finding, machine-checked; excluded by decision D1 & Section~\ref{sec:undo}; \lean{undo\_revives\_later\_removal} \\
 Lean port & Join, replay adequacy, and observation equivalence machine-checked & \lean{JoinOn M Honest}, \lean{ReplayAdequacyCertificate M generation}, \lean{ObservationEquivalence}, \lean{UpdatePreservesCanon} with issuing pasts, \lean{Issued.fold}, \lean{cross\_model}, \lean{converse}, and \lean{verified : VerifiedMRDT M} are proved (no \lean{sorry}, standard axioms only) \\
-Retention witnesses & machine-checked & five theorems in \lean{AegisSheetRetentionSPOT.lean} with PASS and FAIL companions; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}, \lean{Lean.ofReduceBool} \\
+Retention witnesses & machine-checked & five theorems in \lean{AegisSheetRetentionSPOT.lean} with PASS and FAIL companions; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound}, \lean{Lean.ofReduceBool}, \lean{Lean.trustCompiler} \\
 \bottomrule
 \end{tabular}
 \caption{Status of each claim.}
@@ -117,7 +121,9 @@ Lean model in \lean{Sal/MRDTs/Instances/AegisSheet.lean}, which the
 repository validates against Tables~3 and~4 of the AegisSheet paper. The
 Python transcription of that model is trusted only to the extent of the
 fixture check. The candidate design is specified here and implemented in
-Python; it has no Lean declaration.
+Python, and implemented and proved in the Lean materialised modules.
+The Python campaign predates the final port guard: it does not validate
+issuance equivalence or the new retirement guard theorem.
 
 \section{The reference model}
 \label{sec:reference}
@@ -307,7 +313,7 @@ unavailable; Section~\ref{sec:mech} gives the conditioned route instead.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}lrrrl@{}}
+\begin{tabular}{@{}p{0.44\textwidth}rrrp{0.22\textwidth}@{}}
 \toprule
 Design & seed 1 & seed 2 & seed 3 & first failure class \\
 \midrule
@@ -322,7 +328,7 @@ ancestor ignored (control) & 520 & 511 & 512 & rows, cells, ranges \\
 eager range re-anchoring (control) & 747 & 720 & 746 & ranges \\
 \bottomrule
 \end{tabular}
-\caption{Failing executions out of 1000 per seed under the D1 issuance
+\caption{Historical cutoff-mask campaign: failing executions out of 1000 per seed under the D1 issuance
 rule with Lamport clocks, laggard replicas, and purge markers. Each seed
 produced about 36{,}800 versions, 30{,}300 operations, 6{,}400 merges at a
 registered ancestor, 150 merges at a virtual base, 28 to 41 purge markers,
@@ -371,19 +377,13 @@ cannot answer both. The information lives only on the removing branch.
 The third counterexample does not involve ranges or undo, and it survives
 the D1 issuance rule (35 to 41 failing executions of 1000 per seed for the
 register-dropping variant). The
-retention residue is therefore: one position register per axis identifier
-that has ever been known, retained until the removal is causally stable,
-that is, until no replica can still issue an operation concurrent with it.
-Under update-wins this is unavoidable; under a remove-wins policy the
-register could be dropped at removal. Causal stability suffices only if undo
-cannot revive a removed axis: under the current model
-(Section~\ref{sec:undo}) an undo issued \emph{after} observing the removal
-still revives it, and the register must then be kept as long as any replica
-can undo a write into the row. Decision D1 adopts the no-revival rule. The
-purge experiment of Section~\ref{sec:h3} then found that the register should
-simply be kept for every identifier ever known, one $O(1)$ entry each, while
-the identifier's tokens and \lean{known} entry can be dropped as soon as it
-is dead.
+implemented retention rule keeps one position register per identifier ever
+positioned. These witnesses refute dropping it at removal; they do not prove
+that causal stability is sufficient to collect it. Range resolution can
+still read a dead endpoint, and the legacy undo rule can revive it even
+after observing the removal. D1 excludes that undo revival but does not
+establish a register collector. The certified collector drops only dead
+\lean{known} entries, leaving the register unchanged.
 
 \section{Finding: undo revives a causally later removal}
 \label{sec:undo}
@@ -408,9 +408,11 @@ specification.
 
 \paragraph{Decision D1.} No revival, as an issuance rule: an inverse cell
 write is legal only while its row and column are live. The legacy revival
-behaviour stays documented by this finding and its SPOT; the equivalence
-theorem of Section~\ref{sec:mech} is stated only for honest executions under
-the new rule.
+behaviour stays documented by this finding and its SPOT. The converse in
+Section~\ref{sec:mech} starts from issued port executions and additionally
+requires honest undo. The forward theorem produces a materialised fold even
+for legacy union histories; it does not assert that those operations are
+issuable by the port.
 
 \section{H3: purge and retirement}
 \label{sec:h3}
@@ -480,7 +482,11 @@ both rules.
 
 \paragraph{Consequence.} The roster acknowledgement protocol of the current
 model plays no role in the materialised design's convergence, masking, or
-retirement. It remains an issuance policy on when a purge may be requested.
+retirement. The port deliberately requires neither acknowledgements nor a
+designated issuer. Its guard requires covered versions present in the state,
+valid cutoff/coordinate metadata, and dead coordinates. These conditions
+apply even when the carried command is an inverse; a purge cannot bypass
+them by using the undo constructor.
 Decision D2 (taken): keep a write concurrent with a purge and below its
 cutoff. The materialised purge is then plain deletion, and the sequential
 specification of the port masks exactly the covered versions. The harness
@@ -536,25 +542,28 @@ distinguish these would carry no evidence.
 \section{Mechanization correspondence}
 \label{sec:mech}
 
-\begin{center}\small
-\begin{tabular}{@{}p{0.34\textwidth}p{0.30\textwidth}p{0.28\textwidth}@{}}
+Companion module names below omit the prefix \lean{AegisSheetMaterialised}.
+
+{\small
+\begin{longtable}{@{}p{0.25\textwidth}p{0.35\textwidth}p{0.34\textwidth}@{}}
 \toprule
 Display & Lean declaration & Status \\
 \midrule
+\endhead
 Reference events, state, liveness, positions, cells, ranges, resolution, issuance & \lean{Instances.AegisSheet}: \lean{D}, \lean{axisLive}, \lean{axisPositions}, \lean{cellValues}, \lean{rangeValues}, \lean{resolveRange}, \lean{applicableB} & machine-checked definitions; transcription validated on 20 fixtures \\
-Materialised state, update, merge, observation, canonical state & \lean{Instances.AegisSheet.Materialised}: \lean{M}, \lean{mupdate}, \lean{mmerge}, \lean{mview}, \lean{canon}, \lean{toM} & machine-checked definitions; 45 fixtures of the union model replayed through three-way merges pass by \lean{native\_decide}, and \lean{canon} agrees with the fold on two of them \\
-Restricted Join of the port & \lean{AegisSheetMaterialisedJoin.lean}: \lean{m\_join\_at}, \lean{joinTarget} & machine-checked: \lean{JoinOn M Honest}; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
-Issuance and replay adequacy & \lean{AegisSheetMaterialisedCertificates.lean}: \lean{generation}, \lean{honest\_of\_mint}, \lean{issuanceEstablishes}, \lean{replayAdequacy} & machine-checked: \lean{ReplayAdequacyCertificate M generation} by \lean{ofJoinOn}; same axioms \\
-Observation equivalence & \lean{AegisSheetMaterialisedEquivalence.lean}: \lean{observationEquivalence} & machine-checked: \lean{mview (canon E) = view E} on purge-free histories; same axioms \\
-Update preservation & \lean{AegisSheetMaterialisedUpdate.lean}: \lean{update\_preserves\_canon\_of\_past}, \lean{HonestHistory.insert}, \lean{Issued.fold} & machine-checked: $\mathsf{do}(\mathit{canon}(E), \mathit{toM}(P,e)) = \mathit{canon}(E \cup \{e\})$ for every honest history $E$, past $P \subseteq E$, and event $e$ applicable at $P$ with a fresh timestamp; honesty is preserved; the materialised fold of every issue-ordered history is its canonical state; same axioms \\
-Bridge to union-model executions & \lean{AegisSheetMaterialisedBridge.lean}: \lean{issued\_of\_version}, \lean{cross\_model} & machine-checked: every version of a certified execution of $D$ is enumerated by an issue-ordered history (timestamp order, causal pasts); the materialised fold of its erased operations is the canonical state and, purge-free, observes $D$'s view; same axioms \\
-Verification package & \lean{AegisSheetMaterialisedCertificates.lean}: \lean{mEffect}, \lean{mBefore}, \lean{spec}, \lean{verified} & machine-checked: \lean{VerifiedMRDT M} with the datatype's own fold as sequential machine, by \lean{ofTotal}; convergence and observation through \lean{mview}; the union-model content is the two bridges \\
-Converse bridge & \lean{AegisSheetMaterialisedConverse.lean}: \lean{fold\_eq\_of\_enums}, \lean{applicable\_of\_mApplicable}, \lean{converse} & machine-checked: every version of a certified execution of $M$ without purges and with \lean{UndoHonest} is the canonical state of an issue-ordered union-model history with the same observation; same axioms \\
-Retirement & \lean{AegisSheetMaterialisedRetirement.lean}: \lean{retire}, \lean{retirement}, \lean{retire\_keeps\_live} & machine-checked: \lean{StateGCCertificate M generation} with no evidence and no cross-branch condition; the \lean{known} entries of identifiers without tokens are collected, observations, issued updates, and merges are preserved; same axioms \\
+Materialised state, update, merge, observation, canonical state & \lean{Materialised}: \lean{M}, \lean{mupdate}, \lean{mmerge}, \lean{mview}, \lean{canon}, \lean{toM} & machine-checked definitions; 45 raw-update fixtures in \lean{AegisSheetPortSPOT} pass by \lean{native\_decide}, and \lean{canon} agrees with the fold on two of them \\
+Restricted Join of the port & \lean{Join}: \lean{m\_join\_at}, \lean{joinTarget} & machine-checked: \lean{JoinOn M Honest}; axioms \lean{propext}, \lean{Classical.choice}, \lean{Quot.sound} \\
+Issuance and replay adequacy & \lean{Certificates}: \lean{generation}, \lean{honest\_of\_mint}, \lean{issuanceEstablishes}, \lean{replayAdequacy} & machine-checked: \lean{ReplayAdequacyCertificate M generation} by \lean{ofJoinOn}; same axioms \\
+Observation equivalence & \lean{Equivalence}: \lean{observationEquivalence} & machine-checked: \lean{mview (canon E) = view E} on purge-free histories; same axioms \\
+Update preservation & \lean{Update}: \lean{update\_preserves\_canon\_of\_past}, \lean{HonestHistory.insert}, \lean{Issued.fold} & machine-checked: updating $\mathit{canon}(E)$ by $\mathit{toM}(P,e)$ yields $\mathit{canon}(E \cup \{e\})$ for every honest history $E$, past $P \subseteq E$, and event $e$ applicable at $P$ with a fresh timestamp; honesty is preserved; the materialised fold of every issue-ordered history is its canonical state; same axioms \\
+Bridge to union-model executions & \lean{Bridge}: \lean{issued\_of\_version}, \lean{cross\_model} & machine-checked: every version of a certified execution of $D$ is enumerated by an issue-ordered history (timestamp order, causal pasts); the materialised fold of its erased operations is the canonical state and, purge-free, observes $D$'s view; same axioms \\
+Verification package & \lean{Certificates}: \lean{mEffect}, \lean{mBefore}, \lean{spec}, \lean{verified} & machine-checked: \lean{VerifiedMRDT M} with the datatype's own fold as sequential machine, by \lean{ofTotal}; convergence and observation through \lean{mview}; the union-model content is the two bridges \\
+Converse bridge & \lean{Converse}: \lean{fold\_eq\_of\_enums}, \lean{applicable\_of\_mApplicable}, \lean{converse} & machine-checked: every version of a certified execution of $M$ without purges and with \lean{UndoHonest} is the canonical state of an issue-ordered union-model history with the same observation; same axioms \\
+Retirement & \lean{Retirement}: \lean{retire}, \lean{retirement}, \lean{retire\_keeps\_live} & machine-checked: \lean{StateGCCertificate M generation} with no evidence and no cross-branch condition; the \lean{known} entries of identifiers without tokens are collected, observations, issuance decisions, updates, and merges are preserved; \lean{Represents.applicable\_iff}; same axioms \\
 Counterexamples 5.1 to 5.3, Finding 6.1 & \lean{RetentionSPOT}: \lean{dead\_position\_load\_bearing\_for\_ranges}, \lean{eager\_reanchoring\_refuted}, \lean{dead\_position\_load\_bearing\_for\_revival}, \lean{remove\_wins\_refuted}, \lean{undo\_revives\_later\_removal} & machine-checked by \lean{native\_decide} against the current model; listed in \lean{NegativeLedger.lean} \\
 \bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
+}
 
 \paragraph{Lean status.} The materialised design is a product of
 observed-remove sets and one last-writer-wins register. Because causally
@@ -629,8 +638,9 @@ materialised state does.
 \section{Open obligations}
 
 \begin{enumerate}
-\item Decision D1 (no revival) is taken; carry it into the Lean issuance
-predicate of the new package and keep the legacy SPOT.
+\item Decision D1 is implemented. Selective undo of one among several active
+cell or range versions remains refused by the port, unlike the union model.
+Changing that restriction requires a separate specification decision.
 \item Decision D2 (keep) is taken; the Lean port's purge is plain deletion
 and its sequential specification masks exactly the covered versions.
 \item \lean{JoinTarget}, the replay-adequacy certificate,
@@ -644,5 +654,15 @@ which has no spreadsheet today.
 \item Extend the harness to merges between non-head versions and to undo of
 undo; report the generator's coverage.
 \end{enumerate}
+
+\paragraph{Retirement and issuance.} The old freshness test used only
+\lean{known}, so retiring a dead identifier made it appear fresh. The new
+test also consults the retained position register. The representation
+invariant requires every known identifier to have a position; this holds
+initially and is preserved by issued updates and three-way merges.
+\lean{Represents.applicable\_iff} proves equality of the entire issuance
+decision between compact and full states, and
+\lean{update\_represents\_of\_compact} covers operations admitted on the
+compact state. The register itself is unchanged by collection.
 
 \end{document}

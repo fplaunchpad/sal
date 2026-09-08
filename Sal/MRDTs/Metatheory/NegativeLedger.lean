@@ -10,6 +10,7 @@ import Sal.MRDTs.Instances.AegisSheetMaterialisedUpdate
 import Sal.MRDTs.Instances.AegisSheetMaterialisedBridge
 import Sal.MRDTs.Instances.AegisSheetMaterialisedConverse
 import Sal.MRDTs.Instances.AegisSheetMaterialisedRetirement
+import Sal.MRDTs.Instances.AegisSheetPortSPOT
 import Sal.MRDTs.Instances.FugueMaxReplay
 import Sal.MRDTs.Metatheory.ConditioningSPOT
 import Sal.MRDTs.Metatheory.Join.Convergence_CounterModel
@@ -60,6 +61,8 @@ namespace Sal.MRDTs.Negative
 #check Instances.AegisSheet.Materialised.converse
 #check Instances.AegisSheet.Materialised.retirement
 #check Instances.AegisSheet.Materialised.retire_keeps_live
+#check Instances.AegisSheet.Materialised.retire_applicable_iff
+#check Instances.AegisSheet.Materialised.update_represents_of_compact
 #check Instances.SidedEmbedRGA.fmGeneration
 #check Instances.SidedEmbedRGA.fmReplayAdequacy
 #check Instances.SidedEmbedRGA.fuguemax_replay_witness

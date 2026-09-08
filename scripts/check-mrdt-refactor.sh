@@ -6,6 +6,8 @@ lake build \
   Sal.MRDTs.Metatheory.NegativeLedger \
   Sal.MRDTs.Metatheory.RefactorLedger
 
+sh scripts/check-aegis-materialised.sh
+
 # Guard the two representation-mirroring regressions found by the sequential
 # specification audit.  The theorem ledgers above check the positive bridges;
 # these source checks keep the retired proof-only state shapes from returning.

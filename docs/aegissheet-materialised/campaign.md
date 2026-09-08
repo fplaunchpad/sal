@@ -1,5 +1,11 @@
 # AegisSheet materialised-merge campaign
 
+Historical campaign: the generator uses the union-model guards plus D1/D2,
+not the final Lean port's stronger inverse-write guard or corrected
+allocation/purge guards. These measurements validate the stated Python
+models and fixture scope, not equality of the two issuance languages. The
+current proof and guard status is in `plan.md`, Sections 19 to 21.
+
 Differential property-based testing of the candidate materialised three-way
 AegisSheet against the current union-merge model. Harness: `model.py` in this
 directory. Reproduce with `python3 model.py 1000 1` (three seeds, then the
@@ -78,8 +84,9 @@ frontier-evidence retirement 0/0/0.
 
 Status: validated on honest executions within the campaign scope; the
 restricted Join `JoinOn M Honest` is machine-checked
-(`AegisSheetMaterialisedJoin.lean`, `joinTarget`); the cross-model
-equivalence (S3b) is still a statement.
+(`AegisSheetMaterialisedJoin.lean`, `joinTarget`). The later Lean bridges
+prove purge-free state/replay correspondence at their documented scopes;
+they do not prove equality of admitted execution languages.
 
 The named-removal design with purge masks and registers kept has no failing
 execution. Clearing removal converges and matches the reference but fails

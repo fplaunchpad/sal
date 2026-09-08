@@ -4,6 +4,9 @@ This plan states what exists, what is claimed with which evidence class, what
 is proposed, and what a validator should try to break. Section 8 records the
 first validation round and how each finding changed the plan.
 
+Current status is in Sections 19 to 21. Earlier progress sections are a
+chronological research record, not the current implementation inventory.
+
 ## 1. Research question
 
 The verified AegisSheet (`Sal/MRDTs/Instances/AegisSheet.lean`) is a CRDT
@@ -592,8 +595,10 @@ under `generation`, ordinary or virtual-merge-base, with no purge event and
 with honest undo, there is an issue-ordered union-model history whose
 erasure enumerates the version's events, whose canonical state is the
 version's state, and whose union-model view is the materialised observation.
-With `cross_model` (Section 18) this closes H1 in both directions on
-purge-free executions.
+With `cross_model` (Section 18) this establishes purge-free state/replay
+correspondence. It does not identify the two sets of admitted executions:
+the forward result produces a fold, and the converse an `Issued` history,
+not a certified execution of the other datatype.
 
 Two changes to the port's issuance were needed, in
 `AegisSheetMaterialisedCertificates.lean`. `mApplicable` is now
@@ -681,7 +686,7 @@ compact state therefore knows its identifier). The union model's collector
 (`AegisSheetGC.lean`) needs the roster acknowledgements and the compact
 marker; the port needs neither, as Section 10 predicted.
 
-The residue is therefore exact: live tokens, live cell and range versions,
+The retained-state components are live tokens, live cell and range versions,
 and one register entry per identifier ever positioned. Whether the register
 can be bounded differently is a design question outside this arc.
 
@@ -691,3 +696,54 @@ growth"): stored items 122 to 10,076 for the reference against 30 to 192 for
 the materialised design over 23 to 176 operations, consistent with quadratic
 against linear. A production measurement belongs with a decision to adopt
 the port, which is outside this research arc.
+
+## 21. Validation corrections: issuance after retirement
+
+Goal: make compact-state issuance agree with full-state issuance and state
+the exact theorem scopes. Falsifier: insert an ID, remove it, retire it,
+and issue another insert of that ID. The old `known`-only freshness check
+accepted it only on the compact state. `Audit.known_only_freshness_refuted`
+in `AegisSheetPortSPOT.lean` retains this machine-checked negative control.
+The trusted intent is that an allocated stable ID is not made fresh by GC.
+
+The corrected guard consults both `known` and the retained position register
+(`allocated`). `KnownPositioned` states that every known ID has a position;
+it holds initially and is preserved by issued updates and three-way merges.
+It is included in `Represents`, alongside the existing component equalities.
+`Represents.applicable_iff` is machine-checked: compact and full states make
+the same complete issuance decision. `retire_applicable_iff` specialises it
+to collection; `update_represents_of_compact` allows the guard to be checked
+on the compact state. The old-ID rejection and fresh-ID acceptance are
+machine-checked by kernel reduction, without a native tactic. A bounded
+executable regression also checks five fixture states, 32 payloads and seven
+event forms (1120 comparisons); this is regression evidence, not the proof.
+
+Purge policy: `mEffect` now checks that covered entries are present,
+`Purge.validB` holds, and every named coordinate has a dead row or column.
+The port deliberately requires neither roster acknowledgements nor a
+designated issuer. These guards apply to direct and inverse effects. The
+positive SPOT admits a valid dead-coordinate purge by replica 7 with no
+acknowledgements; negative SPOTs reject live coordinates and invalid metadata.
+D2 still deletes exactly covered versions. The historical Python campaign
+used a different issuance discipline and is not validation of the final guard.
+
+`UndoHonest` remains an explicit external premise. The port still refuses
+selective undo of one among several active cell or range versions. The
+kernel-checked union-accepts/port-rejects cell example documents this scope;
+the broader same-execution-language claim is refuted, not proved by H1.
+The two bridges remain machine-checked at their existing, narrower scopes.
+
+Native raw-update fixtures moved to `AegisSheetPortSPOT.lean`, outside the
+proof imports. `scripts/check-aegis-materialised.sh` rejects native tactics
+and admits in `AegisSheetMaterialised*.lean` and audits twelve declarations
+for exactly the allowed axiom set (propext, Classical.choice, Quot.sound).
+The refactor gate invokes it. The RetentionSPOT trust boundary also includes
+Lean.ofReduceBool and Lean.trustCompiler, now stated in the note. The note's
+mechanization table is multipage so the converse and retirement rows remain
+visible. No integration with current main or production adoption is claimed.
+
+Validation (2026-09-08): `lake lean Sal/MRDTs/Metatheory/NegativeLedger.lean`
+and `sh scripts/check-mrdt-refactor.sh` both exit 0. The latter includes all
+twelve axiom checks, 1120 guard comparisons, 186 runtime tests, and validation
+of 569 benchmark records. The note rebuilds with `tectonic -C`; its formerly
+clipped retirement and counterexample rows were inspected in the rendered PDF.

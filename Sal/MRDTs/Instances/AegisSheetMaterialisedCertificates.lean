@@ -60,11 +60,18 @@ def activeCellTimesOf (s : MState) (row column : StableId) : Finset Timestamp :=
 def activeRangeTimesOf (s : MState) (id : RangeId) : Finset Timestamp :=
   (s.ranges.filter fun v => v.1 = id).image fun v => v.2.1
 
+/-- Allocation survives retirement of `known`: the retained position also
+records that the identifier has already been used. -/
+def allocated (s : MState) (axis : Axis) (id : StableId) : Prop :=
+  (axis, id) ∈ s.known ∨ ∃ p ∈ s.pos, posKey p = (axis, id)
+
 /-- The effect clauses of the issuer's guard, by the effect of the operation:
 a removal names exactly the live tokens of its identifier; every other
-operation names no token; a write names the active versions of its cell and
-requires both axes live (D1); a range edit names the active versions of its
-range; a purge covers versions present at its coordinates. -/
+operation names no token; an insert must be unallocated even after retirement.
+A write names the active versions of its cell and requires both axes live
+(D1); a range edit names the active versions of its range. A purge covers
+present versions, has valid cutoff/coordinate metadata, and names only dead
+coordinates. Neither a roster nor a designated issuer is required. -/
 def mEffect (e : MEvent) (s : MState) : Prop :=
   match MEvent.action e with
   | .axis u =>
@@ -73,7 +80,7 @@ def mEffect (e : MEvent) (s : MState) : Prop :=
           mLive s u.axis u.id = true ∧ e.2.2.kills = liveTokensOf s u.axis u.id
       | some _ =>
           e.2.2.kills = ∅ ∧
-            (u.kind = .insert → (u.axis, u.id) ∉ s.known) ∧
+            (u.kind = .insert → ¬ allocated s u.axis u.id) ∧
             (u.kind = .move → mLive s u.axis u.id = true)
   | .cell u =>
       mLive s .row u.row = true ∧ mLive s .column u.column = true ∧
@@ -81,7 +88,9 @@ def mEffect (e : MEvent) (s : MState) : Prop :=
   | .range u => u.overwrites = activeRangeTimesOf s u.id ∧ e.2.2.kills = ∅
   | .purge m =>
       (∀ entry ∈ m.covered, ∃ v ∈ s.cells, (v.1, v.2.1) = entry.2 ∧ v.2.2.1 = entry.1) ∧
-        e.2.2.kills = ∅
+        e.2.2.kills = ∅ ∧ m.validB = true ∧
+        (∀ coordinate ∈ m.coordinates,
+          mLive s .row coordinate.1 = false ∨ mLive s .column coordinate.2 = false)
 
 /-- The before-image clauses of a direct command, decided at the materialised
 state: the union model's guards `currentAxisPositions`, `cellValues`, and
@@ -110,6 +119,10 @@ def mApplicable (e : MEvent) (s : MState) : Prop :=
     match e.2.2.command with
     | .direct a => mBefore s a
     | .undo _ _ => True
+
+instance (e : MEvent) (s : MState) : Decidable (mApplicable e s) := by
+  unfold mApplicable mEffect mBefore allocated
+  repeat' first | infer_instance | split
 
 def generation : Issuance M where
   CanIssue := mApplicable

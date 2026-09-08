@@ -25,6 +25,64 @@ open Sal.MRDTs Sal.MRDTs.Foundation
 /-- Every token names a known identifier. -/
 def TokensKnown (s : MState) : Prop := ∀ x ∈ s.tokens, (x.1, x.2.1) ∈ s.known
 
+/-- Every allocated identifier retains a position, including after removal. -/
+def KnownPositioned (s : MState) : Prop :=
+  ∀ k ∈ s.known, ∃ p ∈ s.pos, posKey p = k
+
+theorem positioned_posInsert (ps : Finset PosEntry) (a : Axis) (id t p : Nat)
+    (k : Axis × StableId)
+    (hk : k = (a, id) ∨ ∃ x ∈ ps, posKey x = k) :
+    ∃ x ∈ posInsert ps a id t p, posKey x = k := by
+  unfold posInsert
+  split
+  · rename_i h
+    rcases hk with rfl | hk
+    · obtain ⟨x, hx, heq, _⟩ := h
+      exact ⟨x, hx, heq⟩
+    · exact hk
+  · rcases hk with rfl | ⟨x, hx, heq⟩
+    · exact ⟨(a, id, t, p), Finset.mem_insert_self _ _, rfl⟩
+    · by_cases hkey : k = (a, id)
+      · exact ⟨(a, id, t, p), Finset.mem_insert_self _ _, hkey.symm⟩
+      · exact ⟨x, Finset.mem_insert_of_mem (Finset.mem_filter.mpr
+          ⟨hx, fun h => hkey (heq.symm.trans h)⟩), heq⟩
+
+theorem positioned_posMerge (l a b : Finset PosEntry) (k : Axis × StableId)
+    (hk : ∃ x ∈ l ∪ a ∪ b, posKey x = k) :
+    ∃ x ∈ posMerge l a b, posKey x = k := by
+  obtain ⟨x, hx, heq⟩ := hk
+  obtain ⟨y, hy, hmax⟩ := Finset.exists_max_image
+    ((l ∪ a ∪ b).filter fun z => posKey z = k) posTs
+    ⟨x, Finset.mem_filter.mpr ⟨hx, heq⟩⟩
+  obtain ⟨hy, hyk⟩ := Finset.mem_filter.mp hy
+  refine ⟨y, Finset.mem_filter.mpr ⟨hy, ?_⟩, hyk⟩
+  intro z hz hzk
+  exact hmax z (Finset.mem_filter.mpr ⟨hz, hzk.trans hyk⟩)
+
+theorem knownPositioned_update {s : MState} (hs : KnownPositioned s)
+    {e : MEvent} (happ : mApplicable e s) : KnownPositioned (mupdate s e) := by
+  intro k hk
+  cases he : MEvent.action e with
+  | axis u =>
+    cases hp : u.after with
+    | none =>
+      have hl : mLive s u.axis u.id = true := by
+        have heff := happ.1
+        simp only [mEffect, he, hp] at heff
+        exact heff.1
+      have hknown : (u.axis, u.id) ∈ s.known := by
+        simp only [mLive, Bool.and_eq_true, decide_eq_true_eq] at hl
+        exact hl.1
+      simp only [mupdate, he, hp, Finset.mem_insert] at hk ⊢
+      exact hs k (hk.elim (fun h => h ▸ hknown) id)
+    | some p =>
+      simp only [mupdate, he, hp, Finset.mem_insert] at hk ⊢
+      exact positioned_posInsert s.pos u.axis u.id e.1 p k
+        (hk.elim Or.inl (fun h => Or.inr (hs k h)))
+  | cell u => simp only [mupdate, he] at hk ⊢; exact hs k hk
+  | range u => simp only [mupdate, he] at hk ⊢; exact hs k hk
+  | purge u => simp only [mupdate, he] at hk ⊢; exact hs k hk
+
 /-- Retire the `known` entries of identifiers without tokens. -/
 def retire (s : MState) : MState :=
   { s with known := s.known.filter fun k => ∃ x ∈ s.tokens, x.1 = k.1 ∧ x.2.1 = k.2 }
@@ -49,6 +107,7 @@ structure Represents (c f : MState) : Prop where
   known_sub : c.known ⊆ f.known
   dead_dropped : ∀ k ∈ f.known, k ∉ c.known → ∀ x ∈ f.tokens, ¬ (x.1 = k.1 ∧ x.2.1 = k.2)
   tokens_known : TokensKnown f
+  known_positioned : KnownPositioned f
 
 theorem Represents.live_eq {c f : MState} (h : Represents c f) (a : Axis) (id : StableId) :
     mLive c a id = mLive f a id := by
@@ -99,8 +158,8 @@ theorem Represents.view_eq {c f : MState} (h : Represents c f) : mview c = mview
     unfold mRangeValues
     rw [h.ranges]
 
-theorem represents_refl_of {f : MState} (hf : TokensKnown f) : Represents f f :=
-  ⟨rfl, rfl, rfl, rfl, Finset.Subset.refl _, fun _ _ hn => absurd (by assumption) hn, hf⟩
+theorem represents_refl_of {f : MState} (hf : TokensKnown f) (hp : KnownPositioned f) : Represents f f :=
+  ⟨rfl, rfl, rfl, rfl, Finset.Subset.refl _, fun _ _ hn => absurd (by assumption) hn, hf, hp⟩
 
 theorem retire_represents {c f : MState} (h : Represents c f) : Represents (retire c) f where
   tokens := h.tokens
@@ -117,6 +176,7 @@ theorem retire_represents {c f : MState} (h : Represents c f) : Represents (reti
       exact ⟨hc, x, h.tokens ▸ hx, hxk.1, hxk.2⟩
     · exact h.dead_dropped k hk hc x hx hxk
   tokens_known := h.tokens_known
+  known_positioned := h.known_positioned
 
 theorem mem_tokAdds_key {e : MEvent} {x : TokenEntry} (hx : x ∈ tokAdds e) :
     (∃ u : AxisUpdate, MEvent.action e = .axis u ∧ u.after.isSome = true ∧ (x.1, x.2.1) = (u.axis, u.id)) ∨
@@ -164,7 +224,7 @@ theorem update_represents {c f : MState} {e : MEvent} (h : Represents c f)
     unfold mEffect at heff
     simp only [hu] at heff
     exact ⟨heff.1, heff.2.1⟩
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, knownPositioned_update h.known_positioned happ⟩
   · rw [tokens_step, tokens_step, h.tokens]
   · rw [pos_step, pos_step, h.pos]
   · rw [cells_step, cells_step, h.cells]
@@ -210,8 +270,8 @@ theorem update_represents {c f : MState} {e : MEvent} (h : Represents c f)
       · left
         obtain ⟨hr, hc⟩ := hlive_cell u hu
         rcases hkey with hkey | hkey
-        · rw [hkey]; exact known_of_live (represents_refl_of h.tokens_known) hr
-        · rw [hkey]; exact known_of_live (represents_refl_of h.tokens_known) hc
+        · rw [hkey]; exact known_of_live (represents_refl_of h.tokens_known h.known_positioned) hr
+        · rw [hkey]; exact known_of_live (represents_refl_of h.tokens_known h.known_positioned) hc
 
 theorem mem_mvr_right {α : Type} [DecidableEq α] {l a b : Finset α} {x : α} (hx : x ∈ mvr l a b) :
     x ∈ a ∨ x ∈ b := by
@@ -224,7 +284,7 @@ theorem mem_mvr_right {α : Type} [DecidableEq α] {l a b : Finset α} {x : α} 
 
 theorem merge_represents {cl ca cb l a b : MState} (hl : Represents cl l) (ha : Represents ca a)
     (hb : Represents cb b) : Represents (mmerge cl ca cb) (mmerge l a b) := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · show mvr cl.tokens ca.tokens cb.tokens = mvr l.tokens a.tokens b.tokens
     rw [hl.tokens, ha.tokens, hb.tokens]
   · show posMerge cl.pos ca.pos cb.pos = posMerge l.pos a.pos b.pos
@@ -254,6 +314,54 @@ theorem merge_represents {cl ca cb l a b : MState} (hl : Represents cl l) (ha : 
     rcases mem_mvr_right hx' with hxa | hxb
     · exact Finset.mem_union_left _ (Finset.mem_union_right _ (ha.tokens_known x hxa))
     · exact Finset.mem_union_right _ (hb.tokens_known x hxb)
+  · intro k hk
+    apply positioned_posMerge
+    rcases Finset.mem_union.mp hk with hk | hk
+    · rcases Finset.mem_union.mp hk with hk | hk
+      · obtain ⟨p, hp, heq⟩ := hl.known_positioned k hk
+        exact ⟨p, Finset.mem_union_left _ (Finset.mem_union_left _ hp), heq⟩
+      · obtain ⟨p, hp, heq⟩ := ha.known_positioned k hk
+        exact ⟨p, Finset.mem_union_left _ (Finset.mem_union_right _ hp), heq⟩
+    · obtain ⟨p, hp, heq⟩ := hb.known_positioned k hk
+      exact ⟨p, Finset.mem_union_right _ hp, heq⟩
+
+/-- The retained register prevents retirement from making an old ID fresh. -/
+theorem Represents.allocated_iff {c f : MState} (h : Represents c f) (a : Axis) (id : StableId) :
+    allocated c a id ↔ allocated f a id := by
+  unfold allocated
+  rw [h.pos]
+  constructor
+  · exact Or.imp (fun hk => h.known_sub hk) (fun hp => hp)
+  · rintro (hk | hp)
+    · exact Or.inr (h.known_positioned _ hk)
+    · exact Or.inr hp
+
+/-- Retirement preserves the complete local issuance decision, not only
+updates already admitted by the full state. -/
+theorem Represents.applicable_iff {c f : MState} (h : Represents c f) (e : MEvent) :
+    mApplicable e c ↔ mApplicable e f := by
+  have hpositions : ∀ a id, mPositions c a id = mPositions f a id := by
+    intro a id; simp only [mPositions, h.pos]
+  have hcell : mCellValues c = mCellValues f := congrArg View.cell h.view_eq
+  have hrange : mRangeValues c = mRangeValues f := congrArg View.range h.view_eq
+  simp only [mApplicable, mEffect, mBefore, h.live_eq, h.allocated_iff,
+    liveTokensOf, activeCellTimesOf, activeRangeTimesOf, h.tokens, h.cells,
+    h.ranges, hpositions, hcell, hrange]
+
+#print axioms Represents.applicable_iff
+
+theorem update_represents_of_compact {c f : MState} {e : MEvent}
+    (h : Represents c f) (happ : mApplicable e c) :
+    Represents (mupdate c e) (mupdate f e) :=
+  update_represents h ((h.applicable_iff e).mp happ)
+
+theorem retire_applicable_iff (s : MState) (ht : TokensKnown s)
+    (hp : KnownPositioned s) (e : MEvent) :
+    mApplicable e (retire s) ↔ mApplicable e s :=
+  (retire_represents (represents_refl_of ht hp)).applicable_iff e
+
+#print axioms retire_applicable_iff
+#print axioms update_represents_of_compact
 
 /-- **Retirement needs no evidence.** The `known` entries of identifiers
 without tokens can be dropped at any time; updates issued under `generation`
@@ -270,7 +378,9 @@ def retirement : StateGCCertificate M generation where
   update := mupdate
   merge := mmerge
   query := fun s _ => mview s
-  init_represents := represents_refl_of fun x hx => by simp [MState.empty] at hx
+  init_represents := represents_refl_of
+    (fun x hx => by simp [MState.empty] at hx)
+    (fun k hk => by simp [MState.empty] at hk)
   collect_represents := fun h _ => retire_represents h
   update_represents := fun h happ => update_represents h happ
   merge_represents := fun hl ha hb _ => merge_represents hl ha hb

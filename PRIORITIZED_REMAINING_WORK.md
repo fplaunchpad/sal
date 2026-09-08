@@ -339,6 +339,13 @@ anonymous long-form working papers under `docs/`.
   machine-checked; the metadata measurement is the Python one in
   `docs/aegissheet-materialised/campaign.md` (the JavaScript runtime has no
   spreadsheet). Adoption in place of the union model is a separate decision.
+  Validation corrections: retirement now preserves the entire issuance guard
+  (`Represents.applicable_iff`), with freshness consulting the retained
+  position register. Purge issuance requires valid present covered entries
+  and dead coordinates, without a roster or designated issuer. The bridges
+  certify state/replay correspondence, not identical issuance languages;
+  selective undo remains stricter and `UndoHonest` remains external. Native
+  fixtures are isolated from the twelve axiom-gated proof declarations.
 - [x] Add a canonical-replay MRDT model of the TPDS replicated tree move:
   finite move-event state, union merge, timestamp replay, generation guard,
   cycle safety, convergence, direct chronological tree refinement, and SPOTs.

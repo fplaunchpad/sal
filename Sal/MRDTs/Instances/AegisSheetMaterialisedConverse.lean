@@ -318,7 +318,7 @@ theorem directApplicable_of {P : Finset Event} (hH : HonestHistory P)
       obtain ⟨_, hknown, _⟩ := heff
       have hnk := hknown hk
       rw [Bool.and_eq_true, Bool.and_eq_true, Bool.not_eq_true', Bool.eq_false_iff]
-      refine ⟨⟨fun hak => hnk (mem_canonKnown.mpr hak), ?_⟩, ?_⟩
+      refine ⟨⟨fun hak => hnk (Or.inl (mem_canonKnown.mpr hak)), ?_⟩, ?_⟩
       · rw [hb1]; rfl
       · rw [hp]; rfl
     | move =>
